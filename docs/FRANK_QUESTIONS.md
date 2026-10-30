@@ -250,3 +250,7 @@ All four answered with the recommended default (Frank, 2026-10-25):
   ed. page, coefficients stay IDAES's 3rd-ed., stated); the differences are **fixed before 0.3.0** ("Fix before 0.3.0
   (Rec.)": a design-lane ruling; coefficients settled with the 3rd ed. when it arrives, or the 4th ed.'s adopted).
   3rd ed. requested via zotero (`seider2009product`, JFDFFJ4X).
+- **QA1 closed** (Frank, 2026-10-30): the 3rd ed. (supplied by Frank) settled every number (E01 design §10.10, R-895…R-899;
+  no 4th-ed. number ships); C7's five flags (compressors p. 569, turbine p. 593, tower fit "2" p. 575) **approved**
+  ("Approve (Rec.)"), committed on `wp/E01b` as `92afd75b`.
+- **N-9 (V03, ADR 0054)** (Frank, 2026-10-30): keep the catch-all `semantic_role` value `other` ("Keep 'other' (Rec.)").
