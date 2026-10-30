@@ -102,3 +102,16 @@ Left for after this branch:
 4. Q1 (semantic roles) for the design lane; if roles are added, change the two notebooks, the tutorial and the
    change set (`examples/rankine-cycle.changeset.json`, regenerate from the notebook) together.
 5. `docs/support-matrix.md` is still titled for v0.2.0.dev0; the limitations page summarises it and links it.
+
+## Handoff (end of brief 2)
+
+State: `main` 05363060 merged (666dabcb); cost/LCA guide, API page, `lca` install row and
+`examples/rankine-cost-and-gwp.ipynb` (8331caf9, 5ce7ff92); S14 manifest at dfd886c1 `tested` (7/7; S11-IDENTITY
+PASS n=54494); both S14 manifests harvested (class P), `HARVEST_SIZE = (64, 906, 114)`, `t08_support_matrix.py --check` 0.
+
+For the merge:
+1. `wp/E01b` also moves `HARVEST_SIZE` (it adds S12b's manifest, 15 limitations and 5 checks) and the envelope's tail:
+   the second branch to merge re-takes the count and keeps both blocks of harvest entries.
+2. If DOC merges before E01b, `git revert 5ce7ff92` (D13). After E01b merges, the cost example still passes its stated
+   numbers (D11); only the printed capital figures move.
+3. O1 and O2 above when `wp/V03` merges.
