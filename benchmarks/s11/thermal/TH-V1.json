@@ -85,7 +85,7 @@
         "fidelity": "test",
         "validity": "test"
       },
-      "semantic_role": "other"
+      "semantic_role": "feed"
     },
     {
       "id": "V",
@@ -99,7 +99,7 @@
         "fidelity": "test",
         "validity": "test"
       },
-      "semantic_role": "other"
+      "semantic_role": "valve"
     },
     {
       "id": "D",
@@ -130,7 +130,7 @@
         "fidelity": "test",
         "validity": "test"
       },
-      "semantic_role": "other"
+      "semantic_role": "flash"
     },
     {
       "id": "K1",
@@ -144,7 +144,7 @@
         "fidelity": "test",
         "validity": "test"
       },
-      "semantic_role": "other"
+      "semantic_role": "product_sink"
     },
     {
       "id": "K2",
@@ -158,7 +158,7 @@
         "fidelity": "test",
         "validity": "test"
       },
-      "semantic_role": "other"
+      "semantic_role": "product_sink"
     }
   ],
   "parent_revision": null,

@@ -19,6 +19,7 @@ from typing import Any
 
 import pytest
 from m02_c1_support import connection, quantity, revision, specification
+from semantic_roles import role_of
 from test_s11_thermal_binding import dimensionless
 
 from openflowsheet.application.policies import T06_REVISION_V2
@@ -42,7 +43,6 @@ PH_FLASH = "syn001.ph_flash"
 VALVE = "syn001.valve"
 #: The five γ–φ-faced K02/T05 units (units design §4.5).
 FIVE = (MIXER, HEATER, TP_FLASH, PH_FLASH, VALVE)
-ROLES = {"syn001.feed_source": "feed", "syn001.product_sink": "product_sink"}
 #: S10 C-MW's feed composition on the real records (CH3OH, C2H5OH, H2O), mol/s; ethanol exactly
 #: +0.0 (a binary on the ternary provider).
 C_MW_FEED = (0.4, 0.0, 0.6)
@@ -55,7 +55,7 @@ def _instance(unit: str, model: str, parameters: Mapping[str, Any] | None = None
     return {
         "id": unit,
         "model": {"id": model, "version": "0.0.0-declared", "artifact_ref": None},
-        "semantic_role": ROLES.get(model, "other"),
+        "semantic_role": role_of(model),
         "parameters": dict(parameters or {}),
         "policy": {"fidelity": "test", "validity": "test"},
     }

@@ -101,7 +101,7 @@
         "fidelity": "test",
         "validity": "test"
       },
-      "semantic_role": "other"
+      "semantic_role": "feed"
     },
     {
       "id": "G",
@@ -132,7 +132,7 @@
         "fidelity": "test",
         "validity": "test"
       },
-      "semantic_role": "other"
+      "semantic_role": "compressor"
     },
     {
       "id": "C",
@@ -163,7 +163,7 @@
         "fidelity": "test",
         "validity": "test"
       },
-      "semantic_role": "other"
+      "semantic_role": "heater"
     },
     {
       "id": "V",
@@ -177,7 +177,7 @@
         "fidelity": "test",
         "validity": "test"
       },
-      "semantic_role": "other"
+      "semantic_role": "valve"
     },
     {
       "id": "E",
@@ -208,7 +208,7 @@
         "fidelity": "test",
         "validity": "test"
       },
-      "semantic_role": "other"
+      "semantic_role": "heater"
     },
     {
       "id": "K",
@@ -222,7 +222,7 @@
         "fidelity": "test",
         "validity": "test"
       },
-      "semantic_role": "other"
+      "semantic_role": "product_sink"
     }
   ],
   "parent_revision": null,

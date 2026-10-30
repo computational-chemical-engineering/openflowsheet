@@ -17,6 +17,7 @@ from typing import Any
 
 import pytest
 from m02_c1_support import connection, quantity, revision, specification
+from semantic_roles import role_of
 
 from openflowsheet.application.binding import Unbound
 from openflowsheet.application.revision_binding import (
@@ -44,7 +45,6 @@ MIXER, HEATER, TP_FLASH, PH_FLASH, VALVE = (
 )
 FIVE = (MIXER, HEATER, TP_FLASH, PH_FLASH, VALVE)
 WILSON = "wilson-ig-v2"
-ROLES = {"syn001.feed_source": "feed", "syn001.product_sink": "product_sink"}
 
 Document = dict[str, Any]
 
@@ -53,7 +53,7 @@ def _instance(unit: str, model: str, parameters: Mapping[str, Any] | None = None
     return {
         "id": unit,
         "model": {"id": model, "version": "0.0.0-declared", "artifact_ref": None},
-        "semantic_role": ROLES.get(model, "other"),
+        "semantic_role": role_of(model),
         "parameters": dict(parameters or {}),
         "policy": {"fidelity": "test", "validity": "test"},
     }

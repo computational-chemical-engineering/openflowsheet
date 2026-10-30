@@ -101,7 +101,7 @@
         "fidelity": "test",
         "validity": "test"
       },
-      "semantic_role": "other"
+      "semantic_role": "valve"
     },
     {
       "id": "D",
@@ -132,7 +132,7 @@
         "fidelity": "test",
         "validity": "test"
       },
-      "semantic_role": "other"
+      "semantic_role": "flash"
     },
     {
       "id": "KV",

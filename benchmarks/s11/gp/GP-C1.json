@@ -118,7 +118,7 @@
         "fidelity": "test",
         "validity": "test"
       },
-      "semantic_role": "other"
+      "semantic_role": "heater"
     },
     {
       "id": "D",
@@ -149,7 +149,7 @@
         "fidelity": "test",
         "validity": "test"
       },
-      "semantic_role": "other"
+      "semantic_role": "flash"
     },
     {
       "id": "KV",

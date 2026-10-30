@@ -31,6 +31,7 @@ from conftest import REPO_ROOT
 from m02_c1_support import connection, quantity, revision, specification
 from m02_wo8_support import solve
 from s11_column_support import WILSON_CASES, column_registered, committed_case
+from semantic_roles import role_of
 from test_s11_routing import case_revision
 
 from openflowsheet.application.revision_binding import RevisionBinding, bind_revision_flowsheet
@@ -116,11 +117,10 @@ AZEOTROPE = _find_azeotrope(REFERENCE)
 
 
 def _instance(unit: str, model: str, parameters: Mapping[str, Any] | None = None) -> Document:
-    roles = {"syn001.feed_source": "feed", "syn001.product_sink": "product_sink"}
     return {
         "id": unit,
         "model": {"id": model, "version": "0.0.0-declared", "artifact_ref": None},
-        "semantic_role": roles.get(model, "other"),
+        "semantic_role": role_of(model),
         "parameters": dict(parameters or {}),
         "policy": {"fidelity": "test", "validity": "test"},
     }
