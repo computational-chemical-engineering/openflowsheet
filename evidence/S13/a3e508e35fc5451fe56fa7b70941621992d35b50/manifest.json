@@ -2,9 +2,9 @@
  "work_package": "S13",
  "commit": "a3e508e35fc5451fe56fa7b70941621992d35b50",
  "requirements": [],
- "status": "implemented",
+ "status": "tested",
  "inputs": {
-  "case_id": "V03's acceptance at C: one check per assertion of docs/derivations/V03-release-spec.md §7 (0ebf2e4820915db3a36c86ecdc03fb29a0dbd45658d1ae9fe5828170bec8472d), S11.G8, S12.G8, S12.G10 and one per ADR of §6",
+  "case_id": "V03's acceptance at C: one check per assertion of docs/derivations/V03-release-spec.md §7 (387282298ec13c3579518fda7d5fb87b9c0ad3bbd53ee82f29f52ae0cc770ad2), S11.G8, S12.G8, S12.G10 and one per ADR of §6",
   "case_hash": "b918959ba65b020db9fd5d10bcdd250ba9d5dd4eb7bb967882550e78da71eb3c",
   "environment_lock_hash": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
  },
@@ -25,19 +25,19 @@
    "cmd": "python -m pytest -q -p no:cacheprovider --basetemp=TMP/V03.A01 --junitxml=evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A01.junit.xml tests/test_v03_v0_3_gate.py -k 'a01_ or otherwise_passing_fixture'",
    "cwd": ".",
    "exit_code": 0,
-   "stdout_sha256": "b48497f402c10f7a87e6a9099bc4933dc64d399cdaf6848a59babcc18558973f"
+   "stdout_sha256": "722e4748d4fc78d67d5c0e6ae123ce55313710c60bf1ce31f9fff380ed6d6b60"
   },
   {
    "cmd": "python -m pytest -q -p no:cacheprovider --basetemp=TMP/V03.A02 --junitxml=evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A02.junit.xml tests/test_v03_v0_3_gate.py -k a02_",
    "cwd": ".",
    "exit_code": 0,
-   "stdout_sha256": "75b8a0207c910411a2cc1d972a2daa2810f1e722e91e608ce00d2797db0434ee"
+   "stdout_sha256": "1b28200f55a851bbf4f61cfaa904e293f1d6efdce997e0bdb89ae02cd4c761e3"
   },
   {
    "cmd": "python -m pytest -q -p no:cacheprovider --basetemp=TMP/V03.A03 --junitxml=evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A03.junit.xml tests/test_v03_v0_3_gate.py tests/test_m07a_v0_2_gate.py tests/test_m07_v0_2_gate.py -k 'a03_ or test_m07a_v0_2_gate or test_m07_v0_2_gate'",
    "cwd": ".",
    "exit_code": 0,
-   "stdout_sha256": "1b014d5e92e47db8b82f7800f12d208481e3fb522634b99b69bb07cae963135d"
+   "stdout_sha256": "894cf6d06c935338a8954163deb6ccb1762c1d8c2ae1a57e14226a3a57959ace"
   },
   {
    "cmd": "python -m pytest -q -p no:cacheprovider --basetemp=TMP/V03.A04 --junitxml=evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A04.junit.xml tests/test_v03_v0_3_gate.py -k a04_",
@@ -61,43 +61,43 @@
    "cmd": "python -m pytest -q -p no:cacheprovider --basetemp=TMP/V03.A07 --junitxml=evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A07.junit.xml tests/test_v03_v0_3_gate.py -k a07_",
    "cwd": ".",
    "exit_code": 0,
-   "stdout_sha256": "a9b6aaf150cb908f303c56c2a77d73d5975acbe366a19047130bd461d21c5e2d"
+   "stdout_sha256": "454a5f25071e7635349bb5e14968c790bb5599847fcc16aa6d45179c532a5f27"
   },
   {
    "cmd": "python -m pytest -q -p no:cacheprovider --basetemp=TMP/V03.A08 --junitxml=evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A08.junit.xml tests/test_v03_v0_3_gate.py -k a08_",
    "cwd": ".",
    "exit_code": 0,
-   "stdout_sha256": "717dd3c50356ebdad1f687e6e70fae8149fb94ec48bcbf25dd5e719b97169ed4"
+   "stdout_sha256": "bee443b856405e55478e4cfbe6b2366c7efb89d8ab7513d98eccdacb900fa699"
   },
   {
    "cmd": "python -m pytest -q -p no:cacheprovider --basetemp=TMP/V03.A10 --junitxml=evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A10.junit.xml tests/test_e01_a48_tripwire.py",
    "cwd": ".",
    "exit_code": 0,
-   "stdout_sha256": "6f45ab86ea62b4126ac44d0efaacb18df4e8e9389236c0b11fdf19fc0b90ee5b"
+   "stdout_sha256": "c0dc5341498b959e4f9733e92535318ea4f163bea1b3de8438625f26fcfe6401"
   },
   {
    "cmd": "python -m pytest -q -p no:cacheprovider --basetemp=TMP/V03.A11 --junitxml=evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A11.junit.xml tests/test_m07_mr12_extras_v02.py",
    "cwd": ".",
    "exit_code": 0,
-   "stdout_sha256": "22892dbcd28cc5df47b6739da0404abc827e7eb52143027c903d3a144239ea6e"
+   "stdout_sha256": "37f0044587028aaf1e3515673fcd4cc9058b159b12774f55f2ee1545385732e0"
   },
   {
    "cmd": "python -m pytest -q -p no:cacheprovider --basetemp=TMP/V03.A12 --junitxml=evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A12.junit.xml tests/test_v03_wilson_ship.py tests/test_s11_wilson_v2.py::test_a75_v1_is_not_edited -k 'a12_ or test_a75_v1_is_not_edited'",
    "cwd": ".",
    "exit_code": 0,
-   "stdout_sha256": "fd5cf35d20b7a4d3a055304f2eb6dc698dd6c866c4e1aaa5b546e3b4052bd7fa"
+   "stdout_sha256": "a9e0fd3d5fd05a87883a98da9215d30e852c8c58d9a5fbf918393be4b410a80e"
   },
   {
    "cmd": "python -m pytest -q -p no:cacheprovider --basetemp=TMP/V03.A13 --junitxml=evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A13.junit.xml tests/test_v03_wilson_ship.py -k a13_",
    "cwd": ".",
    "exit_code": 0,
-   "stdout_sha256": "25de23a9682005ded8e37cc9e3ad967c60825a6d6931da2be89088ade29024f3"
+   "stdout_sha256": "8f7392c9c5128d7e0ab5a96bb3d8e2276bdb3e3a07b844752df2fe4aa4ad107a"
   },
   {
    "cmd": "python -m pytest -q -p no:cacheprovider --basetemp=TMP/V03.A14 --junitxml=evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A14.junit.xml tests/test_v03_wilson_ship.py -k a14_",
    "cwd": ".",
    "exit_code": 0,
-   "stdout_sha256": "ff92593e33adc7901df2f42de0618902178c45e1787f4229a6b5157672914934"
+   "stdout_sha256": "b6ba45ae4fd803a1267b8d3f670c75b24a94a57c0745c7a5aa6b72a5e5ad3ab6"
   },
   {
    "cmd": "python -m pytest -q -p no:cacheprovider --basetemp=TMP/V03.A15 --junitxml=evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A15.junit.xml tests/test_v03_rc_coolprop.py",
@@ -115,25 +115,25 @@
    "cmd": "python -m pytest -q -p no:cacheprovider --basetemp=TMP/V03.A28 --junitxml=evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A28.junit.xml tests/test_v03_semantic_roles.py -k a28_",
    "cwd": ".",
    "exit_code": 0,
-   "stdout_sha256": "3077a35c0e9d10cf3cdb655178c00c90fbfbefe84ed1e78a1cf4ca9de387d19c"
+   "stdout_sha256": "354e509165d2e6a7bef466ead52becd91e32f65e6fe8033788c7666558fe0dc7"
   },
   {
    "cmd": "python -m pytest -q -p no:cacheprovider --basetemp=TMP/V03.A29 --junitxml=evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A29.junit.xml tests/test_v03_semantic_roles.py -k 'a29_ or nine_cases_and_its_floor'",
    "cwd": ".",
    "exit_code": 0,
-   "stdout_sha256": "8abfcd45e9cd8550aefd21bd998843bd68c66bc98457e5b1375f628909e4c264"
+   "stdout_sha256": "22135e48d0bdf5872e47ebf0ea93dc1433483ce27b4bc5c6fb1846324597093d"
   },
   {
    "cmd": "python -m pytest -q -p no:cacheprovider --basetemp=TMP/V03.A30 --junitxml=evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A30.junit.xml tests/test_v03_semantic_roles.py -k a30_",
    "cwd": ".",
    "exit_code": 0,
-   "stdout_sha256": "0a37f42965f11fe7107f2036f87b792021135769ead3eb3b5b7677bb076d9da4"
+   "stdout_sha256": "1e7f1cc5185a5200a5163b4ef392278abe3b2860693a918efbf80b5b9b4d3085"
   },
   {
    "cmd": "python -m pytest -q -p no:cacheprovider --basetemp=TMP/V03.A31 --junitxml=evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A31.junit.xml tests/test_v03_semantic_roles.py -k a31_",
    "cwd": ".",
    "exit_code": 0,
-   "stdout_sha256": "b3f49fb40e5bf85a0f34bfad18b93eef11e8f6be433a904d9fc26660482825fa"
+   "stdout_sha256": "1b4a1893bfbf42b3a90f0e7a03c441ad3076a5af48f373b90843e7e19326c8cf"
   },
   {
    "cmd": "TMPDIR=TMP python scripts/s11_identity.py",
@@ -233,7 +233,7 @@
    "exit_code": 0
   },
   {
-   "cmd": "PYTHONPATH=src:. .venv/bin/python scripts/s13_evidence_manifest.py --commit a3e508e35fc5451fe56fa7b70941621992d35b50 --gate-log gate-fe61ae9.log --ci-run 41108983463 --ci-run 41108983672 (run at 4ac5b66c39c9b9511d25f65762bb5f36e95f94b4)",
+   "cmd": "PYTHONPATH=src:. .venv/bin/python scripts/s13_evidence_manifest.py --commit a3e508e35fc5451fe56fa7b70941621992d35b50 --gate-log gate-fe61ae9.log --ci-run 41108983463 --ci-run 41108983672 (run at 04c503e5cbb5dfb0d5cec803a483a9f010e9865d)",
    "cwd": ".",
    "exit_code": 0
   }
@@ -250,7 +250,7 @@
       "-k",
       "a01_ or otherwise_passing_fixture"
      ],
-     "summary": "3 passed, 64 deselected in 0.08s"
+     "summary": "3 passed, 64 deselected in 0.09s"
     }
    }
   },
@@ -265,7 +265,7 @@
       "-k",
       "a02_"
      ],
-     "summary": "20 passed, 47 deselected in 0.08s"
+     "summary": "20 passed, 47 deselected in 0.09s"
     }
    }
   },
@@ -282,7 +282,7 @@
       "-k",
       "a03_ or test_m07a_v0_2_gate or test_m07_v0_2_gate"
      ],
-     "summary": "297 passed, 66 deselected in 4.19s"
+     "summary": "297 passed, 66 deselected in 3.87s"
     }
    }
   },
@@ -342,14 +342,14 @@
       "-k",
       "a07_"
      ],
-     "summary": "5 passed, 62 deselected in 0.34s"
+     "summary": "5 passed, 62 deselected in 0.30s"
     }
    }
   },
   {
    "id": "V03.A08",
-   "description": "V03.A08 (§7 gate D, R): output: the §2.2 first line; 18 gate rows, the 17 claimed in order and then W27 `not claimed (v0.3-gate-v1)`; last line `v0.3.0 tag may be proposed: YES` or `… NO (k reasons)`",
-   "result": "unsupported",
+   "description": "V03.A08 (§7 gate D, R): output: the §2.2 first line; 18 gate rows, the 17 claimed in order and then W27 `not claimed (v0.3-gate-v1)`; last line `v0.3.0 tag may be proposed: YES` or `… NO (k reasons)`. D: the gate's tests, which S13's manifest judges. R: step 18's own output at WO-8 (§6.1 step 4), recorded in the build log; S13's manifest does not judge it (Amendment 4, R-913)",
+   "result": "pass",
    "value": {
     "tests": {
      "selection": [
@@ -357,11 +357,7 @@
       "-k",
       "a08_"
      ],
-     "summary": "7 passed, 60 deselected in 0.72s"
-    },
-    "step18": {
-     "state": "pending",
-     "reason": "step 18 runs after the ledger (WO-8); no --step18-log was given"
+     "summary": "7 passed, 60 deselected in 0.62s"
     }
    }
   },
@@ -391,7 +387,7 @@
      "selection": [
       "tests/test_e01_a48_tripwire.py"
      ],
-     "summary": "3 passed in 0.13s"
+     "summary": "3 passed in 0.15s"
     }
    }
   },
@@ -404,7 +400,7 @@
      "selection": [
       "tests/test_m07_mr12_extras_v02.py"
      ],
-     "summary": "29 passed in 0.20s"
+     "summary": "29 passed in 0.19s"
     }
    }
   },
@@ -420,7 +416,7 @@
       "-k",
       "a12_ or test_a75_v1_is_not_edited"
      ],
-     "summary": "9 passed, 17 deselected in 0.82s",
+     "summary": "9 passed, 17 deselected in 0.81s",
      "a12c": {
       "a12c_mode": "version_aligned",
       "V_C": "0.3.0",
@@ -455,7 +451,7 @@
       "-k",
       "a13_"
      ],
-     "summary": "11 passed, 14 deselected in 0.53s"
+     "summary": "11 passed, 14 deselected in 0.54s"
     }
    }
   },
@@ -470,7 +466,7 @@
       "-k",
       "a14_"
      ],
-     "summary": "5 passed, 20 deselected in 0.53s"
+     "summary": "5 passed, 20 deselected in 0.55s"
     }
    }
   },
@@ -522,7 +518,7 @@
     "changelog": {
      "phrases": 17,
      "missing": [],
-     "judged_at": "4ac5b66c39c9b9511d25f65762bb5f36e95f94b4"
+     "judged_at": "04c503e5cbb5dfb0d5cec803a483a9f010e9865d"
     }
    }
   },
@@ -709,8 +705,8 @@
   },
   {
    "id": "V03.A25",
-   "description": "V03.A25 (§7 gate R): gate item 12 at C: the 25 required ADRs Accepted (0054 included, Amendment 1); 0043 Proposed and not required",
-   "result": "unsupported",
+   "description": "V03.A25 (§7 gate R): gate item 12 at C, in two parts (Amendment 4, R-913). (a) S13's manifest: the gate's own `adr_problems` over `docs/adr/`, at the commit the generator runs at, returns no problem except `ADR 0053 is not Accepted: ` or `ADR 0054 is not Accepted: `, and each of those for a status line that starts `Status: Proposed` (`*` removed, stripped). So the other 23 required ADRs are Accepted, and 0043 is Proposed and not required. (b) Step 18 (§6.1 step 4): item 12 in full, the 25 required ADRs Accepted (0054 included, Amendment 1), shown by its YES line and recorded in the build log",
+   "result": "pass",
    "value": {
     "adrs": {
      "required": 25,
@@ -718,9 +714,12 @@
       "ADR 0053 is not Accepted: **Status:** **Proposed, 2026-10-29** (design lane, `specifier`, package V03; manifest id `S13`). It becomes",
       "ADR 0054 is not Accepted: **Status:** **Proposed, 2026-10-29** (design lane, `specifier`, package V03, ruling round 1; manifest id `S13`). It"
      ],
+     "at_wo8": [
+      "ADR 0053 is not Accepted: **Status:** **Proposed, 2026-10-29** (design lane, `specifier`, package V03; manifest id `S13`). It becomes",
+      "ADR 0054 is not Accepted: **Status:** **Proposed, 2026-10-29** (design lane, `specifier`, package V03, ruling round 1; manifest id `S13`). It"
+     ],
      "adr_0043_status": "**Status:** Proposed, 2026-10-22. It becomes Accepted when three things hold: WO-L01-1 and WO-L01-2's manifest is",
-     "judged_at": "4ac5b66c39c9b9511d25f65762bb5f36e95f94b4",
-     "state": "pending"
+     "judged_at": "04c503e5cbb5dfb0d5cec803a483a9f010e9865d"
     }
    }
   },
@@ -732,32 +731,40 @@
     "verdict_document": {
      "rows": 17,
      "verdicts": {
-      "BLOCKED": 3,
-      "FAIL": 3,
-      "PASS": 11
+      "FAIL": 2,
+      "PASS": 15
      },
      "judged": "2026-10-30",
-     "judged_at": "4ac5b66c39c9b9511d25f65762bb5f36e95f94b4"
+     "judged_at": "04c503e5cbb5dfb0d5cec803a483a9f010e9865d"
+    },
+    "policy": {
+     "adr": "docs/adr/0053-v0.3.0-release-policy.md",
+     "judged": "2026-10-30",
+     "rejudged": "2026-10-31",
+     "d3": {
+      "V14 (b)": "accepted, 2026-10-30 — Frank, verbatim: \"Accept (Recommended)\" (the default in this row; asked in plain words after W21's new judgement)",
+      "X31 (c)": "accepted, 2026-10-30 — Frank, verbatim: \"Accept (Recommended)\" (the default in this row; asked in plain words after W21's new judgement)"
+     },
+     "frank_items": [
+      "Claim set",
+      "V17 carry",
+      "M02 N1",
+      "M03 N1"
+     ],
+     "problems": [],
+     "frank": [],
+     "d3_not_accepted_on_time": []
     }
    }
   },
   {
    "id": "V03.A27",
-   "description": "V03.A27 (§7 gate R): `evidence/S13/{C}/manifest.json` `tested`, listing V03.A01–A26 and A28–A34 with commands run and `S11.G8`, `S12.G8`, `S12.G10`; step 18's last line `v0.3.0 tag may be proposed: YES`",
-   "result": "unsupported",
+   "description": "V03.A27 (§7 gate R): two parts (Amendment 4, R-913). (a) S13's manifest, as its own check V03.A27: `evidence/S13/{C}/manifest.json` `tested`, listing V03.A01–A26 and A28–A34 with commands run and `S11.G8`, `S12.G8`, `S12.G10`. That is, every other check passes and commands were run. (b) At WO-8, from step 18's output (§6.1 step 4), not by the manifest: step 18's last line `v0.3.0 tag may be proposed: YES`, recorded in the build log with the log's SHA-256",
+   "result": "pass",
    "value": {
-    "step18": {
-     "state": "pending",
-     "reason": "step 18 runs after the ledger (WO-8); no --step18-log was given"
-    },
     "self": {
      "other_checks": 47,
-     "not_pass": [
-      "V03.A08",
-      "V03.A25",
-      "ADR.0053",
-      "ADR.0054"
-     ],
+     "not_pass": [],
      "commands": 41
     }
    }
@@ -773,7 +780,7 @@
       "-k",
       "a28_"
      ],
-     "summary": "1 passed, 19 deselected in 3.84s"
+     "summary": "1 passed, 19 deselected in 4.06s"
     }
    }
   },
@@ -788,7 +795,7 @@
       "-k",
       "a29_ or nine_cases_and_its_floor"
      ],
-     "summary": "3 passed, 17 deselected in 10.14s"
+     "summary": "3 passed, 17 deselected in 10.63s"
     }
    }
   },
@@ -803,7 +810,7 @@
       "-k",
       "a30_"
      ],
-     "summary": "12 passed, 8 deselected in 3.88s"
+     "summary": "12 passed, 8 deselected in 4.25s"
     }
    }
   },
@@ -818,7 +825,7 @@
       "-k",
       "a31_"
      ],
-     "summary": "3 passed, 17 deselected in 8.33s"
+     "summary": "3 passed, 17 deselected in 9.03s"
     }
    }
   },
@@ -1052,23 +1059,49 @@
   {
    "id": "ADR.0053",
    "description": "ADR 0053 (V03 spec §6): at WO-8",
-   "result": "unsupported",
+   "result": "pass",
    "value": {
     "wo4_checked_against": "—",
     "wo4_result": "unchanged",
     "status_line": "**Status:** **Proposed, 2026-10-29** (design lane, `specifier`, package V03; manifest id `S13`). It becomes",
-    "state": "pending"
+    "status": "Proposed",
+    "policy": {
+     "adr": "docs/adr/0053-v0.3.0-release-policy.md",
+     "judged": "2026-10-30",
+     "rejudged": "2026-10-31",
+     "d3": {
+      "V14 (b)": "accepted, 2026-10-30 — Frank, verbatim: \"Accept (Recommended)\" (the default in this row; asked in plain words after W21's new judgement)",
+      "X31 (c)": "accepted, 2026-10-30 — Frank, verbatim: \"Accept (Recommended)\" (the default in this row; asked in plain words after W21's new judgement)"
+     },
+     "frank_items": [
+      "Claim set",
+      "V17 carry",
+      "M02 N1",
+      "M03 N1"
+     ],
+     "problems": [],
+     "frank": [],
+     "d3_not_accepted_on_time": []
+    },
+    "listed": {
+     "range": "V03.A01–A31",
+     "missing": []
+    }
    }
   },
   {
    "id": "ADR.0054",
    "description": "ADR 0054 (V03 spec §6): at WO-8",
-   "result": "unsupported",
+   "result": "pass",
    "value": {
     "wo4_checked_against": "—",
     "wo4_result": "unchanged",
     "status_line": "**Status:** **Proposed, 2026-10-29** (design lane, `specifier`, package V03, ruling round 1; manifest id `S13`). It",
-    "state": "pending"
+    "status": "Proposed",
+    "listed": {
+     "range": "V03.A28–A31",
+     "missing": []
+    }
    }
   },
   {
@@ -1101,32 +1134,32 @@
   },
   {
    "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A01.log",
-   "sha256": "b48497f402c10f7a87e6a9099bc4933dc64d399cdaf6848a59babcc18558973f",
+   "sha256": "722e4748d4fc78d67d5c0e6ae123ce55313710c60bf1ce31f9fff380ed6d6b60",
    "description": "tests run here (not committed)"
   },
   {
    "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A01.junit.xml",
-   "sha256": "d3768f9098b552f82a2682e0878e30b1abe5be5328c547d7dd34eb265f7da848",
+   "sha256": "9d7eda19f825b6091a92e6a9209a098793eed03c1a1d3375f769b93234b9773a",
    "description": "tests run here (not committed)"
   },
   {
    "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A02.log",
-   "sha256": "75b8a0207c910411a2cc1d972a2daa2810f1e722e91e608ce00d2797db0434ee",
+   "sha256": "1b28200f55a851bbf4f61cfaa904e293f1d6efdce997e0bdb89ae02cd4c761e3",
    "description": "tests run here (not committed)"
   },
   {
    "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A02.junit.xml",
-   "sha256": "311c02411c96a34447cead42a8192daf3b9431993926e39c514fa04c59237ced",
+   "sha256": "12d34a830c263a99fb05a5f07eff1178f5139265568d1d7a8f17aa414f92fb93",
    "description": "tests run here (not committed)"
   },
   {
    "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A03.log",
-   "sha256": "1b014d5e92e47db8b82f7800f12d208481e3fb522634b99b69bb07cae963135d",
+   "sha256": "894cf6d06c935338a8954163deb6ccb1762c1d8c2ae1a57e14226a3a57959ace",
    "description": "tests run here (not committed)"
   },
   {
    "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A03.junit.xml",
-   "sha256": "2e1c8fff3b3185c34abcecf42d265da9f6cf9ed762cadcaf2face006e25bbaba",
+   "sha256": "33e756d8ae026c2048d4683a94a1b9672db694c819c4719b5576e93c15515e24",
    "description": "tests run here (not committed)"
   },
   {
@@ -1136,7 +1169,7 @@
   },
   {
    "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A04.junit.xml",
-   "sha256": "9e713e754d7e5cbdd385aaa8db999bde63706c4eec4a0d956e4c04ffedded91a",
+   "sha256": "59f94bc62acae27e6cbb4af96a50397fcddc5672159052d7f57a9b3eaf494b9b",
    "description": "tests run here (not committed)"
   },
   {
@@ -1146,7 +1179,7 @@
   },
   {
    "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A05.junit.xml",
-   "sha256": "55e4068ce4d3eea8e76590f967a6692cac02713a28170339572b3db2e3fb0f1a",
+   "sha256": "9f26ddd6c56f741ffb2e253bcc106514ac9f6e393f8c59c2db2fcb3daaa169f4",
    "description": "tests run here (not committed)"
   },
   {
@@ -1156,77 +1189,77 @@
   },
   {
    "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A06.junit.xml",
-   "sha256": "855071eb0290441204da55e401be50b82beed6961f3c6ab037ee56b84d72c246",
+   "sha256": "b807e2ffb4e9b41e25ff2f490e721490d2ea6860fbac197f10a6ffc7dcb04138",
    "description": "tests run here (not committed)"
   },
   {
    "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A07.log",
-   "sha256": "a9b6aaf150cb908f303c56c2a77d73d5975acbe366a19047130bd461d21c5e2d",
+   "sha256": "454a5f25071e7635349bb5e14968c790bb5599847fcc16aa6d45179c532a5f27",
    "description": "tests run here (not committed)"
   },
   {
    "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A07.junit.xml",
-   "sha256": "731a3cd4f1ad2bb0d0e2f395aef81fce11309e4659bc0f726ad85ff335e7dd7c",
+   "sha256": "aec41cd8aae28eaff02bbc0660dd1c9ff750886ae544eab3a28397bb51cdefaf",
    "description": "tests run here (not committed)"
   },
   {
    "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A08.log",
-   "sha256": "717dd3c50356ebdad1f687e6e70fae8149fb94ec48bcbf25dd5e719b97169ed4",
+   "sha256": "bee443b856405e55478e4cfbe6b2366c7efb89d8ab7513d98eccdacb900fa699",
    "description": "tests run here (not committed)"
   },
   {
    "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A08.junit.xml",
-   "sha256": "1b5af3613c835f8261c6d4b9996499d29a2ba5533fa421b5bbddf668b1ade089",
+   "sha256": "2bed2c14b935bd1331e97bf37417ed7c0469499fc4960149f3d5fbb6f78cfbf9",
    "description": "tests run here (not committed)"
   },
   {
    "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A10.log",
-   "sha256": "6f45ab86ea62b4126ac44d0efaacb18df4e8e9389236c0b11fdf19fc0b90ee5b",
+   "sha256": "c0dc5341498b959e4f9733e92535318ea4f163bea1b3de8438625f26fcfe6401",
    "description": "tests run here (not committed)"
   },
   {
    "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A10.junit.xml",
-   "sha256": "c43e58d0aa9bed1257fdc5e35961109cb1be6c1d742e5931502e56c65e0e12a2",
+   "sha256": "d74b3c4b2089ac5813545ee24638bc2e526cae37f4db1feeb3d63a1ab7340eca",
    "description": "tests run here (not committed)"
   },
   {
    "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A11.log",
-   "sha256": "22892dbcd28cc5df47b6739da0404abc827e7eb52143027c903d3a144239ea6e",
+   "sha256": "37f0044587028aaf1e3515673fcd4cc9058b159b12774f55f2ee1545385732e0",
    "description": "tests run here (not committed)"
   },
   {
    "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A11.junit.xml",
-   "sha256": "269340f0dc96517ffefd39901c40362326b9e9592482a80514f7ad5e0ba422dc",
+   "sha256": "95e91a567d0a5cb6635953f99a26a0a308239af8342d90d2413399634392e5b0",
    "description": "tests run here (not committed)"
   },
   {
    "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A12.log",
-   "sha256": "fd5cf35d20b7a4d3a055304f2eb6dc698dd6c866c4e1aaa5b546e3b4052bd7fa",
+   "sha256": "a9e0fd3d5fd05a87883a98da9215d30e852c8c58d9a5fbf918393be4b410a80e",
    "description": "tests run here (not committed)"
   },
   {
    "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A12.junit.xml",
-   "sha256": "84cede86520611f26e50555154c5243a5ef8935da8d92ce4da5b8300d695befc",
+   "sha256": "f8d44baaf05951fad0ae4a3fba8eedf846171508334d7274b9ad7722c145c2f8",
    "description": "tests run here (not committed)"
   },
   {
    "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A13.log",
-   "sha256": "25de23a9682005ded8e37cc9e3ad967c60825a6d6931da2be89088ade29024f3",
+   "sha256": "8f7392c9c5128d7e0ab5a96bb3d8e2276bdb3e3a07b844752df2fe4aa4ad107a",
    "description": "tests run here (not committed)"
   },
   {
    "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A13.junit.xml",
-   "sha256": "1d704b1f24fcf59c2f3c3874fb7c35f3a284def5c6b2765f408eaabcc1c1dbef",
+   "sha256": "ec0abc713724a69fd97593ee153f4b994890617300b5e50e0591224037c446d6",
    "description": "tests run here (not committed)"
   },
   {
    "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A14.log",
-   "sha256": "ff92593e33adc7901df2f42de0618902178c45e1787f4229a6b5157672914934",
+   "sha256": "b6ba45ae4fd803a1267b8d3f670c75b24a94a57c0745c7a5aa6b72a5e5ad3ab6",
    "description": "tests run here (not committed)"
   },
   {
    "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A14.junit.xml",
-   "sha256": "241b14bed2beb1cb02ebc5816e987ed72d2b2b4c6fc24e4579237d91c5410134",
+   "sha256": "2ffff31f8604382f8f9e4cf2ca58bf927aa878d76460bdba14d6daf46fb3fddd",
    "description": "tests run here (not committed)"
   },
   {
@@ -1236,7 +1269,7 @@
   },
   {
    "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A15.junit.xml",
-   "sha256": "bbdda8e911274215cce7e00df543740490d90d044ab48c98d4a394f58c2cd094",
+   "sha256": "80caf728f2ab7372f084714cbe87ccd31d545ad05c940609660cf8060fa06244",
    "description": "tests run here (not committed)"
   },
   {
@@ -1246,47 +1279,47 @@
   },
   {
    "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A16.junit.xml",
-   "sha256": "7387edf20f1fd6db5fa2b9b1b50b3a0bf8e18becd5b6ce51562e8fd83c338007",
+   "sha256": "6d5200150ba8f5bc4cd4836409f8faccae21821a35a5755508a3dd93463773a1",
    "description": "tests run here (not committed)"
   },
   {
    "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A28.log",
-   "sha256": "3077a35c0e9d10cf3cdb655178c00c90fbfbefe84ed1e78a1cf4ca9de387d19c",
+   "sha256": "354e509165d2e6a7bef466ead52becd91e32f65e6fe8033788c7666558fe0dc7",
    "description": "tests run here (not committed)"
   },
   {
    "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A28.junit.xml",
-   "sha256": "26ceeacf3b380d400fcfcb89d84a1420aec9a93b9bfa1c84dcf891a68ac15243",
+   "sha256": "7b933d79a88ed36cc1ba33ab3ace272d0b501304e02214c156747b8cb978ff0f",
    "description": "tests run here (not committed)"
   },
   {
    "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A29.log",
-   "sha256": "8abfcd45e9cd8550aefd21bd998843bd68c66bc98457e5b1375f628909e4c264",
+   "sha256": "22135e48d0bdf5872e47ebf0ea93dc1433483ce27b4bc5c6fb1846324597093d",
    "description": "tests run here (not committed)"
   },
   {
    "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A29.junit.xml",
-   "sha256": "0f83b3a8d96def9a06dea1faae6254c49887fa077a7711d2ba4c8cf8b85c4358",
+   "sha256": "d37c0cee03890ae19a68f2e5cd6dfa94913aac54776cda541c4da3102ea7c490",
    "description": "tests run here (not committed)"
   },
   {
    "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A30.log",
-   "sha256": "0a37f42965f11fe7107f2036f87b792021135769ead3eb3b5b7677bb076d9da4",
+   "sha256": "1e7f1cc5185a5200a5163b4ef392278abe3b2860693a918efbf80b5b9b4d3085",
    "description": "tests run here (not committed)"
   },
   {
    "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A30.junit.xml",
-   "sha256": "be8f2fadb686c9c96055ff9039db78593ad567ee558278037088d33c8902dfaf",
+   "sha256": "237b44d8c057cc6299bde6f1ac6d72f4f49fa2a92086b215225a9256943a6aaf",
    "description": "tests run here (not committed)"
   },
   {
    "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A31.log",
-   "sha256": "b3f49fb40e5bf85a0f34bfad18b93eef11e8f6be433a904d9fc26660482825fa",
+   "sha256": "1b4a1893bfbf42b3a90f0e7a03c441ad3076a5af48f373b90843e7e19326c8cf",
    "description": "tests run here (not committed)"
   },
   {
    "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A31.junit.xml",
-   "sha256": "e0a56e67de9efdf3e5aa80d5a067e90be3539feb0968d66b9511db2fbbdca62a",
+   "sha256": "e0667ee0caf5d0974c59f86c0d0763f82700cabef07e3a226e938d7911f20674",
    "description": "tests run here (not committed)"
   },
   {
@@ -1301,87 +1334,87 @@
   },
   {
    "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A12c-aligned-keep/branch/shard-0.log",
-   "sha256": "87c414880f08c28c65ab572794609730c4fa985aab6e05d0b37bdcfc39cbdbbb",
+   "sha256": "d26280f4d686677a25d53189494888c1f2d3067635dc94b486427dce1b14ffea",
    "description": "tests run here (not committed)"
   },
   {
    "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A12c-aligned-keep/branch/shard-1.log",
-   "sha256": "17c082909091708bbdea4f059c8299b9cc1e4fc95f978b72220847ebeaf2a71e",
+   "sha256": "c896564d07292ad3a5fa02e006ee2baea40311d305d0eea007534d91505e80a2",
    "description": "tests run here (not committed)"
   },
   {
    "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A12c-aligned-keep/branch/shard-10.log",
-   "sha256": "5bba8b4af2ae37cd11a0c05dd49e1ebcd680c65c3e8ee16e630eacf879847f70",
+   "sha256": "5cf1decd976541daba74c47eedcb649a099477e547b477fda6b1fd25dcac6a19",
    "description": "tests run here (not committed)"
   },
   {
    "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A12c-aligned-keep/branch/shard-11.log",
-   "sha256": "d2cdc33af7441171aedb23724c52bcdfdd1dbc0993d8662cbe1b753a9f2eec73",
+   "sha256": "e19c32bd196c5ae867d697bcdb7ee06224d4627f8c47158d950337e4c27458a1",
    "description": "tests run here (not committed)"
   },
   {
    "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A12c-aligned-keep/branch/shard-12.log",
-   "sha256": "df83f834465ea30f70a63edefadb600e7ebe4f34d436ef3a5b8ffc27db10a061",
+   "sha256": "a65c04ad5334170dd73115ae77633f88047e29038e4c5d45e7722c70e33dc941",
    "description": "tests run here (not committed)"
   },
   {
    "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A12c-aligned-keep/branch/shard-13.log",
-   "sha256": "c4453ab0f6168075f2f53452107adf755fc05f2c65e5676fbe955a0a20546500",
+   "sha256": "746b1b81a81c6862a70e2443100157f1009c35cf268c0bccb27739f1210457b6",
    "description": "tests run here (not committed)"
   },
   {
    "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A12c-aligned-keep/branch/shard-14.log",
-   "sha256": "e27d651674d34e7c3f5d3bbf556e90a64ebf775e5ca717f55042217c5855b260",
+   "sha256": "55992cae4738bd6b6eca50e81d1bd91c4d4196ad509f29dc2b2a43f7b50ae4ea",
    "description": "tests run here (not committed)"
   },
   {
    "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A12c-aligned-keep/branch/shard-15.log",
-   "sha256": "d4ef9a98bc46c2071dfc00be09e110c39e37703f46fcc1312df4d46ac13264ef",
+   "sha256": "025bfc3b667c9aa5871af3c512c17b04002fdb4345ed588e0458af05cdd93cc8",
    "description": "tests run here (not committed)"
   },
   {
    "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A12c-aligned-keep/branch/shard-16.log",
-   "sha256": "e04606ef3ccdf41ed709c87c3709882c6045865dcdd377dacc71d515b585e053",
+   "sha256": "7598d1c599b008048c695599a9cd71894a6b06fef6375d6ed711cf15bdd56792",
    "description": "tests run here (not committed)"
   },
   {
    "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A12c-aligned-keep/branch/shard-2.log",
-   "sha256": "0f3c7307e3243c14b9f843480275b86db9b72dd9a1e97f7fe3ca3fa2c72ee01e",
+   "sha256": "d3e42e47da47e430e0327515c76972363e290374e17ea5e29dc22a76025da7c9",
    "description": "tests run here (not committed)"
   },
   {
    "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A12c-aligned-keep/branch/shard-3.log",
-   "sha256": "fee3318b597b345d64ffe31af852a6a386f489cb615b2a45b0a6b47724ecc9ff",
+   "sha256": "585987b19cdebf651d974cf79330bb5ffb1c5a4dfe025d8f0242a6cedd2c904b",
    "description": "tests run here (not committed)"
   },
   {
    "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A12c-aligned-keep/branch/shard-4.log",
-   "sha256": "8fdb39584472b1dd1dd0e013626ff1f16928de9b4a8c8769970d51f50e172f94",
+   "sha256": "2fa07b52942784286b89052038a16ca6a6d3361862365fb2df352db7a5250781",
    "description": "tests run here (not committed)"
   },
   {
    "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A12c-aligned-keep/branch/shard-5.log",
-   "sha256": "eddc8a5f82484fbbf43a93a44caf00dfb0f5772f4b715ed235e72ef132ab6ad1",
+   "sha256": "97871ca97c10d9223cec431abf6007b6ebab5bb5167337525fcf6c1097c457ba",
    "description": "tests run here (not committed)"
   },
   {
    "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A12c-aligned-keep/branch/shard-6.log",
-   "sha256": "c66939472ae8b8859632543e47e9b083d30aaefb8f4ab50cf02595497be2b6e8",
+   "sha256": "1dbb8edf25ba6409922066c3c695c9f5473f261279f4f462841f8123a1a68020",
    "description": "tests run here (not committed)"
   },
   {
    "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A12c-aligned-keep/branch/shard-7.log",
-   "sha256": "baff80adf035353b5ac3af25004b87587af2a8077494493b281e18492d6da069",
+   "sha256": "7ac72f8c132db36168f579d4af80d4ed0257846dbc4bafc9e81a8fcfd45e9c92",
    "description": "tests run here (not committed)"
   },
   {
    "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A12c-aligned-keep/branch/shard-8.log",
-   "sha256": "4bb1907a492db6a3451cace9ec8fd6d1c070189fdf8da3a77d9ad5144833481b",
+   "sha256": "31dc586f115ffc97c0ce714286958e04a38e987ddc175832fe08c780fe4eacea",
    "description": "tests run here (not committed)"
   },
   {
    "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A12c-aligned-keep/branch/shard-9.log",
-   "sha256": "3bef4ce628bac17a4a0162874be046614e2cc4ab93263ca4f20679c64ab3bee0",
+   "sha256": "dd588c99fc57fdacfcca07ef9e4ed5359c50af98b2f4edf25fee709f0f812980",
    "description": "tests run here (not committed)"
   }
  ],
@@ -1391,15 +1424,11 @@
   "The D-gated assertions (A01-A08, A10-A16, A28-A31) are judged by their test nodes run here with S13a's selections; S13a's own manifest, at a commit before K3, is cited (S13.S13a), not re-used as evidence for C.",
   "V03.A24's ratio classes (S07 A31, S11 thermal check) are read through the CI jobs that assert them; the ratios themselves are recorded in docs/v03-rc-record.md, not here.",
   "S11.G8 and S12.G8 read the full gate from --gate-log, run at a commit whose distribution trees equal C's; the log's commit is named in the build log.",
-  "The design lane's verdicts are not judged here; A25, A26, A27 and ADRs 0053/0054 are judged at the candidate after the verdicts and the ledger (WO-7, WO-8).",
+  "Step 18 (scripts/v0_3_gate.py --rc C) is not run by this script and is not judged here. It reads this manifest and ADRs 0053 and 0054, which are marked Accepted on this manifest, so it runs after both (V03 spec §6.1, R-913). V03.A08's R part, A25 (b) and A27 (b) are judged from its output, which docs/V03_RC_DECISIONS.md records with its SHA-256, as M07.A36's R part was at 0.2.0.",
+  "ADR.0053 and ADR.0054 judge their conditions other than this manifest's own status, and pass with the status line Proposed or Accepted; one Accepted while another check does not pass fails (R-913). V03.A25 here is its part (a); item 12 in full is step 18's (A25 (b)).",
   "Not harvested into v0.3-envelope-1. This manifest is written after C, and classifying its items would change benchmarks/t08/support_envelope.yaml, a D2.4 path. scripts/t08_support_matrix.py excludes evidence/S13/, as R-485 excluded M07's manifest from 0.2.0's harvest; the next envelope's package harvests it (R-911).",
   "V03.A12 (c) is judged version-aligned (V03 spec §7.1, R-910). The registered identity run differs from its base only in family-C digests, through the version string; with the version held equal, no digest differs. This shows that no binding outcome changed. It does not make the version string inert: the experiment fingerprint carries it by design (R-458).",
-  "L-S11-1, L-S11-2, L-S11-3 and L-E01-1, and W26's sentence \"G14 not judged at 0.3.0\", travel in the prose of docs/reviews/V03-verdicts.md and in the envelope, not in the verdict table's limitation column, whose grammar (v0_2_gate.LIMITATION) cannot carry them (R-912).",
-  "V03.A08 is unsupported (pending): see its value.",
-  "V03.A25 is unsupported (pending): see its value.",
-  "V03.A27 is unsupported (pending): see its value.",
-  "ADR.0053 is unsupported: see its value.",
-  "ADR.0054 is unsupported: see its value."
+  "L-S11-1, L-S11-2, L-S11-3 and L-E01-1, and W26's sentence \"G14 not judged at 0.3.0\", travel in the prose of docs/reviews/V03-verdicts.md and in the envelope, not in the verdict table's limitation column, whose grammar (v0_2_gate.LIMITATION) cannot carry them (R-912)."
  ],
  "review": {
   "numerical": "pending",
