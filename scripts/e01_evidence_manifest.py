@@ -627,7 +627,10 @@ def found_limitations(entries: Sequence[Mapping[str, Any]], a33: Mapping[str, An
         "approval. The open questions of §10.10.9 (Q-B2, Q-B3, Q-B8, Q-B9, Q-B11, Q-B12) are "
         "worked on their defaults. A49 compares the set with the Seider 3rd ed. by page and "
         "equation (benchmarks/e01/cost_hand/seider3.yaml): transcription verification, not "
-        "empirical validation of the correlations.",
+        "empirical validation of the correlations. Since R-898 every P2 capital row is floored, "
+        "so P2's optimization exercises operating cost only; no registered NLP case carries a "
+        "capital row in a `units:N` regime (V03 review F-E1; E01.A18 makes a floor's derivative "
+        "row empty, so A33–A36 show nothing about capital sensitivities through the optimizer).",
         "Not applied from the review: the lower-priority domain entries for .per_fu, lcox and "
         "the allocation ratios (§4.7.5 erratum); N2 (layering, deferred by the review until "
         "numerics/ opens); N3 (the platform piece's provenance in the shipped set).",
