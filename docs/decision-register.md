@@ -17967,3 +17967,61 @@ outputs stay byte-identical.
 **Rejected.**
 - *Widen now.* It changes the engine that judges C, after C, to gain one table cell and no evidence.
 - *Rename the envelope ids.* That is a D2.4 change, and the ids are cited across the tree.
+
+## R-913 — WO-8 at 0.3.0 is acyclic: S13's manifest `tested` → ADRs 0053 and 0054 Accepted on it → step 18 → build log; the manifest never judges step 18 and is not regenerated after it
+
+| | |
+| --- | --- |
+| Date | 2026-10-31 |
+| Decided by | design lane (`specifier`), V03 Amendment 4 (the WO-8 engineer's stop) |
+| Normative text | V03 spec §6.1, V03.A08, A25, A27, §10.1, §12 |
+| Evidence | The manifest at C (`4ecfc162`): `implemented`, 48 checks, exactly five `unsupported`: A08, A25, A27, ADR.0053, ADR.0054. Step 18's dry run at `2b7fc98e`: `NO (3 reasons)`, namely the manifest's status and ADRs 0053 and 0054 not Accepted. M07's generator: `Spec("A43", measure="self")`, "Step 18 … is not run by this script", and no ADR-status check. ADR 0042 was Accepted on M07's `tested` manifest |
+| Affected packages | V03 (WO-8; `scripts/s13_evidence_manifest.py`) |
+
+**Decision.** WO-8 runs in §6.1's order. The generator takes rules (g1)–(g6):
+- A08's check is its tests only, and A27's check is `_self` only. `--step18-log` is removed.
+- A25 (a) is the gate's `adr_problems`, which may return only `ADR 0053/0054 is not Accepted` problems, and only for
+  Proposed status lines.
+- ADR.0053 and ADR.0054 judge their conditions other than the manifest's own status: Frank's six cells by the gate's
+  `policy` (0053), and the listed range.
+- A guard fails an ADR marked Accepted while another check does not pass.
+- A26 gains the `policy` part.
+This replaces 4ac5b66c's pending branch, which the orchestrator ratified on 2026-10-30. Step 18's output is recorded in
+the build log. The manifest from step 2 is final.
+
+**Rejected.**
+- *Regenerate the manifest with `--step18-log` after step 18 (the engineer's last step).* The status is a fixed point,
+  but the bytes are not. The regeneration rewrites the file the ADR lines cite and step 18 read, after both read it.
+  Re-running step 18 to cover the new file never ends.
+- *Mark 0053 and 0054 Accepted first.* That marks them before their condition holds.
+- *Run step 18 in a scratch tree with the ADRs flipped, or keep A25 `unsupported`.* The first invents a step-18 log.
+  With the second, the gate's manifest item refuses the manifest forever.
+- *Let the gate accept `implemented` or skip item 12.* That changes the engine that judges C, after C, for a
+  bookkeeping loop.
+- *Drop A25 and A27 from the manifest.* The catalogue rule, one check per §7 row, is what keeps an assertion from being
+  left out.
+
+**Watch for.** A regenerated `evidence/S13/<C>/manifest.json` after H2 without steps 3–5 repeated. An ADR line citing a
+manifest SHA-256 that differs from the tree's.
+
+## R-914 — Standing: a release manifest never judges the gate that reads it; an assertion decided by that gate is split, and an ADR conditioned on the manifest is judged in it on its other conditions
+
+| | |
+| --- | --- |
+| Date | 2026-10-31 |
+| Decided by | design lane (`specifier`), V03 Amendment 4 |
+| Normative text | V03 spec §6.1, A08, A25, A27; every later release spec |
+| Evidence | 0.2.0 had no loop because M07's manifest judged neither step 18 nor item 12 (M07.A36's R part was in the build log). 0.3.0 wrote both into A25 and A27, and into an ADR route that conditions on the manifest, and so built the loop (R-913) |
+| Affected packages | V03; the next release spec |
+
+**Decision.** In a release spec, any assertion whose condition is decided by a step that reads the release manifest
+(the tag gate, its ADR item) is written in two parts. The manifest judges what holds before that step. The step's own
+output, recorded in the build log, judges the rest. An ADR whose acceptance condition includes the manifest being
+`tested` has a manifest check over its other conditions, with Proposed or Accepted allowed and §6.1's guard applied. It
+is marked after the manifest and before the gate. The spec's step table states this order.
+
+**Rejected.** *Pending rules per release (4ac5b66c's form).* They keep the manifest from ever reaching `tested`, and the
+loop is found only at the last work order.
+
+**Watch for.** A release generator with an input for the gate's own output. An ADR check that requires Accepted where
+the ADR's condition is the manifest itself.

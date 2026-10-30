@@ -3,7 +3,8 @@
 **Authority.** Design lane (`specifier`), package V03 (manifest id `S13`, R-878). Policy: ADR 0053 (Proposed). Brief:
 `docs/briefs/V03-release-policy.md`. Builds on ADR 0042 and `docs/derivations/M07-spec.md` §7–§13; on ADR 0028 and
 `docs/derivations/V02-alpha-release-spec.md` §4–§8; and on `docs/RELEASING.md`. Register: R-872…R-880, and R-881…R-883
-for Amendment 1, R-903…R-908 for Amendment 2, and R-909…R-912 for Amendment 3. Facts quoted here were measured at
+for Amendment 1, R-903…R-908 for Amendment 2, R-909…R-912 for Amendment 3, and R-913…R-914 for Amendment 4. Facts quoted here were
+measured at
 `main` = `a1b50ccf` and `wp/E01` = `84d71df8` unless stated otherwise.
 
 **Amendment 1 (2026-10-29, design lane, ruling round 1, brief `docs/briefs/V03-rulings-1.md`).** Two build-lane
@@ -44,6 +45,23 @@ step 12 itself (§4, V03.A34, R-909).
 C stays `a3e508e3`: nothing here changes a D2.4 path. Changed: header, §1, §4, §7 (A12, A27; A34 and §7.1 new), §10,
 §10.1, §10.2, §10.5 (new), §11 (N-11, N-12, F-5, F-6), §12. Amendment 3's tree was read at `wp/V03-rc` = `41b99a9b`.
 
+**Amendment 4 (2026-10-31, design lane, on the WO-8 stop in `docs/V03_RC_DECISIONS.md`).** As written, three
+conditions waited on each other. ADRs 0053 and 0054 became Accepted only once S13's manifest was `tested`. The manifest
+was `tested` only if A25, ADR.0053 and ADR.0054 passed, and those needed the ADRs Accepted. It also needed A08's R part
+and A27 to pass, and those needed step 18's YES. Step 18 says YES only on a `tested` manifest and Accepted ADRs. §6.1
+now orders WO-8 so that nothing waits on anything after it:
+1. the generator's rules (R-913);
+2. the manifest, regenerated `tested`, which judges A25 (a) and ADR.0053 and ADR.0054 on what holds before the ADRs
+   are marked;
+3. ADRs 0053 and 0054 marked Accepted on that manifest;
+4. step 18;
+5. step 18's output, recorded in the build log.
+The manifest never judges step 18 and is not regenerated after it. At 0.2.0, M07's manifest did not judge step 18
+either (M07.A36). A08, A25 and A27 are each split into a part the manifest judges and a part step 18 judges. The split
+is standing for later release specs (R-914). C stays `a3e508e3`: nothing here changes a D2.4 path. Changed: header,
+§1, §4 (step 18), §6 (0053, 0054; §6.1 new), §7 (A08, A25, A27, falsifiability), §10 (WO-8), §10.1, §11 (F-7, F-8),
+§12. Amendment 4's tree was read at `wp/V03-rc` = `2fa00ff6`.
+
 **Scope.** What 0.3.0 claims and how each claim is judged. The registry entry, the release candidate C, the RC job,
 the version pin and the working form, the ADR acceptance route, the data the wheel ships, the release notes, numbered
 assertions, and work orders for one build-lane engineer and one `verdict` agent. No production code is written here.
@@ -69,6 +87,8 @@ for 0.2.0. Three choices are asked early (§11).
 8. What W26 (a) judges at 0.3.0 (§3.5), and Amendment 2's RC corrections (§4 steps 14–17b, A19 (c), A21, A32, A33).
 9. Step 12's keep-and-audit of G11's experiment results (§4, A34), A12 (c) at a version cut (§7.1), and S13's manifest
    outside the 0.3.0 harvest (§4) (Amendment 3).
+10. The order at WO-8 that decides S13's manifest, ADRs 0053 and 0054, and step 18, so that none waits on a step that
+    waits on it (§6.1, Amendment 4).
 
 ## 2. The claim set and the registry entry
 
@@ -250,7 +270,7 @@ The restated step 16 therefore passes there. It is re-measured at C.
 | 15 | W25 per §3.4: journey at J (K3 plus the G10 records, `2d945b5d`), carried to C, `check` and `replay` at C | V03.A21 |
 | 16 | W26 per §3.5: G1–G13 and G15's registered content, with W27's v1 refusal asserted; the browser test on CI x86-64 | V03.A20, V03.A32 |
 | 17 | v0.3 package items 17a–17e below | V03.A22 |
-| 18 | `scripts/v0_3_gate.py --rc C`, not required in the record; run for its YES line only after the ledger is written | V03.A27 |
+| 18 | `scripts/v0_3_gate.py --rc C`, not required in the record. It is run for its YES line at WO-8, after S13's manifest is `tested` and ADRs 0053 and 0054 are Accepted on it (§6.1). Its output is recorded in the build log. S13's manifest does not judge it (Amendment 4, R-913) | V03.A08 (R), V03.A25 (b), V03.A27 (b) |
 
 - **17a.** E01 G10: `e01_evidence_manifest.a48_release_check()` returns `("pass", {"unverified_primary_ranges": 0, …})`.
 - **17b.** S07 F-8: with `requirements-coolprop.lock` installed after the main lock (`--no-deps --require-hashes`) and
@@ -342,8 +362,90 @@ and report. It is not a choice.
 | 0050, 0051 (S11) | manifest `tested` with G1–G8 (0050) or G1–G13 (0051); `reviewer` passed | `evidence/S11/01e72ca4…` (123/126, G8 outstanding there); merge `1b2758d1` (gate PASS `021441ef`, CI 40877525424 green on both architectures); `docs/reviews/S11-review.md`; G8 again at C (steps 1, 17b; V03.A24) | Accepted **after** V03.A24 holds at C. S13's manifest records `S11.G8` pass |
 | 0052 (E01) | manifest `tested` with G1–G9; `reviewer` passed tracks A, B and integration | `evidence/S12/d87078af…`; `docs/reviews/E01-review.md`; E01's merge record (G8); G8 again at C | Accepted after E01's merge and V03.A24 |
 | 0043 (L01/S04) | Frank's L01-Q1 and Q-2; manifest; review | L01-Q1 (W27 Amendment 3) is not done | **Stays Proposed.** It is not in `required_adrs`. `pr-lib-v1` is library-only, its records do not ship (L01-Q4), and no 0.3.0 claim rests on it |
-| 0053 | §ADR status line | Frank's tables; S13 manifest `tested` | Accepted at WO-8 |
-| 0054 (V03, Amendment 1) | S13's manifest `tested` at C, listing V03.A28–A31 with their commands | `evidence/S13/<C>/manifest.json` | Accepted at WO-8, with 0053 |
+| 0053 | §ADR status line | Frank's tables; S13 manifest `tested` | Accepted at WO-8, in §6.1's order: after S13's manifest is `tested`, before step 18 |
+| 0054 (V03, Amendment 1) | S13's manifest `tested` at C, listing V03.A28–A31 with their commands | `evidence/S13/<C>/manifest.json` | Accepted at WO-8, with 0053, in §6.1's order |
+
+### 6.1 The order at WO-8 (Amendment 4, R-913)
+
+Before Amendment 4, three conditions waited on each other:
+- ADRs 0053 and 0054 waited on S13's manifest being `tested`.
+- The manifest waited on A25, ADR.0053 and ADR.0054, which need the ADRs Accepted, and on A08's R part and A27, which
+  need step 18's YES.
+- Step 18 waited on the manifest being `tested` (its manifest item) and on the ADRs being Accepted (item 12).
+
+The order below has no cycle. Each step reads only what an earlier step wrote.
+
+| Step | What | Reads | Writes |
+| --- | --- | --- | --- |
+| 1 | The generator `scripts/s13_evidence_manifest.py` takes rules (g1)–(g6), with controls (c1)–(c10) | — | the script; `tests/test_v03_s13_route.py` |
+| 2 | S13's manifest is regenerated at a clean commit G that holds step 1 (its `judged_at`), with the `--gate-log` and `--ci-run` arguments of the generation committed in `4ecfc162`. It must come out `tested`. It is committed alone as H1 | tests, RC records, CI, the verdict document, ADR 0053's tables, `docs/adr/` with 0053 and 0054 Proposed | `evidence/S13/<C>/manifest.json` |
+| 3 | ADR 0053's and 0054's Status paragraphs are edited to Accepted, citing step 2's manifest | the manifest at H1 | the two ADRs (commit H2) |
+| 4 | Step 18 runs at H2: `PYTHONPATH=src .venv/bin/python scripts/v0_3_gate.py --rc a3e508e35fc5451fe56fa7b70941621992d35b50`, with the candidate at HEAD = H2. Its output goes to `evidence/S13/<C>/artifacts/step18-H2.log` | the gate's inputs at H2 | the log (git-ignored) |
+| 5 | The build log records step 4 | the log | `docs/V03_RC_DECISIONS.md` (commit H3) |
+
+**The generator's rules (R-913).** These replace 4ac5b66c's pending branch for A25 and the `step18` reading.
+- (g1) A08's check is its tests only: `Spec("A08", tests=True)`. A27's check is `_self` only:
+  `Spec("A27", measures=("self",))`. It passes if and only if every other check passes and at least one command was
+  run, as M07.A43's does. The `step18` measure, `_m_step18`, `Inputs.step18_log` and the `--step18-log` option are
+  removed. The parser then refuses the option with exit 2.
+- (g2) A25 (a) calls `v0_2_gate.adr_problems` over `docs/adr/` at the commit the generator runs at. Before WO-7, when
+  there is no verdict document and some problem is found, A25 (a) is `unsupported`, pending, unchanged. Otherwise it
+  passes if and only if two things hold. First, every problem matches `^ADR (0053|0054) is not Accepted: `, and that
+  ADR's status line, with `*` removed and stripped, starts `Status: Proposed`. Second, 0043 is Proposed and not
+  required. Anything else is `fail`. The value lists those problems as `at_wo8`.
+- (g3) ADR.0053 and ADR.0054. Before WO-7 (no verdict document) each is `unsupported`, pending. Otherwise
+  each passes if and only if all of these hold:
+  - Its status line, with `*` removed and stripped, starts `Status: Proposed` or `Status: Accepted`.
+  - For 0053 only, the six cells pass. That means the gate's own `v0_2_gate.policy` over ADR 0053, against the verdict
+    document's `Judged` and `Re-judged`, returns no `problems` and no `frank` refusals. It also means every D3
+    acceptance it returns is dated on or after `Judged`, or on or after `Re-judged` for a clause of a gate the
+    re-judgement lists (Table T7).
+  - The catalogue lists V03.A01–A31 (0053) or V03.A28–A31 (0054).
+  The value holds the status line, the status (`Proposed` or `Accepted`), the policy's summary and the listed range.
+- (g4) The guard. Decide every check except V03.A27. Then, if some check other than ADR.0053 and ADR.0054 is not `pass`,
+  or no command was run, each of ADR.0053 and ADR.0054 whose status is Accepted becomes `fail`, with
+  `accepted_early: true` in its value. `_self` runs after the guard.
+- (g5) A26 takes the same `policy` part as (g3): `Spec("A26", measures=("verdict_document", "policy"))`.
+- (g6) In the limitations, the sentence that begins "The design lane's verdicts are not judged here" is replaced by
+  these two, verbatim:
+  - `Step 18 (scripts/v0_3_gate.py --rc C) is not run by this script and is not judged here. It reads this manifest and ADRs 0053 and 0054, which are marked Accepted on this manifest, so it runs after both (V03 spec §6.1, R-913). V03.A08's R part, A25 (b) and A27 (b) are judged from its output, which docs/V03_RC_DECISIONS.md records with its SHA-256, as M07.A36's R part was at 0.2.0.`
+  - `ADR.0053 and ADR.0054 judge their conditions other than this manifest's own status, and pass with the status line Proposed or Accepted; one Accepted while another check does not pass fails (R-913). V03.A25 here is its part (a); item 12 in full is step 18's (A25 (b)).`
+
+**Controls (c1)–(c10)** form `tests/test_v03_s13_route.py`. They call the generator's functions with `docs/adr/` and
+the check list substituted. They never run the full generator.
+- (c1) A25 (a) on the tree at `2fa00ff6` (0053 and 0054 Proposed) gives `pass`, with both problems in `at_wo8`.
+- (c2) A25 (a) with 0046's status line set to `**Status:** **Proposed, 2026-10-29**` gives `fail`.
+- (c3) A25 (a) with 0053's status line set to `**Status:** **Rejected, 2026-10-31**` gives `fail`.
+- (c4) A25 (a) with 0053 and 0054 Accepted gives `pass`, with `problems` empty.
+- (c5) ADR.0053 with Proposed and the committed tables gives `pass`. With one decisions-table cell set to `pending` it
+  gives `fail`. With one D3 cell dated 2026-10-29 it gives `fail`.
+- (c6) ADR.0054 with Proposed gives `pass`. With the status line `**Status:** **Withdrawn, 2026-10-31**` it gives
+  `fail`.
+- (c7) The guard. ADR 0053 Accepted with V03.A24 set to `fail` gives ADR.0053 `fail` with `accepted_early`. With every
+  other check `pass`, it gives `pass`. The same holds for 0054.
+- (c8) `_self` gives `pass` when every other check passes and 1 command was run. It gives `fail` with one other check
+  `unsupported`, and `fail` with 0 commands. Its value has no `step18` key.
+- (c9) `main(["--step18-log", "x", …])` exits 2, and `MEASURES` has no key `step18`.
+- (c10) A26 with one ADR 0053 cell set to `pending` gives `fail`.
+
+**Step 3's Status paragraphs.** Each replaces its ADR's Status paragraph, from `**Status:**` to the line before
+`**Author:**`. Nothing else in either ADR changes. Each braced field is replaced by its value.
+- ADR 0053: `**Status:** **Accepted, {date}** — its own condition holds: Frank's answers are recorded in the two tables below (all six cells `accepted, 2026-10-30`, on or after the verdict's `Judged` date 2026-10-30), and S13's manifest `evidence/S13/a3e508e3…/manifest.json` is `tested` at the release candidate C = `a3e508e3`, with V03.A01–A31 among its checks (generated at `{G}`, committed in `{H1}`, SHA-256 `{first 8 hex}…`). Marked by the build lane at WO-8, in V03 spec §6.1's order. (Proposed 2026-10-29.)`
+- ADR 0054: `**Status:** **Accepted, {date}** — its condition holds: S13's manifest `evidence/S13/a3e508e3…/manifest.json` is `tested` at the release candidate C = `a3e508e3`, with V03.A28–A31 among its checks (generated at `{G}`, committed in `{H1}`, SHA-256 `{first 8 hex}…`). Marked by the build lane at WO-8, with ADR 0053, in V03 spec §6.1's order. (Proposed 2026-10-29.)`
+
+**Step 3 runs only on step 2's manifest.** Before the edit, `git show H1:evidence/S13/<C>/manifest.json` has `status`
+`tested`, every check `pass`, and the SHA-256 that the lines cite.
+
+**Steps 4 and 5.** Step 4 must exit 0, and its last line must be exactly `v0.3.0 tag may be proposed: YES`. At H2, F9's
+count must be 4 of 4, each phrase exactly once, with `awaits Frank's statement` 0 times. A08's R part is the log's
+grammar: the first line is §2.2's; there are 18 gate rows, the 17 claimed gates in order and then W27
+`not claimed (v0.3-gate-v1)`; the last line is YES. A short script checks it, and its one summary line goes into the
+build log. Step 5 records H2, the command, the exit status, the log's SHA-256, A08's summary line, the last line and
+F9's count. H3 touches only `docs/V03_RC_DECISIONS.md` and `docs/progress.md`. `git diff --name-only H2 H3` lists
+nothing else. Step 18 reads neither file: it reads the ledger, the envelope, `docs/adr/`, the verdict document, the RC
+record, `evidence/`, `scripts/m07a_rc.py` and its own code. So step 4's YES holds at H3. The manifest is not
+regenerated. If a stop forces a regeneration,
+steps 3–5 are repeated after it, the ADR lines cite the new manifest, and the build log says why.
 
 ## 7. Assertions
 
@@ -361,7 +463,7 @@ as an identity, with no tolerance.
 | V03.A05 | clause grammar. Under v0.3's: `V11 (a)`, `V20 (c)`, `W21 (f)`, `W26 (b)`, `X31 (c)` parse; `W27 (a)`, `W28 (a)`, `V10 (a)`, `X32 (a)`, `X31 (A)` do not. Under `v0.2-gate-v1`'s: `X31 (c)` does not, `W27 (a)` does | 5 / 5 / 2 | exact | D |
 | V03.A06 | decision items 1–12 for `v0.3-gate-v1`: one YES fixture; for each item one NO fixture flipping only it | 1 YES, 12 NO, each with its reason | exact | D |
 | V03.A07 | X31 FAIL (c) without a D3 row → NO; with a row dated on `Judged` → YES; dated the day before → NO. A verdict document with a W27 row → exit 2 | 2 NO, 1 YES, exit 2 | exact (dates are days) | D |
-| V03.A08 | output: the §2.2 first line; 18 gate rows, the 17 claimed in order and then W27 `not claimed (v0.3-gate-v1)`; last line `v0.3.0 tag may be proposed: YES` or `… NO (k reasons)` | grammar | exact | D, R |
+| V03.A08 | output: the §2.2 first line; 18 gate rows, the 17 claimed in order and then W27 `not claimed (v0.3-gate-v1)`; last line `v0.3.0 tag may be proposed: YES` or `… NO (k reasons)`. D: the gate's tests, which S13's manifest judges. R: step 18's own output at WO-8 (§6.1 step 4), recorded in the build log; S13's manifest does not judge it (Amendment 4, R-913) | grammar | exact | D, R |
 | V03.A09 | at K3 and C: the five version-carrying files read `0.3.0`; the envelope `v0.3-envelope-1` / `0.3.0` | as stated | exact | R |
 | V03.A10 | `test_e01_a48_tripwire`: count 0 after P2; `a48_release_check()` is `pass`; its synthetic unverified document still gives `fail` | 0; pass; fail | exact count (an accidental 0 is excluded by the `fail` control) | D |
 | V03.A11 | MR-12 v03 (§9.3) at HEAD: `new_since_v0_2_0 == ["coolprop", "lca"]`, both with entries; a control extra without an entry → `fail`; `mr12_extras_v02` at `RELEASE_0_2_0_COMMIT` unchanged (S07 A44's release clause) | pass; fail; unchanged | exact | D |
@@ -378,9 +480,9 @@ as an identity, with no tolerance.
 | V03.A22 | step 17a–17e pass at C; an `unsupported` result is not a pass | pass | as each | R |
 | V03.A23 | step 8: served digest D_3 and chain rows as §3.3; otherwise STOP | equal | exact (SHA-256) | R |
 | V03.A24 | CI green at C on both architectures. S07 A31: x86-64 bitwise, aarch64 within R-627's classes. S11 thermal check: x86-64 bitwise, aarch64 within R-843/R-845 classes (flash class at the S11 merge: 0.024 of its bound), and the relative class's worst ≤ 0.1 of its bound (R-845's watch). THM-09/4's lines copied into `docs/t07-measurements.md` (R-796) | green; ratios recorded | registered classes; the 0.1 watch is R-845's, not new | CI |
-| V03.A25 | gate item 12 at C: the 25 required ADRs Accepted (0054 included, Amendment 1); 0043 Proposed and not required | as stated | exact | R |
+| V03.A25 | gate item 12 at C, in two parts (Amendment 4, R-913). (a) S13's manifest: the gate's own `adr_problems` over `docs/adr/`, at the commit the generator runs at, returns no problem except `ADR 0053 is not Accepted: ` or `ADR 0054 is not Accepted: `, and each of those for a status line that starts `Status: Proposed` (`*` removed, stripped). So the other 23 required ADRs are Accepted, and 0043 is Proposed and not required. (b) Step 18 (§6.1 step 4): item 12 in full, the 25 required ADRs Accepted (0054 included, Amendment 1), shown by its YES line and recorded in the build log | as stated | exact | R |
 | V03.A26 | `docs/reviews/V03-verdicts.md`: header names C once and one `Judged`; 17 rows in claimed order; every clause parses under v0.3's grammar. ADR 0053's two tables pass the cell rule. `docs/requirements.yaml` X31 verdict and evidence written from it | as stated | exact | R |
-| V03.A27 | `evidence/S13/<C>/manifest.json` `tested`, listing V03.A01–A26 and A28–A34 with commands run and `S11.G8`, `S12.G8`, `S12.G10`; step 18's last line `v0.3.0 tag may be proposed: YES` | present; YES | exact | R |
+| V03.A27 | two parts (Amendment 4, R-913). (a) S13's manifest, as its own check V03.A27: `evidence/S13/<C>/manifest.json` `tested`, listing V03.A01–A26 and A28–A34 with commands run and `S11.G8`, `S12.G8`, `S12.G10`. That is, every other check passes and commands were run. (b) At WO-8, from step 18's output (§6.1 step 4), not by the manifest: step 18's last line `v0.3.0 tag may be proposed: YES`, recorded in the build log with the log's SHA-256 | (a) present; (b) YES | exact | R |
 | V03.A28 | `schemas/process-revision.schema.json`: `properties.instances.items.properties.semantic_role.enum` equals the eleven frozen values in their order (`feed` … `heat_exchanger`) followed by `compressor`, `turbine`, `other`; `$id` equals `https://github.com/frankp/process-runtime/schemas/process-revision.schema.json`; `properties.schema_version` equals `{"type": "integer", "const": 1}` (ADR 0054 D1) | 14 values in order; `$id` and `schema_version` unchanged | exact (list and string equality) | D |
 | V03.A29 | every document of §9.4's corpus gets no `SCHEMA-01` FAIL from `application.validation.validate(document)`. The corpus has at least 80 documents and contains the nine cases of §9.4 by path. Control: GP-M1 with `instances[1].semantic_role` set to `purge_sink` (the value V17 c1's agents wrote) gives a `SCHEMA-01` FAIL whose message starts `schema_invalid(/instances/1/semantic_role)` | 0 FAIL over ≥ 80 documents; the control FAILs | exact (count, path set, message prefix) | D |
 | V03.A30 | `tests/semantic_roles.py` `ROLE_OF_MODEL` is Table R (§9.4), and: (a) its keys equal `revision_binding.MODEL_SIGNATURES`' keys; (b) every value is in A28's enum, and the set of values equals the enum without `other` (13 values); (c) every instance of every corpus document whose model id is a key of `ROLE_OF_MODEL` has `semantic_role == ROLE_OF_MODEL[instance.model.id]`; an instance with any other model id is counted and not judged (0 of 441 at `98701cca`), because a declared model the binder does not accept may take any value A28 allows; (d) none of §9.4's five builders holds the string constant `"other"` (read by `ast`), and each imports from `semantic_roles`; (e) `ROLE_OF_MODEL` equals §9.4's Table R as parsed from this file (both column pairs, 30 rows), as `test_v03_v0_3_gate.py` parses §2.2. Controls: a copy of the table without `thermal.turbine` fails (a); a copy with `thermal.turbine: pump` fails (b), and (c) on TH-C1 and GP-M2 | (a)–(e) hold; each control fails | exact | D |
@@ -407,6 +509,10 @@ fails it. (c)'s counts exclude an empty audit, which the script itself refuses (
 experiment). §7.1's R1 changes one line. So any digest it still finds changed, and any failure outside the five
 registered readers, has a cause other than the version, and (c) fails. The five readers failing shows that the edit took
 effect. A34 and §7.1 compare counts, JSON values, exit statuses and strings, so no tolerance applies.
+A25 (a) fails on a third required ADR that is not Accepted, and on a 0053 or 0054 status line that is neither Proposed
+nor Accepted. §6.1's guard fails ADR 0053 or 0054 when either is marked Accepted while another check of the manifest
+does not pass. Controls (c2), (c3), (c6) and (c7) show that each refusal fires. Both compare strings, so no tolerance
+applies (Amendment 4).
 
 ### 7.1 V03.A12 (c) at a version cut (Amendment 3, R-910)
 
@@ -619,7 +725,7 @@ is the proof.
 | WO-5 | Opus | K3 (§5.1); G10 re-take; the journey at K3 in the reactor environment; C | P1–P4 | A09, A21 |
 | WO-6 | Opus | the RC job at C, steps 1–17; RC record; tree record; S13 manifest. *V03 review F-V3:* WO-6 owns the producer of step 17c's record `step17/rc-step17c.json` (`checks[].id` = each `MR12_AUDITS_V03` entry's `check` command, `provenance.commit` = C) and the call of `mr12_extras_v03`, which is in the M07a script's `MEASURES` but not in its `SPECS`; a missing record fails the measure (fail-safe). **Amendment 3:** step 12's G11 keep-and-audit at C (§4, A34); A12 (c) judged version-aligned (§7.1); S13's manifest outside the harvest (R-911); §10.5 | WO-5 | A12 (c), A17, A19–A24, A27, A32, A33, A34 |
 | WO-7 | verdict (design) | `docs/reviews/V03-verdicts.md` at C | WO-6 | A26 |
-| WO-8 | Sonnet | ledger from WO-7; ask Frank the four items and the D3 rows (in plain words, with defaults); record his answers verbatim; step 18; ADRs 0053 and 0054 Accepted (§6); hand to Frank for the tag | WO-7 | A26, A27 |
+| WO-8 | Sonnet | ledger from WO-7; ask Frank the four items and the D3 rows (in plain words, with defaults); record his answers verbatim; then, in §6.1's order (Amendment 4): the generator's R-913 rules, S13's manifest regenerated `tested`, ADRs 0053 and 0054 Accepted on it, step 18, its output in the build log; hand to Frank for the tag | WO-7 | A08 (R), A25, A26, A27 |
 | WO-9 | Sonnet | after the tag: §5.3 | the tag | — |
 
 ### 10.1 Stops (the engineer reports and does not choose)
@@ -642,6 +748,9 @@ The engineer stops on any of these:
   they are, and nothing is re-run to pass.
 - A12 (c)'s aligned run (§7.1) finds a changed digest, a failed test outside the five registered readers, or a failed
   base shard (Amendment 3).
+- §6.1 step 2's manifest is not `tested`. No ADR is marked Accepted, and step 18 is not run for YES (Amendment 4).
+- Step 18 at §6.1 step 4 ends in anything but `v0.3.0 tag may be proposed: YES`, or H2 to H3 touches a file other
+  than `docs/V03_RC_DECISIONS.md` and `docs/progress.md`. Nothing is edited to pass, the manifest is not regenerated to pass, and the reasons are reported (Amendment 4).
 
 ### 10.3 WO-3, Amendment 1: the roles (one engineer, before the rest of WO-3)
 
@@ -753,6 +862,8 @@ nothing that §3 pre-registers differently.
 | F-4 | Does any default-gate test need W27's v1 `coverage.json` at the new version? | fact: step 1 at K3 | no (R-566 dropped the byte pin). *Measured (Amendment 2):* yes, twice. Each time a check compared the committed snapshot's `package_version`: `test_committed_coverage_json_is_g14_…` at K3 (R-902), and S11's S4 check at `4fa15efa` (R-904). Both now exclude it as build provenance | at K3 |
 | F-5 | Does A12 (c)'s aligned run (§7.1) find no changed digest, at the same n as R0, and fail exactly the five registered readers at the judged commit? | fact: the S13 generator's R1 | yes (the counterfactual at C) | at the generator's run |
 | F-6 | Does A34 hold at C, with the re-run equal to step 12's runs file at all 242 point-runs and 210 results audited with 0 problems? | fact: §4's re-run | yes, as at 0.2.0 with byte-identical producing code | before W21's new judgement |
+| F-7 | Does S13's manifest, regenerated at §6.1 step 2, come out `tested` with all 48 checks `pass`? That means the five checks the loop held (A08, A25, A27, ADR.0053, ADR.0054) and the 43 that passed in `4ecfc162` | fact: §6.1 step 2 | yes. `4ecfc162`'s 43 passes were measured on the same evidence, Frank's six cells read `accepted, 2026-10-30`, and the dry run at `2b7fc98e` found no other reason | WO-8 (Amendment 4) |
+| F-8 | Does step 18 at §6.1 step 4 end in `v0.3.0 tag may be proposed: YES`? | fact: §6.1 step 4 | yes. The dry run at `2b7fc98e` gave `NO (3 reasons)`, exactly the manifest's status and the two ADR lines, and steps 2 and 3 change those | WO-8 (Amendment 4) |
 
 Ask N-1, N-7 and N-8 in one message now, and N-2 to N-6 in one message after the verdict, as 0.2.0 did. N-9 (Amendment
 1) rides on the next message to Frank before K3; work proceeds on its default. N-10 (Amendment 2) rides on the next
@@ -802,3 +913,8 @@ to N-6 and N-1's re-confirmation are recorded in ADR 0053's tables.
   by design (R-458), and that is what R0's differences are.
 - S13's own manifest is not in `v0.3-envelope-1`'s harvest (R-911). Its limitations reach an envelope only at the next
   release.
+- S13's manifest does not establish step 18's YES, gate item 12 in full (A25 (b)) or A08's R part. These come from
+  step 18's log at WO-8. Step 18 reads the manifest, so it runs after it (§6.1). The manifest's ADR.0053 and ADR.0054
+  checks judge those ADRs' conditions other than the manifest's own status. They do not establish that either ADR is
+  Accepted. A26's ledger clause is judged by step 18's item 3 and `tests/test_v03_ledger.py`, not by the manifest
+  (Amendment 4).
