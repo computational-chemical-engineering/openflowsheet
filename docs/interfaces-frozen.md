@@ -89,6 +89,8 @@ the finite-difference derivative path because the path is recorded.
 
 **M03, ADR 0031 D7 and ADR 0032 D6 (Proposed; spec §10, Amendment 1).** Two schemas added for the M01–M04 row's Study and OptimizationReport: `schemas/study.schema.json` and `schemas/optimization-report.schema.json`, with fixtures emitted by real study runs; the schema list is registered in `schemas/registry.json` (R-213), which mirrors this section and replaces the literal counts in `tests/test_t08_w4_package_data.py`.
 
+**E01, ADR 0052 (Proposed).** Two schemas are added: `schemas/assessment.schema.json` and `schemas/assessment-report.schema.json`. `study.schema.json` gains an optional top-level `assessment`, and `optimization-report.schema.json` an optional `formulation.assessment` (both `$ref`s into `assessment.schema.json`, R-863). No existing document becomes invalid. No `Protocol`, quantity kind, check category or tolerance changes. Assessment outputs never enter a `CompiledProblem`. `AMENDED_TESTS` (§8.3) is empty: no test pins the bytes or hash of an edited schema or of `pyproject.toml`. Tests amended for E01's packaging and layer, each citing ADR 0052: `test_t08_w4_package_data` (packaged single files 6 → 13), `test_t08_w2_inventory` (T08.A32 admits six attributed assessment data files, R-617's rule), `test_m07_mr12_extras_v02` (the `lca` extra beside `coolprop` in S07 Ruling M's tripwire), `test_package_imports` (the `assessment` layer).
+
 ## 3. Semantic rules covered by the freeze
 
 ADR 0001 D1–D5 (units, state definition `nTP-v1`, zero flow, signs, reference conventions) and ADR 0008 D1–D3 (no time at the evaluation boundary, `state_sha256` coverage, per-row accumulation declarations and the balance-row sign convention) are part of this freeze.

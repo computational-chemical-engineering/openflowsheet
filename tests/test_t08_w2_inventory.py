@@ -370,6 +370,8 @@ SHIPPED_DATA = re.compile(
     r"|_data/benchmarks/t08/numerical_policy_v2\.yaml|_data/benchmarks/m01/components\.yaml"
     # M02 (register R-317 (b)): the external addendum whose `compare` rules a coupled replay reads.
     r"|_data/benchmarks/m02/numerical_policy_external\.yaml"
+    # E01 (ADR 0052): the synthetic LCA background table, authored in this repository.
+    r"|_data/assessment/lca/test-background-v1\.json"
     # M02 design note §3.1: the registered variants and their registry (the project's own data).
     r"|adapters/variants/[a-z0-9.-]+\.json"
     # M02 design note §2.4: the reactor environment's lock — the project's own pin file (names,
@@ -387,6 +389,26 @@ PACKAGING = re.compile(
 ATTRIBUTED_DATA = {
     "openflowsheet/_data/benchmarks/s05/iapws95_coefficients.json": (
         "b9e93877e37874f1b3a483e298a45692e264d70686d4c158372084b96abbe6ed"
+    ),
+    # E01 (ADR 0052): the six third-party assessment data files, under the same rule, each with
+    # its own attribution (`E01_ATTRIBUTION`) in NOTICE.
+    "openflowsheet/_data/assessment/cost/chains.json": (
+        "d4707a829a9ed6136c7cd06b5e398dd1831ad6b1504af1dfbfe296e56e99fd52"
+    ),
+    "openflowsheet/_data/assessment/cost/sslw-idaes-v1.json": (
+        "0ee43c89d21b15e73654fef316f684493558f991cbd07d44f5827f5a9c180364"
+    ),
+    "openflowsheet/_data/assessment/index/bls-ppi-wpu11-annual-v1.json": (
+        "1c36f463a0a61123f7b71d82c848954aae61305a0a550a735cefb3c77c4ba578"
+    ),
+    "openflowsheet/_data/assessment/index/eurostat-ppi-c28-ea-annual-v1.json": (
+        "a16dad15929cf747c57621b104ee15ce4a885215ae00442396bc81fd977a5529"
+    ),
+    "openflowsheet/_data/assessment/index/frb-g5a-annual-v1.json": (
+        "0be392930ed58c6c035e274cdcfbdfe058eced3dd8a79c573bf0c71ab5cc78a6"
+    ),
+    "openflowsheet/_data/assessment/lca/gwp100-ipcc-ar6-v1.json": (
+        "9b307aad8fa5faae7dba951b4097b4eebe030436019cd16a113fc71e11b808de"
     ),
     # V03 spec §9.1 (R-880, Frank's Q-F3): Wilson's records and the Kurihara 1993 Table II points,
     # under the same rule, each with its own attribution (`WILSON_ATTRIBUTION`) in NOTICE.
@@ -407,6 +429,39 @@ IAPWS_ATTRIBUTION = (
 )
 
 
+#: E01's attribution strings per file: the IDAES BSD licence's conditions and disclaimer (its
+#: second condition asks a binary redistribution to reproduce them), and each source's citation.
+E01_ATTRIBUTION = {
+    "openflowsheet/_data/assessment/cost/chains.json": (
+        "Charalambous et al., Nature 632 (2024), doi:10.1038/s41586-024-07683-8",
+        "Creative Commons Attribution licence (CC BY)",
+    ),
+    "openflowsheet/_data/assessment/cost/sslw-idaes-v1.json": (
+        "of the IDAES PSE Framework 2.13.0, which is distributed under this licence:",
+        "Institute for the Design of Advanced Energy Systems Process Systems Engineering "
+        "Framework (IDAES PSE Framework) Copyright (c) 2018-2026, by the software owners:",
+        "2. Redistributions in binary form must reproduce the above copyright notice, this list "
+        "of conditions and the following disclaimer in the documentation and/or other materials "
+        "provided with the distribution.",
+        "SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.",
+    ),
+    "openflowsheet/_data/assessment/index/bls-ppi-wpu11-annual-v1.json": (
+        "Source: U.S. Bureau of Labor Statistics via FRED, Federal Reserve Bank of St. Louis.",
+    ),
+    "openflowsheet/_data/assessment/index/eurostat-ppi-c28-ea-annual-v1.json": (
+        "Source: Eurostat.",
+        "Creative Commons Attribution 4.0 International",
+    ),
+    "openflowsheet/_data/assessment/index/frb-g5a-annual-v1.json": (
+        "Source: Board of Governors of the Federal Reserve System, via FRED",
+    ),
+    "openflowsheet/_data/assessment/lca/gwp100-ipcc-ar6-v1.json": (
+        "IPCC AR6 WG1 Chapter 7, Table 7.15 (\u00a9 2021 IPCC)",
+        "doi:10.1017/9781009157896.009",
+    ),
+}
+#: The NOTICE before E01's section (bytes): it attributes the IAPWS file and none of E01's.
+PRE_E01_NOTICE_BYTES = 2237
 #: V03 spec §9.1 and V03.A13: the citations NOTICE gives the Wilson files, RC-01 (TM-4513), RC-03's
 #: three conditions (CoolProp 8.0.0, the three EOS keys; the IAPWS block above), RC-05 (the paper)
 #: and RC-08 (CIAAW) of `docs/s10-rights-check.md`.
@@ -435,7 +490,7 @@ def _attributed(name: str, content: bytes, notice: bytes) -> bool:
     if path not in ATTRIBUTED_DATA:
         return False
     text = " ".join(notice.decode("utf-8").split())
-    strings = WILSON_ATTRIBUTION.get(path, IAPWS_ATTRIBUTION)
+    strings = {**E01_ATTRIBUTION, **WILSON_ATTRIBUTION}.get(path, IAPWS_ATTRIBUTION)
     return (
         hashlib.sha256(content).hexdigest() == ATTRIBUTED_DATA[path]
         and path in text
@@ -444,8 +499,8 @@ def _attributed(name: str, content: bytes, notice: bytes) -> bool:
 
 
 def test_a32_no_third_party_data_in_the_sdist_or_the_wheel(built: dict[str, Path]) -> None:
-    """Amended for one attributed file by S05 spec §16.12 (R-617), and for Wilson's two (V03 spec
-    §9.1, R-880) under the same rule."""
+    """Amended for one attributed file by S05 spec §16.12 (R-617), for E01's six (ADR 0052) and
+    for Wilson's two (V03 spec §9.1, R-880) under the same rule."""
     for kind in ("sdist", "wheel"):
         contents = (_sdist_members if kind == "sdist" else _wheel_members)(built[kind])
         members = list(contents)
@@ -463,6 +518,10 @@ def test_a32_no_third_party_data_in_the_sdist_or_the_wheel(built: dict[str, Path
             assert not _attributed(name, content, notice[:1292])
             assert not _attributed(name, content + b"\n", notice)
             assert not _attributed("openflowsheet/_data/benchmarks/s05/x.json", content, notice)
+            for path in E01_ATTRIBUTION:
+                assert _attributed(path, contents[path], notice), path
+                assert not _attributed(path, contents[path], notice[:PRE_E01_NOTICE_BYTES]), path
+                assert not _attributed(path, contents[path] + b"\n", notice), path
             for path in WILSON_ATTRIBUTION:
                 assert _attributed(path, contents[path], notice), path
                 assert not _attributed(path, contents[path], notice[:PRE_WILSON_NOTICE_BYTES]), path

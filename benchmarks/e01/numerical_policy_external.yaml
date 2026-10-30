@@ -1,0 +1,26 @@
+# E01 (ADR 0052 §4.11, ADR 0025 D2.3): the `sha256`-bearing property names that E01's schemas add.
+# A separate table beside M02's and M05's, so that the registered numerical policies
+# (`K04-numerical-policy-v1`, `T08-numerical-policy-v2`) keep their ids and their contents
+# (M02's precedent, its design note §3.6; M05 build decision S11; E01 escalation ESC-A1).
+#
+# Read by `scripts/t08_numerical_policy.py --check` (the closed partition of `sha256` names, one
+# addendum after another). E01's floats are classified by its own assertions (design note §6), not
+# here: the table carries no `rules`.
+numerical_policy_external:
+  id: E01-numerical-policy-external-v1
+  schemas:
+  - assessment-report.schema.json
+  - assessment.schema.json
+  # `assessment.schema.json` declares `applies_to.configuration_sha256` (§4.11), a name M02's
+  # addendum already classifies as an exact digest; a reused name keeps its class. Its `$defs`
+  # `assessment_link` and `formulation_assessment` (design note §9.1, R-863) declare
+  # `assessment_sha256` (canonical hash of the assessment document) and `regime_sha256` (of the
+  # regime signature), both exact digests (none is a float digest, ADR 0007 D1 row 3); the study and
+  # optimization-report schemas reach them by `$ref`, so no `sha256` name enters v2's domain.
+  # WO-A5's `assessment-report.schema.json` (design note §4.11, §9.5) declares `assessment_sha256`
+  # (reused: exact, as above), `state_sha256` (the host state's float digest, ADR 0008 D2: it keeps
+  # v2's float-digest class and is never listed here), and `regime.sha256` and `lca.tables[].sha256`,
+  # which reuse `sha256` and keep v2's class. The audit refuses a classified name no schema declares.
+  exact_sha256:
+  - assessment_sha256
+  - regime_sha256

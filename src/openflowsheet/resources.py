@@ -11,6 +11,9 @@ since M02 the external addendum whose `compare` rules a coupled replay reads
 coefficient file the library-only provider `iapws95-v1` reads
 (`benchmarks/s05/iapws95_coefficients.json`, R-616; its attribution is in NOTICE), the
 diagnostic web shell's static files (`apps/web/`, served by `serve-http --ui`; M06, ADR 0030 D2),
+since E01 the assessment data (`assessment/{cost,index,lca}/*.json`: the SSLW cost set, the
+capital-chain presets, three index series and two LCA tables, ADR 0052; their attributions are in
+NOTICE),
 and since 0.3.0 the Wilson records `wilson-ig-v1` and `wilson-ig-v2` read
 (`benchmarks/s10/records.yaml`) with the Kurihara 1993 Table II points they are fitted to
 (`benchmarks/s10/vle/kurihara1993_binaries.csv`; V03 spec §9.1, R-880; their attribution is in
@@ -60,6 +63,15 @@ PACKAGED: Final[tuple[str, ...]] = (
     # S05 (R-616): the IAPWS-95 coefficient file `iapws95-v1` reads; one file entry, so nothing
     # placed beside it later ships (spec S05 §16.2 A26 (a)).
     "benchmarks/s05/iapws95_coefficients.json",
+    # E01 (ADR 0052): the assessment data, one file entry each like S05's (a file placed beside them
+    # fails T08's package-data check); the third-party ones carry their attribution in NOTICE.
+    "assessment/cost/chains.json",
+    "assessment/cost/sslw-idaes-v1.json",
+    "assessment/index/bls-ppi-wpu11-annual-v1.json",
+    "assessment/index/eurostat-ppi-c28-ea-annual-v1.json",
+    "assessment/index/frb-g5a-annual-v1.json",
+    "assessment/lca/gwp100-ipcc-ar6-v1.json",
+    "assessment/lca/test-background-v1.json",
     # V03 (R-880, Frank's Q-F3): Wilson's records and the Table II points of their fit, one file
     # entry each like S05's; the double entries, the RC-06 files and the reports stay out (§9.1).
     "benchmarks/s10/records.yaml",

@@ -17,6 +17,15 @@ initializer — never on the optimizer's own state or measures:
   residual, the multiplier signs and LICQ; second order per spec §8.3;
 - **V6** the objective and constraint values, from `x_sim`.
 
+With an assessment (E01 §4.10.3) the objective and constraints may name `assessment:<id>`: its
+values come from `program.evaluate(x_sim, d)`, the float reference path (V6); the closure's
+admissibility rows are inequalities `adm ≥ 0` checked like any declared one (V3); an output's
+gradient is `∇ₓG·X + ∂G/∂d`, `linearize` plus the adjoint (V5); and
+
+- **V7** `program.select(x_sim, d)` returns the held regime, dormancy entries given to the rule
+  (exact: a zero flow stays zero), else `ASSESSMENT_REGIME_CHANGED(<entry>)`. A failure leaves the
+  candidate unverified, as V2's does. Without an assessment V7 is absent and nothing changes.
+
 Every check is evaluated that can be, and every failure is listed.
 """
 
@@ -30,9 +39,22 @@ from typing import Any, Final, Literal
 import numpy as np
 import numpy.typing as npt
 
+from openflowsheet.assessment.program import Linearization, Refusal
+from openflowsheet.assessment.quantities import ASSESSMENT_PREFIX
+from openflowsheet.compile.casadi_backend import TwinEvaluationError
+from openflowsheet.compile.reference import state_vector
 from openflowsheet.models.syn001.flowsheet import Syn001Flowsheet
 from openflowsheet.numerics.scaling import Scaling
-from openflowsheet.studies.nlp.formulation import NlpFormulation, QuadraticExpression
+from openflowsheet.studies.nlp.formulation import (
+    AssessmentBinding,
+    AssessmentClosure,
+    InequalityConstraint,
+    NlpFormulation,
+    QuadraticExpression,
+    assessment_closure,
+    assessment_twin,
+    is_assessment_name,
+)
 from openflowsheet.studies.sensitivity import (
     TAU_REGIME,
     OutputFunctional,
@@ -60,7 +82,11 @@ OBJECTIVE_OUTPUT: Final = "objective"
 
 CheckOutcome = Literal["pass", "fail", "not_evaluated"]
 SecondOrder = Literal["not_assessed", "vacuous_at_vertex"]
-CHECKS: Final = ("V1", "V2", "V3", "V4", "V5", "V6")
+CHECKS: Final = ("V1", "V2", "V3", "V4", "V5", "V6", "V7")
+#: M03's checks; V7 (E01 §4.10.3) is recorded only for a formulation with an assessment.
+M03_CHECKS: Final = CHECKS[:6]
+#: E01 §4.10.3 V7's code, with the entry as its argument.
+REGIME_CHANGED: Final = "ASSESSMENT_REGIME_CHANGED"
 
 
 @dataclass(frozen=True)
@@ -133,7 +159,7 @@ class KktEvidence:
 
 @dataclass(frozen=True)
 class CandidateVerification:
-    """V1-V6 for one candidate decision vector."""
+    """V1-V6 (and V7 with an assessment) for one candidate decision vector."""
 
     decisions: Mapping[str, float]
     checks: tuple[VerificationCheck, ...]
@@ -146,14 +172,20 @@ class CandidateVerification:
     state_sha256: str | None
     simulation_state: Mapping[str, float] | None
     sensitivity: SensitivityResult | None
+    #: E01 §4.10.3 V6: the closure's assessment values at `x_sim`; `None` without an assessment.
+    assessment_values: Mapping[str, float] | None = None
 
     def outcome(self, check: str) -> CheckOutcome:
         return next(item.outcome for item in self.checks if item.check == check)
 
     @property
     def passed(self) -> bool:
-        """V1-V5 all `pass` — the condition for `KKT_POINT_VERIFIED` (spec §8.5)."""
-        return all(self.outcome(check) == "pass" for check in CHECKS[:5])
+        """V1-V5 all `pass`, and V7 where recorded — the condition for `KKT_POINT_VERIFIED`
+        (spec §8.5; E01 §4.10.3)."""
+        recorded = {item.check for item in self.checks}
+        return all(self.outcome(check) == "pass" for check in CHECKS[:5]) and (
+            "V7" not in recorded or self.outcome("V7") == "pass"
+        )
 
     @property
     def failures(self) -> tuple[str, ...]:
@@ -189,13 +221,18 @@ def verify_candidate(
     *,
     regimes: Mapping[str, str],
     optimizer_state: Mapping[str, float] | None = None,
+    closure: AssessmentClosure | None = None,
 ) -> CandidateVerification:
-    """V1-V6 at `decisions` (spec §8.5). `regimes` are the formulation's declared regimes (the
-    start's, `declared_regimes`); `optimizer_state` is the solver's final state by variable id,
-    and without it V2 is `not_evaluated` — so such a candidate is never `passed`."""
+    """V1-V6 at `decisions` (spec §8.5), and V7 with an assessment (E01 §4.10.3). `regimes` are
+    the formulation's declared regimes (the start's, `declared_regimes`); `optimizer_state` is
+    the solver's final state by variable id, and without it V2 is `not_evaluated` — so such a
+    candidate is never `passed`. `closure` is the gray box's (`FullSpaceNlp.closure`); without
+    it the binding's closure is computed at `x_sim` (the pattern is structural)."""
     values = formulation.decision_values(decisions)
     sheet = with_pinned(flowsheet, values)
     solve = solve_certified(sheet)
+    binding = formulation.assessment
+    names = CHECKS if binding is not None else M03_CHECKS
     checks: dict[str, VerificationCheck] = {}
     certificate = solve.certificate
     checks["V1"] = VerificationCheck(
@@ -209,11 +246,11 @@ def verify_candidate(
     )
     state = solve.final_state
     if state is None:
-        for check in CHECKS[1:]:
+        for check in names[1:]:
             checks[check] = VerificationCheck(check, "not_evaluated", {"reason": "no_simulation"})
         return CandidateVerification(
             decisions=values,
-            checks=tuple(checks[check] for check in CHECKS),
+            checks=tuple(checks[check] for check in names),
             objective=None,
             constraint_values={},
             slacks={},
@@ -227,20 +264,47 @@ def verify_candidate(
 
     scaling = Scaling.from_spec(sheet.spec())
     checks["V2"] = _gross(scaling, state, optimizer_state)
-    constraint_values = {
-        constraint.constraint_id: constraint.expression.value(state)
-        for constraint in formulation.constraints
-    }
-    slacks, active, checks["V3"] = _feasibility(formulation, values, constraint_values)
     checks["V4"] = _regimes(sheet, state, regimes)
-    sensitivity, kkt, checks["V5"] = _kkt(sheet, solve, formulation, state, active)
-    objective = formulation.objective.value(state)
-    checks["V6"] = VerificationCheck(
-        "V6", "pass", {"objective": objective, "constraint_values": dict(constraint_values)}
+    assessment: _Assessment | None = None
+    if binding is not None:
+        evaluated = _assessment(sheet, formulation, binding, state, values, closure)
+        checks["V7"] = _regime_held(binding, state, values)
+        if isinstance(evaluated, str):
+            for check in ("V3", "V5", "V6"):
+                checks[check] = VerificationCheck(
+                    check, "not_evaluated", {"reason": f"assessment_not_evaluable: {evaluated}"}
+                )
+            return CandidateVerification(
+                decisions=values,
+                checks=tuple(checks[check] for check in names),
+                objective=None,
+                constraint_values={},
+                slacks={},
+                active_set=(),
+                kkt=None,
+                certificate_id=certificate.certificate_id if certificate else None,
+                state_sha256=certificate.target_state_sha256 if certificate else None,
+                simulation_state=dict(state),
+                sensitivity=None,
+            )
+        assessment = evaluated
+    point = state if assessment is None else assessment.point
+    constraints = formulation.constraints if assessment is None else assessment.constraints
+    constraint_values = {
+        constraint.constraint_id: constraint.expression.value(point) for constraint in constraints
+    }
+    slacks, active, checks["V3"] = _feasibility(formulation, constraints, values, constraint_values)
+    sensitivity, kkt, checks["V5"] = _kkt(
+        sheet, solve, formulation, constraints, point, active, assessment
     )
+    objective = formulation.objective.value(point)
+    v6: dict[str, Any] = {"objective": objective, "constraint_values": dict(constraint_values)}
+    if assessment is not None:
+        v6["assessment_values"] = dict(assessment.values)
+    checks["V6"] = VerificationCheck("V6", "pass", v6)
     return CandidateVerification(
         decisions=values,
-        checks=tuple(checks[check] for check in CHECKS),
+        checks=tuple(checks[check] for check in names),
         objective=objective,
         constraint_values=constraint_values,
         slacks=slacks,
@@ -250,6 +314,111 @@ def verify_candidate(
         state_sha256=certificate.target_state_sha256 if certificate else None,
         simulation_state=dict(state),
         sensitivity=sensitivity,
+        assessment_values=None if assessment is None else dict(assessment.values),
+    )
+
+
+# -- the assessment (E01 §4.10.3) -----------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class _Assessment:
+    """The assessment at `(x_sim, d)`: the closure's values (float path), the state augmented by
+    their `assessment:<id>` names, the constraints with the closure's admissibility rows
+    appended (`adm ≥ 0`), and the linearization: `∂y/∂x` by output as `{variable_id: value}`
+    and `∂y/∂d` by output in decision order."""
+
+    values: Mapping[str, float]
+    point: Mapping[str, float]
+    constraints: tuple[InequalityConstraint, ...]
+    d_dx: Mapping[str, Mapping[str, float]]
+    d_dd: Mapping[str, npt.NDArray[np.float64]]
+
+
+def _assessment(
+    sheet: Syn001Flowsheet,
+    formulation: NlpFormulation,
+    binding: AssessmentBinding,
+    state: Mapping[str, float],
+    decisions: Mapping[str, float],
+    closure: AssessmentClosure | None,
+) -> _Assessment | str:
+    """The assessment at `x_sim`, or why it cannot be evaluated there."""
+    program = binding.program
+    decision_ids = formulation.decision_ids
+    try:
+        if closure is None:
+            spec = sheet.spec()
+            twin = assessment_twin(binding, spec.variable_ids, decision_ids)
+            x = np.array(state_vector(spec, state), dtype=np.float64)
+            closure = assessment_closure(binding, twin, x, decisions)
+        evaluated = program.evaluate(state, decisions)
+        lin = program.linearize(state, decisions, list(closure.output_ids), decision_ids)
+    except TwinEvaluationError as error:
+        return f"{error}"
+    if isinstance(evaluated, Refusal):
+        return f"{evaluated.code}({evaluated.target})"
+    if isinstance(lin, Refusal):
+        return f"{lin.code}({lin.target})"
+    assert isinstance(lin, Linearization)
+    rows: dict[str, dict[str, float]] = {name: {} for name in closure.output_ids}
+    matrix = lin.d_dx
+    for j, variable_id in enumerate(matrix.col_ids):
+        for k in range(matrix.indptr[j], matrix.indptr[j + 1]):
+            rows[matrix.row_ids[matrix.indices[k]]][variable_id] = float(matrix.data[k])
+    direct = {name: np.zeros(len(decision_ids)) for name in closure.output_ids}
+    matrix = lin.d_dp
+    for j in range(len(matrix.col_ids)):
+        for k in range(matrix.indptr[j], matrix.indptr[j + 1]):
+            direct[matrix.row_ids[matrix.indices[k]]][j] = float(matrix.data[k])
+    values = {name: float(evaluated[name]) for name in closure.output_ids}
+    admissibility = tuple(
+        InequalityConstraint(
+            name,
+            QuadraticExpression(linear={f"{ASSESSMENT_PREFIX}{name}": 1.0}, text=f"{name} >= 0"),
+            lower=0.0,
+        )
+        for name in closure.admissibility
+    )
+    return _Assessment(
+        values=values,
+        point={**state, **{f"{ASSESSMENT_PREFIX}{name}": value for name, value in values.items()}},
+        constraints=(*formulation.constraints, *admissibility),
+        d_dx=rows,
+        d_dd=direct,
+    )
+
+
+def _regime_held(
+    binding: AssessmentBinding, state: Mapping[str, float], decisions: Mapping[str, float]
+) -> VerificationCheck:
+    """V7: `select(x_sim, d)` with the held regime returns it; dormancy entries (no rows) are
+    given to the rule, which compares their flow with 0.0 exactly."""
+    program = binding.program
+    held = program.regime
+    dormant = [entry.entry_id for entry in program.entries if entry.kind == "dormant"]
+    try:
+        selected = program.select(state, decisions, release=dormant).entries
+    except TwinEvaluationError as error:
+        return VerificationCheck(
+            "V7", "fail", {"reason": f"not evaluable: {error}", "held": dict(held.entries)}
+        )
+    changed = sorted(
+        name
+        for name in set(held.entries) | set(selected)
+        if held.entries.get(name) != selected.get(name)
+    )
+    return VerificationCheck(
+        "V7",
+        "fail" if changed else "pass",
+        {
+            "regime_sha256": held.sha256,
+            "held": dict(held.entries),
+            "selected": dict(selected),
+            "regime_changed": changed,
+            "codes": [f"{REGIME_CHANGED}({name})" for name in changed],
+            "dormancy_released": dormant,
+        },
     )
 
 
@@ -278,10 +447,12 @@ def _gross(
 
 def _feasibility(
     formulation: NlpFormulation,
+    constraints: Sequence[InequalityConstraint],
     decisions: Mapping[str, float],
     constraint_values: Mapping[str, float],
 ) -> tuple[dict[str, dict[str, float]], tuple[ActiveConstraint, ...], VerificationCheck]:
-    """V3: the box exactly, `ĝ ≥ −τ_feas` on every inequality side, and the active set."""
+    """V3: the box exactly, `ĝ ≥ −τ_feas` on every inequality side of `constraints` (the
+    formulation's, then an assessment's admissibility rows), and the active set."""
     active: list[ActiveConstraint] = []
     outside_box: list[str] = []
     violated: list[str] = []
@@ -304,7 +475,7 @@ def _feasibility(
                         slack,
                     )
                 )
-    for constraint in formulation.constraints:
+    for constraint in constraints:
         value = constraint_values[constraint.constraint_id]
         sides = [
             (side, bound)
@@ -366,31 +537,62 @@ def _regimes(
 
 
 def _functional(
-    output_id: str, expression: QuadraticExpression, state: Mapping[str, float]
-) -> OutputFunctional:
+    output_id: str,
+    expression: QuadraticExpression,
+    state: Mapping[str, float],
+    assessment: _Assessment | None,
+    n: int,
+) -> tuple[OutputFunctional | None, npt.NDArray[np.float64] | None]:
     """The expression's linearization at `state`, as a sensitivity output of scale 1: its
-    sensitivity is then the scaled gradient with respect to the decisions."""
-    return OutputFunctional(output_id, expression.gradient(state), 1.0)
+    sensitivity is then the scaled gradient with respect to the decisions.
+
+    An `assessment:<id>` term enters by the chain rule (E01 §4.10.3 V5): its coefficient times
+    `∂y/∂x` joins the functional, and times `∂y/∂d` the direct term returned beside it (`None`
+    for an expression without one, whose functional is M03's exactly). The functional is `None`
+    when no state variable is left in it."""
+    gradient = expression.gradient(state)
+    named = [name for name in gradient if is_assessment_name(name)]
+    if not named:
+        return OutputFunctional(output_id, gradient, 1.0), None
+    assert assessment is not None
+    parts: dict[str, list[float]] = {
+        name: [value] for name, value in gradient.items() if not is_assessment_name(name)
+    }
+    direct = np.zeros(n)
+    for name in named:
+        coefficient = gradient[name]
+        output = name[len(ASSESSMENT_PREFIX) :]
+        for variable_id, value in assessment.d_dx[output].items():
+            parts.setdefault(variable_id, []).append(coefficient * value)
+        direct += coefficient * assessment.d_dd[output]
+    coefficients = {name: math.fsum(values) for name, values in parts.items()}
+    return (OutputFunctional(output_id, coefficients, 1.0) if coefficients else None), direct
 
 
 def _kkt(
     sheet: Syn001Flowsheet,
     solve: Any,
     formulation: NlpFormulation,
+    constraints: Sequence[InequalityConstraint],
     state: Mapping[str, float],
     active: Sequence[ActiveConstraint],
+    assessment: _Assessment | None,
 ) -> tuple[SensitivityResult | None, KktEvidence | None, VerificationCheck]:
-    """V5, from M03's adjoint sensitivities at `x_sim`."""
+    """V5, from M03's adjoint sensitivities at `x_sim` (plus `∂G/∂d` for assessment terms)."""
     if not all(decision.bounded for decision in formulation.decisions):
         return None, None, VerificationCheck("V5", "not_evaluated", {"reason": "bounds_undeclared"})
     parameters = tuple(
         StudyParameter(decision.parameter_id, decision.scale, decision.lower, decision.upper)  # type: ignore[arg-type]
         for decision in formulation.decisions
     )
-    outputs = (_functional(OBJECTIVE_OUTPUT, formulation.objective, state),) + tuple(
-        _functional(constraint.constraint_id, constraint.expression, state)
-        for constraint in formulation.constraints
-    )
+    n = len(formulation.decisions)
+    built = [_functional(OBJECTIVE_OUTPUT, formulation.objective, state, assessment, n)] + [
+        _functional(constraint.constraint_id, constraint.expression, state, assessment, n)
+        for constraint in constraints
+    ]
+    outputs = tuple(functional for functional, _ in built if functional is not None)
+    if not outputs:
+        return None, None, VerificationCheck("V5", "not_evaluated", {"reason": "state_independent"})
     sensitivity = syn001_sensitivity(
         sheet,
         solve.result,
@@ -412,21 +614,30 @@ def _kkt(
                 },
             ),
         )
-    rows = np.array(sensitivity.adjoint.scaled, dtype=np.float64)
+    host = np.array(sensitivity.adjoint.scaled, dtype=np.float64)
+    scales = np.array([decision.scale for decision in formulation.decisions], dtype=np.float64)
+    rows: list[npt.NDArray[np.float64]] = []
+    position = 0
+    for functional, direct in built:
+        if functional is not None:
+            row = host[position]
+            position += 1
+        else:
+            row = np.zeros(n)
+        rows.append(row if direct is None else row + direct * scales)
     objective_gradient = rows[0]
     gradients = {
         constraint.constraint_id: rows[index]
-        for index, constraint in enumerate(formulation.constraints, start=1)
+        for index, constraint in enumerate(constraints, start=1)
     }
-    n = len(formulation.decisions)
-    position = {
+    position_of = {
         decision.parameter_id: index for index, decision in enumerate(formulation.decisions)
     }
     active_rows = []
     for item in active:
         if item.kind == "bound":
             row = np.zeros(n)
-            row[position[item.target]] = 1.0
+            row[position_of[item.target]] = 1.0
         else:
             row = gradients[item.target].copy()
         active_rows.append(row if item.side == "lower" else -row)
