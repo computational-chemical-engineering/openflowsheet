@@ -297,7 +297,24 @@ def build_report(
     state_sha256: str,
     uncertainty: bool = True,
 ) -> dict[str, Any]:
-    """The report at `x` (§4.11); `provenance` is outside every hash."""
+    """The report at `x` (§4.11); `provenance` is outside every hash.
+
+    Parameters
+    ----------
+    program
+        The assessment program.
+    x
+        The state by host variable id.
+    state_sha256
+        The state's identity, recorded in the report.
+    uncertainty
+        Whether to propagate the declared input ranges.
+
+    Returns
+    -------
+    dict
+        A document valid against `schemas/assessment-report.schema.json`.
+    """
     body = report_body(program, x, state_sha256=state_sha256, uncertainty=uncertainty)
     body["provenance"] = {
         "openflowsheet_version": __version__,

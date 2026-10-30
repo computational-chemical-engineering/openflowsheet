@@ -192,7 +192,38 @@ def assessment_sensitivity(
 
     `scales` gives an output's scale; by default `max(|y(x*)|, 1)` (§4.10.2's output scale). A
     refusal of `program.linearize` (an unavailable or unknown output) is returned with no host
-    run. Raises `ValueError` when the program's host variables are not the host's."""
+    run. Raises `ValueError` when the program's host variables are not the host's.
+
+    Parameters
+    ----------
+    program
+        The assessment program, built over the same host problem.
+    host
+        The sensitivity host, e.g. `revision_sensitivity_host(flowsheet, state)`.
+    request
+        The parameters, the host outputs and the mode (forward, adjoint or both).
+    state
+        The certified state, in `host.spec.variable_ids` order.
+    outputs
+        The assessment output ids, without the `assessment:` prefix.
+    certificate
+        The certificate's evidence, passed to the host's qualification.
+    scales
+        Output scales; by default `max(|y(x*)|, 1)`.
+    splits
+        Split regimes, passed to the host's evaluation.
+
+    Returns
+    -------
+    AssessmentSensitivity
+        `dy/dp` per output (rows) and parameter (columns), the host's own result, refusals,
+        active regime bounds and limitations.
+
+    Raises
+    ------
+    ValueError
+        When the program was built over a different host problem.
+    """
     variable_ids = host.spec.variable_ids
     if tuple(program.context.host_spec.variable_ids) != tuple(variable_ids):
         raise ValueError("the program was built over a different host problem")
