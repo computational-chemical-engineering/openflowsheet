@@ -8158,3 +8158,52 @@ harvest:
   class: P
   to: []
   note: 'process note: the site is deployed by site.yml after the merge to main, once Pages is enabled'
+- manifest: evidence/S13a/0ce3748a7a473950a295e2668201fb96c44d0ec1/manifest.json
+  item: limitations[0]
+  sha256: 066c291c6ba93e88ebb25702c936a8a7752236dab114d4c427fe7af93d16b358
+  class: P
+  to: []
+  note: 'process note: filed as S13a, V03''s sub-manifest for WO-1…WO-4 (orchestrator''s decision; S12b''s precedent), merged before K3; S13 at C carries the rest'
+- manifest: evidence/S13a/0ce3748a7a473950a295e2668201fb96c44d0ec1/manifest.json
+  item: limitations[1]
+  sha256: dd2df36dcf0f5e95b346eb82022d2fa821e1801dbf1df52b8a2af0f808bcb53f
+  class: P
+  to: []
+  note: 'process note: requirements empty; V03''s claims are judged by the verdict document at C (A26)'
+- manifest: evidence/S13a/0ce3748a7a473950a295e2668201fb96c44d0ec1/manifest.json
+  item: limitations[2]
+  sha256: fc0c9621dda6c25ea44a6f15bfaa896af9c80b3d8604d164f0563b37c2990a71
+  class: P
+  to: []
+  note: 'release-candidate item: V03.A18 (CHANGELOG phrases) has gate R and is judged at C, in S13'
+- manifest: evidence/S13a/0ce3748a7a473950a295e2668201fb96c44d0ec1/manifest.json
+  item: limitations[3]
+  sha256: 9927c869b8f059f14ecbedbec19844d59ccada9c4f546c18bd7b3d693a178e95
+  class: P
+  to: []
+  note: 'release-candidate item: V03.A08''s R part (step 18''s output) is judged at C, in S13'
+- manifest: evidence/S13a/0ce3748a7a473950a295e2668201fb96c44d0ec1/manifest.json
+  item: limitations[4]
+  sha256: dab14c2d753a2f5b6f478113dda159d1fbc32c3ebf5f4bb553812ff6cda60f4c
+  class: P
+  to: []
+  note: 'release-candidate item: A09, A17, A19–A27 exist only at K3 or C, or belong to WO-5…WO-8; S13 carries them'
+- manifest: evidence/S13a/0ce3748a7a473950a295e2668201fb96c44d0ec1/manifest.json
+  item: limitations[5]
+  sha256: 7e8679aa763eed17748893b285082a8f458a4e3d3844d6e146083a711237f457
+  class: P
+  to: []
+  note: 'process note: the full gate is read from its log; CI on both architectures is checked before the merge'
+- manifest: evidence/S13a/0ce3748a7a473950a295e2668201fb96c44d0ec1/manifest.json
+  item: limitations[6]
+  sha256: dac2c22bbbdb3c3ec8e676357a15a2a12adb34e81f6cab44acecbbf52f8e10fb
+  class: P
+  to: []
+  note: 'process note: the reviewer pass (docs/reviews/V03-review.md) and its fix commits; review field pending'
+- manifest: evidence/S13a/0ce3748a7a473950a295e2668201fb96c44d0ec1/manifest.json
+  item: checks[15]
+  check_id: S13a.A18
+  sha256: 60ad3bbbcfab8937b0b61870053c070f6879e8564b03ddbd8a5c86aaa00f17ab
+  class: P
+  to: []
+  note: 'release-candidate item (gate R): V03.A18 judged on CHANGELOG.md at C; unsupported here, not a pass'

@@ -178,6 +178,19 @@ no erratum (R-901). Q3: cite R-900 (F-V1); MR-12 v03's `lca` entry now runs `scr
   Its full stdout with the old and the new change set is byte-identical: impact 0.024320 kg CO2-eq/s, total capital
   836869 USD, turbine purchased 8726 / bare module 30542 USD. No number moved.
 
+## Brief 6: the S13a manifest (`docs/briefs/V03-S13a-manifest.md`, 2026-10-30)
+
+- DECISION (orchestrator): how WO-1…WO-4 merge into `main` before K3 (spec P3) when S13's manifest is written only at
+  C → a sub-manifest `evidence/S13a/0ce3748a…/manifest.json`, `tested`, for the assertions WO-1…WO-4 own, as E01b's
+  S12b; S13 at C stays as the spec says and may cite it. Alternative: merge without a manifest (forbidden by
+  `CLAUDE.md`). Reversible by: reverting the commit that carries it.
+- Generator `scripts/s13a_evidence_manifest.py`: each assertion's gate read from §7; a D assertion runs its nodes in
+  its own pytest and passes only on exit 0 with ≥ 1 passed and 0 skipped; A18 (gate R) is `unsupported` (planned at
+  C; the draft holds 17 of 17 phrases at `0ce3748a`). A12 (c) runs `scripts/s11_identity.py` without
+  `PYTEST_ADDOPTS` (its parallel shards cannot share one `--basetemp`; a first run with it failed in most shards, and
+  a run with the untracked manifest already present failed the two harvest shards; both are the run's environment).
+- Harvest: 7 limitations and 1 non-`pass` check, all class P; `HARVEST_SIZE` (65, 921, 119) → (66, 928, 120).
+
 ## Run log
 
 - 2026-10-29, WO-1: `v0_2_gate.py` output before/after the engine change, 18 runs (text, `--json`, `--markdown` over
