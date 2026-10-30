@@ -601,10 +601,9 @@ def found_limitations(entries: Sequence[Mapping[str, Any]], a33: Mapping[str, An
         "unsupported.",
         "G10, release-candidate data (§9.6 A48: every primary range in shipped sets is "
         f"verified: true) is not run (RC item): {PACKAGE}.A48 and {PACKAGE}.G10 are unsupported, "
-        "which is not a pass. After Amendment 1 to ruling B five SSLW primary ranges carry "
-        "verified: false (the three compressors, the turbine and vessel fit '2'; design note "
-        "§10.10.8); C7 (docs/briefs/QA1b.patch, not applied) sets them on Frank's approval "
-        "(Q-B7), and the release candidate is blocked until then.",
+        "which is not a pass. Every SSLW primary range is verified: true since C7 (the three "
+        "compressors, the turbine and vessel fit '2', design note §10.10.8, on Frank's approval, "
+        "Q-B7); a48_release_check() returns pass at this commit.",
         "Review: the design lane's reviewer pass (docs/reviews/E01-review.md, at de63b9a2) found "
         "two must-fix items (M1 derived-ratio denominators, R-868; M2 the default build, R-869), "
         "four should-fix items (S1 objective scaling, S2 sensitivity regime boundaries, S3 "
@@ -617,8 +616,8 @@ def found_limitations(entries: Sequence[Mapping[str, Any]], a33: Mapping[str, An
         "and motor entries at CE 500 (× 0.788 on every pump and motor cost), the fixed-head "
         "alpha2 and tower-platform amendments, the vessel weight ranges (the P2 drum and P3 M1's "
         "column shell now floor), the compressor on consumed power and the turbine range. Its "
-        "reviewer pass is pending, and C7 (the five verified flags, docs/briefs/QA1b.patch) is not "
-        "applied. The open questions of §10.10.9 (Q-B2, Q-B3, Q-B8, Q-B9, Q-B11, Q-B12) are "
+        "reviewer pass is pending; C7 (the five verified flags of §10.10.8) is applied on Frank's "
+        "approval. The open questions of §10.10.9 (Q-B2, Q-B3, Q-B8, Q-B9, Q-B11, Q-B12) are "
         "worked on their defaults. A49 compares the set with the Seider 3rd ed. by page and "
         "equation (benchmarks/e01/cost_hand/seider3.yaml): transcription verification, not "
         "empirical validation of the correlations.",

@@ -547,7 +547,7 @@
       "source": {
        "citation": "Seider, Seader, Lewin, Widagdo, Product and Process Design Principles: Synthesis, Analysis, and Evaluation, 3rd ed. (Wiley, 2009), ch. 22, p. 593, Table 22.32: gas expanders (pressure discharge), power extracted P = 20 to 5,000 Hp, C_P = 530 P^0.81 (design note §10, R-893)",
        "kind": "primary",
-       "verified": false
+       "verified": true
       }
      }
     },
@@ -766,7 +766,7 @@
   "opex.utility.HPS": 18922.463266177867
  },
  "provenance": {
-  "generated_utc": "2026-10-29T20:11:45+00:00",
+  "generated_utc": "2026-10-29T20:18:55+00:00",
   "openflowsheet_version": "0.3.0.dev0",
   "program_label": "ASM1-923c80392eaf-f3a2a03d"
  },

@@ -129,21 +129,21 @@ def test_the_shipped_set_loads_with_the_notes_entries_in_order(capsys: Any) -> N
         for name, r in found:
             kinds.append((item["entry_id"], name, r["source"]["kind"], r["source"].get("verified")))
     print("\n".join(f"{e} {n}: {k} verified={v}" for e, n, k, v in kinds))
-    # §10.4.3: the five ranges QA1 found matching are verified (QA1.patch); the five ruling B adds
-    # wait for a person's approval (A48, C7).
+    # §10.4.3: the five ranges QA1 found matching are verified (QA1.patch), and so, after C7, are
+    # the five ruling B adds (§10.10.8, on Frank's approval; A48).
     primary = sorted((e, n, v) for e, n, k, v in kinds if k == "primary")
     assert primary == sorted(
         [
             ("exchanger.shell_tube", "area_ft2", True),
-            ("vessel.vertical", "weight_lb", False),
+            ("vessel.vertical", "weight_lb", True),
             ("pump", "size_factor", True),
             ("pump", "flow_gpm", True),
             ("pump", "power_hp", True),
             ("motor.electric", "motor_power_hp", True),
-            ("compressor", "consumed_power_hp", False),
-            ("compressor", "consumed_power_hp", False),
-            ("compressor", "consumed_power_hp", False),
-            ("turbine", "power_hp", False),
+            ("compressor", "consumed_power_hp", True),
+            ("compressor", "consumed_power_hp", True),
+            ("compressor", "consumed_power_hp", True),
+            ("turbine", "power_hp", True),
         ]
     ), primary
     assert {k for _, _, k, _ in kinds} == {"pinned", "primary"}

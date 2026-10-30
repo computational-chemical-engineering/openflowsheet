@@ -486,7 +486,7 @@
                   "source": {
                     "kind": "primary",
                     "citation": "Seider, Seader, Lewin, Widagdo, Product and Process Design Principles: Synthesis, Analysis, and Evaluation, 3rd ed. (Wiley, 2009), ch. 22, p. 575, Eq. (22.57): towers, 9,000 < W < 2,500,000 lb, the fit of weight_limit '2' (design note §10.10, R-898)",
-                    "verified": false
+                    "verified": true
                   }
                 }
               }
@@ -1356,7 +1356,7 @@
                   "source": {
                     "kind": "primary",
                     "citation": "Seider, Seader, Lewin, Widagdo, Product and Process Design Principles: Synthesis, Analysis, and Evaluation, 3rd ed. (Wiley, 2009), ch. 22, p. 569, Eq. (22.36): centrifugal compressor, valid from consumed power P_C = 200 to 30,000 Hp; the base cost includes an electric motor drive (design note §10, R-890)",
-                    "verified": false
+                    "verified": true
                   }
                 }
               }
@@ -1378,7 +1378,7 @@
                   "source": {
                     "kind": "primary",
                     "citation": "Seider, Seader, Lewin, Widagdo, Product and Process Design Principles: Synthesis, Analysis, and Evaluation, 3rd ed. (Wiley, 2009), ch. 22, p. 569, Eq. (22.37): reciprocating compressor, valid from consumed power P_C = 100 to 20,000 Hp; the base cost includes an electric motor drive (design note §10, R-890)",
-                    "verified": false
+                    "verified": true
                   }
                 }
               }
@@ -1400,7 +1400,7 @@
                   "source": {
                     "kind": "primary",
                     "citation": "Seider, Seader, Lewin, Widagdo, Product and Process Design Principles: Synthesis, Analysis, and Evaluation, 3rd ed. (Wiley, 2009), ch. 22, p. 569, Eq. (22.38): screw compressor, valid from consumed power P_C = 10 to 750 Hp; the base cost includes an electric motor drive (design note §10, R-890)",
-                    "verified": false
+                    "verified": true
                   }
                 }
               }
@@ -1479,7 +1479,7 @@
           "source": {
             "kind": "primary",
             "citation": "Seider, Seader, Lewin, Widagdo, Product and Process Design Principles: Synthesis, Analysis, and Evaluation, 3rd ed. (Wiley, 2009), ch. 22, p. 593, Table 22.32: gas expanders (pressure discharge), power extracted P = 20 to 5,000 Hp, C_P = 530 P^0.81 (design note §10, R-893)",
-            "verified": false
+            "verified": true
           }
         }
       },

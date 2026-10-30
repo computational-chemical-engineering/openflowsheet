@@ -396,3 +396,5 @@ I1's.
   supersedes `0ee43c89…0364` (D04 above) and the E01b C1 pin `6ff671a7…eea9`: the four amendments, the ranges,
   citations and `checked_against` of design note §10.10 (R-895…R-899). Pinned in `tests/test_t08_w2_inventory.py`
   and `docs/e01-data-licences.json` (`scripts/e01_d04_inventory.py --data`; `--check` A42 PASS).
+- C7 (E01b, on Frank's approval, design note §10.10.8): the five `verified` flags set; sha256 `23d103d897d01c436f191285e38f305ff4374e42aa75c7f2c5a080984dbef6fb`
+  supersedes `b70d6f22…933f` (t08 pin, `docs/e01-data-licences.json`).
