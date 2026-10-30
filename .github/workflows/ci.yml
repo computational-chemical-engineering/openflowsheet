@@ -874,6 +874,79 @@ jobs:
         if: always()
         run: grep -qx "a30 exit status 0" "$OUT/a30.log" || { echo "::error::T08.A30 did not pass; see a30.log in rc-steps-${{ matrix.runner }}"; exit 1; }
 
+  rc-coolprop:
+    # V03 spec §4 step 17b (S07 F-8, R-879): the RC's CoolProp test step. requirements.lock first,
+    # then the coolprop extra's increment with the `check` job's two lines (--no-deps
+    # --require-hashes, OPENFLOWSHEET_REQUIRE_COOLPROP=1), then every S07 and S11 test module that
+    # imports CoolProp. Under the flag an absent CoolProp fails instead of skipping, and the step
+    # fails on any skip at all, so A29's sdist/wheel test gets T08.A43's build Python. A job of its
+    # own, so that `rc-steps`' A30 inventory keeps reading the base install.
+    if: github.event_name == 'workflow_dispatch' && inputs.rc
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [ubuntu-latest, ubuntu-24.04-arm]
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 60
+    env:
+      OPENBLAS_NUM_THREADS: "1"
+      OMP_NUM_THREADS: "1"
+      MKL_NUM_THREADS: "1"
+      PYTHONPATH: "src:."
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.13"
+
+      - name: Install locked dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.lock
+
+      - name: Install the coolprop extra's lock
+        run: python -m pip install --no-deps --require-hashes -r requirements-coolprop.lock
+
+      - name: Install project
+        run: |
+          python -m pip install -e .
+          echo "OUT=$RUNNER_TEMP/rc-coolprop" >> "$GITHUB_ENV"
+          mkdir -p "$RUNNER_TEMP/rc-coolprop"
+
+      - name: T08.A43's build Python, for S07.A29's built sdist and wheel
+        run: |
+          builder=$(python -c 'import pathlib, sys; sys.path.insert(0, "scripts"); import t08_dist; print(t08_dist.build_environment(pathlib.Path(sys.argv[1]), t08_dist.SETUPTOOLS)[0])' "$RUNNER_TEMP/build-venv")
+          echo "OFS_S07_BUILD_PYTHON=$builder" >> "$GITHUB_ENV"
+
+      - name: V03 step 17b — the S07 and S11 CoolProp modules, 0 skipped
+        env:
+          OPENFLOWSHEET_REQUIRE_COOLPROP: "1"
+        run: |
+          modules=$(grep -lE 'CoolProp|s07_coolprop_support' tests/test_s07_*.py tests/test_s11_*.py)
+          echo "$modules" > "$OUT/modules-${{ matrix.runner }}.txt"
+          set +e
+          python -m pytest -q -rs $modules 2>&1 | tee "$OUT/17b-${{ matrix.runner }}.log"
+          status=${PIPESTATUS[0]}
+          set -e
+          echo "17b pytest exit status $status" | tee -a "$OUT/17b-${{ matrix.runner }}.log"
+          [ "$status" -eq 0 ] || exit 1
+          if grep -qE '[0-9]+ skipped' "$OUT/17b-${{ matrix.runner }}.log"; then
+            echo "::error::step 17b requires 0 skipped"; exit 1
+          fi
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: rc-coolprop-${{ matrix.runner }}
+          path: ${{ runner.temp }}/rc-coolprop/
+          if-no-files-found: error
+
   rc-ensemble:
     # T08.A46 (step 6): the registered ensemble (`T06-ens-v1`, the committed starts,
     # `T06-revision-v2`) at this commit on `ci-aarch64`, then T06 A34's same-class replay of the

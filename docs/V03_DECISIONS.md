@@ -62,6 +62,15 @@ commit. Questions for the design lane are under "Open questions"; measurements u
   pattern. `test_the_git_backed_measure_at_head` (node name kept; S07's manifest maps it to A44) now runs the v03
   measure at HEAD over a synthetic 17c record. Alternative: the measure runs the two check scripts itself at the
   checkout. Reversible by: reverting the MR-12 v03 commit.
+- DECISION: what is "the RC's test step" of F-8 (V03.A15, step 17b)? → a new CI job `rc-coolprop` (RC dispatch,
+  `inputs.rc`, both architectures): `requirements.lock`, then `requirements-coolprop.lock` with `--no-deps
+  --require-hashes`, then the project; T08.A43's build Python as `OFS_S07_BUILD_PYTHON` (else S07.A29's
+  sdist/wheel test skips); then `pytest -rs` over every `tests/test_s07_*.py`/`tests/test_s11_*.py` naming CoolProp
+  (`grep -lE 'CoolProp|s07_coolprop_support'`, 14 modules today) with `OPENFLOWSHEET_REQUIRE_COOLPROP=1`, failing on a
+  non-zero exit or any `N skipped`. `tests/test_v03_rc_coolprop.py` reads the job (A15) with three controls. A job of
+  its own so `rc-steps`' A30 inventory still reads the base install. (The `check` job, RC step 1, already has the two
+  lines; its suite does not set the build Python, so its S07.A29 skip remains.) Alternative: add the steps to
+  `rc-steps`. Reversible by: reverting the RC CoolProp commit.
 
 ## Open questions (for the design-lane review of WO-1–WO-4)
 
