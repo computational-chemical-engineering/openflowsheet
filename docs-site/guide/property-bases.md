@@ -45,8 +45,7 @@ equilibrium, it is within its pre-registered bands for methanol–ethanol–wate
 **not** within band against CoolProp. That comparison is the
 [validation report](https://github.com/computational-chemical-engineering/openflowsheet/blob/main/docs/s10-validation-report.md).
 On this basis the column takes reflux, rate and duty end specifications only, and the compressor
-and turbine are single-phase vapour machines. The records are read from a source checkout of the
-repository.
+and turbine are single-phase vapour machines. The records ship with the package.
 
 ## Peng–Robinson for the ammonia loop (`pr-c1-v1`)
 
