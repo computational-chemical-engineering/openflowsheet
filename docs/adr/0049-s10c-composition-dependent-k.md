@@ -1,8 +1,10 @@
 # ADR 0049 — Composition-dependent K in the PH kernel and the column: equilibrium forms, the constant-β point, a band-first PH route, and the column's admission of `wilson-ig-v1` (package S10-C)
 
-**Status:** **Proposed, 2026-10-26** (design lane, `architect`; register R-760…R-769). It becomes **Accepted** when:
+**Status:** **Accepted, 2026-10-30**, marked by the build lane (V03 spec §6, R-876; the check is recorded in `docs/V03_DECISIONS.md` for S13's manifest). Proposed 2026-10-26 (design lane, `architect`; register R-760…R-769). It became **Accepted** when:
 - S10-C's evidence manifest is `tested`, with gates G1–G9 of the design note passing;
 - the `reviewer` has passed WO-1…WO-4 against the design note and the S10-C specification.
+
+*Met 2026-10-30 (V03 WO-4):* `evidence/S10c/2aedd250…/manifest.json` (and the earlier `8f38f963…`) is `tested`: `S10C.G1`, `S10C.G1-flowsheets`, `S10C.G2`, `S10C.G-R3` and `S10C.G-R7` pass, G3 is held by S10C.A60/A61 against its registered references (the review's must-fix F1), and G9's wall times are recorded in WO-4; the merge `8654aabc` records the gate PASS (13249/3137) and CI 40315691647. `docs/reviews/S10C-review.md` passed WO-1…WO-4 with that one must-fix, which the manifest carries.
 
 **Date:** 2026-10-26
 **Author:** design lane (`architect`), brief `docs/briefs/S10C-flash-and-column.md`.

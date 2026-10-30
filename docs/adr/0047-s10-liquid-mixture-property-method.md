@@ -1,9 +1,11 @@
 # ADR 0047 — The first liquid-capable mixture method: γ–φ with a Wilson liquid and an ideal-gas vapour, a library-only provider `wilson-ig-v1` (package S10)
 
-**Status:** **Proposed, 2026-10-24** (design lane, `specifier`; register R-700…R-710). It becomes **Accepted** when:
+**Status:** **Accepted, 2026-10-30**, marked by the build lane (V03 spec §6, R-876; the check is recorded in `docs/V03_DECISIONS.md` for S13's manifest). Proposed 2026-10-24 (design lane, `specifier`; register R-700…R-710). It became **Accepted** when:
 - WO-S10-1 and WO-S10-2 have an evidence manifest with status `tested`, covering assertions S10.A01–A28;
 - `s10_reference.py --check` passes (113 claims at this writing);
 - the `reviewer` has passed the provider against spec §3–§5.
+
+*Met 2026-10-30 (V03 WO-4):* `evidence/S10/c4f3751e…/manifest.json` (WO-S10-1/2) is `tested` with S10.A01–A45 passing, and the later S10 manifests `f974cc87…` and `f6f27c3f…` are `tested`; `docs/derivations/scripts/s10_reference.py --check` at `wp/V03` prints "113 claims hold; reference_values.yaml matches" (exit 0; the RC runs it again at C); the reviewer passed the provider (`docs/reviews/S10-review-wo1-wo2.md`, nothing a must-fix; `docs/reviews/S10-review-final.md`, sound).
 
 Three things are **not** acceptance conditions; each is a separate result recorded by its own entry:
 - the real records (WO-S10-3);

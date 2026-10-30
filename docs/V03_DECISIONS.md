@@ -78,6 +78,27 @@ commit. Questions for the design lane are under "Open questions"; measurements u
   the predecessor and the regenerated document for each of the three (and the predecessor reproduces the old pin).
   Alternative: stop for the design lane. Reversible by: reverting the re-pin commit (with `0461c6ec`).
 
+## WO-4: ADR checks and flips, release texts
+
+- DECISION: where "one check per ADR in S13's manifest" (spec §6) is recorded before S13's manifest exists (WO-6 writes
+  it at C) → the table below; WO-6's generator transcribes it into `evidence/S13/<C>/manifest.json`. Alternative: a
+  committed JSON for the generator to read. Reversible by: moving the rows.
+- DECISION: what "the `COOLPROP-DEF-ref-v1` line of S07 spec §3.5" is (F-1) → §3.5's four definition bullets,
+  verbatim, joined into one item (the fifth bullet only says F-1 writes the line), as ADR 0001 D5 item 5 and an S07
+  paragraph in `interfaces-frozen.md` §3 in ADR 0045's pattern (`7ccb13a3`). Alternative: the identifier alone.
+  Reversible by: reverting `7ccb13a3`.
+
+| ADR | Condition (spec §6) | Checked 2026-10-30 against | Result |
+| --- | --- | --- | --- |
+| 0046 | manifest `tested` both architectures; reviewer passed provider and generator; Q-1 with its number; Q-S07-1; F-1 written; Amendment 1 in the manifest | `evidence/S07/7bfab70d…` (A01–A50 pass, A33–A35 pass; `S07.ci`: S07 steps success on both `check` jobs; `S07.gate` `unsupported` by design); `docs/reviews/S07-review.md`, `S07-generator-review.md`; ADR status Q-1 note (R-627); Frank 2026-10-23; `7ccb13a3` | met → **Accepted** |
+| 0047 | WO-S10-1/2 manifest `tested` covering A01–A28; `s10_reference.py --check`; reviewer passed | `evidence/S10/c4f3751e…` (A01–A45 pass); `--check` at `wp/V03`: "113 claims hold; reference_values.yaml matches", exit 0 (again at C by the RC); `docs/reviews/S10-review-wo1-wo2.md`, `S10-review-final.md` | met → **Accepted** |
+| 0048 | manifest `tested`; G1, G2; full gate and CI at merge; reviewer read the ADR | `evidence/S08/6d7d1a6d…` (G1, G2 pass); merge `d96c17ae`: gate PASS `f5565a34` 12356/3137, CI 40248543872 green both architectures; `docs/reviews/S08-review.md` | met → **Accepted** |
+| 0049 | manifest `tested` with G1–G9; reviewer passed WO-1…4 | `evidence/S10c/2aedd250…`, `8f38f963…` (G1, G1-flowsheets, G2, G-R3, G-R7; G3 by A60/A61; G9 in WO-4); merge `8654aabc` gate PASS 13249/3137, CI 40315691647; `docs/reviews/S10C-review.md` (must-fix F1 carried by A60/A61) | met → **Accepted** |
+| 0050, 0051 | Accepted **after** V03.A24 holds at C | — | not yet: stays Proposed until C |
+| 0052 | after E01's merge (`05363060`) and V03.A24 | E01 merged | not yet: V03.A24 is at C |
+| 0043 | stays Proposed | — | unchanged |
+| 0053, 0054 | at WO-8 | — | unchanged |
+
 ## Open questions (for the design-lane review of WO-1–WO-4)
 
 1. D-1: is "a bind of `wilson-ig-v1` from package data" (V03.A12, A19) satisfied by `WilsonIdealGasProvider(

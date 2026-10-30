@@ -1,11 +1,13 @@
 # ADR 0048 — One-phase column sections: block openings in the column's initializer; ADR 0005 D4 unchanged
 
-**Status:** Proposed 2026-10-25.
-It becomes Accepted when:
+**Status:** **Accepted, 2026-10-30**, marked by the build lane (V03 spec §6, R-876; the check is recorded in `docs/V03_DECISIONS.md` for S13's manifest). Proposed 2026-10-25.
+It became Accepted when:
 1. S08's evidence manifest is `tested`;
 2. gates G1 and G2 of `docs/derivations/S08-design.md` §9 have passed on the merge candidate;
 3. `scripts/gate.sh` has passed, and CI is green on x86-64 and aarch64;
 4. the `reviewer` has read this ADR.
+
+*Met 2026-10-30 (V03 WO-4):* `evidence/S08/6d7d1a6d…/manifest.json` is `tested` with `S08.G1` and `S08.G2` passing; the merge `d96c17ae` records the gate PASS at `f5565a34` (12356 passed, 3137 skipped), CI 40248543872 green on x86-64 and aarch64, and G1 `S08-IDENTITY PASS n=52`; `docs/reviews/S08-review.md` reads this ADR.
 
 **Date:** 2026-10-25
 **Author:** design lane (`architect`). Brief: `docs/briefs/S08-one-phase-sections.md`.
