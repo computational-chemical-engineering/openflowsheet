@@ -1,0 +1,251 @@
+# A49 expectation (E01 design §10.10.5.7, §10.10.6; Amendment 1 to ruling B, R-895…R-899).
+#
+# The 3rd-edition numbers that the shipped set `sslw-idaes-v1` corresponds to, typed from the pages
+# of design §10.10.1 in Seider, Seader, Lewin, Widagdo, Product and Process Design Principles:
+# Synthesis, Analysis, and Evaluation, 3rd ed. (Wiley, 2009), ch. 22 (printed pages). Individual
+# numbers only, each with its page and equation or table; no book text or table is reproduced.
+# Book values are strings so that their printed decimals and signs are kept. Typed from the book,
+# never from the set file; the two meet only in tests/test_e01_b_seider3.py.
+#
+# A record names the set path (entry id + the path as ResolvedEntry.amended writes it; entry `set`
+# is the set's own `basis`), the book value, the page (a string: "571", or "563-564" for a span),
+# the equation, table or example, and a relation (v the set's value):
+#   same         Decimal(v)*sign == Decimal(book); `sign` (default +1) is the sign the form
+#                applies to v, so a coefficient printed "- 0.8709" is book "-0.8709" with sign -1
+#   shift        Decimal(v) - Decimal(book) == 0.2382 (the four exchanger alpha1; design §10.10 G2)
+#   amended      Decimal(v)*sign == Decimal(book); v.amended.replaces == `replaces` (IDAES's value,
+#                SSLW.py) and v.amended.citation names the page
+#   basis        the entry's effective index_basis == book == 500 (the book's stated CE), with
+#                amended.replaces == `replaces` (394, IDAES's USD_CE394)
+#   not_in_book  IDAES's own number (design §10.10 G11); `reason` says why
+# Ranges compare by exact equality of min and max with the book's printed bounds; a primary range's
+# citation names the page. `min_is_switch`: the min is IDAES's switch between two pieces, not a
+# printed bound; it lies at or above the book's min and equals the previous piece's max.
+citation: "Seider, Seader, Lewin, Widagdo, Product and Process Design Principles: Synthesis, Analysis, and Evaluation, 3rd ed. (Wiley, 2009), ch. 22"
+book_index: 500.0
+shift: "0.2382"
+records:
+  # Set basis: every §22.5 correlation used is stated at 2006, CE = 500 (first at p. 561)
+  - {entry: set, path: basis.index.value, relation: same, book: "500", page: "561", eq: "Eq. (22.14)"}
+
+  # Shell-and-tube exchangers, p. 571, Eqs. (22.39)-(22.45), Table 22.25, F_L; Example 22.10 (p. 572)
+  - {entry: exchanger.shell_tube, path: options.hx_type.choices.floating_head.alpha1, relation: shift, book: "11.667", page: "571", eq: "Eq. (22.39)", note: "ln(500/394) = 0.238257 truncated; design note §10.10 G2"}
+  - {entry: exchanger.shell_tube, path: options.hx_type.choices.floating_head.alpha1, relation: same, book: "11.9052", page: "572", eq: "Example 22.10"}
+  - {entry: exchanger.shell_tube, path: options.hx_type.choices.floating_head.alpha2, relation: same, sign: -1, book: "-0.8709", page: "571", eq: "Eq. (22.39)"}
+  - {entry: exchanger.shell_tube, path: options.hx_type.choices.floating_head.alpha3, relation: same, book: "0.09005", page: "571", eq: "Eq. (22.39)"}
+  - {entry: exchanger.shell_tube, path: options.hx_type.choices.fixed_head.alpha1, relation: shift, book: "11.0545", page: "571", eq: "Eq. (22.40)", note: "ln(500/394) = 0.238257 truncated; design note §10.10 G2"}
+  - {entry: exchanger.shell_tube, path: options.hx_type.choices.fixed_head.alpha2, relation: amended, sign: -1, book: "-0.9228", replaces: "0.8228", page: "571", eq: "Eq. (22.40)"}
+  - {entry: exchanger.shell_tube, path: options.hx_type.choices.fixed_head.alpha3, relation: same, book: "0.09861", page: "571", eq: "Eq. (22.40)"}
+  - {entry: exchanger.shell_tube, path: options.hx_type.choices.Utube.alpha1, relation: shift, book: "11.147", page: "571", eq: "Eq. (22.41)", note: "ln(500/394) = 0.238257 truncated; design note §10.10 G2, G4"}
+  - {entry: exchanger.shell_tube, path: options.hx_type.choices.Utube.alpha2, relation: same, sign: -1, book: "-0.9186", page: "571", eq: "Eq. (22.41)"}
+  - {entry: exchanger.shell_tube, path: options.hx_type.choices.Utube.alpha3, relation: same, book: "0.09790", page: "571", eq: "Eq. (22.41)"}
+  - {entry: exchanger.shell_tube, path: options.hx_type.choices.kettle_vap.alpha1, relation: shift, book: "11.967", page: "571", eq: "Eq. (22.42)", note: "ln(500/394) = 0.238257 truncated; design note §10.10 G2"}
+  - {entry: exchanger.shell_tube, path: options.hx_type.choices.kettle_vap.alpha2, relation: same, sign: -1, book: "-0.8709", page: "571", eq: "Eq. (22.42)"}
+  - {entry: exchanger.shell_tube, path: options.hx_type.choices.kettle_vap.alpha3, relation: same, book: "0.09005", page: "571", eq: "Eq. (22.42)"}
+  - {entry: exchanger.shell_tube, path: options.material.choices.CarbonSteelCarbonSteel.A, relation: same, book: "0.00", page: "571", eq: "Table 22.25"}
+  - {entry: exchanger.shell_tube, path: options.material.choices.CarbonSteelCarbonSteel.B, relation: same, book: "0.00", page: "571", eq: "Table 22.25"}
+  - {entry: exchanger.shell_tube, path: options.material.choices.CarbonSteelCarbonSteel.unity, relation: same, book: "1", page: "571", eq: "Eq. (22.44)", note: "a = b = 0 gives F_M = 1"}
+  - {entry: exchanger.shell_tube, path: options.material.choices.CarbonSteelBrass.A, relation: same, book: "1.08", page: "571", eq: "Table 22.25"}
+  - {entry: exchanger.shell_tube, path: options.material.choices.CarbonSteelBrass.B, relation: same, book: "0.05", page: "571", eq: "Table 22.25"}
+  - {entry: exchanger.shell_tube, path: options.material.choices.CarbonSteelStainlessSteel.A, relation: same, book: "1.75", page: "571", eq: "Table 22.25"}
+  - {entry: exchanger.shell_tube, path: options.material.choices.CarbonSteelStainlessSteel.B, relation: same, book: "0.13", page: "571", eq: "Table 22.25"}
+  - {entry: exchanger.shell_tube, path: options.material.choices.CarbonSteelMonel.A, relation: same, book: "2.1", page: "571", eq: "Table 22.25"}
+  - {entry: exchanger.shell_tube, path: options.material.choices.CarbonSteelMonel.B, relation: same, book: "0.13", page: "571", eq: "Table 22.25"}
+  - {entry: exchanger.shell_tube, path: options.material.choices.CarbonSteelTitanium.A, relation: same, book: "5.2", page: "571", eq: "Table 22.25"}
+  - {entry: exchanger.shell_tube, path: options.material.choices.CarbonSteelTitanium.B, relation: same, book: "0.16", page: "571", eq: "Table 22.25"}
+  - {entry: exchanger.shell_tube, path: options.material.choices.CarbonSteelCrMoSteel.A, relation: same, book: "1.55", page: "571", eq: "Table 22.25"}
+  - {entry: exchanger.shell_tube, path: options.material.choices.CarbonSteelCrMoSteel.B, relation: same, book: "0.05", page: "571", eq: "Table 22.25"}
+  - {entry: exchanger.shell_tube, path: options.material.choices.CrMoSteelCrMoSteel.A, relation: same, book: "1.70", page: "571", eq: "Table 22.25"}
+  - {entry: exchanger.shell_tube, path: options.material.choices.CrMoSteelCrMoSteel.B, relation: same, book: "0.07", page: "571", eq: "Table 22.25"}
+  - {entry: exchanger.shell_tube, path: options.material.choices.StainlessSteelStainlessSteel.A, relation: same, book: "2.70", page: "571", eq: "Table 22.25"}
+  - {entry: exchanger.shell_tube, path: options.material.choices.StainlessSteelStainlessSteel.B, relation: same, book: "0.07", page: "571", eq: "Table 22.25"}
+  - {entry: exchanger.shell_tube, path: options.material.choices.MonelMonel.A, relation: same, book: "3.3", page: "571", eq: "Table 22.25"}
+  - {entry: exchanger.shell_tube, path: options.material.choices.MonelMonel.B, relation: same, book: "0.08", page: "571", eq: "Table 22.25"}
+  - {entry: exchanger.shell_tube, path: options.material.choices.TitaniumTitanium.A, relation: same, book: "9.6", page: "571", eq: "Table 22.25"}
+  - {entry: exchanger.shell_tube, path: options.material.choices.TitaniumTitanium.B, relation: same, book: "0.06", page: "571", eq: "Table 22.25"}
+  - {entry: exchanger.shell_tube, path: options.tube_length.choices.EightFoot.F_L, relation: same, book: "1.25", page: "571", eq: "F_L, 8 ft"}
+  - {entry: exchanger.shell_tube, path: options.tube_length.choices.TwelveFoot.F_L, relation: same, book: "1.12", page: "571", eq: "F_L, 12 ft"}
+  - {entry: exchanger.shell_tube, path: options.tube_length.choices.SixteenFoot.F_L, relation: same, book: "1.05", page: "571", eq: "F_L, 16 ft"}
+  - {entry: exchanger.shell_tube, path: options.tube_length.choices.TwentyFoot.F_L, relation: same, book: "1.00", page: "571", eq: "F_L, 20 ft"}
+  - {entry: exchanger.shell_tube, path: coefficients.oversize, relation: not_in_book, reason: "IDAES's design margin, SSLW.py:393 ('1.1 to 1.5'); design note §10.10 G11"}
+  - {entry: exchanger.shell_tube, path: coefficients.material_area_ref_ft2, relation: same, book: "100", page: "571", eq: "Eq. (22.44)"}
+  - {entry: exchanger.shell_tube, path: "coefficients.pressure_a[0]", relation: same, book: "0.9803", page: "571", eq: "Eq. (22.45)"}
+  - {entry: exchanger.shell_tube, path: "coefficients.pressure_a[1]", relation: same, book: "0.018", page: "571", eq: "Eq. (22.45)"}
+  - {entry: exchanger.shell_tube, path: "coefficients.pressure_a[2]", relation: same, book: "0.0017", page: "571", eq: "Eq. (22.45)"}
+  - {entry: exchanger.shell_tube, path: coefficients.pressure_ref_psig, relation: same, book: "100", page: "571", eq: "Eq. (22.45)"}
+
+  # Vertical vessels and towers, pp. 574-576, Eqs. (22.54), (22.56)-(22.59), Table 22.26
+  - {entry: vessel.vertical, path: options.material.choices.CarbonSteel.F_M, relation: same, book: "1.0", page: "576", eq: "Table 22.26"}
+  - {entry: vessel.vertical, path: options.material.choices.CarbonSteel.density_lb_in3, relation: same, book: "0.284", page: "575", eq: "Eq. (22.59)"}
+  - {entry: vessel.vertical, path: options.material.choices.LowAlloySteel.F_M, relation: same, book: "1.2", page: "576", eq: "Table 22.26"}
+  - {entry: vessel.vertical, path: options.material.choices.LowAlloySteel.density_lb_in3, relation: not_in_book, reason: "IDAES's density; the book gives carbon steel's only (design note §10.10 G11)"}
+  - {entry: vessel.vertical, path: options.material.choices.StainlessSteel304.F_M, relation: same, book: "1.7", page: "576", eq: "Table 22.26"}
+  - {entry: vessel.vertical, path: options.material.choices.StainlessSteel304.density_lb_in3, relation: not_in_book, reason: "IDAES's density; the book gives carbon steel's only (design note §10.10 G11)"}
+  - {entry: vessel.vertical, path: options.material.choices.StainlessSteel316.F_M, relation: same, book: "2.1", page: "576", eq: "Table 22.26"}
+  - {entry: vessel.vertical, path: options.material.choices.StainlessSteel316.density_lb_in3, relation: not_in_book, reason: "IDAES's density; the book gives carbon steel's only (design note §10.10 G11)"}
+  - {entry: vessel.vertical, path: options.material.choices.Carpenter20CB3.F_M, relation: same, book: "3.2", page: "576", eq: "Table 22.26"}
+  - {entry: vessel.vertical, path: options.material.choices.Carpenter20CB3.density_lb_in3, relation: not_in_book, reason: "IDAES's density; the book gives carbon steel's only (design note §10.10 G11)"}
+  - {entry: vessel.vertical, path: options.material.choices.Nickel200.F_M, relation: same, book: "5.4", page: "576", eq: "Table 22.26"}
+  - {entry: vessel.vertical, path: options.material.choices.Nickel200.density_lb_in3, relation: not_in_book, reason: "IDAES's density; the book gives carbon steel's only (design note §10.10 G11)"}
+  - {entry: vessel.vertical, path: options.material.choices.Monel400.F_M, relation: same, book: "3.6", page: "576", eq: "Table 22.26"}
+  - {entry: vessel.vertical, path: options.material.choices.Monel400.density_lb_in3, relation: not_in_book, reason: "IDAES's density; the book gives carbon steel's only (design note §10.10 G11)"}
+  - {entry: vessel.vertical, path: options.material.choices.Inconel600.F_M, relation: same, book: "3.9", page: "576", eq: "Table 22.26"}
+  - {entry: vessel.vertical, path: options.material.choices.Inconel600.density_lb_in3, relation: not_in_book, reason: "IDAES's density; the book gives carbon steel's only (design note §10.10 G11)"}
+  - {entry: vessel.vertical, path: options.material.choices.Incoloy825.F_M, relation: same, book: "3.7", page: "576", eq: "Table 22.26"}
+  - {entry: vessel.vertical, path: options.material.choices.Incoloy825.density_lb_in3, relation: not_in_book, reason: "IDAES's density; the book gives carbon steel's only (design note §10.10 G11)"}
+  - {entry: vessel.vertical, path: options.material.choices.Titanium.F_M, relation: same, book: "7.7", page: "576", eq: "Table 22.26"}
+  - {entry: vessel.vertical, path: options.material.choices.Titanium.density_lb_in3, relation: not_in_book, reason: "IDAES's density; the book gives carbon steel's only (design note §10.10 G11)"}
+  - {entry: vessel.vertical, path: options.weight_limit.choices.1.alpha1, relation: same, book: "7.0132", page: "574", eq: "Eq. (22.54)"}
+  - {entry: vessel.vertical, path: options.weight_limit.choices.1.alpha2, relation: same, book: "0.18255", page: "574", eq: "Eq. (22.54)"}
+  - {entry: vessel.vertical, path: options.weight_limit.choices.1.alpha3, relation: same, book: "0.02297", page: "574", eq: "Eq. (22.54)"}
+  - {entry: vessel.vertical, path: options.weight_limit.choices.2.alpha1, relation: same, book: "7.2756", page: "575", eq: "Eq. (22.57); Examples 22.13, 22.14"}
+  - {entry: vessel.vertical, path: options.weight_limit.choices.2.alpha2, relation: same, book: "0.18255", page: "575", eq: "Eq. (22.57)"}
+  - {entry: vessel.vertical, path: options.weight_limit.choices.2.alpha3, relation: same, book: "0.02297", page: "575", eq: "Eq. (22.57)"}
+  - {entry: vessel.vertical, path: continuous.shell_thickness_in.default, relation: not_in_book, reason: "IDAES's default shell thickness, SSLW.py:513 (design note §10.10 G11)"}
+  - {entry: vessel.vertical, path: coefficients.diameter_allowance, relation: same, book: "0.8", page: "575", eq: "Eq. (22.59)"}
+  - {entry: vessel.vertical, path: "coefficients.platforms[0].a", relation: same, book: "361.8", page: "574", eq: "Eq. (22.56)"}
+  - {entry: vessel.vertical, path: "coefficients.platforms[0].b_D", relation: same, book: "0.73960", page: "574", eq: "Eq. (22.56)"}
+  - {entry: vessel.vertical, path: "coefficients.platforms[0].b_L", relation: same, book: "0.70684", page: "574", eq: "Eq. (22.56)"}
+  - {entry: vessel.vertical, path: "coefficients.platforms[1].a", relation: amended, book: "300.9", replaces: "309.9", page: "575", eq: "Eq. (22.58); Examples 22.13 (p. 578), 22.14 (p. 579)"}
+  - {entry: vessel.vertical, path: "coefficients.platforms[1].b_D", relation: same, book: "0.63316", page: "575", eq: "Eq. (22.58)"}
+  - {entry: vessel.vertical, path: "coefficients.platforms[1].b_L", relation: same, book: "0.80161", page: "575", eq: "Eq. (22.58)"}
+
+  # Horizontal vessels, pp. 574-576, Eqs. (22.53), (22.55), (22.59), Table 22.26; Example 22.12 (p. 577)
+  - {entry: vessel.horizontal, path: options.material.choices.CarbonSteel.F_M, relation: same, book: "1.0", page: "576", eq: "Table 22.26"}
+  - {entry: vessel.horizontal, path: options.material.choices.CarbonSteel.density_lb_in3, relation: same, book: "0.284", page: "575", eq: "Eq. (22.59)"}
+  - {entry: vessel.horizontal, path: options.material.choices.LowAlloySteel.F_M, relation: same, book: "1.2", page: "576", eq: "Table 22.26"}
+  - {entry: vessel.horizontal, path: options.material.choices.LowAlloySteel.density_lb_in3, relation: not_in_book, reason: "IDAES's density; the book gives carbon steel's only (design note §10.10 G11)"}
+  - {entry: vessel.horizontal, path: options.material.choices.StainlessSteel304.F_M, relation: same, book: "1.7", page: "576", eq: "Table 22.26"}
+  - {entry: vessel.horizontal, path: options.material.choices.StainlessSteel304.density_lb_in3, relation: not_in_book, reason: "IDAES's density; the book gives carbon steel's only (design note §10.10 G11)"}
+  - {entry: vessel.horizontal, path: options.material.choices.StainlessSteel316.F_M, relation: same, book: "2.1", page: "576", eq: "Table 22.26"}
+  - {entry: vessel.horizontal, path: options.material.choices.StainlessSteel316.density_lb_in3, relation: not_in_book, reason: "IDAES's density; the book gives carbon steel's only (design note §10.10 G11)"}
+  - {entry: vessel.horizontal, path: options.material.choices.Carpenter20CB3.F_M, relation: same, book: "3.2", page: "576", eq: "Table 22.26"}
+  - {entry: vessel.horizontal, path: options.material.choices.Carpenter20CB3.density_lb_in3, relation: not_in_book, reason: "IDAES's density; the book gives carbon steel's only (design note §10.10 G11)"}
+  - {entry: vessel.horizontal, path: options.material.choices.Nickel200.F_M, relation: same, book: "5.4", page: "576", eq: "Table 22.26"}
+  - {entry: vessel.horizontal, path: options.material.choices.Nickel200.density_lb_in3, relation: not_in_book, reason: "IDAES's density; the book gives carbon steel's only (design note §10.10 G11)"}
+  - {entry: vessel.horizontal, path: options.material.choices.Monel400.F_M, relation: same, book: "3.6", page: "576", eq: "Table 22.26"}
+  - {entry: vessel.horizontal, path: options.material.choices.Monel400.density_lb_in3, relation: not_in_book, reason: "IDAES's density; the book gives carbon steel's only (design note §10.10 G11)"}
+  - {entry: vessel.horizontal, path: options.material.choices.Inconel600.F_M, relation: same, book: "3.9", page: "576", eq: "Table 22.26"}
+  - {entry: vessel.horizontal, path: options.material.choices.Inconel600.density_lb_in3, relation: not_in_book, reason: "IDAES's density; the book gives carbon steel's only (design note §10.10 G11)"}
+  - {entry: vessel.horizontal, path: options.material.choices.Incoloy825.F_M, relation: same, book: "3.7", page: "576", eq: "Table 22.26"}
+  - {entry: vessel.horizontal, path: options.material.choices.Incoloy825.density_lb_in3, relation: not_in_book, reason: "IDAES's density; the book gives carbon steel's only (design note §10.10 G11)"}
+  - {entry: vessel.horizontal, path: options.material.choices.Titanium.F_M, relation: same, book: "7.7", page: "576", eq: "Table 22.26"}
+  - {entry: vessel.horizontal, path: options.material.choices.Titanium.density_lb_in3, relation: not_in_book, reason: "IDAES's density; the book gives carbon steel's only (design note §10.10 G11)"}
+  - {entry: vessel.horizontal, path: continuous.shell_thickness_in.default, relation: not_in_book, reason: "IDAES's default shell thickness, SSLW.py:513 (design note §10.10 G11)"}
+  - {entry: vessel.horizontal, path: coefficients.alpha1, relation: same, book: "8.9552", page: "574", eq: "Eq. (22.53); Example 22.12"}
+  - {entry: vessel.horizontal, path: coefficients.alpha2, relation: same, book: "-0.2330", page: "574", eq: "Eq. (22.53)"}
+  - {entry: vessel.horizontal, path: coefficients.alpha3, relation: same, book: "0.04333", page: "574", eq: "Eq. (22.53)"}
+  - {entry: vessel.horizontal, path: coefficients.diameter_allowance, relation: same, book: "0.8", page: "575", eq: "Eq. (22.59)"}
+  - {entry: vessel.horizontal, path: coefficients.platforms_horizontal.a, relation: same, book: "2005", page: "574", eq: "Eq. (22.55); Example 22.12 (p. 577)"}
+  - {entry: vessel.horizontal, path: coefficients.platforms_horizontal.b_D, relation: same, book: "0.20294", page: "574", eq: "Eq. (22.55)"}
+
+  # Trays, p. 577, Eqs. (22.66)-(22.68), F_TT, F_TM
+  - {entry: column.trays, path: options.tray_type.choices.Sieve.F_TT, relation: same, book: "1.0", page: "577", eq: "F_TT, sieve"}
+  - {entry: column.trays, path: options.tray_type.choices.Valve.F_TT, relation: same, book: "1.18", page: "577", eq: "F_TT, valve"}
+  - {entry: column.trays, path: options.tray_type.choices.BubbleCap.F_TT, relation: same, book: "1.87", page: "577", eq: "F_TT, bubble cap"}
+  - {entry: column.trays, path: options.tray_material.choices.CarbonSteel.alpha1, relation: same, book: "1.0", page: "577", eq: "F_TM, carbon steel"}
+  - {entry: column.trays, path: options.tray_material.choices.CarbonSteel.alpha2, relation: same, book: "0", page: "577", eq: "F_TM, carbon steel", note: "carbon steel's F_TM is printed without a D term"}
+  - {entry: column.trays, path: options.tray_material.choices.StainlessSteel303.alpha1, relation: same, book: "1.189", page: "577", eq: "F_TM, 303 stainless steel"}
+  - {entry: column.trays, path: options.tray_material.choices.StainlessSteel303.alpha2, relation: same, book: "0.0577", page: "577", eq: "F_TM, 303 stainless steel"}
+  - {entry: column.trays, path: options.tray_material.choices.StainlessSteel316.alpha1, relation: same, book: "1.401", page: "577", eq: "F_TM, 316 stainless steel"}
+  - {entry: column.trays, path: options.tray_material.choices.StainlessSteel316.alpha2, relation: same, book: "0.0724", page: "577", eq: "F_TM, 316 stainless steel"}
+  - {entry: column.trays, path: options.tray_material.choices.Carpenter20CB3.alpha1, relation: same, book: "1.525", page: "577", eq: "F_TM, Carpenter 20CB-3"}
+  - {entry: column.trays, path: options.tray_material.choices.Carpenter20CB3.alpha2, relation: same, book: "0.0788", page: "577", eq: "F_TM, Carpenter 20CB-3"}
+  - {entry: column.trays, path: options.tray_material.choices.Monel.alpha1, relation: same, book: "2.306", page: "577", eq: "F_TM, Monel"}
+  - {entry: column.trays, path: options.tray_material.choices.Monel.alpha2, relation: same, book: "0.1120", page: "577", eq: "F_TM, Monel"}
+  - {entry: column.trays, path: coefficients.tray_cost_a, relation: same, book: "468", page: "577", eq: "Eq. (22.67)"}
+  - {entry: column.trays, path: coefficients.tray_cost_b, relation: same, book: "0.1739", page: "577", eq: "Eq. (22.67)"}
+  - {entry: column.trays, path: coefficients.count_floor, relation: same, book: "1", page: "577", eq: "Eq. (22.68), N_T > 20"}
+  - {entry: column.trays, path: coefficients.count_a, relation: same, book: "2.25", page: "577", eq: "Eq. (22.68)"}
+  - {entry: column.trays, path: coefficients.count_b, relation: same, book: "1.0414", page: "577", eq: "Eq. (22.68)"}
+
+  # Pumps, pp. 560-564, Eqs. (22.13)-(22.15), (22.21)-(22.23), Tables 22.20, 22.21; Example 22.6
+  - {entry: pump, path: index_basis.value, relation: basis, book: "500", replaces: "394", page: "561", eq: "Eqs. (22.14), (22.21), (22.23) (pp. 561, 563); Example 22.6 (p. 564)"}
+  - {entry: pump, path: options.pump_type.choices.Centrifugal.a0, relation: same, book: "9.7171", page: "561", eq: "Eq. (22.14); Example 22.6"}
+  - {entry: pump, path: options.pump_type.choices.Centrifugal.a1, relation: same, sign: -1, book: "-0.6019", page: "561", eq: "Eq. (22.14)"}
+  - {entry: pump, path: options.pump_type.choices.Centrifugal.a2, relation: same, book: "0.0519", page: "561", eq: "Eq. (22.14)"}
+  - {entry: pump, path: options.pump_type.choices.Centrifugal.head_exponent, relation: same, book: "0.5", page: "560", eq: "Eq. (22.13)"}
+  - {entry: pump, path: options.pump_type.choices.ExternalGear.a0, relation: same, book: "7.6964", page: "563", eq: "Eq. (22.21)"}
+  - {entry: pump, path: options.pump_type.choices.ExternalGear.a1, relation: same, book: "0.1986", page: "563", eq: "Eq. (22.21)"}
+  - {entry: pump, path: options.pump_type.choices.ExternalGear.a2, relation: same, book: "0.0291", page: "563", eq: "Eq. (22.21)"}
+  - {entry: pump, path: options.pump_type.choices.Reciprocating.a0, relation: same, book: "7.8103", page: "563", eq: "Eq. (22.23)"}
+  - {entry: pump, path: options.pump_type.choices.Reciprocating.a1, relation: same, book: "0.26986", page: "563", eq: "Eq. (22.23)"}
+  - {entry: pump, path: options.pump_type.choices.Reciprocating.a2, relation: same, book: "0.06718", page: "563", eq: "Eq. (22.23)"}
+  - {entry: pump, path: options.material.choices_by.Centrifugal.CastIron.F_M, relation: same, book: "1.00", page: "562", eq: "Table 22.21"}
+  - {entry: pump, path: options.material.choices_by.Centrifugal.DuctileIron.F_M, relation: same, book: "1.15", page: "562", eq: "Table 22.21"}
+  - {entry: pump, path: options.material.choices_by.Centrifugal.CastSteel.F_M, relation: same, book: "1.35", page: "562", eq: "Table 22.21"}
+  - {entry: pump, path: options.material.choices_by.Centrifugal.Bronze.F_M, relation: same, book: "1.90", page: "562", eq: "Table 22.21"}
+  - {entry: pump, path: options.material.choices_by.Centrifugal.StainlessSteel.F_M, relation: same, book: "2.00", page: "562", eq: "Table 22.21"}
+  - {entry: pump, path: options.material.choices_by.Centrifugal.HastelloyC.F_M, relation: same, book: "2.95", page: "562", eq: "Table 22.21"}
+  - {entry: pump, path: options.material.choices_by.Centrifugal.Monel.F_M, relation: same, book: "3.30", page: "562", eq: "Table 22.21"}
+  - {entry: pump, path: options.material.choices_by.Centrifugal.Nickel.F_M, relation: same, book: "3.50", page: "562", eq: "Table 22.21"}
+  - {entry: pump, path: options.material.choices_by.Centrifugal.Titanium.F_M, relation: same, book: "9.70", page: "562", eq: "Table 22.21"}
+  - {entry: pump, path: options.material.choices_by.ExternalGear.CastIron.F_M, relation: same, book: "1.00", page: "562", eq: "Table 22.21, for gear pumps by Eq. (22.22), p. 563"}
+  - {entry: pump, path: options.material.choices_by.ExternalGear.DuctileIron.F_M, relation: same, book: "1.15", page: "562", eq: "Table 22.21, for gear pumps by Eq. (22.22), p. 563"}
+  - {entry: pump, path: options.material.choices_by.ExternalGear.CastSteel.F_M, relation: same, book: "1.35", page: "562", eq: "Table 22.21, for gear pumps by Eq. (22.22), p. 563"}
+  - {entry: pump, path: options.material.choices_by.ExternalGear.Bronze.F_M, relation: same, book: "1.90", page: "562", eq: "Table 22.21, for gear pumps by Eq. (22.22), p. 563"}
+  - {entry: pump, path: options.material.choices_by.ExternalGear.StainlessSteel.F_M, relation: same, book: "2.00", page: "562", eq: "Table 22.21, for gear pumps by Eq. (22.22), p. 563"}
+  - {entry: pump, path: options.material.choices_by.ExternalGear.HastelloyC.F_M, relation: same, book: "2.95", page: "562", eq: "Table 22.21, for gear pumps by Eq. (22.22), p. 563"}
+  - {entry: pump, path: options.material.choices_by.ExternalGear.Monel.F_M, relation: same, book: "3.30", page: "562", eq: "Table 22.21, for gear pumps by Eq. (22.22), p. 563"}
+  - {entry: pump, path: options.material.choices_by.ExternalGear.Nickel.F_M, relation: same, book: "3.50", page: "562", eq: "Table 22.21, for gear pumps by Eq. (22.22), p. 563"}
+  - {entry: pump, path: options.material.choices_by.ExternalGear.Titanium.F_M, relation: same, book: "9.70", page: "562", eq: "Table 22.21, for gear pumps by Eq. (22.22), p. 563"}
+  - {entry: pump, path: options.material.choices_by.Reciprocating.DuctileIron.F_M, relation: same, book: "1.00", page: "564", eq: "reciprocating F_M, ductile iron"}
+  - {entry: pump, path: options.material.choices_by.Reciprocating.StainlessSteel.F_M, relation: same, book: "2.20", page: "564", eq: "reciprocating F_M, stainless steel"}
+  - {entry: pump, path: options.material.choices_by.Reciprocating.NiAlBronze.F_M, relation: same, book: "1.15", page: "564", eq: "reciprocating F_M, Ni-Al-bronze"}
+  - {entry: pump, path: options.material.choices_by.Reciprocating.CarbonSteel.F_M, relation: same, book: "1.50", page: "564", eq: "reciprocating F_M, carbon steel"}
+  - {entry: pump, path: 'options.pump_type_factor.choices."1.1".F_T', relation: same, book: "1.00", page: "561", eq: "Table 22.20, row 1"}
+  - {entry: pump, path: 'options.pump_type_factor.choices."1.2".F_T', relation: same, book: "1.50", page: "561", eq: "Table 22.20, row 2"}
+  - {entry: pump, path: 'options.pump_type_factor.choices."1.3".F_T', relation: same, book: "1.70", page: "561", eq: "Table 22.20, row 3"}
+  - {entry: pump, path: 'options.pump_type_factor.choices."1.4".F_T', relation: same, book: "2.00", page: "561", eq: "Table 22.20, row 4"}
+  - {entry: pump, path: 'options.pump_type_factor.choices."2.1".F_T', relation: same, book: "2.70", page: "561", eq: "Table 22.20, row 5"}
+  - {entry: pump, path: 'options.pump_type_factor.choices."2.2".F_T', relation: same, book: "8.90", page: "561", eq: "Table 22.20, row 6"}
+  - {entry: pump, path: coefficients.type_factor_other, relation: same, book: "1", page: "563-564", eq: "Eqs. (22.22) and (22.23): gear and reciprocating costs carry no F_T"}
+
+  # Electric motor, pp. 562-563, Eqs. (22.18)-(22.20), Table 22.22; Example 22.6 (p. 565)
+  - {entry: motor.electric, path: index_basis.value, relation: basis, book: "500", replaces: "394", page: "562", eq: "Eq. (22.19); Example 22.6 (p. 565)"}
+  - {entry: motor.electric, path: options.motor_type.choices.Open.F_MT, relation: same, book: "1.0", page: "563", eq: "Table 22.22, 3,600 rpm"}
+  - {entry: motor.electric, path: options.motor_type.choices.Enclosed.F_MT, relation: same, book: "1.4", page: "563", eq: "Table 22.22, 3,600 rpm"}
+  - {entry: motor.electric, path: options.motor_type.choices.ExplosionProof.F_MT, relation: same, book: "1.8", page: "563", eq: "Table 22.22, 3,600 rpm"}
+  - {entry: motor.electric, path: "coefficients.eta[0]", relation: same, book: "0.80", page: "562", eq: "Eq. (22.18)"}
+  - {entry: motor.electric, path: "coefficients.eta[1]", relation: same, book: "0.0319", page: "562", eq: "Eq. (22.18)"}
+  - {entry: motor.electric, path: "coefficients.eta[2]", relation: same, sign: -1, book: "-0.00182", page: "562", eq: "Eq. (22.18)"}
+  - {entry: motor.electric, path: "coefficients.base[0]", relation: same, book: "5.8259", page: "562", eq: "Eq. (22.19); Example 22.6"}
+  - {entry: motor.electric, path: "coefficients.base[1]", relation: same, book: "0.13141", page: "562", eq: "Eq. (22.19)"}
+  - {entry: motor.electric, path: "coefficients.base[2]", relation: same, book: "0.053255", page: "562", eq: "Eq. (22.19)"}
+  - {entry: motor.electric, path: "coefficients.base[3]", relation: same, book: "0.028628", page: "562", eq: "Eq. (22.19)"}
+  - {entry: motor.electric, path: "coefficients.base[4]", relation: same, sign: -1, book: "-0.0035549", page: "562", eq: "Eq. (22.19)"}
+
+  # Compressors, p. 569, Eqs. (22.35)-(22.38); Example 22.9 (p. 570)
+  - {entry: compressor, path: options.compressor_type.choices.Centrifugal.alpha1, relation: same, book: "7.5800", page: "569", eq: "Eq. (22.36)"}
+  - {entry: compressor, path: options.compressor_type.choices.Centrifugal.alpha2, relation: same, book: "0.80", page: "569", eq: "Eq. (22.36)"}
+  - {entry: compressor, path: options.compressor_type.choices.Reciprocating.alpha1, relation: same, book: "7.9661", page: "569", eq: "Eq. (22.37)"}
+  - {entry: compressor, path: options.compressor_type.choices.Reciprocating.alpha2, relation: same, book: "0.80", page: "569", eq: "Eq. (22.37)"}
+  - {entry: compressor, path: options.compressor_type.choices.Screw.alpha1, relation: same, book: "8.1238", page: "569", eq: "Eq. (22.38)"}
+  - {entry: compressor, path: options.compressor_type.choices.Screw.alpha2, relation: same, book: "0.7243", page: "569", eq: "Eq. (22.38)"}
+  - {entry: compressor, path: options.drive_type.choices.ElectricMotor.F_D, relation: same, book: "1", page: "569", eq: "Eq. (22.35)", note: "the base cost includes an electric motor drive; F_D replaces 1 for the turbine drives"}
+  - {entry: compressor, path: options.material.choices.CarbonSteel.F_M, relation: same, book: "1", page: "569", eq: "Eq. (22.35)", note: "the base cost is carbon steel's; F_M replaces 1 for the alloys"}
+  - {entry: compressor, path: options.material.choices.StainlessSteel.F_M, relation: same, book: "2.5", page: "569", eq: "Eq. (22.35)"}
+  - {entry: compressor, path: options.material.choices.NickelAlloy.F_M, relation: same, book: "5.0", page: "569", eq: "Eq. (22.35)"}
+
+  # Turbine (gas expander, pressure discharge), p. 593, Table 22.32
+  - {entry: turbine, path: coefficients.a, relation: same, book: "530", page: "593", eq: "Table 22.32"}
+  - {entry: turbine, path: coefficients.b, relation: same, book: "0.81", page: "593", eq: "Table 22.32"}
+
+ranges:
+  - {entry: exchanger.shell_tube, path: ranges.area_ft2, min: "150", max: "12000", page: "571", eq: "Eqs. (22.39)-(22.42)"}
+  - {entry: exchanger.shell_tube, path: ranges.pressure_psig, min: "100", max: "2000", page: "571", eq: "Eq. (22.45)"}
+  - {entry: vessel.vertical, path: options.weight_limit.choices.1.ranges.weight_lb, min: "4200", max: "1000000", page: "574", eq: "Eq. (22.54)"}
+  - {entry: vessel.vertical, path: options.weight_limit.choices.2.ranges.weight_lb, min: "9000", max: "2500000", page: "575", eq: "Eq. (22.57)"}
+  - {entry: vessel.vertical, path: "ranges.platform_length_ft.pieces[0]", min: "12", max: "40", page: "574", eq: "Eq. (22.56)"}
+  - {entry: vessel.vertical, path: "ranges.platform_length_ft.pieces[1]", min: "27", max: "170", page: "575", eq: "Eq. (22.58)", min_is_switch: true, note: "the min is IDAES's switch between Eqs. 22.56 and 22.58 at 40 ft (SSLW.py:537), not the book's 27; design note §10.10.5.7"}
+  - {entry: vessel.vertical, path: ranges.platform_diameter_ft, min: "3", max: ["21", "24"], page: "574-575", eq: "Eqs. (22.56), (22.58)"}
+  - {entry: vessel.horizontal, path: ranges.weight_lb, min: "1000", max: "920000", page: "574", eq: "Eq. (22.53)"}
+  - {entry: column.trays, path: ranges.diameter_ft, min: "2", max: "16", page: "577", eq: "Eq. (22.67)"}
+  - {entry: pump, path: options.pump_type.choices.Centrifugal.ranges.size_factor, min: "400", max: "100000", page: "561", eq: "Eq. (22.14)"}
+  - {entry: pump, path: options.pump_type.choices.ExternalGear.ranges.flow_gpm, min: "10", max: "900", page: "563", eq: "Eq. (22.21)"}
+  - {entry: pump, path: options.pump_type.choices.Reciprocating.ranges.power_hp, min: "1", max: "200", page: "563-564", eq: "Eq. (22.23)"}
+  - {entry: motor.electric, path: ranges.motor_power_hp, min: "1", max: "700", page: "562", eq: "Eq. (22.19); Table 22.22 (p. 563)"}
+  - {entry: compressor, path: options.compressor_type.choices.Centrifugal.ranges.consumed_power_hp, min: "200", max: "30000", page: "569", eq: "Eq. (22.36)"}
+  - {entry: compressor, path: options.compressor_type.choices.Reciprocating.ranges.consumed_power_hp, min: "100", max: "20000", page: "569", eq: "Eq. (22.37)"}
+  - {entry: compressor, path: options.compressor_type.choices.Screw.ranges.consumed_power_hp, min: "10", max: "750", page: "569", eq: "Eq. (22.38)"}
+  - {entry: turbine, path: ranges.power_hp, min: "20", max: "5000", page: "593", eq: "Table 22.32"}

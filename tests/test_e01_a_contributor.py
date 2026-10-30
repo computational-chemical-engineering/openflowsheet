@@ -18,10 +18,13 @@ from s11_thermal_support import committed_case, solve
 
 from openflowsheet.assessment.cost import uncertainty
 from openflowsheet.assessment.cost.contributor import CostContributor
+from openflowsheet.assessment.cost.forms import FORMS
 from openflowsheet.assessment.cost.index import load_series
+from openflowsheet.assessment.cost.sets import NoCorrelation, load_set, resolve
 from openflowsheet.assessment.program import AssessmentProgram
 from openflowsheet.assessment.spec import load_assessment
 from openflowsheet.assessment.views import view_of
+from openflowsheet.compile.reference import FloatAlgebra
 
 #: SSLW.py:1636-1641 (η_m) and :1150-1178 (compressor), restated.
 KAPPA_W = 1.0 / 745.6998715822702
@@ -120,6 +123,14 @@ def test_th_c2_complete_cost_and_a22(registered: None) -> None:  # noqa: F811
     n = 1 if choice == "floor" else int(choice.split(":")[1])
     assert values["size.G.drive.power"] == pytest.approx(w / eta_m(w / n * KAPPA_W), rel=1e-15)
     assert "asm:item.G.drive.eta_drive" not in program.theta
+    # §10.5 A44: the compressor's size S(N) (consumed power, hp) over κ_W is its drive's
+    # electricity.
+    sslw = load_set("sslw-idaes-v1")
+    comp = resolve(sslw, "compressor", {})
+    assert not isinstance(comp, NoCorrelation)
+    size_n = FORMS[comp.form].quantities(comp, {"power": w}, FloatAlgebra(), n)
+    consumed = size_n["consumed_power_hp"] / KAPPA_W
+    assert consumed == pytest.approx(values["size.G.drive.power"], rel=1e-15)
     # §4.7.2: electricity and utilities by hand.
     h = 8000.0
     el = 0.1 / 3.6e6 * values["size.G.drive.power"] * 3600.0 * h

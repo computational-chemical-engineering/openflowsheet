@@ -399,3 +399,12 @@ I1's.
 - FACT: CI 40937174304 at `991dcde8`: x86-64 runners give `state_sha256` `8ad27fb2…` (workstation golden `e496390f…`):
   the digest is not reproducible across x86-64 CPUs either. Amended DECISION: float digests compared for kind only on
   every platform (ADR 0025 D2 as written); exact digests stay exact; numbers stay at rel 1e-9.
+
+## E01b pin (2026-10-29): the SSLW set's sha256 after Amendment 1 to ruling B
+
+- `src/openflowsheet/_data/assessment/cost/sslw-idaes-v1.json` sha256 `b70d6f22afc6da185c531d1c3bf2bbf0f80f7866b686f3a102a466984a41933f`
+  supersedes `0ee43c89…0364` (D04 above) and the E01b C1 pin `6ff671a7…eea9`: the four amendments, the ranges,
+  citations and `checked_against` of design note §10.10 (R-895…R-899). Pinned in `tests/test_t08_w2_inventory.py`
+  and `docs/e01-data-licences.json` (`scripts/e01_d04_inventory.py --data`; `--check` A42 PASS).
+- C7 (E01b, on Frank's approval, design note §10.10.8): the five `verified` flags set; sha256 `23d103d897d01c436f191285e38f305ff4374e42aa75c7f2c5a080984dbef6fb`
+  supersedes `b70d6f22…933f` (t08 pin, `docs/e01-data-licences.json`).

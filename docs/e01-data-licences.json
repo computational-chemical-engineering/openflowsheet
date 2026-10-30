@@ -20,8 +20,12 @@
    "licence_text_sha256": "4fdde00bd663a045a688899c7e6924bd3b747204518e75540273c97f4bc98fa0",
    "path": "openflowsheet/_data/assessment/cost/sslw-idaes-v1.json",
    "redistribution": "allowed",
-   "sha256": "0ee43c89d21b15e73654fef316f684493558f991cbd07d44f5827f5a9c180364",
+   "sha256": "23d103d897d01c436f191285e38f305ff4374e42aa75c7f2c5a080984dbef6fb",
    "source": {
+    "checked_against": {
+     "citation": "Seider, Seader, Lewin, Widagdo, Product and Process Design Principles: Synthesis, Analysis, and Evaluation, 3rd ed. (Wiley, 2009), ch. 22",
+     "scope": "every Seider number in this set compared by page and equation (design note §10.10; benchmarks/e01/cost_hand/seider3.yaml); individual numbers and bounds only, no text or table reproduced; the five QA1 ranges are also checked against the 4th ed. (Wiley, 2017), ch. 16"
+    },
     "citation": "Seider, Seader, Lewin, Widagdo, Product and Process Design Principles, 3rd ed., ch. 22",
     "licence_text_sha256": "4fdde00bd663a045a688899c7e6924bd3b747204518e75540273c97f4bc98fa0",
     "transcribed_from": {

@@ -122,14 +122,30 @@ def test_the_shipped_set_loads_with_the_notes_entries_in_order(capsys: Any) -> N
     assert doc["source"]["licence_text_sha256"].startswith("4fdde00b")
     kinds = []
     for item in doc["entries"]:
-        found = dict(item.get("ranges", {}))
+        found = list(dict(item.get("ranges", {})).items())
         for option in item.get("options", {}).values():
             for body in option.get("choices", {}).values():
-                found |= dict(body.get("ranges", {}))
-        for name, r in found.items():
+                found += list(dict(body.get("ranges", {})).items())  # one row per choice
+        for name, r in found:
             kinds.append((item["entry_id"], name, r["source"]["kind"], r["source"].get("verified")))
     print("\n".join(f"{e} {n}: {k} verified={v}" for e, n, k, v in kinds))
-    assert all(v is False for _, _, k, v in kinds if k == "primary")
+    # §10.4.3: the five ranges QA1 found matching are verified (QA1.patch), and so, after C7, are
+    # the five ruling B adds (§10.10.8, on Frank's approval; A48).
+    primary = sorted((e, n, v) for e, n, k, v in kinds if k == "primary")
+    assert primary == sorted(
+        [
+            ("exchanger.shell_tube", "area_ft2", True),
+            ("vessel.vertical", "weight_lb", True),
+            ("pump", "size_factor", True),
+            ("pump", "flow_gpm", True),
+            ("pump", "power_hp", True),
+            ("motor.electric", "motor_power_hp", True),
+            ("compressor", "consumed_power_hp", True),
+            ("compressor", "consumed_power_hp", True),
+            ("compressor", "consumed_power_hp", True),
+            ("turbine", "power_hp", True),
+        ]
+    ), primary
     assert {k for _, _, k, _ in kinds} == {"pinned", "primary"}
     assert "primary" in capsys.readouterr().out
 
@@ -336,8 +352,8 @@ def test_vessel_platform_pieces_floors_and_orientation() -> None:
     lw = math.log(w)
     c_v = math.exp(7.0132 + 0.18255 * lw + 0.02297 * lw**2)
     assert form.cost(v, tall, sel, F) == pytest.approx(
-        c_v + 309.9 * d_ft**0.63316 * l_ft**0.80161, rel=1e-14
-    )  # :765-767
+        c_v + 300.9 * d_ft**0.63316 * l_ft**0.80161, rel=1e-14
+    )  # :765-767, with 300.9 for IDAES's 309.9 (S3 p. 575 Eq. 22.58; §10.10.5.1, R-897)
     assert ("platform_diameter_ft.hi", -1, 24.0) in [
         (r.row_id, r.sense, r.bound) for r in rows(form, v, sel)
     ]
@@ -387,31 +403,33 @@ def test_a44_the_tray_count_factor() -> None:
     )
 
 
-# -- IV–VII. machines; the CE 394 conversion (A44) -----------------------------------------------
+# -- IV–VII. machines; the pump and motor basis at CE 500 (A44, R-896) ----------------------------
 
 
 def test_a44_the_ce394_ratio_and_the_pump_forms() -> None:
+    # §10.10.4 (R-896): the 3rd ed. states every pump and motor correlation at CE 500 (pp. 561-563),
+    # so the entry's basis is amended from IDAES's CE 394 label to 500 and no factor applies.
     pump = entry("pump")
-    assert pump.ratio == 500.0 / 394.0 == 1.2690355329949239
+    assert pump.ratio == 1.0 and pump.amended["index_basis.value"]["effective_value"] == 500.0
     form = FORMS[pump.form]
     x = {"vol_flow": 0.01, "head": 50.0, "power": 8.0e3}
     sel = select(form, pump, x)
     assert isinstance(sel, Selection) and sel.size == "units:1"
     s = (0.01 * KAPPA_Q) * (50.0 / 0.3048) ** 0.5  # SSLW.py:1502-1524
     c_b = math.exp(9.7171 - 0.6019 * math.log(s) + 0.0519 * math.log(s) ** 2)  # :1585-1590
-    assert form.cost(pump, x, sel, F) == pytest.approx(2.00 * 2.00 * c_b * (500 / 394.0), rel=1e-15)
+    assert form.cost(pump, x, sel, F) == pytest.approx(2.00 * 2.00 * c_b, rel=1e-15)
     gear = entry("pump", pump_type="ExternalGear", material="CastIron")
     sel = select(form, gear, x)
     assert isinstance(sel, Selection)
     q = 0.01 * KAPPA_Q
     c_b = math.exp(7.6964 + 0.1986 * math.log(q) + 0.0291 * math.log(q) ** 2)  # :1591-1596
-    assert form.cost(gear, x, sel, F) == pytest.approx(1 * 1.00 * c_b * (500 / 394.0), rel=1e-15)
+    assert form.cost(gear, x, sel, F) == pytest.approx(1 * 1.00 * c_b, rel=1e-15)
     recip = entry("pump", pump_type="Reciprocating", material="NiAlBronze")
     sel = select(form, recip, x)
     assert isinstance(sel, Selection)
     w = 8.0e3 / 745.6998715822702
     c_b = math.exp(7.8103 + 0.26986 * math.log(w) + 0.06718 * math.log(w) ** 2)  # :1597-1602
-    assert form.cost(recip, x, sel, F) == pytest.approx(1.15 * c_b * (500 / 394.0), rel=1e-15)
+    assert form.cost(recip, x, sel, F) == pytest.approx(1.15 * c_b, rel=1e-15)
 
 
 def test_a44_motor_efficiency_and_the_motor_form() -> None:
@@ -428,43 +446,180 @@ def test_a44_motor_efficiency_and_the_motor_form() -> None:
     c_b = math.exp(
         5.8259 + 0.13141 * lam + 0.053255 * lam**2 + 0.028628 * lam**3 - 0.0035549 * lam**4
     )  # :1652-1661
-    assert form.cost(motor, x, sel, F) == pytest.approx(2 * 1 * c_b * (500 / 394.0), rel=1e-14)
+    assert form.cost(motor, x, sel, F) == pytest.approx(2 * 1 * c_b, rel=1e-14)  # CE 500 (R-896)
     for power in (1.0e17, 1.0e-4):  # η_m ≤ 0 outside ln W ∈ (−13.96, 31.5)
         guard = select(form, motor, {"power": power})
         assert isinstance(guard, OutOfRange) and guard.target == "eta"
     tiny = select(form, motor, {"power": 100.0})
     assert isinstance(tiny, Selection) and tiny.size == "floor"
-    assert form.cost(motor, {"power": 100.0}, tiny, F) == pytest.approx(
-        math.exp(5.8259) * (500 / 394.0), rel=1e-15
-    )
+    assert form.cost(motor, {"power": 100.0}, tiny, F) == pytest.approx(math.exp(5.8259), rel=1e-15)
+
+
+def _eta_m(w_hp: float) -> float:
+    """Eq. 22.18 (S3 p. 562; SSLW.py:1636-1641), restated."""
+    lw = math.log(w_hp)
+    return 0.80 + 0.0319 * lw - 0.00182 * lw * lw
+
+
+def _brake_for(p_c: float) -> float:
+    """The per-unit brake power (hp) whose consumed power w/η_m(w) is `p_c`, by Newton on floats."""
+    w = 0.9 * p_c
+    for _ in range(60):
+        lw = math.log(w)
+        eta = 0.80 + 0.0319 * lw - 0.00182 * lw * lw
+        slope = (eta - (0.0319 - 2 * 0.00182 * lw)) / eta**2
+        step = (w / eta - p_c) / slope
+        w -= step
+        if abs(step) <= 1e-17 * w:
+            break
+    return w
 
 
 def test_compressor_and_turbine_forms() -> None:
     comp = entry("compressor")
     assert comp.includes_drive
+    assert comp.drive is not None and comp.drive.entry_id == "motor.electric"
     form = FORMS[comp.form]
     x = {"power": 2.0e6}
     sel = select(form, comp, x)
     assert isinstance(sel, Selection) and sel.size == "units:1"
     w = 2.0e6 / 745.6998715822702
     assert form.cost(comp, x, sel, F) == pytest.approx(
-        1 * 2.5 * math.exp(7.58 + 0.8 * math.log(w)), rel=1e-15
-    )  # SSLW.py:1136, :1146, :1156, :1164-1178
+        1 * 2.5 * math.exp(7.58 + 0.8 * math.log(w / _eta_m(w))), rel=1e-15
+    )  # SSLW.py:1136, :1146, :1156, :1164-1178; consumed power (§10.4.4)
     screw = entry("compressor", compressor_type="Screw", material="CarbonSteel")
-    big = {"power": 1.2e6}  # 1609 hp > 750 hp: three screw units
+    big = {"power": 1.2e6}  # 1609 hp brake: three screw units of 578 hp consumed
     sel = select(form, screw, big)
     assert isinstance(sel, Selection) and sel.size == "units:3"
     w = (1.2e6 / 3) / 745.6998715822702
     assert form.cost(screw, big, sel, F) == pytest.approx(
-        3 * math.exp(8.1238 + 0.7243 * math.log(w)), rel=1e-15
+        3 * math.exp(8.1238 + 0.7243 * math.log(w / _eta_m(w))), rel=1e-15
     )
     turbine = entry("turbine")
     form = FORMS[turbine.form]
     sel = select(form, turbine, {"power": 5.0e5})
-    assert isinstance(sel, Selection) and sel.size is None and rows(form, turbine, sel) == ()
+    assert isinstance(sel, Selection) and sel.size == "units:1"
+    assert [(r.row_id, r.bound) for r in rows(form, turbine, sel)] == [
+        ("power_hp.lo", 20.0),
+        ("power_hp.hi", 5000.0),
+    ]
     assert form.cost(turbine, {"power": 5.0e5}, sel, F) == pytest.approx(
         530 * (5.0e5 / 745.6998715822702) ** 0.81, rel=1e-15
     )  # :1376-1385
+    # §10.4.5: a floor below 20 hp, parallel expanders above 5,000 hp.
+    small = {"power": 10.0 / KAPPA_W}
+    sel = select(form, turbine, small)
+    assert isinstance(sel, Selection) and sel.size == "floor"
+    assert form.cost(turbine, small, sel, F) == pytest.approx(530 * 20.0**0.81, rel=1e-15)
+    large = {"power": 12000.0 / KAPPA_W}
+    sel = select(form, turbine, large)
+    assert isinstance(sel, Selection) and sel.size == "units:3" and sel.n == 3
+    assert form.cost(turbine, large, sel, F) == pytest.approx(3 * 530 * 4000.0**0.81, rel=1e-14)
+
+
+def test_a50_the_compressor_regimes_at_their_boundaries() -> None:
+    """§10.5 A50: per-unit P_C at S_min·(1 ± 1e-9), S_max·(1 − 1e-12) and, at N = 2,
+    S_max·(1 + 1e-9) select floor / units:1, units:1 and units:3; C_P by hand to A14's 1e-10."""
+    alpha = {"Centrifugal": (7.58, 0.8), "Reciprocating": (7.9661, 0.8), "Screw": (8.1238, 0.7243)}
+    bounds = {
+        "Centrifugal": (200.0, 30000.0),
+        "Reciprocating": (100.0, 20000.0),
+        "Screw": (10.0, 750.0),
+    }
+    for kind, (s_min, s_max) in bounds.items():
+        e = entry("compressor", compressor_type=kind, material="CarbonSteel")
+        form = FORMS[e.form]
+        a1, a2 = alpha[kind]
+        for per_unit, units, want in (
+            (s_min * (1 - 1e-9), 1, "floor"),
+            (s_min * (1 + 1e-9), 1, "units:1"),
+            (s_max * (1 - 1e-12), 1, "units:1"),
+            (s_max * (1 + 1e-9), 2, "units:3"),
+        ):
+            x = {"power": units * _brake_for(per_unit) / KAPPA_W}
+            sel = select(form, e, x)
+            assert isinstance(sel, Selection) and sel.size == want, (kind, per_unit, sel)
+            if want == "floor":
+                hand = math.exp(a1 + a2 * math.log(s_min))
+            else:
+                n = sel.n
+                w = (x["power"] / n) * KAPPA_W
+                hand = n * math.exp(a1 + a2 * math.log(w / _eta_m(w)))
+            assert form.cost(e, x, sel, F) == pytest.approx(hand, rel=1e-10), (kind, want)
+            q = form.quantities(e, x, F, sel.n)["consumed_power_hp"]
+            for r in rows(form, e, sel):  # the held regime's rows hold at S(N) (§10.4.4)
+                assert r.sense * (q - r.bound) >= 0.0, (kind, want, r)
+
+
+def test_a50_the_loader_refuses_a_compressor_without_a_motor_and_a_narrow_consumed_range() -> None:
+    doc = shipped_document()
+    doc["entries"] = [e for e in doc["entries"] if e["entry_id"] != "motor.electric"]
+    _refused(doc, "needs the set's machine.drive entry of form sslw-motor-v1")
+    doc = shipped_document()
+    choices = doc["entries"][6]["options"]["compressor_type"]["choices"]
+    choices["Screw"]["ranges"]["consumed_power_hp"]["max"] = 29.0
+    _refused(doc, "consumed-power range max 29.0 < 3·min 10.0")
+
+
+def test_a51_the_loader_refuses_a_malformed_amendment() -> None:
+    def amended(doc: dict[str, Any]) -> dict[str, Any]:
+        node = doc["entries"][0]["options"]["hx_type"]["choices"]["fixed_head"]["alpha2"]
+        return node["amended"]  # type: ignore[no-any-return]
+
+    for change, fragment in (
+        (lambda a: a.pop("ruling"), "amended: missing ruling"),
+        (lambda a: a.pop("citation"), "amended: missing citation"),
+        (lambda a: a.pop("replaces"), "amended: neither replaces nor index_basis"),
+        (lambda a: a.update(replaces=0.9228), "amended: replaces 0.9228 equals value"),
+        (lambda a: a.update(scale="log"), "amended: scale and index_basis go together"),
+        (lambda a: a.update(index_basis=567.0), "amended: scale and index_basis go together"),
+        (lambda a: a.update(index_basis=567.0, scale="cubic"), "scale 'cubic' is not one of"),
+    ):
+        doc = shipped_document()
+        change(amended(doc))
+        _refused(doc, fragment)
+    # §10.10.5.2: the sixth refusal; a basis has no basis of its own.
+    for entry_id in ("pump", "motor.electric"):
+        doc = shipped_document()
+        body = next(e for e in doc["entries"] if e["entry_id"] == entry_id)
+        body["index_basis"]["value"]["amended"].update(index_basis=394.0, scale="log")
+        _refused(doc, "index_basis.value.amended: a basis carries no index_basis or scale")
+
+
+def test_a51_effective_values_are_the_notes_expressions_bitwise() -> None:
+    """§10.10.5.1: no amendment carries an index basis, so v_e is `value`, bitwise."""
+    fixed = entry("exchanger.shell_tube", hx_type="fixed_head")
+    assert fixed.n("alpha2") == 0.9228
+    assert sorted(fixed.amended) == ["options.hx_type.choices.fixed_head.alpha2"]
+    vertical = entry("vessel.vertical")
+    assert vertical.numbers["platforms"][1]["a"] == 300.9
+    assert sorted(vertical.amended) == ["coefficients.platforms[1].a"]
+    for entry_id in ("pump", "motor.electric"):
+        e = entry(entry_id)
+        assert sorted(e.amended) == ["index_basis.value"], entry_id
+        assert e.amended["index_basis.value"]["effective_value"] == 500.0, entry_id
+        assert e.ratio == 1.0, entry_id
+    horizontal = entry("vessel.horizontal")
+    assert horizontal.numbers["platforms_horizontal"] == {"a": 2005, "b_D": 0.20294}
+    assert horizontal.amended == {}
+    tower = entry("vessel.vertical", weight_limit="2")
+    assert (tower.n("alpha1"), tower.n("alpha2"), tower.n("alpha3")) == (7.2756, 0.18255, 0.02297)
+    assert sorted(tower.amended) == ["coefficients.platforms[1].a"]
+
+
+def test_a51_fit_two_increases_with_weight() -> None:
+    """§10.10.6: fit "2" increases with W for W >= 1 lb, since alpha2, alpha3 > 0; its range is the
+    3rd ed.'s tower range (p. 575, Eq. 22.57)."""
+    tower = entry("vessel.vertical", weight_limit="2")
+    assert (tower.ranges["weight_lb"].min, tower.ranges["weight_lb"].max) == (9000.0, 2500000.0)
+    assert tower.n("alpha2") > 0.0 and tower.n("alpha3") > 0.0
+
+    def c_v(w: float) -> float:
+        lw = math.log(w)
+        return math.exp(tower.n("alpha1") + tower.n("alpha2") * lw + tower.n("alpha3") * lw * lw)
+
+    grid = [10.0 ** (k / 4) for k in range(0, 29)]  # 1 lb to 1e7 lb
+    assert all(c_v(a) < c_v(b) for a, b in zip(grid, grid[1:], strict=False))
 
 
 def test_every_form_has_one_function_on_both_algebras() -> None:
