@@ -244,3 +244,13 @@ R0 INDIFFERENT, R1 DECIDED 653.15 K (cold 36, 1554 s), R2 SURROGATE_NOT_PROMOTAB
   on exactly those two. Controls: as is → unsupported; plus 0050 not Accepted → fail; plus a missing ADR → fail; no
   problem → pass. `unsupported` is not a pass; the status stays `implemented`. Alternative: leave `fail` until WO-8.
   Reversible by: reverting this commit (one `if` in `_m_adrs`).
+- **S13's manifest at C, generated at `4ac5b66c`** (`--gate-log gate-fe61ae9.log --ci-run 41108983463 --ci-run
+  41108983672`): `implemented`, 48 checks, 43 pass, 0 fail, 5 unsupported (pending): V03.A08 (step 18), A25 (0053,
+  0054 at WO-8), A27 (step 18), ADR.0053, ADR.0054. V03.A12 pass, `version_aligned`: R0 n = 54494, k = 47; R1
+  `n=54494 changed=[] (C branch shards [1, 3, 7, 11] exited non-zero)`; numstat one line; the five readers exactly.
+  V03.A34 pass (3 checks, 242/0, the registered audit line). Review fields `pending`; `t08.problems` none. The
+  first generation at `362e4763` differed only in A25 (`fail`; see the DECISION above).
+- Harvest controls with the manifest present (§10.5 item 5): `test_m07a_harvest.py` + `test_t08_w2_support_envelope.py`
+  44 passed with the exclusion; with `HARVEST_EXCLUDED = ()` 3 failed (`test_c4…`, `…harvest_size…`, `test_a21…`);
+  `t08_support_matrix.py --check` 0 problems with the exclusion. Manifest-scanning tests + `test_v03_v0_3_gate.py`:
+  766 passed, 1 skipped (`test_t08_w1_ledger.py:87`, "not in A02", registered).

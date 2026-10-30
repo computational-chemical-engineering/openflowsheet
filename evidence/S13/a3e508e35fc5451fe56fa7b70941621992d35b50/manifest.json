@@ -1,0 +1,1408 @@
+{
+ "work_package": "S13",
+ "commit": "a3e508e35fc5451fe56fa7b70941621992d35b50",
+ "requirements": [],
+ "status": "implemented",
+ "inputs": {
+  "case_id": "V03's acceptance at C: one check per assertion of docs/derivations/V03-release-spec.md §7 (0ebf2e4820915db3a36c86ecdc03fb29a0dbd45658d1ae9fe5828170bec8472d), S11.G8, S12.G8, S12.G10 and one per ADR of §6",
+  "case_hash": "b918959ba65b020db9fd5d10bcdd250ba9d5dd4eb7bb967882550e78da71eb3c",
+  "environment_lock_hash": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+ },
+ "commands": [
+  {
+   "cmd": "gh run view 41108983463 --json databaseId,headSha,conclusion,event,jobs,workflowName,url",
+   "cwd": ".",
+   "exit_code": 0,
+   "stdout_sha256": "9745bc7ea2ba6ba923c8fcdb4998ada13a8fed273a972cc90fe0e04e140cc97e"
+  },
+  {
+   "cmd": "gh run view 41108983672 --json databaseId,headSha,conclusion,event,jobs,workflowName,url",
+   "cwd": ".",
+   "exit_code": 0,
+   "stdout_sha256": "c5129900c8d29109de0e486bf64711804c4f361d2728531cfa1c6cb92e811b32"
+  },
+  {
+   "cmd": "python -m pytest -q -p no:cacheprovider --basetemp=TMP/V03.A01 --junitxml=evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A01.junit.xml tests/test_v03_v0_3_gate.py -k 'a01_ or otherwise_passing_fixture'",
+   "cwd": ".",
+   "exit_code": 0,
+   "stdout_sha256": "b48497f402c10f7a87e6a9099bc4933dc64d399cdaf6848a59babcc18558973f"
+  },
+  {
+   "cmd": "python -m pytest -q -p no:cacheprovider --basetemp=TMP/V03.A02 --junitxml=evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A02.junit.xml tests/test_v03_v0_3_gate.py -k a02_",
+   "cwd": ".",
+   "exit_code": 0,
+   "stdout_sha256": "75b8a0207c910411a2cc1d972a2daa2810f1e722e91e608ce00d2797db0434ee"
+  },
+  {
+   "cmd": "python -m pytest -q -p no:cacheprovider --basetemp=TMP/V03.A03 --junitxml=evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A03.junit.xml tests/test_v03_v0_3_gate.py tests/test_m07a_v0_2_gate.py tests/test_m07_v0_2_gate.py -k 'a03_ or test_m07a_v0_2_gate or test_m07_v0_2_gate'",
+   "cwd": ".",
+   "exit_code": 0,
+   "stdout_sha256": "1b014d5e92e47db8b82f7800f12d208481e3fb522634b99b69bb07cae963135d"
+  },
+  {
+   "cmd": "python -m pytest -q -p no:cacheprovider --basetemp=TMP/V03.A04 --junitxml=evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A04.junit.xml tests/test_v03_v0_3_gate.py -k a04_",
+   "cwd": ".",
+   "exit_code": 0,
+   "stdout_sha256": "a6c900a12eb86223e414ce8abd6645161875577ddf08182d05f1e15d751edd58"
+  },
+  {
+   "cmd": "python -m pytest -q -p no:cacheprovider --basetemp=TMP/V03.A05 --junitxml=evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A05.junit.xml tests/test_v03_v0_3_gate.py -k a05_",
+   "cwd": ".",
+   "exit_code": 0,
+   "stdout_sha256": "4ccbab488579c589fffad071dca30229a12df0a40d74dcd35ee6ad661408bf24"
+  },
+  {
+   "cmd": "python -m pytest -q -p no:cacheprovider --basetemp=TMP/V03.A06 --junitxml=evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A06.junit.xml tests/test_v03_v0_3_gate.py -k a06_",
+   "cwd": ".",
+   "exit_code": 0,
+   "stdout_sha256": "6b4c6d7b9aa2dd9360f778df1141389a15c08ad033cf2e828ec201a50327ee5a"
+  },
+  {
+   "cmd": "python -m pytest -q -p no:cacheprovider --basetemp=TMP/V03.A07 --junitxml=evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A07.junit.xml tests/test_v03_v0_3_gate.py -k a07_",
+   "cwd": ".",
+   "exit_code": 0,
+   "stdout_sha256": "a9b6aaf150cb908f303c56c2a77d73d5975acbe366a19047130bd461d21c5e2d"
+  },
+  {
+   "cmd": "python -m pytest -q -p no:cacheprovider --basetemp=TMP/V03.A08 --junitxml=evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A08.junit.xml tests/test_v03_v0_3_gate.py -k a08_",
+   "cwd": ".",
+   "exit_code": 0,
+   "stdout_sha256": "717dd3c50356ebdad1f687e6e70fae8149fb94ec48bcbf25dd5e719b97169ed4"
+  },
+  {
+   "cmd": "python -m pytest -q -p no:cacheprovider --basetemp=TMP/V03.A10 --junitxml=evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A10.junit.xml tests/test_e01_a48_tripwire.py",
+   "cwd": ".",
+   "exit_code": 0,
+   "stdout_sha256": "6f45ab86ea62b4126ac44d0efaacb18df4e8e9389236c0b11fdf19fc0b90ee5b"
+  },
+  {
+   "cmd": "python -m pytest -q -p no:cacheprovider --basetemp=TMP/V03.A11 --junitxml=evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A11.junit.xml tests/test_m07_mr12_extras_v02.py",
+   "cwd": ".",
+   "exit_code": 0,
+   "stdout_sha256": "22892dbcd28cc5df47b6739da0404abc827e7eb52143027c903d3a144239ea6e"
+  },
+  {
+   "cmd": "python -m pytest -q -p no:cacheprovider --basetemp=TMP/V03.A12 --junitxml=evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A12.junit.xml tests/test_v03_wilson_ship.py tests/test_s11_wilson_v2.py::test_a75_v1_is_not_edited -k 'a12_ or test_a75_v1_is_not_edited'",
+   "cwd": ".",
+   "exit_code": 0,
+   "stdout_sha256": "fd5cf35d20b7a4d3a055304f2eb6dc698dd6c866c4e1aaa5b546e3b4052bd7fa"
+  },
+  {
+   "cmd": "python -m pytest -q -p no:cacheprovider --basetemp=TMP/V03.A13 --junitxml=evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A13.junit.xml tests/test_v03_wilson_ship.py -k a13_",
+   "cwd": ".",
+   "exit_code": 0,
+   "stdout_sha256": "25de23a9682005ded8e37cc9e3ad967c60825a6d6931da2be89088ade29024f3"
+  },
+  {
+   "cmd": "python -m pytest -q -p no:cacheprovider --basetemp=TMP/V03.A14 --junitxml=evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A14.junit.xml tests/test_v03_wilson_ship.py -k a14_",
+   "cwd": ".",
+   "exit_code": 0,
+   "stdout_sha256": "ff92593e33adc7901df2f42de0618902178c45e1787f4229a6b5157672914934"
+  },
+  {
+   "cmd": "python -m pytest -q -p no:cacheprovider --basetemp=TMP/V03.A15 --junitxml=evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A15.junit.xml tests/test_v03_rc_coolprop.py",
+   "cwd": ".",
+   "exit_code": 0,
+   "stdout_sha256": "1117c072c9e7cdd1a60021dd853f0dd5974625620006bfeb269803c29c384a2b"
+  },
+  {
+   "cmd": "python -m pytest -q -p no:cacheprovider --basetemp=TMP/V03.A16 --junitxml=evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A16.junit.xml tests/test_v03_v0_3_gate.py -k a16_",
+   "cwd": ".",
+   "exit_code": 0,
+   "stdout_sha256": "01e12077d4951ef6deb35e07e27999968fdefe7a92dd3808662bae5f35f7e7f3"
+  },
+  {
+   "cmd": "python -m pytest -q -p no:cacheprovider --basetemp=TMP/V03.A28 --junitxml=evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A28.junit.xml tests/test_v03_semantic_roles.py -k a28_",
+   "cwd": ".",
+   "exit_code": 0,
+   "stdout_sha256": "3077a35c0e9d10cf3cdb655178c00c90fbfbefe84ed1e78a1cf4ca9de387d19c"
+  },
+  {
+   "cmd": "python -m pytest -q -p no:cacheprovider --basetemp=TMP/V03.A29 --junitxml=evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A29.junit.xml tests/test_v03_semantic_roles.py -k 'a29_ or nine_cases_and_its_floor'",
+   "cwd": ".",
+   "exit_code": 0,
+   "stdout_sha256": "8abfcd45e9cd8550aefd21bd998843bd68c66bc98457e5b1375f628909e4c264"
+  },
+  {
+   "cmd": "python -m pytest -q -p no:cacheprovider --basetemp=TMP/V03.A30 --junitxml=evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A30.junit.xml tests/test_v03_semantic_roles.py -k a30_",
+   "cwd": ".",
+   "exit_code": 0,
+   "stdout_sha256": "0a37f42965f11fe7107f2036f87b792021135769ead3eb3b5b7677bb076d9da4"
+  },
+  {
+   "cmd": "python -m pytest -q -p no:cacheprovider --basetemp=TMP/V03.A31 --junitxml=evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A31.junit.xml tests/test_v03_semantic_roles.py -k a31_",
+   "cwd": ".",
+   "exit_code": 0,
+   "stdout_sha256": "b3f49fb40e5bf85a0f34bfad18b93eef11e8f6be433a904d9fc26660482825fa"
+  },
+  {
+   "cmd": "TMPDIR=TMP python scripts/s11_identity.py",
+   "cwd": ".",
+   "exit_code": 1,
+   "stdout_sha256": "db190837ca400295d0acd2483968d9c938dbb9b6866b89f1e282d884b47ddfd7"
+  },
+  {
+   "cmd": "git worktree add --detach W HEAD; W/src/openflowsheet/__init__.py: 0.3.0 -> 0.3.0.dev0; cd W; PYTHONPATH=W/src:W TMPDIR=TMP2 python scripts/s11_identity.py --keep K",
+   "cwd": "W",
+   "exit_code": 1,
+   "stdout_sha256": "7bc5728034545bf843145a5969b4029e46f62b0fa3d9d109666aa11de2f537a8"
+  },
+  {
+   "cmd": "pytest -q -p no:cacheprovider -m 'pymrm or not pymrm' tests/test_m02_*.py (RC step 12 at C, ref-x86-64; a41.m02_tests_with_reactor: pass)",
+   "cwd": ".",
+   "exit_code": 0
+  },
+  {
+   "cmd": "python docs/derivations/scripts/m04_reference.py --check (RC step 13 at C, ref-x86-64; a60.w23.generator_check: pass)",
+   "cwd": ".",
+   "exit_code": 0
+  },
+  {
+   "cmd": "python scripts/m04_schema_fixtures.py (RC step 13 at C, ref-x86-64; a60.w23.schema_fixtures: pass)",
+   "cwd": ".",
+   "exit_code": 0
+  },
+  {
+   "cmd": "pytest -q -rs -p no:cacheprovider tests/test_m04_*.py tests/test_evidence_manifests.py (RC step 13 at C, ref-x86-64; a60.w23.tests: pass)",
+   "cwd": ".",
+   "exit_code": 0
+  },
+  {
+   "cmd": "scripts/m03_nlp_check.sh PREFIX CACHE -- -o junit_family=xunit1 --junitxml=... (RC step 14 at C, ref-x86-64; a60.w24.nlp_tier_and_inventory: pass)",
+   "cwd": ".",
+   "exit_code": 0
+  },
+  {
+   "cmd": "nlp env: pytest -q -rs -p no:cacheprovider -m 'nlp or not nlp' tests/test_m05_*.py tests/test_m03_nlp_isolation.py tests/test_m03_nlp_greybox.py (RC step 14 at C, ref-x86-64; a60.w24.m03_m05_all_tiers: pass)",
+   "cwd": ".",
+   "exit_code": 0
+  },
+  {
+   "cmd": "nlp env: python scripts/m05_wo9_real.py --replay (RC step 14 at C, ref-x86-64; a60.w24.m05_g10_real_replay: pass)",
+   "cwd": ".",
+   "exit_code": 0
+  },
+  {
+   "cmd": "python docs/derivations/scripts/m03_reference.py --check (RC step 14 at C, ref-x86-64; a60.w24.m03_reference_check: pass)",
+   "cwd": ".",
+   "exit_code": 0
+  },
+  {
+   "cmd": "nlp env: pytest --collect-only -q -p no:cacheprovider -m nlp {the modules}; the same over tests/ (its exit status not judged) (RC step 14 at C, ref-x86-64; a60.w24.nlp_selection: pass)",
+   "cwd": ".",
+   "exit_code": 0
+  },
+  {
+   "cmd": "python scripts/v0_3_gate.py --rc a3e508e35fc5451fe56fa7b70941621992d35b50 --carry-journey 2d945b5d (RC step 15 at C, ref-x86-64; a21.carry_journey: pass)",
+   "cwd": ".",
+   "exit_code": 0
+  },
+  {
+   "cmd": "python scripts/m07_journey.py check 2d945b5d (RC step 15 at C, ref-x86-64; a21.check: pass)",
+   "cwd": ".",
+   "exit_code": 0
+  },
+  {
+   "cmd": "nlp env, OMP_NUM_THREADS=1: python scripts/m07_journey.py replay 2d945b5d (RC step 15 at C, ref-x86-64; a21.replay: pass)",
+   "cwd": ".",
+   "exit_code": 0
+  },
+  {
+   "cmd": "OPENFLOWSHEET_REQUIRE_BROWSER=1 pytest -q -rs -p no:cacheprovider tests/test_m06_*.py (RC step 16 at C, ref-x86-64; a60.w26.m06_tests: pass)",
+   "cwd": ".",
+   "exit_code": 0
+  },
+  {
+   "cmd": "node --test --test-reporter=spec \"tests/web/*.test.mjs\" (RC step 16 at C, ref-x86-64; a60.w26.web_unit_tests: pass)",
+   "cwd": ".",
+   "exit_code": 0
+  },
+  {
+   "cmd": "python -m benchmarks.m06.w27.dryrun --out evidence/M06/W27/artifacts/dry-run/a3e508e (RC step 16 at C, ref-x86-64; a60.w26.w27_v1_refusal: pass)",
+   "cwd": ".",
+   "exit_code": 1
+  },
+  {
+   "cmd": "e01_evidence_manifest.a48_release_check() (RC step 17a at C, ref-x86-64; a22.17a.a48_release_check: pass)",
+   "cwd": ".",
+   "exit_code": 0
+  },
+  {
+   "cmd": "rc venv + requirements-coolprop.lock (--no-deps --require-hashes), OPENFLOWSHEET_REQUIRE_COOLPROP=1, OFS_S07_BUILD_PYTHON: pytest -rs {modules} (RC step 17b at C, ref-x86-64; a22.17b.coolprop_modules: pass)",
+   "cwd": ".",
+   "exit_code": 0
+  },
+  {
+   "cmd": "PYTHONPATH=src:. .venv/bin/python scripts/s13_evidence_manifest.py --commit a3e508e35fc5451fe56fa7b70941621992d35b50 --gate-log gate-fe61ae9.log --ci-run 41108983463 --ci-run 41108983672 (run at 4ac5b66c39c9b9511d25f65762bb5f36e95f94b4)",
+   "cwd": ".",
+   "exit_code": 0
+  }
+ ],
+ "checks": [
+  {
+   "id": "V03.A01",
+   "description": "V03.A01 (§7 gate D): `scripts/v0_3_gate.py`'s registry has exactly one entry; its fields equal §2.2 and `registration.json` `gate_set`",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selection": [
+      "tests/test_v03_v0_3_gate.py",
+      "-k",
+      "a01_ or otherwise_passing_fixture"
+     ],
+     "summary": "3 passed, 64 deselected in 0.08s"
+    }
+   }
+  },
+  {
+   "id": "V03.A02",
+   "description": "V03.A02 (§7 gate D): `gate_set_of` over Table T-V3",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selection": [
+      "tests/test_v03_v0_3_gate.py",
+      "-k",
+      "a02_"
+     ],
+     "summary": "20 passed, 47 deselected in 0.08s"
+    }
+   }
+  },
+  {
+   "id": "V03.A03",
+   "description": "V03.A03 (§7 gate D): the v0.2 engine is unchanged. `tests/test_m07a_v0_2_gate.py` and `tests/test_m07_v0_2_gate.py` pass, and their nodes are unchanged except A04's; AM-07 holds (the alpha's `--markdown` output byte-identical); both v0.2 entries equal `benchmarks/m07/registration.json` `gate.gate_sets`",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selection": [
+      "tests/test_v03_v0_3_gate.py",
+      "tests/test_m07a_v0_2_gate.py",
+      "tests/test_m07_v0_2_gate.py",
+      "-k",
+      "a03_ or test_m07a_v0_2_gate or test_m07_v0_2_gate"
+     ],
+     "summary": "297 passed, 66 deselected in 4.19s"
+    }
+   }
+  },
+  {
+   "id": "V03.A04",
+   "description": "V03.A04 (§7 gate D): `test_a10_…`'s loop tuple = tagged + `A10_PINS_0_2_0` + `A10_PINS_0_3_0` (§5.2); a control with the pairs swapped fails `test_a31_b_…`",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selection": [
+      "tests/test_v03_v0_3_gate.py",
+      "-k",
+      "a04_"
+     ],
+     "summary": "3 passed, 64 deselected in 0.17s"
+    }
+   }
+  },
+  {
+   "id": "V03.A05",
+   "description": "V03.A05 (§7 gate D): clause grammar. Under v0.3's: `V11 (a)`, `V20 (c)`, `W21 (f)`, `W26 (b)`, `X31 (c)` parse; `W27 (a)`, `W28 (a)`, `V10 (a)`, `X32 (a)`, `X31 (A)` do not. Under `v0.2-gate-v1`'s: `X31 (c)` does not, `W27 (a)` does",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selection": [
+      "tests/test_v03_v0_3_gate.py",
+      "-k",
+      "a05_"
+     ],
+     "summary": "12 passed, 55 deselected in 0.08s"
+    }
+   }
+  },
+  {
+   "id": "V03.A06",
+   "description": "V03.A06 (§7 gate D): decision items 1–12 for `v0.3-gate-v1`: one YES fixture; for each item one NO fixture flipping only it",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selection": [
+      "tests/test_v03_v0_3_gate.py",
+      "-k",
+      "a06_"
+     ],
+     "summary": "14 passed, 53 deselected in 0.14s"
+    }
+   }
+  },
+  {
+   "id": "V03.A07",
+   "description": "V03.A07 (§7 gate D): X31 FAIL (c) without a D3 row → NO; with a row dated on `Judged` → YES; dated the day before → NO. A verdict document with a W27 row → exit 2",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selection": [
+      "tests/test_v03_v0_3_gate.py",
+      "-k",
+      "a07_"
+     ],
+     "summary": "5 passed, 62 deselected in 0.34s"
+    }
+   }
+  },
+  {
+   "id": "V03.A08",
+   "description": "V03.A08 (§7 gate D, R): output: the §2.2 first line; 18 gate rows, the 17 claimed in order and then W27 `not claimed (v0.3-gate-v1)`; last line `v0.3.0 tag may be proposed: YES` or `… NO (k reasons)`",
+   "result": "unsupported",
+   "value": {
+    "tests": {
+     "selection": [
+      "tests/test_v03_v0_3_gate.py",
+      "-k",
+      "a08_"
+     ],
+     "summary": "7 passed, 60 deselected in 0.72s"
+    },
+    "step18": {
+     "state": "pending",
+     "reason": "step 18 runs after the ledger (WO-8); no --step18-log was given"
+    }
+   }
+  },
+  {
+   "id": "V03.A09",
+   "description": "V03.A09 (§7 gate R): at K3 and C: the five version-carrying files read `0.3.0`; the envelope `v0.3-envelope-1` / `0.3.0`",
+   "result": "pass",
+   "value": {
+    "versions": {
+     "K3": {
+      "commit": "295a2e652c6746b0621350112d6e43945d8b114a",
+      "not_as_stated": []
+     },
+     "C": {
+      "commit": "a3e508e35fc5451fe56fa7b70941621992d35b50",
+      "not_as_stated": []
+     }
+    }
+   }
+  },
+  {
+   "id": "V03.A10",
+   "description": "V03.A10 (§7 gate D): `test_e01_a48_tripwire`: count 0 after P2; `a48_release_check()` is `pass`; its synthetic unverified document still gives `fail`",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selection": [
+      "tests/test_e01_a48_tripwire.py"
+     ],
+     "summary": "3 passed in 0.13s"
+    }
+   }
+  },
+  {
+   "id": "V03.A11",
+   "description": "V03.A11 (§7 gate D): MR-12 v03 (§9.3) at HEAD: `new_since_v0_2_0 == [\"coolprop\", \"lca\"]`, both with entries; a control extra without an entry → `fail`; `mr12_extras_v02` at `RELEASE_0_2_0_COMMIT` unchanged (S07 A44's release clause)",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selection": [
+      "tests/test_m07_mr12_extras_v02.py"
+     ],
+     "summary": "29 passed in 0.20s"
+    }
+   }
+  },
+  {
+   "id": "V03.A12",
+   "description": "V03.A12 (§7 gate D): the ship set (§9.1) is in `PACKAGED` with `_data` links, bytes equal to the `benchmarks/s10/` files; R-811's wheel row is gone. With `wilson_ig._checkout_records` returning `None`, as in a wheel (the fixture first checks that `wilson_ig.load_records()` then refuses `records_missing: `): (a) `revision_binding.provider_for(WILSON_BASIS)` is not `Unbound`, its `describe()` has `provider_id` `wilson-ig-v2` and the records' `data_sha256`, and `verify.certificate._wilson_provider().describe()` equals it; (b) `WilsonIdealGasProvider(resources.packaged_path(wilson_ig.RECORDS_PATH))` answers `evaluate_phase` (both phases, every property and derivative) and `flash` exactly as the checkout's provider does at one state; (c) S10/S11 identity tests are unchanged, and `tests/test_s11_wilson_v2.py::test_a75_v1_is_not_edited` passes (v1's bytes are not edited, R-883). At a version cut, (c)'s identity run is judged as §7.1 states (Amendment 3, R-910)",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selection": [
+      "tests/test_v03_wilson_ship.py",
+      "tests/test_s11_wilson_v2.py::test_a75_v1_is_not_edited",
+      "-k",
+      "a12_ or test_a75_v1_is_not_edited"
+     ],
+     "summary": "9 passed, 17 deselected in 0.82s",
+     "a12c": {
+      "a12c_mode": "version_aligned",
+      "V_C": "0.3.0",
+      "V_B": "0.3.0.dev0",
+      "r0_last_line": "S11-IDENTITY FAIL n=54494 changed=[C:tests/test_m04_wo19_box_v2.py::test_a44b_the_unit_scales_by_its_manifests_box#0,C:tests/test_m04_wo20_isolation.py::test_a45_case1_the_rough_parents_own_surrogate_fails_on_the_verdict_alone#1,C:tests/test_m04_wo20_isolation.py::test_a45_case1_the_rough_parents_ow",
+      "tracked_clean": true,
+      "r1_last_line": "S11-IDENTITY FAIL n=54494 changed=[] (C branch shards [1, 3, 7, 11] exited non-zero)",
+      "n": 54494,
+      "n_r1": 54494,
+      "k": 47,
+      "numstat": "1\t1\tsrc/openflowsheet/__init__.py",
+      "failed": [
+       "tests/test_m06_w27_coverage.py::test_snapshot_of_this_build_is_todays_registry",
+       "tests/test_m07_journey.py::test_a21_the_carry_identity_is_the_determining_files_at_the_anchor_and_j",
+       "tests/test_package_imports.py::test_root_package_exposes_version",
+       "tests/test_t07_w5e_application_results.py::test_the_fixtures_are_what_real_responses_emit_today",
+       "tests/test_v02_main_version.py::test_the_envelope_matches_the_version"
+      ],
+      "reasons": []
+     }
+    }
+   }
+  },
+  {
+   "id": "V03.A13",
+   "description": "V03.A13 (§7 gate D): NOTICE holds the Wilson block (each of `Kurihara`, `J. Chem. Eng. Data 38 (1993) 446`, `NASA TM-4513`, `CoolProp 8.0.0`, `deReuck-BOOK-1993`, `Schroeder-JPCRD-2014`, `Wagner-JPCRD-2002`, `CIAAW`) and the IPCC block (`IPCC AR6 WG1`, `Table 7.15`), each once",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selection": [
+      "tests/test_v03_wilson_ship.py",
+      "-k",
+      "a13_"
+     ],
+     "summary": "11 passed, 14 deselected in 0.53s"
+    }
+   }
+  },
+  {
+   "id": "V03.A14",
+   "description": "V03.A14 (§7 gate D): `docs/s10-rights-check.md` §3 \"Ships?\" column equals §9.1's table; RC-05 and RC-08 cite Frank 2026-10-29",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selection": [
+      "tests/test_v03_wilson_ship.py",
+      "-k",
+      "a14_"
+     ],
+     "summary": "5 passed, 20 deselected in 0.53s"
+    }
+   }
+  },
+  {
+   "id": "V03.A15",
+   "description": "V03.A15 (§7 gate D): the RC test step (WO-3) installs `requirements-coolprop.lock` after the main lock and sets `OPENFLOWSHEET_REQUIRE_COOLPROP=1` (read from the script)",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selection": [
+      "tests/test_v03_rc_coolprop.py"
+     ],
+     "summary": "2 passed in 0.11s"
+    }
+   }
+  },
+  {
+   "id": "V03.A16",
+   "description": "V03.A16 (§7 gate D): `registration.json` `changelog_what_it_is_not` equals §8's 17 phrases",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selection": [
+      "tests/test_v03_v0_3_gate.py",
+      "-k",
+      "a16_"
+     ],
+     "summary": "1 passed, 66 deselected in 0.07s"
+    }
+   }
+  },
+  {
+   "id": "V03.A17",
+   "description": "V03.A17 (§7 gate R): the wheel at C: each §9.1 ship-set file once, with the repository SHA-256; E01's seven data files with `docs/e01-data-licences.json`'s SHA-256; no §9.1 repository-only file",
+   "result": "pass",
+   "value": {
+    "records": {
+     "rc_records": {
+      "step17/rc-step17e.json": "passed True, checks {'pass': 11}, at C True"
+     }
+    }
+   }
+  },
+  {
+   "id": "V03.A18",
+   "description": "V03.A18 (§7 gate R): `CHANGELOG.md` `## v0.3.0` holds §8's 17 phrases verbatim",
+   "result": "pass",
+   "value": {
+    "changelog": {
+     "phrases": 17,
+     "missing": [],
+     "judged_at": "4ac5b66c39c9b9511d25f65762bb5f36e95f94b4"
+    }
+   }
+  },
+  {
+   "id": "V03.A19",
+   "description": "V03.A19 (§7 gate R): in a fresh venv installed from the wheel (the package is imported from site-packages, so v1's own checkout lookup finds nothing): (a) `resources.packaged_path(wilson_ig.RECORDS_PATH)` is a file whose SHA-256 equals the repository's `benchmarks/s10/records.yaml`; (b) `provider_for(WILSON_BASIS)` gives `wilson-ig-v2` with that `data_sha256`, and `certificate._wilson_provider()` describes equal; (c) `WilsonIdealGasProvider(packaged_path(RECORDS_PATH))` answers `evaluate_phase` and `flash` equal to the checkout's at C, at four states (Amendment 2, R-905). `evaluate_phase` covers both phases, every property of `describe().properties` and every derivative in T, P and the three mole numbers; the liquid's `lnphi` carries γ. `flash`'s `k_values` are K. The states are S10's RE1, n = (0.6, 0.4, 1.0) mol, 350 K, 101 325 Pa; RE2, (1, 0, 1), 345 K, 101 325 Pa; RE3, pure H₂O, 360 K, 8 × 10⁴ Pa (S10 spec §9.7); and A12's state, (0.3, 0.3, 0.4), 350 K, 101 325 Pa (`scripts/v03_rc.py` `A19_STATES`); (d) `WilsonIdealGasProvider()` with no argument raises `RecordError` whose message starts `records_missing: `, the library's documented, typed refusal (R-883); a success or any other exception fails",
+   "result": "pass",
+   "value": {
+    "records": {
+     "rc_records": {
+      "step17/rc-step17e.json": "passed True, checks {'pass': 11}, at C True"
+     }
+    }
+   }
+  },
+  {
+   "id": "V03.A20",
+   "description": "V03.A20 (§7 gate R): RC steps 1–14 and 16 pass at C; `docs/v03-rc-record.md` has a passed row for each of 1–17",
+   "result": "pass",
+   "value": {
+    "records": {
+     "rc_records": {
+      "identity/rc-identity.json": "passed True, checks {'pass': 3}, at C True",
+      "ensemble/rc-ensemble-ref-x86-64.json": "passed True, checks {'pass': 7}, at C True",
+      "corpus-ref-x86-64.json": "passed True, checks {'pass': 12}, at C True",
+      "surface/rc-alpha-surface.json": "passed True, checks {'pass': 8}, at C True",
+      "a30/t08-a30-x86_64.json": "verdict.pass True",
+      "certificates-ref-x86-64.json": "passed True, checks {'pass': 2}, at C True",
+      "step11/rc-step11.json": "passed True, checks {'pass': 3}, at C True",
+      "step12/rc-step12.json": "passed True, checks {'pass': 6}, at C True",
+      "step13/rc-step13.json": "passed True, checks {'pass': 3}, at C True",
+      "step14/rc-step14.json": "passed True, checks {'pass': 5}, at C True",
+      "step16/rc-step16.json": "passed True, checks {'pass': 4}, at C True"
+     }
+    },
+    "ci": {
+     "ci_runs": [
+      41108983463,
+      41108983672
+     ],
+     "jobs": {
+      "check (ubuntu-latest)": "success",
+      "check (ubuntu-24.04-arm)": "success",
+      "identity": "success",
+      "dist": "success",
+      "clean-install (ubuntu-latest)": "success",
+      "clean-install (ubuntu-24.04-arm)": "success",
+      "bundle-set": "success",
+      "bundle-replay (ubuntu-latest)": "success",
+      "bundle-replay (ubuntu-24.04-arm)": "success",
+      "rc-ensemble": "success",
+      "rc-steps (ubuntu-latest)": "success",
+      "rc-steps (ubuntu-24.04-arm)": "success"
+     }
+    },
+    "rc_record": {
+     "record": "docs/v03-rc-record.md",
+     "problems": [],
+     "sha256": "ebac91db184d0b1b7d5e971d0432983a265b377955e8b988747f9f7203f13762"
+    }
+   }
+  },
+  {
+   "id": "V03.A21",
+   "description": "V03.A21 (§7 gate R): step 15: the journey record of J (`2d945b5d`, §3.4) is in C; `--carry-journey 2d945b5d --rc C` reports carried; `check` and `replay` (bitwise) pass at C",
+   "result": "pass",
+   "value": {
+    "records": {
+     "rc_records": {
+      "step15/rc-step15.json": "passed True, checks {'pass': 3}, at C True"
+     }
+    }
+   }
+  },
+  {
+   "id": "V03.A22",
+   "description": "V03.A22 (§7 gate R): step 17a–17e pass at C; an `unsupported` result is not a pass",
+   "result": "pass",
+   "value": {
+    "records": {
+     "rc_records": {
+      "step17/rc-step17a.json": "passed True, checks {'pass': 1}, at C True",
+      "step17/rc-step17b.json": "passed True, checks {'pass': 1}, at C True",
+      "step17/rc-step17c.json": "passed True, checks {'pass': 3}, at C True",
+      "step17/rc-step17d.json": "passed True, checks {'pass': 8}, at C True",
+      "step17/rc-step17e.json": "passed True, checks {'pass': 11}, at C True"
+     }
+    },
+    "mr12_extras_v03": {
+     "new_since_v0_2_0": [
+      "coolprop",
+      "lca"
+     ],
+     "extras": {
+      "coolprop": {
+       "audit": "docs/derivations/S07-spec.md",
+       "audit_section": "§17",
+       "inventory": "docs/s07-coolprop-licences.json",
+       "check": "scripts/t07_licence_inventory.py --extra coolprop",
+       "decision": "R-624",
+       "files_at_commit": {
+        "audit": true,
+        "inventory": true
+       },
+       "check_result": "pass",
+       "step17c_commit": "a3e508e35fc5451fe56fa7b70941621992d35b50",
+       "decision_in_register": true
+      },
+      "lca": {
+       "audit": "docs/derivations/E01-design.md",
+       "audit_section": "§4.8.4 and WO-B1",
+       "inventory": "docs/e01-lca-licences.json",
+       "check": "scripts/e01_d04_inventory.py --check",
+       "decision": "R-900",
+       "files_at_commit": {
+        "audit": true,
+        "inventory": true
+       },
+       "check_result": "pass",
+       "step17c_commit": "a3e508e35fc5451fe56fa7b70941621992d35b50",
+       "decision_in_register": true
+      }
+     }
+    }
+   }
+  },
+  {
+   "id": "V03.A23",
+   "description": "V03.A23 (§7 gate R): step 8: served digest D_3 and chain rows as §3.3; otherwise STOP",
+   "result": "pass",
+   "value": {
+    "records": {
+     "rc_records": {
+      "surface/rc-alpha-surface.json": "passed True, checks {'pass': 8}, at C True"
+     }
+    }
+   }
+  },
+  {
+   "id": "V03.A24",
+   "description": "V03.A24 (§7 gate CI): CI green at C on both architectures. S07 A31: x86-64 bitwise, aarch64 within R-627's classes. S11 thermal check: x86-64 bitwise, aarch64 within R-843/R-845 classes (flash class at the S11 merge: 0.024 of its bound), and the relative class's worst ≤ 0.1 of its bound (R-845's watch). THM-09/4's lines copied into `docs/t07-measurements.md` (R-796)",
+   "result": "pass",
+   "value": {
+    "ci": {
+     "ci_runs": [
+      41108983463,
+      41108983672
+     ],
+     "jobs": {
+      "check (ubuntu-latest)": "success",
+      "check (ubuntu-24.04-arm)": "success",
+      "rc-coolprop (ubuntu-latest)": "success",
+      "rc-coolprop (ubuntu-24.04-arm)": "success"
+     }
+    },
+    "ci_runs": {
+     "ci_runs": {
+      "41108983463": "success",
+      "41108983672": "success"
+     },
+     "events": [
+      "push",
+      "workflow_dispatch"
+     ]
+    },
+    "thm09": {
+     "file": "docs/t07-measurements.md",
+     "rows_at_c": {
+      "check (ubuntu-latest)": [
+       "41108983463",
+       "41108983672"
+      ],
+      "check (ubuntu-24.04-arm)": [
+       "41108983463",
+       "41108983672"
+      ],
+      "default-install": [
+       "41108983463",
+       "41108983672"
+      ]
+     }
+    }
+   }
+  },
+  {
+   "id": "V03.A25",
+   "description": "V03.A25 (§7 gate R): gate item 12 at C: the 25 required ADRs Accepted (0054 included, Amendment 1); 0043 Proposed and not required",
+   "result": "unsupported",
+   "value": {
+    "adrs": {
+     "required": 25,
+     "problems": [
+      "ADR 0053 is not Accepted: **Status:** **Proposed, 2026-10-29** (design lane, `specifier`, package V03; manifest id `S13`). It becomes",
+      "ADR 0054 is not Accepted: **Status:** **Proposed, 2026-10-29** (design lane, `specifier`, package V03, ruling round 1; manifest id `S13`). It"
+     ],
+     "adr_0043_status": "**Status:** Proposed, 2026-10-22. It becomes Accepted when three things hold: WO-L01-1 and WO-L01-2's manifest is",
+     "judged_at": "4ac5b66c39c9b9511d25f65762bb5f36e95f94b4",
+     "state": "pending"
+    }
+   }
+  },
+  {
+   "id": "V03.A26",
+   "description": "V03.A26 (§7 gate R): `docs/reviews/V03-verdicts.md`: header names C once and one `Judged`; 17 rows in claimed order; every clause parses under v0.3's grammar. ADR 0053's two tables pass the cell rule. `docs/requirements.yaml` X31 verdict and evidence written from it",
+   "result": "pass",
+   "value": {
+    "verdict_document": {
+     "rows": 17,
+     "verdicts": {
+      "BLOCKED": 3,
+      "FAIL": 3,
+      "PASS": 11
+     },
+     "judged": "2026-10-30",
+     "judged_at": "4ac5b66c39c9b9511d25f65762bb5f36e95f94b4"
+    }
+   }
+  },
+  {
+   "id": "V03.A27",
+   "description": "V03.A27 (§7 gate R): `evidence/S13/{C}/manifest.json` `tested`, listing V03.A01–A26 and A28–A34 with commands run and `S11.G8`, `S12.G8`, `S12.G10`; step 18's last line `v0.3.0 tag may be proposed: YES`",
+   "result": "unsupported",
+   "value": {
+    "step18": {
+     "state": "pending",
+     "reason": "step 18 runs after the ledger (WO-8); no --step18-log was given"
+    },
+    "self": {
+     "other_checks": 47,
+     "not_pass": [
+      "V03.A08",
+      "V03.A25",
+      "ADR.0053",
+      "ADR.0054"
+     ],
+     "commands": 41
+    }
+   }
+  },
+  {
+   "id": "V03.A28",
+   "description": "V03.A28 (§7 gate D): `schemas/process-revision.schema.json`: `properties.instances.items.properties.semantic_role.enum` equals the eleven frozen values in their order (`feed` … `heat_exchanger`) followed by `compressor`, `turbine`, `other`; `$id` equals `https://github.com/frankp/process-runtime/schemas/process-revision.schema.json`; `properties.schema_version` equals `{\"type\": \"integer\", \"const\": 1}` (ADR 0054 D1)",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selection": [
+      "tests/test_v03_semantic_roles.py",
+      "-k",
+      "a28_"
+     ],
+     "summary": "1 passed, 19 deselected in 3.84s"
+    }
+   }
+  },
+  {
+   "id": "V03.A29",
+   "description": "V03.A29 (§7 gate D): every document of §9.4's corpus gets no `SCHEMA-01` FAIL from `application.validation.validate(document)`. The corpus has at least 80 documents and contains the nine cases of §9.4 by path. Control: GP-M1 with `instances[1].semantic_role` set to `purge_sink` (the value V17 c1's agents wrote) gives a `SCHEMA-01` FAIL whose message starts `schema_invalid(/instances/1/semantic_role)`",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selection": [
+      "tests/test_v03_semantic_roles.py",
+      "-k",
+      "a29_ or nine_cases_and_its_floor"
+     ],
+     "summary": "3 passed, 17 deselected in 10.14s"
+    }
+   }
+  },
+  {
+   "id": "V03.A30",
+   "description": "V03.A30 (§7 gate D): `tests/semantic_roles.py` `ROLE_OF_MODEL` is Table R (§9.4), and: (a) its keys equal `revision_binding.MODEL_SIGNATURES`' keys; (b) every value is in A28's enum, and the set of values equals the enum without `other` (13 values); (c) every instance of every corpus document whose model id is a key of `ROLE_OF_MODEL` has `semantic_role == ROLE_OF_MODEL[instance.model.id]`; an instance with any other model id is counted and not judged (0 of 441 at `98701cca`), because a declared model the binder does not accept may take any value A28 allows; (d) none of §9.4's five builders holds the string constant `\"other\"` (read by `ast`), and each imports from `semantic_roles`; (e) `ROLE_OF_MODEL` equals §9.4's Table R as parsed from this file (both column pairs, 30 rows), as `test_v03_v0_3_gate.py` parses §2.2. Controls: a copy of the table without `thermal.turbine` fails (a); a copy with `thermal.turbine: pump` fails (b), and (c) on TH-C1 and GP-M2",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selection": [
+      "tests/test_v03_semantic_roles.py",
+      "-k",
+      "a30_"
+     ],
+     "summary": "12 passed, 8 deselected in 3.88s"
+    }
+   }
+  },
+  {
+   "id": "V03.A31",
+   "description": "V03.A31 (§7 gate D): (a) no `*.py` file under `src/openflowsheet/` contains the text `semantic_role`. (b) For every corpus document d, with d′ = d with every instance's `semantic_role` set to `other`: `s11_identity_recorder.outcome(bind(d), document_sha256(d)) == outcome(bind(d′), document_sha256(d′))`, where bind is `revision_binding.bind_revision_flowsheet` and a raise is compared as (type name, message). Control: GP-M1 with instance `M`'s `efficiency` value replaced by `math.nextafter(v, math.inf)` gives a different outcome",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selection": [
+      "tests/test_v03_semantic_roles.py",
+      "-k",
+      "a31_"
+     ],
+     "summary": "3 passed, 17 deselected in 8.33s"
+    }
+   }
+  },
+  {
+   "id": "V03.A32",
+   "description": "V03.A32 (§7 gate R): step 16 at C (§3.5). `step16/rc-step16.json` (step `w26-web-shell`) holds exactly four checks, each `pass`. (a) `a60.w26.m06_tests`, as 0.2.0's: `OPENFLOWSHEET_REQUIRE_BROWSER=1 pytest -q -rs -p no:cacheprovider --junitxml={rc}/step16/m06-tests.junit.xml tests/test_m06_*.py` exits 0, and the junit has 0 failures and 0 errors. (b) `a60.w26.web_unit_tests`, as 0.2.0's: `node --test` exits 0. (c) `a60.w26.g15_registered_states`: (a)'s junit has 0 skipped, and each of these 25 testcases appears exactly once with no `failure`, `error` or `skipped` child. From `tests.test_m06_w27_scorer`: `test_the_twenty_states_are_registered`, `test_candidate_states[W27-S11]` to `[W27-S16]`, and `test_harness_states[W27-S01]` to `[W27-S10]` and `[W27-S17]` to `[W27-S20]`. From `tests.test_m06_w27_harness`: `test_a23_run_record` and `test_a79b_an_unpinned_attempt_through_the_harness`. From `tests.test_m06_w27_coverage`: `test_s11_the_v2_snapshot_refuses_this_build` and `test_committed_coverage_json_is_g14_and_this_builds_classification`. (d) `a60.w26.w27_v1_refusal`: `python -m benchmarks.m06.w27.dryrun --out evidence/M06/W27/artifacts/dry-run/{C7}` exits 1; its last non-empty output line is exactly `benchmarks.m06.w27.snapshot.SnapshotUnsupportedError: registry_snapshot: unsupported(provider 'iapws95-v1': no registered records and phases, W27-R63)`; and `{out}/summary.json` does not exist. (c) and (d) are judged on the local `ref-x86-64` run, where the pinned archive and `mcp` are present, not on CI",
+   "result": "pass",
+   "value": {
+    "records": {
+     "rc_records": {
+      "step16/rc-step16.json": "passed True, checks {'pass': 4}, at C True"
+     }
+    },
+    "step16_checks": {
+     "checks": [
+      "a60.w26.g15_registered_states",
+      "a60.w26.m06_tests",
+      "a60.w26.w27_v1_refusal",
+      "a60.w26.web_unit_tests"
+     ],
+     "g15_nodes": 25,
+     "w27_v1_refusal": {
+      "exit_code": 1,
+      "last_line": "benchmarks.m06.w27.snapshot.SnapshotUnsupportedError: registry_snapshot: unsupported(provider 'iapws95-v1': no registered records and phases, W27-R63)",
+      "summary_written": false
+     }
+    }
+   }
+  },
+  {
+   "id": "V03.A33",
+   "description": "V03.A33 (§7 gate R): step 14's nlp selection (R-907). `step14/rc-step14.json` holds `a60.w24.nlp_tier_and_inventory` `pass`, with `scripts/m03_nlp_check.sh` given the modules that `grep -l 'mark.nlp' tests/test_*.py` lists at C (13 at `4fa15efa`), and the record carries that list. It also holds `a60.w24.nlp_selection` `pass`: in the audited nlp environment, `pytest --collect-only -q -m nlp` lists the same set of node ids over those modules as over `tests/`, the set has 190 members, and the run over the modules exits 0. The run over `tests/` exits 2 on the three `tests/test_s10_*.py` modules that import `mpmath`, and its exit status is not judged",
+   "result": "pass",
+   "value": {
+    "records": {
+     "rc_records": {
+      "step14/rc-step14.json": "passed True, checks {'pass': 5}, at C True"
+     }
+    },
+    "nlp_selection": {
+     "modules": [
+      "tests/test_e01_b_nlp.py",
+      "tests/test_e01_integration.py",
+      "tests/test_m03_nlp_greybox.py",
+      "tests/test_m05_basis.py",
+      "tests/test_m05_basis_v2_c1.py",
+      "tests/test_m05_c1_projection.py",
+      "tests/test_m05_g10_replay.py",
+      "tests/test_m05_parent.py",
+      "tests/test_m05_projection.py",
+      "tests/test_m05_readiness.py",
+      "tests/test_m05_surrogate_truth.py",
+      "tests/test_m05_trf.py",
+      "tests/test_m05_zero_flow.py"
+     ],
+     "selected_count": 190,
+     "all_count": 190,
+     "equal": true,
+     "selected_exit_code": 0
+    }
+   }
+  },
+  {
+   "id": "V03.A34",
+   "description": "V03.A34 (§7 gate R): step 12's G11 experiment results at C (§4, R-375, R-909). `step12/experiments/rc-step12-experiments.json` (step `g11-keep-and-audit`) holds exactly three checks, each `pass`. (a) `r375.g11_rerun`: §4's re-run exits 0. (b) `r375.same_computation`: the re-run's `step12/experiments/g11-coverage-v3.runs.json` and step 12's own `step12/g11-coverage-v3.runs.json` (SHA-256 `cdb7d9993327cd48543212c37063421fa9c82232dd05b356e1609335fce6fd0a`, committed in `3b05511d`) have 2 runs each and the same labels in the same order in each run. At each of the 242 point-runs the members `stage`, `accepted`, `child_accepted`, `tube_outlet`, `path` and `attempts` are equal as JSON. A member present on one side only is a difference. The result is 0 differences. (c) `r375.audit`: `python scripts/m07_g11_experiments_audit.py --variant-file benchmarks/m02/variant-v3-provisional.json --runs {rc}/step12/g11-coverage-v3.runs.json --out {rc}/step12/experiments/g11-experiments-audit.json` over the two collected records (`g11-experiments-run1.json`, `g11-experiments-run2.json`, or their `.gz`). It is given step 12's own runs file. It exits 0, and its line reads exactly `G11 experiments audit: 2 runs, 210 boundary points, 210 results, 210 attempts, 0 without a result, 32 direct points (no records); 6 items + schema: 0 problems; context (job_id): {j} findings: PASS`. j is recorded and not judged: R-375's six items do not include `job_id` (0.2.0's j was 420)",
+   "result": "pass",
+   "value": {
+    "records": {
+     "rc_records": {
+      "step12/experiments/rc-step12-experiments.json": "passed True, checks {'pass': 3}, at C True"
+     }
+    },
+    "step12_experiments": {
+     "checks": [
+      "r375.audit",
+      "r375.g11_rerun",
+      "r375.same_computation"
+     ],
+     "rerun_exit_code": 0,
+     "point_runs": 242,
+     "differences": 0,
+     "audit_line": "G11 experiments audit: 2 runs, 210 boundary points, 210 results, 210 attempts, 0 without a result, 32 direct points (no records); 6 items + schema: 0 problems; context (job_id): 420 findings: PASS"
+    }
+   }
+  },
+  {
+   "id": "S11.G8",
+   "description": "S11 §6.2 G8 at C: the full gate, CI on x86-64 and aarch64, and the CoolProp step with 0 skipped (V03 spec §6, ADRs 0050/0051: G8 again at C, steps 1 and 17b, V03.A24)",
+   "result": "pass",
+   "value": {
+    "records": {
+     "rc_records": {
+      "step17/rc-step17b.json": "passed True, checks {'pass': 1}, at C True"
+     }
+    },
+    "ci": {
+     "ci_runs": [
+      41108983463,
+      41108983672
+     ],
+     "jobs": {
+      "check (ubuntu-latest)": "success",
+      "check (ubuntu-24.04-arm)": "success",
+      "rc-coolprop (ubuntu-latest)": "success",
+      "rc-coolprop (ubuntu-24.04-arm)": "success"
+     }
+    },
+    "gate": {
+     "log": "gate-fe61ae9.log",
+     "log_sha256": "4d54b6acf447e19ec91a9a08eba7c23405c0d2c9ad722d157ed3dd51f85a1f65",
+     "summary": "14757 passed, 3206 skipped, 197 deselected, 1 warning in 2710.42s (0:45:10)",
+     "check_sh_passed": true
+    }
+   }
+  },
+  {
+   "id": "S12.G8",
+   "description": "E01 §6.2 G8 at C: the full gate and CI on x86-64 and aarch64 (V03 spec §6, ADR 0052)",
+   "result": "pass",
+   "value": {
+    "ci": {
+     "ci_runs": [
+      41108983463,
+      41108983672
+     ],
+     "jobs": {
+      "check (ubuntu-latest)": "success",
+      "check (ubuntu-24.04-arm)": "success"
+     }
+    },
+    "gate": {
+     "log": "gate-fe61ae9.log",
+     "log_sha256": "4d54b6acf447e19ec91a9a08eba7c23405c0d2c9ad722d157ed3dd51f85a1f65",
+     "summary": "14757 passed, 3206 skipped, 197 deselected, 1 warning in 2710.42s (0:45:10)",
+     "check_sh_passed": true
+    }
+   }
+  },
+  {
+   "id": "S12.G10",
+   "description": "E01 §9.6 G10 at C: release-candidate data, a48_release_check() pass (RC step 17a)",
+   "result": "pass",
+   "value": {
+    "records": {
+     "rc_records": {
+      "step17/rc-step17a.json": "passed True, checks {'pass': 1}, at C True"
+     }
+    }
+   }
+  },
+  {
+   "id": "ADR.0046",
+   "description": "ADR 0046 (V03 spec §6): manifest `tested` both architectures; reviewer passed provider and generator; Q-1 with its number; Q-S07-1; F-1 written; Amendment 1 in the manifest",
+   "result": "pass",
+   "value": {
+    "wo4_checked_against": "`evidence/S07/7bfab70d…` (A01–A50 pass, A33–A35 pass; `S07.ci`: S07 steps success on both `check` jobs; `S07.gate` `unsupported` by design); `docs/reviews/S07-review.md`, `S07-generator-review.md`; ADR status Q-1 note (R-627); Frank 2026-10-23; `7ccb13a3`",
+    "wo4_result": "met → **Accepted**",
+    "status_line": "**Status:** **Accepted, 2026-10-30**, marked by the build lane (V03 spec §6, R-876; the check is recorded in `docs/V03_DECISIONS.md` for S13's manifest). Proposed 2026-10-23 (design lane, `specifier`; R-618…R-622; Amendment 1: R-623; Erratum 1: R-624). It becomes"
+   }
+  },
+  {
+   "id": "ADR.0047",
+   "description": "ADR 0047 (V03 spec §6): WO-S10-1/2 manifest `tested` covering A01–A28; `s10_reference.py --check`; reviewer passed",
+   "result": "pass",
+   "value": {
+    "wo4_checked_against": "`evidence/S10/c4f3751e…` (A01–A45 pass); `--check` at `wp/V03`: \"113 claims hold; reference_values.yaml matches\", exit 0 (again at C by the RC); `docs/reviews/S10-review-wo1-wo2.md`, `S10-review-final.md`",
+    "wo4_result": "met → **Accepted**",
+    "status_line": "**Status:** **Accepted, 2026-10-30**, marked by the build lane (V03 spec §6, R-876; the check is recorded in `docs/V03_DECISIONS.md` for S13's manifest). Proposed 2026-10-24 (design lane, `specifier`; register R-700…R-710). It became **Accepted** when:"
+   }
+  },
+  {
+   "id": "ADR.0048",
+   "description": "ADR 0048 (V03 spec §6): manifest `tested`; G1, G2; full gate and CI at merge; reviewer read the ADR",
+   "result": "pass",
+   "value": {
+    "wo4_checked_against": "`evidence/S08/6d7d1a6d…` (G1, G2 pass); merge `d96c17ae`: gate PASS `f5565a34` 12356/3137, CI 40248543872 green both architectures; `docs/reviews/S08-review.md`",
+    "wo4_result": "met → **Accepted**",
+    "status_line": "**Status:** **Accepted, 2026-10-30**, marked by the build lane (V03 spec §6, R-876; the check is recorded in `docs/V03_DECISIONS.md` for S13's manifest). Proposed 2026-10-25."
+   }
+  },
+  {
+   "id": "ADR.0049",
+   "description": "ADR 0049 (V03 spec §6): manifest `tested` with G1–G9; reviewer passed WO-1…4",
+   "result": "pass",
+   "value": {
+    "wo4_checked_against": "`evidence/S10c/2aedd250…`, `8f38f963…` (G1, G1-flowsheets, G2, G-R3, G-R7; G3 by A60/A61; G9 in WO-4); merge `8654aabc` gate PASS 13249/3137, CI 40315691647; `docs/reviews/S10C-review.md` (must-fix F1 carried by A60/A61). G3–G8 are the S10-C specification's assertions S10C.A01–A61 (spec §6), all `pass` in `2aedd250…`.",
+    "wo4_result": "met → **Accepted**",
+    "status_line": "**Status:** **Accepted, 2026-10-30**, marked by the build lane (V03 spec §6, R-876; the check is recorded in `docs/V03_DECISIONS.md` for S13's manifest). Proposed 2026-10-26 (design lane, `architect`; register R-760…R-769). It became **Accepted** when:"
+   }
+  },
+  {
+   "id": "ADR.0050",
+   "description": "ADR 0050 (V03 spec §6): Accepted **after** V03.A24 holds at C; S13's manifest records `S11.G8` pass",
+   "result": "pass",
+   "value": {
+    "wo4_checked_against": "C = `a3e508e3`: CI dispatch 41108983463 and push 41108983672 `success` (`check` on both architectures, `rc-coolprop` on both in the dispatch); THM-09/4 rows copied (`0b112d13`); S13 generator at C: V03.A24 and `S11.G8` pass (`docs/V03_RC_DECISIONS.md`, the RC run); verdict F8 (`docs/reviews/V03-verdicts.md`)",
+    "wo4_result": "met → **Accepted** (WO-7b, checked 2026-10-30)",
+    "status_line": "**Status:** **Accepted, 2026-10-30**, marked by the build lane (V03 spec §6, R-876; the check is recorded in `docs/V03_DECISIONS.md` for S13's manifest). Proposed 2026-10-26 (design lane, `architect`; register R-800…R-812). It becomes **Accepted** when:"
+   }
+  },
+  {
+   "id": "ADR.0051",
+   "description": "ADR 0051 (V03 spec §6): Accepted **after** V03.A24 holds at C; S13's manifest records `S11.G8` pass",
+   "result": "pass",
+   "value": {
+    "wo4_checked_against": "C = `a3e508e3`: CI dispatch 41108983463 and push 41108983672 `success` (`check` on both architectures, `rc-coolprop` on both in the dispatch); THM-09/4 rows copied (`0b112d13`); S13 generator at C: V03.A24 and `S11.G8` pass (`docs/V03_RC_DECISIONS.md`, the RC run); verdict F8 (`docs/reviews/V03-verdicts.md`)",
+    "wo4_result": "met → **Accepted** (WO-7b, checked 2026-10-30)",
+    "status_line": "**Status:** **Accepted, 2026-10-30**, marked by the build lane (V03 spec §6, R-876; the check is recorded in `docs/V03_DECISIONS.md` for S13's manifest). Proposed 2026-10-27 (design lane, `architect`; register R-813…R-821). It becomes **Accepted** when:"
+   }
+  },
+  {
+   "id": "ADR.0052",
+   "description": "ADR 0052 (V03 spec §6): after E01's merge (`05363060`) and V03.A24",
+   "result": "pass",
+   "value": {
+    "wo4_checked_against": "E01 merged; V03.A24 at C as on the row above; verdict F8",
+    "wo4_result": "met → **Accepted** (WO-7b, checked 2026-10-30)",
+    "status_line": "**Status:** **Accepted, 2026-10-30**, marked by the build lane (V03 spec §6, R-876; the check is recorded in `docs/V03_DECISIONS.md` for S13's manifest). Proposed 2026-10-27 (design lane, `architect`; register R-850…R-862). It becomes **Accepted** when:"
+   }
+  },
+  {
+   "id": "ADR.0043",
+   "description": "ADR 0043 (V03 spec §6): stays Proposed",
+   "result": "pass",
+   "value": {
+    "wo4_checked_against": "—",
+    "wo4_result": "unchanged",
+    "status_line": "**Status:** Proposed, 2026-10-22. It becomes Accepted when three things hold: WO-L01-1 and WO-L01-2's manifest is"
+   }
+  },
+  {
+   "id": "ADR.0053",
+   "description": "ADR 0053 (V03 spec §6): at WO-8",
+   "result": "unsupported",
+   "value": {
+    "wo4_checked_against": "—",
+    "wo4_result": "unchanged",
+    "status_line": "**Status:** **Proposed, 2026-10-29** (design lane, `specifier`, package V03; manifest id `S13`). It becomes",
+    "state": "pending"
+   }
+  },
+  {
+   "id": "ADR.0054",
+   "description": "ADR 0054 (V03 spec §6): at WO-8",
+   "result": "unsupported",
+   "value": {
+    "wo4_checked_against": "—",
+    "wo4_result": "unchanged",
+    "status_line": "**Status:** **Proposed, 2026-10-29** (design lane, `specifier`, package V03, ruling round 1; manifest id `S13`). It",
+    "state": "pending"
+   }
+  },
+  {
+   "id": "S13.S13a",
+   "description": "S13a's manifest (WO-1…WO-4, V03.A01–A08, A10–A16, A18, A28–A31 before K3) is tested and its commit an ancestor of this one",
+   "result": "pass",
+   "value": {
+    "manifest": "evidence/S13a/0ce3748a7a473950a295e2668201fb96c44d0ec1/manifest.json",
+    "sha256": "24145c2eac3a39bca9d3e3853b6551183bd116e21569d29e6d2b777c3173d074",
+    "status": "tested",
+    "ancestor": true
+   }
+  }
+ ],
+ "artifacts": [
+  {
+   "path": "docs/v03-rc-record.md",
+   "sha256": "ebac91db184d0b1b7d5e971d0432983a265b377955e8b988747f9f7203f13762",
+   "description": "the RC record at C (§4)"
+  },
+  {
+   "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/rc/records.json",
+   "sha256": "b918959ba65b020db9fd5d10bcdd250ba9d5dd4eb7bb967882550e78da71eb3c",
+   "description": "the RC records: sha256, size and how each is kept"
+  },
+  {
+   "path": "release/rc-trees/a3e508e35fc5451fe56fa7b70941621992d35b50.json",
+   "sha256": "915c94891bf3466b86c533bb2b2a79cd1a5790dfbb8ab7525cd067bbd10cc004",
+   "description": "the tree record of C (R-151)"
+  },
+  {
+   "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A01.log",
+   "sha256": "b48497f402c10f7a87e6a9099bc4933dc64d399cdaf6848a59babcc18558973f",
+   "description": "tests run here (not committed)"
+  },
+  {
+   "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A01.junit.xml",
+   "sha256": "d3768f9098b552f82a2682e0878e30b1abe5be5328c547d7dd34eb265f7da848",
+   "description": "tests run here (not committed)"
+  },
+  {
+   "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A02.log",
+   "sha256": "75b8a0207c910411a2cc1d972a2daa2810f1e722e91e608ce00d2797db0434ee",
+   "description": "tests run here (not committed)"
+  },
+  {
+   "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A02.junit.xml",
+   "sha256": "311c02411c96a34447cead42a8192daf3b9431993926e39c514fa04c59237ced",
+   "description": "tests run here (not committed)"
+  },
+  {
+   "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A03.log",
+   "sha256": "1b014d5e92e47db8b82f7800f12d208481e3fb522634b99b69bb07cae963135d",
+   "description": "tests run here (not committed)"
+  },
+  {
+   "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A03.junit.xml",
+   "sha256": "2e1c8fff3b3185c34abcecf42d265da9f6cf9ed762cadcaf2face006e25bbaba",
+   "description": "tests run here (not committed)"
+  },
+  {
+   "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A04.log",
+   "sha256": "a6c900a12eb86223e414ce8abd6645161875577ddf08182d05f1e15d751edd58",
+   "description": "tests run here (not committed)"
+  },
+  {
+   "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A04.junit.xml",
+   "sha256": "9e713e754d7e5cbdd385aaa8db999bde63706c4eec4a0d956e4c04ffedded91a",
+   "description": "tests run here (not committed)"
+  },
+  {
+   "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A05.log",
+   "sha256": "4ccbab488579c589fffad071dca30229a12df0a40d74dcd35ee6ad661408bf24",
+   "description": "tests run here (not committed)"
+  },
+  {
+   "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A05.junit.xml",
+   "sha256": "55e4068ce4d3eea8e76590f967a6692cac02713a28170339572b3db2e3fb0f1a",
+   "description": "tests run here (not committed)"
+  },
+  {
+   "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A06.log",
+   "sha256": "6b4c6d7b9aa2dd9360f778df1141389a15c08ad033cf2e828ec201a50327ee5a",
+   "description": "tests run here (not committed)"
+  },
+  {
+   "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A06.junit.xml",
+   "sha256": "855071eb0290441204da55e401be50b82beed6961f3c6ab037ee56b84d72c246",
+   "description": "tests run here (not committed)"
+  },
+  {
+   "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A07.log",
+   "sha256": "a9b6aaf150cb908f303c56c2a77d73d5975acbe366a19047130bd461d21c5e2d",
+   "description": "tests run here (not committed)"
+  },
+  {
+   "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A07.junit.xml",
+   "sha256": "731a3cd4f1ad2bb0d0e2f395aef81fce11309e4659bc0f726ad85ff335e7dd7c",
+   "description": "tests run here (not committed)"
+  },
+  {
+   "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A08.log",
+   "sha256": "717dd3c50356ebdad1f687e6e70fae8149fb94ec48bcbf25dd5e719b97169ed4",
+   "description": "tests run here (not committed)"
+  },
+  {
+   "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A08.junit.xml",
+   "sha256": "1b5af3613c835f8261c6d4b9996499d29a2ba5533fa421b5bbddf668b1ade089",
+   "description": "tests run here (not committed)"
+  },
+  {
+   "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A10.log",
+   "sha256": "6f45ab86ea62b4126ac44d0efaacb18df4e8e9389236c0b11fdf19fc0b90ee5b",
+   "description": "tests run here (not committed)"
+  },
+  {
+   "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A10.junit.xml",
+   "sha256": "c43e58d0aa9bed1257fdc5e35961109cb1be6c1d742e5931502e56c65e0e12a2",
+   "description": "tests run here (not committed)"
+  },
+  {
+   "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A11.log",
+   "sha256": "22892dbcd28cc5df47b6739da0404abc827e7eb52143027c903d3a144239ea6e",
+   "description": "tests run here (not committed)"
+  },
+  {
+   "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A11.junit.xml",
+   "sha256": "269340f0dc96517ffefd39901c40362326b9e9592482a80514f7ad5e0ba422dc",
+   "description": "tests run here (not committed)"
+  },
+  {
+   "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A12.log",
+   "sha256": "fd5cf35d20b7a4d3a055304f2eb6dc698dd6c866c4e1aaa5b546e3b4052bd7fa",
+   "description": "tests run here (not committed)"
+  },
+  {
+   "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A12.junit.xml",
+   "sha256": "84cede86520611f26e50555154c5243a5ef8935da8d92ce4da5b8300d695befc",
+   "description": "tests run here (not committed)"
+  },
+  {
+   "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A13.log",
+   "sha256": "25de23a9682005ded8e37cc9e3ad967c60825a6d6931da2be89088ade29024f3",
+   "description": "tests run here (not committed)"
+  },
+  {
+   "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A13.junit.xml",
+   "sha256": "1d704b1f24fcf59c2f3c3874fb7c35f3a284def5c6b2765f408eaabcc1c1dbef",
+   "description": "tests run here (not committed)"
+  },
+  {
+   "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A14.log",
+   "sha256": "ff92593e33adc7901df2f42de0618902178c45e1787f4229a6b5157672914934",
+   "description": "tests run here (not committed)"
+  },
+  {
+   "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A14.junit.xml",
+   "sha256": "241b14bed2beb1cb02ebc5816e987ed72d2b2b4c6fc24e4579237d91c5410134",
+   "description": "tests run here (not committed)"
+  },
+  {
+   "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A15.log",
+   "sha256": "1117c072c9e7cdd1a60021dd853f0dd5974625620006bfeb269803c29c384a2b",
+   "description": "tests run here (not committed)"
+  },
+  {
+   "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A15.junit.xml",
+   "sha256": "bbdda8e911274215cce7e00df543740490d90d044ab48c98d4a394f58c2cd094",
+   "description": "tests run here (not committed)"
+  },
+  {
+   "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A16.log",
+   "sha256": "01e12077d4951ef6deb35e07e27999968fdefe7a92dd3808662bae5f35f7e7f3",
+   "description": "tests run here (not committed)"
+  },
+  {
+   "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A16.junit.xml",
+   "sha256": "7387edf20f1fd6db5fa2b9b1b50b3a0bf8e18becd5b6ce51562e8fd83c338007",
+   "description": "tests run here (not committed)"
+  },
+  {
+   "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A28.log",
+   "sha256": "3077a35c0e9d10cf3cdb655178c00c90fbfbefe84ed1e78a1cf4ca9de387d19c",
+   "description": "tests run here (not committed)"
+  },
+  {
+   "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A28.junit.xml",
+   "sha256": "26ceeacf3b380d400fcfcb89d84a1420aec9a93b9bfa1c84dcf891a68ac15243",
+   "description": "tests run here (not committed)"
+  },
+  {
+   "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A29.log",
+   "sha256": "8abfcd45e9cd8550aefd21bd998843bd68c66bc98457e5b1375f628909e4c264",
+   "description": "tests run here (not committed)"
+  },
+  {
+   "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A29.junit.xml",
+   "sha256": "0f83b3a8d96def9a06dea1faae6254c49887fa077a7711d2ba4c8cf8b85c4358",
+   "description": "tests run here (not committed)"
+  },
+  {
+   "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A30.log",
+   "sha256": "0a37f42965f11fe7107f2036f87b792021135769ead3eb3b5b7677bb076d9da4",
+   "description": "tests run here (not committed)"
+  },
+  {
+   "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A30.junit.xml",
+   "sha256": "be8f2fadb686c9c96055ff9039db78593ad567ee558278037088d33c8902dfaf",
+   "description": "tests run here (not committed)"
+  },
+  {
+   "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A31.log",
+   "sha256": "b3f49fb40e5bf85a0f34bfad18b93eef11e8f6be433a904d9fc26660482825fa",
+   "description": "tests run here (not committed)"
+  },
+  {
+   "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A31.junit.xml",
+   "sha256": "e0a56e67de9efdf3e5aa80d5a067e90be3539feb0968d66b9511db2fbbdca62a",
+   "description": "tests run here (not committed)"
+  },
+  {
+   "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A12c.log",
+   "sha256": "db190837ca400295d0acd2483968d9c938dbb9b6866b89f1e282d884b47ddfd7",
+   "description": "tests run here (not committed)"
+  },
+  {
+   "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A12c-aligned.log",
+   "sha256": "7bc5728034545bf843145a5969b4029e46f62b0fa3d9d109666aa11de2f537a8",
+   "description": "tests run here (not committed)"
+  },
+  {
+   "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A12c-aligned-keep/branch/shard-0.log",
+   "sha256": "87c414880f08c28c65ab572794609730c4fa985aab6e05d0b37bdcfc39cbdbbb",
+   "description": "tests run here (not committed)"
+  },
+  {
+   "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A12c-aligned-keep/branch/shard-1.log",
+   "sha256": "17c082909091708bbdea4f059c8299b9cc1e4fc95f978b72220847ebeaf2a71e",
+   "description": "tests run here (not committed)"
+  },
+  {
+   "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A12c-aligned-keep/branch/shard-10.log",
+   "sha256": "5bba8b4af2ae37cd11a0c05dd49e1ebcd680c65c3e8ee16e630eacf879847f70",
+   "description": "tests run here (not committed)"
+  },
+  {
+   "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A12c-aligned-keep/branch/shard-11.log",
+   "sha256": "d2cdc33af7441171aedb23724c52bcdfdd1dbc0993d8662cbe1b753a9f2eec73",
+   "description": "tests run here (not committed)"
+  },
+  {
+   "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A12c-aligned-keep/branch/shard-12.log",
+   "sha256": "df83f834465ea30f70a63edefadb600e7ebe4f34d436ef3a5b8ffc27db10a061",
+   "description": "tests run here (not committed)"
+  },
+  {
+   "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A12c-aligned-keep/branch/shard-13.log",
+   "sha256": "c4453ab0f6168075f2f53452107adf755fc05f2c65e5676fbe955a0a20546500",
+   "description": "tests run here (not committed)"
+  },
+  {
+   "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A12c-aligned-keep/branch/shard-14.log",
+   "sha256": "e27d651674d34e7c3f5d3bbf556e90a64ebf775e5ca717f55042217c5855b260",
+   "description": "tests run here (not committed)"
+  },
+  {
+   "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A12c-aligned-keep/branch/shard-15.log",
+   "sha256": "d4ef9a98bc46c2071dfc00be09e110c39e37703f46fcc1312df4d46ac13264ef",
+   "description": "tests run here (not committed)"
+  },
+  {
+   "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A12c-aligned-keep/branch/shard-16.log",
+   "sha256": "e04606ef3ccdf41ed709c87c3709882c6045865dcdd377dacc71d515b585e053",
+   "description": "tests run here (not committed)"
+  },
+  {
+   "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A12c-aligned-keep/branch/shard-2.log",
+   "sha256": "0f3c7307e3243c14b9f843480275b86db9b72dd9a1e97f7fe3ca3fa2c72ee01e",
+   "description": "tests run here (not committed)"
+  },
+  {
+   "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A12c-aligned-keep/branch/shard-3.log",
+   "sha256": "fee3318b597b345d64ffe31af852a6a386f489cb615b2a45b0a6b47724ecc9ff",
+   "description": "tests run here (not committed)"
+  },
+  {
+   "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A12c-aligned-keep/branch/shard-4.log",
+   "sha256": "8fdb39584472b1dd1dd0e013626ff1f16928de9b4a8c8769970d51f50e172f94",
+   "description": "tests run here (not committed)"
+  },
+  {
+   "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A12c-aligned-keep/branch/shard-5.log",
+   "sha256": "eddc8a5f82484fbbf43a93a44caf00dfb0f5772f4b715ed235e72ef132ab6ad1",
+   "description": "tests run here (not committed)"
+  },
+  {
+   "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A12c-aligned-keep/branch/shard-6.log",
+   "sha256": "c66939472ae8b8859632543e47e9b083d30aaefb8f4ab50cf02595497be2b6e8",
+   "description": "tests run here (not committed)"
+  },
+  {
+   "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A12c-aligned-keep/branch/shard-7.log",
+   "sha256": "baff80adf035353b5ac3af25004b87587af2a8077494493b281e18492d6da069",
+   "description": "tests run here (not committed)"
+  },
+  {
+   "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A12c-aligned-keep/branch/shard-8.log",
+   "sha256": "4bb1907a492db6a3451cace9ec8fd6d1c070189fdf8da3a77d9ad5144833481b",
+   "description": "tests run here (not committed)"
+  },
+  {
+   "path": "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/V03.A12c-aligned-keep/branch/shard-9.log",
+   "sha256": "3bef4ce628bac17a4a0162874be046614e2cc4ab93263ca4f20679c64ab3bee0",
+   "description": "tests run here (not committed)"
+  }
+ ],
+ "limitations": [
+  "Evidence class: numerical and software verification at V03's release candidate C (tests run here at a commit whose distribution trees equal C's; the RC records of steps 2 and 6-17 on ref-x86-64; CI on x86-64 and aarch64). Self-generated records are regression evidence, not empirical validation.",
+  "requirements is empty: V03's claims (X31 and the carried rows) are judged by the verdict document at C (spec §3, A26), and the frozen schema admits only D/A requirement ids.",
+  "The D-gated assertions (A01-A08, A10-A16, A28-A31) are judged by their test nodes run here with S13a's selections; S13a's own manifest, at a commit before K3, is cited (S13.S13a), not re-used as evidence for C.",
+  "V03.A24's ratio classes (S07 A31, S11 thermal check) are read through the CI jobs that assert them; the ratios themselves are recorded in docs/v03-rc-record.md, not here.",
+  "S11.G8 and S12.G8 read the full gate from --gate-log, run at a commit whose distribution trees equal C's; the log's commit is named in the build log.",
+  "The design lane's verdicts are not judged here; A25, A26, A27 and ADRs 0053/0054 are judged at the candidate after the verdicts and the ledger (WO-7, WO-8).",
+  "Not harvested into v0.3-envelope-1. This manifest is written after C, and classifying its items would change benchmarks/t08/support_envelope.yaml, a D2.4 path. scripts/t08_support_matrix.py excludes evidence/S13/, as R-485 excluded M07's manifest from 0.2.0's harvest; the next envelope's package harvests it (R-911).",
+  "V03.A12 (c) is judged version-aligned (V03 spec §7.1, R-910). The registered identity run differs from its base only in family-C digests, through the version string; with the version held equal, no digest differs. This shows that no binding outcome changed. It does not make the version string inert: the experiment fingerprint carries it by design (R-458).",
+  "L-S11-1, L-S11-2, L-S11-3 and L-E01-1, and W26's sentence \"G14 not judged at 0.3.0\", travel in the prose of docs/reviews/V03-verdicts.md and in the envelope, not in the verdict table's limitation column, whose grammar (v0_2_gate.LIMITATION) cannot carry them (R-912).",
+  "V03.A08 is unsupported (pending): see its value.",
+  "V03.A25 is unsupported (pending): see its value.",
+  "V03.A27 is unsupported (pending): see its value.",
+  "ADR.0053 is unsupported: see its value.",
+  "ADR.0054 is unsupported: see its value."
+ ],
+ "review": {
+  "numerical": "pending",
+  "process_model": "pending"
+ }
+}
