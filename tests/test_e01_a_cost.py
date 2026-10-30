@@ -432,6 +432,43 @@ def test_a44_the_ce394_ratio_and_the_pump_forms() -> None:
     assert form.cost(recip, x, sel, F) == pytest.approx(1.15 * c_b, rel=1e-15)
 
 
+def test_an_entry_basis_off_the_set_basis_scales_by_the_index_ratio() -> None:
+    """V03 review F-E2: every shipped entry is at CE 500, the set's basis, so the shipped set never
+    exercises `ratio = set_index / entry_basis` (sets.py) with a ratio other than 1. A synthetic
+    control, not a shipped number: a copy of the set with the pump's basis at CE 394 (IDAES's label
+    before R-896) gives ratio 500/394, scales each pump form's C_P by it, and leaves the motor."""
+    doc = shipped_document()
+    body = next(e for e in doc["entries"] if e["entry_id"] == "pump")
+    body["index_basis"]["value"] = {"value": 394.0, "source_line": "synthetic: V03 review F-E2"}
+    control = parse_set(doc)
+
+    def resolved(cost_set: Any, entry_id: str, **options: str) -> Any:
+        e = resolve(cost_set, entry_id, options)
+        assert not isinstance(e, NoCorrelation), e
+        return e
+
+    x = {"vol_flow": 0.01, "head": 50.0, "power": 8.0e3}
+    for options in (
+        {},
+        {"pump_type": "ExternalGear", "material": "CastIron"},
+        {"pump_type": "Reciprocating", "material": "NiAlBronze"},
+    ):
+        shipped, scaled = entry("pump", **options), resolved(control, "pump", **options)
+        assert shipped.ratio == 1.0
+        assert scaled.ratio == 500.0 / 394.0, options
+        form = FORMS[scaled.form]
+        sel = select(form, scaled, x)
+        assert isinstance(sel, Selection) and sel == select(form, shipped, x), options
+        c_p = form.cost(shipped, x, sel, F)
+        assert form.cost(scaled, x, sel, F) == pytest.approx(c_p * 500.0 / 394.0, rel=1e-15)
+    motor, same = entry("motor.electric"), resolved(control, "motor.electric")
+    assert same.ratio == motor.ratio == 1.0
+    form = FORMS[motor.form]
+    sel = select(form, motor, {"power": 2.0e4})
+    assert isinstance(sel, Selection)
+    assert form.cost(same, {"power": 2.0e4}, sel, F) == form.cost(motor, {"power": 2.0e4}, sel, F)
+
+
 def test_a44_motor_efficiency_and_the_motor_form() -> None:
     motor = entry("motor.electric")
     assert motor_efficiency(motor, 1.0, F) == 0.8

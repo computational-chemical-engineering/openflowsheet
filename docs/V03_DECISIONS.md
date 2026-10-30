@@ -144,6 +144,10 @@ no erratum (R-901). Q3: cite R-900 (F-V1); MR-12 v03's `lca` entry now runs `scr
   `benchmarks/t08/support_envelope.yaml` with the review's sentence, evidence the P2 floor test, A18's empty-row test
   and E01 design §10.10.7; the matrix re-emitted, `--check` 0. Alternative: no envelope row, the manifest limitation
   only. Reversible by: reverting the L-E01-1 commit and re-emitting the matrix.
+- F-E2: `tests/test_e01_a_cost.py::test_an_entry_basis_off_the_set_basis_scales_by_the_index_ratio`, a copy of the set
+  with the pump's `index_basis.value` at 394 (the `amended` block dropped, since `replaces 394` would equal the value):
+  ratio 500/394, each of the three pump forms' C_P = shipped × 500/394 to rel 1e-15, the motor's cost equal exactly.
+  Mutation: an inverted ratio in `sets.py` fails it (1 failed, 34 passed); unmutated 35 passed.
 
 ## Merge notes for E01 (expected conflicts, all additive)
 
