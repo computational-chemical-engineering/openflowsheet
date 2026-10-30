@@ -1,5 +1,103 @@
 # Changelog
 
+## v0.3.0 — unreleased
+
+*Draft (V03 WO-4); nothing below is released. The release candidate C, its gate table and the
+verdicts are added to this section at C (V03 spec §4, ADR 0053). 0.3.0 claims V11–V20, W21–W26
+and X31; W27 is not claimed.*
+
+### S01 — the countercurrent equilibrium-stage subsystem
+
+- Equilibrium stages with explicit degrees of freedom and energy and phase coupling, an
+  initializer and Newton continuation, on SYN-001. Manifest
+  `evidence/S01/465240a4…/manifest.json`.
+
+### S02 — the MESH column
+
+- Stage indexing, feed, condenser, reboiler, pressure and specification conventions; four matched
+  cases and the invalid-specification and invalid-phase refusals. Manifest
+  `evidence/S02/1810dde8…/manifest.json`.
+
+### S03 — independent column references
+
+- Column answers compared with an independently written implementation across the available suite,
+  with perturbation studies and the supported nonideal scope. Manifest
+  `evidence/S03/930aad1b…/manifest.json`.
+
+### S04 — the Peng–Robinson component library `pr-lib-v1` (library-only)
+
+- A vapour-phase Peng–Robinson library provider; a revision cannot select it, and its records do
+  not ship. Manifest `evidence/S04/5c29fbf6…/manifest.json`.
+
+### S05 — IAPWS-95 water `iapws95-v1`
+
+- The IAPWS-95 formulation as a provider with its own reference convention `IAPWS95-ref-v1`; the
+  coefficients ship with IAPWS's attribution in NOTICE. Manifest
+  `evidence/S05/01cdeed4…/manifest.json`.
+
+### S06 — column specifications by purity, recovery and stage temperature
+
+- Purity, recovery and stage-temperature specifications for the column, with their rows, degrees of
+  freedom and typed refusals. Manifest `evidence/S06/ad264a23…/manifest.json`.
+
+### S07 — CoolProp pure fluids `coolprop-heos-v1` (optional extra `coolprop`)
+
+- CoolProp 8.0.0's Helmholtz equations of state for 123 fluids in two tiers, reference convention
+  `COOLPROP-DEF-ref-v1`, compared across architectures within registered bounds (ADR 0046).
+  Manifest `evidence/S07/7bfab70d…/manifest.json`.
+
+### S08 and S08b — one-phase column sections and the phase contract
+
+- Block openings for column sections in one phase (ADR 0048), and signature items by declaration
+  with saturation consistency for S01 cascades. Manifests `evidence/S08/6d7d1a6d…/manifest.json`
+  and `evidence/S08b/acbd1266…/manifest.json`.
+
+### S09 — BioSTEAM as a third column reference
+
+- A blind third reference for the column cases: 19 of 19 qualified, X31 met where available for 3
+  of 4 cases. Manifest `evidence/S09/4d4df087…/manifest.json`.
+
+### S10 and S10-C — the Wilson liquid-mixture method on real records
+
+- `wilson-ig-v1`: Wilson activity coefficients with an ideal-gas vapour for methanol, ethanol and
+  water, Wilson parameters fitted to published equilibrium data (Kurihara et al. 1993), with the VAL-1–3
+  validation bands (ADR 0047); S10-C adds the
+  γ–φ PH flash and the column on Wilson (ADR 0049). Wilson's records and the Kurihara 1993 points
+  ship as package data (V03 spec §9.1). Manifests `evidence/S10/f6f27c3f…/manifest.json` and
+  `evidence/S10c/2aedd250…/manifest.json`.
+
+### S11 — the binding package
+
+- Water (IAPWS-95), CoolProp's pure fluids and Wilson selectable in flowsheets; the seven
+  `thermal.*` units; the column as a flowsheet unit (ADRs 0050, 0051). `semantic_role` gains
+  `compressor`, `turbine` and `other` (ADR 0054). Manifest `evidence/S11/01e72ca4…/manifest.json`.
+
+### S12 (E01) — cost estimation and LCA
+
+- Cost and life-cycle impact as differentiable post-solve functionals of a
+  verified state, with an accuracy class (ADR 0052); the LCA table builder needs the optional
+  extra `lca`. Manifest `evidence/S12/02fc8d2f…/manifest.json`.
+
+### What it is not
+
+- numerical verification, not empirical validation
+- no global optimality
+- Linux only
+- not a sandbox
+- the stand-in reactor is synthetic
+- the optimization routes need the optional nlp extra
+- the CoolProp provider needs the optional coolprop extra
+- cost and LCA results are assessment estimates with an accuracy class
+- cost and LCA are Python-only
+- no ecoinvent data
+- Wilson is vapour-liquid only; no liquid-liquid split
+- no automatic liquid/vapour regime switching for pure fluids
+- X31: one independent reference for the refluxed absorber
+- no rate-based column models
+- no W27 claim in 0.3.0
+- no CFD or Peclet refinement
+- no external benchmark score
+
 ## v0.2.0a1 — release candidate `C_α` = `cc73219a77f6a54579c8acb151ed6fae228c8a4c` (`0.2.0a1`); a pre-release; tag and publication by Frank
 
 *ADR 0021 D4, reused by ADR 0028. The gate table below is what
