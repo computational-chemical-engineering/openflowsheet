@@ -85,6 +85,9 @@ and X31; W27 is not claimed.*
 - Linux only
 - not a sandbox
 - the stand-in reactor is synthetic
+- no reactor result has been compared with experimental data by this project: the group's published
+  comparison is the group's evidence, and every real-reactor number is the group's model at the pin,
+  a regression, whose discretization bias is 1.0–1.4 % in NH₃ (M02 design note §13)
 - the optimization routes need the optional nlp extra
 - the CoolProp provider needs the optional coolprop extra
 - cost and LCA results are assessment estimates with an accuracy class
