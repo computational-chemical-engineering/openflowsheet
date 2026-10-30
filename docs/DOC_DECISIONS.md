@@ -44,6 +44,38 @@ numerics-changing. Each choice below is isolated so that a revert undoes it.
   the operations table (`docs-site/api/operations.md`, from `OPERATIONS`), so neither can drift; CI's site job runs its
   `--check` before building. Alternative: a hand-written operations table. Reversible by: deleting the second page.
 
+### Brief 2 (`docs/briefs/DOC-followup.md`; `main` 05363060 merged at 666dabcb)
+
+- D2 and D6 are **closed** by brief 2: `docs-site/guide/assessment.md`, `docs-site/api/assessment.md`, the install
+  table's `lca` row and `examples/rankine-cost-and-gwp.ipynb` (commits 327134bf, 8331caf9).
+- DECISION D11: the cost example's stated numbers → only figures no cost correlation reads: the impact (rate and per
+  kg of condensate), its sensitivity to the boiler temperature, the steam bill and its sensitivity, plus the report
+  status and every item `costed`. The capital figures are printed at build and never stated, because `wp/E01b` moves
+  the pump and motor (x 394/500), the turbine (range 20-5,000 hp) and vessel costs. The stated impact equals the hand
+  superposition `benchmarks/e01/lca_hand/lca_hand.yaml` (P4 is TH-C1, the Rankine example's flowsheet) to all
+  printed digits. Alternative: state capital figures and re-take them after E01b. Reversible by: adding rows to
+  `STATED` in `tests/test_doc_examples.py` and bold numbers to the closing cell.
+- DECISION D12: the example solves through the application contract and then assesses through the library layer
+  (`bind_revision_flowsheet` on the bundle's `revision.json`, `view_of`, `AssessmentProgram`,
+  `assessment_sensitivity`): no transport offers an assessment (ADR 0052 D10 defers the CLI/HTTP/MCP bindings).
+  `examples/README.md`'s rule gains one sentence naming this exception. It reads the Rankine change set by
+  searching the working directory and its parents for `examples/rankine-cycle.changeset.json` (it runs from the repository root in the test and from `docs-site/examples/`
+  in mkdocs-jupyter). Alternative: inline the Rankine document's helpers (about 150 lines). Reversible by: editing the
+  notebook's first code cell.
+- DECISION D13: the guide's SSLW provenance → the page-and-equation check against Seider et al. 3rd ed. that
+  `wp/E01b` lands (p. 571 exchanger, p. 562 motor, p. 593 expander; the set's `checked_against`). On `main` 05363060
+  the set cites chapter and equations only (ranges "recalled"). Isolated in commit 5ce7ff92: **revert it if DOC
+  merges before E01b**. Alternative: the chapter-level sentence of 8331caf9. Reversible by: `git revert 5ce7ff92`.
+
+## Open (for the release batch, not this branch)
+
+- O1 (D7): the Wilson "source checkout" lines (`docs-site/guide/property-bases.md`, `examples/README.md`,
+  `docs-site/examples/index.md`, `docs-site/getting-started/install.md`): the Wilson records ship in the wheel on
+  `wp/V03`. Drop the lines when V03 merges.
+- O2 (D3, Q1): `semantic_role` of `thermal.turbine`/`thermal.compressor` in the examples is `pump`; ADR 0054 on
+  `wp/V03` adds `compressor`/`turbine`. Change the two notebooks, the tutorial and `examples/rankine-cycle.changeset.json`
+  together when V03 merges (the cost example reads the change set, so it follows).
+
 ## Questions for the design lane (batched)
 
 - Q1 (D3): should `process-revision.schema.json`'s `semantic_role` gain `compressor`, `turbine` (and `column`), or
