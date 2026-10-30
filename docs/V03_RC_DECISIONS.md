@@ -258,3 +258,7 @@ R0 INDIFFERENT, R1 DECIDED 653.15 K (cold 36, 1554 s), R2 SURROGATE_NOT_PROMOTAB
 - DECISION (orchestrator, 2026-10-30): WO-7b's A25 choice (4ac5b66c, A25 `unsupported` while ADRs 0053/0054 are the only
   problems) → ratified. Alternative: `fail` until WO-8 accepts them. Reversible by: revert 4ac5b66c, regenerate S13's
   manifest. W21 re-judgement started (brief `V03-w21-rejudge-brief.md`, scratchpad).
+
+- 2026-10-31 (orchestrator): Frank's answers recorded 5cc63136 (all defaults, 2026-10-30); my table edit put four answers
+  in an extra cell (`||`, finding F10 of the re-judgement); fixed in the re-judgement commit, text and dates unchanged.
+  Re-judgement: 15 PASS, V14 (b) and X31 (c) FAIL accepted by D3, none BLOCKED. WO-8 engineer started (brief 9).
