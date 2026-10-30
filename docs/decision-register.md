@@ -17743,3 +17743,110 @@ exactly. RELEASING's claim that no default-gate test needs `coverage.json` at a 
 
 **Rejected.** *Compare the base version* (`0.3.0` against `0.3.0.dev0`): it breaks again at `0.4.0.dev0` (WO-9).
 *Re-take `coverage.json`*: the v1 snapshot refuses this build (W27-R63), and V03 spec §5.1 does not re-take it.
+
+## R-903 — W26 (a) at 0.3.0 judges M06 G1–G13 and G15's registered content, not G14, which W27 registration v1 refuses on this build (ADR 0050 D9); the dry run's refusal is asserted exactly
+
+| | |
+| --- | --- |
+| Date | 2026-10-30 |
+| Decided by | design lane (`specifier`), V03 RC rulings, Amendment 2 (the WO-6 step-16 stop) |
+| Normative text | V03 spec §3.5, §4 step 16, V03.A32, §10.1, §11 N-10 |
+| Evidence | `docs/V03_RC_DECISIONS.md` (WO-6): at `4fa15efa`, `python -m benchmarks.m06.w27.dryrun` exits 1 at its first action, `snapshot.build_snapshot()`, with `registry_snapshot: unsupported(provider 'iapws95-v1': no registered records and phases, W27-R63)`. `tests/test_m06_w27_coverage.py::test_s11_the_v2_snapshot_refuses_this_build` registers that refusal (ADR 0050 D9), and V03 spec §2.1 measured it at `a1b50ccf`. The m06 junit at `4fa15efa` has 662 testcases, 0 failures, errors or skips, and the 25 nodes of A32 (c) passed |
+| Affected packages | V03 (WO-6 step 16, WO-7), M06 (W27 G14 and G15 read at 0.3.0) |
+
+**Decision.** At 0.3.0, W26 (a) judges M06 G1–G13 as M07 reads them. It also judges G15's registered content: the
+twenty scorer states against the registered rows, W27-A23 and A79b, the committed record's G14 and the refusal test. It
+does not judge G14 on this build, P3, or the stub campaign rehearsal. W27 registration v1 refuses this build by ADR 0050
+D9, which is why W27 is not claimed (ADR 0053 D1). Step 16 runs the dry run unchanged and asserts the registered refusal
+exactly. W26 stays claimed. K3 is not re-cut. M07 §7.3's reading for 0.2.0 is unchanged.
+
+**Rejected.**
+- *Record the FAIL and judge it.* It labels the web shell failed for a pre-registered consequence of ADR 0050 D9, and it
+  needs a D3 row for a capability 0.3.0 does not claim. It stays Frank's alternative (N-10).
+- *W26 not claimed.* It drops a true claim, and it changes the claim set (ADR 0053, Frank).
+- *A re-cut with a `benchmarks/` fix.* Skipping the coverage on a refusal would be a placeholder success path. Teaching
+  v1 the S11 providers contradicts ADR 0050 D9. Moving the dry run to registration v3 is N-1's campaign work, which
+  Frank declined.
+- *A new out-of-tree script that re-runs the dry run's state scoring.* It is a second code path for what
+  `tests/test_m06_w27_scorer.py` already runs through the same functions.
+
+## R-904 — R-902 reaches S11's S4 check: `scripts/s11_w27_s4.py` excludes `package_version` beside `git_commit`
+
+| | |
+| --- | --- |
+| Date | 2026-10-30 |
+| Decided by | design lane (`specifier`), V03 RC rulings, Amendment 2 (ratifies `fe61ae9d`) |
+| Normative text | `scripts/s11_w27_s4.py` `problems()`; `tests/test_s11_w27_v3.py::test_a40_the_s4_check_can_fail` |
+| Evidence | At `4fa15efa`, `tests/test_s11_w27_v3.py::test_a40_a84_the_build_snapshot_is_s4_and_classifies_the_225_rows` failed on `package_version` alone (`S4 DIFFERS: 1 problem(s)`), in the default suite, on both architectures. The full gate at `fe61ae9d` reports 14757 passed. At `a3e508e3` the only other snapshot comparison that excludes `git_commit` is `benchmarks/m06/w27/preflight.py` P3, which compares a campaign's coverage made at the same commit, so the versions are equal by construction |
+| Affected packages | V03 (WO-6: step 1, 17b, CI), S11 (A40, A84) |
+
+**Decision.** `package_version` in S11's committed S4 snapshot is build provenance. It is excluded from the
+live-versus-committed comparison, as R-902 excludes it for M06's `coverage.json`. Every other snapshot member, and the
+record's `routes`, `wilson_route`, `development`, `registration_version` and `schema`, stay compared exactly. The
+control sets `package_version` to `9.9.9` and sees no problem, then still catches a removed route.
+
+**Rejected.** *A separate provenance set for S4*: it is the same kind of record. *Re-take the S4 record at 0.3.0*: it is
+S11's registered evidence, and re-taking it at every version bump is the recurrence R-902 rejected.
+
+## R-905 — V03.A19 (c) compares at S10's RE1–RE3 and A12's state; "S10's P1 state" was an authoring error
+
+| | |
+| --- | --- |
+| Date | 2026-10-30 |
+| Decided by | design lane (`specifier`), V03 RC rulings, Amendment 2 (ratifies WO-6's `A19_STATES`) |
+| Normative text | V03 spec §7 A19 (c); `scripts/v03_rc.py` `A19_STATES`, `a19_findings` |
+| Evidence | No S10 record defines a state P1. S10's real reference states are RE1–RE3 (S10 spec §9.7). P1–P3 are S10C's premises (S10C spec, "Premises (P1–P3)"), not states. A12 (b)'s state is `tests/test_v03_wilson_ship.py:128` |
+| Affected packages | V03 (WO-6 step 17e) |
+
+**Decision.** A19 (c) compares `evaluate_phase` (both phases, every property and derivative) and `flash` bitwise
+(`float.hex`) at RE1, RE2, RE3 and A12's state. `a19_findings` requires the compared document to be non-empty and equal.
+
+**Rejected.** *One state of the design lane's naming*: it is weaker. RE2's zero mole number and RE3's pure component at
+another pressure reach paths that RE1 does not, and no single state "P1" exists to restore.
+
+## R-906 — 17b's "0 skipped" allows S07's registered A31a platform skip on aarch64 only
+
+| | |
+| --- | --- |
+| Date | 2026-10-30 |
+| Decided by | design lane (`specifier`), V03 RC rulings, Amendment 2 (ratifies the orchestrator ruling `49a9dfc5`) |
+| Normative text | V03 spec §4 17b; `.github/workflows/ci.yml`, `rc-coolprop`'s 17b step |
+| Evidence | CI at `4fa15efa`, `rc-coolprop` on aarch64: one skip, `tests/test_s07_registration.py:242: A31a holds on x86_64 only; this machine is aarch64 (A31b)`. R-627 registers S07 A31 as bitwise on x86-64 and classed on aarch64. `test_a31b_cross_architecture` runs on both. The check was tried on five synthetic logs: arm with A31b passes; x86 with A31b fails; arm with another skip fails; arm with both fails; no skip passes |
+| Affected packages | V03 (WO-6 17b), S07 (F-8) |
+
+**Decision.** On aarch64 exactly that skip is allowed, matched by its reason text. On x86-64 none is allowed. Any other
+skip fails, and the pytest exit status must still be 0, so A31b itself must pass.
+
+**Rejected.** *Drop the 0-skipped rule on aarch64*: it would hide a missing CoolProp, which is what F-8 exists to catch.
+*Run A31a on aarch64*: R-627 registers it as x86-64's.
+
+## R-907 — Step 14's nlp check runs over the modules that contain `mark.nlp`, not over `tests/`, and its record shows that no node is lost
+
+| | |
+| --- | --- |
+| Date | 2026-10-30 |
+| Decided by | design lane (`specifier`), V03 RC rulings, Amendment 2 (ratifies WO-6's runner change) |
+| Normative text | V03 spec §4 step 14, V03.A33; the RC runner's `run_step14.sh` |
+| Evidence | At `4fa15efa`, `scripts/m03_nlp_check.sh` over `tests/` exits 2. `tests/test_s10_records.py`, `test_s10_idaes.py` and `test_s10_dwsim.py` import `mpmath`, which the audited nlp environment lacks, and none of them contains `mark.nlp`. `tests/conftest.py` applies no `nlp` marker. `--collect-only -m nlp` lists the same 190 node ids from the 13 modules as from `tests/` |
+| Affected packages | V03 (WO-6 step 14), M03, M05, E01 (the nlp-marked modules) |
+
+**Decision.** The nlp check is given `grep -l 'mark.nlp' tests/test_*.py` at C. The step-14 record proves with V03.A33
+that the selection loses nothing: the two node-id sets are equal, with 190 members.
+
+**Rejected.** *Add `mpmath` to the audited nlp environment*: it changes an audited inventory (M03), and its `--check`
+would need a re-audit. *Ignore the collection errors*: a gate that tolerates them could hide an nlp module.
+
+## R-908 — Step 15's journey commit is J = K3 plus the G10 records (`2d945b5d`), not K3
+
+| | |
+| --- | --- |
+| Date | 2026-10-30 |
+| Decided by | design lane (`specifier`), V03 RC rulings, Amendment 2 (ratifies WO-5's decision) |
+| Normative text | V03 spec §3.4, §4 step 15, V03.A21 |
+| Evidence | `docs/V03_RC_DECISIONS.md` (WO-5): `carry.journey_files` holds `benchmarks/m05/**`, and `git diff --name-only K3 2d945b5d -- <carry paths>` lists 36 files. So `v0_2_gate.journey_carry` from K3 would answer `JOURNEY_RERUN`, and from `2d945b5d` it answers carried. 0.2.0's K = `2c508b5` was A plus its G10 records |
+| Affected packages | V03 (WO-5, WO-6 step 15) |
+
+**Decision.** The journey runs at J and carries from J to C. §3.4, step 15 and A21 name J.
+
+**Rejected.** *Run the journey at K3 and re-run it at C*: about an hour of compute for the same code, and C is not the
+cut commit.
