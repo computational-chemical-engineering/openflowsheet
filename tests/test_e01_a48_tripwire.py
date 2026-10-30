@@ -41,3 +41,25 @@ def test_the_release_check_finds_one_range_flipped_back() -> None:
     turbine = next(i for i, e in enumerate(flipped["entries"]) if e["entry_id"] == "turbine")
     flipped["entries"][turbine]["ranges"]["power_hp"]["source"]["verified"] = False
     assert unverified_primary_ranges(flipped) == (f"/entries/{turbine}/ranges/power_hp",)
+
+
+def test_the_release_check_fails_on_a_synthetic_unverified_document(tmp_path: Path) -> None:
+    """V03.A10's `fail` control: `a48_release_check()` itself, over a directory holding the shipped
+    set with one primary range flipped back, gives `fail` with that one pointer — so the shipped
+    count 0 is not an accidental 0 (a scan that finds no set, or reads no range)."""
+    document = json.loads(SET.read_text(encoding="utf-8"))
+    turbine = next(i for i, e in enumerate(document["entries"]) if e["entry_id"] == "turbine")
+    document["entries"][turbine]["ranges"]["power_hp"]["source"]["verified"] = False
+    (tmp_path / SET.name).write_text(json.dumps(document), encoding="utf-8")
+    result, value = manifest.a48_release_check(tmp_path)
+    assert result == "fail"
+    assert value == {
+        "unverified_primary_ranges": 1,
+        "by_set": {document["set_id"]: [f"/entries/{turbine}/ranges/power_hp"]},
+    }
+    # The same directory with the shipped bytes passes: the control differs only in the flag.
+    (tmp_path / SET.name).write_bytes(SET.read_bytes())
+    assert manifest.a48_release_check(tmp_path) == (
+        "pass",
+        {"unverified_primary_ranges": 0, "by_set": {}},
+    )

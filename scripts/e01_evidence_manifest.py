@@ -115,18 +115,25 @@ RESTATED = ("A49", "A51")
 RC_ITEMS = ("A48",)
 
 
-def a48_release_check() -> tuple[str, dict[str, Any]]:
+def a48_release_check(root: Path | None = None) -> tuple[str, dict[str, Any]]:
     """§9.6 A48 at a release candidate: every primary range of every shipped cost set is
     `verified: true`. It fails while any is not — the tripwire of the E01 review's S4 (the MR-12 /
     S07 Ruling M pattern): the normal suite pins the count and the `fail`, and the release
-    specification, once §9.7 QA1 has checked the ranges, flips them and the count."""
+    specification, once §9.7 QA1 has checked the ranges, flips them and the count.
+
+    `root` is the directory of cost-set documents, the package data by default; a test passes a
+    directory holding a synthetic document, so that the `fail` control runs this function itself
+    (V03.A10)."""
     from importlib.resources import files  # noqa: PLC0415
+    from importlib.resources.abc import Traversable  # noqa: PLC0415
 
     from openflowsheet.assessment.cost import sets  # noqa: PLC0415
 
-    root = files("openflowsheet").joinpath("_data", "assessment", "cost")
+    directory: Traversable = (
+        files("openflowsheet").joinpath("_data", "assessment", "cost") if root is None else root
+    )
     by_set: dict[str, list[str]] = {}
-    for path in sorted(root.iterdir(), key=lambda item: item.name):
+    for path in sorted(directory.iterdir(), key=lambda item: item.name):
         if not path.name.endswith(".json"):
             continue
         document = json.loads(path.read_text(encoding="utf-8"))

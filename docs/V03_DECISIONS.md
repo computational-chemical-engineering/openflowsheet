@@ -128,6 +128,14 @@ no erratum (R-901). Q3: cite R-900 (F-V1); MR-12 v03's `lca` entry now runs `scr
   has passing test nodes (G4 54, G5 28, G6 108, G7 13, G8 23). Two ids carry no node by the spec's own text: A07
   ("covered by G1", `S10C-IDENTITY PASS n=858 changed=[]`) and A15 ("recorded, not gated", every target returned a
   PHState). `8f38f963…` agrees. So the sentence was appended to ADR 0049's *Met* line and the 0049 row above.
+- WO-3's A48 item (V03.A10, Q4): E01b (`51cd6847`, C7 `92afd75b`) already set `test_e01_a48_tripwire`'s count to 0
+  and its `pass`; `a48_release_check()` gives `('pass', {'unverified_primary_ranges': 0, 'by_set': {}})` here. The
+  `fail` control E01b left ran `unverified_primary_ranges` on a flipped copy, not `a48_release_check()`, so it did not
+  exclude a vacuous 0 of the check itself (a scan that finds no set).
+  DECISION: how A10's "synthetic unverified document still gives `fail`" reaches the function → an optional `root`
+  directory on `a48_release_check()` (default: the package data, unchanged), and a test over `tmp_path` with the turbine
+  range flipped: `fail`, count 1, that one pointer; the shipped bytes in the same directory: `pass`, 0. Alternative:
+  monkeypatch `importlib.resources.files`. Reversible by: reverting the A10 commit.
 
 ## Merge notes for E01 (expected conflicts, all additive)
 
