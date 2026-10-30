@@ -759,6 +759,10 @@ Ask N-1, N-7 and N-8 in one message now, and N-2 to N-6 in one message after the
 message to Frank, and work proceeds on its default. N-11 (Amendment 3) rides in the message that asks N-2 to N-6, after
 W21's new judgement, and work proceeds on its default. N-12 asks Frank nothing.
 
+**Frank's answers to N-10 and N-11 (2026-10-30, after W21's new judgement; verbatim).** N-10: "Judge as planned
+(Recommended)" — Option 1, §3.5's reading. N-11: "Accept (Recommended)" — R-624 and R-900 accepted; V18 stays PASS. N-2
+to N-6 and N-1's re-confirmation are recorded in ADR 0053's tables.
+
 **Answered, Frank, 2026-10-29:** N-1 "No, don't claim it (Rec.)" (W27 not claimed); N-7 "Keep the token (Rec.)"; N-8
 "Correct it (Rec.)". N-2 to N-6 remain for after the verdict. N-9 (Frank, 2026-10-30): "Keep 'other' (Rec.)".
 
