@@ -124,6 +124,6 @@ def test_malformed_evidence_is_refused() -> None:
     with pytest.raises(ValueError, match="before any solve"):
         classify_starts([])
     with pytest.raises(ValueError, match="not V checks"):
-        StartEvidence(0, {"V7": "pass"})
+        StartEvidence(0, {"V8": "pass"})
     with pytest.raises(ValueError, match="not check outcomes"):
         StartEvidence(0, {"V1": "passed"})  # type: ignore[dict-item]

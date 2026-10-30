@@ -22,6 +22,11 @@ rates are unbounded.
 **Scaling** is the K03 nominals: variables `1/S_x`, decisions `1/s_d`, equality rows `1/S_F`,
 objective and constraints 1 (they are declared scaled).
 
+**Assessment outputs** (E01 §4.10.2). With an `AssessmentBinding`, an expression may also name
+`assessment:<id>`, a bound output of an assessment program; the gray box then has outputs — the
+bound outputs and the admissibility rows of their dependency closure — evaluated by the program's
+twin with the decisions symbolic. Without one, there are no outputs and nothing here differs.
+
 **Hessian** (D2): `Capabilities.hessian` is `absent`; the solver is configured with Ipopt's
 limited-memory approximation and a request for an exact Hessian is refused `HESSIAN_UNAVAILABLE`
 before any solver call. No finite-difference, Gauss-Newton or zero Hessian exists anywhere.
@@ -32,16 +37,21 @@ from __future__ import annotations
 import math
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
-from typing import Any, Final
+from types import MappingProxyType
+from typing import TYPE_CHECKING, Any, Final
 
 import numpy as np
 import numpy.typing as npt
 import scipy.sparse as sp
 
+from openflowsheet.assessment.quantities import ASSESSMENT_PREFIX
 from openflowsheet.compile.casadi_backend import ParametricTwin, compile_parametric_twin
 from openflowsheet.compile.reference import state_vector
 from openflowsheet.models.syn001.flowsheet import Syn001Flowsheet
 from openflowsheet.orchestrator.tear import Syn001TearProblem
+
+if TYPE_CHECKING:
+    from openflowsheet.assessment.program import AssessmentProgram
 
 #: Spec §8.3: the only Hessian policy M03 accepts, and how every report records it.
 HESSIAN_APPROXIMATION: Final = "limited-memory"
@@ -190,6 +200,73 @@ class InequalityConstraint:
         }
 
 
+class AssessmentOutputUnknownError(ValueError):
+    """`ASSESSMENT_OUTPUT_UNKNOWN` (E01 §4.10.2): a formulation names `assessment:<id>` that its
+    binding does not declare, or that the program does not publish. Raised before any solve."""
+
+    code: Final = "ASSESSMENT_OUTPUT_UNKNOWN"
+
+    def __init__(self, names: Sequence[str]) -> None:
+        self.names = tuple(names)
+        super().__init__(f"{self.code}({','.join(self.names)})")
+
+
+def assessment_names(names: Sequence[str]) -> tuple[str, ...]:
+    """The output ids of the `assessment:<id>` names among `names`, in their order."""
+    return tuple(name[len(ASSESSMENT_PREFIX) :] for name in names if is_assessment_name(name))
+
+
+def is_assessment_name(name: str) -> bool:
+    return name.startswith(ASSESSMENT_PREFIX)
+
+
+@dataclass(frozen=True)
+class AssessmentBinding:
+    """The assessment a formulation may name (E01 §4.10.2): a program at its held regime, the
+    output ids the formulation may reference as `assessment:<id>`, and each one's scale.
+
+    The scales are fixed per formulation, so that every start is scaled alike and the report
+    records one scale per output; `at` takes them as §4.10.2's `max(|y(x₀)|, 1)` at a state."""
+
+    program: AssessmentProgram
+    outputs: tuple[str, ...]
+    output_scales: Mapping[str, float]
+
+    def __post_init__(self) -> None:
+        if not self.outputs or len(set(self.outputs)) != len(self.outputs):
+            raise ValueError(f"binding outputs must be present and distinct: {self.outputs}")
+        if set(self.output_scales) != set(self.outputs):
+            raise ValueError("a binding gives exactly one scale per output")
+        bad = [n for n, v in self.output_scales.items() if not (math.isfinite(v) and v > 0.0)]
+        if bad:
+            raise ValueError(f"output scales divide, so they must be finite and > 0: {bad}")
+
+    @classmethod
+    def at(
+        cls, program: AssessmentProgram, outputs: Sequence[str], state: Mapping[str, float]
+    ) -> AssessmentBinding:
+        """The binding with each output's scale `max(|y(state)|, 1)` (§4.10.2), `y` on the
+        float reference path. Raises `TwinEvaluationError` where `y` cannot be evaluated."""
+        values = program.evaluate(state)
+        if not isinstance(values, Mapping):
+            raise ValueError(f"the program refuses evaluation: {values}")
+        unknown = [name for name in outputs if name not in values]
+        if unknown:
+            raise AssessmentOutputUnknownError(unknown)
+        return cls(
+            program,
+            tuple(outputs),
+            {name: max(abs(float(values[name])), 1.0) for name in outputs},
+        )
+
+    @property
+    def unknown(self) -> tuple[str, ...]:
+        """Declared outputs the program does not publish (or publishes only as an admissibility
+        row, which a formulation never names)."""
+        published = set(self.program.output_ids) - set(self.program.admissibility_ids)
+        return tuple(name for name in self.outputs if name not in published)
+
+
 @dataclass(frozen=True)
 class NlpFormulation:
     """Spec §8.1: decisions, a minimized objective, inequality constraints, starts (each a value
@@ -201,6 +278,8 @@ class NlpFormulation:
     constraints: tuple[InequalityConstraint, ...]
     starts: tuple[tuple[float, ...], ...]
     hessian: str = HESSIAN_APPROXIMATION
+    #: E01 §4.10.2: the assessment `assessment:<id>` names refer to; `None` names none.
+    assessment: AssessmentBinding | None = None
 
     def __post_init__(self) -> None:
         ids = [decision.parameter_id for decision in self.decisions]
@@ -222,13 +301,31 @@ class NlpFormulation:
             for decision, value in zip(self.decisions, values, strict=True)
         }
 
-    @property
-    def variables(self) -> tuple[str, ...]:
-        """Every state variable the objective and constraints name."""
+    def _named(self) -> tuple[str, ...]:
         named = list(self.objective.variables)
         for constraint in self.constraints:
             named.extend(constraint.expression.variables)
         return tuple(dict.fromkeys(named))
+
+    @property
+    def variables(self) -> tuple[str, ...]:
+        """Every state variable the objective and constraints name (not `assessment:<id>`)."""
+        return tuple(name for name in self._named() if not is_assessment_name(name))
+
+    @property
+    def assessment_outputs(self) -> tuple[str, ...]:
+        """The output ids the objective and constraints name as `assessment:<id>`, in
+        first-mention order (E01 §4.10.2)."""
+        return assessment_names(self._named())
+
+    def unknown_assessment_outputs(self) -> tuple[str, ...]:
+        """Named assessment outputs without a binding, not declared by it, or not published by
+        its program: `ASSESSMENT_OUTPUT_UNKNOWN`."""
+        named = self.assessment_outputs
+        if self.assessment is None:
+            return named
+        declared = set(self.assessment.outputs) - set(self.assessment.unknown)
+        return tuple(name for name in named if name not in declared)
 
     def as_document(self) -> dict[str, Any]:
         return {
@@ -243,6 +340,87 @@ class NlpFormulation:
 
 
 # -- the full-space problem -----------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class AssessmentClosure:
+    """E01 §4.10.2's gray-box outputs of a binding: the bound outputs in catalogue (program)
+    order, then every admissibility row whose regime entry is in their dependency closure, in
+    catalogue order; each with its scale, and each admissibility row with its nominal."""
+
+    outputs: tuple[str, ...]
+    admissibility: tuple[str, ...]
+    scales: Mapping[str, float]
+    nominals: Mapping[str, float]
+
+    @property
+    def output_ids(self) -> tuple[str, ...]:
+        return (*self.outputs, *self.admissibility)
+
+
+def assessment_twin(
+    binding: AssessmentBinding, variable_ids: Sequence[str], decision_ids: Sequence[str]
+) -> ParametricTwin:
+    """The binding program's twin with the decisions symbolic, over the host's variables."""
+    program = binding.program
+    twin = program.twin(tuple(decision_ids))
+    if not isinstance(twin, ParametricTwin):
+        raise ValueError(f"the assessment twin is refused: {twin}")
+    if tuple(program.context.host_spec.variable_ids) != tuple(variable_ids):
+        raise ValueError("the assessment program's host is not this flowsheet's spec")
+    if tuple(twin.parameter_ids) != tuple(decision_ids):
+        raise ValueError("the assessment twin's symbols are not the decisions")
+    return twin
+
+
+def assessment_closure(
+    binding: AssessmentBinding,
+    twin: ParametricTwin,
+    x: npt.NDArray[np.float64],
+    decisions: Mapping[str, float],
+) -> AssessmentClosure:
+    """An admissibility row is a gray-box output when its regime entry is in the dependency
+    closure of a bound output: some row of the entry has a structural nonzero in a column (state
+    or decision) of `[G_x  G_d]` at `(x, d)` in which some bound output has one."""
+    program = binding.program
+    jacobian = _twin_jacobian(twin, x, decisions).tocsr()
+    pattern = {
+        name: set(jacobian.indices[jacobian.indptr[i] : jacobian.indptr[i + 1]].tolist())
+        for i, name in enumerate(program.output_ids)
+    }
+    outputs = [name for name in program.output_ids if name in set(binding.outputs)]
+    used = set().union(*(pattern[name] for name in outputs))
+    rows_of: dict[str, list[str]] = {}
+    nominal: dict[str, float] = {}
+    for entry in program.entries:
+        for row in entry.admissibility:
+            name = f"adm.{entry.entry_id}.{row.row_id}"
+            rows_of.setdefault(entry.entry_id, []).append(name)
+            nominal[name] = row.nominal
+    closure = {
+        name
+        for names in rows_of.values()
+        if any(pattern[name] & used for name in names)
+        for name in names
+    }
+    admissibility = [name for name in program.admissibility_ids if name in closure]
+    scales = {name: float(binding.output_scales[name]) for name in outputs}
+    # The program's admissibility rows are `a/nominal` already (§4.3.1): their scale is 1.
+    scales.update({name: 1.0 for name in admissibility})
+    return AssessmentClosure(
+        tuple(outputs),
+        tuple(admissibility),
+        MappingProxyType(scales),
+        MappingProxyType({name: nominal[name] for name in admissibility}),
+    )
+
+
+def _twin_jacobian(
+    twin: ParametricTwin, x: npt.NDArray[np.float64], decisions: Mapping[str, float]
+) -> sp.csc_matrix:
+    state = _sparse(twin.jacobian_x(x, decisions))
+    parameter = _sparse(twin.jacobian_p(x, decisions))
+    return sp.csc_matrix(sp.hstack([state, parameter], format="csc"))
 
 
 @dataclass(frozen=True)
@@ -288,6 +466,41 @@ class FullSpaceNlp:
         self.start_state = dict(start_state)
         self.bounds = self._bounds(flowsheet)
         self.counters = {"residual_calls": 0, "jacobian_calls": 0}
+        unknown = formulation.unknown_assessment_outputs()
+        if unknown:
+            raise AssessmentOutputUnknownError(unknown)
+        self.assessment = formulation.assessment
+        #: E01 §4.10.2: the gray box's outputs — the bound outputs, then the admissibility rows
+        #: in their closure — each with its scale; empty without an assessment.
+        self.output_ids: tuple[str, ...] = ()
+        self.output_scales: dict[str, float] = {}
+        self.admissibility_nominals: dict[str, float] = {}
+        self.closure: AssessmentClosure | None = None
+        if self.assessment is not None:
+            self._bind(self.assessment)
+
+    def _bind(self, binding: AssessmentBinding) -> None:
+        """The gray box's outputs over the program's twin with the decisions symbolic (E01
+        §4.10.2): `assessment_closure` at the start."""
+        self.assessment_twin: ParametricTwin = assessment_twin(
+            binding, self.variable_ids, self.decision_ids
+        )
+        self._assessment_calls = _block_calls(self.assessment_twin)
+        x, decisions = self.split(self.initial_point())
+        closure = assessment_closure(binding, self.assessment_twin, x, decisions)
+        program = binding.program
+        self.closure = closure
+        self.output_ids = closure.output_ids
+        self._outputs = np.array(
+            [program.output_ids.index(name) for name in self.output_ids], dtype=np.intp
+        )
+        self.output_scales = dict(closure.scales)
+        self.admissibility_nominals = dict(closure.nominals)
+
+    def _assessment_jacobian(
+        self, x: npt.NDArray[np.float64], decisions: Mapping[str, float]
+    ) -> sp.csc_matrix:
+        return _twin_jacobian(self.assessment_twin, x, decisions)
 
     # -- primal layout -------------------------------------------------------------------------
 
@@ -325,6 +538,25 @@ class FullSpaceNlp:
         state = _sparse(self.twin.jacobian_x(x, decisions))
         parameter = _sparse(self.twin.jacobian_p(x, decisions))
         return sp.csc_matrix(sp.hstack([state, parameter], format="csc")[self._kept, :])
+
+    def output_values(self, z: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
+        """The gray box's outputs `G(x; d)` in `output_ids` order, from the assessment twin."""
+        self.counters["output_calls"] = self.counters.get("output_calls", 0) + 1
+        x, decisions = self.split(z)
+        values = np.asarray(self.assessment_twin.residual(x, decisions), dtype=np.float64)
+        return values[self._outputs]
+
+    def output_jacobian(self, z: npt.NDArray[np.float64]) -> sp.csc_matrix:
+        """`[G_x  G_d]` at `z`: rows `output_ids`, columns `primal_ids`; exact, canonical CSC."""
+        self.counters["output_jacobian_calls"] = self.counters.get("output_jacobian_calls", 0) + 1
+        x, decisions = self.split(z)
+        return sp.csc_matrix(self._assessment_jacobian(x, decisions)[self._outputs, :])
+
+    def assessment_property_calls(self) -> int:
+        """Property-block callbacks of the assessment twin since this problem was built."""
+        if self.assessment is None:
+            return 0
+        return _block_calls(self.assessment_twin) - self._assessment_calls
 
     # -- bounds and scaling --------------------------------------------------------------------
 
@@ -372,6 +604,10 @@ class FullSpaceNlp:
         """Ipopt's user scaling of the kept rows: `1/S_F`."""
         return np.array([1.0 / self.scaling.row[name] for name in self.equality_ids])
 
+    def output_scaling(self) -> npt.NDArray[np.float64]:
+        """Ipopt's user scaling of the gray box's output rows: `1/scale` (E01 §4.10.2)."""
+        return np.array([1.0 / self.output_scales[name] for name in self.output_ids])
+
     def as_document(self) -> dict[str, Any]:
         return {
             "kind": FORMULATION_KIND,
@@ -392,3 +628,7 @@ def _sparse(matrix: Any) -> sp.csc_matrix:
         (np.array(matrix.data), np.array(matrix.indices), np.array(matrix.indptr)),
         shape=(len(matrix.row_ids), len(matrix.col_ids)),
     )
+
+
+def _block_calls(twin: ParametricTwin) -> int:
+    return sum(c["value_calls"] + c["jacobian_calls"] for c in twin.block_calls().values())

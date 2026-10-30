@@ -1,0 +1,718 @@
+{
+ "base_members": [
+  {
+   "name": "attrs",
+   "version": "26.1.0"
+  },
+  {
+   "name": "jsonschema",
+   "version": "4.26.0"
+  },
+  {
+   "name": "jsonschema-specifications",
+   "version": "2025.9.1"
+  },
+  {
+   "name": "numpy",
+   "version": "2.2.4"
+  },
+  {
+   "name": "referencing",
+   "version": "0.37.0"
+  },
+  {
+   "name": "rpds-py",
+   "version": "2026.6.3"
+  },
+  {
+   "name": "scipy",
+   "version": "1.15.3"
+  }
+ ],
+ "distributions": [
+  {
+   "compiled": false,
+   "license": null,
+   "license_classifiers": [
+    "OSI Approved :: MIT License"
+   ],
+   "license_expression": "MIT",
+   "license_files": {
+    "licenses/LICENSE": "fe1049884b1a0d9342901e88e07f32925d24b3121d9972b6a6805fb9824b095d"
+   },
+   "name": "annotated-types",
+   "verdict": "ok",
+   "version": "0.8.0",
+   "wheels": {}
+  },
+  {
+   "compiled": false,
+   "license": null,
+   "license_classifiers": [],
+   "license_expression": "MIT",
+   "license_files": {
+    "licenses/LICENSE": "cf57630eb1dac940bf055508351fad0fd275f00b62fd5b4c43af8dfc0357927d"
+   },
+   "name": "asteval",
+   "verdict": "ok",
+   "version": "1.0.10",
+   "wheels": {}
+  },
+  {
+   "audit": {
+    "file": "LICENSE",
+    "identified_as": "BSD-3-Clause AND PSF-2.0",
+    "read": "Copyright (c) 2014 Simon Percivall, BSD-3 clauses; plus the PSF licence v2 for the parts derived from CPython",
+    "sha256": "92fc0e4f4fa9460558eedf3412b988d433a2dcbb3a9c45402a145a4fab8a6ac6"
+   },
+   "compiled": false,
+   "license": "BSD",
+   "license_classifiers": [
+    "OSI Approved :: BSD License"
+   ],
+   "license_expression": null,
+   "license_files": {
+    "AUTHORS.rst": "fd5c56e8981ba3b42ed6ef33dcedee4b4fc0a02c2e6a000fa07c2c7394f0c55c",
+    "LICENSE": "92fc0e4f4fa9460558eedf3412b988d433a2dcbb3a9c45402a145a4fab8a6ac6"
+   },
+   "name": "astunparse",
+   "verdict": "ok (audited)",
+   "version": "1.6.3",
+   "wheels": {}
+  },
+  {
+   "audit": {
+    "file": "LICENSE.txt",
+    "identified_as": "MIT",
+    "read": "Copyright 2010 Jason Kirtland; MIT permission notice",
+    "sha256": "9eb73a1f38597a4aa17025d2ae1be3839624c795e985d4f0e9769ce29faca467"
+   },
+   "compiled": false,
+   "license": null,
+   "license_classifiers": [
+    "OSI Approved :: MIT License"
+   ],
+   "license_expression": null,
+   "license_files": {
+    "LICENSE.txt": "9eb73a1f38597a4aa17025d2ae1be3839624c795e985d4f0e9769ce29faca467"
+   },
+   "name": "blinker",
+   "verdict": "ok (audited)",
+   "version": "1.9.0",
+   "wheels": {}
+  },
+  {
+   "audit": {
+    "file": "licenses/LICENSE",
+    "identified_as": "BSD-3-Clause",
+    "read": "Copyright 2024 Chris Mutel; BSD three clauses (same file as bw2data)",
+    "sha256": "966d484abb7c9601d38b3797695be4ccd24199e95b3c43346fc668204ad622d5"
+   },
+   "compiled": false,
+   "license": null,
+   "license_classifiers": [],
+   "license_expression": null,
+   "license_files": {
+    "licenses/LICENSE": "966d484abb7c9601d38b3797695be4ccd24199e95b3c43346fc668204ad622d5"
+   },
+   "name": "bw-graph-tools",
+   "verdict": "ok (audited)",
+   "version": "0.10",
+   "wheels": {}
+  },
+  {
+   "audit": {
+    "file": "licenses/LICENSE",
+    "identified_as": "BSD-3-Clause",
+    "read": "Copyright 2023 Chris Mutel; BSD three clauses",
+    "sha256": "89776e1db059ae189fcd87af4810feed693d7a735192fb73a7953c26ddb518f1"
+   },
+   "compiled": false,
+   "license": null,
+   "license_classifiers": [],
+   "license_expression": null,
+   "license_files": {
+    "licenses/LICENSE": "89776e1db059ae189fcd87af4810feed693d7a735192fb73a7953c26ddb518f1"
+   },
+   "name": "bw-processing",
+   "verdict": "ok (audited)",
+   "version": "1.6",
+   "wheels": {}
+  },
+  {
+   "compiled": false,
+   "license": null,
+   "license_classifiers": [],
+   "license_expression": "BSD-3-Clause",
+   "license_files": {
+    "licenses/LICENSE": "e3e590114822c8f110f6b0333ef0649494287680c2cb950d333f977e85bee2c8"
+   },
+   "name": "bw2calc",
+   "verdict": "ok",
+   "version": "2.5.0",
+   "wheels": {}
+  },
+  {
+   "audit": {
+    "file": "licenses/LICENSE",
+    "identified_as": "BSD-3-Clause",
+    "read": "Copyright 2024 Chris Mutel; BSD three clauses ('Neither the name of the copyright holder\u2026'); METADATA declares no licence",
+    "sha256": "966d484abb7c9601d38b3797695be4ccd24199e95b3c43346fc668204ad622d5"
+   },
+   "compiled": false,
+   "license": null,
+   "license_classifiers": [],
+   "license_expression": null,
+   "license_files": {
+    "licenses/LICENSE": "966d484abb7c9601d38b3797695be4ccd24199e95b3c43346fc668204ad622d5"
+   },
+   "name": "bw2data",
+   "verdict": "ok (audited)",
+   "version": "4.7",
+   "wheels": {}
+  },
+  {
+   "compiled": false,
+   "license": "BSD-3-Clause",
+   "license_classifiers": [],
+   "license_expression": null,
+   "license_files": {
+    "LICENSE": "a9d87344e6b75a1998c5d60f8aeb10bfb4850c0f227bac85209d028540162740"
+   },
+   "name": "bw2parameters",
+   "verdict": "ok",
+   "version": "1.1.0",
+   "wheels": {}
+  },
+  {
+   "compiled": false,
+   "license": "MIT",
+   "license_classifiers": [
+    "OSI Approved :: MIT License"
+   ],
+   "license_expression": null,
+   "license_files": {
+    "AUTHORS.md": "ffb567af89c70495361dad422badadd9cc559126334fad9324d4e991b6f13cf5",
+    "LICENSE": "64e51909f73ac2891c05075c027018fc8d9f9f882c605f35461bef7df82feeea"
+   },
+   "name": "deepdiff",
+   "verdict": "ok",
+   "version": "7.0.1",
+   "wheels": {}
+  },
+  {
+   "compiled": false,
+   "license": null,
+   "license_classifiers": [],
+   "license_expression": "MIT",
+   "license_files": {
+    "licenses/LICENSE.md": "a210fe0b9e9f2c0123e873f5347e9091f51cfd12863aebbe8da71f24cf804fd2"
+   },
+   "name": "deprecated",
+   "verdict": "ok",
+   "version": "3.0.0",
+   "wheels": {}
+  },
+  {
+   "audit": {
+    "file": "LICENSE",
+    "identified_as": "BSD-3-Clause",
+    "read": "Copyright (c) 2022 Hernan E. Grecco and contributors; BSD three clauses (names of contributors may not be used to endorse)",
+    "sha256": "a276fa944e6becfe51ae313094cb048f7aa6c2e5cc823138e8c1e74f73f79d61"
+   },
+   "compiled": false,
+   "license": "BSD",
+   "license_classifiers": [
+    "OSI Approved :: BSD License"
+   ],
+   "license_expression": null,
+   "license_files": {
+    "AUTHORS": "d77ff2d5d56354e790addb409bb0af6b965bc98a65ec2fc958dcca651fb98399",
+    "LICENSE": "a276fa944e6becfe51ae313094cb048f7aa6c2e5cc823138e8c1e74f73f79d61"
+   },
+   "name": "flexcache",
+   "verdict": "ok (audited)",
+   "version": "0.3",
+   "wheels": {}
+  },
+  {
+   "compiled": false,
+   "license": "BSD-3-Clause",
+   "license_classifiers": [
+    "OSI Approved :: BSD License"
+   ],
+   "license_expression": null,
+   "license_files": {
+    "AUTHORS": "8f5316068b6ab607680f9edc264f52a6c97e214d1af9c76d990e84a3aa37003d",
+    "LICENSE": "a276fa944e6becfe51ae313094cb048f7aa6c2e5cc823138e8c1e74f73f79d61"
+   },
+   "name": "flexparser",
+   "verdict": "ok",
+   "version": "0.4",
+   "wheels": {}
+  },
+  {
+   "compiled": false,
+   "license": null,
+   "license_classifiers": [],
+   "license_expression": "BSD-3-Clause",
+   "license_files": {
+    "licenses/LICENSE": "2dc35496ce53a7307915c008a844aad53e772b49b34cdd00445067691407ec94"
+   },
+   "name": "fsspec",
+   "verdict": "ok",
+   "version": "2026.9.0",
+   "wheels": {}
+  },
+  {
+   "compiled": true,
+   "license": "BSD-3-Clause",
+   "license_classifiers": [],
+   "license_expression": null,
+   "license_files": {
+    "licenses/LICENSE.txt": "8fc2b568133516e46845d2147917adeee1648e70ae9ab5ed6c5417afef4ce855",
+    "licenses/LICENSES.txt": "388fa99f3bde4447cd5a4cbb114037be026854db6cfe89e112691c1d8abdcf3c"
+   },
+   "name": "lxml",
+   "verdict": "ok",
+   "version": "6.1.3",
+   "wheels": {}
+  },
+  {
+   "audit": {
+    "file": "licenses/LICENSE",
+    "identified_as": "BSD-3-Clause",
+    "read": "'BSD 3-Clause License', Copyright (c) 2019 Chris Mutel",
+    "sha256": "dbfafa09981fdb6c2d0d83b59c3036ec033ae17d75ad042683102b39187a003a"
+   },
+   "compiled": false,
+   "license": null,
+   "license_classifiers": [
+    "OSI Approved :: BSD License"
+   ],
+   "license_expression": null,
+   "license_files": {
+    "licenses/LICENSE": "dbfafa09981fdb6c2d0d83b59c3036ec033ae17d75ad042683102b39187a003a"
+   },
+   "name": "matrix-utils",
+   "verdict": "ok (audited)",
+   "version": "0.9",
+   "wheels": {}
+  },
+  {
+   "compiled": false,
+   "license": "Apache-2.0",
+   "license_classifiers": [],
+   "license_expression": null,
+   "license_files": {
+    "LICENSE": "fb58e16cf8e82151d1d1c1206a12f866172def915fe0ccd8091fe339a2433eaf"
+   },
+   "name": "morefs",
+   "verdict": "ok",
+   "version": "0.2.2",
+   "wheels": {}
+  },
+  {
+   "audit": {
+    "file": "",
+    "identified_as": "MIT",
+    "read": "no licence file in the wheel; METADATA classifier 'OSI Approved :: MIT License' (the only statement the distribution makes)",
+    "sha256": ""
+   },
+   "compiled": false,
+   "license": null,
+   "license_classifiers": [
+    "OSI Approved :: MIT License"
+   ],
+   "license_expression": null,
+   "license_files": {},
+   "name": "ordered-set",
+   "verdict": "ok (audited)",
+   "version": "4.1.0",
+   "wheels": {}
+  },
+  {
+   "audit": {
+    "file": "licenses/LICENSE",
+    "identified_as": "Apache-2.0 OR BSD-2-Clause",
+    "read": "dual licence; already requirements.lock's packaging==26.3",
+    "sha256": "cad1ef5bd340d73e074ba614d26f7deaca5c7940c3d8c34852e65c4909686c48"
+   },
+   "compiled": false,
+   "license": null,
+   "license_classifiers": [],
+   "license_expression": "Apache-2.0 OR BSD-2-Clause",
+   "license_files": {
+    "licenses/LICENSE": "cad1ef5bd340d73e074ba614d26f7deaca5c7940c3d8c34852e65c4909686c48",
+    "licenses/LICENSE.APACHE": "0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594",
+    "licenses/LICENSE.BSD": "b70e7e9b742f1cc6f948b34c16aa39ffece94196364bc88ff0d2180f0028fac5"
+   },
+   "name": "packaging",
+   "verdict": "ok (audited)",
+   "version": "26.3",
+   "wheels": {}
+  },
+  {
+   "audit": {
+    "file": "LICENSE",
+    "identified_as": "BSD-3-Clause",
+    "read": "'BSD 3-Clause License', AQR, Lambda Foundry and PyData; bundled third-party licences in the same file are permissive",
+    "sha256": "5c1052e921e62d36ccda50a61585e9c0444b80c62f39b57c4f3f0d5fb62f5071"
+   },
+   "compiled": true,
+   "license": "BSD 3-Clause License",
+   "license_classifiers": [
+    "OSI Approved :: BSD License"
+   ],
+   "license_expression": null,
+   "license_files": {
+    "LICENSE": "5c1052e921e62d36ccda50a61585e9c0444b80c62f39b57c4f3f0d5fb62f5071"
+   },
+   "name": "pandas",
+   "verdict": "ok (audited)",
+   "version": "3.0.6",
+   "wheels": {}
+  },
+  {
+   "audit": {
+    "file": "licenses/LICENSE",
+    "identified_as": "MIT",
+    "read": "Copyright (c) 2010 Charles Leifer; MIT permission notice",
+    "sha256": "3740096125b08735a247b8dd08cd82e0ba984d3bebd9221d378576637e5240da"
+   },
+   "compiled": false,
+   "license": null,
+   "license_classifiers": [],
+   "license_expression": null,
+   "license_files": {
+    "licenses/LICENSE": "3740096125b08735a247b8dd08cd82e0ba984d3bebd9221d378576637e5240da"
+   },
+   "name": "peewee",
+   "verdict": "ok (audited)",
+   "version": "4.5.3",
+   "wheels": {}
+  },
+  {
+   "audit": {
+    "file": "licenses/LICENSE",
+    "identified_as": "BSD-3-Clause",
+    "read": "Copyright (c) 2012 Hernan E. Grecco and contributors; BSD three clauses",
+    "sha256": "46e43fb463fe2e0e28b32c900bbbdb6f376959df3936e1c134566860a55b2112"
+   },
+   "compiled": false,
+   "license": "BSD",
+   "license_classifiers": [
+    "OSI Approved :: BSD License"
+   ],
+   "license_expression": null,
+   "license_files": {
+    "licenses/AUTHORS": "f4a11fb914899773f93c50af710b242880d37dd3d232d4b79914800c5910d391",
+    "licenses/LICENSE": "46e43fb463fe2e0e28b32c900bbbdb6f376959df3936e1c134566860a55b2112"
+   },
+   "name": "pint",
+   "verdict": "ok (audited)",
+   "version": "0.26.1",
+   "wheels": {}
+  },
+  {
+   "compiled": false,
+   "license": null,
+   "license_classifiers": [
+    "OSI Approved :: MIT License"
+   ],
+   "license_expression": "MIT",
+   "license_files": {
+    "licenses/LICENSE": "29e0fd62e929850e86eb28c3fdccf0cefdf4fa94879011cffb3d0d4bed6d4db6"
+   },
+   "name": "platformdirs",
+   "verdict": "ok",
+   "version": "4.13.0",
+   "wheels": {}
+  },
+  {
+   "compiled": false,
+   "license": null,
+   "license_classifiers": [],
+   "license_expression": "MIT",
+   "license_files": {
+    "licenses/LICENSE": "a9e186f3ca16b5eef84318e7a701721351a00cb7b8ae3a4394b67b49e3529ef3"
+   },
+   "name": "pydantic",
+   "verdict": "ok",
+   "version": "2.13.5",
+   "wheels": {}
+  },
+  {
+   "compiled": true,
+   "license": null,
+   "license_classifiers": [],
+   "license_expression": "MIT",
+   "license_files": {
+    "licenses/LICENSE": "2afdd30d54b4d62b6f488a6bcc1546e84ec5061f13f4209c03d012348783795a"
+   },
+   "name": "pydantic-core",
+   "verdict": "ok",
+   "version": "2.46.5",
+   "wheels": {}
+  },
+  {
+   "compiled": false,
+   "license": null,
+   "license_classifiers": [
+    "OSI Approved :: MIT License"
+   ],
+   "license_expression": "MIT",
+   "license_files": {
+    "licenses/LICENSE": "eb355a753e020346d33d83bf9769135b89fc610568ac531a01c295bcee7fd998"
+   },
+   "name": "pydantic-settings",
+   "verdict": "ok",
+   "version": "2.15.0",
+   "wheels": {}
+  },
+  {
+   "audit": {
+    "file": "LICENSE",
+    "identified_as": "Apache-2.0 AND BSD-3-Clause",
+    "read": "Apache-2.0 for contributions after 2017-12-01, BSD-3 for earlier code",
+    "sha256": "ba00f51a0d92823b5a1cde27d8b5b9d2321e67ed8da9bc163eff96d5e17e577e"
+   },
+   "compiled": false,
+   "license": "Dual License",
+   "license_classifiers": [
+    "OSI Approved :: Apache Software License",
+    "OSI Approved :: BSD License"
+   ],
+   "license_expression": null,
+   "license_files": {
+    "LICENSE": "ba00f51a0d92823b5a1cde27d8b5b9d2321e67ed8da9bc163eff96d5e17e577e"
+   },
+   "name": "python-dateutil",
+   "verdict": "ok (audited)",
+   "version": "2.9.0.post0",
+   "wheels": {}
+  },
+  {
+   "compiled": false,
+   "license": "BSD-3-Clause",
+   "license_classifiers": [],
+   "license_expression": null,
+   "license_files": {
+    "licenses/LICENSE": "80619b7049f08c81683ad0e01f08f257a840652dd71ee83146d36658c7d2c2b9"
+   },
+   "name": "python-dotenv",
+   "verdict": "ok",
+   "version": "1.2.3",
+   "wheels": {}
+  },
+  {
+   "compiled": true,
+   "license": null,
+   "license_classifiers": [],
+   "license_expression": "MIT",
+   "license_files": {
+    "licenses/LICENSE": "f34ccdffdff56fc417785915eedf18601d5479755df3c472b2c754c29802d683"
+   },
+   "name": "rapidfuzz",
+   "verdict": "ok",
+   "version": "3.14.6",
+   "wheels": {}
+  },
+  {
+   "compiled": false,
+   "license": "MIT",
+   "license_classifiers": [
+    "OSI Approved :: MIT License"
+   ],
+   "license_expression": null,
+   "license_files": {
+    "LICENSE": "4375ba20e2b9c6c4e7cad2940a628fd90e95cc3d50ee92aae755715d8ba1fbd0"
+   },
+   "name": "six",
+   "verdict": "ok",
+   "version": "1.17.0",
+   "wheels": {}
+  },
+  {
+   "audit": {
+    "file": "licenses/LICENSE",
+    "identified_as": "MIT",
+    "read": "METADATA 'MIT License'; MIT permission notice",
+    "sha256": "5c2462f49ff9a8c06fcb46a239881652eef88512f83eb0c9063bfb0dc239bd36"
+   },
+   "compiled": false,
+   "license": "MIT License",
+   "license_classifiers": [
+    "OSI Approved :: MIT License"
+   ],
+   "license_expression": null,
+   "license_files": {
+    "licenses/LICENSE": "5c2462f49ff9a8c06fcb46a239881652eef88512f83eb0c9063bfb0dc239bd36"
+   },
+   "name": "snowflake-id",
+   "verdict": "ok (audited)",
+   "version": "1.0.2",
+   "wheels": {}
+  },
+  {
+   "audit": {
+    "file": "licenses/LICENSE",
+    "identified_as": "BSD-3-Clause",
+    "read": "Copyright 2024 Chris Mutel; BSD three clauses (same file as bw2data)",
+    "sha256": "966d484abb7c9601d38b3797695be4ccd24199e95b3c43346fc668204ad622d5"
+   },
+   "compiled": false,
+   "license": null,
+   "license_classifiers": [],
+   "license_expression": null,
+   "license_files": {
+    "licenses/LICENSE": "966d484abb7c9601d38b3797695be4ccd24199e95b3c43346fc668204ad622d5"
+   },
+   "name": "stats-arrays",
+   "verdict": "ok (audited)",
+   "version": "3.0",
+   "wheels": {}
+  },
+  {
+   "audit": {
+    "file": "licenses/LICENSE-MIT",
+    "identified_as": "MIT OR Apache-2.0",
+    "read": "dual licence, both permissive",
+    "sha256": "2bc12bb94eec2ccea211daebb763235bec3169276197a7be1f858963db31c5dd"
+   },
+   "compiled": false,
+   "license": null,
+   "license_classifiers": [
+    "OSI Approved :: Apache Software License",
+    "OSI Approved :: MIT License"
+   ],
+   "license_expression": "MIT OR Apache-2.0",
+   "license_files": {
+    "licenses/LICENSE-APACHE": "0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594",
+    "licenses/LICENSE-MIT": "2bc12bb94eec2ccea211daebb763235bec3169276197a7be1f858963db31c5dd",
+    "licenses/NOTICE": "274a71ae064275a87378f2a93ad2cf351b2929f016e280a33fc3c836a3f0f84c"
+   },
+   "name": "structlog",
+   "verdict": "ok (audited)",
+   "version": "26.1.0",
+   "wheels": {}
+  },
+  {
+   "audit": {
+    "file": "licenses/LICENCE",
+    "identified_as": "MPL-2.0 AND MIT",
+    "read": "MIT for most files, MPL-2.0 for some; used unmodified (as certifi's MPL-2.0, T07 E5)",
+    "sha256": "fcff87c3a47ce8028a8512aa182d4fcf0ad1c90544ee75cf9b343684cac194de"
+   },
+   "compiled": false,
+   "license": "MPL-2.0 AND MIT",
+   "license_classifiers": [],
+   "license_expression": null,
+   "license_files": {
+    "licenses/LICENCE": "fcff87c3a47ce8028a8512aa182d4fcf0ad1c90544ee75cf9b343684cac194de"
+   },
+   "name": "tqdm",
+   "verdict": "ok (audited)",
+   "version": "4.70.1",
+   "wheels": {}
+  },
+  {
+   "compiled": false,
+   "license": null,
+   "license_classifiers": [],
+   "license_expression": "PSF-2.0",
+   "license_files": {
+    "licenses/LICENSE": "3b2f81fe21d181c499c59a256c8e1968455d6689d269aa85373bfb6af41da3bf"
+   },
+   "name": "typing-extensions",
+   "verdict": "ok",
+   "version": "4.16.0",
+   "wheels": {}
+  },
+  {
+   "compiled": false,
+   "license": null,
+   "license_classifiers": [],
+   "license_expression": "MIT",
+   "license_files": {
+    "licenses/LICENSE": "804b59b25f2c31bd278f9202a19ae49a3945aa2664387e2d0a128c7cacc61ec3"
+   },
+   "name": "typing-inspection",
+   "verdict": "ok",
+   "version": "0.4.4",
+   "wheels": {}
+  },
+  {
+   "compiled": false,
+   "license": "BSD-3-Clause",
+   "license_classifiers": [
+    "OSI Approved :: BSD License"
+   ],
+   "license_expression": null,
+   "license_files": {
+    "COPYING": "247b4976b7a7fa4d89d9587caa5095561eb46dc5457f2279f62a62b5452adea9"
+   },
+   "name": "voluptuous",
+   "verdict": "ok",
+   "version": "0.16.0",
+   "wheels": {}
+  },
+  {
+   "compiled": false,
+   "license": null,
+   "license_classifiers": [],
+   "license_expression": "MIT",
+   "license_files": {
+    "licenses/LICENSE.txt": "30c23618679108f3e8ea1d2a658c7ca417bdfc891c98ef1a89fa4ff0c9828654"
+   },
+   "name": "wheel",
+   "verdict": "ok",
+   "version": "0.48.0",
+   "wheels": {}
+  },
+  {
+   "audit": {
+    "file": "licenses/LICENSE",
+    "identified_as": "BSD-2-Clause",
+    "read": "Copyright (c) 2013-2026 Graham Dumpleton; BSD two clauses",
+    "sha256": "d4f66854a24dda2f2a5282912aedebe6b18186b86284510a433d78fadcd88e5d"
+   },
+   "compiled": true,
+   "license": null,
+   "license_classifiers": [],
+   "license_expression": "BSD-2-Clause",
+   "license_files": {
+    "licenses/LICENSE": "d4f66854a24dda2f2a5282912aedebe6b18186b86284510a433d78fadcd88e5d"
+   },
+   "name": "wrapt",
+   "verdict": "ok (audited)",
+   "version": "2.5.0",
+   "wheels": {}
+  },
+  {
+   "compiled": false,
+   "license": null,
+   "license_classifiers": [],
+   "license_expression": "Apache-2.0",
+   "license_files": {
+    "licenses/LICENSE": "533d735a2bbc40eccebe20014c38a2bf6fb1afd488398d2c508006496099af17"
+   },
+   "name": "xarray",
+   "verdict": "ok",
+   "version": "2026.9.0",
+   "wheels": {}
+  }
+ ],
+ "extra": "lca",
+ "failures": [],
+ "format": "e01-lca-licences-v1",
+ "lock": {
+  "file": "benchmarks/e01/brightway/lca-pip.lock",
+  "sha256": "207b7606e9ebd8cca0fe0c10a4f4b21bcec38e73bce61c7fb712fe6e7b3b0da7"
+ },
+ "python": "3.13.5",
+ "requirements": [
+  "bw2data==4.7",
+  "bw2calc==2.5.0"
+ ]
+}

@@ -83,11 +83,13 @@ from openflowsheet.studies.nlp.closure import (
     ReadinessReason,
     StartEvidence,
     StartReadiness,
+    assessment_record,
     classify_starts,
     formulation_record,
     model_record,
     report_limits,
     solver_record,
+    start_closure,
     unsupported_report,
 )
 from openflowsheet.studies.nlp.formulation import (
@@ -97,6 +99,8 @@ from openflowsheet.studies.nlp.formulation import (
     FullSpaceNlp,
     NlpFormulation,
     QuadraticExpression,
+    assessment_names,
+    is_assessment_name,
 )
 from openflowsheet.studies.nlp.verification import CandidateVerification, verify_candidate
 from openflowsheet.studies.syn001 import with_pinned
@@ -121,14 +125,16 @@ HSL_OBJECT: Final = re.compile(r"hsl", re.IGNORECASE)
 class FullSpaceGreyBox(ExternalGreyBoxModel):  # type: ignore[misc]
     """`FullSpaceNlp`'s equality rows and their exact Jacobian as PyNumero's gray box.
 
-    Inputs `primal_ids` (the state, then the decisions); equality constraints `equality_ids`; no
-    outputs, no objective, no Hessian. A twin evaluation error is re-raised as
-    `PyNumeroEvaluationError` and counted; any other exception propagates."""
+    Inputs `primal_ids` (the state, then the decisions); equality constraints `equality_ids`;
+    outputs `nlp.output_ids` — none without an assessment, else the bound assessment outputs and
+    their admissibility rows (E01 §4.10.2); no objective, no Hessian. A twin evaluation error is
+    re-raised as `PyNumeroEvaluationError` and counted; any other exception propagates."""
 
     def __init__(self, nlp: FullSpaceNlp) -> None:
         self.nlp = nlp
         self._z = nlp.initial_point()
         self._pattern: tuple[npt.NDArray[np.int64], npt.NDArray[np.int64]] | None = None
+        self._output_pattern: tuple[npt.NDArray[np.int64], npt.NDArray[np.int64]] | None = None
         self.evaluation_errors: list[str] = []
 
     def input_names(self) -> list[str]:
@@ -138,7 +144,7 @@ class FullSpaceGreyBox(ExternalGreyBoxModel):  # type: ignore[misc]
         return list(self.nlp.equality_ids)
 
     def output_names(self) -> list[str]:
-        return []
+        return list(self.nlp.output_ids)
 
     def set_input_values(self, input_values: npt.NDArray[np.float64]) -> None:
         self._z = np.array(input_values, dtype=np.float64)
@@ -160,14 +166,27 @@ class FullSpaceGreyBox(ExternalGreyBoxModel):  # type: ignore[misc]
         # Ipopt is handed the structure once; every later Jacobian must fill exactly that pattern.
         # The twin's CSC is structural and canonical (`_csc_from_triplets`), so this holds by
         # construction, and a violation is a bug, not an evaluation error.
-        pattern = (jacobian.row.astype(np.int64), jacobian.col.astype(np.int64))
-        if self._pattern is None:
-            self._pattern = pattern
-        elif not (
-            np.array_equal(pattern[0], self._pattern[0])
-            and np.array_equal(pattern[1], self._pattern[1])
-        ):
-            raise RuntimeError("the twin's Jacobian changed its sparsity pattern")
+        self._pattern = _same_pattern(self._pattern, jacobian, "the twin's Jacobian")
+        return jacobian
+
+    def get_output_constraint_scaling_factors(self) -> npt.NDArray[np.float64]:
+        return self.nlp.output_scaling()
+
+    def evaluate_outputs(self) -> npt.NDArray[np.float64]:
+        try:
+            return self.nlp.output_values(self._z)
+        except TwinEvaluationError as error:
+            raise self._failed("assessment output", error) from error
+
+    def evaluate_jacobian_outputs(self) -> sp.coo_matrix:
+        try:
+            jacobian = self.nlp.output_jacobian(self._z).tocoo()
+        except TwinEvaluationError as error:
+            raise self._failed("assessment jacobian", error) from error
+        # The same guard as the equality Jacobian's (E01 §4.10.2, A34).
+        self._output_pattern = _same_pattern(
+            self._output_pattern, jacobian, "the assessment twin's Jacobian"
+        )
         return jacobian
 
     def _failed(self, what: str, error: TwinEvaluationError) -> PyNumeroEvaluationError:
@@ -175,8 +194,38 @@ class FullSpaceGreyBox(ExternalGreyBoxModel):  # type: ignore[misc]
         return PyNumeroEvaluationError(f"twin {what} evaluation failed: {error}")
 
 
+def _same_pattern(
+    held: tuple[npt.NDArray[np.int64], npt.NDArray[np.int64]] | None,
+    jacobian: sp.coo_matrix,
+    what: str,
+) -> tuple[npt.NDArray[np.int64], npt.NDArray[np.int64]]:
+    """Ipopt is handed a Jacobian's structure once; every later one must fill exactly that
+    pattern. The twin's CSC is structural and canonical (`_csc_from_triplets`), so this holds by
+    construction, and a violation is a bug, not an evaluation error."""
+    pattern = (jacobian.row.astype(np.int64), jacobian.col.astype(np.int64))
+    if held is None:
+        return pattern
+    if not (np.array_equal(pattern[0], held[0]) and np.array_equal(pattern[1], held[1])):
+        raise RuntimeError(f"{what} changed its sparsity pattern")
+    return held
+
+
+class _Names:
+    """What a declared expression's names stand for in Pyomo: a state variable or decision is
+    the gray box's input, `assessment:<id>` its output `<id>` (E01 §4.10.2)."""
+
+    def __init__(self, inputs: Any, outputs: Any) -> None:
+        self._inputs, self._outputs = inputs, outputs
+
+    def __getitem__(self, name: str) -> Any:
+        if is_assessment_name(name):
+            return self._outputs[assessment_names((name,))[0]]
+        return self._inputs[name]
+
+
 def _expression(expression: QuadraticExpression, variables: Any) -> Any:
-    """A declared linear or quadratic expression over the gray box's input variables."""
+    """A declared linear or quadratic expression over the gray box's input variables (and,
+    with an assessment, its outputs)."""
     terms: list[Any] = [expression.constant]
     terms.extend(coefficient * variables[name] for name, coefficient in expression.linear.items())
     terms.extend(
@@ -201,8 +250,9 @@ def build_model(nlp: FullSpaceNlp, box: FullSpaceGreyBox) -> Any:
         inputs[name].value = float(value)
         inputs[name].setlb(None if math.isinf(low) else float(low))
         inputs[name].setub(None if math.isinf(high) else float(high))
+    names = _Names(inputs, model.greybox.outputs) if nlp.output_ids else inputs
     model.objective = pyo.Objective(
-        expr=_expression(formulation.objective, inputs), sense=pyo.minimize
+        expr=_expression(formulation.objective, names), sense=pyo.minimize
     )
     ids = [constraint.constraint_id for constraint in formulation.constraints]
     by_id = {constraint.constraint_id: constraint for constraint in formulation.constraints}
@@ -210,16 +260,34 @@ def build_model(nlp: FullSpaceNlp, box: FullSpaceGreyBox) -> Any:
         ids,
         rule=lambda _, name: (
             by_id[name].lower,
-            _expression(by_id[name].expression, inputs),
+            _expression(by_id[name].expression, names),
             by_id[name].upper,
         ),
     )
+    admissibility = list(nlp.admissibility_nominals)
+    if nlp.output_ids:
+        # E01 §4.10.2: each admissibility row of the closure is `adm ≥ 0`, scaling 1.
+        model.assessment_admissibility = pyo.Constraint(
+            admissibility, rule=lambda _, name: model.greybox.outputs[name] >= 0.0
+        )
     model.scaling_factor = pyo.Suffix(direction=pyo.Suffix.EXPORT)
     for name, factor in zip(nlp.primal_ids, nlp.primal_scaling(), strict=True):
         model.scaling_factor[inputs[name]] = float(factor)
     model.scaling_factor[model.objective] = 1.0
     for name in ids:
         model.scaling_factor[model.inequalities[name]] = 1.0
+    if nlp.output_ids:
+        outputs = model.greybox.outputs
+        for name, value, factor in zip(
+            nlp.output_ids,
+            nlp.output_values(nlp.initial_point()),
+            nlp.output_scaling(),
+            strict=True,
+        ):
+            outputs[name].value = float(value)  # G(x₀)
+            model.scaling_factor[outputs[name]] = float(factor)
+        for name in admissibility:
+            model.scaling_factor[model.assessment_admissibility[name]] = 1.0
     return model
 
 
@@ -431,6 +499,7 @@ def solve_start(
             run.final_decisions,
             regimes=readiness.regimes,
             optimizer_state=optimizer_state,
+            closure=nlp.closure,
         )
     except Exception as error:  # noqa: BLE001 - recorded; the start then has no V outcomes
         run.note(f"verification raised {type(error).__name__}: {_first_line(error)}")
@@ -456,9 +525,12 @@ def _by_primal_id(
 def _evaluations(nlp: FullSpaceNlp, box: FullSpaceGreyBox) -> dict[str, int]:
     """Spec §8.6's counters since the start's twin was built: full-space residuals and
     Jacobians, property-block callbacks (value and Jacobian), and failed evaluations."""
-    property_calls = sum(
-        counts["value_calls"] + counts["jacobian_calls"]
-        for counts in nlp.twin.block_calls().values()
+    property_calls = (
+        sum(
+            counts["value_calls"] + counts["jacobian_calls"]
+            for counts in nlp.twin.block_calls().values()
+        )
+        + nlp.assessment_property_calls()
     )
     return {
         "residual_calls": nlp.counters["residual_calls"],
@@ -611,7 +683,13 @@ def optimize(
     verified = [runs[index] for index in verdict.verified_starts]
     candidate = _candidate(verified)
     return OptimizationReport(
-        formulation=formulation_record(formulation, readiness.declared_regimes),
+        formulation=formulation_record(
+            formulation,
+            readiness.declared_regimes,
+            assessment_record(
+                formulation, start_closure(formulation, flowsheet, readiness), candidate
+            ),
+        ),
         model=model_record(flowsheet),
         solver=solver_record(solver, solver_environment()),
         hessian_policy=dict(HESSIAN_POLICY),

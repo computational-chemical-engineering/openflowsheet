@@ -64,6 +64,9 @@
     },
     "result": {
       "type": "object"
+    },
+    "assessment": {
+      "$ref": "https://github.com/frankp/process-runtime/schemas/assessment.schema.json#/$defs/assessment_link"
     }
   },
   "allOf": [

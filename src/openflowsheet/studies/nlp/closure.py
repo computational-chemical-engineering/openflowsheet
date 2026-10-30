@@ -11,8 +11,14 @@ importable; otherwise `unsupported` with every failing reason, in the specificat
 | `START_OUTSIDE_BOUNDS` | every start inside the box |
 | `DECISION_INCONSISTENT_WITH_ELIMINATED_ROWS` | the decisions pass Q3 at every start |
 | `UNKNOWN_VARIABLE` | every variable the objective and constraints name exists |
+| `ASSESSMENT_OUTPUT_UNKNOWN` | every `assessment:<id>` named is bound (E01 §4.10.2) |
+| `ASSESSMENT_OUTPUT_UNAVAILABLE` | no `assessment:<id>` named is `null` in the program (E01 §4.9) |
+| `ASSESSMENT_PARAMETER_STRUCTURAL` | no decision is a structural θ of the program |
+| `ASSESSMENT_PARAMETER_DECISION` | no decision is a θ of the program (unsupported on day one) |
 | `HESSIAN_UNAVAILABLE` | the Hessian policy is the limited-memory approximation |
 | `SIMULATION_NOT_READY` | every start solves and certifies `VERIFIED` |
+| `ASSESSMENT_REGIME_INADMISSIBLE` | the held regime's rows are ≥ −τ_feas at every start |
+| `ASSESSMENT_OBJECTIVE_UNSCALED` | an objective on outputs has 1e-3 ≤ abs(f) ≤ 1e3 at every start |
 | `NLP_SOLVER_UNAVAILABLE` | the `nlp` extra and its adapter installed; [A10] verdict `PASS` |
 
 `optimize()` calls it first and returns an `OptimizationReport` with status `UNSUPPORTED` and those
@@ -37,7 +43,11 @@ from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
 from typing import Any, Final, Literal
 
-from openflowsheet.compile.casadi_backend import compile_problem
+import numpy as np
+
+from openflowsheet.assessment.quantities import ASSESSMENT_PREFIX
+from openflowsheet.compile.casadi_backend import TwinEvaluationError, compile_problem
+from openflowsheet.compile.reference import state_vector
 from openflowsheet.models import SpecificationError
 from openflowsheet.models.syn001.flowsheet import Syn001Flowsheet
 from openflowsheet.studies.nlp.formulation import (
@@ -45,9 +55,20 @@ from openflowsheet.studies.nlp.formulation import (
     HESSIAN_APPROXIMATION,
     HESSIAN_POLICY,
     IPOPT_OPTIONS,
+    AssessmentClosure,
+    AssessmentOutputUnknownError,
     NlpFormulation,
+    assessment_closure,
+    assessment_twin,
+    is_assessment_name,
 )
-from openflowsheet.studies.nlp.verification import CHECKS, CheckOutcome, declared_regimes
+from openflowsheet.studies.nlp.verification import (
+    CHECKS,
+    TAU_FEAS,
+    CandidateVerification,
+    CheckOutcome,
+    declared_regimes,
+)
 from openflowsheet.studies.sensitivity import TAU_ALIAS, OutputFunctional, StudyParameter
 from openflowsheet.studies.syn001 import solve_certified, syn001_sensitivity, with_pinned
 
@@ -79,8 +100,14 @@ ReadinessCode = Literal[
     "START_OUTSIDE_BOUNDS",
     "DECISION_INCONSISTENT_WITH_ELIMINATED_ROWS",
     "UNKNOWN_VARIABLE",
+    "ASSESSMENT_OUTPUT_UNKNOWN",
+    "ASSESSMENT_OUTPUT_UNAVAILABLE",
+    "ASSESSMENT_PARAMETER_STRUCTURAL",
+    "ASSESSMENT_PARAMETER_DECISION",
     "HESSIAN_UNAVAILABLE",
     "SIMULATION_NOT_READY",
+    "ASSESSMENT_REGIME_INADMISSIBLE",
+    "ASSESSMENT_OBJECTIVE_UNSCALED",
     "NLP_SOLVER_UNAVAILABLE",
 ]
 #: Spec §8.7's order, which is the order reasons are listed in.
@@ -90,10 +117,20 @@ READINESS_ORDER: Final[tuple[ReadinessCode, ...]] = (
     "START_OUTSIDE_BOUNDS",
     "DECISION_INCONSISTENT_WITH_ELIMINATED_ROWS",
     "UNKNOWN_VARIABLE",
+    "ASSESSMENT_OUTPUT_UNKNOWN",
+    "ASSESSMENT_OUTPUT_UNAVAILABLE",
+    "ASSESSMENT_PARAMETER_STRUCTURAL",
+    "ASSESSMENT_PARAMETER_DECISION",
     "HESSIAN_UNAVAILABLE",
     "SIMULATION_NOT_READY",
+    "ASSESSMENT_REGIME_INADMISSIBLE",
+    "ASSESSMENT_OBJECTIVE_UNSCALED",
     "NLP_SOLVER_UNAVAILABLE",
 )
+#: E01 review S1: the range of `|f(x₀)|` an objective naming an assessment output must lie in.
+#: V5 scores stationarity in the objective's declared units (TAU_KKT absolute), so an unscaled
+#: SI output (an impact rate of 1e-5 kg/s) would pass V5 everywhere.
+OBJECTIVE_SCALE_RANGE: Final = (1.0e-3, 1.0e3)
 ReadinessStatus = Literal["READY_FOR_OPTIMIZATION", "unsupported"]
 ReportStatus = Literal[
     "KKT_POINT_VERIFIED", "NOT_VERIFIED", "INFEASIBLE_REPORTED", "SOLVER_FAILED", "UNSUPPORTED"
@@ -281,7 +318,11 @@ def optimization_readiness(
     known_decisions = True
     if spec is not None:
         for decision_id in formulation.decision_ids:
-            if decision_id not in spec.parameter_ids:
+            theta = _assessment_theta(formulation, decision_id)
+            if theta is not None:
+                known_decisions = False
+                reasons.append(theta)
+            elif decision_id not in spec.parameter_ids:
                 known_decisions = False
                 reasons.append(
                     ReadinessReason(
@@ -321,6 +362,7 @@ def optimization_readiness(
                         "UNKNOWN_VARIABLE", f"{name!r} is not a variable of {spec.label!r}", name
                     )
                 )
+    reasons.extend(_assessment_outputs(formulation))
     if formulation.hessian != HESSIAN_APPROXIMATION:
         reasons.append(
             ReadinessReason(
@@ -336,6 +378,8 @@ def optimization_readiness(
             record, found = _start(formulation, flowsheet, index, start, bounded, spec)
             starts.append(record)
             reasons.extend(found)
+            reasons.extend(_assessment_regime(formulation, index, record))
+            reasons.extend(_assessment_objective_scale(formulation, index, record))
 
     solver = solver_probe()
     if not solver.available:
@@ -349,6 +393,122 @@ def optimization_readiness(
         solver=solver,
         starts=tuple(starts),
     )
+
+
+def _assessment_theta(formulation: NlpFormulation, decision_id: str) -> ReadinessReason | None:
+    """E01 §4.10.2: a decision that is a θ of the bound program. Assessment parameters are never
+    decisions on day one; a structural one is named as such."""
+    binding = formulation.assessment
+    if binding is None or decision_id not in binding.program.theta:
+        return None
+    if binding.program.theta[decision_id].structural:
+        return ReadinessReason(
+            "ASSESSMENT_PARAMETER_STRUCTURAL",
+            f"{decision_id!r} is a structural assessment parameter; it is never continuous",
+            decision_id,
+        )
+    return ReadinessReason(
+        "ASSESSMENT_PARAMETER_DECISION",
+        f"{decision_id!r} is an assessment parameter; assessment parameters are not decisions "
+        "(unsupported)",
+        decision_id,
+    )
+
+
+def _assessment_outputs(formulation: NlpFormulation) -> list[ReadinessReason]:
+    """E01 §4.10.2: every `assessment:<id>` named is a bound, published, non-null output."""
+    binding = formulation.assessment
+    unavailable = {} if binding is None else dict(binding.program.unavailable)
+    unknown = set(formulation.unknown_assessment_outputs())
+    reasons: list[ReadinessReason] = []
+    for name in formulation.assessment_outputs:
+        if name in unavailable:
+            reasons.append(
+                ReadinessReason(
+                    "ASSESSMENT_OUTPUT_UNAVAILABLE",
+                    f"assessment:{name} is null: {unavailable[name]}",
+                    name,
+                )
+            )
+        elif name in unknown:
+            reasons.append(
+                ReadinessReason(
+                    "ASSESSMENT_OUTPUT_UNKNOWN",
+                    f"assessment:{name} is not "
+                    + ("bound" if binding is None else "a bound output of the program"),
+                    name,
+                )
+            )
+    return reasons
+
+
+def _assessment_regime(
+    formulation: NlpFormulation, index: int, start: StartReadiness
+) -> list[ReadinessReason]:
+    """E01 §4.10.2: the held regime is admissible at a verified start — every admissibility row
+    `≥ −τ_feas` at its state and decisions — else `ASSESSMENT_REGIME_INADMISSIBLE`."""
+    binding = formulation.assessment
+    if binding is None or start.state is None:
+        return []
+    program = binding.program
+    try:
+        values = program.evaluate(start.state, formulation.decision_values(start.start))
+    except TwinEvaluationError as error:
+        return [
+            ReadinessReason(
+                "ASSESSMENT_REGIME_INADMISSIBLE", f"start {index}: not evaluable: {error}"
+            )
+        ]
+    if not isinstance(values, Mapping):
+        return [ReadinessReason("ASSESSMENT_REGIME_INADMISSIBLE", f"start {index}: {values}")]
+    violated = [name for name in program.admissibility_ids if values[name] < -TAU_FEAS]
+    if not violated:
+        return []
+    return [
+        ReadinessReason(
+            "ASSESSMENT_REGIME_INADMISSIBLE",
+            f"start {index}: rows below -tau_feas={TAU_FEAS}: {','.join(violated)}",
+            ",".join(violated),
+        )
+    ]
+
+
+def _assessment_objective_scale(
+    formulation: NlpFormulation, index: int, start: StartReadiness
+) -> list[ReadinessReason]:
+    """E01 review S1: an objective naming an assessment output has `|f| ∈ OBJECTIVE_SCALE_RANGE`
+    at a verified start, `f = 0` included in the refusal, else `ASSESSMENT_OBJECTIVE_UNSCALED`.
+    It is never normalised silently: that would change the declared problem. A start where the
+    program cannot be evaluated is `_assessment_regime`'s to report."""
+    binding = formulation.assessment
+    objective = formulation.objective
+    named = [name for name in objective.variables if is_assessment_name(name)]
+    if binding is None or start.state is None or not named:
+        return []
+    try:
+        values = binding.program.evaluate(start.state, formulation.decision_values(start.start))
+    except TwinEvaluationError:
+        return []
+    if not isinstance(values, Mapping) or any(
+        name.removeprefix(ASSESSMENT_PREFIX) not in values for name in named
+    ):
+        return []  # unknown or null outputs are `_assessment_outputs`'s to report
+    point = {**start.state, **{f"{ASSESSMENT_PREFIX}{k}": float(v) for k, v in values.items()}}
+    f = objective.value(point)
+    low, high = OBJECTIVE_SCALE_RANGE
+    if low <= abs(f) <= high:
+        return []
+    scales = {
+        name: binding.output_scales.get(name.removeprefix(ASSESSMENT_PREFIX)) for name in named
+    }
+    return [
+        ReadinessReason(
+            "ASSESSMENT_OBJECTIVE_UNSCALED",
+            f"start {index}: |f| = {abs(f)!r} is outside [{low!r}, {high!r}]; divide the "
+            f"objective's assessment terms by the binding's recorded scale {scales}",
+            ",".join(named),
+        )
+    ]
 
 
 def _start(
@@ -455,8 +615,11 @@ class StartEvidence:
 
     @property
     def verified(self) -> bool:
-        """V1-V5 all `pass` (V6 records values and decides nothing)."""
-        return all(self.checks.get(check) == "pass" for check in CHECKS[:5])
+        """V1-V5 all `pass` (V6 records values and decides nothing), and V7 where recorded (E01
+        §4.10.3: a changed assessment regime leaves the start unverified, as V2 does)."""
+        return all(self.checks.get(check) == "pass" for check in CHECKS[:5]) and (
+            self.checks.get("V7", "pass") == "pass"
+        )
 
 
 @dataclass(frozen=True)
@@ -644,9 +807,93 @@ def report_limits() -> dict[str, Any]:
 
 
 def formulation_record(
-    formulation: NlpFormulation, regimes: Mapping[str, str] | None
+    formulation: NlpFormulation,
+    regimes: Mapping[str, str] | None,
+    assessment: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
-    return {**formulation.as_document(), "kind": FORMULATION_KIND, "declared_regimes": regimes}
+    """The report's `formulation`; `assessment` (E01 §4.11, `assessment_record`) only when the
+    formulation has a binding, so an M03 report is unchanged."""
+    record = {**formulation.as_document(), "kind": FORMULATION_KIND, "declared_regimes": regimes}
+    if assessment is not None:
+        record["assessment"] = dict(assessment)
+    return record
+
+
+def start_closure(
+    formulation: NlpFormulation, flowsheet: Syn001Flowsheet, readiness: Readiness
+) -> AssessmentClosure | None:
+    """The binding's gray-box closure (E01 §4.10.2) at the first start readiness certified;
+    `None` without a binding, without such a start, or where it cannot be formed there."""
+    binding = formulation.assessment
+    if binding is None:
+        return None
+    for start in readiness.starts:
+        if start.state is None:
+            continue
+        decisions = formulation.decision_values(start.start)
+        spec = with_pinned(flowsheet, decisions).spec()
+        try:
+            twin = assessment_twin(binding, spec.variable_ids, formulation.decision_ids)
+            x = np.array(state_vector(spec, start.state), dtype=np.float64)
+            return assessment_closure(binding, twin, x, decisions)
+        except (TwinEvaluationError, AssessmentOutputUnknownError, ValueError):
+            return None
+    return None
+
+
+def assessment_record(
+    formulation: NlpFormulation,
+    closure: AssessmentClosure | None,
+    candidate: CandidateVerification | None = None,
+) -> dict[str, Any] | None:
+    """`formulation.assessment` (E01 §4.11): the assessment's and regime's identity, each bound
+    output's scale, each admissibility row of the closure with its nominal, and
+    `regime_bounds_active` — the rows with scaled slack ≤ τ_feas at the candidate, each with its
+    multiplier from V5's least squares, and then `regime_note` in words (E01 review N5). Without a
+    closure (no certified start) the outputs carry the binding's scales and there are no rows;
+    without a candidate nothing is active."""
+    binding = formulation.assessment
+    if binding is None:
+        return None
+    program = binding.program
+    spec = program.context.spec
+    if closure is not None:
+        outputs = [{"id": name, "scale": closure.scales[name]} for name in closure.outputs]
+        admissibility = [
+            {"id": name, "nominal": closure.nominals[name]} for name in closure.admissibility
+        ]
+    else:
+        known = [name for name in program.output_ids if name in set(binding.outputs)]
+        outputs = [{"id": name, "scale": float(binding.output_scales[name])} for name in known]
+        admissibility = []
+    active: list[dict[str, Any]] = []
+    if candidate is not None and candidate.kkt is not None:
+        for name in closure.admissibility if closure is not None else ():
+            slack = candidate.slacks.get(name, {}).get("lower")
+            multiplier = candidate.kkt.multipliers.get(name)
+            if slack is not None and slack <= TAU_FEAS and multiplier is not None:
+                active.append({"id": name, "slack": slack, "multiplier": multiplier})
+    record = {
+        "assessment_id": spec.assessment_id,
+        "assessment_sha256": spec.assessment_sha256,
+        "regime_sha256": program.regime.sha256,
+        "regime_entries": dict(program.regime.entries),
+        "outputs": outputs,
+        "admissibility": admissibility,
+        "regime_bounds_active": active,
+    }
+    if active:
+        record["regime_note"] = REGIME_NOTE
+    return record
+
+
+#: E01 review N5: the words a record with active regime rows carries.
+REGIME_NOTE: Final = (
+    "KKT_POINT_VERIFIED holds for the held regime: the candidate is a KKT point of the problem "
+    "with every regime choice held. The admissibility rows under regime_bounds_active are at "
+    "their boundary, where a choice (parallel units, a correlation piece) changes and the cost "
+    "may jump; a point beyond it is not covered by the verification."
+)
 
 
 def model_record(flowsheet: Syn001Flowsheet) -> dict[str, Any]:
@@ -663,7 +910,11 @@ def unsupported_report(
 ) -> OptimizationReport:
     """`UNSUPPORTED`: refused before any solve, with every reason; no candidate, no claim."""
     return OptimizationReport(
-        formulation=formulation_record(formulation, readiness.declared_regimes),
+        formulation=formulation_record(
+            formulation,
+            readiness.declared_regimes,
+            assessment_record(formulation, start_closure(formulation, flowsheet, readiness)),
+        ),
         model=model_record(flowsheet),
         solver=solver_record(readiness.solver),
         hessian_policy=dict(HESSIAN_POLICY),

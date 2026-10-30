@@ -9,8 +9,11 @@ component records the provider `pr-c1-v1` reads (`benchmarks/m01/components.yaml
 since M02 the external addendum whose `compare` rules a coupled replay reads
 (`benchmarks/m02/numerical_policy_external.yaml`, register R-317 (b)), since S05 the IAPWS-95
 coefficient file the library-only provider `iapws95-v1` reads
-(`benchmarks/s05/iapws95_coefficients.json`, R-616; its attribution is in NOTICE), and the
-diagnostic web shell's static files (`apps/web/`, served by `serve-http --ui`; M06, ADR 0030 D2).
+(`benchmarks/s05/iapws95_coefficients.json`, R-616; its attribution is in NOTICE), the
+diagnostic web shell's static files (`apps/web/`, served by `serve-http --ui`; M06, ADR 0030 D2),
+and since E01 the assessment data (`assessment/{cost,index,lca}/*.json`: the SSLW cost set, the
+capital-chain presets, three index series and two LCA tables, ADR 0052; their attributions are in
+NOTICE).
 Each has exactly one copy in the repository, at the path its registration names. Until T08 they were
 found by walking up from a module's `__file__` to the repository root, which an installed wheel does
 not have (T08 release spec §12 Q1, FD5): `openflowsheet solve SYN-001-nominal` from a wheel failed
@@ -48,6 +51,15 @@ PACKAGED: Final[tuple[str, ...]] = (
     # S05 (R-616): the IAPWS-95 coefficient file `iapws95-v1` reads; one file entry, so nothing
     # placed beside it later ships (spec S05 §16.2 A26 (a)).
     "benchmarks/s05/iapws95_coefficients.json",
+    # E01 (ADR 0052): the assessment data, one file entry each like S05's (a file placed beside them
+    # fails T08's package-data check); the third-party ones carry their attribution in NOTICE.
+    "assessment/cost/chains.json",
+    "assessment/cost/sslw-idaes-v1.json",
+    "assessment/index/bls-ppi-wpu11-annual-v1.json",
+    "assessment/index/eurostat-ppi-c28-ea-annual-v1.json",
+    "assessment/index/frb-g5a-annual-v1.json",
+    "assessment/lca/gwp100-ipcc-ar6-v1.json",
+    "assessment/lca/test-background-v1.json",
     "web",
 )
 #: The entries of `PACKAGED` that are directories: a file anywhere below one is packaged too.
