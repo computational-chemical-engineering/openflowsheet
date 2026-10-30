@@ -626,6 +626,10 @@ def _m_adrs(inputs: Inputs) -> Part:
         # Before WO-7 the routes "after V03.A24" and "at WO-8" (§6) cannot have run yet.
         value["state"] = "pending"
         return "unsupported", value
+    if found and all(re.match(r"ADR (0053|0054) is not Accepted", p) for p in found):
+        # After WO-7 only the "at WO-8" route (0053, 0054; §6) can still be open.
+        value["state"] = "pending"
+        return "unsupported", value
     return ("pass" if not found and proposed else "fail"), value
 
 

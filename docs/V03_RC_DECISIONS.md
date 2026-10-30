@@ -238,3 +238,9 @@ R0 INDIFFERENT, R1 DECIDED 653.15 K (cold 36, 1554 s), R2 SURROGATE_NOT_PROMOTAB
 - DECISION: when R0 passes, §7.1 says (c) passes "whatever else it is given" → the clean-tracked-files fact is
   recorded but not required in that branch (the generator refuses a dirty tree before it runs anyway).
   Alternative: require it in both branches. Reversible by: moving one line in `a12c_decide`.
+- DECISION: V03.A25 after WO-7, while the only ADR problems are 0053/0054 not Accepted (their §6 route is "at WO-8")
+  → `unsupported` with `state: pending`, not `fail` (extends WO-6's pending rule, which keyed on the verdict document's
+  absence; the WO-6 handoff's "A25–A27 unsupported until WO-7/8"). The first generation at `362e4763` gave A25 `fail`
+  on exactly those two. Controls: as is → unsupported; plus 0050 not Accepted → fail; plus a missing ADR → fail; no
+  problem → pass. `unsupported` is not a pass; the status stays `implemented`. Alternative: leave `fail` until WO-8.
+  Reversible by: reverting this commit (one `if` in `_m_adrs`).
