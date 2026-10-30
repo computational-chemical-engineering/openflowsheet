@@ -92,27 +92,19 @@ F5 education mode deferred.
 
 ## Next action
 
-**Position (2026-10-29 evening).** **S11 merged** (`1b2758d1`). **wp/E01**: gate PASS `84d71df8` (14537 passed); CI
-40909427554 failed aarch64 only (golden report's `state_sha256`, a float digest under ADR 0025 D2) → test fixed `991dcde8`,
-CI re-running; then merge `--no-ff` + tree check. Branches in flight (≤ 2 agents; batch, then test once):
-- **wp/E01b** (worktree `e01b`): Seider corrections. Frank: five 4th-ed.-matched ranges verified (C1 done); differences fixed
-  **before 0.3.0**; Frank supplied the **3rd ed.** (`seider2009product`; local text `~/.cache/seider3/`, 4th ed.
-  `~/.cache/seider4/`, never committed). §10 ruling R-890…R-894 (4th-ed. based) is being amended against the 3rd ed.
-  (`architect`, brief `docs/briefs/E01b-seider3-amendment.md`, R-895+). Done: C1, C2 loader, C1 pins (`15307c6a`); C3–C6 on
-  4th-ed. numbers parked on local `wip/E01b-held`. C7 (new `verified` flags) needs Frank's approval.
-- **wp/V03** (worktree `v03`): 0.3.0 release policy ADR 0053 + `docs/derivations/V03-release-spec.md` (R-872…R-880);
-  Frank: W27 not claimed, keep the token, correct U02 text; WO-1 (`scripts/v0_3_gate.py`, byte-identical v0.2) and WO-2
-  (Wilson data in the wheel, Frank: params + points) done at `98701cca`. Next: WO-3/WO-4 after E01 + E01b merge; reviewer
-  question: does `wilson-ig-v1` bind from package data without a path?
-- **wp/DOC** (worktree `doc`): GitHub Pages site (Frank 2026-10-29), MkDocs Material in Peclet's look (site.yml,
-  requirements-docs.txt) with PyMRM habits (NumPy docstrings, notebooks executed in CI, Getting Started / Coding Agents);
-  manifest id S14; engineer building. After merge: enable Pages (`build_type=workflow`).
+**Position (2026-10-30).** Merged into main: S11 (`1b2758d1`), E01 (`05363060`), E01b (`51cd6847`, Seider 3rd-ed.
+check, QA1 closed, C7 approved by Frank), **DOC (`8f402cfa`**, CI 41041080081 green both runners). GitHub Pages enabled
+(`build_type=workflow`); site https://computational-chemical-engineering.github.io/openflowsheet/ deploys from `site.yml` on
+push to main.
+- **wp/V03** (worktree `v03`, head `aa83d975`): ADR 0053/0054, spec + Amendment 1, WO-1…WO-4 and the review fixes
+  (`docs/reviews/V03-review.md`, R-900/R-901) done; S11-IDENTITY PASS n=54494. Running: brief 4
+  (`docs/briefs/V03-docs-merge.md`): merge main 8f402cfa, close DOC O1 (Wilson ships in the wheel) and O2 (turbine/compressor
+  roles in the examples). Then full gate → push → CI both runners → merge (spec P3).
 **Next actions (in order):**
-1. E01 CI green → merge E01; merge main into V03/E01b/DOC as they need it.
-2. E01b: amended ruling → one engineer C3–C6 → Frank approves C7 → gate/CI → merge.
-3. DOC: build → merge → enable Pages.
-4. **Release 0.3.0** (Frank, 2026-10-29: "cut 0.3.0 right after S11 and E01 merge, before starting the optimiser package,
-   and leave Wilson in"): V03 WO-3/4, one reviewer pass, WO-5 K3/C, RC job, verdict, Frank's N-2…N-6, tag (Frank's).
+1. V03 brief 4 → full gate → CI → merge into main.
+2. **Release 0.3.0** (spec §4): WO-5 K3 cut + G10 re-take + W25 journey at K3 (reactor env) + C; WO-6 RC steps 1–17
+   (17a A48, 17b CoolProp 0 skips, 17c MR-12 v03, 17d lca/nlp, 17e wheel), RC record, S13 manifest; WO-7 verdict; WO-8 Frank's
+   N-2…N-6 in plain words, ADR 0053/0054 Accepted, tag is Frank's; WO-9 main → 0.4.0.dev0.
 2b. **NLP optimiser on revision flowsheets** (Frank 2026-10-27: right after E01), with MCP/CLI/HTTP for cost/LCA.
 2c. **X01 — model extensibility infrastructure, piloted by NRTL + UNIQUAC (+ original UNIFAC), VLE only** (Frank,
    2026-10-28: "more about the flexibility of the basic infrastructure than having all models on board"; adding a model
