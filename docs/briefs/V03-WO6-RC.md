@@ -7,6 +7,13 @@ F-V3: the producer of `step17/rc-step17c.json` and the call of `mr12_extras_v03`
 `docs/v02-rc-record.md` (records under `evidence/M07/ce99365…/rc/`, `rc/records.json`, tools under `…/tools/`), the alpha
 spec §8.2 steps as M07 §8 reads them, `scripts/m07a_rc.py`, `scripts/t08_rc.py`, CI's `rc-steps` and `rc-coolprop` jobs.
 
+**WO-5 facts (handoff in `docs/V03_RC_DECISIONS.md`, head `28a2be21`):** G10 re-taken at `2d945b5d` (K3 + records); journey
+record `93886ac3` taken at `2d945b5d`, not at K3, because `carry.journey_files` holds `benchmarks/m05/**` — step 15 therefore
+runs `v0_3_gate.py --rc C --carry-journey 2d945b5d`. Both commits touch `benchmarks/m05/records` and `benchmarks/m07/journey/<J>`
+(D2.4 paths) after K3, as 0.2.0's K + records did. **First check** whether `v0_3_gate.py`'s tree rule (RC.1-style
+`git diff K3 C -- <D2.4>` or the A-rule that reads it) accepts exactly those two paths; if it would refuse, stop and report
+before cutting C.
+
 **D2.4 rule:** from K3 to dispatch no commit touches `src/`, `benchmarks/`, `schemas/`, `requirements*.lock`,
 `pyproject.toml`. Anything in the RC that would need such a change is a stop (report; a re-cut is the design lane's call).
 
