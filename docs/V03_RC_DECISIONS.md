@@ -262,3 +262,37 @@ R0 INDIFFERENT, R1 DECIDED 653.15 K (cold 36, 1554 s), R2 SURROGATE_NOT_PROMOTAB
 - 2026-10-31 (orchestrator): Frank's answers recorded 5cc63136 (all defaults, 2026-10-30); my table edit put four answers
   in an extra cell (`||`, finding F10 of the re-judgement); fixed in the re-judgement commit, text and dates unchanged.
   Re-judgement: 15 PASS, V14 (b) and X31 (c) FAIL accepted by D3, none BLOCKED. WO-8 engineer started (brief 9).
+
+## WO-8 at C = `a3e508e3` (2026-10-31, brief 9): the ledger, F9, and the stop on item 2/3
+
+- **The ledger** (`2b7fc98e`, V03.A26): X31 `verdict: null` → `FAIL`, from the verdicts (X31 (c), D3 row accepted
+  2026-10-30); evidence adds `evidence/S13/a3e508e3…/manifest.json`. V11–W26 already agreed with the document.
+  New `tests/test_v03_ledger.py` (pattern `test_m07_ledger.py`): 4 passed, 0 skipped at `2b7fc98e`. Controls: X31
+  null → 1 failed; S13 path dropped → 1 failed. With the other ledger tests (`test_requirements_ledger`,
+  `test_m07_ledger`, `test_m07a_ledger`, `test_t08_w1_ledger`): 45 passed, 1 skipped (`test_t08_w1_ledger.py:87`,
+  "not in A02", registered).
+- DECISION: the ledger's V03 evidence → X31 only cites S13 at C; the sixteen carried gates keep their 0.2.0 evidence.
+  Alternative: every claimed gate cites S13 at C (M07's O1 form). Reason: A26 names X31's verdict and evidence only,
+  and the re-judgement's item 2 names only X31. Reversible by: adding the path to sixteen entries and one test.
+- **F9's count** (whitespace-normalized, `## v0.3.0 — unreleased`, the four phrases of alpha §19.5 item 1):
+  at C = `a3e508e3` **0 of 4** (l.3–100; the statements were added after C by `41b99a9b`, outside D2.4);
+  at `df379b41` and `2b7fc98e` **4 of 4**, each exactly once (l.3–103); `awaits Frank's statement` 0 times.
+  To be counted again at the commit where step 18 runs for YES.
+- **Step 18 dry run at `2b7fc98e`**: `scripts/v0_3_gate.py --rc a3e508e35fc5451fe56fa7b70941621992d35b50` →
+  `v0.3.0 tag may be proposed: NO (3 reasons)`: S13's manifest `implemented`; ADR 0053 not Accepted; ADR 0054 not
+  Accepted. X31's ledger reason is gone.
+- **STOP (brief 9 item 2; spec §10.1 "an ADR condition in §6 is unmet").** The conditions are circular as written:
+  1. ADRs 0053/0054 become Accepted only when S13's manifest is `tested` (their status lines; §6).
+  2. S13 is `tested` only if every check passes (`status()`), including V03.A25 and ADR.0053/ADR.0054, which pass only
+     once 0053/0054 are Accepted (`_m_adrs`, `adr_checks`; pending = `unsupported`).
+  3. S13 is `tested` only if V03.A27 and A08's R part pass, which need step 18's log with the YES line (`_m_step18`,
+     `_self`; no `--step18-log` = `unsupported`).
+  4. Step 18 says YES only if S13 is `tested` (gate item 5, `manifest_problems`) and 0053/0054 are Accepted (item 12).
+  Loop 1–2 could be broken only by marking the ADRs before their condition holds; loop 3–4 cannot be broken at all
+  without fabricating a step-18 log. 0.2.0 had neither loop: M07's manifest did not judge step 18 ("not run by this
+  script", M07.A36's R part in the build log) nor gate item 12.
+- Proposed resolution (design lane to rule; not applied): S13's manifest judges A08's R part and A27's step-18 clause
+  from the build log, as M07.A36 was, and judges A25/ADR.0053/ADR.0054 on everything except the "at WO-8" route
+  (Frank's six cells, A01–A31 listed). Order: S13 `tested` → 0053, 0054 Accepted → step 18 YES → record. The final
+  state is a fixed point of the current generator (re-generated with `--step18-log` it stays `tested`), so the
+  amendment changes only the bootstrap order, no numerics and no D2.4 path.
