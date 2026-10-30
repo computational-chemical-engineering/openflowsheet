@@ -234,3 +234,19 @@ All four answered with the recommended default (Frank, 2026-10-25):
   package; two liquid phases wait for a case. "In some way I want OpenFlowsheet to be extensible … more about the flexibility
   of the basic infrastructure than having all models on board" → X01: extensibility infrastructure piloted by NRTL,
   UNIQUAC and original UNIFAC.
+- **Next release** (Frank, 2026-10-29): "cut 0.3.0 right after S11 and E01 merge, before starting the optimiser package,
+  and leave Wilson in." Still needed from Frank before the tag: Q-F3 (Wilson/S10 data rights), the E01 data rights, QA1.
+- **Q-F3 answered** (Frank, 2026-10-29): the 0.3.0 wheel ships the Wilson data, **fitted parameters and the transcribed
+  Kurihara 1993 points** ("Ship params + points"), with the three CIAAW atomic weights; S10-RC-05/RC-08 settled by Frank.
+- **E01 data rights answered** (Frank, 2026-10-29): ship the five IPCC AR6 GWP-100 values **as facts with the citation**
+  ("Ship with citation (Rec.)"); the other E01 data are open (BSD, US public domain, CC BY).
+- **QA1** (Frank, 2026-10-29): "I have uploaded edition 4 of Seider et al." → Zotero `seider2017product` (4th ed., 2017;
+  ch. 16 = 3rd ed. ch. 22; Table 16.32 pp. 481-485, CE 567). An agent compares the ranges against it; Frank approves the
+  one commit that sets `verified: true` (A48). Edition differences are reported, not silently adopted.
+- **QA1 result** (agent, 2026-10-29, against Seider 4th ed. ch. 16): 5 of 8 primary ranges match exactly (exchanger,
+  centrifugal pump, gear pump, reciprocating pump, motor); 3 compressor ranges match in number but the book sizes on consumed
+  power incl. the motor, IDAES on brake power; several coefficients differ from the 4th ed. (refits; e.g. fixed-head α2
+  0.8228 vs 0.9228). **Frank, 2026-10-29:** the five ranges count as checked ("Yes, mark checked (Rec.)": cited to the 4th
+  ed. page, coefficients stay IDAES's 3rd-ed., stated); the differences are **fixed before 0.3.0** ("Fix before 0.3.0
+  (Rec.)": a design-lane ruling; coefficients settled with the 3rd ed. when it arrives, or the 4th ed.'s adopted).
+  3rd ed. requested via zotero (`seider2009product`, JFDFFJ4X).

@@ -390,6 +390,16 @@ I1's.
   convention for B2.
 - **For B1/I1 (unchanged):** package-data globs, `resources.PACKAGED`, M05 ADDENDA pin, A48 RC item, P3 volumes.
 
+## Merge CI (2026-10-29)
+- FACT: CI 40909427554 at `84d71df8`: aarch64 failed `test_a38_fixtures_validate_and_are_what_the_code_emits[p3_m1]` on
+  `/state_sha256` (golden `e496390f…`, aarch64 `245ea83d…`); every number matched to rel 1e-9; x86-64 green.
+- DECISION: the golden-report comparison treats `state_sha256` per ADR 0025 D2 (a float digest, `run/compare.py`'s
+  `_is_float_digest_v2`): exact on x86-64, kind (64 hex) elsewhere; exact digests (`assessment_sha256`) stay exact
+  everywhere. Alternative: per-platform golden files. Reversible by: reverting this commit.
+- FACT: CI 40937174304 at `991dcde8`: x86-64 runners give `state_sha256` `8ad27fb2…` (workstation golden `e496390f…`):
+  the digest is not reproducible across x86-64 CPUs either. Amended DECISION: float digests compared for kind only on
+  every platform (ADR 0025 D2 as written); exact digests stay exact; numbers stay at rel 1e-9.
+
 ## E01b pin (2026-10-29): the SSLW set's sha256 after Amendment 1 to ruling B
 
 - `src/openflowsheet/_data/assessment/cost/sslw-idaes-v1.json` sha256 `b70d6f22afc6da185c531d1c3bf2bbf0f80f7866b686f3a102a466984a41933f`

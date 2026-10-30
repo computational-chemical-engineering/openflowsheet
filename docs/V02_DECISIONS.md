@@ -1259,3 +1259,12 @@ Grep, don't read whole. Newest at the bottom.
   briefs now forbid personal identifiers to external services and nested subagents.
 - Frank, 2026-10-28: "finish what you are doing and then pause further development until budget is refreshed again" →
   paused after S11 WO-I2 and E01 WO-B4; next actions in `docs/V02_STATE.md`.
+- 2026-10-29: S11 merged into main `1b2758d1` (gate PASS `021441ef`; CI 40877525424 green both architectures; aarch64
+  R-843 classes ≤ 2.9e-3 of bound, R-845 flash 0.024). wp/E01 merged main at `84d71df8` (register: per-entry three-way
+  merge, 720 entries, nothing dropped from either side). DECISION: E01 manifest → keep `02fc8d2f` (S08b/S11 precedent).
+  Alternative: regenerate at the merge commit. Reversible by: re-running `scripts/e01_evidence_manifest.py`.
+- Frank, 2026-10-29: "cut 0.3.0 right after S11 and E01 merge, before starting the optimiser package, and leave Wilson
+  in." Release work queued as step 2 of `docs/V02_STATE.md`.
+- Frank, 2026-10-29: Q-F3 → ship Wilson fitted parameters + transcribed points in 0.3.0; IPCC GWP values ship with
+  citation; QA1 checked against Seider 4th ed. (Frank uploaded it; Zotero `seider2017product`), Frank approves the flip.
+  E01 merge gate PASS `84d71df8` (14537 passed, 3205 skipped); CI 40909427554 running.

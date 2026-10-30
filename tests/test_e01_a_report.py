@@ -52,6 +52,7 @@ from openflowsheet.assessment.views import view_of  # noqa: E402
 from openflowsheet.canonical import canonical_json, state_sha256  # noqa: E402
 from openflowsheet.orchestrator.executor import execute_plan  # noqa: E402
 from openflowsheet.orchestrator.revision import plan_revision  # noqa: E402
+from openflowsheet.run.compare import _is_float_digest_v2  # noqa: E402
 
 FIXTURES = Path(__file__).resolve().parent / "fixtures" / "schemas" / "assessment_report"
 REPO = Path(__file__).resolve().parents[1]
@@ -191,7 +192,12 @@ def _body(report: Mapping[str, Any]) -> dict[str, Any]:
 
 def _same(a: Any, b: Any, where: str = "") -> None:
     """Equal structure and strings; numbers to rel 1e-9 (regression across platforms' last bits
-    of the solved state; logged in docs/E01A_DECISIONS.md)."""
+    of the solved state; logged in docs/E01A_DECISIONS.md); float digests for kind only (ADR 0025
+    D2: they hash the solved state's last bits, which differ between machines, CPUs included)."""
+    if _is_float_digest_v2(where.rsplit("/", 1)[-1]):
+        assert isinstance(a, str) and isinstance(b, str), where
+        assert len(a) == len(b) == 64 and int(a, 16) >= 0 and int(b, 16) >= 0, (where, a, b)
+        return
     if isinstance(a, dict):
         assert isinstance(b, dict) and sorted(a) == sorted(b), where
         for k in a:
