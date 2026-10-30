@@ -2076,3 +2076,18 @@ unit for this trajectory (R-796). That the CPU model or the OpenBLAS core is wha
 
 All six lines and both local lines agree with the core hypothesis: `Haswell` → 94; `SkylakeX` (four different x86-64 CPUs)
 and `neoversen2` → 136. No (class, `cpu_model`, core) key yet has ≥ 2 CI jobs, so R-796 pins nothing new.
+
+### 2026-10-30 — rows at V03's release candidate C = `a3e508e3` (V03.A24, R-796; copied by WO-6)
+
+| Run | Job | Commit | Class | `cpu_model` | numpy core | SciPy core | Records | Source |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 41108983463 | `check (ubuntu-latest)` | `a3e508e3` | ci-x86-64 | AMD EPYC 9V74 80-Core Processor | Haswell | Haswell | 94 (`CONVERGED`) | C1 line |
+| 41108983463 | `default-install` | `a3e508e3` | ci-x86-64 | AMD EPYC 9V74 80-Core Processor | Haswell | Haswell | 94 (`CONVERGED`) | C1 line |
+| 41108983463 | `check (ubuntu-24.04-arm)` | `a3e508e3` | ci-aarch64 | aarch64 | neoversen2 | neoversen2 | 136 (`CONVERGED`) | C1 line |
+| 41108983672 | `check (ubuntu-latest)` | `a3e508e3` | ci-x86-64 | AMD EPYC 9V74 80-Core Processor | Haswell | Haswell | 94 (`CONVERGED`) | C1 line |
+| 41108983672 | `default-install` | `a3e508e3` | ci-x86-64 | AMD EPYC 7763 64-Core Processor | Haswell | Haswell | 94 (`CONVERGED`) | C1 line |
+| 41108983672 | `check (ubuntu-24.04-arm)` | `a3e508e3` | ci-aarch64 | aarch64 | neoversen2 | neoversen2 | 136 (`CONVERGED`) | C1 line |
+
+Run 41108983463 is the `workflow_dispatch` RC run (`rc_alpha=true`), 41108983672 a push run at the same commit. All six
+agree with the core hypothesis (`Haswell` → 94, `neoversen2` → 136); EPYC 9V74 with a `Haswell` core gives 94 here.
+ci-x86-64 is reported, not pinned, and the ci-aarch64 pin (136) is unchanged, so R-796 pins nothing new.
