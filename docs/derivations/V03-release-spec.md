@@ -3,8 +3,8 @@
 **Authority.** Design lane (`specifier`), package V03 (manifest id `S13`, R-878). Policy: ADR 0053 (Proposed). Brief:
 `docs/briefs/V03-release-policy.md`. Builds on ADR 0042 and `docs/derivations/M07-spec.md` §7–§13; on ADR 0028 and
 `docs/derivations/V02-alpha-release-spec.md` §4–§8; and on `docs/RELEASING.md`. Register: R-872…R-880, and R-881…R-883
-for Amendment 1, and R-903…R-908 for Amendment 2. Facts quoted here were measured at `main` = `a1b50ccf` and `wp/E01` =
-`84d71df8` unless stated otherwise.
+for Amendment 1, R-903…R-908 for Amendment 2, and R-909…R-912 for Amendment 3. Facts quoted here were measured at
+`main` = `a1b50ccf` and `wp/E01` = `84d71df8` unless stated otherwise.
 
 **Amendment 1 (2026-10-29, design lane, ruling round 1, brief `docs/briefs/V03-rulings-1.md`).** Two build-lane
 questions are answered. (1) `semantic_role` has no role for S11's compressor and turbine: ADR 0054 widens the enum,
@@ -30,6 +30,20 @@ Changed: header, §1, §3.1, §3.4, §3.5 (new), §4, §7 (A19, A21, A27; A32 an
 N-10), §12. Amendment 2's tree was read at `wp/V03-rc` = `a3e508e3`. Its runs were read at the superseded `4fa15efa`,
 whose `src/`, `benchmarks/`, M06 and nlp test modules are byte-identical to it.
 
+**Amendment 3 (2026-10-30, design lane, on the findings of `docs/reviews/V03-verdicts.md` at C = `a3e508e3`).** Five
+findings are answered.
+(1) F1: §4 carried the alpha's steps 1–12 "read as in M07 §8" without R-375's keep-and-audit of G11's experiment
+results, the same gap M07 §8 had at 0.2.0. So C's step 12 kept none, and W21 (e) failed. Step 12 now keeps and audits
+them. At 0.3.0 that is a re-run at C compared with step 12's own runs file; from the next release on, it is part of
+step 12 itself (§4, V03.A34, R-909).
+(2) F2: V03.A12 (c) fails at C only because the version string enters the experiment fingerprint. At a version cut
+(c) is judged with the version held equal, by a one-line control run beside the registered run (§7.1, R-910).
+(3) F7: S13's own manifest is excluded from the 0.3.0 harvest, as M07's was from 0.2.0's (§4, R-911).
+(4) F5: the gate's limitation grammar is not widened for 0.3.0 (§11 N-12, R-912).
+(5) F4: Frank is asked to accept the `coolprop` and `lca` licence decisions (§11 N-11).
+C stays `a3e508e3`: nothing here changes a D2.4 path. Changed: header, §1, §4, §7 (A12, A27; A34 and §7.1 new), §10,
+§10.1, §10.2, §10.5 (new), §11 (N-11, N-12, F-5, F-6), §12. Amendment 3's tree was read at `wp/V03-rc` = `41b99a9b`.
+
 **Scope.** What 0.3.0 claims and how each claim is judged. The registry entry, the release candidate C, the RC job,
 the version pin and the working form, the ADR acceptance route, the data the wheel ships, the release notes, numbered
 assertions, and work orders for one build-lane engineer and one `verdict` agent. No production code is written here.
@@ -48,11 +62,13 @@ for 0.2.0. Three choices are asked early (§11).
 3. The 0.3.0 pin, the working form after it, and A10's pairs, which resolves R-563 (§5).
 4. The acceptance route for ADRs 0046–0052 (§6).
 5. The wheel's new data (§9) and the release notes' phrases (§8).
-6. Assertions V03.A01–A33 (§7), work orders (§10), the `verdict` agent's inputs (§10.2), and open items with defaults
+6. Assertions V03.A01–A34 (§7), work orders (§10), the `verdict` agent's inputs (§10.2), and open items with defaults
    (§11).
 7. The widening of `semantic_role` (ADR 0054), the role of every bindable model (Table R) and the test corpus that
    holds the repository to it (§9.4). Also what "binds from package data" means for Wilson (§9.1, R-883).
 8. What W26 (a) judges at 0.3.0 (§3.5), and Amendment 2's RC corrections (§4 steps 14–17b, A19 (c), A21, A32, A33).
+9. Step 12's keep-and-audit of G11's experiment results (§4, A34), A12 (c) at a version cut (§7.1), and S13's manifest
+   outside the 0.3.0 harvest (§4) (Amendment 3).
 
 ## 2. The claim set and the registry entry
 
@@ -212,6 +228,10 @@ The restated step 16 therefore passes there. It is re-measured at C.
   `CHANGELOG.md` `## v0.3.0`.
 - C is merged into `main` with a merge commit. From K3 until Frank's dispatch, `main` takes no D2.4 change (RELEASING
   "Pre-releases" step 2).
+- S13's manifest is written after C and is not harvested into `v0.3-envelope-1`. `scripts/t08_support_matrix.py`
+  sets `HARVEST_EXCLUDED = ("evidence/S13/",)`, as R-485 excluded M07's manifest from 0.2.0's harvest. Classifying its
+  items would change `benchmarks/t08/support_envelope.yaml`, a D2.4 path. The next envelope's package harvests it
+  (Amendment 3, R-911).
 
 **Preconditions at K3.**
 
@@ -224,7 +244,7 @@ The restated step 16 therefore passes there. It is re-measured at C.
 
 | Step | What, at C unless stated | Assertion |
 | --- | --- | --- |
-| 1–12 | the alpha spec §8.2 steps 1–12, read as in M07 §8 (step 1's four ledger skips as [A6]; step 9 and step 12 as [A7]) | V03.A20 |
+| 1–12 | the alpha spec §8.2 steps 1–12, read as in M07 §8 (step 1's four ledger skips as [A6]; step 9 and step 12 as [A7]). Step 12 also keeps G11's experiment results and audits them (R-375; Amendment 3, R-909; "Step 12's G11 results" below) | V03.A20, V03.A34 |
 | 13 | W23 as M07 step 13 | V03.A20 |
 | 14 | W24 as M07 step 14. The five in-process G10 records are re-taken at K3 and proved with `scripts/m05_retake_diff.py --digest-only` (R-458). The nlp check runs over the test modules that contain `mark.nlp`, not over `tests/` (Amendment 2, R-907) | V03.A20, V03.A33 |
 | 15 | W25 per §3.4: journey at J (K3 plus the G10 records, `2d945b5d`), carried to C, `check` and `replay` at C | V03.A21 |
@@ -244,6 +264,30 @@ The restated step 16 therefore passes there. It is re-measured at C.
   A33–A36 in the audited `nlp` environment.
 - **17e.** The wheel: built from C by `scripts/t08_dist.py` (T08.A43) and inspected (V03.A17). In a fresh venv
   installed from it, V03.A19.
+
+**Step 12's G11 results (R-375; Amendment 3, R-909).** Alpha §6.1 W21 (e) covers every experiment result record that
+step 12 writes. G11 writes one at each boundary point, 105 per run and 210 over its two runs. It writes none at its 16
+direct points per run (0.2.0's reading, `docs/reviews/V02-verdicts.md`, W21 (e)). Step 12 keeps those records and
+audits them for blueprint §9.1's six items. At 0.3.0 step 12 ran without keeping them, so they come from a re-run at C:
+
+1. Step 12's own runs file `step12/g11-coverage-v3.runs.json` (SHA-256 `cdb7d999…fd0a`) is committed before the
+   re-run (`3b05511d`). It is the reference for steps 2 and 4.
+2. G11 is re-run in the reactor environment built from C's lock, on one thread. It uses step 12's command (step
+   `step12-g11` of `tools/run_local.sh`) through 0.2.0's `g11keep.py.txt`, which keeps each point's store.
+   `g11collect.py.txt` collects one record per run. Both wrappers are copied unchanged from
+   `evidence/M07/ce993651…/tools/` to `evidence/S13/<C>/tools/`. Any change to either is recorded with its diff in
+   `docs/V03_RC_DECISIONS.md`.
+3. These files go under `step12/experiments/`: the re-run's `g11-coverage-v3.json` and `g11-coverage-v3.runs.json`; the
+   collected `g11-experiments-run1.json` and `g11-experiments-run2.json`; the audit's report
+   `g11-experiments-audit.json`; and the record `rc-step12-experiments.json`. The record has step `g11-keep-and-audit`,
+   format `t08-rc-v1` and the provenance members of `rc-step12.json`, with `commit` = C and `tree_clean` true. Each file
+   is listed in `rc/records.json` by that file's rule (gzip beside the path over 1 MB). `docs/v03-rc-record.md` gains
+   one step-12 row in the form of `docs/v02-rc-record.md` l.126, citing each file by SHA-256.
+4. The record's three checks are V03.A34's. The audit is given step 12's own runs file, not the re-run's. So the
+   collected records' labels, order, paths, inlets and `n_tubes` are checked against a record written before the
+   re-run. Together with A34 (b), this closes 0.2.0's finding F8 at its root.
+
+No D2.4 path changes, so C stands. From the next release on, step 12 keeps the records in its first run (R-909).
 
 **CI at C** must be green on x86-64 and aarch64 (V03.A24). X31's evidence (§3.2) is step 1's default gate, and no
 separate step runs it.
@@ -321,7 +365,7 @@ as an identity, with no tolerance.
 | V03.A09 | at K3 and C: the five version-carrying files read `0.3.0`; the envelope `v0.3-envelope-1` / `0.3.0` | as stated | exact | R |
 | V03.A10 | `test_e01_a48_tripwire`: count 0 after P2; `a48_release_check()` is `pass`; its synthetic unverified document still gives `fail` | 0; pass; fail | exact count (an accidental 0 is excluded by the `fail` control) | D |
 | V03.A11 | MR-12 v03 (§9.3) at HEAD: `new_since_v0_2_0 == ["coolprop", "lca"]`, both with entries; a control extra without an entry → `fail`; `mr12_extras_v02` at `RELEASE_0_2_0_COMMIT` unchanged (S07 A44's release clause) | pass; fail; unchanged | exact | D |
-| V03.A12 | the ship set (§9.1) is in `PACKAGED` with `_data` links, bytes equal to the `benchmarks/s10/` files; R-811's wheel row is gone. With `wilson_ig._checkout_records` returning `None`, as in a wheel (the fixture first checks that `wilson_ig.load_records()` then refuses `records_missing: `): (a) `revision_binding.provider_for(WILSON_BASIS)` is not `Unbound`, its `describe()` has `provider_id` `wilson-ig-v2` and the records' `data_sha256`, and `verify.certificate._wilson_provider().describe()` equals it; (b) `WilsonIdealGasProvider(resources.packaged_path(wilson_ig.RECORDS_PATH))` answers `evaluate_phase` (both phases, every property and derivative) and `flash` exactly as the checkout's provider does at one state; (c) S10/S11 identity tests are unchanged, and `tests/test_s11_wilson_v2.py::test_a75_v1_is_not_edited` passes (v1's bytes are not edited, R-883) | as stated | exact (SHA-256; `==` on the answers: same code, same bytes) | D |
+| V03.A12 | the ship set (§9.1) is in `PACKAGED` with `_data` links, bytes equal to the `benchmarks/s10/` files; R-811's wheel row is gone. With `wilson_ig._checkout_records` returning `None`, as in a wheel (the fixture first checks that `wilson_ig.load_records()` then refuses `records_missing: `): (a) `revision_binding.provider_for(WILSON_BASIS)` is not `Unbound`, its `describe()` has `provider_id` `wilson-ig-v2` and the records' `data_sha256`, and `verify.certificate._wilson_provider().describe()` equals it; (b) `WilsonIdealGasProvider(resources.packaged_path(wilson_ig.RECORDS_PATH))` answers `evaluate_phase` (both phases, every property and derivative) and `flash` exactly as the checkout's provider does at one state; (c) S10/S11 identity tests are unchanged, and `tests/test_s11_wilson_v2.py::test_a75_v1_is_not_edited` passes (v1's bytes are not edited, R-883). At a version cut, (c)'s identity run is judged as §7.1 states (Amendment 3, R-910) | as stated | exact (SHA-256; `==` on the answers: same code, same bytes) | D |
 | V03.A13 | NOTICE holds the Wilson block (each of `Kurihara`, `J. Chem. Eng. Data 38 (1993) 446`, `NASA TM-4513`, `CoolProp 8.0.0`, `deReuck-BOOK-1993`, `Schroeder-JPCRD-2014`, `Wagner-JPCRD-2002`, `CIAAW`) and the IPCC block (`IPCC AR6 WG1`, `Table 7.15`), each once | 10 substrings | exact substring | D |
 | V03.A14 | `docs/s10-rights-check.md` §3 "Ships?" column equals §9.1's table; RC-05 and RC-08 cite Frank 2026-10-29 | equal | exact | D |
 | V03.A15 | the RC test step (WO-3) installs `requirements-coolprop.lock` after the main lock and sets `OPENFLOWSHEET_REQUIRE_COOLPROP=1` (read from the script) | present | exact | D |
@@ -336,13 +380,14 @@ as an identity, with no tolerance.
 | V03.A24 | CI green at C on both architectures. S07 A31: x86-64 bitwise, aarch64 within R-627's classes. S11 thermal check: x86-64 bitwise, aarch64 within R-843/R-845 classes (flash class at the S11 merge: 0.024 of its bound), and the relative class's worst ≤ 0.1 of its bound (R-845's watch). THM-09/4's lines copied into `docs/t07-measurements.md` (R-796) | green; ratios recorded | registered classes; the 0.1 watch is R-845's, not new | CI |
 | V03.A25 | gate item 12 at C: the 25 required ADRs Accepted (0054 included, Amendment 1); 0043 Proposed and not required | as stated | exact | R |
 | V03.A26 | `docs/reviews/V03-verdicts.md`: header names C once and one `Judged`; 17 rows in claimed order; every clause parses under v0.3's grammar. ADR 0053's two tables pass the cell rule. `docs/requirements.yaml` X31 verdict and evidence written from it | as stated | exact | R |
-| V03.A27 | `evidence/S13/<C>/manifest.json` `tested`, listing V03.A01–A26 and A28–A33 with commands run and `S11.G8`, `S12.G8`, `S12.G10`; step 18's last line `v0.3.0 tag may be proposed: YES` | present; YES | exact | R |
+| V03.A27 | `evidence/S13/<C>/manifest.json` `tested`, listing V03.A01–A26 and A28–A34 with commands run and `S11.G8`, `S12.G8`, `S12.G10`; step 18's last line `v0.3.0 tag may be proposed: YES` | present; YES | exact | R |
 | V03.A28 | `schemas/process-revision.schema.json`: `properties.instances.items.properties.semantic_role.enum` equals the eleven frozen values in their order (`feed` … `heat_exchanger`) followed by `compressor`, `turbine`, `other`; `$id` equals `https://github.com/frankp/process-runtime/schemas/process-revision.schema.json`; `properties.schema_version` equals `{"type": "integer", "const": 1}` (ADR 0054 D1) | 14 values in order; `$id` and `schema_version` unchanged | exact (list and string equality) | D |
 | V03.A29 | every document of §9.4's corpus gets no `SCHEMA-01` FAIL from `application.validation.validate(document)`. The corpus has at least 80 documents and contains the nine cases of §9.4 by path. Control: GP-M1 with `instances[1].semantic_role` set to `purge_sink` (the value V17 c1's agents wrote) gives a `SCHEMA-01` FAIL whose message starts `schema_invalid(/instances/1/semantic_role)` | 0 FAIL over ≥ 80 documents; the control FAILs | exact (count, path set, message prefix) | D |
 | V03.A30 | `tests/semantic_roles.py` `ROLE_OF_MODEL` is Table R (§9.4), and: (a) its keys equal `revision_binding.MODEL_SIGNATURES`' keys; (b) every value is in A28's enum, and the set of values equals the enum without `other` (13 values); (c) every instance of every corpus document whose model id is a key of `ROLE_OF_MODEL` has `semantic_role == ROLE_OF_MODEL[instance.model.id]`; an instance with any other model id is counted and not judged (0 of 441 at `98701cca`), because a declared model the binder does not accept may take any value A28 allows; (d) none of §9.4's five builders holds the string constant `"other"` (read by `ast`), and each imports from `semantic_roles`; (e) `ROLE_OF_MODEL` equals §9.4's Table R as parsed from this file (both column pairs, 30 rows), as `test_v03_v0_3_gate.py` parses §2.2. Controls: a copy of the table without `thermal.turbine` fails (a); a copy with `thermal.turbine: pump` fails (b), and (c) on TH-C1 and GP-M2 | (a)–(e) hold; each control fails | exact | D |
 | V03.A31 | (a) no `*.py` file under `src/openflowsheet/` contains the text `semantic_role`. (b) For every corpus document d, with d′ = d with every instance's `semantic_role` set to `other`: `s11_identity_recorder.outcome(bind(d), document_sha256(d)) == outcome(bind(d′), document_sha256(d′))`, where bind is `revision_binding.bind_revision_flowsheet` and a raise is compared as (type name, message). Control: GP-M1 with instance `M`'s `efficiency` value replaced by `math.nextafter(v, math.inf)` gives a different outcome | (a) none; (b) equal for every document (measured: 80 of 80; 63 bound, 17 typed `Unbound`, a split that depends on the installed extras and is not asserted); the control differs | exact (`float.hex` inside `outcome`) | D |
 | V03.A32 | step 16 at C (§3.5). `step16/rc-step16.json` (step `w26-web-shell`) holds exactly four checks, each `pass`. (a) `a60.w26.m06_tests`, as 0.2.0's: `OPENFLOWSHEET_REQUIRE_BROWSER=1 pytest -q -rs -p no:cacheprovider --junitxml=<rc>/step16/m06-tests.junit.xml tests/test_m06_*.py` exits 0, and the junit has 0 failures and 0 errors. (b) `a60.w26.web_unit_tests`, as 0.2.0's: `node --test` exits 0. (c) `a60.w26.g15_registered_states`: (a)'s junit has 0 skipped, and each of these 25 testcases appears exactly once with no `failure`, `error` or `skipped` child. From `tests.test_m06_w27_scorer`: `test_the_twenty_states_are_registered`, `test_candidate_states[W27-S11]` to `[W27-S16]`, and `test_harness_states[W27-S01]` to `[W27-S10]` and `[W27-S17]` to `[W27-S20]`. From `tests.test_m06_w27_harness`: `test_a23_run_record` and `test_a79b_an_unpinned_attempt_through_the_harness`. From `tests.test_m06_w27_coverage`: `test_s11_the_v2_snapshot_refuses_this_build` and `test_committed_coverage_json_is_g14_and_this_builds_classification`. (d) `a60.w26.w27_v1_refusal`: `python -m benchmarks.m06.w27.dryrun --out evidence/M06/W27/artifacts/dry-run/<C7>` exits 1; its last non-empty output line is exactly `benchmarks.m06.w27.snapshot.SnapshotUnsupportedError: registry_snapshot: unsupported(provider 'iapws95-v1': no registered records and phases, W27-R63)`; and `<out>/summary.json` does not exist. (c) and (d) are judged on the local `ref-x86-64` run, where the pinned archive and `mcp` are present, not on CI | 4 of 4 pass; 25 nodes; exit 1 and the line | exact (names, counts, exit status, string) | R |
 | V03.A33 | step 14's nlp selection (R-907). `step14/rc-step14.json` holds `a60.w24.nlp_tier_and_inventory` `pass`, with `scripts/m03_nlp_check.sh` given the modules that `grep -l 'mark.nlp' tests/test_*.py` lists at C (13 at `4fa15efa`), and the record carries that list. It also holds `a60.w24.nlp_selection` `pass`: in the audited nlp environment, `pytest --collect-only -q -m nlp` lists the same set of node ids over those modules as over `tests/`, the set has 190 members, and the run over the modules exits 0. The run over `tests/` exits 2 on the three `tests/test_s10_*.py` modules that import `mpmath`, and its exit status is not judged | pass; 190; equal sets | exact (set equality, count) | R |
+| V03.A34 | step 12's G11 experiment results at C (§4, R-375, R-909). `step12/experiments/rc-step12-experiments.json` (step `g11-keep-and-audit`) holds exactly three checks, each `pass`. (a) `r375.g11_rerun`: §4's re-run exits 0. (b) `r375.same_computation`: the re-run's `step12/experiments/g11-coverage-v3.runs.json` and step 12's own `step12/g11-coverage-v3.runs.json` (SHA-256 `cdb7d9993327cd48543212c37063421fa9c82232dd05b356e1609335fce6fd0a`, committed in `3b05511d`) have 2 runs each and the same labels in the same order in each run. At each of the 242 point-runs the members `stage`, `accepted`, `child_accepted`, `tube_outlet`, `path` and `attempts` are equal as JSON. A member present on one side only is a difference. The result is 0 differences. (c) `r375.audit`: `python scripts/m07_g11_experiments_audit.py --variant-file benchmarks/m02/variant-v3-provisional.json --runs <rc>/step12/g11-coverage-v3.runs.json --out <rc>/step12/experiments/g11-experiments-audit.json` over the two collected records (`g11-experiments-run1.json`, `g11-experiments-run2.json`, or their `.gz`). It is given step 12's own runs file. It exits 0, and its line reads exactly `G11 experiments audit: 2 runs, 210 boundary points, 210 results, 210 attempts, 0 without a result, 32 direct points (no records); 6 items + schema: 0 problems; context (job_id): <j> findings: PASS`. j is recorded and not judged: R-375's six items do not include `job_id` (0.2.0's j was 420) | 3 of 3; 0 differences in 242; the line, with 210, 210, 210, 0, 32 and 0 | exact (counts, JSON equality, exit status, the string with j free) | R |
 
 **Falsifiability.** A06 and A07 flip one input at a time, so a dropped item or a mis-dated cell changes the answer.
 A10's `fail` control excludes a vacuous 0. A11's control excludes a measure that passes with no entries. A04's swapped
@@ -356,6 +401,60 @@ A32 (c) names its 25 nodes and requires 0 skipped. A run without the pinned arch
 skip, therefore fails it. A32 (d) passes only on the registered refusal, so a dry run that succeeds or fails otherwise
 fails it. A33's count excludes an empty selection that would compare equal to an empty collection. A32 and A33 compare
 names, counts, exit statuses and strings, so no tolerance applies.
+A34 (b) compares the re-run with step 12's own record, written before it. A re-run that took another path at any point
+therefore fails it. (c) gives the audit that record too, so a collected record with a missing, extra or reordered point
+fails it. (c)'s counts exclude an empty audit, which the script itself refuses (`passed` needs at least one
+experiment). §7.1's R1 changes one line. So any digest it still finds changed, and any failure outside the five
+registered readers, has a cause other than the version, and (c) fails. The five readers failing shows that the edit took
+effect. A34 and §7.1 compare counts, JSON values, exit statuses and strings, so no tolerance applies.
+
+### 7.1 V03.A12 (c) at a version cut (Amendment 3, R-910)
+
+`scripts/s11_identity.py` compares the judged checkout with its base `8c34ecb0` (S11 design §6). The version string is
+part of the in-process experiment fingerprint (`src/openflowsheet/adapters/experiments/backends.py` l.174, and
+`tests/support/m04_synthetic_parents.py`). Through `Environment`'s digest (`document_sha256(fingerprint)`) it reaches
+the documents built from it. So across a change of `__version__` the comparison differs by construction: at C, 47
+family-C digests, all of them binder calls of `tests/test_m04_wo{7,8,19,20}_*.py`. The version is build provenance
+(R-902). It sits under a derived digest, so excluding the clear field would not remove it, and (c) holds it equal
+instead. The S13 generator decides (c)'s identity part as follows. Any other outcome is `fail`.
+
+0. The judged checkout's tracked files are clean (`git diff --quiet HEAD`). V_C and V_B are the `__version__`
+   literals of `src/openflowsheet/__init__.py` at HEAD and at `8c34ecb0` (`git show`). Each is the single match of
+   `^__version__ = "([^"]+)"$`. Measured: V_C = `0.3.0`, V_B = `0.3.0.dev0`.
+1. **R0, the registered run.** `scripts/s11_identity.py` runs in the checkout as WO-6's generator runs it now, with a
+   private `TMPDIR` and no `PYTEST_ADDOPTS`. If it exits 0 and its last line starts `S11-IDENTITY PASS`, (c)'s identity
+   part passes, and steps 2–5 do not run.
+2. Otherwise V_C ≠ V_B, and R0 exits 1 with a last line matching
+   `^S11-IDENTITY FAIL n=(\d+) changed=\[(C:.+)\] \((\d+) digests differ\)$`. The parenthesis then names no problem
+   except changed digests: no key set differs, and no shard of either tree exited non-zero. The tool lists A and B keys
+   before C keys, so a first key `C:` means that only family-C digests changed.
+3. **R1, the aligned run.** Run `git worktree add --detach <W> HEAD`. In `<W>/src/openflowsheet/__init__.py`, the line
+   `__version__ = "<V_C>"` becomes `__version__ = "<V_B>"`. Then `git -C <W> diff --numstat` must print exactly one
+   line: `1`, `1` and `src/openflowsheet/__init__.py`, tab-separated. Next, with cwd `<W>`,
+   `PYTHONPATH=<W>/src:<W>`, a second private `TMPDIR` and no `PYTEST_ADDOPTS`, run
+   `python scripts/s11_identity.py --keep <K>`, with `<K>` a fresh directory. `<W>` is removed afterwards. R1 exits 1 with a last line matching
+   `^S11-IDENTITY FAIL n=(\d+) changed=\[\] \(C branch shards \[\d+(?:, \d+)*\] exited non-zero\)$`. So no digest
+   changed, and the only problem is that some shards of the aligned tree failed.
+4. n(R1) = n(R0): the two runs compared the same keys.
+5. The aligned tree's failed tests are exactly these five. They are read as the node ids of the lines matching
+   `^(?:FAILED|ERROR) (\S+)` in `<K>/branch/shard-*.log`:
+   - `tests/test_package_imports.py::test_root_package_exposes_version`
+   - `tests/test_v02_main_version.py::test_the_envelope_matches_the_version`
+   - `tests/test_m06_w27_coverage.py::test_snapshot_of_this_build_is_todays_registry`
+   - `tests/test_t07_w5e_application_results.py::test_the_fixtures_are_what_real_responses_emit_today`
+   - `tests/test_m07_journey.py::test_a21_the_carry_identity_is_the_determining_files_at_the_anchor_and_j`
+   Each reads the version or hashes `src/**`. By step 2, all five pass in R0's checkout.
+
+S13's manifest records these members in V03.A12's `value`: `a12c_mode` (`plain` or `version_aligned`), V_C, V_B, R0's
+and R1's last lines, n, R0's digest count k (47 at C; recorded, not judged), the numstat line and the five failed node
+ids. Both commands go into `commands`. `V03.A12c.log`, `V03.A12c-aligned.log` and `<K>/branch/shard-*.log` go under the
+manifest's artifacts.
+
+Expected at C, from the run at C and the orchestrator's counterfactual (`docs/reviews/V03-verdicts.md`, "V03.A12
+(c)"): R0 `S11-IDENTITY FAIL n=54494 changed=[C:…] (47 digests differ)`; R1 `S11-IDENTITY FAIL n=54494 changed=[] (C
+branch shards [1, 3, 7, 11] exited non-zero)`; and the five tests above. n and the shard indices can move at a later
+judged commit whose `tests/` differ. Steps 4 and 5 cannot. A different set of failed tests in step 5 is a stop (§10.1),
+and the set is never edited to pass.
 
 ## 8. Release notes: `CHANGELOG.md` `## v0.3.0`, "What it is not"
 
@@ -518,7 +617,7 @@ is the proof.
 | WO-4 | Sonnet | ADR checks and flips (§6, S07 F-1 transcribed); `## v0.3.0` draft; envelope U02 text (N-8); RELEASING "Per release" for 0.3.0 and the W27 sentence (F-4); **Amendment 1:** L-S11-3 and the attribution page (§10.4) | WO-1–3 | A25 (at C), A18 |
 | — | reviewer | one design-lane pass over WO-1–WO-4 before the merge into `main` | WO-1–4 | — |
 | WO-5 | Opus | K3 (§5.1); G10 re-take; the journey at K3 in the reactor environment; C | P1–P4 | A09, A21 |
-| WO-6 | Opus | the RC job at C, steps 1–17; RC record; tree record; S13 manifest. *V03 review F-V3:* WO-6 owns the producer of step 17c's record `step17/rc-step17c.json` (`checks[].id` = each `MR12_AUDITS_V03` entry's `check` command, `provenance.commit` = C) and the call of `mr12_extras_v03`, which is in the M07a script's `MEASURES` but not in its `SPECS`; a missing record fails the measure (fail-safe) | WO-5 | A17, A19–A24, A27, A32, A33 |
+| WO-6 | Opus | the RC job at C, steps 1–17; RC record; tree record; S13 manifest. *V03 review F-V3:* WO-6 owns the producer of step 17c's record `step17/rc-step17c.json` (`checks[].id` = each `MR12_AUDITS_V03` entry's `check` command, `provenance.commit` = C) and the call of `mr12_extras_v03`, which is in the M07a script's `MEASURES` but not in its `SPECS`; a missing record fails the measure (fail-safe). **Amendment 3:** step 12's G11 keep-and-audit at C (§4, A34); A12 (c) judged version-aligned (§7.1); S13's manifest outside the harvest (R-911); §10.5 | WO-5 | A12 (c), A17, A19–A24, A27, A32, A33, A34 |
 | WO-7 | verdict (design) | `docs/reviews/V03-verdicts.md` at C | WO-6 | A26 |
 | WO-8 | Sonnet | ledger from WO-7; ask Frank the four items and the D3 rows (in plain words, with defaults); record his answers verbatim; step 18; ADRs 0053 and 0054 Accepted (§6); hand to Frank for the tag | WO-7 | A26, A27 |
 | WO-9 | Sonnet | after the tag: §5.3 | the tag | — |
@@ -539,6 +638,10 @@ The engineer stops on any of these:
 - V03.A31 (b) differs for any corpus document. Production code then reads the role after all, and ADR 0054's premise is
   false.
 - A regenerated S11 case differs from its predecessor in anything other than `semantic_role` values.
+- V03.A34 fails, or step 12's re-run differs from step 12's own runs file (Amendment 3). The records are committed as
+  they are, and nothing is re-run to pass.
+- A12 (c)'s aligned run (§7.1) finds a changed digest, a failed test outside the five registered readers, or a failed
+  base shard (Amendment 3).
 
 ### 10.3 WO-3, Amendment 1: the roles (one engineer, before the rest of WO-3)
 
@@ -590,9 +693,43 @@ The brief carries:
 - The RC record and S13's manifest, with each step's summary line and its record path.
 - The step 8 chain rows and the step 15 carry lines.
 - `docs/reviews/S09-verdicts.md` verdict 3, and 0.2.0's `docs/reviews/V02-verdicts.md` for comparison.
+- For W21 (e) at its next judgement (Amendment 3, R-909): V03.A34's record, the files under `step12/experiments/`, step
+  12's own runs file and its commit `3b05511d`. (e) is met if and only if R-909's four conditions hold.
 
 It returns 17 rows in the alpha §6.3 form: verdict, failing clauses (or `—`), and travelling limitations. It judges
 nothing that §3 pre-registers differently.
+
+### 10.5 Amendment 3: the build lane's work at C (no re-cut)
+
+1. Step 12's G11 results (§4). The record's checks are V03.A34's.
+2. `scripts/s13_evidence_manifest.py` gets a rule for V03.A34. The rule reads `step12/experiments/rc-step12-experiments.json`
+   from `rc/records.json`, re-hashes it, reads it with T08's `_record`, and requires exactly A34's three check ids, as
+   A32's rule does for step 16. A12 (c) is decided as §7.1 states. `scripts/s11_identity.py` is not edited.
+3. `scripts/t08_support_matrix.py` sets `HARVEST_EXCLUDED = ("evidence/S13/",)`, naming R-911 in its comment. In
+   `tests/test_m07a_harvest.py`, `test_c4_the_post_0_2_0_harvest_reads_m07a_and_m07` expects that tuple. A new test
+   asserts three things: C's tree holds no file under `evidence/S13/`; every manifest the exclusion removes is
+   `evidence/S13/<40 hex>/manifest.json`; and S13a's manifest
+   (`evidence/S13a/0ce3748a7a473950a295e2668201fb96c44d0ec1/manifest.json`) is still harvested. `HARVEST_SIZE` and
+   T08.A21's test do not change.
+4. S13's manifest carries these three limitations verbatim, beside anything else it states:
+   - `Not harvested into v0.3-envelope-1. This manifest is written after C, and classifying its items would change benchmarks/t08/support_envelope.yaml, a D2.4 path. scripts/t08_support_matrix.py excludes evidence/S13/, as R-485 excluded M07's manifest from 0.2.0's harvest; the next envelope's package harvests it (R-911).`
+   - `V03.A12 (c) is judged version-aligned (V03 spec §7.1, R-910). The registered identity run differs from its base only in family-C digests, through the version string; with the version held equal, no digest differs. This shows that no binding outcome changed. It does not make the version string inert: the experiment fingerprint carries it by design (R-458).`
+   - `L-S11-1, L-S11-2, L-S11-3 and L-E01-1, and W26's sentence "G14 not judged at 0.3.0", travel in the prose of docs/reviews/V03-verdicts.md and in the envelope, not in the verdict table's limitation column, whose grammar (v0_2_gate.LIMITATION) cannot carry them (R-912).`
+5. Controls run before the generator change is committed, recorded in `docs/V03_RC_DECISIONS.md`.
+   - **A12 (c).** §7.1's decision is written as a pure function over V_C, V_B, R0's and R1's exit codes and last lines,
+     the numstat output and the failed node ids. It passes on a PASS-shaped R0 with exit 0, whatever else it is given.
+     It passes on the lines measured at C: `evidence/S13/<C>/artifacts/V03.A12c.log`,
+     `~/.cache/v03rc-a12-tmp/identity-cf2.log` and the five failed ids in `~/.cache/v03rc-a12-keep/branch/`. It fails
+     on each of these: R0 whose first changed key starts `A:`; R0 whose parenthesis also names a failed shard; R1 with
+     a changed key; R1 naming a failed base shard; n(R1) = n(R0) + 1; a sixth failed id; four of the five; a numstat
+     of two lines; and V_C = V_B with R0 failing.
+   - **A34.** The A34 rule fails on a copy of the record with one check `fail`, on a copy with a fourth check, and on a
+     `records.json` without the record. It passes on the committed record.
+   - **Harvest.** With S13's manifest present, `tests/test_m07a_harvest.py` and the A21 test of
+     `tests/test_t08_w2_support_envelope.py` pass with the exclusion and fail with `HARVEST_EXCLUDED = ()`.
+     `scripts/t08_support_matrix.py --check` passes with the exclusion.
+6. Then the work proceeds in the order the verdict's Sequencing gives: W21's new judgement (WO-7, with a new `Judged`
+   date); then Frank's message (N-2 to N-6, and N-11); then one re-judgement line for V13, V17, W21 and W24.
 
 ## 11. Open items (each with a default; work proceeds on the default)
 
@@ -608,14 +745,19 @@ nothing that §3 pre-registers differently.
 | N-8 | S04-O2: correct U02's stale capability text ("any property method other than SYN-001") at K3? | Frank's preference | **Correct it** to name the bases 0.3.0 binds | before K3 |
 | N-9 | Keep `other` in the role enum (ADR 0054 D1)? Removing a value after 0.3.0 ships is a narrowing that can invalidate user documents, so the cheap time to decide is before K3 | Frank's preference | **Keep it** (his standing "as few limitations as possible"). Alternative: `compressor` and `turbine` only, with `other` dropped from the ADR, A28 and A30 (b) | before K3 |
 | N-10 | W26 at 0.3.0. Option 1: judge the web-shell checks and the W27 scorer's twenty stub cases, and record that W27's old registration refuses this build (§3.5). Option 2: judge M06 G1–G15 literally | Frank's preference | **Option 1, §3.5's reading** (W26 (a) PASS iff A32 holds). Alternative: W26 (a) FAIL on G14 and G15, releasable only with a D3 row `W26 (a)` (an ADR 0053 amendment) | next message to Frank; WO-6 and WO-7 proceed on the default |
+| N-11 | Accept the licence decisions of the two new extras? `coolprop`: R-624 (CoolProp is MIT; its numpy as under R-135). `lca`: R-900 (WO-B1/D04's audit of the pinned Brightway lock). The alpha's MR-12 asks for Frank's recorded decision, and V18 was judged on §9.3's registration of R-624 and R-900 (verdict finding F4) | Frank's preference | **Accept** (V18 stays PASS). A decline needs a spec amendment, and V18 (a) is then judged again on MR-12's decision leg. The answer is recorded verbatim here, not in ADR 0053's tables | with N-2 to N-6, after W21's new judgement |
+| N-12 | Widen the gate's limitation grammar so that L-S11-1…3 and L-E01-1 can stand in the verdict table (verdict finding F5)? | design lane, at the next release | **Not for 0.3.0** (R-912). They travel in the verdict's prose, the envelope and S13's manifest. The next release adopts R-912's pattern | the next release's spec |
 | F-1 | Is the served digest at C equal to D_3? | fact: step 8 | yes (R-860) | at C |
 | F-2 | Does the journey at K3 fit its registered budget? | fact: WO-5 | yes, as at 0.2.0 | at K3 |
 | F-3 | Do S11's and E01's modules import in step 9's default-install workload? | fact: step 9 | yes (`test_package_imports` lists `assessment`) | at C |
 | F-4 | Does any default-gate test need W27's v1 `coverage.json` at the new version? | fact: step 1 at K3 | no (R-566 dropped the byte pin). *Measured (Amendment 2):* yes, twice. Each time a check compared the committed snapshot's `package_version`: `test_committed_coverage_json_is_g14_…` at K3 (R-902), and S11's S4 check at `4fa15efa` (R-904). Both now exclude it as build provenance | at K3 |
+| F-5 | Does A12 (c)'s aligned run (§7.1) find no changed digest, at the same n as R0, and fail exactly the five registered readers at the judged commit? | fact: the S13 generator's R1 | yes (the counterfactual at C) | at the generator's run |
+| F-6 | Does A34 hold at C, with the re-run equal to step 12's runs file at all 242 point-runs and 210 results audited with 0 problems? | fact: §4's re-run | yes, as at 0.2.0 with byte-identical producing code | before W21's new judgement |
 
 Ask N-1, N-7 and N-8 in one message now, and N-2 to N-6 in one message after the verdict, as 0.2.0 did. N-9 (Amendment
 1) rides on the next message to Frank before K3; work proceeds on its default. N-10 (Amendment 2) rides on the next
-message to Frank, and work proceeds on its default.
+message to Frank, and work proceeds on its default. N-11 (Amendment 3) rides in the message that asks N-2 to N-6, after
+W21's new judgement, and work proceeds on its default. N-12 asks Frank nothing.
 
 **Answered, Frank, 2026-10-29:** N-1 "No, don't claim it (Rec.)" (W27 not claimed); N-7 "Keep the token (Rec.)"; N-8
 "Correct it (Rec.)". N-2 to N-6 remain for after the verdict. N-9 (Frank, 2026-10-30): "Keep 'other' (Rec.)".
@@ -648,3 +790,11 @@ message to Frank, and work proceeds on its default.
   digests by construction, and A31 is the proof (§9.4).
 - The no-argument Wilson constructors do not read package data, and their `records_missing` text stays stale (§9.1,
   R-883). The envelope and the attribution page carry the correction.
+- A34 shows two things: the experiment records of a re-run of G11 at C carry blueprint §9.1's six items, and the
+  re-run's per-point outcomes equal step 12's own record. It audits fields and their bindings, not physics. Nothing in
+  it shows that the reactor is right (L46).
+- A12 (c) at a version cut (§7.1) shows that, with the version string held equal, C binds every document of the suite
+  exactly as the base does. It does not show that the version string is inert. The experiment fingerprint carries it
+  by design (R-458), and that is what R0's differences are.
+- S13's own manifest is not in `v0.3-envelope-1`'s harvest (R-911). Its limitations reach an envelope only at the next
+  release.

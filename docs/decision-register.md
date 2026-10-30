@@ -17850,3 +17850,120 @@ would need a re-audit. *Ignore the collection errors*: a gate that tolerates the
 
 **Rejected.** *Run the journey at K3 and re-run it at C*: about an hour of compute for the same code, and C is not the
 cut commit.
+
+## R-909 — Step 12 keeps G11's experiment results and audits them, in the step's own text, at 0.3.0 and every later release; at 0.3.0 by a re-run at C compared with step 12's own runs file (V03.A34)
+
+| | |
+| --- | --- |
+| Date | 2026-10-30 |
+| Decided by | design lane (`specifier`), V03 Amendment 3 (verdict finding F1) |
+| Normative text | V03 spec §4 ("Step 12's G11 results"), V03.A34, §10.1, §10.2, §10.5; `docs/RELEASING.md` (0.3.0 block, step 3) |
+| Evidence | `docs/reviews/V03-verdicts.md` W21 (e): C's step 12 ran G11 through temporary stores and kept nothing. V03 §4 carried "the alpha spec §8.2 steps 1–12, read as in M07 §8", and M07 §8 lacked R-375's keep-and-audit, as 0.2.0's finding F1 found. Step 12's own runs file at C (`3b05511d`, SHA-256 `cdb7d999…fd0a`): 2 runs × 121 points; 105 boundary and 16 direct per run; `attempts` 1 at each boundary point and absent at direct ones; `child_accepted` only at direct points; boundary outcomes 178 accepted, 28 at S1, 4 at certificate, which is 0.2.0's 89/14/2 per run. 0.2.0's remedy: `docs/v02-rc-record.md` l.126; audit 210 results, 210 attempts, 0 problems, 420 `job_id` context findings |
+| Affected packages | V03 (WO-6 step 12, WO-7 W21 (e)); every later release spec that runs the alpha's step 12 |
+
+**Decision.**
+1. *The record at 0.3.0.* `step12/experiments/rc-step12-experiments.json` holds exactly the three checks of V03.A34,
+   beside the re-run's G11 record and runs file, the two collected records and the audit's report. (b) compares six
+   members at all 242 point-runs with step 12's own runs file. The audit is given that file, so the collected
+   records' labels, order, paths, inlets and `n_tubes` are judged against a record written before the re-run.
+2. *What W21 (e) is judged again on.* At W21's new judgement, (e) is met if and only if all four of these hold.
+   (i) V03.A34 holds on the committed record. (ii) The verdict's own re-check agrees: each file's SHA-256 equals
+   `rc/records.json` and the RC row's (gzip decompressed); A34 (b) is recomputed from the two committed runs files; and
+   the audit, re-run over the committed records, prints the same line. (iii) `3b05511d` is an ancestor of the commit
+   that adds `step12/experiments/`, and `git diff --name-only a3e508e3 <that commit>` touches no D2.4 path. (iv) The
+   rest of (e) holds as judged on 2026-10-30 (G6 nodes, G12's coupling record, the reactor commit). The denominator
+   is the 210 results (0.2.0's reading). If any result lacks an item, (e) is not met, now on a record.
+3. *Standing.* Every later release spec that runs the alpha's step 12 writes the keep-and-audit into step 12's own
+   text, not only into a register entry or a side section. Step 12 runs G11 through a store-keeping wrapper in its
+   first run. The audit is given step 12's own runs file, and the record holds A34 (c). Checks (a) and (b), the re-run
+   form, are only the remedy for a step 12 that did not keep the records.
+
+**Rejected.**
+- *Carry 0.2.0's audit, since the producing code is byte-identical.* No registered carry covers it, and the alpha's §4
+  rule 3 forbids it.
+- *A D3 row for W21 (e).* That is the PASS with waiver that ADR 0021 rejects, for half an hour of free compute.
+- *Make `g11_coverage_v3.py` keep its stores.* It is a frozen D2.4 file, so this would need a re-cut.
+- *Give the audit the re-run's runs file (the verdict's step 4).* That ties inlets and `n_tubes` to the re-run.
+  Step 12's own file costs nothing and was written first.
+- *The verdict's five members only.* `attempts` is in step 12's own file. Adding it grounds the audit's 210 attempts
+  in step 12's record.
+
+**Watch for.** A release spec that cites "steps 1–12" of an earlier spec without the keep-and-audit in step 12's row.
+The wrappers living only as `tools/*.txt`; promoting them is open item A3-3.
+
+## R-910 — V03.A12 (c) at a version cut is judged with the version held equal: the registered run may differ only in family-C digests, and a one-line control run finds none
+
+| | |
+| --- | --- |
+| Date | 2026-10-30 |
+| Decided by | design lane (`specifier`), V03 Amendment 3 (verdict finding F2; the WO-6 A12 (c) stop) |
+| Normative text | V03 spec §7 V03.A12, §7.1, §10.1, §10.5; `scripts/s13_evidence_manifest.py` (A12 (c)) |
+| Evidence | R0 at C (`evidence/S13/a3e508e3…/artifacts/V03.A12c.log`, SHA-256 `db190837…`): `S11-IDENTITY FAIL n=54494 changed=[C:tests/test_m04_wo19_…] (47 digests differ)`. R1, which is C with only `__version__` = `0.3.0.dev0` (`~/.cache/v03rc-a12-tmp/identity-cf2.log`): `S11-IDENTITY FAIL n=54494 changed=[] (C branch shards [1, 3, 7, 11] exited non-zero)`. The kept logs (`~/.cache/v03rc-a12-keep/`) hold five FAILED lines in the branch tree, §7.1's five, and none in the base. `git diff --numstat 0ce3748a a3e508e3 -- src` is the one `__version__` line. `backends.py` l.174 puts the version in the fingerprint, and `Environment(fingerprint, document_sha256(fingerprint))` digests it |
+| Affected packages | V03 (WO-6 generator, S13's manifest); every later assertion that runs `scripts/s11_identity.py` across a change of `__version__` |
+
+**Decision.** As §7.1 states. R0 is the registered run. Its failure is admitted only when the versions differ and the
+only problem is changed family-C digests. R1 changes exactly the version line, and it must find no changed digest at
+the same n, with exactly the registered readers failing. `scripts/s11_identity.py`, its rule and its base are not
+edited. A later spec that applies the rule registers its own list of readers, measured the same way.
+
+**Rejected.**
+- *Exclude `openflowsheet_version` in the identity recorder (R-902's literal reach).* The version sits under
+  `Environment`'s derived digest. Excluding it would mean recomputing the experiment layer's digests inside gate
+  machinery, a second code path.
+- *Re-base the comparison at K3.* That compares only K3 with C. WO-2's change, which A12 (c) exists to judge, lies
+  before K3, so the check would be vacuous.
+- *S13a's pass at `0ce3748a` plus the `src/` diff.* That is evidence about another commit (alpha §4 rule 3), and
+  `tests/` and `benchmarks/` have moved since then.
+- *Align the base tree's version instead.* It is unmeasured, the base's own version readers and `src/**` hashes would
+  fail there, and it gains nothing.
+- *Drop the version from the fingerprint.* That is a D2.4 change and a re-cut, and R-458's re-take relies on the
+  version being there.
+- *Record A12 `fail` and release.* A27 needs `tested`, so this would be a waiver (ADR 0021).
+
+**Watch for.** A sixth reader appearing at a later judged commit. That is a stop, and the list is not edited to pass.
+S11's G1 being retired or re-based, after which this rule has nothing to apply to.
+
+## R-911 — S13's own manifest is excluded from the 0.3.0 harvest, as M07's was from 0.2.0's: `HARVEST_EXCLUDED = ("evidence/S13/",)`
+
+| | |
+| --- | --- |
+| Date | 2026-10-30 |
+| Decided by | design lane (`specifier`), V03 Amendment 3 (verdict finding F7) |
+| Normative text | V03 spec §4 (K3 and C), §10.5 item 3; `scripts/t08_support_matrix.py` `HARVEST_EXCLUDED`; `tests/test_m07a_harvest.py` |
+| Evidence | `docs/V03_RC_DECISIONS.md` (WO-6): with S13's manifest in the tree, `test_m07a_a50_the_harvest_size…` and T08.A21's test fail. At C, `HARVEST_EXCLUDED = ()` and `evidence/S13/` holds nothing. `HARVEST_SIZE = (66, 928, 120)`. The harvest's classifications live in `benchmarks/t08/support_envelope.yaml`, a D2.4 path. Precedent: R-485 |
+| Affected packages | V03 (WO-6, WO-8); the next envelope's package |
+
+**Decision.** `HARVEST_EXCLUDED = ("evidence/S13/",)`. The trailing slash keeps `evidence/S13a/` harvested.
+`HARVEST_SIZE` and T08.A21's test do not change. `test_c4_…` expects the tuple. A new test asserts that C's tree holds
+no file under `evidence/S13/`, that every excluded manifest is `evidence/S13/<40 hex>/manifest.json`, and that S13a's
+manifest is harvested. S13's manifest states the exclusion as a limitation. The next envelope's package removes the
+exclusion and harvests S13's manifest.
+
+**Rejected.**
+- *Classify S13's items in the envelope.* That is a D2.4 change and a new C.
+- *Move `HARVEST_SIZE` only.* T08.A21 would still find unclassified items.
+- *Write the manifest outside `evidence/`.* That breaks the merge rule (CLAUDE.md) and the gate's reading of it.
+
+**Watch for.** `HARVEST_EXCLUDED` holding anything besides `evidence/S13/` after 0.3.0, or the next envelope still
+excluding it.
+
+## R-912 — 0.3.0 keeps the gate's limitation grammar; L-S11-1…3, L-E01-1 and W26's G14 sentence travel in prose, and the next release widens the grammar
+
+| | |
+| --- | --- |
+| Date | 2026-10-30 |
+| Decided by | design lane (`specifier`), V03 Amendment 3 (verdict finding F5) |
+| Normative text | V03 spec §11 N-12, §10.5 item 4 |
+| Evidence | `scripts/v0_2_gate.py` `LIMITATION` (its pattern is quoted under the table), which every entry of the limitation column must fully match. It refuses `L-S11-1`, `L-S11-2`, `L-S11-3` and `L-E01-1` and accepts `L46`, `L-COL-10`, `L-WEB-1` and `L-CSTR-3`. All four refused ids are rows of `benchmarks/t08/support_envelope.yaml`, and the verdict carries them in its "Limitations that must travel" section |
+| Affected packages | V03 (the verdict, S13's manifest); the next release's gate |
+
+Today's pattern: `\bL(?:\d{2}|-[A-Z]+-\d+)\b`.
+
+**Decision.** No grammar change for 0.3.0. The four ids and W26's sentence travel in the verdict's prose, the envelope
+and one limitation of S13's manifest. The next release's gate adopts `\bL(?:\d{2}|-[A-Z][A-Z0-9]*-\d+)\b`, with tests
+that the four ids and today's ids match, that `L-s11-1`, `L-S11-`, `LS11-1` and `L-11-1` do not, and that 0.2's
+outputs stay byte-identical.
+
+**Rejected.**
+- *Widen now.* It changes the engine that judges C, after C, to gain one table cell and no evidence.
+- *Rename the envelope ids.* That is a D2.4 change, and the ids are cited across the tree.
