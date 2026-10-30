@@ -168,11 +168,13 @@ def test_the_git_backed_measure_at_the_v0_2_0_commit(tmp_path: Path) -> None:
 
 def test_the_git_backed_measure_at_head(tmp_path: Path) -> None:
     """The tripwire (S07 Ruling M, A44): `coolprop`, an extra added after v0.2, has no `MR12_AUDITS`
-    entry, so the measure fails at `HEAD` until the next release specification adds one (F-9)."""
+    entry, so the measure fails at `HEAD` until the next release specification adds one (F-9).
+    E01 (ADR 0052) adds `lca` the same way: no entry until the release specification supplies it."""
     head = subprocess.run(
         ["git", "rev-parse", "HEAD"], cwd=REPO_ROOT, capture_output=True, text=True, check=True
     ).stdout.strip()
     _, (result, value), _ = _git_backed(head, tmp_path)
     assert result == "fail", value
-    assert value["new_since_v0_1_1"] == ["coolprop", "nlp"]
+    assert value["new_since_v0_1_1"] == ["coolprop", "lca", "nlp"]
     assert value["extras"]["coolprop"] == {"audit": None, "reason": "no MR12_AUDITS entry"}
+    assert value["extras"]["lca"] == {"audit": None, "reason": "no MR12_AUDITS entry"}

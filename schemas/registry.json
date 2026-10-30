@@ -1,6 +1,8 @@
 [
   "api-error.schema.json",
   "application-results.schema.json",
+  "assessment-report.schema.json",
+  "assessment.schema.json",
   "attempt-context.schema.json",
   "capability-reference.schema.json",
   "change-set.schema.json",

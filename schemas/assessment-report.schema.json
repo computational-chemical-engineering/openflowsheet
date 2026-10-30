@@ -1,0 +1,672 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/frankp/process-runtime/schemas/assessment-report.schema.json",
+  "title": "Assessment report",
+  "description": "E01 design §4.5.5, §4.9, §4.11, ADR 0052 (Proposed): the report of one assessment program at one state — every output (null where withheld or undefined), the regime with its admissibility values, the resolved basis, per-item provenance, the AACE class and the first-order propagation with their assumptions, defaulted inputs, limitations, refusals and exclusions, and the verbatim evidence statement. Built by `openflowsheet.assessment.report`. `assessment_sha256` is the exact digest of the assessment document; `state_sha256` is the float digest of the host state (ADR 0008 D2; v2's class); `regime.sha256` is the exact digest of the regime signature. `provenance` lies outside every hash.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "assessment_id",
+    "assessment_sha256",
+    "state_sha256",
+    "regime",
+    "status",
+    "basis",
+    "items",
+    "capex",
+    "opex",
+    "annual",
+    "lca",
+    "derived",
+    "uncertainty",
+    "defaulted_inputs",
+    "limitations",
+    "refusals",
+    "unavailable",
+    "excluded",
+    "statement"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "assessment-report-v1"
+    },
+    "assessment_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "assessment_sha256": {
+      "$ref": "https://github.com/frankp/process-runtime/schemas/evaluation-result.schema.json#/$defs/sha256"
+    },
+    "state_sha256": {
+      "$ref": "https://github.com/frankp/process-runtime/schemas/evaluation-result.schema.json#/$defs/sha256"
+    },
+    "regime": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "signature": {
+          "type": "string"
+        },
+        "sha256": {
+          "$ref": "https://github.com/frankp/process-runtime/schemas/evaluation-result.schema.json#/$defs/sha256"
+        },
+        "entries": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/regime_entry"
+          }
+        }
+      },
+      "required": [
+        "signature",
+        "sha256",
+        "entries"
+      ]
+    },
+    "status": {
+      "enum": [
+        "COMPLETE",
+        "PARTIAL",
+        "REFUSED"
+      ]
+    },
+    "basis": {
+      "type": "object",
+      "required": [
+        "currency",
+        "year"
+      ],
+      "description": "The resolved basis (defaults applied): currency, year, location, location_factor, escalation series, exchange rates, correlation set, operation."
+    },
+    "items": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/item"
+      }
+    },
+    "capex": {
+      "$ref": "#/$defs/outputs"
+    },
+    "opex": {
+      "$ref": "#/$defs/outputs"
+    },
+    "annual": {
+      "$ref": "#/$defs/outputs"
+    },
+    "lca": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "inventory": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/lca_row"
+          }
+        },
+        "impacts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/lca_row"
+          }
+        },
+        "tables": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "sha256": {
+                "$ref": "https://github.com/frankp/process-runtime/schemas/evaluation-result.schema.json#/$defs/sha256"
+              },
+              "rights": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "id",
+              "sha256",
+              "rights"
+            ]
+          }
+        }
+      },
+      "required": [
+        "inventory",
+        "impacts",
+        "tables"
+      ]
+    },
+    "derived": {
+      "$ref": "#/$defs/outputs"
+    },
+    "uncertainty": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "aace_class": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1,
+          "maximum": 5
+        },
+        "aace_range": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "low": {
+                  "type": "array",
+                  "items": {
+                    "type": "number"
+                  },
+                  "minItems": 2,
+                  "maxItems": 2
+                },
+                "high": {
+                  "type": "array",
+                  "items": {
+                    "type": "number"
+                  },
+                  "minItems": 2,
+                  "maxItems": 2
+                }
+              },
+              "required": [
+                "low",
+                "high"
+              ]
+            }
+          ]
+        },
+        "linear_interval": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            },
+            "minItems": 2,
+            "maxItems": 2
+          }
+        },
+        "rss_sigma": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "number",
+            "minimum": 0
+          }
+        },
+        "parameters": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "theta": {
+                "type": "string",
+                "pattern": "^asm:"
+              },
+              "value": {
+                "type": "number"
+              },
+              "withheld": {
+                "type": "string",
+                "minLength": 1
+              },
+              "relative_range": {
+                "type": "array",
+                "items": {
+                  "type": "number"
+                },
+                "minItems": 2,
+                "maxItems": 2
+              }
+            },
+            "required": [
+              "theta",
+              "relative_range"
+            ],
+            "description": "A theta with a declared range. `value` is its value, or `withheld` states why the value is not disclosed (a score of an LCA table whose rights forbid redistribution, E01 design §4.8.6); the theta still enters the propagation.",
+            "oneOf": [
+              {
+                "required": [
+                  "value"
+                ]
+              },
+              {
+                "required": [
+                  "withheld"
+                ]
+              }
+            ]
+          }
+        },
+        "assumptions": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "linear_interval": {
+              "type": "string",
+              "minLength": 1
+            },
+            "rss_sigma": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "linear_interval",
+            "rss_sigma"
+          ]
+        }
+      },
+      "required": [
+        "aace_class",
+        "aace_range",
+        "linear_interval",
+        "rss_sigma",
+        "parameters",
+        "assumptions"
+      ]
+    },
+    "defaulted_inputs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "key": {
+            "type": "string",
+            "minLength": 1
+          },
+          "input": {
+            "type": "string",
+            "minLength": 1
+          },
+          "value": {
+            "type": [
+              "number",
+              "string",
+              "boolean"
+            ]
+          },
+          "target": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "key",
+          "value",
+          "target"
+        ]
+      }
+    },
+    "limitations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "code",
+          "target"
+        ],
+        "properties": {
+          "code": {
+            "type": "string",
+            "minLength": 1
+          },
+          "target": {
+            "type": "string"
+          }
+        },
+        "description": "A typed limitation (§4.12); its detail fields sit beside `code` and `target`."
+      }
+    },
+    "refusals": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "enum": [
+              "refusal",
+              "unsupported"
+            ]
+          },
+          "code": {
+            "type": "string",
+            "minLength": 1
+          },
+          "target": {
+            "type": "string"
+          },
+          "detail": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "code",
+          "target",
+          "detail"
+        ]
+      }
+    },
+    "unavailable": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      },
+      "description": "Each withheld output (reported as null) with its reason (§4.9, A40)."
+    },
+    "excluded": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "item": {
+            "type": "string",
+            "minLength": 1
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "item",
+          "reason"
+        ]
+      }
+    },
+    "statement": {
+      "const": "Assessment evidence: an estimate under the stated basis, correlations, data and regimes. It is not numerical verification of the flowsheet and not empirical validation."
+    },
+    "provenance": {
+      "type": "object",
+      "description": "Versions and a timestamp; outside every hash (A39)."
+    }
+  },
+  "$defs": {
+    "outputs": {
+      "type": "object",
+      "additionalProperties": {
+        "type": [
+          "number",
+          "null"
+        ]
+      },
+      "description": "Output id (unprefixed, §4.1) → value in the catalogue's unit, or null when withheld or undefined."
+    },
+    "lca_row": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "value": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "unit": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "value",
+        "unit"
+      ]
+    },
+    "regime_entry": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "entry_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "kind": {
+          "enum": [
+            "service",
+            "utility",
+            "size",
+            "piece",
+            "argmax",
+            "dormant",
+            "domain"
+          ]
+        },
+        "choice": {
+          "type": "string",
+          "minLength": 1
+        },
+        "rule": {
+          "type": "string"
+        },
+        "admissibility": {
+          "type": "object",
+          "additionalProperties": {
+            "type": [
+              "number",
+              "null"
+            ]
+          }
+        }
+      },
+      "required": [
+        "entry_id",
+        "kind",
+        "choice",
+        "rule",
+        "admissibility"
+      ]
+    },
+    "item_input": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "value": {
+          "type": [
+            "number",
+            "string"
+          ]
+        },
+        "unit": {
+          "type": "string"
+        },
+        "defaulted": {
+          "type": "boolean"
+        },
+        "theta": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "used": {
+          "type": "boolean"
+        },
+        "v_source": {
+          "enum": [
+            null,
+            "provider",
+            "model_identity",
+            "declared_item",
+            "declared_components"
+          ]
+        },
+        "default_key": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "name",
+        "value",
+        "unit",
+        "defaulted",
+        "theta",
+        "used",
+        "v_source",
+        "default_key"
+      ]
+    },
+    "item": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "item_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "family": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "enum": [
+            "costed",
+            "included",
+            "excluded",
+            "refused"
+          ]
+        },
+        "size": {
+          "type": "object",
+          "additionalProperties": {
+            "type": [
+              "number",
+              "null"
+            ]
+          }
+        },
+        "inputs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/item_input"
+          }
+        },
+        "source": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "description": "Set and entry (form, citation, source lines, options with those defaulted, range provenance with `verified`, index-basis conversion), a quote, or the item that includes it."
+        },
+        "regime": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "escalation": {
+          "type": [
+            "object",
+            "null"
+          ]
+        },
+        "accuracy_class": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1,
+          "maximum": 5
+        },
+        "relative_range": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            }
+          ]
+        },
+        "extrapolated": {
+          "type": "boolean"
+        },
+        "purchased": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "bare_module": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "included_in": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "purchased_value": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "bare_module_value": {
+          "type": [
+            "number",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "item_id",
+        "family",
+        "status",
+        "size",
+        "inputs",
+        "source",
+        "regime",
+        "escalation",
+        "accuracy_class",
+        "relative_range",
+        "extrapolated",
+        "purchased",
+        "bare_module",
+        "included_in",
+        "purchased_value",
+        "bare_module_value"
+      ]
+    }
+  }
+}

@@ -32,6 +32,9 @@ LAYERS = [
     # which runs them, and above `models`, whose boundary they evaluate.
     "adapters",
     "application",
+    # E01's assessment functionals (ADR 0052): post-solve functionals of a verified state,
+    # compiled beside (never into) a `CompiledProblem`; below `studies`, which reads them.
+    "assessment",
     # M03's studies (blueprint §15's `src/studies/`): sensitivities, sweeps and estimation over a
     # compiled problem's pinned inputs. Above the verifier, because a sensitivity is issued only at
     # a certified root.

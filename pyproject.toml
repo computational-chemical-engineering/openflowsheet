@@ -58,6 +58,15 @@ nlp = [
     "cyipopt==1.7.0",
     "packaging==26.3",  # Pyomo detects numpy through packaging.version and does not declare it
 ]
+# E01 ADR 0052 D7 (design §4.8.4): the optional offline Brightway adapter that builds frozen LCA
+# unit-score tables. Never imported by a solve, an optimization or a replay; without it every
+# adapter call is `UNSUPPORTED(LCA_ENGINE_UNAVAILABLE)`. Not bw2io, not pypardiso (§7 Q11). The
+# audited environment is scripts/build-lca-env.sh (benchmarks/e01/brightway/lca-pip.lock); the
+# closure's licences are docs/e01-lca-licences.json (scripts/e01_d04_inventory.py).
+lca = [
+    "bw2data==4.7",
+    "bw2calc==2.5.0",
+]
 
 [tool.setuptools]
 package-dir = { "" = "src" }
@@ -80,6 +89,11 @@ openflowsheet = [
     "_data/benchmarks/m02/numerical_policy_external.yaml",
     # S05 (R-616): the IAPWS-95 coefficients `iapws95-v1` reads, with IAPWS's attribution in NOTICE.
     "_data/benchmarks/s05/iapws95_coefficients.json",
+    # E01 (ADR 0052): the assessment data (cost set, chain presets, index series, LCA tables), with
+    # the third-party attributions in NOTICE; one glob per directory.
+    "_data/assessment/cost/*.json",
+    "_data/assessment/index/*.json",
+    "_data/assessment/lca/*.json",
     # M06 (ADR 0030 D2): the diagnostic web shell, `_data/web` → `apps/web/`, one glob per
     # directory (`serve-http --ui`).
     "_data/web/*.html",
@@ -148,6 +162,13 @@ ignore_missing_imports = true
 # imports; every other strict check still applies to that module.
 [[tool.mypy.overrides]]
 module = ["pyomo.*", "cyipopt.*"]
+ignore_missing_imports = true
+
+# E01 WO-B1: bw2data and bw2calc exist only in the audited `lca` environment
+# (scripts/build-lca-env.sh), are imported inside the adapter's calls, and ship no stubs;
+# bw_processing (bw2calc's pinned dependency) builds the adapter's float64 datapackages.
+[[tool.mypy.overrides]]
+module = ["bw2data.*", "bw2calc.*", "bw_processing.*"]
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]

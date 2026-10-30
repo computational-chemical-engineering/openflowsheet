@@ -240,6 +240,9 @@
               "ZERO_FLOW"
             ]
           }
+        },
+        "assessment": {
+          "$ref": "https://github.com/frankp/process-runtime/schemas/assessment.schema.json#/$defs/formulation_assessment"
         }
       }
     },
@@ -617,8 +620,14 @@
                     "START_OUTSIDE_BOUNDS",
                     "DECISION_INCONSISTENT_WITH_ELIMINATED_ROWS",
                     "UNKNOWN_VARIABLE",
+                    "ASSESSMENT_OUTPUT_UNKNOWN",
+                    "ASSESSMENT_OUTPUT_UNAVAILABLE",
+                    "ASSESSMENT_PARAMETER_STRUCTURAL",
+                    "ASSESSMENT_PARAMETER_DECISION",
                     "HESSIAN_UNAVAILABLE",
                     "SIMULATION_NOT_READY",
+                    "ASSESSMENT_REGIME_INADMISSIBLE",
+                    "ASSESSMENT_OBJECTIVE_UNSCALED",
                     "NLP_SOLVER_UNAVAILABLE"
                   ]
                 }
@@ -668,8 +677,14 @@
             "START_OUTSIDE_BOUNDS",
             "DECISION_INCONSISTENT_WITH_ELIMINATED_ROWS",
             "UNKNOWN_VARIABLE",
+            "ASSESSMENT_OUTPUT_UNKNOWN",
+            "ASSESSMENT_OUTPUT_UNAVAILABLE",
+            "ASSESSMENT_PARAMETER_STRUCTURAL",
+            "ASSESSMENT_PARAMETER_DECISION",
             "HESSIAN_UNAVAILABLE",
             "SIMULATION_NOT_READY",
+            "ASSESSMENT_REGIME_INADMISSIBLE",
+            "ASSESSMENT_OBJECTIVE_UNSCALED",
             "NLP_SOLVER_UNAVAILABLE",
             "KKT_POINT_VERIFIED",
             "NOT_VERIFIED",
@@ -690,7 +705,7 @@
     },
     "check": {
       "type": "object",
-      "description": "One of spec §8.5's checks on the re-solved simulation; members beyond `check` and `outcome` are what it measured.",
+      "description": "One of spec §8.5's checks on the re-solved simulation; members beyond `check` and `outcome` are what it measured. `V7` (E01 §4.10.3) is recorded only for a formulation with an assessment.",
       "required": [
         "check",
         "outcome"
@@ -703,7 +718,8 @@
             "V3",
             "V4",
             "V5",
-            "V6"
+            "V6",
+            "V7"
           ]
         },
         "outcome": {
@@ -786,6 +802,14 @@
               "properties": {
                 "check": {
                   "const": "V6"
+                }
+              }
+            },
+            {
+              "$ref": "#/$defs/check",
+              "properties": {
+                "check": {
+                  "const": "V7"
                 }
               }
             }
@@ -1074,7 +1098,7 @@
           ]
         },
         "checks": {
-          "description": "V1-V6 on the decisions the start returned, whatever Ipopt's status; empty when it returned none.",
+          "description": "V1-V6 (and V7 with an assessment, E01 §4.10.3) on the decisions the start returned, whatever Ipopt's status; empty when it returned none.",
           "oneOf": [
             {
               "type": "array",
@@ -1128,6 +1152,14 @@
                   "properties": {
                     "check": {
                       "const": "V6"
+                    }
+                  }
+                },
+                {
+                  "$ref": "#/$defs/check",
+                  "properties": {
+                    "check": {
+                      "const": "V7"
                     }
                   }
                 }

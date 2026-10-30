@@ -1,0 +1,25 @@
+{
+  "schema": "capital-chains-v1",
+  "chains": [
+    {
+      "chain_id": "bare-module-total",
+      "source": "E01 design §4.7.1: the total capital investment is the sum of the bare-module costs",
+      "steps": [
+        {"name": "TCI", "terms": [{"of": "sum_bare_module"}]}
+      ],
+      "capital_total": "TCI",
+      "fci": "TCI"
+    },
+    {
+      "chain_id": "ebtf-prisma-v1",
+      "source": "PrISMa SI §6.3.3 (CC BY), after the EBTF method; docs/briefs/PrISMa-scoping.md:115. TDC is the sum of bare-module costs (LM as each item's F_BM); EPC = 1.10·1.14·1.30·TDC; CAPEX = 1.07·EPC. PrISMa's IDC/TCR step is the PrISMa package's to add.",
+      "steps": [
+        {"name": "TDC", "terms": [{"of": "sum_bare_module"}]},
+        {"name": "EPC", "terms": [{"of": "TDC", "factor_product": [1.10, 1.14, 1.30]}]},
+        {"name": "CAPEX", "terms": [{"of": "EPC", "factor": 1.07}]}
+      ],
+      "capital_total": "CAPEX",
+      "fci": "CAPEX"
+    }
+  ]
+}

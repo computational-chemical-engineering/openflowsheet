@@ -1,0 +1,1033 @@
+{
+ "annual": {
+  "annual.capital_charge": 62576.06596453452,
+  "profit": -95418.29211593355,
+  "revenue.total": 0.0,
+  "tac": 95418.29211593355
+ },
+ "assessment_id": "e01-a5-p1-th-r1",
+ "assessment_sha256": "1635c38aee50f6e5ddffcfd0d29726a943b7756a289f4845d9c17c487557f43f",
+ "basis": {
+  "correlation_set": "sslw-idaes-v1",
+  "currency": "USD",
+  "escalation_series": {
+   "EUR": "eurostat-ppi-c28-ea-annual-v1",
+   "USD": "bls-ppi-wpu11-annual-v1"
+  },
+  "exchange_rates": "frb-g5a-annual-v1",
+  "location": null,
+  "location_factor": 1.0,
+  "operation": {
+   "discount_rate": 0.08,
+   "hours_per_year": 8000.0,
+   "lifetime_years": 20.0
+  },
+  "year": 2023
+ },
+ "capex": {
+  "capex.CAPEX": 614381.0398180706,
+  "capex.EPC": 574187.8876804397,
+  "capex.TDC": 352219.29068852885,
+  "capex.bare_module.D.drum": 94518.4848069472,
+  "capex.bare_module.H": 189642.03165056967,
+  "capex.bare_module.P": 67167.9260599007,
+  "capex.bare_module.P.drive": 890.8481711112703,
+  "capex.fci": 614381.0398180706,
+  "capex.purchased.D.drum": 22720.789617054616,
+  "capex.purchased.H": 59823.984747813774,
+  "capex.purchased.P": 20353.916987848697,
+  "capex.purchased.P.drive": 593.8987807408469,
+  "capex.sum_bare_module": 352219.29068852885,
+  "capex.sum_purchased": 103492.59013345792,
+  "capex.total": 614381.0398180706
+ },
+ "defaulted_inputs": [
+  {
+   "key": "escalation_series.USD",
+   "target": "",
+   "value": "bls-ppi-wpu11-annual-v1"
+  },
+  {
+   "key": "escalation_series.EUR",
+   "target": "",
+   "value": "eurostat-ppi-c28-ea-annual-v1"
+  },
+  {
+   "key": "basis.location_factor",
+   "target": "",
+   "value": 1.0
+  },
+  {
+   "key": "exchange_rates",
+   "target": "",
+   "value": "frb-g5a-annual-v1"
+  },
+  {
+   "key": "option.hx_type",
+   "target": "H",
+   "value": "Utube"
+  },
+  {
+   "key": "option.material",
+   "target": "H",
+   "value": "StainlessSteelStainlessSteel"
+  },
+  {
+   "key": "option.tube_length",
+   "target": "H",
+   "value": "TwelveFoot"
+  },
+  {
+   "key": "shell_thickness",
+   "target": "D.drum",
+   "value": 0.03175
+  },
+  {
+   "key": "option.material",
+   "target": "D.drum",
+   "value": "CarbonSteel"
+  },
+  {
+   "key": "option.weight_limit",
+   "target": "D.drum",
+   "value": "1"
+  },
+  {
+   "key": "option.platforms_ladders",
+   "target": "D.drum",
+   "value": "true"
+  },
+  {
+   "key": "option.pump_type",
+   "target": "P",
+   "value": "Centrifugal"
+  },
+  {
+   "key": "option.material",
+   "target": "P",
+   "value": "StainlessSteel"
+  },
+  {
+   "key": "option.pump_type_factor",
+   "target": "P",
+   "value": "1.4"
+  },
+  {
+   "key": "option.motor_type",
+   "target": "P.drive",
+   "value": "Open"
+  },
+  {
+   "input": "F_T",
+   "key": "F_T",
+   "target": "H",
+   "value": 1.0
+  },
+  {
+   "input": "T_return",
+   "key": "T_return",
+   "target": "H",
+   "value": 520.0
+  },
+  {
+   "input": "tau",
+   "key": "drum_residence_time",
+   "target": "D.drum",
+   "value": 300.0
+  },
+  {
+   "input": "fill",
+   "key": "drum_fill_fraction",
+   "target": "D.drum",
+   "value": 0.5
+  },
+  {
+   "input": "LD",
+   "key": "drum_LD",
+   "target": "D.drum",
+   "value": 3.0
+  },
+  {
+   "input": "K_SB",
+   "key": "drum_K_SB",
+   "target": "D.drum",
+   "value": 0.07
+  },
+  {
+   "input": "orientation",
+   "key": "drum_orientation",
+   "target": "D.drum",
+   "value": "vertical"
+  }
+ ],
+ "derived": {},
+ "excluded": [],
+ "items": [
+  {
+   "accuracy_class": 4,
+   "bare_module": "capex.bare_module.H",
+   "bare_module_value": 189642.03165056967,
+   "escalation": {
+    "base": [
+     "2006",
+     126.167
+    ],
+    "exchange": 1.0,
+    "factor": 1.3806462862713704,
+    "index_ratio": 1.3806462862713704,
+    "location_factor": 1.0,
+    "series": "bls-ppi-wpu11-annual-v1",
+    "target": [
+     2023,
+     174.192
+    ]
+   },
+   "extrapolated": false,
+   "family": "exchanger.utility",
+   "included_in": null,
+   "inputs": [
+    {
+     "default_key": null,
+     "defaulted": false,
+     "name": "U",
+     "theta": "asm:item.H.U",
+     "unit": "W/(m2*K)",
+     "used": true,
+     "v_source": null,
+     "value": 800.0
+    },
+    {
+     "default_key": "F_T",
+     "defaulted": true,
+     "name": "F_T",
+     "theta": "asm:item.H.F_T",
+     "unit": "1",
+     "used": true,
+     "v_source": null,
+     "value": 1.0
+    },
+    {
+     "default_key": null,
+     "defaulted": false,
+     "name": "T_supply",
+     "theta": "asm:item.H.T_supply",
+     "unit": "K",
+     "used": true,
+     "v_source": null,
+     "value": 520.0
+    },
+    {
+     "default_key": null,
+     "defaulted": true,
+     "name": "T_return",
+     "theta": "asm:item.H.T_return",
+     "unit": "K",
+     "used": true,
+     "v_source": null,
+     "value": 520.0
+    },
+    {
+     "default_key": null,
+     "defaulted": false,
+     "name": "dT_min",
+     "theta": "asm:item.H.dT_min",
+     "unit": "K",
+     "used": true,
+     "v_source": null,
+     "value": 10.0
+    },
+    {
+     "default_key": null,
+     "defaulted": false,
+     "name": "Q",
+     "theta": null,
+     "unit": "W",
+     "used": true,
+     "v_source": null,
+     "value": 25000.0
+    },
+    {
+     "default_key": null,
+     "defaulted": false,
+     "name": "design_pressure",
+     "theta": null,
+     "unit": "Pa",
+     "used": true,
+     "v_source": null,
+     "value": 500000.0
+    }
+   ],
+   "item_id": "H",
+   "purchased": "capex.purchased.H",
+   "purchased_value": 59823.984747813774,
+   "regime": {
+    "H.pressure.piece": "floor",
+    "H.size": "floor"
+   },
+   "relative_range": [
+    -0.3,
+    0.5
+   ],
+   "size": {
+    "area": 0.23013894935410378
+   },
+   "source": {
+    "citation": "Seider, Seader, Lewin, Widagdo, Product and Process Design Principles, 3rd ed., ch. 22",
+    "entry": "exchanger.shell_tube",
+    "form": "sslw-exchanger-v1",
+    "options": {
+     "hx_type": "Utube",
+     "material": "StainlessSteelStainlessSteel",
+     "tube_length": "TwelveFoot"
+    },
+    "options_defaulted": [
+     "hx_type",
+     "material",
+     "tube_length"
+    ],
+    "ranges": {
+     "area_ft2": {
+      "below": "refuse",
+      "max": 12000.0,
+      "min": 150.0,
+      "role": "size",
+      "source": {
+       "citation": "Seider, Seader, Lewin, Widagdo, Product and Process Design Principles, 3rd ed., ch. 22: shell-and-tube heat exchanger purchase cost, Eq. 22.39-22.43 (size range of the equation, recalled; design note §9.2.5, QA1)",
+       "kind": "primary",
+       "verified": false
+      }
+     },
+     "pressure_psig": {
+      "below": "floor",
+      "max": 2000.0,
+      "min": 100.0,
+      "role": "input",
+      "source": {
+       "kind": "pinned",
+       "source_line": "SSLW.py:492",
+       "text": "Equation valid from 100 pisg to 2000 psig"
+      }
+     }
+    },
+    "set": "sslw-idaes-v1",
+    "source_lines": {
+     "A": "SSLW.py:446",
+     "B": "SSLW.py:446",
+     "F_L": "SSLW.py:384",
+     "alpha1": "SSLW.py:403",
+     "alpha2": "SSLW.py:403",
+     "alpha3": "SSLW.py:403",
+     "material_area_ref_ft2": "SSLW.py:460",
+     "oversize": "SSLW.py:393",
+     "pressure_ref_psig": "SSLW.py:495"
+    }
+   },
+   "status": "costed"
+  },
+  {
+   "accuracy_class": 4,
+   "bare_module": "capex.bare_module.D.drum",
+   "bare_module_value": 94518.4848069472,
+   "escalation": {
+    "base": [
+     "2006",
+     126.167
+    ],
+    "exchange": 1.0,
+    "factor": 1.3806462862713704,
+    "index_ratio": 1.3806462862713704,
+    "location_factor": 1.0,
+    "series": "bls-ppi-wpu11-annual-v1",
+    "target": [
+     2023,
+     174.192
+    ]
+   },
+   "extrapolated": false,
+   "family": "drum",
+   "included_in": null,
+   "inputs": [
+    {
+     "default_key": "drum_residence_time",
+     "defaulted": true,
+     "name": "tau",
+     "theta": "asm:item.D.drum.tau",
+     "unit": "s",
+     "used": true,
+     "v_source": null,
+     "value": 300.0
+    },
+    {
+     "default_key": "drum_fill_fraction",
+     "defaulted": true,
+     "name": "fill",
+     "theta": "asm:item.D.drum.fill",
+     "unit": "1",
+     "used": true,
+     "v_source": null,
+     "value": 0.5
+    },
+    {
+     "default_key": "drum_LD",
+     "defaulted": true,
+     "name": "LD",
+     "theta": "asm:item.D.drum.LD",
+     "unit": "1",
+     "used": true,
+     "v_source": null,
+     "value": 3.0
+    },
+    {
+     "default_key": "drum_K_SB",
+     "defaulted": true,
+     "name": "K_SB",
+     "theta": "asm:item.D.drum.K_SB",
+     "unit": "m/s",
+     "used": true,
+     "v_source": null,
+     "value": 0.07
+    },
+    {
+     "default_key": null,
+     "defaulted": false,
+     "name": "vdot.S6",
+     "theta": null,
+     "unit": "m3/s",
+     "used": true,
+     "v_source": "provider",
+     "value": "LIQUID"
+    },
+    {
+     "default_key": null,
+     "defaulted": false,
+     "name": "vdot.S5",
+     "theta": null,
+     "unit": "m3/s",
+     "used": true,
+     "v_source": "provider",
+     "value": "VAPOR"
+    },
+    {
+     "default_key": "drum_orientation",
+     "defaulted": true,
+     "name": "orientation",
+     "theta": null,
+     "unit": "",
+     "used": true,
+     "v_source": null,
+     "value": "vertical"
+    },
+    {
+     "default_key": null,
+     "defaulted": true,
+     "name": "t_shell",
+     "theta": null,
+     "unit": "m",
+     "used": true,
+     "v_source": null,
+     "value": 0.03175
+    }
+   ],
+   "item_id": "D.drum",
+   "purchased": "capex.purchased.D.drum",
+   "purchased_value": 22720.789617054616,
+   "regime": {
+    "D.drum.platforms.D.piece": "floor",
+    "D.drum.platforms.L.piece": "floor",
+    "D.drum.size": "floor"
+   },
+   "relative_range": [
+    -0.3,
+    0.5
+   ],
+   "size": {
+    "diameter": 0.17464743031492239,
+    "height": 0.5239422909447672,
+    "volume": 0.012551560856031718
+   },
+   "source": {
+    "citation": "Seider, Seader, Lewin, Widagdo, Product and Process Design Principles, 3rd ed., ch. 22",
+    "entry": "vessel.vertical",
+    "form": "sslw-vessel-v1",
+    "options": {
+     "material": "CarbonSteel",
+     "platforms_ladders": "true",
+     "weight_limit": "1"
+    },
+    "options_defaulted": [
+     "material",
+     "weight_limit",
+     "platforms_ladders"
+    ],
+    "ranges": {
+     "platform_diameter_ft": {
+      "below": "floor",
+      "max": 24.0,
+      "min": 3.0,
+      "role": "input",
+      "source": {
+       "kind": "pinned",
+       "source_line": "SSLW.py:537",
+       "text": "1: 3 < D < 21 ft, 12 < L < 40 ft, 2: 3 < D < 24 ft; 27 < L < 170 ft."
+      }
+     },
+     "platform_length_ft": {
+      "below": "floor",
+      "max": 170.0,
+      "min": 12.0,
+      "role": "input",
+      "source": {
+       "kind": "pinned",
+       "note": "piece 2 starts at 40 ft, where piece 1 ends, so the pieces are contiguous (design note §9.2.4 form II, departure 4)",
+       "source_line": "SSLW.py:537",
+       "text": "1: 3 < D < 21 ft, 12 < L < 40 ft, 2: 3 < D < 24 ft; 27 < L < 170 ft."
+      }
+     },
+     "weight_lb": {
+      "below": "refuse",
+      "max": 920000.0,
+      "min": 1000.0,
+      "role": "size",
+      "source": {
+       "kind": "pinned",
+       "source_line": "SSLW.py:534",
+       "text": "1: (default) 1000 to 920,000 lb"
+      }
+     }
+    },
+    "set": "sslw-idaes-v1",
+    "source_lines": {
+     "F_M": "SSLW.py:621",
+     "alpha1": "SSLW.py:676",
+     "alpha2": "SSLW.py:676",
+     "alpha3": "SSLW.py:676",
+     "density_lb_in3": "SSLW.py:621",
+     "diameter_allowance": "SSLW.py:665"
+    }
+   },
+   "status": "costed"
+  },
+  {
+   "accuracy_class": 4,
+   "bare_module": "capex.bare_module.P",
+   "bare_module_value": 67167.9260599007,
+   "escalation": {
+    "base": [
+     "2006",
+     126.167
+    ],
+    "exchange": 1.0,
+    "factor": 1.3806462862713704,
+    "index_ratio": 1.3806462862713704,
+    "location_factor": 1.0,
+    "series": "bls-ppi-wpu11-annual-v1",
+    "target": [
+     2023,
+     174.192
+    ]
+   },
+   "extrapolated": false,
+   "family": "machine.pump",
+   "included_in": null,
+   "inputs": [
+    {
+     "default_key": null,
+     "defaulted": false,
+     "name": "vdot.S6",
+     "theta": null,
+     "unit": "m3/s",
+     "used": true,
+     "v_source": "provider",
+     "value": "LIQUID"
+    }
+   ],
+   "item_id": "P",
+   "purchased": "capex.purchased.P",
+   "purchased_value": 20353.916987848697,
+   "regime": {
+    "P.size": "floor"
+   },
+   "relative_range": [
+    -0.3,
+    0.5
+   ],
+   "size": {
+    "head": 32.442760203582424,
+    "power": 8.367131010182973,
+    "vol_flow": 2.0919268093386196e-05
+   },
+   "source": {
+    "citation": "Seider, Seader, Lewin, Widagdo, Product and Process Design Principles, 3rd ed., ch. 22",
+    "entry": "pump",
+    "form": "sslw-pump-v1",
+    "index_basis": "CEPCI 394 → 500 by the source's ratio",
+    "options": {
+     "material": "StainlessSteel",
+     "pump_type": "Centrifugal",
+     "pump_type_factor": "1.4"
+    },
+    "options_defaulted": [
+     "pump_type",
+     "material",
+     "pump_type_factor"
+    ],
+    "ranges": {
+     "size_factor": {
+      "below": "refuse",
+      "max": 100000.0,
+      "min": 400.0,
+      "role": "size",
+      "source": {
+       "citation": "Seider, Seader, Lewin, Widagdo, Product and Process Design Principles, 3rd ed., ch. 22: centrifugal pump size factor S = Q H^0.5, gpm ft^0.5 (size range of the equation, recalled; design note §9.2.5, QA1)",
+       "kind": "primary",
+       "verified": false
+      }
+     }
+    },
+    "set": "sslw-idaes-v1",
+    "source_lines": {
+     "F_M": "SSLW.py:1533",
+     "F_T": "SSLW.py:1558",
+     "a0": "SSLW.py:1587",
+     "a1": "SSLW.py:1588",
+     "a2": "SSLW.py:1589",
+     "head_exponent": "SSLW.py:1523",
+     "type_factor_other": "SSLW.py:1571"
+    }
+   },
+   "status": "costed"
+  },
+  {
+   "accuracy_class": 4,
+   "bare_module": "capex.bare_module.P.drive",
+   "bare_module_value": 890.8481711112703,
+   "escalation": {
+    "base": [
+     "2006",
+     126.167
+    ],
+    "exchange": 1.0,
+    "factor": 1.3806462862713704,
+    "index_ratio": 1.3806462862713704,
+    "location_factor": 1.0,
+    "series": "bls-ppi-wpu11-annual-v1",
+    "target": [
+     2023,
+     174.192
+    ]
+   },
+   "extrapolated": false,
+   "family": "machine.drive",
+   "included_in": null,
+   "inputs": [],
+   "item_id": "P.drive",
+   "purchased": "capex.purchased.P.drive",
+   "purchased_value": 593.8987807408469,
+   "regime": {
+    "P.drive.size": "floor"
+   },
+   "relative_range": [
+    -0.3,
+    0.5
+   ],
+   "size": {
+    "power": 13.493696071150344
+   },
+   "source": {
+    "citation": "Seider, Seader, Lewin, Widagdo, Product and Process Design Principles, 3rd ed., ch. 22",
+    "entry": "motor.electric",
+    "form": "sslw-motor-v1",
+    "index_basis": "CEPCI 394 → 500 by the source's ratio",
+    "options": {
+     "motor_type": "Open"
+    },
+    "options_defaulted": [
+     "motor_type"
+    ],
+    "ranges": {
+     "motor_power_hp": {
+      "below": "refuse",
+      "max": 700.0,
+      "min": 1.0,
+      "role": "size",
+      "source": {
+       "citation": "Seider, Seader, Lewin, Widagdo, Product and Process Design Principles, 3rd ed., ch. 22: electric motor power consumption P_C, hp (size range of the equation, recalled; design note §9.2.5, QA1)",
+       "kind": "primary",
+       "verified": false
+      }
+     }
+    },
+    "set": "sslw-idaes-v1",
+    "source_lines": {
+     "F_MT": "SSLW.py:1626"
+    }
+   },
+   "status": "costed"
+  }
+ ],
+ "lca": {
+  "impacts": [],
+  "inventory": [],
+  "tables": []
+ },
+ "limitations": [
+  {
+   "code": "LMTD_ACROSS_PHASE_CHANGE",
+   "inlet": "LIQUID",
+   "outlet": "VAPOR_LIQUID",
+   "r": 1.966050465118504,
+   "target": "H",
+   "underwood_over_lmtd_minus_1": 3.184625174479372e-05
+  },
+  {
+   "code": "INDEX_BASIS_MAPPED",
+   "mapping": "CEPCI 500 → 2006",
+   "target": "sslw-idaes-v1"
+  }
+ ],
+ "opex": {
+  "opex.fixed.maintenance": 18431.431194542118,
+  "opex.total": 32842.22615139904,
+  "opex.utility.EL": 10.794956856920276,
+  "opex.utility.HPS": 14400.0
+ },
+ "provenance": {
+  "generated_utc": "2026-10-27T22:02:48+00:00",
+  "openflowsheet_version": "0.3.0.dev0",
+  "program_label": "ASM1-1635c38aee50-2a9930bc"
+ },
+ "refusals": [],
+ "regime": {
+  "entries": [
+   {
+    "admissibility": {
+     "duty": 1.0
+    },
+    "choice": "heating",
+    "entry_id": "H.service",
+    "kind": "service",
+    "rule": "§4.3.2 rule 1"
+   },
+   {
+    "admissibility": {
+     "dT1": 0.8947578029133075,
+     "dT2": 0.9464702463370649
+    },
+    "choice": "HPS",
+    "entry_id": "H.utility",
+    "kind": "utility",
+    "rule": "§4.3.2 rule 2 (cheapest admissible)"
+   },
+   {
+    "admissibility": {},
+    "choice": "active",
+    "entry_id": "D.drum.S6.dormant",
+    "kind": "dormant",
+    "rule": "§4.3.2 rule 3"
+   },
+   {
+    "admissibility": {},
+    "choice": "active",
+    "entry_id": "D.drum.S5.dormant",
+    "kind": "dormant",
+    "rule": "§4.3.2 rule 3"
+   },
+   {
+    "admissibility": {
+     "over_V": 0.8509144533120043
+    },
+    "choice": "L",
+    "entry_id": "D.drum.controlling",
+    "kind": "argmax",
+    "rule": "§4.3.2 rule 6"
+   },
+   {
+    "admissibility": {},
+    "choice": "active",
+    "entry_id": "P.S6.dormant",
+    "kind": "dormant",
+    "rule": "§4.3.2 rule 3"
+   },
+   {
+    "admissibility": {
+     "area_ft2_floor": 0.9834853664383783
+    },
+    "choice": "floor",
+    "entry_id": "H.size",
+    "kind": "size",
+    "rule": "§4.3.2 rule 4"
+   },
+   {
+    "admissibility": {
+     "pressure_psig_floor": 0.4217707991040884
+    },
+    "choice": "floor",
+    "entry_id": "H.pressure.piece",
+    "kind": "piece",
+    "rule": "§4.3.2 rule 5; §9.2.5"
+   },
+   {
+    "admissibility": {
+     "weight_lb_floor": 0.7632113535005328
+    },
+    "choice": "floor",
+    "entry_id": "D.drum.size",
+    "kind": "size",
+    "rule": "§4.3.2 rule 4"
+   },
+   {
+    "admissibility": {
+     "platform_length_ft_floor": 0.8567524357653196
+    },
+    "choice": "floor",
+    "entry_id": "D.drum.platforms.L.piece",
+    "kind": "piece",
+    "rule": "§4.3.2 rule 5; §9.2.5"
+   },
+   {
+    "admissibility": {
+     "platform_diameter_ft_floor": 0.8090032476870928
+    },
+    "choice": "floor",
+    "entry_id": "D.drum.platforms.D.piece",
+    "kind": "piece",
+    "rule": "§4.3.2 rule 5; §9.2.5"
+   },
+   {
+    "admissibility": {
+     "size_factor_floor": 0.9914478357745408
+    },
+    "choice": "floor",
+    "entry_id": "P.size",
+    "kind": "size",
+    "rule": "§4.3.2 rule 4"
+   },
+   {
+    "admissibility": {
+     "motor_power_hp_floor": 0.9819046554983057
+    },
+    "choice": "floor",
+    "entry_id": "P.drive.size",
+    "kind": "size",
+    "rule": "§4.3.2 rule 4"
+   }
+  ],
+  "sha256": "2a9930bc8849d1911e5178e18902e62b84b80cc95ae1b51cc8d61625ba7dbe93",
+  "signature": "{\"D.drum.S5.dormant\":\"active\",\"D.drum.S6.dormant\":\"active\",\"D.drum.controlling\":\"L\",\"D.drum.platforms.D.piece\":\"floor\",\"D.drum.platforms.L.piece\":\"floor\",\"D.drum.size\":\"floor\",\"H.pressure.piece\":\"floor\",\"H.service\":\"heating\",\"H.size\":\"floor\",\"H.utility\":\"HPS\",\"P.S6.dormant\":\"active\",\"P.drive.size\":\"floor\",\"P.size\":\"floor\"}"
+ },
+ "schema_version": "assessment-report-v1",
+ "state_sha256": "9cdbdcc20bac4c61bbb29d42328268e558997cf6630a5b62e0107415fafb105d",
+ "statement": "Assessment evidence: an estimate under the stated basis, correlations, data and regimes. It is not numerical verification of the flowsheet and not empirical validation.",
+ "status": "COMPLETE",
+ "unavailable": {},
+ "uncertainty": {
+  "aace_class": 4,
+  "aace_range": {
+   "high": [
+    0.2,
+    0.5
+   ],
+   "low": [
+    -0.15,
+    -0.3
+   ]
+  },
+  "assumptions": {
+   "linear_interval": "linear, first order; each input at its own adverse bound (box worst case; conservative for any correlation)",
+   "rss_sigma": "linear, first order; inputs independent and uniform on their ranges"
+  },
+  "linear_interval": {
+   "annual.capital_charge": [
+    43803.246175174165,
+    93864.0989468018
+   ],
+   "capex.CAPEX": [
+    430066.72787264944,
+    921571.5597271059
+   ],
+   "capex.EPC": [
+    401931.52137630776,
+    861281.8315206596
+   ],
+   "capex.TDC": [
+    246553.50348197026,
+    528328.9360327933
+   ],
+   "capex.bare_module.D.drum": [
+    66162.93936486305,
+    141777.72721042082
+   ],
+   "capex.bare_module.H": [
+    132749.42215539876,
+    284463.0474758545
+   ],
+   "capex.bare_module.P": [
+    47017.54824193049,
+    100751.88908985104
+   ],
+   "capex.bare_module.P.drive": [
+    623.5937197778892,
+    1336.2722566669054
+   ],
+   "capex.fci": [
+    430066.72787264944,
+    921571.5597271059
+   ],
+   "capex.purchased.D.drum": [
+    15904.55273193823,
+    34081.18442558192
+   ],
+   "capex.purchased.H": [
+    41876.78932346964,
+    89735.97712172066
+   ],
+   "capex.purchased.P": [
+    14247.741891494088,
+    30530.875481773044
+   ],
+   "capex.purchased.P.drive": [
+    415.7291465185928,
+    890.8481711112703
+   ],
+   "capex.sum_bare_module": [
+    246553.50348197026,
+    528328.9360327933
+   ],
+   "capex.sum_purchased": [
+    72444.81309342054,
+    155238.8852001869
+   ],
+   "capex.total": [
+    430066.72787264944,
+    921571.5597271059
+   ],
+   "opex.fixed.maintenance": [
+    12902.001836179483,
+    27647.14679181318
+   ],
+   "opex.total": [
+    27312.796793036403,
+    42057.94174867009
+   ],
+   "opex.utility.EL": [
+    10.794956856920276,
+    10.794956856920276
+   ],
+   "opex.utility.HPS": [
+    14400.0,
+    14400.0
+   ],
+   "profit": [
+    -135922.0406954719,
+    -71116.04296821056
+   ],
+   "revenue.total": [
+    0.0,
+    0.0
+   ],
+   "size.D.drum.diameter": [
+    0.17464743031492239,
+    0.17464743031492239
+   ],
+   "size.D.drum.height": [
+    0.5239422909447672,
+    0.5239422909447672
+   ],
+   "size.D.drum.volume": [
+    0.012551560856031718,
+    0.012551560856031718
+   ],
+   "size.H.area": [
+    0.23013894935410378,
+    0.23013894935410378
+   ],
+   "size.P.drive.power": [
+    13.493696071150344,
+    13.493696071150344
+   ],
+   "size.P.head": [
+    32.442760203582424,
+    32.442760203582424
+   ],
+   "size.P.power": [
+    8.367131010182973,
+    8.367131010182973
+   ],
+   "size.P.vol_flow": [
+    2.0919268093386196e-05,
+    2.0919268093386196e-05
+   ],
+   "tac": [
+    71116.04296821056,
+    135922.0406954719
+   ]
+  },
+  "parameters": [
+   {
+    "relative_range": [
+     -0.3,
+     0.5
+    ],
+    "theta": "asm:item.H.accuracy",
+    "value": 1.0
+   },
+   {
+    "relative_range": [
+     -0.3,
+     0.5
+    ],
+    "theta": "asm:item.D.drum.accuracy",
+    "value": 1.0
+   },
+   {
+    "relative_range": [
+     -0.3,
+     0.5
+    ],
+    "theta": "asm:item.P.accuracy",
+    "value": 1.0
+   },
+   {
+    "relative_range": [
+     -0.3,
+     0.5
+    ],
+    "theta": "asm:item.P.drive.accuracy",
+    "value": 1.0
+   }
+  ],
+  "rss_sigma": {
+   "annual.capital_charge": 9120.163994773136,
+   "capex.CAPEX": 89543.11448079426,
+   "capex.EPC": 83685.15372036847,
+   "capex.TDC": 51334.286419070326,
+   "capex.bare_module.D.drum": 21828.10905867461,
+   "capex.bare_module.H": 43795.95120924957,
+   "capex.bare_module.P": 15511.76807663702,
+   "capex.bare_module.P.drive": 205.73257255927106,
+   "capex.fci": 89543.11448079426,
+   "capex.purchased.D.drum": 5247.141600642935,
+   "capex.purchased.H": 13815.75747925854,
+   "capex.purchased.P": 4700.535780799098,
+   "capex.purchased.P.drive": 137.15504837284738,
+   "capex.sum_bare_module": 51334.286419070326,
+   "capex.sum_purchased": 15508.755521857734,
+   "capex.total": 89543.11448079426,
+   "opex.fixed.maintenance": 2686.2934344238274,
+   "opex.total": 2686.2934344238274,
+   "opex.utility.EL": 0.0,
+   "opex.utility.HPS": 0.0,
+   "profit": 11806.457429196964,
+   "revenue.total": 0.0,
+   "size.D.drum.diameter": 0.0,
+   "size.D.drum.height": 0.0,
+   "size.D.drum.volume": 0.0,
+   "size.H.area": 0.0,
+   "size.P.drive.power": 0.0,
+   "size.P.head": 0.0,
+   "size.P.power": 0.0,
+   "size.P.vol_flow": 0.0,
+   "tac": 11806.457429196964
+  }
+ }
+}
