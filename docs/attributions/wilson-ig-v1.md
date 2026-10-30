@@ -55,3 +55,23 @@ and the points they are fitted to". It names both package paths and gives: NASA 
 copyright line and licence; the keys `deReuck-BOOK-1993`, `Schroeder-JPCRD-2014` and `Wagner-JPCRD-2002`, the last
 pointing at the IAPWS block above it; the paper as *J. Chem. Eng. Data* 38 (1993) 446-449, Table II; and the CIAAW 2021
 conventional atomic weights.
+
+## Using the provider from the library
+
+V03 spec §9.1 and §10.4 (R-883). Three facts:
+
+- The records are package data. `benchmarks/s10/records.yaml` ships in the wheel as
+  `openflowsheet/_data/benchmarks/s10/records.yaml` (R-880), so a revision whose `record_source` names it binds
+  `wilson-ig-v2` in a wheel; the binder and the verifier pass the packaged path.
+- The no-argument constructors `WilsonIdealGasProvider()` and `WilsonIdealGasProviderV2()` read a source checkout only.
+  Elsewhere they refuse `RecordError("records_missing: …")`, never a fallback. The refusal's text still says the records
+  are read from a "source checkout only": `thermo/wilson_ig.py`'s bytes are pinned (S11.A75) and enter both providers'
+  identity, so the stale message stays (R-883).
+- A library user passes the packaged path:
+
+  ```python
+  from openflowsheet import resources
+  from openflowsheet.thermo import wilson_ig
+
+  provider = wilson_ig.WilsonIdealGasProvider(resources.packaged_path(wilson_ig.RECORDS_PATH))
+  ```
