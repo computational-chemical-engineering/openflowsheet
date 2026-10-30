@@ -1,8 +1,6 @@
 # ADR 0054 — `semantic_role` gains `compressor`, `turbine` and `other`: an additive widening of the frozen revision schema
 
-**Status:** **Proposed, 2026-10-29** (design lane, `specifier`, package V03, ruling round 1; manifest id `S13`). It
-becomes **Accepted** when `evidence/S13/<C>/manifest.json` is `tested` at the release candidate C with V03.A28–A31
-among its checks. The build lane marks it Accepted at WO-8, together with ADR 0053 (V03 spec §6).
+**Status:** **Accepted, 2026-10-31** — its condition holds: S13's manifest `evidence/S13/a3e508e3…/manifest.json` is `tested` at the release candidate C = `a3e508e3`, with V03.A28–A31 among its checks (generated at `04c503e5`, committed in `9e998beb`, SHA-256 `3e3d0b3d…`). Marked by the build lane at WO-8, with ADR 0053, in V03 spec §6.1's order. (Proposed 2026-10-29.)
 **Author:** design lane (`specifier`), brief `docs/briefs/V03-rulings-1.md`.
 **Normative text:** this ADR; `docs/derivations/V03-release-spec.md` §9.4 (Table R, the corpus) and V03.A28–A31.
 **Change rule served:** `docs/interfaces-frozen.md` header (plan §2.2: a widening of a frozen schema needs a design-lane
