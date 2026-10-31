@@ -92,7 +92,7 @@ F5 education mode deferred.
 
 ## Next action
 
-**Position (2026-10-31).** **0.3.0 is ready to tag; the dispatch is Frank's.** `wp/V03-rc` (log `docs/V03_RC_DECISIONS.md`)
+**Position (2026-10-31).** **0.3.0 RELEASED 2026-10-31** (tag `v0.3.0` → `b8f47a04`, release run 41186226024 all green; PyPI + GitHub release; dry run 41185514015). `wp/V03-rc` (log `docs/V03_RC_DECISIONS.md`)
 merged into main `727f7f0f` (head `246a42b0`: gate PASS 14781; CI 41147504316 green both architectures). C = `a3e508e3`
 (K3 `295a2e65`, 0.3.0, `v0.3-envelope-1`); main takes no D2.4 change until the dispatch.
 - Amendments 2–4 (R-903…R-914): W26 without G14; G11 keep-and-audit standing in step 12 (A34 PASS: 210/210, 0 problems);
@@ -102,7 +102,8 @@ merged into main `727f7f0f` (head `246a42b0`: gate PASS 14781; CI 41147504316 gr
 - S13 manifest `tested` 48/48 (`9e998beb`); ADRs 0053/0054 Accepted (`e55f9efd`); step 18 `v0_3_gate.py --rc a3e508e3…`:
   `v0.3.0 tag may be proposed: YES` at H2, H3 and main.
 **Next actions (in order):**
-1. On Frank's confirmation: dispatch `release.yml` from main, `version` 0.3.0, `rc` = `a3e508e35fc5451fe56fa7b70941621992d35b50`.
+1. Release-process slimming for 0.4.0 (Frank 2026-10-31: "reduce the checking a bit, but still retain quality"): standing
+   procedure, gate carry by path diff, standing acceptances, one test run per commit; one `specifier` pass.
 2. WO-9 after the tag: 0.4.0.dev0, envelope back to its working form, G10 re-take (R-875).
 2b. **NLP optimiser on revision flowsheets** (Frank 2026-10-27: right after E01), with MCP/CLI/HTTP for cost/LCA.
 2c. **X01 — model extensibility infrastructure, piloted by NRTL + UNIQUAC (+ original UNIFAC), VLE only** (Frank,
