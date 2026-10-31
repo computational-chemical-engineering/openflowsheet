@@ -18025,3 +18025,169 @@ loop is found only at the last work order.
 
 **Watch for.** A release generator with an input for the gate's own output. An ADR check that requires Accepted where
 the ADR's condition is the manifest itself.
+
+## R-915: From 0.4.0 one standing procedure (RP) and one generic gate read a per-line file; no per-release specification, policy ADR or gate script
+
+| | |
+| --- | --- |
+| Date | 2026-10-31 |
+| Decided by | design lane (`specifier`), ADR 0055 D1, on Frank's request of 2026-10-31 |
+| Normative text | `docs/adr/0055-standing-release-procedure.md` D1; `docs/derivations/release-procedure.md` (WO-R1) |
+| Evidence | V03's spec, about 920 lines with four amendments (R-872 … R-914); W21 (e) repeated 0.2.0's F1 because step 12 was re-transcribed without the fix (R-909) |
+| Affected packages | every release from 0.4.0; RELEASING; `release.yml` |
+
+**Decision.** RP is written once and amended only by a register-recorded amendment. Each minor line has
+`release/lines/<M>.<m>.json` (`inherits`, `changed`). The gate refuses an unlisted change. `release.yml` runs
+`scripts/release_gate.py` when a line file exists, and the legacy script otherwise. A release's delta is its line file
+plus a RELEASING block of at most 40 lines. Its package id is `REL<digits>`.
+
+**Rejected.** *Templated per-release specs* (re-transcription is where gaps come back in). *A registry entry per line in
+a per-line script* (the per-release script again).
+
+**Watch for.** A `scripts/v0_4_gate.py`. A release spec under `docs/derivations/`. A line-file field edited without
+`changed`.
+
+## R-916: A verdict row carries only by evidence-fingerprint equality, and evidence is always re-run at C; a path diff alone never carries
+
+| | |
+| --- | --- |
+| Date | 2026-10-31 |
+| Decided by | design lane (`specifier`), ADR 0055 D2 (changes the brief's cut 2) |
+| Normative text | ADR 0055 D2.1, D2.4–D2.7 |
+| Evidence | F-C: `src/` changed between 0.2.0 and 0.3.0, so honest path scopes carry 0 of 17; V03-verdicts l.17 shows a hand-narrowed scope. F-E: the journey, W27 and V17 carries are mechanical precedents |
+| Affected packages | every release from 0.5.0 (first carry); the `verdict` agent's brief |
+
+**Decision.** The row carries if and only if K1–K5 hold: Φ is byte-equal, there is no non-benign git, the prior row is
+not `BLOCKED` (a `FAIL` row carries only with standing acceptances), the gate's line entry is equal, and a prior Φ
+exists. The gate re-verifies every carried row (item 13). Nothing carries at 0.4.0.
+
+**Rejected.** *A path diff over scopes drawn by hand* (judgement). *A path diff with `src/`* (carries nothing).
+*Carrying the evidence of unchanged gates* (skips defect-catching runs).
+
+**Watch for.** A carried row without two Φ files. A carry report that skips a test or step at C. A carried `BLOCKED`
+row.
+
+## R-917: The fingerprint Φ: criteria, documents, junit outcomes on both legs, RC check statuses, audited non-product reads, and non-benign git; unsupported never matches
+
+| | |
+| --- | --- |
+| Date | 2026-10-31 |
+| Decided by | design lane (`specifier`), ADR 0055 D2.2, D2.3, D2.5 |
+| Normative text | ADR 0055 D2.2–D2.3 |
+| Evidence | An outcome-only fingerprint misses a re-taken fixture under passing tests. `strace -f` sees subprocess reads (node, reactor child). Git object reads cannot be mapped to paths |
+| Affected packages | WO-R4, WO-R5 |
+
+**Decision.** The canonical JSON is as D2.2 states. `reads` covers tracked files outside `src/openflowsheet/`, `.git/`
+and `__pycache__/` opened by any process of the audit run. The benign git set is exactly `rev-parse`, `status`,
+`cat-file -e`, `cat-file -t` and `merge-base --is-ancestor`. A missing junit file, a missing `strace` or a failed
+audit gives `unsupported`, which never equals anything.
+
+**Rejected.** *Including `src/` in `reads`* (carries nothing; the product is covered by re-running). *Hand-registered
+scope globs* (they rot without anyone noticing). *Widening the benign set by convenience*.
+
+**Watch for.** A timing, run id or commit id inside Φ. Two `unsupported` records treated as equal.
+
+## R-918: Frank's acceptances stand while their scope fingerprint is unchanged; a lapsed or new row is re-dated; a new failure or new claim always needs Frank (reverses ADR 0053 D2's "no acceptance is carried" from 0.4.0)
+
+| | |
+| --- | --- |
+| Date | 2026-10-31 |
+| Decided by | design lane (`specifier`), ADR 0055 D3.1–D3.5, on Frank's agreement in principle of 2026-10-31 |
+| Normative text | ADR 0055 D3; `release/acceptances.md` |
+| Evidence | F-D: V13, V17 and W24 were `BLOCKED` at 0.3.0 only because unchanged acceptances were re-asked, which cost a re-judgement pass (V03-verdicts l.230–251) |
+| Affected packages | every release from 0.4.0; supersedes for standing rows the date rule of alpha Table T6, ADR 0042 D2 and ADR 0053 D2 |
+
+**Decision.** There is one standing table, with `Scope`, `Fingerprint` and `Accepted at`. The scope terms are `paths:`,
+`extract:` (`claim_set`, `pyproject_extra:<x>`, `links`, `served_digest`) and `gate_row:<g>`. A row stands if its
+fingerprint holds at C. A row whose fingerprint does not hold has lapsed and counts as absent. A failing clause without
+a standing row gives NO. A new failure-clause row is dated on or after `Judged`. A new decision-item row is dated on or
+after the carry report that showed the lapse. The gate report lists every standing row used.
+
+**Rejected.** *Acceptances keyed by date* (re-asking with no new information). *Acceptances that stand until withdrawn*
+(they would admit a changed failure without Frank's sign-off).
+
+**Watch for.** A standing row whose scope omits what Frank accepted. A decision-item answer dated before the lapse
+report.
+
+## R-919: The standing table is seeded with ADR 0053's six cells at `a3e508e3`; V14 (b) is asked once more at 0.4.0
+
+| | |
+| --- | --- |
+| Date | 2026-10-31 |
+| Decided by | design lane (`specifier`), ADR 0055 D3.6 |
+| Normative text | ADR 0055 D3.6 table |
+| Evidence | ADR 0053's tables (six cells, `accepted, 2026-10-30`). R-450 (M03 N1's audit files). The X31 (c) evidence is S09 verdict 3. V14 (b)'s PTC-R1 evidence is not re-run at C (V03-verdicts l.17) |
+| Affected packages | WO-R1; 0.4.0 |
+
+**Decision.** The scopes are as D3.6 states. V14 (b) takes `gate_row:V14` if PTC-R1 becomes a standing RC item (N-2,
+default). Otherwise it takes R-453's path scope with `src/`. V14 (b) is therefore asked at 0.4.0 either way. The coolprop
+and lca licences are seeded only on a recorded Frank answer (N-7).
+
+**Rejected.** *A narrowed `src/` scope for V14 (b)* (the judgement F-C describes).
+
+**Watch for.** A seeded cell that differs from ADR 0053's verbatim text. A fingerprint not recomputable at `a3e508e3`.
+
+## R-920: One CI run per commit; RC step 1 is the push run at C; the release dispatch skips `check`; local 17b is dropped; the local merge gate is kept
+
+| | |
+| --- | --- |
+| Date | 2026-10-31 |
+| Decided by | design lane (`specifier`), ADR 0055 D4 (narrows the brief's cut 4) |
+| Normative text | ADR 0055 D4 |
+| Evidence | F-A: `release.yml`'s gate and RC step 1 run no suite; `check` has no `if`, so each dispatch re-runs it. F-B: the workstation holds the archived objects, and seven test modules run only there |
+| Affected packages | WO-R4, WO-R6; `ci.yml` |
+
+**Decision.** There is a `release_rc` dispatch input, and `check` is skipped under it. Step 1 cites the push run (run id,
+legs, log and junit SHA-256) and fails if that run is missing or red. `check` uploads junit (pytest and node) on both
+legs. 17b is CI's `rc-coolprop`. Local runs cover only the reactor, nlp and lca environments, G10/G11/G12, the journey,
+and `CLAUDE.md`'s merge gate.
+
+**Rejected.** *Dropping the local full gate* (it loses the archived-history tests and contradicts `CLAUDE.md`; this is
+Frank's N-3).
+
+**Watch for.** A step 1 that cites a dispatch's `check`. A `release_rc` run that executes `check`.
+
+## R-921: Per release: the build lane writes the mechanical line fields; the design lane writes only claim-set, criteria, item and phrase changes and judges only rows that did not carry; Frank is asked once, batched, for lapsed or new things
+
+| | |
+| --- | --- |
+| Date | 2026-10-31 |
+| Decided by | design lane (`specifier`), ADR 0055 D5 |
+| Normative text | ADR 0055 D5; plan §1.3 (unchanged rule, applied per release) |
+| Evidence | 0.3.0: about 10 design-lane passes and 8 engineer passes, about 2 days from K3 to tag (orchestrator's count) |
+| Affected packages | every release from 0.4.0 |
+
+**Decision.** A `specifier` pass happens only if something scientific changes. There is one `verdict` pass over the
+rows that did not carry, and none if all carry. There is a `reviewer` pass only for changes to release machinery.
+Frank gets one plain-words message for lapsed rows, new failures, a claim-set change or money. The tag, the dispatch and
+PyPI stay his.
+
+**Rejected.** *A specifier pass per release by default* (it re-transcribes RP).
+
+**Watch for.** A build-lane edit to `claimed`, a clause grammar or the "What it is not" phrases without a `specifier`
+pass.
+
+## R-922: A post-release `X.Y.Z.postN` of a released `X.Y.Z` changes only the PyPI page and carries `X.Y.Z`'s gate verdict
+
+| | |
+| --- | --- |
+| Date | 2026-10-31 |
+| Decided by | orchestrator (build lane), on Frank's request of 2026-10-31 ("the readme seems old … keep it up to date … a link to the repository, pages etc on the PyPi landing page") and his choice of `0.3.0.post1` over waiting for 0.4.0 |
+| Normative text | `docs/RELEASING.md` "Post-releases"; `scripts/v0_2_gate.py` (`post_release_differences`, `is_released`, `ReleaseLine.post_releases`); `.github/workflows/release.yml` gate step |
+| Evidence | `tests/test_v03_post_release.py`, `tests/test_release_workflows.py` (R-922 tests), `tests/test_changelog_section.py`; `docs/V03_RC_DECISIONS.md` "V03-post1" |
+| Affected packages | V03-post1 (0.3.0.post1); any later post-release |
+
+**Decision.** `X.Y.Z.postN` (N ≥ 1, canonical; not of a pre-release) is admitted iff, against `X.Y.Z`'s candidate C,
+the D2.4 files differ only in `README.md`, in `pyproject.toml`'s `[project]` `version`, `urls` and `readme` (compared
+parsed), and in the version string of `src/openflowsheet/__init__.py`; files outside D2.4 are free; and a tag `vX.Y.Z`
+is on an ancestor of the candidate. The line's gate script gates it as `X.Y.Z`: same gate set, same C, verdicts and
+ADR 0053 not redone, envelope still `release: X.Y.Z` (a post-release is the same release). The GitHub release is not
+a pre-release; its notes are a `## vX.Y.Z.postN` CHANGELOG section. The gate set's `covers` pattern and the registered
+patterns of `benchmarks/` (V03 Table T-V3, M07a T2/T3) are unchanged: the post-release forms sit beside them
+(`POST_RELEASE`, `POST_TAG`, the workflow's second pattern), because changing `benchmarks/` would itself break the rule.
+
+**Rejected.** *Wait for 0.4.0* (Frank chose the post-release). *A new release `0.3.1` with an RC job and verdicts*
+(the code is 0.3.0's; nothing to judge). *Widening `v0.3-gate-v1`'s `covers` to `.postN`* (edits the registration
+under `benchmarks/`, a D2.4 path, and would let the ordinary tree rule refuse the README).
+
+**Watch for.** A post-release used to ship a code, schema, data or lock change; an envelope moved to `X.Y.Z.postN`.

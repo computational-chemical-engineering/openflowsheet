@@ -377,3 +377,22 @@ Branch `wp/V03-wo9` from `main` `f7289197`, worktree `.claude/worktrees/v03wo9`.
 - Full gate at `bbdbd8b5` (clean tree, private `TMPDIR` under `~/.cache`): `GATE PASS bbdbd8b5: 14781 passed, 3206
   skipped, 197 deselected, 1 warning in 6150.37s`, exit 0. No manifest: 0.2.0's post-tag work (C7) carried none.
   Branch `wp/V03-wo9` pushed for CI; the orchestrator merges. Nothing tagged.
+## V03-post1 (2026-10-31): 0.3.0.post1 — a current README and the project links on PyPI
+
+- DECISION: how is `0.3.0.postN` admitted (orchestrator's rule, registered R-922)? → the engine gates it as 0.3.0 by a
+  `ReleaseLine.post_releases` flag (v0.3 only), with its own tree check and a tag check; `v0.3-gate-v1.covers`, Table
+  T-V3 and the M07a patterns under `benchmarks/` are unchanged and the post forms sit beside them. Alternative: widen
+  `covers` (edits `benchmarks/v03/registration.json`, a D2.4 file the rule itself forbids). Reversible by: reverting
+  the rule commit.
+- DECISION: V03.A06's item-1 fixture used `0.3.0.post1` as its uncovered version; R-922 admits it, so the fixture uses
+  `0.3.1` (also uncovered in Table T-V3). A06's statement (each item refuses alone) is unchanged. Alternative: keep
+  `0.3.0.post1` uncovered (contradicts the rule). Reversible by: the same commit. **For the design lane:** Table
+  T-V3 still lists `0.3.0.post1` as "not covered by any entry" — literally true of the entry's pattern; the gate now
+  proposes it through R-922. A one-line note in V03 spec §2.3 would remove the apparent conflict.
+- DECISION: what does README's status name at a post-release? → the release (`Version 0.3.0 is released`) and the
+  post-release string (`0.3.0.post1`), as the envelope does. Alternative: `Version 0.3.0.post1 is released`.
+  Reversible by: `named_release` in `tests/test_readme_current.py`.
+- DECISION: the quickstart's change set is fetched from the tag (`raw.githubusercontent.com/…/v0.3.0/examples/…`), not
+  `main`, so the page's example stays the released one. Alternative: `main` (moves with 0.4.0). Reversible by: README.
+- DECISION: `RELEASED` in `tests/test_v02_main_version.py` is not given `0.3.0` here (WO-9 adds it); the post-release
+  readers use the git tag (`is_released`). Reversible by: WO-9's merge.

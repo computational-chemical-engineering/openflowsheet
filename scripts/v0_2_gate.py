@@ -64,6 +64,14 @@ registry, the line's name in the report (`v0.2`) and a set's specification texts
 `ReleaseLine` names a line and its registry, and `GateSet.specification_texts` overrides the
 evidence-package lookup. `scripts/v0_3_gate.py` passes its own; every default is this script's, so
 its output is unchanged byte for byte (V03.A03).
+
+**Post-releases (R-922, V03-post1).** A line whose `ReleaseLine.post_releases` is set also gates
+a post-release `X.Y.Z.postN` (N ≥ 1, canonical) of a released final `X.Y.Z`: the gate set is the
+one covering `X.Y.Z` (its `covers` pattern, and so Table T-V3, is unchanged), `C` is `X.Y.Z`'s
+candidate, the envelope stays `X.Y.Z`'s, and the report and its last line name `X.Y.Z.postN`. Two
+items differ: the tree check is `post_release_differences` (D2.4 with the post-release allowance),
+and `X.Y.Z` must be released — a tag `vX.Y.Z` on an ancestor of the candidate (`is_released`). The
+v0.2 line sets no `post_releases`, so its output is unchanged.
 """
 
 from __future__ import annotations
@@ -75,6 +83,7 @@ import json
 import re
 import subprocess
 import sys
+import tomllib
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -93,6 +102,7 @@ from v0_1_gate import (  # noqa: E402
     git,
     has_commit,
     resolve_rc,
+    tree,
     tree_differences,
     tree_record,
     tree_record_of,
@@ -133,6 +143,17 @@ REJUDGED_VALUE: Final = re.compile(
     r"\*\*Re-judged:\*\* (\d{4}-\d{2}-\d{2}) "
     r"\(((?:V(?:1[1-9]|20)|W2[12])(?:, (?:V(?:1[1-9]|20)|W2[12]))*)\)"
 )
+#: R-922: a post-release `X.Y.Z.postN` of a final release `X.Y.Z` (canonical PEP 440, N ≥ 1); group
+#: 1 is `X.Y.Z`. A post-release of a pre-release (`0.3.0rc1.post1`) or a `.devN` is not one.
+POST_RELEASE: Final = re.compile(
+    r"((?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*))\.post[1-9][0-9]*"
+)
+#: R-922's allowance inside D2.4: the file a post-release may change (the PyPI long description),
+#: and the `[project]` keys of `pyproject.toml` it may change; in the other version file only the
+#: version string, by `tree_differences`' rule.
+POST_RELEASE_FREE: Final = ("README.md",)
+POST_RELEASE_PROJECT_KEYS: Final = ("version", "urls", "readme")
+POST_RELEASE_REGISTER: Final = "R-922"
 #: How a gate set's reasons name its specification and its RC step table, by evidence package
 #: (M07 spec §20 Q-A3-1): `M07a` is the alpha's text byte for byte (A31).
 _SPECIFICATION_TEXTS: Final = {
@@ -292,6 +313,8 @@ class ReleaseLine:
     name: str
     gate_sets: tuple[GateSet, ...]
     description: str
+    #: R-922: whether the line gates `X.Y.Z.postN` as a post-release of a released `X.Y.Z`.
+    post_releases: bool = False
 
 
 def _line(release: ReleaseLine | None) -> ReleaseLine:
@@ -311,6 +334,21 @@ def gate_set_of(version: str, release: ReleaseLine | None = None) -> GateSet | N
 
 def not_covered(version: str, release: ReleaseLine | None = None) -> str:
     return f"version {version} is not covered by a registered {_line(release).name} gate set"
+
+
+def post_release_of(version: str, release: ReleaseLine | None = None) -> str | None:
+    """R-922: the release `X.Y.Z` that `version` is a post-release `X.Y.Z.postN` of, where the line
+    admits post-releases; else `None`."""
+    if not _line(release).post_releases:
+        return None
+    match = POST_RELEASE.fullmatch(version)
+    return match[1] if match else None
+
+
+def gated_version(version: str, release: ReleaseLine | None = None) -> str:
+    """The version whose gate set, candidate `C` and envelope judge `version`: `X.Y.Z` for a
+    post-release `X.Y.Z.postN` (R-922), else `version` itself."""
+    return post_release_of(version, release) or version
 
 
 # -- reading the verdict document ------------------------------------------------------------
@@ -935,12 +973,17 @@ def build(
     differences: Sequence[str] | None,
     is_ancestor: Callable[[str], bool],
     release: ReleaseLine | None = None,
+    released: bool | None = None,
 ) -> dict[str, Any]:
     """The report, from the candidate's files (path → text; a missing path is a missing file)
     and the facts about `C` that git gives. `differences` is the D2.4 tree check's result
-    (`tree_differences`); `None` means it was not run, which refuses. A malformed verdict
-    document is a `ValueError`."""
-    gate_set = gate_set_of(version, release)
+    (`tree_differences`, or `post_release_differences` for a post-release); `None` means it was
+    not run, which refuses. `released` is, for a post-release `X.Y.Z.postN`, whether `X.Y.Z` is
+    released (`is_released`); `None` means it was not checked, which refuses (R-922). A malformed
+    verdict document is a `ValueError`."""
+    of = post_release_of(version, release)
+    gated = of or version
+    gate_set = gate_set_of(gated, release)
     if gate_set is None:
         return {
             "gate_set": None,
@@ -996,9 +1039,14 @@ def build(
     reasons = [f"{line.gate}: {problem}" for line in lines for problem in line.problems]
     if verdict_text is None:
         reasons.insert(0, f"{gate_set.verdict_document} does not exist at the candidate")
-    if rc_version != version:
+    if rc_version != gated:
         reasons.append(
-            f"C's version {rc_version} is not the candidate's version {version} ({gate_set.adr} D4)"
+            f"C's version {rc_version} is not the candidate's version {gated} ({gate_set.adr} D4)"
+        )
+    if of is not None and released is not True:
+        reasons.append(
+            f"{version} is a post-release of {of}, which is not released: no tag v{of} on an "
+            f"ancestor of the candidate ({POST_RELEASE_REGISTER})"
         )
     if differences is None:
         # Review F3: a caller that does not run the tree check gets no YES (D2.4 fails closed).
@@ -1009,7 +1057,7 @@ def build(
     manifests = manifest_problems(
         files, gate_set, rc, rc_in_repository=rc_in_repository, is_ancestor=is_ancestor
     )
-    envelope = envelope_problems(envelope_text, gate_set, version)
+    envelope = envelope_problems(envelope_text, gate_set, gated)
     adrs = adr_problems(files, gate_set)
     frank = [
         *found.frank,
@@ -1017,7 +1065,10 @@ def build(
     ]
     for group in (record, manifests, envelope, adrs, found.problems, frank):
         reasons.extend(group)
+    # R-922: only a post-release's report carries the key, so every other report is unchanged.
+    post = {} if of is None else {"post_release": {"of": of, "released": released}}
     return {
+        **post,
         "gate_set": gate_set.name,
         "rc": rc,
         "candidate": candidate,
@@ -1134,6 +1185,12 @@ def text(report: Mapping[str, Any], release: ReleaseLine | None = None) -> str:
             else "equal to C"
         )
     )
+    if "post_release" in report:
+        post = report["post_release"]
+        out.append(
+            f"post-release ({POST_RELEASE_REGISTER}): of {post['of']}, "
+            + (f"released (tag v{post['of']})" if post["released"] else "not released")
+        )
     out.append(
         "RC record (§8.1 item 4): "
         + _summary(report["rc_record_problems"], "the required steps passed at C")
@@ -1250,6 +1307,62 @@ def files_at(candidate: str, rc: str, gate_set: GateSet) -> dict[str, str]:
     return {path: content for path, content in found.items() if content is not None}
 
 
+def _project_beside_allowance(text: bytes) -> dict[str, Any]:
+    """`pyproject.toml` parsed, without the `[project]` keys a post-release may change."""
+    document = tomllib.loads(text.decode("utf-8"))
+    project = {
+        key: value
+        for key, value in document.get("project", {}).items()
+        if key not in POST_RELEASE_PROJECT_KEYS
+    }
+    return {**document, "project": project}
+
+
+def post_release_differences(rc: str, candidate: str) -> list[str]:
+    """R-922's tree check: the paths under `TREES` where `candidate` differs from `rc` beyond a
+    post-release's allowance — `README.md`; in `pyproject.toml` the `[project]` keys `version`,
+    `urls` and `readme` (the documents compared parsed, every other key and table equal); in
+    `src/openflowsheet/__init__.py` the version string, by `tree_differences`' rule. `README.md`
+    may differ in any way; the other two keep their mode and exist at both. `C` is read from git:
+    a `C` known only by its record (R-151) is a `ValueError`, since the record holds no text to
+    parse."""
+    if not has_commit(rc):
+        raise ValueError(
+            f"the post-release tree check ({POST_RELEASE_REGISTER}) reads C = {rc} from git"
+        )
+    ours, theirs = tree(rc), tree(candidate)
+    rc_version, candidate_version = version_at(rc), version_at(candidate)
+    differing: list[str] = []
+    for path in sorted(set(ours) | set(theirs)):
+        if ours.get(path) == theirs.get(path):
+            continue
+        if path in POST_RELEASE_FREE:
+            continue
+        if path in ours and path in theirs and ours[path].split()[0] == theirs[path].split()[0]:
+            before = git("show", f"{rc}:{path}")
+            after = git("show", f"{candidate}:{path}")
+            if path == "pyproject.toml":
+                if _project_beside_allowance(before) == _project_beside_allowance(after):
+                    continue
+            elif path in VERSION_FILES:
+                quoted = (f'"{candidate_version}"'.encode(), f'"{rc_version}"'.encode())
+                if after.count(quoted[0]) == 1 and after.replace(*quoted) == before:
+                    continue
+        differing.append(path)
+    return differing
+
+
+def is_released(version: str, candidate: str) -> bool:
+    """R-922: `version` is released iff a tag `v<version>` exists and its commit is an ancestor of
+    (or is) `candidate`."""
+    try:
+        tagged = git("rev-parse", "-q", "--verify", f"refs/tags/v{version}^{{commit}}")
+        git("merge-base", "--is-ancestor", tagged.decode().strip(), candidate)
+    except subprocess.CalledProcessError:
+        return False
+    return True
+
+
 def is_ancestor_of(rc: str) -> Callable[[str], bool]:
     def check(commit: str) -> bool:
         try:
@@ -1312,7 +1425,8 @@ def main(argv: Sequence[str] | None = None, release: ReleaseLine | None = None) 
             return 0 if carry.carried else 1
         candidate = git("rev-parse", f"{arguments.candidate}^{{commit}}").decode().strip()
         version = version_at(candidate)
-        gate_set = gate_set_of(version, release)
+        of = post_release_of(version, release)
+        gate_set = gate_set_of(of or version, release)
         report = build(
             files={} if gate_set is None else files_at(candidate, rc, gate_set),
             rc=rc,
@@ -1320,9 +1434,16 @@ def main(argv: Sequence[str] | None = None, release: ReleaseLine | None = None) 
             rc_in_repository=rc_in_repository,
             candidate=candidate,
             version=version,
-            differences=None if gate_set is None else tree_differences(rc, candidate),
+            differences=(
+                None
+                if gate_set is None
+                else tree_differences(rc, candidate)
+                if of is None
+                else post_release_differences(rc, candidate)
+            ),
             is_ancestor=is_ancestor_of(rc),
             release=release,
+            released=None if of is None else is_released(of, candidate),
         )
     except ValueError as error:
         print(f"error: {error}", file=sys.stderr)

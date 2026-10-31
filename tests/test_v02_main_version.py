@@ -26,6 +26,7 @@ RELEASED = {
     "0.2.0a1": ALPHA_TAG_COMMIT,
     "0.2.0": "5c82b4cc40dd4fefd3dbce45352910006e5dee13",
     "0.3.0": "b8f47a044ea5ee2a89230ff95bd6a934f541f615",
+    "0.3.0.post1": "b059e7ab272ad8bc162fe2205c5112604210e4e4",
 }
 #: R-193's working envelope.
 WORKING_ENVELOPE = ("v0.2-envelope-dev", "0.2.0.dev0")
@@ -54,12 +55,15 @@ def test_a_released_version_names_its_tree_only() -> None:
 
 def test_the_envelope_matches_the_version() -> None:
     """AM-41: a canonical PEP 440 version; between releases the working envelope, at a cut the
-    envelope's `release` is the version."""
+    envelope's `release` is the version, and at a post-release `X.Y.Z.postN` it stays `X.Y.Z`
+    (R-922: a post-release is the same release)."""
     assert str(Version(VERSION)) == VERSION
     envelope = MATRIX.load()
     if Version(VERSION).is_devrelease:
         assert (envelope["envelope_id"], envelope["release"]) == WORKING_ENVELOPE
         assert MATRIX.ENVELOPE_ID == WORKING_ENVELOPE[0]
+    elif Version(VERSION).is_postrelease:
+        assert envelope["release"] == Version(VERSION).base_version != VERSION
     else:
         assert envelope["release"] == VERSION
 
