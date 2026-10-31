@@ -399,3 +399,14 @@ be met by a constant answer.
 
 **Proposed → Accepted** when REL.A01–A21 hold in a `tested` manifest of the migration package, the `reviewer` pass on
 WO-R2 to WO-R6 is recorded, and Frank's answers to N-1, N-3 and N-6 are recorded, or their defaults stand.
+
+## Frank's answer (2026-10-31, verbatim) and its effect
+
+Asked in plain words whether to build parts 1–3 (one procedure with a per-line file, D1; standing acceptances, D3; one CI
+run per commit, D4) now and the evidence-fingerprint carry (D2) later, Frank answered: **"1–3 now, 4 later
+(Recommended)"**. So D2 (R-916, R-917) and WO-R5 are deferred: 0.4.0 judges every claimed gate, and the carry is taken up
+only if 0.4.0's verdict pass is still costly; this needs a new decision recorded the same way. The `strace` parts of WO-R4
+and WO-R6 and REL.A11–A16, A21 go with D2. N-1, N-4 and N-5 lapse with D2. N-3 and N-6 stand on their defaults (keep the
+local merge gate; the listed acceptances suffice at dispatch). N-7, a fact: Frank accepted the coolprop and lca licence
+decisions (R-624, R-900) on 2026-10-30, recorded verbatim in `docs/derivations/V03-release-spec.md` §11 (N-11); WO-R1
+seeds that row.
