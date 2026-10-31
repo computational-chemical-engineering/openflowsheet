@@ -364,3 +364,13 @@ Branch `wp/V03-wo9` from `main` `f7289197`, worktree `.claude/worktrees/v03wo9`.
   unnecessary: R-902 treats `package_version` as build provenance beside `git_commit`, and R-566 dropped the byte pin, so
   the committed record stays G14 at `0.4.0.dev0` (the W27 coverage tests above pass). RELEASING already says so ("from
   0.3.0 it is not"). Alternative: none available. Reversible by: nothing to revert.
+- Commit 2 (`94c9f217`): the five in-process G10 records re-taken from the clean tree at `1b4263a6` (E6/K's recipe:
+  `run_case` + `write_files` into `~/.cache/v03wo9-retake/out`, alpha-main's `.venv-nlp`, OMP 1,
+  `PYOMO_CONFIG_DIR=<venv>/share/pyomo`, `PYTHONNOUSERSITE=1`, `PYTHONPATH=src:<m05's nlp-test-tools>`); 36 files, all
+  under `benchmarks/m05/records/`, each record `run_commit` `1b4263a6…`, `tree_clean` true. `--digest-only
+  --old-version 0.3.0`: PASS ×5, changed digests / version leaves 41/4, 79/7, 70/4, 91/3, 37/4, `other=0`,
+  `environment=equal` (the expected counts exactly, as `5a6b8117` and `2d945b5d`). AM-23 (`-m nlp
+  tests/test_m05_g10_replay.py`, `.venv-nlp`): 5 passed. Records tests (m05 basis/replay/study record/wo8/wo9 gates,
+  retake-diff, m07 journey and journey record): 438 passed, 23 deselected.
+- REAL replay (as `93842857`): `scripts/m05_wo9_real.py --replay` at `94c9f217` (clean tree, alpha-main's `.venv-nlp`,
+  OMP 1, the same environment variables): `REPLAY PASS REAL differences=0`, exit 0.
