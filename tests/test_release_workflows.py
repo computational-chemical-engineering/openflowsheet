@@ -289,6 +289,60 @@ def test_the_gate_step(scratch: Path) -> None:
         assert not output.exists()
 
 
+# -- R-922 (V03-post1): a post-release X.Y.Z.postN of a tagged X.Y.Z ----------------------------
+
+
+def test_r922_the_version_step_admits_a_post_release_of_a_tagged_release(scratch: Path) -> None:
+    (scratch / "pyproject.toml").write_text(
+        '[project]\nname = "p"\nversion = "0.1.1.post1"\n', "utf-8"
+    )
+    _git(scratch, "commit", "-qam", "post")
+    refused = _run(scratch, VERSION_STEP, "0.1.1.post1")
+    assert refused.returncode == 1, refused.stderr
+    assert "post-release 0.1.1.post1 of 0.1.1, which has no tag v0.1.1 (R-922)" in refused.stderr
+    _git(scratch, "tag", "v0.1.1", "HEAD~1")
+    assert _run(scratch, VERSION_STEP, "0.1.1.post1").returncode == 0
+
+
+@pytest.mark.parametrize(
+    "version",
+    [
+        "0.1.1.post0",
+        "0.1.1.post01",
+        "0.1.1rc1.post1",
+        "0.1.1.post1.dev0",
+        "0.1.1-post1",
+        "0.1.1post1",
+    ],
+)
+def test_r922_the_version_step_refuses_other_post_forms(scratch: Path, version: str) -> None:
+    (scratch / "pyproject.toml").write_text(
+        f'[project]\nname = "p"\nversion = "{version}"\n', "utf-8"
+    )
+    _git(scratch, "tag", "v0.1.1", "HEAD")
+    refused = _run(scratch, VERSION_STEP, version)
+    assert refused.returncode == 1 and "not of the form" in refused.stderr, version
+
+
+def test_r922_a_post_release_resolves_its_line_s_gate(scratch: Path) -> None:
+    passed = _run(
+        scratch,
+        "The release gate",
+        "0.1.1.post1",
+        FAKE_GATE_OUT="...\nv0.1.1.post1 tag may be proposed: YES",
+        FAKE_GATE_EXIT="0",
+    )
+    assert passed.returncode == 0, passed.stderr
+    refused = _run(
+        scratch,
+        "The release gate",
+        "0.1.1.post1",
+        FAKE_GATE_OUT="...\nv0.1.1 tag may be proposed: YES",
+        FAKE_GATE_EXIT="0",
+    )
+    assert refused.returncode == 1 and "did not print" in refused.stderr
+
+
 # -- M07a.A20–A23: PEP 440 pre-releases (V02 alpha release spec §9.1) --------------------------
 
 M07A = yaml.safe_load(
@@ -347,7 +401,8 @@ printf '%s\\n' "$@" > "$FAKE_GH_ARGS"
 
 
 @pytest.mark.parametrize(
-    ("version", "prerelease"), [("0.2.0a1", True), ("0.2.0rc1", True), ("0.2.0", False)]
+    ("version", "prerelease"),
+    [("0.2.0a1", True), ("0.2.0rc1", True), ("0.2.0", False), ("0.3.0.post1", False)],
 )
 def test_m07a_a23_github_release_marks_pre_releases(
     tmp_path: Path, version: str, prerelease: bool

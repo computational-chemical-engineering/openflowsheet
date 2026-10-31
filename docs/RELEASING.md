@@ -84,7 +84,9 @@ makes it read-only on GitHub; that is Frank's call.
 1. **Prepare** on a branch and merge to `main` by pull request: the version in `pyproject.toml`,
    `src/openflowsheet/__init__.py` and the version-carrying test fixtures
    (`tests/fixtures/schemas/application_results/project_summary/*/*.json`), and a `## vX.Y.Z`
-   section in `CHANGELOG.md`. Check the gate locally:
+   section in `CHANGELOG.md`. The same cut commit updates `README.md`'s status to name the release
+   (it is the PyPI project page; every link in it absolute; `tests/test_readme_current.py`). Check
+   the gate locally:
 
    ```sh
    PYTHONPATH=src .venv/bin/python scripts/v0_1_gate.py --rc 67c66d98587f23bd7dfe8da28a8facccc92da21e
@@ -194,6 +196,31 @@ for it, so a head between releases cannot be dispatched. The version is part of 
 experiment fingerprint, so the five in-process G10 records are re-taken after it changes and the
 re-take is proved with `scripts/m05_retake_diff.py --digest-only` (R-458).
 
+## Post-releases
+
+R-922 (V03-post1). A post-release `X.Y.Z.postN` (N ≥ 1, canonical) republishes a released `X.Y.Z`
+with a corrected PyPI page and nothing else — `0.3.0.post1` is the first. It is admitted iff, against
+`X.Y.Z`'s candidate C, the D2.4 files differ only in `README.md`; in `pyproject.toml` only
+`[project]` `version`, `urls` and `readme`; and in `src/openflowsheet/__init__.py` only the version
+string; files outside D2.4 (the version-carrying test fixtures, `CHANGELOG.md`, `docs/`, `scripts/`,
+`tests/`, `.github/`) are free. A tag `vX.Y.Z` must be on an ancestor of the candidate.
+
+`X.Y.Z`'s gate verdict carries unchanged: the line's gate script (`scripts/v0_3_gate.py` for 0.3)
+gates `X.Y.Z.postN` as `X.Y.Z`, with the same gate set, the same C, the same verdicts and the
+envelope still at `X.Y.Z` (`v0.3-envelope-1`, `release: 0.3.0`); its report adds the line
+`post-release (R-922): of X.Y.Z, released (tag vX.Y.Z)` and ends `vX.Y.Z.postN tag may be proposed:
+YES`. Nothing is re-judged and no RC job runs. The steps:
+
+1. On a branch, set `X.Y.Z.postN` where the cut set `X.Y.Z` (`pyproject.toml`,
+   `src/openflowsheet/__init__.py`, the `project_summary` fixtures, the W27 coverage test), change
+   the README or the project links, and write a `## vX.Y.Z.postN` section in `CHANGELOG.md` that says
+   what changed and that no code did. Merge to `main`.
+2. Check: `PYTHONPATH=src .venv/bin/python scripts/v0_3_gate.py --rc <C>` ends with
+   `vX.Y.Z.postN tag may be proposed: YES`.
+3. Dispatch as in steps 2–5 of [Per release](#per-release), with `version` `X.Y.Z.postN` and `rc` = C.
+   `release.yml` refuses a post-release whose `vX.Y.Z` tag does not exist, and does not mark the
+   GitHub release a pre-release.
+
 ## What the workflow refuses
 
 | Refusal | Enforced by |
@@ -201,11 +228,12 @@ re-take is proved with `scripts/m05_retake_diff.py --digest-only` (R-458).
 | Running outside `computational-chemical-engineering/openflowsheet` | every job's `if: github.repository == '…'` |
 | Tagging, uploading or publishing on a dry run | `tag`, `pypi`, `github-release`: `if: … && !inputs.dry_run` |
 | An upload without approval | `pypi` runs in the environment `pypi` (required reviewer Frank) |
-| A version not of the form `X.Y.Z` or `X.Y.Z{a\|b\|rc}N` (N ≥ 1), or not `pyproject.toml`'s | `gate`, first step |
+| A version not of the form `X.Y.Z`, `X.Y.Z{a\|b\|rc}N` or `X.Y.Z.postN` (N ≥ 1), or not `pyproject.toml`'s | `gate`, first step |
+| A post-release `X.Y.Z.postN` without a tag `vX.Y.Z` | `gate`, first step, and the gate script (R-922) |
 | A tag `vX.Y.Z` on another commit | `gate` (before anything is built) and `tag` |
 | A release without its `CHANGELOG.md` section | `scripts/changelog_section.py` in `gate` |
 | A gate that is not YES for this version | `gate`: the minor line's gate script must exist, exit 0 **and** print `vX.Y.Z tag may be proposed: YES` |
-| Files under the D2.4 paths that differ from `C`'s beyond the version | the gate's tree check (by git where `C` is present, else by `release/rc-trees/<C>.json`) |
+| Files under the D2.4 paths that differ from `C`'s beyond the version (for a post-release, beyond R-922's allowance) | the gate's tree check (by git where `C` is present, else by `release/rc-trees/<C>.json`) |
 | Artifacts that fail T08.A43's inspection | `build` (`scripts/t08_dist.py`), before `pypi` |
 | A build after a failed or cancelled `tag` | `build`'s `if` |
 

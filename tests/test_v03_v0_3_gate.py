@@ -508,9 +508,11 @@ def test_a05_a_re_judgement_may_list_w24_and_not_x31() -> None:
 
 STEP_15 = {step: ["PASS (1/1)"] for step in V03.rc_steps} | {15: ["FAIL (re-run required)"]}
 NO = {
+    # R-922 admits 0.3.0.postN as a post-release of 0.3.0 (tests/test_v03_post_release.py), so
+    # item 1's uncovered version is another of Table T-V3's.
     1: (
-        {"version": "0.3.0.post1"},
-        "version 0.3.0.post1 is not covered by a registered v0.3 gate set",
+        {"version": "0.3.1"},
+        "version 0.3.1 is not covered by a registered v0.3 gate set",
     ),
     2: (
         {"rc_version": "0.3.0rc1"},

@@ -9,7 +9,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "openflowsheet"
-version = "0.3.0"
+version = "0.3.0.post1"
 description = "OpenFlowsheet: an agent-native open process simulator"
 requires-python = ">=3.13"
 readme = "README.md"
@@ -27,6 +27,15 @@ dependencies = [
     # README.md (ADR 0006 D5.1).
     "casadi==3.8.0",
 ]
+
+# PyPI's sidebar (V03-post1): every link absolute, as README.md's (tests/test_readme_current.py).
+[project.urls]
+Homepage = "https://computational-chemical-engineering.github.io/openflowsheet/"
+Documentation = "https://computational-chemical-engineering.github.io/openflowsheet/"
+Repository = "https://github.com/computational-chemical-engineering/openflowsheet"
+Issues = "https://github.com/computational-chemical-engineering/openflowsheet/issues"
+Changelog = "https://github.com/computational-chemical-engineering/openflowsheet/blob/main/CHANGELOG.md"
+"Release notes" = "https://github.com/computational-chemical-engineering/openflowsheet/releases"
 
 [project.optional-dependencies]
 dev = [
