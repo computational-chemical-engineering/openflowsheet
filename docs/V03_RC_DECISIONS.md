@@ -374,3 +374,6 @@ Branch `wp/V03-wo9` from `main` `f7289197`, worktree `.claude/worktrees/v03wo9`.
   retake-diff, m07 journey and journey record): 438 passed, 23 deselected.
 - REAL replay (as `93842857`): `scripts/m05_wo9_real.py --replay` at `94c9f217` (clean tree, alpha-main's `.venv-nlp`,
   OMP 1, the same environment variables): `REPLAY PASS REAL differences=0`, exit 0.
+- Full gate at `bbdbd8b5` (clean tree, private `TMPDIR` under `~/.cache`): `GATE PASS bbdbd8b5: 14781 passed, 3206
+  skipped, 197 deselected, 1 warning in 6150.37s`, exit 0. No manifest: 0.2.0's post-tag work (C7) carried none.
+  Branch `wp/V03-wo9` pushed for CI; the orchestrator merges. Nothing tagged.
