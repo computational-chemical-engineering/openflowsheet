@@ -1,5 +1,20 @@
 # Changelog
 
+## v0.3.0.post1 — the PyPI page: a current README and the project links; no code change
+
+*A post-release of 0.3.0 (R-922): the same release, republished so that its PyPI page is current.
+It is gated as 0.3.0 at 0.3.0's candidate C = `a3e508e35fc5451fe56fa7b70941621992d35b50`, whose
+verdicts carry unchanged; the envelope stays `v0.3-envelope-1` (`release: 0.3.0`).*
+
+- `README.md`, the PyPI long description, is rewritten for a PyPI reader: what OpenFlowsheet is,
+  what 0.3.0 contains and what it has and has not established, how to install it and its extras, a
+  quickstart, and a links section; every link is absolute.
+- `pyproject.toml` gains `[project.urls]`: the documentation site (Homepage, Documentation), the
+  repository, the issue tracker, the changelog and the GitHub releases.
+- No code, schema, data, dependency or lock change: the wheel and the sdist differ from 0.3.0's only
+  in the version, the README and the project links. Everything the `## v0.3.0` section below states
+  holds for 0.3.0.post1 unchanged.
+
 ## v0.3.0 — unreleased
 
 *Draft (V03 WO-4); nothing below is released. The release candidate C, its gate table and the
