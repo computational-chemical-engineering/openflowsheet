@@ -92,19 +92,18 @@ F5 education mode deferred.
 
 ## Next action
 
-**Position (2026-10-30 night).** Main: DOC merged (`8f402cfa`, Pages live), V03 merged (`8076b283`, S13a), **K3 `295a2e65`
-(0.3.0, `v0.3-envelope-1`) is main's head + briefs**; main takes no D2.4 change until dispatch.
-- **wp/V03-rc** (worktree `v03rc`, log `docs/V03_RC_DECISIONS.md`): R-902 (version = build provenance); G10 re-take + journey at
-  J = `2d945b5d` (T* 653.1500351610193 K, BOUND_LOWER, bitwise = 0.2.0 but walls); **C = `a3e508e3`** (first C `4fa15efa`
-  superseded: S4 version, 17b aarch64 skip). Full gate PASS `fe61ae9d` 14757; CI 41108983672 + RC dispatch 41108983463 green.
-  RC steps 2–17 all PASS at C (`0caf09a0`, `docs/v03-rc-record.md`). Amendment 2 `8e0cb1a1` (R-903…R-908: W26 without G14).
-- **Verdicts `617459a7`:** 11 PASS; FAIL V14 (b), X31 (c) (D3, Frank), **W21 (e)** (G11 results not kept/audited — fixing at
-  C); BLOCKED V13 (e)/V17 (a)/W24 (a)/W21 (c) on Frank's N-2…N-4. A12 (c) fails only by the version string (counterfactual
-  `changed=[]`). Running: Amendment 3 (`specifier`: F1 standing keep-and-audit, A12, S13 harvest exclusion, grammar) and the
-  build fixes (G11 keep+audit at C, CHANGELOG W21 (f4), F6, ADR 0050–0052 Accepted).
+**Position (2026-10-31).** **0.3.0 is ready to tag; the dispatch is Frank's.** `wp/V03-rc` (log `docs/V03_RC_DECISIONS.md`)
+merged into main `727f7f0f` (head `246a42b0`: gate PASS 14781; CI 41147504316 green both architectures). C = `a3e508e3`
+(K3 `295a2e65`, 0.3.0, `v0.3-envelope-1`); main takes no D2.4 change until the dispatch.
+- Amendments 2–4 (R-903…R-914): W26 without G14; G11 keep-and-audit standing in step 12 (A34 PASS: 210/210, 0 problems);
+  A12 (c) version-aligned; S13 outside the harvest; WO-8 acyclic (R-914: a manifest never judges the gate that reads it).
+- Verdicts `docs/reviews/V03-verdicts.md`: W21 re-judged → BLOCKED (c) only; Frank's eight answers 2026-10-30 (all
+  defaults; ADR 0053 tables, spec §11 N-10/N-11); re-judgement 2026-10-31: 15 PASS, V14 (b) and X31 (c) FAIL accepted (D3).
+- S13 manifest `tested` 48/48 (`9e998beb`); ADRs 0053/0054 Accepted (`e55f9efd`); step 18 `v0_3_gate.py --rc a3e508e3…`:
+  `v0.3.0 tag may be proposed: YES` at H2, H3 and main.
 **Next actions (in order):**
-1. Apply Amendment 3 → S13 manifest → re-judge W21 (new Judged date) → ask Frank N-2…N-6, N-10 (+ F4 licences line).
-2. WO-8: ledger, step 18 YES, ADR 0053/0054 Accepted, merge C into main, tag is Frank's; WO-9 main → 0.4.0.dev0.
+1. On Frank's confirmation: dispatch `release.yml` from main, `version` 0.3.0, `rc` = `a3e508e35fc5451fe56fa7b70941621992d35b50`.
+2. WO-9 after the tag: 0.4.0.dev0, envelope back to its working form, G10 re-take (R-875).
 2b. **NLP optimiser on revision flowsheets** (Frank 2026-10-27: right after E01), with MCP/CLI/HTTP for cost/LCA.
 2c. **X01 — model extensibility infrastructure, piloted by NRTL + UNIQUAC (+ original UNIFAC), VLE only** (Frank,
    2026-10-28: "more about the flexibility of the basic infrastructure than having all models on board"; adding a model
