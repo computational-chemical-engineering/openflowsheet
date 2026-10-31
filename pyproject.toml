@@ -28,6 +28,15 @@ dependencies = [
     "casadi==3.8.0",
 ]
 
+# PyPI's sidebar (V03-post1): every link absolute, as README.md's (tests/test_readme_current.py).
+[project.urls]
+Homepage = "https://computational-chemical-engineering.github.io/openflowsheet/"
+Documentation = "https://computational-chemical-engineering.github.io/openflowsheet/"
+Repository = "https://github.com/computational-chemical-engineering/openflowsheet"
+Issues = "https://github.com/computational-chemical-engineering/openflowsheet/issues"
+Changelog = "https://github.com/computational-chemical-engineering/openflowsheet/blob/main/CHANGELOG.md"
+"Release notes" = "https://github.com/computational-chemical-engineering/openflowsheet/releases"
+
 [project.optional-dependencies]
 dev = [
     "pytest==8.3.5",
