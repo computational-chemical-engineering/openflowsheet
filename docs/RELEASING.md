@@ -84,7 +84,9 @@ makes it read-only on GitHub; that is Frank's call.
 1. **Prepare** on a branch and merge to `main` by pull request: the version in `pyproject.toml`,
    `src/openflowsheet/__init__.py` and the version-carrying test fixtures
    (`tests/fixtures/schemas/application_results/project_summary/*/*.json`), and a `## vX.Y.Z`
-   section in `CHANGELOG.md`. Check the gate locally:
+   section in `CHANGELOG.md`. The same cut commit updates `README.md`'s status to name the release
+   (it is the PyPI project page; every link in it absolute; `tests/test_readme_current.py`). Check
+   the gate locally:
 
    ```sh
    PYTHONPATH=src .venv/bin/python scripts/v0_1_gate.py --rc 67c66d98587f23bd7dfe8da28a8facccc92da21e
