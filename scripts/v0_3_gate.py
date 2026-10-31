@@ -7,6 +7,13 @@ claims V11–V20, W21–W26 and X31, each judged at its own candidate under ADR 
 W27, which is printed `not claimed (v0.3-gate-v1)` and never read (§2.1). A version the set does not
 cover is refused, and nothing else is read; 0.2.0 and its pre-releases stay `v0_2_gate.py`'s.
 
+The line admits post-releases (R-922, V03-post1): `0.3.0.postN` (N ≥ 1, canonical) is gated as a
+post-release of the released 0.3.0 by the same set and the same `C`, with the envelope at 0.3.0, a
+tree check that allows only `README.md`, `pyproject.toml`'s `[project]` `version`, `urls` and
+`readme`, and the version string in `src/openflowsheet/__init__.py`, and a tag `v0.3.0` on an
+ancestor of the candidate (`v0_2_gate.post_release_differences`, `is_released`). The set's
+`covers` pattern, and so Table T-V3, is unchanged.
+
 It runs `scripts/v0_2_gate.py`'s engine unchanged, with this line's name (`v0.3`), its registry and
 its specification texts as parameters (§2.2): the inputs, the decision items 1–12, the output
 grammar, the tree record (R-151) and the journey carry of RC step 15 are that script's, with this
@@ -33,6 +40,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from v0_2_gate import GateSet, ReleaseLine  # noqa: E402
 from v0_2_gate import build as _build  # noqa: E402
 from v0_2_gate import gate_set_of as _gate_set_of  # noqa: E402
+from v0_2_gate import gated_version as _gated_version  # noqa: E402
 from v0_2_gate import main as _main  # noqa: E402
 from v0_2_gate import markdown as _markdown  # noqa: E402
 from v0_2_gate import not_covered as _not_covered  # noqa: E402
@@ -118,7 +126,7 @@ GATE_SETS: Final = (
 
 def release_line() -> ReleaseLine:
     """This line, read at the call so that `GATE_SETS` is the current one."""
-    return ReleaseLine("v0.3", GATE_SETS, (__doc__ or "").splitlines()[0])
+    return ReleaseLine("v0.3", GATE_SETS, (__doc__ or "").splitlines()[0], post_releases=True)
 
 
 def gate_set_of(version: str) -> GateSet | None:
@@ -128,6 +136,11 @@ def gate_set_of(version: str) -> GateSet | None:
 
 def not_covered(version: str) -> str:
     return _not_covered(version, release_line())
+
+
+def gated_version(version: str) -> str:
+    """`0.3.0` for a post-release `0.3.0.postN` (R-922), else `version`."""
+    return _gated_version(version, release_line())
 
 
 def build(
@@ -140,6 +153,7 @@ def build(
     version: str,
     differences: Sequence[str] | None,
     is_ancestor: Callable[[str], bool],
+    released: bool | None = None,
 ) -> dict[str, Any]:
     """`v0_2_gate.build` over this line's registry."""
     return _build(
@@ -152,6 +166,7 @@ def build(
         differences=differences,
         is_ancestor=is_ancestor,
         release=release_line(),
+        released=released,
     )
 
 

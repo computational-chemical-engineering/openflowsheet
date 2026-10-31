@@ -5,11 +5,14 @@ name: release
 # in any other repository every job is skipped. A dry run (the default) runs `gate` and `build`
 # and pushes, uploads and publishes nothing.
 #
-#   gate            the version is `pyproject.toml`'s and a canonical PEP 440 release X.Y.Z or
-#                   pre-release X.Y.Z{a|b|rc}N (N >= 1); a tag v<version>, if it exists, is on this
-#                   commit; CHANGELOG.md has its section; the release gate of the version's minor
-#                   line (scripts/v<major>_<minor>_gate.py --rc <rc>) exits 0 and prints
-#                   `v<version> tag may be proposed: YES`.
+#   gate            the version is `pyproject.toml`'s and a canonical PEP 440 release X.Y.Z,
+#                   pre-release X.Y.Z{a|b|rc}N (N >= 1) or post-release X.Y.Z.postN (N >= 1) of a
+#                   tagged X.Y.Z (R-922); a tag v<version>, if it exists, is on this commit;
+#                   CHANGELOG.md has its section; the release gate of the version's minor line
+#                   (scripts/v<major>_<minor>_gate.py --rc <rc>) exits 0 and prints
+#                   `v<version> tag may be proposed: YES`. A post-release is gated as X.Y.Z, at
+#                   X.Y.Z's candidate, with the tree check's R-922 allowance (README.md and the
+#                   project's version, urls and readme only).
 #   tag             (not on a dry run) tags the gated commit vX.Y.Z and pushes the tag.
 #   build           the sdist and the wheel, built twice and inspected (scripts/t08_dist.py,
 #                   T08.A43), from the gated commit.
@@ -18,13 +21,13 @@ name: release
 #                   file, `release.yml`.
 #   github-release  (not on a dry run) the GitHub release, with the CHANGELOG section as its notes
 #                   and the artifacts attached, marked a pre-release iff the version has an a, b or
-#                   rc segment (V02 alpha release spec §9.1).
+#                   rc segment (V02 alpha release spec §9.1); a post-release is not one.
 
 on:
   workflow_dispatch:
     inputs:
       version:
-        description: "Version to release, X.Y.Z or X.Y.Z{a|b|rc}N (pyproject.toml must declare it)"
+        description: "Version to release, X.Y.Z, X.Y.Z{a|b|rc}N or X.Y.Z.postN (pyproject.toml must declare it)"
         required: true
         type: string
       rc:
@@ -69,8 +72,16 @@ jobs:
       - name: The version is pyproject.toml's, and its tag is free or on this commit
         run: |
           refuse() { echo "refused: $*" >&2; exit 1; }
+          post='^((0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*))\.post[1-9][0-9]*$'
           [[ "$VERSION" =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)((a|b|rc)[1-9][0-9]*)?$ ]] \
-            || refuse "version '$VERSION' is not of the form X.Y.Z or X.Y.Z{a|b|rc}N"
+            || [[ "$VERSION" =~ $post ]] \
+            || refuse "version '$VERSION' is not of the form X.Y.Z, X.Y.Z{a|b|rc}N or X.Y.Z.postN"
+          # R-922: a post-release X.Y.Z.postN needs the release X.Y.Z, tagged.
+          if [[ "$VERSION" =~ $post ]]; then
+            released="${BASH_REMATCH[1]}"
+            git rev-parse -q --verify "refs/tags/v$released" >/dev/null \
+              || refuse "post-release $VERSION of $released, which has no tag v$released (R-922)"
+          fi
           declared=$(python -c 'import tomllib; print(tomllib.load(open("pyproject.toml", "rb"))["project"]["version"])')
           [ "$VERSION" = "$declared" ] \
             || refuse "pyproject.toml declares version '$declared', not '$VERSION'"

@@ -18166,3 +18166,28 @@ PyPI stay his.
 
 **Watch for.** A build-lane edit to `claimed`, a clause grammar or the "What it is not" phrases without a `specifier`
 pass.
+
+## R-922: A post-release `X.Y.Z.postN` of a released `X.Y.Z` changes only the PyPI page and carries `X.Y.Z`'s gate verdict
+
+| | |
+| --- | --- |
+| Date | 2026-10-31 |
+| Decided by | orchestrator (build lane), on Frank's request of 2026-10-31 ("the readme seems old … keep it up to date … a link to the repository, pages etc on the PyPi landing page") and his choice of `0.3.0.post1` over waiting for 0.4.0 |
+| Normative text | `docs/RELEASING.md` "Post-releases"; `scripts/v0_2_gate.py` (`post_release_differences`, `is_released`, `ReleaseLine.post_releases`); `.github/workflows/release.yml` gate step |
+| Evidence | `tests/test_v03_post_release.py`, `tests/test_release_workflows.py` (R-922 tests), `tests/test_changelog_section.py`; `docs/V03_RC_DECISIONS.md` "V03-post1" |
+| Affected packages | V03-post1 (0.3.0.post1); any later post-release |
+
+**Decision.** `X.Y.Z.postN` (N ≥ 1, canonical; not of a pre-release) is admitted iff, against `X.Y.Z`'s candidate C,
+the D2.4 files differ only in `README.md`, in `pyproject.toml`'s `[project]` `version`, `urls` and `readme` (compared
+parsed), and in the version string of `src/openflowsheet/__init__.py`; files outside D2.4 are free; and a tag `vX.Y.Z`
+is on an ancestor of the candidate. The line's gate script gates it as `X.Y.Z`: same gate set, same C, verdicts and
+ADR 0053 not redone, envelope still `release: X.Y.Z` (a post-release is the same release). The GitHub release is not
+a pre-release; its notes are a `## vX.Y.Z.postN` CHANGELOG section. The gate set's `covers` pattern and the registered
+patterns of `benchmarks/` (V03 Table T-V3, M07a T2/T3) are unchanged: the post-release forms sit beside them
+(`POST_RELEASE`, `POST_TAG`, the workflow's second pattern), because changing `benchmarks/` would itself break the rule.
+
+**Rejected.** *Wait for 0.4.0* (Frank chose the post-release). *A new release `0.3.1` with an RC job and verdicts*
+(the code is 0.3.0's; nothing to judge). *Widening `v0.3-gate-v1`'s `covers` to `.postN`* (edits the registration
+under `benchmarks/`, a D2.4 path, and would let the ordinary tree rule refuse the README).
+
+**Watch for.** A post-release used to ship a code, schema, data or lock change; an envelope moved to `X.Y.Z.postN`.

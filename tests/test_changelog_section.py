@@ -102,3 +102,19 @@ def test_m07a_a22_a_malformed_tag_exits_2(tmp_path: Path, tag: str) -> None:
         text=True,
     )
     assert result.returncode == 2 and "is not of the form" in result.stderr, result.stderr
+
+
+def test_r922_a_post_release_tag_has_its_own_section() -> None:
+    """R-922 (V03-post1): `vX.Y.Z.postN` reads its own heading, never X.Y.Z's, and X.Y.Z's tag
+    never reads the post-release's."""
+    changelog = (
+        "# Changelog\n\n## v0.3.0.post1 — README only\n\nPost.\n\n"
+        "## v0.3.0 — the release\n\nRelease.\n"
+    )
+    assert changelog_section.section(changelog, "v0.3.0.post1") == "Post.\n"
+    assert changelog_section.section(changelog, "v0.3.0") == "Release.\n"
+    with pytest.raises(changelog_section.MissingSectionError, match="0 sections"):
+        changelog_section.section(changelog, "v0.3.0.post2")
+    for malformed in ("v0.3.0.post0", "v0.3.0.post01", "v0.3.0rc1.post1", "v0.3.0post1"):
+        with pytest.raises(ValueError, match="vX.Y.Z.postN"):
+            changelog_section.section(changelog, malformed)
