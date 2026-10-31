@@ -102,8 +102,8 @@ merged into main `727f7f0f` (head `246a42b0`: gate PASS 14781; CI 41147504316 gr
 - S13 manifest `tested` 48/48 (`9e998beb`); ADRs 0053/0054 Accepted (`e55f9efd`); step 18 `v0_3_gate.py --rc a3e508e3…`:
   `v0.3.0 tag may be proposed: YES` at H2, H3 and main.
 **Next actions (in order):**
-1. Release-process slimming for 0.4.0 (Frank 2026-10-31: "reduce the checking a bit, but still retain quality"): standing
-   procedure, gate carry by path diff, standing acceptances, one test run per commit; one `specifier` pass.
+1. Release-process slimming: ADR 0055 (Proposed, `11e1d604`, R-915…R-921); Frank 2026-10-31 "1–3 now, 4 later": build
+   WO-R1–R4, R6 without the fingerprint carry (D2 deferred) before 0.4.0's cut, beside the optimiser package.
 2. WO-9 after the tag: 0.4.0.dev0, envelope back to its working form, G10 re-take (R-875).
 2b. **NLP optimiser on revision flowsheets** (Frank 2026-10-27: right after E01), with MCP/CLI/HTTP for cost/LCA.
 2c. **X01 — model extensibility infrastructure, piloted by NRTL + UNIQUAC (+ original UNIFAC), VLE only** (Frank,
