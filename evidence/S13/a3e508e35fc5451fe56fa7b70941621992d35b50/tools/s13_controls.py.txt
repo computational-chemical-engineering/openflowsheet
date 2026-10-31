@@ -1,0 +1,100 @@
+"""V03 WO-7b (spec §10.5 item 5): controls of the S13 generator's V03.A12 (c) decision (§7.1) and V03.A34 rule.
+
+    PYTHONPATH=src:. python s13_controls.py     (cwd: the branch worktree)
+
+Prints one line per control (`ok` when the outcome is the expected one) and exits non-zero if any is not.
+"""
+
+from __future__ import annotations
+
+import json
+import re
+import shutil
+import sys
+import tempfile
+from pathlib import Path
+
+sys.path.insert(0, "scripts")
+import s13_evidence_manifest as m  # noqa: E402
+
+C = "a3e508e35fc5451fe56fa7b70941621992d35b50"
+HOME = Path.home()
+
+
+def last(path: Path) -> str:
+    return path.read_text(errors="replace").strip().splitlines()[-1]
+
+
+R0 = last(Path(f"evidence/S13/{C}/artifacts/V03.A12c.log"))
+R1 = last(HOME / ".cache/v03rc-a12-tmp/identity-cf2.log")
+FAILED = [
+    node
+    for shard in sorted((HOME / ".cache/v03rc-a12-keep/branch").glob("shard-*.log"))
+    for node in m.A12C_FAILED.findall(shard.read_text(errors="replace"))
+]
+BASE = dict(clean=True, v_c="0.3.0", v_b="0.3.0.dev0", r0=(1, R0), r1=(1, R1), numstat=m.A12C_NUMSTAT,
+            failed=FAILED)
+results: list[bool] = []
+
+
+def control(name: str, expected: str, **change: object) -> None:
+    result, value = m.a12c_decide(**{**BASE, **change})  # type: ignore[arg-type]
+    results.append(result == expected)
+    print(f"{'ok ' if result == expected else 'BAD'} A12c {name}: {result} (expected {expected}) "
+          f"{value.get('reasons', '')}")
+
+
+print(f"measured: R0 {R0[:80]}... R1 {R1}; failed {len(FAILED)}")
+control("PASS-shaped R0, exit 0, anything else", "pass", r0=(0, "S11-IDENTITY PASS n=1 changed=[]"), r1=None,
+        numstat="x", failed=["junk"], v_c=None, clean=False)
+control("the lines measured at C", "pass")
+control("R0 first changed key A:", "fail", r0=(1, R0.replace("changed=[C:", "changed=[A:", 1)))
+control("R0 also names a failed shard", "fail",
+        r0=(1, R0.replace(" digests differ)", " digests differ; C branch shards [1] exited non-zero)")))
+control("R1 with a changed key", "fail", r1=(1, R1.replace("changed=[]", "changed=[C:tests/x.py::t#0]")))
+control("R1 names a failed base shard", "fail", r1=(1, R1.replace("C branch shards", "C base shards")))
+n = int(re.search(r"n=(\d+)", R0)[1])  # type: ignore[index]
+control("n(R1) = n(R0) + 1", "fail", r1=(1, R1.replace(f"n={n} ", f"n={n + 1} ")))
+control("a sixth failed id", "fail", failed=[*FAILED, "tests/test_x.py::test_y"])
+control("four of the five", "fail", failed=FAILED[:4])
+control("numstat of two lines", "fail", numstat=m.A12C_NUMSTAT + "\n1\t1\tsrc/openflowsheet/x.py")
+control("V_C = V_B with R0 failing", "fail", v_b="0.3.0")
+
+
+def a34(name: str, expected: str, mutate: object = None, drop: bool = False) -> None:
+    with tempfile.TemporaryDirectory(dir=HOME / ".cache/v03rc-tmp") as scratch:
+        root = Path(scratch) / "S13"
+        shutil.copytree(f"evidence/S13/{C}/rc", root / C / "rc")
+        index_path = root / C / "rc" / "records.json"
+        index = json.loads(index_path.read_text())
+        record_path = root / C / "rc" / m.A34_RECORD
+        if mutate is not None:
+            record = json.loads(record_path.read_text())
+            mutate(record)  # type: ignore[operator]
+            record_path.write_text(json.dumps(record, indent=1, sort_keys=True) + "\n")
+            entry = next(e for e in index["files"] if e["path"] == m.A34_RECORD)
+            entry["sha256"] = m._sha256(record_path)  # a consistent copy: the rule, not the hash, must refuse it
+            entry["bytes"] = record_path.stat().st_size
+        if drop:
+            index["files"] = [e for e in index["files"] if e["path"] != m.A34_RECORD]
+        index_path.write_text(json.dumps(index, indent=1) + "\n")
+        spec = next(s for s in m.SPECS if s.id == "A34")
+        entry = m.decide(spec, "V03.A34", "A34", m.Inputs(C, evidence=root))
+    results.append(entry["result"] == expected)
+    print(f"{'ok ' if entry['result'] == expected else 'BAD'} A34 {name}: {entry['result']} (expected {expected})")
+
+
+def one_fail(record: dict) -> None:
+    record["checks"][1]["result"] = "fail"
+
+
+def fourth(record: dict) -> None:
+    record["checks"].append({"id": "r375.extra", "result": "pass"})
+
+
+a34("the committed record", "pass")
+a34("one check fail (passed left true)", "fail", one_fail)
+a34("a fourth check", "fail", fourth)
+a34("records.json without the record", "fail", drop=True)
+print(f"controls: {sum(results)} of {len(results)} as expected")
+sys.exit(0 if all(results) else 1)

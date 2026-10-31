@@ -17743,3 +17743,285 @@ exactly. RELEASING's claim that no default-gate test needs `coverage.json` at a 
 
 **Rejected.** *Compare the base version* (`0.3.0` against `0.3.0.dev0`): it breaks again at `0.4.0.dev0` (WO-9).
 *Re-take `coverage.json`*: the v1 snapshot refuses this build (W27-R63), and V03 spec §5.1 does not re-take it.
+
+## R-903 — W26 (a) at 0.3.0 judges M06 G1–G13 and G15's registered content, not G14, which W27 registration v1 refuses on this build (ADR 0050 D9); the dry run's refusal is asserted exactly
+
+| | |
+| --- | --- |
+| Date | 2026-10-30 |
+| Decided by | design lane (`specifier`), V03 RC rulings, Amendment 2 (the WO-6 step-16 stop) |
+| Normative text | V03 spec §3.5, §4 step 16, V03.A32, §10.1, §11 N-10 |
+| Evidence | `docs/V03_RC_DECISIONS.md` (WO-6): at `4fa15efa`, `python -m benchmarks.m06.w27.dryrun` exits 1 at its first action, `snapshot.build_snapshot()`, with `registry_snapshot: unsupported(provider 'iapws95-v1': no registered records and phases, W27-R63)`. `tests/test_m06_w27_coverage.py::test_s11_the_v2_snapshot_refuses_this_build` registers that refusal (ADR 0050 D9), and V03 spec §2.1 measured it at `a1b50ccf`. The m06 junit at `4fa15efa` has 662 testcases, 0 failures, errors or skips, and the 25 nodes of A32 (c) passed |
+| Affected packages | V03 (WO-6 step 16, WO-7), M06 (W27 G14 and G15 read at 0.3.0) |
+
+**Decision.** At 0.3.0, W26 (a) judges M06 G1–G13 as M07 reads them. It also judges G15's registered content: the
+twenty scorer states against the registered rows, W27-A23 and A79b, the committed record's G14 and the refusal test. It
+does not judge G14 on this build, P3, or the stub campaign rehearsal. W27 registration v1 refuses this build by ADR 0050
+D9, which is why W27 is not claimed (ADR 0053 D1). Step 16 runs the dry run unchanged and asserts the registered refusal
+exactly. W26 stays claimed. K3 is not re-cut. M07 §7.3's reading for 0.2.0 is unchanged.
+
+**Rejected.**
+- *Record the FAIL and judge it.* It labels the web shell failed for a pre-registered consequence of ADR 0050 D9, and it
+  needs a D3 row for a capability 0.3.0 does not claim. It stays Frank's alternative (N-10).
+- *W26 not claimed.* It drops a true claim, and it changes the claim set (ADR 0053, Frank).
+- *A re-cut with a `benchmarks/` fix.* Skipping the coverage on a refusal would be a placeholder success path. Teaching
+  v1 the S11 providers contradicts ADR 0050 D9. Moving the dry run to registration v3 is N-1's campaign work, which
+  Frank declined.
+- *A new out-of-tree script that re-runs the dry run's state scoring.* It is a second code path for what
+  `tests/test_m06_w27_scorer.py` already runs through the same functions.
+
+## R-904 — R-902 reaches S11's S4 check: `scripts/s11_w27_s4.py` excludes `package_version` beside `git_commit`
+
+| | |
+| --- | --- |
+| Date | 2026-10-30 |
+| Decided by | design lane (`specifier`), V03 RC rulings, Amendment 2 (ratifies `fe61ae9d`) |
+| Normative text | `scripts/s11_w27_s4.py` `problems()`; `tests/test_s11_w27_v3.py::test_a40_the_s4_check_can_fail` |
+| Evidence | At `4fa15efa`, `tests/test_s11_w27_v3.py::test_a40_a84_the_build_snapshot_is_s4_and_classifies_the_225_rows` failed on `package_version` alone (`S4 DIFFERS: 1 problem(s)`), in the default suite, on both architectures. The full gate at `fe61ae9d` reports 14757 passed. At `a3e508e3` the only other snapshot comparison that excludes `git_commit` is `benchmarks/m06/w27/preflight.py` P3, which compares a campaign's coverage made at the same commit, so the versions are equal by construction |
+| Affected packages | V03 (WO-6: step 1, 17b, CI), S11 (A40, A84) |
+
+**Decision.** `package_version` in S11's committed S4 snapshot is build provenance. It is excluded from the
+live-versus-committed comparison, as R-902 excludes it for M06's `coverage.json`. Every other snapshot member, and the
+record's `routes`, `wilson_route`, `development`, `registration_version` and `schema`, stay compared exactly. The
+control sets `package_version` to `9.9.9` and sees no problem, then still catches a removed route.
+
+**Rejected.** *A separate provenance set for S4*: it is the same kind of record. *Re-take the S4 record at 0.3.0*: it is
+S11's registered evidence, and re-taking it at every version bump is the recurrence R-902 rejected.
+
+## R-905 — V03.A19 (c) compares at S10's RE1–RE3 and A12's state; "S10's P1 state" was an authoring error
+
+| | |
+| --- | --- |
+| Date | 2026-10-30 |
+| Decided by | design lane (`specifier`), V03 RC rulings, Amendment 2 (ratifies WO-6's `A19_STATES`) |
+| Normative text | V03 spec §7 A19 (c); `scripts/v03_rc.py` `A19_STATES`, `a19_findings` |
+| Evidence | No S10 record defines a state P1. S10's real reference states are RE1–RE3 (S10 spec §9.7). P1–P3 are S10C's premises (S10C spec, "Premises (P1–P3)"), not states. A12 (b)'s state is `tests/test_v03_wilson_ship.py:128` |
+| Affected packages | V03 (WO-6 step 17e) |
+
+**Decision.** A19 (c) compares `evaluate_phase` (both phases, every property and derivative) and `flash` bitwise
+(`float.hex`) at RE1, RE2, RE3 and A12's state. `a19_findings` requires the compared document to be non-empty and equal.
+
+**Rejected.** *One state of the design lane's naming*: it is weaker. RE2's zero mole number and RE3's pure component at
+another pressure reach paths that RE1 does not, and no single state "P1" exists to restore.
+
+## R-906 — 17b's "0 skipped" allows S07's registered A31a platform skip on aarch64 only
+
+| | |
+| --- | --- |
+| Date | 2026-10-30 |
+| Decided by | design lane (`specifier`), V03 RC rulings, Amendment 2 (ratifies the orchestrator ruling `49a9dfc5`) |
+| Normative text | V03 spec §4 17b; `.github/workflows/ci.yml`, `rc-coolprop`'s 17b step |
+| Evidence | CI at `4fa15efa`, `rc-coolprop` on aarch64: one skip, `tests/test_s07_registration.py:242: A31a holds on x86_64 only; this machine is aarch64 (A31b)`. R-627 registers S07 A31 as bitwise on x86-64 and classed on aarch64. `test_a31b_cross_architecture` runs on both. The check was tried on five synthetic logs: arm with A31b passes; x86 with A31b fails; arm with another skip fails; arm with both fails; no skip passes |
+| Affected packages | V03 (WO-6 17b), S07 (F-8) |
+
+**Decision.** On aarch64 exactly that skip is allowed, matched by its reason text. On x86-64 none is allowed. Any other
+skip fails, and the pytest exit status must still be 0, so A31b itself must pass.
+
+**Rejected.** *Drop the 0-skipped rule on aarch64*: it would hide a missing CoolProp, which is what F-8 exists to catch.
+*Run A31a on aarch64*: R-627 registers it as x86-64's.
+
+## R-907 — Step 14's nlp check runs over the modules that contain `mark.nlp`, not over `tests/`, and its record shows that no node is lost
+
+| | |
+| --- | --- |
+| Date | 2026-10-30 |
+| Decided by | design lane (`specifier`), V03 RC rulings, Amendment 2 (ratifies WO-6's runner change) |
+| Normative text | V03 spec §4 step 14, V03.A33; the RC runner's `run_step14.sh` |
+| Evidence | At `4fa15efa`, `scripts/m03_nlp_check.sh` over `tests/` exits 2. `tests/test_s10_records.py`, `test_s10_idaes.py` and `test_s10_dwsim.py` import `mpmath`, which the audited nlp environment lacks, and none of them contains `mark.nlp`. `tests/conftest.py` applies no `nlp` marker. `--collect-only -m nlp` lists the same 190 node ids from the 13 modules as from `tests/` |
+| Affected packages | V03 (WO-6 step 14), M03, M05, E01 (the nlp-marked modules) |
+
+**Decision.** The nlp check is given `grep -l 'mark.nlp' tests/test_*.py` at C. The step-14 record proves with V03.A33
+that the selection loses nothing: the two node-id sets are equal, with 190 members.
+
+**Rejected.** *Add `mpmath` to the audited nlp environment*: it changes an audited inventory (M03), and its `--check`
+would need a re-audit. *Ignore the collection errors*: a gate that tolerates them could hide an nlp module.
+
+## R-908 — Step 15's journey commit is J = K3 plus the G10 records (`2d945b5d`), not K3
+
+| | |
+| --- | --- |
+| Date | 2026-10-30 |
+| Decided by | design lane (`specifier`), V03 RC rulings, Amendment 2 (ratifies WO-5's decision) |
+| Normative text | V03 spec §3.4, §4 step 15, V03.A21 |
+| Evidence | `docs/V03_RC_DECISIONS.md` (WO-5): `carry.journey_files` holds `benchmarks/m05/**`, and `git diff --name-only K3 2d945b5d -- <carry paths>` lists 36 files. So `v0_2_gate.journey_carry` from K3 would answer `JOURNEY_RERUN`, and from `2d945b5d` it answers carried. 0.2.0's K = `2c508b5` was A plus its G10 records |
+| Affected packages | V03 (WO-5, WO-6 step 15) |
+
+**Decision.** The journey runs at J and carries from J to C. §3.4, step 15 and A21 name J.
+
+**Rejected.** *Run the journey at K3 and re-run it at C*: about an hour of compute for the same code, and C is not the
+cut commit.
+
+## R-909 — Step 12 keeps G11's experiment results and audits them, in the step's own text, at 0.3.0 and every later release; at 0.3.0 by a re-run at C compared with step 12's own runs file (V03.A34)
+
+| | |
+| --- | --- |
+| Date | 2026-10-30 |
+| Decided by | design lane (`specifier`), V03 Amendment 3 (verdict finding F1) |
+| Normative text | V03 spec §4 ("Step 12's G11 results"), V03.A34, §10.1, §10.2, §10.5; `docs/RELEASING.md` (0.3.0 block, step 3) |
+| Evidence | `docs/reviews/V03-verdicts.md` W21 (e): C's step 12 ran G11 through temporary stores and kept nothing. V03 §4 carried "the alpha spec §8.2 steps 1–12, read as in M07 §8", and M07 §8 lacked R-375's keep-and-audit, as 0.2.0's finding F1 found. Step 12's own runs file at C (`3b05511d`, SHA-256 `cdb7d999…fd0a`): 2 runs × 121 points; 105 boundary and 16 direct per run; `attempts` 1 at each boundary point and absent at direct ones; `child_accepted` only at direct points; boundary outcomes 178 accepted, 28 at S1, 4 at certificate, which is 0.2.0's 89/14/2 per run. 0.2.0's remedy: `docs/v02-rc-record.md` l.126; audit 210 results, 210 attempts, 0 problems, 420 `job_id` context findings |
+| Affected packages | V03 (WO-6 step 12, WO-7 W21 (e)); every later release spec that runs the alpha's step 12 |
+
+**Decision.**
+1. *The record at 0.3.0.* `step12/experiments/rc-step12-experiments.json` holds exactly the three checks of V03.A34,
+   beside the re-run's G11 record and runs file, the two collected records and the audit's report. (b) compares six
+   members at all 242 point-runs with step 12's own runs file. The audit is given that file, so the collected
+   records' labels, order, paths, inlets and `n_tubes` are judged against a record written before the re-run.
+2. *What W21 (e) is judged again on.* At W21's new judgement, (e) is met if and only if all four of these hold.
+   (i) V03.A34 holds on the committed record. (ii) The verdict's own re-check agrees: each file's SHA-256 equals
+   `rc/records.json` and the RC row's (gzip decompressed); A34 (b) is recomputed from the two committed runs files; and
+   the audit, re-run over the committed records, prints the same line. (iii) `3b05511d` is an ancestor of the commit
+   that adds `step12/experiments/`, and `git diff --name-only a3e508e3 <that commit>` touches no D2.4 path. (iv) The
+   rest of (e) holds as judged on 2026-10-30 (G6 nodes, G12's coupling record, the reactor commit). The denominator
+   is the 210 results (0.2.0's reading). If any result lacks an item, (e) is not met, now on a record.
+3. *Standing.* Every later release spec that runs the alpha's step 12 writes the keep-and-audit into step 12's own
+   text, not only into a register entry or a side section. Step 12 runs G11 through a store-keeping wrapper in its
+   first run. The audit is given step 12's own runs file, and the record holds A34 (c). Checks (a) and (b), the re-run
+   form, are only the remedy for a step 12 that did not keep the records.
+
+**Rejected.**
+- *Carry 0.2.0's audit, since the producing code is byte-identical.* No registered carry covers it, and the alpha's §4
+  rule 3 forbids it.
+- *A D3 row for W21 (e).* That is the PASS with waiver that ADR 0021 rejects, for half an hour of free compute.
+- *Make `g11_coverage_v3.py` keep its stores.* It is a frozen D2.4 file, so this would need a re-cut.
+- *Give the audit the re-run's runs file (the verdict's step 4).* That ties inlets and `n_tubes` to the re-run.
+  Step 12's own file costs nothing and was written first.
+- *The verdict's five members only.* `attempts` is in step 12's own file. Adding it grounds the audit's 210 attempts
+  in step 12's record.
+
+**Watch for.** A release spec that cites "steps 1–12" of an earlier spec without the keep-and-audit in step 12's row.
+The wrappers living only as `tools/*.txt`; promoting them is open item A3-3.
+
+## R-910 — V03.A12 (c) at a version cut is judged with the version held equal: the registered run may differ only in family-C digests, and a one-line control run finds none
+
+| | |
+| --- | --- |
+| Date | 2026-10-30 |
+| Decided by | design lane (`specifier`), V03 Amendment 3 (verdict finding F2; the WO-6 A12 (c) stop) |
+| Normative text | V03 spec §7 V03.A12, §7.1, §10.1, §10.5; `scripts/s13_evidence_manifest.py` (A12 (c)) |
+| Evidence | R0 at C (`evidence/S13/a3e508e3…/artifacts/V03.A12c.log`, SHA-256 `db190837…`): `S11-IDENTITY FAIL n=54494 changed=[C:tests/test_m04_wo19_…] (47 digests differ)`. R1, which is C with only `__version__` = `0.3.0.dev0` (`~/.cache/v03rc-a12-tmp/identity-cf2.log`): `S11-IDENTITY FAIL n=54494 changed=[] (C branch shards [1, 3, 7, 11] exited non-zero)`. The kept logs (`~/.cache/v03rc-a12-keep/`) hold five FAILED lines in the branch tree, §7.1's five, and none in the base. `git diff --numstat 0ce3748a a3e508e3 -- src` is the one `__version__` line. `backends.py` l.174 puts the version in the fingerprint, and `Environment(fingerprint, document_sha256(fingerprint))` digests it |
+| Affected packages | V03 (WO-6 generator, S13's manifest); every later assertion that runs `scripts/s11_identity.py` across a change of `__version__` |
+
+**Decision.** As §7.1 states. R0 is the registered run. Its failure is admitted only when the versions differ and the
+only problem is changed family-C digests. R1 changes exactly the version line, and it must find no changed digest at
+the same n, with exactly the registered readers failing. `scripts/s11_identity.py`, its rule and its base are not
+edited. A later spec that applies the rule registers its own list of readers, measured the same way.
+
+**Rejected.**
+- *Exclude `openflowsheet_version` in the identity recorder (R-902's literal reach).* The version sits under
+  `Environment`'s derived digest. Excluding it would mean recomputing the experiment layer's digests inside gate
+  machinery, a second code path.
+- *Re-base the comparison at K3.* That compares only K3 with C. WO-2's change, which A12 (c) exists to judge, lies
+  before K3, so the check would be vacuous.
+- *S13a's pass at `0ce3748a` plus the `src/` diff.* That is evidence about another commit (alpha §4 rule 3), and
+  `tests/` and `benchmarks/` have moved since then.
+- *Align the base tree's version instead.* It is unmeasured, the base's own version readers and `src/**` hashes would
+  fail there, and it gains nothing.
+- *Drop the version from the fingerprint.* That is a D2.4 change and a re-cut, and R-458's re-take relies on the
+  version being there.
+- *Record A12 `fail` and release.* A27 needs `tested`, so this would be a waiver (ADR 0021).
+
+**Watch for.** A sixth reader appearing at a later judged commit. That is a stop, and the list is not edited to pass.
+S11's G1 being retired or re-based, after which this rule has nothing to apply to.
+
+## R-911 — S13's own manifest is excluded from the 0.3.0 harvest, as M07's was from 0.2.0's: `HARVEST_EXCLUDED = ("evidence/S13/",)`
+
+| | |
+| --- | --- |
+| Date | 2026-10-30 |
+| Decided by | design lane (`specifier`), V03 Amendment 3 (verdict finding F7) |
+| Normative text | V03 spec §4 (K3 and C), §10.5 item 3; `scripts/t08_support_matrix.py` `HARVEST_EXCLUDED`; `tests/test_m07a_harvest.py` |
+| Evidence | `docs/V03_RC_DECISIONS.md` (WO-6): with S13's manifest in the tree, `test_m07a_a50_the_harvest_size…` and T08.A21's test fail. At C, `HARVEST_EXCLUDED = ()` and `evidence/S13/` holds nothing. `HARVEST_SIZE = (66, 928, 120)`. The harvest's classifications live in `benchmarks/t08/support_envelope.yaml`, a D2.4 path. Precedent: R-485 |
+| Affected packages | V03 (WO-6, WO-8); the next envelope's package |
+
+**Decision.** `HARVEST_EXCLUDED = ("evidence/S13/",)`. The trailing slash keeps `evidence/S13a/` harvested.
+`HARVEST_SIZE` and T08.A21's test do not change. `test_c4_…` expects the tuple. A new test asserts that C's tree holds
+no file under `evidence/S13/`, that every excluded manifest is `evidence/S13/<40 hex>/manifest.json`, and that S13a's
+manifest is harvested. S13's manifest states the exclusion as a limitation. The next envelope's package removes the
+exclusion and harvests S13's manifest.
+
+**Rejected.**
+- *Classify S13's items in the envelope.* That is a D2.4 change and a new C.
+- *Move `HARVEST_SIZE` only.* T08.A21 would still find unclassified items.
+- *Write the manifest outside `evidence/`.* That breaks the merge rule (CLAUDE.md) and the gate's reading of it.
+
+**Watch for.** `HARVEST_EXCLUDED` holding anything besides `evidence/S13/` after 0.3.0, or the next envelope still
+excluding it.
+
+## R-912 — 0.3.0 keeps the gate's limitation grammar; L-S11-1…3, L-E01-1 and W26's G14 sentence travel in prose, and the next release widens the grammar
+
+| | |
+| --- | --- |
+| Date | 2026-10-30 |
+| Decided by | design lane (`specifier`), V03 Amendment 3 (verdict finding F5) |
+| Normative text | V03 spec §11 N-12, §10.5 item 4 |
+| Evidence | `scripts/v0_2_gate.py` `LIMITATION` (its pattern is quoted under the table), which every entry of the limitation column must fully match. It refuses `L-S11-1`, `L-S11-2`, `L-S11-3` and `L-E01-1` and accepts `L46`, `L-COL-10`, `L-WEB-1` and `L-CSTR-3`. All four refused ids are rows of `benchmarks/t08/support_envelope.yaml`, and the verdict carries them in its "Limitations that must travel" section |
+| Affected packages | V03 (the verdict, S13's manifest); the next release's gate |
+
+Today's pattern: `\bL(?:\d{2}|-[A-Z]+-\d+)\b`.
+
+**Decision.** No grammar change for 0.3.0. The four ids and W26's sentence travel in the verdict's prose, the envelope
+and one limitation of S13's manifest. The next release's gate adopts `\bL(?:\d{2}|-[A-Z][A-Z0-9]*-\d+)\b`, with tests
+that the four ids and today's ids match, that `L-s11-1`, `L-S11-`, `LS11-1` and `L-11-1` do not, and that 0.2's
+outputs stay byte-identical.
+
+**Rejected.**
+- *Widen now.* It changes the engine that judges C, after C, to gain one table cell and no evidence.
+- *Rename the envelope ids.* That is a D2.4 change, and the ids are cited across the tree.
+
+## R-913 — WO-8 at 0.3.0 is acyclic: S13's manifest `tested` → ADRs 0053 and 0054 Accepted on it → step 18 → build log; the manifest never judges step 18 and is not regenerated after it
+
+| | |
+| --- | --- |
+| Date | 2026-10-31 |
+| Decided by | design lane (`specifier`), V03 Amendment 4 (the WO-8 engineer's stop) |
+| Normative text | V03 spec §6.1, V03.A08, A25, A27, §10.1, §12 |
+| Evidence | The manifest at C (`4ecfc162`): `implemented`, 48 checks, exactly five `unsupported`: A08, A25, A27, ADR.0053, ADR.0054. Step 18's dry run at `2b7fc98e`: `NO (3 reasons)`, namely the manifest's status and ADRs 0053 and 0054 not Accepted. M07's generator: `Spec("A43", measure="self")`, "Step 18 … is not run by this script", and no ADR-status check. ADR 0042 was Accepted on M07's `tested` manifest |
+| Affected packages | V03 (WO-8; `scripts/s13_evidence_manifest.py`) |
+
+**Decision.** WO-8 runs in §6.1's order. The generator takes rules (g1)–(g6):
+- A08's check is its tests only, and A27's check is `_self` only. `--step18-log` is removed.
+- A25 (a) is the gate's `adr_problems`, which may return only `ADR 0053/0054 is not Accepted` problems, and only for
+  Proposed status lines.
+- ADR.0053 and ADR.0054 judge their conditions other than the manifest's own status: Frank's six cells by the gate's
+  `policy` (0053), and the listed range.
+- A guard fails an ADR marked Accepted while another check does not pass.
+- A26 gains the `policy` part.
+This replaces 4ac5b66c's pending branch, which the orchestrator ratified on 2026-10-30. Step 18's output is recorded in
+the build log. The manifest from step 2 is final.
+
+**Rejected.**
+- *Regenerate the manifest with `--step18-log` after step 18 (the engineer's last step).* The status is a fixed point,
+  but the bytes are not. The regeneration rewrites the file the ADR lines cite and step 18 read, after both read it.
+  Re-running step 18 to cover the new file never ends.
+- *Mark 0053 and 0054 Accepted first.* That marks them before their condition holds.
+- *Run step 18 in a scratch tree with the ADRs flipped, or keep A25 `unsupported`.* The first invents a step-18 log.
+  With the second, the gate's manifest item refuses the manifest forever.
+- *Let the gate accept `implemented` or skip item 12.* That changes the engine that judges C, after C, for a
+  bookkeeping loop.
+- *Drop A25 and A27 from the manifest.* The catalogue rule, one check per §7 row, is what keeps an assertion from being
+  left out.
+
+**Watch for.** A regenerated `evidence/S13/<C>/manifest.json` after H2 without steps 3–5 repeated. An ADR line citing a
+manifest SHA-256 that differs from the tree's.
+
+## R-914 — Standing: a release manifest never judges the gate that reads it; an assertion decided by that gate is split, and an ADR conditioned on the manifest is judged in it on its other conditions
+
+| | |
+| --- | --- |
+| Date | 2026-10-31 |
+| Decided by | design lane (`specifier`), V03 Amendment 4 |
+| Normative text | V03 spec §6.1, A08, A25, A27; every later release spec |
+| Evidence | 0.2.0 had no loop because M07's manifest judged neither step 18 nor item 12 (M07.A36's R part was in the build log). 0.3.0 wrote both into A25 and A27, and into an ADR route that conditions on the manifest, and so built the loop (R-913) |
+| Affected packages | V03; the next release spec |
+
+**Decision.** In a release spec, any assertion whose condition is decided by a step that reads the release manifest
+(the tag gate, its ADR item) is written in two parts. The manifest judges what holds before that step. The step's own
+output, recorded in the build log, judges the rest. An ADR whose acceptance condition includes the manifest being
+`tested` has a manifest check over its other conditions, with Proposed or Accepted allowed and §6.1's guard applied. It
+is marked after the manifest and before the gate. The spec's step table states this order.
+
+**Rejected.** *Pending rules per release (4ac5b66c's form).* They keep the manifest from ever reaching `tested`, and the
+loop is found only at the last work order.
+
+**Watch for.** A release generator with an input for the gate's own output. An ADR check that requires Accepted where
+the ADR's condition is the manifest itself.

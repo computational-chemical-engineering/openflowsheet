@@ -1,0 +1,32 @@
+{
+ "base_members": [
+  {
+   "name": "numpy",
+   "version": "2.2.4"
+  }
+ ],
+ "distributions": [
+  {
+   "compiled": true,
+   "license": "MIT",
+   "license_classifiers": [
+    "OSI Approved :: MIT License"
+   ],
+   "license_expression": null,
+   "license_files": {
+    "licenses/LICENSE": "9bf835333ef602af4cb19338b9f9d43671e174fa029b00280e9bdba6ea4719b2"
+   },
+   "name": "coolprop",
+   "verdict": "ok",
+   "version": "8.0.0",
+   "wheels": {}
+  }
+ ],
+ "extra": "coolprop",
+ "failures": [],
+ "format": "s07-coolprop-licences-v1",
+ "python": "3.13.5",
+ "requirements": [
+  "CoolProp==8.0.0"
+ ]
+}

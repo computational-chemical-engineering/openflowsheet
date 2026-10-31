@@ -1,6 +1,6 @@
 # ADR 0050 — The binding package: record-source bases for IAPWS-95, CoolProp and Wilson, basis-generic routing models, and `syn001.column` in flowsheets (package S11)
 
-**Status:** **Proposed, 2026-10-26** (design lane, `architect`; register R-800…R-812). It becomes **Accepted** when:
+**Status:** **Accepted, 2026-10-30**, marked by the build lane (V03 spec §6, R-876; the check is recorded in `docs/V03_DECISIONS.md` for S13's manifest). Proposed 2026-10-26 (design lane, `architect`; register R-800…R-812). It becomes **Accepted** when:
 - S11's evidence manifest is `tested`, with gates G1–G8 of the design note passing;
 - the `reviewer` has passed the work orders against the design note.
 

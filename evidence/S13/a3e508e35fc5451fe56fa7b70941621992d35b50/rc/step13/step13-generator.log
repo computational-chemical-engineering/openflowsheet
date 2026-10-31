@@ -1,0 +1,8 @@
+11943 claims passed
+benchmarks/m04/reference_values.json is byte-identical to the generator's output
+benchmarks/m04/plan-it1.json is byte-identical to the generator's output
+benchmarks/m04/plan-it2.json is byte-identical to the generator's output
+benchmarks/m04/plan-it3.json is byte-identical to the generator's output
+benchmarks/m04/plan-b2-it1.json is byte-identical to the generator's output
+benchmarks/m04/plan-b2-it2.json is byte-identical to the generator's output
+benchmarks/m04/plan-b2-it3.json is byte-identical to the generator's output

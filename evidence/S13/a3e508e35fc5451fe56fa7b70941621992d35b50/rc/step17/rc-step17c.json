@@ -1,0 +1,80 @@
+{
+ "checks": [
+  {
+   "exit_code": 0,
+   "extra": "coolprop",
+   "id": "scripts/t07_licence_inventory.py --extra coolprop",
+   "last_line": "G19: 1 distributions, no GPL-family, unresolved or unlisted licence",
+   "result": "pass"
+  },
+  {
+   "exit_code": 0,
+   "extra": "lca",
+   "id": "scripts/e01_d04_inventory.py --check",
+   "last_line": "A42 PASS",
+   "result": "pass"
+  },
+  {
+   "expected_new_since_v0_2_0": [
+    "coolprop",
+    "lca"
+   ],
+   "id": "a22.17c.mr12_extras_v03",
+   "measure": {
+    "extras": {
+     "coolprop": {
+      "audit": "docs/derivations/S07-spec.md",
+      "audit_section": "\u00a717",
+      "check": "scripts/t07_licence_inventory.py --extra coolprop",
+      "check_result": "pass",
+      "decision": "R-624",
+      "decision_in_register": true,
+      "files_at_commit": {
+       "audit": true,
+       "inventory": true
+      },
+      "inventory": "docs/s07-coolprop-licences.json",
+      "step17c_commit": "a3e508e35fc5451fe56fa7b70941621992d35b50"
+     },
+     "lca": {
+      "audit": "docs/derivations/E01-design.md",
+      "audit_section": "\u00a74.8.4 and WO-B1",
+      "check": "scripts/e01_d04_inventory.py --check",
+      "check_result": "pass",
+      "decision": "R-900",
+      "decision_in_register": true,
+      "files_at_commit": {
+       "audit": true,
+       "inventory": true
+      },
+      "inventory": "docs/e01-lca-licences.json",
+      "step17c_commit": "a3e508e35fc5451fe56fa7b70941621992d35b50"
+     }
+    },
+    "new_since_v0_2_0": [
+     "coolprop",
+     "lca"
+    ]
+   },
+   "measure_result": "pass",
+   "result": "pass"
+  }
+ ],
+ "format": "t08-rc-v1",
+ "passed": true,
+ "provenance": {
+  "architecture": "x86_64",
+  "commit": "a3e508e35fc5451fe56fa7b70941621992d35b50",
+  "environment_lock_sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4",
+  "github_actions": false,
+  "machine_class": "ref-x86-64",
+  "python": "3.13.5",
+  "threads": {
+   "MKL_NUM_THREADS": "1",
+   "OMP_NUM_THREADS": "1",
+   "OPENBLAS_NUM_THREADS": "1"
+  },
+  "tree_clean": true
+ },
+ "step": "17c"
+}

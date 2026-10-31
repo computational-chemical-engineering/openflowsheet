@@ -1,0 +1,38 @@
+{
+ "checks": [
+  {
+   "certificates": 77,
+   "id": "a34.certificates_audited",
+   "result": "pass"
+  },
+  {
+   "first": {},
+   "id": "a34.violations",
+   "result": "pass",
+   "violations": 0
+  }
+ ],
+ "format": "t08-rc-v1",
+ "inputs": [
+  "/home/frankp/Codes/OpenFlowsheet/.claude/worktrees/rc-v03-a3e508e/evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/rc/identity",
+  "/home/frankp/Codes/OpenFlowsheet/.claude/worktrees/rc-v03-a3e508e/evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/rc/ensemble",
+  "/home/frankp/Codes/OpenFlowsheet/.claude/worktrees/rc-v03-a3e508e/evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/rc/surface",
+  "/home/frankp/Codes/OpenFlowsheet/.claude/worktrees/rc-v03-a3e508e/evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/rc/step12"
+ ],
+ "passed": true,
+ "provenance": {
+  "architecture": "x86_64",
+  "commit": "a3e508e35fc5451fe56fa7b70941621992d35b50",
+  "environment_lock_sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4",
+  "github_actions": false,
+  "machine_class": "ref-x86-64",
+  "python": "3.13.5",
+  "threads": {
+   "MKL_NUM_THREADS": "1",
+   "OMP_NUM_THREADS": "1",
+   "OPENBLAS_NUM_THREADS": "1"
+  },
+  "tree_clean": true
+ },
+ "step": "certificates"
+}

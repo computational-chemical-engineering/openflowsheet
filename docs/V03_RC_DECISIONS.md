@@ -1,0 +1,344 @@
+# V03 RC decisions (WO-5, brief `docs/briefs/V03-WO5-K3.md`)
+
+Build-lane choices made while executing WO-5, one line each, with what reverts them.
+
+- DECISION: K3 also sets `scripts/t08_support_matrix.ENVELOPE_ID` and re-emits `docs/support-matrix.md` (both outside
+  D2.4) → yes, as 0.2.0's A = `0fcf1ad` did; without them `t08_support_matrix.py --check` fails on the envelope id.
+  Alternative: leave them for a later commit. Reversible by: revert of K3 `295a2e65`.
+- DECISION: the `assessment_report` fixtures that carry `0.3.0.dev0` are left as they are → they are not in §5.1's
+  set (nor in 0.2.0's), and no test reads them as the package version. Alternative: bump them too.
+
+## Stop at K3 (§10.1, F-4) — resolved by R-902
+
+The first K3 (`ad4c23db`, discarded, never pushed) failed
+`tests/test_m06_w27_coverage.py::test_committed_coverage_json_is_g14_and_this_builds_classification`: it compared
+every snapshot field but `git_commit`, so `package_version` `0.3.0` != the committed `0.3.0.dev0`, and the v1 re-take
+refuses (`registry_snapshot: unsupported(provider 'iapws95-v1': no registered records and phases, W27-R63)`).
+Orchestrator ruling: `package_version` is build provenance and is excluded beside `git_commit` (R-902, rejected:
+base-version comparison). Fix commit `91d1cc54` on 4a664416 (W27 tests at 0.3.0.dev0: 56 passed, 2 skipped), then K3.
+
+## Step 2: the G10 re-take (`2d945b5d`)
+
+From a clean detached worktree at K3 (`.claude/worktrees/rc-k3-295a2e6`), E6/K's recipe (alpha-main's `.venv-nlp`,
+OMP 1, `PYTHONNOUSERSITE=1`, `PYTHONPATH=src:<nlp-test-tools>`): `--digest-only --old-version 0.3.0.dev0` PASS for all
+five, changed digests / version leaves 41/4, 79/7, 70/4, 91/3, 37/4, `other=0`, `environment=equal`; AM-23 5 passed.
+
+- FINDING: `benchmarks/m05/records/**` is a D2.4 path (`v0_1_gate.TREES` holds `benchmarks`), so the brief's "one
+  commit (outside D2.4)" is not literally true; the commit changes nothing outside `benchmarks/m05/records/` (36 files).
+  0.2.0 put the records inside K (`2c508b5` = A + records); here they follow K3 by the orchestrator's order.
+- DECISION: the journey runs at `2d945b5d` (K3 + the G10 records), not at K3 itself → `carry.journey_files` holds
+  `benchmarks/m05/**`, so a journey recorded at K3 cannot carry to C (`git diff --name-only K3 2d945b5d -- <carry
+  paths>`: 36 files; `v0_2_gate.journey_carry` would answer `JOURNEY_RERUN`). This is 0.2.0's K exactly (A + the G10
+  records). Alternative: run at K3 and re-run at C. Reversible by: re-running at K3 (one hour of compute); the carry
+  argument at C is then `--carry-journey 2d945b5d`.
+
+## Step 3: the journey (`93886ac3`)
+
+Clean detached worktree at `2d945b5d`, m05's `.venv-nlp`, OMP 1, `PYTHONNOUSERSITE=1`, `PYTHONPATH=src`,
+`--m05-record benchmarks/m05/records/trust-region-study-real.json`, artifacts in `~/.cache/v03rc-journey/artifacts`;
+budgets unchanged. Exit 0, 3304 s. Decision `refined`, T* = 653.1500351610193 K, BOUND_LOWER, J = 0.4524965242483627;
+R0 INDIFFERENT, R1 DECIDED 653.15 K (cold 36, 1554 s), R2 SURROGATE_NOT_PROMOTABLE, R3 DECISION_STABLE.
+- R3: M05's REAL record is **not** carried (`carry_identity_differs` from anchor `cdacc32`); M05's study re-ran at
+  `2d945b5d` (cold 48, 1455 s; T* 653.1500351610193).
+- Against 0.2.0's K record (`2c508b5`): 69 leaves differ, all walls, coupling/run digests, `commit` and R3's
+  `m05_record` {path, sha256}; every other number bitwise equal (K's comparison with J′ had 70: it also held
+  `registration_sha256`, unchanged here). No stop: nothing differs for a reason other than the code changes.
+- `check` ACCEPT; `replay` at `93886ac3` (clean worktree): bitwise, 19 s; `OMP_NUM_THREADS=2` exit 2.
+  `tests/test_m07_journey_record.py`: 56 passed. `v0_2_gate.journey_carry(2d945b5d, 93886ac3)`: carried; from K3 it
+  would not carry (36 files of `benchmarks/m05/**`).
+
+## Handoff
+
+- Branch `wp/V03-rc` (not pushed): fix `91d1cc54`, K3 `295a2e65` (on `main`), log, G10 re-take `2d945b5d`, journey
+  record `93886ac3` (J = `2d945b5d`), this log.
+- WO-5 steps 1–3 done. At C the RC job carries the journey with `--carry-journey 2d945b5d --rc C` (not K3).
+- Not done: C itself (WO-6's RC job). Scratch: `~/.cache/v03rc-tmp`, `~/.cache/v03rc-journey`, `~/.cache/v03rc-tools`.
+
+# WO-6 (brief `docs/briefs/V03-WO6-RC.md`, on `main` at `4e8c3ba0`)
+
+- First check (before C): `v0_3_gate.py`'s tree rule is `v0_2_gate.main` → `v0_1_gate.tree_differences(rc=C,
+  candidate)`: it compares the **candidate with C** under `TREES`, never K3 with C; `m07a`/`m07_evidence_manifest`
+  call it as `(C, HEAD)`. No rule or test diffs K3..C, so `2d945b5d`'s and `93886ac3`'s `benchmarks/m05/records` and
+  `benchmarks/m07/journey/2d945b5d…` are not refused. Their C-tree bytes enter `release/rc-trees/<C>.json`.
+- DECISION: how does the RC dispatch run both the alpha's step 8 (`m07a_rc.py surface`, §3.3) and `rc-coolprop`
+  (17b)? `rc-coolprop` ran only under `inputs.rc`, whose `rc-steps` runs T08.A49's surface (`served ==
+  R133_DESCRIPTIONS_SHA256`, D_0), red at D_3; with both inputs the two surface steps share `$OUT/surface`. → the
+  job's `if` becomes `inputs.rc || inputs.rc_alpha`; the dispatch is `rc_alpha=true` (which includes the
+  distribution). A15's test reads `inputs.rc` as a substring and still holds. Alternative: a new `rc_v03` input on
+  seven jobs. Reversible by: reverting the ci.yml commit.
+- DECISION: where is step 17c's producer (F-V3) and the `mr12_extras_v03` call? → `scripts/v03_rc.py` (committed in
+  C, linted, `tests/test_v03_rc.py`) writes the `t08-rc-v1` records of step 15 and 17a–17e; `step17c` records one
+  check per `MR12_AUDITS_V03` entry (id = its `check` command, result = its exit status) and then calls
+  `m07a_evidence_manifest.mr12_extras_v03_at(C, record)` (the measure's git reading, factored out of
+  `_m_mr12_extras_v03`, behaviour unchanged) as a third check `a22.17c.mr12_extras_v03` (pass, `["coolprop",
+  "lca"]`). The S13 manifest calls `MEASURES["mr12_extras_v03"]` again over the committed record. Steps 11–14 and
+  16 use 0.2.0's `m07_rc_external.py` as 0.2.0 kept it (a tool beside the records). Alternative: everything as
+  out-of-tree tools. Reversible by: reverting the producer commit.
+- DECISION: V03.A19 (c) names "S10's P1 state", which no S10 record defines (S10's real reference states are
+  RE1–RE3; P1–P3 are S10C's column premises) → (c) compares, bitwise (`float.hex`), `evaluate_phase` (both phases,
+  every property and derivative; the liquid's `lnphi` carries γ) and `flash` (K) at RE1, RE2, RE3 and A12's state,
+  a superset of any one state. Alternative: one state of the design lane's naming. Reversible by: editing
+  `v03_rc.A19_STATES`. **Question for the design lane** (batched): which state "P1" meant.
+- Step 15's carry argument is `2d945b5d` (WO-5's decision above), not the spec's K3; A21's wording follows it.
+
+## The local run at C = `4fa15efa` (2026-10-30, `~/.cache/of-rc-v03-4fa15ef`, worktree `rc-v03-4fa15ef`)
+
+63 commands; all exit 0 except three steps (and the records that read them):
+- **Step 17b FAIL** — `tests/test_s11_w27_v3.py::test_a40_a84_the_build_snapshot_is_s4_and_classifies_the_225_rows`
+  (1 failed, 4173 passed): `scripts/s11_w27_s4.py` compares the S4 snapshot in every member but `git_commit`, so at
+  0.3.0 `package_version` differs from the committed `0.3.0.dev0` (`S4 DIFFERS: 1 problem(s)`). Not CoolProp-gated:
+  it fails in the default suite too, so CI's `check` at C is red on both architectures. K3 had no full gate (R-902's
+  fix covered `test_m06_w27_coverage.py` only).
+- DECISION: apply R-902 to the S4 check (`package_version` excluded beside `git_commit`; the control test also sets
+  it) → outside D2.4, a new C. It narrows a check, so the orchestrator confirms it as R-902's reach before the RC
+  re-runs. Alternative: a register entry of its own. Reversible by: reverting that commit.
+- **Step 14 FAIL (tooling)** — `m03_nlp_check.sh` with no test paths collects all of `tests/`; three
+  `tests/test_s10_*.py` modules (newer than 0.2.0) import `mpmath` at module level, absent from the audited nlp
+  environment → collection errors, `pytest -m nlp: exit 2`. Both inventory `--check`s exit 0. Fix in the runner only
+  (not in C): pass the modules that hold `mark.nlp`, as E01's manifest does (run N); measured at C: `-m nlp`
+  collects the same 190 nodes from those 13 modules as from `tests/` (`--collect-only` lists identical).
+- **Step 16 FAIL — stop (design lane)** — `python -m benchmarks.m06.w27.dryrun` (M06 G15's dry run, part of W26's
+  G1–G15) refuses: `SnapshotUnsupportedError: registry_snapshot: unsupported(provider 'iapws95-v1': no registered
+  records and phases, W27-R63)`, the v1 snapshot refusal spec §2.1 records for W27's coverage. `tests/test_m06_*.py`
+  passed and `node --test` passed. A fix touches `benchmarks/` (D2.4) or changes what step 16 runs: not chosen here.
+- CI at `4fa15efa` (push 41092667441, dispatch 41092667216; orchestrator's reading): `rc-steps` (both), `dist`,
+  `bundle-set`, `rc-ensemble` success; every default-suite job fails exactly the S4 test above; `rc-coolprop` aarch64
+  also has one skip, `tests/test_s07_registration.py:242: A31a holds on x86_64 only; this machine is aarch64 (A31b)`.
+- DECISION (orchestrator ruling, batched for the verdict): 17b's CI check allows exactly that registered platform
+  skip, matched by its reason text, on aarch64 only; x86-64 stays 0 skipped; any other skip fails (`ci.yml`, 17b
+  step; tried on five synthetic logs: arm+A31b pass, x86+A31b fail, arm+other fail, arm+both fail, none pass).
+  Reversible by: reverting that commit.
+
+## WO-6 handoff (the new C is the commit that adds this section)
+
+- **Branch** `wp/V03-rc`. Old C `4fa15efa` is superseded, never to be judged. The new C is this commit, = `4fa15efa` +
+  `fe61ae9d` (R-902 in `scripts/s11_w27_s4.py`, with a control) + `49a9dfc5` (17b's aarch64 A31b skip in `ci.yml`) +
+  this log. No D2.4 path changed after WO-5 (`git diff --name-only 28a2be21 <C> -- src schemas benchmarks
+  requirements*.lock pyproject.toml MANIFEST.in README.md LICENSE NOTICE` is empty). Dispatch: `gh workflow run ci.yml
+  --ref wp/V03-rc -f rc_alpha=true` (only that input).
+- **Full gate at `fe61ae9d`** (clean worktree `.claude/worktrees/gate-v03-fe61ae9`, main `.venv` tools): GATE PASS,
+  14757 passed, 3206 skipped, 197 deselected (2710 s). `49a9dfc5` changes only `ci.yml` (A15 test 2 passed).
+- **Runner** (out of tree, as 0.2.0's): `~/.cache/of-rc-v03-4fa15ef/tools/` — `run_local.sh` (steps 2, 6–17),
+  `run_step14.sh` (now passes the 13 `mark.nlp` modules), `m07_rc_external.py` (0.2.0's, output path S13),
+  `g12keep.py`, `collect_records.py` (args: artifacts/rc, evidence/S13/<C>/rc, cited.txt, C, docs/v03-rc-record.md).
+  Re-run from a fresh `W` and a clean detached worktree at the new C: copy `tools/`, set the worktree path, then
+  `bash $W/tools/run_local.sh <wt>` (about 1 h 40 min).
+- **What ran at old C (local, 63 commands)**: all exit 0 except steps 14, 16 and 17b (above). Records at old C passed:
+  2, 6–13, 15 (carry from `2d945b5d`: carried; check, replay exit 0), 17a, 17c (`["coolprop", "lca"]`, measure
+  `pass`), 17d (A24, A25 lca; A33–A36 nlp), 17e (A17, A19 (a)–(d) incl. the superset (c)); step 8 surface PASS.
+  **None carries**: the RC record must cite records whose `commit` is C, so every step re-runs at the new C. The old
+  run is diagnostic only (`~/.cache/of-rc-v03-4fa15ef/`, worktree `.claude/worktrees/rc-v03-4fa15ef`).
+- **Expected at the new C**: steps 14 and 17b pass (the fixes above); **step 16 still FAILs** on G15's W27 dry run
+  (`registry_snapshot: unsupported(… iapws95-v1 …, W27-R63)`). That is a design-lane stop (W26's G15 vs §2.1's v1
+  snapshot refusal). Record it as FAIL; do not change the step.
+- **Not done**: steps 2–17 at the new C; `collect_records.py` + `cited.txt`; `docs/v03-rc-record.md` (in
+  `v02-rc-record.md`'s form; step cells must be digits, so 17a–17e are rows with step `17`); `release/rc-trees/<C>.json`
+  (`v0_3_gate.py --rc C --write-tree-record`); the S13 manifest generator (none exists; S13a's pattern: A25–A27
+  `unsupported` until WO-7/8, the 17c part calls `MEASURES["mr12_extras_v03"]` with `evidence=evidence/S13`); CI ids.
+- **Open for the design lane (batched)**: step 16's G15 dry run (stop); R-902's reach to the S4 check; A19 (c)'s "P1
+  state" (superset accepted for now); the 17b A31b skip (orchestrator ruling).
+
+## WO-6 at C = `a3e508e3`: the S13 generator and the tree record
+
+- Tree record `release/rc-trees/a3e508e3….json` written by `v0_3_gate.py --rc C --write-tree-record` (`d963c64b`);
+  the four test modules that read tree records: 287 passed.
+- `scripts/s13_evidence_manifest.py` in `m07_evidence_manifest.py`'s pattern: one check per §7 assertion (catalogue
+  read from the spec; a missing rule stops it), D-gated ones by S13a's selections run here (A12 (c) by
+  `s11_identity.py` with its own `TMPDIR`), R-gated ones from `rc/records.json`'s committed records, CI runs at C,
+  and the gate's own readers (`rc_record_problems`, `adr_problems`, `verdict_document`); 17c also through M07a's
+  `MEASURES["mr12_extras_v03"]` with `evidence/S13` (F-V3).
+- DECISION: what `S11.G8`, `S12.G8`, `S12.G10` are at C (A27 names them, the spec does not define them at C) →
+  S11.G8 = full gate log + `check` and `rc-coolprop` on both architectures + step 17b's record; S12.G8 = full gate log +
+  `check` on both; S12.G10 = step 17a's record (E01 §9.6 G10 is A48 = 17a). Alternative: the CI jobs only.
+  Reversible by: editing `GATES` in the generator.
+- DECISION: "one check per ADR in S13's manifest" (§6) → `ADR.<n>` checks transcribed from WO-4's table: `met` rows
+  pass iff the status line is Accepted; 0050–0052 take V03.A24's result (their condition); 0043 passes iff Proposed and
+  not required; 0053/0054 are `unsupported` (pending) until Accepted at WO-8. Alternative: a committed JSON. Reversible
+  by: editing `adr_checks`.
+- DECISION: before WO-7/WO-8, V03.A25 (when the verdict document does not exist yet) and V03.A27 (while step 18 has
+  not run) are `unsupported` with `state: pending`, not `fail` (S13a's pattern; the handoff's "A25–A27 unsupported
+  until WO-7/8"). `unsupported` is not a pass, so the status stays `implemented`. Reversible by: two `if`s.
+- **Amendment 2 (`8e0cb1a1`, R-903…R-908) in the runner and the generator.** C stays `a3e508e3`. Out of tree
+  (`~/.cache/of-rc-v03-a3e508e/tools/`, edited while the run was at step 12, before step 14 started; `run_local.sh`
+  untouched): `run_step14.sh` writes `step14/nlp-modules.txt` (the `grep -l 'mark.nlp'` list) and adds
+  `step14-nlp-collect-selected` / `step14-nlp-collect-all` (`--collect-only -q -m nlp`, modules vs `tests/`);
+  `m07_rc_external.py` step 14 adds `a60.w24.nlp_selection` (A33), step 16 is `W26 (V03 spec §3.5, V03.A32)` with
+  `a60.w26.g15_registered_states` (the 25 nodes, `skipped_total`) and `a60.w26.w27_v1_refusal` (exit 1, the exact
+  W27-R63 last line, no `<C7>/summary.json`) in place of `w27_dry_run`. Generator: A32 (step 16's record, exactly the
+  four checks), A33 (step 14's record, modules carried, 190 equal sets).
+- **Controls (§4 of the ruling), on `4fa15efa`'s inputs** (its step-16 junit and dry-run log, `nlp-files.txt` /
+  `nlp-all.txt`): unmodified, (c), (d) and `nlp_selection` pass (190 = 190, equal). (c) fails with a `<skipped>` child
+  on `test_harness_states[W27-S04]`, and with `test_candidate_states[W27-S11]` deleted (reported `missing`); (d) fails
+  on the `unsupported(route enumeration) for openflowsheet 0.3.0` last line, and on exit 0; `nlp_selection` fails with
+  one id removed from either list, and on two empty lists.
+
+## The RC run at C = `a3e508e3` (2026-10-30, `~/.cache/of-rc-v03-a3e508e`, worktree `rc-v03-a3e508e`)
+
+- Fresh `W`, clean detached worktree, the handoff's runner plus: a private `--basetemp` per pytest under
+  `~/.cache/v03rc-tmp/rc-a3e508e/` (inert), and Amendment 2's step-14/16 changes (above). 65 commands, 3994 s; every
+  exit 0 except `step14-nlp-collect-all` 2 and `step16-dryrun` 1 (both registered by Amendment 2). Tree clean at start,
+  after venv, after archive, at end; nlp worktree: 50 ignored `__pycache__` entries at the end, as at `4fa15efa`.
+- Every record passes at C: steps 2, 6–16 and 17a–17e (`passed`, all checks `pass`, `commit` = C, `tree_clean`); step 16
+  4/4 (662 passed, 0 skipped; node 92/92; G15 25 of 25; the exact W27-R63 refusal, exit 1, no `summary.json`); step 14
+  5/5 (190 = 190, equal sets, 13 modules); step 15 "the journey at 2d945b5d carried", ACCEPT, bitwise; 17b 4174 passed,
+  0 skipped; ensemble S = 437 (F-FALSE-SUCCESS-CAUGHT 3).
+- CI at C: dispatch 41108983463 (`rc_alpha=true`) success, push 41108983672 success, Site 41108983605 success.
+  THM-09/4 rows copied (`0b112d13`). Records, tools, step-1 skips and `docs/v03-rc-record.md` committed (`0caf09a0`);
+  `rc_record_problems` reads the record with no problem.
+- S13 generator at C (`--gate-log gate-fe61ae9.log --ci-run 41108983463 --ci-run 41108983672`): 47 checks, 40 pass,
+  1 fail (V03.A12), 6 unsupported (A08 R part, A25, A26, A27, ADR.0053, ADR.0054: pending WO-7/WO-8). Manifest not
+  committed (removed: an untracked manifest makes `test_m07a_a50_the_harvest_size…` and `test_t08_w2_support_envelope
+  ::test_a21…` fail — committing S13's manifest needs the harvest/envelope update S13a's commit made).
+- **STOP — V03.A12 (c) fails at C.** `scripts/s11_identity.py` (base `8c34ecb0`): `S11-IDENTITY FAIL n=54494`, 47
+  family-C digests differ, all binder calls of `tests/test_m04_wo{7,8,19,20}_*.py` (surrogate manifests); identical key
+  set on a second run with a fresh `TMPDIR`. Cause: the only `src/` change since S13a's passing run (`0ce3748a`) is K3's
+  `__version__` `0.3.0.dev0` → `0.3.0`, and `adapters/experiments/backends.py:174` writes `openflowsheet_version` into
+  each experiment manifest, so the bound documents' SHA-256 change. Not a numerics change; the same class as R-902
+  (version as build provenance). A fix changes a check (s11_identity's comparison or its base) or how A12 (c) is judged
+  at C — design lane. Options: (a) R-902's reach to `s11_identity.py` (exclude `openflowsheet_version` from the
+  document digest, with a control); (b) judge A12 (c) at C by S13a's pass at `0ce3748a` plus "src diff = version only";
+  (c) a base at K3. Default I would take: (a). Nothing else depends on it.
+
+## WO-7b at C = `a3e508e3`: the verdict's build-lane fixes (F1 = V03.A34, F3, F6, F8)
+
+- F1 step 1 (`3b05511d`): step 12's own `step12/g11-coverage-v3.runs.json` (`cdb7d999…fd0a`) committed before the
+  re-run. Then `tools/run_g11keep.sh` (out of tree, copied to `evidence/S13/<C>/tools/`): `step12-g11`'s exact
+  arguments through 0.2.0's `g11keep.py`, OMP/OPENBLAS/MKL = 1, `OPENFLOWSHEET_EXTERNAL_ROOT` as step 12: exit 0,
+  1758 s (step 12: 1755 s); RC worktree clean before and after; keep dir 105 MB (ignored). `g11collect.py`: 2 runs,
+  121 points, 105 boundary with one experiment each, 16 direct. `g11keep.py.txt` and `g11collect.py.txt` are
+  byte-identical to `evidence/M07/ce993651…/tools/` (`cmp`), so no diff to record (§4 item 2).
+- V03.A34 (Amendment 3, R-909) record `step12/experiments/rc-step12-experiments.json` (`c8e9be63…`), written by
+  `tools/g11record.py.txt`: (a) exit 0; (b) 242 point-runs, 6 members incl. `attempts`, 0 differences
+  (`tools/g11equal.py.txt`); (c) the audit given step 12's own runs file: exit 0, the registered line, j = 420. Also:
+  S12.2/S12.3 (0.2.0's `s12_check.py.txt` against `6fec822`'s record) hold; the collected records are runs 1, 2 bound
+  to the re-run's runs file, per-run (label, path) multisets equal step 12's own (210 boundary, 32 direct).
+  Controls of `g11equal.py` on 0.2.0's committed records: passes unmodified; fails with one `stage` changed, one
+  `attempts` changed, two labels swapped, a member added on one side only, run 1 given twice, one record path changed.
+- DECISION: TMPDIR for the re-run → private `~/.cache/v03rc-tmp/wo7b/tmp` (brief rule; inert: G11's stores go to the
+  keep dir, step 12 used the default). Alternative: the default. Reversible by: deleting one `export` in
+  `run_g11keep.sh` and re-running.
+- DECISION: A34's record is written by a new tool `g11record.py` (t08_rc's `check`/`finish`, rc-step12.json's
+  provenance) rather than a step in `m07_rc_external.py` → the RC runner stays as it ran. Alternative: a step-12b in
+  `m07_rc_external.py`. Reversible by: moving the function.
+- RC record: step 12's data row cites the runs file; a new step-12 row (V03.A34) cites the six files; `records.json`
+  110 entries (two gzip); `rc_record_problems` → `[]`. F6: step 8's local cell now reads "served D_3 (c_3, R-295)
+  `455d01eb…`; strip c_3 → `383b4e2c…`" (`3970c35a`). F3: one bullet in `## v0.3.0` "What it is not" (`41b99a9b`).
+  F8: ADRs 0050–0052 Accepted (`fa8d4f0e`; rows in `docs/V03_DECISIONS.md`).
+- **Amendment 3 in the S13 generator** (§10.5 items 2, 4): V03.A34 = `step12/experiments/rc-step12-experiments.json`
+  through T08's `_record` (re-hashed against `records.json`) plus a measure requiring exactly A34's three ids, each
+  `pass`; A12 (c) decided by `a12c_decide` (a pure function of §7.1's facts) after R0, with R1 in a detached worktree
+  of HEAD (version line V_C → V_B, `--keep` under `artifacts/V03.A12c-aligned-keep/`, worktree removed after);
+  the three limitation texts verbatim (checked against the spec text). `s11_identity.py` not edited.
+  Controls (`tools/s13_controls.py.txt`, before the commit): 15 of 15 as expected — A12 (c) passes on a PASS-shaped
+  R0 with everything else broken and on the lines measured at C (R0 `n=54494 … (47 digests differ)`, R1
+  `n=54494 changed=[] (C branch shards [1, 3, 7, 11] exited non-zero)`, the five readers from
+  `~/.cache/v03rc-a12-keep/branch/`); fails on R0 key `A:`, R0 naming a failed shard, R1 with a changed key, R1
+  naming a base shard, n+1, a sixth id, four of five, a two-line numstat, V_C = V_B. A34 passes on the committed
+  record, fails with one check `fail`, with a fourth check, and without its `records.json` entry.
+- DECISION: when R0 passes, §7.1 says (c) passes "whatever else it is given" → the clean-tracked-files fact is
+  recorded but not required in that branch (the generator refuses a dirty tree before it runs anyway).
+  Alternative: require it in both branches. Reversible by: moving one line in `a12c_decide`.
+- DECISION: V03.A25 after WO-7, while the only ADR problems are 0053/0054 not Accepted (their §6 route is "at WO-8")
+  → `unsupported` with `state: pending`, not `fail` (extends WO-6's pending rule, which keyed on the verdict document's
+  absence; the WO-6 handoff's "A25–A27 unsupported until WO-7/8"). The first generation at `362e4763` gave A25 `fail`
+  on exactly those two. Controls: as is → unsupported; plus 0050 not Accepted → fail; plus a missing ADR → fail; no
+  problem → pass. `unsupported` is not a pass; the status stays `implemented`. Alternative: leave `fail` until WO-8.
+  Reversible by: reverting this commit (one `if` in `_m_adrs`).
+- **S13's manifest at C, generated at `4ac5b66c`** (`--gate-log gate-fe61ae9.log --ci-run 41108983463 --ci-run
+  41108983672`): `implemented`, 48 checks, 43 pass, 0 fail, 5 unsupported (pending): V03.A08 (step 18), A25 (0053,
+  0054 at WO-8), A27 (step 18), ADR.0053, ADR.0054. V03.A12 pass, `version_aligned`: R0 n = 54494, k = 47; R1
+  `n=54494 changed=[] (C branch shards [1, 3, 7, 11] exited non-zero)`; numstat one line; the five readers exactly.
+  V03.A34 pass (3 checks, 242/0, the registered audit line). Review fields `pending`; `t08.problems` none. The
+  first generation at `362e4763` differed only in A25 (`fail`; see the DECISION above).
+- Harvest controls with the manifest present (§10.5 item 5): `test_m07a_harvest.py` + `test_t08_w2_support_envelope.py`
+  44 passed with the exclusion; with `HARVEST_EXCLUDED = ()` 3 failed (`test_c4…`, `…harvest_size…`, `test_a21…`);
+  `t08_support_matrix.py --check` 0 problems with the exclusion. Manifest-scanning tests + `test_v03_v0_3_gate.py`:
+  766 passed, 1 skipped (`test_t08_w1_ledger.py:87`, "not in A02", registered).
+
+- DECISION (orchestrator, 2026-10-30): WO-7b's A25 choice (4ac5b66c, A25 `unsupported` while ADRs 0053/0054 are the only
+  problems) → ratified. Alternative: `fail` until WO-8 accepts them. Reversible by: revert 4ac5b66c, regenerate S13's
+  manifest. W21 re-judgement started (brief `V03-w21-rejudge-brief.md`, scratchpad).
+
+- 2026-10-31 (orchestrator): Frank's answers recorded 5cc63136 (all defaults, 2026-10-30); my table edit put four answers
+  in an extra cell (`||`, finding F10 of the re-judgement); fixed in the re-judgement commit, text and dates unchanged.
+  Re-judgement: 15 PASS, V14 (b) and X31 (c) FAIL accepted by D3, none BLOCKED. WO-8 engineer started (brief 9).
+
+## WO-8 at C = `a3e508e3` (2026-10-31, brief 9): the ledger, F9, and the stop on item 2/3
+
+- **The ledger** (`2b7fc98e`, V03.A26): X31 `verdict: null` → `FAIL`, from the verdicts (X31 (c), D3 row accepted
+  2026-10-30); evidence adds `evidence/S13/a3e508e3…/manifest.json`. V11–W26 already agreed with the document.
+  New `tests/test_v03_ledger.py` (pattern `test_m07_ledger.py`): 4 passed, 0 skipped at `2b7fc98e`. Controls: X31
+  null → 1 failed; S13 path dropped → 1 failed. With the other ledger tests (`test_requirements_ledger`,
+  `test_m07_ledger`, `test_m07a_ledger`, `test_t08_w1_ledger`): 45 passed, 1 skipped (`test_t08_w1_ledger.py:87`,
+  "not in A02", registered).
+- DECISION: the ledger's V03 evidence → X31 only cites S13 at C; the sixteen carried gates keep their 0.2.0 evidence.
+  Alternative: every claimed gate cites S13 at C (M07's O1 form). Reason: A26 names X31's verdict and evidence only,
+  and the re-judgement's item 2 names only X31. Reversible by: adding the path to sixteen entries and one test.
+- **F9's count** (whitespace-normalized, `## v0.3.0 — unreleased`, the four phrases of alpha §19.5 item 1):
+  at C = `a3e508e3` **0 of 4** (l.3–100; the statements were added after C by `41b99a9b`, outside D2.4);
+  at `df379b41` and `2b7fc98e` **4 of 4**, each exactly once (l.3–103); `awaits Frank's statement` 0 times.
+  To be counted again at the commit where step 18 runs for YES.
+- **Step 18 dry run at `2b7fc98e`**: `scripts/v0_3_gate.py --rc a3e508e35fc5451fe56fa7b70941621992d35b50` →
+  `v0.3.0 tag may be proposed: NO (3 reasons)`: S13's manifest `implemented`; ADR 0053 not Accepted; ADR 0054 not
+  Accepted. X31's ledger reason is gone.
+- **STOP (brief 9 item 2; spec §10.1 "an ADR condition in §6 is unmet").** The conditions are circular as written:
+  1. ADRs 0053/0054 become Accepted only when S13's manifest is `tested` (their status lines; §6).
+  2. S13 is `tested` only if every check passes (`status()`), including V03.A25 and ADR.0053/ADR.0054, which pass only
+     once 0053/0054 are Accepted (`_m_adrs`, `adr_checks`; pending = `unsupported`).
+  3. S13 is `tested` only if V03.A27 and A08's R part pass, which need step 18's log with the YES line (`_m_step18`,
+     `_self`; no `--step18-log` = `unsupported`).
+  4. Step 18 says YES only if S13 is `tested` (gate item 5, `manifest_problems`) and 0053/0054 are Accepted (item 12).
+  Loop 1–2 could be broken only by marking the ADRs before their condition holds; loop 3–4 cannot be broken at all
+  without fabricating a step-18 log. 0.2.0 had neither loop: M07's manifest did not judge step 18 ("not run by this
+  script", M07.A36's R part in the build log) nor gate item 12.
+- Proposed resolution (design lane to rule; not applied): S13's manifest judges A08's R part and A27's step-18 clause
+  from the build log, as M07.A36 was, and judges A25/ADR.0053/ADR.0054 on everything except the "at WO-8" route
+  (Frank's six cells, A01–A31 listed). Order: S13 `tested` → 0053, 0054 Accepted → step 18 YES → record. The final
+  state is a fixed point of the current generator (re-generated with `--step18-log` it stays `tested`), so the
+  amendment changes only the bootstrap order, no numerics and no D2.4 path.
+
+## WO-8 under Amendment 4 (2026-10-31, brief 10): §6.1's five steps
+
+- **Step 1 (commit G): the generator's rules (g1)–(g6)** in `scripts/s13_evidence_manifest.py` (docstring included):
+  A08 = its tests; A27 = `_self` (every other check `pass`, commands > 0); `_m_step18`, `Inputs.step18_log`,
+  `--step18-log` and `STEP18_YES` removed (the parser refuses the option, exit 2); A25 (a) admits only
+  `ADR 0053/0054 is not Accepted: ` for a `Status: Proposed` line (`at_wo8`); new `_m_policy` (the gate's `policy` over
+  ADR 0053, D3 dated ≥ `Judged`, ≥ `Re-judged` for a re-judged gate's clause) feeding ADR.0053 and A26; ADR.0053/0054
+  pass Proposed or Accepted on their other conditions (status, policy for 0053, catalogue range); `guard` (g4) before
+  `_self`; the two (g6) limitation sentences verbatim. `main` takes `argv` (for (c9)).
+- 4ac5b66c's rule (A25 `unsupported`/pending while only 0053/0054 are open, ratified 2026-10-30) is **superseded by
+  R-913** (g2): such a tree now gives A25 (a) `pass`, with the two problems in `at_wo8`.
+- **Controls** `tests/test_v03_s13_route.py`, (c1)–(c10): 13 passed (c5 three cases, c7 for 0053 and 0054). Mutation
+  checks, each restored: no Proposed check in A25 (a) → 1 failed; no D3 date rule → 1 failed; no guard → 2 failed;
+  `_self` without commands → 1 failed; A26 without `policy` → 2 failed; `Withdrawn` admitted → 1 failed.
+  With the manifest-scanning and ledger tests (`test_evidence_manifests`, `test_t05_manifests`,
+  `test_t07_evidence_manifest`, `test_t08_evidence_manifest`, `test_s01/s02/s06_evidence_manifest`,
+  `test_v03_v0_3_gate`, `test_v03_ledger`, `test_m07_ledger`, `test_m07a_ledger`, `test_requirements_ledger`,
+  `test_t08_w1_ledger`): 696 passed, 29 skipped (28 `test_t07_evidence_manifest.py`, pre-0.1.0 history archived,
+  R-150; 1 `test_t08_w1_ledger.py:87`, "not in A02", registered). ruff check and format clean.
+- DECISION: a D3 cell of ADR 0053 that is not an acceptance (`_m_policy`) → `fail`, like one dated too early.
+  Alternative: judge only the dates of cells that are acceptances (the gate refuses a non-accepted clause only where a
+  FAIL names it). Reason: ADR 0053's own condition is "every cell starts `accepted, YYYY-MM-DD`". Reversible by: one
+  `date is None or` in `_m_policy`.
+- **Step 2 (H1 = `9e998beb`): S13's manifest regenerated at G = `04c503e5`** (clean tree; `PYTHONPATH=src:.
+  python scripts/s13_evidence_manifest.py --commit a3e508e35fc5451fe56fa7b70941621992d35b50 --gate-log
+  gate-fe61ae9.log --ci-run 41108983463 --ci-run 41108983672`, 4ecfc162's arguments, main `.venv` python, private
+  `--tmp` under `~/.cache/v03rc-tmp`): `S13 tested a3e508e3: 48 checks, 48 pass, 0 fail, 0 unsupported`; exit 0;
+  `t08.problems` none. Against 4ecfc162's: A08, A25, A27, ADR.0053, ADR.0054 `unsupported` → `pass`; every other
+  result unchanged, values differing only in test timings and `judged_at`. ADR.0053/0054 `status: Proposed`, ranges
+  complete; A25 (a) `at_wo8` = the two problems; A26 `policy` D3 V14 (b), X31 (c), `frank` [] ; A27 47 others, 41
+  commands. Review fields `pending`. SHA-256 `3e3d0b3d8228b7c0dba61d123c75894664f5ff7048a54075f41f7371f6098eb4`.
+- **Step 3 (H2 = `e55f9efd`)**: precondition at H1 checked (`tested`, 48/48 `pass`, the SHA-256 above); ADR 0053 and
+  0054 Status paragraphs from §6.1's templates (date 2026-10-31, G `04c503e5`, H1 `9e998beb`, `3e3d0b3d…`); nothing
+  else in either ADR. Tests reading `docs/adr/` plus the route and gate tests at H2: 855 passed.
+- **Step 4: step 18 at H2** (HEAD = `e55f9efd`, clean): `PYTHONPATH=src .venv/bin/python scripts/v0_3_gate.py --rc
+  a3e508e35fc5451fe56fa7b70941621992d35b50` (main `.venv` python) → exit 0; log
+  `evidence/S13/a3e508e3…/artifacts/step18-H2.log` (git-ignored), SHA-256
+  `ad31dc6b1fc1632a0b6847860a6ea3fb62b4c92c31fe22ae39c56b7d2e3bbbfb`; last line
+  **`v0.3.0 tag may be proposed: YES`**. Items: tree equal to C; RC record passed; manifests tested; envelope pinned;
+  ADRs every one Accepted; Frank's answers every one accepted.
+- A08's R part (grammar script, one line): `A08-R PASS: first line §2.2's (candidate e55f9efd); 18 gate rows (17
+  claimed in order, then W27 not claimed (v0.3-gate-v1)); non-PASS rows: V14=FAIL X31=FAIL; last line 'v0.3.0 tag may
+  be proposed: YES'`. (The same script on the 2b7fc98e dry run fails on its last line only.)
+- F9 at H2 (`## v0.3.0 — unreleased`, l.3–103): **4 of 4**, each phrase exactly once; `awaits Frank's statement` 0.
+- H3 touches only this file and `docs/progress.md`; the manifest is not regenerated. Next: hand to Frank for the tag.

@@ -916,11 +916,17 @@ gates:
     # rule: "met where available, 3 of 4" (RC1 and RC2 three references, RC3 two, RC4 one: BioSTEAM). S03's verdict
     # above stands as the two-tool outcome ("not met, 2 of 4"). The status and verdict fields are not moved by this
     # citation; whether a release accepts "met where available" is outside S09 (spec §8.5). S09's manifest `evidence/S09/4d4df087...` (`tested`) is cited below.
-    verdict: null
+    #
+    # 0.3.0 (V03 spec §3.2, V03.A26; WO-8): `docs/reviews/V03-verdicts.md` at C = `a3e508e3` judges X31 FAIL on clause
+    # X31 (c): S09's three-tool outcome "met where available, 3 of 4" (RC4 has one independent reference, BioSTEAM) is
+    # the registered failure of the reference clause; (a) and (b) are green in step 1 on both architectures. Releasable
+    # by ADR 0053's D3 row `X31 (c)` (Frank, `accepted, 2026-10-30`). V03's manifest at C (S13) is cited below.
+    verdict: FAIL
     evidence:
       - evidence/S03/930aad1b162d0dc27276e64a5b67ce857a7cdf97/manifest.json
       - evidence/S08/6d7d1a6dbc3de166fe5dfd44715cf83031a9c843/manifest.json
       - evidence/S09/4d4df0875557cb53bcb0c267ad3a82de38c7d694/manifest.json
+      - evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/manifest.json
 
   - id: X41
     required_evidence: "v1 counts, robustness, independent reproduction/extension and stable governance/workbench"

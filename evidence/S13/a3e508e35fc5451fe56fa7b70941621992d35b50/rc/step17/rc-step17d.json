@@ -1,0 +1,96 @@
+{
+ "checks": [
+  {
+   "exit_code": 0,
+   "id": "a22.17d.lca_run",
+   "junit": {
+    "failed": 0,
+    "passed": 44,
+    "skipped": 0
+   },
+   "junit_sha256": "9895952ca4da3361ae10e5d7f06145fe36694407bbc7b752ac46184d9126fc28",
+   "result": "pass"
+  },
+  {
+   "environment": "lca",
+   "id": "a22.17d.a24",
+   "nodes": {
+    "tests/test_e01_b_brightway.py::test_a24_the_adapter_reproduces_the_hand_unit_scores": "passed",
+    "tests/test_e01_b_brightway.py::test_the_float64_assembly_is_brightways_own_matrices_unrounded": "passed"
+   },
+   "result": "pass"
+  },
+  {
+   "environment": "lca",
+   "id": "a22.17d.a25",
+   "nodes": {
+    "tests/test_e01_b_brightway.py::test_foreground_check_on_p4_against_the_b4_expectation": "passed",
+    "tests/test_e01_b_brightway.py::test_foreground_check_reproduces_the_hand_superposition": "passed",
+    "tests/test_e01_b_cost_hand.py::test_a25_the_p4_rate_against_brightways_score": "passed",
+    "tests/test_e01_b_lca.py::test_p4_matches_the_hand_superposition": "passed"
+   },
+   "result": "pass"
+  },
+  {
+   "exit_code": 0,
+   "id": "a22.17d.nlp_run",
+   "junit": {
+    "failed": 0,
+    "passed": 27,
+    "skipped": 0
+   },
+   "junit_sha256": "ef005e5541fb211deb99a0d20bdb347d34f04ef8814be496841b39c18643fec1",
+   "result": "pass"
+  },
+  {
+   "environment": "nlp",
+   "id": "a22.17d.a33",
+   "nodes": {
+    "tests/test_e01_integration.py::test_a33_a34_p2_tac_objective_from_every_start": "passed",
+    "tests/test_e01_integration.py::test_a33_m03_starts_0_and_1_are_infeasible_for_recovery": "passed"
+   },
+   "result": "pass"
+  },
+  {
+   "environment": "nlp",
+   "id": "a22.17d.a34",
+   "nodes": {
+    "tests/test_e01_integration.py::test_a33_a34_p2_tac_objective_from_every_start": "passed"
+   },
+   "result": "pass"
+  },
+  {
+   "environment": "nlp",
+   "id": "a22.17d.a35",
+   "nodes": {
+    "tests/test_e01_b_nlp.py::test_a35_without_an_assessment_the_model_is_m03s": "passed"
+   },
+   "result": "pass"
+  },
+  {
+   "environment": "nlp",
+   "id": "a22.17d.a36",
+   "nodes": {
+    "tests/test_e01_integration.py::test_a36_a_drum_stream_held_dormant_that_flows_at_x_sim_is_not_verified": "passed"
+   },
+   "result": "pass"
+  }
+ ],
+ "format": "t08-rc-v1",
+ "passed": true,
+ "provenance": {
+  "architecture": "x86_64",
+  "commit": "a3e508e35fc5451fe56fa7b70941621992d35b50",
+  "environment_lock_sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4",
+  "github_actions": false,
+  "machine_class": "ref-x86-64",
+  "python": "3.13.5",
+  "threads": {
+   "MKL_NUM_THREADS": "1",
+   "OMP_NUM_THREADS": "1",
+   "OPENBLAS_NUM_THREADS": "1"
+  },
+  "tree_clean": true
+ },
+ "step": "17d"
+}

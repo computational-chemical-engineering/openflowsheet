@@ -417,6 +417,7 @@ def test_a40_the_s4_check_can_fail() -> None:
     record = json.loads(S4_RECORD.read_bytes())
     built = json.loads(S4_RECORD.read_bytes())
     built["snapshot"]["git_commit"] = "0" * 40
+    built["snapshot"]["package_version"] = "9.9.9"  # build provenance (R-902), not compared
     assert s11_w27_s4.problems(record, built) == []
     built["snapshot"]["routes"] = built["snapshot"]["routes"][1:]
     built["development"]["tally"]["classes"]["CANDIDATE"] += 1

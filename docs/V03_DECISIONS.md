@@ -94,8 +94,8 @@ commit. Questions for the design lane are under "Open questions"; measurements u
 | 0047 | WO-S10-1/2 manifest `tested` covering A01–A28; `s10_reference.py --check`; reviewer passed | `evidence/S10/c4f3751e…` (A01–A45 pass); `--check` at `wp/V03`: "113 claims hold; reference_values.yaml matches", exit 0 (again at C by the RC); `docs/reviews/S10-review-wo1-wo2.md`, `S10-review-final.md` | met → **Accepted** |
 | 0048 | manifest `tested`; G1, G2; full gate and CI at merge; reviewer read the ADR | `evidence/S08/6d7d1a6d…` (G1, G2 pass); merge `d96c17ae`: gate PASS `f5565a34` 12356/3137, CI 40248543872 green both architectures; `docs/reviews/S08-review.md` | met → **Accepted** |
 | 0049 | manifest `tested` with G1–G9; reviewer passed WO-1…4 | `evidence/S10c/2aedd250…`, `8f38f963…` (G1, G1-flowsheets, G2, G-R3, G-R7; G3 by A60/A61; G9 in WO-4); merge `8654aabc` gate PASS 13249/3137, CI 40315691647; `docs/reviews/S10C-review.md` (must-fix F1 carried by A60/A61). G3–G8 are the S10-C specification's assertions S10C.A01–A61 (spec §6), all `pass` in `2aedd250…`. | met → **Accepted** |
-| 0050, 0051 | Accepted **after** V03.A24 holds at C | — | not yet: stays Proposed until C |
-| 0052 | after E01's merge (`05363060`) and V03.A24 | E01 merged | not yet: V03.A24 is at C |
+| 0050, 0051 | Accepted **after** V03.A24 holds at C; S13's manifest records `S11.G8` pass | C = `a3e508e3`: CI dispatch 41108983463 and push 41108983672 `success` (`check` on both architectures, `rc-coolprop` on both in the dispatch); THM-09/4 rows copied (`0b112d13`); S13 generator at C: V03.A24 and `S11.G8` pass (`docs/V03_RC_DECISIONS.md`, the RC run); verdict F8 (`docs/reviews/V03-verdicts.md`) | met → **Accepted** (WO-7b, checked 2026-10-30) |
+| 0052 | after E01's merge (`05363060`) and V03.A24 | E01 merged; V03.A24 at C as on the row above; verdict F8 | met → **Accepted** (WO-7b, checked 2026-10-30) |
 | 0043 | stays Proposed | — | unchanged |
 | 0053, 0054 | at WO-8 | — | unchanged |
 

@@ -1,0 +1,105 @@
+"""M07 WO-8d (W21 (e), R-375): one record per G11 run of the experiment records g11keep.py kept.
+
+    python g11collect.py <keep-dir> <runs.json> <out-dir>     (from the RC worktree at C')
+
+For run k (`<keep-dir>/run<k>/`, the k-th entry of `<runs.json>`), writes
+`<out-dir>/g11-experiments-run<k>.json`: the RC provenance block (`t08_rc.provenance()` and
+`machine_class()`, as every step-12 record), and for each point of the run, in the run's order,
+its label, its path (`boundary` or `direct`) and, for a boundary point, every experiment of its
+store (`records/experiments/<xx>/<key>/`): `request.json`, `result.json` (null when absent) and
+`attempts/<n>.json` in attempt order, embedded as parsed, with each file's sha256 over its bytes.
+A direct point evaluates through the backend without a store (G11's `run_point`), so it has no
+experiment records (`experiments` null). Logs, handshakes and caches are not records and are not
+copied. Exits non-zero if a run's points and its kept directories differ.
+"""
+
+from __future__ import annotations
+
+import hashlib
+import json
+import sys
+from pathlib import Path
+from typing import Any
+
+sys.path.insert(0, str(Path("scripts").resolve()))
+import t08_rc  # noqa: E402
+
+PREFIX = "m02-g11v3-"
+
+
+def sha256(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def experiment(directory: Path, store: Path) -> dict[str, Any]:
+    names = ["request.json", "result.json"] + [
+        f"attempts/{p.name}"
+        for p in sorted((directory / "attempts").glob("*.json"), key=lambda p: int(p.stem))
+    ]
+    files = {
+        (directory / name).relative_to(store).as_posix(): sha256(directory / name)
+        for name in names
+        if (directory / name).is_file()
+    }
+    result = directory / "result.json"
+    return {
+        "experiment_key": directory.name,
+        "files": files,
+        "request": json.loads((directory / "request.json").read_text(encoding="utf-8")),
+        "result": json.loads(result.read_text(encoding="utf-8")) if result.is_file() else None,
+        "attempts": [
+            json.loads((directory / name).read_text(encoding="utf-8"))
+            for name in names
+            if name.startswith("attempts/")
+        ],
+    }
+
+
+def main() -> int:
+    keep, runs_path, out = (Path(p).resolve() for p in sys.argv[1:4])
+    runs = json.loads(runs_path.read_text(encoding="utf-8"))
+    provenance = {**t08_rc.provenance(), "machine_class": t08_rc.machine_class()}
+    status = 0
+    for k, run in enumerate(runs, start=1):
+        root = keep / f"run{k}"
+        kept = {p.name[len(PREFIX) :] for p in root.iterdir() if p.is_dir()}
+        labels = [p["label"] for p in run]
+        if kept != set(labels) or len(labels) != len(set(labels)):
+            print(f"run {k}: kept {len(kept)} directories, run has {len(labels)} points")
+            status = 1
+            continue
+        points = []
+        for point in run:
+            entry: dict[str, Any] = {"label": point["label"], "path": point["path"]}
+            if point["path"] == "boundary":
+                store = root / f"{PREFIX}{point['label']}" / "records"
+                entry["experiments"] = [
+                    experiment(d, store)
+                    for d in sorted((store / "experiments").glob("??/*"))
+                    if (d / "request.json").is_file()
+                ]
+            else:
+                entry["experiments"] = None
+            points.append(entry)
+        record = {
+            "format": "m07-g11-experiments-v1",
+            "description": "G11's experiment records of one run at C', kept by tools/g11keep.py.txt "
+            "and collected by tools/g11collect.py.txt (W21 (e), R-375, V02 alpha spec §19.6 A6)",
+            "provenance": provenance,
+            "run": k,
+            "runs_file_sha256": sha256(runs_path),
+            "points": points,
+        }
+        target = out / f"g11-experiments-run{k}.json"
+        target.write_text(json.dumps(record, indent=1, ensure_ascii=False) + "\n", "utf-8")
+        boundary = [p for p in points if p["experiments"] is not None]
+        print(
+            f"run {k}: {len(points)} points, {len(boundary)} boundary, "
+            f"{sum(len(p['experiments']) for p in boundary)} experiments, "
+            f"{target.stat().st_size} bytes"
+        )
+    return status
+
+
+if __name__ == "__main__":
+    sys.exit(main())

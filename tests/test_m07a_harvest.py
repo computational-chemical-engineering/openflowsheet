@@ -7,7 +7,8 @@ limitations and 2 non-pass checks are classified E/S/P/B with pointers like ever
 manifest, which is written after `C_α` (R-320), and `evidence/M07/`, M07's own, which is written
 after C′; both belong to the next harvest (R-485). Those assertions about `C_α`, C′ and the
 0.2.0 tag stand as history. After 0.2.0 the next harvest (C4) reads M07a's three manifests and
-M07's, and `HARVEST_EXCLUDED` is empty. The harvest's size is held
+M07's. At 0.3.0 `HARVEST_EXCLUDED` names `evidence/S13/`, S13's own manifest, written after 0.3.0's
+C (R-911), as R-485 excluded M07's from 0.2.0's harvest. The harvest's size is held
 equal to `HARVEST_SIZE`, which M07a's manifest quotes at `C_α` (MR-5); a new manifest moves it,
 and this test with it.
 
@@ -66,6 +67,9 @@ HARVEST_SIZE = (66, 928, 120)
 C_PRIME = "ce993651ce37c1343e771b276160bd6623e43500"
 #: The commit tagged v0.2.0.
 TAG_0_2_0 = "5c82b4cc40dd4fefd3dbce45352910006e5dee13"
+#: 0.3.0's release candidate C (V03 spec §4) and S13a's manifest, harvested (R-911).
+C_0_3_0 = "a3e508e35fc5451fe56fa7b70941621992d35b50"
+S13A_MANIFEST = "evidence/S13a/0ce3748a7a473950a295e2668201fb96c44d0ec1/manifest.json"
 #: What the post-0.2.0 harvest adds per directory: (manifests, limitations, non-pass checks).
 DEFERRED_BY_R485 = {"evidence/M07a/": (3, 24, 18), "evidence/M07/": (1, 4, 0)}
 
@@ -137,8 +141,9 @@ def test_m07a_a50_nothing_is_excluded_from_the_harvest_at_c_alpha() -> None:
 
 def test_c4_the_post_0_2_0_harvest_reads_m07a_and_m07() -> None:
     """R-485's next harvest (C4): nothing is excluded, and every item of the manifests R-485
-    deferred is in the harvest and classified once in the envelope."""
-    assert matrix.HARVEST_EXCLUDED == ()
+    deferred is in the harvest and classified once in the envelope. Only S13's own directory is
+    excluded (R-911)."""
+    assert matrix.HARVEST_EXCLUDED == ("evidence/S13/",)
     items = matrix.harvest_items()
     classified = [(entry["manifest"], entry["item"]) for entry in matrix.load()["harvest"]]
     for directory, size in DEFERRED_BY_R485.items():
@@ -147,6 +152,22 @@ def test_c4_the_post_0_2_0_harvest_reads_m07a_and_m07() -> None:
         found = (len({path for path, _ in deferred}), kinds["limitations"], kinds["checks"])
         assert found == size, directory
         assert all(classified.count(key) == 1 for key in deferred), directory
+
+
+def test_r911_s13s_manifest_is_excluded_and_nothing_else() -> None:
+    """R-911: 0.3.0's C holds no file under `evidence/S13/`; the exclusion removes only S13's own
+    manifests (`evidence/S13/<40 hex>/manifest.json`); S13a's manifest is still harvested."""
+    listed = subprocess.run(
+        ["git", "ls-tree", "-r", "--name-only", C_0_3_0, "--", "evidence/S13/"],
+        cwd=REPO_ROOT,
+        capture_output=True,
+        text=True,
+        check=True,
+    ).stdout
+    assert listed == "", listed
+    excluded = [path for path in matrix._manifests() if path.startswith(matrix.HARVEST_EXCLUDED)]
+    assert all(re.fullmatch(r"evidence/S13/[0-9a-f]{40}/manifest\.json", path) for path in excluded)
+    assert S13A_MANIFEST in {path for path, _ in matrix.harvest_items()}
 
 
 def test_m07a_a50_t08s_manifest_is_harvested_in_full() -> None:

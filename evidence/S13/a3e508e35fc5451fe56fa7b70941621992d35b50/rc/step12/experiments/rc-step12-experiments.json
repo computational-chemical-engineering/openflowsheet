@@ -1,0 +1,59 @@
+{
+ "checks": [
+  {
+   "command": "tools/run_g11keep.sh (step12-g11's command through tools/g11keep.py.txt)",
+   "exit_code": 0,
+   "id": "r375.g11_rerun",
+   "result": "pass",
+   "wall_s": 1758
+  },
+  {
+   "differences": 0,
+   "equal_exit_code": 0,
+   "equal_output": [
+    "(1) point-runs compared 242, fields ('stage', 'accepted', 'child_accepted', 'tube_outlet', 'path', 'attempts'), differences 0",
+    "(2a) collected records are runs 1..2 in order, bound to the re-run's runs file: True",
+    "(2) per-run (label, path) multiset equal True: {'boundary': 210, 'direct': 32}; boundary results 210; shape problems 0"
+   ],
+   "id": "r375.same_computation",
+   "members": [
+    "stage",
+    "accepted",
+    "child_accepted",
+    "tube_outlet",
+    "path",
+    "attempts"
+   ],
+   "point_runs": 242,
+   "rerun_runs_sha256": "cf7ed7415a6a4e805592743a069e5957877131fbe435c75018b0119088cacab8",
+   "result": "pass",
+   "step12_runs_sha256": "cdb7d9993327cd48543212c37063421fa9c82232dd05b356e1609335fce6fd0a"
+  },
+  {
+   "command": "python scripts/m07_g11_experiments_audit.py --variant-file benchmarks/m02/variant-v3-provisional.json --runs <rc>/step12/g11-coverage-v3.runs.json --out <rc>/step12/experiments/g11-experiments-audit.json <rc>/step12/experiments/g11-experiments-run1.json <rc>/step12/experiments/g11-experiments-run2.json",
+   "exit_code": 0,
+   "id": "r375.audit",
+   "job_id_findings": 420,
+   "last_line": "G11 experiments audit: 2 runs, 210 boundary points, 210 results, 210 attempts, 0 without a result, 32 direct points (no records); 6 items + schema: 0 problems; context (job_id): 420 findings: PASS",
+   "result": "pass",
+   "runs_file": "step12/g11-coverage-v3.runs.json"
+  }
+ ],
+ "format": "t08-rc-v1",
+ "passed": true,
+ "provenance": {
+  "architecture": "x86_64",
+  "commit": "a3e508e35fc5451fe56fa7b70941621992d35b50",
+  "environment_lock_sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4",
+  "github_actions": false,
+  "machine_class": "ref-x86-64",
+  "python": "3.13.5",
+  "threads": {
+   "MKL_NUM_THREADS": "1",
+   "OMP_NUM_THREADS": "1",
+   "OPENBLAS_NUM_THREADS": "1"
+  },
+  "tree_clean": true
+ },
+ "step": "g11-keep-and-audit"
+}

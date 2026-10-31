@@ -1,0 +1,14 @@
+tests/test_s07_broad.py
+tests/test_s07_coolprop.py
+tests/test_s07_near_critical.py
+tests/test_s07_packaging.py
+tests/test_s07_registration.py
+tests/test_s11_bases.py
+tests/test_s11_routing.py
+tests/test_s11_thermal_binding.py
+tests/test_s11_thermal_kernel.py
+tests/test_s11_thermal_machines.py
+tests/test_s11_thermal_solve.py
+tests/test_s11_thermal_units.py
+tests/test_s11_verifier_forms.py
+tests/test_s11_w27_v3.py

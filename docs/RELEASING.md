@@ -116,7 +116,8 @@ input at C (`git show`). The steps follow `0.2.0a1`'s ([Pre-releases](#pre-relea
    `evidence/S13/<C>/manifest.json`, the verdicts, the ledger and the `## v0.3.0` section of `CHANGELOG.md`. C is
    merged into `main` with a merge commit, never squashed.
 3. The RC job runs at C: steps 1–17 (step 17b is CI's `rc-coolprop` job, the CoolProp tests with
-   `requirements-coolprop.lock` installed), then
+   `requirements-coolprop.lock` installed; step 12 keeps G11's experiment results and audits them, as every release
+   from 0.3.0 does, R-375 and R-909), then
 
    ```sh
    PYTHONPATH=src .venv/bin/python scripts/v0_3_gate.py --rc <C>

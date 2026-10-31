@@ -1,0 +1,78 @@
+"""V03 WO-7b (W21 (e), verdict finding F1, step 5): the G11 keep re-run is step 12's computation.
+
+    python g11equal.py <step 12's runs file> <the re-run's runs file> <run1.json> <run2.json> ...
+
+(1) Over every point-run (run k, label), `stage`, `accepted`, `child_accepted`, `tube_outlet`, `path` and `attempts`
+of the re-run equal step 12's original runs file exactly (JSON equality, a member on one side only differs; same
+run count, the same labels in the same order per run; V03.A34 (b), R-909).
+(2) Each collected record is run k in order and bound to the re-run's runs file (sha256), and the per-run
+(label, path) multiset of the collected records (g11collect.py's `g11-experiments-run<k>.json`) equals
+step 12's original runs file's, and every boundary point carries exactly one experiment with a result, every direct
+point none (V02 verdict W21 (e) item 3: the denominator is fixed by the record written before the re-run, not by
+the collector). Prints one line per check and a summary; exits non-zero on any difference.
+"""
+
+from __future__ import annotations
+
+import collections
+import gzip
+import hashlib
+import json
+import sys
+from pathlib import Path
+
+FIELDS = ("stage", "accepted", "child_accepted", "tube_outlet", "path", "attempts")
+ABSENT = object()
+
+
+def load(path: str) -> object:
+    raw = Path(path).read_bytes()
+    return json.loads(gzip.decompress(raw) if path.endswith(".gz") else raw)
+
+
+def main() -> int:
+    original, rerun = load(sys.argv[1]), load(sys.argv[2])
+    collected = [load(p) for p in sys.argv[3:]]
+    bad = 0
+    if len(original) != len(rerun) or len(collected) != len(original):
+        print(f"run counts differ: original {len(original)}, re-run {len(rerun)}, collected {len(collected)}")
+        return 1
+    compared = 0
+    for k, (a, b) in enumerate(zip(original, rerun), start=1):
+        pa, pb = {p["label"]: p for p in a}, {p["label"]: p for p in b}
+        if [p["label"] for p in a] != [p["label"] for p in b] or len(pa) != len(a):
+            print(f"run {k}: label sets differ ({len(pa)} vs {len(pb)})")
+            bad += 1
+            continue
+        for label in pa:
+            compared += 1
+            for field in FIELDS:
+                x, y = pa[label].get(field, ABSENT), pb[label].get(field, ABSENT)
+                if x is not y and x != y:  # a member present on one side only is a difference
+                    bad += 1
+                    print(f"run {k} {label} {field}: {x!r} != {y!r}")
+    print(f"(1) point-runs compared {compared}, fields {FIELDS}, differences {bad}")
+    rerun_sha = hashlib.sha256(Path(sys.argv[2]).read_bytes()).hexdigest()
+    bound = [rec.get("run") == k and rec.get("runs_file_sha256") == rerun_sha for k, rec in enumerate(collected, 1)]
+    print(f"(2a) collected records are runs 1..{len(collected)} in order, bound to the re-run's runs file: {all(bound)}")
+    want = collections.Counter((k, p["label"], p["path"]) for k, run in enumerate(original, 1) for p in run)
+    got = collections.Counter((k, p["label"], p["path"]) for k, rec in enumerate(collected, 1) for p in rec["points"])
+    paths = collections.Counter(path for _, _, path in got.elements())
+    shape = 0
+    results = 0
+    for rec in collected:
+        for p in rec["points"]:
+            ex = p["experiments"]
+            if p["path"] == "direct":
+                shape += ex is not None
+            else:
+                ok = ex is not None and len(ex) == 1 and ex[0]["result"] is not None
+                shape += not ok
+                results += bool(ok)
+    multiset = want == got
+    print(f"(2) per-run (label, path) multiset equal {multiset}: {dict(paths)}; boundary results {results}; shape problems {shape}")
+    return 0 if bad == 0 and all(bound) and multiset and shape == 0 else 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())

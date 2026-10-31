@@ -1,0 +1,4 @@
+wrote /home/runner/work/_temp/rc/a30/a30-inventory-x86_64.json (322561 bytes) and /home/runner/work/_temp/rc/a30/t08-a30-x86_64.json
+x86_64: 381 objects in 8 compiled distributions (casadi, cffi, cryptography, numpy, pydantic-core, pyyaml, rpds-py, scipy); required closure 150
+A30 PASS: {'undispositioned_in_required_closure': [], 'metis_reached_from_project_paths': [], 'pass': True}
+a30 exit status 0

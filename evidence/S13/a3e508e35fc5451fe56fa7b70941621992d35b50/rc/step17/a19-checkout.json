@@ -1,0 +1,499 @@
+{
+ "c": {
+  "A12": {
+   "evaluate_phase": {
+    "LIQUID": {
+     "achieved_accuracy": "exact-double",
+     "derivatives": {
+      "h": {
+       "P": "0x0.0p+0",
+       "T": "0x1.4b6aa53d8f348p+6",
+       "n_C2H5OH": "-0x1.abadc3f991740p+12",
+       "n_CH3OH": "0x1.ce18f687cd108p+14",
+       "n_H2O": "-0x1.0a6224270e870p+14"
+      },
+      "lnphi_C2H5OH": {
+       "P": "-0x1.4b2810264829ap-17",
+       "T": "0x1.469c2b790ab98p-5",
+       "n_C2H5OH": "-0x1.afa760380189cp-2",
+       "n_CH3OH": "-0x1.1c7b13b00bc70p-2",
+       "n_H2O": "0x1.0c8ceb7704fe4p-1"
+      },
+      "lnphi_CH3OH": {
+       "P": "-0x1.4b2810264829ap-17",
+       "T": "0x1.297875d4e212bp-5",
+       "n_C2H5OH": "-0x1.1c7b13b00bc70p-2",
+       "n_CH3OH": "0x1.c610f7dd62f80p-4",
+       "n_H2O": "0x1.007240950c8d0p-3"
+      },
+      "lnphi_H2O": {
+       "P": "-0x1.4b2810264829ap-17",
+       "T": "0x1.5298dc9422645p-5",
+       "n_C2H5OH": "0x1.0c8ceb7704fe4p-1",
+       "n_CH3OH": "0x1.007240950c8d0p-3",
+       "n_H2O": "-0x1.f2fe396a6c324p-2"
+      }
+     },
+     "message": "",
+     "phase_signature": "LIQUID",
+     "provider_id": "wilson-ig-v1",
+     "reference_convention": "WILSON-IG-ref-v1",
+     "status": "ok",
+     "values": {
+      "h": "-0x1.02e959ce757e6p+18",
+      "lnphi_C2H5OH": "0x1.1a48c8b8950c0p-3",
+      "lnphi_CH3OH": "0x1.ca4ecfbbd8360p-2",
+      "lnphi_H2O": "-0x1.0bd5ee667c080p-1"
+     }
+    },
+    "VAPOR": {
+     "achieved_accuracy": "exact-double",
+     "derivatives": {
+      "h": {
+       "P": "0x0.0p+0",
+       "T": "0x1.8e28185c7f7f8p+5",
+       "n_C2H5OH": "-0x1.8d01f73c68d20p+12",
+       "n_CH3OH": "0x1.9d281d699c6e0p+14",
+       "n_H2O": "-0x1.d6db6f67c3580p+13"
+      },
+      "lnphi_C2H5OH": {
+       "P": "0x0.0p+0",
+       "T": "0x0.0p+0",
+       "n_C2H5OH": "0x0.0p+0",
+       "n_CH3OH": "0x0.0p+0",
+       "n_H2O": "0x0.0p+0"
+      },
+      "lnphi_CH3OH": {
+       "P": "0x0.0p+0",
+       "T": "0x0.0p+0",
+       "n_C2H5OH": "0x0.0p+0",
+       "n_CH3OH": "0x0.0p+0",
+       "n_H2O": "0x0.0p+0"
+      },
+      "lnphi_H2O": {
+       "P": "0x0.0p+0",
+       "T": "0x0.0p+0",
+       "n_C2H5OH": "0x0.0p+0",
+       "n_CH3OH": "0x0.0p+0",
+       "n_H2O": "0x0.0p+0"
+      }
+     },
+     "message": "",
+     "phase_signature": "VAPOR",
+     "provider_id": "wilson-ig-v1",
+     "reference_convention": "WILSON-IG-ref-v1",
+     "status": "ok",
+     "values": {
+      "h": "-0x1.b77826db1e23ep+17",
+      "lnphi_C2H5OH": "0x0.0p+0",
+      "lnphi_CH3OH": "0x0.0p+0",
+      "lnphi_H2O": "0x0.0p+0"
+     }
+    }
+   },
+   "flash": {
+    "achieved_accuracy": "exact-double",
+    "iterations": 73,
+    "k_values": {
+     "C2H5OH": "0x1.3ba1fc1428e84p+0",
+     "CH3OH": "0x1.95dd67ffdb798p+0",
+     "H2O": "0x1.1f20ed0e13b48p-1"
+    },
+    "liquid": {
+     "n": [
+      "0x1.41d667d5d9859p-3",
+      "0x1.67f13e1a1b558p-3",
+      "0x1.35f0798297ea1p-2"
+     ],
+     "pressure": "0x1.8bcd000000000p+16",
+     "temperature": "0x1.5e00000000000p+8"
+    },
+    "message": "stability: STABLE_WITHIN_TESTED_SCOPE; scope: S10-tpd-v1; tm_vapour_trial: -0.050753773584271134; tm_liquid_trial: -0.18153755720612685; fugacity_residual: 6.039613253960852e-14",
+    "phase_signature": "TWO_PHASE",
+    "provider_id": "wilson-ig-v1",
+    "reference_convention": "WILSON-IG-ref-v1",
+    "status": "ok",
+    "vapor": {
+     "n": [
+      "0x1.248ffe908ce0cp-3",
+      "0x1.fcea50989621dp-4",
+      "0x1.8ea4805c06be2p-4"
+     ],
+     "pressure": "0x1.8bcd000000000p+16",
+     "temperature": "0x1.5e00000000000p+8"
+    },
+    "vapor_fraction": "0x1.752bb3856da86p-2"
+   }
+  },
+  "RE1": {
+   "evaluate_phase": {
+    "LIQUID": {
+     "achieved_accuracy": "exact-double",
+     "derivatives": {
+      "h": {
+       "P": "0x0.0p+0",
+       "T": "0x1.3a2b207edc551p+6",
+       "n_C2H5OH": "-0x1.6be4af82e6fc0p+11",
+       "n_CH3OH": "0x1.de0b3ba577ae8p+13",
+       "n_H2O": "-0x1.f4dfbe12c7d20p+12"
+      },
+      "lnphi_C2H5OH": {
+       "P": "-0x1.4b2810264829ap-17",
+       "T": "0x1.469c2b790ab98p-5",
+       "n_C2H5OH": "-0x1.62182f098451ap-2",
+       "n_CH3OH": "-0x1.0a804455b4a1ep-2",
+       "n_H2O": "0x1.2d89d56a6e1b6p-2"
+      },
+      "lnphi_CH3OH": {
+       "P": "-0x1.4b2810264829ap-17",
+       "T": "0x1.297875d4e212bp-5",
+       "n_C2H5OH": "-0x1.0a804455b4a20p-2",
+       "n_CH3OH": "-0x1.29601b09eb480p-7",
+       "n_H2O": "0x1.c0b46f5d12a88p-4"
+      },
+      "lnphi_H2O": {
+       "P": "-0x1.4b2810264829ap-17",
+       "T": "0x1.5298dc9422645p-5",
+       "n_C2H5OH": "0x1.2d89d56a6e1b5p-2",
+       "n_CH3OH": "0x1.c0b46f5d12a88p-4",
+       "n_H2O": "-0x1.77d798f110e20p-3"
+      }
+     },
+     "message": "",
+     "phase_signature": "LIQUID",
+     "provider_id": "wilson-ig-v1",
+     "reference_convention": "WILSON-IG-ref-v1",
+     "status": "ok",
+     "values": {
+      "h": "-0x1.03e87e2050284p+18",
+      "lnphi_C2H5OH": "0x1.fcc2465e66100p-3",
+      "lnphi_CH3OH": "0x1.01fd2b272f340p-1",
+      "lnphi_H2O": "-0x1.3e4007ab23400p-1"
+     }
+    },
+    "VAPOR": {
+     "achieved_accuracy": "exact-double",
+     "derivatives": {
+      "h": {
+       "P": "0x0.0p+0",
+       "T": "0x1.6ec14e6430cf5p+5",
+       "n_C2H5OH": "-0x1.568979adb2a20p+11",
+       "n_CH3OH": "0x1.aac63ccd49fa0p+13",
+       "n_H2O": "-0x1.bb9f30a068400p+12"
+      },
+      "lnphi_C2H5OH": {
+       "P": "0x0.0p+0",
+       "T": "0x0.0p+0",
+       "n_C2H5OH": "0x0.0p+0",
+       "n_CH3OH": "0x0.0p+0",
+       "n_H2O": "0x0.0p+0"
+      },
+      "lnphi_CH3OH": {
+       "P": "0x0.0p+0",
+       "T": "0x0.0p+0",
+       "n_C2H5OH": "0x0.0p+0",
+       "n_CH3OH": "0x0.0p+0",
+       "n_H2O": "0x0.0p+0"
+      },
+      "lnphi_H2O": {
+       "P": "0x0.0p+0",
+       "T": "0x0.0p+0",
+       "n_C2H5OH": "0x0.0p+0",
+       "n_CH3OH": "0x0.0p+0",
+       "n_H2O": "0x0.0p+0"
+      }
+     },
+     "message": "",
+     "phase_signature": "VAPOR",
+     "provider_id": "wilson-ig-v1",
+     "reference_convention": "WILSON-IG-ref-v1",
+     "status": "ok",
+     "values": {
+      "h": "-0x1.b92beac793d56p+17",
+      "lnphi_C2H5OH": "0x0.0p+0",
+      "lnphi_CH3OH": "0x0.0p+0",
+      "lnphi_H2O": "0x0.0p+0"
+     }
+    }
+   },
+   "flash": {
+    "achieved_accuracy": "exact-double",
+    "iterations": 64,
+    "k_values": {
+     "C2H5OH": "0x1.53edd956bf247p+0",
+     "CH3OH": "0x1.ac89a183d92b0p+0",
+     "H2O": "0x1.0d9cfe0fb274fp-1"
+    },
+    "liquid": {
+     "n": [
+      "0x1.f6f17bc8e3382p-2",
+      "0x1.5c5cc8ca433f7p-2",
+      "0x1.dea2241cfa1dep-1"
+     ],
+     "pressure": "0x1.8bcd000000000p+16",
+     "temperature": "0x1.5e00000000000p+8"
+    },
+    "message": "stability: STABLE_WITHIN_TESTED_SCOPE; scope: S10-tpd-v1; tm_vapour_trial: -0.021487491343385123; tm_liquid_trial: -0.363713462598245; fugacity_residual: 3.730349362740526e-14",
+    "phase_signature": "TWO_PHASE",
+    "provider_id": "wilson-ig-v1",
+    "reference_convention": "WILSON-IG-ref-v1",
+    "status": "ok",
+    "vapor": {
+     "n": [
+      "0x1.bdd3aa760cb90p-4",
+      "0x1.e9e6867ab2d1bp-5",
+      "0x1.0aeedf182f110p-4"
+     ],
+     "pressure": "0x1.8bcd000000000p+16",
+     "temperature": "0x1.5e00000000000p+8"
+    },
+    "vapor_fraction": "0x1.dedae665ca996p-4"
+   }
+  },
+  "RE2": {
+   "evaluate_phase": {
+    "LIQUID": {
+     "achieved_accuracy": "exact-double",
+     "derivatives": {
+      "h": {
+       "P": "0x0.0p+0",
+       "T": "0x1.1bd0220dfd9bep+6",
+       "n_C2H5OH": "-0x1.9ff548a0c66e0p+12",
+       "n_CH3OH": "0x1.6c1ed3e7579e0p+13",
+       "n_H2O": "-0x1.6c1ed3e7579e0p+13"
+      },
+      "lnphi_C2H5OH": {
+       "P": "-0x1.4b2810264829ap-17",
+       "T": "0x1.51c2677f61afcp-5",
+       "n_C2H5OH": "-0x1.5b9b189c31804p-2",
+       "n_CH3OH": "-0x1.39b4a8a85d070p-2",
+       "n_H2O": "0x1.39b4a8a85d06ep-2"
+      },
+      "lnphi_CH3OH": {
+       "P": "-0x1.4b2810264829ap-17",
+       "T": "0x1.332fac710f459p-5",
+       "n_C2H5OH": "-0x1.39b4a8a85d071p-2",
+       "n_CH3OH": "-0x1.29b7b5c6ab7d2p-3",
+       "n_H2O": "0x1.29b7b5c6ab7d2p-3"
+      },
+      "lnphi_H2O": {
+       "P": "-0x1.4b2810264829ap-17",
+       "T": "0x1.5df220add2dd0p-5",
+       "n_C2H5OH": "0x1.39b4a8a85d06ep-2",
+       "n_CH3OH": "0x1.29b7b5c6ab7d4p-3",
+       "n_H2O": "-0x1.29b7b5c6ab7d4p-3"
+      }
+     },
+     "message": "",
+     "phase_signature": "LIQUID",
+     "provider_id": "wilson-ig-v1",
+     "reference_convention": "WILSON-IG-ref-v1",
+     "status": "ok",
+     "values": {
+      "h": "-0x1.fa482cdbaa7a8p+17",
+      "lnphi_C2H5OH": "0x1.18d5b90e7dd80p-4",
+      "lnphi_CH3OH": "0x1.9a0f47f984440p-2",
+      "lnphi_H2O": "-0x1.cd1c7c82c0f70p-1"
+     }
+    },
+    "VAPOR": {
+     "achieved_accuracy": "exact-double",
+     "derivatives": {
+      "h": {
+       "P": "0x0.0p+0",
+       "T": "0x1.444171630a4dbp+5",
+       "n_C2H5OH": "-0x1.7d407d8735930p+12",
+       "n_CH3OH": "0x1.43c3be3b33b40p+13",
+       "n_H2O": "-0x1.43c3be3b33b38p+13"
+      },
+      "lnphi_C2H5OH": {
+       "P": "0x0.0p+0",
+       "T": "0x0.0p+0",
+       "n_C2H5OH": "0x0.0p+0",
+       "n_CH3OH": "0x0.0p+0",
+       "n_H2O": "0x0.0p+0"
+      },
+      "lnphi_CH3OH": {
+       "P": "0x0.0p+0",
+       "T": "0x0.0p+0",
+       "n_C2H5OH": "0x0.0p+0",
+       "n_CH3OH": "0x0.0p+0",
+       "n_H2O": "0x0.0p+0"
+      },
+      "lnphi_H2O": {
+       "P": "0x0.0p+0",
+       "T": "0x0.0p+0",
+       "n_C2H5OH": "0x0.0p+0",
+       "n_CH3OH": "0x0.0p+0",
+       "n_H2O": "0x0.0p+0"
+      }
+     },
+     "message": "",
+     "phase_signature": "VAPOR",
+     "provider_id": "wilson-ig-v1",
+     "reference_convention": "WILSON-IG-ref-v1",
+     "status": "ok",
+     "values": {
+      "h": "-0x1.acc2145e40130p+17",
+      "lnphi_C2H5OH": "0x0.0p+0",
+      "lnphi_CH3OH": "0x0.0p+0",
+      "lnphi_H2O": "0x0.0p+0"
+     }
+    }
+   },
+   "flash": {
+    "achieved_accuracy": "exact-double",
+    "iterations": 0,
+    "k_values": {},
+    "liquid": {
+     "n": [
+      "0x1.0000000000000p+0",
+      "0x0.0p+0",
+      "0x1.0000000000000p+0"
+     ],
+     "pressure": "0x1.8bcd000000000p+16",
+     "temperature": "0x1.5900000000000p+8"
+    },
+    "message": "stability: STABLE_WITHIN_TESTED_SCOPE; scope: S10-tpd-v1; tm_vapour_trial: 0.050591443914663636; tm_liquid_trial: not_evaluated",
+    "phase_signature": "LIQUID",
+    "provider_id": "wilson-ig-v1",
+    "reference_convention": "WILSON-IG-ref-v1",
+    "status": "ok",
+    "vapor": {
+     "n": [
+      "0x0.0p+0",
+      "0x0.0p+0",
+      "0x0.0p+0"
+     ],
+     "pressure": "0x1.8bcd000000000p+16",
+     "temperature": "0x1.5900000000000p+8"
+    },
+    "vapor_fraction": "0x0.0p+0"
+   }
+  },
+  "RE3": {
+   "evaluate_phase": {
+    "LIQUID": {
+     "achieved_accuracy": "exact-double",
+     "derivatives": {
+      "h": {
+       "P": "0x0.0p+0",
+       "T": "0x1.0f44ed61b019cp+6",
+       "n_C2H5OH": "0x1.4cc6b0a01b660p+13",
+       "n_CH3OH": "0x1.6c8506201b0b8p+15",
+       "n_H2O": "0x0.0p+0"
+      },
+      "lnphi_C2H5OH": {
+       "P": "-0x1.a36e2eb1c432dp-17",
+       "T": "0x1.31c48cba7b388p-5",
+       "n_C2H5OH": "-0x1.4c2818f480023p+3",
+       "n_CH3OH": "-0x1.18a776409168ep+3",
+       "n_H2O": "0x0.0p+0"
+      },
+      "lnphi_CH3OH": {
+       "P": "-0x1.a36e2eb1c432dp-17",
+       "T": "0x1.175917d5bf7dbp-5",
+       "n_C2H5OH": "-0x1.18a776409168ep+3",
+       "n_CH3OH": "-0x1.941cc9af6bb7cp+1",
+       "n_H2O": "0x0.0p+0"
+      },
+      "lnphi_H2O": {
+       "P": "-0x1.a36e2eb1c432dp-17",
+       "T": "0x1.3d6d75bcc16ffp-5",
+       "n_C2H5OH": "0x0.0p+0",
+       "n_CH3OH": "0x0.0p+0",
+       "n_H2O": "0x0.0p+0"
+      }
+     },
+     "message": "",
+     "phase_signature": "LIQUID",
+     "provider_id": "wilson-ig-v1",
+     "reference_convention": "WILSON-IG-ref-v1",
+     "status": "ok",
+     "values": {
+      "h": "-0x1.12e48603c9e32p+18",
+      "lnphi_C2H5OH": "0x1.4005c80703254p+1",
+      "lnphi_CH3OH": "0x1.ec388fa6a8b50p+0",
+      "lnphi_H2O": "-0x1.01d6a708e6180p-2"
+     }
+    },
+    "VAPOR": {
+     "achieved_accuracy": "exact-double",
+     "derivatives": {
+      "h": {
+       "P": "0x0.0p+0",
+       "T": "0x1.0fab44beb025ap+5",
+       "n_C2H5OH": "0x1.1cd91617fcc90p+13",
+       "n_CH3OH": "0x1.45634089c8ac0p+15",
+       "n_H2O": "0x0.0p+0"
+      },
+      "lnphi_C2H5OH": {
+       "P": "0x0.0p+0",
+       "T": "0x0.0p+0",
+       "n_C2H5OH": "0x0.0p+0",
+       "n_CH3OH": "0x0.0p+0",
+       "n_H2O": "0x0.0p+0"
+      },
+      "lnphi_CH3OH": {
+       "P": "0x0.0p+0",
+       "T": "0x0.0p+0",
+       "n_C2H5OH": "0x0.0p+0",
+       "n_CH3OH": "0x0.0p+0",
+       "n_H2O": "0x0.0p+0"
+      },
+      "lnphi_H2O": {
+       "P": "0x0.0p+0",
+       "T": "0x0.0p+0",
+       "n_C2H5OH": "0x0.0p+0",
+       "n_CH3OH": "0x0.0p+0",
+       "n_H2O": "0x0.0p+0"
+      }
+     },
+     "message": "",
+     "phase_signature": "VAPOR",
+     "provider_id": "wilson-ig-v1",
+     "reference_convention": "WILSON-IG-ref-v1",
+     "status": "ok",
+     "values": {
+      "h": "-0x1.d43c3f93d9426p+17",
+      "lnphi_C2H5OH": "0x0.0p+0",
+      "lnphi_CH3OH": "0x0.0p+0",
+      "lnphi_H2O": "0x0.0p+0"
+     }
+    }
+   },
+   "flash": {
+    "achieved_accuracy": "exact-double",
+    "iterations": 0,
+    "k_values": {},
+    "liquid": {
+     "n": [
+      "0x0.0p+0",
+      "0x0.0p+0",
+      "0x1.0000000000000p+0"
+     ],
+     "pressure": "0x1.3880000000000p+16",
+     "temperature": "0x1.6800000000000p+8"
+    },
+    "message": "stability: STABLE_WITHIN_TESTED_SCOPE; scope: S10-tpd-v1; tm_vapour_trial: 0.22259621884370884; tm_liquid_trial: not_evaluated",
+    "phase_signature": "LIQUID",
+    "provider_id": "wilson-ig-v1",
+    "reference_convention": "WILSON-IG-ref-v1",
+    "status": "ok",
+    "vapor": {
+     "n": [
+      "0x0.0p+0",
+      "0x0.0p+0",
+      "0x0.0p+0"
+     ],
+     "pressure": "0x1.3880000000000p+16",
+     "temperature": "0x1.6800000000000p+8"
+    },
+    "vapor_fraction": "0x0.0p+0"
+   }
+  }
+ },
+ "checkout_records": "/home/frankp/Codes/OpenFlowsheet/.claude/worktrees/rc-v03-a3e508e/benchmarks/s10/records.yaml",
+ "module_file": "/home/frankp/Codes/OpenFlowsheet/.claude/worktrees/rc-v03-a3e508e/src/openflowsheet/__init__.py",
+ "version": "0.3.0"
+}

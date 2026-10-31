@@ -1,0 +1,225 @@
+tests/test_e01_b_nlp.py::test_a35_without_an_assessment_the_model_is_m03s
+tests/test_e01_b_nlp.py::test_the_model_maps_assessment_names_to_outputs_and_adds_the_admissibility_rows
+tests/test_e01_b_nlp.py::test_a_tac_objective_solves_to_a_verified_point_with_v7_from_every_m03_start
+tests/test_e01_integration.py::test_a33_a34_p2_tac_objective_from_every_start
+tests/test_m03_nlp_greybox.py::test_the_environment_is_the_audited_one
+tests/test_m03_nlp_greybox.py::test_the_report_records_the_thread_configuration_it_was_produced_under
+tests/test_m03_nlp_greybox.py::test_a35_every_start_reaches_the_reference_optimum_verified
+tests/test_m03_nlp_greybox.py::test_a36_the_candidate_is_verified_on_the_resolved_simulation
+tests/test_m03_nlp_greybox.py::test_a37_an_infeasible_problem_is_never_a_verified_point
+tests/test_m03_nlp_greybox.py::test_a38_an_exact_hessian_is_refused_with_zero_ipopt_calls
+tests/test_m03_nlp_greybox.py::test_the_pynumero_problem_has_no_hessian_and_ipopt_approximates_it
+tests/test_m03_nlp_greybox.py::test_a39_no_casadi_metis_closure_object_is_mapped_and_nlpsol_is_never_called
+tests/test_m03_nlp_greybox.py::test_a40_every_start_records_status_iterations_counters_and_time_within_budget
+tests/test_m03_nlp_greybox.py::test_the_gray_box_hands_pynumero_the_twins_rows_and_jacobian_bitwise
+tests/test_m03_nlp_greybox.py::test_q_f4_a_twin_evaluation_error_reaches_pynumero_as_an_evaluation_error
+tests/test_m03_nlp_greybox.py::test_q_f4_injected_domain_errors[jacobian_at_an_accepted_point]
+tests/test_m03_nlp_greybox.py::test_q_f4_injected_domain_errors[residual_at_a_trial_point]
+tests/test_m03_nlp_greybox.py::test_q_f4_injected_domain_errors[residual_at_the_start]
+tests/test_m03_nlp_greybox.py::test_an_unaudited_asl_build_is_refused_before_any_solve
+tests/test_m03_nlp_greybox.py::test_an_adapter_exception_is_a_solver_failed_start_never_a_raise
+tests/test_m03_nlp_greybox.py::test_the_nlp_fixtures_are_what_the_adapter_emits_today
+tests/test_m03_nlp_greybox.py::test_the_q_f2_and_q_f4_measurements_reproduce_and_keep_their_margin
+tests/test_m05_basis.py::test_the_property_basis_is_the_blocks_taylor_model_at_the_start
+tests/test_m05_basis.py::test_tr_e1_with_the_affine_basis_reaches_natives_objective
+tests/test_m05_basis.py::test_tr_e1_with_the_affine_basis_converges_to_native_within_2_sigma
+tests/test_m05_basis.py::test_the_link_basis_is_the_truths_taylor_model_at_the_start_inlet
+tests/test_m05_basis.py::test_an_fd_truths_link_basis_reuses_the_gradient_checks_points
+tests/test_m05_basis.py::test_the_stage_forms_the_basis_inside_the_holders_run
+tests/test_m05_basis.py::test_the_live_run_document_validates_and_holds_the_request_identity[1.0]
+tests/test_m05_basis.py::test_the_live_run_document_validates_and_holds_the_request_identity[0.25]
+tests/test_m05_basis.py::test_r400_the_curvature_is_the_truths_along_the_path
+tests/test_m05_basis.py::test_r400_the_basis_value_and_gradient_at_the_start_are_v1s_bitwise
+tests/test_m05_basis.py::test_r400_the_stencil_is_one_sided_at_the_box
+tests/test_m05_basis.py::test_r400_the_one_sided_curvature_and_direction_are_exact_on_a_quadratic
+tests/test_m05_basis.py::test_r400_a_failed_inner_solve_falls_back_to_the_affine_basis
+tests/test_m05_basis.py::test_r400_a_budget_refusal_propagates_and_another_refusal_falls_back
+tests/test_m05_basis.py::test_r400_more_than_one_decision_is_refused_before_any_request
+tests/test_m05_basis.py::test_r400_the_stage_records_the_basis_block_and_two_curvature_points
+tests/test_m05_basis.py::test_r432_noise_ratio_is_the_value_noise_over_the_curvature_step
+tests/test_m05_basis_v2_c1.py::test_wo8d_i_the_direction_is_20_k_along_the_inlet_temperature
+tests/test_m05_basis_v2_c1.py::test_wo8d_iii_the_curvature_matches_the_analytic_directional_derivative
+tests/test_m05_c1_projection.py::test_s0_is_certified
+tests/test_m05_c1_projection.py::test_the_formulation_is_generated_from_the_revision_and_the_variant
+tests/test_m05_c1_projection.py::test_the_real_variant_adds_the_per_tube_flow_bounds
+tests/test_m05_c1_projection.py::test_c1_passes_the_shape_check_and_omits_exactly_the_computed_alias_rows
+tests/test_m05_c1_projection.py::test_r296_the_five_exact_zero_flows_are_eliminated_with_their_pins
+tests/test_m05_c1_projection.py::test_r296_trf_on_tr_e2_passes_iteration_1_with_exact_zero_arguments
+tests/test_m05_c1_projection.py::test_g4_c1_at_s0s_certified_state
+tests/test_m05_c1_projection.py::test_g4_c1_at_s0_perturbed_by_a_seeded_relative_1e_3
+tests/test_m05_g10_replay.py::test_g10_in_process_replay[TR-E2]
+tests/test_m05_g10_replay.py::test_g10_in_process_replay[TR-E2-FAR]
+tests/test_m05_g10_replay.py::test_g10_in_process_replay[TR-E2-FD]
+tests/test_m05_g10_replay.py::test_g10_in_process_replay[LOOP-R]
+tests/test_m05_g10_replay.py::test_g10_in_process_replay[LOOP-S]
+tests/test_m05_parent.py::test_project_at_s0_links_the_parent_truth
+tests/test_m05_projection.py::test_g4_tr_e1_at_its_start
+tests/test_m05_projection.py::test_the_source_map_is_canonical_and_reproducible
+tests/test_m05_projection.py::test_the_projection_does_not_call_the_holders
+tests/test_m05_projection.py::test_the_output_scale_is_the_next_power_of_two[0.0-1.9073486328125e-06]
+tests/test_m05_projection.py::test_the_output_scale_is_the_next_power_of_two[1e-06-1.9073486328125e-06]
+tests/test_m05_projection.py::test_the_output_scale_is_the_next_power_of_two[0.5-0.5]
+tests/test_m05_projection.py::test_the_output_scale_is_the_next_power_of_two[0.84-1.0]
+tests/test_m05_projection.py::test_the_output_scale_is_the_next_power_of_two[1.0-1.0]
+tests/test_m05_projection.py::test_the_output_scale_is_the_next_power_of_two[-90.0-128.0]
+tests/test_m05_projection.py::test_the_output_scale_is_the_next_power_of_two[128.0-128.0]
+tests/test_m05_projection.py::test_the_output_scale_is_the_next_power_of_two[128.00000000000003-256.0]
+tests/test_m05_projection.py::test_the_output_scale_is_the_next_power_of_two[-30000000.0-33554432.0]
+tests/test_m05_projection.py::test_a_spec_without_kinds_is_projected_with_unit_scales_and_says_so
+tests/test_m05_projection.py::test_a_spec_without_kinds_ignores_its_own_scales
+tests/test_m05_projection.py::test_a_spec_with_partial_kinds_is_refused
+tests/test_m05_projection.py::test_syn001_is_projected_in_k03s_scales
+tests/test_m05_projection.py::test_a_builder_that_branches_on_a_decision_is_not_differentiable
+tests/test_m05_projection.py::test_a_builder_that_fails_on_floats_too_is_a_defect_not_a_refusal
+tests/test_m05_projection.py::test_a_nonsmooth_row_is_refused
+tests/test_m05_projection.py::test_a_decision_in_no_constraint_is_a_structure_refusal
+tests/test_m05_projection.py::test_a_row_with_no_variable_is_a_structure_refusal
+tests/test_m05_projection.py::test_a_dof_count_other_than_the_decisions_is_refused
+tests/test_m05_projection.py::test_syn001_s_alias_rows_are_computed_not_supplied[P1]
+tests/test_m05_projection.py::test_syn001_s_alias_rows_are_computed_not_supplied[P2]
+tests/test_m05_projection.py::test_syn001_s_alias_rows_are_computed_not_supplied[P3]
+tests/test_m05_projection.py::test_syn001_s_alias_rows_are_computed_not_supplied[B1]
+tests/test_m05_projection.py::test_syn001_s_alias_rows_are_computed_not_supplied[B2]
+tests/test_m05_projection.py::test_syn001_s_alias_rows_are_computed_not_supplied[B3]
+tests/test_m05_projection.py::test_syn001_a_supplied_set_equal_to_the_certified_one_is_accepted
+tests/test_m05_projection.py::test_syn001_a_supplied_set_other_than_the_certified_one_is_refused[supplied0-U-FLASH:FLASH-P:inlet]
+tests/test_m05_projection.py::test_syn001_a_supplied_set_other_than_the_certified_one_is_refused[supplied1-U-FLASH:FLASH-P:inlet]
+tests/test_m05_projection.py::test_syn001_a_supplied_set_other_than_the_certified_one_is_refused[supplied2-U-SPLIT:SPLIT-P:recycle]
+tests/test_m05_projection.py::test_syn001_a_supplied_row_the_elimination_keeps_is_refused
+tests/test_m05_projection.py::test_syn001_projects_with_dof_equal_to_the_decisions[P1]
+tests/test_m05_projection.py::test_syn001_projects_with_dof_equal_to_the_decisions[P2]
+tests/test_m05_projection.py::test_syn001_projects_with_dof_equal_to_the_decisions[P3]
+tests/test_m05_projection.py::test_syn001_projects_with_dof_equal_to_the_decisions[B1]
+tests/test_m05_projection.py::test_syn001_projects_with_dof_equal_to_the_decisions[B2]
+tests/test_m05_projection.py::test_syn001_projects_with_dof_equal_to_the_decisions[B3]
+tests/test_m05_projection.py::test_g4_syn001_at_the_registered_states[P1]
+tests/test_m05_projection.py::test_g4_syn001_at_the_registered_states[P2]
+tests/test_m05_projection.py::test_g4_syn001_at_the_registered_states[P3]
+tests/test_m05_projection.py::test_g4_syn001_at_the_registered_states[B1]
+tests/test_m05_projection.py::test_g4_syn001_at_the_registered_states[B2]
+tests/test_m05_projection.py::test_g4_syn001_at_the_registered_states[B3]
+tests/test_m05_projection.py::test_an_unknown_omitted_row_is_refused
+tests/test_m05_projection.py::test_at_the_implied_pressure_row_is_omitted_with_its_certificate
+tests/test_m05_projection.py::test_at_a_row_not_satisfied_at_the_start_is_refused
+tests/test_m05_projection.py::test_at_a_row_a_decision_moves_is_refused
+tests/test_m05_projection.py::test_at_without_a_witness_state_no_row_is_certified
+tests/test_m05_projection.py::test_at_an_inconsistent_redundancy_is_the_elimination_s_own_refusal
+tests/test_m05_projection.py::test_at_the_omitted_rows_are_checked_at_a_final_state
+tests/test_m05_projection.py::test_a_spec_without_alias_rows_omits_none
+tests/test_m05_projection.py::test_r278_a_link_output_pinned_by_the_decisions_is_refused
+tests/test_m05_projection.py::test_r278_the_same_link_in_the_forward_shape_passes
+tests/test_m05_projection.py::test_r278_a_property_output_pinned_by_the_decisions_passes
+tests/test_m05_projection.py::test_r278_tr_e1_is_exempt_as_the_oracle_and_would_be_refused
+tests/test_m05_projection.py::test_r278_the_at_toy_passes
+tests/test_m05_projection.py::test_r278_syn001_passes_at_the_registered_states[P1]
+tests/test_m05_projection.py::test_r278_syn001_passes_at_the_registered_states[P2]
+tests/test_m05_projection.py::test_r278_syn001_passes_at_the_registered_states[P3]
+tests/test_m05_projection.py::test_r278_syn001_passes_at_the_registered_states[B1]
+tests/test_m05_projection.py::test_r278_syn001_passes_at_the_registered_states[B2]
+tests/test_m05_projection.py::test_r278_syn001_passes_at_the_registered_states[B3]
+tests/test_m05_projection.py::test_r326_syn001_s_zero_flows_are_eliminated_by_one_certified_block[B2]
+tests/test_m05_projection.py::test_r326_syn001_s_zero_flows_are_eliminated_by_one_certified_block[P1]
+tests/test_m05_projection.py::test_r326_syn001_s_zero_flows_are_eliminated_by_one_certified_block[P2]
+tests/test_m05_readiness.py::test_each_projection_refusal_is_a_readiness_reason[PARAMETER_NOT_DIFFERENTIABLE]
+tests/test_m05_readiness.py::test_each_projection_refusal_is_a_readiness_reason[PROJECTION_DOF]
+tests/test_m05_readiness.py::test_each_projection_refusal_is_a_readiness_reason[PROJECTION_IMPLICIT_EF_INPUT]
+tests/test_m05_readiness.py::test_each_projection_refusal_is_a_readiness_reason[PROJECTION_NONSMOOTH]
+tests/test_m05_readiness.py::test_each_projection_refusal_is_a_readiness_reason[PROJECTION_OMITTED_ROW_UNCERTIFIED]
+tests/test_m05_readiness.py::test_each_projection_refusal_is_a_readiness_reason[PROJECTION_SCALES_UNAVAILABLE]
+tests/test_m05_readiness.py::test_each_projection_refusal_is_a_readiness_reason[PROJECTION_STRUCTURE]
+tests/test_m05_readiness.py::test_each_projection_refusal_is_a_readiness_reason[PROJECTION_ZERO_FLOW]
+tests/test_m05_readiness.py::test_each_joint_zero_flow_refusal_is_a_readiness_reason[joint_not_persistent]
+tests/test_m05_readiness.py::test_each_joint_zero_flow_refusal_is_a_readiness_reason[joint_not_square]
+tests/test_m05_readiness.py::test_each_joint_zero_flow_refusal_is_a_readiness_reason[joint_singular]
+tests/test_m05_readiness.py::test_each_framework_reason_is_a_readiness_reason[TRUST_REGION_FRAMEWORK_UNPINNED-overrides0]
+tests/test_m05_readiness.py::test_each_framework_reason_is_a_readiness_reason[TRSP_SOLVER_UNAUDITED-overrides1]
+tests/test_m05_readiness.py::test_the_unavailable_reason_stops_readiness_before_any_solve
+tests/test_m05_readiness.py::test_an_uncertified_start_is_a_readiness_reason_and_the_projection_still_runs
+tests/test_m05_readiness.py::test_every_readiness_code_has_a_fixture
+tests/test_m05_readiness.py::test_readiness_is_ready_on_tr_e2_s_configuration
+tests/test_m05_readiness.py::test_p3_s_c1_constraints_hold_at_s0_and_catch_a_violation
+tests/test_m05_readiness.py::test_trf_stage_is_run_trf_with_the_radius_scaled
+tests/test_m05_surrogate_truth.py::test_the_compiled_quadratic_on_pyomo_variables_agrees_with_predict[J1]
+tests/test_m05_surrogate_truth.py::test_the_compiled_quadratic_on_pyomo_variables_agrees_with_predict[J2]
+tests/test_m05_surrogate_truth.py::test_the_compiled_quadratic_on_pyomo_variables_agrees_with_predict[J3]
+tests/test_m05_trf.py::test_g2_the_audited_environment_is_the_pinned_framework
+tests/test_m05_trf.py::test_g2_a_patched_version_string_is_unpinned_and_nothing_runs
+tests/test_m05_trf.py::test_g2_one_changed_module_byte_is_unpinned
+tests/test_m05_trf.py::test_g3_tr_e1_reproduces_the_native_example
+tests/test_m05_trf.py::test_g3_every_trsp_option_is_echoed
+tests/test_m05_trf.py::test_p10_the_alias_runs_without_ipopt_on_path
+tests/test_m05_trf.py::test_p9_a_repeat_run_is_bitwise_identical
+tests/test_m05_trf.py::test_p2_prime_a_bound_method_callback_loses_trfs_calls_to_the_clone
+tests/test_m05_trf.py::test_p3_an_external_function_without_a_gradient_is_refused_by_trf
+tests/test_m05_trf.py::test_p6_a_refusal_aborts_the_run_typed_with_no_candidate
+tests/test_m05_trf.py::test_r276_a_refusal_at_the_start_is_caught_before_trf_runs
+tests/test_m05_trf.py::test_r276_the_backstop_refuses_a_run_trf_called_optimal
+tests/test_m05_trf.py::test_p7_a_nan_never_reaches_trf
+tests/test_m05_trf.py::test_p7_native_trf_accepts_a_nan_silently
+tests/test_m05_trf.py::test_p8_cyipopt_cannot_be_the_subproblem_solver
+tests/test_m05_trf.py::test_g7_mechanism_a_budget_is_never_exceeded_through_a_run
+tests/test_m05_trf.py::test_the_omitted_rows_are_recorded_at_trf_s_final_state
+tests/test_m05_trf.py::test_one_trf_run_per_process
+tests/test_m05_trf.py::test_the_logger_is_restored_after_a_run
+tests/test_m05_trf.py::test_p14a_a_run_without_a_basis_is_refused_and_nothing_runs
+tests/test_m05_trf.py::test_p14a_an_explicit_zero_basis_is_refused_off_tr_e1
+tests/test_m05_trf.py::test_p14a_native_trf_with_b_zero_fails_in_the_pmp
+tests/test_m05_trf.py::test_p14b_optimal_with_no_subproblem_is_exit_without_step[M05-trf-config-v1]
+tests/test_m05_trf.py::test_p14b_optimal_with_no_subproblem_is_exit_without_step[pyomo_defaults]
+tests/test_m05_trf.py::test_p14b_the_affine_basis_on_the_same_toy_converges[M05-trf-config-v1]
+tests/test_m05_trf.py::test_p14b_the_affine_basis_on_the_same_toy_converges[pyomo_defaults]
+tests/test_m05_trf.py::test_p14c_a_feasible_exit_above_the_tolerance_is_stalled_inconsistent[300.5-1.8006-M05-trf-config-v1]
+tests/test_m05_trf.py::test_p14c_a_feasible_exit_above_the_tolerance_is_stalled_inconsistent[300.5-1.8006-pyomo_defaults]
+tests/test_m05_trf.py::test_p14c_a_feasible_exit_above_the_tolerance_is_stalled_inconsistent[310.0-0.000198-M05-trf-config-v1]
+tests/test_m05_trf.py::test_p14c_a_feasible_exit_above_the_tolerance_is_stalled_inconsistent[310.0-0.000198-pyomo_defaults]
+tests/test_m05_trf.py::test_r299_an_optimal_exit_whose_model_disagrees_is_stalled_inconsistent
+tests/test_m05_trf.py::test_r299_a_converged_run_records_its_claim_and_its_point
+tests/test_m05_zero_flow.py::test_a_pinned_zero_flow_and_its_chain_are_eliminated_with_their_pins
+tests/test_m05_zero_flow.py::test_the_inverse_map_writes_plus_zero_and_the_pins_hold_at_a_state
+tests/test_m05_zero_flow.py::test_set_state_keeps_an_eliminated_flow_at_zero
+tests/test_m05_zero_flow.py::test_a_bound_on_an_eliminated_flow_is_a_value_error
+tests/test_m05_zero_flow.py::test_a_zero_flow_pinned_by_a_decision_dependent_row_is_unpinned
+tests/test_m05_zero_flow.py::test_a_decision_dependent_pin_leaves_a_non_square_joint_block
+tests/test_m05_zero_flow.py::test_a_second_row_on_an_eliminated_flow_alone_is_redundant
+tests/test_m05_zero_flow.py::test_an_eliminated_flow_among_a_links_inlet_is_refused
+tests/test_m05_zero_flow.py::test_the_affine_basis_has_no_term_for_a_constant_argument
+tests/test_m05_zero_flow.py::test_a_certified_joint_block_is_eliminated_with_its_rows
+tests/test_m05_zero_flow.py::test_a_toy_without_a_joint_block_keeps_its_source_map_bytes
+tests/test_m05_zero_flow.py::test_each_joint_refusal_names_the_block_s_first_variable[joint_not_persistent]
+tests/test_m05_zero_flow.py::test_each_joint_refusal_names_the_block_s_first_variable[joint_not_square]
+tests/test_m05_zero_flow.py::test_each_joint_refusal_names_the_block_s_first_variable[joint_singular]
+
+==================================== ERRORS ====================================
+___________________ ERROR collecting tests/test_s10_dwsim.py ___________________
+ImportError while importing test module '/home/frankp/.cache/of-rc-v03-a3e508e/nlp-wt/tests/test_s10_dwsim.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+../../../Codes/OpenFlowsheet/.claude/worktrees/m05/.venv-nlp/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests/test_s10_dwsim.py:31: in <module>
+    from mpmath import mp, mpf  # type: ignore[import-untyped]
+E   ModuleNotFoundError: No module named 'mpmath'
+___________________ ERROR collecting tests/test_s10_idaes.py ___________________
+ImportError while importing test module '/home/frankp/.cache/of-rc-v03-a3e508e/nlp-wt/tests/test_s10_idaes.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+../../../Codes/OpenFlowsheet/.claude/worktrees/m05/.venv-nlp/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests/test_s10_idaes.py:34: in <module>
+    from mpmath import mp, mpf  # type: ignore[import-untyped]
+E   ModuleNotFoundError: No module named 'mpmath'
+__________________ ERROR collecting tests/test_s10_records.py __________________
+ImportError while importing test module '/home/frankp/.cache/of-rc-v03-a3e508e/nlp-wt/tests/test_s10_records.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+../../../Codes/OpenFlowsheet/.claude/worktrees/m05/.venv-nlp/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests/test_s10_records.py:30: in <module>
+    from mpmath import mp, mpf  # type: ignore[import-untyped]
+E   ModuleNotFoundError: No module named 'mpmath'
+=========================== short test summary info ============================
+ERROR tests/test_s10_dwsim.py
+ERROR tests/test_s10_idaes.py
+ERROR tests/test_s10_records.py
+!!!!!!!!!!!!!!!!!!! Interrupted: 3 errors during collection !!!!!!!!!!!!!!!!!!!!
+190/18080 tests collected (17890 deselected), 3 errors in 28.17s

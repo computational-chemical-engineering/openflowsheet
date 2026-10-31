@@ -1,6 +1,6 @@
 # ADR 0052 — Cost and life-cycle impact as differentiable assessment functionals outside the compiled problem (package E01)
 
-**Status:** **Proposed, 2026-10-27** (design lane, `architect`; register R-850…R-862). It becomes **Accepted** when:
+**Status:** **Accepted, 2026-10-30**, marked by the build lane (V03 spec §6, R-876; the check is recorded in `docs/V03_DECISIONS.md` for S13's manifest). Proposed 2026-10-27 (design lane, `architect`; register R-850…R-862). It becomes **Accepted** when:
 - E01's evidence manifest is `tested`, with gates G1–G9 of the design note passing;
 - the `reviewer` has passed tracks A and B and the integration WO against the design note.
 
