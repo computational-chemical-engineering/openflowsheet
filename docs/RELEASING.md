@@ -179,7 +179,7 @@ refused as not covered until M07 registers the 0.2.0 gate set.
 that sorts after the tagged version, and returns the envelope to its working form
 (`v0.2-envelope-dev`, `release: 0.2.0.dev0`, R-193). After `0.2.0a1`, `main` carries
 `0.2.0a2.dev0`; `0.2.0.dev0` would sort before the release it follows. After `0.2.0`, `main` carries
-`0.3.0.dev0` (C7), with the envelope again in its working form. The working form's id and label are a fixed token for `main`'s
+`0.3.0.dev0` (C7), with the envelope again in its working form; after `0.3.0`, `0.4.0.dev0` (V03 WO-9). The working form's id and label are a fixed token for `main`'s
 unreleased working envelope, not "v0.2 under development"; they stay until v0.3's release-policy ADR names the
 0.3.0 pin and its successor together with M07a.A10's pairs (D1, R-563). The version is set in
 `pyproject.toml`, `src/openflowsheet/__init__.py`, the two `project_summary` fixtures and

@@ -21,8 +21,12 @@ import openflowsheet
 sys.path.insert(0, str(REPO_ROOT / "scripts"))
 import v0_1_gate  # noqa: E402
 
-#: Every released version and the commit it was tagged from (`v0.2.0`: `git rev-list -n1 v0.2.0`).
-RELEASED = {"0.2.0a1": ALPHA_TAG_COMMIT, "0.2.0": "5c82b4cc40dd4fefd3dbce45352910006e5dee13"}
+#: Every released version and the commit it was tagged from (`git rev-list -n1 v<version>`).
+RELEASED = {
+    "0.2.0a1": ALPHA_TAG_COMMIT,
+    "0.2.0": "5c82b4cc40dd4fefd3dbce45352910006e5dee13",
+    "0.3.0": "b8f47a044ea5ee2a89230ff95bd6a934f541f615",
+}
 #: R-193's working envelope.
 WORKING_ENVELOPE = ("v0.2-envelope-dev", "0.2.0.dev0")
 
