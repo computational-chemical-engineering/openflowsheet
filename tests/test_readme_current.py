@@ -49,7 +49,10 @@ def named_release(version: str, released: Iterable[str]) -> tuple[str, ...]:
     """The strings the status must carry at `version`."""
     parsed = Version(version)
     if parsed.is_devrelease:
-        return (f"Version {max(released, key=Version)} is released",)
+        newest = max(released, key=Version)
+        if Version(newest).is_postrelease:
+            return named_release(newest, released)
+        return (f"Version {newest} is released",)
     if parsed.is_postrelease:
         return (f"Version {parsed.base_version} is released", f"`{version}`")
     return (f"Version {version} is released",)

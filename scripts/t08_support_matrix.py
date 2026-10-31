@@ -67,8 +67,9 @@ TOP_LEVEL: Final = ("envelope_id", "release", "axes", "unsupported", "limitation
 #: `v0.2-alpha-envelope-1` (V02 alpha release spec MR-3); returned at the alpha's merge into main,
 #: R-460. Pinned at 0.2.0's cut commit K as `v0.2-envelope-1` (M07 spec §7.2; alpha-main rulings
 #: O5); returned to `v0.2-envelope-dev` by the first D2.4 change after the tag (R-460, C7).
-#: Pinned at 0.3.0's cut commit K3 as `v0.3-envelope-1` (V03 release spec §5.1).
-ENVELOPE_ID: Final = "v0.3-envelope-1"
+#: Pinned at 0.3.0's cut commit K3 as `v0.3-envelope-1` (V03 release spec §5.1); returned to
+#: `v0.2-envelope-dev` by the first D2.4 change after the tag (V03 release spec §5.3, R-460, WO-9).
+ENVELOPE_ID: Final = "v0.2-envelope-dev"
 #: The CI runners and the architecture each is (`.github/workflows/ci.yml`'s matrix).
 RUNNER_ARCHITECTURE: Final[Mapping[str, str]] = {
     "ubuntu-latest": "x86-64",

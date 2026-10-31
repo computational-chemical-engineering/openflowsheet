@@ -343,6 +343,40 @@ R0 INDIFFERENT, R1 DECIDED 653.15 K (cold 36, 1554 s), R2 SURROGATE_NOT_PROMOTAB
 - F9 at H2 (`## v0.3.0 — unreleased`, l.3–103): **4 of 4**, each phrase exactly once; `awaits Frank's statement` 0.
 - H3 touches only this file and `docs/progress.md`; the manifest is not regenerated. Next: hand to Frank for the tag.
 
+## WO-9: `main` after the 0.3.0 tag (spec §5.3, R-460, R-458, R-563; RELEASING 0.3.0 step 5)
+
+Branch `wp/V03-wo9` from `main` `f7289197`, worktree `.claude/worktrees/v03wo9`. Pattern: C7's `954fde36`, `f85fcd79`,
+`5a6b8117`, `93842857`.
+
+- Tag source: `git rev-list -n1 v0.3.0` = `b8f47a044ea5ee2a89230ff95bd6a934f541f615` (equals `docs/V02_STATE.md`'s
+  `b8f47a04`); added to `RELEASED` in `tests/test_v02_main_version.py`. Between the tag and `f7289197` only docs moved, so
+  C7's negative control (old version + new `RELEASED` fails AM-40) has no D2.4 difference to find here; AM-40's own
+  control (`HEAD` differs from the alpha's tree) still runs.
+- Commit 1: `0.4.0.dev0` in K3's five files (pyproject, `__init__.py`, the two `project_summary` fixtures,
+  `test_m06_w27_coverage.py`); envelope `v0.2-envelope-dev` / `release: 0.2.0.dev0` and `ENVELOPE_ID` with it (§5.3: the
+  token, N-7 "keep the token", no A10 pair); one header line each in the envelope and `t08_support_matrix.py`;
+  `docs/support-matrix.md` re-emitted (`--check` 0 problems); RELEASING "After a tag" names `0.4.0.dev0`. Tests reading
+  the version and the envelope (17 files: A10, A31 (b), W27 coverage, package imports, project_summary, T08 envelope,
+  v0.1/v0.2/v0.3 gates, `test_v02_main_version`, retake-diff): 929 passed, 3 skipped (two `test_m06_w27_coverage.py`
+  facts tests, pinned archive absent in this tree; one `test_s05_envelope.py`, `OFS_S05_BUILD_PYTHON` unset).
+- DECISION: W27's `coverage.json` re-take at the dev build (C7's `f85fcd79`) → not done. It is impossible: W27's v1
+  snapshot refuses this build (`registry_snapshot: unsupported(provider 'iapws95-v1' …, W27-R63)`, spec §2.1). It is
+  unnecessary: R-902 treats `package_version` as build provenance beside `git_commit`, and R-566 dropped the byte pin, so
+  the committed record stays G14 at `0.4.0.dev0` (the W27 coverage tests above pass). RELEASING already says so ("from
+  0.3.0 it is not"). Alternative: none available. Reversible by: nothing to revert.
+- Commit 2 (`94c9f217`): the five in-process G10 records re-taken from the clean tree at `1b4263a6` (E6/K's recipe:
+  `run_case` + `write_files` into `~/.cache/v03wo9-retake/out`, alpha-main's `.venv-nlp`, OMP 1,
+  `PYOMO_CONFIG_DIR=<venv>/share/pyomo`, `PYTHONNOUSERSITE=1`, `PYTHONPATH=src:<m05's nlp-test-tools>`); 36 files, all
+  under `benchmarks/m05/records/`, each record `run_commit` `1b4263a6…`, `tree_clean` true. `--digest-only
+  --old-version 0.3.0`: PASS ×5, changed digests / version leaves 41/4, 79/7, 70/4, 91/3, 37/4, `other=0`,
+  `environment=equal` (the expected counts exactly, as `5a6b8117` and `2d945b5d`). AM-23 (`-m nlp
+  tests/test_m05_g10_replay.py`, `.venv-nlp`): 5 passed. Records tests (m05 basis/replay/study record/wo8/wo9 gates,
+  retake-diff, m07 journey and journey record): 438 passed, 23 deselected.
+- REAL replay (as `93842857`): `scripts/m05_wo9_real.py --replay` at `94c9f217` (clean tree, alpha-main's `.venv-nlp`,
+  OMP 1, the same environment variables): `REPLAY PASS REAL differences=0`, exit 0.
+- Full gate at `bbdbd8b5` (clean tree, private `TMPDIR` under `~/.cache`): `GATE PASS bbdbd8b5: 14781 passed, 3206
+  skipped, 197 deselected, 1 warning in 6150.37s`, exit 0. No manifest: 0.2.0's post-tag work (C7) carried none.
+  Branch `wp/V03-wo9` pushed for CI; the orchestrator merges. Nothing tagged.
 ## V03-post1 (2026-10-31): 0.3.0.post1 — a current README and the project links on PyPI
 
 - DECISION: how is `0.3.0.postN` admitted (orchestrator's rule, registered R-922)? → the engine gates it as 0.3.0 by a
