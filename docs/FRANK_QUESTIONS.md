@@ -2,6 +2,15 @@
 
 Questions only Frank can answer (scope, value judgments). Each carries the default that unattended work proceeds on.
 
+## Answer — Frank, 2026-11-01: full real-simulator scope; design quality over speed (ADR 0056 Am. 2, R-927)
+
+Frank, verbatim, answering the FB-08 gap analysis (`docs/USER_FEEDBACK.md` batch 3): "Yes. The aim is a 'real simulator' so all these features need to be on board at some stage, including electrolytes,
+solids, polymers, petroleum assays, rate-based columns, P&ID drawing and superstructure (MINLP) synthesis. The issue is
+planning. I am not in a hurry to have some features available as soon as possible. What is important is to have a very
+well designed implementation, that runs well, is very flexible, can very well be used by agents etc. So what is
+important is to have a very good plan."
+This also confirms R-926 (relayed direction) and the FB-08 grouping X12–X17.
+
 ## Answer — Frank, 2026-11-01: the capability restrictions are lifted (ADR 0056, R-925)
 
 Frank, verbatim: "All restrictions in the table, I want lifted. This is not needed right away, but should be planned.

@@ -18311,3 +18311,30 @@ rights rows are `permitted` and Frank has decided. Data the user fetches or hold
 and is not redistributed; that is admitted under R-924 rather than refused. A design that ships fetched data, or that
 refuses user-licensed sources outright, departs from this entry.
 
+---
+
+## R-927 — Full real-simulator scope, the blueprint's deferred list included; a very good plan and design quality take priority over early availability
+
+| | |
+| --- | --- |
+| Date | 2026-11-01 |
+| Decided by | Frank (verbatim in `docs/FRANK_QUESTIONS.md` and ADR 0056 Amendment 2) |
+| Normative text | ADR 0056 Amendment 2 |
+| Affected packages | X12–X26 (new); blueprint v3.1 deferred list and D18; plan v1.2 §288; every later package's ordering |
+
+**Decision.** Every feature a real simulator has is in scope at some stage. That includes the blueprint's deferred list:
+electrolytes, solids, polymers, petroleum assays, rate-based columns, P&ID drawing and superstructure (MINLP) synthesis.
+It also includes the FB-08 gaps: economics, reactors, heat exchange and integration, transport properties, CAPE-OPEN, the
+PFD editor and reports, batch processes, and relief and safety. Frank: "I am not in a hurry to have some features
+available as soon as possible. What is important is to have a very well designed implementation, that runs well, is
+very flexible, can very well be used by agents etc. So what is important is to have a very good plan."
+R-926 is confirmed.
+
+**Rejected alternative.** Delivering features as early as possible, one at a time, with the architecture adapted as each
+arrives. Also rejected: keeping the blueprint's deferred list out of scope.
+
+**Watch for.** Two failure modes. First, a package designed for its own feature alone that fixes a core structure (state,
+phase, component, unit-model or provider interfaces, solver, replay identity) in a way a later planned capability must
+break. Second, release-line placement chosen for speed over a sound dependency order. Each design brief cites this entry
+and the roadmap that Amendment 2 calls for.
+

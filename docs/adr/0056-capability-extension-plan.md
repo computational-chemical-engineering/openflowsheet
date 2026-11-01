@@ -92,3 +92,40 @@ gaps. Seider is a licensed copy, so only individual numbers with page and table 
 DECISION (orchestrator, 2026-11-01): X11 in the 0.5 line beside X01 → yes. Alternative: 0.4. Reversible by: moving the
 row. Reason: X11's records feed X01's property methods, and its liquid-phase use needs X09.
 
+## Amendment 2 — 2026-11-01: full real-simulator scope (R-927); the blueprint's deferred list is lifted; a roadmap comes first
+
+Frank, verbatim: "Yes. The aim is a 'real simulator' so all these features need to be on board at some stage, including electrolytes,
+solids, polymers, petroleum assays, rate-based columns, P&ID drawing and superstructure (MINLP) synthesis. The issue is
+planning. I am not in a hurry to have some features available as soon as possible. What is important is to have a very
+well designed implementation, that runs well, is very flexible, can very well be used by agents etc. So what is
+important is to have a very good plan."
+
+This amendment is the ADR the plan requires for departing from the blueprint's scope (blueprint §2 deferred list, D18,
+§496, §579; plan v1.2 §288). Reason: R-927. Migration impact: none now; current behaviour stays typed until each package
+lands. Acceptance evidence: per package.
+
+New planned packages, with no release line yet:
+
+| Package | Contents | Source |
+| --- | --- | --- |
+| X12 economics | Sizing and costing for every unit; costed utilities; profitability (NPV, IRR, cash flow); extends E01/S12 | FB-08 |
+| X13 reactors | Gibbs equilibrium reactor; kinetic CSTR/PFR with user rate laws on any basis | FB-08, blueprint §579 |
+| X14 heat exchange | Rigorous two-stream exchanger design and rating on every basis; pinch targets and HEN | FB-08 |
+| X15 CAPE-OPEN | Thermo and unit interoperability; after X07 and X01 | FB-08, D18 |
+| X16 PFD and reports | Graphical flowsheet editor in the web shell; stream and equipment reports | FB-08 |
+| X17 transport properties | Viscosity, thermal conductivity, diffusivity, through X01 and X11 | FB-08 |
+| X18 electrolytes | True and apparent species, eNRTL-class models, reference states | blueprint deferred |
+| X19 solids | Solid phases, particle size distributions, solids units | blueprint deferred |
+| X20 polymers | Polymer components (segments, moments), polymer thermodynamics and kinetics | blueprint deferred |
+| X21 petroleum assays | Pseudo-components from assays, characterisation methods | blueprint deferred |
+| X22 rate-based columns | Mass- and heat-transfer stage models; needs X17 | blueprint deferred |
+| X23 P&ID | P&ID drawing and DEXPI exchange | blueprint deferred, D18 |
+| X24 superstructure synthesis | MINLP over structural alternatives; builds on X06 branches and the optimiser | blueprint deferred |
+| X25 batch | Batch processes and scheduling; needs TX | FB-08 |
+| X26 relief and safety | Relief, blowdown, safety analysis; needs TX | FB-08 |
+
+**Release lines become provisional.** The order tables above (the base ADR and Amendment 1) stand only as defaults until
+the roadmap exists. The next design deliverable is a roadmap: a target architecture for the full scope, a dependency
+graph, and a package sequence with entry and exit criteria. Its main job is to find which core structures every planned
+capability needs, so that they are designed once, early, rather than broken later.
+

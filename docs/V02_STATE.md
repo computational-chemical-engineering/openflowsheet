@@ -109,6 +109,8 @@ restrictions, R-925): 0.4 = ADR 0055 + optimiser + **MSG student-readable messag
 `docs/USER_FEEDBACK.md`)** + ST stream table + FB-04(1) + X04 units, X05 replay from wheel, X02 warm start, X10 inventory;
 0.5 = X07 Windows/macOS, X01 extensibility (library-only providers selectable), **X11 component data infrastructure (R-926)**, X06 MCP over HTTP; 0.6 = X08 LLE/VLLE,
 X09 domain widening, PrISMa; 0.7+ = TX transient with co-simulation.
+**R-927 (Frank, 2026-11-01): full real-simulator scope, X12–X26 added (ADR 0056 Am. 2); design quality over speed; release
+lines provisional. Next design deliverable: the roadmap (target architecture, dependency graph, package sequence).**
 **Next actions (in order):**
 1. ADR 0055 parts 1–3 (WO-R1–R4, R6 without the fingerprint carry; Frank "1–3 now, 4 later") before 0.4.0's cut.
 2b. **NLP optimiser on revision flowsheets** (Frank 2026-10-27: right after E01), with MCP/CLI/HTTP for cost/LCA.

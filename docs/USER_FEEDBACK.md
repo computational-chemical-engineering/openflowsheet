@@ -31,7 +31,8 @@ session, which relayed it. FB-02 and FB-04 placements are still defaults.
 
 **FB-08: gap analysis against commercial simulators.** Full table at
 `/home/frankp/Codes/OpenFlowsheet_tutorial/notes/real_simulator_gaps.md`. Frank asked for it and will discuss it
-directly. Status: `logged`, awaiting Frank.
+directly. Status: `placed`. Frank accepted it on 2026-11-01 and extended it to the blueprint's deferred list (R-927,
+ADR 0056 Am. 2). Release lines wait for the roadmap.
 
 Not in any plan today; spot-checked against the repo and accurate:
 - heat integration and pinch;
