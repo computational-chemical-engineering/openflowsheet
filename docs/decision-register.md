@@ -23,6 +23,8 @@ S03 on `wp/S03` and are not on `main` yet. ADR 0047 is S10's. The next package o
 
 ## R-001 — Transient extension: neutralize the lock-in points now, keep dynamics deferred
 
+**Lifted as policy (Frank, 2026-11-01; R-925, ADR 0056): package TX.** The behaviour below stays until that package lands.
+
 | | |
 | --- | --- |
 | Date | 2026-09-16 |
@@ -2026,6 +2028,8 @@ release note calling V14 passed.
 
 ## R-077 — Specification values in ADR 0001's input units are converted by `unit-conversion-v1`; every other unit is refused
 
+**Lifted as policy (Frank, 2026-11-01; R-925, ADR 0056): package X04.** The behaviour below stays until that package lands.
+
 > **Amended 2026-09-26 by R-081 (ADR 0016):** the unit set is widened to ADR 0016's table and instance parameters are converted (Frank's Q11); the arithmetic becomes `RN(a·D(v) + b)` on the decimal `v` denotes — v1's binary reading is reversed because it is not unit-invariant (measured: 75.1 % ≠ 0.751, −40 °C ≠ 233.15 K). STA-03's and A56's values are unchanged; the readers, records (now with `source`, `input_id`) and codes stand; a component reference is judged before a unit.
 
 | | |
@@ -2700,6 +2704,8 @@ release note calling V14 passed.
 
 ## R-110 — v0.1 excludes resume, branches, in-band policy administration, MCP over HTTP and further solve policies, each reported explicitly unsupported
 
+**Lifted as policy (Frank, 2026-11-01; R-925, ADR 0056): package X06.** The behaviour below stays until that package lands.
+
 | | |
 | --- | --- |
 | Date | 2026-09-27 |
@@ -3255,6 +3261,8 @@ release note calling V14 passed.
 ---
 
 ## R-140 — v0.1 ships no lock in the wheel; an installed package's bundles replay `NOT_RUN` (L41); the lock lookup is confined to the source checkout
+
+**Lifted as policy (Frank, 2026-11-01; R-925, ADR 0056): package X05.** The behaviour below stays until that package lands.
 
 | | |
 | --- | --- |
@@ -4879,6 +4887,8 @@ crash containment).
 
 ## R-221 — The kill chain has three layers, the executor's forced kill is a process-group kill, and the isolation profile `external-subprocess-v1` is stated as not a sandbox
 
+**Lifted as policy (Frank, 2026-11-01; R-925, ADR 0056): package X07 (Windows refused; macOS best effort).** The behaviour below stays until that package lands.
+
 | | |
 | --- | --- |
 | Date | 2026-10-08 |
@@ -4938,6 +4948,8 @@ lock (serializes unrelated experiments); a new table (a store migration for no g
 ---
 
 ## R-224 — Bounded transient-only retry, a 120 s per-attempt timeout, cold S1–S3 only (no reactor warm start), and no persistent child — each revisited only on a measurement
+
+**Lifted as policy (Frank, 2026-11-01; R-925, ADR 0056): package X02 (cold only).** The behaviour below stays until that package lands.
 
 | | |
 | --- | --- |
@@ -6455,6 +6467,8 @@ semantic error. Dropping the lenient matching instead: W27-R40 is lenient on pur
 ---
 
 ## R-287 — The coupled reactor's initial iterate is not a revision parameter: `coupling_initial.*` is refused, and w₀ is the variant's
+
+**Lifted as policy (Frank, 2026-11-01; R-925, ADR 0056): package X02.** The behaviour below stays until that package lands.
 
 | | |
 | --- | --- |
@@ -11215,6 +11229,8 @@ by its own ADR or spec. A new root is added in one commit, together with its spe
 
 ## R-561 — Library-only capabilities stay E → U04; L-rows come with the binding, pinned by a tripwire
 
+**Lifted as policy (Frank, 2026-11-01; R-925, ADR 0056): package X01.** The behaviour below stays until that package lands.
+
 | | |
 | --- | --- |
 | Date | 2026-10-22 |
@@ -13071,6 +13087,8 @@ with no input changed.
 
 ## R-631 — Column supported nonideal scope: none; S11 refuses any provider other than SYN-001 by identity, before evaluation
 
+**Lifted as policy (Frank, 2026-11-01; R-925, ADR 0056): package X10.** The behaviour below stays until that package lands.
+
 | | |
 | --- | --- |
 | Date | 2026-10-24 |
@@ -13752,6 +13770,8 @@ decided.
 ---
 
 ## R-709 — S10 is library-only by default; S03's S11 refusal of the column stays; the PH flash and the column go to S10-C with an `architect` pass; LLE is out (an interface ADR first)
+
+**Lifted as policy (Frank, 2026-11-01; R-925, ADR 0056): package X08 (LLE out).** The behaviour below stays until that package lands.
 
 | | |
 | --- | --- |
@@ -15873,6 +15893,8 @@ refuse them.
 
 ## R-807 — S11: the cascade is bound through the column; `syn001.cascade` stays library-only
 
+**Lifted as policy (Frank, 2026-11-01; R-925, ADR 0056): package X01.** The behaviour below stays until that package lands.
+
 | | |
 | --- | --- |
 | Date | 2026-10-26 |
@@ -15911,6 +15933,8 @@ capability.
 - *Not registering.* The S11 build's snapshot would be refused at the next release.
 
 ## R-809 — S11: `pr-lib-v1` stays library-only (R-615 stands)
+
+**Lifted as policy (Frank, 2026-11-01; R-925, ADR 0056): package X01.** The behaviour below stays until that package lands.
 
 | | |
 | --- | --- |
@@ -16130,6 +16154,8 @@ gap, and that distinguishes it from R-615's case.
 statement and every SYN-001 `ProblemSpec` unchanged (gate G1); only the manifests' `artifact_hash` moves.
 
 ## R-819 — S11: `wilson-ig-v2` adds `s` and becomes the Wilson basis's provider; the pump stays refused on Wilson
+
+**Lifted as policy (Frank, 2026-11-01; R-925, ADR 0056): package X10 (pump on Wilson).** The behaviour below stays until that package lands.
 
 | | |
 | --- | --- |
@@ -18238,3 +18264,24 @@ and unsupported cases return explicit unsupported results until they are built.
 
 **Watch for.** A design note or ADR that says "excluded" or "not admitted" for a capability users plausibly need. It
 must show why containment by declaration is impossible, or offer the declared form.
+
+## R-925 — Capability extension plan: the ten restrictions of 2026-11-01 are lifted as planned packages, Windows and macOS included (ADR 0056)
+
+| | |
+| --- | --- |
+| Date | 2026-11-01 |
+| Decided by | Frank (verbatim in ADR 0056 and `docs/FRANK_QUESTIONS.md`) |
+| Normative text | ADR 0056 |
+| Affected packages | TX, X01, X02, X04–X10; R-001, R-077, R-110, R-140, R-221, R-224, R-287, R-561, R-631, R-709, R-807, R-809, R-819 |
+
+**Decision.** "All restrictions in the table, I want lifted. This is not needed right away, but should be planned. Also
+windows and mac users should be able to use OpenFlowsheet." Ten restrictions (transient, warm start, library-only
+providers, liquid–liquid, platforms, replay from the wheel, units of measure, application capabilities, basis coverage,
+domain widening) become planned packages with a default order (0.4: X04, X05, X02, X10 inventory; 0.5: X07, X01, X06;
+0.6: X08, X09; 0.7+: TX with co-simulation). Current behaviour stays, typed, until each package lands; no check is
+relaxed (R-924).
+
+**Rejected alternative.** Keeping the restrictions as policy and lifting case by case on demand (the earlier defaults).
+
+**Watch for.** A design note re-introducing one of these restrictions as policy. It needs a new decision recorded the
+same way, with what changed.

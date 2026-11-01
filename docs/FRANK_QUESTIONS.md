@@ -2,6 +2,12 @@
 
 Questions only Frank can answer (scope, value judgments). Each carries the default that unattended work proceeds on.
 
+## Answer — Frank, 2026-11-01: the capability restrictions are lifted (ADR 0056, R-925)
+
+Frank, verbatim: "All restrictions in the table, I want lifted. This is not needed right away, but should be planned.
+Also windows and mac users should be able to use OpenFlowsheet. Otherwise it is very restricted. Explicitly plan for the
+extended capabilities." The table and the packages are in ADR 0056.
+
 ## Answer — Frank, 2026-11-01: Q-B2 reversed (co-simulation allowed)
 
 Frank, verbatim: "On the question of co-simulation. Yes, I think it should be allowed. One think I want is that
