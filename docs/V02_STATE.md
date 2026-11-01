@@ -105,7 +105,8 @@ merged into main `727f7f0f` (head `246a42b0`: gate PASS 14781; CI 41147504316 gr
 `[project.urls]`, keep-current test `tests/test_readme_current.py`, post-release rule R-922. PyPI environment `pypi` again
 requires Frank's approval (it had none). WO-9 merged `cde1a3c2`: main = `0.4.0.dev0`, envelope working form, G10 re-take.
 **Development paused for budget (Frank, 2026-11-01).** Capability plan **ADR 0056** (R-923 co-simulation, R-924 no needless
-restrictions, R-925): 0.4 = ADR 0055 + optimiser + X04 units, X05 replay from wheel, X02 warm start, X10 inventory;
+restrictions, R-925): 0.4 = ADR 0055 + optimiser + **MSG student-readable messages (FB-05 with FB-01, FB-03; Frank 2026-11-01, ahead of X04;
+`docs/USER_FEEDBACK.md`)** + X04 units, X05 replay from wheel, X02 warm start, X10 inventory;
 0.5 = X07 Windows/macOS, X01 extensibility (library-only providers selectable), X06 MCP over HTTP; 0.6 = X08 LLE/VLLE,
 X09 domain widening, PrISMa; 0.7+ = TX transient with co-simulation.
 **Next actions (in order):**
