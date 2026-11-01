@@ -2,6 +2,12 @@
 
 Questions only Frank can answer (scope, value judgments). Each carries the default that unattended work proceeds on.
 
+## Answer — Frank, 2026-11-01: Q-B2 reversed (co-simulation allowed)
+
+Frank, verbatim: "On the question of co-simulation. Yes, I think it should be allowed. One think I want is that
+OpenFlowsheet will be flexible and capable. So, I do not want to have unnecessary restrictions on capabilities."
+This replaces the 2026-10-22 answer to Q-B2 below (R-923), and states a standing principle (R-924).
+
 ## Answers — Frank, 2026-10-22: "accept all recommendations"
 
 Recommendations as put to Frank (session, 2026-10-22); each answer below is now the decision.

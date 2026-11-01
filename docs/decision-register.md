@@ -10419,6 +10419,9 @@ dynamic C1 reactor that includes the bed's heat capacity is a different model (U
 
 **Watch for.** A "stateful child" or warm-start proposal for an external model. It is the excluded form.
 
+**Reversed in part (2026-11-01, R-923).** Frank allows co-simulation. Forms (a) and (b) stand; co-simulation becomes a
+third admitted form, defined by the transient package's ADR revising D2.3.
+
 ---
 
 ## R-499 — X4's empty-diff set is every self-hashing module (24 at 0.2.0); J5 binds the web shell; a frozen surrogate's coefficients are backend form
@@ -18191,3 +18194,47 @@ patterns of `benchmarks/` (V03 Table T-V3, M07a T2/T3) are unchanged: the post-r
 under `benchmarks/`, a D2.4 path, and would let the ordinary tree rule refuse the README).
 
 **Watch for.** A post-release used to ship a code, schema, data or lock change; an envelope moved to `X.Y.Z.postN`.
+
+## R-923 — Co-simulated external models will be admitted (reverses R-498's exclusion; Q-B2 answered "yes")
+
+| | |
+| --- | --- |
+| Date | 2026-11-01 |
+| Decided by | Frank (Q-B2, `docs/FRANK_QUESTIONS.md`, answer of 2026-11-01, verbatim there) |
+| Normative text | to come: the transient package's ADR revising ADR 0008 D2.3 (X11) |
+| Affected packages | TX and any package admitting a dynamic external model; R-498 |
+
+**Decision.** Co-simulation (the external program integrates over `[t_n, t_{n+1}]` and keeps its own state between
+calls, FMI co-simulation style) becomes an admitted form beside X11's quasi-steady (a) and model exchange (b). The
+transient package's ADR revises D2.3 to define it. R-498's exclusion no longer stands.
+
+**What the ADR must still settle (R-498's reasons, now design constraints rather than grounds for exclusion).** The
+answer depends on history the request does not carry, so: a co-simulated unit is declared stateful; its results are
+never served from the exact experiment cache by request alone (key on the child's state snapshot, or bypass the cache);
+replay records the step sequence, or the child's state at each step when it can export it (FMI `getFMUstate`);
+certificates state what the verifier could not re-check inside the child; model exchange stays the preferred form
+where the model can expose its states, because it keeps the verifier's full reach.
+
+**Rejected alternative.** Keeping the exclusion (the 2026-10-22 default): it removes a capability that common external
+tools (FMUs, vendor simulators) offer only in this form. Frank: "I do not want to have unnecessary restrictions on
+capabilities."
+
+## R-924 — Standing: no unnecessary restrictions on capability; admit with declaration and stated limits instead of excluding
+
+| | |
+| --- | --- |
+| Date | 2026-11-01 |
+| Decided by | Frank (verbatim in `docs/FRANK_QUESTIONS.md`, 2026-11-01) |
+| Affected packages | all design-lane work |
+
+**Decision.** "One think I want is that OpenFlowsheet will be flexible and capable. So, I do not want to have unnecessary
+restrictions on capabilities." A design may exclude a capability only when admitting it would make a result wrong,
+unverifiable without saying so, or non-reproducible without saying so, and no declaration, typed limitation or
+separate evidence class can contain that. Otherwise the capability is admitted, declared, and carries its limitations
+and the evidence it does and does not have. Scientific conduct is unchanged: no placeholder success, no relaxed checks,
+and unsupported cases return explicit unsupported results until they are built.
+
+**Rejected alternative.** Excluding by default whatever a first design finds awkward (R-498's original form).
+
+**Watch for.** A design note or ADR that says "excluded" or "not admitted" for a capability users plausibly need. It
+must show why containment by declaration is impossible, or offer the declared form.
