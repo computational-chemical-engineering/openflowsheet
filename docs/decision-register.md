@@ -18285,3 +18285,29 @@ relaxed (R-924).
 
 **Watch for.** A design note re-introducing one of these restrictions as policy. It needs a new decision recorded the
 same way, with what changed.
+
+---
+
+## R-926 — Direction: a real simulator, open and agent-enabled; component data comes through an acquisition infrastructure (package X11)
+
+| | |
+| --- | --- |
+| Date | 2026-11-01 |
+| Decided by | Frank, stated in the `OpenFlowsheet_tutorial` session and relayed by it (FB-07 in `docs/USER_FEEDBACK.md`) |
+| Normative text | ADR 0056 Amendment 1 |
+| Affected packages | X11 (new), X01, X09, X10; R-706 |
+
+**Decision.** "The goal is a *real* simulator, built up like a commercial one but open and agent-enabled. External
+libraries must be easy to connect. For less common compounds, a coding agent should be able to fetch data, e.g. from the
+NIST WebBook. What matters is the infrastructure to get and use that information." This becomes package X11:
+component identity, a record schema with provenance, validity range and kind, source adapters behind one interface,
+regression and estimation, consistency checks as evidence, records pinned by hash into revisions and replay, and agent
+operations on the application contract. Property methods consume the records through X01.
+
+**Rejected alternative.** Adding components one provider at a time as packages need them (the practice up to 0.3).
+
+**Watch for.** R-706's rights rule still governs what the package *ships*: a record enters a packaged path only once its
+rights rows are `permitted` and Frank has decided. Data the user fetches or holds a licence for lives in the user's project
+and is not redistributed; that is admitted under R-924 rather than refused. A design that ships fetched data, or that
+refuses user-licensed sources outright, departs from this entry.
+

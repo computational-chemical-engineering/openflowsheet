@@ -72,3 +72,23 @@ the README likewise.
 No existing acceptance evidence changes. Each new package registers its own assertions. The support matrix, README and
 CHANGELOG keep stating the current restrictions until the package that lifts each one merges (`tests/test_readme_current.py`
 and the envelope keep them honest).
+
+## Amendment 1 — 2026-11-01: user-feedback packages (MSG, ST, X11)
+
+Source: the tutorial session's feedback batches 1 and 2 (`docs/USER_FEEDBACK.md`), and Frank's direction R-926.
+
+| Package | What it adds | Line | Placement by |
+| --- | --- | --- | --- |
+| **MSG** student-readable messages | FB-05, with FB-01 (re-run `create`, `exist_ok=True`) and FB-03 (failure on `RunResult`, a useful `not_found`). What, where, why and what to do; the failure kind (input, not supported, numerical, bug); typed codes kept; `explain <code>`; a beginner-mistake corpus in CI. Architect pass first | 0.4, ahead of X04 | Frank (relayed, 2026-11-01) |
+| **ST** stream table | FB-06, with FB-02. Post-solve per-stream T, P, molar and mass flow, composition, vapour fraction, h, s, density; an overall energy-balance summary; API, artifact, CLI | 0.4 | default |
+| **X11** component data infrastructure | FB-07 and R-926. Identity keys; a record schema (value or correlation, units, validity range, kind measured/fitted/estimated, uncertainty, retrieval provenance); source adapters behind one interface (a bundled open databank, external libraries, user files, user-licensed databanks, web fetchers such as NIST WebBook, PubChem and ThermoML, group-contribution estimation flagged as estimated); regression from data to correlations, later k_ij; consistency checks as evidence; records pinned by hash into revisions and replay; agent operations (search, fetch, fit, validate, register). Architect and specifier passes first; R-706 governs what ships | 0.5, beside X01 | default |
+| FB-04 (1) | Two-phase isentropic reference for a vapour turbine outlet (part of L-TH-4). Specifier pass first | 0.4 | default |
+| FB-04 (2) | Regime discovery, so stream phases need not be declared (L-TH-1, L-TH-6) | 0.6, with X08 | default |
+
+Acceptance case for the X01 + X11 + X09 + X10 chain: Seider's vinyl chloride process (Ch. 2, route 3) against its Table
+2.7 stream table, at the end of the 0.6 line. It needs a basis-independent conversion reactor, which is added to X10's
+gaps. Seider is a licensed copy, so only individual numbers with page and table citations enter the repository.
+
+DECISION (orchestrator, 2026-11-01): X11 in the 0.5 line beside X01 → yes. Alternative: 0.4. Reversible by: moving the
+row. Reason: X11's records feed X01's property methods, and its liquid-phase use needs X09.
+
