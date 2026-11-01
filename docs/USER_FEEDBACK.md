@@ -27,5 +27,42 @@ session, which relayed it. FB-02 and FB-04 placements are still defaults.
 | FB-06 | No stream table. Checking H(S5) − H(S1) for a Rankine energy balance took about 25 lines of internal API (`Iapws95Provider`, `EvaluationContext`, `PropertyRequest`, phase chosen by hand). Asks: a post-solve stream table (T, P, molar and mass flow, composition, vapour fraction, h, s, density) and an overall energy-balance summary, via API, artifact and CLI. Subsumes FB-02. | Build lane; result views over existing providers | 0.4, package ST (ADR 0056 Am. 1) | placed |
 | FB-07 | Seider's vinyl chloride process (C2H4, Cl2, HCl, EDC, VCM, O2, H2O) can't be modelled. Blockers: component records; liquid-phase VLE with k_ij; a basis-independent conversion reactor; column and HX coverage. It carries Frank's direction (R-926): a real simulator, open and agent-enabled, with infrastructure to get and use component data (identity, record schema, adapters including NIST WebBook fetchers and user-licensed databanks, regression, consistency evidence, hash pinning, agent operations). | Architect and specifier; new package X11; touches R-706 (rights of shipped data), X01, X09, X10 | X11 in 0.5 beside X01; VCM acceptance at the end of 0.6 | placed (default) |
 
+## Batch 3 — 2026-11-01
+
+**FB-08: gap analysis against commercial simulators.** Full table at
+`/home/frankp/Codes/OpenFlowsheet_tutorial/notes/real_simulator_gaps.md`. Frank asked for it and will discuss it
+directly. Status: `logged`, awaiting Frank.
+
+Not in any plan today; spot-checked against the repo and accurate:
+- heat integration and pinch;
+- sizing and costing of every unit, with profitability (NPV, IRR, cash flow). E01/S12 has cost and LCA functionals only;
+- a Gibbs equilibrium reactor, and kinetic CSTR/PFR with user rate laws on any basis. Blueprint §579: "deferred unless
+  already needed by a case"; the VCM case is now such a case;
+- CAPE-OPEN. Blueprint D18 and §496, and plan §288, say demand-driven and need a use case and an ADR. R-926 supplies
+  the use case;
+- a rigorous two-stream exchanger with design and rating on every basis;
+- transport properties;
+- a PFD editor and reports;
+- batch processes;
+- relief and safety.
+
+One correction: activity models are already named, since X01 is piloted by NRTL, UNIQUAC and original UNIFAC
+(`docs/V02_STATE.md`, queue 2c).
+
+Proposed grouping, all defaults for Frank:
+
+| Package | Contents | Line |
+| --- | --- | --- |
+| X12 economics | Sizing and costing for every unit, costed utilities, profitability; extends E01/S12 | 0.6, needed for the VCM route comparison |
+| X13 reactors | Gibbs reactor; kinetic CSTR/PFR with user rate laws on any basis | 0.6 |
+| X14 heat exchange | Rigorous HeatX design and rating on every basis; pinch targets and HEN | 0.6 |
+| X15 CAPE-OPEN | Thermo and unit interop, after X07 and X01 | 0.7 |
+| X16 PFD and reports | Graphical editor in the web shell; stream and equipment reports | 0.7+ |
+| X17 transport properties | Viscosity, conductivity, diffusivity through X01 and X11 | 0.6, with X12 |
+| after TX | Batch processes; relief and safety | 0.8+ |
+
+Open question for Frank: does R-924 also lift the blueprint's deferred list (electrolytes, solids, polymers, assays,
+rate-based columns, P&ID, MINLP synthesis) as planned packages?
+
 Related: transient simulation for process control is TX in ADR 0056 (0.7+). The tutorial session is collecting control
 use cases as design input.
