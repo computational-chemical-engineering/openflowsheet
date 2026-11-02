@@ -18413,3 +18413,26 @@ mass entries.
 
 **Watch for.** PTC giving `state_rate` rows a mass entry without a PTC decision.
 
+
+---
+
+## R-931: The agentic design layer is part of OpenFlowsheet; its end state is co-creation, with configurable approval; autonomous route comparison comes first
+
+| | |
+| --- | --- |
+| Date | 2026-11-02 |
+| Decided by | Frank (verbatim in `docs/agentic-layer/preliminary-plan.md` §8) |
+| Normative text | `docs/agentic-layer/preliminary-plan.md` (preliminary; a design pass A1 follows) |
+| Affected packages | Agentic layer phases A0–A7; F1/X01 (extensions); MSG (typed gaps) |
+
+**Decision.**
+- **Placement.** The design layer lives inside OpenFlowsheet. It uses only the public contract.
+- **Co-creation.** When the layer finds missing functionality, an agent extends OpenFlowsheet through the F1 registry,
+  under the two-lane rules.
+- **Approval.** Approval is configurable per project and per gate.
+- **Users.** Students, practitioners and autonomous agents. Autonomous route comparison is the priority.
+
+**Rejected alternative.** A separate repository that is only a user of the tool (the plan's first default).
+
+**Watch for.** Configurable approval must never skip tests, gates, the independent review, or the `contributed,
+unreviewed` flag on results that use an unreviewed extension. An agent never certifies its own extension.

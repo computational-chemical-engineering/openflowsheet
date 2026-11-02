@@ -1,6 +1,6 @@
 # Agentic design layer: preliminary plan
 
-Status: **brainstorm / preliminary plan**, 2026-11-02 (orchestrator, from Frank's request). Not a design and not a
+Status: **preliminary plan**, 2026-11-02 (orchestrator, from Frank's request; Frank's answers in §8). Not a design and not a
 decision. A design pass (architect) and the literature survey (A0) come first when budget allows.
 
 Frank, verbatim: "Next to OpenFlowsheet that is the tool, I would like to design an agentic layer. It should use
@@ -219,18 +219,68 @@ wait for the roadmap, and its needs sharpen the roadmap's priorities.
 | A6 | ML tools trained on the corpus; heuristic refinement | architect, then build lane |
 | A7 | Safety, sustainability, uncertainty-aware ranking; a full design report | design and build lanes |
 
-## 8. Questions for Frank (later; nothing is blocked)
+## 8. Frank's answers (2026-11-02)
 
-1. **Where it lives:** its own repository (for example `OpenFlowsheet-Designer`), or inside OpenFlowsheet? The default
-   is its own repository: it is a user of the tool, as the tutorial is. This preliminary plan sits in OpenFlowsheet's docs
-   until then.
-2. **Users:** students learning design, practitioners, or autonomous agents comparing routes? It changes how much the
-   layer explains and when it asks the human.
-3. **Sources beyond Seider:** Douglas, Smith, Turton, Towler and Sinnott? Which do you have access to?
-4. **Human gates:** at every level, only at final selection, or configurable?
-5. **Name and licence:** the default is Apache-2.0, matching the core.
+Frank, verbatim: "It should be part of OpenFlowsheet. It should in the end become co-creation. When an agent finds that
+OpenFlowsheet misses functionality it extends it. Approval is configurable. It is for all 3: students, practitioners, or
+autonomous agents comparing routes? The last route is specifically relevant."
 
-## 9. Risks
+- **Where it lives:** inside OpenFlowsheet, as a layer of its own (for example `src/openflowsheet/designer/`, with its
+  agents and skills under the repository's plugin directory). It still uses only the public contract internally, so the
+  boundary stays testable.
+- **Co-creation (end state).** When the layer finds missing functionality, an agent extends OpenFlowsheet. See §8.1.
+- **Approval:** configurable per project and per gate (each level, final selection, extensions), from fully supervised
+  to autonomous.
+- **Users:** students, practitioners and autonomous agents. **The priority is autonomous route comparison**, so A3's
+  first benchmark is choosing between Seider's vinyl chloride routes. The explanation depth for students and
+  practitioners is a presentation setting over the same dossier.
+
+### 8.1 The co-creation loop (sketch)
+
+1. **Gap detection.** A design step needs a capability OpenFlowsheet refuses, such as a unit, a property method, a
+   correlation or a cost model. The typed refusal (MSG) names the missing capability.
+2. **Gap record.** The layer writes a typed feature request into the dossier and the repository's feedback log, with the
+   design context that needs it.
+3. **Extension.** An extension agent builds it through the F1 registry (X01: one registration point per provider and
+   unit), following the repository's two-lane rules:
+   - scientific content (equations, data, phase logic) gets a design-lane pass;
+   - the build lane implements with tests;
+   - gates and CI run as for any package.
+4. **Evidence class.** Until a `reviewer` pass and the configured approval accept it, the extension is
+   **`contributed, unreviewed`**. Every design result that uses it carries that flag. An agent never certifies its own
+   extension (CLAUDE.md: never set `reviewed` on your own work).
+5. **Merge.** On approval it becomes an ordinary registered extension, with its own manifest. The design that needed it
+   is re-run on the merged version.
+
+Approval settings may skip human sign-off; they never skip tests, gates, the flag or the independent review. The
+scientific-conduct rules are not configurable.
+
+## 9. Textbooks (requested sources)
+
+Frank asked which textbooks the layer should draw on. In priority order:
+
+| # | Book | Why |
+| --- | --- | --- |
+| 1 | Seider, Seader, Lewin, Widagdo, *Product and Process Design Principles* (3rd/4th ed.) | Already in Zotero. Synthesis steps, heuristics, route comparison, the vinyl chloride case, costing |
+| 2 | Douglas, *Conceptual Design of Chemical Processes* (1988) | The hierarchical decision procedure, the methodology backbone; economic potential by level; HDA case |
+| 3 | Smith, *Chemical Process Design and Integration* (2nd ed., 2016) | The onion model; reactor and separation choice; distillation sequencing; heat integration |
+| 4 | Couper, Penney, Fair, Walas, *Chemical Process Equipment: Selection and Design* (3rd ed.) | The standard rules-of-thumb collection for equipment selection |
+| 5 | Turton et al., *Analysis, Synthesis and Design of Chemical Processes* (5th ed.) | Worked plant cases, costing, troubleshooting; benchmark cases |
+| 6 | Biegler, Grossmann, Westerberg, *Systematic Methods of Chemical Process Design* (1997) | Optimisation-based synthesis, the counterpart to heuristics; superstructures |
+| 7 | Doherty and Malone, *Conceptual Design of Distillation Systems* (2001) | Azeotropic and nonideal separations, residue curve maps, feasibility |
+| 8 | Towler and Sinnott, *Chemical Engineering Design* (2nd or 3rd ed.) | Equipment design, costing, safety and layout |
+| 9 | Kemp, *Pinch Analysis and Process Integration* (2nd ed., 2007) | Heat-integration practice |
+| 10 | CCPS, *Inherently Safer Chemical Processes*, or Kletz and Amyotte, *Process Plants: A Handbook for Inherently Safer Design* | Safety questions at the conceptual stage |
+| 11 | Levenspiel, *Chemical Reaction Engineering* (3rd ed.) | Reactor-type selection |
+
+Numbers 2–4 matter most after Seider: Douglas for the method, Smith for its systematic alternatives, and Couper and
+Walas for the rules of thumb. Recent review papers on AI for process design come from the A0 survey, not from textbooks.
+
+## 10. Questions still open (nothing is blocked)
+
+- Licence and name of the layer: the default is the core's Apache-2.0, under the OpenFlowsheet name.
+
+## 11. Risks
 
 - **Conflicting heuristics.** Textbooks disagree. The record model must hold conflicts and show them, not resolve them
   silently.
