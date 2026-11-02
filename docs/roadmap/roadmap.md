@@ -1,6 +1,6 @@
 # OpenFlowsheet roadmap, 0.4 to 1.0
 
-Status: Proposed, 2026-11-02 (roadmap stage 4c). Frank decides in stage 5. Recorded by ADR 0057. The design behind
+Status: **Accepted**, 2026-11-02 (Frank, stage 5, "Accept as is"). Recorded by ADR 0057. The design behind
 it is `docs/roadmap/target-architecture.md` ("the note"); the scientific rulings are `docs/roadmap/foundation-rulings.md`.
 This page is for Frank and for an agent about to start a package.
 

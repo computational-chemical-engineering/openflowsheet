@@ -18338,3 +18338,78 @@ phase, component, unit-model or provider interfaces, solver, replay identity) in
 break. Second, release-line placement chosen for speed over a sound dependency order. Each design brief cites this entry
 and the roadmap that Amendment 2 calls for.
 
+---
+
+## R-928 — Roadmap: foundations F0–F8 are designed together (wave W1, during 0.4) and built before the features that need them; release lines 0.4–1.0 (ADR 0057)
+
+| | |
+| --- | --- |
+| Date | 2026-11-02 |
+| Decided by | Frank ("Accept as is", roadmap stage 5), on the design lane's roadmap (architect, specifier, reviewer) |
+| Normative text | ADR 0057; `docs/roadmap/target-architecture.md` Rev 2 (structure); `docs/roadmap/roadmap.md` (order) |
+| Evidence | `docs/roadmap/review-roadmap.md` (finalise after fixes; fixes applied in Rev 2 and rulings Am. 1) |
+| Affected packages | All of ADR 0056 and its amendments; ADR 0056's release lines are subordinate to the roadmap |
+
+**Decision.**
+- **Foundations.** F0 is the corpus identity gate. F1 is the registry, F2 the material model and revision v2, F3 the
+  component data, F4 the property methods, F5 the phase equilibrium, F6 the unit framework v2, F7 the problem layer v2,
+  and F8 identity and replay v2.
+- **Design order.** All eight foundations are designed in one wave during 0.4, then built in dependency order.
+- **Release lines.** 0.4: boundary work and W1. 0.5: platforms, registry, data and the schema. 0.6: the multiphase core
+  and generic units, closing on Seider's vinyl chloride case. 0.7: dynamics. 0.8: the design toolkit. 0.9: batch,
+  relief, synthesis and electrolytes. 1.0: solids, polymers and P&ID.
+- **Unchanged.** Every package keeps its own design pass, ADR, manifest and reviewer pass.
+
+**Rejected alternatives.**
+- Feature-first delivery, with the architecture adapted as each feature arrives (R-927 rejects it).
+- The design toolkit (0.8) before dynamics (0.7). The two lines swap without breaking anything; Frank kept dynamics
+  first.
+
+**Watch for.** A package that fixes a core structure outside its foundation's ADR, or a release placement chosen for
+speed over dependency order.
+
+---
+
+## R-929 — v2 freeze points and legacy retirement
+
+| | |
+| --- | --- |
+| Date | 2026-11-02 |
+| Decided by | Frank (ADR 0057 accepted), on the review's defaults (`docs/roadmap/decisions.md`) |
+| Normative text | ADR 0057; note §3 (F2, F6) |
+| Affected packages | F2, F4–F6, every legacy unit and provider family |
+
+**Decision.**
+- **Freeze points.** The v2 core grammar freezes at the end of design wave W1. The method, phase-assertion and template
+  slots stay `preview` until the end of 0.6.
+- **Legacy freeze.** Legacy families are frozen at byte level, with line-ending rules for hashed files.
+- **Retirement.** A legacy family takes no new v2 work once `std.*` matches it on the defined equivalence. Old
+  revisions keep running it.
+
+**Rejected alternatives.**
+- Freezing everything at W1, before F4–F6 are built.
+- Keeping both unit code paths open indefinitely.
+- Migrating released cases onto `std.*`, which would change released numbers.
+
+**Watch for.** An edit to a frozen legacy module. F0 fails on it, and that failure is correct.
+
+---
+
+## R-930 — Control rows enter dynamics through a new additive `state_rate` accumulation kind (the route ADR 0008 C10 named)
+
+| | |
+| --- | --- |
+| Date | 2026-11-02 |
+| Decided by | Frank (ADR 0057 accepted); the design lane (architect, TX sketch, note §9) |
+| Normative text | ADR 0057; ADR-F7 (to be written) amends ADR 0008 |
+| Affected packages | F7, TX, X25, X26 |
+
+**Decision.** The integral states of controllers, measurement lags and actuators are differential rows of a new kind,
+`state_rate`. They are not conserved and never `holdup_balance`. The mass matrix stays 0/1. This is the additive branch
+that ADR 0008 C10 reserved for a control ADR.
+
+**Rejected alternative.** Declaring control states as `holdup_balance` rows. That would break conservation and PTC's
+mass entries.
+
+**Watch for.** PTC giving `state_rate` rows a mass entry without a PTC decision.
+

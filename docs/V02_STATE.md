@@ -111,9 +111,9 @@ restrictions, R-925): 0.4 = ADR 0055 + optimiser + **MSG student-readable messag
 X09 domain widening, PrISMa; 0.7+ = TX transient with co-simulation.
 **R-927 (Frank, 2026-11-01): full real-simulator scope, X12–X26 added (ADR 0056 Am. 2); design quality over speed; release
 lines provisional. **Roadmap done to stage 4** (2026-11-02, `82530b57`): `docs/roadmap/roadmap.md` (0.4–1.0),
-`target-architecture.md` Rev 2 (F0–F8), `foundation-rulings.md` + Am. 1, review, ADR 0057 **Proposed**. Next: Frank's
-stage-5 review of ADR 0057; on acceptance, register entries (freeze points, legacy retirement, ADR 0008 C10 reversal)
-and design wave W1 when budget allows.**
+`target-architecture.md` Rev 2 (F0–F8), `foundation-rulings.md` + Am. 1, review, ADR 0057 **Accepted** (Frank, "Accept as is";
+R-928–R-930). Next, when budget allows: 0.4 items (MSG first, ST, X04, X05, X02, OPT, X10 inventory, F0, ADR 0055 1–3)
+and design wave W1 (specifier on the five open items, then architect P1–P3).**
 **Next actions (in order):**
 1. ADR 0055 parts 1–3 (WO-R1–R4, R6 without the fingerprint carry; Frank "1–3 now, 4 later") before 0.4.0's cut.
 2b. **NLP optimiser on revision flowsheets** (Frank 2026-10-27: right after E01), with MCP/CLI/HTTP for cost/LCA.

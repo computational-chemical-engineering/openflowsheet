@@ -1,6 +1,7 @@
 # ADR 0057 — Roadmap and target architecture: foundations F0–F8 before the features that need them
 
-**Status:** **Proposed, 2026-11-02.** Frank decides in roadmap stage 5. Once Accepted, its normative text is
+**Status:** **Accepted, 2026-11-02** (Frank, roadmap stage 5: "Accept as is" — dynamics in 0.7, the design toolkit in
+0.8). Proposed the same day. Its normative text is
 `docs/roadmap/target-architecture.md` (Revision 2, "the note") for structure and `docs/roadmap/roadmap.md` for order.
 `docs/roadmap/foundation-rulings.md` (with Amendment 1) is input to ADR-F2 to ADR-F5 and becomes archival once they adopt
 it. Nothing is built by this ADR.

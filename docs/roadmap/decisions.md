@@ -19,3 +19,5 @@ Each entry gives the date, the question, the choice, who made it and where it is
 - **2026-11-02** DECISION (orchestrator, on the specifier's default O-7, which the review endorses): state documents
   carry mass-specific `ĥ`; reports show both specific and molar h. Alternative: molar h. Reversible by: Q1.R1, before
   the v2 freeze.
+- **2026-11-02** Frank: ADR 0057 accepted as is ("Accept as is"): dynamics in 0.7, the design toolkit in 0.8. Register
+  entries R-928 (roadmap), R-929 (freeze points, legacy retirement) and R-930 (`state_rate` control rows).
