@@ -276,6 +276,15 @@ Frank asked which textbooks the layer should draw on. In priority order:
 Numbers 2–4 matter most after Seider: Douglas for the method, Smith for its systematic alternatives, and Couper and
 Walas for the rules of thumb. Recent review papers on AI for process design come from the A0 survey, not from textbooks.
 
+**In Zotero (2026-11-02):** collection *projects / OpenFlowsheet design layer* (`J27U2G9V`). The keys are
+`seider2009product`, `seider2017product`, `douglas1988conceptual`, `smith2016chemical`, `couper2012chemical`,
+`turton2018analysis`, `biegler1997systematic`, `doherty2001conceptual`, `towler2022chemical` (3rd ed.),
+`kemp2007pinch`, `center2009inherently`, `kletz2010process` and `levenspiel1999chemical`.
+
+PDFs are present for Seider (both editions) and Levenspiel. The other ten are tagged `ofs:pdf-needed`, and Frank
+supplies them through the zotero session's inbox. The PDFs stay in Zotero storage only; this repository gets citations,
+plus short page-cited excerpts on request.
+
 ## 10. Questions still open (nothing is blocked)
 
 - Licence and name of the layer: the default is the core's Apache-2.0, under the OpenFlowsheet name.
