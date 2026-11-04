@@ -270,7 +270,7 @@ Frank asked which textbooks the layer should draw on. In priority order:
 | 7 | Doherty and Malone, *Conceptual Design of Distillation Systems* (2001) | Azeotropic and nonideal separations, residue curve maps, feasibility |
 | 8 | Towler and Sinnott, *Chemical Engineering Design* (2nd or 3rd ed.) | Equipment design, costing, safety and layout |
 | 9 | Kemp, *Pinch Analysis and Process Integration* (2nd ed., 2007) | Heat-integration practice |
-| 10 | CCPS, *Inherently Safer Chemical Processes*, or Kletz and Amyotte, *Process Plants: A Handbook for Inherently Safer Design* | Safety questions at the conceptual stage |
+| 10 | CCPS, *Guidelines for Inherently Safer Chemical Processes* (3rd ed., 2020), or Kletz and Amyotte, *Process Plants: A Handbook for Inherently Safer Design* | Safety questions at the conceptual stage |
 | 11 | Levenspiel, *Chemical Reaction Engineering* (3rd ed.) | Reactor-type selection |
 
 Numbers 2–4 matter most after Seider: Douglas for the method, Smith for its systematic alternatives, and Couper and
@@ -279,12 +279,13 @@ Walas for the rules of thumb. Recent review papers on AI for process design come
 **In Zotero (2026-11-02):** collection *projects / OpenFlowsheet design layer* (`J27U2G9V`). The keys are
 `seider2009product`, `seider2017product`, `douglas1988conceptual`, `smith2016chemical`, `couper2012chemical`,
 `turton2018analysis`, `biegler1997systematic`, `doherty2001conceptual`, `towler2022chemical` (3rd ed.),
-`kemp2007pinch`, `center2009inherently`, `kletz2010process` and `levenspiel1999chemical`.
+`kemp2007pinch`, `center2020guidelines` (3rd ed., 2020), `kletz2010process` and `levenspiel1999chemical`.
 
-PDFs status (2026-11-04):
-- **Present:** Seider (both editions), Levenspiel, Smith, Couper (an OCR'd scan), Turton, Towler, Kemp, and Douglas (a
-  scan with two book pages per PDF page; its text layer is poor in places).
-- **Still needed:** Biegler/Grossmann/Westerberg, Doherty and Malone, CCPS, and Kletz and Amyotte.
+PDF status (2026-11-04):
+- **Present:** Seider (both editions), Levenspiel, Smith, Couper (an OCR'd scan), Turton, Towler, Kemp, CCPS (3rd ed.),
+  and Douglas (split to one book page per PDF page and re-OCR'd: 97.5 % dictionary words; PDF page labels match the
+  printed page numbers).
+- **Still needed:** Biegler/Grossmann/Westerberg, Doherty and Malone, and Kletz and Amyotte.
 
 The missing ones are tagged `ofs:pdf-needed`. The PDFs stay in Zotero storage only; this repository gets citations,
 plus short page-cited excerpts on request.
