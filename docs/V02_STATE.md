@@ -104,40 +104,37 @@ merged into main `727f7f0f` (head `246a42b0`: gate PASS 14781; CI 41147504316 gr
 **After the release (2026-10-31/11-01).** `0.3.0.post1` RELEASED (tag → `b059e7ab`, run 41207468957): README for PyPI,
 `[project.urls]`, keep-current test `tests/test_readme_current.py`, post-release rule R-922. PyPI environment `pypi` again
 requires Frank's approval (it had none). WO-9 merged `cde1a3c2`: main = `0.4.0.dev0`, envelope working form, G10 re-take.
-**Development paused for budget (Frank, 2026-11-01).** Capability plan **ADR 0056** (R-923 co-simulation, R-924 no needless
-restrictions, R-925): 0.4 = ADR 0055 + optimiser + **MSG student-readable messages (FB-05 with FB-01, FB-03; Frank 2026-11-01, ahead of X04;
-`docs/USER_FEEDBACK.md`)** + ST stream table + FB-04(1) + X04 units, X05 replay from wheel, X02 warm start, X10 inventory;
-0.5 = X07 Windows/macOS, X01 extensibility (library-only providers selectable), **X11 component data infrastructure (R-926)**, X06 MCP over HTTP; 0.6 = X08 LLE/VLLE,
-X09 domain widening, PrISMa; 0.7+ = TX transient with co-simulation.
-**R-927 (Frank, 2026-11-01): full real-simulator scope, X12–X26 added (ADR 0056 Am. 2); design quality over speed; release
-lines provisional. **Roadmap done to stage 4** (2026-11-02, `82530b57`): `docs/roadmap/roadmap.md` (0.4–1.0),
-`target-architecture.md` Rev 2 (F0–F8), `foundation-rulings.md` + Am. 1, review, ADR 0057 **Accepted** (Frank, "Accept as is";
-R-928–R-930). Next, when budget allows: 0.4 items (MSG first, ST, X04, X05, X02, OPT, X10 inventory, F0, ADR 0055 1–3)
-and design wave W1 (specifier on the five open items, then architect P1–P3).**
-**Next actions (in order):**
-1. ADR 0055 parts 1–3 (WO-R1–R4, R6 without the fingerprint carry; Frank "1–3 now, 4 later") before 0.4.0's cut.
-2b. **NLP optimiser on revision flowsheets** (Frank 2026-10-27: right after E01), with MCP/CLI/HTTP for cost/LCA.
-2c. **X01 — model extensibility infrastructure, piloted by NRTL + UNIQUAC (+ original UNIFAC), VLE only** (Frank,
-   2026-10-28: "more about the flexibility of the basic infrastructure than having all models on board"; adding a model
-   should be easy, e.g. by asking a coding agent). After the optimiser package. Design pass decides: one registration
-   point per provider (today a new basis touches ~10 sites: `SELECTABLE_BASES`, `basis_provider`, verifier
-   `fresh_provider`, `MODEL_BASES`, W27 lines, envelope, T08 inventory, records); an activity-model interface (ln γ(T,x)
-   with derivatives by AD) from which the γ–φ flash, column, binding and verifier follow; a conformance kit (derivatives,
-   Gibbs–Duhem, limits, symmetry, stability) plus a reference-comparison scaffold; library-only until both pass; an
-   agent recipe ("add a model") as a skill/doc. Pilots: NRTL, UNIQUAC, original UNIFAC (rights check of parameter
-   tables; Dortmund UNIFAC is licensed). A predicted liquid split is refused typed.
-2d. **Two liquid phases (LLE/VLLE)** — waits for a case (Frank 2026-10-28); needs an interface ADR (FlashResult carries
-   one liquid, S10 F-1), three-phase flash, decanter, verifier.
-3. **After S11 merges: revision-region continuation** (edge 3 for flowsheet regions; Frank 2026-10-27 "plan for it at the
-   appropriate time"; removes S11's L-COL-9, R-827). Design pass first.
-4. **PrISMa rework as a test case** (Frank, 2026-10-27: "get OpenFlowsheet to the level that it can rework PrISMa analysis
-   as one of the test cases"). Target: Charalambous et al., Nature 632 (2024), doi 10.1038/s41586-024-07683-8; data Zenodo
-   10.5281/zenodo.11244258 (cifs, simulated isotherms, heat capacities, all case results); layer software on request only.
-   Needs: adsorption-isotherm property model (CO2/N2/H2O), TSA/TVSA cycle unit (PrISMa's "ideal" model first), TEA (nCAC, CCC)
-   and LCA adapters, MEA reference, CO2 compression (S11). Scoping digest `docs/briefs/PrISMa-scoping.md` (2026-10-27):
-   equilibrium shortcut (SI §3.2, Ajenifuja 2020), GCMC isotherms + IAST, compression to 110 bar; TEA partly blocked
-   (Aspen ACCE costs), LCA rebuild blocked (ecoinvent) but comparable; first target UK cement TSA-dry (MgMOF74, 13X, CALF-20).
-   Design pass after S11.
+**Roadmap governs order (ADR 0057 Accepted, R-928–R-930; `docs/roadmap/roadmap.md`).** Scope: R-923–R-927 (ADR 0056 +
+Am. 1–2). Foundations F0–F8 are designed in wave W1 during 0.4, then built in dependency order. User feedback intake:
+`docs/USER_FEEDBACK.md` (tutorial session). Agentic design layer (inside OpenFlowsheet, R-931):
+`docs/agentic-layer/preliminary-plan.md`, not started; textbooks in Zotero (12/13 PDFs).
+**Development paused for budget (Frank, 2026-11-01) until Frank's go-ahead.**
+**Next actions for 0.4 (roadmap §0.4; at most 2 agents at a time):**
+1. **Wave 1 (two design agents in parallel):**
+   - (a) **MSG** architect pass: student-readable messages (FB-05, with FB-01 `create(..., exist_ok=True)`, FB-03 failure
+     on `RunResult`). Frank put MSG first, ahead of X04.
+   - (b) **W1 specifier** on the five open items: A1-a conserved-basis boundary, A1-b enthalpy anchor, S5 EOS phase
+     families, two dynamic-holdup questions (`target-architecture.md` Rev 2 §3 F2/F4/F5/F7).
+2. **Build lane, after or between the design passes:**
+   - F0 corpus identity gate, with `.gitattributes` line-ending rules for hashed files (review S1);
+   - ST stream table (FB-06, FB-02), within the note's ST constraints;
+   - ADR 0055 parts 1–3 (WO-R1–R4, R6 without the fingerprint carry) before 0.4.0's cut.
+3. **Then:**
+   - MSG build;
+   - X04 units of measure;
+   - X05 replay from the wheel;
+   - X02 warm start (architect);
+   - OPT, the NLP optimiser on revision flowsheets (architect; with MCP/CLI/HTTP for cost and LCA);
+   - X10 inventory;
+   - RRC, revision-region continuation (architect).
+4. **W1 architect passes:** P1 (F1, F3), P2 (F2, F4, F5) and P3 (F6, F7, F8), with one reviewer pass per ADR set. The
+   v2 core schema freezes at W1's end, which is the 0.4 line's acceptance.
+- **Superseded by the roadmap:**
+  - X01 piloted by NRTL, UNIQUAC and UNIFAC: now F1 (0.5) plus F4. The pilots and the conformance kit carry over into
+    those designs.
+  - LLE/VLLE: now F5 plus X08 (0.6).
+  - PrISMa: 0.6, on F5. The scoping digest `docs/briefs/PrISMa-scoping.md` still holds.
+**Older backlog (fit into the roadmap when touched):**
 5. Ternary column claims need a methanol+ethanol refit (S10 S-4).
 6. Design-lane leftovers: S07 B-42, F-20.2, Q-A1-2; ADR 0046–0049 acceptance; S03 B6-1..B6-4; S10 B-86, B-87, B-90, B-91,
    verdict F1/F2; S08 W5-7 (X31 in `evidence` not `requirements`, schema takes D/A ids), W5-9 classes; S10-C W5-1/W5-2;
