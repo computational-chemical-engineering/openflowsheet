@@ -282,10 +282,10 @@ Walas for the rules of thumb. Recent review papers on AI for process design come
 `kemp2007pinch`, `center2020guidelines` (3rd ed., 2020), `kletz2010process` and `levenspiel1999chemical`.
 
 PDF status (2026-11-04):
-- **Present:** Seider (both editions), Levenspiel, Smith, Couper (an OCR'd scan), Turton, Towler, Kemp, CCPS (3rd ed.),
+- **Present:** Seider (both editions), Levenspiel, Smith, Couper (an OCR'd scan), Turton, Towler, Kemp, CCPS (3rd ed.), Doherty and Malone,
   and Douglas (split to one book page per PDF page and re-OCR'd: 97.5 % dictionary words; PDF page labels match the
   printed page numbers).
-- **Still needed:** Biegler/Grossmann/Westerberg, Doherty and Malone, and Kletz and Amyotte.
+- **Still needed:** Biegler/Grossmann/Westerberg, and Kletz and Amyotte.
 
 The missing ones are tagged `ofs:pdf-needed`. The PDFs stay in Zotero storage only; this repository gets citations,
 plus short page-cited excerpts on request.
