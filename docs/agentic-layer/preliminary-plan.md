@@ -281,8 +281,12 @@ Walas for the rules of thumb. Recent review papers on AI for process design come
 `turton2018analysis`, `biegler1997systematic`, `doherty2001conceptual`, `towler2022chemical` (3rd ed.),
 `kemp2007pinch`, `center2009inherently`, `kletz2010process` and `levenspiel1999chemical`.
 
-PDFs are present for Seider (both editions) and Levenspiel. The other ten are tagged `ofs:pdf-needed`, and Frank
-supplies them through the zotero session's inbox. The PDFs stay in Zotero storage only; this repository gets citations,
+PDFs status (2026-11-04):
+- **Present:** Seider (both editions), Levenspiel, Smith, Couper (an OCR'd scan), Turton, Towler, Kemp, and Douglas (a
+  scan with two book pages per PDF page; its text layer is poor in places).
+- **Still needed:** Biegler/Grossmann/Westerberg, Doherty and Malone, CCPS, and Kletz and Amyotte.
+
+The missing ones are tagged `ofs:pdf-needed`. The PDFs stay in Zotero storage only; this repository gets citations,
 plus short page-cited excerpts on request.
 
 ## 10. Questions still open (nothing is blocked)
