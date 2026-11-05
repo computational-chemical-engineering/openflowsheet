@@ -18,6 +18,11 @@ JSON. Exit 0 is a domain result, whatever its status; an `ApiError` is printed t
 exits `API_EXIT_CODES[code]`, 2–16 in §5.8's order. Exit 1 means no call was made: the request
 file could not be read or the project could not be opened (the message is on stderr).
 
+**MSG §3.7: machine documents on stdout, human text on stderr.** A refused `api` or `validate`
+prints the projected `ApiError` document (with `detail.explanation`) on stdout and its layered
+text (surface `cli`) on stderr, whether or not stderr is a terminal. An exception no command
+handles prints `internal_error`'s layered text, then the traceback, and exits 1.
+
 `api` runs jobs on the inline executor only. §11.5 names `--executor inline|process`, but a
 one-shot command closes its project when it returns, and closing a process executor ends every
 job it still runs `cancelled(server_shutdown)` (§9.3) — so the process executor belongs to the
@@ -37,6 +42,7 @@ import ipaddress
 import json
 import os
 import sys
+import traceback
 from collections.abc import Mapping
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Final, get_args
@@ -46,6 +52,7 @@ from openflowsheet.application.validation import validate
 
 if TYPE_CHECKING:
     from openflowsheet.application.local import LocalApplication
+    from openflowsheet.application.types import ApiError
 
 #: §11.5: an `ApiError`'s exit code, 2–16 in §5.8's table order (`ApiErrorCode`'s order). 0 is a
 #: domain result; 1 is a call that was never made. argparse's own usage error is also 2.
@@ -74,8 +81,7 @@ def command_validate(arguments: argparse.Namespace) -> int:
     try:
         report = validate(_load(Path(arguments.revision)), arguments.task)
     except ApplicationError as refused:
-        _print_document(refused.error.as_document())
-        return API_EXIT_CODES[refused.code]
+        return _print_refusal(refused.error)
     if arguments.json:
         print(json.dumps(report.as_document(), indent=1, sort_keys=True))
         return 0 if report.status != "INVALID" else 1
@@ -88,6 +94,8 @@ def command_validate(arguments: argparse.Namespace) -> int:
         print(f"  [{marks[check.result]}] {check.id}: {check.message}")
         if check.implicated_objects:
             print(f"           implicated: {', '.join(check.implicated_objects)}")
+        if check.result in ("FAIL", "WARN") and (line := _check_line(check.id)) is not None:
+            print(line)
     if report.structural_counts is None:
         print(f"\nstructural counts: not computed — {report.structural_counts_absent_reason}")
     else:
@@ -98,6 +106,19 @@ def command_validate(arguments: argparse.Namespace) -> int:
             f"{counts['unmatched']} unmatched"
         )
     return 0 if report.status != "INVALID" else 1
+
+
+def _check_line(check_id: str) -> str | None:
+    """MSG §3.7: under a FAIL or WARN check whose catalogue entry is complete, its summary and
+    action on one line, indented by 8; `None` for a stub or a check id with no entry."""
+    from openflowsheet.messages.catalogue import CATALOGUE
+    from openflowsheet.messages.render import RenderContext, render_code
+
+    entry = CATALOGUE.entry(check_id)
+    if entry is None or not entry.complete:
+        return None
+    explanation = render_code(check_id, context=RenderContext(surface="cli"))
+    return f"        {explanation['summary']} {explanation['action']}"
 
 
 def command_solve(arguments: argparse.Namespace) -> int:
@@ -287,6 +308,31 @@ def _print_document(document: Any) -> None:
     sys.stdout.write(canonical_json(document).decode("utf-8") + "\n")
 
 
+def _print_refusal(error: ApiError) -> int:
+    """MSG §3.7: a refusal's projected document on stdout, its layered text (surface `cli`) on
+    stderr; the exit code is the code's (§5.8)."""
+    from openflowsheet.application.operations import project_error
+    from openflowsheet.messages.text import format_text
+
+    projected = project_error(error)
+    _print_document(projected.as_document())
+    explanation = projected.render_explanation("cli")
+    print(format_text(explanation, f"{projected.code}: {projected.message}"), file=sys.stderr)
+    return API_EXIT_CODES[projected.code]
+
+
+def _print_internal_error() -> None:
+    """MSG §3.7: an exception no command handled — `internal_error`'s layered text (kind
+    `bug`) on stderr; the caller prints the traceback after it."""
+    from openflowsheet.messages.render import RenderContext, render_code
+    from openflowsheet.messages.text import format_text
+
+    _, raised, _ = sys.exc_info()
+    details = f"{type(raised).__name__}: {raised}" if raised is not None else None
+    explanation = render_code("internal_error", context=RenderContext(surface="cli"))
+    print(format_text(explanation, details), file=sys.stderr)
+
+
 def _request_text(arguments: argparse.Namespace) -> str:
     if arguments.json is not None:
         return str(arguments.json)
@@ -326,8 +372,7 @@ def command_api(arguments: argparse.Namespace) -> int:
         try:
             response = dispatch(application, name, _request(application, name, text))
         except ApplicationError as refused:
-            _print_document(refused.error.as_document())
-            return API_EXIT_CODES[refused.code]
+            return _print_refusal(refused.error)
     if isinstance(response, bytes):
         if arguments.raw_out is None:
             sys.stdout.buffer.write(response)
@@ -573,7 +618,12 @@ def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     arguments = parser.parse_args(argv)
     handler = arguments.handler
-    return int(handler(arguments))
+    try:
+        return int(handler(arguments))
+    except Exception:
+        _print_internal_error()
+        traceback.print_exc()
+        return 1
 
 
 if __name__ == "__main__":

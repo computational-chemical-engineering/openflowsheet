@@ -68,7 +68,9 @@ PINS = REPO_ROOT / "tests" / "fixtures" / "t07" / "cli-existing-commands.json"
 #: `inspect` print only: all three reversed, the file is these bytes again.
 PINS_T07_SHA256 = "86aae0c13e5125a2e26f3441af70878519fdbcac41b3432b5efb64efd1596a6c"
 #: The one pinned command U05 moved: `validate --task optimization` was the `simulation` report
-#: with its task and status renamed, and is now the typed `unsupported` refusal.
+#: with its task and status renamed, and is now the typed `unsupported` refusal. MSG §3.7 moved
+#: that record again (stdout gains `detail.explanation`, stderr the layered text); `u05_reversed`
+#: replaces the record whole, so `PINS_T07_SHA256` holds without a further reversal.
 U05_ARGV = ["validate", "<CASE>", "--task", "optimization"]
 CASE = REPO_ROOT / "benchmarks" / "syn001" / "cases" / "SYN-001-nominal.yaml"
 

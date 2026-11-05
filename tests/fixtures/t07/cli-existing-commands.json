@@ -26,8 +26,8 @@
    "optimization"
   ],
   "exit": 14,
-  "stdout": "{\"code\":\"unsupported\",\"detail\":{\"pointer\":\"/task\"},\"message\":\"task_unsupported(optimization)\",\"retryable\":false}\n",
-  "stderr": ""
+  "stdout": "{\"code\":\"unsupported\",\"detail\":{\"explanation\":{\"action\":\"See the limitation's docs section for workarounds; support may come in a later version.\",\"cause\":null,\"chain\":[\"unsupported\",\"task_unsupported\"],\"code\":\"task_unsupported\",\"complete\":false,\"docs\":\"https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#task_unsupported\",\"elements\":[],\"family\":\"refusal\",\"gap\":null,\"hint\":null,\"kind\":\"not_supported\",\"numbers\":[],\"summary\":\"Refused: task unsupported.\",\"where\":null,\"why\":null},\"pointer\":\"/task\"},\"message\":\"task_unsupported(optimization)\",\"retryable\":false}\n",
+  "stderr": "Refused: task unsupported.\n  Do:      See the limitation's docs section for workarounds; support may come in a later version.\n  Kind:    Not supported in this version: a limitation of OpenFlowsheet, not an error in your flowsheet.\n  Code:    task_unsupported, in unsupported (openflowsheet explain task_unsupported)\n  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#task_unsupported\n  Details: unsupported: task_unsupported(optimization)\n"
  },
  {
   "argv": [

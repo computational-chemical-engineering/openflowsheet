@@ -150,6 +150,8 @@ MAX_JOB_PAGE: Final[int] = 200
 AUDIT_ORDERS: Final[tuple[str, ...]] = ("ascending", "descending")
 _AUDIT_OPERATION_LIMIT: Final[int] = 128
 MAX_EVENT_PAGE: Final[int] = 500
+#: MSG §3.4 (FB-03b): a `not_found` on a bundle member lists at most this many member names.
+MAX_LISTED_MEMBERS: Final[int] = 64
 
 
 class LocalApplication:
@@ -1482,9 +1484,42 @@ class LocalApplication:
         row = self._store.artifact(artifact_id) if isinstance(artifact_id, str) else None
         if row is None:
             self._refuse(
-                "not_found", "no such artifact", operation=operation, artifact_id=artifact_id
+                "not_found",
+                "no such artifact",
+                operation=operation,
+                artifact_id=artifact_id,
+                **self._missing_member(artifact_id),
             )
         return row
+
+    def _missing_member(self, artifact_id: object) -> dict[str, Any]:
+        """MSG §3.4 (FB-03b): for a missing `<bundle id>/<member>` of a bundle with registered
+        members, what the bundle does hold — `bundle_id`, `member`, `members` (sorted file
+        names, at most `MAX_LISTED_MEMBERS`) and, for a job's bundle (`<job_id>:bundle`,
+        `<job_id>:rerun`), `job_id` and the run's `run_outcome` when the job recorded one.
+        Added detail members only: the message and the existing members are unchanged (I1)."""
+        if not isinstance(artifact_id, str):
+            return {}
+        bundle_id, slash, member = artifact_id.rpartition("/")
+        if not slash or not bundle_id or not member:
+            return {}
+        members = sorted(row.name for row in self._store.artifact_children(bundle_id))
+        if not members:
+            return {}
+        found: dict[str, Any] = {
+            "bundle_id": bundle_id,
+            "member": member,
+            "members": members[:MAX_LISTED_MEMBERS],
+        }
+        job_id, colon, suffix = bundle_id.rpartition(":")
+        if colon and suffix in ("bundle", "rerun") and self._store.get_job(job_id) is not None:
+            found["job_id"] = job_id
+            worker = self._store.worker_result(job_id)
+            run = worker.get("run") if isinstance(worker, Mapping) else None
+            outcome = run.get("outcome") if isinstance(run, Mapping) else None
+            if isinstance(outcome, str):
+                found["run_outcome"] = outcome
+        return found
 
     def _check_view(
         self, operation: str, pointer: object, depth: object, cursor: object, limit: object

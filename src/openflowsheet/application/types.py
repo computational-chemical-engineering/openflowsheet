@@ -270,6 +270,26 @@ class ApiError:
     def http_status(self) -> int:
         return API_ERROR_HTTP_STATUS[self.code]
 
+    @property
+    def explanation(self) -> dict[str, Any]:
+        """MSG §3.3: the explanation document a transport attaches as `detail.explanation` —
+        the one this error carries when it was projected, else rendered now (surface null).
+        A property, never a field: it is not in `as_document()` and is stored nowhere (I2)."""
+        carried = self.detail.get("explanation")
+        if isinstance(carried, Mapping):
+            return dict(carried)
+        return self.render_explanation()
+
+    def render_explanation(self, surface: Literal["python", "cli"] | None = None) -> dict[str, Any]:
+        """The explanation rendered from the machine document (any carried one ignored)."""
+        from openflowsheet.messages.render import RenderContext, render_error
+
+        detail = {name: value for name, value in self.detail.items() if name != "explanation"}
+        return render_error(
+            {"code": self.code, "message": self.message, "detail": detail},
+            context=RenderContext(surface=surface),
+        )
+
     def as_document(self) -> dict[str, Any]:
         return {
             "code": self.code,

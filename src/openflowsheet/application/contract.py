@@ -55,6 +55,19 @@ class ApplicationError(Exception):
     def code(self) -> ApiErrorCode:
         return self.error.code
 
+    @property
+    def explanation(self) -> dict[str, Any]:
+        """MSG §3.3: the error's explanation as Python shows it (surface `python`)."""
+        return self.error.render_explanation("python")
+
+    def __str__(self) -> str:
+        """MSG §4.5: the layered text; its last line is `args[0]`, `"<code>: <message>"`, the
+        pre-MSG string, so an unanchored match on that string still matches. Never convert
+        this error to a document through `str()` (§4.7): use `error.as_document()`."""
+        from openflowsheet.messages.text import format_text
+
+        return format_text(self.explanation, str(self.args[0]))
+
 
 def api_error(
     code: ApiErrorCode, message: str, *, retryable: bool = False, **detail: Any
