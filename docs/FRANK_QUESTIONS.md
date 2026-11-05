@@ -312,3 +312,11 @@ an "unreviewed" flag on results that use an agent-contributed extension, and a c
 records with rights kept outside every hash. They add to the frozen application contract (ADR 0019 Amendments 7 and 8:
 `list_capabilities`, `check_admission`, and a records interface with five operations), so they need your yes, as ADR
 0058 did. Nothing is built before 0.5. Default: they stay Proposed; P2 designs on them as written.
+
+## W1 P2 — accept ADR 0062 (F2), 0063 (F4), 0064 (F5)? (2026-11-05)
+
+Reviewed (`docs/reviews/W1-P2-review.md`: accept after fixes) and fixes applied (`4f59f6fd`). In plain words: the v2
+stream and document grammar (frozen at the end of W1), property methods composed from records with one enthalpy
+reference per flowsheet, and an N-phase flash that discovers phases instead of having them declared (the turbine case
+of FB-04). ADR 0062 amends the frozen contract (ADR 0019 Amendment 9: existing operations accept v2 documents), so it
+needs your yes. Built in 0.5 (F2) and 0.6 (F4, F5). Default: Proposed; P3 designs on them as written.
