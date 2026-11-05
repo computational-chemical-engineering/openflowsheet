@@ -52,7 +52,7 @@ def test_every_implemented_measure_passes(full: tuple[dict[str, Any], list[str]]
     results, log = full
     implemented = {m: r for m, r in results.items() if m not in gate.NOT_IMPLEMENTED}
     assert all(r["status"] in ("PASS", "NOT JUDGED") for r in implemented.values()), log
-    assert results["M1"]["n"] == 50 and results["M2"]["n"] == 52 and results["M9"]["n"] == 8
+    assert results["M1"]["n"] == 50 and results["M2"]["n"] == 52 and results["M9"]["n"] == 35
     assert results["M7"]["n"] == 52 and results["M8"]["n"] == 105
 
 
@@ -222,14 +222,18 @@ def test_exit_3_one_flipped_check_result_fails_m5(
     assert judged(registered, {"M5": {KEY: measured["M5"]}})["M5"]["status"] == "FAIL"
 
 
+@pytest.mark.parametrize("family", ["src/openflowsheet/models/", "src/openflowsheet/thermo/"])
 def test_exit_4_one_byte_in_a_frozen_module_fails_m9_by_name(
-    registered: dict[str, Any], tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    registered: dict[str, Any], tmp_path: Path, monkeypatch: pytest.MonkeyPatch, family: str
 ) -> None:
+    """One byte of the module docstring (the file stays valid Python), in the first registered
+    legacy unit module and the first registered provider module."""
     shutil.copytree(ROOT / "src", tmp_path / "src", symlinks=True)
-    name = sorted(registered["measures"]["M9"])[0]
+    name = next(n for n in sorted(registered["measures"]["M9"]) if n.startswith(family))
     target = tmp_path / name
     data = bytearray(target.read_bytes())
-    data[-1] ^= 0x01
+    at = next(i for i in range(3, len(data)) if chr(data[i]).isalpha())
+    data[at] ^= 0x20  # the letter's case
     target.write_bytes(bytes(data))
     monkeypatch.setattr(gate, "ROOT", tmp_path)
     results, log = gate.compare(registered, {"M9": gate.m9()}, "", subset=True)
@@ -298,3 +302,67 @@ def test_m9_a_hash_scope_read_by_an_unknown_idiom_raises(
     monkeypatch.setattr(gate, "ROOT", tmp_path)
     with pytest.raises(ValueError, match="a hash scope resolves to no file"):
         gate.identity_bearing_modules()
+
+
+def _manifest_modules() -> set[str]:
+    """The distinct `module=` values of the model manifests under `models/`: `__name__` is the
+    calling module, a string literal names one; a pass-through parameter adds none."""
+    import ast
+
+    modules: set[str] = set()
+    for path in sorted((gate.ROOT / "src" / "openflowsheet" / "models").rglob("*.py")):
+        for node in ast.walk(ast.parse(path.read_text(encoding="utf-8"))):
+            if isinstance(node, ast.keyword) and node.arg == "module":
+                if isinstance(node.value, ast.Name) and node.value.id == "__name__":
+                    modules.add(path.relative_to(gate.ROOT).as_posix())
+                elif isinstance(node.value, ast.Constant) and isinstance(node.value.value, str):
+                    dotted = node.value.value.split(".")
+                    modules.add(Path("src", *dotted).with_suffix(".py").as_posix())
+    return modules
+
+
+def test_m9_holds_every_legacy_unit_module_d9() -> None:
+    """Ruling D9 (R-940), the AST fallback's cross-checks: the legacy set is the set of distinct
+    manifest modules; each declares a `MODEL_BUILDERS` id and every bindable id but M04's
+    surrogate is declared by one; a zero-argument `_artifact_hash()` is its own file's SHA-256."""
+    import importlib
+    import inspect
+
+    from openflowsheet.application.revision_binding import MODEL_BUILDERS
+
+    legacy = gate.legacy_unit_modules()
+    assert len(legacy) == 27 and set(legacy) == _manifest_modules()
+    assert set(legacy) <= set(gate.frozen_modules()) and len(gate.frozen_modules()) == 35
+    declared: set[str] = set()
+    for name in legacy:
+        module = importlib.import_module(
+            Path(name).with_suffix("").as_posix()[4:].replace("/", ".")
+        )
+        ids = {getattr(module, "MODEL_ID", None), *getattr(module, "MODEL_IDS", ())} - {None}
+        assert ids & set(MODEL_BUILDERS), name
+        declared |= ids
+        hasher = inspect.unwrap(getattr(module, "_artifact_hash", lambda path: path))
+        if not inspect.signature(hasher).parameters:
+            assert hasher() == gate.sha256((gate.ROOT / name).read_bytes()), name
+    assert set(MODEL_BUILDERS) - declared == {"c1.reactor_surrogate"}
+
+
+def test_m9_an_unknown_artifact_hash_idiom_raises(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    models = tmp_path / "src" / "openflowsheet" / "models" / "family"
+    models.mkdir(parents=True)
+    (models / "unit.py").write_text("M = dict(artifact_hash='0' * 64)\n")
+    monkeypatch.setattr(gate, "ROOT", tmp_path)
+    with pytest.raises(ValueError, match="artifact_hash is not resolved"):
+        gate.legacy_unit_modules()
+    (models / "unit.py").write_text(
+        "def _artifact_hash(path):\n    return path\n\n\n"
+        "M = dict(artifact_hash=_artifact_hash('x'))\n"
+    )
+    with pytest.raises(ValueError, match="a forwarding _artifact_hash has no caller"):
+        gate.legacy_unit_modules()
+    (models / "other.py").write_text(
+        "from openflowsheet.models.family.unit import build\n\n\nX = build(path=__file__)\n"
+    )
+    assert gate.legacy_unit_modules() == ["src/openflowsheet/models/family/other.py"]

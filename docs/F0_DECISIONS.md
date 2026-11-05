@@ -98,3 +98,15 @@ Package F0, the corpus identity gate (roadmap 0.4, ADR 0057 D3; brief `docs/brie
   guarded literals, and only those files carry them), 11 carry `T04-W12` (none of them). `--record` registers the
   `ARCHIVED_POLICIES = ("T06-revision-v2",)` records, i.e. exactly the 36 the ruling names. Alternative: register all
   47 (11 exemptions that exempt nothing). Reversible by: editing `ARCHIVED_POLICIES` and re-recording.
+- **Finding 3 applied** (f5a878c9): every `_implementation_sha256` scope must contribute a file; else it raises.
+- **D9 applied, by the ruling's AST fallback. D18 (choice): manifests are not produced.** Producing each
+  `MODEL_BUILDERS` manifest needs an `InstanceView`, a provider and parameters per model id (30 ids, 4 families); no
+  registry builds them without a revision. `legacy_unit_modules()` scans `src/openflowsheet/models/` for the two
+  idioms in use: a zero-argument `_artifact_hash()` hashing its `__file__` (22 modules), and the forwarding
+  `thermal/common._artifact_hash(path)` whose callers pass their `__file__` (5 modules). Any other `artifact_hash=`,
+  a zero-argument hasher reading no `__file__`, or a forwarder with no caller raises. Cross-checks
+  (`test_m9_holds_every_legacy_unit_module_d9`): the 27 files equal the distinct manifest `module=` values; each
+  declares a `MODEL_BUILDERS` id and every id but `c1.reactor_surrogate` (excluded by the ruling) is declared by one;
+  each zero-argument hasher's value equals its file's SHA-256. M9: 8 → 35 files; registry diff 27 insertions, 0
+  deletions. The registry's informal `corpus.M9` description is left unchanged so the diff stays insertions only; the
+  module docstring is authoritative. Reversible by: reverting the commit.

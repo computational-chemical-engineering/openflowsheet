@@ -15,7 +15,7 @@ reported `NOT IMPLEMENTED` and makes the gate FAIL; it is never counted as passi
 | M6 | the exact property cache's key digests of the runs' requests | the RC bundle set |
 | M7 | replay verdict, mode and integrity of each 0.3.0 bundle | the RC set written at v0.3.0 |
 | M8 | outcome of each schema round-trip test node | `M8_FUNCTIONS` (below) |
-| M9 | SHA-256 of each file whose bytes enter an `implementation_sha256` | AST scan of `src/` |
+| M9 | SHA-256 of each file feeding an `implementation_sha256` or `artifact_hash` | AST scan |
 
 The RC bundle set is RC step 4's (`scripts/t08_rc.py bundles-write`): the K05 SYN-001 variants
 solved through the CLI and T07 W3a's eligible revisions under the default policy. F0 wraps those
@@ -441,12 +441,77 @@ def identity_bearing_modules() -> list[str]:
     for path in sorted((ROOT / "src").rglob("*.py")):
         text = path.read_text(encoding="utf-8")
         if "_implementation_sha256" in text:
-            found |= _hashed_files(path, ast.parse(text))
+            found |= _hashed_files(path, ast.parse(text, filename=str(path)))
     return sorted(path.relative_to(ROOT).as_posix() for path in found)
 
 
+def _reads_file(node: ast.AST) -> bool:
+    return any(isinstance(n, ast.Name) and n.id == "__file__" for n in ast.walk(node))
+
+
+def legacy_unit_modules() -> list[str]:
+    """Ruling D9 (R-940): every file under `src/openflowsheet/models/` whose bytes enter a model
+    manifest's `implementation_artifact.artifact_hash`, by the two idioms in use:
+
+    - a module's zero-argument `_artifact_hash()` that hashes its own `__file__`;
+    - a forwarding `_artifact_hash(path)` (`models/thermal/common.py`): each module that passes
+      its own `__file__` to a function it imports from the forwarding module.
+
+    Any other idiom raises: an `artifact_hash=` that is not a call of the module's own
+    `_artifact_hash`, a zero-argument one that reads no `__file__`, or a forwarder no module calls
+    with its `__file__`. `studies/surrogate` and `adapters/*` are not legacy unit families."""
+    models = ROOT / "src" / "openflowsheet" / "models"
+    trees = {
+        path: ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+        for path in sorted(models.rglob("*.py"))
+    }
+    found: set[Path] = set()
+    forwarders: set[Path] = set()
+    for path, tree in trees.items():
+        sites = [
+            node
+            for node in ast.walk(tree)
+            if isinstance(node, ast.FunctionDef) and node.name == "_artifact_hash"
+        ]
+        for keyword in (n for n in ast.walk(tree) if isinstance(n, ast.keyword)):
+            if keyword.arg == "artifact_hash" and not (
+                sites
+                and isinstance(keyword.value, ast.Call)
+                and isinstance(keyword.value.func, ast.Name)
+                and keyword.value.func.id == "_artifact_hash"
+            ):
+                raise ValueError(f"{path}:{keyword.value.lineno}: artifact_hash is not resolved")
+        for site in sites:
+            if site.args.args:
+                forwarders.add(path)
+            elif _reads_file(site):
+                found.add(path)
+            else:
+                raise ValueError(f"{path}:{site.lineno}: _artifact_hash reads no __file__")
+    for forwarder in sorted(forwarders):
+        callers = {
+            path
+            for path, tree in trees.items()
+            for names in [{n for n, f in _imported_modules(path, tree).items() if f == forwarder}]
+            for call in ast.walk(tree)
+            if isinstance(call, ast.Call)
+            and isinstance(call.func, ast.Name)
+            and call.func.id in names
+            and any(_reads_file(a) for a in [*call.args, *(k.value for k in call.keywords)])
+        }
+        if not callers:
+            raise ValueError(f"{forwarder}: a forwarding _artifact_hash has no caller")
+        found |= callers
+    return sorted(path.relative_to(ROOT).as_posix() for path in found)
+
+
+def frozen_modules() -> list[str]:
+    """M9's set: the provider files of `implementation_sha256` and the legacy unit modules."""
+    return sorted({*identity_bearing_modules(), *legacy_unit_modules()})
+
+
 def m9() -> dict[str, str]:
-    return {name: sha256((ROOT / name).read_bytes()) for name in identity_bearing_modules()}
+    return {name: sha256((ROOT / name).read_bytes()) for name in frozen_modules()}
 
 
 # -- registry and comparison ---------------------------------------------------------------------
