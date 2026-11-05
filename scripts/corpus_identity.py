@@ -392,9 +392,9 @@ def _hashed_files(module: Path, tree: ast.AST) -> set[Path]:
     `__file__` is read, each sibling `*.py` named by a string literal in the same scope, the file
     of an imported module whose `__file__` is read, and, when the scope reads another provider's
     `implementation_sha256` (a composed identity, §2.4.4's "imported into such a hash set"),
-    every hash-site module `module` imports. A composition that resolves to none raises: the
-    scan never narrows silently."""
-    scopes: list[ast.AST] = []
+    every hash-site module `module` imports. A scope that resolves to no file, by any idiom, or a
+    composition that resolves to none, raises: the scan never narrows silently."""
+    scopes: list[ast.FunctionDef | ast.Assign] = []
     for node in ast.walk(tree):
         if isinstance(node, ast.FunctionDef) and node.name == "_implementation_sha256":
             scopes.append(node)
@@ -406,15 +406,16 @@ def _hashed_files(module: Path, tree: ast.AST) -> set[Path]:
     imported = _imported_modules(module, tree)
     found: set[Path] = set()
     for scope in scopes:
+        files: set[Path] = set()
         names = {n.id for n in ast.walk(scope) if isinstance(n, ast.Name)}
         calls = {n.attr for n in ast.walk(scope) if isinstance(n, ast.Attribute)}
         if "__file__" in names or "here" in names:
             if "read_bytes" in calls:
-                found.add(module)
+                files.add(module)
         for node in ast.walk(scope):
             if isinstance(node, ast.Constant) and isinstance(node.value, str):
                 if node.value.endswith(".py") and (module.parent / node.value).is_file():
-                    found.add(module.parent / node.value)
+                    files.add(module.parent / node.value)
             elif (
                 isinstance(node, ast.Attribute)
                 and node.attr == "__file__"
@@ -422,12 +423,15 @@ def _hashed_files(module: Path, tree: ast.AST) -> set[Path]:
             ):
                 if node.value.id not in imported:
                     raise ValueError(f"{module}: {node.value.id}.__file__ is not resolved")
-                found.add(imported[node.value.id])
+                files.add(imported[node.value.id])
         if "implementation_sha256" in calls:
             composed = {path for path in imported.values() if _is_hash_site(path)}
             if not composed:
                 raise ValueError(f"{module}: a composed implementation_sha256 is not resolved")
-            found |= composed
+            files |= composed
+        if not files:
+            raise ValueError(f"{module}:{scope.lineno}: a hash scope resolves to no file")
+        found |= files
     return found
 
 

@@ -280,3 +280,21 @@ def test_m9_a_composition_it_cannot_resolve_raises(
     (package / "composed.py").write_text(composed.format("plain", "X"))
     with pytest.raises(ValueError, match="composed implementation_sha256 is not resolved"):
         gate.identity_bearing_modules()
+
+
+def test_m9_a_hash_scope_read_by_an_unknown_idiom_raises(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Review finding 3: a scope that reads its bytes by an idiom the scan does not know adds no
+    file; it raises instead of narrowing the set silently."""
+    package = tmp_path / "src" / "openflowsheet" / "thermo"
+    package.mkdir(parents=True)
+    (package / "odd.py").write_text(
+        "import hashlib\n\n\n"
+        "def _implementation_sha256() -> str:\n"
+        "    with open(__spec__.origin, 'rb') as handle:\n"
+        "        return hashlib.sha256(handle.read()).hexdigest()\n"
+    )
+    monkeypatch.setattr(gate, "ROOT", tmp_path)
+    with pytest.raises(ValueError, match="a hash scope resolves to no file"):
+        gate.identity_bearing_modules()
