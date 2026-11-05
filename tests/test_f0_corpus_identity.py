@@ -48,14 +48,18 @@ def judged(registered: dict[str, Any], measured: dict[str, Any]) -> dict[str, di
     return results
 
 
-def test_every_implemented_measure_passes(full: tuple[dict[str, Any], list[str]]) -> None:
+def test_every_implemented_measure_passes(
+    registered: dict[str, Any], full: tuple[dict[str, Any], list[str]], platform: str
+) -> None:
     results, log = full
     implemented = {m: r for m, r in results.items() if m not in gate.NOT_IMPLEMENTED}
     assert all(r["status"] in ("PASS", "NOT JUDGED") for r in implemented.values()), log
     assert results["M1"]["n"] == 50 and results["M2"]["n"] == 52 + 9 and results["M9"]["n"] == 35
     assert results["M7"]["n"] == 52 and results["M8"]["n"] == 105
-    # M6 counts what carries keys: the 15 runs that key the cache and the 70-entry sample.
-    assert results["M6"]["n"] == 15 + 70
+    # M6 counts what carries keys: the 15 runs that key the cache and the 70-entry sample. Off
+    # the reference platform the runs' key trails are not judged, so only the sample counts.
+    runs = 15 if platform == registered["reference_platform"] else 0
+    assert results["M6"]["n"] == runs + 70
 
 
 def test_the_gate_passes(full: tuple[dict[str, Any], list[str]]) -> None:

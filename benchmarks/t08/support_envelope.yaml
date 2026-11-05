@@ -8209,3 +8209,39 @@ harvest:
   class: P
   to: []
   note: 'release-candidate item (gate R): V03.A18 judged on CHANGELOG.md at C; unsupported here, not a pass'
+- manifest: evidence/F0/ef1bf51a9da354dfa9003b69bcdd00a1d9910ebf/manifest.json
+  item: limitations[0]
+  sha256: 578bb1f3db013f199de16e2d4bd8c352490d993e3c2b3127171a89e743b0fc4d
+  class: P
+  to: []
+  note: 'provenance note: an identity gate on ref-x86-64; registered values are self-generated regression fixtures, not validation'
+- manifest: evidence/F0/ef1bf51a9da354dfa9003b69bcdd00a1d9910ebf/manifest.json
+  item: limitations[1]
+  sha256: fbff731ce22e978ab91150423468cb922932a1b7b2c2a0fdda6a90d13cb51a99
+  class: P
+  to: []
+  note: 'process note: CI on both architectures was pending when written; superseded by F0''s re-take, CI checked before the merge'
+- manifest: evidence/F0/ef1bf51a9da354dfa9003b69bcdd00a1d9910ebf/manifest.json
+  item: limitations[2]
+  sha256: ed5edacb1b2286c86c262cb51cc6a35ed96848259ca19c5d6995f39e9f63788f
+  class: P
+  to: []
+  note: 'scope note: TH-C2 (CoolProp) not in the run corpus, guarded by M6''s sample and M9 (F0_DECISIONS D20); Wilson-column flowsheets not run'
+- manifest: evidence/F0/ef1bf51a9da354dfa9003b69bcdd00a1d9910ebf/manifest.json
+  item: limitations[3]
+  sha256: 7d1374154668c29ed676a12d2c2da89c4080b8cc200fc3b22a03c634e6b1e89a
+  class: P
+  to: []
+  note: 'method note: M9''s legacy unit modules enumerated by the AST fallback, cross-checked against MODEL_BUILDERS (F0_DECISIONS D18)'
+- manifest: evidence/F0/ef1bf51a9da354dfa9003b69bcdd00a1d9910ebf/manifest.json
+  item: limitations[4]
+  sha256: aa00e3893cdbdc263953bc42b30bd2f076d31d35e43d7be0dc4bab194bdb5a8d
+  class: P
+  to: []
+  note: 'scope note: exit 3 flips F0''s reader of the certificate, not the verifier (F0 review note 8)'
+- manifest: evidence/F0/ef1bf51a9da354dfa9003b69bcdd00a1d9910ebf/manifest.json
+  item: limitations[5]
+  sha256: f254eeb645eddbb04a6ae079c56e63cb643394b7a3c06c231d26efed200c8ec5
+  class: P
+  to: []
+  note: 'scope note: off the reference platform M4, M6''s run key trails and M7''s replay mode are not judged'

@@ -61,8 +61,9 @@ T08_MANIFEST = "evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/manifest.j
 #: manifest, filed as S14 (`03d8edb…`, `tested`, 5 and 0), moves it on `wp/DOC` (brief 2), and its
 #: brief-2 manifest
 #: (`dfd886c…`, `tested`, 7 and 0) on `wp/DOC`. V03's WO-1…WO-4 manifest, filed as S13a
-#: (`0ce3748…`, `tested`, 7 and 1), moves it on `wp/V03` (brief 6).
-HARVEST_SIZE = (66, 928, 120)
+#: (`0ce3748…`, `tested`, 7 and 1), moves it on `wp/V03` (brief 6). F0's manifest (`ef1bf51…`,
+#: `tested`, 6 and 0) moves it on `wp/F0`.
+HARVEST_SIZE = (67, 934, 120)
 #: The 0.2.0 release candidate C′ (M07 spec §25, R-485).
 C_PRIME = "ce993651ce37c1343e771b276160bd6623e43500"
 #: The commit tagged v0.2.0.

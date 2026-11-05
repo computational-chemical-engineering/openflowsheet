@@ -140,3 +140,18 @@ Package F0, the corpus identity gate (roadmap 0.4, ADR 0057 D3; brief `docs/brie
   value fails (`n == 0`). Note 7: exit 2 runs an unmutated control first (M2, M3 PASS; M4 PASS on the reference
   platform) and checks the mutated state trail differs from the control on any platform; M4 is judged by the host's
   real platform. Note 9: `--record` refuses (exit 2) unless the host is `REFERENCE_PLATFORM` (`ref-x86-64`).
+
+## CI fix round (2026-11-05, fourth engineer)
+
+CI run 42077157573 failed three tests on both architectures and in default-install.
+- **M6's count is platform-aware.** `test_every_implemented_measure_passes` asserted 15 + 70 everywhere; off
+  `ref-x86-64` the runs' key trails are not judged (by design, note 9), so the expected count is 85 on the reference
+  platform and exactly 70 elsewhere. Not weakened: each platform's count is still asserted exactly.
+- **D22 (choice): the harvest classifies F0's manifests as every package's are.** Each `limitations[i]` of
+  `evidence/F0/ef1bf51a…` is class P (provenance, process, method or scope note; none is a user-facing support
+  claim, F0 being an internal gate), appended to `benchmarks/t08/support_envelope.yaml`, matrix re-emitted,
+  `HARVEST_SIZE` moved with the reason in its comment. Alternative: E rows for the scope notes (D20, off-platform
+  judging); rejected, the envelope describes what a user may run, not what a gate covers.
+- **D23 (choice): the pushed `ef1bf51a` manifest is kept, the re-take added beside it** (S09, S12, S14 precedent;
+  only S08's *unpushed* WO-4 manifest was ever dropped). The re-take drops the "CI had not completed" limitation:
+  CI state belongs in the report. Alternative: delete the superseded manifest; rejected, it was pushed.
