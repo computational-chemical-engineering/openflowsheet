@@ -38,6 +38,7 @@ from __future__ import annotations
 import copy
 import json
 import re
+import sys
 import tempfile
 import time
 from collections.abc import Callable, Mapping
@@ -82,6 +83,7 @@ from openflowsheet.graph.analysis import analyse, analyse_declaration
 from openflowsheet.graph.process import ProcessGraph
 from openflowsheet.graph.report import StructuralReport
 from openflowsheet.graph.trace import Declaration, StructureUnavailableError, trace_declaration
+from openflowsheet.messages import audit
 from openflowsheet.orchestrator.execution import (
     ExecutionPlan,
     PlanRefusal,
@@ -176,6 +178,8 @@ class RunUnsupportedError(RuntimeError):
     def __init__(self, code: str) -> None:
         super().__init__(code)
         self.code = code
+        if audit.auditor is not None:  # MSG-G3: the reported `unsupported(<code>)` has entries
+            audit.auditor.observe(code, sys._getframe(1).f_globals.get("__name__", ""))
 
 
 # -- routing (R2.1) ---------------------------------------------------------------------------

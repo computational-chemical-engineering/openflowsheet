@@ -55,3 +55,77 @@ entries:
     args: [reason]
     params: {reason: {type: code, optional: true}}
     summary: "OpenFlowsheet hit an internal error and could not complete the request."
+
+  # Stubs (MSG WO-2): kind by §4.2.1's rules.
+  - code: budget_exceeds_ceiling
+    family: api_error
+    kind: input
+    complete: false
+    title: Budget exceeds ceiling
+    summary: 'The request was refused: budget exceeds ceiling.'
+  - code: document_not_canonical
+    family: api_error
+    kind: input
+    complete: false
+    title: Document not canonical
+    summary: 'The request was refused: document not canonical.'
+  - code: forbidden
+    family: api_error
+    kind: input
+    complete: false
+    title: Forbidden
+    summary: 'The request was refused: forbidden.'
+  - code: idempotency_key_reused
+    family: api_error
+    kind: input
+    complete: false
+    title: Idempotency key reused
+    summary: 'The request was refused: idempotency key reused.'
+  - code: invalid_request
+    family: api_error
+    kind: input
+    complete: false
+    title: Invalid request
+    summary: 'The request was refused: invalid request.'
+  - code: limit_exceeded
+    family: api_error
+    kind: input
+    complete: false
+    title: Limit exceeded
+    summary: 'The request was refused: limit exceeded.'
+  - code: model_replacement_incompatible
+    family: api_error
+    kind: input
+    complete: false
+    title: Model replacement incompatible
+    summary: 'The request was refused: model replacement incompatible.'
+  - code: not_ready
+    family: api_error
+    kind: notice
+    complete: false
+    title: Not ready
+    summary: 'The request was refused: not ready.'
+  - code: revision_not_ready
+    family: api_error
+    kind: input
+    complete: false
+    title: Revision not ready
+    summary: 'The request was refused: revision not ready.'
+  - code: revision_unsupported
+    family: api_error
+    kind: not_supported
+    complete: false
+    title: Revision unsupported
+    summary: 'The request was refused: revision unsupported.'
+  - code: unauthenticated
+    family: api_error
+    kind: input
+    complete: false
+    title: Unauthenticated
+    summary: 'The request was refused: unauthenticated.'
+  - code: verification_weakening_refused
+    family: api_error
+    kind: input
+    complete: false
+    title: Verification weakening refused
+    summary: 'The request was refused: verification weakening refused.'

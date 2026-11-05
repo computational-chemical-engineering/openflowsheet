@@ -1,0 +1,109 @@
+# Family `check` (MSG design note §4.2.1). Stubs (MSG WO-2): kind by §4.2.1's rules.
+catalogue: openflowsheet-messages-v1
+namespace: null
+entries:
+  - code: CAP-01
+    family: check
+    kind: not_supported
+    complete: false
+    title: Cap 01
+    summary: Validation check CAP-01 did not pass.
+    review: true
+  - code: COMP-01
+    family: check
+    kind: input
+    complete: false
+    title: Comp 01
+    summary: Validation check COMP-01 did not pass.
+    review: true
+  - code: COMP-02
+    family: check
+    kind: input
+    complete: false
+    title: Comp 02
+    summary: Validation check COMP-02 did not pass.
+    review: true
+  - code: COMP-03
+    family: check
+    kind: input
+    complete: false
+    title: Comp 03
+    summary: Validation check COMP-03 did not pass.
+    review: true
+  - code: COND-01
+    family: check
+    kind: input
+    complete: false
+    title: Cond 01
+    summary: Validation check COND-01 did not pass.
+    review: true
+  - code: DIM-01
+    family: check
+    kind: input
+    complete: false
+    title: Dim 01
+    summary: Validation check DIM-01 did not pass.
+    review: true
+  - code: GRAPH-01
+    family: check
+    kind: input
+    complete: false
+    title: Graph 01
+    summary: Validation check GRAPH-01 did not pass.
+    review: true
+  - code: GRAPH-02
+    family: check
+    kind: input
+    complete: false
+    title: Graph 02
+    summary: Validation check GRAPH-02 did not pass.
+    review: true
+  - code: SCHEMA-01
+    family: check
+    kind: input
+    complete: false
+    title: Schema 01
+    summary: Validation check SCHEMA-01 did not pass.
+    review: true
+  - code: STR-01
+    family: check
+    kind: input
+    complete: false
+    title: Str 01
+    summary: Validation check STR-01 did not pass.
+    review: true
+  - code: STR-02
+    family: check
+    kind: input
+    complete: false
+    title: Str 02
+    summary: Validation check STR-02 did not pass.
+    review: true
+  - code: STR-03
+    family: check
+    kind: input
+    complete: false
+    title: Str 03
+    summary: Validation check STR-03 did not pass.
+    review: true
+  - code: STR-04
+    family: check
+    kind: input
+    complete: false
+    title: Str 04
+    summary: Validation check STR-04 did not pass.
+    review: true
+  - code: STR-05
+    family: check
+    kind: input
+    complete: false
+    title: Str 05
+    summary: Validation check STR-05 did not pass.
+    review: true
+  - code: STR-06
+    family: check
+    kind: input
+    complete: false
+    title: Str 06
+    summary: Validation check STR-06 did not pass.
+    review: true

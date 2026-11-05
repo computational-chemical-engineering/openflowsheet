@@ -1,0 +1,100 @@
+# Family `job` (MSG design note §4.2.1). Stubs (MSG WO-2): kind by §4.2.1's rules.
+catalogue: openflowsheet-messages-v1
+namespace: null
+entries:
+  - code: cancel_requested
+    family: job
+    kind: notice
+    complete: false
+    title: Cancel requested
+    summary: 'The job ended: cancel requested.'
+  - code: cancelled
+    family: job
+    kind: notice
+    complete: false
+    title: Cancelled
+    summary: 'The job ended: cancelled.'
+  - code: completed
+    family: job
+    kind: notice
+    complete: false
+    title: Completed
+    summary: 'The job ended: completed.'
+  - code: failed
+    family: job
+    kind: notice
+    complete: false
+    title: Failed
+    summary: 'The job ended: failed.'
+  - code: keyboard_interrupt
+    family: job
+    kind: notice
+    complete: false
+    title: Keyboard interrupt
+    summary: 'The job ended: keyboard interrupt.'
+  - code: operation_completed
+    family: job
+    kind: notice
+    complete: false
+    title: Operation completed
+    summary: 'The job ended: operation completed.'
+  - code: operation_error
+    family: job
+    kind: notice
+    complete: false
+    title: Operation error
+    summary: 'The job ended: operation error.'
+  - code: owner_lost
+    family: job
+    kind: bug
+    complete: false
+    title: Owner lost
+    summary: 'The job ended: owner lost.'
+  - code: queued
+    family: job
+    kind: notice
+    complete: false
+    title: Queued
+    summary: 'The job ended: queued.'
+  - code: running
+    family: job
+    kind: notice
+    complete: false
+    title: Running
+    summary: 'The job ended: running.'
+  - code: server_shutdown
+    family: job
+    kind: notice
+    complete: false
+    title: Server shutdown
+    summary: 'The job ended: server shutdown.'
+  - code: store_error
+    family: job
+    kind: bug
+    complete: false
+    title: Store error
+    summary: 'The job ended: store error.'
+  - code: timed_out
+    family: job
+    kind: notice
+    complete: false
+    title: Timed out
+    summary: 'The job ended: timed out.'
+  - code: verifier_refused
+    family: job
+    kind: notice
+    complete: false
+    title: Verifier refused
+    summary: 'The job ended: verifier refused.'
+  - code: wall_time_exhausted
+    family: job
+    kind: notice
+    complete: false
+    title: Wall time exhausted
+    summary: 'The job ended: wall time exhausted.'
+  - code: worker_lost
+    family: job
+    kind: bug
+    complete: false
+    title: Worker lost
+    summary: 'The job ended: worker lost.'

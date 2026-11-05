@@ -12,11 +12,13 @@ or rejected transaction, an `INVALID` report, a non-converged solve, a cancelled
 from __future__ import annotations
 
 import os
+import sys
 from collections.abc import Callable
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Protocol
 
 from openflowsheet.application.types import ApiError, ApiErrorCode
+from openflowsheet.messages import audit
 
 if TYPE_CHECKING:
     from openflowsheet.application.jobs.model import JobStatus
@@ -58,9 +60,21 @@ def api_error(
     code: ApiErrorCode, message: str, *, retryable: bool = False, **detail: Any
 ) -> ApplicationError:
     """An `ApplicationError` of `code`, ready to raise."""
+    if audit.auditor is not None:  # MSG-G3: the codes this machine text carries have entries
+        _observe(code, message, detail, sys._getframe(1).f_globals.get("__name__", ""))
     return ApplicationError(
         ApiError(code=code, message=message, retryable=retryable, detail=detail)
     )
+
+
+def _observe(code: str, message: str, detail: dict[str, Any], caller: str) -> None:
+    auditor = audit.auditor
+    assert auditor is not None
+    auditor.code(code, caller)
+    auditor.observe(message, caller)
+    reason = detail.get("reason")
+    if isinstance(reason, str):
+        auditor.observe(reason, caller)
 
 
 class Application(Protocol):

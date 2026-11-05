@@ -1,23 +1,661 @@
-# Family `limitation` (MSG design note §4.2.9): one entry per support-matrix id. WO-2's
-# `scripts/msg_catalogue.py sync-limitations` regenerates the generated fields from the matrix and
-# keeps the authored ones.
+# Family `limitation` (MSG design note §4.2.9): one entry per support-matrix id, written by
+# `scripts/msg_catalogue.py sync-limitations` from `benchmarks/t08/support_envelope.yaml`.
+# Generated: code, family, kind, title, and the summary of an entry that is not complete.
+# Authored and kept: everything else (complete, why, action, see_also, examples, ...).
 catalogue: openflowsheet-messages-v1
 namespace: null
 entries:
-  - code: L-TH-3
-    family: limitation
-    kind: notice
-    complete: false
-    title: L-TH-3
-    summary: "`thermal.flash` needs a two-phase state at drum pressure; its products are declared `vapor_liquid`."
-  - code: L-TH-4
-    family: limitation
-    kind: notice
-    complete: true
-    title: L-TH-4
-    summary: "A turbine's ideal (isentropic) outlet is computed in the phase declared for its real outlet, so a vapour outlet whose ideal state would be wet is refused."
-    why: "This version takes the phase of a machine's ideal outlet from the phase declared for its real outlet. It does not compute a two-phase ideal state for a turbine whose outlet is declared vapour, and it refuses a compressor whose ideal state would be two-phase."
-    action: "Declare the outlet wet if it can be wet at your conditions, or change the operating conditions until the ideal and the real outlet are in the same phase; `openflowsheet explain isentropic_state_two_phase` gives the details."
-    see_also: [isentropic_state_two_phase]
-    examples:
-      - params: {}
+- code: L01
+  family: limitation
+  kind: notice
+  complete: false
+  title: L01
+  summary: 'PTC is experimental: selectable by explicit policy only (`T08-ptc-v1`); no qualified family.
+    V14 clause (b) is carried as FAIL (ADR 0021 D3; on PTC-R1, PTC ends at the saddle from 149 starts).'
+- code: L02
+  family: limitation
+  kind: notice
+  complete: false
+  title: L02
+  summary: A zero-duty lifted flash whose root lies exactly on its dew or bubble point is `UNVERIFIED`,
+    `RANK_DEFICIENT`; nearby two-phase-attempt stops are caught `FAILED(false_success_detected)`.
+- code: L03
+  family: limitation
+  kind: notice
+  complete: false
+  title: L03
+  summary: 'The alias-pressure-shift limit: the pressure column at 0-based position j is certifiable iff
+    997 (j + 1) <= max(200 000 - P, P - 50 000) Pa; beyond it the alias certificates are `unsupported(pressure_shift_outside_domain)`
+    and the verdict `UNVERIFIED` (spec §5.4).'
+- code: L04
+  family: limitation
+  kind: notice
+  complete: false
+  title: L04
+  summary: A saturation-closure failure inside the rows' own window is `FAILED`, where `UNVERIFIED(label_not_demonstrated)`
+    would be exact (conservative).
+- code: L05
+  family: limitation
+  kind: notice
+  complete: false
+  title: L05
+  summary: '`VERIFIED` certifies residuals at registered tolerances; the solution-error bound is recorded,
+    not promised.'
+- code: L06
+  family: limitation
+  kind: notice
+  complete: false
+  title: L06
+  summary: Energy checks share the property provider with the solver ([[A09]]).
+- code: L07
+  family: limitation
+  kind: notice
+  complete: false
+  title: L07
+  summary: Bitwise float reproduction is reported, never promised; per-start ensemble outcomes differ
+    across architectures. LU pivot-path diagnostics (`u_diag_min_abs`, `u_diag_max_abs`, `u_diagonal_ratio`,
+    `nnz_L`, `nnz_U`) are recorded and not compared across platforms (ADR 0025 D4).
+- code: L08
+  family: limitation
+  kind: notice
+  complete: false
+  title: L08
+  summary: Property-call counts are within-platform diagnostics; the terminal-refinement core (ADR 0018)
+    can exhaust the property budget where `newton` finishes.
+- code: L09
+  family: limitation
+  kind: notice
+  complete: false
+  title: L09
+  summary: The robustness claim is the nominal profile only; the stress profiles were not run.
+- code: L10
+  family: limitation
+  kind: notice
+  complete: false
+  title: L10
+  summary: 'The initializer chain is partial (blueprint §7.4, K03 §10.1): GUESS-role specifications are
+    not bound by the revision binder (such revisions run on `legacy_eo`), the SYN-001 tear path has its
+    registered initializer only, and the one fallback between initializer sources is `T08-warm-v1`''s
+    compatible warm start → traversal (opt-in; L-WS-1, L-WS-2).'
+- code: L11
+  family: limitation
+  kind: notice
+  complete: false
+  title: L11
+  summary: 'Cancellation: `verify` has no cooperative checkpoint; a region''s events are lost on interrupt.'
+- code: L12
+  family: limitation
+  kind: notice
+  complete: false
+  title: L12
+  summary: 'Agent evidence: one pinned model and configuration, MCP only, not out of sample (CP lower
+    bound 0.681); T09 0/6, T10 1/3; INJ-4 never exposed.'
+- code: L13
+  family: limitation
+  kind: notice
+  complete: false
+  title: L13
+  summary: '`worker.log` is readable through `get_artifact`.'
+- code: L14
+  family: limitation
+  kind: notice
+  complete: false
+  title: L14
+  summary: The v0.1 rank rule is exactly one freed column per promoted target.
+- code: L15
+  family: limitation
+  kind: notice
+  complete: false
+  title: L15
+  summary: Linux x86-64 and aarch64 only; Python 3.13; the one lock. The C1 reactor (`c1.reactor`) is
+    measured on x86-64 only (L44).
+- code: L16
+  family: limitation
+  kind: notice
+  complete: false
+  title: L16
+  summary: IDAES agreement holds at the registered near-sharp SmoothVLE ε only.
+- code: L17
+  family: limitation
+  kind: notice
+  complete: false
+  title: L17
+  summary: The reference environment's DWSIM runs on .NET 8, end of life 2026-11-10.
+- code: L-CSTR-1
+  family: limitation
+  kind: notice
+  complete: false
+  title: L-CSTR-1
+  summary: The kinetic CSTR's rate law and coolant model are synthetic (the Frank-Kamenetskii γ → ∞ form
+    and a coolant capacity rate); no Arrhenius or physical-conductance claim is made.
+- code: L-CSTR-2
+  family: limitation
+  kind: notice
+  complete: false
+  title: L-CSTR-2
+  summary: An adiabatic, dormant kinetic CSTR's outlet temperature is a singularity (T05 §4.7 (a)); v0.1
+    does not certify an EO solve in which it appears.
+- code: L-CSTR-3
+  family: limitation
+  kind: notice
+  complete: false
+  title: L-CSTR-3
+  summary: The kinetic CSTR's causal evaluator is a local model initializer (the isothermal state at `T_init`),
+    not a steady state.
+- code: L-WS-1
+  family: limitation
+  kind: notice
+  complete: false
+  title: L-WS-1
+  summary: Warm-start compatibility is exact id-set identity; a topology edit is a typed rejection to
+    the next source, not a partial or adapted match.
+- code: L-WS-2
+  family: limitation
+  kind: notice
+  complete: false
+  title: L-WS-2
+  summary: The warm-start source is chosen automatically (the lineage's latest VERIFIED state) under an
+    opt-in policy only; no request-named source exists in v0.1 (v0.2, M03).
+- code: L18
+  family: limitation
+  kind: notice
+  complete: false
+  title: L18
+  summary: 'Nothing in v0.1 is empirically validated: SYN-001 is synthetic (pseudo-components, invented
+    constants, ideal VLE), and every result is numerical verification against the same equations.'
+- code: L19
+  family: limitation
+  kind: notice
+  complete: false
+  title: L19
+  summary: 'Certificates are local: the regularity screen and the error bound hold at the certified state
+    only. No root completeness, uniqueness, thermodynamic stability beyond the admissibility check, or
+    dynamic stability is assessed (`claims` stay NOT_ASSESSED).'
+- code: L20
+  family: limitation
+  kind: notice
+  complete: false
+  title: L20
+  summary: 'Convergence is not guaranteed wherever a root exists: registered counterexamples end typed
+    (PHS-05 without edge 3; HOM-03/HOM-04 stall at a phase boundary); folds are not followed (no arclength
+    continuation).'
+- code: L21
+  family: limitation
+  kind: notice
+  complete: false
+  title: L21
+  summary: Specification continuation (edge 3's homotopy) exists only for regions with a promoted specification;
+    elsewhere it is `unsupported(no_continuation_parameter)`.
+- code: L22
+  family: limitation
+  kind: notice
+  complete: false
+  title: L22
+  summary: 'Scope of the solver evidence: tear selection is greedy (minimality not claimed); behaviour
+    finer than the registered basin margins and trajectories below a residual of 1e-6 are not established;
+    several stated rules are exercised only by synthetic fixtures.'
+- code: L36
+  family: limitation
+  kind: notice
+  complete: false
+  title: L36
+  summary: 'No performance claim at size: costs are within-platform measurements on registered cases of
+    at most tens of variables; compiles per plan run and the regularity screen''s cost at size are not
+    measured.'
+- code: L37
+  family: limitation
+  kind: notice
+  complete: false
+  title: L37
+  summary: '`verify` is not safe to run concurrently in threads of one process: the regularity screen
+    seeds and restores numpy''s global generator around `onenormest` (T06 §8.1, R-069), so concurrent
+    calls can move the estimate, `rcond₁`, the bound and a regularity verdict near its threshold; jobs
+    run in separate processes and are unaffected.'
+- code: L38
+  family: limitation
+  kind: notice
+  complete: false
+  title: L38
+  summary: 'Structural analysis is generic: validation''s STR checks and `inspect_structure` report structural
+    rank and the DM/BTF partition only; numerical rank, conditioning and feasibility are judged by the
+    certificate''s regularity screen at a converged state (blueprint D05).'
+- code: L39
+  family: limitation
+  kind: notice
+  complete: false
+  title: L39
+  summary: 'The structural-zero release (recovery edge E5) leaves no trace record: a trace does not show
+    that it ran.'
+- code: L23
+  family: limitation
+  kind: notice
+  complete: false
+  title: L23
+  summary: More than one recycle loop or region per plan is not exercised by any registered flowsheet;
+    the plan builder's single-loop reading is to be revisited when one is (T02 review N8).
+- code: L24
+  family: limitation
+  kind: notice
+  complete: false
+  title: L24
+  summary: 'Not implemented: Wegstein and Aitken acceleration, trust regions, Krylov linear solves, arclength
+    continuation.'
+- code: L25
+  family: limitation
+  kind: notice
+  complete: false
+  title: L25
+  summary: Alias certificates cover pressure and temperature copies only (the kinds ADR 0001 D6 gives
+    a tolerance); any other affine redundancy is `uncertified_affine`, retained and listed.
+- code: L26
+  family: limitation
+  kind: notice
+  complete: false
+  title: L26
+  summary: 'SYN-001''s symmetric data leave paths unexercised: component discrimination in liquid enthalpy,
+    a liquid heat of reaction (every liquid reaction is thermoneutral), an exchanger with a phase change
+    or temperature-dependent c_p (refused).'
+- code: L27
+  family: limitation
+  kind: notice
+  complete: false
+  title: L27
+  summary: An EO solve with a dormant PH-type outlet is never certified (UNVERIFIED, RANK_DEFICIENT; T05
+    §4.7 (a), R-050).
+- code: L28
+  family: limitation
+  kind: notice
+  complete: false
+  title: L28
+  summary: A single flowing component inside its latent jump is solved causally only; on the EO path it
+    ends typed or not VERIFIED, never VERIFIED (T05 §4.7 (b), R-050).
+- code: L29
+  family: limitation
+  kind: notice
+  complete: false
+  title: L29
+  summary: The PH kernel's accuracy for near-pure feeds is the energy tolerance's resolution; a target
+    inside the latent jump may be refused `ph_ill_conditioned` (T05 §4.4, R-049).
+- code: L30
+  family: limitation
+  kind: notice
+  complete: false
+  title: L30
+  summary: 'Degenerate specifications are reported, not certified: a TP outlet of one component at exactly
+    T_sat, conditioning near β → 0 or 1, and a zero-flow SPECIFICATION_CONFLICT (not searched past); a
+    dormant exchanger side gets no second-law judgement.'
+- code: L31
+  family: limitation
+  kind: notice
+  complete: false
+  title: L31
+  summary: 'A state whose verifier projection is refused is judged at its final state: a possible false
+    alarm, never a false pass.'
+- code: L32
+  family: limitation
+  kind: notice
+  complete: false
+  title: L32
+  summary: The ensemble gate's run 2 is not out of sample for `T06-revision-v2` (its last change was informed
+    by these draws); the holdout (436 of 440 on every class) is the out-of-sample estimate.
+- code: L33
+  family: limitation
+  kind: notice
+  complete: false
+  title: L33
+  summary: 'Scope defaults of T06 §16: results are keyed by component id; a TWO_PHASE split with a vanishing
+    phase is not converted by the solver (the verifier catches the label); three F-BUDGET starts have
+    no cost remedy.'
+- code: L34
+  family: limitation
+  kind: notice
+  complete: false
+  title: L34
+  summary: A replay bundle references the CasADi wheel by hash and does not embed it; a replay needs the
+    wheel to remain fetchable.
+- code: L35
+  family: limitation
+  kind: notice
+  complete: false
+  title: L35
+  summary: A tear-path solve that exhausts its budget records `attempts = 0`, the start state and no provenance
+    (K03's registered capped-budget shape).
+- code: L40
+  family: limitation
+  kind: notice
+  complete: false
+  title: L40
+  summary: 'The reference-tool data (the IDAES and DWSIM environments, their downloads and their outputs)
+    and OpenIDAES-450 are not distributed: the sdist and the wheel carry the project''s own code, its
+    package data (since M01 including the five C1 records, M01 spec §15 Q-N4''s default), its licence
+    files, one third-party data file, the IAPWS-95 coefficients `benchmarks/s05/iapws95_coefficients.json`,
+    under IAPWS''s terms with their attribution in NOTICE (S05 spec §16, R-616, R-617), and since E01
+    six third-party assessment data files under `assessment/` (the SSLW cost set transcribed from IDAES
+    under its BSD licence, the PrISMa chain factors, the BLS, Eurostat and Federal Reserve index series,
+    and five IPCC AR6 GWP100 values), each with its attribution in NOTICE (ADR 0052), and since 0.3.0
+    Wilson''s records `benchmarks/s10/records.yaml` and the Kurihara 1993 Table II points `benchmarks/s10/vle/kurihara1993_binaries.csv`,
+    with their attribution in NOTICE (V03 spec §9.1, R-880), and nothing else; every ComponentRecord is
+    synthetic (SYN-001) or one of M01''s five real C1 records, each with its identifiers, rights, per-parameter
+    provenance and retrieval equality (M01 spec §3.5, R-158).'
+- code: L41
+  family: limitation
+  kind: notice
+  complete: false
+  title: L41
+  summary: 'A bundle written by an installed package (wheel or sdist, not the source checkout) carries
+    no dependency-set identity: the package ships no lock file, so its `lock_sha256` is empty and every
+    replay of it is `inspected_archived_results` / `NOT_RUN` ("the dependency set is unknown …"); replayable
+    bundles are written from the source checkout at the lock `ead4edf1…`.'
+- code: L42
+  family: limitation
+  kind: notice
+  complete: false
+  title: L42
+  summary: '`pr-c1-v1` (Peng–Robinson with the light gases vapour-only, ADR 0026), shipped since M01,
+    is bound by the C1 models (`c1.*`) on their own basis (R-288) and does not share the axes'' components
+    and domain: it takes the five real components H2, N2, NH3, Ar, CH4 (the only liquid is pure NH3) over
+    200–1000 K and 10⁴–3 × 10⁷ Pa. It is validated for pure-component behaviour only, within M01 spec
+    §11''s bands (NH3 saturation pressure within 2 %, liquid NH3 and light-gas ln φ within 0.05 of the
+    reference equations of state). There is no mixture VLE validation, and k_ij = 0 for every pair: k_H2–NH3
+    = 0.1 would move the separator''s vapour NH3 fraction y* by −3.1 % (about 3 % per 0.1; spec §4.2).'
+- code: L43
+  family: limitation
+  kind: notice
+  complete: false
+  title: L43
+  summary: 'The Anderson recycle, its stagnation restart (recovery edge E1) and the stalled-recycle EO
+    merge (E2) are library capabilities: every shipped unit that can sit in a loop declares exact derivatives,
+    so `auto` resolves to `newton_tear`, and no application-offered policy requests `anderson` (`docs/recovery-edges.yaml`,
+    `enabled: library-only`, R-130). V13 (b)''s and V14 (c)''s evidence for them is library-level.'
+- code: L-WEB-1
+  family: limitation
+  kind: notice
+  complete: false
+  title: L-WEB-1
+  summary: 'The web shell (`serve-http --ui`) is a diagnostic client of the HTTP binding: it edits nothing
+    (Solve and Cancel are its only effects), calls seventeen operations and no other, computes only display
+    arithmetic (design note §5.6), converts no unit, and judges nothing — the scenario view displays run
+    differences without a registered comparison or allowance.'
+- code: L-WEB-2
+  family: limitation
+  kind: notice
+  complete: false
+  title: L-WEB-2
+  summary: 'The web shell''s security is the local, single-user model: loopback by default, the bearer
+    token on every data request, a strict Content-Security-Policy; no TLS, no multi-user hosting, and
+    no security assessment beyond design note §7. Served with `--allow-remote` over plain HTTP the page
+    is an insecure context and record digests show "unchecked".'
+- code: L-WEB-3
+  family: limitation
+  kind: notice
+  complete: false
+  title: L-WEB-3
+  summary: The web shell is tested in headless Chromium only. No usability, workflow or screen-reader
+    study exists; accessibility is limited to status shown as glyph and word, controls that are keyboard-reachable
+    by construction, and the measured contrast of its colour tokens.
+- code: L-WEB-4
+  family: limitation
+  kind: notice
+  complete: false
+  title: L-WEB-4
+  summary: The agent history shows what the project recorded, not what an agent claimed; the validation
+    shown beside a commit is recomputed now by the current server, not the report the agent received at
+    commit time.
+- code: L44
+  family: limitation
+  kind: notice
+  complete: false
+  title: L44
+  summary: 'The C1 reactor (`c1.reactor`) is measured on Linux x86-64 only, on one machine (`ref-x86-64`).
+    Its runs are opt-in: they need the separately built, pinned reactor environment, which no CI job builds
+    (M02 N2). They are reproducibility class R3 (ADR 0034 D6). A run on aarch64 is not measured, nor is
+    the reproduction of a coupled run across architectures. macOS is best effort, and Windows is refused
+    before spawn (ADR 0033 D2).'
+- code: L45
+  family: limitation
+  kind: notice
+  complete: false
+  title: L45
+  summary: '`external-subprocess-v1` runs the group''s pinned code with the user''s privileges and is
+    not a sandbox: there is no filesystem confinement, network isolation, memory or CPU quota, or syscall
+    filtering, and trust rests on provenance (ADR 0033 D2; M02 N1).'
+- code: L46
+  family: limitation
+  kind: notice
+  complete: false
+  title: L46
+  summary: No reactor result has been compared with experimental data by this project. The group's published
+    comparison (Gargiulo et al. 2025 §3.1, of Rossetti et al. 2006's rate law) is the group's evidence.
+    Every real-reactor number is the group's model at the pin, a regression, and its discretization bias
+    is 1.0–1.4 % in NH₃ (M02 design note §13).
+- code: L47
+  family: limitation
+  kind: notice
+  complete: false
+  title: L47
+  summary: '`pr-c1-v1`''s saturated-liquid NH₃ volume is 11–30 % high (240–400 K) and its enthalpy of
+    vaporization 2–5 % high (−7 % at 400 K), against the reference equations of state. No v0.2 loop decision
+    uses either.'
+- code: L48
+  family: limitation
+  kind: notice
+  complete: false
+  title: L48
+  summary: The C1 loop's convergence is evidenced at the corners and the centre of its registered hard
+    domain only (M02 G11). The inert-fraction floor y_inert ≥ 0.035 sits just above a measured stage-1
+    failure (0.03 at 653.15 K, 11 MPa, H₂/N₂ 2.5). A failure inside the domain ends in a typed refusal
+    and then `COUPLING_NOT_CONVERGED`, never in a false success.
+- code: L49
+  family: limitation
+  kind: notice
+  complete: false
+  title: L49
+  summary: 'No promotable surrogate of the real C1 reactor exists in v0.2. M04''s one real iteration (plan
+    `b2-it1` on box v2, reactor variant v3) is NOT_PROMOTABLE (`band_not_finite`): 26 of its 632 registered
+    experiments, 5 of them among the 118 calibration draws, end in a deterministic `reactor_not_accepted(certificate)`,
+    more than the n − k = 4 refused draws the conformal band tolerates, so q̂ is infinite. A revision
+    binds `c1.reactor_surrogate` only through a manifest that re-derives PROMOTABLE (R-360), and no further
+    iteration on v3 is admissible (R-364).'
+- code: L-S11-1
+  family: limitation
+  kind: notice
+  complete: false
+  title: L-S11-1
+  summary: '`iapws95-v1` (IAPWS-95, S05) is selected by `record_source: benchmarks/s05/components.yaml`
+    for the one component H2O, over 273.16–1273.15 K and 10²–10⁸ Pa. The routing models (`syn001.feed_source`,
+    `syn001.product_sink`, `syn001.stream_splitter`) and the seven `thermal.*` models (L-TH-1..8) bind
+    on it; its evidence is S05''s validation against the IAPWS-95 reference equation (S05 spec).'
+- code: L-S11-2
+  family: limitation
+  kind: notice
+  complete: false
+  title: L-S11-2
+  summary: '`coolprop-heos-v1` (CoolProp HEOS, S07) is selected by `record_source: benchmarks/s07/components.yaml`
+    for exactly one admitted fluid per revision, among the 123 of S07''s table; each fluid keeps S07''s
+    tier and domain. The routing models and the seven `thermal.*` models (L-TH-1..8) bind on it, and it
+    needs the `coolprop` extra: without CoolProp installed, binding is refused `basis_unavailable(coolprop-heos-v1)`.'
+- code: L-S11-3
+  family: limitation
+  kind: notice
+  complete: false
+  title: L-S11-3
+  summary: '`wilson-ig-v2` (S10''s Wilson activity model with an ideal-gas vapour; `wilson-ig-v1`''s answers
+    with the molar entropy added, S11 units design §4.6) is selected by `record_source: benchmarks/s10/records.yaml`
+    for its three record components (CH3OH, C2H5OH, H2O, in any order), over 300–400 K and 30–200 kPa.
+    The routing models, the column (`syn001.column`, L-COL-1..10), the five K02/T05 units with γ–φ faces
+    and the vapour machines `thermal.compressor` and `thermal.turbine` (L-GP-1..3) bind on it. Its records
+    ship as package data (R-880), so it binds in a wheel. An installation with neither copy is refused
+    `basis_unavailable(wilson-ig-v2)`. The library constructors `WilsonIdealGasProvider()` and `WilsonIdealGasProviderV2()`
+    with no argument read a source checkout only and elsewhere refuse `records_missing`. A library user
+    passes `resources.packaged_path(wilson_ig.RECORDS_PATH)` (R-883). Premises P1–P3 are checked at binding.
+    The S10 VAL-1–3 bands apply, and the VAL-3 latent-heat miss (methanol, +5.72 % against 5 %) is carried.
+    Results are compared across architectures by tolerance, not bitwise.'
+- code: L-COL-1
+  family: limitation
+  kind: notice
+  complete: false
+  title: L-COL-1
+  summary: 'The column''s feeds are single-phase and declared: one side feed per stage, none at a slot
+    stage (S01 DECISION 8, S02 §1.4), and every side feed on its `feed` port shares one declared phase
+    (the revision reader''s one phase per port). A two-phase feed needs a flash and two stages.'
+- code: L-COL-2
+  family: limitation
+  kind: notice
+  complete: false
+  title: L-COL-2
+  summary: 'The column has no side draws, pump-arounds, stage efficiencies or hydraulics, and is solved
+    by S02''s Newton method only: no inside-out or rate-based method (S02 §14).'
+- code: L-COL-3
+  family: limitation
+  kind: notice
+  complete: false
+  title: L-COL-3
+  summary: A total condenser gives saturated liquid (no subcooling); there is no total reboiler.
+- code: L-COL-4
+  family: limitation
+  kind: notice
+  complete: false
+  title: L-COL-4
+  summary: 'On `wilson-ig-v2` the column''s end specifications are ratio, rate and duty only: a purity,
+    recovery or temperature end is refused at binding (S10-C D8).'
+- code: L-COL-5
+  family: limitation
+  kind: notice
+  complete: false
+  title: L-COL-5
+  summary: 'No uniqueness, multiplicity or feasibility claim for a column beyond S06 §14: a certificate
+    holds at the converged state, and an inverse specification''s feasibility is decided only on S06''s
+    registered band.'
+- code: L-COL-6
+  family: limitation
+  kind: notice
+  complete: false
+  title: L-COL-6
+  summary: In a flowsheet a purity end's tolerance acts on the mole fraction directly (`|x − x*|` ≤ the
+    molar-flow tolerance ÷ 1 mol/s, the `F_ref` meaning); the standalone column's acts on `F·x`.
+- code: L-COL-7
+  family: limitation
+  kind: notice
+  complete: false
+  title: L-COL-7
+  summary: On `wilson-ig-v2` the column's Stage B (S08's block re-entry) is tested at the opening level
+    only (S10-C).
+- code: L-COL-8
+  family: limitation
+  kind: notice
+  complete: false
+  title: L-COL-8
+  summary: 'SYN-001 columns are synthetic (L18): their results are verified, never validated.'
+- code: L-COL-9
+  family: limitation
+  kind: notice
+  complete: false
+  title: L-COL-9
+  summary: In a flowsheet a column region has no edge-3 continuation (no revision region has one). The
+    unit's own `evaluate` keeps S02's full standalone path, S08 Stage B included, so the traversal start
+    is the standalone answer.
+- code: L-COL-10
+  family: limitation
+  kind: notice
+  complete: false
+  title: L-COL-10
+  summary: 'A column under a PTC policy (`T08-ptc-v1`) ends `PTC_MAPPING_INVALID` before any attempt:
+    the PTC mapping does not cover the column''s stage variables.'
+- code: L-TH-1
+  family: limitation
+  kind: notice
+  complete: false
+  title: L-TH-1
+  summary: Pure-fluid stream regimes are declared (liquid, vapor, vapor_liquid = saturated); a closure
+    in another regime is refused `phase_regime_mismatch`.
+- code: L-TH-2
+  family: limitation
+  kind: notice
+  complete: false
+  title: L-TH-2
+  summary: Saturated pure-fluid streams are produced only by `thermal.*` units; there are no wet feeds,
+    and routing models do not carry them.
+- code: L-TH-3
+  family: limitation
+  kind: notice
+  complete: false
+  title: L-TH-3
+  summary: '`thermal.flash` needs a two-phase state at drum pressure; its products are declared `vapor_liquid`.'
+- code: L-TH-4
+  family: limitation
+  kind: notice
+  complete: true
+  title: L-TH-4
+  summary: A turbine's ideal (isentropic) outlet is computed in the phase declared for its real outlet,
+    so a vapour outlet whose ideal state would be wet is refused.
+  why: This version takes the phase of a machine's ideal outlet from the phase declared for its real outlet.
+    It does not compute a two-phase ideal state for a turbine whose outlet is declared vapour, and it
+    refuses a compressor whose ideal state would be two-phase.
+  action: Declare the outlet wet if it can be wet at your conditions, or change the operating conditions
+    until the ideal and the real outlet are in the same phase; `openflowsheet explain isentropic_state_two_phase`
+    gives the details.
+  see_also:
+  - isentropic_state_two_phase
+  examples:
+  - params: {}
+- code: L-TH-5
+  family: limitation
+  kind: notice
+  complete: false
+  title: L-TH-5
+  summary: 'The near-critical box and the supercritical label rule of S05 §4.2 and S07. A supercritical
+    PH or PS closure whose root lies at the provider''s label switch (T = T_c) returns `not_converged`
+    (measured: 4 of 11 200 grid outcomes, at 22.85 MPa).'
+- code: L-TH-6
+  family: limitation
+  kind: notice
+  complete: false
+  title: L-TH-6
+  summary: No regime discovery for pure fluids.
+- code: L-TH-7
+  family: limitation
+  kind: notice
+  complete: false
+  title: L-TH-7
+  summary: Dormant single-phase thermal outlets need T05b's v2 phase contract to solve. Under v1 a converged
+    start certifies RANK_DEFICIENT, and a solve that must move ends LINEAR_SOLVE_FAILED. Under either
+    contract, a converged run with such an outlet certifies UNVERIFIED, with regularity RANK_DEFICIENT.
+    The verifier's own dormant-outlet table (verify.zero_flow.DORMANT_OUTLETS, spec §7.6) has no thermal.*
+    outlet, so it judges the outlet's energy row, which reads no temperature at zero flow.
+- code: L-TH-8
+  family: limitation
+  kind: notice
+  complete: false
+  title: L-TH-8
+  summary: A revision declares one phase per port (R4), so a `thermal.mixer` takes inlets of one declared
+    phase. Mixing a liquid with a vapour is available by direct construction only, as L-COL-1 is for the
+    column's side feeds.
+- code: L-GP-1
+  family: limitation
+  kind: notice
+  complete: false
+  title: L-GP-1
+  summary: On Wilson (`wilson-ig-v2`), only the five K02/T05 units and the two machines; no pump (no liquid
+    volume); exchanger, separator and reactors refused.
+- code: L-GP-2
+  family: limitation
+  kind: notice
+  complete: false
+  title: L-GP-2
+  summary: Wilson machines are single-phase vapour, within the records' domain (300–400 K, 30–200 kPa).
+- code: L-GP-3
+  family: limitation
+  kind: notice
+  complete: false
+  title: L-GP-3
+  summary: A Wilson TP flash near an azeotrope has an E-2 noise floor (S10 §14); a temperature-degenerate
+    split is judged on its stored split.
+- code: L-E01-1
+  family: limitation
+  kind: notice
+  complete: false
+  title: L-E01-1
+  summary: Since R-898 every P2 capital row is floored, so P2's optimization exercises operating cost
+    only; no registered NLP case carries a capital row in a `units:N` regime. A floor's derivative row
+    is empty (E01.A18), so E01.A33–A36 show nothing about capital sensitivities through the optimizer.
+    P2 is not resized (E01 design §9.7).

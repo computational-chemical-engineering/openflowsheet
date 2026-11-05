@@ -1,0 +1,76 @@
+# Family `status` (MSG design note §4.2.1). Stubs (MSG WO-2): kind by §4.2.1's rules.
+catalogue: openflowsheet-messages-v1
+namespace: null
+entries:
+  - code: DRAFT
+    family: status
+    kind: notice
+    complete: false
+    title: Draft
+    summary: Status DRAFT.
+  - code: FAILED
+    family: status
+    kind: numerical
+    complete: false
+    title: Failed
+    summary: Status FAILED.
+  - code: ILL_CONDITIONED
+    family: status
+    kind: notice
+    complete: false
+    title: Ill conditioned
+    summary: Status ILL_CONDITIONED.
+  - code: INCONCLUSIVE
+    family: status
+    kind: notice
+    complete: false
+    title: Inconclusive
+    summary: Status INCONCLUSIVE.
+  - code: INVALID
+    family: status
+    kind: input
+    complete: false
+    title: Invalid
+    summary: Status INVALID.
+  - code: NO_RANK_LOSS_DETECTED
+    family: status
+    kind: notice
+    complete: false
+    title: No rank loss detected
+    summary: Status NO_RANK_LOSS_DETECTED.
+  - code: RANK_DEFICIENT
+    family: status
+    kind: notice
+    complete: false
+    title: Rank deficient
+    summary: Status RANK_DEFICIENT.
+  - code: READY_FOR_OPTIMIZATION
+    family: status
+    kind: notice
+    complete: false
+    title: Ready for optimization
+    summary: Status READY_FOR_OPTIMIZATION.
+  - code: READY_FOR_SIMULATION
+    family: status
+    kind: notice
+    complete: false
+    title: Ready for simulation
+    summary: Status READY_FOR_SIMULATION.
+  - code: RELAXED
+    family: status
+    kind: notice
+    complete: false
+    title: Relaxed
+    summary: Status RELAXED.
+  - code: UNVERIFIED
+    family: status
+    kind: notice
+    complete: false
+    title: Unverified
+    summary: Status UNVERIFIED.
+  - code: VERIFIED
+    family: status
+    kind: notice
+    complete: false
+    title: Verified
+    summary: Status VERIFIED.

@@ -14,3 +14,131 @@ entries:
     action: "Check the specifications of the unit named; if they are right, supply an initial guess for the recycle streams."
     examples:
       - params: {unit: T}
+
+  # Stubs (MSG WO-2): kind by §4.2.1's rules.
+  - code: ACTIVE_SET_CYCLING
+    family: outcome
+    kind: numerical
+    complete: false
+    title: Active set cycling
+    summary: The solve ended ACTIVE_SET_CYCLING (homotopy/PTC/active-set stalls).
+  - code: ATTEMPTS_EXHAUSTED
+    family: outcome
+    kind: numerical
+    complete: false
+    title: Attempts exhausted
+    summary: The solve ended ATTEMPTS_EXHAUSTED (budget/cancellation outcomes).
+  - code: BOUND_BLOCKED
+    family: outcome
+    kind: numerical
+    complete: false
+    title: Bound blocked
+    summary: The solve ended BOUND_BLOCKED (rank/linear/globalization failures).
+  - code: BUDGET_EXHAUSTED
+    family: outcome
+    kind: numerical
+    complete: false
+    title: Budget exhausted
+    summary: The solve ended BUDGET_EXHAUSTED (budget/cancellation outcomes).
+  - code: CAPABILITY_UNAVAILABLE
+    family: outcome
+    kind: not_supported
+    complete: false
+    title: Capability unavailable
+    summary: The solve ended CAPABILITY_UNAVAILABLE (model domain/conservation/derivative defects).
+  - code: CHECKPOINT_INCOMPATIBLE
+    family: outcome
+    kind: numerical
+    complete: false
+    title: Checkpoint incompatible
+    summary: The solve ended CHECKPOINT_INCOMPATIBLE (homotopy/PTC/active-set stalls).
+  - code: CONVERGED
+    family: outcome
+    kind: notice
+    complete: false
+    title: Converged
+    summary: The solve converged.
+  - code: COUPLING_NOT_CONVERGED
+    family: outcome
+    kind: numerical
+    complete: false
+    title: Coupling not converged
+    summary: The solve ended COUPLING_NOT_CONVERGED (initialization and recycle failures).
+  - code: EVALUATION_ERROR
+    family: outcome
+    kind: numerical
+    complete: false
+    title: Evaluation error
+    summary: The solve ended EVALUATION_ERROR (model domain/conservation/derivative defects).
+  - code: HOMOTOPY_STALLED
+    family: outcome
+    kind: numerical
+    complete: false
+    title: Homotopy stalled
+    summary: The solve ended HOMOTOPY_STALLED (homotopy/PTC/active-set stalls).
+  - code: INNER_SOLVE_INCONSISTENT
+    family: outcome
+    kind: bug
+    complete: false
+    title: Inner solve inconsistent
+    summary: The solve ended INNER_SOLVE_INCONSISTENT (model domain/conservation/derivative defects).
+  - code: LINEAR_SOLVE_FAILED
+    family: outcome
+    kind: numerical
+    complete: false
+    title: Linear solve failed
+    summary: The solve ended LINEAR_SOLVE_FAILED (rank/linear/globalization failures).
+  - code: LINE_SEARCH_FAILED
+    family: outcome
+    kind: numerical
+    complete: false
+    title: Line search failed
+    summary: The solve ended LINE_SEARCH_FAILED (rank/linear/globalization failures).
+  - code: PHASE_UPDATE_REQUIRED
+    family: outcome
+    kind: numerical
+    complete: false
+    title: Phase update required
+    summary: The solve ended PHASE_UPDATE_REQUIRED (homotopy/PTC/active-set stalls).
+  - code: PTC_MAPPING_INVALID
+    family: outcome
+    kind: bug
+    complete: false
+    title: Ptc mapping invalid
+    summary: The solve ended PTC_MAPPING_INVALID (model domain/conservation/derivative defects).
+  - code: PTC_STALLED
+    family: outcome
+    kind: numerical
+    complete: false
+    title: Ptc stalled
+    summary: The solve ended PTC_STALLED (homotopy/PTC/active-set stalls).
+  - code: RECYCLE_STAGNATION
+    family: outcome
+    kind: numerical
+    complete: false
+    title: Recycle stagnation
+    summary: The solve ended RECYCLE_STAGNATION (initialization and recycle failures).
+  - code: SCALE_UNAVAILABLE
+    family: outcome
+    kind: input
+    complete: false
+    title: Scale unavailable
+    summary: The solve ended SCALE_UNAVAILABLE (structure/specification conflicts).
+  - code: SPECIFICATION_CONFLICT
+    family: outcome
+    kind: input
+    complete: false
+    title: Specification conflict
+    summary: The solve ended SPECIFICATION_CONFLICT (structure/specification conflicts).
+  - code: STAGNATION
+    family: outcome
+    kind: numerical
+    complete: false
+    title: Stagnation
+    summary: The solve ended STAGNATION (rank/linear/globalization failures).
+  - code: UNSUPPORTED_RANK_STRUCTURE
+    family: outcome
+    kind: not_supported
+    complete: false
+    title: Unsupported rank structure
+    summary: The solve ended UNSUPPORTED_RANK_STRUCTURE (rank/linear/globalization failures).

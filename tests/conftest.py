@@ -30,9 +30,40 @@ TERMINAL_REPORT: list[str] = []
 
 
 def pytest_terminal_summary(terminalreporter: Any) -> None:
-    """Print `TERMINAL_REPORT`'s lines at the end of the run."""
+    """Print `TERMINAL_REPORT`'s lines at the end of the run, then MSG-G3's findings."""
     for line in TERMINAL_REPORT:
         terminalreporter.write_line(line)
+    for line in _msg_audit_findings():
+        terminalreporter.write_line(line, red=True)
+
+
+# -- MSG-G3 (design note §4.2.8): the runtime audit of emitted codes ---------------------------
+
+
+def pytest_configure(config: Any) -> None:
+    """Every code the package emits at the four audit hooks must have a catalogue entry."""
+    from openflowsheet.messages import audit
+
+    audit.enable()
+
+
+def _msg_audit_findings() -> list[str]:
+    from openflowsheet.messages import audit
+
+    auditor = audit.auditor
+    if auditor is None:
+        return []
+    lines = [
+        f"MSG-G3 miss: {code} (first emitted by {where})" for code, where in auditor.misses.items()
+    ]
+    lines += [f"MSG-G3 defect: {key} (in {where!r})" for key, where in auditor.defects.items()]
+    return sorted(lines)
+
+
+def pytest_sessionfinish(session: Any, exitstatus: int) -> None:
+    """MSG-G3: a code without an entry, or a rendering defect, fails the session."""
+    if _msg_audit_findings() and exitstatus == 0:
+        session.exitstatus = pytest.ExitCode.TESTS_FAILED
 
 
 def _git_ok(*arguments: str) -> bool:

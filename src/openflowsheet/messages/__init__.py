@@ -1,4 +1,4 @@
-"""Messages a student understands (MSG design note `docs/design/MSG-messages.md`, ADR 0058).
+"""Messages a student understands, introduced by package MSG (`docs/design/MSG-messages.md`).
 
 One explanation model over a catalogue of typed codes: every failure, refusal, warning or notice
 renders in the same layered form — what and where, why (with the numbers), what to do, the kind,
