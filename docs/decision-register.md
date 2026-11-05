@@ -18464,3 +18464,28 @@ unreviewed` flag on results that use an unreviewed extension. An agent never cer
 
 **Watch for.** Any MSG change that moves a bundle byte, the `t07` document or a 0.3.0 replay verdict (MSG-G0, then F0);
 the sidecar (WO-5) leaking into a serialized artifact; an emitted code without a catalogue entry (MSG-G2/G3).
+
+---
+
+## R-938…R-940: F0 ruling round (review `docs/reviews/F0-review.md`, 2026-11-05)
+
+| | |
+| --- | --- |
+| Date | 2026-11-05 |
+| Decided by | design lane (`reviewer`), F0 ruling round D16, D15, D9 |
+| Normative text | `docs/adr/0059-evidence-work-package-ids.md` (R-938); `docs/reviews/F0-review.md` rulings (R-939, R-940) |
+| Affected packages | F0; every roadmap package's evidence manifest (R-938) |
+
+**Decisions.**
+- **R-938 (D16, ADR 0059)** The evidence manifest's `work_package` pattern is widened additively to admit the roadmap's
+  package ids; every old id still matches. **Reverses the rejected alternative of R-565 and R-878** ("an ADR widening the
+  pattern"): the roadmap now names dozens of packages outside `[PKTMSR]NN`, so picking fitting ids no longer scales.
+- **R-939 (D15)** The three policy-literal guards exempt exactly the 36 archived `solve-policy.json` files registered in
+  `benchmarks/f0/corpus.json`, matched by path and SHA-256, with a test pinning 36 per guard. A scope correction (the
+  guards protect registered input documents; these are archived release outputs). *Rejected:* exemption by structure (a
+  directory holding `run-manifest.json`) — a relaxation; an unscanned root; building bundles at check time.
+- **R-940 (D9)** M9's frozen set includes the legacy unit-model modules whose bytes enter a model's `artifact_hash`,
+  enumerated from `MODEL_BUILDERS`' manifests (AST scan as fallback; raise if unresolved). *Rejected:* leaving them out —
+  the premise that M1–M8 catch their edits is false (`artifact_hash` enters none of them).
+
+**Watch for.** A new archived bundle entering the D15 exemption without registration; M9 shrinking.
