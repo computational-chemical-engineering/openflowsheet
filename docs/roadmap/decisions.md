@@ -72,3 +72,9 @@ Each entry gives the date, the question, the choice, who made it and where it is
   questions (SQ-F6-1…4, SQ-F7-1…2, SQ-F8-1) batched with ADR 0063 risk 5 into one specifier round
   (`docs/roadmap/brief-specifier-W1-P3-questions.md`, bf1d9107); the P3 reviewer runs after it. SQ-F6-1's default gives
   O-11 a numerical consequence: Frank to be told with O-11.
+- **2026-11-06** W1 P3 specifier round done (06c13731): Amendment 4 (§16) — Q2.R10 entropy datum (default adopted,
+  refusal narrowed to amount-changing uses; PS/TS specs and isentropic units admitted), Q4.R9 (SQ-F6-1), Q5.R9 (SQ-F6-3),
+  Q5.R10 (SQ-F6-4), Q5.R11 (SQ-F7-1; ADR 0066 D7's PR-liquid example wrong), Q1.R10 (SQ-F7-2), Q9.R8 (SQ-F8-1, changed:
+  τ_g on g's quantity kind, not time); O-14…O-18. `docs/derivations/F6-std-seed.md` complete for 11 units (generator
+  --check PASS, 107 claims). 18 ADR edits pending, folded into the P3 reviewer's consolidated list
+  (`docs/roadmap/brief-reviewer-W1-P3.md`, 7bd2ad04). O-11 now has a numerical consequence; FRANK_QUESTIONS updated.

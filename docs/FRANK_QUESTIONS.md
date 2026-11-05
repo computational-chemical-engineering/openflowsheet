@@ -279,8 +279,10 @@ All four answered with the recommended default (Frank, 2026-10-25):
 ## W1 — foundation rulings Amendment 2 (2026-11-05; not urgent)
 
 Source: `docs/roadmap/foundation-rulings.md` §14 (Amendment 2), §11. Work proceeds on the defaults.
-- **O-11** How OpenFlowsheet labels an equation-of-state phase "vapour-like" or "liquid-like" (shown in reports only; no
-  effect on any number). Default: Venkatarathnam and Oellrich's phase identification parameter.
+- **O-11** How OpenFlowsheet labels an equation-of-state phase "vapour-like" or "liquid-like". Default: Venkatarathnam
+  and Oellrich's phase identification parameter. **Changed 2026-11-06 (Amendment 4, Q4.R9):** this is no longer
+  reports-only. When a unit (a flash, for example) has a single dense or supercritical phase, this label decides whether
+  that phase leaves by the top (vapour) outlet or the bottom (liquid) outlet, so the choice can change results.
 - **A2-a** (before X25, batch): a tank that empties completely and refills (a vented vessel) is a kind of unit that your
   ADR 0008 answer Q-A5 keeps out of the first dynamics release (TX). Until it is admitted, the "vessel drains to zero"
   rule only covers evacuating a rigid vessel. Default: keep it out of TX's first release, decide when X25 is designed.
