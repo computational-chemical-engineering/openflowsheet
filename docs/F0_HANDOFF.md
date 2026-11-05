@@ -21,3 +21,12 @@ Branch `wp/F0`, worktree `.claude/worktrees/f0`. Brief `docs/briefs/F0-build.md`
 
 ## Open (for the design lane, batched)
 - D9: are `artifact_hash` self-hashed unit-model modules part of M9's frozen set?
+
+## Orchestrator rulings (2026-11-05, before the second engineer)
+- D3 / M7: write all 52 bundles from a worktree of the `v0.3.0` tag and commit them as fixtures (the default). One
+  isolated commit for the fixtures.
+- D9 / M9: keep the brief's definition plus note §2.4.4's "or one imported into such a hash set" — check the AST scan
+  covers imported modules; `artifact_hash` self-hashing unit modules stay out for now (their edits move model identity,
+  caught by M1–M3). Batched for the design-lane read of F0.
+- The gate failure `test_f6_the_forty_runs_fit_their_budget` (401.5 s vs 300 s, load ~49): re-run that test alone when
+  the host is quieter; if it fails at low load, report — do not touch the budget.
