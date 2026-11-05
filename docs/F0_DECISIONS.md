@@ -110,3 +110,13 @@ Package F0, the corpus identity gate (roadmap 0.4, ADR 0057 D3; brief `docs/brie
   each zero-argument hasher's value equals its file's SHA-256. M9: 8 → 35 files; registry diff 27 insertions, 0
   deletions. The registry's informal `corpus.M9` description is left unchanged so the diff stays insertions only; the
   module docstring is authoritative. Reversible by: reverting the commit.
+- **Finding 1 fixed by the preferred fix (committed request sample).** `benchmarks/f0/m6-requests.json` (written by
+  `--record`): from each of the 15 runs that key the exact cache, requests 0, 1, 2 and the last (60 entries), plus
+  one `evaluate_phase` and one `flash` request at a fixed state per registered basis (`M6_PROVIDERS`: syn001, pr-c1,
+  IAPWS-95, Wilson v2, CoolProp R134a; 10 entries). `m6_sample()` rebuilds each provider (`basis_provider`) and
+  recomputes the keys with `ExactPropertyCache._property_key`/`_flash_key`, no solve; JSON floats round-trip exactly,
+  so the 70 `sample/*` keys are judged on every platform. The 52 run trails stay registered and are judged on the
+  reference platform only (like M4). M6's count is entries that carry keys: 15 + 70 = 85 (37 runs with
+  `n_keys: 0` are compared but not counted). **D19 (choice): sample selection** (first three and last per run; one
+  pair per basis). Alternative: every request (~9 000 entries, ~5 MB). Reversible by: `M6_FIRST`/`M6_PROVIDERS` and
+  re-record. Registry diff: 70 insertions; one line changes only by gaining a comma (`}` → `},`).

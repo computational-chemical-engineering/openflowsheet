@@ -54,6 +54,8 @@ def test_every_implemented_measure_passes(full: tuple[dict[str, Any], list[str]]
     assert all(r["status"] in ("PASS", "NOT JUDGED") for r in implemented.values()), log
     assert results["M1"]["n"] == 50 and results["M2"]["n"] == 52 and results["M9"]["n"] == 35
     assert results["M7"]["n"] == 52 and results["M8"]["n"] == 105
+    # M6 counts what carries keys: the 15 runs that key the cache and the 70-entry sample.
+    assert results["M6"]["n"] == 15 + 70
 
 
 def test_the_gate_passes(full: tuple[dict[str, Any], list[str]]) -> None:
@@ -183,6 +185,39 @@ def _one_ulp_split_fraction(document: dict[str, Any]) -> float:
     moved = math.nextafter(parameter["value"], math.inf)
     parameter["value"] = pinned[0]["value"] = moved
     return moved
+
+
+def test_m6_the_request_sample_recomputes_without_solving(registered: dict[str, Any]) -> None:
+    """Review finding 1: the sample's keys are a function of committed inputs, the providers'
+    `describe()` and the key code, so they are recomputed and judged on every platform."""
+    sample = gate.m6_sample()
+    assert len(sample) == 70 and all(k.startswith(gate.M6_SAMPLE_PREFIX) for k in sample)
+    providers = {k.split("/")[2] for k in sample if k.startswith("sample/provider/")}
+    assert providers == {p for p, _ in gate.M6_PROVIDERS} and len(providers) == 5
+    assert judged(registered, {"M6": sample})["M6"]["status"] == "PASS"
+
+
+def test_m6_judges_the_run_trails_only_on_the_reference_platform(
+    registered: dict[str, Any], tmp_path: Path
+) -> None:
+    measured = json.loads(json.dumps(registered["measures"]))
+    trail = "k05/SYN-001-nominal"
+    measured["M6"][trail]["keys_sha256"] = "0" * 64
+    elsewhere, log = gate.compare(registered, measured, "elsewhere")
+    assert elsewhere["M6"]["status"] == "PASS" and elsewhere["M6"]["n"] == 70
+    assert any("key trails (iterate states) are not judged" in line for line in log)
+    here, _ = gate.compare(registered, measured, registered["reference_platform"])
+    assert here["M6"]["status"] == "FAIL" and here["M6"]["wrong"] == [trail]
+    # One ulp in one committed sample state moves its key, and that fails on every platform.
+    document = json.loads(gate.M6_SAMPLE.read_text(encoding="utf-8"))
+    name = sorted(document["entries"])[0]
+    state = document["entries"][name]["state"]
+    state["temperature"] = math.nextafter(state["temperature"], math.inf)
+    copy = tmp_path / "m6-requests.json"
+    copy.write_text(json.dumps(document), encoding="utf-8")
+    moved = gate.m6_sample(copy)
+    elsewhere, _ = gate.compare(registered, {**measured, "M6": moved}, "elsewhere")
+    assert elsewhere["M6"]["wrong"] == [gate.M6_SAMPLE_PREFIX + name]
 
 
 def test_exit_2_one_ulp_in_a_registered_parameter_moves_m2_m3_m4(

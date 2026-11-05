@@ -12,7 +12,7 @@ reported `NOT IMPLEMENTED` and makes the gate FAIL; it is never counted as passi
 | M3 | `artifact_r0_sha256` of each registered run | the RC bundle set |
 | M4 | every `state_sha256` in the artifacts, bitwise (reference platform) | the RC bundle set |
 | M5 | outcome, verification status and every check's (id, result) | the RC bundle set |
-| M6 | the exact property cache's key digests of the runs' requests | the RC bundle set |
+| M6 | exact-cache keys of a committed request sample; run key trails (ref.) | `m6-requests.json` |
 | M7 | replay verdict, mode and integrity of each 0.3.0 bundle | the RC set written at v0.3.0 |
 | M8 | outcome of each schema round-trip test node | `M8_FUNCTIONS` (below) |
 | M9 | SHA-256 of each file feeding an `implementation_sha256` or `artifact_hash` | AST scan |
@@ -60,6 +60,19 @@ V030_BUNDLES: Final = ROOT / "tests" / "fixtures" / "f0" / "v0.3.0-bundles"
 #: guards that keep this policy's values out of input documents (`tests/f0_support.py`). The other
 #: records (`T04-W12`) carry none of those values and are not registered.
 ARCHIVED_POLICIES: Final = ("T06-revision-v2",)
+#: M6's committed request sample (review finding 1): keys recomputed without solving.
+M6_SAMPLE: Final = ROOT / "benchmarks" / "f0" / "m6-requests.json"
+M6_FIRST: Final = 3
+#: One sample per registered provider basis (`basis_provider`), by id and component order.
+M6_PROVIDERS: Final[tuple[tuple[str, tuple[str, ...]], ...]] = (
+    ("syn001", ("A", "B", "C")),
+    ("pr-c1-v1", ("H2", "N2", "NH3", "Ar", "CH4")),
+    ("iapws95-v1", ("H2O",)),
+    ("wilson-ig-v2", ("CH3OH", "C2H5OH", "H2O")),
+    ("coolprop-heos-v1", ("R134a",)),
+)
+#: M6's registry keys of the sample start with this; the others are the runs' key trails.
+M6_SAMPLE_PREFIX: Final = "sample/"
 #: M7's fields judged off the reference platform: the replay mode is decided by the platform
 #: identity (`run.replay.decide_mode`), so elsewhere only the verdict and the integrity are.
 M7_PORTABLE: Final = ("verdict", "integrity_ok")
@@ -129,8 +142,11 @@ def run_corpus() -> list[tuple[str, str]]:
 
 
 @contextlib.contextmanager
-def recorded_cache_keys() -> Iterator[list[str]]:
-    """Record every key the exact property cache computes, in order, without changing one."""
+def recorded_cache_keys(
+    requests: list[dict[str, Any]] | None = None,
+) -> Iterator[list[str]]:
+    """Record every key the exact property cache computes, in order, without changing one; and,
+    when `requests` is given, each key's inputs as an M6 sample entry (`m6_entry`)."""
     from openflowsheet.thermo.cache import ExactPropertyCache  # noqa: PLC0415
 
     keys: list[str] = []
@@ -142,6 +158,9 @@ def recorded_cache_keys() -> Iterator[list[str]]:
         def wrapped(*arguments: Any) -> str:
             key = original(*arguments)
             keys.append(key)
+            if requests is not None:
+                cache, request, context = arguments
+                requests.append(m6_entry(cache._capabilities, request, context))
             return key
 
         return wrapped
@@ -254,16 +273,150 @@ def run_measures(
 def runs(
     selection: Sequence[tuple[str, str]] | None = None,
     documents: Mapping[str, Mapping[str, Any]] | None = None,
+    requests: dict[str, list[dict[str, Any]]] | None = None,
 ) -> dict[str, dict[str, Any]]:
-    """M2-M6 per run, keyed `<set>/<name>`. `documents` replaces a g8 run's revision (tests)."""
+    """M2-M6 per run, keyed `<set>/<name>`. `documents` replaces a g8 run's revision (tests);
+    `requests`, when given, receives each run's cache-key inputs, in order (`--record`)."""
     result: dict[str, dict[str, Any]] = {}
     with tempfile.TemporaryDirectory() as scratch:
         for index, (run_set, name) in enumerate(selection or run_corpus()):
             directory = Path(scratch) / f"{index:03d}"
-            with recorded_cache_keys() as keys:
+            captured: list[dict[str, Any]] | None = None if requests is None else []
+            with recorded_cache_keys(captured) as keys:
                 solve(run_set, name, directory, (documents or {}).get(name))
             result[f"{run_set}/{name}"] = run_measures(*artifacts(directory), keys)
+            if requests is not None and captured:
+                requests[f"{run_set}/{name}"] = captured
     return result
+
+
+# -- M6: the cache keys of a committed request sample ---------------------------------------------
+
+
+def m6_entry(capabilities: Any, request: Any, context: Any) -> dict[str, Any]:
+    """One cache-key input set as a document: the provider by id and component order, the
+    request (state at full precision: JSON floats round-trip exactly) and the context fields."""
+    from openflowsheet.thermo import FlashRequest  # noqa: PLC0415
+
+    state = request.state
+    document: dict[str, Any] = {
+        "provider_id": capabilities.provider_id,
+        "components": list(capabilities.components),
+        "state": {"n": list(state.n), "temperature": state.temperature, "pressure": state.pressure},
+        "derivatives": list(request.derivatives),
+        "context": {
+            "model_version": context.model_version,
+            "constants_sha256": context.constants_sha256,
+            "phase_signature": context.phase_signature,
+            "accuracy_policy": context.accuracy_policy,
+        },
+    }
+    if isinstance(request, FlashRequest):
+        document |= {"kind": "flash", "specification": request.specification}
+    else:
+        document |= {
+            "kind": "evaluate_phase",
+            "phase": request.phase,
+            "properties": list(request.properties),
+        }
+    return document
+
+
+def m6_sample_provider(provider_id: str, components: Sequence[str]) -> Any:
+    """A fresh provider of a registered basis, by id (`basis_provider`); its component order must
+    be the recorded one."""
+    from openflowsheet.application.revision_binding import basis_provider  # noqa: PLC0415
+    from openflowsheet.models.revision_flowsheet import (  # noqa: PLC0415
+        SYN001_BASIS,
+        ComponentBasis,
+    )
+
+    basis = (
+        SYN001_BASIS
+        if provider_id == SYN001_BASIS.provider_id
+        else ComponentBasis(provider_id, tuple(components), {}, record_source="")
+    )
+    provider = basis_provider(basis)
+    if list(provider.describe().components) != list(components):
+        raise ValueError(f"M6 sample: {provider_id} components {list(components)} differ")
+    return provider
+
+
+def m6_sample(sample: Path = M6_SAMPLE) -> dict[str, str]:
+    """`sample/<id>` -> the exact cache's key of each committed entry, recomputed without solving
+    (review finding 1): a function of the entry, the provider's `describe()` and the key code, so
+    it is judged on every platform."""
+    from openflowsheet.compiled import EvaluationContext  # noqa: PLC0415
+    from openflowsheet.thermo import FlashRequest, PropertyRequest, StreamState  # noqa: PLC0415
+    from openflowsheet.thermo.cache import ExactPropertyCache  # noqa: PLC0415
+
+    entries: dict[str, dict[str, Any]] = json.loads(sample.read_text(encoding="utf-8"))["entries"]
+    caches: dict[tuple[str, ...], Any] = {}
+    keys: dict[str, str] = {}
+    for name, entry in entries.items():
+        identity = (entry["provider_id"], *entry["components"])
+        if identity not in caches:
+            caches[identity] = ExactPropertyCache(
+                m6_sample_provider(entry["provider_id"], entry["components"])
+            )
+        cache = caches[identity]
+        state = StreamState(
+            n=tuple(entry["state"]["n"]),
+            temperature=entry["state"]["temperature"],
+            pressure=entry["state"]["pressure"],
+        )
+        context = EvaluationContext(**entry["context"])
+        derivatives = tuple(entry["derivatives"])
+        if entry["kind"] == "flash":
+            flash = FlashRequest(state, entry["specification"], derivatives)
+            keys[M6_SAMPLE_PREFIX + name] = cache._flash_key(flash, context)
+        else:
+            phase = PropertyRequest(state, entry["phase"], tuple(entry["properties"]), derivatives)
+            keys[M6_SAMPLE_PREFIX + name] = cache._property_key(phase, context)
+    return keys
+
+
+def m6_sample_entries(requests: Mapping[str, Sequence[dict[str, Any]]]) -> dict[str, Any]:
+    """The committed sample (`--record`): from each run that keys the cache, its first
+    `M6_FIRST` requests and its last, by position; and, for each registered provider basis, one
+    `evaluate_phase` and one `flash` request at a fixed state, so every basis' identity enters a
+    key whether or not a corpus run caches it."""
+    entries: dict[str, Any] = {}
+    for run, captured in sorted(requests.items()):
+        for position in sorted({*range(min(M6_FIRST, len(captured))), len(captured) - 1}):
+            entries[f"{run}#{position}"] = captured[position]
+    for provider_id, components in M6_PROVIDERS:
+        provider = m6_sample_provider(provider_id, components)
+        described = provider.describe()
+        state = {"n": [1.0] * len(components), "temperature": 300.0, "pressure": 101325.0}
+        common = {
+            "provider_id": described.provider_id,
+            "components": list(described.components),
+            "state": state,
+            "derivatives": [],
+            "context": {
+                "model_version": f"F0-M6-sample@{provider_id}",
+                "constants_sha256": "0" * 64,
+                "phase_signature": None,
+                "accuracy_policy": "exact-double",
+            },
+        }
+        entries[f"provider/{provider_id}/evaluate_phase"] = {
+            **common,
+            "kind": "evaluate_phase",
+            "phase": "LIQUID",
+            "properties": ["h"],
+        }
+        entries[f"provider/{provider_id}/flash"] = {
+            **common,
+            "kind": "flash",
+            "specification": "TP",
+        }
+    return {
+        "format": "f0-m6-request-sample-v1",
+        "provenance": "corpus_identity.py --record on the reference platform (review finding 1)",
+        "entries": entries,
+    }
 
 
 # -- M7: the 0.3.0 bundles, replayed ------------------------------------------------------------
@@ -523,14 +676,23 @@ def reference_class() -> str:
     return machine_class()
 
 
-def measure_all() -> dict[str, Any]:
-    per_run = runs()
+def measure_all(requests: dict[str, list[dict[str, Any]]] | None = None) -> dict[str, Any]:
+    """Every measure. `requests` (`--record`) receives the runs' cache-key inputs, and the M6
+    sample is written from them before it is measured."""
+    per_run = runs(requests=requests)
+    if requests is not None:
+        M6_SAMPLE.write_text(
+            json.dumps(m6_sample_entries(requests), indent=1, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+    measured = {
+        measure: {run: values[measure] for run, values in per_run.items()}
+        for measure in ("M2", "M3", "M4", "M5", "M6")
+    }
     return {
         "M1": m1(),
-        **{
-            measure: {run: values[measure] for run, values in per_run.items()}
-            for measure in ("M2", "M3", "M4", "M5", "M6")
-        },
+        **measured,
+        "M6": {**measured["M6"], **m6_sample()},
         "M7": m7(),
         "M8": m8(),
         "M9": m9(),
@@ -567,6 +729,13 @@ def compare(
                 f"M4: NOT JUDGED on {platform} (reference {registered['reference_platform']})"
             )
             continue
+        if measure == "M6" and platform != registered["reference_platform"]:
+            expected = {k: v for k, v in expected.items() if k.startswith(M6_SAMPLE_PREFIX)}
+            actual = {k: v for k, v in actual.items() if k.startswith(M6_SAMPLE_PREFIX)}
+            log.append(
+                f"M6: the runs' key trails (iterate states) are not judged on {platform}; "
+                "the committed request sample is"
+            )
         if measure == "M7" and platform != registered["reference_platform"]:
             expected = {k: _fields(v, M7_PORTABLE) for k, v in expected.items()}
             actual = {k: _fields(v, M7_PORTABLE) for k, v in actual.items()}
@@ -579,13 +748,26 @@ def compare(
         log.extend(f"{measure}: {key}: registered, not measured" for key in missing)
         log.extend(f"{measure}: {key}: measured, not registered" for key in extra)
         failed = len(wrong) + len(missing) + len(extra)
+        n = _coverage(measure, expected)
         results[measure] = {
             "status": "FAIL" if failed else "PASS",
-            "n": len(expected),
+            "n": n,
             "failed": failed,
             "wrong": wrong,
         }
     return results, log
+
+
+def _coverage(measure: str, expected: Mapping[str, Any]) -> int:
+    """The judged entries that carry a value: M6 counts the sample and the runs that key the
+    cache, not the runs with an empty trail (review finding 1); the others count every entry."""
+    if measure != "M6":
+        return len(expected)
+    return sum(
+        1
+        for key, value in expected.items()
+        if key.startswith(M6_SAMPLE_PREFIX) or (isinstance(value, Mapping) and value["n_keys"])
+    )
 
 
 def summary(results: Mapping[str, Mapping[str, Any]]) -> tuple[bool, str]:
@@ -612,7 +794,7 @@ def record() -> int:
             "M8": "M8_FUNCTIONS: the schema round-trip tests, every collected node",
             "M9": "AST scan of src/ for what feeds an implementation_sha256",
         },
-        "measures": measure_all(),
+        "measures": measure_all(requests={}),
         "archived_outputs": archived_outputs(),
     }
     REGISTRY.parent.mkdir(parents=True, exist_ok=True)
