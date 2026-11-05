@@ -228,3 +228,22 @@ decomposition (M02, M04, A3.2, v17-c2 chains). `scripts/m07a_rc.py` gains link c
 `strip_msg`, `D_4 = b083ffe1…`) as its docstring prescribes for an MCP-visible change. Open for
 the design lane: the register entry carrying `D_4`, and Frank's carry naming c_4. WO-7 extends
 `without_msg` (the `explain` tool, `message_entry`) and re-registers `D_4`. Commit: `d8a2be92`.
+
+**D3-6. Exact-`detail` assertions on transported errors.** They compare `machine_detail(doc)`
+(`tests/msg_support.py`: the detail without `explanation`, which must be present and explain the
+document's code). Nine sites in five files (`test_t07_w5b_cli`, `test_t07_w5d_surrogates` (one,
+parametrized ×9), `test_adr_0002_a1_integers`, `test_t07_w5a_operations` (3), `test_t07_w6a_http`
+(2)); the note's ~33 counted direct calls too, whose documents are unchanged. The pins-hash tests
+(`test_t07_w5b_cli`, `test_t08_rename_substitution`) reverse MSG's two records first
+(`msg_reversed`: U05's stdout without `detail.explanation`, its stderr empty; the refused
+`project init`'s stderr T07's one-liner); both registered hashes hold. G20: `error_locations`'
+`@cache` allowlisted (pure function of the static table and schemas). Commit: this one.
+
+**D6-5. The W26 web fixtures (`tests/web/fixtures/w26/exchanges.json`).** M06's validity test
+holds each recorded response to today's schema, so the three `get_job_result` records needed
+`run_result.failure`. A full `m06_web_fixtures.py --write` re-take also moves unrelated values
+since M06 (12 `policy_sha256`, `models`, `package_version`, thread variables, clocks), so only
+MSG's members were taken from a fresh generation (same project, same ids; every raw member but
+the three run manifests byte-identical): the 3 `failure` members and the 2 refusals'
+`detail.explanation`. Nothing written by hand. Alternative: the full re-take (WO-10's, with the
+shell's display). Commit: this one.

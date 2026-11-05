@@ -39,6 +39,7 @@ from typing import Any
 import pytest
 import yaml
 from conftest import REPO_ROOT
+from msg_support import machine_detail
 from t07_corpus import CORPUS
 from t07_mcp_support import call, direct_call, in_session, project_with_grant
 from test_t07_injection import client_for
@@ -388,7 +389,7 @@ def test_j14c_the_transports_agree_on_the_text(tmp_path: Path) -> None:
     (committed, committed_doc), (refused, refused_doc) = outcomes["python"]
     assert not committed and committed_doc["status"] == "committed", committed_doc
     assert refused and refused_doc["code"] == "document_not_canonical", refused_doc
-    assert refused_doc["detail"] == {"pointer": "/edits/0/value"}
+    assert machine_detail(refused_doc) == {"pointer": "/edits/0/value"}
     for transport in ("http", "mcp"):
         assert _timeless(outcomes[transport]) == _timeless(outcomes["python"]), transport
     with LocalApplication.open(tmp_path / "mcp") as owner:

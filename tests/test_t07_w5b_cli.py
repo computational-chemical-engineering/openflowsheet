@@ -42,6 +42,7 @@ from typing import Any
 import pytest
 import yaml
 from conftest import REPO_ROOT
+from msg_support import machine_detail
 from t07_corpus import CORPUS
 from t07_jobs_support import lifecycle_violations
 from t08_d1_substitution import d1_str05_reversed_message
@@ -174,7 +175,9 @@ def single_threaded(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 def msg_reversed(pins: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    """`pins` with the refused `project init` as T07 captured it (its stderr only)."""
+    """`pins` as they were before MSG: the refused `project init`'s stderr T07's one-liner again,
+    and U05's refusal without `detail.explanation` on stdout and with nothing on stderr. Every
+    other entry is returned as it is."""
     refused = [
         index
         for index, entry in enumerate(pins)
@@ -185,7 +188,18 @@ def msg_reversed(pins: list[dict[str, Any]]) -> list[dict[str, Any]]:
     assert pins[index]["stderr"].endswith("  Details: project_exists: <ROOT>/project\n")
     restored = [dict(entry) for entry in pins]
     restored[index]["stderr"] = MSG_PROJECT_INIT_STDERR_T07
+    (u05,) = (entry for entry in restored if entry["argv"] == U05_ARGV)
+    document = json.loads(u05["stdout"])
+    del document["detail"]["explanation"]
+    assert u05["stderr"].endswith(f"  Details: unsupported: {document['message']}\n")
+    u05["stdout"] = canonical_json(document).decode("utf-8") + "\n"
+    u05["stderr"] = ""
     return restored
+
+
+def msg_reversed_text(text: str) -> str:
+    """The pins file's text with `msg_reversed` applied, serialized as the file is."""
+    return json.dumps(msg_reversed(json.loads(text)), indent=1, ensure_ascii=False) + "\n"
 
 
 def u05_reversed(pins: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -434,10 +448,10 @@ def refused(project: Path, name: str, request: Any, code: str, *extra: str) -> d
 
 def test_each_reachable_api_error_exits_its_code(project: Path) -> None:
     """As the local owner, `unauthenticated` and `forbidden` cannot arise (§10.2)."""
-    assert refused(project, "get_job", {}, "invalid_request")["detail"] == {"pointer": ""}
-    assert refused(project, "get_job", '{"job_id": NaN}', "document_not_canonical")["detail"] == {
-        "pointer": "/job_id"
-    }
+    assert machine_detail(refused(project, "get_job", {}, "invalid_request")) == {"pointer": ""}
+    assert machine_detail(
+        refused(project, "get_job", '{"job_id": NaN}', "document_not_canonical")
+    ) == {"pointer": "/job_id"}
     refused(project, "get_job", {"job_id": "job-000099"}, "not_found")
     edits = [{"operation": "set", "path": ["title"], "value": "a"}]
     first = {"edits": edits, "expected_revision": None, "idempotency_key": "k"}
@@ -462,7 +476,9 @@ def test_the_cli_refuses_as_dispatch_does_and_audits_it(
     unknown = refused(project, "grant_policy", {}, "invalid_request")
     assert "grant_policy" not in unknown["detail"]["operations"]
     for text in ('{"job_id": ', '{"job_id": "job-000001", "job_id": "job-000002"}'):
-        assert refused(project, "get_job", text, "invalid_request")["detail"] == {"pointer": ""}
+        assert machine_detail(refused(project, "get_job", text, "invalid_request")) == {
+            "pointer": ""
+        }
     row = OPERATIONS["get_project"]
     monkeypatch.setitem(
         OPERATIONS, "get_project", dataclasses.replace(row, transports=("python", "http"))

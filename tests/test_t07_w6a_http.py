@@ -34,6 +34,7 @@ from urllib.parse import quote
 
 import pytest
 from conftest import REPO_ROOT
+from msg_support import machine_detail
 from t07_corpus import CORPUS
 
 from openflowsheet.application.authz import grant, new_token, revoke
@@ -629,7 +630,7 @@ def test_query_values_are_typed_by_the_request_schema(served: Served) -> None:
     # A cursor is a string whatever it looks like: the schema passes "12", and the method
     # refuses it as a cursor it never issued.
     response = served.client.get("/v1/revisions?cursor=12", headers=served.headers)
-    assert (response.status_code, response.json()["detail"]) == (422, {"pointer": "/cursor"})
+    assert (response.status_code, machine_detail(response.json())) == (422, {"pointer": "/cursor"})
     assert "not one this list issued" in response.json()["message"]
 
 
@@ -656,7 +657,7 @@ def test_unknown_routes_and_methods_answer_in_the_one_error_shape(served: Served
     assert preflight.status_code == 422
     assert not any(key.lower().startswith("access-control-") for key in preflight.headers)
     assert preflight.headers["Allow"] == "GET, POST"
-    assert preflight.json()["detail"] == {"method": "OPTIONS", "allowed": "GET, POST"}
+    assert machine_detail(preflight.json()) == {"method": "OPTIONS", "allowed": "GET, POST"}
 
 
 def test_an_untyped_exception_is_500_with_a_fixed_message(

@@ -28,6 +28,7 @@ from pathlib import Path
 from typing import Any
 
 import pytest
+from msg_support import machine_detail
 from t07_corpus import CORPUS
 from t07_jobs_support import commit, lifecycle_violations
 
@@ -218,7 +219,7 @@ def test_dispatch_refuses_non_canonical_input_first(app: LocalApplication) -> No
             ({"deep": 2**53 + 1}, "/x/deep"),
         ):
             refused = _refusal(app, name, {"x": value})
-            assert (refused["code"], refused["detail"]) == (
+            assert (refused["code"], machine_detail(refused)) == (
                 "document_not_canonical",
                 {"pointer": pointer},
             )
@@ -250,7 +251,7 @@ def test_dispatch_refuses_a_lone_surrogate_as_non_canonical(app: LocalApplicatio
     ):
         refused = _refusal(app, "commit_change", request)
         assert refused["code"] == "document_not_canonical"
-        assert refused["detail"] == {"pointer": pointer.replace("\udfff", "�")}
+        assert machine_detail(refused) == {"pointer": pointer.replace("\udfff", "�")}
     assert app.list_revisions().items == ()
 
 
@@ -296,7 +297,7 @@ def test_transports_refuse_the_reserved_key_prefix(app: LocalApplication) -> Non
         ),
     ):
         refused = _refusal(app, name, request)
-        assert (refused["code"], refused["detail"]) == (
+        assert (refused["code"], machine_detail(refused)) == (
             "invalid_request",
             {"pointer": "/idempotency_key"},
         )
