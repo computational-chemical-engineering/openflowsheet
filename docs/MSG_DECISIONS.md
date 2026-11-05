@@ -151,3 +151,80 @@ parts a only: a 1 diff`, exit 1.
   `test_t07_conformance.py::test_the_budget_of_the_scenario_runs` (123.0 s > 120; passes when rerun alone) and
   `test_t07_v17_reference.py::test_f6_the_forty_runs_fit_their_budget` (480 s > 300; 343 s alone; it also failed at
   the branch point, 418 s, with no MSG code). MSG-G3: no miss, no defect.
+
+## WO-3
+
+**D3-1. Which surface `.explanation` renders.** `ApiError.explanation` returns the carried
+`detail.explanation` when the error was projected, else renders with surface null (the transported
+document's); `ApplicationError.explanation` and `__str__` render surface `python` from the machine
+document (any carried explanation ignored). Alternative: one surface for both. Commit: `251b98b4`.
+
+**D3-2. Nested `ApiError` locations.** `operations.error_locations(name)` walks each response
+schema (`$ref` resolved, `allOf/anyOf/oneOf`, `if/then/else`, `properties`, `items`,
+`prefixItems`, `additionalProperties`, `patternProperties`; `*` for an array item or map member)
+and records where `api-error.schema.json` is referenced; cached per operation. Measured: 10
+operations, 11 locations (`error`, `job.error`, `run_result.error`, `items[*].error`,
+`events[*].error`). The test pins that table (read off the schemas by hand) and projects a fixture
+error at each. `project_error` and the nested attach are idempotent (an error that carries an
+explanation keeps it), because bindings project errors `dispatch` already projected. Commit:
+`251b98b4`.
+
+**D3-3. CLI text.** Refusal stderr renders surface `cli` from the *projected* error (the message
+as bounded). The top-level handler's `Details:` is `<ExceptionType>: <str>`, then the traceback.
+The `validate` explanation line goes after the check's `implicated:` line. No check entry is
+complete yet, so the golden `broken.yaml` record is unchanged (the test forces one complete).
+Commit: `251b98b4`.
+
+**D3-4. FB-03(b) members query.** Reuses `ProjectStore.artifact_children(bundle_id)` (already
+the registered `<bundle id>/<file>` rows, by parent); no new store query. `job_id` is added only
+when the bundle id ends `:bundle`/`:rerun` *and* that job exists (an import's
+`import-<n>:bundle` names no job). The pre-MSG detail of this refusal has no `operation` member
+(the note's §4.13.3 HTTP example shows one; `_refuse` keeps `operation` for the audit only) — the
+detail stays as it was plus the new members. Commit: `251b98b4`.
+
+**D3-5. `str()`-conversion check.** `tests/test_msg_surfaces.py` scans `src/` by AST for an
+`except` of `ApplicationError`, `StoreError` or `SolveFailedError` whose body uses `str(e)`,
+`repr(e)` or `{e}` outside a `print(..., file=sys.stderr)`. Finds none; a control file is flagged.
+Commit: `251b98b4`.
+
+## WO-4
+
+**D4-1. Stubs for the three new codes.** `not_a_directory`, `not_a_project`,
+`project_id_mismatch` are stubs (`complete: false`, `review: true`) with a technical summary that
+names the directory; `not_a_project`'s keeps the words "is not a project", so the existing
+`match="not a project"` checks hold. Their action is the kind's default, which reads oddly for a
+directory: for WO-9 / the design lane to complete. Commit: `69802e70`.
+
+**D4-2. `exist_ok` id check.** `project_id_mismatch` reads the existing id through
+`ProjectStore.open(...).project_id` (closed at once) before `LocalApplication.open`, so a refusal
+takes no owner lock. Its machine message is `project_id_mismatch: <directory>`; params add
+`project_id` and `existing`. Commit: `69802e70`.
+
+**D4-3. CLI surface for coded store errors.** Every CLI site that printed `str(StoreError)` now
+prints `StoreError.text("cli")` (`_human_text`); identical to `str()` for an uncoded error.
+Golden: the refused `project init` stderr only; `msg_reversed` in the pins hash test restores
+T07's one-liner, and `PINS_T07_SHA256` holds. Commit: `69802e70`.
+
+## WO-6
+
+**D6-1. `RunFailure` details and fallbacks.** `Details:` is `<message> — <artifact id>`, the
+outcome when the bundle has no message. An unreadable bundle: outcome from the run facts,
+taxonomy from `verify.failure.TAXONOMY` (empty string if the outcome has none), `message: null`,
+chain `[outcome]`, empty lists. `params` are `messages.render.explain_failure`'s merged params
+(context ids included). Commit: `d8a2be92`.
+
+**D6-2. `SolveFailedError` without a failure** (a job that did not complete): `args[0]` is
+`<job_status>: job <id>`, text the job-status entry's (family `job`). Commit: `d8a2be92`.
+
+**D6-3. CLI failure text.** `api` prints each non-null `failure` found anywhere in the response
+from its carried (surface-null) explanation; `solve`/`inspect` render the bundle's failure with
+surface `cli` and no project context (no revision or job ids), `Details:` naming the bundle file
+path. The `solve` `note` line is skipped when the status is null. Commit: `d8a2be92`.
+
+**D6-4. MSG-G10 decomposition and the surface chain.** `tests/msg_schema_support.without_msg`
+removes `failure` from run-result-shaped objects and the `run_failure`/`explanation` `$defs` (an
+emptied `$defs` is dropped: run-result had none). Composed into every existing R4-G3/MCP
+decomposition (M02, M04, A3.2, v17-c2 chains). `scripts/m07a_rc.py` gains link c_4 (R-934,
+`strip_msg`, `D_4 = b083ffe1…`) as its docstring prescribes for an MCP-visible change. Open for
+the design lane: the register entry carrying `D_4`, and Frank's carry naming c_4. WO-7 extends
+`without_msg` (the `explain` tool, `message_entry`) and re-registers `D_4`. Commit: `d8a2be92`.
