@@ -46,6 +46,9 @@ ROOT: Final = Path(__file__).resolve().parent.parent
 THREAD_VARIABLES: Final = ("OPENBLAS_NUM_THREADS", "OMP_NUM_THREADS", "MKL_NUM_THREADS")
 REGISTRY: Final = ROOT / "benchmarks" / "f0" / "corpus.json"
 FORMAT: Final = "f0-corpus-identity-v1"
+#: The machine class (`t08_rc.machine_class`) the registry is recorded on, and where M4, M6's
+#: run trails and M7's mode are judged.
+REFERENCE_PLATFORM: Final = "ref-x86-64"
 MEASURES: Final = ("M1", "M2", "M3", "M4", "M5", "M6", "M7", "M8", "M9")
 #: Measures not implemented yet, with the reason; each is reported, and fails the gate.
 NOT_IMPLEMENTED: Final[dict[str, str]] = {}
@@ -164,6 +167,23 @@ def revision_document(run_set: str, name: str) -> dict[str, Any]:
     path = ROOT / "benchmarks" / "s11" / directory / f"{name}.json"
     document: dict[str, Any] = json.loads(path.read_text(encoding="utf-8"))
     return document
+
+
+@contextlib.contextmanager
+def pinned_threads() -> Iterator[None]:
+    """The thread variables at "1" while runs are solved or replayed, then restored (review
+    finding 5): a run manifest records them (`Environment.threads`), and the 0.3.0 bundles were
+    written single-threaded (RC step 4), so M7's replay mode depends on them."""
+    saved = {name: os.environ.get(name) for name in THREAD_VARIABLES}
+    os.environ.update(dict.fromkeys(THREAD_VARIABLES, "1"))
+    try:
+        yield
+    finally:
+        for name, value in saved.items():
+            if value is None:
+                os.environ.pop(name, None)
+            else:
+                os.environ[name] = value
 
 
 @contextlib.contextmanager
@@ -301,7 +321,7 @@ def runs(
     """M2-M6 per run, keyed `<set>/<name>`. `documents` replaces a g8 run's revision (tests);
     `requests`, when given, receives each run's cache-key inputs, in order (`--record`)."""
     result: dict[str, dict[str, Any]] = {}
-    with tempfile.TemporaryDirectory() as scratch:
+    with pinned_threads(), tempfile.TemporaryDirectory() as scratch:
         for index, (run_set, name) in enumerate(selection or run_corpus()):
             directory = Path(scratch) / f"{index:03d}"
             captured: list[dict[str, Any]] | None = None if requests is None else []
@@ -461,7 +481,7 @@ def m7(bundles: Path = V030_BUNDLES) -> dict[str, dict[str, Any]]:
     result: dict[str, dict[str, Any]] = {
         f"unindexed/{directory}": {"verdict": None} for directory in sorted(found - set(entries))
     }
-    with tempfile.TemporaryDirectory() as scratch:
+    with pinned_threads(), tempfile.TemporaryDirectory() as scratch:
         for directory, key in entries.items():
             if directory not in found:
                 result[key] = {"verdict": None, "missing": directory}
@@ -772,8 +792,10 @@ def compare(
         log.extend(f"{measure}: {key}: measured, not registered" for key in extra)
         failed = len(wrong) + len(missing) + len(extra)
         n = _coverage(measure, expected)
+        if n == 0:
+            log.append(f"{measure}: nothing registered carries a value: an empty measure fails")
         results[measure] = {
-            "status": "FAIL" if failed else "PASS",
+            "status": "FAIL" if failed or n == 0 else "PASS",
             "n": n,
             "failed": failed,
             "wrong": wrong,
@@ -807,9 +829,15 @@ def summary(results: Mapping[str, Mapping[str, Any]]) -> tuple[bool, str]:
 
 
 def record() -> int:
+    platform = reference_class()
+    if platform != REFERENCE_PLATFORM:
+        # Review note 9: a re-record elsewhere would move where M4, M6's trails and M7's mode
+        # are judged; the registry is written on the reference platform only.
+        print(f"--record refused on {platform}: the reference platform is {REFERENCE_PLATFORM}")
+        return 2
     document = {
         "format": FORMAT,
-        "reference_platform": reference_class(),
+        "reference_platform": platform,
         "corpus": {
             "M1": "tests/t07_corpus.py CORPUS (T07 W0.2's revisions)",
             "M2-M6": "scripts/t08_rc.py bundles-write: K05 variants (CLI) + T07 W3a ELIGIBLE",

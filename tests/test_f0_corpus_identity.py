@@ -74,6 +74,23 @@ def test_the_runs_cover_every_provider_basis_but_coolprop(registered: dict[str, 
     ]
 
 
+def test_an_empty_measure_fails_the_gate(registered: dict[str, Any]) -> None:
+    """Review note 6: a measure with nothing registered and nothing measured is not 0/0 PASS."""
+    empty = {**registered, "measures": {**registered["measures"], "M1": {}}}
+    results, log = gate.compare(empty, {"M1": {}}, registered["reference_platform"], subset=True)
+    assert results["M1"]["status"] == "FAIL" and results["M1"]["n"] == 0
+    assert any("an empty measure fails" in line for line in log)
+    assert not gate.summary(results)[0]
+
+
+def test_record_refuses_off_the_reference_platform(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Review note 9: a re-record elsewhere would move where M4 is judged; it is refused before
+    anything is measured or written."""
+    monkeypatch.setattr(gate, "reference_class", lambda: "elsewhere")
+    monkeypatch.setattr(gate, "measure_all", lambda **_: pytest.fail("measured"))
+    assert gate.record() == 2
+
+
 def test_a_not_implemented_measure_fails_the_gate() -> None:
     passed, line = gate.summary(
         {"M1": {"status": "PASS", "n": 1}, "M7": {"status": "NOT IMPLEMENTED"}}
@@ -232,19 +249,35 @@ def test_m6_judges_the_run_trails_only_on_the_reference_platform(
 
 
 def test_exit_2_one_ulp_in_a_registered_parameter_moves_m2_m3_m4(
-    registered: dict[str, Any],
+    registered: dict[str, Any], platform: str
 ) -> None:
+    """With an unmutated control (review note 7): the run as registered passes M2, M3 (and M4 on
+    the reference platform); one ulp fails M2 and M3 everywhere, fails M4 on the reference
+    platform, and moves the state trail against the control on any platform."""
     from t07_corpus import CORPUS
 
+    def statuses(measured: dict[str, Any]) -> dict[str, str]:
+        results, _ = gate.compare(
+            registered, {m: {KEY: measured[m]} for m in ("M2", "M3", "M4")}, platform, subset=True
+        )
+        return {m: r["status"] for m, r in results.items()}
+
+    reference = platform == registered["reference_platform"]
+    control = gate.runs([RUN])[KEY]
+    assert statuses(control) == {
+        "M2": "PASS",
+        "M3": "PASS",
+        "M4": "PASS" if reference else "NOT JUDGED",
+    }
     document = CORPUS[RUN[1]]()
     assert _one_ulp_split_fraction(document) == 0.5 + 2.0**-53
     measured = gate.runs([RUN], {RUN[1]: document})[KEY]
-    results = judged(registered, {m: {KEY: measured[m]} for m in ("M2", "M3", "M4")})
-    assert {m: r["status"] for m, r in results.items()} == {
+    assert statuses(measured) == {
         "M2": "FAIL",
         "M3": "FAIL",
-        "M4": "FAIL",
+        "M4": "FAIL" if reference else "NOT JUDGED",
     }
+    assert measured["M4"]["state_trail_sha256"] != control["M4"]["state_trail_sha256"]
     expected = registered["measures"]["M2"][KEY]
     assert measured["M2"]["model_version"] == expected["model_version"]
     assert measured["M2"]["constants_sha256"] != expected["constants_sha256"]
@@ -429,3 +462,7 @@ def test_importing_the_gate_leaves_the_thread_variables_alone() -> None:
         [sys.executable, "-c", probe], env=environment, capture_output=True, text=True, check=True
     ).stdout.strip()
     assert shown == "[None, None, None]"
+    before = [os.environ.get(n) for n in gate.THREAD_VARIABLES]
+    with gate.pinned_threads():
+        assert [os.environ[n] for n in gate.THREAD_VARIABLES] == ["1", "1", "1"]
+    assert [os.environ.get(n) for n in gate.THREAD_VARIABLES] == before

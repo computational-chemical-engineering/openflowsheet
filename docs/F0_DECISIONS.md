@@ -131,3 +131,12 @@ Package F0, the corpus identity gate (roadmap 0.4, ADR 0057 D3; brief `docs/brie
   every session's gate); not done. CoolProp stays covered by M6's sample (identity in the key) and M9 (its 2 files).
   Not added either: the Wilson-column flowsheets (`benchmarks/s11/flowsheets/C-*.json`), outside the brief. To close:
   install `requirements-coolprop.lock` on the reference host, add `TH-C2` to `BASIS_CASES`, re-record.
+- **Findings 5, 6 (notes 6, 7, 9).** Finding 5 first moved the thread variables into `main()`; the F0 tests then
+  measured M7 `compatible_reproduction` for all 52 bundles inside pytest, because a run manifest records the thread
+  variables (`Environment.threads`) and the bundles were written single-threaded. **D21 (choice):**
+  `pinned_threads()` sets them to "1" around `runs()` and `m7()` only and restores them, so no other subprocess of
+  the session inherits them; `main()` also sets them before numpy loads (RC step 4's single-threaded BLAS).
+  Alternative: leave them set at import (the leak the review names). Note 6: a measure with nothing that carries a
+  value fails (`n == 0`). Note 7: exit 2 runs an unmutated control first (M2, M3 PASS; M4 PASS on the reference
+  platform) and checks the mutated state trail differs from the control on any platform; M4 is judged by the host's
+  real platform. Note 9: `--record` refuses (exit 2) unless the host is `REFERENCE_PLATFORM` (`ref-x86-64`).
