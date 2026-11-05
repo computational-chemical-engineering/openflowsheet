@@ -203,6 +203,20 @@
       "patterns": ["cache"],
       "occurrences": 1,
       "justification": "M01 WO-6: nullary _artifact_hash, the module source's SHA-256, immutable for the process's life (the W0.5 pattern of every model module)."
+    },
+    {
+      "file": "messages/audit.py",
+      "line": "global auditor  # noqa: PLW0603",
+      "patterns": ["global"],
+      "occurrences": 2,
+      "justification": "MSG design note §4.2.8 (MSG-G3): the runtime audit switch, set only by tests/conftest.py's pytest_configure and by tests that save and restore it; production never sets it. It records unknown codes and rendering defects and changes no result."
+    },
+    {
+      "file": "messages/template.py",
+      "line": "@lru_cache(maxsize=4096)",
+      "patterns": ["cache"],
+      "occurrences": 1,
+      "justification": "MSG design note §4.2.4: parsed message templates, a pure function of the template string (immutable node tuples); nothing in it depends on a job or a project."
     }
   ]
 }

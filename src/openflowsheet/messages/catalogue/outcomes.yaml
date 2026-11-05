@@ -1,0 +1,16 @@
+# Family `outcome` (MSG design note §4.2.1): solve outcomes, by the `verify.failure.TAXONOMY` class.
+catalogue: openflowsheet-messages-v1
+namespace: null
+entries:
+  - code: INITIALIZATION_FAILED
+    family: outcome
+    kind: numerical
+    complete: true
+    title: The solve could not find a starting point
+    params: {unit: {type: unit, optional: true}}
+    context: "The solve[ of revision {revision}] stopped before its first iteration[: unit {unit}[ ({unit_model})] could not compute its outlets from the starting values]."
+    summary: "The solve[ of revision {revision}] could not find a starting point[ at unit {unit}]."
+    why: "Before iterating, OpenFlowsheet computes every unit once, in flow order, from the feeds and the specifications. One unit could not, so there was no starting point."
+    action: "Check the specifications of the unit named; if they are right, supply an initial guess for the recycle streams."
+    examples:
+      - params: {unit: T}

@@ -1,0 +1,57 @@
+# Family `api_error` (MSG design note §4.2.1): the 15 `ApiErrorCode`s, kinds normative.
+catalogue: openflowsheet-messages-v1
+namespace: null
+entries:
+  - code: not_found
+    family: api_error
+    kind: input
+    complete: true
+    title: The named object does not exist in this project
+    params:
+      artifact_id: {type: artifact, optional: true}
+      revision_id: {type: revision, optional: true}
+      job_id:      {type: job, optional: true}
+      bundle_id:   {type: bundle, optional: true}
+      member:      {type: text, optional: true}
+      members:     {type: list, optional: true}
+      run_outcome: {type: code, optional: true}
+      code:        {type: text, optional: true}
+      suggestions: {type: list, optional: true}
+    summary: "Nothing named[ {artifact_id}][ {revision_id}][ {job_id}] exists in this project."
+    why: "The id is not one this project has recorded."
+    action: "Check the id; a job's outputs list the artifact ids it wrote."
+    variants:
+      - when: {has: [bundle_id, member, members, run_outcome], not_equals: {run_outcome: CONVERGED}}
+        summary: "Bundle {bundle_id} has no file '{member!raw}': its run ended {run_outcome} and wrote no solution."
+        why: "A run that does not converge writes a failure bundle instead of a solution state and a certificate. This bundle holds {members}."
+        action: "Check the run's outcome before reading its results; the run result's failure says why it failed[, and '{bundle_id!raw}/failure-bundle.json' holds the evidence]."
+      - when: {has: [bundle_id, member, members]}
+        summary: "Bundle {bundle_id} has no file '{member!raw}'."
+        why: "This bundle holds {members}."
+        action: "Read one of the files the bundle holds."
+      - when: {has: [code]}
+        summary: "There is no message code '{code!raw}'."
+        why: "Codes are case-sensitive and listed in the docs' Messages section."
+        action: "[Did you mean {suggestions}?]"
+    examples:
+      - params: {artifact_id: "job-000004:bundle/solution-state.json", bundle_id: "job-000004:bundle",
+                 member: solution-state.json, members: [failure-bundle.json, run-manifest.json],
+                 run_outcome: INITIALIZATION_FAILED, job_id: job-000004}
+
+  - code: unsupported
+    family: api_error
+    kind: not_supported
+    complete: false
+    title: The request needs something this version does not support
+    args: [reason]
+    params: {reason: {type: code, optional: true}}
+    summary: "The request needs something this version does not support."
+
+  - code: internal_error
+    family: api_error
+    kind: bug
+    complete: false
+    title: An internal error in OpenFlowsheet
+    args: [reason]
+    params: {reason: {type: code, optional: true}}
+    summary: "OpenFlowsheet hit an internal error and could not complete the request."

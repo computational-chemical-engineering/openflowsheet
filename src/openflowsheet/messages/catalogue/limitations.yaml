@@ -1,0 +1,23 @@
+# Family `limitation` (MSG design note §4.2.9): one entry per support-matrix id. WO-2's
+# `scripts/msg_catalogue.py sync-limitations` regenerates the generated fields from the matrix and
+# keeps the authored ones.
+catalogue: openflowsheet-messages-v1
+namespace: null
+entries:
+  - code: L-TH-3
+    family: limitation
+    kind: notice
+    complete: false
+    title: L-TH-3
+    summary: "`thermal.flash` needs a two-phase state at drum pressure; its products are declared `vapor_liquid`."
+  - code: L-TH-4
+    family: limitation
+    kind: notice
+    complete: true
+    title: L-TH-4
+    summary: "A turbine's ideal (isentropic) outlet is computed in the phase declared for its real outlet, so a vapour outlet whose ideal state would be wet is refused."
+    why: "This version takes the phase of a machine's ideal outlet from the phase declared for its real outlet. It does not compute a two-phase ideal state for a turbine whose outlet is declared vapour, and it refuses a compressor whose ideal state would be two-phase."
+    action: "Declare the outlet wet if it can be wet at your conditions, or change the operating conditions until the ideal and the real outlet are in the same phase; `openflowsheet explain isentropic_state_two_phase` gives the details."
+    see_also: [isentropic_state_two_phase]
+    examples:
+      - params: {}

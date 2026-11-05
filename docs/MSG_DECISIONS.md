@@ -37,3 +37,41 @@ schema (canonical JSON; the "R4-G3 snapshots"), and the SHA-256 of every `schema
 
 **D0-6. Determinism inputs.** Every measuring subprocess runs with the three thread variables at 1 (the run manifest
 records them) and `PYTHONHASHSEED=0`. Commit: WO-0.
+
+## WO-1
+
+**D1-1. Module split (§9).** As §4.1, plus `template.py` (the §4.2.4 grammar: parse, placeholder walk, literal and
+display forms) and `lint.py` (MSG-G4), so that `catalogue.py` holds data and `render.py` holds resolution. The
+`entry_document(code)` of §4.1 is left to WO-7, which defines its schema (`message_entry`). Commit: WO-1.
+
+**D1-2. `]]` inside a segment (note defect).** §4.2.4 makes `]]` a literal, but §4.13.1's own `where` template closes
+two nested segments with `]]`. Choice: `]]` closes segments while one is open and is a literal `]` only where none
+is open; `[[` is always a literal. Consequence: a literal `]` cannot be written inside a segment. Alternative: change
+the worked entry to `] ]` (rejected: the note's text is the spec under test). Commit: WO-1.
+
+**D1-3. Quantity params from legacy text (§4.3 rule 5).** "Or the param declaration fixes it" needs a unit in the
+declaration, which §4.2.2's param fields lack. The schema's `param` gains optional `unit` and `quantity_kind` (type
+`quantity` only, by use). `quantity_kind` rather than `kind`, so the field cannot be read as the entry's failure kind.
+Commit: WO-1.
+
+**D1-4. Kinds and vocabulary files.** `kinds.yaml` and `vocabulary.yaml` are validated against
+`$defs/kinds_document` and `$defs/vocabulary_document` of `message-catalogue.schema.json`; the schema's root is the
+catalogue document that `register()` takes. Commit: WO-1.
+
+**D1-5. Rendering details the note leaves open.** (a) A field renders from the first matching variant that defines
+it, then the base; a candidate that fails (or renders empty) falls to the next, and a failure is a defect: `strict`
+raises it, the audit records it (session fails, I9), production continues. (b) The defect record is
+`audit.Auditor.defects`, beside `misses`. (c) An outcome entry without `context` uses its `summary` for line 1.
+(d) A stub contributes no `where` (§4.4: stubs give summary and kind). (e) Elements: per chain entry outer → inner,
+the merged params in insertion order that the entry declares element-typed (this reproduces both §4.13.1's and
+§4.13.3's printed order; declaration order would not reproduce §4.13.3's). (f) The minimal rendering (I9) uses the
+first chain code, its entry's family and kind when it has one, else the caller's family (`api_error`, `outcome`,
+`refusal`) and kind `bug`, with the machine text as summary. (g) `render_error` takes the `ApiError` *document*, so
+`messages` imports nothing from `application`. (h) A validation report's first FAIL check id is used as a chain code
+directly (a check id does not parse under §4.3's grammar). Commit: WO-1.
+
+**D1-6. Entries needed by WO-1's tests beyond §4.13.** `INITIALIZATION_FAILED` and `initializer_failed` gained an
+`examples` item each (the note's YAML has none, but the schema requires one on a complete entry). `L-TH-3` is a stub
+(it is `phase_regime_mismatch`'s `see_also`); `L-TH-4` is complete with authored prose (summary, why, action) taken
+from the support-matrix row. `unsupported` and `internal_error` are stubs with `args: [reason]` of type `code`, so
+§4.3's expansion examples resolve. Commit: WO-1.

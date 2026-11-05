@@ -1,0 +1,107 @@
+# Family `refusal` (MSG design note §4.2.1): lower-snake typed refusal codes.
+catalogue: openflowsheet-messages-v1
+namespace: null
+entries:
+  - code: initializer_failed
+    family: refusal
+    kind: numerical
+    complete: true
+    title: The first pass over the flowsheet stopped at a unit
+    args: [unit]
+    params: {unit: {type: element, label: unit}}
+    summary: "The first pass over the flowsheet could not compute every unit[ (it stopped at {unit})]."
+    why: "Before iterating, OpenFlowsheet computes every unit once, in flow order; this pass stopped."
+    action: "Read the cause; if none is given, supply an initial guess for the recycle streams."
+    examples:
+      - params: {unit: T}
+
+  - code: phase_regime_mismatch
+    family: refusal
+    kind: input
+    complete: true
+    title: Declared phase does not match the computed state
+    args: [stream]
+    params:
+      stream:           {type: stream, label: stream}
+      unit:             {type: unit, optional: true}
+      declared:         {type: enum, vocabulary: phase_capability, optional: true, label: declared phase}
+      landed:           {type: enum, vocabulary: phase_capability, optional: true, label: computed phase}
+      vapour_fraction:  {type: number, optional: true, label: vapour fraction}
+      property:         {type: enum, vocabulary: state_property, optional: true}
+      value:            {type: quantity, optional: true, label: computed value}
+      saturated_liquid: {type: quantity, optional: true, label: saturated-liquid value}
+      saturated_vapour: {type: quantity, optional: true, label: saturated-vapour value}
+      pressure:         {type: quantity, optional: true, label: pressure}
+    summary: "Stream {stream} is not in its declared phase[: it is declared {declared}, but at these conditions it is {landed}]."
+    where: "stream {stream}[, an outlet of unit {unit}[ ({unit_model})]]"
+    why: "Each stream carries a declared phase, and a unit computes its outlet only in that phase."
+    action: "Change the phase declared for {stream} to the one that matches the computed state."
+    variants:
+      - when: {equals: {landed: vapor}, has: [property, value, saturated_vapour, pressure]}
+        why: "At {pressure} the {property} of {stream} is {value}, above the saturated-vapour value {saturated_vapour}, so the stream is vapour, not {declared}."
+      - when: {equals: {landed: liquid}, has: [property, value, saturated_liquid, pressure]}
+        why: "At {pressure} the {property} of {stream} is {value}, below the saturated-liquid value {saturated_liquid}, so the stream is liquid, not {declared}."
+      - when: {equals: {landed: vapor_liquid}, has: [property, value, saturated_liquid, saturated_vapour, pressure]}
+        why: "At {pressure} the {property} of {stream} is {value}, between the saturated-liquid value {saturated_liquid} and the saturated-vapour value {saturated_vapour}[ (vapour fraction {vapour_fraction})], so the stream is wet, not {declared}."
+      - when: {has: [landed]}
+        action: "Declare {stream} as {landed}[: set {stream_path}.phase_capability to \"{landed!raw}\"]. If you expected {declared}, check the specifications that set the conditions upstream of {stream}."
+    see_also: [isentropic_state_two_phase, L-TH-3]
+    examples:
+      - chain: [INITIALIZATION_FAILED, initializer_failed, phase_regime_mismatch]
+        params: {stream: S4, unit: T, declared: vapor_liquid, landed: vapor, property: h,
+                 value: {value: 47330.0, unit: J/mol, kind: molar_enthalpy},
+                 saturated_vapour: {value: 46570.0, unit: J/mol, kind: molar_enthalpy},
+                 pressure: {value: 10000.0, unit: Pa, kind: pressure}}
+
+  - code: isentropic_state_two_phase
+    family: refusal
+    kind: not_supported
+    complete: true
+    title: A turbine whose ideal outlet would be wet while its outlet is declared vapour
+    args: [unit]
+    params:
+      unit:        {type: unit}
+      outlet:      {type: stream, optional: true}
+      phase:       {type: enum, vocabulary: phase, optional: true}
+      s_star:      {type: quantity, optional: true, label: ideal (isentropic) outlet entropy}
+      s_saturated: {type: quantity, optional: true, label: saturated-vapour entropy}
+      pressure:    {type: quantity, optional: true, label: outlet pressure}
+    summary: "Unit {unit} needs a case this version does not support: its outlet[ {outlet}] is declared vapour, but its ideal (isentropic) outlet state would be wet."
+    why: "This version computes a turbine's ideal outlet in the phase declared for the real outlet.[ Here the ideal outlet entropy {s_star} is below the saturated-vapour entropy {s_saturated} at {pressure}, so the ideal state is two-phase.] This is a limitation of the software (L-TH-4), not an error in your flowsheet."
+    action: "Re-declare the outlet[ {outlet}] as wet (\"vapor_liquid\") if it can be wet at your conditions. If that is refused as a phase mismatch, change the operating conditions (for example the turbine inlet temperature or outlet pressure) until the ideal and the real outlet are in the same phase. Support for this case is planned (the std.turbine model)."
+    gap: {limitation: L-TH-4, capability: "a vapour turbine outlet with a two-phase isentropic reference"}
+    see_also: [phase_regime_mismatch, L-TH-4]
+    examples:
+      - chain: [INITIALIZATION_FAILED, initializer_failed, isentropic_state_two_phase]
+        params: {unit: T, outlet: S4, phase: VAPOR,
+                 s_star: {value: 140.2, unit: J/(mol*K), kind: molar_entropy},
+                 s_saturated: {value: 146.3, unit: J/(mol*K), kind: molar_entropy},
+                 pressure: {value: 10000.0, unit: Pa, kind: pressure}}
+
+  - code: project_exists
+    family: refusal
+    kind: input
+    complete: true
+    title: The directory already holds a project
+    params: {directory: {type: directory}}
+    summary: "Directory {directory} is not empty: it already holds a project, and create() needs a new or empty directory."
+    why: "create() makes a new project and never reuses a directory, so a re-run cannot overwrite work silently."
+    action: "To use the existing project, open it instead."
+    variants:
+      - when: {surface: [python]}
+        action: "To use the existing project, call LocalApplication.open(\"{directory!raw}\"), or call LocalApplication.create(\"{directory!raw}\", exist_ok=True), which opens it."
+      - when: {surface: [cli]}
+        summary: "Directory {directory} is not empty: it already holds a project, and project init needs a new or empty directory."
+        action: "The project is ready to use: pass --project {directory!raw} to other commands, or run project init with --exist-ok."
+    examples: [{params: {directory: plant}}]
+
+  - code: directory_not_empty
+    family: refusal
+    kind: input
+    complete: true
+    title: The directory holds files that are not a project
+    params: {directory: {type: directory}}
+    summary: "Directory {directory} is not empty and does not hold a project; a project needs a new or empty directory."
+    why: "OpenFlowsheet will not mix a project with other files, and exist_ok=True opens only an existing project."
+    action: "Choose a new directory name, or empty this directory first."
+    examples: [{params: {directory: notes}}]

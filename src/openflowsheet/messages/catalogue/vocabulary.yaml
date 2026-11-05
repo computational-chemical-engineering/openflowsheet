@@ -1,0 +1,13 @@
+# MSG design note §4.2.4: the phrase an `enum` param renders as, per vocabulary table.
+catalogue: openflowsheet-messages-v1
+vocabulary:
+  phase_capability:
+    liquid: liquid
+    vapor: vapour
+    vapor_liquid: wet (vapour + liquid)
+  state_property:
+    h: enthalpy
+    s: entropy
+  phase:
+    LIQUID: liquid
+    VAPOR: vapour
