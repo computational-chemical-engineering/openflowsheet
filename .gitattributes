@@ -10,3 +10,9 @@
 *.toml              text eol=lf
 *.lock              text eol=lf
 *.md                text eol=lf
+# Review finding 4: hashed text kinds outside the source tree (e.g. `benchmarks/t06/ensemble/runs/`,
+# pinned by its SHA256SUMS), and the checksum files themselves.
+*.txt               text eol=lf
+*.jsonl             text eol=lf
+*.log               text eol=lf
+SHA256SUMS          text eol=lf
