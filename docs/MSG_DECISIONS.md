@@ -247,3 +247,21 @@ MSG's members were taken from a fresh generation (same project, same ids; every 
 the three run manifests byte-identical): the 3 `failure` members and the 2 refusals'
 `detail.explanation`. Nothing written by hand. Alternative: the full re-take (WO-10's, with the
 shell's display). Commit: this one.
+
+## Gate results at the end of WO-3, WO-4, WO-6 (code = `4324953f`)
+
+- MSG-G0 `--check --suite`: `MSG-G0 PASS: a 0 diff; b 0/562 diff (108 bundles); c 0/57 diff; d 0
+  hit(s) in 429 stores; surface moved: mcp_tools_sha256, schema_files/application-results.schema.json,
+  schema_files/message-catalogue.schema.json, schema_files/registry.json`.
+- `scripts/gate.sh`: ruff, format, mypy, node clean; pytest 14959 passed, 3206 skipped, 3 failed,
+  all wall-clock limits under load (load average 57–61 on 48 cores, two full suites at once):
+  `test_t07_conformance::test_the_budget_of_the_scenario_runs` 131.7 s > 120 (alone: 216.6 s;
+  paired A/B run at the same moment, pre-MSG `37a521f9` 54.1 s vs MSG 48.8 s, both pass);
+  `test_t07_v17_reference::test_f6_the_forty_runs_fit_their_budget` 360.3 s > 300 (alone 324.9 s;
+  it failed at the branch point too, 418 s); `test_m02_kill_chain::test_g3e_a_worker_killed_alone_
+  leaves_its_child_to_its_lifeline` 2.015 s > 2.0 (alone: passes, 12 s run). No budget changed.
+- MSG-G3 over the gate's suite: no miss, no defect. WO-6 converse: 675 run results read back, 55
+  with a failure, `failure` non-null iff a `failure_bundle` output in every one.
+- MSG-G7: golden diff = the U05 record (stdout `detail.explanation`, stderr) and the refused
+  `project init` stderr; all 17 exit codes unchanged. MSG-G10: 7 R4-G3 snapshots and the MCP digest
+  moved; with `without_msg` all equal their pre-MSG values (`455d01eb…` for MCP).
