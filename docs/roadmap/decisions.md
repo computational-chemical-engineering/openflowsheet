@@ -51,3 +51,12 @@ Each entry gives the date, the question, the choice, who made it and where it is
 - **2026-11-05** W1 architect P2: ADR 0062 (F2), 0063 (F4), 0064 (F5), Proposed. One spelling rule for units
   (`schemas/units.json` ASCII form, e.g. `J/(mol K)`), answering MSG's question too. ADR 0063 D2 narrows ADR 0061 D10's
   `data_sha256` per method; the ADR 0061 edit is held until the P2 reviewer pass confirms it.
+- **2026-11-05** W1 P2 review (`docs/reviews/W1-P2-review.md`): ADR 0062–0064 accept after listed fixes (4 must-fix:
+  non-TP flashes as one Newton system with T; dispatch to T05b only for v1-path runs, FB-04 full check moves to F6's
+  exit; a lowered run is a v1 run in every artifact; delegating methods refuse `records_not_delegable`). Ruling 1:
+  per-method `data_sha256` accepted (ADR 0061 D10 sentence and risk 8 replaced as the review gives). Departures: Q4.R7
+  narrowing rejected; scales placement must be fixed; the rest accepted. PR-C1's ideal-gas part is separable
+  (`pr_c1.h_ig`, `pr_c1.py:315`).
+- **2026-11-05** DECISION (orchestrator, reviewer's defaults): phase-removal threshold 1e-12 of the total amount,
+  fixed later by the O-2 measurement; entropy shift for records without s° takes the review's default, referred to the
+  specifier (batched with P3's specifier needs). Reversible by: one constant in ADR 0064; the specifier ruling.
