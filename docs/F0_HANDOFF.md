@@ -9,7 +9,8 @@ Branch `wp/F0`, worktree `.claude/worktrees/f0`. Brief `docs/briefs/F0-build.md`
   `F0 FAIL: M1 50/50, M2 52/52, M3 52/52, M4 52/52, M5 52/52, M6 52/52, M7 NOT IMPLEMENTED, M8 NOT IMPLEMENTED, M9 8/8`.
 - Exit 2 (one ulp in SYN-001's split fraction and its pinning spec → M2 constants_sha256, M3, M4 FAIL), exit 3 (one
   flipped check result → M5 FAIL), exit 4 (one byte in a frozen module → M9 FAIL naming the file): tests pass.
-- Test file: 6 passed, 1 xfailed (strict: `test_the_gate_passes`), ~25 s.
+- Test file: 6 passed, 1 xfailed (strict: `test_the_gate_passes`), ~25 s. Full gate at 5fa16527: 1 failure, a wall-time
+  budget under host load (see F0_DECISIONS.md, last entry); re-run on an idle host.
 
 ## Next
 1. M7 (D3): get the caller's ruling on how the 0.3.0 bundles enter the repo; implement `m7()`; remove M7 from

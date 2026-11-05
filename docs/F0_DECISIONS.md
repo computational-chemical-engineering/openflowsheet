@@ -39,3 +39,8 @@ Package F0, the corpus identity gate (roadmap 0.4, ADR 0057 D3; brief `docs/brie
   gate's bit-identity step and bundle set). The W27 snapshot (`benchmarks/m06/openidaes450/runs/w27-m07-83f825d`)
   holds agent-campaign records with no `content_hash`, run manifest or state hash: nothing for F0 to enumerate there.
   For M7, A1 is false today (no 0.3.0 bundles registered).
+
+- **Gate run at 5fa16527 (2026-11-05):** `GATE FAIL`: 1 failed, 14844 passed, 3206 skipped, 197 deselected, 1 xfailed
+  (1:57:47). ruff, format, mypy exit 0. The one failure is `test_f6_the_forty_runs_fit_their_budget` (V17's 40-run
+  wall-time budget: 401.5 s > 300 s) on a host at load average ~49; F0 touches no `src/` file. Not re-run; a re-run on
+  an idle host decides whether it is load. F0's own tests: 6 passed, 1 xfailed (strict) inside that run.
