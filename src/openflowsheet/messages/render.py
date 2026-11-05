@@ -661,6 +661,29 @@ def render_failure(
     strict: bool = False,
 ) -> Explanation:
     """A failure bundle's `outcome` and `observations.message`, with the sidecar → explanation."""
+    explanation, _ = explain_failure(
+        outcome=outcome,
+        message=message,
+        diagnosis=diagnosis,
+        context=context,
+        catalogue=catalogue,
+        strict=strict,
+    )
+    return explanation
+
+
+def explain_failure(
+    *,
+    outcome: str,
+    message: str | None,
+    diagnosis: Diagnostic | Mapping[str, Any] | None = None,
+    context: RenderContext | None = None,
+    catalogue: Catalogue = CATALOGUE,
+    strict: bool = False,
+) -> tuple[Explanation, dict[str, Any]]:
+    """`render_failure`'s explanation and the merged params it was rendered from (context, the
+    chain's params outer → inner, then the sidecar's; a quantity as `{value, unit, kind}`):
+    `RunFailure.params` (§4.8)."""
     context = context or RenderContext()
     links = [Link(outcome)]
     if message:
@@ -679,4 +702,4 @@ def render_failure(
         machine=message or outcome,
         family_hint="outcome",
     )
-    return _explain(request, catalogue, strict=strict)
+    return _explain(request, catalogue, strict=strict), dict(request.params)

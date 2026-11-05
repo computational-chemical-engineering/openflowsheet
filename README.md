@@ -68,6 +68,7 @@ with LocalApplication.create("plant", exist_ok=True) as app:  # created, or open
 
     run = app.solve(committed.revision_id, "default")
     print(run.outcome, run.verification_status)        # CONVERGED VERIFIED
+    run.raise_for_outcome()                            # says why, if the solve failed
 
     bundle = next(o.artifact_id for o in run.outputs if o.kind == "replay_bundle")
     state = json.loads(app.artifact_bytes(f"{bundle}/solution-state.json"))["variables"]

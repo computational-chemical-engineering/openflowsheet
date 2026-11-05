@@ -1159,8 +1159,113 @@ class JobEvent:
 
 
 @dataclass(frozen=True)
+class RunFailure:
+    """ADR 0058 D5 (MSG §3.4, §4.8): why a solve did not converge, read from its failure bundle.
+
+    `outcome`, `taxonomy`, `message` (`observations.message`, verbatim), `implicated`
+    (`implicated_sources`) and `suggested_actions` (each `action`) are the stored failure
+    bundle's; `code` is the explained code and `chain` the codes outer → inner; `params` the
+    merged params (a quantity as `{value, unit, kind}`); `failure_bundle` the artifact id of
+    `failure-bundle.json`. Derived on read, never stored; `str()` is the layered text.
+    """
+
+    outcome: str
+    taxonomy: str
+    message: str | None
+    code: str
+    chain: tuple[str, ...]
+    implicated: tuple[str, ...]
+    suggested_actions: tuple[str, ...]
+    failure_bundle: str
+    params: Mapping[str, Any]
+    explanation: Mapping[str, Any]
+
+    def as_document(self) -> dict[str, Any]:
+        return {
+            "outcome": self.outcome,
+            "taxonomy": self.taxonomy,
+            "message": self.message,
+            "code": self.code,
+            "chain": list(self.chain),
+            "implicated": list(self.implicated),
+            "suggested_actions": list(self.suggested_actions),
+            "failure_bundle": self.failure_bundle,
+            "params": copy.deepcopy(dict(self.params)),
+            "explanation": copy.deepcopy(dict(self.explanation)),
+        }
+
+    @classmethod
+    def from_document(cls, document: Mapping[str, Any]) -> Self:
+        validate_document("run-result.schema.json#/$defs/run_failure", document)
+        return cls._build(document)
+
+    @classmethod
+    def _build(cls, document: Mapping[str, Any]) -> Self:
+        return cls(
+            outcome=document["outcome"],
+            taxonomy=document["taxonomy"],
+            message=document["message"],
+            code=document["code"],
+            chain=tuple(document["chain"]),
+            implicated=tuple(document["implicated"]),
+            suggested_actions=tuple(document["suggested_actions"]),
+            failure_bundle=document["failure_bundle"],
+            params=dict(document["params"]),
+            explanation=dict(document["explanation"]),
+        )
+
+    def __str__(self) -> str:
+        """MSG §4.5: the layered text; `Details:` is `<observations.message> — <failure bundle
+        artifact id>` (the outcome when the bundle recorded no message)."""
+        from openflowsheet.messages.text import format_text
+
+        return format_text(
+            self.explanation, f"{self.message or self.outcome} — {self.failure_bundle}"
+        )
+
+
+class SolveFailedError(Exception):
+    """MSG §3.4: `RunResult.raise_for_outcome` on a run that did not end converged. Not an
+    `ApplicationError`: a domain outcome is not an `ApiError`. `result` is the run result; the
+    text is the failure's layered text (or, for a job that ended without a failure bundle, its
+    status's)."""
+
+    def __init__(self, result: RunResult) -> None:
+        failure = result.failure
+        machine = (
+            f"{failure.outcome}: {failure.message or failure.outcome}"
+            if failure is not None
+            else f"{result.job_status}: job {result.job_id}"
+        )
+        super().__init__(machine)
+        self.result = result
+
+    def __str__(self) -> str:
+        failure = self.result.failure
+        if failure is not None:
+            return str(failure)
+        from openflowsheet.messages.render import RenderContext, render_code
+        from openflowsheet.messages.text import format_text
+
+        explanation = render_code(
+            self.result.job_status,
+            context=RenderContext(surface="python", job_id=self.result.job_id),
+        )
+        return format_text(explanation, str(self.args[0]))
+
+
+def _failure_document(failure: RunFailure | None) -> dict[str, Any] | None:
+    return failure.as_document() if failure is not None else None
+
+
+@dataclass(frozen=True)
 class RunResult:
-    """§5.7: what a solve job produced. `job_status` is not `verification_status`."""
+    """§5.7: what a solve job produced. `job_status` is not `verification_status`.
+
+    `failure` (ADR 0058 D5) is non-null iff `outputs` holds a `failure_bundle`; it says why the
+    solve did not converge. `error` stays the operational failure (R-095). Verification is
+    separate: a `CONVERGED` run whose certificate is `FAILED` has no `failure`.
+    """
 
     job_id: str
     run_id: str | None
@@ -1176,6 +1281,7 @@ class RunResult:
     outputs: tuple[ArtifactRef, ...]
     error: ApiError | None = None
     solve_path: SolvePath = "revision_eo"
+    failure: RunFailure | None = None
 
     def __post_init__(self) -> None:
         certified = any(output.kind == "solution_certificate" for output in self.outputs)
@@ -1184,6 +1290,26 @@ class RunResult:
                 "verification_status is copied from a solution certificate, and no "
                 "solution_certificate output exists (§5.7)"
             )
+        if self.failure is not None and not any(
+            output.kind == "failure_bundle" for output in self.outputs
+        ):
+            raise ValueError(
+                "failure is read from a failure bundle, and no failure_bundle output exists "
+                "(ADR 0058 D5)"
+            )
+
+    def raise_for_outcome(self) -> Self:
+        """Raise unless the solve ran to its end and wrote no failure bundle; return `self`, so
+        calls chain (MSG §3.4). An operational `error` raises `ApplicationError`; a `failure`,
+        or a job that did not complete, raises `SolveFailedError`. Verification is separate: a
+        converged run whose certificate is not `VERIFIED` does not raise."""
+        if self.error is not None:
+            from openflowsheet.application.contract import ApplicationError
+
+            raise ApplicationError(self.error)
+        if self.failure is not None or self.job_status != "completed":
+            raise SolveFailedError(self)
+        return self
 
     def as_document(self) -> dict[str, Any]:
         return {
@@ -1201,6 +1327,7 @@ class RunResult:
             "structural_sha256": self.structural_sha256,
             "outputs": [output.as_document() for output in self.outputs],
             "error": _error_document(self.error),
+            "failure": _failure_document(self.failure),
         }
 
     @classmethod
@@ -1224,6 +1351,7 @@ class RunResult:
                 outputs=tuple(ArtifactRef._build(output) for output in d["outputs"]),
                 error=_error_build(d["error"]),
                 solve_path=d["solve_path"],
+                failure=RunFailure._build(d["failure"]) if d["failure"] is not None else None,
             ),
             document,
         )

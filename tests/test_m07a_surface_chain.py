@@ -5,8 +5,9 @@ with §5.3's negative controls (i)–(iv), and holds the script's registered val
 sources. G16-b, the step's other half, runs in the RC job only (40 reference runs).
 
 On `main` the chain has three links: c_3 (R-295, M04's `surrogate_study` job kind) was registered at
-the alpha's merge (R-457). Every control first asserts that the unmodified served list passes, so no
-control passes merely because the chain already fails. The released 0.2.0a1's step 8 (two links) is
+the alpha's merge (R-457). MSG adds c_4 (R-934, ADR 0058's `RunResult.failure`; MSG-G10). Every
+control first asserts that the unmodified served list passes, so no control passes merely because
+the chain already fails. The released 0.2.0a1's step 8 (two links) is
 read from its committed record at `C_α²`, not re-run (`test_m07a_a37_the_released_step_8_record`).
 """
 
@@ -37,7 +38,7 @@ ALPHA_SURFACE = (
     REPO_ROOT / "evidence" / "M07a" / C_ALPHA_2 / "rc" / "surface" / "rc-alpha-surface.json"
 )
 REGISTER = REPO_ROOT / "docs" / "decision-register.md"
-L0, L1, L2 = m07a_rc.LINKS
+L0, L1, L2, L3 = m07a_rc.LINKS
 
 
 @pytest.fixture
@@ -54,7 +55,8 @@ def assert_the_unmodified_list_passes(served: list[dict[str, Any]]) -> None:
 def test_m07a_a37_the_chain_holds_on_the_served_list(served: list[dict[str, Any]]) -> None:
     rows = m07a_rc.chain(served)
     assert [(r["item"], r["link"]) for r in rows] == [
-        (1, "c_3"),
+        (1, "c_4"),
+        (2, "c_4"),
         (2, "c_3"),
         (2, "c_2"),
         (2, "c_1"),
@@ -83,8 +85,8 @@ def test_m07a_a37_control_i_a_member_added_to_another_tools_output_schema(
     (tool,) = [t for t in served if t["name"] == "get_project"]
     tool["outputSchema"]["properties"]["probe"] = {"type": "string"}
     rows = m07a_rc.chain(served)
-    assert m07a_rc.first_failure(rows) == "c_3 (R-295)"
-    assert [r["pass"] for r in rows[:2]] == [False, False]
+    assert m07a_rc.first_failure(rows) == "c_4 (R-934)"
+    assert [r["pass"] for r in rows[:3]] == [False, False, False]
 
 
 def one_member_too_many(strip: Any) -> Any:
@@ -104,9 +106,9 @@ def test_m07a_a37_control_ii_s_m_strips_one_member_too_many(
 ) -> None:
     assert_the_unmodified_list_passes(served)
     too_many = one_member_too_many(m07a_rc.strip_m04)
-    links = (L0, L1, m07a_rc.Link("c_3", "R-295", too_many, L2.digest))
+    links = (L0, L1, m07a_rc.Link("c_3", "R-295", too_many, L2.digest), L3)
     rows = m07a_rc.chain(served, links)
-    assert rows[0]["pass"]
+    assert rows[0]["pass"] and rows[1]["pass"]
     assert m07a_rc.first_failure(rows) == "c_3 (R-295)"
 
 
@@ -115,9 +117,9 @@ def test_m07a_a37_control_ii_prime_an_inner_link_strips_one_member_too_many(
 ) -> None:
     assert_the_unmodified_list_passes(served)
     too_many = one_member_too_many(m07a_rc.strip_m02)
-    links = (L0, m07a_rc.Link("c_2", "R-234", too_many, L1.digest), L2)
+    links = (L0, m07a_rc.Link("c_2", "R-234", too_many, L1.digest), L2, L3)
     rows = m07a_rc.chain(served, links)
-    assert rows[0]["pass"] and rows[1]["pass"]
+    assert rows[0]["pass"] and rows[1]["pass"] and rows[2]["pass"]
     assert m07a_rc.first_failure(rows) == "c_2 (R-234)"
 
 
@@ -131,9 +133,9 @@ def test_m07a_a37_control_iii_one_byte_of_another_description_changed() -> None:
 
 def test_m07a_a37_control_iv_elements_left_in_place(served: list[dict[str, Any]]) -> None:
     assert_the_unmodified_list_passes(served)
-    links = (m07a_rc.Link("c_1", "R-192", lambda tools: tools, L0.digest), L1, L2)
+    links = (m07a_rc.Link("c_1", "R-192", lambda tools: tools, L0.digest), L1, L2, L3)
     rows = m07a_rc.chain(served, links)
-    assert [r["pass"] for r in rows[:3]] == [True, True, True]
+    assert [r["pass"] for r in rows[:4]] == [True, True, True, True]
     assert m07a_rc.first_failure(rows) == "c_1 (R-192)"
 
 
@@ -199,3 +201,24 @@ def test_m07a_a37_ci_dispatch_input_rc_alpha_selects_the_alphas_step_8() -> None
     assert len(t08) == len(alpha) == 1
     assert t08[0]["if"] == "always() && inputs.rc"
     assert alpha[0]["if"] == "always() && inputs.rc_alpha"
+
+
+def test_msg_g10_link_c_4_is_msgs_strip_and_digest(served: list[dict[str, Any]]) -> None:
+    """c_4 (R-934): `without_msg` is the strip, and `D_4` the served digest the surface-digest
+    test registers (MSG-G10). Its register entry's digest and Frank's carry are the design
+    lane's to add (MSG build decision D6-4)."""
+    import test_t08_w2_surface_digest as surface
+    from msg_schema_support import without_msg
+
+    assert m07a_rc.strip_msg(served) == without_msg(copy.deepcopy(served))
+    assert L3.digest == surface.MSG_SERVED_SHA256
+    assert L2.digest == surface.M04_SERVED_SHA256
+
+
+def test_msg_g10_control_c_4_left_in_place(served: list[dict[str, Any]]) -> None:
+    """A c_4 whose strip takes nothing out fails at c_3: `failure` reaches M04's digest."""
+    assert_the_unmodified_list_passes(served)
+    links = (L0, L1, L2, m07a_rc.Link("c_4", "R-934", lambda tools: tools, L3.digest))
+    rows = m07a_rc.chain(served, links)
+    assert rows[0]["pass"]
+    assert m07a_rc.first_failure(rows) == "c_4 (R-934)"

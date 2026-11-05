@@ -710,6 +710,197 @@
           "maxLength": 1024
         }
       }
+    },
+    "explanation": {
+      "description": "MSG design note §4.5 (ADR 0058 D3): the explanation of one code, rendered on read from the message catalogue and stored nowhere. `code` is the explained code, `chain` the codes outer → inner (the transport code or the outcome first). A transport attaches it to an `ApiError` as `detail.explanation`; `RunResult.failure` carries it. Bounded like every string of a response (§10.4).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "code",
+        "family",
+        "kind",
+        "complete",
+        "summary",
+        "cause",
+        "where",
+        "why",
+        "action",
+        "hint",
+        "elements",
+        "numbers",
+        "gap",
+        "chain",
+        "docs"
+      ],
+      "properties": {
+        "code": {
+          "type": "string",
+          "minLength": 1
+        },
+        "family": {
+          "enum": [
+            "api_error",
+            "refusal",
+            "outcome",
+            "check",
+            "status",
+            "limitation",
+            "notice",
+            "job"
+          ]
+        },
+        "kind": {
+          "enum": [
+            "input",
+            "not_supported",
+            "numerical",
+            "bug",
+            "notice"
+          ]
+        },
+        "complete": {
+          "type": "boolean"
+        },
+        "summary": {
+          "type": "string"
+        },
+        "cause": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "where": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "why": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "action": {
+          "type": "string"
+        },
+        "hint": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "elements": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "type",
+              "id",
+              "path"
+            ],
+            "properties": {
+              "type": {
+                "type": "string"
+              },
+              "id": {
+                "type": "string"
+              },
+              "path": {
+                "anyOf": [
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": [
+                        "string",
+                        "integer"
+                      ]
+                    }
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "numbers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "name",
+              "label",
+              "value",
+              "unit",
+              "kind"
+            ],
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "label": {
+                "type": "string"
+              },
+              "value": {
+                "type": "number"
+              },
+              "unit": {
+                "type": "string"
+              },
+              "kind": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            }
+          }
+        },
+        "gap": {
+          "anyOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "limitation",
+                "capability"
+              ],
+              "properties": {
+                "limitation": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "capability": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "chain": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "docs": {
+          "type": "string",
+          "format": "uri"
+        }
+      }
     }
   }
 }

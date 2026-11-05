@@ -127,6 +127,7 @@ from openflowsheet.application.types import (
     ReplayPolicy,
     ReproduceBody,
     RevisionSummary,
+    RunFailure,
     RunResult,
     SemanticDiff,
     ServerInfo,
@@ -1056,6 +1057,63 @@ class LocalApplication:
             outputs=job.outputs,
             error=job.error,
             solve_path=run["solve_path"],
+            failure=self._run_failure(job, revision, run),
+        )
+
+    def _run_failure(
+        self, job: Job, revision: Revision, run: Mapping[str, Any]
+    ) -> RunFailure | None:
+        """ADR 0058 D5 (MSG §3.4, §4.8): the failure, derived on read from the stored
+        `failure-bundle.json`, the run's `diagnosis` when the runner recorded one, and the
+        revision document — so a job a 0.3 store holds gets one too (without numbers). A bundle
+        that cannot be read or parsed gives the failure of the outcome alone. Never raises."""
+        from openflowsheet.messages.render import RenderContext, explain_failure
+        from openflowsheet.verify.failure import TAXONOMY
+
+        output = next((o for o in job.outputs if o.kind == "failure_bundle"), None)
+        if output is None:
+            return None
+        bundle: Mapping[str, Any] = {}
+        try:
+            loaded = json.loads(self._artifact_path(output).read_bytes())
+            if isinstance(loaded, Mapping):
+                bundle = loaded
+        except (OSError, ValueError, AssertionError):
+            bundle = {}
+        outcome = bundle.get("outcome")
+        if not isinstance(outcome, str):
+            bundle, outcome = {}, str(run.get("outcome") or "")
+        observations = bundle.get("observations")
+        message = observations.get("message") if isinstance(observations, Mapping) else None
+        message = message if isinstance(message, str) else None
+        taxonomy = bundle.get("taxonomy")
+        diagnosis = run.get("diagnosis")
+        explanation, params = explain_failure(
+            outcome=outcome,
+            message=message,
+            diagnosis=diagnosis if isinstance(diagnosis, Mapping) else None,
+            context=RenderContext(
+                revision=revision.document,
+                revision_id=revision.revision_id,
+                job_id=job.job_id,
+                bundle_id=output.artifact_id.rpartition("/")[0] or None,
+            ),
+        )
+        return RunFailure(
+            outcome=outcome,
+            taxonomy=taxonomy if isinstance(taxonomy, str) else TAXONOMY.get(outcome, ""),
+            message=message,
+            code=str(explanation["code"]),
+            chain=tuple(str(code) for code in explanation["chain"]),
+            implicated=tuple(str(s) for s in bundle.get("implicated_sources") or ()),
+            suggested_actions=tuple(
+                str(entry["action"])
+                for entry in bundle.get("suggested_actions") or ()
+                if isinstance(entry, Mapping) and "action" in entry
+            ),
+            failure_bundle=output.artifact_id,
+            params=params,
+            explanation=explanation,
         )
 
     def _resolution(self, revision: Revision, body: SolveBody) -> dict[str, Any]:

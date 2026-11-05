@@ -66,6 +66,38 @@ def pytest_sessionfinish(session: Any, exitstatus: int) -> None:
         session.exitstatus = pytest.ExitCode.TESTS_FAILED
 
 
+# -- MSG WO-6 (design note §4.8): the converse of `RunResult.failure`'s invariant --------------
+
+#: Every run result the suite built: (results, with a failure).
+RUN_RESULTS_SEEN = [0, 0]
+
+
+@pytest.fixture(autouse=True, scope="session")
+def _msg_failure_iff_failure_bundle() -> Any:
+    """Every `RunResult` `_run_result` builds has `failure` non-null iff its outputs hold a
+    `failure_bundle` (`__post_init__` checks one direction; this wrapper checks the other, over
+    every solve the suite reads back). The count goes to the terminal summary."""
+    from openflowsheet.application.local import LocalApplication
+
+    built = LocalApplication._run_result
+
+    def checked(self: Any, job: Any) -> Any:
+        result = built(self, job)
+        bundled = any(output.kind == "failure_bundle" for output in result.outputs)
+        assert (result.failure is not None) == bundled, (job.job_id, result.outputs)
+        RUN_RESULTS_SEEN[0] += 1
+        RUN_RESULTS_SEEN[1] += result.failure is not None
+        return result
+
+    with pytest.MonkeyPatch.context() as monkeypatch:
+        monkeypatch.setattr(LocalApplication, "_run_result", checked)
+        yield
+    TERMINAL_REPORT.append(
+        f"MSG WO-6: {RUN_RESULTS_SEEN[0]} run results checked, {RUN_RESULTS_SEEN[1]} with a "
+        "failure; failure non-null iff a failure_bundle output in every one"
+    )
+
+
 def _git_ok(*arguments: str) -> bool:
     completed = subprocess.run(["git", *arguments], cwd=REPO_ROOT, capture_output=True)
     return completed.returncode == 0

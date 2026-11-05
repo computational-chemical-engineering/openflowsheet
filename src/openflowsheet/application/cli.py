@@ -42,6 +42,7 @@ import ipaddress
 import json
 import os
 import sys
+import textwrap
 import traceback
 from collections.abc import Mapping
 from pathlib import Path
@@ -139,7 +140,37 @@ def command_solve(arguments: argparse.Namespace) -> int:
     print(f"verification      {manifest.verification_status}")
     print(f"structural sha256 {manifest.structural_sha256}")
     print(f"bundle            {directory}")
+    if "failure-bundle.json" in manifest.artifacts:  # MSG §3.7
+        print()
+        print(_bundle_failure_text(directory))
+    status = manifest.verification_status
+    if status is not None and status != "VERIFIED":
+        print(f"note              {_status_summary(status)}")
     return 0 if manifest.verification_status == "VERIFIED" else 1
+
+
+def _bundle_failure_text(directory: Path) -> str:
+    """MSG §3.7: the layered text (surface `cli`) of the failure bundle `directory` holds;
+    `Details:` names the bundle file."""
+    from openflowsheet.messages.render import RenderContext, render_failure
+    from openflowsheet.messages.text import format_text
+    from openflowsheet.run.bundle import ARTIFACT_DIR, read_artifact
+
+    bundle = read_artifact(directory, "failure-bundle.json")
+    message = (bundle.get("observations") or {}).get("message")
+    message = message if isinstance(message, str) else None
+    explanation = render_failure(
+        outcome=str(bundle["outcome"]), message=message, context=RenderContext(surface="cli")
+    )
+    path = directory / ARTIFACT_DIR / "failure-bundle.json"
+    return format_text(explanation, f"{message or bundle['outcome']} — {path}")
+
+
+def _status_summary(status: str) -> str:
+    """The catalogue summary of a status code (MSG §3.7's `note` line)."""
+    from openflowsheet.messages.render import RenderContext, render_code
+
+    return str(render_code(status, context=RenderContext(surface="cli"))["summary"])
 
 
 def command_inspect(arguments: argparse.Namespace) -> int:
@@ -190,6 +221,7 @@ def command_inspect(arguments: argparse.Namespace) -> int:
         print(f"  implicated        {bundle['implicated_sources']}")
         for action in bundle["suggested_actions"]:
             print(f"  suggested         {action['action']} (requires permission)")
+        print(textwrap.indent(_bundle_failure_text(directory), "  "))  # MSG §3.7
 
     events = read_artifact(directory, "solve-events.json")
     print(f"\n=== trace  {len(events)} events")
@@ -360,6 +392,7 @@ def command_api(arguments: argparse.Namespace) -> int:
     from openflowsheet.application.local import LocalApplication
     from openflowsheet.application.operations import OPERATIONS, dispatch
     from openflowsheet.application.store import StoreError
+    from openflowsheet.messages.text import format_text
 
     name = arguments.operation
     operation = OPERATIONS.get(name)
@@ -392,7 +425,26 @@ def command_api(arguments: argparse.Namespace) -> int:
             Path(arguments.raw_out).write_bytes(response)
         return 0
     _print_document(response)
+    for failure in _failures(response):  # MSG §3.7: a run's failure, as text on stderr
+        details = f"{failure['message'] or failure['outcome']} — {failure['failure_bundle']}"
+        print(format_text(failure["explanation"], details), file=sys.stderr)
     return 0
+
+
+def _failures(document: Any) -> list[Mapping[str, Any]]:
+    """Every non-null `RunResult.failure` in a response document, at any nesting, in document
+    order."""
+    found: list[Mapping[str, Any]] = []
+    if isinstance(document, Mapping):
+        for key, value in document.items():
+            if key == "failure" and isinstance(value, Mapping) and "failure_bundle" in value:
+                found.append(value)
+            else:
+                found.extend(_failures(value))
+    elif isinstance(document, list):
+        for item in document:
+            found.extend(_failures(item))
+    return found
 
 
 def _request(application: LocalApplication, name: str, text: str) -> Any:

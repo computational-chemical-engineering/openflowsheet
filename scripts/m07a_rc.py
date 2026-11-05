@@ -31,6 +31,9 @@ function, a registered digest and Frank's carry extended to name it):
 - c_3, R-295 (ADR 0037 D6, ADR 0019 Amendment 5): M04's `surrogate_study` job kind, stripped by
   `tests/m04_schema_support.py`'s `without_m04` (R-295's decomposition function); `D_3` =
   `455d01eb…`, registered at the alpha's merge into `main` (R-457).
+- c_4, R-934 (ADR 0058 D5): MSG's `RunResult.failure`, stripped by `tests/msg_schema_support.py`'s
+  `without_msg` (MSG-G10's decomposition function); `D_4` = `b083ffe1…`, measured at MSG WO-6
+  (`tests/test_t08_w2_surface_digest.py`'s `MSG_SERVED_SHA256`).
 
 The released 0.2.0a1 ran the two-link chain (its committed record at `C_α²`); a re-run of the
 alpha's step 8 uses this script at the tag.
@@ -147,6 +150,16 @@ def strip_m04(tools: Tools) -> Tools:
     return stripped
 
 
+def strip_msg(tools: Tools) -> Tools:
+    """s_4 (R-934): `tools` without MSG's additions (`msg_schema_support.without_msg`)."""
+    t08_rc._tests_on_path()
+    from msg_schema_support import without_msg  # noqa: PLC0415
+
+    stripped = without_msg(copy.deepcopy(tools))
+    assert isinstance(stripped, list)
+    return stripped
+
+
 @dataclass(frozen=True)
 class Link:
     """One registered surface change c_k: its register entry, its strip function s_k, and the
@@ -176,6 +189,12 @@ LINKS: Final = (
         "R-295",
         strip_m04,
         "455d01eb2f420032b27358798e6b331a0120aa1857f02ce3cb7851647849e125",
+    ),
+    Link(
+        "c_4",
+        "R-934",
+        strip_msg,
+        "b083ffe1be73f2f0c862956bc156e776d6a4170a3b93d65bdcdb8a92a306b46f",
     ),
 )
 

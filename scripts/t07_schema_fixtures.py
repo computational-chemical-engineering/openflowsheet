@@ -37,7 +37,9 @@ one member removed) and one converged solve: `submit_job`, `list_jobs`, `list_jo
 Amendment 2 requires; and `semantic_diff` has a second, the response without the `elements`
 ADR 0019 Amendment 3 (A3.2) requires. ADR 0019 Amendment 3 (A3.3) adds `audit_page` (the
 project's `submit_job` audit rows, `list_audit` with `operation: submit_job`) and its first item,
-`audit_record`; an audit row's `at` is a clock reading and is masked like the timestamps.
+`audit_record`; an audit row's `at` is a clock reading and is masked like the timestamps. MSG
+(ADR 0058 D3) adds `explanation`: the `detail.explanation` of `get_job`'s refusal of an unknown
+job, as `dispatch` carries it.
 "Regenerates identically" is `stable` equality, as for the jobs
 (`tests/test_t07_w5e_application_results.py`).
 
@@ -63,6 +65,7 @@ sys.path.insert(0, str(ROOT / "tests"))
 import yaml  # noqa: E402
 from t07_jobs_support import cancel_while_queued, commit, lifecycle_violations  # noqa: E402
 
+from openflowsheet.application.contract import ApplicationError  # noqa: E402
 from openflowsheet.application.local import LocalApplication  # noqa: E402
 from openflowsheet.application.operations import dispatch  # noqa: E402
 from openflowsheet.application.policies import resolve_policy  # noqa: E402
@@ -112,6 +115,7 @@ RESULTS_VALID = {
     "semantic_diff": "one_value_changed_one_member_removed",
     "audit_record": "solve_accepted_with_its_key",
     "audit_page": "one_submit",
+    "explanation": "not_found_job",
 }
 
 
@@ -249,6 +253,13 @@ def application_results_documents() -> dict[str, Any]:
             audit = call("list_audit", {"operation": "submit_job"})
             responses["audit_record"] = audit["items"][0]
             responses["audit_page"] = audit
+            # MSG (ADR 0058 D3): a refusal's `detail.explanation`, as `dispatch` carries it.
+            try:
+                call("get_job", {"job_id": "job-999999"})
+            except ApplicationError as refused:
+                responses["explanation"] = refused.error.detail["explanation"]
+            else:
+                raise SystemExit("get_job of an unknown job was not refused")
             violations = lifecycle_violations(application)
             if violations:
                 raise SystemExit(f"the fixture job breaks the lifecycle: {violations}")
