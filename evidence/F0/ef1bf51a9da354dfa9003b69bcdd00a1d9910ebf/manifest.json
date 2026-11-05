@@ -1,0 +1,131 @@
+{
+  "work_package": "F0",
+  "commit": "ef1bf51a9da354dfa9003b69bcdd00a1d9910ebf",
+  "requirements": [],
+  "status": "tested",
+  "inputs": {
+    "case_id": "F0 corpus identity gate: registry benchmarks/f0/corpus.json (M1-M9), M6 request sample benchmarks/f0/m6-requests.json, the 52 v0.3.0 bundles tests/fixtures/f0/v0.3.0-bundles (index.json 0e86db0797e172dda4e318ee80b7e70564a3ead3ca0d2ce8aa0e570f3901283a)",
+    "case_hash": "7b66858a5421d96834a3f463c54e850929112a3a926fcf36b266d6e8aa937fd2",
+    "environment_lock_hash": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+  },
+  "commands": [
+    {
+      "cmd": "PYTHONPATH=src PATH=.venv/bin:$PATH ./scripts/gate.sh",
+      "cwd": ".claude/worktrees/f0",
+      "exit_code": 0
+    },
+    {
+      "cmd": "PYTHONPATH=src python scripts/corpus_identity.py --check",
+      "cwd": ".claude/worktrees/f0",
+      "exit_code": 0
+    },
+    {
+      "cmd": "PYTHONPATH=src python -m pytest -q tests/test_f0_corpus_identity.py",
+      "cwd": ".claude/worktrees/f0",
+      "exit_code": 0
+    },
+    {
+      "cmd": "PYTHONPATH=src python scripts/corpus_identity.py --record",
+      "cwd": ".claude/worktrees/f0",
+      "exit_code": 0
+    },
+    {
+      "cmd": "git add --renormalize . && git status --short",
+      "cwd": ".claude/worktrees/f0",
+      "exit_code": 0
+    }
+  ],
+  "checks": [
+    {
+      "id": "F0.E1",
+      "description": "Exit 1: the gate passes on the branch head (main + F0); scripts/gate.sh at the commit, ref-x86-64",
+      "result": "pass",
+      "value": {
+        "gate": "GATE PASS: 14866 passed, 3206 skipped, 197 deselected (3:07:00); ruff, format, mypy, node exit 0; gate log sha256 c35589fe66651e13d16c0f3cd2582d07f88bc947d95b8390602e0a2a13c7647a",
+        "corpus_identity": "F0 PASS: M1 50/50, M2 61/61, M3 61/61, M4 61/61, M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 35/35"
+      }
+    },
+    {
+      "id": "F0.E2",
+      "description": "Exit 2: one ulp in SYN-001's split fraction fails M2 (constants_sha256), M3 and M4 against an unmutated control that passes (test_exit_2_one_ulp_in_a_registered_parameter_moves_m2_m3_m4)",
+      "result": "pass"
+    },
+    {
+      "id": "F0.E3",
+      "description": "Exit 3: a test-only flip of one check result fails M5, unmutated control passes (test_exit_3_one_flipped_check_result_fails_m5); F0's reader is flipped, not the verifier (review note 8)",
+      "result": "pass"
+    },
+    {
+      "id": "F0.E4",
+      "description": "Exit 4: a one-byte change to a frozen module fails M9 and names the file, for a legacy unit module and a provider module (test_exit_4_one_byte_in_a_frozen_module_fails_m9_by_name[2])",
+      "result": "pass"
+    },
+    {
+      "id": "F0.R1",
+      "description": "Review condition 1: D15 (1'), ADR 0059 and D9 applied each in its own commit (acb90e9b, 13eac60b, 3853cc97); M9 registry diff 27 insertions, 0 deletions",
+      "result": "pass",
+      "value": {
+        "M9_files": 35,
+        "legacy_unit_modules": 27,
+        "archived_outputs": 36
+      }
+    },
+    {
+      "id": "F0.R2",
+      "description": "Review condition 2: finding 1 fixed by the committed request sample (fd92b41e): 70 sample keys judged on every platform, run trails on the reference platform; CI on both architectures is pending at this manifest (not claimed)",
+      "result": "pass"
+    },
+    {
+      "id": "F0.R3",
+      "description": "Review condition 3: findings 3-5 in the batch (f5a878c9, a783a219, 205717b6, ef1bf51a); notes 6, 7, 9 applied (ef1bf51a)",
+      "result": "pass"
+    },
+    {
+      "id": "F0.R4",
+      "description": "Review condition 4: the full gate is green, the V17 budget test test_f6_the_forty_runs_fit_their_budget passing inside it (budget unchanged)",
+      "result": "pass"
+    },
+    {
+      "id": "F0.F2",
+      "description": "Finding 2 (orchestrator default): the run corpus adds S11 GP-C1..C3, GP-M1, GP-M2 (Wilson v2), TH-C1, TH-R1, TH-V1 (IAPWS-95) and C1-FLASH-F1-M02-v1 (pr-c1); each deterministic over two solves; re-record 198 insertions, 0 deletions. TH-C2 (CoolProp) not run (D20, limitation below)",
+      "result": "pass",
+      "value": {
+        "runs": 61
+      }
+    },
+    {
+      "id": "ADR0059.A1",
+      "description": "ADR 0059 acceptance 1-2: tests/test_evidence_manifests.py passes with every committed manifest unchanged and this one added; the widening enumerates 6 x 100 x 27 old ids and the named admits/refusals (test_work_package_pattern_widening_is_additive)",
+      "result": "pass"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "benchmarks/f0/corpus.json",
+      "sha256": "7b66858a5421d96834a3f463c54e850929112a3a926fcf36b266d6e8aa937fd2",
+      "description": "the F0 registry (M1-M9, archived_outputs) at the commit"
+    },
+    {
+      "path": "benchmarks/f0/m6-requests.json",
+      "sha256": "367a3b049acdf74926ea41ac49667667b2d7d2bafc51b1c807abdef7042f37d4",
+      "description": "M6's committed request sample (70 entries)"
+    },
+    {
+      "path": "tests/fixtures/f0/v0.3.0-bundles/index.json",
+      "sha256": "0e86db0797e172dda4e318ee80b7e70564a3ead3ca0d2ce8aa0e570f3901283a",
+      "description": "M7's index of the 52 bundles written at v0.3.0"
+    }
+  ],
+  "limitations": [
+    "Evidence class: software verification (an identity gate) on ref-x86-64; registered values are self-generated regression fixtures, not validation.",
+    "CI on x86-64 and aarch64 for wp/F0 had not completed when this manifest was written; review condition 2's CI half is open.",
+    "TH-C2 (CoolProp R134a) is not in the run corpus: the reference host has no coolprop extra (docs/F0_DECISIONS.md D20). CoolProp is guarded by M6's sample and M9 only. The Wilson-column flowsheets (benchmarks/s11/flowsheets/C-*.json) are not run.",
+    "M9's legacy unit modules are enumerated by the ruling's AST fallback (D18), cross-checked against MODEL_BUILDERS' declaring modules, not by producing each manifest.",
+    "Exit 3 flips F0's reader of the certificate, not the verifier (review note 8).",
+    "Off the reference platform M4, M6's run key trails and M7's replay mode are not judged."
+  ],
+  "review": {
+    "numerical": "pending",
+    "process_model": "pending"
+  }
+}
