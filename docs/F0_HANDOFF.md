@@ -12,6 +12,8 @@ choices `docs/F0_DECISIONS.md` (D17–D21 this round).
   M8 105/105, M9 35/35`. F0 tests: 26 passed.
 - Full gate at ef1bf51a: GATE PASS, 14866 passed, 3206 skipped (3:07:00), V17 budget test passed inside it.
 - Manifest `evidence/F0/ef1bf51a…/manifest.json`, status `tested` (d0af0259); branch pushed for CI.
+- CI run 42077157573 failed 3 tests (unharvested manifest, HARVEST_SIZE, M6 count off-platform); fixed in
+  eba4bcb4 (gate GATE PASS 14872 passed, 2:25:04), re-take manifest `evidence/F0/eba4bcb4…` (D22, D23), harvested.
 
 ## Open
 - CI on both architectures for `wp/F0` (review condition 2's CI half).
