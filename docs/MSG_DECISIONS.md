@@ -131,3 +131,23 @@ document is always validated by `register()`. Measured after (fresh process, mac
 cores, 3 runs): cold load 100–119 ms (plus 90–106 ms for importing the modules), render median 0.16–0.20 ms
 (1000 renders of §4.13.1). Alternative: validate always and exceed the budget. Reversible by: `validate_core=True`
 as the default. Commit: this one.
+
+**D0-7. MSG-G0 (b) defect found and fixed (`993cc42a`).** The check at `793b74d4` failed (b) on `run-manifest.json`
+in all 54 bundles and passed on the other 505 members. C01 written twice at one commit differs in exactly
+`started_at`, `elapsed_seconds` and `manifest_sha256` (which covers the first two), so the first baseline's self-check
+could not see it. (b) now digests the run manifest without those three (`run-manifest.json#stable`); every artifact
+and every other manifest member is still compared. The baseline's (a)–(c) were re-recorded at `37a521f9` with the
+fixed script (self-check PASS, 559 digests, 57 replays); its (d) is the first record's (unaffected). `--parts` lets a
+run judge a subset; a subset run says so in its summary line. Control: the baseline with (a) altered → `MSG-G0 FAIL:
+parts a only: a 1 diff`, exit 1.
+
+## Gate results at the end of WO-2
+
+- MSG-G0 at `993cc42a` (code = `793b74d4`): `MSG-G0 PASS: parts abc only: a 0 diff; b 0/562 diff (108 bundles); c 0/57
+  diff; surface moved: schema_files/message-catalogue.schema.json, schema_files/registry.json`. (d) at `793b74d4`
+  (full suite inside the check): `d 0 hit(s) in 414 stores`. MCP digest and every operation schema unchanged.
+- `scripts/gate.sh` at `793b74d4`: ruff, format, mypy, node clean; pytest 14902 passed, 3206 skipped, 2 failed — both
+  wall-clock budgets under machine load (load average 50–57 on 48 cores, two full suites at once):
+  `test_t07_conformance.py::test_the_budget_of_the_scenario_runs` (123.0 s > 120; passes when rerun alone) and
+  `test_t07_v17_reference.py::test_f6_the_forty_runs_fit_their_budget` (480 s > 300; 343 s alone; it also failed at
+  the branch point, 418 s, with no MSG code). MSG-G3: no miss, no defect.
