@@ -1,7 +1,7 @@
 # ADR 0058 — Messages: a code catalogue, explanations on read, `RunResult.failure` and `explain`
 
-**Status:** **Proposed, 2026-11-05.** It is accepted when Frank approves it (precedent: ADR 0019 Amendment 3) and MSG's
-manifest is `tested` with the reviewer pass done. Until then MSG is built on `wp/MSG` and not merged.
+**Status:** **Accepted, 2026-11-05 (Frank: "accept ADR 0058").** It takes effect on `main` when MSG's manifest is
+`tested` with the reviewer pass done; until then MSG is built on `wp/MSG` and not merged. Register: R-932…R-937.
 **Author:** design lane (`architect`), MSG design pass.
 **Design note:** `docs/design/MSG-messages.md`, the normative detail; section numbers below refer to it.
 **Amends:**
