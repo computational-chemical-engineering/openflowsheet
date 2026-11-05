@@ -122,3 +122,12 @@ compares like with like) and C03 `not_found: no such artifact`. (c) 57 replays: 
 `inspected_archived_results NOT_RUN`. (d) 414 stores, 0 hits. MCP digest `455d01eb…e125`. The suite run inside the
 record: 14838 passed, 3206 skipped, 1 failed — `test_t07_v17_reference.py::test_f6_the_forty_runs_fit_their_budget`
 (418 s > 300 s), a wall-clock budget missed under load (two full suites ran at once); not an MSG matter.
+
+**D2-6. The cold-load budget (§7 Performance: ≤ 200 ms).** With 363 entries the load measured 430–500 ms: the
+jsonschema pass over the core files cost ~100 ms plus the jsonschema import. Choice: a production load skips the
+schema pass over the package's own files; it runs whenever texts are given, under the test-suite audit (so every
+suite run validates the shipped catalogue), and in `test_the_packaged_catalogue_is_schema_valid`; an extension's
+document is always validated by `register()`. Measured after (fresh process, machine load average ~50 on 48
+cores, 3 runs): cold load 100–119 ms (plus 90–106 ms for importing the modules), render median 0.16–0.20 ms
+(1000 renders of §4.13.1). Alternative: validate always and exceed the budget. Reversible by: `validate_core=True`
+as the default. Commit: this one.

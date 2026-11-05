@@ -220,9 +220,16 @@ def _schema() -> Mapping[str, Any]:
 class Catalogue:
     """The merged catalogue: the core documents plus registered extensions (§4.11)."""
 
-    def __init__(self, core: Mapping[str, str] | None = None) -> None:
+    def __init__(
+        self, core: Mapping[str, str] | None = None, *, validate_core: bool | None = None
+    ) -> None:
         #: `{file name: YAML text}`; `None` reads the package's `catalogue/*.yaml`.
         self._core_texts = core
+        #: Whether the core documents are schema-validated at load. `None`: when given texts, or
+        #: under the test-suite audit. The package's own files are validated by the suite
+        #: (`tests/test_msg_engine.py`), so a production load skips the schema pass (the cold-load
+        #: budget, §7 Performance); an extension's document is always validated (`register`).
+        self._validate_core = validate_core
         self._lock = threading.RLock()
         self._entries: dict[str, Entry] | None = None
         self._kinds: dict[str, Kind] = {}
@@ -251,24 +258,33 @@ class Catalogue:
         with self._lock:
             if self._entries is not None:
                 return self._entries
-            validators = self._validator()
+            validate = self._validate_core
+            if validate is None:
+                from openflowsheet.messages import audit  # noqa: PLC0415
+
+                validate = self._core_texts is not None or audit.auditor is not None
+
+            def check(document: object, definition: str) -> None:
+                if validate:
+                    self._validator().validate(document, definition)
+
             entries: dict[str, Entry] = {}
             for name, text in self._texts().items():
                 document = _yaml_load(text)
                 if name == "kinds.yaml":
-                    validators.validate(document, "kinds_document")
+                    check(document, "kinds_document")
                     self._kinds = {
                         kind: Kind(str(value["label"]), str(value["default_action"]))
                         for kind, value in document["kinds"].items()
                     }
                 elif name == "vocabulary.yaml":
-                    validators.validate(document, "vocabulary_document")
+                    check(document, "vocabulary_document")
                     self._vocabulary = {
                         table: {str(k): str(v) for k, v in values.items()}
                         for table, values in document["vocabulary"].items()
                     }
                 else:
-                    validators.validate(document, "catalogue_document")
+                    check(document, "catalogue_document")
                     if document["namespace"] is not None:
                         raise CatalogueError(f"{name}: a core document has no namespace")
                     self._merge(entries, document, None, name)

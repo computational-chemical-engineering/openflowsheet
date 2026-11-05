@@ -670,6 +670,13 @@ def test_register_refuses_after_the_first_lookup() -> None:
         catalogue.register(_extension("ext.refused"), namespace="ext")
 
 
+def test_the_packaged_catalogue_is_schema_valid() -> None:
+    """A production load skips the schema pass over the package's own files; this is that pass."""
+    validated = Catalogue(validate_core=True)
+    assert validated.keys() == CATALOGUE.keys()
+    assert validated.sha256() == Catalogue(validate_core=False).sha256()
+
+
 def test_the_catalogue_digest_is_a_sha256() -> None:
     digest = CATALOGUE.sha256()
     assert len(digest) == 64 and digest == Catalogue().sha256()
