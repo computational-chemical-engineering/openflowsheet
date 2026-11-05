@@ -107,7 +107,7 @@ requires Frank's approval (it had none). WO-9 merged `cde1a3c2`: main = `0.4.0.d
 **Roadmap governs order (ADR 0057 Accepted, R-928–R-930; `docs/roadmap/roadmap.md`).** Scope: R-923–R-927 (ADR 0056 +
 Am. 1–2). Foundations F0–F8 are designed in wave W1 during 0.4, then built in dependency order. User feedback intake:
 `docs/USER_FEEDBACK.md` (tutorial session). Agentic design layer (inside OpenFlowsheet, R-931):
-`docs/agentic-layer/preliminary-plan.md`, not started; textbooks in Zotero (12/13 PDFs).
+`docs/agentic-layer/preliminary-plan.md`, not started; textbooks in Zotero (13/13 PDFs).
 **Development paused for budget (Frank, 2026-11-01) until Frank's go-ahead.**
 **Next actions for 0.4 (roadmap §0.4; at most 2 agents at a time):**
 1. **Wave 1 (two design agents in parallel):**
