@@ -1,7 +1,7 @@
 # Foundation rulings: the nine questions of the target architecture (roadmap stage 3)
 
-Status: design-lane rulings (`specifier`), 2026-11-02; amended in place by Amendment 1 (2026-11-02, §13) and Amendment
-2 (2026-11-05, §14), which list every changed clause. Brief: `docs/roadmap/brief-specifier-foundation-questions.md`.
+Status: design-lane rulings (`specifier`), 2026-11-02; amended in place by Amendment 1 (2026-11-02, §13), Amendment 2
+(2026-11-05, §14), Amendment 3 (2026-11-05, §15) and Amendment 4 (2026-11-05, §16), which list every changed clause. Brief: `docs/roadmap/brief-specifier-foundation-questions.md`.
 Questions and defaults: `docs/roadmap/target-architecture.md` §6 ("the note"). Input to ADR-F2 to ADR-F5, not an ADR:
 once an ADR adopts a ruling, the ADR is the authority and this document is archival input.
 
@@ -79,6 +79,19 @@ Notation: ε = 2.220446e-16. "Exactly" = bitwise in IEEE double after signed-zer
   T_ref,w) and the scale capacity × s_T (note §2.3.7). A transfer between holdups sits with opposite signs in exactly the
   two rows it couples. They enter the conservation ledger and never go dormant with the material; a `state_rate` state
   (R-930) is not conserved and stays out of the ledger.
+- **Q1.R10** *Simultaneous events* (F7; Amendment 4, SQ-F7-2). The integrator registers a location tolerance τ_loc =
+  c_loc (|t| + |h|), h the step in which the root is located (reference integrator, ADR 0066 D16: c_loc = 1e-14); τ_ev =
+  10 τ_loc. In an accepted step, t* is the earliest located root; the **group** is every event located in that step at
+  t ≤ t* + τ_ev, applied to the state at t*. Every action value is evaluated on that pre-group state; the actions then
+  apply in ascending (priority, id) order (integer priority, ids by code point). Two actions of one group writing one
+  target (a discrete state, a parameter, a holdup by `empty`) with different values end the run
+  `simultaneous_event_conflict(<target>, <event>, <event>)`, keeping its trajectory; equal values are one write. One
+  consistent re-initialisation (ADR 0066 D6) follows the group. Then every event function is re-evaluated at (t*, x⁺):
+  one that is exactly zero is masked until it is non-zero; one that crossed in its direction relative to its pre-group
+  value fires as a further group at t*; an event fires at most once per t*, and a second firing ends the run
+  `event_chattering(<event>)`, keeping its trajectory. Grouping is a thresholded decision: an event located at
+  |t − t*| ∈ [τ_ev/10, 10 τ_ev] flags its group `near_threshold` (ADR 0007 D2.4). The groups in order, each with its
+  (event id, assignments) in application order and one `reinit`, are R0.
 
 ### Rejected alternatives
 - **(a) `nTP` plus phase amounts where Gibbs' rule leaves the state open.** Degeneracy in `T` is not only structural (π
@@ -176,6 +189,18 @@ Notation: ε = 2.220446e-16. "Exactly" = bitwise in IEEE double after signed-zer
   contents are dormant, T_w then rising at 0.2 K/s within 1e-10 relative; L = L₀ + 10t N m s within 1e-12 relative; the
   ledger lists U_w and L, not a probe PI integral; at ẋ = 0 the wall unit's dynamic residual equals its steady residual
   bitwise. Mutation control: T_w differentiated with coefficient C_w is refused (a non-unit M entry).
+- **Q1.A13** *Simultaneous events* (F7, reference integrator; Amendment 4). Probe: one differential state x, ẋ = 1,
+  x(0) = 0, fixed h = 0.125 s (t_k = x_k = k/8, exact in binary); event a: g = t − 0.95, rising, assigns d_a := 1;
+  event b: g = x − (0.95 + δ), rising, assigns d_b := 1; at t* = 0.95, τ_loc = 1e-14 · 1.075 = 1.075e-14 s and τ_ev =
+  1.075e-13 s. (a) δ = 0, equal priorities: one group at t* (|t* − 0.95| ≤ τ_loc), sequence (a, b), one `reinit`; the
+  scenario with its event list reversed gives the identical R0 sequence. (b) δ = 0, priority 0 for b and 1 for a:
+  (b, a). (c) δ = 5e-15 s: one group, not flagged. (d) δ = 5e-14 s: one group, `near_threshold`. (e) δ = 5e-13 s: two
+  groups, two `reinit`, `near_threshold`. (f) δ = 1e-6 s: two groups, not flagged. (g) δ = 0 with b assigning
+  d_a := 2: `simultaneous_event_conflict(d_a, a, b)` at t*; with d_a := 1 it is one write. (h) a's action also sets a
+  parameter p := 1, and event c (g = p − 0.5, rising) fires in a second group at t*; if c sets p := 0 and event c′
+  (g = 0.5 − p, rising) sets p := 1, c's second firing ends the run `event_chattering(c)`. Expectations are orders,
+  counts, exact assignments and the located t*. Mutation controls: ordering by id alone fails (b); a `reinit` per event
+  fails (a); τ_ev = 0 fails (c).
 
 **Effect on the note.** §2.1.1: `thermal_coordinate: T | h` becomes `T | h_mass`; add Q1.R4. §2.2.1: each state-point
 specification carries its quantity kind (molar or specific). §6 Q1: text corrected. §7 R4: decided, mitigated by Q1.R3.
@@ -233,6 +258,24 @@ A12).
   anchor evaluation passes the method's guard and declared domain like any other evaluation. A refusal there refuses
   the method for the component, `anchor_unavailable(<method>, <component>, ig)` with the method's own reason code as its
   cause, and the method keeps its native convention for it (Q2.R5).
+- **Q2.R10** *Entropy datum* (Amendment 4; ADR 0063 risk 5). (a) For a method m providing `s`, Δˢ_{m,c} = s°_c(a) −
+  s^m_c(a; T°, P°) (Q2.R3; bridged by Q2.R8's Δ_aφ s°_c where m cannot evaluate the anchor phase a). s°_c(a) is the
+  record's third-law entropy in a; else, when the record gives s° in a phase φ ≠ a and a transition datum Δ_aφ s°_c,
+  s°_c(φ) − Δ_aφ s°_c; else the **entropy datum** s°_c(a) := 0, with the notice `entropy_datum(<c>)` in `describe()` and
+  on every report of an absolute s, ŝ, Ṡ or g of a phase holding c. A Q2.R4 component without s° carries the same
+  notice. A method without `s` (PR-C1) gets no S shift and provides no `s`, `s_ig` or `g`; a unit requiring them is
+  refused by ADR 0060 D5 (`capability_missing(<unit>, <method>, vocab:s:1)`). A method bridged for c whose record lacks
+  Δ_aφ s°_c gets no S shift for c, and its `s` and `g` of a phase holding c are refused `anchor_unavailable(<method>,
+  <c>, <a>)` with cause `entropy_bridge_missing`. (b) *Admitted* (datum-free, §16 argument 1): every use in which the
+  amount of c is conserved: state points and specifications at fixed amounts (PS, TS, the isentropic reference of ADR
+  0065 D16), the entropy balance or entropy generation of a non-reacting unit, and phase equilibrium within one method
+  or between methods anchored in a. A specified absolute s is admitted and reported with the notice. (c) *Refused:*
+  every quantity in which the amount of c changes while c carries the datum (Δr s, Δr g, an equilibrium constant or
+  affinity from g, a Gibbs-energy minimisation in which n_c is free, the entropy generation of a reacting unit) where
+  c's coefficient is non-zero: `component_not_reaction_consistent(<c>)` at the declaration. A verifier check that would
+  compute such a quantity reports `unsupported` with that code, never `pass` or `fail`. c as an inert in a reactor is
+  admitted. A component with Δf h° and no s° is reaction-consistent in h (a conversion reactor's energy balance is
+  admitted) and not in s or g.
 
 ### Rejected alternatives
 - **Native conventions with per-method summaries only (the default's fallback).** Energy does not close across a
@@ -352,6 +395,22 @@ component. *Floor:* a duty Ḣ_out − Ḣ_in carries ε·max|Ḣ|, 6.3e-9 W at 
   data) the same reaction is Q2.A2 (ii), admitted. (d) *No default.* Once ADR-F2 admits `kg`, a `kg` record with
   nothing is refused on `ELEMENTAL-ref-v1` with `anchor_undetermined(<component>)` and admitted on a native
   convention; until then (d) is reported `unsupported` with cause `amount_basis_unsupported(kg)`.
+- **Q2.A12** *Entropy datum* (Amendment 4; F4: (a), (d), (e); F6: (b), (c)). The sheet method of
+  `docs/derivations/F6-std-seed.md` §2 (SYN-001's potentials composed on `ELEMENTAL-ref-v1`) with records A, B, C given
+  a synthetic Δf h°(ig) = (−1.0e5, −1.2e5, −1.4e5) J/mol and either (i) no s° or (ii) s°(ig) = (200, 250, 300)
+  J/(mol K). (a) Both compose; (i) carries `entropy_datum(A)`, `(B)`, `(C)`, (ii) none; Δˢ_c(ii) − Δˢ_c(i) = s°_c within
+  2 ulp. (b) The sheet's case CMP-1 (compressor, (1, 1, 1) mol/s, 380 K, 6e4 → 1.5e5 Pa, η = 0.8) is admitted on both
+  and gives T_out = 417.601 866 113 419 K within 1e-10 relative and W = 11 280.559 834 025 72 W within 1e-9 relative on
+  each, (i) and (ii) agreeing to the same bounds. (c) The outlet's reported Ṡ differs, (ii) − (i), by Σ_c n_c s°_c =
+  750 W/K within 1e-10 relative. (d) A reaction ν = (−2, −1, 3) declared with an equilibrium constant from g is refused
+  `component_not_reaction_consistent(A)` on (i) and admitted on (ii); declared with a conversion and an energy balance
+  only (it reads h), it is admitted on both. (e) The TP flash of the equimolar feed at 350 K, P_r (sheet case HTR-T,
+  β = 0.101 368 723 426 727 76) gives phase amounts that agree between (i) and (ii) within 1e-12 relative. Floors: the
+  datum adds ε·|Σ_c n_c Δˢ_c| ≈ 2e-13 W/K to each Ṡ, ≈ 3e-13 K in T_s; a PS solve converged to 1e-12 relative in Ṡ
+  (|Ṡ| ≤ 900 W/K) moves T_s by ≤ 1.2e-9 K, so T_out by ≤ 4e-12 relative and W by ≤ 4e-11 relative; margins ≥ 25.
+  Expectations: `docs/derivations/scripts/f6_std_seed_reference.json` (case CMP-1). Mutation controls: the datum on one
+  side only (inlet Ṡ shifted, PS point native) moves T_s by hundreds of K; refusing (b) on (i), as the default's "or
+  equilibrium" reads, fails (b); dropping the notice fails (a).
 
 **Effect on the note.** §2.3.6: `ELEMENTAL-ref-v1` with anchor phase, entropy datum and component datum. F4 exit: the
 convention-shift clause becomes Q2.A2. §6 Q2: default replaced. §2.3 "ADRs": ADR-F4 also amends ADR 0001 D5.2 (§10).
@@ -497,6 +556,17 @@ not "later". Amendment 2: §14 (A1-a; F2 gains Q3.A6, F4 Q3.A5).
   `split`), else by its model id. A one-component confined phase takes Q5.R2's scalar pure-phase test with its own
   chemical potential for μ_S,k, claim `exact`, indicator that tm (Q5.R8); a several-component one takes its own local
   trial. Q8.R7's sorbent is a component outside the support of every phase but one.
+- **Q4.R9** *Routing a lone fluid phase* (Amendment 4, SQ-F6-1; ADR 0065 D9). At a point a unit routes, a phase with
+  no other active unconfined fluid phase takes the port a lone VAPOR takes under ADR 0065 D9 (i) if it is VAPOR or a
+  `vapour_like` FLUID, and the port a lone LIQUID takes otherwise: a FLUID phase routes as the `split` family its
+  `character` names. The character is the identification rule's (Q4.R6, O-11) at the opening's root, fixed with the
+  routing for the attempt; at closure a changed character closes the attempt `routing_order_changed(<unit>)` and the
+  adjacent assignment (the lone phase's other port) opens. Each identification rule declares its scalar q and threshold
+  q* (Venkatarathnam and Oellrich's parameter: q* = 1); |q − q*| ≤ 10 τ_char |q*| attaches `near_threshold` to the
+  routing (ADR 0007 D2.4), τ_char = 1e-6 (O-14). With two or more active fluid phases D9's mass-density order rules; an
+  adjacent pair with |ln ρ_a − ln ρ_b| ≤ 10 τ_ρ is flagged `near_threshold` (Q4.R5's pattern), τ_ρ = 1e-6 (O-14), and
+  an exact tie is ordered by canonical ordinal. **This gives O-11 a numerical consequence:** the identification rule
+  decides through which outlet a lone dense, supercritical or near-critical phase leaves a unit.
 
 ### Rejected alternatives
 - **The default's "without a key, descending mass density".** It contradicts its own key rule in the commonest case (a
@@ -552,6 +622,15 @@ about 4 decades above the expected cross-platform agreement of converged mole fr
 - **Q4.A11** *Family scan* (F5 R0 scan; Amendment 2). No record of a `single` method has a VAPOR or LIQUID phase, none
   of a `split` method has FLUID, every `character` sits outside ids and fingerprints, and legacy-provider records are
   unchanged (Q4.A7).
+- **Q4.A12** *Lone-phase routing* (F6, E-F6-10 (c), (d); Amendment 4). Q4.A9's method and paths, through a `std.flash`
+  (ports `vapor`, `liquid`; the drum's ĥ set by its duty). (a) At 1.13 P_c, T from 0.93 T_c to 1.08 T_c: one FLUID
+  phase at every point; the whole flow leaves by `liquid` while it is `liquid_like` and by `vapor` while `vapour_like`;
+  the port changes exactly once, at the path index where the reported character changes, recorded
+  `routing_order_changed`; the other outlet is dormant with its Q1.R4 label; energy closes within τ_E at every point.
+  (b) At 0.9 P_c from compressed liquid to superheated vapour: `liquid` only, then both (the lower mass density on
+  `vapor`), then `vapor` only. (c) **[gen]** The generator locates on path (a), by bisection on the method's own q, a
+  point with |q − 1| ≤ 5e-6 and one with |q − 1| ≥ 1e-3: the first carries `near_threshold` on its routing, the second
+  does not. Mutation control: the map reversed (`vapour_like` → `liquid`) moves the whole flow at both ends of path (a).
 
 **Effect on the note.** §2.1.5: the triple and injectivity. §2.2.2–2.2.3: prefix rule and count lattice; exact order
 with flags (Q4.R3, R5). §6 Q4: density removed; water the default key. Amendment 2: §14 (S5; F5 gains Q4.A8–A11).
@@ -605,6 +684,37 @@ with flags (Q4.R3, R5). §6 Q4: density removed; water the default key. Amendmen
   z_i K_i, ι_L = 1 − Σ z_i/K_i (composition-free K) are defined everywhere. Disappearance keeps the phase amount.
   For FLUID (Amendment 2), one W is tracked per distinct non-trivial minimum the trials reach at the opening (vapour-
   and liquid-like alike), each recorded, and ι of the next FLUID slot is their minimum.
+- **Q5.R9** *Steady controller closure* (Amendment 4, SQ-F6-3; ADR 0065 D10). A steady `std.pid` with integral
+  action, limits out_min ≤ out_max (out_min > out_max is refused at binding by ADR 0065 D2's parameter validation) and
+  σ = +1 for `reverse`, −1 for `direct` has as its steady states exactly the solutions of σ·e ∈ N(out), e = sp − pv,
+  N the normal cone of [out_min, out_max] at out: the rest points of the integrator with clamping anti-windup. So
+  `tracking` closes iff out_min ≤ out ≤ out_max, `saturated_high` iff σe ≥ 0, `saturated_low` iff σe ≤ 0 (ADR 0065
+  D10's condition, confirmed). A failed closure opens: from `tracking` above out_max, `saturated_high`; below out_min,
+  `saturated_low`; from a saturated regime with the wrong sign, `tracking` if this solve has not visited it, else the
+  other saturated regime (a recorded non-adjacent restart, ADR 0005 D4), so ADR 0005's `no_repeated_signature` is never
+  needed and three attempts suffice; if all three fail, the solve ends with ADR 0005's cycle status. At out_min =
+  out_max the two saturated rows coincide and one of them closes. A closure is near threshold, flagged `near_threshold`
+  (ADR 0007 D2.4), when a saturated regime has |e| ≤ 10 τ_pv or `tracking` has min(out − out_min, out_max − out) ≤
+  10 τ_out (τ the certificate tolerances of the two signals' kinds); a saturated regime at closure carries the notice
+  `controller_saturated`. TX's dynamic `std.pid` must have these rest points (a clamped integrator); a law with another
+  anti-windup is another unit.
+- **Q5.R10** *`heat_direction`* (Amendment 4, SQ-F6-4; ADR 0065 D11). For a heat connection with Q its variable,
+  positive from endpoint A into B (ADR 0001 D4.1), and the temperature intervals I_A, I_B of D11: if Q > τ_Q the value
+  is min I_B − max I_A; if Q < −τ_Q it is min I_A − max I_B. The check passes iff value ≤ τ_hd and is near threshold iff
+  τ_hd/10 < value ≤ 10 τ_hd, the one-sided rule of the exchanger's temperature-cross check (`verify/table.py:275–298`,
+  `:965`). |Q| ≤ τ_Q gives `not_applicable(no_heat_flow)`; a dormant `from` or `to` stream gives
+  `not_applicable(zero_flow)` (T05b §9.3's rule). τ_hd is the policy's `temperature` tolerance (1e-6 K registered;
+  O-15), τ_Q its `heat_rate` tolerance. Equality (value 0) passes, as the exchanger's pinch does. The check is
+  necessary, not sufficient: it excludes a source wholly colder than its sink, not a crossing inside an exchanger.
+- **Q5.R11** *Near-singular algebraic block* (Amendment 4, SQ-F7-1; ADR 0066 D7). At every consistent
+  (re-)initialisation, Ĝ = S_g⁻¹ (∂g/∂z) S_z on D7's algebraic rows g and columns z with the policy's scales, and
+  rcond₁(Ĝ) by K04's estimate (SuperLU with ADR 0004's options, `onenormest`). τ_idx = K04's τ_ill = 1e-8 (O-16): below
+  it the trajectory certificate carries the typed limitation `dae_index_near_singular` with rcond₁ and t recorded, and
+  the run continues; rcond₁/τ_idx ∈ [1/10, 10] flags `near_threshold` (ADR 0007 D2.4). A structurally deficient block
+  stays `dae_index_unsupported` at build. The reason is K04's: below 1e-8 the algebraic columns are not determined to
+  better than 1e-8 relative under perturbations at the Jacobian's 1e-14 error, and a sensitivity through Ĝ loses more
+  than 1e-6. A liquid in a rigid vessel is near-singular only when its scaled expansivity and compressibility are both
+  small (§16 argument 5): a PR liquid (α s_T ≈ 0.1) is regular, contrary to ADR 0066 D7's example.
 
 ### Rejected alternatives
 - **A fixed trial set claimed as global.** False for non-ideal liquids, which can have several LL minima.
@@ -668,6 +778,38 @@ bracketed (the note's "minimal tm" fell to the trivial solution on the stable si
   opening records `root_switch` and converges on the vapour-like root, count 1; the composition-only triviality rule
   (mutation control) discards the witness and passes. (b) **[gen]** F5 registers at least one single-FLUID state where
   the trials reach two distinct non-trivial minima; both W are recorded and ι equals the lower tm*.
+- **Q5.A11** *Steady PI* (F6, E-F6-14; Amendment 4). The sheet method (`docs/derivations/F6-std-seed.md` §2): liquid
+  (1, 1, 1) mol/s at 300 K, P_r → `std.heater` (no drop) whose duty is `std.pid`'s `out`; pv the outlet's derived T;
+  sp = 320 K; out_min = 0 W. Closed form (sheet cases HTR-L*): T_out = 300 K + Q/(300 W/K). (a) `reverse`, out_max =
+  1e4 W: `tracking`, Q = 6000 W, T_out = 320 K. (b) `reverse`, out_max = 3000 W: `tracking` → `saturated_high`, Q =
+  3000 W, T_out = 310 K, e = +10 K, notice `controller_saturated`. (c) `direct`, out_max = 3000 W: `tracking` →
+  `saturated_high` → `saturated_low`, Q = 0 W, T_out = 300 K, σe = −20 K. (d) `reverse`, out_max = 6000 W: Q = 6000 W
+  and T_out = 320 K in whichever regime closes, flagged `near_threshold`. Each `VERIFIED`; T within 3.4e-6 K (τ_T where the
+  tracking row decides, τ_E/(ṁ ĉ_p) where the energy row does) and Q within 1.01e-3 W: the certificate tolerances,
+  ≥ 7 decades above the solved residuals at registered states (ADR 0007 D2.4). Mutation
+  controls: σ's sign flipped closes (b) at `saturated_low` and (c) at `saturated_high`; without the closure condition
+  (b) stays at `tracking` with Q = 6000 W > out_max.
+- **Q5.A12** *`heat_direction`* (F6, E-F6-18; Amendment 4). The sheet method: two `std.heater`s joined by `heat-v1`,
+  both fed liquid (1, 1, 1) mol/s at P_r, the donor's outlet T specified, the connection from donor to receiver;
+  closed forms (sheet cases HD-*): Q = 300 W/K·(T_d,in − T_d,out), T_r,out = T_r,in + Q/(300 W/K). (a) Donor 340 → 320
+  K, receiver 300 → 320 K: value −40 K, `pass`, not flagged. (b) Donor 300 → 290 K, receiver 320 → 330 K: value +20 K,
+  `fail`. (c) Donor 310 → 300 K, receiver 310 → 320 K: value 0, `pass` (equality), not flagged. (d) Donor outlet T =
+  its inlet T: |Q| ≤ τ_Q, `not_applicable(no_heat_flow)`. (e) Donor fed (0, 0, 0): `not_applicable(zero_flow)`. (f)
+  (b) with the connection declared from receiver to donor (Q < 0 in its variable): value +20 K, `fail`. Values within
+  τ_E/(ṁ ĉ_p) = 3.4e-6 K of the closed forms (the sheet's (S) class), result words exact; (c)'s `pass` presumes an
+  achieved |r_E|/(ṁ ĉ_p) ≤ τ_T/10 (O-15). Mutation control: ignoring the sign of Q passes (f).
+- **Q5.A13** *Index probe* (F7; Amendment 4). Test probe: a rigid vessel V = N v0 holding N = 1000 mol of a synthetic
+  liquid with v = v0 [1 + α(T − T0) − κ(P − P0)] and h consistent with it ((∂h/∂T)_P = c_p at P0, (∂h/∂P)_T =
+  v − T(∂v/∂T)_P), v0 = 1.8e-5 m³/mol, c_p = 75 J/(mol K), T0 = 300 K, P0 = 1e5 Pa; differential N and U; algebraic
+  columns T, P; rows N v − V = 0 and U − N(h − Pv) = 0, initialised at (T0, P0); scales s_T = 100 K, s_P = 1e5 Pa, rows
+  by V and N c_p s_T. Then Ĝ = [[α s_T, −κ s_P], [−(1 − P0 v0 α/c_p), (T0 α − P0 κ) v0 s_P/(c_p s_T)]] and, for α = 0,
+  rcond₁ = κ s_P / (1 + κ s_P P0 v0/(c_p s_T)) exactly. Registered: (a) α = 0, κ = 4.5e-10 Pa⁻¹: rcond₁ =
+  4.499 999 951 4e-5, clean; (b) κ = 3e-13: 2.999 999 999 978e-8, no limitation, `near_threshold`; (c) κ = 3e-14:
+  3.0e-9, `dae_index_near_singular` and `near_threshold`; (d) κ = 1e-15: 1.0e-10, the limitation, not flagged;
+  (e) α = 2.1e-4 K⁻¹ with v independent of P (κ ≡ 0): structurally index 1, rcond₁ = 3.109 876 266e-7, clean
+  (registered because incompressibility alone does not make the block singular: the volume row fixes T, the energy
+  row P); (f) α ≡ κ ≡ 0: `dae_index_unsupported` naming the volume row. rcond₁ within 1e-9 relative (`onenormest` is
+  exact on 2 × 2, K04 A23's measured ratio 1.000; entries exact to ε). **[gen]**: F7's generator recomputes them.
 
 **Effect on the note.** §2.2.6, §2.2.9: claim levels, witness, trial-set id. F5 exit: τ_tm and the band. §6 Q5:
 near-pure trials per component (not "per liquid candidate"), exact levels, witnesses. §8:
@@ -874,6 +1016,19 @@ confined adsorbed phases (Q8.R7). §6 Q8: default confirmed, with Q8.R2, Q8.R6 a
 - **Q9.R7** *Identity without content.* Identity is computable as a SHA reference, so a bundle may reference a record
   its rights forbid it to carry; replay without that record runs in mode `inspected_archived_results` with verdict
   `NOT_RUN` (ADR 0007 D4), never as a silent pass.
+- **Q9.R8** *Grazing events under `forced_replay`* (Amendment 4, SQ-F8-1; ADR 0067 D8). An event disagreement under
+  `forced_replay` (a recorded event the replay detects in another step or not at all, an event the record lacks, or a
+  different grouping, Q1.R10) is *near threshold* iff the replay's own event function is within τ_g of zero at the
+  disputed time: at the recorded located time for a recorded event; the smaller |g| of the two step ends for an event
+  only the replay detects; for a grouping, Q1.R10's band on |t − t*|. τ_g = 10 × the floor ADR 0007 D2.2 registers for
+  the function's output kind (F7 registers one for every kind an event function may have, D2.3; an event of an
+  unregistered kind is refused at scenario validation `event_floor_unregistered(<event>, <kind>)`). A near-threshold
+  disagreement is resolved by imposing the record (the event fires, or not, in the recorded step at the recorded t*,
+  grouped as recorded) and the comparison continues; with every other field agreeing the verdict is `MATCH` with
+  `verdict_changed_near_threshold(<seq>)` (ADR 0007 D2.4). Any other disagreement, and a corrector failure on a
+  recorded step, is `forced_replay_divergence(<seq>)`, verdict `MISMATCH`. The default τ_g (the location tolerance, a
+  time) is not adopted: g is not a time, and a slow crossing turns a roundoff difference in g into a time difference
+  larger than any location tolerance.
 
 ### Rejected alternatives
 - **One five-value kind (the default).** "fitted" hides whether the data were measured or estimated.
@@ -908,6 +1063,15 @@ trial states are not results (ADR 0001 D2.3).
 - **Q9.A7** *Fit origin.* A correlation fitted to estimated points reports origin {estimated}, derivation fitted.
 - **Q9.A8** *Missing record.* Replay with a referenced record absent runs in `inspected_archived_results` with
   `NOT_RUN`.
+- **Q9.A9** *Grazing replay* (TX with F8-WO7; Amendment 4). Q1.A13's probe (h = 0.125 s, x_k = k/8) with one event
+  g = x − 1 + u, rising, x dimensionless with registered floor 1e-12 (τ_g = 1e-11), u a constant set through a
+  test-only seam on one side. (a) Record u = −1e-13 (crossing in (1, 1.125]), replay u = +1e-13 (crossing in
+  (0.875, 1]): `MATCH` with `verdict_changed_near_threshold`, the event imposed in the recorded step at the recorded t*,
+  every later step bitwise equal. (b) Replay u = +1e-3: `forced_replay_divergence`, `MISMATCH`. (c) g = (x − 1)² − u,
+  direction either: record u = +1e-20 (events at 1 ∓ 1e-10), replay u = −1e-20 (none): `MATCH` flagged, both events
+  imposed. (d) Q1.A13 (d)'s pair with the replay's b moved by 1e-13 s: `MATCH` flagged, grouped as recorded; moved by
+  1e-6 s: `MISMATCH`. Mutation control: τ_g taken as the location tolerance in seconds (the default) makes (a)
+  `MISMATCH`.
 
 **Effect on the note.** §2.3.1: two provenance axes, record types, rights register, volatile set. F3 scope and exit:
 Q9.A1–A3. §8: the ComponentRecord row. ADR-F8: bundles may reference records they do not carry.
@@ -949,9 +1113,14 @@ of F2's `species_basis` field; both are inside F2's scope.
 | O-8 | Cost of N near-pure trials for large N (assays) | fact | F5 times N = 50 | all components; a reduced set keeps claim level `local` |
 | O-9 | τ_mono = 1e-12 against the moment rounding floor (Q6.R5) | fact | F2's worst relative deficit on monodisperse probe streams, a recycle of loop gain 100 included | 1e-12; amend if the margin falls below 10× |
 | O-10 | Drain-defect bound and trajectory tolerances (Q1.A11, A12) | fact | F7's measured defect and T error on the probe at its default integrator tolerances | 1e-8·m₀, 1e-10 relative; amend if a margin falls below 10× |
-| O-11 | Default identification rule for `character` (Q4.R6) | Frank's preference | — | Venkatarathnam and Oellrich's phase identification parameter; reported only, so no numerical consequence |
+| O-11 | Default identification rule for `character` (Q4.R6) | Frank's preference | — | Venkatarathnam and Oellrich's phase identification parameter; reported, and since Amendment 4 it decides the outlet of a lone fluid phase (Q4.R9) |
 | O-12 | CoolProp's anchor evaluation at (T°, δ°) for the 118 in-box fluids, and Q2.A11 (b)'s answered-phase control (Amendment 3) | fact | one run of Q2.A11 (b) on a machine with the coolprop extra | all 118 admitted, every control above 2 ulp; a fluid that fails is refused with its cause and listed here by amendment (rule 6), never dropped from the assertion |
 | O-13 | Q2.A11 (a)'s floors on aarch64 (Amendment 3) | fact | the four comparisons on the CI's arm runner | 1e-12 and 1e-10 relative; amend if a margin falls below 100× |
+| O-14 | τ_char = τ_ρ = 1e-6 (Q4.R9; Amendment 4) | fact | cross-platform agreement of the identification parameter q and of ln ρ at F5's and F6's registered FLUID states on the X07a legs | 1e-6; amend if a margin falls below 10× |
+| O-15 | τ_hd = the `temperature` tolerance against the derived-T floor (Q5.R10; Amendment 4) | fact | E-F6-18's achieved max \|r_E\|/(ṁ ĉ_p) per side at its probes | τ_T; add that term to τ_hd if it exceeds τ_T/10 |
+| O-16 | τ_idx = 1e-8 (Q5.R11; Amendment 4) | fact | rcond₁ of Ĝ at TX's and X25's registered dynamic cases | 1e-8; re-argue with the first supported case below 1e-7 |
+| O-17 | c_loc = 1e-14, τ_ev = 10 τ_loc (Q1.R10; Amendment 4) | fact | the achieved location error on Q1.A13 with the reference integrator and with TX's BDF | as stated; amend if a located time errs by more than τ_loc/10 |
+| O-18 | τ_g = 10 × the kind's floor (Q9.R8; Amendment 4) | fact | max \|Δg\| at recorded step ends between the CI's two platforms on TX's registered transients under `forced_replay` | as stated; amend if a measured \|Δg\| exceeds τ_g/10 |
 
 [zotero], cited not fetched: Michelsen (1982), *Fluid Phase Equilib.* 9 (TPD; stability matrix); Michelsen and Mollerup
 (2007), ch. 9–10 and ch. 12 (critical points); Heidemann and Khalil (1980), *AIChE J.* (criticality cubic form);
@@ -980,7 +1149,7 @@ Venkatarathnam and Oellrich (2011), phase identification; CODATA key values for 
 - **§7 R4:** decided (Q1), mitigated by Q1.R3.
 - **§8:** `ComponentRecord` row adds amount basis, anchor and provenance axes; `SolutionCertificate` row adds claim
   level and witness.
-- Amendments 1, 2 and 3 add the edits listed per finding or item in §13, §14 and §15.
+- Amendments 1 to 4 add the edits listed per finding or item in §13 to §16.
 
 ## 13. Amendment 1 (2026-11-02)
 
@@ -1141,3 +1310,122 @@ the index spells its other findings. Q2.A10 (a) asserts these lists exactly.
 - It does not choose how ADR-F4 calls the kernels (`phi_jet`, the provider's `_jet`), nor the ideal-gas evaluation of
   non-Helmholtz methods (A3-a). F4 composes no SYN-001 method (`target-architecture.md:432–433`), so the `syn001`
   default is asserted at F3 only.
+
+## 16. Amendment 4 (2026-11-05)
+
+Brief: `docs/roadmap/brief-specifier-W1-P3-questions.md`; items: ADR 0063 risk 5 (the entropy datum, W1 P2 review S6)
+and the specifier questions of ADR 0065 (SQ-F6-1, -3, -4), ADR 0066 (SQ-F7-1, -2) and ADR 0067 (SQ-F8-1). SQ-F6-2 is
+ruled by its own sheet, `docs/derivations/F6-std-seed.md`, whose expectations come from
+`docs/derivations/scripts/f6_std_seed_reference.py` (`--check`). Edits are in place; existing clause numbers are kept,
+new clauses appended. The last column lists the note edits and what each ADR adopts.
+
+| Item | Ruling (default adopted?) | Clauses | Assertions (exit) | Edits to the note; the ADR |
+| --- | --- | --- | --- | --- |
+| Entropy datum (ADR 0063 risk 5) | Adopted with the refusal narrowed: the default refuses "any reaction or equilibrium" reading s or g; the ruling refuses only uses in which the component's amount changes. Phase equilibrium and every fixed-amount use are datum-free and admitted, so **PS and TS specifications and the isentropic units are admitted** on such a component. Also: s° from another phase plus a transition datum; a bridge without its entropy part refuses s and g | Q2.R10 new | Q2.A12 new (F4: (a), (d), (e); F6: (b), (c)) | §2.3.6: after "entropy datum" add "(s° absent: s = 0 in the anchor phase, notice `entropy_datum`; admitted wherever the component's amount is conserved, refused where it reacts; Q2.R10)". F4 exit: add Q2.A12 (a), (d), (e); F6 exit: Q2.A12 (b), (c). §6 Q2: "(R1–R9)" → "(R1–R10)". ADR 0063 adopts Q2.R10, Q2.A12; edits 0063-1 to -3 |
+| SQ-F6-1 (ADR 0065 D9 (iii)) | Adopted, generalised: a FLUID phase routes as the `split` family its character names; τ_ρ = 1e-6 with Q4.R5's flag band (10 τ); a band τ_char added for the character decision, which now has consequences | Q4.R9 new | Q4.A12 new (F6) | §2.2.2 or §2.4 (routing): add Q4.R9. §11 O-11 (here) and the note's §6 O-11 row: "reported only, no numerical consequence" → "decides a lone fluid phase's outlet (Q4.R9)". F6 exit: add Q4.A12. ADR 0065 adopts Q4.R9, Q4.A12; edit 0065-1 |
+| SQ-F6-3 (ADR 0065 D10) | Adopted (D10's sign rule), made complete: it is the normal-cone condition of a clamped integrator; the failed-closure transitions are fixed so no signature repeats; flags and notice | Q5.R9 new | Q5.A11 new (F6, E-F6-14) | §2.4.11: `std.pid` steady closure per Q5.R9. ADR 0065 adopts Q5.R9, Q5.A11; edit 0065-2 |
+| SQ-F6-4 (ADR 0065 D11) | Adopted (the cross check's tolerance; equality passes), with the direction taken from the sign of Q and the `not_applicable` cases | Q5.R10 new | Q5.A12 new (F6, E-F6-18) | §2.4 heat ports: Q5.R10. ADR 0065 adopts Q5.R10, Q5.A12; edit 0065-3 |
+| SQ-F7-1 (ADR 0066 D7) | Adopted (τ_idx = τ_ill = 1e-8 on rcond₁ of the scaled ∂g/∂z, D2.4's band); D7's example is wrong and is corrected | Q5.R11 new | Q5.A13 new (F7) | §2.5.3: τ_idx and its example. F7 exit: add Q5.A13. ADR 0066 adopts Q5.R11, Q5.A13; edit 0066-2 |
+| SQ-F7-2 (ADR 0066 D5) | Adopted and defined: τ_loc relative to \|t\| + \|h\| (defined at t = 0), τ_ev = 10 τ_loc, ascending (priority, id), action values on the pre-group state, one re-initialisation per group; conflicts and cascades typed | Q1.R10 new | Q1.A13 new (F7) | §2.5.2: events per Q1.R10. F7 exit: add Q1.A13. §6 Q1: "(R1–R9)" → "(R1–R10)". ADR 0066 adopts Q1.R10, Q1.A13; edits 0066-1, -3 |
+| SQ-F8-1 (ADR 0067 D8) | **Changed:** τ_g is in the event function's units, 10 × its kind's D2.2 floor, not the location tolerance (a time); a near-threshold disagreement imposes the record and gives `MATCH` with `verdict_changed_near_threshold`; other mismatches `forced_replay_divergence` (as the default) | Q9.R8 new | Q9.A9 new (TX) | §2.7: `forced_replay` per Q9.R8. TX exit: add Q9.A9. ADR 0067 adopts Q9.R8, Q9.A9; edit 0067-1 |
+
+**Argument.**
+1. *Where the entropy datum acts.* The S shift is linear in amounts: S = S_native + Σ_c n_c Δˢ_{m,c}. At fixed amounts
+   the second term is a constant, so a PS or TS point, an isentropic reference at (n, Ṡ_in, P_out) and any entropy
+   difference see S_native alone. A non-reacting unit conserves every n_c, so Σ_out n_c = Σ_in n_c and the datum terms
+   cancel in S_out − Σ S_in. In phase equilibrium μ_c gains Δ_{m,c} − T Δˢ_{m,c} in every phase of method m; between
+   methods anchored in a, the shifts differ by h^{m′}_c(a) − h^m_c(a) − T (s^{m′}_c(a) − s^m_c(a)), in which s°_c does
+   not appear. Only where n_c changes does Σ_c ν_c s°_c enter (Δr s°, so Δr g° and K). Hence the refusal belongs to
+   reactions, as Q2.R4's does for h, and a flash or an isentropic unit on an m01 component on `cubic.pr-v1` is
+   admitted. The default's "or equilibrium" would refuse every flash on every legacy record (no legacy record has s°,
+   ADR 0061 risk 6) without any number changing.
+2. *Floor of the datum.* The isentropic point solves S(T_s, P_out, n) = S_in with the constant on both sides: the
+   rounding it adds is ε (|S| + |Σ n_c Δˢ_c|) in S, ≈ 3e-13 K in T_s at CMP-1, five decades under the PS solve.
+3. *Routing.* With one fluid phase present, density order says nothing; any rule is a convention. A fixed port sends a
+   superheated vapour fed to a drum out of the liquid outlet, unlike every legacy unit and the reference tools; the
+   character reproduces `split` routing wherever the identification rule agrees with the legacy label, and it is
+   decided once per attempt, so it is a discrete coordinate like the others. Its threshold therefore needs D2.4's
+   treatment: D2.4's multiplicative band [q*/10, 10 q*] would cover almost every state, so the band is relative to q*
+   at Q4.R5's width.
+4. *The steady controller.* The steady state of ṙ = σe with the output clamped to [out_min, out_max] is exactly
+   σe ∈ N(out). The transition order makes the regime search finite (three regimes, none repeated) and keeps the
+   wrong-action case (Q5.A11 (c)) solvable: its only rest point is `saturated_low`.
+5. *Index of a liquid-full vessel.* With z = (T, P), ∂g/∂z of the rows (N v − V, U − N u) has determinant
+   N² v (κ c_p − T v α²) = N² v κ c_v (molar c_v); at κ → 0 with α ≠ 0 this tends to −N² T v² α² ≠ 0: the volume row
+   then fixes T and the energy row P, index 1. The block is singular only when both v_T and v_P vanish. In scaled form,
+   for α = 0, rcond₁ = κ s_P/(1 + κ s_P P0 v0/(c_p s_T)) (Q5.A13); a PR liquid has α s_T ≈ 0.1 and is regular.
+6. *Events.* A location tolerance relative to |t| alone vanishes at t = 0; |t| + |h| is the usual form (SUNDIALS'
+   root finding uses 100 ε (|t| + |h|) [zotero]), and 1e-14 is 45 ε. τ_ev = 10 τ_loc makes two roots of one exact
+   instant, located independently, one group. Evaluating all actions on the pre-group state and refusing conflicting
+   writes makes the result independent of the order, which then only orders the record.
+7. *Grazing.* The quantity compared with zero is g; its cross-platform difference under imposed steps is bounded by
+   the comparison rule of its kind (D2.1, whose floor at zero is D2.2's), and D2.4's margin of 10 makes a sign
+   disagreement explainable by roundoff exactly when |g| ≤ τ_g. Continuing a replay with the replay's own decision
+   would shift every later step by an action applied one step early, a truncation-level difference no float policy can
+   judge; imposing the record keeps the rest at roundoff, which is why `forced_replay` imposes decisions at all.
+
+**Edits the ADRs need** (the orchestrator applies them; this document edits no ADR). Eleven in all.
+- **0063-1.** D4 step 5 → "5. The S shift per Q2.R10: for a method providing `s`, Δˢ_{m,c} = s°_c(a) − s^m_c(a; T°, P°),
+  s°_c(a) from the record's anchor-phase entry, else another phase's entry with a transition datum, else 0 with the
+  notice `entropy_datum(<c>)`; uses in which the amount of c changes (Δr s, Δr g, K or affinity from g, a free-n_c Gibbs
+  minimisation) are refused `component_not_reaction_consistent(<c>)`; fixed-amount uses (PS, TS, isentropic references,
+  phase equilibrium) are admitted. A method without `s` (PR-C1, `pr_c1.py:761`) gets no S shift and provides no `s`,
+  `s_ig` or `g`."
+- **0063-2.** Risk 5: replace the body after its title with "*Resolved* by the specifier (foundation rulings Amendment 4,
+  Q2.R10, 2026-11-05): the default, with the refusal narrowed to uses in which the component's amount changes; PS and
+  TS specifications and isentropic units on such a component are admitted."
+- **0063-3.** Header: "Adopts verbatim: Q2.R1–R9 and Q2.A1–A9, A11" → "Q2.R1–R10 and Q2.A1–A9, A11, A12"; exit list:
+  add Q2.A12 (a), (d), (e) (F4); catalogue: `anchor_unavailable` gains the cause `entropy_bridge_missing`.
+- **0065-1.** D9 (iii) → "(iii) *Exactly one active fluid phase*: it takes the port a lone VAPOR takes under (i) if it
+  is VAPOR or `vapour_like`, else the port a lone LIQUID takes (Q4.R9); its character is fixed with the routing at the
+  opening, and |q − q*| ≤ 10 τ_char |q*| flags `near_threshold`." Last sentence: "A relative density gap ≤ τ_ρ attaches
+  `near_threshold` (Q4.R5's pattern; τ_ρ = 1e-6, SQ-F6-1)" → "An adjacent pair with |ln ρ_a − ln ρ_b| ≤ 10 τ_ρ attaches
+  `near_threshold` (Q4.R5's pattern; τ_ρ = τ_char = 1e-6, Q4.R9)". E-F6-10 (c), (d): cite Q4.A12.
+- **0065-2.** D10, from "Closure:" to "(**SQ-F6-3**, default as stated)" → "Closure and transitions per Q5.R9 (the
+  normal-cone condition σe ∈ N(out); a saturated regime with the wrong sign opens `tracking` unless visited in the
+  solve, else the other saturated regime; near-threshold flags; notice `controller_saturated`); out_min ≤ out_max is a
+  D2 validation rule." E-F6-14: cite Q5.A11.
+- **0065-3.** D11, "for a heat connection from A to B, `max T_A ≥ min T_B − τ_hd`; τ_hd is … (**SQ-F6-4**)" → "with the
+  direction from the sign of the connection's Q, `not_applicable(no_heat_flow)` for |Q| ≤ τ_Q and
+  `not_applicable(zero_flow)` for a dormant side; τ_hd the policy's `temperature` tolerance (Q5.R10)". E-F6-18: cite
+  Q5.A12.
+- **0065-4.** Header "Adopts verbatim": add Q4.R9, Q5.R9, Q5.R10, Q2.A12 (b), (c), Q4.A12, Q5.A11, Q5.A12 and the sheet
+  `docs/derivations/F6-std-seed.md` (SQ-F6-2); exits: add Q2.A12 (b), (c) beside E-F6-16; "Specifier questions":
+  SQ-F6-1, -3, -4 "ruled (Amendment 4)", SQ-F6-2 "ruled (the sheet)"; risk 1 resolved. The sheet's own ADR edits are
+  listed in its §7.
+- **0066-1.** D5, "Events located in one step at times within τ_ev of each other are simultaneous; they apply in
+  (priority, id) order, then one consistent re-initialisation (D6). … (τ_ev, ordering: SQ-F7-2.)" → "Simultaneous
+  events, their order, conflicts and cascades follow Q1.R10 (τ_ev = 10 τ_loc; ascending (priority, id); action values
+  on the pre-group state; one re-initialisation per group; `simultaneous_event_conflict`, `event_chattering`)."
+- **0066-2.** D7, "below τ_idx … as for PR liquid in a fixed volume (SQ-F7-1)" → "below τ_idx = K04's τ_ill = 1e-8 the run
+  carries the typed limitation `dae_index_near_singular` (not a refusal), with D2.4's near-threshold band (Q5.R11): for
+  example a vessel full of a liquid whose scaled expansivity and compressibility are both small; an ordinary liquid,
+  PR's included, is regular (Q5.A13 (e))".
+- **0066-3.** D16, "event location by Illinois on the linear interpolant to 1e-14 relative in t" → "… to τ_loc =
+  1e-14 (|t| + |h|) (Q1.R10)". Exits: add Q1.A13 and Q5.A13. Codes: `simultaneous_event_conflict`, `event_chattering`,
+  `event_floor_unregistered`; F7 registers a D2.2 floor for every quantity kind an event function may have (D2.3).
+  Specifier questions: SQ-F7-1, -2 "ruled (Amendment 4)".
+- **0067-1.** D8, "Grazing events near a step boundary: SQ-F8-1." → "Event disagreements are judged by Q9.R8: near
+  threshold iff the replay's |g| ≤ τ_g (10 × the function kind's D2.2 floor) at the disputed time; then the record is
+  imposed and the verdict is `MATCH` with `verdict_changed_near_threshold`; otherwise `forced_replay_divergence`." TX's
+  exit (WO7): add Q9.A9. Specifier question SQ-F8-1: "ruled, default changed (Amendment 4)".
+
+**New findings, listed and not fixed.**
+- **A4-a.** ADR 0065 D17 runs equivalence step 1 on the `syn001` bases, but ADR 0063 composes no SYN-001 method
+  (`0063:21–22`; Amendment 3 asserts the `syn001` anchor at F3 only). F6 needs a delegating SYN-001 composition, or its
+  `syn001` leg is `equivalence_pending`. The sheet's checks use a test-only method with SYN-001's potentials (sheet §2).
+  ADR 0065.
+- **A4-b.** ADR 0007 D2.4's band is multiplicative and has no meaning at a threshold of zero (a sign, an event function,
+  a duty direction); Q5.R10 and Q9.R8 use additive bands. ADR 0007 could state the additive form once.
+- **A4-c.** The sheet (its §7) finds that a state point whose amounts are all `+0.0` needs a stated behaviour (not
+  evaluated, labels, rows reading it swapped) and that a specification on a derived intensive of a dormant stream must
+  be swapped by a form; ADR 0065 D6–D7 carry neither. ADR 0065.
+
+**Not established by Amendment 4.**
+- Nothing has run. The sheet's closed forms and Q5.A13's values come from 50-digit scratch evaluations and the sheet's
+  generator; Q4.A12 (c), Q5.A13 and the event and replay probes need F6's, F7's and TX's generators and runs.
+- τ_char, τ_ρ, τ_hd's floor, τ_idx, c_loc and τ_g are estimates with stated margins (O-14 to O-18), not measurements.
+- The routing rule makes a choice of O-11 numerically visible; it does not make any identification rule physically
+  right near critical endpoints (Amendment 2's limitation stands).
+- The entropy datum makes no record reaction-capable in s or g; Q2.A12's s° values are synthetic, not data. Nothing
+  here validates a property, a controller or an integrator against measurement.
