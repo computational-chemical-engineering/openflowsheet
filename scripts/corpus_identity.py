@@ -13,13 +13,16 @@ reported `NOT IMPLEMENTED` and makes the gate FAIL; it is never counted as passi
 | M4 | every `state_sha256` in the artifacts, bitwise (reference platform) | the RC bundle set |
 | M5 | outcome, verification status and every check's (id, result) | the RC bundle set |
 | M6 | the exact property cache's key digests of the runs' requests | the RC bundle set |
-| M7 | replay verdicts of the 0.3.0 bundles | not implemented yet |
-| M8 | schema round-trips | not implemented yet |
+| M7 | replay verdict, mode and integrity of each 0.3.0 bundle | the RC set written at v0.3.0 |
+| M8 | outcome of each schema round-trip test node | `M8_FUNCTIONS` (below) |
 | M9 | SHA-256 of each file whose bytes enter an `implementation_sha256` | AST scan of `src/` |
 
 The RC bundle set is RC step 4's (`scripts/t08_rc.py bundles-write`): the K05 SYN-001 variants
 solved through the CLI and T07 W3a's eligible revisions under the default policy. F0 wraps those
-enumerations; it does not keep its own copy of them.
+enumerations; it does not keep its own copy of them. M7 replays the same set as RC step 5 does
+(`bundles-replay`), from the bundles written at tag v0.3.0 (`tests/fixtures/f0/v0.3.0-bundles`).
+M8 runs the schema round-trip tests in a subprocess, as RC step 7 runs its corpus, and registers
+every node id, so a removed case is a diff.
 
     PYTHONPATH=src .venv/bin/python scripts/corpus_identity.py --check [--log PATH]
     PYTHONPATH=src .venv/bin/python scripts/corpus_identity.py --record   # writes the registry
@@ -48,11 +51,38 @@ ROOT: Final = Path(__file__).resolve().parent.parent
 REGISTRY: Final = ROOT / "benchmarks" / "f0" / "corpus.json"
 FORMAT: Final = "f0-corpus-identity-v1"
 MEASURES: Final = ("M1", "M2", "M3", "M4", "M5", "M6", "M7", "M8", "M9")
-NOT_IMPLEMENTED: Final = {
-    "M7": "the 0.3.0 bundles are not in the repository yet (docs/F0_DECISIONS.md D3)",
-    "M8": "the schema round-trip wrapper is not written yet (docs/F0_DECISIONS.md D4)",
-}
+#: Measures not implemented yet, with the reason; each is reported, and fails the gate.
+NOT_IMPLEMENTED: Final[dict[str, str]] = {}
 STATE_KEYS: Final = ("state_sha256", "target_state_sha256")
+V030_BUNDLES: Final = ROOT / "tests" / "fixtures" / "f0" / "v0.3.0-bundles"
+#: M7's fields judged off the reference platform: the replay mode is decided by the platform
+#: identity (`run.replay.decide_mode`), so elsewhere only the verdict and the integrity are.
+M7_PORTABLE: Final = ("verdict", "integrity_ok")
+#: M8: the test functions that validate a document against its schema and round-trip it
+#: (docs/F0_DECISIONS.md D4, D13). Every node they collect is registered.
+M8_FUNCTIONS: Final = (
+    "tests/test_schemas_p01.py::test_valid_fixture_round_trips_through_json",
+    "tests/test_schemas_p01.py::test_component_record_round_trips",
+    "tests/test_k01_schemas.py::test_a_valid_fixture_round_trips_through_json_and_through_the_dataclass",
+    "tests/test_k03_schemas.py::test_the_fixtures_validate_and_round_trip",
+    "tests/test_k04_schemas.py::test_a31_the_fixtures_validate_and_round_trip",
+    "tests/test_k05_schemas.py::test_the_fixtures_validate_and_round_trip",
+    "tests/test_t04_schemas.py::test_a26_the_t04_fixtures_validate_and_round_trip",
+    "tests/test_t07_types.py::test_each_typed_document_round_trips_through_its_schema",
+    "tests/test_t07_w1f_followup.py::test_a_job_result_round_trips_through_its_schema",
+    "tests/test_t07_w3e_solution_state.py::test_the_fixture_validates_round_trips_and_is_consistent",
+)
+#: M8's subprocess: RC step 7's recorder (`t08_rc._Recorder`), every node's worst outcome.
+M8_DRIVER: Final = """
+import json, sys
+import pytest
+sys.path.insert(0, "scripts")
+from t08_rc import _Recorder
+recorder = _Recorder()
+pytest.main(["-q", "-p", "no:cacheprovider", *sys.argv[2:]], plugins=[recorder])
+with open(sys.argv[1], "w", encoding="utf-8") as out:
+    json.dump(recorder.outcomes, out, sort_keys=True)
+"""
 
 for _entry in (ROOT / "scripts", ROOT / "tests", ROOT):
     if str(_entry) not in sys.path:
@@ -231,6 +261,67 @@ def runs(
     return result
 
 
+# -- M7: the 0.3.0 bundles, replayed ------------------------------------------------------------
+
+
+def m7(bundles: Path = V030_BUNDLES) -> dict[str, dict[str, Any]]:
+    """Each bundle re-run and compared as RC step 5 (`bundles-replay`) does, keyed `<set>/<name>`.
+    A directory the index does not name, or an entry with no directory, is its own key."""
+    from openflowsheet.application.revision_run import reproduce_bundle  # noqa: PLC0415
+
+    index = json.loads((bundles / "index.json").read_text(encoding="utf-8"))
+    entries = {entry["directory"]: f"{entry['set']}/{entry['name']}" for entry in index["entries"]}
+    found = {
+        f"{run_set.name}/{run.name}"
+        for run_set in bundles.iterdir()
+        if run_set.is_dir()
+        for run in run_set.iterdir()
+    }
+    result: dict[str, dict[str, Any]] = {
+        f"unindexed/{directory}": {"verdict": None} for directory in sorted(found - set(entries))
+    }
+    with tempfile.TemporaryDirectory() as scratch:
+        for directory, key in entries.items():
+            if directory not in found:
+                result[key] = {"verdict": None, "missing": directory}
+                continue
+            with contextlib.redirect_stdout(sys.stderr):
+                report = reproduce_bundle(
+                    bundles / directory,
+                    rerun=True,
+                    rerun_directory=Path(scratch) / directory,
+                    run_id="rc-replay",
+                ).report
+            result[key] = {
+                "verdict": report.verdict,
+                "mode": report.mode,
+                "integrity_ok": report.integrity.ok,
+            }
+    return result
+
+
+# -- M8: schema round-trips ----------------------------------------------------------------------
+
+
+def m8(functions: Sequence[str] = M8_FUNCTIONS) -> dict[str, str]:
+    """Each collected node of `functions` and its worst outcome, from a fresh interpreter."""
+    import subprocess  # noqa: PLC0415
+
+    with tempfile.TemporaryDirectory() as scratch:
+        out = Path(scratch) / "outcomes.json"
+        subprocess.run(  # noqa: S603
+            [sys.executable, "-c", M8_DRIVER, str(out), *functions],
+            cwd=ROOT,
+            check=False,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+        if not out.is_file():
+            return {"driver": "no outcomes written"}
+        outcomes: dict[str, str] = json.loads(out.read_text(encoding="utf-8"))
+    return outcomes
+
+
 # -- M9: identity-bearing legacy modules ---------------------------------------------------------
 
 
@@ -291,8 +382,14 @@ def measure_all() -> dict[str, Any]:
             measure: {run: values[measure] for run, values in per_run.items()}
             for measure in ("M2", "M3", "M4", "M5", "M6")
         },
+        "M7": m7(),
+        "M8": m8(),
         "M9": m9(),
     }
+
+
+def _fields(value: Any, names: Sequence[str]) -> Any:
+    return {n: value.get(n) for n in names} if isinstance(value, Mapping) else value
 
 
 def compare(
@@ -321,6 +418,10 @@ def compare(
                 f"M4: NOT JUDGED on {platform} (reference {registered['reference_platform']})"
             )
             continue
+        if measure == "M7" and platform != registered["reference_platform"]:
+            expected = {k: _fields(v, M7_PORTABLE) for k, v in expected.items()}
+            actual = {k: _fields(v, M7_PORTABLE) for k, v in actual.items()}
+            log.append(f"M7: mode not judged on {platform}; {', '.join(M7_PORTABLE)} are")
         wrong = [key for key in actual if key in expected and expected[key] != actual[key]]
         missing = [] if subset else sorted(set(expected) - set(actual))
         extra = sorted(set(actual) - set(expected))
@@ -358,6 +459,8 @@ def record() -> int:
         "corpus": {
             "M1": "tests/t07_corpus.py CORPUS (T07 W0.2's revisions)",
             "M2-M6": "scripts/t08_rc.py bundles-write: K05 variants (CLI) + T07 W3a ELIGIBLE",
+            "M7": "tests/fixtures/f0/v0.3.0-bundles: bundles-write at tag v0.3.0, replayed",
+            "M8": "M8_FUNCTIONS: the schema round-trip tests, every collected node",
             "M9": "AST scan of src/ for what feeds an implementation_sha256",
         },
         "measures": measure_all(),

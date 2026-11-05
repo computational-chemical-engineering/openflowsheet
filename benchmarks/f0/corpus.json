@@ -2,6 +2,8 @@
  "corpus": {
   "M1": "tests/t07_corpus.py CORPUS (T07 W0.2's revisions)",
   "M2-M6": "scripts/t08_rc.py bundles-write: K05 variants (CLI) + T07 W3a ELIGIBLE",
+  "M7": "tests/fixtures/f0/v0.3.0-bundles: bundles-write at tag v0.3.0, replayed",
+  "M8": "M8_FUNCTIONS: the schema round-trip tests, every collected node",
   "M9": "AST scan of src/ for what feeds an implementation_sha256"
  },
  "format": "f0-corpus-identity-v1",
@@ -1211,6 +1213,375 @@
     "keys_sha256": "31fa5ff3301e96103e264c4e48e3c0995daee08a036a77fe75abe4e0bf01ee46",
     "n_keys": 227
    }
+  },
+  "M7": {
+   "g8/SYN-001-A02-340-two-phase-guess": {
+    "integrity_ok": true,
+    "mode": "exact_replay",
+    "verdict": "MATCH"
+   },
+   "g8/SYN-001-A02-352-vapor-guess-410": {
+    "integrity_ok": true,
+    "mode": "exact_replay",
+    "verdict": "MATCH"
+   },
+   "g8/SYN-001-A02-355": {
+    "integrity_ok": true,
+    "mode": "exact_replay",
+    "verdict": "MATCH"
+   },
+   "g8/SYN-001-A02-355-dew-guess": {
+    "integrity_ok": true,
+    "mode": "exact_replay",
+    "verdict": "MATCH"
+   },
+   "g8/SYN-001-A02-355-dew-guess-377": {
+    "integrity_ok": true,
+    "mode": "exact_replay",
+    "verdict": "MATCH"
+   },
+   "g8/SYN-001-A02-355-liquid-guess": {
+    "integrity_ok": true,
+    "mode": "exact_replay",
+    "verdict": "MATCH"
+   },
+   "g8/SYN-001-A02-360": {
+    "integrity_ok": true,
+    "mode": "exact_replay",
+    "verdict": "MATCH"
+   },
+   "g8/SYN-001-A02-360-liquid-guess": {
+    "integrity_ok": true,
+    "mode": "exact_replay",
+    "verdict": "MATCH"
+   },
+   "g8/SYN-001-A02-360-no-guess": {
+    "integrity_ok": true,
+    "mode": "exact_replay",
+    "verdict": "MATCH"
+   },
+   "g8/SYN-001-A02-360-vapor-guess": {
+    "integrity_ok": true,
+    "mode": "exact_replay",
+    "verdict": "MATCH"
+   },
+   "g8/SYN-001-A02-365": {
+    "integrity_ok": true,
+    "mode": "exact_replay",
+    "verdict": "MATCH"
+   },
+   "g8/SYN-001-T06-NET02": {
+    "integrity_ok": true,
+    "mode": "exact_replay",
+    "verdict": "MATCH"
+   },
+   "g8/SYN-001-T06-NET03": {
+    "integrity_ok": true,
+    "mode": "exact_replay",
+    "verdict": "MATCH"
+   },
+   "g8/SYN-001-T06-NET06": {
+    "integrity_ok": true,
+    "mode": "exact_replay",
+    "verdict": "MATCH"
+   },
+   "g8/SYN-001-T06-NET09": {
+    "integrity_ok": true,
+    "mode": "exact_replay",
+    "verdict": "MATCH"
+   },
+   "g8/SYN-001-T06-NET10": {
+    "integrity_ok": true,
+    "mode": "exact_replay",
+    "verdict": "MATCH"
+   },
+   "g8/SYN-001-T06-NET11": {
+    "integrity_ok": true,
+    "mode": "exact_replay",
+    "verdict": "MATCH"
+   },
+   "g8/SYN-001-T06-PC2": {
+    "integrity_ok": true,
+    "mode": "exact_replay",
+    "verdict": "MATCH"
+   },
+   "g8/SYN-001-T06-REF01": {
+    "integrity_ok": true,
+    "mode": "exact_replay",
+    "verdict": "MATCH"
+   },
+   "g8/SYN-001-T06-REF02": {
+    "integrity_ok": true,
+    "mode": "exact_replay",
+    "verdict": "MATCH"
+   },
+   "g8/SYN-001-T06-REF03": {
+    "integrity_ok": true,
+    "mode": "exact_replay",
+    "verdict": "MATCH"
+   },
+   "g8/SYN-001-T06-REF04": {
+    "integrity_ok": true,
+    "mode": "exact_replay",
+    "verdict": "MATCH"
+   },
+   "g8/SYN-001-T06-REF05": {
+    "integrity_ok": true,
+    "mode": "exact_replay",
+    "verdict": "MATCH"
+   },
+   "g8/SYN-001-T06-REF06": {
+    "integrity_ok": true,
+    "mode": "exact_replay",
+    "verdict": "MATCH"
+   },
+   "g8/SYN-001-T06-REF07": {
+    "integrity_ok": true,
+    "mode": "exact_replay",
+    "verdict": "MATCH"
+   },
+   "g8/SYN-001-T06-STA02": {
+    "integrity_ok": true,
+    "mode": "exact_replay",
+    "verdict": "MATCH"
+   },
+   "g8/SYN-001-T06-STA03-degC": {
+    "integrity_ok": true,
+    "mode": "exact_replay",
+    "verdict": "MATCH"
+   },
+   "g8/SYN-001-T06-STA03-kgs": {
+    "integrity_ok": true,
+    "mode": "exact_replay",
+    "verdict": "MATCH"
+   },
+   "g8/SYN-001-T06-STA04": {
+    "integrity_ok": true,
+    "mode": "exact_replay",
+    "verdict": "MATCH"
+   },
+   "g8/SYN-001-T06-THM01": {
+    "integrity_ok": true,
+    "mode": "exact_replay",
+    "verdict": "MATCH"
+   },
+   "g8/SYN-001-T06-THM02": {
+    "integrity_ok": true,
+    "mode": "exact_replay",
+    "verdict": "MATCH"
+   },
+   "g8/SYN-001-T06-THM10": {
+    "integrity_ok": true,
+    "mode": "exact_replay",
+    "verdict": "MATCH"
+   },
+   "g8/SYN-001-UL-C1": {
+    "integrity_ok": true,
+    "mode": "exact_replay",
+    "verdict": "MATCH"
+   },
+   "g8/SYN-001-UL-C2": {
+    "integrity_ok": true,
+    "mode": "exact_replay",
+    "verdict": "MATCH"
+   },
+   "g8/SYN-001-UL-C3": {
+    "integrity_ok": true,
+    "mode": "exact_replay",
+    "verdict": "MATCH"
+   },
+   "g8/SYN-001-UL-C3X": {
+    "integrity_ok": true,
+    "mode": "exact_replay",
+    "verdict": "MATCH"
+   },
+   "g8/SYN-001-all-liquid-310K": {
+    "integrity_ok": true,
+    "mode": "exact_replay",
+    "verdict": "MATCH"
+   },
+   "g8/SYN-001-all-vapor-420K": {
+    "integrity_ok": true,
+    "mode": "exact_replay",
+    "verdict": "MATCH"
+   },
+   "g8/SYN-001-high-recycle": {
+    "integrity_ok": true,
+    "mode": "exact_replay",
+    "verdict": "MATCH"
+   },
+   "g8/SYN-001-nominal": {
+    "integrity_ok": true,
+    "mode": "exact_replay",
+    "verdict": "MATCH"
+   },
+   "g8/SYN-001-once-through": {
+    "integrity_ok": true,
+    "mode": "exact_replay",
+    "verdict": "MATCH"
+   },
+   "g8/T05b:DZ-3": {
+    "integrity_ok": true,
+    "mode": "exact_replay",
+    "verdict": "MATCH"
+   },
+   "g8/T05b:DZ-7": {
+    "integrity_ok": true,
+    "mode": "exact_replay",
+    "verdict": "MATCH"
+   },
+   "g8/T05b:NP-1": {
+    "integrity_ok": true,
+    "mode": "exact_replay",
+    "verdict": "MATCH"
+   },
+   "g8/T05b:SC-1": {
+    "integrity_ok": true,
+    "mode": "exact_replay",
+    "verdict": "MATCH"
+   },
+   "g8/T05b:SC-2": {
+    "integrity_ok": true,
+    "mode": "exact_replay",
+    "verdict": "MATCH"
+   },
+   "g8/T05b:SC-3": {
+    "integrity_ok": true,
+    "mode": "exact_replay",
+    "verdict": "MATCH"
+   },
+   "k05/SYN-001-all-liquid-310K": {
+    "integrity_ok": true,
+    "mode": "exact_replay",
+    "verdict": "MATCH"
+   },
+   "k05/SYN-001-all-vapor-420K": {
+    "integrity_ok": true,
+    "mode": "exact_replay",
+    "verdict": "MATCH"
+   },
+   "k05/SYN-001-high-recycle": {
+    "integrity_ok": true,
+    "mode": "exact_replay",
+    "verdict": "MATCH"
+   },
+   "k05/SYN-001-nominal": {
+    "integrity_ok": true,
+    "mode": "exact_replay",
+    "verdict": "MATCH"
+   },
+   "k05/SYN-001-once-through": {
+    "integrity_ok": true,
+    "mode": "exact_replay",
+    "verdict": "MATCH"
+   }
+  },
+  "M8": {
+   "tests/test_k01_schemas.py::test_a_valid_fixture_round_trips_through_json_and_through_the_dataclass[compiled_problem_metadata-syn001_lifted]": "passed",
+   "tests/test_k01_schemas.py::test_a_valid_fixture_round_trips_through_json_and_through_the_dataclass[evaluation_result-syn001_out_of_domain]": "passed",
+   "tests/test_k01_schemas.py::test_a_valid_fixture_round_trips_through_json_and_through_the_dataclass[evaluation_result-syn001_s1]": "passed",
+   "tests/test_k01_schemas.py::test_a_valid_fixture_round_trips_through_json_and_through_the_dataclass[evaluation_result-syn001_s5]": "passed",
+   "tests/test_k01_schemas.py::test_a_valid_fixture_round_trips_through_json_and_through_the_dataclass[jacobian_result-syn001_out_of_domain]": "passed",
+   "tests/test_k01_schemas.py::test_a_valid_fixture_round_trips_through_json_and_through_the_dataclass[jacobian_result-syn001_s1]": "passed",
+   "tests/test_k01_schemas.py::test_a_valid_fixture_round_trips_through_json_and_through_the_dataclass[jacobian_result-syn001_s5]": "passed",
+   "tests/test_k03_schemas.py::test_the_fixtures_validate_and_round_trip[attempt_context-syn001_restart]": "passed",
+   "tests/test_k03_schemas.py::test_the_fixtures_validate_and_round_trip[attempt_context-t04_hom05_homotopy]": "passed",
+   "tests/test_k03_schemas.py::test_the_fixtures_validate_and_round_trip[attempt_context-t04_ptc_restart]": "passed",
+   "tests/test_k03_schemas.py::test_the_fixtures_validate_and_round_trip[checkpoint-syn001_candidate_root]": "passed",
+   "tests/test_k03_schemas.py::test_the_fixtures_validate_and_round_trip[checkpoint-t04_hom04_stall]": "passed",
+   "tests/test_k03_schemas.py::test_the_fixtures_validate_and_round_trip[solve_event-syn001_nominal_trace]": "passed",
+   "tests/test_k03_schemas.py::test_the_fixtures_validate_and_round_trip[solve_event-syn001_off_b_restart_trace]": "passed",
+   "tests/test_k03_schemas.py::test_the_fixtures_validate_and_round_trip[solve_event-t04_hom05_recovery_trace]": "passed",
+   "tests/test_k03_schemas.py::test_the_fixtures_validate_and_round_trip[solve_event-t04_ptc_nominal_region_trace]": "passed",
+   "tests/test_k03_schemas.py::test_the_fixtures_validate_and_round_trip[solve_plan-syn001_nominal]": "passed",
+   "tests/test_k03_schemas.py::test_the_fixtures_validate_and_round_trip[solve_policy-syn001_k03]": "passed",
+   "tests/test_k03_schemas.py::test_the_fixtures_validate_and_round_trip[solve_policy-t04_ptc]": "passed",
+   "tests/test_k04_schemas.py::test_a31_the_fixtures_validate_and_round_trip[failure_bundle-syn001_capped_budget]": "passed",
+   "tests/test_k04_schemas.py::test_a31_the_fixtures_validate_and_round_trip[failure_bundle-t04_hom04_homotopy_stalled]": "passed",
+   "tests/test_k04_schemas.py::test_a31_the_fixtures_validate_and_round_trip[regularity_evidence-syn001_nominal]": "passed",
+   "tests/test_k04_schemas.py::test_a31_the_fixtures_validate_and_round_trip[solution_certificate-syn001_nominal_verified]": "passed",
+   "tests/test_k04_schemas.py::test_a31_the_fixtures_validate_and_round_trip[solution_certificate-syn001_trivial_root_failed]": "passed",
+   "tests/test_k04_schemas.py::test_a31_the_fixtures_validate_and_round_trip[solution_certificate-t04_hom01_bound_verified]": "passed",
+   "tests/test_k05_schemas.py::test_the_fixtures_validate_and_round_trip[replay_report-changed_dependency]": "passed",
+   "tests/test_k05_schemas.py::test_the_fixtures_validate_and_round_trip[replay_report-exact_match]": "passed",
+   "tests/test_k05_schemas.py::test_the_fixtures_validate_and_round_trip[replay_report-tampered_archive]": "passed",
+   "tests/test_k05_schemas.py::test_the_fixtures_validate_and_round_trip[run_manifest-syn001_nominal]": "passed",
+   "tests/test_schemas_p01.py::test_component_record_round_trips[A]": "passed",
+   "tests/test_schemas_p01.py::test_component_record_round_trips[B]": "passed",
+   "tests/test_schemas_p01.py::test_component_record_round_trips[C]": "passed",
+   "tests/test_schemas_p01.py::test_valid_fixture_round_trips_through_json[model_manifest-feed]": "passed",
+   "tests/test_schemas_p01.py::test_valid_fixture_round_trips_through_json[model_manifest-flash]": "passed",
+   "tests/test_schemas_p01.py::test_valid_fixture_round_trips_through_json[model_manifest-heater]": "passed",
+   "tests/test_schemas_p01.py::test_valid_fixture_round_trips_through_json[model_manifest-mixer]": "passed",
+   "tests/test_schemas_p01.py::test_valid_fixture_round_trips_through_json[model_manifest-sink]": "passed",
+   "tests/test_schemas_p01.py::test_valid_fixture_round_trips_through_json[model_manifest-splitter]": "passed",
+   "tests/test_schemas_p01.py::test_valid_fixture_round_trips_through_json[process_revision-SYN-001-A02-340-two-phase-guess]": "passed",
+   "tests/test_schemas_p01.py::test_valid_fixture_round_trips_through_json[process_revision-SYN-001-A02-352-vapor-guess-410]": "passed",
+   "tests/test_schemas_p01.py::test_valid_fixture_round_trips_through_json[process_revision-SYN-001-A02-355-dew-guess-377]": "passed",
+   "tests/test_schemas_p01.py::test_valid_fixture_round_trips_through_json[process_revision-SYN-001-A02-355-dew-guess]": "passed",
+   "tests/test_schemas_p01.py::test_valid_fixture_round_trips_through_json[process_revision-SYN-001-A02-355-liquid-guess]": "passed",
+   "tests/test_schemas_p01.py::test_valid_fixture_round_trips_through_json[process_revision-SYN-001-A02-355]": "passed",
+   "tests/test_schemas_p01.py::test_valid_fixture_round_trips_through_json[process_revision-SYN-001-A02-360-liquid-guess]": "passed",
+   "tests/test_schemas_p01.py::test_valid_fixture_round_trips_through_json[process_revision-SYN-001-A02-360-no-guess]": "passed",
+   "tests/test_schemas_p01.py::test_valid_fixture_round_trips_through_json[process_revision-SYN-001-A02-360-vapor-guess]": "passed",
+   "tests/test_schemas_p01.py::test_valid_fixture_round_trips_through_json[process_revision-SYN-001-A02-360]": "passed",
+   "tests/test_schemas_p01.py::test_valid_fixture_round_trips_through_json[process_revision-SYN-001-A02-365]": "passed",
+   "tests/test_schemas_p01.py::test_valid_fixture_round_trips_through_json[process_revision-SYN-001-all-liquid-310K]": "passed",
+   "tests/test_schemas_p01.py::test_valid_fixture_round_trips_through_json[process_revision-SYN-001-all-vapor-420K]": "passed",
+   "tests/test_schemas_p01.py::test_valid_fixture_round_trips_through_json[process_revision-SYN-001-conflicting-heater-spec]": "passed",
+   "tests/test_schemas_p01.py::test_valid_fixture_round_trips_through_json[process_revision-SYN-001-high-recycle]": "passed",
+   "tests/test_schemas_p01.py::test_valid_fixture_round_trips_through_json[process_revision-SYN-001-nominal]": "passed",
+   "tests/test_schemas_p01.py::test_valid_fixture_round_trips_through_json[process_revision-SYN-001-once-through]": "passed",
+   "tests/test_schemas_p01.py::test_valid_fixture_round_trips_through_json[quantity-flash-temperature]": "passed",
+   "tests/test_schemas_p01.py::test_valid_fixture_round_trips_through_json[quantity-negative-heater-duty]": "passed",
+   "tests/test_schemas_p01.py::test_valid_fixture_round_trips_through_json[quantity-temperature-difference]": "passed",
+   "tests/test_schemas_p01.py::test_valid_fixture_round_trips_through_json[quantity-zero-component-flow]": "passed",
+   "tests/test_schemas_p01.py::test_valid_fixture_round_trips_through_json[specification-flash-temperature]": "passed",
+   "tests/test_schemas_p01.py::test_valid_fixture_round_trips_through_json[specification-purge-flow-bounds]": "passed",
+   "tests/test_schemas_p01.py::test_valid_fixture_round_trips_through_json[validation_report-conflicting-heater-spec]": "passed",
+   "tests/test_schemas_p01.py::test_valid_fixture_round_trips_through_json[validation_report-nominal-draft]": "passed",
+   "tests/test_t04_schemas.py::test_a26_the_t04_fixtures_validate_and_round_trip[attempt_context-t04_hom05_homotopy]": "passed",
+   "tests/test_t04_schemas.py::test_a26_the_t04_fixtures_validate_and_round_trip[attempt_context-t04_ptc_restart]": "passed",
+   "tests/test_t04_schemas.py::test_a26_the_t04_fixtures_validate_and_round_trip[checkpoint-t04_hom04_stall]": "passed",
+   "tests/test_t04_schemas.py::test_a26_the_t04_fixtures_validate_and_round_trip[failure_bundle-t04_hom04_homotopy_stalled]": "passed",
+   "tests/test_t04_schemas.py::test_a26_the_t04_fixtures_validate_and_round_trip[solution_certificate-t04_hom01_bound_verified]": "passed",
+   "tests/test_t04_schemas.py::test_a26_the_t04_fixtures_validate_and_round_trip[solve_event-t04_hom05_recovery_trace]": "passed",
+   "tests/test_t04_schemas.py::test_a26_the_t04_fixtures_validate_and_round_trip[solve_event-t04_ptc_nominal_region_trace]": "passed",
+   "tests/test_t04_schemas.py::test_a26_the_t04_fixtures_validate_and_round_trip[solve_policy-t04_ptc]": "passed",
+   "tests/test_t07_types.py::test_each_typed_document_round_trips_through_its_schema[ApiError]": "passed",
+   "tests/test_t07_types.py::test_each_typed_document_round_trips_through_its_schema[ArtifactRef]": "passed",
+   "tests/test_t07_types.py::test_each_typed_document_round_trips_through_its_schema[CapabilityReference]": "passed",
+   "tests/test_t07_types.py::test_each_typed_document_round_trips_through_its_schema[Edit remove]": "passed",
+   "tests/test_t07_types.py::test_each_typed_document_round_trips_through_its_schema[Edit set to null]": "passed",
+   "tests/test_t07_types.py::test_each_typed_document_round_trips_through_its_schema[Job completed]": "passed",
+   "tests/test_t07_types.py::test_each_typed_document_round_trips_through_its_schema[Job failed]": "passed",
+   "tests/test_t07_types.py::test_each_typed_document_round_trips_through_its_schema[Job queued]": "passed",
+   "tests/test_t07_types.py::test_each_typed_document_round_trips_through_its_schema[JobEvent accepted]": "passed",
+   "tests/test_t07_types.py::test_each_typed_document_round_trips_through_its_schema[JobEvent cancel_requested]": "passed",
+   "tests/test_t07_types.py::test_each_typed_document_round_trips_through_its_schema[JobEvent ended]": "passed",
+   "tests/test_t07_types.py::test_each_typed_document_round_trips_through_its_schema[JobEvent output0]": "passed",
+   "tests/test_t07_types.py::test_each_typed_document_round_trips_through_its_schema[JobEvent output1]": "passed",
+   "tests/test_t07_types.py::test_each_typed_document_round_trips_through_its_schema[JobEvent output2]": "passed",
+   "tests/test_t07_types.py::test_each_typed_document_round_trips_through_its_schema[JobEvent progress0]": "passed",
+   "tests/test_t07_types.py::test_each_typed_document_round_trips_through_its_schema[JobEvent progress1]": "passed",
+   "tests/test_t07_types.py::test_each_typed_document_round_trips_through_its_schema[JobEvent progress2]": "passed",
+   "tests/test_t07_types.py::test_each_typed_document_round_trips_through_its_schema[JobEvent progress3]": "passed",
+   "tests/test_t07_types.py::test_each_typed_document_round_trips_through_its_schema[JobEvent progress4]": "passed",
+   "tests/test_t07_types.py::test_each_typed_document_round_trips_through_its_schema[JobEvent progress5]": "passed",
+   "tests/test_t07_types.py::test_each_typed_document_round_trips_through_its_schema[JobEvent started]": "passed",
+   "tests/test_t07_types.py::test_each_typed_document_round_trips_through_its_schema[JobRequest reproduce]": "passed",
+   "tests/test_t07_types.py::test_each_typed_document_round_trips_through_its_schema[JobRequest solve]": "passed",
+   "tests/test_t07_types.py::test_each_typed_document_round_trips_through_its_schema[ProjectPolicy]": "passed",
+   "tests/test_t07_types.py::test_each_typed_document_round_trips_through_its_schema[RunResult interrupted]": "passed",
+   "tests/test_t07_types.py::test_each_typed_document_round_trips_through_its_schema[RunResult verified]": "passed",
+   "tests/test_t07_types.py::test_each_typed_document_round_trips_through_its_schema[TransactionResult committed]": "passed",
+   "tests/test_t07_types.py::test_each_typed_document_round_trips_through_its_schema[TransactionResult conflict]": "passed",
+   "tests/test_t07_types.py::test_each_typed_document_round_trips_through_its_schema[TransactionResult rejected]": "passed",
+   "tests/test_t07_w1f_followup.py::test_a_job_result_round_trips_through_its_schema[reproduce-no-report]": "passed",
+   "tests/test_t07_w1f_followup.py::test_a_job_result_round_trips_through_its_schema[reproduce]": "passed",
+   "tests/test_t07_w1f_followup.py::test_a_job_result_round_trips_through_its_schema[solve-failed]": "passed",
+   "tests/test_t07_w1f_followup.py::test_a_job_result_round_trips_through_its_schema[solve]": "passed",
+   "tests/test_t07_w3e_solution_state.py::test_the_fixture_validates_round_trips_and_is_consistent": "passed"
   },
   "M9": {
    "src/openflowsheet/thermo/_coolprop_heos_fluids.py": "521fc40556d962bc3cf061ae558ee1d97a526abb0ef94a2465c7e87af300f878",

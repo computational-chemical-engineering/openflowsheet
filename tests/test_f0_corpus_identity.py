@@ -53,9 +53,9 @@ def test_every_implemented_measure_passes(full: tuple[dict[str, Any], list[str]]
     implemented = {m: r for m, r in results.items() if m not in gate.NOT_IMPLEMENTED}
     assert all(r["status"] in ("PASS", "NOT JUDGED") for r in implemented.values()), log
     assert results["M1"]["n"] == 50 and results["M2"]["n"] == 52 and results["M9"]["n"] == 8
+    assert results["M7"]["n"] == 52 and results["M8"]["n"] == 105
 
 
-@pytest.mark.xfail(strict=True, reason="M7 and M8 are not implemented (docs/F0_DECISIONS.md)")
 def test_the_gate_passes(full: tuple[dict[str, Any], list[str]]) -> None:
     passed, line = gate.summary(full[0])
     assert passed, line
@@ -66,6 +66,59 @@ def test_a_not_implemented_measure_fails_the_gate() -> None:
         {"M1": {"status": "PASS", "n": 1}, "M7": {"status": "NOT IMPLEMENTED"}}
     )
     assert not passed and "M7 NOT IMPLEMENTED" in line
+
+
+def test_the_registry_holds_no_hollow_entry(registered: dict[str, Any]) -> None:
+    """Every registered replay matches with its archive intact (RC step 5's rule), and every
+    registered round-trip node passed: a registered failure or skip would be a vacuous identity."""
+    replays = registered["measures"]["M7"].values()
+    assert all(r["verdict"] == "MATCH" and r["integrity_ok"] for r in replays)
+    assert all(r["mode"] in ("exact_replay", "compatible_reproduction") for r in replays)
+    assert set(registered["measures"]["M8"].values()) == {"passed"}
+    assert not gate.NOT_IMPLEMENTED
+
+
+def test_m7_one_byte_in_a_0_3_0_bundle_fails_m7(registered: dict[str, Any], tmp_path: Path) -> None:
+    source = gate.V030_BUNDLES
+    index = json.loads((source / "index.json").read_text(encoding="utf-8"))
+    entry = next(e for e in index["entries"] if (e["set"], e["name"]) == RUN)
+    shutil.copytree(source / entry["directory"], tmp_path / entry["directory"])
+    (tmp_path / "index.json").write_text(json.dumps({**index, "entries": [entry]}))
+    target = tmp_path / entry["directory"] / "artifacts" / "solution-certificate.json"
+    data = bytearray(target.read_bytes())
+    at = next(i for i in range(len(data) // 2, len(data)) if chr(data[i]).isdigit())
+    data[at] = ord("1") if data[at] != ord("1") else ord("2")  # one digit: still valid JSON
+    target.write_bytes(bytes(data))
+    measured = gate.m7(tmp_path)
+    assert list(measured) == [KEY] and measured[KEY]["integrity_ok"] is False
+    assert judged(registered, {"M7": measured})["M7"]["wrong"] == [KEY]
+
+
+def test_m7_judges_the_mode_only_on_the_reference_platform(registered: dict[str, Any]) -> None:
+    measured = json.loads(json.dumps(registered["measures"]))
+    measured["M7"][KEY]["mode"] = "compatible_reproduction"
+    elsewhere, log = gate.compare(registered, measured, "elsewhere")
+    assert elsewhere["M7"]["status"] == "PASS" and any("mode not judged" in x for x in log)
+    here, _ = gate.compare(registered, measured, registered["reference_platform"])
+    assert here["M7"]["status"] == "FAIL" and here["M7"]["wrong"] == [KEY]
+    measured["M7"][KEY]["verdict"] = "MISMATCH"
+    assert gate.compare(registered, measured, "elsewhere")[0]["M7"]["wrong"] == [KEY]
+
+
+def test_m8_a_removed_round_trip_node_fails_m8_by_name(registered: dict[str, Any]) -> None:
+    measured = json.loads(json.dumps(registered["measures"]))
+    node = sorted(measured["M8"])[0]
+    del measured["M8"][node]
+    results, log = gate.compare(registered, measured, registered["reference_platform"])
+    assert results["M8"]["status"] == "FAIL" and f"M8: {node}: registered, not measured" in log
+    assert all(r["status"] == "PASS" for m, r in results.items() if m != "M8")
+
+
+def test_m8_runs_the_registered_nodes_in_a_fresh_interpreter(registered: dict[str, Any]) -> None:
+    function = "tests/test_k05_schemas.py::test_the_fixtures_validate_and_round_trip"
+    measured = gate.m8([function])
+    assert measured and all(node.startswith(function + "[") for node in measured)
+    assert judged(registered, {"M8": measured})["M8"]["status"] == "PASS"
 
 
 def _mappings(node: Any) -> Iterator[dict[str, Any]]:
