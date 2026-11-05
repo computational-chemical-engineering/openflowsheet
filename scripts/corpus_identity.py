@@ -325,9 +325,56 @@ def m8(functions: Sequence[str] = M8_FUNCTIONS) -> dict[str, str]:
 # -- M9: identity-bearing legacy modules ---------------------------------------------------------
 
 
+def _imported_modules(module: Path, tree: ast.AST) -> dict[str, Path]:
+    """Local name -> file of every `openflowsheet` module `module` imports from (absolute or
+    relative), for the names it binds; a package resolves to its `__init__.py`."""
+    package = ROOT / "src"
+    found: dict[str, Path] = {}
+    for node in ast.walk(tree):
+        if isinstance(node, ast.ImportFrom):
+            if node.level:
+                base = module.parent
+                for _ in range(node.level - 1):
+                    base = base.parent
+                parts = node.module.split(".") if node.module else []
+                target = base.joinpath(*parts)
+            elif node.module and node.module.split(".")[0] == "openflowsheet":
+                target = package.joinpath(*node.module.split("."))
+            else:
+                continue
+            for alias in node.names:
+                as_module = target / alias.name
+                for candidate in (as_module.with_suffix(".py"), as_module / "__init__.py"):
+                    if candidate.is_file():
+                        found[alias.asname or alias.name] = candidate
+                        break
+                else:
+                    for candidate in (target.with_suffix(".py"), target / "__init__.py"):
+                        if candidate.is_file():
+                            found[alias.asname or alias.name] = candidate
+                            break
+        elif isinstance(node, ast.Import):
+            for alias in node.names:
+                if alias.name.split(".")[0] != "openflowsheet":
+                    continue
+                target = package.joinpath(*alias.name.split("."))
+                for candidate in (target.with_suffix(".py"), target / "__init__.py"):
+                    if candidate.is_file() and alias.asname:
+                        found[alias.asname] = candidate
+    return found
+
+
+def _is_hash_site(path: Path) -> bool:
+    return "_implementation_sha256" in path.read_text(encoding="utf-8")
+
+
 def _hashed_files(module: Path, tree: ast.AST) -> set[Path]:
     """Files whose bytes an `implementation_sha256` of `module` reads: the module itself when
-    `__file__` is read, and each sibling `*.py` named by a string literal in the same scope."""
+    `__file__` is read, each sibling `*.py` named by a string literal in the same scope, the file
+    of an imported module whose `__file__` is read, and, when the scope reads another provider's
+    `implementation_sha256` (a composed identity, §2.4.4's "imported into such a hash set"),
+    every hash-site module `module` imports. A composition that resolves to none raises: the
+    scan never narrows silently."""
     scopes: list[ast.AST] = []
     for node in ast.walk(tree):
         if isinstance(node, ast.FunctionDef) and node.name == "_implementation_sha256":
@@ -337,6 +384,7 @@ def _hashed_files(module: Path, tree: ast.AST) -> set[Path]:
             for target in node.targets
         ):
             scopes.append(node)
+    imported = _imported_modules(module, tree)
     found: set[Path] = set()
     for scope in scopes:
         names = {n.id for n in ast.walk(scope) if isinstance(n, ast.Name)}
@@ -348,6 +396,19 @@ def _hashed_files(module: Path, tree: ast.AST) -> set[Path]:
             if isinstance(node, ast.Constant) and isinstance(node.value, str):
                 if node.value.endswith(".py") and (module.parent / node.value).is_file():
                     found.add(module.parent / node.value)
+            elif (
+                isinstance(node, ast.Attribute)
+                and node.attr == "__file__"
+                and isinstance(node.value, ast.Name)
+            ):
+                if node.value.id not in imported:
+                    raise ValueError(f"{module}: {node.value.id}.__file__ is not resolved")
+                found.add(imported[node.value.id])
+        if "implementation_sha256" in calls:
+            composed = {path for path in imported.values() if _is_hash_site(path)}
+            if not composed:
+                raise ValueError(f"{module}: a composed implementation_sha256 is not resolved")
+            found |= composed
     return found
 
 

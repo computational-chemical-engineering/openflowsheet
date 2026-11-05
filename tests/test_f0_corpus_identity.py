@@ -205,3 +205,42 @@ def test_m9_enumerates_from_the_hash_sites_not_by_hand() -> None:
     modules = gate.identity_bearing_modules()
     assert "src/openflowsheet/thermo/wilson_ig.py" in modules
     assert "src/openflowsheet/thermo/_coolprop_heos_fluids.py" in modules
+
+
+def test_m9_follows_a_composed_identity_into_the_imported_module() -> None:
+    """§2.4.4 "or one imported into such a hash set": wilson_ig_v2 hashes its own bytes and v1's
+    `implementation_sha256`, so wilson_ig.py enters M9 through v2's site, not only its own."""
+    import ast
+
+    module = gate.ROOT / "src/openflowsheet/thermo/wilson_ig_v2.py"
+    hashed = gate._hashed_files(module, ast.parse(module.read_text(encoding="utf-8")))
+    assert hashed == {module, module.parent / "wilson_ig.py"}
+
+
+def test_m9_a_composition_it_cannot_resolve_raises(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    package = tmp_path / "src" / "openflowsheet" / "thermo"
+    package.mkdir(parents=True)
+    (package / "base.py").write_text(
+        "import hashlib\nfrom pathlib import Path\n\n\n"
+        "def _implementation_sha256() -> str:\n"
+        "    return hashlib.sha256(Path(__file__).read_bytes()).hexdigest()\n"
+    )
+    (package / "plain.py").write_text("X = 1\n")
+    composed = (
+        "import hashlib\nfrom pathlib import Path\nfrom openflowsheet.thermo.{} import {}\n\n\n"
+        "class P:\n    def __init__(self, v1):\n"
+        "        self._implementation_sha256 = hashlib.sha256(\n"
+        "            Path(__file__).read_bytes() + v1.describe().implementation_sha256.encode()\n"
+        "        ).hexdigest()\n"
+    )
+    (package / "composed.py").write_text(composed.format("base", "_implementation_sha256"))
+    monkeypatch.setattr(gate, "ROOT", tmp_path)
+    assert gate.identity_bearing_modules() == [
+        "src/openflowsheet/thermo/base.py",
+        "src/openflowsheet/thermo/composed.py",
+    ]
+    (package / "composed.py").write_text(composed.format("plain", "X"))
+    with pytest.raises(ValueError, match="composed implementation_sha256 is not resolved"):
+        gate.identity_bearing_modules()
