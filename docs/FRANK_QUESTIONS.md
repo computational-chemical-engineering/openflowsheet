@@ -303,3 +303,12 @@ property model (the synthetic `syn001`). A change that moved the numbers of PR (
 Wilson or the thermal units would pass F0 unnoticed. Default (taken now, per "design quality over speed", R-927): add
 the registered S11 GP/TH cases plus one case each for pr-c1, IAPWS-95 and CoolProp before F0 is `tested`. Alternative:
 ship F0 with this as a declared limit and widen it as an entry condition of F2/F3/F4.
+
+## W1 P1 — accept ADR 0060 (F1 extension registry) and ADR 0061 (F3 component data)? (2026-11-05)
+
+Reviewed (`docs/reviews/W1-P1-review.md`: accept after fixes) and fixes applied (`e162cdcc`). In plain words: one place
+where every extension registers, a pure rule deciding which unit/method pairs may combine (reproducing today's 54 exactly),
+an "unreviewed" flag on results that use an agent-contributed extension, and a content-addressed store for component
+records with rights kept outside every hash. They add to the frozen application contract (ADR 0019 Amendments 7 and 8:
+`list_capabilities`, `check_admission`, and a records interface with five operations), so they need your yes, as ADR
+0058 did. Nothing is built before 0.5. Default: they stay Proposed; P2 designs on them as written.
