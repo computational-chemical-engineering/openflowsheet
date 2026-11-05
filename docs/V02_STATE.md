@@ -108,7 +108,7 @@ requires Frank's approval (it had none). WO-9 merged `cde1a3c2`: main = `0.4.0.d
 Am. 1–2). Foundations F0–F8 are designed in wave W1 during 0.4, then built in dependency order. User feedback intake:
 `docs/USER_FEEDBACK.md` (tutorial session). Agentic design layer (inside OpenFlowsheet, R-931):
 `docs/agentic-layer/preliminary-plan.md`, not started; textbooks in Zotero (13/13 PDFs).
-**Development resumed 2026-11-05 (Frank).** W1 specifier DONE (`22ecb918`, rulings §14 Amendment 2: five defaults adopted; Frank O-11, A2-a logged). Running: MSG architect (brief `docs/briefs/MSG-architect.md` → `docs/design/MSG-messages.md`); F0 build on `wp/F0` (`.claude/worktrees/f0`, brief `docs/briefs/F0-build.md`). Next design pass after MSG: W1 architect P1 (F1, F3).
+**Development resumed 2026-11-05 (Frank).** W1 specifier DONE (`22ecb918`, rulings §14 Amendment 2: five defaults adopted; Frank O-11, A2-a logged). MSG architect DONE (`0c78cf11`: `docs/design/MSG-messages.md`, ADR 0058 Proposed — needs Frank's yes before MSG merges, `docs/FRANK_QUESTIONS.md`). Running: F0 build on `wp/F0` (`.claude/worktrees/f0`, brief `docs/briefs/F0-build.md`). Next: MSG build WO-0…WO-2 on `wp/MSG` (independent of ADR 0058's contract changes), then W1 architect P1 (F1, F3).
 **Next actions for 0.4 (roadmap §0.4; at most 2 agents at a time):**
 1. **Wave 1 (two design agents in parallel):**
    - (a) **MSG** architect pass: student-readable messages (FB-05, with FB-01 `create(..., exist_ok=True)`, FB-03 failure
