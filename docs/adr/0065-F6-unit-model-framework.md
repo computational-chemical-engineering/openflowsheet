@@ -413,9 +413,9 @@ method overrides, phase assertions in `candidates`, declared port maps, expressi
   terms, so the no-read rule would be heuristic; the accessor record is exact and costs nothing at evaluation.
 - *Zero-flow forms as a per-call switch inside the residual.* A switch makes the function depend on a threshold of `x`
   without a recorded decision; ADR 0012 D12 chose attempt-level coordinates for the same reason.
-- *Routing by `character` for every FLUID point.* It would give O-11's identification rule numerical consequence where
-  density already decides (two or more phases) and would split two liquids by an identification parameter that does not
-  separate them.
+- *Routing by `character` alone for every FLUID point.* It would split two liquid-like phases by an identification
+  parameter that does not separate them. D9 (ii) uses `character` only to pick the phases for `vapor` and orders the
+  rest by density (W1 P3 review M4; SQ-F6-5).
 - *A family per provider; refactoring legacy families in place; a built-in two-phase assumption; code-only user
   models* — the note's rejections, unchanged.
 
