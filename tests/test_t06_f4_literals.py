@@ -17,6 +17,7 @@ from pathlib import Path
 
 import pytest
 from conftest import load_json
+from f0_support import N_ARCHIVED_OUTPUTS, is_archived_output
 from test_k03_schemas import SCHEMA_DIR, errors_for
 
 from openflowsheet.orchestrator import executor
@@ -106,11 +107,13 @@ def test_wo1_the_event_schema_refuses_every_other_reason(reason: str) -> None:
 def test_wo1_no_committed_document_names_the_new_policy_value() -> None:
     """§5.8: no registered case, fixture or reference document carries the new value, so no
     registered policy document or trace moves (the T06 revision policy is built in code)."""
-    documents = [
-        path.relative_to(REPO_ROOT)
+    carrying = [
+        path
         for root in ("tests/fixtures", "benchmarks")
         for pattern in ("*.json", "*.yaml")
         for path in (REPO_ROOT / root).rglob(pattern)
         if RESTART in path.read_text(encoding="utf-8")
     ]
-    assert documents == []
+    # F0's registered archived outputs (R-939), by path and SHA-256; nothing else is exempt.
+    assert [path.relative_to(REPO_ROOT) for path in carrying if not is_archived_output(path)] == []
+    assert sum(map(is_archived_output, carrying)) == N_ARCHIVED_OUTPUTS

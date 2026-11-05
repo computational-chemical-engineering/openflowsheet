@@ -87,3 +87,14 @@ Package F0, the corpus identity gate (roadmap 0.4, ADR 0057 D3; brief `docs/brie
 - **D16, open: the evidence schema refuses `F0`** (`work_package` pattern `^[PKTMSR][0-9]{2}[a-z]?$`, frozen §2.2).
   Precedent ADR 0028 chose a fitting id (`M07a`). The manifest is drafted (status `implemented`) but not committed;
   committing it fails `test_evidence_manifests`. Needs an id choice or a schema ADR.
+
+## Third engineer (2026-11-05): the F0 review (`docs/reviews/F0-review.md`) applied
+
+- **ADR 0059 D1 applied** (13eac60b): pattern widened; `test_work_package_pattern_widening_is_additive` enumerates the
+  16 200 old ids; `tests/test_evidence_manifests.py` 404 passed, every committed manifest unchanged.
+- **D15 (1′) applied.** `tests/f0_support.py` reads `archived_outputs` (path → SHA-256) from the registry; each guard
+  skips a file only when both match, and pins the skipped count at 36. **D17 (choice): which records are registered.**
+  The 0.3.0 index names 47 `artifacts/solve-policy.json` files: 36 carry `policy_id` `T06-revision-v2` (all three
+  guarded literals, and only those files carry them), 11 carry `T04-W12` (none of them). `--record` registers the
+  `ARCHIVED_POLICIES = ("T06-revision-v2",)` records, i.e. exactly the 36 the ruling names. Alternative: register all
+  47 (11 exemptions that exempt nothing). Reversible by: editing `ARCHIVED_POLICIES` and re-recording.

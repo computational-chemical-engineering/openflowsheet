@@ -55,6 +55,11 @@ MEASURES: Final = ("M1", "M2", "M3", "M4", "M5", "M6", "M7", "M8", "M9")
 NOT_IMPLEMENTED: Final[dict[str, str]] = {}
 STATE_KEYS: Final = ("state_sha256", "target_state_sha256")
 V030_BUNDLES: Final = ROOT / "tests" / "fixtures" / "f0" / "v0.3.0-bundles"
+#: Ruling D15 (R-939): the policies whose archived `solve-policy.json` records in the 0.3.0
+#: bundles are registered as archived outputs, by path and SHA-256, and so exempt from the three
+#: guards that keep this policy's values out of input documents (`tests/f0_support.py`). The other
+#: records (`T04-W12`) carry none of those values and are not registered.
+ARCHIVED_POLICIES: Final = ("T06-revision-v2",)
 #: M7's fields judged off the reference platform: the replay mode is decided by the platform
 #: identity (`run.replay.decide_mode`), so elsewhere only the verdict and the integrity are.
 M7_PORTABLE: Final = ("verdict", "integrity_ok")
@@ -300,6 +305,20 @@ def m7(bundles: Path = V030_BUNDLES) -> dict[str, dict[str, Any]]:
     return result
 
 
+def archived_outputs(bundles: Path = V030_BUNDLES) -> dict[str, str]:
+    """Path -> SHA-256 of each indexed bundle's `artifacts/solve-policy.json` whose policy is one
+    of `ARCHIVED_POLICIES`: the guards' registered exemption (R-939)."""
+    index = json.loads((bundles / "index.json").read_text(encoding="utf-8"))
+    found: dict[str, str] = {}
+    for entry in index["entries"]:
+        path = bundles / entry["directory"] / "artifacts" / "solve-policy.json"
+        if path.is_file():
+            data = path.read_bytes()
+            if json.loads(data).get("policy_id") in ARCHIVED_POLICIES:
+                found[path.relative_to(ROOT).as_posix()] = sha256(data)
+    return dict(sorted(found.items()))
+
+
 # -- M8: schema round-trips ----------------------------------------------------------------------
 
 
@@ -525,6 +544,7 @@ def record() -> int:
             "M9": "AST scan of src/ for what feeds an implementation_sha256",
         },
         "measures": measure_all(),
+        "archived_outputs": archived_outputs(),
     }
     REGISTRY.parent.mkdir(parents=True, exist_ok=True)
     REGISTRY.write_text(json.dumps(document, indent=1, sort_keys=True) + "\n", encoding="utf-8")

@@ -78,6 +78,42 @@ def test_the_registry_holds_no_hollow_entry(registered: dict[str, Any]) -> None:
     assert not gate.NOT_IMPLEMENTED
 
 
+def test_the_guards_exempt_only_the_registered_archived_outputs(registered: dict[str, Any]) -> None:
+    """Ruling D15 (R-939): exactly 36 files, each the `artifacts/solve-policy.json` of a bundle
+    the 0.3.0 index names, registered as `--record` writes them and matching their bytes."""
+    from f0_support import N_ARCHIVED_OUTPUTS, archived_outputs, is_archived_output
+
+    exempt = registered["archived_outputs"]
+    assert exempt == archived_outputs() == gate.archived_outputs()
+    assert len(exempt) == N_ARCHIVED_OUTPUTS == 36
+    index = json.loads((gate.V030_BUNDLES / "index.json").read_text(encoding="utf-8"))
+    indexed = {
+        (gate.V030_BUNDLES / e["directory"] / "artifacts" / "solve-policy.json")
+        .relative_to(ROOT)
+        .as_posix()
+        for e in index["entries"]
+    }
+    assert set(exempt) <= indexed
+    assert all(is_archived_output(ROOT / path) for path in exempt)
+
+
+def test_an_archived_output_with_one_changed_byte_is_not_exempt(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import f0_support
+
+    path = next(iter(f0_support.archived_outputs()))
+    original = (ROOT / path).read_bytes()
+    copy = tmp_path / path
+    copy.parent.mkdir(parents=True)
+    monkeypatch.setattr(f0_support, "REPO_ROOT", tmp_path)
+    copy.write_bytes(original)
+    assert f0_support.is_archived_output(copy)
+    copy.write_bytes(original[:-1] + bytes([original[-1] ^ 0x01]))
+    assert not f0_support.is_archived_output(copy)
+    assert not f0_support.is_archived_output(tmp_path / "benchmarks" / "elsewhere.json")
+
+
 def test_m7_one_byte_in_a_0_3_0_bundle_fails_m7(registered: dict[str, Any], tmp_path: Path) -> None:
     source = gate.V030_BUNDLES
     index = json.loads((source / "index.json").read_text(encoding="utf-8"))
