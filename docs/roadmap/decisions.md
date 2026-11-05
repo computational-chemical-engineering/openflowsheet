@@ -65,3 +65,10 @@ Each entry gives the date, the question, the choice, who made it and where it is
   scientific questions with defaults instead of ruling, and one specifier round follows P3 batching them with ADR 0063
   risk 5 (entropy shift). Alternative: a specifier pass on the entropy shift now. Reversible by: renumbering before
   commit; running the specifier earlier.
+- **2026-11-05** W1 P3 architect pass done: ADR 0065 (F6), 0066 (F7), 0067 (F8) Proposed (e740c7ca), 30 note edits in
+  `docs/roadmap/W1-P3-note-edits.md`. Eight departures recorded in the ADRs, two of them touching P1/P2 ADRs (ADR 0060
+  D9 narrowed: evidence notices in the evidence report, not the certificate; ADR 0063 D7 amended additively:
+  `MaterialModel` reports record entries read per state point) — flagged for the P3 reviewer. Seven specifier
+  questions (SQ-F6-1…4, SQ-F7-1…2, SQ-F8-1) batched with ADR 0063 risk 5 into one specifier round
+  (`docs/roadmap/brief-specifier-W1-P3-questions.md`, bf1d9107); the P3 reviewer runs after it. SQ-F6-1's default gives
+  O-11 a numerical consequence: Frank to be told with O-11.
