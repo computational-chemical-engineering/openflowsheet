@@ -108,7 +108,7 @@ requires Frank's approval (it had none). WO-9 merged `cde1a3c2`: main = `0.4.0.d
 Am. 1–2). Foundations F0–F8 are designed in wave W1 during 0.4, then built in dependency order. User feedback intake:
 `docs/USER_FEEDBACK.md` (tutorial session). Agentic design layer (inside OpenFlowsheet, R-931):
 `docs/agentic-layer/preliminary-plan.md`, not started; textbooks in Zotero (13/13 PDFs).
-**Development paused for budget (Frank, 2026-11-01) until Frank's go-ahead.**
+**Development resumed 2026-11-05 (Frank): wave 1 started — W1 specifier brief `docs/roadmap/brief-specifier-w1-open-items.md` (running); MSG architect brief after recon.**
 **Next actions for 0.4 (roadmap §0.4; at most 2 agents at a time):**
 1. **Wave 1 (two design agents in parallel):**
    - (a) **MSG** architect pass: student-readable messages (FB-05, with FB-01 `create(..., exist_ok=True)`, FB-03 failure
