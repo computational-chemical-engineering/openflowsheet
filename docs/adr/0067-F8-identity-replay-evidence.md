@@ -7,14 +7,18 @@ P3 reviewer pass over ADRs 0065–0067. Built in 0.5 (bundle, data lock, registr
 **Author:** design lane (`architect`). **Brief:** `docs/roadmap/brief-architect-W1-P3.md`.
 **Refines:** `target-architecture.md` §2.7, §3 F8, §8 (`RunManifest`, replay manifest, `ReplayMode`). Departures are
 marked **[departure]**. **Note edits:** `docs/roadmap/W1-P3-note-edits.md`.
-**Adopts verbatim** (foundation rulings; this ADR is their authority once Accepted): Q9.R6, Q9.R7; Q9.A4–A8; the
-ADR 0060 D9 rule "evidence never moves an identity".
+**Adopts verbatim** (foundation rulings; this ADR is their authority once Accepted): Q9.R6, Q9.R7, Q9.R8; Q9.A4–A9;
+the ADR 0060 D9 rule "evidence never moves an identity".
 **Amends** (each additive; every v1 manifest, bundle, replay report and digest unchanged):
 - ADR 0007: D1 (classes of the new fields, D9); D4 (`forced_replay`, the registry and data checks, D5, D8).
+- ADR 0007 D2.4: the additive band at q* = 0 (finding A4-b, W1 P3 review): "where q* = 0, near threshold iff
+  |q| ≤ 10 τ, τ in q's units: the kind's D2.2 floor or the clause's stated tolerance." Q5.R10, Q9.R8 and Q1.R10 are
+  its instances; no new work order: each consumer implements its instance.
 - ADR 0025: per-platform reference records generalised to every registered platform (D7).
 - ADR 0034 D6: R3 replay-from-record covers co-simulated units (D10).
 - ADR 0060 D9 **[departure, narrowing]**: evidence notices go to the run's evidence report, not into the certificate (D6).
-- ADR 0063 D7 (additive): `MaterialModel` reports the record entries each state point read (D6).
+- ADR 0063 D7 (additive): `MaterialModel` reports the record entries each state point read (D6); the hook is written
+  into ADR 0063 D7 itself.
 - ADR 0052: **not amended here**; the extension-contributor amendment belongs to X01 rest, under D11's constraints.
 - ADR 0019 D1 as **Amendment 12**: `ReplayReport` gains optional members and `ReplayMode` the value `forced_replay`;
   ADR 0020: artifact kinds (D3).
@@ -53,7 +57,7 @@ in the package (ADR 0061 D12), so its replay still resolves them, and when a sto
 | --- | --- | --- |
 | `bundle_format` | const `"openflowsheet-bundle-v2"`; its presence selects D5's reader | non-structural (added to `NON_STRUCTURAL`) |
 | `data_lock_sha256` | ADR 0061 D10's SHA of the run's lock | structural, R0 |
-| `extensions_used` | `[[kind, id, version, descriptor_sha256, self_sha256]…]` sorted by (kind, id, version key): ADR 0060 D8's set derived from the documents, built-ins included | structural, R0 |
+| `extensions_used` | `[[kind, id, version, descriptor_sha256, self_sha256]…]` sorted by (kind, id, version key): ADR 0060 D8's set derived from the documents, built-ins included | structural, R0, top level **[departure from ADR 0060 D9]**, which put it in `environment`: what ran is identity |
 | `run_kind`, `documents` | `[id, version]` and `{<role>: sha256}` for `run` jobs (ADR 0066 D11) | structural, R0 |
 | `environment.registry` | `{registry_sha256, snapshot_sha256}` (the snapshot document of ADR 0060 D10 is an artifact) | non-structural (in `environment`) |
 
@@ -91,7 +95,8 @@ No network access occurs while writing or replaying a bundle (note §2.7.2).
 ### D5. Replay of a v2 bundle (`run/replay_v2.py`; one dispatch line in `run/replay.py`)
 
 Steps in this order; reasons accumulate in this order; any reason from steps 2, 5 or 6 makes the mode
-`inspected_archived_results` and the verdict `NOT_RUN` (ADR 0007 D4: nothing is rerun):
+`inspected_archived_results` and the verdict `NOT_RUN` (ADR 0007 D4: nothing is rerun), except step 5's changed
+built-in, which reruns:
 1. **Integrity:** `verify_bundle`, unchanged.
 2. **Format:** no `bundle_format` → the v1 path, unchanged, and its report is returned as today. An unknown value →
    `bundle_format_unsupported(<value>)` (ADR 0002 D7.5).
@@ -99,7 +104,11 @@ Steps in this order; reasons accumulate in this order; any reason from steps 2, 
 4. **Environment:** ADR 0007 D4's mode from lock, platform and threads, unchanged.
 5. **Extensions:** for each `extensions_used` entry the current registry must hold (kind, id, version) with equal
    `descriptor_sha256` and `self_sha256`: else `extension_unavailable(<kind>, <id>, <version>)` or
-   `extension_changed(<kind>, <id>, <version>)`. A difference only in descriptors the run did not use changes nothing
+   `extension_changed(<kind>, <id>, <version>)`. `extension_unavailable`, and a changed non-built-in, stay
+   `inspected_archived_results` / `NOT_RUN`. A changed built-in of the running distribution gives
+   `compatible_reproduction`: the rerun proceeds under reason `extension_changed`, with the verdict from step 7 (in
+   general `MISMATCH`, its R0 and float differences listed), so a v2 reference case stays a regression check across
+   releases. A difference only in descriptors the run did not use changes nothing
    but is reported (`registry_comparison.unused_differences`). Evidence fields (status, attestations) are never compared.
 6. **Data:** each lock SHA resolves from `artifacts/records/` (identity rule re-applied to the bytes; a mismatch is
    `store_object_corrupt(<sha>)`) or the local F3 store; each unresolved SHA adds `data_unavailable(<sha>)`, all listed,
@@ -135,7 +144,8 @@ evidence-class notice is not a verification claim (D14); keeping the certificate
 untouched by review status. The run's report is its `RunResult` plus `run-evidence.json` (an output artifact; no
 `RunResult` field changes).
 
-**F4 hook (amends ADR 0063 D7 additively):** `MaterialModel.entries_read(point_id) -> tuple[EntryRead, ...]` with
+**F4 hook (specified in ADR 0063 D7, an additive amendment; departure 8 of the W1 P3 review; F4-WO4 builds it):**
+`MaterialModel.entries_read(point_id) -> tuple[EntryRead, ...]` with
 `EntryRead = (component, entry, record_sha256, validity: {variable: (lo, hi)})`, determined from the composed method's
 phase models and the point's active phases at the converged state; the evidence writer judges extrapolation from it.
 
@@ -177,7 +187,9 @@ each imposed step it re-evaluates event functions, and an event must be detected
 sequences identical; trajectory values at the recorded steps, event times and ledger floats within the numerical
 policy. Why: adaptive selection turns a 1-ulp platform difference into truncation-level trajectory differences, which
 no roundoff policy can judge; imposing the decisions keeps differences at roundoff. Only routes with
-`decision_records: true` (ADR 0066 D10) support it. Grazing events near a step boundary: SQ-F8-1.
+`decision_records: true` (ADR 0066 D10) support it. Event disagreements are judged by Q9.R8: near threshold iff the
+replay's |g| ≤ τ_g (10 × the function kind's D2.2 floor) at the disputed time; then the record is imposed and the
+verdict is `MATCH` with `verdict_changed_near_threshold`; otherwise `forced_replay_divergence`.
 
 ### D9. Classes of the new fields (ADR 0007 D1, amended)
 
@@ -241,8 +253,9 @@ and enum values (ADR 0002 D7.1; migration report: no instance migrated, no store
 - **E-F8-4** Q9.A8: with a referenced record absent from the store, replay is `inspected_archived_results` / `NOT_RUN`
   with `data_unavailable(<sha>)`; with two absent, both listed in sorted order; with the record embedded, the replay
   runs and matches.
-- **E-F8-5** Registry: a changed `self_sha256` of a used extension gives `extension_changed` and `NOT_RUN`; a changed
-  unused one changes neither mode nor verdict and is counted; the recorded snapshot equals ADR 0060 D10's document.
+- **E-F8-5** Registry: a changed `self_sha256` of a used non-built-in extension gives `extension_changed` and `NOT_RUN`;
+  of a used built-in, `compatible_reproduction` with reason `extension_changed`, rerun and compared; a changed unused
+  one changes neither mode nor verdict and is counted; the recorded snapshot equals ADR 0060 D10's document.
 - **E-F8-6** Usage: for every v2 corpus run the usage set ⊆ `extensions_used`; a test-only hidden `resolve` makes the
   replay `MISMATCH` with `extension_use_undeclared`.
 - **E-F8-7** Evidence: Q9.A4–A7; changing an extension's review status or attestation changes no structural or R0
@@ -266,16 +279,16 @@ and enum values (ADR 0002 D7.1; migration report: no instance migrated, no store
 | --- | --- | --- | --- | --- | --- |
 | 1 | **F8-WO1** (0.5) Manifest and schemas | `run/manifest_v2.py`; `run-manifest`, `replay-report` (optional members, `forced_replay` reserved: refused `construct_unavailable(forced_replay, TX)` until WO7), `records-index`, `run-evidence` schemas; `NON_STRUCTURAL` += `bundle_format` | E-F8-10, E-F8-2 (schema part) | no | Opus |
 | 2 | **F8-WO2** (0.5) Bundle writer | `run/bundle_v2.py`; embedding via ADR 0061 D11; test-only v2 bundle factory (a corpus case rerun and recorded as v2) | E-F8-2, E-F8-3 | no | Opus |
-| 3 | **F8-WO3** (0.5) Replay | dispatch in `run/replay.py`; `run/replay_v2.py`; usage cross-check | E-F8-1, -4, -5, -6 | no | Opus |
-| 4 | **F8-WO4** (0.6, after F4-WO4) Evidence | `run/evidence.py`; the F4 hook in `material/model.py` | E-F8-7 | no | Opus |
+| 3 | **F8-WO3** (0.5) Replay | dispatch in `run/replay.py`; `run/replay_v2.py`; usage cross-check; a re-record tool for registered v2 cases | E-F8-1, -4, -5, -6 | no | Opus |
+| 4 | **F8-WO4** (0.6, after F4-WO4) Evidence | `run/evidence.py`; reads the F4 hook (ADR 0063 D7, built by F4-WO4) | E-F8-7 | no | Opus |
 | 5 | **F8-WO5** (0.6, with X07a) Platform records | `run/platform_refs.py`; invariant test | E-F8-8 | no | Sonnet, Opus review |
-| 6 | **F8-WO6** (0.6, after F6-WO4) Wiring | v2-compiled runs write bundle v2 | E-F8-2 on real v2 runs | no | Opus |
-| 7 | **F8-WO7** (0.7, in TX) Decision records, `forced_replay`, exchange records | `run/decisions.py`; route hooks | E-F8-9 | no | Opus |
+| 6 | **F8-WO6** (0.6, after F6-WO4) Wiring | v2-compiled runs write bundle v2; a merge prerequisite of `wp/F6` | E-F8-2 on real v2 runs | no | Opus |
+| 7 | **F8-WO7** (0.7, in TX) Decision records, `forced_replay`, exchange records | `run/decisions.py`; route hooks | E-F8-9; Q9.A9 | no | Opus |
 
 ## Risks and open questions (each with a default)
 
-1. **ADR 0063 must carry the F4 hook** (fact: the P3 review). *Default:* this ADR amends ADR 0063 D7 additively; F8-WO4
-   waits for F4-WO4.
+1. **ADR 0063 must carry the F4 hook** (fact: the P3 review). *Resolved:* ADR 0063 D7 carries it (W1 P3 review,
+   departure 8); F4-WO4 builds it; F8-WO4 waits for F4-WO4.
 2. **The certificate without notices** (preference: reviewer). *Default:* D6; reversing it means an optional,
    non-R0 certificate member.
 3. **Redistribution** (Frank, R-706). *Default:* reference only unless every source is `permitted`.
@@ -286,9 +299,10 @@ and enum values (ADR 0002 D7.1; migration report: no instance migrated, no store
 
 ## Specifier questions (batched for the round after P3)
 
-- **SQ-F8-1** Grazing events under `forced_replay`: an event whose function is within τ_g of zero at a recorded step
-  boundary. *Default:* τ_g = the integrator's event-location tolerance; such a case is `MATCH` with
-  `verdict_changed_near_threshold` semantics (ADR 0007 D2.4), any other step mismatch `forced_replay_divergence`.
+- **SQ-F8-1** *Ruled, default changed (Amendment 4): Q9.R8.* Grazing events under `forced_replay`: an event whose
+  function is within τ_g of zero at a recorded step boundary. *Default:* τ_g = the integrator's event-location
+  tolerance; such a case is `MATCH` with `verdict_changed_near_threshold` semantics (ADR 0007 D2.4), any other step
+  mismatch `forced_replay_divergence`.
 
 ---
 
@@ -297,8 +311,27 @@ and enum values (ADR 0002 D7.1; migration report: no instance migrated, no store
 | Line | Order (each after the previous on `main`) | Unblocks |
 | --- | --- | --- |
 | 0.5 | F1 → F3 → F2 → **F8-WO1–WO3** (needs F2-WO4/WO6, F3's store and rights register, F1's snapshot) | v2 bundles mechanics; X07b's records; TX's later decision records |
-| 0.6 | F4 → F5 → **F6-WO1–WO3** (may start after F1-WO2, F2-WO3) → **F6-WO4** (needs F4-WO4, F5's contract) → F6-WO5–WO9; **F8-WO4** after F4-WO4; **F8-WO6** after F6-WO4; **F8-WO5** with X07a | X08, X09, X10 gaps, X12, X13, X14 (with X17), X15 (CAPE-OPEN seam), X16, X19, X21, X22 |
+| 0.6 | F4 → F5 → **F6-WO1–WO3** (may start after F1-WO2, F2-WO3) → **F6-WO4** (needs F4-WO4, F5's contract) → F6-WO5–WO9; **F8-WO4** after F4-WO4; **F8-WO6** after F6-WO4 and a merge prerequisite of `wp/F6` (no v2-compiled run on `main` writes a v1-format bundle); **F8-WO5** with X07a | X08, X09, X10 gaps, X12, X13, X14 (with X17), X15 (CAPE-OPEN seam), X16, X19, X21, X22 |
 | 0.7 | **F7-WO1–WO7** (after F6-WO4) → TX (with **F8-WO7**) | TX → X25, X26; X24 (needs F7, F8, OPT, X06); X06 resume |
 
 The specifier round after P3 batches SQ-F6-1…4, SQ-F7-1…2, SQ-F8-1 with ADR 0063 risk 5 (entropy shift). Only SQ-F6-2
 gates a work order's exit (F6-WO5's `h_mass` forms; E-F6-6, E-F6-16); every other question proceeds on its default.
+Amendment 4 and the sheet `docs/derivations/F6-std-seed.md` (2026-11-05) ruled all of them; SQ-F6-5 (W1 P3 review M4)
+is open for the next round and gates nothing.
+
+## W1 P3 review applied (`docs/reviews/W1-P3-review.md`, 2026-11-06)
+
+Status stays Proposed. S1 follows the orchestrator's decision on the reviewer's default.
+
+| Finding | Edit |
+| --- | --- |
+| Header | Adopts Q9.R8, Q9.A9 verbatim. |
+| A4-b | Amends ADR 0007 D2.4: the additive band at q* = 0, with the ruling's text; no new work order. |
+| S2 | D2: `extensions_used` marked **[departure from ADR 0060 D9]**: structural, top level. |
+| S1 | D5 step 5: a changed built-in reruns as `compatible_reproduction` (reason `extension_changed`); `extension_unavailable` and a changed non-built-in stay `NOT_RUN`; E-F8-5 split; F8-WO3 re-record tool. |
+| Departure 8 | D6: the F4 hook specified in ADR 0063 D7, built by F4-WO4; risk 1 resolved; F8-WO4 reads it. |
+| 0067-1 | D8: event disagreements per Q9.R8; F8-WO7 acceptance E-F8-9 and Q9.A9; SQ-F8-1 ruled, default changed. |
+| S11 | Build order and F8-WO6: a merge prerequisite of `wp/F6`. |
+
+Not applied: N6 (E-F8-9's mutation control) is a note outside the consolidated edit list. The build-order paragraph
+gains one sentence recording that Amendment 4 and the sheet ruled the batched questions.

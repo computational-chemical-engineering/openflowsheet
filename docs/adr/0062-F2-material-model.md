@@ -218,7 +218,9 @@ port energy out; an unconnected energy port leaves the duty a unit variable. A s
 `quantity_kind`; both endpoints must have that kind (`signal_kind_mismatch(<connection>)`). Endpoints: `{instance,
 port}` (any kind); `{probe: <target>}` (signal source only; target as D10); `{instance, parameter}` (signal sink only,
 the manifest must declare it `manipulable`, else `parameter_not_manipulable`; bound by a signal and a time input:
-`parameter_binding_conflict`). Energy and signal connections, probes and parameter sinks are validated and laid out in
+`parameter_binding_conflict`); `{specification: <id>}` (signal sink only, ADR 0065 D10: that specification's row reads
+the signal's `~s` in place of its pinned value; bound also by a time input: `parameter_binding_conflict`). Energy and
+signal connections, probes and parameter sinks are validated and laid out in
 0.5 and refused at binding with `construct_unavailable(<construct>, F6)` until ADR-F6's units read them.
 
 ### D10. `Specification` v2 (`schemas/specification-v2.schema.json`)
@@ -227,7 +229,9 @@ v1's fields, with `target` either v1's `{object_type, object_id, path}` (the onl
 connections) or one of: `{variable: <vid>}`; `{derived: <derived_quantity id>, version, stream: <connection id>,
 component?: id, phase?: <rendering>}`; `{energy: <connection id>}`; `{signal: <connection id>}`. `kind` must equal the
 target's quantity kind. A derived target before ADR-F4/F5 builds it is refused `construct_unavailable(derived:<id>,
-F4)`; `specification_degenerate(<spec>)` is ADR-F4's opening check.
+F4)`; `specification_degenerate(<spec>)` is ADR-F4's opening check. A `{derived: X, stream: S}` target on an `h_mass`
+connection compiles by the F6 sheet's C3 (`docs/derivations/F6-std-seed.md`: the X-form row ṁ_S ĥ_S − Ḣ^XP(n_S,
+X_spec, P_S) = 0 through an XP point at S's amounts).
 
 ### D11. `ProcessRevision` v2 (`schemas/process-revision-v2.schema.json`)
 
@@ -401,5 +405,16 @@ Status stays Proposed.
 | S10 (0063-5) | D1: `specific_heat_capacity`, `segment_molar_heat_capacity`, `segment_molar_volume` added; edit list item 6. |
 | N6, N7 (0062-9) | D4: M = 1 for `kg`; F2-WO1 acceptance; E-F2-5 "of any structure"; D7 `point := uid`. |
 | Ruling 2 | D6's Q4.R7 narrowing removed (S4); D2, D3 and D8 departures accepted unchanged. |
+
+Not applied: none of the edits for this ADR.
+
+## W1 P3 review applied (`docs/reviews/W1-P3-review.md`, 2026-11-06)
+
+Status stays Proposed. Cross-ADR edits from the W1 P3 review's consolidated list (the F6 sheet, M3).
+
+| Finding | Edit |
+| --- | --- |
+| M3 | D9: endpoint `{specification: <id>}` (signal sink only), by ADR 0065 D10. |
+| B-7 | D10: a `{derived: X, stream: S}` target on an `h_mass` connection compiles by the F6 sheet's C3. |
 
 Not applied: none of the edits for this ADR.

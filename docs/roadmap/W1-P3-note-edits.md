@@ -66,3 +66,16 @@ Status: list, 2026-11-05, for the orchestrator to apply once the P3 review has r
 29. §2.3 (F1, wherever ADR 0060 D9's propagation is restated): "the run report and the certificate carry the notices"
     → "the run's evidence report carries the notices".
 30. §4: F8's note column: "bundle and replay 0.5; evidence and v2 wiring 0.6; decision records with TX 0.7".
+
+## From the W1 P3 review (`docs/reviews/W1-P3-review.md`, 2026-11-06)
+
+31. §3 F7 exit (`target-architecture.md:875–876`): the same replacement as ADR 0066 E-F7-4: "An index-1 probe is
+    accepted; Q5.A13 (a)–(f): (f) α ≡ κ ≡ 0 refused `dae_index_unsupported` naming the volume row; (c), (d) carry
+    `dae_index_near_singular`; (e) (thermally expanding, κ ≡ 0) and a `cubic.pr-v1` liquid are regular" (review M6).
+32. §2.4 routing: `phase_routing` gains `vapor: <port> | null` beside `light_to_heavy` (the liquid ports) and `solids`;
+    VAPOR, or a lone `vapour_like` FLUID (Q4.R9), goes to `vapor`, else to the first liquid port when `vapor` is null;
+    LIQUID slots go over `light_to_heavy` by density; two or more active FLUID phases by SQ-F6-5's default (ADR 0065 D9,
+    review M4).
+33. §2.4 identity: the v2 structure document's `sources` gain the role `configuration` (`document_sha256` of the v2
+    revision with every pinned numeric value removed), and the v2 label is `FSR2-<configuration_sha256[:12]>` (ADR 0065
+    D3, review M1).
