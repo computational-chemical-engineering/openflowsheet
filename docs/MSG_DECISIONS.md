@@ -75,3 +75,50 @@ directly (a check id does not parse under §4.3's grammar). Commit: WO-1.
 (it is `phase_regime_mismatch`'s `see_also`); `L-TH-4` is complete with authored prose (summary, why, action) taken
 from the support-matrix row. `unsupported` and `internal_error` are stubs with `args: [reason]` of type `code`, so
 §4.3's expansion examples resolve. Commit: WO-1.
+
+## WO-2
+
+**D2-1. G2 scanner details (§9).** Beyond §3.2's list: (a) for `api_error`, `_refuse`, `Failure` and
+`RunUnsupportedError` the code is the first *code-shaped* string constant (lower or upper snake with an underscore)
+among the first two positional args, because `Failure(status, code, …)` and studies' `_refuse(qualification, code,
+…)` put the code second; (b) the string args of a `Literal[...]` assigned to a name ending `Code` (`ApiErrorCode`,
+studies' `RefusalCode`) are scanned as a closed set; (c) a plain string constant is scanned when it *begins*
+`snake_code(` (not only when it fully matches), so `"task_unsupported(optimization)"` literals are found. Eight
+tokens are allow-listed with reasons (`scan-allow.yaml`): three column keys of `invalid_spec(<key>)`, a budget label
+and four replay-difference location labels. Commit: WO-2.
+
+**D2-2. G1's "validation check ids" and "limitation ids".** Check ids are the `XXX-NN` literals of
+`application/validation.py` (16). Limitation ids are the `limitations` section of `benchmarks/t08/support_envelope.yaml`
+(83); the `unsupported` rows `U01..U15` are not limitations and are not enumerated. Commit: WO-2.
+
+**D2-3. Stub wording and kinds (§9; Q10).** Stubs were generated mechanically from the code (a one-off script, not
+committed): title = the code in words; summary by family (`Refused: <words>.`, `The request was refused: <words>.`,
+`The solve ended <CODE> (<taxonomy class>).`, `Status <S>.`, `The job ended: <words>.`, `Validation check <id> did
+not pass.`) — the technical summary §4.12 promises for stubs. Kinds by §4.2.1's tables; `review: true` on every
+judgment call: refusal codes matching no row (default `input`), every `*_mismatch` (whether it is internal), every
+upper-case study/assessment refusal, and every validation check (the note gives check ids no kind rule; `CAP-01` →
+`not_supported`, the others → `input`). `infeasible_spec`'s stub is hand-written: the generated words would fail the
+I8 lint. Commit: WO-2.
+
+**D2-4. `sync-limitations` keeps a complete entry's summary (note conflict).** §4.2.9 regenerates `summary` from the
+matrix text, but a complete entry's summary is jargon-linted and the matrix text is not jargon-free (L-TH-4's carries
+backticks and a snake_case code). Choice: the generated summary applies to stubs only; a complete entry keeps its
+authored summary. Generated text is escaped for the template grammar (braces and brackets doubled). Commit: WO-2.
+
+**D2-5. G3 hooks and the session verdict.** Hooks: `api_error()` (the code, the message, a string `detail.reason`),
+`bundle_for()` (the outcome and `result.message`), `Unbound.__post_init__` (`detail`; the caller is frame 2, past the
+generated `__init__`) and `RunUnsupportedError.__init__` (its code text). Each costs one `audit.auditor is not None`
+check when the audit is off. `pytest_sessionfinish` turns a passing session into a failing one when there is any miss
+or rendering defect; `pytest_terminal_summary` lists them. Commit: WO-2.
+
+## WO-0 record (measured)
+
+`--record` at `37a521f9` (WO-0's commit, no MSG code), in a detached worktree, with `--suite`:
+`MSG-G0 PASS: a 0 diff; b 0/562 diff (108 bundles); c 0/57 diff; d 0 hit(s) in 414 stores; surface same`
+(self-check). (a) `t07` identity SHA-256 `54ca564b…57d1`. (b) 559 member digests of 54 bundles (52 RC + C01 + C02;
+the printed `n_bundles` counts each bundle's `artifacts/` directory separately — kept as recorded, so the field
+compares like with like) and C03 `not_found: no such artifact`. (c) 57 replays: 52 v0.3.0 RC bundles
+`exact_replay MATCH bitwise`, 1 fixture `compatible_reproduction MATCH bitwise`, 4 fixtures
+`inspected_archived_results NOT_RUN`. (d) 414 stores, 0 hits. MCP digest `455d01eb…e125`. The suite run inside the
+record: 14838 passed, 3206 skipped, 1 failed — `test_t07_v17_reference.py::test_f6_the_forty_runs_fit_their_budget`
+(418 s > 300 s), a wall-clock budget missed under load (two full suites ran at once); not an MSG matter.
