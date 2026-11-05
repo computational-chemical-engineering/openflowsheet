@@ -34,3 +34,12 @@ Each entry gives the date, the question, the choice, who made it and where it is
 - **2026-11-05** DECISION (orchestrator): `pr-lib-v1` stays a v2-only basis — ADR 0050 D10 and R-615 stand; the note's
   "X01 rest: `pr-lib-v1` selectable" means selectable on v2 flowsheets. Alternative: reverse D10 (new ADR). Reversible
   by: an ADR amending ADR 0050 D10.
+- **2026-11-05** W1 P1 review (`docs/reviews/W1-P1-review.md`): ADR 0060 and 0061 accept after the listed fixes (5
+  must-fix, 16 should-fix). Rulings: D12 provenance table confirmed with four identity-bearing changes; `assess_rights`
+  accepted with four request checks; the no-data anchor (`syn001`, `s05`, `s07`) referred to the specifier — build
+  default null + `anchor_undetermined`, deadline before ADR-F4 is Accepted.
+- **2026-11-05** DECISION (orchestrator, on the reviewer's preference): finding 2 — `functional_contributor`
+  extensions are `preview` in 0.5 (listed, not passed to E01) until an ADR 0052 amendment (ADR-F8 or X01 rest).
+  Finding 12 — core admission covers single-side units; ADR-F6 adds per-side `requires` additively. Finding 19 —
+  whole-source rights rows keyed by `source_sha256`; `legacy.` reserved for the importer; "latest" = insertion order.
+  Reversible by: editing ADR 0060 D8/D12 or ADR 0061 D11 before F1/F3 are built.
