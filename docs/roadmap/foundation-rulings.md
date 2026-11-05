@@ -193,10 +193,11 @@ A12).
   its identity (Q9.R2), stated by the record (in a phase where it gives formation data, if it gives any) or set at
   import by this order. A charged component takes `aq` (infinite dilution, molality scale, conventional Δf h°(H⁺, aq) =
   s°(H⁺, aq) = 0); any other the first of `ig` (ideal gas), `aq`, `l`, `s:<form>` (forms in record order) in which the
-  record gives formation data, else (Q2.R4) any property correlation; `kg`-basis components included. No method enters
-  it, so adding or removing a method never re-anchors. Every method evaluating the component evaluates it in that phase
-  at (T°, P°); one that cannot is bridged (Q2.R8), and without a bridge datum it is refused for it
-  (`anchor_unavailable(<method>, <component>, <phase>)`).
+  record gives formation data, else (Q2.R4) any property correlation, else Q2.R9's default (Amendment 3); `kg`-basis
+  components included. No method enters it, so adding or removing a method never re-anchors. Every method evaluating
+  the component evaluates it in that phase at (T°, P°) (for `ig`, its ideal-gas state, Q2.R9 (b)); one that cannot is
+  bridged (Q2.R8), and without a bridge datum it is refused for it (`anchor_unavailable(<method>, <component>,
+  <phase>)`).
 - **Q2.R3** *Shift.* For method m and component c, Δ_{m,c} = Δf h°_c − h^m_c(anchor; T°, P°), h^m_c being the method's
   native pure-component (for `aq`, infinite-dilution) value. Ḣ_shifted = Ḣ_native + Σ_c n_c Δ_{m,c}; S likewise with
   s°_c. The shifts are constants of the composed method, computed once at composition and recorded in its `describe()`;
@@ -219,6 +220,19 @@ A12).
   provenance, and where another method evaluates c in both phases, δ = Δ_aφ h°_c − (h^{m′}_c(φ) − h^{m′}_c(a))(T°, P°).
   Energy still closes at boundaries (Q1 argument 2); δ appears in the reported T jump. A record with formation data in
   both a and φ gives the datum as Δ_aφ h°_c = Δf h°_c(φ) − Δf h°_c(a) (s likewise), with both entries as provenance.
+- **Q2.R9** *Default anchor* (Amendment 3, §15). (a) A record that states no anchor, has charge 0, gives no formation
+  data and tags no entry with a phase takes `ig` when its amount basis is `mol`, with the notice
+  `anchor_defaulted(<component>)` at normalisation. On `segment_mol` or `kg` it takes none (`null`,
+  `anchor_undetermined(<component>)`), and the component is refused on `ELEMENTAL-ref-v1` with that code until its
+  record states an anchor. The default is the record's field like any other anchor: part of its identity, a function of
+  its charge, basis, formation entries and phase tags alone, and the same record as one stating `ig` (the notice is not
+  identity). Q2.R4's datum then sits in the ideal-gas state: h = 0 at T°, s = 0 at (T°, P°). (b) A method evaluates an
+  `ig` anchor, defaulted or not, as its own ideal-gas state at (T°, P°), never as its vapour root at P° unless its vapour
+  model is an ideal gas. For a Helmholtz-form method, φ = φ° + φʳ, that is φ° alone: h_ig = R T° (1 + τ φ°_τ), s_ig =
+  R (τ φ°_τ − φ°(τ, δ°)), with τ = T_red/T°, δ° = P°/(R T° ρ_red) and the method's own R, T_red and molar ρ_red. (c) The
+  anchor evaluation passes the method's guard and declared domain like any other evaluation. A refusal there refuses
+  the method for the component, `anchor_unavailable(<method>, <component>, ig)` with the method's own reason code as its
+  cause, and the method keeps its native convention for it (Q2.R5).
 
 ### Rejected alternatives
 - **Native conventions with per-method summaries only (the default's fallback).** Energy does not close across a
@@ -232,6 +246,15 @@ A12).
   refusal of such methods, which a declaration can contain (R-924).
 - **h now, s at X13.** X13 would reopen the convention (R-927's first failure mode).
 - **P° = 101 325 Pa.** The repository's formation data (NASA, M01) use 1e5 Pa; P° affects s and g only.
+- **`null` for a record with nothing (ADR 0061's build default; Amendment 3).** It is faithful, but it refuses every
+  IAPWS-95 and CoolProp record on `ELEMENTAL-ref-v1` although both methods evaluate their ideal-gas state from φ° (§15).
+  With one convention per flowsheet, no such stream can then share a flowsheet with a PR-C1 or Wilson stream. Its
+  refusal is no louder than `anchor_unavailable`, which `ig` still gives where a method cannot evaluate the state.
+- **A phase chosen per legacy profile by the importer** (`l` for water, each fluid's phase at (T°, P°)). The phase at
+  (T°, P°) is a model output, so the anchor would depend on a method (A1-b).
+- **The vapour root at P° as the `ig` state.** It is the real gas, off by the departure. For water at (T°, P°) it is
+  refused (`phase_not_stable`, P° ≈ 31.5 P_sat), and wherever the fluid is liquid at (T°, P°) it does not exist.
+- **`ig` on every basis.** A `kg` material (coal, biomass) or a `segment_mol` polymer has no ideal-gas state.
 
 ### Argument
 The shift is a constant per component, so residual and Jacobian still describe one function, and exact caches key on the
@@ -285,10 +308,54 @@ component. *Floor:* a duty Ḣ_out − Ḣ_in carries ε·max|Ḣ|, 6.3e-9 W at 
   and h_shifted(l; T°) equals that Δf h°(l) within 2 ulp (difference and sum exact by Sterbenz; Q2.R3 rounds twice).
   (c) **[gen]** Each registered record's stored anchor equals the order's; the anchor map is identical over every subset
   and order of the registered methods.
+- **Q2.A10** *Default anchor, records* (F3; Amendment 3). Exact; no tolerance. (a) **[gen]** *Legacy.* The importer
+  writes `anchor_phase: ig` for the 127 records of `syn001` (A, B, C), `s05` (H2O) and `s07` (123 fluids), each with
+  index `findings` exactly `[anchor_defaulted(<id>)]`; the 20 records of `m01`, `l01`, `s10` and `s10-verification` take
+  `ig` from their formation entries (ADR 0061 D6 step 2) without the notice; no legacy record has a null anchor or
+  `anchor_undetermined`. Mutation control: the superseded step 4 leaves the 127 at `null`, with other SHAs. (b)
+  **[gen]** *Order.* R0 is a synthetic record: charge 0, `mol`, molar mass 0.1 kg/mol, no formation, no phase-tagged
+  entry, no anchor. R0 → `ig` and `anchor_defaulted`. R0 stating `ig` → no notice and the SHA of normalised R0;
+  normalised R0 normalised again → the same bytes, no notice. R0 stating `l` → `l`, no notice. R0 plus one entry tagged
+  `l` → `l` (step 3), no notice. R0 with charge +1 → `aq`, no notice. R0 on `kg` without molar mass → D6 gives `null`
+  and `anchor_undetermined`, and registration is refused `amount_basis_unsupported(kg)` until ADR-F2 admits the basis
+  (both asserted). Each case differs from R0 in one field, and each catches one wrong order: the notice entering
+  identity, the default overriding a statement, preceding step 3, preceding step 1, or ignoring the basis.
+- **Q2.A11** *Default anchor, methods* (F4; Amendment 3). Expectations **[gen]**: 50-digit closed forms on
+  `docs/derivations/scripts/s05_reference.py`'s coefficients, φ°_τ analytic, the liquid by its density root, T° the
+  double nearest 298.15; the digits below are a scratch evaluation of those forms (§15). The generator also claims, and
+  refuses to emit otherwise, that ln(P°/P_sat(T°)) > ε_σ and that each smallest error and each mutation listed in (a)
+  moves the value it acts on by more than 1e3 times that value's bound. (a) *IAPWS-95*
+  (`iapws95-v1` composed on `ELEMENTAL-ref-v1` with the `s05` H2O record). Admitted. The anchor evaluation gives
+  h^m(ig; T°) = 45 902.570 301 197 764 9 J/mol and s^m(ig; T°, P°) = 125.529 406 457 013 861 3 J/(mol K), each within
+  1e-12 relative; the recorded shifts are their negations, exactly (Q2.R4: Δf h° and s are 0); h_shifted(ig; T°) and
+  s_shifted(ig; T°, P°) are 0 within 2 ulp (1.5e-11 J/mol, 2.8e-14 J/(mol K)). Non-vanishing controls, the LIQUID at
+  (T°, P°): h_shifted = −44 012.428 328 641 234 5 J/mol and s_shifted = −118.914 200 335 262 723 1 J/(mol K), within
+  1e-10 relative. *Floor*, measured on the legacy kernel (x86_64): 5.7e-17, 2.4e-16, 5.6e-16 and 2.7e-16 relative, so
+  the bounds sit ≥ 3.6 and ≥ 5.2 decades above it. *Smallest error worth catching:* T° off by 0.01 K, 7.3e-6 relative in
+  h (c_p,ig(T°) = 33.587 J/(mol K)); CODATA's R for the formulation's, 1.1e-5; P° = 101 325 Pa, 0.109 J/(mol K) in s.
+  *Mutation controls:* the VAPOR root at P° is refused `phase_not_stable` (measured), so the composition is refused, not
+  admitted; φ° at δ = 1 moves s by R ln(1/δ°) = 50.67 J/(mol K); the real fluid at the ideal-gas density lies inside
+  the spinodal (the kernel's Z = −5.99 there); anchoring water on `l` makes the LIQUID control 0. (b) *CoolProp*
+  (`coolprop-heos-v1` with the `s07` records, the coolprop extra installed). **[gen]** Of the 123 fluids, the 118 whose
+  declared box contains (T°, P°) are admitted; the 5 whose box does not — CycloHexane (T_lo = 329.4 K), D4 (304.8 K),
+  MethylPalmitate (317.9 K), MethylStearate (327.5 K), p-Xylene (300.8 K) — are refused
+  `anchor_unavailable(coolprop-heos-v1, <id>, ig)` with cause `out_of_domain`, and each is admitted on
+  `COOLPROP-DEF-ref-v1` (Q2.R5).
+  H2O: h^m(ig; T°) and s^m(ig; T°, P°) equal (a)'s values within 1e-10 relative, and its LIQUID control (a)'s within
+  1e-9 relative, an expectation from another code path (CoolProp's Water α° is IAPWS-95's φ°, S05 agreement 9.0e-16 for
+  φ° and 1.3e-16 for φ°_τ; the table's R = 8.314 371 357 587 J/(mol K) differs from R_s·M by 4.8e-14 relative, which the
+  bound clears by 3.3 decades). Every admitted fluid: h_shifted(ig; T°) = 0 within 2 ulp, and for each phase the method
+  answers at (T°, P°), |h_shifted| > 2 ulp(h^m(ig; T°)) (an anchor taken from the answered phase gives exactly 0
+  there; O-12). Without the extra every `s07` composition is refused with cause `coolprop_unavailable`, and (b) is
+  reported `unsupported` with that cause, never passed. (c) *Reactions.* H2 + ½ O2 → H2O(g), H2O on `iapws95-v1` with
+  the `s05` record: refused `component_not_reaction_consistent(H2O)`. Contrast: with H2O on its `s10` record (formation
+  data) the same reaction is Q2.A2 (ii), admitted. (d) *No default.* Once ADR-F2 admits `kg`, a `kg` record with
+  nothing is refused on `ELEMENTAL-ref-v1` with `anchor_undetermined(<component>)` and admitted on a native
+  convention; until then (d) is reported `unsupported` with cause `amount_basis_unsupported(kg)`.
 
 **Effect on the note.** §2.3.6: `ELEMENTAL-ref-v1` with anchor phase, entropy datum and component datum. F4 exit: the
 convention-shift clause becomes Q2.A2. §6 Q2: default replaced. §2.3 "ADRs": ADR-F4 also amends ADR 0001 D5.2 (§10).
-Amendment 2: §14 (A1-b; F4 gains Q2.A9).
+Amendment 2: §14 (A1-b; F4 gains Q2.A9). Amendment 3: §15 (Q2.R9; F3 gains Q2.A10, F4 gains Q2.A11).
 
 ## Q3. Electrolyte species basis on connections
 
@@ -883,6 +950,8 @@ of F2's `species_basis` field; both are inside F2's scope.
 | O-9 | τ_mono = 1e-12 against the moment rounding floor (Q6.R5) | fact | F2's worst relative deficit on monodisperse probe streams, a recycle of loop gain 100 included | 1e-12; amend if the margin falls below 10× |
 | O-10 | Drain-defect bound and trajectory tolerances (Q1.A11, A12) | fact | F7's measured defect and T error on the probe at its default integrator tolerances | 1e-8·m₀, 1e-10 relative; amend if a margin falls below 10× |
 | O-11 | Default identification rule for `character` (Q4.R6) | Frank's preference | — | Venkatarathnam and Oellrich's phase identification parameter; reported only, so no numerical consequence |
+| O-12 | CoolProp's anchor evaluation at (T°, δ°) for the 118 in-box fluids, and Q2.A11 (b)'s answered-phase control (Amendment 3) | fact | one run of Q2.A11 (b) on a machine with the coolprop extra | all 118 admitted, every control above 2 ulp; a fluid that fails is refused with its cause and listed here by amendment (rule 6), never dropped from the assertion |
+| O-13 | Q2.A11 (a)'s floors on aarch64 (Amendment 3) | fact | the four comparisons on the CI's arm runner | 1e-12 and 1e-10 relative; amend if a margin falls below 100× |
 
 [zotero], cited not fetched: Michelsen (1982), *Fluid Phase Equilib.* 9 (TPD; stability matrix); Michelsen and Mollerup
 (2007), ch. 9–10 and ch. 12 (critical points); Heidemann and Khalil (1980), *AIChE J.* (criticality cubic form);
@@ -911,7 +980,7 @@ Venkatarathnam and Oellrich (2011), phase identification; CODATA key values for 
 - **§7 R4:** decided (Q1), mitigated by Q1.R3.
 - **§8:** `ComponentRecord` row adds amount basis, anchor and provenance axes; `SolutionCertificate` row adds claim
   level and witness.
-- Amendments 1 and 2 add the edits listed per finding or item in §13 and §14.
+- Amendments 1, 2 and 3 add the edits listed per finding or item in §13, §14 and §15.
 
 ## 13. Amendment 1 (2026-11-02)
 
@@ -968,3 +1037,107 @@ exact integer cases; nothing has run; the trajectory tolerances and drain bound 
 show that an identification rule gives meaningful characters near critical endpoints, nor that root continuation
 converges where roots merge (D09's limitation applies); Q3.R5's condition is checked on five bases, not proved for every
 declaration; it chooses no wall or rotor model, admits no U–H.8 vessel, and validates nothing against data.
+
+## 15. Amendment 3 (2026-11-05)
+
+Brief: `docs/roadmap/brief-specifier-anchor-no-data.md`; item: the anchor of a record with no formation data and nothing
+phase-tagged, referred by the W1 P1 review (`docs/reviews/W1-P1-review.md` ruling 2) from ADR 0061 D6 step 4 and its
+risk 2; it gates ADR-F4. Edits are in place; existing clause numbers are kept, new clauses appended. The last column
+lists the architect's edits to `target-architecture.md` and what the gated ADR adopts verbatim.
+
+**The deciding fact:** can a delegating composition over the legacy IAPWS-95 and CoolProp providers evaluate the
+ideal-gas state at (T° = 298.15 K, P° = 1e5 Pa)? Established from the code (paths under `src/openflowsheet/thermo/`) and
+from scratch evaluations of the legacy kernel and of `docs/derivations/scripts/s05_reference.py`'s 50-digit forms. No
+solve was run, and CoolProp is not installed on this workstation.
+- *Through the provider interface, no.* Both declare only `LIQUID` and `VAPOR` (`iapws95.py:822`, `coolprop_heos.py:928`)
+  and no ideal-gas property (`iapws95.py:128`, `coolprop_heos.py:434–435`). Their VAPOR is the real fluid, φ° + φʳ
+  (`iapws95.py:514`, `coolprop_heos.py:575`). For water at (T°, P°), P° = 31.5 P_sat(T°) (P_sat = 3 169.93 Pa,
+  ln(P°/P_sat) = 3.45 against ε_σ = 1e-6), so VAPOR is refused `phase_not_stable` (`iapws95.py:781`, `:902–906`;
+  measured), and LIQUID answers h = 1 890.141 972 556 56 J/mol.
+- *Through the kernels the compositions delegate to, yes.* φ° is evaluated apart from φʳ: `iapws95.py:347–373`
+  (`_ideal_jet`, public as `phi_jet`, `:424–428`) and `coolprop_heos.py:509–545` (`_jet`: CoolProp's α° partials on the
+  state its guard creates with the gas phase imposed, `:475`). φ°_τ carries no δ (`iapws95.py:368`, `dt=0.0`), so h_ig
+  is the same at every density (measured bitwise equal at δ = δ°, 1 and 1e-3: 45 902.570 301 197 77 J/mol), and s_ig
+  needs φ° at δ° only. Q2.R9 (b)'s two lines over these calls stay inside the note's definition of a delegating
+  composition, which "calls the legacy kernel functions unchanged" (`target-architecture.md:374–375`). They add no
+  native-layer output, so M2 (i)'s bitwise proof is untouched, and the shift is checked by Q2.A1.
+- *Domains.* IAPWS-95's box, T ∈ [273.16, 1 273.15] K and P ∈ [1e2, 1e8] Pa (`iapws95.py:97–100`), contains (T°, P°).
+  Of the 123 CoolProp boxes (`_coolprop_heos_fluids.py`), 118 contain it and 5 do not (Q2.A11 (b)). IAPWS-95's
+  coefficient file is in no packaged path (R-594, `iapws95.py:10–14`) and CoolProp is an extra; without them the
+  method's own refusal applies, reported as `anchor_unavailable` with that cause (Q2.R9 (c)).
+
+Both methods therefore evaluate `ig` wherever they evaluate anything at (T°, P°), and that decides for `ig`.
+
+| Item | Ruling (default adopted?) | Clauses | Assertions (exit) | Edits to the note; the ADR |
+| --- | --- | --- | --- | --- |
+| ADR 0061 risk 2 (ADR-F4) | The build default `null` is replaced by the review's alternative, `ig` for a `mol` record with the notice `anchor_defaulted`. The deciding fact forces four precisions: `ig` is the method's ideal-gas state (φ° alone for a Helmholtz method); its evaluation keeps the method's guard and domain; the notice is not identity; other bases keep `null` | Q2.R9 new; Q2.R2 amended (pointer); Q2 rejected alternatives extended | Q2.A10 new (F3; (a), (b) **[gen]**); Q2.A11 new (F4; its values and (b)'s partition **[gen]**) | §2.3.6: after Amendment 2's anchor text add "; a neutral `mol` record with neither formation data nor phase-tagged entries takes `ig`, reported `anchor_defaulted`, and an `ig` anchor is the method's ideal-gas state, φ° alone for a Helmholtz method (Q2.R9)". F3 exit: add "Q2.A10". F4 exit: "Q2.A1–A9" → "Q2.A1–A9, A11". §6 table, Q2 row: "(R1–R8)" → "(R1–R9)". §7: ADR 0061's risk 2 (its edit 5) enters as ruled by Q2.R9. ADR-F4 adopts Q2.R9 and Q2.A11; ADR 0061 takes the edits below |
+
+**Argument.**
+1. *Where the anchor of a datum-only component acts.* Q2.R4's datum is a constant per component. A component that takes
+   part in no reaction is conserved unit by unit, so the constant cancels in every balance. The anchor decides only the
+   state at which two methods agree (the T jump at a method boundary) and which methods are admitted. Reactions stay
+   refused (Q2.R4), so a defaulted anchor never reaches Δr h.
+2. *Why `ig`.* It is the first neutral phase of Q2.R2's order, and every neutral `mol` species has it. It is the state a
+   Helmholtz method defines on its own (φ°), and it is the phase step 2 gives the record once a gas formation datum is
+   added, so the record's shifted values then move by that Δf h°(g) alone.
+3. *Why not `null`.* It refuses all 124 IAPWS-95 and CoolProp records on `ELEMENTAL-ref-v1` although their methods
+   evaluate `ig`. With one convention per flowsheet, every steam, refrigerant and cryogen stream is then kept out of a
+   flowsheet holding a PR-C1 or Wilson stream, against R-924. Its merit, that the field says nothing when the record says
+   nothing, is kept by the notice and by the record's empty `formation`.
+4. *Identity.* The default is a function of the record alone, so A1-b holds. A defaulted and a stated `ig` are one
+   record, so the notice is a registration finding, and the legacy index pins it.
+5. *Cost.* No legacy index exists yet (`src/openflowsheet/records/` is absent on `main`, 2026-11-05), so the change costs
+   no regeneration; if one has been generated by the time ADR 0061 is edited, one `--write` regenerates it.
+
+**What the legacy importer writes** for the three files the default reaches. Every other field is as D12 maps it.
+
+| Profile and file | Records | `anchor_phase` | Index `findings` of each record |
+| --- | --- | --- | --- |
+| `syn001`, `benchmarks/syn001/components.yaml` | A, B, C | `ig` | `[anchor_defaulted(<id>)]` |
+| `s05`, `benchmarks/s05/components.yaml` | H2O | `ig` | `[anchor_defaulted(H2O)]` |
+| `s07`, `benchmarks/s07/components.yaml` | the 123 fluids, in file order | `ig` | `[anchor_defaulted(<id>)]` |
+
+None of the 127 carries `fit_inputs_unhashed`: D12's 17 belong to `m01`, `l01` and `s10`. The finding is spelled as
+the index spells its other findings. Q2.A10 (a) asserts these lists exactly.
+
+**Edits ADR 0061 needs** (the orchestrator applies them; this document edits no ADR).
+1. D6, step 4 becomes two steps: "4. Else, when `amount_basis` is `mol`, `ig`, with the notice
+   `anchor_defaulted(<component>)` (Q2.R9). 5. Else `null`, with the finding `anchor_undetermined(<component>)`; F4
+   refuses the component on `ELEMENTAL-ref-v1` with that code until its record states an anchor."
+2. D6, last sentence: "Step 4 is a gap in the ruling for records with no phase-tagged data at all (risk 2)." →
+   "Steps 4 and 5 are Q2.R9 (foundation rulings, Amendment 3); a stated `ig` and a defaulted one give the same record,
+   and only the defaulted one carries the notice."
+3. D7, *Findings*: before `anchor_undetermined(<component>)` add `anchor_defaulted(<component>)`.
+4. D12, "Anchors follow D6: …" → "Anchors follow D6: `ig` from formation data (step 2) for `m01`, `l01`, `s10`,
+   `s10-verification`; `ig` by default (step 4) for the 127 records of `syn001`, `s05`, `s07`, each with
+   `anchor_defaulted(<id>)` in its index `findings`. No legacy record has a null anchor."
+5. E-F3-13: "nothing phase-tagged → `null` and `anchor_undetermined`" → "nothing phase-tagged: `mol` → `ig` and
+   `anchor_defaulted`, with the SHA of the same record stating `ig`; `kg` → D6 gives `null` and `anchor_undetermined`,
+   and registration is refused `amount_basis_unsupported(kg)` until ADR-F2 (Q2.A10)".
+6. New catalogue codes, the notice row: add `anchor_defaulted(<component>)`.
+7. Risk 2: replace the body after its title with "*Resolved* by the specifier (foundation rulings Amendment 3, Q2.R9,
+   2026-11-05): `ig` with `anchor_defaulted` for a `mol` record, `null` with `anchor_undetermined` otherwise; an `ig`
+   anchor is the method's ideal-gas state, and its evaluation keeps the method's guard and domain."
+
+**New findings, listed and not fixed.**
+- **A3-a.** Q2.R9 (b) says what an `ig` anchor means for every record, not only a defaulted one. A composed real-gas
+  method evaluates its ideal-gas part, not its vapour at P°. Only Q2.A3 states this, and only for elements: Q2.A2's
+  identity cannot see a real-gas method anchored at its vapour at P°, because the shift and the check use the same
+  state, which is off the tabulated Δf h°(g) by the departure. ADR-F4 must give each composed real-gas method that
+  evaluation (for PR-C1, its ideal-gas c_p integral) or refuse it typed, and its exit should carry one departure control
+  on a non-Helmholtz method. ADR-F4.
+- **A3-b.** ADR 0061 D7 stores findings. A record registered first by the importer, with the notice, and later stated
+  `ig` by a user is one stored object. D8 should state whether the stored findings are the first registration's or
+  per registration. ADR 0061.
+
+**Not established by Amendment 3.**
+- No CoolProp evaluation was run. The 118/5 partition is read from the fluid table, and whether each in-box fluid's α°
+  evaluates at (T°, δ°) is O-12's measurement. An independent value exists only for CoolProp's water.
+- The floors come from a scratch script on the legacy kernel on one x86_64 machine; aarch64 is unmeasured (O-13). No
+  shipped generator emits the values yet; the reference generator must (**[gen]**).
+- The component datum is a convention for non-reacting use, not an elemental enthalpy. Nothing here makes an `s05` or
+  `s07` record reaction-capable (that needs a record with formation data), and nothing validates a property against
+  data.
+- It does not choose how ADR-F4 calls the kernels (`phi_jet`, the provider's `_jet`), nor the ideal-gas evaluation of
+  non-Helmholtz methods (A3-a). F4 composes no SYN-001 method (`target-architecture.md:432–433`), so the `syn001`
+  default is asserted at F3 only.
