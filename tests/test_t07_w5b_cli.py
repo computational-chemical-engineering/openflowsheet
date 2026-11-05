@@ -65,7 +65,8 @@ PINS = REPO_ROOT / "tests" / "fixtures" / "t07" / "cli-existing-commands.json"
 #: SHA-256 of the pins as T07 captured them. T08 D1's STR-05 extension (Frank, 2026-09-29) moved
 #: them by its substitution only, T08 review 2's U05 refusal (Ruling 1) by one entry only, and
 #: ADR 0025 D1.2's recording switch (Frank, 2026-10-02, R-148) by the structural hash `solve` and
-#: `inspect` print only: all three reversed, the file is these bytes again.
+#: `inspect` print only, and MSG (ADR 0058) by the refused `project init`'s stderr and the U05
+#: record only: all reversed, the file is these bytes again.
 PINS_T07_SHA256 = "86aae0c13e5125a2e26f3441af70878519fdbcac41b3432b5efb64efd1596a6c"
 #: The one pinned command U05 moved: `validate --task optimization` was the `simulation` report
 #: with its task and status renamed, and is now the typed `unsupported` refusal. MSG §3.7 moved
@@ -73,6 +74,11 @@ PINS_T07_SHA256 = "86aae0c13e5125a2e26f3441af70878519fdbcac41b3432b5efb64efd1596
 #: replaces the record whole, so `PINS_T07_SHA256` holds without a further reversal.
 U05_ARGV = ["validate", "<CASE>", "--task", "optimization"]
 CASE = REPO_ROOT / "benchmarks" / "syn001" / "cases" / "SYN-001-nominal.yaml"
+#: MSG §3.7/§3.8 (FB-01) moved the second `project init`'s stderr only: T07's one-liner became
+#: `project_exists`' layered text (surface `cli`). `msg_reversed` puts the one-liner back.
+MSG_PROJECT_INIT_STDERR_T07 = (
+    "<ROOT>/project is not empty; a project is created in a new directory\n"
+)
 
 
 # ================================================================ the existing commands, pinned
@@ -167,6 +173,21 @@ def single_threaded(monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.setenv(variable, "1")
 
 
+def msg_reversed(pins: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """`pins` with the refused `project init` as T07 captured it (its stderr only)."""
+    refused = [
+        index
+        for index, entry in enumerate(pins)
+        if entry["argv"][:2] == ["project", "init"] and entry["exit"] == 2
+    ]
+    assert len(refused) == 1, refused
+    (index,) = refused
+    assert pins[index]["stderr"].endswith("  Details: project_exists: <ROOT>/project\n")
+    restored = [dict(entry) for entry in pins]
+    restored[index]["stderr"] = MSG_PROJECT_INIT_STDERR_T07
+    return restored
+
+
 def u05_reversed(pins: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """`pins` with U05's entry as T07 captured it: the `validate <CASE>` entry with its task and
     status renamed. Every other entry is returned as it is."""
@@ -183,12 +204,12 @@ def u05_reversed(pins: list[dict[str, Any]]) -> list[dict[str, Any]]:
 
 
 @pytest.mark.usefixtures("single_threaded")
-def test_the_pins_moved_by_d1s_str05_substitution_u05_and_v2_recording_only() -> None:
+def test_the_pins_moved_by_d1s_str05_substitution_u05_v2_recording_and_msg_only() -> None:
     pins = json.loads(PINS.read_text(encoding="utf-8"))
     (u05,) = (entry for entry in pins if entry["argv"] == U05_ARGV)
     assert u05["exit"] == API_EXIT_CODES["unsupported"]
     assert json.loads(u05["stdout"])["message"] == "task_unsupported(optimization)"
-    restored = json.dumps(u05_reversed(pins), indent=1, ensure_ascii=False) + "\n"
+    restored = json.dumps(u05_reversed(msg_reversed(pins)), indent=1, ensure_ascii=False) + "\n"
     reversed_pins = v2_reversed_cli_text(d1_str05_reversed_message(renamed_back_cli_text(restored)))
     assert hashlib.sha256(reversed_pins.encode("utf-8")).hexdigest() == PINS_T07_SHA256
 

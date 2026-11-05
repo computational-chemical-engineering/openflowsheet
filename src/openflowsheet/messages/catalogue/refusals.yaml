@@ -763,6 +763,22 @@ entries:
     title: No saturation
     summary: 'Refused: no saturation.'
     review: true
+  - code: not_a_directory
+    family: refusal
+    kind: input
+    complete: false
+    title: The path is a file, not a directory
+    params: {directory: {type: directory}}
+    summary: "{directory} is a file, not a directory; a project needs a new or empty directory."
+    review: true
+  - code: not_a_project
+    family: refusal
+    kind: input
+    complete: false
+    title: The directory does not hold a project
+    params: {directory: {type: directory}}
+    summary: "Directory {directory} is not a project: it holds no project database."
+    review: true
   - code: not_converged
     family: refusal
     kind: numerical
@@ -978,6 +994,17 @@ entries:
     complete: false
     title: Pressure rise
     summary: 'Refused: pressure rise.'
+  - code: project_id_mismatch
+    family: refusal
+    kind: input
+    complete: false
+    title: The directory holds a project with another id
+    params:
+      directory: {type: directory}
+      project_id: {type: text}
+      existing: {type: text}
+    summary: "Directory {directory} holds the project '{existing!raw}', not '{project_id!raw}'."
+    review: true
   - code: projection_unevaluable
     family: refusal
     kind: input

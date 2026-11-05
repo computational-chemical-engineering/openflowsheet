@@ -242,14 +242,18 @@ def command_replay(arguments: argparse.Namespace) -> int:
 
 
 def command_project_init(arguments: argparse.Namespace) -> int:
-    """T07 §10.3: a new project directory — store, empty policy, owner and job folders."""
+    """T07 §10.3: a new project directory — store, empty policy, owner and job folders. With
+    `--exist-ok` (MSG §3.8) a directory that holds a project is opened and reported as on
+    creation. A coded refusal prints its layered text (surface `cli`) on stderr."""
     from openflowsheet.application.local import LocalApplication
     from openflowsheet.application.store import StoreError
 
     try:
-        application = LocalApplication.create(arguments.directory, project_id=arguments.project_id)
+        application = LocalApplication.create(
+            arguments.directory, project_id=arguments.project_id, exist_ok=arguments.exist_ok
+        )
     except StoreError as error:
-        print(str(error), file=sys.stderr)
+        print(error.text("cli"), file=sys.stderr)
         return 2
     with application:
         print(f"project   {application.project_id}")
@@ -278,7 +282,7 @@ def command_project_grant(arguments: argparse.Namespace) -> int:
             capability_id=arguments.capability_id,
         )
     except (ValueError, StoreError) as error:
-        print(str(error), file=sys.stderr)
+        print(_human_text(error), file=sys.stderr)
         return 2
     print(f"capability {capability.capability_id}")
     print(f"principal  {capability.principal_id}")
@@ -296,7 +300,7 @@ def command_project_revoke(arguments: argparse.Namespace) -> int:
     try:
         capability = revoke(Path(arguments.project), arguments.capability)
     except (ValueError, StoreError) as error:
-        print(str(error), file=sys.stderr)
+        print(_human_text(error), file=sys.stderr)
         return 2
     print(f"revoked    {capability.capability_id} (principal {capability.principal_id})")
     return 0
@@ -306,6 +310,14 @@ def _print_document(document: Any) -> None:
     from openflowsheet.canonical import canonical_json
 
     sys.stdout.write(canonical_json(document).decode("utf-8") + "\n")
+
+
+def _human_text(error: Exception) -> str:
+    """An error as the command line shows it: a coded `StoreError`'s layered text on the
+    `cli` surface (MSG §3.7), anything else as `str()`."""
+    from openflowsheet.application.store import StoreError
+
+    return error.text("cli") if isinstance(error, StoreError) else str(error)
 
 
 def _print_refusal(error: ApiError) -> int:
@@ -366,7 +378,7 @@ def command_api(arguments: argparse.Namespace) -> int:
     try:
         application = LocalApplication.open(arguments.project)
     except (StoreError, PolicyRefusedError) as error:
-        print(str(error), file=sys.stderr)
+        print(_human_text(error), file=sys.stderr)
         return 1
     with application:
         try:
@@ -469,13 +481,13 @@ def command_serve_http(arguments: argparse.Namespace) -> int:
         try:
             web.static_directory()
         except web.WebShellMissingError as error:
-            print(f"serve-http: refused to start: {error}", file=sys.stderr)
+            print(f"serve-http: refused to start: {_human_text(error)}", file=sys.stderr)
             return 1
         serve = web.serve
     try:
         application = LocalApplication.open(arguments.project, executor="process")
     except (StoreError, PolicyRefusedError) as error:
-        print(f"serve-http: refused to start: {error}", file=sys.stderr)
+        print(f"serve-http: refused to start: {_human_text(error)}", file=sys.stderr)
         return 1
     with application:
         serve(
@@ -544,6 +556,11 @@ def build_parser() -> argparse.ArgumentParser:
     init_command = project_commands.add_parser("init", help="create a project directory")
     init_command.add_argument("directory")
     init_command.add_argument("--project-id", default=None)
+    init_command.add_argument(
+        "--exist-ok",
+        action="store_true",
+        help="open the project the directory already holds instead of refusing it",
+    )
     init_command.set_defaults(handler=command_project_init)
 
     grant_command = project_commands.add_parser(

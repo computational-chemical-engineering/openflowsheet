@@ -130,7 +130,7 @@
   ],
   "exit": 2,
   "stdout": "",
-  "stderr": "<ROOT>/project is not empty; a project is created in a new directory\n"
+  "stderr": "Directory '<ROOT>/project' is not empty: it already holds a project, and project init needs a new or empty directory.\n  Why:     create() makes a new project and never reuses a directory, so a re-run cannot overwrite work silently.\n  Do:      The project is ready to use: pass --project <ROOT>/project to other commands, or run project init with --exist-ok.\n  Kind:    Input problem: something in the flowsheet or the request needs to change.\n  Code:    project_exists (openflowsheet explain project_exists)\n  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#project_exists\n  Details: project_exists: <ROOT>/project\n"
  },
  {
   "argv": [

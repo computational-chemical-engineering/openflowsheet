@@ -61,7 +61,7 @@ with open("rankine-cycle.changeset.json") as handle:
     change_set = json.load(handle)
 change, expected_revision, key = Change.from_change_set(change_set)
 
-with LocalApplication.create("plant") as app:          # a project directory, created empty
+with LocalApplication.create("plant", exist_ok=True) as app:  # created, or opened on a re-run
     committed = app.commit_change(change, expected_revision, key)
     report = app.validate(committed.revision_id, "simulation")
     print(report.status)                               # READY_FOR_SIMULATION

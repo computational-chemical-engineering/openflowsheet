@@ -95,7 +95,9 @@ from openflowsheet.application.store import (
     IdempotencyKeyReusedError,
     LedgerRow,
     ProjectStore,
+    StoreError,
     atomic_write_bytes,
+    coded_store_error,
 )
 from openflowsheet.application.transactions import (
     EditPathError,
@@ -190,26 +192,64 @@ class LocalApplication:
 
     @classmethod
     def create(
-        cls, directory: str | os.PathLike[str], *, project_id: str | None = None
+        cls,
+        directory: str | os.PathLike[str],
+        *,
+        project_id: str | None = None,
+        exist_ok: bool = False,
     ) -> LocalApplication:
         """A new project in `directory` (absent or empty), opened by the local owner.
+
+        With `exist_ok`, a directory that already holds a project is opened instead (MSG §3.8,
+        FB-01), so a script that creates its project can run twice. It tries to create first
+        and opens only on the typed refusal `project_exists`, so there is no check-then-act
+        race.
 
         Parameters
         ----------
         directory
-            Where the project is created; it must be absent or empty.
+            Where the project is created; it must be absent or empty, or (with `exist_ok`)
+            hold a project.
         project_id
-            The project's id; a fresh `project-<hex>` id when omitted.
+            The project's id; a fresh `project-<hex>` id when omitted. With `exist_ok`, an
+            existing project must have this id when it is given.
+        exist_ok
+            Open the project the directory already holds instead of refusing it.
 
         Returns
         -------
         LocalApplication
-            The new project, opened with the inline executor.
+            The new (or, with `exist_ok`, the existing) project, opened with the inline
+            executor.
+
+        Raises
+        ------
+        StoreError
+            Coded (`.code`): `project_exists` (without `exist_ok`), `project_id_mismatch`,
+            `directory_not_empty` (files that are not a project) or `not_a_directory`.
         """
-        ProjectStore.create(
-            Path(directory),
-            project_id=project_id if project_id is not None else f"project-{uuid.uuid4().hex[:12]}",
-        ).close()
+        try:
+            ProjectStore.create(
+                Path(directory),
+                project_id=project_id
+                if project_id is not None
+                else f"project-{uuid.uuid4().hex[:12]}",
+            ).close()
+        except StoreError as refused:
+            if not exist_ok or refused.code != "project_exists":
+                raise
+            store = ProjectStore.open(Path(directory))
+            try:
+                existing = store.project_id
+            finally:
+                store.close()
+            if project_id is not None and existing != project_id:
+                raise coded_store_error(
+                    "project_id_mismatch",
+                    Path(directory),
+                    project_id=project_id,
+                    existing=existing,
+                ) from None
         return cls.open(directory)
 
     @classmethod

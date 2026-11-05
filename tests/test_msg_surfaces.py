@@ -512,3 +512,34 @@ def test_no_handler_turns_a_layered_error_into_a_document_by_str() -> None:
         for site in _str_conversions(path)
     ]
     assert sites == []
+
+
+# ================================================================ FB-01 on the command line
+
+
+def test_fb01_project_init_twice_refuses_with_the_cli_text_and_exist_ok_opens(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    directory = tmp_path / "plant"
+    assert cli.main(["project", "init", str(directory), "--project-id", "p-cli"]) == 0
+    created, _ = capsys.readouterr()
+    assert cli.main(["project", "init", str(directory), "--project-id", "p-cli"]) == 2
+    out, err = capsys.readouterr()
+    assert out == ""
+    lines = err.split("\n")
+    assert lines[0] == (
+        f"Directory '{directory}' is not empty: it already holds a project, and project init "
+        "needs a new or empty directory."
+    )
+    assert lines[2] == (
+        f"  Do:      The project is ready to use: pass --project {directory} to other commands, "
+        "or run project init with --exist-ok."
+    )
+    assert err.endswith(f"  Details: project_exists: {directory}\n")
+    argv = ["project", "init", str(directory), "--project-id", "p-cli", "--exist-ok"]
+    assert cli.main(argv) == 0
+    opened, err = capsys.readouterr()
+    assert (opened, err) == (created, "")
+    assert cli.main([*argv[:-3], "--project-id", "p-other", "--exist-ok"]) == 2
+    _, err = capsys.readouterr()
+    assert err.endswith(f"  Details: project_id_mismatch: {directory}\n")
