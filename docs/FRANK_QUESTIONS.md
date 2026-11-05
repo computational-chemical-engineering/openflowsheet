@@ -285,7 +285,7 @@ Source: `docs/roadmap/foundation-rulings.md` §14 (Amendment 2), §11. Work proc
   ADR 0008 answer Q-A5 keeps out of the first dynamics release (TX). Until it is admitted, the "vessel drains to zero"
   rule only covers evacuating a rigid vessel. Default: keep it out of TX's first release, decide when X25 is designed.
 
-## MSG — ADR 0058, messages and the code catalogue (2026-11-05; needs your approval before MSG merges)
+## MSG — ADR 0058, messages and the code catalogue (2026-11-05) — ANSWERED 2026-11-05: accepted (R-932…R-937)
 
 Design: `docs/design/MSG-messages.md`; ADR: `docs/adr/0058-messages-and-code-catalogue.md` (Proposed). In plain words:
 it changes the frozen application contract, additively, so it needs your yes (as ADR 0019 Amendment 3 did).

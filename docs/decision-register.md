@@ -18436,3 +18436,31 @@ mass entries.
 
 **Watch for.** Configurable approval must never skip tests, gates, the independent review, or the `contributed,
 unreviewed` flag on results that use an unreviewed extension. An agent never certifies its own extension.
+
+---
+
+## R-932…R-937: Messages — a code catalogue rendered on read, `RunResult.failure`, `explain` (ADR 0058, ADR 0019 Amendment 6)
+
+| | |
+| --- | --- |
+| Date | 2026-11-05 |
+| Decided by | Frank ("accept ADR 0058"), on the MSG architect pass |
+| Normative text | `docs/adr/0058-messages-and-code-catalogue.md`; detail `docs/design/MSG-messages.md` |
+| Affected packages | MSG; X04 (display units slot); F1 (catalogue extension slot); every surface (Python, CLI, HTTP, MCP, web shell) |
+
+**Decisions.**
+- **R-932** Human text is rendered on read from a catalogue and never stored or hashed; producers keep their machine
+  messages byte for byte. *Rejected:* rewriting producer messages (breaks ADR 0025 replay of released bundles); storing
+  both texts.
+- **R-933** The failure kind and layered explanation travel as `detail.explanation`; `api-error.schema.json` stays
+  byte-identical. *Rejected:* a new `ApiError` member (`additionalProperties: false`; 0.3 clients would reject it).
+- **R-934** `RunResult.failure` carries a domain outcome's cause, built on read from the failure bundle; `error` keeps
+  its R-095 meaning. *Rejected:* the cause in `error`; an `explain_run` operation.
+- **R-935** R-159's scope clarified: it governs machine messages; renderings begin with the human summary.
+- **R-936** Numbers travel in a diagnostic sidecar on the failure value, persisted only in
+  `worker_result.run.diagnosis`. *Rejected:* a `ContextVar` collector; a bundle member; render-time property calls.
+- **R-937** Catalogue codes are stable and the key set only grows; a `.` in a key is reserved for extension namespaces.
+  `explain` is an `Inspection` operation on all four transports (rule C1).
+
+**Watch for.** Any MSG change that moves a bundle byte, the `t07` document or a 0.3.0 replay verdict (MSG-G0, then F0);
+the sidecar (WO-5) leaking into a serialized artifact; an emitted code without a catalogue entry (MSG-G2/G3).
