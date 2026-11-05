@@ -173,11 +173,14 @@ At normalisation, when `anchor_phase` is absent:
 2. Else the first of `ig`, `aq`, `l`, then the `s:` forms in record order, in which `formation` has an entry.
 3. Else the first phase in that order in which an entry is phase-tagged (the ruling's "any property correlation";
    the component datum of Q2.R4 then applies in F4).
-4. Else `null`, with the finding `anchor_undetermined(<component>)`.
+4. Else, when `amount_basis` is `mol`, `ig`, with the notice `anchor_defaulted(<component>)` (Q2.R9).
+5. Else `null`, with the finding `anchor_undetermined(<component>)`; F4 refuses the component on `ELEMENTAL-ref-v1` with
+   that code until its record states an anchor.
 
 A stated anchor must be a phase with a formation entry when the record has any (else `anchor_phase_invalid(<component>,
 <phase>)`), and a charged component's anchor must be `aq`. No method enters the derivation, so adding or removing a
-method never re-anchors. Step 4 is a gap in the ruling for records with no phase-tagged data at all (risk 2).
+method never re-anchors. Steps 4 and 5 are Q2.R9 (foundation rulings, Amendment 3); a stated `ig` and a defaulted one give the same record,
+and only the defaulted one carries the notice.
 
 ### D7. Validation
 
@@ -192,7 +195,7 @@ ADR-F2's quantity kinds are in `units.json` (then a one-line table change admits
 `sources`). Entropy entries need a `molar_entropy` kind, which ADR-F2 must add (risk 6); until then they are
 `record_unit_invalid`.
 
-**Findings (stored, reported):** `anchor_undetermined(<component>)`; `fit_inputs_unhashed(<entry>)`;
+**Findings (stored, reported):** `anchor_defaulted(<component>)`; `anchor_undetermined(<component>)`; `fit_inputs_unhashed(<entry>)`;
 `molar_mass_inconsistent(<reaction>)` (below; Q7.A3 reports it "in the validation class", so it is a notice, not a
 refusal).
 
@@ -365,8 +368,9 @@ identity. Parameters:
 - `syn001`: each parameter `p` → constant entry `syn001.p`, phase null.
 - `s05`, `s07`: no parameters.
 
-Anchors follow D6: `ig` for `m01`, `l01`, `s10`, `s10-verification`; `null` with
-`anchor_undetermined` for `syn001`, `s05`, `s07`.
+Anchors follow D6: `ig` from formation data (step 2) for `m01`, `l01`, `s10`, `s10-verification`; `ig` by default (step 4)
+for the 127 records of `syn001`, `s05`, `s07`, each with `anchor_defaulted(<id>)` in its index `findings`. No legacy
+record has a null anchor.
 
 **Provenance classification** (identity-bearing; **confirmed with four changes by the W1 P1 review, ruling 1**).
 `derivation` describes the step from the cited source to the stored value; a derivation inside the source belongs in
@@ -520,7 +524,9 @@ and `segment_mol` waits only for ADR-F2's kinds; the rules are core now.
   `provenance_invalid`.
 - **E-F3-13 Anchor [gen].** Synthetic records: charged → `aq`; formation in `l` only → `l`; in `ig` and `l` → `ig`; two
   solid forms → the first in record order; a stated anchor without formation there while formation exists elsewhere →
-  `anchor_phase_invalid`; nothing phase-tagged → `null` and `anchor_undetermined`. Legacy anchors as D12 states.
+  `anchor_phase_invalid`; nothing phase-tagged: `mol` → `ig` and
+  `anchor_defaulted`, with the SHA of the same record stating `ig`; `kg` → D6 gives `null` and `anchor_undetermined`,
+  and registration is refused `amount_basis_unsupported(kg)` until ADR-F2 (Q2.A10). Legacy anchors as D12 states.
 
 ---
 
@@ -531,7 +537,7 @@ and `segment_mol` waits only for ADR-F2's kinds; the rules are core now.
 | `component_ambiguous(<key>)`, `record_schema_invalid(<pointer>)`, `record_unit_invalid(<entry>)`, `amount_basis_invalid(<component>, <rule>)`, `identifier_invalid(<component>, <scheme>)`, `formula_elements_invalid(<component>)`, `anchor_phase_invalid(<component>, <phase>)`, `correlation_form_unknown(<entry>, <form>)`, `correlation_coefficients_invalid(<entry>, <form>)`, `validity_range_invalid(<entry>, <variable>)`, `provenance_invalid(<entry>)`, `parameter_set_component_missing(<set>, <key>)`, `reaction_element_imbalance(<reaction>, <element>)`, `reaction_charge_imbalance(<reaction>)`, `data_unavailable(<sha>)` | refusal | `input` |
 | `molar_mass_inconsistent(<reaction>)` | notice | `notice` (explicit override of MSG's `*_inconsistent` → bug rule; `review: false`) |
 | `amount_basis_unsupported(<basis>)`, `store_path_too_long(<root>)` | refusal | `not_supported` |
-| `anchor_undetermined(<component>)`, `fit_inputs_unhashed(<entry>)`, `reaction_element_unchecked(<reaction>, <component>)` | notice | `notice` |
+| `anchor_defaulted(<component>)`, `anchor_undetermined(<component>)`, `fit_inputs_unhashed(<entry>)`, `reaction_element_unchecked(<reaction>, <component>)` | notice | `notice` |
 | `store_object_corrupt(<sha>)`, `legacy_record_drift(<file>, <id>)` | refusal | `bug` |
 
 `data_unavailable` is Q9.R7's code; F8 reuses this entry.
@@ -569,15 +575,10 @@ built-in `registry_sha256` and the legacy index's digest, so a later change to e
 1. **Legacy provenance classification is identity-bearing** (D12's table). *Resolved:* the W1 P1 review confirmed it
    with four changes (ruling 1), applied in D12; the specifier decides on any later dispute. A correction before any released v2
    document pins these SHAs costs one index regeneration; after, it makes new records.
-2. **Anchor for a record with no formation data and nothing phase-tagged** (`syn001`, `s05`, `s07`): Q2.R2 does not
-   decide it. **Referred to the specifier** by the W1 P1 review (ruling 2): any value here amends Q2.R2, and the choice
-   depends on facts in F4. *Needs:* a specifier ruling before ADR-F4 is Accepted; changing the default regenerates the
-   legacy index. *Build default:* `null` with `anchor_undetermined` (D6 step 4 stands); F4 refuses such a component on
-   `ELEMENTAL-ref-v1` with that code until a record states its anchor. Against null, for the specifier: Q2.R4's
-   component datum then never reaches `s05` or `s07`, so no CoolProp or IAPWS-95 water record is usable on
-   `ELEMENTAL-ref-v1`; the alternative is `ig` for `mol` basis with a notice `anchor_defaulted(<component>)`. The fact
-   that decides it: whether F4's delegating IAPWS-95 and CoolProp compositions evaluate the ideal-gas state at (T°, P°).
-   *Deadline:* before ADR-F4 is Accepted.
+2. **Anchor for a record with no formation data and nothing phase-tagged** (`syn001`, `s05`, `s07`): *Resolved* by the
+   specifier (foundation rulings Amendment 3, Q2.R9, 2026-11-05): `ig` with `anchor_defaulted` for a `mol` record, `null`
+   with `anchor_undetermined` otherwise; an `ig` anchor is the method's ideal-gas state, and its evaluation keeps the
+   method's guard and domain.
 3. **Water for the v2 IAPWS-95 composition.** The `s05` record has no formation data, so F4 must bind a water record
    that has (the `s10` one, as Q2.A9 (b) does, or a merged record). *Needs:* F4's design. *Default:* F4's choice; F3
    imports faithfully.
@@ -651,3 +652,17 @@ preference).
 
 **Not applied:** notes N7 (write-protocol details), N8 (for the specifier, not an ADR fix) and N9 (E-F3-2's
 `selectable_bases()` scope): the review lists no exact edit for them. They remain open for F3-WO2 and WO3.
+
+## Amendment 3 applied (`docs/roadmap/foundation-rulings.md` §15, Q2.R9, 2026-11-05)
+
+Status stays Proposed.
+
+| §15 edit | Applied to |
+| --- | --- |
+| 1 | D6: step 4 split into step 4 (`ig`, `anchor_defaulted`) and step 5 (`null`, `anchor_undetermined`). |
+| 2 | D6: last sentence replaced (steps 4 and 5 are Q2.R9). |
+| 3 | D7 Findings: `anchor_defaulted(<component>)` added. |
+| 4 | D12: anchor sentence replaced (127 records `ig` by default, each with `anchor_defaulted`). |
+| 5 | E-F3-13: nothing-phase-tagged clause replaced (`mol` → `ig`; `kg` → refused until ADR-F2). |
+| 6 | Code table: `anchor_defaulted(<component>)` added to the notice row. |
+| 7 | Risk 2: body replaced by the resolution. |
