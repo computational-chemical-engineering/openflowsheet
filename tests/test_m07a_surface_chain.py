@@ -215,6 +215,18 @@ def test_msg_g10_link_c_4_is_msgs_strip_and_digest(served: list[dict[str, Any]])
     assert L2.digest == surface.M04_SERVED_SHA256
 
 
+def test_msg_the_added_description_is_pinned_at_its_recorded_hash() -> None:
+    """§5.3 item 4 with c_4 (ADR 0058 D7): `explain.md` is pinned at `REVIEW.json`'s hash, and one
+    byte of it changed is caught as MSG's."""
+    record = json.loads((REPO_ROOT / REVIEW).read_text(encoding="utf-8"))
+    for name, sha256 in m07a_rc.MSG_FILE_SHA256.items():
+        assert record["operations"][name]["sha256"] == sha256
+    texts = m07a_rc.description_texts()
+    texts["explain"] = texts["explain"].replace(".", ",", 1)
+    (problem,) = m07a_rc.description_problems(texts)
+    assert problem.startswith("explain.md: ") and " is not MSG's " in problem
+
+
 def test_msg_g10_control_c_4_left_in_place(served: list[dict[str, Any]]) -> None:
     """A c_4 whose strip takes nothing out fails at c_3: `failure` reaches M04's digest."""
     assert_the_unmodified_list_passes(served)

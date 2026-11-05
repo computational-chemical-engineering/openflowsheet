@@ -94,6 +94,11 @@ V17_C2_FILE_SHA256: Final = {
     "validate": "302dc544f519046e25efe6d5a5e83840b6017bfbd36d94a3e3e54435eaae7c12",
     "wait_job": "4a5b99596c771bf6b3254fa9c294e8ad32077de45c3a2e64b93eda0dca37a01c",
 }
+#: c_4 (R-934, ADR 0058 D7): the one tool MSG added, `explain`, its file pinned as `v17-c2`'s are.
+#: Its two reviews are `REVIEW.json`'s, which `tests/test_t08_w2_description_reviews.py` holds.
+MSG_FILE_SHA256: Final = {
+    "explain": "695311624eb29dba53bf277f592d2619aa8a5d4680c3cefc5a32587a4e510a46",
+}
 #: The two changed files as R-133 carried them: their reviewed hashes in `REVIEW.json` as v0.1.0
 #: released it (`PUBLIC_ROOT`).
 R133_FILE_SHA256: Final = {
@@ -282,15 +287,21 @@ def description_texts() -> dict[str, str]:
 
 
 def description_problems(texts: Mapping[str, str]) -> list[str]:
-    """§5.3 item 4 on `texts` (operation name -> description file): one line per failure."""
+    """§5.3 item 4 on `texts` (operation name -> description file): one line per failure. The
+    tools are `v17-c2`'s 17 and MSG's `explain` (c_4), each file at its pinned hash."""
     problems: list[str] = []
-    if sorted(texts) != sorted(V17_C2_FILE_SHA256):
-        problems.append(f"tools {sorted(texts)} are not v17-c2's 17")
-    for name in sorted(set(texts) & set(V17_C2_FILE_SHA256)):
-        expected = R133_FILE_SHA256[name] if name in CHANGED else V17_C2_FILE_SHA256[name]
+    pinned = {**V17_C2_FILE_SHA256, **MSG_FILE_SHA256}
+    if sorted(texts) != sorted(pinned):
+        problems.append(f"tools {sorted(texts)} are not v17-c2's 17 and MSG's explain")
+    for name in sorted(set(texts) & set(pinned)):
+        if name in CHANGED:
+            expected, source = R133_FILE_SHA256[name], "R-133's"
+        elif name in MSG_FILE_SHA256:
+            expected, source = MSG_FILE_SHA256[name], "MSG's"
+        else:
+            expected, source = V17_C2_FILE_SHA256[name], "v17-c2's"
         found = hashlib.sha256(texts[name].encode("utf-8")).hexdigest()
         if found != expected:
-            source = "R-133's" if name in CHANGED else "v17-c2's"
             problems.append(f"{name}.md: {found} is not {source} {expected}")
     return problems
 
