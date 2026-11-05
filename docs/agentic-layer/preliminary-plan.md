@@ -286,7 +286,8 @@ PDF status (2026-11-04):
   and Douglas (split to one book page per PDF page and re-OCR'd: 97.5 % dictionary words; PDF page labels match the
   printed page numbers).
 - **Still needed:** none. All 13 are present (2026-11-05).
- The PDFs stay in Zotero storage only; this repository gets citations,
+
+The PDFs stay in Zotero storage only; this repository gets citations,
 plus short page-cited excerpts on request.
 
 ## 10. Questions still open (nothing is blocked)
