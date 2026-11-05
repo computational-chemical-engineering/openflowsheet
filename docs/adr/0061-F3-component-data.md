@@ -280,8 +280,10 @@ data_lock_sha256 = document_sha256(lock)
 
 **Place in identity.** The lock is *derived*, never stored in the revision: from the v2 revision (record SHAs, method
 ids and versions; F2's schema) and the F1 registry (`implementation_sha256` = `sha256(canonical_json([descriptor_sha256,
-self_sha256]))` of the method descriptor, ADR 0060 D3). Record SHAs enter the revision's `content_hash` through F2; `data_lock_sha256` is every composed
-provider's `data_sha256` (F4), and so enters the exact cache keys and `describe()`; F8 records the lock document and its
+self_sha256]))` of the method descriptor, ADR 0060 D3). Record SHAs enter the revision's `content_hash` through F2; each composed
+provider's `data_sha256` is its narrowed lock (ADR 0063 D2: `document_sha256` of this lock restricted to the provider's
+substream, with the delegated legacy provider's own `data_sha256` or `null`), and so enters the exact cache keys and
+`describe()`; `data_lock_sha256` of the whole lock is recorded per run; F8 records the lock document and its
 SHA in the run manifest and the bundle. The builder `records.lock.build_lock(components, parameter_sets, methods,
 method_options, stack)` normalises the order, checks each SHA resolves (else `data_unavailable(<sha>)`) and checks
 parameter-set matching (D5). Rights never enter it (Q9.A2).
@@ -591,9 +593,8 @@ built-in `registry_sha256` and the legacy index's digest, so a later change to e
    legacy record has s°). *Default:* refused until then; nothing in 0.5's import needs it, but F4's Q2.A9 fixtures do.
 7. **Rights precedence: a project row overrides the repository row.** *Needs:* Frank's preference (a user holding a
    licence). *Default:* as D11 for bundles; packaging uses the repository layer only.
-8. **`data_sha256` = the whole lock** changes every composed provider's cache identity when an unrelated method joins
-   the flowsheet. *Needs:* fact (cache hit rates, F4). *Default:* the note's rule; F4 may narrow it to a per-substream
-   sub-lock before the W1 freeze.
+8. **`data_sha256` = the whole lock** *Resolved* by ADR 0063 D2 (narrowed per substream and method; W1 P2 review
+   ruling 1).
 9. **Windows store behaviour** is simulated until X07a's legs exist. *Default:* recorded `pending`.
 10. **One file's comment edit moves all its records' SHAs** (`file_sha256` is identity, the raw-payload hash of Q9.R2).
     *Default:* accepted; the files are byte-frozen.
@@ -666,3 +667,12 @@ Status stays Proposed.
 | 5 | E-F3-13: nothing-phase-tagged clause replaced (`mol` → `ig`; `kg` → refused until ADR-F2). |
 | 6 | Code table: `anchor_defaulted(<component>)` added to the notice row. |
 | 7 | Risk 2: body replaced by the resolution. |
+
+## W1 P2 review ruling 1 applied (`docs/reviews/W1-P2-review.md`, 2026-11-05)
+
+Status stays Proposed.
+
+| Ruling 1 edit | Applied to |
+| --- | --- |
+| (b) first item | D10: the `data_lock_sha256` sentence replaced by the narrowed per-provider `data_sha256` (ADR 0063 D2). |
+| (b) second item | Risk 8: text after the title replaced by the resolution. |

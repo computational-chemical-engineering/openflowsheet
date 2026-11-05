@@ -40,11 +40,14 @@ Added kinds (dimension order L, M, T, Θ, N, I, J):
 | `specific_enthalpy` | `J/kg` | (2,0,−2,0,0,0,0) | `ĥ`; h of a `kg`-basis component (Q7.A4) |
 | `specific_entropy` | `J/(kg K)` | (2,0,−2,−1,0,0,0) | `ŝ`; s of a `kg` component |
 | `specific_volume` | `m3/kg` | (3,−1,0,0,0,0,0) | `v̂` (Q4.R3 FLUID key); TV specifications |
+| `specific_heat_capacity` | `J/(kg K)` | (2,0,−2,−1,0,0,0) | `cp` of a `kg` component (ADR 0063 D1) |
 | `molar_entropy` | `J/(mol K)` | (2,1,−2,−1,−1,0,0) | s°, s per mol (ADR 0061 risk 6) |
 | `segment_molar_flow` | `mol/s` | (0,0,−1,0,1,0,0) | `segment_mol` amounts (Q7.R3) |
 | `segment_molar_mass` | `kg/mol` | (0,1,0,0,−1,0,0) | M per segment type (Q7.R2) |
 | `segment_molar_enthalpy` | `J/mol` | (2,1,−2,0,−1,0,0) | h, Δf h° per segment-mol (ADR 0061 risk 4) |
 | `segment_molar_entropy` | `J/(mol K)` | (2,1,−2,−1,−1,0,0) | s, s° per segment-mol |
+| `segment_molar_heat_capacity` | `J/(mol K)` | (2,1,−2,−1,−1,0,0) | `cp` per segment-mol (ADR 0063 D1) |
+| `segment_molar_volume` | `m3/mol` | (3,0,0,0,−1,0,0) | `v` per segment-mol (ADR 0063 D1) |
 | `enthalpy_flow` | `W` | (2,1,−3,0,0,0,0) | `Ḣ`; distinct from `heat_rate` and `power` |
 | `mass_fraction` | `1` | 0 | w[c], the composition common to every basis (Q7.R3) |
 | `number_flow` | `1/s` | (0,0,−1,0,0,0,0) | particle numbers, counts per class |
@@ -77,11 +80,13 @@ declare the attribute read (ADR-F4). Attribute key: `<kind id>` (substream scope
 
 `PhaseId(family: str, qualifier: str | None, ordinal: int)`, `PhaseSet = tuple[PhaseId, ...]` in canonical order (D6).
 Widened annotations only (no runtime change; legacy providers never receive the new types, ADR-F4's adapters convert):
-`PropertyRequest.state: StreamState | EvaluationState`; `PropertyRequest.phase: Phase | PhaseId`.
-**[departure]** from the note §8: `PropertyCapabilities`, `FlashResult` and `FlashRequest` are **not** widened (the fact
-above). v2 capability fields live in ADR-F4's new `MethodDescription`; N-phase results in ADR-F5's `EquilibriumResult`;
-providers are asked TP flashes and phase evaluations only, and every other specification is solved by ADR-F5's service.
-The static `flash` token space (ADR 0060 D4) is `TP, PH, PS, TV, PBETA, TBETA`; only `TP` is a provider capability.
+`PropertyRequest.state: StreamState | EvaluationState`; `PropertyRequest.phase: Phase | PhaseId`. **[departure]** from
+the note §8: `PropertyCapabilities`, `FlashResult` and `FlashRequest` are **not** widened (the fact above). v2
+capability fields live in ADR-F4's new `MethodDescription`; N-phase results in ADR-F5's `EquilibriumResult`; providers
+are asked TP flashes and phase evaluations only, and every other specification is solved by ADR-F5's service. The static
+`flash` token space (ADR 0060 D4) is `TP, PH, PS, TV, PBETA, TBETA`; only `TP` is a provider capability.
+`thermo/cache.py` keys an `EvaluationState` by n, T, P **and** `attributes`, and a `PhaseId` by its rendering (D6); a
+`StreamState` key is byte-unchanged (M6).
 
 ### D3. Connection definitions (F1 kind `connection_definition`; `schemas/connection-definition.schema.json`)
 
@@ -90,7 +95,7 @@ SHA is the connection's definition identity.
 
 | Template (built-in, core) | Instance parameters | Variables per connection |
 | --- | --- | --- |
-| `nTP-v1` (exists, ADR 0060 D6) | none: one `mixed` substream over the revision's components, `true` basis | legacy ids, unchanged |
+| `nTP-v1` (exists, ADR 0060 D6) | none: one `mixed` substream over the revision's components, `true` basis; substream id `mixed` | legacy ids, unchanged |
 | `mat-v1` | `thermal_coordinate`, `substreams` | D7 |
 | `heat-v1` | none | `~Q`, kind `heat_rate` |
 | `work-v1` | none | `~W`, kind `power` |
@@ -123,19 +128,24 @@ with the instance normalised (key order canonical, component lists as given, gro
 components)). The revision-local id is not in the preimage, so equal definitions in two revisions share a SHA.
 `nTP-v1`'s SHA is that of `{"template": ["nTP-v1", "1.0.0", <descriptor_sha256>], "body": {}}`.
 
+Every order below is the normalised instance's, so equal `definition_sha256` means equal layout; (kind, components) is
+unique within a substream (`attribute_redundant`).
+
 **Carried indices** of a substream, in this order: for each component in definition order, its parent amount, or, if a
 partition attribute targets it, its classes (ascending) instead (Q6.R2); for a group basis the groups replace the
-species. Non-partition attributes follow, in attribute order, component order, class order. Then the stream fields:
-`h` (or `T`) and `P`. For `nTP-v1` this is today's order (flows, T, P).
+species. Non-partition attributes follow, in attribute order, component order, class order. After the last substream
+(instance order), the stream fields once per connection: `h` (or `T`), then `P`. For `nTP-v1` this is today's order
+(flows, T, P).
 
 ### D4. Dormancy, labels, attributes
 
 Adopted rules (Q1.R4, Q6.R3, Q8.R6) as executable predicates in `material/state.py`: a substream is dormant iff every
 carried amount `== 0.0` (signed zeros normalised first, ADR 0001 D1.5); a stream iff all its substreams are. Dormant ⇒
-`Ḣ`, `ṁ`, attributes exactly `+0.0`; derived intensives `None` with reason `zero_flow`; `ĥ` is a label (never a
-property input; the zero-flow row forms are ADR-F6's). A non-zero attribute on a dormant parent is an invalid state
-(`attribute_on_zero_parent(<S>, <kind>)`). `ṁ = Σ M n` in carried-index order with M_g for groups (Q3.R7), one
-rounding per term, no fma. Admissibility inequalities (Q6.R5) are attribute-kind payload, checked with τ_mono = 1e-12.
+`Ḣ`, `ṁ`, attributes exactly `+0.0`; derived intensives `None` with reason `zero_flow`; `ĥ` is a label (never a property
+input; the zero-flow row forms are ADR-F6's). A non-zero attribute on a dormant parent is an invalid state
+(`attribute_on_zero_parent(<S>, <kind>)`). `ṁ = Σ M n` in carried-index order with M_g for groups (Q3.R7) and M = 1 for
+a `kg`-basis component, one rounding per term, no fma. Admissibility inequalities (Q6.R5) are attribute-kind payload,
+checked with τ_mono = 1e-12.
 
 ### D5. Attribute, derived-quantity, kinetics and section kinds (payload schemas; F1 kinds)
 
@@ -155,47 +165,51 @@ rounding per term, no fma. Admissibility inequalities (Q6.R5) are attribute-kind
 ### D6. Phase ids (Q4.R1, R8; core grammar)
 
 Families are F1 `phase_family` descriptors; the built-ins are `VAPOR`, `LIQUID`, `FLUID`, `SOLID` (core). Family id
-`^[A-Z][A-Z0-9_]*$`. Qualifier grammar, rendered inside `( )`:
+`^[A-Z][A-Z0-9_]*$`. `phase_family` descriptors are built-in only. An extension spelling (ADR 0060's `<namespace>.`
+prefix cannot match this pattern) needs an amendment of this ADR. Qualifier grammar, rendered inside `( )`:
 
 ```
 qual := cid | cid "," form | "model=" mid        # cid: component id; form: ^[A-Za-z0-9][A-Za-z0-9_-]*$; mid: F1 id
 render(f, q, k) = f ( "(" q ")" if q ) ( "." k if k ≥ 2 )
 ```
 
-`,` and `=` are outside the component alphabet, so a component, a component form and a model id never render alike
-even when a component id equals a model id (Q4.A5). Parse (test-only): family = longest `[A-Z0-9_]*` prefix; a `(`
-opens the qualifier, closed by the first `)` (neither parenthesis is in any alphabet); a final `.k` needs k ≥ 2 without
-leading zero, so `LIQUID.1` does not parse. Examples: `VAPOR`, `LIQUID.2`, `FLUID(water)`, `LIQUID(water).2`,
-`SOLID(CaCO3,calcite)`, `SOLID(model=langmuir-co2)`. **Phase-set rendering** (signatures): canonical order — family
-by (registration order VAPOR, LIQUID, FLUID, SOLID, then extension families by id), qualifier (none first, then UTF-8
-bytes), ordinal — joined by `+` (outside both alphabets). Two-candidate legacy points render `LIQUID`, `VAPOR`,
-`TWO_PHASE` (Q4.R7); `ZERO_FLOW` stays a stream property. Ordering *within* a family (Q4.R3) is ADR-F5's.
+`,` and `=` are outside the component alphabet, so a component, a component form and a model id never render alike even
+when a component id equals a model id (Q4.A5). Parse (test-only): family = longest `[A-Z0-9_]*` prefix; a `(` opens the
+qualifier, closed by the first `)` (neither parenthesis is in any alphabet); a final `.k` needs k ≥ 2 without leading
+zero, so `LIQUID.1` does not parse. Examples: `VAPOR`, `LIQUID.2`, `FLUID(water)`, `LIQUID(water).2`,
+`SOLID(CaCO3,calcite)`, `SOLID(model=langmuir-co2)`. **Phase-set rendering** (signatures): canonical order — family by
+(registration order VAPOR, LIQUID, FLUID, SOLID), qualifier (none first, then UTF-8 bytes), ordinal — joined by `+`
+(outside both alphabets). A point of a `split` method with candidates {VAPOR, LIQUID} renders `LIQUID`, `VAPOR`,
+`TWO_PHASE` as today; `ZERO_FLOW` stays a stream property (Q4.R7). Ordering *within* a family (Q4.R3) is ADR-F5's.
 
 ### D7. Variable ids (S6; core)
 
-The note's grammar, made exact: `vid := owner ("@" sub)? ("#" point ("#" phase)?)? "~" field ("[" index "]")*`,
-`owner := uid ("/" uid)*`. **Field table** (closed, core; additions by ADR amendment): connection fields `n` (carried
-amount; indices `[component]` or `[component][class]` or `[group]`), `a` (non-partition attribute;
-`[kind][component]?[class]?`), `h`, `T`, `P`, `Q`, `W`, `s`; state-point fields `n`, `T`, `h`, `P`, `beta`, `v`
-(ADR-F5, F6). Class indices are 1-based decimals. Production code renders only (`material/vid.py`); ids stay opaque
-(R-019). `tests/f2/vid_parse.py` is the left inverse that proves injectivity. Every v2 id contains `~`; `nTP-v1`
-connections keep today's ids exactly; `ProblemSpec` still refuses duplicates (`compile/spec.py:174`).
+The note's grammar, made exact: `vid := owner ("@" sub)? ("#" point ("#" phase)?)? "~" field ("[" index "]")*`, `owner
+:= uid ("/" uid)*`, `point := uid`. **Field table** (closed, core; additions by ADR amendment): connection fields `n`
+(carried amount; indices `[component]` or `[component][class]` or `[group]`), `a` (non-partition attribute;
+`[kind][component]?[class]?`), `h`, `T`, `P`, `Q`, `W`, `s`; state-point fields `n`, `T`, `h`, `P`, `beta`, `v` (ADR-F5,
+F6). Fields of unit-owned variables are added by ADR-F6 before the W1 freeze. Class indices are 1-based decimals.
+Production code renders only (`material/vid.py`); ids stay opaque (R-019). `tests/f2/vid_parse.py` is the left inverse
+that proves injectivity. Every v2 id contains `~`; `nTP-v1` connections keep today's ids exactly; `ProblemSpec` still
+refuses duplicates (`compile/spec.py:174`).
 
 ### D8. Material layout and `solution-state-v2`
 
-`MaterialLayout` (built at validation, immutable): per connection `{connection, definition, definition_sha256,
-slots: [{substream, field, index: [..], quantity_kind, variable_index}]}` in D3's order, plus per substream M (or M_g)
-and the dormancy partition. `layout.state(x, connection) -> MaterialState` reads by index, never by parsing an id.
+`MaterialLayout` (built at validation, immutable): per connection `{connection, definition, definition_sha256, slots:
+[{substream, field, index: [..], quantity_kind, variable_index}]}` in D3's order, plus per substream M (or M_g) and the
+dormancy partition. `layout.state(x, connection) -> MaterialState` reads by index, never by parsing an id.
 `solution-state-v2` = v1's fields (`state_sha256`, `variable_ids`, `variables`) plus `material_layout` (the slots
 without `variable_index`, which `variable_ids` order gives) and `state_points: [{point, signature}]` (renderings).
-v2 runs write v2; legacy runs write `solution-state-v1` unchanged. `material_layout` and signatures are R0; floats
-stay out of R0 as today.
+v2-compiled runs write v2. Legacy runs and lowered runs (D12) write `solution-state-v1` unchanged. Every artifact of a
+lowered run is byte-identical to the v1 run of its lowered document, except the run manifest's revision reference (the
+v2 `revision_id` and `content_hash`). `material_layout` and signatures are R0; floats stay out of R0 as today.
 
-**Fingerprint [departure].** A v2 revision in the v1-expressible subset (D12) is lowered to a v1 document and compiled by
-the untouched v1 path; its compiled problem, and so its `model_version`, is the v1 one, and that is correct because the
-problem is identical. The definition SHAs join the numerical-model fingerprint only where a v2 compiler builds the
-problem (ADR-F6): the note's "for v2 runs only" is narrowed to "for v2-compiled runs". Either way the definition SHAs are
-recorded in `solution-state-v2` and enter R0 there.
+**Fingerprint [departure].** A v2 revision in the v1-expressible subset (D12) is lowered to a v1 document and compiled
+by the untouched v1 path; its compiled problem, and so its `model_version`, is the v1 one, and that is correct because
+the problem is identical. The definition SHAs join the numerical-model fingerprint only where a v2 compiler builds the
+problem (ADR-F6): the note's "for v2 runs only" is narrowed to "for v2-compiled runs". In a v2-compiled run the
+definition SHAs are recorded in `solution-state-v2`. They enter R0 through `run/identity.py`'s `r0_projection`, which is
+extended for `solution-state-v2` documents only (`material_layout`, `state_points`).
 
 ### D9. Energy and signal connections; endpoints (note §2.1 items 9–10, adopted)
 
@@ -209,10 +223,11 @@ the manifest must declare it `manipulable`, else `parameter_not_manipulable`; bo
 
 ### D10. `Specification` v2 (`schemas/specification-v2.schema.json`)
 
-v1's fields with `target` widened to one of: `{variable: <vid>}`; `{derived: <derived_quantity id>, version, stream:
-<connection id>, component?: id, phase?: <rendering>}`; `{energy: <connection id>}`; `{signal: <connection id>}`.
-`kind` must equal the target's quantity kind. A derived target before ADR-F4/F5 builds it is refused
-`construct_unavailable(derived:<id>, F4)`; `specification_degenerate(<spec>)` is ADR-F4's opening check.
+v1's fields, with `target` either v1's `{object_type, object_id, path}` (the only form for instances and `nTP-v1`
+connections) or one of: `{variable: <vid>}`; `{derived: <derived_quantity id>, version, stream: <connection id>,
+component?: id, phase?: <rendering>}`; `{energy: <connection id>}`; `{signal: <connection id>}`. `kind` must equal the
+target's quantity kind. A derived target before ADR-F4/F5 builds it is refused `construct_unavailable(derived:<id>,
+F4)`; `specification_degenerate(<spec>)` is ADR-F4's opening check.
 
 ### D11. `ProcessRevision` v2 (`schemas/process-revision-v2.schema.json`)
 
@@ -226,18 +241,19 @@ v1's fields with `target` widened to one of: `{variable: <vid>}`; `{derived: <de
 | `reaction_sets` | `[{id, reactions: [{id, stoichiometry: {<component>: [p, q]}, scope: [<substream id>…]}], kinetics?: {kind, version, …}}]` | core; kinetics body preview |
 | `property_methods` | `{default: MethodSet, overrides: [{instance, side?, method_set}]}` (ADR-F4) | preview |
 | `instances` | `[{id, model, semantic_role, parameters, references?, template?, policy}]` | core; `template` preview |
-| `connections` | `[{id, kind, from, to, definition, quantity_kind?, phase_assertion?, initialization_hint?}]` | core; `phase_assertion` preview |
+| `connections` | `[{id, kind, from, to, definition, quantity_kind?, phase_assertion?, initialization_hint?, phase_capability?, notes?}]` | core; `phase_assertion` preview |
 | `specifications` | `[Specification v2]` | core |
 | `sections` | `{<namespace>: {schema, body}}` | core mechanism |
 
 Rules: ids in `^[A-Za-z0-9][A-Za-z0-9_.:-]*$` (the v1 pattern; assumption A6 holds by schema). Stoichiometry: `[p, q]`
-integers, q > 0, gcd 1, p ≠ 0 (a zero coefficient is omitted; canonical); every stoichiometric component lies in a
-scope substream. `semantic_role` is a registered id (the v1 enum plus `utility`, `controller`, `shaft`,
-`relief_device`; ADR-F6 owns the vocabulary). A material connection's `definition` names a `materials.definitions` id
-or `nTP-v1`; an energy one `heat-v1` or `work-v1`; a signal one `signal-v1` with `quantity_kind`. No
-`component_mapping`, no `record_source`. `content_hash` = v1's rule (`CONTENT_HASH_EXCLUDED` unchanged in name and
-members), applied to the v2 document. **Thermal coordinate** (note item 11): every material definition has the
-revision's coordinate (`thermal_coordinate_mismatch(<definition>)`); `h_mass` admits `std.*` units only
+integers, q > 0, gcd 1, p ≠ 0 (a zero coefficient is omitted; canonical); every stoichiometric component lies in a scope
+substream. `semantic_role` is a registered id (the v1 enum plus `utility`, `controller`, `shaft`, `relief_device`;
+ADR-F6 owns the vocabulary). A material connection's `definition` names a `materials.definitions` id or `nTP-v1`; an
+energy one `heat-v1` or `work-v1`; a signal one `signal-v1` with `quantity_kind`. `phase_capability` (v1's enum) only on
+`nTP-v1` connections; it and `notes` enter `content_hash` as in v1. No `component_mapping`, no `record_source`.
+`content_hash` = v1's rule (`CONTENT_HASH_EXCLUDED` unchanged in name and members), applied to the v2 document.
+**Thermal coordinate** (note item 11): every material definition has the revision's coordinate
+(`thermal_coordinate_mismatch(<definition>)`); `h_mass` admits `std.*` units only
 (`unit_coordinate_unsupported(<instance>, h_mass)`); `T` admits `nTP-v1`, legacy and `std.*` units. **Port
 compatibility** (note item 12): one definition per connection, accepted by both endpoints
 (`definition_incompatible(<connection>, <instance>.<port>)`); generic transport units take one definition on all
@@ -248,16 +264,21 @@ id and no overrides (v1's selection in v2).
 ### D12. Reading, lowering and operations (ADR 0019 Amendment 9)
 
 `parse_revision` dispatches on `schema_version`: 1 → the untouched v1 reader; 2 → `revision_v2.parse` (ADR 0002 D7.5:
-never read as the other). **Lowering** (`revision_v2/lower.py`): a v2 document is *v1-expressible* iff its convention
-is the legacy provider's native one, every material connection is `nTP-v1`, it has no energy or signal connection,
-reaction set, section, probe or parameter endpoint, and every component record carries `legacy.{profile, file}` from one
-file whose component list equals `component_set` in order (ADR 0061 D12). It lowers to the v1 document with
-`record_source` = that file and `component_mapping` the identity; anything else is refused
-`construct_unavailable(<construct>, <foundation>)`. **Raising** (`revision_v2/raise_v1.py`, test and tooling only)
-inverts it. Amendment 9: `commit_change`, `preview_change`, `diff_revisions`, `validate_revision`, `check_admission`
-(ADR 0060 D11's revision form) and run submission accept v2 documents; `ChangeSet` paths address v2 fields unchanged;
-results gain no field. `check_admission` adds F2's checks (thermal coordinate, port compatibility, solid roles, grids,
-basis validity, signal kinds) to `AdmissionReport.notices`/refusals.
+never read as the other). **Lowering** (`revision_v2/lower.py`): a v2 document is *v1-expressible* iff its convention is
+the legacy provider's native one, every material connection is `nTP-v1`, it has no energy or signal connection, reaction
+set, section, probe or parameter endpoint, and every component record carries `legacy.{profile, file}` from one file
+whose component list equals `component_set` in order (ADR 0061 D12). It lowers to the v1 document with `record_source` =
+that file and `component_mapping` the identity; anything else is refused `construct_unavailable(<construct>,
+<foundation>)`. Lowering is a field map. A connection with `definition: nTP-v1` becomes `state_definition: nTP-v1`,
+`component_mapping: revision_component_set`. `phase_capability`, `initialization_hint` and `notes` are copied.
+Specifications in v1's target form are copied. `convention`, `materials` and `property_methods` are dropped, after
+checking that `property_methods.default` is the provider ADR 0050 D1 assigns to `record_source` (else
+`construct_unavailable(property_methods, F4)`). **Raising** (`revision_v2/raise_v1.py`, test and tooling only) inverts
+the map, with `convention` = that provider's native convention. Amendment 9: `commit_change`, `preview_change`,
+`diff_revisions`, `validate_revision`, `check_admission` (ADR 0060 D11's revision form) and run submission accept v2
+documents; `ChangeSet` paths address v2 fields unchanged; results gain no field. `check_admission` adds F2's checks
+(thermal coordinate, port compatibility, solid roles, grids, basis validity, signal kinds) to
+`AdmissionReport.notices`/refusals.
 
 ### D13. Core at the end of W1, and preview
 
@@ -281,10 +302,11 @@ section namespace.
 
 ## Migration proof
 
-F0 PASS on every work order (M1–M9; no frozen module edited; no existing dataclass gains a field). v1 documents are
-read by the untouched v1 reader. `StreamState ↔ EvaluationState` bitwise over every corpus stream (E-F2-1). Raising
-then lowering every corpus revision returns its v1 document with the same `content_hash`, and running the lowered
-document reproduces the corpus run's `r0_sha256` and `state_sha256` (E-F2-3). M6's recorded cache-key digests unchanged.
+F0 PASS on every work order (M1–M9; no frozen module edited; no existing dataclass gains a field). v1 documents are read
+by the untouched v1 reader. `StreamState ↔ EvaluationState` bitwise over every corpus stream (E-F2-1). Raising then
+lowering every corpus revision returns its v1 document with the same `content_hash`, and each raised v2 document, run
+through Amendment 9, reproduces the corpus run's `r0_sha256`, `state_sha256` and `solution-state.json` bytes (E-F2-3).
+M6's recorded cache-key digests unchanged.
 
 ## Exit tests (F0 PASS implied on each)
 
@@ -293,16 +315,17 @@ document reproduces the corpus run's `r0_sha256` and `state_sha256` (E-F2-3). M6
 - **E-F2-2** Round trips: fixtures with all three connection kinds, all three endpoint kinds, a `mat-v1` with `mixed`
   and `solid` substreams, a group basis, a classed attribute on a grid, a reaction set and a section: parse → canonical
   → parse is a fixed point; `content_hash` stable under key reordering; changing any core field moves it.
-- **E-F2-3** Lowering: every corpus v1 revision raises and lowers to the same bytes' `content_hash`; the lowered runs'
-  `r0_sha256` and `state_sha256` equal the corpus values. A v2 document with any non-expressible construct is refused
-  with the catalogued `construct_unavailable` naming it.
+- **E-F2-3** Lowering: every corpus v1 revision raises and lowers to the same bytes' `content_hash`; each raised v2
+  document, submitted as a run through Amendment 9, gives `r0_sha256` and `state_sha256` equal to the corpus run's, and
+  a `solution-state.json` byte-identical to it. A v2 document with any non-expressible construct is refused with the
+  catalogued `construct_unavailable` naming it.
 - **E-F2-4** Q1.A5 and Q6.A1–A5 on the probe flowsheets (test-only numeric probes: mixer ≤ 8 inlets, splitter, heater in
   `(n, ĥ, P)`, division-free rows solved for the outlet; no property call): relative conservation ≤ 1e-14 per carried
   amount and attribute; dormant streams exact `+0.0`, `ĥ` bitwise its label; the 5e-324 stream flowing. O-9: report
   the worst moment deficit; amend τ_mono if the margin is below 10×.
 - **E-F2-5** Ids **[gen]**: 10⁴ random structures with adversarial user ids (`a.2`, `n`, `LIQUID`, `x:y`, digits,
   `model`, a component id equal to a model id), qualifiers on every family (Q4.A5): render then parse returns the
-  structure; no v2 id equals any legacy-form id of the same structure; no two structures render alike.
+  structure; no v2 id equals any legacy-form id of any structure; no two structures render alike.
 - **E-F2-6** Layout: for every probe and fixture state, `layout.state(x, c)` equals the state built independently from
   the definition; the code path contains no id parsing (a test asserts `vid_parse` is not importable from `src/`).
 - **E-F2-7** Q3.A1–A3, A6 **[gen]** in exact arithmetic (all five A6 cases and the former-rule control), M_g per case.
@@ -324,12 +347,12 @@ document reproduces the corpus run's `r0_sha256` and `state_sha256` (E-F2-3). M6
 
 | # | WO | Content and files | Acceptance | Identity | Lane |
 | --- | --- | --- | --- | --- | --- |
-| 1 | **F2-WO1** Kinds and types | `schemas/units.json` (D1); `src/openflowsheet/material/{__init__,state,phase_id}.py`; annotations in `thermo/__init__.py`; ADR 0061 `kg`/`segment_mol` gate lifted | E-F2-1; phase-id part of E-F2-5 | no | Opus (state), Sonnet (`phase_id.py` from D6) |
+| 1 | **F2-WO1** Kinds and types | `schemas/units.json` (D1); `src/openflowsheet/material/{__init__,state,phase_id}.py`; annotations in `thermo/__init__.py`; `thermo/cache.py` (D2 keys); ADR 0061 `kg`/`segment_mol` gate lifted | E-F2-1; phase-id part of E-F2-5; Q2.A10 (b) and E-F3-13 `kg` branches updated | no | Opus (state), Sonnet (`phase_id.py` from D6) |
 | 2 | **F2-WO2** Definitions and bases | `schemas/connection-definition.schema.json`; `material/{definitions,basis}.py`; payload schemas for `attribute_kind`, `derived_quantity`, `kinetics_kind`, `phase_family`, `revision_section`; built-in templates and families in `registry/builtin/` via `scripts/registry_builtin.py` | E-F2-7; template SHAs pinned | no | Opus |
 | 3 | **F2-WO3** Ids and layout | `material/{vid,layout}.py`; `tests/f2/vid_parse.py` | E-F2-5, E-F2-6 | no | Opus |
 | 4 | **F2-WO4** Revision v2 | `schemas/{process-revision-v2,specification-v2}.schema.json`; `src/openflowsheet/revision_v2/{parse,validate,canonical}.py`; fixtures under `tests/fixtures/schemas/v2/` | E-F2-2, E-F2-8, E-F2-9 | no | Opus (validate), Sonnet (fixtures) |
 | 5 | **F2-WO5** Probes | `tests/f2/probes.py`, test-only attribute kinds | E-F2-4 | no | Opus |
-| 6 | **F2-WO6** Lowering, state, operations | `revision_v2/{lower,raise_v1}.py`; `run/solution_state.py` (v2 writer beside v1); dispatch in the application layer; ADR 0019 Amendment 9 pointer; `interfaces-frozen.md` | E-F2-3, E-F2-10 | no | Opus |
+| 6 | **F2-WO6** Lowering, state, operations | `revision_v2/{lower,raise_v1}.py`; `run/solution_state.py` (v2 writer beside v1); `run/identity.py` (`r0_projection` for v2 only); dispatch in the application layer; ADR 0019 Amendment 9 pointer; `interfaces-frozen.md` | E-F2-3, E-F2-10 | no | Opus |
 | 7 | Close-out | evidence manifest, catalogue entries, full gate, CI both legs | all E-F2 | no | Sonnet |
 
 **Unblocks.** WO1: F4's adapters (types), X11 rest (`kg`, `segment_mol` records). WO2+WO3: F4's `MaterialModel` and
@@ -344,7 +367,8 @@ F5's signatures. WO4+WO6: v2 documents in 0.5 on legacy providers; F6's binder. 
    only). *Needs:* fact (their design passes). *Default:* each package adds its kinds by an additive amendment (R2).
 3. **The `,` and `model=` qualifier spellings** are a taste call inside Q4.R1's constraint. *Needs:* Frank's preference
    only if he dislikes them. *Default:* as D6; changing them after W1 is a grammar change.
-4. **Lowered runs keep v1 fingerprints** (D8). *Needs:* reviewer confirmation. *Default:* as D8.
+4. **Lowered runs keep v1 fingerprints** (D8). *Resolved:* accepted by the W1 P2 review (ruling 2), conditional on M3,
+   which is applied (D8, D12, E-F2-3).
 
 ## Edits `target-architecture.md` needs (the orchestrator applies them)
 
@@ -355,5 +379,27 @@ F5's signatures. WO4+WO6: v2 documents in 0.5 on legacy providers; F6's binder. 
 5. §2.1.14: `component_set.components[].record`; signal `quantity_kind` on the connection; lowering in 0.5 (D12).
 6. §8: `PropertyCapabilities`, `FlashResult`, `FlashRequest` rows → "unchanged; new `MethodDescription` (ADR-F4) and
    `EquilibriumResult` (ADR-F5)"; kinds row adds `specific_volume`, `molar_entropy`, `segment_molar_enthalpy`,
-   `segment_molar_entropy`, `enthalpy_flow`, `mass_fraction`, `number_flow`.
+   `segment_molar_entropy`, `enthalpy_flow`, `mass_fraction`, `number_flow`, `specific_heat_capacity`,
+   `segment_molar_heat_capacity`, `segment_molar_volume`.
 7. §3 F2 exit: "Also Q3.A1–A3" → "Also Q3.A1–A3, A6" (Amendment 2) and add the lowering identity (E-F2-3).
+
+## Review applied (W1 P2 review, `docs/reviews/W1-P2-review.md`, 2026-11-05)
+
+Status stays Proposed.
+
+| Finding | Edit |
+| --- | --- |
+| M3 (0062-1) | D8: lowered runs write v1 artifacts byte-identical but for the revision reference; R0 via `r0_projection` (v2 only). |
+| M3 (0062-2) | D11: `phase_capability?` and `notes?` on connections; rule: `nTP-v1` only, in `content_hash` as in v1. |
+| M3 (0062-3) | D12: lowering as a field map, `property_methods.default` checked against ADR 0050 D1; raising inverts it. |
+| M3 (0062-4) | E-F2-3 runs each raised v2 document; migration proof restated; F2-WO6 lists `run/identity.py`; risk 4 resolved. |
+| S1 | D2: `thermo/cache.py` keys `attributes` and `PhaseId` renderings; `StreamState` keys unchanged; listed in F2-WO1. |
+| S2 (0062-5) | D3: layout order from the normalised instance; stream fields once per connection; `nTP-v1` substream id `mixed`. |
+| S3 (0062-6) | D6: `phase_family` built-in only; "then extension families by id" deleted. |
+| S4 (0062-7) | D6: Q4.R7's wording restored verbatim. |
+| S5 (0062-8) | D10: v1's target form kept; D7: unit-owned fields added by ADR-F6 before the W1 freeze. |
+| S10 (0063-5) | D1: `specific_heat_capacity`, `segment_molar_heat_capacity`, `segment_molar_volume` added; edit list item 6. |
+| N6, N7 (0062-9) | D4: M = 1 for `kg`; F2-WO1 acceptance; E-F2-5 "of any structure"; D7 `point := uid`. |
+| Ruling 2 | D6's Q4.R7 narrowing removed (S4); D2, D3 and D8 departures accepted unchanged. |
+
+Not applied: none of the edits for this ADR.
