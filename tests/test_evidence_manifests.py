@@ -70,6 +70,21 @@ def test_schema_is_itself_valid(manifest_schema: dict[str, Any]) -> None:
     Draft202012Validator.check_schema(manifest_schema)
 
 
+def test_work_package_pattern_widening_is_additive(manifest_schema: dict[str, Any]) -> None:
+    """ADR 0059 D1: every id the old pattern accepted still matches; the roadmap's ids are admitted
+    and R-565's refusals stand."""
+    pattern = re.compile(manifest_schema["properties"]["work_package"]["pattern"])
+    old = re.compile(r"^[PKTMSR][0-9]{2}[a-z]?$")
+    suffixes = ["", *"abcdefghijklmnopqrstuvwxyz"]
+    ids = [f"{letter}{n:02d}{s}" for letter in "PKTMSR" for n in range(100) for s in suffixes]
+    assert len(ids) == 6 * 100 * 27 and all(old.match(i) for i in ids)
+    assert all(pattern.match(i) for i in ids)
+    for admitted in ("F0", "F9", "X07a", "X26", "TX", "MSG", "ST", "OPT", "RRC", "PrISMa"):
+        assert pattern.match(admitted), admitted
+    for refused in ("L01", "C9", "E01", "V03", "W1", "FB-04", "f0", "F10", "FO", "MGS", "", "<id>"):
+        assert not pattern.match(refused), refused
+
+
 def test_manifest_validates(manifest_path: Path, manifest_schema: dict[str, Any]) -> None:
     errors = sorted(
         Draft202012Validator(manifest_schema).iter_errors(load(manifest_path)),
