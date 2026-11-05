@@ -71,3 +71,19 @@ Package F0, the corpus identity gate (roadmap 0.4, ADR 0057 D3; brief `docs/brie
   file imports; an unresolved composition raises. Only composition today: `wilson_ig_v2` → `wilson_ig` (already in the
   set). Registered set unchanged, 8 files. `artifact_hash` unit modules stay out (ruling).
 - **Registry re-record for M7, M8:** `git diff` of `benchmarks/f0/corpus.json` = 371 insertions, 0 deletions.
+
+- **Gate run at ab97a46e (2026-11-05):** `GATE FAIL`: 4 failed, 14849 passed, 3206 skipped, 197 deselected (3:02:14);
+  ruff, format, mypy, node exit 0; F0's 14 tests pass inside it (exits 2-4 included). Failures:
+  (a) `test_t05b_literal::test_b06_no_registered_policy_names_v2`, `test_t06_f4_literals::test_wo1_no_committed_
+  document_names_the_new_policy_value`, `test_t06_w18_literal::test_w18_no_committed_fixture_names_the_new_value`: each
+  scans `tests/fixtures` and `benchmarks` for a policy value that must stay out of committed documents, and 37 of the
+  v0.3.0 bundles' `artifacts/solve-policy.json` records carry it. **D15, open (ruling needed):** the D3 ruling conflicts
+  with these guards. Options: (1) exempt archived replay bundles in the three guards, by structure (a directory holding
+  `run-manifest.json`), not by path; (2) keep the fixtures under a root the guards do not scan; (3) build the bundles
+  from the tag at check time (D3's rejected alternative). Default proposed: (1) — the guards protect registered policy
+  documents, and a replay archive must record the policy it ran under — but it narrows three existing checks, so it is
+  not taken without a ruling. (b) `test_f6_the_forty_runs_fit_their_budget`: 450.1 s in the gate, 344.0 s alone (load
+  ~50 both times), budget 300 s untouched.
+- **D16, open: the evidence schema refuses `F0`** (`work_package` pattern `^[PKTMSR][0-9]{2}[a-z]?$`, frozen §2.2).
+  Precedent ADR 0028 chose a fitting id (`M07a`). The manifest is drafted (status `implemented`) but not committed;
+  committing it fails `test_evidence_manifests`. Needs an id choice or a schema ADR.
