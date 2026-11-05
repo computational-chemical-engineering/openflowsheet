@@ -52,7 +52,7 @@ def test_every_implemented_measure_passes(full: tuple[dict[str, Any], list[str]]
     results, log = full
     implemented = {m: r for m, r in results.items() if m not in gate.NOT_IMPLEMENTED}
     assert all(r["status"] in ("PASS", "NOT JUDGED") for r in implemented.values()), log
-    assert results["M1"]["n"] == 50 and results["M2"]["n"] == 52 and results["M9"]["n"] == 35
+    assert results["M1"]["n"] == 50 and results["M2"]["n"] == 52 + 9 and results["M9"]["n"] == 35
     assert results["M7"]["n"] == 52 and results["M8"]["n"] == 105
     # M6 counts what carries keys: the 15 runs that key the cache and the 70-entry sample.
     assert results["M6"]["n"] == 15 + 70
@@ -61,6 +61,17 @@ def test_every_implemented_measure_passes(full: tuple[dict[str, Any], list[str]]
 def test_the_gate_passes(full: tuple[dict[str, Any], list[str]]) -> None:
     passed, line = gate.summary(full[0])
     assert passed, line
+
+
+def test_the_runs_cover_every_provider_basis_but_coolprop(registered: dict[str, Any]) -> None:
+    """Review finding 2: a run per basis beyond SYN-001 (D20: CoolProp only in M6 and M9)."""
+    versions = {v["model_version"] for v in registered["measures"]["M2"].values()}
+    bases = {"syn001", "wilson-ig-v2", "iapws95-v1", "pr-c1-v1"}
+    assert all(any(f"-{basis}-" in version for version in versions) for basis in bases)
+    assert not any("coolprop" in version for version in versions)
+    assert [r for s, r in gate.run_corpus() if s in gate.BASIS_CASES] == [
+        name for names in gate.BASIS_CASES.values() for name in names
+    ]
 
 
 def test_a_not_implemented_measure_fails_the_gate() -> None:

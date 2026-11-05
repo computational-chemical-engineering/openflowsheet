@@ -132,13 +132,42 @@ def m1(names: Sequence[str] | None = None) -> dict[str, str]:
 # -- M2-M6: the RC bundle set --------------------------------------------------------------------
 
 
+#: Review finding 2: registered revisions on the provider bases beyond SYN-001, solved through
+#: the g8 path (`solve`): S11's GP cases (Wilson v2), its IAPWS-95 TH cases and M02's C1 flash
+#: (pr-c1). TH-C2 (CoolProp R134a) is not run: the reference platform has no `coolprop` extra,
+#: so it cannot be recorded there (docs/F0_DECISIONS.md D20); CoolProp enters M6's sample and M9.
+BASIS_CASES: Final[dict[str, tuple[str, ...]]] = {
+    "s11-gp": ("GP-C1", "GP-C2", "GP-C3", "GP-M1", "GP-M2"),
+    "s11-th": ("TH-C1", "TH-R1", "TH-V1"),
+    "m02": ("C1-FLASH-F1-M02-v1",),
+}
+
+
 def run_corpus() -> list[tuple[str, str]]:
-    """`(set, name)` of every registered run, enumerated as RC step 4 enumerates them."""
+    """`(set, name)` of every registered run: RC step 4's enumeration, then `BASIS_CASES`."""
     from t08_rc import g8_revisions, k05_registered_cases  # noqa: PLC0415
 
-    return [("k05", case) for case in k05_registered_cases()] + [
-        ("g8", name) for name in g8_revisions()
-    ]
+    return (
+        [("k05", case) for case in k05_registered_cases()]
+        + [("g8", name) for name in g8_revisions()]
+        + [(run_set, name) for run_set, names in BASIS_CASES.items() for name in names]
+    )
+
+
+def revision_document(run_set: str, name: str) -> dict[str, Any]:
+    """A fresh copy of a registered revision: T07's corpus (`g8`) or a committed basis case."""
+    if run_set == "g8":
+        from t07_corpus import CORPUS  # noqa: PLC0415
+
+        return CORPUS[name]()
+    if run_set == "m02":
+        from m02_c1_corpus import C1_CORPUS  # noqa: PLC0415
+
+        return C1_CORPUS[name]()
+    directory = {"s11-gp": "gp", "s11-th": "thermal"}[run_set]
+    path = ROOT / "benchmarks" / "s11" / directory / f"{name}.json"
+    document: dict[str, Any] = json.loads(path.read_text(encoding="utf-8"))
+    return document
 
 
 @contextlib.contextmanager
@@ -187,8 +216,6 @@ def solve(
         if code != 0:
             raise RuntimeError(f"k05 {name}: solve exited {code}")
         return
-    from t07_corpus import CORPUS  # noqa: PLC0415
-
     from openflowsheet.application.policies import (  # noqa: PLC0415
         DEFAULT_POLICY_ID,
         resolve_policy,
@@ -200,7 +227,7 @@ def solve(
     )
     from openflowsheet.verify.certificate import CheckPolicy  # noqa: PLC0415
 
-    revision = dict(document) if document is not None else CORPUS[name]()
+    revision = dict(document) if document is not None else revision_document(run_set, name)
     route = select_route(revision)
     assert isinstance(route, Route), name
     policy = resolve_policy(DEFAULT_POLICY_ID, route.solve_path)

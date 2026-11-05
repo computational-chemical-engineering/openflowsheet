@@ -120,3 +120,14 @@ Package F0, the corpus identity gate (roadmap 0.4, ADR 0057 D3; brief `docs/brie
   `n_keys: 0` are compared but not counted). **D19 (choice): sample selection** (first three and last per run; one
   pair per basis). Alternative: every request (~9 000 entries, ~5 MB). Reversible by: `M6_FIRST`/`M6_PROVIDERS` and
   re-record. Registry diff: 70 insertions; one line changes only by gaining a comma (`}` → `},`).
+- **Finding 2 applied (orchestrator's default).** `BASIS_CASES`: S11 GP-C1, C2, C3, M1, M2 (Wilson v2), TH-C1, R1, V1
+  (IAPWS-95; the "IAPWS case" of the brief) and M02's `C1-FLASH-F1-M02-v1` (pr-c1), solved through the g8 `solve()`
+  path. Each was solved twice in one process: identical M2–M6. GP-M2 registers `INITIALIZATION_FAILED` (S11.A81's
+  registered refusal of a Wilson turbine crossing the dew point), pinned as such. None keys the exact cache (M6 sample
+  unchanged). Full `--record`: registry diff 198 insertions, 0 deletions; every earlier value equal.
+  **D20 (stopped case): TH-C2 (CoolProp R134a) is not run.** `select_route` refuses it on the reference host:
+  `basis_unavailable(coolprop-heos-v1)`, the `coolprop` extra is not installed in the shared `.venv`, so it cannot be
+  recorded on the reference platform. Installing the extra would change the shared environment (and which tests run in
+  every session's gate); not done. CoolProp stays covered by M6's sample (identity in the key) and M9 (its 2 files).
+  Not added either: the Wilson-column flowsheets (`benchmarks/s11/flowsheets/C-*.json`), outside the brief. To close:
+  install `requirements-coolprop.lock` on the reference host, add `TH-C2` to `BASIS_CASES`, re-record.
