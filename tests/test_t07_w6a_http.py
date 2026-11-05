@@ -343,8 +343,10 @@ def _scenario(call: Call, raw: Callable[[str, bytes], tuple[int, Any]]) -> list[
         "list_audit",
         {"principal_id": PRINCIPAL, "order": "descending", "cursor": audit["next_cursor"]},
     )  # 422 the other order's cursor
+    step("explain", {"code": "not_found"})  # ADR 0058 D7 (MSG)
     # Refusals a transport can reach.
     step("get_job", {"job_id": "job-999999"})  # 404
+    step("explain", {"code": "phase_regim_mismatch"})  # 404, with suggestions
     step("get_artifact", {"artifact_id": "job-999999:bundle"})  # 404
     step("get_revision", {"revision_id": revision, "depth": 99})  # 422 schema
     step("list_revisions", {"cursor": "not-a-cursor"})  # 422
@@ -384,7 +386,8 @@ def test_g14_every_http_operation_equals_dispatch_as_the_same_principal(
         assert len(got) == len(expected)
         got = [(status, _seq_aligned(document, offset)) for status, document in got]
         served_names = {n for n, row in OPERATIONS.items() if "http" in row.transports}
-        assert len(served_names) == 19  # with ADR 0019 Amendment 3's `list_audit`
+        # 19 with ADR 0019 Amendment 3's `list_audit`, 20 with ADR 0058 D7's `explain`.
+        assert len(served_names) == 20
         for index, ((status, document), (want_status, want)) in enumerate(
             zip(got, expected, strict=True)
         ):

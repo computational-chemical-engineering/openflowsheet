@@ -1,5 +1,5 @@
-"""The command line: `validate`, `solve`, `inspect`, `replay`, `project`, `api`, `serve-http`,
-`serve-mcp`. K06, gates G02 and G06; T07 §10.3, §11.5.
+"""The command line: `validate`, `solve`, `inspect`, `replay`, `project`, `api`, `explain`,
+`serve-http`, `serve-mcp`. K06, gates G02 and G06; T07 §10.3, §11.5.
 
 Blueprint D15: local Python and CLI share one contract and neither requires a network round
 trip. So this module is thin on purpose — it parses arguments, calls the application layer,
@@ -352,14 +352,15 @@ def _human_text(error: Exception) -> str:
     return error.text("cli") if isinstance(error, StoreError) else str(error)
 
 
-def _print_refusal(error: ApiError) -> int:
-    """MSG §3.7: a refusal's projected document on stdout, its layered text (surface `cli`) on
-    stderr; the exit code is the code's (§5.8)."""
+def _print_refusal(error: ApiError, *, document: bool = True) -> int:
+    """MSG §3.7: a refusal's projected document on stdout (unless `document` is false), its
+    layered text (surface `cli`) on stderr; the exit code is the code's (§5.8)."""
     from openflowsheet.application.operations import project_error
     from openflowsheet.messages.text import format_text
 
     projected = project_error(error)
-    _print_document(projected.as_document())
+    if document:
+        _print_document(projected.as_document())
     explanation = projected.render_explanation("cli")
     print(format_text(explanation, f"{projected.code}: {projected.message}"), file=sys.stderr)
     return API_EXIT_CODES[projected.code]
@@ -565,6 +566,30 @@ def command_serve_mcp(arguments: argparse.Namespace) -> int:
     return serve_mcp(arguments.project, arguments.token_file)
 
 
+def command_explain(arguments: argparse.Namespace) -> int:
+    """MSG §3.5, §3.7: a message code's catalogue entry, with no project — the same
+    `entry_document` the `explain` operation returns. The entry's text on stdout (the
+    `message_entry` document with `--json`), exit 0; an unknown code is `not_found` with
+    `{code, suggestions}`: its layered text on stderr (with `--json`, the projected `ApiError`
+    document on stdout too), exit 6."""
+    from openflowsheet.application.contract import api_error
+    from openflowsheet.messages.render import entry_document, suggestions
+    from openflowsheet.messages.text import format_entry
+
+    code = arguments.code
+    document = entry_document(code)
+    if document is None:
+        refused = api_error(
+            "not_found", "no such message code", code=code, suggestions=suggestions(code)
+        ).error
+        return _print_refusal(refused, document=arguments.json)
+    if arguments.json:
+        _print_document(document)
+    else:
+        print(format_entry(document))
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="openflowsheet",
@@ -657,6 +682,20 @@ def build_parser() -> argparse.ArgumentParser:
         "--raw-out", default=None, help="artifact_bytes: write the bytes here, not to stdout"
     )
     api_command.set_defaults(handler=command_api)
+
+    explain_command = commands.add_parser(
+        "explain",
+        help="explain a message code (no project needed)",
+        description=(
+            "Print a message code's catalogue entry: its title, kind, templates, params, gap "
+            "and examples. Exit 0; an unknown code exits 6 (not_found) with close codes."
+        ),
+    )
+    explain_command.add_argument("code", help="a message code, e.g. phase_regime_mismatch")
+    explain_command.add_argument(
+        "--json", action="store_true", help="print the message_entry document instead"
+    )
+    explain_command.set_defaults(handler=command_explain)
 
     http_command = commands.add_parser("serve-http", help="serve the project over HTTP (§11.2)")
     http_command.add_argument("--project", required=True, help="the project directory")

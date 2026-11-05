@@ -39,7 +39,9 @@ ADR 0019 Amendment 3 (A3.2) requires. ADR 0019 Amendment 3 (A3.3) adds `audit_pa
 project's `submit_job` audit rows, `list_audit` with `operation: submit_job`) and its first item,
 `audit_record`; an audit row's `at` is a clock reading and is masked like the timestamps. MSG
 (ADR 0058 D3) adds `explanation`: the `detail.explanation` of `get_job`'s refusal of an unknown
-job, as `dispatch` carries it.
+job, as `dispatch` carries it; and (ADR 0058 D7) `message_entry`: `explain`'s response for
+`phase_regime_mismatch`, which carries the catalogue's digest, so a catalogue edit is followed by
+`--write`.
 "Regenerates identically" is `stable` equality, as for the jobs
 (`tests/test_t07_w5e_application_results.py`).
 
@@ -116,6 +118,7 @@ RESULTS_VALID = {
     "audit_record": "solve_accepted_with_its_key",
     "audit_page": "one_submit",
     "explanation": "not_found_job",
+    "message_entry": "phase_regime_mismatch",
 }
 
 
@@ -260,6 +263,8 @@ def application_results_documents() -> dict[str, Any]:
                 responses["explanation"] = refused.error.detail["explanation"]
             else:
                 raise SystemExit("get_job of an unknown job was not refused")
+            # MSG (ADR 0058 D7): `explain`'s response, a catalogue entry.
+            responses["message_entry"] = call("explain", {"code": "phase_regime_mismatch"})
             violations = lifecycle_violations(application)
             if violations:
                 raise SystemExit(f"the fixture job breaks the lifecycle: {violations}")

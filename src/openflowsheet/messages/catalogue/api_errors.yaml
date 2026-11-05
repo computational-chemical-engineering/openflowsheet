@@ -29,10 +29,14 @@ entries:
         summary: "Bundle {bundle_id} has no file '{member!raw}'."
         why: "This bundle holds {members}."
         action: "Read one of the files the bundle holds."
+      - when: {has: [code, suggestions], not_equals: {suggestions: []}}
+        summary: "There is no message code '{code!raw}'."
+        why: "Codes are case-sensitive and listed in the docs' Messages section."
+        action: "Did you mean {suggestions}?"
       - when: {has: [code]}
         summary: "There is no message code '{code!raw}'."
         why: "Codes are case-sensitive and listed in the docs' Messages section."
-        action: "[Did you mean {suggestions}?]"
+        action: "Check the code's spelling against the docs' Messages section; no message code is close to it."
     examples:
       - params: {artifact_id: "job-000004:bundle/solution-state.json", bundle_id: "job-000004:bundle",
                  member: solution-state.json, members: [failure-bundle.json, run-manifest.json],

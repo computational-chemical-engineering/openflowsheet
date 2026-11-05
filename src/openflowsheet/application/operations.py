@@ -1,7 +1,8 @@
 """The operations table and the one dispatch every binding goes through (§4.3, §10.4, §11.6).
 
 `OPERATIONS` is the only routing source: one row per protocol method — `Application`'s four,
-`JobControl`'s seven, `Inspection`'s nine (`list_audit` is ADR 0019 Amendment 3's) — and
+`JobControl`'s seven, `Inspection`'s ten (`list_audit` is ADR 0019 Amendment 3's, `explain`
+ADR 0058 D7's) — and
 `artifact_bytes`, the raw export. A row names its method, the right it needs, its request and
 response schemas, its HTTP verb and path, its MCP tool, the transports that carry it and its tool
 description. Python (through `dispatch`), the
@@ -133,6 +134,13 @@ JOB_ID: Final = _ref("job.schema.json#/$defs/job_id")
 ARTIFACT_ID: Final = _ref("job.schema.json#/$defs/artifact_id")
 CURSOR: Final = {"type": ["string", "null"], "maxLength": 1024}
 POINTER: Final = {"type": "string", "maxLength": 8192}
+#: ADR 0058 D7: a message code as `explain` takes it (MSG §3.5).
+MESSAGE_CODE: Final = {
+    "type": "string",
+    "minLength": 1,
+    "maxLength": 128,
+    "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]*$",
+}
 
 
 def _limit(maximum: int) -> dict[str, Any]:
@@ -504,6 +512,15 @@ OPERATIONS: Final[Mapping[str, Operation]] = {
             decode=_members("principal_id", "operation", "order", "cursor", "limit"),
             encode=_page_of(AuditRecord.as_document),
             transports=("python", "cli", "http"),
+        ),
+        # ADR 0058 D7 (MSG §3.5): a message-catalogue entry; it reads no project state.
+        _row(
+            "explain",
+            "read",
+            _object({"code": MESSAGE_CODE}),
+            _result("message_entry"),
+            ("GET", "/v1/explain/{code}"),
+            decode=_members("code"),
         ),
         # The raw export (Python, CLI, HTTP; never MCP)
         _row(

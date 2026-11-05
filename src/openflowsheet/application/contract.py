@@ -31,6 +31,7 @@ if TYPE_CHECKING:
         JobRequest,
         JobResult,
         JobWait,
+        MessageEntry,
         ModelRegistryView,
         ProjectSummary,
         ReplayPolicy,
@@ -70,9 +71,10 @@ class ApplicationError(Exception):
 
 
 def api_error(
-    code: ApiErrorCode, message: str, *, retryable: bool = False, **detail: Any
+    code: ApiErrorCode, message: str, /, *, retryable: bool = False, **detail: Any
 ) -> ApplicationError:
-    """An `ApplicationError` of `code`, ready to raise."""
+    """An `ApplicationError` of `code`, ready to raise. `code` and `message` are positional, so
+    a `detail` member may be named `code` (`explain`'s `not_found`, ADR 0058 D7)."""
     if audit.auditor is not None:  # MSG-G3: the codes this machine text carries have entries
         _observe(code, message, detail, sys._getframe(1).f_globals.get("__name__", ""))
     return ApplicationError(
@@ -178,7 +180,8 @@ class Inspection(Protocol):
     """§4.1, new under ADR 0019: the project, its models, revisions, structure and artifacts.
     Every method is read-only (`read`); every document comes back as a bounded `Projection`.
     `list_audit` is ADR 0019 Amendment 3's (A3.3): the audit, by `seq`; another principal's rows,
-    or all principals', need `policy` as well."""
+    or all principals', need `policy` as well. `explain` is ADR 0058 D7's: a message-catalogue
+    entry, which reads no project state."""
 
     def get_project(self) -> ProjectSummary: ...
 
@@ -233,3 +236,5 @@ class Inspection(Protocol):
         cursor: str | None = None,
         limit: int = 50,
     ) -> Page[AuditRecord]: ...
+
+    def explain(self, code: str) -> MessageEntry: ...

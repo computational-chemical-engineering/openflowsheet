@@ -31,9 +31,10 @@ function, a registered digest and Frank's carry extended to name it):
 - c_3, R-295 (ADR 0037 D6, ADR 0019 Amendment 5): M04's `surrogate_study` job kind, stripped by
   `tests/m04_schema_support.py`'s `without_m04` (R-295's decomposition function); `D_3` =
   `455d01eb…`, registered at the alpha's merge into `main` (R-457).
-- c_4, R-934 (ADR 0058 D5): MSG's `RunResult.failure`, stripped by `tests/msg_schema_support.py`'s
-  `without_msg` (MSG-G10's decomposition function); `D_4` = `b083ffe1…`, measured at MSG WO-6
-  (`tests/test_t08_w2_surface_digest.py`'s `MSG_SERVED_SHA256`).
+- c_4, R-934 (ADR 0058 D5, D7): MSG's `RunResult.failure` and its `explain` tool, stripped by
+  `tests/msg_schema_support.py`'s `without_msg` (MSG-G10's decomposition function); `D_4` =
+  `1ca06b37…`, measured at MSG WO-7 (`tests/test_t08_w2_surface_digest.py`'s `MSG_SERVED_SHA256`;
+  `b083ffe1…` at WO-6, before `explain`).
 
 The released 0.2.0a1 ran the two-link chain (its committed record at `C_α²`); a re-run of the
 alpha's step 8 uses this script at the tag.
@@ -194,7 +195,7 @@ LINKS: Final = (
         "c_4",
         "R-934",
         strip_msg,
-        "b083ffe1be73f2f0c862956bc156e776d6a4170a3b93d65bdcdb8a92a306b46f",
+        "1ca06b375717140d10bb108163c04e06face4d15493a9ae9b657220ddfdc75aa",
     ),
 )
 

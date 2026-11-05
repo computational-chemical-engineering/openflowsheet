@@ -121,6 +121,7 @@ from openflowsheet.application.types import (
     JobRequest,
     JobResult,
     JobWait,
+    MessageEntry,
     ModelRegistryView,
     ProjectPolicy,
     ProjectSummary,
@@ -460,6 +461,7 @@ class LocalApplication:
         self,
         code: ApiErrorCode,
         message: str,
+        /,
         *,
         operation: str,
         request_sha256: str | None = None,
@@ -1503,6 +1505,28 @@ class LocalApplication:
         )
         next_cursor = _encode_audit_cursor(order, rows[-1].seq) if more else None
         return Page(items=tuple(rows), next_cursor=next_cursor)
+
+    def explain(self, code: str) -> MessageEntry:
+        """ADR 0058 D7 (MSG §3.5, §4.9): the message-catalogue entry `code` — its display
+        templates, params, gap, see-also, rendered examples, docs URL and the catalogue's digest.
+        `read`; it reads no project state. An unknown code is refused `not_found` with
+        `detail {code, suggestions}`: up to five keys within edit distance 3, case-insensitively."""
+        from openflowsheet.messages.render import entry_document, suggestions  # noqa: PLC0415
+
+        name = "explain"
+        self._authorize(name)
+        if not isinstance(code, str):
+            self._refuse("invalid_request", "code is a string", operation=name, pointer="/code")
+        document = entry_document(code)
+        if document is None:
+            self._refuse(
+                "not_found",
+                "no such message code",
+                operation=name,
+                code=code,
+                suggestions=suggestions(code),
+            )
+        return MessageEntry.from_document(document)
 
     def _decode_audit_cursor(self, cursor: str | None, order: str, operation: str) -> int | None:
         """`list_audit`'s cursor, `{order, seq}`, as the `seq` to continue after; `None` for the

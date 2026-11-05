@@ -1774,6 +1774,79 @@ class ModelRegistryView:
 
 
 @dataclass(frozen=True)
+class MessageEntry:
+    """ADR 0058 D7 (MSG §3.5, §4.9) `explain`: one message-catalogue entry. The five templates
+    (`summary`, `context`, `where`, `why`, `action`) are display forms, `{p}` → `<p>`; `examples`
+    are explanations rendered from the entry's example params; `catalogue` is `{id, sha256}`,
+    which enters no identity. Read from the catalogue alone; no project state."""
+
+    code: str
+    family: str
+    kind: str
+    complete: bool
+    title: str
+    summary: str | None
+    context: str | None
+    where: str | None
+    why: str | None
+    action: str | None
+    params: tuple[Mapping[str, Any], ...]
+    gap: Mapping[str, Any] | None
+    see_also: tuple[str, ...]
+    examples: tuple[Mapping[str, Any], ...]
+    docs: str
+    deprecated: bool
+    replaced_by: str | None
+    catalogue: Mapping[str, Any]
+
+    def as_document(self) -> dict[str, Any]:
+        return {
+            "code": self.code,
+            "family": self.family,
+            "kind": self.kind,
+            "complete": self.complete,
+            "title": self.title,
+            "summary": self.summary,
+            "context": self.context,
+            "where": self.where,
+            "why": self.why,
+            "action": self.action,
+            "params": [dict(param) for param in self.params],
+            "gap": None if self.gap is None else dict(self.gap),
+            "see_also": list(self.see_also),
+            "examples": copy.deepcopy([dict(example) for example in self.examples]),
+            "docs": self.docs,
+            "deprecated": self.deprecated,
+            "replaced_by": self.replaced_by,
+            "catalogue": dict(self.catalogue),
+        }
+
+    @classmethod
+    def from_document(cls, document: Mapping[str, Any]) -> Self:
+        validate_document("application-results.schema.json#/$defs/message_entry", document)
+        return cls(
+            code=document["code"],
+            family=document["family"],
+            kind=document["kind"],
+            complete=document["complete"],
+            title=document["title"],
+            summary=document["summary"],
+            context=document["context"],
+            where=document["where"],
+            why=document["why"],
+            action=document["action"],
+            params=tuple(dict(param) for param in document["params"]),
+            gap=None if document["gap"] is None else dict(document["gap"]),
+            see_also=tuple(document["see_also"]),
+            examples=tuple(copy.deepcopy(dict(example)) for example in document["examples"]),
+            docs=document["docs"],
+            deprecated=document["deprecated"],
+            replaced_by=document["replaced_by"],
+            catalogue=dict(document["catalogue"]),
+        )
+
+
+@dataclass(frozen=True)
 class RevisionSummary:
     """§4.2 `list_revisions`: one stored revision without its document. `title` is the
     document's own (untrusted) text, or `None` when it has no string title."""

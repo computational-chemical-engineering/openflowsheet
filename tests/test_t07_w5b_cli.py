@@ -335,6 +335,7 @@ def scenario(revision_id: str, job_id: str, bundle: Path) -> list[tuple[str, dic
         ("get_artifact", {"artifact_id": state, "pointer": "/variable_ids", "limit": 5}),
         # ADR 0019 Amendment 3 (A3.3); `at` is a clock reading (`CLOCK_MEMBERS`).
         ("list_audit", {"order": "descending", "limit": 4}),
+        ("explain", {"code": "not_found"}),  # ADR 0058 D7 (MSG)
         ("artifact_bytes", {"artifact_id": state}),
     ]
 

@@ -61,6 +61,26 @@
         }
       ]
     },
+    "explain": {
+      "tool": "explain",
+      "file": "explain.md",
+      "sha256": "695311624eb29dba53bf277f592d2619aa8a5d4680c3cefc5a32587a4e510a46",
+      "characters": 979,
+      "reviews": [
+        {
+          "review_kind": "design-lane",
+          "status": "pending_design_review",
+          "reviewed_by": null,
+          "reviewed_at": null
+        },
+        {
+          "review_kind": "human",
+          "status": "pending",
+          "reviewed_by": null,
+          "reviewed_at": null
+        }
+      ]
+    },
     "get_artifact": {
       "tool": "get_artifact",
       "file": "get_artifact.md",

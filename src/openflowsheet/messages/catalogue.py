@@ -236,6 +236,8 @@ class Catalogue:
         self._vocabulary: dict[str, dict[str, str]] = {}
         self._frozen = False
         self._validators: _Validators | None = None
+        #: `sha256()`, computed once: the merged entries cannot change after the first lookup.
+        self._sha256: str | None = None
 
     # -- loading ----------------------------------------------------------------------------
 
@@ -363,8 +365,10 @@ class Catalogue:
         """SHA-256 of ADR 0002 canonical JSON of the merged entries, sorted by code (§3.2)."""
         from openflowsheet.canonical import canonical_json  # noqa: PLC0415
 
-        documents = [dict(entry.document) for entry in self.entries()]
-        return hashlib.sha256(canonical_json(documents)).hexdigest()
+        if self._sha256 is None:
+            documents = [dict(entry.document) for entry in self.entries()]
+            self._sha256 = hashlib.sha256(canonical_json(documents)).hexdigest()
+        return self._sha256
 
 
 CATALOGUE: Final[Catalogue] = Catalogue()

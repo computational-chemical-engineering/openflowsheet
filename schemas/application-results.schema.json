@@ -901,6 +901,192 @@
           "format": "uri"
         }
       }
+    },
+    "message_entry": {
+      "description": "MSG design note §3.5, §4.9 (ADR 0058 D7): `explain`'s response, one message-catalogue entry. The five templates are display forms (`{p}` → `<p>`, optional brackets removed); `examples` are explanations rendered with the entry's example params, surface `null`; `catalogue` is the catalogue's format id and content digest, which enter no identity. Reads no project state.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "code",
+        "family",
+        "kind",
+        "complete",
+        "title",
+        "summary",
+        "context",
+        "where",
+        "why",
+        "action",
+        "params",
+        "gap",
+        "see_also",
+        "examples",
+        "docs",
+        "deprecated",
+        "replaced_by",
+        "catalogue"
+      ],
+      "properties": {
+        "code": {
+          "type": "string",
+          "minLength": 1
+        },
+        "family": {
+          "enum": [
+            "api_error",
+            "refusal",
+            "outcome",
+            "check",
+            "status",
+            "limitation",
+            "notice",
+            "job"
+          ]
+        },
+        "kind": {
+          "enum": [
+            "input",
+            "not_supported",
+            "numerical",
+            "bug",
+            "notice"
+          ]
+        },
+        "complete": {
+          "type": "boolean"
+        },
+        "title": {
+          "type": "string"
+        },
+        "summary": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "context": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "where": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "why": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "action": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "params": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "name",
+              "type",
+              "label",
+              "optional"
+            ],
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string"
+              },
+              "label": {
+                "type": "string"
+              },
+              "optional": {
+                "type": "boolean"
+              }
+            }
+          }
+        },
+        "gap": {
+          "anyOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "limitation",
+                "capability"
+              ],
+              "properties": {
+                "limitation": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "capability": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "see_also": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "examples": {
+          "type": "array",
+          "items": {
+            "$ref": "https://github.com/frankp/process-runtime/schemas/application-results.schema.json#/$defs/explanation"
+          }
+        },
+        "docs": {
+          "type": "string",
+          "format": "uri"
+        },
+        "deprecated": {
+          "type": "boolean"
+        },
+        "replaced_by": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "catalogue": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "sha256"
+          ],
+          "properties": {
+            "id": {
+              "const": "openflowsheet-messages-v1"
+            },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            }
+          }
+        }
+      }
     }
   }
 }

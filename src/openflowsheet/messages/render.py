@@ -9,6 +9,9 @@ computed on read and stored nowhere (I2). Three entry points build the chain:
   observation message, with the diagnostic sidecar's params when they agree with the chain;
 - `render_code(code, params, chain=…)`: a code with given params (examples, `explain`).
 
+`entry_document(code)` is the catalogue entry itself, as `explain` returns it (§3.5, §4.9), and
+`suggestions(code)` the keys near an unknown code.
+
 **Rendering is total (I9).** A defective entry, a template that fails or an unknown code falls back
 to the next entry outward, and last to a minimal rendering (the code and the machine text). Under
 the test-suite audit each fallback is recorded as a defect, which fails the session.
@@ -29,8 +32,11 @@ from openflowsheet.messages.catalogue import (
     DOCS_BASE,
     ELEMENT_TYPES,
     FAMILY_PAGES,
+    FORMAT_ID,
+    TEMPLATE_FIELDS,
     Catalogue,
     Entry,
+    parsed,
 )
 from openflowsheet.messages.diagnostic import Diagnostic, Quantity
 from openflowsheet.messages.legacy import Chain, Link, Segment, parse_chain, resolve
@@ -703,3 +709,72 @@ def explain_failure(
         family_hint="outcome",
     )
     return _explain(request, catalogue, strict=strict), dict(request.params)
+
+
+# -- the catalogue entry (`explain`, §3.5, §4.9) ------------------------------------------------
+
+#: §3.5: an unknown code's suggestions — at most this many keys within this edit distance.
+MAX_SUGGESTIONS = 5
+MAX_SUGGESTION_DISTANCE = 3
+
+
+def _distance(a: str, b: str) -> int:
+    """The Levenshtein distance between `a` and `b` (unit-cost insert, delete, substitute)."""
+    previous = list(range(len(b) + 1))
+    for i, left in enumerate(a, start=1):
+        current = [i]
+        for j, right in enumerate(b, start=1):
+            current.append(
+                min(previous[j] + 1, current[j - 1] + 1, previous[j - 1] + (left != right))
+            )
+        previous = current
+    return previous[-1]
+
+
+def suggestions(code: str, catalogue: Catalogue = CATALOGUE) -> list[str]:
+    """§3.5: up to `MAX_SUGGESTIONS` catalogue keys within Levenshtein distance
+    `MAX_SUGGESTION_DISTANCE` of `code`, compared case-insensitively, sorted by (distance, key)."""
+    folded = code.casefold()
+    scored = sorted(
+        (distance, key)
+        for key in catalogue.keys()
+        if (distance := _distance(folded, key.casefold())) <= MAX_SUGGESTION_DISTANCE
+    )
+    return [key for _, key in scored[:MAX_SUGGESTIONS]]
+
+
+def _display(entry: Entry, name: str) -> str | None:
+    text = entry.document.get(name)
+    return None if text is None else template.display(parsed(str(text)))
+
+
+def entry_document(code: str, catalogue: Catalogue = CATALOGUE) -> dict[str, Any] | None:
+    """§4.9: the catalogue entry `code` as `application-results.schema.json#/$defs/message_entry`
+    — its display templates (`{p}` → `<p>`, optional brackets removed), params, gap, see-also,
+    examples rendered with their params (surface `None`), docs URL, deprecation and the
+    catalogue's id and digest — or `None` when `code` is not a key. Reads no project state."""
+    entry = catalogue.entry(code)
+    if entry is None:
+        return None
+    return {
+        "code": entry.code,
+        "family": entry.family,
+        "kind": entry.kind,
+        "complete": entry.complete,
+        "title": entry.title,
+        **{name: _display(entry, name) for name in TEMPLATE_FIELDS},
+        "params": [
+            {"name": p.name, "type": p.type, "label": p.label, "optional": p.optional}
+            for p in entry.params.values()
+        ],
+        "gap": entry.gap,
+        "see_also": list(entry.see_also),
+        "examples": [
+            render_code(code, example["params"], chain=example.get("chain"), catalogue=catalogue)
+            for example in entry.examples
+        ],
+        "docs": entry.docs,
+        "deprecated": bool(entry.document.get("deprecated", False)),
+        "replaced_by": entry.document.get("replaced_by"),
+        "catalogue": {"id": FORMAT_ID, "sha256": catalogue.sha256()},
+    }
