@@ -44,3 +44,30 @@ Package F0, the corpus identity gate (roadmap 0.4, ADR 0057 D3; brief `docs/brie
   (1:57:47). ruff, format, mypy exit 0. The one failure is `test_f6_the_forty_runs_fit_their_budget` (V17's 40-run
   wall-time budget: 401.5 s > 300 s) on a host at load average ~49; F0 touches no `src/` file. Not re-run; a re-run on
   an idle host decides whether it is load. F0's own tests: 6 passed, 1 xfailed (strict) inside that run.
+
+## 2026-11-05 — second engineer
+
+- **D3 resolved (ruling: commit the fixtures).** `scripts/t08_rc.py bundles-write` run in a detached worktree of tag
+  `v0.3.0` (b8f47a04), its own `src` on `PYTHONPATH` (`openflowsheet.__version__` 0.3.0), single-threaded, ref-x86-64:
+  52 bundles (k05 5, g8 47; 49 CONVERGED/VERIFIED, 2 INITIALIZATION_FAILED, 1 HOMOTOPY_STALLED, the same mix as main),
+  540 JSON files, 5.5 MB, no absolute path, no CRLF. Committed as `tests/fixtures/f0/v0.3.0-bundles/` (833e8093);
+  tag worktree removed.
+- **D12. M7 value per bundle = `verdict`, `mode`, `integrity_ok`** of `reproduce_bundle(rerun=True)` (RC step 5's call
+  and run id). Reasons and differences are not registered (prose). Measured: 52 MATCH, `exact_replay`, intact, 47 s.
+  Off the reference platform the mode is not judged (`decide_mode` makes it `compatible_reproduction` whenever the
+  platform identity differs); verdict and integrity still are. Alternative: M7 `NOT JUDGED` off-reference, as M4 (D5).
+  Reversible by: `M7_PORTABLE` and the M7 branch in `compare()`.
+- **D13. M8 corpus = ten test functions** (`M8_FUNCTIONS`): D4's six plus the four other functions whose name says
+  round-trip and whose body validates against a schema (`test_schemas_p01::test_component_record_round_trips`,
+  `test_t07_types::test_each_typed_document_round_trips_through_its_schema`,
+  `test_t07_w1f_followup::test_a_job_result_round_trips_through_its_schema`,
+  `test_t07_w3e_solution_state::test_the_fixture_validates_round_trips_and_is_consistent`). Excluded: round trips with
+  no schema check (`test_the_composite_results_round_trip`, `test_solve_policy_document_round_trips_byte_identically`,
+  canonicalization and float round trips). Run in a subprocess with `t08_rc._Recorder`; every node id registered with
+  its worst outcome: 105 passed, 8 s. A test asserts no registered node is other than passed. Reversible by: editing
+  `M8_FUNCTIONS` and re-recording.
+- **D14. M9 follows imports (D9 ruling).** `_hashed_files` also adds the file of an imported module whose `__file__` a
+  hash scope reads, and, for a scope that reads another provider's `implementation_sha256`, every hash-site module the
+  file imports; an unresolved composition raises. Only composition today: `wilson_ig_v2` → `wilson_ig` (already in the
+  set). Registered set unchanged, 8 files. `artifact_hash` unit modules stay out (ruling).
+- **Registry re-record for M7, M8:** `git diff` of `benchmarks/f0/corpus.json` = 371 insertions, 0 deletions.
