@@ -1,7 +1,10 @@
 # ADR 0059 — The evidence manifest's `work_package` admits the roadmap's package ids: an additive widening
 
-**Status:** Proposed, 2026-11-05 (design lane, `reviewer`, F0 ruling round D16; brief `docs/briefs/F0-review.md`).
-It becomes **Accepted** when the build lane has applied the pattern below in one isolated commit and recorded that
+**Status:** **Accepted, 2026-11-05** — its condition holds: the pattern was applied alone in `13eac60b` (with the
+acceptance-2 unit check `test_work_package_pattern_widening_is_additive`), and `tests/test_evidence_manifests.py`
+passes (410 passed) with every committed manifest unchanged and F0's `evidence/F0/ef1bf51a…/manifest.json` added
+(`d0af0259`). Marked by the build lane. (Proposed 2026-11-05, design lane, `reviewer`, F0 ruling round D16; brief
+`docs/briefs/F0-review.md`.) It became **Accepted** when the build lane has applied the pattern below in one isolated commit and recorded that
 `tests/test_evidence_manifests.py` passes with every committed manifest unchanged and with F0's manifest
 (`evidence/F0/<commit>/manifest.json`) added. The build lane marks it, as for ADRs 0050–0054.
 **Author:** design lane (`reviewer`), review `docs/reviews/F0-review.md` (ruling 2).
