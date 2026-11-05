@@ -1,7 +1,7 @@
 # Foundation rulings: the nine questions of the target architecture (roadmap stage 3)
 
-Status: design-lane rulings (`specifier`), 2026-11-02; amended in place by Amendment 1 (2026-11-02, §13), which lists
-every changed clause. Brief: `docs/roadmap/brief-specifier-foundation-questions.md`.
+Status: design-lane rulings (`specifier`), 2026-11-02; amended in place by Amendment 1 (2026-11-02, §13) and Amendment
+2 (2026-11-05, §14), which list every changed clause. Brief: `docs/roadmap/brief-specifier-foundation-questions.md`.
 Questions and defaults: `docs/roadmap/target-architecture.md` §6 ("the note"). Input to ADR-F2 to ADR-F5, not an ADR:
 once an ADR adopts a ruling, the ADR is the authority and this document is archival input.
 
@@ -15,7 +15,7 @@ once an ADR adopts a ruling, the ADR is the authority and this document is archi
 - **Departures from the note's defaults:** Q1 (enthalpy per unit mass, not molar), Q2 (anchor phase, entropy datum,
   component datum), Q3 (a conserved-group basis replaces the `apparent|true` switch), Q4 (density ordering removed), Q5
   (claim levels and witnesses), Q6 (no-redundancy rule), Q9 (two provenance axes; rights outside identity). Q7 and Q8
-  confirm the default with precisions.
+  confirm the default with precisions. Amendment 2 adopts the note's five W1 defaults, each with precisions (§14).
 
 **What this document does not establish.** It chooses no correlation, parameter set, or electrolyte, solid, polymer or
 petroleum model. No number in it is validation: sanity values are closed-form consequences, synthetic test constants or
@@ -58,6 +58,27 @@ Notation: ε = 2.220446e-16. "Exactly" = bitwise in IEEE double after signed-zer
   their bases: each carried amount (Q3 groups or components; Q6 partition classes, never their parent), each carried
   extensive attribute, and one energy holdup; never true species of a group basis, equilibrium-phase amounts (Q8.R4) or
   derived intensives. Fast reactions and phase equilibria add no balance term; the mass matrix stays 0/1 (note A4).
+- **Q1.R8** *Holdup dormancy* (F7; Amendment 2). A material holdup (one control volume; per substream as Q8.R6) is
+  dormant iff every held amount is exactly `+0.0`. Its attributes are then `+0.0`; when the whole volume is dormant its
+  energy holdup is `+0.0`, every intensive of the contents is null (`holdup_empty`) and, where a row loses rank in it, a
+  label in the unit's declared zero-holdup form (Q1.R4's value, Q5.R7's no-read rule), and its outlets are dormant.
+  *Entering* is at t₀ (specified empty) or at an event, since integration never reaches exact zero: event function the
+  held mass, decreasing; action `empty(<holdup>)` sets every held amount, attribute and the energy holdup to `+0.0` and
+  books what it removes as `drain_defect(<holdup>)` in the conservation ledger (an action on an accepted state, not a
+  projection; a negative held amount stays an invalid trial, ADR 0001 D2.3). While dormant every balance source is
+  `+0.0`; one the zero-holdup form does not route to a Q1.R9 holdup is refused at the event
+  (`dormant_holdup_source(<unit>, <term>)`). *Leaving* is at the event opening where an inflow starts: before any state
+  point of the holdup is evaluated, the contents take the flowing inflows' composition and, on the energy column (û for
+  U), e_seed = Σ Ḣ_in / Σ ṁ_in in fixed order (one inlet: its `ĥ` bitwise), the limit of E/m as m → 0⁺ when the energy
+  row has no other source. A unit without a zero-holdup form is refused where it would become dormant
+  (`holdup_dormancy_unsupported(<unit>)`); the run ends there with that status and keeps its trajectory.
+- **Q1.R9** *Non-material holdups* (F7; Amendment 2). A unit may own conserved holdups no connection carries, of a
+  registered kind (F1; seeded: `wall_energy`, J; `angular_momentum`, kg m² s⁻¹), each the column its `holdup_balance`
+  row differentiates with coefficient 1 (U_w, not T_w; L = Iω, not ω), so M stays 0/1; its capacity (m_w c_w, I) is
+  positive (`holdup_capacity_nonpositive(<unit>, <holdup>)`). A wall energy has a unit-local datum (U_w = 0 at a declared
+  T_ref,w) and the scale capacity × s_T (note §2.3.7). A transfer between holdups sits with opposite signs in exactly the
+  two rows it couples. They enter the conservation ledger and never go dormant with the material; a `state_rate` state
+  (R-930) is not conserved and stays out of the ledger.
 
 ### Rejected alternatives
 - **(a) `nTP` plus phase amounts where Gibbs' rule leaves the state open.** Degeneracy in `T` is not only structural (π
@@ -139,10 +160,27 @@ Notation: ε = 2.220446e-16. "Exactly" = bitwise in IEEE double after signed-zer
   Mutation control: keeping the label instead, (b) evaluates `ĥ = +0.0` J/kg (count ≥ 1), refused out of domain.
 - **Q1.A10** *Holdups* (F7 probe tank). On the MEA–CO2–H2O basis (Q3.A2 (c)) the states are the three group holdups and
   one energy holdup, no species; with `probe.partition`, its classes, not the parent; with `probe.moments`, λ0 and λ2.
+- **Q1.A11** *Holdup dormancy* (F7 probe: rigid vessel; synthetic ideal gas, M = 0.028 kg/mol, c_v = 2.5R/M, c_p =
+  3.5R/M, R = 8.314 462 618 J/(mol K), Δf h° = 0; closed forms). (a) *Fill:* empty at t₀, inflow 0.01 kg/s at T_in =
+  300 K, adiabatic: û_seed is the inlet `ĥ` bitwise and T = γT_in = 420.0 K within 1e-10 relative at every step (m and
+  U grow linearly, which BDF integrates to roundoff, floor ≈ n_steps·ε ≤ 1e-12; seeding T_in into the state, or dropping
+  Pv, errs by 40 %). (b) *Drain:* 1 kg at T₀ = 300 K, outflow 0.01 kg/s, duty ṁR_sT₀ = 890.835 280 5 W holding T = T₀:
+  the event falls at t_d = 100 s within 1e-9 relative; |drain_defect| ≤ 1e-8 kg (floor ≈ ε·1 kg; an unlocated event
+  clamps a step, ≥ 1e-4 kg), and the ledger closes with it; the duty left on is refused `dormant_holdup_source`; switched
+  off by the action, every held amount and U stay exactly `+0.0`, T null, the outlet dormant. (c) *Refill* at 150 s
+  reproduces (a). No state point reads a label (instrumented count 0). Mutation control: without the event the step
+  below m = 0 is an invalid trial and the run cannot pass t_d.
+- **Q1.A12** *Non-material holdups* (F7 probe: (b)'s vessel with a wall, C_w = 5e4 J/K, 100 W/K to the contents, fire
+  duty 1e4 W into the wall; a rotor, I = 2 kg m², net torque 10 N m). M's entries are exactly 1.0 on the declared map, U_w
+  and L included; the wall–contents term sits in exactly two rows with opposite signs and is exactly `+0.0` while the
+  contents are dormant, T_w then rising at 0.2 K/s within 1e-10 relative; L = L₀ + 10t N m s within 1e-12 relative; the
+  ledger lists U_w and L, not a probe PI integral; at ẋ = 0 the wall unit's dynamic residual equals its steady residual
+  bitwise. Mutation control: T_w differentiated with coefficient C_w is refused (a non-unit M entry).
 
 **Effect on the note.** §2.1.1: `thermal_coordinate: T | h` becomes `T | h_mass`; add Q1.R4. §2.2.1: each state-point
 specification carries its quantity kind (molar or specific). §6 Q1: text corrected. §7 R4: decided, mitigated by Q1.R3.
-Exits: F2 gains Q1.A5; F4 and F5 gain Q1.A1–A4, A6, A7. Amendment 1: §13 S3, N10.
+Exits: F2 gains Q1.A5; F4 and F5 gain Q1.A1–A4, A6, A7. Amendment 1: §13 S3, N10. Amendment 2: §14 (F7 gains Q1.A11,
+A12).
 
 ## Q2. Enthalpy and entropy reference
 
@@ -151,20 +189,22 @@ Exits: F2 gains Q1.A5; F4 and F5 gain Q1.A1–A4, A6, A7. Amendment 1: §13 S3, 
   `ELEMENTAL-ref-v1`: elements in their standard reference phases at T° = 298.15 K, P° = 1e5 Pa have h = 0; each
   component in its anchor phase at (T°, P°) has h = Δf h°_c and s = s°_c (third-law absolute), both per unit of its
   amount basis. Hence `g = h − Ts`, and Σν g at (T°, P°) is Δr g°.
-- **Q2.R2** *Anchor phase,* one per component per flowsheet, from its record: `ig` (ideal gas) by default; `aq` for ions
-  and solutes without an ideal-gas model (infinite dilution, molality scale, conventional Δf h°(H⁺, aq) = s°(H⁺, aq) =
-  0); `s:<form>` for a component modelled only as a condensed solid, `kg`-basis ones included; `l` only when the record
-  has no ideal-gas value and no method in the flowsheet has an ideal-gas model for it. Every method evaluating the
-  component evaluates it in that phase at (T°, P°); one that cannot is bridged (Q2.R8), and without a bridge datum it is
-  refused for it (`anchor_unavailable(<method>, <component>, <phase>)`).
+- **Q2.R2** *Anchor phase,* one per component, a function of its record alone (Amendment 2): a record field and part of
+  its identity (Q9.R2), stated by the record (in a phase where it gives formation data, if it gives any) or set at
+  import by this order. A charged component takes `aq` (infinite dilution, molality scale, conventional Δf h°(H⁺, aq) =
+  s°(H⁺, aq) = 0); any other the first of `ig` (ideal gas), `aq`, `l`, `s:<form>` (forms in record order) in which the
+  record gives formation data, else (Q2.R4) any property correlation; `kg`-basis components included. No method enters
+  it, so adding or removing a method never re-anchors. Every method evaluating the component evaluates it in that phase
+  at (T°, P°); one that cannot is bridged (Q2.R8), and without a bridge datum it is refused for it
+  (`anchor_unavailable(<method>, <component>, <phase>)`).
 - **Q2.R3** *Shift.* For method m and component c, Δ_{m,c} = Δf h°_c − h^m_c(anchor; T°, P°), h^m_c being the method's
   native pure-component (for `aq`, infinite-dilution) value. Ḣ_shifted = Ḣ_native + Σ_c n_c Δ_{m,c}; S likewise with
   s°_c. The shifts are constants of the composed method, computed once at composition and recorded in its `describe()`;
   derivatives in T and P are unchanged; ∂/∂n_c gains Δ_{m,c}.
-- **Q2.R4** *Component datum.* A component whose record has no formation data takes h = 0 (s = s° if given, else 0) in
-  its anchor phase at (T°, P°): consistent across methods and admitted across method boundaries, refused in any reaction
-  where its coefficient is non-zero (`component_not_reaction_consistent(<component>)`), admitted as an inert in a
-  reactor (its datum cancels).
+- **Q2.R4** *Component datum.* A component whose record has no formation data in any phase takes h = 0 (s = s° if
+  given, else 0) in its anchor phase at (T°, P°): consistent across methods and admitted across method boundaries,
+  refused in any reaction where its coefficient is non-zero (`component_not_reaction_consistent(<component>)`), admitted
+  as an inert in a reactor (its datum cancels).
 - **Q2.R5** A method that cannot evaluate its own anchor-state value keeps its native convention and is admitted only in
   a flowsheet whose convention is that native one, where ADR 0001 D5.2 rules (the default's "used alone", narrowed to
   where it is needed).
@@ -177,7 +217,8 @@ Exits: F2 gains Q1.A5; F4 and F5 gain Q1.A1–A4, A6, A7. Amendment 1: §13 S3, 
   h°, −Δvap s°): Δ_{m,c} = Δf h°_c + Δ_aφ h°_c − h^m_c(φ; T°, P°), s likewise, else as Q2.R3. It carries
   `anchor_bridged(<method>, <component>, <a>-><φ>)` in `describe()` and the validation class, with the datum's
   provenance, and where another method evaluates c in both phases, δ = Δ_aφ h°_c − (h^{m′}_c(φ) − h^{m′}_c(a))(T°, P°).
-  Energy still closes at boundaries (Q1 argument 2); δ appears in the reported T jump.
+  Energy still closes at boundaries (Q1 argument 2); δ appears in the reported T jump. A record with formation data in
+  both a and φ gives the datum as Δ_aφ h°_c = Δf h°_c(φ) − Δf h°_c(a) (s likewise), with both entries as provenance.
 
 ### Rejected alternatives
 - **Native conventions with per-method summaries only (the default's fallback).** Energy does not close across a
@@ -234,9 +275,20 @@ component. *Floor:* a duty Ḣ_out − Ḣ_in carries ε·max|Ḣ|, 6.3e-9 W at 
   anchor `ig`; synthetic Δvap h° = 44 000.0 J/mol, Δvap s° = 118.0 J/(mol K)). h_shifted(l; T°) = −285 824.621 625 364 96
   J/mol (Q2.A2 (ii) minus 44 000.0) and s_shifted(l; T°) = s°_ig − 118.0 within 2 ulp; `anchor_bridged` recorded; no
   datum → `anchor_unavailable`; no bridge for an `ig`-capable method; δ beside a two-phase method within 1e-9 relative.
+- **Q2.A9** *Anchor stability* (F4; Amendment 2). (a) Synthetic X with formation data only in `l` (Δf h° = −1.0e5
+  J/mol, s° = 150.0 J/(mol K)), a liquid-only method m1 (h = 150.0 (T − T°) J/mol) and m2, a synthetic γ–φ method with
+  an ideal-gas vapour and its own liquid: anchor `l` and Δ_{m1,X} = −1.0e5 J/mol exactly under {m1}, {m1, m2} and {m2,
+  m1}; a converged {m1} flowsheet keeps every stored `ĥ` bitwise when m2 joins on a disjoint unit; a pure ideal-gas
+  method is refused `anchor_unavailable(<method>, X, l)`. Mutation control: the former method-set clause re-anchors X to
+  `ig` and refuses m1. (b) Water: the S10 gas record plus a synthetic Δf h°(l) = −285 824.621 625 364 96 J/mol: anchor
+  `ig` under every method set; a liquid-only method is bridged by the difference (`anchor_bridged`, both entries named)
+  and h_shifted(l; T°) equals that Δf h°(l) within 2 ulp (difference and sum exact by Sterbenz; Q2.R3 rounds twice).
+  (c) **[gen]** Each registered record's stored anchor equals the order's; the anchor map is identical over every subset
+  and order of the registered methods.
 
 **Effect on the note.** §2.3.6: `ELEMENTAL-ref-v1` with anchor phase, entropy datum and component datum. F4 exit: the
 convention-shift clause becomes Q2.A2. §6 Q2: default replaced. §2.3 "ADRs": ADR-F4 also amends ADR 0001 D5.2 (§10).
+Amendment 2: §14 (A1-b; F4 gains Q2.A9).
 
 ## Q3. Electrolyte species basis on connections
 
@@ -255,9 +307,15 @@ convention-shift clause becomes Q2.A2. §6 Q2: default replaced. §2.3 "ADRs": A
   an outlet from per-phase true amounts converts by `b = A n_s`.
 - **Q3.R4** *Electroneutrality.* If zᵀ = ζᵀA for some ζ, then Σ_g ζ_g b_g = 0 is a checked invariant of every connection
   and feed; otherwise (neutral groups) it holds by construction and no charge row or check exists.
-- **Q3.R5** *Method boundaries.* A method m′ may evaluate a stream on basis (A, R) iff its invariants are a linear image
-  b′ = C b, which holds when R′ ⊇ R; with fewer fast reactions it is refused (`species_basis_incompatible(<method>,
-  <S>)`).
+- **Q3.R5** *Method boundaries* (Amendment 2, A1-a). Let the stream's basis (S, A, z, R) be valid against its producer's
+  method (Q3.R1) and a consumer m′ declare (S′, A′, z′, R′), valid on its own. m′ evaluates the stream iff, in exact
+  arithmetic, (i) each species s of S \ S′ has an integer vector Π e_s over S ∩ S′ (same record and charge) with e_s −
+  Π e_s ∈ span R, Π the identity on S ∩ S′, and (ii) an integer C solves C A = A′ Π. C is then unique (A has full row
+  rank, Q3.R7), recorded in the boundary's `describe()`, and m′ evaluates b′ = C b in a fixed order; a negative entry in
+  C carries `species_basis_not_monotone` (a negative b′ is an invalid trial, Q3.R1 (iii)). R′ ⊇ R with S ⊆ S′ is
+  sufficient, not necessary. Otherwise `species_basis_incompatible(<method>, <S>)`. Each species of S \ S′ is a
+  structural limitation, reported `solid_candidate_dropped(<method>, <phase>)` if it forms a solid candidate of the
+  producer, else `species_dropped(<method>, <species>)`. Energy closes with no boundary term (Q1 argument 2).
 - **Q3.R6** F5's conserved-basis slot (note §2.2.8) is this object (A, R): components (A = I, R = ∅); a Gibbs reactor (R
   = all reactions, A = element-and-charge matrix); X18 speciation (groups).
 - **Q3.R7** *Group molar masses.* ṁ = Σ_g M_g b_g (Q1.R1), with (M_g, μ) solving Aᵀ M_g + μ z = M (species masses M;
@@ -304,44 +362,74 @@ species containing it to exactly 0, and the method guards ln 0 (ADR 0001 D3.3). 
 - **Q3.A4** *Charge.* On every connection and feed of a registered charged-group flowsheet, |Σ ζ_g b_g| ≤ 1e-12·Σ|ζ_g|
   b_g. Floor: input rounding (~ε per entry) plus mixing sums (k·ε); margin ≥ 3 decades. A feed with a residual of 1e-6
   relative is refused (`feed_not_electroneutral(<S>)`).
-- **Q3.A5** *Boundary.* A method with R′ ⊊ R is refused; with R′ ⊋ R it is admitted and b′ = C b exactly (integer C).
+- **Q3.A5** *Boundary* (F4; rewritten by Amendment 2). At a registered NaCl–H2O state of Q3.A6 (a) the consumer is
+  admitted with `solid_candidate_dropped(<method>, SOLID(NaCl))`, b′ bitwise b, and energy closes within K04's τ_E with
+  no boundary term; on (e) b′ equals an independent fixed-order product bitwise; on each registered boundary |ṁ′ − ṁ| ≤
+  1e-14·ṁ on electroneutral states (floor (k + k′ + 4)ε ≈ 2.2e-15 at three groups each; a wrong C entry errs by ≥
+  1e-3); (c) is refused typed.
+- **Q3.A6** *Boundary admissibility* **[gen]** (F2; Amendment 2; exact arithmetic; each method valid by Q3.A2). (a)
+  NaCl–H2O apparent, producer with SOLID.NaCl (Q3.A2 (b)), consumer without (Q3.A2 (a); R′ = ∅ ⊊ R): Π(NaCl(s)) = Na⁺
+  + Cl⁻, C = I, admitted, one `solid_candidate_dropped`. (b) The reverse (R′ ⊋ R): C = I, nothing dropped. (c) Species
+  (A, B, W), producer groups {AB, W} with R = {A ⇌ B}, consumer A′ = I, R′ = ∅: no C (rank 2 against 3), refused; the
+  reverse is admitted, C = [[1, 1, 0], [0, 0, 1]]. (d) MEA–CO2–H2O (Q3.A2 (c)) into a consumer without MEACOO⁻ and
+  carbamate (eight species, four reactions): Π(MEACOO⁻) = MEA + HCO3⁻ − H2O, C = I, admitted, `species_dropped`. (e)
+  True-preset NaCl–H2O (A = I) into the apparent preset: C = [[1, 0, 0], [0, 0, 1]]. Control: the former rule (R′ ⊇ R)
+  refuses (a) and (d) and agrees on (b), (c), (e); the generator emits both verdicts and refuses to emit if the new rule
+  refuses (a), (b), (d) or (e) or admits (c).
 
 **Effect on the note.** §2.1.1: `species_basis: apparent|true` becomes `conserved_basis: {groups, A, R_ref}` with
 presets `apparent` and `true`. §2.1.4 and §2.2.8: one object. §6 Q3: the true basis is available from F2 (preset R = ∅),
-not "later".
+not "later". Amendment 2: §14 (A1-a; F2 gains Q3.A6, F4 Q3.A5).
 
 ## Q4. Phase labels
 
 ### Ruling
-- **Q4.R1** *Phase id* = (family, qualifier, ordinal): family ∈ {VAPOR, LIQUID, SOLID}; qualifier none for VAPOR and
-  LIQUID, and for SOLID a component (pure solid, with a form id when the record lists polymorphs) or a solid-solution
-  model id (an isotherm for an adsorbed phase, Q8.R7); ordinal k ≥ 1. Rendering: `VAPOR`, `LIQUID`, `LIQUID.2`, …,
-  `SOLID.<qualifier>[.k]`. The rendering must be **injective over the whole id alphabet** `[A-Za-z0-9_.:-]` (component
-  ids may contain `.` and digits); F2 fixes the spelling under that constraint, for example with a separator outside
-  the alphabet at the qualifier boundary.
+- **Q4.R1** *Phase id* = (family, qualifier, ordinal): family from a registered vocabulary, {VAPOR, LIQUID, FLUID
+  (Q4.R6), SOLID}; qualifier none for an unconfined fluid phase, the confining component or model id for a confined one
+  (Q4.R8), and for SOLID a component (pure solid, with a form id when the record lists polymorphs) or a solid-solution
+  model id (an isotherm for an adsorbed phase, Q8.R7); ordinal k ≥ 1. Rendering: `VAPOR`, `LIQUID`, `LIQUID.2`,
+  `FLUID.2`, …, `<FAMILY>(<qualifier>)[.k]` on every family (Amendment 2; the note's spelling). The rendering must be
+  **injective over the whole id alphabet** `[A-Za-z0-9_.:-]` (component ids may contain `.` and digits); F2 fixes the
+  spelling under that constraint, for example with a separator outside the alphabet at the qualifier boundary.
 - **Q4.R2** *Interchangeable slots.* Phases of one family and qualifier share one phase model and are interchangeable.
   Their canonical active subsets are prefixes (ordinals 1..k, no gaps), adjacency on such a family is a count change of
   ±1, and note §2.2.3's lattice is taken over these counts. With the two legacy candidates this is ADR 0005 D2 exactly.
 - **Q4.R3** *Canonical order* within a family and qualifier: lexicographic ascending on a key vector, compared
   **exactly** (IEEE, signed zeros normalised; richer in the first differing key → higher ordinal). Key vector: x over
   the declared `phase_order_keys`, else water (InChIKey `XLYOFNOQVPJJNP-UHFFFAOYSA-N`) if present, then every other
-  component in definition order; last, the phase's mass. x is the mole fraction on the method's composition basis. This
-  is a total order (phases tied on every key are bitwise identical, so their order leaves the state unchanged);
-  thresholds only flag (Q4.R5). τ_comp = 1e-6. Density is not used.
+  component in definition order; for FLUID next the phase's specific volume v̂ (Amendment 2: two phases of one fluid
+  model tie on every composition key at a pure component); last, the phase's mass. x is the mole fraction on the
+  method's composition basis. This is a total order (phases tied on every key are bitwise identical, so their order
+  leaves the state unchanged); thresholds only flag (Q4.R5). τ_comp = 1e-6. Density is not used, except as FLUID's v̂,
+  which decides only after every composition key ties.
 - **Q4.R4** *When.* Labels are assigned at every attempt opening and at every converged closure; within an attempt,
   labels and variable ids never change. A closure whose canonical order differs from the attempt's labels is relabelled
   by permutation (bitwise exact) and recorded `relabel(<point>: <from>-><to>, …)`. Root fingerprints use canonical
   labels.
 - **Q4.R5** *Flags.* For each pair adjacent in canonical order, the deciding key is the first on which they differ; if
-  its |Δx| ≤ 10 τ_comp the order is flagged `near_threshold` (ADR 0007 D2.4). If max_c |Δx_c| ≤ τ_comp over all
-  components, the pair is indistinguishable (coexisting phases this close occur only near a critical point): flagged,
-  and the point carries Q5.R4's `near_critical` limitation.
-- **Q4.R6** *VAPOR and LIQUID under one fluid model* (an EOS) name root-selection models. A single phase in the
-  single-root region evaluates identically under both and takes, at the opening, the label of the method's declared
-  vapour–liquid identification rule. A single phase's label change between attempts is an ordinary phase-set update
-  (non-adjacent restart, ADR 0005 D4), recorded. Its cost is O-3.
-- **Q4.R7** *Legacy rendering.* A point with candidates {VAPOR, LIQUID} renders `LIQUID`, `VAPOR`, `TWO_PHASE` as today;
-  `ZERO_FLOW` stays a stream property.
+  its |Δx| ≤ 10 τ_comp (for v̂: |Δ ln v̂|) the order is flagged `near_threshold` (ADR 0007 D2.4). If max_c |Δx_c| ≤
+  τ_comp over all components (and, for FLUID, |Δ ln v̂| ≤ τ_comp), the pair is indistinguishable (coexisting phases this
+  close occur only near a critical point): flagged, and the point carries Q5.R4's `near_critical` limitation.
+- **Q4.R6** *One fluid model* (rewritten by Amendment 2, S5). A method declares its fluid phases as one model
+  (`fluid_model: single`: an EOS such as PR, SRK, CPA, SAFT, IAPWS-95) or as separate vapour and liquid models (`split`:
+  γ–φ). Under `single` every unconfined fluid phase is a slot of one interchangeable family FLUID (Q4.R2), ordered by
+  Q4.R3; VAPOR and LIQUID are not used. Each FLUID phase reports `character` ∈ {vapour_like, liquid_like} from the
+  method's declared identification rule (O-11), never in an id, signature, order, adjacency or fingerprint: a change of
+  character, or two phases of one character, changes no signature; appearance or disappearance is a count change of ±1.
+  Within an attempt each FLUID slot keeps the root (density branch) it opened on, never re-selected at an iterate; a
+  lower-Gibbs root at closure is a Q5.R3 witness, and the next opening records `root_switch(<point>, <slot>)`. Legacy
+  providers and their delegating compositions declare `split`: VAPOR and LIQUID name their root-selection models, a
+  single phase takes the rule's label at the opening, and a change between attempts is a non-adjacent restart (ADR 0005
+  D4), recorded, as today.
+- **Q4.R7** *Legacy rendering.* A point of a `split` method with candidates {VAPOR, LIQUID} renders `LIQUID`, `VAPOR`,
+  `TWO_PHASE` as today; `ZERO_FLOW` stays a stream property.
+- **Q4.R8** *Confined phases* (Amendment 2, S5). A phase model declares its support, the components it can hold; outside
+  it amounts are structurally `+0.0`, never trial variables. A fluid family has one unconfined phase model per method; a
+  further model in it must have a proper subset as support (*confined*) and forms its own slot chain, qualified by the
+  component id if the support is one component (X21's free water: `FLUID(water)` under `single`, `LIQUID(water)` under
+  `split`), else by its model id. A one-component confined phase takes Q5.R2's scalar pure-phase test with its own
+  chemical potential for μ_S,k, claim `exact`, indicator that tm (Q5.R8); a several-component one takes its own local
+  trial. Q8.R7's sorbent is a component outside the support of every phase but one.
 
 ### Rejected alternatives
 - **The default's "without a key, descending mass density".** It contradicts its own key rule in the commonest case (a
@@ -363,7 +451,8 @@ about 4 decades above the expected cross-platform agreement of converged mole fr
 
 ### Assertions
 - **Q4.A1** *Order invariance.* On the registered LLE and VLLE states, the flash with its trial list forward and
-  reversed gives identical labels and state vectors that are bitwise permutations; the water-rich liquid is LIQUID.2.
+  reversed gives identical labels and state vectors that are bitwise permutations; the water-richest phase has the
+  highest ordinal of its family (LIQUID.2 under `split`; amended by Amendment 2).
 - **Q4.A2** *Prefix* (R0 scan over every v2 record). No record has LIQUID.k or SOLID.q.k active without k−1 active.
 - **Q4.A3** *Relabel.* A registered path on which a liquid disappears and reappears emits `relabel(…)`, and its final
   state compares `SAME` under `same_root` with a run opened directly in the final set.
@@ -372,13 +461,33 @@ about 4 decades above the expected cross-platform agreement of converged mole fr
   pairs flagged, none indistinguishable; 10⁴ random near-tied triples likewise; two water-free liquids (+0.0 = +0.0)
   are decided by the next key.
 - **Q4.A5** *Injectivity* **[gen]**. 10⁴ random triples plus adversarial qualifiers (`a.2`, `2`, `a:b`, `SOLID`, `-`, a
-  component id equal to a model id) give no colliding rendering.
+  component id equal to a model id) give no colliding rendering, with qualifiers on every family (`FLUID(a.2)`,
+  `LIQUID(FLUID)`, `FLUID(water).2`; Amendment 2; also F2's id exit).
 - **Q4.A6** *Lattice.* With candidates {VAPOR, LIQUID, LIQUID.2}, {VAPOR, LIQUID} is adjacent to {VAPOR, LIQUID,
   LIQUID.2}, and {LIQUID.2} alone is never constructed.
 - **Q4.A7** *Legacy.* F5's decision equivalence holds with two-candidate rendering.
+- **Q4.A8** *Pure-fluid order* **[gen]** (F5; Amendment 2; F4's re-implemented cubic, a `single` method, on pure water
+  at 101 325 Pa, `ĥ` at β ∈ {0.25, 0.5, 0.75} of the saturation interval as in Q1.A1). The two FLUID phases have x = 1.0
+  bitwise; the liquid-like one is FLUID and the vapour-like one FLUID.2 at all three β, decided by v̂. At β = 0.5 the
+  masses are bitwise equal (registered for that reason): with v̂ dropped the order is undecided there, and mass alone
+  swaps the labels between β = 0.25 and 0.75.
+- **Q4.A9** *No family churn* (F5; Amendment 2; same method, warm-started isobaric paths, in the method's T_c, P_c). At
+  1.13 P_c, T from 0.93 T_c to 1.08 T_c (one root throughout): signature {FLUID: 1} at every point, no restart, at least
+  one change of `character`. At 0.9 P_c, `ĥ` from compressed liquid to superheated vapour: counts 1 → 2 → 1 by adjacent
+  steps only. Mutation control: the same EOS declared `split` with the same identification rule (test double) restarts
+  non-adjacently on the first path.
+- **Q4.A10** *Confined phase* (F5; Amendment 2; synthetic `single` method with the ideal gas as fluid model and a
+  confined pure-water liquid with f_w = P_sat(T), ln P_sat = ln 101 325 − (40 650/R)(1/T − 1/373.15), R = 8.314 462
+  618; feed water 0.1, N2 0.9 mol/mol at 1e5 Pa). The water phase is `FLUID(water)`, never FLUID.k, its N2 amount is
+  exactly `+0.0`, and its test is tm_w = ln P_sat(T) − ln(z_w P), claim `exact`: tm_w(T_d ∓ 0.01 K) = ∓4.862e-4 (3.7
+  decades outside the band), and the point is {FLUID, FLUID(water)} below T_d and {FLUID} above, with the boundary at
+  T_d = 317.103 397 758 K (1/T_d = 1/373.15 − (R/40 650) ln(1e4/101 325)) within 1e-9 K (floor ~1e-13 K).
+- **Q4.A11** *Family scan* (F5 R0 scan; Amendment 2). No record of a `single` method has a VAPOR or LIQUID phase, none
+  of a `split` method has FLUID, every `character` sits outside ids and fingerprints, and legacy-provider records are
+  unchanged (Q4.A7).
 
 **Effect on the note.** §2.1.5: the triple and injectivity. §2.2.2–2.2.3: prefix rule and count lattice; exact order
-with flags (Q4.R3, R5). §6 Q4: density removed; water the default key.
+with flags (Q4.R3, R5). §6 Q4: density removed; water the default key. Amendment 2: §14 (S5; F5 gains Q4.A8–A11).
 
 ## Q5. Stability test, and what a certificate may claim
 
@@ -391,7 +500,9 @@ with flags (Q4.R3, R5). §6 Q4: density removed; water the default key.
   the scalar test `tm_S = μ_S,k/RT − d_k`, exact with no search; a solid-solution candidate takes its own local trial.
 - **Q5.R3** *Classification.* A point is **unstable** iff some trial yields a witness W with tm*(W) < −τ_tm (any W,
   stationary or not). A trial converging to the reference composition, or to an active phase (max_i |w_i − x_i| ≤
-  τ_comp), is not a witness. **τ_tm = 1e-8**; near-threshold band (ADR 0007 D2.4) |tm*_min| ∈ [1e-9, 1e-7].
+  τ_comp), is not a witness. **τ_tm = 1e-8**; near-threshold band (ADR 0007 D2.4) |tm*_min| ∈ [1e-9, 1e-7]. Under
+  FLUID (Amendment 2), ln φ(W) is taken on the method's minimum-Gibbs root at W, and a trial is trivial only if it also
+  matches that phase's root (|Δ ln v̂| ≤ τ_comp): a trial at the reference composition on another root is a witness.
 - **Q5.R4** *Claims.* `phase_stability` ∈ {pass, fail, unsupported}.
   - **fail** carries the witness (W, tm*(W), trial id): a proof, re-evaluated by the verifier with a fresh provider. A
     fail at the certified state makes the certificate `FAILED`.
@@ -425,6 +536,8 @@ with flags (Q4.R3, R5). §6 Q4: density removed; water the default key.
   τ_comp, λ_min of the stability matrix at W_p > 0); elsewhere `indicator_untracked(<point>, <p>)`, never read as a
   sign, and undefined → negative is an unbracketed event (the step is refined). ι = tm_S (pure solid) and ι_V = 1 − Σ
   z_i K_i, ι_L = 1 − Σ z_i/K_i (composition-free K) are defined everywhere. Disappearance keeps the phase amount.
+  For FLUID (Amendment 2), one W is tracked per distinct non-trivial minimum the trials reach at the opening (vapour-
+  and liquid-like alike), each recorded, and ι of the next FLUID slot is their minimum.
 
 ### Rejected alternatives
 - **A fixed trial set claimed as global.** False for non-ideal liquids, which can have several LL minima.
@@ -482,10 +595,17 @@ bracketed (the note's "minimal tm" fell to the trivial solution on the stable si
   (floor ~1e-15), changing sign within 1e-8 relative of the generator's closed-form bubble point **[gen]**. (b) Q5.A2's
   fixture: ι = tm_S. (c) On F5's registered LLE and VLE boundary paths, ι is defined at both bracket ends with opposite
   signs, bracketing the flash's boundary within 1e-8 relative in T. (d) At Q5.A6's NC, ι is `indicator_untracked`.
+- **Q5.A10** *FLUID roots* (F5; Amendment 2). (a) Q4.A8's method at 101 325 Pa and its T_sat + 5 K, an attempt held on
+  the liquid-like root: the closure finds W = x on the vapour-like root with tm* = (g_V − g_L)/(RT) from the method's
+  own roots within 1e-12 absolute (floor ~1e-15; |tm*| ≈ Δs_vap·5 K/(RT) ≈ 0.2), fails with that witness, and the next
+  opening records `root_switch` and converges on the vapour-like root, count 1; the composition-only triviality rule
+  (mutation control) discards the witness and passes. (b) **[gen]** F5 registers at least one single-FLUID state where
+  the trials reach two distinct non-trivial minima; both W are recorded and ι equals the lower tm*.
 
 **Effect on the note.** §2.2.6, §2.2.9: claim levels, witness, trial-set id. F5 exit: τ_tm and the band. §6 Q5:
 near-pure trials per component (not "per liquid candidate"), exact levels, witnesses. §8:
 `SolutionCertificate.phase_stability` carries claim level, witness and trial-set id. §7 R9 unchanged. Amendment 1: §13.
+Amendment 2: §14 (S5; F5 gains Q5.A10).
 
 ## Q6. Attribute semantics
 
@@ -637,7 +757,7 @@ Ice–water at T_m (C = 1, π = 2) and a binary eutectic (C = 2, π = 3) are deg
 at saturation: its amount reaches 0 and it leaves through `BOUND_BLOCKED` on the watched phase amount, with an exact
 indicator tm_S (Q5). A dry solids stream (`mixed` dormant) and a clear liquor (`solid` dormant) are ordinary. At a
 method boundary where the downstream method lacks the producer's solid candidate, the stream is interpreted without it
-and the boundary report says so.
+and the boundary report says so (Q3.R5 as amended by Amendment 2: admitted, `solid_candidate_dropped`).
 
 ### Assertions
 - **Q8.A1** *Role.* A role conflict is refused at validation; a component dissolved in `mixed` with its crystals in
@@ -741,6 +861,9 @@ Not written here; each belongs to the ADR named, and none moves a released case.
 5. **ADR 0005, in ADR-F5.** The count lattice over interchangeable slots (Q4.R2) and the `relabel` record.
 6. **ADR 0012 D7/D8 and ADR 0013.** Not applicable to `ĥ` definitions; unchanged for v1.
 7. **`SolutionCertificate`, in ADR-F5.** `phase_stability` gains claim level, witness and trial-set id.
+8. **ADR 0008 A1.1 U1/U1b, in ADR-F7** (Amendment 2). U1 admits only `U…` and `N…_i` as `holdup_balance` symbols; Q1.R9's
+   `angular_momentum` fails it. U1 becomes a check on registered holdup kinds (amount, internal energy, Q1.R9's kinds),
+   still never an enthalpy; U–H.8's kind stays outside (Q-A5).
 
 No ruling breaks a foundation's premise. Q6.R2 changes F2's probe design (a third probe) and Q3.R1 changes the meaning
 of F2's `species_basis` field; both are inside F2's scope.
@@ -751,13 +874,15 @@ of F2's `species_basis` field; both are inside F2's scope.
 | --- | --- | --- | --- | --- |
 | O-1 | PH-solver tolerance at elemental magnitudes (Q1.A1's margin) | fact | F4 measures the achieved `ĥ` residual on the IAPWS-95 probes | 1e-12 relative |
 | O-2 | τ_tm against F5's equilibrium noise | fact | max \|tm*\| of active phases used as trials at the registered converged states | τ_tm = 1e-8 if the noise is ≤ 1e-10; otherwise amend |
-| O-3 | Single-phase label flips for one-fluid-model methods on supercritical paths (Q4.R6) | fact | extra attempts on F5's registered supercritical paths | Q4.R6; above one extra attempt per path, an F5 amendment merges single-fluid {VAPOR} and {LIQUID} into one node |
+| O-3 | Single-phase label flips for one-fluid-model methods on supercritical paths (Q4.R6) | fact | extra attempts on F5's registered supercritical paths | Closed by Amendment 2: `single` methods use FLUID (Q4.R6, Q4.A9); legacy providers keep today's behaviour |
 | O-4 | τ_spin = 1e-4, τ_crit = 1e-2 (Q5.R4) | fact | λ_min(B) and c3 against distance to the critical point on one registered EOS system | 1e-4 and 1e-2 |
 | O-5 | τ_comp = 1e-6 | fact | cross-platform agreement of converged x on the X07a legs | 1e-6 |
 | O-6 | Water as default first key (Q4.R3) | Frank's preference | — | water first; alternative: component order only |
 | O-7 | Mass-specific `ĥ` as the raw coordinate in state documents | Frank's preference | — | mass-specific; reports show specific and molar h |
 | O-8 | Cost of N near-pure trials for large N (assays) | fact | F5 times N = 50 | all components; a reduced set keeps claim level `local` |
 | O-9 | τ_mono = 1e-12 against the moment rounding floor (Q6.R5) | fact | F2's worst relative deficit on monodisperse probe streams, a recycle of loop gain 100 included | 1e-12; amend if the margin falls below 10× |
+| O-10 | Drain-defect bound and trajectory tolerances (Q1.A11, A12) | fact | F7's measured defect and T error on the probe at its default integrator tolerances | 1e-8·m₀, 1e-10 relative; amend if a margin falls below 10× |
+| O-11 | Default identification rule for `character` (Q4.R6) | Frank's preference | — | Venkatarathnam and Oellrich's phase identification parameter; reported only, so no numerical consequence |
 
 [zotero], cited not fetched: Michelsen (1982), *Fluid Phase Equilib.* 9 (TPD; stability matrix); Michelsen and Mollerup
 (2007), ch. 9–10 and ch. 12 (critical points); Heidemann and Khalil (1980), *AIChE J.* (criticality cubic form);
@@ -786,7 +911,7 @@ Venkatarathnam and Oellrich (2011), phase identification; CODATA key values for 
 - **§7 R4:** decided (Q1), mitigated by Q1.R3.
 - **§8:** `ComponentRecord` row adds amount basis, anchor and provenance axes; `SolutionCertificate` row adds claim
   level and witness.
-- Amendment 1 adds the edits listed per finding in §13.
+- Amendments 1 and 2 add the edits listed per finding or item in §13 and §14.
 
 ## 13. Amendment 1 (2026-11-02)
 
@@ -810,6 +935,36 @@ place; existing clause numbers are kept, new clauses appended. The last column l
   b′ = b), which Q3.R5 and Q3.A5 refuse; the condition belongs on the invariants (b′ = C b), not R′ ⊇ R. ADR-F2.
 - **A1-b.** Q2.R2's anchor depends on the method set: an added `ig`-capable method re-anchors an `l` component (every
   stored `ĥ` moves) and sends a record with only Δf h°(l) to Q2.R4's datum; with Q2.R8 the record could fix it. ADR-F4.
+- Both are ruled by Amendment 2 (§14).
 
 **Not established by Amendment 1.** Its numbers are closed forms, synthetic constants or the in-repository water record;
 τ_mono's floor is a scratch measurement, τ_crit and c3's accuracy are unmeasured on an EOS (O-4, O-9); nothing has run.
+
+## 14. Amendment 2 (2026-11-05)
+
+Brief: `docs/roadmap/brief-specifier-w1-open-items.md`; items: the note's §3 open items, gating ADR-F2, F4, F5 and F7.
+Edits are in place; existing clause numbers are kept, new clauses appended. The last column lists the architect's edits
+to `target-architecture.md` and what the gated ADR adopts verbatim.
+
+| Item | Ruling (default adopted?) | Clauses | Assertions (exit) | Edits to the note; the ADR |
+| --- | --- | --- | --- | --- |
+| A1-a (ADR-F2) | Adopted, made exact: admitted iff an integer C solves C A = A′Π, Π sending each producer species the consumer lacks to shared species modulo R; R′ ⊇ R sufficient, not necessary; every dropped species reported | Q3.R5 rewritten; Q8 argument (pointer) | Q3.A5 rewritten (F4); Q3.A6 new **[gen]** (F2) | §3 F2: delete the open item; F2 exit: "Also Q3.A1–A3" → "Also Q3.A1–A3, A6". §2.3.8: "(ii) the downstream invariants are an image of the upstream ones (Q3.R5; A1-a open); and (iii) a solid candidate the downstream method lacks is reported (Q8 argument; A1-a)" → "(ii) Q3.R5's condition C A = A′Π holds and the consumer evaluates b′ = C b; and (iii) each producer species the consumer lacks is reported (`solid_candidate_dropped`, `species_dropped`)". F4 exit, refusals bullet: add Q3.A5. §6: drop the A1-a row; §7 R13: ruled. ADR-F2 adopts Q3.R5 and Q3.A6; ADR-F4 cites Q3.R5 and adopts Q3.A5 |
+| A1-b (ADR-F4) | Adopted: the anchor is a record field set by a fixed order; a record's formation entries in two phases are a bridge datum | Q2.R2 rewritten; Q2.R4, R8 extended | Q2.A9 new (F4) | §2.3.6: "`l` otherwise (Q2.R2; A1-b open, §6)" → "chosen from the record alone: `aq` if charged, else the first of `ig`, `aq`, `l`, `s:<form>` with formation data; adding a method never re-anchors (Q2.R2)"; after "bridged through a record datum" add "or the difference of the record's formation entries (Q2.R8)". §3 F4: delete the open item; F4 exit: "Q2.A1–A8" → "Q2.A1–A9". §8 `ComponentRecord`: the anchor is an identity field. §6: drop the row; §7 R14: ruled. ADR-F4 adopts Q2.R2, R4, R8 and Q2.A9 |
+| S5 (ADR-F5; rendering in ADR-F2) | Adopted, with the precisions it forces: v̂ joins FLUID's order key and indistinguishability test; triviality looks at the root; a FLUID slot keeps its root within an attempt (`root_switch`); one W per incipient minimum. Legacy providers stay `split` (decision equivalence). Confinement by declared support | Q4.R1, R3, R5, R7 amended; Q4.R6 rewritten; Q4.R8 new; Q5.R3, R8 extended | Q4.A1, A5 amended; Q4.A8 **[gen]**, A9–A11 new; Q5.A10 new (F5; Q4.A5 also F2) | §2.1.6: "with `VAPOR`, `LIQUID` and `SOLID` at F2 (S5 may add `FLUID`, §6)" → "`VAPOR`, `LIQUID`, `FLUID` and `SOLID` (Q4.R6)", and a qualifier may follow every family (`FLUID(water)`, `LIQUID(water).2`): a core-grammar item of the W1 freeze. §2.2.2: add Q4.R6 (FLUID, `character`, root kept within an attempt, `root_switch`), Q4.R3's v̂ key and Q4.R8; "so ADR-F5 can add one without a grammar change (S5, §6)" → "(FLUID, Q4.R6)". §2.2.6–7: Q5.R3, R8 as extended. §3 F5: delete the open item; F5 exit: "Q4.A1–A7" → "Q4.A1–A11", "Q5.A1–A9" → "Q5.A1–A10". F2 exit, ids: qualifiers on every family. §6: drop the row; Q4 "(R1–R7)" → "(R1–R8)". §7 R12: ruled, O-3 closed. §9.4 (1): "is a qualified fluid phase, which Q4.R1 does not allow. It is part of the S5 input to ADR-F5 (§3 F5)" → "is `FLUID(water)` (Q4.R8)". §9.11: drop "(ruling pending)". ADR-F5 adopts the Q4 and Q5 clauses and assertions listed; ADR-F2 adopts the family vocabulary and rendering; F4's comparison (iii) maps legacy VAPOR/LIQUID requests to FLUID with `character`, in its harness only |
+| Holdup dormancy (ADR-F7) | Adopted, with the mechanism: entered only at t₀ or by a located drain event whose removed content is ledgered; sources zero while dormant; the seed sits on the energy column (û, not T); refused typed without a zero-holdup form | Q1.R8 new | Q1.A11 new (F7) | §2.5.2 (a): add "dormancy, the drain event and re-seeding per Q1.R8". §3 F7: delete the first open item; F7 exit: add Q1.A11. §6: drop the row; Q1 "(R1–R7)" → "(R1–R9)". §7 R15: ruled. §9.6 (4) and §9.9: cite Q1.R8. §9.11: drop "(rulings pending)". ADR-F7 adopts Q1.R8 and Q1.A11 |
+| Non-material holdups (ADR-F7) | Adopted: registered kinds (wall energy, angular momentum), the conserved quantity as column with coefficient 1, unit-local datum, in the ledger | Q1.R9 new | Q1.A12 new (F7) | §2.5.2 (c): "pending a ruling (§6)" → "(Q1.R9)". §3 F7: delete the second open item; F7 exit: add Q1.A12. §9.10 (1): cite Q1.R9. ADR-F7 adopts Q1.R9 and Q1.A12 and amends ADR 0008 U1/U1b (§10 item 8) |
+
+**New findings, listed and not fixed.**
+- **A2-a.** The vessel that empties and refills in practice (X25's vented tank) is ADR 0008 U–H.8's kind, which Frank's
+  Q-A5 answer keeps out of TX's first release; until an ADR admits it, Q1.R8's drain is reachable only by evacuating a
+  rigid vessel (Q1.A11 (b)). Frank's scope call before X25.
+- **A2-b.** Units can no longer route by family (VAPOR to the top outlet): ADR-F6 must declare a port-routing rule for
+  FLUID phases (density order or `character`), fixed at openings and recorded, and carry Q1.R8's zero-holdup forms.
+- **A2-c.** A confined phase beside a FLUID model that can form a phase rich in its component gives that phase two
+  representations; the stability test takes the lower Gibbs energy, but whether a method excludes one is for X21 and F5.
+
+**Not established by Amendment 2.** Its numbers are closed forms of synthetic models, in-repository record values or
+exact integer cases; nothing has run; the trajectory tolerances and drain bound are estimated floors (O-10). It does not
+show that an identification rule gives meaningful characters near critical endpoints, nor that root continuation
+converges where roots merge (D09's limitation applies); Q3.R5's condition is checked on five bases, not proved for every
+declaration; it chooses no wall or rotor model, admits no U–H.8 vessel, and validates nothing against data.

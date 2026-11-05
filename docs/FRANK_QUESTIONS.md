@@ -275,3 +275,12 @@ All four answered with the recommended default (Frank, 2026-10-25):
   no 4th-ed. number ships); C7's five flags (compressors p. 569, turbine p. 593, tower fit "2" p. 575) **approved**
   ("Approve (Rec.)"), committed on `wp/E01b` as `92afd75b`.
 - **N-9 (V03, ADR 0054)** (Frank, 2026-10-30): keep the catch-all `semantic_role` value `other` ("Keep 'other' (Rec.)").
+
+## W1 — foundation rulings Amendment 2 (2026-11-05; not urgent)
+
+Source: `docs/roadmap/foundation-rulings.md` §14 (Amendment 2), §11. Work proceeds on the defaults.
+- **O-11** How OpenFlowsheet labels an equation-of-state phase "vapour-like" or "liquid-like" (shown in reports only; no
+  effect on any number). Default: Venkatarathnam and Oellrich's phase identification parameter.
+- **A2-a** (before X25, batch): a tank that empties completely and refills (a vented vessel) is a kind of unit that your
+  ADR 0008 answer Q-A5 keeps out of the first dynamics release (TX). Until it is admitted, the "vessel drains to zero"
+  rule only covers evacuating a rigid vessel. Default: keep it out of TX's first release, decide when X25 is designed.
