@@ -412,3 +412,20 @@ def test_m9_an_unknown_artifact_hash_idiom_raises(
         "from openflowsheet.models.family.unit import build\n\n\nX = build(path=__file__)\n"
     )
     assert gate.legacy_unit_modules() == ["src/openflowsheet/models/family/other.py"]
+
+
+def test_importing_the_gate_leaves_the_thread_variables_alone() -> None:
+    """Review finding 5: only `main()` pins the BLAS/OpenMP threads, never the import."""
+    import os
+    import subprocess
+
+    environment = {k: v for k, v in os.environ.items() if k not in gate.THREAD_VARIABLES} | {
+        "PYTHONPATH": os.pathsep.join([str(ROOT / "src"), str(ROOT / "scripts")])
+    }
+    probe = (
+        "import os, corpus_identity as g; print([os.environ.get(n) for n in g.THREAD_VARIABLES])"
+    )
+    shown = subprocess.run(
+        [sys.executable, "-c", probe], env=environment, capture_output=True, text=True, check=True
+    ).stdout.strip()
+    assert shown == "[None, None, None]"

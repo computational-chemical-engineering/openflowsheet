@@ -30,24 +30,20 @@ every node id, so a removed case is a diff.
 
 from __future__ import annotations
 
+import argparse
+import ast
+import contextlib
+import hashlib
+import json
 import os
-
-# Before numpy is imported anywhere: the runs are recorded single-threaded (RC step 4).
-for _name in ("OPENBLAS_NUM_THREADS", "OMP_NUM_THREADS", "MKL_NUM_THREADS"):
-    os.environ[_name] = "1"
-
-import argparse  # noqa: E402
-import ast  # noqa: E402
-import contextlib  # noqa: E402
-import hashlib  # noqa: E402
-import json  # noqa: E402
-import sys  # noqa: E402
-import tempfile  # noqa: E402
-from collections.abc import Callable, Iterator, Mapping, Sequence  # noqa: E402
-from pathlib import Path  # noqa: E402
-from typing import Any, Final  # noqa: E402
+import sys
+import tempfile
+from collections.abc import Callable, Iterator, Mapping, Sequence
+from pathlib import Path
+from typing import Any, Final
 
 ROOT: Final = Path(__file__).resolve().parent.parent
+THREAD_VARIABLES: Final = ("OPENBLAS_NUM_THREADS", "OMP_NUM_THREADS", "MKL_NUM_THREADS")
 REGISTRY: Final = ROOT / "benchmarks" / "f0" / "corpus.json"
 FORMAT: Final = "f0-corpus-identity-v1"
 MEASURES: Final = ("M1", "M2", "M3", "M4", "M5", "M6", "M7", "M8", "M9")
@@ -844,6 +840,12 @@ def check(log_path: Path) -> int:
 
 
 def main(argv: Sequence[str] | None = None) -> int:
+    # The runs are recorded single-threaded (RC step 4). Set here, before numpy is first imported
+    # (every import of it is lazy), and never at import: a test session that collects this module
+    # must not run its other subprocesses single-threaded (review finding 5).
+    if "numpy" not in sys.modules:
+        for name in THREAD_VARIABLES:
+            os.environ[name] = "1"
     parser = argparse.ArgumentParser(description=__doc__.split("\n", 1)[0])
     mode = parser.add_mutually_exclusive_group(required=True)
     mode.add_argument("--check", action="store_true")
