@@ -284,3 +284,14 @@ Source: `docs/roadmap/foundation-rulings.md` §14 (Amendment 2), §11. Work proc
 - **A2-a** (before X25, batch): a tank that empties completely and refills (a vented vessel) is a kind of unit that your
   ADR 0008 answer Q-A5 keeps out of the first dynamics release (TX). Until it is admitted, the "vessel drains to zero"
   rule only covers evacuating a rigid vessel. Default: keep it out of TX's first release, decide when X25 is designed.
+
+## MSG — ADR 0058, messages and the code catalogue (2026-11-05; needs your approval before MSG merges)
+
+Design: `docs/design/MSG-messages.md`; ADR: `docs/adr/0058-messages-and-code-catalogue.md` (Proposed). In plain words:
+it changes the frozen application contract, additively, so it needs your yes (as ADR 0019 Amendment 3 did).
+- An `explain` operation on every surface (Python, CLI, HTTP `GET /v1/explain/{code}`, MCP tool `explain`).
+- `RunResult` gains `failure` (why a run failed, read from the failure bundle; also works for 0.3 jobs). `error` keeps
+  its meaning.
+- One new schema (the message catalogue) and three new type names. The MCP tool list's digest changes because a tool is
+  added. No error code is added; no released number, hash or replay changes.
+Default: the build proceeds on branch `wp/MSG` and merges into `main` only after you accept.
