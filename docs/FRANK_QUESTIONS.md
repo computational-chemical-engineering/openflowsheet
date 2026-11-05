@@ -322,3 +322,18 @@ stream and document grammar (frozen at the end of W1), property methods composed
 reference per flowsheet, and an N-phase flash that discovers phases instead of having them declared (the turbine case
 of FB-04). ADR 0062 amends the frozen contract (ADR 0019 Amendment 9: existing operations accept v2 documents), so it
 needs your yes. Built in 0.5 (F2) and 0.6 (F4, F5). Default: Proposed; P3 designs on them as written.
+
+## W1 P3 — accept ADR 0065 (F6), 0066 (F7), 0067 (F8)? (2026-11-06)
+
+Reviewed (`docs/reviews/W1-P3-review.md`: accept after fixes) and fixes applied (`76d38f6d`, `cb309525`), with the
+specifier's Amendment 4 (`foundation-rulings.md` §16) and the standard-unit equation sheet
+(`docs/derivations/F6-std-seed.md`). In plain words: how every new unit declares its ports, variables, zero-flow
+forms and outlet routing (built in 0.6); how dynamic problems, events and run kinds are described (built with
+transient work in 0.7); and what a v2 replay bundle carries, including data that may not be redistributed. All three
+amend the frozen application contract (ADR 0019 Amendments 10, 11 and 12, additive), so they need your yes.
+Two choices were made on the reviewer's defaults; tell me if you want them the other way:
+- **S1:** after a built-in unit's code changes, older v2 replay bundles re-run and report differences
+  (`compatible_reproduction`) instead of refusing to re-run. Alternative: refuse (`NOT_RUN`).
+- **S7:** retiring a legacy unit family affects only revisions built by the new compiler; old-style revisions keep
+  running it. Alternative: retire it for every revision.
+Default: Proposed; the v2 core freeze is recorded at W1's end on these texts.
