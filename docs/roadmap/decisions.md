@@ -60,3 +60,8 @@ Each entry gives the date, the question, the choice, who made it and where it is
 - **2026-11-05** DECISION (orchestrator, reviewer's defaults): phase-removal threshold 1e-12 of the total amount,
   fixed later by the O-2 measurement; entropy shift for records without s° takes the review's default, referred to the
   specifier (batched with P3's specifier needs). Reversible by: one constant in ADR 0064; the specifier ruling.
+- **2026-11-05** W1 P3 started: architect brief `docs/roadmap/brief-architect-W1-P3.md` (be742832). DECISION
+  (orchestrator): P3's ADRs take 0065 (F6), 0066 (F7), 0067 (F8); ADR 0019 amendments from 10; the architect lists
+  scientific questions with defaults instead of ruling, and one specifier round follows P3 batching them with ADR 0063
+  risk 5 (entropy shift). Alternative: a specifier pass on the entropy shift now. Reversible by: renumbering before
+  commit; running the specifier earlier.
