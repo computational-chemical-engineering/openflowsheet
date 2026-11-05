@@ -59,6 +59,9 @@ STORE_COLUMNS: Mapping[str, tuple[str, ...]] = {
     "audit": ("operation", "outcome", "code", "effect"),
 }
 PARTS = ("a", "b", "c", "d")
+#: The run manifest's members that differ between two runs of one commit (measured: C01 written
+#: twice at one commit differs in exactly these). `manifest_sha256` covers the other two.
+VOLATILE_MANIFEST_KEYS = ("started_at", "elapsed_seconds", "manifest_sha256")
 
 
 def sha256(data: bytes) -> str:
@@ -90,6 +93,22 @@ def tree_digests(root: Path) -> dict[str, str]:
         for path in sorted(root.rglob("*"))
         if path.is_file()
     }
+
+
+def bundle_digests(root: Path) -> dict[str, str]:
+    """`tree_digests` of a bundle, except that `run-manifest.json` is digested without its
+    wall-clock members (`VOLATILE_MANIFEST_KEYS`), keyed `run-manifest.json#stable`. Every other
+    manifest member — the artifact digests, `artifact_r0_sha256`, `structural_sha256`,
+    `model_version`, `constants_sha256`, the environment — is compared byte for byte."""
+    digests = tree_digests(root)
+    manifest = root / "run-manifest.json"
+    if manifest.is_file():
+        del digests["run-manifest.json"]
+        document = json.loads(manifest.read_text("utf-8"))
+        stable = {k: v for k, v in document.items() if k not in VOLATILE_MANIFEST_KEYS}
+        canonical = json.dumps(stable, sort_keys=True, separators=(",", ":")).encode()
+        digests["run-manifest.json#stable"] = sha256(canonical)
+    return digests
 
 
 def bundle_directories(root: Path) -> list[Path]:
@@ -234,7 +253,7 @@ def measure_b(work: Path, log: Any) -> dict[str, Any]:
     for root, prefix in ((rc, "rc"), (corpus, "corpus")):
         for directory in bundle_directories(root):
             name = directory.relative_to(root).as_posix()
-            for member, digest in tree_digests(directory).items():
+            for member, digest in bundle_digests(directory).items():
                 members[f"{prefix}/{name}/{member}"] = digest
     return {
         "n_bundles": len({key.rsplit("/", 1)[0] for key in members}),
@@ -322,26 +341,35 @@ def suite_stores(work: Path, log: Any) -> Path:
 
 
 def measure(arguments: argparse.Namespace, work: Path, log: Any) -> dict[str, Any]:
-    stores = arguments.stores or (suite_stores(work, log) if arguments.suite else None)
+    parts = arguments.parts
+    stores = None
+    if "d" in parts:
+        stores = arguments.stores or (suite_stores(work, log) if arguments.suite else None)
     return {
         "format": FORMAT,
         "commit": subprocess.run(
             ["git", "rev-parse", "HEAD"], cwd=ROOT, capture_output=True, text=True, check=True
         ).stdout.strip(),
-        "a": measure_a(work, log),
-        "b": measure_b(work, log),
-        "c": measure_c(work, arguments.v030, log),
+        "a": measure_a(work, log) if "a" in parts else None,
+        "b": measure_b(work, log) if "b" in parts else None,
+        "c": measure_c(work, arguments.v030, log) if "c" in parts else None,
         "d": None if stores is None else measure_d(stores),
         "surface": measure_surface(work, log),
     }
 
 
-def differences(baseline: Mapping[str, Any], current: Mapping[str, Any]) -> dict[str, list[str]]:
-    """Per part, the keys whose values differ (a key on one side only counts)."""
+def differences(
+    baseline: Mapping[str, Any], current: Mapping[str, Any], parts: str = "abcd"
+) -> dict[str, list[str]]:
+    """Per measured part, the keys whose values differ (a key on one side only counts)."""
     out: dict[str, list[str]] = {}
-    for part in ("a", "b", "c"):
+    for part in "abc":
+        if part not in parts:
+            continue
         old, new = flatten(baseline[part]), flatten(current[part])
         out[part] = sorted(k for k in old.keys() | new.keys() if old.get(k) != new.get(k))
+    if "d" not in parts:
+        return out
     d = current["d"]
     out["d"] = ["not measured"] if d is None else list(d["explanation_hits"])
     if d is not None and d["n_stores"] == 0:
@@ -400,6 +428,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     stores = parser.add_mutually_exclusive_group()
     stores.add_argument("--stores", type=Path, help="(d): a pytest base directory to scan")
     stores.add_argument("--suite", action="store_true", help="(d): run the full suite first")
+    parser.add_argument(
+        "--parts", default="abcd", help="the parts to measure and judge (default: all four)"
+    )
     parser.add_argument("--log", type=Path, default=None)
     arguments = parser.parse_args(argv)
     log_path = arguments.log or Path(tempfile.gettempdir()) / "msg-identity-gate.log"
@@ -427,17 +458,32 @@ def main(argv: Sequence[str] | None = None) -> int:
             arguments.record.write_text(json.dumps(current, indent=1, sort_keys=True) + "\n")
             baseline = current
         assert baseline is not None
-        found = differences(baseline, current)
+        found = differences(baseline, current, arguments.parts)
         json.dump(found, log, indent=1)
-        surface_moved = flatten(baseline["surface"]) != flatten(current["surface"])
-        passed = not any(found.values())
-        counts = (
-            f"a {len(found['a'])} diff; b {len(found['b'])}/{len(flatten(current['b']))} diff "
-            f"({current['b']['n_bundles']} bundles); c {len(found['c'])}/"
-            f"{len(current['c']['replays'])} diff; d {len(found['d'])} hit(s)"
-            f"{'' if current['d'] is None else ' in ' + str(current['d']['n_stores']) + ' stores'}"
-            f"; surface {'moved' if surface_moved else 'same'}"
+        moved = sorted(
+            k
+            for k in flatten(baseline["surface"]).keys() | flatten(current["surface"]).keys()
+            if flatten(baseline["surface"]).get(k) != flatten(current["surface"]).get(k)
         )
+        log.write(f"\nsurface moved: {moved}\n")
+        passed = not any(found.values())
+        summary = []
+        if "a" in found:
+            summary.append(f"a {len(found['a'])} diff")
+        if "b" in found:
+            summary.append(
+                f"b {len(found['b'])}/{len(flatten(current['b']))} diff "
+                f"({current['b']['n_bundles']} bundles)"
+            )
+        if "c" in found:
+            summary.append(f"c {len(found['c'])}/{len(current['c']['replays'])} diff")
+        if "d" in found:
+            where = "" if current["d"] is None else f" in {current['d']['n_stores']} stores"
+            summary.append(f"d {len(found['d'])} hit(s){where}")
+        summary.append(f"surface {'moved: ' + ', '.join(moved[:4]) if moved else 'same'}")
+        counts = "; ".join(summary)
+        if arguments.parts != "abcd":
+            counts = f"parts {arguments.parts} only: {counts}"
         print(f"MSG-G0 {'PASS' if passed else 'FAIL'}: {counts} (log {log_path})")
         if not passed:
             for part, keys in found.items():
