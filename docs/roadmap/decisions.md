@@ -78,3 +78,12 @@ Each entry gives the date, the question, the choice, who made it and where it is
   τ_g on g's quantity kind, not time); O-14…O-18. `docs/derivations/F6-std-seed.md` complete for 11 units (generator
   --check PASS, 107 claims). 18 ADR edits pending, folded into the P3 reviewer's consolidated list
   (`docs/roadmap/brief-reviewer-W1-P3.md`, 7bd2ad04). O-11 now has a numerical consequence; FRANK_QUESTIONS updated.
+- **2026-11-06** W1 P3 review (`docs/reviews/W1-P3-review.md`, 08c7b165): ADR 0065, 0066, 0067 accept after fixes
+  (M1 v2 `model_version` gains a `configuration` source and label `FSR2-<cfg>`; M2 `control_volumes`; M3
+  `{specification}` signal sink; M4 `phase_routing.vapor`; M5 syn001 leg `equivalence_pending`; M6 E-F7-4 example);
+  all eight architect departures accepted; no second architect pass. DECISION (orchestrator, reviewer's defaults):
+  S1 → a changed built-in replays as `compatible_reproduction` (`extension_changed`), others stay `NOT_RUN`.
+  Alternative: every changed extension `NOT_RUN`. Reversible by: ADR 0067 D5 step 5. S7 → retirement closes families
+  for v2-compiled revisions only. Alternative: gate lowering too and re-base ADR 0062's lowering fixtures. Reversible
+  by: ADR 0065 D17. M4's ≥2-FLUID-phase routing takes the reviewer's default, recorded as SQ-F6-5 for the next
+  specifier round (does not block the freeze). Edits applied by one engineer pass.
