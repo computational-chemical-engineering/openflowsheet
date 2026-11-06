@@ -126,8 +126,9 @@ Let `st = StreamState(n=(state[flow_id(S,c)] for c in components), T=state[tempe
 P=state[pressure_id(S)])`.
 
 - **R0 dormant** (`st.is_dormant`). `phase_source: "zero_flow"`, `phases: []`, and
-  `n_total = m_total = H_flow = S_flow = V_flow = +0.0`. The arrays `n` and `m` hold the stored flows and `M_c·n_c`;
-  `T`, `x`, `w`, `h`, `h_mass`, `s`, `s_mass`, `rho` and both vapour fractions are `null`, with `zero_flow(stream=S)`.
+  `n_total = m_total = H_flow = S_flow = V_flow = +0.0`. The arrays `n` and `m` are `+0.0` (a stored −0.0 normalised),
+  and no provider call is made (Q1.R11); `T`, `x`, `w`, `h`, `h_mass`, `s`, `s_mass`, `rho` and both vapour fractions
+  are `null`, with `zero_flow(stream=S)`.
 - **R1 carried split.** Both `vapor_id(S)` and `liquid_id(S)` are in `state` (thermal saturated streams, ADR 0051 D1).
   It requires `len(components) == 1`; otherwise the result is `internal_error`. `phase_source: "carried_split"`. With
   V = `state[vapor_id(S)]` and L = `state[liquid_id(S)]`, the phases are VAPOR with n = (V,) and LIQUID with
@@ -135,7 +136,9 @@ P=state[pressure_id(S)])`.
   `evaluate_phase(PropertyRequest(StreamState((1.0,), T_lo, P), "LIQUID", ("Tsat",)))`, where `T_lo =
   provider.describe().domain["T"][0]`; this is the verifier's `_saturation_temperature`. Each phase request uses the
   state `StreamState((1.0,), T_sat, P)` with the phase's family; the per-mole values do not depend on the amount, which
-  is what the verifier's `_properties` assumes.
+  is what the verifier's `_properties` assumes. The stream's `T` is the stored T. A `Tsat` status other than `"ok"`
+  nulls every property-derived quantity of the substream and its phases with `property_evaluation_failed(stream=S,
+  phase=LIQUID, property=Tsat, status=…)`; amounts, compositions and fractions are still given (Q1.R12).
 - **R2 declared.** `declared_phase[S]` is not `None`. `phase_source: "declared"`; one phase of that family,
   n = `st.n`, at (T, P).
 - **R3 flash.** In every other case, `provider.flash(FlashRequest(state=st), context)`, and `phase_source: "flash"`.
@@ -143,10 +146,12 @@ P=state[pressure_id(S)])`.
   `rho`, `H_flow`, `S_flow`, `V_flow`, the vapour fractions) is `null` with `flash_failed(stream=S, status=…)`.
   `n`, `m`, `x`, `w`, `T` and `P` are still given. If the status is `"ok"`, the phases are VAPOR from `result.vapor`
   and LIQUID from `result.liquid`, each with its outlet `n` in provider order, at the stream's (T, P). There is **no
-  snap**.
-- **Listing.** A phase is listed iff it exists and its total amount is `!= 0.0`, ordered VAPOR, LIQUID (registered
-  family order VAPOR, LIQUID, FLUID, SOLID; within a family by ordinal). Its id is `{family, qualifier: null,
-  ordinal: 1}`.
+  snap**. The substream's `flash_near_phase_boundary` is true iff two or more phases are listed and min_p |n_p,tot|/N_P
+  ≤ τ_β = 1e-8, or the stream has a quoted `independent_split` row with result `not_applicable` and reason
+  `temperature_degenerate` or `fresh_flash_unresolved` (Q4.R12 (b)); it is false for R0–R2.
+- **Listing.** A phase is listed iff it exists and its total amount is `!= 0.0` (either sign, never clamped; ids never
+  renumbered; Q4.R11), ordered VAPOR, LIQUID (registered family order VAPOR, LIQUID, FLUID, SOLID; within a family by
+  ordinal). Its id is `{family, qualifier: null, ordinal: 1}`.
 
 ### 4.3 Property calls and formulas (per listed phase p with amounts n_p in provider order)
 
@@ -157,32 +162,36 @@ P=state[pressure_id(S)])`.
   `h_p = H_p / n_p,tot`; for R1, `n_p,tot` is V or L.
 - **s, v (optional).** Requested only if declared in `describe().properties`, each in its **own** call
   `(…, ("s",))` / `(…, ("v",))`; otherwise `property_not_provided(provider, property)`. Only the mixture key is
-  accepted. A per-component `s_c` or `v_c` gives `property_not_provided`, because summing x·s_c drops the entropy of
-  mixing. Then `S_p = n_p,tot * s_p` and `V_p = n_p,tot * v_p` (m³/s).
+  accepted. A per-component `s_c` or `v_c` gives `property_not_provided`, because such a key does not say whether it
+  holds a pure-component or a partial molar value, and summed pure-component values drop the entropy of mixing (s) or
+  the excess volume (v) (Q2.R11). Then `S_p = n_p,tot * s_p` and `V_p = n_p,tot * v_p` (m³/s).
 - A status other than `"ok"` gives `property_evaluation_failed(stream, phase=<family>, property, status)`. A
   non-finite result gives `value_not_finite(stream, quantity)`.
 - **Mass and composition.** `m_p,c = M_c * n_p,c`; `m_p,tot = Σ_c m_p,c` (provider order); `x_p,c = n_p,c / n_p,tot`;
   `w_p,c = m_p,c / m_p,tot`.
 - **Phase intensives.** `h_mass_p = H_p / m_p,tot`; `s_mass_p = S_p / m_p,tot`; `rho_p = m_p,tot / V_p`;
-  `phase_fraction_molar = n_p,tot / n_tot`; `phase_fraction_mass = m_p,tot / m_tot`.
+  `phase_fraction_molar = n_p,tot / N_P`; `phase_fraction_mass = m_p,tot / M_P`, with N_P = Σ_p n_p,tot and M_P = Σ_p
+  m_p,tot over the listed phases from 0.0 in listing order (Q4.R10).
 - **Substream totals.** `n_tot = sum(st.n)`, `m_tot = Σ_c M_c n_c`. `H_flow = Σ_p H_p`, accumulated from `0.0` over
   the listed phases in order, which is the verifier's `total += …` for R3 and `V·h_V + L·h_L` for R1 (VAPOR first). For
   R1 that reads `0.0 + V*h_V + L*h_L`, which is bitwise `V*h_V + L*h_L` since `0.0 + a == a`. `S_flow` and `V_flow`
   are accumulated the same way. Then `h = H_flow/n_tot`, `h_mass = H_flow/m_tot`, `s = S_flow/n_tot`,
   `s_mass = S_flow/m_tot`, and `rho = m_tot/V_flow`.
-- **Vapour fractions.** `vapor_fraction_molar = (Σ_{p: family == VAPOR} n_p,tot) / n_tot` and
-  `vapor_fraction_mass = (Σ m_p,tot) / m_tot`, accumulated from 0.0. With no VAPOR phase listed they are exactly
-  `0.0`. In v1 they are defined for every flowing stream with phases.
+- **Vapour fractions.** `vapor_fraction_molar = (Σ_{p in the vapour group} n_p,tot)/N_P` and `vapor_fraction_mass = (Σ
+  m_p,tot)/M_P`, accumulated from 0.0 (v1: the vapour group is VAPOR); exactly 0.0 with no VAPOR listed and 1.0 with
+  VAPOR alone, in [0, 1] when no listed amount is negative, bitwise the VAPOR `phase_fraction_molar`; null only for R0,
+  a failed flash or a non-finite quotient (Q4.R10).
+- **Quotients.** Every division in §4.3 is an IEEE division: a non-finite result (for example a zero mass after
+  underflow) is null with `value_not_finite(subject, quantity)`, never an exception (Q4.R11 (c)).
 - **Order of output arrays.** Each array follows the substream's `components` (= `declared`), filled by id.
 
 ### 4.4 Quoted checks
 
-Each stream carries `checks`: every certificate row with `category == "phase_admissibility"` and `subject == S`, in
-certificate order. Each unit carries the rows with `category == "energy_balance"` and `subject == U`; the overall
-section carries the row `id == "energy_balance.envelope"`. A quote is
-`{index, id, result, scope, value, tolerance, reason, near_threshold}`, where `index` is the row's position in the
-certificate's `checks` array, so the full row is at
-`get_artifact("<bundle>/solution-certificate.json", pointer="/checks/<index>")`.
+Each stream carries `checks`: every certificate row with `category` in {`phase_admissibility`, `independent_split`} and
+`subject == S`, in certificate order. Each unit carries the rows with `category == "energy_balance"` and `subject == U`;
+the overall section carries the row `id == "energy_balance.envelope"`. A quote is `{index, id, result, scope, value,
+tolerance, reason, near_threshold}`, where `index` is the row's position in the certificate's `checks` array, so the
+full row is at `get_artifact("<bundle>/solution-certificate.json", pointer="/checks/<index>")`.
 
 ### 4.5 Energy summary (computed at the stored state)
 
@@ -224,6 +233,7 @@ stream: {id, from: str|null, to: str|null, T: q, P: number, dormant: bool,
   substreams: [substream], checks: [quote], absent: {name: entry}}
 substream: {id: "mixed", kind: "mixed", components: [str], convention: str,
   phase_source: str  (registered: zero_flow | carried_split | declared | flash; open),
+  flash_near_phase_boundary: bool,
   n: [number], m: [number], x: [q]|null, w: [q]|null, n_total, m_total: number,
   H_flow, S_flow, V_flow, h, h_mass, s, s_mass, rho, vapor_fraction_molar, vapor_fraction_mass: q,
   phases: [phase], absent: {name: entry}}
@@ -316,12 +326,13 @@ bundle directories; 0.3.0 bundles included.
 
 `substreams[].method` is added, and the header `basis` stays for v1 documents. Every h and s is on the flowsheet
 convention (Q2.R1, R6); per-method subtotals become attribution members. `phase_source: "state_point"` reads the phases
-from the solved state point's phase set (Q4/Q5) instead of re-flashing. FLUID phases gain `character`, and a vapour
-fraction counts FLUID phases with `character == vapour_like` (Q4.R6, R9); how SOLID enters is F4's decision. The
-`solid` and `nonconventional` substream kinds arrive with their attributes, and dormancy becomes per substream (Q1.R4).
-`h_mass` is read from the state's ĥ (Q1.R1). The `entropy_datum` notice (Q2.R10) attaches through a sibling `notices`
-map. Dynamic runs add `time_s` as a request and header member (F7). `build` gains a v2 branch keyed on the revision's
-definition; the operation, the transports and every v1 member stay as they are.
+from the solved state point's phase set (Q4/Q5) instead of re-flashing. FLUID phases gain `character`, read from the
+state point; the vapour fractions count Q4.R13's vapour group (VAPOR and `vapour_like` FLUID) over all listed phases, a
+SOLID phase included by default (Q4.R10, O-20); `flash_near_phase_boundary` is false for `state_point`, whose own flags
+are added beside it (Q4.R12 (e)). The `solid` and `nonconventional` substream kinds arrive with their attributes, and
+dormancy becomes per substream (Q1.R4). `h_mass` is read from the state's ĥ (Q1.R1). The `entropy_datum` notice (Q2.R10)
+attaches through a sibling `notices` map. Dynamic runs add `time_s` as a request and header member (F7). `build` gains a
+v2 branch keyed on the revision's definition; the operation, the transports and every v1 member stay as they are.
 
 ## 9. Files
 
@@ -340,7 +351,7 @@ merges into `main` (merge `main` into `wp/ST` first).
 
 | WO | Content and files | Acceptance | Who |
 | --- | --- | --- | --- |
-| 1 | Core: `application/stream_table.py` (`build`, `from_bundle`, §4), `tests/test_st_core.py` | G1–G10, G14 at core level; no `verify/thermo/models/run` diff | Opus |
+| 1 | Core: `application/stream_table.py` (`build`, `from_bundle`, §4), `tests/test_st_core.py` | G1–G10, G14, G16 at core level; no `verify/thermo/models/run` diff | Opus |
 | 2 | Schema (§5) + `tests/test_st_schema.py` + fixtures (valid: one per basis from WO-1 output; invalid: a rendered phase key, null without `absent`, missing `convention`, `family` lower-case, extra member in a phase id); registry entry | every WO-1 corpus document validates; each invalid fixture rejected; F0 PASS | Sonnet |
 | 3 | Operation (§6.1): contract, local, operations, authz (+pin test), HTTP, MCP; `tests/test_st_operation.py`; transport and conformance fixtures; digest and R4-G3 re-record; interfaces-frozen paragraph | G11, G12, G13 | Opus |
 | 4 | Catalogue entries (§6.4) | G15; MSG's lint (G4) on the entries | Sonnet drafts, Opus checks |
@@ -359,27 +370,30 @@ The corpus is F0's RC bundle set plus TH-C1 (`benchmarks/s11/thermal/TH-C1.json`
   `W_P > 0`, `W_T < 0`, `Q_B > 0`, `Q_C < 0`. Record max |closure|/tol.
 - **G2 lever rule (S4, R1).** `x_lever = (h4 − h_L)/(h_V − h_L)`, where `h4 = (H(S3) + W_T)/n4` and `h_L`, `h_V` are
   evaluated **by the test directly** with `Iapws95Provider` at `(T_sat(P4), P4)`. Require
-  `|vf_molar(S4) − x_lever| ≤ 10·tol_T/(n4·(h_V − h_L)) + 1e-12` (`tol_T` from the turbine row) and
-  `|vf_mass − vf_molar| ≤ 4 ulp`. S5 (`outlet_vapor_fraction 0`): `vf_molar ≤ 1e-12`, and `h(S5)` is within 1e-12
-  relative of `h_L(P5)`.
+  `|vf_molar(S4) − x_lever| ≤ 10·tol_T/(n4·(h_V − h_L)) + 1e-12` (`tol_T` from the turbine row) and `|vf_mass −
+  vf_molar| ≤ 8ε·vf_molar` (worst case 3ε, §17 argument 9). S5 (`outlet_vapor_fraction 0`): `vf_molar = V5/(0.0 + V5 +
+  L5)` bitwise, and `|h(S5) − h_L(P5)| ≤ (|V5|(h_V − h_L) + |V5 + L5 − n5|·|h_L|)/n5 + 8ε|h_L|` (the bounds checks admit
+  |V5| up to τ_flow; record |V5|/n5).
 - **G3 saturation reference.** `build` on TH-C1's revision with S4 overwritten to `P = 932203.564 Pa`,
   `V = L = 0.5 mol/s` and `n = 1.0`, against IAPWS-95 R6-95(2018) Table 8 at 450 K, relative error ≤ 1e-7:
   h′ 749.161585 and h″ 2774.41078 kJ/kg; s′ 2.10865845 and s″ 6.60921221 kJ/(kg K); ρ′ 890.341250 and
-  ρ″ 4.81200360 kg/m³. `vf_molar == 0.5` exactly. O6 governs the source of these values.
+  ρ″ 4.81200360 kg/m³. `vf_molar == 0.5` exactly. O6 governs the source of these values. S4's stored T is kept and `|T −
+  450 K| > 100 K` asserted (Q1.A15 (a)).
 - **G4 limiting cases.** A dormant stream: `n_total`, `m_total`, `H_flow`, `S_flow` and `V_flow` `== +0.0` (sign
   checked), `T` null with `zero_flow`, `P` present, `phases == []`. A single-phase stream: vapour fraction exactly 0.0
-  or 1.0. On SYN-001 (all M = 0.1 kg/mol): `|w_c − x_c| ≤ 4 ulp`.
+  or 1.0. On SYN-001 (all M = 0.1 kg/mol): `|w_c − x_c| ≤ 8ε·x_c` (worst case 4ε). Q1.A14; Q4.A13 (b), (f); Q4.A14 (d).
 - **G5 absence.** Over every corpus document: null ⇔ an `absent` key; every code is a catalogue key; no NaN or inf;
-  canonical JSON succeeds.
+  canonical JSON succeeds. Q2.A13.
 - **G6 consistency.** `|Σx − 1|` and `|Σw − 1| ≤ 1e-12`. The substream `H_flow` equals the sum of its phases' bitwise.
   R3 phases sum to the stream's `n_c` within `1e-12·n_total`; R1 `V + L` equals `n` within `1e-9·n`.
-  `0 ≤ vf ≤ 1 + 1e-12` on VERIFIED runs. On SYN-001 R3 two-phase streams: the Rachford–Rice residual
-  `|Σ z_i(K_i−1)/(1+β(K_i−1))| ≤ 1e-10`, and `y_i = K_i x_i` to 1e-9 relative, with K from the provider's `lnK` at
-  (T, P). This catches a swap of the VAPOR and LIQUID outlets.
+  `0 ≤ vf ≤ 1` exactly where no listed amount is negative, otherwise within Σ|negative amounts|/N_P of [0, 1] (Q4.R10,
+  R11; Q4.A13 (a), (d)). On SYN-001 R3 two-phase streams: the Rachford–Rice residual `|Σ z_i(K_i−1)/(1+β(K_i−1))| ≤
+  1e-10`, and `y_i = K_i x_i` to 1e-9 relative, with K from the provider's `lnK` at (T, P). This catches a swap of the
+  VAPOR and LIQUID outlets.
 - **G7 verifier equivalence (bitwise), same state and context.** In the test only, call the verifier helper of the basis
   form: R1 `thermal.saturated_enthalpy`; R2 on DECLARED_MIXTURE and GAMMA_PHI forms `forms.enthalpy_flow`; R3
   single-phase flashes `checks.enthalpy_flow` (SYN) and `pr_c1.enthalpy_flow` (PR). ST's `H_flow` must equal the
-  helper's result bitwise for every such stream; the other cases are counted and reported.
+  helper's result bitwise for every such stream; the other cases are counted and reported. Q1.A15 (c); Q4.A14 (a)–(c).
 - **G8 envelope agreement.** Where `judged_at == "final_state"` and every envelope stream is G7-bitwise,
   `overall.closure ==` the quoted value bitwise. Otherwise `|overall.closure − value| ≤ tolerance`, and the max ratio
   is recorded. A failure is escalated, never loosened.
@@ -399,6 +413,7 @@ The corpus is F0's RC bundle set plus TH-C1 (`benchmarks/s11/thermal/TH-C1.json`
 - **G14 performance.** `get_stream_table` takes ≤ 0.5 s on TH-C1 and ≤ 2 s on the largest corpus case (reference
   machine), recorded. If exceeded, report; no cache may be added without a design decision.
 - **G15 C3.** MSG's runtime audit passes over the whole suite with ST's emissions.
+- **G16 The report's decision near a phase boundary.** Q4.A15 (a)–(e); the counts of (e) recorded in the manifest.
 
 ## 12. Risks and open questions (each with a default)
 
@@ -421,7 +436,9 @@ The corpus is F0's RC bundle set plus TH-C1 (`benchmarks/s11/thermal/TH-C1.json`
   closure is `energy_balance_undefined`.
 - **Riskiest point.** Near a phase boundary, R3's raw flash can decide differently from the verifier's snapped
   decision, so ST's Ḣ and vapour fraction may differ slightly from what was judged. A second hazard is the two
-  provider value shapes (`h` against `h_<c>`). Mitigations: the quoted checks, `judged_at`, and G6–G8.
+  provider value shapes (`h` against `h_<c>`). Mitigations: the quoted checks, `judged_at`, and G6–G8. Ruled by Q4.R12
+  (Amendment 5): the raw flash stays; `flash_near_phase_boundary` and the quoted `independent_split` rows mark where the
+  verifier may have decided otherwise; G16.
 
 ## 13. Specifier questions (scientific semantics; the default applies until ruled)
 
@@ -431,4 +448,6 @@ member named "quality"; 0 or 1 outside the dome, not undefined. **SQ-ST-2** A do
 ε_adm or τ_dew snap. **SQ-ST-4** An R1 phase is evaluated at `(T_sat(P), P)` (the verifier's choice), not at the
 stored T. **SQ-ST-5** Density only from a provider's `v`, with no ideal-gas fallback; the per-component property form
 is accepted for `h` only (ideal-solution additivity), never for `s` or `v`. **SQ-ST-6** A phase is listed iff its
-amount is `!= 0.0`; a saturated liquid with V = 0 shows one phase, and its vapour fraction is still defined (0.0).
+amount is `!= 0.0`; a saturated liquid with V = 0 shows one phase, and its vapour fraction is still defined (0.0). Ruled
+2026-11-06 (foundation rulings Amendment 5): SQ-ST-1 Q4.R10, SQ-ST-2 Q1.R11, SQ-ST-3 Q4.R12, SQ-ST-4 Q1.R12, SQ-ST-5
+Q2.R11, SQ-ST-6 Q4.R11.

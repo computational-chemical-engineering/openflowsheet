@@ -608,18 +608,17 @@ CAPE-OPEN units; controllers; sizing and costing hooks; hierarchy.
 13. **Phase routing** (A2-b; ADR 0065 D9). A unit whose outlets take phases of a state point declares `phase_routing`:
     `vapor: <port> | null`, `light_to_heavy` (the liquid ports) and `solids: <port> | null`. At every opening the
     routing is fixed for the attempt and recorded as the discrete coordinate `phase_routing`:
-    - VAPOR, or a lone `vapour_like` FLUID (Q4.R9), goes to `vapor`, else to the first liquid port when `vapor` is null;
-    - LIQUID slots go over `light_to_heavy` by mass density, ascending (with two candidates, today's routing exactly);
-    - two or more active FLUID phases: `vapour_like` phases to `vapor`, the rest over `light_to_heavy` by mass density;
-      a unit with `vapor: null` routes them all by density (SQ-F6-5's default);
-    - exactly one active fluid phase routes as the `split` family its `character` names (Q4.R9); the character is fixed
-      with the routing at the opening, and |q − q*| ≤ 10 τ_char |q*| flags `near_threshold`;
+    - the vapour group (VAPOR and `vapour_like` FLUID) goes to `vapor`, else to the first liquid port when `vapor` is
+      null;
+    - the liquid group (the other fluid phases) goes over `light_to_heavy` by mass density, ascending (with two `split`
+      candidates, today's routing exactly; with one fluid phase, Q4.R9); characters are fixed with the routing at the
+      opening, and |q − q*| ≤ 10 τ_char |q*| flags `near_threshold` (Q4.R13);
     - phases beyond the last liquid port go to the last port; SOLID phases to `solids`, else to the last port.
 
     Closure checks the order at the converged state; a different order or character closes the attempt
     `routing_order_changed(<unit>)`, and the controller opens the adjacent assignment (one transposition of
-    density-adjacent phases, or the lone phase's other port). An adjacent pair with |ln ρ_a − ln ρ_b| ≤ 10 τ_ρ attaches
-    `near_threshold` (Q4.R5's pattern); τ_ρ = τ_char = 1e-6 (Q4.R9).
+    density-adjacent liquid-group phases, or one phase moved between the groups). An adjacent pair with |ln ρ_a − ln
+    ρ_b| ≤ 10 τ_ρ attaches `near_threshold` (Q4.R5's pattern); τ_ρ = τ_char = 1e-6 (Q4.R9, R13).
 
 **Rejected.**
 - *A family per provider* (today). This produced X10.
