@@ -167,3 +167,38 @@ where it lives. Questions for the design lane are batched for the one `reviewer`
   environment lives in another worktree), 16 (the pinned W27 archive likewise), `ci` (no dispatch at this head).
 - `tests/test_rel_rc_local.py` 20 passed; `tests/test_rel_*.py`, `test_release_workflows.py`,
   `test_m07a_surface_chain.py` 192 passed; F0 `corpus_identity.py --check` PASS (M1–M9 all equal).
+
+## Choices (build lane, WO-R6c, 2026-11-06)
+
+- **C-18 RP.S11 reads steps 1, 3–5 and the CI legs through the CI jobs**, V03.A20's form ("same form"): step 1 is the
+  push run's `check` on both legs, step 2's G05 the push run's `identity`, steps 2–10's CI legs the dispatch's jobs;
+  the local records of steps 2, 6–14, 16 (those in `rc_steps`); the RC record by `rc_record_problems`. Step 1's full
+  record (its four checks, junit) is RP.S15's. Reversible: `STEP_JOBS`/`SPECS["S11"]` in the generator.
+- **C-19 The D rules.** Test selections, each its own pytest process (S13a's rule): S01 the RP.L tests, S03 V03.A03's
+  three legacy files whole + REL.A02's test, S04 V03 `a04_`, S06 V03 `a06_` + REL.A03's fixtures, S07
+  `test_rel_standing_acceptances.py`, S08 V03 `a08_` + REL.A03/A05, S22 `test_m07a_harvest.py -k r911`. S02, S05,
+  S22 are also measured directly from the line (T-V(M.m), the clause grammar, `HARVEST_EXCLUDED` at C). The line
+  file is read in the checkout (outside D2.4); RP.L05/L08 at C.
+- **C-20 Where RP names no input.** S16's manifest-conditioned ADRs are `--manifest-adr N` (R-914; none by default).
+  S17's acceptances part: every row the gate needs (each `frank_items` row, each failing clause's row) stands at C.
+  S10's failure lines come from the failure rows that stand. S20 requires its two checks `pass`, not "exactly two"
+  (§6.5 says "holds"; 0.3.0's record has five). A line without `rc_items` makes S13 `unsupported`, never a vacuous
+  pass. S22's 0.3.0 counterpart is a test, not an S13 check: its REL.A20 status is RP's stated `pass`.
+- **C-21 `--rel-a20`** runs over a past release's records, so HEAD's trees may differ from C's there (only there),
+  and it writes only to `--out`. Saved `gh run view` answers are read with `--ci-json`; 0.3.0's two
+  (`tests/fixtures/rel/s13-ci/`) hash to the `stdout_sha256` S13's manifest recorded for them (a test pins it).
+
+## Questions for the design lane (WO-R6c, default applied)
+
+- **Q-C5 (REL.A20 cannot pass as written).** RP.S18 is "same form", but its rule (a) is "every other check passes",
+  and over 0.3.0's records five changed-form checks fail by construction (S10: no failure lines; S13: no `rc_items`,
+  `unsupported`; S15: no step-1 record; S17: ADR 0053 is not a standing table; S21: three checks). So RP.S18 is
+  `fail` where S13's V03.A27 is `pass`, and REL.A20 is FAIL: 12 of 13 same-form equal. Default: RP followed
+  literally, REL.A20 reported FAIL; the test pins that RP.S18's `not_pass` lies wholly in the changed-form set. A
+  ruling could move RP.S18 to §11.2's changed list, or compare it over the same-form checks (an RP amendment).
+
+## Measured (WO-R6c, 2026-11-06)
+
+- `release_evidence_manifest.py --line 0.3 --commit a3e508e3 … --rel-a20` (38 s): 22 checks, 15 pass, 6 fail, 1
+  unsupported. Same form: S02, S03, S04, S06, S08, S09, S11, S12, S14, S16, S19, S22 `pass` = S13; S18 `fail` (Q-C5).
+  Changed form: S01, S05, S07, S20 pass; S10, S15, S17, S21 fail; S13 unsupported. `REL.A20: FAIL`.
