@@ -144,3 +144,16 @@ cap again). Reversible by: merging the two briefs.
 1 failed (description reviews, by design), 15065 passed. MSG-G0 (c) FAIL 156/109, all from F0's later v0.3.0 replay
 fixtures (D9-10). Reviewer brief `docs/briefs/MSG-reviewer.md` (`4ddc2fb7`) batches nine questions incl. the WO-5 route
 under F0 M9, D9-2, D9-10, gate changes, A5-a. RP WO-R6b done (`596dee3a`); WO-R6c engineer running.
+
+## 2026-11-06 — MSG review (`2aee6dd3`) → WO-11/12
+
+Not merge-ready: M1 (≈60 required entries still stubs), M2 (`pressure_rise` says turbine for valves), M3 (MSG-G0 must
+PASS: F0 replaces (a)/(c)), M4 (missing gate records), M5 (explain.md: design lane approved with two edits; Frank's
+review still blocks), M6 (c_4 register entry), M7 (WO-5a). Q1: sidecar at `revision_flowsheet.py:1029-1034` outside
+M9; C01's main numbers deferred to F6 v2. Q2/Q3/Q4/Q6 as the engineer's defaults; D4-1 overruled; A5-a is the
+verifier's.
+DECISION: WO-5a (M7) before merge → yes. Alternative: merge with strict xfails, WO-5a after. Reversible by: reverting
+WO-5a's commits.
+DECISION: M1 → complete all required entries, no declared-stub limitation. Alternative: ship stubs declared (Frank's
+call). Reversible by: Frank's late answer.
+Brief `docs/briefs/MSG-build-WO11-12.md`.
