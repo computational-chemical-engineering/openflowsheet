@@ -369,3 +369,79 @@ gate change, flagged). Commits: `f0f17ad8` (tests), `631a9f3f` (envelope, matrix
 - MSG-G8: `explain` equal on Python, CLI, HTTP and MCP for all 366 keys and for the refusal.
 - MSG-G10: R4-G3 and the MCP digest equal their pre-MSG values with `without_msg`
   (`455d01eb…`); new values `SNAPSHOT_MSG_EXPLAIN` `a4fcafe7…`, `D_4` `1ca06b37…`.
+
+## WO-9
+
+**D9-1. WO-5 is parked (orchestrator, 2026-11-06): what waits on it is a strict xfail.** WO-5 must
+edit `models/thermal/{flash,heater,machines,mixer,valve}.py`, which F0 freezes (M9, R-940). Every
+corpus fact that only the sidecar can supply is a `pending` item of its case, run by
+`test_g6_pending_holds` as `xfail(strict=True, raises=AssertionError, reason="MSG WO-5 parked:
+thermal modules frozen by F0 M9 (R-940)")`: C01's `value`, `saturated_vapour`, `pressure` (10 kPa,
+`value > saturated_vapour`) and its `phase_capability` action token (the action naming it is the
+`has: [landed]` variant, and `landed` is a P1 param); C02's `s_star`, `s_saturated`, `pressure`
+(`s_star < s_saturated`) and its element S4 (P2's `outlet`). **Beyond the brief, flagged:** C11's
+`p_spec` (5 MPa) and `p_inlet` (3 MPa, the pump's outlet; `thermal.heater`'s `pressure_drop`
+defaults to 0) come from P5 (`machines.py`), so they are pending for the same reason. C09's bounds
+are conditional in §7 ("if `detail_pattern` extracts them"); the provider text is P4's, so no
+pattern is written and nothing is asserted. Everything else of C01/C02/C11 is asserted now.
+Commit: `184479d8`.
+
+**D9-2. C06, C07, C08 and C10 record the codes emitted, and their implicated ids are pending
+(design lane).** Measured (§3.6, Q8): all four are refused at admission `revision_not_ready`.
+C06 (`pump-T` on the pump's `outlet.T`), C07 (`turbine-P` removed) and C10 (`thermal.boiler`)
+validate DRAFT: every structural check is `NOT_RUN` and the specific code sits only in those
+checks' messages (`specification_unconsumed(pump-T)`, `specification_missing(S4.P)`,
+`model_unsupported(thermal.boiler)`). §4.4 rule 2 reads the first `FAIL` check only, so the chain
+is `[revision_not_ready]`, with no elements. C08 (`"degc"`) validates INVALID; rule 2 gives
+`[revision_not_ready, DIM-01]` from the check's id alone, without its message
+(`specification_unit_unsupported(boiler-T)`) or `implicated_objects`; and "degc" is in no machine
+message at all. No machine message was changed (I1). Pending, as strict xfails: C06 `pump-T`,
+C07 `S4`, C08 `boiler-T` and "degc" in the summary, C10 `model_unsupported`/`not_supported`/
+`gap.capability` and the instance B. **Design-lane question:** extend §4.4 rule 2 to (a) parse the
+first non-PASS check's message when no check FAILs (DRAFT), and (b) add a failing check's
+`implicated_objects` as elements and parse its message for the inner code? My default would be
+both: it is renderer-only (no machine message, no bundle, no identity), and it turns C06/C07/C10
+into their specific codes. C08's unit text would still need the revision context (the spec's
+unit) — a separate question. Commit: `184479d8`.
+
+**D9-3. "In the summary text" = line 1 and its cause.** With an outcome first in the chain, line 1
+is the outcome's `context` and the explained entry's `summary` is `cause` (§4.4), so C01's S4 is
+in the cause line. The corpus checks element ids and `in_summary` texts in `summary + cause`.
+
+**D9-4. Transports.** `solve` is Python/CLI only, so a refused solve travels as `submit_job`
+(`operation: solve`); a run failure as `get_job_result`; C03 as `get_artifact`; C12 as `validate`.
+Documents are compared after removing the validation report's `provenance.timestamp`, a clock
+reading each call makes afresh (as `test_t07_conformance.py` strips it). The transported
+explanation's code, kind, chain, summary, cause, why, action and elements equal the Python one.
+
+**D9-5. Texts.** `text.python` is `str()` of the exception the Python API raises (a run failure's
+`raise_for_outcome()`); `text.cli` is the stderr of `openflowsheet api <operation>` for a
+transported case and of `project init` for C04/C05. The test's directory is written `<tmp>`.
+`--msg-update` (a conftest option) rewrites the YAML in its own layout.
+
+**D9-6. Complete entries written.** `revision_not_ready`, `unsupported` (api_error), `DIM-01`
+(check; `review: true` kept, its kind was not reviewed), `out_of_domain`, `pressure_rise`,
+`task_unsupported`, and `model_unsupported` (C10's expected code, on §4.2.6's list; reached only
+when D9-2 is decided). `unsupported`'s gap is `{limitation: null, capability: null}`: the reason's
+own entry carries the typed gap, and `unsupported` is never the explained code when its reason has
+an entry. `pressure_rise` takes the legacy arg as `machine` (`pressure_rise(turbine)`) and `unit`
+from the outer `initializer_failed(T)`. The rest of §4.2.6's normative list (the other api_errors,
+the outcomes and statuses, `pressure_fall`, `isentropic_state_single_phase`, …) is not WO-9's and
+stays stub. The prose is the build lane's draft for the reviewer pass. Commit: `3842f686`.
+
+**D9-7. MSG-G7 / Q7: the U05 CLI pin re-taken.** `validate <CASE> --task optimization` is the only
+record that moved (stdout's `detail.explanation`, stderr's layered text; exit 14 unchanged);
+`msg_reversed` already strips both, so `PINS_T07_SHA256` holds. Commit: `3842f686`.
+
+**D9-8. C09 at 200 K.** The refusal comes from the pump P (the first unit that evaluates a
+property of the 200 K feed), not from the feed: the case records P.
+
+## WO-10
+
+**D10-1. Where the explanation shows.** `text.js explained()` renders summary (strong), cause and
+"Do: action", tagged `data-ofs-explanation-part`. The error panel shows it under its heading,
+above the machine message, HTTP line and detail, which are unchanged. A failed run's
+`run_result.failure` shows as a `notice-bad` block (`data-ofs-failure`) in the job screen's
+summary and the failure screen's outcome; a job's own `error` adds its explanation under its
+existing one-line notice. Docs URLs are not linked: `h.js` allows `#` fragments only. Commit:
+`5a68e53c`.
