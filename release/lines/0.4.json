@@ -1,0 +1,386 @@
+{
+  "format": "release-line-v1",
+  "line": "0.4",
+  "role": "gate",
+  "inherits": "0.3",
+  "changed": [
+    "changelog_what_it_is_not",
+    "gate_set.acceptances",
+    "gate_set.covers",
+    "gate_set.envelope_id",
+    "gate_set.evidence_package",
+    "gate_set.frank_items",
+    "gate_set.name",
+    "gate_set.rc_record",
+    "gate_set.required_adrs",
+    "gate_set.specification_texts",
+    "gate_set.verdict_document",
+    "gates",
+    "rc_items"
+  ],
+  "_comment": [
+    "The 0.4 line (ADR 0055 D1.2, WO-R1). Seeded from 0.3.0: the claim set, gates[*] (from the Basis",
+    "column of docs/reviews/V03-verdicts.md) and rc_items (from V03 17a-17e, plus PTC-R1 under N-2).",
+    "What 0.4.0's cut must revisit is listed in docs/derivations/release-procedure.md, section 3.6."
+  ],
+  "gate_set": {
+    "name": "v0.4-gate-v1",
+    "covers": "0\\.4\\.0(?:(?:b|rc)[1-9][0-9]*)?",
+    "claimed": [
+      "V11",
+      "V12",
+      "V13",
+      "V14",
+      "V15",
+      "V16",
+      "V17",
+      "V18",
+      "V19",
+      "V20",
+      "W21",
+      "W22",
+      "W23",
+      "W24",
+      "W25",
+      "W26",
+      "X31"
+    ],
+    "not_claimed": ["W27"],
+    "clause": "\\b(?:V(?:1[1-9]|20)|W2[1-6]|X31) \\([a-z0-9]+\\)",
+    "acceptances": "release/acceptances.md",
+    "verdict_document": "docs/reviews/REL040-verdicts.md",
+    "rc_record": "docs/REL040-rc-record.md",
+    "rc_steps": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17],
+    "rc_last_step": 18,
+    "evidence_package": "REL040",
+    "packages": [
+      "M01",
+      "M02",
+      "M03",
+      "M04",
+      "M05",
+      "M06",
+      "S01",
+      "S02",
+      "S03",
+      "S04",
+      "S05",
+      "S06",
+      "S07",
+      "S08",
+      "S08b",
+      "S09",
+      "S10",
+      "S10c",
+      "S11",
+      "S12"
+    ],
+    "envelope_id": "v0.4-envelope-1",
+    "required_adrs": [
+      "0022",
+      "0026",
+      "0027",
+      "0030",
+      "0031",
+      "0032",
+      "0033",
+      "0034",
+      "0035",
+      "0036",
+      "0037",
+      "0038",
+      "0039",
+      "0041",
+      "0044",
+      "0045",
+      "0046",
+      "0047",
+      "0048",
+      "0049",
+      "0050",
+      "0051",
+      "0052",
+      "0053",
+      "0054",
+      "0055"
+    ],
+    "frank_items": ["Claim set", "V17 carry", "M02 N1", "M03 N1", "coolprop and lca licences"],
+    "rejudge_waits": [["V13", "V17 carry"], ["V17", "V17 carry"], ["W21", "M02 N1"], ["W24", "M03 N1"]],
+    "links_item": "V17 carry",
+    "specification_texts": ["the standing release procedure", "§6"]
+  },
+  "changelog_what_it_is_not": [
+    "numerical verification, not empirical validation",
+    "no global optimality",
+    "Linux only",
+    "not a sandbox",
+    "the stand-in reactor is synthetic",
+    "the optimization routes need the optional nlp extra",
+    "the CoolProp provider needs the optional coolprop extra",
+    "cost and LCA results are assessment estimates with an accuracy class",
+    "cost and LCA are Python-only",
+    "no ecoinvent data",
+    "Wilson is vapour-liquid only; no liquid-liquid split",
+    "no automatic liquid/vapour regime switching for pure fluids",
+    "X31: one independent reference for the refluxed absorber",
+    "no rate-based column models",
+    "no W27 claim in 0.4.0",
+    "no CFD or Peclet refinement",
+    "no external benchmark score"
+  ],
+  "gates": {
+    "V11": {
+      "tests": [
+        "tests/test_k06_*.py",
+        "tests/test_t01_*.py",
+        "tests/test_t06_*.py",
+        "tests/test_t07_*.py",
+        "tests/test_t08_*.py",
+        "tests/test_m07a_*.py"
+      ],
+      "rc": [[1, "*"]],
+      "criteria": [
+        "docs/derivations/release-procedure.md",
+        "docs/derivations/V02-alpha-release-spec.md",
+        "docs/derivations/T08-release-spec.md"
+      ],
+      "documents": []
+    },
+    "V12": {
+      "tests": ["tests/test_t05_*.py", "tests/test_t05b_*.py", "tests/test_t08_*.py"],
+      "rc": [[1, "*"]],
+      "criteria": [
+        "docs/derivations/release-procedure.md",
+        "docs/derivations/V02-alpha-release-spec.md",
+        "docs/derivations/T08-release-spec.md"
+      ],
+      "documents": []
+    },
+    "V13": {
+      "tests": [
+        "tests/test_t01_*.py",
+        "tests/test_t02_*.py",
+        "tests/test_k03_*.py",
+        "tests/test_t08_*.py",
+        "tests/test_m07a_*.py"
+      ],
+      "rc": [[1, "*"], [8, "*"]],
+      "criteria": [
+        "docs/derivations/release-procedure.md",
+        "docs/derivations/V02-alpha-release-spec.md",
+        "docs/derivations/T08-release-spec.md"
+      ],
+      "documents": []
+    },
+    "V14": {
+      "tests": ["tests/test_t02_*.py", "tests/test_t04_*.py", "tests/test_t08_*.py"],
+      "rc": [[1, "*"], [17, "PTC-R1"]],
+      "criteria": [
+        "docs/derivations/release-procedure.md",
+        "docs/derivations/V02-alpha-release-spec.md",
+        "docs/derivations/T08-release-spec.md"
+      ],
+      "documents": ["docs/reviews/T08-verdict-V14b.md", "benchmarks/t08/ptc_r1"]
+    },
+    "V15": {
+      "tests": ["tests/test_t02_*.py", "tests/test_t03_*.py", "tests/test_t06_*.py"],
+      "rc": [[1, "*"], [10, "*"], [12, "a41.*"]],
+      "criteria": [
+        "docs/derivations/release-procedure.md",
+        "docs/derivations/V02-alpha-release-spec.md",
+        "docs/derivations/T08-release-spec.md"
+      ],
+      "documents": []
+    },
+    "V16": {
+      "tests": ["tests/test_t06_*.py"],
+      "rc": [[7, "a48.*"]],
+      "criteria": [
+        "docs/derivations/release-procedure.md",
+        "docs/derivations/V02-alpha-release-spec.md",
+        "docs/derivations/T08-release-spec.md"
+      ],
+      "documents": ["docs/reviews/T06-verdicts.md"]
+    },
+    "V17": {
+      "tests": ["tests/test_m07a_*.py"],
+      "rc": [[8, "*"]],
+      "criteria": [
+        "docs/derivations/release-procedure.md",
+        "docs/derivations/V02-alpha-release-spec.md",
+        "docs/derivations/T08-release-spec.md"
+      ],
+      "documents": ["benchmarks/t07/v17/runs/v17-c2", "tests/fixtures/t08/v17_c2_descriptions"]
+    },
+    "V18": {
+      "tests": ["tests/test_t08_*.py"],
+      "rc": [[1, "*"], [9, "*"], [10, "*"], [17, "MR12-coolprop"], [17, "MR12-lca"]],
+      "criteria": [
+        "docs/derivations/release-procedure.md",
+        "docs/derivations/V02-alpha-release-spec.md",
+        "docs/derivations/T08-release-spec.md",
+        "docs/derivations/V03-release-spec.md"
+      ],
+      "documents": ["docs/s07-coolprop-licences.json", "docs/e01-lca-licences.json"]
+    },
+    "V19": {
+      "tests": ["tests/test_t08_*.py"],
+      "rc": [[1, "*"]],
+      "criteria": [
+        "docs/derivations/release-procedure.md",
+        "docs/derivations/V02-alpha-release-spec.md",
+        "docs/derivations/T08-release-spec.md"
+      ],
+      "documents": ["docs/v02-real-chemistry-dossier.md", "benchmarks/t08/v19"]
+    },
+    "V20": {
+      "tests": ["tests/test_t08_*.py"],
+      "rc": [[1, "*"], [6, "*"], [7, "a47.*"]],
+      "criteria": [
+        "docs/derivations/release-procedure.md",
+        "docs/derivations/V02-alpha-release-spec.md",
+        "docs/derivations/T08-release-spec.md"
+      ],
+      "documents": []
+    },
+    "W21": {
+      "tests": ["tests/test_m02_*.py"],
+      "rc": [[12, "*"]],
+      "criteria": ["docs/derivations/release-procedure.md", "docs/derivations/V02-alpha-release-spec.md"],
+      "documents": []
+    },
+    "W22": {
+      "tests": ["tests/test_m01_*.py", "tests/test_m02_*.py"],
+      "rc": [[1, "*"], [11, "*"], [12, "a41.g12"]],
+      "criteria": [
+        "docs/derivations/release-procedure.md",
+        "docs/derivations/V02-alpha-release-spec.md",
+        "docs/derivations/M01-spec.md"
+      ],
+      "documents": []
+    },
+    "W23": {
+      "tests": ["tests/test_m04_*.py", "tests/test_evidence_manifests.py"],
+      "rc": [[1, "*"], [13, "*"]],
+      "criteria": [
+        "docs/derivations/release-procedure.md",
+        "docs/derivations/M07-spec.md",
+        "docs/derivations/M04-spec.md"
+      ],
+      "documents": []
+    },
+    "W24": {
+      "tests": ["tests/test_m03_*.py", "tests/test_m05_*.py"],
+      "rc": [[14, "*"]],
+      "criteria": ["docs/derivations/release-procedure.md", "docs/derivations/M07-spec.md"],
+      "documents": []
+    },
+    "W25": {
+      "tests": ["tests/test_m07_*.py"],
+      "rc": [[15, "*"]],
+      "criteria": ["docs/derivations/release-procedure.md", "docs/derivations/M07-spec.md"],
+      "documents": []
+    },
+    "W26": {
+      "tests": ["tests/test_m06_*.py", "tests/web/*.test.mjs"],
+      "rc": [[1, "*"], [16, "*"]],
+      "criteria": ["docs/derivations/release-procedure.md", "docs/derivations/M07-spec.md"],
+      "documents": ["benchmarks/m06/openidaes450/coverage.json"]
+    },
+    "X31": {
+      "tests": [
+        "tests/test_s02_*.py",
+        "tests/test_s03_*.py",
+        "tests/test_s08_*.py",
+        "tests/test_s08b_*.py",
+        "tests/test_s09_*.py",
+        "tests/test_s10c_*.py"
+      ],
+      "rc": [[1, "*"]],
+      "criteria": [
+        "docs/derivations/release-procedure.md",
+        "docs/derivations/S03-spec.md",
+        "docs/derivations/S09-spec.md"
+      ],
+      "documents": ["docs/reviews/S09-verdicts.md"]
+    }
+  },
+  "rc_items": [
+    {
+      "id": "E01-A48",
+      "assertion": "E01 G10 (E01.A48): a48_release_check() is pass, 0 unverified primary ranges (V03 17a)",
+      "script": "scripts/e01_evidence_manifest.py",
+      "where": "local:project",
+      "command": ["python", "scripts/e01_evidence_manifest.py", "--a48-release-check"]
+    },
+    {
+      "id": "S07-F8",
+      "assertion": "S07 F-8: the CoolProp modules pass with the coolprop lock on both legs (V03 17b, R-906)",
+      "script": ".github/workflows/ci.yml",
+      "where": "ci:rc-coolprop"
+    },
+    {
+      "id": "MR12-coolprop",
+      "assertion": "MR-12, coolprop extra: G19's inventory of the extra's increment (R-624; V03 17c)",
+      "script": "scripts/t07_licence_inventory.py",
+      "where": "local:coolprop",
+      "command": ["python", "scripts/t07_licence_inventory.py", "--extra", "coolprop"]
+    },
+    {
+      "id": "MR12-lca",
+      "assertion": "MR-12, lca extra: WO-B1/D04's licence inventory check, E01.A42 (R-900; V03 17c)",
+      "script": "scripts/e01_d04_inventory.py",
+      "where": "local:project",
+      "command": ["python", "scripts/e01_d04_inventory.py", "--check"]
+    },
+    {
+      "id": "E01-G5-lca",
+      "assertion": "E01 G5 (E01.A24, A25) in the lca environment (V03 17d)",
+      "script": "scripts/build-lca-env.sh",
+      "where": "local:lca",
+      "command": [
+        "python",
+        "-m",
+        "pytest",
+        "-q",
+        "-rs",
+        "-p",
+        "no:cacheprovider",
+        "tests/test_e01_b_brightway.py",
+        "tests/test_e01_b_lca.py",
+        "tests/test_e01_b_tables.py",
+        "tests/test_e01_b_cost_hand.py"
+      ]
+    },
+    {
+      "id": "E01-G6-nlp",
+      "assertion": "E01 G6 (E01.A33-A36) in the audited nlp environment (V03 17d)",
+      "script": "scripts/m03_nlp_check.sh",
+      "where": "local:nlp",
+      "command": [
+        "bash",
+        "scripts/m03_nlp_check.sh",
+        "$NLP_PREFIX",
+        "$NLP_CACHE",
+        "--",
+        "-m",
+        "nlp or not nlp",
+        "tests/test_e01_b_nlp.py",
+        "tests/test_e01_integration.py"
+      ]
+    },
+    {
+      "id": "WHEEL-DATA",
+      "assertion": "the wheel holds the ship set and E01's data; Wilson binds from it (V03.A17, A19)",
+      "script": "scripts/wheel_data_check.py",
+      "where": "local:project",
+      "command": ["python", "scripts/wheel_data_check.py", "--commit", "$C"]
+    },
+    {
+      "id": "PTC-R1",
+      "assertion": "T08's registered PTC-R1 comparison runs to completion at C on both legs (N-2)",
+      "script": ".github/workflows/ci.yml",
+      "where": "ci:ptc-r1"
+    }
+  ]
+}

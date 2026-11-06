@@ -99,3 +99,30 @@ Each entry gives the date, the question, the choice, who made it and where it is
   provider evaluation in the application layer, or an M9 exception by ADR) goes to MSG's reviewer pass. WO-9's number
   assertions for C01/C02 are strict xfails until then. Alternative: architect consult now. Reversible by: unparking
   WO-5 after the ruling.
+- **2026-11-06** ST architect pass done (9d822640): `docs/design/ST-stream-table.md`, ADR 0068 Proposed (ADR 0019 Am.
+  13): `Inspection.get_stream_table(job_id)` computes on read from the bundle, nothing stored; CLI `openflowsheet
+  streams`; no F0 measure can move. WO-1 (new files only) may start now; WO-2+ after `wp/MSG` merges (shared files).
+  O6 resolved by the orchestrator: G3/E3 read Table 8 expectations from `s05_reference.json` `/saturation/450`
+  (values agree), not from the architect's recollection. SQ-ST-1…6 → a specifier round with SQ-F6-5 (Amendment 5);
+  defaults apply until ruled. O3 (web shell display deferred) → Frank, with ADR 0068's acceptance.
+- **2026-11-06** Main CI 42132502629 (after the F0 merge) FAILED `check` on both archs: 38 ruff errors, all in the
+  specifier's `docs/derivations/scripts/f6_std_seed_reference.py`, committed as docs-only without lint. Fixed in
+  b9a05e16 (generator JSON byte-identical, `--check` PASS 107); F0's code itself was green. Procedure: lint any `.py`
+  a design agent writes before committing. Amendment 5 (§17, cbf2230e): SQ-ST-1…6 adopted with precisions (Q1.R11–R12,
+  Q2.R11, Q4.R10–R12; new flag `flash_near_phase_boundary`, G16; G2/G4 tolerances 8ε); SQ-F6-5 changed for
+  `vapor: null` (Q4.R13: the vapour group takes the first liquid port). New finding A5-a (verifier reason
+  `temperature_degenerate_unlifted` is an untyped string) → ST/MSG reviewer. 21 edits applied by one implementer pass.
+- **2026-11-06** ST WO-1/WO-2 on `wp/ST` (c79a99db…dff3e439, pushed): G1–G7, G9, G10, G14, G16 pass (TH-C1 energy gap
+  1.4e-10 W; Table 8 max rel 3.8e-10); **G8 fails** on T05b:SC-1 (temperature-degenerate lifted split, raw flash lists
+  LIQUID only, Ḣ 2016 W off) — strict xfail, design-lane question E1 for ST's reviewer (default: reported failing). F0
+  PASS. Registry entry deferred until `wp/MSG` merges (4 package-data tests red on `wp/ST` until WO-3). Batched for the
+  reviewer: E1, D1-1 (verifier's per-component h uses Python `sum`, compensated from 3.12 — ST copies it for bitwise
+  G7; also a 3.11-vs-3.12 identity question for the verifier itself), D1-3, D1-6/D1-7 schema departures.
+- **2026-11-06** ADR 0055 WO-R1 done (6714958d): RP, line files 0.3/0.4, acceptances, release-line-v1 schema; D2
+  deferred throughout. Findings F-1 (gate resolution needs `role`), F-2 (`git ls-tree` does no glob matching), F-3
+  (ADR 0055's acceptance condition names REL.A11–A16, A21, deferred with D2) and Q-1…Q-15 go to the single reviewer
+  pass over WO-R2…R6 together with WO-R1's design review of `gates[*]`. DECISION (orchestrator): build WO-R2/R3 on
+  `wp/RP` now on RP's text. Alternative: wait for the review of RP first. Reversible by: rework on the branch.
+- **2026-11-06** RP WO-R2/R3 done on `wp/RP` (fdc4f9a0, aa73d933, 2bac7fa9): REL.A01–A10 pass (A03 limited to the
+  fixture comparison at this checkout); F0 PASS. Questions Q-B1…Q-B5 batched for the reviewer. Next: WO-R6 + WO-R4
+  (brief `docs/briefs/REL-build-WO-R4-R6.md`), including one `release_rc` dispatch on `wp/RP` for REL.A17/N-4.

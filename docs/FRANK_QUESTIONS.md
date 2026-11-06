@@ -337,3 +337,32 @@ Two choices were made on the reviewer's defaults; tell me if you want them the o
 - **S7:** retiring a legacy unit family affects only revisions built by the new compiler; old-style revisions keep
   running it. Alternative: retire it for every revision.
 Default: Proposed; the v2 core freeze is recorded at W1's end on these texts.
+
+## MSG — review the MCP description of the new `explain` tool (2026-11-06; blocks MSG's merge)
+
+The `explain` operation (ADR 0058, accepted) has an MCP tool description, the text an AI agent reads to decide when to
+call the tool: `src/openflowsheet/application/bindings/descriptions/explain.md` on branch `wp/MSG`
+(`git show wp/MSG:src/openflowsheet/application/bindings/descriptions/explain.md`). Every MCP description needs two
+recorded reviews before release (T08 G15): the design lane's (done in MSG's reviewer pass) and yours. In plain words:
+read the text and say "approved" or what to change. Default: none — MSG cannot merge until you have looked at it.
+
+## ST — accept ADR 0068 (stream table)? (2026-11-06)
+
+Design `docs/design/ST-stream-table.md`, ADR `docs/adr/0068-stream-table.md` (Proposed). In plain words: a new read-only
+operation `get_stream_table(job)` on every surface (Python, CLI `openflowsheet streams` as text, JSON or CSV, HTTP, MCP)
+that shows, for each stream of a finished run, T, P, molar and mass flow, composition, vapour fraction (molar and
+mass), h, s and density per phase, plus an energy-balance summary. It is computed when asked, from the run's bundle;
+nothing is stored, so no released number or replay changes, and 0.3.0 runs get a table too. It adds to the frozen
+application contract (ADR 0019 Amendment 13), so it needs your yes. Two choices for you:
+- **O3:** showing the table in the web shell is deferred to a later package. Alternative: include it in ST now.
+- Values a provider cannot give (density and entropy on most legacy providers) are shown as absent with a reason,
+  never estimated (no ideal-gas fallback).
+Default: build proceeds (new files first); merge waits for your acceptance.
+
+## Release procedure (ADR 0055 WO-R1) — one small preference (2026-11-06; not urgent, before 0.4.0's cut)
+
+The standing release procedure is written (`docs/derivations/release-procedure.md`, `release/lines/0.4.json`,
+`release/acceptances.md`). Your licence acceptance for the coolprop and lca extras (2026-10-30) is carried as a standing
+acceptance that lapses when the accepted thing changes.
+- **Q-11:** keep it as **one row** for both extras (default), or **one row per extra**, so that a change to the lca
+  dependency lock re-asks you only about lca.

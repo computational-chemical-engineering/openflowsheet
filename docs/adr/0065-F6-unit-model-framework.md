@@ -10,7 +10,8 @@ method-set and phase-assertion slots and the expression *uses* stay `preview` to
 value for unit rows (F2 adopted the predicates), Q1.R6 and Q1.A9; Q5.R7's no-read rule and Q5.A8; Q1.R8's zero-holdup
 *form grammar* (its mechanics are ADR 0066's); finding A2-b (decided in D9). From Amendment 4 (2026-11-05): Q4.R9,
 Q5.R9, Q5.R10, Q2.A12 (b), (c), Q4.A12, Q5.A11, Q5.A12, and the equation sheet `docs/derivations/F6-std-seed.md`
-(SQ-F6-2). Findings A4-a (D17) and F6S-a (D11), as the W1 P3 review rules them.
+(SQ-F6-2). Findings A4-a (D17) and F6S-a (D11), as the W1 P3 review rules them. From Amendment 5 (2026-11-06): Q4.R13,
+Q4.A16, and Q4.R9 as amended.
 **Amends** (each additive; every v1 document, legacy digest and identity-bearing module unchanged):
 - ADR 0060: D1 (payloads of `unit_model` v2, `semantic_role`, `equipment_class`, discrete coordinates `zero_flow_form`,
   `phase_routing`, `controller_regime`); D12 (per-side `requires` and admission, D5).
@@ -229,21 +230,18 @@ with a label input; it must stay 0 (Q1.A9).
 
 A unit whose outlets take phases of a state point declares `phase_routing`: a `vapor` port or `null`, the liquid
 ports from light to heavy (`light_to_heavy`), and optionally a `solids` port. At every **opening** the routing is fixed
-for the attempt: (i) at a point of a `split` method (families VAPOR/LIQUID, legacy and delegating methods), VAPOR to
-`vapor` and the LIQUID slots over `light_to_heavy` in mass-density order, ascending (with two candidates this is
-today's routing exactly; equivalence step 1 depends on it); when `vapor` is null, VAPOR goes to the first liquid port;
-(ii) at a point of a `single` method (FLUID) with two or more active fluid phases, phases whose `character` is
-`vapour_like` go to `vapor` and the rest over `light_to_heavy` by **mass density**, ascending; a unit with `vapor: null`
-routes them all by density (**specifier question SQ-F6-5**, default as stated). In both, phases beyond the last liquid
-port go to the last port; SOLID phases to `solids`, else to the last port. (iii) *Exactly one active fluid phase*: it
-takes the port a lone VAPOR takes under (i) if it is VAPOR or `vapour_like`, else the port a lone LIQUID takes
-(Q4.R9); its character is fixed with the routing at the opening, and |q − q*| ≤ 10 τ_char |q*| flags
-`near_threshold`. The assignment is the F1 discrete
-coordinate `phase_routing` (value: port → phase-set rendering; adjacency: one transposition of density-adjacent phases,
-or a change of the single phase's port). Closure checks the order at the converged state; a different order closes
-the attempt `routing_order_changed(<unit>)` and the controller opens the adjacent assignment (cycle rule as ADR 0005).
-An adjacent pair with |ln ρ_a − ln ρ_b| ≤ 10 τ_ρ attaches `near_threshold` (Q4.R5's pattern; τ_ρ = τ_char = 1e-6,
-Q4.R9).
+for the attempt by Q4.R13 (Amendment 5, SQ-F6-5): the vapour group (VAPOR phases and FLUID phases whose `character` is
+`vapour_like`) leaves by `vapor`, or by the first liquid port when `vapor` is null; the liquid group (the other fluid
+phases, confined ones included) goes over `light_to_heavy` in mass-density order, ascending, an exact tie by canonical
+ordinal, phases beyond the last liquid port by the last port; SOLID phases by `solids`, else by the last port. With two
+`split` candidates this is today's routing exactly (equivalence step 1 depends on it); with one fluid phase it is Q4.R9.
+Each character is fixed with the routing at the opening, and |q − q*| ≤ 10 τ_char |q*| on any FLUID phase flags
+`near_threshold`. The assignment is the F1 discrete coordinate `phase_routing` (value: port → phase-set rendering;
+adjacency: one transposition of density-adjacent liquid-group phases, or one fluid phase moved between the groups).
+Closure checks the groups and the order at the converged state; a difference closes the attempt
+`routing_order_changed(<unit>)` and the controller opens the adjacent assignment (cycle rule as ADR 0005). An adjacent
+liquid-group pair with |ln ρ_a − ln ρ_b| ≤ 10 τ_ρ attaches `near_threshold` (Q4.R5's pattern; τ_ρ = τ_char = 1e-6,
+Q4.R9, R13).
 
 ### D10. Energy and signal constructs; manipulable parameters; steady controllers
 
@@ -449,8 +447,9 @@ structure v2 applies only to problems no released artifact contains.
   adjacency with `routing_order_changed`; (c) a single FLUID phase follows D9 (iii) (Q4.A12); (d) an adjacent pair
   within 10 τ_ρ flags `near_threshold` (Q4.A12); (e) `cubic.pr-v1` water/n-hexane at 300 K and 5 bar in `std.flash`
   (two liquid-like FLUID phases, no vapour): the hexane-rich liquid goes to `liquid`, not `vapor` (regression for the
-  W1 P3 review's M4); (f) a two-port liquid–liquid decanter on a `split` method (`vapor: null`) sends the lighter
-  liquid to its light port and the heavier to its heavy port.
+  W1 P3 review's M4); (f) a two-port liquid–liquid decanter on a `split` method (`vapor: null`) sends the lighter liquid
+  to its light port and the heavier to its heavy port; (g) the routing vectors of Q4.A16, the `vapor: null` VLLE case
+  (4) included.
 - **E-F6-11** Templates: a two-level template flattens to stable ids (permuting inner arrays or re-flattening changes no
   id; renaming the outer instance changes only prefixes); a cycle is refused `template_cycle`.
 - **E-F6-12** Expressions: round trip and SHA stability under key order; dimension refusals; a compiled expression row
@@ -500,7 +499,7 @@ structure v2 applies only to problems no released artifact contains.
 | 1 | **F6-WO1** Types, manifest, ids | `units_v2/{__init__,types,manifest}.py`; `schemas/{model-manifest-v2,unit-declaration}.schema.json`; vid fields in `material/vid.py`, `tests/f2/vid_parse.py`; F1 payload schemas for `unit_model` v2, `semantic_role` (+ built-ins), `equipment_class` | E-F6-2 (schema part), E-F2-5 extended | no | Opus (types); Sonnet (schema fixtures) |
 | 2 | **F6-WO2** Sides and matrix skeleton | `units_v2/admission.py`; `scripts/coverage_matrix.py` (verdict table only); Amendment 10 request form | E-F6-3 | no | Opus |
 | 3 | **F6-WO3** Expressions | `expressions/{grammar,canonical,compile,evaluate}.py`; `schemas/expression.schema.json` | E-F6-12 | no | Opus |
-| 4 | **F6-WO4** v2 compiler and phase machinery | `units_v2/{binding,compile,forms,routing,reactivation}.py`; `compile/structure_v2.py`; registration of `zero_flow_form`, `phase_routing`, `controller_regime`; test-only probe units; `tests/f6/sheet_method.py` (the test-only `test.syn001-elemental`, sheet §2); the `stream_point` check | E-F6-17, E-F6-8, E-F6-9 (probes), E-F6-10 (b–d, f), E-F6-22 | no | Opus |
+| 4 | **F6-WO4** v2 compiler and phase machinery | `units_v2/{binding,compile,forms,routing,reactivation}.py`; `compile/structure_v2.py`; registration of `zero_flow_form`, `phase_routing`, `controller_regime`; test-only probe units; `tests/f6/sheet_method.py` (the test-only `test.syn001-elemental`, sheet §2); the `stream_point` check | E-F6-17, E-F6-8, E-F6-9 (probes), E-F6-10 (b–d, f, g), E-F6-22 | no | Opus |
 | 5 | **F6-WO5** `std.*` seed | `std/*.py`; `benchmarks/f6/coverage-bases.yaml`; matrix cases; `h_mass` forms per the sheet | E-F6-4, -7, -9, -10 (e), -13, -16; F6S.A1–A11 (A10 is E-F6-16) | no | Opus |
 | 6 | **F6-WO6** Equivalence, retirement, adapter | `benchmarks/f6/equivalence-map.yaml`; `scripts/{f6_equivalence,f6_parity}.py`; `units_v2/adapter_v1.py`, `legacy_adaptable.json` generator | E-F6-5, -6, -20, -21 | no | Opus |
 | 7 | **F6-WO7** Constructs and controller | energy/signal compile path with the specification sink; `std/pid.py`; heat intervals, curves, `heat_direction` in the verifier | E-F6-14, -18; Q5.A11, Q5.A12 | no | Opus |
@@ -539,9 +538,8 @@ intervals). WO8: X22 (templates, rate stages), X24 superstructure blocks. D14's 
   *Default:* as D10.
 - **SQ-F6-4** *Ruled (Amendment 4): Q5.R10.* `heat_direction`'s tolerance τ_hd and whether an equal-temperature contact
   passes. *Default:* the exchanger temperature-cross check's tolerance; equality passes.
-- **SQ-F6-5** (W1 P3 review M4; open, for the next specifier round; does not block the freeze) Routing of two or more
-  active FLUID phases at a unit with a `vapor` port. *Default:* phases whose `character` is `vapour_like` go to
-  `vapor`, the rest over `light_to_heavy` by density; a unit with `vapor: null` routes them all by density (D9 (ii)).
+- **SQ-F6-5** *Ruled (Amendment 5): Q4.R13; default changed for `vapor: null`* (the vapour group takes the first liquid
+  port, as (i) does for VAPOR; the default's 'all by density' sent the light liquid of a VLLE feed to the heavy port).
 
 ## W1 P3 review applied (`docs/reviews/W1-P3-review.md`, 2026-11-06)
 
@@ -571,6 +569,7 @@ two-or-more-FLUID case is SQ-F6-5.
 | B-4 | D16: the sheet approved; `incompressible` V̇ΔP/η; `test.syn001-elemental` test-only. |
 | B-5 | F6-WO5 acceptance F6S.A1–A11; E-F6-9 checks the sheet's §4.10 table. |
 | F6S-a | D11 `stream_point` check; E-F6-22; codes `stream_point_refused`, `dynamic_variant_ambiguous` (TX). |
+| Amendment 5 (2026-11-06) | 0065-5 (D9 rules), 0065-6 (E-F6-10 (g), F6-WO4 acceptance), 0065-7 (header; SQ-F6-5 ruled). |
 
 Not applied: none of the edits for this ADR. Two readings: in D11, 0065-3's replacement keeps the inequality
 `max T_A ≥ min T_B − τ_hd` and replaces only its tolerance clause; in D16, the sentence "F6-WO5 builds the T-form
