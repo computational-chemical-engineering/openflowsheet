@@ -3,6 +3,9 @@
 Status: design note, design lane (`architect`). Revision 1, 2026-11-01 (stage 2); Revision 2, 2026-11-02 (stage 4c,
 this text). Proposed. Frank decides in stage 5. Recorded by ADR 0057 (Proposed) together with `docs/roadmap/roadmap.md`.
 
+Revision 3 (2026-11-06): W1 design edits applied — rulings Amendments 2–4, ADR 0060–0067; see
+`docs/roadmap/W1-note-edits-log.md`.
+
 **Inputs.** Brief 1 (`brief-architect-1-target-architecture.md`), still binding for scope, constraints and what is out of
 scope; brief 2 (`brief-architect-2-final.md`); the foundation rulings Q1–Q9 with Amendment 1 (`foundation-rulings.md`,
 "the rulings"; clauses `Qn.Rk`, assertions `Qn.Ak`); the review (`review-roadmap.md`; findings M, S, N, U); the decisions
@@ -134,16 +137,20 @@ attribute mechanism; energy and signal connections; reaction sets.
 
 1. **Two levels, three connection kinds.** The *evaluation state* is the provider level: T, P, amounts over a component
    list, optional attributes, the phase evaluated. `StreamState` stays the type legacy providers accept;
-   `EvaluationState.from_stream_state` loses nothing. A *connection definition* is the flowsheet level: a registered,
-   versioned, canonical document whose SHA-256 is its identity.
+   `EvaluationState.from_stream_state` loses nothing. A *connection definition* is the flowsheet level, on two levels
+   (ADR 0062 D3): a *template* is a registered descriptor (`nTP-v1`, `mat-v1`, `heat-v1`, `work-v1`, `signal-v1`); an
+   *instance* is a canonical document in the revision whose SHA-256 (`definition_sha256`, over the template's id,
+   version and descriptor SHA and the normalised instance) is the connection's definition identity.
 
    ```
-   material: {id, version, connection_kind: material, thermal_coordinate: h_mass | T, pressure: P,
-              substreams: [{id, kind: mixed | solid | nonconventional, components: [...],
-                            conserved_basis: {preset: apparent | true} | {groups, A, R_ref},
-                            attributes: [{kind, scope: component | substream, partition: bool, grid?}]}]}
-   energy:   {id, version, connection_kind: energy, variables: [{field, quantity_kind}]}   # heat-v1 {Q}; work-v1 {W}
-   signal:   {id, version, connection_kind: signal, variables: [{field: s, quantity_kind: <argument>}]}
+   mat-v1:    {template: mat-v1, thermal_coordinate: h_mass | T,
+               substreams: [{id, kind: mixed | solid | nonconventional, components: [...],
+                             conserved_basis: {preset: true} | {preset: apparent | null, species,
+                                                                groups: [{id, content}], fast_reactions},
+                             grids: [{id, quantity_kind, edges}],          # declared inside the substream (Q6.R4)
+                             attributes: [{kind, version, components?, grid?}]}]}
+   heat-v1:   no parameters; one variable ~Q, kind heat_rate        work-v1: no parameters; one variable ~W, kind power
+   signal-v1: parameter quantity_kind (a registered kind); one variable ~s of that kind
    ```
 
    The general material definition is `(n, ĥ, P)` (Q1.R1): one amount per carried index (a component, a group (Q3) or a
@@ -174,11 +181,15 @@ attribute mechanism; energy and signal connections; reaction sets.
    with generated records (Q9.R5). Polymers use `segment_mol`, a segment-type partition for copolymers and the moments
    λ0, λ2; λ1 is the segment amount and is never carried as an attribute; M is per segment type (Q7.R2). `molar_flow`,
    `segment_molar_flow` and `mass_flow` are distinct kinds (Q7.R3).
-6. **Phase ids** (Q4.R1). A phase id is the triple (family, qualifier, ordinal). Families form a registered vocabulary,
-   with `VAPOR`, `LIQUID` and `SOLID` at F2 (S5 may add `FLUID`, §6). Rendering: `VAPOR`, `LIQUID`, `LIQUID.2`,
-   `SOLID(<qualifier>)`, `SOLID(<qualifier>).2`. The qualifier sits between parentheses, which are outside the id
-   alphabet, so the rendering is injective even for qualifiers like `a.2` (Q4.A5). Two-candidate points render `LIQUID`,
-   `VAPOR`, `TWO_PHASE` as today (Q4.R7); `ZERO_FLOW` stays a stream property.
+6. **Phase ids** (Q4.R1). A phase id is the triple (family, qualifier, ordinal). Families form a registered vocabulary:
+   `VAPOR`, `LIQUID`, `FLUID` and `SOLID` (Q4.R6), and a qualifier may follow every family (`FLUID(water)`,
+   `LIQUID(water).2`); this is a core-grammar item of the W1 freeze. Qualifier grammar (ADR 0062 D6): `cid | cid,form |
+   model=mid` (a component, a component form, a phase-model id). Rendering: `VAPOR`, `LIQUID`, `LIQUID.2`,
+   `FLUID(water)`, `SOLID(CaCO3,calcite)`, `SOLID(model=langmuir-co2).2`. The qualifier sits between parentheses, which
+   are outside the id alphabet, and `,` and `=` are outside the component alphabet, so the rendering is injective even
+   for qualifiers like `a.2` or a component id equal to a model id (Q4.A5). A phase set renders its phases in canonical
+   order joined by `+`, which is outside both alphabets. Two-candidate points render `LIQUID`, `VAPOR`, `TWO_PHASE` as
+   today (Q4.R7); `ZERO_FLOW` stays a stream property.
 7. **Variable ids** (S6). User ids use the alphabet `[A-Za-z0-9_.:-]`, which the schema enforces. Every v2 id has the
    form
 
@@ -188,7 +199,11 @@ attribute mechanism; energy and signal connections; reaction sets.
    ```
 
    Each separator (`/ @ # ~ [ ]`) is outside the alphabet; fields are keywords from a closed registered set; component,
-   attribute and class indices sit in brackets; the order of the parts is fixed. Hence a test-only parser inverts the
+   attribute and class indices sit in brackets; the order of the parts is fixed. The field table is closed, additions by
+   ADR amendment (ADR 0062 D7, ADR 0065 D4): connection fields `n`, `a`, `h`, `T`, `P`, `Q`, `W`, `s`; state-point
+   fields `n`, `T`, `h`, `P`, `beta`, `v`; unit-owned fields `Q[port]`, `W[port]`, `x`, `xi`, `N`, `A`, `U`, `K[kind]`,
+   `r`, with `#<cv>` naming a control volume; parameter-id fields `p` (unit parameter) and `z` (discrete state held as a
+   pinned input). Hence a test-only parser inverts the
    rendering, which proves injectivity (a function with a left inverse is injective). Every v2 id contains `~` and no
    legacy id can, so v2 ids never collide with `nTP-v1` ids, which stay exactly as today. Legacy ids are not injective in
    general (`a.n` with component `x` and `a` with component `n.x` both give `a.n.n.x`); `ProblemSpec` already refuses
@@ -196,8 +211,13 @@ attribute mechanism; energy and signal connections; reaction sets.
    structure travels in the material layout.
 8. **Solution state and identity.** `solution-state-v2` adds the material layout: per connection its definition id and
    SHA; the map from (substream, index tuple) to variable index; each state point's phase-set signature. Legacy runs
-   write `solution-state-v1`, unchanged. For v2 runs only, the definition SHA joins the numerical-model fingerprint (ADR
-   0002 D4.4, ADR 0007); legacy fingerprints do not move (N3).
+   write `solution-state-v1`, unchanged. For v2-compiled runs only (ADR 0062 D8), the definition SHA joins the
+   numerical-model fingerprint (ADR 0002 D4.4, ADR 0007); legacy fingerprints do not move, and lowered runs (a v2
+   document in the v1-expressible subset, compiled by the v1 path) keep v1 fingerprints (N3). The v2-compiled
+   fingerprint is the structure document `compiled-problem-structure-v2`, v1's members plus `sources` with the roles
+   compiler, configuration, data lock, definitions, expressions, templates and unit declarations. `configuration` is
+   the `document_sha256` of the v2 revision with every pinned numeric value removed; the revision's `content_hash` is
+   not a source. The label is `FSR2-<configuration_sha256[:12]>` (ADR 0065 D3, review M1).
 9. **Energy and signal connections** (M1). An energy connection carries its definition's variable: `heat-v1` a heat
    flow Q, `work-v1` a shaft or electrical work rate W, both in W. Its value is the energy flow from `from` to `to`; an
    inlet energy port reads it as energy into the unit (ADR 0001 D4.1's duty convention), an outlet port as energy out. An
@@ -236,13 +256,14 @@ attribute mechanism; energy and signal connections; reaction sets.
     ```
     schema_version: 2, revision_id, parent_revision, content_hash, title, description            core
     convention: ELEMENTAL-ref-v1 | <native convention id>                                        core
-    component_set: {components: [{id, record_sha}], parameter_sets: [sha]}                       core
-    materials: {thermal_coordinate, definitions: [...], grids: [...], phase_order_keys?}         core
+    component_set: {components: [{id, record}], parameter_sets: [sha]}   (record: a record SHA)  core
+    materials: {thermal_coordinate, definitions: [...], phase_order_keys?}  (grids per substream) core
     reaction_sets: [{id, reactions: [{id, stoichiometry: {<component>: [p, q]}, scope}],
                      kinetics: {kind: <registered kinetics kind>, ...}}]                          core; kind expression preview
     property_methods: {default: MethodSet, overrides: [{instance, side?, method_set}]}           preview
     instances: [{id, model, semantic_role, parameters, references?, template?, policy}]          core; template preview
-    connections: [{id, kind, from, to, definition, phase_assertion?, initialization_hint?}]      core; assertion preview
+    connections: [{id, kind, from, to, definition, quantity_kind?, phase_assertion?,
+                   initialization_hint?}]                  (quantity_kind: signal only)          core; assertion preview
     specifications: [Specification v2]                     (targets include derived quantities)  core
     sections: {<namespace>: {schema, body}}                (F1 kind revision_section)            core mechanism
     provenance                                                                                   core
@@ -251,9 +272,13 @@ attribute mechanism; energy and signal connections; reaction sets.
     `semantic_role` is a registered id (the v1 enum plus, for example, `utility`, `controller`, `shaft`,
     `relief_device`). `references` binds an instance to a reaction set or a template. Stoichiometric coefficients are
     exact rationals, so element balances can be checked exactly (Q7.A3). In 0.5, before F4, `property_methods.default`
-    admits only a single legacy provider id, which is v1's selection expressed in v2. A package adds a `section` only
-    for process truth that fits neither a core section nor a separate referencing document, and its ADR gives the
-    reason. None of the ten sketches in §9 needed one; the mechanism is a reserve against a v3.
+    admits only a single legacy provider id, which is v1's selection expressed in v2. *Lowering in 0.5* (ADR 0062 D12):
+    a v2 document in the v1-expressible subset (native convention, `nTP-v1` connections only, no energy or signal
+    connection, reaction set, section, probe or parameter endpoint, records from one legacy file in its component order)
+    lowers to a v1 document and runs on the v1 path; anything else is refused `construct_unavailable(<construct>,
+    <foundation>)` until its foundation is built. A signal connection names its `quantity_kind`. A package adds a
+    `section` only for process truth that fits neither a core section nor a separate referencing document, and its ADR
+    gives the reason. None of the ten sketches in §9 needed one; the mechanism is a reserve against a v3.
 
 **Rejected.**
 - *Widening `nTP-v1` in place.* Every state document, cache key and structure digest would move.
@@ -286,23 +311,40 @@ whichever regime is declared.
 
 1. **State points.** A unit asks the thermo face (§2.3.9) for each state it needs as a named state point: amounts plus
    two specifications from {T, P, ĥ, ŝ, v, β}, each carrying its quantity kind (molar or specific); a method set;
-   candidate phases (the method's phase models intersected with an optional assertion); a formulation; outputs. The unit
-   gets per-phase symbols for every candidate. At an inactive phase, amounts are exactly `+0.0` and every other output is
-   the label `+0.0` with derivative `+0.0`, reported null (`phase_inactive`). No row reads such an output except times
-   that phase's amount; a row that would is swapped by the unit's zero-flow form or refused at the opening
-   (`inactive_phase_read`) (Q5.R7).
+   candidate phases (the method's phase models intersected with an optional assertion); a formulation; outputs. A
+   method's fluid candidates are VAPOR and LIQUID slots if it declares `fluid_model: split`, FLUID slots if `single`
+   (Q4.R6). The unit gets per-phase symbols for every candidate. At an inactive phase, amounts are exactly `+0.0` and
+   every other output is the label `+0.0` with derivative `+0.0`, reported null (`phase_inactive`). No row reads such an
+   output except times that phase's amount; a row that would is swapped by the unit's zero-flow form or refused at the
+   opening (`inactive_phase_read`) (Q5.R7).
 2. **Signatures and labels.** A point's signature is its active set in canonical order. Phases of one family and
    qualifier are interchangeable slots whose active subsets are prefixes (Q4.R2). The canonical order is exact
-   lexicographic on Q4.R3's key vector (declared keys, else water first, then definition order, then mass); thresholds
-   only attach `near_threshold` flags afterwards (Q4.R5, N7). Labels are assigned at openings and closures and never
-   change within an attempt; a differing closure is relabelled by permutation and recorded (Q4.R4). Families are a
-   registered vocabulary, so ADR-F5 can add one without a grammar change (S5, §6).
+   lexicographic on Q4.R3's key vector (declared keys, else water first, then definition order; for FLUID next the
+   specific volume v̂; then mass); thresholds only attach `near_threshold` flags afterwards (Q4.R5, N7). Labels are
+   assigned at openings and closures and never change within an attempt; a differing closure is relabelled by
+   permutation and recorded (Q4.R4). Families are a registered vocabulary (FLUID, Q4.R6).
+   - *One fluid model* (Q4.R6). Under `fluid_model: single` (an EOS) every unconfined fluid phase is a slot of the one
+     interchangeable family FLUID; VAPOR and LIQUID are not used. Each FLUID phase reports `character` ∈ {vapour_like,
+     liquid_like} from the method's declared identification rule, never in an id, signature, order, adjacency or
+     fingerprint. Within an attempt each FLUID slot keeps the root it opened on; a lower-Gibbs root at closure is a
+     witness, and the next opening records `root_switch(<point>, <slot>)`. Two FLUID slots are indistinguishable only if
+     they agree in composition and in ln v̂. Legacy providers and their delegating compositions declare `split`
+     (decision equivalence). Units route FLUID phases to ports by density and `character`, never by family (§2.4.13).
+   - *Confined phases* (Q4.R8). A phase model declares its support; outside it amounts are structurally `+0.0`. A
+     further model in a fluid family with a proper subset as support is confined and forms its own slot chain,
+     qualified by the component if the support is one component (`FLUID(water)` under `single`, `LIQUID(water)` under
+     `split`), else by its model id. Two representations of a phase rich in the confined component are both admitted;
+     the stability test decides by Gibbs energy, unless the method declares `confined_exclusive` (ADR 0064 D6).
 3. **Lattice and discrete coordinates.** Each family is a count chain; a point's lattice is the product of its chains.
    The *attempt signature* is the tuple, in plan order, of every registered discrete coordinate: state-point phase sets
    now, controller regimes (TX) and recipe segments (X25) later, each with its own adjacency. Two attempt signatures are
    adjacent when every coordinate differs by at most one step and at least one differs; with two candidates and no other
    coordinate this is ADR 0005 D2 exactly. ADR 0005 D2–D7 carry over, with "regime" read as "discrete coordinate". The
-   contract is a new `SolvePolicy.phase_contract` value; existing policies are not rewritten.
+   contract is a new `SolvePolicy.phase_contract` value (`F5-phase-contract-v3`); existing policies are not rewritten.
+   *Dispatch* (ADR 0064 D3): a run compiled through the v1 path (a v1 document, or a v2 document lowered by ADR 0062
+   D12) runs the existing T05b controller code unchanged under the new value; every v2-compiled run takes the
+   generalised controller, which at two-candidate points of a `split` method keeps the legacy admissibility decision
+   and opens from the provider's own TP flash (Q5.R5).
 4. **Formulations.** *Procedural* (the default): a batched opaque `PropertyBlock` solves equilibrium at the frozen set,
    and the TPD screen reports the unrestricted set. *Smooth*: a reserved slot for D09's later formulation. *Lifted*:
    deferred until a benchmark needs it (U2); refused with `formulation_unsupported(lifted)`.
@@ -311,13 +353,17 @@ whichever regime is declared.
    ADR 0051 D1. Before any state point is evaluated, an opening re-seeds every reactivated stream's `ĥ` from its
    producer's causal evaluation, else from a TP evaluation at a declared or inlet T, else it refuses typed
    (`reactivation_seed_unavailable`) (Q1.R6). A phase that an opening activates is seeded from its tracked W_p (Q5.R7).
-6. **Flash and stability service.** `flash(EvaluationState, spec, candidates) → FlashResult(phases: tuple[...])`.
-   `stability(state, active_set, trial_set) → StabilityReport` gives tm*_min, the witness if any, each W_p and ι_p, the
-   trial-set id and the `near_threshold` flag (Q5.R6, Q5.R8). Trial sets are registered (F1 kind `stability_trial_set`).
-   F5 ships `F5-trials-v1` (Q5.R2); a method may select another, which is how X18 adds a TPD over neutral combinations.
-   Specifications: TP, PH, PS, TV, Pβ, Tβ.
-7. **Classification and claims** (Q5.R1–R5). Michelsen's modified TPD over components present. A point is unstable iff
-   a witness has tm* < −τ_tm, with τ_tm = 1e-8 and the near-threshold band [1e-9, 1e-7]. `phase_stability` is pass
+6. **Flash and stability service** (ADR 0064 D1). `flash(inputs, spec, candidates, method, basis) →
+   EquilibriumResult(phases: tuple[PhaseOutlet(phase, n, T, P, v̂, character?)], signature, stability, records)`, a new
+   type; the frozen `FlashResult` is unchanged. `stability(state, active_set, trial_set) → StabilityReport` gives
+   tm*_min, the witness if any, each W_p and ι_p, the trial-set id, the claim and the `near_threshold` flag (Q5.R6,
+   Q5.R8). Trial sets are registered (F1 kind `stability_trial_set`). F5 ships `F5-trials-v1` (Q5.R2); a method may
+   select another, which is how X18 adds a TPD over neutral combinations. Specifications: TP, PH, PS, TV, Pβ, Tβ.
+   Providers answer TP evaluations and TP flashes only; every other specification is solved by the service.
+7. **Classification and claims** (Q5.R1–R5). Michelsen's modified TPD over components present. A point is unstable iff a
+   witness has tm* < −τ_tm, with τ_tm = 1e-8 and the near-threshold band [1e-9, 1e-7]. Under FLUID, ln φ(W) is taken on
+   the method's minimum-Gibbs root at W, and a trial is trivial only if it also matches that phase's root (|Δ ln v̂| ≤
+   τ_comp), so a trial at the reference composition on another root is a witness (Q5.R3). `phase_stability` is pass
    (claim level `exact` or `local`, the latter with "local search; global stability not established"), fail (with the
    witness; `FAILED` at the certified state), or unsupported (`no_fugacity_model`, `charged_species_tpd`,
    `near_critical`, `near_spinodal`). A pure-solid candidate takes the exact scalar test. A confined adsorbed phase is
@@ -326,7 +372,9 @@ whichever regime is declared.
 8. **Appearance indicators** (for TX). ι_p = tm*(W_p) for the next inactive slot of each family and qualifier, with W_p
    tracked by continuation. It is defined where the continuation reaches a non-trivial local minimum; elsewhere it is
    `indicator_untracked`, never read as a sign, and a change from undefined to negative is an unbracketed event. Closed
-   forms hold everywhere for pure solids and composition-free K (Q5.R8).
+   forms hold everywhere for pure solids and composition-free K (Q5.R8). For FLUID, one W is tracked per distinct
+   non-trivial minimum the trials reach at the opening (vapour- and liquid-like alike), and ι of the next FLUID slot is
+   their minimum (Q5.R8).
 9. **Conserved-basis slot.** The Q3 object (A, R) with M_g (Q3.R6, R7): components (A = I, R = ∅); a Gibbs reactor (all
    reactions, element-and-charge matrix, X13); speciation groups (X18).
 10. **Verifier.** At the converged set it re-checks the equilibrium residuals, non-negative phase amounts and stability
@@ -365,16 +413,25 @@ pure-component data; several methods in one flowsheet; a reference that works fo
    and derivation ∈ {direct, fitted, generated} (Q9.R4). Record types are `component`, `parameter_set` and `assay`; the
    set is extensible (F1 kind `record_type`). Identity is the SHA-256 of the canonical record minus a closed,
    schema-declared volatile set (Q9.R2). Rights live in a separate register keyed by source and record SHA, so vetting
-   never moves an identity (Q9.R3). The store is content-addressed and write-once.
-2. **Data lock.** `{components: [(id, record_sha)], parameter_sets: [sha], methods: [(substream, method id, version,
-   implementation_sha256)], method_options}`. Its SHA is the composed provider's `data_sha256`.
+   never moves an identity (Q9.R3). The store is content-addressed and write-once: a stored object is the canonical
+   identity projection, so its file hash is its name; volatile blocks are kept beside it (ADR 0061 D2, D8). Parameter
+   sets match components by record SHA or InChIKey (ADR 0061 D5).
+2. **Data lock** (ADR 0061 D10). `{lock_format: openflowsheet-data-lock-v1, components: [{id, record}] (revision
+   order), parameter_sets: [sha] (ascending), methods: [{substream, method, version, implementation_sha256}] (sorted by
+   substream, method, version key), method_options}`; `data_lock_sha256` is its `document_sha256`. The lock is derived
+   from the v2 revision and the F1 registry, never stored in the revision. Each composed provider's `data_sha256` is
+   the lock narrowed to its substream and method, with the delegated legacy provider's own `data_sha256` (ADR 0063 D2);
+   the whole lock's SHA is recorded per run.
 3. **Composition.** A property method is an F1 factory whose descriptor gives the model family, required record fields,
    phase models, vocabulary with derivative orders, the attributes it reads, convention capability and domain rules.
    `compose(method, data_lock, add_on_sources)` returns a provider implementing the frozen protocol with F2's widened
-   types. A composed method has a *native layer* and recorded shifts (Q2.R3). A *delegating* composition calls the
+   types and, beside the frozen `describe()`, `describe_method() → MethodDescription` (new type: fluid model `split` or
+   `single`, phase models with supports, vocabulary version, attributes read, convention, shifts, bridges; ADR 0063
+   D2). A composed method has a *native layer* and recorded shifts (Q2.R3). A *delegating* composition calls the
    legacy kernel functions unchanged, as the four legacy methods do; a *re-implemented* method has new arithmetic. Its
-   `implementation_sha256` is the SHA over the sorted (module path, SHA of LF-normalised bytes) of its implementation
-   set, delegated legacy modules included (S1).
+   `implementation_sha256` is `sha256(canonical_json([descriptor_sha256, self_sha256]))` of its F1 descriptor (ADR
+   0060 D3); the self-hash covers its implementation set over LF-normalised bytes, delegated legacy modules included
+   (S1).
 4. **Source stack.** Each vocabulary item routes to exactly one source: the thermo method, a transport add-on (X17), a
    CAPE-OPEN package (X15) or an external library. A conflict needs an explicit assignment.
 5. **Vocabulary registry.** Each item has a name, an index set (components, component pairs, true species, phases), a
@@ -382,28 +439,39 @@ pure-component data; several methods in one flowsheet; a reference that works fo
    through adapters in new modules, so the existing providers become property sources unchanged.
 6. **Enthalpy convention** (Q2). One per v2 flowsheet. `ELEMENTAL-ref-v1`: elements in their standard reference phases
    at T° = 298.15 K, P° = 1e5 Pa have h = 0; each component in its anchor phase has h = Δf h° and s = s° (third law),
-   per unit of its amount basis. The anchor is `ig` by default, `aq` for ions and solutes (H⁺ convention), `s:<form>`
-   for solids, `l` otherwise (Q2.R2; A1-b open, §6). The shift Δ_{m,c} is a constant of the composed method, recorded in
-   `describe()`; T and P derivatives are unchanged (Q2.R3). A component without formation data takes the component datum
-   and is refused in any reaction with non-zero ν (Q2.R4). A method that cannot evaluate its anchor value keeps its native
-   convention and serves only flowsheets on that convention (Q2.R5). A method that evaluates c only in another phase is
-   bridged through a record datum and reports `anchor_bridged` (Q2.R8). The energy report states the overall balance on
-   the flowsheet convention; per-method subtotals are attribution only (Q2.R6). v1 is unchanged (Q2.R7).
+   per unit of its amount basis. The entropy datum: with s° absent, s = 0 in the anchor phase, with the notice
+   `entropy_datum`; this is admitted wherever the component's amount is conserved (PS and TS specifications, isentropic
+   units, phase equilibrium) and refused where it reacts (Q2.R10). The anchor is chosen from the record alone: `aq` if
+   charged, else the first of `ig`, `aq`, `l`, `s:<form>` with formation data; adding a method never re-anchors
+   (Q2.R2); a neutral `mol` record with neither formation data nor phase-tagged entries takes `ig`, reported
+   `anchor_defaulted`, and an `ig` anchor is the method's ideal-gas state, φ° alone for a Helmholtz method (Q2.R9).
+   PR-C1 evaluates it through its ideal-gas part `pr_c1.h_ig`, which its h sums with the departure, and `cubic.pr-v1`
+   through its ideal-gas c_p integral; never through the vapour root (ADR 0063 D4, A3-a). The shift Δ_{m,c} is a
+   constant of the composed method, recorded in `describe_method()`; T and P derivatives are unchanged (Q2.R3). A
+   component without formation data takes the component datum and is refused in any reaction with non-zero ν (Q2.R4). A
+   method that cannot evaluate its anchor value keeps its native convention and serves only flowsheets on that
+   convention (Q2.R5). A method that evaluates c only in another phase is bridged through a record datum or the
+   difference of the record's formation entries (Q2.R8), and reports `anchor_bridged`. The energy report states the
+   overall balance on the flowsheet convention; per-method subtotals are attribution only (Q2.R6). v1 is unchanged
+   (Q2.R7).
 7. **Scales** (S7). No variable scale, step bound or tolerance is taken from `|ĥ|`, `|Ḣ|` or any other
    convention-dependent value. The scale of `ĥ` is `c_ref · s_T`, with `s_T` the policy's temperature scale and `c_ref` a
    registered constant (default 2.0e3 J/(kg K)); step bounds on `ĥ` follow from the T bounds the same way. The energy
    check keeps ADR 0001 D6's form, 1e-5 W + 1e-8 E, with a convention-free scale E = Σ|Q| + Σ|W| + Σ_S ṁ_S c_ref ΔT_ref +
-   Σ_r |ξ_r Δr h_r| (ΔT_ref default 100 K). Assertion: shifting one component's Δf h° by 1e6 J/mol leaves every scale,
+   Σ_r |ξ_r Δr h_r| (ΔT_ref default 100 K). The constants live in the policy: `SolvePolicy.scales["specific_enthalpy"]`
+   (= c_ref · s_T) and the new optional object `SolvePolicy.energy_check: {capacity_ref, delta_T_ref}`, both required
+   in a v2-compiled run's policy with no code default, so they are always in `policy_sha256`, and absent from every v1
+   policy (ADR 0063 D6). Assertion: shifting one component's Δf h° by 1e6 J/mol leaves every scale,
    step bound and verdict unchanged. Trace streams are guarded by the verifier's independent PH split (Q1.A7).
 8. **Method assignment** (v2). A *method set* maps each substream to a method: a fluid method for `mixed`, a solid
    method for `solid`, and so on. The revision gives a default and per-instance overrides. A unit evaluates each *side*
    (a port group its manifest declares; one side by default) with one method set, so an exchanger can evaluate steam on
-   IAPWS-95 and the process side on PR. Every method in a flowsheet is on its convention. The PH state point over several
-   substreams is one scalar T solve on Σ substream Ḣ (Q8.R5). A *method boundary* is a material connection whose two
-   endpoint sides use different method sets. It is admitted when (i) every component is evaluable in its anchor or
-   bridged (Q2.R2, R8); (ii) the downstream invariants are an image of the upstream ones (Q3.R5; A1-a open); and (iii) a
-   solid candidate the downstream method lacks is reported (Q8 argument; A1-a). The boundary report carries
-   T_B(ĥ) − T_A(ĥ) as a non-R0 float (Q1.A6). There is no boundary energy term.
+   IAPWS-95 and the process side on PR. Every method in a flowsheet is on its convention. The PH state point over
+   several substreams is one scalar T solve on Σ substream Ḣ (Q8.R5). A *method boundary* is a material connection whose
+   two endpoint sides use different method sets. It is admitted when (i) every component is evaluable in its anchor or
+   bridged (Q2.R2, R8); (ii) Q3.R5's condition C A = A′Π holds and the consumer evaluates b′ = C b; and (iii) each
+   producer species the consumer lacks is reported (`solid_candidate_dropped`, `species_dropped`). The boundary report
+   carries T_B(ĥ) − T_A(ĥ) as a non-R0 float (Q1.A6). There is no boundary energy term.
 9. **Thermo face.** `MaterialModel.state_point(...)` is the only path from a unit to properties. State points are batched
    per method (one vectorised callback per method; block-diagonal pattern); exact caching is per point.
 
@@ -450,24 +518,38 @@ CAPE-OPEN units; controllers; sizing and costing hooks; hierarchy.
 
 **Design.**
 
-1. **`UnitModel` v2.** `declare(binding) → UnitDeclaration`; `contribute(wiring, material: MaterialModel, mode) →
-   Contribution`; optional `evaluate` (causal) and `initialize`. `UnitDeclaration` covers:
+1. **`UnitModel` v2.** `declare(binding) → UnitDeclaration`; `contribute(declaration, wiring, material:
+   MaterialModel, mode) → Contribution`; optional `evaluate` (causal), `reseed` and `initialize`. The declaration is a
+   canonical document whose SHA enters the fingerprint (§2.1.8; ADR 0065 D1, D3). The manifest declares:
    - ports: kind, accepted definitions or patterns, subset fill, maps between port definitions;
    - sides (port groups for method assignment) and parameters with kinds and a `manipulable` flag;
-   - modes, state points, required capabilities, derivative declarations;
+   - modes, state points, internal variables, required capabilities, derivative declarations;
    - zero-flow forms (the ADR 0012 D4(c)/D12 mechanism), required wherever a row could read a label or an inactive
-     phase (Q1.R4, Q5.R7);
-   - whether the unit has a causal outlet evaluation, which reactivation uses first (Q1.R6);
-   - heat-exchange temperature intervals on heat ports (§2.1.9) and a heat-curve output on units with duty (X14);
+     phase (Q1.R4, Q5.R7). A form is selected exactly when its trigger is exactly dormant and is carried as the
+     discrete coordinate `zero_flow_form` (ADR 0012 D12 generalised); coverage is generated, and a dormancy pattern
+     without a regular form fails CI with `zero_flow_form_missing` (ADR 0065 D7);
+   - per outlet port, its reactivation kind; whether the unit has a causal outlet evaluation, which reactivation uses
+     first (Q1.R6);
+   - phase routing (item 13), the coverage recipe, the execution class and its semantic roles (ADR 0065 D2);
+   - heat-exchange temperature intervals on heat ports (§2.1.9) and a heat-curve output on units with duty (X14); the
+     `heat_direction` check takes its direction from the sign of the connection's Q, is `not_applicable(no_heat_flow)`
+     for |Q| ≤ τ_Q and `not_applicable(zero_flow)` for a dormant side, with τ_hd the policy's `temperature` tolerance
+     (Q5.R10);
    - the initializer, equipment items and statefulness.
 
+   Q5.R7's no-read rule is enforced by the state-point accessors `amount_weighted` (n_p · o_p, `+0.0` at an inactive
+   slot) and `raw` (o_p, recorded per row) and by the opening check `inactive_phase_read` (ADR 0065 D6).
    `Contribution` carries rows (with ADR 0008 D3 accumulation), owned variables, requested state points, and in dynamic
    mode holdups, differential pairs, rate states, discrete states and event functionals.
 2. **Admission (F1).** Requirements are matched against method descriptors and definitions; a failed match is refused
-   with `capability_missing(<unit>, <method>, <capability>)`. Legacy families keep the frozen `MODEL_BASES`.
-3. **Coverage matrix in CI.** Every admitted (unit, method) pair runs a generated feed → unit → sink case and must reach
-   `VERIFIED`; every refused pair names its missing capability; an untyped refusal, or an admitted pair without a test,
-   fails CI. A new method enters the matrix automatically.
+   with `capability_missing(<unit>, <method>, <capability>)`. Legacy families keep the frozen `MODEL_BASES`, expressed
+   as reserved `legacy:` tokens only built-ins may provide (ADR 0060 D6).
+3. **Coverage matrix in CI.** Its axes are every native v2 unit × every property method × the definition templates the
+   unit accepts (`nTP-v1` and a generated `mat-v1`). Every admitted triple runs a generated feed → unit → sink case,
+   built from the method's entry in `benchmarks/f6/coverage-bases.yaml` and the manifest's coverage recipe, and must
+   reach `VERIFIED`; every refused triple names its missing capability; an untyped refusal, or an admitted triple
+   without a bases entry, fails CI. A new method enters the matrix automatically. Legacy units are outside the generated
+   cases (ADR 0065 D16).
 4. **Generic family `std.*`, legacy freeze, equivalence, retirement** (review §3(b)).
    - `std.*` is written only against `MaterialModel`; an architecture test forbids imports of provider modules.
    - *Byte-level freeze* (S1). An identity-bearing legacy module is one whose bytes enter an `implementation_sha256`, or
@@ -479,33 +561,64 @@ CAPE-OPEN units; controllers; sizing and costing hooks; hierarchy.
      that passes step-1 equivalence on all its corpus cases and its matrix entries. From then on the family is closed
      to new v2 work: it gets no new features or bases, and the edit operation that adds an instance refuses its models
      in a v2 revision (`legacy_family_closed(<family>, <std model>)`). Existing documents keep validating and running;
-     v1 revisions run it unchanged forever.
+     v1 revisions run it unchanged forever. Parity is computed by `scripts/f6_parity.py`; `thermal` is expected to reach
+     parity in 0.6, `syn001` and `c1` not (ADR 0065 D17).
+   - *v1 adapter.* A v2-compiled revision may mix a legacy unit with v2 units through an adapter, admitted only for
+     legacy units without a phase-selecting point; others are refused `legacy_unit_not_adaptable(<model>)` (ADR 0065
+     D17).
    - The opt-in v1 → `std.*` mapping tool is deferred until someone asks for it (U4).
 5. **Modes** (ADR 0008 X4′). The dynamic variant is a separate manifest sharing kernels with the steady one. F6 builds
    steady variants and refuses dynamic mode with `mode_unsupported(dynamic)` until TX.
 6. **Hierarchy.** An instance may reference a flowsheet template (a sub-revision by hash) with exposed ports, flattened
-   at bind time under `/`-prefixed ids; for columns, superstructure alternatives and PFD blocks.
-7. **Expression documents.** One restricted canonical math grammar as a JSON AST: constants; symbols for variables,
-   parameters and vocabulary items at state points; `+ − × ÷`, `pow`, `exp`, `log`, `sqrt`; piecewise forms only through
-   declared regimes (E01 D3). Compiled by the same compiler and hashed into `content_hash`. Uses: declarative user units,
-   controller laws, the `expression` kinetics kind, TX events and inputs, recipe conditions, report quantities. Python
-   plugin units stay admitted through F1 under the `install` right; E01 D5 is untouched for shipped cost forms.
+   at bind time under `/`-prefixed ids; for columns, superstructure alternatives and PFD blocks. Flattening depth is at
+   most 8; a repeated template on the path is refused `template_cycle`, a missing one `template_unavailable`; ids depend
+   only on instance ids, never on array order (ADR 0065 D13).
+7. **Expression documents.** One restricted canonical math grammar as a JSON AST. The node set (ADR 0065 D12):
+   constants; unit-local variables and parameters; vocabulary items at state points; n-ary `add` and `mul`, evaluated
+   left to right as written; `sub`, `div`, `pow`; `neg`, `exp`, `log`, `sqrt`; piecewise forms only through declared
+   regimes (E01 D3). No canonical reordering, folding or simplification, so the document's SHA pins the evaluation
+   order; validation infers each node's quantity kind and dimension (`expression_dimension_mismatch`). Compiled by the
+   same compiler and hashed into `content_hash`. Uses: declarative user units, controller laws, the `expression`
+   kinetics kind, TX events and inputs, recipe conditions, report quantities. Python plugin units stay admitted through
+   F1 under the `install` right; E01 D5 is untouched for shipped cost forms.
 8. **Adapters over v2.** External units (ADR 0033/0034): opaque blocks with a declared derivative method.
    Co-simulation (R-923): stateful, dynamic only, exchanged in TX's step loop. CAPE-OPEN units: sequential-modular,
-   finite-difference derivatives declared for EO, Windows only.
+   finite-difference derivatives declared for EO, Windows only. F6 builds the seams only: `cosimulation` is refused
+   typed (`construct_unavailable(cosimulation, TX)`) until TX, and `cape_open` (`construct_unavailable(cape_open, X15)`)
+   until X15 (ADR 0065 D14).
 9. **Rate-based stages** are ordinary units with several internal state points (bulk V, bulk L, interface), transfer rows
    on X17 items and registered correlation forms, composed with templates.
 10. **Sizing and costing hooks.** Equipment items name classes from one taxonomy registry shared by X12, X16, X23 and
     the semantic roles. *Identity follows use:* a design parameter that a unit's rows read is a unit parameter, inside the
-    revision; one read only by sizing or costing lives in X12's economics document.
-11. **Controllers** (M1(c)). Controllers are units with signal ports and manipulable-parameter sinks (`std.pid`, ratio,
-    lead–lag, selector, split range); their laws are code or expression documents. *Steady mode:* an integrating
-    controller contributes `pv − sp = 0` and frees its output within its limits, which makes it a design
-    specification; output saturation is a discrete coordinate (§2.2.3) on the attempt contract. *Dynamic mode:* TX
-    (§9.6). *Rejected:* controllers as expression documents attached to connections. A controller owns state (integral
-    action), modes and limits, and only units own state in this design; a second owner would duplicate F6.
+    revision; one read only by sizing or costing lives in X12's economics document. The F1 kind `equipment_class` is
+    `preview`; F6 seeds one class per `std.*` unit and leaves the taxonomy's growth to X12 (ADR 0065 D15).
+11. **Controllers** (M1(c)). Controllers are units with signal ports and manipulable-parameter sinks; their laws are
+    code or expression documents. F6 seeds `std.pid` only; ratio, lead–lag, selector and split range are TX's seed (ADR
+    0065 D10). *Steady mode:* an integrating controller contributes `pv − sp = 0` and frees its output within its
+    limits, which makes it a design specification; output saturation is the discrete coordinate `controller_regime` ∈
+    {`tracking`, `saturated_low`, `saturated_high`} (§2.2.3) on the attempt contract, with tracking adjacent to each
+    saturated value. Closure and transitions follow Q5.R9: the normal-cone condition σe ∈ N(out) of a clamped
+    integrator; a saturated regime with the wrong sign opens `tracking` unless visited in the solve, else the other
+    saturated regime; near-threshold flags; the notice `controller_saturated`. *Dynamic mode:* TX (§9.6). *Rejected:*
+    controllers as expression documents attached to connections. A controller owns state (integral action), modes and
+    limits, and only units own state in this design; a second owner would duplicate F6.
 12. **Utilities.** Instances of `std.utility` (role `utility`) with energy outlets connected to the units they serve.
     Their temperature levels are parameters; their prices live in X12's economics document.
+13. **Phase routing** (A2-b; ADR 0065 D9). A unit whose outlets take phases of a state point declares `phase_routing`:
+    `vapor: <port> | null`, `light_to_heavy` (the liquid ports) and `solids: <port> | null`. At every opening the
+    routing is fixed for the attempt and recorded as the discrete coordinate `phase_routing`:
+    - VAPOR, or a lone `vapour_like` FLUID (Q4.R9), goes to `vapor`, else to the first liquid port when `vapor` is null;
+    - LIQUID slots go over `light_to_heavy` by mass density, ascending (with two candidates, today's routing exactly);
+    - two or more active FLUID phases: `vapour_like` phases to `vapor`, the rest over `light_to_heavy` by mass density;
+      a unit with `vapor: null` routes them all by density (SQ-F6-5's default);
+    - exactly one active fluid phase routes as the `split` family its `character` names (Q4.R9); the character is fixed
+      with the routing at the opening, and |q − q*| ≤ 10 τ_char |q*| flags `near_threshold`;
+    - phases beyond the last liquid port go to the last port; SOLID phases to `solids`, else to the last port.
+
+    Closure checks the order at the converged state; a different order or character closes the attempt
+    `routing_order_changed(<unit>)`, and the controller opens the adjacent assignment (one transposition of
+    density-adjacent phases, or the lone phase's other port). An adjacent pair with |ln ρ_a − ln ρ_b| ≤ 10 τ_ρ attaches
+    `near_threshold` (Q4.R5's pattern); τ_ρ = τ_char = 1e-6 (Q4.R9).
 
 **Rejected.**
 - *A family per provider* (today). This produced X10.
@@ -547,23 +660,34 @@ the NLP runs through ADR 0032. Accumulation declarations exist (ADR 0008 D3); ti
 2. **`DynamicSpec`.** Three kinds of differential state:
    - (a) *conserved holdups*, exactly Q1.R7's list: each carried amount (Q3 groups or components; Q6 partition classes,
      never their parent), each carried extensive attribute, and one energy holdup; never true species,
-     equilibrium-phase amounts or derived intensives; fast reactions and phase equilibria add no balance term;
+     equilibrium-phase amounts or derived intensives; fast reactions and phase equilibria add no balance term. The
+     holdup columns mirror the carried indices of the held definition, plus one energy holdup per control volume.
+     Dormancy, the drain event and re-seeding follow Q1.R8: a holdup is dormant iff every held amount is exactly
+     `+0.0`, entered only at t₀ or by a located drain event whose removed content is ledgered; sources are zero while
+     dormant; the seed sits on the energy column (û, not T); a unit without a zero-holdup form is refused typed;
    - (b) *rate states* with rows of a new accumulation kind `state_rate` (ẋ = f with x not conserved: controller
      integrators, filters, transmitter lags). ADR-F7 adds the kind and reverses ADR 0008 C10's rejection, because TX's
      controllers need it;
-   - (c) *non-material conserved holdups* (a vessel wall's energy, a rotor's angular momentum), pending a ruling (§6).
+   - (c) *non-material conserved holdups* (a vessel wall's energy, a rotor's angular momentum) (Q1.R9; registered
+     `holdup_kind`, built-in only).
 
    Each differential state is differentiated in exactly one row with coefficient 1, so `M` stays a constant 0/1
    selection. *Discrete states* are constant between events and assigned only by event actions: a controller's regime
    and mode, a valve open or closed, a recipe segment. The integer-valued ones are attempt-signature coordinates (R0).
-   Time inputs are parameter ids with trajectory references, applied through the parametric twin. An *event* is a
-   functional program, a direction and an action (discrete assignments), followed by consistent re-initialisation.
-   The variable set is constant over a run; events change active rows only, which is ADR 0005 D2 generalised. The
-   initial condition is the dynamic model's steady state at t₀, or specified. `EvaluationContext` stays time-free (ADR
-   0008 D1); `CompiledProblemMetadata` gains a nullable `differential_map`.
+   Time inputs are parameter ids with trajectory references, applied through the parametric twin. Time inputs, scenario
+   events and the horizon live in a dynamic scenario document beside the revision, not on `Specification` (ADR 0008 C7
+   relocated; ADR 0066 D5). An *event* is a functional program, a direction and an action (discrete assignments),
+   followed by consistent re-initialisation. Simultaneous events follow Q1.R10: location tolerance τ_loc = c_loc (|t| +
+   |h|), τ_ev = 10 τ_loc; a group is applied in ascending (priority, id) with every action value evaluated on the
+   pre-group state, then one re-initialisation per group; conflicting writes end the run `simultaneous_event_conflict`,
+   cascades `event_chattering`. The variable set is constant over a run; events change active rows only, which is ADR
+   0005 D2 generalised. The initial condition is the dynamic model's steady state at t₀, or specified.
+   `EvaluationContext` stays time-free (ADR 0008 D1); `CompiledProblemMetadata` gains a nullable `differential_map`.
 3. **Index.** A structural matching on ∂g/∂z runs first; index above 1 is refused with `dae_index_unsupported`. At
-   consistent initialisation a rank and conditioning check of ∂g/∂z follows. When it fails, the run carries the typed
-   limitation `dae_index_near_singular`, as for PR liquid in a fixed volume (N1).
+   consistent initialisation a rank and conditioning check of ∂g/∂z follows (N1): with rcond₁ of the scaled ∂g/∂z below
+   τ_idx = K04's τ_ill = 1e-8, with ADR 0007 D2.4's near-threshold band, the run carries the typed limitation
+   `dae_index_near_singular`, not a refusal (Q5.R11). Example: a vessel full of a liquid whose scaled expansivity and
+   compressibility are both small; an ordinary liquid, PR's included, is regular (Q5.A13 (e)).
 4. **Integrator** (review §3(c)). The step loop is owned (D01) and follows the published DASSL/IDA BDF: the fixed-
    leading-coefficient form, orders 1–5, the local error test in the weighted RMS norm, the convergence-rate test, and
    step and order selection by the published rules. The corrector is modified Newton with Jacobian reuse and SuperLU
@@ -592,9 +716,15 @@ the NLP runs through ADR 0032. Accumulation declarations exist (ADR 0008 D3); ti
    specification set, setpoints and controller modes, and ends at an event. The segment index is a discrete state, and
    the variable set stays constant. Scheduling is a later layer.
 9. **Run kinds.** Simulation, optimization, transient, synthesis, batch, study, analysis (X14 pinch), acquisition. Each
-   declares its input documents, problem form, solver route, result type and R-class. One typed operation
-   `submit_run(kind, documents)` with per-kind request and result schemas replaces one operation per kind (U3). The
-   `ValidationReport` task enum widens accordingly.
+   declares its input documents, problem form, solver routes, result type, R-class, validation task, `job_operation`,
+   partial-artifact kinds and checkpoint schema (the F1 `run_kind` payload, ADR 0066 D10). One typed operation
+   `submit_run(kind, documents)` with per-kind request and result schemas replaces one operation per kind (U3). Seed
+   table and status in 0.7: `simulation` implemented (`job_operation: solve`, so it aliases `solve` and its artifacts
+   are byte-identical to `solve`'s); `optimization` implemented iff OPT is on `main`, else declared; `transient` (TX),
+   `synthesis` (X24), `batch` (X25), `analysis` (X14), `study` (unassigned) and `acquisition` (X11 rest) declared and
+   refused `run_kind_unavailable(<kind>, <package>)`. Every kind but `simulation` runs as the new job operation `run`.
+   The `ValidationReport` task enum gains `transient`, `synthesis`, `batch` and `analysis`; an extension run kind maps
+   to one of the seeded tasks, so no extension widens the enum (ADR 0066 D11).
 
 **D02 and D03 hold.** CasADi covers algebraic and DAE residuals, Jacobians and the Hessians the NLP needs; the callback
 route covers external and CAPE-OPEN units. SuperLU stays the default; KLU-class adapters come later if benchmarks and the
@@ -611,8 +741,8 @@ D04 audit justify them. Scale is a measured risk (R1).
 **Foundation:** F7, on F6. **ADR:** ADR-F7. It amends ADR 0003 (the metadata field), makes ADR 0008 C7 and C8 concrete,
 reverses C10 for `state_rate`, and amends ADR 0019 and ADR 0020 (`submit_run`, `ValidationReport` tasks).
 
-**Migration proof.** F0 PASS. `differential_map` is absent for every steady problem and is not a member of ADR 0002 D2's
-structure document, so `model_version` is unchanged.
+**Migration proof.** F0 PASS. `differential_map` is absent for every steady problem; for dynamic problems it is a member
+of the structure document v2 (§2.1.8), so every steady `model_version` is unchanged.
 
 ### 2.6 Application and agent contract
 
@@ -629,7 +759,7 @@ client (ADR 0030).
 | C3 Messages | MSG | Every `ApiError` code and every typed refusal or limitation code has a catalogue entry: what, where (a template over element ids), why, what to do, and the kind: input, not supported, numerical, bug, or `notice` for codes that are not failures (`relabel`, `extrapolated`, `anchor_bridged`, limitations). Extensions register entries through F1. CI fails on an emitted code without an entry. `explain <code>` is an operation |
 | C4 Units | X04 | Conversion only in dispatch and in projection; internal values stay SI (ADR 0001 D1.1, ADR 0016 D1.2). Display preferences outside identity. A gauge pressure needs a declared ambient pressure, per project (R-924) |
 | C5 Projections | ST, X16 | Derived after the solve from the verified state: through legacy providers until F4, through the thermo face after it. Per phase and per substream from the start. Never in certificate identity |
-| C6 Long-running work | F7 | Progress events; partial artifacts (trajectory chunks, incumbents); per-kind checkpoints for resume (X06) |
+| C6 Long-running work | F7 | Progress events, with the optional members `time_s`, `time_end_s` and `segment` for dynamic kinds; partial artifacts (trajectory chunks, checkpoints, incumbents) are ordinary output events; per-kind checkpoints for resume (X06) |
 | C7 Branches | X06 | Named mutable references over the immutable revision DAG, in the project store, never in documents |
 | C8 No code to author | — | Edits are ChangeSets, mathematics is expression documents, data comes through acquisition jobs |
 
@@ -654,11 +784,17 @@ existing request and response schemas are unchanged and their round-trip fixture
 bundles reference the backend by hash; `Environment`; three `ReplayMode`s; cross-platform comparison per ADR 0025.
 
 **Design.**
-1. **Data.** v2 revisions pin record SHAs inside `content_hash`. A bundle carries the data lock and embeds a record only
-   when its rights permit (R-706, R-926); otherwise it references it by SHA. A replay that lacks a record ends `NOT_RUN`
-   in mode `inspected_archived_results` with `data_unavailable(<sha>)` (Q9.R7).
+1. **Data.** v2 revisions pin record SHAs inside `content_hash`. A bundle of a v2-compiled run (or of a run with
+   `job_operation: run`) carries the data lock and embeds a record only when its rights permit (R-706, R-926); otherwise
+   it references it by SHA. v1-path runs, lowered v2 documents included, write manifests, bundles and replay reports
+   exactly as today (ADR 0067 D1). The v2 layout sits under `artifacts/`: the v1 artifact files, `data-lock.json`,
+   `registry-snapshot.json`, `records-index.json`, `records/<record sha>.json` (embedded records), `run-evidence.json`,
+   and TX's decision records and trajectory (ADR 0067 D3, D4). A replay that lacks a record ends `NOT_RUN` in mode
+   `inspected_archived_results` with `data_unavailable(<sha>)` (Q9.R7).
 2. **No network inside a solve or a replay.** Acquisition is its own job (R3 provenance) that writes records.
-3. **Extensions.** `Environment` gains a registry snapshot: id, version and self-hash of every extension loaded.
+3. **Extensions.** `Environment` gains a registry snapshot: id, version and self-hash of every extension loaded; the
+   snapshot is ADR 0060 D10's. Replay compares the extensions the run *used* only; differences in unused ones are
+   counted, not decisive (ADR 0067 D5).
 4. **Platforms (X07).** R0 is identical on every registered platform; R1 and R2 agree within the K04 policy; a float
    beyond the policy gets a per-platform reference record (ADR 0025's pattern); near-threshold flags make an R0
    discrepancy attributable. Self-hashes do not depend on line endings (S1).
@@ -666,11 +802,20 @@ bundles reference the backend by hash; `Environment`; three `ReplayMode`s; cross
    exportable); the certificate names what it could not re-check; the exact cache keys on the child's snapshot or is
    bypassed.
 6. **Adaptive solvers** (D20). Step sizes, orders, event times, seeds and master iterations are numerical records, not
-   R0. Integer control flow is R0: event order, discrete-state sequence, segments, structures visited. The mode
-   `forced_replay` re-runs with recorded decisions imposed. F8 designs it; TX builds it.
+   R0. Integer control flow is R0: event order, discrete-state sequence, segments, structures visited. A decision
+   record (ADR 0067 D8) has entry kinds `step`, `step_rejected`, `master_iteration` and `seed` (numerical records) and
+   `event`, `segment`, `reinit` and `structure` (R0 sequences; an event's located t is numerical). The mode
+   `forced_replay` re-runs with recorded decisions imposed; it replaces `compatible_reproduction` for runs with decision
+   records. Event disagreements are judged by Q9.R8: near threshold iff the replay's |g| ≤ τ_g (10 × the function
+   kind's ADR 0007 D2.2 floor) at the disputed time, then the record is imposed and the verdict is `MATCH` with
+   `verdict_changed_near_threshold`; otherwise `forced_replay_divergence`. F8 designs it; TX builds it, and TX's exit
+   carries Q9.A9.
 7. **Evidence classes.** Run reports state verification, validation (Q9.R6: origin, derivation, source, record SHA,
-   `extrapolated`) and optimality separately; no data origin changes a verification verdict (D14). Descriptors carry
-   implemented, tested, reviewed or released; agents never claim reviewed or released.
+   `extrapolated`) and optimality separately; no data origin changes a verification verdict (D14). They are written
+   to the run's evidence report, the artifact `run-evidence.json`, which is outside every identity; the run's evidence
+   report carries the notices, and the certificate carries no evidence notices (ADR 0067 D6). Evidence classes never
+   move an identity (ADR 0060 D9). Descriptors carry implemented, tested, reviewed or released; agents never claim
+   reviewed or released.
 
 **Rejected.** *Embedding all data* (breaks R-706, R-926); *fetching data at solve time* (non-deterministic; offline
 replay fails).
@@ -736,21 +881,23 @@ a frozen module makes M9 fail and names the file.
 
 ### F1 — Extension registry and computed admission (architect; ADR-F1; core of X01)
 
-**Scope.** Kinds `property_method`, `property_source`, `unit_model`, `connection_definition` (material, energy,
-signal), `attribute_kind`, `derived_quantity`, `kinetics_kind`, `stability_trial_set`, `phase_family`,
-`discrete_coordinate`, `record_type`, `data_source`, `record_generator`, `solver_route`, `run_kind`,
-`functional_contributor` (wrapping E01's `register_contributor`), `exchange_format`, `revision_section`,
-`semantic_role`, `equipment_class`, `message_entries`. A built-in table plus the entry-point group
-`openflowsheet.extensions`. Each descriptor holds id, version, self-hash, requirements and provisions, status, typed
-limitations, platforms, pip extra, data rights and, for units, parameter and port schemas. Iteration is sorted by id, with
-a snapshot hash. New modules self-hash LF-normalised bytes (S1). Legacy providers and units are registered from new
-modules, without a byte edit to theirs. The admission function, `list_capabilities` and `check_admission` (C2).
+**Scope.** Kinds `property_method`, `property_source`, `unit_model`, `connection_definition` (material, energy, signal),
+`attribute_kind`, `derived_quantity`, `kinetics_kind`, `stability_trial_set`, `phase_family`, `discrete_coordinate`,
+`record_type`, `data_source`, `record_generator`, `solver_route`, `run_kind`, `functional_contributor` (wrapping E01's
+`register_contributor`), `exchange_format`, `revision_section`, `semantic_role`, `equipment_class`, `message_entries`,
+`correlation_form` (owner ADR 0061). A built-in table plus the entry-point group `openflowsheet.extensions`. Each
+descriptor holds id, version, self-hash, requirements and provisions, status, typed limitations, platforms, pip extra,
+data rights and, for units, parameter and port schemas. Iteration is sorted by (kind, id, version); the snapshot's
+`registry_sha256` covers ids, versions, descriptor and self-hashes, and excludes evidence (ADR 0060 D10). New modules
+self-hash LF-normalised bytes (S1). Legacy providers and units are registered from new modules, without a byte edit to
+theirs. The admission function, `list_capabilities` and `check_admission` (C2).
 
-**Exit.** Every existing provider and unit is registered; admission over the legacy pairs equals `MODEL_BASES` exactly, as
-sets; the snapshot hash is identical across runs and platforms (R0), the Windows leg included; the operations work on
-all four transports.
+**Exit.** Every existing provider and unit is registered; admission over the legacy pairs equals `MODEL_BASES` exactly,
+as sets (31 × 7 pairs, 54 admitted); the snapshot hash is identical across runs and platforms (R0), the Windows leg
+included; the operations work on all four transports.
 
-**X01 rest** (after F1): `pr-lib-v1` and `syn001.cascade` become selectable; plugin authors get documentation.
+**X01 rest** (after F1): `pr-lib-v1` and `syn001.cascade` become selectable through v2 (F4, F6); a v1 basis for
+`pr-lib-v1` would reverse ADR 0050 D10 and needs its own decision (ADR 0060 risk 1). Plugin authors get documentation.
 
 ### F2 — Material model and `ProcessRevision` v2 (specifier rulings; architect; ADR-F2)
 
@@ -761,35 +908,34 @@ phase-id triple and signature type, the id grammar, the material layout and `sol
 port-compatibility rule. The core is frozen at the end of W1; the preview slots stay preview until the end of 0.6.
 Constructs whose foundation is not yet built are refused with a catalogued code.
 
-**Open item (entry criterion of ADR-F2): A1-a.** Q3.R5 and Q3.A5 refuse a downstream method whose fast-reaction set lacks
-the producer's salt dissolution (R′ ⊊ R), while Q8's argument admits it. *Proposed default:* the boundary condition is the
-invariant one, b′ = C b with integer C, and m′'s own declaration is valid under Q3.R1. R′ ⊇ R is then sufficient, not
-necessary. A dropped solid candidate is reported as `solid_candidate_dropped(<method>, <phase>)`. The specifier rules
-before ADR-F2 is Accepted.
-
 **Exit.**
 - `StreamState ↔ EvaluationState` is bitwise for every corpus stream; every v1 `content_hash` is unchanged.
+- *Lowering identity* (E-F2-3): every corpus v1 revision raises and lowers to the same `content_hash`, and each raised
+  v2 document, run through the v1 path, reproduces the corpus run's `r0_sha256`, `state_sha256` and
+  `solution-state.json` bytes.
 - The v2 fixtures round-trip: all three connection kinds, all three endpoint kinds, a reaction set and a section.
 - Q1.A5 (zero flow). *Probes:* `probe.moments`, `probe.classes` and `probe.partition` through probe mixers (≤ 8 inlets)
-  and splitters, with relative conservation residuals ≤ 1e-14 (Q6.A1). Also Q3.A1–A3, Q6.A2–A6, Q7.A1–A2, Q8.A1, A2,
-  A4 and A6.
-- *Ids* [gen]: 10⁴ random structures with adversarial user ids (`a.2`, `n`, `LIQUID`, `x:y`, digits) render and parse
-  back to the same structure; no v2 id equals a legacy-form id.
+  and splitters, with relative conservation residuals ≤ 1e-14 (Q6.A1). Also Q3.A1–A3, A6, Q6.A2–A6, Q7.A1–A2, Q8.A1,
+  A2, A4 and A6.
+- *Ids* [gen]: 10⁴ random structures with adversarial user ids (`a.2`, `n`, `LIQUID`, `x:y`, digits), with qualifiers
+  on every phase family, render and parse back to the same structure; no v2 id equals a legacy-form id.
 - The layout rebuilds every `MaterialState` without parsing an id. Thermal-coordinate, port-compatibility and
   signal-kind refusals are typed.
 
 ### F3 — Component data core (architect, on rulings Q7 and Q9; ADR-F3; core of X11)
 
-**Scope.** `ComponentRecord` v2 (§2.3.1); identity-key resolution (an ambiguous key is `component_ambiguous(<key>)`); the
-content-addressed store; the data lock and the rights register; an importer for the benchmark records and a user-file
-adapter; operations `search`, `get`, `register` and `validate`. *Windows* (N12): `os.replace` onto a target that a reader
-holds open fails. Because the store is write-once and content-addressed, an existing target with the expected SHA counts
-as done: verify it and discard the temporary file. Names are two-level sharded SHAs, and a root too deep for the
-260-character limit is refused (`store_path_too_long`) unless long paths are enabled.
+**Scope.** `ComponentRecord` v2 (§2.3.1); identity-key resolution (an ambiguous key is `component_ambiguous(<key>)`);
+the content-addressed store; the data lock and the rights register; an importer for the benchmark records and a
+user-file adapter; operations `search_records`, `get_record`, `register_record`, `validate_record` and `assess_rights`
+(the names avoid `Application.validate`; the fifth sets rights on every transport). *Windows* (N12): `os.replace` onto a
+target that a reader holds open fails. Because the store is write-once and content-addressed, an existing target with
+the expected SHA counts as done: verify it and discard the temporary file. Names are two-level sharded SHAs, and a root
+too deep for the 260-character limit is refused (`store_path_too_long`) unless long paths are enabled.
 
-**Exit.** Imported records equal, bitwise, the values from the YAML loaders (`pr_c1.load_records`, `pr_lib.load_records`,
-the S10 records). The data-lock hash is stable across runs and platforms. Q7.A3, Q9's identity and volatile-set
-assertions pass. The store tests pass on the X07a legs; until those exist, on Linux, with the others recorded as pending.
+**Exit.** Imported records equal, bitwise, the values from the YAML loaders (`pr_c1.load_records`,
+`pr_lib.load_records`, the S10 records) and the S10 verification records; 149 records from 7 files. The data-lock hash
+is stable across runs and platforms. Q7.A3, Q9's identity and volatile-set assertions, and Q2.A10 (the default anchor)
+pass. The store tests pass on the X07a legs; until those exist, on Linux, with the others recorded as pending.
 
 **X11 rest** (after F3 and F4): NIST WebBook, PubChem and ThermoML fetchers; regression to correlations; group-
 contribution estimation flagged as estimated; consistency checks as evidence; operations `fetch` and `fit`.
@@ -801,17 +947,14 @@ convention shift, anchors and bridges; method sets, sides and the method-boundar
 `MaterialModel` with batched procedural state points and multi-substream PH; one re-implemented vectorised kernel (a
 cubic EOS) that proves batching; fresh composition in the verifier.
 
-**Open item (entry criterion of ADR-F4): A1-b.** Q2.R2 makes the anchor depend on the flowsheet's method set. Adding an
-ideal-gas-capable method re-anchors an `l` component, so every stored `ĥ` moves; it also sends a record that has only
-Δf h°(l) to the component datum. *Proposed default:* the anchor is a function of the record only (its phase data under
-Q2.R2's order, without the method-set clause). A method that cannot evaluate the component in that anchor is bridged
-(Q2.R8) or refused, so adding a method never re-anchors. The specifier rules before ADR-F4 is Accepted.
-
 **Exit.**
 - *Re-composition identity:* the three parts of §2.3's migration proof.
-- *Convention:* Q2.A1–A8 (Q2.A2 replaces the former 1e-10 clause); Q1.A1, A2 and A6.
+- *Convention:* Q2.A1–A9, A11 and Q2.A12 (a), (d), (e) (Q2.A2 replaces the former 1e-10 clause); Q1.A1, A2 and A6.
+  E-F4-3 (A3-a): on `composed.pr-c1-v1` and `cubic.pr-v1`, the `ig` anchor is the ideal-gas part, and the vapour at
+  (T°, P°) differs from it by the method's departure.
 - *Scales:* the S7 invariance assertion (§2.3.7).
-- Method-boundary refusals (`anchor_unavailable`, `species_basis_incompatible`, mismatched conventions) are typed.
+- Method-boundary refusals (`anchor_unavailable`, `species_basis_incompatible`, mismatched conventions) are typed;
+  Q3.A5.
 - *Batching:* on the re-implemented vectorised cubic kernel, at N = 300 state points, batched cost per point (values plus
   Jacobian) ≤ 0.1 × unbatched, same machine; delegating compositions must not regress (≤ 1.05 × unbatched).
 
@@ -820,35 +963,30 @@ Q2.R2's order, without the method-set clause). A method that cannot evaluate the
 **Scope.** The N-phase flash (§2.2.6) and stability analysis with registered trial sets; the new contract value with the
 discrete-coordinate signature; regime discovery (FB-04 (2)); indicators; the conserved-basis slot; the verifier checks.
 
-**Open item (entry criterion of ADR-F5): S5.** Under one fluid model (an EOS), every fluid phase comes from the same
-model. The split into VAPOR and LIQUID families can then put two phases in one family or flip a liquid between families
-near a critical endpoint, which gives non-adjacent restarts and label churn in R0. *Proposed default:* methods declaring a
-single fluid model use one interchangeable `FLUID` family, ordered by Q4.R3, with vapour-like or liquid-like as a
-reported attribute; two-candidate legacy points keep Q4.R7's rendering. A phase confined to one component by its own
-model, such as X21's free water, takes a qualifier on its fluid family. This generalises Q8.R7's confinement. It amends
-Q4.R1 and Q4.R6, so the specifier rules before ADR-F5 is Accepted.
-
 **Exit.**
-- Decision equivalence (§2.2) over the corpus; Q4.A1–A7.
+- Decision equivalence (§2.2) over the corpus; E-F5-2: the same with the generalised controller forced at every
+  two-candidate point, with identical R0 sequences and bitwise floats; Q4.A1–A11.
 - On the registered LLE and VLLE systems, phase compositions match an independent implementation within 1e-8 absolute in
   mole fraction, or literature data within the registered tolerance; Q1.A3, A4 and A7.
-- Q5.A1–A9, with classification 100 % correct at τ_tm = 1e-8 and every registered feed outside [1e-9, 1e-7]; Q8.A3, A5
+- Q5.A1–A10, with classification 100 % correct at τ_tm = 1e-8 and every registered feed outside [1e-9, 1e-7]; Q8.A3, A5
   and A7.
-- The FB-04 turbine solves with no declared phase: `VERIFIED`, outlet `h` within the registered tolerance of an
-  independent IAPWS-95 evaluation.
 - Q5.A9 (c): on the registered boundary paths, ι is defined at both bracket ends with opposite signs and brackets the
   flash's boundary within 1e-8 relative in T.
 
 ### F6 — Unit-model framework v2 (architect; ADR-F6)
 
 **Scope.** `UnitModel` v2 and `ModelManifest` v2 (§2.4.1); a `std.*` seed (feed, sink, mixer, splitter, heater, valve,
-flash, pump, compressor, turbine); the coverage-matrix generator; templates and flattening; the expression grammar and
-compiler; the equipment taxonomy; signal ports and manipulable parameters; controllers' steady semantics; the seams for
-external, co-simulated and CAPE-OPEN units; the architecture test; the retirement rule.
+flash, pump, compressor, turbine, `std.pid`); the coverage-matrix generator; templates and flattening; the expression
+grammar and compiler; the equipment taxonomy; signal ports and manipulable parameters; controllers' steady semantics;
+the seams for external, co-simulated and CAPE-OPEN units; the architecture test; the retirement rule.
 
 **Exit.**
 - Equivalence steps 1 and 2 (§2.4); the matrix is complete (every pair verified or refused typed).
-- Q1.A9 (reactivation) and Q5.A8 (inactive-phase invariance).
+- Q1.A9 (reactivation) and Q5.A8 (inactive-phase invariance); zero-flow coverage is generated (§2.4.1).
+- The FB-04 turbine solves on `std.turbine` with no declared phase: `VERIFIED`, outlet `h` within the registered
+  tolerance of an independent IAPWS-95 evaluation (moved from F5, ADR 0064 E-F5-6).
+- A2-b routing is recorded and restarted by adjacency (§2.4.13); Q4.A12. Q2.A12 (b), (c) (the entropy datum on
+  isentropic units).
 - A two-level template flattens to stable ids; expression documents compile and the verifier re-evaluates them; dynamic
   mode is refused typed.
 - A steady probe PI loop solves as a design specification and its saturation restarts by adjacency.
@@ -862,18 +1000,13 @@ external, co-simulated and CAPE-OPEN units; the architecture test; the retiremen
 `differential_map`; the structural index check and the rank check (N1); functional programs; the run-kind registry,
 `submit_run` and the `ValidationReport` tasks; progress events; a chunked trajectory artifact; per-kind checkpoints.
 
-**Open items (entry criteria of ADR-F7).**
-- *Holdup dormancy.* Q1.R4 and Q1.R6 cover streams, not a vessel that drains to exactly zero. *Proposed default:* the
-  same rules apply to holdups. A holdup is dormant iff every held amount is exactly `+0.0`; then U is exactly `+0.0` and T
-  is a label; the holdup is re-seeded at the event opening that starts filling, from the inflow's state.
-- *Non-material holdups.* Q1.R7 lists material holdups. *Proposed default:* a unit may own further conserved holdups
-  (wall energy, rotor angular momentum) in `holdup_balance` rows; M stays 0/1.
-
 **Exit.**
 - For a probe tank with holdup, the dynamic residual at ẋ = 0 equals the steady residual bitwise; Q1.A10.
+- Q1.A11 (holdup dormancy) and Q1.A12 (non-material holdups) run on a test-only reference integrator; TX re-runs them
+  on its BDF. Q1.A13 (simultaneous events).
 - A probe PI controller's integral is a `state_rate` state and M stays 0/1.
-- An index-1 probe is accepted; a structurally index-2 probe (fixed volume, incompressible liquid) is refused with
-  `dae_index_unsupported`; PR liquid in a fixed volume carries `dae_index_near_singular`.
+- An index-1 probe is accepted; Q5.A13 (a)–(f): (f) α ≡ κ ≡ 0 refused `dae_index_unsupported` naming the volume row;
+  (c), (d) carry `dae_index_near_singular`; (e) (thermally expanding, κ ≡ 0) and a `cubic.pr-v1` liquid are regular.
 - Unbuilt run kinds are refused typed; chunked artifacts round-trip with verified chunk hashes.
 
 ### F8 — Identity, replay and evidence v2 (architect; ADR-F8)
@@ -884,7 +1017,7 @@ external, co-simulated and CAPE-OPEN units; the architecture test; the retiremen
 
 **Exit.** The 0.3.0 bundles replay with unchanged verdicts. A record that may not be redistributed travels by reference
 only; replaying it elsewhere ends `NOT_RUN` with `data_unavailable`. The registry snapshot is recorded and compared on
-replay.
+replay. The usage cross-check holds for every v2 run; v1-path runs are byte-identical.
 
 ---
 
@@ -904,8 +1037,8 @@ on the named open items (§6). OPT is the optimiser on revision flowsheets; RRC 
 | F5 | F4, SPEC | contains FB-04 (2) |
 | F6 | F5 | needs F2 and F4 through F5 |
 | F7 | F6, SPEC | |
-| F8 | F2, F3 | decision records built with TX |
-| MSG | — | before X04 |
+| F8 | F2, F3 | bundle and replay 0.5; evidence and v2 wiring 0.6; decision records with TX 0.7 |
+| MSG | — | before X04; soft edge MSG → F1 (F1-WO3, WO4a) |
 | ST | — | soft: X04 |
 | X04 | MSG | |
 | X05 | — | F8 builds on its environment record |
@@ -953,6 +1086,7 @@ flowchart LR
   F7 --> TX & X24
   F8 --> TX & X24 & X07b
   MSG --> X04
+  MSG -.-> F1
   X07a --> X07b & X15
   X10i[X10 inventory] --> X10g
   ST --> X16
@@ -969,9 +1103,10 @@ flowchart LR
   RRC
 ```
 
-**The graph is acyclic.** No foundation depends on a feature package. The foundations order topologically as F0, SPEC,
-F1, F3, F2, F4, F5, F6, F7, F8. Every feature-to-feature edge lies on a chain with no back edge: MSG→X04; ST→X16→X23;
-X07a→X07b; X10i→X10g; X09→X21; X13→X18; X13→X20; X17→X22; X17→X14; OPT and X06→X24→X14h; TX→X25; TX→X26.
+**The graph is acyclic.** No foundation depends on a feature package, except the soft edge MSG → F1, which orders two F1
+work orders (WO3, WO4a) after MSG; MSG has no prerequisite, so no cycle arises. The foundations order topologically as
+F0, SPEC, F1, F3, F2, F4, F5, F6, F7, F8. Every feature-to-feature edge lies on a chain with no back edge: MSG→X04;
+ST→X16→X23; X07a→X07b; X10i→X10g; X09→X21; X13→X18; X13→X20; X17→X22; X17→X14; OPT and X06→X24→X14h; TX→X25; TX→X26.
 
 ---
 
@@ -1021,30 +1156,26 @@ The stage-3 questions are answered; their defaults are replaced by the rulings, 
 
 | Question | Ruling adopted | Where in this note |
 | --- | --- | --- |
-| Q1 State and zero flow | `(n, ĥ, P)`, mass-specific; derived T; labels; reactivation; holdups (R1–R7). T is a continuous, non-decreasing function of `ĥ`, and the state is single-valued in `(n, ĥ, P)`; `ĥ` is not a function of T where π = C + 1 | §2.1.1–2, §2.2.5, §2.5.2 |
-| Q2 Reference | `ELEMENTAL-ref-v1`, anchors, entropy and component data, bridge (R1–R8) | §2.3.6 |
+| Q1 State and zero flow | `(n, ĥ, P)`, mass-specific; derived T; labels; reactivation; holdups; holdup dormancy; non-material holdups; simultaneous events (R1–R10). T is a continuous, non-decreasing function of `ĥ`, and the state is single-valued in `(n, ĥ, P)`; `ĥ` is not a function of T where π = C + 1 | §2.1.1–2, §2.2.5, §2.5.2 |
+| Q2 Reference | `ELEMENTAL-ref-v1`, anchors, entropy and component data, bridge, default anchor, entropy datum (R1–R10) | §2.3.6 |
 | Q3 Electrolyte basis | Conserved groups (A, R, z), presets, M_g (R1–R7) | §2.1.5, §2.2.9 |
-| Q4 Labels | Triple, prefix and count lattice, exact order, flags, relabel (R1–R7) | §2.1.6, §2.2.2–3 |
+| Q4 Labels | Triple, prefix and count lattice, exact order, flags, relabel, FLUID, confined phases (R1–R8); the character decides a lone fluid phase's outlet (R9) | §2.1.6, §2.2.2–3, §2.4.13 |
 | Q5 Stability | Trial set, τ_tm, claims, witnesses, inactive outputs, ι_p (R1–R8) | §2.2.1, §2.2.6–8 |
 | Q6 Attributes | Extensive; partition rule; zero flow; grids; τ_mono (R1–R5) | §2.1.4 |
 | Q7 Amount bases | Per record; per-amount meaning; distinct kinds (R1–R5) | §2.1.5, §2.3.1 |
 | Q8 Solids | Kinetic criterion; exclusive role; substream dormancy; adsorption (R1–R7) | §2.1.3 |
 | Q9 Records | Types, identity, rights register, provenance axes, evidence (R1–R7) | §2.3.1, §2.7 |
 
-**Inputs still open,** each with the ADR it gates and a proposed default (§3 states each in full):
+**Inputs still open,** each with the ADR it gates and a proposed default. A1-a, A1-b, S5 and the two F7 holdup items
+are ruled by Amendment 2 (rulings §14) and no longer listed:
 
 | Item | Gates | Kind | Proposed default |
 | --- | --- | --- | --- |
-| A1-a: boundary condition on conserved bases | ADR-F2 | specifier ruling | the invariant condition b′ = C b; a dropped solid candidate reported |
-| A1-b: anchor depends on the method set | ADR-F4 | specifier ruling | the anchor is a function of the record only |
-| S5: EOS phase families; confined fluid phases | ADR-F5 | specifier ruling | a `FLUID` family for single-fluid-model methods; qualifiers on fluid families for confined phases |
-| Holdup dormancy | ADR-F7 | specifier ruling | the stream rules applied to holdups |
-| Non-material holdups | ADR-F7 | specifier ruling | admitted as unit-owned conserved holdups |
 | `heat_direction` verdict | none: ADR-F6 takes the default, X14's specification confirms it | specifier ruling | a judged check, as the exchanger's are today |
 
-**No ruling makes this design unworkable.** Three carry a cost the design absorbs until they are ruled: A1-a (an
-admissible stream refused at a boundary), A1-b (stored `ĥ` moving when a method is added) and S5 (label churn on EOS
-paths).
+**No ruling makes this design unworkable.** The three that carried a cost until ruled, A1-a (an admissible stream
+refused at a boundary), A1-b (stored `ĥ` moving when a method is added) and S5 (label churn on EOS paths), are ruled by
+Amendment 2.
 
 ---
 
@@ -1063,14 +1194,17 @@ paths).
 | R9 | Near-threshold stability decisions differ across platforms | fact: X07a legs | flags; per-platform records | An F5 amendment of the screen |
 | R10 | LOA slow for large superstructures | fact: X24 benchmarks | LOA; enumeration when small | Monolithic MINLP adapters as a declared second route |
 | R11 | Index-2 DAEs refused until index reduction exists | fact: a census of TX cases | typed refusal; N1 limitation | An index-reduction work order inside TX |
-| R12 | S5 (EOS families, confined fluid phases) | specifier ruling | §3 F5 default | If refused, Q4.R6 and O-3 stand and F5 measures the churn |
-| R13 | A1-a | specifier ruling | §3 F2 default | none structural |
-| R14 | A1-b | specifier ruling | §3 F4 default | If Q2.R2 stands, F4 records a re-anchoring event and moves warm starts by the shift |
-| R15 | Holdup dormancy, non-material holdups | specifier ruling | §3 F7 defaults | none structural |
+| R12 | S5 (EOS families, confined fluid phases) | ruled (Amendment 2: Q4.R6 rewritten, Q4.R8); O-3 closed | — | — |
+| R13 | A1-a | ruled (Amendment 2: Q3.R5 rewritten, Q3.A6) | — | — |
+| R14 | A1-b | ruled (Amendment 2: Q2.R2 rewritten, Q2.A9) | — | — |
+| R15 | Holdup dormancy, non-material holdups | ruled (Amendment 2: Q1.R8, Q1.R9) | — | — |
 | R16 | Dead time in control loops is not a DAE | preference and fact | refused `delay_unsupported` | TX's design pass chooses a history buffer in the owned step loop or a declared lag-chain approximation |
 | R17 | Dynamic optimisation needs integrator sensitivities | preference | not in TX; the owned BDF leaves room for forward sensitivities | A package that needs optimal control gets its own design pass, possibly an IDAS-sensitivity adapter |
-| R18 | Legacy providers built from store records in 0.5 | fact: the F3 build | an adapter in a new module builds each from record objects; if one accepts only a path, the adapter checks that the YAML records hash to the pinned SHAs and uses the path | none structural |
+| R18 | Legacy providers built from store records in 0.5 | resolved by ADR 0061 D12: loader views; `legacy_path_for` for path-only constructors | — | none structural |
 | R19 | `c_ref` and ΔT_ref (S7) | fact: F4 and F6 measurements | 2.0e3 J/(kg K); 100 K | An ADR-F2 amendment of the constants |
+| R20 | Legacy provenance classification is identity-bearing (ADR 0061 risk 1) | resolved: the W1 P1 review confirmed it with four changes; the specifier decides any later dispute | ADR 0061 D12's table | A correction before a released v2 document pins these SHAs costs one index regeneration; after, it makes new records |
+| R21 | Anchor of a record with no formation data and nothing phase-tagged (ADR 0061 risk 2) | ruled by Q2.R9 (Amendment 3) | `ig` with `anchor_defaulted` for a `mol` record; `null` with `anchor_undetermined` otherwise | — |
+| R22 | `molar_entropy` not a registered kind, so s° entries cannot validate (ADR 0061 risk 6) | ADR-F2 adds the kind (ADR 0062 D1) | refused until then; no 0.5 import needs it | — |
 | O1 | Dynamics (0.7) before the design toolkit (0.8)? | preference | dynamics first | Swap the lines; no dependency breaks |
 | O2 | A bundled open databank | preference and fact (R-706) | nothing shipped until cleared | A cleared source gets a packaged path in X11 rest |
 | O3 | PrISMa beyond isotherms (A3) | fact: the owner | the equilibrium part is Q8.R7's adsorbed phase (0.6); the kinetic part is solid-substream loading with LDF rows on F6 | Cyclic adsorption moves behind TX |
@@ -1096,25 +1230,28 @@ reader never reads a newer document as an older one.
 
 | Interface or schema (frozen by) | Change | ADR | Lands |
 | --- | --- | --- | --- |
-| `PropertyProvider` types (§2.1, `interfaces-frozen.md` §1) | `PropertyRequest.state` accepts `EvaluationState`; `Phase` follows the triple; `PhaseSignature` takes phase-set renderings; `FlashResult` gains `phases`, keeping `vapor` and `liquid`; `FlashRequest.specification` adds PH, PS, TV, Pβ, Tβ | ADR-F2 (types), ADR-F5 (semantics) | 0.5, 0.6 |
-| `PropertyCapabilities` (P02/K01) | `connection_definitions`, `phase_models`, `vocabulary_version`, attributes read, convention-shift capability | ADR-F2, ADR-F4 | 0.5, 0.6 |
+| `PropertyProvider` types (§2.1, `interfaces-frozen.md` §1) | Widened annotations only: `PropertyRequest.state` accepts `EvaluationState`, `PropertyRequest.phase` accepts `PhaseId` (the triple). `PropertyCapabilities`, `FlashResult` and `FlashRequest` are unchanged; N-phase results are the new `EquilibriumResult` (ADR-F5) and v2 capability fields the new `MethodDescription` (ADR-F4); providers answer TP only | ADR-F2 (types), ADR-F4, ADR-F5 | 0.5, 0.6 |
+| `MethodDescription` (new; `PropertyCapabilities` unchanged) | `describe_method()`: fluid model `split` or `single`, phase models with supports, vocabulary version, attributes read, convention, shifts, bridges, native convention | ADR-F4 | 0.6 |
 | `ProcessRevision` (P01) | v2 (§2.1.14): convention, records by SHA, materials, reaction sets, energy and signal connections, endpoint kinds, sections; preview: method sets, phase assertions, templates. v1 unchanged | ADR-F2 (with F3–F6 inputs) | 0.5 |
 | `Specification` (P01) | v2: targets on derived quantities and on energy and signal connections | ADR-F2 | 0.5 |
-| `ComponentRecord` (P01) | v2: identity keys, `charge`, amount basis, per-amount M and element matrix, anchor and formation data, correlation entries, per-entry provenance axes, uncertainty | ADR-F3 | 0.5 |
-| ADR 0001 D1.3 quantity kinds | `specific_enthalpy`, `specific_entropy`, `segment_molar_flow`, `segment_molar_mass`; `power` if absent | ADR-F2 | 0.5 |
-| `ModelManifest` (P01) | v2: modes, sides, state points, required capabilities, manipulable parameters, zero-flow forms, causal outlet evaluation, heat intervals and heat curves, equipment items, statefulness | ADR-F6 | 0.6 |
-| Accumulation kinds (ADR 0008 D3) | `state_rate` added (C10 reversed) | ADR-F7 | 0.7 |
+| `ComponentRecord` (P01) | v2, `record-v2.schema.json`: identity keys, `charge`, amount basis, per-amount M and element matrix, anchor and formation data, correlation entries, per-entry provenance axes, uncertainty; the anchor is an identity field | ADR-F3 | 0.5 |
+| Data lock (new) | `data-lock.schema.json` (`openflowsheet-data-lock-v1`) | ADR-F3 | 0.5 |
+| `Records` protocol (new; ADR 0019 Amendment 8) | `search_records`, `get_record`, `register_record`, `validate_record`, `assess_rights` | ADR-F3 | 0.5 |
+| ADR 0001 D1.3 quantity kinds | `specific_enthalpy`, `specific_entropy`, `specific_volume`, `specific_heat_capacity`, `molar_entropy`, `segment_molar_flow`, `segment_molar_mass`, `segment_molar_enthalpy`, `segment_molar_entropy`, `segment_molar_heat_capacity`, `segment_molar_volume`, `enthalpy_flow`, `mass_fraction`, `number_flow`; `power` exists | ADR-F2 | 0.5 |
+| `ModelManifest` (P01) | v2: modes, sides, state points, internal variables, required capabilities, manipulable parameters, zero-flow forms, phase routing, reactivation kinds, causal outlet evaluation, heat intervals and heat curves, the coverage recipe, the execution class, equipment items, statefulness | ADR-F6 | 0.6 |
+| Accumulation kinds (ADR 0008 D3) | `state_rate` added (C10 reversed); the F1 kind `holdup_kind` | ADR-F7 | 0.7 |
 | `ValidationReport` (P01) | Task enum gains the run kinds | ADR-F7 | 0.7 |
-| `CompiledProblemMetadata` (P02/K01) | Nullable `differential_map`; methods unchanged | ADR-F7 | 0.7 |
+| `CompiledProblemMetadata` (P02/K01) | Nullable `differential_map`, the last field, default `None`, serialised only when set; methods unchanged | ADR-F7 | 0.7 |
 | `EvaluationContext` (§2.1) | **Unchanged**: no time field (ADR 0008 D1) | — | — |
 | `SolvePolicy` (K03) | A new `phase_contract` value with discrete-coordinate signatures | ADR-F5 | 0.6 |
-| `SolutionCertificate` (K04/K05) | `phase_branch` for N-phase points; `phase_stability` with claim level, witness, trial-set id, `near_critical` and `near_spinodal`; `heat_direction` check | ADR-F5, ADR-F6 | 0.6 |
-| `RunManifest`, replay manifest (K04/K05) | Data lock, registry snapshot, evidence-class fields; `ReplayMode` gains `forced_replay` | ADR-F8 (`forced_replay` with TX) | 0.5, 0.7 |
-| Checkpoint metadata (K03); `SolveEvent` outcomes | Per-kind checkpoints; DAE and event outcomes | TX's ADR on ADR-F7 | 0.7 |
-| Job and job events (K06/T07) | Progress events, partial-artifact kinds, `submit_run(kind, documents)` | ADR-F7; ADR 0019/0020 amendments | 0.7 |
+| `SolutionCertificate` (K04/K05) | An optional `phase_report` (default `None`, omitted from every serialisation and from `r0_projection` when `None`): per point signature, labels, relabels and `phase_stability` with claim level, witness, trial-set id, `near_critical` and `near_spinodal`; `heat_direction` check | ADR-F5, ADR-F6 | 0.6 |
+| `RunManifest`, replay manifest (K04/K05) | Optional members `bundle_format`, `data_lock_sha256`, `extensions_used`, `run_kind`, `documents`, `environment.registry`; evidence-class fields; `ReplayMode` gains `forced_replay`. Built 0.5 (F8-WO1–WO3), 0.6 (WO4–WO6), 0.7 (WO7) | ADR-F8 (`forced_replay` with TX) | 0.5, 0.6, 0.7 |
+| Checkpoint metadata (K03); `SolveEvent` outcomes | Per-kind checkpoints (envelope ADR-F7, transient body TX); DAE and event outcomes | ADR-F7; TX's ADR | 0.7 |
+| Job and job events (K06/T07) | Progress events, the job operation `run`, the artifact kinds of ADR 0066 D12 and ADR 0067 D3, `submit_run(kind, documents)` | ADR-F7, ADR-F8; ADR 0019/0020 amendments | 0.7 |
 | `Application` protocol (§2.1) | **Unchanged**: new capabilities are OPERATIONS rows (C1) | ADR 0019 amendments | per package |
+| `Inspection` (ADR 0019) | `list_capabilities`, `check_admission` (ADR 0019 Amendment 7) | ADR 0060 | 0.5 |
 | `OptimizationReport`, `Study` (M01–M04) | Synthesis report fields | X24's ADR | 0.9 |
-| `UnitModel` protocol (not in §2.1) | v2 beside v1; v1 units run through an adapter | ADR-F6 | 0.6 |
+| `UnitModel` protocol (not in §2.1) | v2 beside v1; v1 units without phase-selecting points run through an adapter | ADR-F6 | 0.6 |
 
 ADR numbers are assigned when each ADR is written; ADR-F1 to ADR-F8 are expected to take 0058 onwards.
 
@@ -1192,8 +1329,9 @@ lives, which foundation hooks it uses, what it refuses, and what broke. Every br
   flash with water (VLLE), with O-8's cost of 50 near-pure trials; derived quantities for product properties (D86 and
   TBP points, RVP with its auxiliary state point at 37.8 °C and V/L = 4, flash point); X09's PR liquid regime.
 - *Refuses:* comparing a regeneration by SHA (Q9.R5 compares under R2); a replay that would regenerate.
-- *Broke, fixed:* (1) a free-water phase (pure water by its own model beside a hydrocarbon liquid) is a qualified fluid
-  phase, which Q4.R1 does not allow. It is part of the S5 input to ADR-F5 (§3 F5). (2) Product-property specifications
+- *Broke, fixed:* (1) a free-water phase (pure water by its own model beside a hydrocarbon liquid) is `FLUID(water)`
+  (Q4.R8); beside the unconfined FLUID model both representations are admitted and stability decides, unless X21's
+  method declares `confined_exclusive` (ADR 0064 D6). (2) Product-property specifications
   need auxiliary state points, which derived quantities now carry (§2.1.13). (3) The dependencies are F5, F6 and X09
   (N4).
 
@@ -1214,7 +1352,8 @@ lives, which foundation hooks it uses, what it refuses, and what broke. Every br
 ### 9.6 TX Transient, with controllers and co-simulation (0.7; on F7 and F8)
 
 - *Carries:* the steady connection definitions. Time is the problem's coordinate, never on a connection or in
-  `EvaluationContext`. Units own conserved holdups (Q1.R7), rate states and discrete states.
+  `EvaluationContext`. Time inputs come from the dynamic scenario document. Units own conserved holdups (Q1.R7), rate
+  states and discrete states.
 - *Controllers:* units with signal ports. Measurements are probe endpoints on any target; a stream T is a derived
   quantity with its state point. Actuators drive manipulable parameters, such as a valve opening. Cascade, ratio,
   feedforward, split range and selectors are signal units. A PID has an integral and a filtered-derivative state
@@ -1232,7 +1371,7 @@ lives, which foundation hooks it uses, what it refuses, and what broke. Every br
   `state_rate` kind, and M stays 0/1. (2) Saturation, modes and valve states need discrete states assigned at events:
   F7 adds them with event actions, and F5's signature became a product of discrete coordinates. (3) Measurements and
   actuators needed the `probe` and `parameter` endpoint kinds (F2). (4) A vessel that drains to exactly zero has a
-  dormant holdup that Q1.R4 and Q1.R6 do not cover: an F7 open item (§3).
+  dormant holdup, entered by a located drain event and re-seeded when an inflow starts (Q1.R8).
 
 ### 9.7 X12 Economics (0.8; on F6)
 
@@ -1274,7 +1413,7 @@ lives, which foundation hooks it uses, what it refuses, and what broke. Every br
 - *Refuses:* a recipe that changes the variable set (`recipe_structure_change_unsupported`) until a later decision;
   scheduling until its layer exists; optimising a recipe (R17).
 - *Broke, fixed:* nothing beyond TX's fixes; segments as active-row regimes keep ADR 0005's fixed variable set. Emptying
-  and refilling a vessel is the holdup-dormancy item (§3 F7).
+  and refilling a vessel is holdup dormancy (Q1.R8).
 
 ### 9.10 X26 Relief and safety (0.9; on TX)
 
@@ -1288,7 +1427,8 @@ lives, which foundation hooks it uses, what it refuses, and what broke. Every br
   P_reseat); TX depressurisation with fire heat input.
 - *Refuses:* nothing new structurally.
 - *Broke, fixed:* (1) a vessel wall's energy, and with it the minimum metal temperature, needs a holdup that is not a
-  material holdup: an F7 open item (§3). (2) Hysteresis uses discrete states, as TX does.
+  material holdup: a registered non-material holdup kind, `wall_energy` (Q1.R9). (2) Hysteresis uses discrete states, as
+  TX does.
 
 **Also checked, briefly.** *X13:* a Gibbs reactor is the conserved-basis slot with the element-and-charge matrix; kinetic
 CSTRs and PFRs use reaction sets with any kinetics kind; a PFR is an internal discretisation or a template. *PrISMa:*
@@ -1307,11 +1447,11 @@ revision.
 | Derived quantities over any vocabulary item, with auxiliary state points | F1, F2 | X18, X19, X21 |
 | Kinetics kinds that write source terms for any carried index | F1, F2 | X20 |
 | Methods declaring the attributes they read | F4 | X20 |
-| Registered phase families; qualifiers on fluid families (ruling pending) | F5, specifier | S5, X21 |
+| Registered phase families; qualifiers on fluid families | F5, specifier | S5, X21 |
 | Component-pair index sets; extensible record types | F3, F4 | X22 |
 | `state_rate` rows, discrete states, event actions; the discrete-coordinate signature | F5, F7 | TX, X25, X26 |
 | Sides, manipulable parameters, heat intervals and heat curves in the manifest | F6 | TX, X14 |
-| Holdup dormancy and non-material holdups (rulings pending) | specifier, F7 | TX, X25, X26 |
+| Holdup dormancy and non-material holdups | specifier, F7 | TX, X25, X26 |
 
 No sketch needed a new variable on a material connection, a `section`, or a v3. Every fix is additive inside a
 foundation that has not yet been built. All except the two preview-slot changes (method sets and sides) touch the
