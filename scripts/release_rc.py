@@ -22,11 +22,29 @@ checkout that is not at `--commit`. With D2 deferred, nothing runs under `strace
 
     python scripts/release_rc.py surface --out RC/surface
     python scripts/release_rc.py step1 --rc RC --commit C
-    python scripts/release_rc.py items --line 0.4 --rc RC --commit C \
-        [--python ENV=INTERPRETER ...] [--nlp-prefix P] [--nlp-cache D] [--ci-run ID]
+- **local** (steps 2, 6–17 at C, RP §6.1 "How the steps run"): 0.3.0's RC runner, ported in
+  `scripts/release_rc_local.py`. It runs the line's `rc_steps` that have a local leg from this
+  checkout, which must be at C and clean, writes the records under `--rc`
+  (`evidence/<pkg>/<C>/artifacts/rc`) and its logs and environments under `--work`, and exits 0
+  iff every record it wrote passed. A selected step whose input is not given is refused before
+  anything runs (exit 2).
+- **record** (steps 11–16): one step's `t08-rc-v1` record from the runner's summary and logs
+  (`local` calls it; it can be re-run alone).
+- **ci** (steps 1–8's CI legs): the `release_rc` dispatch at C's artifacts and job logs into
+  `<rc>/ci/` (0.3.0's `fetch_ci.sh`).
+- **records** (§6.9): the cited records into `evidence/<pkg>/<C>/rc/` and `rc/records.json`
+  (format `m07a-rc-records-v1`), a record over 1 MB gzip-compressed beside its path.
 
-Steps 2–7 and 9–16 are not yet driven from here (RP §6.1 "How the steps run"; see
-`docs/RP_HANDOFF.md`).
+    python scripts/release_rc.py items --line 0.4 --rc RC --commit C \
+        [--python ENV=INTERPRETER ...] [--nlp-prefix P] [--nlp-cache D] \\
+        [--ci-run ID]
+    python scripts/release_rc.py local --line 0.4 --rc RC --commit C --work W \
+        [--steps 2,6,...] [--nlp-prefix P --nlp-cache D] [--journey J] [--w27-artifacts DIR] \
+        [--ci-run ID] [--base-python PY]
+    python scripts/release_rc.py record step12 --rc RC --commit C --line 0.4 --summary S --logs L
+    python scripts/release_rc.py ci --rc RC --commit C --ci-run ID
+    python scripts/release_rc.py records --rc RC --commit C --to evidence/PKG/C/rc \
+        --cited CITED.txt --rc-record docs/REL040-rc-record.md --package PKG
 """
 
 from __future__ import annotations
@@ -361,21 +379,88 @@ def _surface(out: Path) -> int:
     ).returncode
 
 
+def _local_lib() -> Any:
+    sys.path.insert(0, str(ROOT / "scripts"))
+    import release_rc_local  # noqa: PLC0415
+
+    return release_rc_local
+
+
+def _steps(line: str, selected: str | None) -> tuple[int, ...]:
+    """The line's `rc_steps` with a local leg, narrowed to `--steps` if given."""
+    import release_gate  # noqa: PLC0415
+
+    def read(path: str) -> bytes | None:
+        file = ROOT / path
+        return file.read_bytes() if file.is_file() else None
+
+    claimed = set(release_gate.load_line(line, read).document["gate_set"].get("rc_steps", []))
+    local = [step for step in _local_lib().LOCAL_STEPS if step in claimed]
+    if selected is None:
+        return tuple(local)
+    wanted = {int(step) for step in selected.split(",") if step}
+    return tuple(step for step in local if step in wanted)
+
+
+def _local(arguments: argparse.Namespace, head: str) -> int:
+    lib = _local_lib()
+    plan = lib.Plan(
+        line=arguments.line,
+        commit=head,
+        rc=arguments.rc.resolve(),
+        work=arguments.work.resolve(),
+        steps=_steps(arguments.line, arguments.steps),
+        base_python=arguments.base_python,
+        nlp_prefix=arguments.nlp_prefix,
+        nlp_cache=arguments.nlp_cache,
+        journey=arguments.journey,
+        w27_artifacts=arguments.w27_artifacts,
+        ci_run=arguments.ci_run,
+    )
+    missing = lib.missing_inputs(plan)
+    if missing:
+        print(f"refused: {'; '.join(missing)}", file=sys.stderr)
+        return 2
+    return int(lib.Runner(plan).run())
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=(__doc__ or "").split("\n\n")[0])
     commands = parser.add_subparsers(dest="command", required=True)
     surface = commands.add_parser("surface", help="step 8: m07a_rc.py surface, unchanged")
     surface.add_argument("--out", type=Path, required=True)
-    for name in ("step1", "items"):
+    for name in ("step1", "items", "local", "record", "ci", "records"):
         sub = commands.add_parser(name)
+        if name == "record":
+            sub.add_argument("step", choices=sorted(_local_lib().RECORDS))
         sub.add_argument("--rc", type=Path, required=True, help="the RC record directory")
         sub.add_argument("--commit", required=True, help="C; the checkout must be at it")
-        if name == "items":
+        if name in ("items", "local", "record"):
             sub.add_argument("--line", required=True, help="the release line <major>.<minor>")
+        if name in ("items", "local"):
+            sub.add_argument("--nlp-prefix", type=Path)
+            sub.add_argument("--nlp-cache", type=Path)
+        if name in ("items", "local", "ci"):
+            sub.add_argument(
+                "--ci-run", type=int, required=name == "ci", help="the release_rc dispatch at C"
+            )
+        if name == "items":
             sub.add_argument("--python", action="append", default=[], metavar="ENV=PATH")
-            sub.add_argument("--nlp-prefix")
-            sub.add_argument("--nlp-cache")
-            sub.add_argument("--ci-run", type=int, help="the release_rc dispatch at C")
+        if name == "local":
+            sub.add_argument("--work", type=Path, required=True, help="logs and environments")
+            sub.add_argument("--steps", help="comma-separated subset of the line's local steps")
+            sub.add_argument("--journey", help="J, the journey commit (step 15)")
+            sub.add_argument("--w27-artifacts", type=Path, help="the pinned W27 archive (step 16)")
+            sub.add_argument("--base-python", default="/usr/bin/python3")
+        if name == "record":
+            sub.add_argument("--summary", type=Path, required=True)
+            sub.add_argument("--logs", type=Path, required=True)
+            sub.add_argument("--journey", default="")
+        if name == "records":
+            sub.add_argument("--to", type=Path, required=True, help="evidence/<pkg>/<C>/rc")
+            sub.add_argument("--cited", type=Path, required=True, help="one path per line")
+            sub.add_argument("--rc-record", required=True)
+            sub.add_argument("--package", required=True)
     arguments = parser.parse_args(argv)
     if arguments.command == "surface":
         return _surface(arguments.out)
@@ -385,6 +470,38 @@ def main(argv: Sequence[str] | None = None) -> int:
         return 2
     if arguments.command == "step1":
         return step1(arguments.rc, head)
+    if arguments.command == "local":
+        return _local(arguments, head)
+    if arguments.command == "record":
+        return int(
+            _local_lib().write_record(
+                arguments.step,
+                arguments.rc.resolve(),
+                head,
+                arguments.summary,
+                arguments.logs,
+                arguments.line,
+                arguments.journey,
+            )
+        )
+    if arguments.command == "ci":
+        return int(_local_lib().fetch_ci(arguments.ci_run, head, arguments.rc / "ci", _gh))
+    if arguments.command == "records":
+        cited = [
+            line.strip()
+            for line in arguments.cited.read_text(encoding="utf-8").splitlines()
+            if line.strip()
+        ]
+        try:
+            index = _local_lib().collect_records(
+                arguments.rc, arguments.to, cited, head, arguments.rc_record, arguments.package
+            )
+        except ValueError as error:
+            print(f"refused: {error}", file=sys.stderr)
+            return 2
+        files = index["files"]
+        print(f"{len(files)} records, {sum(f['committed'] for f in files)} committed as is")
+        return 0
     interpreters = {"project": sys.executable}
     for pair in arguments.python:
         environment, _, interpreter = pair.partition("=")
@@ -396,7 +513,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         arguments.rc,
         head,
         interpreters,
-        (arguments.nlp_prefix, arguments.nlp_cache),
+        (
+            None if arguments.nlp_prefix is None else str(arguments.nlp_prefix),
+            None if arguments.nlp_cache is None else str(arguments.nlp_cache),
+        ),
         arguments.ci_run,
     )
 
