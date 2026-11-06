@@ -337,3 +337,11 @@ Two choices were made on the reviewer's defaults; tell me if you want them the o
 - **S7:** retiring a legacy unit family affects only revisions built by the new compiler; old-style revisions keep
   running it. Alternative: retire it for every revision.
 Default: Proposed; the v2 core freeze is recorded at W1's end on these texts.
+
+## MSG — review the MCP description of the new `explain` tool (2026-11-06; blocks MSG's merge)
+
+The `explain` operation (ADR 0058, accepted) has an MCP tool description, the text an AI agent reads to decide when to
+call the tool: `src/openflowsheet/application/bindings/descriptions/explain.md` on branch `wp/MSG`
+(`git show wp/MSG:src/openflowsheet/application/bindings/descriptions/explain.md`). Every MCP description needs two
+recorded reviews before release (T08 G15): the design lane's (done in MSG's reviewer pass) and yours. In plain words:
+read the text and say "approved" or what to change. Default: none — MSG cannot merge until you have looked at it.
