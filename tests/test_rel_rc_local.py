@@ -10,6 +10,7 @@ and the promoted G11 collector, which writes what 0.2.0's `g11collect.py.txt` wr
 from __future__ import annotations
 
 import gzip
+import hashlib
 import json
 import os
 import subprocess
@@ -17,6 +18,7 @@ import sys
 from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
+from unittest import mock
 
 import pytest
 from conftest import REPO_ROOT
@@ -374,7 +376,9 @@ def test_missing_inputs_refuse_before_anything_runs(tmp_path: Path) -> None:
     assert local.missing_inputs(_plan(tmp_path, (2,)))[0].startswith("--rc inside the checkout")
 
 
-def _run(tmp_path: Path, steps: tuple[int, ...], **extra: Any) -> list[tuple[str, list[str], Path]]:
+def _run(
+    tmp_path: Path, steps: tuple[int, ...], *, exit_code: int = 0, **extra: Any
+) -> list[tuple[str, list[str], Path]]:
     seen: list[tuple[str, list[str], Path]] = []
 
     def execute(argv: list[str], log: Path, env: Mapping[str, str], cwd: Path) -> int:
@@ -385,9 +389,25 @@ def _run(tmp_path: Path, steps: tuple[int, ...], **extra: Any) -> list[tuple[str
     plan = _plan(tmp_path, steps, **extra)
     (plan.work / "rcvenv/bin").mkdir(parents=True)
     (plan.work / "rcvenv/bin/python").touch()
-    os.symlink(REPO_ROOT, plan.work / "nlp-wt")  # a checkout at HEAD = C
-    assert local.Runner(plan, execute=execute).run() == 0
+    if not (plan.work / "nlp-wt").exists():
+        os.symlink(REPO_ROOT, plan.work / "nlp-wt")  # a checkout at HEAD = C
+    with mock.patch.object(local, "_output", _clean_status(local._output)):
+        assert local.Runner(plan, execute=execute).run() == exit_code
     return seen
+
+
+def _clean_status(output: Any) -> Any:
+    """`_output`, with `git status --porcelain` empty: the symlinked nlp worktree is this checkout,
+    whose working tree a test run may change (C-12's own test uses a real repository)."""
+
+    def found(argv: list[str], *args: Any, **kwargs: Any) -> str:
+        return (
+            ""
+            if argv[:3] == ["git", "status", "--porcelain"] and len(argv) == 3
+            else output(argv, *args, **kwargs)
+        )
+
+    return found
 
 
 def test_the_runner_runs_only_the_selected_steps_in_0_3_0s_order(tmp_path: Path) -> None:
@@ -435,6 +455,8 @@ def test_the_runner_plan_for_steps_12_14_15(tmp_path: Path) -> None:
 
 def test_the_runner_exits_on_its_records_not_on_expected_non_zero_commands() -> None:
     assert local.records_passed({"step16-dryrun": 1, "record-step16": 0, "step17-items": 0})
+    assert local.records_passed({"record-step16": 0, "stop-nlp-wt": 0})
+    assert not local.records_passed({"record-step16": 0, "stop-step12-inputs": 2})
     assert not local.records_passed({"record-step16": 1})
     assert not local.records_passed({"record-step16": 0, "step17-items": 1})
     assert not local.records_passed({})
@@ -524,3 +546,57 @@ def test_g11_keep_shim_names_each_points_directory_and_keeps_it(
     with m07_rc_keep._Runs(max_workers=1):
         assert os.environ[m07_rc_keep.RUN].startswith("run")
     assert os.environ[m07_rc_keep.RUN] == "after-runs"
+
+
+# -- amendment A-5 (RP §6.4; review S-5) and C-12 (the nlp worktree at C, clean) ------------------
+
+
+def test_a5_step12_s_inputs_are_registered_by_sha256(monkeypatch: pytest.MonkeyPatch) -> None:
+    """The archived inputs at the full commit, each equal to its registered SHA-256 (the hashes in
+    RP §6.4, read independently by `git show` here). Controls: a failed read, a changed byte."""
+    found = local.step12_inputs(local._git_show)
+    assert {name: hashlib.sha256(data).hexdigest() for name, data in found.items()} == {
+        "g10-adapter-halves-v3": "c6a520e08433791cdea48821b981dd661a606e86bf99c740ff6bd26c86022586",
+        "g11-coverage-v3": "fa1b02544f00a1ce02a203dc8cccc9d7bc5e35122a79cfe1506e355bb9729a90",
+    }
+    assert local.STEP12_INPUTS_AT == "bd446abab1bcc26b286ae4a287d1de131d87ceac"
+    with pytest.raises(ValueError, match="could not be read"):
+        local.step12_inputs(lambda at: None)
+    with pytest.raises(ValueError, match="not the registered"):
+        local.step12_inputs(lambda at: (local._git_show(at) or b"") + b" ")
+
+
+def test_a5_unreadable_inputs_stop_step_12(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(local, "_git_show", lambda at: None)
+    labels = [label for label, *_ in _run(tmp_path, (12,), exit_code=1)]
+    assert "step12-g10" not in labels and "step12-g11" not in labels
+    summary = (tmp_path / "w" / "summary.txt").read_text("utf-8")
+    assert "stop-step12-inputs exit 2 :: bd446abab1bcc26b286ae4a287d1de131d87ceac:" in summary
+
+
+def test_c12_the_nlp_worktree_problem() -> None:
+    assert local.nlp_tree_problem(HEAD, "", HEAD) is None
+    assert local.nlp_tree_problem("d" * 40, "", HEAD) == f"HEAD {'d' * 40} is not C = {HEAD}"
+    assert local.nlp_tree_problem("", "", HEAD) == f"HEAD (none) is not C = {HEAD}"
+    assert local.nlp_tree_problem(HEAD, " M src/x.py\n?? y\n", HEAD) == (
+        "not clean: 2 paths (M src/x.py, ?? y)"
+    )
+
+
+def test_c12_an_nlp_worktree_not_at_c_stops_step_14(tmp_path: Path) -> None:
+    """A real repository at another commit as the nlp worktree: step 14 does not run, and the
+    runner exits 1 on `stop-nlp-wt`. Control: the plan test above (a checkout at C, clean)."""
+    other = tmp_path / "other"
+    other.mkdir()
+    subprocess.run(["git", "init", "-q", str(other)], check=True)
+    (other / "f").write_text("f\n", encoding="utf-8")
+    git = ["git", "-C", str(other), "-c", "user.name=t", "-c", "user.email=t@t"]
+    subprocess.run([*git, "add", "f"], check=True)
+    subprocess.run([*git, "commit", "-q", "-m", "other"], check=True)
+    (tmp_path / "w").mkdir()
+    os.symlink(other, tmp_path / "w" / "nlp-wt")
+    nlp = {"nlp_prefix": Path("/n"), "nlp_cache": Path("/c")}
+    labels = [label for label, *_ in _run(tmp_path, (14,), exit_code=1, **nlp)]
+    assert "step14-nlp-check" not in labels
+    summary = (tmp_path / "w" / "summary.txt").read_text("utf-8")
+    assert f"stop-nlp-wt exit 2 :: {tmp_path / 'w' / 'nlp-wt'}: HEAD " in summary

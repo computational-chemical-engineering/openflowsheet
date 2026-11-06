@@ -46,8 +46,13 @@ THREADS = {"OMP_NUM_THREADS": "1", "OPENBLAS_NUM_THREADS": "1", "MKL_NUM_THREADS
 SYS_PATH = "/usr/local/bin:/usr/bin:/bin"
 #: Step 12's reactor variant (M02 v3, `src/openflowsheet/adapters/variants/`).
 REACTOR_VARIANT = "pymrm-6089593-g2-nz800-s123-v1"
-#: Step 12's archived inputs: 0.2.0's and 0.3.0's, WO-12a′'s v3 records at `bd446ab` (RP §6.3).
-STEP12_INPUTS_AT = "bd446ab"
+#: Step 12's archived inputs: 0.2.0's and 0.3.0's, WO-12a′'s v3 records, registered by commit and
+#: SHA-256 (RP §6.4, amendment A-5). A failed read or a differing hash stops the RC (§12).
+STEP12_INPUTS_AT = "bd446abab1bcc26b286ae4a287d1de131d87ceac"
+STEP12_INPUTS = {
+    "g10-adapter-halves-v3": "c6a520e08433791cdea48821b981dd661a606e86bf99c740ff6bd26c86022586",
+    "g11-coverage-v3": "fa1b02544f00a1ce02a203dc8cccc9d7bc5e35122a79cfe1506e355bb9729a90",
+}
 #: Step 11's cross-check pins, as `benchmarks/m01/external_crosscheck.py` registers them.
 XCHECK_PINS = (
     "chemicals==1.5.2",
@@ -231,6 +236,38 @@ def _m02_judges(out: Path) -> dict[str, Callable[[], tuple[dict[str, Any], bool]
 
     m02.M02 = out  # the records this step wrote, judged by M02's own functions
     return {"g10": m02.g10, "g11": m02.g11, "g12": m02.g12}
+
+
+def step12_inputs(show: Callable[[str], bytes | None]) -> dict[str, bytes]:
+    """Step 12's archived inputs (A-5), each read by `show` (`git show <commit>:<path>`, `None`
+    when it fails) and checked against its registered SHA-256. A `ValueError` stops the RC."""
+    found = {}
+    for name, registered in STEP12_INPUTS.items():
+        at = f"{STEP12_INPUTS_AT}:benchmarks/m02/{name}.json"
+        data = show(at)
+        if data is None:
+            raise ValueError(f"{at}: could not be read")
+        digest = hashlib.sha256(data).hexdigest()
+        if digest != registered:
+            raise ValueError(f"{at}: SHA-256 {digest}, not the registered {registered}")
+        found[name] = data
+    return found
+
+
+def _git_show(at: str) -> bytes | None:
+    done = subprocess.run(["git", "show", at], cwd=ROOT, capture_output=True)
+    return done.stdout if done.returncode == 0 else None
+
+
+def nlp_tree_problem(head: str, status: str, commit: str) -> str | None:
+    """C-12: the nlp worktree's HEAD is C and its tree is clean (`git status --porcelain` empty);
+    else why not."""
+    if head != commit:
+        return f"HEAD {head or '(none)'} is not C = {commit}"
+    if status.strip():
+        changed = status.strip().splitlines()
+        return f"not clean: {len(changed)} paths ({', '.join(changed[:3])})"
+    return None
 
 
 def step12_checks(
@@ -831,6 +868,21 @@ class Runner:
         status = _output(["git", "status", "--porcelain"], cwd)
         (self.logs / f"{name}.txt").write_text(status, encoding="utf-8")
 
+    def stop(self, name: str, code: int, why: str) -> None:
+        """A summary line `stop-<name>`; the runner exits non-zero on a non-zero one (§12)."""
+        with self.lock, self.summary.open("a", encoding="utf-8") as stream:
+            stream.write(f"stop-{name} exit {code} :: {why}\n")
+
+    def nlp_tree(self) -> Path | None:
+        """The clean nlp worktree at C (C-12), checked and recorded each time it is used."""
+        tree = self.worktree("nlp-wt")
+        head = _output(["git", "rev-parse", "HEAD"], tree).strip()
+        problem = nlp_tree_problem(
+            head, _output(["git", "status", "--porcelain"], tree), self.plan.commit
+        )
+        self.stop("nlp-wt", 2 if problem else 0, f"{tree}: {problem or 'at C, clean'}")
+        return None if problem else tree
+
     def worktree(self, name: str) -> Path:
         """A clean detached worktree at C under the work directory (0.3.0's `nlp-wt`)."""
         tree = self.plan.work / name
@@ -840,10 +892,6 @@ class Runner:
                 ["git", "-C", ROOT, "worktree", "add", "--detach", tree, self.plan.commit],
             )
         return tree
-
-    def head_is_c(self, tree: Path) -> bool:
-        head = _output(["git", "rev-parse", "HEAD"], tree).strip()
-        return head == self.plan.commit
 
     def venv(self, name: str, *installs: Sequence[object]) -> Path:
         """A venv under the work directory, unless it exists; then each `pip install` in order."""
@@ -1025,11 +1073,15 @@ class Runner:
         out.mkdir(parents=True, exist_ok=True)
         inputs = work / "inputs"
         inputs.mkdir(parents=True, exist_ok=True)
+        try:
+            read = step12_inputs(_git_show)
+        except ValueError as error:
+            self.stop("step12-inputs", 2, str(error))
+            return
+        self.stop("step12-inputs", 0, f"{STEP12_INPUTS_AT}: both registered SHA-256 equal")
         archived = {}
-        for name in ("g10-adapter-halves-v3", "g11-coverage-v3"):
-            at = f"{STEP12_INPUTS_AT}:benchmarks/m02/{name}.json"
-            data = subprocess.run(["git", "show", at], cwd=ROOT, capture_output=True).stdout
-            archived[name] = inputs / f"{name}-{STEP12_INPUTS_AT}.json"
+        for name, data in read.items():
+            archived[name] = inputs / f"{name}-{STEP12_INPUTS_AT[:7]}.json"
             archived[name].write_bytes(data)
         host = _output(["uname", "-a"]) + _output(["lscpu"])
         (out / "host.txt").write_text(host, encoding="utf-8")
@@ -1183,10 +1235,8 @@ class Runner:
         """`run_step14.sh`: a clean detached worktree at C, no install into it, `env -i`."""
         out, work = self.plan.rc / "step14", self.plan.work
         out.mkdir(parents=True, exist_ok=True)
-        tree = self.worktree("nlp-wt")
-        if not self.head_is_c(tree):
-            with self.summary.open("a", encoding="utf-8") as stream:
-                stream.write(f"step14-nlp-wt exit 2 :: {tree} is not at {self.plan.commit}\n")
+        tree = self.nlp_tree()
+        if tree is None:
             return
         nlp, cache = self.plan.nlp_prefix, self.plan.nlp_cache
         status = _output(["git", "status", "--porcelain", "--ignored"], tree)
@@ -1362,15 +1412,12 @@ class Runner:
             "--python",
             f"lca={lca / 'bin' / 'python'}",
         ]
-        if plan.nlp_prefix is not None and plan.nlp_cache is not None:
-            argv += [
-                "--nlp-prefix",
-                plan.nlp_prefix,
-                "--nlp-cache",
-                plan.nlp_cache,
-                "--nlp-root",
-                self.worktree("nlp-wt"),
-            ]
+        nlp = (
+            self.nlp_tree() if plan.nlp_prefix is not None and plan.nlp_cache is not None else None
+        )
+        if nlp is not None:  # otherwise the nlp items are `unsupported` ($NLP_PREFIX unset)
+            argv += ["--nlp-prefix", plan.nlp_prefix, "--nlp-cache", plan.nlp_cache]
+            argv += ["--nlp-root", nlp]
         if plan.ci_run is not None:
             argv += ["--ci-run", str(plan.ci_run)]
         self.step("step17-items", argv)
@@ -1417,10 +1464,13 @@ def _output(argv: list[str], cwd: Path = ROOT, env: Mapping[str, str] | None = N
 
 
 def records_passed(codes: Mapping[str, int]) -> bool:
-    """The runner's exit: every record written passed, and step 17's items did. A command's own
+    """The runner's exit: every record written passed, step 17's items did, and no `stop-` line
+    (A-5's inputs, C-12's nlp worktree) is non-zero. A command's own
     exit is judged by its record (step 14's collection over `tests/` and step 16's dry run are
     expected to exit non-zero)."""
-    judged = {k: v for k, v in codes.items() if k.startswith("record-") or k == "step17-items"}
+    judged = {
+        k: v for k, v in codes.items() if k.startswith(("record-", "stop-")) or k == "step17-items"
+    }
     return bool(judged) and all(code == 0 for code in judged.values())
 
 
