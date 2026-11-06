@@ -167,3 +167,10 @@ at render time. Reversible by: a later MSG change adding revision context.
 DECISION: `worker_lost`/`owner_lost`/`store_error` keep kind `bug` with specific actions. Alternative: an `environment`
 kind (closed schema → ADR 0058 amendment). Reversible by: that amendment.
 Next: WO-12 (M1, M3, M4, M6; full gate; manifest). R-942's number re-checked at the merge.
+
+## 2026-11-06 — RP WO-R6c done (`05e3e069`); review launched
+
+`release_evidence_manifest.py`: REL.A20 FAIL as RP states it (RP.S18 "every other check passes" sees changed-form
+fails; Q-C5). Full gate at `3e7ccf00`: 29 fail + 1 error, all browser smoke under load (alone 31 pass). Manifest
+`evidence/S15/3e7ccf00…` `implemented` (schema refuses `RP` and `REL040`, Q-C6). Reviewer brief
+`docs/briefs/RP-reviewer.md` batches F-1…F-3, Q-1…Q-15, gates[*], ADR 0055 acceptance restatement, Q-B*, Q-C1…C6.
