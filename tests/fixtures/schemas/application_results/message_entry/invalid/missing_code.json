@@ -4,7 +4,7 @@
     "action": "Change the phase declared for <stream> to the one that matches the computed state.",
     "catalogue": {
       "id": "openflowsheet-messages-v1",
-      "sha256": "6c13f640994bfdc22416f0869fdcbba23874a228c741f71d4070b029e81a15b8"
+      "sha256": "05ecaf0734dabfc2c36f958a6c958cbc65485894179f072bdf28dcde36cda50c"
     },
     "complete": true,
     "context": null,

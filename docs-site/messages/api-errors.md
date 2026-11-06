@@ -178,8 +178,8 @@ The revision is not ready to solve: it does not pass validation for simulation.
 **Kind:** Not supported in this version: a limitation of OpenFlowsheet, not an error in your flowsheet.
 
 - **Summary:** The request needs something this version does not support.
-- **Why:** The request is well formed, but it asks for a capability this version does not have. The reason names that capability; its own explanation says what is missing.
-- **Do:** Read the reason's explanation (openflowsheet explain &lt;reason&gt;) for what is missing and what to do instead.
+- **Why:** The request is well formed, but it asks for a capability this version does not have.
+- **Do:** Read the error's message for the capability it names; the limitations page lists what this version does not support and what to use instead.
 - **Parameters:** `reason` (code, optional)
 - **Not supported:** 
 

@@ -50,8 +50,13 @@ entries:
     args: [reason]
     params: {reason: {type: code, optional: true}}
     summary: "The request needs something this version does not support."
-    why: "The request is well formed, but it asks for a capability this version does not have. The reason names that capability; its own explanation says what is missing."
-    action: "Read the reason's explanation[ (openflowsheet explain {reason!raw})] for what is missing and what to do instead."
+    why: "The request is well formed, but it asks for a capability this version does not have."
+    action: "Read the error's message for the capability it names; the limitations page lists what this version does not support and what to use instead."
+    variants:
+      # Review S3: the reason's own explanation only when there is a reason.
+      - when: {has: [reason]}
+        why: "The request is well formed, but it asks for a capability this version does not have. The reason names that capability; its own explanation says what is missing."
+        action: "Read the reason's explanation (openflowsheet explain {reason!raw}) for what is missing and what to do instead."
     gap: {limitation: null, capability: null}
     examples:
       - params: {reason: task_unsupported}

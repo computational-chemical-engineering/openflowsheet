@@ -76,13 +76,24 @@ Why a job ended the way it did (`Job.status`, its end reason). How to read an ex
 
 <a id="owner_lost"></a>
 
-## `owner_lost`: Owner lost
+## `owner_lost`: The program that accepted the job stopped before it finished
 
 **Kind:** Internal error in OpenFlowsheet: please report it.
 
-*No plain-language explanation is written yet; the summary is the technical one.*
+- **Summary:** The job ended: the program that accepted it stopped, or lost the job, before the job finished.
+- **Why:** A job belongs to the program (a Python session, the CLI or a server) that accepted it. That program ended or lost its hold on the job while the job was queued or running, so the next program to open the project marked the job failed.
+- **Do:** Submit the job again from a program that stays open until the job ends, for example by waiting for it (wait_job) before the program exits.
 
-- **Summary:** The job ended: owner lost.
+Example:
+
+```text
+The job ended: the program that accepted it stopped, or lost the job, before the job finished.
+  Why:     A job belongs to the program (a Python session, the CLI or a server) that accepted it. That program ended or lost its hold on the job while the job was queued or running, so the next program to open the project marked the job failed.
+  Do:      Submit the job again from a program that stays open until the job ends, for example by waiting for it (wait_job) before the program exits.
+  Kind:    Internal error in OpenFlowsheet: please report it.
+  Code:    owner_lost (openflowsheet explain owner_lost)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/jobs/#owner_lost
+```
 
 <a id="queued"></a>
 
@@ -116,13 +127,24 @@ Why a job ended the way it did (`Job.status`, its end reason). How to read an ex
 
 <a id="store_error"></a>
 
-## `store_error`: Store error
+## `store_error`: The project database failed while the job ran
 
 **Kind:** Internal error in OpenFlowsheet: please report it.
 
-*No plain-language explanation is written yet; the summary is the technical one.*
+- **Summary:** The job ended: the project's database reported an error while the job ran.
+- **Why:** A job reads and writes the project's database (project.sqlite3) as it runs. The database refused an operation, for example because the disk is full, the file is not writable, or another program holds it locked.
+- **Do:** Check that the project's directory is writable and its disk has free space, then submit the job again. If the error recurs with both in order, report it with the server log.
 
-- **Summary:** The job ended: store error.
+Example:
+
+```text
+The job ended: the project's database reported an error while the job ran.
+  Why:     A job reads and writes the project's database (project.sqlite3) as it runs. The database refused an operation, for example because the disk is full, the file is not writable, or another program holds it locked.
+  Do:      Check that the project's directory is writable and its disk has free space, then submit the job again. If the error recurs with both in order, report it with the server log.
+  Kind:    Internal error in OpenFlowsheet: please report it.
+  Code:    store_error (openflowsheet explain store_error)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/jobs/#store_error
+```
 
 <a id="timed_out"></a>
 
@@ -156,10 +178,21 @@ Why a job ended the way it did (`Job.status`, its end reason). How to read an ex
 
 <a id="worker_lost"></a>
 
-## `worker_lost`: Worker lost
+## `worker_lost`: The job's worker process stopped without a result
 
 **Kind:** Internal error in OpenFlowsheet: please report it.
 
-*No plain-language explanation is written yet; the summary is the technical one.*
+- **Summary:** The job ended: the process that ran it could not be started or stopped without a result.
+- **Why:** Each job runs in a worker process. That process failed to start, or ended before it reported a result: it crashed, was killed, or ran out of memory. Nothing in the flowsheet is known to be wrong.
+- **Do:** Submit the job again. If it stops the same way again, report it with the job's log artifact, which the job's error names when one was written.
 
-- **Summary:** The job ended: worker lost.
+Example:
+
+```text
+The job ended: the process that ran it could not be started or stopped without a result.
+  Why:     Each job runs in a worker process. That process failed to start, or ended before it reported a result: it crashed, was killed, or ran out of memory. Nothing in the flowsheet is known to be wrong.
+  Do:      Submit the job again. If it stops the same way again, report it with the job's log artifact, which the job's error names when one was written.
+  Kind:    Internal error in OpenFlowsheet: please report it.
+  Code:    worker_lost (openflowsheet explain worker_lost)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/jobs/#worker_lost
+```

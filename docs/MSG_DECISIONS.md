@@ -550,3 +550,18 @@ and, where known, numbers"). `REVIEW.json`: hash `f1fca282…`, 997 characters, 
 `test_t08_w2_description_reviews` stays red (its one open item: `explain: human pending`). Re-pinned:
 `m07a_rc.MSG_FILE_SHA256`, and `D_4` = `MSG_SERVED_SHA256` = `eaff4585…` (was `1ca06b37…`; `m07a_rc.py`'s c_4 link,
 `docs/interfaces-frozen.md`). WO-12 re-measures `D_4` on the merge tree for the register entry (Q5).
+
+**D11-9. Q7 (D4-1 overruled): FB-01's three are complete.** `not_a_directory` (choose another path, or move the
+file), `not_a_project` (check the path; `python`/`cli` variants name `LocalApplication.create` and `project init`),
+`project_id_mismatch` (ask for the existing id or none, or another directory; a `cli` variant names `--project-id`).
+`review: true` dropped on the three. Prose is the build lane's draft for the design-lane prose check (M1).
+
+**D11-10. S3, S4.** `unsupported`: the base `why`/`action` no longer mention a reason; a variant `has: [reason]`
+carries the reason's wording (S3). `worker_lost`, `owner_lost`, `store_error` are complete with environment-worded
+`why`/`action` (resubmit; check the directory, disk or the program's lifetime; report only if it recurs). **Kind:
+kept `bug`, `review: true`; question for the design lane.** The review says `bug` misleads, but the kind enum is
+closed in `message-catalogue.schema.json` and `application-results.schema.json` (`explanation.kind`,
+`message_entry.kind`), and no other member fits (`notice` says "not a failure"). An `environment` kind would change
+a frozen schema and ADR 0058 D3, which the build lane may not decide. Default: `bug` with the specific actions above,
+which now override the kind's "report it" default. `CHECKPOINT_INCOMPATIBLE` (an outcome, `numerical`) and S5
+(`DIM-01`'s `review: true`; D3-4's silent cut of `members` at 64) are left to WO-12 with M1.

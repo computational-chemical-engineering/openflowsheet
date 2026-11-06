@@ -785,19 +785,30 @@ entries:
   - code: not_a_directory
     family: refusal
     kind: input
-    complete: false
+    complete: true
     title: The path is a file, not a directory
     params: {directory: {type: directory}}
     summary: "{directory} is a file, not a directory; a project needs a new or empty directory."
-    review: true
+    why: "A project is a directory that holds its database and its files, so it cannot be made at the path of an existing file."
+    action: "Choose another path for the project, or move or rename the file."
+    see_also: [project_exists, directory_not_empty]
+    examples: [{params: {directory: plant.txt}}]
   - code: not_a_project
     family: refusal
     kind: input
-    complete: false
+    complete: true
     title: The directory does not hold a project
     params: {directory: {type: directory}}
     summary: "Directory {directory} is not a project: it holds no project database."
-    review: true
+    why: "Opening a project reads the database (project.sqlite3) that creating the project wrote into its directory. This directory has none: it was never made a project, or it is not the directory you meant."
+    action: "Check the path: give the directory the project was created in, or create a new project here."
+    variants:
+      - when: {surface: [python]}
+        action: "Check the path: give the directory the project was created in, or make a new project here with LocalApplication.create(\"{directory!raw}\")."
+      - when: {surface: [cli]}
+        action: "Check the path given to --project, or make a new project here with project init {directory!raw}."
+    see_also: [project_exists]
+    examples: [{params: {directory: plant}}]
   - code: not_converged
     family: refusal
     kind: numerical
@@ -1074,14 +1085,20 @@ entries:
   - code: project_id_mismatch
     family: refusal
     kind: input
-    complete: false
+    complete: true
     title: The directory holds a project with another id
     params:
       directory: {type: directory}
       project_id: {type: text}
       existing: {type: text}
     summary: "Directory {directory} holds the project '{existing!raw}', not '{project_id!raw}'."
-    review: true
+    why: "Asked to reuse an existing project, OpenFlowsheet opens it only when its id is the one requested, so a script never works on another project by mistake."
+    action: "To open the project that is there, ask for its id '{existing!raw}' or give no id; to create '{project_id!raw}', choose another directory."
+    variants:
+      - when: {surface: [cli]}
+        action: "To open the project that is there, pass --project-id {existing!raw} or no --project-id; to create '{project_id!raw}', choose another directory."
+    see_also: [project_exists]
+    examples: [{params: {directory: plant, project_id: plant-b, existing: plant-a}}]
   - code: projection_unevaluable
     family: refusal
     kind: input

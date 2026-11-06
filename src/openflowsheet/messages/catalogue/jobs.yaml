@@ -47,9 +47,13 @@ entries:
   - code: owner_lost
     family: job
     kind: bug
-    complete: false
-    title: Owner lost
-    summary: 'The job ended: owner lost.'
+    complete: true
+    title: The program that accepted the job stopped before it finished
+    summary: "The job ended: the program that accepted it stopped, or lost the job, before the job finished."
+    why: "A job belongs to the program (a Python session, the CLI or a server) that accepted it. That program ended or lost its hold on the job while the job was queued or running, so the next program to open the project marked the job failed."
+    action: "Submit the job again from a program that stays open until the job ends, for example by waiting for it (wait_job) before the program exits."
+    examples: [{params: {}}]
+    review: true
   - code: queued
     family: job
     kind: notice
@@ -71,9 +75,13 @@ entries:
   - code: store_error
     family: job
     kind: bug
-    complete: false
-    title: Store error
-    summary: 'The job ended: store error.'
+    complete: true
+    title: The project database failed while the job ran
+    summary: "The job ended: the project's database reported an error while the job ran."
+    why: "A job reads and writes the project's database (project.sqlite3) as it runs. The database refused an operation, for example because the disk is full, the file is not writable, or another program holds it locked."
+    action: "Check that the project's directory is writable and its disk has free space, then submit the job again. If the error recurs with both in order, report it with the server log."
+    examples: [{params: {}}]
+    review: true
   - code: timed_out
     family: job
     kind: notice
@@ -95,6 +103,12 @@ entries:
   - code: worker_lost
     family: job
     kind: bug
-    complete: false
-    title: Worker lost
-    summary: 'The job ended: worker lost.'
+    complete: true
+    title: The job's worker process stopped without a result
+    summary: "The job ended: the process that ran it could not be started or stopped without a result."
+    why: "Each job runs in a worker process. That process failed to start, or ended before it reported a result: it crashed, was killed, or ran out of memory. Nothing in the flowsheet is known to be wrong."
+    action: "Submit the job again. If it stops the same way again, report it with the job's log artifact, which the job's error names when one was written."
+    # Review S4: an environment event more often than a defect; no kind in the closed enum fits
+    # (`docs/MSG_DECISIONS.md` D11-10).
+    examples: [{params: {}}]
+    review: true

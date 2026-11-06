@@ -1093,10 +1093,22 @@ No model with the id "thermal.boiler" is available in this version.
 
 **Kind:** Input problem: something in the flowsheet or the request needs to change.
 
-*No plain-language explanation is written yet; the summary is the technical one.*
-
 - **Summary:** &lt;directory&gt; is a file, not a directory; a project needs a new or empty directory.
+- **Why:** A project is a directory that holds its database and its files, so it cannot be made at the path of an existing file.
+- **Do:** Choose another path for the project, or move or rename the file.
 - **Parameters:** `directory` (directory)
+- **See also:** [`project_exists`](#project_exists), [`directory_not_empty`](#directory_not_empty)
+
+Example:
+
+```text
+'plant.txt' is a file, not a directory; a project needs a new or empty directory.
+  Why:     A project is a directory that holds its database and its files, so it cannot be made at the path of an existing file.
+  Do:      Choose another path for the project, or move or rename the file.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    not_a_directory (openflowsheet explain not_a_directory)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#not_a_directory
+```
 
 <a id="not_a_project"></a>
 
@@ -1104,10 +1116,22 @@ No model with the id "thermal.boiler" is available in this version.
 
 **Kind:** Input problem: something in the flowsheet or the request needs to change.
 
-*No plain-language explanation is written yet; the summary is the technical one.*
-
 - **Summary:** Directory &lt;directory&gt; is not a project: it holds no project database.
+- **Why:** Opening a project reads the database (project.sqlite3) that creating the project wrote into its directory. This directory has none: it was never made a project, or it is not the directory you meant.
+- **Do:** Check the path: give the directory the project was created in, or create a new project here.
 - **Parameters:** `directory` (directory)
+- **See also:** [`project_exists`](#project_exists)
+
+Example:
+
+```text
+Directory 'plant' is not a project: it holds no project database.
+  Why:     Opening a project reads the database (project.sqlite3) that creating the project wrote into its directory. This directory has none: it was never made a project, or it is not the directory you meant.
+  Do:      Check the path: give the directory the project was created in, or create a new project here.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    not_a_project (openflowsheet explain not_a_project)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#not_a_project
+```
 
 <a id="not_converged"></a>
 
@@ -1564,10 +1588,22 @@ Directory 'plant' is not empty: it already holds a project, and create() needs a
 
 **Kind:** Input problem: something in the flowsheet or the request needs to change.
 
-*No plain-language explanation is written yet; the summary is the technical one.*
-
 - **Summary:** Directory &lt;directory&gt; holds the project '&lt;existing&gt;', not '&lt;project_id&gt;'.
+- **Why:** Asked to reuse an existing project, OpenFlowsheet opens it only when its id is the one requested, so a script never works on another project by mistake.
+- **Do:** To open the project that is there, ask for its id '&lt;existing&gt;' or give no id; to create '&lt;project_id&gt;', choose another directory.
 - **Parameters:** `directory` (directory), `project_id` (text), `existing` (text)
+- **See also:** [`project_exists`](#project_exists)
+
+Example:
+
+```text
+Directory 'plant' holds the project 'plant-a', not 'plant-b'.
+  Why:     Asked to reuse an existing project, OpenFlowsheet opens it only when its id is the one requested, so a script never works on another project by mistake.
+  Do:      To open the project that is there, ask for its id 'plant-a' or give no id; to create 'plant-b', choose another directory.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    project_id_mismatch (openflowsheet explain project_id_mismatch)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#project_id_mismatch
+```
 
 <a id="projection_unevaluable"></a>
 
