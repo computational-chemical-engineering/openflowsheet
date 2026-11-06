@@ -115,6 +115,7 @@ class Spec:
 
 _V03 = "tests/test_v03_v0_3_gate.py"
 _REL = "tests/test_rel_release_gate.py"
+_STANDING = "tests/test_rel_standing_acceptances.py"
 #: One rule per assertion of §11.1. The D selections are the default gate's own tests.
 SPECS: tuple[Spec, ...] = (
     Spec(
@@ -136,8 +137,8 @@ SPECS: tuple[Spec, ...] = (
     ),
     Spec("S04", tests=((_V03, "-k", "a04_"),)),
     Spec("S05", measures=("clause",)),
-    Spec("S06", tests=((_V03, "-k", "a06_"), (_REL, "-k", "a03_"))),
-    Spec("S07", tests=(("tests/test_rel_standing_acceptances.py",),)),
+    Spec("S06", tests=((_V03, "-k", "a06_"), (_REL, "-k", "a03_"), (_STANDING, "-k", "s06_"))),
+    Spec("S07", tests=((_STANDING,),)),
     Spec("S08", tests=((_V03, "-k", "a08_"), (_REL, "-k", "a03_ or a05_"))),
     Spec("S09", measures=("versions",)),
     Spec("S10", measures=("changelog",)),

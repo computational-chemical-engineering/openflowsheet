@@ -24,7 +24,7 @@ import hashlib
 import json
 import re
 import sys
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from typing import Any
 
 import pytest
@@ -189,7 +189,7 @@ def row(
     return release_gate.Row(item, answer, scope, digest, at)
 
 
-def acceptances(*rows: release_gate.Row) -> str:
+def acceptances(*rows: release_gate.Row, defaults: Mapping[str, str] = DEFAULTS) -> str:
     """`release/acceptances.md`'s two tables: every decision item of the line with a seeded row
     unless `rows` replaces it, and the failure-clause rows `rows` names."""
     given = {r.item: r for r in rows}
@@ -210,7 +210,7 @@ def acceptances(*rows: release_gate.Row) -> str:
         "| Frank item | Default | Frank's answer | Scope | Fingerprint | Accepted at |",
         "| --- | --- | --- | --- | --- | --- |",
         *(
-            f"| {r.item} | {DEFAULTS.get(r.item, 'd')} | {r.cell} | `{r.scope}` | "
+            f"| {r.item} | {defaults.get(r.item, 'd')} | {r.cell} | `{r.scope}` | "
             f"`{r.fingerprint}` | "
             f"`{r.accepted_at}` |"
             for r in decisions
@@ -252,16 +252,21 @@ def files(table: str | None = None, **overrides: str | None) -> dict[str, str]:
 
 
 def report(
-    candidate_files: dict[str, str] | None = None, tree: Trees | None = None
+    candidate_files: dict[str, str] | None = None,
+    tree: Trees | None = None,
+    *,
+    version: str = VERSION,
+    rc_version: str | None = None,
+    differences: Sequence[str] | None = (),
 ) -> dict[str, Any]:
     return release_gate.build(
         files=files() if candidate_files is None else candidate_files,
         rc=RC,
-        rc_version=VERSION,
+        rc_version=version if rc_version is None else rc_version,
         rc_in_repository=True,
         candidate=CANDIDATE,
-        version=VERSION,
-        differences=[],
+        version=version,
+        differences=None if differences is None else list(differences),
         is_ancestor=lambda commit: commit in v03.ANCESTORS,
         line=LINE,
         scopes=scopes(tree or trees()),
@@ -457,6 +462,110 @@ def test_a08_a_row_that_is_not_an_acceptance_is_not_accepted() -> None:
     result = report(files(acceptances(pending), **X31_FAIL))
     assert result["tag_may_be_proposed"] is False
     assert "not accepted" in result["reasons"][0]
+
+
+# -- RP.S06 in standing mode: decision items 1–12, each refusing alone (review M-1) ---------------
+
+#: V03.A06's twelve NO fixtures (`tests/test_v03_v0_3_gate.py`) on the 0.4 line, through
+#: `release_gate.build` with the standing table: each flips only its item and asserts that item's
+#: reasons, so that `_build_standing` cannot drop an item (or the version or tree check) unseen.
+#: Item 11 has two: Frank's answer, and the links row (`links_problems`, M07 O3).
+STEP_15 = {step: ["PASS (1/1)"] for step in SET.rc_steps} | {15: ["FAIL (re-run required)"]}
+S10C = f"evidence/S10c/{v03.PACKAGE_AT['S10c']}/manifest.json"
+NO: dict[str, tuple[dict[str, Any], list[str]]] = {
+    "1": (
+        {"version": "0.4.1"},
+        ["version 0.4.1 is not covered by a registered v0.4 gate set"],
+    ),
+    "2": (
+        {"rc_version": "0.4.0rc1"},
+        ["C's version 0.4.0rc1 is not the candidate's version 0.4.0 (release/acceptances.md D4)"],
+    ),
+    "3": (
+        {"files": {v03.LEDGER: v03.ledger({g: "PASS" for g in v03.CLAIMED} | {"X31": None})}},
+        ["X31: no verdict in the ledger (D2.1)"],
+    ),
+    "4": (
+        {
+            "files": {
+                v03.LEDGER: v03.ledger({g: "PASS" for g in v03.CLAIMED} | {"W26": "BLOCKED"}),
+                VERDICTS: v03.document(v03.ALL_PASS | {"W26": ("BLOCKED", "W26 (b): CI run", "—")}),
+            }
+        },
+        ["W26: BLOCKED blocks the tag (D2.2)"],
+    ),
+    "5": (
+        {"files": X31_FAIL},
+        ["X31: FAIL clause not accepted in release/acceptances.md D3: ['X31 (c)'] (D2.3)"],
+    ),
+    "6": (
+        {"differences": ["src/openflowsheet/x.py"]},
+        [f"candidate {CANDIDATE[:12]} differs from C in ['src/openflowsheet/x.py'] (D2.4)"],
+    ),
+    "6 (not run)": ({"differences": None}, ["tree check (D2.4) not run"]),
+    "7": (
+        {"files": {SET.rc_record: v03.rc_record(STEP_15)}},
+        [
+            f"§6 step 15 (A15, CI): failed in {SET.rc_record}",
+            f"§6 step 15: no row of {SET.rc_record} states that it passed",
+        ],
+    ),
+    "8": (
+        {"files": {f"evidence/REL040/{RC}/manifest.json": v03.manifest("REL040", RC, "planned")}},
+        [f"evidence/REL040/{RC}/manifest.json has status 'planned', not `tested`"],
+    ),
+    "9": (
+        {"files": {S10C: None}},
+        [
+            "no `tested` or `reviewed` S10c manifest at C or an ancestor of C "
+            "(evidence/S10c/<c>/manifest.json)"
+        ],
+    ),
+    "10": (
+        {"files": {v03.ENVELOPE: v03.envelope(envelope_id="v0.3-envelope-1", release=VERSION)}},
+        [f"{v03.ENVELOPE}: envelope_id 'v0.3-envelope-1', not 'v0.4-envelope-1'"],
+    ),
+    "11": (
+        {"table": {"rows": (row("M03 N1", cell="pending"),)}},
+        [
+            "Frank's answer to M03 N1 is not an acceptance of the default; amend the standing "
+            "release procedure for it"
+        ],
+    ),
+    "11 (links)": (
+        {"table": {"defaults": {"V17 carry": "carry v17-c2's agent evidence across R-192, R-234"}}},
+        ["V17 carry does not name R-295"],
+    ),
+    "12": (
+        {"files": {"docs/adr/0052-test-input.md": v03.adr("**Status:** Proposed, 2026-10-28")}},
+        ["ADR 0052 is not Accepted: **Status:** Proposed, 2026-10-28"],
+    ),
+}
+
+
+def test_s06_the_standing_yes_fixture() -> None:
+    result = report()
+    assert result["reasons"] == [] and result["tag_may_be_proposed"] is True
+    assert "acceptances" in result  # standing mode, not the engine's dated build
+
+
+@pytest.mark.parametrize("item", list(NO))
+def test_s06_standing_each_item_refuses_alone(item: str) -> None:
+    state, reasons = NO[item]
+    table = state.get("table", {})
+    rows, defaults = table.get("rows", ()), table.get("defaults", DEFAULTS)
+    result = report(
+        files(acceptances(*rows, defaults=defaults), **state.get("files", {})),
+        version=state.get("version", VERSION),
+        rc_version=state.get("rc_version"),
+        differences=state.get("differences", ()),
+    )
+    assert result["tag_may_be_proposed"] is False
+    assert result["reasons"] == reasons
+
+
+def test_s06_standing_twelve_items() -> None:
+    assert sorted({int(key.split()[0]) for key in NO}) == list(range(1, 13))
 
 
 # -- REL.A09: a claim-set change -------------------------------------------------------------------
