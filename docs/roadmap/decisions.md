@@ -123,3 +123,6 @@ Each entry gives the date, the question, the choice, who made it and where it is
   (ADR 0055's acceptance condition names REL.A11–A16, A21, deferred with D2) and Q-1…Q-15 go to the single reviewer
   pass over WO-R2…R6 together with WO-R1's design review of `gates[*]`. DECISION (orchestrator): build WO-R2/R3 on
   `wp/RP` now on RP's text. Alternative: wait for the review of RP first. Reversible by: rework on the branch.
+- **2026-11-06** RP WO-R2/R3 done on `wp/RP` (fdc4f9a0, aa73d933, 2bac7fa9): REL.A01–A10 pass (A03 limited to the
+  fixture comparison at this checkout); F0 PASS. Questions Q-B1…Q-B5 batched for the reviewer. Next: WO-R6 + WO-R4
+  (brief `docs/briefs/REL-build-WO-R4-R6.md`), including one `release_rc` dispatch on `wp/RP` for REL.A17/N-4.
