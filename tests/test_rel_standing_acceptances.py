@@ -381,6 +381,25 @@ def test_a07_re_dated_at_c_on_the_lapse_report_s_date() -> None:
     assert standing_line("M02 N1", LAPSED_ON, RC) in result["acceptances"]
 
 
+def test_s1_a_replacing_row_that_keeps_the_old_accepted_at_is_not_reproduced() -> None:
+    """Amendment A-2 (§8.3 (d), review S-1): a row carrying C's fingerprint but the old
+    `Accepted at` would stand at C and skip §8.4's date bound; its scope does not reproduce the
+    fingerprint at `Accepted at`, so it is `unsupported` and absent. Control: the same row with
+    `Accepted at` = C is new, and §8.4's bound judges its date."""
+    at_c = row("M02 N1", date=EARLY, at=RC, tree=CHANGED)
+    copied = release_gate.Row(at_c.item, at_c.cell, at_c.scope, at_c.fingerprint, OLD)
+    result = report(files(acceptances(copied)), tree=CHANGED)
+    assert result["reasons"] == [f"Frank's answer to M02 N1: unsupported (not reproduced at {OLD})"]
+    assert f"acceptance M02 N1: unsupported (not reproduced at {OLD})" in result["acceptances"]
+    control = report(files(acceptances(at_c)), tree=CHANGED)
+    assert control["reasons"] == [
+        f"Frank's answer to M02 N1: accepted {EARLY}, before the lapse report's date "
+        f"{LAPSED_ON} (RP §8.4)"
+    ]
+    unchanged = release_gate.Row(at_c.item, at_c.cell, at_c.scope, row("M02 N1").fingerprint, OLD)
+    assert report(files(acceptances(unchanged)))["tag_may_be_proposed"] is True
+
+
 def test_a07_re_dated_one_day_earlier_refuses() -> None:
     early = day_before(LAPSED_ON)
     new = row("M02 N1", date=early, at=RC, tree=CHANGED)
@@ -574,6 +593,9 @@ def test_s06_standing_twelve_items() -> None:
 OLD_LINE = json.loads(json.dumps(LINE.document))
 OLD_LINE["gate_set"]["claimed"].append("W27")
 OLD_LINE["gate_set"]["not_claimed"] = []
+#: ... and its records are where `OLD`'s are (`CANDIDATE_TREE`: S13's), so that every other row,
+#: recorded at `OLD`, reproduces there (§8.3 (d)).
+OLD_LINE["gate_set"]["evidence_package"] = "S13"
 OLD_CLAIM = trees(**{"release__lines__0.4.json": json.dumps(OLD_LINE).encode()})
 
 

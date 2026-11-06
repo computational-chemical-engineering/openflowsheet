@@ -665,13 +665,10 @@ class RowState:
         return self.state if self.stands else f"{self.state} ({self.why})"
 
 
-def _differing(row: Row, at_c: Sequence[TermValue], scopes: Scopes) -> str:
-    """A lapsed row's differing terms, from its scope at `Accepted at`: each `paths:` term by
-    the paths that differ, each `extract:` term by itself. When `Accepted at` does not reproduce
-    the recorded fingerprint, only that is said."""
-    recorded, at_a = scopes.evaluate(row.scope, row.accepted_at)
-    if recorded != row.fingerprint:
-        return f"the fingerprint at C is not the one recorded at {row.accepted_at[:12]}"
+def _differing(at_a: Sequence[TermValue], at_c: Sequence[TermValue]) -> str:
+    """A lapsed row's differing terms, from its scope at `Accepted at` (`at_a`, which reproduces
+    the recorded fingerprint, §8.3 (d)): each `paths:` term by the paths that differ, each
+    `extract:` term by itself."""
     terms = []
     for before, after in zip(at_a, at_c, strict=True):
         if before.digest == after.digest:
@@ -685,13 +682,22 @@ def _differing(row: Row, at_c: Sequence[TermValue], scopes: Scopes) -> str:
 
 
 def row_state(row: Row, scopes: Scopes) -> RowState:
-    """RP §8.3 (b) at `C`."""
+    """RP §8.3 (b) at `C`, and (d) at `Accepted at` (amendment A-2): a row whose scope does not
+    reproduce `Fingerprint` at `Accepted at` is `unsupported` and counts as absent, whatever (b)
+    gives."""
     digest, values = scopes.evaluate(row.scope, scopes.rc)
     if digest is None:
         return RowState("unsupported", "; ".join(v.reason for v in values if v.digest is None))
+    recorded, at_a = (
+        (digest, values)
+        if row.accepted_at == scopes.rc
+        else scopes.evaluate(row.scope, row.accepted_at)
+    )
+    if recorded != row.fingerprint:
+        return RowState("unsupported", f"not reproduced at {row.accepted_at}")
     if digest == row.fingerprint:
         return RowState("stands")
-    return RowState("lapsed", _differing(row, values, scopes))
+    return RowState("lapsed", _differing(at_a, values))
 
 
 def lapses_date(text: str | None, rc: str) -> datetime.date | None:
