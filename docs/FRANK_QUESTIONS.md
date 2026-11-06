@@ -345,3 +345,16 @@ call the tool: `src/openflowsheet/application/bindings/descriptions/explain.md` 
 (`git show wp/MSG:src/openflowsheet/application/bindings/descriptions/explain.md`). Every MCP description needs two
 recorded reviews before release (T08 G15): the design lane's (done in MSG's reviewer pass) and yours. In plain words:
 read the text and say "approved" or what to change. Default: none — MSG cannot merge until you have looked at it.
+
+## ST — accept ADR 0068 (stream table)? (2026-11-06)
+
+Design `docs/design/ST-stream-table.md`, ADR `docs/adr/0068-stream-table.md` (Proposed). In plain words: a new read-only
+operation `get_stream_table(job)` on every surface (Python, CLI `openflowsheet streams` as text, JSON or CSV, HTTP, MCP)
+that shows, for each stream of a finished run, T, P, molar and mass flow, composition, vapour fraction (molar and
+mass), h, s and density per phase, plus an energy-balance summary. It is computed when asked, from the run's bundle;
+nothing is stored, so no released number or replay changes, and 0.3.0 runs get a table too. It adds to the frozen
+application contract (ADR 0019 Amendment 13), so it needs your yes. Two choices for you:
+- **O3:** showing the table in the web shell is deferred to a later package. Alternative: include it in ST now.
+- Values a provider cannot give (density and entropy on most legacy providers) are shown as absent with a reason,
+  never estimated (no ideal-gas fallback).
+Default: build proceeds (new files first); merge waits for your acceptance.
