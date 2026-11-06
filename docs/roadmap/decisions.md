@@ -105,3 +105,10 @@ Each entry gives the date, the question, the choice, who made it and where it is
   O6 resolved by the orchestrator: G3/E3 read Table 8 expectations from `s05_reference.json` `/saturation/450`
   (values agree), not from the architect's recollection. SQ-ST-1…6 → a specifier round with SQ-F6-5 (Amendment 5);
   defaults apply until ruled. O3 (web shell display deferred) → Frank, with ADR 0068's acceptance.
+- **2026-11-06** Main CI 42132502629 (after the F0 merge) FAILED `check` on both archs: 38 ruff errors, all in the
+  specifier's `docs/derivations/scripts/f6_std_seed_reference.py`, committed as docs-only without lint. Fixed in
+  b9a05e16 (generator JSON byte-identical, `--check` PASS 107); F0's code itself was green. Procedure: lint any `.py`
+  a design agent writes before committing. Amendment 5 (§17, cbf2230e): SQ-ST-1…6 adopted with precisions (Q1.R11–R12,
+  Q2.R11, Q4.R10–R12; new flag `flash_near_phase_boundary`, G16; G2/G4 tolerances 8ε); SQ-F6-5 changed for
+  `vapor: null` (Q4.R13: the vapour group takes the first liquid port). New finding A5-a (verifier reason
+  `temperature_degenerate_unlifted` is an untyped string) → ST/MSG reviewer. 21 edits applied by one implementer pass.
