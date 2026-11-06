@@ -8277,3 +8277,41 @@ harvest:
   class: P
   to: []
   note: 'scope note: off the reference platform M4, M6''s run key trails and M7''s replay mode are not judged'
+- manifest: evidence/MSG/b1a82351fa68f4c8676ebd90d21bd55c8649cd36/manifest.json
+  item: limitations[0]
+  sha256: 12e3253ca181d82901a50c0d0051bcb7316a663bb06d109068294988c4961847
+  class: P
+  to: []
+  note: 'provenance note: software verification on ref-x86-64; corpus texts are self-generated regression fixtures; entry prose awaits the reviewer pass'
+- manifest: evidence/MSG/b1a82351fa68f4c8676ebd90d21bd55c8649cd36/manifest.json
+  item: limitations[1]
+  sha256: 7111cd74e30727c0d2b8e606b17314f8e98e62ca7e68b770aa89c9911f366713
+  class: P
+  to: []
+  note: 'scope note: MSG WO-5 (diagnostic sidecar) parked by F0 M9 (R-940); explanations carry no numbers; pending items are strict xfails (MSG_DECISIONS D9-1)'
+- manifest: evidence/MSG/b1a82351fa68f4c8676ebd90d21bd55c8649cd36/manifest.json
+  item: limitations[2]
+  sha256: 931813dc25b9182d43afb636805d2facb38eabbbdb57ce030807965368c0ab33
+  class: P
+  to: []
+  note: 'scope note: a DRAFT revision is explained as revision_not_ready without the element at fault; a unit typo as DIM-01 without the unit text (MSG_DECISIONS D9-2, design lane)'
+- manifest: evidence/MSG/b1a82351fa68f4c8676ebd90d21bd55c8649cd36/manifest.json
+  item: limitations[3]
+  sha256: 9e719f20bebaecfa6ee76425c49d432742d0519e04fd1c57c19099b9b5500197
+  class: P
+  to: []
+  note: 'process note: MSG-G0 (c)''s WO-0 baseline predates F0''s 52 registered v0.3.0 replay fixtures, which F0 M7 judges'
+- manifest: evidence/MSG/b1a82351fa68f4c8676ebd90d21bd55c8649cd36/manifest.json
+  item: checks[6]
+  check_id: MSG-G0.c
+  sha256: f4e66369b274a59feb0a2d6cd3a377e8dba30348e0cb71f14b5563163ef491df
+  class: P
+  to: []
+  note: 'process note: MSG-G0 (c) differs only by F0''s 52 new replay fixtures (156 keys); baseline replays unchanged; design-lane ruling requested (section 7: F0 replaces (a)-(c))'
+- manifest: evidence/MSG/b1a82351fa68f4c8676ebd90d21bd55c8649cd36/manifest.json
+  item: checks[9]
+  check_id: MSG.GATE
+  sha256: 06be01230ffd5e44da2bc39e5979db143b1c40f895504383af0340e780cf0beb
+  class: P
+  to: []
+  note: 'process note: the full suite''s one red is explain.md''s pending reviews (D7-8, merge blocker by design); f6''s wall-time budget failed under load at 0067129c only'

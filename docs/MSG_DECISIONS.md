@@ -445,3 +445,31 @@ above the machine message, HTTP line and detail, which are unchanged. A failed r
 summary and the failure screen's outcome; a job's own `error` adds its explanation under its
 existing one-line notice. Docs URLs are not linked: `h.js` allows `#` fragments only. Commit:
 `5a68e53c`.
+
+**D9-9. The manifest: status `implemented`, harvested as F0's (F0 D22).** `evidence/MSG/b1a82351…`
+is MSG's first manifest. Status is `implemented`, not `tested`: the full suite's one red is
+`explain.md`'s pending reviews (D7-8), and MSG-G0 (c) prints FAIL (D9-10). Each of its four
+limitations and two non-pass checks is class P (no user-facing support claim), appended to
+`benchmarks/t08/support_envelope.yaml`; matrix re-emitted; `HARVEST_SIZE` (68, 939, 120) →
+(69, 943, 122) with its reason (a gate change, flagged). Re-take the manifest as `tested` once
+D7-8's reviews are recorded and D9-10 is ruled.
+
+**D9-10. MSG-G0 (c) after F0 (design-lane question).** At `0067129c`: `c 156/109 diff`. The
+baseline's 57 replays are unchanged; the 156 keys are F0's 52 v0.3.0 bundles
+(`tests/fixtures/f0/v0.3.0-bundles`, 3 keys each), registered on main after WO-0's baseline and
+absent from it. F0 M7 judges them (52/52). §7 says "after F0 lands, F0 replaces (a)–(c)". Neither
+the gate nor the baseline was changed. Default: F0 replaces (a)–(c) (F0 PASS), MSG-G0 keeps (d).
+
+## Gate results at the end of WO-9, WO-10
+
+- `scripts/gate.sh` at `0067129c`: GATE FAIL, 2 failed, 15064 passed, 3206 skipped, 11 xfailed
+  (2 h 59 min, load ~78): `test_t08_w2_description_reviews` (D7-8) and f6's budget, 327.95 s >
+  300 (alone 250.2 s; budget unchanged); ruff/format: 38 errors in main's
+  `docs/derivations/scripts/f6_std_seed_reference.py`, fixed on main (`b9a05e16`) and merged
+  (`b1a82351`; ruff, format clean). mypy, node (94) clean.
+- Full suite at `b1a82351` (MSG-G0 `--suite`): 1 failed (description reviews), 15065 passed,
+  3206 skipped, 11 xfailed (2 h 21 min).
+- MSG-G0: a 0 diff; b 0/562 (108 bundles); c see D9-10; d 0 hits in 442 stores. F0
+  `corpus_identity.py --check`: PASS, M1 50/50 … M9 35/35.
+- MSG-G4 0 violations (15 complete entries); G5 clean; G6 23 passed, 11 strict xfails; G7 16
+  passed (U05 record only); G8 the ten transported corpus cases equal on four transports.

@@ -1,0 +1,158 @@
+{
+  "work_package": "MSG",
+  "commit": "b1a82351fa68f4c8676ebd90d21bd55c8649cd36",
+  "requirements": [],
+  "status": "implemented",
+  "inputs": {
+    "case_id": "MSG WO-0..4, WO-6..10 (WO-5 parked): the beginner-mistake corpus tests/fixtures/msg/corpus.yaml (C01-C12, sha256 f0b167cb71a7a92c7bb694e1f1adebfeea01f7a4e52badd2dc8d96ac20e1d6bc) and MSG-G0's baseline evidence/MSG/af35153979cf35cdf9e0e364e015492db3a41493/identity-baseline.json",
+    "case_hash": "f0b167cb71a7a92c7bb694e1f1adebfeea01f7a4e52badd2dc8d96ac20e1d6bc",
+    "environment_lock_hash": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+  },
+  "commands": [
+    {
+      "cmd": "PYTHONPATH=$PWD/src PATH=.venv/bin:$PATH ./scripts/gate.sh (at 0067129c, PYTEST_ADDOPTS=--basetemp)",
+      "cwd": ".claude/worktrees/msg",
+      "exit_code": 1
+    },
+    {
+      "cmd": "PYTHONPATH=src python scripts/msg_identity_gate.py --check evidence/MSG/af35153979cf35cdf9e0e364e015492db3a41493/identity-baseline.json --parts abc (at 0067129c)",
+      "cwd": ".claude/worktrees/msg",
+      "exit_code": 1
+    },
+    {
+      "cmd": "PYTHONPATH=src python scripts/corpus_identity.py --check (at 0067129c)",
+      "cwd": ".claude/worktrees/msg",
+      "exit_code": 0
+    },
+    {
+      "cmd": "PYTHONPATH=src python scripts/msg_identity_gate.py --check evidence/MSG/af35153979cf35cdf9e0e364e015492db3a41493/identity-baseline.json --parts d --suite",
+      "cwd": ".claude/worktrees/msg",
+      "exit_code": 0
+    },
+    {
+      "cmd": "ruff check . && ruff format --check . (after merging main's lint fix b9a05e16)",
+      "cwd": ".claude/worktrees/msg",
+      "exit_code": 0
+    },
+    {
+      "cmd": "PYTHONPATH=src python -m pytest -q tests/test_msg_corpus.py tests/test_msg_engine.py tests/test_msg_coverage.py tests/test_msg_docs.py tests/test_msg_explain.py tests/test_msg_run_failure.py tests/test_msg_surfaces.py tests/test_t07_w5b_cli.py tests/test_m06_http_contract.py tests/test_t07_w5e_application_results.py",
+      "cwd": ".claude/worktrees/msg",
+      "exit_code": 0
+    },
+    {
+      "cmd": "node --test tests/web/*.test.mjs",
+      "cwd": ".claude/worktrees/msg",
+      "exit_code": 0
+    }
+  ],
+  "checks": [
+    {
+      "id": "MSG-G4",
+      "description": "catalogue lint (tests/test_msg_engine.py): every complete entry, the seven WO-9 entries included",
+      "result": "pass",
+      "value": {
+        "violations": 0,
+        "entries": 366,
+        "complete": 15
+      }
+    },
+    {
+      "id": "MSG-G5",
+      "description": "generated files current: doc_pages.py --check, msg_catalogue.py sync-limitations --check",
+      "result": "pass"
+    },
+    {
+      "id": "MSG-G6",
+      "description": "the corpus C01-C12 (tests/test_msg_corpus.py): code, kind, chain, elements, numbers, action token, gap, docs URL, exact per-surface text; pending expectations as strict xfails (MSG_DECISIONS D9-1 WO-5 parked; D9-2 design lane)",
+      "result": "pass",
+      "value": {
+        "passed": 23,
+        "xfailed_strict": 11
+      }
+    },
+    {
+      "id": "MSG-G7",
+      "description": "CLI goldens (tests/test_t07_w5b_cli.py): only the U05 record moved (stdout explanation, stderr text), exit codes unchanged",
+      "result": "pass",
+      "value": {
+        "passed": 16
+      }
+    },
+    {
+      "id": "MSG-G8",
+      "description": "the corpus's ten transported cases give one document on Python, CLI, HTTP and MCP (validation report timestamp removed, D9-4)",
+      "result": "pass",
+      "value": {
+        "cases": 10
+      }
+    },
+    {
+      "id": "MSG-G0.ab",
+      "description": "identity (a) t07_identity document, (b) bundle member digests of the RC set and corpus C01-C03, against the WO-0 baseline",
+      "result": "pass",
+      "value": "a 0 diff; b 0/562 diff (108 bundles)"
+    },
+    {
+      "id": "MSG-G0.c",
+      "description": "identity (c) replay verdicts against the WO-0 baseline",
+      "result": "fail",
+      "value": "c 156/109 diff: the 57 baseline replays unchanged; the 156 differing keys are the 52 v0.3.0 bundles F0 registered on main (tests/fixtures/f0/v0.3.0-bundles, 3 keys each), absent from the WO-0 baseline. F0's M7 judges them: 52/52.",
+      "expected": "0 diff; design note §7: after F0 lands, F0 replaces (a)-(c) (design-lane ruling requested)"
+    },
+    {
+      "id": "MSG-G0.d",
+      "description": "no key 'explanation' in the worker_result, ledger and audit tables of any store the full suite leaves",
+      "result": "pass",
+      "value": "0 hits in 442 stores"
+    },
+    {
+      "id": "F0",
+      "description": "scripts/corpus_identity.py --check",
+      "result": "pass",
+      "value": "F0 PASS: M1 50/50, M2 61/61, M3 61/61, M4 61/61, M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 35/35"
+    },
+    {
+      "id": "MSG.GATE",
+      "description": "full suite at the commit (MSG-G0 --suite run) and scripts/gate.sh at 0067129c",
+      "result": "fail",
+      "value": {
+        "suite_at_commit": "1 failed, 15065 passed, 3206 skipped, 197 deselected, 11 xfailed (2:21:01); log sha256 a485fe7ce79142c7c6de62fe3ccde2dc191f67f02279dbe92d8499442f82de34",
+        "gate_at_0067129c": "GATE FAIL: 2 failed, 15064 passed, 3206 skipped, 11 xfailed (2:59:41); ruff/format: 38 errors in docs/derivations/scripts/f6_std_seed_reference.py from main, fixed on main by b9a05e16 and merged; mypy, node exit 0; log sha256 534d1c38d6874d0a10a2263aa2f4f71cce5b23b1bb686b202cc32249fd97559e",
+        "failed": [
+          "test_t08_w2_description_reviews: explain.md awaits the design-lane and human reviews (D7-8, merge blocker by design)",
+          "test_f6_the_forty_runs_fit_their_budget at 0067129c only: 327.95 s > 300 at load ~78; alone 250.2 s, and it passed in the run at the commit; budget unchanged"
+        ]
+      }
+    },
+    {
+      "id": "MSG-WO10",
+      "description": "web shell: a refused request shows explanation.summary and action; a failed run shows failure.explanation.summary (job and failure screens)",
+      "result": "pass",
+      "value": {
+        "node_tests": 94
+      }
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "tests/fixtures/msg/corpus.yaml",
+      "sha256": "f0b167cb71a7a92c7bb694e1f1adebfeea01f7a4e52badd2dc8d96ac20e1d6bc",
+      "description": "the beginner-mistake corpus, C01-C12, with its text goldens and pending items"
+    },
+    {
+      "path": "evidence/MSG/af35153979cf35cdf9e0e364e015492db3a41493/identity-baseline.json",
+      "sha256": "bc13e6abc91b2b46e2bda6a327f9b4cc888cea007a47b9ef7d2c31fae342a285",
+      "description": "MSG-G0's WO-0 baseline, recorded at 37a521f9"
+    }
+  ],
+  "limitations": [
+    "Evidence class: software verification (catalogue lint, corpus goldens, transport equality, identity gates) on ref-x86-64; the corpus texts are self-generated regression fixtures, and the prose of the complete entries awaits the reviewer pass.",
+    "WO-5 (the diagnostic sidecar) is parked: F0 M9 freezes the thermal modules it must edit (R-940). Explanations carry no numbers; C01, C02 and C11's numbers, C01's action token and C02's outlet are strict xfails (MSG_DECISIONS D9-1).",
+    "A revision that validates DRAFT (an extra or missing specification, an unknown model id) is explained as revision_not_ready without the specification or unit at fault, and a unit typo as DIM-01 without the specification or unit text: section 4.4 reads only a FAIL check's id (MSG_DECISIONS D9-2, design lane).",
+    "MSG-G0 (c) was compared against the WO-0 baseline, which predates F0's 52 registered v0.3.0 replay fixtures; those are judged by F0 M7, not by MSG-G0."
+  ],
+  "review": {
+    "numerical": "pending",
+    "process_model": "pending"
+  }
+}
