@@ -126,3 +126,13 @@ Each entry gives the date, the question, the choice, who made it and where it is
 - **2026-11-06** RP WO-R2/R3 done on `wp/RP` (fdc4f9a0, aa73d933, 2bac7fa9): REL.A01–A10 pass (A03 limited to the
   fixture comparison at this checkout); F0 PASS. Questions Q-B1…Q-B5 batched for the reviewer. Next: WO-R6 + WO-R4
   (brief `docs/briefs/REL-build-WO-R4-R6.md`), including one `release_rc` dispatch on `wp/RP` for REL.A17/N-4.
+
+## 2026-11-06 — RP WO-R4/R6 hand-back; WO-R6 split
+
+The WO-R4/R6 engineer stopped at the context cap: WO-R4 done (REL.A17 17/17; dispatch 42156856877 success, `check`
+skipped, 8 RC jobs green; push 42156850745 `check` green both legs with `junit-<arch>`), `wheel_data_check.py` PASS
+11/11, RP.L01–L10 PASS, full gate PASS 14995 at `bd672ff7`. Choices C-1…C-8, questions Q-C1 (`release-audit` in ADR
+0055's WO-R4 row vs RP's D2 deferral), Q-C2 (junit evidence from the push run) go to the RP reviewer batch.
+DECISION: rest of WO-R6 → two fresh engineers in sequence: WO-R6b (`release_rc.py` local steps 2–7, 9–16) then WO-R6c
+(`release_evidence_manifest.py`, REL.A20, evidence manifest, gate). Alternative: one engineer for both (would overrun the
+cap again). Reversible by: merging the two briefs.
