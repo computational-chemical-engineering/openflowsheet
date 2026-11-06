@@ -759,6 +759,7 @@ class Runner:
         self.logs = self.plan.work / "logs"
         self.summary = self.plan.work / "summary.txt"
         self.logs.mkdir(parents=True, exist_ok=True)
+        (self.plan.work / "tmp").mkdir(exist_ok=True)  # pytest's --basetemp needs its parent
         self.plan.rc.mkdir(parents=True, exist_ok=True)
 
     # environments ------------------------------------------------------------------------------

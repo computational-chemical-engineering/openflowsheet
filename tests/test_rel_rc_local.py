@@ -391,7 +391,10 @@ def _run(tmp_path: Path, steps: tuple[int, ...], **extra: Any) -> list[tuple[str
 
 
 def test_the_runner_runs_only_the_selected_steps_in_0_3_0s_order(tmp_path: Path) -> None:
-    labels = [label for label, *_ in _run(tmp_path, (2, 13))]
+    seen = _run(tmp_path, (2, 13))
+    labels = [label for label, *_ in seen]
+    basetemp = next(a for a in seen[-2][1] if a.startswith("--basetemp="))
+    assert Path(basetemp.removeprefix("--basetemp=")).parent.is_dir()
     assert labels == [
         "step02-identity",
         "step13-generator",
