@@ -74,8 +74,8 @@ M02_BASE_SERVED_SHA256 = M06_A3_SERVED_SHA256
 #: R-457: M04's served digest, registered at the alpha's merge (`scripts/m07a_rc.py`'s `D_3`).
 M04_SERVED_SHA256 = "455d01eb2f420032b27358798e6b331a0120aa1857f02ce3cb7851647849e125"
 #: MSG-G10 (ADR 0058): the served digest with `RunResult.failure` (D5) and the `explain` tool (D7),
-#: re-measured at MSG WO-11 after `explain.md`'s two review edits (Q6). (Evidence, not a pin: at WO-7,
-#: before the edits, `1ca06b37…`; with `failure` alone, at WO-6, `b083ffe1…`.)
+#: re-measured at MSG WO-11 after `explain.md`'s two review edits (Q6). (Evidence, not a pin: at
+#: WO-7, before the edits, `1ca06b37…`; with `failure` alone, at WO-6, `b083ffe1…`.)
 MSG_SERVED_SHA256 = "eaff45852d7596816d90d744078f537e46c723e577295d347d9d73aea0942eac"
 #: The files N1 and N2 changed; the only difference from `v17-c2`'s served texts.
 CHANGED = ("commit_change", "validate")

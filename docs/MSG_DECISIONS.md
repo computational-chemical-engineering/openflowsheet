@@ -565,3 +565,7 @@ closed in `message-catalogue.schema.json` and `application-results.schema.json` 
 a frozen schema and ADR 0058 D3, which the build lane may not decide. Default: `bug` with the specific actions above,
 which now override the kind's "report it" default. `CHECKPOINT_INCOMPATIBLE` (an outcome, `numerical`) and S5
 (`DIM-01`'s `review: true`; D3-4's silent cut of `members` at 64) are left to WO-12 with M1.
+
+**WO-11 commits.** `a87881fb` (D11-1), `00a63730` (D11-2, D11-3, D11-5, D11-6; with the out_of_domain example
+wording of D11-4), `7d8e5981` (D11-4's kind variant), `4503bb2e` (D11-7), `8c935831` (D11-8), `5f272819` (D11-9,
+D11-10). Gates at the end of WO-11: see the handoff.

@@ -68,8 +68,8 @@ PENDING_REASONS: dict[str, str] = {
         "to the F6 v2 unit models (ADR 0065)"
     ),
     "ctx": (
-        "MSG review Q2: an ApiError renders from its own document (projection, I2); the spec's unit "
-        "text and the instance id need the revision document as render context"
+        "MSG review Q2: an ApiError renders from its own document (projection, I2); the spec's "
+        "unit text and the instance id need the revision document as render context"
     ),
 }
 

@@ -1,34 +1,40 @@
-# MSG handoff (after WO-9, WO-10) — 2026-11-07
+# MSG handoff (after WO-11) — 2026-11-06
 
-Branch `wp/MSG`, worktree `.claude/worktrees/msg`. Spec `docs/design/MSG-messages.md`; choices in
-`docs/MSG_DECISIONS.md` (D0-1…D10-1). Not merged. WO-0…4, 6…10 done; WO-5 parked (F0 M9).
+Branch `wp/MSG`, worktree `.claude/worktrees/msg`. Spec `docs/design/MSG-messages.md` (§4.6 amended); review
+`docs/reviews/MSG-review.md` (binding); brief `docs/briefs/MSG-build-WO11-12.md`; choices `docs/MSG_DECISIONS.md`
+(D11-1…D11-10, commit index at the end of the WO-11 section). Not merged.
 
-## Done (commits)
+## Done in WO-11
 
-- WO-9 `3842f686` (complete entries: revision_not_ready, unsupported, DIM-01, out_of_domain,
-  pressure_rise, task_unsupported, model_unsupported; pages, schema fixtures, U05 CLI pin),
-  `184479d8` (corpus C01–C12, `tests/test_msg_corpus.py`, `--msg-update`).
-- WO-10 `5a68e53c` (web shell: error panel, job and failure screens show explanations).
-- Decisions `0067129c`; merge of main `b1a82351`; manifest
-  `evidence/MSG/b1a82351…/manifest.json` (`implemented`) and harvest rows (D9-9).
+- WO-5a (Q1): sidecar at the traversal hop → `run.diagnosis`; patterns; `outlet` derived; register R-942.
+  Lifted: C01 action, C02 numbers + S4, C11 numbers; C09 records `[value, low, high]`; `values` pinned to
+  independent expectations (change set, `iapws95.T_MIN/T_MAX`, steam tables).
+- S2 (`_typed` non-finite), M2 (`pressure_rise(valve)`), S1 (`out_of_domain` example wording; `numerical`
+  under iterative outcomes), Q2 (rule 2 + `parse_check`; three inner codes complete; C06/C07/C08/C10 lifted),
+  Q6 (`explain.md` edits; design-lane review in `REVIEW.json`; `MSG_FILE_SHA256`, `D_4` = `eaff4585…`),
+  Q7 (FB-01's three complete), S3 (`unsupported`), S4 (job ending reasons complete, kind kept `bug`).
 
-## Rules a later WO must keep
+## Still strict xfails (3)
 
-- A catalogue edit needs `scripts/doc_pages.py` and `scripts/t07_schema_fixtures.py --write`.
-- Corpus texts change only by `pytest tests/test_msg_corpus.py --msg-update`, diff reviewed.
-- `pending` items are strict xfails: when one XPASSes, move it into the case's facts.
+- C01 `numbers` (`q1c`: kernel-only; F6 v2 models, ADR 0065).
+- C08 "degc" and C10 instance `B` (`ctx`: need the revision as an ApiError's render context; design question).
 
-## Next
+## Open questions for the design lane (batch with WO-12's prose check)
 
-- WO-5 (when the design lane unfreezes the thermal modules): the C01/C02/C11 pending items turn
-  red as their numbers appear; regenerate the texts.
-- Design lane (batched): D9-2 (§4.4 rule 2 for DRAFT/NOT_RUN checks and implicated objects),
-  D9-10 (MSG-G0 (c) after F0), the prose of the seven new complete entries, plus the earlier
-  D7-7, D7-10, D6-3, D6-4/D7-9, D4-1, D3-4.
-- Merge blocker: `explain.md` reviews in `REVIEW.json` (D7-8). Then re-take the manifest as
-  `tested`; the single reviewer pass.
+- D11-7: load the revision into an ApiError's render context at projection, or declare C08/C10's gaps?
+- D11-10: `worker_lost`/`owner_lost`/`store_error` kind — an `environment` kind needs a schema + ADR 0058 change.
+- R-942's number: re-check against `main`'s register at the merge (WO-12 adds the c_4 entry after it).
 
-## Gates at the end of this run
+## Next: WO-12 (brief's WO-12 section)
 
-Suite at `b1a82351`: 1 failed (description reviews), 15065 passed. MSG-G0 a/b 0 diff, d 0 in 442
-stores, c see D9-10; F0 PASS. Detail at the tail of `docs/MSG_DECISIONS.md`.
+M1 (rest of §4.2.6, incl. `pressure_fall` — it already has args/params/pattern; `isentropic_state_single_phase`;
+outcomes incl. `CHECKPOINT_INCOMPATIBLE`'s kind; S5), M3 (`--parts bd` default), M6 (c_4 entry, D_4 on the merge
+tree), M4 + evidence, full gate. A catalogue edit needs `scripts/doc_pages.py` and
+`scripts/t07_schema_fixtures.py --write`; complete entries need `examples`. Corpus texts change only by
+`pytest tests/test_msg_corpus.py --msg-update`.
+
+## Gates at the end of WO-11 (head before this handoff)
+
+MSG-G0 a 0 diff, b 0/562 (108 bundles); F0 PASS (M1 50/50 … M9 35/35); ruff, format, mypy (254 files) clean;
+MSG tests + WO-5a-path tests 777 passed, 3 xfailed. `test_t08_w2_description_reviews`: one open item,
+`explain: human pending` (Frank). No full gate run.
