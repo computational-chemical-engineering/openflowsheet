@@ -118,3 +118,8 @@ Each entry gives the date, the question, the choice, who made it and where it is
   PASS. Registry entry deferred until `wp/MSG` merges (4 package-data tests red on `wp/ST` until WO-3). Batched for the
   reviewer: E1, D1-1 (verifier's per-component h uses Python `sum`, compensated from 3.12 — ST copies it for bitwise
   G7; also a 3.11-vs-3.12 identity question for the verifier itself), D1-3, D1-6/D1-7 schema departures.
+- **2026-11-06** ADR 0055 WO-R1 done (6714958d): RP, line files 0.3/0.4, acceptances, release-line-v1 schema; D2
+  deferred throughout. Findings F-1 (gate resolution needs `role`), F-2 (`git ls-tree` does no glob matching), F-3
+  (ADR 0055's acceptance condition names REL.A11–A16, A21, deferred with D2) and Q-1…Q-15 go to the single reviewer
+  pass over WO-R2…R6 together with WO-R1's design review of `gates[*]`. DECISION (orchestrator): build WO-R2/R3 on
+  `wp/RP` now on RP's text. Alternative: wait for the review of RP first. Reversible by: rework on the branch.
