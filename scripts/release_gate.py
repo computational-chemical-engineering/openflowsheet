@@ -329,6 +329,20 @@ def line_problems(line: Line, read: Callable[[str], bytes | None]) -> list[str]:
     return problems
 
 
+def chain_problems(
+    line: Line, at_c: Callable[[str], bytes | None], at_candidate: Callable[[str], bytes | None]
+) -> list[str]:
+    """RP §5.1 (amendment A-3): the line file and the files it inherits are byte-equal at `C` and
+    at the candidate; a change after `C` needs a new `C`. Standing mode only: the dated path is
+    the legacy gate unchanged (REL.A03), and 0.3.0's `C` holds no line file."""
+    return [
+        f"line {line.name}: {line_path(name)} differs between C and the candidate "
+        "(RP §5.1, A-3): a change after C needs a new C"
+        for name in (str(document["line"]) for document in line.chain)
+        if at_c(line_path(name)) != at_candidate(line_path(name))
+    ]
+
+
 def tree_problems(line: Line, paths: Sequence[str]) -> list[str]:
     """RP.L05 and RP.L08 at `C`, whose tracked paths are `paths`: every `tests` glob matches one,
     every `criteria` and `documents` path is one or a directory of them, every script is one."""
@@ -1079,6 +1093,9 @@ def main(argv: Sequence[str] | None = None) -> int:
             if arguments.lapses:
                 raise ValueError(f"line {line.name}: {where} has no standing acceptances")
             return engine.main(passed, line.release())
+        problems = chain_problems(line, lambda path: trees.read(rc, path), _read_at(candidate))
+        if problems:
+            raise LineError("\n".join(problems))
         scopes = Scopes(trees, line, rc, candidate)
         if arguments.lapses:
             today = datetime.datetime.now(datetime.UTC).date()

@@ -436,3 +436,24 @@ def test_a05_the_step_s_text() -> None:
     assert 'gate=("scripts/v${major}_${minor}_gate.py")' in run
     assert 'refuse "no release gate for the $major.$minor line"' in run
     assert 'python "${gate[@]}" --rc "$RC"' in run
+
+
+# -- amendment A-3 (RP §5.1, review S-2): the line file is byte-equal at C and the candidate -----
+
+
+@pytest.mark.parametrize("path", ["release/lines/0.4.json", "release/lines/0.3.json"])
+def test_a3_a_line_file_changed_after_c_exits_2(
+    path: str, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """The judged line file, or one it inherits, differs at the candidate from C's (here in its
+    bytes only, one appended newline): exit 2. Control: the committed bytes pass the check."""
+    changed = (REPO_ROOT / path).read_text(encoding="utf-8") + "\n"
+    monkeypatch.setattr(release_gate, "_read_at", lambda candidate: reader(**{path: changed}))
+    assert release_gate.main(["--line", "0.4", "--rc", "HEAD", "--lapses"]) == 2
+    assert capsys.readouterr().err == (
+        f"error: line 0.4: {path} differs between C and the candidate (RP §5.1, A-3): a change "
+        "after C needs a new C\n"
+    )
+    monkeypatch.setattr(release_gate, "_read_at", lambda candidate: reader())
+    assert release_gate.main(["--line", "0.4", "--rc", "HEAD", "--lapses"]) == 0
+    assert capsys.readouterr().out.startswith("acceptance lapses at C = ")
