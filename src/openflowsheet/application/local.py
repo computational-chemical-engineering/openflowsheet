@@ -1618,8 +1618,9 @@ class LocalApplication:
     def _missing_member(self, artifact_id: object) -> dict[str, Any]:
         """MSG §3.4 (FB-03b): for a missing `<bundle id>/<member>` of a bundle with registered
         members, what the bundle does hold — `bundle_id`, `member`, `members` (sorted file
-        names, at most `MAX_LISTED_MEMBERS`) and, for a job's bundle (`<job_id>:bundle`,
-        `<job_id>:rerun`), `job_id` and the run's `run_outcome` when the job recorded one.
+        names, at most `MAX_LISTED_MEMBERS`; `members_total` when cut) and, for a job's bundle
+        (`<job_id>:bundle`, `<job_id>:rerun`), `job_id` and the run's `run_outcome` when the job
+        recorded one.
         Added detail members only: the message and the existing members are unchanged (I1)."""
         if not isinstance(artifact_id, str):
             return {}
@@ -1634,6 +1635,9 @@ class LocalApplication:
             "member": member,
             "members": members[:MAX_LISTED_MEMBERS],
         }
+        if len(members) > MAX_LISTED_MEMBERS:
+            # Review S5 (D3-4): a cut list says so, with the full count.
+            found["members_total"] = len(members)
         job_id, colon, suffix = bundle_id.rpartition(":")
         if colon and suffix in ("bundle", "rerun") and self._store.get_job(job_id) is not None:
             found["job_id"] = job_id

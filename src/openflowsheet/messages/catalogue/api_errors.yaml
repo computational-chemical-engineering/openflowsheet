@@ -14,6 +14,7 @@ entries:
       bundle_id:   {type: bundle, optional: true}
       member:      {type: text, optional: true}
       members:     {type: list, optional: true}
+      members_total: {type: number, optional: true, label: files in the bundle}
       run_outcome: {type: code, optional: true}
       code:        {type: text, optional: true}
       suggestions: {type: list, optional: true}
@@ -21,6 +22,11 @@ entries:
     why: "The id is not one this project has recorded."
     action: "Check the id; a job's outputs list the artifact ids it wrote."
     variants:
+      # Review S5 (D3-4): `members` is cut at 64 names; `members_total` says so.
+      - when: {has: [bundle_id, member, members, members_total]}
+        summary: "Bundle {bundle_id} has no file '{member!raw}'."
+        why: "This bundle holds {members_total!raw} files, among them {members}."
+        action: "Read one of the files the bundle holds."
       - when: {has: [bundle_id, member, members, run_outcome], not_equals: {run_outcome: CONVERGED}}
         summary: "Bundle {bundle_id} has no file '{member!raw}': its run ended {run_outcome} and wrote no solution."
         why: "A run that does not converge writes a failure bundle instead of a solution state and a certificate. This bundle holds {members}."
@@ -41,6 +47,8 @@ entries:
       - params: {artifact_id: "job-000004:bundle/solution-state.json", bundle_id: "job-000004:bundle",
                  member: solution-state.json, members: [failure-bundle.json, run-manifest.json],
                  run_outcome: INITIALIZATION_FAILED, job_id: job-000004}
+      - params: {artifact_id: "import-000001:bundle/x.json", bundle_id: "import-000001:bundle",
+                 member: x.json, members: [a.json, b.json], members_total: 70}
 
   - code: unsupported
     family: api_error

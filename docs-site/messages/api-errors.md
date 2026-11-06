@@ -243,7 +243,7 @@ The change was refused: a replacement model does not fit the model it replaces.
 - **Summary:** Nothing named &lt;artifact_id&gt; &lt;revision_id&gt; &lt;job_id&gt; exists in this project.
 - **Why:** The id is not one this project has recorded.
 - **Do:** Check the id; a job's outputs list the artifact ids it wrote.
-- **Parameters:** `artifact_id` (artifact, optional), `revision_id` (revision, optional), `job_id` (job, optional), `bundle_id` (bundle, optional), `member` (text, optional), `members` (list, optional), `run_outcome` (code, optional), `code` (text, optional), `suggestions` (list, optional)
+- **Parameters:** `artifact_id` (artifact, optional), `revision_id` (revision, optional), `job_id` (job, optional), `bundle_id` (bundle, optional), `member` (text, optional), `members` (list, optional), `members_total` (number, optional), `run_outcome` (code, optional), `code` (text, optional), `suggestions` (list, optional)
 
 Example:
 
@@ -251,6 +251,17 @@ Example:
 Bundle 'job-000004:bundle' has no file 'solution-state.json': its run ended INITIALIZATION_FAILED and wrote no solution.
   Why:     A run that does not converge writes a failure bundle instead of a solution state and a certificate. This bundle holds failure-bundle.json, run-manifest.json.
   Do:      Check the run's outcome before reading its results; the run result's failure says why it failed, and 'job-000004:bundle/failure-bundle.json' holds the evidence.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    not_found (openflowsheet explain not_found)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/api-errors/#not_found
+```
+
+Example:
+
+```text
+Bundle 'import-000001:bundle' has no file 'x.json'.
+  Why:     This bundle holds 70 files, among them a.json, b.json.
+  Do:      Read one of the files the bundle holds.
   Kind:    Input problem: something in the flowsheet or the request needs to change.
   Code:    not_found (openflowsheet explain not_found)
   Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/api-errors/#not_found

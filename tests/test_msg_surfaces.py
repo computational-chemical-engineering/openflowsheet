@@ -267,6 +267,25 @@ def test_fb03b_the_refusal_names_the_bundle_its_members_and_the_run_outcome(
     assert str(refused.value).split("\n")[-1] == "  Details: not_found: no such artifact"
 
 
+def test_fb03b_a_cut_member_list_says_so(failed: Failed, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Review S5 (D3-4): `members` is cut at `MAX_LISTED_MEMBERS` names, and a cut list carries
+    `members_total`, which the entry reads; an uncut one does not (the test above)."""
+    from openflowsheet.application import local
+
+    monkeypatch.setattr(local, "MAX_LISTED_MEMBERS", 2)
+    missing = f"{failed.bundle_id}/solution-state.json"
+    with LocalApplication.open(failed.project) as app:
+        with pytest.raises(ApplicationError) as refused:
+            app.artifact_bytes(missing)
+    detail = refused.value.error.detail
+    everything = _members(failed)
+    assert len(everything) > 2
+    assert (detail["members"], detail["members_total"]) == (everything[:2], len(everything))
+    assert refused.value.explanation["why"] == (
+        f"This bundle holds {len(everything)} files, among them {', '.join(everything[:2])}."
+    )
+
+
 def test_fb03b_an_id_that_names_no_bundle_member_keeps_the_old_detail(failed: Failed) -> None:
     with LocalApplication.open(failed.project) as app:
         for missing, call in (
