@@ -346,6 +346,16 @@ call the tool: `src/openflowsheet/application/bindings/descriptions/explain.md` 
 recorded reviews before release (T08 G15): the design lane's (done in MSG's reviewer pass) and yours. In plain words:
 read the text and say "approved" or what to change. Default: none — MSG cannot merge until you have looked at it.
 
+Update 2026-11-06: the design lane approved it after two wording edits ("project data" → "data"; "with its numbers"
+→ "with its own ids and, where known, numbers"; review `docs/reviews/MSG-review.md`, Q6). WO-11 applies them; read the
+edited text once it lands on `wp/MSG`.
+
+## MSG — ship incomplete catalogue entries as a declared limitation? (2026-11-06)
+
+The review (M1) found about 60 message entries still stubs (a code and a one-line title, no explanation or action).
+Default, already acted on: complete them all before the merge (WO-12). Alternative: merge with the stubs listed as a
+declared limitation and complete them later. Say so only if you want the faster merge.
+
 ## ST — accept ADR 0068 (stream table)? (2026-11-06)
 
 Design `docs/design/ST-stream-table.md`, ADR `docs/adr/0068-stream-table.md` (Proposed). In plain words: a new read-only
