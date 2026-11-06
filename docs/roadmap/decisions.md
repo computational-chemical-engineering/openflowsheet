@@ -92,3 +92,10 @@ Each entry gives the date, the question, the choice, who made it and where it is
   four transports is an addition to the frozen application contract (an ADR 0019 amendment, design lane), although the
   roadmap lists ST as needing no design pass. Alternative: build lane designs the operation and the reviewer checks it.
   Reversible by: dropping the architect pass if the recon shows an existing operation can carry the table additively.
+- **2026-11-06** MSG WO-7/8 done on `wp/MSG` (6a5435ad…6a0c9b0b; gate: description-review test red by design until
+  `explain.md` reviews; f6 wall-time budget red under load). DECISION (orchestrator): **WO-5 parked** — it must edit
+  `models/thermal/{flash,heater,machines,mixer,valve}.py`, frozen byte-for-byte by F0 M9 (R-940; S1). The design-lane
+  question (how C01/C02's numbers reach `failure.explanation` without editing frozen modules, e.g. a post-hoc
+  provider evaluation in the application layer, or an M9 exception by ADR) goes to MSG's reviewer pass. WO-9's number
+  assertions for C01/C02 are strict xfails until then. Alternative: architect consult now. Reversible by: unparking
+  WO-5 after the ruling.
