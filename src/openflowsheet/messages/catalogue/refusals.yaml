@@ -667,9 +667,21 @@ entries:
   - code: isentropic_state_single_phase
     family: refusal
     kind: not_supported
-    complete: false
-    title: Isentropic state single phase
-    summary: 'Refused: isentropic state single phase.'
+    complete: true
+    # MSG WO-12 (M1). Emitters: `thermal/machines.py` (with the unit), `thermal/blocks.py` and
+    # `thermal/kernel.py` `isentropic_state`/`_isentropic_temperature` (R-839).
+    title: A machine whose ideal outlet is single-phase, unlike its declared outlet
+    args: [unit]
+    params: {unit: {type: unit, optional: true}}
+    summary: "The machine[ {unit}] needs a case this version does not support: its ideal (isentropic) outlet state is single-phase, not the phase declared for its outlet."
+    why: "This version computes a machine's ideal outlet in the phase declared for the real outlet. Here the outlet is declared wet (\"vapor_liquid\") but the ideal outlet lies outside the two-phase region, or, where the fluid has no two-phase region at the outlet pressure, the ideal outlet is of another phase than the one declared. This is a limitation of the software, not an error in your flowsheet."
+    action: "Declare the outlet with the phase its ideal state has (for example vapour when the ideal state is superheated) if the real outlet has that phase too; otherwise change the operating conditions until the ideal and the real outlet are in the same phase."
+    gap: {limitation: null, capability: "an ideal (isentropic) outlet of another phase than the declared outlet"}
+    see_also: [isentropic_state_two_phase, phase_regime_mismatch]
+    examples:
+      - chain: [INITIALIZATION_FAILED, initializer_failed, isentropic_state_single_phase]
+        params: {unit: T}
+      - params: {}
   - code: kernel_disagrees
     family: refusal
     kind: bug
@@ -1037,8 +1049,7 @@ entries:
   - code: pressure_fall
     family: refusal
     kind: input
-    complete: false
-    title: Pressure fall
+    complete: true
     args: [machine]
     # Review Q1 (WO-5a): the bound's detail line (`machines.py`, `syn001/pump.py`; P5).
     detail_pattern: 'P_spec = (?P<p_spec>[-+]?[0-9]+(?:\.[0-9]+)?(?:e[-+]?[0-9]+)?) Pa (?:is above|is below|exceeds) the inlet''s (?P<p_inlet>[-+]?[0-9]+(?:\.[0-9]+)?(?:e[-+]?[0-9]+)?) Pa'
@@ -1046,7 +1057,19 @@ entries:
       machine: {type: text, label: machine}
       p_spec:  {type: quantity, optional: true, label: specified outlet pressure, unit: Pa, quantity_kind: pressure}
       p_inlet: {type: quantity, optional: true, label: inlet pressure, unit: Pa, quantity_kind: pressure}
-    summary: 'Refused: pressure fall.'
+      unit:    {type: unit, optional: true}
+    # MSG WO-12 (M1). Emitters: `syn001/pump.py` (pump), `thermal/machines.py` `_bound_code` (every
+    # machine but the turbine: pump, compressor).
+    title: An outlet pressure below the inlet pressure of a machine that can only raise it
+    summary: "The outlet pressure specified for[ unit {unit},] a {machine!raw}, is below its inlet pressure[ ({p_spec} against {p_inlet})]."
+    why: "A pump or a compressor does work on the fluid to raise its pressure, so its outlet pressure cannot be below its inlet pressure. Lowering the pressure takes a valve or a turbine."
+    action: "Give the {machine!raw}[ {unit}] an outlet pressure at or above its inlet pressure[ of {p_inlet}], or lower the pressure upstream of it."
+    see_also: [pressure_rise]
+    examples:
+      - chain: [INITIALIZATION_FAILED, initializer_failed, pressure_fall]
+        params: {machine: pump, unit: P,
+                 p_spec: {value: 50000.0, unit: Pa, kind: pressure},
+                 p_inlet: {value: 100000.0, unit: Pa, kind: pressure}}
   - code: pressure_outside_domain
     family: refusal
     kind: input

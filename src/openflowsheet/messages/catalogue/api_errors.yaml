@@ -61,64 +61,194 @@ entries:
     examples:
       - params: {reason: task_unsupported}
 
+  # MSG WO-12 (review M1): every `api_error` is complete (§4.2.6). Producers: `application/`
+  # `admission.py`, `local.py`, `authz.py`, `operations.py`, `jobs/runner.py`, `jobs/executor.py`,
+  # `bindings/http.py`, `bindings/mcp.py`, `cli.py`.
   - code: internal_error
     family: api_error
     kind: bug
-    complete: false
+    complete: true
     title: An internal error in OpenFlowsheet
     args: [reason]
     params: {reason: {type: code, optional: true}}
     summary: "OpenFlowsheet hit an internal error and could not complete the request."
+    why: "Something inside OpenFlowsheet failed in a way it does not expect: an exception that nothing handled, a consistency check that should always hold, or a job's runner or worker that stopped without a result. The error's message, and the server's or the job's log, say where."
+    action: "Report it with the error's message and the server's or the job's log. If the error is marked retryable, the same request may succeed when it is sent again."
+    examples:
+      - params: {}
 
-  # Stubs (MSG WO-2): kind by §4.2.1's rules.
-  - code: budget_exceeds_ceiling
-    family: api_error
-    kind: input
-    complete: false
-    title: Budget exceeds ceiling
-    summary: 'The request was refused: budget exceeds ceiling.'
-  - code: document_not_canonical
-    family: api_error
-    kind: input
-    complete: false
-    title: Document not canonical
-    summary: 'The request was refused: document not canonical.'
-  - code: forbidden
-    family: api_error
-    kind: input
-    complete: false
-    title: Forbidden
-    summary: 'The request was refused: forbidden.'
-  - code: idempotency_key_reused
-    family: api_error
-    kind: input
-    complete: false
-    title: Idempotency key reused
-    summary: 'The request was refused: idempotency key reused.'
   - code: invalid_request
     family: api_error
     kind: input
-    complete: false
-    title: Invalid request
-    summary: 'The request was refused: invalid request.'
-  - code: limit_exceeded
+    complete: true
+    title: The request is not one the operation accepts
+    params: {pointer: {type: pointer, optional: true}}
+    summary: "The request was refused as invalid."
+    why: "The request does not have the form the operation accepts: a member is missing, has the wrong type or value, is given twice, or breaks a rule stated for it. The error's message says which; its pointer, when present, locates the member in the request."
+    action: "Correct the member the message names and send the request again; the operation's schema lists its members."
+    variants:
+      # An empty pointer is the whole request (`bindings/http.py`).
+      - when: {has: [pointer], not_equals: {pointer: ""}}
+        summary: "The request was refused as invalid at {pointer}."
+    examples:
+      - params: {pointer: /body/check_tolerances/pressure}
+      - params: {pointer: ""}
+
+  - code: document_not_canonical
     family: api_error
     kind: input
-    complete: false
-    title: Limit exceeded
-    summary: 'The request was refused: limit exceeded.'
-  - code: model_replacement_incompatible
+    complete: true
+    title: A value with no canonical JSON form
+    params: {pointer: {type: pointer, optional: true}}
+    summary: "The request was refused: a value has no canonical JSON form."
+    why: "OpenFlowsheet stores and hashes every document in one canonical JSON form, so that the same content always has the same hash. The value has no such form: it is NaN or an infinity, an integer beyond 2^53 that is not the exact spelling of a double, or a key repeated in one object."
+    action: "Replace the value with a finite number, or remove the repeated key, and send the request again."
+    variants:
+      - when: {has: [pointer], not_equals: {pointer: ""}}
+        summary: "The request was refused: the value at {pointer} has no canonical JSON form."
+    examples:
+      - params: {pointer: /body/inlet/n}
+      - params: {}
+
+  - code: unauthenticated
     family: api_error
     kind: input
-    complete: false
-    title: Model replacement incompatible
-    summary: 'The request was refused: model replacement incompatible.'
+    complete: true
+    title: The request carries no valid credential
+    summary: "The request was refused: it carries no credential this project accepts."
+    why: "Every request acts with a credential that the project's policy holds. This request had none, or one that is unknown, malformed, expired or revoked."
+    action: "Send the request with a valid credential (over HTTP, the header 'Authorization: Bearer' followed by the token). If yours has expired or was revoked, ask the project's owner for a new one."
+    examples:
+      - params: {}
+
+  - code: forbidden
+    family: api_error
+    kind: input
+    complete: true
+    title: The credential does not hold the right the operation needs
+    params: {required: {type: list, optional: true}}
+    summary: "The request was refused: the credential does not hold the right this operation needs."
+    why: "Each operation needs a right, and acting on another principal's job needs one more. The credential is valid, but it does not hold every right this operation needs.[ The operation needs {required}.]"
+    action: "Use a credential that holds the rights the message names, or ask the project's owner to grant them."
+    examples:
+      - params: {required: [execute]}
+      - params: {}
+
+  - code: idempotency_key_reused
+    family: api_error
+    kind: input
+    complete: true
+    title: An idempotency key used again with a different request
+    summary: "The request was refused: its idempotency key was already used with a different request."
+    why: "An idempotency key makes a request safe to repeat: the same request under the same key returns the original result instead of acting twice. This key was used before with a different job request or change set, so OpenFlowsheet refuses rather than guess which one was meant."
+    action: "Use a new idempotency key for a new request. To get the original result, repeat the original request with this key."
+    examples:
+      - params: {}
+
   - code: not_ready
     family: api_error
     kind: notice
-    complete: false
-    title: Not ready
-    summary: 'The request was refused: not ready.'
+    complete: true
+    title: The job has no result yet
+    params:
+      job_id: {type: job, optional: true}
+      status: {type: text, optional: true, label: job status}
+      reason: {type: code, optional: true}
+    summary: "The job[ {job_id}] has no result yet[: it is {status!raw}]."
+    why: "A job's result exists once the job has ended, and this job is still queued or running."
+    action: "Wait for the job to end (for example with wait_job), then ask for its result again."
+    variants:
+      # `local.py` `_unproduced`: a reproduce job that ended without a replay report.
+      - when: {has: [reason]}
+        summary: "The job[ {job_id}] ended[ {status!raw}] without a report."
+        why: "The job ended before it produced its report: it was cancelled, or it ran out of time."
+        action: "Submit the job again if you still need its report; give it a larger wall-time budget if it timed out."
+    examples:
+      - params: {job_id: job-000002, status: running}
+      - params: {job_id: job-000002, status: timed_out, reason: wall_time_exhausted}
+
+  - code: verification_weakening_refused
+    family: api_error
+    kind: input
+    complete: true
+    title: A request that would loosen a verification tolerance
+    args: [kind]
+    params:
+      kind:       {type: text, label: quantity kind}
+      requested:  {type: number, optional: true, label: requested tolerance}
+      registered: {type: number, optional: true, label: registered tolerance}
+    summary: "The request was refused: it would loosen the verifier's tolerance for {kind!raw}[ ({requested} against the registered {registered})]."
+    why: "The verifier judges every solution at registered tolerances, one per quantity kind. A request may tighten a tolerance but never loosen one, so that a solution is never certified at a weaker standard than the registered one."
+    action: "Request a tolerance at or below the registered one[ ({registered})] for {kind!raw}, or omit it to use the registered value."
+    see_also: [RELAXED]
+    examples:
+      - params: {kind: pressure, requested: 1.0, registered: 0.01}
+
+  - code: budget_exceeds_ceiling
+    family: api_error
+    kind: input
+    complete: true
+    title: A budget above its ceiling
+    args: [budget]
+    params:
+      budget:    {type: text, label: budget}
+      requested: {type: number, optional: true, label: requested budget}
+      ceiling:   {type: number, optional: true, label: ceiling}
+    summary: "The request was refused: its budget '{budget!raw}' is above the ceiling[ ({requested} against {ceiling})]."
+    why: "A request may lower a budget but not raise it above its ceiling. The ceiling of the property-call budget is the solve policy's."
+    action: "Request at most the ceiling[ of {ceiling}], or omit the budget to use the default."
+    variants:
+      - when: {equals: {budget: wall_time_s}}
+        why: "A job's wall time, in seconds, may not exceed the ceiling that the credential's capability sets."
+        action: "Request a wall time at most the ceiling[ of {ceiling} s], or omit it to use the capability's default; a longer job needs a capability with a higher ceiling."
+    examples:
+      - params: {budget: max_property_calls, requested: 1000000, ceiling: 200000}
+      - params: {budget: wall_time_s, requested: 7200.0, ceiling: 3600.0}
+
+  - code: limit_exceeded
+    family: api_error
+    kind: input
+    complete: true
+    title: Too many active jobs
+    args: [limit]
+    params:
+      limit:           {type: text, label: limit}
+      active_jobs:     {type: number, optional: true, label: active jobs}
+      max_active_jobs: {type: number, optional: true, label: maximum active jobs}
+    summary: "The request was refused: the caller already has the most queued or running jobs its credential allows[ ({max_active_jobs!raw})]."
+    why: "A credential's capability limits how many of its jobs may be queued or running at once, and this caller is at that limit. The refusal is temporary."
+    action: "Wait for one of your jobs to end, or cancel one, then submit again."
+    examples:
+      - params: {limit: max_active_jobs, active_jobs: 4, max_active_jobs: 4}
+
+  - code: model_replacement_incompatible
+    family: api_error
+    kind: input
+    complete: true
+    title: A model replacement that does not fit the unit it replaces
+    params:
+      instance_id: {type: unit, optional: true}
+      reason:      {type: code, optional: true}
+      cause:       {type: text, optional: true, label: cause}
+    summary: "The change was refused: a replacement model[ for unit {instance_id}] does not fit the model it replaces."
+    why: "A change that replaces a unit's model is checked against the model it replaces: the new model must resolve, keep the same ports, components and conserved quantities, the same property method and reference state, the same degrees of freedom, cover the old operating domain, and declare the derivatives the old one declared. A surrogate model also needs evidence that allows it in. The error's report or message names the checks that failed."
+    action: "Change the replacement model, or its mapping onto the unit, so that the failed checks pass; a surrogate model needs a verdict that allows it in before a revision can use it."
+    examples:
+      - params: {instance_id: R1}
+      - params: {}
+
+  - code: revision_unsupported
+    family: api_error
+    kind: not_supported
+    complete: true
+    title: No way in this version to solve the revision
+    summary: "This version cannot solve the revision as it stands."
+    why: "A solve needs a solver path whose models cover every unit and specification of the revision. None covers this revision, for example because a unit uses a model this version cannot solve, a specification is not read by its unit, or the units are combined in a way the solver does not handle. The error names what did not fit."
+    action: "Read the explanation of the cause the error names: it says whether to change the flowsheet or that the case is a limitation of this version. The limitations page lists what this version can solve."
+    gap: {limitation: null, capability: null}
+    examples:
+      - params: {}
+
   - code: revision_not_ready
     family: api_error
     kind: input
@@ -132,21 +262,3 @@ entries:
     examples:
       - params: {revision: rev-000001}
       - params: {}
-  - code: revision_unsupported
-    family: api_error
-    kind: not_supported
-    complete: false
-    title: Revision unsupported
-    summary: 'The request was refused: revision unsupported.'
-  - code: unauthenticated
-    family: api_error
-    kind: input
-    complete: false
-    title: Unauthenticated
-    summary: 'The request was refused: unauthenticated.'
-  - code: verification_weakening_refused
-    family: api_error
-    kind: input
-    complete: false
-    title: Verification weakening refused
-    summary: 'The request was refused: verification weakening refused.'

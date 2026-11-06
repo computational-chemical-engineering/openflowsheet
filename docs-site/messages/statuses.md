@@ -6,120 +6,264 @@ The words of a validation report's status and of a run's certificate. How to rea
 
 <a id="DRAFT"></a>
 
-## `DRAFT`: Draft
+## `DRAFT`: The revision is incomplete
 
 **Kind:** Notice: not a failure.
 
-*No plain-language explanation is written yet; the summary is the technical one.*
+- **Summary:** The revision &lt;revision&gt; is a draft: it is incomplete, or a check could not run, so it is not ready to solve yet.
+- **Why:** Validation marks a revision DRAFT when it has no specifications, when the only failed check is the structural one that finds a specification missing, or when a structural check could not run, for example because a unit's model is not available or a specification is not read by its unit. A draft is not wrong: it can be stored and committed, but a solve needs a revision that is ready for simulation.
+- **Do:** Read the validation report's checks that did not pass or did not run: each names the specification, stream or unit to add or change.
+- **See also:** [`READY_FOR_SIMULATION`](#READY_FOR_SIMULATION), [`INVALID`](#INVALID), [`revision_not_ready`](api-errors.md#revision_not_ready)
 
-- **Summary:** Status DRAFT.
+Example:
+
+```text
+The revision is a draft: it is incomplete, or a check could not run, so it is not ready to solve yet.
+  Why:     Validation marks a revision DRAFT when it has no specifications, when the only failed check is the structural one that finds a specification missing, or when a structural check could not run, for example because a unit's model is not available or a specification is not read by its unit. A draft is not wrong: it can be stored and committed, but a solve needs a revision that is ready for simulation.
+  Do:      Read the validation report's checks that did not pass or did not run: each names the specification, stream or unit to add or change.
+  Kind:    Notice: not a failure.
+  Code:    DRAFT (openflowsheet explain DRAFT)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/statuses/#DRAFT
+```
 
 <a id="FAILED"></a>
 
-## `FAILED`: Failed
+## `FAILED`: A required check failed at the solution
 
 **Kind:** Numerical failure: the solver did not find the solution; your flowsheet may be correct.
 
-*No plain-language explanation is written yet; the summary is the technical one.*
+- **Summary:** Failed: the solution of revision &lt;revision&gt; does not pass a required check of the verifier.
+- **Why:** The verifier evaluated the final state independently of the solver and a required check failed: an equation residual, a material or energy balance, a specification, a bound or domain check, the phase of a stream or the recomputed phase split. A failed check is a statement about this state, which therefore is not a solution of the flowsheet at the registered tolerances. When the solver itself reported convergence, the certificate records this as a false success.
+- **Do:** Do not use the result. Read the certificate's failed checks for the equation, balance or stream involved; try another initial guess or solve policy, and if the solver reported convergence, report it with the run's bundle.
+- **See also:** [`VERIFIED`](#VERIFIED), [`UNVERIFIED`](#UNVERIFIED)
 
-- **Summary:** Status FAILED.
+Example:
+
+```text
+Failed does not pass a required check of the verifier.
+  Why:     The verifier evaluated the final state independently of the solver and a required check failed: an equation residual, a material or energy balance, a specification, a bound or domain check, the phase of a stream or the recomputed phase split. A failed check is a statement about this state, which therefore is not a solution of the flowsheet at the registered tolerances. When the solver itself reported convergence, the certificate records this as a false success.
+  Do:      Do not use the result. Read the certificate's failed checks for the equation, balance or stream involved; try another initial guess or solve policy, and if the solver reported convergence, report it with the run's bundle.
+  Kind:    Numerical failure: the solver did not find the solution; your flowsheet may be correct.
+  Code:    FAILED (openflowsheet explain FAILED)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/statuses/#FAILED
+```
 
 <a id="ILL_CONDITIONED"></a>
 
-## `ILL_CONDITIONED`: Ill conditioned
+## `ILL_CONDITIONED`: The Jacobian at the solution is too badly conditioned to certify it
 
 **Kind:** Notice: not a failure.
 
-*No plain-language explanation is written yet; the summary is the technical one.*
+- **Summary:** The rank screen found the equations ill-conditioned at the solution: a small error in them can mean a large error in the result.
+- **Why:** The scaled Jacobian at the solution has full rank, but its condition number exceeds the screen's relative limit, or its inverse is large enough that the rounding noise of the equations, amplified through it, could exceed the residual tolerance. A small residual then does not imply an accurate solution. The verdict is UNVERIFIED.
+- **Do:** Check for nearly redundant specifications or a nearly vanishing flow; a better-posed specification set usually removes it. The certificate's regularity evidence records which limit was exceeded.
+- **See also:** [`UNVERIFIED`](#UNVERIFIED), [`RANK_DEFICIENT`](#RANK_DEFICIENT)
 
-- **Summary:** Status ILL_CONDITIONED.
+Example:
+
+```text
+The rank screen found the equations ill-conditioned at the solution: a small error in them can mean a large error in the result.
+  Why:     The scaled Jacobian at the solution has full rank, but its condition number exceeds the screen's relative limit, or its inverse is large enough that the rounding noise of the equations, amplified through it, could exceed the residual tolerance. A small residual then does not imply an accurate solution. The verdict is UNVERIFIED.
+  Do:      Check for nearly redundant specifications or a nearly vanishing flow; a better-posed specification set usually removes it. The certificate's regularity evidence records which limit was exceeded.
+  Kind:    Notice: not a failure.
+  Code:    ILL_CONDITIONED (openflowsheet explain ILL_CONDITIONED)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/statuses/#ILL_CONDITIONED
+```
 
 <a id="INCONCLUSIVE"></a>
 
-## `INCONCLUSIVE`: Inconclusive
+## `INCONCLUSIVE`: The Jacobian screen could not decide
 
 **Kind:** Notice: not a failure.
 
-*No plain-language explanation is written yet; the summary is the technical one.*
+- **Summary:** The rank screen could not decide whether the solution is locally unique.
+- **Why:** The screen's dense rank test was not attempted or did not finish (the system is larger than its budget), or the matrix it was given is not the one of the state being judged. The screen records this rather than guessing, and the verdict is UNVERIFIED.
+- **Do:** Read the certificate's regularity evidence for the reason. The result may be right; it is not certified.
+- **See also:** [`UNVERIFIED`](#UNVERIFIED)
 
-- **Summary:** Status INCONCLUSIVE.
+Example:
+
+```text
+The rank screen could not decide whether the solution is locally unique.
+  Why:     The screen's dense rank test was not attempted or did not finish (the system is larger than its budget), or the matrix it was given is not the one of the state being judged. The screen records this rather than guessing, and the verdict is UNVERIFIED.
+  Do:      Read the certificate's regularity evidence for the reason. The result may be right; it is not certified.
+  Kind:    Notice: not a failure.
+  Code:    INCONCLUSIVE (openflowsheet explain INCONCLUSIVE)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/statuses/#INCONCLUSIVE
+```
 
 <a id="INVALID"></a>
 
-## `INVALID`: Invalid
+## `INVALID`: A validation check failed
 
 **Kind:** Input problem: something in the flowsheet or the request needs to change.
 
-*No plain-language explanation is written yet; the summary is the technical one.*
+- **Summary:** The revision &lt;revision&gt; is invalid: a validation check failed.
+- **Why:** Validation checks a revision in order: its schema, its dimensions and units, its connections, its components, then its structure (for example specifications that contradict each other). A check that fails, other than a single missing specification, makes the revision invalid, and a solve does not start from it.
+- **Do:** Read the validation report's failed checks: each names the element to correct. Commit the corrected revision and validate again.
+- **See also:** [`DRAFT`](#DRAFT), [`READY_FOR_SIMULATION`](#READY_FOR_SIMULATION), [`revision_not_ready`](api-errors.md#revision_not_ready)
 
-- **Summary:** Status INVALID.
+Example:
+
+```text
+The revision is invalid: a validation check failed.
+  Why:     Validation checks a revision in order: its schema, its dimensions and units, its connections, its components, then its structure (for example specifications that contradict each other). A check that fails, other than a single missing specification, makes the revision invalid, and a solve does not start from it.
+  Do:      Read the validation report's failed checks: each names the element to correct. Commit the corrected revision and validate again.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    INVALID (openflowsheet explain INVALID)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/statuses/#INVALID
+```
 
 <a id="NO_RANK_LOSS_DETECTED"></a>
 
-## `NO_RANK_LOSS_DETECTED`: No rank loss detected
+## `NO_RANK_LOSS_DETECTED`: The Jacobian screen found the solution locally unique
 
 **Kind:** Notice: not a failure.
 
-*No plain-language explanation is written yet; the summary is the technical one.*
+- **Summary:** The rank screen found no rank loss: the solution is locally unique to the screen's resolution.
+- **Why:** The verifier screens the scaled Jacobian of the flowsheet's equations at the solution. No rank loss detected means it is nonsingular and well enough conditioned that the residual tolerances also bound the solution: nearby states do not satisfy the equations equally well.
+- **Do:** No action is needed.
+- **See also:** [`RANK_DEFICIENT`](#RANK_DEFICIENT), [`ILL_CONDITIONED`](#ILL_CONDITIONED), [`INCONCLUSIVE`](#INCONCLUSIVE), [`VERIFIED`](#VERIFIED)
 
-- **Summary:** Status NO_RANK_LOSS_DETECTED.
+Example:
+
+```text
+The rank screen found no rank loss: the solution is locally unique to the screen's resolution.
+  Why:     The verifier screens the scaled Jacobian of the flowsheet's equations at the solution. No rank loss detected means it is nonsingular and well enough conditioned that the residual tolerances also bound the solution: nearby states do not satisfy the equations equally well.
+  Do:      No action is needed.
+  Kind:    Notice: not a failure.
+  Code:    NO_RANK_LOSS_DETECTED (openflowsheet explain NO_RANK_LOSS_DETECTED)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/statuses/#NO_RANK_LOSS_DETECTED
+```
 
 <a id="RANK_DEFICIENT"></a>
 
-## `RANK_DEFICIENT`: Rank deficient
+## `RANK_DEFICIENT`: The Jacobian at the solution is singular
 
 **Kind:** Notice: not a failure.
 
-*No plain-language explanation is written yet; the summary is the technical one.*
+- **Summary:** The rank screen found the equations singular at the solution, so the solution is not locally unique.
+- **Why:** The scaled Jacobian at the solution has a numerical rank below its size: some direction changes the state without changing the equations, to first order. Possible causes are specifications that are dependent at this state, or a unit at a point where its equations degenerate, such as a vanishing flow. The verdict is then UNVERIFIED.
+- **Do:** Check the specifications for one that duplicates another, and the streams for a zero or vanishing flow; the certificate's regularity evidence records the screen's numbers.
+- **See also:** [`UNVERIFIED`](#UNVERIFIED), [`NO_RANK_LOSS_DETECTED`](#NO_RANK_LOSS_DETECTED)
 
-- **Summary:** Status RANK_DEFICIENT.
+Example:
+
+```text
+The rank screen found the equations singular at the solution, so the solution is not locally unique.
+  Why:     The scaled Jacobian at the solution has a numerical rank below its size: some direction changes the state without changing the equations, to first order. Possible causes are specifications that are dependent at this state, or a unit at a point where its equations degenerate, such as a vanishing flow. The verdict is then UNVERIFIED.
+  Do:      Check the specifications for one that duplicates another, and the streams for a zero or vanishing flow; the certificate's regularity evidence records the screen's numbers.
+  Kind:    Notice: not a failure.
+  Code:    RANK_DEFICIENT (openflowsheet explain RANK_DEFICIENT)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/statuses/#RANK_DEFICIENT
+```
 
 <a id="READY_FOR_OPTIMIZATION"></a>
 
-## `READY_FOR_OPTIMIZATION`: Ready for optimization
+## `READY_FOR_OPTIMIZATION`: The study's optimization formulation closes
 
 **Kind:** Notice: not a failure.
 
-*No plain-language explanation is written yet; the summary is the technical one.*
+- **Summary:** Ready for optimization: the study's optimization formulation closes and a supported optimizer is available.
+- **Why:** An optimization study reports this when its formulation closes (for example, every decision has finite bounds that contain its start, and every variable the objective and the constraints name exists) and a supported optimizer is installed. Validating a revision for the task 'optimization' is not offered in this version; the status comes from the study's own readiness check.
+- **Do:** Run the optimization study.
+- **See also:** [`READY_FOR_SIMULATION`](#READY_FOR_SIMULATION), [`task_unsupported`](refusals.md#task_unsupported)
 
-- **Summary:** Status READY_FOR_OPTIMIZATION.
+Example:
+
+```text
+Ready for optimization: the study's optimization formulation closes and a supported optimizer is available.
+  Why:     An optimization study reports this when its formulation closes (for example, every decision has finite bounds that contain its start, and every variable the objective and the constraints name exists) and a supported optimizer is installed. Validating a revision for the task 'optimization' is not offered in this version; the status comes from the study's own readiness check.
+  Do:      Run the optimization study.
+  Kind:    Notice: not a failure.
+  Code:    READY_FOR_OPTIMIZATION (openflowsheet explain READY_FOR_OPTIMIZATION)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/statuses/#READY_FOR_OPTIMIZATION
+```
 
 <a id="READY_FOR_SIMULATION"></a>
 
-## `READY_FOR_SIMULATION`: Ready for simulation
+## `READY_FOR_SIMULATION`: The revision passes validation for simulation
 
 **Kind:** Notice: not a failure.
 
-*No plain-language explanation is written yet; the summary is the technical one.*
+- **Summary:** The revision &lt;revision&gt; is ready for simulation: it passes validation and can be solved.
+- **Why:** No validation check failed or was left unrun: the schema, dimensions, connections and components are consistent, the specifications are declared and the structural analysis closes the system.
+- **Do:** Solve the revision.
+- **See also:** [`DRAFT`](#DRAFT), [`INVALID`](#INVALID)
 
-- **Summary:** Status READY_FOR_SIMULATION.
+Example:
+
+```text
+The revision is ready for simulation: it passes validation and can be solved.
+  Why:     No validation check failed or was left unrun: the schema, dimensions, connections and components are consistent, the specifications are declared and the structural analysis closes the system.
+  Do:      Solve the revision.
+  Kind:    Notice: not a failure.
+  Code:    READY_FOR_SIMULATION (openflowsheet explain READY_FOR_SIMULATION)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/statuses/#READY_FOR_SIMULATION
+```
 
 <a id="RELAXED"></a>
 
-## `RELAXED`: Relaxed
+## `RELAXED`: Every required check passed, under a check policy other than the registered one
 
 **Kind:** Notice: not a failure.
 
-*No plain-language explanation is written yet; the summary is the technical one.*
+- **Summary:** Relaxed: the solution of revision &lt;revision&gt; passed every required check, but under a check policy other than the registered one.
+- **Why:** Every required check passed and the Jacobian screen found no rank loss, but the checks ran under a check policy whose id or tolerances differ from the registered ones, for example tolerances the request tightened. The verdict says so, so that a result checked under another policy never reads as one checked under the registered policy. The certificate lists any tolerance looser than the registered one.
+- **Do:** To obtain VERIFIED, solve again under the registered check policy (a request without check tolerances). Otherwise use the result knowing which policy judged it.
+- **See also:** [`VERIFIED`](#VERIFIED), [`verification_weakening_refused`](api-errors.md#verification_weakening_refused)
 
-- **Summary:** Status RELAXED.
+Example:
+
+```text
+Relaxed passed every required check, but under a check policy other than the registered one.
+  Why:     Every required check passed and the Jacobian screen found no rank loss, but the checks ran under a check policy whose id or tolerances differ from the registered ones, for example tolerances the request tightened. The verdict says so, so that a result checked under another policy never reads as one checked under the registered policy. The certificate lists any tolerance looser than the registered one.
+  Do:      To obtain VERIFIED, solve again under the registered check policy (a request without check tolerances). Otherwise use the result knowing which policy judged it.
+  Kind:    Notice: not a failure.
+  Code:    RELAXED (openflowsheet explain RELAXED)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/statuses/#RELAXED
+```
 
 <a id="UNVERIFIED"></a>
 
-## `UNVERIFIED`: Unverified
+## `UNVERIFIED`: No required check failed, but the verifier could not establish the result
 
 **Kind:** Notice: not a failure.
 
-*No plain-language explanation is written yet; the summary is the technical one.*
+- **Summary:** Unverified: the solution of revision &lt;revision&gt; failed no required check, but the verifier could not establish it.
+- **Why:** A result is unverified when no required check failed but the evidence is incomplete: a required check could not run (a model or capability the verifier has no check for), the Jacobian screen did not find the solution locally unique (rank-deficient, ill-conditioned or inconclusive), or the derivative evidence did not hold. A solve that did not converge also gets an unverified certificate, with every check marked unsupported.
+- **Do:** Read the certificate's limitations: each names the check or the evidence that is missing. The result may be right, but nothing certifies it.
+- **See also:** [`VERIFIED`](#VERIFIED), [`FAILED`](#FAILED), [`RANK_DEFICIENT`](#RANK_DEFICIENT), [`ILL_CONDITIONED`](#ILL_CONDITIONED), [`INCONCLUSIVE`](#INCONCLUSIVE)
 
-- **Summary:** Status UNVERIFIED.
+Example:
+
+```text
+Unverified failed no required check, but the verifier could not establish it.
+  Why:     A result is unverified when no required check failed but the evidence is incomplete: a required check could not run (a model or capability the verifier has no check for), the Jacobian screen did not find the solution locally unique (rank-deficient, ill-conditioned or inconclusive), or the derivative evidence did not hold. A solve that did not converge also gets an unverified certificate, with every check marked unsupported.
+  Do:      Read the certificate's limitations: each names the check or the evidence that is missing. The result may be right, but nothing certifies it.
+  Kind:    Notice: not a failure.
+  Code:    UNVERIFIED (openflowsheet explain UNVERIFIED)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/statuses/#UNVERIFIED
+```
 
 <a id="VERIFIED"></a>
 
-## `VERIFIED`: Verified
+## `VERIFIED`: The solution passed every required check under the registered check policy
 
 **Kind:** Notice: not a failure.
 
-*No plain-language explanation is written yet; the summary is the technical one.*
+- **Summary:** Verified: the solution of revision &lt;revision&gt; passed every required check under the registered check policy.
+- **Why:** After a solve, OpenFlowsheet's verifier judges the final state without the solver: it evaluates every equation again, sums the material and energy balances from the streams, checks the specifications, the bounds and the phase of every stream, recomputes the phase split, and screens the Jacobian for rank loss. VERIFIED means every required check passed at the registered tolerances and the screen found no rank loss. It is verification of the model's equations, not validation against measured data, and not a claim of optimality.
+- **Do:** Use the result. The certificate lists each check with its value and its tolerance.
+- **See also:** [`RELAXED`](#RELAXED), [`UNVERIFIED`](#UNVERIFIED), [`FAILED`](#FAILED), [`NO_RANK_LOSS_DETECTED`](#NO_RANK_LOSS_DETECTED)
 
-- **Summary:** Status VERIFIED.
+Example:
+
+```text
+Verified passed every required check under the registered check policy.
+  Why:     After a solve, OpenFlowsheet's verifier judges the final state without the solver: it evaluates every equation again, sums the material and energy balances from the streams, checks the specifications, the bounds and the phase of every stream, recomputes the phase split, and screens the Jacobian for rank loss. VERIFIED means every required check passed at the registered tolerances and the screen found no rank loss. It is verification of the model's equations, not validation against measured data, and not a claim of optimality.
+  Do:      Use the result. The certificate lists each check with its value and its tolerance.
+  Kind:    Notice: not a failure.
+  Code:    VERIFIED (openflowsheet explain VERIFIED)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/statuses/#VERIFIED
+```

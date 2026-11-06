@@ -15,130 +15,251 @@ entries:
     examples:
       - params: {unit: T}
 
-  # Stubs (MSG WO-2): kind by §4.2.1's rules.
-  - code: ACTIVE_SET_CYCLING
-    family: outcome
-    kind: numerical
-    complete: false
-    title: Active set cycling
-    summary: The solve ended ACTIVE_SET_CYCLING (homotopy/PTC/active-set stalls).
-  - code: ATTEMPTS_EXHAUSTED
-    family: outcome
-    kind: numerical
-    complete: false
-    title: Attempts exhausted
-    summary: The solve ended ATTEMPTS_EXHAUSTED (budget/cancellation outcomes).
-  - code: BOUND_BLOCKED
-    family: outcome
-    kind: numerical
-    complete: false
-    title: Bound blocked
-    summary: The solve ended BOUND_BLOCKED (rank/linear/globalization failures).
-  - code: BUDGET_EXHAUSTED
-    family: outcome
-    kind: numerical
-    complete: false
-    title: Budget exhausted
-    summary: The solve ended BUDGET_EXHAUSTED (budget/cancellation outcomes).
-  - code: CAPABILITY_UNAVAILABLE
-    family: outcome
-    kind: not_supported
-    complete: false
-    title: Capability unavailable
-    summary: The solve ended CAPABILITY_UNAVAILABLE (model domain/conservation/derivative defects).
-  - code: CHECKPOINT_INCOMPATIBLE
-    family: outcome
-    kind: numerical
-    complete: false
-    title: Checkpoint incompatible
-    summary: The solve ended CHECKPOINT_INCOMPATIBLE (homotopy/PTC/active-set stalls).
+  # MSG WO-12 (review M1): every outcome is complete (§4.2.6). Meanings from the producers
+  # (`numerics/newton.py`, `numerics/ptc.py`, `numerics/scaling.py`, `orchestrator/*`,
+  # `models/syn001/column.py`) and K03 spec §5, §11.1; kinds by §4.2.1's table.
   - code: CONVERGED
     family: outcome
     kind: notice
-    complete: false
-    title: Converged
-    summary: The solve converged.
-  - code: COUPLING_NOT_CONVERGED
-    family: outcome
-    kind: numerical
-    complete: false
-    title: Coupling not converged
-    summary: The solve ended COUPLING_NOT_CONVERGED (initialization and recycle failures).
-  - code: EVALUATION_ERROR
-    family: outcome
-    kind: numerical
-    complete: false
-    title: Evaluation error
-    summary: The solve ended EVALUATION_ERROR (model domain/conservation/derivative defects).
-  - code: HOMOTOPY_STALLED
-    family: outcome
-    kind: numerical
-    complete: false
-    title: Homotopy stalled
-    summary: The solve ended HOMOTOPY_STALLED (homotopy/PTC/active-set stalls).
-  - code: INNER_SOLVE_INCONSISTENT
-    family: outcome
-    kind: bug
-    complete: false
-    title: Inner solve inconsistent
-    summary: The solve ended INNER_SOLVE_INCONSISTENT (model domain/conservation/derivative defects).
-  - code: LINEAR_SOLVE_FAILED
-    family: outcome
-    kind: numerical
-    complete: false
-    title: Linear solve failed
-    summary: The solve ended LINEAR_SOLVE_FAILED (rank/linear/globalization failures).
-  - code: LINE_SEARCH_FAILED
-    family: outcome
-    kind: numerical
-    complete: false
-    title: Line search failed
-    summary: The solve ended LINE_SEARCH_FAILED (rank/linear/globalization failures).
-  - code: PHASE_UPDATE_REQUIRED
-    family: outcome
-    kind: numerical
-    complete: false
-    title: Phase update required
-    summary: The solve ended PHASE_UPDATE_REQUIRED (homotopy/PTC/active-set stalls).
-  - code: PTC_MAPPING_INVALID
-    family: outcome
-    kind: bug
-    complete: false
-    title: Ptc mapping invalid
-    summary: The solve ended PTC_MAPPING_INVALID (model domain/conservation/derivative defects).
-  - code: PTC_STALLED
-    family: outcome
-    kind: numerical
-    complete: false
-    title: Ptc stalled
-    summary: The solve ended PTC_STALLED (homotopy/PTC/active-set stalls).
-  - code: RECYCLE_STAGNATION
-    family: outcome
-    kind: numerical
-    complete: false
-    title: Recycle stagnation
-    summary: The solve ended RECYCLE_STAGNATION (initialization and recycle failures).
-  - code: SCALE_UNAVAILABLE
-    family: outcome
-    kind: input
-    complete: false
-    title: Scale unavailable
-    summary: The solve ended SCALE_UNAVAILABLE (structure/specification conflicts).
+    complete: true
+    title: The solver found a solution
+    summary: "The solve[ of revision {revision}] converged."
+    why: "The solver found a state at which every equation of the flowsheet is satisfied within the solve policy's tolerances. Whether the result is certified is decided afterwards by the verifier, which checks the state independently of the solver: its verdict is VERIFIED, RELAXED, UNVERIFIED or FAILED."
+    action: "Read the verification status before relying on the result."
+    see_also: [VERIFIED, FAILED]
+    examples:
+      - params: {}
+
   - code: SPECIFICATION_CONFLICT
     family: outcome
     kind: input
-    complete: false
-    title: Specification conflict
-    summary: The solve ended SPECIFICATION_CONFLICT (structure/specification conflicts).
-  - code: STAGNATION
+    complete: true
+    title: Specifications that contradict each other
+    summary: "The solve[ of revision {revision}] did not start: two specifications contradict each other."
+    why: "Before solving, OpenFlowsheet removes equations that only pass a value along, for example a pressure carried through units without a pressure drop. Removing one is allowed only when the values agree; here they differ, so the specifications fix one quantity to two different values. The message names the equation, the path and the mismatch."
+    action: "Change one of the two specifications so that they agree, for example the feed pressure or the pressure specified downstream of it, or give a unit between them a pressure drop."
+    see_also: [SCALE_UNAVAILABLE]
+    examples:
+      - params: {}
+
+  - code: SCALE_UNAVAILABLE
     family: outcome
-    kind: numerical
-    complete: false
-    title: Stagnation
-    summary: The solve ended STAGNATION (rank/linear/globalization failures).
+    kind: input
+    complete: true
+    title: A variable or equation without a quantity the solver can scale
+    summary: "The solve[ of revision {revision}] did not start: a variable or equation has no quantity the solver can scale."
+    why: "The solver scales every variable and equation by a registered nominal value for its quantity (a molar flow, a temperature, a pressure, a heat rate). The named variable or equation declares no quantity, or one without a registered nominal, and the solver refuses to guess a scale."
+    action: "Read the message for the names. A unit model or a specification that introduces them needs a declared quantity of a supported kind; if the model is OpenFlowsheet's own, report it."
+    examples:
+      - params: {}
+
   - code: UNSUPPORTED_RANK_STRUCTURE
     family: outcome
     kind: not_supported
-    complete: false
-    title: Unsupported rank structure
-    summary: The solve ended UNSUPPORTED_RANK_STRUCTURE (rank/linear/globalization failures).
+    complete: true
+    title: Equations structured in a way this version's solver does not handle
+    summary: "The solve[ of revision {revision}] did not run: its equations have a structure this version's solver does not handle."
+    why: "The solver arranges the flowsheet's equations into blocks it can solve in order. This flowsheet's arrangement is one it does not support, for example a specification that relates variables of more than one unit. The message names the structure."
+    action: "Read the message for the structure named. A specification across units can often be replaced by one on a single unit; the limitations page lists what this version supports."
+    gap: {limitation: null, capability: "equation structures beyond the solver's supported blocks"}
+    examples:
+      - params: {}
+
+  - code: CAPABILITY_UNAVAILABLE
+    family: outcome
+    kind: not_supported
+    complete: true
+    title: A unit needs a capability its model does not have
+    summary: "The solve[ of revision {revision}] stopped: a unit needs something its model does not provide."
+    why: "A unit's model declares what it supports. This solve needed something outside it, for example a column given a two-phase inlet, a condenser or reboiler kind it does not model, a property method outside its scope, or a derivative the model declares unavailable. The message names the unit and the capability."
+    action: "Change the unit so that it stays within its model's scope (the message names what is missing), or use a model that provides it. The limitations page lists what this version supports."
+    gap: {limitation: null, capability: "the capability the message names"}
+    examples:
+      - params: {}
+
+  - code: PHASE_UPDATE_REQUIRED
+    family: outcome
+    kind: numerical
+    complete: true
+    title: The phases changed during the solve
+    summary: "The solve[ of revision {revision}] stopped: the phases present changed during the solve and it could not continue with the new ones."
+    why: "The solver works with a fixed assignment of phases to streams per attempt. When an iterate's phases differ from the attempt's, it normally restarts with the new assignment; this outcome means it needed that restart and did not make it."
+    action: "Try an initial guess closer to the expected phases, or declare the phases you expect on the streams concerned."
+    see_also: [ACTIVE_SET_CYCLING, ATTEMPTS_EXHAUSTED]
+    examples:
+      - params: {}
+
+  - code: ACTIVE_SET_CYCLING
+    family: outcome
+    kind: numerical
+    complete: true
+    title: The solve returned to a phase assignment it had already tried
+    summary: "The solve[ of revision {revision}] stopped: it came back to an assignment of phases it had already tried."
+    why: "When the phases present change during a solve, the solver restarts with the new assignment of phases to streams. Each assignment is tried at most once; this solve was about to try one a second time, which would only repeat the earlier attempt."
+    action: "Try another initial guess, closer to the expected phases, or declare the phases you expect on the streams that switched."
+    see_also: [PHASE_UPDATE_REQUIRED, ATTEMPTS_EXHAUSTED]
+    examples:
+      - params: {}
+
+  - code: ATTEMPTS_EXHAUSTED
+    family: outcome
+    kind: numerical
+    complete: true
+    title: The solve used all its restarts
+    summary: "The solve[ of revision {revision}] stopped: it used all the restarts its policy allows."
+    why: "Each time the phases present change, the solver restarts with the new assignment of phases to streams. The solve policy limits the number of these attempts, and this solve reached the limit without converging."
+    action: "Try another initial guess, closer to the expected phases, or declare the phases you expect on the streams that switched."
+    see_also: [ACTIVE_SET_CYCLING, PHASE_UPDATE_REQUIRED]
+    examples:
+      - params: {}
+
+  - code: BUDGET_EXHAUSTED
+    family: outcome
+    kind: numerical
+    complete: true
+    title: The solve used its budget of iterations or property calls
+    summary: "The solve[ of revision {revision}] stopped: it used its budget before converging."
+    why: "The solve policy limits the property calls of a solve and the iterations of each attempt. This solve reached one of these limits before converging; the message names which."
+    action: "If the solve was still making progress, solve again from its best state or a better initial guess, or under a solve policy with a larger budget (a request may lower the property-call budget but not raise it above the policy's)."
+    see_also: [budget_exceeds_ceiling]
+    examples:
+      - params: {}
+
+  - code: STAGNATION
+    family: outcome
+    kind: numerical
+    complete: true
+    title: The solve stopped making progress
+    summary: "The solve[ of revision {revision}] stopped making progress before converging."
+    why: "For several consecutive steps the equations' error decreased by less than one per cent while it was still above the tolerance. This happens near a point where the equations come close to being satisfied without being satisfied, or far from the solution where the steps are small."
+    action: "Try another initial guess or solve policy; check that the specifications are what you intend. If it persists, report it with the failure bundle."
+    examples:
+      - params: {}
+
+  - code: LINE_SEARCH_FAILED
+    family: outcome
+    kind: numerical
+    complete: true
+    title: The solve found no acceptable step
+    summary: "The solve[ of revision {revision}] stopped: no step along its search direction reduced the error."
+    why: "Each step is shortened, by halving, until it reduces the equations' error and stays where the models can be evaluated. Here every shortened step was rejected, either because it did not reduce the error or because a unit could not be evaluated there."
+    action: "Try another initial guess, ideally one where every unit can be evaluated; if it persists, report it with the failure bundle."
+    examples:
+      - params: {}
+
+  - code: BOUND_BLOCKED
+    family: outcome
+    kind: numerical
+    complete: true
+    title: The solve was blocked by a variable at its bound
+    summary: "The solve[ of revision {revision}] stopped: a variable at its bound blocked every step."
+    why: "Some variables have bounds, for example a flow that cannot be negative. A variable sat on its bound and the next step pointed past it, so no step could be taken in that direction."
+    action: "Try another initial guess that keeps the flows away from zero, or check whether a specification forces a flow to vanish."
+    examples:
+      - params: {}
+
+  - code: LINEAR_SOLVE_FAILED
+    family: outcome
+    kind: numerical
+    complete: true
+    title: A linear system of the solve could not be solved
+    summary: "The solve[ of revision {revision}] stopped: a linear system at one of its steps could not be solved accurately."
+    why: "Each step solves a linear system built from the derivatives of the equations. At this iterate the system was exactly singular, or its solution was not accurate enough to use. This can happen at a degenerate state, for example a vanishing flow, or when the specifications do not determine some variable."
+    action: "Try another initial guess; check that the specifications determine every variable. If it persists, report it with the failure bundle."
+    see_also: [RANK_DEFICIENT]
+    examples:
+      - params: {}
+
+  - code: INNER_SOLVE_INCONSISTENT
+    family: outcome
+    kind: bug
+    complete: true
+    title: The solver's inner calculation disagreed with its equations
+    summary: "The solve[ of revision {revision}] stopped: an internal consistency check of the solver failed."
+    why: "The solver computes the units in order and checks, at every accepted state, that the equations it differentiates are satisfied by the values it computed. Here they were not, so its derivatives do not describe the function it solves. This is a defect in OpenFlowsheet or in a unit model, not an error in your flowsheet."
+    action: "Report it with the failure bundle; the message names the equation that disagreed."
+    examples:
+      - params: {}
+
+  - code: EVALUATION_ERROR
+    family: outcome
+    kind: numerical
+    complete: true
+    title: A unit's model raised an error during the solve
+    summary: "The solve[ of revision {revision}] stopped: a unit's model reported an error during the solve."
+    why: "A unit's model, or an external model coupled to the flowsheet, reported an error at a state the solver had accepted, or its derivatives could not be evaluated there. The message names the unit and its error."
+    action: "Read the message for the unit and its error. If the state is far from where the unit operates, try another initial guess; if the error persists, report it with the failure bundle."
+    examples:
+      - params: {}
+
+  - code: RECYCLE_STAGNATION
+    family: outcome
+    kind: numerical
+    complete: true
+    title: The recycle iteration stopped making progress
+    summary: "The solve[ of revision {revision}] stopped: the recycle streams stopped converging."
+    why: "A flowsheet with a recycle is solved by guessing the recycle streams, computing around the loop and updating the guess. The update stopped reducing the mismatch between the guessed and the computed streams before it was within the tolerance."
+    action: "Supply an initial guess for the recycle streams closer to the expected solution, or try another solve policy."
+    see_also: [INITIALIZATION_FAILED, COUPLING_NOT_CONVERGED]
+    examples:
+      - params: {}
+
+  - code: COUPLING_NOT_CONVERGED
+    family: outcome
+    kind: numerical
+    complete: true
+    title: The coupling with an external model did not converge
+    summary: "The solve[ of revision {revision}] stopped: the outer iteration between the flowsheet and a coupled model did not converge."
+    why: "A flowsheet coupled to an external model is solved by an outer iteration that alternates between the two. It gave up without converging: it reached its iteration limit, stopped reducing the mismatch, or its update became singular. The message names the reason."
+    action: "Supply an initial guess for the coupled streams closer to the expected solution, or check the external model's inputs and outputs."
+    see_also: [RECYCLE_STAGNATION, EVALUATION_ERROR]
+    examples:
+      - params: {}
+
+  - code: HOMOTOPY_STALLED
+    family: outcome
+    kind: numerical
+    complete: true
+    title: The continuation from an easier problem could not advance
+    summary: "The solve[ of revision {revision}] stopped: its continuation from an easier problem could not advance."
+    why: "Under some solve policies the solver starts from an easier problem whose solution is known and moves it step by step to the real one. The steps shrank until the continuation could not advance."
+    action: "Supply an initial guess closer to the expected solution, or try another solve policy."
+    see_also: [PTC_STALLED]
+    examples:
+      - params: {}
+
+  - code: PTC_STALLED
+    family: outcome
+    kind: numerical
+    complete: true
+    title: The pseudo-time stepping could not advance
+    summary: "The solve[ of revision {revision}] stopped: its pseudo-time stepping could not advance."
+    why: "Under some solve policies the solver advances the flowsheet in an artificial time towards steady state, which is more robust far from the solution. The time steps stopped advancing before the steady state was reached."
+    action: "Supply an initial guess closer to the expected solution, or try another solve policy."
+    see_also: [HOMOTOPY_STALLED, PTC_MAPPING_INVALID]
+    examples:
+      - params: {}
+
+  - code: PTC_MAPPING_INVALID
+    family: outcome
+    kind: bug
+    complete: true
+    title: The pseudo-time stepping could not be set up
+    summary: "The solve[ of revision {revision}] did not run: its pseudo-time stepping could not be set up for this flowsheet."
+    why: "Pseudo-time stepping needs a mapping that gives each equation an artificial holdup. The mapping built for this flowsheet did not pass its own validation. That is a defect in OpenFlowsheet, not an error in your flowsheet."
+    action: "Report it with the failure bundle. Meanwhile, a solve policy without pseudo-time stepping may solve the flowsheet."
+    see_also: [PTC_STALLED]
+    examples:
+      - params: {}
+
+  - code: CHECKPOINT_INCOMPATIBLE
+    family: outcome
+    kind: numerical
+    complete: true
+    title: A restart's starting state did not fit the new phase assignment
+    summary: "The solve[ of revision {revision}] stopped: the state it restarted from does not fit the new assignment of phases."
+    why: "When the phases present change, the solver restarts from its last state with the new assignment of phases to streams. That state did not pass the new attempt's opening checks. No supported path should produce this, so it is treated as a defect in OpenFlowsheet."
+    action: "Report it with the failure bundle; the message names the check that refused the state."
+    see_also: [PHASE_UPDATE_REQUIRED]
+    examples:
+      - params: {}

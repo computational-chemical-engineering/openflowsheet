@@ -880,13 +880,39 @@ The first pass over the flowsheet could not compute every unit (it stopped at 'T
 
 <a id="isentropic_state_single_phase"></a>
 
-## `isentropic_state_single_phase`: Isentropic state single phase
+## `isentropic_state_single_phase`: A machine whose ideal outlet is single-phase, unlike its declared outlet
 
 **Kind:** Not supported in this version: a limitation of OpenFlowsheet, not an error in your flowsheet.
 
-*No plain-language explanation is written yet; the summary is the technical one.*
+- **Summary:** The machine &lt;unit&gt; needs a case this version does not support: its ideal (isentropic) outlet state is single-phase, not the phase declared for its outlet.
+- **Why:** This version computes a machine's ideal outlet in the phase declared for the real outlet. Here the outlet is declared wet ("vapor_liquid") but the ideal outlet lies outside the two-phase region, or, where the fluid has no two-phase region at the outlet pressure, the ideal outlet is of another phase than the one declared. This is a limitation of the software, not an error in your flowsheet.
+- **Do:** Declare the outlet with the phase its ideal state has (for example vapour when the ideal state is superheated) if the real outlet has that phase too; otherwise change the operating conditions until the ideal and the real outlet are in the same phase.
+- **Parameters:** `unit` (unit, optional)
+- **Not supported:** missing capability: an ideal (isentropic) outlet of another phase than the declared outlet
+- **See also:** [`isentropic_state_two_phase`](#isentropic_state_two_phase), [`phase_regime_mismatch`](#phase_regime_mismatch)
 
-- **Summary:** Refused: isentropic state single phase.
+Example:
+
+```text
+The solve stopped before its first iteration: unit 'T' could not compute its outlets from the starting values.
+  Cause:   The machine 'T' needs a case this version does not support: its ideal (isentropic) outlet state is single-phase, not the phase declared for its outlet.
+  Why:     This version computes a machine's ideal outlet in the phase declared for the real outlet. Here the outlet is declared wet ("vapor_liquid") but the ideal outlet lies outside the two-phase region, or, where the fluid has no two-phase region at the outlet pressure, the ideal outlet is of another phase than the one declared. This is a limitation of the software, not an error in your flowsheet.
+  Do:      Declare the outlet with the phase its ideal state has (for example vapour when the ideal state is superheated) if the real outlet has that phase too; otherwise change the operating conditions until the ideal and the real outlet are in the same phase.
+  Kind:    Not supported in this version: a limitation of OpenFlowsheet, not an error in your flowsheet.
+  Code:    isentropic_state_single_phase, in INITIALIZATION_FAILED → initializer_failed (openflowsheet explain isentropic_state_single_phase)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#isentropic_state_single_phase
+```
+
+Example:
+
+```text
+The machine needs a case this version does not support: its ideal (isentropic) outlet state is single-phase, not the phase declared for its outlet.
+  Why:     This version computes a machine's ideal outlet in the phase declared for the real outlet. Here the outlet is declared wet ("vapor_liquid") but the ideal outlet lies outside the two-phase region, or, where the fluid has no two-phase region at the outlet pressure, the ideal outlet is of another phase than the one declared. This is a limitation of the software, not an error in your flowsheet.
+  Do:      Declare the outlet with the phase its ideal state has (for example vapour when the ideal state is superheated) if the real outlet has that phase too; otherwise change the operating conditions until the ideal and the real outlet are in the same phase.
+  Kind:    Not supported in this version: a limitation of OpenFlowsheet, not an error in your flowsheet.
+  Code:    isentropic_state_single_phase (openflowsheet explain isentropic_state_single_phase)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#isentropic_state_single_phase
+```
 
 <a id="isentropic_state_two_phase"></a>
 
@@ -1180,7 +1206,7 @@ The solve stopped before its first iteration: unit 'P' could not compute its out
 Example:
 
 ```text
-The solve ended LINE_SEARCH_FAILED (rank/linear/globalization failures).
+The solve stopped: no step along its search direction reduced the error.
   Cause:   A property calculation for unit 'B' was asked for a state outside the range its property method covers.
   Why:     A property method is valid only over a stated range of temperature and pressure, and outside it OpenFlowsheet stops instead of extrapolating. For example, water's IAPWS-95 method in this version covers 273.16 K to 1273.15 K and 100 Pa to 100 MPa.
   Do:      The solver reached a state outside the property method's range at unit 'B' while iterating; the specified states may all be inside it. Give initial guesses closer to the expected solution, or check the specifications that drive the solve towards that state; the limitations page lists the range of each method.
@@ -1506,14 +1532,27 @@ The solve stopped before its first iteration: unit 'T' could not compute its out
 
 <a id="pressure_fall"></a>
 
-## `pressure_fall`: Pressure fall
+## `pressure_fall`: An outlet pressure below the inlet pressure of a machine that can only raise it
 
 **Kind:** Input problem: something in the flowsheet or the request needs to change.
 
-*No plain-language explanation is written yet; the summary is the technical one.*
+- **Summary:** The outlet pressure specified for unit &lt;unit&gt;, a &lt;machine&gt;, is below its inlet pressure (&lt;p_spec&gt; against &lt;p_inlet&gt;).
+- **Why:** A pump or a compressor does work on the fluid to raise its pressure, so its outlet pressure cannot be below its inlet pressure. Lowering the pressure takes a valve or a turbine.
+- **Do:** Give the &lt;machine&gt; &lt;unit&gt; an outlet pressure at or above its inlet pressure of &lt;p_inlet&gt;, or lower the pressure upstream of it.
+- **Parameters:** `machine` (text), `p_spec` (quantity, optional), `p_inlet` (quantity, optional), `unit` (unit, optional)
+- **See also:** [`pressure_rise`](#pressure_rise)
 
-- **Summary:** Refused: pressure fall.
-- **Parameters:** `machine` (text), `p_spec` (quantity, optional), `p_inlet` (quantity, optional)
+Example:
+
+```text
+The solve stopped before its first iteration: unit 'P' could not compute its outlets from the starting values.
+  Cause:   The outlet pressure specified for unit 'P', a pump, is below its inlet pressure (50000 Pa against 100000 Pa).
+  Why:     A pump or a compressor does work on the fluid to raise its pressure, so its outlet pressure cannot be below its inlet pressure. Lowering the pressure takes a valve or a turbine.
+  Do:      Give the pump 'P' an outlet pressure at or above its inlet pressure of 100000 Pa, or lower the pressure upstream of it.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    pressure_fall, in INITIALIZATION_FAILED → initializer_failed (openflowsheet explain pressure_fall)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#pressure_fall
+```
 
 <a id="pressure_outside_domain"></a>
 

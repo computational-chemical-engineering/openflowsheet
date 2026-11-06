@@ -6,53 +6,111 @@ Why a job ended the way it did (`Job.status`, its end reason). How to read an ex
 
 <a id="cancel_requested"></a>
 
-## `cancel_requested`: Cancel requested
+## `cancel_requested`: The job was cancelled on request
 
 **Kind:** Notice: not a failure.
 
-*No plain-language explanation is written yet; the summary is the technical one.*
+- **Summary:** The job ended: it was cancelled on request.
+- **Why:** Someone with the right to do so cancelled the job (cancel_job) while it was queued or running.
+- **Do:** Submit the job again if you still need its result.
 
-- **Summary:** The job ended: cancel requested.
+Example:
+
+```text
+The job ended: it was cancelled on request.
+  Why:     Someone with the right to do so cancelled the job (cancel_job) while it was queued or running.
+  Do:      Submit the job again if you still need its result.
+  Kind:    Notice: not a failure.
+  Code:    cancel_requested (openflowsheet explain cancel_requested)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/jobs/#cancel_requested
+```
 
 <a id="cancelled"></a>
 
-## `cancelled`: Cancelled
+## `cancelled`: The job was cancelled
 
 **Kind:** Notice: not a failure.
 
-*No plain-language explanation is written yet; the summary is the technical one.*
+- **Summary:** The job &lt;job&gt; was cancelled before it finished.
+- **Why:** A job is cancelled when someone asked for it (cancel_job), when the server running it shut down, or when the program running it was interrupted from the keyboard. The ending reason says which.
+- **Do:** Submit the job again if you still need its result.
+- **See also:** [`cancel_requested`](#cancel_requested), [`server_shutdown`](#server_shutdown), [`keyboard_interrupt`](#keyboard_interrupt)
 
-- **Summary:** The job ended: cancelled.
+Example:
+
+```text
+The job was cancelled before it finished.
+  Why:     A job is cancelled when someone asked for it (cancel_job), when the server running it shut down, or when the program running it was interrupted from the keyboard. The ending reason says which.
+  Do:      Submit the job again if you still need its result.
+  Kind:    Notice: not a failure.
+  Code:    cancelled (openflowsheet explain cancelled)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/jobs/#cancelled
+```
 
 <a id="completed"></a>
 
-## `completed`: Completed
+## `completed`: The job ran its operation to the end
 
 **Kind:** Notice: not a failure.
 
-*No plain-language explanation is written yet; the summary is the technical one.*
+- **Summary:** The job &lt;job&gt; completed: its operation ran to the end.
+- **Why:** A completed job ran its operation and stored its results. For a solve this does not mean that the solve converged: the job's result gives the solve's outcome and its verification status.
+- **Do:** Read the job's result; for a solve, check its outcome and verification status before relying on it.
+- **See also:** [`CONVERGED`](outcomes.md#CONVERGED), [`VERIFIED`](statuses.md#VERIFIED)
 
-- **Summary:** The job ended: completed.
+Example:
+
+```text
+The job completed: its operation ran to the end.
+  Why:     A completed job ran its operation and stored its results. For a solve this does not mean that the solve converged: the job's result gives the solve's outcome and its verification status.
+  Do:      Read the job's result; for a solve, check its outcome and verification status before relying on it.
+  Kind:    Notice: not a failure.
+  Code:    completed (openflowsheet explain completed)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/jobs/#completed
+```
 
 <a id="failed"></a>
 
-## `failed`: Failed
+## `failed`: The job ended without completing its operation
 
 **Kind:** Notice: not a failure.
 
-*No plain-language explanation is written yet; the summary is the technical one.*
+- **Summary:** The job &lt;job&gt; failed: it ended without completing its operation.
+- **Why:** A job fails when its operation raised an error, when the verifier refused to judge its result, when the process that ran it or the program that owned it was lost, or when the project's database reported an error. The job's ending reason says which, and its error says what happened.
+- **Do:** Read the job's error and ending reason; each has its own explanation.
+- **See also:** [`operation_error`](#operation_error), [`verifier_refused`](#verifier_refused), [`worker_lost`](#worker_lost), [`owner_lost`](#owner_lost), [`store_error`](#store_error)
 
-- **Summary:** The job ended: failed.
+Example:
+
+```text
+The job failed: it ended without completing its operation.
+  Why:     A job fails when its operation raised an error, when the verifier refused to judge its result, when the process that ran it or the program that owned it was lost, or when the project's database reported an error. The job's ending reason says which, and its error says what happened.
+  Do:      Read the job's error and ending reason; each has its own explanation.
+  Kind:    Notice: not a failure.
+  Code:    failed (openflowsheet explain failed)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/jobs/#failed
+```
 
 <a id="keyboard_interrupt"></a>
 
-## `keyboard_interrupt`: Keyboard interrupt
+## `keyboard_interrupt`: The job was cancelled by a keyboard interrupt
 
 **Kind:** Notice: not a failure.
 
-*No plain-language explanation is written yet; the summary is the technical one.*
+- **Summary:** The job ended: the program running it was interrupted from the keyboard.
+- **Why:** The program running the job received an interrupt (Ctrl-C), so it cancelled the job before stopping.
+- **Do:** Submit the job again if you still need its result.
 
-- **Summary:** The job ended: keyboard interrupt.
+Example:
+
+```text
+The job ended: the program running it was interrupted from the keyboard.
+  Why:     The program running the job received an interrupt (Ctrl-C), so it cancelled the job before stopping.
+  Do:      Submit the job again if you still need its result.
+  Kind:    Notice: not a failure.
+  Code:    keyboard_interrupt (openflowsheet explain keyboard_interrupt)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/jobs/#keyboard_interrupt
+```
 
 <a id="operation_completed"></a>
 
@@ -117,13 +175,24 @@ The job ended: the program that accepted it stopped, or lost the job, before the
 
 <a id="server_shutdown"></a>
 
-## `server_shutdown`: Server shutdown
+## `server_shutdown`: The job was cancelled because its server shut down
 
 **Kind:** Notice: not a failure.
 
-*No plain-language explanation is written yet; the summary is the technical one.*
+- **Summary:** The job ended: the server running it shut down before it finished.
+- **Why:** When the server shuts down cleanly it cancels its queued and running jobs, so none is left half-finished. Nothing was wrong with the job.
+- **Do:** Submit the job again once the server is back; it may succeed unchanged.
 
-- **Summary:** The job ended: server shutdown.
+Example:
+
+```text
+The job ended: the server running it shut down before it finished.
+  Why:     When the server shuts down cleanly it cancels its queued and running jobs, so none is left half-finished. Nothing was wrong with the job.
+  Do:      Submit the job again once the server is back; it may succeed unchanged.
+  Kind:    Notice: not a failure.
+  Code:    server_shutdown (openflowsheet explain server_shutdown)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/jobs/#server_shutdown
+```
 
 <a id="store_error"></a>
 
@@ -148,13 +217,25 @@ The job ended: the project's database reported an error while the job ran.
 
 <a id="timed_out"></a>
 
-## `timed_out`: Timed out
+## `timed_out`: The job ran out of wall time
 
 **Kind:** Notice: not a failure.
 
-*No plain-language explanation is written yet; the summary is the technical one.*
+- **Summary:** The job &lt;job&gt; timed out: it used its wall-time budget before it finished.
+- **Why:** Every job may carry a wall-time budget: the request's, or else the credential's default or ceiling. This job reached it and was stopped before it finished.
+- **Do:** Submit the job again with a larger wall-time budget, within the credential's ceiling.
+- **See also:** [`wall_time_exhausted`](#wall_time_exhausted), [`budget_exceeds_ceiling`](api-errors.md#budget_exceeds_ceiling)
 
-- **Summary:** The job ended: timed out.
+Example:
+
+```text
+The job timed out: it used its wall-time budget before it finished.
+  Why:     Every job may carry a wall-time budget: the request's, or else the credential's default or ceiling. This job reached it and was stopped before it finished.
+  Do:      Submit the job again with a larger wall-time budget, within the credential's ceiling.
+  Kind:    Notice: not a failure.
+  Code:    timed_out (openflowsheet explain timed_out)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/jobs/#timed_out
+```
 
 <a id="verifier_refused"></a>
 
@@ -168,13 +249,24 @@ The job ended: the project's database reported an error while the job ran.
 
 <a id="wall_time_exhausted"></a>
 
-## `wall_time_exhausted`: Wall time exhausted
+## `wall_time_exhausted`: The job used its wall-time budget
 
 **Kind:** Notice: not a failure.
 
-*No plain-language explanation is written yet; the summary is the technical one.*
+- **Summary:** The job ended: it used its wall-time budget before it finished.
+- **Why:** The job carried a wall-time budget, the request's or the credential's default, and was stopped when it reached it.
+- **Do:** Submit the job again with a larger wall-time budget, within the credential's ceiling.
 
-- **Summary:** The job ended: wall time exhausted.
+Example:
+
+```text
+The job ended: it used its wall-time budget before it finished.
+  Why:     The job carried a wall-time budget, the request's or the credential's default, and was stopped when it reached it.
+  Do:      Submit the job again with a larger wall-time budget, within the credential's ceiling.
+  Kind:    Notice: not a failure.
+  Code:    wall_time_exhausted (openflowsheet explain wall_time_exhausted)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/jobs/#wall_time_exhausted
+```
 
 <a id="worker_lost"></a>
 

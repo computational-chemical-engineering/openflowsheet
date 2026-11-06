@@ -6,43 +6,123 @@ The error codes every transport returns as `ApiError.code`. A refusal names one 
 
 <a id="budget_exceeds_ceiling"></a>
 
-## `budget_exceeds_ceiling`: Budget exceeds ceiling
+## `budget_exceeds_ceiling`: A budget above its ceiling
 
 **Kind:** Input problem: something in the flowsheet or the request needs to change.
 
-*No plain-language explanation is written yet; the summary is the technical one.*
+- **Summary:** The request was refused: its budget '&lt;budget&gt;' is above the ceiling (&lt;requested&gt; against &lt;ceiling&gt;).
+- **Why:** A request may lower a budget but not raise it above its ceiling. The ceiling of the property-call budget is the solve policy's.
+- **Do:** Request at most the ceiling of &lt;ceiling&gt;, or omit the budget to use the default.
+- **Parameters:** `budget` (text), `requested` (number, optional), `ceiling` (number, optional)
 
-- **Summary:** The request was refused: budget exceeds ceiling.
+Example:
+
+```text
+The request was refused: its budget 'max_property_calls' is above the ceiling (1000000 against 200000).
+  Why:     A request may lower a budget but not raise it above its ceiling. The ceiling of the property-call budget is the solve policy's.
+  Do:      Request at most the ceiling of 200000, or omit the budget to use the default.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    budget_exceeds_ceiling (openflowsheet explain budget_exceeds_ceiling)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/api-errors/#budget_exceeds_ceiling
+```
+
+Example:
+
+```text
+The request was refused: its budget 'wall_time_s' is above the ceiling (7200 against 3600).
+  Why:     A job's wall time, in seconds, may not exceed the ceiling that the credential's capability sets.
+  Do:      Request a wall time at most the ceiling of 3600 s, or omit it to use the capability's default; a longer job needs a capability with a higher ceiling.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    budget_exceeds_ceiling (openflowsheet explain budget_exceeds_ceiling)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/api-errors/#budget_exceeds_ceiling
+```
 
 <a id="document_not_canonical"></a>
 
-## `document_not_canonical`: Document not canonical
+## `document_not_canonical`: A value with no canonical JSON form
 
 **Kind:** Input problem: something in the flowsheet or the request needs to change.
 
-*No plain-language explanation is written yet; the summary is the technical one.*
+- **Summary:** The request was refused: a value has no canonical JSON form.
+- **Why:** OpenFlowsheet stores and hashes every document in one canonical JSON form, so that the same content always has the same hash. The value has no such form: it is NaN or an infinity, an integer beyond 2^53 that is not the exact spelling of a double, or a key repeated in one object.
+- **Do:** Replace the value with a finite number, or remove the repeated key, and send the request again.
+- **Parameters:** `pointer` (pointer, optional)
 
-- **Summary:** The request was refused: document not canonical.
+Example:
+
+```text
+The request was refused: the value at /body/inlet/n has no canonical JSON form.
+  Why:     OpenFlowsheet stores and hashes every document in one canonical JSON form, so that the same content always has the same hash. The value has no such form: it is NaN or an infinity, an integer beyond 2^53 that is not the exact spelling of a double, or a key repeated in one object.
+  Do:      Replace the value with a finite number, or remove the repeated key, and send the request again.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    document_not_canonical (openflowsheet explain document_not_canonical)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/api-errors/#document_not_canonical
+```
+
+Example:
+
+```text
+The request was refused: a value has no canonical JSON form.
+  Why:     OpenFlowsheet stores and hashes every document in one canonical JSON form, so that the same content always has the same hash. The value has no such form: it is NaN or an infinity, an integer beyond 2^53 that is not the exact spelling of a double, or a key repeated in one object.
+  Do:      Replace the value with a finite number, or remove the repeated key, and send the request again.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    document_not_canonical (openflowsheet explain document_not_canonical)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/api-errors/#document_not_canonical
+```
 
 <a id="forbidden"></a>
 
-## `forbidden`: Forbidden
+## `forbidden`: The credential does not hold the right the operation needs
 
 **Kind:** Input problem: something in the flowsheet or the request needs to change.
 
-*No plain-language explanation is written yet; the summary is the technical one.*
+- **Summary:** The request was refused: the credential does not hold the right this operation needs.
+- **Why:** Each operation needs a right, and acting on another principal's job needs one more. The credential is valid, but it does not hold every right this operation needs. The operation needs &lt;required&gt;.
+- **Do:** Use a credential that holds the rights the message names, or ask the project's owner to grant them.
+- **Parameters:** `required` (list, optional)
 
-- **Summary:** The request was refused: forbidden.
+Example:
+
+```text
+The request was refused: the credential does not hold the right this operation needs.
+  Why:     Each operation needs a right, and acting on another principal's job needs one more. The credential is valid, but it does not hold every right this operation needs. The operation needs execute.
+  Do:      Use a credential that holds the rights the message names, or ask the project's owner to grant them.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    forbidden (openflowsheet explain forbidden)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/api-errors/#forbidden
+```
+
+Example:
+
+```text
+The request was refused: the credential does not hold the right this operation needs.
+  Why:     Each operation needs a right, and acting on another principal's job needs one more. The credential is valid, but it does not hold every right this operation needs.
+  Do:      Use a credential that holds the rights the message names, or ask the project's owner to grant them.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    forbidden (openflowsheet explain forbidden)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/api-errors/#forbidden
+```
 
 <a id="idempotency_key_reused"></a>
 
-## `idempotency_key_reused`: Idempotency key reused
+## `idempotency_key_reused`: An idempotency key used again with a different request
 
 **Kind:** Input problem: something in the flowsheet or the request needs to change.
 
-*No plain-language explanation is written yet; the summary is the technical one.*
+- **Summary:** The request was refused: its idempotency key was already used with a different request.
+- **Why:** An idempotency key makes a request safe to repeat: the same request under the same key returns the original result instead of acting twice. This key was used before with a different job request or change set, so OpenFlowsheet refuses rather than guess which one was meant.
+- **Do:** Use a new idempotency key for a new request. To get the original result, repeat the original request with this key.
 
-- **Summary:** The request was refused: idempotency key reused.
+Example:
+
+```text
+The request was refused: its idempotency key was already used with a different request.
+  Why:     An idempotency key makes a request safe to repeat: the same request under the same key returns the original result instead of acting twice. This key was used before with a different job request or change set, so OpenFlowsheet refuses rather than guess which one was meant.
+  Do:      Use a new idempotency key for a new request. To get the original result, repeat the original request with this key.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    idempotency_key_reused (openflowsheet explain idempotency_key_reused)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/api-errors/#idempotency_key_reused
+```
 
 <a id="internal_error"></a>
 
@@ -50,40 +130,109 @@ The error codes every transport returns as `ApiError.code`. A refusal names one 
 
 **Kind:** Internal error in OpenFlowsheet: please report it.
 
-*No plain-language explanation is written yet; the summary is the technical one.*
-
 - **Summary:** OpenFlowsheet hit an internal error and could not complete the request.
+- **Why:** Something inside OpenFlowsheet failed in a way it does not expect: an exception that nothing handled, a consistency check that should always hold, or a job's runner or worker that stopped without a result. The error's message, and the server's or the job's log, say where.
+- **Do:** Report it with the error's message and the server's or the job's log. If the error is marked retryable, the same request may succeed when it is sent again.
 - **Parameters:** `reason` (code, optional)
+
+Example:
+
+```text
+OpenFlowsheet hit an internal error and could not complete the request.
+  Why:     Something inside OpenFlowsheet failed in a way it does not expect: an exception that nothing handled, a consistency check that should always hold, or a job's runner or worker that stopped without a result. The error's message, and the server's or the job's log, say where.
+  Do:      Report it with the error's message and the server's or the job's log. If the error is marked retryable, the same request may succeed when it is sent again.
+  Kind:    Internal error in OpenFlowsheet: please report it.
+  Code:    internal_error (openflowsheet explain internal_error)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/api-errors/#internal_error
+```
 
 <a id="invalid_request"></a>
 
-## `invalid_request`: Invalid request
+## `invalid_request`: The request is not one the operation accepts
 
 **Kind:** Input problem: something in the flowsheet or the request needs to change.
 
-*No plain-language explanation is written yet; the summary is the technical one.*
+- **Summary:** The request was refused as invalid.
+- **Why:** The request does not have the form the operation accepts: a member is missing, has the wrong type or value, is given twice, or breaks a rule stated for it. The error's message says which; its pointer, when present, locates the member in the request.
+- **Do:** Correct the member the message names and send the request again; the operation's schema lists its members.
+- **Parameters:** `pointer` (pointer, optional)
 
-- **Summary:** The request was refused: invalid request.
+Example:
+
+```text
+The request was refused as invalid at /body/check_tolerances/pressure.
+  Why:     The request does not have the form the operation accepts: a member is missing, has the wrong type or value, is given twice, or breaks a rule stated for it. The error's message says which; its pointer, when present, locates the member in the request.
+  Do:      Correct the member the message names and send the request again; the operation's schema lists its members.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    invalid_request (openflowsheet explain invalid_request)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/api-errors/#invalid_request
+```
+
+Example:
+
+```text
+The request was refused as invalid.
+  Why:     The request does not have the form the operation accepts: a member is missing, has the wrong type or value, is given twice, or breaks a rule stated for it. The error's message says which; its pointer, when present, locates the member in the request.
+  Do:      Correct the member the message names and send the request again; the operation's schema lists its members.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    invalid_request (openflowsheet explain invalid_request)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/api-errors/#invalid_request
+```
 
 <a id="limit_exceeded"></a>
 
-## `limit_exceeded`: Limit exceeded
+## `limit_exceeded`: Too many active jobs
 
 **Kind:** Input problem: something in the flowsheet or the request needs to change.
 
-*No plain-language explanation is written yet; the summary is the technical one.*
+- **Summary:** The request was refused: the caller already has the most queued or running jobs its credential allows (&lt;max_active_jobs&gt;).
+- **Why:** A credential's capability limits how many of its jobs may be queued or running at once, and this caller is at that limit. The refusal is temporary.
+- **Do:** Wait for one of your jobs to end, or cancel one, then submit again.
+- **Parameters:** `limit` (text), `active_jobs` (number, optional), `max_active_jobs` (number, optional)
 
-- **Summary:** The request was refused: limit exceeded.
+Example:
+
+```text
+The request was refused: the caller already has the most queued or running jobs its credential allows (4).
+  Why:     A credential's capability limits how many of its jobs may be queued or running at once, and this caller is at that limit. The refusal is temporary.
+  Do:      Wait for one of your jobs to end, or cancel one, then submit again.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    limit_exceeded (openflowsheet explain limit_exceeded)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/api-errors/#limit_exceeded
+```
 
 <a id="model_replacement_incompatible"></a>
 
-## `model_replacement_incompatible`: Model replacement incompatible
+## `model_replacement_incompatible`: A model replacement that does not fit the unit it replaces
 
 **Kind:** Input problem: something in the flowsheet or the request needs to change.
 
-*No plain-language explanation is written yet; the summary is the technical one.*
+- **Summary:** The change was refused: a replacement model for unit &lt;instance_id&gt; does not fit the model it replaces.
+- **Why:** A change that replaces a unit's model is checked against the model it replaces: the new model must resolve, keep the same ports, components and conserved quantities, the same property method and reference state, the same degrees of freedom, cover the old operating domain, and declare the derivatives the old one declared. A surrogate model also needs evidence that allows it in. The error's report or message names the checks that failed.
+- **Do:** Change the replacement model, or its mapping onto the unit, so that the failed checks pass; a surrogate model needs a verdict that allows it in before a revision can use it.
+- **Parameters:** `instance_id` (unit, optional), `reason` (code, optional), `cause` (text, optional)
 
-- **Summary:** The request was refused: model replacement incompatible.
+Example:
+
+```text
+The change was refused: a replacement model for unit 'R1' does not fit the model it replaces.
+  Why:     A change that replaces a unit's model is checked against the model it replaces: the new model must resolve, keep the same ports, components and conserved quantities, the same property method and reference state, the same degrees of freedom, cover the old operating domain, and declare the derivatives the old one declared. A surrogate model also needs evidence that allows it in. The error's report or message names the checks that failed.
+  Do:      Change the replacement model, or its mapping onto the unit, so that the failed checks pass; a surrogate model needs a verdict that allows it in before a revision can use it.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    model_replacement_incompatible (openflowsheet explain model_replacement_incompatible)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/api-errors/#model_replacement_incompatible
+```
+
+Example:
+
+```text
+The change was refused: a replacement model does not fit the model it replaces.
+  Why:     A change that replaces a unit's model is checked against the model it replaces: the new model must resolve, keep the same ports, components and conserved quantities, the same property method and reference state, the same degrees of freedom, cover the old operating domain, and declare the derivatives the old one declared. A surrogate model also needs evidence that allows it in. The error's report or message names the checks that failed.
+  Do:      Change the replacement model, or its mapping onto the unit, so that the failed checks pass; a surrogate model needs a verdict that allows it in before a revision can use it.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    model_replacement_incompatible (openflowsheet explain model_replacement_incompatible)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/api-errors/#model_replacement_incompatible
+```
 
 <a id="not_found"></a>
 
@@ -109,13 +258,36 @@ Bundle 'job-000004:bundle' has no file 'solution-state.json': its run ended INIT
 
 <a id="not_ready"></a>
 
-## `not_ready`: Not ready
+## `not_ready`: The job has no result yet
 
 **Kind:** Notice: not a failure.
 
-*No plain-language explanation is written yet; the summary is the technical one.*
+- **Summary:** The job &lt;job_id&gt; has no result yet: it is &lt;status&gt;.
+- **Why:** A job's result exists once the job has ended, and this job is still queued or running.
+- **Do:** Wait for the job to end (for example with wait_job), then ask for its result again.
+- **Parameters:** `job_id` (job, optional), `status` (text, optional), `reason` (code, optional)
 
-- **Summary:** The request was refused: not ready.
+Example:
+
+```text
+The job 'job-000002' has no result yet: it is running.
+  Why:     A job's result exists once the job has ended, and this job is still queued or running.
+  Do:      Wait for the job to end (for example with wait_job), then ask for its result again.
+  Kind:    Notice: not a failure.
+  Code:    not_ready (openflowsheet explain not_ready)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/api-errors/#not_ready
+```
+
+Example:
+
+```text
+The job 'job-000002' ended timed_out without a report.
+  Why:     The job ended before it produced its report: it was cancelled, or it ran out of time.
+  Do:      Submit the job again if you still need its report; give it a larger wall-time budget if it timed out.
+  Kind:    Notice: not a failure.
+  Code:    not_ready (openflowsheet explain not_ready)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/api-errors/#not_ready
+```
 
 <a id="revision_not_ready"></a>
 
@@ -153,23 +325,46 @@ The revision is not ready to solve: it does not pass validation for simulation.
 
 <a id="revision_unsupported"></a>
 
-## `revision_unsupported`: Revision unsupported
+## `revision_unsupported`: No way in this version to solve the revision
 
 **Kind:** Not supported in this version: a limitation of OpenFlowsheet, not an error in your flowsheet.
 
-*No plain-language explanation is written yet; the summary is the technical one.*
+- **Summary:** This version cannot solve the revision as it stands.
+- **Why:** A solve needs a solver path whose models cover every unit and specification of the revision. None covers this revision, for example because a unit uses a model this version cannot solve, a specification is not read by its unit, or the units are combined in a way the solver does not handle. The error names what did not fit.
+- **Do:** Read the explanation of the cause the error names: it says whether to change the flowsheet or that the case is a limitation of this version. The limitations page lists what this version can solve.
+- **Not supported:** 
 
-- **Summary:** The request was refused: revision unsupported.
+Example:
+
+```text
+This version cannot solve the revision as it stands.
+  Why:     A solve needs a solver path whose models cover every unit and specification of the revision. None covers this revision, for example because a unit uses a model this version cannot solve, a specification is not read by its unit, or the units are combined in a way the solver does not handle. The error names what did not fit.
+  Do:      Read the explanation of the cause the error names: it says whether to change the flowsheet or that the case is a limitation of this version. The limitations page lists what this version can solve.
+  Kind:    Not supported in this version: a limitation of OpenFlowsheet, not an error in your flowsheet.
+  Code:    revision_unsupported (openflowsheet explain revision_unsupported)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/api-errors/#revision_unsupported
+```
 
 <a id="unauthenticated"></a>
 
-## `unauthenticated`: Unauthenticated
+## `unauthenticated`: The request carries no valid credential
 
 **Kind:** Input problem: something in the flowsheet or the request needs to change.
 
-*No plain-language explanation is written yet; the summary is the technical one.*
+- **Summary:** The request was refused: it carries no credential this project accepts.
+- **Why:** Every request acts with a credential that the project's policy holds. This request had none, or one that is unknown, malformed, expired or revoked.
+- **Do:** Send the request with a valid credential (over HTTP, the header 'Authorization: Bearer' followed by the token). If yours has expired or was revoked, ask the project's owner for a new one.
 
-- **Summary:** The request was refused: unauthenticated.
+Example:
+
+```text
+The request was refused: it carries no credential this project accepts.
+  Why:     Every request acts with a credential that the project's policy holds. This request had none, or one that is unknown, malformed, expired or revoked.
+  Do:      Send the request with a valid credential (over HTTP, the header 'Authorization: Bearer' followed by the token). If yours has expired or was revoked, ask the project's owner for a new one.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    unauthenticated (openflowsheet explain unauthenticated)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/api-errors/#unauthenticated
+```
 
 <a id="unsupported"></a>
 
@@ -196,10 +391,23 @@ The request needs something this version does not support.
 
 <a id="verification_weakening_refused"></a>
 
-## `verification_weakening_refused`: Verification weakening refused
+## `verification_weakening_refused`: A request that would loosen a verification tolerance
 
 **Kind:** Input problem: something in the flowsheet or the request needs to change.
 
-*No plain-language explanation is written yet; the summary is the technical one.*
+- **Summary:** The request was refused: it would loosen the verifier's tolerance for &lt;kind&gt; (&lt;requested&gt; against the registered &lt;registered&gt;).
+- **Why:** The verifier judges every solution at registered tolerances, one per quantity kind. A request may tighten a tolerance but never loosen one, so that a solution is never certified at a weaker standard than the registered one.
+- **Do:** Request a tolerance at or below the registered one (&lt;registered&gt;) for &lt;kind&gt;, or omit it to use the registered value.
+- **Parameters:** `kind` (text), `requested` (number, optional), `registered` (number, optional)
+- **See also:** [`RELAXED`](statuses.md#RELAXED)
 
-- **Summary:** The request was refused: verification weakening refused.
+Example:
+
+```text
+The request was refused: it would loosen the verifier's tolerance for pressure (1.000 against the registered 0.01000).
+  Why:     The verifier judges every solution at registered tolerances, one per quantity kind. A request may tighten a tolerance but never loosen one, so that a solution is never certified at a weaker standard than the registered one.
+  Do:      Request a tolerance at or below the registered one (0.01000) for pressure, or omit it to use the registered value.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    verification_weakening_refused (openflowsheet explain verification_weakening_refused)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/api-errors/#verification_weakening_refused
+```

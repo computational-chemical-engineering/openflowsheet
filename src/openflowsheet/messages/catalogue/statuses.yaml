@@ -1,76 +1,151 @@
-# Family `status` (MSG design note §4.2.1). Stubs (MSG WO-2): kind by §4.2.1's rules.
+# Family `status` (MSG design note §4.2.1): verification, regularity and validation statuses.
+# MSG WO-12 (review M1): all twelve are complete (§4.2.6). Verification: `verify/certificate.py`
+# (the verdict and its precedence FAILED > UNVERIFIED > RELAXED > VERIFIED); regularity:
+# `verify/regularity.py`; validation: `application/validation.py` `validate`, and
+# `studies/nlp/closure.py` for READY_FOR_OPTIMIZATION.
 catalogue: openflowsheet-messages-v1
 namespace: null
 entries:
-  - code: DRAFT
-    family: status
-    kind: notice
-    complete: false
-    title: Draft
-    summary: Status DRAFT.
-  - code: FAILED
-    family: status
-    kind: numerical
-    complete: false
-    title: Failed
-    summary: Status FAILED.
-  - code: ILL_CONDITIONED
-    family: status
-    kind: notice
-    complete: false
-    title: Ill conditioned
-    summary: Status ILL_CONDITIONED.
-  - code: INCONCLUSIVE
-    family: status
-    kind: notice
-    complete: false
-    title: Inconclusive
-    summary: Status INCONCLUSIVE.
-  - code: INVALID
-    family: status
-    kind: input
-    complete: false
-    title: Invalid
-    summary: Status INVALID.
-  - code: NO_RANK_LOSS_DETECTED
-    family: status
-    kind: notice
-    complete: false
-    title: No rank loss detected
-    summary: Status NO_RANK_LOSS_DETECTED.
-  - code: RANK_DEFICIENT
-    family: status
-    kind: notice
-    complete: false
-    title: Rank deficient
-    summary: Status RANK_DEFICIENT.
-  - code: READY_FOR_OPTIMIZATION
-    family: status
-    kind: notice
-    complete: false
-    title: Ready for optimization
-    summary: Status READY_FOR_OPTIMIZATION.
-  - code: READY_FOR_SIMULATION
-    family: status
-    kind: notice
-    complete: false
-    title: Ready for simulation
-    summary: Status READY_FOR_SIMULATION.
-  - code: RELAXED
-    family: status
-    kind: notice
-    complete: false
-    title: Relaxed
-    summary: Status RELAXED.
-  - code: UNVERIFIED
-    family: status
-    kind: notice
-    complete: false
-    title: Unverified
-    summary: Status UNVERIFIED.
   - code: VERIFIED
     family: status
     kind: notice
-    complete: false
-    title: Verified
-    summary: Status VERIFIED.
+    complete: true
+    title: The solution passed every required check under the registered check policy
+    summary: "Verified[: the solution of revision {revision}] passed every required check under the registered check policy."
+    why: "After a solve, OpenFlowsheet's verifier judges the final state without the solver: it evaluates every equation again, sums the material and energy balances from the streams, checks the specifications, the bounds and the phase of every stream, recomputes the phase split, and screens the Jacobian for rank loss. VERIFIED means every required check passed at the registered tolerances and the screen found no rank loss. It is verification of the model's equations, not validation against measured data, and not a claim of optimality."
+    action: "Use the result. The certificate lists each check with its value and its tolerance."
+    see_also: [RELAXED, UNVERIFIED, FAILED, NO_RANK_LOSS_DETECTED]
+    examples:
+      - params: {}
+
+  - code: RELAXED
+    family: status
+    kind: notice
+    complete: true
+    title: Every required check passed, under a check policy other than the registered one
+    summary: "Relaxed[: the solution of revision {revision}] passed every required check, but under a check policy other than the registered one."
+    why: "Every required check passed and the Jacobian screen found no rank loss, but the checks ran under a check policy whose id or tolerances differ from the registered ones, for example tolerances the request tightened. The verdict says so, so that a result checked under another policy never reads as one checked under the registered policy. The certificate lists any tolerance looser than the registered one."
+    action: "To obtain VERIFIED, solve again under the registered check policy (a request without check tolerances). Otherwise use the result knowing which policy judged it."
+    see_also: [VERIFIED, verification_weakening_refused]
+    examples:
+      - params: {}
+
+  - code: UNVERIFIED
+    family: status
+    kind: notice
+    complete: true
+    title: No required check failed, but the verifier could not establish the result
+    summary: "Unverified[: the solution of revision {revision}] failed no required check, but the verifier could not establish it."
+    why: "A result is unverified when no required check failed but the evidence is incomplete: a required check could not run (a model or capability the verifier has no check for), the Jacobian screen did not find the solution locally unique (rank-deficient, ill-conditioned or inconclusive), or the derivative evidence did not hold. A solve that did not converge also gets an unverified certificate, with every check marked unsupported."
+    action: "Read the certificate's limitations: each names the check or the evidence that is missing. The result may be right, but nothing certifies it."
+    see_also: [VERIFIED, FAILED, RANK_DEFICIENT, ILL_CONDITIONED, INCONCLUSIVE]
+    examples:
+      - params: {}
+
+  - code: FAILED
+    family: status
+    kind: numerical
+    complete: true
+    title: A required check failed at the solution
+    summary: "Failed[: the solution of revision {revision}] does not pass a required check of the verifier."
+    why: "The verifier evaluated the final state independently of the solver and a required check failed: an equation residual, a material or energy balance, a specification, a bound or domain check, the phase of a stream or the recomputed phase split. A failed check is a statement about this state, which therefore is not a solution of the flowsheet at the registered tolerances. When the solver itself reported convergence, the certificate records this as a false success."
+    action: "Do not use the result. Read the certificate's failed checks for the equation, balance or stream involved; try another initial guess or solve policy, and if the solver reported convergence, report it with the run's bundle."
+    see_also: [VERIFIED, UNVERIFIED]
+    examples:
+      - params: {}
+
+  - code: NO_RANK_LOSS_DETECTED
+    family: status
+    kind: notice
+    complete: true
+    title: The Jacobian screen found the solution locally unique
+    summary: "The rank screen found no rank loss: the solution is locally unique to the screen's resolution."
+    why: "The verifier screens the scaled Jacobian of the flowsheet's equations at the solution. No rank loss detected means it is nonsingular and well enough conditioned that the residual tolerances also bound the solution: nearby states do not satisfy the equations equally well."
+    action: "No action is needed."
+    see_also: [RANK_DEFICIENT, ILL_CONDITIONED, INCONCLUSIVE, VERIFIED]
+    examples:
+      - params: {}
+
+  - code: RANK_DEFICIENT
+    family: status
+    kind: notice
+    complete: true
+    title: The Jacobian at the solution is singular
+    summary: "The rank screen found the equations singular at the solution, so the solution is not locally unique."
+    why: "The scaled Jacobian at the solution has a numerical rank below its size: some direction changes the state without changing the equations, to first order. Possible causes are specifications that are dependent at this state, or a unit at a point where its equations degenerate, such as a vanishing flow. The verdict is then UNVERIFIED."
+    action: "Check the specifications for one that duplicates another, and the streams for a zero or vanishing flow; the certificate's regularity evidence records the screen's numbers."
+    see_also: [UNVERIFIED, NO_RANK_LOSS_DETECTED]
+    examples:
+      - params: {}
+
+  - code: ILL_CONDITIONED
+    family: status
+    kind: notice
+    complete: true
+    title: The Jacobian at the solution is too badly conditioned to certify it
+    summary: "The rank screen found the equations ill-conditioned at the solution: a small error in them can mean a large error in the result."
+    why: "The scaled Jacobian at the solution has full rank, but its condition number exceeds the screen's relative limit, or its inverse is large enough that the rounding noise of the equations, amplified through it, could exceed the residual tolerance. A small residual then does not imply an accurate solution. The verdict is UNVERIFIED."
+    action: "Check for nearly redundant specifications or a nearly vanishing flow; a better-posed specification set usually removes it. The certificate's regularity evidence records which limit was exceeded."
+    see_also: [UNVERIFIED, RANK_DEFICIENT]
+    examples:
+      - params: {}
+
+  - code: INCONCLUSIVE
+    family: status
+    kind: notice
+    complete: true
+    title: The Jacobian screen could not decide
+    summary: "The rank screen could not decide whether the solution is locally unique."
+    why: "The screen's dense rank test was not attempted or did not finish (the system is larger than its budget), or the matrix it was given is not the one of the state being judged. The screen records this rather than guessing, and the verdict is UNVERIFIED."
+    action: "Read the certificate's regularity evidence for the reason. The result may be right; it is not certified."
+    see_also: [UNVERIFIED]
+    examples:
+      - params: {}
+
+  - code: DRAFT
+    family: status
+    kind: notice
+    complete: true
+    title: The revision is incomplete
+    summary: "The revision[ {revision}] is a draft: it is incomplete, or a check could not run, so it is not ready to solve yet."
+    why: "Validation marks a revision DRAFT when it has no specifications, when the only failed check is the structural one that finds a specification missing, or when a structural check could not run, for example because a unit's model is not available or a specification is not read by its unit. A draft is not wrong: it can be stored and committed, but a solve needs a revision that is ready for simulation."
+    action: "Read the validation report's checks that did not pass or did not run: each names the specification, stream or unit to add or change."
+    see_also: [READY_FOR_SIMULATION, INVALID, revision_not_ready]
+    examples:
+      - params: {}
+
+  - code: INVALID
+    family: status
+    kind: input
+    complete: true
+    title: A validation check failed
+    summary: "The revision[ {revision}] is invalid: a validation check failed."
+    why: "Validation checks a revision in order: its schema, its dimensions and units, its connections, its components, then its structure (for example specifications that contradict each other). A check that fails, other than a single missing specification, makes the revision invalid, and a solve does not start from it."
+    action: "Read the validation report's failed checks: each names the element to correct. Commit the corrected revision and validate again."
+    see_also: [DRAFT, READY_FOR_SIMULATION, revision_not_ready]
+    examples:
+      - params: {}
+
+  - code: READY_FOR_SIMULATION
+    family: status
+    kind: notice
+    complete: true
+    title: The revision passes validation for simulation
+    summary: "The revision[ {revision}] is ready for simulation: it passes validation and can be solved."
+    why: "No validation check failed or was left unrun: the schema, dimensions, connections and components are consistent, the specifications are declared and the structural analysis closes the system."
+    action: "Solve the revision."
+    see_also: [DRAFT, INVALID]
+    examples:
+      - params: {}
+
+  - code: READY_FOR_OPTIMIZATION
+    family: status
+    kind: notice
+    complete: true
+    title: The study's optimization formulation closes
+    summary: "Ready for optimization: the study's optimization formulation closes and a supported optimizer is available."
+    why: "An optimization study reports this when its formulation closes (for example, every decision has finite bounds that contain its start, and every variable the objective and the constraints name exists) and a supported optimizer is installed. Validating a revision for the task 'optimization' is not offered in this version; the status comes from the study's own readiness check."
+    action: "Run the optimization study."
+    see_also: [READY_FOR_SIMULATION, task_unsupported]
+    examples:
+      - params: {}

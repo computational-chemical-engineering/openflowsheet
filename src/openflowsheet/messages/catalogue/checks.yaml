@@ -49,7 +49,6 @@ entries:
     examples:
       - chain: [revision_not_ready, DIM-01]
         params: {}
-    review: true
   - code: GRAPH-01
     family: check
     kind: input

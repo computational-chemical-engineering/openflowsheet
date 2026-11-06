@@ -24,7 +24,7 @@ import msg_catalogue  # noqa: E402
 
 from openflowsheet.messages import audit  # noqa: E402
 from openflowsheet.messages.catalogue import CATALOGUE  # noqa: E402
-from openflowsheet.messages.lint import review_count  # noqa: E402
+from openflowsheet.messages.lint import lint_entry, review_count  # noqa: E402
 
 
 def test_g1_every_closed_vocabulary_member_has_an_entry() -> None:
@@ -62,6 +62,49 @@ other = "plain_code_here(T)"
         "not_found", "invalid_request", "kernel_code_here", "run_code_here", "store_code_here",
         "listed_code_here", "literal_code_here", "head_code_here", "plain_code_here",
     }  # fmt: skip
+
+
+#: Design note §4.2.6's normative "complete in 0.4" list, beyond the closed vocabularies that
+#: `test_the_normative_list_is_complete` reads from their sources (review M1). The corpus's codes
+#: are `test_msg_corpus.py`'s.
+NORMATIVE_JOB_STATUSES = ("completed", "failed", "cancelled", "timed_out")
+NORMATIVE_REFUSALS = (
+    "phase_regime_mismatch", "isentropic_state_two_phase", "isentropic_state_single_phase",
+    "initializer_failed", "out_of_domain", "pressure_rise", "pressure_fall", "model_unsupported",
+    "task_unsupported",
+    # FB-01's five (§3.8, `application/store.py`).
+    "project_exists", "directory_not_empty", "not_a_directory", "not_a_project",
+    "project_id_mismatch",
+)  # fmt: skip
+NORMATIVE_LIMITATIONS = ("L-TH-4",)
+
+
+def test_the_normative_list_is_complete() -> None:
+    """MSG review M1: every code of §4.2.6's normative list is a complete, lint-clean entry —
+    all 15 `api_error`s, every outcome (the `TAXONOMY` keys and `CONVERGED`), the verification,
+    regularity and validation statuses, four job statuses, the named refusals and `L-TH-4`."""
+    from typing import get_args
+
+    from openflowsheet.application.types import ApiErrorCode
+    from openflowsheet.application.validation import ValidationStatus
+    from openflowsheet.verify import RegularityStatus, VerificationStatus
+    from openflowsheet.verify.failure import TAXONOMY
+
+    api_errors = get_args(ApiErrorCode)
+    outcomes = (*TAXONOMY, "CONVERGED")
+    statuses = (
+        *get_args(VerificationStatus), *get_args(RegularityStatus), *get_args(ValidationStatus)
+    )  # fmt: skip
+    assert (len(api_errors), len(outcomes), len(statuses)) == (15, 22, 12)
+    normative = (
+        *api_errors, *outcomes, *statuses, *NORMATIVE_JOB_STATUSES, *NORMATIVE_REFUSALS,
+        *NORMATIVE_LIMITATIONS,
+    )  # fmt: skip
+    assert len(set(normative)) == len(normative) == 68
+    stubs = [code for code in normative if not CATALOGUE.entry(code).complete]  # type: ignore[union-attr]
+    assert stubs == []
+    problems = [problem for code in normative for problem in lint_entry(CATALOGUE.entry(code))]  # type: ignore[arg-type]
+    assert problems == []
 
 
 def test_released_codes_are_never_removed() -> None:

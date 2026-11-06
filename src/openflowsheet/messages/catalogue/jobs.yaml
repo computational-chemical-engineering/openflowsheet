@@ -5,33 +5,51 @@ entries:
   - code: cancel_requested
     family: job
     kind: notice
-    complete: false
-    title: Cancel requested
-    summary: 'The job ended: cancel requested.'
+    complete: true
+    title: The job was cancelled on request
+    summary: "The job ended: it was cancelled on request."
+    why: "Someone with the right to do so cancelled the job (cancel_job) while it was queued or running."
+    action: "Submit the job again if you still need its result."
+    examples: [{params: {}}]
   - code: cancelled
     family: job
     kind: notice
-    complete: false
-    title: Cancelled
-    summary: 'The job ended: cancelled.'
+    complete: true
+    title: The job was cancelled
+    summary: "The job[ {job}] was cancelled before it finished."
+    why: "A job is cancelled when someone asked for it (cancel_job), when the server running it shut down, or when the program running it was interrupted from the keyboard. The ending reason says which."
+    action: "Submit the job again if you still need its result."
+    see_also: [cancel_requested, server_shutdown, keyboard_interrupt]
+    examples: [{params: {}}]
   - code: completed
     family: job
     kind: notice
-    complete: false
-    title: Completed
-    summary: 'The job ended: completed.'
+    complete: true
+    title: The job ran its operation to the end
+    summary: "The job[ {job}] completed: its operation ran to the end."
+    why: "A completed job ran its operation and stored its results. For a solve this does not mean that the solve converged: the job's result gives the solve's outcome and its verification status."
+    action: "Read the job's result; for a solve, check its outcome and verification status before relying on it."
+    see_also: [CONVERGED, VERIFIED]
+    examples: [{params: {}}]
   - code: failed
     family: job
     kind: notice
-    complete: false
-    title: Failed
-    summary: 'The job ended: failed.'
+    complete: true
+    title: The job ended without completing its operation
+    summary: "The job[ {job}] failed: it ended without completing its operation."
+    why: "A job fails when its operation raised an error, when the verifier refused to judge its result, when the process that ran it or the program that owned it was lost, or when the project's database reported an error. The job's ending reason says which, and its error says what happened."
+    action: "Read the job's error and ending reason; each has its own explanation."
+    see_also: [operation_error, verifier_refused, worker_lost, owner_lost, store_error]
+    examples: [{params: {}}]
   - code: keyboard_interrupt
     family: job
     kind: notice
-    complete: false
-    title: Keyboard interrupt
-    summary: 'The job ended: keyboard interrupt.'
+    complete: true
+    title: The job was cancelled by a keyboard interrupt
+    summary: "The job ended: the program running it was interrupted from the keyboard."
+    why: "The program running the job received an interrupt (Ctrl-C), so it cancelled the job before stopping."
+    action: "Submit the job again if you still need its result."
+    examples: [{params: {}}]
   - code: operation_completed
     family: job
     kind: notice
@@ -69,9 +87,12 @@ entries:
   - code: server_shutdown
     family: job
     kind: notice
-    complete: false
-    title: Server shutdown
-    summary: 'The job ended: server shutdown.'
+    complete: true
+    title: The job was cancelled because its server shut down
+    summary: "The job ended: the server running it shut down before it finished."
+    why: "When the server shuts down cleanly it cancels its queued and running jobs, so none is left half-finished. Nothing was wrong with the job."
+    action: "Submit the job again once the server is back; it may succeed unchanged."
+    examples: [{params: {}}]
   - code: store_error
     family: job
     kind: bug
@@ -85,9 +106,13 @@ entries:
   - code: timed_out
     family: job
     kind: notice
-    complete: false
-    title: Timed out
-    summary: 'The job ended: timed out.'
+    complete: true
+    title: The job ran out of wall time
+    summary: "The job[ {job}] timed out: it used its wall-time budget before it finished."
+    why: "Every job may carry a wall-time budget: the request's, or else the credential's default or ceiling. This job reached it and was stopped before it finished."
+    action: "Submit the job again with a larger wall-time budget, within the credential's ceiling."
+    see_also: [wall_time_exhausted, budget_exceeds_ceiling]
+    examples: [{params: {}}]
   - code: verifier_refused
     family: job
     kind: notice
@@ -97,9 +122,12 @@ entries:
   - code: wall_time_exhausted
     family: job
     kind: notice
-    complete: false
-    title: Wall time exhausted
-    summary: 'The job ended: wall time exhausted.'
+    complete: true
+    title: The job used its wall-time budget
+    summary: "The job ended: it used its wall-time budget before it finished."
+    why: "The job carried a wall-time budget, the request's or the credential's default, and was stopped when it reached it."
+    action: "Submit the job again with a larger wall-time budget, within the credential's ceiling."
+    examples: [{params: {}}]
   - code: worker_lost
     family: job
     kind: bug

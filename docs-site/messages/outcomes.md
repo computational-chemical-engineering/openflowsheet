@@ -6,103 +6,221 @@ How a solve ended (`RunResult.outcome`). Anything but `CONVERGED` comes with a f
 
 <a id="ACTIVE_SET_CYCLING"></a>
 
-## `ACTIVE_SET_CYCLING`: Active set cycling
+## `ACTIVE_SET_CYCLING`: The solve returned to a phase assignment it had already tried
 
 **Kind:** Numerical failure: the solver did not find the solution; your flowsheet may be correct.
 
-*No plain-language explanation is written yet; the summary is the technical one.*
+- **Summary:** The solve of revision &lt;revision&gt; stopped: it came back to an assignment of phases it had already tried.
+- **Why:** When the phases present change during a solve, the solver restarts with the new assignment of phases to streams. Each assignment is tried at most once; this solve was about to try one a second time, which would only repeat the earlier attempt.
+- **Do:** Try another initial guess, closer to the expected phases, or declare the phases you expect on the streams that switched.
+- **See also:** [`PHASE_UPDATE_REQUIRED`](#PHASE_UPDATE_REQUIRED), [`ATTEMPTS_EXHAUSTED`](#ATTEMPTS_EXHAUSTED)
 
-- **Summary:** The solve ended ACTIVE_SET_CYCLING (homotopy/PTC/active-set stalls).
+Example:
+
+```text
+The solve stopped: it came back to an assignment of phases it had already tried.
+  Why:     When the phases present change during a solve, the solver restarts with the new assignment of phases to streams. Each assignment is tried at most once; this solve was about to try one a second time, which would only repeat the earlier attempt.
+  Do:      Try another initial guess, closer to the expected phases, or declare the phases you expect on the streams that switched.
+  Kind:    Numerical failure: the solver did not find the solution; your flowsheet may be correct.
+  Code:    ACTIVE_SET_CYCLING (openflowsheet explain ACTIVE_SET_CYCLING)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/outcomes/#ACTIVE_SET_CYCLING
+```
 
 <a id="ATTEMPTS_EXHAUSTED"></a>
 
-## `ATTEMPTS_EXHAUSTED`: Attempts exhausted
+## `ATTEMPTS_EXHAUSTED`: The solve used all its restarts
 
 **Kind:** Numerical failure: the solver did not find the solution; your flowsheet may be correct.
 
-*No plain-language explanation is written yet; the summary is the technical one.*
+- **Summary:** The solve of revision &lt;revision&gt; stopped: it used all the restarts its policy allows.
+- **Why:** Each time the phases present change, the solver restarts with the new assignment of phases to streams. The solve policy limits the number of these attempts, and this solve reached the limit without converging.
+- **Do:** Try another initial guess, closer to the expected phases, or declare the phases you expect on the streams that switched.
+- **See also:** [`ACTIVE_SET_CYCLING`](#ACTIVE_SET_CYCLING), [`PHASE_UPDATE_REQUIRED`](#PHASE_UPDATE_REQUIRED)
 
-- **Summary:** The solve ended ATTEMPTS_EXHAUSTED (budget/cancellation outcomes).
+Example:
+
+```text
+The solve stopped: it used all the restarts its policy allows.
+  Why:     Each time the phases present change, the solver restarts with the new assignment of phases to streams. The solve policy limits the number of these attempts, and this solve reached the limit without converging.
+  Do:      Try another initial guess, closer to the expected phases, or declare the phases you expect on the streams that switched.
+  Kind:    Numerical failure: the solver did not find the solution; your flowsheet may be correct.
+  Code:    ATTEMPTS_EXHAUSTED (openflowsheet explain ATTEMPTS_EXHAUSTED)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/outcomes/#ATTEMPTS_EXHAUSTED
+```
 
 <a id="BOUND_BLOCKED"></a>
 
-## `BOUND_BLOCKED`: Bound blocked
+## `BOUND_BLOCKED`: The solve was blocked by a variable at its bound
 
 **Kind:** Numerical failure: the solver did not find the solution; your flowsheet may be correct.
 
-*No plain-language explanation is written yet; the summary is the technical one.*
+- **Summary:** The solve of revision &lt;revision&gt; stopped: a variable at its bound blocked every step.
+- **Why:** Some variables have bounds, for example a flow that cannot be negative. A variable sat on its bound and the next step pointed past it, so no step could be taken in that direction.
+- **Do:** Try another initial guess that keeps the flows away from zero, or check whether a specification forces a flow to vanish.
 
-- **Summary:** The solve ended BOUND_BLOCKED (rank/linear/globalization failures).
+Example:
+
+```text
+The solve stopped: a variable at its bound blocked every step.
+  Why:     Some variables have bounds, for example a flow that cannot be negative. A variable sat on its bound and the next step pointed past it, so no step could be taken in that direction.
+  Do:      Try another initial guess that keeps the flows away from zero, or check whether a specification forces a flow to vanish.
+  Kind:    Numerical failure: the solver did not find the solution; your flowsheet may be correct.
+  Code:    BOUND_BLOCKED (openflowsheet explain BOUND_BLOCKED)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/outcomes/#BOUND_BLOCKED
+```
 
 <a id="BUDGET_EXHAUSTED"></a>
 
-## `BUDGET_EXHAUSTED`: Budget exhausted
+## `BUDGET_EXHAUSTED`: The solve used its budget of iterations or property calls
 
 **Kind:** Numerical failure: the solver did not find the solution; your flowsheet may be correct.
 
-*No plain-language explanation is written yet; the summary is the technical one.*
+- **Summary:** The solve of revision &lt;revision&gt; stopped: it used its budget before converging.
+- **Why:** The solve policy limits the property calls of a solve and the iterations of each attempt. This solve reached one of these limits before converging; the message names which.
+- **Do:** If the solve was still making progress, solve again from its best state or a better initial guess, or under a solve policy with a larger budget (a request may lower the property-call budget but not raise it above the policy's).
+- **See also:** [`budget_exceeds_ceiling`](api-errors.md#budget_exceeds_ceiling)
 
-- **Summary:** The solve ended BUDGET_EXHAUSTED (budget/cancellation outcomes).
+Example:
+
+```text
+The solve stopped: it used its budget before converging.
+  Why:     The solve policy limits the property calls of a solve and the iterations of each attempt. This solve reached one of these limits before converging; the message names which.
+  Do:      If the solve was still making progress, solve again from its best state or a better initial guess, or under a solve policy with a larger budget (a request may lower the property-call budget but not raise it above the policy's).
+  Kind:    Numerical failure: the solver did not find the solution; your flowsheet may be correct.
+  Code:    BUDGET_EXHAUSTED (openflowsheet explain BUDGET_EXHAUSTED)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/outcomes/#BUDGET_EXHAUSTED
+```
 
 <a id="CAPABILITY_UNAVAILABLE"></a>
 
-## `CAPABILITY_UNAVAILABLE`: Capability unavailable
+## `CAPABILITY_UNAVAILABLE`: A unit needs a capability its model does not have
 
 **Kind:** Not supported in this version: a limitation of OpenFlowsheet, not an error in your flowsheet.
 
-*No plain-language explanation is written yet; the summary is the technical one.*
+- **Summary:** The solve of revision &lt;revision&gt; stopped: a unit needs something its model does not provide.
+- **Why:** A unit's model declares what it supports. This solve needed something outside it, for example a column given a two-phase inlet, a condenser or reboiler kind it does not model, a property method outside its scope, or a derivative the model declares unavailable. The message names the unit and the capability.
+- **Do:** Change the unit so that it stays within its model's scope (the message names what is missing), or use a model that provides it. The limitations page lists what this version supports.
+- **Not supported:** missing capability: the capability the message names
 
-- **Summary:** The solve ended CAPABILITY_UNAVAILABLE (model domain/conservation/derivative defects).
+Example:
+
+```text
+The solve stopped: a unit needs something its model does not provide.
+  Why:     A unit's model declares what it supports. This solve needed something outside it, for example a column given a two-phase inlet, a condenser or reboiler kind it does not model, a property method outside its scope, or a derivative the model declares unavailable. The message names the unit and the capability.
+  Do:      Change the unit so that it stays within its model's scope (the message names what is missing), or use a model that provides it. The limitations page lists what this version supports.
+  Kind:    Not supported in this version: a limitation of OpenFlowsheet, not an error in your flowsheet.
+  Code:    CAPABILITY_UNAVAILABLE (openflowsheet explain CAPABILITY_UNAVAILABLE)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/outcomes/#CAPABILITY_UNAVAILABLE
+```
 
 <a id="CHECKPOINT_INCOMPATIBLE"></a>
 
-## `CHECKPOINT_INCOMPATIBLE`: Checkpoint incompatible
+## `CHECKPOINT_INCOMPATIBLE`: A restart's starting state did not fit the new phase assignment
 
 **Kind:** Numerical failure: the solver did not find the solution; your flowsheet may be correct.
 
-*No plain-language explanation is written yet; the summary is the technical one.*
+- **Summary:** The solve of revision &lt;revision&gt; stopped: the state it restarted from does not fit the new assignment of phases.
+- **Why:** When the phases present change, the solver restarts from its last state with the new assignment of phases to streams. That state did not pass the new attempt's opening checks. No supported path should produce this, so it is treated as a defect in OpenFlowsheet.
+- **Do:** Report it with the failure bundle; the message names the check that refused the state.
+- **See also:** [`PHASE_UPDATE_REQUIRED`](#PHASE_UPDATE_REQUIRED)
 
-- **Summary:** The solve ended CHECKPOINT_INCOMPATIBLE (homotopy/PTC/active-set stalls).
+Example:
+
+```text
+The solve stopped: the state it restarted from does not fit the new assignment of phases.
+  Why:     When the phases present change, the solver restarts from its last state with the new assignment of phases to streams. That state did not pass the new attempt's opening checks. No supported path should produce this, so it is treated as a defect in OpenFlowsheet.
+  Do:      Report it with the failure bundle; the message names the check that refused the state.
+  Kind:    Numerical failure: the solver did not find the solution; your flowsheet may be correct.
+  Code:    CHECKPOINT_INCOMPATIBLE (openflowsheet explain CHECKPOINT_INCOMPATIBLE)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/outcomes/#CHECKPOINT_INCOMPATIBLE
+```
 
 <a id="CONVERGED"></a>
 
-## `CONVERGED`: Converged
+## `CONVERGED`: The solver found a solution
 
 **Kind:** Notice: not a failure.
 
-*No plain-language explanation is written yet; the summary is the technical one.*
+- **Summary:** The solve of revision &lt;revision&gt; converged.
+- **Why:** The solver found a state at which every equation of the flowsheet is satisfied within the solve policy's tolerances. Whether the result is certified is decided afterwards by the verifier, which checks the state independently of the solver: its verdict is VERIFIED, RELAXED, UNVERIFIED or FAILED.
+- **Do:** Read the verification status before relying on the result.
+- **See also:** [`VERIFIED`](statuses.md#VERIFIED), [`FAILED`](statuses.md#FAILED)
 
-- **Summary:** The solve converged.
+Example:
+
+```text
+The solve converged.
+  Why:     The solver found a state at which every equation of the flowsheet is satisfied within the solve policy's tolerances. Whether the result is certified is decided afterwards by the verifier, which checks the state independently of the solver: its verdict is VERIFIED, RELAXED, UNVERIFIED or FAILED.
+  Do:      Read the verification status before relying on the result.
+  Kind:    Notice: not a failure.
+  Code:    CONVERGED (openflowsheet explain CONVERGED)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/outcomes/#CONVERGED
+```
 
 <a id="COUPLING_NOT_CONVERGED"></a>
 
-## `COUPLING_NOT_CONVERGED`: Coupling not converged
+## `COUPLING_NOT_CONVERGED`: The coupling with an external model did not converge
 
 **Kind:** Numerical failure: the solver did not find the solution; your flowsheet may be correct.
 
-*No plain-language explanation is written yet; the summary is the technical one.*
+- **Summary:** The solve of revision &lt;revision&gt; stopped: the outer iteration between the flowsheet and a coupled model did not converge.
+- **Why:** A flowsheet coupled to an external model is solved by an outer iteration that alternates between the two. It gave up without converging: it reached its iteration limit, stopped reducing the mismatch, or its update became singular. The message names the reason.
+- **Do:** Supply an initial guess for the coupled streams closer to the expected solution, or check the external model's inputs and outputs.
+- **See also:** [`RECYCLE_STAGNATION`](#RECYCLE_STAGNATION), [`EVALUATION_ERROR`](#EVALUATION_ERROR)
 
-- **Summary:** The solve ended COUPLING_NOT_CONVERGED (initialization and recycle failures).
+Example:
+
+```text
+The solve stopped: the outer iteration between the flowsheet and a coupled model did not converge.
+  Why:     A flowsheet coupled to an external model is solved by an outer iteration that alternates between the two. It gave up without converging: it reached its iteration limit, stopped reducing the mismatch, or its update became singular. The message names the reason.
+  Do:      Supply an initial guess for the coupled streams closer to the expected solution, or check the external model's inputs and outputs.
+  Kind:    Numerical failure: the solver did not find the solution; your flowsheet may be correct.
+  Code:    COUPLING_NOT_CONVERGED (openflowsheet explain COUPLING_NOT_CONVERGED)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/outcomes/#COUPLING_NOT_CONVERGED
+```
 
 <a id="EVALUATION_ERROR"></a>
 
-## `EVALUATION_ERROR`: Evaluation error
+## `EVALUATION_ERROR`: A unit's model raised an error during the solve
 
 **Kind:** Numerical failure: the solver did not find the solution; your flowsheet may be correct.
 
-*No plain-language explanation is written yet; the summary is the technical one.*
+- **Summary:** The solve of revision &lt;revision&gt; stopped: a unit's model reported an error during the solve.
+- **Why:** A unit's model, or an external model coupled to the flowsheet, reported an error at a state the solver had accepted, or its derivatives could not be evaluated there. The message names the unit and its error.
+- **Do:** Read the message for the unit and its error. If the state is far from where the unit operates, try another initial guess; if the error persists, report it with the failure bundle.
 
-- **Summary:** The solve ended EVALUATION_ERROR (model domain/conservation/derivative defects).
+Example:
+
+```text
+The solve stopped: a unit's model reported an error during the solve.
+  Why:     A unit's model, or an external model coupled to the flowsheet, reported an error at a state the solver had accepted, or its derivatives could not be evaluated there. The message names the unit and its error.
+  Do:      Read the message for the unit and its error. If the state is far from where the unit operates, try another initial guess; if the error persists, report it with the failure bundle.
+  Kind:    Numerical failure: the solver did not find the solution; your flowsheet may be correct.
+  Code:    EVALUATION_ERROR (openflowsheet explain EVALUATION_ERROR)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/outcomes/#EVALUATION_ERROR
+```
 
 <a id="HOMOTOPY_STALLED"></a>
 
-## `HOMOTOPY_STALLED`: Homotopy stalled
+## `HOMOTOPY_STALLED`: The continuation from an easier problem could not advance
 
 **Kind:** Numerical failure: the solver did not find the solution; your flowsheet may be correct.
 
-*No plain-language explanation is written yet; the summary is the technical one.*
+- **Summary:** The solve of revision &lt;revision&gt; stopped: its continuation from an easier problem could not advance.
+- **Why:** Under some solve policies the solver starts from an easier problem whose solution is known and moves it step by step to the real one. The steps shrank until the continuation could not advance.
+- **Do:** Supply an initial guess closer to the expected solution, or try another solve policy.
+- **See also:** [`PTC_STALLED`](#PTC_STALLED)
 
-- **Summary:** The solve ended HOMOTOPY_STALLED (homotopy/PTC/active-set stalls).
+Example:
+
+```text
+The solve stopped: its continuation from an easier problem could not advance.
+  Why:     Under some solve policies the solver starts from an easier problem whose solution is known and moves it step by step to the real one. The steps shrank until the continuation could not advance.
+  Do:      Supply an initial guess closer to the expected solution, or try another solve policy.
+  Kind:    Numerical failure: the solver did not find the solution; your flowsheet may be correct.
+  Code:    HOMOTOPY_STALLED (openflowsheet explain HOMOTOPY_STALLED)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/outcomes/#HOMOTOPY_STALLED
+```
 
 <a id="INITIALIZATION_FAILED"></a>
 
@@ -129,110 +247,238 @@ The solve could not find a starting point at unit 'T'.
 
 <a id="INNER_SOLVE_INCONSISTENT"></a>
 
-## `INNER_SOLVE_INCONSISTENT`: Inner solve inconsistent
+## `INNER_SOLVE_INCONSISTENT`: The solver's inner calculation disagreed with its equations
 
 **Kind:** Internal error in OpenFlowsheet: please report it.
 
-*No plain-language explanation is written yet; the summary is the technical one.*
+- **Summary:** The solve of revision &lt;revision&gt; stopped: an internal consistency check of the solver failed.
+- **Why:** The solver computes the units in order and checks, at every accepted state, that the equations it differentiates are satisfied by the values it computed. Here they were not, so its derivatives do not describe the function it solves. This is a defect in OpenFlowsheet or in a unit model, not an error in your flowsheet.
+- **Do:** Report it with the failure bundle; the message names the equation that disagreed.
 
-- **Summary:** The solve ended INNER_SOLVE_INCONSISTENT (model domain/conservation/derivative defects).
+Example:
+
+```text
+The solve stopped: an internal consistency check of the solver failed.
+  Why:     The solver computes the units in order and checks, at every accepted state, that the equations it differentiates are satisfied by the values it computed. Here they were not, so its derivatives do not describe the function it solves. This is a defect in OpenFlowsheet or in a unit model, not an error in your flowsheet.
+  Do:      Report it with the failure bundle; the message names the equation that disagreed.
+  Kind:    Internal error in OpenFlowsheet: please report it.
+  Code:    INNER_SOLVE_INCONSISTENT (openflowsheet explain INNER_SOLVE_INCONSISTENT)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/outcomes/#INNER_SOLVE_INCONSISTENT
+```
 
 <a id="LINEAR_SOLVE_FAILED"></a>
 
-## `LINEAR_SOLVE_FAILED`: Linear solve failed
+## `LINEAR_SOLVE_FAILED`: A linear system of the solve could not be solved
 
 **Kind:** Numerical failure: the solver did not find the solution; your flowsheet may be correct.
 
-*No plain-language explanation is written yet; the summary is the technical one.*
+- **Summary:** The solve of revision &lt;revision&gt; stopped: a linear system at one of its steps could not be solved accurately.
+- **Why:** Each step solves a linear system built from the derivatives of the equations. At this iterate the system was exactly singular, or its solution was not accurate enough to use. This can happen at a degenerate state, for example a vanishing flow, or when the specifications do not determine some variable.
+- **Do:** Try another initial guess; check that the specifications determine every variable. If it persists, report it with the failure bundle.
+- **See also:** [`RANK_DEFICIENT`](statuses.md#RANK_DEFICIENT)
 
-- **Summary:** The solve ended LINEAR_SOLVE_FAILED (rank/linear/globalization failures).
+Example:
+
+```text
+The solve stopped: a linear system at one of its steps could not be solved accurately.
+  Why:     Each step solves a linear system built from the derivatives of the equations. At this iterate the system was exactly singular, or its solution was not accurate enough to use. This can happen at a degenerate state, for example a vanishing flow, or when the specifications do not determine some variable.
+  Do:      Try another initial guess; check that the specifications determine every variable. If it persists, report it with the failure bundle.
+  Kind:    Numerical failure: the solver did not find the solution; your flowsheet may be correct.
+  Code:    LINEAR_SOLVE_FAILED (openflowsheet explain LINEAR_SOLVE_FAILED)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/outcomes/#LINEAR_SOLVE_FAILED
+```
 
 <a id="LINE_SEARCH_FAILED"></a>
 
-## `LINE_SEARCH_FAILED`: Line search failed
+## `LINE_SEARCH_FAILED`: The solve found no acceptable step
 
 **Kind:** Numerical failure: the solver did not find the solution; your flowsheet may be correct.
 
-*No plain-language explanation is written yet; the summary is the technical one.*
+- **Summary:** The solve of revision &lt;revision&gt; stopped: no step along its search direction reduced the error.
+- **Why:** Each step is shortened, by halving, until it reduces the equations' error and stays where the models can be evaluated. Here every shortened step was rejected, either because it did not reduce the error or because a unit could not be evaluated there.
+- **Do:** Try another initial guess, ideally one where every unit can be evaluated; if it persists, report it with the failure bundle.
 
-- **Summary:** The solve ended LINE_SEARCH_FAILED (rank/linear/globalization failures).
+Example:
+
+```text
+The solve stopped: no step along its search direction reduced the error.
+  Why:     Each step is shortened, by halving, until it reduces the equations' error and stays where the models can be evaluated. Here every shortened step was rejected, either because it did not reduce the error or because a unit could not be evaluated there.
+  Do:      Try another initial guess, ideally one where every unit can be evaluated; if it persists, report it with the failure bundle.
+  Kind:    Numerical failure: the solver did not find the solution; your flowsheet may be correct.
+  Code:    LINE_SEARCH_FAILED (openflowsheet explain LINE_SEARCH_FAILED)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/outcomes/#LINE_SEARCH_FAILED
+```
 
 <a id="PHASE_UPDATE_REQUIRED"></a>
 
-## `PHASE_UPDATE_REQUIRED`: Phase update required
+## `PHASE_UPDATE_REQUIRED`: The phases changed during the solve
 
 **Kind:** Numerical failure: the solver did not find the solution; your flowsheet may be correct.
 
-*No plain-language explanation is written yet; the summary is the technical one.*
+- **Summary:** The solve of revision &lt;revision&gt; stopped: the phases present changed during the solve and it could not continue with the new ones.
+- **Why:** The solver works with a fixed assignment of phases to streams per attempt. When an iterate's phases differ from the attempt's, it normally restarts with the new assignment; this outcome means it needed that restart and did not make it.
+- **Do:** Try an initial guess closer to the expected phases, or declare the phases you expect on the streams concerned.
+- **See also:** [`ACTIVE_SET_CYCLING`](#ACTIVE_SET_CYCLING), [`ATTEMPTS_EXHAUSTED`](#ATTEMPTS_EXHAUSTED)
 
-- **Summary:** The solve ended PHASE_UPDATE_REQUIRED (homotopy/PTC/active-set stalls).
+Example:
+
+```text
+The solve stopped: the phases present changed during the solve and it could not continue with the new ones.
+  Why:     The solver works with a fixed assignment of phases to streams per attempt. When an iterate's phases differ from the attempt's, it normally restarts with the new assignment; this outcome means it needed that restart and did not make it.
+  Do:      Try an initial guess closer to the expected phases, or declare the phases you expect on the streams concerned.
+  Kind:    Numerical failure: the solver did not find the solution; your flowsheet may be correct.
+  Code:    PHASE_UPDATE_REQUIRED (openflowsheet explain PHASE_UPDATE_REQUIRED)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/outcomes/#PHASE_UPDATE_REQUIRED
+```
 
 <a id="PTC_MAPPING_INVALID"></a>
 
-## `PTC_MAPPING_INVALID`: Ptc mapping invalid
+## `PTC_MAPPING_INVALID`: The pseudo-time stepping could not be set up
 
 **Kind:** Internal error in OpenFlowsheet: please report it.
 
-*No plain-language explanation is written yet; the summary is the technical one.*
+- **Summary:** The solve of revision &lt;revision&gt; did not run: its pseudo-time stepping could not be set up for this flowsheet.
+- **Why:** Pseudo-time stepping needs a mapping that gives each equation an artificial holdup. The mapping built for this flowsheet did not pass its own validation. That is a defect in OpenFlowsheet, not an error in your flowsheet.
+- **Do:** Report it with the failure bundle. Meanwhile, a solve policy without pseudo-time stepping may solve the flowsheet.
+- **See also:** [`PTC_STALLED`](#PTC_STALLED)
 
-- **Summary:** The solve ended PTC_MAPPING_INVALID (model domain/conservation/derivative defects).
+Example:
+
+```text
+The solve did not run: its pseudo-time stepping could not be set up for this flowsheet.
+  Why:     Pseudo-time stepping needs a mapping that gives each equation an artificial holdup. The mapping built for this flowsheet did not pass its own validation. That is a defect in OpenFlowsheet, not an error in your flowsheet.
+  Do:      Report it with the failure bundle. Meanwhile, a solve policy without pseudo-time stepping may solve the flowsheet.
+  Kind:    Internal error in OpenFlowsheet: please report it.
+  Code:    PTC_MAPPING_INVALID (openflowsheet explain PTC_MAPPING_INVALID)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/outcomes/#PTC_MAPPING_INVALID
+```
 
 <a id="PTC_STALLED"></a>
 
-## `PTC_STALLED`: Ptc stalled
+## `PTC_STALLED`: The pseudo-time stepping could not advance
 
 **Kind:** Numerical failure: the solver did not find the solution; your flowsheet may be correct.
 
-*No plain-language explanation is written yet; the summary is the technical one.*
+- **Summary:** The solve of revision &lt;revision&gt; stopped: its pseudo-time stepping could not advance.
+- **Why:** Under some solve policies the solver advances the flowsheet in an artificial time towards steady state, which is more robust far from the solution. The time steps stopped advancing before the steady state was reached.
+- **Do:** Supply an initial guess closer to the expected solution, or try another solve policy.
+- **See also:** [`HOMOTOPY_STALLED`](#HOMOTOPY_STALLED), [`PTC_MAPPING_INVALID`](#PTC_MAPPING_INVALID)
 
-- **Summary:** The solve ended PTC_STALLED (homotopy/PTC/active-set stalls).
+Example:
+
+```text
+The solve stopped: its pseudo-time stepping could not advance.
+  Why:     Under some solve policies the solver advances the flowsheet in an artificial time towards steady state, which is more robust far from the solution. The time steps stopped advancing before the steady state was reached.
+  Do:      Supply an initial guess closer to the expected solution, or try another solve policy.
+  Kind:    Numerical failure: the solver did not find the solution; your flowsheet may be correct.
+  Code:    PTC_STALLED (openflowsheet explain PTC_STALLED)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/outcomes/#PTC_STALLED
+```
 
 <a id="RECYCLE_STAGNATION"></a>
 
-## `RECYCLE_STAGNATION`: Recycle stagnation
+## `RECYCLE_STAGNATION`: The recycle iteration stopped making progress
 
 **Kind:** Numerical failure: the solver did not find the solution; your flowsheet may be correct.
 
-*No plain-language explanation is written yet; the summary is the technical one.*
+- **Summary:** The solve of revision &lt;revision&gt; stopped: the recycle streams stopped converging.
+- **Why:** A flowsheet with a recycle is solved by guessing the recycle streams, computing around the loop and updating the guess. The update stopped reducing the mismatch between the guessed and the computed streams before it was within the tolerance.
+- **Do:** Supply an initial guess for the recycle streams closer to the expected solution, or try another solve policy.
+- **See also:** [`INITIALIZATION_FAILED`](#INITIALIZATION_FAILED), [`COUPLING_NOT_CONVERGED`](#COUPLING_NOT_CONVERGED)
 
-- **Summary:** The solve ended RECYCLE_STAGNATION (initialization and recycle failures).
+Example:
+
+```text
+The solve stopped: the recycle streams stopped converging.
+  Why:     A flowsheet with a recycle is solved by guessing the recycle streams, computing around the loop and updating the guess. The update stopped reducing the mismatch between the guessed and the computed streams before it was within the tolerance.
+  Do:      Supply an initial guess for the recycle streams closer to the expected solution, or try another solve policy.
+  Kind:    Numerical failure: the solver did not find the solution; your flowsheet may be correct.
+  Code:    RECYCLE_STAGNATION (openflowsheet explain RECYCLE_STAGNATION)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/outcomes/#RECYCLE_STAGNATION
+```
 
 <a id="SCALE_UNAVAILABLE"></a>
 
-## `SCALE_UNAVAILABLE`: Scale unavailable
+## `SCALE_UNAVAILABLE`: A variable or equation without a quantity the solver can scale
 
 **Kind:** Input problem: something in the flowsheet or the request needs to change.
 
-*No plain-language explanation is written yet; the summary is the technical one.*
+- **Summary:** The solve of revision &lt;revision&gt; did not start: a variable or equation has no quantity the solver can scale.
+- **Why:** The solver scales every variable and equation by a registered nominal value for its quantity (a molar flow, a temperature, a pressure, a heat rate). The named variable or equation declares no quantity, or one without a registered nominal, and the solver refuses to guess a scale.
+- **Do:** Read the message for the names. A unit model or a specification that introduces them needs a declared quantity of a supported kind; if the model is OpenFlowsheet's own, report it.
 
-- **Summary:** The solve ended SCALE_UNAVAILABLE (structure/specification conflicts).
+Example:
+
+```text
+The solve did not start: a variable or equation has no quantity the solver can scale.
+  Why:     The solver scales every variable and equation by a registered nominal value for its quantity (a molar flow, a temperature, a pressure, a heat rate). The named variable or equation declares no quantity, or one without a registered nominal, and the solver refuses to guess a scale.
+  Do:      Read the message for the names. A unit model or a specification that introduces them needs a declared quantity of a supported kind; if the model is OpenFlowsheet's own, report it.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    SCALE_UNAVAILABLE (openflowsheet explain SCALE_UNAVAILABLE)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/outcomes/#SCALE_UNAVAILABLE
+```
 
 <a id="SPECIFICATION_CONFLICT"></a>
 
-## `SPECIFICATION_CONFLICT`: Specification conflict
+## `SPECIFICATION_CONFLICT`: Specifications that contradict each other
 
 **Kind:** Input problem: something in the flowsheet or the request needs to change.
 
-*No plain-language explanation is written yet; the summary is the technical one.*
+- **Summary:** The solve of revision &lt;revision&gt; did not start: two specifications contradict each other.
+- **Why:** Before solving, OpenFlowsheet removes equations that only pass a value along, for example a pressure carried through units without a pressure drop. Removing one is allowed only when the values agree; here they differ, so the specifications fix one quantity to two different values. The message names the equation, the path and the mismatch.
+- **Do:** Change one of the two specifications so that they agree, for example the feed pressure or the pressure specified downstream of it, or give a unit between them a pressure drop.
+- **See also:** [`SCALE_UNAVAILABLE`](#SCALE_UNAVAILABLE)
 
-- **Summary:** The solve ended SPECIFICATION_CONFLICT (structure/specification conflicts).
+Example:
+
+```text
+The solve did not start: two specifications contradict each other.
+  Why:     Before solving, OpenFlowsheet removes equations that only pass a value along, for example a pressure carried through units without a pressure drop. Removing one is allowed only when the values agree; here they differ, so the specifications fix one quantity to two different values. The message names the equation, the path and the mismatch.
+  Do:      Change one of the two specifications so that they agree, for example the feed pressure or the pressure specified downstream of it, or give a unit between them a pressure drop.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    SPECIFICATION_CONFLICT (openflowsheet explain SPECIFICATION_CONFLICT)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/outcomes/#SPECIFICATION_CONFLICT
+```
 
 <a id="STAGNATION"></a>
 
-## `STAGNATION`: Stagnation
+## `STAGNATION`: The solve stopped making progress
 
 **Kind:** Numerical failure: the solver did not find the solution; your flowsheet may be correct.
 
-*No plain-language explanation is written yet; the summary is the technical one.*
+- **Summary:** The solve of revision &lt;revision&gt; stopped making progress before converging.
+- **Why:** For several consecutive steps the equations' error decreased by less than one per cent while it was still above the tolerance. This happens near a point where the equations come close to being satisfied without being satisfied, or far from the solution where the steps are small.
+- **Do:** Try another initial guess or solve policy; check that the specifications are what you intend. If it persists, report it with the failure bundle.
 
-- **Summary:** The solve ended STAGNATION (rank/linear/globalization failures).
+Example:
+
+```text
+The solve stopped making progress before converging.
+  Why:     For several consecutive steps the equations' error decreased by less than one per cent while it was still above the tolerance. This happens near a point where the equations come close to being satisfied without being satisfied, or far from the solution where the steps are small.
+  Do:      Try another initial guess or solve policy; check that the specifications are what you intend. If it persists, report it with the failure bundle.
+  Kind:    Numerical failure: the solver did not find the solution; your flowsheet may be correct.
+  Code:    STAGNATION (openflowsheet explain STAGNATION)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/outcomes/#STAGNATION
+```
 
 <a id="UNSUPPORTED_RANK_STRUCTURE"></a>
 
-## `UNSUPPORTED_RANK_STRUCTURE`: Unsupported rank structure
+## `UNSUPPORTED_RANK_STRUCTURE`: Equations structured in a way this version's solver does not handle
 
 **Kind:** Not supported in this version: a limitation of OpenFlowsheet, not an error in your flowsheet.
 
-*No plain-language explanation is written yet; the summary is the technical one.*
+- **Summary:** The solve of revision &lt;revision&gt; did not run: its equations have a structure this version's solver does not handle.
+- **Why:** The solver arranges the flowsheet's equations into blocks it can solve in order. This flowsheet's arrangement is one it does not support, for example a specification that relates variables of more than one unit. The message names the structure.
+- **Do:** Read the message for the structure named. A specification across units can often be replaced by one on a single unit; the limitations page lists what this version supports.
+- **Not supported:** missing capability: equation structures beyond the solver's supported blocks
 
-- **Summary:** The solve ended UNSUPPORTED_RANK_STRUCTURE (rank/linear/globalization failures).
+Example:
+
+```text
+The solve did not run: its equations have a structure this version's solver does not handle.
+  Why:     The solver arranges the flowsheet's equations into blocks it can solve in order. This flowsheet's arrangement is one it does not support, for example a specification that relates variables of more than one unit. The message names the structure.
+  Do:      Read the message for the structure named. A specification across units can often be replaced by one on a single unit; the limitations page lists what this version supports.
+  Kind:    Not supported in this version: a limitation of OpenFlowsheet, not an error in your flowsheet.
+  Code:    UNSUPPORTED_RANK_STRUCTURE (openflowsheet explain UNSUPPORTED_RANK_STRUCTURE)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/outcomes/#UNSUPPORTED_RANK_STRUCTURE
+```
