@@ -219,3 +219,47 @@ where it lives. Questions for the design lane are batched for the one `reviewer`
 - **Q-C6.** RP §3.1 (D1.5) names the release package `REL040`, which the same pattern refuses: at 0.4.0 the release
   manifest `evidence/REL040/<C>/manifest.json` fails `t08.problems` (schema). Either an ADR admits `REL\d{3}` (and
   `RP`), as ADR 0059 D1 admitted the roadmap ids, or RP names an S-id for each release package.
+
+## WO-R7 (build lane, 2026-11-06): the RP review's fixes
+
+Review `docs/reviews/RP-review.md` (binding), brief `docs/briefs/REL-build-WO-R7.md`. Amendments A-1…A-8 pasted into
+RP §17.1 with their section edits, register R-942…R-949 (`7799bd72`); ADR 0055 §10 gains ruling 2's restated
+acceptance and notes (M-3), status unchanged.
+
+### Choices (each isolated in its commit)
+
+- **C-23 A-3's chain check runs in standing mode only** (`411a6e52`). The dated path is the legacy engine unchanged
+  (REL.A03 pins it byte-identical to `v0_3_gate.py`), and 0.3.0's C holds no line file, so a literal check there
+  would refuse 0.3.0. The check runs for the report and for `--lapses`. Reversible: move the `chain_problems` call in
+  `release_gate.main` above the `table is None` branch.
+- **C-24 REL.A09's fixture names S13 as the package at `OLD`** (`03ff3ff3`). It put the 0.4 line (package REL040) at
+  `OLD`, where the fixture's records are S13's, so the other decision rows, recorded at `OLD`, did not reproduce there
+  and A-2 refused them. The fixture's history is now coherent; the assertion (a claim-set change lapses `Claim set`)
+  is unchanged.
+- **C-25 S-4 is step 1's selection plus a stated remedy, not a fifth check** (`e677ac36`). A push run exists only
+  for a pushed head, so `push_run` (head = C) already fails C pushed beneath later commits; `s1.push_run` then names
+  `git push origin C:refs/heads/rc/<C7>`. RP §6.2's "exactly these checks" stays four; `runs_at_c` is a record field.
+- **C-26 The `release_rc` dispatch is the greatest `workflow_dispatch` run id of `ci.yml` at C** (`e677ac36`,
+  `26f86b0e`). `gh run list` does not show a dispatch's inputs; at a release's C only `release_rc` is dispatched.
+  `gh run view` without `--attempt` reads the latest attempt, so the manifest compares an attempt only where the given
+  run states one (`t08.fetch_ci`'s fields carry none, and `t08_evidence_manifest.py` is legacy, not edited). A step 1
+  record without `runs_at_c` is refused.
+- **C-27 "Stops the RC" (§12) for A-5 and C-12** (`2049b4ed`): the runner writes `stop-step12-inputs` /
+  `stop-nlp-wt exit 2`, runs no step 12 command, no step 14 and no step-17 nlp item, and exits 1 (`records_passed`
+  judges every `stop-` line). The other steps still run, so one run shows every failure. Without a clean nlp tree at
+  C the nlp items stay `unsupported`, never run from elsewhere.
+- **C-28 REL.A18 and REL.A19 got tests** (`3dfa0ff0`): ruling 2's acceptance needs A17–A20 in a `tested` manifest,
+  and neither had an executable check (A19's fingerprints did; its six verbatim cells did not).
+- **C-29 M-1's fixtures add two to V03's twelve**: item 6 with the tree check not run, and item 11's links row
+  (`links_problems`, which no standing test reached). RP.S06's selection gains `test_rel_standing_acceptances.py -k
+  s06_` (`a79399bf`).
+
+### Measured (WO-R7)
+
+- REL.A20 (`--rel-a20` at `ae620ac4`, exit 0): 22 checks, 16 pass, 5 fail, 1 unsupported; same form
+  12 of 12 equal S13; RP.S18 `not_pass` 5 (S10, S13, S15, S17, S21), all changed form, commands 29 → `REL.A20: PASS`.
+  Controls in `test_rel_a20_over_0_3_0s_committed_records`: a same-form check failing; the same with S13's
+  counterpart failing too (A-1's sub-check alone); zero commands — each FAIL.
+- M-1 mutation (the five engine readers blanked), `tests/test_rel_standing_acceptances.py`: before 40 passed
+  unmutated, 40 passed mutated; after 56 passed unmutated, 6 failed / 50 passed mutated (items 7, 8, 9, 10,
+  11 (links), 12).
