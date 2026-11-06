@@ -12,6 +12,7 @@ import { DASH } from "../text.js";
 import {
   digestBanner,
   facts,
+  failureNotice,
   heading,
   id,
   jsonTree,
@@ -58,6 +59,7 @@ export function view(data) {
       section(
         "Failure bundle",
         none(`no failure bundle recorded for this run (outcome ${run?.outcome ?? "not recorded"})`),
+        failureNotice(run),
       ),
     );
   }
@@ -74,6 +76,7 @@ export function view(data) {
     section(
       "Outcome",
       h("p", null, pill(bundle.outcome)),
+      failureNotice(run),
       facts([["taxonomy", text(bundle.taxonomy)]]),
     ),
     section(
