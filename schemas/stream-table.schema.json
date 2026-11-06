@@ -1,0 +1,803 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/frankp/process-runtime/schemas/stream-table.schema.json",
+  "title": "StreamTable",
+  "description": "ADR 0068, ST design note §5: `stream-table-v1`, the stream table and energy summary of a run, computed on read from its bundle (`application.stream_table`) and never stored. SI only (C-4). A quantity that cannot be given is null with a typed reason `{code, params}` in its object's `absent` map, and a member is null iff it is a key of `absent` (D6). Open objects (root, stream, substream, phase, unit, port, overall) accept additive v2 members; the phase id, the absent entry and the check quote are closed. A non-additive change is `stream-table-v2`. Every `h`, `s`, `H_flow` and `S_flow` is on the substream's `convention` (the energy section's for its figures). Signs: Q and W positive into the unit; closure = (Q + W) - (H_out - H_in) (C-5).",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "source",
+    "state_sha256",
+    "certificate_id",
+    "verification_status",
+    "judged_at",
+    "basis",
+    "evaluator",
+    "components",
+    "streams",
+    "energy"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "stream-table-v1"
+    },
+    "source": {
+      "type": "object",
+      "required": [
+        "job_id",
+        "bundle_id",
+        "run_id",
+        "revision_id"
+      ],
+      "properties": {
+        "job_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "bundle_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "run_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "revision_id": {
+          "type": "string"
+        }
+      }
+    },
+    "state_sha256": {
+      "type": "string"
+    },
+    "certificate_id": {
+      "type": "string"
+    },
+    "verification_status": {
+      "type": "string"
+    },
+    "judged_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "basis": {
+      "type": "object",
+      "required": [
+        "provider_id",
+        "implementation_sha256",
+        "data_sha256",
+        "convention",
+        "record_source"
+      ],
+      "properties": {
+        "provider_id": {
+          "type": "string"
+        },
+        "implementation_sha256": {
+          "type": "string"
+        },
+        "data_sha256": {
+          "type": "string"
+        },
+        "convention": {
+          "type": "string"
+        },
+        "record_source": {
+          "type": "string"
+        }
+      }
+    },
+    "evaluator": {
+      "type": "object",
+      "required": [
+        "phase_rule",
+        "package_version"
+      ],
+      "properties": {
+        "phase_rule": {
+          "const": "st-phase-rule-v1"
+        },
+        "package_version": {
+          "type": "string"
+        }
+      }
+    },
+    "components": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "molar_mass"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "molar_mass": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    "streams": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/stream"
+      }
+    },
+    "energy": {
+      "type": "object",
+      "required": [
+        "convention",
+        "units",
+        "overall"
+      ],
+      "properties": {
+        "convention": {
+          "type": "string"
+        },
+        "units": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/unit"
+          }
+        },
+        "overall": {
+          "$ref": "#/$defs/overall"
+        }
+      }
+    }
+  },
+  "$defs": {
+    "q": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "absent": {
+      "description": "Quantity name -> why it is null (D6).",
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/$defs/entry"
+      }
+    },
+    "entry": {
+      "description": "A typed reason: a catalogue code and its parameters (MSG C3).",
+      "type": "object",
+      "required": [
+        "code",
+        "params"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "type": "string"
+        },
+        "params": {
+          "type": "object",
+          "additionalProperties": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    "quote": {
+      "description": "A certificate row quoted verbatim (§4.4); `index` is its position in the certificate's `checks`.",
+      "type": "object",
+      "required": [
+        "index",
+        "id",
+        "result",
+        "scope",
+        "value",
+        "tolerance",
+        "reason",
+        "near_threshold"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "index": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "id": {
+          "type": "string"
+        },
+        "result": {
+          "type": "string"
+        },
+        "scope": {
+          "type": "string"
+        },
+        "value": {
+          "$ref": "#/$defs/q"
+        },
+        "tolerance": {
+          "$ref": "#/$defs/q"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "near_threshold": {
+          "type": "boolean"
+        }
+      }
+    },
+    "phase_id": {
+      "description": "Q4.R1's phase triple; never a rendered string (C-2).",
+      "type": "object",
+      "required": [
+        "family",
+        "qualifier",
+        "ordinal"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "family": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9_]*$"
+        },
+        "qualifier": {
+          "oneOf": [
+            {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "ordinal": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "stream": {
+      "description": "One stream: its stored T (null when dormant, Q1.R11) and P, its substreams and its quoted phase_admissibility and independent_split rows.",
+      "type": "object",
+      "required": [
+        "P",
+        "T",
+        "absent",
+        "checks",
+        "dormant",
+        "from",
+        "id",
+        "substreams",
+        "to"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "from": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "to": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "T": {
+          "$ref": "#/$defs/q"
+        },
+        "P": {
+          "type": "number"
+        },
+        "dormant": {
+          "type": "boolean"
+        },
+        "substreams": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/substream"
+          }
+        },
+        "checks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/quote"
+          }
+        },
+        "absent": {
+          "$ref": "#/$defs/absent"
+        }
+      },
+      "allOf": [
+        {"if": {"properties": {"T": {"type": "null"}}, "required": ["T"]}, "then": {"properties": {"absent": {"required": ["T"]}}}},
+        {"if": {"properties": {"absent": {"required": ["T"]}}, "required": ["absent"]}, "then": {"properties": {"T": {"type": "null"}}, "required": ["T"]}}
+      ]
+    },
+    "substream": {
+      "description": "v1: one substream, id and kind `mixed`. `phase_source` is registered as zero_flow | carried_split | declared | flash and open. Arrays follow `components` and are given or null whole.",
+      "type": "object",
+      "required": [
+        "H_flow",
+        "S_flow",
+        "V_flow",
+        "absent",
+        "components",
+        "convention",
+        "flash_near_phase_boundary",
+        "h",
+        "h_mass",
+        "id",
+        "kind",
+        "m",
+        "m_total",
+        "n",
+        "n_total",
+        "phase_source",
+        "phases",
+        "rho",
+        "s",
+        "s_mass",
+        "vapor_fraction_mass",
+        "vapor_fraction_molar",
+        "w",
+        "x"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "kind": {
+          "type": "string"
+        },
+        "components": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "convention": {
+          "type": "string"
+        },
+        "phase_source": {
+          "type": "string"
+        },
+        "flash_near_phase_boundary": {
+          "type": "boolean"
+        },
+        "n": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        },
+        "m": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        },
+        "x": {
+          "oneOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "number"
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "w": {
+          "oneOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "number"
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "n_total": {
+          "type": "number"
+        },
+        "m_total": {
+          "type": "number"
+        },
+        "H_flow": {
+          "$ref": "#/$defs/q"
+        },
+        "S_flow": {
+          "$ref": "#/$defs/q"
+        },
+        "V_flow": {
+          "$ref": "#/$defs/q"
+        },
+        "h": {
+          "$ref": "#/$defs/q"
+        },
+        "h_mass": {
+          "$ref": "#/$defs/q"
+        },
+        "s": {
+          "$ref": "#/$defs/q"
+        },
+        "s_mass": {
+          "$ref": "#/$defs/q"
+        },
+        "rho": {
+          "$ref": "#/$defs/q"
+        },
+        "vapor_fraction_molar": {
+          "$ref": "#/$defs/q"
+        },
+        "vapor_fraction_mass": {
+          "$ref": "#/$defs/q"
+        },
+        "phases": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/phase"
+          }
+        },
+        "absent": {
+          "$ref": "#/$defs/absent"
+        }
+      },
+      "allOf": [
+        {"if": {"properties": {"x": {"type": "null"}}, "required": ["x"]}, "then": {"properties": {"absent": {"required": ["x"]}}}},
+        {"if": {"properties": {"absent": {"required": ["x"]}}, "required": ["absent"]}, "then": {"properties": {"x": {"type": "null"}}, "required": ["x"]}},
+        {"if": {"properties": {"w": {"type": "null"}}, "required": ["w"]}, "then": {"properties": {"absent": {"required": ["w"]}}}},
+        {"if": {"properties": {"absent": {"required": ["w"]}}, "required": ["absent"]}, "then": {"properties": {"w": {"type": "null"}}, "required": ["w"]}},
+        {"if": {"properties": {"H_flow": {"type": "null"}}, "required": ["H_flow"]}, "then": {"properties": {"absent": {"required": ["H_flow"]}}}},
+        {"if": {"properties": {"absent": {"required": ["H_flow"]}}, "required": ["absent"]}, "then": {"properties": {"H_flow": {"type": "null"}}, "required": ["H_flow"]}},
+        {"if": {"properties": {"S_flow": {"type": "null"}}, "required": ["S_flow"]}, "then": {"properties": {"absent": {"required": ["S_flow"]}}}},
+        {"if": {"properties": {"absent": {"required": ["S_flow"]}}, "required": ["absent"]}, "then": {"properties": {"S_flow": {"type": "null"}}, "required": ["S_flow"]}},
+        {"if": {"properties": {"V_flow": {"type": "null"}}, "required": ["V_flow"]}, "then": {"properties": {"absent": {"required": ["V_flow"]}}}},
+        {"if": {"properties": {"absent": {"required": ["V_flow"]}}, "required": ["absent"]}, "then": {"properties": {"V_flow": {"type": "null"}}, "required": ["V_flow"]}},
+        {"if": {"properties": {"h": {"type": "null"}}, "required": ["h"]}, "then": {"properties": {"absent": {"required": ["h"]}}}},
+        {"if": {"properties": {"absent": {"required": ["h"]}}, "required": ["absent"]}, "then": {"properties": {"h": {"type": "null"}}, "required": ["h"]}},
+        {"if": {"properties": {"h_mass": {"type": "null"}}, "required": ["h_mass"]}, "then": {"properties": {"absent": {"required": ["h_mass"]}}}},
+        {"if": {"properties": {"absent": {"required": ["h_mass"]}}, "required": ["absent"]}, "then": {"properties": {"h_mass": {"type": "null"}}, "required": ["h_mass"]}},
+        {"if": {"properties": {"s": {"type": "null"}}, "required": ["s"]}, "then": {"properties": {"absent": {"required": ["s"]}}}},
+        {"if": {"properties": {"absent": {"required": ["s"]}}, "required": ["absent"]}, "then": {"properties": {"s": {"type": "null"}}, "required": ["s"]}},
+        {"if": {"properties": {"s_mass": {"type": "null"}}, "required": ["s_mass"]}, "then": {"properties": {"absent": {"required": ["s_mass"]}}}},
+        {"if": {"properties": {"absent": {"required": ["s_mass"]}}, "required": ["absent"]}, "then": {"properties": {"s_mass": {"type": "null"}}, "required": ["s_mass"]}},
+        {"if": {"properties": {"rho": {"type": "null"}}, "required": ["rho"]}, "then": {"properties": {"absent": {"required": ["rho"]}}}},
+        {"if": {"properties": {"absent": {"required": ["rho"]}}, "required": ["absent"]}, "then": {"properties": {"rho": {"type": "null"}}, "required": ["rho"]}},
+        {"if": {"properties": {"vapor_fraction_molar": {"type": "null"}}, "required": ["vapor_fraction_molar"]}, "then": {"properties": {"absent": {"required": ["vapor_fraction_molar"]}}}},
+        {"if": {"properties": {"absent": {"required": ["vapor_fraction_molar"]}}, "required": ["absent"]}, "then": {"properties": {"vapor_fraction_molar": {"type": "null"}}, "required": ["vapor_fraction_molar"]}},
+        {"if": {"properties": {"vapor_fraction_mass": {"type": "null"}}, "required": ["vapor_fraction_mass"]}, "then": {"properties": {"absent": {"required": ["vapor_fraction_mass"]}}}},
+        {"if": {"properties": {"absent": {"required": ["vapor_fraction_mass"]}}, "required": ["absent"]}, "then": {"properties": {"vapor_fraction_mass": {"type": "null"}}, "required": ["vapor_fraction_mass"]}}
+      ]
+    },
+    "phase": {
+      "description": "One listed phase (its amount != 0.0, Q4.R11), keyed by its id.",
+      "type": "object",
+      "required": [
+        "H_flow",
+        "S_flow",
+        "V_flow",
+        "absent",
+        "h",
+        "h_mass",
+        "id",
+        "m",
+        "m_total",
+        "n",
+        "n_total",
+        "phase_fraction_mass",
+        "phase_fraction_molar",
+        "rho",
+        "s",
+        "s_mass",
+        "v",
+        "w",
+        "x"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/phase_id"
+        },
+        "n": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        },
+        "m": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        },
+        "x": {
+          "oneOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "number"
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "w": {
+          "oneOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "number"
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "n_total": {
+          "type": "number"
+        },
+        "m_total": {
+          "type": "number"
+        },
+        "phase_fraction_molar": {
+          "$ref": "#/$defs/q"
+        },
+        "phase_fraction_mass": {
+          "$ref": "#/$defs/q"
+        },
+        "H_flow": {
+          "$ref": "#/$defs/q"
+        },
+        "S_flow": {
+          "$ref": "#/$defs/q"
+        },
+        "V_flow": {
+          "$ref": "#/$defs/q"
+        },
+        "h": {
+          "$ref": "#/$defs/q"
+        },
+        "h_mass": {
+          "$ref": "#/$defs/q"
+        },
+        "s": {
+          "$ref": "#/$defs/q"
+        },
+        "s_mass": {
+          "$ref": "#/$defs/q"
+        },
+        "v": {
+          "$ref": "#/$defs/q"
+        },
+        "rho": {
+          "$ref": "#/$defs/q"
+        },
+        "absent": {
+          "$ref": "#/$defs/absent"
+        }
+      },
+      "allOf": [
+        {"if": {"properties": {"x": {"type": "null"}}, "required": ["x"]}, "then": {"properties": {"absent": {"required": ["x"]}}}},
+        {"if": {"properties": {"absent": {"required": ["x"]}}, "required": ["absent"]}, "then": {"properties": {"x": {"type": "null"}}, "required": ["x"]}},
+        {"if": {"properties": {"w": {"type": "null"}}, "required": ["w"]}, "then": {"properties": {"absent": {"required": ["w"]}}}},
+        {"if": {"properties": {"absent": {"required": ["w"]}}, "required": ["absent"]}, "then": {"properties": {"w": {"type": "null"}}, "required": ["w"]}},
+        {"if": {"properties": {"phase_fraction_molar": {"type": "null"}}, "required": ["phase_fraction_molar"]}, "then": {"properties": {"absent": {"required": ["phase_fraction_molar"]}}}},
+        {"if": {"properties": {"absent": {"required": ["phase_fraction_molar"]}}, "required": ["absent"]}, "then": {"properties": {"phase_fraction_molar": {"type": "null"}}, "required": ["phase_fraction_molar"]}},
+        {"if": {"properties": {"phase_fraction_mass": {"type": "null"}}, "required": ["phase_fraction_mass"]}, "then": {"properties": {"absent": {"required": ["phase_fraction_mass"]}}}},
+        {"if": {"properties": {"absent": {"required": ["phase_fraction_mass"]}}, "required": ["absent"]}, "then": {"properties": {"phase_fraction_mass": {"type": "null"}}, "required": ["phase_fraction_mass"]}},
+        {"if": {"properties": {"H_flow": {"type": "null"}}, "required": ["H_flow"]}, "then": {"properties": {"absent": {"required": ["H_flow"]}}}},
+        {"if": {"properties": {"absent": {"required": ["H_flow"]}}, "required": ["absent"]}, "then": {"properties": {"H_flow": {"type": "null"}}, "required": ["H_flow"]}},
+        {"if": {"properties": {"S_flow": {"type": "null"}}, "required": ["S_flow"]}, "then": {"properties": {"absent": {"required": ["S_flow"]}}}},
+        {"if": {"properties": {"absent": {"required": ["S_flow"]}}, "required": ["absent"]}, "then": {"properties": {"S_flow": {"type": "null"}}, "required": ["S_flow"]}},
+        {"if": {"properties": {"V_flow": {"type": "null"}}, "required": ["V_flow"]}, "then": {"properties": {"absent": {"required": ["V_flow"]}}}},
+        {"if": {"properties": {"absent": {"required": ["V_flow"]}}, "required": ["absent"]}, "then": {"properties": {"V_flow": {"type": "null"}}, "required": ["V_flow"]}},
+        {"if": {"properties": {"h": {"type": "null"}}, "required": ["h"]}, "then": {"properties": {"absent": {"required": ["h"]}}}},
+        {"if": {"properties": {"absent": {"required": ["h"]}}, "required": ["absent"]}, "then": {"properties": {"h": {"type": "null"}}, "required": ["h"]}},
+        {"if": {"properties": {"h_mass": {"type": "null"}}, "required": ["h_mass"]}, "then": {"properties": {"absent": {"required": ["h_mass"]}}}},
+        {"if": {"properties": {"absent": {"required": ["h_mass"]}}, "required": ["absent"]}, "then": {"properties": {"h_mass": {"type": "null"}}, "required": ["h_mass"]}},
+        {"if": {"properties": {"s": {"type": "null"}}, "required": ["s"]}, "then": {"properties": {"absent": {"required": ["s"]}}}},
+        {"if": {"properties": {"absent": {"required": ["s"]}}, "required": ["absent"]}, "then": {"properties": {"s": {"type": "null"}}, "required": ["s"]}},
+        {"if": {"properties": {"s_mass": {"type": "null"}}, "required": ["s_mass"]}, "then": {"properties": {"absent": {"required": ["s_mass"]}}}},
+        {"if": {"properties": {"absent": {"required": ["s_mass"]}}, "required": ["absent"]}, "then": {"properties": {"s_mass": {"type": "null"}}, "required": ["s_mass"]}},
+        {"if": {"properties": {"v": {"type": "null"}}, "required": ["v"]}, "then": {"properties": {"absent": {"required": ["v"]}}}},
+        {"if": {"properties": {"absent": {"required": ["v"]}}, "required": ["absent"]}, "then": {"properties": {"v": {"type": "null"}}, "required": ["v"]}},
+        {"if": {"properties": {"rho": {"type": "null"}}, "required": ["rho"]}, "then": {"properties": {"absent": {"required": ["rho"]}}}},
+        {"if": {"properties": {"absent": {"required": ["rho"]}}, "required": ["absent"]}, "then": {"properties": {"rho": {"type": "null"}}, "required": ["rho"]}}
+      ]
+    },
+    "port": {
+      "description": "One port of a unit and the sum of its streams' enthalpy flows.",
+      "type": "object",
+      "required": [
+        "H_flow",
+        "absent",
+        "direction",
+        "port",
+        "streams"
+      ],
+      "properties": {
+        "port": {
+          "type": "string"
+        },
+        "direction": {
+          "enum": [
+            "inlet",
+            "outlet"
+          ]
+        },
+        "streams": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "H_flow": {
+          "$ref": "#/$defs/q"
+        },
+        "absent": {
+          "$ref": "#/$defs/absent"
+        }
+      },
+      "allOf": [
+        {"if": {"properties": {"H_flow": {"type": "null"}}, "required": ["H_flow"]}, "then": {"properties": {"absent": {"required": ["H_flow"]}}}},
+        {"if": {"properties": {"absent": {"required": ["H_flow"]}}, "required": ["absent"]}, "then": {"properties": {"H_flow": {"type": "null"}}, "required": ["H_flow"]}}
+      ]
+    },
+    "unit": {
+      "description": "A unit's energy figures at the stored state, beside its quoted energy_balance rows.",
+      "type": "object",
+      "required": [
+        "H_in",
+        "H_out",
+        "Q",
+        "W",
+        "absent",
+        "checks",
+        "closure",
+        "id",
+        "model",
+        "ports"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "model": {
+          "type": "string"
+        },
+        "ports": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/port"
+          }
+        },
+        "H_in": {
+          "$ref": "#/$defs/q"
+        },
+        "H_out": {
+          "$ref": "#/$defs/q"
+        },
+        "Q": {
+          "type": "number"
+        },
+        "W": {
+          "type": "number"
+        },
+        "closure": {
+          "$ref": "#/$defs/q"
+        },
+        "checks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/quote"
+          }
+        },
+        "absent": {
+          "$ref": "#/$defs/absent"
+        }
+      },
+      "allOf": [
+        {"if": {"properties": {"H_in": {"type": "null"}}, "required": ["H_in"]}, "then": {"properties": {"absent": {"required": ["H_in"]}}}},
+        {"if": {"properties": {"absent": {"required": ["H_in"]}}, "required": ["absent"]}, "then": {"properties": {"H_in": {"type": "null"}}, "required": ["H_in"]}},
+        {"if": {"properties": {"H_out": {"type": "null"}}, "required": ["H_out"]}, "then": {"properties": {"absent": {"required": ["H_out"]}}}},
+        {"if": {"properties": {"absent": {"required": ["H_out"]}}, "required": ["absent"]}, "then": {"properties": {"H_out": {"type": "null"}}, "required": ["H_out"]}},
+        {"if": {"properties": {"closure": {"type": "null"}}, "required": ["closure"]}, "then": {"properties": {"absent": {"required": ["closure"]}}}},
+        {"if": {"properties": {"absent": {"required": ["closure"]}}, "required": ["absent"]}, "then": {"properties": {"closure": {"type": "null"}}, "required": ["closure"]}}
+      ]
+    },
+    "overall": {
+      "description": "The envelope at the stored state: _envelope_energy's arithmetic, beside the quoted energy_balance.envelope row.",
+      "type": "object",
+      "required": [
+        "H_feeds",
+        "H_products",
+        "Q",
+        "W",
+        "absent",
+        "checks",
+        "closure",
+        "feeds",
+        "products"
+      ],
+      "properties": {
+        "feeds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "products": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "Q": {
+          "type": "number"
+        },
+        "W": {
+          "type": "number"
+        },
+        "H_feeds": {
+          "$ref": "#/$defs/q"
+        },
+        "H_products": {
+          "$ref": "#/$defs/q"
+        },
+        "closure": {
+          "$ref": "#/$defs/q"
+        },
+        "checks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/quote"
+          }
+        },
+        "absent": {
+          "$ref": "#/$defs/absent"
+        }
+      },
+      "allOf": [
+        {"if": {"properties": {"H_feeds": {"type": "null"}}, "required": ["H_feeds"]}, "then": {"properties": {"absent": {"required": ["H_feeds"]}}}},
+        {"if": {"properties": {"absent": {"required": ["H_feeds"]}}, "required": ["absent"]}, "then": {"properties": {"H_feeds": {"type": "null"}}, "required": ["H_feeds"]}},
+        {"if": {"properties": {"H_products": {"type": "null"}}, "required": ["H_products"]}, "then": {"properties": {"absent": {"required": ["H_products"]}}}},
+        {"if": {"properties": {"absent": {"required": ["H_products"]}}, "required": ["absent"]}, "then": {"properties": {"H_products": {"type": "null"}}, "required": ["H_products"]}},
+        {"if": {"properties": {"closure": {"type": "null"}}, "required": ["closure"]}, "then": {"properties": {"absent": {"required": ["closure"]}}}},
+        {"if": {"properties": {"absent": {"required": ["closure"]}}, "required": ["absent"]}, "then": {"properties": {"closure": {"type": "null"}}, "required": ["closure"]}}
+      ]
+    }
+  }
+}

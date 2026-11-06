@@ -1,0 +1,910 @@
+{
+ "basis": {
+  "convention": "WILSON-IG-ref-v1",
+  "data_sha256": "033e10b3f151a83ddb6235a04e7349458a38baf6968962577bfe24099eb7c9a6",
+  "implementation_sha256": "8eab3b83551ad5bbff86411eb22b875b6e268edd3db6f98d372c60e9ae238340",
+  "provider_id": "wilson-ig-v2",
+  "record_source": "benchmarks/s10/records.yaml"
+ },
+ "certificate_id": "cert-751ca6568fcc",
+ "components": [
+  {
+   "id": "CH3OH",
+   "molar_mass": 0.032042
+  },
+  {
+   "id": "C2H5OH",
+   "molar_mass": 0.046069
+  },
+  {
+   "id": "H2O",
+   "molar_mass": 0.018015
+  }
+ ],
+ "energy": {
+  "convention": "WILSON-IG-ref-v1",
+  "overall": {
+   "H_feeds": -264946.2872938786,
+   "H_products": -242485.81259724748,
+   "Q": 22460.474696631136,
+   "W": 0.0,
+   "absent": {},
+   "checks": [
+    {
+     "id": "energy_balance.envelope",
+     "index": 53,
+     "near_threshold": false,
+     "reason": "",
+     "result": "pass",
+     "scope": "evaluated",
+     "tolerance": 0.00101,
+     "value": 2.1827872842550278e-11
+    }
+   ],
+   "closure": 0.0,
+   "feeds": [
+    "S1"
+   ],
+   "products": [
+    "S3",
+    "S4"
+   ]
+  },
+  "units": [
+   {
+    "H_in": -264946.2872938786,
+    "H_out": -250816.51325576275,
+    "Q": 14129.774038115866,
+    "W": 0.0,
+    "absent": {},
+    "checks": [
+     {
+      "id": "energy_balance.H",
+      "index": 51,
+      "near_threshold": false,
+      "reason": "",
+      "result": "pass",
+      "scope": "evaluated",
+      "tolerance": 0.00101,
+      "value": -1.1932570487260818e-09
+     }
+    ],
+    "closure": 0.0,
+    "id": "H",
+    "model": "syn001.tp_heater",
+    "ports": [
+     {
+      "H_flow": -264946.2872938786,
+      "absent": {},
+      "direction": "inlet",
+      "port": "inlet",
+      "streams": [
+       "S1"
+      ]
+     },
+     {
+      "H_flow": -250816.51325576275,
+      "absent": {},
+      "direction": "outlet",
+      "port": "outlet",
+      "streams": [
+       "S2"
+      ]
+     }
+    ]
+   },
+   {
+    "H_in": -250816.51325576275,
+    "H_out": -242485.81259724748,
+    "Q": 8330.70065851527,
+    "W": 0.0,
+    "absent": {},
+    "checks": [
+     {
+      "id": "energy_balance.D",
+      "index": 52,
+      "near_threshold": false,
+      "reason": "",
+      "result": "pass",
+      "scope": "evaluated",
+      "tolerance": 0.00101,
+      "value": 1.2223608791828156e-09
+     }
+    ],
+    "closure": 0.0,
+    "id": "D",
+    "model": "syn001.tp_flash",
+    "ports": [
+     {
+      "H_flow": -250816.51325576275,
+      "absent": {},
+      "direction": "inlet",
+      "port": "inlet",
+      "streams": [
+       "S2"
+      ]
+     },
+     {
+      "H_flow": -114522.85236226801,
+      "absent": {},
+      "direction": "outlet",
+      "port": "vapor",
+      "streams": [
+       "S3"
+      ]
+     },
+     {
+      "H_flow": -127962.96023497946,
+      "absent": {},
+      "direction": "outlet",
+      "port": "liquid",
+      "streams": [
+       "S4"
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ "evaluator": {
+  "package_version": "0.4.0.dev0",
+  "phase_rule": "st-phase-rule-v1"
+ },
+ "judged_at": "projection",
+ "schema_version": "stream-table-v1",
+ "source": {
+  "bundle_id": null,
+  "job_id": null,
+  "revision_id": "S11-GP-C1",
+  "run_id": "run-GP-C1"
+ },
+ "state_sha256": "751ca6568fccc5653c362821636d9ec28aa9b061e821b7e3c067469fe6566bb5",
+ "streams": [
+  {
+   "P": 101325.0,
+   "T": 330.0,
+   "absent": {},
+   "checks": [
+    {
+     "id": "phase_admissibility.stream.S1",
+     "index": 100,
+     "near_threshold": false,
+     "reason": "",
+     "result": "pass",
+     "scope": "evaluated",
+     "tolerance": 1e-06,
+     "value": 0
+    }
+   ],
+   "dormant": false,
+   "from": "F",
+   "id": "S1",
+   "substreams": [
+    {
+     "H_flow": -264946.2872938786,
+     "S_flow": -105.29715979550309,
+     "V_flow": null,
+     "absent": {
+      "V_flow": {
+       "code": "property_not_provided",
+       "params": {
+        "property": "v",
+        "provider": "wilson-ig-v2"
+       }
+      },
+      "rho": {
+       "code": "property_not_provided",
+       "params": {
+        "property": "v",
+        "provider": "wilson-ig-v2"
+       }
+      }
+     },
+     "components": [
+      "CH3OH",
+      "C2H5OH",
+      "H2O"
+     ],
+     "convention": "WILSON-IG-ref-v1",
+     "flash_near_phase_boundary": false,
+     "h": -264946.2872938786,
+     "h_mass": -11214277.920488559,
+     "id": "mixed",
+     "kind": "mixed",
+     "m": [
+      0.012816800000000001,
+      0.0,
+      0.010809
+     ],
+     "m_total": 0.023625800000000002,
+     "n": [
+      0.4,
+      0.0,
+      0.6
+     ],
+     "n_total": 1.0,
+     "phase_source": "declared",
+     "phases": [
+      {
+       "H_flow": -264946.2872938786,
+       "S_flow": -105.29715979550309,
+       "V_flow": null,
+       "absent": {
+        "V_flow": {
+         "code": "property_not_provided",
+         "params": {
+          "property": "v",
+          "provider": "wilson-ig-v2"
+         }
+        },
+        "rho": {
+         "code": "property_not_provided",
+         "params": {
+          "property": "v",
+          "provider": "wilson-ig-v2"
+         }
+        },
+        "v": {
+         "code": "property_not_provided",
+         "params": {
+          "property": "v",
+          "provider": "wilson-ig-v2"
+         }
+        }
+       },
+       "h": -264946.2872938786,
+       "h_mass": -11214277.920488559,
+       "id": {
+        "family": "LIQUID",
+        "ordinal": 1,
+        "qualifier": null
+       },
+       "m": [
+        0.012816800000000001,
+        0.0,
+        0.010809
+       ],
+       "m_total": 0.023625800000000002,
+       "n": [
+        0.4,
+        0.0,
+        0.6
+       ],
+       "n_total": 1.0,
+       "phase_fraction_mass": 1.0,
+       "phase_fraction_molar": 1.0,
+       "rho": null,
+       "s": -105.29715979550309,
+       "s_mass": -4456.871716322964,
+       "v": null,
+       "w": [
+        0.5424916828213224,
+        0.0,
+        0.45750831717867746
+       ],
+       "x": [
+        0.4,
+        0.0,
+        0.6
+       ]
+      }
+     ],
+     "rho": null,
+     "s": -105.29715979550309,
+     "s_mass": -4456.871716322964,
+     "vapor_fraction_mass": 0.0,
+     "vapor_fraction_molar": 0.0,
+     "w": [
+      0.5424916828213224,
+      0.0,
+      0.45750831717867746
+     ],
+     "x": [
+      0.4,
+      0.0,
+      0.6
+     ]
+    }
+   ],
+   "to": "H"
+  },
+  {
+   "P": 101325.0,
+   "T": 352.0,
+   "absent": {},
+   "checks": [
+    {
+     "id": "phase_admissibility.H.S2.closure",
+     "index": 90,
+     "near_threshold": false,
+     "reason": "",
+     "result": "pass",
+     "scope": "evaluated",
+     "tolerance": 1e-10,
+     "value": 0
+    },
+    {
+     "id": "independent_split.H.S2.total",
+     "index": 91,
+     "near_threshold": false,
+     "reason": "",
+     "result": "pass",
+     "scope": "evaluated",
+     "tolerance": 3.1000000000000006e-08,
+     "value": -3.169686735304822e-14
+    },
+    {
+     "id": "independent_split.H.S2.CH3OH",
+     "index": 92,
+     "near_threshold": false,
+     "reason": "",
+     "result": "pass",
+     "scope": "evaluated",
+     "tolerance": 3.1000000000000006e-08,
+     "value": -2.0788926136106056e-14
+    },
+    {
+     "id": "independent_split.H.S2.C2H5OH",
+     "index": 93,
+     "near_threshold": false,
+     "reason": "",
+     "result": "pass",
+     "scope": "evaluated",
+     "tolerance": 3.1000000000000006e-08,
+     "value": 0
+    },
+    {
+     "id": "independent_split.H.S2.H2O",
+     "index": 94,
+     "near_threshold": false,
+     "reason": "",
+     "result": "pass",
+     "scope": "evaluated",
+     "tolerance": 3.1000000000000006e-08,
+     "value": -1.0921819004749977e-14
+    },
+    {
+     "id": "phase_admissibility.D.S2.closure",
+     "index": 95,
+     "near_threshold": false,
+     "reason": "",
+     "result": "pass",
+     "scope": "evaluated",
+     "tolerance": 1e-10,
+     "value": -8.881784197001252e-16
+    },
+    {
+     "id": "independent_split.D.S2.total",
+     "index": 96,
+     "near_threshold": false,
+     "reason": "",
+     "result": "pass",
+     "scope": "evaluated",
+     "tolerance": 3.1000000000000006e-08,
+     "value": -1.354472090042691e-14
+    },
+    {
+     "id": "independent_split.D.S2.CH3OH",
+     "index": 97,
+     "near_threshold": false,
+     "reason": "",
+     "result": "pass",
+     "scope": "evaluated",
+     "tolerance": 3.1000000000000006e-08,
+     "value": -7.771561172376096e-15
+    },
+    {
+     "id": "independent_split.D.S2.C2H5OH",
+     "index": 98,
+     "near_threshold": false,
+     "reason": "",
+     "result": "pass",
+     "scope": "evaluated",
+     "tolerance": 3.1000000000000006e-08,
+     "value": 0
+    },
+    {
+     "id": "independent_split.D.S2.H2O",
+     "index": 99,
+     "near_threshold": false,
+     "reason": "",
+     "result": "pass",
+     "scope": "evaluated",
+     "tolerance": 3.1000000000000006e-08,
+     "value": -5.745404152435185e-15
+    }
+   ],
+   "dormant": false,
+   "from": "H",
+   "id": "S2",
+   "substreams": [
+    {
+     "H_flow": -250816.51325576275,
+     "S_flow": -64.82441688467266,
+     "V_flow": null,
+     "absent": {
+      "V_flow": {
+       "code": "property_not_provided",
+       "params": {
+        "property": "v",
+        "provider": "wilson-ig-v2"
+       }
+      },
+      "rho": {
+       "code": "property_not_provided",
+       "params": {
+        "property": "v",
+        "provider": "wilson-ig-v2"
+       }
+      }
+     },
+     "components": [
+      "CH3OH",
+      "C2H5OH",
+      "H2O"
+     ],
+     "convention": "WILSON-IG-ref-v1",
+     "flash_near_phase_boundary": false,
+     "h": -250816.51325576275,
+     "h_mass": -10616212.498868302,
+     "id": "mixed",
+     "kind": "mixed",
+     "m": [
+      0.012816800000000001,
+      0.0,
+      0.010809
+     ],
+     "m_total": 0.023625800000000002,
+     "n": [
+      0.4,
+      0.0,
+      0.6
+     ],
+     "n_total": 1.0,
+     "phase_source": "flash",
+     "phases": [
+      {
+       "H_flow": -69137.12689009806,
+       "S_flow": 3.9866698275286603,
+       "V_flow": null,
+       "absent": {
+        "V_flow": {
+         "code": "property_not_provided",
+         "params": {
+          "property": "v",
+          "provider": "wilson-ig-v2"
+         }
+        },
+        "rho": {
+         "code": "property_not_provided",
+         "params": {
+          "property": "v",
+          "provider": "wilson-ig-v2"
+         }
+        },
+        "v": {
+         "code": "property_not_provided",
+         "params": {
+          "property": "v",
+          "provider": "wilson-ig-v2"
+         }
+        }
+       },
+       "h": -212953.2371139712,
+       "h_mass": -7843190.384567599,
+       "id": {
+        "family": "VAPOR",
+        "ordinal": 1,
+        "qualifier": null
+       },
+       "m": [
+        0.006775710001628266,
+        0.0,
+        0.002039213964278964
+       ],
+       "m_total": 0.00881492396590723,
+       "n": [
+        0.2114633918490814,
+        0.0,
+        0.11319533523613458
+       ],
+       "n_total": 0.324658727085216,
+       "phase_fraction_mass": 0.3731058404755491,
+       "phase_fraction_molar": 0.324658727085216,
+       "rho": null,
+       "s": 12.279570807539834,
+       "s_mass": 452.26366590881344,
+       "v": null,
+       "w": [
+        0.7686634652589328,
+        0.0,
+        0.23133653474106725
+       ],
+       "x": [
+        0.6513405437999416,
+        0.0,
+        0.3486594562000584
+       ]
+      },
+      {
+       "H_flow": -181679.3863656647,
+       "S_flow": -68.81108671220132,
+       "V_flow": null,
+       "absent": {
+        "V_flow": {
+         "code": "property_not_provided",
+         "params": {
+          "property": "v",
+          "provider": "wilson-ig-v2"
+         }
+        },
+        "rho": {
+         "code": "property_not_provided",
+         "params": {
+          "property": "v",
+          "provider": "wilson-ig-v2"
+         }
+        },
+        "v": {
+         "code": "property_not_provided",
+         "params": {
+          "property": "v",
+          "provider": "wilson-ig-v2"
+         }
+        }
+       },
+       "h": -269018.63347035414,
+       "h_mass": -12266619.877680536,
+       "id": {
+        "family": "LIQUID",
+        "ordinal": 1,
+        "qualifier": null
+       },
+       "m": [
+        0.0060410899983717355,
+        0.0,
+        0.008769786035721037
+       ],
+       "m_total": 0.014810876034092773,
+       "n": [
+        0.18853660815091863,
+        0.0,
+        0.48680466476386547
+       ],
+       "n_total": 0.6753412729147841,
+       "phase_fraction_mass": 0.6268941595244508,
+       "phase_fraction_molar": 0.6753412729147841,
+       "rho": null,
+       "s": -101.89083574769765,
+       "s_mass": -4645.983570033727,
+       "v": null,
+       "w": [
+        0.407882017543453,
+        0.0,
+        0.592117982456547
+       ],
+       "x": [
+        0.2791723469486642,
+        0.0,
+        0.7208276530513358
+       ]
+      }
+     ],
+     "rho": null,
+     "s": -64.82441688467266,
+     "s_mass": -2743.7977501152404,
+     "vapor_fraction_mass": 0.3731058404755491,
+     "vapor_fraction_molar": 0.324658727085216,
+     "w": [
+      0.5424916828213224,
+      0.0,
+      0.45750831717867746
+     ],
+     "x": [
+      0.4,
+      0.0,
+      0.6
+     ]
+    }
+   ],
+   "to": "D"
+  },
+  {
+   "P": 101325.0,
+   "T": 355.0,
+   "absent": {},
+   "checks": [
+    {
+     "id": "phase_admissibility.stream.S3",
+     "index": 101,
+     "near_threshold": false,
+     "reason": "",
+     "result": "pass",
+     "scope": "evaluated",
+     "tolerance": 1e-06,
+     "value": 0
+    }
+   ],
+   "dormant": false,
+   "from": "D",
+   "id": "S3",
+   "substreams": [
+    {
+     "H_flow": -114522.85236226801,
+     "S_flow": 6.776477530128219,
+     "V_flow": null,
+     "absent": {
+      "V_flow": {
+       "code": "property_not_provided",
+       "params": {
+        "property": "v",
+        "provider": "wilson-ig-v2"
+       }
+      },
+      "rho": {
+       "code": "property_not_provided",
+       "params": {
+        "property": "v",
+        "provider": "wilson-ig-v2"
+       }
+      }
+     },
+     "components": [
+      "CH3OH",
+      "C2H5OH",
+      "H2O"
+     ],
+     "convention": "WILSON-IG-ref-v1",
+     "flash_near_phase_boundary": false,
+     "h": -215889.04439206154,
+     "h_mass": -8266089.733709024,
+     "id": "mixed",
+     "kind": "mixed",
+     "m": [
+      0.009818198703807565,
+      0.0,
+      0.004036339058496789
+     ],
+     "m_total": 0.013854537762304353,
+     "n": [
+      0.30641653778813943,
+      0.0,
+      0.22405434684966913
+     ],
+     "n_total": 0.5304708846378086,
+     "phase_source": "declared",
+     "phases": [
+      {
+       "H_flow": -114522.85236226801,
+       "S_flow": 6.776477530128219,
+       "V_flow": null,
+       "absent": {
+        "V_flow": {
+         "code": "property_not_provided",
+         "params": {
+          "property": "v",
+          "provider": "wilson-ig-v2"
+         }
+        },
+        "rho": {
+         "code": "property_not_provided",
+         "params": {
+          "property": "v",
+          "provider": "wilson-ig-v2"
+         }
+        },
+        "v": {
+         "code": "property_not_provided",
+         "params": {
+          "property": "v",
+          "provider": "wilson-ig-v2"
+         }
+        }
+       },
+       "h": -215889.04439206154,
+       "h_mass": -8266089.733709024,
+       "id": {
+        "family": "VAPOR",
+        "ordinal": 1,
+        "qualifier": null
+       },
+       "m": [
+        0.009818198703807565,
+        0.0,
+        0.004036339058496789
+       ],
+       "m_total": 0.013854537762304353,
+       "n": [
+        0.30641653778813943,
+        0.0,
+        0.22405434684966913
+       ],
+       "n_total": 0.5304708846378086,
+       "phase_fraction_mass": 1.0,
+       "phase_fraction_molar": 1.0,
+       "rho": null,
+       "s": 12.774457046318421,
+       "s_mass": 489.1161037913345,
+       "v": null,
+       "w": [
+        0.7086630295614103,
+        0.0,
+        0.29133697043858975
+       ],
+       "x": [
+        0.5776312077850465,
+        0.0,
+        0.4223687922149535
+       ]
+      }
+     ],
+     "rho": null,
+     "s": 12.774457046318421,
+     "s_mass": 489.1161037913345,
+     "vapor_fraction_mass": 1.0,
+     "vapor_fraction_molar": 1.0,
+     "w": [
+      0.7086630295614103,
+      0.0,
+      0.29133697043858975
+     ],
+     "x": [
+      0.5776312077850465,
+      0.0,
+      0.4223687922149535
+     ]
+    }
+   ],
+   "to": "KV"
+  },
+  {
+   "P": 101325.0,
+   "T": 355.0,
+   "absent": {},
+   "checks": [
+    {
+     "id": "phase_admissibility.stream.S4",
+     "index": 102,
+     "near_threshold": false,
+     "reason": "",
+     "result": "pass",
+     "scope": "evaluated",
+     "tolerance": 1e-06,
+     "value": 0
+    }
+   ],
+   "dormant": false,
+   "from": "D",
+   "id": "S4",
+   "substreams": [
+    {
+     "H_flow": -127962.96023497946,
+     "S_flow": -48.03167131919465,
+     "V_flow": null,
+     "absent": {
+      "V_flow": {
+       "code": "property_not_provided",
+       "params": {
+        "property": "v",
+        "provider": "wilson-ig-v2"
+       }
+      },
+      "rho": {
+       "code": "property_not_provided",
+       "params": {
+        "property": "v",
+        "provider": "wilson-ig-v2"
+       }
+      }
+     },
+     "components": [
+      "CH3OH",
+      "C2H5OH",
+      "H2O"
+     ],
+     "convention": "WILSON-IG-ref-v1",
+     "flash_near_phase_boundary": false,
+     "h": -272534.6651533414,
+     "h_mass": -13095847.508965936,
+     "id": "mixed",
+     "kind": "mixed",
+     "m": [
+      0.002998601296192436,
+      0.0,
+      0.006772660941503211
+     ],
+     "m_total": 0.009771262237695647,
+     "n": [
+      0.09358346221186056,
+      0.0,
+      0.3759456531503309
+     ],
+     "n_total": 0.46952911536219144,
+     "phase_source": "declared",
+     "phases": [
+      {
+       "H_flow": -127962.96023497946,
+       "S_flow": -48.03167131919465,
+       "V_flow": null,
+       "absent": {
+        "V_flow": {
+         "code": "property_not_provided",
+         "params": {
+          "property": "v",
+          "provider": "wilson-ig-v2"
+         }
+        },
+        "rho": {
+         "code": "property_not_provided",
+         "params": {
+          "property": "v",
+          "provider": "wilson-ig-v2"
+         }
+        },
+        "v": {
+         "code": "property_not_provided",
+         "params": {
+          "property": "v",
+          "provider": "wilson-ig-v2"
+         }
+        }
+       },
+       "h": -272534.6651533414,
+       "h_mass": -13095847.508965936,
+       "id": {
+        "family": "LIQUID",
+        "ordinal": 1,
+        "qualifier": null
+       },
+       "m": [
+        0.002998601296192436,
+        0.0,
+        0.006772660941503211
+       ],
+       "m_total": 0.009771262237695647,
+       "n": [
+        0.09358346221186056,
+        0.0,
+        0.3759456531503309
+       ],
+       "n_total": 0.46952911536219144,
+       "phase_fraction_mass": 1.0,
+       "phase_fraction_molar": 1.0,
+       "rho": null,
+       "s": -102.29753544067945,
+       "s_mass": -4915.60559432104,
+       "v": null,
+       "w": [
+        0.3068796255026715,
+        0.0,
+        0.6931203744973286
+       ],
+       "x": [
+        0.1993134379742797,
+        0.0,
+        0.8006865620257203
+       ]
+      }
+     ],
+     "rho": null,
+     "s": -102.29753544067945,
+     "s_mass": -4915.60559432104,
+     "vapor_fraction_mass": 0.0,
+     "vapor_fraction_molar": 0.0,
+     "w": [
+      0.3068796255026715,
+      0.0,
+      0.6931203744973286
+     ],
+     "x": [
+      0.1993134379742797,
+      0.0,
+      0.8006865620257203
+     ]
+    }
+   ],
+   "to": "KL"
+  }
+ ],
+ "verification_status": "VERIFIED"
+}

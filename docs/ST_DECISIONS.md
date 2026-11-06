@@ -78,3 +78,23 @@ rulings Amendment 5. Each is revertible; the ones marked **Q** are batched for S
 G7 run (WO-1): 41 streams bitwise on G7's list; beyond it, 173 SYN-001 declared streams and 20 SYN-001
 two-phase flashed streams the verifier reads by `checks.enthalpy_flow` without a snap are bitwise equal to it
 too (0 mismatches) with Python `sum`.
+
+## WO-2 (schema, without the registry entry)
+
+- **D2-1 — "null iff a key of `absent`" is in the schema**, both directions, one `if`/`then` pair per
+  nullable member (stream, substream, phase, port, unit, overall). The note calls it test-level; the WO-2 row
+  lists "null without `absent`" among the fixtures the schema must reject, and JSON Schema can state it.
+- **D2-2 — arrays are given or null whole**: `x`, `w` are `[number] | null` (§5 wrote `[q] | null`); the core
+  never emits a null element.
+- **D2-3 — §5 amended by D1-6 and D1-7**: ports carry `absent`; phase `x`, `w` are nullable arrays and the
+  phase fractions are `q`.
+- **D2-4 — fixtures.** Valid: WO-1 output of `g8/SYN-001-once-through` (syn001: declared, R3 two-phase and
+  dormant streams), `m02/C1-FLASH-F1-M02-v1` (pr-c1-v1), `s11-th/TH-C1` (iapws95-v1), `s11-gp/GP-C1`
+  (wilson-ig-v2). CoolProp is not installed here, so there is no coolprop-heos-v1 fixture and the core test
+  asserts its `basis_unavailable` refusal instead. Invalid: `g8/T05b:DZ-7`'s document with one mutation each
+  (phases keyed by the rendered family; a substream `h` null without an entry; a substream without
+  `convention`; family `vapor`; an extra `name` in a phase id); the test checks each is rejected at the member
+  it breaks.
+- **D2-5 — registry entry pending.** `schemas/registry.json` is shared with `wp/MSG`; until WO-3 adds the
+  entry, `tests/test_t08_w4_package_data.py` fails four tests (A48: the registry must equal the schema
+  directory; 43 files against 42 entries). Expected; not loosened.
