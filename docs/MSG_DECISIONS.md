@@ -569,3 +569,55 @@ which now override the kind's "report it" default. `CHECKPOINT_INCOMPATIBLE` (an
 **WO-11 commits.** `a87881fb` (D11-1), `00a63730` (D11-2, D11-3, D11-5, D11-6; with the out_of_domain example
 wording of D11-4), `7d8e5981` (D11-4's kind variant), `4503bb2e` (D11-7), `8c935831` (D11-8), `5f272819` (D11-9,
 D11-10). Gates at the end of WO-11: see the handoff.
+
+## WO-12 (catalogue completion, MSG-G0 default, c_4 register entry, evidence)
+
+**D12-1. M1: §4.2.6's normative list complete.** 51 entries completed from their producers: 12 `api_error`
+(`admission.py`, `local.py`, `authz.py`, `operations.py`, `jobs/runner.py`, `jobs/executor.py`, `bindings/*`), 21
+outcomes (`numerics/newton.py`, `ptc.py`, `scaling.py`, `orchestrator/*`, `syn001/column.py`; K03 spec §5, §11.1), 12
+statuses (`verify/certificate.py` verdict precedence; `verify/regularity.py`; `validation.py`; `studies/nlp/closure.py`
+for READY_FOR_OPTIMIZATION), four job statuses, `isentropic_state_single_phase` (`machines.py`, `blocks.py`,
+`kernel.py`, R-839), `pressure_fall` (`syn001/pump.py`, `machines.py` `_bound_code`: pump, compressor). **Choice:**
+also the four ending reasons `not_ready`'s chain reaches (`cancel_requested`, `server_shutdown`, `keyboard_interrupt`,
+`wall_time_exhausted`): `render_error` explains the innermost entry, so `not_ready` from a reproduce job that ended
+(`local.py` `_unproduced`, `detail.reason`) rendered the stub "The job ended: wall time exhausted." Left stubs (not on
+the list): `queued`, `running`, `operation_completed`, `operation_error`, `verifier_refused`. Facts the texts state
+and the code they rest on: RELAXED is any non-registered check policy, tightened included (`CheckPolicy.is_registered`
+is equality); a `completed` solve job need not be CONVERGED (`runner.py` ends every run `completed`); `invalid_request`
+and `document_not_canonical` with an empty pointer (the whole body, `bindings/http.py`) use the base summary (variant
+`not_equals: {pointer: ""}`); integer counts render `!raw` (`format_number` gives 4 significant digits: `4.000`).
+Pinning test `tests/test_msg_coverage.py::test_the_normative_list_is_complete`: 68 codes (api_error, outcomes and
+statuses read from `ApiErrorCode`, `TAXONOMY` + CONVERGED and the three status literals; the job statuses, refusals
+with FB-01's five, and L-TH-4 listed), each complete and `lint_entry`-clean; the corpus's codes stay
+`test_msg_corpus.py`'s. S5: `DIM-01`'s `review: true` dropped. **Pending:** the design-lane prose check of the new
+`why`/`action` texts (review M1: one fresh agent, tight brief) — the orchestrator's to launch. Commit `b2fcd26a`.
+
+**D12-2. CHECKPOINT_INCOMPATIBLE → kind `bug`** (review S4). Its failure action is already `report_defect`
+(`verify.failure.OUTCOME_ACTIONS`, ADR 0005 D6: no registered path produces it). An override of §4.2.1's class table,
+like `UNSUPPORTED_RANK_STRUCTURE`'s; text only. Alternative: `numerical` (the class's). Commit `c82e29a7`.
+
+**D12-3. S5 (D3-4): `members_total`.** A member list cut at `MAX_LISTED_MEMBERS` carries `members_total` (added detail
+member, ADR 0058 D1; absent when uncut, so no existing document moves); a `not_found` variant reads it. Alternative:
+say so in the docs only — rejected, the variant's "This bundle holds {members}" would stay false for a cut list.
+Test with the cap monkeypatched to 2. Commit `265040df`.
+
+**D12-4. M3.** `scripts/msg_identity_gate.py --parts` defaults to `bd`; the summary names F0's `corpus_identity.py
+--check` for (a) and (c). Baseline unchanged. Commit `4dff894d`.
+
+**D12-5. M6: R-943.** D_4 measured on the merge tree (`a8267cef`, `origin/main` merged): served 18 tools →
+`eaff4585…`; `without_msg` → `455d01eb…` = D_3. `main`'s register ends at R-941, so R-942 and R-943 are free. The c_4
+test reads R-943's entry for both digests. Commit `9c76b939`.
+
+## Gate results at the end of WO-12 (code = `9c76b939`)
+
+- `scripts/gate.sh` (load average 73–77 on 48 cores): ruff, format, mypy (254 files), node clean; pytest 31 failed,
+  15062 passed, 3207 skipped, 3 xfailed, 1 error (2:13:11). Failures: `test_every_description_is_reviewed_by_both_lanes`
+  (`explain: human pending`, Frank's review); `test_m06_browser_smoke` 29 + 1 error (the headless browser went away,
+  then broken pipes); `test_g3f_the_self_deadline_exits_71` 3.65 s > 3.0 s. Alone after the gate: 32 passed (111.5 s).
+  No budget changed.
+- MSG-G0 (`--parts bd`, stores of the gate's suite): PASS, b 0/562 (108 bundles), d 0 hits in 442 stores. F0 PASS:
+  M1 50/50, M2–M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 35/35.
+- MSG-G3: no miss, no defect. WO-5a scan: 889 bundles, no sidecar key. WO-6: 681 run results, 77 with a failure.
+- Performance (fresh process, 3 runs): 366 entries; cold load 120/119/111 ms; import 81/90/92 ms; render_error median
+  0.082/0.074/0.071 ms; render_failure median 0.068/0.068/0.064 ms.
+- Manifest `evidence/MSG/9c76b939…/manifest.json`: `implemented` (the one non-load failure needs Frank's review).
