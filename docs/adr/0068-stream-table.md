@@ -194,8 +194,9 @@ WO-2 onward start after `wp/MSG` merges into `main`. Files shared with MSG are l
 - **O3 (preference).** Web shell. *Default:* later.
 - **O4 (preference).** CSV. *Default:* in.
 - **O5 (fact).** Is TH-C1's S4 saturated? *Default:* yes; otherwise the next thermal case.
-- **O6 (fact).** The Table 8 constants must be confirmed via the `zotero` session before E3 is committed. A mismatch
-  with the provider is reported, never adjusted.
+- **O6 (fact) — resolved 2026-11-06.** E3's expectations are read from the committed S05 reference
+  `docs/derivations/scripts/s05_reference.json` `/saturation/450` (independent mpmath values registered against Table 8,
+  `S05-IAPWS95-spec.md:660`). A mismatch with the provider is reported, never adjusted.
 - **O7 (preference).** `from_bundle` public. *Default:* yes, as a library helper outside the contract.
 - **O8 (fact).** Coupled runs. *Default:* served; an external unit's closure is `energy_balance_undefined`.
 

@@ -99,3 +99,9 @@ Each entry gives the date, the question, the choice, who made it and where it is
   provider evaluation in the application layer, or an M9 exception by ADR) goes to MSG's reviewer pass. WO-9's number
   assertions for C01/C02 are strict xfails until then. Alternative: architect consult now. Reversible by: unparking
   WO-5 after the ruling.
+- **2026-11-06** ST architect pass done (9d822640): `docs/design/ST-stream-table.md`, ADR 0068 Proposed (ADR 0019 Am.
+  13): `Inspection.get_stream_table(job_id)` computes on read from the bundle, nothing stored; CLI `openflowsheet
+  streams`; no F0 measure can move. WO-1 (new files only) may start now; WO-2+ after `wp/MSG` merges (shared files).
+  O6 resolved by the orchestrator: G3/E3 read Table 8 expectations from `s05_reference.json` `/saturation/450`
+  (values agree), not from the architect's recollection. SQ-ST-1…6 → a specifier round with SQ-F6-5 (Amendment 5);
+  defaults apply until ruled. O3 (web shell display deferred) → Frank, with ADR 0068's acceptance.

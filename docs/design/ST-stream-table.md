@@ -410,9 +410,12 @@ The corpus is F0's RC bundle set plus TH-C1 (`benchmarks/s11/thermal/TH-C1.json`
 - **O4 (preference)** CSV in scope. *Default:* yes (FB-06 asked for an artifact; about 40 lines).
 - **O5 (fact)** Is TH-C1's S4 R1? Its specification (η 0.85, 10 kPa) makes it wet. *Default:* assert it. If not, G2
   takes the first registered thermal case with an R1 stream, else a test-local variant with a lower boiler T.
-- **O6 (fact)** The G3 constants are the architect's recollection of R6-95(2018) Table 8. *Default:* confirm them
-  through the `zotero` session before committing G3. If the provider differs by more than 1e-7 relative, stop and
-  report; never adjust the constants.
+- **O6 (fact) — resolved 2026-11-06 (orchestrator).** The G3 constants agree with the committed S05 reference
+  `docs/derivations/scripts/s05_reference.json` `/saturation/450` (mpmath, independent of production code; registered
+  against R6-95(2018) Table 8 to 9 figures by `docs/derivations/S05-IAPWS95-spec.md:660`): ρ′ 890.34124976, ρ″
+  4.81200360, h′ 13496.3467 J/mol = 749.1616 kJ/kg. G3 reads its expectations from that file (molar values, converted
+  with M = 0.018015268 kg/mol), not from literals. If the provider differs by more than 1e-7 relative, stop and report;
+  never adjust the expectations.
 - **O7 (preference)** `from_bundle` public. *Default:* yes, documented as a library helper outside the frozen contract.
 - **O8 (fact)** Coupled runs. *Default:* served when the four members exist; an external unit has no energy row, so its
   closure is `energy_balance_undefined`.
