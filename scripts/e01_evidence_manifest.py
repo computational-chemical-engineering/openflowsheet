@@ -1043,7 +1043,17 @@ def main() -> int:
     parser.add_argument(
         "--out", type=Path, help=f"default: evidence/{PACKAGE}/<commit>/manifest.json"
     )
+    parser.add_argument(
+        "--a48-release-check",
+        action="store_true",
+        help="RC item E01-A48 (RP §3.6): print a48_release_check(); exit 0 iff it is `pass`",
+    )
     arguments = parser.parse_args()
+    if arguments.a48_release_check:
+        result, value = a48_release_check()
+        print(json.dumps({"result": result, "value": value}, sort_keys=True))
+        print(f"a48_release_check: {result}")
+        return 0 if result == "pass" else 1
     commit = arguments.commit or _git("rev-parse", "HEAD")
     manifest = build(commit, Environments(arguments))
     out = arguments.out or ROOT / "evidence" / PACKAGE / commit / "manifest.json"

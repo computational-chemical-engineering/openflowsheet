@@ -195,13 +195,16 @@ def test_l08_a_duplicated_id() -> None:
     assert refusal(line_0_4(edit)) == ["line 0.4: RP.L08: rc_items ids ['E01-A48'] are not unique"]
 
 
-def test_l08_fails_today_only_on_wheel_data() -> None:
-    """RP §3.4: `scripts/wheel_data_check.py` is WO-R6's, so the committed 0.4 line fails RP.L08
-    at this checkout, on that item alone, until it exists."""
+def test_l08_the_committed_0_4_line_passes_at_this_checkout() -> None:
+    """RP §3.4: RP.L08 failed on `WHEEL-DATA` alone until WO-R6 provided
+    `scripts/wheel_data_check.py`; with it, RP.L05 and RP.L08 pass on the committed 0.4 line."""
     tracked = subprocess.run(
         ["git", "ls-files"], cwd=REPO_ROOT, capture_output=True, text=True, check=True
     ).stdout.splitlines()
-    assert release_gate.tree_problems(release_gate.load_line("0.4", reader()), tracked) == [
+    line = release_gate.load_line("0.4", reader())
+    assert release_gate.tree_problems(line, tracked) == []
+    without = [path for path in tracked if path != "scripts/wheel_data_check.py"]
+    assert release_gate.tree_problems(line, without) == [
         "line 0.4: RP.L08: WHEEL-DATA script scripts/wheel_data_check.py: not at C"
     ]
 
