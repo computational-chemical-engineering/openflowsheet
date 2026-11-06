@@ -136,3 +136,11 @@ skipped, 8 RC jobs green; push 42156850745 `check` green both legs with `junit-<
 DECISION: rest of WO-R6 → two fresh engineers in sequence: WO-R6b (`release_rc.py` local steps 2–7, 9–16) then WO-R6c
 (`release_evidence_manifest.py`, REL.A20, evidence manifest, gate). Alternative: one engineer for both (would overrun the
 cap again). Reversible by: merging the two briefs.
+
+## 2026-11-06 — MSG WO-9/10 done; review launched
+
+`wp/MSG` head `8d955cd7` (pushed): WO-9 corpus + seven catalogue entries, WO-10 web shell; manifest
+`evidence/MSG/b1a82351…` `implemented` (blocked on the `explain.md` reviews, D7-8, and D9-10). Full suite at `b1a82351`:
+1 failed (description reviews, by design), 15065 passed. MSG-G0 (c) FAIL 156/109, all from F0's later v0.3.0 replay
+fixtures (D9-10). Reviewer brief `docs/briefs/MSG-reviewer.md` (`4ddc2fb7`) batches nine questions incl. the WO-5 route
+under F0 M9, D9-2, D9-10, gate changes, A5-a. RP WO-R6b done (`596dee3a`); WO-R6c engineer running.
