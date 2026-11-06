@@ -277,9 +277,26 @@ def _inputs(
 
 
 def _unit_ids(revision: Mapping[str, Any], view: RevisionView) -> dict[str, str]:
-    """Each instance's id in the state and the certificate: its own on the revision route."""
-    del revision
-    return {instance.unit_id: instance.unit_id for instance in view.instances}
+    """Each instance's id in the state and the certificate.
+
+    On the revision route an instance names its own variables and rows. A revision with a
+    specification that is not `fixed` can only have been solved on `legacy_eo`, whose state and
+    certificate name the units of the SYN-001 flowsheet (`U-HEAT`); each is the instance the
+    legacy binder matched to it by stream topology (`application.binding`), read back from that
+    binder's own match. Stream ids are the revision's on both routes.
+    """
+    own = {instance.unit_id: instance.unit_id for instance in view.instances}
+    if all(entry.get("role") == "fixed" for entry in revision.get("specifications") or ()):
+        return own
+    from openflowsheet.application.binding import bind_revision  # noqa: PLC0415
+
+    binding = bind_revision(revision)
+    if binding is None:
+        raise StreamTableError(
+            "internal_error", "a legacy-route revision no longer binds on the legacy binder"
+        )
+    legacy = {instance: unit for unit, instance in binding.graph.instance_ids.items()}
+    return {instance: legacy.get(instance, instance) for instance in own}
 
 
 def _quote(index: int, row: Mapping[str, Any]) -> dict[str, Any]:
