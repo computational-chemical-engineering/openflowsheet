@@ -23,6 +23,7 @@ from conftest import REPO_ROOT
 
 sys.path.insert(0, str(REPO_ROOT / "scripts"))
 import m07_rc_keep  # noqa: E402
+import release_rc  # noqa: E402
 import release_rc_local as local  # noqa: E402
 
 S13_TOOLS = REPO_ROOT / "evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/tools"
@@ -434,6 +435,27 @@ def test_the_runner_exits_on_its_records_not_on_expected_non_zero_commands() -> 
     assert not local.records_passed({"record-step16": 1})
     assert not local.records_passed({"record-step16": 0, "step17-items": 1})
     assert not local.records_passed({})
+
+
+def test_nlp_items_run_from_the_given_root(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """C-12: the runner gives the `nlp` items its clean nlp worktree; other items run from ROOT."""
+    seen: dict[str, Path] = {}
+
+    def run(argv: list[str], log: Path, environment: dict[str, str], cwd: Path = REPO_ROOT) -> int:
+        seen[log.stem] = cwd
+        log.write_text("", encoding="utf-8")
+        return 0
+
+    items = [
+        {"id": "N", "where": "local:nlp", "assertion": "a", "command": ["bash", "x.sh"]},
+        {"id": "P", "where": "local:project", "assertion": "a", "command": ["python", "y.py"]},
+    ]
+    monkeypatch.setattr(release_rc, "_run_to_log", run)
+    monkeypatch.setattr(release_rc, "_line_items", lambda line: items)
+    release_rc.items(
+        "0.4", tmp_path, HEAD, {"project": "p"}, (None, None), None, {"nlp": tmp_path / "wt"}
+    )
+    assert seen == {"N": tmp_path / "wt", "P": REPO_ROOT}
 
 
 # -- the promoted G11 keep and collect (RP §6.4 item 1) -------------------------------------------

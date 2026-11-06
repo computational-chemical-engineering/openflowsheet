@@ -36,7 +36,7 @@ checkout that is not at `--commit`. With D2 deferred, nothing runs under `strace
   (format `m07a-rc-records-v1`), a record over 1 MB gzip-compressed beside its path.
 
     python scripts/release_rc.py items --line 0.4 --rc RC --commit C \
-        [--python ENV=INTERPRETER ...] [--nlp-prefix P] [--nlp-cache D] \\
+        [--python ENV=INTERPRETER ...] [--nlp-prefix P] [--nlp-cache D] [--nlp-root WT] \\
         [--ci-run ID]
     python scripts/release_rc.py local --line 0.4 --rc RC --commit C --work W \
         [--steps 2,6,...] [--nlp-prefix P --nlp-cache D] [--journey J] [--w27-artifacts DIR] \
@@ -50,6 +50,7 @@ checkout that is not at `--commit`. With D2 deferred, nothing runs under `strace
 from __future__ import annotations
 
 import argparse
+import functools
 import hashlib
 import json
 import os
@@ -269,10 +270,10 @@ def _local_environment(environment: str) -> dict[str, str]:
 Runner = Callable[[list[str], Path, dict[str, str]], int]
 
 
-def _run_to_log(argv: list[str], log: Path, environment: dict[str, str]) -> int:
+def _run_to_log(argv: list[str], log: Path, environment: dict[str, str], cwd: Path = ROOT) -> int:
     with log.open("wb") as stream:
         return subprocess.run(
-            argv, cwd=ROOT, env=environment, stdout=stream, stderr=subprocess.STDOUT
+            argv, cwd=cwd, env=environment, stdout=stream, stderr=subprocess.STDOUT
         ).returncode
 
 
@@ -344,7 +345,10 @@ def items(
     interpreters: Mapping[str, str],
     nlp: tuple[str | None, str | None],
     ci_run: int | None,
+    roots: Mapping[str, Path] | None = None,
 ) -> int:
+    """Step 17. `roots` gives an environment's items another checkout at C to run from: the
+    runner runs the `nlp` items from its clean nlp worktree, as step 14 (C-12)."""
     ci_jobs = None
     if ci_run is not None:
         view = json.loads(_gh("run", "view", str(ci_run), "--json", "jobs,headSha,event"))
@@ -363,7 +367,9 @@ def items(
                 cwd=ROOT,
                 capture_output=True,
             )
-        check = item_check(item, rc, interpreters, values, ci_jobs)
+        cwd = (roots or {}).get(str(item["where"]).partition(":")[2], ROOT)
+        run = functools.partial(_run_to_log, cwd=cwd)
+        check = item_check(item, rc, interpreters, values, ci_jobs, run)
         out = rc / "step17" / f"rc-step17-{item['id']}.json"
         status |= _finish(out, str(item["id"]), [check], assertion=item["assertion"])
     return status
@@ -446,6 +452,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             )
         if name == "items":
             sub.add_argument("--python", action="append", default=[], metavar="ENV=PATH")
+            sub.add_argument("--nlp-root", type=Path, help="a clean worktree at C for nlp items")
         if name == "local":
             sub.add_argument("--work", type=Path, required=True, help="logs and environments")
             sub.add_argument("--steps", help="comma-separated subset of the line's local steps")
@@ -508,6 +515,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         if environment not in ENVIRONMENTS or not interpreter:
             parser.error(f"--python {pair!r}: not <environment>=<interpreter>")
         interpreters[environment] = interpreter
+    roots = {"nlp": arguments.nlp_root} if arguments.nlp_root is not None else None
     return items(
         arguments.line,
         arguments.rc,
@@ -518,6 +526,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             None if arguments.nlp_cache is None else str(arguments.nlp_cache),
         ),
         arguments.ci_run,
+        roots,
     )
 
 

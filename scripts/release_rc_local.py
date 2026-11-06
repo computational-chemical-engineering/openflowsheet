@@ -1367,6 +1367,8 @@ class Runner:
                 plan.nlp_prefix,
                 "--nlp-cache",
                 plan.nlp_cache,
+                "--nlp-root",
+                self.worktree("nlp-wt"),
             ]
         if plan.ci_run is not None:
             argv += ["--ci-run", str(plan.ci_run)]
