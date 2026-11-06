@@ -278,8 +278,9 @@ axes:
   - id: interfaces
     title: Interfaces
     statement: >-
-      Python (`LocalApplication`), CLI, HTTP (`/v1`) and MCP over stdio; the twenty-one operations of
-      `OPERATIONS`, each on the transports listed; authority from the credential only (ADR 0019).
+      Python (`LocalApplication`), CLI, HTTP (`/v1`) and MCP over stdio; the twenty-two operations of
+      `OPERATIONS`, each on the transports listed (`explain`, ADR 0058 D7, reads the message catalogue
+      only); authority from the credential only (ADR 0019).
       With `serve-http --ui`, the diagnostic web shell at `/ui/` is a browser client of seventeen of
       them over HTTP and of nothing else (M06; L-WEB-1 to L-WEB-4).
     operations:
@@ -287,6 +288,7 @@ axes:
       cancel_job: [python, cli, http, mcp]
       commit_change: [python, cli, http, mcp]
       diff_revisions: [python, cli, http, mcp]
+      explain: [python, cli, http, mcp]
       get_artifact: [python, cli, http, mcp]
       get_job: [python, cli, http, mcp]
       get_job_result: [python, cli, http, mcp]
