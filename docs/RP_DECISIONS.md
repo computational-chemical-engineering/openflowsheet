@@ -116,3 +116,54 @@ where it lives. Questions for the design lane are batched for the one `reviewer`
 - Push run 42156850745 at `bd672ff7`: `check` success on both legs (x86-64 1 h 40 min, aarch64 1 h 12 min),
   `identity` success, artifacts `junit-x86_64` and `junit-aarch64` present.
 - Full gate at `bd672ff7`: `GATE PASS: 14995 passed, 3206 skipped, 197 deselected` (8527 s).
+
+## Choices (build lane, WO-R6b, 2026-11-06)
+
+- **C-9 The runner's layout** (`release_rc.py local`, `scripts/release_rc_local.py`). It runs from the checkout at C
+  the line's `gate_set.rc_steps` that have a local leg (2, 6–17), `--steps` narrowing them. Records go under `--rc`
+  = `evidence/<pkg>/<C>/artifacts/rc` (git-ignored), 0.3.0's paths and check ids; `--rc` outside the checkout is
+  refused, because M02's judges (`m02_evidence_manifest.g10`–`g12`) name records relative to it. Logs, the summary
+  (`<label> exit <code> :: <command>`, 0.3.0's form), the venvs, `external/`, the worktrees, the step-12 inputs and
+  G11's keep directory go under `--work`.
+- **C-10 G11's keep directory is `<work>/g11-keep`**, not under `<rc>/step12/`, so that step 10's certificate audit
+  reads exactly the directories 0.3.0's read (0.3.0 kept G11's stores in a re-run after step 10). 0.2.0's G12 keep
+  wrapper, which step 10 needs (R-348), is promoted with G11's into one tracked script `scripts/m07_rc_keep.py`
+  (`g11`, `g11-collect`, `g12`); behaviour unchanged, the collected record's `description` names the script. A test
+  pins that its collector writes what `g11collect.py.txt` wrote.
+- **C-11 Step 12's archived inputs stay 0.2.0's and 0.3.0's**: `--previous-v3`/`--previous` are WO-12a′'s v3
+  records at `bd446ab` (`STEP12_INPUTS_AT`), as RP §6.3's "registered constants at C". See Q-C3.
+- **C-12 The `nlp` items run from the clean nlp worktree at C** (`items --nlp-root`, commit `88045740`), as step 14
+  and 0.3.0's 17d: the RC checkout carries the project venv's editable install, which the audited environment's
+  fingerprint would count. Revert the commit to run them from the repository root.
+- **C-13 Missing inputs are refused up front**: a selected step 14 or 15 without `--nlp-prefix`/`--nlp-cache`, a
+  step 15 without `--journey`, exit 2 before anything runs. A step-17 `nlp` item without them stays `unsupported`.
+- **C-14 `local`'s exit** is 0 iff every record it wrote passed and `step17-items` exited 0. A command's own exit is
+  judged in its record (step 14's collection over `tests/` and step 16's dry run exit non-zero by design).
+- **C-15 `records` takes the cited list as a file** (`--cited`, one path per line, as 0.3.0's `tools/cited.txt`):
+  the RC record's hashes are written from `records.json` (§6.9), so the list cannot be read from it. A path cited
+  twice or absent is refused (exit 2). Step 12's kept G12 certificates are copied to `step12/certificates/` after
+  step 10 (0.3.0's `collect.sh`).
+- **C-16 `r375.audit`'s writer runs the audit itself** and judges its stdout's last line (0.3.0's `g11record`); the
+  keep and collect exits are recorded in the check, not judged ("exactly one check", §6.4).
+- **C-17 `ci`** ports `fetch_ci.sh`: the `release_rc` dispatch at C's artifacts into `<rc>/ci/`, each job that ran
+  into `ci/job-logs/<job>-<leg>.log`; a run that is not a dispatch at C is refused.
+
+## Questions for the design lane (WO-R6b, defaults applied)
+
+- **Q-C3 (C-11).** RP §6.3 says step constants are "the registered ones at C"; step 12's archived inputs
+  (`bd446ab`'s v3 records) are named only in 0.3.0's runner. Register them, or name the inputs a release uses.
+- **Q-C4.** Step 16 (c) needs the pinned W27 archive in `evidence/M06/W27/artifacts/`; RP §6.6 does not say where
+  the runner takes it from. Default: `--w27-artifacts DIR`, hard-linked as 0.3.0 did; absent, (c) fails.
+
+## Measured (WO-R6b, 2026-11-06)
+
+- Real `release_rc.py local --line 0.4 --steps 2,7,8,9,10,13` at `88045740` (1045 s, fresh `rcvenv` from the lock):
+  `identity` 3/3, `corpus` 12/12, `surface-alpha` 8/8, A30 exit 0, `certificates` 2/2; every record `commit` = C,
+  `tree_clean` true (the editable install leaves the tree clean), `ref-x86-64`. Step 13 failed, 85 errors: pytest's
+  `--basetemp` parent did not exist; fixed in `df30b36e`. Re-run of step 13 at `df30b36e` (624 s): `rc-step13`
+  3/3 pass, 696 tests, 0 failures, 0 skipped.
+- `release_rc.py records` on those records: 3 collected as is; an absent cited path refused, exit 2.
+- Not run here: steps 6, 11, 12 (hours; the reactor and IDAES environments), 14, 15 and the nlp item (the audited nlp
+  environment lives in another worktree), 16 (the pinned W27 archive likewise), `ci` (no dispatch at this head).
+- `tests/test_rel_rc_local.py` 20 passed; `tests/test_rel_*.py`, `test_release_workflows.py`,
+  `test_m07a_surface_chain.py` 192 passed; F0 `corpus_identity.py --check` PASS (M1–M9 all equal).

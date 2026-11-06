@@ -1,34 +1,32 @@
 # RP handoff (ADR 0055 WO-R4 / WO-R6, build lane)
 
-Branch `wp/RP`, worktree `.claude/worktrees/rp`. Brief `docs/briefs/REL-build-WO-R4-R6.md`; choices C-1…C-8 and
-questions Q-C1, Q-C2 in `docs/RP_DECISIONS.md`. Stopped at the ~150k context cap.
+Branch `wp/RP`, worktree `.claude/worktrees/rp`. Brief `docs/briefs/REL-build-WO-R4-R6.md`; choices C-1…C-17 and
+questions Q-C1…Q-C4 in `docs/RP_DECISIONS.md` (with the measured numbers).
 
-## Done (commits `b69dc0f1`, `bd672ff7`)
+## Done
 
-- `scripts/wheel_data_check.py` (WHEEL-DATA) and `e01_evidence_manifest.py --a48-release-check` (E01-A48). RP.L01–L10
-  pass on `release/lines/0.4.json` (`test_rel_release_gate.py`, L08 control kept). Real run at `b69dc0f1`:
-  `wheel data check: PASS`, 11/11 checks.
-- `ci.yml` WO-R4 (input `release_rc`, `check`'s `if`, `junit-<arch>`, RC job list incl. `rc-ensemble`, `ptc-r1`;
-  no `release-audit`, no strace). REL.A17 tests in `tests/test_rel_ci_release_rc.py` (17 pass).
-- `scripts/release_rc.py`: `surface` (step 8), `step1` (§6.2 record), `items` (§6.7 step-17 wrapper).
-- Dispatch (the one allowed): run 42156856877 at `bd672ff7`; push run at the same head 42156850745.
+- WO-R4 (`ci.yml`, REL.A17) and WO-R6 items 1–2: `b69dc0f1`, `bd672ff7` (step 1, step 8, step 17's wrapper,
+  WHEEL-DATA, E01-A48); WO-R6b `6beaf53d`, `88045740`, `df30b36e`: `release_rc.py local` (steps 2, 6–17 at C, the
+  line's `rc_steps`), `record` (steps 11–16 and step 12's `r375.audit`), `ci` (the dispatch's artifacts and logs),
+  `records` (`rc/records.json`); `scripts/release_rc_local.py` (the port of 0.3.0's runner and record writers);
+  `scripts/m07_rc_keep.py` (G11/G12 keep wrappers and G11's collector, promoted, R-909 A3-3).
+- Tests `tests/test_rel_rc_local.py` (20). Real run: steps 2, 7, 8, 9, 10, 13 pass at C (see the decisions file).
 
 ## Not done (next agent, in order)
 
-1. Read the dispatch's outcome: `gh run view 42156856877 --json jobs` — `check`/`identity`/`default-install`
-   skipped, the 8 RC jobs run; `ptc-r1` wall time on both legs vs 360 min (Q-13/N-2). Push run 42156850745: `check`
-   green on both legs, artifacts `junit-x86_64`, `junit-aarch64` present (C-8). Do NOT dispatch again.
-2. `release_rc.py` steps 2–7, 9–16 locally (RP §6.1 "How the steps run"): port of 0.3.0's runner
-   `evidence/S13/a3e508e3…/tools/run_local.sh`, the step 11–16 record writers of `tools/m07_rc_external.py.txt`,
-   `run_step14.sh` (with §6.5's selection: `a60.w24.nlp_selection`), step 12's keep-and-audit (§6.4: promote
-   `g11keep.py.txt`/`g11collect.py.txt` into a tracked script; record `r375.audit` only), step 16 per §6.6, and
-   `rc/records.json`. Keep 0.3.0's record paths and check ids (§6.1).
-3. `scripts/release_evidence_manifest.py`: RP.S01–S22 (§11.1) + one check per `rc_items` entry; REL.A20 (§11.2):
+1. `scripts/release_evidence_manifest.py`: RP.S01–S22 (§11.1) + one check per `rc_items` entry; REL.A20 (§11.2):
    over 0.3.0's records the 13 same-form assertions equal S13's `pass`; the 9 changed-form ones decided and recorded
    with the exclusion reason. Model: `scripts/s13_evidence_manifest.py` (read-only). Fixtures for S10, S13, S17,
-   S20, S21 (a passing record and one control per changed rule).
-4. Full gate once, evidence manifest `evidence/RP/<commit>/manifest.json` (F0 format; status `tested` only if
-   supported; never `reviewed`), push, report CI run id. Do not merge.
+   S20, S21 (a passing record and one control per changed rule). The records the runner writes are 0.3.0's paths
+   and ids, so S13's `evidence/S13/a3e508e3…/rc/` reads directly.
+2. Full gate once (`scripts/gate.sh`, background), evidence manifest `evidence/RP/<commit>/manifest.json` (F0
+   format; status `tested` only if supported; never `reviewed`); its limitations: steps 6, 11, 12, 14–16 and the
+   nlp item not run locally at this head (environments), no dispatch at this head. Push, report the CI run id.
+   Do not merge.
+3. The one `reviewer` pass over WO-R2…R6 takes Q-B1…B5 and Q-C1…C4.
 
-## Gate at `bd672ff7`
-`GATE PASS bd672ff7: 14995 passed, 3206 skipped, 197 deselected` (8527 s). Dispatch and push run: see `docs/RP_DECISIONS.md` "Measured (WO-R4/R6)"; step 1 of "Not done" is therefore done.
+## How to run the RC locally at C
+
+`python scripts/release_rc.py local --line 0.4 --commit C --rc evidence/<pkg>/C/artifacts/rc --work W
+--nlp-prefix P --nlp-cache D --journey J --w27-artifacts A [--ci-run ID]`, then `release_rc.py step1`, `ci`, and
+`records --cited` once the RC record's citations are known.
