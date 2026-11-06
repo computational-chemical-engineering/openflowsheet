@@ -199,6 +199,23 @@ where it lives. Questions for the design lane are batched for the one `reviewer`
 
 ## Measured (WO-R6c, 2026-11-06)
 
-- `release_evidence_manifest.py --line 0.3 --commit a3e508e3 … --rel-a20` (38 s): 22 checks, 15 pass, 6 fail, 1
-  unsupported. Same form: S02, S03, S04, S06, S08, S09, S11, S12, S14, S16, S19, S22 `pass` = S13; S18 `fail` (Q-C5).
-  Changed form: S01, S05, S07, S20 pass; S10, S15, S17, S21 fail; S13 unsupported. `REL.A20: FAIL`.
+- `release_evidence_manifest.py --line 0.3 --commit a3e508e3 … --rel-a20` at `3e7ccf00` (38 s, exit 1, stdout
+  `7c82ba9d…`): 22 checks, 16 pass, 5 fail, 1 unsupported. Same form: S02, S03, S04, S06, S08, S09, S11, S12, S14,
+  S16, S19, S22 `pass` = S13; S18 `fail` (Q-C5). Changed form: S01, S05, S07, S20 pass (0.3.0's n = 190 meets n ≥ 1);
+  S10, S15, S17, S21 fail; S13 unsupported. `REL.A20: FAIL`.
+- `tests/test_rel_*.py tests/test_release_workflows.py`: 195 passed; ruff, ruff format, mypy clean; F0
+  `corpus_identity.py --check` PASS (M1–M9 all equal).
+- Full gate at `3e7ccf00` (8095 s): `GATE FAIL: 29 failed, 14999 passed, 3207 skipped, 197 deselected, 1 error`. All
+  29 failures and the one teardown error are `tests/test_m06_browser_smoke.py`: the headless browser went away
+  (`BrokenPipeError`) under host load. That module alone at the same commit: 31 passed in 43.7 s. Not a code
+  failure of this branch (no web or browser file changed), but the gate is red as run; it is not re-baselined.
+
+## Choices and questions (WO-R6c, the manifest)
+
+- **C-22 Package RP's manifest is filed as `S15`** (`evidence/S15/3e7ccf00…/manifest.json`): the frozen schema's
+  `work_package` pattern refuses `RP` (R-878's rule; E01 → S12, V03 → S13, DOC → S14). Harvested, 6 limitations and
+  2 checks, class P (F0's D22); `HARVEST_SIZE` (69, 945, 122). Reversible: `git mv` to `evidence/RP/` after a schema
+  ADR, and the harvest entries' paths with it.
+- **Q-C6.** RP §3.1 (D1.5) names the release package `REL040`, which the same pattern refuses: at 0.4.0 the release
+  manifest `evidence/REL040/<C>/manifest.json` fails `t08.problems` (schema). Either an ADR admits `REL\d{3}` (and
+  `RP`), as ADR 0059 D1 admitted the roadmap ids, or RP names an S-id for each release package.
