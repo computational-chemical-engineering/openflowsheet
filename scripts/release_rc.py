@@ -11,14 +11,19 @@ checkout that is not at `--commit`. With D2 deferred, nothing runs under `strace
   `<rc>/step1/rc-step1.json` holds exactly `s1.push_run`, `s1.check.x86_64`, `s1.check.aarch64`
   and `s1.junit`; it fails, never skips, when no completed push run at C exists or a leg is not
   green. Each leg's skips, read from its junit, go to `<rc>/step1-skips/<arch>.txt` (R-376); the
-  S07 A31 and S11 thermal lines of each `check` log are recorded, not judged (RP.S15).
+  S07 A31 and S11 thermal lines of each `check` log are recorded, not judged (RP.S15). The record
+  lists every `ci.yml` run at C (`runs_at_c`: id, event, attempt, conclusion; A-4), and without a
+  push run at C, `s1.push_run` names the remedy: C pushed on its own, as a branch head.
 - **items** (step 17, §6.7): each `rc_items` entry of `release/lines/<line>.json`, in order, into
   `<rc>/step17/rc-step17-<id>.json` with exactly one check, `<id>`. A `local:` item runs its
   `command` from the repository root with the environment's interpreter for `python` and `$C`,
   `$RC_OUT`, `$NLP_PREFIX`, `$NLP_CACHE` substituted; a `ci:` item is that job of the
-  `release_rc` dispatch `--ci-run`, `pass` iff it concluded `success` on every leg, its artifacts
-  fetched into `<rc>/step17/<id>/`. An environment, a value or a dispatch that is not given
-  makes the item `unsupported`, which is not a pass (RP.S13).
+  `release_rc` dispatch `--ci-run`, `pass` iff it concluded `success` on every leg and its
+  artifacts were fetched into `<rc>/step17/<id>/` (the download's exit status and file count are
+  recorded; S-7). `items` and `ci` refuse (exit 2) a `--ci-run` that is not C's `release_rc`
+  dispatch: the greatest run id of the `workflow_dispatch` runs at C (§6.10, A-4). An environment,
+  a value or a dispatch that is not given makes the item `unsupported`, which is not a pass
+  (RP.S13).
 
     python scripts/release_rc.py surface --out RC/surface
     python scripts/release_rc.py step1 --rc RC --commit C
@@ -106,6 +111,40 @@ def push_run(runs: Sequence[Mapping[str, Any]], commit: str) -> Mapping[str, Any
     return max(found, key=lambda run: int(run["databaseId"])) if found else None
 
 
+def rc_dispatch(runs: Sequence[Mapping[str, Any]], commit: str) -> Mapping[str, Any] | None:
+    """§6.10 (amendment A-4): of the `ci.yml` runs whose event is `workflow_dispatch` and whose
+    head is C, the greatest run id: the `release_rc` dispatch at C (`gh run view` reads its
+    latest attempt)."""
+    found = [
+        run
+        for run in runs
+        if run.get("event") == "workflow_dispatch" and run.get("headSha") == commit
+    ]
+    return max(found, key=lambda run: int(run["databaseId"])) if found else None
+
+
+def dispatch_problem(run_id: int, runs: Sequence[Mapping[str, Any]], commit: str) -> str | None:
+    """Why `run_id` is not C's `release_rc` dispatch (A-4), or `None`."""
+    selected = rc_dispatch(runs, commit)
+    if selected is None:
+        return f"run {run_id}: there is no workflow_dispatch run of ci.yml at {commit}"
+    if int(selected["databaseId"]) != int(run_id):
+        return (
+            f"run {run_id} is not the release_rc dispatch at {commit}: that is run "
+            f"{selected['databaseId']}, the greatest run id (RP §6.10, A-4)"
+        )
+    return None
+
+
+def runs_at_c(runs: Sequence[Mapping[str, Any]], commit: str) -> list[dict[str, Any]]:
+    """Step 1's list of every `ci.yml` run at C (A-4), by run id: a retry is visible."""
+    keys = ("databaseId", "event", "attempt", "status", "conclusion")
+    return sorted(
+        ({key: run.get(key) for key in keys} for run in runs if run.get("headSha") == commit),
+        key=lambda run: int(run["databaseId"]),
+    )
+
+
 def junit_skips(xml: bytes) -> list[str]:
     """Each skipped testcase of a junit file as `<classname>::<name>: <message>`, sorted."""
     skips = []
@@ -131,11 +170,22 @@ def step1_checks(
     run: Mapping[str, Any] | None,
     junit: Mapping[str, Mapping[str, bytes] | None],
     logs: Mapping[str, str],
+    *,
+    commit: str = "<C>",
 ) -> list[dict[str, Any]]:
     """§6.2's four checks over the selected run (`gh run view --json` with `jobs`), each leg's junit
-    files (artifact `junit-<arch>`: name → bytes, None when absent) and each leg's `check` log."""
+    files (artifact `junit-<arch>`: name → bytes, None when absent) and each leg's `check` log.
+    Without a push run at C, `s1.push_run` names A-4's remedy: C pushed on its own."""
     checks: list[dict[str, Any]] = []
     completed = run is not None and run.get("status") == "completed"
+    remedy = (
+        {}
+        if run is not None
+        else {
+            "remedy": f"push C on its own, as a branch head: git push origin {commit}:refs/heads/"
+            f"rc/{commit[:7]} (RP §6.2, A-4)"
+        }
+    )
     _check(
         checks,
         "s1.push_run",
@@ -144,6 +194,7 @@ def step1_checks(
         attempt=None if run is None else run.get("attempt"),
         status=None if run is None else run.get("status"),
         conclusion=None if run is None else run.get("conclusion"),
+        **remedy,
     )
     jobs = {job.get("name"): job for job in (run or {}).get("jobs", [])}
     for arch, runner in LEGS.items():
@@ -196,7 +247,8 @@ def _gh_junit(run_id: int, arch: str, into: Path) -> dict[str, bytes] | None:
 
 
 def step1(rc: Path, commit: str) -> int:
-    selected = push_run(_gh_runs(commit), commit)
+    runs = _gh_runs(commit)
+    selected = push_run(runs, commit)
     run: dict[str, Any] | None = None
     junit: dict[str, dict[str, bytes] | None] = dict.fromkeys(LEGS)
     logs: dict[str, str] = {}
@@ -219,8 +271,10 @@ def step1(rc: Path, commit: str) -> int:
             skips_dir.mkdir(parents=True, exist_ok=True)
             skips = [line for data in found.values() for line in junit_skips(data)]
             (skips_dir / f"{arch}.txt").write_text("".join(f"{s}\n" for s in skips), "utf-8")
-    checks = step1_checks(run, junit, logs)
-    return _finish(rc / "step1" / "rc-step1.json", "ci-push-run", checks)
+    checks = step1_checks(run, junit, logs, commit=commit)
+    return _finish(
+        rc / "step1" / "rc-step1.json", "ci-push-run", checks, runs_at_c=runs_at_c(runs, commit)
+    )
 
 
 # -- step 17: the line's items (§6.7) --------------------------------------------------------------
@@ -284,8 +338,11 @@ def item_check(
     values: Mapping[str, str | None],
     ci_jobs: Sequence[Mapping[str, Any]] | None,
     run: Runner = _run_to_log,
+    download: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
-    """The one check of item `item`'s record (§6.7)."""
+    """The one check of item `item`'s record (§6.7). A `ci:` item also needs its artifacts:
+    `download` is `gh run download`'s exit status and the file count (review S-7); a failed
+    download is `fail`."""
     kind, _, where = str(item["where"]).partition(":")
     directory = rc / "step17" / str(item["id"])
     checks: list[dict[str, Any]] = []
@@ -294,7 +351,16 @@ def item_check(
             _check(checks, item["id"], "unsupported", job=where, reason="no --ci-run given")
             return checks[0]
         passed, legs = ci_item_result(ci_jobs, where)
-        _check(checks, item["id"], passed, job=where, conclusions=legs, artifacts=_files(directory))
+        downloaded = download is not None and download.get("exit_status") == 0
+        _check(
+            checks,
+            item["id"],
+            passed and downloaded,
+            job=where,
+            conclusions=legs,
+            download=None if download is None else dict(download),
+            artifacts=_files(directory),
+        )
         return checks[0]
     argv = substitute([str(element) for element in item["command"]], values)
     interpreter = interpreters.get(where)
@@ -350,8 +416,11 @@ def items(
     """Step 17. `roots` gives an environment's items another checkout at C to run from: the
     runner runs the `nlp` items from its clean nlp worktree, as step 14 (C-12)."""
     ci_jobs = None
+    view: dict[str, Any] = {}
     if ci_run is not None:
-        view = json.loads(_gh("run", "view", str(ci_run), "--json", "jobs,headSha,event"))
+        view = json.loads(
+            _gh("run", "view", str(ci_run), "--json", "jobs,headSha,event,databaseId,attempt")
+        )
         if view.get("headSha") != commit or view.get("event") != "workflow_dispatch":
             print(f"refused: run {ci_run} is not a dispatch at {commit}", file=sys.stderr)
             return 2
@@ -359,17 +428,24 @@ def items(
     values = {"C": commit, "RC_OUT": str(rc), "NLP_PREFIX": nlp[0], "NLP_CACHE": nlp[1]}
     status = 0
     for item in _line_items(line):
+        download = None
         if ci_run is not None and str(item["where"]).startswith("ci:"):
             job = str(item["where"]).removeprefix("ci:")
             target = rc / "step17" / str(item["id"])
-            subprocess.run(
+            done = subprocess.run(
                 ["gh", "run", "download", str(ci_run), "-p", f"{job}-*", "-D", str(target)],
                 cwd=ROOT,
                 capture_output=True,
             )
+            download = {
+                "run_id": ci_run,
+                "attempt": view.get("attempt"),
+                "exit_status": done.returncode,
+                "files": len(_files(target)),
+            }
         cwd = (roots or {}).get(str(item["where"]).partition(":")[2], ROOT)
         run = functools.partial(_run_to_log, cwd=cwd)
-        check = item_check(item, rc, interpreters, values, ci_jobs, run)
+        check = item_check(item, rc, interpreters, values, ci_jobs, run, download)
         out = rc / "step17" / f"rc-step17-{item['id']}.json"
         status |= _finish(out, str(item["id"]), [check], assertion=item["assertion"])
     return status
@@ -477,6 +553,11 @@ def main(argv: Sequence[str] | None = None) -> int:
         return 2
     if arguments.command == "step1":
         return step1(arguments.rc, head)
+    if arguments.command in ("ci", "items") and arguments.ci_run is not None:
+        problem = dispatch_problem(int(arguments.ci_run), _gh_runs(head), head)
+        if problem is not None:
+            print(f"refused: {problem}", file=sys.stderr)
+            return 2
     if arguments.command == "local":
         return _local(arguments, head)
     if arguments.command == "record":

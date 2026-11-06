@@ -250,3 +250,108 @@ def test_items_a_failing_command_fails(tmp_path: Path, code: int) -> None:
         ITEMS["E01-A48"], tmp_path, {"project": "/py"}, values, None, fake
     )
     assert (found["result"], found["exit_status"]) == ("fail", code)
+
+
+# -- amendment A-4 (RP §6.2, §6.10; review S-3, S-4) and S-7 -------------------------------------
+
+RUNS_AT_C = [
+    {
+        "databaseId": 12,
+        "event": "workflow_dispatch",
+        "headSha": C,
+        "attempt": 2,
+        "conclusion": "success",
+    },
+    {
+        "databaseId": 10,
+        "event": "workflow_dispatch",
+        "headSha": C,
+        "attempt": 1,
+        "conclusion": "failure",
+    },
+    {"databaseId": 8, "event": "push", "headSha": C, "attempt": 1, "conclusion": "success"},
+    {"databaseId": 13, "event": "workflow_dispatch", "headSha": "d" * 40, "attempt": 1},
+]
+
+
+def test_a4_the_release_rc_dispatch_is_the_greatest_run_id_at_c() -> None:
+    """A red dispatch and a green retry at C: only the greatest run id is the dispatch; another
+    commit's run never is. Control: the greatest is accepted."""
+    selected = release_rc.rc_dispatch(RUNS_AT_C, C)
+    assert selected is not None and selected["databaseId"] == 12
+    assert release_rc.dispatch_problem(12, RUNS_AT_C, C) is None
+    assert release_rc.dispatch_problem(10, RUNS_AT_C, C) == (
+        f"run 10 is not the release_rc dispatch at {C}: that is run 12, the greatest run id "
+        "(RP §6.10, A-4)"
+    )
+    assert "is not the release_rc dispatch" in str(release_rc.dispatch_problem(8, RUNS_AT_C, C))
+    assert "no workflow_dispatch run" in str(release_rc.dispatch_problem(13, RUNS_AT_C[2:], C))
+
+
+def test_a4_step_1_lists_every_run_at_c() -> None:
+    listed = release_rc.runs_at_c(RUNS_AT_C, C)
+    assert [(run["databaseId"], run["event"], run["attempt"]) for run in listed] == [
+        (8, "push", 1),
+        (10, "workflow_dispatch", 1),
+        (12, "workflow_dispatch", 2),
+    ]
+    assert listed[1]["conclusion"] == "failure"
+
+
+def test_s4_c_pushed_beneath_a_later_commit_has_no_push_run_and_names_the_remedy() -> None:
+    """GitHub starts a push run only for the pushed head: C pushed beneath a later commit has none,
+    and step 1 fails with A-4's remedy. Control: C pushed as a head."""
+    beneath = [{"databaseId": 9, "event": "push", "headSha": "d" * 40}]
+    assert release_rc.push_run(beneath, C) is None
+    (push, *_) = release_rc.step1_checks(None, dict.fromkeys(release_rc.LEGS), {}, commit=C)
+    assert push["result"] == "fail"
+    assert push["remedy"] == (
+        f"push C on its own, as a branch head: git push origin {C}:refs/heads/rc/{C[:7]} "
+        "(RP §6.2, A-4)"
+    )
+    (control, *_) = release_rc.step1_checks(_run(), JUNITS, {}, commit=C)
+    assert control["result"] == "pass" and "remedy" not in control
+
+
+@pytest.mark.parametrize("command", ["ci", "items"])
+def test_a4_ci_and_items_refuse_a_run_that_is_not_the_dispatch(
+    command: str,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+    tmp_path: Path,
+) -> None:
+    head = release_rc._t08_rc().git("rev-parse", "HEAD").strip()
+    runs = [{**run, "headSha": head} for run in RUNS_AT_C[:3]]
+    monkeypatch.setattr(release_rc, "_gh_runs", lambda commit: runs)
+    reached: list[str] = []
+    monkeypatch.setattr(release_rc, "items", lambda *a, **k: reached.append("items") or 0)
+
+    def fetch_ci(*arguments: Any) -> int:
+        reached.append("ci")
+        return 0
+
+    monkeypatch.setattr(release_rc._local_lib(), "fetch_ci", fetch_ci)
+    argv = [command, "--rc", str(tmp_path), "--commit", head]
+    argv += ["--line", "0.4"] if command == "items" else []
+    assert release_rc.main([*argv, "--ci-run", "10"]) == 2
+    assert capsys.readouterr().err.startswith("refused: run 10 is not the release_rc dispatch")
+    assert reached == []
+    assert release_rc.main([*argv, "--ci-run", "12"]) == 0
+    assert reached == [command]
+
+
+def test_s7_a_ci_item_whose_download_failed_fails(tmp_path: Path) -> None:
+    """Review S-7: the item's check records `gh run download`'s exit status and file count; a
+    failed download is `fail` though every leg succeeded. Control: a download that exited 0."""
+    jobs = [
+        {"name": "ptc-r1 (ubuntu-latest)", "conclusion": "success"},
+        {"name": "ptc-r1 (ubuntu-24.04-arm)", "conclusion": "success"},
+    ]
+    values = {"C": C, "RC_OUT": str(tmp_path), "NLP_PREFIX": None, "NLP_CACHE": None}
+    failed = {"run_id": 12, "attempt": 2, "exit_status": 1, "files": 0}
+    found = release_rc.item_check(ITEMS["PTC-R1"], tmp_path, {}, values, jobs, download=failed)
+    assert (found["result"], found["download"]) == ("fail", failed)
+    fetched = {**failed, "exit_status": 0, "files": 4}
+    found = release_rc.item_check(ITEMS["PTC-R1"], tmp_path, {}, values, jobs, download=fetched)
+    assert (found["result"], found["download"]["files"]) == ("pass", 4)
+    assert release_rc.item_check(ITEMS["PTC-R1"], tmp_path, {}, values, jobs)["result"] == "fail"
