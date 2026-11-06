@@ -265,3 +265,107 @@ shell's display). Commit: this one.
 - MSG-G7: golden diff = the U05 record (stdout `detail.explanation`, stderr) and the refused
   `project init` stderr; all 17 exit codes unchanged. MSG-G10: 7 R4-G3 snapshots and the MCP digest
   moved; with `without_msg` all equal their pre-MSG values (`455d01eb…` for MCP).
+
+## WO-7
+
+**D7-1. Where `entry_document` lives.** `messages.render.entry_document(code)` and
+`suggestions(code)` (the note's `messages.entry_document`): `messages/__init__.py` imports nothing
+so that `messages.diagnostic` stays cheap, and the examples need `render_code`. `Catalogue.sha256()`
+is now computed once (the catalogue is frozen at the first lookup), which took one `entry_document`
+from 13 ms to 0.65 ms. Commit: `6a5435ad`.
+
+**D7-2. `suggestions` when nothing is close.** The detail is always `{code, suggestions}`, with
+`suggestions` a list, possibly empty (the note's shape). The engine counts `[]` as present, so the
+`not_found` `code` variant rendered "Did you mean ?". Options: (i) split the catalogue variant on
+`not_equals: {suggestions: []}` — "Did you mean <list>?" — with a second variant, "Check the code's
+spelling against the docs' Messages section; no message code is close to it."; (ii) treat an empty
+list as absent in the engine (changes §4.2.4's presence rule for every list param). **(i).**
+Commit: `6a5435ad`.
+
+**D7-3. A detail member named `code`.** `api_error(code, message, /, *, retryable, **detail)` and
+`LocalApplication._refuse(code, message, /, *, …)` are positional-only in `code` and `message`
+(no caller passed them by keyword; AST scan), so `explain`'s refusal can carry `detail.code`.
+Alternative: rename the member (the note names it `code`). Commit: `6a5435ad`.
+
+**D7-4. `message_entry` schema details.** As §4.9, closed and all required: the five templates
+`string | null` (the catalogue requires `summary`, so it is never null in practice); `params` items
+closed `{name, type, label, optional}`; `catalogue.id` a `const`, `catalogue.sha256` 64 hex;
+`examples` `$ref` `explanation`. The valid fixture is `explain("phase_regime_mismatch")`; it carries
+the catalogue digest, so **every catalogue edit needs `scripts/t07_schema_fixtures.py --write`**.
+Commit: `6a5435ad`.
+
+**D7-5. `openflowsheet explain` text.** `messages.text.format_entry`: `<code>: <title>`, then the
+layered text's 11-column fields `Kind`, `Summary`, `Note` (stubs: §4.12's sentence), `Context`,
+`Where`, `Why`, `Do`, `Params` (`name (type[, optional])`), `Gap`, `See`, `Status` (deprecated),
+`Docs`; then each example's layered text under `Example:`, indented 2. An unknown code: the layered
+`not_found` text on stderr, stdout empty; with `--json`, the projected `ApiError` document on stdout
+as well (`_print_refusal(document=…)`); exit 6. Commit: `6a5435ad`.
+
+**D7-6. The method's own checks.** `LocalApplication.explain` refuses a non-string `code`
+`invalid_request` at `/code`; length and pattern are the request schema's (dispatch). The
+`not_found` refusal is audited through `_refuse`. Commit: `6a5435ad`.
+
+**D7-7. Gate change: `m07a_rc` §5.3 item 4** (flagged). The item held the served descriptions to
+exactly `v17-c2`'s 17 tools; ADR 0058 D7 adds `explain`. It now pins `explain.md` as c_4's
+addition (`MSG_FILE_SHA256`), held equal to `REVIEW.json`'s recorded hash by a new test, with a
+one-byte control. Nothing else in the item moved. Own commit: `a34f1735`.
+
+**D7-8. The `explain` description's reviews.** `REVIEW.json` records `explain.md` with both reviews
+pending (`pending_design_review`, `pending`). `tests/test_t08_w2_description_reviews.py` is red
+by design until the design lane and Frank record them (no xfail): **a merge blocker for MSG.**
+
+**D7-9. MSG-G10 re-registration.** `without_msg` also drops `$defs/message_entry` and every served
+tool named in `MSG_OPERATIONS` (`explain`). R4-G3: `SNAPSHOT_MSG_EXPLAIN` = `a4fcafe7…` (new row,
+no pre-MSG value). Served MCP digest `D_4` = `1ca06b37…` (was `b083ffe1…` at WO-6), in
+`tests/test_t08_w2_surface_digest.py` and `scripts/m07a_rc.py` c_4; minus MSG it is M04's
+`455d01eb…`. The count pins (17 → 18 MCP tools, 21 → 22 operations, 19 → 20 routes, Inspection
+9 → 10) and the transport scenarios (HTTP, MCP, CLI, G11, G13) gained `explain`. The generated
+operations page and the web route table were regenerated. Commit: `6a5435ad`.
+
+## WO-8
+
+**D8-1. Page form.** One `## \`code\`: title` section per code, in key order, opened by the
+explicit anchor; prose fields as a list, Markdown-escaped (`<`, `>`, `&`) outside code spans; each
+example as a `text` block of its layered text. An empty family (`notice` today) says "No code is in
+this family yet." Commit: `30ef6dde`.
+
+**D8-2. "A link to the support-matrix row".** Support-matrix rows have no anchors, and each
+limitation id is itself a catalogue entry synced from the matrix. The gap links its limitation's
+section on `messages/limitations.md` and the support matrix document. Commit: `30ef6dde`.
+
+**D8-3. "Every docs URL the corpus produces resolves".** The corpus is WO-9's. `tests/
+test_msg_docs.py` checks every entry's `docs`, every rendered example's and every one recorded in
+the committed fixtures (W26 exchanges, the schema fixtures), with `docs_url_problems` for the
+corpus test to reuse. **A catalogue edit also needs `scripts/doc_pages.py`** (the pages are
+generated; `--check` fails otherwise). Commit: `30ef6dde`.
+
+**D7-10. What the full gate found after WO-7/WO-8** (`30ef6dde`). Five pins the targeted runs had
+not reached: `test_m02_schemas` G1c and `test_m04_study_job` A42 (pre-MSG snapshots: the `explain`
+row is skipped, as in R4-G3's MSG-G10 test); `test_t07_conformance`'s every-carried-operation
+check (the scenario now calls `explain` once); and T08.A20 — the working envelope
+`benchmarks/t08/support_envelope.yaml` lists every operation with its transports, so its
+interfaces axis gains `explain: [python, cli, http, mcp]` and "twenty-two operations", and
+`docs/support-matrix.md` is regenerated (`t08_support_matrix.py --emit`). The envelope change is
+ADR 0058 D7's consequence, not a new decision; the design lane may want it named in the register
+entry. `scripts/t08_support_matrix.py check_a20`'s pinned count moves 21 → 22 with its reason (a
+gate change, flagged). Commits: `f0f17ad8` (tests), `631a9f3f` (envelope, matrix, A20 count).
+
+## Gate results at the end of WO-7, WO-8 (code = `30ef6dde`, then `631a9f3f`)
+
+- `scripts/gate.sh` at `30ef6dde`: ruff, format, mypy, node (92) clean; pytest 14994 passed, 3206
+  skipped, 10 failed (2 h 58 min; load average ~61 on 48 cores). Nine fixed by `f0f17ad8` and
+  `631a9f3f` (D7-10; the touched files re-run: 1177 + 76 passed). Left:
+  `test_t08_w2_description_reviews` (red by design until `explain.md`'s two reviews, D7-8) and
+  `test_t07_v17_reference::test_f6_the_forty_runs_fit_their_budget` 589.5 s > 300 (alone: 420.7 s,
+  load 61; it failed at the branch point too, 418 s). `test_t07_conformance::
+  test_the_budget_of_the_scenario_runs` failed once in a targeted run, 129.0 s > 120; alone it
+  passes (scenario 118.2 s). No budget changed.
+- MSG-G0 `--check` (no `--suite`): `a 0 diff; b 0/562 diff (108 bundles); c 0/57 diff`; (d) not
+  measured in this run (WO-7/WO-8 are identity: no; last measured at `4324953f`: 0 hits in 429
+  stores). Surface moved as expected: `mcp_tools_sha256`, `operations/explain/*`,
+  `application-results.schema.json`.
+- MSG-G5: `doc_pages.py --check` up to date; `msg_catalogue.py sync-limitations --check` clean.
+- MSG-G7: no CLI golden record changed (the 17 records and exit codes; `explain` is a new command).
+- MSG-G8: `explain` equal on Python, CLI, HTTP and MCP for all 366 keys and for the refusal.
+- MSG-G10: R4-G3 and the MCP digest equal their pre-MSG values with `without_msg`
+  (`455d01eb…`); new values `SNAPSHOT_MSG_EXPLAIN` `a4fcafe7…`, `D_4` `1ca06b37…`.
