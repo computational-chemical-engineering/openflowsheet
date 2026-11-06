@@ -205,14 +205,19 @@ def test_m07a_a37_ci_dispatch_input_rc_alpha_selects_the_alphas_step_8() -> None
 
 def test_msg_g10_link_c_4_is_msgs_strip_and_digest(served: list[dict[str, Any]]) -> None:
     """c_4 (R-934): `without_msg` is the strip, and `D_4` the served digest the surface-digest
-    test registers (MSG-G10). Its register entry's digest and Frank's carry are the design
-    lane's to add (MSG build decision D6-4)."""
+    test registers (MSG-G10), and R-943's register entry carries it (review Q5, M6; R-457's form).
+    Frank's carry naming c_4 is a release-time item."""
     import test_t08_w2_surface_digest as surface
     from msg_schema_support import without_msg
 
     assert m07a_rc.strip_msg(served) == without_msg(copy.deepcopy(served))
     assert L3.digest == surface.MSG_SERVED_SHA256
     assert L2.digest == surface.M04_SERVED_SHA256
+    register = REGISTER.read_text(encoding="utf-8")
+    start = register.index("\n## R-943 ")
+    end = register.find("\n## R-", start + 1)
+    entry = register[start : end if end != -1 else None]
+    assert L3.digest in entry and L2.digest in entry
 
 
 def test_msg_the_added_description_is_pinned_at_its_recorded_hash() -> None:

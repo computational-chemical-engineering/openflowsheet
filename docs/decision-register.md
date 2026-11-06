@@ -18538,3 +18538,26 @@ family F6 replaces. A `ContextVar` collector or render-time property calls (R-93
 **Watch for.** A sidecar key in any serialized artifact (the session scan in `tests/conftest.py`); a pattern group
 capturing `nan`/`inf` (kept as text, review S2); a machine text edit that a `detail_pattern` silently stops matching
 (the corpus's `values` turn red).
+
+## R-943 — `main`'s surface chain gains link c_4 = (R-934/R-937, `without_msg`, `eaff4585…`); the 0.4 RC carry names it (review Q5, 2026-11-06)
+
+| | |
+| --- | --- |
+| Date | 2026-11-06 |
+| Decided by | design lane, MSG review Q5 and M6 (R-457's form); recorded by the build lane at MSG WO-12 |
+| Normative text | `docs/reviews/MSG-review.md` Q5, M6; ADR 0058 D5, D7; R-457 (the form, and "a new MCP-visible change … is a new link") |
+| Evidence | Measured on the merge tree (`wp/MSG` at `a8267cef`, `origin/main` merged): the served list (18 tools) digests to `eaff45852d7596816d90d744078f537e46c723e577295d347d9d73aea0942eac`; `without_msg` of it digests to `455d01eb2f420032b27358798e6b331a0120aa1857f02ce3cb7851647849e125` = D_3 (R-457), so the chain holds. MSG's only addition is the `explain` tool, its `explain.md` pinned by `m07a_rc.MSG_FILE_SHA256` (D7-7, with a control); no other tool's name or description moved (MSG-G10, `tests/test_t08_w2_surface_digest.py`) |
+| Affected packages | MSG (`scripts/m07a_rc.py` `LINKS`, `tests/test_m07a_surface_chain.py`), M07 (the 0.4 RC's surface step), M07a (the chain's tests) |
+
+**Decision.** `m07a_rc.LINKS` gains c_4 (R-934/R-937; strip `without_msg`, `tests/msg_schema_support.py`;
+D_4 = `eaff45852d7596816d90d744078f537e46c723e577295d347d9d73aea0942eac`, re-measured on the merge tree rather than
+taken from WO-7's `1ca06b37…`, which `explain.md`'s review edits moved). The envelope change is named here: A20's
+21 → 22 and D7-10's five pins follow from ADR 0058 D7 (review Q4). The carry naming c_4 is a release-time item, as
+R-457's is ("Frank's carry is the gate's check at a release, not a `main` test"): it goes on the 0.4 RC list and does
+not block the merge.
+
+**Rejected alternatives.** D_4 from WO-7's measurement (`1ca06b37…`): `main` and `explain.md` moved since. A fold of
+MSG's addition into c_3: R-457 makes each MCP-visible change its own link.
+
+**Watch for.** Any later change to `explain.md` or to a tool description moves D_4: re-measure it, re-pin
+`MSG_SERVED_SHA256` and `MSG_FILE_SHA256`, and amend this entry rather than editing the digest in place.
