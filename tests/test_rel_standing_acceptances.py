@@ -19,6 +19,7 @@ The inputs are of two kinds, and each says which it is:
 
 from __future__ import annotations
 
+import dataclasses
 import datetime
 import hashlib
 import json
@@ -739,3 +740,60 @@ def test_the_seed_fingerprints_recompute_at_a3e508e3() -> None:
     for seed in rows:
         digest, _ = seeded.evaluate(seed.scope, seed.accepted_at)
         assert digest == seed.fingerprint, seed.item
+
+
+# -- REL.A19: the seed is ADR 0053's six cells verbatim, at a3e508e3 (ADR 0055 D3.6) ---------------
+
+ADR_0053 = REPO_ROOT / "docs" / "adr" / "0053-v0.3.0-release-policy.md"
+C_0_3 = "a3e508e35fc5451fe56fa7b70941621992d35b50"
+LICENCES = "coolprop and lca licences"  # ADR 0055 N-7: V03 spec §11 N-11, the seventh row
+
+
+def a19_problems(seed: release_gate.Acceptances, adr_text: str) -> list[str]:
+    """REL.A19's text part: each of ADR 0053's six answer cells is a seeded row's cell, verbatim,
+    accepted at C₀.₃; the only other row is N-7's licence row. (The fingerprints recomputed at
+    `Accepted at` are `test_the_seed_fingerprints_recompute_at_a3e508e3`'s.)"""
+    answers = {
+        v0_2_gate._bare(cells[0]): cells[1 if len(header) == 2 else 2]
+        for header, table in v0_2_gate._tables(adr_text)
+        for cells in table
+        if [v0_2_gate._bare(c) for c in header][-1] in ("Frank's acceptance", "Frank's answer")
+    }
+    rows = {r.item: r for r in (*seed.failures, *seed.decisions)}
+    problems = [f"ADR 0053 has {len(answers)} cells, not six"] if len(answers) != 6 else []
+    for item, cell in answers.items():
+        if item not in rows:
+            problems.append(f"{item}: no seeded row")
+        elif rows[item].cell != cell:
+            problems.append(f"{item}: the answer cell is not ADR 0053's verbatim")
+    problems += [f"{item}: not D3.6's" for item in rows if item not in answers and item != LICENCES]
+    problems += [
+        f"{r.item}: accepted at {r.accepted_at}" for r in rows.values() if r.accepted_at != C_0_3
+    ]
+    return problems
+
+
+def test_rel_a19_the_seed_is_adr_0053_s_six_cells_verbatim() -> None:
+    """Base: no problem. Controls: one character of one cell changed, a row dropped, a row at
+    another commit."""
+    adr_text = ADR_0053.read_text(encoding="utf-8")
+    assert a19_problems(SEEDED, adr_text) == []
+    first = SEEDED.decisions[1]
+    edited = release_gate.Acceptances(
+        SEEDED.failures,
+        (
+            SEEDED.decisions[0],
+            dataclasses.replace(first, cell=first.cell + "."),
+            *SEEDED.decisions[2:],
+        ),
+    )
+    assert a19_problems(edited, adr_text) == [
+        f"{first.item}: the answer cell is not ADR 0053's verbatim"
+    ]
+    dropped = release_gate.Acceptances(SEEDED.failures[1:], SEEDED.decisions)
+    assert a19_problems(dropped, adr_text) == [f"{SEEDED.failures[0].item}: no seeded row"]
+    moved = release_gate.Acceptances(
+        SEEDED.failures,
+        (*SEEDED.decisions[:-1], dataclasses.replace(SEEDED.decisions[-1], accepted_at=OLD)),
+    )
+    assert a19_problems(moved, adr_text) == [f"{SEEDED.decisions[-1].item}: accepted at {OLD}"]

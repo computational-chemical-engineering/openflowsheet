@@ -15,6 +15,7 @@ import copy
 import dataclasses
 import json
 import os
+import re
 import subprocess
 import sys
 from collections.abc import Callable, Mapping
@@ -457,3 +458,55 @@ def test_a3_a_line_file_changed_after_c_exits_2(
     monkeypatch.setattr(release_gate, "_read_at", lambda candidate: reader())
     assert release_gate.main(["--line", "0.4", "--rc", "HEAD", "--lapses"]) == 0
     assert capsys.readouterr().out.startswith("acceptance lapses at C = ")
+
+
+# -- REL.A18: RP's coverage table (§14) -----------------------------------------------------------
+
+RP_TEXT = (REPO_ROOT / "docs" / "derivations" / "release-procedure.md").read_text(encoding="utf-8")
+A18_ROWS = (
+    "R-460",
+    "R-875",
+    "R-902",
+    "R-903",
+    "R-906",
+    "R-907",
+    "R-909",
+    "R-911",
+    "R-913",
+    "R-914",
+)
+
+
+def a18_problems(text: str) -> list[str]:
+    """REL.A18: §14's first ten rows are the ten register entries, in order, and every `§n` or
+    `§n.m` of a section cell names a heading of RP that exists."""
+    headings = set(re.findall(r"^#{2,3} (\d+(?:\.\d+)?)\. ", text, flags=re.MULTILINE))
+    headings |= set(re.findall(r"^#{2,3} (\d+\.\d+) ", text, flags=re.MULTILINE))
+    section = text[text.index("## 14. Coverage table") : text.index("## 15. ")]
+    rows = [
+        [cell.strip() for cell in line.strip().strip("|").split("|")]
+        for line in section.splitlines()
+        if line.startswith("| R-")
+    ]
+    problems = []
+    if tuple(row[0] for row in rows[:10]) != A18_ROWS:
+        problems.append(f"the first ten rows are {[row[0] for row in rows[:10]]}")
+    for row in rows:
+        references = re.findall(r"§(\d+(?:\.\d+)?)", row[2])
+        if not references:
+            problems.append(f"{row[0]}: no section")
+        problems += [
+            f"{row[0]}: §{ref} is not a heading" for ref in references if ref not in headings
+        ]
+    return problems
+
+
+def test_rel_a18_the_coverage_table() -> None:
+    """Base: no problem. Controls: a referenced heading removed, a row removed."""
+    assert a18_problems(RP_TEXT) == []
+    assert a18_problems(RP_TEXT.replace("### 6.4 Step 12", "### 6.4x Step 12")) == [
+        "R-909: §6.4 is not a heading",
+        "R-480: §6.4 is not a heading",
+    ]
+    without = "\n".join(line for line in RP_TEXT.splitlines() if not line.startswith("| R-907 "))
+    assert a18_problems(without)[0].startswith("the first ten rows are ")
