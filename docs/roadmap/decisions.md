@@ -112,3 +112,9 @@ Each entry gives the date, the question, the choice, who made it and where it is
   Q2.R11, Q4.R10–R12; new flag `flash_near_phase_boundary`, G16; G2/G4 tolerances 8ε); SQ-F6-5 changed for
   `vapor: null` (Q4.R13: the vapour group takes the first liquid port). New finding A5-a (verifier reason
   `temperature_degenerate_unlifted` is an untyped string) → ST/MSG reviewer. 21 edits applied by one implementer pass.
+- **2026-11-06** ST WO-1/WO-2 on `wp/ST` (c79a99db…dff3e439, pushed): G1–G7, G9, G10, G14, G16 pass (TH-C1 energy gap
+  1.4e-10 W; Table 8 max rel 3.8e-10); **G8 fails** on T05b:SC-1 (temperature-degenerate lifted split, raw flash lists
+  LIQUID only, Ḣ 2016 W off) — strict xfail, design-lane question E1 for ST's reviewer (default: reported failing). F0
+  PASS. Registry entry deferred until `wp/MSG` merges (4 package-data tests red on `wp/ST` until WO-3). Batched for the
+  reviewer: E1, D1-1 (verifier's per-component h uses Python `sum`, compensated from 3.12 — ST copies it for bitwise
+  G7; also a 3.11-vs-3.12 identity question for the verifier itself), D1-3, D1-6/D1-7 schema departures.
