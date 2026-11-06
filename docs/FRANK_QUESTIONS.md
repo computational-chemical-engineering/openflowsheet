@@ -379,7 +379,7 @@ acceptance that lapses when the accepted thing changes.
 
 ## RP — one or two messages to you per release? (2026-11-06, F-8)
 
-ADR 0055 D5 says each release asks you one message. The release procedure (RP) plans up to two: the first (only when
-non-empty) asks before judgement about standing acceptances that lapsed; the second, after the verdicts, asks about a
-failed clause. One message after the verdicts would bring back the `BLOCKED` row and 0.3.0's re-judgement round.
+ADR 0055 D5 says each release asks you one message. The release procedure (RP) plans up to two (RP §8.5): the first, before
+the verdict, asks for lapsed decision items and any claim-set change; the second, after `Judged`, asks for each failing
+clause without a standing acceptance (at 0.4.0, V14 (b)). An empty message is not sent. One message after the verdicts would bring back the `BLOCKED` row and 0.3.0's re-judgement round.
 Default (reviewer's recommendation, `docs/reviews/RP-review.md` ruling 1): keep two, the first only when non-empty.
