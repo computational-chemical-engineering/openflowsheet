@@ -64,8 +64,8 @@ T08_MANIFEST = "evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/manifest.j
 #: (`0ce3748…`, `tested`, 7 and 1), moves it on `wp/V03` (brief 6). F0's manifest (`ef1bf51…`,
 #: `tested`, 6 and 0) moves it on `wp/F0`, and its CI-fix re-take (`eba4bcb…`, `tested`, 5 and
 #: 0) on `wp/F0`. MSG's manifest (`b1a8235…`, `implemented`, 4 and 2) moves it on `wp/MSG`
-#: (MSG_DECISIONS D9-9).
-HARVEST_SIZE = (69, 943, 122)
+#: (MSG_DECISIONS D9-9); WO-12's (`9c76b93…`, `implemented`, 5 and 1) moves it again (D12-6).
+HARVEST_SIZE = (70, 948, 123)
 #: The 0.2.0 release candidate C′ (M07 spec §25, R-485).
 C_PRIME = "ce993651ce37c1343e771b276160bd6623e43500"
 #: The commit tagged v0.2.0.

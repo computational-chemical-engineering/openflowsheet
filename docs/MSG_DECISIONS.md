@@ -621,3 +621,9 @@ test reads R-943's entry for both digests. Commit `9c76b939`.
 - Performance (fresh process, 3 runs): 366 entries; cold load 120/119/111 ms; import 81/90/92 ms; render_error median
   0.082/0.074/0.071 ms; render_failure median 0.068/0.068/0.064 ms.
 - Manifest `evidence/MSG/9c76b939…/manifest.json`: `implemented` (the one non-load failure needs Frank's review).
+
+**D12-6. The WO-12 manifest in the harvest** (as D9-9). Push CI on `334f52a0` (run 42205758891) failed both `check`
+legs and `default-install` on three tests: the description review (expected), `test_m07a_a50_the_harvest_size_is_the_
+quoted_one` and `test_a21_every_item_is_classified_once_and_resolves` — the new manifest's five limitations and one
+non-pass check (MSG.GATE) were unclassified. Each is class P (no user-facing support claim), appended to
+`benchmarks/t08/support_envelope.yaml`; matrix re-emitted; `HARVEST_SIZE` (69, 943, 122) → (70, 948, 123).
