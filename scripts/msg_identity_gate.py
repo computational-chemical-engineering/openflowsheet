@@ -23,6 +23,10 @@ The baseline also records, for MSG-G10 later, the served MCP tool-list digest an
 every `OPERATIONS` row's request and response schema (the R4-G3 snapshots). They are reported by
 `--check` but do not decide MSG-G0.
 
+**After F0** (review Q3, M3): F0's `scripts/corpus_identity.py --check` replaces (a) and (c), so the
+default `--parts` is `bd`; record F0's line beside this one. `--parts abcd` still measures all four
+against the same baseline.
+
 Subprocesses pin the thread variables to 1 (`run/manifest.py` records them in every bundle).
 Prints one summary line; the full log goes to `--log`.
 
@@ -62,6 +66,10 @@ PARTS = ("a", "b", "c", "d")
 #: The run manifest's members that differ between two runs of one commit (measured: C01 written
 #: twice at one commit differs in exactly these). `manifest_sha256` covers the other two.
 VOLATILE_MANIFEST_KEYS = ("started_at", "elapsed_seconds", "manifest_sha256")
+
+
+#: Review Q3 (M3): F0 replaces (a) and (c); MSG-G0 measures (b) and (d).
+DEFAULT_PARTS = "bd"
 
 
 def sha256(data: bytes) -> str:
@@ -429,7 +437,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     stores.add_argument("--stores", type=Path, help="(d): a pytest base directory to scan")
     stores.add_argument("--suite", action="store_true", help="(d): run the full suite first")
     parser.add_argument(
-        "--parts", default="abcd", help="the parts to measure and judge (default: all four)"
+        "--parts",
+        default=DEFAULT_PARTS,
+        help="the parts to measure and judge (default: bd; F0 covers a and c, review Q3)",
     )
     parser.add_argument("--log", type=Path, default=None)
     arguments = parser.parse_args(argv)
@@ -482,7 +492,9 @@ def main(argv: Sequence[str] | None = None) -> int:
             summary.append(f"d {len(found['d'])} hit(s){where}")
         summary.append(f"surface {'moved: ' + ', '.join(moved[:4]) if moved else 'same'}")
         counts = "; ".join(summary)
-        if arguments.parts != "abcd":
+        if arguments.parts == DEFAULT_PARTS:
+            counts = f"{counts}; a, c: F0 (corpus_identity.py --check)"
+        elif arguments.parts != "abcd":
             counts = f"parts {arguments.parts} only: {counts}"
         print(f"MSG-G0 {'PASS' if passed else 'FAIL'}: {counts} (log {log_path})")
         if not passed:
