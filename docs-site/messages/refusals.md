@@ -1153,6 +1153,18 @@ The solve stopped before its first iteration: unit 'P' could not compute its out
   Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#out_of_domain
 ```
 
+Example:
+
+```text
+The solve ended LINE_SEARCH_FAILED (rank/linear/globalization failures).
+  Cause:   A property calculation for unit 'B' was asked for a state outside the range its property method covers.
+  Why:     A property method is valid only over a stated range of temperature and pressure, and outside it OpenFlowsheet stops instead of extrapolating. For example, water's IAPWS-95 method in this version covers 273.16 K to 1273.15 K and 100 Pa to 100 MPa.
+  Do:      The solver reached a state outside the property method's range at unit 'B' while iterating; the specified states may all be inside it. Give initial guesses closer to the expected solution, or check the specifications that drive the solve towards that state; the limitations page lists the range of each method.
+  Kind:    Numerical failure: the solver did not find the solution; your flowsheet may be correct.
+  Code:    out_of_domain, in LINE_SEARCH_FAILED (openflowsheet explain out_of_domain)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#out_of_domain
+```
+
 <a id="parameter_kind_unsupported"></a>
 
 ## `parameter_kind_unsupported`: Parameter kind unsupported

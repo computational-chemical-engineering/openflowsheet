@@ -546,6 +546,27 @@ def test_pressure_rise_explains_the_machine_it_names(machine: str, detail: str, 
     assert p_spec["unit"] == p_inlet["unit"] == "Pa"
 
 
+def test_out_of_domain_is_numerical_when_an_iterate_left_the_range() -> None:
+    """Review S1: under the traversal the state was specified (`input`); under an iterative
+    outcome the solver's iterate left the range (`numerical`)."""
+    at_start = _from_detail(
+        "initializer_failed(P): out_of_domain",
+        "out_of_domain",
+        "out_of_domain: temperature 200.0 K outside [273.16, 1273.15] K",
+    )
+    assert at_start["kind"] == "input"
+    assert "Here the temperature 200.0 K is outside" in at_start["why"]
+    assert [n["value"] for n in at_start["numbers"]] == [200.0, 273.16, 1273.15]
+    iterate = render_failure(
+        outcome="LINE_SEARCH_FAILED",
+        message="out_of_domain: pressure 1e-05 Pa outside [100.0, 100000000.0] Pa",
+        strict=True,
+    )
+    assert iterate["kind"] == "numerical"
+    assert "while iterating" in iterate["action"]
+    assert "For example, water's IAPWS-95" not in iterate["why"]
+
+
 NOT_FOUND = {
     "code": "not_found",
     "message": "no such artifact",

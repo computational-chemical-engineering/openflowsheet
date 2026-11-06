@@ -830,6 +830,10 @@ entries:
     why: "A property method is valid only over a stated range of temperature and pressure, and outside it OpenFlowsheet stops instead of extrapolating.[ The method reported: {detail!raw}.] For example, water's IAPWS-95 method in this version covers 273.16 K to 1273.15 K and 100 Pa to 100 MPa."
     action: "Check the temperatures and pressures specified for the streams[ that reach {unit}], for example a feed below the freezing point, and bring them inside the property method's range; the limitations page lists the range of each method."
     variants:
+      # Review S1: a solve's iterate, not a specified state, left the range.
+      - when: {outer: [ACTIVE_SET_CYCLING, ATTEMPTS_EXHAUSTED, BOUND_BLOCKED, BUDGET_EXHAUSTED, COUPLING_NOT_CONVERGED, EVALUATION_ERROR, HOMOTOPY_STALLED, INNER_SOLVE_INCONSISTENT, LINEAR_SOLVE_FAILED, LINE_SEARCH_FAILED, PTC_STALLED, RECYCLE_STAGNATION, STAGNATION]}
+        kind: numerical
+        action: "The solver reached a state outside the property method's range[ at unit {unit}] while iterating; the specified states may all be inside it. Give initial guesses closer to the expected solution, or check the specifications that drive the solve towards that state; the limitations page lists the range of each method."
       - when: {has: [what, value, low, high]}
         why: "A property method is valid only over a stated range of temperature and pressure, and outside it OpenFlowsheet stops instead of extrapolating. Here the {what!raw} {value} is outside the method's range of {low} to {high}."
     see_also: [initializer_failed]
@@ -839,6 +843,8 @@ entries:
                  value: {value: 200.0, unit: K, kind: null},
                  low: {value: 273.16, unit: K, kind: null},
                  high: {value: 1273.15, unit: K, kind: null}}
+      - chain: [LINE_SEARCH_FAILED, out_of_domain]
+        params: {unit: B}
   - code: parameter_kind_unsupported
     family: refusal
     kind: not_supported
