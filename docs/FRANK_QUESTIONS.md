@@ -376,3 +376,10 @@ The standing release procedure is written (`docs/derivations/release-procedure.m
 acceptance that lapses when the accepted thing changes.
 - **Q-11:** keep it as **one row** for both extras (default), or **one row per extra**, so that a change to the lca
   dependency lock re-asks you only about lca.
+
+## RP — one or two messages to you per release? (2026-11-06, F-8)
+
+ADR 0055 D5 says each release asks you one message. The release procedure (RP) plans up to two: the first (only when
+non-empty) asks before judgement about standing acceptances that lapsed; the second, after the verdicts, asks about a
+failed clause. One message after the verdicts would bring back the `BLOCKED` row and 0.3.0's re-judgement round.
+Default (reviewer's recommendation, `docs/reviews/RP-review.md` ruling 1): keep two, the first only when non-empty.

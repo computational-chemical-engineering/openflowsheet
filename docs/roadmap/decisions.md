@@ -174,3 +174,14 @@ Next: WO-12 (M1, M3, M4, M6; full gate; manifest). R-942's number re-checked at 
 fails; Q-C5). Full gate at `3e7ccf00`: 29 fail + 1 error, all browser smoke under load (alone 31 pass). Manifest
 `evidence/S15/3e7ccf00…` `implemented` (schema refuses `RP` and `REL040`, Q-C6). Reviewer brief
 `docs/briefs/RP-reviewer.md` batches F-1…F-3, Q-1…Q-15, gates[*], ADR 0055 acceptance restatement, Q-B*, Q-C1…C6.
+
+## 2026-11-06 — RP review (`d1b4a593`) → WO-R7
+
+RP sound once amended (A-1…A-8). Must-fix: M-1 standing-mode decision items unpinned (mutation passed 40/40), M-2
+REL.A20 via A-1 (S18 to changed form), M-3 ADR 0055 restated acceptance. Before K3: schema ADR for `REL[0-9]{3,}`;
+ADR 0055 Accepted on the restated condition. Should-fix S-1…S-7.
+DECISION: fold S-1…S-5, S-7 and C-12's check into WO-R7 now; S-6 (rehearse never-run steps) as a pre-K3 task.
+Alternative: all should-fix at the cut. Reversible by: dropping those commits.
+DECISION: F-8 (up to two messages to Frank per release, ADR D5 says one) → keep two, first only when non-empty (reviewer's
+recommendation), asked of Frank. Reversible by: Frank's answer + an RP amendment.
+Brief `docs/briefs/REL-build-WO-R7.md`.
