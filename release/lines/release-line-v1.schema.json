@@ -1,0 +1,410 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "release-line-v1.schema.json",
+  "title": "release-line-v1",
+  "description": "A release line file (ADR 0055 D1.2; RP section 3). Shape only: RP.L01-L10 are the loader's.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["format", "line", "role", "inherits", "changed", "gate_set", "changelog_what_it_is_not"],
+  "properties": {
+    "format": {
+      "const": "release-line-v1"
+    },
+    "line": {
+      "$ref": "#/$defs/line"
+    },
+    "role": {
+      "enum": ["inheritance", "gate"]
+    },
+    "inherits": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "#/$defs/line"
+        }
+      ]
+    },
+    "changed": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "enum": [
+          "gate_set.name",
+          "gate_set.covers",
+          "gate_set.claimed",
+          "gate_set.not_claimed",
+          "gate_set.clause",
+          "gate_set.acceptances",
+          "gate_set.verdict_document",
+          "gate_set.rc_record",
+          "gate_set.rc_steps",
+          "gate_set.rc_last_step",
+          "gate_set.evidence_package",
+          "gate_set.packages",
+          "gate_set.envelope_id",
+          "gate_set.required_adrs",
+          "gate_set.frank_items",
+          "gate_set.rejudge_waits",
+          "gate_set.links_item",
+          "gate_set.specification_texts",
+          "gates",
+          "rc_items",
+          "changelog_what_it_is_not"
+        ]
+      }
+    },
+    "_comment": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "gate_set": {
+      "$ref": "#/$defs/gate_set"
+    },
+    "changelog_what_it_is_not": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "gates": {
+      "type": "object",
+      "minProperties": 1,
+      "propertyNames": {
+        "$ref": "#/$defs/gate_id"
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/gate"
+      }
+    },
+    "rc_items": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/rc_item"
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "role": {
+            "const": "gate"
+          }
+        }
+      },
+      "then": {
+        "required": ["gates", "rc_items"],
+        "properties": {
+          "inherits": {
+            "$ref": "#/$defs/line"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "inherits": {
+            "type": "null"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "changed": {
+            "maxItems": 0
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "line": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"
+    },
+    "gate_id": {
+      "type": "string",
+      "pattern": "^[A-Z][0-9]{2}$"
+    },
+    "path": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_.][A-Za-z0-9_./-]*$",
+      "not": {
+        "pattern": "(^|/)\\.\\.(/|$)"
+      }
+    },
+    "glob": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_.*?][A-Za-z0-9_./*?-]*$",
+      "not": {
+        "pattern": "(^|/)\\.\\.(/|$)"
+      }
+    },
+    "gate_ids": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/gate_id"
+      }
+    },
+    "gate_set": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "covers",
+        "claimed",
+        "not_claimed",
+        "clause",
+        "acceptances",
+        "verdict_document",
+        "rc_record",
+        "rc_steps",
+        "rc_last_step",
+        "evidence_package",
+        "packages",
+        "envelope_id",
+        "required_adrs",
+        "frank_items",
+        "rejudge_waits",
+        "links_item",
+        "specification_texts"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^v(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)-gate-v[1-9][0-9]*$"
+        },
+        "covers": {
+          "type": "string",
+          "minLength": 1
+        },
+        "claimed": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/gate_ids"
+            },
+            {
+              "minItems": 1
+            }
+          ]
+        },
+        "not_claimed": {
+          "$ref": "#/$defs/gate_ids"
+        },
+        "clause": {
+          "type": "string",
+          "pattern": "^\\\\b\\(\\?:.+\\) \\\\\\(\\[a-z0-9\\]\\+\\\\\\)$"
+        },
+        "acceptances": {
+          "$ref": "#/$defs/path"
+        },
+        "verdict_document": {
+          "$ref": "#/$defs/path"
+        },
+        "rc_record": {
+          "$ref": "#/$defs/path"
+        },
+        "rc_steps": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "rc_last_step": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "evidence_package": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Za-z0-9]*$"
+        },
+        "packages": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Za-z0-9]*$"
+          }
+        },
+        "envelope_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "required_adrs": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^[0-9]{4}$"
+          }
+        },
+        "frank_items": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "rejudge_waits": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/$defs/gate_id"
+              },
+              {
+                "type": "string",
+                "minLength": 1
+              }
+            ],
+            "minItems": 2,
+            "maxItems": 2
+          }
+        },
+        "links_item": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "string",
+              "minLength": 1
+            }
+          ]
+        },
+        "specification_texts": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "string",
+                  "minLength": 1
+                },
+                {
+                  "type": "string",
+                  "minLength": 1
+                }
+              ],
+              "minItems": 2,
+              "maxItems": 2
+            }
+          ]
+        }
+      }
+    },
+    "gate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tests", "rc", "criteria", "documents"],
+      "properties": {
+        "tests": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/glob"
+          }
+        },
+        "rc": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "type": "integer",
+                "minimum": 1
+              },
+              {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "^[^*]*\\*?$"
+              }
+            ],
+            "minItems": 2,
+            "maxItems": 2
+          }
+        },
+        "criteria": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/path"
+          }
+        },
+        "documents": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/path"
+          }
+        }
+      }
+    },
+    "rc_item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "assertion", "script", "where"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[A-Z0-9][A-Za-z0-9-]*$"
+        },
+        "assertion": {
+          "type": "string",
+          "minLength": 1
+        },
+        "script": {
+          "$ref": "#/$defs/path"
+        },
+        "where": {
+          "type": "string",
+          "pattern": "^(local:(project|coolprop|reactor|nlp|lca)|ci:[a-z0-9][a-z0-9-]*)$"
+        },
+        "command": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "if": {
+        "properties": {
+          "where": {
+            "pattern": "^local:"
+          }
+        }
+      },
+      "then": {
+        "required": ["command"]
+      },
+      "else": {
+        "not": {
+          "required": ["command"]
+        }
+      }
+    }
+  }
+}
