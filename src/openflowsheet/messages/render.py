@@ -45,6 +45,7 @@ from openflowsheet.messages.legacy import (
     Segment,
     detail_params,
     parse_chain,
+    parse_check,
     resolve,
 )
 
@@ -497,6 +498,8 @@ def _elements(request: _Request, resolved: list[tuple[int, Entry]]) -> list[dict
             else:
                 add(located[0], _raw(value), located[1])
     for identifier in request.extra_elements:
+        if any(element["id"] == identifier for element in out):
+            continue  # an implicated id a chain param already typed (rule 2's check, Q2)
         located = _locate("element", identifier, request.context.revision)
         if located is None:
             add("element", identifier, None)
@@ -574,26 +577,56 @@ def render_code(
     return _explain(request, catalogue, strict=strict)
 
 
+def _implicated(check: Mapping[str, Any]) -> tuple[str, ...]:
+    objects = check.get("implicated_objects")
+    if not isinstance(objects, Sequence) or isinstance(objects, str):
+        return ()
+    return tuple(str(item) for item in objects)
+
+
+def _report_chain(
+    report: Mapping[str, Any], catalogue: Catalogue
+) -> tuple[Chain, tuple[str, ...]] | None:
+    """§4.4 rule 2 as amended by review Q2: the first `FAIL` check — its id, then the codes of
+    its message; else, on a `DRAFT` report, the codes of the first `NOT_RUN` check whose
+    message names a code with an entry; never a `WARN`. With the check's implicated objects."""
+    checks = [check for check in report["checks"] if isinstance(check, Mapping)]
+    for check in checks:
+        if check.get("result") == "FAIL" and check.get("id"):
+            inner = parse_check(str(check.get("message") or ""), catalogue)
+            chain = Chain((Segment(str(check["id"])), *inner.segments), inner.status, inner.detail)
+            return chain, _implicated(check)
+    if report.get("status") != "DRAFT":
+        return None
+    for check in checks:
+        if check.get("result") == "NOT_RUN":
+            inner = parse_check(str(check.get("message") or ""), catalogue)
+            if inner.segments:
+                return inner, _implicated(check)
+    return None
+
+
 def _candidate_chain(
     detail: Mapping[str, Any], message: str, catalogue: Catalogue
-) -> tuple[Chain, bool]:
-    """§4.4: the first candidate text that yields a code; `True` when it was the binder's."""
+) -> tuple[Chain, bool, tuple[str, ...]]:
+    """§4.4: the first candidate text that yields a code; `True` when it was the binder's; and
+    the implicated objects of the validation check rule 2 read, if it did."""
     unbound = detail.get("unbound")
     if isinstance(unbound, Mapping) and isinstance(unbound.get("detail"), str):
         chain = parse_chain(unbound["detail"], catalogue)
         if chain.segments:
-            return chain, True
+            return chain, True, ()
     report = detail.get("report")
     if isinstance(report, Mapping) and isinstance(report.get("checks"), Sequence):
-        for check in report["checks"]:
-            if isinstance(check, Mapping) and check.get("result") == "FAIL" and check.get("id"):
-                return Chain((Segment(str(check["id"])),)), False
+        found = _report_chain(report, catalogue)
+        if found is not None:
+            return found[0], False, found[1]
     reason = detail.get("reason")
     if isinstance(reason, str):
         chain = parse_chain(reason, catalogue)
         if chain.segments:
-            return chain, False
-    return parse_chain(message, catalogue), False
+            return chain, False, ()
+    return parse_chain(message, catalogue), False, ()
 
 
 def render_error(
@@ -612,7 +645,7 @@ def render_error(
         detail = {}
     if context.operation is None and isinstance(detail.get("operation"), str):
         context = replace(context, operation=detail["operation"])
-    chain, from_binder = _candidate_chain(detail, message, catalogue)
+    chain, from_binder, implicated_objects = _candidate_chain(detail, message, catalogue)
     links = [Link(code), *resolve(chain, catalogue)]
     declared = {
         name
@@ -623,13 +656,13 @@ def render_error(
     members = {name: value for name, value in detail.items() if name in declared}
     unbound = detail.get("unbound")
     hint = None
-    extra: tuple[str, ...] = ()
+    extra: tuple[str, ...] = implicated_objects
     kind_override = None
     if isinstance(unbound, Mapping):
         hint = unbound.get("hint") if isinstance(unbound.get("hint"), str) else None
         implicated = unbound.get("implicated")
         if isinstance(implicated, Sequence) and not isinstance(implicated, str):
-            extra = tuple(str(item) for item in implicated)
+            extra += tuple(str(item) for item in implicated)
         if from_binder and unbound.get("kind") in UNBOUND_INPUT_KINDS:
             kind_override = "input"
     request = _Request(

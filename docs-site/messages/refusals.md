@@ -1771,13 +1771,26 @@ Directory 'plant' is not empty: it already holds a project, and create() needs a
 
 <a id="specification_missing"></a>
 
-## `specification_missing`: Specification missing
+## `specification_missing`: A value that no specification fixes
 
 **Kind:** Input problem: something in the flowsheet or the request needs to change.
 
-*No plain-language explanation is written yet; the summary is the technical one.*
+- **Summary:** The revision is incomplete: no specification fixes &lt;column&gt; (on &lt;object&gt;).
+- **Why:** A solve needs every value its units leave free to be fixed by exactly one specification. Here &lt;column&gt; is left free, so the equations do not determine the state.
+- **Do:** Add one fixed specification for &lt;column&gt;, for example with target &lt;object&gt;; the check's message lists the kind, unit and target each choice takes.
+- **Parameters:** `column` (text), `object` (element, optional)
+- **See also:** [`specification_unconsumed`](#specification_unconsumed), [`revision_not_ready`](api-errors.md#revision_not_ready)
 
-- **Summary:** Refused: specification missing.
+Example:
+
+```text
+The revision is incomplete: no specification fixes S4.P (on 'S4').
+  Why:     A solve needs every value its units leave free to be fixed by exactly one specification. Here S4.P is left free, so the equations do not determine the state.
+  Do:      Add one fixed specification for S4.P, for example with target 'S4'; the check's message lists the kind, unit and target each choice takes.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    specification_missing, in revision_not_ready (openflowsheet explain specification_missing)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#specification_missing
+```
 
 <a id="specification_pairing_unsupported"></a>
 
@@ -1821,23 +1834,49 @@ Directory 'plant' is not empty: it already holds a project, and create() needs a
 
 <a id="specification_unconsumed"></a>
 
-## `specification_unconsumed`: Specification unconsumed
+## `specification_unconsumed`: A specification that no unit reads
 
 **Kind:** Input problem: something in the flowsheet or the request needs to change.
 
-*No plain-language explanation is written yet; the summary is the technical one.*
+- **Summary:** Specification &lt;specification&gt; sets a value that no unit reads: unit &lt;unit&gt; (&lt;model&gt;) does not read &lt;column&gt;.
+- **Why:** Each specification must fix a value a unit's model reads. One that nothing reads would be ignored silently, so validation refuses it; it usually means one specification too many, or one on the wrong variable or object.
+- **Do:** Remove &lt;specification&gt;, or change its target to a value the unit reads (&lt;unit&gt; reads &lt;reads&gt;, among others); the check's message lists the kind, unit and target each one takes.
+- **Parameters:** `specification` (specification), `unit` (unit, optional), `model` (text, optional), `column` (text, optional), `reads` (text, optional)
+- **See also:** [`specification_missing`](#specification_missing), [`revision_not_ready`](api-errors.md#revision_not_ready)
 
-- **Summary:** Refused: specification unconsumed.
+Example:
+
+```text
+Specification 'pump-T' sets a value that no unit reads: unit 'P' (thermal.pump) does not read S2.T.
+  Why:     Each specification must fix a value a unit's model reads. One that nothing reads would be ignored silently, so validation refuses it; it usually means one specification too many, or one on the wrong variable or object.
+  Do:      Remove 'pump-T', or change its target to a value the unit reads ('P' reads outlet_pressure, among others); the check's message lists the kind, unit and target each one takes.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    specification_unconsumed, in revision_not_ready (openflowsheet explain specification_unconsumed)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#specification_unconsumed
+```
 
 <a id="specification_unit_unsupported"></a>
 
-## `specification_unit_unsupported`: Specification unit unsupported
+## `specification_unit_unsupported`: A specification's unit that its quantity kind does not take
 
-**Kind:** Not supported in this version: a limitation of OpenFlowsheet, not an error in your flowsheet.
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
 
-*No plain-language explanation is written yet; the summary is the technical one.*
+- **Summary:** Specification &lt;specification&gt; gives its value in a unit its quantity kind does not take: a &lt;quantity&gt; takes &lt;units&gt;.
+- **Why:** Validation accepts for each quantity kind only the units listed for it, spelled exactly: unit symbols are case-sensitive, so a temperature takes "degC" but not "degc".
+- **Do:** Correct the spelling of the unit of &lt;specification&gt; to one of &lt;units&gt;, or give the value in one of the accepted units.
+- **Parameters:** `specification` (specification), `quantity` (text, optional), `units` (text, optional)
+- **See also:** [`DIM-01`](checks.md#DIM-01), [`revision_not_ready`](api-errors.md#revision_not_ready)
 
-- **Summary:** Refused: specification unit unsupported.
+Example:
+
+```text
+Specification 'boiler-T' gives its value in a unit its quantity kind does not take: a temperature takes K, degC, degF.
+  Why:     Validation accepts for each quantity kind only the units listed for it, spelled exactly: unit symbols are case-sensitive, so a temperature takes "degC" but not "degc".
+  Do:      Correct the spelling of the unit of 'boiler-T' to one of K, degC, degF, or give the value in one of the accepted units.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    specification_unit_unsupported, in revision_not_ready → DIM-01 (openflowsheet explain specification_unit_unsupported)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#specification_unit_unsupported
+```
 
 <a id="specification_unsupported"></a>
 

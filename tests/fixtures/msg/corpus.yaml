@@ -164,101 +164,92 @@ cases:
 - id: C06
   mistake: One specification too many, the pump outlet temperature on top of its outlet pressure.
   surfaces: [python, cli, http, mcp]
-  code: revision_not_ready
+  code: specification_unconsumed
   kind: input
-  chain: [revision_not_ready]
-  in_summary: []
-  elements: []
+  chain: [revision_not_ready, specification_unconsumed]
+  in_summary: [S2.T]
+  elements: [pump-T, P]
   numbers: []
-  action_token: check
+  action_token: Remove
   gap: null
-  pending:
-  - what: elements
-    expect: [pump-T]
-    reason: d9-2
+  pending: []
   text:
     python: |-
-      The revision is not ready to solve: it does not pass validation for simulation.
-        Why:     A solve starts only from a revision whose validation finds it ready for simulation. Validation marks a revision DRAFT when a check could not run, for example because a specification is missing, extra or not read by its unit, or a unit's model is not available; it marks it INVALID when a check fails.
-        Do:      Validate the revision and read each check that did not pass (the error's report lists the same checks): its message names the specification, stream or unit to change.
+      Specification 'pump-T' sets a value that no unit reads: unit 'P' (thermal.pump) does not read S2.T.
+        Why:     Each specification must fix a value a unit's model reads. One that nothing reads would be ignored silently, so validation refuses it; it usually means one specification too many, or one on the wrong variable or object.
+        Do:      Remove 'pump-T', or change its target to a value the unit reads ('P' reads outlet_pressure, among others); the check's message lists the kind, unit and target each one takes.
         Kind:    Input problem: something in the flowsheet or the request needs to change.
-        Code:    revision_not_ready (openflowsheet explain revision_not_ready)
-        Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/api-errors/#revision_not_ready
+        Code:    specification_unconsumed, in revision_not_ready (openflowsheet explain specification_unconsumed)
+        Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#specification_unconsumed
         Details: revision_not_ready: revision 'rev-000001' validates DRAFT, not READY_FOR_SIMULATION
     cli: |
-      The revision is not ready to solve: it does not pass validation for simulation.
-        Why:     A solve starts only from a revision whose validation finds it ready for simulation. Validation marks a revision DRAFT when a check could not run, for example because a specification is missing, extra or not read by its unit, or a unit's model is not available; it marks it INVALID when a check fails.
-        Do:      Validate the revision and read each check that did not pass (the error's report lists the same checks): its message names the specification, stream or unit to change.
+      Specification 'pump-T' sets a value that no unit reads: unit 'P' (thermal.pump) does not read S2.T.
+        Why:     Each specification must fix a value a unit's model reads. One that nothing reads would be ignored silently, so validation refuses it; it usually means one specification too many, or one on the wrong variable or object.
+        Do:      Remove 'pump-T', or change its target to a value the unit reads ('P' reads outlet_pressure, among others); the check's message lists the kind, unit and target each one takes.
         Kind:    Input problem: something in the flowsheet or the request needs to change.
-        Code:    revision_not_ready (openflowsheet explain revision_not_ready)
-        Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/api-errors/#revision_not_ready
+        Code:    specification_unconsumed, in revision_not_ready (openflowsheet explain specification_unconsumed)
+        Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#specification_unconsumed
         Details: revision_not_ready: revision 'rev-000001' validates DRAFT, not READY_FOR_SIMULATION
 - id: C07
   mistake: One specification too few, the turbine outlet pressure removed.
   surfaces: [python, cli, http, mcp]
-  code: revision_not_ready
+  code: specification_missing
   kind: input
-  chain: [revision_not_ready]
-  in_summary: []
-  elements: []
+  chain: [revision_not_ready, specification_missing]
+  in_summary: [S4.P]
+  elements: [S4]
   numbers: []
-  action_token: check
+  action_token: Add one fixed specification
   gap: null
-  pending:
-  - what: elements
-    expect: [S4]
-    reason: d9-2
+  pending: []
   text:
     python: |-
-      The revision is not ready to solve: it does not pass validation for simulation.
-        Why:     A solve starts only from a revision whose validation finds it ready for simulation. Validation marks a revision DRAFT when a check could not run, for example because a specification is missing, extra or not read by its unit, or a unit's model is not available; it marks it INVALID when a check fails.
-        Do:      Validate the revision and read each check that did not pass (the error's report lists the same checks): its message names the specification, stream or unit to change.
+      The revision is incomplete: no specification fixes S4.P (on 'S4').
+        Why:     A solve needs every value its units leave free to be fixed by exactly one specification. Here S4.P is left free, so the equations do not determine the state.
+        Do:      Add one fixed specification for S4.P, for example with target 'S4'; the check's message lists the kind, unit and target each choice takes.
         Kind:    Input problem: something in the flowsheet or the request needs to change.
-        Code:    revision_not_ready (openflowsheet explain revision_not_ready)
-        Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/api-errors/#revision_not_ready
+        Code:    specification_missing, in revision_not_ready (openflowsheet explain specification_missing)
+        Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#specification_missing
         Details: revision_not_ready: revision 'rev-000001' validates DRAFT, not READY_FOR_SIMULATION
     cli: |
-      The revision is not ready to solve: it does not pass validation for simulation.
-        Why:     A solve starts only from a revision whose validation finds it ready for simulation. Validation marks a revision DRAFT when a check could not run, for example because a specification is missing, extra or not read by its unit, or a unit's model is not available; it marks it INVALID when a check fails.
-        Do:      Validate the revision and read each check that did not pass (the error's report lists the same checks): its message names the specification, stream or unit to change.
+      The revision is incomplete: no specification fixes S4.P (on 'S4').
+        Why:     A solve needs every value its units leave free to be fixed by exactly one specification. Here S4.P is left free, so the equations do not determine the state.
+        Do:      Add one fixed specification for S4.P, for example with target 'S4'; the check's message lists the kind, unit and target each choice takes.
         Kind:    Input problem: something in the flowsheet or the request needs to change.
-        Code:    revision_not_ready (openflowsheet explain revision_not_ready)
-        Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/api-errors/#revision_not_ready
+        Code:    specification_missing, in revision_not_ready (openflowsheet explain specification_missing)
+        Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#specification_missing
         Details: revision_not_ready: revision 'rev-000001' validates DRAFT, not READY_FOR_SIMULATION
 - id: C08
   mistake: The boiler outlet temperature given in the unit "degc".
   surfaces: [python, cli, http, mcp]
-  code: DIM-01
+  code: specification_unit_unsupported
   kind: input
-  chain: [revision_not_ready, DIM-01]
-  in_summary: []
-  elements: []
+  chain: [revision_not_ready, DIM-01, specification_unit_unsupported]
+  in_summary: [degC]
+  elements: [boiler-T]
   numbers: []
   action_token: spelling
   gap: null
   pending:
-  - what: elements
-    expect: [boiler-T]
-    reason: d9-2
   - what: summary
     expect: degc
-    reason: d9-2
+    reason: ctx
   text:
     python: |-
-      A specification or parameter has a unit that its kind (temperature, pressure, flow, ...) does not accept.
-        Why:     Each specification and parameter declares a quantity kind and a unit, and validation accepts only the units listed for that kind, spelled exactly: unit symbols are case-sensitive, so a temperature takes "degC" but not "degc".
-        Do:      Read the check's message: it names the specification or parameter and the units its kind accepts. Correct the unit's spelling, or give the value in one of the accepted units.
+      Specification 'boiler-T' gives its value in a unit its quantity kind does not take: a temperature takes K, degC, degF.
+        Why:     Validation accepts for each quantity kind only the units listed for it, spelled exactly: unit symbols are case-sensitive, so a temperature takes "degC" but not "degc".
+        Do:      Correct the spelling of the unit of 'boiler-T' to one of K, degC, degF, or give the value in one of the accepted units.
         Kind:    Input problem: something in the flowsheet or the request needs to change.
-        Code:    DIM-01, in revision_not_ready (openflowsheet explain DIM-01)
-        Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/checks/#DIM-01
+        Code:    specification_unit_unsupported, in revision_not_ready → DIM-01 (openflowsheet explain specification_unit_unsupported)
+        Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#specification_unit_unsupported
         Details: revision_not_ready: revision 'rev-000001' validates INVALID, not READY_FOR_SIMULATION
     cli: |
-      A specification or parameter has a unit that its kind (temperature, pressure, flow, ...) does not accept.
-        Why:     Each specification and parameter declares a quantity kind and a unit, and validation accepts only the units listed for that kind, spelled exactly: unit symbols are case-sensitive, so a temperature takes "degC" but not "degc".
-        Do:      Read the check's message: it names the specification or parameter and the units its kind accepts. Correct the unit's spelling, or give the value in one of the accepted units.
+      Specification 'boiler-T' gives its value in a unit its quantity kind does not take: a temperature takes K, degC, degF.
+        Why:     Validation accepts for each quantity kind only the units listed for it, spelled exactly: unit symbols are case-sensitive, so a temperature takes "degC" but not "degc".
+        Do:      Correct the spelling of the unit of 'boiler-T' to one of K, degC, degF, or give the value in one of the accepted units.
         Kind:    Input problem: something in the flowsheet or the request needs to change.
-        Code:    DIM-01, in revision_not_ready (openflowsheet explain DIM-01)
-        Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/checks/#DIM-01
+        Code:    specification_unit_unsupported, in revision_not_ready → DIM-01 (openflowsheet explain specification_unit_unsupported)
+        Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#specification_unit_unsupported
         Details: revision_not_ready: revision 'rev-000001' validates INVALID, not READY_FOR_SIMULATION
 - id: C09
   mistake: The feed temperature at 200 K, below the range of water's property method.
@@ -295,37 +286,34 @@ cases:
 - id: C10
   mistake: The boiler's model id misspelt, thermal.boiler for thermal.heater.
   surfaces: [python, cli, http, mcp]
-  code: revision_not_ready
-  kind: input
-  chain: [revision_not_ready]
-  in_summary: []
+  code: model_unsupported
+  kind: not_supported
+  chain: [revision_not_ready, model_unsupported]
+  in_summary: [thermal.boiler]
   elements: []
   numbers: []
-  action_token: check
-  gap: null
+  action_token: list_models
+  gap: {limitation: null, capability: true}
   pending:
-  - what: code
-    expect: {code: model_unsupported, kind: not_supported, capability: true}
-    reason: d9-2
   - what: elements
     expect: [B]
-    reason: d9-2
+    reason: ctx
   text:
     python: |-
-      The revision is not ready to solve: it does not pass validation for simulation.
-        Why:     A solve starts only from a revision whose validation finds it ready for simulation. Validation marks a revision DRAFT when a check could not run, for example because a specification is missing, extra or not read by its unit, or a unit's model is not available; it marks it INVALID when a check fails.
-        Do:      Validate the revision and read each check that did not pass (the error's report lists the same checks): its message names the specification, stream or unit to change.
-        Kind:    Input problem: something in the flowsheet or the request needs to change.
-        Code:    revision_not_ready (openflowsheet explain revision_not_ready)
-        Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/api-errors/#revision_not_ready
+      No model with the id "thermal.boiler" is available in this version.
+        Why:     Each unit names the model that computes it. This version computes only the models it lists, and a unit's model id must match one of them exactly, prefix included (for example thermal.heater).
+        Do:      Compare the unit's model id with the available models (the list_models operation, or openflowsheet api list_models): correct its spelling, or choose a listed model that does what the unit needs.
+        Kind:    Not supported in this version: a limitation of OpenFlowsheet, not an error in your flowsheet.
+        Code:    model_unsupported, in revision_not_ready (openflowsheet explain model_unsupported)
+        Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#model_unsupported
         Details: revision_not_ready: revision 'rev-000001' validates DRAFT, not READY_FOR_SIMULATION
     cli: |
-      The revision is not ready to solve: it does not pass validation for simulation.
-        Why:     A solve starts only from a revision whose validation finds it ready for simulation. Validation marks a revision DRAFT when a check could not run, for example because a specification is missing, extra or not read by its unit, or a unit's model is not available; it marks it INVALID when a check fails.
-        Do:      Validate the revision and read each check that did not pass (the error's report lists the same checks): its message names the specification, stream or unit to change.
-        Kind:    Input problem: something in the flowsheet or the request needs to change.
-        Code:    revision_not_ready (openflowsheet explain revision_not_ready)
-        Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/api-errors/#revision_not_ready
+      No model with the id "thermal.boiler" is available in this version.
+        Why:     Each unit names the model that computes it. This version computes only the models it lists, and a unit's model id must match one of them exactly, prefix included (for example thermal.heater).
+        Do:      Compare the unit's model id with the available models (the list_models operation, or openflowsheet api list_models): correct its spelling, or choose a listed model that does what the unit needs.
+        Kind:    Not supported in this version: a limitation of OpenFlowsheet, not an error in your flowsheet.
+        Code:    model_unsupported, in revision_not_ready (openflowsheet explain model_unsupported)
+        Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#model_unsupported
         Details: revision_not_ready: revision 'rev-000001' validates DRAFT, not READY_FOR_SIMULATION
 - id: C11
   mistake: The turbine outlet pressure at 5 MPa, above its 3 MPa inlet.

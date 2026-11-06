@@ -1207,9 +1207,21 @@ entries:
   - code: specification_missing
     family: refusal
     kind: input
-    complete: false
-    title: Specification missing
-    summary: 'Refused: specification missing.'
+    complete: true
+    title: A value that no specification fixes
+    args: [column]
+    # Review Q2: the binder's hint names where a specification would go (`revision_binding.py`).
+    detail_pattern: 'object_id: (?P<object>[^,}]+)'
+    params:
+      column: {type: text, label: value left free}
+      object: {type: element, optional: true, label: where a specification would fix it}
+    summary: "The revision is incomplete: no specification fixes {column!raw}[ (on {object})]."
+    why: "A solve needs every value its units leave free to be fixed by exactly one specification. Here {column!raw} is left free, so the equations do not determine the state."
+    action: "Add one fixed specification for {column!raw}[, for example with target {object}]; the check's message lists the kind, unit and target each choice takes."
+    see_also: [specification_unconsumed, revision_not_ready]
+    examples:
+      - chain: [revision_not_ready, specification_missing]
+        params: {column: S4.P, object: S4}
   - code: specification_pairing_unsupported
     family: refusal
     kind: not_supported
@@ -1237,10 +1249,24 @@ entries:
   - code: specification_unconsumed
     family: refusal
     kind: input
-    complete: false
-    title: Specification unconsumed
-    summary: 'Refused: specification unconsumed.'
-    review: true
+    complete: true
+    title: A specification that no unit reads
+    args: [specification]
+    # Review Q2: the binder's hint (`revision_binding.py` `_unconsumed_hint`).
+    detail_pattern: '(?P<unit>[^ ]+) \((?P<model>[^)]+)\) does not read column (?P<column>[^;]+); it reads (?P<reads>[a-z0-9_]+)(?=: )'
+    params:
+      specification: {type: specification}
+      unit:          {type: unit, optional: true}
+      model:         {type: text, optional: true, label: model id}
+      column:        {type: text, optional: true, label: value it sets}
+      reads:         {type: text, optional: true, label: what the unit reads}
+    summary: "Specification {specification} sets a value that no unit reads[: unit {unit} ({model!raw}) does not read {column!raw}]."
+    why: "Each specification must fix a value a unit's model reads. One that nothing reads would be ignored silently, so validation refuses it; it usually means one specification too many, or one on the wrong variable or object."
+    action: "Remove {specification}, or change its target to a value the unit reads[ ({unit} reads {reads!raw}, among others)]; the check's message lists the kind, unit and target each one takes."
+    see_also: [specification_missing, revision_not_ready]
+    examples:
+      - chain: [revision_not_ready, specification_unconsumed]
+        params: {specification: pump-T, unit: P, model: thermal.pump, column: S2.T, reads: outlet_pressure}
   - code: specification_unsupported
     family: refusal
     kind: not_supported
@@ -1481,10 +1507,23 @@ entries:
     summary: 'Refused: specification kind unsupported.'
   - code: specification_unit_unsupported
     family: refusal
-    kind: not_supported
-    complete: false
-    title: Specification unit unsupported
-    summary: 'Refused: specification unit unsupported.'
+    kind: input
+    complete: true
+    title: A specification's unit that its quantity kind does not take
+    args: [specification]
+    # Review Q2: the check's own text (`revision_flowsheet.py` `Kind … takes the units …`).
+    detail_pattern: 'Kind (?P<quantity>[a-z_]+) takes the units (?P<units>[^\n]+)\.'
+    params:
+      specification: {type: specification}
+      quantity:      {type: text, optional: true, label: quantity kind}
+      units:         {type: text, optional: true, label: units it takes}
+    summary: "Specification {specification} gives its value in a unit its quantity kind does not take[: a {quantity!raw} takes {units!raw}]."
+    why: "Validation accepts for each quantity kind only the units listed for it, spelled exactly: unit symbols are case-sensitive, so a temperature takes \"degC\" but not \"degc\"."
+    action: "Correct the spelling of the unit of {specification}[ to one of {units!raw}], or give the value in one of the accepted units."
+    see_also: [DIM-01, revision_not_ready]
+    examples:
+      - chain: [revision_not_ready, DIM-01, specification_unit_unsupported]
+        params: {specification: boiler-T, quantity: temperature, units: "K, degC, degF"}
   - code: specification_value_unsupported
     family: refusal
     kind: not_supported

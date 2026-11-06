@@ -567,6 +567,76 @@ def test_out_of_domain_is_numerical_when_an_iterate_left_the_range() -> None:
     assert "For example, water's IAPWS-95" not in iterate["why"]
 
 
+# -- review Q2: §4.4 rule 2 reads a FAIL check's message, else a DRAFT report's NOT_RUN check ------
+
+NOT_READY = "revision 'rev-000001' validates DRAFT, not READY_FOR_SIMULATION"
+UNCONSUMED = (
+    "not run: this revision cannot be analysed by T01's binding: specification_unconsumed(pump-T). "
+    "P (thermal.pump) does not read column S2.T; it reads outlet_pressure: kind pressure, unit Pa, "
+    "target {object_type: connection, object_id: S2, path: state.P}"
+)
+
+
+def _not_ready(status: str, *checks: dict[str, Any]) -> Any:
+    report = {"status": status, "checks": [{"implicated_objects": [], **c} for c in checks]}
+    document = {"code": "revision_not_ready", "message": NOT_READY, "detail": {"report": report}}
+    return render_error(document, strict=True)
+
+
+def test_rule_2_a_fail_check_gives_its_id_its_message_code_and_implicated_objects() -> None:
+    explanation = _not_ready(
+        "INVALID",
+        {"id": "STR-01", "result": "WARN", "message": "specification_missing(S9.P). Pin it"},
+        {
+            "id": "DIM-01",
+            "result": "FAIL",
+            "message": "specification_unit_unsupported(boiler-T). Kind temperature takes the "
+            "units K, degC, degF.",
+            "implicated_objects": ["boiler-T", "B"],
+        },
+        {"id": "STR-02", "result": "NOT_RUN", "message": UNCONSUMED},
+    )
+    assert explanation["chain"] == [
+        "revision_not_ready",
+        "DIM-01",
+        "specification_unit_unsupported",
+    ]
+    assert explanation["summary"].endswith("a temperature takes K, degC, degF.")
+    # The implicated `boiler-T` is the arg's specification, listed once; `B` is added.
+    assert [(e["type"], e["id"]) for e in explanation["elements"]] == [
+        ("specification", "boiler-T"),
+        ("element", "B"),
+    ]
+
+
+def test_rule_2_a_draft_report_reads_its_first_not_run_check_with_a_code() -> None:
+    explanation = _not_ready(
+        "DRAFT",
+        {"id": "STR-00", "result": "WARN", "message": "specification_missing(S9.P)"},
+        {"id": "STR-01", "result": "NOT_RUN", "message": "not run: no structural analysis"},
+        {"id": "STR-02", "result": "NOT_RUN", "message": UNCONSUMED},
+    )
+    assert explanation["chain"] == ["revision_not_ready", "specification_unconsumed"]
+    assert explanation["code"] == "specification_unconsumed"
+    assert ("unit", "P") in {(e["type"], e["id"]) for e in explanation["elements"]}
+    assert "('P' reads outlet_pressure, among others)" in explanation["action"]
+
+
+@pytest.mark.parametrize("status", ["INVALID", "READY_FOR_SIMULATION"])
+def test_rule_2_a_not_run_check_is_read_only_on_a_draft_report(status: str) -> None:
+    explanation = _not_ready(status, {"id": "STR-02", "result": "NOT_RUN", "message": UNCONSUMED})
+    assert explanation["chain"] == ["revision_not_ready"]
+
+
+def test_rule_2_never_reads_a_warn_check() -> None:
+    explanation = _not_ready(
+        "DRAFT",
+        {"id": "STR-02", "result": "WARN", "message": UNCONSUMED, "implicated_objects": ["X"]},
+    )
+    assert explanation["chain"] == ["revision_not_ready"]
+    assert explanation["elements"] == []
+
+
 NOT_FOUND = {
     "code": "not_found",
     "message": "no such artifact",

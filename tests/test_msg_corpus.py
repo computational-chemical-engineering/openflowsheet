@@ -67,9 +67,9 @@ PENDING_REASONS: dict[str, str] = {
         "MSG review Q1 (c): a number only the thermal kernel knows, in no message text; deferred "
         "to the F6 v2 unit models (ADR 0065)"
     ),
-    "d9-2": (
-        "MSG D9-2: a DRAFT report's explanation stops at revision_not_ready (§4.4 reads FAIL "
-        "checks only); design lane"
+    "ctx": (
+        "MSG review Q2: an ApiError renders from its own document (projection, I2); the spec's unit "
+        "text and the instance id need the revision document as render context"
     ),
 }
 

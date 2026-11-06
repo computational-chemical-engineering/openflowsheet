@@ -94,6 +94,29 @@ def parse_chain(text: str, keys: Container[str] = ()) -> Chain:
     return Chain(tuple(segments), status, detail)
 
 
+def parse_check(text: str, catalogue: Catalogue) -> Chain:
+    """§4.4 rule 2 (review Q2): the codes of a validation check's message. A check message is
+    prose around one code — `[not run: <why>: ]code(args). <prose>` — so when the §4.3 parse
+    yields no code, the code is the first `": "`-separated part of line 1 whose text up to its
+    first `". "` is a code with a catalogue entry; what follows it is the `detail` text."""
+    chain = parse_chain(text, catalogue)
+    if chain.segments:
+        return chain
+    first, _, rest = text.partition("\n")
+    parts = first.split(SEPARATOR)
+    for index, part in enumerate(parts):
+        head, _, tail = part.partition(". ")
+        segment = _code_segment(head.removesuffix("."), catalogue)
+        if segment is None or catalogue.entry(segment.code) is None:
+            continue
+        detail_lines = [SEPARATOR.join([tail, *parts[index + 1 :]]).strip()]
+        if rest:
+            detail_lines.append(rest)
+        detail = "\n".join(line for line in detail_lines if line) or None
+        return Chain((segment,), None, detail)
+    return Chain(())
+
+
 @dataclass
 class Link:
     """A resolved chain code: its params (named args, expansion, detail-pattern groups)."""

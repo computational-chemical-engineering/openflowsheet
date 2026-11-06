@@ -473,3 +473,73 @@ the gate nor the baseline was changed. Default: F0 replaces (a)–(c) (F0 PASS),
   `corpus_identity.py --check`: PASS, M1 50/50 … M9 35/35.
 - MSG-G4 0 violations (15 complete entries); G5 clean; G6 23 passed, 11 strict xfails; G7 16
   passed (U05 record only); G8 the ten transported corpus cases equal on four transports.
+
+## WO-11 (review fixes: WO-5a, rule 2, entry fixes)
+
+**D11-1. S2: a non-finite capture stays text.** `legacy._typed` returns the captured text when `float()` gives `nan`
+or `inf`; the patterns WO-5a adds use strict decimal groups (`[-+]?[0-9]+(?:\.[0-9]+)?(?:e[-+]?[0-9]+)?`), so they
+cannot capture one anyway. Test with a finite control. Commit `a87881fb`.
+
+**D11-2. WO-5a, the sidecar (review Q1 (a) narrowed; register R-942; note §4.6 amended).** Producer: the traversal
+hop `models/revision_flowsheet.py` `traverse`, which builds `Diagnostic(<code at the head of line 1>, {"detail":
+lines 2+})` (`None` when there are no detail lines). Line 1's code is read lexically (`[A-Za-z]…` followed by `(`, `:`
+or the end), because `models` imports only `messages.diagnostic`. Carriers `FlowsheetPass`, `InitialStateFailure`,
+`StepResult` (field `diagnostic`, `compare=hash=repr=False`; reflective test). `run_revision_session` gains
+`on_diagnosis` (a callback beside `on_iteration`): called once after the bundle is written, iff a failure bundle was
+written and the last step's outcome is the bundle's and carries a sidecar. **Choice:** a callback rather than a field
+on `RunManifest` (`run/manifest.py` is identity-central; the carrier rule would apply to its `as_document`) or a
+changed return type (two callers). The runner stores `run["diagnosis"]`. `LocalApplication._run_failure` passes the
+sidecar only when the bundle was read (without the bundle there is no message to match, and audit mode raises on a
+mismatch). `explain_failure` applies the **explained** entry's `detail_pattern` to the sidecar's `detail` (sidecar
+params win over the groups) and derives a missing `outlet` stream param as the one connection leaving the `unit`
+param's `outlet` port (§4.2.5). `legacy.detail_params` is factored out of `_apply_detail` (behaviour unchanged).
+Session scan (`tests/conftest.py`): every bundle written through `write_bundle` (revision and SYN-001 sessions) is
+searched for the keys `"diagnosis":` and `"diagnostic":`; the count goes to the terminal summary.
+
+**D11-3. Patterns and units.** Basis confirmed molar: C02's `s_saturated` = 146.80317968321518 J/(mol*K) =
+8.14883 kJ/(kg*K) × 18.015268 g/mol, the steam tables' s_g(10 kPa) = 8.1488. Entries: `phase_regime_mismatch`
+(`declared`, `landed`, `vapour_fraction`), `isentropic_state_two_phase` (`s_star`, `s_saturated` in J/(mol*K)
+`molar_entropy`, `pressure` in Pa, `phase`), `pressure_rise` and `pressure_fall` (`p_spec`, `p_inlet` in Pa; both
+`is above|is below|exceeds`, the SYN-001 valve's wording), `out_of_domain` (`what`, `value`, `low`, `high`, units from
+the text, quantity kind null since it varies). **Choice:** `isentropic_state_two_phase` gains a variant `equals: {phase: LIQUID}`
+whose `why` drops the base's numbers sentence, because that sentence names the saturated-vapour entropy and would be
+false for a `LIQUID` (pump) detail (the docs page shows the base, with `<s_star>`); `pressure_fall` stays a stub (WO-12, M1)
+with `args: [machine]`, its params and pattern. Display: §4.5's four digits print IAPWS-95's range as "273.2 K to
+1273 K" in C09's why; the `numbers` carry the exact 273.16 and 1273.15.
+
+**D11-4. S1 `out_of_domain`.** The IAPWS-95 sentence reads "For example, water's IAPWS-95 method …". A variant with
+the numbers ("Here the temperature 200.0 K is outside the method's range of …") replaces it when the pattern matched.
+**Choice:** kind `numerical` and an iterate-worded action under the iterative outcomes (`outer:` ACTIVE_SET_CYCLING,
+ATTEMPTS_EXHAUSTED, BOUND_BLOCKED, BUDGET_EXHAUSTED, COUPLING_NOT_CONVERGED, EVALUATION_ERROR, HOMOTOPY_STALLED,
+INNER_SOLVE_INCONSISTENT, LINEAR_SOLVE_FAILED, LINE_SEARCH_FAILED, PTC_STALLED, RECYCLE_STAGNATION, STAGNATION);
+`input` elsewhere (the traversal, admission, a bare provider text). Alternative: `numerical` by default and `input`
+under a list of admission codes — rejected, the admission chains are not enumerable from the catalogue.
+
+**D11-5. M2 `pressure_rise`.** Generic title; base `why` stays the turbine's; variant `equals: {machine: valve}` says
+a valve throttles. Example and engine test for `pressure_rise(valve)` (both valve wordings).
+
+**D11-6. Corpus.** Lifted: C01 `action` (`phase_capability`, now the case's `action_token`), C02 `numbers` and
+`elements` (S4), C11 `numbers`. C09 now records `numbers: [value, low, high]`. New case key `values` (the independent
+expectations, review Q1): C11 = the change set's `turbine-P` (5 MPa) and `pump-P` (3 MPa); C02 `pressure` = the change
+set's `turbine-P`; C09 = the feed's 200 K and `iapws95.T_MIN`/`T_MAX`; a test pins each against its source, and C02's
+`s_saturated` against an independent `kernel.saturation` call (rel 1e-12) and the steam tables (abs 5e-5 kJ/(kg*K)).
+Remaining for WO-5's reason: C01's `value`, `saturated_vapour`, `pressure`, re-reasoned `q1c` ("deferred to the F6 v2
+unit models (ADR 0065)"). Texts regenerated with `--msg-update`; the diff is exactly the new causes, whys and actions.
+
+**D11-7. Q2, §4.4 rule 2.** The first `FAIL` check gives its id, then the codes of its message; else, on a `DRAFT`
+report, the first `NOT_RUN` check whose message names a code with an entry gives that code; a `WARN` never. The
+check's `implicated_objects` become elements (an id a chain param already typed is not listed again as an untyped
+`element`; the rule applies to the binder's `implicated` too, which only drops such duplicates). **Choice (the
+parse):** check messages are prose around one code (`[not run: <why>: ]code(args). <prose>`), which §4.3 does not
+parse, so `legacy.parse_check` takes the first `": "`-part of line 1 whose text up to its first `". "` is a code with
+an entry, and the rest as `detail` (the entry's `detail_pattern` reads it); §4.3 is tried first. **Choice:** the
+`NOT_RUN` check's id (`STR-0n`, "not run") is not put in the chain: it names the analysis that could not run, not the
+cause. Completed in the same change (kind `input`; prose for the design-lane prose check): `specification_unconsumed`
+(`unit`, `model`, `column`, `reads` from the binder's hint), `specification_missing` (`column`; `object` from the
+hint's first target), `specification_unit_unsupported` (kind changed from the stub's `not_supported` to `input`, §7's
+C08 row; `quantity`, `units` from the check's text). Corpus: C06 → `specification_unconsumed` (pump-T, P), C07 →
+`specification_missing` (S4), C08 → `specification_unit_unsupported` (boiler-T; `degC` in the summary), C10 →
+`model_unsupported` (`not_supported`, `gap.capability`). **Still pending (strict xfail, reason `ctx`):** C08's "degc"
+and C10's instance `B`. Both need the revision document as render context; an `ApiError` is rendered from its own
+document at projection (`operations.py`), which has no revision. **Question for the design lane:** load the revision
+into the error's render context (a store read at projection) or leave both as declared gaps? Default: leave them.
