@@ -33,8 +33,9 @@ function, a registered digest and Frank's carry extended to name it):
   `455d01eb…`, registered at the alpha's merge into `main` (R-457).
 - c_4, R-934 (ADR 0058 D5, D7): MSG's `RunResult.failure` and its `explain` tool, stripped by
   `tests/msg_schema_support.py`'s `without_msg` (MSG-G10's decomposition function); `D_4` =
-  `1ca06b37…`, measured at MSG WO-7 (`tests/test_t08_w2_surface_digest.py`'s `MSG_SERVED_SHA256`;
-  `b083ffe1…` at WO-6, before `explain`).
+  `eaff4585…`, measured at MSG WO-11 after `explain.md`'s review edits
+  (`tests/test_t08_w2_surface_digest.py`'s `MSG_SERVED_SHA256`; `1ca06b37…` at WO-7, `b083ffe1…` at
+  WO-6, before `explain`).
 
 The released 0.2.0a1 ran the two-link chain (its committed record at `C_α²`); a re-run of the
 alpha's step 8 uses this script at the tag.
@@ -97,7 +98,7 @@ V17_C2_FILE_SHA256: Final = {
 #: c_4 (R-934, ADR 0058 D7): the one tool MSG added, `explain`, its file pinned as `v17-c2`'s are.
 #: Its two reviews are `REVIEW.json`'s, which `tests/test_t08_w2_description_reviews.py` holds.
 MSG_FILE_SHA256: Final = {
-    "explain": "695311624eb29dba53bf277f592d2619aa8a5d4680c3cefc5a32587a4e510a46",
+    "explain": "f1fca282f28f7e1a0f0dc6407bb405734f18b811fc97f7e0f5d0b0afac9b8d3e",
 }
 #: The two changed files as R-133 carried them: their reviewed hashes in `REVIEW.json` as v0.1.0
 #: released it (`PUBLIC_ROOT`).
@@ -200,7 +201,7 @@ LINKS: Final = (
         "c_4",
         "R-934",
         strip_msg,
-        "1ca06b375717140d10bb108163c04e06face4d15493a9ae9b657220ddfdc75aa",
+        "eaff45852d7596816d90d744078f537e46c723e577295d347d9d73aea0942eac",
     ),
 )
 

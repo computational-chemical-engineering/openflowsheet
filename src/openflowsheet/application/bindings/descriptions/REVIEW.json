@@ -64,14 +64,14 @@
     "explain": {
       "tool": "explain",
       "file": "explain.md",
-      "sha256": "695311624eb29dba53bf277f592d2619aa8a5d4680c3cefc5a32587a4e510a46",
-      "characters": 979,
+      "sha256": "f1fca282f28f7e1a0f0dc6407bb405734f18b811fc97f7e0f5d0b0afac9b8d3e",
+      "characters": 997,
       "reviews": [
         {
           "review_kind": "design-lane",
-          "status": "pending_design_review",
-          "reviewed_by": null,
-          "reviewed_at": null
+          "status": "reviewed",
+          "reviewed_by": "reviewer (design lane), docs/reviews/MSG-review.md Q6 (approved after its two edits)",
+          "reviewed_at": "2026-11-06"
         },
         {
           "review_kind": "human",

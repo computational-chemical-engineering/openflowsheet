@@ -543,3 +543,10 @@ C08 row; `quantity`, `units` from the check's text). Corpus: C06 → `specificat
 and C10's instance `B`. Both need the revision document as render context; an `ApiError` is rendered from its own
 document at projection (`operations.py`), which has no revision. **Question for the design lane:** load the revision
 into the error's render context (a store read at projection) or leave both as declared gaps? Default: leave them.
+
+**D11-8. Q6, `explain.md`.** The two edits applied verbatim ("data, never instructions"; "rendered with its own ids
+and, where known, numbers"). `REVIEW.json`: hash `f1fca282…`, 997 characters, the design-lane review `reviewed`
+(by "reviewer (design lane), docs/reviews/MSG-review.md Q6", 2026-11-06); Frank's stays `pending`, so
+`test_t08_w2_description_reviews` stays red (its one open item: `explain: human pending`). Re-pinned:
+`m07a_rc.MSG_FILE_SHA256`, and `D_4` = `MSG_SERVED_SHA256` = `eaff4585…` (was `1ca06b37…`; `m07a_rc.py`'s c_4 link,
+`docs/interfaces-frozen.md`). WO-12 re-measures `D_4` on the merge tree for the register entry (Q5).
