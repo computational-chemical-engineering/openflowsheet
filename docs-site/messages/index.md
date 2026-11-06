@@ -96,13 +96,16 @@ The explanations are tested against a corpus of beginner mistakes, `tests/fixtur
 each built from the README's Rankine change set through the public API. A case records:
 
 - `id` and the `mistake`, in a sentence;
-- the emitted `code` and `kind`, exactly;
-- the element ids that must appear in `explanation.elements` and in the summary;
+- the emitted `code`, `kind` and `chain`, exactly;
+- the `elements` ids that must appear in `explanation.elements` and in the summary (line 1 and
+  its cause), and `in_summary` texts the summary must contain;
 - the `numbers` names, with values where an independent expectation exists;
-- an `action_token` the action must contain;
-- the complete rendered text, `expected_text`, as an exact golden (regenerated only by
+- an `action_token` the action must contain, and the `gap` of a `not_supported` code;
+- the complete rendered text per surface, `text`, as an exact golden (regenerated only by
   `pytest tests/test_msg_corpus.py --msg-update` and reviewed in the diff);
-- the transports it runs on; a transported case's documents must be equal on all of them.
+- the `surfaces` it runs on; a case on all four must give one document on all of them;
+- `pending` items: what the design expects and the software does not emit yet, each a strict
+  expected failure that turns the test red the day it holds.
 
 A case's Python setup function lives in `tests/test_msg_corpus.py`, keyed by its `id`. A case records
 the code the software actually emits; a code that is too unspecific is reported, never invented.

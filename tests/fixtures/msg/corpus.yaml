@@ -1,0 +1,397 @@
+# MSG-G6 (design note docs/design/MSG-messages.md §3.6, §7): the beginner-mistake corpus.
+# Each case is built by the setup function of the same id in tests/test_msg_corpus.py, from the
+# README's Rankine change set (examples/rankine-cycle.changeset.json), in a fresh project.
+# `text` is an exact golden: regenerate it only with `pytest tests/test_msg_corpus.py --msg-update`
+# and review the diff. `pending` items are strict xfails: each must fail today and turn the test red
+# the day it holds (docs/MSG_DECISIONS.md D9-1, D9-2). `<tmp>` stands for the test's directory.
+corpus: openflowsheet-msg-corpus-v1
+cases:
+- id: C01
+  mistake: The boiler outlet temperature is set to 973.15 K (FB-03's reproduction).
+  surfaces: [python, cli, http, mcp]
+  code: phase_regime_mismatch
+  kind: input
+  chain: [INITIALIZATION_FAILED, initializer_failed, phase_regime_mismatch]
+  in_summary: []
+  elements: [S4, T]
+  numbers: null
+  action_token: phase declared
+  gap: null
+  pending:
+  - what: action
+    expect: phase_capability
+    reason: wo5
+  - what: numbers
+    expect: {names: [value, saturated_vapour, pressure], pressure: 10000.0, above: [value, saturated_vapour]}
+    reason: wo5
+  text:
+    python: |-
+      The solve of revision 'rev-000001' stopped before its first iteration: unit 'T' (thermal.turbine) could not compute its outlets from the starting values.
+        Cause:   Stream 'S4' is not in its declared phase.
+        Why:     Each stream carries a declared phase, and a unit computes its outlet only in that phase.
+        Do:      Change the phase declared for 'S4' to the one that matches the computed state.
+        Kind:    Input problem: something in the flowsheet or the request needs to change.
+        Code:    phase_regime_mismatch, in INITIALIZATION_FAILED → initializer_failed (openflowsheet explain phase_regime_mismatch)
+        Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#phase_regime_mismatch
+        Details: initializer_failed(T): phase_regime_mismatch(S4) — job-000001:bundle/failure-bundle.json
+    cli: |
+      The solve of revision 'rev-000001' stopped before its first iteration: unit 'T' (thermal.turbine) could not compute its outlets from the starting values.
+        Cause:   Stream 'S4' is not in its declared phase.
+        Why:     Each stream carries a declared phase, and a unit computes its outlet only in that phase.
+        Do:      Change the phase declared for 'S4' to the one that matches the computed state.
+        Kind:    Input problem: something in the flowsheet or the request needs to change.
+        Code:    phase_regime_mismatch, in INITIALIZATION_FAILED → initializer_failed (openflowsheet explain phase_regime_mismatch)
+        Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#phase_regime_mismatch
+        Details: initializer_failed(T): phase_regime_mismatch(S4) — job-000001:bundle/failure-bundle.json
+- id: C02
+  mistake: C01 with the turbine outlet S4 declared vapour (FB-05 case 2).
+  surfaces: [python, cli, http, mcp]
+  code: isentropic_state_two_phase
+  kind: not_supported
+  chain: [INITIALIZATION_FAILED, initializer_failed, isentropic_state_two_phase]
+  in_summary: []
+  elements: [T]
+  numbers: null
+  action_token: vapor_liquid
+  gap: {limitation: L-TH-4, capability: true}
+  pending:
+  - what: numbers
+    expect: {names: [s_star, s_saturated, pressure], pressure: 10000.0, above: [s_saturated, s_star]}
+    reason: wo5
+  - what: elements
+    expect: [S4]
+    reason: wo5
+  text:
+    python: |-
+      The solve of revision 'rev-000001' stopped before its first iteration: unit 'T' (thermal.turbine) could not compute its outlets from the starting values.
+        Cause:   Unit 'T' needs a case this version does not support: its outlet is declared vapour, but its ideal (isentropic) outlet state would be wet.
+        Why:     This version computes a turbine's ideal outlet in the phase declared for the real outlet. This is a limitation of the software (L-TH-4), not an error in your flowsheet.
+        Do:      Re-declare the outlet as wet ("vapor_liquid") if it can be wet at your conditions. If that is refused as a phase mismatch, change the operating conditions (for example the turbine inlet temperature or outlet pressure) until the ideal and the real outlet are in the same phase. Support for this case is planned (the std.turbine model).
+        Kind:    Not supported in this version: a limitation of OpenFlowsheet, not an error in your flowsheet.
+        Code:    isentropic_state_two_phase, in INITIALIZATION_FAILED → initializer_failed (openflowsheet explain isentropic_state_two_phase)
+        Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#isentropic_state_two_phase
+        Details: initializer_failed(T): isentropic_state_two_phase(T) — job-000001:bundle/failure-bundle.json
+    cli: |
+      The solve of revision 'rev-000001' stopped before its first iteration: unit 'T' (thermal.turbine) could not compute its outlets from the starting values.
+        Cause:   Unit 'T' needs a case this version does not support: its outlet is declared vapour, but its ideal (isentropic) outlet state would be wet.
+        Why:     This version computes a turbine's ideal outlet in the phase declared for the real outlet. This is a limitation of the software (L-TH-4), not an error in your flowsheet.
+        Do:      Re-declare the outlet as wet ("vapor_liquid") if it can be wet at your conditions. If that is refused as a phase mismatch, change the operating conditions (for example the turbine inlet temperature or outlet pressure) until the ideal and the real outlet are in the same phase. Support for this case is planned (the std.turbine model).
+        Kind:    Not supported in this version: a limitation of OpenFlowsheet, not an error in your flowsheet.
+        Code:    isentropic_state_two_phase, in INITIALIZATION_FAILED → initializer_failed (openflowsheet explain isentropic_state_two_phase)
+        Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#isentropic_state_two_phase
+        Details: initializer_failed(T): isentropic_state_two_phase(T) — job-000001:bundle/failure-bundle.json
+- id: C03
+  mistake: Reading solution-state.json from C01's bundle, a run that did not converge.
+  surfaces: [python, cli, http, mcp]
+  code: not_found
+  kind: input
+  chain: [not_found]
+  in_summary: []
+  elements: ['job-000001:bundle', job-000001]
+  numbers: []
+  action_token: outcome
+  gap: null
+  pending: []
+  text:
+    python: |-
+      Bundle 'job-000001:bundle' has no file 'solution-state.json': its run ended INITIALIZATION_FAILED and wrote no solution.
+        Why:     A run that does not converge writes a failure bundle instead of a solution state and a certificate. This bundle holds check-policy.json, execution-plan.json, failure-bundle.json, revision.json, run-manifest.json, solve-events.json, solve-path.json, solve-plan.json, solve-policy.json, structural-report.json.
+        Do:      Check the run's outcome before reading its results; the run result's failure says why it failed, and 'job-000001:bundle/failure-bundle.json' holds the evidence.
+        Kind:    Input problem: something in the flowsheet or the request needs to change.
+        Code:    not_found (openflowsheet explain not_found)
+        Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/api-errors/#not_found
+        Details: not_found: no such artifact
+    cli: |
+      Bundle 'job-000001:bundle' has no file 'solution-state.json': its run ended INITIALIZATION_FAILED and wrote no solution.
+        Why:     A run that does not converge writes a failure bundle instead of a solution state and a certificate. This bundle holds check-policy.json, execution-plan.json, failure-bundle.json, revision.json, run-manifest.json, solve-events.json, solve-path.json, solve-plan.json, solve-policy.json, structural-report.json.
+        Do:      Check the run's outcome before reading its results; the run result's failure says why it failed, and 'job-000001:bundle/failure-bundle.json' holds the evidence.
+        Kind:    Input problem: something in the flowsheet or the request needs to change.
+        Code:    not_found (openflowsheet explain not_found)
+        Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/api-errors/#not_found
+        Details: not_found: no such artifact
+- id: C04
+  mistake: Creating the project "plant" twice.
+  surfaces: [python, cli]
+  code: project_exists
+  kind: input
+  chain: [project_exists]
+  in_summary: []
+  elements: [<tmp>/plant]
+  numbers: []
+  action_token: exist
+  gap: null
+  pending: []
+  text:
+    python: |-
+      Directory '<tmp>/plant' is not empty: it already holds a project, and create() needs a new or empty directory.
+        Why:     create() makes a new project and never reuses a directory, so a re-run cannot overwrite work silently.
+        Do:      To use the existing project, call LocalApplication.open("<tmp>/plant"), or call LocalApplication.create("<tmp>/plant", exist_ok=True), which opens it.
+        Kind:    Input problem: something in the flowsheet or the request needs to change.
+        Code:    project_exists (openflowsheet explain project_exists)
+        Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#project_exists
+        Details: project_exists: <tmp>/plant
+    cli: |
+      Directory '<tmp>/plant' is not empty: it already holds a project, and project init needs a new or empty directory.
+        Why:     create() makes a new project and never reuses a directory, so a re-run cannot overwrite work silently.
+        Do:      The project is ready to use: pass --project <tmp>/plant to other commands, or run project init with --exist-ok.
+        Kind:    Input problem: something in the flowsheet or the request needs to change.
+        Code:    project_exists (openflowsheet explain project_exists)
+        Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#project_exists
+        Details: project_exists: <tmp>/plant
+- id: C05
+  mistake: Creating a project with exist_ok in a directory that holds other files.
+  surfaces: [python, cli]
+  code: directory_not_empty
+  kind: input
+  chain: [directory_not_empty]
+  in_summary: []
+  elements: [<tmp>/notes]
+  numbers: []
+  action_token: empty
+  gap: null
+  pending: []
+  text:
+    python: |-
+      Directory '<tmp>/notes' is not empty and does not hold a project; a project needs a new or empty directory.
+        Why:     OpenFlowsheet will not mix a project with other files, and exist_ok=True opens only an existing project.
+        Do:      Choose a new directory name, or empty this directory first.
+        Kind:    Input problem: something in the flowsheet or the request needs to change.
+        Code:    directory_not_empty (openflowsheet explain directory_not_empty)
+        Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#directory_not_empty
+        Details: directory_not_empty: <tmp>/notes
+    cli: |
+      Directory '<tmp>/notes' is not empty and does not hold a project; a project needs a new or empty directory.
+        Why:     OpenFlowsheet will not mix a project with other files, and exist_ok=True opens only an existing project.
+        Do:      Choose a new directory name, or empty this directory first.
+        Kind:    Input problem: something in the flowsheet or the request needs to change.
+        Code:    directory_not_empty (openflowsheet explain directory_not_empty)
+        Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#directory_not_empty
+        Details: directory_not_empty: <tmp>/notes
+- id: C06
+  mistake: One specification too many, the pump outlet temperature on top of its outlet pressure.
+  surfaces: [python, cli, http, mcp]
+  code: revision_not_ready
+  kind: input
+  chain: [revision_not_ready]
+  in_summary: []
+  elements: []
+  numbers: []
+  action_token: check
+  gap: null
+  pending:
+  - what: elements
+    expect: [pump-T]
+    reason: d9-2
+  text:
+    python: |-
+      The revision is not ready to solve: it does not pass validation for simulation.
+        Why:     A solve starts only from a revision whose validation finds it ready for simulation. Validation marks a revision DRAFT when a check could not run, for example because a specification is missing, extra or not read by its unit, or a unit's model is not available; it marks it INVALID when a check fails.
+        Do:      Validate the revision and read each check that did not pass (the error's report lists the same checks): its message names the specification, stream or unit to change.
+        Kind:    Input problem: something in the flowsheet or the request needs to change.
+        Code:    revision_not_ready (openflowsheet explain revision_not_ready)
+        Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/api-errors/#revision_not_ready
+        Details: revision_not_ready: revision 'rev-000001' validates DRAFT, not READY_FOR_SIMULATION
+    cli: |
+      The revision is not ready to solve: it does not pass validation for simulation.
+        Why:     A solve starts only from a revision whose validation finds it ready for simulation. Validation marks a revision DRAFT when a check could not run, for example because a specification is missing, extra or not read by its unit, or a unit's model is not available; it marks it INVALID when a check fails.
+        Do:      Validate the revision and read each check that did not pass (the error's report lists the same checks): its message names the specification, stream or unit to change.
+        Kind:    Input problem: something in the flowsheet or the request needs to change.
+        Code:    revision_not_ready (openflowsheet explain revision_not_ready)
+        Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/api-errors/#revision_not_ready
+        Details: revision_not_ready: revision 'rev-000001' validates DRAFT, not READY_FOR_SIMULATION
+- id: C07
+  mistake: One specification too few, the turbine outlet pressure removed.
+  surfaces: [python, cli, http, mcp]
+  code: revision_not_ready
+  kind: input
+  chain: [revision_not_ready]
+  in_summary: []
+  elements: []
+  numbers: []
+  action_token: check
+  gap: null
+  pending:
+  - what: elements
+    expect: [S4]
+    reason: d9-2
+  text:
+    python: |-
+      The revision is not ready to solve: it does not pass validation for simulation.
+        Why:     A solve starts only from a revision whose validation finds it ready for simulation. Validation marks a revision DRAFT when a check could not run, for example because a specification is missing, extra or not read by its unit, or a unit's model is not available; it marks it INVALID when a check fails.
+        Do:      Validate the revision and read each check that did not pass (the error's report lists the same checks): its message names the specification, stream or unit to change.
+        Kind:    Input problem: something in the flowsheet or the request needs to change.
+        Code:    revision_not_ready (openflowsheet explain revision_not_ready)
+        Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/api-errors/#revision_not_ready
+        Details: revision_not_ready: revision 'rev-000001' validates DRAFT, not READY_FOR_SIMULATION
+    cli: |
+      The revision is not ready to solve: it does not pass validation for simulation.
+        Why:     A solve starts only from a revision whose validation finds it ready for simulation. Validation marks a revision DRAFT when a check could not run, for example because a specification is missing, extra or not read by its unit, or a unit's model is not available; it marks it INVALID when a check fails.
+        Do:      Validate the revision and read each check that did not pass (the error's report lists the same checks): its message names the specification, stream or unit to change.
+        Kind:    Input problem: something in the flowsheet or the request needs to change.
+        Code:    revision_not_ready (openflowsheet explain revision_not_ready)
+        Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/api-errors/#revision_not_ready
+        Details: revision_not_ready: revision 'rev-000001' validates DRAFT, not READY_FOR_SIMULATION
+- id: C08
+  mistake: The boiler outlet temperature given in the unit "degc".
+  surfaces: [python, cli, http, mcp]
+  code: DIM-01
+  kind: input
+  chain: [revision_not_ready, DIM-01]
+  in_summary: []
+  elements: []
+  numbers: []
+  action_token: spelling
+  gap: null
+  pending:
+  - what: elements
+    expect: [boiler-T]
+    reason: d9-2
+  - what: summary
+    expect: degc
+    reason: d9-2
+  text:
+    python: |-
+      A specification or parameter has a unit that its kind (temperature, pressure, flow, ...) does not accept.
+        Why:     Each specification and parameter declares a quantity kind and a unit, and validation accepts only the units listed for that kind, spelled exactly: unit symbols are case-sensitive, so a temperature takes "degC" but not "degc".
+        Do:      Read the check's message: it names the specification or parameter and the units its kind accepts. Correct the unit's spelling, or give the value in one of the accepted units.
+        Kind:    Input problem: something in the flowsheet or the request needs to change.
+        Code:    DIM-01, in revision_not_ready (openflowsheet explain DIM-01)
+        Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/checks/#DIM-01
+        Details: revision_not_ready: revision 'rev-000001' validates INVALID, not READY_FOR_SIMULATION
+    cli: |
+      A specification or parameter has a unit that its kind (temperature, pressure, flow, ...) does not accept.
+        Why:     Each specification and parameter declares a quantity kind and a unit, and validation accepts only the units listed for that kind, spelled exactly: unit symbols are case-sensitive, so a temperature takes "degC" but not "degc".
+        Do:      Read the check's message: it names the specification or parameter and the units its kind accepts. Correct the unit's spelling, or give the value in one of the accepted units.
+        Kind:    Input problem: something in the flowsheet or the request needs to change.
+        Code:    DIM-01, in revision_not_ready (openflowsheet explain DIM-01)
+        Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/checks/#DIM-01
+        Details: revision_not_ready: revision 'rev-000001' validates INVALID, not READY_FOR_SIMULATION
+- id: C09
+  mistake: The feed temperature at 200 K, below the range of water's property method.
+  surfaces: [python, cli, http, mcp]
+  code: out_of_domain
+  kind: input
+  chain: [INITIALIZATION_FAILED, initializer_failed, out_of_domain]
+  in_summary: []
+  elements: [P]
+  numbers: []
+  action_token: range
+  gap: null
+  pending: []
+  text:
+    python: |-
+      The solve of revision 'rev-000001' stopped before its first iteration: unit 'P' (thermal.pump) could not compute its outlets from the starting values.
+        Cause:   A property calculation for unit 'P' was asked for a state outside the range its property method covers.
+        Why:     A property method is valid only over a stated range of temperature and pressure, and outside it OpenFlowsheet stops instead of extrapolating. For water (IAPWS-95) this version covers 273.16 K to 1273.15 K and 100 Pa to 100 MPa.
+        Do:      Check the temperatures and pressures specified for the streams that reach 'P', for example a feed below the freezing point, and bring them inside the property method's range; the limitations page lists the range of each method.
+        Kind:    Input problem: something in the flowsheet or the request needs to change.
+        Code:    out_of_domain, in INITIALIZATION_FAILED → initializer_failed (openflowsheet explain out_of_domain)
+        Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#out_of_domain
+        Details: initializer_failed(P): out_of_domain — job-000001:bundle/failure-bundle.json
+    cli: |
+      The solve of revision 'rev-000001' stopped before its first iteration: unit 'P' (thermal.pump) could not compute its outlets from the starting values.
+        Cause:   A property calculation for unit 'P' was asked for a state outside the range its property method covers.
+        Why:     A property method is valid only over a stated range of temperature and pressure, and outside it OpenFlowsheet stops instead of extrapolating. For water (IAPWS-95) this version covers 273.16 K to 1273.15 K and 100 Pa to 100 MPa.
+        Do:      Check the temperatures and pressures specified for the streams that reach 'P', for example a feed below the freezing point, and bring them inside the property method's range; the limitations page lists the range of each method.
+        Kind:    Input problem: something in the flowsheet or the request needs to change.
+        Code:    out_of_domain, in INITIALIZATION_FAILED → initializer_failed (openflowsheet explain out_of_domain)
+        Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#out_of_domain
+        Details: initializer_failed(P): out_of_domain — job-000001:bundle/failure-bundle.json
+- id: C10
+  mistake: The boiler's model id misspelt, thermal.boiler for thermal.heater.
+  surfaces: [python, cli, http, mcp]
+  code: revision_not_ready
+  kind: input
+  chain: [revision_not_ready]
+  in_summary: []
+  elements: []
+  numbers: []
+  action_token: check
+  gap: null
+  pending:
+  - what: code
+    expect: {code: model_unsupported, kind: not_supported, capability: true}
+    reason: d9-2
+  - what: elements
+    expect: [B]
+    reason: d9-2
+  text:
+    python: |-
+      The revision is not ready to solve: it does not pass validation for simulation.
+        Why:     A solve starts only from a revision whose validation finds it ready for simulation. Validation marks a revision DRAFT when a check could not run, for example because a specification is missing, extra or not read by its unit, or a unit's model is not available; it marks it INVALID when a check fails.
+        Do:      Validate the revision and read each check that did not pass (the error's report lists the same checks): its message names the specification, stream or unit to change.
+        Kind:    Input problem: something in the flowsheet or the request needs to change.
+        Code:    revision_not_ready (openflowsheet explain revision_not_ready)
+        Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/api-errors/#revision_not_ready
+        Details: revision_not_ready: revision 'rev-000001' validates DRAFT, not READY_FOR_SIMULATION
+    cli: |
+      The revision is not ready to solve: it does not pass validation for simulation.
+        Why:     A solve starts only from a revision whose validation finds it ready for simulation. Validation marks a revision DRAFT when a check could not run, for example because a specification is missing, extra or not read by its unit, or a unit's model is not available; it marks it INVALID when a check fails.
+        Do:      Validate the revision and read each check that did not pass (the error's report lists the same checks): its message names the specification, stream or unit to change.
+        Kind:    Input problem: something in the flowsheet or the request needs to change.
+        Code:    revision_not_ready (openflowsheet explain revision_not_ready)
+        Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/api-errors/#revision_not_ready
+        Details: revision_not_ready: revision 'rev-000001' validates DRAFT, not READY_FOR_SIMULATION
+- id: C11
+  mistake: The turbine outlet pressure at 5 MPa, above its 3 MPa inlet.
+  surfaces: [python, cli, http, mcp]
+  code: pressure_rise
+  kind: input
+  chain: [INITIALIZATION_FAILED, initializer_failed, pressure_rise]
+  in_summary: []
+  elements: [T]
+  numbers: null
+  action_token: inlet pressure
+  gap: null
+  pending:
+  - what: numbers
+    expect: {names: [p_spec, p_inlet], p_spec: 5000000.0, p_inlet: 3000000.0}
+    reason: wo5
+  text:
+    python: |-
+      The solve of revision 'rev-000001' stopped before its first iteration: unit 'T' (thermal.turbine) could not compute its outlets from the starting values.
+        Cause:   The outlet pressure specified for unit 'T', a turbine, is above its inlet pressure.
+        Why:     A turbine expands the fluid that passes through it, so it can only lower the pressure. Raising the pressure takes a pump or a compressor.
+        Do:      Give the turbine 'T' an outlet pressure at or below its inlet pressure, or raise the pressure upstream of it (for example a pump's outlet pressure).
+        Kind:    Input problem: something in the flowsheet or the request needs to change.
+        Code:    pressure_rise, in INITIALIZATION_FAILED → initializer_failed (openflowsheet explain pressure_rise)
+        Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#pressure_rise
+        Details: initializer_failed(T): pressure_rise(turbine) — job-000001:bundle/failure-bundle.json
+    cli: |
+      The solve of revision 'rev-000001' stopped before its first iteration: unit 'T' (thermal.turbine) could not compute its outlets from the starting values.
+        Cause:   The outlet pressure specified for unit 'T', a turbine, is above its inlet pressure.
+        Why:     A turbine expands the fluid that passes through it, so it can only lower the pressure. Raising the pressure takes a pump or a compressor.
+        Do:      Give the turbine 'T' an outlet pressure at or below its inlet pressure, or raise the pressure upstream of it (for example a pump's outlet pressure).
+        Kind:    Input problem: something in the flowsheet or the request needs to change.
+        Code:    pressure_rise, in INITIALIZATION_FAILED → initializer_failed (openflowsheet explain pressure_rise)
+        Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#pressure_rise
+        Details: initializer_failed(T): pressure_rise(turbine) — job-000001:bundle/failure-bundle.json
+- id: C12
+  mistake: Validating a revision for the task "optimization".
+  surfaces: [python, cli, http, mcp]
+  code: task_unsupported
+  kind: not_supported
+  chain: [unsupported, task_unsupported]
+  in_summary: [optimization]
+  elements: []
+  numbers: []
+  action_token: simulation
+  gap: {limitation: null, capability: true}
+  pending: []
+  text:
+    python: |-
+      This version cannot validate a revision for the "optimization" task; it validates for simulation only.
+        Why:     Validating for optimization would mean checking an optimization formulation (objective, decision variables and their bounds). This version checks none, so it refuses rather than report a revision ready for a task it has not checked.
+        Do:      Validate with the task "simulation" (openflowsheet validate --task simulation, or task "simulation" in the request).
+        Kind:    Not supported in this version: a limitation of OpenFlowsheet, not an error in your flowsheet.
+        Code:    task_unsupported, in unsupported (openflowsheet explain task_unsupported)
+        Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#task_unsupported
+        Details: unsupported: task_unsupported(optimization)
+    cli: |
+      This version cannot validate a revision for the "optimization" task; it validates for simulation only.
+        Why:     Validating for optimization would mean checking an optimization formulation (objective, decision variables and their bounds). This version checks none, so it refuses rather than report a revision ready for a task it has not checked.
+        Do:      Validate with the task "simulation" (openflowsheet validate --task simulation, or task "simulation" in the request).
+        Kind:    Not supported in this version: a limitation of OpenFlowsheet, not an error in your flowsheet.
+        Code:    task_unsupported, in unsupported (openflowsheet explain task_unsupported)
+        Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#task_unsupported
+        Details: unsupported: task_unsupported(optimization)

@@ -37,6 +37,18 @@ def pytest_terminal_summary(terminalreporter: Any) -> None:
         terminalreporter.write_line(line, red=True)
 
 
+# -- MSG-G6 (design note §3.6): the corpus's golden texts -------------------------------------
+
+
+def pytest_addoption(parser: Any) -> None:
+    parser.addoption(
+        "--msg-update",
+        action="store_true",
+        default=False,
+        help="rewrite the stored texts of tests/fixtures/msg/corpus.yaml (MSG-G6); review the diff",
+    )
+
+
 # -- MSG-G3 (design note §4.2.8): the runtime audit of emitted codes ---------------------------
 
 
