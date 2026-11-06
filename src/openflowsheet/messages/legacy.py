@@ -8,6 +8,7 @@ further chain codes, and applies the entries' `detail_pattern`s.
 
 from __future__ import annotations
 
+import math
 import re
 from collections.abc import Container, Mapping
 from dataclasses import dataclass, field
@@ -160,6 +161,9 @@ def _typed(
     try:
         number = float(value)
     except ValueError:
+        return value
+    if not math.isfinite(number):
+        # `float` reads "nan" and "inf"; a params document holds finite numbers only (§4.5).
         return value
     declared = declarations.get(name)
     if declared is not None and declared.type == "quantity":

@@ -214,6 +214,22 @@ def test_a_detail_pattern_names_numbers_and_quantities() -> None:
     assert [n["name"] for n in explanation["numbers"]] == ["value", "low", "high"]
 
 
+@pytest.mark.parametrize("token", ["nan", "inf", "-inf", "NaN", "Infinity"])
+def test_a_detail_pattern_keeps_a_non_finite_capture_as_text(token: str) -> None:
+    """Review S2: `float` reads `nan` and `inf`; such a capture stays text and never becomes a
+    non-finite number in `RunFailure.params` (a JSON document). The control: `250.0` is typed."""
+    loose = DETAIL_CATALOGUE["test.yaml"].replace(
+        "[-0-9.e]+) (?P<value_unit>", "\\S+) (?P<value_unit>"
+    )
+    catalogue = Catalogue({**DETAIL_CATALOGUE, "test.yaml": loose})
+    text = f"out_of_domain: temperature {token} K outside [280.0, 440.0] K"
+    (link,) = resolve(parse_chain(text, catalogue), catalogue)
+    assert link.params["value"] == token
+    control = text.replace(token, "250.0")
+    (link,) = resolve(parse_chain(control, catalogue), catalogue)
+    assert link.params["value"] == {"value": 250.0, "unit": "K", "kind": "temperature"}
+
+
 # -- §4.5: numbers -------------------------------------------------------------------------------
 
 
