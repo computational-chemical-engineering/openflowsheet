@@ -2,12 +2,12 @@
 
 **Status:** **Proposed, 2026-11-05.** W1 pass P2 (ADR 0057, R-928); Accepted after the W1 P2 reviewer pass; built in 0.6
 on `wp/F4`. Method slots stay `preview` to the end of 0.6 (R-929). **Author:** design lane (`architect`). **Refines:**
-`target-architecture.md` §2.3, §3 F4. **Adopts verbatim:** Q2.R1–R9 and Q2.A1–A9, A11 (Amendments 2 and 3); cites Q3.R5
-and adopts Q3.A5; Q1.A1, A2, A6. **Amends:** ADR 0001 D5.2 for v2 (recorded shifts replace "no implicit shift";
-`ELEMENTAL-ref-v1` joins D5's list and `interfaces-frozen.md` §3); ADR 0050 D5 for v2; ADR 0011 D2 by a new decision
-naming the datum (v2 reaction consistency per component, Q2.R4); ADR 0061 D10's last paragraph (D2 below); `SolvePolicy`
-schema (`scales["specific_enthalpy"]` and a new optional `energy_check` object, D6). Builds on ADR 0060 (D3 self-hash,
-D4 `vocab` space) and ADR 0062 (`EvaluationState`, layout, ids).
+`target-architecture.md` §2.3, §3 F4. **Adopts verbatim:** Q2.R1–R10 and Q2.A1–A9, A11, A12 (Amendments 2, 3 and 4);
+cites Q3.R5 and adopts Q3.A5; Q1.A1, A2, A6. **Amends:** ADR 0001 D5.2 for v2 (recorded shifts replace "no implicit
+shift"; `ELEMENTAL-ref-v1` joins D5's list and `interfaces-frozen.md` §3); ADR 0050 D5 for v2; ADR 0011 D2 by a new
+decision naming the datum (v2 reaction consistency per component, Q2.R4); ADR 0061 D10's last paragraph (D2 below);
+`SolvePolicy` schema (`scales["specific_enthalpy"]` and a new optional `energy_check` object, D6). Builds on ADR 0060
+(D3 self-hash, D4 `vocab` space) and ADR 0062 (`EvaluationState`, layout, ids).
 
 ## Decisions
 
@@ -93,10 +93,12 @@ choice; adding a method never re-anchors):
 3. If the method cannot evaluate a: bridge (Q2.R8) through `transitions` or the difference of two formation entries,
    recorded `anchor_bridged(<m>, <c>, <a>-><φ>)`; else `anchor_unavailable(<m>, <c>, <a>)`.
 4. Δ_{m,c} = Δf h°_c (+ bridge) − h^m_c; s likewise; Q2.R4's datum (0, s° or 0) when no formation data.
-5. For a method providing `s`, Δˢ_{m,c} = s°_c − s^m_c(a; T°, P°). A record without s° in its anchor phase takes s = 0
-   there, with notice `entropy_datum(<c>)`, and any reaction or equilibrium reading `s` or `g` of c is refused
-   `component_not_reaction_consistent(<c>)` (default pending a specifier ruling, risk 5). A method without `s` (PR-C1,
-   `pr_c1.py:761`) gets no S shift and provides no `s`, `s_ig` or `g`.
+5. The S shift per Q2.R10: for a method providing `s`, Δˢ_{m,c} = s°_c(a) − s^m_c(a; T°, P°), s°_c(a) from the
+   record's anchor-phase entry, else another phase's entry with a transition datum, else 0 with the notice
+   `entropy_datum(<c>)`; uses in which the amount of c changes (Δr s, Δr g, K or affinity from g, a free-n_c Gibbs
+   minimisation) are refused `component_not_reaction_consistent(<c>)`; fixed-amount uses (PS, TS, isentropic
+   references, phase equilibrium) are admitted. A method without `s` (PR-C1, `pr_c1.py:761`) gets no S shift and
+   provides no `s`, `s_ig` or `g`.
 
 Shifts are constants in `describe_method().shifts`. **Application:** at the extensive level in fixed component order,
 `Ḣ = n_tot·h_native; for c in order: Ḣ = Ḣ + n_c·Δ_{m,c}` (no fma), likewise S; T and P derivatives are the native
@@ -138,6 +140,14 @@ inactive phases are ADR-F5's labels. Exact cache per point, keyed on (composed i
 methods loop over points calling the legacy provider; `cubic.pr-v1` evaluates all N points in vectorised NumPy
 (closed-form cubic roots, analytic derivatives in T, P, n).
 
+State-point specifications may carry an extensive kind (`enthalpy_flow`, `entropy_flow`) at the point's amounts; the
+isentropic reference uses (Ṡ, P) (F6 sheet C8, edit B-6; ADR 0065 D2's `extensive` kind).
+
+**Record entries read (ADR 0067 D6's F4 hook, written here; additive):** `MaterialModel.entries_read(point_id) ->
+tuple[EntryRead, ...]`, with `EntryRead` as ADR 0067 D6 defines it (`(component, entry, record_sha256, validity:
+{variable: (lo, hi)})`, determined from the composed method's phase models and the point's active phases at the
+converged state). F4-WO4 builds it; F8's evidence writer judges extrapolation from it.
+
 ### D8. Verifier
 
 A v2 run is recomposed from its data lock (fresh `compose`, no shared cache); every state point is re-evaluated.
@@ -159,7 +169,8 @@ K04 R2 comparison with a registered difference record, the harness mapping VAPOR
 
 ## Exit tests
 
-- **E-F4-1** M2 (i)–(iii). **E-F4-2** Q2.A1–A9, A11 (A11 (b) `unsupported` without the coolprop extra; O-12, O-13).
+- **E-F4-1** M2 (i)–(iii). **E-F4-2** Q2.A1–A9, A11, A12 (a), (d), (e) (A11 (b) `unsupported` without the coolprop
+  extra; O-12, O-13).
 - **E-F4-3 (A3-a)** On `composed.pr-c1-v1` and `cubic.pr-v1`, N2 and CH4 (M01 records): `h_shifted(ig; T°)` = Δf h°
   within 2 ulp, and the VAPOR at (T°, P°) differs from it by the method's departure, |Δ| ≥ 1 J/mol (non-vanishing
   control); mutation: anchoring at the vapour root makes the first difference non-zero beyond 2 ulp.
@@ -174,10 +185,10 @@ K04 R2 comparison with a registered difference record, the harness mapping VAPOR
 
 ## New catalogue codes
 
-`anchor_unavailable`, `anchor_bridged`, `anchor_defaulted` (notice, ADR 0061), `anchor_undetermined`,
-`component_not_reaction_consistent`, `convention_mismatch`, `source_conflict`, `solid_candidate_dropped`,
-`species_dropped`, `specification_degenerate`, `ideal_gas_state_unavailable` (cause), `records_not_delegable`,
-`entropy_datum` (notice).
+`anchor_unavailable` (gains the cause `entropy_bridge_missing`), `anchor_bridged`, `anchor_defaulted` (notice, ADR
+0061), `anchor_undetermined`, `component_not_reaction_consistent`, `convention_mismatch`, `source_conflict`,
+`solid_candidate_dropped`, `species_dropped`, `specification_degenerate`, `ideal_gas_state_unavailable` (cause),
+`records_not_delegable`, `entropy_datum` (notice).
 
 ## Work orders (`wp/F4`; after F2-WO3 and F3-WO3/WO4)
 
@@ -186,7 +197,7 @@ K04 R2 comparison with a registered difference record, the harness mapping VAPOR
 | 1 | **F4-WO1** Vocabulary, adapters | `methods/vocabulary.py`, `methods/legacy_adapters/*.py` | adapter round trips; `vocab` validator in F1 | no | Sonnet |
 | 2 | **F4-WO2** Compose, delegating methods, identity | `methods/{compose,description,lock_view}.py`; four v2 descriptors | E-F4-1 (i), E-F4-8 | no | Opus |
 | 3 | **F4-WO3** Convention | `methods/convention.py` (anchors, bridges, shifts); the CoolProp anchor calls the private `_jet` on a state the adapter builds as the guard does (`coolprop_heos.py:475`; Amendment 3 covers this) | E-F4-2, E-F4-3 | no | Opus; reviewer-adjacent |
-| 4 | **F4-WO4** MaterialModel, scales, boundaries | `material/{model,scales,boundary}.py`; `solve-policy` schema (`scales["specific_enthalpy"]`, `energy_check`) | E-F4-4, -5, -6 | no | Opus |
+| 4 | **F4-WO4** MaterialModel, scales, boundaries | `material/{model,scales,boundary}.py`; `solve-policy` schema (`scales["specific_enthalpy"]`, `energy_check`); `MaterialModel.entries_read` (D7) | E-F4-4, -5, -6 | no | Opus |
 | 5 | **F4-WO5** `cubic.pr-v1` and batching | `methods/cubic_pr.py`; `scripts/bench_batching.py` | E-F4-1 (iii), E-F4-7 | no | Opus |
 | 6 | Close-out | manifest, catalogue, gate, CI | all E-F4 | no | Sonnet |
 
@@ -202,10 +213,10 @@ K04 R2 comparison with a registered difference record, the harness mapping VAPOR
    `SolvePolicy.energy_check` (D6).
 4. **CasADi callback overhead at N = 300** may hide the batching gain (fact, WO5). Default: one callback per method;
       if E-F4-7 fails, an architect question before WO6.
-5. **Entropy shift for a record without s°** (W1 P2 review S6; ADR 0061 risk 6: no legacy record has s°). *Needs:* a
-   specifier ruling as a Q2 amendment, batched with P3's specifier needs (orchestrator decision 2026-11-05,
-   `docs/roadmap/decisions.md`). *Default:* D4 step 5 (s = 0 in the anchor phase, `entropy_datum(<c>)`, reactions and
-   equilibria reading `s` or `g` of c refused); F4-WO3 proceeds on it.
+5. **Entropy shift for a record without s°** (W1 P2 review S6; ADR 0061 risk 6: no legacy record has s°). *Resolved*
+   by the specifier (foundation rulings Amendment 4, Q2.R10, 2026-11-05): the default, with the refusal narrowed to
+   uses in which the component's amount changes; PS and TS specifications and isentropic units on such a component are
+   admitted.
 
 ## Edits `target-architecture.md` needs
 
@@ -236,3 +247,17 @@ Status stays Proposed. The S6 default and its referral follow `docs/roadmap/deci
 
 Not applied: N3 (ĥ step count across water's latent heat) is a performance note with no edit. The cause
 `ideal_gas_state_unavailable` stays in the catalogue although N1 removes its only use in D4; the review gives no edit.
+
+## W1 P3 review applied (`docs/reviews/W1-P3-review.md`, 2026-11-06)
+
+Status stays Proposed. Cross-ADR edits from the W1 P3 review's consolidated list (Amendment 4, the F6 sheet).
+
+| Finding | Edit |
+| --- | --- |
+| 0063-1 | D4 step 5: the S shift per Q2.R10 (refusal narrowed to amount-changing uses). |
+| 0063-2 | Risk 5 resolved (Amendment 4, Q2.R10). |
+| 0063-3 | Header: Q2.R1–R10, Q2.A1–A9, A11, A12; E-F4-2 adds Q2.A12 (a), (d), (e); `anchor_unavailable` cause `entropy_bridge_missing`. |
+| B-6 | D7: state-point specifications may carry `enthalpy_flow`, `entropy_flow`; the isentropic reference uses (Ṡ, P). |
+| Departure 8 | D7: `entries_read(point_id)` as ADR 0067 D6 defines it; F4-WO4 builds it. |
+
+Not applied: none of the edits for this ADR.

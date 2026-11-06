@@ -1,0 +1,18 @@
+# F0 (ADR 0057 D3, review finding S1): files whose bytes enter an identity are checked out with LF
+# on every platform, so a self-hash (`implementation_sha256`, a model's `artifact_hash`), a data or
+# record SHA, a lock SHA or a fixture digest never depends on the checkout's line endings.
+*.py                text eol=lf
+*.pyi               text eol=lf
+*.json              text eol=lf
+*.yaml              text eol=lf
+*.yml               text eol=lf
+*.csv               text eol=lf
+*.toml              text eol=lf
+*.lock              text eol=lf
+*.md                text eol=lf
+# Review finding 4: hashed text kinds outside the source tree (e.g. `benchmarks/t06/ensemble/runs/`,
+# pinned by its SHA256SUMS), and the checksum files themselves.
+*.txt               text eol=lf
+*.jsonl             text eol=lf
+*.log               text eol=lf
+SHA256SUMS          text eol=lf

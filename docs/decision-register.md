@@ -18489,3 +18489,28 @@ the sidecar (WO-5) leaking into a serialized artifact; an emitted code without a
   the premise that M1–M8 catch their edits is false (`artifact_hash` enters none of them).
 
 **Watch for.** A new archived bundle entering the D15 exemption without registration; M9 shrinking.
+
+---
+
+## R-941 — W1 closed; the v2 core freezes on ADR 0060–0067 (2026-11-06)
+
+| | |
+| --- | --- |
+| Date | 2026-11-06 |
+| Decided by | orchestrator, applying R-929 at the end of design wave W1; Frank's acceptance of ADR 0060–0067 pending (`docs/FRANK_QUESTIONS.md`) |
+| Normative text | the "Core at the end of W1" sections: ADR 0060 D12, ADR 0061 D14, ADR 0062 D13, ADR 0065 D19, ADR 0066 D17, ADR 0067 D12; rulings `docs/roadmap/foundation-rulings.md` through Amendment 4; note `docs/roadmap/target-architecture.md` Revision 3 |
+| Affected packages | F1–F8 and every later package reading the v2 grammar |
+
+**Decision.** Design wave W1 is closed: eight foundation ADRs (0060–0067) are designed, reviewed once per set (W1-P1,
+P2, P3 reviews) with fixes applied, and the note carries every W1 edit (`docs/roadmap/W1-note-edits-log.md`). The items
+each ADR lists as **core** are frozen: they change only by a design-lane ADR amendment, as the P01 interfaces do. The
+items listed as **preview** (method, phase-assertion and template slots; F4–F6 `preview` parts) stay open until the end
+of 0.6 (R-929). One specifier item remains open without blocking the freeze: SQ-F6-5 (routing of two or more FLUID
+phases; default in ADR 0065 D9).
+
+**Rejected alternatives.** Waiting for Frank's acceptance before recording the freeze — the build of F1–F3 (0.5) needs
+a fixed grammar, and a late answer is honoured by amending the frozen text (CLAUDE.md "Honour a late answer").
+Freezing the preview slots too (R-929's rejected alternative).
+
+**Watch for.** A build-lane change to a core item without an ADR amendment; F0 (`scripts/corpus_identity.py --check`)
+on every foundation merge.

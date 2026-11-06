@@ -279,8 +279,10 @@ All four answered with the recommended default (Frank, 2026-10-25):
 ## W1 — foundation rulings Amendment 2 (2026-11-05; not urgent)
 
 Source: `docs/roadmap/foundation-rulings.md` §14 (Amendment 2), §11. Work proceeds on the defaults.
-- **O-11** How OpenFlowsheet labels an equation-of-state phase "vapour-like" or "liquid-like" (shown in reports only; no
-  effect on any number). Default: Venkatarathnam and Oellrich's phase identification parameter.
+- **O-11** How OpenFlowsheet labels an equation-of-state phase "vapour-like" or "liquid-like". Default: Venkatarathnam
+  and Oellrich's phase identification parameter. **Changed 2026-11-06 (Amendment 4, Q4.R9):** this is no longer
+  reports-only. When a unit (a flash, for example) has a single dense or supercritical phase, this label decides whether
+  that phase leaves by the top (vapour) outlet or the bottom (liquid) outlet, so the choice can change results.
 - **A2-a** (before X25, batch): a tank that empties completely and refills (a vented vessel) is a kind of unit that your
   ADR 0008 answer Q-A5 keeps out of the first dynamics release (TX). Until it is admitted, the "vessel drains to zero"
   rule only covers evacuating a rigid vessel. Default: keep it out of TX's first release, decide when X25 is designed.
@@ -320,3 +322,18 @@ stream and document grammar (frozen at the end of W1), property methods composed
 reference per flowsheet, and an N-phase flash that discovers phases instead of having them declared (the turbine case
 of FB-04). ADR 0062 amends the frozen contract (ADR 0019 Amendment 9: existing operations accept v2 documents), so it
 needs your yes. Built in 0.5 (F2) and 0.6 (F4, F5). Default: Proposed; P3 designs on them as written.
+
+## W1 P3 — accept ADR 0065 (F6), 0066 (F7), 0067 (F8)? (2026-11-06)
+
+Reviewed (`docs/reviews/W1-P3-review.md`: accept after fixes) and fixes applied (`76d38f6d`, `cb309525`), with the
+specifier's Amendment 4 (`foundation-rulings.md` §16) and the standard-unit equation sheet
+(`docs/derivations/F6-std-seed.md`). In plain words: how every new unit declares its ports, variables, zero-flow
+forms and outlet routing (built in 0.6); how dynamic problems, events and run kinds are described (built with
+transient work in 0.7); and what a v2 replay bundle carries, including data that may not be redistributed. All three
+amend the frozen application contract (ADR 0019 Amendments 10, 11 and 12, additive), so they need your yes.
+Two choices were made on the reviewer's defaults; tell me if you want them the other way:
+- **S1:** after a built-in unit's code changes, older v2 replay bundles re-run and report differences
+  (`compatible_reproduction`) instead of refusing to re-run. Alternative: refuse (`NOT_RUN`).
+- **S7:** retiring a legacy unit family affects only revisions built by the new compiler; old-style revisions keep
+  running it. Alternative: retire it for every revision.
+Default: Proposed; the v2 core freeze is recorded at W1's end on these texts.

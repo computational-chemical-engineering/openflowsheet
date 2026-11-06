@@ -28,6 +28,7 @@ from pathlib import Path
 
 import pytest
 from conftest import load_json
+from f0_support import N_ARCHIVED_OUTPUTS, is_archived_output
 from test_k03_schemas import FIXTURE_DIR, errors_for
 
 from openflowsheet.orchestrator.trace import PhaseContract, SolvePolicy
@@ -182,11 +183,13 @@ def test_b06_no_registered_policy_names_v2() -> None:
         assert len(constructed) == 1, source
         policy = getattr(importlib.import_module(module), name)
         assert (policy.policy_id, policy.phase_contract) == (policy_id, V2), source
-    documents = [
+    carrying = [
         path
         for root in ("tests/fixtures", "benchmarks")
         for pattern in ("*.json", "*.yaml")
         for path in (REPO_ROOT / root).rglob(pattern)
         if V2 in path.read_text(encoding="utf-8")
     ]
-    assert documents == []
+    # F0's registered archived outputs (R-939), by path and SHA-256; nothing else is exempt.
+    assert [path for path in carrying if not is_archived_output(path)] == []
+    assert sum(map(is_archived_output, carrying)) == N_ARCHIVED_OUTPUTS

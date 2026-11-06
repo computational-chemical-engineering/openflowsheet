@@ -60,3 +60,42 @@ Each entry gives the date, the question, the choice, who made it and where it is
 - **2026-11-05** DECISION (orchestrator, reviewer's defaults): phase-removal threshold 1e-12 of the total amount,
   fixed later by the O-2 measurement; entropy shift for records without s° takes the review's default, referred to the
   specifier (batched with P3's specifier needs). Reversible by: one constant in ADR 0064; the specifier ruling.
+- **2026-11-05** W1 P3 started: architect brief `docs/roadmap/brief-architect-W1-P3.md` (be742832). DECISION
+  (orchestrator): P3's ADRs take 0065 (F6), 0066 (F7), 0067 (F8); ADR 0019 amendments from 10; the architect lists
+  scientific questions with defaults instead of ruling, and one specifier round follows P3 batching them with ADR 0063
+  risk 5 (entropy shift). Alternative: a specifier pass on the entropy shift now. Reversible by: renumbering before
+  commit; running the specifier earlier.
+- **2026-11-05** W1 P3 architect pass done: ADR 0065 (F6), 0066 (F7), 0067 (F8) Proposed (e740c7ca), 30 note edits in
+  `docs/roadmap/W1-P3-note-edits.md`. Eight departures recorded in the ADRs, two of them touching P1/P2 ADRs (ADR 0060
+  D9 narrowed: evidence notices in the evidence report, not the certificate; ADR 0063 D7 amended additively:
+  `MaterialModel` reports record entries read per state point) — flagged for the P3 reviewer. Seven specifier
+  questions (SQ-F6-1…4, SQ-F7-1…2, SQ-F8-1) batched with ADR 0063 risk 5 into one specifier round
+  (`docs/roadmap/brief-specifier-W1-P3-questions.md`, bf1d9107); the P3 reviewer runs after it. SQ-F6-1's default gives
+  O-11 a numerical consequence: Frank to be told with O-11.
+- **2026-11-06** W1 P3 specifier round done (06c13731): Amendment 4 (§16) — Q2.R10 entropy datum (default adopted,
+  refusal narrowed to amount-changing uses; PS/TS specs and isentropic units admitted), Q4.R9 (SQ-F6-1), Q5.R9 (SQ-F6-3),
+  Q5.R10 (SQ-F6-4), Q5.R11 (SQ-F7-1; ADR 0066 D7's PR-liquid example wrong), Q1.R10 (SQ-F7-2), Q9.R8 (SQ-F8-1, changed:
+  τ_g on g's quantity kind, not time); O-14…O-18. `docs/derivations/F6-std-seed.md` complete for 11 units (generator
+  --check PASS, 107 claims). 18 ADR edits pending, folded into the P3 reviewer's consolidated list
+  (`docs/roadmap/brief-reviewer-W1-P3.md`, 7bd2ad04). O-11 now has a numerical consequence; FRANK_QUESTIONS updated.
+- **2026-11-06** W1 P3 review (`docs/reviews/W1-P3-review.md`, 08c7b165): ADR 0065, 0066, 0067 accept after fixes
+  (M1 v2 `model_version` gains a `configuration` source and label `FSR2-<cfg>`; M2 `control_volumes`; M3
+  `{specification}` signal sink; M4 `phase_routing.vapor`; M5 syn001 leg `equivalence_pending`; M6 E-F7-4 example);
+  all eight architect departures accepted; no second architect pass. DECISION (orchestrator, reviewer's defaults):
+  S1 → a changed built-in replays as `compatible_reproduction` (`extension_changed`), others stay `NOT_RUN`.
+  Alternative: every changed extension `NOT_RUN`. Reversible by: ADR 0067 D5 step 5. S7 → retirement closes families
+  for v2-compiled revisions only. Alternative: gate lowering too and re-base ADR 0062's lowering fixtures. Reversible
+  by: ADR 0065 D17. M4's ≥2-FLUID-phase routing takes the reviewer's default, recorded as SQ-F6-5 for the next
+  specifier round (does not block the freeze). Edits applied by one engineer pass.
+- **2026-11-06** W1 closed (R-941, 97fe738a); note Revision 3 (31520fea, 6e9d62bc). F0 merged (97f07dce). DECISION
+  (orchestrator): ST starts with a recon digest and one short architect pass, because a stream-table operation on all
+  four transports is an addition to the frozen application contract (an ADR 0019 amendment, design lane), although the
+  roadmap lists ST as needing no design pass. Alternative: build lane designs the operation and the reviewer checks it.
+  Reversible by: dropping the architect pass if the recon shows an existing operation can carry the table additively.
+- **2026-11-06** MSG WO-7/8 done on `wp/MSG` (6a5435ad…6a0c9b0b; gate: description-review test red by design until
+  `explain.md` reviews; f6 wall-time budget red under load). DECISION (orchestrator): **WO-5 parked** — it must edit
+  `models/thermal/{flash,heater,machines,mixer,valve}.py`, frozen byte-for-byte by F0 M9 (R-940; S1). The design-lane
+  question (how C01/C02's numbers reach `failure.explanation` without editing frozen modules, e.g. a post-hoc
+  provider evaluation in the application layer, or an M9 exception by ADR) goes to MSG's reviewer pass. WO-9's number
+  assertions for C01/C02 are strict xfails until then. Alternative: architect consult now. Reversible by: unparking
+  WO-5 after the ruling.

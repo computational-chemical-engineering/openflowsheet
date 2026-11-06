@@ -344,7 +344,8 @@ derived one.
 - **Flag:** the notice `extension_unreviewed(<id>, <origin>)` for every `unreviewed` descriptor a result used, and
   `preview_kind(<kind>, <id>)` for every `preview`-kind descriptor.
 - **Propagation.** In 0.5: `list_capabilities` items and `check_admission` notices. From F8: `RunManifest.environment`
-  carries the snapshot (D10) and the run's extensions used, derived from its documents (D8); the run report and the certificate carry the notices.
+  carries the snapshot (D10); the run's extensions used are a structural member of `RunManifest` (ADR 0067 D2); the
+  run's evidence report, not the certificate, carries the notices (ADR 0067 D6).
   **Evidence never moves an identity** (the rule Q9.R3 states for rights): `status`, attestations, `evidence_class` and
   the notices enter no `descriptor_sha256`, `registry_sha256`, `content_hash`, `constants_sha256`, `r0_sha256`,
   `state_sha256`, cache key or certificate check result. ADR-F8 places the notices outside the R0 projection.
@@ -585,3 +586,13 @@ preference).
 **Not applied:** notes N1 (`builtin-sha256.txt` `--write/--check`), N4 (exact-case module paths) and N5 (frozen or zip
 builds): the review lists no exact edit for them, and the brief limited this pass to findings 1–21, the rulings, N2,
 N3 and N6. They remain open for F1-WO1/WO5.
+
+## W1 P3 review applied (`docs/reviews/W1-P3-review.md`, 2026-11-06)
+
+Status stays Proposed. Cross-ADR edit from the W1 P3 review's consolidated list.
+
+| Finding | Edit |
+| --- | --- |
+| S2, departure 6 | D9 propagation: extensions used are a structural `RunManifest` member (ADR 0067 D2); the evidence report, not the certificate, carries the notices (ADR 0067 D6). |
+
+Not applied: none of the edits for this ADR.

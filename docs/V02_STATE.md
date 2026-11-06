@@ -109,18 +109,21 @@ Am. 1–2). Foundations F0–F8 are designed in wave W1 during 0.4, then built i
 `docs/USER_FEEDBACK.md` (tutorial session). Agentic design layer (inside OpenFlowsheet, R-931):
 `docs/agentic-layer/preliminary-plan.md`, not started; textbooks in Zotero (13/13 PDFs).
 **Development resumed 2026-11-05 (Frank).** Position (log: `docs/roadmap/decisions.md`, `docs/F0_DECISIONS.md`, `docs/MSG_DECISIONS.md`):
-- **W1 design:** specifier Amendments 2 (`22ecb918`) and 3 (`4862a968`, Q2.R9). P1: ADR 0060 (F1), 0061 (F3) reviewed + fixes applied (`e162cdcc`, `0ed23b9c`) — **await Frank's acceptance** (ADR 0019 Am. 7, 8; `docs/FRANK_QUESTIONS.md`). P2: ADR 0062 (F2), 0063 (F4), 0064 (F5) `fbe9c491`, review `d24765a7` (accept after fixes, replacement text in the review) — **next: apply the P2 review edits** (incl. ADR 0061 D10 + risk 8 per ruling 1), then P3 (F6, F7, F8) with a specifier read of the entropy-shift default.
-- **F0** (`wp/F0`): tested locally (gate PASS ef1bf51a); CI 42077157573 FAILED on 3 tests (F0 manifest limitations unclassified in the support-envelope harvest; M6 count not platform-aware) — fix engineer running; merge into main after CI green.
-- **MSG** (`wp/MSG`): WO-0…2 done; WO-3/4/6 running; then WO-5 (own engineer), WO-7…10, reviewer. ADR 0058 Accepted.
+- **W1 design: CLOSED 2026-11-06 (R-941, v2 core frozen).** ADR 0060–0067 (F1–F8) designed, one review per set
+  (W1-P1/P2/P3 reviews), fixes applied; rulings through Amendment 4 (§16: Q1.R10, Q2.R10 entropy datum, Q4.R9, Q5.R9–R11,
+  Q9.R8); `docs/derivations/F6-std-seed.md` (11 std units); note Revision 3 (`31520fea`, log `W1-note-edits-log.md`).
+  **Await Frank:** accept ADR 0060/0061, 0062–0064, 0065–0067 (ADR 0019 Am. 7–12; S1/S7 defaults), O-11 (now affects
+  routing, Q4.R9), A2-a. Open, non-blocking: SQ-F6-5 (≥2 FLUID phase routing; next specifier round); design-lane read
+  of F0 D17–D23.
+- **F0: MERGED** into main `97f07dce` (CI 42119225468 green both archs; gate PASS eba4bcb4). Every merge now runs
+  `scripts/corpus_identity.py --check`. D20 open: TH-C2 CoolProp case once the host has the coolprop extra.
+- **MSG** (`wp/MSG`): WO-0…4, 6 done; WO-7/8 engineer running; then WO-5 (own engineer), WO-9, WO-10, evidence
+  manifest, reviewer (batched questions in `docs/MSG_DECISIONS.md`), merge after gate + CI + F0 check.
 - Host load ~50 from other users: wall-time budget tests flaky (re-run alone).
 **Next actions for 0.4 (roadmap §0.4; at most 2 agents at a time):**
-1. **Wave 1 (two design agents in parallel):**
-   - (a) **MSG** architect pass: student-readable messages (FB-05, with FB-01 `create(..., exist_ok=True)`, FB-03 failure
-     on `RunResult`). Frank put MSG first, ahead of X04.
-   - (b) **W1 specifier** on the five open items: A1-a conserved-basis boundary, A1-b enthalpy anchor, S5 EOS phase
-     families, two dynamic-holdup questions (`target-architecture.md` Rev 2 §3 F2/F4/F5/F7).
+1. **Wave 1: done** (MSG architect pass, W1 specifier, P1–P3, reviews; W1 closed R-941).
 2. **Build lane, after or between the design passes:**
-   - F0 corpus identity gate, with `.gitattributes` line-ending rules for hashed files (review S1);
+   - F0 corpus identity gate — **merged** 2026-11-06;
    - ST stream table (FB-06, FB-02), within the note's ST constraints;
    - ADR 0055 parts 1–3 (WO-R1–R4, R6 without the fingerprint carry) before 0.4.0's cut.
 3. **Then:**
@@ -131,8 +134,8 @@ Am. 1–2). Foundations F0–F8 are designed in wave W1 during 0.4, then built i
    - OPT, the NLP optimiser on revision flowsheets (architect; with MCP/CLI/HTTP for cost and LCA);
    - X10 inventory;
    - RRC, revision-region continuation (architect).
-4. **W1 architect passes:** P1 (F1, F3), P2 (F2, F4, F5) and P3 (F6, F7, F8), with one reviewer pass per ADR set. The
-   v2 core schema freezes at W1's end, which is the 0.4 line's acceptance.
+4. **W1 architect passes: done** (P1–P3 reviewed; core frozen R-941). Next in the build lane: ST, ADR 0055 parts 1–3,
+   then X04, X05.
 - **Superseded by the roadmap:**
   - X01 piloted by NRTL, UNIQUAC and UNIFAC: now F1 (0.5) plus F4. The pilots and the conformance kit carry over into
     those designs.
