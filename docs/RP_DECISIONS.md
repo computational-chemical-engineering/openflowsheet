@@ -1,4 +1,4 @@
-# RP build decisions (ADR 0055 WO-R2, WO-R3)
+# RP build decisions (ADR 0055 WO-R2, WO-R3, WO-R4, WO-R6)
 
 Build lane, branch `wp/RP`. Brief: `docs/briefs/REL-build-WO-R2-R3.md`. Normative text: RP
 (`docs/derivations/release-procedure.md`). Each choice below is isolated in `scripts/release_gate.py` and named
@@ -69,3 +69,50 @@ where it lives. Questions for the design lane are batched for the one `reviewer`
 - REL.A03 at the checkout (`--rc a3e508e3`, text and `--json`): stdout byte-identical. HEAD is `0.4.0.dev0`, so
   both print the not-covered report; `--candidate a3e508e3` cannot be compared because that tree has no line file.
   The fixture comparison (V03.A06–A08's 17 states and the W27 malformed case) carries the substance.
+
+## Choices (build lane, WO-R4/WO-R6, 2026-11-06)
+
+- **C-1 `release-audit` not added.** The brief and ADR 0055's WO-R4 row list it; RP §6.10 (binding) says it is D2.3's
+  and is not added while D2 is deferred. RP followed. Reversible: add the job when D2 is adopted.
+- **C-2 Step 8 under `release_rc`** is a new `rc-steps` step `python scripts/release_rc.py surface`, which calls
+  `m07a_rc.py surface` unchanged. The `rc_alpha` step's `if` is not widened: RP §6.10 keeps `rc`/`rc_alpha` as they
+  are, and `tests/test_m07a_surface_chain.py` (legacy) pins it. Reversible: one step in `ci.yml`.
+- **C-3 `default-install` skipped under `release_rc`** (same `if` as `check`): RP §6.10 "runs the RC jobs only".
+- **C-4 junit** via `OPENFLOWSHEET_JUNIT_DIR` in `scripts/check.sh` (pytest `--junitxml`, node `--test-reporter=junit`
+  beside `spec`), not `PYTEST_ADDOPTS`, which subprocess pytest runs in the suite would inherit and overwrite.
+  Unset, `check.sh` is unchanged. Artifact `junit-<arch>`, `if-no-files-found: error`.
+- **C-5 `wheel_data_check.py` copies** 17e's functions (`wheel_findings`, `a19_findings`, `exact`, `answers`,
+  `probe`) rather than importing `v03_rc.py`: RP §3.3 forbids a per-release RC script as an item's owner, and the
+  legacy script is not edited. A test pins that both decide identically. Check ids kept (`a17.*`, `a19.*`); 17e's
+  `a22.17e.t08_a43` becomes `wheel.built` (T08.A43 itself is step 3's, RP §3.6). Work dir: `--out` or a temp dir;
+  findings go to stdout, which the wrapper hashes and keeps as `step17/<id>.log`.
+- **C-6 Step-17 wrapper.** `local:` items run with `PYTHONPATH=<C>/src:<C>` and one thread (0.3.0's `P` array);
+  `nlp` items under `env -i` with HOME, PATH, LANG (0.3.0's 17d). "Records the command wrote itself" = files under
+  `<rc>` new or changed during the item. Interpreters other than `project` are given as `--python ENV=PATH`; a
+  missing one, or an unset `$NAME`, is `unsupported`. `ci:` items need `--ci-run` (a dispatch at C), else
+  `unsupported`; artifacts `<job>-*` go to `step17/<id>/`.
+- **C-7 Step 1's ratio lines** are the log lines of the `check` steps `S07 A31 line` and `S11 thermal reference
+  line`, recorded per leg in `s1.check.<arch>`, not judged (RP.S15).
+- **C-8 N-4's junit measurement** is read on the push run at the dispatch's head (the dispatch skips `check`, which
+  is what writes junit).
+
+## Questions for the design lane (defaults applied)
+
+- **Q-C1 (C-1).** ADR 0055's WO-R4 row lists `release-audit`; RP §6.10 defers it with D2. An ADR note should align.
+- **Q-C2 (C-8).** "One dispatch shows junit-x86_64/junit-aarch64 present": the dispatch cannot, since `check` is
+  skipped by D4.2; default: the push run at the same commit shows them.
+
+## Measured (WO-R4/R6, 2026-11-06)
+
+- `scripts/wheel_data_check.py --commit b69dc0f1` (real build, fresh venv): `wheel data check: PASS`, 11/11 checks.
+- RP.L01–L10 on `release/lines/0.4.json`: all pass at `bd672ff7` (`tree_problems` = []); RP.L08 control (script
+  absent from the tracked set) refused.
+- REL.A17 tests (`tests/test_rel_ci_release_rc.py`): 17 passed; workflow suites (`test_release_workflows`,
+  `test_m07a_surface_chain`, `test_v03_rc_coolprop`, `test_s07_packaging`) unchanged and green.
+- The one `release_rc` dispatch: run 42156856877 at `bd672ff7`, `success`. `check`, `identity`, `default-install`
+  skipped; `rc-steps` ×2, `rc-coolprop` ×2, `rc-ensemble`, `dist`, `clean-install` ×2, `bundle-set`,
+  `bundle-replay` ×2, `ptc-r1` ×2 all `success`. PTC-R1 (Q-13, N-2): `compare --run` 70 s on x86-64; job wall
+  1 min 54 s (x86-64), 1 min 28 s (aarch64) — far inside 360 min, so the item stands.
+- Push run 42156850745 at `bd672ff7`: `check` success on both legs (x86-64 1 h 40 min, aarch64 1 h 12 min),
+  `identity` success, artifacts `junit-x86_64` and `junit-aarch64` present.
+- Full gate at `bd672ff7`: `GATE PASS: 14995 passed, 3206 skipped, 197 deselected` (8527 s).
