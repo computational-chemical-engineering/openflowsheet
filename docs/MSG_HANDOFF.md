@@ -27,13 +27,11 @@ Branch `wp/MSG`, worktree `.claude/worktrees/msg`. Spec `docs/design/MSG-message
 
 - WO-5 (sidecar; own engineer): `_run_failure` passes `worker_result.run["diagnosis"]` to
   `explain_failure`; C01/C02 numbers then appear in `failure.explanation.numbers`.
-- WO-9 (corpus + complete entries), WO-10 (web shell display; W26 fixtures already carry
-  `failure` / `detail.explanation`).
+- WO-9 (corpus, complete entries), WO-10 (web shell; W26 fixtures carry the members).
 - Merge blocker: `explain.md` needs the design-lane and Frank's reviews recorded in `REVIEW.json`
   (`tests/test_t08_w2_description_reviews.py` red until then, by design; D7-8).
-- Design lane (batched): register entry with `D_4` (now `1ca06b37…`) and Frank's carry for c_4
-  (D6-4, D7-9); the gate changes D7-7 (`m07a_rc` item 4) and D7-10 (A20 count, envelope); stub prose for the FB-01 codes (D4-1); CLI
-  `solve`/`inspect` render without revision context (D6-3); §4.13.3's `operation` member (D3-4).
+- Design lane (batched): register entry with `D_4` (now `1ca06b37…`) and c_4's carry (D6-4,
+  D7-9); gate changes D7-7, D7-10; FB-01 stub prose (D4-1); D6-3; D3-4.
 
 ## Gates at the end of this run
 
