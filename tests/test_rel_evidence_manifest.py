@@ -355,3 +355,78 @@ def test_s18_the_generator_s_own_rule(tmp_path: Path) -> None:
     assert decided([*others[:2], {"id": "RP.S03", "result": "fail"}], 3) == "fail"
     assert decided([*others[:2], {"id": "RP.S03", "result": "unsupported"}], 3) == "fail"
     assert decided(others, 0) == "fail"
+
+
+# -- amendment A-4 (RP §6.2, §6.10; review S-3): exactly the push run and the dispatch ------------
+
+
+def _ci(run_id: int, event: str, conclusion: str = "success", **more: Any) -> dict[str, Any]:
+    return {"databaseId": run_id, "event": event, "headSha": C, "conclusion": conclusion, **more}
+
+
+LISTED = [
+    _ci(5, "push", attempt=1),
+    _ci(8, "push", attempt=1),
+    _ci(10, "workflow_dispatch", "failure", attempt=1),
+    _ci(12, "workflow_dispatch", attempt=2),
+]
+
+
+def test_a4_the_manifest_reads_exactly_the_push_run_and_the_dispatch() -> None:
+    """One red and one green dispatch at C passed RP.S11 before A-4 (`t08._jobs` takes `success`
+    from any run). Now: two dispatches, a run at another commit, an older dispatch or push than
+    step 1 lists, or another attempt are refused. Controls: 0.3.0's two runs (no step 1 record),
+    and the listed push run and dispatch."""
+    saved = [json.loads(path.read_text("utf-8")) for path in sorted(CI.glob("ci-run-*.json"))]
+    assert rem.ci_selection_problems(saved, S13.name, None) == []
+    assert (
+        rem.ci_selection_problems([_ci(8, "push"), _ci(12, "workflow_dispatch")], C, LISTED) == []
+    )
+    red_and_green = [
+        _ci(8, "push"),
+        _ci(10, "workflow_dispatch", "failure"),
+        _ci(12, "workflow_dispatch"),
+    ]
+    assert rem.ci_selection_problems(red_and_green, C, None) == [
+        "runs [10, 12]: 2 workflow_dispatch runs given, not one (A-4)"
+    ]
+    elsewhere = {**_ci(12, "workflow_dispatch"), "headSha": "d" * 40}
+    assert rem.ci_selection_problems([elsewhere], C, None) == [
+        f"run 12: its head {'d' * 40} is not C"
+    ]
+    older = [_ci(5, "push"), _ci(10, "workflow_dispatch")]
+    assert rem.ci_selection_problems(older, C, LISTED) == [
+        "run 5 is not the push run step 1 lists for C (8; A-4)",
+        "run 10 is not the workflow_dispatch run step 1 lists for C (12; A-4)",
+    ]
+    attempt = [_ci(12, "workflow_dispatch", attempt=1)]
+    assert rem.ci_selection_problems(attempt, C, LISTED) == [
+        "run 12: attempt 1, not the latest listed, 2 (A-4)"
+    ]
+    assert rem.ci_selection_problems([_ci(3, "schedule")], C, None) == [
+        "runs [3]: event 'schedule' is neither push nor workflow_dispatch"
+    ]
+
+
+def test_a4_step_1_s_listing(tmp_path: Path) -> None:
+    assert rem.listed_runs(tmp_path, C) is None
+    record = tmp_path / rem.STEP_RECORD[1]
+    record.parent.mkdir(parents=True)
+    record.write_text(json.dumps({"checks": []}), encoding="utf-8")
+    with pytest.raises(SystemExit, match="no `runs_at_c`"):
+        rem.listed_runs(tmp_path, C)
+    record.write_text(json.dumps({"runs_at_c": [{"databaseId": 8, "event": "push"}]}), "utf-8")
+    assert rem.listed_runs(tmp_path, C) == [{"databaseId": 8, "event": "push", "headSha": C}]
+
+
+def test_a4_the_generator_refuses_before_it_runs_anything(tmp_path: Path) -> None:
+    dispatch = CI / "ci-run-41108983463.json"
+    argv = ["--line", "0.3", "--commit", S13.name, f"--ci-json={dispatch}", f"--ci-json={dispatch}"]
+    argv += [
+        "--evidence=evidence/S13",
+        f"--out={tmp_path / 'm.json'}",
+        f"--rel-a20={S13 / 'manifest.json'}",
+    ]
+    with pytest.raises(SystemExit, match="2 workflow_dispatch runs given"):
+        rem.main(argv)
+    assert not (tmp_path / "m.json").exists()

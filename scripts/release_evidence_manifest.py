@@ -54,6 +54,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "scripts"))
 import changelog_section  # noqa: E402
 import release_gate as rg  # noqa: E402
+import release_rc  # noqa: E402
 import release_rc_local  # noqa: E402
 import s13_evidence_manifest as s13  # noqa: E402
 import t08_evidence_manifest as t08  # noqa: E402
@@ -259,6 +260,59 @@ class Inputs:
 
 
 Part = tuple[str, dict[str, Any]]
+
+
+def ci_selection_problems(
+    runs: Sequence[Mapping[str, Any]], commit: str, listed: Sequence[Mapping[str, Any]] | None
+) -> list[str]:
+    """Amendment A-4 (RP §6.2, §6.10): the manifest reads exactly C's push run and C's
+    `release_rc` dispatch, and refuses any other run. Each given run is at C; at most one is a
+    `push` and at most one a `workflow_dispatch`. Where step 1's record lists every `ci.yml` run
+    at C (`listed`), the push run is §6.2's (the greatest push run id) and the dispatch the
+    greatest dispatch run id. `gh run view` without `--attempt` reads a run's latest attempt; an
+    attempt the given run states must be the one listed."""
+    problems = [
+        f"run {run.get('databaseId')}: its head {run.get('headSha')} is not C"
+        for run in runs
+        if run.get("headSha") != commit
+    ]
+    by_event: dict[str, list[Mapping[str, Any]]] = {}
+    for run in runs:
+        by_event.setdefault(str(run.get("event")), []).append(run)
+    for event, found in sorted(by_event.items()):
+        ids = [run.get("databaseId") for run in found]
+        if event not in ("push", "workflow_dispatch"):
+            problems.append(f"runs {ids}: event {event!r} is neither push nor workflow_dispatch")
+        elif len(found) > 1:
+            problems.append(f"runs {ids}: {len(found)} {event} runs given, not one (A-4)")
+    if listed is not None:
+        selections = (("push", release_rc.push_run), ("workflow_dispatch", release_rc.rc_dispatch))
+        for event, select in selections:
+            expected = select(listed, commit)
+            for run in by_event.get(event, [])[:1]:
+                if expected is None or run.get("databaseId") != expected.get("databaseId"):
+                    problems.append(
+                        f"run {run.get('databaseId')} is not the {event} run step 1 lists for C "
+                        f"({None if expected is None else expected.get('databaseId')}; A-4)"
+                    )
+                elif run.get("attempt") not in (None, expected.get("attempt")):
+                    problems.append(
+                        f"run {run.get('databaseId')}: attempt {run.get('attempt')}, not the "
+                        f"latest listed, {expected.get('attempt')} (A-4)"
+                    )
+    return problems
+
+
+def listed_runs(rc_dir: Path, commit: str) -> list[dict[str, Any]] | None:
+    """Step 1's `runs_at_c` (A-4), each at C; `None` without a step 1 record (0.3.0's). A step 1
+    record that lists no runs is refused: it was not written by A-4's step 1."""
+    record = rc_dir / STEP_RECORD[1]
+    if not record.is_file():
+        return None
+    found = json.loads(record.read_text(encoding="utf-8")).get("runs_at_c")
+    if not isinstance(found, list):
+        raise SystemExit(f"{record}: no `runs_at_c` (RP §6.2, A-4)")
+    return [{**run, "headSha": commit} for run in found]
 
 
 def _read_here(path: str) -> bytes | None:
@@ -903,6 +957,10 @@ def main(argv: Sequence[str] | None = None) -> int:
                 "stdout_sha256": t08._sha256(saved),
             }
         )
+    rc_dir = Inputs(line, commit, evidence=arguments.evidence).rc_dir
+    refused = ci_selection_problems(ci, commit, listed_runs(rc_dir, commit))
+    if refused:
+        raise SystemExit("CI runs refused (RP §6.2, §6.10, A-4):\n" + "\n".join(refused))
     tests, test_commands, _files = run_tests(artifacts, tmp)
     commands.extend(test_commands)
     inputs = Inputs(
