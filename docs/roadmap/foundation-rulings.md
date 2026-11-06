@@ -1,7 +1,7 @@
 # Foundation rulings: the nine questions of the target architecture (roadmap stage 3)
 
 Status: design-lane rulings (`specifier`), 2026-11-02; amended in place by Amendment 1 (2026-11-02, §13), Amendment 2
-(2026-11-05, §14), Amendment 3 (2026-11-05, §15) and Amendment 4 (2026-11-05, §16), which list every changed clause. Brief: `docs/roadmap/brief-specifier-foundation-questions.md`.
+(2026-11-05, §14), Amendment 3 (2026-11-05, §15), Amendment 4 (2026-11-05, §16) and Amendment 5 (2026-11-06, §17), which list every changed clause. Brief: `docs/roadmap/brief-specifier-foundation-questions.md`.
 Questions and defaults: `docs/roadmap/target-architecture.md` §6 ("the note"). Input to ADR-F2 to ADR-F5, not an ADR:
 once an ADR adopts a ruling, the ADR is the authority and this document is archival input.
 
@@ -12,6 +12,8 @@ once an ADR adopts a ruling, the ADR is the authority and this document is archi
 - **Consistency.** ADR 0001 D1–D5, ADR 0005 D2–D7, ADR 0007 D2.4, ADR 0011 D2, ADR 0012 and ADR 0051 D1 stay binding for
   `nTP-v1` and every v1 document. Where a ruling needs one of them amended *for v2 documents*, §10 records a finding;
   this document amends nothing. No ruling touches a v1 document, `nTP-v1`, a legacy provider or a registered fixture.
+  Amendment 5's report clauses (Q1.R11, Q1.R12, Q2.R11, Q4.R10–R12) rule what a derived report (`stream-table-v1`,
+  ADR 0068) states about a v1 state; they change no v1 document, fixture or identity input.
 - **Departures from the note's defaults:** Q1 (enthalpy per unit mass, not molar), Q2 (anchor phase, entropy datum,
   component datum), Q3 (a conserved-group basis replaces the `apparent|true` switch), Q4 (density ordering removed), Q5
   (claim levels and witnesses), Q6 (no-redundancy rule), Q9 (two provenance axes; rights outside identity). Q7 and Q8
@@ -92,6 +94,25 @@ Notation: ε = 2.220446e-16. "Exactly" = bitwise in IEEE double after signed-zer
   `event_chattering(<event>)`, keeping its trajectory. Grouping is a thresholded decision: an event located at
   |t − t*| ∈ [τ_ev/10, 10 τ_ev] flags its group `near_threshold` (ADR 0007 D2.4). The groups in order, each with its
   (event id, assignments) in application order and one `reinit`, are R0.
+- **Q1.R11** *A dormant stream in a report* (Amendment 5, SQ-ST-2; ADR 0068 R0; v1 states). A report derived from a
+  solved state treats a stream as dormant iff `StreamState.is_dormant` (Σn == 0.0 after signed-zero normalisation, ADR
+  0001 D3.1): decided on the amounts, never on ṁ or Ḣ, so a stream whose only amount is 5e-324 flows even when its mass
+  underflows (Q4.R11 (c)). For a dormant stream the report makes **no provider call**. Every entry of its `n` and `m`
+  (a stored −0.0 normalised) and its `n_total`, `m_total`, `H_flow`, `S_flow` and `V_flow` are exactly `+0.0`; `T`,
+  `x`, `w`, every intensive and both vapour fractions are null with `zero_flow(stream)`; its phase list is empty. The
+  stored T is a label (ADR 0001 D3.1; ADR 0012 D4 (c), D12) and is never shown, as Q1.R4 rules for ĥ. P is shown as
+  stored: v1's zero-flow forms (ADR 0012 D4 (c), D12) drop or swap energy, equilibrium and split rows and never a
+  pressure row, so a dormant stream's P is still the pressure-network value ADR 0001 D3.1 retains. This is Q1.R4's reporting half read for v1 states.
+- **Q1.R12** *Evaluation state of a carried saturated split* (Amendment 5, SQ-ST-4; ADR 0068 R1; ADR 0051 D2). A report
+  evaluates both phases of a carried saturated split (`<S>.sat.V` and `<S>.sat.L` in the state; one component) at
+  (T_sat(P), P), **never at the stored T**. T_sat is the verifier's: the provider's `Tsat` from `evaluate_phase` on
+  `StreamState((1.0,), T_lo, P)` in LIQUID, T_lo the provider's lowest declared T. Each phase is then requested on
+  `StreamState((1.0,), T_sat, P)` in its family, and its extensive values are its carried amount times the per-mole
+  values, so the report's Ḣ equals `verify.thermal.saturated_enthalpy` bitwise. The stream's reported `T` is the
+  stored T, the coordinate the certificate judged against T_sat(P) at the temperature tolerance; no second temperature
+  is reported. A `Tsat` status other than `ok` nulls every property-derived quantity of the substream and its phases
+  with `property_evaluation_failed(stream, LIQUID, Tsat, status)`; amounts, masses, compositions, phase fractions and
+  vapour fractions, which read no property, are still given.
 
 ### Rejected alternatives
 - **(a) `nTP` plus phase amounts where Gibbs' rule leaves the state open.** Degeneracy in `T` is not only structural (π
@@ -201,6 +222,28 @@ Notation: ε = 2.220446e-16. "Exactly" = bitwise in IEEE double after signed-zer
   (g = 0.5 − p, rising) sets p := 1, c's second firing ends the run `event_chattering(c)`. Expectations are orders,
   counts, exact assignments and the located t*. Mutation controls: ordering by id alone fails (b); a `reinit` per event
   fails (a); τ_ev = 0 fails (c).
+- **Q1.A14** *Dormant stream in the report* (ST G4; Amendment 5). Every test-local state of Amendment 5 is paired with a
+  certificate whose `target_state_sha256` matches, as G3's must be (note §4.1's precondition). (a) On every dormant stream of the ST
+  corpus: `T` null with absent `{code: zero_flow, params: {stream: <S>}}`; `P` bitwise the stored value; every entry of
+  `n` and `m` and `n_total`, `m_total`, `H_flow`, `S_flow`, `V_flow` equal to 0.0 with a clear sign bit; `x`, `w`, both
+  vapour fractions and every intensive null with `zero_flow`; `phases == []`; `flash_near_phase_boundary` false.
+  [pre] The corpus has at least one dormant stream (O-21). (b) Two probes on the first undeclared stream S of a SYN-001
+  corpus revision, n := (+0.0, −0.0, +0.0) at its stored P: (b1) T := 1234.5 K, outside syn001's [280, 440] K; (b2)
+  T := 300.0 K, inside it. Each meets (a); the only code on S is `zero_flow`; a counting provider wrapper records no
+  call whose state is dormant. Exact (assignments, not arithmetic). Mutation controls: showing the stored T puts 1234.5
+  or 300.0 in `T`; evaluating at the label draws `out_of_domain` at (b1) and yields numbers at (b2), which only the null
+  `T` and the call count catch; deciding dormancy on ṁ fails Q4.A14 (d).
+- **Q1.A15** *Saturated split at T_sat(P)* (ST G3, G7; Amendment 5). (a) G3's state keeps S4's stored T [pre: |T −
+  450 K| > 100 K]; G3's six values within 1e-7 relative of the S05 reference then exclude an evaluation at the stored
+  T, which would move h′ alone by about c_p ΔT ≈ 4.2 kJ/(kg K) × 131 K ≈ 0.55 MJ/kg (an estimate, not an
+  expectation). (b) S4's reported `T` is bitwise the stored T. (c) On every R1 stream of the corpus a recording provider
+  wrapper shows one `Tsat` call on `StreamState((1.0,), T_lo, P)` in LIQUID, then every phase request on
+  `StreamState((1.0,), T_sat, P)` with T_sat bitwise the returned value; `H_flow` is bitwise
+  `thermal.saturated_enthalpy` (E7). (d) G3's state with P := 2.5e7 Pa, above IAPWS-95's P_c = 22.064 MPa [pre: `Tsat`
+  refused, O-21]: `h`, `h_mass`, `s`, `s_mass`, `v`, `rho`, `H_flow`, `S_flow`, `V_flow` of the substream and both
+  phases null with `property_evaluation_failed(stream: S4, phase: LIQUID, property: Tsat, status: <the provider's>)`;
+  both vapour fractions and both phase fractions exactly 0.5 (0.5/1.0, and M·0.5 is exact); `n`, `m`, `x`, `w`, `T`
+  given. Mutation control: nulling the fractions with the properties fails (d).
 
 **Effect on the note.** §2.1.1: `thermal_coordinate: T | h` becomes `T | h_mass`; add Q1.R4. §2.2.1: each state-point
 specification carries its quantity kind (molar or specific). §6 Q1: text corrected. §7 R4: decided, mitigated by Q1.R3.
@@ -276,6 +319,19 @@ A12).
   compute such a quantity reports `unsupported` with that code, never `pass` or `fail`. c as an inert in a reactor is
   admitted. A component with Δf h° and no s° is reaction-consistent in h (a conversion reactor's energy balance is
   admitted) and not in s or g.
+- **Q2.R11** *Mixture properties in a report* (Amendment 5, SQ-ST-5; ADR 0068 D4, D5). (a) A phase's h is the
+  provider's mixture `h`, H_p = n_p,tot·h, or, only when that key is absent and every `h_<c>` is present, H_p =
+  Σ_c n_p,c h_c from 0.0 in provider order. The per-component form is admitted for h because the one legacy provider
+  returning it, SYN-001, defines its phase enthalpy as that sum (an ideal solution, H^E ≡ 0), the arithmetic of its
+  units and of the verifier. (b) s and v come only from the mixture keys `s` and `v`, each requested alone and only when
+  declared; a per-component `s_<c>` or `v_<c>` gives `property_not_provided(provider, property)`. Such a key does not
+  say whether it holds a pure-component or a partial molar value, and for pure-component values the sum omits the
+  entropy of mixing −R Σ_c x_c ln x_c (R ln 3 = 9.134 370 806 J/(mol K) for an equimolar ternary) or the excess
+  volume. (c) A density is m/V with V = n·v from the provider's v and from nothing else: **no ideal-gas fallback**, even
+  where the method's vapour model is an ideal gas (SYN-001, the Wilson γ–φ vapour). The gap is
+  `property_not_provided(provider, v)` with capability `property:v`; the provider closes it by declaring `v` (F4), never
+  the report. (d) The report holds no thermodynamic model of its own: every value it shows is a provider value, a
+  carried state value, or one of the note's §4.3 combinations of them with amounts and molar masses.
 
 ### Rejected alternatives
 - **Native conventions with per-method summaries only (the default's fallback).** Energy does not close across a
@@ -411,6 +467,18 @@ component. *Floor:* a duty Ḣ_out − Ḣ_in carries ε·max|Ḣ|, 6.3e-9 W at 
   Expectations: `docs/derivations/scripts/f6_std_seed_reference.json` (case CMP-1). Mutation controls: the datum on one
   side only (inlet Ṡ shifted, PS point native) moves T_s by hundreds of K; refusing (b) on (i), as the default's "or
   equilibrium" reads, fails (b); dropping the notice fails (a).
+- **Q2.A13** *Property forms in the report* (ST G5; Amendment 5). (a) On every SYN-001 substream with phases in the
+  corpus: the h-derived members are given, H_p bitwise Σ_c n_p,c h_c from 0.0; `s`, `s_mass`, `S_flow` null with
+  `property_not_provided(provider: syn001, property: s)`; `v`, `V_flow`, `rho` null with
+  `property_not_provided(syn001, v)` (`rho` copies its first absent input). (b) A test double D_c delegating to SYN-001,
+  declaring `s` and `v` and returning only `s_<c>` = (100, 200, 300) J/(mol K) and `v_<c>` = 1e-3 m³/mol, at Q4.A15's
+  B-far state: `s`, `v` and every quantity derived from them null with `property_not_provided(<D_c's id>, s | v)`; h
+  bitwise as in (a). Mutation control: a per-component sum gives s ≥ 100 J/(mol K), a number. (c) The same double
+  returning the mixture keys `s` = 150 J/(mol K) and `v` = 2e-3 m³/mol instead: S_p = n_p,tot·150, V_p =
+  n_p,tot·2e-3, rho_p = m_p,tot/V_p and rho = m_tot/V_flow, each bitwise as the test recomputes it. (d) On the
+  wilson-ig-v2 corpus revision, a listed VAPOR phase [pre, O-21] has `s` given and `rho` null with
+  `property_not_provided(wilson-ig-v2, v)`. Mutation control: an ideal-gas fallback gives PM/(RT), a number. (e)
+  IAPWS-95 gives ρ (G3). Exact: null patterns and bitwise recomputation.
 
 **Effect on the note.** §2.3.6: `ELEMENTAL-ref-v1` with anchor phase, entropy datum and component datum. F4 exit: the
 convention-shift clause becomes Q2.A2. §6 Q2: default replaced. §2.3 "ADRs": ADR-F4 also amends ADR 0001 D5.2 (§10).
@@ -563,10 +631,72 @@ not "later". Amendment 2: §14 (A1-a; F2 gains Q3.A6, F4 Q3.A5).
   routing for the attempt; at closure a changed character closes the attempt `routing_order_changed(<unit>)` and the
   adjacent assignment (the lone phase's other port) opens. Each identification rule declares its scalar q and threshold
   q* (Venkatarathnam and Oellrich's parameter: q* = 1); |q − q*| ≤ 10 τ_char |q*| attaches `near_threshold` to the
-  routing (ADR 0007 D2.4), τ_char = 1e-6 (O-14). With two or more active fluid phases D9's mass-density order rules; an
-  adjacent pair with |ln ρ_a − ln ρ_b| ≤ 10 τ_ρ is flagged `near_threshold` (Q4.R5's pattern), τ_ρ = 1e-6 (O-14), and
-  an exact tie is ordered by canonical ordinal. **This gives O-11 a numerical consequence:** the identification rule
-  decides through which outlet a lone dense, supercritical or near-critical phase leaves a unit.
+  routing (ADR 0007 D2.4), τ_char = 1e-6 (O-14). With two or more active fluid phases Q4.R13 rules (amended by
+  Amendment 5), its density flag at τ_ρ = 1e-6 (O-14); beside an active confined phase Q4.R13 rules as well. **This
+  gives O-11 a numerical consequence:** the identification rule decides through which outlet a lone dense,
+  supercritical or near-critical phase leaves a unit, and (Q4.R13) whether each of several coexisting fluid phases
+  leaves by `vapor`.
+- **Q4.R10** *Vapour fraction* (Amendment 5, SQ-ST-1; ADR 0068 D5). (a) A substream whose phase list is decided reports
+  `vapor_fraction_molar` = N_V/N_P and `vapor_fraction_mass` = M_V/M_P. N_P and M_P are the amounts and masses of its
+  listed phases (Q4.R11), N_V and M_V those of its listed phases in the **vapour group**, each accumulated from 0.0 in
+  listing order. The vapour group is the VAPOR family in v1; v2 adds every FLUID phase whose recorded `character` is
+  `vapour_like`, which is Q4.R13's vapour group, so the vapour fraction is the share a unit with a `vapor` port sends
+  there. `phase_fraction_molar` = n_p,tot/N_P and `phase_fraction_mass` = m_p,tot/M_P. (b) Hence, exactly in IEEE
+  arithmetic: 0.0 when no listed phase is in the vapour group; 1.0 when every one is; 0 ≤ vf ≤ 1 when no listed amount
+  is negative (rounding is monotone); and in v1 `vapor_fraction_molar` is bitwise the VAPOR phase's
+  `phase_fraction_molar`. (c) It is an amount ratio, never the thermodynamic quality (h − h_L)/(h_V − h_L); no member
+  is named `quality`, and the documentation maps "steam quality" to `vapor_fraction_mass`. On a one-component carried
+  split the two agree by the lever rule (E2); outside the dome the vapour fraction is 0.0 or 1.0, where the
+  thermodynamic quality leaves [0, 1]; for a mixture the latter is undefined. In v1 the family is the legacy label
+  (Q4.R7): a supercritical fluid labelled VAPOR has the vapour fraction 1.0. (d) It is null only when no phase list is
+  decided (`zero_flow`, `flash_failed`) or its quotient is not finite (Q4.R11 (c)); a property failure never nulls it.
+  (e) v2 keeps both members, adds `character` to FLUID phase objects (Q4.R6), read from the state point and never
+  decided again by the report, and counts a listed SOLID phase in N_P and M_P (O-20).
+- **Q4.R11** *Listing* (Amendment 5, SQ-ST-6; ADR 0068 D3). (a) A phase of the substream's phase decision is listed iff
+  its amount n_p,tot = Σ_c n_p,c (Python `sum`, provider order) is `!= 0.0`: the dormancy test applied to the phase, so
+  ±0.0 is not listed and every non-zero amount is, however small and of either sign. Listed phases are ordered by family
+  (VAPOR, LIQUID, FLUID, SOLID), then ordinal, and keep the decision's ids, never renumbered (a v2 list therefore need
+  not be a Q4.R2 prefix: activity is the state point's, listing is by amount). (b) Amounts are reported as decided and
+  **never clamped**. At a verified state a carried V or L may be a small negative within the bounds checks' τ_flow; it is
+  listed, its phase fraction is negative, the vapour fraction lies outside [0, 1] by at most |amount|/N_P, and
+  `H_flow` still equals Σ_p H_p and the verifier's Ḣ bitwise. (c) *Quotients.* Every quotient the report forms (x, w,
+  h, h_mass, s, s_mass, ρ, the phase and vapour fractions) is an IEEE-754 division. A non-finite result (a zero
+  denominator, as when the mass of a listed phase or of a flowing stream underflows to +0.0) is null with
+  `value_not_finite(subject, quantity)`; the report never raises.
+- **Q4.R12** *The report's phase decision for an undeclared, unsplit stream* (Amendment 5, SQ-ST-3; ADR 0068 R3). (a)
+  A flowing stream with neither a carried split nor a declared producer-port phase is decided by one TP flash of the
+  provider at its stored (n, T, P): the listed phases are the flash's outlets (Q4.R11), with **no ε_adm or τ_dew
+  snap**, no lifted split and no further decision; `phase_source` is `flash`. The decision is the report's and is never
+  presented as the verifier's. A flash that is not `ok` lists no phases; every phase-derived quantity is null with
+  `flash_failed(stream, status)`; n, m, x, w, T and P are given. (b) *Where the two may differ.* Every substream reports
+  `flash_near_phase_boundary`, false unless the phase source is `flash`, and then true iff (i) two or more phases are
+  listed and min_p |n_p,tot|/N_P ≤ τ_β = 1e-8 (O-19), or (ii) the certificate holds a row for the stream with category
+  `independent_split`, result `not_applicable` and reason `temperature_degenerate` or `fresh_flash_unresolved` (the
+  verifier could not recompute that stream by a fresh flash). The stream's quoted checks (note §4.4) include those
+  `independent_split` rows. (c) *What it covers* (§17 argument 4). The verifier reads a flashed two-phase stream as
+  single-phase only where a device acts: on SYN-001's form when Σ z K ≤ 1 + ε_adm or Σ z/K ≤ 1 + ε_adm (ε_adm =
+  1e-12); on PR-C1's when l_NH3/n_tot ≤ τ_dew = 1e-10; at a lifted split that is temperature-degenerate or unresolved,
+  where it reads the stored split. In the first two the report's minority fraction is at most c·ε_adm, c = max(1,
+  K_max)²/Σ_c z_c (K_c − 1)² (dew: K → 1/K), and at most τ_dew/x^L_NH3; so (i) covers them where c ≤ 1e4 and
+  x^L_NH3 ≥ 1e-2, and (ii) covers the third. Elsewhere only Q4.A15 (e) watches (§17, not established). (d) *What the
+  difference is.* Where the verifier reads single-phase a stream the report lists as two phases, Ḣ_report − Ḣ_verifier
+  = Σ_c n_min,c (h_c^min − h_c^maj) at (T, P): the minority phase evaluated in its own family instead of the majority's
+  (SYN-001's form; exact in real arithmetic). The energy summary shows the report's closure beside the quoted row
+  (ADR 0068 D6); the flag says why they may differ. (e) v2's `state_point` source makes no flash and reports false; the
+  state point's own flags (Q4.R5, R9, R13) are added beside it.
+- **Q4.R13** *Routing the fluid phases of a point* (Amendment 5, SQ-F6-5; ADR 0065 D9; generalises Q4.R9). At a point a
+  unit routes, the active fluid phases (confined ones included, Q4.R8) form two groups. The **vapour group** is every
+  VAPOR phase and every FLUID phase whose `character` (Q4.R6, O-11) is `vapour_like`; the **liquid group** is the rest.
+  Every phase of the vapour group leaves by `vapor`, or by the first port of `light_to_heavy` when `vapor` is null. The
+  liquid group is ordered by mass density, ascending, an exact tie by canonical ordinal; its k-th phase leaves by the
+  k-th port of `light_to_heavy`, and phases beyond the last port by the last port. SOLID phases leave by `solids`, else
+  by the last port. One rule serves `split` and `single` methods and every phase count: with two `split` candidates it
+  is today's routing, and with one fluid phase it is Q4.R9. The characters are fixed with the routing at the opening
+  (Q4.R9); at closure a changed group membership or liquid-group order closes the attempt
+  `routing_order_changed(<unit>)`, and the adjacent assignment moves one phase between the groups or transposes one
+  density-adjacent liquid-group pair. Flags (ADR 0007 D2.4): every FLUID phase with |q − q*| ≤ 10 τ_char |q*|, and
+  every adjacent liquid-group pair with |ln ρ_a − ln ρ_b| ≤ 10 τ_ρ (exact ties included), attach `near_threshold` to
+  the routing; τ_char = τ_ρ = 1e-6 (O-14). Inside the vapour group nothing is ordered or flagged.
 
 ### Rejected alternatives
 - **The default's "without a key, descending mass density".** It contradicts its own key rule in the commonest case (a
@@ -631,6 +761,70 @@ about 4 decades above the expected cross-platform agreement of converged mole fr
   `vapor`), then `vapor` only. (c) **[gen]** The generator locates on path (a), by bisection on the method's own q, a
   point with |q − 1| ≤ 5e-6 and one with |q − 1| ≥ 1e-3: the first carries `near_threshold` on its routing, the second
   does not. Mutation control: the map reversed (`vapour_like` → `liquid`) moves the whole flow at both ends of path (a).
+- **Q4.A13** *Vapour fraction* (ST G2, G4, G6; Amendment 5). (a) *Definition, bitwise.* On every corpus substream with a
+  phase list, the test recomputes in listing order vf_molar = (0.0 + Σ_VAPOR n_p,tot)/N_P, vf_mass likewise, and the
+  phase fractions; vf_molar equals the VAPOR phase's `phase_fraction_molar` when VAPOR is listed and is 0.0 when it is
+  not. (b) *Exactly 0 and 1.* SYN-001, n = (1, 1, 1) mol/s, P = 1e5 Pa: at T = 340 K the list is [LIQUID] and both
+  fractions are 0.0; at T = 385 K it is [VAPOR] and both are 1.0 [pre: the provider's Σ z K < 1 at 340 K and Σ z/K < 1
+  at 385 K; sanity −0.184 and −0.256]. Every R2 corpus stream gives 0.0 or 1.0 by its declared family. (c) *Interior.*
+  G2's S4 has 1e-3 < vf_molar < 1 − 1e-3 [pre]; G3's state gives 0.5 exactly. (d) *Bases.* Where every listed
+  phase's components share one molar mass (SYN-001, water), |vf_mass − vf_molar| ≤ 4(C + 1) ε·vf_molar, C the
+  substream's component count (worst-case rounding (2C + 1) ε, §17 argument 9; margin ≥ 2). At the first corpus
+  substream with two listed phases and unequal molar masses [pre, O-21], |vf_mass − vf_molar| > 1e-3. Mutation
+  control: a mass fraction formed from molar amounts passes on SYN-001 and water and fails there. (e) No key matching
+  `/quality/i` occurs in the schema, in a corpus document or among the CLI's CSV columns. (f) *Null.* R0 gives
+  `zero_flow` (Q1.A14). Q1.A14 (b)'s stream with n := (1, 1, 1) and T := 450 K, outside the domain, gives phases [] and
+  both fractions null with `flash_failed(stream, out_of_domain)`, while n, x, T and P are given. Q1.A15 (d): a property
+  failure leaves the fractions given.
+- **Q4.A14** *Listing* (ST G4, G6, G7; Amendment 5). TH-C1's S5 [pre: R1] overwritten, n5 and P5 kept: (a) V := +0.0
+  and V := −0.0, L := n5: [LIQUID], both fractions 0.0, `H_flow` bitwise `saturated_enthalpy`. (b) V := 1e-300,
+  L := n5: [VAPOR, LIQUID], the VAPOR `n_total` 1e-300, vf_molar > 0, `H_flow` bitwise. (c) V := −1e-12·n5, L := n5 −
+  V: [VAPOR, LIQUID]; the VAPOR `n_total` and `phase_fraction_molar` negative and unclamped; vf_molar = V/(0.0 + V + L)
+  bitwise and < 0; `H_flow` bitwise `saturated_enthalpy` and bitwise Σ_p H_p. (d) Q1.A14 (b)'s SYN-001 stream with
+  n := (5e-324, 0.0, 0.0) at (350 K, 1e5 Pa): flowing; `T` = 350.0; phases [VAPOR] with `n_total` 5e-324 [pre: the
+  flash answers VAPOR; sanity Σ z/K = 1/K_A = 0.447]; `h` = 30 000.0 exactly (h_A^V(350 K) = 100·50 + 25 000, and
+  H_p = 30 000·2⁻¹⁰⁷⁴ is exact among subnormals); `x` = (1.0, 0.0, 0.0); vf_molar = 1.0; `m_total` = +0.0; `h_mass`,
+  `w`, vf_mass and `phase_fraction_mass` null with `value_not_finite`; no exception. (e) Every R3 single-phase
+  substream of the corpus lists exactly one phase. All exact.
+- **Q4.A15** *The report's decision near a phase boundary* (ST G16, new; Amendment 5). SYN-001, n = (1, 1, 1) mol/s,
+  P = 1e5 Pa (= P_r, so ln K_i = (L_i/R)(1/T_b,i − 1/T) exactly), on Q1.A14 (b)'s stream. Four temperatures, located
+  by bisection in double on the provider's own sums as its flash forms them: B-near, 5e-13 ≤ Σ z K − 1 ≤ 1e-12; B-far,
+  1e-5 ≤ Σ z K − 1 ≤ 1e-4; D-near, 5e-13 ≤ Σ z/K − 1 ≤ 1e-12; D-far, 1e-5 ≤ Σ z/K − 1 ≤ 1e-4. Sanity values (50-digit
+  scratch evaluation of syn001's closed forms; not expectations): T_bub = 347.441 181 981 440 K, T_dew =
+  374.270 304 118 478 K; each near band ≈ 1.9e-11 K wide (≈ 330 doubles); c = 6.831 (bubble), 7.158 (dew). (a)
+  *Near.* [pre, O-21] The flash is TWO_PHASE. The list is [VAPOR, LIQUID]; the minority fraction is > 0 and ≤ c·δ, c
+  and δ computed by the test from the provider's K (so ≤ 7.2e-12; sanity 7.7e-13 to 1.7e-12);
+  `flash_near_phase_boundary` true; the verifier's decision (`checks._admissible_phase`) is LIQUID at B-near and VAPOR
+  at D-near. With ΔH = `H_flow` − `checks.enthalpy_flow` at the same state and context, |ΔH − Σ_c n_min,c (h_c^min −
+  h_c^maj)| ≤ 64 ε Σ_c (n_c |h_c^maj| + n_min,c |h_c^min|), ΔH > 0 at B-near and < 0 at D-near; [pre] the closed form
+  exceeds ten times the tolerance (sanity 6.2e-8 to 1.2e-7 W against 2.0e-10 W at B-near, −8.3e-8 to −1.7e-7 W against
+  1.6e-9 W at D-near). Floor: the flash rebuilds n_V,c + n_L,c = n_c (1 + η), |η| ≤ 4ε, and each sum of ≤ 4 terms adds
+  ≤ 1.5ε, so the floor is ≤ 16 ε (…); margin ≥ 4. (b) *Far.* TWO_PHASE; minority fraction ≥ δ·min(1, K_min)²/Σ z (K −
+  1)² (sanity 0.064 δ and 0.110 δ, so ≥ 6.4e-7 > 64 τ_β); flag false; `_admissible_phase` returns None; `H_flow`
+  bitwise `checks.enthalpy_flow`. (c) *Rows.* B-far with a test-local certificate carrying an `independent_split` row
+  for the stream (result `not_applicable`, reason `temperature_degenerate`, then `fresh_flash_unresolved`): flag true and
+  the row quoted in the stream's `checks`; without the row, false. (If note §4.1's precondition refuses the edited
+  certificate, the core's flag function is tested on the same inputs.) (d) Q4.A13 (b)'s single-phase states: false.
+  (e) *Corpus* (counts recorded, O-19). On every R3 substream of the SYN-001 and PR-C1 forms the test forms the
+  verifier's decision (SYN-001: the flash, then `_admissible_phase` when TWO_PHASE; PR-C1: the flash, then VAPOR when
+  TWO_PHASE and `pr_c1.liquid_fraction` ≤ `TAU_DEW`); a decision differing from the listed families requires the flag.
+  Recorded per basis: R3 substreams, flagged, disagreeing, max c·ε_adm (SYN-001) and max τ_dew/x^L_NH3 (PR-C1).
+  Mutation controls: applying ε_adm lists one phase at B-near and fails (a); dropping the minority phase gives ΔH = 0;
+  a flag on vf_molar alone misses D-near.
+- **Q4.A16** *Routing groups* (F6, E-F6-10 (g); Amendment 5). The router as a pure function of the declaration and the
+  active phases (id, family, character, q, mass density). Phases (q* = 1): a = FLUID, liquid_like, q 0.2, ρ 990
+  kg/m³; b = FLUID.2, liquid_like, q 0.3, ρ 660; c = FLUID.3, vapour_like, q 3, ρ 4; d = FLUID.4, vapour_like, q 1.5,
+  ρ 1100; e = FLUID.5, vapour_like, q 2, ρ 30. Units: F `{vapor: vapor, light_to_heavy: [liquid]}`; T3 `{vapor: vapor,
+  light_to_heavy: [light, heavy]}`; D `{vapor: null, light_to_heavy: [light, heavy]}`. Expected port → phases: (1)
+  F{a, b}: vapor ∅, liquid {a, b} (the review's M4 failure 1); (2) F{a, c}: vapor {c}, liquid {a}; (3) T3{a, b, c}:
+  vapor {c}, light {b}, heavy {a}; (4) D{a, b, c}: light {c, b}, heavy {a}; (5) D{a, b}: light {b}, heavy {a}; (6)
+  T3{a, b, d}: vapor {d}, light {b}, heavy {a}; (7) F{a, c, e}: vapor {c, e}, liquid {a}; (8) F{b}: liquid; F{c}:
+  vapor; D{c}: light; D{a}: light. (9) The `split` mirror of (1)–(6) and (8) (c, d → VAPOR; a, b → LIQUID slots, same
+  densities) gives the same sets. (10) Flags: T3{a, b′, c} with ρ_b′ = 990·exp(−5e-6) flags the pair, with
+  990·exp(−1e-3) does not, and with ρ_b′ = 990 sends a to `light` and b′ to `heavy` (ordinal) and flags; q_c =
+  1 + 5e-6 flags cases (2), (3) and (4), q_c = 1 + 1e-3 does not; no other case flags. Exact (the rule against its statement; F6's runs carry the
+  physics, E-F6-10 (e), (f)). Mutation controls: SQ-F6-5's default for `vapor: null` gives (4) light {c}, heavy {b, a};
+  a density-only rule sends b to `vapor` in (1) and d to `heavy` in (6).
 
 **Effect on the note.** §2.1.5: the triple and injectivity. §2.2.2–2.2.3: prefix rule and count lattice; exact order
 with flags (Q4.R3, R5). §6 Q4: density removed; water the default key. Amendment 2: §14 (S5; F5 gains Q4.A8–A11).
@@ -1113,7 +1307,7 @@ of F2's `species_basis` field; both are inside F2's scope.
 | O-8 | Cost of N near-pure trials for large N (assays) | fact | F5 times N = 50 | all components; a reduced set keeps claim level `local` |
 | O-9 | τ_mono = 1e-12 against the moment rounding floor (Q6.R5) | fact | F2's worst relative deficit on monodisperse probe streams, a recycle of loop gain 100 included | 1e-12; amend if the margin falls below 10× |
 | O-10 | Drain-defect bound and trajectory tolerances (Q1.A11, A12) | fact | F7's measured defect and T error on the probe at its default integrator tolerances | 1e-8·m₀, 1e-10 relative; amend if a margin falls below 10× |
-| O-11 | Default identification rule for `character` (Q4.R6) | Frank's preference | — | Venkatarathnam and Oellrich's phase identification parameter; reported, and since Amendment 4 it decides the outlet of a lone fluid phase (Q4.R9) |
+| O-11 | Default identification rule for `character` (Q4.R6) | Frank's preference | — | Venkatarathnam and Oellrich's phase identification parameter; reported, and since Amendment 4 it decides the outlet of a lone fluid phase (Q4.R9); since Amendment 5 also whether each of several coexisting fluid phases leaves by `vapor` (Q4.R13) and which FLUID phases a v2 stream table counts as vapour (Q4.R10) |
 | O-12 | CoolProp's anchor evaluation at (T°, δ°) for the 118 in-box fluids, and Q2.A11 (b)'s answered-phase control (Amendment 3) | fact | one run of Q2.A11 (b) on a machine with the coolprop extra | all 118 admitted, every control above 2 ulp; a fluid that fails is refused with its cause and listed here by amendment (rule 6), never dropped from the assertion |
 | O-13 | Q2.A11 (a)'s floors on aarch64 (Amendment 3) | fact | the four comparisons on the CI's arm runner | 1e-12 and 1e-10 relative; amend if a margin falls below 100× |
 | O-14 | τ_char = τ_ρ = 1e-6 (Q4.R9; Amendment 4) | fact | cross-platform agreement of the identification parameter q and of ln ρ at F5's and F6's registered FLUID states on the X07a legs | 1e-6; amend if a margin falls below 10× |
@@ -1121,6 +1315,9 @@ of F2's `species_basis` field; both are inside F2's scope.
 | O-16 | τ_idx = 1e-8 (Q5.R11; Amendment 4) | fact | rcond₁ of Ĝ at TX's and X25's registered dynamic cases | 1e-8; re-argue with the first supported case below 1e-7 |
 | O-17 | c_loc = 1e-14, τ_ev = 10 τ_loc (Q1.R10; Amendment 4) | fact | the achieved location error on Q1.A13 with the reference integrator and with TX's BDF | as stated; amend if a located time errs by more than τ_loc/10 |
 | O-18 | τ_g = 10 × the kind's floor (Q9.R8; Amendment 4) | fact | max \|Δg\| at recorded step ends between the CI's two platforms on TX's registered transients under `forced_replay` | as stated; amend if a measured \|Δg\| exceeds τ_g/10 |
+| O-19 | τ_β = 1e-8 (Q4.R12 (b)), Q4.A15 (a)'s 64 ε, and the rounding tolerances 4(C + 1) ε·vf (Q4.A13 (d)) and 8 ε·x_c (§17 N9) (Amendment 5) | fact | Q4.A15 (e)'s recorded maxima of c·ε_adm (SYN-001) and τ_dew/x^L_NH3 (PR-C1) over the ST corpus and its flagged count; Q4.A15 (a)'s achieved \|ΔH − closed form\|/tolerance; the corpus maxima of \|vf_mass − vf_molar\|/(ε·vf_molar) and \|w_c − x_c\|/(ε·x_c) | as stated; amend τ_β if a maximum exceeds τ_β/10 or a registered stream outside every verifier band is flagged; amend a rounding tolerance if its achieved ratio exceeds a quarter (64 ε) or a half (the others) of it |
+| O-20 | A listed SOLID phase in the vapour fraction's denominator (Q4.R10 (e); v2; Amendment 5) | Frank's preference (F4 applies it) | — | counted: the vapour fraction is the vapour share of the substream; a fluid-only share can be added later as an additive member |
+| O-21 | The probes' preconditions marked [pre] in Q1.A14, Q1.A15, Q2.A13, Q4.A13–A15 (Amendment 5) | fact | ST WO-1's first test run | each holds; a failed [pre] fails its assertion, and this document is amended with a replacement state (rule 6), never skipped |
 
 [zotero], cited not fetched: Michelsen (1982), *Fluid Phase Equilib.* 9 (TPD; stability matrix); Michelsen and Mollerup
 (2007), ch. 9–10 and ch. 12 (critical points); Heidemann and Khalil (1980), *AIChE J.* (criticality cubic form);
@@ -1149,7 +1346,7 @@ Venkatarathnam and Oellrich (2011), phase identification; CODATA key values for 
 - **§7 R4:** decided (Q1), mitigated by Q1.R3.
 - **§8:** `ComponentRecord` row adds amount basis, anchor and provenance axes; `SolutionCertificate` row adds claim
   level and witness.
-- Amendments 1 to 4 add the edits listed per finding or item in §13 to §16.
+- Amendments 1 to 5 add the edits listed per finding or item in §13 to §17.
 
 ## 13. Amendment 1 (2026-11-02)
 
@@ -1429,3 +1626,211 @@ new clauses appended. The last column lists the note edits and what each ADR ado
   right near critical endpoints (Amendment 2's limitation stands).
 - The entropy datum makes no record reaction-capable in s or g; Q2.A12's s° values are synthetic, not data. Nothing
   here validates a property, a controller or an integrator against measurement.
+
+## 17. Amendment 5 (2026-11-06)
+
+Brief: `docs/roadmap/brief-specifier-amendment5.md`; items: the stream table's specifier questions SQ-ST-1…6 (ADR 0068;
+`docs/design/ST-stream-table.md` §13) and SQ-F6-5 (ADR 0065 D9; W1 P3 review M4). Edits are in place: new clauses and
+assertions are appended to Q1, Q2 and Q4, Q4.R9's last sentence is amended, O-11 is extended and O-19 to O-21 are added.
+Nothing released moves: ST is computed on read and enters no identity (ADR 0068 C-1), F6 is unreleased, no F0 measure
+is touched, and no catalogue code is added (every null carries one of ADR 0068's seven codes, R-924).
+
+| Item | Ruling (default adopted?) | Clauses | Assertions (exit) | Edits |
+| --- | --- | --- | --- | --- |
+| SQ-ST-1 | Adopted, with precisions: the denominators are the listed phases' sums, so 0.0 and 1.0 are exact, vf ∈ [0, 1] by monotone rounding and vf_molar is the VAPOR phase fraction bitwise; never nulled by a property failure; v2's vapour group is Q4.R13's (VAPOR or `vapour_like` FLUID) | Q4.R10 new | Q4.A13 new (ST G2, G4, G6) | N5, N8, N9; 0068-3, -5 |
+| SQ-ST-2 | Adopted; P stays shown (v1's zero-flow forms keep every pressure row); `n`, `m` normalised to +0.0; no provider call | Q1.R11 new | Q1.A14 new (ST G4) | N1, N9; 0068-2, -5 |
+| SQ-ST-3 | Adopted (raw TP flash, no snap), and what the table reports where it may disagree: `flash_near_phase_boundary` (minority fraction ≤ τ_β = 1e-8, or a verifier `independent_split` row `not_applicable` for degeneracy or an unresolved flash), those rows quoted, and the closed form of the Ḣ difference | Q4.R12 new | Q4.A15 new (ST G16, new) | N3, N6, N7, N9, N10; 0068-2, -3, -5, -6, -7 |
+| SQ-ST-4 | Adopted; the stream's `T` stays the stored T; a refused `Tsat` nulls the properties only | Q1.R12 new | Q1.A15 new (ST G3, G7) | N2, N9; 0068-2, -5 |
+| SQ-ST-5 | Adopted; the reason for refusing `s_<c>`, `v_<c>` restated (the key does not say pure-component or partial molar) | Q2.R11 new | Q2.A13 new (ST G5) | N4, N9; 0068-4, -5 |
+| SQ-ST-6 | Adopted, with precisions: negative carried amounts listed and never clamped; ids never renumbered; every quotient IEEE, a non-finite one null with `value_not_finite`, never raised | Q4.R11 new | Q4.A14 new (ST G4, G6, G7) | N3, N5, N9; 0068-2, -3, -5 |
+| SQ-F6-5 | **Changed for `vapor: null`:** the vapour group takes the first liquid port, as D9 (i) does for VAPOR, instead of joining the density order; with a `vapor` port, as the default. One rule for `split` and `single` and every phase count; Q4.R9 is its one-phase case | Q4.R13 new; Q4.R9 amended | Q4.A16 new (F6, E-F6-10 (g)) | T1; 0065-5 to -7 |
+
+**Argument.**
+1. *The fractions' denominators.* With N_P the sum of the listed amounts, a stream listing VAPOR alone has N_V and N_P
+   the same sum, hence 1.0; one without VAPOR has 0.0/N_P = 0.0; and fl(a + b) ≥ a for a, b ≥ 0, so N_V ≤ N_P and the
+   quotient is ≤ 1. With the stream's n_tot as denominator (the default formula) an R1 stream gives V/n with V + L ≠ n
+   by the saturation row's residual, so a saturated vapour could show 1 + 1e-10, and an R3 stream would depend on how
+   the flash rebuilds its outlets. The stream's n_tot remains the denominator of h and s.
+2. *Not the thermodynamic quality.* (h − h_L)/(h_V − h_L) needs h_L and h_V at P, so it exists only for one component
+   in two phases; there it equals the vapour mass fraction (lever rule, E2), and elsewhere the tools that report it give
+   values outside [0, 1] or a sentinel. A member called `quality` would carry one meaning to readers expecting the
+   other. Taking Q4.R13's vapour group makes the reported fraction what a drum's `vapor` port would take, a definition
+   that holds in v1 and v2 alike.
+3. *The dormant T.* At dormancy v1 replaces each row that loses rank in an outlet T by T_out − T_label = 0 (ADR 0012
+   D4 (c), D12); a dormant feed keeps its specified T. Either way the stored T describes no material (ADR 0001 D3.1
+   calls it a label), and Q1.R4 forbids a label as a property input or a reported result. No v1 zero-flow form swaps a
+   pressure row, so P is a solved value.
+4. *The report's decision against the verifier's.* Rachford–Rice: f(β) = Σ_c z_c (K_c − 1)/(1 + β(K_c − 1)), f(0) =
+   Σ z K − 1 = δ, f′(β) = −Σ_c z_c (K_c − 1)²/(1 + β(K_c − 1))². On [0, 1] each denominator lies between 1 and K_c,
+   so g/max(1, K_max)² ≤ |f′| ≤ g/min(1, K_min)², g = Σ_c z_c (K_c − 1)², and the root (δ = ∫₀^β* |f′|) obeys
+   δ min(1, K_min)²/g ≤ β* ≤ δ max(1, K_max)²/g; the dew side is the same with K → 1/K and β → 1 − β. Inside SYN-001's
+   band δ ≤ ε_adm, so the minority fraction is ≤ c·ε_adm; at the probes c ≈ 7, three decades inside the reach c ≤ 1e4.
+   c grows as every K_c approaches 1 (near-critical, azeotropic or near-pure streams, the temperature-degenerate case),
+   which is where (i) stops covering and (ii) or nothing must. On PR-C1 the liquid's total is l_NH3/x^L_NH3. The snaps
+   are not copied because they exist so that the verifier's energy row reads the phase its admissibility row admitted
+   (ADR 0013 D2), a device for a consistent verdict at a band's edge; in a report they would put a step of width 1e-12
+   into a continuous quantity and need per-form code that ADR 0068 D3 rejected. The verifier evaluates Σ_c n_c
+   h_c^maj, the report Σ_c n_maj,c h_c^maj + Σ_c n_min,c h_c^min; with n_maj + n_min = n the difference is
+   Σ_c n_min,c (h_c^min − h_c^maj), about 1e-7 W at the probes against the energy rows' 1.01e-3 W (SYN-001's
+   `ENERGY_TOLERANCE`), which is why the verdict and the report can both stand and the flag only explains.
+5. *T_sat.* A one-component two-phase state is degenerate in T (Q1 argument 1): the stored T sits within the solver's
+   tolerance of T_sat(P), on either side, where one phase is metastable or not offered. ADR 0051 D2 defines Ḣ at
+   (T_sat(P), P) for that reason and the verifier evaluates there. The stored T stays the reported coordinate because a
+   report never replaces a state value with a derived one; the two differ by at most the temperature tolerance the
+   certificate judged.
+6. *Property forms.* For an ideal solution the partial molar and pure-component enthalpies coincide, so Σ_c n_c h_c is
+   exact whichever SYN-001 means; entropies differ by −R ln x_c and volumes by the partial excess volume. A key that
+   does not say which cannot be summed safely. The refusal costs nothing today (no legacy provider returns `s_<c>` or
+   `v_<c>`) and stops a future provider from being summed wrongly. An ideal-gas density would be a second thermodynamic
+   model inside a report; a provider with a vapour volume declares `v`, and the report then shows it.
+7. *Listing, signs and underflow.* The dormancy test is exact (ADR 0001 D3.1); a threshold would move the line between
+   a trace phase and none. Listing only positive amounts would drop a term the verifier's Ḣ contains (E7) and break
+   Σ_p = substream; clamping would invent a state. M·n rounds to +0.0 when M·n < 2⁻¹⁰⁷⁵ (n = 5e-324 mol/s, M = 0.1
+   kg/mol): such a phase flows and has no mass. IEEE then yields inf or NaN, and Python raises on a float division by
+   zero, hence the explicit rule.
+8. *Routing (SQ-F6-5).* Under Q4.R13 a phase's port depends on its own character and, in the liquid group, on the
+   density order among liquid-group phases only. A vapour-group phase appearing or vanishing moves no liquid-group
+   phase, so the count changes ±1 of Q4.A12 (b) keep every persisting phase on its port. The default's "a unit with
+   `vapor: null` routes them all by density" breaks the equivalence with `split` that Amendment 4 (argument 3) relied
+   on: a VLLE feed at a two-port decanter sends the vapour to the light port and the light liquid to the heavy port
+   (Q4.A16 (4)), while (i) sends VAPOR and the light liquid to the light port, which is the review's M4 failure 2 on the
+   `single` side. Treating the vapour group as a block that takes the vapour port, or the lightest port when there is
+   none, is (i) with the character in place of the family, so `single` and `split` route alike wherever the
+   identification rule agrees with the legacy label. A dense vapour-like phase leaves by `vapor` whatever its density,
+   as VAPOR does under (i); two vapour-like phases (gas–gas immiscibility) share `vapor`, and nothing inside the vapour
+   group is ordered, so nothing there is flagged.
+9. *Rounding bounds* (u = ε/2; a rounding count, not a measurement). With one molar mass M shared by a phase's C
+   components, m_p,tot = M n_p,tot (1 + θ_p), |θ_p| ≤ (2C − 1) u (C products and two sums of C terms). vf_mass/vf_molar
+   is the VAPOR phase's ratio over the amount-weighted mean of both phases', with four more roundings, so
+   |vf_mass/vf_molar − 1| ≤ (4C + 2) u = (2C + 1) ε; likewise |w_c/x_c − 1| ≤ (C + 1) ε. Since an ulp of x lies between
+   εx/2 and εx, the note's "4 ulp" (G2 for water's vf, G4 for SYN-001's w) sits below these worst cases (up to 6 and 8
+   ulp). Q4.A13 (d) takes 4(C + 1) ε·vf and N9 takes 8ε·vf (water) and 8ε·x_c (SYN-001), a margin ≥ 2.
+
+**Edits the ADRs and the design note need** (the orchestrator applies them; this document edits none). Twenty-one in all.
+- **0068-1.** Header, "Builds on": append "Adopts verbatim foundation rulings Amendment 5: Q1.R11, Q1.R12, Q2.R11,
+  Q4.R10, Q4.R11, Q4.R12 and Q1.A14, Q1.A15, Q2.A13, Q4.A13–A15."
+- **0068-2.** D3: R0 bullet, after "with `zero_flow` (Q1.R4)" add "; no provider call; `n` and `m` are `+0.0`
+  (Q1.R11)". R1 bullet: append "The stream's `T` is the stored T; a refused `Tsat` nulls the properties only
+  (Q1.R12)." R3 bullet: append "Each substream reports `flash_near_phase_boundary` (Q4.R12 (b))." "A phase is listed
+  iff its amount is `!= 0.0`, in the order VAPOR, LIQUID." → "A phase is listed iff its amount is `!= 0.0`, of either
+  sign and never clamped, in the order VAPOR, LIQUID, with the decision's ids (Q4.R11)."
+- **0068-3.** D5: "Per substream: `vapor_fraction_molar` and `vapor_fraction_mass` over the VAPOR family." → "Per
+  substream: `vapor_fraction_molar` and `vapor_fraction_mass` over the vapour group (v1: VAPOR), with the listed phases'
+  sums as denominators, which `phase_fraction_molar` and `phase_fraction_mass` share (Q4.R10); and
+  `flash_near_phase_boundary` (Q4.R12)." New last bullet: "Every quotient is an IEEE division; a non-finite result is
+  null with `value_not_finite` (Q4.R11 (c))."
+- **0068-4.** Alternatives rejected, last bullet: "the sum also drops the entropy of mixing." → "a per-component key
+  does not say whether it is pure-component or partial molar, and summed pure-component values drop the entropy of
+  mixing (Q2.R11)."
+- **0068-5.** Exit tests. E2: "At S5, `vf ≤ 1e-12` and `h = h_L(P5)` to 1e-12." → "At S5, `vf_molar = V5/(0.0 + V5 +
+  L5)` and `|h − h_L(P5)| ≤ (|V5|(h_V − h_L) + |V5 + L5 − n5|·|h_L|)/n5 + 8ε|h_L|`." E3: append "S4's stored T is
+  kept (Q1.A15)." E4: "on SYN-001, `w = x` within 4 ulp" → "on SYN-001, `|w − x| ≤ 8ε·x`; Q1.A14, Q4.A13 (b), (f),
+  Q4.A14 (d)". E5: append "Q2.A13." E6: append "Q4.A13 (a), (d)." E7: append "Q1.A15 (c); Q4.A14 (a)–(c)." After E15
+  add "**E16** The report's decision near a phase boundary: Q4.A15 (note G16)."
+- **0068-6.** "Riskiest point": append "*Ruled by Q4.R12 (Amendment 5):* the raw flash stays;
+  `flash_near_phase_boundary` and the quoted `independent_split` rows mark where the verifier may have decided
+  otherwise; E16 tests it." "Specifier questions": under the heading add "Ruled 2026-11-06 (foundation rulings
+  Amendment 5): SQ-ST-1 Q4.R10, SQ-ST-2 Q1.R11, SQ-ST-3 Q4.R12, SQ-ST-4 Q1.R12, SQ-ST-5 Q2.R11, SQ-ST-6 Q4.R11; each
+  default adopted with the precisions of §17's table."
+- **0068-7.** Frozen-list changes, the schema bullet: append "The substream object carries `flash_near_phase_boundary:
+  boolean` from v1 on, and a stream's `checks` also quote its `independent_split` rows (Q4.R12)."
+- **0065-5.** D9, from "At every **opening** the routing is fixed for the attempt: (i)" through "flags
+  `near_threshold`." → "At every **opening** the routing is fixed for the attempt by Q4.R13 (Amendment 5, SQ-F6-5): the
+  vapour group (VAPOR phases and FLUID phases whose `character` is `vapour_like`) leaves by `vapor`, or by the first
+  liquid port when `vapor` is null; the liquid group (the other fluid phases, confined ones included) goes over
+  `light_to_heavy` in mass-density order, ascending, an exact tie by canonical ordinal, phases beyond the last liquid
+  port by the last port; SOLID phases by `solids`, else by the last port. With two `split` candidates this is today's
+  routing exactly (equivalence step 1 depends on it); with one fluid phase it is Q4.R9. Each character is fixed with
+  the routing at the opening, and |q − q*| ≤ 10 τ_char |q*| on any FLUID phase flags `near_threshold`." Then
+  "adjacency: one transposition of density-adjacent phases, or a change of the single phase's port" → "adjacency: one
+  transposition of density-adjacent liquid-group phases, or one fluid phase moved between the groups"; "Closure checks
+  the order at the converged state; a different order closes" → "Closure checks the groups and the order at the
+  converged state; a difference closes"; "An adjacent pair with" → "An adjacent liquid-group pair with", and "Q4.R9)."
+  at the end → "Q4.R9, R13)."
+- **0065-6.** E-F6-10: append "(g) the routing vectors of Q4.A16, the `vapor: null` VLLE case (4) included." F6-WO4's
+  acceptance: "E-F6-10 (b–d, f)" → "E-F6-10 (b–d, f, g)".
+- **0065-7.** Header "Adopts verbatim", after "as the W1 P3 review rules them.": add "From Amendment 5 (2026-11-06):
+  Q4.R13, Q4.A16, and Q4.R9 as amended." SQ-F6-5: replace the item with "*Ruled (Amendment 5): Q4.R13; default changed
+  for `vapor: null`* (the vapour group takes the first liquid port, as (i) does for VAPOR; the default's 'all by
+  density' sent the light liquid of a VLLE feed to the heavy port)."
+- **N1.** Note §4.2 R0: "The arrays `n` and `m` hold the stored flows and `M_c·n_c`;" → "The arrays `n` and `m` are
+  `+0.0` (a stored −0.0 normalised), and no provider call is made (Q1.R11);".
+- **N2.** §4.2 R1, after "which is what the verifier's `_properties` assumes." add "The stream's `T` is the stored T. A
+  `Tsat` status other than `"ok"` nulls every property-derived quantity of the substream and its phases with
+  `property_evaluation_failed(stream=S, phase=LIQUID, property=Tsat, status=…)`; amounts, compositions and fractions are
+  still given (Q1.R12)."
+- **N3.** §4.2 R3, after "There is **no snap**." add "The substream's `flash_near_phase_boundary` is true iff two or
+  more phases are listed and min_p |n_p,tot|/N_P ≤ τ_β = 1e-8, or the stream has a quoted `independent_split` row with
+  result `not_applicable` and reason `temperature_degenerate` or `fresh_flash_unresolved` (Q4.R12 (b)); it is false
+  for R0–R2." Listing bullet: "A phase is listed iff it exists and its total amount is `!= 0.0`" → "A phase is listed
+  iff it exists and its total amount is `!= 0.0` (either sign, never clamped; ids never renumbered; Q4.R11)".
+- **N4.** §4.3, s and v bullet: "because summing x·s_c drops the entropy of mixing." → "because such a key does not say
+  whether it holds a pure-component or a partial molar value, and summed pure-component values drop the entropy of
+  mixing (s) or the excess volume (v) (Q2.R11)."
+- **N5.** §4.3 Phase intensives: "`phase_fraction_molar = n_p,tot / n_tot`; `phase_fraction_mass = m_p,tot / m_tot`." →
+  "`phase_fraction_molar = n_p,tot / N_P`; `phase_fraction_mass = m_p,tot / M_P`, with N_P = Σ_p n_p,tot and M_P =
+  Σ_p m_p,tot over the listed phases from 0.0 in listing order (Q4.R10)." The **Vapour fractions** bullet →
+  "`vapor_fraction_molar = (Σ_{p in the vapour group} n_p,tot)/N_P` and `vapor_fraction_mass = (Σ m_p,tot)/M_P`,
+  accumulated from 0.0 (v1: the vapour group is VAPOR); exactly 0.0 with no VAPOR listed and 1.0 with VAPOR alone, in
+  [0, 1] when no listed amount is negative, bitwise the VAPOR `phase_fraction_molar`; null only for R0, a failed flash
+  or a non-finite quotient (Q4.R10)." New bullet after it: "**Quotients.** Every division in §4.3 is an IEEE division: a
+  non-finite result (for example a zero mass after underflow) is null with `value_not_finite(subject, quantity)`, never
+  an exception (Q4.R11 (c))."
+- **N6.** §4.4: "every certificate row with `category == "phase_admissibility"` and `subject == S`" → "every
+  certificate row with `category` in {`phase_admissibility`, `independent_split`} and `subject == S`".
+- **N7.** §5, substream line: after "`phase_source: str (…; open)`," add "`flash_near_phase_boundary: bool`,".
+- **N8.** §8: "FLUID phases gain `character`, and a vapour fraction counts FLUID phases with `character ==
+  vapour_like` (Q4.R6, R9); how SOLID enters is F4's decision." → "FLUID phases gain `character`, read from the state
+  point; the vapour fractions count Q4.R13's vapour group (VAPOR and `vapour_like` FLUID) over all listed phases, a
+  SOLID phase included by default (Q4.R10, O-20); `flash_near_phase_boundary` is false for `state_point`, whose own
+  flags are added beside it (Q4.R12 (e))."
+- **N9.** §10–§11. WO-1's acceptance: "G1–G10, G14" → "G1–G10, G14, G16". G2: "and `|vf_mass − vf_molar| ≤ 4 ulp`" →
+  "and `|vf_mass − vf_molar| ≤ 8ε·vf_molar` (worst case 3ε, §17 argument 9)"; "S5 (`outlet_vapor_fraction 0`):
+  `vf_molar ≤ 1e-12`, and `h(S5)` is within 1e-12 relative of `h_L(P5)`." → "S5 (`outlet_vapor_fraction 0`):
+  `vf_molar = V5/(0.0 + V5 + L5)` bitwise, and `|h(S5) − h_L(P5)| ≤ (|V5|(h_V − h_L) + |V5 + L5 − n5|·|h_L|)/n5 +
+  8ε|h_L|` (the bounds checks admit |V5| up to τ_flow; record |V5|/n5)." G3: append "S4's stored T is kept and
+  `|T − 450 K| > 100 K` asserted (Q1.A15 (a))." G4: "`|w_c − x_c| ≤ 4 ulp`" → "`|w_c − x_c| ≤ 8ε·x_c` (worst case
+  4ε)"; append "Q1.A14; Q4.A13 (b), (f); Q4.A14 (d)." G5: append "Q2.A13." G6: "`0 ≤ vf ≤ 1 + 1e-12` on VERIFIED runs"
+  → "`0 ≤ vf ≤ 1` exactly where no listed amount is negative, otherwise within Σ|negative amounts|/N_P of [0, 1]
+  (Q4.R10, R11; Q4.A13 (a), (d))". G7: append "Q1.A15 (c); Q4.A14 (a)–(c)." New: "**G16 The report's decision near a
+  phase boundary.** Q4.A15 (a)–(e); the counts of (e) recorded in the manifest."
+- **N10.** §12 "Riskiest point": append "Ruled by Q4.R12 (Amendment 5): the raw flash stays;
+  `flash_near_phase_boundary` and the quoted `independent_split` rows mark where the verifier may have decided
+  otherwise; G16." §13: append "Ruled 2026-11-06 (foundation rulings Amendment 5): SQ-ST-1 Q4.R10, SQ-ST-2 Q1.R11,
+  SQ-ST-3 Q4.R12, SQ-ST-4 Q1.R12, SQ-ST-5 Q2.R11, SQ-ST-6 Q4.R11."
+- **T1.** `target-architecture.md` item 13 (Phase routing): the bullets from "VAPOR, or a lone `vapour_like` FLUID
+  (Q4.R9), goes to `vapor`" through "flags `near_threshold`;" → "- the vapour group (VAPOR and `vapour_like` FLUID)
+  goes to `vapor`, else to the first liquid port when `vapor` is null; - the liquid group (the other fluid phases) goes
+  over `light_to_heavy` by mass density, ascending (with two `split` candidates, today's routing exactly; with one fluid
+  phase, Q4.R9); characters are fixed with the routing at the opening, and |q − q*| ≤ 10 τ_char |q*| flags
+  `near_threshold` (Q4.R13);". In the closure paragraph: "(one transposition of density-adjacent phases, or the lone
+  phase's other port)" → "(one transposition of density-adjacent liquid-group phases, or one phase moved between the
+  groups)"; "(Q4.R9)." at its end → "(Q4.R9, R13)."
+
+**New findings, listed and not fixed.**
+- **A5-a.** `verify.table.blocked_check` records the reason `temperature_degenerate_unlifted(<S>)`
+  (`src/openflowsheet/verify/table.py:310–319`) as a string with the stream inside it, not as a code with params, so a
+  report can recognise it only by parsing a rendered string, which ADR 0068 C-2 forbids. Q4.R12 (b) (ii) therefore does
+  not cover that case. T05's S1 ruling makes it unreachable today. A typed reason would close it. Owner: the verifier
+  (ADR 0013).
+
+**Not established by Amendment 5.**
+- Nothing has run. Every [pre] is a stated fact awaiting ST WO-1 (O-21). The sanity values come from 50-digit scratch
+  evaluations of syn001's closed forms, and no generator ships with them. The ST tests compute each expectation from
+  the provider's own K and h and from the verifier's helpers. Those helpers are comparators of the same code base, so
+  Q4.A15 tests the report against the verifier's devices, not against thermodynamics.
+- τ_β covers the SYN-001 and PR-C1 bands only where c ≤ 1e4 and x^L_NH3 ≥ 1e-2. Two kinds of stream can disagree with
+  the verifier without the flag: near-critical, azeotropic or near-pure R3 streams outside that domain, and
+  temperature-degenerate streams outside lifted splits (A5-a). Q4.A15 (e) catches either only at registered states.
+- The vapour fraction is a label-based amount ratio. In v1 it follows the legacy split label (a supercritical fluid
+  labelled VAPOR counts 1.0), and in v2 it inherits O-11's identification rule. Neither is a claim of physical
+  gas-likeness. Nothing here validates a vapour fraction against steam tables beyond G2's lever rule and G3's six
+  values.
+- Q4.R13 makes O-11 decide the outlets of coexisting phases. It does not make any identification rule right near
+  mixture critical points. Q4.A16's vectors are synthetic and test the rule against its own statement; the end-to-end
+  behaviour rests on E-F6-10 (e), (f) and F6's runs.
+- SYN-001 and the Wilson γ–φ method get no density until their providers declare `v` (F4). The null there is a
+  capability gap, not a value.
+- The report evaluates R1 phases at T_sat(P) per ADR 0051 and does not re-judge how far the stored T is from T_sat(P).
+  The tolerances 64ε, 4(C + 1)ε and 8ε rest on rounding counts and τ_β on an argument with a domain; none of them is a
+  measured floor yet (O-19).
