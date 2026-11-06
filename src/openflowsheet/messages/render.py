@@ -39,7 +39,14 @@ from openflowsheet.messages.catalogue import (
     parsed,
 )
 from openflowsheet.messages.diagnostic import Diagnostic, Quantity
-from openflowsheet.messages.legacy import Chain, Link, Segment, parse_chain, resolve
+from openflowsheet.messages.legacy import (
+    Chain,
+    Link,
+    Segment,
+    detail_params,
+    parse_chain,
+    resolve,
+)
 
 Surface = Literal["python", "cli", "http", "mcp"]
 Explanation = dict[str, Any]
@@ -657,6 +664,33 @@ def _consistent(diagnosis: Mapping[str, Any], links: Sequence[Link], catalogue: 
     return True
 
 
+def _derived_elements(
+    entry: Entry, params: Mapping[str, Any], revision: Mapping[str, Any] | None
+) -> dict[str, Any]:
+    """§4.2.5, for a run failure (review Q1): an entry's `outlet` stream param, when absent, is
+    the one connection that leaves its `unit` param's `outlet` port in the revision. Absent when
+    the revision has no such connection, or more than one."""
+    declared, unit = entry.params.get("outlet"), params.get("unit")
+    if (
+        declared is None
+        or declared.type != "stream"
+        or _present(params.get("outlet"))
+        or not isinstance(unit, str)
+        or revision is None
+    ):
+        return {}
+    connections = revision.get("connections")
+    leaving = [
+        item.get("id")
+        for item in (connections if isinstance(connections, Sequence) else ())
+        if isinstance(item, Mapping)
+        and isinstance(item.get("from"), Mapping)
+        and item["from"].get("instance") == unit
+        and item["from"].get("port") == "outlet"
+    ]
+    return {"outlet": leaving[0]} if len(leaving) == 1 and isinstance(leaving[0], str) else {}
+
+
 def render_failure(
     *,
     outcome: str,
@@ -694,16 +728,28 @@ def explain_failure(
     links = [Link(outcome)]
     if message:
         links.extend(resolve(parse_chain(message, catalogue), catalogue))
-    layer: Mapping[str, Any] = {}
+    explained = next(
+        (entry for link in reversed(links) if (entry := catalogue.entry(link.code)) is not None),
+        None,
+    )
+    layer: dict[str, Any] = {}
     if diagnosis is not None:
         document = diagnosis.as_document() if isinstance(diagnosis, Diagnostic) else diagnosis
         if _consistent(document, links, catalogue):
             layer = dict(document.get("params") or {})
+            detail = layer.get("detail")
+            if explained is not None and isinstance(detail, str):
+                # Review Q1 (WO-5a): the sidecar's detail lines hold the numbers the bundle's
+                # one-line message lacks; the explained entry's pattern reads them.
+                layer = {**detail_params(explained, detail), **layer}
         elif strict or audit.auditor is not None:
             raise RenderError(f"diagnosis {document.get('code')!r} does not match the chain")
+    params = _merge(context, links, layer)
+    if explained is not None:
+        params.update(_derived_elements(explained, params, context.revision))
     request = _Request(
         links=links,
-        params=_merge(context, links, layer),
+        params=params,
         context=context,
         machine=message or outcome,
         family_hint="outcome",

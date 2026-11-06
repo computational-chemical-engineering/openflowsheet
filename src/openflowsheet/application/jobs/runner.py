@@ -457,6 +457,8 @@ class _Body:
         #: design note §4.4).
         sink = _RecordingSink(ArtifactTableSink(store))
         emitted = 0
+        #: MSG §4.6: the failure bundle's sidecar, if the run wrote one (`run["diagnosis"]`).
+        diagnoses: list[dict[str, Any]] = []
 
         def emit_records() -> None:
             nonlocal emitted
@@ -548,6 +550,7 @@ class _Body:
                 warm_start=warm_start,
                 experiments=experiments,
                 on_iteration=self._outer_iteration,
+                on_diagnosis=diagnoses.append,
             )
         except JobInterrupted as interrupted:
             # M02 design note §4.4: an interrupted coupled job keeps the experiment records it
@@ -586,6 +589,8 @@ class _Body:
             policy_sha256=manifest.policy_sha256,
             check_policy_sha256=manifest.check_policy_sha256,
         )
+        if diagnoses:
+            run["diagnosis"] = diagnoses[-1]
         return WorkerResult(
             status="completed",
             reason="operation_completed",

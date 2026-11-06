@@ -110,6 +110,38 @@ def _msg_failure_iff_failure_bundle() -> Any:
     )
 
 
+#: MSG §4.6: bundles the suite wrote, scanned for the sidecar's keys.
+BUNDLES_SCANNED = [0]
+SIDECAR_KEYS = (b'"diagnosis":', b'"diagnostic":')
+
+
+@pytest.fixture(autouse=True, scope="session")
+def _msg_sidecar_in_no_bundle() -> Any:
+    """MSG §4.6's carrier rule (WO-5a): no artifact, event or manifest of any bundle the suite
+    writes holds the key `diagnosis` or `diagnostic`; the sidecar lives only in the job store's
+    `run.diagnosis`. Wraps `write_bundle` where the two session paths import it."""
+    import openflowsheet.application.revision_run as revision_run
+    import openflowsheet.run.session as session
+
+    written = session.write_bundle
+
+    def scanned(directory: Any, manifest: Any, artifacts: Any) -> Any:
+        complete = written(directory, manifest, artifacts)
+        for path in Path(directory).rglob("*.json"):
+            content = path.read_bytes()
+            assert not any(key in content for key in SIDECAR_KEYS), path
+        BUNDLES_SCANNED[0] += 1
+        return complete
+
+    with pytest.MonkeyPatch.context() as monkeypatch:
+        monkeypatch.setattr(revision_run, "write_bundle", scanned)
+        monkeypatch.setattr(session, "write_bundle", scanned)
+        yield
+    TERMINAL_REPORT.append(
+        f"MSG WO-5a: {BUNDLES_SCANNED[0]} bundles scanned; no sidecar key in any written document"
+    )
+
+
 def _git_ok(*arguments: str) -> bool:
     completed = subprocess.run(["git", *arguments], cwd=REPO_ROOT, capture_output=True)
     return completed.returncode == 0

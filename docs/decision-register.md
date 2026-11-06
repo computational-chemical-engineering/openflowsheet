@@ -18514,3 +18514,27 @@ Freezing the preview slots too (R-929's rejected alternative).
 
 **Watch for.** A build-lane change to a core item without an ADR amendment; F0 (`scripts/corpus_identity.py --check`)
 on every foundation merge.
+
+---
+
+## R-942 — MSG: in 0.4 the diagnostic sidecar has one producer, the traversal hop (review Q1, 2026-11-06)
+
+| | |
+| --- | --- |
+| Date | 2026-11-06 |
+| Decided by | design lane, MSG review Q1 (route (a), narrowed); built as WO-5a |
+| Normative text | `docs/reviews/MSG-review.md` Q1; amendment to `docs/design/MSG-messages.md` §4.6 |
+| Affected packages | MSG; F6 (the v2 unit models, ADR 0065, inherit the kernel-only numbers) |
+
+**Decision.** The sidecar is built where the failing unit's message is cut to its first line
+(`models/revision_flowsheet.py`, outside F0 M9): `Diagnostic(<line 1's code>, {"detail": lines 2+})`. It travels
+`FlowsheetPass` → `InitialStateFailure` → `StepResult` → `run.diagnosis`, and the explained entry's `detail_pattern`
+reads its numbers at render time. Numbers in no message text (P1's `value`, saturated values and `pressure`) are
+deferred to the F6 v2 unit models. This amends note §4.6's producer list only; ADR 0058 D6 and R-936 stand.
+
+**Rejected alternatives.** (b) Reopening the M9 freeze (R-940) to add the P1–P5 producers in `models/thermal/*`, a
+family F6 replaces. A `ContextVar` collector or render-time property calls (R-936's rejected alternatives).
+
+**Watch for.** A sidecar key in any serialized artifact (the session scan in `tests/conftest.py`); a pattern group
+capturing `nan`/`inf` (kept as text, review S2); a machine text edit that a `detail_pattern` silently stops matching
+(the corpus's `values` turn red).

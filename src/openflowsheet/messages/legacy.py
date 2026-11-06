@@ -15,7 +15,7 @@ from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any, Final
 
 if TYPE_CHECKING:
-    from openflowsheet.messages.catalogue import Catalogue
+    from openflowsheet.messages.catalogue import Catalogue, Entry
 
 SEPARATOR: Final[str] = ": "
 _SEGMENT: Final = re.compile(
@@ -136,23 +136,30 @@ def _apply_detail(links: list[Link], detail: str, catalogue: Catalogue) -> None:
         return
     innermost = resolved[-1]
     innermost.params.setdefault("detail", detail)
+    innermost_entry = catalogue.entry(innermost.code)
+    assert innermost_entry is not None
     for link in resolved:
         entry = catalogue.entry(link.code)
         assert entry is not None
-        pattern = entry.detail_pattern
-        if pattern is None:
-            continue
-        match = re.search(pattern, detail)
-        if match is None:
-            continue
-        groups = {k: v for k, v in match.groupdict().items() if v is not None}
-        innermost_entry = catalogue.entry(innermost.code)
-        assert innermost_entry is not None
-        declarations = {**entry.params, **innermost_entry.params}
-        for name, value in groups.items():
-            if name.endswith("_unit") and name[: -len("_unit")] in groups:
-                continue
-            innermost.params[name] = _typed(name, value, groups, declarations)
+        innermost.params.update(detail_params(entry, detail, innermost_entry))
+
+
+def detail_params(entry: Entry, detail: str, target: Entry | None = None) -> dict[str, Any]:
+    """`entry`'s `detail_pattern` applied to `detail`: its named groups, typed by the
+    declarations of `entry` and then `target` (the code the groups go to; `entry` itself by
+    default) — a `<name>_unit` group gives `<name>`'s unit. Empty when there is no pattern or no
+    match."""
+    pattern = entry.detail_pattern
+    match = None if pattern is None else re.search(pattern, detail)
+    if match is None:
+        return {}
+    groups = {k: v for k, v in match.groupdict().items() if v is not None}
+    declarations = {**entry.params, **(target or entry).params}
+    return {
+        name: _typed(name, value, groups, declarations)
+        for name, value in groups.items()
+        if not (name.endswith("_unit") and name[: -len("_unit")] in groups)
+    }
 
 
 def _typed(

@@ -457,6 +457,95 @@ def test_4_13_2_isentropic_state_two_phase() -> None:
     assert [n["name"] for n in explanation["numbers"]] == ["s_star", "s_saturated", "pressure"]
 
 
+# -- review Q1 (WO-5a): the sidecar's detail lines, read by the explained entry's pattern ----------
+
+
+def _from_detail(message: str, code: str, detail: str) -> Any:
+    return render_failure(
+        outcome="INITIALIZATION_FAILED",
+        message=message,
+        diagnosis=Diagnostic(code, {"detail": detail}),
+        context=RenderContext(revision=REVISION, revision_id="rev-000006"),
+        strict=True,
+    )
+
+
+def test_the_sidecar_detail_gives_the_two_phase_numbers_and_the_outlet() -> None:
+    explanation = _from_detail(
+        "initializer_failed(T): isentropic_state_two_phase(T)",
+        "isentropic_state_two_phase",
+        "s* = 139.7797844964916 lies past the saturated VAPOR entropy 146.80317968321518 at "
+        "10000.0 Pa",
+    )
+    numbers = {n["name"]: (n["value"], n["unit"], n["kind"]) for n in explanation["numbers"]}
+    assert numbers == {
+        "s_star": (139.7797844964916, "J/(mol*K)", "molar_entropy"),
+        "s_saturated": (146.80317968321518, "J/(mol*K)", "molar_entropy"),
+        "pressure": (10000.0, "Pa", "pressure"),
+    }
+    # §4.2.5 derived: `outlet` is the one connection leaving T's outlet port (none in REVISION,
+    # whose connections carry no `from`), so it is absent here and the summary omits it.
+    assert "outlet 'S4'" not in explanation["summary"] + (explanation["cause"] or "")
+    wired = {
+        **REVISION,
+        "connections": [
+            {"id": "S3", "from": {"instance": "B", "port": "outlet"}},
+            {"id": "S4", "from": {"instance": "T", "port": "outlet"}},
+        ],
+    }
+    derived = render_failure(
+        outcome="INITIALIZATION_FAILED",
+        message="initializer_failed(T): isentropic_state_two_phase(T)",
+        context=RenderContext(revision=wired),
+        strict=True,
+    )
+    assert "its outlet 'S4' is declared vapour" in derived["cause"]
+    assert ("stream", "S4") in {(e["type"], e["id"]) for e in derived["elements"]}
+
+
+def test_a_liquid_two_phase_detail_does_not_claim_the_vapour_sentence() -> None:
+    explanation = _from_detail(
+        "initializer_failed(P): isentropic_state_two_phase(P)",
+        "isentropic_state_two_phase",
+        "s* = 9.5 lies past the saturated LIQUID entropy 8.0 at 3000000.0 Pa",
+    )
+    assert "saturated-vapour entropy" not in explanation["why"]
+
+
+def test_the_sidecar_detail_gives_the_phase_the_stream_landed_in() -> None:
+    explanation = _from_detail(
+        "initializer_failed(T): phase_regime_mismatch(S4)",
+        "phase_regime_mismatch",
+        "declared vapor_liquid, closure SATURATED beta=0.912345; declare vapor_liquid",
+    )
+    assert 'set connections[3].phase_capability to "vapor_liquid"' in explanation["action"]
+    assert [(n["name"], n["value"]) for n in explanation["numbers"]] == [
+        ("vapour_fraction", 0.912345)
+    ]
+
+
+@pytest.mark.parametrize(
+    ("machine", "detail", "why"),
+    [
+        ("turbine", "P_spec = 5000000.0 Pa is above the inlet's 3000000.0 Pa", "A turbine expands"),
+        ("valve", "P_spec = 200000.0 Pa is above the inlet's 100000.0 Pa", "A valve throttles"),
+        ("valve", "P_spec = 200000.0 Pa exceeds the inlet's 100000.0 Pa", "A valve throttles"),
+    ],
+)
+def test_pressure_rise_explains_the_machine_it_names(machine: str, detail: str, why: str) -> None:
+    """Review M2: a valve's rise is not explained as a turbine's (`thermal/valve.py`,
+    `syn001/valve.py` say `exceeds`)."""
+    explanation = _from_detail(
+        f"initializer_failed(T): pressure_rise({machine})", "pressure_rise", detail
+    )
+    assert explanation["why"].startswith(why)
+    assert "turbine" not in explanation["why"] or machine == "turbine"
+    p_spec, p_inlet = explanation["numbers"]
+    assert (p_spec["name"], p_inlet["name"]) == ("p_spec", "p_inlet")
+    assert p_spec["value"] > p_inlet["value"]
+    assert p_spec["unit"] == p_inlet["unit"] == "Pa"
+
+
 NOT_FOUND = {
     "code": "not_found",
     "message": "no such artifact",

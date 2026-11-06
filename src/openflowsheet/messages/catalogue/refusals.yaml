@@ -21,6 +21,8 @@ entries:
     complete: true
     title: Declared phase does not match the computed state
     args: [stream]
+    # Review Q1 (WO-5a): the sidecar's detail line (`kernel.py` `Mismatch.failure`).
+    detail_pattern: 'declared (?P<declared>vapor_liquid|liquid|vapor), closure (?:LIQUID|VAPOR|SATURATED)(?: beta=(?P<vapour_fraction>[-+]?[0-9]+(?:\.[0-9]+)?(?:e[-+]?[0-9]+)?))?; declare (?P<landed>vapor_liquid|liquid|vapor)'
     params:
       stream:           {type: stream, label: stream}
       unit:             {type: unit, optional: true}
@@ -59,16 +61,25 @@ entries:
     complete: true
     title: A turbine whose ideal outlet would be wet while its outlet is declared vapour
     args: [unit]
+    # Review Q1 (WO-5a): the sidecar's detail line (`kernel.py` `isentropic_state`). The thermal
+    # kernel's entropy is molar, J/(mol*K) (C02: 146.80 at 10 kPa, the steam tables' 8.1488
+    # kJ/(kg*K) times 18.015268 g/mol).
+    detail_pattern: 's\* = (?P<s_star>[-+]?[0-9]+(?:\.[0-9]+)?(?:e[-+]?[0-9]+)?) lies past the saturated (?P<phase>LIQUID|VAPOR) entropy (?P<s_saturated>[-+]?[0-9]+(?:\.[0-9]+)?(?:e[-+]?[0-9]+)?) at (?P<pressure>[-+]?[0-9]+(?:\.[0-9]+)?(?:e[-+]?[0-9]+)?) Pa'
     params:
       unit:        {type: unit}
       outlet:      {type: stream, optional: true}
       phase:       {type: enum, vocabulary: phase, optional: true}
-      s_star:      {type: quantity, optional: true, label: ideal (isentropic) outlet entropy}
-      s_saturated: {type: quantity, optional: true, label: saturated-vapour entropy}
-      pressure:    {type: quantity, optional: true, label: outlet pressure}
+      s_star:      {type: quantity, optional: true, label: ideal (isentropic) outlet entropy, unit: J/(mol*K), quantity_kind: molar_entropy}
+      s_saturated: {type: quantity, optional: true, label: saturated-vapour entropy, unit: J/(mol*K), quantity_kind: molar_entropy}
+      pressure:    {type: quantity, optional: true, label: outlet pressure, unit: Pa, quantity_kind: pressure}
     summary: "Unit {unit} needs a case this version does not support: its outlet[ {outlet}] is declared vapour, but its ideal (isentropic) outlet state would be wet."
     why: "This version computes a turbine's ideal outlet in the phase declared for the real outlet.[ Here the ideal outlet entropy {s_star} is below the saturated-vapour entropy {s_saturated} at {pressure}, so the ideal state is two-phase.] This is a limitation of the software (L-TH-4), not an error in your flowsheet."
     action: "Re-declare the outlet[ {outlet}] as wet (\"vapor_liquid\") if it can be wet at your conditions. If that is refused as a phase mismatch, change the operating conditions (for example the turbine inlet temperature or outlet pressure) until the ideal and the real outlet are in the same phase. Support for this case is planned (the std.turbine model)."
+    variants:
+      # The base's numbers sentence names the saturated-vapour entropy; a LIQUID detail (a pump's
+      # isentropic state past the saturated liquid) must not render it.
+      - when: {equals: {phase: LIQUID}}
+        why: "This version computes a machine's ideal outlet in the phase declared for the real outlet. This is a limitation of the software (L-TH-4), not an error in your flowsheet."
     gap: {limitation: L-TH-4, capability: "a vapour turbine outlet with a two-phase isentropic reference"}
     see_also: [phase_regime_mismatch, L-TH-4]
     examples:
@@ -805,16 +816,29 @@ entries:
     kind: input
     complete: true
     title: A state outside the range of the property method
+    # Review Q1 (WO-5a): the provider's own message (P4), e.g. `iapws95.py`'s `out_of_domain:
+    # temperature 200.0 K outside [273.16, 1273.15] K`.
+    detail_pattern: '(?P<what>temperature|pressure) (?P<value>[-+]?[0-9]+(?:\.[0-9]+)?(?:e[-+]?[0-9]+)?) (?P<value_unit>K|Pa) outside \[(?=[-+]?[0-9]+(?:\.[0-9]+)?(?:e[-+]?[0-9]+)?, [-+]?[0-9]+(?:\.[0-9]+)?(?:e[-+]?[0-9]+)?\] (?P<low_unit>K|Pa))(?P<low>[-+]?[0-9]+(?:\.[0-9]+)?(?:e[-+]?[0-9]+)?), (?P<high>[-+]?[0-9]+(?:\.[0-9]+)?(?:e[-+]?[0-9]+)?)\] (?P<high_unit>K|Pa)'
     params:
       unit:   {type: unit, optional: true}
       detail: {type: text, optional: true, label: property method's message}
+      what:   {type: text, optional: true}
+      value:  {type: quantity, optional: true, label: value asked for}
+      low:    {type: quantity, optional: true, label: lower end of the range}
+      high:   {type: quantity, optional: true, label: upper end of the range}
     summary: "A property calculation[ for unit {unit}] was asked for a state outside the range its property method covers."
-    why: "A property method is valid only over a stated range of temperature and pressure, and outside it OpenFlowsheet stops instead of extrapolating.[ The method reported: {detail!raw}.] For water (IAPWS-95) this version covers 273.16 K to 1273.15 K and 100 Pa to 100 MPa."
+    why: "A property method is valid only over a stated range of temperature and pressure, and outside it OpenFlowsheet stops instead of extrapolating.[ The method reported: {detail!raw}.] For example, water's IAPWS-95 method in this version covers 273.16 K to 1273.15 K and 100 Pa to 100 MPa."
     action: "Check the temperatures and pressures specified for the streams[ that reach {unit}], for example a feed below the freezing point, and bring them inside the property method's range; the limitations page lists the range of each method."
+    variants:
+      - when: {has: [what, value, low, high]}
+        why: "A property method is valid only over a stated range of temperature and pressure, and outside it OpenFlowsheet stops instead of extrapolating. Here the {what!raw} {value} is outside the method's range of {low} to {high}."
     see_also: [initializer_failed]
     examples:
       - chain: [INITIALIZATION_FAILED, initializer_failed, out_of_domain]
-        params: {unit: P}
+        params: {unit: P, what: temperature,
+                 value: {value: 200.0, unit: K, kind: null},
+                 low: {value: 273.16, unit: K, kind: null},
+                 high: {value: 1273.15, unit: K, kind: null}}
   - code: parameter_kind_unsupported
     family: refusal
     kind: not_supported
@@ -998,6 +1022,13 @@ entries:
     kind: input
     complete: false
     title: Pressure fall
+    args: [machine]
+    # Review Q1 (WO-5a): the bound's detail line (`machines.py`, `syn001/pump.py`; P5).
+    detail_pattern: 'P_spec = (?P<p_spec>[-+]?[0-9]+(?:\.[0-9]+)?(?:e[-+]?[0-9]+)?) Pa (?:is above|is below|exceeds) the inlet''s (?P<p_inlet>[-+]?[0-9]+(?:\.[0-9]+)?(?:e[-+]?[0-9]+)?) Pa'
+    params:
+      machine: {type: text, label: machine}
+      p_spec:  {type: quantity, optional: true, label: specified outlet pressure, unit: Pa, quantity_kind: pressure}
+      p_inlet: {type: quantity, optional: true, label: inlet pressure, unit: Pa, quantity_kind: pressure}
     summary: 'Refused: pressure fall.'
   - code: pressure_outside_domain
     family: refusal
@@ -1009,21 +1040,31 @@ entries:
     family: refusal
     kind: input
     complete: true
-    title: A turbine outlet pressure above its inlet pressure
+    title: An outlet pressure above the inlet pressure of a unit that can only lower it
     args: [machine]
+    # Review Q1 (WO-5a): the bound's detail line (`machines.py`, `valve.py`; P5).
+    detail_pattern: 'P_spec = (?P<p_spec>[-+]?[0-9]+(?:\.[0-9]+)?(?:e[-+]?[0-9]+)?) Pa (?:is above|is below|exceeds) the inlet''s (?P<p_inlet>[-+]?[0-9]+(?:\.[0-9]+)?(?:e[-+]?[0-9]+)?) Pa'
     params:
       machine: {type: text, label: machine}
       unit:    {type: unit, optional: true}
-      p_spec:  {type: quantity, optional: true, label: specified outlet pressure}
-      p_inlet: {type: quantity, optional: true, label: inlet pressure}
+      p_spec:  {type: quantity, optional: true, label: specified outlet pressure, unit: Pa, quantity_kind: pressure}
+      p_inlet: {type: quantity, optional: true, label: inlet pressure, unit: Pa, quantity_kind: pressure}
     summary: "The outlet pressure specified for[ unit {unit},] a {machine!raw}, is above its inlet pressure[ ({p_spec} against {p_inlet})]."
     why: "A turbine expands the fluid that passes through it, so it can only lower the pressure. Raising the pressure takes a pump or a compressor."
+    variants:
+      # Review M2: `pressure_rise(valve)` (`thermal/valve.py`, `syn001/valve.py`).
+      - when: {equals: {machine: valve}}
+        why: "A valve throttles the fluid that passes through it, so it can only lower the pressure. Raising the pressure takes a pump or a compressor."
     action: "Give the {machine!raw}[ {unit}] an outlet pressure at or below its inlet pressure[ of {p_inlet}], or raise the pressure upstream of it (for example a pump's outlet pressure)."
     examples:
       - chain: [INITIALIZATION_FAILED, initializer_failed, pressure_rise]
         params: {machine: turbine, unit: T,
                  p_spec: {value: 5000000.0, unit: Pa, kind: pressure},
                  p_inlet: {value: 3000000.0, unit: Pa, kind: pressure}}
+      - chain: [INITIALIZATION_FAILED, initializer_failed, pressure_rise]
+        params: {machine: valve, unit: V,
+                 p_spec: {value: 200000.0, unit: Pa, kind: pressure},
+                 p_inlet: {value: 100000.0, unit: Pa, kind: pressure}}
   - code: project_id_mismatch
     family: refusal
     kind: input

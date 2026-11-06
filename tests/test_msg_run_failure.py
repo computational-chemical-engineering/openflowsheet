@@ -79,9 +79,16 @@ def test_fb03_the_failure_names_the_inner_cause_and_its_elements(solved: Solved)
     assert failure.failure_bundle == f"{solved.failed.job_id}:bundle/failure-bundle.json"
     assert {"T", "S4"} <= {element["id"] for element in failure.explanation["elements"]}
     assert failure.explanation["kind"] == "input"
+    # MSG WO-5a (review Q1): the run records the refusing unit's detail line as its sidecar.
+    diagnosis = _worker_run(solved.project, solved.failed.job_id)["run"]["diagnosis"]
+    assert diagnosis == {
+        "code": "phase_regime_mismatch",
+        "params": {"detail": "declared vapor_liquid, closure VAPOR; declare vapor"},
+    }
     assert failure.explanation == render_failure(
         outcome=failure.outcome,
         message=failure.message,
+        diagnosis=diagnosis,
         context=_context(solved, failure),
     )
     # The bundle's own members, verbatim.
@@ -278,3 +285,23 @@ def test_inspect_prints_the_failure_text_under_its_section(
     assert f"\n  {bare['summary']}\n" in section
     assert bare["code"] == failure.code
     assert "    Do:      " in section and "    Kind:    " in section
+
+
+def test_the_sidecar_carriers_are_never_compared_hashed_or_printed() -> None:
+    """MSG §4.6's carrier rule (review Q1, WO-5a): the field rides on each value that carries the
+    failure's message and changes none of their equality, hash or repr."""
+    from dataclasses import fields, replace
+
+    from openflowsheet.messages.diagnostic import Diagnostic
+    from openflowsheet.models.revision_flowsheet import FlowsheetPass
+    from openflowsheet.orchestrator.executor import StepResult
+    from openflowsheet.orchestrator.revision import InitialStateFailure
+
+    for carrier in (FlowsheetPass, InitialStateFailure, StepResult):
+        (field,) = [f for f in fields(carrier) if f.name == "diagnostic"]
+        assert (field.default, field.compare, field.hash, field.repr) == (None, False, False, False)
+    sidecar = Diagnostic("pressure_rise", {"detail": "P_spec = 2.0 Pa is above the inlet's 1.0 Pa"})
+    bare = InitialStateFailure("T", "pressure_rise(turbine)")
+    carried = replace(bare, diagnostic=sidecar)
+    assert carried == bare and hash(carried) == hash(bare) and repr(carried) == repr(bare)
+    assert carried.message == bare.message

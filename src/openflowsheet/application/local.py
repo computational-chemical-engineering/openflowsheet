@@ -1089,7 +1089,8 @@ class LocalApplication:
         message = observations.get("message") if isinstance(observations, Mapping) else None
         message = message if isinstance(message, str) else None
         taxonomy = bundle.get("taxonomy")
-        diagnosis = run.get("diagnosis")
+        # The sidecar explains the bundle's message; without the bundle it has nothing to match.
+        diagnosis = run.get("diagnosis") if bundle else None
         explanation, params = explain_failure(
             outcome=outcome,
             message=message,

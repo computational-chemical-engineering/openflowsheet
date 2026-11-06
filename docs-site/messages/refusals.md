@@ -1136,9 +1136,9 @@ No model with the id "thermal.boiler" is available in this version.
 **Kind:** Input problem: something in the flowsheet or the request needs to change.
 
 - **Summary:** A property calculation for unit &lt;unit&gt; was asked for a state outside the range its property method covers.
-- **Why:** A property method is valid only over a stated range of temperature and pressure, and outside it OpenFlowsheet stops instead of extrapolating. The method reported: &lt;detail&gt;. For water (IAPWS-95) this version covers 273.16 K to 1273.15 K and 100 Pa to 100 MPa.
+- **Why:** A property method is valid only over a stated range of temperature and pressure, and outside it OpenFlowsheet stops instead of extrapolating. The method reported: &lt;detail&gt;. For example, water's IAPWS-95 method in this version covers 273.16 K to 1273.15 K and 100 Pa to 100 MPa.
 - **Do:** Check the temperatures and pressures specified for the streams that reach &lt;unit&gt;, for example a feed below the freezing point, and bring them inside the property method's range; the limitations page lists the range of each method.
-- **Parameters:** `unit` (unit, optional), `detail` (text, optional)
+- **Parameters:** `unit` (unit, optional), `detail` (text, optional), `what` (text, optional), `value` (quantity, optional), `low` (quantity, optional), `high` (quantity, optional)
 - **See also:** [`initializer_failed`](#initializer_failed)
 
 Example:
@@ -1146,7 +1146,7 @@ Example:
 ```text
 The solve stopped before its first iteration: unit 'P' could not compute its outlets from the starting values.
   Cause:   A property calculation for unit 'P' was asked for a state outside the range its property method covers.
-  Why:     A property method is valid only over a stated range of temperature and pressure, and outside it OpenFlowsheet stops instead of extrapolating. For water (IAPWS-95) this version covers 273.16 K to 1273.15 K and 100 Pa to 100 MPa.
+  Why:     A property method is valid only over a stated range of temperature and pressure, and outside it OpenFlowsheet stops instead of extrapolating. Here the temperature 200.0 K is outside the method's range of 273.2 K to 1273 K.
   Do:      Check the temperatures and pressures specified for the streams that reach 'P', for example a feed below the freezing point, and bring them inside the property method's range; the limitations page lists the range of each method.
   Kind:    Input problem: something in the flowsheet or the request needs to change.
   Code:    out_of_domain, in INITIALIZATION_FAILED → initializer_failed (openflowsheet explain out_of_domain)
@@ -1477,6 +1477,7 @@ The solve stopped before its first iteration: unit 'T' could not compute its out
 *No plain-language explanation is written yet; the summary is the technical one.*
 
 - **Summary:** Refused: pressure fall.
+- **Parameters:** `machine` (text), `p_spec` (quantity, optional), `p_inlet` (quantity, optional)
 
 <a id="pressure_outside_domain"></a>
 
@@ -1490,7 +1491,7 @@ The solve stopped before its first iteration: unit 'T' could not compute its out
 
 <a id="pressure_rise"></a>
 
-## `pressure_rise`: A turbine outlet pressure above its inlet pressure
+## `pressure_rise`: An outlet pressure above the inlet pressure of a unit that can only lower it
 
 **Kind:** Input problem: something in the flowsheet or the request needs to change.
 
@@ -1506,6 +1507,18 @@ The solve stopped before its first iteration: unit 'T' could not compute its out
   Cause:   The outlet pressure specified for unit 'T', a turbine, is above its inlet pressure (5000000 Pa against 3000000 Pa).
   Why:     A turbine expands the fluid that passes through it, so it can only lower the pressure. Raising the pressure takes a pump or a compressor.
   Do:      Give the turbine 'T' an outlet pressure at or below its inlet pressure of 3000000 Pa, or raise the pressure upstream of it (for example a pump's outlet pressure).
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    pressure_rise, in INITIALIZATION_FAILED → initializer_failed (openflowsheet explain pressure_rise)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#pressure_rise
+```
+
+Example:
+
+```text
+The solve stopped before its first iteration: unit 'V' could not compute its outlets from the starting values.
+  Cause:   The outlet pressure specified for unit 'V', a valve, is above its inlet pressure (200000 Pa against 100000 Pa).
+  Why:     A valve throttles the fluid that passes through it, so it can only lower the pressure. Raising the pressure takes a pump or a compressor.
+  Do:      Give the valve 'V' an outlet pressure at or below its inlet pressure of 100000 Pa, or raise the pressure upstream of it (for example a pump's outlet pressure).
   Kind:    Input problem: something in the flowsheet or the request needs to change.
   Code:    pressure_rise, in INITIALIZATION_FAILED → initializer_failed (openflowsheet explain pressure_rise)
   Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#pressure_rise

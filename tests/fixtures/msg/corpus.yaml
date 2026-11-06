@@ -3,7 +3,9 @@
 # README's Rankine change set (examples/rankine-cycle.changeset.json), in a fresh project.
 # `text` is an exact golden: regenerate it only with `pytest tests/test_msg_corpus.py --msg-update`
 # and review the diff. `pending` items are strict xfails: each must fail today and turn the test red
-# the day it holds (docs/MSG_DECISIONS.md D9-1, D9-2). `<tmp>` stands for the test's directory.
+# the day it holds (docs/MSG_DECISIONS.md D9-1, D9-2). `values` are the numbers' independent expectations
+# (review Q1): the case's inputs and the provider's range, compared to relative 1e-12; `above: [a, b]`
+# asserts a > b. `<tmp>` stands for the test's directory.
 corpus: openflowsheet-msg-corpus-v1
 cases:
 - id: C01
@@ -15,30 +17,27 @@ cases:
   in_summary: []
   elements: [S4, T]
   numbers: null
-  action_token: phase declared
+  action_token: phase_capability
   gap: null
   pending:
-  - what: action
-    expect: phase_capability
-    reason: wo5
   - what: numbers
     expect: {names: [value, saturated_vapour, pressure], pressure: 10000.0, above: [value, saturated_vapour]}
-    reason: wo5
+    reason: q1c
   text:
     python: |-
       The solve of revision 'rev-000001' stopped before its first iteration: unit 'T' (thermal.turbine) could not compute its outlets from the starting values.
-        Cause:   Stream 'S4' is not in its declared phase.
+        Cause:   Stream 'S4' is not in its declared phase: it is declared wet (vapour + liquid), but at these conditions it is vapour.
         Why:     Each stream carries a declared phase, and a unit computes its outlet only in that phase.
-        Do:      Change the phase declared for 'S4' to the one that matches the computed state.
+        Do:      Declare 'S4' as vapour: set connections[3].phase_capability to "vapor". If you expected wet (vapour + liquid), check the specifications that set the conditions upstream of 'S4'.
         Kind:    Input problem: something in the flowsheet or the request needs to change.
         Code:    phase_regime_mismatch, in INITIALIZATION_FAILED → initializer_failed (openflowsheet explain phase_regime_mismatch)
         Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#phase_regime_mismatch
         Details: initializer_failed(T): phase_regime_mismatch(S4) — job-000001:bundle/failure-bundle.json
     cli: |
       The solve of revision 'rev-000001' stopped before its first iteration: unit 'T' (thermal.turbine) could not compute its outlets from the starting values.
-        Cause:   Stream 'S4' is not in its declared phase.
+        Cause:   Stream 'S4' is not in its declared phase: it is declared wet (vapour + liquid), but at these conditions it is vapour.
         Why:     Each stream carries a declared phase, and a unit computes its outlet only in that phase.
-        Do:      Change the phase declared for 'S4' to the one that matches the computed state.
+        Do:      Declare 'S4' as vapour: set connections[3].phase_capability to "vapor". If you expected wet (vapour + liquid), check the specifications that set the conditions upstream of 'S4'.
         Kind:    Input problem: something in the flowsheet or the request needs to change.
         Code:    phase_regime_mismatch, in INITIALIZATION_FAILED → initializer_failed (openflowsheet explain phase_regime_mismatch)
         Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#phase_regime_mismatch
@@ -50,32 +49,27 @@ cases:
   kind: not_supported
   chain: [INITIALIZATION_FAILED, initializer_failed, isentropic_state_two_phase]
   in_summary: []
-  elements: [T]
-  numbers: null
+  elements: [T, S4]
+  numbers: [s_star, s_saturated, pressure]
+  values: {pressure: 10000.0, above: [s_saturated, s_star]}
   action_token: vapor_liquid
   gap: {limitation: L-TH-4, capability: true}
-  pending:
-  - what: numbers
-    expect: {names: [s_star, s_saturated, pressure], pressure: 10000.0, above: [s_saturated, s_star]}
-    reason: wo5
-  - what: elements
-    expect: [S4]
-    reason: wo5
+  pending: []
   text:
     python: |-
       The solve of revision 'rev-000001' stopped before its first iteration: unit 'T' (thermal.turbine) could not compute its outlets from the starting values.
-        Cause:   Unit 'T' needs a case this version does not support: its outlet is declared vapour, but its ideal (isentropic) outlet state would be wet.
-        Why:     This version computes a turbine's ideal outlet in the phase declared for the real outlet. This is a limitation of the software (L-TH-4), not an error in your flowsheet.
-        Do:      Re-declare the outlet as wet ("vapor_liquid") if it can be wet at your conditions. If that is refused as a phase mismatch, change the operating conditions (for example the turbine inlet temperature or outlet pressure) until the ideal and the real outlet are in the same phase. Support for this case is planned (the std.turbine model).
+        Cause:   Unit 'T' needs a case this version does not support: its outlet 'S4' is declared vapour, but its ideal (isentropic) outlet state would be wet.
+        Why:     This version computes a turbine's ideal outlet in the phase declared for the real outlet. Here the ideal outlet entropy 139.8 J/(mol*K) is below the saturated-vapour entropy 146.8 J/(mol*K) at 10000 Pa, so the ideal state is two-phase. This is a limitation of the software (L-TH-4), not an error in your flowsheet.
+        Do:      Re-declare the outlet 'S4' as wet ("vapor_liquid") if it can be wet at your conditions. If that is refused as a phase mismatch, change the operating conditions (for example the turbine inlet temperature or outlet pressure) until the ideal and the real outlet are in the same phase. Support for this case is planned (the std.turbine model).
         Kind:    Not supported in this version: a limitation of OpenFlowsheet, not an error in your flowsheet.
         Code:    isentropic_state_two_phase, in INITIALIZATION_FAILED → initializer_failed (openflowsheet explain isentropic_state_two_phase)
         Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#isentropic_state_two_phase
         Details: initializer_failed(T): isentropic_state_two_phase(T) — job-000001:bundle/failure-bundle.json
     cli: |
       The solve of revision 'rev-000001' stopped before its first iteration: unit 'T' (thermal.turbine) could not compute its outlets from the starting values.
-        Cause:   Unit 'T' needs a case this version does not support: its outlet is declared vapour, but its ideal (isentropic) outlet state would be wet.
-        Why:     This version computes a turbine's ideal outlet in the phase declared for the real outlet. This is a limitation of the software (L-TH-4), not an error in your flowsheet.
-        Do:      Re-declare the outlet as wet ("vapor_liquid") if it can be wet at your conditions. If that is refused as a phase mismatch, change the operating conditions (for example the turbine inlet temperature or outlet pressure) until the ideal and the real outlet are in the same phase. Support for this case is planned (the std.turbine model).
+        Cause:   Unit 'T' needs a case this version does not support: its outlet 'S4' is declared vapour, but its ideal (isentropic) outlet state would be wet.
+        Why:     This version computes a turbine's ideal outlet in the phase declared for the real outlet. Here the ideal outlet entropy 139.8 J/(mol*K) is below the saturated-vapour entropy 146.8 J/(mol*K) at 10000 Pa, so the ideal state is two-phase. This is a limitation of the software (L-TH-4), not an error in your flowsheet.
+        Do:      Re-declare the outlet 'S4' as wet ("vapor_liquid") if it can be wet at your conditions. If that is refused as a phase mismatch, change the operating conditions (for example the turbine inlet temperature or outlet pressure) until the ideal and the real outlet are in the same phase. Support for this case is planned (the std.turbine model).
         Kind:    Not supported in this version: a limitation of OpenFlowsheet, not an error in your flowsheet.
         Code:    isentropic_state_two_phase, in INITIALIZATION_FAILED → initializer_failed (openflowsheet explain isentropic_state_two_phase)
         Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#isentropic_state_two_phase
@@ -274,7 +268,8 @@ cases:
   chain: [INITIALIZATION_FAILED, initializer_failed, out_of_domain]
   in_summary: []
   elements: [P]
-  numbers: []
+  numbers: [value, low, high]
+  values: {value: 200.0, low: 273.16, high: 1273.15}
   action_token: range
   gap: null
   pending: []
@@ -282,7 +277,7 @@ cases:
     python: |-
       The solve of revision 'rev-000001' stopped before its first iteration: unit 'P' (thermal.pump) could not compute its outlets from the starting values.
         Cause:   A property calculation for unit 'P' was asked for a state outside the range its property method covers.
-        Why:     A property method is valid only over a stated range of temperature and pressure, and outside it OpenFlowsheet stops instead of extrapolating. For water (IAPWS-95) this version covers 273.16 K to 1273.15 K and 100 Pa to 100 MPa.
+        Why:     A property method is valid only over a stated range of temperature and pressure, and outside it OpenFlowsheet stops instead of extrapolating. Here the temperature 200.0 K is outside the method's range of 273.2 K to 1273 K.
         Do:      Check the temperatures and pressures specified for the streams that reach 'P', for example a feed below the freezing point, and bring them inside the property method's range; the limitations page lists the range of each method.
         Kind:    Input problem: something in the flowsheet or the request needs to change.
         Code:    out_of_domain, in INITIALIZATION_FAILED → initializer_failed (openflowsheet explain out_of_domain)
@@ -291,7 +286,7 @@ cases:
     cli: |
       The solve of revision 'rev-000001' stopped before its first iteration: unit 'P' (thermal.pump) could not compute its outlets from the starting values.
         Cause:   A property calculation for unit 'P' was asked for a state outside the range its property method covers.
-        Why:     A property method is valid only over a stated range of temperature and pressure, and outside it OpenFlowsheet stops instead of extrapolating. For water (IAPWS-95) this version covers 273.16 K to 1273.15 K and 100 Pa to 100 MPa.
+        Why:     A property method is valid only over a stated range of temperature and pressure, and outside it OpenFlowsheet stops instead of extrapolating. Here the temperature 200.0 K is outside the method's range of 273.2 K to 1273 K.
         Do:      Check the temperatures and pressures specified for the streams that reach 'P', for example a feed below the freezing point, and bring them inside the property method's range; the limitations page lists the range of each method.
         Kind:    Input problem: something in the flowsheet or the request needs to change.
         Code:    out_of_domain, in INITIALIZATION_FAILED → initializer_failed (openflowsheet explain out_of_domain)
@@ -340,28 +335,26 @@ cases:
   chain: [INITIALIZATION_FAILED, initializer_failed, pressure_rise]
   in_summary: []
   elements: [T]
-  numbers: null
+  numbers: [p_spec, p_inlet]
+  values: {p_spec: 5000000.0, p_inlet: 3000000.0}
   action_token: inlet pressure
   gap: null
-  pending:
-  - what: numbers
-    expect: {names: [p_spec, p_inlet], p_spec: 5000000.0, p_inlet: 3000000.0}
-    reason: wo5
+  pending: []
   text:
     python: |-
       The solve of revision 'rev-000001' stopped before its first iteration: unit 'T' (thermal.turbine) could not compute its outlets from the starting values.
-        Cause:   The outlet pressure specified for unit 'T', a turbine, is above its inlet pressure.
+        Cause:   The outlet pressure specified for unit 'T', a turbine, is above its inlet pressure (5000000 Pa against 3000000 Pa).
         Why:     A turbine expands the fluid that passes through it, so it can only lower the pressure. Raising the pressure takes a pump or a compressor.
-        Do:      Give the turbine 'T' an outlet pressure at or below its inlet pressure, or raise the pressure upstream of it (for example a pump's outlet pressure).
+        Do:      Give the turbine 'T' an outlet pressure at or below its inlet pressure of 3000000 Pa, or raise the pressure upstream of it (for example a pump's outlet pressure).
         Kind:    Input problem: something in the flowsheet or the request needs to change.
         Code:    pressure_rise, in INITIALIZATION_FAILED → initializer_failed (openflowsheet explain pressure_rise)
         Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#pressure_rise
         Details: initializer_failed(T): pressure_rise(turbine) — job-000001:bundle/failure-bundle.json
     cli: |
       The solve of revision 'rev-000001' stopped before its first iteration: unit 'T' (thermal.turbine) could not compute its outlets from the starting values.
-        Cause:   The outlet pressure specified for unit 'T', a turbine, is above its inlet pressure.
+        Cause:   The outlet pressure specified for unit 'T', a turbine, is above its inlet pressure (5000000 Pa against 3000000 Pa).
         Why:     A turbine expands the fluid that passes through it, so it can only lower the pressure. Raising the pressure takes a pump or a compressor.
-        Do:      Give the turbine 'T' an outlet pressure at or below its inlet pressure, or raise the pressure upstream of it (for example a pump's outlet pressure).
+        Do:      Give the turbine 'T' an outlet pressure at or below its inlet pressure of 3000000 Pa, or raise the pressure upstream of it (for example a pump's outlet pressure).
         Kind:    Input problem: something in the flowsheet or the request needs to change.
         Code:    pressure_rise, in INITIALIZATION_FAILED → initializer_failed (openflowsheet explain pressure_rise)
         Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#pressure_rise

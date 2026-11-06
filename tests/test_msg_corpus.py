@@ -63,7 +63,10 @@ TMP = "<tmp>"
 
 #: Why a `pending` item does not hold yet; the keys are the corpus's `reason` values.
 PENDING_REASONS: dict[str, str] = {
-    "wo5": "MSG WO-5 parked: thermal modules frozen by F0 M9 (R-940)",
+    "q1c": (
+        "MSG review Q1 (c): a number only the thermal kernel knows, in no message text; deferred "
+        "to the F6 v2 unit models (ADR 0065)"
+    ),
     "d9-2": (
         "MSG D9-2: a DRAFT report's explanation stops at revision_not_ready (§4.4 reads FAIL "
         "checks only); design lane"
@@ -376,6 +379,18 @@ def _element_ids(explanation: Mapping[str, Any]) -> set[str]:
     return {str(element["id"]) for element in explanation["elements"]}
 
 
+def _assert_values(explanation: Mapping[str, Any], expect: Mapping[str, Any]) -> None:
+    """Each named number equals its expectation to relative 1e-12; `above: [a, b]`: a > b."""
+    numbers = {number["name"]: number["value"] for number in explanation["numbers"]}
+    for name, value in expect.items():
+        if name not in ("names", "above"):
+            assert name in numbers, (name, sorted(numbers))
+            assert numbers[name] == pytest.approx(value, rel=1e-12), name
+    if "above" in expect:
+        high, low = expect["above"]
+        assert numbers[high] > numbers[low], (high, low)
+
+
 def _assert_facts(case: Mapping[str, Any], explanation: Mapping[str, Any]) -> None:
     assert (explanation["code"], explanation["kind"]) == (case["code"], case["kind"])
     assert list(explanation["chain"]) == case["chain"]
@@ -393,6 +408,7 @@ def _assert_facts(case: Mapping[str, Any], explanation: Mapping[str, Any]) -> No
         assert expected in text, (expected, text)
     if case["numbers"] is not None:
         assert [number["name"] for number in explanation["numbers"]] == case["numbers"]
+    _assert_values(explanation, case.get("values", {}))
     assert case["action_token"] in explanation["action"], explanation["action"]
     if case["gap"] is None:
         assert explanation["gap"] is None
@@ -490,14 +506,9 @@ def test_g6_pending_holds(case_id: str, index: int, observe: Callable[[str], Obs
     explanation = observe(case_id).explanations["python"]
     expect = item["expect"]
     if item["what"] == "numbers":
-        numbers = {number["name"]: number["value"] for number in explanation["numbers"]}
-        assert set(expect["names"]) <= set(numbers), sorted(numbers)
-        for name, value in expect.items():
-            if name not in ("names", "above"):
-                assert numbers[name] == pytest.approx(value, rel=1e-12), name
-        if "above" in expect:
-            high, low = expect["above"]
-            assert numbers[high] > numbers[low], (high, low)
+        numbers = {number["name"] for number in explanation["numbers"]}
+        assert set(expect["names"]) <= numbers, sorted(numbers)
+        _assert_values(explanation, expect)
     elif item["what"] == "elements":
         for element in expect:
             assert element in _element_ids(explanation)
@@ -512,6 +523,48 @@ def test_g6_pending_holds(case_id: str, index: int, observe: Callable[[str], Obs
         assert bool((explanation["gap"] or {}).get("capability")) is expect["capability"]
 
 
+def test_g6_the_values_have_independent_expectations() -> None:
+    """Review Q1: the corpus's `values` are not the software's own output. C11's are the case's
+    inputs (its turbine outlet pressure and the pump outlet pressure that feeds the turbine,
+    the heater's pressure drop being 0); C02's pressure is the turbine outlet's in the change
+    set; C09's value is the feed temperature it sets and its range IAPWS-95's own
+    (`thermo/iapws95.py` `T_MIN`, `T_MAX`)."""
+    from openflowsheet.thermo import iapws95
+
+    document = _rankine(_turbine_compresses)
+    assert CASES["C11"]["values"] == {
+        "p_spec": _spec(document, "turbine-P")["value"],
+        "p_inlet": _spec(document, "pump-P")["value"],
+    }
+    assert CASES["C02"]["values"]["pressure"] == _spec(_rankine(), "turbine-P")["value"]
+    assert CASES["C09"]["values"] == {
+        "value": _spec(_rankine(_cold_feed), "feed-T")["value"],
+        "low": iapws95.T_MIN,
+        "high": iapws95.T_MAX,
+    }
+
+
+def test_g6_c02_saturated_entropy_is_the_providers_and_the_steam_tables(
+    observe: Callable[[str], Observed],
+) -> None:
+    """Review Q1 / WO-5: C02's `s_saturated` equals an independent IAPWS-95 saturation call at
+    the case pressure to relative 1e-12, and the steam tables' s_g(10 kPa) = 8.1488 kJ/(kg*K)
+    (IAPWS-IF97 saturation-pressure table; molar mass 18.015268 g/mol) to their four decimals.
+    The molar basis (J/(mol*K)) is the thermal kernel's."""
+    from openflowsheet.compiled import EvaluationContext
+    from openflowsheet.models.thermal.kernel import Failure, saturation
+    from openflowsheet.thermo.iapws95 import Iapws95Provider
+
+    numbers = {n["name"]: n for n in observe("C02").explanations["python"]["numbers"]}
+    pressure, s_saturated = numbers["pressure"], numbers["s_saturated"]
+    assert (pressure["unit"], s_saturated["unit"]) == ("Pa", "J/(mol*K)")
+    context = EvaluationContext(model_version="msg-c02", constants_sha256="0" * 64)
+    sat = saturation(Iapws95Provider(), pressure["value"], context)
+    assert not isinstance(sat, Failure)
+    assert s_saturated["value"] == pytest.approx(sat.value("VAPOR", "s"), rel=1e-12)
+    assert s_saturated["value"] / 18.015268 == pytest.approx(8.1488, abs=5e-5)
+
+
 def test_g6_the_corpus_is_well_formed() -> None:
     """Twelve cases, C01–C12; each `pending` item has a known reason and kind; `numbers` is null
     exactly when a pending item asserts them; every case has its stored text."""
@@ -522,4 +575,7 @@ def test_g6_the_corpus_is_well_formed() -> None:
         assert set(whats) <= {"numbers", "elements", "summary", "action", "code"}, case_id
         assert {item["reason"] for item in case["pending"]} <= set(PENDING_REASONS), case_id
         assert (case["numbers"] is None) is ("numbers" in whats), case_id
+        values = set(case.get("values", {})) - {"above"}
+        assert values <= set(case["numbers"] or ()), case_id
+        assert set(case.get("values", {}).get("above", ())) <= set(case["numbers"] or ()), case_id
         assert set(case.get("text", {})) == set(case["surfaces"]) & {"python", "cli"}, case_id
