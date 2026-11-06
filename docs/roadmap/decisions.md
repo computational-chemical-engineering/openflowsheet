@@ -157,3 +157,13 @@ WO-5a's commits.
 DECISION: M1 → complete all required entries, no declared-stub limitation. Alternative: ship stubs declared (Frank's
 call). Reversible by: Frank's late answer.
 Brief `docs/briefs/MSG-build-WO11-12.md`.
+
+## 2026-11-06 — MSG WO-11 done (`bc3ecf8b`)
+
+WO-5a sidecar (outside M9), M2, Q2, Q6, Q7, S1–S4; C01 action, C02/C11 numbers, C06–C08/C10 codes lifted; 3 xfails
+remain (C01 numbers → F6 v2; C08 "degc", C10 instance B need the revision at render time). F0 PASS; MSG-G0 a 0, b 0/562.
+DECISION: render errors from the error document alone (C08/C10 stay declared gaps) → yes. Alternative: load the revision
+at render time. Reversible by: a later MSG change adding revision context.
+DECISION: `worker_lost`/`owner_lost`/`store_error` keep kind `bug` with specific actions. Alternative: an `environment`
+kind (closed schema → ADR 0058 amendment). Reversible by: that amendment.
+Next: WO-12 (M1, M3, M4, M6; full gate; manifest). R-942's number re-checked at the merge.
