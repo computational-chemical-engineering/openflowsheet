@@ -358,3 +358,11 @@ application contract (ADR 0019 Amendment 13), so it needs your yes. Two choices 
 - Values a provider cannot give (density and entropy on most legacy providers) are shown as absent with a reason,
   never estimated (no ideal-gas fallback).
 Default: build proceeds (new files first); merge waits for your acceptance.
+
+## Release procedure (ADR 0055 WO-R1) — one small preference (2026-11-06; not urgent, before 0.4.0's cut)
+
+The standing release procedure is written (`docs/derivations/release-procedure.md`, `release/lines/0.4.json`,
+`release/acceptances.md`). Your licence acceptance for the coolprop and lca extras (2026-10-30) is carried as a standing
+acceptance that lapses when the accepted thing changes.
+- **Q-11:** keep it as **one row** for both extras (default), or **one row per extra**, so that a change to the lca
+  dependency lock re-asks you only about lca.
