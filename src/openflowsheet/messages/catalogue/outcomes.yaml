@@ -17,7 +17,8 @@ entries:
 
   # MSG WO-12 (review M1): every outcome is complete (§4.2.6). Meanings from the producers
   # (`numerics/newton.py`, `numerics/ptc.py`, `numerics/scaling.py`, `orchestrator/*`,
-  # `models/syn001/column.py`) and K03 spec §5, §11.1; kinds by §4.2.1's table.
+  # `models/syn001/column.py`) and K03 spec §5, §11.1; kinds by §4.2.1's table, with
+  # CHECKPOINT_INCOMPATIBLE `bug` (review S4; `verify.failure.OUTCOME_ACTIONS`: report_defect).
   - code: CONVERGED
     family: outcome
     kind: notice
@@ -254,7 +255,7 @@ entries:
 
   - code: CHECKPOINT_INCOMPATIBLE
     family: outcome
-    kind: numerical
+    kind: bug
     complete: true
     title: A restart's starting state did not fit the new phase assignment
     summary: "The solve[ of revision {revision}] stopped: the state it restarted from does not fit the new assignment of phases."

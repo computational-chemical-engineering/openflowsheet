@@ -117,7 +117,7 @@ The solve stopped: a unit needs something its model does not provide.
 
 ## `CHECKPOINT_INCOMPATIBLE`: A restart's starting state did not fit the new phase assignment
 
-**Kind:** Numerical failure: the solver did not find the solution; your flowsheet may be correct.
+**Kind:** Internal error in OpenFlowsheet: please report it.
 
 - **Summary:** The solve of revision &lt;revision&gt; stopped: the state it restarted from does not fit the new assignment of phases.
 - **Why:** When the phases present change, the solver restarts from its last state with the new assignment of phases to streams. That state did not pass the new attempt's opening checks. No supported path should produce this, so it is treated as a defect in OpenFlowsheet.
@@ -130,7 +130,7 @@ Example:
 The solve stopped: the state it restarted from does not fit the new assignment of phases.
   Why:     When the phases present change, the solver restarts from its last state with the new assignment of phases to streams. That state did not pass the new attempt's opening checks. No supported path should produce this, so it is treated as a defect in OpenFlowsheet.
   Do:      Report it with the failure bundle; the message names the check that refused the state.
-  Kind:    Numerical failure: the solver did not find the solution; your flowsheet may be correct.
+  Kind:    Internal error in OpenFlowsheet: please report it.
   Code:    CHECKPOINT_INCOMPATIBLE (openflowsheet explain CHECKPOINT_INCOMPATIBLE)
   Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/outcomes/#CHECKPOINT_INCOMPATIBLE
 ```
