@@ -733,9 +733,17 @@ entries:
   - code: model_unsupported
     family: refusal
     kind: not_supported
-    complete: false
-    title: Model unsupported
-    summary: 'Refused: model unsupported.'
+    complete: true
+    title: No model with this id is available
+    args: [model]
+    params: {model: {type: text, label: model id}}
+    summary: "No model with the id \"{model!raw}\" is available in this version."
+    why: "Each unit names the model that computes it. This version computes only the models it lists, and a unit's model id must match one of them exactly, prefix included (for example thermal.heater)."
+    action: "Compare the unit's model id with the available models (the list_models operation, or openflowsheet api list_models): correct its spelling, or choose a listed model that does what the unit needs."
+    gap: {limitation: null, capability: "a unit model with this id"}
+    see_also: [revision_not_ready]
+    examples:
+      - params: {model: thermal.boiler}
   - code: model_variant_mismatch
     family: refusal
     kind: bug
@@ -795,9 +803,18 @@ entries:
   - code: out_of_domain
     family: refusal
     kind: input
-    complete: false
-    title: Out of domain
-    summary: 'Refused: out of domain.'
+    complete: true
+    title: A state outside the range of the property method
+    params:
+      unit:   {type: unit, optional: true}
+      detail: {type: text, optional: true, label: property method's message}
+    summary: "A property calculation[ for unit {unit}] was asked for a state outside the range its property method covers."
+    why: "A property method is valid only over a stated range of temperature and pressure, and outside it OpenFlowsheet stops instead of extrapolating.[ The method reported: {detail!raw}.] For water (IAPWS-95) this version covers 273.16 K to 1273.15 K and 100 Pa to 100 MPa."
+    action: "Check the temperatures and pressures specified for the streams[ that reach {unit}], for example a feed below the freezing point, and bring them inside the property method's range; the limitations page lists the range of each method."
+    see_also: [initializer_failed]
+    examples:
+      - chain: [INITIALIZATION_FAILED, initializer_failed, out_of_domain]
+        params: {unit: P}
   - code: parameter_kind_unsupported
     family: refusal
     kind: not_supported
@@ -991,9 +1008,22 @@ entries:
   - code: pressure_rise
     family: refusal
     kind: input
-    complete: false
-    title: Pressure rise
-    summary: 'Refused: pressure rise.'
+    complete: true
+    title: A turbine outlet pressure above its inlet pressure
+    args: [machine]
+    params:
+      machine: {type: text, label: machine}
+      unit:    {type: unit, optional: true}
+      p_spec:  {type: quantity, optional: true, label: specified outlet pressure}
+      p_inlet: {type: quantity, optional: true, label: inlet pressure}
+    summary: "The outlet pressure specified for[ unit {unit},] a {machine!raw}, is above its inlet pressure[ ({p_spec} against {p_inlet})]."
+    why: "A turbine expands the fluid that passes through it, so it can only lower the pressure. Raising the pressure takes a pump or a compressor."
+    action: "Give the {machine!raw}[ {unit}] an outlet pressure at or below its inlet pressure[ of {p_inlet}], or raise the pressure upstream of it (for example a pump's outlet pressure)."
+    examples:
+      - chain: [INITIALIZATION_FAILED, initializer_failed, pressure_rise]
+        params: {machine: turbine, unit: T,
+                 p_spec: {value: 5000000.0, unit: Pa, kind: pressure},
+                 p_inlet: {value: 3000000.0, unit: Pa, kind: pressure}}
   - code: project_id_mismatch
     family: refusal
     kind: input
@@ -1272,9 +1302,18 @@ entries:
   - code: task_unsupported
     family: refusal
     kind: not_supported
-    complete: false
-    title: Task unsupported
-    summary: 'Refused: task unsupported.'
+    complete: true
+    title: Validation for a task this version does not check
+    args: [task]
+    params: {task: {type: text, label: task}}
+    summary: "This version cannot validate a revision for the \"{task!raw}\" task; it validates for simulation only."
+    why: "Validating for optimization would mean checking an optimization formulation (objective, decision variables and their bounds). This version checks none, so it refuses rather than report a revision ready for a task it has not checked."
+    action: "Validate with the task \"simulation\" (openflowsheet validate --task simulation, or task \"simulation\" in the request)."
+    gap: {limitation: null, capability: "validation of an optimization formulation (task \"optimization\")"}
+    see_also: [unsupported]
+    examples:
+      - chain: [unsupported, task_unsupported]
+        params: {task: optimization}
   - code: tear_path_unsupported
     family: refusal
     kind: not_supported

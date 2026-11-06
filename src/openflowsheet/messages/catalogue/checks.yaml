@@ -40,9 +40,15 @@ entries:
   - code: DIM-01
     family: check
     kind: input
-    complete: false
-    title: Dim 01
-    summary: Validation check DIM-01 did not pass.
+    complete: true
+    title: Every specification and parameter has a unit its kind accepts
+    summary: "A specification or parameter has a unit that its kind (temperature, pressure, flow, ...) does not accept."
+    why: "Each specification and parameter declares a quantity kind and a unit, and validation accepts only the units listed for that kind, spelled exactly: unit symbols are case-sensitive, so a temperature takes \"degC\" but not \"degc\"."
+    action: "Read the check's message: it names the specification or parameter and the units its kind accepts. Correct the unit's spelling, or give the value in one of the accepted units."
+    see_also: [revision_not_ready]
+    examples:
+      - chain: [revision_not_ready, DIM-01]
+        params: {}
     review: true
   - code: GRAPH-01
     family: check

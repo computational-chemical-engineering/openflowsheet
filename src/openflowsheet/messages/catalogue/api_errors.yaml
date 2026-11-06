@@ -45,11 +45,16 @@ entries:
   - code: unsupported
     family: api_error
     kind: not_supported
-    complete: false
+    complete: true
     title: The request needs something this version does not support
     args: [reason]
     params: {reason: {type: code, optional: true}}
     summary: "The request needs something this version does not support."
+    why: "The request is well formed, but it asks for a capability this version does not have. The reason names that capability; its own explanation says what is missing."
+    action: "Read the reason's explanation[ (openflowsheet explain {reason!raw})] for what is missing and what to do instead."
+    gap: {limitation: null, capability: null}
+    examples:
+      - params: {reason: task_unsupported}
 
   - code: internal_error
     family: api_error
@@ -112,9 +117,16 @@ entries:
   - code: revision_not_ready
     family: api_error
     kind: input
-    complete: false
-    title: Revision not ready
-    summary: 'The request was refused: revision not ready.'
+    complete: true
+    title: The revision does not pass validation for simulation
+    params: {revision: {type: revision, optional: true}}
+    summary: "The revision[ {revision}] is not ready to solve: it does not pass validation for simulation."
+    why: "A solve starts only from a revision whose validation finds it ready for simulation. Validation marks a revision DRAFT when a check could not run, for example because a specification is missing, extra or not read by its unit, or a unit's model is not available; it marks it INVALID when a check fails."
+    action: "Validate the revision and read each check that did not pass (the error's report lists the same checks): its message names the specification, stream or unit to change."
+    see_also: [DIM-01, model_unsupported]
+    examples:
+      - params: {revision: rev-000001}
+      - params: {}
   - code: revision_unsupported
     family: api_error
     kind: not_supported

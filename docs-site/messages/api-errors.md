@@ -119,13 +119,37 @@ Bundle 'job-000004:bundle' has no file 'solution-state.json': its run ended INIT
 
 <a id="revision_not_ready"></a>
 
-## `revision_not_ready`: Revision not ready
+## `revision_not_ready`: The revision does not pass validation for simulation
 
 **Kind:** Input problem: something in the flowsheet or the request needs to change.
 
-*No plain-language explanation is written yet; the summary is the technical one.*
+- **Summary:** The revision &lt;revision&gt; is not ready to solve: it does not pass validation for simulation.
+- **Why:** A solve starts only from a revision whose validation finds it ready for simulation. Validation marks a revision DRAFT when a check could not run, for example because a specification is missing, extra or not read by its unit, or a unit's model is not available; it marks it INVALID when a check fails.
+- **Do:** Validate the revision and read each check that did not pass (the error's report lists the same checks): its message names the specification, stream or unit to change.
+- **Parameters:** `revision` (revision, optional)
+- **See also:** [`DIM-01`](checks.md#DIM-01), [`model_unsupported`](refusals.md#model_unsupported)
 
-- **Summary:** The request was refused: revision not ready.
+Example:
+
+```text
+The revision 'rev-000001' is not ready to solve: it does not pass validation for simulation.
+  Why:     A solve starts only from a revision whose validation finds it ready for simulation. Validation marks a revision DRAFT when a check could not run, for example because a specification is missing, extra or not read by its unit, or a unit's model is not available; it marks it INVALID when a check fails.
+  Do:      Validate the revision and read each check that did not pass (the error's report lists the same checks): its message names the specification, stream or unit to change.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    revision_not_ready (openflowsheet explain revision_not_ready)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/api-errors/#revision_not_ready
+```
+
+Example:
+
+```text
+The revision is not ready to solve: it does not pass validation for simulation.
+  Why:     A solve starts only from a revision whose validation finds it ready for simulation. Validation marks a revision DRAFT when a check could not run, for example because a specification is missing, extra or not read by its unit, or a unit's model is not available; it marks it INVALID when a check fails.
+  Do:      Validate the revision and read each check that did not pass (the error's report lists the same checks): its message names the specification, stream or unit to change.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    revision_not_ready (openflowsheet explain revision_not_ready)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/api-errors/#revision_not_ready
+```
 
 <a id="revision_unsupported"></a>
 
@@ -153,10 +177,22 @@ Bundle 'job-000004:bundle' has no file 'solution-state.json': its run ended INIT
 
 **Kind:** Not supported in this version: a limitation of OpenFlowsheet, not an error in your flowsheet.
 
-*No plain-language explanation is written yet; the summary is the technical one.*
-
 - **Summary:** The request needs something this version does not support.
+- **Why:** The request is well formed, but it asks for a capability this version does not have. The reason names that capability; its own explanation says what is missing.
+- **Do:** Read the reason's explanation (openflowsheet explain &lt;reason&gt;) for what is missing and what to do instead.
 - **Parameters:** `reason` (code, optional)
+- **Not supported:** 
+
+Example:
+
+```text
+The request needs something this version does not support.
+  Why:     The request is well formed, but it asks for a capability this version does not have. The reason names that capability; its own explanation says what is missing.
+  Do:      Read the reason's explanation (openflowsheet explain task_unsupported) for what is missing and what to do instead.
+  Kind:    Not supported in this version: a limitation of OpenFlowsheet, not an error in your flowsheet.
+  Code:    unsupported (openflowsheet explain unsupported)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/api-errors/#unsupported
+```
 
 <a id="verification_weakening_refused"></a>
 

@@ -1025,13 +1025,27 @@ The solve stopped before its first iteration: unit 'T' could not compute its out
 
 <a id="model_unsupported"></a>
 
-## `model_unsupported`: Model unsupported
+## `model_unsupported`: No model with this id is available
 
 **Kind:** Not supported in this version: a limitation of OpenFlowsheet, not an error in your flowsheet.
 
-*No plain-language explanation is written yet; the summary is the technical one.*
+- **Summary:** No model with the id "&lt;model&gt;" is available in this version.
+- **Why:** Each unit names the model that computes it. This version computes only the models it lists, and a unit's model id must match one of them exactly, prefix included (for example thermal.heater).
+- **Do:** Compare the unit's model id with the available models (the list_models operation, or openflowsheet api list_models): correct its spelling, or choose a listed model that does what the unit needs.
+- **Parameters:** `model` (text)
+- **Not supported:** missing capability: a unit model with this id
+- **See also:** [`revision_not_ready`](api-errors.md#revision_not_ready)
 
-- **Summary:** Refused: model unsupported.
+Example:
+
+```text
+No model with the id "thermal.boiler" is available in this version.
+  Why:     Each unit names the model that computes it. This version computes only the models it lists, and a unit's model id must match one of them exactly, prefix included (for example thermal.heater).
+  Do:      Compare the unit's model id with the available models (the list_models operation, or openflowsheet api list_models): correct its spelling, or choose a listed model that does what the unit needs.
+  Kind:    Not supported in this version: a limitation of OpenFlowsheet, not an error in your flowsheet.
+  Code:    model_unsupported (openflowsheet explain model_unsupported)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#model_unsupported
+```
 
 <a id="model_variant_mismatch"></a>
 
@@ -1117,13 +1131,27 @@ The solve stopped before its first iteration: unit 'T' could not compute its out
 
 <a id="out_of_domain"></a>
 
-## `out_of_domain`: Out of domain
+## `out_of_domain`: A state outside the range of the property method
 
 **Kind:** Input problem: something in the flowsheet or the request needs to change.
 
-*No plain-language explanation is written yet; the summary is the technical one.*
+- **Summary:** A property calculation for unit &lt;unit&gt; was asked for a state outside the range its property method covers.
+- **Why:** A property method is valid only over a stated range of temperature and pressure, and outside it OpenFlowsheet stops instead of extrapolating. The method reported: &lt;detail&gt;. For water (IAPWS-95) this version covers 273.16 K to 1273.15 K and 100 Pa to 100 MPa.
+- **Do:** Check the temperatures and pressures specified for the streams that reach &lt;unit&gt;, for example a feed below the freezing point, and bring them inside the property method's range; the limitations page lists the range of each method.
+- **Parameters:** `unit` (unit, optional), `detail` (text, optional)
+- **See also:** [`initializer_failed`](#initializer_failed)
 
-- **Summary:** Refused: out of domain.
+Example:
+
+```text
+The solve stopped before its first iteration: unit 'P' could not compute its outlets from the starting values.
+  Cause:   A property calculation for unit 'P' was asked for a state outside the range its property method covers.
+  Why:     A property method is valid only over a stated range of temperature and pressure, and outside it OpenFlowsheet stops instead of extrapolating. For water (IAPWS-95) this version covers 273.16 K to 1273.15 K and 100 Pa to 100 MPa.
+  Do:      Check the temperatures and pressures specified for the streams that reach 'P', for example a feed below the freezing point, and bring them inside the property method's range; the limitations page lists the range of each method.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    out_of_domain, in INITIALIZATION_FAILED → initializer_failed (openflowsheet explain out_of_domain)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#out_of_domain
+```
 
 <a id="parameter_kind_unsupported"></a>
 
@@ -1462,13 +1490,26 @@ The solve stopped before its first iteration: unit 'T' could not compute its out
 
 <a id="pressure_rise"></a>
 
-## `pressure_rise`: Pressure rise
+## `pressure_rise`: A turbine outlet pressure above its inlet pressure
 
 **Kind:** Input problem: something in the flowsheet or the request needs to change.
 
-*No plain-language explanation is written yet; the summary is the technical one.*
+- **Summary:** The outlet pressure specified for unit &lt;unit&gt;, a &lt;machine&gt;, is above its inlet pressure (&lt;p_spec&gt; against &lt;p_inlet&gt;).
+- **Why:** A turbine expands the fluid that passes through it, so it can only lower the pressure. Raising the pressure takes a pump or a compressor.
+- **Do:** Give the &lt;machine&gt; &lt;unit&gt; an outlet pressure at or below its inlet pressure of &lt;p_inlet&gt;, or raise the pressure upstream of it (for example a pump's outlet pressure).
+- **Parameters:** `machine` (text), `unit` (unit, optional), `p_spec` (quantity, optional), `p_inlet` (quantity, optional)
 
-- **Summary:** Refused: pressure rise.
+Example:
+
+```text
+The solve stopped before its first iteration: unit 'T' could not compute its outlets from the starting values.
+  Cause:   The outlet pressure specified for unit 'T', a turbine, is above its inlet pressure (5000000 Pa against 3000000 Pa).
+  Why:     A turbine expands the fluid that passes through it, so it can only lower the pressure. Raising the pressure takes a pump or a compressor.
+  Do:      Give the turbine 'T' an outlet pressure at or below its inlet pressure of 3000000 Pa, or raise the pressure upstream of it (for example a pump's outlet pressure).
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    pressure_rise, in INITIALIZATION_FAILED → initializer_failed (openflowsheet explain pressure_rise)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#pressure_rise
+```
 
 <a id="project_exists"></a>
 
@@ -1955,13 +1996,27 @@ Directory 'plant' is not empty: it already holds a project, and create() needs a
 
 <a id="task_unsupported"></a>
 
-## `task_unsupported`: Task unsupported
+## `task_unsupported`: Validation for a task this version does not check
 
 **Kind:** Not supported in this version: a limitation of OpenFlowsheet, not an error in your flowsheet.
 
-*No plain-language explanation is written yet; the summary is the technical one.*
+- **Summary:** This version cannot validate a revision for the "&lt;task&gt;" task; it validates for simulation only.
+- **Why:** Validating for optimization would mean checking an optimization formulation (objective, decision variables and their bounds). This version checks none, so it refuses rather than report a revision ready for a task it has not checked.
+- **Do:** Validate with the task "simulation" (openflowsheet validate --task simulation, or task "simulation" in the request).
+- **Parameters:** `task` (text)
+- **Not supported:** missing capability: validation of an optimization formulation (task "optimization")
+- **See also:** [`unsupported`](api-errors.md#unsupported)
 
-- **Summary:** Refused: task unsupported.
+Example:
+
+```text
+This version cannot validate a revision for the "optimization" task; it validates for simulation only.
+  Why:     Validating for optimization would mean checking an optimization formulation (objective, decision variables and their bounds). This version checks none, so it refuses rather than report a revision ready for a task it has not checked.
+  Do:      Validate with the task "simulation" (openflowsheet validate --task simulation, or task "simulation" in the request).
+  Kind:    Not supported in this version: a limitation of OpenFlowsheet, not an error in your flowsheet.
+  Code:    task_unsupported, in unsupported (openflowsheet explain task_unsupported)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#task_unsupported
+```
 
 <a id="tear_path_unsupported"></a>
 

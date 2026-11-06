@@ -56,13 +56,25 @@ The checks of a validation report (`checks[].id`), each `PASS`, `FAIL`, `WARN` o
 
 <a id="DIM-01"></a>
 
-## `DIM-01`: Dim 01
+## `DIM-01`: Every specification and parameter has a unit its kind accepts
 
 **Kind:** Input problem: something in the flowsheet or the request needs to change.
 
-*No plain-language explanation is written yet; the summary is the technical one.*
+- **Summary:** A specification or parameter has a unit that its kind (temperature, pressure, flow, ...) does not accept.
+- **Why:** Each specification and parameter declares a quantity kind and a unit, and validation accepts only the units listed for that kind, spelled exactly: unit symbols are case-sensitive, so a temperature takes "degC" but not "degc".
+- **Do:** Read the check's message: it names the specification or parameter and the units its kind accepts. Correct the unit's spelling, or give the value in one of the accepted units.
+- **See also:** [`revision_not_ready`](api-errors.md#revision_not_ready)
 
-- **Summary:** Validation check DIM-01 did not pass.
+Example:
+
+```text
+A specification or parameter has a unit that its kind (temperature, pressure, flow, ...) does not accept.
+  Why:     Each specification and parameter declares a quantity kind and a unit, and validation accepts only the units listed for that kind, spelled exactly: unit symbols are case-sensitive, so a temperature takes "degC" but not "degc".
+  Do:      Read the check's message: it names the specification or parameter and the units its kind accepts. Correct the unit's spelling, or give the value in one of the accepted units.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    DIM-01, in revision_not_ready (openflowsheet explain DIM-01)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/checks/#DIM-01
+```
 
 <a id="GRAPH-01"></a>
 
