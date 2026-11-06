@@ -388,8 +388,9 @@ whichever regime is declared.
 - *A block that selects its own phase set.* The residual would change mid-attempt, against ADR 0005 D3.
 
 **Foundation:** F5. **ADR:** ADR-F5. It amends ADR 0005 (count lattice, `relabel` record, discrete-coordinate product),
-ADR 0051 D1 and ADR 0012 for v2 documents; it adds a `SolvePolicy` value and reshapes `SolutionCertificate.phase_branch`
-and `phase_stability` (claim level, witness, trial-set id, both unsupported reasons).
+ADR 0051 D1 and ADR 0012 for v2 documents; it adds a `SolvePolicy` value and an optional `SolutionCertificate.phase_report`
+(claim level, witness, trial-set id, both unsupported reasons; ADR 0064), leaving `phase_branch` and `phase_stability`
+as they are.
 
 **Migration proof.** F0 PASS, and *decision equivalence*: every corpus case is re-run under the new value with
 two-candidate points; the attempt and event sequence, the signatures and the floats are bitwise identical; only the
@@ -1160,11 +1161,11 @@ The stage-3 questions are answered; their defaults are replaced by the rulings, 
 | Q2 Reference | `ELEMENTAL-ref-v1`, anchors, entropy and component data, bridge, default anchor, entropy datum (R1–R10) | §2.3.6 |
 | Q3 Electrolyte basis | Conserved groups (A, R, z), presets, M_g (R1–R7) | §2.1.5, §2.2.9 |
 | Q4 Labels | Triple, prefix and count lattice, exact order, flags, relabel, FLUID, confined phases (R1–R8); the character decides a lone fluid phase's outlet (R9) | §2.1.6, §2.2.2–3, §2.4.13 |
-| Q5 Stability | Trial set, τ_tm, claims, witnesses, inactive outputs, ι_p (R1–R8) | §2.2.1, §2.2.6–8 |
+| Q5 Stability | Trial set, τ_tm, claims, witnesses, inactive outputs, ι_p (R1–R11) | §2.2.1, §2.2.6–8 |
 | Q6 Attributes | Extensive; partition rule; zero flow; grids; τ_mono (R1–R5) | §2.1.4 |
 | Q7 Amount bases | Per record; per-amount meaning; distinct kinds (R1–R5) | §2.1.5, §2.3.1 |
 | Q8 Solids | Kinetic criterion; exclusive role; substream dormancy; adsorption (R1–R7) | §2.1.3 |
-| Q9 Records | Types, identity, rights register, provenance axes, evidence (R1–R7) | §2.3.1, §2.7 |
+| Q9 Records | Types, identity, rights register, provenance axes, evidence (R1–R8) | §2.3.1, §2.7 |
 
 **Inputs still open,** each with the ADR it gates and a proposed default. A1-a, A1-b, S5 and the two F7 holdup items
 are ruled by Amendment 2 (rulings §14) and no longer listed:
