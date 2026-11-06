@@ -126,3 +126,62 @@ Each entry gives the date, the question, the choice, who made it and where it is
 - **2026-11-06** RP WO-R2/R3 done on `wp/RP` (fdc4f9a0, aa73d933, 2bac7fa9): REL.A01–A10 pass (A03 limited to the
   fixture comparison at this checkout); F0 PASS. Questions Q-B1…Q-B5 batched for the reviewer. Next: WO-R6 + WO-R4
   (brief `docs/briefs/REL-build-WO-R4-R6.md`), including one `release_rc` dispatch on `wp/RP` for REL.A17/N-4.
+
+## 2026-11-06 — RP WO-R4/R6 hand-back; WO-R6 split
+
+The WO-R4/R6 engineer stopped at the context cap: WO-R4 done (REL.A17 17/17; dispatch 42156856877 success, `check`
+skipped, 8 RC jobs green; push 42156850745 `check` green both legs with `junit-<arch>`), `wheel_data_check.py` PASS
+11/11, RP.L01–L10 PASS, full gate PASS 14995 at `bd672ff7`. Choices C-1…C-8, questions Q-C1 (`release-audit` in ADR
+0055's WO-R4 row vs RP's D2 deferral), Q-C2 (junit evidence from the push run) go to the RP reviewer batch.
+DECISION: rest of WO-R6 → two fresh engineers in sequence: WO-R6b (`release_rc.py` local steps 2–7, 9–16) then WO-R6c
+(`release_evidence_manifest.py`, REL.A20, evidence manifest, gate). Alternative: one engineer for both (would overrun the
+cap again). Reversible by: merging the two briefs.
+
+## 2026-11-06 — MSG WO-9/10 done; review launched
+
+`wp/MSG` head `8d955cd7` (pushed): WO-9 corpus + seven catalogue entries, WO-10 web shell; manifest
+`evidence/MSG/b1a82351…` `implemented` (blocked on the `explain.md` reviews, D7-8, and D9-10). Full suite at `b1a82351`:
+1 failed (description reviews, by design), 15065 passed. MSG-G0 (c) FAIL 156/109, all from F0's later v0.3.0 replay
+fixtures (D9-10). Reviewer brief `docs/briefs/MSG-reviewer.md` (`4ddc2fb7`) batches nine questions incl. the WO-5 route
+under F0 M9, D9-2, D9-10, gate changes, A5-a. RP WO-R6b done (`596dee3a`); WO-R6c engineer running.
+
+## 2026-11-06 — MSG review (`2aee6dd3`) → WO-11/12
+
+Not merge-ready: M1 (≈60 required entries still stubs), M2 (`pressure_rise` says turbine for valves), M3 (MSG-G0 must
+PASS: F0 replaces (a)/(c)), M4 (missing gate records), M5 (explain.md: design lane approved with two edits; Frank's
+review still blocks), M6 (c_4 register entry), M7 (WO-5a). Q1: sidecar at `revision_flowsheet.py:1029-1034` outside
+M9; C01's main numbers deferred to F6 v2. Q2/Q3/Q4/Q6 as the engineer's defaults; D4-1 overruled; A5-a is the
+verifier's.
+DECISION: WO-5a (M7) before merge → yes. Alternative: merge with strict xfails, WO-5a after. Reversible by: reverting
+WO-5a's commits.
+DECISION: M1 → complete all required entries, no declared-stub limitation. Alternative: ship stubs declared (Frank's
+call). Reversible by: Frank's late answer.
+Brief `docs/briefs/MSG-build-WO11-12.md`.
+
+## 2026-11-06 — MSG WO-11 done (`bc3ecf8b`)
+
+WO-5a sidecar (outside M9), M2, Q2, Q6, Q7, S1–S4; C01 action, C02/C11 numbers, C06–C08/C10 codes lifted; 3 xfails
+remain (C01 numbers → F6 v2; C08 "degc", C10 instance B need the revision at render time). F0 PASS; MSG-G0 a 0, b 0/562.
+DECISION: render errors from the error document alone (C08/C10 stay declared gaps) → yes. Alternative: load the revision
+at render time. Reversible by: a later MSG change adding revision context.
+DECISION: `worker_lost`/`owner_lost`/`store_error` keep kind `bug` with specific actions. Alternative: an `environment`
+kind (closed schema → ADR 0058 amendment). Reversible by: that amendment.
+Next: WO-12 (M1, M3, M4, M6; full gate; manifest). R-942's number re-checked at the merge.
+
+## 2026-11-06 — RP WO-R6c done (`05e3e069`); review launched
+
+`release_evidence_manifest.py`: REL.A20 FAIL as RP states it (RP.S18 "every other check passes" sees changed-form
+fails; Q-C5). Full gate at `3e7ccf00`: 29 fail + 1 error, all browser smoke under load (alone 31 pass). Manifest
+`evidence/S15/3e7ccf00…` `implemented` (schema refuses `RP` and `REL040`, Q-C6). Reviewer brief
+`docs/briefs/RP-reviewer.md` batches F-1…F-3, Q-1…Q-15, gates[*], ADR 0055 acceptance restatement, Q-B*, Q-C1…C6.
+
+## 2026-11-06 — RP review (`d1b4a593`) → WO-R7
+
+RP sound once amended (A-1…A-8). Must-fix: M-1 standing-mode decision items unpinned (mutation passed 40/40), M-2
+REL.A20 via A-1 (S18 to changed form), M-3 ADR 0055 restated acceptance. Before K3: schema ADR for `REL[0-9]{3,}`;
+ADR 0055 Accepted on the restated condition. Should-fix S-1…S-7.
+DECISION: fold S-1…S-5, S-7 and C-12's check into WO-R7 now; S-6 (rehearse never-run steps) as a pre-K3 task.
+Alternative: all should-fix at the cut. Reversible by: dropping those commits.
+DECISION: F-8 (up to two messages to Frank per release, ADR D5 says one) → keep two, first only when non-empty (reviewer's
+recommendation), asked of Frank. Reversible by: Frank's answer + an RP amendment.
+Brief `docs/briefs/REL-build-WO-R7.md`.

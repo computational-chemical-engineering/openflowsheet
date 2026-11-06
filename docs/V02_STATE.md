@@ -117,8 +117,15 @@ Am. 1–2). Foundations F0–F8 are designed in wave W1 during 0.4, then built i
   of F0 D17–D23.
 - **F0: MERGED** into main `97f07dce` (CI 42119225468 green both archs; gate PASS eba4bcb4). Every merge now runs
   `scripts/corpus_identity.py --check`. D20 open: TH-C2 CoolProp case once the host has the coolprop extra.
-- **MSG** (`wp/MSG`): WO-0…4, 6 done; WO-7/8 engineer running; then WO-5 (own engineer), WO-9, WO-10, evidence
-  manifest, reviewer (batched questions in `docs/MSG_DECISIONS.md`), merge after gate + CI + F0 check.
+- **MSG** (`wp/MSG`): WO-0…4, 6, 7, 8 done; WO-9/10 engineer running (gate, manifest, push). **WO-5 parked**: its
+  files are frozen by F0 M9 (R-940); redesign goes to MSG's reviewer pass (WO-9 C01/C02 strict xfails). Then reviewer
+  (batched questions in `docs/MSG_DECISIONS.md`, incl. A5-a), Frank's `explain.md` review, merge after gate + CI + F0.
+- **ST** (`wp/ST`, ADR 0068 Proposed, Am. 13): WO-1/2 done (`dff3e439`, `docs/ST_HANDOFF.md`); WO-3…7 wait for
+  wp/MSG's merge (registry entry). G8 T05b:SC-1 strict xfail (E1 for ST's reviewer).
+- **RP** (ADR 0055 parts 1–3, `wp/RP`): WO-R1 RP doc on main (`6714958d`); WO-R2/R3 done (REL.A01–A10 PASS, A03 on
+  the 17 fixtures); WO-R6/R4 engineer running (brief `docs/briefs/REL-build-WO-R4-R6.md`). Then one reviewer pass over
+  R1–R6 (F-1…F-3, Q-*, Q-B*, gates[*]); ADR 0055's acceptance restated for the D2 deferral.
+- **Await Frank** (`docs/FRANK_QUESTIONS.md`): ADR 0068 acceptance, Q-11 (licence acceptance rows), `explain.md`.
 - Host load ~50 from other users: wall-time budget tests flaky (re-run alone).
 **Next actions for 0.4 (roadmap §0.4; at most 2 agents at a time):**
 1. **Wave 1: done** (MSG architect pass, W1 specifier, P1–P3, reviews; W1 closed R-941).
