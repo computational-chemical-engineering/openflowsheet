@@ -26,9 +26,10 @@ Step 18 (`scripts/release_gate.py --line <l> --rc C`) is not run or judged here 
 RP.S08's R part, RP.S16 (b) and RP.S18 (b) are judged from its output in the build log.
 
 `--rel-a20 S13-MANIFEST` is REL.A20 (§11.2): the same generator over 0.3.0's committed records
-(`--line 0.3 --commit a3e508e3…`), whose thirteen same-form assertions must each have the status
-S13's manifest gives its counterpart, and whose nine changed-form ones are decided and listed with
-the reason for their exclusion. Only in that mode may this checkout's trees differ from C's.
+(`--line 0.3 --commit a3e508e3…`), whose twelve same-form assertions must each have the status
+S13's manifest gives its counterpart, and whose ten changed-form ones are decided and listed with
+the reason for their exclusion; RP.S18's failures must all be changed-form ones (amendment
+A-1). Only in that mode may this checkout's trees differ from C's.
 
 Status is `tested` iff every check is `pass`; otherwise `implemented`. `reviewed` is never set.
 
@@ -158,9 +159,8 @@ SPECS: tuple[Spec, ...] = (
     ),
 )
 #: §11.2's two lists, as RP states them; `catalogue()` checks them against §11.1's text.
-SAME_FORM = ("S02", "S03", "S04", "S06", "S08", "S09", "S11", "S12", "S14", "S16", "S18", "S19")
-SAME_FORM += ("S22",)
-CHANGED_FORM = ("S01", "S05", "S07", "S10", "S13", "S15", "S17", "S20", "S21")
+SAME_FORM = ("S02", "S03", "S04", "S06", "S08", "S09", "S11", "S12", "S14", "S16", "S19", "S22")
+CHANGED_FORM = ("S01", "S05", "S07", "S10", "S13", "S15", "S17", "S18", "S20", "S21")
 #: §11.2: where each changed-form assertion's own acceptance is.
 ACCEPTED_ELSEWHERE = {
     "S01": "RP.L01-L10 and REL.A01-A02",
@@ -171,6 +171,8 @@ ACCEPTED_ELSEWHERE = {
         i: "its fixtures in WO-R6's tests (a passing record and one control per changed rule)"
         for i in ("S10", "S13", "S17", "S20", "S21")
     },
+    "S18": "the generator's fixtures (every other check passes: pass; one fails: fail; zero "
+    "commands: fail); its comparable part is A-1's sub-check below",
 }
 _ITEM = re.compile(r"^- \*\*RP\.(S\d\d)\*\* \(([A-Z, ]+)\)\. ")
 
@@ -791,7 +793,8 @@ def build(inputs: Inputs, commands: Sequence[Mapping[str, Any]] = ()) -> dict[st
 def rel_a20(manifest: Mapping[str, Any], s13_manifest: Mapping[str, Any]) -> tuple[bool, list[str]]:
     """§11.2: each same-form assertion has its counterpart's status in S13's manifest (RP.S22's
     counterpart is a test, not a check of that manifest: its status is RP's stated `pass`); each
-    changed-form one is listed with its status and the reason for its exclusion."""
+    changed-form one is listed with its status and the reason for its exclusion. Amendment A-1:
+    RP.S18's `not_pass` lies within the changed-form assertions, and commands were run."""
     listed = catalogue()
     theirs = {entry["id"]: entry["result"] for entry in s13_manifest["checks"]}
     ours = {entry["id"]: entry["result"] for entry in manifest["checks"]}
@@ -811,6 +814,15 @@ def rel_a20(manifest: Mapping[str, Any], s13_manifest: Mapping[str, Any]) -> tup
             f"RP.{key} changed form: {ours[f'RP.{key}']}; excluded from the equality (§11.2), "
             f"accepted by {ACCEPTED_ELSEWHERE[key]}"
         )
+    (own,) = [entry for entry in manifest["checks"] if entry["id"] == "RP.S18"]
+    said = own["value"]["self"]
+    outside = [i for i in said["not_pass"] if i.removeprefix("RP.") not in CHANGED_FORM]
+    holds = not outside and said["commands"] > 0
+    equal = equal and holds
+    lines.append(
+        f"RP.S18 (A-1): not_pass {len(said['not_pass'])}, outside the changed form "
+        f"{outside or 'none'}; commands {said['commands']}: " + ("holds" if holds else "FAILS")
+    )
     return equal, lines
 
 

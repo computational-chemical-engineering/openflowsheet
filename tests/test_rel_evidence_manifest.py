@@ -268,9 +268,10 @@ def test_the_ci_fixtures_are_the_runs_s13_read() -> None:
 
 
 def test_rel_a20_over_0_3_0s_committed_records(tmp_path: Path) -> None:
-    """The generator over 0.3.0's records: every same-form assertion but RP.S18 has S13's `pass`.
-    RP.S18 (every other check passes) differs, and only through changed-form assertions, which
-    cannot pass over 0.3.0's records by construction (Q-C5 in docs/RP_DECISIONS.md)."""
+    """REL.A20 (RP §11.2 with amendment A-1): the generator over 0.3.0's records gives every
+    same-form assertion S13's `pass`, and RP.S18 fails only through changed-form assertions, which
+    cannot pass over 0.3.0's records by construction. Controls: a same-form check that fails, the
+    same with S13's counterpart failing too (A-1's sub-check alone), and zero commands."""
     command = [
         sys.executable,
         str(ROOT / "scripts" / "release_evidence_manifest.py"),
@@ -297,7 +298,7 @@ def test_rel_a20_over_0_3_0s_committed_records(tmp_path: Path) -> None:
     assert not [line for line in lines if line.startswith("invalid:")], completed.stdout
     for key in rem.SAME_FORM:
         (said,) = [line for line in lines if line.startswith(f"RP.{key} same form: ")]
-        assert said.endswith(": equal") == (key != "S18"), said
+        assert said.endswith(": equal"), said
     for key in rem.CHANGED_FORM:
         assert any(line.startswith(f"RP.{key} changed form: ") for line in lines)
     manifest = json.loads((tmp_path / "manifest.json").read_text(encoding="utf-8"))
@@ -307,4 +308,50 @@ def test_rel_a20_over_0_3_0s_committed_records(tmp_path: Path) -> None:
     assert not_pass and {i.removeprefix("RP.") for i in not_pass} <= set(rem.CHANGED_FORM)
     assert results["RP.S20"] == "pass"  # 0.3.0's n = 190 meets n >= 1
     assert results["RP.S13"] == "unsupported"  # the 0.3 line has no rc_items
-    assert lines[-1] == "REL.A20: FAIL" and completed.returncode == 1
+    assert any(line.startswith("RP.S18 (A-1): ") and line.endswith(": holds") for line in lines)
+    assert lines[-1] == "REL.A20: PASS" and completed.returncode == 0, completed.stdout
+    s13 = json.loads((S13 / "manifest.json").read_text(encoding="utf-8"))
+    assert rem.rel_a20(manifest, s13)[0] is True
+    assert rem.rel_a20(*_same_form_fails(manifest, s13, counterpart="pass"))[0] is False
+    equal, said = rem.rel_a20(*_same_form_fails(manifest, s13, counterpart="fail"))
+    assert equal is False and said[-1].endswith("FAILS") and "RP.S02" in said[-1]
+    assert [ln for ln in said if ln.startswith("RP.S02 ")] == [
+        "RP.S02 same form: fail; S13 V03.A02 fail: equal"
+    ]
+    no_commands = json.loads(json.dumps(manifest))
+    (own,) = [entry for entry in no_commands["checks"] if entry["id"] == "RP.S18"]
+    own["value"]["self"]["commands"] = 0
+    assert rem.rel_a20(no_commands, s13)[0] is False
+
+
+def _same_form_fails(
+    manifest: Mapping[str, Any], s13: Mapping[str, Any], *, counterpart: str
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    """REL.A20's control: RP.S02 (same form) fails, and RP.S18 says so; S13's counterpart of
+    RP.S02 is given `counterpart`."""
+    ours, theirs = json.loads(json.dumps(manifest)), json.loads(json.dumps(s13))
+    for entry in ours["checks"]:
+        if entry["id"] == "RP.S02":
+            entry["result"] = "fail"
+        if entry["id"] == "RP.S18":
+            entry["value"]["self"]["not_pass"].append("RP.S02")
+    for entry in theirs["checks"]:
+        if entry["id"] == rem.catalogue()["S02"].counterpart:
+            entry["result"] = counterpart
+    return ours, theirs
+
+
+def test_s18_the_generator_s_own_rule(tmp_path: Path) -> None:
+    """RP.S18 (a)'s own acceptance (A-1): every other check passes and commands were run gives
+    `pass`; one check failing, or zero commands, gives `fail`."""
+    others = [{"id": f"RP.S{n:02d}", "result": "pass"} for n in (1, 2, 3)]
+
+    def decided(entries: list[dict[str, Any]], commands: int) -> str:
+        own: dict[str, Any] = {"id": "RP.S18", "result": "pass", "value": {}}
+        rem._self(own, entries, _inputs(tmp_path, commands=commands))
+        return str(own["result"])
+
+    assert decided(others, 3) == "pass"
+    assert decided([*others[:2], {"id": "RP.S03", "result": "fail"}], 3) == "fail"
+    assert decided([*others[:2], {"id": "RP.S03", "result": "unsupported"}], 3) == "fail"
+    assert decided(others, 0) == "fail"
