@@ -87,3 +87,8 @@ Each entry gives the date, the question, the choice, who made it and where it is
   for v2-compiled revisions only. Alternative: gate lowering too and re-base ADR 0062's lowering fixtures. Reversible
   by: ADR 0065 D17. M4's ≥2-FLUID-phase routing takes the reviewer's default, recorded as SQ-F6-5 for the next
   specifier round (does not block the freeze). Edits applied by one engineer pass.
+- **2026-11-06** W1 closed (R-941, 97fe738a); note Revision 3 (31520fea, 6e9d62bc). F0 merged (97f07dce). DECISION
+  (orchestrator): ST starts with a recon digest and one short architect pass, because a stream-table operation on all
+  four transports is an addition to the frozen application contract (an ADR 0019 amendment, design lane), although the
+  roadmap lists ST as needing no design pass. Alternative: build lane designs the operation and the reviewer checks it.
+  Reversible by: dropping the architect pass if the recon shows an existing operation can carry the table additively.
