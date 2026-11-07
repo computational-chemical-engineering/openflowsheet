@@ -260,3 +260,11 @@ reviewer rules whether `child_warm.py` stays in `src/` unregistered or leaves th
 kept as evidence). Alternative: register with a manifest note / raise the floor. Reversible by: registering later with
 the handoff's commands.
 Next: the single X02 reviewer pass (WO-1…5 + batched questions), then WO-6 close-out (fixes, full gate, manifest).
+
+## 2026-11-07 — X02 review (`a7139dee`) → WO-6
+
+Sound for identity; no code defect (reviewer re-ran 88 + 294 tests; cold coupled run main vs branch: 9 artifacts + R0
+identical). Must-fix: M-1 (note/ADR still promise the warm variant; amendments A-1…A-9), M-2 (recovery-edges E9
+`enabled: default`). Ruling 1: the warm variant leaves the package (child_warm.py, tests, provisional variant, campaign
+script); evidence and WO-4 plumbing stay. S-1…S-4 incl. S-2 G5d on v3 (~10 reactor calls). Register: R-950 for c_4;
+second of X02/MSG to merge renumbers. Do not squash (evidence pins 69c4a24d, 005d206f). WO-6 engineer launched.
