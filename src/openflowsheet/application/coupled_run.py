@@ -66,7 +66,11 @@ from openflowsheet.orchestrator.execution import PlanRefusal, declaration_identi
 from openflowsheet.orchestrator.executor import PlanResult, execute_plan
 from openflowsheet.orchestrator.revision import plan_revision
 from openflowsheet.orchestrator.trace import SolvePolicy, Trace
-from openflowsheet.orchestrator.warm_start import WarmStartCandidate
+from openflowsheet.orchestrator.warm_start import (
+    WARM_START_SOURCE,
+    WarmStartCandidate,
+    WarmStartRecord,
+)
 from openflowsheet.resources import packaged
 from openflowsheet.run import solution_state
 from openflowsheet.run.compare import KIND_FLOOR, differences, floored_difference
@@ -657,6 +661,11 @@ class CoupledSolve:
     inner: InnerRun
     #: `external-coupling.json`.
     record: Mapping[str, Any]
+    #: X02 Part C (design note D9, §5.4): the warm-start record of the coupling's k = 0 inner run,
+    #: the only one that reads the candidate; `None` when that run did not consult the source (or
+    #: its plan was refused). The last inner run started from a `user_start` whenever K ≥ 1, so
+    #: its own record is not this one.
+    initial_warm: WarmStartRecord | None = None
 
 
 def solve_coupled(
@@ -670,15 +679,19 @@ def solve_coupled(
 ) -> CoupledSolve:
     """The outer coupling of `binding`'s external units (§4.3). `warm_start` is the route's
     source-2 candidate, read by the k = 0 inner solve only (under a policy whose chain names it);
-    `trace` (the job's) receives every inner solve's events."""
+    `trace` (the job's) receives every inner solve's events. The k = 0 inner solve's warm-start
+    record is kept on the result (`initial_warm`), and that solve is labelled
+    `compatible_warm_start` when it opened from the candidate (X02 Part C)."""
     units = external_units(binding)
     if not units:
         raise CouplingUnsupportedError("no_external_unit")
     block, block_document = coupling_block(units)
     by_id = {unit.unit_id: unit for unit in units}
     unit_variants = {unit.unit_id: unit_variant(unit) for unit in units}
+    initial_warm: WarmStartRecord | None = None
 
     def solve_inner(w: Mapping[str, tuple[float, float]], start: Any) -> InnerSolve:
+        nonlocal initial_warm
         bound = at_coupling(binding, w)
         inner_trace = Trace()
         label = "route_initializer" if start is None else "user_start"
@@ -686,6 +699,8 @@ def solve_coupled(
         try:
             plan, report = plan_revision(bound, policy, trace=inner_trace)
             if isinstance(plan, PlanRefusal):
+                if start is None:
+                    initial_warm = None
                 payload = InnerRun(bound, plan, report, None)
                 return InnerSolve(
                     str(plan.outcome), None, {}, None, label, constants, None, payload
@@ -699,6 +714,11 @@ def solve_coupled(
                 user_start=start,
                 warm_start=warm_start if start is None else None,
             )
+            if start is None:
+                # X02 Part C: the k = 0 record, and the label of a start the candidate gave.
+                initial_warm = run.warm_start
+                if initial_warm is not None and initial_warm.status == "accepted":
+                    label = WARM_START_SOURCE
         finally:
             if trace is not None:
                 trace.extend(inner_trace.events)
@@ -747,7 +767,7 @@ def solve_coupled(
         "outcome": coupling.outcome,
         "reason": coupling.reason,
     }
-    return CoupledSolve(coupling, units, coupling.final.payload, record)
+    return CoupledSolve(coupling, units, coupling.final.payload, record, initial_warm)
 
 
 # -- the certificate's evidence (§4.4) -------------------------------------------------------------

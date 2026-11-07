@@ -94,7 +94,7 @@ from openflowsheet.orchestrator.executor import PlanResult, execute_plan
 from openflowsheet.orchestrator.region import RegionResult
 from openflowsheet.orchestrator.revision import plan_revision
 from openflowsheet.orchestrator.trace import SolvePlan, SolvePolicy, Trace
-from openflowsheet.orchestrator.warm_start import WarmStartCandidate
+from openflowsheet.orchestrator.warm_start import WarmStartCandidate, WarmStartRecord
 from openflowsheet.resources import packaged
 from openflowsheet.run import solution_state
 from openflowsheet.run.bundle import read_artifact, read_manifest, verify_bundle, write_bundle
@@ -459,6 +459,9 @@ class RouteRun:
     coupled_outcome: str | None = None
     #: `revision_coupled` only: the run's reproducibility class (§7.2), else the flowsheet's.
     reproducibility_class: str | None = None
+    #: `revision_coupled` only (X02 Part C): the warm-start record of the coupling's k = 0 inner
+    #: run, which `solve-path.json` carries in place of the last inner run's.
+    initial_warm: WarmStartRecord | None = None
 
     @property
     def outcome(self) -> str:
@@ -717,6 +720,7 @@ def _solve_coupled(
         "reproducibility_class": reproducibility_class(
             solved.units, _reproducibility_class(inner.binding.flowsheet)
         ),
+        "initial_warm": solved.initial_warm,
     }
     if isinstance(inner.plan, PlanRefusal):  # at k = 0: the plan's own outcome, passed through
         return replace(_refused_plan(final, inner.plan, inner.report), **extra)
@@ -802,7 +806,8 @@ def run_revision_session(
     `warm_start`, `experiments` and `on_iteration` are `solve_route`'s; `stage` is also called at
     the start of `bundle`. A `revision_coupled` bundle is the final inner solve's, plus
     `external-coupling.json` (ADR 0034 D6).
-    `solve-path.json` gains `warm_start` (ADR 0024 D4) iff the solve consulted the source.
+    `solve-path.json` gains `warm_start` (ADR 0024 D4) iff the solve consulted the source (on
+    `revision_coupled`, the coupling's k = 0 inner solve, X02 Part C).
     """
     from openflowsheet.run.session import _numerical_policy_id, _reproducibility_class
 
@@ -834,7 +839,12 @@ def run_revision_session(
         "route_reason": route.reason,
         "policy_requested": policy_requested,
     }
-    warm = result.run.warm_start if result.run is not None else None
+    # X02 Part C: on `revision_coupled` the candidate is read by the k = 0 inner solve only, so
+    # the record is that solve's, whatever the coupling's number of outer iterations.
+    if route.solve_path == "revision_coupled":
+        warm = result.initial_warm
+    else:
+        warm = result.run.warm_start if result.run is not None else None
     if warm is not None:
         solve_path["warm_start"] = warm.as_document()
     artifacts: dict[str, Any] = {
