@@ -29,9 +29,11 @@ classification under `KKT_POINT_VERIFIED` > `NOT_VERIFIED` > `INFEASIBLE_REPORTE
 `SOLVER_FAILED`. Whether a solver is available is decided without importing one
 (`importlib.util.find_spec`), so the default install never loads Pyomo or cyipopt (gate G6).
 
-R-129 is unchanged: `Application.validate(…, task="optimization")` stays typed `unsupported`,
-because a `ProcessRevision` has no place to declare decisions, an objective or constraints
-(ADR 0032 D6). This closure is study-level; it is what an optimizer sits behind.
+OPT (ADR 0071 D8, design §4.11) lifts R-129: `Application.validate(…, task="optimization")`
+takes an optimization request (`studies/nlp/request.py`) and runs its static readiness. The
+reason table gains OPT's codes in design §4.5's places; M03's keep their relative order. The
+solver is available only on a platform the [A10] `PASS` covers (`AUDITED_PLATFORMS`). This
+closure is study-level; it is what an optimizer sits behind.
 """
 
 from __future__ import annotations
@@ -39,6 +41,8 @@ from __future__ import annotations
 import importlib
 import importlib.metadata
 import importlib.util
+import platform
+import sys
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
 from typing import Any, Final, Literal
@@ -92,11 +96,20 @@ NLP_LICENCES_ACCEPTED: Final = True
 #: The one module allowed to import Pyomo and cyipopt (WO-8), and the libraries it needs.
 ADAPTER_MODULE: Final = "openflowsheet.studies.nlp.greybox"
 NLP_LIBRARIES: Final = ("pyomo", "cyipopt")
+#: The platforms the [A10] `PASS` inventory covers (audit §1: linux x86-64; OPT design §2.7), as
+#: `running_platform()` spells them. Everywhere else the solver is unavailable, naming the platform.
+AUDITED_PLATFORMS: Final = ("linux-x86_64",)
 
 ReadinessCode = Literal[
+    "REVISION_MISMATCH",
+    "REVISION_UNBOUND",
+    "OPTIMIZATION_ROUTE_UNAVAILABLE",
     "UNKNOWN_DECISION",
+    "DECISION_UNIT_NOT_INTERNAL",
+    "DECISION_NOT_CONTINUOUS",
     "BOUNDS_UNDECLARED",
     "START_OUTSIDE_BOUNDS",
+    "TOO_MANY_STARTS",
     "DECISION_INCONSISTENT_WITH_ELIMINATED_ROWS",
     "UNKNOWN_VARIABLE",
     "ASSESSMENT_OUTPUT_UNKNOWN",
@@ -107,13 +120,22 @@ ReadinessCode = Literal[
     "SIMULATION_NOT_READY",
     "ASSESSMENT_REGIME_INADMISSIBLE",
     "ASSESSMENT_OBJECTIVE_UNSCALED",
+    "REGIME_MARGIN_UNDEFINED",
     "NLP_SOLVER_UNAVAILABLE",
 ]
-#: Spec §8.7's order, which is the order reasons are listed in.
+#: Spec §8.7's order, which is the order reasons are listed in, with OPT's codes (design §4.5,
+#: ADR 0071) where its table puts them; M03's codes keep their relative order, so a SYN-001
+#: report lists its reasons as before.
 READINESS_ORDER: Final[tuple[ReadinessCode, ...]] = (
+    "REVISION_MISMATCH",
+    "REVISION_UNBOUND",
+    "OPTIMIZATION_ROUTE_UNAVAILABLE",
     "UNKNOWN_DECISION",
+    "DECISION_UNIT_NOT_INTERNAL",
+    "DECISION_NOT_CONTINUOUS",
     "BOUNDS_UNDECLARED",
     "START_OUTSIDE_BOUNDS",
+    "TOO_MANY_STARTS",
     "DECISION_INCONSISTENT_WITH_ELIMINATED_ROWS",
     "UNKNOWN_VARIABLE",
     "ASSESSMENT_OUTPUT_UNKNOWN",
@@ -124,6 +146,7 @@ READINESS_ORDER: Final[tuple[ReadinessCode, ...]] = (
     "SIMULATION_NOT_READY",
     "ASSESSMENT_REGIME_INADMISSIBLE",
     "ASSESSMENT_OBJECTIVE_UNSCALED",
+    "REGIME_MARGIN_UNDEFINED",
     "NLP_SOLVER_UNAVAILABLE",
 )
 #: E01 review S1: the range of `|f(x₀)|` an objective naming an assessment output must lie in.
@@ -202,9 +225,20 @@ class SolverAvailability:
         }
 
 
-def audited_solver() -> SolverAvailability:
-    """The `nlp` extra's state, found without importing it (G6), and N1's licence acceptance."""
+def running_platform() -> str:
+    """The running platform as `AUDITED_PLATFORMS` names it: `<sys.platform>-<machine>`."""
+    return f"{sys.platform}-{platform.machine()}"
+
+
+def audited_solver(platform_id: str | None = None) -> SolverAvailability:
+    """The `nlp` extra's state, found without importing it (G6), N1's licence acceptance, and
+    whether the [A10] `PASS` covers the running platform (OPT design §2.7: linux x86-64 only).
+
+    `platform_id` defaults to `running_platform()`; a test names another to take the
+    platform-not-audited path on an audited machine. On an audited platform the detail is M03's,
+    byte for byte; elsewhere the platform's problem is appended, naming it."""
     versions = {name: _version(name) for name in ("ipopt", "cyipopt", "pyomo")}
+    running = running_platform() if platform_id is None else platform_id
     missing = [name for name in NLP_LIBRARIES if importlib.util.find_spec(name) is None]
     problems = []
     if missing:
@@ -215,6 +249,11 @@ def audited_solver() -> SolverAvailability:
         problems.append(f"the [A10] verdict is {AUDIT_VERDICT}")
     if not NLP_LICENCES_ACCEPTED:
         problems.append("the licences of the `nlp` extra's stack are not accepted (N1)")
+    if running not in AUDITED_PLATFORMS:
+        problems.append(
+            f"the platform {running} is not audited (the [A10] PASS covers "
+            f"{', '.join(AUDITED_PLATFORMS)})"
+        )
     if problems:
         return SolverAvailability(
             False,
