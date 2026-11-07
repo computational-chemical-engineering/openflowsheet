@@ -306,3 +306,30 @@ produced them. The design-lane ruling round is folded into OPT's single `reviewe
   hashes); OPT-A1/A2/A2b/N1 reports (wall times blanked) identical base vs head (`8e986126…`).
   Alternative: one gray box per block (Pyomo would see several external models; the Ipopt problem changes).
   Reversible by: the D-31 commit.
+- D-32. DECISION (supersedes D-26): E01's binding on the revision host → `revision._bind_assessment` after every
+  start's certify + Q3: at the first start that passes, `AssessmentProgram.build(view_of(host.bound_flowsheet(point)),
+  point.spec, load_assessment(request.assessment), state)` (regime by the rule there, default contributors) and
+  `AssessmentBinding.at(program, named outputs, state)` (scales `max(|y|, 1)` there). A start where the program cannot be
+  planned (`Refusal`) or a named output cannot be evaluated does not pass (`START_NOT_CERTIFIED(<k>, <code>)`; the next
+  passing start is tried). Program-wide checks (`ASSESSMENT_PARAMETER_STRUCTURAL`/`_DECISION`, `ASSESSMENT_OUTPUT_
+  UNKNOWN`/`_UNAVAILABLE`; M03's closure functions) → `UNSUPPORTED` with those reasons, no Ipopt import; per-start
+  checks (`ASSESSMENT_REGIME_INADMISSIBLE`, `ASSESSMENT_OBJECTIVE_UNSCALED`) fail each passing start they find, the
+  planning start included. A request whose expressions name no `assessment:<id>` is not bound (its assessment unused).
+  The report's `formulation.assessment` is E01's `assessment_record` (closure at the planning start, candidate's active
+  rows). `request_problems` needs no change: `load_assessment` checks only canonical form and schema, both already the
+  request's. Alternative: plan the program at every start (scales would differ per start; E01 fixes one per
+  formulation). Reversible by: the D-32 commit.
+- D-33. DECISION: the assessment benchmark of WO-4b → **OPT-C0** = OPT-A1 with `assessment:opex.total` (one LPS heating
+  utility, 8 USD/GJ, 8000 h/yr, U_heating 800) scaled by α·Q_s, α = 8e-9·8000·3600 = 0.2304 USD/(W·yr) by hand in
+  `analytic.py`, so Q*, λ* are A1's and opex* = α·Q* = 2073.6. Bound-active (the area-floor admissibility row of the
+  exchanger would bind an interior A2-type case at Q ≈ 2700 W). The interior cost case (golden section, G19) and LCA
+  (G20) stay WO-7's. Reversible by: the files.
+- AUDITED-ENV record test (§4.8): `test_the_record_holds_every_starts_files_by_hash` on OPT-A2's record.
+
+### Gates (WO-4b, 2026-11-07, TRS2)
+
+- OPT-C0 (audited env): `KKT_POINT_VERIFIED`, 7 iterations; Q = 9000.000000090908 vs Q* = 9000 (rel 1.0e-11 ≤ 1e-7);
+  λ = 0.03 vs 0.03; opex(V6, float path) = 2073.6000000209456 = α·Q exactly (rel 0.0 ≤ 1e-9), vs opex* 2073.6 rel
+  1.0e-11; V7 pass; binding scale α·10500 = 2419.2. Refusals (default env): `assessment:tac` → `UNSUPPORTED
+  ASSESSMENT_OUTPUT_UNAVAILABLE`; `assessment:opex.NOPE` → `ASSESSMENT_OUTPUT_UNKNOWN`; scale 1 → `SIMULATION_NOT_READY`
+  `START_NOT_CERTIFIED(0, ASSESSMENT_OBJECTIVE_UNSCALED)`.

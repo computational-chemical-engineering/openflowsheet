@@ -8,6 +8,7 @@ import json
 import subprocess
 import sys
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Any
 
 import pytest
@@ -68,7 +69,7 @@ def test_the_analytic_expectations_and_requests_are_current() -> None:
     assert result.returncode == 0, result.stdout + result.stderr
 
 
-@pytest.mark.parametrize("case", ["OPT-A1", "OPT-A2", "OPT-A2b", "OPT-N1"])
+@pytest.mark.parametrize("case", ["OPT-A1", "OPT-A2", "OPT-A2b", "OPT-C0", "OPT-N1"])
 def test_the_benchmark_flowsheets_bind_on_revision_eo(case: str) -> None:
     document, _ = _case(case)
     assert getattr(select_route(document), "solve_path", None) == "revision_eo"
@@ -183,3 +184,77 @@ def test_an_ill_formed_request_is_an_error_not_a_report() -> None:
     document, request = _case("OPT-A1")
     with pytest.raises(ValueError, match="request_invalid"):
         _optimize(document, {**request, "decisions": []}, None, AVAILABLE)
+
+
+# -- the assessment binding at the first passing start (D-18, D-26, D-32) ----------------------
+
+
+def _c0(objective: dict[str, Any] | None = None, **extra: Any) -> tuple[Any, dict[str, Any]]:
+    document, request = _case("OPT-C0")
+    if objective is not None:
+        request = {**request, "objective": {**request["objective"], **objective}}
+    return document, {**request, **extra}
+
+
+def _named(output: str) -> dict[str, Any]:
+    return {"expression": {**_c0()[1]["objective"]["expression"], "linear": {output: 1}}}
+
+
+@pytest.mark.parametrize(
+    ("output", "code"),
+    [
+        ("assessment:tac", "ASSESSMENT_OUTPUT_UNAVAILABLE"),
+        ("assessment:opex.NOPE", "ASSESSMENT_OUTPUT_UNKNOWN"),
+    ],
+)
+def test_an_output_the_program_cannot_bind_refuses_the_request(
+    tmp_path: Path, output: str, code: str
+) -> None:
+    """The program planned at start 0 publishes `tac` as null (no capital chain) and has no
+    `opex.NOPE`: `UNSUPPORTED` with that program-wide reason, before any Ipopt import. The
+    report records the assessment's identity; no start was run."""
+    document, request = _c0(_named(output))
+    outcome = _optimize(document, request, tmp_path / "record", AVAILABLE)
+    report = outcome.report.as_document()
+    assert report["status"] == "UNSUPPORTED"
+    assert [(r["code"], r["subject"]) for r in report["reasons"]] == [
+        (code, output.removeprefix("assessment:"))
+    ]
+    assert report["starts"] == [] and report["candidate"] is None
+    assert schema_errors("optimization-report.schema.json", report) == []
+    assert outcome.points[0].start is not None and outcome.points[0].start.verified
+
+
+def test_an_unscaled_assessment_objective_fails_the_start(tmp_path: Path) -> None:
+    """E01 review S1 at the revision's start: `opex` (2419.2 USD/yr at Q = 10500 W) left at
+    scale 1 is outside `[1e-3, 1e3]`; the start does not pass, so no start does."""
+    document, request = _c0({"scale": 1.0})
+    report = _optimize(document, request, None, AVAILABLE).report.as_document()
+    assert report["status"] == "UNSUPPORTED"
+    assert [(r["code"], r["subject"]) for r in report["reasons"]] == [
+        ("SIMULATION_NOT_READY", "start 0")
+    ]
+    assert report["reasons"][0]["detail"].startswith(
+        "START_NOT_CERTIFIED(0, ASSESSMENT_OBJECTIVE_UNSCALED)"
+    )
+    assert schema_errors("optimization-report.schema.json", report) == []
+
+
+def test_an_assessment_named_by_no_expression_is_not_bound(monkeypatch: pytest.MonkeyPatch) -> None:
+    """A request carrying an assessment that no expression names optimises as without one: the
+    program is never planned (OPT-A1 with C0's assessment reaches the solve unchanged)."""
+    from openflowsheet.studies.nlp import revision
+
+    document, request = _case("OPT-A1")
+    request = {**request, "assessment": _c0()[1]["assessment"]}
+
+    class ReachedError(Exception):
+        pass
+
+    def stop(name: str) -> Any:
+        raise ReachedError(name)
+
+    monkeypatch.setattr(revision.AssessmentProgram, "build", None)
+    monkeypatch.setattr(revision, "importlib", SimpleNamespace(import_module=stop))
+    with pytest.raises(ReachedError, match=r"greybox"):
+        _optimize(document, request, None, AVAILABLE)

@@ -9,7 +9,11 @@ library entry the job body calls (as `solve` calls `run_revision_session`):
    written), then Q3 (M03's `_start`). A start that fails is **not run**: it is classified
    `SOLVER_FAILED` by the pure `classify_starts`, its detail `START_NOT_CERTIFIED(<k>, <code>)`.
    The formulation is ready iff one start passes; if none does, `UNSUPPORTED` with
-   `SIMULATION_NOT_READY` and every start's reason.
+   `SIMULATION_NOT_READY` and every start's reason. With an assessment (E01) its binding is
+   planned at the first start that passes (D-18, D-32): its program-wide checks
+   (`ASSESSMENT_OUTPUT_UNKNOWN`/`_UNAVAILABLE`, `ASSESSMENT_PARAMETER_*`) refuse the request,
+   its per-start checks (`ASSESSMENT_REGIME_INADMISSIBLE`, `ASSESSMENT_OBJECTIVE_UNSCALED`) the
+   start.
 3. **Solve and verify** each passing start with M03's gray box (`greybox.solve_start`, imported
    only now, so the default install never loads Pyomo or cyipopt): Ipopt over the held system,
    then V1–V6 on the cold re-solve at the returned decisions (V1's bundle written).
@@ -34,7 +38,11 @@ from pathlib import Path
 from typing import Any, Final
 
 from openflowsheet.application.policies import DEFAULT_POLICY_ID
+from openflowsheet.assessment.program import AssessmentProgram, Refusal
+from openflowsheet.assessment.spec import load_assessment
+from openflowsheet.assessment.views import view_of
 from openflowsheet.canonical import canonical_json, document_sha256
+from openflowsheet.compile.casadi_backend import TwinEvaluationError
 from openflowsheet.models.revision_flowsheet import si_unit
 from openflowsheet.orchestrator.trace import SolvePolicy
 from openflowsheet.run.manifest import policy_sha256
@@ -43,17 +51,29 @@ from openflowsheet.studies.nlp.closure import (
     OptimizationReport,
     Readiness,
     ReadinessReason,
+    SolverAvailability,
     SolverProbe,
     StartEvidence,
     StartReadiness,
+    _assessment_objective_scale,
+    _assessment_outputs,
+    _assessment_regime,
+    _assessment_theta,
     _start,
+    assessment_record,
     audited_solver,
     classify_starts,
     formulation_record,
     report_limits,
     solver_record,
+    start_closure,
 )
-from openflowsheet.studies.nlp.formulation import HESSIAN_POLICY, NlpFormulation
+from openflowsheet.studies.nlp.formulation import (
+    HESSIAN_POLICY,
+    AssessmentBinding,
+    AssessmentClosure,
+    NlpFormulation,
+)
 from openflowsheet.studies.nlp.host import CertifiedPoint
 from openflowsheet.studies.nlp.request import (
     OptimizationRequest,
@@ -147,7 +167,7 @@ def optimize_revision(
 
     Raises `ValueError` for a request with problems (`request_problems`): an invalid input, not
     a report. `check` is called between stages and may raise to cancel; `progress(stage, info)`
-    is told each stage. A request with an assessment raises `NotImplementedError` (D-26)."""
+    is told each stage."""
     check = check or (lambda: None)
     progress = progress or (lambda stage, info: None)
     parsed = OptimizationRequest.of(request)
@@ -176,10 +196,6 @@ def optimize_revision(
         reasons = static.reasons or _not_run(static)
         report = _unsupported(parsed, static, revision, reasons, document=document)
         return _finish(record, report, ())
-    if parsed.assessment is not None:
-        # D-26: E01's binding at the first certified start is not built yet (OPT WO-4 open item).
-        raise NotImplementedError("an optimisation request with an assessment (OPT WO-4 open)")
-
     formulation = static.formulation
     sink = _Sink() if record is not None else None
     host = RevisionNlpHost(
@@ -206,6 +222,24 @@ def optimize_revision(
             failures[index] = f"{START_NOT_CERTIFIED}({index}, {code})"
             detail = "; ".join(reason.detail for reason in found) or readiness.message
             failures[index] += f": {detail}"
+    bound = _Bound(formulation, (), None)
+    if parsed.assessment is not None:
+        bound = _bind_assessment(parsed.assessment, formulation, host, starts, failures)
+        formulation = bound.formulation
+    if bound.reasons:
+        refused = Readiness("unsupported", bound.reasons, static.solver, tuple(starts))
+        report = _unsupported(
+            parsed,
+            static,
+            revision,
+            bound.reasons,
+            formulation,
+            refused,
+            host.model_record(),
+            assessment=assessment_record(formulation, bound.closure(host, starts, static.solver)),
+        )
+        points = tuple(StartPoints(start.point, None) for start in starts)
+        return _finish(record, report, points)
     if len(failures) == len(starts):
         reasons = tuple(
             ReadinessReason("SIMULATION_NOT_READY", failures[index], f"start {index}")
@@ -258,7 +292,11 @@ def optimize_revision(
             **_candidate_members(host, document, formulation, best, sha),
         }
     report = OptimizationReport(
-        formulation=formulation_record(formulation, _declared(starts)),
+        formulation=formulation_record(
+            formulation,
+            _declared(starts),
+            assessment_record(formulation, bound.closure(host, starts, solver), candidate),
+        ),
         model=host.model_record(),
         solver=solver_record(solver, adapter.solver_environment()),
         hessian_policy=dict(HESSIAN_POLICY),
@@ -297,6 +335,121 @@ def optimize_revision(
     return _finish(record, report, points)
 
 
+@dataclass(frozen=True)
+class _Bound:
+    """The formulation with its assessment binding (or as it was), the program-wide reasons that
+    refuse it, and the start the binding was planned at (`None` where none was)."""
+
+    formulation: NlpFormulation
+    reasons: tuple[ReadinessReason, ...]
+    at: int | None
+
+    def closure(
+        self, host: RevisionNlpHost, starts: Sequence[StartReadiness], solver: SolverAvailability
+    ) -> AssessmentClosure | None:
+        """The binding's gray-box closure at the start it was planned at (E01 §4.10.2)."""
+        if self.at is None or self.formulation.assessment is None:
+            return None
+        planned = Readiness("unsupported", (), solver, (starts[self.at],))
+        return start_closure(self.formulation, host, planned)
+
+
+def _bind_assessment(
+    document: Mapping[str, Any],
+    formulation: NlpFormulation,
+    host: RevisionNlpHost,
+    starts: Sequence[StartReadiness],
+    failures: dict[int, str],
+) -> _Bound:
+    """E01's binding at the first start that passes the start phase (§4.5, D-18, D-32).
+
+    The program is planned at that start's certified state on its bound problem
+    (`AssessmentProgram.build`, the regime chosen by the rule there), and each named output's
+    scale is taken there (`AssessmentBinding.at`). A start where the program cannot be planned
+    (a `Refusal`) or a named output cannot be evaluated does not pass: its failure is
+    `START_NOT_CERTIFIED(<k>, <code>)` and the next passing start is tried. The program-wide
+    checks (`ASSESSMENT_OUTPUT_UNKNOWN`, `_UNAVAILABLE`, `ASSESSMENT_PARAMETER_STRUCTURAL`,
+    `_DECISION`) are returned as reasons that refuse the request; the per-start ones
+    (`ASSESSMENT_REGIME_INADMISSIBLE`, `ASSESSMENT_OBJECTIVE_UNSCALED`) fail each start they
+    find, the planning start included. A request naming no `assessment:<id>` is not bound."""
+    named = tuple(dict.fromkeys(formulation.assessment_outputs))
+    if not named:
+        return _Bound(formulation, (), None)
+    spec = load_assessment(document)
+    for index, start in enumerate(starts):
+        if index in failures:
+            continue
+        point, state = start.point, start.state
+        assert point is not None and point.spec is not None and state is not None
+        program = AssessmentProgram.build(
+            view_of(host.bound_flowsheet(point)), point.spec, spec, state
+        )
+        if isinstance(program, Refusal):
+            failures[index] = (
+                f"{START_NOT_CERTIFIED}({index}, {program.code}): the assessment program "
+                f"cannot be planned at this start: {program.target} {program.detail}".rstrip()
+            )
+            continue
+        published = set(program.output_ids) - set(program.admissibility_ids)
+        bindable = [n for n in named if n in published and n not in program.unavailable]
+        if not bindable:
+            return _Bound(formulation, _unbound_outputs(named, program), None)
+        try:
+            binding = AssessmentBinding.at(program, bindable, state)
+        except TwinEvaluationError as error:
+            failures[index] = (
+                f"{START_NOT_CERTIFIED}({index}, ASSESSMENT_OUTPUT_UNAVAILABLE): the bound "
+                f"outputs cannot be evaluated at this start: {error}"
+            )
+            continue
+        bound = dataclasses.replace(formulation, assessment=binding)
+        reasons = [
+            theta
+            for decision_id in bound.decision_ids
+            if (theta := _assessment_theta(bound, decision_id)) is not None
+        ]
+        reasons.extend(_assessment_outputs(bound))
+        for later in range(index, len(starts)):
+            if later in failures:
+                continue
+            found = [
+                *_assessment_regime(bound, later, starts[later]),
+                *_assessment_objective_scale(bound, later, starts[later]),
+            ]
+            if found:
+                failures[later] = f"{START_NOT_CERTIFIED}({later}, {found[0].code}): " + "; ".join(
+                    reason.detail for reason in found
+                )
+        return _Bound(bound, tuple(reasons), index)
+    return _Bound(formulation, (), None)
+
+
+def _unbound_outputs(
+    named: Sequence[str], program: AssessmentProgram
+) -> tuple[ReadinessReason, ...]:
+    """Every named output when none can be bound: null in the program (`_UNAVAILABLE`, with
+    why) or not one of its published outputs (`_UNKNOWN`), as `closure._assessment_outputs`."""
+    reasons = []
+    for name in named:
+        if name in program.unavailable:
+            reasons.append(
+                ReadinessReason(
+                    "ASSESSMENT_OUTPUT_UNAVAILABLE",
+                    f"assessment:{name} is null: {program.unavailable[name]}",
+                    name,
+                )
+            )
+        else:
+            reasons.append(
+                ReadinessReason(
+                    "ASSESSMENT_OUTPUT_UNKNOWN",
+                    f"assessment:{name} is not a bound output of the program",
+                    name,
+                )
+            )
+    return tuple(reasons)
+
+
 def _declared(starts: Sequence[StartReadiness]) -> Mapping[str, str] | None:
     return next((start.regimes for start in starts if start.regimes is not None), None)
 
@@ -319,10 +472,13 @@ def _unsupported(
     readiness: Readiness | None = None,
     model: Mapping[str, Any] | None = None,
     document: Mapping[str, Any] | None = None,
+    assessment: Mapping[str, Any] | None = None,
 ) -> OptimizationReport:
     """`UNSUPPORTED` with every reason: refused before any Ipopt call."""
     record = (
-        formulation_record(formulation, _declared(readiness.starts) if readiness else None)
+        formulation_record(
+            formulation, _declared(readiness.starts) if readiness else None, assessment
+        )
         if formulation is not None
         else _request_formulation_record(parsed, static, document or {})
     )

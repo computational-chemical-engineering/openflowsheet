@@ -61,6 +61,28 @@ BOX = {
     "A2b": {"r": (0.05, 0.95), "T": (305.0, 336.0)},
     "N1": {"Q": (1000.0, 20000.0)},
 }
+#: OPT-C0 (WO-4b, D-32): OPT-A1 with the heater's heating-utility cost as the objective, through
+#: E01's cost program. Its one operating line is `opex = price · hours · 3600 s/h · Q`, so
+#: `ALPHA` (USD/yr per W) is by hand; the objective's scale `ALPHA · Q_S` makes it A1's `Q/Q_S`.
+PRICE_PER_GJ, HOURS = mp.mpf(8), mp.mpf(8000)
+ALPHA = PRICE_PER_GJ * mp.mpf("1e-9") * HOURS * 3600
+ASSESSMENT_C0 = {
+    "schema_version": "assessment-v1",
+    "assessment_id": "opt-c0-heater-utility",
+    "basis": {"currency": "USD", "year": 2020},
+    "operation": {"hours_per_year": float(HOURS), "lifetime_years": 20, "discount_rate": 0.08},
+    "correlation_set": "sslw-idaes-v1",
+    "defaults": {"U_by_service": {"heating": 800.0}},
+    "utilities": [
+        {
+            "utility_id": "LPS",
+            "kind": "heating",
+            "T_supply": 433.15,
+            "dT_min": 10.0,
+            "price": {"value": float(PRICE_PER_GJ), "per": "GJ"},
+        }
+    ],
+}
 
 
 def h_liquid(component: str, temperature: Any, pressure: Any) -> Any:
@@ -183,13 +205,30 @@ def requests() -> dict[str, dict[str, Any]]:
         objective=_a2_objective("U-HEAT.Q"),
         starts={"include_revision": True, "explicit": [[0.7, 325.0]], "halton": 1},
     )
-    return {"OPT-A1": a1, "OPT-A2": a2, "OPT-A2b": a2b, "OPT-N1": n1}
+    c0 = dict(
+        a1,
+        problem_id="OPT-C0",
+        objective={
+            "sense": "minimize",
+            "expression": _linear("opex/opex_s", {"assessment:opex.total": 1}),
+            "scale": float(ALPHA * Q_S),
+        },
+        assessment=ASSESSMENT_C0,
+    )
+    return {"OPT-A1": a1, "OPT-A2": a2, "OPT-A2b": a2b, "OPT-C0": c0, "OPT-N1": n1}
 
 
 #: Each case's flowsheet and its revision values (start 0) of the decisions, in request order.
-FLOWSHEET = {"OPT-A1": "OPT-A1", "OPT-N1": "OPT-A1", "OPT-A2": "OPT-A2", "OPT-A2b": "OPT-A2b"}
+FLOWSHEET = {
+    "OPT-A1": "OPT-A1",
+    "OPT-N1": "OPT-A1",
+    "OPT-A2": "OPT-A2",
+    "OPT-A2b": "OPT-A2b",
+    "OPT-C0": "OPT-A1",
+}
 REVISION_START = {
     "OPT-A1": (10500.0,),
+    "OPT-C0": (10500.0,),
     "OPT-N1": (10500.0,),
     "OPT-A2": (0.5, 5000.0),
     "OPT-A2b": (0.5, 320.0),
@@ -254,6 +293,12 @@ def expectations() -> dict[str, Any]:
         },
         "OPT-A2": {"r": s(r_star), "Q": s(q_a2), "objective": s(f_a2), "T_out": s(T_MIN)},
         "OPT-A2b": {"r": s(r_star), "Q": s(q_a2), "T": s(T_MIN), "objective": s(f_a2)},
+        "OPT-C0": {
+            "Q": s(q_a1),
+            "opex": s(ALPHA * q_a1),
+            "objective": s(q_a1 / Q_S),
+            "multiplier": s(flow_cp / Q_S),
+        },
         "OPT-N1": {
             "T_min": s(T_MIN_N1),
             "liquid_held_Q": s(q_n1),

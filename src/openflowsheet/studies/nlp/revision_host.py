@@ -51,7 +51,7 @@ from openflowsheet.compile.casadi_backend import (
 )
 from openflowsheet.compile.spec import ProblemSpec
 from openflowsheet.compiled import CompiledProblem, EvaluationContext
-from openflowsheet.models.revision_flowsheet import si_unit
+from openflowsheet.models.revision_flowsheet import RevisionFlowsheet, si_unit
 from openflowsheet.models.syn001.equilibrium_form import composition_dependent
 from openflowsheet.numerics.scaling import Scaling
 from openflowsheet.orchestrator.region import RegionResult
@@ -485,6 +485,14 @@ class RevisionNlpHost:
         )
 
     # -- what the NLP is at a point ----------------------------------------------------------------
+
+    def bound_flowsheet(self, point: CertifiedPoint) -> RevisionFlowsheet:
+        """The flowsheet the point's candidate document binds to (an assessment's view, D-32);
+        `ValueError` for a point the binder refused."""
+        route = _handle(point).route
+        if route is None:
+            raise ValueError("the point's document was refused by the binder")
+        return route.binding.flowsheet  # type: ignore[no-any-return]
 
     def held_system(self, point: CertifiedPoint) -> HeldSystem:
         """The region's converged attempt over the candidate's problem, with the plan's alias rows
