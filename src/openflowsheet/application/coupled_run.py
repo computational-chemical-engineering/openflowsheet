@@ -709,7 +709,8 @@ class CoupledStart:
 class ExternalSource:
     """One unit's k = 0 child start from a job source (ADR 0070 D2, §5.2): `accepted`, or
     `absent` (`no_profile`, `variant_cold_only`, `profile_unavailable`) or `rejected`
-    (`warm_start_rejected(external_compatibility|external_integrity)`)."""
+    (`external_compatibility|external_integrity`: the bare check name, as ADR 0024 records it;
+    the trace message is `warm_start_rejected(<check>)`)."""
 
     status: str
     reason: str | None
@@ -748,6 +749,8 @@ def _coupling_record(
 
 
 def _rejected(check: str) -> str:
+    """The trace message for a rejected start (ADR 0024 D4; X02 review S-1). Records carry the bare
+    check name."""
     return f"{WARM_START_REJECTED}({check})"
 
 
@@ -774,7 +777,7 @@ def job_coupling_start(path: Path | None) -> CoupledStart:
         )
     if record is None:
         return CoupledStart(
-            "job", None, _coupling_record("job", "rejected", _rejected("coupling_integrity"), None)
+            "job", None, _coupling_record("job", "rejected", "coupling_integrity", None)
         )
     units = sorted(record["variants"])
     w = record["iterations"][-1]["w"]
@@ -833,7 +836,7 @@ def external_starts(
             found[unit_id] = ExternalSource("absent", "variant_cold_only")
             continue
         if status == "rejected":
-            found[unit_id] = ExternalSource("rejected", _rejected("external_integrity"))
+            found[unit_id] = ExternalSource("rejected", "external_integrity")
             continue
         entry = entries.get(unit_id)
         request = entry.get("request") if isinstance(entry, Mapping) else None
@@ -844,17 +847,13 @@ def external_starts(
             continue
         key = str(request["experiment_key"])
         if request["model"]["artifact_ref"] != variant.sha256:
-            found[unit_id] = ExternalSource(
-                "rejected", _rejected("external_compatibility"), key, profile
-            )
+            found[unit_id] = ExternalSource("rejected", "external_compatibility", key, profile)
             continue
         data = stored(profile)
         if data is None:
             found[unit_id] = ExternalSource("absent", "profile_unavailable", key, profile)
         elif hashlib.sha256(data).hexdigest() != profile:
-            found[unit_id] = ExternalSource(
-                "rejected", _rejected("external_integrity"), key, profile
-            )
+            found[unit_id] = ExternalSource("rejected", "external_integrity", key, profile)
         else:
             found[unit_id] = ExternalSource("accepted", None, key, profile)
     return found
@@ -892,7 +891,7 @@ def recorded_coupling_start(
         }
     )
     status, reason = member.get("status"), member.get("reason")
-    if status == "absent" or reason == _rejected("coupling_integrity") or declared is None:
+    if status == "absent" or reason == "coupling_integrity" or declared is None:
         record = _coupling_record(source, str(status), reason, declared)
     else:
         record = _coupling_record(source, "accepted", None, declared)
@@ -905,7 +904,7 @@ def unused_coupling_start(start: CoupledStart, check: str) -> dict[str, Any]:
     without it. A record that already ended at resolution keeps its own outcome."""
     if start.record["status"] != "accepted":
         return dict(start.record)
-    return _coupling_record(start.source, "rejected", _rejected(check), start.declared)
+    return _coupling_record(start.source, "rejected", check, start.declared)
 
 
 def _project(
@@ -1098,7 +1097,7 @@ def solve_coupled(
         start = coupled_start
         for source in (start.profiles or {}).values():
             if source.status == "rejected":
-                _coupling_event(trace, "initializer_rejected", str(source.reason))
+                _coupling_event(trace, "initializer_rejected", _rejected(str(source.reason)))
         present = "absent" if start.record["status"] == "absent" else "present"
         _coupling_event(trace, "initializer_candidate", f"coupling_warm_start({present})")
         coupling_start = dict(start.record)
@@ -1106,7 +1105,7 @@ def solve_coupled(
             assert start.declared is not None
             if set(start.declared) != set(unit_ids):
                 coupling_start = _coupling_record(
-                    start.source, "rejected", _rejected("coupling_compatibility"), start.declared
+                    start.source, "rejected", "coupling_compatibility", start.declared
                 )
             else:
                 w0, projections = _project(start.declared, block)
@@ -1117,7 +1116,7 @@ def solve_coupled(
                     coupling_start = _coupling_record(
                         start.source,
                         "rejected",
-                        _rejected("coupling_opening"),
+                        "coupling_opening",
                         start.declared,
                         projections,
                     )
@@ -1127,7 +1126,7 @@ def solve_coupled(
                         start.source, "accepted", None, start.declared, projections
                     )
         if coupling_start["status"] == "rejected":
-            _coupling_event(trace, "initializer_rejected", str(coupling_start["reason"]))
+            _coupling_event(trace, "initializer_rejected", _rejected(str(coupling_start["reason"])))
     if coupling is None:
         last.clear()
         last.update(initial_profiles)

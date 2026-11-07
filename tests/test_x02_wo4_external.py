@@ -393,18 +393,18 @@ def test_external_start_statuses(chained: Chained, tmp_path: Path) -> None:
     assert status({"reactor": variant}, stored=lambda _: None) == ("absent", "profile_unavailable")
     assert status({"reactor": variant}, stored=lambda _: b"{}") == (
         "rejected",
-        "warm_start_rejected(external_integrity)",
+        "external_integrity",
     )
     other = warm_variant("x02-g4-other")
     assert status({"reactor": other}) == (
         "rejected",
-        "warm_start_rejected(external_compatibility)",
+        "external_compatibility",
     )
     garbage = tmp_path / "garbage.json"
     garbage.write_bytes(b"{")
     assert status({"reactor": variant}, path=garbage) == (
         "rejected",
-        "warm_start_rejected(external_integrity)",
+        "external_integrity",
     )
     cold_only = synthetic_variant("x02-g4-cold", ["ok"])
     found = external_starts(source, {"reactor": variant, "second": cold_only}, store.profile)

@@ -11,13 +11,13 @@ same cache state (build decision D-10).
   bitwise J_c's, one experiment evaluated (a cache hit: the k = 0 inner solve from J_c's
   solution state returns its inlet bit for bit).
 - **(b)** iterate = J_c's w + (0.01, +5 K): VERIFIED, and the Δû bound holds.
-- **(c)** an iterate whose k = 0 inner solve fails: `rejected`
-  `warm_start_rejected(coupling_opening)`, no experiment at w₀, `external-coupling.json` byte-equal
-  to J_c′'s. No in-bounds w makes the inner solve of the registered loop fail (every corner of
-  the bounds converges), so the loop is taken with its H₂ make-up lowered to 0.725 mol/s: X = 0.95
-  then asks for more H₂ than the loop holds, while the stand-in's fixed point X = 0.25 does not
-  (build decision D-11). The test first proves the inner solve fails at that w and converges at
-  the variant's `coupling.initial`.
+- **(c)** an iterate whose k = 0 inner solve fails: `rejected` with reason `coupling_opening`
+  (trace `warm_start_rejected(coupling_opening)`), no experiment at w₀, `external-coupling.json`
+  byte-equal to J_c′'s. No in-bounds w makes the inner solve of the registered loop fail (every
+  corner of the bounds converges), so the loop is taken with its H₂ make-up lowered to 0.725
+  mol/s: X = 0.95 then asks for more H₂ than the loop holds, while the stand-in's fixed point X =
+  0.25 does not (build decision D-11). The test first proves the inner solve fails at that w and
+  converges at the variant's `coupling.initial`.
 - **(d)** an iterate naming a non-external instance: admitted (A2 holds), `rejected`
   `…(coupling_compatibility)`, record byte-equal to J_c′'s.
 - **(e)** replay of (a), (b), (c): `MATCH`. **(f)** a forged `coupling.declared`: not `MATCH`.
@@ -33,6 +33,7 @@ same cache state (build decision D-10).
 from __future__ import annotations
 
 import copy
+import dataclasses
 import json
 from collections.abc import Iterator
 from dataclasses import dataclass
@@ -49,6 +50,7 @@ from openflowsheet.adapters.experiments.runner import ExperimentRunner
 from openflowsheet.adapters.experiments.store import ExperimentStore, ListArtifactSink
 from openflowsheet.application import coupled_run
 from openflowsheet.application.coupled_run import (
+    ExternalSource,
     LiveExperiments,
     at_coupling,
     coupling_block,
@@ -311,7 +313,7 @@ def test_g3c_a_failing_opening_is_rejected_and_the_coupling_starts_cold(tight: T
         "record": "coupling-start-v1",
         "source": "iterate",
         "status": "rejected",
-        "reason": "warm_start_rejected(coupling_opening)",
+        "reason": "coupling_opening",
         "declared": {"reactor": {"X": OPENING_W[0], "dT_K": OPENING_W[1]}},
         "projections": [],
     }
@@ -327,7 +329,7 @@ def test_g3c_a_failing_opening_is_rejected_and_the_coupling_starts_cold(tight: T
 
 def test_g3d_an_iterate_on_another_instance_is_rejected_for_compatibility(loop: Loop) -> None:
     assert loop.foreign.coupling["status"] == "rejected"
-    assert loop.foreign.coupling["reason"] == "warm_start_rejected(coupling_compatibility)"
+    assert loop.foreign.coupling["reason"] == "coupling_compatibility"
     assert loop.foreign.coupling["declared"] == {"mixer": {"X": 0.2, "dT_K": 80.0}}
     assert loop.foreign.record_bytes == loop.again.record_bytes
     assert loop.foreign.evaluations == loop.again.evaluations
@@ -354,7 +356,12 @@ def test_g3f_a_forged_declared_iterate_does_not_match(loop: Loop, tmp_path: Path
     declared["X"] += 0.05
     write_bundle(tmp_path / "forged", manifest, artifacts)
     report = loop.app.reproduce(tmp_path / "forged", ReplayPolicy(rerun=True))
-    assert report.verdict != "MATCH"
+    # X02 review S-3: pinned to its cause, as G4e is — the rerun starts from the forged w₀, so the
+    # k = 0 experiment's inlet differs from the recorded one.
+    assert report.verdict == "MISMATCH", (report.verdict, report.reasons)
+    assert any(entry.startswith("external_request(0, reactor)") for entry in report.differences), (
+        report.differences
+    )
 
 
 # -- G6: the W14 path — a far iterate is only ever a start -----------------------------------------
@@ -446,8 +453,8 @@ def test_r0_projects_statuses_and_ids_never_values(loop: Loop) -> None:
 @pytest.mark.parametrize(
     ("case", "path", "reason"),
     [
-        ("SYN-001-nominal", "revision_eo", "warm_start_rejected(coupling_compatibility)"),
-        ("SYN-001-A02-360", "legacy_eo", "warm_start_rejected(route)"),
+        ("SYN-001-nominal", "revision_eo", "coupling_compatibility"),
+        ("SYN-001-A02-360", "legacy_eo", "route"),
     ],
 )
 def test_a_declared_iterate_off_the_coupled_route_is_recorded_rejected(
@@ -511,7 +518,7 @@ def test_integrity_of_a_job_source(loop: Loop, tmp_path: Path) -> None:
         member = tampered(edit)
         assert (member["status"], member["reason"], member["declared"]) == (
             "rejected",
-            "warm_start_rejected(coupling_integrity)",
+            "coupling_integrity",
             None,
         ), edit.__name__
     garbage = tmp_path / "garbage.json"
@@ -546,7 +553,8 @@ def test_solve_coupled_rejects_the_opening_with_its_trace_messages(
         on_iteration=lambda k, _: opened.append(k),
     )
     assert solved.coupling_start is not None
-    assert solved.coupling_start["reason"] == "warm_start_rejected(coupling_opening)"
+    # S-1: the record holds the bare check name, the trace message wraps it.
+    assert solved.coupling_start["reason"] == "coupling_opening"
     assert solved.coupling.outcome == "CONVERGED"
     messages = [
         (event.kind, event.message)
@@ -559,4 +567,40 @@ def test_solve_coupled_rejects_the_opening_with_its_trace_messages(
     ]
     # k = 0 fires twice: once for the rejected opening, once for the cold coupling.
     assert opened[:2] == [0, 0]
+
+
+def test_s1_a_rejected_child_start_is_a_bare_record_reason_and_a_wrapped_trace_message(
+    tight: Tight, tmp_path: Path
+) -> None:
+    """X02 review S-1 (ruling 5; ADR 0024's convention): a rejected k = 0 child start keeps the
+    bare check name in its record, and the trace message alone reads `warm_start_rejected(...)`."""
+    route = bind_route("revision_coupled", copy.deepcopy(tight.revision))
+    assert isinstance(route, Route)
+    policy = resolve_policy("default", "revision_coupled")
+    assert policy is not None
+    experiments = LiveExperiments(
+        ExperimentRunner(
+            ExperimentStore(tmp_path, ListArtifactSink()),
+            PrC1Provider(),
+            EvaluationContext(model_version="x02-wo3", constants_sha256="0" * 64),
+        )
+    )
+    source = ExternalSource("rejected", "external_integrity")
+    start = iterate_start({"reactor": (0.15, 80.0)})
+    trace = Trace()
+    solved = solve_coupled(
+        route.binding,
+        policy=policy,
+        experiments=experiments,
+        trace=trace,
+        coupled_start=dataclasses.replace(start, profiles={"reactor": source}),
+    )
+    assert solved.coupling_start is not None
+    assert (solved.coupling_start["status"], solved.coupling_start["reason"]) == (
+        "accepted",
+        None,
+    )
+    assert source.as_document()["reason"] == "external_integrity"
+    rejected = [event.message for event in trace.events if event.kind == "initializer_rejected"]
+    assert rejected == ["warm_start_rejected(external_integrity)"]
     assert coupled_run.COUPLING_START == "coupling-start-v1"
