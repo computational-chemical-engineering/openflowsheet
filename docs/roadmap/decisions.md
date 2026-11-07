@@ -210,3 +210,12 @@ background); a fresh X05 specifier that adopts or revises the predecessor's scri
 DECISION: fresh specifier rather than resuming the crashed one. Alternative: SendMessage to the 255k-context agent.
 Reversible by: n/a (the script carries its decisions; the fresh agent may revise them and must say so).
 DECISION: X02 recon now (architect pass next, roadmap). Alternative: wait. Reversible by: parking it.
+
+## 2026-11-07 — X05 ADR 0069 (`6b12ab54`, `004d7faa`) → build
+
+ADR 0069 Proposed: packaged lock via symlink (D1), exact version check over a fixed 9-distribution runtime closure
+(D2/D3), same hash in checkout and wheel (D4), no schema change (D5), T08.A19 retired → X05.A11, A13–A17 (D7);
+25 assertions, 36 cases; reference script `--check` PASS. Frank: Q-F1…F3 (defaults yes/no/no) + acceptance.
+DECISION: build X05 now on `wp/X05` (WO-1…3, one Opus engineer, then a reviewer) before Frank accepts ADR 0069, with
+Q-F1's pins as an isolated commit. Alternative: wait for acceptance. Reversible by: not merging; reverting the pin commit.
+CPU rule (hub, 2026-11-07): one full gate at a time on TRS2; ≤ ~36 busy cores.
