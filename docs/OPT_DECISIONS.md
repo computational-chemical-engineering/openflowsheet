@@ -132,3 +132,91 @@ produced them. The design-lane ruling round is folded into OPT's single `reviewe
   1 skipped. Audited env (m05's `.venv-nlp`): `test_m03_nlp_greybox.py test_e01_b_nlp.py test_e01_integration.py` —
   22 passed. No existing test edited.
 - G17 (record): cold certify wall time TH-R1 1.7 s, M1 1.0 s, C-MW 6.3 s.
+
+## WO-3 (request schema, formulation, static readiness, probe, `validate` lift)
+
+- D-16. DECISION: the platform-aware probe → `audited_solver(platform_id=None)` also requires
+  `running_platform()` = `<sys.platform>-<platform.machine()>` in `AUDITED_PLATFORMS = ("linux-x86_64",)`; the
+  platform's problem is appended last, so M03's detail on linux x86-64 is unchanged byte for byte, and elsewhere the
+  detail (the report reason's, §2.7) names the platform. The API refusal is `unsupported`, message
+  `nlp_solver_unavailable` (bare, as §4.11 and ADR 0071's catalogue list it), pointer `/task`: one text on every
+  platform, so the CLI pin (`tests/fixtures/t07/cli-existing-commands.json`) holds on both CI legs. (A first cut named
+  the platform in the message; the pins made it architecture-dependent.) Alternative:
+  `nlp_solver_unavailable(<platform>)`. Reversible by: `dbed6c58` and the message commit.
+- D-17. DECISION: the new codes' places → `READINESS_ORDER` follows §4.5's table: REVISION_MISMATCH, REVISION_UNBOUND,
+  OPTIMIZATION_ROUTE_UNAVAILABLE first; DECISION_UNIT_NOT_INTERNAL, DECISION_NOT_CONTINUOUS after UNKNOWN_DECISION;
+  TOO_MANY_STARTS after START_OUTSIDE_BOUNDS; REGIME_MARGIN_UNDEFINED after ASSESSMENT_OBJECTIVE_UNSCALED. M03's
+  relative order kept (tested). START_NOT_CERTIFIED and PHASE_REGIME_CHANGED are start/report reasons (WO-4/WO-5).
+  `optimization-report.schema.json` `$defs/reason` enumerates codes; it is **not** extended here (no report with a new
+  code exists before WO-4; the schema edit is Amendment 16's, WO-4/WO-6). Reversible by: `dbed6c58`.
+- D-18. DECISION (escalated): static assessment checks → statically only "an `assessment:<id>` named with
+  `assessment: null`" (`ASSESSMENT_OUTPUT_UNKNOWN`). Whether the program publishes an output and whether a decision is a
+  θ (`ASSESSMENT_PARAMETER_STRUCTURAL`/`_DECISION`) need the program, which E01 plans at a solved state
+  (`AssessmentProgram.build(view, host_spec, spec, state)`); they move to the first certified start (where §4.5 takes
+  the binding's scales anyway). In `validate` those three checks PASS with the message "an assessment is given; … judged
+  at the first certified start". Consequence: G18's "one test per static reason" has no failing static case for the two
+  `ASSESSMENT_PARAMETER_*` codes. Alternative: plan the program at the unsolved initial guess (a planning state that is
+  not a solution), or NOT_RUN (no request with an assessment could ever be `READY_FOR_OPTIMIZATION`). Reversible by:
+  `request.py` `static_readiness` and `validation.ASSESSMENT_AT_START`.
+- D-19. DECISION: the application `validate` member → `LocalApplication.validate(revision_id, task)` keeps its
+  signature; the `optimization` member, the served `validate` input schema, the decode and `descriptions/validate.md`
+  change together with OPT's surface link (WO-6, §4.13 `strip_opt`). Reason: `test_t07_w5a_operations.py` holds a
+  method's parameters equal to its served schema's properties, and `test_m07a_surface_chain.py` pins D_3 — adding the
+  member in WO-3 moves the served digest, which is WO-6's. Until then the application refuses in §4.11's order:
+  no audited solver → `unsupported nlp_solver_unavailable(<platform>)`; with one → `invalid_request` at
+  `/optimization`. The library path `validation.validate(doc, "optimization", optimization=, solver_probe=)` is complete.
+  The CLI `validate --request` goes with the member (WO-6). The `ApplicationProtocol` (`contract.py:69`) is unchanged.
+  Alternative: move the digest now. Reversible by: WO-6 adds the member.
+- D-20. DECISION: the report shape → after the revision's own checks, `OPT.REQUEST_SCHEMA` (stage `schema`) and one
+  check per static code, always all present: FAIL (details joined, subjects implicated), NOT_RUN (with why), else PASS
+  (what it established). Stage `capability` for REVISION_UNBOUND, OPTIMIZATION_ROUTE_UNAVAILABLE, the three assessment
+  codes, HESSIAN_UNAVAILABLE and NLP_SOLVER_UNAVAILABLE; `structural_analysis` for the rest. A revision not
+  `READY_FOR_SIMULATION`: request schema still judged, every other OPT check NOT_RUN, status DRAFT/INVALID as the
+  revision's. Alternative: failing checks only. Reversible by: `validation._validate_optimization`.
+- D-21. DECISION: request rules and starts → `request_problems`: canonical (ADR 0002) first, then the schema's errors,
+  then: distinct decision specification ids, each explicit start one value per decision, distinct constraint ids, every
+  expression names ≥ 1 variable, no quadratic pair twice. Start 0 = the base binding's parameters at the mapped ids
+  (internal units by construction; D-13 makes them the written values). A decision with no finite box end is not
+  probed (BOUNDS_UNDECLARED; continuity NOT_RUN); START_OUTSIDE_BOUNDS is judged only on a bounded box (M03's rule).
+  Zero starts is TOO_MANY_STARTS (§4.3 "1…32, else"). Objective: coefficient `(s·c)/scale`; text unchanged when
+  minimised at scale 1, else `(t)/scale` / `-(t)/scale` / `-(t)`, the scale in its canonical JSON spelling.
+  `request_sha256` = canonical SHA-256 of the request as given (no defaults filled). Route: `select_route`; `NoRoute` →
+  REVISION_UNBOUND(`<binder code>`), `legacy_eo`/`revision_coupled` → OPTIMIZATION_ROUTE_UNAVAILABLE (subject = route);
+  either makes the revision-dependent checks NOT_RUN. Reversible by: `bcd043ec`.
+- D-22. DECISION: `revision_sha256`, the request schema's `sha256` name → an OPT addendum in `ADDENDA`
+  (`benchmarks/opt/numerical_policy_external.yaml`, id `OPT-numerical-policy-external-v1`, schemas
+  `[optimization-request.schema.json]`, `exact_sha256: []` — the name keeps M05's addendum's class), E01's ESC-A1
+  precedent. v2 bytes unchanged (`scripts/t08_numerical_policy.py --check`: equals, sha256 `6b449911…d707c`).
+  Alternative: rename the field. Reversible by: the addendum commit.
+- AMENDED_TESTS (ADR 0071; U05/R-129's refusal and its pins, design §4.11):
+  `tests/test_t08_w2_unsupported.py::test_u05_validate_for_optimization_is_unsupported`,
+  `tests/test_m03_nlp_formulation.py::test_a33_validate_for_optimization_is_still_r129s_unsupported` (both skip where an
+  audited solver is installed), `tests/test_t07_w3b_validation.py::test_r3_every_corpus_report_validates[optimization]`,
+  `tests/test_t07_w5b_cli.py::test_the_pins_moved_by_d1s_str05_substitution_u05_and_v2_recording_only` and the pin file
+  `tests/fixtures/t07/cli-existing-commands.json` (U05's message only), `tests/test_t08_rename_substitution.py::
+  test_the_cli_pins_moved_by_the_rename_only` (reverses OPT's message first, `opt_reversed_cli_text`; the pre-rename
+  hash is unchanged); D-22: `tests/test_m05_study_record.py::test_the_m05_addendum_is_audited_after_m02s_and_its_
+  partition_holds` (`ADDENDA` + `opt`).
+- Stale until WO-6: `descriptions/validate.md` still says `task_unsupported(optimization)` (the surface link's text).
+- Open for WO-6/WO-7: `benchmarks/t08/support_envelope.yaml` U05's outcome text still states the v0.1 refusal; not
+  edited here (a release document; its evidence test node still exists).
+
+### Gates (WO-3, 2026-11-07, TRS2, worktree `wp/OPT`)
+
+- G1: `scripts/corpus_identity.py --check` at `d5533e09`: **F0 PASS** — M1 50/50, M2 61/61, M3 61/61, M4 61/61,
+  M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 35/35.
+- G18 + G11 (default env): `tests/test_opt_request.py` — 42 passed: schema is draft 2020-12 and registered; 2 valid
+  fixtures round-trip, 8 invalid refused at the expected pointer; Halton k = 1…4 (2-D) within 1 ulp of (1/2, 1/3),
+  (1/4, 2/3), (3/4, 1/9), (1/8, 4/9); one failing case per static reason (12, each alone) plus NLP_SOLVER_UNAVAILABLE and
+  the real `revision_coupled` route (`benchmarks/m02/c1-loop-real.json`); validate READY/INVALID/DRAFT/missing request;
+  platform `linux-aarch64`/`darwin-arm64` → unavailable naming it, API `unsupported nlp_solver_unavailable`; a fresh
+  interpreter running `validate` and `static_readiness` loads neither `pyomo` nor `cyipopt`. Not covered: a failing
+  static `ASSESSMENT_PARAMETER_*` case (D-18).
+- Regression, default env (`tests/test_opt_*.py test_m03_*.py test_e01_*.py test_t07_*.py test_t08_*.py
+  test_k01_schemas.py test_package_imports.py test_m07a_*.py test_adr_0002_canonicalization.py test_m04_schemas.py
+  test_rel_*.py`): 3593 passed, 31 skipped, 10 failed before D-16's bare message and D-22 — 6 pins of U05's old text,
+  3 numerical-policy audits (`revision_sha256` unclassified), 2 `test_rel_rc_local` (HEAD moved by a commit during the
+  run). After the fixes, the 10 failing files: 536 passed + rename 25 passed, 0 failed. Served surface digest unmoved
+  (`test_m07a_surface_chain.py`, `test_t08_w2_surface_digest.py` pass).
+- Audited env (m05's `.venv-nlp`, `m03_nlp_check.sh`): 18 passed (the script runs the `nlp`-marked tests only; WO-3's
+  tests are default-env tests).
