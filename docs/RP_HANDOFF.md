@@ -1,27 +1,28 @@
-# RP handoff (ADR 0055 WO-R1…R6, build lane)
+# RP handoff (ADR 0055 WO-R1…R7, build lane)
 
-Branch `wp/RP`, worktree `.claude/worktrees/rp`. Choices C-1…C-22, questions Q-B1…B5, Q-C1…C6 and every measured
-number: `docs/RP_DECISIONS.md`.
+Branch `wp/RP`, worktree `.claude/worktrees/rp`. Choices C-1…C-29, questions and every measured number:
+`docs/RP_DECISIONS.md`. The review: `docs/reviews/RP-review.md`.
 
 ## Done
 
-- WO-R4 (`ci.yml`, REL.A17), WO-R6 (`release_rc.py` steps 1, 8, 17, items; WO-R6b `local`, `record`, `ci`,
-  `records`), WO-R6c `scripts/release_evidence_manifest.py` (`3e7ccf00`): RP.S01–S22 read from RP §11.1, one
-  `ITEM.<id>` check per `rc_items` entry, `--rel-a20` (REL.A20, §11.2). Tests `tests/test_rel_evidence_manifest.py`
-  (14): the catalogue, S02/S05 controls, a passing record and controls for S10, S13, S15, S17, S20, S21, REL.A20 over
-  0.3.0's records with 0.3.0's two CI views (`tests/fixtures/rel/s13-ci/`, byte-equal to what S13 read).
-- REL.A20: 12 of 13 same-form equal S13's `pass`; RP.S18 differs by construction (Q-C5) → `REL.A20: FAIL`.
-- Package manifest `evidence/S15/3e7ccf00…/manifest.json` (C-22: the schema refuses `RP`), status `implemented`
-  (REL.A20 fail; the gate red only in the browser module), harvested (class P), `HARVEST_SIZE` (69, 945, 122).
-- Full gate at `3e7ccf00`: 29 failed + 1 error, all `tests/test_m06_browser_smoke.py` (browser went away under
-  load); the module alone: 31 passed.
+- WO-R1…R7. The review's must-fix items M-1 (standing-mode fixtures, mutation 6 failed / 50 passed), M-2 (REL.A20)
+  and M-3 (ADR 0055's restated acceptance) are applied; REL.A18 and A19 have tests (C-28).
+- Code commit `fd28ff7b`: gate `GATE PASS` (15070 passed, 3206 skipped, 197 deselected, 3446 s); F0 PASS (M1–M9 equal);
+  push CI `ci` 42320544169 (both `check` legs, `identity`, `default-install`) and `Site` 42320544186 green.
+- `tests/test_rel_*.py` + `tests/test_release_workflows.py`: 230 passed. REL.A20: `REL.A20: PASS`.
+- Manifest `evidence/S15/fd28ff7bc8e3e98c67857c869d6939d1d755f3ed/manifest.json`, status `tested` (never `reviewed`):
+  REL.A01–A10 and A17–A20, the gate, F0, CI and its six limitations. The old `3e7ccf00…` manifest stays.
+- Harvested (6 class-P items): `HARVEST_SIZE` (70, 951, 122); `t08_support_matrix.py --check` 0 problems.
 
 ## Not done (next, in order)
 
-1. The one `reviewer` pass over WO-R2…R6: Q-B1…B5, Q-C1…C6. Q-C5 (REL.A20 unmeetable as written) and Q-C6
-   (`REL040`/`RP` vs the frozen `work_package` pattern) need a design-lane ruling (an RP amendment / a schema ADR).
-2. After the ruling: re-run `--rel-a20`, re-run the full gate on a quiet host (green browser module), re-take the
-   manifest (`tested` only if both hold). Do not merge before; CI green on both legs before a merge.
+1. Merge `wp/RP` into `main` (orchestrator). Not merged here.
+2. Before 0.4.0's K3: K-1 the schema ADR admitting `REL[0-9]{3,}` (so `evidence/REL040/` passes `t08.problems`);
+   S-6 one background `release_rc.py local` with every step at a `main` commit after the merge (steps 6, 11, 12, 14–16
+   and `E01-G6-nlp` have never run); K-2 Frank's acceptance of ADR 0055 on its restated condition, and F-8 (two
+   messages, the second after `Judged`).
+3. The review's should-fix items S-1…S-7 not recorded as closed in `RP_DECISIONS.md` stay open for 0.4.0's cut.
+4. D2 (REL.A11–A16, A21, `release-audit`, WO-R5) is deferred and outside this acceptance.
 
 ## How to run
 
