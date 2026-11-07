@@ -333,3 +333,31 @@ produced them. The design-lane ruling round is folded into OPT's single `reviewe
   1.0e-11; V7 pass; binding scale α·10500 = 2419.2. Refusals (default env): `assessment:tac` → `UNSUPPORTED
   ASSESSMENT_OUTPUT_UNAVAILABLE`; `assessment:opex.NOPE` → `ASSESSMENT_OUTPUT_UNKNOWN`; scale 1 → `SIMULATION_NOT_READY`
   `START_NOT_CERTIFIED(0, ASSESSMENT_OBJECTIVE_UNSCALED)`.
+- D-34. DECISION: G17's requests → `benchmarks/opt/requests/perf/{TH-R1,M1,C-MW}.json`, generated and checked by
+  `benchmarks/opt/performance.py --write/--check` (quadratic trackings, boxes certified at both ends to keep the base
+  regime, starts: revision + one explicit). TH-R1: `SPEC-H-Q` ∈ [15, 35] kW, `SPEC-D-Q` ∈ [−5, 5] kW, min
+  ((S5.n.H2O − 0.5)/0.05)² + (Q_D/5000)²; M1: feed T ∈ [320, 348] K, min ((S-DISTILLATE.n.B − 0.06)/0.005)²; C-MW: feed
+  T ∈ [335, 348.6156] K, min ((COL.stage.20.Q − 38500)/1000)². Reversible by: the files.
+
+### G17 / F5 (2026-11-07, TRS2, audited env, one process, `OMP_NUM_THREADS=1`; at `079b32b4` + the D-32 edits)
+
+| case/start | Ipopt | it | certify s | twin s | Ipopt s | verify s | res/jac/prop calls | eval errors | n (free+dec) | result |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| TH-R1 s0 | 0 | 16 | 2.65 | 0.40 | 1.87 | 3.07 | 22/19/540 | 0 | 40 (38+2) | VERIFIED, H.Q* 26882.99 W |
+| TH-R1 s1 | 0 | 25 | 2.45 | 0.12 | 4.62 | 1.99 | 131/28/1683 | 0 | 40 | VERIFIED, same point |
+| M1 s0 | 0 | 8 | 1.32 | 0.02 | 0.16 | 1.30 | 32/11/1188 | 0 | 119 (118+1) | VERIFIED, T* 332.6915 K |
+| M1 s1 | 0 | 8 | 1.27 | 0.02 | 0.09 | 1.32 | 9/11/682 | 0 | 119 | VERIFIED, same point |
+| C-MW s0 | −2 | 46 | 8.10 | 0.06 | 16.08 | 7.28 | 7032/49/102987 | 6984 | 298 (297+1) | SOLVER_FAILED (restoration) |
+| C-MW s1 | 0 | 61 | 7.82 | 0.08 | 7.49 | 7.01 | 5690/64/31922 | 5625 | 298 | NOT_VERIFIED, T 341.284 K |
+
+Totals: TH-R1 18.3 s, M1 5.9 s, C-MW 54.4 s ("verify" also holds report/record writing for the last start).
+- **F5**: L-BFGS converges on C-MW (297 columns) in 61 iterations, 7.5 s Ipopt; no start near 500 iterations or 120 s
+  → keep the default `max_iter` 500.
+- **Escalated (design lane, with WO-5):** (1) C-MW's feed has exactly zero C2H5OH; Ipopt's trial points drive the
+  column's ethanol flows negative and the twin raises `DomainError … component flows ['C2H5OH'] are not finite and
+  non-negative` (stages s1, s18, s19, feed enthalpy) on ~99 % of residual calls — the flows bounded `None` by §4.2.3's
+  "unbounded where exactly zero at the point" rule (`zero_at_start_pinned_by_regime`) are not pinned by any row, so
+  Ipopt moves them; start 0's restoration failure follows. (2) All 19 held TWO_PHASE stages of C-MW have a `null`
+  PH-split margin: V4 fails and V5 is refused `REGIME_MARGIN_UNSUPPORTED` ×19, so no C-MW start can verify whatever
+  Ipopt does (M1 passes the same checks). Default until ruled: recorded, no change (both touch §4.2.3 bounds or §4.7
+  margins, i.e. numerics).
