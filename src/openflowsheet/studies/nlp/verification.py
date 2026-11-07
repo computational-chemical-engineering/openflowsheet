@@ -273,9 +273,12 @@ def verify_candidate(
         },
     )
     state = point.state
-    if state is None:
+    # A revision host's held system and regimes exist only at a certified point (OPT §4.2.1):
+    # a re-solve that converged without a VERIFIED certificate fails V1 and is judged no further.
+    if state is None or (held is not None and not point.verified):
+        reason = "no_simulation" if state is None else "resolve_not_certified"
         for check in names[1:]:
-            checks[check] = VerificationCheck(check, "not_evaluated", {"reason": "no_simulation"})
+            checks[check] = VerificationCheck(check, "not_evaluated", {"reason": reason})
         return CandidateVerification(
             decisions=values,
             checks=tuple(checks[check] for check in names),
