@@ -1,5 +1,5 @@
 """OPT's analytic benchmark cases: the requests and their independent expectations (OPT design §6
-G7, G8, G9; WO-4).
+G7, G8, G9; WO-4; G9 rerun, G10; WO-5).
 
 The expectations are computed with mpmath (30 digits) from the SYN-001 coefficient table
 (`docs/derivations/SYN-001.md` §1, transcribed below), **independently of the provider code**:
@@ -17,7 +17,13 @@ drop is zero, so P = 1e5 Pa throughout):
 - **OPT-A2b** (G8): A2 with a TP heater whose outlet-T specification is the decision; the
   objective names the heater duty `U-HEAT.Q` (a state variable). Same r*, Q*; T* = T_min.
 - **OPT-N1** (G9): A1 with T_min above the bubble point, started liquid: before WO-5
-  `NOT_VERIFIED` with `PHASE_REGIME_CHANGED(U-PHF)`.
+  `NOT_VERIFIED` with `PHASE_REGIME_CHANGED(U-PHF)`; after WO-5 the held LIQUID regime's phase
+  row makes T_min unreachable, `INFEASIBLE_REPORTED`.
+- **OPT-A3** (G10, WO-5): A1 maximising the outlet temperature (min −T/T_s), no T bound, a Q box
+  whose upper end exceeds the duty to the bubble point: the optimum is the bubble point
+  Σ z_i K_i(T_b, P) = 1 (an mpmath root), Q* = Σ n_i c_p (T_b − T_in), the phase row
+  `a = (Σ n_i − Σ n_i K_i(T))/N₀` (N₀ = 3 mol/s, K03's molar-flow nominal) active, its multiplier
+  in scaled decisions μ* = (∂φ/∂Q̂)/(∂a/∂Q̂) with Q̂ = Q/s_Q.
 
 Constants are chosen so that interior decisions sit ≥ 10 % of the box from either end and every
 start's single-phase state is ≥ 10 K below its bubble point (checked here, not assumed).
@@ -53,6 +59,9 @@ FEED = {"A": mp.mpf(1), "B": mp.mpf(1), "C": mp.mpf(1)}  # mol/s
 T_IN, P = mp.mpf(300), mp.mpf(100000)
 T_MIN = mp.mpf(330)
 T_MIN_N1 = mp.mpf(355)
+T_S = mp.mpf(100)
+#: K03's registered molar-flow nominal: the phase row is `a/N0` (OPT §4.7).
+N0 = mp.mpf(3)
 Q_S = mp.mpf(10000)
 C, N_STAR, N_S = mp.mpf("0.25"), mp.mpf("1.5"), mp.mpf(1)
 BOX = {
@@ -60,6 +69,7 @@ BOX = {
     "A2": {"r": (0.05, 0.95), "Q": (500.0, 6000.0)},
     "A2b": {"r": (0.05, 0.95), "T": (305.0, 336.0)},
     "N1": {"Q": (1000.0, 20000.0)},
+    "A3": {"Q": (1000.0, 20000.0)},
 }
 #: OPT-C0 (WO-4b, D-32): OPT-A1 with the heater's heating-utility cost as the objective, through
 #: E01's cost program. Its one operating line is `opex = price · hours · 3600 s/h · Q`, so
@@ -215,7 +225,18 @@ def requests() -> dict[str, dict[str, Any]]:
         },
         assessment=ASSESSMENT_C0,
     )
-    return {"OPT-A1": a1, "OPT-A2": a2, "OPT-A2b": a2b, "OPT-C0": c0, "OPT-N1": n1}
+    a3 = dict(
+        a1,
+        problem_id="OPT-A3",
+        decisions=[_decision("SPEC-Q", BOX["A3"]["Q"], 10000.0, "W")],
+        objective={
+            "sense": "minimize",
+            "expression": _linear("-S3.T", {"S3.T": -1}),
+            "scale": float(T_S),
+        },
+        constraints=[],
+    )
+    return {"OPT-A1": a1, "OPT-A2": a2, "OPT-A2b": a2b, "OPT-A3": a3, "OPT-C0": c0, "OPT-N1": n1}
 
 
 #: Each case's flowsheet and its revision values (start 0) of the decisions, in request order.
@@ -225,11 +246,13 @@ FLOWSHEET = {
     "OPT-A2": "OPT-A2",
     "OPT-A2b": "OPT-A2b",
     "OPT-C0": "OPT-A1",
+    "OPT-A3": "OPT-A1",
 }
 REVISION_START = {
     "OPT-A1": (10500.0,),
     "OPT-C0": (10500.0,),
     "OPT-N1": (10500.0,),
+    "OPT-A3": (10500.0,),
     "OPT-A2": (0.5, 5000.0),
     "OPT-A2b": (0.5, 320.0),
 }
@@ -278,6 +301,20 @@ def expectations() -> dict[str, Any]:
     assert all(v >= mp.mpf("0.1") for v in interior.values()), interior
     q_n1 = duty(1, T_MIN_N1)
     assert T_MIN_N1 > t_b and _interior(q_n1, BOX["N1"]["Q"]) >= mp.mpf("0.1")
+    # OPT-A3: the bubble point inside the box; φ = −T/T_s, a = (Σ n − Σ n K(T))/N0 along
+    # T(Q) = T_in + Q/Σ n c_p, both differentiated in Q̂ = Q/s_Q.
+    q_a3 = duty(1, t_b)
+    interior["OPT-A3/Q"] = _interior(q_a3, BOX["A3"]["Q"])
+    assert interior["OPT-A3/Q"] >= mp.mpf("0.1"), interior
+    s_q = mp.mpf(10000)
+
+    def phase_row(q_hat: Any) -> Any:
+        t = outlet_temperature(1, q_hat * s_q)
+        return sum(FEED[i] * (1 - k_value(i, t, P)) for i in COMPONENTS) / N0
+
+    d_phi = -s_q / (T_S * flow_cp)
+    d_a = mp.diff(phase_row, q_a3 / s_q)
+    assert abs(phase_row(q_a3 / s_q)) < mp.mpf("1e-25") and d_a < 0
 
     def s(value: Any) -> str:
         return mp.nstr(value, 30, min_fixed=-30, max_fixed=30)
@@ -302,8 +339,16 @@ def expectations() -> dict[str, Any]:
         "OPT-N1": {
             "T_min": s(T_MIN_N1),
             "liquid_held_Q": s(q_n1),
-            "status": "NOT_VERIFIED",
-            "reason": "PHASE_REGIME_CHANGED(U-PHF)",
+            "status": "INFEASIBLE_REPORTED",
+            "status_before_WO-5": "NOT_VERIFIED",
+            "reason_before_WO-5": "PHASE_REGIME_CHANGED(U-PHF)",
+        },
+        "OPT-A3": {
+            "T": s(t_b),
+            "Q": s(q_a3),
+            "objective": s(-t_b / T_S),
+            "phase_row": "phase.U-PHF.bubble",
+            "multiplier": s(d_phi / d_a),
         },
         "margins_K": {k: s(v) for k, v in margins.items()},
         "interior_fraction": {k: s(v) for k, v in interior.items()},

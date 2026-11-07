@@ -1,4 +1,4 @@
-"""OPT WO-4 gates G7, G8, G9 (design §6): `optimize_revision` on the analytic cases.
+"""OPT WO-4/WO-5 gates G7, G8, G9, G10 (design §6): `optimize_revision` on the analytic cases.
 
 The expectations are `benchmarks/opt/expected.json`, computed by `benchmarks/opt/analytic.py` with
 mpmath from the SYN-001 coefficient table, independently of the provider and of the code under
@@ -61,6 +61,10 @@ def _expected(case: str, name: str) -> float:
     return float(EXPECTED[case][name])
 
 
+def _expected_text(case: str, name: str) -> str:
+    return str(EXPECTED[case][name])
+
+
 def _check(case: str, outcome: OptimizationOutcome) -> dict[str, Any]:
     report = outcome.report.as_document()
     assert schema_errors("optimization-report.schema.json", report) == []
@@ -119,15 +123,47 @@ def test_g8_opt_a2b_the_outlet_temperature_as_decision_gives_the_same_optimum(
     assert abs(candidate["objective"] - f_star) <= 1e-8 * max(1.0, abs(f_star))
 
 
-def test_g9_opt_n1_is_refuted_by_the_regime_change(records: Path) -> None:
+def test_g9_opt_n1_is_infeasible_in_its_held_regime(records: Path) -> None:
+    """G9 after WO-5: the held LIQUID regime's phase row (`phase.U-PHF.bubble ≥ 0`) cannot meet
+    `S3.T ≥ T_min > T_b`; Ipopt reports local infeasibility and no start is verified across the
+    regime change (before WO-5: `NOT_VERIFIED`, `PHASE_REGIME_CHANGED(U-PHF)`)."""
     report = _check("OPT-N1", _run("OPT-N1", records))
-    assert report["status"] == "NOT_VERIFIED", report["reasons"]
+    assert report["status"] == _expected_text("OPT-N1", "status") == "INFEASIBLE_REPORTED"
     (reason,) = report["reasons"]
-    assert "V4" in reason["detail"]
+    assert reason["code"] == "INFEASIBLE_REPORTED", reason
     (start,) = report["starts"]
-    (v4,) = (check for check in start["checks"] if check["check"] == "V4")
-    assert v4["outcome"] == "fail"
-    assert v4["phase_regime_changed"] == ["PHASE_REGIME_CHANGED(U-PHF)"]
+    assert start["ipopt_status"] == 2, start["ipopt_message"]
+    assert report["candidate"] is None
+
+
+def test_g10_opt_a3_reaches_the_bubble_point(records: Path) -> None:
+    """G10 (OPT-A3), the part that holds: Ipopt's optimum of the held LIQUID problem is the
+    bubble point (an mpmath root, `benchmarks/opt/analytic.py`): |T − T_b| ≤ 1e-6 K, taken through
+    the exact liquid energy balance T = T_in + Q/Σ n c_p (|Q − Q*| ≤ 3e-4 W)."""
+    report = _check("OPT-A3", _run("OPT-A3", records))
+    (start,) = report["starts"]
+    assert start["ipopt_status"] == 0, start["ipopt_message"]
+    q = start["final_decisions"]["U-PHF.Q_spec"]
+    q_star = _expected("OPT-A3", "Q")
+    assert abs(q - q_star) / 300.0 <= 1e-6, (q, q_star)
+
+
+@pytest.mark.xfail(
+    strict=True,
+    reason="OPT_DECISIONS D-37 (escalated): the cold re-solve's K04 certificate is ILL_CONDITIONED "
+    "within ~0.01 W (~3e-5 K) of the bubble point (the full system bifurcates there), so V1 "
+    "cannot pass at a lifted split's phase-boundary optimum",
+)
+def test_g10_opt_a3_is_verified_with_its_phase_row_active(records: Path) -> None:
+    """G10 as designed: `KKT_POINT_VERIFIED`, `phase_bounds_active = [U-PHF]`, `regime_note`."""
+    report = _check("OPT-A3", _run("OPT-A3", records))
+    assert report["status"] == "KKT_POINT_VERIFIED", report["reasons"]
+    candidate = report["candidate"]
+    assert [item["unit"] for item in candidate["phase_bounds_active"]] == ["U-PHF"]
+    assert "regime_note" in candidate
+    (item,) = candidate["phase_bounds_active"]
+    mu = _expected("OPT-A3", "multiplier")
+    assert abs(item["multiplier"] - mu) <= 1e-4 * mu, (item, mu)
 
 
 def test_c0_an_assessment_objective_reaches_the_hand_cost_optimum(records: Path) -> None:

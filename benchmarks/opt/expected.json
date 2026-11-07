@@ -17,6 +17,13 @@
     "objective": "0.36",
     "r": "0.3"
   },
+  "OPT-A3": {
+    "Q": "14232.3545944320614317687774977",
+    "T": "347.441181981440204772562591659",
+    "multiplier": "0.373970904895325103155708045392",
+    "objective": "-3.47441181981440204772562591659",
+    "phase_row": "phase.U-PHF.bubble"
+  },
   "OPT-C0": {
     "Q": "9000.0",
     "multiplier": "0.03",
@@ -26,14 +33,16 @@
   "OPT-N1": {
     "T_min": "355.0",
     "liquid_held_Q": "16500.0",
-    "reason": "PHASE_REGIME_CHANGED(U-PHF)",
-    "status": "NOT_VERIFIED"
+    "reason_before_WO-5": "PHASE_REGIME_CHANGED(U-PHF)",
+    "status": "INFEASIBLE_REPORTED",
+    "status_before_WO-5": "NOT_VERIFIED"
   },
   "bubble_point_K": "347.441181981440204772562591659",
   "flowsheets": {
     "OPT-A1": "OPT-A1",
     "OPT-A2": "OPT-A2",
     "OPT-A2b": "OPT-A2b",
+    "OPT-A3": "OPT-A1",
     "OPT-C0": "OPT-A1",
     "OPT-N1": "OPT-A1"
   },
@@ -42,7 +51,8 @@
     "OPT-A2/Q": "0.4",
     "OPT-A2/r": "0.277777777777777789256935594118",
     "OPT-A2b/T": "0.193548387096774193548387096774",
-    "OPT-A2b/r": "0.277777777777777789256935594118"
+    "OPT-A2b/r": "0.277777777777777789256935594118",
+    "OPT-A3/Q": "0.303560284503575714117432763278"
   },
   "margins_K": {
     "OPT-A1/0": "12.441181981440204772562591659",
@@ -65,6 +75,9 @@
     "OPT-A2b": [
       0.5,
       320.0
+    ],
+    "OPT-A3": [
+      10500.0
     ],
     "OPT-C0": [
       10500.0
