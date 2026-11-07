@@ -892,6 +892,10 @@ def run_revision_session(
         solve_path["warm_start"] = warm.as_document()
         if coupling_member is not None:
             solve_path["warm_start"]["coupling"] = dict(coupling_member)
+        external = coupled_start.external if coupled_start is not None else None
+        if external is not None and route.solve_path == "revision_coupled":
+            # ADR 0070 D9 (§5.7): the k = 0 child starts of a job source.
+            solve_path["warm_start"]["external"] = external
     artifacts: dict[str, Any] = {
         "solve-events.json": [event.as_document() for event in trace.events],
         "structural-report.json": result.report.as_document(),
@@ -1046,7 +1050,10 @@ def _recorded_coupled_start(recorded: Any) -> CoupledStart | None:
     compatibility, bounds and opening, and must write the same record."""
     member = recorded.get("warm_start") if isinstance(recorded, Mapping) else None
     coupling = member.get("coupling") if isinstance(member, Mapping) else None
-    return recorded_coupling_start(coupling) if isinstance(coupling, Mapping) else None
+    if not isinstance(coupling, Mapping):
+        return None
+    assert isinstance(member, Mapping)
+    return recorded_coupling_start(coupling, member.get("external"))
 
 
 def reproduce_bundle(

@@ -168,6 +168,9 @@ class ExternalAnswer:
     floor_T: float | None = None  # noqa: N815
     documents: Mapping[str, Any] = field(default_factory=dict)
     attributed_request: Mapping[str, Any] | None = None
+    #: ADR 0070 D6: the result's exported start profile (a start-capable variant's `ok`), the
+    #: next experiment's start for that unit; `None` otherwise.
+    profile_sha256: str | None = None
 
 
 @dataclass(frozen=True)

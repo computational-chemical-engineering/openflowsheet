@@ -64,7 +64,7 @@ from __future__ import annotations
 import json
 import logging
 from collections.abc import Callable, Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Any, Final, Self
 
@@ -80,8 +80,11 @@ from openflowsheet.application.coupled_run import (
     COUPLING_NAME,
     CoupledStart,
     LiveExperiments,
+    external_starts,
+    external_units,
     iterate_start,
     job_coupling_start,
+    unit_variant,
 )
 from openflowsheet.application.jobs.interrupt import CancelReason, JobInterrupted
 from openflowsheet.application.jobs.model import (
@@ -90,6 +93,7 @@ from openflowsheet.application.jobs.model import (
     Interruption,
     TerminalStatus,
 )
+from openflowsheet.application.revision_binding import RevisionBinding
 from openflowsheet.application.revision_run import (
     Route,
     RunUnsupportedError,
@@ -257,25 +261,37 @@ def explicit_warm_start_candidate(context: RunContext, job_id: str) -> WarmStart
 
 
 def declared_coupled_start(
-    context: RunContext, declaration: WarmStartDeclaration | None, solve_path: str
+    context: RunContext, declaration: WarmStartDeclaration | None, bound: Route
 ) -> CoupledStart | None:
     """ADR 0070 D2–D3 (X02 design note §5.2): the declared outer start w₀, with its integrity
     outcome. A `coupling` iterate is w₀ on any route (the routes without an outer iteration
     record it rejected); otherwise, on `revision_coupled`, a declared `job_id` gives the last
     iterate of that job's `external-coupling.json`, the sibling of its `solution-state.json`.
-    `None` when nothing was declared that the route reads."""
+    `None` when nothing was declared that the route reads. On `revision_coupled` a `job_id` also
+    gives the k = 0 child starts of the start-capable units (ADR 0070 D2, the `external`
+    sub-record), from that record's last iterate and the project's profile store."""
     if declaration is None:
         return None
+    path: Path | None = None
+    job = bound.solve_path == "revision_coupled" and declaration.job_id is not None
+    if job:
+        assert declaration.job_id is not None
+        store = context.store
+        with store.reading() as connection:
+            found = store.solution_of_job(connection, declaration.job_id)
+        path = None if found is None else (context.root / found[1]).with_name(COUPLING_NAME)
     if declaration.coupling is not None:
-        return iterate_start(declaration.coupling)
-    if solve_path != "revision_coupled" or declaration.job_id is None:
+        start = iterate_start(declaration.coupling)
+    elif job:
+        start = job_coupling_start(path)
+    else:
         return None
-    store = context.store
-    with store.reading() as connection:
-        found = store.solution_of_job(connection, declaration.job_id)
-    return job_coupling_start(
-        None if found is None else (context.root / found[1]).with_name(COUPLING_NAME)
-    )
+    if job:
+        assert isinstance(bound.binding, RevisionBinding)
+        targets = {unit.unit_id: unit_variant(unit) for unit in external_units(bound.binding)}
+        profiles = external_starts(path, targets, ExperimentStore(context.root).profile)
+        start = replace(start, profiles=profiles)
+    return start
 
 
 class _RecordingSink:
@@ -584,7 +600,7 @@ class _Body:
                 and WARM_START_SOURCE in policy.initializer_chain
             ):
                 warm_start = warm_start_candidate(self.context, self.job.job_id, body.revision_id)
-            coupled_start = declared_coupled_start(self.context, body.warm_start, bound.solve_path)
+            coupled_start = declared_coupled_start(self.context, body.warm_start, bound)
             experiments = None
             if bound.solve_path == "revision_coupled":
                 experiments = self._experiments(sink, emit_records)

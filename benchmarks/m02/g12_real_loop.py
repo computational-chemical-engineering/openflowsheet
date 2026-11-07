@@ -92,7 +92,7 @@ class TimedExperiments(LiveExperiments):
         self.cache = cache
         self.calls: list[dict[str, Any]] = []
 
-    def evaluate(self, unit: Any, variant: Any, inlet: Any) -> Any:
+    def evaluate(self, unit: Any, variant: Any, inlet: Any, start: str | None = None) -> Any:
         started = time.perf_counter()
         outcome = self.runner.run(
             variant,
@@ -100,6 +100,7 @@ class TimedExperiments(LiveExperiments):
             unit.components,
             unit.n_tubes,
             cache=self.cache,
+            start=start,
         )
         ended = time.perf_counter()
         attempt = outcome.attempts[-1] if outcome.attempts else {}
