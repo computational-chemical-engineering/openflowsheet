@@ -1000,6 +1000,44 @@
           ],
           "minLength": 1,
           "description": "OPT §4.8: V1's re-solve bundle, relative to the optimisation record."
+        },
+        "phase_bounds_active": {
+          "type": "array",
+          "description": "OPT §4.7: the start's held-regime phase rows active at the candidate (V3's active set): the unit (a lifted split's) or stream (a declared thermal port's) it holds, the row, its scaled slack (row / nominal) and V5's multiplier.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "unit",
+              "row",
+              "slack_scaled",
+              "multiplier"
+            ],
+            "properties": {
+              "unit": {
+                "type": "string",
+                "minLength": 1
+              },
+              "row": {
+                "type": "string",
+                "minLength": 1
+              },
+              "slack_scaled": {
+                "type": "number"
+              },
+              "multiplier": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              }
+            }
+          }
+        },
+        "regime_note": {
+          "type": "string",
+          "minLength": 1,
+          "description": "OPT §4.6 (E01 review N5): present when phase_bounds_active or the assessment's regime_bounds_active is non-empty; the status is relative to the held regime."
         }
       }
     },

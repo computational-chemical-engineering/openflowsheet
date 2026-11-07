@@ -51,6 +51,7 @@ from openflowsheet.models.syn001.flowsheet import Syn001Flowsheet
 from openflowsheet.numerics.scaling import REGISTERED_NOMINALS, Scaling
 from openflowsheet.orchestrator.region import LABEL_KIND
 from openflowsheet.studies.nlp.host import CertifiedPoint, NlpHost, Syn001NlpHost, as_host
+from openflowsheet.studies.nlp.phase import PHASE_COMPONENT, PhaseRows
 
 if TYPE_CHECKING:
     from openflowsheet.assessment.program import AssessmentProgram
@@ -548,6 +549,13 @@ class FullSpaceNlp:
         self.output_blocks: tuple[OutputBlock, ...] = ()
         if self.assessment is not None:
             self._bind(self.assessment)
+        #: OPT §4.7: the start's held-regime phase rows, the second output block (a revision
+        #: host's; SYN-001's `phase_rows` is `None`, so M03's gray box is unchanged).
+        self.phase: PhaseRows | None = None
+        if point is not None:
+            rows = host.phase_rows(point)
+            if rows is not None and rows.rows:
+                self._hold_phases(rows)
 
     def _bind(self, binding: AssessmentBinding) -> None:
         """The gray box's outputs over the program's twin with the decisions symbolic (E01
@@ -574,6 +582,34 @@ class FullSpaceNlp:
                 jacobian=self._assessment_output_jacobian,
             )
         )
+
+    def _hold_phases(self, rows: PhaseRows) -> None:
+        """The phase rows as an output block over their twin with the decisions symbolic; each
+        row is `a/nominal ≥ 0` already, so its scale is 1 (§4.7)."""
+        self.phase = rows
+        self.phase_twin: ParametricTwin = rows.twin(self.decision_ids)
+        self._add_block(
+            OutputBlock(
+                name="phase",
+                constraint=PHASE_COMPONENT,
+                ids=rows.ids,
+                scales=MappingProxyType({name: 1.0 for name in rows.ids}),
+                admissibility=rows.nominals,
+                values=self._phase_values,
+                jacobian=self._phase_jacobian,
+            )
+        )
+
+    def _phase_values(self, z: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
+        x, decisions = self.split(z)
+        return np.asarray(self.phase_twin.residual(x, decisions), dtype=np.float64)
+
+    def _phase_jacobian(self, z: npt.NDArray[np.float64]) -> sp.csc_matrix:
+        x, decisions = self.split(z)
+        jacobian = _twin_jacobian(self.phase_twin, x, decisions)
+        if self.restricted:
+            jacobian = jacobian[:, self._columns]
+        return sp.csc_matrix(jacobian)
 
     def _add_block(self, block: OutputBlock) -> None:
         """Append an output block; its ids must be new."""

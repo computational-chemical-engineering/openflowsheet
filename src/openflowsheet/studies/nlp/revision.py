@@ -83,6 +83,7 @@ from openflowsheet.studies.nlp.request import (
     static_readiness,
 )
 from openflowsheet.studies.nlp.revision_host import ROUTE, DecisionMap, RevisionNlpHost
+from openflowsheet.studies.nlp.verification import CandidateVerification
 from openflowsheet.verify.certificate import CheckPolicy
 
 OPTIMIZATION_FORMAT: Final = "openflowsheet-optimization-v1"
@@ -93,6 +94,12 @@ REVISION: Final = "revision-document.json"
 REPORT: Final = "optimization-report.json"
 #: §4.5: a start that fails the start phase; its arguments are the start and the code.
 START_NOT_CERTIFIED: Final = "START_NOT_CERTIFIED"
+#: §4.7: a held regime with no phase row and no bound that holds it (a start-phase refusal).
+REGIME_MARGIN_UNDEFINED: Final = "REGIME_MARGIN_UNDEFINED"
+#: §4.6 (E01 N5): the candidate's words when a phase or regime row is active.
+PHASE_REGIME_NOTE: Final = (
+    "KKT point of the held-regime problem; the physical derivative across the boundary is one-sided"
+)
 
 Progress = Callable[[str, Mapping[str, Any]], None]
 
@@ -222,6 +229,13 @@ def optimize_revision(
             failures[index] = f"{START_NOT_CERTIFIED}({index}, {code})"
             detail = "; ".join(reason.detail for reason in found) or readiness.message
             failures[index] += f": {detail}"
+        elif readiness.point is not None:
+            # §4.7: a held regime no phase row (and no bound) can hold refuses the start.
+            undefined = host.phase_rows(readiness.point).undefined
+            if undefined:
+                failures[index] = f"{START_NOT_CERTIFIED}({index}, {REGIME_MARGIN_UNDEFINED}): " + (
+                    "; ".join(f"{REGIME_MARGIN_UNDEFINED}({unit})" for unit in undefined)
+                )
     bound = _Bound(formulation, (), None)
     if parsed.assessment is not None:
         bound = _bind_assessment(parsed.assessment, formulation, host, starts, failures)
@@ -284,19 +298,17 @@ def optimize_revision(
         records.append(_start_record(formulation, readiness, run, index))
     verified = [runs[index] for index in verdict.verified_starts]
     candidate = adapter._candidate(verified)
+    assessment = assessment_record(formulation, bound.closure(host, starts, solver), candidate)
     candidate_document = None
     if candidate is not None:
         best = next(run for run in verified if run.verification is candidate)
         candidate_document = {
             **candidate.as_document(),
             **_candidate_members(host, document, formulation, best, sha),
+            **_phase_members(host, starts[best.index], candidate, assessment),
         }
     report = OptimizationReport(
-        formulation=formulation_record(
-            formulation,
-            _declared(starts),
-            assessment_record(formulation, bound.closure(host, starts, solver), candidate),
-        ),
+        formulation=formulation_record(formulation, _declared(starts), assessment),
         model=host.model_record(),
         solver=solver_record(solver, adapter.solver_environment()),
         hessian_policy=dict(HESSIAN_POLICY),
@@ -612,6 +624,35 @@ def _candidate_members(
         },
         "resolve_record": f"starts/{run.index}/resolve" if point.bundle_ref else None,
     }
+
+
+def _phase_members(
+    host: RevisionNlpHost,
+    readiness: StartReadiness,
+    candidate: CandidateVerification,
+    assessment: Mapping[str, Any] | None,
+) -> dict[str, Any]:
+    """§4.7/§4.6: `phase_bounds_active` — the candidate's start's phase rows in V3's active set,
+    each with its unit (a split's, or a declared port's stream), its scaled slack and V5's
+    multiplier — and `regime_note` when it or the assessment's `regime_bounds_active` is
+    non-empty."""
+    assert readiness.point is not None
+    rows = host.phase_rows(readiness.point)
+    multipliers = candidate.kkt.multipliers if candidate.kkt is not None else {}
+    active = [
+        {
+            "unit": rows.row(item.target).unit,
+            "row": item.target,
+            "slack_scaled": item.slack,
+            "multiplier": multipliers.get(item.name),
+        }
+        for item in candidate.active_set
+        if item.kind == "constraint" and item.target in set(rows.ids)
+    ]
+    members: dict[str, Any] = {"phase_bounds_active": active}
+    if active or (assessment is not None and assessment.get("regime_bounds_active")):
+        members["regime_note"] = PHASE_REGIME_NOTE
+    return members
 
 
 class _Record:

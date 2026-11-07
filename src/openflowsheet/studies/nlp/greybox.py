@@ -544,6 +544,7 @@ def solve_start(
             optimizer_state=optimizer_state,
             closure=nlp.closure,
             held=held,
+            phase=nlp.phase,
         )
     except Exception as error:  # noqa: BLE001 - recorded; the start then has no V outcomes
         run.note(f"verification raised {type(error).__name__}: {_first_line(error)}")

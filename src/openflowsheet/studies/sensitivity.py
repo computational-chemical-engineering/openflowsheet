@@ -436,6 +436,7 @@ def evaluate_sensitivity(
     certificate: CertificateEvidence | None = None,
     splits: Sequence[SplitRegime] = (),
     twin_factory: TwinFactory = compile_parametric_twin,
+    held: Sequence[str] = (),
 ) -> SensitivityResult:
     """Spec §3.5-§3.7: qualify the state, then solve once, forward and/or adjoint.
 
@@ -443,6 +444,9 @@ def evaluate_sensitivity(
     toys) and Q1′ is recorded `not_applicable`. `splits` are the lifted phase splits at `x` with
     their margins (Q4, Q4′); empty means the problem has none. `twin_factory` is the twin's
     compiler, replaceable only so that a test can hand the guard a twin that is not the base.
+    `held` (OPT design §4.7, Q4's *held* mode) names split units whose phase-admissibility row is
+    active at an optimiser's candidate: Q4 records them `held` instead of refusing
+    `PHASE_BOUNDARY`. Only OPT's V5 passes it; empty, Q4 is unchanged.
 
     The base problem's `residual` and `jacobian` are evaluated once each, and the twin's
     `residual`, `jacobian_x` and `jacobian_p` once each (A03). Nothing is solved by differencing.
@@ -461,7 +465,7 @@ def evaluate_sensitivity(
         if unknown:
             raise ValueError(f"output {output.output_id!r} names unknown variables {unknown}")
 
-    run = _Run(host, x, request, certificate, tuple(splits), twin_factory)
+    run = _Run(host, x, request, certificate, tuple(splits), twin_factory, tuple(held))
     return run.result()
 
 
@@ -476,12 +480,14 @@ class _Run:
         certificate: CertificateEvidence | None,
         splits: tuple[SplitRegime, ...],
         twin_factory: TwinFactory,
+        held: tuple[str, ...] = (),
     ) -> None:
         self.host = host
         self.x = x
         self.request = request
         self.certificate = certificate
         self.splits = splits
+        self.held = held
         self.twin_factory = twin_factory
         self.outcomes: dict[str, QualificationOutcome] = {}
         self.refusals: list[Refusal] = []
@@ -846,18 +852,25 @@ class _Run:
 
     def _regimes(self) -> None:
         """Q4 and Q4′: every TP split — and every PH split with a margin (OPT design §4.2.4) — at
-        least `τ_regime` from its boundary; every split TP or margined."""
+        least `τ_regime` from its boundary; every split TP or margined. A unit in `held` (OPT
+        §4.7) is not refused: its regime is held by an active phase row, and Q4 records it."""
         tp = [split for split in self.splits if split.kind == "TP" or split.margin is not None]
         ph = [split for split in self.splits if split.kind != "TP" and split.margin is None]
         if not tp:
             self._record("Q4", "not_applicable", reason="no TP-type lifted split")
         else:
             near = [split for split in tp if split.margin is None or not split.margin >= TAU_REGIME]
+            held = [split.unit_id for split in near if split.unit_id in self.held]
+            near = [split for split in near if split.unit_id not in self.held]
+            detail: dict[str, Any] = {}
+            if held:
+                detail["held"] = held
             self._record(
                 "Q4",
                 "fail" if near else "pass",
                 threshold=TAU_REGIME,
                 splits=[split.as_document() for split in tp],
+                **detail,
             )
             for split in near:
                 self._refuse(

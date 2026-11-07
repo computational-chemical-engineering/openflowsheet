@@ -67,6 +67,7 @@ from openflowsheet.studies.nlp.host import (
     HostKind,
     RegimeRecord,
 )
+from openflowsheet.studies.nlp.phase import PhaseRows, phase_rows
 from openflowsheet.studies.sensitivity import (
     CertificateEvidence,
     Mode,
@@ -290,6 +291,7 @@ class _RevisionPoint:
     run: RouteRun | None
     system: HeldSystem | None = None
     compiled: CompiledProblem | None = field(default=None, repr=False)
+    phase: PhaseRows | None = field(default=None, repr=False)
 
     @property
     def region(self) -> RegionResult | None:
@@ -566,10 +568,12 @@ class RevisionNlpHost:
         outputs: Sequence[OutputFunctional],
         *,
         mode: Mode = "both",
+        held: Sequence[str] = (),
     ) -> SensitivityResult:
         """M03's sensitivity (ADR 0031) at the point on its held system, with its certificate
         (Q1′) and its splits' margins (Q4, Q4′). The twin is the host's cached one when the
-        requested parameters include every decision (the same function), else the point's own."""
+        requested parameters include every decision (the same function), else the point's own.
+        `held`: the split units Q4 records as held by an active phase row (§4.7; V5 only)."""
         system = self.held_system(point)
         assert point.spec is not None and point.state is not None
         spec = point.spec
@@ -609,6 +613,7 @@ class RevisionNlpHost:
             ),
             splits=self.regimes(point).splits,
             twin_factory=twin_factory,
+            held=tuple(held),
         )
 
     def twin(self, decision_ids: Sequence[str]) -> ParametricTwin:
@@ -647,7 +652,41 @@ class RevisionNlpHost:
                 bounds[name] = VariableBound(None, None, f"no_declared_bound({kind})")
         return bounds
 
-    def phase_rows(self, point: CertifiedPoint) -> None:
-        """The held-regime admissibility rows are WO-5's (§4.7); until then a revision holds its
-        regimes by V4 alone, as SYN-001 does (gate G9's pre-WO-5 expectation)."""
-        return None
+    def phase_rows(self, point: CertifiedPoint) -> PhaseRows:
+        """The start's held-regime admissibility rows (§4.7), once per point: one per held
+        LIQUID/VAPOR lifted split with a margin (its `regimes` record) and one per declared
+        single-phase thermal port; `undefined` names the held regimes no row can hold."""
+        handle = _handle(point)
+        if handle.phase is None:
+            assert point.spec is not None and point.state is not None
+            route = handle.route
+            assert route is not None
+            flowsheet = route.binding.flowsheet
+            lifted = {
+                split.unit: split
+                for split in region_splits(
+                    instances_of(flowsheet), flowsheet.units(), flowsheet.components
+                ).splits
+            }
+            metadata = self._compiled_at(point).metadata
+            handle.phase = phase_rows(
+                point.spec,
+                point.state,
+                [
+                    (
+                        record,
+                        lifted[record.unit_id].feed,
+                        lifted[record.unit_id].temperature,
+                        lifted[record.unit_id].pressure,
+                    )
+                    for record in self.regimes(point).splits
+                ],
+                flowsheet.provider,
+                flowsheet.components,
+                EvaluationContext(
+                    model_version=metadata.model_version,
+                    constants_sha256=metadata.constants_sha256,
+                    phase_signature=None,
+                ),
+            )
+        return handle.phase

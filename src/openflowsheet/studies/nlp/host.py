@@ -15,7 +15,8 @@ and its K04 certificate at given decision values):
 - `held_system(point)`: the square system the NLP's equalities are (§4.2.1) — for SYN-001 every
   row but its two alias rows, every column free, no label rows;
 - `regimes(point)`: the attempt signature and every phase split's regime and margin (§4.2.4);
-- `sensitivity(point, parameters, outputs)`: M03's sensitivity (ADR 0031) on the held system;
+- `sensitivity(point, parameters, outputs, held=units)`: M03's sensitivity (ADR 0031) on the held
+  system; `held` is Q4's held mode (§4.7), passed only by V5;
 - `twin(decision_ids)`: the parametric twin with the decisions symbolic, compiled once per
   decision ids and cached by the host (the same function at every start);
 - `phase_rows(point)`: the phase-regime admissibility rows (§4.7, WO-5); `None` for SYN-001;
@@ -177,6 +178,7 @@ class NlpHost(Protocol):
         outputs: Sequence[OutputFunctional],
         *,
         mode: Mode = "both",
+        held: Sequence[str] = (),
     ) -> SensitivityResult: ...
 
     def twin(self, decision_ids: Sequence[str]) -> ParametricTwin: ...
@@ -281,8 +283,12 @@ class Syn001NlpHost:
         outputs: Sequence[OutputFunctional],
         *,
         mode: Mode = "both",
+        held: Sequence[str] = (),
     ) -> SensitivityResult:
-        """`syn001_sensitivity` at the point's solve, with its certificate."""
+        """`syn001_sensitivity` at the point's solve, with its certificate. SYN-001 has no
+        phase rows (`phase_rows` is `None`), so nothing is ever held by one."""
+        if held:
+            raise ValueError(f"SYN-001 holds no regime by a phase row: held={list(held)}")
         handle = _handle(point)
         return syn001_sensitivity(
             handle.sheet,
