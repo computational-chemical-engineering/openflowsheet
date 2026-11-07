@@ -491,7 +491,7 @@ def solve_start(
         return run
     x, decisions = nlp.split(run.final_primal)
     run.final_decisions = tuple(decisions[name] for name in formulation.decision_ids)
-    optimizer_state = dict(zip(nlp.variable_ids, (float(value) for value in x), strict=True))
+    optimizer_state = dict(zip(nlp.spec.variable_ids, (float(value) for value in x), strict=True))
     try:
         run.verification = verify_candidate(
             host,

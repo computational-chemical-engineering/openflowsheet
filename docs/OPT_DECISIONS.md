@@ -220,3 +220,14 @@ produced them. The design-lane ruling round is folded into OPT's single `reviewe
   (`test_m07a_surface_chain.py`, `test_t08_w2_surface_digest.py` pass).
 - Audited env (m05's `.venv-nlp`, `m03_nlp_check.sh`): 18 passed (the script runs the `nlp`-marked tests only; WO-3's
   tests are default-env tests).
+
+## WO-4 (formulation and gray box on the revision host, verification, records, benchmarks)
+
+- D-23. DECISION: `FullSpaceNlp` on a held system (lifts D-7) → `restricted` iff the system holds columns or has
+  label rows; then `variable_ids` = the free columns in spec order, `split` returns the full state vector (held columns
+  at their certified values, index arrays built once), the equality rows are the system's rows (region order) then its
+  labels (`x[out] − x[src]`, constant `+1/−1` Jacobian, scaled by K03's temperature nominal), Jacobian columns and an
+  assessment block's columns restricted to the primal; bounds from the host's `bounds(point)` where the host has one
+  (§4.2.3), else M03's `_bounds`. An unrestricted system (SYN-001; every corpus revision but a held PH split) takes
+  M03's code path unchanged. Alternative: one code path for both (column selection by an identity index changes no
+  value but re-canonicalises the CSC; G2 would have to prove it). Reversible by: the WO-4 formulation commit.
