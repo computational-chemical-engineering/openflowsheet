@@ -328,3 +328,10 @@ of claims the package no longer makes (warm variant unregistered, neighbour spee
 X02 merges after Frank accepts ADR 0070 (Q5). OPT: WO-1 SYN-001 bit-identical (dump `cmp`, both envs), F0 PASS; WO-2
 F1 holds (8 cases, 0 entries differ), F2 holds for composition-independent K; D-12 (Q4′ refuses splits not judged by
 tp_margin) → for OPT's reviewer.
+
+## 2026-11-07 — X05 merged into main (`3e93c9a7`)
+
+No-squash merge of `wp/X05` `1e5b3252` (main had moved by docs only). Push CI 42405801772/42405801801 green; RC
+dispatch 42397255469 green; gate PASS 15138 at `830e7556`. On main after merge: F0 PASS (M1–M9), support matrix 0
+problems, harvest + X05 lock tests 54 passed. ADR 0069 stays Proposed; its register lines wait for Frank. Worktree
+removed.

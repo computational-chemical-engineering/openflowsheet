@@ -125,9 +125,9 @@ Am. 1–2). Foundations F0–F8 are designed in wave W1 during 0.4, then built i
 - **RP: MERGED** into main `ad1ffd74` (manifest `evidence/S15/fd28ff7b…` tested; gate PASS 15070; CI 42374299572
   green). Before 0.4.0's K3: schema ADR admitting `REL[0-9]{3,}`; S-6 rehearsal of never-run steps; Frank: ADR 0055
   acceptance, F-8.
-- **X05** (`wp/X05` `1e5b3252`, ADR 0069 Proposed): review fixed (WO-4); manifest `evidence/X05/7c8d05e5…` `tested`
-  31/31; gate PASS 15138; RC dispatch 42397255469 green (dist, clean-install both legs). **Merge when push CI on
-  `1e5b3252` is green**; register lines + ADR 0007 Am. 2 on Frank's acceptance. Frank: Q-F1…F3, acceptance.
+- **X05: MERGED** into main `3e93c9a7` (manifest `evidence/X05/7c8d05e5…` tested 31/31; gate PASS 15138; RC
+  dispatch 42397255469 + push CI green; F0 PASS on main). On Frank's acceptance of ADR 0069: register lines, ADR 0007
+  Am. 2, R-140 "Lifted by X05". Before the cut: `[4, "x05.*"]` in the 0.4 gate (specifier). Frank: Q-F1…F3.
 - **X02** (`wp/X02` `c05a9e84`, ADR 0070 Proposed, Am. 15): WO-1…7 done; manifest `evidence/X02/2ab11b66…` `tested`
   (G5b, G5d (iii) `fail` with accepted_fail: warm variant not registered, neighbour speed-up withdrawn, D-32); gate
   PASS 15138; CI green. **Ready; merges after Frank accepts ADR 0070 (Q5).** At merge: R-950, c_4/c_5 vs MSG.
