@@ -32,8 +32,8 @@ inventory gains `body/inlet/T`, `body/inlet/P` and `body/n_tubes`. That no path 
 **X02 (ADR 0070, amending R-088 Q26 and ADR 0020 D7).** A solve may declare its outer start
 w₀ per coupled unit: two scalars by full path and only there, `submit_job`'s
 `body/warm_start/coupling/*/X` and `body/warm_start/coupling/*/dT_K`. They are a start, never a
-constraint: the certificate judges the converged answer; the W14-path test is
-`tests/test_x02_wo2_contract.py`.
+constraint: the certificate judges the converged answer. Their W14-path test (design note §7
+G6) lands with the outer start that reads them (X02 WO-3).
 
 **(ii) The forged bundle through every transport that reaches reproduce.** A bundle of a run that
 did not converge (`SYN-001-A02-352-vapor-guess-410`, `HOMOTOPY_STALLED`), forged to carry the
@@ -263,7 +263,7 @@ def test_t07_q26_no_external_state() -> None:
         ("submit_job", "body/budget/max_cold_experiments")
     }
     # ADR 0070 (amends R-088 Q26, ADR 0020 D7): the one registered path by which a solver state
-    # enters from outside, as a start only (its W14-path test: `tests/test_x02_wo2_contract.py`).
+    # enters from outside, as a start only (its W14-path test: X02 design note §7 G6).
     assert {(o, path) for o, path in scalars if path.split("/")[-1] in ("X", "dT_K")} == {
         ("submit_job", "body/warm_start/coupling/*/X"),
         ("submit_job", "body/warm_start/coupling/*/dT_K"),
