@@ -277,3 +277,14 @@ unsupported pending `dist`/`clean-install`.
 DECISION: one `workflow_dispatch` of `ci.yml` on `wp/X05` (run 42391223708) to run `dist`/`clean-install` for A20's
 sdist half, A21, A22 (b), A25's CI half, Q-N2. Alternative: leave them unsupported. Reversible by: n/a (CI only).
 Reviewer brief `docs/briefs/X05-reviewer.md`.
+
+## 2026-11-07 — X05 review (`8121f245`) → WO-4 fix round
+
+Code sound (49 + 14 tests, reference `--check` PASS). Must-fix: M1 — my dispatch 42391223708 lacked the RC input, so
+`dist`/`clean-install` were skipped (cancelled); re-dispatch after the main merge with main's `release_rc` input. M2 —
+merge main; RP `release-procedure.md:422` step 4 `a19.*` → `x05.*`. S1: `run/lock.py:175` re-raised memo exception
+grows its traceback (`with_traceback(None)` + depth assertion).
+DECISION: adding `[4, "x05.*"]` and `tests/test_x05_*.py` to a 0.4 gate in `release/lines/0.4.json` → deferred to the
+0.4.0 cut's specifier pass (RP §13: gate criteria and `rc_items` are design-lane fields). Alternative: build-lane edit
+now (R-921 watch item). Reversible by: the cut's specifier pass adding it.
+At merge: ADR 0069 Accepted only on Frank's word; register lines above R-950.
