@@ -70,7 +70,8 @@ in an exact cache. Measured (note §3):
   - Admission: `invalid_request` for a missing source (`warm_start_source_missing(<job>)`) and for an unknown unit
     (`warm_start_unit_unknown(<unit>)`).
 - **D2. Precedence** (note §4 D2).
-  - x₀: internal `user_start` > `job_id` > `T08-warm-v1` lineage > `traversal-G0-v1`.
+  - x₀: internal `user_start` > `job_id` (when declared, it replaces the lineage lookup) > `T08-warm-v1`
+    lineage > `traversal-G0-v1`. *Amended (X02 review, 2026-11-07):* if a declared job is rejected, `traversal-G0-v1` follows (note D-7).
   - w₀: `coupling` > `job_id`'s final iterate > the variant's `coupling.initial`.
   - Child at k = 0: `job_id`'s final profile (same variant) > cold.
   - Child at k ≥ 1: the unit's most recent `ok` experiment in the run.
@@ -78,8 +79,11 @@ in an exact cache. Measured (note §3):
   converges). A rejection is recorded, and the coupling starts from the variant's w₀. Nothing falls back after
   acceptance. B₀ = −I.
 - **D4. A child start is a variant property.** A variant whose `evaluation.profile.start` is present is
-  start-capable. The first is `pymrm-6089593-g2-nz800-s123w-v1` with runner `adapters/pymrm/child_warm.py`. That
-  runner loads the hash-pinned `child.py` and never edits it. Its behaviour (note §5.6):
+  start-capable. *Amended (X02 review, 2026-11-07):* X02 registers no start-capable variant. The measured candidate
+  `pymrm-6089593-g2-nz800-s123w-v1` (`child_warm.py`, `69c4a24d`) failed D6's decade rule (1.92e-7 against 1e-6)
+  and was about 21 % slower than the cold chain (note §3.1). It is not registered and its runner is not shipped. The
+  behaviour below is the contract for a future start-capable runner, which loads the hash-pinned `child.py` and
+  never edits it (note §5.6):
   - S1 is skipped and S2 is seeded from the start profile;
   - S3, the certificate and the acceptance criteria are unchanged;
   - on any refusal of the warm chain, the cold chain runs in the same attempt;
@@ -101,7 +105,11 @@ in an exact cache. Measured (note §3):
   - R0 takes statuses, reasons, selections and unit ids, never values, digests or ids of jobs and experiments.
   - The rerun takes every start from the record, makes no lookup, re-runs the checks, and recomputes chained starts
     from the recorded results.
-- **D8. The child program is selected by `runner_sha256`.** For v1–v3 this is the same file as today.
+  - *Amended (X02 review, 2026-11-07):* the sub-records' `reason` members are bare check names
+    (`coupling_integrity|coupling_compatibility|coupling_opening|route|external_integrity|external_compatibility`);
+    `warm_start_rejected(<check>)` is the trace message only (ADR 0024's convention).
+- **D8. The child program is selected by `runner_sha256`**, among the packaged child scripts (today `child.py`
+  alone; amended by the X02 review). For v1–v3 this is the same file as today.
 
 ## Alternatives rejected
 
@@ -129,7 +137,9 @@ in an exact cache. Measured (note §3):
 
 - A coupled flowsheet restarted from a converged run of the same revision converges at k = 0: one call, or none on an
   exact-inlet hit. A neighbouring revision restarts near its fixed point.
-- A start-capable variant saves S1 on every call after the first: about 11–15 % per call (note §3.1).
+- ~~A start-capable variant saves S1 on every call after the first: about 11–15 % per call (note §3.1).~~
+  *Amended (X02 review, 2026-11-07):* No start-capable variant is registered. The measured warm reactor chain was slower (G5c). Part B
+  ships as plumbing, tested in CI.
 - A warm-started run may reach another certified answer than a cold one: another fixed point within the coupling
   tolerance, or another steady state where the model has several. This is a change of method, recorded in the bundle
   and disclosed in the certificate, never a change of problem (ADR 0024 Consequences). It is a declared limitation
@@ -139,6 +149,11 @@ in an exact cache. Measured (note §3):
 ## Migration proof
 
 - No existing document gains a member.
+- *Amended (X02 review, 2026-11-07):* replay of pre-X02 coupled `T08-warm-v1` bundles (S-4). A coupled `T08-warm-v1` bundle written before
+  X02 with K ≥ 1 whose candidate was `absent` or `rejected` carries no `warm_start` member and reproduced `MATCH`.
+  Under Part C its rerun writes the k = 0 member (`absent`), so it reproduces `MISMATCH` on R0. Such bundles whose
+  candidate was *accepted* already reproduced `MISMATCH`: that is the Part C defect. F0 holds no such bundle. The
+  behaviour is correct; the stored documents are unchanged, only their reproduction verdict moves.
 - v1–v3, the stand-in and every registered policy behave as today. The only exception is `T08-warm-v1` bundles on
   `revision_coupled`, which gain the record they should have had.
 - F0 M1–M9 PASS.
@@ -177,12 +192,12 @@ in an exact cache. Measured (note §3):
   - the child falls back to the cold chain within the attempt.
 - **Rejected:** a cold re-check; failing on a warm refusal.
 
-**D — the warm reactor variant.**
-- **Decision:**
-  - `…-s123w-v1` runs `child_warm.py`, which loads the hash-pinned `child.py`;
-  - programs are selected by `runner_sha256`;
-  - R-224 is lifted for start-capable variants.
-- **Rejected:** editing or copying `child.py`.
+**D — the warm reactor variant** (*Amended (X02 review, 2026-11-07):*).
+- **Decision:** no warm reactor variant is registered (G5b 1.92e-7 > floor/10; G5c −21 %). Programs are selected by
+  `runner_sha256`. R-224 is lifted only for start-capable variants, and none is registered.
+- **Rejected:** registering with a raised floor, because the real loop's T floor ratio would drop from 13 to about
+  6.8; registering in the manifest-note band, because it contradicts D6; editing or copying `child.py`.
+- **Evidence:** `evidence/X02/69c4a24d…/`.
 
 **E — Q26 exception and coupled record.**
 - **Decision:**

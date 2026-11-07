@@ -64,6 +64,9 @@ states whether a start was used. Nothing that runs cold changes by one bit.
     final state.
   - Under Part B, A is warm. Its distance from the cold answer at the same inlet is bounded by the variant's registered
     `measured_path_independence_rel`, which must sit at least one decade below its `precision_floor_rel` (gate G5).
+    *Amended (X02 review, 2026-11-07, A-3):* the band 1e-7 < max ≤ 1e-6 in G5b is struck: it contradicts this rule. G5b passes iff
+    max ≤ `precision_floor_rel`/10; otherwise the variant is not registered. Raising the floor is a separate
+    decision: the EXT-COUPLING floors scale with it.
     The EXT-COUPLING floor ratios already carry that floor.
   - The start may change *which* converged point is reached: within the coupling tolerance (Part A), or which steady
     state where a model has several (§8 R2). It never changes what is accepted as converged.
@@ -83,6 +86,10 @@ states whether a start was used. Nothing that runs cold changes by one bit.
   Failing a check is recorded, and the next source follows. Nothing falls back after acceptance at the flowsheet
   level. The one bounded exception is the child's own fallback (D7), which keeps a warm request from refusing where a
   cold one would not.
+  *Amended (X02 review, 2026-11-07, A-5):* The run never fails because of a start that fails a check. A start
+  that passes its checks is the run's start: from (0, −50) the stand-in ends `COUPLING_NOT_CONVERGED`
+  (`external_refused(nh3_below_trace)` at k = 0), where the cold run verifies (G6). That is recorded, not a fallback
+  case (D3).
 - **I9 — Scientific conduct.** No placeholder paths:
   - an unsupported start is a recorded `absent` or `rejected` with a reason, never a silent cold start;
   - correctness fixtures have analytic or independent expectations (the synthetic warm child, §7 G4);
@@ -107,6 +114,11 @@ diagnostics. Medians:
 A child-level warm start can remove S1 (11 %) and shorten S2. The certificate dominates and must run whatever the
 start was. Expected gain: **about 11–15 % per call.**
 
+*Amended (X02 review, 2026-11-07, A-1):* *Measured (G5c, `evidence/X02/69c4a24d…/`):* the gain did not materialise. At 8
+inlets the warm chain took 287 s against 133 s (g12) and 383 s against 420 s (cand-C1-P1): about 21 % slower
+overall, with per-inlet ratios from 0.37 to 4.60. S1 was saved, but the KPI-drift certificate's round 2 ran at 6 of
+8 warm inlets against 4 of 8 cold. The certificate's cost is not independent of the start.
+
 ### 3.2 Where a coupled run spends its calls
 
 `benchmarks/m02/g12-real-loop-v3.json` (`c1-loop-real.json`, v3, cold from (0.15, 80 K)):
@@ -117,8 +129,9 @@ start was. Expected gain: **about 11–15 % per call.**
 - floor ratios 65 (ξ) and 13 (T).
 
 An outer start at a nearby converged w removes whole calls. A same-revision restart converges at k = 0 (one call, or
-none on an exact-inlet cache hit). **The outer start (Part A) is the large lever; the child start (Part B) adds about
-6 % end to end on top of it.**
+none on an exact-inlet cache hit). *Amended (X02 review, 2026-11-07, A-2):* **The outer start (Part A) is the lever:** G5e on v3
+restarted in 1 outer iteration and 1 call (24.9 s) against 4 iterations cold (174.9 s). The child start (Part B) gave
+no gain (§3.1).
 
 ### 3.3 Code facts
 
@@ -180,10 +193,13 @@ Rejected:
 
 | Start | 1st | 2nd | 3rd | 4th |
 | --- | --- | --- | --- | --- |
-| x₀ (inner, k = 0) | internal `user_start` (harness only) | `warm_start.job_id`'s solution state (`explicit-v1`) | lineage under `T08-warm-v1` (`store-latest-verified-lineage-v1`) | `traversal-G0-v1` |
+| x₀ (inner, k = 0) | internal `user_start` (harness only) | `warm_start.job_id`'s solution state (`explicit-v1`); when declared, it replaces the lineage lookup | lineage under `T08-warm-v1` (`store-latest-verified-lineage-v1`), only when no job is declared | `traversal-G0-v1` |
 | w₀ (outer) | `warm_start.coupling` | `warm_start.job_id`'s final coupling iterate | the variant's `coupling.initial` | — |
 | child, k = 0 | `warm_start.job_id`'s final experiment profile (same variant, start-capable) | cold | — | — |
 | child, k ≥ 1 | the unit's most recent `ok` experiment in this run (start-capable variant) | cold | — | — |
+
+*Amended (X02 review, 2026-11-07, A-4):* x₀ row: a declared `job_id` replaces the lineage lookup. If it is rejected,
+`traversal-G0-v1` follows (D-7).
 
 **Explicit sources.**
 - An explicit job may be any solve job of the project that has a `solution_state` artifact, whatever its certificate
@@ -227,6 +243,12 @@ Decisions:
 - v1–v3 and the stand-in are not start-capable, and they run exactly as today.
 - The new variant is `pymrm-6089593-g2-nz800-s123w-v1`. Its runner is a new script, `adapters/pymrm/child_warm.py`
   (D7), selected by `runner_sha256` (D10).
+
+*Amended (X02 review, 2026-11-07, A-8):* *Outcome:* `…-s123w-v1` was built and measured (G5, `69c4a24d`) and is
+not registered: G5b fails I3, and G5c shows no gain. Its runner, tests, variant and campaign script left the package
+at WO-6. The Part B plumbing (§5.5) stays with no start-capable variant registered, and the synthetic child (G4)
+tests it in CI. A future start-capable runner needs a new design and its own G5. Candidates: seeding S3, a larger
+warm S2 `dt_init` (F4), a cheaper certificate.
 
 Rejected:
 - **Editing `child.py`.** It moves v1–v3 (I6).
@@ -312,6 +334,8 @@ The registered path independence (G5) bounds the effect at least two decades bel
 among `pymrm/child.py` and `pymrm/child_warm.py`. If neither matches, it returns `child.py`, so that a mismatch
 surfaces as today (handshake `environment_mismatch`). For v1–v3 this selects the same file as today. The variant
 already pins its runner by hash, so the selection adds no new identity.
+
+*Amended (X02 review, 2026-11-07, A-9):* Kept: the selection is among the packaged scripts, today `child.py` alone.
 
 ## 5. Design in detail
 
@@ -399,14 +423,17 @@ the following:
   - the profile store holds the bytes, and their sha256 equals the recorded hash.
 
   Otherwise the status is `absent`, with reason `no_profile` (the source result has none), `variant_cold_only` or
-  `profile_unavailable`. On a variant mismatch, or bytes whose hash differs, it is `rejected` with
-  `warm_start_rejected(external_compatibility|external_integrity)`.
+  `profile_unavailable`. On a variant mismatch, or bytes whose hash differs, it is `rejected` with reason
+  `external_compatibility|external_integrity` (trace: `warm_start_rejected(<check>)`, A-7).
 
 **On other routes.**
 - On `revision_eo`, a `coupling` member yields a `coupling` sub-record `rejected` with
   `warm_start_rejected(coupling_compatibility)`, and the run proceeds without it.
 - On `legacy_eo`, the whole `warm_start` member is recorded `rejected` with `warm_start_rejected(route)`, and the
   solve runs as without it.
+
+*Amended (X02 review, 2026-11-07, A-7):* The `reason` members of the `coupling` and `external` sub-records are bare check names.
+`warm_start_rejected(<check>)` is the trace message only.
 
 ### 5.3 The inner start (x₀)
 
@@ -497,6 +524,12 @@ if answer.status == "ok" and answer.profile_sha256 is not None: last[unit_id] = 
 
 ### 5.6 The warm child `adapters/pymrm/child_warm.py` (variant `pymrm-6089593-g2-nz800-s123w-v1`)
 
+*Amended (X02 review, 2026-11-07, A-8):* *Outcome:* `…-s123w-v1` was built and measured (G5, `69c4a24d`) and is
+not registered: G5b fails I3, and G5c shows no gain. Its runner, tests, variant and campaign script left the package
+at WO-6. The Part B plumbing (§5.5) stays with no start-capable variant registered, and the synthetic child (G4)
+tests it in CI. A future start-capable runner needs a new design and its own G5. Candidates: seeding S3, a larger
+warm S2 `dt_init` (F4), a cheaper certificate.
+
 **How it loads the base child.**
 - It is self-contained except for one load. It reads the base child by path, `Path(__file__).with_name("child.py")`.
 - It checks that file's sha256 against the literal `BASE_CHILD_SHA256 =
@@ -566,7 +599,7 @@ optional members are added, each present only in the case stated:
   "source": "iterate" | "job" | null,
   "status": "accepted" | "rejected" | "absent",
   "reason": null | "no_coupling_record" | "not_declared"
-            | "warm_start_rejected(coupling_integrity|coupling_compatibility|coupling_opening|route)",
+            | "coupling_integrity" | "coupling_compatibility" | "coupling_opening" | "route",
   "declared": {"<unit>": {"X": x, "dT_K": t}} | null,
   "projections": [["<unit>", "X" | "dT_K", from, to], ...]
 },
@@ -580,6 +613,9 @@ optional members are added, each present only in the case stated:
 When a start is declared but no x₀ source is (an iterate only, under a policy whose chain is empty), the inner members
 read `status: "absent", reason: "not_declared"`. The member is written iff the policy names the source or `warm_start`
 was declared.
+
+*Amended (X02 review, 2026-11-07, A-7):* The `reason` members of the `coupling` and `external` sub-records are bare check names.
+`warm_start_rejected(<check>)` is the trace message only.
 
 **`external-coupling.json`.** No schema change.
 - `iterations[0].w` is the w₀ used.
@@ -617,8 +653,11 @@ work order runs, add the entries; otherwise list them in the package build-decis
 | --- | --- | --- |
 | `warm_start_source_missing(<job>)` | api_error detail / `input` | A1 |
 | `warm_start_unit_unknown(<unit>)` | api_error detail / `input` | A2 |
-| `warm_start_rejected(coupling_integrity\|coupling_compatibility\|coupling_opening\|route\|external_integrity\|external_compatibility)` | notice | records; trace `initializer_rejected` events |
+| `warm_start_rejected(coupling_integrity\|coupling_compatibility\|coupling_opening\|route\|external_integrity\|external_compatibility)` | notice | trace `initializer_rejected` events only; records carry the bare check name (A-7) |
 | `coupling_warm_start(present\|absent)` | notice | trace message (existing event kinds only, as ADR 0024 D4) |
+
+*Amended (X02 review, 2026-11-07, A-7):* The `reason` members of the `coupling` and `external` sub-records are bare check names.
+`warm_start_rejected(<check>)` is the trace message only.
 
 `parameter_unsupported(<U>.coupling_initial.X | .dT)` keeps its bytes (`tests/test_m02_wo9_reactor.py:386-398`). Its
 catalogue entry may add an `action` naming `warm_start.coupling`, through MSG's `when` mechanism (MSG's call).
@@ -647,6 +686,12 @@ before the merge (it touches identity, replay and the certificate). Each work or
 | **WO-4** External plumbing | §5.5 complete; `ExperimentStore` profile store; result `profile_sha256`; the `external` sub-record and its R0; replay chaining; D8 disclosure; `pinned_program` by hash; synthetic warm child `tests/support/synthetic_warm_child.py` and its variant (§7 G4) | WO-3 | G4 in CI; G0's key recomputation |
 | **WO-5** The warm reactor | `child_warm.py` (§5.6) with unit tests that need no environment (hash literal = v3's `runner_sha256`, profile round-trip, AST and literal tests); provisional variant; the workstation campaign G5a–e (Opus analyses the numbers); registration of `…-s123w-v1` with the measured value | WO-4 | G5; numbers in `evidence/X02/<C>/` |
 | **WO-6** Close | MSG entries (§5.9); register entries (ADR 0070 drafts); `docs/progress.md`; manifest `status: tested`; `reviewer` pass; full gate and F0 | WO-5 | G0 full; reviewer findings resolved |
+
+*Amended (X02 review, 2026-11-07, A-8):* *Outcome:* `…-s123w-v1` was built and measured (G5, `69c4a24d`) and is
+not registered: G5b fails I3, and G5c shows no gain. Its runner, tests, variant and campaign script left the package
+at WO-6. The Part B plumbing (§5.5) stays with no start-capable variant registered, and the synthetic child (G4)
+tests it in CI. A future start-capable runner needs a new design and its own G5. Candidates: seeding S3, a larger
+warm S2 `dt_init` (F4), a cheaper certificate.
 
 **Stopping rules.**
 - If F0 or any cold test moves in WO-1–WO-4, stop: I1 is broken, and the commit is wrong until shown otherwise.
@@ -703,6 +748,10 @@ pass vacuously.
 | (e) replay of (a), (b) and (c) | `MATCH`; the record reproduced | `reproduce` |
 | (f) forged bundle: `solve-path.json`'s `coupling.declared` edited, hashes recomputed | not `MATCH` | `reproduce(rerun=true)` |
 
+*Amended (X02 review, 2026-11-07, A-6):* the registered stand-in opens everywhere in its bounds (D-11). (c) uses that loop with H₂
+make-up 0.725 mol/s, from (0.95, −50), and first proves the inner outcomes. The byte reference for (c) and (d) is a
+second cold run under the same cache state (D-10).
+
 **The Δû bound** (G3b, G5d). Use scaled coordinates: û = (X/scale_X, ΔT/scale_dT) and r̂ = (r_ξ/scale_X,
 r_T/scale_dT), at each run's final iterate (recorded per unit). Let B_c be the cold run's last non-null Broyden matrix
 (`step.B`), or −I if it converged at k = 0. Then the gate is
@@ -739,8 +788,11 @@ and the four of `benchmarks/m05/records/trust-region-study-real.coupling/S0.json
   - The metric is rel = max over ξ, T_out, and every outlet flow with |n| > 1e-12·n_tot, of |a_w − a_c|/|a_c|.
   - Max ≤ 1e-7: pass. Register `measured_path_independence_rel = max(measured, 1.56e-8)` and keep
     `precision_floor_rel = 1e-6`.
-  - 1e-7 < max ≤ 1e-6: pass with a manifest note.
-  - Max > 1e-6: fail and escalate.
+  - ~~1e-7 < max ≤ 1e-6: pass with a manifest note.~~
+  - ~~Max > 1e-6: fail and escalate.~~
+  - *Amended (X02 review, 2026-11-07, A-3):* strike the band 1e-7 < max ≤ 1e-6, which contradicts I3. Pass iff max ≤
+    `precision_floor_rel`/10; otherwise the variant is not registered. Raising the floor is a separate decision: the
+    EXT-COUPLING floors scale with it.
   - Every warm call must be accepted, with `start.used == true` at at least 7 of 8 inlets. Each fallback is listed.
 - **(c) Timing.** Report wall_warm/wall_cold per inlet (expected 0.85–0.90). Report only; no gate.
 - **(d) Real loop**, `c1-loop-real.json` pinned to the new variant (`benchmarks/x02/c1-loop-real-s123w.json`):
@@ -770,12 +822,12 @@ revisable by a revert of its isolated commit.
 
 | # | Question | Needs | Default |
 | --- | --- | --- | --- |
-| Q1 | Build the warm reactor variant (WO-5)? It gives about 11–15 % per call, about 6 % end to end on top of Part A (§3), for a new runner, a variant and a workstation campaign | Frank's preference | **Yes.** R-924, R-925 and R-927 lift "external models start cold every call" as policy. WO-5 is last and separable. |
+| Q1 | Build the warm reactor variant (WO-5)? It gives about 11–15 % per call, about 6 % end to end on top of Part A (§3), for a new runner, a variant and a workstation campaign | Frank's preference | **Yes.** R-924, R-925 and R-927 lift "external models start cold every call" as policy. WO-5 is last and separable. *Outcome (A-8):* built and measured (G5, `69c4a24d`), not registered: G5b fails I3, G5c shows no gain (§4 D4). |
 | Q2 | Should `T08-warm-v1` on the coupled route also take w₀ (and k = 0 profiles) from its lineage candidate, giving coherent warm starts without naming a job? | Frank's preference | **No.** A registered policy keeps its behaviour. Name the job, or add a new policy later (it needs a K03 member, D1). |
 | Q3 | Starts on the `experiment` operation? | Frank's preference | **No.** An experiment is a reference evaluation; history there defeats its purpose. |
 | Q4 | Study integration (M05 trust region, M03 sweeps passing the incumbent's job id) | scope call | **Out of X02.** It belongs to a follow-up in the study package. The interface (D1) is ready. |
 | Q5 | Accept ADR 0070, including ADR 0019 Amendment 15? | Frank, as for earlier contract amendments | **Build on Proposed.** Acceptance at the package review, batched with the other 0.4 Frank items. |
-| Q6 | Variant id `pymrm-6089593-g2-nz800-s123w-v1` (a public name in `list_models`) | Frank's taste | **That id.** It is a registry entry, renamable before release. |
+| Q6 | Variant id `pymrm-6089593-g2-nz800-s123w-v1` (a public name in `list_models`) | Frank's taste | **That id.** It is a registry entry, renamable before release. *Outcome (A-8):* not registered, so the id is not public. |
 | F1 | Does the k = 0 inner solve at (x*, w*) return x* bitwise, so that a same-revision rerun needs 0 calls? | fact (G3a, G5d(ii) report it) | No reliance: the gates allow ≤ 1 call. |
 | F2 | Does a schema-only surface change need Frank's description review (R-134, R-144 pattern)? | fact, from the surface-chain test's rules | No description text changes. If the chain demands a review, park it as a batched Frank item and continue. |
 | F3 | Does the G2 reactor have several steady states in its hard domain, so that a warm chain could follow another branch? | fact (G5b at 8 inlets; M01 records) | A declared limitation in ADR 0070 and the `external_model` detail. G5b catches a branch switch at the registered inlets. |
