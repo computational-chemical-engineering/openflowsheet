@@ -164,6 +164,13 @@ Format: question → choice; alternative; reversible by; commit. Batched for the
   unamended until a ruling. Default I would take: record (iii) as measured, qualify Consequences bullet 1 to "a
   neighbouring revision starts near its fixed point; on the real loop it took as many outer iterations as cold (G5d
   (iii))", and not gate on iteration count.
+  *Ruling (design lane, main `c054530b`, 2026-11-07):* the criterion stays in the note and the manifest as **failed**
+  (not removed, not relaxed); the premise (an outer start near a neighbour's fixed point saves outer iterations) is
+  recorded false for this edit; ADR 0070 withdraws the neighbour-speedup claim; the package's claims rest on (ii) and
+  identity, as D-29 did for the warm reactor. Rejected: dropping the criterion from the gate (narrows a gate after it
+  failed); holding X02 for a new design. Reversible by Frank's X02 Q7. Carried out in WO-7: note §7 G5 (d)(iii) A-10,
+  ADR 0070 Consequences bullet 1 and Acceptance evidence (status stays Proposed), manifest check
+  `G5d_iii_iterations` with result `fail`.
 
 ## Tokens for MSG's catalogue (§5.9; `wp/MSG` not merged)
 

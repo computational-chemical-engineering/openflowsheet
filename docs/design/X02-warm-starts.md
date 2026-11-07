@@ -801,6 +801,11 @@ and the four of `benchmarks/m05/records/trust-region-study-real.coupling/S0.json
   - (iii) neighbour: one parameter edit chosen by the engineer (e.g. a feed temperature + 2 K), logged, that moves w by
     more than 10× the Δû bound. Cold and warm (`job_id` = (i)) are both VERIFIED, the Δû bound holds, and the warm
     run takes fewer outer iterations than the cold one. If not, escalate: a premise has failed. Wall times reported.
+    *Amended (D-32 ruling, 2026-11-07, A-10):* Measured on v3 (S-2, `dcb499ee`): cold and warm both VERIFIED, the Δû
+    bound held (3.76e-4 ≤ 1.64e-3), the edit moved û by 83.7 bounds; warm took 4 outer iterations, as cold did (222.7 s
+    against 181.5 s). The iteration criterion is **not met** and stays recorded as failed. The premise (an outer start
+    near a neighbour's fixed point saves outer iterations) is false for this edit on the real loop; ADR 0070 withdraws
+    the claim. A later design that claims a neighbour speed-up must measure it again.
 - **(e) Part A on v3.** (d)(ii) with `c1-loop-real.json` (v3): VERIFIED, 1 outer iteration, all experiments cold
   (no `start` member).
 

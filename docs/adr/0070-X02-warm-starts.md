@@ -136,7 +136,11 @@ in an exact cache. Measured (note §3):
 ## Consequences
 
 - A coupled flowsheet restarted from a converged run of the same revision converges at k = 0: one call, or none on an
-  exact-inlet hit. A neighbouring revision restarts near its fixed point.
+  exact-inlet hit. On v3 (G5 (d)(ii)) it took 1 outer iteration and 1 call, 24.7 s against 193.7 s cold.
+  ~~A neighbouring revision restarts near its fixed point.~~
+  *Amended (D-32 ruling, 2026-11-07):* A neighbouring revision starts near its fixed point but is not claimed to
+  converge faster: on v3 with SPEC-S3-T +2 K it started about twice as close and took the same 4 outer iterations as
+  the cold run, and took longer (222.7 s against 181.5 s).
 - ~~A start-capable variant saves S1 on every call after the first: about 11–15 % per call (note §3.1).~~
   *Amended (X02 review, 2026-11-07):* No start-capable variant is registered. The measured warm reactor chain was slower (G5c). Part B
   ships as plumbing, tested in CI.
@@ -162,6 +166,8 @@ in an exact cache. Measured (note §3):
 ## Acceptance evidence
 
 - G0–G6 of note §7 pass on `wp/X02` (G5 on the workstation, numbers in `evidence/X02/<C>/`).
+- G5 (d) ran on v3 per S-2: (i), (ii) met; (iii) both VERIFIED, bound held, the iteration criterion not met (D-32
+  ruling).
 - One `reviewer` pass.
 - `review.numerical` and `review.process_model` are not set by this ADR.
 
