@@ -4,6 +4,9 @@
 - Takes effect on `main` when OPT's evidence manifest is `tested` (gates G1–G21 of the design note) and the design-lane
   `reviewer` pass is done. Until then OPT is built on `wp/OPT`.
 - Register entries are added on acceptance (drafts below, unnumbered).
+- **Amendment A, 2026-11-07** (mid-build consult, design note §9; brief `docs/briefs/OPT-architect-consult.md`): A-1 V1
+  may pass on the *phase-boundary form*; A-2 structurally zero flows are held with their rows; A-3 margins are the
+  closure's own test and rows are built only where they equal it. Status stays **Proposed**.
 
 **Author:** design lane (`architect`). **Brief:** `docs/briefs/OPT-architect.md`.
 **Design note:** `docs/design/OPT-revision-optimisation.md` holds the normative detail; § numbers below refer to it.
@@ -14,11 +17,12 @@
   `schemas/optimization-request.schema.json`; additive optional members of `optimization-report.schema.json`. ADR 0020:
   the `optimize` body's stages, ends, cancellation and outputs (§4.10).
 - **ADR 0032:** D1 — the gray box is over a host's *held-regime system* (§4.2.1), not only SYN-001's 47 variables; D3 —
-  V1 is the host's production route, cold (§4.6); D4 — bounds for further variable kinds and phase-regime admissibility
-  rows as true domain restrictions (§4.2.3, §4.7); D6 — `validate(task="optimization")` returns a `ValidationReport`
+  V1 is the host's production route, cold (§4.6), passing on the certificate or, at a guarded phase boundary, on the
+  phase-boundary form (§9.1); D4 — bounds for further variable kinds and phase-regime admissibility
+  rows as true domain restrictions (§4.2.3, §4.7), structurally zero flows held at 0 with their rows (§9.2); D6 — `validate(task="optimization")` returns a `ValidationReport`
   when given a request and an audited solver (§4.11), lifting R-129/R-191's refusal; readiness has a static and a start
   phase, and on revision hosts one certified start suffices (§4.5).
-- **ADR 0031 (Q4′, Q4):** a PH-type split given a margin is judged as a TP split; Q4 gains a *held* mode used only by
+- **ADR 0031 (Q4′, Q4):** a PH-type split given a margin is judged as a TP split (margins as §9.3); Q4 gains a *held* mode used only by
   OPT's V5 (§4.2.4, §4.7). Callers that pass neither are unchanged.
 - **ADR 0052 D10 / R-860:** the revision-flowsheet NLP host and the optimisation bindings are lifted; the other cuts stay
   (§3 D10).
@@ -26,7 +30,8 @@
   (§4.15); until it does, F7 open item 4's default holds.
 
 No `Protocol`, `CompiledProblem` method, quantity kind, check category, tolerance or `ProcessRevision` v1 member
-changes. No registered result moves.
+changes. No registered result moves. Amendment A adds no tolerance and changes no ordinary certificate: the
+phase-boundary form is OPT's V1 policy, outside K04, which nothing in `verify/` or `orchestrator/` calls.
 
 **Affected requirements:** blueprint §4.1 (Study object), §4.3 (`READY_FOR_OPTIMIZATION`), §10 (true domain
 restrictions; local stationarity is not global optimality), [A06] (the bridge); D04/A10 (audited binary, platform);
@@ -64,15 +69,27 @@ specifications.
 
 **D5. The equality set is the held-regime system:** the final converged region attempt's rows, free columns and label
 rows (recorded in memory on `RegionResult`), selected by id from the one compiled problem and twin, with regime-pinned
-columns held at their certified values. The alias rows are the plan's; Q3 is checked on them.
+columns held at their certified values. The alias rows are the plan's; Q3 is checked on them. **(Amendment A-2)** On a
+revision host, the free `molar_flow` columns exactly zero at a certified point and the held rows whose exact Jacobian
+over every other free column and every decision is zero form the *zero subsystem*; when square it is held at 0 and its
+rows dropped (exact: block-triangular, dx_Z/dd = 0), else those columns are bounded `[0, ∞)`. V4 re-derives it at the
+re-solve (`ZERO_SUBSYSTEM_CHANGED`).
 
 **D6. V1 is the production route, cold:** the candidate document re-bound on the recorded route, solved from the
 registered initializer with the job's policies and no warm start; its bundle is an ordinary revision bundle of the
-candidate, so committing the result's change-set and solving reproduces the certificate.
+candidate, so committing the result's change-set and solving reproduces the certificate. **(Amendment A-1)** V1 passes on the
+certificate (`VERIFIED`), or on the *phase-boundary form*: at a candidate where guarded LIQUID/VAPOR splits' rows are
+active and the certificate is `UNVERIFIED` only by a rank limitation, the certificate's own `grade` with the regularity
+screen of the certificate's matrix less those splits' pinned columns and dropped rows returns `VERIFIED`. The lifted
+equilibrium rows are homogeneous in the incipient phase's flows, so the declaration is singular at every bubble/dew
+boundary by construction (measured rcond₁ ≈ 2.27e-6·ΔQ/W); the form removes exactly that direction. The bundle's
+certificate stays `UNVERIFIED`, and the record says which basis passed.
 
 **D7. Phase regimes are held by admissibility rows** (bubble/dew test multiplied by the feed total for single-phase
-lifted splits; saturation distance for declared single-phase thermal ports; flow bounds for two-phase). The PH-type
-split's margin is the TP margin at its converged (T, P). An optimum on a regime boundary is `KKT_POINT_VERIFIED` *of the
+lifted splits; saturation distance for declared single-phase thermal ports; flow bounds for two-phase). **(Amendment A-3)** A
+split's margin is the closure's own test at the converged state: 1 − the region's single-phase admissibility value for
+LIQUID/VAPOR (any provider), the smaller phase flow over N0 for TWO_PHASE; a LIQUID/VAPOR row is built only where it
+equals that test at the start (*guarded*), otherwise the split is admitted *unguarded* and judged by V4's margin alone. An optimum on a regime boundary is `KKT_POINT_VERIFIED` *of the
 held-regime problem*, with `phase_bounds_active` and `regime_note`; a re-solve in another regime is `NOT_VERIFIED`
 (`PHASE_REGIME_CHANGED`).
 
@@ -104,6 +121,12 @@ elsewhere `NLP_SOLVER_UNAVAILABLE(<platform>)`. Replay runs everywhere.
 - F7's `submit_run` now; a synchronous `optimize` operation. (D8)
 - A bitwise Ipopt re-run as the replay. (D9)
 - FD or reduced-space derivatives for co-simulated units; a SciPy fallback optimizer (ADR 0032 N2 stands). (D1)
+- **Amendment A:** at a phase boundary, `NOT_VERIFIED` always; certifying a point stepped back into the interior (not a
+  KKT point there); the converged attempt's whole system as the regularity matrix (stops judging the rest of the
+  flowsheet on the declaration); a boundary form inside K04 for every solve (changes ordinary certificates). Zero-at-start
+  flows unbounded (Ipopt drives them negative) or bounded `[0, ∞)` (degenerate face, V5 LICQ fails). Margins `None`
+  with refusal, or `tp_margin` everywhere (neither is the closure's test for γ–φ VAPOR, `pr-c1-v1` or TWO_PHASE). (D5,
+  D6, D7)
 
 ## Consequences
 
@@ -124,13 +147,14 @@ their bytes are amended on purpose citing this ADR.
 Design note §6: identity G1–G3; held system and decision map G4–G6; analytic optima G7, G8, G10 (mpmath expectations
 from the SYN-001 coefficient table); regime-change and route refusals G9; default install and aarch64 G11; job ≡ library
 G12; replay G13; cancellation G14; surface chain G15; candidate = simulation G16; schema and readiness G18; cost and LCA
-against E01's hand models with an independent derivative-free optimum G19, G20; full gate and both CI legs G21.
+against E01's hand models with an independent derivative-free optimum G19, G20; full gate and both CI legs G21. Amendment A: G10 amended; G10a–G10d (phase-boundary form: anchor, mechanism,
+negatives, VAPOR symmetry), G22 (C-MW verifies), G23 (zero subsystem exactness and inertness), G24 (margins) (§9.5).
 
 ## New catalogue codes (ADR 0058 C3)
 
 Readiness and report reasons: `OPTIMIZATION_ROUTE_UNAVAILABLE`, `REVISION_UNBOUND`, `REVISION_MISMATCH`,
 `DECISION_UNIT_NOT_INTERNAL`, `DECISION_NOT_CONTINUOUS`, `TOO_MANY_STARTS`, `REGIME_MARGIN_UNDEFINED`,
-`START_NOT_CERTIFIED`, `PHASE_REGIME_CHANGED`. API refusal detail: `nlp_solver_unavailable`. Registered by whichever of
+`START_NOT_CERTIFIED`, `PHASE_REGIME_CHANGED`, `ZERO_SUBSYSTEM_CHANGED` (Amendment A-2). API refusal detail: `nlp_solver_unavailable`. Registered by whichever of
 OPT and MSG merges second.
 
 ## Register entries (drafts, unnumbered)
@@ -144,8 +168,16 @@ OPT and MSG merges second.
   Rejected: full declaration minus alias rows. Evidence: G4. Watch for: an NLP built on `revision_sensitivity_host`.
 - **OPT: V1 is the cold production route on the candidate document.** Rejected: warm start from Ipopt's state.
   Normative: §3 D6. Watch for: `warm_start` passed into V1.
-- **OPT: phase regimes held by admissibility rows; PH-type margin = TP margin at the converged (T, P); Q4 held mode for
-  V5 only.** Rejected: refusing PH-type splits; smoothing. Normative: §3 D7, §4.7. Watch for: Q4 `held` used outside V5.
+- **OPT: phase regimes held by admissibility rows; a split's margin is the closure's own test (TWO_PHASE: smaller
+  phase flow / N0); rows only where they equal it, else unguarded; Q4 held mode for V5 only.** Rejected: refusing PH-type
+  splits; smoothing; `tp_margin` everywhere; refusing splits without a TP margin. Normative: §3 D7, §4.7, §9.3. Watch
+  for: Q4 `held` used outside V5; a margin computed by a test the closure does not use.
+- **OPT: V1 at a guarded phase boundary passes on the phase-boundary form** (the certificate's matrix less the active
+  splits' pinned columns and dropped rows, unchanged screen and thresholds, the certificate's own `grade`). Rejected:
+  `NOT_VERIFIED` at every boundary; interior retreat; the attempt's whole system; a K04-wide change. Normative: §9.1.
+  Evidence: G10, G10a–G10d. Watch for: `studies.nlp.boundary` imported under `verify/` or `orchestrator/`.
+- **OPT: structurally zero flows are held with their rows (zero subsystem), not left unbounded.** Rejected: unbounded;
+  `[0, ∞)` (degenerate). Normative: §9.2. Evidence: G22, G23.
 - **OPT: R-129/R-191 superseded for `validate(task="optimization")`** — a `ValidationReport` with a request and an
   audited solver; `unsupported nlp_solver_unavailable` otherwise. Rejected: keeping `task_unsupported(optimization)`.
 - **OPT: job operation `optimize` (ADR 0019 Amendment 16); replay re-checks the certification chain, not the search.**
