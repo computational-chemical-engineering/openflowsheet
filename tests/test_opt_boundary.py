@@ -9,8 +9,10 @@
 - **G10c** negatives: a TWO_PHASE re-solve fails at (e2), a non-registered check policy at (e6),
   an empty boundary set at (e3), and no module under `verify/` or `orchestrator/` imports the
   boundary module;
+- **G10d** VAPOR symmetry (OPT-A3v): a vapour feed cooled to its dew point — the certificate is
+  rank-limited and (e1)–(e6) hold with A = {U-PHF} held VAPOR.
 
-Q* is an mpmath root (`benchmarks/opt/analytic.py`), independent of the code.
+Q* and the dew point are mpmath roots (`benchmarks/opt/analytic.py`), independent of the code.
 """
 
 from __future__ import annotations
@@ -267,3 +269,55 @@ def test_g10c_iv_no_ordinary_certificate_path_imports_the_boundary_module() -> N
                     offenders.append(str(path.relative_to(REPO)))
     assert offenders == []
 
+
+# -- G10d ------------------------------------------------------------------------------------------
+
+
+def test_g10d_a_vapour_cooled_to_its_dew_point_passes_with_the_split_held_vapor() -> None:
+    """OPT-A3v: bisection on the cooler duty between the box's lower end (two-phase) and the
+    start (−4000 W, VAPOR) to `0 < a/N0 ≤ 1e-9` (the gate asks ≤ 1e-7); there the outlet is the
+    dew point within 1e-6 K (mpmath), the certificate rank-limited, and (e1)–(e6) hold with
+    A = {U-PHF} held VAPOR (its liquid side pinned and its equilibrium rows dropped)."""
+    expected = EXPECTED["OPT-A3v"]
+    document = _flowsheet("OPT-A3v")
+    host = _host(document, [DecisionBox("SPEC-Q", -20000.0, 0.0, "W")])
+    start = _at(host, float(expected["start_Q"]))
+    assert start.verified and start.signature == (("U-PHF", "VAPOR"),), start.outcome
+    held, phase = host.held_system(start), host.phase_rows(start)
+    assert phase.ids == (expected["phase_row"],) and phase.unguarded == ()
+    (row,) = phase.ids
+
+    def vapour(value: float) -> tuple[CertifiedPoint, float | None]:
+        point = _at(host, value)
+        if point.signature != held.signature or point.state is None:
+            return point, None
+        return point, phase.values(point.state)[row]
+
+    low, high = -20000.0, float(expected["start_Q"])
+    assert vapour(low)[1] is None
+    for _ in range(80):
+        middle = 0.5 * (low + high)
+        point, value = vapour(middle)
+        if value is not None and value > 0.0:
+            high = middle
+            if value <= 1e-9:
+                break
+        else:
+            low = middle
+    point, value = vapour(high)
+    assert value is not None and 0.0 < value <= 1e-9, (high, value)
+    assert point.state is not None and point.certificate is not None
+    assert abs(point.state["S2.T"] - float(expected["T_dew"])) <= 1e-6, (high, point.state["S2.T"])
+    assert point.certificate.verification_status == "UNVERIFIED"
+    assert point.certificate.regularity.status in ("ILL_CONDITIONED", "RANK_DEFICIENT")
+    verdict = host.phase_boundary(point, held, phase, tau_active=TAU_ACTIVE)
+    assert verdict.passed, (high, verdict.clause, verdict.reason)
+    assert verdict.form is not None and verdict.form.splits == ("U-PHF",)
+    assert verdict.form.rows_removed == (
+        "U-PHF:PHF-equilibrium:A",
+        "U-PHF:PHF-equilibrium:B",
+        "U-PHF:PHF-equilibrium:C",
+        "U-PHF:Ndef:liquid",
+    )
+    assert verdict.form.columns_removed == ("S3.n.A", "S3.n.B", "S3.n.C", "S3.N")
+    assert verdict.form.regularity.status == "NO_RANK_LOSS_DETECTED"

@@ -26,6 +26,11 @@ drop is zero, so P = 1e5 Pa throughout):
   (design §9.5, G10 amended) in closed form λ* = N₀ / (T_s n_F Σ z_i K_i ∂lnK_i/∂T) at (T_b, P),
   ∂lnK_i/∂T = (L_i − v_i (P − P_r))/(R T²) — independent of c_p, since the chain rule through
   T(Q) cancels — and checked against μ* = (∂φ/∂Q̂)/(∂a/∂Q̂), Q̂ = Q/s_Q, differentiated numerically.
+- **OPT-A3v** (G10d, WO-5c; certify level, no request): OPT-A1's flowsheet with the feed a vapour
+  at T_in,v = 400 K and the PH flash a cooler (start Q = −4000 W, held VAPOR): the dew point
+  Σ z_i/K_i(T_d, P) = 1 (an mpmath root) and, recorded only, the duty to it
+  Q_d = Σ n_i (h_i^V(T_d) − h_i^V(T_in,v)) with h_i^V = c_p (T − T_r) + L_i (§2 there).
+
 Constants are chosen so that interior decisions sit ≥ 10 % of the box from either end and every
 start's single-phase state is ≥ 10 K below its bubble point (checked here, not assumed).
 
@@ -58,6 +63,8 @@ R = mp.mpf("8.31446261815324")
 # -- the cases' constants -----------------------------------------------------------------------
 FEED = {"A": mp.mpf(1), "B": mp.mpf(1), "C": mp.mpf(1)}  # mol/s
 T_IN, P = mp.mpf(300), mp.mpf(100000)
+#: OPT-A3v (G10d): the vapour feed's temperature and the cooler's start duty (W).
+T_IN_V, Q_START_V = mp.mpf(400), mp.mpf(-4000)
 T_MIN = mp.mpf(330)
 T_MIN_N1 = mp.mpf(355)
 T_S = mp.mpf(100)
@@ -110,6 +117,14 @@ def bubble_point(pressure: Any) -> Any:
     total = sum(FEED.values())
     return mp.findroot(
         lambda t: sum(FEED[i] / total * k_value(i, t, pressure) for i in COMPONENTS) - 1, 345
+    )
+
+
+def dew_point(pressure: Any) -> Any:
+    """Σ z_i / K_i(T, P) = 1 for the feed composition."""
+    total = sum(FEED.values())
+    return mp.findroot(
+        lambda t: sum(FEED[i] / total / k_value(i, t, pressure) for i in COMPONENTS) - 1, 375
     )
 
 
@@ -248,6 +263,7 @@ FLOWSHEET = {
     "OPT-A2b": "OPT-A2b",
     "OPT-C0": "OPT-A1",
     "OPT-A3": "OPT-A1",
+    "OPT-A3v": "OPT-A3v",
 }
 REVISION_START = {
     "OPT-A1": (10500.0,),
@@ -325,6 +341,12 @@ def expectations() -> dict[str, Any]:
     )
     assert lambda_a3 > 0 and abs(lambda_a3 - d_phi / d_a) < mp.mpf("1e-20") * lambda_a3
 
+    # OPT-A3v: the vapour start is >= 10 K above the dew point; the duty to it is recorded.
+    t_d = dew_point(P)
+    q_d = sum(FEED[i] * CP[i] * (t_d - T_IN_V) for i in COMPONENTS)  # h^V's L_i cancels
+    margins["OPT-A3v/0"] = (T_IN_V + Q_START_V / flow_cp) - t_d
+    assert margins["OPT-A3v/0"] >= 10 and T_IN_V - t_d >= 10, margins
+
     def s(value: Any) -> str:
         return mp.nstr(value, 30, min_fixed=-30, max_fixed=30)
 
@@ -358,6 +380,13 @@ def expectations() -> dict[str, Any]:
             "objective": s(-t_b / T_S),
             "phase_row": "phase.U-PHF.bubble",
             "multiplier": s(lambda_a3),
+        },
+        "OPT-A3v": {
+            "T_dew": s(t_d),
+            "Q_dew": s(q_d),
+            "T_in": s(T_IN_V),
+            "start_Q": s(Q_START_V),
+            "phase_row": "phase.U-PHF.dew",
         },
         "margins_K": {k: s(v) for k, v in margins.items()},
         "interior_fraction": {k: s(v) for k, v in interior.items()},
