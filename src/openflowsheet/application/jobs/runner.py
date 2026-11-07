@@ -109,7 +109,7 @@ from openflowsheet.application.types import (
 from openflowsheet.canonical import canonical_json, directory_hash, file_sha256
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.orchestrator.trace import Trace
-from openflowsheet.orchestrator.warm_start import WARM_START_SOURCE, WarmStartCandidate
+from openflowsheet.orchestrator.warm_start import EXPLICIT, WARM_START_SOURCE, WarmStartCandidate
 from openflowsheet.run.bundle import ARTIFACT_DIR, MANIFEST_NAME, BundleError, read_artifact
 from openflowsheet.run.manifest import policy_sha256
 from openflowsheet.studies.surrogate.iterations import predecessors as iteration_predecessors
@@ -228,6 +228,25 @@ def warm_start_candidate(
     except (OSError, ValueError):
         document = None
     return WarmStartCandidate(document, source_job_id, source_revision_id)
+
+
+def explicit_warm_start_candidate(context: RunContext, job_id: str) -> WarmStartCandidate:
+    """ADR 0070 D1–D2 (X02 design note §5.2): the candidate a solve request names by
+    `warm_start.job_id` — that solve job's `solution-state.json`, whatever its certificate
+    status, with `selection` `explicit-v1`. Admission checked that the job holds one (A1); a
+    file that does not parse, or a source no longer found, is a candidate with no document,
+    which the orchestrator's `integrity` check rejects (recorded, never a silent cold start)."""
+    store = context.store
+    with store.reading() as connection:
+        found = store.solution_of_job(connection, job_id)
+    if found is None:
+        return WarmStartCandidate(None, job_id, None, EXPLICIT)
+    source_revision_id, relpath = found
+    try:
+        document = json.loads((context.root / relpath).read_bytes())
+    except (OSError, ValueError):
+        document = None
+    return WarmStartCandidate(document, job_id, source_revision_id, EXPLICIT)
 
 
 class _RecordingSink:
@@ -524,9 +543,14 @@ class _Body:
                 )
             selected = bound
             # ADR 0024 D2: the lookup is here, where the store is, and only when the policy opts
-            # in on the route that reads it; the orchestrator never reads the store.
+            # in on the route that reads it; the orchestrator never reads the store. ADR 0070 D2:
+            # a declared `warm_start.job_id` is the candidate instead, on every route (the legacy
+            # route records it rejected).
             warm_start = None
-            if (
+            declared = body.warm_start.job_id if body.warm_start is not None else None
+            if declared is not None:
+                warm_start = explicit_warm_start_candidate(self.context, declared)
+            elif (
                 bound.solve_path in ("revision_eo", "revision_coupled")
                 and WARM_START_SOURCE in policy.initializer_chain
             ):

@@ -94,7 +94,11 @@ from openflowsheet.orchestrator.executor import PlanResult, execute_plan
 from openflowsheet.orchestrator.region import RegionResult
 from openflowsheet.orchestrator.revision import plan_revision
 from openflowsheet.orchestrator.trace import SolvePlan, SolvePolicy, Trace
-from openflowsheet.orchestrator.warm_start import WarmStartCandidate, WarmStartRecord
+from openflowsheet.orchestrator.warm_start import (
+    EXPLICIT,
+    WarmStartCandidate,
+    WarmStartRecord,
+)
 from openflowsheet.resources import packaged
 from openflowsheet.run import solution_state
 from openflowsheet.run.bundle import read_artifact, read_manifest, verify_bundle, write_bundle
@@ -526,7 +530,8 @@ def solve_route(
 
     `warm_start` is the source-2 candidate the caller found (ADR 0024 D2) or recorded (D5); it is
     read only on `revision_eo` and `revision_coupled` (its k = 0 inner solve), under a policy
-    whose chain names the source (`execute_plan`).
+    whose chain names the source or when it is the request's explicit source (ADR 0070,
+    `execute_plan`).
 
     On `revision_coupled` (M02 design note §4.4) `experiments` runs the experiments — the job's
     runner, or a replay's recorded backend — and `on_iteration(k, max_outer)` is called at each
@@ -845,6 +850,15 @@ def run_revision_session(
         warm = result.initial_warm
     else:
         warm = result.run.warm_start if result.run is not None else None
+    if (
+        warm is None
+        and route.solve_path == "legacy_eo"
+        and warm_start is not None
+        and warm_start.selection == EXPLICIT
+    ):
+        # ADR 0070 (X02 design note §5.2): the legacy route reads no start; a declared one is
+        # recorded rejected, and the solve ran as without it.
+        warm = WarmStartRecord("rejected", "route", warm_start)
     if warm is not None:
         solve_path["warm_start"] = warm.as_document()
     artifacts: dict[str, Any] = {

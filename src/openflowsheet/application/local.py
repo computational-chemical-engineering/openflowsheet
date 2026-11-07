@@ -854,8 +854,13 @@ class LocalApplication:
         active = store.active_job_count(caller.principal_id)
         body = request.body
         if isinstance(body, SolveBody):
+            declared = body.warm_start.job_id if body.warm_start is not None else None
             with store.reading() as connection:
                 revision = store.get_revision(connection, body.revision_id)
+                # ADR 0070 A1: the declared source, as the store is at admission.
+                source = (
+                    store.solution_of_job(connection, declared) if declared is not None else None
+                )
             admission = admit_solve(
                 body.revision_id,
                 revision.as_document() if revision is not None else None,
@@ -864,6 +869,7 @@ class LocalApplication:
                 limits=caller.limits,
                 active_jobs=active,
                 surrogates=self._surrogates(),
+                warm_source_found=source is not None,
             )
             if isinstance(admission, ApiError):
                 self._refuse_error(admission, operation, request_sha256)
