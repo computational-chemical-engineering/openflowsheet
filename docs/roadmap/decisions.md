@@ -288,3 +288,18 @@ DECISION: adding `[4, "x05.*"]` and `tests/test_x05_*.py` to a 0.4 gate in `rele
 0.4.0 cut's specifier pass (RP §13: gate criteria and `rc_items` are design-lane fields). Alternative: build-lane edit
 now (R-921 watch item). Reversible by: the cut's specifier pass adding it.
 At merge: ADR 0069 Accepted only on Frank's word; register lines above R-950.
+
+## 2026-11-07 — X02 WO-6 (`wp/X02` `8d15e28c`) stopped at G5d (iii); ruling D-32
+
+WO-6 done: M-1 (A-1…A-9, ADR 0070 edits), ruling 1 (warm child, variant, campaign script removed), M-2 (E9 default),
+S-1/S-3 (111 targeted tests), R-950 kept as c_4. G5d on v3 (`evidence/X02/dcb499ee…/g5d-v3.json`): (i) cold VERIFIED 4
+outer, 193.7 s; (ii) same-revision restart VERIFIED 1 outer, 1 call, 24.7 s; (iii) neighbour (SPEC-S3-T +2 K, moves û
+83.7 bounds): cold VERIFIED 4 outer, 181.5 s; warm VERIFIED **4** outer, 222.7 s; Δû bound held (3.76e-4 ≤ 1.64e-3).
+The note's "warm takes fewer outer iterations" criterion failed → escalated.
+DECISION: G5d (iii) → the criterion stays in the note and the manifest as **failed** (not removed, not relaxed); the
+premise (an outer start near a neighbour's fixed point saves outer iterations) is recorded false for this edit; ADR 0070
+Consequences bullet 1 withdraws any neighbour-speedup claim; the package's claims rest on (ii) and identity, as D-29 did
+for the warm reactor. Alternative: drop the criterion from the gate (engineer's default; rejected: narrows a gate after
+it failed) or hold X02 for a new design. Reversible by: Frank's X02 Q7.
+X02 still merges only after Frank accepts ADR 0070 (Q5 as stated). WO-7 (close-out) next: ADR/note text, full gate, F0,
+manifest `S16` (frozen pattern refuses `X02`; R-878 rule as RP's S15), CI.

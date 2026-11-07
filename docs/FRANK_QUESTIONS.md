@@ -410,4 +410,9 @@ Design `docs/design/X02-warm-starts.md`. Defaults, acted on unless you say other
 - **Q4:** integration with studies: outside X02.
 - **Q5:** accept ADR 0070 and Amendment 15? Default: build on Proposed, merge after your acceptance.
 - **Q6:** the variant id as given. Default: yes.
+- **Q7 (2026-11-07, measured):** restarting a coupled run from a *neighbouring* design's solution (feed
+  temperature +2 K) was meant to need fewer outer iterations than a cold start. On the real reactor loop it did not:
+  both took 4 iterations, and the warm run took longer (223 s against 182 s), although it started about twice as close.
+  Restarting the *same* design still works (1 iteration, 25 s instead of 194 s). Default: record the check as failed,
+  withdraw the speed-up claim for neighbouring designs, keep everything else. Alternative: hold X02 for a redesign.
 
