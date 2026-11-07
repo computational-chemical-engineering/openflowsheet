@@ -1,0 +1,185 @@
+"""OPT WO-4: `optimize_revision` without Ipopt (design §4.5, §4.8, §4.12; gates G9's route
+refusals, G11's library path). The solved cases are `test_opt_benchmarks_nlp.py` (audited env).
+"""
+
+from __future__ import annotations
+
+import json
+import subprocess
+import sys
+from pathlib import Path
+from typing import Any
+
+import pytest
+from t07_corpus import A02_FILES, CORPUS
+
+from openflowsheet.application.policies import DEFAULT_POLICY_ID, resolve_policy
+from openflowsheet.application.revision_run import select_route
+from openflowsheet.application.types import schema_errors
+from openflowsheet.canonical import canonical_json, document_sha256
+from openflowsheet.studies.nlp.closure import SolverAvailability
+from openflowsheet.studies.nlp.host import CertifiedPoint
+from openflowsheet.studies.nlp.revision import (
+    MANIFEST,
+    REPORT,
+    REQUEST,
+    REVISION,
+    optimization_sha256,
+    optimize_revision,
+)
+from openflowsheet.studies.nlp.revision_host import RevisionNlpHost
+from openflowsheet.verify.certificate import CheckPolicy
+
+REPO = Path(__file__).resolve().parents[1]
+OPT = REPO / "benchmarks" / "opt"
+POLICY = resolve_policy(DEFAULT_POLICY_ID, "revision_eo")
+assert POLICY is not None
+AVAILABLE = SolverAvailability(True, "test double: an audited solver")
+UNAVAILABLE = SolverAvailability(False, "test double: no audited solver")
+
+
+def _case(name: str) -> tuple[dict[str, Any], dict[str, Any]]:
+    expected = json.loads((OPT / "expected.json").read_bytes())
+    flowsheet = expected["flowsheets"][name]
+    document = json.loads((OPT / "flowsheets" / f"{flowsheet}.json").read_bytes())
+    return document, json.loads((OPT / "requests" / f"{name}.json").read_bytes())
+
+
+def _optimize(document: Any, request: Any, directory: Path | None, probe: Any) -> Any:
+    return optimize_revision(
+        document,
+        request,
+        directory=directory,
+        solve_policy=POLICY,
+        check_policy=CheckPolicy(),
+        solver_probe=lambda: probe,
+    )
+
+
+def test_the_analytic_expectations_and_requests_are_current() -> None:
+    """`benchmarks/opt/analytic.py --check`: the requests and mpmath expectations committed are
+    the ones the script computes from the SYN-001 coefficient table."""
+    result = subprocess.run(
+        [sys.executable, str(OPT / "analytic.py"), "--check"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+
+
+@pytest.mark.parametrize("case", ["OPT-A1", "OPT-A2", "OPT-A2b", "OPT-N1"])
+def test_the_benchmark_flowsheets_bind_on_revision_eo(case: str) -> None:
+    document, _ = _case(case)
+    assert getattr(select_route(document), "solve_path", None) == "revision_eo"
+
+
+def test_g11_without_an_audited_solver_the_library_reports_unsupported(tmp_path: Path) -> None:
+    document, request = _case("OPT-A1")
+    outcome = _optimize(document, request, tmp_path / "record", UNAVAILABLE)
+    report = outcome.report.as_document()
+    assert report["status"] == "UNSUPPORTED"
+    assert [reason["code"] for reason in report["reasons"]] == ["NLP_SOLVER_UNAVAILABLE"]
+    assert schema_errors("optimization-report.schema.json", report) == []
+    revision = report["revision"]
+    assert revision["revision_sha256"] == document_sha256(document)
+    assert revision["decision_parameters"] == {"SPEC-Q": "U-PHF.Q_spec"}
+    assert revision["optimization_sha256"] == optimization_sha256(
+        revision["request_sha256"],
+        revision["revision_sha256"],
+        "revision_eo",
+        revision["solve_policy_sha256"],
+        revision["check_policy_sha256"],
+    )
+    # The record: request, revision, report and manifest, each member's SHA-256 recorded.
+    record = outcome.record_dir
+    manifest = json.loads((record / MANIFEST).read_bytes())
+    assert manifest["format"] == "openflowsheet-optimization-v1"
+    assert set(manifest["members"]) == {REQUEST, REVISION, REPORT}
+    for name, sha in manifest["members"].items():
+        assert document_sha256(json.loads((record / name).read_bytes())) == sha
+    assert (record / REQUEST).read_bytes() == canonical_json(request)
+
+
+def test_g11_a_fresh_interpreter_loads_neither_pyomo_nor_cyipopt() -> None:
+    script = f"""
+import json, sys
+sys.path.insert(0, {str(REPO / "tests")!r})
+from openflowsheet.application.policies import DEFAULT_POLICY_ID, resolve_policy
+from openflowsheet.studies.nlp.closure import SolverAvailability
+from openflowsheet.studies.nlp.revision import optimize_revision
+from openflowsheet.verify.certificate import CheckPolicy
+opt = {str(OPT)!r}
+document = json.load(open(opt + "/flowsheets/OPT-A1.json"))
+request = json.load(open(opt + "/requests/OPT-A1.json"))
+outcome = optimize_revision(document, request, directory=None,
+    solve_policy=resolve_policy(DEFAULT_POLICY_ID, "revision_eo"), check_policy=CheckPolicy(),
+    solver_probe=lambda: SolverAvailability(False, "double"))
+assert outcome.report.status == "UNSUPPORTED"
+print(sorted(m for m in ("pyomo", "cyipopt") if m in sys.modules))
+"""
+    result = subprocess.run(
+        [sys.executable, "-c", script], capture_output=True, text=True, check=False
+    )
+    assert result.returncode == 0, result.stderr
+    assert result.stdout.strip() == "[]"
+
+
+def test_g9_routes_other_than_revision_eo_are_unsupported() -> None:
+    _, request = _case("OPT-A1")
+    legacy = CORPUS[A02_FILES[0]]()
+    assert getattr(select_route(legacy), "solve_path", None) == "legacy_eo"
+    report = _optimize(legacy, request, None, AVAILABLE).report.as_document()
+    assert report["status"] == "UNSUPPORTED"
+    assert "OPTIMIZATION_ROUTE_UNAVAILABLE" in [r["code"] for r in report["reasons"]]
+    assert schema_errors("optimization-report.schema.json", report) == []
+    coupled = json.loads((REPO / "benchmarks" / "m02" / "c1-loop-real.json").read_bytes())
+    if getattr(select_route(coupled), "solve_path", None) != "revision_coupled":
+        pytest.skip("c1-loop-real does not route revision_coupled here")
+    report = _optimize(coupled, request, None, AVAILABLE).report.as_document()
+    assert report["status"] == "UNSUPPORTED"
+    assert "OPTIMIZATION_ROUTE_UNAVAILABLE" in [r["code"] for r in report["reasons"]]
+    assert report["revision"]["decision_parameters"] is None
+    assert schema_errors("optimization-report.schema.json", report) == []
+
+
+def test_no_start_certified_is_unsupported_with_every_starts_reason(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """§4.5: a start that fails the start phase is not run; when none passes the report is
+    `UNSUPPORTED` with `SIMULATION_NOT_READY` and `START_NOT_CERTIFIED(<k>, <code>)` per start.
+    No Ipopt is reached, so the default install runs it with a solver-probe double."""
+    document, request = _case("OPT-A2")
+
+    def refused(self: RevisionNlpHost, decisions: Any) -> CertifiedPoint:
+        return CertifiedPoint(
+            outcome="MAX_ITERATIONS",
+            message="test double: the start does not converge",
+            state=None,
+            certificate=None,
+            signature=None,
+            bundle_ref=None,
+            parameters=dict(decisions),
+        )
+
+    monkeypatch.setattr(RevisionNlpHost, "certify", refused)
+    outcome = _optimize(document, request, tmp_path / "record", AVAILABLE)
+    report = outcome.report.as_document()
+    assert report["status"] == "UNSUPPORTED"
+    assert [(r["code"], r["subject"]) for r in report["reasons"]] == [
+        ("SIMULATION_NOT_READY", f"start {k}") for k in range(3)
+    ]
+    assert all(
+        r["detail"].startswith(f"START_NOT_CERTIFIED({k}, MAX_ITERATIONS)")
+        for k, r in enumerate(report["reasons"])
+    )
+    assert len(report["formulation"]["starts"]) == 3
+    assert schema_errors("optimization-report.schema.json", report) == []
+    assert [points.start.outcome for points in outcome.points] == ["MAX_ITERATIONS"] * 3
+    assert all(points.candidate is None for points in outcome.points)
+
+
+def test_an_ill_formed_request_is_an_error_not_a_report() -> None:
+    document, request = _case("OPT-A1")
+    with pytest.raises(ValueError, match="request_invalid"):
+        _optimize(document, {**request, "decisions": []}, None, AVAILABLE)
