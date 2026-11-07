@@ -834,16 +834,17 @@ limitations:
       - doc:docs/adr/0006-distribution-data-rights.md §D1
   - id: L41
     text: >-
-      A bundle written by an installed package (wheel or sdist, not the source checkout) carries no
-      dependency-set identity: the package ships no lock file, so its `lock_sha256` is empty and
-      every replay of it is `inspected_archived_results` / `NOT_RUN` ("the dependency set is
-      unknown …"); replayable bundles are written from the source checkout at the lock
-      `ead4edf1…`.
+      A bundle written by an installed package or a checkout whose runtime closure (the 9
+      distributions of ADR 0069 D3) is not at the packaged lock `ead4edf1…` records no
+      dependency-set identity: its `lock_sha256` is empty, every replay of it is
+      `inspected_archived_results` / `NOT_RUN`, and the replaying side's failing distributions are
+      named. Optional extras are not part of the identity.
     evidence:
-      - tests/test_t08_r3_a19_lock_lookup.py::test_the_three_states_end_to_end
-      - tests/test_t08_r3_a19_lock_lookup.py::test_b_an_installed_layout_beneath_a_stray_lock_has_none
+      - tests/test_x05_replay_from_the_wheel.py::test_a15_one_closure_distribution_off_records_empty_naming_it
+      - tests/test_x05_replay_from_the_wheel.py::test_a16_a17_the_replay_matrix
+      - tests/test_x05_lock.py::test_a01_to_a09_each_registered_state
+      - doc:docs/adr/0069-X05-replay-from-the-wheel.md §D7
       - doc:docs/adr/0007-reproducibility-certificate-policy.md §D4
-      - doc:docs/derivations/T08-release-spec.md §5.5
   - id: L42
     text: >-
       `pr-c1-v1` (Peng–Robinson with the light gases vapour-only, ADR 0026), shipped since M01, is
@@ -8374,6 +8375,116 @@ harvest:
   class: P
   to: []
   note: 'process note: status tested, not reviewed; review''s must-fix items M-1..M-3 applied after the reviewer pass and not re-reviewed'
+- manifest: evidence/X05/42c84f1d983e30917608f3cd6ddbaf0f29766b1f/manifest.json
+  item: checks[19]
+  check_id: X05.A20sdist
+  sha256: e11cf46fc625b59d2fd9a3fedca9b7b4f41cd57ac9d5dc3e3099fa6db0914eab
+  class: S
+  to:
+  - check:X05.A20sdist
+  note: 'taken by the WO-4 rc_distribution dispatch, run 42397255469'
+- manifest: evidence/X05/42c84f1d983e30917608f3cd6ddbaf0f29766b1f/manifest.json
+  item: checks[21]
+  check_id: X05.A21
+  sha256: 5297d4f64ee0c95e28b087a8d6a75565882cc90c1dc1ebbf89863c6b1c4e7721
+  class: S
+  to:
+  - check:X05.A21
+  note: 'taken by the WO-4 rc_distribution dispatch, run 42397255469'
+- manifest: evidence/X05/42c84f1d983e30917608f3cd6ddbaf0f29766b1f/manifest.json
+  item: checks[22]
+  check_id: X05.A22b
+  sha256: 106b41edc3caa88c2f376a2687b86d5af3b3f0ec68d229736503ea20e0c3858d
+  class: S
+  to:
+  - check:X05.A22b
+  note: 'taken by the WO-4 rc_distribution dispatch, run 42397255469'
+- manifest: evidence/X05/42c84f1d983e30917608f3cd6ddbaf0f29766b1f/manifest.json
+  item: checks[26]
+  check_id: X05.A25ci
+  sha256: 3457dcd00901f238c258b677c4296922d1662ca50d4d60caaed2175ab7fd9b1d
+  class: S
+  to:
+  - check:X05.A25ci
+  note: 'taken by the WO-4 rc_distribution dispatch, run 42397255469'
+- manifest: evidence/X05/42c84f1d983e30917608f3cd6ddbaf0f29766b1f/manifest.json
+  item: limitations[0]
+  sha256: 944d4b6e8475aaaf162640dd8baf6c8dc049b12690fc55371b2f914a5aa18fec
+  class: P
+  to: []
+  note: 'evidence-class note: identity bookkeeping verified, no empirical validation (ADR 0069 §10)'
+- manifest: evidence/X05/42c84f1d983e30917608f3cd6ddbaf0f29766b1f/manifest.json
+  item: limitations[1]
+  sha256: 538ce4d64b9d3b740b16ced0a19177d53b3358fc93042cd0e542b6ec3bc718e9
+  class: P
+  to: []
+  note: 'process note: ADR 0069 Proposed; Amendment 2 and register lines wait for Frank''s acceptance (D-7)'
+- manifest: evidence/X05/42c84f1d983e30917608f3cd6ddbaf0f29766b1f/manifest.json
+  item: limitations[2]
+  sha256: baf05bef76a4dc19de53e65a70380d75f916282a1da296e7c4153df139e1e419
+  class: P
+  to: []
+  note: 'process note: the four CI halves not dispatched at this head; local substitutes on ref-x86-64; WO-4 dispatch'
+- manifest: evidence/X05/42c84f1d983e30917608f3cd6ddbaf0f29766b1f/manifest.json
+  item: limitations[3]
+  sha256: 6d371e7a29409a2ba9e3b7d3eb28ec0bd453948e64f1c540663202cd7436f946
+  class: P
+  to: []
+  note: 'provenance note: local wheel records at 7f39b199, code unchanged to the manifest commit'
+- manifest: evidence/X05/42c84f1d983e30917608f3cd6ddbaf0f29766b1f/manifest.json
+  item: limitations[4]
+  sha256: 3de33475a22c67b992e6cdd920c415c6cec7a7cb48e775247fb63fdb9c0e6f43
+  class: P
+  to: []
+  note: 'scope note: Q-N1 for .venv-nlp and .venv-lca judged from their build locks; live measurement at the next RC'
+- manifest: evidence/X05/42c84f1d983e30917608f3cd6ddbaf0f29766b1f/manifest.json
+  item: limitations[5]
+  sha256: 24aba2a2c6b111473e560b8dad35e5cff835558893708b5a186595dacb1e600c
+  class: P
+  to: []
+  note: 'process note: RP step 4 a19.* -> x05.* made in X05 WO-4 after RP merged'
+- manifest: evidence/X05/7c8d05e59dcef7c60b260b687b3cc4e06e5cbda0/manifest.json
+  item: limitations[0]
+  sha256: 944d4b6e8475aaaf162640dd8baf6c8dc049b12690fc55371b2f914a5aa18fec
+  class: P
+  to: []
+  note: 'evidence-class note: identity bookkeeping verified, no empirical validation (ADR 0069 §10)'
+- manifest: evidence/X05/7c8d05e59dcef7c60b260b687b3cc4e06e5cbda0/manifest.json
+  item: limitations[1]
+  sha256: 538ce4d64b9d3b740b16ced0a19177d53b3358fc93042cd0e542b6ec3bc718e9
+  class: P
+  to: []
+  note: 'process note: ADR 0069 Proposed; Amendment 2 and register lines wait for Frank''s acceptance (D-7)'
+- manifest: evidence/X05/7c8d05e59dcef7c60b260b687b3cc4e06e5cbda0/manifest.json
+  item: limitations[2]
+  sha256: 5264f62ceeca3b8d4e38b83254a2ef32d858c28f2af8db7b6b718d23c40f8ef1
+  class: P
+  to: []
+  note: 'measurement note: Q-N2 answered, M7 from the wheel MATCH 52/52 on both CI legs (run 42397255469)'
+- manifest: evidence/X05/7c8d05e59dcef7c60b260b687b3cc4e06e5cbda0/manifest.json
+  item: limitations[3]
+  sha256: 241d774868432be9eac4254c9f4ff6af942afe8a1624afcc821b208212d5eb3c
+  class: P
+  to: []
+  note: 'provenance note: A22 (a)''s local wheel record at 7f39b199; src/ changed since only by review S1'
+- manifest: evidence/X05/7c8d05e59dcef7c60b260b687b3cc4e06e5cbda0/manifest.json
+  item: limitations[4]
+  sha256: 3de33475a22c67b992e6cdd920c415c6cec7a7cb48e775247fb63fdb9c0e6f43
+  class: P
+  to: []
+  note: 'scope note: Q-N1 for .venv-nlp and .venv-lca judged from their build locks; live measurement at the next RC'
+- manifest: evidence/X05/7c8d05e59dcef7c60b260b687b3cc4e06e5cbda0/manifest.json
+  item: limitations[5]
+  sha256: 8b55c5789cdc397a4704b097fe24387b77bfef14eb7a0e73f0de9bc88821be1a
+  class: P
+  to: []
+  note: 'process note: the 0.4 gate''s [4, x05.*] pair deferred to the 0.4.0 cut''s specifier pass (49506c90)'
+- manifest: evidence/X05/7c8d05e59dcef7c60b260b687b3cc4e06e5cbda0/manifest.json
+  item: limitations[6]
+  sha256: 21bf8d90355934f0b08f12f5d4ba32a50036794c3671443e2c656e528bb10460
+  class: P
+  to: []
+  note: 'process note: status tested, not reviewed; review M1, M2, S1 applied in WO-4 and not re-reviewed'
 - manifest: evidence/X10/18d34648b266893fe80971134a12c3f95ad331e5/manifest.json
   item: limitations[0]
   sha256: 2ba6ae8ca52db5a2ecd923ee1ca7b77daef690d4e5544dc5f8507eb27345feb8

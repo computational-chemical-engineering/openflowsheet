@@ -77,6 +77,9 @@ PACKAGED: Final[tuple[str, ...]] = (
     "benchmarks/s10/records.yaml",
     "benchmarks/s10/vle/kurihara1993_binaries.csv",
     "web",
+    # X05 (ADR 0069 D1): the lock `environment()` verifies the runtime closure against and hashes;
+    # the same bytes in a checkout (a link to the root file) and in a wheel.
+    "requirements.lock",
 )
 #: The entries of `PACKAGED` that are directories: a file anywhere below one is packaged too.
 DIRECTORIES: Final[tuple[str, ...]] = ("schemas", "web")

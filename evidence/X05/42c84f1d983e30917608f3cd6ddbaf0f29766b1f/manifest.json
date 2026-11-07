@@ -1,0 +1,358 @@
+{
+ "artifacts": [
+  {
+   "description": "X05's registered values (x05_reference.py --emit)",
+   "path": "benchmarks/x05/reference_values.json",
+   "sha256": "90dd7fea3dff8ffbb5e481044febd668f6549755ad21fe3c3044e9914bf6493a"
+  },
+  {
+   "description": "the packaged lock (src/openflowsheet/_data/requirements.lock links to it)",
+   "path": "requirements.lock",
+   "sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+  },
+  {
+   "description": "lock-check --state installed, locally built wheel in a clean venv beneath the stray",
+   "path": "evidence/X05/42c84f1d983e30917608f3cd6ddbaf0f29766b1f/local/lock-installed-local.json",
+   "sha256": "5a4618d96e0dc93f700d31bde04f24c7d867397f8bfcbbb605f6b909dc9977c3"
+  },
+  {
+   "description": "X05.A22 (a): the wheel replays F0's 52 bundles on ref-x86-64",
+   "path": "evidence/X05/42c84f1d983e30917608f3cd6ddbaf0f29766b1f/local/f0-local.json",
+   "sha256": "28fae403e2a47b84fb28a371306250af72348e404e8600a22c1da91ace962d29"
+  },
+  {
+   "description": "X05.A25: plain `pip install` of the wheel verifies the lock",
+   "path": "evidence/X05/42c84f1d983e30917608f3cd6ddbaf0f29766b1f/local/unconstrained-local.json",
+   "sha256": "95fb2d64bf9dbdf9e657f069c22794ffd998133cbddb2fc92c33c142df248eaa"
+  }
+ ],
+ "checks": [
+  {
+   "description": "verifier: matched lock and closure (V01, V02); controls V04-V29 fail",
+   "id": "X05.A01",
+   "result": "pass",
+   "value": {
+    "cases": "V01-V36 from benchmarks/x05/reference_values.json",
+    "test": "PYTHONPATH=src .venv/bin/python -m pytest -q tests/test_x05_lock.py"
+   }
+  },
+  {
+   "description": "verifier: a closure member at another version (V04-V12, V22, V36), findings exact and in order",
+   "id": "X05.A02",
+   "result": "pass",
+   "value": {
+    "test": "PYTHONPATH=src .venv/bin/python -m pytest -q tests/test_x05_lock.py"
+   }
+  },
+  {
+   "description": "verifier: a closure member not installed (V13-V21), F3 exact",
+   "id": "X05.A03",
+   "result": "pass",
+   "value": {
+    "test": "PYTHONPATH=src .venv/bin/python -m pytest -q tests/test_x05_lock.py"
+   }
+  },
+  {
+   "description": "verifier: the lock lacks a closure member (V23 one F5, V24 nine F5)",
+   "id": "X05.A04",
+   "result": "pass",
+   "value": {
+    "test": "PYTHONPATH=src .venv/bin/python -m pytest -q tests/test_x05_lock.py"
+   }
+  },
+  {
+   "description": "verifier: a missing, unreadable or malformed lock (V25-V29)",
+   "id": "X05.A05",
+   "result": "pass",
+   "value": {
+    "test": "PYTHONPATH=src .venv/bin/python -m pytest -q tests/test_x05_lock.py"
+   }
+  },
+  {
+   "description": "verifier: lock lines outside the closure hashed, not checked (V03); control V30",
+   "id": "X05.A06",
+   "result": "pass",
+   "value": {
+    "test": "PYTHONPATH=src .venv/bin/python -m pytest -q tests/test_x05_lock.py"
+   }
+  },
+  {
+   "description": "verifier: names normalised, comments and blank lines ignored (V30, V31)",
+   "id": "X05.A07",
+   "result": "pass",
+   "value": {
+    "test": "PYTHONPATH=src .venv/bin/python -m pytest -q tests/test_x05_lock.py"
+   }
+  },
+  {
+   "description": "verifier: versions compare as strings (V32, V33)",
+   "id": "X05.A08",
+   "result": "pass",
+   "value": {
+    "test": "PYTHONPATH=src .venv/bin/python -m pytest -q tests/test_x05_lock.py"
+   }
+  },
+  {
+   "description": "verifier: never raises (V34, V35); a real dist-info without Version gives F6 TypeError under -W error",
+   "id": "X05.A09",
+   "result": "pass",
+   "value": {
+    "test": "PYTHONPATH=src .venv/bin/python -m pytest -q tests/test_x05_lock.py"
+   }
+  },
+  {
+   "description": "RUNTIME_CLOSURE == the JSON's closure == the closure measured from installed metadata (packaging, extra=''); control from the five pre-X05 pins",
+   "id": "X05.A10",
+   "result": "pass",
+   "value": {
+    "environment": ".venv, ref-x86-64, Python 3.13.5",
+    "test": "PYTHONPATH=src .venv/bin/python -m pytest -q tests/test_x05_lock.py"
+   }
+  },
+  {
+   "description": "the checkout records the packaged lock ead4edf1..., findings (); control: V36's lock via lock_path -> '' with V36's findings",
+   "id": "X05.A11",
+   "result": "pass",
+   "value": {
+    "test": "PYTHONPATH=src .venv/bin/python -m pytest -q tests/test_x05_lock.py"
+   }
+  },
+  {
+   "description": "the environment document keeps the schema's eight keys; lock_findings outside equality and as_document(); schema unchanged on wp/X05",
+   "id": "X05.A12",
+   "result": "pass",
+   "value": {
+    "schema_diff_vs_merge_base_5f4b53c7": "empty",
+    "test": "PYTHONPATH=src .venv/bin/python -m pytest -q tests/test_x05_lock.py"
+   }
+  },
+  {
+   "description": "installed (copied tree) beneath a verifiable stray: the packaged lock's hash, never the stray's c2a8f1c1...",
+   "id": "X05.A13",
+   "result": "pass",
+   "value": {
+    "local_wheel": "evidence/X05/42c84f1d983e30917608f3cd6ddbaf0f29766b1f/local/lock-installed-local.json (clean venv from the built wheel, all checks pass)",
+    "test": "PYTHONPATH=src .venv/bin/python -m pytest -q tests/test_x05_replay_from_the_wheel.py"
+   }
+  },
+  {
+   "description": "installed with no packaged lock: '' with F1 naming openflowsheet/_data/requirements.lock",
+   "id": "X05.A14",
+   "result": "pass",
+   "value": {
+    "test": "PYTHONPATH=src .venv/bin/python -m pytest -q tests/test_x05_replay_from_the_wheel.py"
+   }
+  },
+  {
+   "description": "installed-off, checkout-off (numpy shadow 2.2.5): '', ['numpy is 2.2.5, the lock pins 2.2.4']",
+   "id": "X05.A15",
+   "result": "pass",
+   "value": {
+    "test": "PYTHONPATH=src .venv/bin/python -m pytest -q tests/test_x05_replay_from_the_wheel.py"
+   }
+  },
+  {
+   "description": "replay matrix, matched cells (on x installed, checkout): exact_replay / MATCH, integrity ok",
+   "id": "X05.A16",
+   "result": "pass",
+   "value": {
+    "test": "PYTHONPATH=src .venv/bin/python -m pytest -q tests/test_x05_replay_from_the_wheel.py"
+   }
+  },
+  {
+   "description": "replay matrix, 6 unmatched cells: inspected / NOT_RUN, reasons[0] exact (R_ARCHIVE, R_THIS, R_BOTH)",
+   "id": "X05.A17",
+   "result": "pass",
+   "value": {
+    "test": "PYTHONPATH=src .venv/bin/python -m pytest -q tests/test_x05_replay_from_the_wheel.py"
+   }
+  },
+  {
+   "description": "decide_mode's reason templates; both verified -> exact_replay, reasons ()",
+   "id": "X05.A18",
+   "result": "pass",
+   "value": {
+    "test": "PYTHONPATH=src .venv/bin/python -m pytest -q tests/test_x05_lock.py"
+   }
+  },
+  {
+   "description": "one installed-version read per closure member per process (fresh interpreter, three environment() calls; control: a second interpreter)",
+   "id": "X05.A19",
+   "result": "pass",
+   "value": {
+    "test": "PYTHONPATH=src .venv/bin/python -m pytest -q tests/test_x05_lock.py"
+   }
+  },
+  {
+   "description": "the sdist's src/openflowsheet/_data/requirements.lock has SHA-256 ead4edf1... (T08.A43's byte comparison, CI dist job)",
+   "id": "X05.A20sdist",
+   "result": "unsupported",
+   "value": {
+    "partial": "tests/test_t08_w2_inventory.py builds the sdist (gate and CI check legs) and finds exactly this one extra data member, admitted by path (D-8); it does not hash it",
+    "reason": "the `dist` and `clean-install` CI jobs run only on workflow_dispatch (rc inputs); the X05 brief forbids a dispatch, so push run 42379232642 skipped them"
+   }
+  },
+  {
+   "description": "the wheel carries the lock's bytes at openflowsheet/_data/requirements.lock and no other member of that name; the link, PACKAGED and package-data entries",
+   "id": "X05.A20",
+   "result": "pass",
+   "value": {
+    "local_wheel": "pip wheel of `git archive` at 7f39b199: one member openflowsheet/_data/requirements.lock, sha256 ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4",
+    "sdist": "tests/test_t08_w2_inventory.py builds the sdist in CI check legs (run 42379232642) and admits exactly src/openflowsheet/_data/requirements.lock (D-8); T08.A43's dist job not run (the `dist` and `clean-install` CI jobs run only on workflow_dispatch (rc inputs); the X05 brief forbids a dispatch, so push run 42379232642 skipped them)",
+    "static": "PYTHONPATH=src .venv/bin/python -m pytest -q tests/test_x05_lock.py::test_a20_the_packaged_lock_is_a_link_to_the_root_file"
+   }
+  },
+  {
+   "description": "the real wheel in CI clean-install, both architectures: lock-check's five states",
+   "id": "X05.A21",
+   "result": "unsupported",
+   "value": {
+    "local_substitute": "tests/test_x05_replay_from_the_wheel.py drives the same lock-check on a copied tree; lock-check --state installed on a locally built wheel passes",
+    "reason": "the `dist` and `clean-install` CI jobs run only on workflow_dispatch (rc inputs); the X05 brief forbids a dispatch, so push run 42379232642 skipped them"
+   }
+  },
+  {
+   "description": "the installed wheel replays the 52 F0 bundles in CI on both architectures (MATCH, integrity, exact or compatible)",
+   "id": "X05.A22b",
+   "result": "unsupported",
+   "value": {
+    "reason": "the `dist` and `clean-install` CI jobs run only on workflow_dispatch (rc inputs); the X05 brief forbids a dispatch, so push run 42379232642 skipped them"
+   }
+  },
+  {
+   "description": "the installed wheel replays the 52 F0 bundles on the reference platform, each equal to M7's registered value",
+   "id": "X05.A22a",
+   "result": "pass",
+   "value": {
+    "a_local": {
+     "command": "clean venv outside the tree, requirements at the lock, the wheel --no-deps; t08_rc.py f0-replay",
+     "differing": {},
+     "machine_class": "ref-x86-64",
+     "modes": {
+      "exact_replay": 52
+     },
+     "package": "/tmp/claude-1003/-home-frankp-Codes-OpenFlowsheet/fd59d98d-797a-4da8-93d6-9c61c6d4bdc7/scratchpad/x05/clean/lib/python3.13/site-packages/openflowsheet",
+     "passed": true,
+     "record": "evidence/X05/42c84f1d983e30917608f3cd6ddbaf0f29766b1f/local/f0-local.json",
+     "verdicts": {
+      "MATCH": 52
+     }
+    }
+   }
+  },
+  {
+   "description": "F0 PASS at the X05 head on ref-x86-64; test_k05_replay.py and test_f0_corpus_identity.py unedited and passing",
+   "id": "X05.A23",
+   "result": "pass",
+   "value": {
+    "f0": "F0 PASS: M1 50/50, M2 61/61, M3 61/61, M4 61/61, M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 35/35",
+    "removed": "tests/test_t08_r3_a19_lock_lookup.py (D7.2)",
+    "replay_suites_diff_vs_merge_base": "empty"
+   }
+  },
+  {
+   "description": "L41 restated (D7.3), support matrix --check, T08 spec notes, no live text says the wheel ships no lock",
+   "id": "X05.A24",
+   "result": "pass",
+   "value": {
+    "command": "PYTHONPATH=src .venv/bin/python scripts/t08_support_matrix.py --check -> 0 problem(s); grep over docs/support-matrix.md, benchmarks/t08/support_envelope.yaml, src/, ci.yml: no match"
+   }
+  },
+  {
+   "description": "an unconstrained install of the RC wheel verifies, CI clean-install both architectures",
+   "id": "X05.A25ci",
+   "result": "unsupported",
+   "value": {
+    "reason": "the `dist` and `clean-install` CI jobs run only on workflow_dispatch (rc inputs); the X05 brief forbids a dispatch, so push run 42379232642 skipped them"
+   }
+  },
+  {
+   "description": "the closure pinned in Requires-Dist; an unconstrained install of the wheel verifies (local, ref-x86-64)",
+   "id": "X05.A25",
+   "result": "pass",
+   "value": {
+    "local_unconstrained": {
+     "lock_findings": [],
+     "lock_sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4",
+     "record": "evidence/X05/42c84f1d983e30917608f3cd6ddbaf0f29766b1f/local/unconstrained-local.json"
+    },
+    "static": "PYTHONPATH=src .venv/bin/python -m pytest -q tests/test_x05_lock.py::test_a25_the_closure_is_pinned_exactly_in_requires_dist"
+   }
+  },
+  {
+   "description": "docs/derivations/scripts/x05_reference.py --check",
+   "id": "X05.REF",
+   "result": "pass",
+   "value": {
+    "line": "x05_reference: PASS (36 cases, 8 replay cells, 25 assertions)"
+   }
+  },
+  {
+   "description": "full gate at the commit, ref-x86-64",
+   "id": "X05.GATE",
+   "result": "pass",
+   "value": {
+    "line": "GATE PASS 42c84f1d: 14934 passed, 3206 skipped, 197 deselected, 1 warning in 3483.49s (0:58:03); ruff, format, mypy exit 0",
+    "log_sha256": "26ff1021897aa580f294d8e97a5680a63c474f369285bcb28ea1a79d9f3f19e1"
+   }
+  },
+  {
+   "description": "push CI on wp/X05",
+   "id": "X05.CI",
+   "result": "pass",
+   "value": {
+    "earlier_run": "42372143366 failed (T08.A32 refused the packaged lock in the sdist; fixed 42c84f1d, D-8)",
+    "legs": "conclusion success; check (ubuntu-latest): success; check (ubuntu-24.04-arm): success; default-install: success; identity: success; dist, clean-install and the rc jobs skipped (workflow_dispatch only)",
+    "run": "42379232642"
+   }
+  }
+ ],
+ "commands": [
+  {
+   "cmd": "PYTHONPATH=$PWD/src PATH=.venv/bin:$PATH ./scripts/gate.sh",
+   "cwd": ".claude/worktrees/x05",
+   "exit_code": 0
+  },
+  {
+   "cmd": "PYTHONPATH=src python scripts/corpus_identity.py --check",
+   "cwd": ".claude/worktrees/x05",
+   "exit_code": 0
+  },
+  {
+   "cmd": "python docs/derivations/scripts/x05_reference.py --check",
+   "cwd": ".claude/worktrees/x05",
+   "exit_code": 0
+  },
+  {
+   "cmd": "PYTHONPATH=src python scripts/t08_support_matrix.py --check",
+   "cwd": ".claude/worktrees/x05",
+   "exit_code": 0
+  },
+  {
+   "cmd": "clean venv from the built wheel: t08_rc.py lock-check --state installed; f0-replay; unconstrained venv lock-check --state installed",
+   "cwd": "scratchpad outside the tree",
+   "exit_code": 0
+  }
+ ],
+ "commit": "42c84f1d983e30917608f3cd6ddbaf0f29766b1f",
+ "inputs": {
+  "case_hash": "90dd7fea3dff8ffbb5e481044febd668f6549755ad21fe3c3044e9914bf6493a",
+  "case_id": "ADR 0069 (Proposed) \u00a76: 36 verifier states, 8 replay cells, 25 assertions",
+  "environment_lock_hash": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+ },
+ "limitations": [
+  "Evidence class: software verification of identity bookkeeping (strings, digests, counts); no empirical validation (ADR 0069 \u00a710).",
+  "ADR 0069 is Proposed; ADR 0007 Amendment 2 and the register lines wait for acceptance (docs/X05_DECISIONS.md D-7).",
+  "X05.A21, A22 (b) and A25's CI half are unsupported: the `dist` and `clean-install` CI jobs run only on workflow_dispatch (rc inputs); the X05 brief forbids a dispatch, so push run 42379232642 skipped them. Local substitutes are recorded on ref-x86-64 only.",
+  "The local wheel records were taken at 7f39b199; the code under src/ and scripts/t08_rc.py is unchanged from there to the manifest commit (later commits: docs, envelope, one test pattern). unconstrained-local.json records tree_clean false (the envelope YAML was being edited, not code).",
+  "Q-N1: .venv measured; .venv-nlp and .venv-lca are absent from this workstation and judged from their build locks (D-1 table); the reactor child never calls environment().",
+  "The release procedure's step-4 line (a19.* -> x05.*) is left to wp/RP (docs/progress.md)."
+ ],
+ "requirements": [],
+ "review": {
+  "numerical": "pending",
+  "process_model": "pending"
+ },
+ "status": "tested",
+ "work_package": "X05"
+}

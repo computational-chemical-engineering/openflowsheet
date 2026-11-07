@@ -328,3 +328,23 @@ of claims the package no longer makes (warm variant unregistered, neighbour spee
 X02 merges after Frank accepts ADR 0070 (Q5). OPT: WO-1 SYN-001 bit-identical (dump `cmp`, both envs), F0 PASS; WO-2
 F1 holds (8 cases, 0 entries differ), F2 holds for composition-independent K; D-12 (Q4′ refuses splits not judged by
 tp_margin) → for OPT's reviewer.
+
+## 2026-11-07 — X05 merged into main (`3e93c9a7`)
+
+No-squash merge of `wp/X05` `1e5b3252` (main had moved by docs only). Push CI 42405801772/42405801801 green; RC
+dispatch 42397255469 green; gate PASS 15138 at `830e7556`. On main after merge: F0 PASS (M1–M9), support matrix 0
+problems, harvest + X05 lock tests 54 passed. ADR 0069 stays Proposed; its register lines wait for Frank. Worktree
+removed.
+
+## 2026-11-07 — X10 inventory (`wp/X10` `c45e8e08`) and review (`827abed4`) → fix round
+
+150 pairs (30 models × 5 selectable providers): off CoolProp 41 VERIFIED, 1 UNVERIFIED, 2 bound-not-solved, 76
+refused, 0 errors; CoolProp 10 VERIFIED with the extra. Review: faithful measurement; M-1 — `c1.reactor_surrogate` on
+`benchmarks/m04/c1-surrogate.json` is UNVERIFIED on the user path (same policy `T06-revision-v2` as M04's test, which
+solves a different flowsheet): the derivative witness step h = 3e-5 mol/s is 14–21 % of the per-tube flows
+(J − FD falls 4× per halving: truncation, not a Jacobian defect) → harvest class E + support-matrix row. S-1…S-4, D-2
+wording. My brief's premise (a policy difference) was wrong.
+DECISION: open a design-lane follow-up "derivative-witness step relative to the state (small-flow `pr-c1-v1`
+revisions)" for the scaling/certificate policy owner, not inside X10. Alternative: fix in X10 (out of its measurement
+scope). Reversible by: folding it into X10 gaps (0.6).
+I stopped X10's first full gate (stale after the fix round); one gate runs after the fixes.
