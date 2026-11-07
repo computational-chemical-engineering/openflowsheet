@@ -315,3 +315,16 @@ Frank OPT Q1–Q8 (defaults). Architect least sure of: F1 bit-identical last-att
 vs `orchestrator/region.py`, F3 Ipopt inline vs worker identity (G12), F4 thermal port regimes — for the reviewer.
 DECISION: OPT build starts now on `wp/OPT` (WO-1) while X02 closes and X05 waits for CI. Alternative: wait for Frank's
 Q1–Q8. Reversible by: the defaults are isolated per WO; a late answer reworks the WO it touches.
+
+## 2026-11-07 — X02 WO-7 done (`wp/X02` `c05a9e84`); OPT WO-1/WO-2 done (`wp/OPT` `508086b0`)
+
+X02: gate PASS 15138 at `2ab11b66`; F0 PASS; CI 42398109849 / 42405646392 green; manifest
+`evidence/X02/2ab11b66…` `tested` (18 checks; G5b and G5d (iii) `fail` + accepted_fail, G5c not_applicable).
+DECISION: X02 D-33 (filed as `X02`, not `S16`) → accepted: ADR 0059 D1 (Accepted, R-938) admits `X[0-9]{2}`; my brief's
+premise was stale. Alternative: S16 alias (ADR 0059 rejects aliases). Reversible by: moving the directory in one commit.
+DECISION: X02 D-34 (`tested` with two `fail` checks of withdrawn claims, T08 precedent) → accepted; both failures are
+of claims the package no longer makes (warm variant unregistered, neighbour speed-up withdrawn). Alternative:
+`implemented`. Reversible by: Frank's X02 Q7 / a manifest re-take.
+X02 merges after Frank accepts ADR 0070 (Q5). OPT: WO-1 SYN-001 bit-identical (dump `cmp`, both envs), F0 PASS; WO-2
+F1 holds (8 cases, 0 entries differ), F2 holds for composition-independent K; D-12 (Q4′ refuses splits not judged by
+tp_margin) → for OPT's reviewer.
