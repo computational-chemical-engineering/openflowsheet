@@ -8411,3 +8411,46 @@ harvest:
   class: P
   to: []
   note: 'method note: the lifted-by and reason columns are register readings in the generator (D-7)'
+- manifest: evidence/X10/033f19289a891221537769d8024ec7f61c0f4da7/manifest.json
+  item: limitations[0]
+  sha256: 2ba6ae8ca52db5a2ecd923ee1ca7b77daef690d4e5544dc5f8507eb27345feb8
+  class: P
+  to: []
+  note: 'provenance note: a software measurement on ref-x86-64; one minimal flowsheet per admitted pair; not validation'
+- manifest: evidence/X10/033f19289a891221537769d8024ec7f61c0f4da7/manifest.json
+  item: limitations[1]
+  sha256: 328033fc8807a09a85c193308801c39f142e658dc1a432851288df92b480321d
+  class: P
+  to: []
+  note: 'scope note: a measurement package with no D/A requirement; requirements empty'
+- manifest: evidence/X10/033f19289a891221537769d8024ec7f61c0f4da7/manifest.json
+  item: limitations[2]
+  sha256: eeda4365e7dafaa4fb5ac453220f27e11165497f8dc2ed6631193b57fb138765
+  class: P
+  to: []
+  note: 'method note: CoolProp represented by R134a (X10_DECISIONS D-1); the extra-present section measured with CoolProp 8.0.0 from requirements-coolprop.lock in a scratch --target directory (D-3)'
+- manifest: evidence/X10/033f19289a891221537769d8024ec7f61c0f4da7/manifest.json
+  item: limitations[3]
+  sha256: 6bc353925fe863bb1b20bd4dafeefd04051e007f9cbfe8af4ac2d23796848e76
+  class: P
+  to: []
+  note: 'scope note: the coupled C1 reactors bind on revision_coupled and are not solved by the probe (D-4)'
+- manifest: evidence/X10/033f19289a891221537769d8024ec7f61c0f4da7/manifest.json
+  item: limitations[4]
+  sha256: dcaceb11d67f8af0081d9430769d1dce87c5bc4d553e8fb0d769b8bc503eaf5a
+  class: E
+  to:
+  - L-X10-1
+  note: 'user-facing (X10 review M-1): c1.reactor_surrogate CONVERGED/UNVERIFIED on its registered revision; witness step set by the column scale, diagnosed (L-X10-1)'
+- manifest: evidence/X10/033f19289a891221537769d8024ec7f61c0f4da7/manifest.json
+  item: limitations[5]
+  sha256: 522e70855648b0708225d45492d8f95aaae6e3017601c43094d8779e6e884528
+  class: P
+  to: []
+  note: 'method note: the lifted-by and reason columns are register readings in the generator (D-7)'
+- manifest: evidence/X10/033f19289a891221537769d8024ec7f61c0f4da7/manifest.json
+  item: limitations[6]
+  sha256: 60bddcd81370268668c374eb5667e7349fca6aaaf9d1e43836723c34df10f4b0
+  class: P
+  to: []
+  note: 'process note: the CoolProp-present section was not re-measured after the review fixes; inventory.json byte-identical'

@@ -1,0 +1,135 @@
+{
+  "work_package": "X10",
+  "commit": "033f19289a891221537769d8024ec7f61c0f4da7",
+  "requirements": [],
+  "status": "tested",
+  "inputs": {
+    "case_id": "X10 inventory: MODEL_BUILDERS (30 models) x the 5 selectable providers (CoolProp by R134a), benchmarks/x10/inventory.json (inventory_sha256 99607a434124946927293b7a5a806bf365bdb456d38db01ae54cba4016e57a92)",
+    "case_hash": "6adcceffb83ab89d19a1b52b69afcc0b52cb29b7a0f86df00b5c2128ec456665",
+    "environment_lock_hash": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+  },
+  "commands": [
+    {
+      "cmd": "PYTHONPATH=src .venv/bin/python scripts/x10_inventory.py --check",
+      "cwd": ".claude/worktrees/x10",
+      "exit_code": 0
+    },
+    {
+      "cmd": ".venv/bin/python -m pip install --no-deps --require-hashes -r requirements-coolprop.lock --target \"$COOLPROP_SITE\" && PYTHONPATH=src:\"$COOLPROP_SITE\" .venv/bin/python scripts/x10_inventory.py --check",
+      "cwd": ".claude/worktrees/x10",
+      "exit_code": 0
+    },
+    {
+      "cmd": "OMP_NUM_THREADS=1 PYTHONPATH=src .venv/bin/python -m pytest -q tests/test_x10_inventory.py",
+      "cwd": ".claude/worktrees/x10",
+      "exit_code": 0
+    },
+    {
+      "cmd": "OMP_NUM_THREADS=1 PYTHONPATH=src .venv/bin/python scripts/corpus_identity.py --check",
+      "cwd": ".claude/worktrees/x10",
+      "exit_code": 0
+    },
+    {
+      "cmd": ".venv/bin/ruff check scripts/x10_inventory.py tests/test_x10_inventory.py && .venv/bin/ruff format --check scripts/x10_inventory.py tests/test_x10_inventory.py",
+      "cwd": ".claude/worktrees/x10",
+      "exit_code": 0
+    },
+    {
+      "cmd": "PYTHONPATH=src .venv/bin/python scripts/t08_support_matrix.py --check",
+      "cwd": ".claude/worktrees/x10",
+      "exit_code": 0
+    },
+    {
+      "cmd": "OMP_NUM_THREADS=1 PYTHONPATH=src .venv/bin/python -m pytest -q tests/test_m07a_harvest.py tests/test_t08_w2_support_envelope.py tests/test_t08_evidence_manifest.py tests/test_evidence_manifests.py tests/test_x10_inventory.py",
+      "cwd": ".claude/worktrees/x10",
+      "exit_code": 0
+    }
+  ],
+  "checks": [
+    {
+      "id": "X10.I1",
+      "description": "--check in the shared .venv (coolprop extra absent): every pair re-measured equal to the committed inventory; the table is its rendering",
+      "result": "pass",
+      "value": {
+        "stdout": "X10 inventory: PASS (coolprop_extra_absent; 150 pairs re-measured equal)",
+        "summary": {
+          "any": {
+            "bound_not_solved": 2,
+            "refused_admission": 76,
+            "solved_not_verified": 1,
+            "solved_verified": 41
+          },
+          "coolprop_extra_absent": {
+            "refused_admission": 20,
+            "refused_basis": 10
+          }
+        }
+      }
+    },
+    {
+      "id": "X10.I3",
+      "description": "tests/test_x10_inventory.py: the full --check, both CoolProp sections present, R-819's two pump refusals, the admission oracle over 150 pairs (review S-2), classify() on no_route (S-3)",
+      "result": "pass",
+      "value": "5 passed in 38.75s"
+    },
+    {
+      "id": "X10.I4",
+      "description": "F0 corpus identity gate unchanged by the package",
+      "result": "pass",
+      "value": "F0 PASS: M1 50/50, M2 61/61, M3 61/61, M4 61/61, M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 35/35"
+    },
+    {
+      "id": "X10.I5",
+      "description": "No production code changed: the package's diff against main touches scripts/x10_inventory.py, benchmarks/x10/, benchmarks/t08/support_envelope.yaml, docs/ and tests only",
+      "result": "pass",
+      "value": "no file under src/ changed"
+    },
+    {
+      "id": "X10.I6",
+      "description": "T08 support matrix --check after L-X10-1 and the harvest",
+      "result": "pass",
+      "value": "0 problem(s)"
+    },
+    {
+      "id": "X10.I7",
+      "description": "harvest, support-envelope, evidence-manifest and X10 tests (tests/test_m07a_harvest.py, test_t08_w2_support_envelope.py, test_t08_evidence_manifest.py, test_evidence_manifests.py, test_x10_inventory.py)",
+      "result": "pass",
+      "value": "504 passed in 88.00s"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "benchmarks/x10/inventory.json",
+      "sha256": "6adcceffb83ab89d19a1b52b69afcc0b52cb29b7a0f86df00b5c2128ec456665",
+      "description": "the measured inventory (150 pairs, both CoolProp environments)"
+    },
+    {
+      "path": "docs/X10-inventory.md",
+      "sha256": "43252352b5bbb4df1ea6aab57123c9548a90580c4d2c21c86b9813017140722f",
+      "description": "its rendering: counts, matrix, every pair not solved and verified with its register reason"
+    },
+    {
+      "path": "scripts/x10_inventory.py",
+      "sha256": "6b949feca1d375727724f51bc017b49d465e81ae5775573a8aa72e449d603375",
+      "description": "the generator (--record, --check)"
+    },
+    {
+      "path": "tests/test_x10_inventory.py",
+      "sha256": "b4148cf0ce33c65d5833e600300601e48e3024626476929af411f8e2c8d48b8e",
+      "description": "the package's test"
+    }
+  ],
+  "limitations": [
+    "Evidence class: software measurement on ref-x86-64 (TRS2). Each admitted pair is solved once, on one registered or constructed minimal flowsheet; a VERIFIED solve shows the pair works there, not across the basis' domain. Not validation.",
+    "No D/A requirement: X10 inventory (ADR 0056 row 9, R-925) is a measurement package, so requirements is empty.",
+    "CoolProp is represented by R134a (docs/X10_DECISIONS.md D-1). Its coolprop_extra_present section was measured with CoolProp 8.0.0 from requirements-coolprop.lock installed into a scratch pip --target directory on PYTHONPATH, not in the shared .venv (D-3).",
+    "c1.reactor and c1.reactor_standin bind on revision_coupled and are not solved: the probe runs no external-unit experiments (D-4).",
+    "c1.reactor_surrogate solves CONVERGED but UNVERIFIED on its registered revision (benchmarks/m04/c1-surrogate.json; derivative_witness.on_pattern 0.109 against 1e-7). Measured cause (X10 review): the witness step h = 3e-5 mol/s is set by the column scale, against per-tube flows of 1.4e-4 to 4.9e-3 mol/s; the Jacobian-minus-finite-difference error falls 4.00x per halving of h, so it is truncation, not a Jacobian defect. User-facing (support matrix L-X10-1, class E). A design-lane follow-up (scaling and certificate policy) owns the step's rule.",
+    "The 'lifted by S10-C/S11?' column and the register reasons in docs/X10-inventory.md are register readings encoded in the generator (D-7), not measurements.",
+    "Review-fix round (docs/reviews/X10-review.md, docs/X10_DECISIONS.md D-8..D-13): the CoolProp-present section was not re-measured after the fixes; benchmarks/x10/inventory.json is byte-identical (sha256 unchanged), so its --check in that environment is the committed one's (X10.I2 of the first manifest)."
+  ],
+  "review": {
+    "numerical": "pending",
+    "process_model": "pending"
+  }
+}

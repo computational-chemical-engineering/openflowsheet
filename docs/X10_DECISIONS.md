@@ -76,7 +76,8 @@ and `--record` in both environments.
   `L-S11-1`). The row states the measured cause (witness step h = 3e-5 mol/s against per-tube flows 1.4e-4 to
   4.9e-3 mol/s; truncation, not a Jacobian defect) and that a design-lane follow-up (scaling and certificate policy)
   owns it. A second manifest at the fix head carries the corrected limitation text ("not diagnosed" dropped) and
-  its own harvest items (5 P, 1 E); the first manifest is kept. `HARVEST_SIZE` (71, 957, 122) → (72, 963, 122).
+  its own harvest items (6 P, 1 E, including a process note that the CoolProp-present section was not re-measured);
+  the first manifest is kept. `HARVEST_SIZE` (71, 957, 122) → (72, 964, 122).
   The reviewer's measurements are quoted from the review, not re-run here.
 - **D-9 (review S-1): R134a stands for the 123 CoolProp fluids.** `docs/X10-inventory.md` says so: admission holds
   for all 123 by construction, a V cell there is R134a's solve only.
