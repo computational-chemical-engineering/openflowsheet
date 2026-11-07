@@ -519,3 +519,23 @@ def test_g6_q4_prime_qualifies_a_ph_type_split_held_liquid() -> None:
     # Held LIQUID: the liquid outlet carries the feed whatever the duty.
     flow = result.forward.unscaled[1][0]
     assert flow is not None and abs(flow) <= 1e-12
+
+
+def test_a_provider_whose_closure_tests_otherwise_gets_no_margin(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """OPT_DECISIONS D-12: on a composition-dependent K (or `pr-c1-v1`) the closure judges a
+    single-phase branch by another test than `tp_margin`'s, so the split has no margin and Q4′
+    refuses it — shown on the PH flash with the provider's form reported composition-dependent."""
+    host, point, _ = _certified("PHF")
+    monkeypatch.setattr(revision_host, "composition_dependent", lambda provider: True)
+    (split,) = host.regimes(point).splits
+    assert (split.kind, split.regime, split.margin) == ("PH", "LIQUID", None)
+    (parameter,) = host.decisions.parameters.values()
+    result = host.sensitivity(
+        point,
+        [StudyParameter(parameter, 1000.0, 0.0, 2000.0)],
+        [OutputFunctional.of_variable("S3.T", 1.0)],
+    )
+    assert result.status == "REFUSED"
+    assert "REGIME_MARGIN_UNSUPPORTED" in result.refusal_codes

@@ -52,6 +52,7 @@ from openflowsheet.compile.casadi_backend import (
 from openflowsheet.compile.spec import ProblemSpec
 from openflowsheet.compiled import CompiledProblem, EvaluationContext
 from openflowsheet.models.revision_flowsheet import si_unit
+from openflowsheet.models.syn001.equilibrium_form import composition_dependent
 from openflowsheet.numerics.scaling import Scaling
 from openflowsheet.orchestrator.region import RegionResult
 from openflowsheet.orchestrator.revision import instances_of
@@ -78,6 +79,7 @@ from openflowsheet.studies.sensitivity import (
     evaluate_sensitivity,
 )
 from openflowsheet.studies.syn001 import tp_margin
+from openflowsheet.thermo.pr_c1 import PROVIDER_ID as PR_C1_PROVIDER_ID
 from openflowsheet.verify.certificate import CheckPolicy
 from openflowsheet.verify.checks import VerifierError
 
@@ -503,7 +505,9 @@ class RevisionNlpHost:
 
         The margin is `tp_margin` at the split's own converged T and P on its feed flows for TP-
         and PH-type splits alike (D7: the region's closure judges both by the TP test there);
-        `None` for `ZERO_FLOW`."""
+        `None` for `ZERO_FLOW`, and `None` on a provider whose closure judges a single-phase
+        branch by another test (`pr-c1-v1`'s `classify`, a composition-dependent K's incipient
+        phase) — Q4′ then refuses it (OPT_DECISIONS D-12)."""
         system = self.held_system(point)
         assert point.state is not None
         route = _handle(point).route
@@ -512,6 +516,9 @@ class RevisionNlpHost:
         splits = region_splits(instances_of(flowsheet), flowsheet.units(), flowsheet.components)
         regimes = dict(item for item in system.signature if len(item) == 2)
         provider = flowsheet.provider
+        own_test = not composition_dependent(provider) and (
+            provider.describe().provider_id != PR_C1_PROVIDER_ID
+        )
         metadata = self._compiled_at(point).metadata
         context = EvaluationContext(
             model_version=metadata.model_version,
@@ -525,7 +532,7 @@ class RevisionNlpHost:
             regime = regimes[split.unit]
             kind = splits.closure_types.get(split.unit, "TP")
             margin: float | None = None
-            if regime != "ZERO_FLOW":
+            if regime != "ZERO_FLOW" and own_test:
                 _, margin = tp_margin(
                     provider,
                     [float(point.state[name]) for name in split.feed],
