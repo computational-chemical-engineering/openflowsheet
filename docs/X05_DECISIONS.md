@@ -45,8 +45,8 @@ Default kept (ADR §11 Q-N1): the rule does not bend; nothing here needs it to.
 - **D-7 (WO-3) — what waits for acceptance.** ADR 0069 is Proposed, so ADR 0007 Amendment 2 (§13) is not appended
   and the three register lines (§12) are not entered: they stay drafted, unnumbered (`R-???`), in the ADR. `wp/MSG`
   and `wp/RP` hold R-942…R-949 unmerged; X05's lines take the next free numbers above them on acceptance, and R-140
-  gains its "Lifted by X05" line then. The release procedure's step-4 line (`a19.*` → `x05.*`) is left to `wp/RP`
-  (listed in `docs/progress.md`).
+  gains its "Lifted by X05" line then. The release procedure's step-4 line (`a19.*` → `x05.*`) was left to `wp/RP`;
+  RP merged first, so WO-4 made it after merging `main` (review ruling 5 (a)).
 - **D-8 (CI run 42372143366) — T08.A32 admits the packaged lock by name.** `tests/test_t08_w2_inventory.py`'s
   data-rights inventory (skipped locally when the build backend cannot be installed) refused
   `src/openflowsheet/_data/requirements.lock` in the sdist on both CI legs and `default-install`. The file is the

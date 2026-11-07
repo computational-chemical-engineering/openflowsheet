@@ -112,9 +112,8 @@ canonicity, T07); ADR 0013 has Amendment 2 (routing on registered tolerances, T0
 **X05 (replay from the wheel, ADR 0069 Proposed) is built on `wp/X05` (2026-11-07), not reviewed.** WO-1…WO-3
 done (`docs/X05_DECISIONS.md`, D-1…D-7, Q-N1 facts); the Q-F1 pins are the isolated commit `a58ef5a5`. Pending
 items: (1) Frank's acceptance of ADR 0069 (Q-F1…F3, `docs/FRANK_QUESTIONS.md`), then ADR 0007 Amendment 2 (ADR 0069
-§13) and the register lines (§12, numbered above `wp/MSG`'s and `wp/RP`'s R-942…R-949); (2) **for RP:**
-`docs/derivations/release-procedure.md` step 4's `a19.*` → `x05.*` (ADR 0069 §7 WO-3), left to `wp/RP` because
-it is unmerged; (3) the single `reviewer` pass against ADR 0069, then merge. Evidence:
+§13) and the register lines (§12, numbered above `wp/MSG`'s and `wp/RP`'s R-942…R-949); (2) (done in WO-4: RP
+step 4's `a19.*` → `x05.*` after the main merge); (3) the single `reviewer` pass against ADR 0069, then merge. Evidence:
 `evidence/X05/42c84f1d983e30917608f3cd6ddbaf0f29766b1f/manifest.json`, `status: tested`, 27 pass / 4 unsupported
 (A20 sdist bytes, A21, A22 (b), A25 CI: the `dist`/`clean-install` jobs run only on a dispatch, not done). Gate PASS
 (14934 passed, 58 min), F0 PASS (M7 52/52), CI push run 42379232642 green on both `check` legs. (4) A dispatch of the
