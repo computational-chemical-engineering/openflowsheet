@@ -109,6 +109,16 @@ canonicity, T07); ADR 0013 has Amendment 2 (routing on registered tolerances, T0
 
 ## Next executable action
 
+**X05 (replay from the wheel, ADR 0069 Proposed) is tested on `wp/X05` (2026-11-07), reviewed once, not `reviewed`.**
+WO-1…WO-4 done (`docs/X05_DECISIONS.md`, D-1…D-9); review `docs/reviews/X05-review.md` (M1, M2, S1 applied in WO-4:
+main merged, RP step 4 `a19.*` → `x05.*`, memo traceback cleared). Evidence:
+`evidence/X05/7c8d05e59dcef7c60b260b687b3cc4e06e5cbda0/manifest.json`, `status: tested`, 31/31 pass: gate PASS at
+`830e7556` (15138 passed, 54 min), F0 PASS (M7 52/52), dispatch run 42397255469 (`rc_distribution`) green on both legs
+(dist, clean-install, check, identity, default-install, bundle-set/replay); Q-N2: MATCH 52/52, compatible on both
+legs. **Next:** Frank's acceptance of ADR 0069 (Q-F1…F3, `docs/FRANK_QUESTIONS.md`), then at the merge ADR 0007
+Amendment 2 (§13), the register lines (§12, R-951… above X02's) and R-140's "Lifted by X05"; then merge. The 0.4 gate's
+`[4, "x05.*"]` pair waits for the 0.4.0 cut's specifier pass (`49506c90`).
+
 **V03 (0.3.0 release, `wp/V03-rc`, C = `a3e508e3`): WO-8 done in V03 spec §6.1's order (2026-10-31).** S13's manifest `tested` 48/48 (H1 `9e998beb`, generated at G `04c503e5`), ADRs 0053 and 0054 Accepted on it (H2 `e55f9efd`), step 18 at H2 `v0.3.0 tag may be proposed: YES` (log SHA-256 `ad31dc6b…`), A08's R part PASS, F9 4 of 4; build log `docs/V03_RC_DECISIONS.md`. **Next:** hand to Frank for the tag (an agent does not tag or push); after the tag, WO-9 (§5.3). Not `reviewed`.
 
 **E01 (cost and LCA assessment functionals, ADR 0052) is tested on `wp/E01` (2026-10-29), not reviewed.** Tracks A and B and WO-I1 complete (`docs/E01A_DECISIONS.md`, `docs/E01B_DECISIONS.md`). Rulings applied: ESC-I2 → manifest id **S12** (E01 the alias; R-565), ESC-I1 → A33 over feasible starts (design §6.1 erratum). Manifest `evidence/S12/d87078af…/manifest.json` `tested` (68/73 pass, none fails; A48/G10 and G8/gate/ci `unsupported`): S11 identity PASS n=54494 changed=[]; A3 dump IDENTICAL; nlp check PASSED with inventories; mypy fix in `lca_hand.py` (hashes only). T08 harvest appended, HARVEST_SIZE (61, 880, 109). **Review (2026-10-29):** `docs/reviews/E01-review.md` — M1, M2, S1–S4, N1, N5 applied on `wp/E01` (R-868–R-871; R-870 confirmed by Frank); manifest `evidence/S12/02fc8d2f…/manifest.json` `tested` (68/73, 0 fail; S11 identity PASS changed=[]; M03 dump identical; nlp PASSED); harvest HARVEST_SIZE (62, 894, 114). **Next:** full `scripts/gate.sh` once, CI on both architectures, the design lane's acceptance of the fixes, then merge. G10/A48 (Seider ranges `verified: false`, now a tripwire test) blocks a release, not this merge.

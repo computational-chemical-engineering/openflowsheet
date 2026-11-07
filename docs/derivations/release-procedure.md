@@ -419,7 +419,8 @@ whose gates are all unclaimed is left out of `rc_steps` by the line file and is 
    `a42.minus_t07_registered`, `a42.t07_key_substituted`, `a42.unchanged_under_trial_version`. RP.S11.
 3. **sdist and wheel twice** (T08.A43): `Version` equals the version in METADATA and the file names. CI `dist`. Record
    format `t08-a43-dist-v1`, checks `a43.*` and `a31.*`. RP.S11.
-4. **Clean install and the lock lookup** (T08.A44, T08.A19). CI `clean-install` on both legs. Checks `a44.*`, `a19.*`.
+4. **Clean install and the packaged lock** (T08.A44; X05.A21, A22 (b), A25; T08.A19 retired by ADR 0069 D7.2). CI
+   `clean-install` on both legs. Checks `a44.*`, `x05.*`.
    RP.S11.
 5. **The RC bundle set** (T08.A45). CI `bundle-set` writes; `bundle-replay` replays on both legs. Checks `a45.*`,
    `a14.c1`–`c3`. RP.S11.

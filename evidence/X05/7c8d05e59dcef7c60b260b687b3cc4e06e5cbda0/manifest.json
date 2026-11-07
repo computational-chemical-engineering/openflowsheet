@@ -1,0 +1,582 @@
+{
+ "artifacts": [
+  {
+   "description": "X05's registered values (x05_reference.py --emit)",
+   "path": "benchmarks/x05/reference_values.json",
+   "sha256": "90dd7fea3dff8ffbb5e481044febd668f6549755ad21fe3c3044e9914bf6493a"
+  },
+  {
+   "description": "the packaged lock (src/openflowsheet/_data/requirements.lock links to it)",
+   "path": "requirements.lock",
+   "sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+  },
+  {
+   "description": "WO-3 local record (7f39b199)",
+   "path": "evidence/X05/42c84f1d983e30917608f3cd6ddbaf0f29766b1f/local/lock-installed-local.json",
+   "sha256": "5a4618d96e0dc93f700d31bde04f24c7d867397f8bfcbbb605f6b909dc9977c3"
+  },
+  {
+   "description": "WO-3 local record (7f39b199)",
+   "path": "evidence/X05/42c84f1d983e30917608f3cd6ddbaf0f29766b1f/local/f0-local.json",
+   "sha256": "28fae403e2a47b84fb28a371306250af72348e404e8600a22c1da91ace962d29"
+  },
+  {
+   "description": "WO-3 local record (7f39b199)",
+   "path": "evidence/X05/42c84f1d983e30917608f3cd6ddbaf0f29766b1f/local/unconstrained-local.json",
+   "sha256": "95fb2d64bf9dbdf9e657f069c22794ffd998133cbddb2fc92c33c142df248eaa"
+  },
+  {
+   "description": "CI run 42397255469 record",
+   "path": "evidence/X05/7c8d05e59dcef7c60b260b687b3cc4e06e5cbda0/ci/f0-ubuntu-24.04-arm.json",
+   "sha256": "5b05d99baa198885566c7859b775ea496068915828521a78e457f22c8a299b16"
+  },
+  {
+   "description": "CI run 42397255469 record",
+   "path": "evidence/X05/7c8d05e59dcef7c60b260b687b3cc4e06e5cbda0/ci/f0-ubuntu-latest.json",
+   "sha256": "0d34506b9d7cb054fecc7e8ec341b85c0588038276c98dcc8a8fb97cfadf2ae4"
+  },
+  {
+   "description": "CI run 42397255469 record",
+   "path": "evidence/X05/7c8d05e59dcef7c60b260b687b3cc4e06e5cbda0/ci/install-ubuntu-24.04-arm.json",
+   "sha256": "30ac508dfcd8301c41a43ceaddb4ea6fb875d3beecbb039f2484814b3ca29ebe"
+  },
+  {
+   "description": "CI run 42397255469 record",
+   "path": "evidence/X05/7c8d05e59dcef7c60b260b687b3cc4e06e5cbda0/ci/install-ubuntu-latest.json",
+   "sha256": "fb6ad2d282f5b0144fbe96f4042abb77c9565a9f5f4fa9a023bae434e277f3cd"
+  },
+  {
+   "description": "CI run 42397255469 record",
+   "path": "evidence/X05/7c8d05e59dcef7c60b260b687b3cc4e06e5cbda0/ci/lock-checkout-off-ubuntu-24.04-arm.json",
+   "sha256": "89490663209dd806289267138f16711460586289fe10df619f1e62779b2d4657"
+  },
+  {
+   "description": "CI run 42397255469 record",
+   "path": "evidence/X05/7c8d05e59dcef7c60b260b687b3cc4e06e5cbda0/ci/lock-checkout-off-ubuntu-latest.json",
+   "sha256": "b40f21571446696cd755d80d08cc312b15b3d788c72f74700c23111c8eb6c0c1"
+  },
+  {
+   "description": "CI run 42397255469 record",
+   "path": "evidence/X05/7c8d05e59dcef7c60b260b687b3cc4e06e5cbda0/ci/lock-checkout-ubuntu-24.04-arm.json",
+   "sha256": "1bd26948c46bf3d0dd48cdd7145c17304d1a0f0c3ee861deac3113f4ee3cccf3"
+  },
+  {
+   "description": "CI run 42397255469 record",
+   "path": "evidence/X05/7c8d05e59dcef7c60b260b687b3cc4e06e5cbda0/ci/lock-checkout-ubuntu-latest.json",
+   "sha256": "661cc6dc6ac08e90db71110f12bf627ca1033e0fa9bc295f70a6af31990f244d"
+  },
+  {
+   "description": "CI run 42397255469 record",
+   "path": "evidence/X05/7c8d05e59dcef7c60b260b687b3cc4e06e5cbda0/ci/lock-installed-nolock-ubuntu-24.04-arm.json",
+   "sha256": "3b6c1ef1dcd618b7e9631a67788c19ab7ba4c1e7b90106a2d1b2760b6d456575"
+  },
+  {
+   "description": "CI run 42397255469 record",
+   "path": "evidence/X05/7c8d05e59dcef7c60b260b687b3cc4e06e5cbda0/ci/lock-installed-nolock-ubuntu-latest.json",
+   "sha256": "cf3e971e8ede423c63fc17681db11db031af15dd90e16c96f2309a2b26279a6a"
+  },
+  {
+   "description": "CI run 42397255469 record",
+   "path": "evidence/X05/7c8d05e59dcef7c60b260b687b3cc4e06e5cbda0/ci/lock-installed-off-ubuntu-24.04-arm.json",
+   "sha256": "f026e6c7513601d68e67d804b46e620f1740f0bf09d764da4746579f1548b014"
+  },
+  {
+   "description": "CI run 42397255469 record",
+   "path": "evidence/X05/7c8d05e59dcef7c60b260b687b3cc4e06e5cbda0/ci/lock-installed-off-ubuntu-latest.json",
+   "sha256": "883d59f0a23c5b7d0a34f218a8e8f5277d74396bcd9186caa3382704e04647e9"
+  },
+  {
+   "description": "CI run 42397255469 record",
+   "path": "evidence/X05/7c8d05e59dcef7c60b260b687b3cc4e06e5cbda0/ci/lock-installed-ubuntu-24.04-arm.json",
+   "sha256": "6b6b474f722b2db8049ba2db05b2815e1b253ff2d5348136ea03cf4742d94836"
+  },
+  {
+   "description": "CI run 42397255469 record",
+   "path": "evidence/X05/7c8d05e59dcef7c60b260b687b3cc4e06e5cbda0/ci/lock-installed-ubuntu-latest.json",
+   "sha256": "e0f5acfc3419aec084dc62fa121357acb6c0689103eecc40c115c4f7354d4520"
+  },
+  {
+   "description": "CI run 42397255469 record",
+   "path": "evidence/X05/7c8d05e59dcef7c60b260b687b3cc4e06e5cbda0/ci/t08-a43-dist.json",
+   "sha256": "8bf7b08b6f5ae2a6a0cba01427e84834f2014442370273312ae122a286a9dac9"
+  },
+  {
+   "description": "CI run 42397255469 record",
+   "path": "evidence/X05/7c8d05e59dcef7c60b260b687b3cc4e06e5cbda0/ci/unconstrained-ubuntu-24.04-arm.json",
+   "sha256": "e1ff38a5979faf34cef651f4e00ab2f7bbfde4032e4aeaf05627feefc8dc0392"
+  },
+  {
+   "description": "CI run 42397255469 record",
+   "path": "evidence/X05/7c8d05e59dcef7c60b260b687b3cc4e06e5cbda0/ci/unconstrained-ubuntu-latest.json",
+   "sha256": "bdf9b74f736e91ca7029ace18518beb6cb5946827a615f2e45ece1c4b2ad3dd6"
+  },
+  {
+   "description": "CI run 42397255469 rc-dist sdist (not committed)",
+   "path": "openflowsheet-0.4.0.dev0.tar.gz",
+   "sha256": "e7f884465a2be9ab9ab7b7f3d0d422cc9fd50b439c01617d4e022d506347872a"
+  },
+  {
+   "description": "CI run 42397255469 rc-dist wheel (not committed)",
+   "path": "openflowsheet-0.4.0.dev0-py3-none-any.whl",
+   "sha256": "9318b05156cd0588b87d3c850d1f11362d47d5fce01f18781f7f83b7448218a6"
+  }
+ ],
+ "checks": [
+  {
+   "description": "verifier: matched lock and closure (V01, V02); controls V04-V29 fail",
+   "id": "X05.A01",
+   "result": "pass",
+   "value": {
+    "cases": "V01-V36 from benchmarks/x05/reference_values.json",
+    "test": "PYTHONPATH=src .venv/bin/python -m pytest -q tests/test_x05_lock.py"
+   }
+  },
+  {
+   "description": "verifier: a closure member at another version (V04-V12, V22, V36), findings exact and in order",
+   "id": "X05.A02",
+   "result": "pass",
+   "value": {
+    "test": "PYTHONPATH=src .venv/bin/python -m pytest -q tests/test_x05_lock.py"
+   }
+  },
+  {
+   "description": "verifier: a closure member not installed (V13-V21), F3 exact",
+   "id": "X05.A03",
+   "result": "pass",
+   "value": {
+    "test": "PYTHONPATH=src .venv/bin/python -m pytest -q tests/test_x05_lock.py"
+   }
+  },
+  {
+   "description": "verifier: the lock lacks a closure member (V23 one F5, V24 nine F5)",
+   "id": "X05.A04",
+   "result": "pass",
+   "value": {
+    "test": "PYTHONPATH=src .venv/bin/python -m pytest -q tests/test_x05_lock.py"
+   }
+  },
+  {
+   "description": "verifier: a missing, unreadable or malformed lock (V25-V29)",
+   "id": "X05.A05",
+   "result": "pass",
+   "value": {
+    "test": "PYTHONPATH=src .venv/bin/python -m pytest -q tests/test_x05_lock.py"
+   }
+  },
+  {
+   "description": "verifier: lock lines outside the closure hashed, not checked (V03); control V30",
+   "id": "X05.A06",
+   "result": "pass",
+   "value": {
+    "test": "PYTHONPATH=src .venv/bin/python -m pytest -q tests/test_x05_lock.py"
+   }
+  },
+  {
+   "description": "verifier: names normalised, comments and blank lines ignored (V30, V31)",
+   "id": "X05.A07",
+   "result": "pass",
+   "value": {
+    "test": "PYTHONPATH=src .venv/bin/python -m pytest -q tests/test_x05_lock.py"
+   }
+  },
+  {
+   "description": "verifier: versions compare as strings (V32, V33)",
+   "id": "X05.A08",
+   "result": "pass",
+   "value": {
+    "test": "PYTHONPATH=src .venv/bin/python -m pytest -q tests/test_x05_lock.py"
+   }
+  },
+  {
+   "description": "verifier: never raises (V34, V35); a real dist-info without Version gives F6 TypeError under -W error",
+   "id": "X05.A09",
+   "result": "pass",
+   "value": {
+    "test": "PYTHONPATH=src .venv/bin/python -m pytest -q tests/test_x05_lock.py"
+   }
+  },
+  {
+   "description": "RUNTIME_CLOSURE == the JSON's closure == the closure measured from installed metadata (packaging, extra=''); control from the five pre-X05 pins",
+   "id": "X05.A10",
+   "result": "pass",
+   "value": {
+    "environment": ".venv, ref-x86-64, Python 3.13.5",
+    "test": "PYTHONPATH=src .venv/bin/python -m pytest -q tests/test_x05_lock.py"
+   }
+  },
+  {
+   "description": "the checkout records the packaged lock ead4edf1..., findings (); control: V36's lock via lock_path -> '' with V36's findings",
+   "id": "X05.A11",
+   "result": "pass",
+   "value": {
+    "test": "PYTHONPATH=src .venv/bin/python -m pytest -q tests/test_x05_lock.py"
+   }
+  },
+  {
+   "description": "the environment document keeps the schema's eight keys; lock_findings outside equality and as_document(); schema unchanged on wp/X05",
+   "id": "X05.A12",
+   "result": "pass",
+   "value": {
+    "schema_diff_vs_merge_base_5f4b53c7": "empty",
+    "test": "PYTHONPATH=src .venv/bin/python -m pytest -q tests/test_x05_lock.py"
+   }
+  },
+  {
+   "description": "installed (copied tree) beneath a verifiable stray: the packaged lock's hash, never the stray's c2a8f1c1...",
+   "id": "X05.A13",
+   "result": "pass",
+   "value": {
+    "local_wheel": "evidence/X05/42c84f1d983e30917608f3cd6ddbaf0f29766b1f/local/lock-installed-local.json (clean venv from the built wheel, all checks pass)",
+    "test": "PYTHONPATH=src .venv/bin/python -m pytest -q tests/test_x05_replay_from_the_wheel.py"
+   }
+  },
+  {
+   "description": "installed with no packaged lock: '' with F1 naming openflowsheet/_data/requirements.lock",
+   "id": "X05.A14",
+   "result": "pass",
+   "value": {
+    "test": "PYTHONPATH=src .venv/bin/python -m pytest -q tests/test_x05_replay_from_the_wheel.py"
+   }
+  },
+  {
+   "description": "installed-off, checkout-off (numpy shadow 2.2.5): '', ['numpy is 2.2.5, the lock pins 2.2.4']",
+   "id": "X05.A15",
+   "result": "pass",
+   "value": {
+    "test": "PYTHONPATH=src .venv/bin/python -m pytest -q tests/test_x05_replay_from_the_wheel.py"
+   }
+  },
+  {
+   "description": "replay matrix, matched cells (on x installed, checkout): exact_replay / MATCH, integrity ok",
+   "id": "X05.A16",
+   "result": "pass",
+   "value": {
+    "test": "PYTHONPATH=src .venv/bin/python -m pytest -q tests/test_x05_replay_from_the_wheel.py"
+   }
+  },
+  {
+   "description": "replay matrix, 6 unmatched cells: inspected / NOT_RUN, reasons[0] exact (R_ARCHIVE, R_THIS, R_BOTH)",
+   "id": "X05.A17",
+   "result": "pass",
+   "value": {
+    "test": "PYTHONPATH=src .venv/bin/python -m pytest -q tests/test_x05_replay_from_the_wheel.py"
+   }
+  },
+  {
+   "description": "decide_mode's reason templates; both verified -> exact_replay, reasons ()",
+   "id": "X05.A18",
+   "result": "pass",
+   "value": {
+    "test": "PYTHONPATH=src .venv/bin/python -m pytest -q tests/test_x05_lock.py"
+   }
+  },
+  {
+   "description": "one installed-version read per closure member per process (fresh interpreter, three environment() calls; control: a second interpreter)",
+   "id": "X05.A19",
+   "result": "pass",
+   "value": {
+    "s1": "review S1: memoised exception re-raised with_traceback(None); the memo test asserts equal traceback depth after calls 1 and 3 (failed first: 4 vs 8)",
+    "test": "PYTHONPATH=src .venv/bin/python -m pytest -q tests/test_x05_lock.py"
+   }
+  },
+  {
+   "description": "the sdist's src/openflowsheet/_data/requirements.lock has SHA-256 ead4edf1... (T08.A43's byte comparison, CI dist job)",
+   "id": "X05.A20sdist",
+   "result": "pass",
+   "value": {
+    "a43.bytes_equal_commit": {
+     "differing": [],
+     "openflowsheet/_data/requirements.lock": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4",
+     "result": "pass"
+    },
+    "dist": {
+     "checks": 8,
+     "passed": 8,
+     "record": "evidence/X05/7c8d05e59dcef7c60b260b687b3cc4e06e5cbda0/ci/t08-a43-dist.json",
+     "sha256": "8bf7b08b6f5ae2a6a0cba01427e84834f2014442370273312ae122a286a9dac9"
+    },
+    "run": "42397255469",
+    "sdist_member": "openflowsheet-0.4.0.dev0/src/openflowsheet/_data/requirements.lock (hashed from the run's rc-dist artifact)",
+    "sdist_member_sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+   }
+  },
+  {
+   "description": "the wheel carries the lock's bytes at openflowsheet/_data/requirements.lock and no other member of that name; the link, PACKAGED and package-data entries",
+   "id": "X05.A20",
+   "result": "pass",
+   "value": {
+    "local_wheel": "pip wheel of `git archive` at 7f39b199: one member openflowsheet/_data/requirements.lock, sha256 ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4",
+    "sdist": "tests/test_t08_w2_inventory.py builds the sdist in CI check legs (run 42379232642) and admits exactly src/openflowsheet/_data/requirements.lock (D-8); T08.A43's dist job not run (the `dist` and `clean-install` CI jobs run only on workflow_dispatch (rc inputs); the X05 brief forbids a dispatch, so push run 42379232642 skipped them)",
+    "static": "PYTHONPATH=src .venv/bin/python -m pytest -q tests/test_x05_lock.py::test_a20_the_packaged_lock_is_a_link_to_the_root_file"
+   }
+  },
+  {
+   "description": "the real wheel in CI clean-install, both architectures: lock-check's five states",
+   "id": "X05.A21",
+   "result": "pass",
+   "value": {
+    "run": "42397255469",
+    "states": {
+     "ubuntu-24.04-arm": {
+      "checkout": {
+       "checks": 7,
+       "passed": 7,
+       "record": "evidence/X05/7c8d05e59dcef7c60b260b687b3cc4e06e5cbda0/ci/lock-checkout-ubuntu-24.04-arm.json",
+       "sha256": "1bd26948c46bf3d0dd48cdd7145c17304d1a0f0c3ee861deac3113f4ee3cccf3"
+      },
+      "checkout-off": {
+       "checks": 7,
+       "passed": 7,
+       "record": "evidence/X05/7c8d05e59dcef7c60b260b687b3cc4e06e5cbda0/ci/lock-checkout-off-ubuntu-24.04-arm.json",
+       "sha256": "89490663209dd806289267138f16711460586289fe10df619f1e62779b2d4657"
+      },
+      "installed": {
+       "checks": 9,
+       "passed": 9,
+       "record": "evidence/X05/7c8d05e59dcef7c60b260b687b3cc4e06e5cbda0/ci/lock-installed-ubuntu-24.04-arm.json",
+       "sha256": "6b6b474f722b2db8049ba2db05b2815e1b253ff2d5348136ea03cf4742d94836"
+      },
+      "installed-nolock": {
+       "checks": 4,
+       "passed": 4,
+       "record": "evidence/X05/7c8d05e59dcef7c60b260b687b3cc4e06e5cbda0/ci/lock-installed-nolock-ubuntu-24.04-arm.json",
+       "sha256": "3b6c1ef1dcd618b7e9631a67788c19ab7ba4c1e7b90106a2d1b2760b6d456575"
+      },
+      "installed-off": {
+       "checks": 8,
+       "passed": 8,
+       "record": "evidence/X05/7c8d05e59dcef7c60b260b687b3cc4e06e5cbda0/ci/lock-installed-off-ubuntu-24.04-arm.json",
+       "sha256": "f026e6c7513601d68e67d804b46e620f1740f0bf09d764da4746579f1548b014"
+      }
+     },
+     "ubuntu-latest": {
+      "checkout": {
+       "checks": 7,
+       "passed": 7,
+       "record": "evidence/X05/7c8d05e59dcef7c60b260b687b3cc4e06e5cbda0/ci/lock-checkout-ubuntu-latest.json",
+       "sha256": "661cc6dc6ac08e90db71110f12bf627ca1033e0fa9bc295f70a6af31990f244d"
+      },
+      "checkout-off": {
+       "checks": 7,
+       "passed": 7,
+       "record": "evidence/X05/7c8d05e59dcef7c60b260b687b3cc4e06e5cbda0/ci/lock-checkout-off-ubuntu-latest.json",
+       "sha256": "b40f21571446696cd755d80d08cc312b15b3d788c72f74700c23111c8eb6c0c1"
+      },
+      "installed": {
+       "checks": 9,
+       "passed": 9,
+       "record": "evidence/X05/7c8d05e59dcef7c60b260b687b3cc4e06e5cbda0/ci/lock-installed-ubuntu-latest.json",
+       "sha256": "e0f5acfc3419aec084dc62fa121357acb6c0689103eecc40c115c4f7354d4520"
+      },
+      "installed-nolock": {
+       "checks": 4,
+       "passed": 4,
+       "record": "evidence/X05/7c8d05e59dcef7c60b260b687b3cc4e06e5cbda0/ci/lock-installed-nolock-ubuntu-latest.json",
+       "sha256": "cf3e971e8ede423c63fc17681db11db031af15dd90e16c96f2309a2b26279a6a"
+      },
+      "installed-off": {
+       "checks": 8,
+       "passed": 8,
+       "record": "evidence/X05/7c8d05e59dcef7c60b260b687b3cc4e06e5cbda0/ci/lock-installed-off-ubuntu-latest.json",
+       "sha256": "883d59f0a23c5b7d0a34f218a8e8f5277d74396bcd9186caa3382704e04647e9"
+      }
+     }
+    }
+   }
+  },
+  {
+   "description": "the installed wheel replays the 52 F0 bundles in CI on both architectures (MATCH, integrity, exact or compatible)",
+   "id": "X05.A22b",
+   "result": "pass",
+   "value": {
+    "f0": {
+     "ubuntu-24.04-arm": {
+      "checks": 3,
+      "differing": {},
+      "modes": {
+       "compatible_reproduction": 52
+      },
+      "passed": 3,
+      "record": "evidence/X05/7c8d05e59dcef7c60b260b687b3cc4e06e5cbda0/ci/f0-ubuntu-24.04-arm.json",
+      "sha256": "5b05d99baa198885566c7859b775ea496068915828521a78e457f22c8a299b16",
+      "verdicts": {
+       "MATCH": 52
+      }
+     },
+     "ubuntu-latest": {
+      "checks": 3,
+      "differing": {},
+      "modes": {
+       "compatible_reproduction": 52
+      },
+      "passed": 3,
+      "record": "evidence/X05/7c8d05e59dcef7c60b260b687b3cc4e06e5cbda0/ci/f0-ubuntu-latest.json",
+      "sha256": "0d34506b9d7cb054fecc7e8ec341b85c0588038276c98dcc8a8fb97cfadf2ae4",
+      "verdicts": {
+       "MATCH": 52
+      }
+     }
+    },
+    "run": "42397255469"
+   }
+  },
+  {
+   "description": "the installed wheel replays the 52 F0 bundles on the reference platform, each equal to M7's registered value",
+   "id": "X05.A22a",
+   "result": "pass",
+   "value": {
+    "a_local": {
+     "command": "clean venv outside the tree, requirements at the lock, the wheel --no-deps; t08_rc.py f0-replay",
+     "differing": {},
+     "machine_class": "ref-x86-64",
+     "modes": {
+      "exact_replay": 52
+     },
+     "package": "/tmp/claude-1003/-home-frankp-Codes-OpenFlowsheet/fd59d98d-797a-4da8-93d6-9c61c6d4bdc7/scratchpad/x05/clean/lib/python3.13/site-packages/openflowsheet",
+     "passed": true,
+     "record": "evidence/X05/42c84f1d983e30917608f3cd6ddbaf0f29766b1f/local/f0-local.json",
+     "verdicts": {
+      "MATCH": 52
+     }
+    },
+    "since": "record at 7f39b199; the only src/ change to 830e7556 is review S1's re-raise in installed_version's failure branch (run/lock.py), not on the verifying path; A22 (b) re-takes the wheel replay at this head on both CI legs"
+   }
+  },
+  {
+   "description": "F0 PASS at the X05 head on ref-x86-64; test_k05_replay.py and test_f0_corpus_identity.py unedited and passing",
+   "id": "X05.A23",
+   "result": "pass",
+   "value": {
+    "at": "830e7556",
+    "f0": "F0 PASS: M1 50/50, M2 61/61, M3 61/61, M4 61/61, M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 35/35",
+    "removed": "tests/test_t08_r3_a19_lock_lookup.py (D7.2)",
+    "replay_suites_diff_vs_merge_base": "empty"
+   }
+  },
+  {
+   "description": "L41 restated (D7.3), support matrix --check, T08 spec notes, no live text says the wheel ships no lock",
+   "id": "X05.A24",
+   "result": "pass",
+   "value": {
+    "command": "PYTHONPATH=src .venv/bin/python scripts/t08_support_matrix.py --check -> 0 problem(s); grep over docs/support-matrix.md, benchmarks/t08/support_envelope.yaml, src/, ci.yml: no match"
+   }
+  },
+  {
+   "description": "an unconstrained install of the RC wheel verifies, CI clean-install both architectures",
+   "id": "X05.A25ci",
+   "result": "pass",
+   "value": {
+    "run": "42397255469",
+    "unconstrained": {
+     "ubuntu-24.04-arm": {
+      "checks": 5,
+      "lock_findings": [],
+      "lock_sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4",
+      "passed": 5,
+      "record": "evidence/X05/7c8d05e59dcef7c60b260b687b3cc4e06e5cbda0/ci/unconstrained-ubuntu-24.04-arm.json",
+      "sha256": "e1ff38a5979faf34cef651f4e00ab2f7bbfde4032e4aeaf05627feefc8dc0392"
+     },
+     "ubuntu-latest": {
+      "checks": 5,
+      "lock_findings": [],
+      "lock_sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4",
+      "passed": 5,
+      "record": "evidence/X05/7c8d05e59dcef7c60b260b687b3cc4e06e5cbda0/ci/unconstrained-ubuntu-latest.json",
+      "sha256": "bdf9b74f736e91ca7029ace18518beb6cb5946827a615f2e45ece1c4b2ad3dd6"
+     }
+    }
+   }
+  },
+  {
+   "description": "the closure pinned in Requires-Dist; an unconstrained install of the wheel verifies (local, ref-x86-64)",
+   "id": "X05.A25",
+   "result": "pass",
+   "value": {
+    "local_unconstrained": {
+     "lock_findings": [],
+     "lock_sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4",
+     "record": "evidence/X05/42c84f1d983e30917608f3cd6ddbaf0f29766b1f/local/unconstrained-local.json"
+    },
+    "static": "PYTHONPATH=src .venv/bin/python -m pytest -q tests/test_x05_lock.py::test_a25_the_closure_is_pinned_exactly_in_requires_dist"
+   }
+  },
+  {
+   "description": "docs/derivations/scripts/x05_reference.py --check",
+   "id": "X05.REF",
+   "result": "pass",
+   "value": {
+    "at": "830e7556",
+    "line": "x05_reference: PASS (36 cases, 8 replay cells, 25 assertions)"
+   }
+  },
+  {
+   "description": "full gate at 830e7556 (the code of this head; 7c8d05e5 adds docs only), ref-x86-64",
+   "id": "X05.GATE",
+   "result": "pass",
+   "value": {
+    "line": "GATE PASS 830e7556: 15138 passed, 3206 skipped, 197 deselected, 1 warning in 3242.55s (0:54:02); ruff, format, mypy in check.sh",
+    "log_sha256": "a29bbe96c8465301784bd39cfb8a9b74f69d712cfbd92790f16cbdd583c26914"
+   }
+  },
+  {
+   "description": "workflow_dispatch of ci.yml on wp/X05 at the head, rc_distribution=true (D-9)",
+   "id": "X05.CI",
+   "result": "pass",
+   "value": {
+    "earlier_runs": "push 42379232642 (WO-3, dist skipped); dispatch 42391223708 without an rc input (dist skipped, review M1)",
+    "input": "rc_distribution=true",
+    "legs": "conclusion success; dist, bundle-set, default-install, identity: success; check, clean-install and bundle-replay (ubuntu-latest, ubuntu-24.04-arm): success; ptc-r1, rc-steps, rc-coolprop, rc-ensemble and the other optional jobs skipped (not requested)",
+    "run": "42397255469"
+   }
+  }
+ ],
+ "commands": [
+  {
+   "cmd": "PYTHONPATH=$PWD/src PATH=.venv/bin:$PATH ./scripts/gate.sh",
+   "cwd": ".claude/worktrees/x05 at 830e7556",
+   "exit_code": 0
+  },
+  {
+   "cmd": "PYTHONPATH=src python scripts/corpus_identity.py --check",
+   "cwd": ".claude/worktrees/x05 at 830e7556",
+   "exit_code": 0
+  },
+  {
+   "cmd": "python docs/derivations/scripts/x05_reference.py --check",
+   "cwd": ".claude/worktrees/x05 at 830e7556",
+   "exit_code": 0
+  },
+  {
+   "cmd": "PYTHONPATH=src python scripts/t08_support_matrix.py --check",
+   "cwd": ".claude/worktrees/x05",
+   "exit_code": 0
+  },
+  {
+   "cmd": "gh workflow run ci.yml --ref wp/X05 -f rc_distribution=true (run 42397255469); gh run download 42397255469 -n rc-dist -n rc-install-ubuntu-latest -n rc-install-ubuntu-24.04-arm",
+   "cwd": ".claude/worktrees/x05",
+   "exit_code": 0
+  }
+ ],
+ "commit": "7c8d05e59dcef7c60b260b687b3cc4e06e5cbda0",
+ "inputs": {
+  "case_hash": "90dd7fea3dff8ffbb5e481044febd668f6549755ad21fe3c3044e9914bf6493a",
+  "case_id": "ADR 0069 (Proposed) §6: 36 verifier states, 8 replay cells, 25 assertions",
+  "environment_lock_hash": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+ },
+ "limitations": [
+  "Evidence class: software verification of identity bookkeeping (strings, digests, counts); no empirical validation (ADR 0069 §10).",
+  "ADR 0069 is Proposed; ADR 0007 Amendment 2 and the register lines wait for acceptance (docs/X05_DECISIONS.md D-7).",
+  "Q-N2 answered from run 42397255469: M7 from the wheel is MATCH 52/52 with integrity on both CI legs, mode compatible_reproduction 52/52 on each (exact_replay 52/52 on ref-x86-64 locally, A22 (a)); no MISMATCH, no inspected mode.",
+  "A22 (a)'s wheel record was taken at 7f39b199; between it and 830e7556 src/ changed only by review S1 (run/lock.py's failure branch).",
+  "Q-N1: .venv measured; .venv-nlp and .venv-lca are absent from this workstation and judged from their build locks (D-1 table); the reactor child never calls environment().",
+  "The 0.4 line's gate does not yet claim RP step 4 ([4, \"x05.*\"]) or tests/test_x05_*.py; deferred to the 0.4.0 cut's specifier pass (orchestrator decision 49506c90).",
+  "Status tested, not reviewed; review M1, M2 and S1 applied in WO-4 and not re-reviewed."
+ ],
+ "requirements": [],
+ "review": {
+  "numerical": "pending",
+  "process_model": "pending"
+ },
+ "status": "tested",
+ "work_package": "X05"
+}

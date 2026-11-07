@@ -26,12 +26,11 @@ import os
 import platform
 from collections.abc import Mapping
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any, Final
+from typing import Any, Final
 
-from openflowsheet.canonical import canonical_json, file_sha256
-
-if TYPE_CHECKING:
-    from pathlib import Path
+from openflowsheet.canonical import canonical_json
+from openflowsheet.resources import packaged
+from openflowsheet.run.lock import PACKAGED_LOCK_WHERE, installed_version, verify_lock
 
 #: ADR 0007 D6's thread variables, in the order a manifest records them.
 THREAD_VARIABLES: Final[tuple[str, ...]] = (
@@ -93,6 +92,11 @@ class Environment:
     blas: Mapping[str, str]
     threads: Mapping[str, str | None]
     superlu_options_ref: str = "ADR 0004 D1"
+    #: ADR 0069 D5: why `lock_sha256` is empty, one finding per failing closure distribution, as
+    #: `environment()` found them. In memory only: not in `as_document()`, not in equality, `()`
+    #: on an `Environment` read from a manifest. Non-empty iff `lock_sha256 == ""` for every
+    #: `Environment` that `environment()` returns; `decide_mode` names them in its reason.
+    lock_findings: tuple[str, ...] = field(default=(), compare=False)
 
     def as_document(self) -> dict[str, Any]:
         return {
@@ -167,54 +171,42 @@ def blas_identity() -> dict[str, str]:
 
 
 def environment(lock_path: str | os.PathLike[str] | None = None) -> Environment:
-    """Capture the live environment. Every field is read, none is defaulted to a guess."""
-    from pathlib import Path  # noqa: PLC0415
+    """Capture the live environment. Every field is read, none is defaulted to a guess.
 
-    resolved = Path(lock_path) if lock_path is not None else _repository_lock()
+    ADR 0069 D1, D2 (X05): `lock_sha256` is the SHA-256 of the package's own lock
+    (`openflowsheet/_data/requirements.lock`, a link to the repository's single copy in a checkout,
+    its bytes in a wheel), recorded only when each distribution of the runtime closure is
+    installed at exactly the version the lock pins; otherwise `""`, with the failing
+    distributions in `lock_findings`. A checkout and an installed wheel that verify the same bytes
+    record the same hash, and a checkout whose environment is off the lock records `""` (D4.3).
+    No other file is read for the lock — not one in a directory above the package (R-140). With
+    `lock_path`, that file is read instead and named in the findings. The lock is read and
+    verified on every call; the installed versions once per process (D6).
+    """
+    if lock_path is None:
+        where = PACKAGED_LOCK_WHERE
+        try:
+            data: bytes | None = packaged("requirements.lock").read_bytes()
+        except OSError:
+            data = None
+    else:
+        where = os.fspath(lock_path)
+        try:
+            with open(lock_path, "rb") as handle:
+                data = handle.read()
+        except OSError:
+            data = None
+    lock_sha256, lock_findings = verify_lock(data, installed_version, where)
     return Environment(
         architecture=platform.machine(),
         os_name=platform.system(),
         os_release=platform.release(),
         python_version=platform.python_version(),
-        lock_sha256=file_sha256(resolved) if resolved is not None and resolved.is_file() else "",
+        lock_sha256=lock_sha256,
         blas=blas_identity(),
         threads={name: os.environ.get(name) for name in THREAD_VARIABLES},
+        lock_findings=lock_findings,
     )
-
-
-def _repository_lock() -> Path | None:
-    return _checkout_lock(__file__)
-
-
-def _checkout_lock(module: str | os.PathLike[str]) -> Path | None:
-    """The `requirements.lock` of the source checkout `module` lives in, or `None`.
-
-    T08 release spec Amendment R3 5 (R-140): the lookup is confined to the checkout — the
-    directory holding `pyproject.toml` with `[project].name = "openflowsheet"` and the
-    `src/openflowsheet/` package this module belongs to. An installed package (wheel or
-    sdist) ships no lock, so it records `lock_sha256 = ""` and its bundles replay
-    `inspected_archived_results` (envelope L41). The earlier lookup walked every parent
-    directory and fell back to the working directory, so an installed package beneath any
-    unrelated file named `requirements.lock` recorded that file's hash as its dependency set —
-    a false identity, and an `exact_replay` between two such installs.
-    """
-    import tomllib  # noqa: PLC0415
-    from pathlib import Path  # noqa: PLC0415
-
-    here = Path(module).resolve()
-    if len(here.parents) < 4:
-        return None
-    package, root = here.parents[1], here.parents[3]
-    if package != (root / "src" / "openflowsheet").resolve():
-        return None
-    try:
-        project = tomllib.loads((root / "pyproject.toml").read_text(encoding="utf-8"))
-    except (OSError, UnicodeDecodeError, tomllib.TOMLDecodeError):
-        return None
-    if project.get("project", {}).get("name") != "openflowsheet":
-        return None
-    lock = root / "requirements.lock"
-    return lock if lock.is_file() else None
 
 
 @dataclass(frozen=True)
