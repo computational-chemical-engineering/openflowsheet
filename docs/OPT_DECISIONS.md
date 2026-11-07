@@ -438,3 +438,85 @@ Totals: TH-R1 18.3 s, M1 5.9 s, C-MW 54.4 s ("verify" also holds report/record w
   `null` (D-12, composition-dependent K), so both starts fail V4 (19 inside τ_regime) and V5 (`REGIME_MARGIN_UNSUPPORTED`
   ×19). Start 1 passes V1, V2, V3, V6 — the null margins are its only failing cause. Item (1) unchanged: the
   ethanol `DomainError` on ~99 % of residual calls (zero-at-start flows unbounded, §4.2.3) — for the reviewer.
+
+## WO-5b (amendment A-2 zero subsystem, A-3 closure margins; design §9.2, §9.3)
+
+- F7 (fact, measured before coding, default env): C-MW certified at T_feed ∈ {348.6156, 338, 335, 342} K — held
+  system 297 rows/297 free, |Z| = |R| = 63 at every T (Z = every C2H5OH flow, all `+0.0`, none `−0.0`; R = 19 `mix`,
+  19 `mole`, 19 `eq`, 3 `n`, `FEED-n`, `bal`, `split` ethanol rows), (Z, R) identical as id sets across the four
+  solves; every cold re-solve keeps the ethanol flows `== 0.0`. **Premise holds.**
+- F8 (fact, read): `_pr_admissible` (`orchestrator/region.py`) admits VAPOR iff `classify` says VAPOR (value: the
+  classifier's) and LIQUID iff the light-gas flow is exactly 0 and `classify` says LIQUID (value n_light/n_tot) — not
+  "admissible iff value ≤ 1 + ε". So `admissibility_value` returns `None` on `pr-c1-v1` → held single-phase splits
+  there stay `REGIME_MARGIN_UNDEFINED` (design default).
+- D-39. DECISION: A-2's open details → R from the compiled problem's Jacobian at the point (all free columns) and
+  the host's cached twin `∂F/∂d` over every decision of the map; a non-`ok` Jacobian at a certified point raises
+  (defect). Z = ∅ → no evaluation at all (inert by construction). The start record's `zero_subsystem` and V4's
+  `zero_subsystem` detail (`start`, `resolve` statuses, |Z|, |R|, `columns_changed`, `rows_changed`, `codes`) appear
+  only where either side is non-empty, so a Z = ∅ report keeps its bytes (G23 (c)). Alternative: always emit the
+  members (moves every report). Reversible by: `051e3397`.
+- D-40. DECISION: A-3's open details → `admissibility_value(provider, context, split, regime, state)` beside
+  `_admissible` (ε passed as 0, the flag ignored; `None` for `pr-c1-v1` or on `VerifierError`/`BandError`/
+  `ValueError`/`ArithmeticError`); TWO_PHASE margin `fsum` of each side's `molar_flow` columns, min over N0 =
+  `REGISTERED_NOMINALS["molar_flow"]`; the guard identity evaluates each candidate row alone on the float reference
+  path (`row_values` of a one-row program) — an empty feed or a row that raises is unguarded; `CLOSURE_IDENTITY =
+  1e-10` in `phase.py`; `PhaseRow.feed` (not in `as_document`); `regimes_unguarded` only where non-empty (start
+  record and candidate, as D-39); V4 detail `phase_row_not_closure_test`; ZERO_FLOW unchanged (margin `None`, V4
+  as before). Alternative: `regimes_unguarded: []` always (moves every report). Reversible by: `7b1f7242`.
+- D-41. Fact (A-2 beyond C-MW): TH-R1's flash holds Z = {`S5.sat.L`, `S6.sat.V`}, R = {`D:sat-fix:vapor`,
+  `D:sat-fix:liquid`} (|Z| = |R| = 2; held system 38 → 36). The rule applies as written; G4's TH-R1 test updated.
+  OPT-A1/A2/A2b: Z = ∅ at their starts (G23 (c)).
+- D-42. **ESCALATED (fact; G24 (c) premise partly false):** on `wilson-ig-v2` K04's certificate is `UNVERIFIED` at
+  every single-phase held split measured — GP-C3's heater held LIQUID (340, 345 K) and VAPOR (365–385 K): the
+  derivative witness's stencil steps the held, exactly-zero side negative (`witness_stencil_invalid_trial_state(
+  S4.liq.CH3OH)` / `S4.vap.CH3OH`, plus `derivative_limitation`). A γ–φ unguarded split is therefore admitted by A-3
+  but can never be an OPT start today (`START_NOT_CERTIFIED`); no corpus flowsheet has a γ–φ single-phase held split
+  (GP-C1/C2/C3 are TWO_PHASE, GP-M1 none). G24 (c) is tested on GP-C3 at 385 K with the converged point relabelled
+  `CONVERGED` (the rule on the converged state: unguarded, margin = 1 − ΣW bitwise, start record names it). For the
+  design lane: whether K04's witness stencil should respect held zero sides is a K04 question outside OPT.
+- D-43. DECISION: V4's closure-identity clause (A-3) judges a guarded split only where the re-solve keeps its held
+  regime; a split the re-solve finds in another regime is already `regime_changed`/`PHASE_REGIME_CHANGED`, and its
+  bubble/dew row is not that regime's test. Measured: OPT-N1's infeasible end point re-solves U-PHF TWO_PHASE, and the
+  clause as first built added a spurious `phase_row_not_closure_test(U-PHF)`. Alternative: judge every guarded split
+  (the design's literal words). Reversible by: `90161fd0`.
+- D-44. Fact (gate tooling): `scripts/opt_m03_dump.py --nlp` run without `PYTHONNOUSERSITE=1
+  PYOMO_CONFIG_DIR=<m05>/.venv-nlp/share/pyomo` (as `m03_nlp_check.sh` sets them) loads `~/.pyomo/lib`'s unaudited
+  PyNumero, and M03's probe then reports NLP-1, NLP-INF and E01-TAC `UNSUPPORTED` — so the WO-4/WO-5 G2 `--nlp` hash
+  `8cfe7c7b…` compared unsupported reports. With the audited variables set the reports solve (`KKT_POINT_VERIFIED`,
+  `INFEASIBLE_REPORTED`) and G2 `--nlp` is `b6bbafdb…`, identical base vs WO-5b. `optimize_revision` does not refuse
+  the unaudited library (OPT reports solve either way) — for the reviewer: should OPT's probe match M03's?
+
+### Gates (WO-5b, 2026-11-08, TRS2, worktree `wp/OPT`; A-2 `051e3397`, A-3 `7b1f7242`, D-43 `90161fd0`)
+
+- Merge of `origin/main` (`32023fa5`, X05): no conflicts; `t08_support_matrix.py --emit` unchanged; HARVEST_SIZE
+  (72, 964, 126) from main; `test_m07a_harvest.py` 5 passed; F0 PASS.
+- **G1** F0 at `7b1f7242`: PASS (M1 50/50, M2 61/61, M3 61/61, M4 61/61, M5 61/61, M6 85/85, M7 52/52, M8 105/105,
+  M9 35/35).
+- **G2** vs `32023fa5` (pre-WO-5b head): default env **identical** at `051e3397` and `7b1f7242` (`6e028e8d…`);
+  audited env `--nlp` identical at `051e3397` (unaudited PyNumero, `8cfe7c7b…`) and at `7b1f7242` with the audited
+  variables (`b6bbafdb…`, D-44).
+- **G23** (a) C-MW: |Z| = |R| = 63, J[R, ¬Z ∪ d] == 0.0 entrywise, J_RZ full rank, reduced residual = the converged
+  attempt's on the kept rows bitwise; (b) dy/dd of `COL.stage.20.Q`, `S-DISTILLATE.n.CH3OH`, `S-BOTTOMS.n.H2O`
+  reduced vs unreduced within 1e-10 rel (dense solve; dx_Z/dd ≤ 1e-12·max|dx| through the unreduced one);
+  (c) OPT-A1/A2/A2b/A3/C0/N1 reports (wall times blanked) at `051e3397` **byte-identical** to `826cc4c4` and
+  `32023fa5` (`scripts/opt_report_dump.py`; unaudited PyNumero) and to `826cc4c4` with the audited variables
+  (`149a1808…`); static Z = ∅ at OPT-A1/A2/A2b starts; (d) C-MW with `SPEC-S-IN1-n-C2H5OH` ∈ [0, 0.1] as a decision →
+  `unresolved`, |Z| 63, |R| 62, Z bounded `[0, ∞)` `zero_at_start_unresolved`. PASS.
+- **G24** (a) OPT-A1/A2/A2b closure margin vs `tp_margin` ≤ 1e-12 (rows guarded); (b) C-MW 19 TWO_PHASE margins =
+  min(Σv, Σl)/3 bitwise, min 0.18893 ≥ τ_regime, no single-phase split; (c) GP-C3 at 385 K (wilson-ig-v2) H VAPOR:
+  unguarded, margin = 1 − ΣW bitwise, start record `regimes_unguarded: ["H"]` (on the relabelled point, D-42);
+  (d) +1e-9 on the closure value → unguarded. PASS.
+- **G22** (audited env, the G17 C-MW request): **PASS** — both starts `KKT_POINT_VERIFIED`, Ipopt 0, V1–V6 pass;
+  s0 (348.6156 K) 10 it, s1 (338 K) 9 it, both → T_feed 341.28364084891 K (objective −2.3e-13: Q_reb = 38.5 kW
+  reached); `evaluation_errors` 0 on both (was ~99 % `DomainError`); zero subsystem `held` 63/63; the 19 TWO_PHASE
+  margins ≥ τ_regime at both starts (min 0.188929, 0.189054).
+- **G7/G8/C0/G9/G10** (audited, `m03_nlp_check.sh`: OPT nlp + M03/E01 nlp tests at `7b1f7242`): 29 passed, 1 xfailed
+  (G10, D-37 unchanged); OPT nlp alone at `90161fd0`: 7 passed, 1 xfailed. A1/A2/A2b/C0 candidates bitwise as WO-5
+  (A1 Q 9000.00000009091; A2 r 0.30000000004620614, Q 2700.000000506764; A2b T 330.0000000010101; C0 objective 0.9000000000090911).
+  OPT reports at `90161fd0` vs `051e3397` differ in one member: OPT-N1's re-solve split (TWO_PHASE) margin
+  0.016949 (`tp_margin`) → 0.025760 (min phase flow / N0), by A-3. **G9**: OPT-N1 `INFEASIBLE_REPORTED`.
+- **G17** rerun (record; audited env): TH-R1 VERIFIED 10/11 it, 15.5 s (zero subsystem 2/2 held, D-41); M1 VERIFIED
+  8/8 it, 8.5 s; **C-MW VERIFIED** 10/9 it, res/jac/prop 11/13/2257 and 15/12/2379 (WO-5: 7032/49/102987 and
+  5690/64/31922, Ipopt −2/0), 28.1 s (WO-5 54.5 s).
+- Default env battery at `7b1f7242` (`test_opt_*.py test_m03_*.py test_e01_*.py test_k01_schemas.py
+  test_m05_study_record.py test_t08_w4_package_data.py`): 790 passed, 1 skipped; mypy and ruff clean on touched files.
