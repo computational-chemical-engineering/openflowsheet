@@ -172,12 +172,34 @@ def task_unsupported(task: str) -> ApplicationError:
     return api_error("unsupported", f"task_unsupported({task})", pointer="/task")
 
 
+def nlp_solver_unavailable(platform_id: str) -> ApplicationError:
+    """OPT design §4.11 (ADR 0071 D8, D10): `validate(task="optimization")` where no audited NLP
+    solver is available — ADR 0019's `unsupported`, naming the platform, pointer `/task`, raised
+    before the revision is read (U05's place)."""
+    from openflowsheet.application.contract import api_error
+
+    return api_error("unsupported", f"nlp_solver_unavailable({platform_id})", pointer="/task")
+
+
+def optimization_request_missing() -> ApplicationError:
+    """OPT design §4.11: `task="optimization"` without an `optimization` request."""
+    from openflowsheet.application.contract import api_error
+
+    return api_error(
+        "invalid_request",
+        "task optimization needs an optimization request",
+        pointer="/optimization",
+    )
+
+
 def validate(
     document: Mapping[str, Any],
     task: Task = "simulation",
     *,
     now: Callable[[], str] = utc_timestamp,
     surrogates: SurrogateResolver | None = None,
+    optimization: Mapping[str, Any] | None = None,
+    solver_probe: Callable[[], Any] | None = None,
 ) -> ValidationReport:
     """Blueprint §4.3's order: schema, dimensions, connectivity, components, then structural
     analysis.
@@ -188,14 +210,15 @@ def validate(
     `surrogates` is the project's SurrogateManifest resolver, which the structural stage hands the
     revision binder (M04 spec §8.2); without one a surrogate-bound revision is not READY.
 
-    `task="optimization"` raises ADR 0019's `unsupported`, detail `task_unsupported(optimization)`,
-    and builds no report (T08 review 2, Ruling 1; envelope U05): blueprint §4.3 defines
-    `READY_FOR_OPTIMIZATION` as "requires a valid optimization formulation", and v0.1 checks none
-    and has no optimizer, so the status would be a placeholder success. The value stays in the
-    frozen enum, unused.
+    `task="optimization"` (OPT design §4.11, ADR 0071 D8, lifting R-129): the solver probe first
+    (`solver_probe`, default `closure.audited_solver`) — unavailable raises `unsupported`
+    `nlp_solver_unavailable(<platform>)` and builds no report; then a missing `optimization`
+    raises `invalid_request` at `/optimization`; then this revision's simulation validation and
+    the request's static readiness (`studies.nlp.request.static_readiness`) as checks `OPT.<CODE>`.
+    Nothing is solved.
     """
     if task == "optimization":
-        raise task_unsupported(task)
+        return _validate_optimization(document, optimization, now, surrogates, solver_probe)
     checks: list[Check] = []
 
     # R-088 Q29 (T07 design note §12.5): a document with no canonical JSON form — a NaN, an
@@ -373,6 +396,127 @@ def validate(
             "timestamp": now(),
         },
     )
+
+
+#: OPT design §4.11: the request schema's check, at stage `schema`.
+REQUEST_CHECK_ID: Final[str] = "OPT.REQUEST_SCHEMA"
+#: OPT design §4.11: the static checks reported at stage `capability` (the solver, the route, the
+#: assessment binding and the Hessian policy); every other one at `structural_analysis`.
+OPTIMIZATION_CAPABILITY_CODES: Final[frozenset[str]] = frozenset(
+    {
+        "REVISION_UNBOUND",
+        "OPTIMIZATION_ROUTE_UNAVAILABLE",
+        "ASSESSMENT_OUTPUT_UNKNOWN",
+        "ASSESSMENT_PARAMETER_STRUCTURAL",
+        "ASSESSMENT_PARAMETER_DECISION",
+        "HESSIAN_UNAVAILABLE",
+        "NLP_SOLVER_UNAVAILABLE",
+    }
+)
+#: What a passing static check established (design §4.5's static row).
+OPTIMIZATION_PASSED: Final[Mapping[str, str]] = {
+    "REVISION_MISMATCH": "the request names no other revision",
+    "REVISION_UNBOUND": "the revision binds",
+    "OPTIMIZATION_ROUTE_UNAVAILABLE": "the revision solves on revision_eo",
+    "UNKNOWN_DECISION": "every decision is a role: fixed specification with a value",
+    "DECISION_UNIT_NOT_INTERNAL": "every decision box is in its kind's internal SI unit",
+    "DECISION_NOT_CONTINUOUS": "every decision binds to exactly one parameter (bind probes)",
+    "BOUNDS_UNDECLARED": "every decision has a finite box with lower < upper",
+    "START_OUTSIDE_BOUNDS": "every start given or taken from the revision is inside the box",
+    "TOO_MANY_STARTS": "1 to 32 starts",
+    "UNKNOWN_VARIABLE": "every state and decision name is known",
+    "ASSESSMENT_OUTPUT_UNKNOWN": "no assessment output is named without an assessment",
+    "ASSESSMENT_PARAMETER_STRUCTURAL": "no assessment is given",
+    "ASSESSMENT_PARAMETER_DECISION": "no assessment is given",
+    "HESSIAN_UNAVAILABLE": "the Hessian policy is the limited-memory approximation",
+    "NLP_SOLVER_UNAVAILABLE": "an audited NLP solver is available on this platform",
+}
+#: OPT D-18: with an assessment, what E01 decides on the program is judged at the first certified
+#: start, where the program is planned (`AssessmentProgram.build` takes a solved state).
+ASSESSMENT_AT_START: Final[str] = (
+    "an assessment is given; its program is planned at a solved state, so this is judged at the "
+    "first certified start"
+)
+
+
+def _validate_optimization(
+    document: Mapping[str, Any],
+    optimization: Mapping[str, Any] | None,
+    now: Callable[[], str],
+    surrogates: SurrogateResolver | None,
+    solver_probe: Callable[[], Any] | None,
+) -> ValidationReport:
+    """OPT design §4.11: see `validate`."""
+    from openflowsheet.studies.nlp.closure import audited_solver, running_platform
+    from openflowsheet.studies.nlp.request import STATIC_CODES, static_readiness
+
+    availability = (solver_probe or audited_solver)()
+    if not availability.available:
+        raise nlp_solver_unavailable(running_platform())
+    if optimization is None:
+        raise optimization_request_missing()
+    simulation = validate(document, "simulation", now=now, surrogates=surrogates)
+    checks = list(simulation.checks)
+    if simulation.status != "READY_FOR_SIMULATION":
+        from openflowsheet.studies.nlp.request import request_problems
+
+        problems = request_problems(optimization)
+        checks.append(_request_check(problems))
+        why = f"the revision is {simulation.status}"
+        checks += [_optimization_check(code, "NOT_RUN", why) for code in STATIC_CODES]
+        status: ValidationStatus = "DRAFT" if simulation.status == "DRAFT" else "INVALID"
+    else:
+        found = static_readiness(
+            optimization, document, surrogates=surrogates, solver_probe=lambda: availability
+        )
+        checks.append(_request_check(found.problems))
+        assessed = found.request is not None and found.request.assessment is not None
+        for code in STATIC_CODES:
+            failing = [reason for reason in found.reasons if reason.code == code]
+            if failing:
+                checks.append(
+                    _optimization_check(
+                        code,
+                        "FAIL",
+                        "; ".join(reason.detail for reason in failing),
+                        tuple(dict.fromkeys(r.subject for r in failing if r.subject)),
+                    )
+                )
+            elif code in found.not_run:
+                checks.append(_optimization_check(code, "NOT_RUN", found.not_run[code]))
+            elif assessed and code.startswith("ASSESSMENT_"):
+                checks.append(_optimization_check(code, "PASS", ASSESSMENT_AT_START))
+            else:
+                checks.append(_optimization_check(code, "PASS", OPTIMIZATION_PASSED[code]))
+        status = "READY_FOR_OPTIMIZATION" if found.ready else "INVALID"
+    return ValidationReport(
+        revision_id=simulation.revision_id,
+        task="optimization",
+        status=status,
+        checks=tuple(checks),
+        structural_counts=simulation.structural_counts,
+        structural_counts_absent_reason=simulation.structural_counts_absent_reason,
+        provenance=dict(simulation.provenance),
+    )
+
+
+def _request_check(problems: Sequence[tuple[str, str]]) -> Check:
+    if not problems:
+        return Check(REQUEST_CHECK_ID, "schema", "PASS", "the optimization request is well formed")
+    return Check(
+        REQUEST_CHECK_ID,
+        "schema",
+        "FAIL",
+        "; ".join(f"request_invalid({pointer or '/'}): {message}" for pointer, message in problems),
+        tuple(dict.fromkeys(pointer for pointer, _ in problems if pointer)),
+    )
+
+
+def _optimization_check(
+    code: str, result: Result, message: str, implicated: tuple[str, ...] = ()
+) -> Check:
+    stage: Stage = "capability" if code in OPTIMIZATION_CAPABILITY_CODES else "structural_analysis"
+    return Check(f"OPT.{code}", stage, result, message, implicated)
 
 
 def _first_schema_error(document: Mapping[str, Any]) -> tuple[str, str] | None:

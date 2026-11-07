@@ -448,17 +448,23 @@ class LocalApplication:
         revision_id
             A revision of this project.
         task
-            `"simulation"`. `"optimization"` is refused `unsupported`.
+            `"simulation"` or `"optimization"` (OPT design §4.11, ADR 0071 D8). The request
+            member `optimization` is ADR 0019 Amendment 16's, added to this method with OPT's
+            surface link (WO-6, OPT D-19); until then the optimization task is refused
+            `unsupported` without an audited solver and `invalid_request` at `/optimization`
+            with one. `validation.validate(..., optimization=)` is the library path.
 
         Returns
         -------
         ValidationReport
-            The status (`INVALID`, `DRAFT` or `READY_FOR_SIMULATION`) and every check.
+            The status (`INVALID`, `DRAFT`, `READY_FOR_SIMULATION` or, for the optimization
+            task, `READY_FOR_OPTIMIZATION`) and every check.
 
         Raises
         ------
         ApplicationError
-            `invalid_request`, `unsupported` (the optimization task) or `not_found`.
+            `invalid_request` (also the missing `optimization`), `unsupported`
+            (`nlp_solver_unavailable(<platform>)`, before the revision is read) or `not_found`.
         """
         self._authorize("validate")
         if task not in TASKS:
@@ -469,13 +475,23 @@ class LocalApplication:
                 pointer="/task",
             )
         if task == "optimization":
-            # U05 (T08 review 2, Ruling 1): no optimization formulation is checked in v0.1, so no
-            # `READY_FOR_OPTIMIZATION`; refused before the revision is read.
+            # OPT design §4.11 (ADR 0071 D8, lifting R-129 and U05's refusal): the solver probe
+            # first, at U05's place, before the revision is read; then the request.
+            from openflowsheet.studies.nlp.closure import audited_solver, running_platform
+
+            availability = audited_solver()
+            if not availability.available:
+                self._refuse(
+                    "unsupported",
+                    f"nlp_solver_unavailable({running_platform()})",
+                    operation="validate",
+                    pointer="/task",
+                )
             self._refuse(
-                "unsupported",
-                "task_unsupported(optimization)",
+                "invalid_request",
+                "task optimization needs an optimization request",
                 operation="validate",
-                pointer="/task",
+                pointer="/optimization",
             )
         with self._store.reading() as connection:
             revision = self._store.get_revision(connection, revision_id)
