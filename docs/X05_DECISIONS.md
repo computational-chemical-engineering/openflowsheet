@@ -42,3 +42,8 @@ Default kept (ADR §11 Q-N1): the rule does not bend; nothing here needs it to.
   checkout's `sys.path` entries dropped (asserting `openflowsheet.__file__` outside the tree), judged against
   `benchmarks/f0/corpus.json` M7: the registered value on `ref-x86-64`, else `MATCH` + integrity +
   `exact_replay`/`compatible_reproduction`. CI's `clean-install` timeout 30 → 45 min for the 52 re-solves.
+- **D-7 (WO-3) — what waits for acceptance.** ADR 0069 is Proposed, so ADR 0007 Amendment 2 (§13) is not appended
+  and the three register lines (§12) are not entered: they stay drafted, unnumbered (`R-???`), in the ADR. `wp/MSG`
+  and `wp/RP` hold R-942…R-949 unmerged; X05's lines take the next free numbers above them on acceptance, and R-140
+  gains its "Lifted by X05" line then. The release procedure's step-4 line (`a19.*` → `x05.*`) is left to `wp/RP`
+  (listed in `docs/progress.md`).

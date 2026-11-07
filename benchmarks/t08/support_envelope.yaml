@@ -834,16 +834,17 @@ limitations:
       - doc:docs/adr/0006-distribution-data-rights.md §D1
   - id: L41
     text: >-
-      A bundle written by an installed package (wheel or sdist, not the source checkout) carries no
-      dependency-set identity: the package ships no lock file, so its `lock_sha256` is empty and
-      every replay of it is `inspected_archived_results` / `NOT_RUN` ("the dependency set is
-      unknown …"); replayable bundles are written from the source checkout at the lock
-      `ead4edf1…`.
+      A bundle written by an installed package or a checkout whose runtime closure (the 9
+      distributions of ADR 0069 D3) is not at the packaged lock `ead4edf1…` records no
+      dependency-set identity: its `lock_sha256` is empty, every replay of it is
+      `inspected_archived_results` / `NOT_RUN`, and the replaying side's failing distributions are
+      named. Optional extras are not part of the identity.
     evidence:
-      - tests/test_t08_r3_a19_lock_lookup.py::test_the_three_states_end_to_end
-      - tests/test_t08_r3_a19_lock_lookup.py::test_b_an_installed_layout_beneath_a_stray_lock_has_none
+      - tests/test_x05_replay_from_the_wheel.py::test_a15_one_closure_distribution_off_records_empty_naming_it
+      - tests/test_x05_replay_from_the_wheel.py::test_a16_a17_the_replay_matrix
+      - tests/test_x05_lock.py::test_a01_to_a09_each_registered_state
+      - doc:docs/adr/0069-X05-replay-from-the-wheel.md §D7
       - doc:docs/adr/0007-reproducibility-certificate-policy.md §D4
-      - doc:docs/derivations/T08-release-spec.md §5.5
   - id: L42
     text: >-
       `pr-c1-v1` (Peng–Robinson with the light gases vapour-only, ADR 0026), shipped since M01, is
