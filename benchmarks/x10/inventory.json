@@ -1,0 +1,5268 @@
+{
+ "enumeration": {
+  "bases": {
+   "coolprop-heos-v1": {
+    "bases": 123,
+    "components": "one per basis; probe fluid R134a",
+    "probe_components": [
+     "R134a"
+    ],
+    "record_source": "benchmarks/s07/components.yaml"
+   },
+   "iapws95-v1": {
+    "bases": 1,
+    "components": [
+     "H2O"
+    ],
+    "probe_components": [
+     "H2O"
+    ],
+    "record_source": "benchmarks/s05/components.yaml"
+   },
+   "pr-c1-v1": {
+    "bases": 1,
+    "components": [
+     "H2",
+     "N2",
+     "NH3",
+     "Ar",
+     "CH4"
+    ],
+    "probe_components": [
+     "H2",
+     "N2",
+     "NH3",
+     "Ar",
+     "CH4"
+    ],
+    "record_source": "benchmarks/m01/components.yaml"
+   },
+   "syn001": {
+    "bases": 1,
+    "components": [
+     "A",
+     "B",
+     "C"
+    ],
+    "probe_components": [
+     "A",
+     "B",
+     "C"
+    ],
+    "record_source": "benchmarks/syn001/components.yaml"
+   },
+   "wilson-ig-v2": {
+    "bases": 1,
+    "components": [
+     "CH3OH",
+     "C2H5OH",
+     "H2O"
+    ],
+    "probe_components": [
+     "CH3OH",
+     "C2H5OH",
+     "H2O"
+    ],
+    "record_source": "benchmarks/s10/records.yaml"
+   }
+  },
+  "library_only_models": [
+   "syn001.cascade"
+  ],
+  "models": {
+   "c1.adiabatic_mixer": {
+    "bases": [
+     "pr-c1-v1"
+    ],
+    "family": "c1"
+   },
+   "c1.feed_source": {
+    "bases": [
+     "pr-c1-v1"
+    ],
+    "family": "c1"
+   },
+   "c1.product_sink": {
+    "bases": [
+     "pr-c1-v1"
+    ],
+    "family": "c1"
+   },
+   "c1.reactor": {
+    "bases": [
+     "pr-c1-v1"
+    ],
+    "family": "c1"
+   },
+   "c1.reactor_standin": {
+    "bases": [
+     "pr-c1-v1"
+    ],
+    "family": "c1"
+   },
+   "c1.reactor_surrogate": {
+    "bases": [
+     "pr-c1-v1"
+    ],
+    "family": "c1"
+   },
+   "c1.stream_splitter": {
+    "bases": [
+     "pr-c1-v1"
+    ],
+    "family": "c1"
+   },
+   "c1.tp_flash": {
+    "bases": [
+     "pr-c1-v1"
+    ],
+    "family": "c1"
+   },
+   "c1.tp_heater": {
+    "bases": [
+     "pr-c1-v1"
+    ],
+    "family": "c1"
+   },
+   "syn001.adiabatic_mixer": {
+    "bases": [
+     "syn001",
+     "wilson-ig-v2"
+    ],
+    "family": "syn001"
+   },
+   "syn001.column": {
+    "bases": [
+     "syn001",
+     "wilson-ig-v2"
+    ],
+    "family": "syn001"
+   },
+   "syn001.component_separator": {
+    "bases": [
+     "syn001"
+    ],
+    "family": "syn001"
+   },
+   "syn001.conversion_reactor": {
+    "bases": [
+     "syn001"
+    ],
+    "family": "syn001"
+   },
+   "syn001.feed_source": {
+    "bases": [
+     "coolprop-heos-v1",
+     "iapws95-v1",
+     "syn001",
+     "wilson-ig-v2"
+    ],
+    "family": "syn001"
+   },
+   "syn001.heat_exchanger": {
+    "bases": [
+     "syn001"
+    ],
+    "family": "syn001"
+   },
+   "syn001.kinetic_cstr": {
+    "bases": [
+     "syn001"
+    ],
+    "family": "syn001"
+   },
+   "syn001.liquid_pump": {
+    "bases": [
+     "syn001"
+    ],
+    "family": "syn001"
+   },
+   "syn001.ph_flash": {
+    "bases": [
+     "syn001",
+     "wilson-ig-v2"
+    ],
+    "family": "syn001"
+   },
+   "syn001.product_sink": {
+    "bases": [
+     "coolprop-heos-v1",
+     "iapws95-v1",
+     "syn001",
+     "wilson-ig-v2"
+    ],
+    "family": "syn001"
+   },
+   "syn001.stream_splitter": {
+    "bases": [
+     "coolprop-heos-v1",
+     "iapws95-v1",
+     "syn001",
+     "wilson-ig-v2"
+    ],
+    "family": "syn001"
+   },
+   "syn001.tp_flash": {
+    "bases": [
+     "syn001",
+     "wilson-ig-v2"
+    ],
+    "family": "syn001"
+   },
+   "syn001.tp_heater": {
+    "bases": [
+     "syn001",
+     "wilson-ig-v2"
+    ],
+    "family": "syn001"
+   },
+   "syn001.valve": {
+    "bases": [
+     "syn001",
+     "wilson-ig-v2"
+    ],
+    "family": "syn001"
+   },
+   "thermal.compressor": {
+    "bases": [
+     "coolprop-heos-v1",
+     "iapws95-v1",
+     "wilson-ig-v2"
+    ],
+    "family": "thermal"
+   },
+   "thermal.flash": {
+    "bases": [
+     "coolprop-heos-v1",
+     "iapws95-v1"
+    ],
+    "family": "thermal"
+   },
+   "thermal.heater": {
+    "bases": [
+     "coolprop-heos-v1",
+     "iapws95-v1"
+    ],
+    "family": "thermal"
+   },
+   "thermal.mixer": {
+    "bases": [
+     "coolprop-heos-v1",
+     "iapws95-v1"
+    ],
+    "family": "thermal"
+   },
+   "thermal.pump": {
+    "bases": [
+     "coolprop-heos-v1",
+     "iapws95-v1"
+    ],
+    "family": "thermal"
+   },
+   "thermal.turbine": {
+    "bases": [
+     "coolprop-heos-v1",
+     "iapws95-v1",
+     "wilson-ig-v2"
+    ],
+    "family": "thermal"
+   },
+   "thermal.valve": {
+    "bases": [
+     "coolprop-heos-v1",
+     "iapws95-v1"
+    ],
+    "family": "thermal"
+   }
+  },
+  "provider_order": [
+   "syn001",
+   "pr-c1-v1",
+   "iapws95-v1",
+   "wilson-ig-v2",
+   "coolprop-heos-v1"
+  ],
+  "scanned_providers": {
+   "coolprop-heos-v1": {
+    "module": "openflowsheet.thermo.coolprop_heos",
+    "selectable": true
+   },
+   "iapws95-v1": {
+    "module": "openflowsheet.thermo.iapws95",
+    "selectable": true
+   },
+   "pr-c1-v1": {
+    "module": "openflowsheet.thermo.pr_c1",
+    "records_path": "benchmarks/m01/components.yaml",
+    "records_path_selects": "pr-c1-v1",
+    "selectable": true
+   },
+   "pr-lib-v1": {
+    "module": "openflowsheet.thermo.pr_lib",
+    "records_path": "benchmarks/l01/components.yaml",
+    "records_path_selects": "syn001",
+    "selectable": false
+   },
+   "syn001": {
+    "module": "openflowsheet.thermo.syn001",
+    "selectable": true
+   },
+   "wilson-ig-v1": {
+    "module": "openflowsheet.thermo.wilson_ig",
+    "records_path": "benchmarks/s10/records.yaml",
+    "records_path_selects": "wilson-ig-v2",
+    "selectable": false
+   },
+   "wilson-ig-v2": {
+    "module": "openflowsheet.thermo.wilson_ig_v2",
+    "selectable": true
+   }
+  }
+ },
+ "inventory_sha256": "99607a434124946927293b7a5a806bf365bdb456d38db01ae54cba4016e57a92",
+ "library_only": {
+  "syn001.cascade": {
+   "coolprop-heos-v1": {
+    "code": "model_unsupported(syn001.cascade)",
+    "hint": "bind syn001.column with its top and bottom inlets connected (S02 §1: condenser none, reboiler none is S01's cascade)",
+    "implicated": [],
+    "kind": "unsupported"
+   },
+   "iapws95-v1": {
+    "code": "model_unsupported(syn001.cascade)",
+    "hint": "bind syn001.column with its top and bottom inlets connected (S02 §1: condenser none, reboiler none is S01's cascade)",
+    "implicated": [],
+    "kind": "unsupported"
+   },
+   "pr-c1-v1": {
+    "code": "model_unsupported(syn001.cascade)",
+    "hint": "bind syn001.column with its top and bottom inlets connected (S02 §1: condenser none, reboiler none is S01's cascade)",
+    "implicated": [],
+    "kind": "unsupported"
+   },
+   "syn001": {
+    "code": "model_unsupported(syn001.cascade)",
+    "hint": "bind syn001.column with its top and bottom inlets connected (S02 §1: condenser none, reboiler none is S01's cascade)",
+    "implicated": [],
+    "kind": "unsupported"
+   },
+   "wilson-ig-v2": {
+    "code": "model_unsupported(syn001.cascade)",
+    "hint": "bind syn001.column with its top and bottom inlets connected (S02 §1: condenser none, reboiler none is S01's cascade)",
+    "implicated": [],
+    "kind": "unsupported"
+   }
+  }
+ },
+ "pairs": {
+  "c1.adiabatic_mixer x coolprop-heos-v1": {
+   "env": {
+    "coolprop_extra_absent": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(c1.adiabatic_mixer)",
+        "hint": "c1.adiabatic_mixer binds on the pr-c1-v1 basis only, not on this revision's coolprop-heos-v1; the c1.* units carry pr-c1-v1's own physics (ADR 0050 D3)",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "m02:C1-MIXER-M02-v1",
+       "route": {
+        "no_route": "unsupported(model_unsupported(c1.adiabatic_mixer)); unsupported(the structural analysis binds the registered SYN-001 revisions only; this revision uses models it does not know (T01 specification §5, §16))"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(c1.adiabatic_mixer)",
+     "reason": "c1_physics"
+    },
+    "coolprop_extra_present": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(c1.adiabatic_mixer)",
+        "hint": "c1.adiabatic_mixer binds on the pr-c1-v1 basis only, not on this revision's coolprop-heos-v1; the c1.* units carry pr-c1-v1's own physics (ADR 0050 D3)",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "m02:C1-MIXER-M02-v1",
+       "route": {
+        "no_route": "unsupported(model_unsupported(c1.adiabatic_mixer)); unsupported(the structural analysis binds the registered SYN-001 revisions only; this revision uses models it does not know (T01 specification §5, §16))"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(c1.adiabatic_mixer)",
+     "reason": "c1_physics"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "c1.adiabatic_mixer",
+   "provider": "coolprop-heos-v1",
+   "registry_admits": false
+  },
+  "c1.adiabatic_mixer x iapws95-v1": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(c1.adiabatic_mixer)",
+        "hint": "c1.adiabatic_mixer binds on the pr-c1-v1 basis only, not on this revision's iapws95-v1; the c1.* units carry pr-c1-v1's own physics (ADR 0050 D3)",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "m02:C1-MIXER-M02-v1",
+       "route": {
+        "no_route": "unsupported(model_unsupported(c1.adiabatic_mixer)); unsupported(the structural analysis binds the registered SYN-001 revisions only; this revision uses models it does not know (T01 specification §5, §16))"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(c1.adiabatic_mixer)",
+     "reason": "c1_physics"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "c1.adiabatic_mixer",
+   "provider": "iapws95-v1",
+   "registry_admits": false
+  },
+  "c1.adiabatic_mixer x pr-c1-v1": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": "bound",
+       "probe": "native",
+       "revision": "m02:C1-MIXER-M02-v1",
+       "route": {
+        "reason": null,
+        "solve_path": "revision_eo"
+       },
+       "solve": {
+        "checks_not_passed": [],
+        "outcome": "CONVERGED",
+        "verification_status": "VERIFIED"
+       }
+      }
+     ],
+     "class": "solved_verified",
+     "detail": "CONVERGED"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "c1.adiabatic_mixer",
+   "provider": "pr-c1-v1",
+   "registry_admits": true
+  },
+  "c1.adiabatic_mixer x syn001": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(c1.adiabatic_mixer)",
+        "hint": "c1.adiabatic_mixer binds on the pr-c1-v1 basis only, not on this revision's syn001; on syn001 the same function is syn001.adiabatic_mixer",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "m02:C1-MIXER-M02-v1",
+       "route": {
+        "no_route": "unsupported(model_unsupported(c1.adiabatic_mixer)); unsupported(the structural analysis binds the registered SYN-001 revisions only; this revision uses models it does not know (T01 specification §5, §16))"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(c1.adiabatic_mixer)",
+     "reason": null
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "c1.adiabatic_mixer",
+   "provider": "syn001",
+   "registry_admits": false
+  },
+  "c1.adiabatic_mixer x wilson-ig-v2": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(c1.adiabatic_mixer)",
+        "hint": "c1.adiabatic_mixer binds on the pr-c1-v1 basis only, not on this revision's wilson-ig-v2; on wilson-ig-v2 the same function is syn001.adiabatic_mixer; the c1.* units carry pr-c1-v1's own physics (ADR 0050 D3)",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "m02:C1-MIXER-M02-v1",
+       "route": {
+        "no_route": "unsupported(model_unsupported(c1.adiabatic_mixer)); unsupported(the structural analysis binds the registered SYN-001 revisions only; this revision uses models it does not know (T01 specification §5, §16))"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(c1.adiabatic_mixer)",
+     "reason": "c1_physics"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "c1.adiabatic_mixer",
+   "provider": "wilson-ig-v2",
+   "registry_admits": false
+  },
+  "c1.feed_source x coolprop-heos-v1": {
+   "env": {
+    "coolprop_extra_absent": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(c1.feed_source)",
+        "hint": "c1.feed_source binds on the pr-c1-v1 basis only, not on this revision's coolprop-heos-v1; on coolprop-heos-v1 the same function is syn001.feed_source",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "m02:C1-HEATER-M02-v1",
+       "route": {
+        "no_route": "unsupported(model_unsupported(c1.feed_source)); unsupported(the structural analysis binds the registered SYN-001 revisions only; this revision uses models it does not know (T01 specification §5, §16))"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(c1.feed_source)",
+     "reason": null
+    },
+    "coolprop_extra_present": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(c1.feed_source)",
+        "hint": "c1.feed_source binds on the pr-c1-v1 basis only, not on this revision's coolprop-heos-v1; on coolprop-heos-v1 the same function is syn001.feed_source",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "m02:C1-HEATER-M02-v1",
+       "route": {
+        "no_route": "unsupported(model_unsupported(c1.feed_source)); unsupported(the structural analysis binds the registered SYN-001 revisions only; this revision uses models it does not know (T01 specification §5, §16))"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(c1.feed_source)",
+     "reason": null
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "c1.feed_source",
+   "provider": "coolprop-heos-v1",
+   "registry_admits": false
+  },
+  "c1.feed_source x iapws95-v1": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(c1.feed_source)",
+        "hint": "c1.feed_source binds on the pr-c1-v1 basis only, not on this revision's iapws95-v1; on iapws95-v1 the same function is syn001.feed_source",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "m02:C1-HEATER-M02-v1",
+       "route": {
+        "no_route": "unsupported(model_unsupported(c1.feed_source)); unsupported(the structural analysis binds the registered SYN-001 revisions only; this revision uses models it does not know (T01 specification §5, §16))"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(c1.feed_source)",
+     "reason": null
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "c1.feed_source",
+   "provider": "iapws95-v1",
+   "registry_admits": false
+  },
+  "c1.feed_source x pr-c1-v1": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": "bound",
+       "probe": "native",
+       "revision": "m02:C1-HEATER-M02-v1",
+       "route": {
+        "reason": null,
+        "solve_path": "revision_eo"
+       },
+       "solve": {
+        "checks_not_passed": [],
+        "outcome": "CONVERGED",
+        "verification_status": "VERIFIED"
+       }
+      }
+     ],
+     "class": "solved_verified",
+     "detail": "CONVERGED"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "c1.feed_source",
+   "provider": "pr-c1-v1",
+   "registry_admits": true
+  },
+  "c1.feed_source x syn001": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(c1.feed_source)",
+        "hint": "c1.feed_source binds on the pr-c1-v1 basis only, not on this revision's syn001; on syn001 the same function is syn001.feed_source",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "m02:C1-HEATER-M02-v1",
+       "route": {
+        "no_route": "unsupported(model_unsupported(c1.feed_source)); unsupported(the structural analysis binds the registered SYN-001 revisions only; this revision uses models it does not know (T01 specification §5, §16))"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(c1.feed_source)",
+     "reason": null
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "c1.feed_source",
+   "provider": "syn001",
+   "registry_admits": false
+  },
+  "c1.feed_source x wilson-ig-v2": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(c1.feed_source)",
+        "hint": "c1.feed_source binds on the pr-c1-v1 basis only, not on this revision's wilson-ig-v2; on wilson-ig-v2 the same function is syn001.feed_source",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "m02:C1-HEATER-M02-v1",
+       "route": {
+        "no_route": "unsupported(model_unsupported(c1.feed_source)); unsupported(the structural analysis binds the registered SYN-001 revisions only; this revision uses models it does not know (T01 specification §5, §16))"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(c1.feed_source)",
+     "reason": null
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "c1.feed_source",
+   "provider": "wilson-ig-v2",
+   "registry_admits": false
+  },
+  "c1.product_sink x coolprop-heos-v1": {
+   "env": {
+    "coolprop_extra_absent": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(c1.product_sink)",
+        "hint": "c1.product_sink binds on the pr-c1-v1 basis only, not on this revision's coolprop-heos-v1; on coolprop-heos-v1 the same function is syn001.product_sink",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "m02:C1-HEATER-M02-v1",
+       "route": {
+        "no_route": "unsupported(model_unsupported(c1.product_sink)); unsupported(the structural analysis binds the registered SYN-001 revisions only; this revision uses models it does not know (T01 specification §5, §16))"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(c1.product_sink)",
+     "reason": null
+    },
+    "coolprop_extra_present": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(c1.product_sink)",
+        "hint": "c1.product_sink binds on the pr-c1-v1 basis only, not on this revision's coolprop-heos-v1; on coolprop-heos-v1 the same function is syn001.product_sink",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "m02:C1-HEATER-M02-v1",
+       "route": {
+        "no_route": "unsupported(model_unsupported(c1.product_sink)); unsupported(the structural analysis binds the registered SYN-001 revisions only; this revision uses models it does not know (T01 specification §5, §16))"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(c1.product_sink)",
+     "reason": null
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "c1.product_sink",
+   "provider": "coolprop-heos-v1",
+   "registry_admits": false
+  },
+  "c1.product_sink x iapws95-v1": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(c1.product_sink)",
+        "hint": "c1.product_sink binds on the pr-c1-v1 basis only, not on this revision's iapws95-v1; on iapws95-v1 the same function is syn001.product_sink",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "m02:C1-HEATER-M02-v1",
+       "route": {
+        "no_route": "unsupported(model_unsupported(c1.product_sink)); unsupported(the structural analysis binds the registered SYN-001 revisions only; this revision uses models it does not know (T01 specification §5, §16))"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(c1.product_sink)",
+     "reason": null
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "c1.product_sink",
+   "provider": "iapws95-v1",
+   "registry_admits": false
+  },
+  "c1.product_sink x pr-c1-v1": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": "bound",
+       "probe": "native",
+       "revision": "m02:C1-HEATER-M02-v1",
+       "route": {
+        "reason": null,
+        "solve_path": "revision_eo"
+       },
+       "solve": {
+        "checks_not_passed": [],
+        "outcome": "CONVERGED",
+        "verification_status": "VERIFIED"
+       }
+      }
+     ],
+     "class": "solved_verified",
+     "detail": "CONVERGED"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "c1.product_sink",
+   "provider": "pr-c1-v1",
+   "registry_admits": true
+  },
+  "c1.product_sink x syn001": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(c1.product_sink)",
+        "hint": "c1.product_sink binds on the pr-c1-v1 basis only, not on this revision's syn001; on syn001 the same function is syn001.product_sink",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "m02:C1-HEATER-M02-v1",
+       "route": {
+        "no_route": "unsupported(model_unsupported(c1.product_sink)); unsupported(the structural analysis binds the registered SYN-001 revisions only; this revision uses models it does not know (T01 specification §5, §16))"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(c1.product_sink)",
+     "reason": null
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "c1.product_sink",
+   "provider": "syn001",
+   "registry_admits": false
+  },
+  "c1.product_sink x wilson-ig-v2": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(c1.product_sink)",
+        "hint": "c1.product_sink binds on the pr-c1-v1 basis only, not on this revision's wilson-ig-v2; on wilson-ig-v2 the same function is syn001.product_sink",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "m02:C1-HEATER-M02-v1",
+       "route": {
+        "no_route": "unsupported(model_unsupported(c1.product_sink)); unsupported(the structural analysis binds the registered SYN-001 revisions only; this revision uses models it does not know (T01 specification §5, §16))"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(c1.product_sink)",
+     "reason": null
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "c1.product_sink",
+   "provider": "wilson-ig-v2",
+   "registry_admits": false
+  },
+  "c1.reactor x coolprop-heos-v1": {
+   "env": {
+    "coolprop_extra_absent": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(c1.reactor)",
+        "hint": "c1.reactor binds on the pr-c1-v1 basis only, not on this revision's coolprop-heos-v1; the c1.* units carry pr-c1-v1's own physics (ADR 0050 D3)",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "m02:C1-REACTOR-M02-v1",
+       "route": {
+        "no_route": "unsupported(model_unsupported(c1.reactor)); unsupported(the structural analysis binds the registered SYN-001 revisions only; this revision uses models it does not know (T01 specification §5, §16))"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(c1.reactor)",
+     "reason": "c1_physics"
+    },
+    "coolprop_extra_present": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(c1.reactor)",
+        "hint": "c1.reactor binds on the pr-c1-v1 basis only, not on this revision's coolprop-heos-v1; the c1.* units carry pr-c1-v1's own physics (ADR 0050 D3)",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "m02:C1-REACTOR-M02-v1",
+       "route": {
+        "no_route": "unsupported(model_unsupported(c1.reactor)); unsupported(the structural analysis binds the registered SYN-001 revisions only; this revision uses models it does not know (T01 specification §5, §16))"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(c1.reactor)",
+     "reason": "c1_physics"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "c1.reactor",
+   "provider": "coolprop-heos-v1",
+   "registry_admits": false
+  },
+  "c1.reactor x iapws95-v1": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(c1.reactor)",
+        "hint": "c1.reactor binds on the pr-c1-v1 basis only, not on this revision's iapws95-v1; the c1.* units carry pr-c1-v1's own physics (ADR 0050 D3)",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "m02:C1-REACTOR-M02-v1",
+       "route": {
+        "no_route": "unsupported(model_unsupported(c1.reactor)); unsupported(the structural analysis binds the registered SYN-001 revisions only; this revision uses models it does not know (T01 specification §5, §16))"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(c1.reactor)",
+     "reason": "c1_physics"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "c1.reactor",
+   "provider": "iapws95-v1",
+   "registry_admits": false
+  },
+  "c1.reactor x pr-c1-v1": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": "bound",
+       "probe": "native",
+       "revision": "m02:C1-REACTOR-M02-v1",
+       "route": {
+        "reason": null,
+        "solve_path": "revision_coupled"
+       }
+      }
+     ],
+     "class": "bound_not_solved",
+     "detail": "revision_coupled"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "c1.reactor",
+   "provider": "pr-c1-v1",
+   "registry_admits": true
+  },
+  "c1.reactor x syn001": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(c1.reactor)",
+        "hint": "c1.reactor binds on the pr-c1-v1 basis only, not on this revision's syn001",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "m02:C1-REACTOR-M02-v1",
+       "route": {
+        "no_route": "unsupported(model_unsupported(c1.reactor)); unsupported(the structural analysis binds the registered SYN-001 revisions only; this revision uses models it does not know (T01 specification §5, §16))"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(c1.reactor)",
+     "reason": null
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "c1.reactor",
+   "provider": "syn001",
+   "registry_admits": false
+  },
+  "c1.reactor x wilson-ig-v2": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(c1.reactor)",
+        "hint": "c1.reactor binds on the pr-c1-v1 basis only, not on this revision's wilson-ig-v2; the c1.* units carry pr-c1-v1's own physics (ADR 0050 D3)",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "m02:C1-REACTOR-M02-v1",
+       "route": {
+        "no_route": "unsupported(model_unsupported(c1.reactor)); unsupported(the structural analysis binds the registered SYN-001 revisions only; this revision uses models it does not know (T01 specification §5, §16))"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(c1.reactor)",
+     "reason": "c1_physics"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "c1.reactor",
+   "provider": "wilson-ig-v2",
+   "registry_admits": false
+  },
+  "c1.reactor_standin x coolprop-heos-v1": {
+   "env": {
+    "coolprop_extra_absent": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(c1.reactor_standin)",
+        "hint": "c1.reactor_standin binds on the pr-c1-v1 basis only, not on this revision's coolprop-heos-v1; the c1.* units carry pr-c1-v1's own physics (ADR 0050 D3)",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "m02:C1-LOOP-M02-v1",
+       "route": {
+        "no_route": "unsupported(model_unsupported(c1.reactor_standin)); unsupported(the structural analysis binds the registered SYN-001 revisions only; this revision uses models it does not know (T01 specification §5, §16))"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(c1.reactor_standin)",
+     "reason": "c1_physics"
+    },
+    "coolprop_extra_present": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(c1.reactor_standin)",
+        "hint": "c1.reactor_standin binds on the pr-c1-v1 basis only, not on this revision's coolprop-heos-v1; the c1.* units carry pr-c1-v1's own physics (ADR 0050 D3)",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "m02:C1-LOOP-M02-v1",
+       "route": {
+        "no_route": "unsupported(model_unsupported(c1.reactor_standin)); unsupported(the structural analysis binds the registered SYN-001 revisions only; this revision uses models it does not know (T01 specification §5, §16))"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(c1.reactor_standin)",
+     "reason": "c1_physics"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "c1.reactor_standin",
+   "provider": "coolprop-heos-v1",
+   "registry_admits": false
+  },
+  "c1.reactor_standin x iapws95-v1": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(c1.reactor_standin)",
+        "hint": "c1.reactor_standin binds on the pr-c1-v1 basis only, not on this revision's iapws95-v1; the c1.* units carry pr-c1-v1's own physics (ADR 0050 D3)",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "m02:C1-LOOP-M02-v1",
+       "route": {
+        "no_route": "unsupported(model_unsupported(c1.reactor_standin)); unsupported(the structural analysis binds the registered SYN-001 revisions only; this revision uses models it does not know (T01 specification §5, §16))"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(c1.reactor_standin)",
+     "reason": "c1_physics"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "c1.reactor_standin",
+   "provider": "iapws95-v1",
+   "registry_admits": false
+  },
+  "c1.reactor_standin x pr-c1-v1": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": "bound",
+       "probe": "native",
+       "revision": "m02:C1-LOOP-M02-v1",
+       "route": {
+        "reason": null,
+        "solve_path": "revision_coupled"
+       }
+      }
+     ],
+     "class": "bound_not_solved",
+     "detail": "revision_coupled"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "c1.reactor_standin",
+   "provider": "pr-c1-v1",
+   "registry_admits": true
+  },
+  "c1.reactor_standin x syn001": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(c1.reactor_standin)",
+        "hint": "c1.reactor_standin binds on the pr-c1-v1 basis only, not on this revision's syn001",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "m02:C1-LOOP-M02-v1",
+       "route": {
+        "no_route": "unsupported(model_unsupported(c1.reactor_standin)); unsupported(the structural analysis binds the registered SYN-001 revisions only; this revision uses models it does not know (T01 specification §5, §16))"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(c1.reactor_standin)",
+     "reason": null
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "c1.reactor_standin",
+   "provider": "syn001",
+   "registry_admits": false
+  },
+  "c1.reactor_standin x wilson-ig-v2": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(c1.reactor_standin)",
+        "hint": "c1.reactor_standin binds on the pr-c1-v1 basis only, not on this revision's wilson-ig-v2; the c1.* units carry pr-c1-v1's own physics (ADR 0050 D3)",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "m02:C1-LOOP-M02-v1",
+       "route": {
+        "no_route": "unsupported(model_unsupported(c1.reactor_standin)); unsupported(the structural analysis binds the registered SYN-001 revisions only; this revision uses models it does not know (T01 specification §5, §16))"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(c1.reactor_standin)",
+     "reason": "c1_physics"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "c1.reactor_standin",
+   "provider": "wilson-ig-v2",
+   "registry_admits": false
+  },
+  "c1.reactor_surrogate x coolprop-heos-v1": {
+   "env": {
+    "coolprop_extra_absent": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(c1.reactor_surrogate)",
+        "hint": "c1.reactor_surrogate binds on the pr-c1-v1 basis only, not on this revision's coolprop-heos-v1; the c1.* units carry pr-c1-v1's own physics (ADR 0050 D3)",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "m02:C1-SURROGATE-M04-v1",
+       "route": {
+        "no_route": "unsupported(model_unsupported(c1.reactor_surrogate)); unsupported(the structural analysis binds the registered SYN-001 revisions only; this revision uses models it does not know (T01 specification §5, §16))"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(c1.reactor_surrogate)",
+     "reason": "c1_physics"
+    },
+    "coolprop_extra_present": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(c1.reactor_surrogate)",
+        "hint": "c1.reactor_surrogate binds on the pr-c1-v1 basis only, not on this revision's coolprop-heos-v1; the c1.* units carry pr-c1-v1's own physics (ADR 0050 D3)",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "m02:C1-SURROGATE-M04-v1",
+       "route": {
+        "no_route": "unsupported(model_unsupported(c1.reactor_surrogate)); unsupported(the structural analysis binds the registered SYN-001 revisions only; this revision uses models it does not know (T01 specification §5, §16))"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(c1.reactor_surrogate)",
+     "reason": "c1_physics"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "c1.reactor_surrogate",
+   "provider": "coolprop-heos-v1",
+   "registry_admits": false
+  },
+  "c1.reactor_surrogate x iapws95-v1": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(c1.reactor_surrogate)",
+        "hint": "c1.reactor_surrogate binds on the pr-c1-v1 basis only, not on this revision's iapws95-v1; the c1.* units carry pr-c1-v1's own physics (ADR 0050 D3)",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "m02:C1-SURROGATE-M04-v1",
+       "route": {
+        "no_route": "unsupported(model_unsupported(c1.reactor_surrogate)); unsupported(the structural analysis binds the registered SYN-001 revisions only; this revision uses models it does not know (T01 specification §5, §16))"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(c1.reactor_surrogate)",
+     "reason": "c1_physics"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "c1.reactor_surrogate",
+   "provider": "iapws95-v1",
+   "registry_admits": false
+  },
+  "c1.reactor_surrogate x pr-c1-v1": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": "bound",
+       "probe": "native",
+       "revision": "m02:C1-SURROGATE-M04-v1",
+       "route": {
+        "reason": null,
+        "solve_path": "revision_eo"
+       },
+       "solve": {
+        "checks_not_passed": [
+         "derivative_witness.on_pattern:fail"
+        ],
+        "outcome": "CONVERGED",
+        "verification_status": "UNVERIFIED"
+       }
+      }
+     ],
+     "class": "solved_not_verified",
+     "detail": "CONVERGED/UNVERIFIED (derivative_witness.on_pattern:fail)"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "c1.reactor_surrogate",
+   "provider": "pr-c1-v1",
+   "registry_admits": true
+  },
+  "c1.reactor_surrogate x syn001": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(c1.reactor_surrogate)",
+        "hint": "c1.reactor_surrogate binds on the pr-c1-v1 basis only, not on this revision's syn001",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "m02:C1-SURROGATE-M04-v1",
+       "route": {
+        "no_route": "unsupported(model_unsupported(c1.reactor_surrogate)); unsupported(the structural analysis binds the registered SYN-001 revisions only; this revision uses models it does not know (T01 specification §5, §16))"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(c1.reactor_surrogate)",
+     "reason": null
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "c1.reactor_surrogate",
+   "provider": "syn001",
+   "registry_admits": false
+  },
+  "c1.reactor_surrogate x wilson-ig-v2": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(c1.reactor_surrogate)",
+        "hint": "c1.reactor_surrogate binds on the pr-c1-v1 basis only, not on this revision's wilson-ig-v2; the c1.* units carry pr-c1-v1's own physics (ADR 0050 D3)",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "m02:C1-SURROGATE-M04-v1",
+       "route": {
+        "no_route": "unsupported(model_unsupported(c1.reactor_surrogate)); unsupported(the structural analysis binds the registered SYN-001 revisions only; this revision uses models it does not know (T01 specification §5, §16))"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(c1.reactor_surrogate)",
+     "reason": "c1_physics"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "c1.reactor_surrogate",
+   "provider": "wilson-ig-v2",
+   "registry_admits": false
+  },
+  "c1.stream_splitter x coolprop-heos-v1": {
+   "env": {
+    "coolprop_extra_absent": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(c1.stream_splitter)",
+        "hint": "c1.stream_splitter binds on the pr-c1-v1 basis only, not on this revision's coolprop-heos-v1; on coolprop-heos-v1 the same function is syn001.stream_splitter",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "m02:C1-LOOP-M02-v1",
+       "route": {
+        "no_route": "unsupported(model_unsupported(c1.stream_splitter)); unsupported(the structural analysis binds the registered SYN-001 revisions only; this revision uses models it does not know (T01 specification §5, §16))"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(c1.stream_splitter)",
+     "reason": null
+    },
+    "coolprop_extra_present": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(c1.stream_splitter)",
+        "hint": "c1.stream_splitter binds on the pr-c1-v1 basis only, not on this revision's coolprop-heos-v1; on coolprop-heos-v1 the same function is syn001.stream_splitter",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "m02:C1-LOOP-M02-v1",
+       "route": {
+        "no_route": "unsupported(model_unsupported(c1.stream_splitter)); unsupported(the structural analysis binds the registered SYN-001 revisions only; this revision uses models it does not know (T01 specification §5, §16))"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(c1.stream_splitter)",
+     "reason": null
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "c1.stream_splitter",
+   "provider": "coolprop-heos-v1",
+   "registry_admits": false
+  },
+  "c1.stream_splitter x iapws95-v1": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(c1.stream_splitter)",
+        "hint": "c1.stream_splitter binds on the pr-c1-v1 basis only, not on this revision's iapws95-v1; on iapws95-v1 the same function is syn001.stream_splitter",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "m02:C1-LOOP-M02-v1",
+       "route": {
+        "no_route": "unsupported(model_unsupported(c1.stream_splitter)); unsupported(the structural analysis binds the registered SYN-001 revisions only; this revision uses models it does not know (T01 specification §5, §16))"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(c1.stream_splitter)",
+     "reason": null
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "c1.stream_splitter",
+   "provider": "iapws95-v1",
+   "registry_admits": false
+  },
+  "c1.stream_splitter x pr-c1-v1": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": "bound",
+       "probe": "native",
+       "revision": "m02:C1-LOOP-M02-v1",
+       "route": {
+        "reason": null,
+        "solve_path": "revision_coupled"
+       }
+      },
+      {
+       "bind": "bound",
+       "probe": "constructed",
+       "revision": "g8:SYN-001-T06-REF02",
+       "route": {
+        "reason": null,
+        "solve_path": "revision_eo"
+       },
+       "solve": {
+        "checks_not_passed": [],
+        "outcome": "CONVERGED",
+        "verification_status": "VERIFIED"
+       }
+      }
+     ],
+     "class": "solved_verified",
+     "detail": "CONVERGED"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "c1.stream_splitter",
+   "provider": "pr-c1-v1",
+   "registry_admits": true
+  },
+  "c1.stream_splitter x syn001": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(c1.stream_splitter)",
+        "hint": "c1.stream_splitter binds on the pr-c1-v1 basis only, not on this revision's syn001; on syn001 the same function is syn001.stream_splitter",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "m02:C1-LOOP-M02-v1",
+       "route": {
+        "no_route": "unsupported(model_unsupported(c1.stream_splitter)); unsupported(the structural analysis binds the registered SYN-001 revisions only; this revision uses models it does not know (T01 specification §5, §16))"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(c1.stream_splitter)",
+     "reason": null
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "c1.stream_splitter",
+   "provider": "syn001",
+   "registry_admits": false
+  },
+  "c1.stream_splitter x wilson-ig-v2": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(c1.stream_splitter)",
+        "hint": "c1.stream_splitter binds on the pr-c1-v1 basis only, not on this revision's wilson-ig-v2; on wilson-ig-v2 the same function is syn001.stream_splitter",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "m02:C1-LOOP-M02-v1",
+       "route": {
+        "no_route": "unsupported(model_unsupported(c1.stream_splitter)); unsupported(the structural analysis binds the registered SYN-001 revisions only; this revision uses models it does not know (T01 specification §5, §16))"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(c1.stream_splitter)",
+     "reason": null
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "c1.stream_splitter",
+   "provider": "wilson-ig-v2",
+   "registry_admits": false
+  },
+  "c1.tp_flash x coolprop-heos-v1": {
+   "env": {
+    "coolprop_extra_absent": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(c1.tp_flash)",
+        "hint": "c1.tp_flash binds on the pr-c1-v1 basis only, not on this revision's coolprop-heos-v1; the c1.* units carry pr-c1-v1's own physics (ADR 0050 D3)",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "m02:C1-FLASH-F1-M02-v1",
+       "route": {
+        "no_route": "unsupported(model_unsupported(c1.tp_flash)); unsupported(the structural analysis binds the registered SYN-001 revisions only; this revision uses models it does not know (T01 specification §5, §16))"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(c1.tp_flash)",
+     "reason": "c1_physics"
+    },
+    "coolprop_extra_present": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(c1.tp_flash)",
+        "hint": "c1.tp_flash binds on the pr-c1-v1 basis only, not on this revision's coolprop-heos-v1; the c1.* units carry pr-c1-v1's own physics (ADR 0050 D3)",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "m02:C1-FLASH-F1-M02-v1",
+       "route": {
+        "no_route": "unsupported(model_unsupported(c1.tp_flash)); unsupported(the structural analysis binds the registered SYN-001 revisions only; this revision uses models it does not know (T01 specification §5, §16))"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(c1.tp_flash)",
+     "reason": "c1_physics"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "c1.tp_flash",
+   "provider": "coolprop-heos-v1",
+   "registry_admits": false
+  },
+  "c1.tp_flash x iapws95-v1": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(c1.tp_flash)",
+        "hint": "c1.tp_flash binds on the pr-c1-v1 basis only, not on this revision's iapws95-v1; the c1.* units carry pr-c1-v1's own physics (ADR 0050 D3)",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "m02:C1-FLASH-F1-M02-v1",
+       "route": {
+        "no_route": "unsupported(model_unsupported(c1.tp_flash)); unsupported(the structural analysis binds the registered SYN-001 revisions only; this revision uses models it does not know (T01 specification §5, §16))"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(c1.tp_flash)",
+     "reason": "c1_physics"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "c1.tp_flash",
+   "provider": "iapws95-v1",
+   "registry_admits": false
+  },
+  "c1.tp_flash x pr-c1-v1": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": "bound",
+       "probe": "native",
+       "revision": "m02:C1-FLASH-F1-M02-v1",
+       "route": {
+        "reason": null,
+        "solve_path": "revision_eo"
+       },
+       "solve": {
+        "checks_not_passed": [],
+        "outcome": "CONVERGED",
+        "verification_status": "VERIFIED"
+       }
+      }
+     ],
+     "class": "solved_verified",
+     "detail": "CONVERGED"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "c1.tp_flash",
+   "provider": "pr-c1-v1",
+   "registry_admits": true
+  },
+  "c1.tp_flash x syn001": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(c1.tp_flash)",
+        "hint": "c1.tp_flash binds on the pr-c1-v1 basis only, not on this revision's syn001; on syn001 the same function is syn001.tp_flash",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "m02:C1-FLASH-F1-M02-v1",
+       "route": {
+        "no_route": "unsupported(model_unsupported(c1.tp_flash)); unsupported(the structural analysis binds the registered SYN-001 revisions only; this revision uses models it does not know (T01 specification §5, §16))"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(c1.tp_flash)",
+     "reason": null
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "c1.tp_flash",
+   "provider": "syn001",
+   "registry_admits": false
+  },
+  "c1.tp_flash x wilson-ig-v2": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(c1.tp_flash)",
+        "hint": "c1.tp_flash binds on the pr-c1-v1 basis only, not on this revision's wilson-ig-v2; on wilson-ig-v2 the same function is syn001.tp_flash; the c1.* units carry pr-c1-v1's own physics (ADR 0050 D3)",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "m02:C1-FLASH-F1-M02-v1",
+       "route": {
+        "no_route": "unsupported(model_unsupported(c1.tp_flash)); unsupported(the structural analysis binds the registered SYN-001 revisions only; this revision uses models it does not know (T01 specification §5, §16))"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(c1.tp_flash)",
+     "reason": "c1_physics"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "c1.tp_flash",
+   "provider": "wilson-ig-v2",
+   "registry_admits": false
+  },
+  "c1.tp_heater x coolprop-heos-v1": {
+   "env": {
+    "coolprop_extra_absent": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(c1.tp_heater)",
+        "hint": "c1.tp_heater binds on the pr-c1-v1 basis only, not on this revision's coolprop-heos-v1; the c1.* units carry pr-c1-v1's own physics (ADR 0050 D3)",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "m02:C1-HEATER-M02-v1",
+       "route": {
+        "no_route": "unsupported(model_unsupported(c1.tp_heater)); unsupported(the structural analysis binds the registered SYN-001 revisions only; this revision uses models it does not know (T01 specification §5, §16))"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(c1.tp_heater)",
+     "reason": "c1_physics"
+    },
+    "coolprop_extra_present": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(c1.tp_heater)",
+        "hint": "c1.tp_heater binds on the pr-c1-v1 basis only, not on this revision's coolprop-heos-v1; the c1.* units carry pr-c1-v1's own physics (ADR 0050 D3)",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "m02:C1-HEATER-M02-v1",
+       "route": {
+        "no_route": "unsupported(model_unsupported(c1.tp_heater)); unsupported(the structural analysis binds the registered SYN-001 revisions only; this revision uses models it does not know (T01 specification §5, §16))"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(c1.tp_heater)",
+     "reason": "c1_physics"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "c1.tp_heater",
+   "provider": "coolprop-heos-v1",
+   "registry_admits": false
+  },
+  "c1.tp_heater x iapws95-v1": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(c1.tp_heater)",
+        "hint": "c1.tp_heater binds on the pr-c1-v1 basis only, not on this revision's iapws95-v1; the c1.* units carry pr-c1-v1's own physics (ADR 0050 D3)",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "m02:C1-HEATER-M02-v1",
+       "route": {
+        "no_route": "unsupported(model_unsupported(c1.tp_heater)); unsupported(the structural analysis binds the registered SYN-001 revisions only; this revision uses models it does not know (T01 specification §5, §16))"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(c1.tp_heater)",
+     "reason": "c1_physics"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "c1.tp_heater",
+   "provider": "iapws95-v1",
+   "registry_admits": false
+  },
+  "c1.tp_heater x pr-c1-v1": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": "bound",
+       "probe": "native",
+       "revision": "m02:C1-HEATER-M02-v1",
+       "route": {
+        "reason": null,
+        "solve_path": "revision_eo"
+       },
+       "solve": {
+        "checks_not_passed": [],
+        "outcome": "CONVERGED",
+        "verification_status": "VERIFIED"
+       }
+      }
+     ],
+     "class": "solved_verified",
+     "detail": "CONVERGED"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "c1.tp_heater",
+   "provider": "pr-c1-v1",
+   "registry_admits": true
+  },
+  "c1.tp_heater x syn001": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(c1.tp_heater)",
+        "hint": "c1.tp_heater binds on the pr-c1-v1 basis only, not on this revision's syn001; on syn001 the same function is syn001.tp_heater",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "m02:C1-HEATER-M02-v1",
+       "route": {
+        "no_route": "unsupported(model_unsupported(c1.tp_heater)); unsupported(the structural analysis binds the registered SYN-001 revisions only; this revision uses models it does not know (T01 specification §5, §16))"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(c1.tp_heater)",
+     "reason": null
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "c1.tp_heater",
+   "provider": "syn001",
+   "registry_admits": false
+  },
+  "c1.tp_heater x wilson-ig-v2": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(c1.tp_heater)",
+        "hint": "c1.tp_heater binds on the pr-c1-v1 basis only, not on this revision's wilson-ig-v2; on wilson-ig-v2 the same function is syn001.tp_heater; the c1.* units carry pr-c1-v1's own physics (ADR 0050 D3)",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "m02:C1-HEATER-M02-v1",
+       "route": {
+        "no_route": "unsupported(model_unsupported(c1.tp_heater)); unsupported(the structural analysis binds the registered SYN-001 revisions only; this revision uses models it does not know (T01 specification §5, §16))"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(c1.tp_heater)",
+     "reason": "c1_physics"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "c1.tp_heater",
+   "provider": "wilson-ig-v2",
+   "registry_admits": false
+  },
+  "syn001.adiabatic_mixer x coolprop-heos-v1": {
+   "env": {
+    "coolprop_extra_absent": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(syn001.adiabatic_mixer)",
+        "hint": "syn001.adiabatic_mixer binds on the syn001, wilson-ig-v2 bases only, not on this revision's coolprop-heos-v1; use thermal.mixer (ADR 0051: pure-fluid streams are declared-regime)",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "g8:SYN-001-T06-REF01",
+       "route": {
+        "no_route": "unsupported(model_unsupported(syn001.adiabatic_mixer)); unsupported(the revision's connections do not match the SYN-001 flowsheet's topology, which is the only one the binding knows)"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(syn001.adiabatic_mixer)",
+     "reason": "declared_regime"
+    },
+    "coolprop_extra_present": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(syn001.adiabatic_mixer)",
+        "hint": "syn001.adiabatic_mixer binds on the syn001, wilson-ig-v2 bases only, not on this revision's coolprop-heos-v1; use thermal.mixer (ADR 0051: pure-fluid streams are declared-regime)",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "g8:SYN-001-T06-REF01",
+       "route": {
+        "no_route": "unsupported(model_unsupported(syn001.adiabatic_mixer)); unsupported(the revision's connections do not match the SYN-001 flowsheet's topology, which is the only one the binding knows)"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(syn001.adiabatic_mixer)",
+     "reason": "declared_regime"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "syn001.adiabatic_mixer",
+   "provider": "coolprop-heos-v1",
+   "registry_admits": false
+  },
+  "syn001.adiabatic_mixer x iapws95-v1": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(syn001.adiabatic_mixer)",
+        "hint": "syn001.adiabatic_mixer binds on the syn001, wilson-ig-v2 bases only, not on this revision's iapws95-v1; use thermal.mixer (ADR 0051: pure-fluid streams are declared-regime)",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "g8:SYN-001-T06-REF01",
+       "route": {
+        "no_route": "unsupported(model_unsupported(syn001.adiabatic_mixer)); unsupported(the revision's connections do not match the SYN-001 flowsheet's topology, which is the only one the binding knows)"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(syn001.adiabatic_mixer)",
+     "reason": "declared_regime"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "syn001.adiabatic_mixer",
+   "provider": "iapws95-v1",
+   "registry_admits": false
+  },
+  "syn001.adiabatic_mixer x pr-c1-v1": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(syn001.adiabatic_mixer)",
+        "hint": "syn001.adiabatic_mixer binds on the syn001, wilson-ig-v2 bases only, not on this revision's pr-c1-v1; on pr-c1-v1 the same function is c1.adiabatic_mixer",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "g8:SYN-001-T06-REF01",
+       "route": {
+        "no_route": "unsupported(model_unsupported(syn001.adiabatic_mixer)); unsupported(the structural analysis binds the registered SYN-001 revisions only; this revision uses models it does not know (T01 specification §5, §16))"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(syn001.adiabatic_mixer)",
+     "reason": null
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "syn001.adiabatic_mixer",
+   "provider": "pr-c1-v1",
+   "registry_admits": false
+  },
+  "syn001.adiabatic_mixer x syn001": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": "bound",
+       "probe": "native",
+       "revision": "g8:SYN-001-T06-REF01",
+       "route": {
+        "reason": null,
+        "solve_path": "revision_eo"
+       },
+       "solve": {
+        "checks_not_passed": [],
+        "outcome": "CONVERGED",
+        "verification_status": "VERIFIED"
+       }
+      }
+     ],
+     "class": "solved_verified",
+     "detail": "CONVERGED"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "syn001.adiabatic_mixer",
+   "provider": "syn001",
+   "registry_admits": true
+  },
+  "syn001.adiabatic_mixer x wilson-ig-v2": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": "bound",
+       "probe": "native",
+       "revision": "file:benchmarks/s11/gp/GP-C3.json",
+       "route": {
+        "reason": null,
+        "solve_path": "revision_eo"
+       },
+       "solve": {
+        "checks_not_passed": [],
+        "outcome": "CONVERGED",
+        "verification_status": "VERIFIED"
+       }
+      }
+     ],
+     "class": "solved_verified",
+     "detail": "CONVERGED"
+    }
+   },
+   "lifted_by_s10c_s11": "yes: S11 units design §4.5, §4.7 (track D, γ–φ faces)",
+   "model": "syn001.adiabatic_mixer",
+   "provider": "wilson-ig-v2",
+   "registry_admits": true
+  },
+  "syn001.column x coolprop-heos-v1": {
+   "env": {
+    "coolprop_extra_absent": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(syn001.column)",
+        "hint": "syn001.column binds on the syn001, wilson-ig-v2 bases only, not on this revision's coolprop-heos-v1; a pure fluid has no stage composition",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "file:benchmarks/s11/flowsheets/C-EW.json",
+       "route": {
+        "no_route": "unsupported(model_unsupported(syn001.column)); unsupported(the revision's connections do not match the SYN-001 flowsheet's topology, which is the only one the binding knows)"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(syn001.column)",
+     "reason": "column_pure"
+    },
+    "coolprop_extra_present": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(syn001.column)",
+        "hint": "syn001.column binds on the syn001, wilson-ig-v2 bases only, not on this revision's coolprop-heos-v1; a pure fluid has no stage composition",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "file:benchmarks/s11/flowsheets/C-EW.json",
+       "route": {
+        "no_route": "unsupported(model_unsupported(syn001.column)); unsupported(the revision's connections do not match the SYN-001 flowsheet's topology, which is the only one the binding knows)"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(syn001.column)",
+     "reason": "column_pure"
+    }
+   },
+   "lifted_by_s10c_s11": "no: R-631 (no stage composition on a pure fluid)",
+   "model": "syn001.column",
+   "provider": "coolprop-heos-v1",
+   "registry_admits": false
+  },
+  "syn001.column x iapws95-v1": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(syn001.column)",
+        "hint": "syn001.column binds on the syn001, wilson-ig-v2 bases only, not on this revision's iapws95-v1; a pure fluid has no stage composition",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "file:benchmarks/s11/flowsheets/C-EW.json",
+       "route": {
+        "no_route": "unsupported(model_unsupported(syn001.column)); unsupported(the revision's connections do not match the SYN-001 flowsheet's topology, which is the only one the binding knows)"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(syn001.column)",
+     "reason": "column_pure"
+    }
+   },
+   "lifted_by_s10c_s11": "no: R-631 (no stage composition on a pure fluid)",
+   "model": "syn001.column",
+   "provider": "iapws95-v1",
+   "registry_admits": false
+  },
+  "syn001.column x pr-c1-v1": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(syn001.column)",
+        "hint": "syn001.column binds on the syn001, wilson-ig-v2 bases only, not on this revision's pr-c1-v1; pr-c1-v1 is vapour-only (S02 §0)",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "file:benchmarks/s11/flowsheets/C-EW.json",
+       "route": {
+        "no_route": "unsupported(model_unsupported(syn001.column)); unsupported(the structural analysis binds the registered SYN-001 revisions only; this revision uses models it does not know (T01 specification §5, §16))"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(syn001.column)",
+     "reason": "column_vapour"
+    }
+   },
+   "lifted_by_s10c_s11": "no: R-760 leaves pr-c1-v1 under S11's cause (R-631)",
+   "model": "syn001.column",
+   "provider": "pr-c1-v1",
+   "registry_admits": false
+  },
+  "syn001.column x syn001": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": "bound",
+       "probe": "native",
+       "revision": "file:benchmarks/s11/flowsheets/J1.json",
+       "route": {
+        "reason": null,
+        "solve_path": "revision_eo"
+       },
+       "solve": {
+        "checks_not_passed": [],
+        "outcome": "CONVERGED",
+        "verification_status": "VERIFIED"
+       }
+      }
+     ],
+     "class": "solved_verified",
+     "detail": "CONVERGED"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "syn001.column",
+   "provider": "syn001",
+   "registry_admits": true
+  },
+  "syn001.column x wilson-ig-v2": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": "bound",
+       "probe": "native",
+       "revision": "file:benchmarks/s11/flowsheets/C-EW.json",
+       "route": {
+        "reason": null,
+        "solve_path": "revision_eo"
+       },
+       "solve": {
+        "checks_not_passed": [],
+        "outcome": "CONVERGED",
+        "verification_status": "VERIFIED"
+       }
+      }
+     ],
+     "class": "solved_verified",
+     "detail": "CONVERGED"
+    }
+   },
+   "lifted_by_s10c_s11": "yes: R-631 lifted for Wilson by S10-C (R-760, gamma-phi-ig-v1 allow-list) and S11 (design §4.7, §9 I1)",
+   "model": "syn001.column",
+   "provider": "wilson-ig-v2",
+   "registry_admits": true
+  },
+  "syn001.component_separator x coolprop-heos-v1": {
+   "env": {
+    "coolprop_extra_absent": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(syn001.component_separator)",
+        "hint": "syn001.component_separator binds on the syn001 basis only, not on this revision's coolprop-heos-v1; pure-fluid streams are declared-regime (ADR 0051), which only the thermal.* units take; none of them has this function",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "g8:SYN-001-T06-STA04",
+       "route": {
+        "no_route": "unsupported(model_unsupported(syn001.component_separator)); unsupported(the revision's connections do not match the SYN-001 flowsheet's topology, which is the only one the binding knows)"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(syn001.component_separator)",
+     "reason": "pure_fluid"
+    },
+    "coolprop_extra_present": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(syn001.component_separator)",
+        "hint": "syn001.component_separator binds on the syn001 basis only, not on this revision's coolprop-heos-v1; pure-fluid streams are declared-regime (ADR 0051), which only the thermal.* units take; none of them has this function",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "g8:SYN-001-T06-STA04",
+       "route": {
+        "no_route": "unsupported(model_unsupported(syn001.component_separator)); unsupported(the revision's connections do not match the SYN-001 flowsheet's topology, which is the only one the binding knows)"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(syn001.component_separator)",
+     "reason": "pure_fluid"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "syn001.component_separator",
+   "provider": "coolprop-heos-v1",
+   "registry_admits": false
+  },
+  "syn001.component_separator x iapws95-v1": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(syn001.component_separator)",
+        "hint": "syn001.component_separator binds on the syn001 basis only, not on this revision's iapws95-v1; pure-fluid streams are declared-regime (ADR 0051), which only the thermal.* units take; none of them has this function",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "g8:SYN-001-T06-STA04",
+       "route": {
+        "no_route": "unsupported(model_unsupported(syn001.component_separator)); unsupported(the revision's connections do not match the SYN-001 flowsheet's topology, which is the only one the binding knows)"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(syn001.component_separator)",
+     "reason": "pure_fluid"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "syn001.component_separator",
+   "provider": "iapws95-v1",
+   "registry_admits": false
+  },
+  "syn001.component_separator x pr-c1-v1": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(syn001.component_separator)",
+        "hint": "syn001.component_separator binds on the syn001 basis only, not on this revision's pr-c1-v1",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "g8:SYN-001-T06-STA04",
+       "route": {
+        "no_route": "unsupported(model_unsupported(syn001.component_separator)); unsupported(the structural analysis binds the registered SYN-001 revisions only; this revision uses models it does not know (T01 specification §5, §16))"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(syn001.component_separator)",
+     "reason": null
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "syn001.component_separator",
+   "provider": "pr-c1-v1",
+   "registry_admits": false
+  },
+  "syn001.component_separator x syn001": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": "bound",
+       "probe": "native",
+       "revision": "g8:SYN-001-T06-STA04",
+       "route": {
+        "reason": null,
+        "solve_path": "revision_eo"
+       },
+       "solve": {
+        "checks_not_passed": [],
+        "outcome": "CONVERGED",
+        "verification_status": "VERIFIED"
+       }
+      }
+     ],
+     "class": "solved_verified",
+     "detail": "CONVERGED"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "syn001.component_separator",
+   "provider": "syn001",
+   "registry_admits": true
+  },
+  "syn001.component_separator x wilson-ig-v2": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(syn001.component_separator)",
+        "hint": "syn001.component_separator binds on the syn001 basis only, not on this revision's wilson-ig-v2; its EO face reads lnK and h_<c>, and S11 gives γ–φ faces to the five K02/T05 units only (L-GP-1)",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "g8:SYN-001-T06-STA04",
+       "route": {
+        "no_route": "unsupported(model_unsupported(syn001.component_separator)); unsupported(the revision's connections do not match the SYN-001 flowsheet's topology, which is the only one the binding knows)"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(syn001.component_separator)",
+     "reason": "gamma_phi"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "syn001.component_separator",
+   "provider": "wilson-ig-v2",
+   "registry_admits": false
+  },
+  "syn001.conversion_reactor x coolprop-heos-v1": {
+   "env": {
+    "coolprop_extra_absent": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(syn001.conversion_reactor)",
+        "hint": "syn001.conversion_reactor binds on the syn001 basis only, not on this revision's coolprop-heos-v1; pure-fluid streams are declared-regime (ADR 0051), which only the thermal.* units take; none of them has this function",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "g8:SYN-001-T06-REF07",
+       "route": {
+        "no_route": "unsupported(model_unsupported(syn001.conversion_reactor)); unsupported(the revision's connections do not match the SYN-001 flowsheet's topology, which is the only one the binding knows)"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(syn001.conversion_reactor)",
+     "reason": "pure_fluid"
+    },
+    "coolprop_extra_present": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(syn001.conversion_reactor)",
+        "hint": "syn001.conversion_reactor binds on the syn001 basis only, not on this revision's coolprop-heos-v1; pure-fluid streams are declared-regime (ADR 0051), which only the thermal.* units take; none of them has this function",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "g8:SYN-001-T06-REF07",
+       "route": {
+        "no_route": "unsupported(model_unsupported(syn001.conversion_reactor)); unsupported(the revision's connections do not match the SYN-001 flowsheet's topology, which is the only one the binding knows)"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(syn001.conversion_reactor)",
+     "reason": "pure_fluid"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "syn001.conversion_reactor",
+   "provider": "coolprop-heos-v1",
+   "registry_admits": false
+  },
+  "syn001.conversion_reactor x iapws95-v1": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(syn001.conversion_reactor)",
+        "hint": "syn001.conversion_reactor binds on the syn001 basis only, not on this revision's iapws95-v1; pure-fluid streams are declared-regime (ADR 0051), which only the thermal.* units take; none of them has this function",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "g8:SYN-001-T06-REF07",
+       "route": {
+        "no_route": "unsupported(model_unsupported(syn001.conversion_reactor)); unsupported(the revision's connections do not match the SYN-001 flowsheet's topology, which is the only one the binding knows)"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(syn001.conversion_reactor)",
+     "reason": "pure_fluid"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "syn001.conversion_reactor",
+   "provider": "iapws95-v1",
+   "registry_admits": false
+  },
+  "syn001.conversion_reactor x pr-c1-v1": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(syn001.conversion_reactor)",
+        "hint": "syn001.conversion_reactor binds on the syn001 basis only, not on this revision's pr-c1-v1",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "g8:SYN-001-T06-REF07",
+       "route": {
+        "no_route": "unsupported(model_unsupported(syn001.conversion_reactor)); unsupported(the structural analysis binds the registered SYN-001 revisions only; this revision uses models it does not know (T01 specification §5, §16))"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(syn001.conversion_reactor)",
+     "reason": null
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "syn001.conversion_reactor",
+   "provider": "pr-c1-v1",
+   "registry_admits": false
+  },
+  "syn001.conversion_reactor x syn001": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": "bound",
+       "probe": "native",
+       "revision": "g8:SYN-001-T06-REF07",
+       "route": {
+        "reason": null,
+        "solve_path": "revision_eo"
+       },
+       "solve": {
+        "checks_not_passed": [],
+        "outcome": "CONVERGED",
+        "verification_status": "VERIFIED"
+       }
+      }
+     ],
+     "class": "solved_verified",
+     "detail": "CONVERGED"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "syn001.conversion_reactor",
+   "provider": "syn001",
+   "registry_admits": true
+  },
+  "syn001.conversion_reactor x wilson-ig-v2": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(syn001.conversion_reactor)",
+        "hint": "syn001.conversion_reactor binds on the syn001 basis only, not on this revision's wilson-ig-v2; its EO face reads lnK and h_<c>, and S11 gives γ–φ faces to the five K02/T05 units only (L-GP-1)",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "g8:SYN-001-T06-REF07",
+       "route": {
+        "no_route": "unsupported(model_unsupported(syn001.conversion_reactor)); unsupported(the revision's connections do not match the SYN-001 flowsheet's topology, which is the only one the binding knows)"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(syn001.conversion_reactor)",
+     "reason": "gamma_phi"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "syn001.conversion_reactor",
+   "provider": "wilson-ig-v2",
+   "registry_admits": false
+  },
+  "syn001.feed_source x coolprop-heos-v1": {
+   "env": {
+    "coolprop_extra_absent": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "basis_unavailable(coolprop-heos-v1)",
+        "hint": "the coolprop extra is not installed (pip install openflowsheet[coolprop])",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "native",
+       "revision": "file:benchmarks/s11/thermal/TH-C2.json",
+       "route": {
+        "no_route": "unsupported(basis_unavailable(coolprop-heos-v1)); unsupported(the structural analysis binds the registered SYN-001 revisions only; this revision uses models it does not know (T01 specification §5, §16))"
+       }
+      }
+     ],
+     "class": "refused_basis",
+     "detail": "basis_unavailable(coolprop-heos-v1)"
+    },
+    "coolprop_extra_present": {
+     "attempts": [
+      {
+       "bind": "bound",
+       "probe": "native",
+       "revision": "file:benchmarks/s11/thermal/TH-C2.json",
+       "route": {
+        "reason": null,
+        "solve_path": "revision_eo"
+       },
+       "solve": {
+        "checks_not_passed": [
+         "independent_split.S3:not_applicable",
+         "independent_split.S4:not_applicable",
+         "independent_split.S5:not_applicable"
+        ],
+        "outcome": "CONVERGED",
+        "verification_status": "VERIFIED"
+       }
+      }
+     ],
+     "class": "solved_verified",
+     "detail": "CONVERGED"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "syn001.feed_source",
+   "provider": "coolprop-heos-v1",
+   "registry_admits": true
+  },
+  "syn001.feed_source x iapws95-v1": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": "bound",
+       "probe": "native",
+       "revision": "file:benchmarks/s11/thermal/TH-V1.json",
+       "route": {
+        "reason": null,
+        "solve_path": "revision_eo"
+       },
+       "solve": {
+        "checks_not_passed": [
+         "independent_split.S2:not_applicable",
+         "independent_split.S3:not_applicable",
+         "independent_split.S4:not_applicable"
+        ],
+        "outcome": "CONVERGED",
+        "verification_status": "VERIFIED"
+       }
+      }
+     ],
+     "class": "solved_verified",
+     "detail": "CONVERGED"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "syn001.feed_source",
+   "provider": "iapws95-v1",
+   "registry_admits": true
+  },
+  "syn001.feed_source x pr-c1-v1": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(syn001.feed_source)",
+        "hint": "syn001.feed_source binds on the coolprop-heos-v1, iapws95-v1, syn001, wilson-ig-v2 bases only, not on this revision's pr-c1-v1; on pr-c1-v1 the same function is c1.feed_source",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "file:benchmarks/s11/gp/GP-M1.json",
+       "route": {
+        "no_route": "unsupported(model_unsupported(syn001.feed_source)); unsupported(the structural analysis binds the registered SYN-001 revisions only; this revision uses models it does not know (T01 specification §5, §16))"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(syn001.feed_source)",
+     "reason": null
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "syn001.feed_source",
+   "provider": "pr-c1-v1",
+   "registry_admits": false
+  },
+  "syn001.feed_source x syn001": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": "bound",
+       "probe": "native",
+       "revision": "file:benchmarks/t08/ptc_r1/revision.json",
+       "route": {
+        "reason": null,
+        "solve_path": "revision_eo"
+       },
+       "solve": {
+        "checks_not_passed": [],
+        "outcome": "CONVERGED",
+        "verification_status": "VERIFIED"
+       }
+      }
+     ],
+     "class": "solved_verified",
+     "detail": "CONVERGED"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "syn001.feed_source",
+   "provider": "syn001",
+   "registry_admits": true
+  },
+  "syn001.feed_source x wilson-ig-v2": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": "bound",
+       "probe": "native",
+       "revision": "file:benchmarks/s11/gp/GP-M1.json",
+       "route": {
+        "reason": null,
+        "solve_path": "revision_eo"
+       },
+       "solve": {
+        "checks_not_passed": [],
+        "outcome": "CONVERGED",
+        "verification_status": "VERIFIED"
+       }
+      }
+     ],
+     "class": "solved_verified",
+     "detail": "CONVERGED"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "syn001.feed_source",
+   "provider": "wilson-ig-v2",
+   "registry_admits": true
+  },
+  "syn001.heat_exchanger x coolprop-heos-v1": {
+   "env": {
+    "coolprop_extra_absent": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(syn001.heat_exchanger)",
+        "hint": "syn001.heat_exchanger binds on the syn001 basis only, not on this revision's coolprop-heos-v1; pure-fluid streams are declared-regime (ADR 0051), which only the thermal.* units take; none of them has this function",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "g8:SYN-001-T06-NET06",
+       "route": {
+        "no_route": "unsupported(model_unsupported(syn001.heat_exchanger)); unsupported(the revision's connections do not match the SYN-001 flowsheet's topology, which is the only one the binding knows)"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(syn001.heat_exchanger)",
+     "reason": "pure_fluid"
+    },
+    "coolprop_extra_present": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(syn001.heat_exchanger)",
+        "hint": "syn001.heat_exchanger binds on the syn001 basis only, not on this revision's coolprop-heos-v1; pure-fluid streams are declared-regime (ADR 0051), which only the thermal.* units take; none of them has this function",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "g8:SYN-001-T06-NET06",
+       "route": {
+        "no_route": "unsupported(model_unsupported(syn001.heat_exchanger)); unsupported(the revision's connections do not match the SYN-001 flowsheet's topology, which is the only one the binding knows)"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(syn001.heat_exchanger)",
+     "reason": "pure_fluid"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "syn001.heat_exchanger",
+   "provider": "coolprop-heos-v1",
+   "registry_admits": false
+  },
+  "syn001.heat_exchanger x iapws95-v1": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(syn001.heat_exchanger)",
+        "hint": "syn001.heat_exchanger binds on the syn001 basis only, not on this revision's iapws95-v1; pure-fluid streams are declared-regime (ADR 0051), which only the thermal.* units take; none of them has this function",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "g8:SYN-001-T06-NET06",
+       "route": {
+        "no_route": "unsupported(model_unsupported(syn001.heat_exchanger)); unsupported(the revision's connections do not match the SYN-001 flowsheet's topology, which is the only one the binding knows)"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(syn001.heat_exchanger)",
+     "reason": "pure_fluid"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "syn001.heat_exchanger",
+   "provider": "iapws95-v1",
+   "registry_admits": false
+  },
+  "syn001.heat_exchanger x pr-c1-v1": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(syn001.heat_exchanger)",
+        "hint": "syn001.heat_exchanger binds on the syn001 basis only, not on this revision's pr-c1-v1",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "g8:SYN-001-T06-NET06",
+       "route": {
+        "no_route": "unsupported(model_unsupported(syn001.heat_exchanger)); unsupported(the structural analysis binds the registered SYN-001 revisions only; this revision uses models it does not know (T01 specification §5, §16))"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(syn001.heat_exchanger)",
+     "reason": null
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "syn001.heat_exchanger",
+   "provider": "pr-c1-v1",
+   "registry_admits": false
+  },
+  "syn001.heat_exchanger x syn001": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": "bound",
+       "probe": "native",
+       "revision": "g8:SYN-001-T06-NET06",
+       "route": {
+        "reason": null,
+        "solve_path": "revision_eo"
+       },
+       "solve": {
+        "checks_not_passed": [],
+        "outcome": "CONVERGED",
+        "verification_status": "VERIFIED"
+       }
+      }
+     ],
+     "class": "solved_verified",
+     "detail": "CONVERGED"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "syn001.heat_exchanger",
+   "provider": "syn001",
+   "registry_admits": true
+  },
+  "syn001.heat_exchanger x wilson-ig-v2": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(syn001.heat_exchanger)",
+        "hint": "syn001.heat_exchanger binds on the syn001 basis only, not on this revision's wilson-ig-v2; its EO face reads lnK and h_<c>, and S11 gives γ–φ faces to the five K02/T05 units only (L-GP-1)",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "g8:SYN-001-T06-NET06",
+       "route": {
+        "no_route": "unsupported(model_unsupported(syn001.heat_exchanger)); unsupported(the revision's connections do not match the SYN-001 flowsheet's topology, which is the only one the binding knows)"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(syn001.heat_exchanger)",
+     "reason": "gamma_phi"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "syn001.heat_exchanger",
+   "provider": "wilson-ig-v2",
+   "registry_admits": false
+  },
+  "syn001.kinetic_cstr x coolprop-heos-v1": {
+   "env": {
+    "coolprop_extra_absent": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(syn001.kinetic_cstr)",
+        "hint": "syn001.kinetic_cstr binds on the syn001 basis only, not on this revision's coolprop-heos-v1; pure-fluid streams are declared-regime (ADR 0051), which only the thermal.* units take; none of them has this function",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "file:benchmarks/t08/ptc_r1/revision.json",
+       "route": {
+        "no_route": "unsupported(model_unsupported(syn001.kinetic_cstr)); unsupported(the revision's connections do not match the SYN-001 flowsheet's topology, which is the only one the binding knows)"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(syn001.kinetic_cstr)",
+     "reason": "pure_fluid"
+    },
+    "coolprop_extra_present": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(syn001.kinetic_cstr)",
+        "hint": "syn001.kinetic_cstr binds on the syn001 basis only, not on this revision's coolprop-heos-v1; pure-fluid streams are declared-regime (ADR 0051), which only the thermal.* units take; none of them has this function",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "file:benchmarks/t08/ptc_r1/revision.json",
+       "route": {
+        "no_route": "unsupported(model_unsupported(syn001.kinetic_cstr)); unsupported(the revision's connections do not match the SYN-001 flowsheet's topology, which is the only one the binding knows)"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(syn001.kinetic_cstr)",
+     "reason": "pure_fluid"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "syn001.kinetic_cstr",
+   "provider": "coolprop-heos-v1",
+   "registry_admits": false
+  },
+  "syn001.kinetic_cstr x iapws95-v1": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(syn001.kinetic_cstr)",
+        "hint": "syn001.kinetic_cstr binds on the syn001 basis only, not on this revision's iapws95-v1; pure-fluid streams are declared-regime (ADR 0051), which only the thermal.* units take; none of them has this function",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "file:benchmarks/t08/ptc_r1/revision.json",
+       "route": {
+        "no_route": "unsupported(model_unsupported(syn001.kinetic_cstr)); unsupported(the revision's connections do not match the SYN-001 flowsheet's topology, which is the only one the binding knows)"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(syn001.kinetic_cstr)",
+     "reason": "pure_fluid"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "syn001.kinetic_cstr",
+   "provider": "iapws95-v1",
+   "registry_admits": false
+  },
+  "syn001.kinetic_cstr x pr-c1-v1": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(syn001.kinetic_cstr)",
+        "hint": "syn001.kinetic_cstr binds on the syn001 basis only, not on this revision's pr-c1-v1",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "file:benchmarks/t08/ptc_r1/revision.json",
+       "route": {
+        "no_route": "unsupported(model_unsupported(syn001.kinetic_cstr)); unsupported(the structural analysis binds the registered SYN-001 revisions only; this revision uses models it does not know (T01 specification §5, §16))"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(syn001.kinetic_cstr)",
+     "reason": null
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "syn001.kinetic_cstr",
+   "provider": "pr-c1-v1",
+   "registry_admits": false
+  },
+  "syn001.kinetic_cstr x syn001": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": "bound",
+       "probe": "native",
+       "revision": "file:benchmarks/t08/ptc_r1/revision.json",
+       "route": {
+        "reason": null,
+        "solve_path": "revision_eo"
+       },
+       "solve": {
+        "checks_not_passed": [],
+        "outcome": "CONVERGED",
+        "verification_status": "VERIFIED"
+       }
+      }
+     ],
+     "class": "solved_verified",
+     "detail": "CONVERGED"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "syn001.kinetic_cstr",
+   "provider": "syn001",
+   "registry_admits": true
+  },
+  "syn001.kinetic_cstr x wilson-ig-v2": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(syn001.kinetic_cstr)",
+        "hint": "syn001.kinetic_cstr binds on the syn001 basis only, not on this revision's wilson-ig-v2; its EO face reads lnK and h_<c>, and S11 gives γ–φ faces to the five K02/T05 units only (L-GP-1)",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "file:benchmarks/t08/ptc_r1/revision.json",
+       "route": {
+        "no_route": "unsupported(model_unsupported(syn001.kinetic_cstr)); unsupported(the revision's connections do not match the SYN-001 flowsheet's topology, which is the only one the binding knows)"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(syn001.kinetic_cstr)",
+     "reason": "gamma_phi"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "syn001.kinetic_cstr",
+   "provider": "wilson-ig-v2",
+   "registry_admits": false
+  },
+  "syn001.liquid_pump x coolprop-heos-v1": {
+   "env": {
+    "coolprop_extra_absent": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(syn001.liquid_pump)",
+        "hint": "syn001.liquid_pump binds on the syn001 basis only, not on this revision's coolprop-heos-v1; use thermal.pump (ADR 0051: pure-fluid streams are declared-regime)",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "g8:SYN-001-T06-REF06",
+       "route": {
+        "no_route": "unsupported(model_unsupported(syn001.liquid_pump)); unsupported(the revision's connections do not match the SYN-001 flowsheet's topology, which is the only one the binding knows)"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(syn001.liquid_pump)",
+     "reason": "declared_regime"
+    },
+    "coolprop_extra_present": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(syn001.liquid_pump)",
+        "hint": "syn001.liquid_pump binds on the syn001 basis only, not on this revision's coolprop-heos-v1; use thermal.pump (ADR 0051: pure-fluid streams are declared-regime)",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "g8:SYN-001-T06-REF06",
+       "route": {
+        "no_route": "unsupported(model_unsupported(syn001.liquid_pump)); unsupported(the revision's connections do not match the SYN-001 flowsheet's topology, which is the only one the binding knows)"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(syn001.liquid_pump)",
+     "reason": "declared_regime"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "syn001.liquid_pump",
+   "provider": "coolprop-heos-v1",
+   "registry_admits": false
+  },
+  "syn001.liquid_pump x iapws95-v1": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(syn001.liquid_pump)",
+        "hint": "syn001.liquid_pump binds on the syn001 basis only, not on this revision's iapws95-v1; use thermal.pump (ADR 0051: pure-fluid streams are declared-regime)",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "g8:SYN-001-T06-REF06",
+       "route": {
+        "no_route": "unsupported(model_unsupported(syn001.liquid_pump)); unsupported(the revision's connections do not match the SYN-001 flowsheet's topology, which is the only one the binding knows)"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(syn001.liquid_pump)",
+     "reason": "declared_regime"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "syn001.liquid_pump",
+   "provider": "iapws95-v1",
+   "registry_admits": false
+  },
+  "syn001.liquid_pump x pr-c1-v1": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(syn001.liquid_pump)",
+        "hint": "syn001.liquid_pump binds on the syn001 basis only, not on this revision's pr-c1-v1",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "g8:SYN-001-T06-REF06",
+       "route": {
+        "no_route": "unsupported(model_unsupported(syn001.liquid_pump)); unsupported(the structural analysis binds the registered SYN-001 revisions only; this revision uses models it does not know (T01 specification §5, §16))"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(syn001.liquid_pump)",
+     "reason": null
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "syn001.liquid_pump",
+   "provider": "pr-c1-v1",
+   "registry_admits": false
+  },
+  "syn001.liquid_pump x syn001": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": "bound",
+       "probe": "native",
+       "revision": "g8:SYN-001-T06-REF06",
+       "route": {
+        "reason": null,
+        "solve_path": "revision_eo"
+       },
+       "solve": {
+        "checks_not_passed": [],
+        "outcome": "CONVERGED",
+        "verification_status": "VERIFIED"
+       }
+      }
+     ],
+     "class": "solved_verified",
+     "detail": "CONVERGED"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "syn001.liquid_pump",
+   "provider": "syn001",
+   "registry_admits": true
+  },
+  "syn001.liquid_pump x wilson-ig-v2": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(syn001.liquid_pump)",
+        "hint": "syn001.liquid_pump binds on the syn001 basis only, not on this revision's wilson-ig-v2; wilson-ig-v2 has no liquid volume, which a pump needs (L-GP-1)",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "g8:SYN-001-T06-REF06",
+       "route": {
+        "no_route": "unsupported(model_unsupported(syn001.liquid_pump)); unsupported(the revision's connections do not match the SYN-001 flowsheet's topology, which is the only one the binding knows)"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(syn001.liquid_pump)",
+     "reason": "no_volume"
+    }
+   },
+   "lifted_by_s10c_s11": "no: R-819 keeps the pump refused on Wilson (X10)",
+   "model": "syn001.liquid_pump",
+   "provider": "wilson-ig-v2",
+   "registry_admits": false
+  },
+  "syn001.ph_flash x coolprop-heos-v1": {
+   "env": {
+    "coolprop_extra_absent": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(syn001.ph_flash)",
+        "hint": "syn001.ph_flash binds on the syn001, wilson-ig-v2 bases only, not on this revision's coolprop-heos-v1; use thermal.flash (ADR 0051: pure-fluid streams are declared-regime)",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "g8:SYN-001-T06-THM02",
+       "route": {
+        "no_route": "unsupported(model_unsupported(syn001.ph_flash)); unsupported(the revision's connections do not match the SYN-001 flowsheet's topology, which is the only one the binding knows)"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(syn001.ph_flash)",
+     "reason": "declared_regime"
+    },
+    "coolprop_extra_present": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(syn001.ph_flash)",
+        "hint": "syn001.ph_flash binds on the syn001, wilson-ig-v2 bases only, not on this revision's coolprop-heos-v1; use thermal.flash (ADR 0051: pure-fluid streams are declared-regime)",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "g8:SYN-001-T06-THM02",
+       "route": {
+        "no_route": "unsupported(model_unsupported(syn001.ph_flash)); unsupported(the revision's connections do not match the SYN-001 flowsheet's topology, which is the only one the binding knows)"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(syn001.ph_flash)",
+     "reason": "declared_regime"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "syn001.ph_flash",
+   "provider": "coolprop-heos-v1",
+   "registry_admits": false
+  },
+  "syn001.ph_flash x iapws95-v1": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(syn001.ph_flash)",
+        "hint": "syn001.ph_flash binds on the syn001, wilson-ig-v2 bases only, not on this revision's iapws95-v1; use thermal.flash (ADR 0051: pure-fluid streams are declared-regime)",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "g8:SYN-001-T06-THM02",
+       "route": {
+        "no_route": "unsupported(model_unsupported(syn001.ph_flash)); unsupported(the revision's connections do not match the SYN-001 flowsheet's topology, which is the only one the binding knows)"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(syn001.ph_flash)",
+     "reason": "declared_regime"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "syn001.ph_flash",
+   "provider": "iapws95-v1",
+   "registry_admits": false
+  },
+  "syn001.ph_flash x pr-c1-v1": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(syn001.ph_flash)",
+        "hint": "syn001.ph_flash binds on the syn001, wilson-ig-v2 bases only, not on this revision's pr-c1-v1",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "g8:SYN-001-T06-THM02",
+       "route": {
+        "no_route": "unsupported(model_unsupported(syn001.ph_flash)); unsupported(the structural analysis binds the registered SYN-001 revisions only; this revision uses models it does not know (T01 specification §5, §16))"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(syn001.ph_flash)",
+     "reason": null
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "syn001.ph_flash",
+   "provider": "pr-c1-v1",
+   "registry_admits": false
+  },
+  "syn001.ph_flash x syn001": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": "bound",
+       "probe": "native",
+       "revision": "g8:SYN-001-T06-THM02",
+       "route": {
+        "reason": null,
+        "solve_path": "revision_eo"
+       },
+       "solve": {
+        "checks_not_passed": [],
+        "outcome": "CONVERGED",
+        "verification_status": "VERIFIED"
+       }
+      }
+     ],
+     "class": "solved_verified",
+     "detail": "CONVERGED"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "syn001.ph_flash",
+   "provider": "syn001",
+   "registry_admits": true
+  },
+  "syn001.ph_flash x wilson-ig-v2": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": "bound",
+       "probe": "native",
+       "revision": "file:benchmarks/s11/gp/GP-C2.json",
+       "route": {
+        "reason": null,
+        "solve_path": "revision_eo"
+       },
+       "solve": {
+        "checks_not_passed": [],
+        "outcome": "CONVERGED",
+        "verification_status": "VERIFIED"
+       }
+      }
+     ],
+     "class": "solved_verified",
+     "detail": "CONVERGED"
+    }
+   },
+   "lifted_by_s10c_s11": "yes: S11 units design §4.5, §4.7 (track D, γ–φ faces)",
+   "model": "syn001.ph_flash",
+   "provider": "wilson-ig-v2",
+   "registry_admits": true
+  },
+  "syn001.product_sink x coolprop-heos-v1": {
+   "env": {
+    "coolprop_extra_absent": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "basis_unavailable(coolprop-heos-v1)",
+        "hint": "the coolprop extra is not installed (pip install openflowsheet[coolprop])",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "native",
+       "revision": "file:benchmarks/s11/thermal/TH-C2.json",
+       "route": {
+        "no_route": "unsupported(basis_unavailable(coolprop-heos-v1)); unsupported(the structural analysis binds the registered SYN-001 revisions only; this revision uses models it does not know (T01 specification §5, §16))"
+       }
+      }
+     ],
+     "class": "refused_basis",
+     "detail": "basis_unavailable(coolprop-heos-v1)"
+    },
+    "coolprop_extra_present": {
+     "attempts": [
+      {
+       "bind": "bound",
+       "probe": "native",
+       "revision": "file:benchmarks/s11/thermal/TH-C2.json",
+       "route": {
+        "reason": null,
+        "solve_path": "revision_eo"
+       },
+       "solve": {
+        "checks_not_passed": [
+         "independent_split.S3:not_applicable",
+         "independent_split.S4:not_applicable",
+         "independent_split.S5:not_applicable"
+        ],
+        "outcome": "CONVERGED",
+        "verification_status": "VERIFIED"
+       }
+      }
+     ],
+     "class": "solved_verified",
+     "detail": "CONVERGED"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "syn001.product_sink",
+   "provider": "coolprop-heos-v1",
+   "registry_admits": true
+  },
+  "syn001.product_sink x iapws95-v1": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": "bound",
+       "probe": "native",
+       "revision": "file:benchmarks/s11/thermal/TH-V1.json",
+       "route": {
+        "reason": null,
+        "solve_path": "revision_eo"
+       },
+       "solve": {
+        "checks_not_passed": [
+         "independent_split.S2:not_applicable",
+         "independent_split.S3:not_applicable",
+         "independent_split.S4:not_applicable"
+        ],
+        "outcome": "CONVERGED",
+        "verification_status": "VERIFIED"
+       }
+      }
+     ],
+     "class": "solved_verified",
+     "detail": "CONVERGED"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "syn001.product_sink",
+   "provider": "iapws95-v1",
+   "registry_admits": true
+  },
+  "syn001.product_sink x pr-c1-v1": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(syn001.product_sink)",
+        "hint": "syn001.product_sink binds on the coolprop-heos-v1, iapws95-v1, syn001, wilson-ig-v2 bases only, not on this revision's pr-c1-v1; on pr-c1-v1 the same function is c1.product_sink",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "file:benchmarks/s11/gp/GP-M1.json",
+       "route": {
+        "no_route": "unsupported(model_unsupported(syn001.product_sink)); unsupported(the structural analysis binds the registered SYN-001 revisions only; this revision uses models it does not know (T01 specification §5, §16))"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(syn001.product_sink)",
+     "reason": null
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "syn001.product_sink",
+   "provider": "pr-c1-v1",
+   "registry_admits": false
+  },
+  "syn001.product_sink x syn001": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": "bound",
+       "probe": "native",
+       "revision": "file:benchmarks/t08/ptc_r1/revision.json",
+       "route": {
+        "reason": null,
+        "solve_path": "revision_eo"
+       },
+       "solve": {
+        "checks_not_passed": [],
+        "outcome": "CONVERGED",
+        "verification_status": "VERIFIED"
+       }
+      }
+     ],
+     "class": "solved_verified",
+     "detail": "CONVERGED"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "syn001.product_sink",
+   "provider": "syn001",
+   "registry_admits": true
+  },
+  "syn001.product_sink x wilson-ig-v2": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": "bound",
+       "probe": "native",
+       "revision": "file:benchmarks/s11/gp/GP-M1.json",
+       "route": {
+        "reason": null,
+        "solve_path": "revision_eo"
+       },
+       "solve": {
+        "checks_not_passed": [],
+        "outcome": "CONVERGED",
+        "verification_status": "VERIFIED"
+       }
+      }
+     ],
+     "class": "solved_verified",
+     "detail": "CONVERGED"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "syn001.product_sink",
+   "provider": "wilson-ig-v2",
+   "registry_admits": true
+  },
+  "syn001.stream_splitter x coolprop-heos-v1": {
+   "env": {
+    "coolprop_extra_absent": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "basis_unavailable(coolprop-heos-v1)",
+        "hint": "the coolprop extra is not installed (pip install openflowsheet[coolprop])",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "constructed",
+       "revision": "g8:SYN-001-T06-REF02",
+       "route": {
+        "no_route": "unsupported(basis_unavailable(coolprop-heos-v1)); unsupported(the revision's connections do not match the SYN-001 flowsheet's topology, which is the only one the binding knows)"
+       }
+      }
+     ],
+     "class": "refused_basis",
+     "detail": "basis_unavailable(coolprop-heos-v1)"
+    },
+    "coolprop_extra_present": {
+     "attempts": [
+      {
+       "bind": "bound",
+       "probe": "constructed",
+       "revision": "g8:SYN-001-T06-REF02",
+       "route": {
+        "reason": null,
+        "solve_path": "revision_eo"
+       },
+       "solve": {
+        "checks_not_passed": [],
+        "outcome": "CONVERGED",
+        "verification_status": "VERIFIED"
+       }
+      }
+     ],
+     "class": "solved_verified",
+     "detail": "CONVERGED"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "syn001.stream_splitter",
+   "provider": "coolprop-heos-v1",
+   "registry_admits": true
+  },
+  "syn001.stream_splitter x iapws95-v1": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": "bound",
+       "probe": "native",
+       "revision": "file:benchmarks/s11/thermal/TH-R1.json",
+       "route": {
+        "reason": null,
+        "solve_path": "revision_eo"
+       },
+       "solve": {
+        "checks_not_passed": [
+         "independent_split.S3:not_applicable",
+         "independent_split.S4:not_applicable",
+         "independent_split.S5:not_applicable",
+         "independent_split.S6:not_applicable"
+        ],
+        "outcome": "CONVERGED",
+        "verification_status": "VERIFIED"
+       }
+      }
+     ],
+     "class": "solved_verified",
+     "detail": "CONVERGED"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "syn001.stream_splitter",
+   "provider": "iapws95-v1",
+   "registry_admits": true
+  },
+  "syn001.stream_splitter x pr-c1-v1": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(syn001.stream_splitter)",
+        "hint": "syn001.stream_splitter binds on the coolprop-heos-v1, iapws95-v1, syn001, wilson-ig-v2 bases only, not on this revision's pr-c1-v1; on pr-c1-v1 the same function is c1.stream_splitter",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "g8:SYN-001-T06-REF02",
+       "route": {
+        "no_route": "unsupported(model_unsupported(syn001.stream_splitter)); unsupported(the structural analysis binds the registered SYN-001 revisions only; this revision uses models it does not know (T01 specification §5, §16))"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(syn001.stream_splitter)",
+     "reason": null
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "syn001.stream_splitter",
+   "provider": "pr-c1-v1",
+   "registry_admits": false
+  },
+  "syn001.stream_splitter x syn001": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": "bound",
+       "probe": "native",
+       "revision": "g8:SYN-001-T06-REF02",
+       "route": {
+        "reason": null,
+        "solve_path": "revision_eo"
+       },
+       "solve": {
+        "checks_not_passed": [],
+        "outcome": "CONVERGED",
+        "verification_status": "VERIFIED"
+       }
+      }
+     ],
+     "class": "solved_verified",
+     "detail": "CONVERGED"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "syn001.stream_splitter",
+   "provider": "syn001",
+   "registry_admits": true
+  },
+  "syn001.stream_splitter x wilson-ig-v2": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": "bound",
+       "probe": "constructed",
+       "revision": "g8:SYN-001-T06-REF02",
+       "route": {
+        "reason": null,
+        "solve_path": "revision_eo"
+       },
+       "solve": {
+        "checks_not_passed": [],
+        "outcome": "CONVERGED",
+        "verification_status": "VERIFIED"
+       }
+      }
+     ],
+     "class": "solved_verified",
+     "detail": "CONVERGED"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "syn001.stream_splitter",
+   "provider": "wilson-ig-v2",
+   "registry_admits": true
+  },
+  "syn001.tp_flash x coolprop-heos-v1": {
+   "env": {
+    "coolprop_extra_absent": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(syn001.tp_flash)",
+        "hint": "syn001.tp_flash binds on the syn001, wilson-ig-v2 bases only, not on this revision's coolprop-heos-v1; use thermal.flash (ADR 0051: pure-fluid streams are declared-regime)",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "g8:SYN-001-T06-PC2",
+       "route": {
+        "no_route": "unsupported(model_unsupported(syn001.tp_flash)); unsupported(the revision's connections do not match the SYN-001 flowsheet's topology, which is the only one the binding knows)"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(syn001.tp_flash)",
+     "reason": "declared_regime"
+    },
+    "coolprop_extra_present": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(syn001.tp_flash)",
+        "hint": "syn001.tp_flash binds on the syn001, wilson-ig-v2 bases only, not on this revision's coolprop-heos-v1; use thermal.flash (ADR 0051: pure-fluid streams are declared-regime)",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "g8:SYN-001-T06-PC2",
+       "route": {
+        "no_route": "unsupported(model_unsupported(syn001.tp_flash)); unsupported(the revision's connections do not match the SYN-001 flowsheet's topology, which is the only one the binding knows)"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(syn001.tp_flash)",
+     "reason": "declared_regime"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "syn001.tp_flash",
+   "provider": "coolprop-heos-v1",
+   "registry_admits": false
+  },
+  "syn001.tp_flash x iapws95-v1": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(syn001.tp_flash)",
+        "hint": "syn001.tp_flash binds on the syn001, wilson-ig-v2 bases only, not on this revision's iapws95-v1; use thermal.flash (ADR 0051: pure-fluid streams are declared-regime)",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "g8:SYN-001-T06-PC2",
+       "route": {
+        "no_route": "unsupported(model_unsupported(syn001.tp_flash)); unsupported(the revision's connections do not match the SYN-001 flowsheet's topology, which is the only one the binding knows)"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(syn001.tp_flash)",
+     "reason": "declared_regime"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "syn001.tp_flash",
+   "provider": "iapws95-v1",
+   "registry_admits": false
+  },
+  "syn001.tp_flash x pr-c1-v1": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(syn001.tp_flash)",
+        "hint": "syn001.tp_flash binds on the syn001, wilson-ig-v2 bases only, not on this revision's pr-c1-v1; on pr-c1-v1 the same function is c1.tp_flash",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "g8:SYN-001-T06-PC2",
+       "route": {
+        "no_route": "unsupported(model_unsupported(syn001.tp_flash)); unsupported(the structural analysis binds the registered SYN-001 revisions only; this revision uses models it does not know (T01 specification §5, §16))"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(syn001.tp_flash)",
+     "reason": null
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "syn001.tp_flash",
+   "provider": "pr-c1-v1",
+   "registry_admits": false
+  },
+  "syn001.tp_flash x syn001": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": "bound",
+       "probe": "native",
+       "revision": "g8:SYN-001-T06-PC2",
+       "route": {
+        "reason": null,
+        "solve_path": "revision_eo"
+       },
+       "solve": {
+        "checks_not_passed": [],
+        "outcome": "CONVERGED",
+        "verification_status": "VERIFIED"
+       }
+      }
+     ],
+     "class": "solved_verified",
+     "detail": "CONVERGED"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "syn001.tp_flash",
+   "provider": "syn001",
+   "registry_admits": true
+  },
+  "syn001.tp_flash x wilson-ig-v2": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": "bound",
+       "probe": "native",
+       "revision": "file:benchmarks/s11/gp/GP-C1.json",
+       "route": {
+        "reason": null,
+        "solve_path": "revision_eo"
+       },
+       "solve": {
+        "checks_not_passed": [],
+        "outcome": "CONVERGED",
+        "verification_status": "VERIFIED"
+       }
+      }
+     ],
+     "class": "solved_verified",
+     "detail": "CONVERGED"
+    }
+   },
+   "lifted_by_s10c_s11": "yes: S11 units design §4.5, §4.7 (track D, γ–φ faces)",
+   "model": "syn001.tp_flash",
+   "provider": "wilson-ig-v2",
+   "registry_admits": true
+  },
+  "syn001.tp_heater x coolprop-heos-v1": {
+   "env": {
+    "coolprop_extra_absent": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(syn001.tp_heater)",
+        "hint": "syn001.tp_heater binds on the syn001, wilson-ig-v2 bases only, not on this revision's coolprop-heos-v1; use thermal.heater (ADR 0051: pure-fluid streams are declared-regime)",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "g8:SYN-001-T06-REF03",
+       "route": {
+        "no_route": "unsupported(model_unsupported(syn001.tp_heater)); unsupported(the revision's connections do not match the SYN-001 flowsheet's topology, which is the only one the binding knows)"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(syn001.tp_heater)",
+     "reason": "declared_regime"
+    },
+    "coolprop_extra_present": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(syn001.tp_heater)",
+        "hint": "syn001.tp_heater binds on the syn001, wilson-ig-v2 bases only, not on this revision's coolprop-heos-v1; use thermal.heater (ADR 0051: pure-fluid streams are declared-regime)",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "g8:SYN-001-T06-REF03",
+       "route": {
+        "no_route": "unsupported(model_unsupported(syn001.tp_heater)); unsupported(the revision's connections do not match the SYN-001 flowsheet's topology, which is the only one the binding knows)"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(syn001.tp_heater)",
+     "reason": "declared_regime"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "syn001.tp_heater",
+   "provider": "coolprop-heos-v1",
+   "registry_admits": false
+  },
+  "syn001.tp_heater x iapws95-v1": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(syn001.tp_heater)",
+        "hint": "syn001.tp_heater binds on the syn001, wilson-ig-v2 bases only, not on this revision's iapws95-v1; use thermal.heater (ADR 0051: pure-fluid streams are declared-regime)",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "g8:SYN-001-T06-REF03",
+       "route": {
+        "no_route": "unsupported(model_unsupported(syn001.tp_heater)); unsupported(the revision's connections do not match the SYN-001 flowsheet's topology, which is the only one the binding knows)"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(syn001.tp_heater)",
+     "reason": "declared_regime"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "syn001.tp_heater",
+   "provider": "iapws95-v1",
+   "registry_admits": false
+  },
+  "syn001.tp_heater x pr-c1-v1": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(syn001.tp_heater)",
+        "hint": "syn001.tp_heater binds on the syn001, wilson-ig-v2 bases only, not on this revision's pr-c1-v1; on pr-c1-v1 the same function is c1.tp_heater",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "g8:SYN-001-T06-REF03",
+       "route": {
+        "no_route": "unsupported(model_unsupported(syn001.tp_heater)); unsupported(the structural analysis binds the registered SYN-001 revisions only; this revision uses models it does not know (T01 specification §5, §16))"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(syn001.tp_heater)",
+     "reason": null
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "syn001.tp_heater",
+   "provider": "pr-c1-v1",
+   "registry_admits": false
+  },
+  "syn001.tp_heater x syn001": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": "bound",
+       "probe": "native",
+       "revision": "g8:SYN-001-T06-REF03",
+       "route": {
+        "reason": null,
+        "solve_path": "revision_eo"
+       },
+       "solve": {
+        "checks_not_passed": [],
+        "outcome": "CONVERGED",
+        "verification_status": "VERIFIED"
+       }
+      }
+     ],
+     "class": "solved_verified",
+     "detail": "CONVERGED"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "syn001.tp_heater",
+   "provider": "syn001",
+   "registry_admits": true
+  },
+  "syn001.tp_heater x wilson-ig-v2": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": "bound",
+       "probe": "native",
+       "revision": "file:benchmarks/s11/gp/GP-C1.json",
+       "route": {
+        "reason": null,
+        "solve_path": "revision_eo"
+       },
+       "solve": {
+        "checks_not_passed": [],
+        "outcome": "CONVERGED",
+        "verification_status": "VERIFIED"
+       }
+      }
+     ],
+     "class": "solved_verified",
+     "detail": "CONVERGED"
+    }
+   },
+   "lifted_by_s10c_s11": "yes: S11 units design §4.5, §4.7 (track D, γ–φ faces)",
+   "model": "syn001.tp_heater",
+   "provider": "wilson-ig-v2",
+   "registry_admits": true
+  },
+  "syn001.valve x coolprop-heos-v1": {
+   "env": {
+    "coolprop_extra_absent": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(syn001.valve)",
+        "hint": "syn001.valve binds on the syn001, wilson-ig-v2 bases only, not on this revision's coolprop-heos-v1; use thermal.valve (ADR 0051: pure-fluid streams are declared-regime)",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "g8:SYN-001-T06-REF05",
+       "route": {
+        "no_route": "unsupported(model_unsupported(syn001.valve)); unsupported(the revision's connections do not match the SYN-001 flowsheet's topology, which is the only one the binding knows)"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(syn001.valve)",
+     "reason": "declared_regime"
+    },
+    "coolprop_extra_present": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(syn001.valve)",
+        "hint": "syn001.valve binds on the syn001, wilson-ig-v2 bases only, not on this revision's coolprop-heos-v1; use thermal.valve (ADR 0051: pure-fluid streams are declared-regime)",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "g8:SYN-001-T06-REF05",
+       "route": {
+        "no_route": "unsupported(model_unsupported(syn001.valve)); unsupported(the revision's connections do not match the SYN-001 flowsheet's topology, which is the only one the binding knows)"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(syn001.valve)",
+     "reason": "declared_regime"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "syn001.valve",
+   "provider": "coolprop-heos-v1",
+   "registry_admits": false
+  },
+  "syn001.valve x iapws95-v1": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(syn001.valve)",
+        "hint": "syn001.valve binds on the syn001, wilson-ig-v2 bases only, not on this revision's iapws95-v1; use thermal.valve (ADR 0051: pure-fluid streams are declared-regime)",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "g8:SYN-001-T06-REF05",
+       "route": {
+        "no_route": "unsupported(model_unsupported(syn001.valve)); unsupported(the revision's connections do not match the SYN-001 flowsheet's topology, which is the only one the binding knows)"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(syn001.valve)",
+     "reason": "declared_regime"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "syn001.valve",
+   "provider": "iapws95-v1",
+   "registry_admits": false
+  },
+  "syn001.valve x pr-c1-v1": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(syn001.valve)",
+        "hint": "syn001.valve binds on the syn001, wilson-ig-v2 bases only, not on this revision's pr-c1-v1",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "g8:SYN-001-T06-REF05",
+       "route": {
+        "no_route": "unsupported(model_unsupported(syn001.valve)); unsupported(the structural analysis binds the registered SYN-001 revisions only; this revision uses models it does not know (T01 specification §5, §16))"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(syn001.valve)",
+     "reason": null
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "syn001.valve",
+   "provider": "pr-c1-v1",
+   "registry_admits": false
+  },
+  "syn001.valve x syn001": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": "bound",
+       "probe": "native",
+       "revision": "g8:SYN-001-T06-REF05",
+       "route": {
+        "reason": null,
+        "solve_path": "revision_eo"
+       },
+       "solve": {
+        "checks_not_passed": [],
+        "outcome": "CONVERGED",
+        "verification_status": "VERIFIED"
+       }
+      }
+     ],
+     "class": "solved_verified",
+     "detail": "CONVERGED"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "syn001.valve",
+   "provider": "syn001",
+   "registry_admits": true
+  },
+  "syn001.valve x wilson-ig-v2": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": "bound",
+       "probe": "native",
+       "revision": "file:benchmarks/s11/gp/GP-C2.json",
+       "route": {
+        "reason": null,
+        "solve_path": "revision_eo"
+       },
+       "solve": {
+        "checks_not_passed": [],
+        "outcome": "CONVERGED",
+        "verification_status": "VERIFIED"
+       }
+      }
+     ],
+     "class": "solved_verified",
+     "detail": "CONVERGED"
+    }
+   },
+   "lifted_by_s10c_s11": "yes: S11 units design §4.5, §4.7 (track D, γ–φ faces)",
+   "model": "syn001.valve",
+   "provider": "wilson-ig-v2",
+   "registry_admits": true
+  },
+  "thermal.compressor x coolprop-heos-v1": {
+   "env": {
+    "coolprop_extra_absent": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "basis_unavailable(coolprop-heos-v1)",
+        "hint": "the coolprop extra is not installed (pip install openflowsheet[coolprop])",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "native",
+       "revision": "file:benchmarks/s11/thermal/TH-C2.json",
+       "route": {
+        "no_route": "unsupported(basis_unavailable(coolprop-heos-v1)); unsupported(the structural analysis binds the registered SYN-001 revisions only; this revision uses models it does not know (T01 specification §5, §16))"
+       }
+      }
+     ],
+     "class": "refused_basis",
+     "detail": "basis_unavailable(coolprop-heos-v1)"
+    },
+    "coolprop_extra_present": {
+     "attempts": [
+      {
+       "bind": "bound",
+       "probe": "native",
+       "revision": "file:benchmarks/s11/thermal/TH-C2.json",
+       "route": {
+        "reason": null,
+        "solve_path": "revision_eo"
+       },
+       "solve": {
+        "checks_not_passed": [
+         "independent_split.S3:not_applicable",
+         "independent_split.S4:not_applicable",
+         "independent_split.S5:not_applicable"
+        ],
+        "outcome": "CONVERGED",
+        "verification_status": "VERIFIED"
+       }
+      }
+     ],
+     "class": "solved_verified",
+     "detail": "CONVERGED"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "thermal.compressor",
+   "provider": "coolprop-heos-v1",
+   "registry_admits": true
+  },
+  "thermal.compressor x iapws95-v1": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": "bound",
+       "probe": "constructed",
+       "revision": "file:benchmarks/s11/gp/GP-M1.json",
+       "route": {
+        "reason": null,
+        "solve_path": "revision_eo"
+       },
+       "solve": {
+        "checks_not_passed": [],
+        "outcome": "CONVERGED",
+        "verification_status": "VERIFIED"
+       }
+      }
+     ],
+     "class": "solved_verified",
+     "detail": "CONVERGED"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "thermal.compressor",
+   "provider": "iapws95-v1",
+   "registry_admits": true
+  },
+  "thermal.compressor x pr-c1-v1": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(thermal.compressor)",
+        "hint": "thermal.compressor binds on the coolprop-heos-v1, iapws95-v1, wilson-ig-v2 bases only, not on this revision's pr-c1-v1; thermal.* needs a provider with s (SYN-001: none; pr-c1-v1: vapour-only, no s)",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "file:benchmarks/s11/gp/GP-M1.json",
+       "route": {
+        "no_route": "unsupported(model_unsupported(thermal.compressor)); unsupported(the structural analysis binds the registered SYN-001 revisions only; this revision uses models it does not know (T01 specification §5, §16))"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(thermal.compressor)",
+     "reason": "no_entropy"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "thermal.compressor",
+   "provider": "pr-c1-v1",
+   "registry_admits": false
+  },
+  "thermal.compressor x syn001": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(thermal.compressor)",
+        "hint": "thermal.compressor binds on the coolprop-heos-v1, iapws95-v1, wilson-ig-v2 bases only, not on this revision's syn001; thermal.* needs a provider with s (SYN-001: none; pr-c1-v1: vapour-only, no s)",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "file:benchmarks/s11/gp/GP-M1.json",
+       "route": {
+        "no_route": "unsupported(model_unsupported(thermal.compressor)); unsupported(the structural analysis binds the registered SYN-001 revisions only; this revision uses models it does not know (T01 specification §5, §16))"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(thermal.compressor)",
+     "reason": "no_entropy"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "thermal.compressor",
+   "provider": "syn001",
+   "registry_admits": false
+  },
+  "thermal.compressor x wilson-ig-v2": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": "bound",
+       "probe": "native",
+       "revision": "file:benchmarks/s11/gp/GP-M1.json",
+       "route": {
+        "reason": null,
+        "solve_path": "revision_eo"
+       },
+       "solve": {
+        "checks_not_passed": [],
+        "outcome": "CONVERGED",
+        "verification_status": "VERIFIED"
+       }
+      }
+     ],
+     "class": "solved_verified",
+     "detail": "CONVERGED"
+    }
+   },
+   "lifted_by_s10c_s11": "yes: S11 (R-819: refusing it rejected; L-GP-2)",
+   "model": "thermal.compressor",
+   "provider": "wilson-ig-v2",
+   "registry_admits": true
+  },
+  "thermal.flash x coolprop-heos-v1": {
+   "env": {
+    "coolprop_extra_absent": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "basis_unavailable(coolprop-heos-v1)",
+        "hint": "the coolprop extra is not installed (pip install openflowsheet[coolprop])",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "constructed",
+       "revision": "file:benchmarks/s11/thermal/TH-V1.json",
+       "route": {
+        "no_route": "unsupported(basis_unavailable(coolprop-heos-v1)); unsupported(the structural analysis binds the registered SYN-001 revisions only; this revision uses models it does not know (T01 specification §5, §16))"
+       }
+      }
+     ],
+     "class": "refused_basis",
+     "detail": "basis_unavailable(coolprop-heos-v1)"
+    },
+    "coolprop_extra_present": {
+     "attempts": [
+      {
+       "bind": "bound",
+       "probe": "constructed",
+       "revision": "file:benchmarks/s11/thermal/TH-V1.json",
+       "route": {
+        "reason": null,
+        "solve_path": "revision_eo"
+       },
+       "solve": {
+        "checks_not_passed": [
+         "independent_split.S2:not_applicable",
+         "independent_split.S3:not_applicable",
+         "independent_split.S4:not_applicable"
+        ],
+        "outcome": "CONVERGED",
+        "verification_status": "VERIFIED"
+       }
+      }
+     ],
+     "class": "solved_verified",
+     "detail": "CONVERGED"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "thermal.flash",
+   "provider": "coolprop-heos-v1",
+   "registry_admits": true
+  },
+  "thermal.flash x iapws95-v1": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": "bound",
+       "probe": "native",
+       "revision": "file:benchmarks/s11/thermal/TH-V1.json",
+       "route": {
+        "reason": null,
+        "solve_path": "revision_eo"
+       },
+       "solve": {
+        "checks_not_passed": [
+         "independent_split.S2:not_applicable",
+         "independent_split.S3:not_applicable",
+         "independent_split.S4:not_applicable"
+        ],
+        "outcome": "CONVERGED",
+        "verification_status": "VERIFIED"
+       }
+      }
+     ],
+     "class": "solved_verified",
+     "detail": "CONVERGED"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "thermal.flash",
+   "provider": "iapws95-v1",
+   "registry_admits": true
+  },
+  "thermal.flash x pr-c1-v1": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(thermal.flash)",
+        "hint": "thermal.flash binds on the coolprop-heos-v1, iapws95-v1 bases only, not on this revision's pr-c1-v1; thermal.* needs a provider with s (SYN-001: none; pr-c1-v1: vapour-only, no s)",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "file:benchmarks/s11/thermal/TH-V1.json",
+       "route": {
+        "no_route": "unsupported(model_unsupported(thermal.flash)); unsupported(the structural analysis binds the registered SYN-001 revisions only; this revision uses models it does not know (T01 specification §5, §16))"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(thermal.flash)",
+     "reason": "no_entropy"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "thermal.flash",
+   "provider": "pr-c1-v1",
+   "registry_admits": false
+  },
+  "thermal.flash x syn001": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(thermal.flash)",
+        "hint": "thermal.flash binds on the coolprop-heos-v1, iapws95-v1 bases only, not on this revision's syn001; thermal.* needs a provider with s (SYN-001: none; pr-c1-v1: vapour-only, no s)",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "file:benchmarks/s11/thermal/TH-V1.json",
+       "route": {
+        "no_route": "unsupported(model_unsupported(thermal.flash)); unsupported(the structural analysis binds the registered SYN-001 revisions only; this revision uses models it does not know (T01 specification §5, §16))"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(thermal.flash)",
+     "reason": "no_entropy"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "thermal.flash",
+   "provider": "syn001",
+   "registry_admits": false
+  },
+  "thermal.flash x wilson-ig-v2": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(thermal.flash)",
+        "hint": "thermal.flash binds on the coolprop-heos-v1, iapws95-v1 bases only, not on this revision's wilson-ig-v2; use syn001.ph_flash (lifted two-phase streams)",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "file:benchmarks/s11/thermal/TH-V1.json",
+       "route": {
+        "no_route": "unsupported(model_unsupported(thermal.flash)); unsupported(the structural analysis binds the registered SYN-001 revisions only; this revision uses models it does not know (T01 specification §5, §16))"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(thermal.flash)",
+     "reason": "lifted"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "thermal.flash",
+   "provider": "wilson-ig-v2",
+   "registry_admits": false
+  },
+  "thermal.heater x coolprop-heos-v1": {
+   "env": {
+    "coolprop_extra_absent": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "basis_unavailable(coolprop-heos-v1)",
+        "hint": "the coolprop extra is not installed (pip install openflowsheet[coolprop])",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "native",
+       "revision": "file:benchmarks/s11/thermal/TH-C2.json",
+       "route": {
+        "no_route": "unsupported(basis_unavailable(coolprop-heos-v1)); unsupported(the structural analysis binds the registered SYN-001 revisions only; this revision uses models it does not know (T01 specification §5, §16))"
+       }
+      }
+     ],
+     "class": "refused_basis",
+     "detail": "basis_unavailable(coolprop-heos-v1)"
+    },
+    "coolprop_extra_present": {
+     "attempts": [
+      {
+       "bind": "bound",
+       "probe": "native",
+       "revision": "file:benchmarks/s11/thermal/TH-C2.json",
+       "route": {
+        "reason": null,
+        "solve_path": "revision_eo"
+       },
+       "solve": {
+        "checks_not_passed": [
+         "independent_split.S3:not_applicable",
+         "independent_split.S4:not_applicable",
+         "independent_split.S5:not_applicable"
+        ],
+        "outcome": "CONVERGED",
+        "verification_status": "VERIFIED"
+       }
+      }
+     ],
+     "class": "solved_verified",
+     "detail": "CONVERGED"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "thermal.heater",
+   "provider": "coolprop-heos-v1",
+   "registry_admits": true
+  },
+  "thermal.heater x iapws95-v1": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": "bound",
+       "probe": "native",
+       "revision": "file:benchmarks/s11/thermal/TH-C1.json",
+       "route": {
+        "reason": null,
+        "solve_path": "revision_eo"
+       },
+       "solve": {
+        "checks_not_passed": [
+         "independent_split.S4:not_applicable",
+         "independent_split.S5:not_applicable"
+        ],
+        "outcome": "CONVERGED",
+        "verification_status": "VERIFIED"
+       }
+      }
+     ],
+     "class": "solved_verified",
+     "detail": "CONVERGED"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "thermal.heater",
+   "provider": "iapws95-v1",
+   "registry_admits": true
+  },
+  "thermal.heater x pr-c1-v1": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(thermal.heater)",
+        "hint": "thermal.heater binds on the coolprop-heos-v1, iapws95-v1 bases only, not on this revision's pr-c1-v1; thermal.* needs a provider with s (SYN-001: none; pr-c1-v1: vapour-only, no s)",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "file:benchmarks/s11/thermal/TH-C1.json",
+       "route": {
+        "no_route": "unsupported(model_unsupported(thermal.heater)); unsupported(the structural analysis binds the registered SYN-001 revisions only; this revision uses models it does not know (T01 specification §5, §16))"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(thermal.heater)",
+     "reason": "no_entropy"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "thermal.heater",
+   "provider": "pr-c1-v1",
+   "registry_admits": false
+  },
+  "thermal.heater x syn001": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(thermal.heater)",
+        "hint": "thermal.heater binds on the coolprop-heos-v1, iapws95-v1 bases only, not on this revision's syn001; thermal.* needs a provider with s (SYN-001: none; pr-c1-v1: vapour-only, no s)",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "file:benchmarks/s11/thermal/TH-C1.json",
+       "route": {
+        "no_route": "unsupported(model_unsupported(thermal.heater)); unsupported(the structural analysis binds the registered SYN-001 revisions only; this revision uses models it does not know (T01 specification §5, §16))"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(thermal.heater)",
+     "reason": "no_entropy"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "thermal.heater",
+   "provider": "syn001",
+   "registry_admits": false
+  },
+  "thermal.heater x wilson-ig-v2": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(thermal.heater)",
+        "hint": "thermal.heater binds on the coolprop-heos-v1, iapws95-v1 bases only, not on this revision's wilson-ig-v2; use syn001.tp_heater (lifted two-phase streams)",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "file:benchmarks/s11/thermal/TH-C1.json",
+       "route": {
+        "no_route": "unsupported(model_unsupported(thermal.heater)); unsupported(the structural analysis binds the registered SYN-001 revisions only; this revision uses models it does not know (T01 specification §5, §16))"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(thermal.heater)",
+     "reason": "lifted"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "thermal.heater",
+   "provider": "wilson-ig-v2",
+   "registry_admits": false
+  },
+  "thermal.mixer x coolprop-heos-v1": {
+   "env": {
+    "coolprop_extra_absent": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "basis_unavailable(coolprop-heos-v1)",
+        "hint": "the coolprop extra is not installed (pip install openflowsheet[coolprop])",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "constructed",
+       "revision": "file:benchmarks/s11/thermal/TH-R1.json",
+       "route": {
+        "no_route": "unsupported(basis_unavailable(coolprop-heos-v1)); unsupported(the structural analysis binds the registered SYN-001 revisions only; this revision uses models it does not know (T01 specification §5, §16))"
+       }
+      }
+     ],
+     "class": "refused_basis",
+     "detail": "basis_unavailable(coolprop-heos-v1)"
+    },
+    "coolprop_extra_present": {
+     "attempts": [
+      {
+       "bind": "bound",
+       "probe": "constructed",
+       "revision": "file:benchmarks/s11/thermal/TH-R1.json",
+       "route": {
+        "reason": null,
+        "solve_path": "revision_eo"
+       },
+       "solve": {
+        "checks_not_passed": [
+         "independent_split.S3:not_applicable",
+         "independent_split.S4:not_applicable",
+         "independent_split.S5:not_applicable",
+         "independent_split.S6:not_applicable"
+        ],
+        "outcome": "CONVERGED",
+        "verification_status": "VERIFIED"
+       }
+      }
+     ],
+     "class": "solved_verified",
+     "detail": "CONVERGED"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "thermal.mixer",
+   "provider": "coolprop-heos-v1",
+   "registry_admits": true
+  },
+  "thermal.mixer x iapws95-v1": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": "bound",
+       "probe": "native",
+       "revision": "file:benchmarks/s11/thermal/TH-R1.json",
+       "route": {
+        "reason": null,
+        "solve_path": "revision_eo"
+       },
+       "solve": {
+        "checks_not_passed": [
+         "independent_split.S3:not_applicable",
+         "independent_split.S4:not_applicable",
+         "independent_split.S5:not_applicable",
+         "independent_split.S6:not_applicable"
+        ],
+        "outcome": "CONVERGED",
+        "verification_status": "VERIFIED"
+       }
+      }
+     ],
+     "class": "solved_verified",
+     "detail": "CONVERGED"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "thermal.mixer",
+   "provider": "iapws95-v1",
+   "registry_admits": true
+  },
+  "thermal.mixer x pr-c1-v1": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(thermal.mixer)",
+        "hint": "thermal.mixer binds on the coolprop-heos-v1, iapws95-v1 bases only, not on this revision's pr-c1-v1; thermal.* needs a provider with s (SYN-001: none; pr-c1-v1: vapour-only, no s)",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "file:benchmarks/s11/thermal/TH-R1.json",
+       "route": {
+        "no_route": "unsupported(model_unsupported(thermal.mixer)); unsupported(the structural analysis binds the registered SYN-001 revisions only; this revision uses models it does not know (T01 specification §5, §16))"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(thermal.mixer)",
+     "reason": "no_entropy"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "thermal.mixer",
+   "provider": "pr-c1-v1",
+   "registry_admits": false
+  },
+  "thermal.mixer x syn001": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(thermal.mixer)",
+        "hint": "thermal.mixer binds on the coolprop-heos-v1, iapws95-v1 bases only, not on this revision's syn001; thermal.* needs a provider with s (SYN-001: none; pr-c1-v1: vapour-only, no s)",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "file:benchmarks/s11/thermal/TH-R1.json",
+       "route": {
+        "no_route": "unsupported(model_unsupported(thermal.mixer)); unsupported(the structural analysis binds the registered SYN-001 revisions only; this revision uses models it does not know (T01 specification §5, §16))"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(thermal.mixer)",
+     "reason": "no_entropy"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "thermal.mixer",
+   "provider": "syn001",
+   "registry_admits": false
+  },
+  "thermal.mixer x wilson-ig-v2": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(thermal.mixer)",
+        "hint": "thermal.mixer binds on the coolprop-heos-v1, iapws95-v1 bases only, not on this revision's wilson-ig-v2; use syn001.adiabatic_mixer (lifted two-phase streams)",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "file:benchmarks/s11/thermal/TH-R1.json",
+       "route": {
+        "no_route": "unsupported(model_unsupported(thermal.mixer)); unsupported(the structural analysis binds the registered SYN-001 revisions only; this revision uses models it does not know (T01 specification §5, §16))"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(thermal.mixer)",
+     "reason": "lifted"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "thermal.mixer",
+   "provider": "wilson-ig-v2",
+   "registry_admits": false
+  },
+  "thermal.pump x coolprop-heos-v1": {
+   "env": {
+    "coolprop_extra_absent": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "basis_unavailable(coolprop-heos-v1)",
+        "hint": "the coolprop extra is not installed (pip install openflowsheet[coolprop])",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "constructed",
+       "revision": "file:benchmarks/s11/thermal/TH-C1.json",
+       "route": {
+        "no_route": "unsupported(basis_unavailable(coolprop-heos-v1)); unsupported(the structural analysis binds the registered SYN-001 revisions only; this revision uses models it does not know (T01 specification §5, §16))"
+       }
+      }
+     ],
+     "class": "refused_basis",
+     "detail": "basis_unavailable(coolprop-heos-v1)"
+    },
+    "coolprop_extra_present": {
+     "attempts": [
+      {
+       "bind": "bound",
+       "probe": "constructed",
+       "revision": "file:benchmarks/s11/thermal/TH-C1.json",
+       "route": {
+        "reason": null,
+        "solve_path": "revision_eo"
+       },
+       "solve": {
+        "checks_not_passed": [
+         "independent_split.S5:not_applicable"
+        ],
+        "outcome": "CONVERGED",
+        "verification_status": "VERIFIED"
+       }
+      }
+     ],
+     "class": "solved_verified",
+     "detail": "CONVERGED"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "thermal.pump",
+   "provider": "coolprop-heos-v1",
+   "registry_admits": true
+  },
+  "thermal.pump x iapws95-v1": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": "bound",
+       "probe": "native",
+       "revision": "file:benchmarks/s11/thermal/TH-C1.json",
+       "route": {
+        "reason": null,
+        "solve_path": "revision_eo"
+       },
+       "solve": {
+        "checks_not_passed": [
+         "independent_split.S4:not_applicable",
+         "independent_split.S5:not_applicable"
+        ],
+        "outcome": "CONVERGED",
+        "verification_status": "VERIFIED"
+       }
+      }
+     ],
+     "class": "solved_verified",
+     "detail": "CONVERGED"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "thermal.pump",
+   "provider": "iapws95-v1",
+   "registry_admits": true
+  },
+  "thermal.pump x pr-c1-v1": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(thermal.pump)",
+        "hint": "thermal.pump binds on the coolprop-heos-v1, iapws95-v1 bases only, not on this revision's pr-c1-v1; thermal.* needs a provider with s (SYN-001: none; pr-c1-v1: vapour-only, no s)",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "file:benchmarks/s11/thermal/TH-C1.json",
+       "route": {
+        "no_route": "unsupported(model_unsupported(thermal.pump)); unsupported(the structural analysis binds the registered SYN-001 revisions only; this revision uses models it does not know (T01 specification §5, §16))"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(thermal.pump)",
+     "reason": "no_entropy"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "thermal.pump",
+   "provider": "pr-c1-v1",
+   "registry_admits": false
+  },
+  "thermal.pump x syn001": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(thermal.pump)",
+        "hint": "thermal.pump binds on the coolprop-heos-v1, iapws95-v1 bases only, not on this revision's syn001; thermal.* needs a provider with s (SYN-001: none; pr-c1-v1: vapour-only, no s)",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "file:benchmarks/s11/thermal/TH-C1.json",
+       "route": {
+        "no_route": "unsupported(model_unsupported(thermal.pump)); unsupported(the structural analysis binds the registered SYN-001 revisions only; this revision uses models it does not know (T01 specification §5, §16))"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(thermal.pump)",
+     "reason": "no_entropy"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "thermal.pump",
+   "provider": "syn001",
+   "registry_admits": false
+  },
+  "thermal.pump x wilson-ig-v2": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(thermal.pump)",
+        "hint": "thermal.pump binds on the coolprop-heos-v1, iapws95-v1 bases only, not on this revision's wilson-ig-v2; wilson-ig-v2 has no liquid volume, which a pump needs (L-GP-1)",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "file:benchmarks/s11/thermal/TH-C1.json",
+       "route": {
+        "no_route": "unsupported(model_unsupported(thermal.pump)); unsupported(the structural analysis binds the registered SYN-001 revisions only; this revision uses models it does not know (T01 specification §5, §16))"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(thermal.pump)",
+     "reason": "no_volume"
+    }
+   },
+   "lifted_by_s10c_s11": "no: R-819 keeps the pump refused on Wilson (X10)",
+   "model": "thermal.pump",
+   "provider": "wilson-ig-v2",
+   "registry_admits": false
+  },
+  "thermal.turbine x coolprop-heos-v1": {
+   "env": {
+    "coolprop_extra_absent": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "basis_unavailable(coolprop-heos-v1)",
+        "hint": "the coolprop extra is not installed (pip install openflowsheet[coolprop])",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "constructed",
+       "revision": "file:benchmarks/s11/thermal/TH-C1.json",
+       "route": {
+        "no_route": "unsupported(basis_unavailable(coolprop-heos-v1)); unsupported(the structural analysis binds the registered SYN-001 revisions only; this revision uses models it does not know (T01 specification §5, §16))"
+       }
+      }
+     ],
+     "class": "refused_basis",
+     "detail": "basis_unavailable(coolprop-heos-v1)"
+    },
+    "coolprop_extra_present": {
+     "attempts": [
+      {
+       "bind": "bound",
+       "probe": "constructed",
+       "revision": "file:benchmarks/s11/thermal/TH-C1.json",
+       "route": {
+        "reason": null,
+        "solve_path": "revision_eo"
+       },
+       "solve": {
+        "checks_not_passed": [
+         "independent_split.S5:not_applicable"
+        ],
+        "outcome": "CONVERGED",
+        "verification_status": "VERIFIED"
+       }
+      }
+     ],
+     "class": "solved_verified",
+     "detail": "CONVERGED"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "thermal.turbine",
+   "provider": "coolprop-heos-v1",
+   "registry_admits": true
+  },
+  "thermal.turbine x iapws95-v1": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": "bound",
+       "probe": "native",
+       "revision": "file:benchmarks/s11/thermal/TH-C1.json",
+       "route": {
+        "reason": null,
+        "solve_path": "revision_eo"
+       },
+       "solve": {
+        "checks_not_passed": [
+         "independent_split.S4:not_applicable",
+         "independent_split.S5:not_applicable"
+        ],
+        "outcome": "CONVERGED",
+        "verification_status": "VERIFIED"
+       }
+      }
+     ],
+     "class": "solved_verified",
+     "detail": "CONVERGED"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "thermal.turbine",
+   "provider": "iapws95-v1",
+   "registry_admits": true
+  },
+  "thermal.turbine x pr-c1-v1": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(thermal.turbine)",
+        "hint": "thermal.turbine binds on the coolprop-heos-v1, iapws95-v1, wilson-ig-v2 bases only, not on this revision's pr-c1-v1; thermal.* needs a provider with s (SYN-001: none; pr-c1-v1: vapour-only, no s)",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "file:benchmarks/s11/gp/GP-M2.json",
+       "route": {
+        "no_route": "unsupported(model_unsupported(thermal.turbine)); unsupported(the structural analysis binds the registered SYN-001 revisions only; this revision uses models it does not know (T01 specification §5, §16))"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(thermal.turbine)",
+     "reason": "no_entropy"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "thermal.turbine",
+   "provider": "pr-c1-v1",
+   "registry_admits": false
+  },
+  "thermal.turbine x syn001": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(thermal.turbine)",
+        "hint": "thermal.turbine binds on the coolprop-heos-v1, iapws95-v1, wilson-ig-v2 bases only, not on this revision's syn001; thermal.* needs a provider with s (SYN-001: none; pr-c1-v1: vapour-only, no s)",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "file:benchmarks/s11/gp/GP-M2.json",
+       "route": {
+        "no_route": "unsupported(model_unsupported(thermal.turbine)); unsupported(the structural analysis binds the registered SYN-001 revisions only; this revision uses models it does not know (T01 specification §5, §16))"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(thermal.turbine)",
+     "reason": "no_entropy"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "thermal.turbine",
+   "provider": "syn001",
+   "registry_admits": false
+  },
+  "thermal.turbine x wilson-ig-v2": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": "bound",
+       "probe": "native",
+       "revision": "file:benchmarks/s11/gp/GP-M2.json",
+       "route": {
+        "reason": null,
+        "solve_path": "revision_eo"
+       },
+       "solve": {
+        "failure": {
+         "message": "initializer_failed(M): isentropic_state_two_phase(M)",
+         "outcome": "INITIALIZATION_FAILED",
+         "taxonomy": "initialization and recycle failures"
+        },
+        "outcome": "INITIALIZATION_FAILED"
+       }
+      },
+      {
+       "bind": "bound",
+       "probe": "constructed",
+       "revision": "file:benchmarks/s11/gp/GP-M2.json",
+       "route": {
+        "reason": null,
+        "solve_path": "revision_eo"
+       },
+       "solve": {
+        "checks_not_passed": [],
+        "outcome": "CONVERGED",
+        "verification_status": "VERIFIED"
+       }
+      }
+     ],
+     "class": "solved_verified",
+     "detail": "CONVERGED"
+    }
+   },
+   "lifted_by_s10c_s11": "yes: S11 (R-819: refusing it rejected; L-GP-2)",
+   "model": "thermal.turbine",
+   "provider": "wilson-ig-v2",
+   "registry_admits": true
+  },
+  "thermal.valve x coolprop-heos-v1": {
+   "env": {
+    "coolprop_extra_absent": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "basis_unavailable(coolprop-heos-v1)",
+        "hint": "the coolprop extra is not installed (pip install openflowsheet[coolprop])",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "native",
+       "revision": "file:benchmarks/s11/thermal/TH-C2.json",
+       "route": {
+        "no_route": "unsupported(basis_unavailable(coolprop-heos-v1)); unsupported(the structural analysis binds the registered SYN-001 revisions only; this revision uses models it does not know (T01 specification §5, §16))"
+       }
+      }
+     ],
+     "class": "refused_basis",
+     "detail": "basis_unavailable(coolprop-heos-v1)"
+    },
+    "coolprop_extra_present": {
+     "attempts": [
+      {
+       "bind": "bound",
+       "probe": "native",
+       "revision": "file:benchmarks/s11/thermal/TH-C2.json",
+       "route": {
+        "reason": null,
+        "solve_path": "revision_eo"
+       },
+       "solve": {
+        "checks_not_passed": [
+         "independent_split.S3:not_applicable",
+         "independent_split.S4:not_applicable",
+         "independent_split.S5:not_applicable"
+        ],
+        "outcome": "CONVERGED",
+        "verification_status": "VERIFIED"
+       }
+      }
+     ],
+     "class": "solved_verified",
+     "detail": "CONVERGED"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "thermal.valve",
+   "provider": "coolprop-heos-v1",
+   "registry_admits": true
+  },
+  "thermal.valve x iapws95-v1": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": "bound",
+       "probe": "native",
+       "revision": "file:benchmarks/s11/thermal/TH-V1.json",
+       "route": {
+        "reason": null,
+        "solve_path": "revision_eo"
+       },
+       "solve": {
+        "checks_not_passed": [
+         "independent_split.S2:not_applicable",
+         "independent_split.S3:not_applicable",
+         "independent_split.S4:not_applicable"
+        ],
+        "outcome": "CONVERGED",
+        "verification_status": "VERIFIED"
+       }
+      }
+     ],
+     "class": "solved_verified",
+     "detail": "CONVERGED"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "thermal.valve",
+   "provider": "iapws95-v1",
+   "registry_admits": true
+  },
+  "thermal.valve x pr-c1-v1": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(thermal.valve)",
+        "hint": "thermal.valve binds on the coolprop-heos-v1, iapws95-v1 bases only, not on this revision's pr-c1-v1; thermal.* needs a provider with s (SYN-001: none; pr-c1-v1: vapour-only, no s)",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "file:benchmarks/s11/thermal/TH-V1.json",
+       "route": {
+        "no_route": "unsupported(model_unsupported(thermal.valve)); unsupported(the structural analysis binds the registered SYN-001 revisions only; this revision uses models it does not know (T01 specification §5, §16))"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(thermal.valve)",
+     "reason": "no_entropy"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "thermal.valve",
+   "provider": "pr-c1-v1",
+   "registry_admits": false
+  },
+  "thermal.valve x syn001": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(thermal.valve)",
+        "hint": "thermal.valve binds on the coolprop-heos-v1, iapws95-v1 bases only, not on this revision's syn001; thermal.* needs a provider with s (SYN-001: none; pr-c1-v1: vapour-only, no s)",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "file:benchmarks/s11/thermal/TH-V1.json",
+       "route": {
+        "no_route": "unsupported(model_unsupported(thermal.valve)); unsupported(the structural analysis binds the registered SYN-001 revisions only; this revision uses models it does not know (T01 specification §5, §16))"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(thermal.valve)",
+     "reason": "no_entropy"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "thermal.valve",
+   "provider": "syn001",
+   "registry_admits": false
+  },
+  "thermal.valve x wilson-ig-v2": {
+   "env": {
+    "any": {
+     "attempts": [
+      {
+       "bind": {
+        "code": "model_unsupported(thermal.valve)",
+        "hint": "thermal.valve binds on the coolprop-heos-v1, iapws95-v1 bases only, not on this revision's wilson-ig-v2; use syn001.valve (lifted two-phase streams)",
+        "implicated": [],
+        "kind": "unsupported"
+       },
+       "probe": "rebased",
+       "revision": "file:benchmarks/s11/thermal/TH-V1.json",
+       "route": {
+        "no_route": "unsupported(model_unsupported(thermal.valve)); unsupported(the structural analysis binds the registered SYN-001 revisions only; this revision uses models it does not know (T01 specification §5, §16))"
+       }
+      }
+     ],
+     "class": "refused_admission",
+     "detail": "model_unsupported(thermal.valve)",
+     "reason": "lifted"
+    }
+   },
+   "lifted_by_s10c_s11": null,
+   "model": "thermal.valve",
+   "provider": "wilson-ig-v2",
+   "registry_admits": false
+  }
+ },
+ "probe": {
+  "coolprop_fluid": "R134a",
+  "max_tries": 3
+ },
+ "reason_references": {
+  "None": "R-288 (a model binds on the bases MODEL_BASES lists; M02 design note §14.4 D3)",
+  "c1_physics": "R-288; ADR 0050 D3 (the c1.* units carry pr-c1-v1's own physics)",
+  "column_pure": "R-631; S11 design §4.7, §9 (a pure fluid has no stage composition)",
+  "column_vapour": "R-631, R-760 (column allow-list); S02 §0 (pr-c1-v1 vapour-only)",
+  "declared_regime": "R-288; ADR 0051; S11 units design §4.7",
+  "gamma_phi": "R-288; L-GP-1 (S11 units design §4.5, §4.7: γ–φ faces for five units only)",
+  "lifted": "R-288; S11 units design §4.7 (lifted two-phase streams)",
+  "no_entropy": "R-288; S11 units design §4.7 (thermal.* needs s)",
+  "no_volume": "R-819 (the pump stays refused on Wilson); L-GP-1",
+  "pure_fluid": "R-288; ADR 0051 (pure-fluid streams are declared-regime); S11 design §4.4"
+ },
+ "schema": "x10-inventory-v1",
+ "summary": {
+  "any": {
+   "bound_not_solved": 2,
+   "refused_admission": 76,
+   "solved_not_verified": 1,
+   "solved_verified": 41
+  },
+  "coolprop_extra_absent": {
+   "refused_admission": 20,
+   "refused_basis": 10
+  },
+  "coolprop_extra_present": {
+   "refused_admission": 20,
+   "solved_verified": 10
+  }
+ }
+}
