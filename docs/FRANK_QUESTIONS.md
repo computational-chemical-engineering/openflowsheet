@@ -383,3 +383,29 @@ ADR 0055 D5 says each release asks you one message. The release procedure (RP) p
 the verdict, asks for lapsed decision items and any claim-set change; the second, after `Judged`, asks for each failing
 clause without a standing acceptance (at 0.4.0, V14 (b)). An empty message is not sent. One message after the verdicts would bring back the `BLOCKED` row and 0.3.0's re-judgement round.
 Default (reviewer's recommendation, `docs/reviews/RP-review.md` ruling 1): keep two, the first only when non-empty.
+
+## X05 — replay from the wheel: three choices (2026-11-07; ADR 0069 §11, Proposed)
+
+An installed `openflowsheet` will replay its own bundles once it checks that its nine runtime dependencies are at the
+locked versions. Defaults, already acted on unless you say otherwise:
+- **Q-F1:** pin the four transitive runtime dependencies (attrs, jsonschema-specifications, referencing, rpds-py)
+  exactly in `pyproject.toml`, so a plain `pip install openflowsheet` can replay its bundles exactly. Default: yes.
+  Cost: users can't freely upgrade those four alongside it.
+- **Q-F2:** warn when a bundle is written without a verified lock? Default: no; decide it together with the messages
+  work (MSG).
+- **Q-F3:** record the writer's lock findings inside the bundle (a schema change)? Default: no; they appear in the
+  replay reason only.
+Also: accept ADR 0069 (it amends ADR 0007's replay-mode rule).
+
+## X02 — warm starts for external and coupled units (2026-11-07; ADR 0070 Proposed, ADR 0019 Am. 15)
+
+Design `docs/design/X02-warm-starts.md`. Defaults, acted on unless you say otherwise:
+- **Q1:** build a warm-start variant of the reactor (`pymrm-6089593-g2-nz800-s123w-v1`; skips the first of three
+  solver stages when given a start; measured gain about 11–15 % per reactor call)? Default: yes. Its cold runs must
+  match today's v3 variant bit for bit.
+- **Q2:** extend the existing `T08-warm-v1` policy to coupled starts? Default: no (a start is declared per solve).
+- **Q3:** allow starts on the `experiment` operation? Default: no.
+- **Q4:** integration with studies: outside X02.
+- **Q5:** accept ADR 0070 and Amendment 15? Default: build on Proposed, merge after your acceptance.
+- **Q6:** the variant id as given. Default: yes.
+

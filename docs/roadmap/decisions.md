@@ -185,3 +185,48 @@ Alternative: all should-fix at the cut. Reversible by: dropping those commits.
 DECISION: F-8 (up to two messages to Frank per release, ADR D5 says one) → keep two, first only when non-empty (reviewer's
 recommendation), asked of Frank. Reversible by: Frank's answer + an RP amendment.
 Brief `docs/briefs/REL-build-WO-R7.md`.
+
+## 2026-11-07 — workstation reboot; restart
+
+Both engineers died with the reboot. State recovered from the worktrees:
+- **MSG** WO-12 complete and pushed (`35403f42`): §4.2.6 list complete (68 codes pinned), MSG-G0 PASS (b, d), R-943,
+  manifest `evidence/MSG/9c76b939…` `implemented`. Push CI 42217363836: both `check` legs and `default-install` fail on
+  exactly one test, `explain: human pending` (18196 / 18168 passed). Only Frank's `explain.md` review blocks `tested`.
+- **RP** WO-R7 code complete but unpushed at the reboot (`fd28ff7b`, now pushed): A-1…A-8 (R-942…R-949), ADR 0055
+  restated (M-3), REL.A20 PASS with controls, M-1 mutation now 6 fail (was 0), S-1…S-5, S-7, C-12, C-23…C-29. F0 PASS.
+  Full gate restarted by the orchestrator (load ~16); then the manifest re-take.
+- **Register collision:** `wp/MSG` uses R-942 (Q1 amendment) and R-943 (c_4); `wp/RP` uses R-942…R-949. Whichever
+  merges second renumbers its entries (and every reference) to the next free numbers.
+DECISION: no second design-lane pass over WO-12's 51 completed entry texts. Alternative: a fresh reviewer prose check.
+Reversible by: running that check before 0.4.0's cut (user-facing text, no numerics).
+DECISION: X05 starts now (no prerequisite; roadmap design pass "none" but it touches replay identity and lifts R-140):
+recon → specifier for the ADR and test spec → build. Alternative: wait for RP/MSG merges. Reversible by: parking it.
+
+## 2026-11-07 — second crash; restart
+
+The workstation crash killed RP's full gate (at 55 %, no result) and the X05 specifier (context ~255k; it left
+`docs/derivations/scripts/x05_reference.py` untracked, no ADR). Restarted: RP's full gate at `fd28ff7b` (orchestrator,
+background); a fresh X05 specifier that adopts or revises the predecessor's script and writes ADR 0069.
+DECISION: fresh specifier rather than resuming the crashed one. Alternative: SendMessage to the 255k-context agent.
+Reversible by: n/a (the script carries its decisions; the fresh agent may revise them and must say so).
+DECISION: X02 recon now (architect pass next, roadmap). Alternative: wait. Reversible by: parking it.
+
+## 2026-11-07 — X05 ADR 0069 (`6b12ab54`, `004d7faa`) → build
+
+ADR 0069 Proposed: packaged lock via symlink (D1), exact version check over a fixed 9-distribution runtime closure
+(D2/D3), same hash in checkout and wheel (D4), no schema change (D5), T08.A19 retired → X05.A11, A13–A17 (D7);
+25 assertions, 36 cases; reference script `--check` PASS. Frank: Q-F1…F3 (defaults yes/no/no) + acceptance.
+DECISION: build X05 now on `wp/X05` (WO-1…3, one Opus engineer, then a reviewer) before Frank accepts ADR 0069, with
+Q-F1's pins as an isolated commit. Alternative: wait for acceptance. Reversible by: not merging; reverting the pin commit.
+CPU rule (hub, 2026-11-07): one full gate at a time on TRS2; ≤ ~36 busy cores.
+
+## 2026-11-07 — X02 design (`6b807f0e`, `f9e72ff5`): note + ADR 0070 (Am. 15)
+
+Found a shipped defect (Part C): under `T08-warm-v1` a coupled run with > 1 outer iteration does not record its first
+warm start (bundle from the final inner run, `revision_run.py:837`; label `route_initializer`, `coupled_run.py:682`);
+its replay starts cold. Design: `solve_body.warm_start {job_id?, coupling?}` (D1), outer start checked then accepted or
+recorded rejected (D3), warm reactor variant with `child_warm.py` loading the pinned `child.py` (D4), warm experiment
+key member `start.profile_sha256` only when used (D5), certificate unchanged + disclosure (D6). WO-1…6; G0 cold
+identity incl. every recorded experiment key; G5 on the workstation. Frank Q1…Q6 (defaults).
+DECISION: X02 build waits for a free agent slot after RP's manifest re-take (RP is nearer to merge and needed for the
+0.4.0 cut). Alternative: start X02 WO-1 now and queue RP. Reversible by: reordering.
