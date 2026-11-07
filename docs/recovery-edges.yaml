@@ -346,13 +346,17 @@ rows:
     enabled: policy-only
     labels:
       - event:initializer_rejected@openflowsheet.orchestrator.executor._reject_initializer
+      - event:initializer_rejected@openflowsheet.application.coupled_run.solve_coupled
     failure_tests:
       - tests/test_t08_w4_warm_starts.py::test_b43_an_incompatible_candidate_is_rejected_to_the_traversal
       - tests/test_t08_w4_warm_starts.py::test_b44_a_tampered_candidate_is_rejected_for_integrity
+      - tests/test_x02_wo3_outer_start.py::test_g3c_a_failing_opening_is_rejected_and_the_coupling_starts_cold
+      - tests/test_x02_wo3_outer_start.py::test_g3d_an_iterate_on_another_instance_is_rejected_for_compatibility
     unchanged_physics:
       kind: identity_compared
       tests:
         - tests/test_t08_w4_warm_starts.py::test_b43_an_incompatible_candidate_is_rejected_to_the_traversal
+        - tests/test_x02_wo3_outer_start.py::test_g3c_a_failing_opening_is_rejected_and_the_coupling_starts_cold
       note: >-
         After the rejection, every artifact except events and policy equals the same revision's
         default run, up to the policy id: `revision.json` and `solution-certificate.json`
@@ -365,7 +369,13 @@ rows:
       source is the only place this edge runs. Under the shared producer only
       `warm_start_rejected(<check>)` is this edge (a next source runs); E3b's P4 rejection and the
       terminal rejections (`missing_initial_guess`, a failed traversal) start no next source and
-      are not edges (T08 review 2, Ruling 10).
+      are not edges (T08 review 2, Ruling 10). ADR 0070 D3 (X02 design note §5.4, §5.9): the
+      coupled route's declared outer start w₀ has the same edge — a w₀ rejected for
+      `coupling_integrity`, `coupling_compatibility` or `coupling_opening` is recorded and the
+      coupling starts from the variant's `coupling.initial`; its `external-coupling.json` is then
+      byte-equal to a cold run's (G3 (c), (d)). The same producer records a rejected k = 0 child
+      start (`external_compatibility`, `external_integrity`), after which that unit's k = 0
+      experiment runs cold.
 
   - id: E10
     title: 'verifier: fresh-flash check at x_final when the projection is refused'

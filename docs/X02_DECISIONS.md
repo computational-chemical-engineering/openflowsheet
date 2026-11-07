@@ -72,3 +72,9 @@ Format: question → choice; alternative; reversible by; commit. Batched for the
 - **Observation (not a choice), for the reviewer.** `couple` opens at u = w₀/scales (§5.4), so `iterations[0].w` is
   fl(fl(w₀/s)·s): a declared iterate can move by an ulp (0.95 → 0.9499999999999998 at s = 0.1). A job source's w is
   itself u·s and round-trips bitwise (G3 (a) measured). Keeping u = w₀/s as the note states.
+- **D-14 — The outer start's `initializer_rejected` producer joins row E9 of `docs/recovery-edges.yaml`.** The note
+  (§5.9) puts `warm_start_rejected(coupling_…)` on `initializer_rejected` events; T08 A33's bijection requires every
+  producer of that kind in a row. It is E9's edge (a start rejected → the next source, here `coupling.initial`), so
+  the label `event:initializer_rejected@openflowsheet.application.coupled_run.solve_coupled` is added to E9 with
+  G3 (c)/(d) as failure and unchanged-physics tests. Alternative: a new row E14. **For the reviewer** (the inventory
+  is a T08 release-spec artifact).
