@@ -230,3 +230,33 @@ key member `start.profile_sha256` only when used (D5), certificate unchanged + d
 identity incl. every recorded experiment key; G5 on the workstation. Frank Q1…Q6 (defaults).
 DECISION: X02 build waits for a free agent slot after RP's manifest re-take (RP is nearer to merge and needed for the
 0.4.0 cut). Alternative: start X02 WO-1 now and queue RP. Reversible by: reordering.
+
+## 2026-11-07 — RP manifest `tested`; X02 WO-1/2 done
+
+RP: manifest `evidence/S15/fd28ff7b…` `tested` (REL.A01–A10, A17–A20 PASS; gate PASS 15070 at `fd28ff7b`; CI
+42320544169 green); main merged into `wp/RP` (`98540811`, F0 PASS); CI on the merge head running, then merge to main.
+X02 (`wp/X02`): WO-1 fixed the shipped defect (failing-first: bundle lacked `warm_start`, reproduce MISMATCH; after: 5/5
+incl. control), WO-2 contract (Am. 15 schemas, admission A1/A2, `explicit-v1`, c_4 link `0af895a0…`, Q26 pins). F0 PASS.
+Questions batched for the X02 reviewer: provisional R-950; c_4 clash with `wp/MSG` (second merger becomes c_5);
+x₀ rejection reason form. Next: WO-3 (outer start), WO-4 (external-start plumbing) on a fresh engineer.
+
+## 2026-11-07 — RP merged (`ad1ffd74`); X02 WO-3/4 done
+
+RP merged into main (CI 42374299572 green at `98540811`; F0 PASS on main). X02 WO-3 (outer start; G3 a–f pass: restart
+1 outer iteration vs 2, w bitwise equal; replay MATCH) and WO-4 (external-start plumbing; G4 a–f on the synthetic warm
+child; G0: 163 recorded experiment keys recompute with 0 differences; F0 PASS). For the X02 reviewer: D-11 (the note's
+G3 (c) premise false — every grid point converges on the registered loop; test uses a lowered H₂ make-up), D-13 (a
+declared iterate can move one ulp through u = w₀/s), D-14 (recovery-edges E9 row), D-20, D-21 (global-state allowlist
+35 → 36). Next: WO-5 (warm reactor variant + workstation campaign), fresh engineer, within the CPU rule.
+
+## 2026-11-07 — X02 WO-5 measured: the warm reactor variant does not pay
+
+G5 (`evidence/X02/69c4a24d…`): (a) cold new variant = v3 bitwise at 8/8 inlets; (b) warm vs cold max rel 1.92e-7
+(> 1e-7; registering against `precision_floor_rel` 1e-6 breaks I3's decade gap); (c) warm ~21 % slower overall (287 vs
+133 s, 383 vs 420 s) — the note's §3.1 premise (10–15 % faster) is false; (e) Part A on v3: restart 1 outer iteration,
+1 call, 25 s vs 4 iterations, 175 s cold. G5d not run.
+DECISION: do not register the warm variant in X02; Frank's Q1 default flips to no (re-asked with the numbers). The X02
+reviewer rules whether `child_warm.py` stays in `src/` unregistered or leaves the package (campaign script and records
+kept as evidence). Alternative: register with a manifest note / raise the floor. Reversible by: registering later with
+the handoff's commands.
+Next: the single X02 reviewer pass (WO-1…5 + batched questions), then WO-6 close-out (fixes, full gate, manifest).

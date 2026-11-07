@@ -400,9 +400,11 @@ Also: accept ADR 0069 (it amends ADR 0007's replay-mode rule).
 ## X02 — warm starts for external and coupled units (2026-11-07; ADR 0070 Proposed, ADR 0019 Am. 15)
 
 Design `docs/design/X02-warm-starts.md`. Defaults, acted on unless you say otherwise:
-- **Q1:** build a warm-start variant of the reactor (`pymrm-6089593-g2-nz800-s123w-v1`; skips the first of three
-  solver stages when given a start; measured gain about 11–15 % per reactor call)? Default: yes. Its cold runs must
-  match today's v3 variant bit for bit.
+- **Q1 (re-asked 2026-11-07 after measurement):** register a warm-start variant of the reactor
+  (`pymrm-6089593-g2-nz800-s123w-v1`)? The design expected 11–15 % faster calls. Measured (G5, 8 inlets): cold runs
+  match today's v3 bit for bit, but warm calls are **about 21 % slower overall** (later stages and certificates ran
+  longer) and differ from cold by up to 1.9e-7 relative. Default now: **no** — do not register it; keep the gains
+  that work (restarting a coupled run from a previous solution: 1 reactor call instead of 4 on the real loop).
 - **Q2:** extend the existing `T08-warm-v1` policy to coupled starts? Default: no (a start is declared per solve).
 - **Q3:** allow starts on the `experiment` operation? Default: no.
 - **Q4:** integration with studies: outside X02.
