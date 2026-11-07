@@ -315,3 +315,72 @@ Frank OPT Q1–Q8 (defaults). Architect least sure of: F1 bit-identical last-att
 vs `orchestrator/region.py`, F3 Ipopt inline vs worker identity (G12), F4 thermal port regimes — for the reviewer.
 DECISION: OPT build starts now on `wp/OPT` (WO-1) while X02 closes and X05 waits for CI. Alternative: wait for Frank's
 Q1–Q8. Reversible by: the defaults are isolated per WO; a late answer reworks the WO it touches.
+
+## 2026-11-07 — X02 WO-7 done (`wp/X02` `c05a9e84`); OPT WO-1/WO-2 done (`wp/OPT` `508086b0`)
+
+X02: gate PASS 15138 at `2ab11b66`; F0 PASS; CI 42398109849 / 42405646392 green; manifest
+`evidence/X02/2ab11b66…` `tested` (18 checks; G5b and G5d (iii) `fail` + accepted_fail, G5c not_applicable).
+DECISION: X02 D-33 (filed as `X02`, not `S16`) → accepted: ADR 0059 D1 (Accepted, R-938) admits `X[0-9]{2}`; my brief's
+premise was stale. Alternative: S16 alias (ADR 0059 rejects aliases). Reversible by: moving the directory in one commit.
+DECISION: X02 D-34 (`tested` with two `fail` checks of withdrawn claims, T08 precedent) → accepted; both failures are
+of claims the package no longer makes (warm variant unregistered, neighbour speed-up withdrawn). Alternative:
+`implemented`. Reversible by: Frank's X02 Q7 / a manifest re-take.
+X02 merges after Frank accepts ADR 0070 (Q5). OPT: WO-1 SYN-001 bit-identical (dump `cmp`, both envs), F0 PASS; WO-2
+F1 holds (8 cases, 0 entries differ), F2 holds for composition-independent K; D-12 (Q4′ refuses splits not judged by
+tp_margin) → for OPT's reviewer.
+
+## 2026-11-07 — X05 merged into main (`3e93c9a7`)
+
+No-squash merge of `wp/X05` `1e5b3252` (main had moved by docs only). Push CI 42405801772/42405801801 green; RC
+dispatch 42397255469 green; gate PASS 15138 at `830e7556`. On main after merge: F0 PASS (M1–M9), support matrix 0
+problems, harvest + X05 lock tests 54 passed. ADR 0069 stays Proposed; its register lines wait for Frank. Worktree
+removed.
+
+## 2026-11-07 — X10 inventory (`wp/X10` `c45e8e08`) and review (`827abed4`) → fix round
+
+150 pairs (30 models × 5 selectable providers): off CoolProp 41 VERIFIED, 1 UNVERIFIED, 2 bound-not-solved, 76
+refused, 0 errors; CoolProp 10 VERIFIED with the extra. Review: faithful measurement; M-1 — `c1.reactor_surrogate` on
+`benchmarks/m04/c1-surrogate.json` is UNVERIFIED on the user path (same policy `T06-revision-v2` as M04's test, which
+solves a different flowsheet): the derivative witness step h = 3e-5 mol/s is 14–21 % of the per-tube flows
+(J − FD falls 4× per halving: truncation, not a Jacobian defect) → harvest class E + support-matrix row. S-1…S-4, D-2
+wording. My brief's premise (a policy difference) was wrong.
+DECISION: open a design-lane follow-up "derivative-witness step relative to the state (small-flow `pr-c1-v1`
+revisions)" for the scaling/certificate policy owner, not inside X10. Alternative: fix in X10 (out of its measurement
+scope). Reversible by: folding it into X10 gaps (0.6).
+I stopped X10's first full gate (stale after the fix round); one gate runs after the fixes.
+
+## 2026-11-07 — OPT WO-3, WO-4, WO-4b done (`wp/OPT` `2dcb5772`)
+
+WO-3: request schema, Halton starts, static readiness, platform-aware probe (linux-x86_64 only), validate lift
+(library path; the application member waits for WO-6's surface link, D-19). WO-4/4b: optimiser on revision flowsheets;
+analytic gates vs mpmath (30 digits): OPT-A1 Q rel 1.0e-11, λ exact; OPT-A2/A2b all starts verified, errors ≤ 2.2e-10;
+OPT-N1 NOT_VERIFIED `PHASE_REGIME_CHANGED(U-PHF)`; legacy/coupled routes refused; OPT-C0 cost objective rel 1.0e-11,
+KKT verified. G2 SYN-001 identical both envs; F0 PASS; 765 + 196 tests. Open for the design lane: D-12, D-18, D-24,
+D-28, D-30, D-32.
+C-MW (297 columns) cannot verify: (1) components exactly zero at the start (ethanol) are unbounded by §4.2.3's
+`zero_at_start_pinned_by_regime` rule but are not pinned on C-MW → Ipopt drives them negative, twin DomainError;
+(2) its 19 held TWO_PHASE stages carry no margin → V4/V5 refuse.
+DECISION: continue with WO-5 (which builds §4.7's held mode and may settle (2)); put (1) — a false premise in §4.2.3 —
+and whatever of (2) WO-5 leaves to OPT's single reviewer pass, not a mid-build architect consult: C-MW is G17's
+performance record, not a pass/fail gate, and no analytic gate depends on it. Alternative: a fresh architect consult
+now. Reversible by: consulting before WO-6 if WO-5 finds the premise blocks it.
+
+## 2026-11-07 — OPT WO-5 (`wp/OPT` `826cc4c4`): G10 fails as designed → architect consult
+
+WO-5 built the phase rows, held mode, `phase_bounds_active`; G1/G2 PASS; G7/G8/C0 within tolerance (not byte-identical:
+new LIQUID rows); G10's Ipopt part passes (|T − T_b| = 9.1e-10 K) but V1's cold re-solve at the bubble point is
+ILL_CONDITIONED (rcond ≈ 2.27e-6·ΔQ; branches meet) → `NOT_VERIFIED` (D-37, xfail strict). C-MW: TWO_PHASE null
+margins still fail V4/V5 (D-12); zero-at-start ethanol still unbounded.
+DECISION: consult a fresh architect now (brief `docs/briefs/OPT-architect-consult.md`): three premises are false by
+measurement, which is the case the budget rule names for a mid-build consult; WO-6 waits for the amendment so it does
+not build on the old text. Alternative: fold into the reviewer pass after WO-7. Reversible by: n/a (a consult).
+
+## 2026-11-08 — OPT design amendment (`9318904a`, note §9, ADR 0071)
+
+A-1 (D-37): V1 may pass on a "phase-boundary form" (the certificate's matrix minus the active splits' pinned columns
+and dropped rows; same screen/thresholds/grade); K04 and ordinary certificates unchanged; the record names the basis.
+A-2: zero-at-start free flows form a zero subsystem, held at 0 when square (exact), else bounded [0, ∞); V4
+`ZERO_SUBSYSTEM_CHANGED`. A-3: margins are the closure's own test (TWO_PHASE: smaller phase flow / N0); rows only where
+guarded; else admitted "unguarded" and listed (R-924) — replaces D-12's refusal. New WO-5b (A-2, A-3), WO-5c (A-1);
+gates G10 amended, G10a–d, G22–G24. Frank: Q7 reworded, Q9 new. Architect least sure of F6 (other certificate checks at
+T_b), F7 (C-MW zero subsystem square), F8 (pr-c1 closure value semantics).

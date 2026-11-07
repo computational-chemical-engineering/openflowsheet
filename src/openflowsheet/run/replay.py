@@ -34,6 +34,7 @@ from typing import Any, Literal
 
 from openflowsheet.run.bundle import BundleIntegrity, read_artifact, read_manifest, verify_bundle
 from openflowsheet.run.compare import CURRENT_POLICY_ID, KNOWN_POLICY_IDS, differences
+from openflowsheet.run.lock import TEMPLATES
 from openflowsheet.run.manifest import Environment, environment
 
 ReplayMode = Literal["exact_replay", "compatible_reproduction", "inspected_archived_results"]
@@ -86,20 +87,18 @@ def decide_mode(recorded: Environment, current: Environment) -> tuple[ReplayMode
     """D4's table, evaluated before anything runs. Every reason is named, not summarized."""
     reasons: list[str] = []
 
-    # M3, from the Fable review: an empty lock hash means the file was not found, and two
-    # unknowns are not a match. Measured before the fix: `environment(lock_path=...)` pointing
-    # at nothing on both sides replayed as `exact_replay`, which is what a non-editable install
-    # outside the repository would have produced.
+    # M3, from the Fable review: an empty lock hash is an unknown dependency set, and two
+    # unknowns are not a match. ADR 0069 D5 (X05): from X05 on `""` means the lock did not
+    # verify, and the reason names this side's failing distributions; the archive's findings are
+    # not recorded, so its side says only that it recorded no verified lock.
     if not recorded.lock_sha256 or not current.lock_sha256:
-        reasons.append(
-            "the dependency set is unknown on "
-            + (
-                "both sides"
-                if not recorded.lock_sha256 and not current.lock_sha256
-                else ("the archive's side" if not recorded.lock_sha256 else "this side")
-            )
-            + ": no lock file was found, and two unknowns are not a match"
-        )
+        findings = TEMPLATES["JOIN"].join(current.lock_findings) or TEMPLATES["NONE"]
+        if not recorded.lock_sha256 and not current.lock_sha256:
+            reasons.append(TEMPLATES["R_BOTH"].format(findings=findings))
+        elif not recorded.lock_sha256:
+            reasons.append(TEMPLATES["R_ARCHIVE"])
+        else:
+            reasons.append(TEMPLATES["R_THIS"].format(findings=findings))
         return "inspected_archived_results", tuple(reasons)
 
     if not recorded.same_dependencies(current):

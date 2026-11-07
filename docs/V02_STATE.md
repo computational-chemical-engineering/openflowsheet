@@ -125,12 +125,16 @@ Am. 1–2). Foundations F0–F8 are designed in wave W1 during 0.4, then built i
 - **RP: MERGED** into main `ad1ffd74` (manifest `evidence/S15/fd28ff7b…` tested; gate PASS 15070; CI 42374299572
   green). Before 0.4.0's K3: schema ADR admitting `REL[0-9]{3,}`; S-6 rehearsal of never-run steps; Frank: ADR 0055
   acceptance, F-8.
-- **X05** (`wp/X05`, ADR 0069 Proposed): WO-1…3 engineer running; then reviewer. Frank: Q-F1…F3, acceptance.
-- **X02** (`wp/X02`, design `docs/design/X02-warm-starts.md`, ADR 0070 Proposed, Am. 15): WO-1 (shipped defect fixed)
-  and WO-2 done; WO-3/4 engineer running; WO-5 (warm reactor variant, workstation campaign), WO-6, reviewer. Frank:
-  Q1…Q6.
-- **Await Frank** (`docs/FRANK_QUESTIONS.md`): `explain.md` (blocks MSG), ADRs 0055/0068/0069/0070, Q-11, F-8,
-  X05 Q-F1…F3, X02 Q1…Q6.
+- **X05: MERGED** into main `3e93c9a7` (manifest `evidence/X05/7c8d05e5…` tested 31/31; gate PASS 15138; RC
+  dispatch 42397255469 + push CI green; F0 PASS on main). On Frank's acceptance of ADR 0069: register lines, ADR 0007
+  Am. 2, R-140 "Lifted by X05". Before the cut: `[4, "x05.*"]` in the 0.4 gate (specifier). Frank: Q-F1…F3.
+- **X02** (`wp/X02` `c05a9e84`, ADR 0070 Proposed, Am. 15): WO-1…7 done; manifest `evidence/X02/2ab11b66…` `tested`
+  (G5b, G5d (iii) `fail` with accepted_fail: warm variant not registered, neighbour speed-up withdrawn, D-32); gate
+  PASS 15138; CI green. **Ready; merges after Frank accepts ADR 0070 (Q5).** At merge: R-950, c_4/c_5 vs MSG.
+- **OPT** (`wp/OPT`, design `docs/design/OPT-revision-optimisation.md`, ADR 0071 Proposed, Am. 16): WO-1 (NlpHost,
+  SYN-001 bit-identical) and WO-2 (revision host; F1/F2 hold; D-12 for review) done; WO-3 running; WO-4…7 next.
+- **Await Frank** (`docs/FRANK_QUESTIONS.md`): `explain.md` (blocks MSG), ADRs 0055/0068/0069/0070/0071, Q-11, F-8,
+  X05 Q-F1…F3, X02 Q1…Q7, OPT Q1…Q8.
 - **TRS2 CPU rule** (user via hub, 2026-11-07): ≤ ~36 busy cores of 48; one full gate at a time; no tests in several
   worktrees at once. GitHub API: poll CI at most every 10 min (rate limit hit 2026-11-07).
 - Host load ~50 from other users: wall-time budget tests flaky (re-run alone).
