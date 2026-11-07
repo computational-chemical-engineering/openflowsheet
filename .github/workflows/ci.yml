@@ -597,17 +597,21 @@ jobs:
     # lock, the audited CasADi hashes, the registered certificate). It checks the versions against
     # the lock, `pip check`, CasADi's installed files against T08.A30's digest (and P03's per-file
     # hashes on x86-64), and solves SYN-001-nominal through the `openflowsheet` console script.
-    # T08.A19 (step 4, release spec Amendment R3 5): the environment sits in a scratch directory
-    # that also holds an unrelated `requirements.lock`; `lock-check` asserts (b) the installed
-    # package records no lock, (a) the checkout records `ead4edf1…`, and (c) the smoke bundle the
-    # installed CLI wrote replays `inspected_archived_results` / `NOT_RUN` from both.
+    # X05 (ADR 0069 §6.2, X05.A21, A22 (b), A25; T08.A19 retired by its D7.2): the environment
+    # sits beneath a stray `requirements.lock` (the packaged lock plus a comment: it would verify,
+    # so only reading it gives its hash); a shadow directory holds only a `numpy` dist-info at
+    # another version. `lock-check` judges the five states (installed, checkout, each with the
+    # shadow, and a copy of the installed package without its lock) and the replay of the bundles
+    # the installed CLI wrote without (`on`) and with (`off`) the shadow; `f0-replay` replays F0's
+    # 52 bundles with the installed wheel; a second environment installs the wheel with no
+    # constraints and must verify the lock as installed.
     needs: dist
     strategy:
       fail-fast: false
       matrix:
         runner: [ubuntu-latest, ubuntu-24.04-arm]
     runs-on: ${{ matrix.runner }}
-    timeout-minutes: 30
+    timeout-minutes: 45
     env:
       OPENBLAS_NUM_THREADS: "1"
       OMP_NUM_THREADS: "1"
@@ -629,8 +633,17 @@ jobs:
 
       - name: A clean environment outside the tree, at the lock's versions, the wheel --no-deps
         run: |
-          # T08.A19 (b): an unrelated file named requirements.lock above the environment.
-          printf 'unrelated-project==1.0\n' > "$RUNNER_TEMP/requirements.lock"
+          # X05 (ADR 0069 §6.2): the stray above the environment, and the shadow.
+          python - "$RUNNER_TEMP" <<'PY'
+          import json, pathlib, sys
+          temp = pathlib.Path(sys.argv[1])
+          e2e = json.loads(pathlib.Path("benchmarks/x05/reference_values.json").read_text())["end_to_end"]
+          stray = pathlib.Path("requirements.lock").read_bytes() + e2e["stray"]["suffix"].encode()
+          (temp / "requirements.lock").write_bytes(stray)
+          metadata = temp / "shadow" / e2e["shadow"]["dist_info"]
+          metadata.parent.mkdir(parents=True)
+          metadata.write_text(e2e["shadow"]["metadata"])
+          PY
           CLEAN="$RUNNER_TEMP/clean"
           python -m venv "$CLEAN"
           "$CLEAN/bin/python" -m pip install --upgrade pip
@@ -655,17 +668,41 @@ jobs:
             --out "$RUNNER_TEMP/rc-install/install-${{ matrix.runner }}.json" \
             --keep "$RUNNER_TEMP/rc-install/bundle"
 
-      - name: T08.A19 — the lock lookup, installed and checkout, and the bundle's replay
+      - name: X05.A21 — the packaged lock in five states, and the two bundles' replay
         if: always()
         run: |
           cd "$RUNNER_TEMP/outside"
+          # The `off` bundle: the installed CLI with the shadow first on its path.
+          PYTHONPATH="$RUNNER_TEMP/shadow" "$RUNNER_TEMP/clean/bin/openflowsheet" solve \
+            SYN-001-nominal --out "$RUNNER_TEMP/rc-install/bundle-off/SYN-001-nominal"
           status=0
-          for state in installed checkout; do
+          for state in installed checkout installed-off checkout-off installed-nolock; do
             "$RUNNER_TEMP/clean/bin/python" "$GITHUB_WORKSPACE/scripts/t08_rc.py" lock-check \
-              --state "$state" --bundle "$RUNNER_TEMP/rc-install/bundle/SYN-001-nominal" \
+              --state "$state" \
+              --bundle-on "$RUNNER_TEMP/rc-install/bundle/SYN-001-nominal" \
+              --bundle-off "$RUNNER_TEMP/rc-install/bundle-off/SYN-001-nominal" \
+              --shadow "$RUNNER_TEMP/shadow" --nolock-root "$RUNNER_TEMP/nolock" \
               --out "$RUNNER_TEMP/rc-install/lock-$state-${{ matrix.runner }}.json" || status=1
           done
           exit $status
+
+      - name: X05.A22 (b) — the installed wheel replays F0's 52 bundles
+        if: always()
+        run: |
+          cd "$RUNNER_TEMP/outside"
+          "$RUNNER_TEMP/clean/bin/python" "$GITHUB_WORKSPACE/scripts/t08_rc.py" f0-replay \
+            --out "$RUNNER_TEMP/rc-install/f0-${{ matrix.runner }}.json"
+
+      - name: X05.A25 — an unconstrained install of the wheel verifies the lock
+        if: always()
+        run: |
+          python -m venv "$RUNNER_TEMP/free"
+          "$RUNNER_TEMP/free/bin/python" -m pip install --upgrade pip
+          "$RUNNER_TEMP/free/bin/python" -m pip install "$(ls "$RUNNER_TEMP"/rc-dist/dist/*.whl)"
+          cd "$RUNNER_TEMP/outside"
+          "$RUNNER_TEMP/free/bin/python" "$GITHUB_WORKSPACE/scripts/t08_rc.py" lock-check \
+            --state installed \
+            --out "$RUNNER_TEMP/rc-install/unconstrained-${{ matrix.runner }}.json"
 
       # M06 gate G10 (design note §8 Layer C): the installed wheel serves the diagnostic web
       # shell. The server extra's requirements, at the lock's versions, join the clean

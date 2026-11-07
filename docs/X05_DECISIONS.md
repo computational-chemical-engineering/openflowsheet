@@ -31,3 +31,14 @@ Default kept (ADR §11 Q-N1): the rule does not bend; nothing here needs it to.
   shallow, so a test diffing against the merge base would skip or fail there; the manifest records
   `git diff --quiet <merge-base> HEAD -- schemas/run-manifest.schema.json`. The test holds the document's keys equal
   to the schema's eight.
+- **D-5 (WO-2) — `lock-check`'s interface.** `--state` takes ADR §6.2's four states and `installed-nolock`;
+  `--bundle-on`/`--bundle-off` are optional and each one given is replayed against its registered cell (the record
+  lists `replayed`), so the A25 environment runs `--state installed` with no bundle. `installed-nolock` copies the
+  installed package below `--nolock-root` (beneath the stray) and deletes the copy's lock — never the clean
+  environment's. Strays are looked for only in the installed states: in a checkout the root's lock *is* the packaged
+  one. Expectations are read from `benchmarks/x05/reference_values.json` at run time, as the step already reads the
+  checkout's lock and certificate as data.
+- **D-6 (WO-2) — A22 is a new `t08_rc.py f0-replay` subcommand** running `corpus_identity.m7()` with the
+  checkout's `sys.path` entries dropped (asserting `openflowsheet.__file__` outside the tree), judged against
+  `benchmarks/f0/corpus.json` M7: the registered value on `ref-x86-64`, else `MATCH` + integrity +
+  `exact_replay`/`compatible_reproduction`. CI's `clean-install` timeout 30 → 45 min for the 52 re-solves.
