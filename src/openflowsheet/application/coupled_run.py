@@ -36,11 +36,13 @@ experiments; this module hands it the two callables it needs and turns its end i
 
 from __future__ import annotations
 
+import json
+import math
 import re
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, replace
 from pathlib import Path
-from typing import Any, Final, Protocol
+from typing import Any, Final, Literal, Protocol
 
 from openflowsheet.adapters.experiments.backends import unmeasured_fingerprint
 from openflowsheet.adapters.experiments.request import build_request, experiment_key
@@ -65,8 +67,9 @@ from openflowsheet.orchestrator.coupling import (
 from openflowsheet.orchestrator.execution import PlanRefusal, declaration_identity
 from openflowsheet.orchestrator.executor import PlanResult, execute_plan
 from openflowsheet.orchestrator.revision import plan_revision
-from openflowsheet.orchestrator.trace import SolvePolicy, Trace
+from openflowsheet.orchestrator.trace import Counters, SolvePolicy, Trace
 from openflowsheet.orchestrator.warm_start import (
+    WARM_START_REJECTED,
     WARM_START_SOURCE,
     WarmStartCandidate,
     WarmStartRecord,
@@ -80,8 +83,10 @@ from openflowsheet.verify.certificate import ExternalEvidence
 
 __all__ = [
     "COUPLING_NAME",
+    "COUPLING_START",
     "COUPLING_VERSION",
     "CoupledSolve",
+    "CoupledStart",
     "CouplingUnsupportedError",
     "Experiments",
     "LiveExperiments",
@@ -95,9 +100,13 @@ __all__ = [
     "external_units",
     "final_constants",
     "iterate_differences",
+    "iterate_start",
+    "job_coupling_start",
+    "recorded_coupling_start",
     "reproducibility_class",
     "solve_coupled",
     "unit_variant",
+    "unused_coupling_start",
 ]
 
 #: ADR 0034 D6: the bundle member beside ADR 0020 D4's files.
@@ -106,6 +115,9 @@ COUPLING_VERSION: Final = "external-coupling-v1"
 ROUTE: Final = "revision_coupled"
 #: §4.2: a floor ratio below this sets `near_threshold` on the coupling check.
 FLOOR_RATIO_MIN: Final = 10.0
+#: ADR 0070 D3 (X02 design note §5.7): the version of `solve-path.json`'s
+#: `warm_start.coupling` sub-record.
+COUPLING_START: Final = "coupling-start-v1"
 
 
 class CouplingUnsupportedError(ValueError):
@@ -637,6 +649,178 @@ def _transient(entry: Mapping[str, Any]) -> dict[str, Any]:
     return {"status": "error", "code": f"external_{status}"}
 
 
+# -- the declared outer start (ADR 0070 D3; X02 design note §5.2, §5.4, §5.7) --------------------
+
+
+@dataclass(frozen=True)
+class CoupledStart:
+    """A declared outer start w₀, as far as resolution got: the source (`iterate` — the request's
+    `warm_start.coupling` — or `job`, the named job's last coupling iterate), w₀ before
+    projection by unit id, and `record`, the `coupling` sub-record so far. Its `status` is
+    `accepted` when the integrity check held (an iterate has none to fail) and the remaining
+    checks are `solve_coupled`'s; `absent` or `rejected` otherwise, and then it is final."""
+
+    source: Literal["iterate", "job"] | None
+    declared: Mapping[str, tuple[float, float]] | None
+    record: Mapping[str, Any]
+
+
+def _coupling_record(
+    source: str | None,
+    status: str,
+    reason: str | None,
+    declared: Mapping[str, tuple[float, float]] | None,
+    projections: Sequence[tuple[str, str, float, float]] = (),
+) -> dict[str, Any]:
+    """§5.7's `coupling` sub-record."""
+    return {
+        "record": COUPLING_START,
+        "source": source,
+        "status": status,
+        "reason": reason,
+        "declared": None
+        if declared is None
+        else {unit: {"X": x, "dT_K": dt} for unit, (x, dt) in sorted(declared.items())},
+        "projections": [
+            [unit, coordinate, before, after] for unit, coordinate, before, after in projections
+        ],
+    }
+
+
+def _rejected(check: str) -> str:
+    return f"{WARM_START_REJECTED}({check})"
+
+
+def iterate_start(coupling: Mapping[str, tuple[float, float]]) -> CoupledStart:
+    """§5.2: the request's declared iterate. It has no integrity check (the schema admitted it,
+    A2 its unit ids); compatibility, bounds and opening are `solve_coupled`'s."""
+    declared = {unit: (float(x), float(dt)) for unit, (x, dt) in coupling.items()}
+    return CoupledStart(
+        "iterate", declared, _coupling_record("iterate", "accepted", None, declared)
+    )
+
+
+def job_coupling_start(path: Path | None) -> CoupledStart:
+    """§5.2, D3 step 1 (`integrity`): w₀ from a source job's `external-coupling.json` (`path`, the
+    sibling of its `solution-state.json`; `None` when the job holds none) — the last iterate's
+    flat `w`, in the record's unit order `sorted(variants)`. A missing file is `absent`
+    (`no_coupling_record`); a record that does not parse, is not valid against
+    `experiment.schema.json#/$defs/coupling`, did not converge, or whose last `w` is not 2·n
+    finite numbers is `rejected` (`coupling_integrity`)."""
+    from openflowsheet.application.types import schema_errors
+
+    if path is None or not path.is_file():
+        return CoupledStart(
+            "job", None, _coupling_record("job", "absent", "no_coupling_record", None)
+        )
+    rejected = CoupledStart(
+        "job", None, _coupling_record("job", "rejected", _rejected("coupling_integrity"), None)
+    )
+    try:
+        record = json.loads(path.read_bytes())
+    except (OSError, ValueError):
+        return rejected
+    if (
+        schema_errors("experiment.schema.json#/$defs/coupling", record)
+        or record["outcome"] != "CONVERGED"
+        or not record["iterations"]
+    ):
+        return rejected
+    units = sorted(record["variants"])
+    w = record["iterations"][-1]["w"]
+    if len(w) != 2 * len(units) or not all(
+        isinstance(value, int | float) and not isinstance(value, bool) and math.isfinite(value)
+        for value in w
+    ):
+        return rejected
+    declared = {unit: (float(w[2 * j]), float(w[2 * j + 1])) for j, unit in enumerate(units)}
+    return CoupledStart("job", declared, _coupling_record("job", "accepted", None, declared))
+
+
+def recorded_coupling_start(member: Mapping[str, Any]) -> CoupledStart:
+    """§5.8: a rerun's outer start, from the bundle's own `coupling` sub-record — its source, its
+    declared w₀ and the integrity outcome, never a store lookup. A record that ended at
+    resolution (`absent`, or rejected for integrity) is final as recorded; any other is
+    re-checked by the rerun from `accepted`."""
+    source = member.get("source")
+    declared_document = member.get("declared")
+    declared = (
+        None
+        if not isinstance(declared_document, Mapping)
+        else {
+            str(unit): (float(item["X"]), float(item["dT_K"]))
+            for unit, item in declared_document.items()
+        }
+    )
+    status, reason = member.get("status"), member.get("reason")
+    if status == "absent" or reason == _rejected("coupling_integrity") or declared is None:
+        record = _coupling_record(source, str(status), reason, declared)
+    else:
+        record = _coupling_record(source, "accepted", None, declared)
+    return CoupledStart(source, declared, record)
+
+
+def unused_coupling_start(start: CoupledStart, check: str) -> dict[str, Any]:
+    """§5.2 on the routes without an outer iteration: the declared start is recorded `rejected`
+    (`coupling_compatibility` on `revision_eo`, `route` on `legacy_eo`) and the solve runs as
+    without it. A record that already ended at resolution keeps its own outcome."""
+    if start.record["status"] != "accepted":
+        return dict(start.record)
+    return _coupling_record(start.source, "rejected", _rejected(check), start.declared)
+
+
+def _project(
+    declared: Mapping[str, tuple[float, float]], block: CouplingBlock
+) -> tuple[dict[str, tuple[float, float]], tuple[tuple[str, str, float, float], ...]]:
+    """D3 step 3 (`bounds`): each coordinate clipped into the block's bounds; a clip is logged
+    `(unit, "X" | "dT_K", from, to)`, never a rejection."""
+    projected: dict[str, tuple[float, float]] = {}
+    projections: list[tuple[str, str, float, float]] = []
+    for unit in sorted(declared):
+        values = []
+        for coordinate, value, (low, high) in zip(
+            ("X", "dT_K"), declared[unit], (block.bounds_X, block.bounds_dT), strict=True
+        ):
+            clipped = min(max(value, low), high)
+            if clipped != value:
+                projections.append((unit, coordinate, value, clipped))
+            values.append(clipped)
+        projected[unit] = (values[0], values[1])
+    return projected, tuple(projections)
+
+
+def _opening_failed(coupling: CouplingRun) -> bool:
+    """D3 step 4 (§5.4; risk R3): the coupling ended at its k = 0 inner solve — one trial, no
+    experiment, an inner outcome other than `CONVERGED` (`couple`'s §4.4 pass-through)."""
+    return (
+        len(coupling.iterations) == 1
+        and not coupling.iterations[0]["units"]
+        and coupling.iterations[0]["inner"]["outcome"] != "CONVERGED"
+    )
+
+
+def _coupling_event(
+    trace: Trace | None,
+    kind: Literal["initializer_candidate", "initializer_rejected"],
+    message: str,
+) -> None:
+    """§5.9: the outer start's trace messages, on the existing initializer event kinds (ADR 0024
+    D4), in the job's trace."""
+    if trace is None:
+        return
+    trace.record(
+        kind=kind,
+        attempt=0,
+        iteration=0,
+        signature=(),
+        state_sha256="",
+        residual_inf_unscaled=float("nan"),
+        merit=float("nan"),
+        counters=Counters(),
+        message=message,
+    )
+
+
 # -- the coupled solve ----------------------------------------------------------------------------
 
 
@@ -666,6 +850,9 @@ class CoupledSolve:
     #: its plan was refused). The last inner run started from a `user_start` whenever K ≥ 1, so
     #: its own record is not this one.
     initial_warm: WarmStartRecord | None = None
+    #: ADR 0070 D3 (X02 design note §5.7): the `coupling` sub-record of a declared outer start,
+    #: `None` when none was declared.
+    coupling_start: Mapping[str, Any] | None = None
 
 
 def solve_coupled(
@@ -676,12 +863,19 @@ def solve_coupled(
     trace: Trace | None = None,
     warm_start: WarmStartCandidate | None = None,
     on_iteration: Callable[[int, int], None] | None = None,
+    coupled_start: CoupledStart | None = None,
 ) -> CoupledSolve:
     """The outer coupling of `binding`'s external units (§4.3). `warm_start` is the route's
     source-2 candidate, read by the k = 0 inner solve only (under a policy whose chain names it);
     `trace` (the job's) receives every inner solve's events. The k = 0 inner solve's warm-start
     record is kept on the result (`initial_warm`), and that solve is labelled
-    `compatible_warm_start` when it opened from the candidate (X02 Part C)."""
+    `compatible_warm_start` when it opened from the candidate (X02 Part C).
+
+    `coupled_start` (ADR 0070 D3, X02 design note §5.4) is a declared w₀ that passed integrity:
+    it is checked for compatibility (its unit ids are the external units'), projected into the
+    bounds and opened — the coupling's k = 0 inner solve at w₀ must converge, else w₀ is rejected
+    and the coupling begins again from the variant's `coupling.initial`. Once open, w₀ is the
+    run's start: there is no fallback after acceptance. `None` changes nothing."""
     units = external_units(binding)
     if not units:
         raise CouplingUnsupportedError("no_external_unit")
@@ -744,13 +938,42 @@ def solve_coupled(
     def evaluate(unit_id: str, inlet: UnitInlet) -> ExternalAnswer:
         return experiments.evaluate(by_id[unit_id], unit_variants[unit_id], inlet)
 
-    coupling = couple(
-        [unit.unit_id for unit in units],
-        block,
-        solve_inner,
-        evaluate,
-        on_iteration=on_iteration,
-    )
+    unit_ids = [unit.unit_id for unit in units]
+    coupling: CouplingRun | None = None
+    coupling_start: dict[str, Any] | None = None
+    if coupled_start is not None:
+        start = coupled_start
+        present = "absent" if start.record["status"] == "absent" else "present"
+        _coupling_event(trace, "initializer_candidate", f"coupling_warm_start({present})")
+        coupling_start = dict(start.record)
+        if start.record["status"] == "accepted":
+            assert start.declared is not None
+            if set(start.declared) != set(unit_ids):
+                coupling_start = _coupling_record(
+                    start.source, "rejected", _rejected("coupling_compatibility"), start.declared
+                )
+            else:
+                w0, projections = _project(start.declared, block)
+                opened = couple(
+                    unit_ids, block, solve_inner, evaluate, on_iteration=on_iteration, initial=w0
+                )
+                if _opening_failed(opened):
+                    coupling_start = _coupling_record(
+                        start.source,
+                        "rejected",
+                        _rejected("coupling_opening"),
+                        start.declared,
+                        projections,
+                    )
+                else:
+                    coupling = opened
+                    coupling_start = _coupling_record(
+                        start.source, "accepted", None, start.declared, projections
+                    )
+        if coupling_start["status"] == "rejected":
+            _coupling_event(trace, "initializer_rejected", str(coupling_start["reason"]))
+    if coupling is None:
+        coupling = couple(unit_ids, block, solve_inner, evaluate, on_iteration=on_iteration)
     assert coupling.final is not None and isinstance(coupling.final.payload, InnerRun)
     frozen = {
         unit_id: entry
@@ -767,7 +990,9 @@ def solve_coupled(
         "outcome": coupling.outcome,
         "reason": coupling.reason,
     }
-    return CoupledSolve(coupling, units, coupling.final.payload, record, initial_warm)
+    return CoupledSolve(
+        coupling, units, coupling.final.payload, record, initial_warm, coupling_start
+    )
 
 
 # -- the certificate's evidence (§4.4) -------------------------------------------------------------

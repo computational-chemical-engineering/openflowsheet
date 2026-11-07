@@ -54,6 +54,7 @@ from openflowsheet.application.binding import (
 )
 from openflowsheet.application.coupled_run import (
     COUPLING_NAME,
+    CoupledStart,
     CouplingUnsupportedError,
     Experiments,
     RecordedExperiments,
@@ -66,8 +67,10 @@ from openflowsheet.application.coupled_run import (
     final_constants,
     iterate_differences,
     record_differences,
+    recorded_coupling_start,
     reproducibility_class,
     solve_coupled,
+    unused_coupling_start,
 )
 from openflowsheet.application.policies import SolvePath
 from openflowsheet.application.revision_binding import (
@@ -466,6 +469,9 @@ class RouteRun:
     #: `revision_coupled` only (X02 Part C): the warm-start record of the coupling's k = 0 inner
     #: run, which `solve-path.json` carries in place of the last inner run's.
     initial_warm: WarmStartRecord | None = None
+    #: `revision_coupled` only (ADR 0070 D3): the `coupling` sub-record of a declared outer
+    #: start, `None` when none was declared.
+    coupling_start: Mapping[str, Any] | None = None
 
     @property
     def outcome(self) -> str:
@@ -518,6 +524,7 @@ def solve_route(
     warm_start: WarmStartCandidate | None = None,
     experiments: Experiments | None = None,
     on_iteration: Callable[[int, int], None] | None = None,
+    coupled_start: CoupledStart | None = None,
 ) -> RouteRun:
     """§12.1's steps on `route` (R2.2's table), from the registered initializer (`user_start`
     unset). A `VerifierError` propagates: the verifier refused to judge, so nothing is certified
@@ -536,7 +543,8 @@ def solve_route(
     On `revision_coupled` (M02 design note §4.4) `experiments` runs the experiments — the job's
     runner, or a replay's recorded backend — and `on_iteration(k, max_outer)` is called at each
     outer iteration's start; a coupled run without `experiments` is
-    `unsupported(external_runner_unavailable)`.
+    `unsupported(external_runner_unavailable)`. `coupled_start` is a declared outer start
+    (ADR 0070 D3), read on `revision_coupled` only.
     """
     at = stage if stage is not None else _no_stage
     binding = route.binding
@@ -551,6 +559,7 @@ def solve_route(
             warm_start=warm_start,
             experiments=experiments,
             on_iteration=on_iteration,
+            coupled_start=coupled_start,
         )
     at("plan")
     try:
@@ -695,6 +704,7 @@ def _solve_coupled(
     warm_start: WarmStartCandidate | None,
     experiments: Experiments | None,
     on_iteration: Callable[[int, int], None] | None,
+    coupled_start: CoupledStart | None = None,
 ) -> RouteRun:
     """`revision_coupled` (M02 design note §4.3–§4.4): the outer coupling, then the final inner
     solve certified with the coupling's evidence, or a bundle. Each inner solve is planned and run
@@ -713,6 +723,7 @@ def _solve_coupled(
             trace=trace,
             warm_start=warm_start,
             on_iteration=on_iteration,
+            coupled_start=coupled_start,
         )
     except CouplingUnsupportedError as error:
         raise RunUnsupportedError(error.code) from error
@@ -726,6 +737,7 @@ def _solve_coupled(
             solved.units, _reproducibility_class(inner.binding.flowsheet)
         ),
         "initial_warm": solved.initial_warm,
+        "coupling_start": solved.coupling_start,
     }
     if isinstance(inner.plan, PlanRefusal):  # at k = 0: the plan's own outcome, passed through
         return replace(_refused_plan(final, inner.plan, inner.report), **extra)
@@ -802,6 +814,7 @@ def run_revision_session(
     warm_start: WarmStartCandidate | None = None,
     experiments: Experiments | None = None,
     on_iteration: Callable[[int, int], None] | None = None,
+    coupled_start: CoupledStart | None = None,
 ) -> RunManifest:
     """Solve, verify and write the bundle (§12.3 as amended by R2.4). Mirrors `run_session`.
 
@@ -812,7 +825,9 @@ def run_revision_session(
     the start of `bundle`. A `revision_coupled` bundle is the final inner solve's, plus
     `external-coupling.json` (ADR 0034 D6).
     `solve-path.json` gains `warm_start` (ADR 0024 D4) iff the solve consulted the source (on
-    `revision_coupled`, the coupling's k = 0 inner solve, X02 Part C).
+    `revision_coupled`, the coupling's k = 0 inner solve, X02 Part C) or a start was declared
+    (ADR 0070); a declared outer start (`coupled_start`) adds its `coupling` sub-record (X02
+    design note §5.7).
     """
     from openflowsheet.run.session import _numerical_policy_id, _reproducibility_class
 
@@ -828,6 +843,7 @@ def run_revision_session(
         warm_start=warm_start,
         experiments=experiments,
         on_iteration=on_iteration,
+        coupled_start=coupled_start,
     )
     (stage if stage is not None else _no_stage)("bundle")
     # The route the result was solved on: on `revision_coupled`, its binding is the final inner
@@ -850,17 +866,32 @@ def run_revision_session(
         warm = result.initial_warm
     else:
         warm = result.run.warm_start if result.run is not None else None
-    if (
-        warm is None
-        and route.solve_path == "legacy_eo"
-        and warm_start is not None
-        and warm_start.selection == EXPLICIT
-    ):
+    explicit = warm_start is not None and warm_start.selection == EXPLICIT
+    if warm is None and route.solve_path == "legacy_eo" and (explicit or coupled_start is not None):
         # ADR 0070 (X02 design note §5.2): the legacy route reads no start; a declared one is
         # recorded rejected, and the solve ran as without it.
-        warm = WarmStartRecord("rejected", "route", warm_start)
+        warm = WarmStartRecord("rejected", "route", warm_start, selection=EXPLICIT)
+    coupling_member: Mapping[str, Any] | None = None
+    if coupled_start is not None:
+        # ADR 0070 D3 (§5.2, §5.7): the outer start's record — the coupling's own on
+        # `revision_coupled`; on the routes without an outer iteration, rejected.
+        if route.solve_path == "revision_coupled":
+            coupling_member = result.coupling_start
+        else:
+            coupling_member = unused_coupling_start(
+                coupled_start,
+                "coupling_compatibility" if route.solve_path == "revision_eo" else "route",
+            )
+        if warm is None:
+            # §5.7: a start declared without an x₀ source (an iterate only, under a policy whose
+            # chain is empty) records the inner members `absent`, `not_declared`.
+            warm = WarmStartRecord(
+                "absent", "not_declared" if warm_start is None else None, selection=EXPLICIT
+            )
     if warm is not None:
         solve_path["warm_start"] = warm.as_document()
+        if coupling_member is not None:
+            solve_path["warm_start"]["coupling"] = dict(coupling_member)
     artifacts: dict[str, Any] = {
         "solve-events.json": [event.as_document() for event in trace.events],
         "structural-report.json": result.report.as_document(),
@@ -1009,6 +1040,15 @@ def _recorded_warm_start(recorded: Any) -> WarmStartCandidate | None:
     return WarmStartCandidate.from_record(member) if isinstance(member, Mapping) else None
 
 
+def _recorded_coupled_start(recorded: Any) -> CoupledStart | None:
+    """ADR 0070 D9 (X02 design note §5.8): the outer start a bundle's `solve-path.json`
+    recorded, or `None` (no `coupling` sub-record: none was declared). The rerun re-runs
+    compatibility, bounds and opening, and must write the same record."""
+    member = recorded.get("warm_start") if isinstance(recorded, Mapping) else None
+    coupling = member.get("coupling") if isinstance(member, Mapping) else None
+    return recorded_coupling_start(coupling) if isinstance(coupling, Mapping) else None
+
+
 def reproduce_bundle(
     directory: Path,
     *,
@@ -1133,6 +1173,7 @@ def reproduce_bundle(
                 policy_requested=str(recorded.get("policy_requested")),
                 # ADR 0024 D5: the recorded candidate, never a store lookup.
                 warm_start=_recorded_warm_start(recorded),
+                coupled_start=_recorded_coupled_start(recorded),
                 experiments=experiments,
             )
         except ReplayDivergenceError as error:

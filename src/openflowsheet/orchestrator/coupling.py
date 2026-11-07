@@ -290,12 +290,17 @@ def couple(
     evaluate: Evaluate,
     *,
     on_iteration: OnIteration | None = None,
+    initial: Mapping[str, tuple[float, float]] | None = None,
 ) -> CouplingRun:
     """§4.3's iteration over `units` under one coupling `block` (every unit's variant carries the
     same one; the caller checks). `solve_inner(w, start)` solves the inner problem at w — `start`
     is `None` at k = 0 (the route's initializer chain) and otherwise the inner solution of the
     iterate the step was taken from; `evaluate(unit, inlet)` runs one experiment. `on_iteration(k,
-    max_outer)` is called at the start of each outer iteration."""
+    max_outer)` is called at the start of each outer iteration.
+
+    `initial` (ADR 0070 D3, X02 design note §5.4) is a declared w₀, `(X, ΔT)` by unit, already
+    checked and projected into the bounds by the caller; `None` starts from `block.initial`. The
+    Broyden matrix starts at −I either way."""
     if not units:
         raise ValueError("a coupled run needs at least one external unit")
     m2 = 2 * len(units)
@@ -313,7 +318,12 @@ def couple(
         / scales
     )
     record: list[dict[str, Any]] = []
-    u = np.array([value for _ in units for value in block.initial], dtype=np.float64) / scales
+    start = (
+        [value for _ in units for value in block.initial]
+        if initial is None
+        else [value for unit in units for value in initial[unit]]
+    )
+    u = np.array(start, dtype=np.float64) / scales
     b_matrix = -np.eye(m2)
     best: _Point | None = None
     base: _Point | None = None  # the iterate the current step was taken from

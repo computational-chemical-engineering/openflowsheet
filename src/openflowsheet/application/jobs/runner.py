@@ -76,7 +76,13 @@ from openflowsheet.application.admission import (
     stored_surrogate_manifests,
     surrogate_resolver,
 )
-from openflowsheet.application.coupled_run import LiveExperiments
+from openflowsheet.application.coupled_run import (
+    COUPLING_NAME,
+    CoupledStart,
+    LiveExperiments,
+    iterate_start,
+    job_coupling_start,
+)
 from openflowsheet.application.jobs.interrupt import CancelReason, JobInterrupted
 from openflowsheet.application.jobs.model import (
     ARTIFACT_FILE_NAMES,
@@ -105,6 +111,7 @@ from openflowsheet.application.types import (
     ReproduceBody,
     SolveBody,
     SurrogateStudyBody,
+    WarmStartDeclaration,
 )
 from openflowsheet.canonical import canonical_json, directory_hash, file_sha256
 from openflowsheet.compiled import EvaluationContext
@@ -247,6 +254,28 @@ def explicit_warm_start_candidate(context: RunContext, job_id: str) -> WarmStart
     except (OSError, ValueError):
         document = None
     return WarmStartCandidate(document, job_id, source_revision_id, EXPLICIT)
+
+
+def declared_coupled_start(
+    context: RunContext, declaration: WarmStartDeclaration | None, solve_path: str
+) -> CoupledStart | None:
+    """ADR 0070 D2–D3 (X02 design note §5.2): the declared outer start w₀, with its integrity
+    outcome. A `coupling` iterate is w₀ on any route (the routes without an outer iteration
+    record it rejected); otherwise, on `revision_coupled`, a declared `job_id` gives the last
+    iterate of that job's `external-coupling.json`, the sibling of its `solution-state.json`.
+    `None` when nothing was declared that the route reads."""
+    if declaration is None:
+        return None
+    if declaration.coupling is not None:
+        return iterate_start(declaration.coupling)
+    if solve_path != "revision_coupled" or declaration.job_id is None:
+        return None
+    store = context.store
+    with store.reading() as connection:
+        found = store.solution_of_job(connection, declaration.job_id)
+    return job_coupling_start(
+        None if found is None else (context.root / found[1]).with_name(COUPLING_NAME)
+    )
 
 
 class _RecordingSink:
@@ -555,6 +584,7 @@ class _Body:
                 and WARM_START_SOURCE in policy.initializer_chain
             ):
                 warm_start = warm_start_candidate(self.context, self.job.job_id, body.revision_id)
+            coupled_start = declared_coupled_start(self.context, body.warm_start, bound.solve_path)
             experiments = None
             if bound.solve_path == "revision_coupled":
                 experiments = self._experiments(sink, emit_records)
@@ -570,6 +600,7 @@ class _Body:
                 trace=trace,
                 stage=self.at,
                 warm_start=warm_start,
+                coupled_start=coupled_start,
                 experiments=experiments,
                 on_iteration=self._outer_iteration,
             )
