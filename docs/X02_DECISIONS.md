@@ -94,6 +94,10 @@ Format: question → choice; alternative; reversible by; commit. Batched for the
 - **D-20 — `Experiments.evaluate(…, start=None)`.** Implementers must accept the keyword (mypy holds the protocol):
   `benchmarks/m02/g12_real_loop.py`'s `TimedExperiments` now forwards it. `solve_coupled` passes `start` only when one
   is set, so a test double without it still runs every cold variant.
+- **D-21 — `pinned_program`'s memo (§5.5 "memoising the packaged scripts' hashes") is a module `@functools.cache`.**
+  T07 G20 lists every such process-global: entry added to `tests/data/t07_global_state_allowlist.json` (immutable
+  package files, at most two entries) and the pinned per-pattern count 35 → 36. Alternative: no memo (hash two files
+  per backend). Reversible by: drop the decorator and both edits.
 
 ## Tokens for MSG's catalogue (§5.9; `wp/MSG` not merged)
 

@@ -130,9 +130,9 @@ def test_g20_every_hit_is_allowlisted_and_every_entry_is_hit() -> None:
     # and source hash (3, the same pattern as M01's); S05's `iapws95-v1` coefficients, saturation
     # bounds and source hash (3), and its exact-T saturation `lru_cache` (Q-3); S07's
     # `coolprop-heos-v1` identity hash (1); S11's `thermal.*` module hash (common.py) and the
-    # thermal kernel's fluid limits (2).
+    # thermal kernel's fluid limits (2); X02's packaged child-script hashes (1, ADR 0070 D10).
     per_line = Counter(hit for hits, count in found.values() for hit in hits for _ in range(count))
-    assert per_line == Counter({"cache": 35, "np.random": 3, "random": 1, "ContextVar": 1})
+    assert per_line == Counter({"cache": 36, "np.random": 3, "random": 1, "ContextVar": 1})
 
 
 def test_openflowsheet_never_imports_benchmarks() -> None:
