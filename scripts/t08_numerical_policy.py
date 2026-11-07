@@ -20,7 +20,8 @@ them and lists the exact `sha256` names they introduce, and `--check` holds that
 closed-partition rule (M02 design note §3.6). M05's `trust-region-study` follows the same pattern
 (`benchmarks/m05/numerical_policy_external.yaml`, M05 build decision S11): `ADDENDA` lists the
 tables, and each is audited in turn, a name an earlier table classified keeping its class; E01's
-`assessment` schemas follow it too (`benchmarks/e01/numerical_policy_external.yaml`). The
+`assessment` schemas follow it too (`benchmarks/e01/numerical_policy_external.yaml`), and OPT's
+`optimization-request` (`benchmarks/opt/numerical_policy_external.yaml`). The
 schemas M04 adds (`surrogate-manifest`, `model-evidence`) are classified the same way, in
 `benchmarks/m04/numerical_policy_surrogate.yaml`.
 
@@ -50,11 +51,12 @@ V2: Final = ROOT / "benchmarks" / "t08" / "numerical_policy_v2.yaml"
 #: M02 design note §3.6: the addendum that classifies the M02 schemas' floats and digests.
 EXTERNAL: Final = ROOT / "benchmarks" / "m02" / "numerical_policy_external.yaml"
 #: Every addendum, in the order `--check` audits them (M02's, then M05's: build decision S11; then
-#: E01's: escalation ESC-A1, `docs/E01A_DECISIONS.md`).
+#: E01's: escalation ESC-A1, `docs/E01A_DECISIONS.md`; then OPT's: `docs/OPT_DECISIONS.md` D-22).
 ADDENDA: Final = (
     EXTERNAL,
     ROOT / "benchmarks" / "m05" / "numerical_policy_external.yaml",
     ROOT / "benchmarks" / "e01" / "numerical_policy_external.yaml",
+    ROOT / "benchmarks" / "opt" / "numerical_policy_external.yaml",
 )
 #: M04: the addendum that classifies the M04 schemas' digests, beside M02's.
 SURROGATE: Final = ROOT / "benchmarks" / "m04" / "numerical_policy_surrogate.yaml"

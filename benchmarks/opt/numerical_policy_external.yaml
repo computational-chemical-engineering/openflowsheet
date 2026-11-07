@@ -1,0 +1,17 @@
+# OPT (ADR 0071 D2, design note §4.3; ADR 0025 D2.3): the `sha256`-bearing property names that OPT's
+# schemas add. A separate table beside M02's, M05's and E01's, so that the registered numerical
+# policies (`K04-numerical-policy-v1`, `T08-numerical-policy-v2`) keep their ids and their contents
+# (M02's precedent, its design note §3.6; M05 build decision S11; E01 escalation ESC-A1; OPT D-22).
+#
+# Read by `scripts/t08_numerical_policy.py --check` (the closed partition of `sha256` names, one
+# addendum after another). OPT's floats are classified by its own gates (design note §6), not here:
+# the table carries no `rules`.
+numerical_policy_external:
+  id: OPT-numerical-policy-external-v1
+  schemas:
+  - optimization-request.schema.json
+  # `optimization-request.schema.json` declares `revision_sha256` (the canonical SHA-256 of the
+  # revision document the request was written against, ADR 0002), a name an earlier addendum already
+  # classifies as an exact digest; a reused name keeps its class, so OPT lists none. Its `assessment`
+  # member reaches `assessment.schema.json` by `$ref` (E01's addendum).
+  exact_sha256: []
