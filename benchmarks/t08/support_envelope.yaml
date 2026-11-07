@@ -8361,3 +8361,66 @@ harvest:
   class: P
   to: []
   note: 'process note: status tested, not reviewed; review''s must-fix items M-1..M-3 applied after the reviewer pass and not re-reviewed'
+- manifest: evidence/X02/2ab11b664b8dc325edf568cccddea23a46936119/manifest.json
+  item: limitations[0]
+  sha256: 993f8cf25a84cb8e5017e48bf8cb04b47f2f660b760e6a11d1e1e90c59e04b3f
+  class: P
+  to: []
+  note: 'provenance note: software verification (stand-in, revision_eo, synthetic child; CI) and workstation measurements on v3; regression evidence, not validation'
+- manifest: evidence/X02/2ab11b664b8dc325edf568cccddea23a46936119/manifest.json
+  item: limitations[1]
+  sha256: 97aa3d426d760b4ca3f0ff9cb8d835c77a703d7be1f12fdac53d53c448cc22bd
+  class: P
+  to: []
+  note: 'claim note: G5d (iii) iteration criterion failed and stays failed (D-32); neighbour warm start not claimed faster; no support claim made'
+- manifest: evidence/X02/2ab11b664b8dc325edf568cccddea23a46936119/manifest.json
+  item: limitations[2]
+  sha256: 0c0712f2e5dc931145251da2a6fdbe17926f2b4b9a148817ba50f3ed161c64c3
+  class: P
+  to: []
+  note: 'scope note: no start-capable reactor variant registered (G5b, G5c; D-29, review M-1); Part B is plumbing; external models start cold in practice'
+- manifest: evidence/X02/2ab11b664b8dc325edf568cccddea23a46936119/manifest.json
+  item: limitations[3]
+  sha256: 379097978e60a0e870a5b24fe1e12f46e6a9cc2e8e697c7e627ab61ca9bb6d76
+  class: P
+  to: []
+  note: 'provenance note: G5 (d) ran on v3 with cold experiments per review S-2 (D-30, D-31)'
+- manifest: evidence/X02/2ab11b664b8dc325edf568cccddea23a46936119/manifest.json
+  item: limitations[4]
+  sha256: 55088b9173df1f03fab642f4b7a94c3aa87931380e42bc97e3fe87952f807265
+  class: P
+  to: []
+  note: 'provenance note: no D/A requirement maps to X02'
+- manifest: evidence/X02/2ab11b664b8dc325edf568cccddea23a46936119/manifest.json
+  item: limitations[5]
+  sha256: b5652411b273e4674ecca758d47ccfcb775f17a5c52ef7ff091f575e3fdf15e2
+  class: P
+  to: []
+  note: 'provenance note: manifest id X02 under ADR 0059 D1 (R-938), no S-id alias (D-33)'
+- manifest: evidence/X02/2ab11b664b8dc325edf568cccddea23a46936119/manifest.json
+  item: limitations[6]
+  sha256: 11be08e191468709ee46fd5c245623409c2e2b7062db708fffc3b27bd3588233
+  class: P
+  to: []
+  note: 'process note: status tested, not reviewed; ADR 0070 Proposed pending Frank (X02 Q5, Q7)'
+- manifest: evidence/X02/2ab11b664b8dc325edf568cccddea23a46936119/manifest.json
+  item: checks[6]
+  check_id: X02.G5b
+  sha256: 56a33c4aeb3723d3a5f36c4e5ee4d28a7c7fe27a2648ad3afe331398e91da871
+  class: P
+  to: []
+  note: 'registration gate: G5b 1.92e-7 > 1e-7, variant not registered (review M-1, A-3, A-8); no user-facing support claim'
+- manifest: evidence/X02/2ab11b664b8dc325edf568cccddea23a46936119/manifest.json
+  item: checks[7]
+  check_id: X02.G5c
+  sha256: 706daabed43e8f728acf322f6c554881d50df54618e469279c93ecf180457a9f
+  class: P
+  to: []
+  note: 'report-only timing (about 21 % slower warm); decided against registration (review M-1)'
+- manifest: evidence/X02/2ab11b664b8dc325edf568cccddea23a46936119/manifest.json
+  item: checks[11]
+  check_id: X02.G5d_iii_iterations
+  sha256: b3ef26de931dcd5595c8d6f931ed8f0719664ec8f557bce4bb10df65d4a38817
+  class: P
+  to: []
+  note: 'accepted fail (D-32): warm 4 = cold 4 outer iterations; neighbour-speedup claim withdrawn in ADR 0070'

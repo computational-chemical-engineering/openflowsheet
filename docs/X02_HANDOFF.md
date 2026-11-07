@@ -1,4 +1,4 @@
-# X02 handoff (build lane) — WO-6 stopped at G5d (iii) (escalated, D-32)
+# X02 handoff (build lane) — WO-7 done; awaiting Frank's ADR 0070 acceptance and the merge
 
 Branch `wp/X02` (worktree `.claude/worktrees/x02`). Design: `docs/design/X02-warm-starts.md` (amended A-1…A-9),
 ADR 0070 (Proposed, amended per the review), review `docs/reviews/X02-review.md` (binding). Choices: D-1…D-32 in
@@ -17,19 +17,16 @@ Never squash: the evidence pins `69c4a24d`, `005d206f`, `dcb499ee`.
 - Register: R-950 stays c_4 (`wp/MSG` not merged at WO-6; MSG renumbers per ruling 4) (`81ae7809`).
 - S-2: `benchmarks/x02/g5d_v3_loops.py` (D-30), record `evidence/X02/dcb499ee…/g5d-v3.json` + `index.json` (D-31).
 
-## Blocked (design lane, D-32)
+## WO-7 done (close-out)
 
-G5d on v3, neighbour SPEC-S3-T 673.15 → 675.15 K: (i) VERIFIED 4 outer; (ii) VERIFIED 1 outer, w₀ bitwise, 1 call;
-(iii) cold VERIFIED 4, warm VERIFIED **4** — "warm takes fewer outer iterations" fails (§7 G5 (d): escalate). Bound
-holds (Δû 3.76e-4 ≤ 1.64e-3), edit moves û 83.7 bounds. Warm starts ~2× closer but converges at the same k.
-Proposed default: record as measured; qualify ADR 0070 Consequences bullet 1; no iteration-count gate.
+- D-32 carried out: note §7 G5 (d)(iii) A-10; ADR 0070 Consequences bullet 1 and Acceptance evidence (review text +
+  D-32); status stays Proposed (`2ab11b66`, `18633e9f`). D-33 (manifest id `X02`, ADR 0059 D1), D-34 (G5b `fail`).
+- Full gate at `2ab11b66`: PASS, 15138 passed. F0 PASS (M1–M9). Targeted X02 + G0 files: 258 passed. CI at
+  `2ab11b66`: run 42398109849 success on both architectures.
+- Manifest `evidence/X02/2ab11b66…/manifest.json`, `tested`, 18 checks (G5b, G5d_iii_iterations `fail` with
+  `accepted_fail`; G5c `not_applicable`); harvested (10 P items), `HARVEST_SIZE` (71, 958, 125).
 
-## Next (after the ruling)
+## Next
 
-1. ADR 0070 Acceptance evidence ("G5 (d) ran on v3 per S-2" + the ruling) and Consequences bullet 1.
-2. `docs/progress.md`; full gate once (only when `pgrep -af 'scripts/gate.sh|scripts/check.sh'` is empty;
-   `PYTHONPATH=$PWD/src PATH=/home/frankp/Codes/OpenFlowsheet/.venv/bin:$PATH ./scripts/gate.sh`, background);
-   F0 `scripts/corpus_identity.py --check`.
-3. Manifest: the frozen pattern `^[PKTMSR][0-9]{2}[a-z]?$` refuses `X02` → file as `S16` (R-878 rule, RP's C-22; S16
-   unused on main, MSG and X05 at WO-6), harvest per RP's `f6f838dd` (support_envelope, support-matrix,
-   `HARVEST_SIZE` in `tests/test_m07a_harvest.py`), status `tested` only if supported; push; record CI run id.
+Frank accepts ADR 0070 (X02 Q5, Q7); the orchestrator merges `wp/X02` (never squash: evidence pins `69c4a24d`,
+`005d206f`, `dcb499ee`, `2ab11b66`). No `reviewed` is claimed.
