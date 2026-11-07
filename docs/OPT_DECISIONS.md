@@ -293,3 +293,16 @@ produced them. The design-lane ruling round is folded into OPT's single `reviewe
   files); audited env (`m03_nlp_check.sh`) 26 passed (OPT 4 + M03/E01 22).
 - Not done in WO-4 (next engineer): G17 performance record (TH-R1, M1, C-MW requests), F5 (C-MW L-BFGS), D-26
   assessment binding, the "multiple output blocks" Pyomo abstraction (phase rows are WO-5's; one block today).
+
+## WO-4b (finish WO-4: assessment binding, record test, output blocks, G17/F5)
+
+- D-31. DECISION: §4.4's "multiple output blocks" → `formulation.OutputBlock` (name, Pyomo component name, ids,
+  scales, admissibility nominals, `values(z)`, `jacobian(z)` over the primal); `FullSpaceNlp.output_blocks` in order
+  (E01's assessment block today, WO-5's phase rows next), `output_ids`/`output_scales`/`admissibility_nominals` their
+  concatenation (`_add_block` refuses a repeated id); `output_values`/`output_jacobian` pass one block through
+  unchanged and stack several (`np.concatenate`, `sp.vstack` CSC), counting one call per gray-box call;
+  `greybox.build_model` adds each block's `≥ 0` rows as its own component (`assessment_admissibility` unchanged).
+  Inert: G2 base `c6755d86` vs this commit identical in both envs (default `6e028e8d…`, audited `8cfe7c7b…`, the WO-4
+  hashes); OPT-A1/A2/A2b/N1 reports (wall times blanked) identical base vs head (`8e986126…`).
+  Alternative: one gray box per block (Pyomo would see several external models; the Ipopt problem changes).
+  Reversible by: the D-31 commit.

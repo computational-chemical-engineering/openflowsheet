@@ -35,7 +35,7 @@ before any solver call. No finite-difference, Gauss-Newton or zero Hessian exist
 from __future__ import annotations
 
 import math
-from collections.abc import Mapping, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
 from types import MappingProxyType
 from typing import TYPE_CHECKING, Any, Final
@@ -417,6 +417,23 @@ def assessment_closure(
     )
 
 
+@dataclass(frozen=True)
+class OutputBlock:
+    """One block of the gray box's outputs (OPT §4.4): its ids in order, each one's scale, the
+    ids that are `≥ 0` admissibility rows with their nominals, and its values and Jacobian over
+    the primal (`z` → values in `ids` order; `z` → `[G_x  G_d]` restricted to the primal, a
+    canonical CSC). `constraint` names the Pyomo component that holds its admissibility rows.
+    E01's assessment is one block; WO-5's phase rows are another, each from its own twin."""
+
+    name: str
+    constraint: str
+    ids: tuple[str, ...]
+    scales: Mapping[str, float]
+    admissibility: Mapping[str, float]
+    values: Callable[[npt.NDArray[np.float64]], npt.NDArray[np.float64]] = field(repr=False)
+    jacobian: Callable[[npt.NDArray[np.float64]], sp.csc_matrix] = field(repr=False)
+
+
 def _twin_jacobian(
     twin: ParametricTwin, x: npt.NDArray[np.float64], decisions: Mapping[str, float]
 ) -> sp.csc_matrix:
@@ -526,6 +543,9 @@ class FullSpaceNlp:
         self.output_scales: dict[str, float] = {}
         self.admissibility_nominals: dict[str, float] = {}
         self.closure: AssessmentClosure | None = None
+        #: OPT §4.4: the output blocks in order (E01's assessment, then WO-5's phase rows);
+        #: `output_ids`, `output_scales` and `admissibility_nominals` are their concatenation.
+        self.output_blocks: tuple[OutputBlock, ...] = ()
         if self.assessment is not None:
             self._bind(self.assessment)
 
@@ -540,17 +560,47 @@ class FullSpaceNlp:
         closure = assessment_closure(binding, self.assessment_twin, x, decisions)
         program = binding.program
         self.closure = closure
-        self.output_ids = closure.output_ids
         self._outputs = np.array(
-            [program.output_ids.index(name) for name in self.output_ids], dtype=np.intp
+            [program.output_ids.index(name) for name in closure.output_ids], dtype=np.intp
         )
-        self.output_scales = dict(closure.scales)
-        self.admissibility_nominals = dict(closure.nominals)
+        self._add_block(
+            OutputBlock(
+                name="assessment",
+                constraint="assessment_admissibility",
+                ids=closure.output_ids,
+                scales=MappingProxyType(dict(closure.scales)),
+                admissibility=MappingProxyType(dict(closure.nominals)),
+                values=self._assessment_values,
+                jacobian=self._assessment_output_jacobian,
+            )
+        )
+
+    def _add_block(self, block: OutputBlock) -> None:
+        """Append an output block; its ids must be new."""
+        clash = set(block.ids) & set(self.output_ids)
+        if clash:
+            raise ValueError(f"output ids repeat across blocks: {sorted(clash)}")
+        self.output_blocks = (*self.output_blocks, block)
+        self.output_ids = (*self.output_ids, *block.ids)
+        self.output_scales.update(block.scales)
+        self.admissibility_nominals.update(block.admissibility)
 
     def _assessment_jacobian(
         self, x: npt.NDArray[np.float64], decisions: Mapping[str, float]
     ) -> sp.csc_matrix:
         return _twin_jacobian(self.assessment_twin, x, decisions)
+
+    def _assessment_values(self, z: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
+        x, decisions = self.split(z)
+        values = np.asarray(self.assessment_twin.residual(x, decisions), dtype=np.float64)
+        return values[self._outputs]
+
+    def _assessment_output_jacobian(self, z: npt.NDArray[np.float64]) -> sp.csc_matrix:
+        x, decisions = self.split(z)
+        jacobian = self._assessment_jacobian(x, decisions)[self._outputs, :]
+        if self.restricted:
+            jacobian = jacobian[:, self._columns]
+        return sp.csc_matrix(jacobian)
 
     # -- primal layout -------------------------------------------------------------------------
 
@@ -625,20 +675,21 @@ class FullSpaceNlp:
         )
 
     def output_values(self, z: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
-        """The gray box's outputs `G(x; d)` in `output_ids` order, from the assessment twin."""
+        """The gray box's outputs `G(x; d)` in `output_ids` order: each block's, in block order
+        (one block is passed through as it is)."""
         self.counters["output_calls"] = self.counters.get("output_calls", 0) + 1
-        x, decisions = self.split(z)
-        values = np.asarray(self.assessment_twin.residual(x, decisions), dtype=np.float64)
-        return values[self._outputs]
+        if len(self.output_blocks) == 1:
+            return self.output_blocks[0].values(z)
+        return np.concatenate([block.values(z) for block in self.output_blocks])
 
     def output_jacobian(self, z: npt.NDArray[np.float64]) -> sp.csc_matrix:
-        """`[G_x  G_d]` at `z`: rows `output_ids`, columns `primal_ids`; exact, canonical CSC."""
+        """`[G_x  G_d]` at `z`: rows `output_ids`, columns `primal_ids`; exact, canonical CSC,
+        the blocks stacked in block order (one block is passed through as it is)."""
         self.counters["output_jacobian_calls"] = self.counters.get("output_jacobian_calls", 0) + 1
-        x, decisions = self.split(z)
-        jacobian = self._assessment_jacobian(x, decisions)[self._outputs, :]
-        if self.restricted:
-            jacobian = jacobian[:, self._columns]
-        return sp.csc_matrix(jacobian)
+        if len(self.output_blocks) == 1:
+            return self.output_blocks[0].jacobian(z)
+        stacked = sp.vstack([block.jacobian(z) for block in self.output_blocks], format="csc")
+        return sp.csc_matrix(stacked)
 
     def property_calls(self) -> int:
         """Property-block callbacks of the twin since this problem was built (the host may

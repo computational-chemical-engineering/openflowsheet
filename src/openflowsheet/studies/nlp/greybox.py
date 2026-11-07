@@ -263,11 +263,15 @@ def build_model(nlp: FullSpaceNlp, box: FullSpaceGreyBox) -> Any:
             by_id[name].upper,
         ),
     )
-    admissibility = list(nlp.admissibility_nominals)
-    if nlp.output_ids:
-        # E01 §4.10.2: each admissibility row of the closure is `adm ≥ 0`, scaling 1.
-        model.assessment_admissibility = pyo.Constraint(
-            admissibility, rule=lambda _, name: model.greybox.outputs[name] >= 0.0
+    # OPT §4.4: each output block's admissibility rows are `row ≥ 0`, scaling 1, in a component
+    # of the block's own (E01 §4.10.2's `assessment_admissibility`; WO-5's phase rows).
+    for block in nlp.output_blocks:
+        model.add_component(
+            block.constraint,
+            pyo.Constraint(
+                list(block.admissibility),
+                rule=lambda _, name: model.greybox.outputs[name] >= 0.0,
+            ),
         )
     model.scaling_factor = pyo.Suffix(direction=pyo.Suffix.EXPORT)
     for name, factor in zip(nlp.primal_ids, nlp.primal_scaling(), strict=True):
@@ -285,8 +289,10 @@ def build_model(nlp: FullSpaceNlp, box: FullSpaceGreyBox) -> Any:
         ):
             outputs[name].value = float(value)  # G(x₀)
             model.scaling_factor[outputs[name]] = float(factor)
-        for name in admissibility:
-            model.scaling_factor[model.assessment_admissibility[name]] = 1.0
+        for block in nlp.output_blocks:
+            component = model.component(block.constraint)
+            for name in block.admissibility:
+                model.scaling_factor[component[name]] = 1.0
     return model
 
 
