@@ -804,8 +804,6 @@ def run_revision_session(
     `external-coupling.json` (ADR 0034 D6).
     `solve-path.json` gains `warm_start` (ADR 0024 D4) iff the solve consulted the source.
     """
-    from openflowsheet.run.session import _numerical_policy_id, _reproducibility_class
-
     started = started_now()
     clock = time.monotonic()
     result = solve_route(
@@ -820,6 +818,36 @@ def run_revision_session(
         on_iteration=on_iteration,
     )
     (stage if stage is not None else _no_stage)("bundle")
+    return write_revision_bundle(
+        result,
+        document,
+        directory,
+        run_id=run_id,
+        policy=policy,
+        check_policy=check_policy,
+        policy_requested=policy_requested,
+        started=started,
+        clock=clock,
+    )
+
+
+def write_revision_bundle(
+    result: RouteRun,
+    document: Mapping[str, Any],
+    directory: Path,
+    *,
+    run_id: str,
+    policy: SolvePolicy,
+    check_policy: CheckPolicy,
+    policy_requested: str,
+    started: str,
+    clock: float,
+) -> RunManifest:
+    """`run_revision_session`'s bundle of a route's solve `result`, as it writes it: `started`
+    is the run's start stamp and `clock` its `time.monotonic()` at the start. OPT's revision NLP
+    host solves with `solve_route` and writes the same bundle through this (OPT design §4.8)."""
+    from openflowsheet.run.session import _numerical_policy_id, _reproducibility_class
+
     # The route the result was solved on: on `revision_coupled`, its binding is the final inner
     # solve's (at the final w); on every other route it is `route` itself.
     route = result.route
