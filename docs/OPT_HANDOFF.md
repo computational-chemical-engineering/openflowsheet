@@ -5,9 +5,8 @@ ADR 0071 (Proposed). Build decisions, facts and gate numbers: `docs/OPT_DECISION
 
 ## Done
 
-- **WO-1** — `studies/nlp/host.py` (`NlpHost`, `Syn001NlpHost`, …); M03 takes a host. G2 tool `scripts/opt_m03_dump.py`.
-- **WO-2** — `RegionResult.final_system`; `write_revision_bundle`; `SensitivityHost.system`; `studies/nlp/revision_host.py`
-  (`decision_map`, `RevisionNlpHost`: certify, held system, regimes, sensitivity, twin cache, bounds).
+- **WO-1/WO-2** — `studies/nlp/host.py` (`NlpHost`, `Syn001NlpHost`); `studies/nlp/revision_host.py` (`decision_map`,
+  `RevisionNlpHost`); `RegionResult.final_system`; `SensitivityHost.system`. G2 tool `scripts/opt_m03_dump.py`.
 - **WO-3** — `schemas/optimization-request.schema.json` (+ registry, README, fixtures `tests/fixtures/schemas/
   optimization_request/`, numerical-policy addendum `benchmarks/opt/`); `studies/nlp/request.py` (`request_problems`,
   `OptimizationRequest`, Halton, `request_starts`, `request_formulation`, `static_readiness`); `closure.py` platform-aware
@@ -36,8 +35,6 @@ ADR 0071 (Proposed). Build decisions, facts and gate numbers: `docs/OPT_DECISION
 - G1: `PYTHONPATH=src .venv/bin/python scripts/corpus_identity.py --check`. Policy: `scripts/t08_numerical_policy.py
   --check`. No full gate until WO-7. TRS2 ≤ ~36 busy cores (`uptime` first).
 
-## Anchors
-
-- `studies/nlp/request.py` `static_readiness`, `request_formulation`; `application/validation.py`
+Anchors: `studies/nlp/request.py` `static_readiness`, `request_formulation`; `application/validation.py`
   `_validate_optimization`; `application/local.py` `validate`; `studies/nlp/closure.py` `audited_solver`.
 - `studies/nlp/revision_host.py` `decision_map`, `RevisionNlpHost.certify`, `.bounds`.
