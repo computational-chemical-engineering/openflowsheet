@@ -248,3 +248,15 @@ child; G0: 163 recorded experiment keys recompute with 0 differences; F0 PASS). 
 G3 (c) premise false — every grid point converges on the registered loop; test uses a lowered H₂ make-up), D-13 (a
 declared iterate can move one ulp through u = w₀/s), D-14 (recovery-edges E9 row), D-20, D-21 (global-state allowlist
 35 → 36). Next: WO-5 (warm reactor variant + workstation campaign), fresh engineer, within the CPU rule.
+
+## 2026-11-07 — X02 WO-5 measured: the warm reactor variant does not pay
+
+G5 (`evidence/X02/69c4a24d…`): (a) cold new variant = v3 bitwise at 8/8 inlets; (b) warm vs cold max rel 1.92e-7
+(> 1e-7; registering against `precision_floor_rel` 1e-6 breaks I3's decade gap); (c) warm ~21 % slower overall (287 vs
+133 s, 383 vs 420 s) — the note's §3.1 premise (10–15 % faster) is false; (e) Part A on v3: restart 1 outer iteration,
+1 call, 25 s vs 4 iterations, 175 s cold. G5d not run.
+DECISION: do not register the warm variant in X02; Frank's Q1 default flips to no (re-asked with the numbers). The X02
+reviewer rules whether `child_warm.py` stays in `src/` unregistered or leaves the package (campaign script and records
+kept as evidence). Alternative: register with a manifest note / raise the floor. Reversible by: registering later with
+the handoff's commands.
+Next: the single X02 reviewer pass (WO-1…5 + batched questions), then WO-6 close-out (fixes, full gate, manifest).
