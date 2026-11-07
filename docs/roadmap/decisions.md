@@ -364,3 +364,13 @@ DECISION: continue with WO-5 (which builds §4.7's held mode and may settle (2))
 and whatever of (2) WO-5 leaves to OPT's single reviewer pass, not a mid-build architect consult: C-MW is G17's
 performance record, not a pass/fail gate, and no analytic gate depends on it. Alternative: a fresh architect consult
 now. Reversible by: consulting before WO-6 if WO-5 finds the premise blocks it.
+
+## 2026-11-07 — OPT WO-5 (`wp/OPT` `826cc4c4`): G10 fails as designed → architect consult
+
+WO-5 built the phase rows, held mode, `phase_bounds_active`; G1/G2 PASS; G7/G8/C0 within tolerance (not byte-identical:
+new LIQUID rows); G10's Ipopt part passes (|T − T_b| = 9.1e-10 K) but V1's cold re-solve at the bubble point is
+ILL_CONDITIONED (rcond ≈ 2.27e-6·ΔQ; branches meet) → `NOT_VERIFIED` (D-37, xfail strict). C-MW: TWO_PHASE null
+margins still fail V4/V5 (D-12); zero-at-start ethanol still unbounded.
+DECISION: consult a fresh architect now (brief `docs/briefs/OPT-architect-consult.md`): three premises are false by
+measurement, which is the case the budget rule names for a mid-build consult; WO-6 waits for the amendment so it does
+not build on the old text. Alternative: fold into the reviewer pass after WO-7. Reversible by: n/a (a consult).
