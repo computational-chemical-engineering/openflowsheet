@@ -5,8 +5,7 @@ where it differs); ADR 0071 (Proposed). Build decisions, facts, gate numbers: `d
 
 ## Done
 
-- **WO-1…WO-5** — host protocol, revision host, request/validate, formulation over held systems, V1–V7, records,
-  phase rows (D-35), Q4 held mode, OPT-A3; see the log's WO sections.
+- **WO-1…WO-5** — host, revision host, request, formulation, V1–V7, records, phase rows (D-35), Q4 held mode, OPT-A3.
 - **WO-5b** (A-2 `051e3397`, A-3 `7b1f7242`, D-43 `90161fd0`): zero subsystem held in `RevisionNlpHost.held_system`
   (`HeldSystem.zero`, `ZeroSubsystem`), `zero_at_start_unresolved` bounds, V4 `ZERO_SUBSYSTEM_CHANGED`, start record
   `zero_subsystem`; margins = closure test (`orchestrator/region.py` `admissibility_value`, `revision_host.
@@ -21,8 +20,7 @@ where it differs); ADR 0071 (Proposed). Build decisions, facts, gate numbers: `d
   steps the held zero side negative), so A-3's unguarded γ–φ splits cannot be OPT starts today; K04 question.
 - D-44: `optimize_revision` runs on an unaudited PyNumero where M03's probe refuses; G2 `--nlp` needs the audited
   variables (`PYTHONNOUSERSITE=1 PYOMO_CONFIG_DIR=<m05>/.venv-nlp/share/pyomo`).
-- D-43 (identity clause only on an unchanged regime) and D-39/D-40 member-presence choices — for review.
-- Pending rulings from earlier: D-18, D-24, D-28, D-30, D-32.
+- For review: D-43 (identity clause only on an unchanged regime), D-39/D-40; earlier D-18, D-24, D-28, D-30, D-32.
 
 ## Next
 
@@ -40,5 +38,5 @@ where it differs); ADR 0071 (Proposed). Build decisions, facts, gate numbers: `d
   bytes `scripts/opt_report_dump.py OUT` per tree + `cmp`; G17 `benchmarks/opt/performance.py RECORDS`. Base trees by
   `git archive <commit>`. No full gate until WO-7. TRS2 ≤ ~36 cores.
 
-Anchors: `revision_host.py` `_held_zero`, `_zero_rows`, `regimes`, `bounds`; `phase.py` `phase_rows`, `_guarded`;
-`verification.py` `_regimes`, `_zero_subsystems`, `_not_closure_test`; `revision.py` `_start_record`, `_phase_members`.
+Anchors: `revision_host.py` `_held_zero`, `_zero_rows`, `regimes`; `phase.py` `_guarded`; `verification.py`
+`_zero_subsystems`, `_not_closure_test`.
