@@ -18568,9 +18568,11 @@ of ADR 0019 Amendment 15 are stripped: `solve_body.warm_start`, the experiment r
 `profile_sha256` (the last two are not served on the MCP list today). No description text changes, so no description
 review is triggered (design note §8 F2). V17 is re-established at the next RC under the release procedure.
 
-**Provisional.** ADR 0070 assigns register numbers on acceptance; R-942…R-949 are held by `wp/MSG` and `wp/RP`, and
-`wp/MSG` carries its own c_4 (R-943). Whichever merges second renumbers its link to c_5 and its digest to the combined
-tree's; this entry's number is confirmed or changed at ADR 0070's acceptance.
+**Number and link (X02 review ruling 4).** R-942…R-949 are RP's on `main`; R-950 was free there at WO-6. `wp/MSG` carries
+its own c_4 and register numbers that collide with RP's, so MSG renumbers in any case. Whichever of X02 and MSG merges
+second renumbers its register entries to the next free numbers, becomes c_5 with the digest of the combined tree
+(measured after its rebase), and re-takes the R4-G3 job-operation snapshots. At X02's WO-6 `wp/MSG` had not merged, so
+this entry stays R-950 with link c_4. ADR 0070's drafts A–E take their numbers at its acceptance.
 
 **Rejected alternatives.** Folding the move into an existing link (R-457: a new MCP-visible change is a new link).
 
