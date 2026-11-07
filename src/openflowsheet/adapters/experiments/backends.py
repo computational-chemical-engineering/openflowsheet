@@ -24,6 +24,8 @@ assumes a measured fingerprint.)
 from __future__ import annotations
 
 import dataclasses
+import functools
+import hashlib
 import math
 import os
 import re
@@ -56,6 +58,9 @@ __all__ = [
     "Execution",
     "InProcessBackend",
     "OutOfProcessBackend",
+    "PROFILE_FILE",
+    "START_FILE",
+    "start_capable",
     "pinned_program",
     "unmeasured_fingerprint",
 ]
@@ -75,6 +80,20 @@ _IN_PROCESS_MODULES: Final = frozenset({"openflowsheet.models.c1.reactor_standin
 _STAGE: Final = re.compile(r"[A-Za-z0-9_]+")
 #: §2.4: where pinned environments live unless `OPENFLOWSHEET_EXTERNAL_ROOT` says otherwise.
 EXTERNAL_ROOT_VARIABLE: Final = "OPENFLOWSHEET_EXTERNAL_ROOT"
+#: ADR 0070 D7 (X02 design note §5.5): the start the backend hands a child, and the profile a
+#: start-capable child exports after an `outlet` answer, in the attempt's working directory.
+START_FILE: Final = "start.json"
+PROFILE_FILE: Final = "profile.json"
+#: ADR 0070 D10: the packaged child scripts a variant's `runner_sha256` selects among.
+CHILD_SCRIPTS: Final = ("child.py", "child_warm.py")
+
+
+def start_capable(variant: Variant) -> bool:
+    """ADR 0070 D4: an out-of-process variant whose evaluation profile declares a `start`."""
+    if variant.kind != "out_of_process":
+        return False
+    profile = variant.evaluation.get("profile")
+    return isinstance(profile, Mapping) and isinstance(profile.get("start"), Mapping)
 
 
 @dataclass(frozen=True)
@@ -122,6 +141,7 @@ class Backend(Protocol):
         directory: Path,
         progress: LaunchProgress,
         check: Callable[[], None] | None,
+        start: bytes | None = None,
     ) -> Execution: ...
 
 
@@ -200,7 +220,9 @@ class InProcessBackend:
         directory: Path,
         progress: LaunchProgress,
         check: Callable[[], None] | None,
+        start: bytes | None = None,
     ) -> Execution:
+        assert start is None, "the in-process stand-in takes no start (ADR 0070 D4)"
         outlet: TubeOutlet = self._evaluate(tube)
         return Execution(
             kind="in_process",
@@ -222,11 +244,27 @@ def external_root() -> Path:
     return Path(cache) / "openflowsheet" / "external"
 
 
+@functools.cache
+def _packaged_child_sha256(name: str) -> str | None:
+    """The SHA-256 of a packaged child script, `None` when the package does not hold it."""
+    child = Path(str(files("openflowsheet.adapters") / "pymrm" / name))
+    return hashlib.sha256(child.read_bytes()).hexdigest() if child.is_file() else None
+
+
 def pinned_program(variant: Variant) -> ChildProgram:
     """The pinned environment's interpreter and the packaged child for a variant (§2.4). The
-    application never builds an environment; an absent one is `environment_unavailable`."""
+    application never builds an environment; an absent one is `environment_unavailable`.
+
+    ADR 0070 D10: the child is the packaged script whose bytes hash to the variant's
+    `runner_sha256` (`child.py` or `child_warm.py`); when none does, `child.py`, so that a
+    mismatch surfaces as before (the handshake's `environment_mismatch`)."""
     root = external_root() / str(variant.evaluation["environment"]["env_id"])
-    child = files("openflowsheet.adapters") / "pymrm" / "child.py"
+    pinned = variant.evaluation.get("runner_sha256")
+    name = next(
+        (script for script in CHILD_SCRIPTS if _packaged_child_sha256(script) == pinned),
+        CHILD_SCRIPTS[0],
+    )
+    child = files("openflowsheet.adapters") / "pymrm" / name
     return ChildProgram(root / "venv" / "bin" / "python", Path(str(child)), root)
 
 
@@ -290,7 +328,7 @@ class OutOfProcessBackend:
         self.test_environment = test_environment
         self._environment: Environment | None = None
 
-    def _request(self, tube: TubeInlet | None) -> dict[str, Any]:
+    def _request(self, tube: TubeInlet | None, start_sha256: str | None = None) -> dict[str, Any]:
         request: dict[str, Any] = {
             "deadline_s": self.limits.timeout_s,
             "expected": self.expected,
@@ -298,6 +336,9 @@ class OutOfProcessBackend:
         }
         if tube is not None:
             request["tube_inlet"] = tube_document(tube)
+        if start_sha256 is not None:
+            # ADR 0070 D7: the child reads `start.json` and checks it against this hash.
+            request["start_profile_sha256"] = start_sha256
         return request
 
     def _failure(
@@ -360,6 +401,24 @@ class OutOfProcessBackend:
             None, document_sha256(unmeasured_fingerprint(self.variant, failure.status)), failure
         )
 
+    def _exported(self, directory: Path, diagnostics: Any) -> str | None:
+        """ADR 0070 D6/D7 (X02 design note §5.5): a start-capable child's `outlet` exports
+        `profile.json` and reports its hash as `diagnostics.profile_sha256`. A missing file or a
+        hash that differs is a protocol error (its message); `None` when the export holds, or
+        when the variant is not start-capable."""
+        if not start_capable(self.variant):
+            return None
+        reported = diagnostics.get("profile_sha256") if isinstance(diagnostics, Mapping) else None
+        path = directory / PROFILE_FILE
+        if not path.is_file():
+            return "protocol_error: a start-capable outlet exported no profile.json"
+        if (
+            not isinstance(reported, str)
+            or hashlib.sha256(path.read_bytes()).hexdigest() != reported
+        ):
+            return "protocol_error: profile.json does not hash to diagnostics.profile_sha256"
+        return None
+
     def identity(self, n_tubes: float) -> Mapping[str, Any]:
         """§8.12's identity of an out-of-process result: the pin, the measured pymrm version,
         the overlay, the configuration's hash and the profile."""
@@ -382,11 +441,20 @@ class OutOfProcessBackend:
         directory: Path,
         progress: LaunchProgress,
         check: Callable[[], None] | None,
+        start: bytes | None = None,
     ) -> Execution:
+        """One launch at `tube`. `start` (ADR 0070 D7, X02 design note §5.5) is a start profile's
+        bytes: written as `start.json` in the attempt directory before the launch, its hash in
+        the child's request. Without it the child's request is unchanged."""
         assert self._environment is not None and self._environment.fingerprint is not None
+        start_sha256 = None
+        if start is not None:
+            start_sha256 = hashlib.sha256(start).hexdigest()
+            directory.mkdir(parents=True, exist_ok=True)
+            (directory / START_FILE).write_bytes(start)
         result = launch(
             self.program,
-            self._request(tube),
+            self._request(tube, start_sha256),
             directory,
             self.limits,
             progress=progress,
@@ -426,6 +494,14 @@ class OutOfProcessBackend:
             message = f"protocol_error: stage {stage!r} is not [A-Za-z0-9_]+"
         else:
             outlet = _parse_outlet(document.get("tube_outlet"), len(tube.composition))
+            exported = self._exported(directory, document.get("diagnostics"))
+            if outlet is not None and exported is not None:
+                return Execution(
+                    status="protocol_error",
+                    answer=ExecutionFailure("protocol_error", exported),
+                    message=exported,
+                    **common,
+                )
             if outlet is not None:
                 return Execution(
                     status="completed",

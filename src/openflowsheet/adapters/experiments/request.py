@@ -64,9 +64,14 @@ def build_request(
     components: Sequence[str],
     inlet: StreamState,
     environment_fingerprint_sha256: str,
+    start: str | None = None,
 ) -> dict[str, Any]:
     """The request document of one experiment, its key included. The inlet is copied exactly;
-    a non-finite value has no canonical form and is a `ValueError` here."""
+    a non-finite value has no canonical form and is a `ValueError` here.
+
+    `start` (ADR 0070 D5) is the SHA-256 of the start profile a warm request carries: the member
+    `start: {kind: profile, profile_sha256}` enters the request, and so its key, only when a start
+    is used. A cold request is byte-identical to one built before X02 (`REQUEST_VERSION` kept)."""
     request: dict[str, Any] = {
         "schema_version": REQUEST_VERSION,
         "model": {
@@ -88,6 +93,8 @@ def build_request(
         },
         "environment_fingerprint_sha256": environment_fingerprint_sha256,
     }
+    if start is not None:
+        request["start"] = {"kind": "profile", "profile_sha256": start}
     pointer = first_noncanonical(request)
     if pointer is not None:
         raise ValueError(f"an experiment request must be canonical; not at {pointer!r}")
