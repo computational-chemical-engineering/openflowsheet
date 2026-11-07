@@ -1131,7 +1131,12 @@ def _region(
     refusal = meter.refusal()
     if refusal is not None:
         result = replace(
-            result, outcome="BUDGET_EXHAUSTED", message=str(refusal), budget="property_calls"
+            result,
+            outcome="BUDGET_EXHAUSTED",
+            message=str(refusal),
+            budget="property_calls",
+            # OPT design §4.2.1: a converged attempt's system belongs to a `CONVERGED` region only.
+            final_system=None,
         )
     before_step = spent
     spent, _, following = _absorb(run, inner, spent, attempts_before)

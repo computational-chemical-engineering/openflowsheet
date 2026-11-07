@@ -399,6 +399,20 @@ class RegionAttempt:
 
 
 @dataclass(frozen=True)
+class AttemptSystem:
+    """OPT design §4.2.1: the converged attempt's square system — exactly the arguments it passed
+    to `_region_problem` (`rows`, `free`, `labels`) and the values it held (every column of the
+    problem that is not free, at the value the attempt held it at), under its `signature`. In
+    memory only, never serialised (like `RegionResult.opening`)."""
+
+    rows: tuple[str, ...]
+    free: tuple[str, ...]
+    held: Mapping[str, float]
+    labels: tuple[tuple[str, str, str], ...]
+    signature: AttemptSignature
+
+
+@dataclass(frozen=True)
 class RegionResult:
     outcome: SolveOutcome
     state: Mapping[str, float]
@@ -424,6 +438,9 @@ class RegionResult:
     budget: str | None = None
     #: T04 §4.7: the homotopy's record, when attempt 0 ran the homotopy core.
     homotopy: HomotopyRecord | None = None
+    #: OPT design §4.2.1: the converged attempt's system, set iff the region returns `CONVERGED`.
+    #: In memory only, never serialised.
+    final_system: AttemptSystem | None = None
 
     @property
     def iterations(self) -> int:
@@ -2088,7 +2105,9 @@ def _solve_region(
     budget: str | None = None
     homotopy: HomotopyRecord | None = None
 
-    def closed(outcome: SolveOutcome, text: str = "") -> RegionResult:
+    def closed(
+        outcome: SolveOutcome, text: str = "", system: AttemptSystem | None = None
+    ) -> RegionResult:
         fingerprint = None
         if outcome == "CONVERGED":
             fingerprint = root_fingerprint(
@@ -2114,6 +2133,7 @@ def _solve_region(
             opening=opened_at,
             budget=budget if outcome == "BUDGET_EXHAUSTED" else None,
             homotopy=homotopy,
+            final_system=system,
         )
 
     for attempt_index in range(policy.max_attempts):
@@ -2465,7 +2485,20 @@ def _solve_region(
             )
         )
         if decision.kind == "converged":
-            return closed("CONVERGED")
+            # OPT design §4.2.1: the system this attempt solved — its rows, free columns and label
+            # rows, and every other column at the value it held (the end state's: the attempt
+            # wrote only its free columns, and re-pinned its pinned ones at +0.0).
+            kept = set(free)
+            return closed(
+                "CONVERGED",
+                system=AttemptSystem(
+                    rows=tuple(rows),
+                    free=tuple(free),
+                    held={name: current[name] for name in spec.variable_ids if name not in kept},
+                    labels=tuple(labels),
+                    signature=opening,
+                ),
+            )
         if decision.kind == "terminal":
             return closed(decision.outcome, decision.message)
         conversion = decision.conversion
