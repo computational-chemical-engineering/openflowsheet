@@ -269,6 +269,70 @@
           "default": 0
         }
       }
+    },
+    "report_revision": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "OPT design §4.13 (ADR 0019 Amendment 16): the optimization report's `revision` member — the stored revision, the request and the optimisation's identity (§4.8). Declared here so that its digests are OPT's addendum's (D-30).",
+      "required": [
+        "revision_id",
+        "revision_sha256",
+        "route",
+        "request_sha256",
+        "optimization_sha256",
+        "objective_sense",
+        "decision_parameters",
+        "solve_policy_sha256",
+        "check_policy_sha256"
+      ],
+      "properties": {
+        "revision_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "revision_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "route": {
+          "type": "string",
+          "minLength": 1
+        },
+        "request_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "optimization_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "objective_sense": {
+          "enum": [
+            "minimize",
+            "maximize"
+          ]
+        },
+        "decision_parameters": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "solve_policy_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "check_policy_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
     }
   }
 }

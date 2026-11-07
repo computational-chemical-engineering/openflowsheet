@@ -13,5 +13,11 @@ numerical_policy_external:
   # `optimization-request.schema.json` declares `revision_sha256` (the canonical SHA-256 of the
   # revision document the request was written against, ADR 0002), a name an earlier addendum already
   # classifies as an exact digest; a reused name keeps its class, so OPT lists none. Its `assessment`
-  # member reaches `assessment.schema.json` by `$ref` (E01's addendum).
-  exact_sha256: []
+  # member reaches `assessment.schema.json` by `$ref` (E01's addendum). Its `$defs/report_revision`
+  # (WO-4, D-30; the optimization report's `revision` member reaches it by `$ref`, so no new name
+  # enters v2's domain) declares `optimization_sha256` (canonical hash of the optimisation's five
+  # inputs, design §4.8) and `solve_policy_sha256` (the solve policy's values, `run.manifest.
+  # policy_sha256`): exact digests.
+  exact_sha256:
+  - optimization_sha256
+  - solve_policy_sha256

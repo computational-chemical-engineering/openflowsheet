@@ -415,9 +415,6 @@ def _start_record(
         f"starts/{index}/resolve" if candidate is not None and candidate.bundle_ref else None
     )
     record["held_signature"] = _signature(held)
-    record["candidate_revision_sha256"] = (
-        document_sha256(candidate.handle.document) if candidate is not None else None
-    )
     return record
 
 
@@ -457,7 +454,6 @@ def _candidate_members(
             "expected_revision": document.get("revision_id"),
             "idempotency_key": f"opt-{sha[:32]}",
         },
-        "candidate_revision_sha256": document_sha256(point.handle.document),
         "resolve_record": f"starts/{run.index}/resolve" if point.bundle_ref else None,
     }
 
