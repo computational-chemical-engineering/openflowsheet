@@ -45,10 +45,11 @@ import numpy.typing as npt
 import scipy.sparse as sp
 
 from openflowsheet.assessment.quantities import ASSESSMENT_PREFIX
-from openflowsheet.compile.casadi_backend import ParametricTwin, compile_parametric_twin
+from openflowsheet.compile.casadi_backend import ParametricTwin
 from openflowsheet.compile.reference import state_vector
 from openflowsheet.models.syn001.flowsheet import Syn001Flowsheet
-from openflowsheet.orchestrator.tear import Syn001TearProblem
+from openflowsheet.numerics.scaling import Scaling
+from openflowsheet.studies.nlp.host import CertifiedPoint, NlpHost, Syn001NlpHost, as_host
 
 if TYPE_CHECKING:
     from openflowsheet.assessment.program import AssessmentProgram
@@ -439,32 +440,52 @@ class FullSpaceNlp:
     initial point. Evaluation errors from a property block propagate as the twin's
     `TwinEvaluationError`; the solver adapter maps them to a rejected trial point (spec §8.2,
     Q-F4), never to a NaN or a clipped value.
+
+    The problem comes from an NLP host (OPT §4.1) at the start's certified point: its held system
+    (the rows, the alias rows it excludes, the spec) and its twin. M03's calling form — a
+    SYN-001 flowsheet already pinned at the start, and the start's verified state — is kept.
     """
 
     def __init__(
         self,
-        flowsheet: Syn001Flowsheet,
+        flowsheet: NlpHost | Syn001Flowsheet,
         formulation: NlpFormulation,
-        start_state: Mapping[str, float],
+        start_state: CertifiedPoint | Mapping[str, float],
         start: Sequence[float],
     ) -> None:
-        tear = Syn001TearProblem(flowsheet)
-        self.spec = tear.spec
+        host = as_host(flowsheet)
+        if isinstance(start_state, CertifiedPoint):
+            if start_state.state is None:
+                raise ValueError("the start's point carries no certified state")
+            system = host.held_system(start_state)
+            state = start_state.state
+        elif isinstance(host, Syn001NlpHost):
+            system = host.pinned_system()
+            state = start_state
+        else:
+            raise TypeError("a host other than SYN-001's needs the start's certified point")
+        if system.held or system.labels:
+            # OPT WO-4 (§4.4) restricts the primal to the free columns and appends the labels.
+            raise ValueError("held columns and label rows are not part of the full space yet")
+        self.spec = system.spec
         self.formulation = formulation
-        self.scaling = tear.scaling
-        eliminated = {row.row_id for row in tear.partition.elimination.eliminated}
+        self.scaling = Scaling.from_spec(self.spec)
+        eliminated = set(system.eliminated)
         self.equality_ids = tuple(name for name in self.spec.equation_ids if name not in eliminated)
         self.eliminated_ids = tuple(name for name in self.spec.equation_ids if name in eliminated)
+        if self.equality_ids != system.rows:
+            raise ValueError("the held system's rows are not the problem's kept rows in order")
         self.variable_ids = self.spec.variable_ids
         self.decision_ids = formulation.decision_ids
         self.primal_ids = self.variable_ids + self.decision_ids
-        self.twin: ParametricTwin = compile_parametric_twin(self.spec, self.decision_ids)
+        self.twin: ParametricTwin = host.twin(self.decision_ids)
+        self._twin_calls = _block_calls(self.twin)
         self._kept = np.array(
             [self.spec.equation_ids.index(name) for name in self.equality_ids], dtype=np.intp
         )
         self.start = tuple(float(value) for value in start)
-        self.start_state = dict(start_state)
-        self.bounds = self._bounds(flowsheet)
+        self.start_state = dict(state)
+        self.bounds = self._bounds(host.domain())
         self.counters = {"residual_calls": 0, "jacobian_calls": 0}
         unknown = formulation.unknown_assessment_outputs()
         if unknown:
@@ -552,6 +573,11 @@ class FullSpaceNlp:
         x, decisions = self.split(z)
         return sp.csc_matrix(self._assessment_jacobian(x, decisions)[self._outputs, :])
 
+    def property_calls(self) -> int:
+        """Property-block callbacks of the twin since this problem was built (the host may
+        reuse one twin across starts)."""
+        return _block_calls(self.twin) - self._twin_calls
+
     def assessment_property_calls(self) -> int:
         """Property-block callbacks of the assessment twin since this problem was built."""
         if self.assessment is None:
@@ -560,8 +586,7 @@ class FullSpaceNlp:
 
     # -- bounds and scaling --------------------------------------------------------------------
 
-    def _bounds(self, flowsheet: Syn001Flowsheet) -> dict[str, VariableBound]:
-        domain = flowsheet.provider.describe().domain
+    def _bounds(self, domain: Mapping[str, tuple[float, float]]) -> dict[str, VariableBound]:
         temperature, pressure = domain["T"], domain["P"]
         bounds: dict[str, VariableBound] = {}
         for name in self.variable_ids:

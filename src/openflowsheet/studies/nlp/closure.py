@@ -46,7 +46,7 @@ from typing import Any, Final, Literal
 import numpy as np
 
 from openflowsheet.assessment.quantities import ASSESSMENT_PREFIX
-from openflowsheet.compile.casadi_backend import TwinEvaluationError, compile_problem
+from openflowsheet.compile.casadi_backend import TwinEvaluationError
 from openflowsheet.compile.reference import state_vector
 from openflowsheet.models import SpecificationError
 from openflowsheet.models.syn001.flowsheet import Syn001Flowsheet
@@ -62,15 +62,14 @@ from openflowsheet.studies.nlp.formulation import (
     assessment_twin,
     is_assessment_name,
 )
+from openflowsheet.studies.nlp.host import CertifiedPoint, DecisionRefusedError, NlpHost, as_host
 from openflowsheet.studies.nlp.verification import (
     CHECKS,
     TAU_FEAS,
     CandidateVerification,
     CheckOutcome,
-    declared_regimes,
 )
 from openflowsheet.studies.sensitivity import TAU_ALIAS, OutputFunctional, StudyParameter
-from openflowsheet.studies.syn001 import solve_certified, syn001_sensitivity, with_pinned
 
 SCHEMA_VERSION: Final = "optimization-report-v1"
 #: The [A10] audit of the optional NLP path (spec §9): the document, its gate and its verdict.
@@ -259,6 +258,8 @@ class StartReadiness:
     regimes: Mapping[str, str] | None
     alias_residuals: Mapping[str, float | None] | None
     state: Mapping[str, float] | None = None
+    #: The host's certified point (OPT §4.1); in memory only, never compared or serialised.
+    point: CertifiedPoint | None = field(default=None, compare=False, repr=False)
 
     def as_document(self) -> dict[str, Any]:
         return {
@@ -300,17 +301,19 @@ class Readiness:
 
 def optimization_readiness(
     formulation: NlpFormulation,
-    flowsheet: Syn001Flowsheet,
+    flowsheet: NlpHost | Syn001Flowsheet,
     *,
     solver_probe: SolverProbe = audited_solver,
 ) -> Readiness:
     """Spec §8.7: every failing reason, or `READY_FOR_OPTIMIZATION`.
 
-    `solver_probe` decides `NLP_SOLVER_UNAVAILABLE`; it is replaceable so that a test can check
-    each other reason alone, and READY, without the audited environment."""
+    `flowsheet` is an NLP host or a SYN-001 flowsheet (`as_host`). `solver_probe` decides
+    `NLP_SOLVER_UNAVAILABLE`; it is replaceable so that a test can check each other reason alone,
+    and READY, without the audited environment."""
+    host = as_host(flowsheet)
     reasons: list[ReadinessReason] = []
     try:
-        spec = flowsheet.spec()
+        spec = host.base_spec()
     except SpecificationError as error:
         spec = None
         reasons.append(ReadinessReason("SIMULATION_NOT_READY", f"the flowsheet: {error}"))
@@ -375,7 +378,7 @@ def optimization_readiness(
     starts: list[StartReadiness] = []
     if spec is not None and known_decisions:
         for index, start in enumerate(formulation.starts):
-            record, found = _start(formulation, flowsheet, index, start, bounded, spec)
+            record, found = _start(formulation, host, index, start, bounded, spec)
             starts.append(record)
             reasons.extend(found)
             reasons.extend(_assessment_regime(formulation, index, record))
@@ -513,7 +516,7 @@ def _assessment_objective_scale(
 
 def _start(
     formulation: NlpFormulation,
-    flowsheet: Syn001Flowsheet,
+    host: NlpHost,
     index: int,
     start: Sequence[float],
     bounded: bool,
@@ -522,29 +525,28 @@ def _start(
     """One start: it must solve and certify; then Q3 for every decision at its state."""
     values = formulation.decision_values(start)
     try:
-        sheet = with_pinned(flowsheet, values)
-    except ValueError as error:
+        point = host.certify(values)
+    except DecisionRefusedError as error:
         reason = ReadinessReason("SIMULATION_NOT_READY", f"start {index}: {error}")
         return StartReadiness(
             tuple(start), "SPECIFICATION_REFUSED", str(error), None, None, None
         ), [reason]
-    solve = solve_certified(sheet)
-    certificate = solve.certificate
+    certificate = point.certificate
     status = certificate.verification_status if certificate else None
-    state = solve.final_state
-    if not solve.verified or state is None:
+    state = point.state
+    if not point.verified or state is None:
         reason = ReadinessReason(
-            "SIMULATION_NOT_READY", f"start {index}: {solve.outcome}: {solve.message}"
+            "SIMULATION_NOT_READY", f"start {index}: {point.outcome}: {point.message}"
         )
-        return StartReadiness(tuple(start), solve.outcome, solve.message, status, None, None), [
-            reason
-        ]
-    regimes = declared_regimes(sheet, state)
+        return StartReadiness(
+            tuple(start), point.outcome, point.message, status, None, None, point=point
+        ), [reason]
+    regimes = host.regimes(point).declared()
     if not bounded:
         # Q3 needs `StudyParameter`s, which need a finite box; BOUNDS_UNDECLARED is already listed.
         return (
             StartReadiness(
-                tuple(start), solve.outcome, solve.message, status, regimes, None, state
+                tuple(start), point.outcome, point.message, status, regimes, None, state, point
             ),
             [],
         )
@@ -554,14 +556,7 @@ def _start(
     )
     # Q3 is a property of each column and does not depend on the outputs requested.
     probe = OutputFunctional.of_variable(spec.variable_ids[0], 1.0)
-    sensitivity = syn001_sensitivity(
-        sheet,
-        solve.result,
-        parameters=parameters,
-        outputs=(probe,),
-        mode="forward",
-        certificate=certificate,
-    )
+    sensitivity = host.sensitivity(point, parameters, (probe,), mode="forward")
     residuals = {column.parameter_id: column.alias_residual for column in sensitivity.parameters}
     found = []
     for name, residual in residuals.items():
@@ -585,7 +580,7 @@ def _start(
             )
     return (
         StartReadiness(
-            tuple(start), solve.outcome, solve.message, status, regimes, residuals, state
+            tuple(start), point.outcome, point.message, status, regimes, residuals, state, point
         ),
         found,
     )
@@ -820,18 +815,19 @@ def formulation_record(
 
 
 def start_closure(
-    formulation: NlpFormulation, flowsheet: Syn001Flowsheet, readiness: Readiness
+    formulation: NlpFormulation, flowsheet: NlpHost | Syn001Flowsheet, readiness: Readiness
 ) -> AssessmentClosure | None:
     """The binding's gray-box closure (E01 §4.10.2) at the first start readiness certified;
-    `None` without a binding, without such a start, or where it cannot be formed there."""
+    `None` without a binding, without such a start, or where it cannot be formed there. The
+    start's problem is the one its certified point was bound at, so `flowsheet` is not read."""
     binding = formulation.assessment
     if binding is None:
         return None
     for start in readiness.starts:
-        if start.state is None:
+        if start.state is None or start.point is None or start.point.spec is None:
             continue
         decisions = formulation.decision_values(start.start)
-        spec = with_pinned(flowsheet, decisions).spec()
+        spec = start.point.spec
         try:
             twin = assessment_twin(binding, spec.variable_ids, formulation.decision_ids)
             x = np.array(state_vector(spec, start.state), dtype=np.float64)
@@ -896,26 +892,23 @@ REGIME_NOTE: Final = (
 )
 
 
-def model_record(flowsheet: Syn001Flowsheet) -> dict[str, Any]:
+def model_record(flowsheet: NlpHost | Syn001Flowsheet) -> dict[str, Any]:
     """The base problem's identity, or `None` fields where the flowsheet does not compile."""
-    try:
-        metadata = compile_problem(flowsheet.spec()).metadata
-    except SpecificationError:
-        return {"model_version": None, "constants_sha256": None}
-    return {"model_version": metadata.model_version, "constants_sha256": metadata.constants_sha256}
+    return as_host(flowsheet).model_record()
 
 
 def unsupported_report(
-    formulation: NlpFormulation, flowsheet: Syn001Flowsheet, readiness: Readiness
+    formulation: NlpFormulation, flowsheet: NlpHost | Syn001Flowsheet, readiness: Readiness
 ) -> OptimizationReport:
     """`UNSUPPORTED`: refused before any solve, with every reason; no candidate, no claim."""
+    host = as_host(flowsheet)
     return OptimizationReport(
         formulation=formulation_record(
             formulation,
             readiness.declared_regimes,
-            assessment_record(formulation, start_closure(formulation, flowsheet, readiness)),
+            assessment_record(formulation, start_closure(formulation, host, readiness)),
         ),
-        model=model_record(flowsheet),
+        model=host.model_record(),
         solver=solver_record(readiness.solver),
         hessian_policy=dict(HESSIAN_POLICY),
         starts=(),
@@ -944,10 +937,14 @@ def optimize(
     It is imported only here and only then, so the default install never loads it; if it cannot
     be imported after all, the result is still a typed `UNSUPPORTED`, never an `ImportError`. Any
     `Exception` raised while importing it counts (a Pyomo or cyipopt import can fail otherwise
-    than with `ImportError`; M03 review F8.1): §8.7's `optimize()` never raises for it."""
-    readiness = optimization_readiness(formulation, flowsheet, solver_probe=solver_probe)
+    than with `ImportError`; M03 review F8.1): §8.7's `optimize()` never raises for it.
+
+    The signature is M03's; the SYN-001 NLP host (OPT §4.1) is built here, once, so readiness and
+    every start share it (and its twin)."""
+    host = as_host(flowsheet)
+    readiness = optimization_readiness(formulation, host, solver_probe=solver_probe)
     if readiness.status != "READY_FOR_OPTIMIZATION":
-        return unsupported_report(formulation, flowsheet, readiness)
+        return unsupported_report(formulation, host, readiness)
     try:
         adapter = importlib.import_module(ADAPTER_MODULE)
     except Exception as error:  # noqa: BLE001 -- §8.7: a typed report, never an exception
@@ -964,6 +961,6 @@ def optimize(
             solver=readiness.solver,
             starts=readiness.starts,
         )
-        return unsupported_report(formulation, flowsheet, missing)
-    report: OptimizationReport = adapter.optimize(formulation, flowsheet, readiness)
+        return unsupported_report(formulation, host, missing)
+    report: OptimizationReport = adapter.optimize(formulation, host, readiness)
     return report

@@ -43,6 +43,7 @@ from openflowsheet.assessment.program import Linearization, Refusal
 from openflowsheet.assessment.quantities import ASSESSMENT_PREFIX
 from openflowsheet.compile.casadi_backend import TwinEvaluationError
 from openflowsheet.compile.reference import state_vector
+from openflowsheet.compile.spec import ProblemSpec
 from openflowsheet.models.syn001.flowsheet import Syn001Flowsheet
 from openflowsheet.numerics.scaling import Scaling
 from openflowsheet.studies.nlp.formulation import (
@@ -55,17 +56,18 @@ from openflowsheet.studies.nlp.formulation import (
     assessment_twin,
     is_assessment_name,
 )
+from openflowsheet.studies.nlp.host import (
+    CertifiedPoint,
+    DecisionRefusedError,
+    NlpHost,
+    RegimeRecord,
+    as_host,
+)
 from openflowsheet.studies.sensitivity import (
     TAU_REGIME,
     OutputFunctional,
     SensitivityResult,
     StudyParameter,
-)
-from openflowsheet.studies.syn001 import (
-    solve_certified,
-    split_regimes,
-    syn001_sensitivity,
-    with_pinned,
 )
 
 #: Spec §8.5's thresholds.
@@ -209,13 +211,8 @@ class CandidateVerification:
         }
 
 
-def declared_regimes(flowsheet: Syn001Flowsheet, state: Mapping[str, float]) -> dict[str, str]:
-    """The regime of every TP split at a verified start: the formulation's declared regimes."""
-    return {split.unit_id: str(split.regime) for split in split_regimes(flowsheet, state)}
-
-
 def verify_candidate(
-    flowsheet: Syn001Flowsheet,
+    flowsheet: NlpHost | Syn001Flowsheet,
     formulation: NlpFormulation,
     decisions: Sequence[float],
     *,
@@ -224,27 +221,32 @@ def verify_candidate(
     closure: AssessmentClosure | None = None,
 ) -> CandidateVerification:
     """V1-V6 at `decisions` (spec §8.5), and V7 with an assessment (E01 §4.10.3). `regimes` are
-    the formulation's declared regimes (the start's, `declared_regimes`); `optimizer_state` is
+    the formulation's declared regimes (the start's, `RegimeRecord.declared`); `optimizer_state` is
     the solver's final state by variable id, and without it V2 is `not_evaluated` — so such a
     candidate is never `passed`. `closure` is the gray box's (`FullSpaceNlp.closure`); without
-    it the binding's closure is computed at `x_sim` (the pattern is structural)."""
+    it the binding's closure is computed at `x_sim` (the pattern is structural). `flowsheet` is
+    an NLP host or a SYN-001 flowsheet (`as_host`); the re-solve is the host's `certify`."""
+    host = as_host(flowsheet)
     values = formulation.decision_values(decisions)
-    sheet = with_pinned(flowsheet, values)
-    solve = solve_certified(sheet)
+    try:
+        point = host.certify(values)
+    except DecisionRefusedError as error:
+        # M03 raised the pinning refusal itself here; it still does (the host wraps it).
+        raise error.__cause__ or error from None
     binding = formulation.assessment
     names = CHECKS if binding is not None else M03_CHECKS
     checks: dict[str, VerificationCheck] = {}
-    certificate = solve.certificate
+    certificate = point.certificate
     checks["V1"] = VerificationCheck(
         "V1",
-        "pass" if solve.verified else "fail",
+        "pass" if point.verified else "fail",
         {
-            "resolve_outcome": solve.outcome,
-            "message": solve.message,
+            "resolve_outcome": point.outcome,
+            "message": point.message,
             "certificate_status": certificate.verification_status if certificate else None,
         },
     )
-    state = solve.final_state
+    state = point.state
     if state is None:
         for check in names[1:]:
             checks[check] = VerificationCheck(check, "not_evaluated", {"reason": "no_simulation"})
@@ -262,12 +264,13 @@ def verify_candidate(
             sensitivity=None,
         )
 
-    scaling = Scaling.from_spec(sheet.spec())
+    assert point.spec is not None  # a point with a state was bound
+    scaling = Scaling.from_spec(point.spec)
     checks["V2"] = _gross(scaling, state, optimizer_state)
-    checks["V4"] = _regimes(sheet, state, regimes)
+    checks["V4"] = _regimes(host.regimes(point), regimes)
     assessment: _Assessment | None = None
     if binding is not None:
-        evaluated = _assessment(sheet, formulation, binding, state, values, closure)
+        evaluated = _assessment(point.spec, formulation, binding, state, values, closure)
         checks["V7"] = _regime_held(binding, state, values)
         if isinstance(evaluated, str):
             for check in ("V3", "V5", "V6"):
@@ -288,16 +291,17 @@ def verify_candidate(
                 sensitivity=None,
             )
         assessment = evaluated
-    point = state if assessment is None else assessment.point
+    resolved = point
+    at = state if assessment is None else assessment.point
     constraints = formulation.constraints if assessment is None else assessment.constraints
     constraint_values = {
-        constraint.constraint_id: constraint.expression.value(point) for constraint in constraints
+        constraint.constraint_id: constraint.expression.value(at) for constraint in constraints
     }
     slacks, active, checks["V3"] = _feasibility(formulation, constraints, values, constraint_values)
     sensitivity, kkt, checks["V5"] = _kkt(
-        sheet, solve, formulation, constraints, point, active, assessment
+        host, resolved, formulation, constraints, at, active, assessment
     )
-    objective = formulation.objective.value(point)
+    objective = formulation.objective.value(at)
     v6: dict[str, Any] = {"objective": objective, "constraint_values": dict(constraint_values)}
     if assessment is not None:
         v6["assessment_values"] = dict(assessment.values)
@@ -336,7 +340,7 @@ class _Assessment:
 
 
 def _assessment(
-    sheet: Syn001Flowsheet,
+    spec: ProblemSpec,
     formulation: NlpFormulation,
     binding: AssessmentBinding,
     state: Mapping[str, float],
@@ -348,7 +352,6 @@ def _assessment(
     decision_ids = formulation.decision_ids
     try:
         if closure is None:
-            spec = sheet.spec()
             twin = assessment_twin(binding, spec.variable_ids, decision_ids)
             x = np.array(state_vector(spec, state), dtype=np.float64)
             closure = assessment_closure(binding, twin, x, decisions)
@@ -514,11 +517,9 @@ def _feasibility(
     )
 
 
-def _regimes(
-    sheet: Syn001Flowsheet, state: Mapping[str, float], declared: Mapping[str, str]
-) -> VerificationCheck:
+def _regimes(record: RegimeRecord, declared: Mapping[str, str]) -> VerificationCheck:
     """V4: every TP split in its declared regime, at least `τ_regime` from the boundary."""
-    splits = split_regimes(sheet, state)
+    splits = record.splits
     changed = [split.unit_id for split in splits if declared.get(split.unit_id) != split.regime]
     near = [
         split.unit_id for split in splits if split.margin is None or not split.margin >= TAU_REGIME
@@ -570,8 +571,8 @@ def _functional(
 
 
 def _kkt(
-    sheet: Syn001Flowsheet,
-    solve: Any,
+    nlp_host: NlpHost,
+    point: CertifiedPoint,
     formulation: NlpFormulation,
     constraints: Sequence[InequalityConstraint],
     state: Mapping[str, float],
@@ -593,14 +594,7 @@ def _kkt(
     outputs = tuple(functional for functional, _ in built if functional is not None)
     if not outputs:
         return None, None, VerificationCheck("V5", "not_evaluated", {"reason": "state_independent"})
-    sensitivity = syn001_sensitivity(
-        sheet,
-        solve.result,
-        parameters=parameters,
-        outputs=outputs,
-        mode="adjoint",
-        certificate=solve.certificate,
-    )
+    sensitivity = nlp_host.sensitivity(point, parameters, outputs, mode="adjoint")
     if sensitivity.status != "QUALIFIED" or sensitivity.adjoint is None:
         return (
             sensitivity,

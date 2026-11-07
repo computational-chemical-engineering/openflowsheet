@@ -4,7 +4,8 @@
 full-space form over the parametric twin; `verification` judges a candidate on the re-solved,
 certified simulation (V1-V6, with a reduced KKT check from M03's adjoints); `closure` is the
 study-level optimization closure — `optimization_readiness`, the `OptimizationReport` type and
-`optimize()`, which without an audited NLP solver returns `UNSUPPORTED` and never raises.
+`optimize()`, which without an audited NLP solver returns `UNSUPPORTED` and never raises. Each
+of them reads the flowsheet through an NLP host (`host`, OPT §4.1): SYN-001's tear path today.
 
 No module here imports Pyomo, cyipopt or any other third-party optimizer: the one module allowed to
 is the gray-box adapter `openflowsheet.studies.nlp.greybox` (WO-8), which exists only with the

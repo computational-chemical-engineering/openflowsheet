@@ -86,7 +86,6 @@ from openflowsheet.studies.nlp.closure import (
     assessment_record,
     classify_starts,
     formulation_record,
-    model_record,
     report_limits,
     solver_record,
     start_closure,
@@ -102,8 +101,8 @@ from openflowsheet.studies.nlp.formulation import (
     assessment_names,
     is_assessment_name,
 )
+from openflowsheet.studies.nlp.host import NlpHost, as_host
 from openflowsheet.studies.nlp.verification import CandidateVerification, verify_candidate
-from openflowsheet.studies.syn001 import with_pinned
 
 #: Ipopt's integer-valued options among spec §8.4's; every other numeric option is a Number.
 #: cyipopt picks Ipopt's option type from the Python type, so the recorded values (verbatim, spec
@@ -431,20 +430,21 @@ def _typed_options() -> dict[str, int | float | str]:
 
 
 def solve_start(
-    flowsheet: Syn001Flowsheet,
+    flowsheet: NlpHost | Syn001Flowsheet,
     formulation: NlpFormulation,
     readiness: StartReadiness,
     index: int,
 ) -> StartRun:
-    """Ipopt from one verified start, then V1-V6 on the decisions it returned (spec §8.5)."""
+    """Ipopt from one verified start, then V1-V6 on the decisions it returned (spec §8.5).
+    `flowsheet` is the NLP host whose readiness certified the start, or a SYN-001 flowsheet."""
+    host = as_host(flowsheet)
     run = StartRun(index, tuple(readiness.start))
-    if readiness.state is None or readiness.regimes is None:
+    if readiness.state is None or readiness.regimes is None or readiness.point is None:
         raise ValueError(f"start {index} is not a verified start; readiness should have refused")
     nlp: FullSpaceNlp | None = None
     box: FullSpaceGreyBox | None = None
     try:
-        sheet = with_pinned(flowsheet, formulation.decision_values(readiness.start))
-        nlp = FullSpaceNlp(sheet, formulation, readiness.state, readiness.start)
+        nlp = FullSpaceNlp(host, formulation, readiness.point, readiness.start)
         box = FullSpaceGreyBox(nlp)
         model = build_model(nlp, box)
         with _quiet_unexported_scaling():
@@ -494,7 +494,7 @@ def solve_start(
     optimizer_state = dict(zip(nlp.variable_ids, (float(value) for value in x), strict=True))
     try:
         run.verification = verify_candidate(
-            flowsheet,
+            host,
             formulation,
             run.final_decisions,
             regimes=readiness.regimes,
@@ -525,13 +525,7 @@ def _by_primal_id(
 def _evaluations(nlp: FullSpaceNlp, box: FullSpaceGreyBox) -> dict[str, int]:
     """Spec §8.6's counters since the start's twin was built: full-space residuals and
     Jacobians, property-block callbacks (value and Jacobian), and failed evaluations."""
-    property_calls = (
-        sum(
-            counts["value_calls"] + counts["jacobian_calls"]
-            for counts in nlp.twin.block_calls().values()
-        )
-        + nlp.assessment_property_calls()
-    )
+    property_calls = nlp.property_calls() + nlp.assessment_property_calls()
     return {
         "residual_calls": nlp.counters["residual_calls"],
         "jacobian_calls": nlp.counters["jacobian_calls"],
@@ -643,7 +637,7 @@ def ipopt_version() -> str:
 
 
 def optimize(
-    formulation: NlpFormulation, flowsheet: Syn001Flowsheet, readiness: Readiness
+    formulation: NlpFormulation, flowsheet: NlpHost | Syn001Flowsheet, readiness: Readiness
 ) -> OptimizationReport:
     """Multistart Ipopt over the full-space gray box and the report (spec §8.5-§8.6).
 
@@ -652,6 +646,7 @@ def optimize(
     `classify_starts` gives each start's classification and the report's status."""
     if readiness.status != "READY_FOR_OPTIMIZATION":
         raise ValueError(f"the adapter needs a ready formulation, not {readiness.status!r}")
+    host = as_host(flowsheet)
     if formulation.hessian != HESSIAN_APPROXIMATION:
         raise ValueError(f"Hessian {formulation.hessian!r}: refused before any solver call")
     solver = dataclasses.replace(
@@ -672,11 +667,10 @@ def optimize(
             solver=solver,
             starts=readiness.starts,
         )
-        return unsupported_report(formulation, flowsheet, refused)
+        return unsupported_report(formulation, host, refused)
 
     runs = [
-        solve_start(flowsheet, formulation, start, index)
-        for index, start in enumerate(readiness.starts)
+        solve_start(host, formulation, start, index) for index, start in enumerate(readiness.starts)
     ]
     verdict = classify_starts([run.evidence() for run in runs])
     records = verdict.start_records([run.record(formulation) for run in runs])
@@ -686,11 +680,9 @@ def optimize(
         formulation=formulation_record(
             formulation,
             readiness.declared_regimes,
-            assessment_record(
-                formulation, start_closure(formulation, flowsheet, readiness), candidate
-            ),
+            assessment_record(formulation, start_closure(formulation, host, readiness), candidate),
         ),
-        model=model_record(flowsheet),
+        model=host.model_record(),
         solver=solver_record(solver, solver_environment()),
         hessian_policy=dict(HESSIAN_POLICY),
         starts=records,
