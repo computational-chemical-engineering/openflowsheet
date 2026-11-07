@@ -18514,3 +18514,28 @@ Freezing the preview slots too (R-929's rejected alternative).
 
 **Watch for.** A build-lane change to a core item without an ADR amendment; F0 (`scripts/corpus_identity.py --check`)
 on every foundation merge.
+
+---
+
+## R-950 — `main`'s surface chain gains link c_4 = (ADR 0070, `without_x02`, `0af895a0…`): X02's `solve_body.warm_start` (provisional number)
+
+| | |
+| --- | --- |
+| Date | 2026-11-07 |
+| Decided by | build lane, X02 WO-2, applying ADR 0070 (Proposed; ADR 0019 Amendment 15) and the X02 design note §5.1 ("the surface chain gains one link … with a register entry") in R-457's form |
+| Normative text | ADR 0070 D1; `docs/design/X02-warm-starts.md` §5.1; `scripts/m07a_rc.py` (link c_4) |
+| Evidence | On `wp/X02` at WO-2 the served MCP tool list digests to `0af895a09d16b40fe85024dd8d2246b955bc79dfdc081afc1fe376bc876b545a`. `without_x02` (`tests/x02_schema_support.py`) on it gives `455d01eb2f420032b27358798e6b331a0120aa1857f02ce3cb7851647849e125`, M04's D_3 (R-457), exactly; the tools are unchanged in name and description, and the six that serve the job request moved (`tests/test_t08_w2_surface_digest.py::test_x02s_surface_move_decomposes_onto_m04s`) |
+| Affected packages | X02; M07a (`scripts/m07a_rc.py`, A37 tests); M07 (the next RC's V17 carry names c_4) |
+
+**Decision.** `m07a_rc.LINKS` gains c_4 (R-950; strip `without_x02`; D_4 = `0af895a0…`). The three optional members
+of ADR 0019 Amendment 15 are stripped: `solve_body.warm_start`, the experiment request's `start` and the result's
+`profile_sha256` (the last two are not served on the MCP list today). No description text changes, so no description
+review is triggered (design note §8 F2). V17 is re-established at the next RC under the release procedure.
+
+**Provisional.** ADR 0070 assigns register numbers on acceptance; R-942…R-949 are held by `wp/MSG` and `wp/RP`, and
+`wp/MSG` carries its own c_4 (R-943). Whichever merges second renumbers its link to c_5 and its digest to the combined
+tree's; this entry's number is confirmed or changed at ADR 0070's acceptance.
+
+**Rejected alternatives.** Folding the move into an existing link (R-457: a new MCP-visible change is a new link).
+
+**Watch for.** A strip that removes more than the three members (the controls in `tests/test_m07a_surface_chain.py`).

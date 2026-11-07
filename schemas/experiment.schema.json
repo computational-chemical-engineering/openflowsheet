@@ -122,6 +122,22 @@
         "environment_fingerprint_sha256": {
           "type": "string",
           "pattern": "^[0-9a-f]{64}$"
+        },
+        "start": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "profile_sha256"
+          ],
+          "properties": {
+            "kind": {
+              "const": "profile"
+            },
+            "profile_sha256": {
+              "$ref": "#/$defs/sha256"
+            }
+          }
         }
       },
       "description": "§3.2. Context — the requesting job, purpose, timestamps, timeout, cache mode — is not in the identity."
@@ -467,6 +483,9 @@
             }
           },
           "description": "§5.3: a bypassed repeat that differed; appending here is the one permitted update of a result."
+        },
+        "profile_sha256": {
+          "$ref": "#/$defs/sha256"
         }
       },
       "description": "§3.3: a deterministic outcome, written once."

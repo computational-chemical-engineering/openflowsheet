@@ -35,6 +35,7 @@ from conftest import REPO_ROOT, load_json
 from jsonschema import Draft202012Validator
 from m02_schema_support import without_m02
 from m04_schema_support import without_m04
+from x02_schema_support import without_x02
 
 from openflowsheet.application.operations import OPERATIONS, Operation
 from openflowsheet.application.types import SCHEMA_BASE, schema_errors
@@ -195,6 +196,20 @@ SNAPSHOT_M04: dict[str, str | None] = {
 }
 
 
+#: X02 (ADR 0070, ADR 0019 Amendment 15): the operations whose resolved response embeds
+#: `job.schema.json`'s `solve_body`, which gains the optional `warm_start`. Taken at X02 WO-2; with
+#: X02's additions removed (`tests/x02_schema_support.py`) each is its `SNAPSHOT_M04` value again
+#: (`test_x02_without_warm_start_every_response_is_its_pre_x02_snapshot`).
+SNAPSHOT_X02: dict[str, str | None] = {
+    "submit_job": "c7eb817ff126bd4f65da90e0eb3698c0fadef7c5a176256c3fc072168e637238",
+    "get_job": "284a9a5f7609bb60f97d2131888990da65e270f01ca5330b003baf21a461f0bf",
+    "cancel_job": "284a9a5f7609bb60f97d2131888990da65e270f01ca5330b003baf21a461f0bf",
+    "list_jobs": "b7152dfee8a64a40530864b8cd9ee8c862d0ae20300c1b44baede82c4b8a02b9",
+    "wait_job": "e607a7d771878e7172a592e1b9987247f547bb99a9992a6b385ecdeabf0b336d",
+    "get_job_result": "74862334d25fd699153ee08c3d53d0d783d7c7b1f9a525fc320efed5ce5ea81f",
+}
+
+
 def _without_specifications(schema: Any) -> Any:
     """`schema` with Amendment 2's member taken out of every pin and option: its property and its
     entry in `required`."""
@@ -219,9 +234,29 @@ def test_r4_g3_every_resolved_response_schema_equals_the_snapshot() -> None:
         **SNAPSHOT_AMENDMENT_3,
         **SNAPSHOT_M02,
         **SNAPSHOT_M04,
+        **SNAPSHOT_X02,
     }
     for operation in OPERATIONS.values():
         assert "$ref" not in canonical_json(resolved_response(operation)).decode("utf-8")
+
+
+def test_x02_without_warm_start_every_response_is_its_pre_x02_snapshot() -> None:
+    """X02 (ADR 0070): with X02's three optional members removed, every operation's resolved
+    response is its snapshot before X02, and exactly the operations of `SNAPSHOT_X02` moved."""
+    before = {
+        **SNAPSHOT_AT_B13D556,
+        **SNAPSHOT_AMENDMENT_2,
+        **SNAPSHOT_AMENDMENT_3,
+        **SNAPSHOT_M02,
+        **SNAPSHOT_M04,
+    }
+    moved = []
+    for name, operation in OPERATIONS.items():
+        resolved = resolved_response(operation)
+        assert _digest(without_x02(resolved)) == before[name], name
+        if _digest(resolved) != before[name]:
+            moved.append(name)
+    assert sorted(moved) == sorted(SNAPSHOT_X02)
 
 
 def test_g_r6_6_list_models_moved_only_by_the_approved_additive_member() -> None:
@@ -235,7 +270,7 @@ def test_g_r6_6_list_models_moved_only_by_the_approved_additive_member() -> None
     moved = [
         name
         for name in SNAPSHOT_AT_B13D556
-        if _digest(without_m02(without_m04(resolved_response(OPERATIONS[name]))))
+        if _digest(without_m02(without_m04(without_x02(resolved_response(OPERATIONS[name])))))
         != SNAPSHOT_AT_B13D556[name]
     ]
     assert sorted(set(OPERATIONS) - set(SNAPSHOT_AT_B13D556)) == ["list_audit"]

@@ -31,6 +31,12 @@ function, a registered digest and Frank's carry extended to name it):
 - c_3, R-295 (ADR 0037 D6, ADR 0019 Amendment 5): M04's `surrogate_study` job kind, stripped by
   `tests/m04_schema_support.py`'s `without_m04` (R-295's decomposition function); `D_3` =
   `455d01eb…`, registered at the alpha's merge into `main` (R-457).
+- c_4, R-950 (ADR 0070, ADR 0019 Amendment 15): X02's `solve_body.warm_start` (and the experiment
+  request's `start` and result's `profile_sha256`, where served), stripped by
+  `tests/x02_schema_support.py`'s `without_x02`; `D_4` = `0af895a0…`, measured at X02 WO-2
+  (`tests/test_t08_w2_surface_digest.py`'s `X02_SERVED_SHA256`). R-950 is provisional: the
+  register number is confirmed at ADR 0070's acceptance, and the link is re-ordered after any
+  link merged into `main` first (MSG's c_4 on `wp/MSG`).
 
 The released 0.2.0a1 ran the two-link chain (its committed record at `C_α²`); a re-run of the
 alpha's step 8 uses this script at the tag.
@@ -147,6 +153,16 @@ def strip_m04(tools: Tools) -> Tools:
     return stripped
 
 
+def strip_x02(tools: Tools) -> Tools:
+    """s_4 (R-950): `tools` without X02's additions (`x02_schema_support.without_x02`)."""
+    t08_rc._tests_on_path()
+    from x02_schema_support import without_x02  # noqa: PLC0415
+
+    stripped = without_x02(copy.deepcopy(tools))
+    assert isinstance(stripped, list)
+    return stripped
+
+
 @dataclass(frozen=True)
 class Link:
     """One registered surface change c_k: its register entry, its strip function s_k, and the
@@ -176,6 +192,12 @@ LINKS: Final = (
         "R-295",
         strip_m04,
         "455d01eb2f420032b27358798e6b331a0120aa1857f02ce3cb7851647849e125",
+    ),
+    Link(
+        "c_4",
+        "R-950",
+        strip_x02,
+        "0af895a09d16b40fe85024dd8d2246b955bc79dfdc081afc1fe376bc876b545a",
     ),
 )
 
