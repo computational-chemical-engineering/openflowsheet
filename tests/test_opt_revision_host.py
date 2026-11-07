@@ -173,7 +173,15 @@ def test_g4_the_held_system_is_the_converged_attempt_bitwise(case: str) -> None:
     assert evaluation.status == "ok" and evaluation.values is not None
     by_id = dict(zip(evaluation.equation_ids, evaluation.values, strict=True))
     at = {name: index for index, name in enumerate(spec.variable_ids)}
-    selected = [float(by_id[row]) for row in system.rows] + [
+    # The converged attempt's own system (C-MW's zero subsystem, §9 A-2, adds its rows back).
+    zero = system.zero
+    rows = system.rows
+    if zero is not None and zero.status == "held":
+        attempt = revision_host._handle(point).region.final_system  # type: ignore[union-attr]
+        assert attempt is not None
+        assert set(attempt.rows) == set(rows) | set(zero.rows)
+        rows = tuple(attempt.rows)
+    selected = [float(by_id[row]) for row in rows] + [
         float(x[at[outlet]]) - float(x[at[source]]) for _, outlet, source in system.labels
     ]
     assert np.array(selected).tobytes() == np.array(final_residual).tobytes(), case
@@ -203,7 +211,11 @@ def test_th_r1_has_an_alias_row_outside_its_held_system() -> None:
     host, point, _ = _certified("TH-R1")
     system = host.held_system(point)
     assert len(system.eliminated) == 1
-    assert len(system.rows) == len(system.free) == 38
+    # §9 A-2: the flash's two exact-zero saturated flows and their fix rows are held (38 → 36).
+    assert system.zero is not None and system.zero.status == "held"
+    assert system.zero.columns == ("S5.sat.L", "S6.sat.V")
+    assert system.zero.rows == ("D:sat-fix:vapor", "D:sat-fix:liquid")
+    assert len(system.rows) == len(system.free) == 36
 
 
 def test_bounds_follow_the_kinds_of_the_free_columns() -> None:
@@ -214,7 +226,8 @@ def test_bounds_follow_the_kinds_of_the_free_columns() -> None:
     assert reasons["temperature"] == reasons["pressure"] == "provider_domain"
     assert reasons["dimensionless"] == "no_declared_bound(dimensionless)"
     flows = [bounds[name] for name in bounds if kinds[name] == "molar_flow"]
-    assert {(b.lower, b.upper) for b in flows} <= {(0.0, None), (None, None)}
+    # §9 A-2: C-MW's exact-zero ethanol flows are held, so every free flow is `[0, ∞)`.
+    assert {(b.lower, b.upper) for b in flows} == {(0.0, None)}
     _, phf, _ = _certified("PHF")
     held = _certified("PHF")[0].bounds(phf)
     assert not set(held) & {"S2.n.A", "S2.n.B", "S2.n.C", "S2.N"}  # held, not primal

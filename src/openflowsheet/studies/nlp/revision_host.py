@@ -12,7 +12,10 @@
   TP margin at its own converged (T, P) (D7);
 - **sensitivity** is M03's core (ADR 0031) on that held system (`SensitivityHost.system`);
 - **twin** is compiled once per decision ids from the base problem and cached;
-- **bounds** (§4.2.3) over the held system's free columns.
+- **bounds** (§4.2.3) over the held system's free columns;
+- the **zero subsystem** (§9 A-2): at every certified point the free flows exactly `0.0` and the
+  rows that only they enter are held at `+0.0` and dropped when they are as many (`HeldSystem.
+  zero`), else bounded `[0, ∞)`; V4 compares it between a start and its re-solve.
 
 The decision map (§4.2.2) is found by two bind probes per decision (`decision_map`): a decision is
 a `role: fixed` specification, and its NLP variable is the single `ProblemSpec` parameter whose
@@ -22,6 +25,7 @@ value moves, bitwise, to the written value, with nothing else in the binding mov
 from __future__ import annotations
 
 import copy
+import dataclasses
 import math
 import struct
 import time
@@ -66,6 +70,7 @@ from openflowsheet.studies.nlp.host import (
     HeldSystem,
     HostKind,
     RegimeRecord,
+    ZeroSubsystem,
 )
 from openflowsheet.studies.nlp.phase import PhaseRows, phase_rows
 from openflowsheet.studies.sensitivity import (
@@ -507,8 +512,81 @@ class RevisionNlpHost:
             assert handle.run is not None and handle.run.solve_plan is not None
             eliminated = tuple(row.row_id for row in handle.run.solve_plan.eliminated_rows)
             assert point.spec is not None
-            handle.system = HeldSystem.of_attempt(point.spec, region.final_system, eliminated)
+            system = HeldSystem.of_attempt(point.spec, region.final_system, eliminated)
+            handle.system = self._held_zero(point, system)
         return handle.system
+
+    def _held_zero(self, point: CertifiedPoint, system: HeldSystem) -> HeldSystem:
+        """§9 A-2: the attempt's system with its zero subsystem (Z, R) held where |R| = |Z| > 0
+        (rows − R, free − Z, held + {z: +0.0}, labels unchanged), recorded `unresolved` where
+        |R| ≠ |Z|, and unchanged (`zero` `None`) where Z = ∅ — no evaluation is made then."""
+        assert point.state is not None
+        kinds = system.spec.variable_kinds
+        columns = tuple(
+            name for name in system.free if kinds[name] == "molar_flow" and point.state[name] == 0.0
+        )
+        if not columns:
+            return system
+        rows = self._zero_rows(point, system, frozenset(columns))
+        if len(rows) != len(columns):
+            return dataclasses.replace(system, zero=ZeroSubsystem("unresolved", columns, rows))
+        dropped, zeros = frozenset(rows), frozenset(columns)
+        return HeldSystem(
+            spec=system.spec,
+            rows=tuple(row for row in system.rows if row not in dropped),
+            free=tuple(name for name in system.free if name not in zeros),
+            held=MappingProxyType({**system.held, **{name: 0.0 for name in columns}}),
+            labels=system.labels,
+            eliminated=system.eliminated,
+            signature=system.signature,
+            zero=ZeroSubsystem("held", columns, rows),
+        )
+
+    def _zero_rows(
+        self, point: CertifiedPoint, system: HeldSystem, zeros: frozenset[str]
+    ) -> tuple[str, ...]:
+        """§9 A-2's R: the held rows (labels excluded) whose exact Jacobian at the point is `0.0`
+        over every free column outside `zeros` and every decision, and non-zero over some column
+        of `zeros`. Free-column entries from the compiled problem's Jacobian at the point (held
+        columns at their certified values), decision entries from the twin's `∂F/∂p`."""
+        assert point.spec is not None and point.state is not None
+        spec = system.spec
+        x = np.array([float(point.state[name]) for name in spec.variable_ids], dtype=np.float64)
+        metadata = self._compiled_at(point).metadata
+        jacobian = self._compiled_at(point).jacobian(
+            x,
+            EvaluationContext(
+                model_version=metadata.model_version,
+                constants_sha256=metadata.constants_sha256,
+                phase_signature=None,
+            ),
+        )
+        if jacobian.status != "ok":
+            raise ValueError(
+                f"defect: the Jacobian at a certified point is {jacobian.status}: "
+                f"{jacobian.message}"
+            )
+        candidates, free = set(system.rows), set(system.free)
+        touches_zero: set[str] = set()
+        touches_other: set[str] = set()
+        for position, column in enumerate(jacobian.col_ids):
+            if column not in free:
+                continue
+            into = touches_zero if column in zeros else touches_other
+            for offset in range(jacobian.indptr[position], jacobian.indptr[position + 1]):
+                row = jacobian.row_ids[jacobian.indices[offset]]
+                if row in candidates and jacobian.data[offset] != 0.0:
+                    into.add(row)
+        decision_ids = tuple(self._specifications)
+        parameters = self.twin(decision_ids).jacobian_p(
+            x, {name: float(point.parameters[name]) for name in decision_ids}
+        )
+        for position in range(len(parameters.col_ids)):
+            for offset in range(parameters.indptr[position], parameters.indptr[position + 1]):
+                row = parameters.row_ids[parameters.indices[offset]]
+                if row in candidates and parameters.data[offset] != 0.0:
+                    touches_other.add(row)
+        return tuple(row for row in system.rows if row in touches_zero and row not in touches_other)
 
     def regimes(self, point: CertifiedPoint) -> RegimeRecord:
         """The final attempt signature and every lifted split's (kind, regime, margin) (§4.2.4).
@@ -626,12 +704,14 @@ class RevisionNlpHost:
 
     def bounds(self, point: CertifiedPoint) -> dict[str, VariableBound]:
         """§4.2.3 over the held system's free columns: T and P by the provider's domain; a flow
-        `[0, ∞)`, or unbounded where it is exactly zero at the point; a duty unbounded; any other
-        kind K03's bound for it in the production solve, or unbounded where K03 has none."""
+        `[0, ∞)` (an unresolved zero subsystem's columns with reason `zero_at_start_unresolved`,
+        §9 A-2; a held one's are not free); a duty unbounded; any other kind K03's bound for it in
+        the production solve, or unbounded where K03 has none."""
         system = self.held_system(point)
-        assert point.state is not None
         domain = self.domain()
         kinds = system.spec.variable_kinds
+        zero = system.zero
+        unresolved = set(zero.columns if zero is not None and zero.status == "unresolved" else ())
         bounds: dict[str, VariableBound] = {}
         for name in system.free:
             kind = kinds[name]
@@ -640,8 +720,8 @@ class RevisionNlpHost:
             elif kind == "pressure":
                 bounds[name] = VariableBound(*domain["P"], "provider_domain")
             elif kind == "molar_flow":
-                if point.state[name] == 0.0:
-                    bounds[name] = VariableBound(None, None, "zero_at_start_pinned_by_regime")
+                if name in unresolved:
+                    bounds[name] = VariableBound(0.0, None, "zero_at_start_unresolved")
                 else:
                     bounds[name] = VariableBound(0.0, None, "nonnegative_flow")
             elif kind == "heat_rate":

@@ -62,6 +62,7 @@ from openflowsheet.studies.nlp.host import (
     HeldSystem,
     NlpHost,
     RegimeRecord,
+    ZeroSubsystem,
     as_host,
 )
 from openflowsheet.studies.nlp.phase import PHASE_PREFIX, PhaseRows
@@ -93,6 +94,8 @@ M03_CHECKS: Final = CHECKS[:6]
 REGIME_CHANGED: Final = "ASSESSMENT_REGIME_CHANGED"
 #: OPT §4.6 V4's code on a held system, with the unit as its argument.
 PHASE_REGIME_CHANGED: Final = "PHASE_REGIME_CHANGED"
+#: OPT §9 A-2 V4's code: the re-solve's zero subsystem is not the start's (as id sets).
+ZERO_SUBSYSTEM_CHANGED: Final = "ZERO_SUBSYSTEM_CHANGED"
 
 
 def _names_decisions(formulation: NlpFormulation) -> bool:
@@ -298,7 +301,9 @@ def verify_candidate(
     scaling = Scaling.from_spec(point.spec)
     checks["V2"] = _gross(scaling, state, optimizer_state, held)
     record = host.regimes(point)
-    checks["V4"] = _regimes(record, regimes, held, point.signature)
+    # §9 A-2: V4 re-derives the zero subsystem at the re-solve (its held system's).
+    zero = (held.zero, host.held_system(point).zero) if held is not None else None
+    checks["V4"] = _regimes(record, regimes, held, point.signature, zero=zero)
     assessment: _Assessment | None = None
     if binding is not None:
         evaluated = _assessment(point.spec, formulation, binding, state, values, closure)
@@ -363,7 +368,13 @@ def verify_candidate(
         active_rows = [item.target for item in active if item.target in set(phase.ids)]
         held_units = tuple(phase.row(row).unit for row in active_rows if phase.row(row).split)
         checks["V4"] = _regimes(
-            record, regimes, held, point.signature, phase_active=held_units, phase_rows=active_rows
+            record,
+            regimes,
+            held,
+            point.signature,
+            phase_active=held_units,
+            phase_rows=active_rows,
+            zero=zero,
         )
     sensitivity, kkt, checks["V5"] = _kkt(
         host, resolved, formulation, constraints, at, active, assessment, rows, held_units
@@ -645,12 +656,15 @@ def _regimes(
     *,
     phase_active: Sequence[str] | None = None,
     phase_rows: Sequence[str] = (),
+    zero: tuple[ZeroSubsystem | None, ZeroSubsystem | None] | None = None,
 ) -> VerificationCheck:
     """V4: every TP split in its declared regime, at least `τ_regime` from the boundary; on a
     held system also the re-solve's attempt signature equal to the start's exactly, else
     `PHASE_REGIME_CHANGED(<unit>)` for each item that differs (OPT §4.6). With phase rows
     (`phase_active` not `None`, OPT §4.7) a split whose row is active is not judged by its
-    margin: it and the active rows are recorded under `phase_bounds_active`."""
+    margin: it and the active rows are recorded under `phase_bounds_active`. `zero` is the
+    start's and the re-solve's zero subsystem (OPT §9 A-2): unequal as id sets →
+    `ZERO_SUBSYSTEM_CHANGED`; recorded under `zero_subsystem` only where either is non-empty."""
     splits = record.splits
     changed = [split.unit_id for split in splits if declared.get(split.unit_id) != split.regime]
     exempt = set(phase_active or ())
@@ -674,7 +688,34 @@ def _regimes(
         detail["phase_regime_changed"] = [f"{PHASE_REGIME_CHANGED}({unit})" for unit in moved]
     if phase_active is not None:
         detail["phase_bounds_active"] = {"units": list(phase_active), "rows": list(phase_rows)}
-    return VerificationCheck("V4", "fail" if changed or near or moved else "pass", detail)
+    zero_changed = False
+    if held is not None and zero is not None and zero != (None, None):
+        detail["zero_subsystem"], zero_changed = _zero_subsystems(*zero)
+    return VerificationCheck(
+        "V4", "fail" if changed or near or moved or zero_changed else "pass", detail
+    )
+
+
+def _zero_subsystems(
+    start: ZeroSubsystem | None, resolved: ZeroSubsystem | None
+) -> tuple[dict[str, Any], bool]:
+    """V4's zero-subsystem clause (OPT §9 A-2): its record and whether (Z, R) moved."""
+    empty: tuple[frozenset[str], frozenset[str]] = (frozenset(), frozenset())
+    (z0, r0), (z1, r1) = (
+        start.ids() if start is not None else empty,
+        resolved.ids() if resolved is not None else empty,
+    )
+    moved = z0 != z1 or r0 != r1
+    record: dict[str, Any] = {
+        "start": None if start is None else start.status,
+        "resolve": None if resolved is None else resolved.status,
+        "columns": len(z0),
+        "rows": len(r0),
+        "columns_changed": sorted(z0 ^ z1),
+        "rows_changed": sorted(r0 ^ r1),
+        "codes": [ZERO_SUBSYSTEM_CHANGED] if moved else [],
+    }
+    return record, moved
 
 
 def _signature_changes(held: Any, resolved: Any) -> list[str]:

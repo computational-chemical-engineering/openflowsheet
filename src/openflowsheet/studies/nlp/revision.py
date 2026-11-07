@@ -295,7 +295,7 @@ def optimize_revision(
     verdict = classify_starts(evidence)
     records = []
     for index, (readiness, run) in enumerate(zip(starts, runs, strict=True)):
-        records.append(_start_record(formulation, readiness, run, index))
+        records.append(_start_record(formulation, readiness, run, index, host))
     verified = [runs[index] for index in verdict.verified_starts]
     candidate = adapter._candidate(verified)
     assessment = assessment_record(formulation, bound.closure(host, starts, solver), candidate)
@@ -554,8 +554,10 @@ def _start_record(
     readiness: StartReadiness,
     run: Any,
     index: int,
+    host: RevisionNlpHost,
 ) -> dict[str, Any]:
-    """The report's start record (§8.6) with §4.13's additive members."""
+    """The report's start record (§8.6) with §4.13's additive members, and the start's zero
+    subsystem (§9 A-2) where it is non-empty."""
     point = readiness.point
     held = point.signature if point is not None else None
     if run is None:
@@ -583,6 +585,10 @@ def _start_record(
         f"starts/{index}/resolve" if candidate is not None and candidate.bundle_ref else None
     )
     record["held_signature"] = _signature(held)
+    if point is not None and point.verified:
+        zero = host.held_system(point).zero
+        if zero is not None:
+            record["zero_subsystem"] = zero.as_document()
     return record
 
 

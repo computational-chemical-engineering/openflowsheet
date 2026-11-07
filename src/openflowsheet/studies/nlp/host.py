@@ -91,12 +91,37 @@ class CertifiedPoint:
         return self.outcome == "CONVERGED"
 
 
+ZeroStatus = Literal["held", "unresolved"]
+
+
+@dataclass(frozen=True)
+class ZeroSubsystem:
+    """A revision point's structurally zero subsystem (OPT §9 A-2): `columns` (Z) the free
+    `molar_flow` columns exactly `0.0` there, `rows` (R) the held rows whose exact Jacobian is
+    `0.0` over every other free column and every decision and non-zero somewhere over Z, both in
+    the attempt's order. `held`: |R| = |Z|, so Z is held at `+0.0` and R dropped; `unresolved`:
+    no reduction, Z bounded `[0, ∞)`."""
+
+    status: ZeroStatus
+    columns: tuple[str, ...]
+    rows: tuple[str, ...]
+
+    def as_document(self) -> dict[str, Any]:
+        return {"status": self.status, "columns": list(self.columns), "rows": list(self.rows)}
+
+    def ids(self) -> tuple[frozenset[str], frozenset[str]]:
+        """(Z, R) as id sets: what V4 compares between a start and its re-solve."""
+        return frozenset(self.columns), frozenset(self.rows)
+
+
 @dataclass(frozen=True)
 class HeldSystem:
     """The NLP's square equality system at a certified point (§4.2.1): `rows` of `spec` and the
     `labels` `(row_id, t_out, t_label)` appended after them, square in the `free` columns; the
     `held` columns fixed at their certified values; `eliminated` the plan's alias rows, which the
-    system excludes; `signature` the attempt signature it was taken from."""
+    system excludes; `signature` the attempt signature it was taken from. `zero` is a revision
+    point's zero subsystem (OPT §9 A-2), `None` where it is empty or the host has none; when
+    `held`, its columns are among `held` and its rows are not in `rows`."""
 
     spec: ProblemSpec
     rows: tuple[str, ...]
@@ -105,6 +130,7 @@ class HeldSystem:
     labels: tuple[tuple[str, str, str], ...]
     eliminated: tuple[str, ...]
     signature: Any = None
+    zero: ZeroSubsystem | None = None
 
     def __post_init__(self) -> None:
         if len(self.rows) + len(self.labels) != len(self.free):
