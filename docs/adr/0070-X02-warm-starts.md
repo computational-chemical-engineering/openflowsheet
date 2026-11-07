@@ -165,9 +165,10 @@ in an exact cache. Measured (note §3):
 
 ## Acceptance evidence
 
-- G0–G6 of note §7 pass on `wp/X02` (G5 on the workstation, numbers in `evidence/X02/<C>/`).
-- G5 (d) ran on v3 per S-2: (i), (ii) met; (iii) both VERIFIED, bound held, the iteration criterion not met (D-32
-  ruling).
+- ~~G0–G6 of note §7 pass on `wp/X02` (G5 on the workstation, numbers in `evidence/X02/<C>/`).~~
+  *Amended (X02 review, 2026-11-07; D-32 ruling):* G0–G4 and G6 pass. G5 (a) and (e) pass. G5 (b) and (c) decided
+  against registration. G5 (d) ran on v3 per S-2: (i), (ii) met; (iii) both VERIFIED, bound held, the iteration
+  criterion not met (D-32 ruling). Numbers in `evidence/X02/69c4a24d…/` and `evidence/X02/dcb499ee…/`.
 - One `reviewer` pass.
 - `review.numerical` and `review.process_model` are not set by this ADR.
 

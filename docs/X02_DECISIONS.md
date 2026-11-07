@@ -169,8 +169,22 @@ Format: question → choice; alternative; reversible by; commit. Batched for the
   recorded false for this edit; ADR 0070 withdraws the neighbour-speedup claim; the package's claims rest on (ii) and
   identity, as D-29 did for the warm reactor. Rejected: dropping the criterion from the gate (narrows a gate after it
   failed); holding X02 for a new design. Reversible by Frank's X02 Q7. Carried out in WO-7: note §7 G5 (d)(iii) A-10,
-  ADR 0070 Consequences bullet 1 and Acceptance evidence (status stays Proposed), manifest check
-  `G5d_iii_iterations` with result `fail`.
+  ADR 0070 Consequences bullet 1 and Acceptance evidence (status stays Proposed; the review's Acceptance-evidence
+  text applied with it), manifest check `X02.G5d_iii_iterations` with result `fail` (`accepted_fail`, citing D-32).
+
+- **D-33 — The manifest id is `X02`, not the brief's `S16` alias.** The WO-7 brief (and the WO-6 handoff) assumed the
+  frozen pattern `^[PKTMSR][0-9]{2}[a-z]?$` refuses `X02`. That premise is stale: ADR 0059 D1 (Accepted, R-938,
+  `13eac60b`) widened `work_package` to admit `X[0-9]{2}[a-z]?` and rejects S-id aliases for roadmap packages
+  ("reverses the rejected alternative of R-565 and R-878"). Choice: `evidence/X02/2ab11b66…/manifest.json`, next to the
+  G5 records. Alternative: `evidence/S16/…` as briefed (contradicts an accepted ADR). Reversible by moving the
+  directory, its harvest entries and its support-matrix row in one commit.
+
+- **D-34 — G5b is recorded as `fail`, G5c as `not_applicable`; status `tested`.** G5b's amended criterion (A-3) is
+  "pass iff max ≤ floor/10, otherwise not registered"; 1.92e-7 > 1e-7, so the check is `fail`, its consequence (no
+  registration) carried out per review M-1/ruling 1. G5c is report-only. The brief's rule "tested only if every other
+  check is supported" is read as "no check `unsupported`" (the schema's enum); T08's manifest is the precedent for
+  `tested` with design-lane-accepted `fail` checks. Alternative: status `implemented` because two checks fail.
+  Reversible by editing the manifest's status and re-harvesting.
 
 ## Tokens for MSG's catalogue (§5.9; `wp/MSG` not merged)
 
