@@ -239,3 +239,12 @@ X02 (`wp/X02`): WO-1 fixed the shipped defect (failing-first: bundle lacked `war
 incl. control), WO-2 contract (Am. 15 schemas, admission A1/A2, `explicit-v1`, c_4 link `0af895a0…`, Q26 pins). F0 PASS.
 Questions batched for the X02 reviewer: provisional R-950; c_4 clash with `wp/MSG` (second merger becomes c_5);
 x₀ rejection reason form. Next: WO-3 (outer start), WO-4 (external-start plumbing) on a fresh engineer.
+
+## 2026-11-07 — RP merged (`ad1ffd74`); X02 WO-3/4 done
+
+RP merged into main (CI 42374299572 green at `98540811`; F0 PASS on main). X02 WO-3 (outer start; G3 a–f pass: restart
+1 outer iteration vs 2, w bitwise equal; replay MATCH) and WO-4 (external-start plumbing; G4 a–f on the synthetic warm
+child; G0: 163 recorded experiment keys recompute with 0 differences; F0 PASS). For the X02 reviewer: D-11 (the note's
+G3 (c) premise false — every grid point converges on the registered loop; test uses a lowered H₂ make-up), D-13 (a
+declared iterate can move one ulp through u = w₀/s), D-14 (recovery-edges E9 row), D-20, D-21 (global-state allowlist
+35 → 36). Next: WO-5 (warm reactor variant + workstation campaign), fresh engineer, within the CPU rule.
