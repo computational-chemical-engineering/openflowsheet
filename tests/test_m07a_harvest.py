@@ -65,7 +65,8 @@ T08_MANIFEST = "evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/manifest.j
 #: `tested`, 6 and 0) moves it on `wp/F0`, and its CI-fix re-take (`eba4bcb…`, `tested`, 5 and
 #: 0) on `wp/F0`. ADR 0055's RP package, filed as S15 (`3e7ccf0…`, `implemented`, 6 and 2), moves
 #: it on `wp/RP` (WO-R6c); its tested re-take at `fd28ff7…` (6 and 0) on `wp/RP` (WO-R7).
-HARVEST_SIZE = (70, 951, 122)
+#: X05's WO-3 manifest (`42c84f1…`, `tested`, 6 and 4) moves it on `wp/X05` (WO-4).
+HARVEST_SIZE = (71, 957, 126)
 #: The 0.2.0 release candidate C′ (M07 spec §25, R-485).
 C_PRIME = "ce993651ce37c1343e771b276160bd6623e43500"
 #: The commit tagged v0.2.0.
