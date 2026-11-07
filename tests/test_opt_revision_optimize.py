@@ -102,6 +102,43 @@ def test_g11_without_an_audited_solver_the_library_reports_unsupported(tmp_path:
     assert (record / REQUEST).read_bytes() == canonical_json(request)
 
 
+def test_an_unaudited_nlp_stack_is_unsupported_before_any_solve(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """D-44 (R-190, G-A10): an available solver whose loaded stack is not the audited one (here
+    PyNumero's ASL from `~/.pyomo/lib`, as `greybox.environment_problems` reports it) refuses the
+    optimisation as M03's `optimize` does — `UNSUPPORTED(NLP_SOLVER_UNAVAILABLE)` naming the
+    audit, the starts certified but no Ipopt call."""
+    from openflowsheet.studies.nlp import revision
+
+    problem = (
+        "PyNumero loads /home/user/.pyomo/lib/libpynumero_ASL.so (sha256 00), not the audited "
+        "build; set PYOMO_CONFIG_DIR=<env>/share/pyomo"
+    )
+
+    def solve_start(*args: Any, **kwargs: Any) -> Any:
+        raise AssertionError("Ipopt was called on an unaudited stack")
+
+    adapter = SimpleNamespace(
+        ipopt_version=lambda: "test-double",
+        environment_problems=lambda: [problem],
+        solve_start=solve_start,
+    )
+    monkeypatch.setattr(revision, "importlib", SimpleNamespace(import_module=lambda name: adapter))
+    document, request = _case("OPT-A1")
+    outcome = _optimize(document, request, tmp_path / "record", AVAILABLE)
+    report = outcome.report.as_document()
+    assert schema_errors("optimization-report.schema.json", report) == []
+    assert report["status"] == "UNSUPPORTED"
+    (reason,) = report["reasons"]
+    assert reason["code"] == "NLP_SOLVER_UNAVAILABLE", reason
+    assert reason["detail"].startswith(problem) and "(G-A10: PASS)" in reason["detail"], reason
+    assert report["candidate"] is None and report["starts"] == []
+    assert report["formulation"]["decisions"], report["formulation"]
+    (points,) = outcome.points
+    assert points.start is not None and points.start.verified and points.candidate is None
+
+
 def test_g11_a_fresh_interpreter_loads_neither_pyomo_nor_cyipopt() -> None:
     script = f"""
 import json, sys

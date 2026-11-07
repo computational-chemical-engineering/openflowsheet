@@ -49,6 +49,9 @@ from openflowsheet.run.manifest import policy_sha256
 from openflowsheet.studies.nlp.boundary import PHASE_BOUNDARY_FORM
 from openflowsheet.studies.nlp.closure import (
     ADAPTER_MODULE,
+    AUDIT_DOCUMENT,
+    AUDIT_GATE,
+    AUDIT_VERDICT,
     OptimizationReport,
     Readiness,
     ReadinessReason,
@@ -278,6 +281,24 @@ def optimize_revision(
     solver = dataclasses.replace(
         static.solver, versions={**static.solver.versions, "ipopt": adapter.ipopt_version()}
     )
+    # R-190, G-A10 (D-44): the loaded stack must be the audited one, as M03's `optimize` requires
+    # (`greybox.environment_problems`: PyNumero's ASL build, no forbidden object mapped) — else
+    # `UNSUPPORTED(NLP_SOLVER_UNAVAILABLE)` before any Ipopt call.
+    problems = adapter.environment_problems()
+    if problems:
+        reasons = (
+            ReadinessReason(
+                "NLP_SOLVER_UNAVAILABLE",
+                "; ".join(problems) + f" — see {AUDIT_DOCUMENT} ({AUDIT_GATE}: {AUDIT_VERDICT})",
+                AUDIT_DOCUMENT,
+            ),
+        )
+        refused = Readiness("unsupported", reasons, solver, tuple(starts))
+        report = _unsupported(
+            parsed, static, revision, reasons, formulation, refused, host.model_record()
+        )
+        points = tuple(StartPoints(start.point, None) for start in starts)
+        return _finish(record, report, points)
     options = {"max_iter": parsed.max_iter, "max_wall_time": parsed.max_wall_time_s}
     runs: list[Any] = []
     evidence: list[StartEvidence] = []
