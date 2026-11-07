@@ -244,6 +244,18 @@ def test_v4_fails_a_guarded_row_that_is_no_longer_the_closure_test() -> None:
     )
     failing = _not_closure_test(phase, shifted, point.state, terms)
     assert failing == (row.unit,)
+    # A split the re-solve finds in another regime is V4's `regime_changed`, not this clause's
+    # (OPT-N1's infeasible end point re-solves TWO_PHASE).
+    moved = type(record)(
+        record.signature,
+        tuple(
+            SplitRegime(s.unit_id, s.streams, s.kind, "TWO_PHASE", 0.5)
+            if s.unit_id == row.unit
+            else s
+            for s in record.splits
+        ),
+    )
+    assert _not_closure_test(phase, moved, point.state, terms) == ()
     check = _regimes(
         shifted, record.declared(), None, point.signature, phase_active=(), not_closure_test=failing
     )

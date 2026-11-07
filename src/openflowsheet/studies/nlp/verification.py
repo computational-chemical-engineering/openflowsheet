@@ -709,13 +709,19 @@ def _not_closure_test(
     phase: PhaseRows, record: RegimeRecord, state: Mapping[str, float], rows: _PhaseTerms
 ) -> tuple[str, ...]:
     """OPT §9 A-3: the guarded splits (a split row of the start) whose row at the re-solve is not
-    the closure's test there, `|a/Σn − margin| > 1e-10` (or no margin, or an empty feed)."""
-    margins = {split.unit_id: split.margin for split in record.splits}
+    the closure's test there, `|a/Σn − margin| > 1e-10` (or no margin, or an empty feed). A split
+    the re-solve finds in another regime is not judged here: its row is not that regime's test,
+    and V4 already fails it (`regime_changed`, `PHASE_REGIME_CHANGED`)."""
+    held = {"split_liquid": "LIQUID", "split_vapor": "VAPOR"}
+    resolved = {split.unit_id: split for split in record.splits}
     failing: list[str] = []
     for row in phase.rows:
         if not row.split:
             continue
-        margin = margins.get(row.unit)
+        split = resolved.get(row.unit)
+        if split is None or split.regime != held[row.kind]:
+            continue
+        margin = split.margin
         total = math.fsum(float(state[name]) for name in row.feed)
         value = rows.point[f"{PHASE_PREFIX}{row.row_id}"]
         if (
