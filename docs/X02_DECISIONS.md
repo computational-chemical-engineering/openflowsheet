@@ -42,3 +42,33 @@ Format: question → choice; alternative; reversible by; commit. Batched for the
 | --- | --- | --- |
 | `warm_start_source_missing(<job>)` | api_error message / `input` | `application/admission.py` `admit_warm_start` (A1) |
 | `warm_start_unit_unknown(<unit>)` | api_error message / `input` | `application/admission.py` `admit_warm_start` (A2) |
+
+## WO-3 (outer start)
+
+- **D-9 — The inner members when no x₀ source was declared.** An iterate-only declaration under a policy whose chain
+  is empty records `{status: absent, reason: not_declared}` (§5.7) with `selection: explicit-v1` (the declaration's
+  form; no selection rule ran) and no candidate. On `legacy_eo` an iterate-only declaration records the whole member
+  `rejected` (`route`) the same way (§5.2 "the whole member"). A declared `job_id` whose k = 0 inner solve never
+  consulted it (a k = 0 plan refusal, structural, so a cold run refuses too) records `absent` with reason `null`.
+  Alternative: the lineage `selection`. Reversible by: the `warm is None` block in `run_revision_session`.
+- **D-10 — G3 (c)/(d) "byte-identical to J_c's".** J_c ran its experiments live (`cache_hit: false`); every later
+  cold coupling in that project is served them from the store (`cache_hit: true`), so no later run can be byte-equal
+  to J_c itself. The reference is J_c′, a second cold run under the same cache state; the (c)/(d) records are
+  byte-equal to it, and their evaluation counts equal J_c's. Alternative: separate projects (wall times in the
+  attempts then differ). Test-only; `tests/test_x02_wo3_outer_start.py`.
+- **D-11 — G3 (c) needs a loop whose inner solve fails in the bounds.** The note's premise "start from (0.95, −50)"
+  does not hold for the registered stand-in loop: a 12-point grid over the bounds (X ∈ {0, 0.5, 0.95} × ΔT ∈ {−50, 0,
+  100, 250}, all four corners included) opens every time (3–4 inner iterations). G3 (c) takes the loop with its H₂
+  make-up lowered 0.74625 → 0.725 mol/s: X = 0.95 then needs more H₂ than the loop holds (inner fails), while
+  `coupling.initial` (0.15, 80) and the fixed point X = 0.25 do not (cold VERIFIED, 2 outer iterations). The test
+  proves both inner outcomes first, without the feature. **For the reviewer** (premise check). Test-only.
+- **D-12 — Trace messages (§5.9).** On the job's trace (the one the inner solves extend), existing event kinds:
+  `initializer_candidate` `coupling_warm_start(present|absent)` (absent iff the record is `absent` at resolution),
+  then `initializer_rejected` `warm_start_rejected(coupling_…)` before the cold coupling's events. The bundle's
+  `solve-events.json` is the final inner run's trace and is unchanged, so no identity moves.
+- **D-13 — Integrity is the note's three checks** (schema `#/$defs/coupling`, `outcome == CONVERGED`, last `w` 2·n
+  finite numbers), not also `coupling_record_problem`'s per-request key recomputation (the request keys play no part
+  in w₀). Alternative: add it (stricter, a few ms). Reversible by: `job_coupling_start`.
+- **Observation (not a choice), for the reviewer.** `couple` opens at u = w₀/scales (§5.4), so `iterations[0].w` is
+  fl(fl(w₀/s)·s): a declared iterate can move by an ulp (0.95 → 0.9499999999999998 at s = 0.1). A job source's w is
+  itself u·s and round-trips bitwise (G3 (a) measured). Keeping u = w₀/s as the note states.
