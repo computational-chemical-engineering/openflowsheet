@@ -367,3 +367,74 @@ Totals: TH-R1 18.3 s, M1 5.9 s, C-MW 54.4 s ("verify" also holds report/record w
   test_m05_study_record.py test_t08_w4_package_data.py`) 765 passed, 1 skipped; audited env on every `nlp`-marked file
   196 passed (a bare `m03_nlp_check.sh` with no file list errors collecting `test_s10_*` — no mpmath in that env; not
   OPT's).
+
+## WO-5 (phase admissibility rows, Q4 held mode, OPT-A3, G9 rerun)
+
+- D-35. DECISION: §4.7's open details → rows in `studies/nlp/phase.py`, one functional `ProblemSpec` (label
+  `OPT-PHASE-ROWS`, the host spec's variables and parameters) per start, cached on the point's handle. Row ids name the
+  expression's form (ADR 0002 D2.7: one label, so the id must): `phase.<unit>.bubble` (held LIQUID), `.dew` (VAPOR),
+  `phase.<stream>.subcooled` / `.superheated` (declared ports). The split row reads the host's own `LnKBlock` fed by
+  the split's `(T, P)` (feed flows in component order, as `tp_margin`); each row is `a/nominal` (molar_flow N0 = 3 mol/s,
+  K03's registered nominal; ports 1 K), gray-box scale 1, Pyomo component `phase_admissibility`. A declared port is a
+  spec `PhaseFlowBlock` `PF_<S>_liquid|vapor`; its `T_sat(P)` is `SaturatedFlowBlock` (the block `sat-T` reads)
+  restricted to `Tsat` (`PortSaturationBlock`, input P), provider and context the host's; the report's `unit` for a
+  port row is its **stream** (the declaration is the stream's: every reader declares the same block). V3 evaluates
+  the rows on the float reference path (`row_values`), V5 by the chain rule from the rows' twin (`phase:<id>` terms,
+  as `assessment:` ones); V4 exempts a split whose row is in V3's active set (|slack| ≤ TAU_ACTIVE) and records
+  `phase_bounds_active: {units, rows}` in its detail; the revision candidate carries `phase_bounds_active` (always,
+  possibly `[]`) and `regime_note` (§4.6's words) when it or the assessment's `regime_bounds_active` is non-empty;
+  Q4's held mode records `held: [units]` in Q4's detail. Alternative: per-unit row ids without the form (two
+  expressions under one id). Reversible by: `e8311348`.
+- D-36. DECISION: which held regimes are `REGIME_MARGIN_UNDEFINED` → a held LIQUID/VAPOR split without a margin
+  (D-12: `pr-c1-v1`, composition-dependent K) or without a `LnKBlock` fed by its `(T, P)`, and a declared port whose
+  `T_sat` raises `DomainError` at the start's P; each fails its start `START_NOT_CERTIFIED(<k>,
+  REGIME_MARGIN_UNDEFINED): REGIME_MARGIN_UNDEFINED(<unit>); …` (D-28's detail pattern). Alternative: build the
+  ideal bubble/dew row anyway (not the closure's test there, F2). Reversible by: `phase_rows`'s `undefined`.
+- D-37. **ESCALATED (premise false):** G10 expects OPT-A3 `KKT_POINT_VERIFIED` at the bubble point, but V1's cold
+  re-solve there is `CERTIFICATE_NOT_VERIFIED`: K04's regularity check on the target system (after alias elimination,
+  equilibrium rows included) is `ILL_CONDITIONED` — the trivial V = 0 branch and the two-phase branch meet at the
+  bubble point, so rcond ∝ distance. Measured on OPT-A1's flowsheet (Q* = 14232.35459443206 W), cert status by
+  Q* − ΔQ: ΔQ 1 W rcond 2.27e-6 VERIFIED; 0.1 W 2.27e-7 VERIFIED; 0.01 W 2.27e-8 ILL_CONDITIONED; … 2.7e-7 W
+  6.1e-13; 0 RANK_DEFICIENT; −1e-3 W (TWO_PHASE) ILL_CONDITIONED. Ipopt's optimum (Q* − 2.7e-7 W, |T − T_b| = 9e-10 K)
+  is therefore `NOT_VERIFIED` (V1 fail). A lifted split's row is "active" (|a/N0| ≤ 1e-6) only within ~1e-2 W of Q*,
+  where the certificate already fails, so V4's exemption and Q4's held mode cannot be reached by a lifted split as
+  the gates stand (thermal port rows have no such bifurcation; not exercised at an active port). Options for the
+  design lane: (a) V1 at a candidate with an active split row judges regularity on the held-regime system (regular:
+  the converged attempt's Newton system) — a K04/V1 policy change; (b) G10 expects `NOT_VERIFIED` with a typed boundary
+  reason; (c) certify a point stepped back into the interior (moves T ≥ 3e-5 K, breaks G10's 1e-6 K). Default until
+  ruled: no numerics change; G10's Ipopt part is a passing test, G10-as-designed is `xfail(strict=True)`. Commit
+  `247e2ea5`.
+- D-38. DECISION: a converged but UNVERIFIED re-solve on a revision host → V2–V5 `not_evaluated`
+  (`resolve_not_certified`) after V1 `fail`, instead of `verification raised ValueError … no held system` (pre-WO-5
+  defect, seen on OPT-A3). SYN-001 (no held system) unchanged. Alternative: take regimes from an uncertified point.
+  Reversible by: `01b9650c`.
+
+### Gates (WO-5, 2026-11-07, TRS2, worktree `wp/OPT`)
+
+- G2: `scripts/opt_m03_dump.py` base `2dcb5772` vs WO-5 tree: **identical**, default env (`6e028e8d…`) and audited
+  env `--nlp` (`8cfe7c7b…`), the WO-4 hashes. G1 F0 PASS (M1 50/50, M2 61/61, M3 61/61, M4 61/61, M5 61/61, M6 85/85,
+  M7 52/52, M8 105/105, M9 35/35). Policy `--check` equals v2; `analytic.py --check`, `performance.py --check` pass;
+  mypy: the 3 pre-existing `benchmarks/opt` errors only.
+- OPT reports vs base (wall times blanked): **not byte-identical, by design** — every LIQUID-held split adds a phase
+  row to the NLP. OPT-A1: Q bitwise unchanged (9000.00000009091), differences = the row's value/gradient/slack and
+  Ipopt's final complementarity/dual infeasibility; OPT-A2 r 0.30000000004620614 (err 4.6e-11 ≤ 1e-6), Q
+  2700.000000506764 (rel 1.9e-10 ≤ 1e-6); A2b r err 6.2e-11, T 330.0000000010101; C0 Q 9000.00000009091 (rel 1.0e-11),
+  opex 2073.600000020946. All within G7/G8 (tests pass); phase rows inactive (slack 0.387 at A1's optimum).
+- G9 rerun: OPT-N1 → `INFEASIBLE_REPORTED` (Ipopt 2, Infeasible_Problem_Detected). G10: Ipopt 0 in 7 iterations,
+  Q = 14232.354594159335 vs Q* 14232.35459443206 (|T − T_b| 9.1e-10 K ≤ 1e-6) — passes; status `NOT_VERIFIED`, V1 fail
+  (D-37) — **G10 FAILS as designed** (xfail strict).
+- Tests: default env `test_opt_*.py test_m03_*.py test_e01_*.py test_k01_schemas.py test_m05_study_record.py
+  test_t08_w4_package_data.py` at `247e2ea5`: 773 passed, 1 skipped; of them `test_opt_phase_rows.py` 8 (row vs
+  mpmath K-table 1e-12, twin = float path bitwise, Jacobian vs central differences, TH-C1/TH-V1 port rows vs the
+  kernel's T_sat, M1 none, undefined, second block, Q4 held mode, REGIME_MARGIN_UNDEFINED start refusal). Audited env
+  (`m03_nlp_check.sh`: `test_opt_benchmarks_nlp.py test_m03_nlp_greybox.py test_e01_b_nlp.py test_e01_integration.py`)
+  29 passed, 1 xfailed.
+- G17 rerun (record; audited env, one process): TH-R1 VERIFIED, H.Q* 26882.98570346 W, 10/10 iterations (WO-4b 16/25;
+  4 port rows `phase.S{1,2,7,8}.subcooled`, inactive), total 11.6 s; M1 VERIFIED T* 332.69149 K, 8/8 it, no rows, 6.4 s;
+  C-MW unchanged: s0 Ipopt −2 (46 it), s1 Ipopt 0 (61 it), res/jac/prop calls 7032/49/102987 and 5690/64/31922 as
+  WO-4b, 54.5 s.
+- **C-MW (open item (2), measured):** WO-5 does not let C-MW's 19 TWO_PHASE stages pass. TWO_PHASE gets no row ("held by
+  V, L ≥ 0"), and nothing undefined, but V4 still judges every split's margin and Q4′ every PH split's: margins are
+  `null` (D-12, composition-dependent K), so both starts fail V4 (19 inside τ_regime) and V5 (`REGIME_MARGIN_UNSUPPORTED`
+  ×19). Start 1 passes V1, V2, V3, V6 — the null margins are its only failing cause. Item (1) unchanged: the
+  ethanol `DomainError` on ~99 % of residual calls (zero-at-start flows unbounded, §4.2.3) — for the reviewer.

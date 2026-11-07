@@ -1,27 +1,34 @@
 # OPT handoff (build lane, branch `wp/OPT`, worktree `.claude/worktrees/opt`)
 
 Design: `docs/design/OPT-revision-optimisation.md` (§4.1 host, §4.2 revision host, §4.3–4.8, §4.11, §5 WOs, §6 gates);
-ADR 0071 (Proposed). Build decisions, facts and gate numbers: `docs/OPT_DECISIONS.md` (D-1…D-34).
+ADR 0071 (Proposed). Build decisions, facts and gate numbers: `docs/OPT_DECISIONS.md` (D-1…D-38).
 
 ## Done
 
 - **WO-1/WO-2** — `studies/nlp/host.py`, `revision_host.py` (`decision_map`, `RevisionNlpHost`). G2 tool
   `scripts/opt_m03_dump.py`. **WO-3** — request schema, `studies/nlp/request.py`, platform probe, `validate` lift.
-- **WO-4** — `FullSpaceNlp` over held systems (D-23); V2/V4/V5 on the revision host (D-25); `revision.optimize_revision`
-  (D-24/27); report `revision` member by `$ref` (D-28, D-30); `benchmarks/opt/` (OPT-A1, A2, A2b, N1; D-29).
-- **WO-4b** — output blocks `formulation.OutputBlock` (D-31, proved inert: G2 + OPT reports identical vs `c6755d86`);
-  E01 binding at the first passing start (D-32, supersedes D-26), OPT-C0 cost benchmark (D-33); audited-env record
-  test (§4.8); G17/F5 (`benchmarks/opt/performance.py`, D-34). Numbers: `docs/OPT_DECISIONS.md` WO-4b gates.
+- **WO-4/WO-4b** — `FullSpaceNlp` over held systems, V2/V4/V5 on the revision host, `optimize_revision`, records,
+  output blocks (D-31), E01 binding (D-32), OPT-C0, G17/F5 (D-34). `benchmarks/opt/`.
+- **WO-5** — `studies/nlp/phase.py` (rows as a functional program; D-35), `RevisionNlpHost.phase_rows`,
+  `REGIME_MARGIN_UNDEFINED` at the start phase (D-36), second output block `phase_admissibility`, V3/V4/V5 with phase
+  rows, Q4 held mode (`evaluate_sensitivity(held=)`, `host.sensitivity(held=)`), candidate `phase_bounds_active` and
+  `regime_note`; D-38 (uncertified re-solve judged no further than V1); OPT-A3 + G9 rerun (N1 → INFEASIBLE_REPORTED).
+  Commits `e8311348`, `01b9650c`, `247e2ea5`; gate numbers in `docs/OPT_DECISIONS.md` "Gates (WO-5)".
+
+## Open (design lane, at OPT's reviewer pass)
+
+- **D-37 (premise false, blocks G10):** at a lifted split's bubble point the cold re-solve's K04 certificate is
+  ILL_CONDITIONED (rcond ≈ 2.27e-6·ΔQ W), so V1 fails at any candidate whose split row is active; G10-as-designed is
+  `xfail(strict=True)` in `tests/test_opt_benchmarks_nlp.py`. Options (a)/(b)/(c) in D-37.
+- C-MW (measured after WO-5): TWO_PHASE gets no row; V4/V5 still fail on the 19 `null` margins (D-12). Ethanol
+  zero-flow `DomainError` (§4.2.3 bounds) unchanged.
+- Pending rulings: D-12, D-18, D-24 (`[[]]` corner), D-28, D-30, D-32; brief's "G7/G8/C0 byte-identical" vs design —
+  the phase row changes those Ipopt problems (numbers within the gates: "OPT reports vs base" in Gates (WO-5)).
 
 ## Next
 
-- **WO-5** (phase rows as a second `OutputBlock`, component `phase_admissibility`; Q4 held mode;
-  `phase_bounds_active`, `regime_note`; OPT-A3; G9 rerun), **WO-6**, **WO-7** (G19 interior cost by golden section,
-  G20 LCA) as the design note §5. WO-6 also owes D-19 (validate member, served schema, CLI) and U05 text.
-- Design lane (OPT's reviewer pass): D-12, D-18, D-24 (`[[]]` starts corner), D-28, D-30, D-32 (binding rules), and
-  **D-34's escalations**: C-MW's zero-flow ethanol columns unbounded by §4.2.3 → twin `DomainError` on ~99 % of
-  residual calls; C-MW's 19 held TWO_PHASE stages have `null` PH-split margins → V4 fails, V5 refused, so no C-MW start
-  can verify.
+- **WO-6** (job `optimize`, replay, CLI, fixture record, surface link; owes D-19 and U05 text), **WO-7** (G19 cost by
+  golden section, G20 LCA, user doc, manifest, full gate before merge).
 
 ## How to run
 
@@ -33,5 +40,6 @@ ADR 0071 (Proposed). Build decisions, facts and gate numbers: `docs/OPT_DECISION
 - G2: base dumps from a `git archive <base>` copy; the audited env needs `PYTHONPATH=<root>/src:<m05>/.reference-
   downloads/m03-ipopt/nlp-test-tools` and `OMP_NUM_THREADS=1`. OPT nlp tests: `tests/test_opt_benchmarks_nlp.py`.
 
-Anchors: `revision.py` `optimize_revision`, `_bind_assessment`, `_Record`; `formulation.py` `FullSpaceNlp.__init__`,
-`OutputBlock`, `_add_block`; `greybox.py` `build_model`, `solve_start`; `verification.py` `_gross`, `_regimes`.
+Anchors: `phase.py` `phase_rows`, `PhaseRows`; `revision.py` `optimize_revision` (start loop), `_phase_members`;
+`formulation.py` `FullSpaceNlp._hold_phases`; `verification.py` `verify_candidate`, `_phase_terms`, `_regimes`;
+`sensitivity.py` `_Run._regimes`.
