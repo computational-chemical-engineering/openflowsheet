@@ -429,6 +429,11 @@ Design `docs/design/OPT-revision-optimisation.md` §7. Defaults, acted on unless
   also works on ARM machines without Ipopt.
 - **Q5:** limits per job. Default: 32 starts, 500 iterations and 120 s per start.
 - **Q6:** commit the optimum as a new revision automatically? Default: no; the result carries a change you commit.
-- **Q7:** include optima that sit on a phase boundary (e.g. a flash just at its dew point) in 0.4? Default: yes.
+- **Q7 (reworded 2026-11-08 after measurement):** an optimum that sits exactly at a boiling (bubble) or dew point
+  cannot be certified the ordinary way: the equations are singular there by nature. The amended design verifies it on
+  a reduced form that removes exactly that one direction, and flags the result as a phase-boundary optimum; the
+  ordinary solve certificate stays unverified and the record says which check passed. Default: verify with the flag.
+  Alternative: report such optima as found but not verified.
+- **Q9 (new):** should ordinary `solve` runs use the same reduced check at a boiling/dew point? Default: not in 0.4.
 - **Q8:** audit Ipopt for ARM in 0.4? Default: no (x86-64 only; ARM replays but does not optimise).
 - Also: accept ADR 0071 (it lifts the old "optimisation unsupported" refusal and adds an `optimize` job).

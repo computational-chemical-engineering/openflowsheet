@@ -374,3 +374,13 @@ margins still fail V4/V5 (D-12); zero-at-start ethanol still unbounded.
 DECISION: consult a fresh architect now (brief `docs/briefs/OPT-architect-consult.md`): three premises are false by
 measurement, which is the case the budget rule names for a mid-build consult; WO-6 waits for the amendment so it does
 not build on the old text. Alternative: fold into the reviewer pass after WO-7. Reversible by: n/a (a consult).
+
+## 2026-11-08 — OPT design amendment (`9318904a`, note §9, ADR 0071)
+
+A-1 (D-37): V1 may pass on a "phase-boundary form" (the certificate's matrix minus the active splits' pinned columns
+and dropped rows; same screen/thresholds/grade); K04 and ordinary certificates unchanged; the record names the basis.
+A-2: zero-at-start free flows form a zero subsystem, held at 0 when square (exact), else bounded [0, ∞); V4
+`ZERO_SUBSYSTEM_CHANGED`. A-3: margins are the closure's own test (TWO_PHASE: smaller phase flow / N0); rows only where
+guarded; else admitted "unguarded" and listed (R-924) — replaces D-12's refusal. New WO-5b (A-2, A-3), WO-5c (A-1);
+gates G10 amended, G10a–d, G22–G24. Frank: Q7 reworded, Q9 new. Architect least sure of F6 (other certificate checks at
+T_b), F7 (C-MW zero subsystem square), F8 (pr-c1 closure value semantics).
