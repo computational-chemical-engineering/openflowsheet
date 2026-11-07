@@ -690,8 +690,7 @@ pass vacuously.
 - A1 fires for an unknown id, for a `reproduce` job and for a solve job without a solution state (3 cases, each
   `invalid_request` with the pointer and message of §5.1).
 - With a tampered `solution-state.json` (one value changed, hash kept): `rejected` with
-  `warm_start_rejected(integrity)`, and the run is otherwise identical to cold (`external-coupling.json` absent;
-  `solution-state.json` R0-equal).
+  `warm_start_rejected(integrity)`, and the run's solution state and certificate are R0-equal to a cold run's.
 
 **G3 — Outer start** (stand-in, CI). J_c is the cold run of the stand-in loop.
 
