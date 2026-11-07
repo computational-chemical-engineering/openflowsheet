@@ -46,6 +46,7 @@ from openflowsheet.compile.casadi_backend import TwinEvaluationError
 from openflowsheet.models.revision_flowsheet import si_unit
 from openflowsheet.orchestrator.trace import SolvePolicy
 from openflowsheet.run.manifest import policy_sha256
+from openflowsheet.studies.nlp.boundary import PHASE_BOUNDARY_FORM
 from openflowsheet.studies.nlp.closure import (
     ADAPTER_MODULE,
     OptimizationReport,
@@ -99,6 +100,12 @@ REGIME_MARGIN_UNDEFINED: Final = "REGIME_MARGIN_UNDEFINED"
 #: §4.6 (E01 N5): the candidate's words when a phase or regime row is active.
 PHASE_REGIME_NOTE: Final = (
     "KKT point of the held-regime problem; the physical derivative across the boundary is one-sided"
+)
+
+#: §9 A-1: added to `regime_note` when the candidate's V1 passed on the phase-boundary form.
+BOUNDARY_NOTE: Final = (
+    "the simulation certificate of this design is UNVERIFIED (rank limitation at the phase "
+    "boundary of {units}); its regularity is judged with those splits held"
 )
 
 Progress = Callable[[str, Mapping[str, Any]], None]
@@ -324,6 +331,12 @@ def optimize_revision(
                 candidate.kkt.second_order
                 if candidate is not None and candidate.kkt is not None
                 else "not_assessed"
+            ),
+            # §9 A-1: numerical verification is reported apart from optimality evidence (§2.5).
+            **(
+                {"numerical_verification": candidate.basis}
+                if candidate is not None and candidate.basis is not None
+                else {}
             ),
         },
         limits={
@@ -626,6 +639,7 @@ def _candidate_members(
             edits.append({"operation": "set", "path": [*path, "unit"], "value": unit})
     point = run.verification.point
     return {
+        "certificate_basis": run.verification.basis,
         "change_set": {
             "edits": edits,
             "expected_revision": document.get("revision_id"),
@@ -661,6 +675,10 @@ def _phase_members(
     members: dict[str, Any] = {"phase_bounds_active": active}
     if active or (assessment is not None and assessment.get("regime_bounds_active")):
         members["regime_note"] = PHASE_REGIME_NOTE
+    v1 = next(check for check in candidate.checks if check.check == "V1")
+    if candidate.basis == PHASE_BOUNDARY_FORM:
+        units = ", ".join(v1.detail["boundary_form"]["splits"])
+        members["regime_note"] = f"{PHASE_REGIME_NOTE}; {BOUNDARY_NOTE.format(units=units)}"
     if rows.unguarded:
         members["regimes_unguarded"] = list(rows.unguarded)
     return members

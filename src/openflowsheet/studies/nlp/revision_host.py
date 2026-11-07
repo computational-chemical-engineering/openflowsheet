@@ -50,6 +50,7 @@ from openflowsheet.application.revision_run import (
 )
 from openflowsheet.compile.casadi_backend import (
     ParametricTwin,
+    TwinEvaluationError,
     compile_parametric_twin,
     compile_problem,
 )
@@ -62,6 +63,14 @@ from openflowsheet.orchestrator.revision import instances_of
 from openflowsheet.orchestrator.splits import region_splits
 from openflowsheet.orchestrator.trace import SolvePolicy
 from openflowsheet.run.manifest import started_now
+from openflowsheet.studies.nlp.boundary import (
+    CERTIFICATE,
+    PHASE_BOUNDARY_FORM,
+    BoundaryVerdict,
+    boundary_set,
+    certificate_target,
+    judge,
+)
 from openflowsheet.studies.nlp.formulation import VariableBound
 from openflowsheet.studies.nlp.host import (
     CertifiedPoint,
@@ -309,6 +318,9 @@ class _RevisionPoint:
     system: HeldSystem | None = None
     compiled: CompiledProblem | None = field(default=None, repr=False)
     phase: PhaseRows | None = field(default=None, repr=False)
+    #: §9 A-1: V1's phase-boundary judgment where it passed; the point then has a held system
+    #: although its certificate is not `VERIFIED`.
+    boundary: BoundaryVerdict | None = field(default=None, repr=False)
 
     @property
     def region(self) -> RegionResult | None:
@@ -515,11 +527,13 @@ class RevisionNlpHost:
 
     def held_system(self, point: CertifiedPoint) -> HeldSystem:
         """The region's converged attempt over the candidate's problem, with the plan's alias rows
-        (§4.2.1). Only a certified point has one."""
+        (§4.2.1). Only a certified point has one: `VERIFIED`, or passed by V1 on the
+        phase-boundary form (§9 A-1, `phase_boundary`)."""
         handle = _handle(point)
         if handle.system is None:
             region = handle.region
-            if not point.verified or region is None or region.final_system is None:
+            admitted = point.verified or handle.boundary is not None
+            if not admitted or region is None or region.final_system is None:
                 raise ValueError(f"the point is not certified ({point.outcome}): no held system")
             assert handle.run is not None and handle.run.solve_plan is not None
             eliminated = tuple(row.row_id for row in handle.run.solve_plan.eliminated_rows)
@@ -696,12 +710,78 @@ class RevisionNlpHost:
             x,
             request,
             certificate=(
-                CertificateEvidence.of(point.certificate) if point.certificate is not None else None
+                CertificateEvidence.of(point.certificate, self.basis(point) or CERTIFICATE)
+                if point.certificate is not None
+                else None
             ),
             splits=self.regimes(point).splits,
             twin_factory=twin_factory,
             held=tuple(held),
         )
+
+    def basis(self, point: CertifiedPoint) -> str | None:
+        """The basis V1 verified the point on (§9 A-1): `certificate` (`VERIFIED`),
+        `phase_boundary_form` (passed `phase_boundary`), else `None`."""
+        if point.verified:
+            return CERTIFICATE
+        return PHASE_BOUNDARY_FORM if _handle(point).boundary is not None else None
+
+    def phase_boundary(
+        self,
+        point: CertifiedPoint,
+        held: HeldSystem,
+        phase: PhaseRows | None,
+        *,
+        tau_active: float,
+    ) -> BoundaryVerdict:
+        """§9 A-1: V1's second basis at a re-solve whose certificate is not `VERIFIED`, judged
+        against the start's held system `held` and phase rows `phase` (its guarded rows, the
+        float reference path at x̂, `|a/N0| ≤ tau_active`). Where it passes the point is admitted:
+        it has a held system, regimes and sensitivities (Q1′ on this basis); its certificate and
+        bundle are unchanged."""
+        handle = _handle(point)
+        state = point.state
+        route = handle.route
+        converged = (
+            handle.run is not None
+            and handle.run.outcome == "CONVERGED"
+            and route is not None
+            and point.spec is not None
+        )
+
+        def boundary() -> tuple[tuple[LiftedSplit, Any], ...] | str:
+            assert state is not None and route is not None
+            if phase is None or not phase.rows:
+                return ()
+            try:
+                values = phase.values(state)
+            except TwinEvaluationError as error:
+                return str(error)
+            flowsheet = route.binding.flowsheet
+            splits = region_splits(
+                instances_of(flowsheet), flowsheet.units(), flowsheet.components
+            ).splits
+            return boundary_set(
+                phase.rows, values, splits, tau_active=tau_active, unguarded=phase.unguarded
+            )
+
+        verdict = judge(
+            converged=converged,
+            certificate=point.certificate,
+            policy=self.check_policy,
+            held_signature=held.signature,
+            signature=point.signature,
+            state=state,
+            boundary=boundary,
+            target=lambda: certificate_target(
+                route.binding,  # type: ignore[union-attr]
+                handle.document,
+                state,  # type: ignore[arg-type]
+            ),
+        )
+        if verdict.passed:
+            handle.boundary = verdict
+        return verdict
 
     def twin(self, decision_ids: Sequence[str]) -> ParametricTwin:
         """The base problem's twin with `decision_ids` symbolic, compiled once per ids: the same

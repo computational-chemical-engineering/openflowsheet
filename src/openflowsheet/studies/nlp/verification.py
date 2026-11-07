@@ -5,7 +5,10 @@ M03 spec §8.5; ADR 0032 D3. Termination is not feasibility and stationarity is 
 computed on the flowsheet **re-solved at d** by the production solver from the registered
 initializer — never on the optimizer's own state or measures:
 
-- **V1** the re-solve converges and its K04 certificate is `VERIFIED`;
+- **V1** the re-solve converges and its K04 certificate is `VERIFIED` (basis `certificate`); on
+  a revision host, alternatively the certificate is rank-limited only by a guarded LIQUID/VAPOR
+  split at its phase boundary and clauses (e1)–(e6) hold (basis `phase_boundary_form`, OPT §9
+  A-1, `studies/nlp/boundary.py`), the certificate itself staying `UNVERIFIED`;
 - **V2** a gross-error check of the optimizer's state against it (`‖S_x⁻¹(x_opt − x_sim)‖_∞ ≤
   1e-6`; a different branch or a negative-flow pseudo-solution, not a precision claim);
 - **V3** the decisions inside their box exactly, every inequality `ĝ ≥ −τ_feas` on `x_sim`, the
@@ -34,7 +37,7 @@ from __future__ import annotations
 import math
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
-from typing import Any, Final, Literal
+from typing import Any, Final, Literal, Protocol, cast
 
 import numpy as np
 import numpy.typing as npt
@@ -46,6 +49,7 @@ from openflowsheet.compile.reference import state_vector
 from openflowsheet.compile.spec import ProblemSpec
 from openflowsheet.models.syn001.flowsheet import Syn001Flowsheet
 from openflowsheet.numerics.scaling import Scaling
+from openflowsheet.studies.nlp.boundary import CERTIFICATE, PHASE_BOUNDARY_FORM, BoundaryVerdict
 from openflowsheet.studies.nlp.formulation import (
     AssessmentBinding,
     AssessmentClosure,
@@ -102,6 +106,14 @@ def _names_decisions(formulation: NlpFormulation) -> bool:
     """An expression names a decision (OPT §4.3); M03's never do."""
     ids = set(formulation.decision_ids)
     return any(name in ids for name in formulation.variables)
+
+
+class _BoundaryHost(Protocol):
+    """A host that judges V1's phase-boundary basis (OPT §9 A-1): `RevisionNlpHost`."""
+
+    def phase_boundary(
+        self, point: CertifiedPoint, held: HeldSystem, phase: PhaseRows | None, *, tau_active: float
+    ) -> BoundaryVerdict: ...
 
 
 @dataclass(frozen=True)
@@ -192,6 +204,9 @@ class CandidateVerification:
     #: OPT §4.6: V1's certified re-solve (its bundle, its document); in memory only, never
     #: compared or serialised.
     point: CertifiedPoint | None = field(default=None, compare=False, repr=False)
+    #: OPT §9 A-1: the basis V1 passed on (`certificate`, `phase_boundary_form`) on a revision
+    #: host; `None` where V1 failed and for SYN-001 (whose documents do not carry it).
+    basis: str | None = None
 
     def outcome(self, check: str) -> CheckOutcome:
         return next(item.outcome for item in self.checks if item.check == check)
@@ -266,19 +281,31 @@ def verify_candidate(
     names = CHECKS if binding is not None else M03_CHECKS
     checks: dict[str, VerificationCheck] = {}
     certificate = point.certificate
-    checks["V1"] = VerificationCheck(
-        "V1",
-        "pass" if point.verified else "fail",
-        {
-            "resolve_outcome": point.outcome,
-            "message": point.message,
-            "certificate_status": certificate.verification_status if certificate else None,
-        },
-    )
+    v1: dict[str, Any] = {
+        "resolve_outcome": point.outcome,
+        "message": point.message,
+        "certificate_status": certificate.verification_status if certificate else None,
+    }
+    admitted = point.verified
+    basis: str | None = None
+    if held is not None:
+        # OPT §9 A-1: on a revision host V1 passes on one of two bases, and says which.
+        if point.verified:
+            basis = CERTIFICATE
+            v1["basis"] = basis
+        else:
+            verdict = cast(_BoundaryHost, host).phase_boundary(
+                point, held, phase, tau_active=TAU_ACTIVE
+            )
+            v1.update(verdict.detail())
+            admitted = verdict.passed
+            basis = PHASE_BOUNDARY_FORM if admitted else None
+    checks["V1"] = VerificationCheck("V1", "pass" if admitted else "fail", v1)
     state = point.state
-    # A revision host's held system and regimes exist only at a certified point (OPT §4.2.1):
-    # a re-solve that converged without a VERIFIED certificate fails V1 and is judged no further.
-    if state is None or (held is not None and not point.verified):
+    # A revision host's held system and regimes exist only at a certified point (OPT §4.2.1;
+    # §9 A-1: or one V1 passed on the phase-boundary form): any other re-solve fails V1 and is
+    # judged no further.
+    if state is None or (held is not None and not admitted):
         reason = "no_simulation" if state is None else "resolve_not_certified"
         for check in names[1:]:
             checks[check] = VerificationCheck(check, "not_evaluated", {"reason": reason})
@@ -326,6 +353,7 @@ def verify_candidate(
                 simulation_state=dict(state),
                 sensitivity=None,
                 point=point,
+                basis=basis,
             )
         assessment = evaluated
     resolved = point
@@ -354,6 +382,7 @@ def verify_candidate(
                 simulation_state=dict(state),
                 sensitivity=None,
                 point=point,
+                basis=basis,
             )
         rows = found
         constraints = (*constraints, *rows.constraints)
@@ -401,6 +430,7 @@ def verify_candidate(
         sensitivity=sensitivity,
         assessment_values=None if assessment is None else dict(assessment.values),
         point=point,
+        basis=basis,
     )
 
 

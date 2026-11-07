@@ -520,6 +520,13 @@
             "not_assessed",
             "vacuous_at_vertex"
           ]
+        },
+        "numerical_verification": {
+          "enum": [
+            "certificate",
+            "phase_boundary_form"
+          ],
+          "description": "OPT §9 A-1: the basis the candidate's V1 passed on — its re-solve's certificate VERIFIED, or the phase-boundary form (the certificate's own matrix with the boundary splits held, clauses e1-e6; the certificate itself UNVERIFIED). Present on a revision optimisation's report with a candidate; numerical verification, reported apart from optimality evidence."
         }
       }
     },
@@ -1046,6 +1053,13 @@
             "type": "string"
           },
           "description": "OPT §9 A-3: the start's held LIQUID/VAPOR splits whose phase row would not be their closure's own test (no row; judged by V4's margin alone). Absent where none."
+        },
+        "certificate_basis": {
+          "enum": [
+            "certificate",
+            "phase_boundary_form"
+          ],
+          "description": "OPT §9 A-1: the basis V1 passed on at the candidate (see claims.numerical_verification); with phase_boundary_form, committing the change-set and solving gives an UNVERIFIED certificate (rank limitation at the phase boundary)."
         }
       }
     },

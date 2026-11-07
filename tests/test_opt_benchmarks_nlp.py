@@ -148,22 +148,47 @@ def test_g10_opt_a3_reaches_the_bubble_point(records: Path) -> None:
     assert abs(q - q_star) / 300.0 <= 1e-6, (q, q_star)
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason="OPT_DECISIONS D-37 (escalated): the cold re-solve's K04 certificate is ILL_CONDITIONED "
-    "within ~0.01 W (~3e-5 K) of the bubble point (the full system bifurcates there), so V1 "
-    "cannot pass at a lifted split's phase-boundary optimum",
-)
-def test_g10_opt_a3_is_verified_with_its_phase_row_active(records: Path) -> None:
-    """G10 as designed: `KKT_POINT_VERIFIED`, `phase_bounds_active = [U-PHF]`, `regime_note`."""
-    report = _check("OPT-A3", _run("OPT-A3", records))
+def test_g10_opt_a3_is_verified_on_the_phase_boundary_form(records: Path) -> None:
+    """G10 as amended (design §9.5, A-1): `KKT_POINT_VERIFIED` at the bubble point,
+    |Q − Q*| ≤ 1e-7·Q*, `phase_bounds_active = [U-PHF]`, `regime_note` with the boundary words;
+    V1 passed on basis `phase_boundary_form` with B `NO_RANK_LOSS_DETECTED`, while V1's bundle
+    certificate stays `UNVERIFIED` with one `rank_limitation` (and possibly `near_threshold`
+    items) as its only limitations; V5's multiplier of the row as written within 1e-4·λ* of
+    λ* = N0/(T_s·n_F·Σ z_i K_i ∂lnK_i/∂T) (mpmath, `benchmarks/opt/analytic.py`)."""
+    outcome = _run("OPT-A3", records)
+    report = _check("OPT-A3", outcome)
     assert report["status"] == "KKT_POINT_VERIFIED", report["reasons"]
     candidate = report["candidate"]
+    q = candidate["decisions"]["U-PHF.Q_spec"]
+    q_star = _expected("OPT-A3", "Q")
+    assert abs(q - q_star) <= 1e-7 * q_star, (q, q_star)
+    assert candidate["certificate_basis"] == "phase_boundary_form"
+    assert report["claims"]["numerical_verification"] == "phase_boundary_form"
+    checks = {check["check"]: check for check in candidate["checks"]}
+    v1 = checks["V1"]
+    assert v1["outcome"] == "pass" and v1["basis"] == "phase_boundary_form", v1
+    assert v1["certificate_status"] == "UNVERIFIED"
+    assert v1["target_regularity"]["status"] in ("ILL_CONDITIONED", "RANK_DEFICIENT")
+    form = v1["boundary_form"]
+    assert form["splits"] == ["U-PHF"]
+    assert form["regularity"]["status"] == "NO_RANK_LOSS_DETECTED"
+    (point,) = (
+        points.candidate
+        for points, start in zip(outcome.points, report["starts"], strict=True)
+        if start["final_decisions"] == candidate["decisions"]
+    )
+    assert point is not None and point.certificate is not None
+    assert point.certificate.verification_status == "UNVERIFIED"
+    kinds = [item.kind for item in point.certificate.limitations]
+    assert kinds.count("rank_limitation") == 1, kinds
+    assert set(kinds) <= {"rank_limitation", "near_threshold"}, kinds
     assert [item["unit"] for item in candidate["phase_bounds_active"]] == ["U-PHF"]
-    assert "regime_note" in candidate
+    assert "UNVERIFIED (rank limitation at the phase boundary of U-PHF)" in candidate["regime_note"]
     (item,) = candidate["phase_bounds_active"]
-    mu = _expected("OPT-A3", "multiplier")
-    assert abs(item["multiplier"] - mu) <= 1e-4 * mu, (item, mu)
+    assert item["row"] == _expected_text("OPT-A3", "phase_row")
+    lam = _expected("OPT-A3", "multiplier")
+    assert lam > 0 and abs(item["multiplier"] - lam) <= 1e-4 * lam, (item, lam)
+    assert checks["V5"]["outcome"] == "pass", checks["V5"]
 
 
 def test_c0_an_assessment_objective_reaches_the_hand_cost_optimum(records: Path) -> None:

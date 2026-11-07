@@ -23,8 +23,9 @@ drop is zero, so P = 1e5 Pa throughout):
   whose upper end exceeds the duty to the bubble point: the optimum is the bubble point
   Σ z_i K_i(T_b, P) = 1 (an mpmath root), Q* = Σ n_i c_p (T_b − T_in), the phase row
   `a = (Σ n_i − Σ n_i K_i(T))/N₀` (N₀ = 3 mol/s, K03's molar-flow nominal) active, its multiplier
-  in scaled decisions μ* = (∂φ/∂Q̂)/(∂a/∂Q̂) with Q̂ = Q/s_Q.
-
+  (design §9.5, G10 amended) in closed form λ* = N₀ / (T_s n_F Σ z_i K_i ∂lnK_i/∂T) at (T_b, P),
+  ∂lnK_i/∂T = (L_i − v_i (P − P_r))/(R T²) — independent of c_p, since the chain rule through
+  T(Q) cancels — and checked against μ* = (∂φ/∂Q̂)/(∂a/∂Q̂), Q̂ = Q/s_Q, differentiated numerically.
 Constants are chosen so that interior decisions sit ≥ 10 % of the box from either end and every
 start's single-phase state is ≥ 10 K below its bubble point (checked here, not assumed).
 
@@ -316,6 +317,14 @@ def expectations() -> dict[str, Any]:
     d_a = mp.diff(phase_row, q_a3 / s_q)
     assert abs(phase_row(q_a3 / s_q)) < mp.mpf("1e-25") and d_a < 0
 
+    def d_ln_k(component: str) -> Any:
+        return (L[component] - V[component] * (P - P_R)) / (R * t_b**2)
+
+    lambda_a3 = N0 / (
+        T_S * n_f * sum(FEED[i] / n_f * k_value(i, t_b, P) * d_ln_k(i) for i in COMPONENTS)
+    )
+    assert lambda_a3 > 0 and abs(lambda_a3 - d_phi / d_a) < mp.mpf("1e-20") * lambda_a3
+
     def s(value: Any) -> str:
         return mp.nstr(value, 30, min_fixed=-30, max_fixed=30)
 
@@ -348,7 +357,7 @@ def expectations() -> dict[str, Any]:
             "Q": s(q_a3),
             "objective": s(-t_b / T_S),
             "phase_row": "phase.U-PHF.bubble",
-            "multiplier": s(d_phi / d_a),
+            "multiplier": s(lambda_a3),
         },
         "margins_K": {k: s(v) for k, v in margins.items()},
         "interior_fraction": {k: s(v) for k, v in interior.items()},
