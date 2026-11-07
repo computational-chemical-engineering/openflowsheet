@@ -1,0 +1,63 @@
+{
+ "bundles": {
+  "off": "/home/runner/work/_temp/rc-install/bundle-off/SYN-001-nominal",
+  "on": "/home/runner/work/_temp/rc-install/bundle/SYN-001-nominal"
+ },
+ "checks": [
+  {
+   "expected_stray": "c2a8f1c164d1798ea4f452360f6bf03e9fea55e19bbdab3053be633cd7ec6250",
+   "id": "x05.installed_outside_the_tree_beneath_the_stray",
+   "package": "/home/runner/work/_temp/nolock/site-packages/openflowsheet",
+   "result": "pass",
+   "strays": {
+    "/home/runner/work/_temp/requirements.lock": "c2a8f1c164d1798ea4f452360f6bf03e9fea55e19bbdab3053be633cd7ec6250"
+   }
+  },
+  {
+   "expected_metadata_version": "2.2.4",
+   "id": "x05.numpy_metadata_and_import",
+   "imported_version": "2.2.4",
+   "metadata_version": "2.2.4",
+   "result": "pass"
+  },
+  {
+   "expected": {
+    "lock_findings": [
+     "the lock openflowsheet/_data/requirements.lock is missing or unreadable"
+    ],
+    "lock_sha256": "",
+    "state": "installed, `_data/requirements.lock` deleted from the installed copy"
+   },
+   "id": "x05.environment",
+   "lock_findings": [
+    "the lock openflowsheet/_data/requirements.lock is missing or unreadable"
+   ],
+   "lock_sha256": "",
+   "result": "pass"
+  },
+  {
+   "id": "x05.never_the_strays_hash",
+   "lock_sha256": "",
+   "result": "pass"
+  }
+ ],
+ "format": "t08-rc-v1",
+ "passed": true,
+ "provenance": {
+  "architecture": "aarch64",
+  "commit": "7c8d05e59dcef7c60b260b687b3cc4e06e5cbda0",
+  "environment_lock_sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4",
+  "github_actions": true,
+  "machine_class": "ci-aarch64",
+  "python": "3.13.18",
+  "threads": {
+   "MKL_NUM_THREADS": "1",
+   "OMP_NUM_THREADS": "1",
+   "OPENBLAS_NUM_THREADS": "1"
+  },
+  "tree_clean": true
+ },
+ "replayed": [],
+ "state": "installed-nolock",
+ "step": "lock-check"
+}

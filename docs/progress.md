@@ -109,15 +109,15 @@ canonicity, T07); ADR 0013 has Amendment 2 (routing on registered tolerances, T0
 
 ## Next executable action
 
-**X05 (replay from the wheel, ADR 0069 Proposed) is built on `wp/X05` (2026-11-07), not reviewed.** WO-1…WO-3
-done (`docs/X05_DECISIONS.md`, D-1…D-7, Q-N1 facts); the Q-F1 pins are the isolated commit `a58ef5a5`. Pending
-items: (1) Frank's acceptance of ADR 0069 (Q-F1…F3, `docs/FRANK_QUESTIONS.md`), then ADR 0007 Amendment 2 (ADR 0069
-§13) and the register lines (§12, numbered above `wp/MSG`'s and `wp/RP`'s R-942…R-949); (2) (done in WO-4: RP
-step 4's `a19.*` → `x05.*` after the main merge); (3) the single `reviewer` pass against ADR 0069, then merge. Evidence:
-`evidence/X05/42c84f1d983e30917608f3cd6ddbaf0f29766b1f/manifest.json`, `status: tested`, 27 pass / 4 unsupported
-(A20 sdist bytes, A21, A22 (b), A25 CI: the `dist`/`clean-install` jobs run only on a dispatch, not done). Gate PASS
-(14934 passed, 58 min), F0 PASS (M7 52/52), CI push run 42379232642 green on both `check` legs. (4) A dispatch of the
-RC distribution jobs on `wp/X05` to close those four.
+**X05 (replay from the wheel, ADR 0069 Proposed) is tested on `wp/X05` (2026-11-07), reviewed once, not `reviewed`.**
+WO-1…WO-4 done (`docs/X05_DECISIONS.md`, D-1…D-9); review `docs/reviews/X05-review.md` (M1, M2, S1 applied in WO-4:
+main merged, RP step 4 `a19.*` → `x05.*`, memo traceback cleared). Evidence:
+`evidence/X05/7c8d05e59dcef7c60b260b687b3cc4e06e5cbda0/manifest.json`, `status: tested`, 31/31 pass: gate PASS at
+`830e7556` (15138 passed, 54 min), F0 PASS (M7 52/52), dispatch run 42397255469 (`rc_distribution`) green on both legs
+(dist, clean-install, check, identity, default-install, bundle-set/replay); Q-N2: MATCH 52/52, compatible on both
+legs. **Next:** Frank's acceptance of ADR 0069 (Q-F1…F3, `docs/FRANK_QUESTIONS.md`), then at the merge ADR 0007
+Amendment 2 (§13), the register lines (§12, R-951… above X02's) and R-140's "Lifted by X05"; then merge. The 0.4 gate's
+`[4, "x05.*"]` pair waits for the 0.4.0 cut's specifier pass (`49506c90`).
 
 **V03 (0.3.0 release, `wp/V03-rc`, C = `a3e508e3`): WO-8 done in V03 spec §6.1's order (2026-10-31).** S13's manifest `tested` 48/48 (H1 `9e998beb`, generated at G `04c503e5`), ADRs 0053 and 0054 Accepted on it (H2 `e55f9efd`), step 18 at H2 `v0.3.0 tag may be proposed: YES` (log SHA-256 `ad31dc6b…`), A08's R part PASS, F9 4 of 4; build log `docs/V03_RC_DECISIONS.md`. **Next:** hand to Frank for the tag (an agent does not tag or push); after the tag, WO-9 (§5.3). Not `reviewed`.
 
