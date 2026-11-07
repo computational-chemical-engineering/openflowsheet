@@ -117,15 +117,22 @@ Am. 1–2). Foundations F0–F8 are designed in wave W1 during 0.4, then built i
   of F0 D17–D23.
 - **F0: MERGED** into main `97f07dce` (CI 42119225468 green both archs; gate PASS eba4bcb4). Every merge now runs
   `scripts/corpus_identity.py --check`. D20 open: TH-C2 CoolProp case once the host has the coolprop extra.
-- **MSG** (`wp/MSG`): WO-0…4, 6, 7, 8 done; WO-9/10 engineer running (gate, manifest, push). **WO-5 parked**: its
-  files are frozen by F0 M9 (R-940); redesign goes to MSG's reviewer pass (WO-9 C01/C02 strict xfails). Then reviewer
-  (batched questions in `docs/MSG_DECISIONS.md`, incl. A5-a), Frank's `explain.md` review, merge after gate + CI + F0.
+- **MSG** (`wp/MSG` `35403f42`): WO-0…12 done; review `docs/reviews/MSG-review.md` applied (WO-11/12); manifest
+  `evidence/MSG/9c76b939…` `implemented`; CI fails only `explain: human pending`. **Blocked on Frank's `explain.md`
+  review**, then `tested` + merge. At merge: renumber its R-942/R-943 (RP took R-942…R-949) and its c_4 link vs X02's.
 - **ST** (`wp/ST`, ADR 0068 Proposed, Am. 13): WO-1/2 done (`dff3e439`, `docs/ST_HANDOFF.md`); WO-3…7 wait for
   wp/MSG's merge (registry entry). G8 T05b:SC-1 strict xfail (E1 for ST's reviewer).
-- **RP** (ADR 0055 parts 1–3, `wp/RP`): WO-R1 RP doc on main (`6714958d`); WO-R2/R3 done (REL.A01–A10 PASS, A03 on
-  the 17 fixtures); WO-R6/R4 engineer running (brief `docs/briefs/REL-build-WO-R4-R6.md`). Then one reviewer pass over
-  R1–R6 (F-1…F-3, Q-*, Q-B*, gates[*]); ADR 0055's acceptance restated for the D2 deferral.
-- **Await Frank** (`docs/FRANK_QUESTIONS.md`): ADR 0068 acceptance, Q-11 (licence acceptance rows), `explain.md`.
+- **RP: MERGED** into main `ad1ffd74` (manifest `evidence/S15/fd28ff7b…` tested; gate PASS 15070; CI 42374299572
+  green). Before 0.4.0's K3: schema ADR admitting `REL[0-9]{3,}`; S-6 rehearsal of never-run steps; Frank: ADR 0055
+  acceptance, F-8.
+- **X05** (`wp/X05`, ADR 0069 Proposed): WO-1…3 engineer running; then reviewer. Frank: Q-F1…F3, acceptance.
+- **X02** (`wp/X02`, design `docs/design/X02-warm-starts.md`, ADR 0070 Proposed, Am. 15): WO-1 (shipped defect fixed)
+  and WO-2 done; WO-3/4 engineer running; WO-5 (warm reactor variant, workstation campaign), WO-6, reviewer. Frank:
+  Q1…Q6.
+- **Await Frank** (`docs/FRANK_QUESTIONS.md`): `explain.md` (blocks MSG), ADRs 0055/0068/0069/0070, Q-11, F-8,
+  X05 Q-F1…F3, X02 Q1…Q6.
+- **TRS2 CPU rule** (user via hub, 2026-11-07): ≤ ~36 busy cores of 48; one full gate at a time; no tests in several
+  worktrees at once. GitHub API: poll CI at most every 10 min (rate limit hit 2026-11-07).
 - Host load ~50 from other users: wall-time budget tests flaky (re-run alone).
 **Next actions for 0.4 (roadmap §0.4; at most 2 agents at a time):**
 1. **Wave 1: done** (MSG architect pass, W1 specifier, P1–P3, reviews; W1 closed R-941).
