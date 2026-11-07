@@ -84,8 +84,9 @@ EXTERNAL_ROOT_VARIABLE: Final = "OPENFLOWSHEET_EXTERNAL_ROOT"
 #: start-capable child exports after an `outlet` answer, in the attempt's working directory.
 START_FILE: Final = "start.json"
 PROFILE_FILE: Final = "profile.json"
-#: ADR 0070 D10: the packaged child scripts a variant's `runner_sha256` selects among.
-CHILD_SCRIPTS: Final = ("child.py", "child_warm.py")
+#: ADR 0070 D10 (D8 as amended by the X02 review): the packaged child scripts a variant's
+#: `runner_sha256` selects among; today `child.py` alone (no start-capable runner is shipped).
+CHILD_SCRIPTS: Final = ("child.py",)
 
 
 def start_capable(variant: Variant) -> bool:
@@ -256,7 +257,7 @@ def pinned_program(variant: Variant) -> ChildProgram:
     application never builds an environment; an absent one is `environment_unavailable`.
 
     ADR 0070 D10: the child is the packaged script whose bytes hash to the variant's
-    `runner_sha256` (`child.py` or `child_warm.py`); when none does, `child.py`, so that a
+    `runner_sha256` (among `CHILD_SCRIPTS`); when none does, `child.py`, so that a
     mismatch surfaces as before (the handshake's `environment_mismatch`)."""
     root = external_root() / str(variant.evaluation["environment"]["env_id"])
     pinned = variant.evaluation.get("runner_sha256")

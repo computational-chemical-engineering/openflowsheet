@@ -181,7 +181,7 @@
       "line": "@functools.cache",
       "patterns": ["cache"],
       "occurrences": 1,
-      "justification": "X02 (ADR 0070 D10, design note \u00a75.5 'memoising the packaged scripts' hashes'): `_packaged_child_sha256`, the SHA-256 of a packaged child script by name (or None when absent), a pure function of package files that are immutable for the process's life; at most two entries (`child.py`, `child_warm.py`)."
+      "justification": "X02 (ADR 0070 D10, design note \u00a75.5 'memoising the packaged scripts' hashes'): `_packaged_child_sha256`, the SHA-256 of a packaged child script by name (or None when absent), a pure function of package files that are immutable for the process's life; at most one entry per packaged child script (today `child.py` alone, X02 review ruling 1)."
     },
     {
       "file": "thermo/iapws95.py",

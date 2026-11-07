@@ -96,7 +96,8 @@ Format: question → choice; alternative; reversible by; commit. Batched for the
   is set, so a test double without it still runs every cold variant.
 - **D-21 — `pinned_program`'s memo (§5.5 "memoising the packaged scripts' hashes") is a module `@functools.cache`.**
   T07 G20 lists every such process-global: entry added to `tests/data/t07_global_state_allowlist.json` (immutable
-  package files, at most two entries) and the pinned per-pattern count 35 → 36. Alternative: no memo (hash two files
+  package files, one entry per packaged child script: today `child.py` alone, after the review's ruling 1) and the
+  pinned per-pattern count 35 → 36 (unchanged by the retirement). Alternative: no memo (hash two files
   per backend). Reversible by: drop the decorator and both edits.
 
 ## WO-5 (the warm reactor)
