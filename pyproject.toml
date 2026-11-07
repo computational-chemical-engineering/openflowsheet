@@ -123,6 +123,8 @@ openflowsheet = [
     "_data/web/js/*.js",
     "_data/web/js/model/*.js",
     "_data/web/js/screens/*.js",
+    # X05 (ADR 0069 D1): the lock the runtime closure is verified against (`run/lock.py`).
+    "_data/requirements.lock",
 ]
 # The MCP tool descriptions and their review record are served text (T07 W6c, gate G15).
 "openflowsheet.application.bindings" = ["descriptions/*.md", "descriptions/REVIEW.json"]
