@@ -21,6 +21,10 @@ part of that sentence is a claim this module checks before it is allowed to publ
   (Q3) and refused alone when it fails.
 - Within `τ_regime` of a phase boundary the derivative may be one-sided or undefined (blueprint
   §6.3), so the caller's phase-split margins are judged too (Q4, Q4′).
+- On a **held system** (`SensitivityHost.system`, OPT design §4.2.1) the root is the region's
+  converged attempt's: its rows and label rows over its free columns, every other column held at
+  its certified value. `K` is then the system's rows and labels, the columns its free ones, and
+  the alias rows its eliminated ones; without a system every path is M03's.
 
 Every failing qualification is listed in the specification's table order; a refused request or
 column carries `None`, never zeros and never the values the solve would have produced, and nothing
@@ -40,7 +44,7 @@ import dataclasses
 import math
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
-from typing import Any, Final, Literal
+from typing import TYPE_CHECKING, Any, Final, Literal
 
 import numpy as np
 import numpy.typing as npt
@@ -67,8 +71,12 @@ from openflowsheet.numerics.linear import (
     LinearSolveRecord,
     solve_linear_kept,
 )
-from openflowsheet.numerics.scaling import Scaling
+from openflowsheet.numerics.scaling import REGISTERED_NOMINALS, Scaling
+from openflowsheet.orchestrator.region import LABEL_KIND
 from openflowsheet.verify.regularity import PAIRING_FIELDS, RegularityEvidence, screen
+
+if TYPE_CHECKING:
+    from openflowsheet.studies.nlp.host import HeldSystem
 
 #: Spec §3.5: the policy every sensitivity result names. A different threshold is a new id.
 POLICY_ID: Final = "M03-sensitivity-v1"
@@ -188,17 +196,30 @@ class SensitivityRequest:
 @dataclass(frozen=True)
 class SensitivityHost:
     """What the core needs of a problem: the compiled problem and the spec it was compiled from
-    (the twin compiles the same spec), its K03 scales, and the alias-eliminated rows."""
+    (the twin compiles the same spec), its K03 scales, and the alias-eliminated rows.
+
+    `system` (OPT design §4.2.1) is the held-regime system the root solves: its rows, label rows
+    and free columns are then the kept rows and the columns, its eliminated rows the alias rows
+    (which must be `eliminated_rows`). `None` is M03's path, unchanged."""
 
     spec: ProblemSpec
     compiled: CompiledProblem
     scaling: Scaling
     eliminated_rows: tuple[str, ...] = ()
+    system: HeldSystem | None = None
 
     def __post_init__(self) -> None:
         unknown = sorted(set(self.eliminated_rows) - set(self.spec.equation_ids))
         if unknown:
             raise ValueError(f"eliminated rows {unknown} are not rows of the problem")
+        if self.system is not None:
+            if (
+                self.system.spec.variable_ids != self.spec.variable_ids
+                or self.system.spec.equation_ids != self.spec.equation_ids
+            ):
+                raise ValueError("the held system is not over this host's problem")
+            if set(self.system.eliminated) != set(self.eliminated_rows):
+                raise ValueError("the held system's eliminated rows are not the host's")
 
 
 @dataclass(frozen=True)
@@ -466,8 +487,15 @@ class _Run:
         #: The records of the solves that completed before a Q2′ failure left no `_Solved`.
         self.completed_records: tuple[LinearSolveRecord, ...] = ()
         eliminated = set(host.eliminated_rows)
+        #: The kept compiled rows; a held system's label rows follow them (`labels`).
         self.kept_rows = tuple(name for name in host.spec.equation_ids if name not in eliminated)
         self.alias_rows = tuple(name for name in host.spec.equation_ids if name in eliminated)
+        self.labels: tuple[tuple[str, str, str], ...] = ()
+        self.columns = host.spec.variable_ids
+        if host.system is not None:
+            self.kept_rows = host.system.rows
+            self.labels = host.system.labels
+            self.columns = host.system.free
 
     # -- bookkeeping ---------------------------------------------------------------------------
 
@@ -634,6 +662,8 @@ class _Run:
         by_id = dict(zip(evaluation.equation_ids, evaluation.values, strict=True))
         row = self.host.scaling.row
         scaled = np.array([by_id[name] / row[name] for name in self.kept_rows])
+        if self.labels:
+            scaled = np.concatenate([scaled, _scaled_labels(self.host, self.x, self.labels)])
         norm = float(np.max(np.abs(scaled))) if scaled.size else 0.0
         if norm <= TAU_ROOT:
             self._record("Q1", "pass", scaled_residual_inf=norm, threshold=TAU_ROOT)
@@ -686,8 +716,8 @@ class _Run:
         if jacobian.status != "ok":
             self._record("Q2", "not_evaluated", reason=f"jacobian {jacobian.status}")
             return None, None
-        if len(self.kept_rows) != len(self.host.spec.variable_ids):
-            shape = f"{len(self.kept_rows)}x{len(self.host.spec.variable_ids)}"
+        if len(self.kept_rows) + len(self.labels) != len(self.columns):
+            shape = f"{len(self.kept_rows) + len(self.labels)}x{len(self.columns)}"
             self._record("Q2", "fail", reduced_shape=shape)
             self._refuse(
                 "Q2",
@@ -695,7 +725,11 @@ class _Run:
                 f"the reduced system is {shape}, not square",
             )
             return None, None
-        target = _target(self.host, jacobian, self.kept_rows)
+        target = (
+            _target(self.host, jacobian, self.kept_rows)
+            if self.host.system is None
+            else _held_rows(self.host, jacobian, self.kept_rows, self.labels)
+        )
         evidence = screen(
             target,
             jacobian_identity={name: getattr(jacobian, name) for name in PAIRING_FIELDS},
@@ -958,16 +992,26 @@ def _solve(
     """Spec §3.6: factorize `Ĵ` once; `Ĵ X̂ = −F̂_p` for every column at once; Q3 on `X̂`.
 
     Returns the forward solve and the transposed solve on the same factorization; each raises
-    `LinearSolveFailedError` when its solve fails ADR 0004 D3."""
+    `LinearSolveFailedError` when its solve fails ADR 0004 D3.
+
+    On a held system the kept rows are its rows then its label rows (no parameter enters a label
+    row, so their `F̂_p` rows are zero) and every matrix is over its free columns."""
     kept = [name for name in host.spec.equation_ids if name not in set(host.eliminated_rows)]
     eliminated = [name for name in host.spec.equation_ids if name in set(host.eliminated_rows)]
+    system = host.system
+    if system is not None:
+        kept = [*system.rows, *(label for label, _, _ in system.labels)]
     parameter_scales = np.array([parameter.scale for parameter in request.parameters])
     f_p_kept = _scaled_parameter_jacobian(host, parameter_jacobian, kept, parameter_scales)
     rhs = -f_p_kept.toarray()
     solution, record, factorization = solve_linear_kept(target, rhs)
 
     if eliminated:
-        j_e = _scaled_rows(host, jacobian, eliminated)
+        j_e = (
+            _scaled_rows(host, jacobian, eliminated)
+            if system is None
+            else _held_rows(host, jacobian, eliminated, ())
+        )
         f_p_e = _scaled_parameter_jacobian(host, parameter_jacobian, eliminated, parameter_scales)
         tangent = j_e @ solution + f_p_e.toarray()
         alias = np.max(np.abs(tangent), axis=0)
@@ -975,6 +1019,10 @@ def _solve(
         alias = np.zeros(len(request.parameters))
 
     c_hat = _scaled_outputs(host, request)
+    if system is not None:
+        # A held column is a constant of the system: its derivative is zero.
+        position = {name: index for index, name in enumerate(host.spec.variable_ids)}
+        c_hat = sp.csr_matrix(c_hat[:, [position[name] for name in system.free]])
     forward = np.asarray(c_hat @ solution, dtype=np.float64)
 
     def adjoint() -> tuple[npt.NDArray[np.float64], LinearSolveRecord]:
@@ -1035,6 +1083,52 @@ def _scaled_rows(
     dense = _scaled_dense(host, jacobian)
     position = {name: index for index, name in enumerate(jacobian.row_ids)}
     return sp.csc_matrix(dense[[position[name] for name in row_ids], :])
+
+
+def _label_scale() -> float:
+    """A label row's `S_F` (T05b spec §7.2: K03's temperature nominal, as the region scales it)."""
+    return float(REGISTERED_NOMINALS[LABEL_KIND])
+
+
+def _scaled_labels(
+    host: SensitivityHost,
+    x: npt.NDArray[np.float64],
+    labels: Sequence[tuple[str, str, str]],
+) -> npt.NDArray[np.float64]:
+    """The label rows `T_out − T_label` at `x`, scaled by `S_F`."""
+    position = {name: index for index, name in enumerate(host.spec.variable_ids)}
+    return np.array(
+        [
+            (float(x[position[outlet]]) - float(x[position[source]])) / _label_scale()
+            for _, outlet, source in labels
+        ],
+        dtype=np.float64,
+    )
+
+
+def _held_rows(
+    host: SensitivityHost,
+    jacobian: JacobianResult,
+    row_ids: Sequence[str],
+    labels: Sequence[tuple[str, str, str]],
+) -> sp.csc_matrix:
+    """`S_F⁻¹ J S_x` on `row_ids` then `labels` (`+1` at `T_out`, `−1` at `T_label`, each where
+    that column is free), over the held system's free columns, by name."""
+    assert host.system is not None
+    dense = _scaled_dense(host, jacobian)
+    rows_at = {name: index for index, name in enumerate(jacobian.row_ids)}
+    columns_at = {name: index for index, name in enumerate(jacobian.col_ids)}
+    free = host.system.free
+    selected = dense[[rows_at[name] for name in row_ids], :][:, [columns_at[name] for name in free]]
+    if not labels:
+        return sp.csc_matrix(selected)
+    at = {name: index for index, name in enumerate(free)}
+    appended = np.zeros((len(labels), len(free)))
+    for k, (_, outlet, source) in enumerate(labels):
+        for name, value in ((outlet, 1.0), (source, -1.0)):
+            if name in at:
+                appended[k, at[name]] = value * host.scaling.column[name] / _label_scale()
+    return sp.csc_matrix(np.vstack([selected, appended]))
 
 
 def _scaled_parameter_jacobian(

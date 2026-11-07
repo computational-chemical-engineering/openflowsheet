@@ -13,6 +13,8 @@ float by `repr` (round-trips exactly) and every array as the hex of its float64 
 - `full_space/<problem>`: `FullSpaceNlp` at start 0 built as the M03 and E01 tests build it — its
   document, initial point, bounds, scalings, equality residual and Jacobian, outputs and their
   Jacobian, at the start and at a perturbed point;
+- `sensitivity/e01-th-c1/<mode>` (WO-2, G3): E01's revision sensitivity host on TH-C1 at A30's
+  two pins, `evaluate_sensitivity` in each mode — the `system=None` path of `SensitivityHost`;
 - with `--nlp` (the audited NLP environment, `OMP_NUM_THREADS=1`): `report/<problem>` — the solved
   `OptimizationReport` of NLP-1, NLP-INF and the E01 TAC binding with every `wall_time_s` blanked,
   the one member no two runs share (`scripts/e01_m03_dump.py`).
@@ -87,6 +89,42 @@ def full_space(nlp: Any) -> dict[str, Any]:
     return out
 
 
+def revision_sensitivities() -> dict[str, Any]:
+    """G3: E01's revision host on TH-C1 at A30's two pins (`tests/test_e01_b_studies.py`), every
+    mode, with no held system (`SensitivityHost.system` `None`, today's path)."""
+    from s11_thermal_support import committed_case, solve
+
+    from openflowsheet.studies import assessment as study_assessment
+    from openflowsheet.studies.sensitivity import (
+        OutputFunctional,
+        SensitivityRequest,
+        StudyParameter,
+        evaluate_sensitivity,
+    )
+
+    binding, run = solve(committed_case("TH-C1"))
+    assert run.state is not None
+    host = study_assessment.revision_sensitivity_host(binding.flowsheet, run.state)
+    x = np.array([run.state[name] for name in host.spec.variable_ids])
+    pins = {"B.T_spec": 673.15, "P.P_spec": 3.0e6}
+    dumped: dict[str, Any] = {}
+    for mode in ("forward", "adjoint", "both"):
+        request = SensitivityRequest(
+            context=study_assessment.evaluation_context(host.compiled),
+            parameters=tuple(
+                StudyParameter(pin, scale, 0.5 * scale, 1.5 * scale) for pin, scale in pins.items()
+            ),
+            outputs=tuple(
+                OutputFunctional.of_variable(name, scale)
+                for name, scale in (("S1.T", 300.0), ("S3.T", 673.15), ("S4.T", 300.0))
+            ),
+            mode=mode,  # type: ignore[arg-type]
+        )
+        result = evaluate_sensitivity(host, x, request)
+        dumped[f"sensitivity/e01-th-c1/{mode}"] = exact(result.as_document())
+    return dumped
+
+
 def main() -> int:
     root, out = Path(sys.argv[1]).resolve(), Path(sys.argv[2])
     with_nlp = "--nlp" in sys.argv[3:]
@@ -151,6 +189,7 @@ def main() -> int:
         if with_nlp:
             report = optimize(formulation, flowsheet({}))
             dumped[f"report/{name}"] = exact(blank(report.as_document()))
+    dumped.update(revision_sensitivities())
     out.write_text(json.dumps(dumped, sort_keys=True, indent=0) + "\n", encoding="utf-8")
     print(f"dumped {len(dumped)} entries{' (with solved reports)' if with_nlp else ''}")
     return 0
