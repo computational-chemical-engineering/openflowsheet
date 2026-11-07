@@ -201,3 +201,12 @@ DECISION: no second design-lane pass over WO-12's 51 completed entry texts. Alte
 Reversible by: running that check before 0.4.0's cut (user-facing text, no numerics).
 DECISION: X05 starts now (no prerequisite; roadmap design pass "none" but it touches replay identity and lifts R-140):
 recon → specifier for the ADR and test spec → build. Alternative: wait for RP/MSG merges. Reversible by: parking it.
+
+## 2026-11-07 — second crash; restart
+
+The workstation crash killed RP's full gate (at 55 %, no result) and the X05 specifier (context ~255k; it left
+`docs/derivations/scripts/x05_reference.py` untracked, no ADR). Restarted: RP's full gate at `fd28ff7b` (orchestrator,
+background); a fresh X05 specifier that adopts or revises the predecessor's script and writes ADR 0069.
+DECISION: fresh specifier rather than resuming the crashed one. Alternative: SendMessage to the 255k-context agent.
+Reversible by: n/a (the script carries its decisions; the fresh agent may revise them and must say so).
+DECISION: X02 recon now (architect pass next, roadmap). Alternative: wait. Reversible by: parking it.
