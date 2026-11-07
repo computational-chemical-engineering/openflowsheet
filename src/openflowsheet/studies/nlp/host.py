@@ -37,6 +37,7 @@ from openflowsheet.compile.casadi_backend import (
 from openflowsheet.compile.spec import ProblemSpec
 from openflowsheet.models import SpecificationError
 from openflowsheet.models.syn001.flowsheet import Syn001Flowsheet
+from openflowsheet.orchestrator.region import AttemptSystem
 from openflowsheet.orchestrator.tear import Syn001TearProblem
 from openflowsheet.studies.sensitivity import (
     Mode,
@@ -120,6 +121,22 @@ class HeldSystem:
         free, held = set(self.free), set(self.held)
         if free & held or free | held != set(self.spec.variable_ids) or len(free) != len(self.free):
             raise ValueError("the free and held columns do not partition the problem's variables")
+
+    @classmethod
+    def of_attempt(
+        cls, spec: ProblemSpec, attempt: AttemptSystem, eliminated: Sequence[str]
+    ) -> HeldSystem:
+        """The held system of a region's converged attempt (`RegionResult.final_system`) over
+        `spec`, with the plan's eliminated alias rows `eliminated` (§4.2.1)."""
+        return cls(
+            spec=spec,
+            rows=tuple(attempt.rows),
+            free=tuple(attempt.free),
+            held=MappingProxyType(dict(attempt.held)),
+            labels=tuple(attempt.labels),
+            eliminated=tuple(eliminated),
+            signature=attempt.signature,
+        )
 
 
 @dataclass(frozen=True)
