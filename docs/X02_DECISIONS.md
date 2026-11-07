@@ -152,11 +152,24 @@ Format: question → choice; alternative; reversible by; commit. Batched for the
   commit the script ran at; beside `evidence/X02/69c4a24d…/` rather than inside it, whose index pins the commit
   69c4a24d it was measured at. Alternative: add it to that index with a second commit field.
 
+- **D-32 — G5d (iii) fails "warm takes fewer outer iterations" (escalated, not decided).** `evidence/X02/dcb499ee…/
+  g5d-v3.json`, v3, cold experiments, neighbour SPEC-S3-T 673.15 → 675.15 K. (i) cold VERIFIED, 4 outer, w =
+  (0.168388, 78.670 K), 193.7 s; (ii) restart VERIFIED, 1 outer, w₀ bitwise, 1 call, 24.7 s; (iii) cold VERIFIED 4
+  outer (181.5 s), warm from (i) VERIFIED **4** outer (222.7 s); Δû 3.76e-4 ≤ bound 1.64e-3 (holds); the edit moves
+  û by 0.137 = 83.7 bounds. Trajectories: cold (0.15, 80) → (0.1629, 79.75) → (0.1696, 75.96) → (0.1672, 77.30);
+  warm (0.1684, 78.67) → (0.1675, 77.14) → (0.1673, 77.25) → (0.1672, 77.30): the warm start begins about 2× closer
+  and stays closer, but meets the tolerance at the same k (B₀ = −I, D3, carries no curvature from the source). §7
+  G5 (d) says "If not, escalate: a premise has failed" — Part A's neighbour claim ("restarts near its fixed point")
+  holds for distance, not for iteration count. ADR 0070 Acceptance evidence and Consequences bullet 1 are left
+  unamended until a ruling. Default I would take: record (iii) as measured, qualify Consequences bullet 1 to "a
+  neighbouring revision starts near its fixed point; on the real loop it took as many outer iterations as cold (G5d
+  (iii))", and not gate on iteration count.
+
 ## Tokens for MSG's catalogue (§5.9; `wp/MSG` not merged)
 
 | Token | Family / kind | Emitted at |
 | --- | --- | --- |
 | `warm_start_source_missing(<job>)` | api_error message / `input` | `application/admission.py` `admit_warm_start` (A1) |
 | `warm_start_unit_unknown(<unit>)` | api_error message / `input` | `application/admission.py` `admit_warm_start` (A2) |
-| `warm_start_rejected(coupling_integrity\|coupling_compatibility\|coupling_opening\|route\|external_integrity\|external_compatibility)` | notice | `solve-path.json` `warm_start.coupling` / `.external`; trace `initializer_rejected` (`application/coupled_run.py` `solve_coupled`) |
+| `warm_start_rejected(coupling_integrity\|coupling_compatibility\|coupling_opening\|external_integrity\|external_compatibility)` | notice | trace `initializer_rejected` only (`application/coupled_run.py` `solve_coupled`, `_rejected`); the `solve-path.json` `warm_start.coupling` / `.external` records carry the bare check name (review S-1); `route` is a record reason only (no trace event) |
 | `coupling_warm_start(present\|absent)` | notice | trace `initializer_candidate` (`application/coupled_run.py` `solve_coupled`) |
