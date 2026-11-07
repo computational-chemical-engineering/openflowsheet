@@ -9,8 +9,11 @@ name: release
 #                   pre-release X.Y.Z{a|b|rc}N (N >= 1) or post-release X.Y.Z.postN (N >= 1) of a
 #                   tagged X.Y.Z (R-922); a tag v<version>, if it exists, is on this commit;
 #                   CHANGELOG.md has its section; the release gate of the version's minor line
-#                   (scripts/v<major>_<minor>_gate.py --rc <rc>) exits 0 and prints
-#                   `v<version> tag may be proposed: YES`. A post-release is gated as X.Y.Z, at
+#                   exits 0 and prints `v<version> tag may be proposed: YES`. The gate is
+#                   scripts/release_gate.py --line <major>.<minor> --rc <rc> when
+#                   release/lines/<major>.<minor>.json exists with role `gate`, else the legacy
+#                   scripts/v<major>_<minor>_gate.py --rc <rc>; with neither, the version is
+#                   refused (docs/derivations/release-procedure.md §3.5, ADR 0055 D1.3). A post-release is gated as X.Y.Z, at
 #                   X.Y.Z's candidate, with the tree check's R-922 allowance (README.md and the
 #                   project's version, urls and readme only).
 #   tag             (not on a dry run) tags the gated commit vX.Y.Z and pushes the tag.
@@ -98,14 +101,25 @@ jobs:
         run: |
           refuse() { echo "refused: $*" >&2; exit 1; }
           IFS=. read -r major minor _ <<< "$VERSION"
-          gate="scripts/v${major}_${minor}_gate.py"
-          [ -f "$gate" ] || refuse "no release gate $gate for the $major.$minor line"
+          # RP §3.5: the line file when its role is `gate`, else the legacy script, else refused.
+          line="release/lines/$major.$minor.json"
+          role=""
+          if [ -f "$line" ]; then
+            role=$(python -c 'import json, sys; print(json.load(open(sys.argv[1], encoding="utf-8"))["role"])' "$line")
+          fi
+          if [ "$role" = gate ]; then
+            gate=(scripts/release_gate.py --line "$major.$minor")
+          elif [ -f "scripts/v${major}_${minor}_gate.py" ]; then
+            gate=("scripts/v${major}_${minor}_gate.py")
+          else
+            refuse "no release gate for the $major.$minor line"
+          fi
           status=0
-          python "$gate" --rc "$RC" > "$RUNNER_TEMP/record/gate.txt" || status=$?
+          python "${gate[@]}" --rc "$RC" > "$RUNNER_TEMP/record/gate.txt" || status=$?
           cat "$RUNNER_TEMP/record/gate.txt"
-          [ "$status" -eq 0 ] || refuse "$gate exited $status"
+          [ "$status" -eq 0 ] || refuse "${gate[*]} exited $status"
           grep -qxF "v$VERSION tag may be proposed: YES" "$RUNNER_TEMP/record/gate.txt" \
-            || refuse "$gate did not print 'v$VERSION tag may be proposed: YES'"
+            || refuse "${gate[*]} did not print 'v$VERSION tag may be proposed: YES'"
           echo "commit=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
