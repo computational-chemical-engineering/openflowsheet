@@ -52,7 +52,7 @@ import math
 import os
 import re
 import time
-from collections.abc import Iterator, Sequence
+from collections.abc import Callable, Iterator, Mapping, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Final
@@ -320,6 +320,10 @@ class _Iterations:
     count: int | None = None
     final: dict[str, float] | None = None
 
+    #: OPT §4.8 `optimizer.json`: one row per iteration (iter, obj, inf_pr, inf_du, mu,
+    #: alpha_pr); bounded by `max_iter` + 1.
+    rows: list[tuple[int, float, float, float, float, float]] = field(default_factory=list)
+
     def __call__(
         self,
         nlp: Any,
@@ -337,6 +341,16 @@ class _Iterations:
         ls_trials: int,
     ) -> bool:
         self.count = int(iter_count)
+        self.rows.append(
+            (
+                int(iter_count),
+                float(obj_value),
+                float(inf_pr),
+                float(inf_du),
+                float(mu),
+                float(alpha_pr),
+            )
+        )
         violations = problem.get_current_violations(scaled=False)
         if violations is not None:
             self.final = {
@@ -380,6 +394,13 @@ class StartRun:
     ipopt_final: dict[str, float] | None = None
     verification: CandidateVerification | None = None
     detail: str | None = None
+    #: OPT §4.8: the per-iteration rows and the options Ipopt ran with (in memory; the report
+    #: does not carry them, the optimisation record's `optimizer.json` does).
+    iteration_rows: list[tuple[int, float, float, float, float, float]] = field(
+        default_factory=list
+    )
+    options: dict[str, int | float | str] = field(default_factory=dict)
+    primal_ids: tuple[str, ...] = ()
 
     def note(self, text: str) -> None:
         """Add to `detail`, which the start's report reason carries (spec §8.5)."""
@@ -417,9 +438,11 @@ class StartRun:
         }
 
 
-def _typed_options() -> dict[str, int | float | str]:
+def _typed_options(
+    overrides: Mapping[str, Any] | None = None,
+) -> dict[str, int | float | str]:
     typed: dict[str, int | float | str] = {}
-    for name, value in IPOPT_OPTIONS.items():
+    for name, value in {**IPOPT_OPTIONS, **(overrides or {})}.items():
         if isinstance(value, str):
             typed[name] = value
         elif name in IPOPT_INTEGER_OPTIONS:
@@ -434,9 +457,17 @@ def solve_start(
     formulation: NlpFormulation,
     readiness: StartReadiness,
     index: int,
+    *,
+    options: Mapping[str, Any] | None = None,
+    before_verification: Callable[[], None] | None = None,
 ) -> StartRun:
     """Ipopt from one verified start, then V1-V6 on the decisions it returned (spec §8.5).
-    `flowsheet` is the NLP host whose readiness certified the start, or a SYN-001 flowsheet."""
+    `flowsheet` is the NLP host whose readiness certified the start, or a SYN-001 flowsheet.
+
+    OPT §4.3/§4.6: `options` override `IPOPT_OPTIONS` (a request's `max_iter`,
+    `max_wall_time`); `before_verification` is called just before V1's re-solve (the record
+    writer places that bundle). On a revision host (a point with an attempt signature) V2 and
+    V4 are judged against the start's held system."""
     host = as_host(flowsheet)
     run = StartRun(index, tuple(readiness.start))
     if readiness.state is None or readiness.regimes is None or readiness.point is None:
@@ -461,7 +492,8 @@ def solve_start(
             np.ones(pynumero.n_primals()) if primal_scaling is None else primal_scaling,
             np.ones(pynumero.n_constraints()) if constraint_scaling is None else constraint_scaling,
         )
-        for name, value in _typed_options().items():
+        run.options = _typed_options(options)
+        for name, value in run.options.items():
             problem.add_option(name, value)
         began = time.perf_counter()
         try:
@@ -473,7 +505,9 @@ def solve_start(
         run.ipopt_message = message.decode() if isinstance(message, bytes) else str(message)
         run.iterations = iterations.count if iterations.count is not None else 0
         run.ipopt_final = iterations.final
+        run.iteration_rows = iterations.rows
         run.final_primal = _by_primal_id(model, pynumero, nlp, np.asarray(primal))
+        run.primal_ids = nlp.primal_ids
     except Exception as error:  # noqa: BLE001 - spec §8.5 rule 4: an adapter exception is a result
         run.note(f"adapter exception {type(error).__name__}: {_first_line(error)}")
     finally:
@@ -492,7 +526,10 @@ def solve_start(
     x, decisions = nlp.split(run.final_primal)
     run.final_decisions = tuple(decisions[name] for name in formulation.decision_ids)
     optimizer_state = dict(zip(nlp.spec.variable_ids, (float(value) for value in x), strict=True))
+    held = nlp.system if readiness.point.signature is not None else None
     try:
+        if before_verification is not None:
+            before_verification()
         run.verification = verify_candidate(
             host,
             formulation,
@@ -500,6 +537,7 @@ def solve_start(
             regimes=readiness.regimes,
             optimizer_state=optimizer_state,
             closure=nlp.closure,
+            held=held,
         )
     except Exception as error:  # noqa: BLE001 - recorded; the start then has no V outcomes
         run.note(f"verification raised {type(error).__name__}: {_first_line(error)}")

@@ -59,6 +59,7 @@ from openflowsheet.studies.nlp.formulation import (
 from openflowsheet.studies.nlp.host import (
     CertifiedPoint,
     DecisionRefusedError,
+    HeldSystem,
     NlpHost,
     RegimeRecord,
     as_host,
@@ -89,6 +90,14 @@ CHECKS: Final = ("V1", "V2", "V3", "V4", "V5", "V6", "V7")
 M03_CHECKS: Final = CHECKS[:6]
 #: E01 §4.10.3 V7's code, with the entry as its argument.
 REGIME_CHANGED: Final = "ASSESSMENT_REGIME_CHANGED"
+#: OPT §4.6 V4's code on a held system, with the unit as its argument.
+PHASE_REGIME_CHANGED: Final = "PHASE_REGIME_CHANGED"
+
+
+def _names_decisions(formulation: NlpFormulation) -> bool:
+    """An expression names a decision (OPT §4.3); M03's never do."""
+    ids = set(formulation.decision_ids)
+    return any(name in ids for name in formulation.variables)
 
 
 @dataclass(frozen=True)
@@ -176,6 +185,9 @@ class CandidateVerification:
     sensitivity: SensitivityResult | None
     #: E01 §4.10.3 V6: the closure's assessment values at `x_sim`; `None` without an assessment.
     assessment_values: Mapping[str, float] | None = None
+    #: OPT §4.6: V1's certified re-solve (its bundle, its document); in memory only, never
+    #: compared or serialised.
+    point: CertifiedPoint | None = field(default=None, compare=False, repr=False)
 
     def outcome(self, check: str) -> CheckOutcome:
         return next(item.outcome for item in self.checks if item.check == check)
@@ -219,13 +231,20 @@ def verify_candidate(
     regimes: Mapping[str, str],
     optimizer_state: Mapping[str, float] | None = None,
     closure: AssessmentClosure | None = None,
+    held: HeldSystem | None = None,
 ) -> CandidateVerification:
     """V1-V6 at `decisions` (spec §8.5), and V7 with an assessment (E01 §4.10.3). `regimes` are
     the formulation's declared regimes (the start's, `RegimeRecord.declared`); `optimizer_state` is
     the solver's final state by variable id, and without it V2 is `not_evaluated` — so such a
     candidate is never `passed`. `closure` is the gray box's (`FullSpaceNlp.closure`); without
     it the binding's closure is computed at `x_sim` (the pattern is structural). `flowsheet` is
-    an NLP host or a SYN-001 flowsheet (`as_host`); the re-solve is the host's `certify`."""
+    an NLP host or a SYN-001 flowsheet (`as_host`); the re-solve is the host's `certify`.
+
+    `held` is the start's held system on a revision host (OPT §4.6): V2 then also compares its
+    held columns exactly, and V4 requires the re-solve's attempt signature to equal the start's
+    exactly (`PHASE_REGIME_CHANGED(<unit>)` otherwise). Without it (SYN-001) neither is judged.
+    An expression may name a decision (OPT §4.3): its value is the decision's, and in V5 its
+    derivative is direct, as an assessment output's `∂G/∂d` is."""
     host = as_host(flowsheet)
     values = formulation.decision_values(decisions)
     try:
@@ -262,12 +281,13 @@ def verify_candidate(
             state_sha256=None,
             simulation_state=None,
             sensitivity=None,
+            point=point,
         )
 
     assert point.spec is not None  # a point with a state was bound
     scaling = Scaling.from_spec(point.spec)
-    checks["V2"] = _gross(scaling, state, optimizer_state)
-    checks["V4"] = _regimes(host.regimes(point), regimes)
+    checks["V2"] = _gross(scaling, state, optimizer_state, held)
+    checks["V4"] = _regimes(host.regimes(point), regimes, held, point.signature)
     assessment: _Assessment | None = None
     if binding is not None:
         evaluated = _assessment(point.spec, formulation, binding, state, values, closure)
@@ -289,10 +309,13 @@ def verify_candidate(
                 state_sha256=certificate.target_state_sha256 if certificate else None,
                 simulation_state=dict(state),
                 sensitivity=None,
+                point=point,
             )
         assessment = evaluated
     resolved = point
     at = state if assessment is None else assessment.point
+    if _names_decisions(formulation):
+        at = {**at, **values}
     constraints = formulation.constraints if assessment is None else assessment.constraints
     constraint_values = {
         constraint.constraint_id: constraint.expression.value(at) for constraint in constraints
@@ -319,6 +342,7 @@ def verify_candidate(
         simulation_state=dict(state),
         sensitivity=sensitivity,
         assessment_values=None if assessment is None else dict(assessment.values),
+        point=point,
     )
 
 
@@ -432,20 +456,31 @@ def _gross(
     scaling: Scaling,
     state: Mapping[str, float],
     optimizer_state: Mapping[str, float] | None,
+    held: HeldSystem | None = None,
 ) -> VerificationCheck:
-    """V2: `‖S_x⁻¹ (x_opt − x_sim)‖_∞ ≤ 1e-6`."""
+    """V2: `‖S_x⁻¹ (x_opt − x_sim)‖_∞ ≤ 1e-6`; on a held system over its free columns, and its
+    held columns equal to the re-solve's exactly (OPT §4.6)."""
     if optimizer_state is None:
         return VerificationCheck("V2", "not_evaluated", {"reason": "no optimizer state supplied"})
     worst_name, worst = "", 0.0
+    held_columns = held.held if held is not None else {}
     for name, value in state.items():
+        if name in held_columns:
+            continue
         difference = abs(optimizer_state[name] - value) / scaling.column[name]
         if difference > worst or not math.isfinite(difference):
             worst_name, worst = name, difference
-    return VerificationCheck(
-        "V2",
-        "pass" if worst <= TAU_GROSS else "fail",
-        {"scaled_difference_inf": worst, "worst_variable": worst_name, "threshold": TAU_GROSS},
-    )
+    detail: dict[str, Any] = {
+        "scaled_difference_inf": worst,
+        "worst_variable": worst_name,
+        "threshold": TAU_GROSS,
+    }
+    moved: list[str] = []
+    if held is not None:
+        moved = sorted(name for name, value in held_columns.items() if state[name] != value)
+        detail["held_columns"] = len(held_columns)
+        detail["held_changed"] = moved
+    return VerificationCheck("V2", "pass" if worst <= TAU_GROSS and not moved else "fail", detail)
 
 
 def _feasibility(
@@ -517,24 +552,58 @@ def _feasibility(
     )
 
 
-def _regimes(record: RegimeRecord, declared: Mapping[str, str]) -> VerificationCheck:
-    """V4: every TP split in its declared regime, at least `τ_regime` from the boundary."""
+def _regimes(
+    record: RegimeRecord,
+    declared: Mapping[str, str],
+    held: HeldSystem | None = None,
+    signature: Any = None,
+) -> VerificationCheck:
+    """V4: every TP split in its declared regime, at least `τ_regime` from the boundary; on a
+    held system also the re-solve's attempt signature equal to the start's exactly, else
+    `PHASE_REGIME_CHANGED(<unit>)` for each item that differs (OPT §4.6)."""
     splits = record.splits
     changed = [split.unit_id for split in splits if declared.get(split.unit_id) != split.regime]
     near = [
         split.unit_id for split in splits if split.margin is None or not split.margin >= TAU_REGIME
     ]
-    return VerificationCheck(
-        "V4",
-        "fail" if changed or near else "pass",
-        {
-            "splits": [split.as_document() for split in splits],
-            "declared": dict(declared),
-            "regime_changed": changed,
-            "inside_tau_regime": near,
-            "tau_regime": TAU_REGIME,
-        },
-    )
+    detail: dict[str, Any] = {
+        "splits": [split.as_document() for split in splits],
+        "declared": dict(declared),
+        "regime_changed": changed,
+        "inside_tau_regime": near,
+        "tau_regime": TAU_REGIME,
+    }
+    moved: list[str] = []
+    if held is not None:
+        moved = _signature_changes(held.signature, signature)
+        detail["held_signature"] = _signature_document(held.signature)
+        detail["signature"] = _signature_document(signature)
+        detail["phase_regime_changed"] = [f"{PHASE_REGIME_CHANGED}({unit})" for unit in moved]
+    return VerificationCheck("V4", "fail" if changed or near or moved else "pass", detail)
+
+
+def _signature_changes(held: Any, resolved: Any) -> list[str]:
+    """The units whose attempt-signature items differ between the start and the re-solve (a
+    lifted split's `(unit, regime)` or a dormancy item), in first-appearance order."""
+    if held == resolved:
+        return []
+    before, after = tuple(held or ()), tuple(resolved or ())
+    units: list[str] = []
+    for item in (*before, *after):
+        if (item in before) != (item in after):
+            unit = str(item[0]) if isinstance(item, tuple) and item else str(item)
+            if unit not in units:
+                units.append(unit)
+    return units or ["<signature>"]
+
+
+def _signature_document(signature: Any) -> list[list[str]] | None:
+    if signature is None:
+        return None
+    return [
+        [str(part) for part in item] if isinstance(item, tuple) else [str(item)]
+        for item in signature
+    ]
 
 
 def _functional(
@@ -543,6 +612,7 @@ def _functional(
     state: Mapping[str, float],
     assessment: _Assessment | None,
     n: int,
+    decision_ids: Sequence[str] = (),
 ) -> tuple[OutputFunctional | None, npt.NDArray[np.float64] | None]:
     """The expression's linearization at `state`, as a sensitivity output of scale 1: its
     sensitivity is then the scaled gradient with respect to the decisions.
@@ -552,16 +622,21 @@ def _functional(
     for an expression without one, whose functional is M03's exactly). The functional is `None`
     when no state variable is left in it."""
     gradient = expression.gradient(state)
-    named = [name for name in gradient if is_assessment_name(name)]
+    position = {name: index for index, name in enumerate(decision_ids)}
+    named = [name for name in gradient if is_assessment_name(name) or name in position]
     if not named:
         return OutputFunctional(output_id, gradient, 1.0), None
-    assert assessment is not None
     parts: dict[str, list[float]] = {
-        name: [value] for name, value in gradient.items() if not is_assessment_name(name)
+        name: [value] for name, value in gradient.items() if name not in set(named)
     }
     direct = np.zeros(n)
     for name in named:
         coefficient = gradient[name]
+        if name in position:
+            # OPT §4.3: a decision named in an expression; its derivative is direct.
+            direct[position[name]] += coefficient
+            continue
+        assert assessment is not None
         output = name[len(ASSESSMENT_PREFIX) :]
         for variable_id, value in assessment.d_dx[output].items():
             parts.setdefault(variable_id, []).append(coefficient * value)
@@ -587,8 +662,9 @@ def _kkt(
         for decision in formulation.decisions
     )
     n = len(formulation.decisions)
-    built = [_functional(OBJECTIVE_OUTPUT, formulation.objective, state, assessment, n)] + [
-        _functional(constraint.constraint_id, constraint.expression, state, assessment, n)
+    ids = formulation.decision_ids
+    built = [_functional(OBJECTIVE_OUTPUT, formulation.objective, state, assessment, n, ids)] + [
+        _functional(constraint.constraint_id, constraint.expression, state, assessment, n, ids)
         for constraint in constraints
     ]
     outputs = tuple(functional for functional, _ in built if functional is not None)
