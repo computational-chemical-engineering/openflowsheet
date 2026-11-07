@@ -185,3 +185,19 @@ Alternative: all should-fix at the cut. Reversible by: dropping those commits.
 DECISION: F-8 (up to two messages to Frank per release, ADR D5 says one) → keep two, first only when non-empty (reviewer's
 recommendation), asked of Frank. Reversible by: Frank's answer + an RP amendment.
 Brief `docs/briefs/REL-build-WO-R7.md`.
+
+## 2026-11-07 — workstation reboot; restart
+
+Both engineers died with the reboot. State recovered from the worktrees:
+- **MSG** WO-12 complete and pushed (`35403f42`): §4.2.6 list complete (68 codes pinned), MSG-G0 PASS (b, d), R-943,
+  manifest `evidence/MSG/9c76b939…` `implemented`. Push CI 42217363836: both `check` legs and `default-install` fail on
+  exactly one test, `explain: human pending` (18196 / 18168 passed). Only Frank's `explain.md` review blocks `tested`.
+- **RP** WO-R7 code complete but unpushed at the reboot (`fd28ff7b`, now pushed): A-1…A-8 (R-942…R-949), ADR 0055
+  restated (M-3), REL.A20 PASS with controls, M-1 mutation now 6 fail (was 0), S-1…S-5, S-7, C-12, C-23…C-29. F0 PASS.
+  Full gate restarted by the orchestrator (load ~16); then the manifest re-take.
+- **Register collision:** `wp/MSG` uses R-942 (Q1 amendment) and R-943 (c_4); `wp/RP` uses R-942…R-949. Whichever
+  merges second renumbers its entries (and every reference) to the next free numbers.
+DECISION: no second design-lane pass over WO-12's 51 completed entry texts. Alternative: a fresh reviewer prose check.
+Reversible by: running that check before 0.4.0's cut (user-facing text, no numerics).
+DECISION: X05 starts now (no prerequisite; roadmap design pass "none" but it touches replay identity and lifts R-140):
+recon → specifier for the ADR and test spec → build. Alternative: wait for RP/MSG merges. Reversible by: parking it.
