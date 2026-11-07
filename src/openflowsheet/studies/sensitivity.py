@@ -224,18 +224,25 @@ class SensitivityHost:
 
 @dataclass(frozen=True)
 class CertificateEvidence:
-    """Q1′'s input: the verdict and the state of a K04 certificate (`SolutionCertificate`)."""
+    """Q1′'s input: the verdict and the state of a K04 certificate (`SolutionCertificate`).
+
+    `basis` is the basis the root was verified on (OPT §9 A-1): `certificate` (the verdict must be
+    `VERIFIED`, M03's rule) or `phase_boundary_form`, which only OPT's revision host sets, after
+    its V1 judged the certificate's own matrix with the boundary splits held and the certificate's
+    own grade returned `VERIFIED` there; the certificate itself is then `UNVERIFIED`."""
 
     certificate_id: str
     verification_status: str
     target_state_sha256: str
+    basis: str = "certificate"
 
     @classmethod
-    def of(cls, certificate: Any) -> CertificateEvidence:
+    def of(cls, certificate: Any, basis: str = "certificate") -> CertificateEvidence:
         return cls(
             certificate_id=certificate.certificate_id,
             verification_status=certificate.verification_status,
             target_state_sha256=certificate.target_state_sha256,
+            basis=basis,
         )
 
 
@@ -692,11 +699,18 @@ class _Run:
             state = evaluation.state_sha256
         same_state = evidence.target_state_sha256 == state
         verified = evidence.verification_status == "VERIFIED"
-        detail = {
+        detail: dict[str, Any] = {
             "certificate_id": evidence.certificate_id,
             "verification_status": evidence.verification_status,
             "same_state": same_state,
         }
+        if evidence.basis != "certificate":
+            # OPT §9 A-1: V1 passed on the phase-boundary form; recorded only there (M03's bytes).
+            verified = (
+                evidence.basis == "phase_boundary_form"
+                and evidence.verification_status == "UNVERIFIED"
+            )
+            detail["basis"] = evidence.basis
         if same_state and verified:
             self._record("Q1'", "pass", **detail)
             return
