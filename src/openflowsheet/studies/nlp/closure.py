@@ -780,6 +780,9 @@ class OptimizationReport:
     claims: Mapping[str, Any]
     limits: Mapping[str, Any]
     schema_version: str = SCHEMA_VERSION
+    #: OPT §4.13: the revision, request and identity of an optimisation of a stored revision;
+    #: absent (`None`) on M03's SYN-001 path, whose report is unchanged.
+    revision: Mapping[str, Any] | None = None
 
     @property
     def reason_codes(self) -> tuple[str, ...]:
@@ -799,6 +802,7 @@ class OptimizationReport:
             "reasons": [reason.as_document() for reason in self.reasons],
             "claims": dict(self.claims),
             "limits": dict(self.limits),
+            **({"revision": dict(self.revision)} if self.revision is not None else {}),
         }
 
 
