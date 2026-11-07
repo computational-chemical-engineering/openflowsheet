@@ -243,7 +243,8 @@ class CertificateEvidence:
 class SplitRegime:
     """Q4's input for one lifted phase split (spec §3.4): its kind, regime and margin.
 
-    A `PH` split has no M03 margin (`margin` `None`) and is refused `REGIME_MARGIN_UNSUPPORTED`."""
+    A `PH` split without a margin (`margin` `None`) is refused `REGIME_MARGIN_UNSUPPORTED`; one
+    with a margin (OPT D7: the TP margin at its converged T and P) is judged as a TP split."""
 
     unit_id: str
     streams: str
@@ -844,9 +845,10 @@ class _Run:
         )
 
     def _regimes(self) -> None:
-        """Q4 and Q4′: every TP split at least `τ_regime` from its boundary; every split TP."""
-        tp = [split for split in self.splits if split.kind == "TP"]
-        ph = [split for split in self.splits if split.kind != "TP"]
+        """Q4 and Q4′: every TP split — and every PH split with a margin (OPT design §4.2.4) — at
+        least `τ_regime` from its boundary; every split TP or margined."""
+        tp = [split for split in self.splits if split.kind == "TP" or split.margin is not None]
+        ph = [split for split in self.splits if split.kind != "TP" and split.margin is None]
         if not tp:
             self._record("Q4", "not_applicable", reason="no TP-type lifted split")
         else:
