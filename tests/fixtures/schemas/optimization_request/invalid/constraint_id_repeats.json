@@ -1,0 +1,44 @@
+{
+  "request_format": "openflowsheet-optimization-request-v1",
+  "problem_id": "th-r1-heater-duty",
+  "decisions": [
+    {
+      "specification_id": "SPEC-H-Q",
+      "lower": 20000.0,
+      "upper": 30000.0,
+      "scale": 10000.0,
+      "unit": "W"
+    }
+  ],
+  "objective": {
+    "sense": "minimize",
+    "expression": {
+      "text": "Q/1e4",
+      "linear": {
+        "decision:SPEC-H-Q": 0.0001
+      }
+    }
+  },
+  "constraints": [
+    {
+      "id": "c",
+      "expression": {
+        "linear": {
+          "S3.T": 1.0
+        }
+      },
+      "lower": 300.0,
+      "upper": null
+    },
+    {
+      "id": "c",
+      "expression": {
+        "linear": {
+          "S3.T": 1.0
+        }
+      },
+      "lower": 300.0,
+      "upper": null
+    }
+  ]
+}

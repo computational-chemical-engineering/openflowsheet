@@ -22,6 +22,7 @@
   "model-replacement.schema.json",
   "model-variant.schema.json",
   "optimization-report.schema.json",
+  "optimization-request.schema.json",
   "process-revision.schema.json",
   "project-policy.schema.json",
   "quantity.schema.json",
