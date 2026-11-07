@@ -8276,3 +8276,89 @@ harvest:
   class: P
   to: []
   note: 'scope note: off the reference platform M4, M6''s run key trails and M7''s replay mode are not judged'
+- manifest: evidence/S15/3e7ccf00f4123a7d9085fef775432d81d45aadd3/manifest.json
+  item: limitations[0]
+  sha256: 8262246970f453c7a91b2b75eba8d77d7ca0e01c4a225b2e7e0ef938053a6a35
+  class: P
+  to: []
+  note: 'provenance note: software verification of the release tooling on ref-x86-64 and CI; fixtures and the 0.3.0 comparison are regression evidence, not validation'
+- manifest: evidence/S15/3e7ccf00f4123a7d9085fef775432d81d45aadd3/manifest.json
+  item: limitations[1]
+  sha256: c5724d26c9152d42589b42e39db19ce13695c1f0e86a54e2336f49a9f4bda99c
+  class: P
+  to: []
+  note: 'scope note: RC steps 6, 11, 12, 14-16 and the nlp item not run locally at this head (environments); writers and judges tested by fixtures; first real run is 0.4.0''s RC'
+- manifest: evidence/S15/3e7ccf00f4123a7d9085fef775432d81d45aadd3/manifest.json
+  item: limitations[2]
+  sha256: c1003b3fa14a838d644d73b9f381ae7e9dba97cea1f4945392db3f2a12c98319
+  class: P
+  to: []
+  note: 'process note: no release_rc dispatch and no step-1 record at this head; the dispatch and push run are at bd672ff7 (WO-R4)'
+- manifest: evidence/S15/3e7ccf00f4123a7d9085fef775432d81d45aadd3/manifest.json
+  item: limitations[3]
+  sha256: bfa43a5adc67e6f96399c1897badd73620eb017a8f477aedfb02232216ca2ca1
+  class: P
+  to: []
+  note: 'process note: REL.A20 fails as RP 11.2 states it (RP.S18 vs V03.A27); design-lane ruling Q-C5 open'
+- manifest: evidence/S15/3e7ccf00f4123a7d9085fef775432d81d45aadd3/manifest.json
+  item: limitations[4]
+  sha256: 9fb7b58365a2d9e2a6da5c161b3766473e84c05e7fdf84ff2f14acea9e1cfc00
+  class: P
+  to: []
+  note: 'provenance note: manifest id S15 stands for package RP (frozen work_package pattern; RP_DECISIONS C-22, Q-C6)'
+- manifest: evidence/S15/3e7ccf00f4123a7d9085fef775432d81d45aadd3/manifest.json
+  item: limitations[5]
+  sha256: a932c3cc62131ab43c369c90f1c274043b5315918d291886578a18599da7a19e
+  class: P
+  to: []
+  note: 'scope note: REL.A18/A19 (WO-R1) and REL.A11-A16/A21 (D2, deferred) not judged here; reviewer pass pending'
+- manifest: evidence/S15/3e7ccf00f4123a7d9085fef775432d81d45aadd3/manifest.json
+  item: checks[11]
+  check_id: REL.A20
+  sha256: 85ff25ab5255fec5b922a05c1aa1a110ee7cbf4f0bbf33947fc73524ae6bef89
+  class: P
+  to: []
+  note: 'release-tooling acceptance: REL.A20 not met as written (Q-C5, design lane); no user-facing support claim'
+- manifest: evidence/S15/3e7ccf00f4123a7d9085fef775432d81d45aadd3/manifest.json
+  item: checks[13]
+  check_id: RP.gate
+  sha256: 90bfb4c4ed9f729dbdb5d8308aea0bc4b1c3e7012bcb5bf1e61947f1fe0e2e52
+  class: P
+  to: []
+  note: 'process note: full gate at 3e7ccf00 red only in tests/test_m06_browser_smoke.py (browser went away under host load); module green alone'
+- manifest: evidence/S15/fd28ff7bc8e3e98c67857c869d6939d1d755f3ed/manifest.json
+  item: limitations[0]
+  sha256: 8262246970f453c7a91b2b75eba8d77d7ca0e01c4a225b2e7e0ef938053a6a35
+  class: P
+  to: []
+  note: 'provenance note: software verification of the release tooling on ref-x86-64 and CI; fixtures and the 0.3.0 comparison are regression evidence, not validation'
+- manifest: evidence/S15/fd28ff7bc8e3e98c67857c869d6939d1d755f3ed/manifest.json
+  item: limitations[1]
+  sha256: 77ccf81a7802b3fac92efc392ec7e8692e73d78b0addeb9e60bcd9e776f79941
+  class: P
+  to: []
+  note: 'scope note: RC steps 6, 11, 12, 14-16 and the nlp item not run locally at this head (environments); writers and judges tested by fixtures; first real run is 0.4.0''s RC (rehearsal S-6)'
+- manifest: evidence/S15/fd28ff7bc8e3e98c67857c869d6939d1d755f3ed/manifest.json
+  item: limitations[2]
+  sha256: 829cefc5c2577bdfeedb56c185b7771dfca4d211645d68381bee66de10e3820d
+  class: P
+  to: []
+  note: 'process note: no release_rc dispatch and no step-1 record at this head; the dispatch and push run are at bd672ff7 (WO-R4); the push run at fd28ff7b is 42320544169'
+- manifest: evidence/S15/fd28ff7bc8e3e98c67857c869d6939d1d755f3ed/manifest.json
+  item: limitations[3]
+  sha256: d0fc024a2c11606fe758e504d14e3fcde388b86e689ee6f17153380040323990
+  class: P
+  to: []
+  note: 'provenance note: manifest id S15 stands for package RP (frozen work_package pattern; RP_DECISIONS C-22); REL[0-9]{3,} schema ADR (review K-1) not yet applied'
+- manifest: evidence/S15/fd28ff7bc8e3e98c67857c869d6939d1d755f3ed/manifest.json
+  item: limitations[4]
+  sha256: 4af1c3e07e0fcc2e206dd03f346b5f1df0c6a26fa266379268e12a4be14c1909
+  class: P
+  to: []
+  note: 'scope note: REL.A11-A16/A21 (D2, deferred) not judged; ADR 0055 acceptance by Frank (K-2, F-8) pending; should-fix items recorded in RP_DECISIONS C-23..C-29'
+- manifest: evidence/S15/fd28ff7bc8e3e98c67857c869d6939d1d755f3ed/manifest.json
+  item: limitations[5]
+  sha256: b68d980e60c92228d50076717df850c5b6422e440a50406abd0d8483d9f01f73
+  class: P
+  to: []
+  note: 'process note: status tested, not reviewed; review''s must-fix items M-1..M-3 applied after the reviewer pass and not re-reviewed'

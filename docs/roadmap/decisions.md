@@ -219,3 +219,72 @@ ADR 0069 Proposed: packaged lock via symlink (D1), exact version check over a fi
 DECISION: build X05 now on `wp/X05` (WO-1…3, one Opus engineer, then a reviewer) before Frank accepts ADR 0069, with
 Q-F1's pins as an isolated commit. Alternative: wait for acceptance. Reversible by: not merging; reverting the pin commit.
 CPU rule (hub, 2026-11-07): one full gate at a time on TRS2; ≤ ~36 busy cores.
+
+## 2026-11-07 — X02 design (`6b807f0e`, `f9e72ff5`): note + ADR 0070 (Am. 15)
+
+Found a shipped defect (Part C): under `T08-warm-v1` a coupled run with > 1 outer iteration does not record its first
+warm start (bundle from the final inner run, `revision_run.py:837`; label `route_initializer`, `coupled_run.py:682`);
+its replay starts cold. Design: `solve_body.warm_start {job_id?, coupling?}` (D1), outer start checked then accepted or
+recorded rejected (D3), warm reactor variant with `child_warm.py` loading the pinned `child.py` (D4), warm experiment
+key member `start.profile_sha256` only when used (D5), certificate unchanged + disclosure (D6). WO-1…6; G0 cold
+identity incl. every recorded experiment key; G5 on the workstation. Frank Q1…Q6 (defaults).
+DECISION: X02 build waits for a free agent slot after RP's manifest re-take (RP is nearer to merge and needed for the
+0.4.0 cut). Alternative: start X02 WO-1 now and queue RP. Reversible by: reordering.
+
+## 2026-11-07 — RP manifest `tested`; X02 WO-1/2 done
+
+RP: manifest `evidence/S15/fd28ff7b…` `tested` (REL.A01–A10, A17–A20 PASS; gate PASS 15070 at `fd28ff7b`; CI
+42320544169 green); main merged into `wp/RP` (`98540811`, F0 PASS); CI on the merge head running, then merge to main.
+X02 (`wp/X02`): WO-1 fixed the shipped defect (failing-first: bundle lacked `warm_start`, reproduce MISMATCH; after: 5/5
+incl. control), WO-2 contract (Am. 15 schemas, admission A1/A2, `explicit-v1`, c_4 link `0af895a0…`, Q26 pins). F0 PASS.
+Questions batched for the X02 reviewer: provisional R-950; c_4 clash with `wp/MSG` (second merger becomes c_5);
+x₀ rejection reason form. Next: WO-3 (outer start), WO-4 (external-start plumbing) on a fresh engineer.
+
+## 2026-11-07 — RP merged (`ad1ffd74`); X02 WO-3/4 done
+
+RP merged into main (CI 42374299572 green at `98540811`; F0 PASS on main). X02 WO-3 (outer start; G3 a–f pass: restart
+1 outer iteration vs 2, w bitwise equal; replay MATCH) and WO-4 (external-start plumbing; G4 a–f on the synthetic warm
+child; G0: 163 recorded experiment keys recompute with 0 differences; F0 PASS). For the X02 reviewer: D-11 (the note's
+G3 (c) premise false — every grid point converges on the registered loop; test uses a lowered H₂ make-up), D-13 (a
+declared iterate can move one ulp through u = w₀/s), D-14 (recovery-edges E9 row), D-20, D-21 (global-state allowlist
+35 → 36). Next: WO-5 (warm reactor variant + workstation campaign), fresh engineer, within the CPU rule.
+
+## 2026-11-07 — X02 WO-5 measured: the warm reactor variant does not pay
+
+G5 (`evidence/X02/69c4a24d…`): (a) cold new variant = v3 bitwise at 8/8 inlets; (b) warm vs cold max rel 1.92e-7
+(> 1e-7; registering against `precision_floor_rel` 1e-6 breaks I3's decade gap); (c) warm ~21 % slower overall (287 vs
+133 s, 383 vs 420 s) — the note's §3.1 premise (10–15 % faster) is false; (e) Part A on v3: restart 1 outer iteration,
+1 call, 25 s vs 4 iterations, 175 s cold. G5d not run.
+DECISION: do not register the warm variant in X02; Frank's Q1 default flips to no (re-asked with the numbers). The X02
+reviewer rules whether `child_warm.py` stays in `src/` unregistered or leaves the package (campaign script and records
+kept as evidence). Alternative: register with a manifest note / raise the floor. Reversible by: registering later with
+the handoff's commands.
+Next: the single X02 reviewer pass (WO-1…5 + batched questions), then WO-6 close-out (fixes, full gate, manifest).
+
+## 2026-11-07 — X02 review (`a7139dee`) → WO-6
+
+Sound for identity; no code defect (reviewer re-ran 88 + 294 tests; cold coupled run main vs branch: 9 artifacts + R0
+identical). Must-fix: M-1 (note/ADR still promise the warm variant; amendments A-1…A-9), M-2 (recovery-edges E9
+`enabled: default`). Ruling 1: the warm variant leaves the package (child_warm.py, tests, provisional variant, campaign
+script); evidence and WO-4 plumbing stay. S-1…S-4 incl. S-2 G5d on v3 (~10 reactor calls). Register: R-950 for c_4;
+second of X02/MSG to merge renumbers. Do not squash (evidence pins 69c4a24d, 005d206f). WO-6 engineer launched.
+
+## 2026-11-07 — X05 built (`82030102`); one CI dispatch; review launched
+
+X05 WO-1…3: A01–A20, A22 (a) (52 F0 bundles MATCH from the wheel, outside the tree), A23–A25 static PASS; F0 PASS;
+gate PASS 14934 at `42c84f1d`; push CI 42379232642 green; manifest `evidence/X05/42c84f1d…` `tested` with 4 checks
+unsupported pending `dist`/`clean-install`.
+DECISION: one `workflow_dispatch` of `ci.yml` on `wp/X05` (run 42391223708) to run `dist`/`clean-install` for A20's
+sdist half, A21, A22 (b), A25's CI half, Q-N2. Alternative: leave them unsupported. Reversible by: n/a (CI only).
+Reviewer brief `docs/briefs/X05-reviewer.md`.
+
+## 2026-11-07 — X05 review (`8121f245`) → WO-4 fix round
+
+Code sound (49 + 14 tests, reference `--check` PASS). Must-fix: M1 — my dispatch 42391223708 lacked the RC input, so
+`dist`/`clean-install` were skipped (cancelled); re-dispatch after the main merge with main's `release_rc` input. M2 —
+merge main; RP `release-procedure.md:422` step 4 `a19.*` → `x05.*`. S1: `run/lock.py:175` re-raised memo exception
+grows its traceback (`with_traceback(None)` + depth assertion).
+DECISION: adding `[4, "x05.*"]` and `tests/test_x05_*.py` to a 0.4 gate in `release/lines/0.4.json` → deferred to the
+0.4.0 cut's specifier pass (RP §13: gate criteria and `rc_items` are design-lane fields). Alternative: build-lane edit
+now (R-921 watch item). Reversible by: the cut's specifier pass adding it.
+At merge: ADR 0069 Accepted only on Frank's word; register lines above R-950.

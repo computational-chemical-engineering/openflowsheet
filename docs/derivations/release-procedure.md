@@ -94,7 +94,9 @@ are the strings of the `re.Pattern`s. Tuples are JSON arrays. `None` is `null`.
 digits (0.4.0: `REL040`). It gives these defaults: branch `wp/REL040`, release manifest
 `evidence/REL040/<C>/manifest.json`, verdicts `docs/reviews/REL040-verdicts.md`, RC record `docs/REL040-rc-record.md`,
 build log `docs/REL040_RC_DECISIONS.md`. D1.2's top-level `evidence_package` is the `gate_set` field of that name. It
-is not repeated (one value, one place; Q-3).
+is not repeated (one value, one place; Q-3). The id `REL` plus digits is admitted by the schema ADR of the RP review's
+ruling 4, which widens the manifest's `work_package` pattern; until it is applied, `t08.problems` refuses
+`evidence/REL040/<C>/manifest.json` (Q-C6). RP's own package manifest is filed as `S15` (C-22). Amendment A-7 (§17.1).
 
 ### 3.2 Inheritance and `changed` (REL.A01)
 
@@ -166,7 +168,8 @@ fails. Each check has a control: a copy of the committed file with one change, w
 RP.L05 and RP.L08 are checked at C (the commit is read with `git`), because the files they name are the candidate's.
 RP.L08 fails today, on purpose: `scripts/wheel_data_check.py`, the script of item `WHEEL-DATA`, does not exist at
 `main` = `1fcdbb1b`. So the 0.4 line file fails RP.L08 until WO-R6 provides it. The failure is the visible result that
-§12 requires, not a defect of the line file.
+§12 requires, not a defect of the line file. Amendment A-8 (§17.1): RP.L08 now passes, because
+`scripts/wheel_data_check.py` exists (`bd672ff7`).
 
 **Measured on the committed files** (design lane, 2026-11-06, at `main` = `1fcdbb1b` with this text on disk):
 - the two line files validate against the schema;
@@ -372,6 +375,9 @@ is judged. The header's `**By:**` names the `verdict` agent, never `carry`.
   ledger (`docs/requirements.yaml`), the release manifest and `CHANGELOG.md`'s `## v<version>`.
 - C is merged into `main` with a merge commit, never squashed. From K3 until Frank's dispatch, `main` takes no D2.4
   change (RELEASING "Pre-releases" step 2).
+- The line file and its inherited chain are byte-equal at C and at the candidate. The gate refuses with exit 2
+  otherwise, and a change after C needs a new C (amendment A-3, §17.1). The check belongs to standing mode: the dated
+  path is the legacy gate unchanged (REL.A03), and 0.3.0's C holds no line file.
 
 ### 5.2 The release manifest is not harvested (R-911)
 
@@ -455,7 +461,10 @@ under `strace`. Each record carries `commit` = C, `tree_clean` true, the lock's 
 
 "CI green at C on both architectures" is one completed `ci.yml` run whose `event` is `push` and whose `head_sha` is C.
 If there are several, it is the one with the greatest run id, at its latest attempt. No step re-runs CI at C to obtain
-it. Its record `step1/rc-step1.json` (format `t08-rc-v1`, step `ci-push-run`) holds exactly these checks:
+it. GitHub starts a push run only for a pushed head, so C is pushed on its own, as the head of a branch ref
+(`git push origin <C>:refs/heads/rc/<C7>` if it would otherwise be pushed beneath later commits; amendment A-4,
+§17.1). The record lists every `ci.yml` run at C with its event, attempt and conclusion (`runs_at_c`), so that a retry
+is visible to the verdict; when no push run at C exists, `s1.push_run` names that remedy. Its record `step1/rc-step1.json` (format `t08-rc-v1`, step `ci-push-run`) holds exactly these checks:
 - `s1.push_run`: such a run exists and is completed. Its run id is recorded;
 - `s1.check.x86_64` and `s1.check.aarch64`: the `check` job concluded `success` on `ubuntu-latest` and on
   `ubuntu-24.04-arm`;
@@ -494,6 +503,11 @@ Under M02 variant v3 that is 105 per run and 210 over its two runs, and none at 
    judged. The counts are those of G11's registered coverage under variant v3. A change of that registration changes
    them, by an RP amendment.
 
+Step 12's archived inputs (amendment A-5, §17.1) are `benchmarks/m02/g10-adapter-halves-v3.json` (SHA-256
+`c6a520e08433791cdea48821b981dd661a606e86bf99c740ff6bd26c86022586`) and `benchmarks/m02/g11-coverage-v3.json`
+(`fa1b02544f00a1ce02a203dc8cccc9d7bc5e35122a79cfe1506e355bb9729a90`) at `bd446abab1bcc26b286ae4a287d1de131d87ceac`.
+A failed read, or a hash that differs, stops the RC (§12).
+
 V03.A34's checks (a) `r375.g11_rerun` and (b) `r375.same_computation`, the re-run at C compared with step 12's own
 runs file, are the remedy for a step 12 that did not keep the records (0.3.0). They are not part of the standing step
 (R-909 item 3). If a step 12 at C keeps nothing, the remedy is applied as V03 §4 states it, and the verdict says so.
@@ -530,6 +544,7 @@ While W27 is not claimed, `step16/rc-step16.json` (step `w26-web-shell`) holds e
   registered records and phases, W27-R63)` (one line, wrapped here), and `<out>/summary.json` does not exist.
 
 (c) and (d) are judged on the local `ref-x86-64` run, where the pinned archive and `mcp` are present, not on CI. The
+pinned W27 archive is supplied to the runner by `--w27-artifacts`; without it, (c) fails (amendment A-6, §17.1). The
 refusal in (d) is the check's expected outcome, not an `unsupported` result. A dry run that exits 0, fails otherwise,
 or writes a `summary.json` fails (d) and stops the RC (§12).
 
@@ -590,7 +605,9 @@ As alpha §8.3, with R7 1 and R8 1:
 - The dispatch input `release_rc` runs the RC jobs only: `rc-steps`, `rc-coolprop`, `rc-ensemble`, `dist`,
   `clean-install`, `bundle-set`, `bundle-replay`, and `ptc-r1` while the `PTC-R1` item stands (N-2). `check` gains
   `if: ${{ !(github.event_name == 'workflow_dispatch' && inputs.release_rc) }}`, so the dispatch never re-runs the
-  suite (D4.2). `rc-ensemble` carries step 6's aarch64 leg (0.3.0's RC record, row 6). ADR 0055 D4.2's list omits it
+  suite (D4.2). The `release_rc` dispatch at C is the one with the greatest run id, at its latest attempt (amendment
+  A-4, §17.1). The RC runner's `ci` and `items` refuse any other run, and the manifest reads exactly that dispatch and
+  §6.2's push run and refuses any other. `rc-ensemble` carries step 6's aarch64 leg (0.3.0's RC record, row 6). ADR 0055 D4.2's list omits it
   (finding F-4). `release-audit` is D2's and is not added while D2 is deferred.
 - `rc` and `rc_alpha` stay as they are, for the legacy lines.
 - **Local runs at C** cover only what CI cannot run: steps 11, 12 and 14, the `local:` items (the reactor, nlp, lca
@@ -753,7 +770,9 @@ A row **stands** at C if and only if:
 - (a) its answer cell passes the cell rule, starting `accepted, YYYY-MM-DD`;
 - (b) its scope, evaluated at C (§8.2), has a fingerprint equal to `Fingerprint`;
 - (c) for a failure-clause row, its gate's row at C fails on a set of clauses that is a subset of the clauses with
-  standing rows.
+  standing rows;
+- (d) its scope, evaluated at `Accepted at`, has a fingerprint equal to `Fingerprint` (amendment A-2, §17.1). If it
+  does not, the row is `unsupported (not reproduced at <Accepted at>)` and counts as absent, whatever (b) gives.
 
 A row that fails (b) is **lapsed**. It counts as absent, and the gate's report names the differing terms. For a
 `paths:` term the report also names the differing paths, and for an `unsupported` term its reason. A clause that fails
@@ -891,7 +910,8 @@ whether the standing form equals it (§11.2).
   (§8.3). The ledger's verdicts are written from the verdict document. 0.3.0: V03.A26. Changed form (standing table).
 - **RP.S18** (R). The release manifest, in two parts. (a) As its own check: `tested`, listing RP.S01–RP.S22 and the
   item checks with commands run. That is, every other check passes and commands were run. (b) At §9.2 step 6: step
-  18's last line is YES, recorded in the build log with the log's SHA-256. 0.3.0: V03.A27. Same form.
+  18's last line is YES, recorded in the build log with the log's SHA-256. 0.3.0: V03.A27. Changed form (its rule (a)
+  quantifies over the catalogue, whose changed-form members cannot pass on 0.3.0's records; amendment A-1, §17.1).
 - **RP.S19** (R). Step 16 as §6.6 states it, while W27 is not claimed: 4 of 4 checks pass; the 25 nodes; exit 1 and
   the exact line. 0.3.0: V03.A32. Same form.
 - **RP.S20** (R). Step 14's selection as §6.5 states it: equal sets, and n ≥ 1 recorded. 0.3.0: V03.A33. Changed form
@@ -911,13 +931,16 @@ selection that compares equal to an empty collection. RP.S21's counts exclude an
 
 REL.A20 runs `release_evidence_manifest.py` over 0.3.0's committed records and requires each standing assertion to
 have S13's status. That is defined only where the standing form equals 0.3.0's. So:
-- RP.S02–S04, S06, S08, S09, S11, S12, S14, S16, S18, S19 and S22 ("same form") must each have exactly the status that
+- RP.S02–S04, S06, S08, S09, S11, S12, S14, S16, S19 and S22 ("same form") must each have exactly the status that
   S13's manifest gives its counterpart (`pass` for every one);
-- RP.S01, S05, S07, S10, S13, S15, S17, S20 and S21 ("changed form") are excluded from REL.A20's equality. Each is
+- RP.S01, S05, S07, S10, S13, S15, S17, S18, S20 and S21 ("changed form") are excluded from REL.A20's equality. Each is
   decided on 0.3.0's records anyway, and the manifest records its status and the reason for the exclusion. Its own
   acceptance is elsewhere: RP.S01 by RP.L01–L10 and REL.A01–A02; RP.S05 by RP.L09; RP.S07 by REL.A06–A10; RP.S15 by
   REL.A17; RP.S10, S13, S17, S20 and S21 by their fixtures in WO-R6's tests (a record that meets the standing form,
-  and one control per changed rule).
+  and one control per changed rule); RP.S18 by the generator's fixtures (every other check passes, giving `pass`; one
+  check fails, giving `fail`; zero commands, giving `fail`);
+- RP.S18 keeps the part that can be compared (amendment A-1, §17.1): over 0.3.0's records, REL.A20 also requires that
+  RP.S18's `not_pass` is a subset of the changed-form assertions, and that commands were run.
 
 The exclusion narrows no denominator: an assertion whose expected form changed has no S13 status to equal. It is named
 here, so that it cannot be dropped quietly (finding F-7).
@@ -1048,6 +1071,35 @@ the cut.
 
 ## 17. Amendments
 
-None. An amendment is a new section here, recorded in the register, that states what changes, why, the affected
+An amendment is a new section here, recorded in the register, that states what changes, why, the affected
 sections and assertions, and the evidence. It updates §14 when it moves a register entry. D2's adoption will be one
 (Φ, the carry, item 13, `gate_row:`, `release-audit`, `strace`).
+
+### 17.1 Amendments A-1 to A-8 (RP review, 2026-11-06; R-942 to R-949)
+
+The design lane's review of WO-R2–R4 and WO-R6 (`docs/reviews/RP-review.md`, "§17 amendment block") states these
+amendments. They are pasted verbatim. Each has its register line: A-1 is R-942, A-2 R-943, A-3 R-944, A-4 R-945, A-5
+R-946, A-6 R-947, A-7 R-948 and A-8 R-949. The sections each amends carry the change and point here. The evidence is
+the review's (M-1, M-2, S-1 to S-5, S-7, rulings 3 to 7) and WO-R7's tests (`docs/RP_DECISIONS.md`, C-23 on).
+
+- **A-1 (§11.2, REL.A20; Q-C5).** Move RP.S18 from the same-form list to the changed-form list. REL.A20 also
+  requires, over 0.3.0's records, that RP.S18's `not_pass` is a subset of the changed-form assertions, and that
+  commands were run. RP.S18's own acceptance is the generator's fixtures: every other check passes, giving `pass`;
+  one check fails, giving `fail`; zero commands, giving `fail`.
+- **A-2 (§8.3; Q-B4).** Add a condition (d). The scope, evaluated at `Accepted at`, has a fingerprint equal to
+  `Fingerprint`. If it does not, the row is `unsupported (not reproduced at <Accepted at>)` and counts as absent.
+- **A-3 (§5.1).** The line file and its inherited chain are byte-equal at C and at the candidate. The gate refuses
+  with exit 2 otherwise, and a change after C needs a new C.
+- **A-4 (§6.2, §6.10).** C is pushed on its own, as the head of a branch ref (`git push origin <C>:refs/heads/rc/<C7>`
+  if it would otherwise be pushed beneath later commits). The `release_rc` dispatch at C is the one with the greatest
+  run id, at its latest attempt. Step 1's record lists every `ci.yml` run at C with its event, attempt and conclusion.
+  The manifest reads exactly those two runs and refuses any other.
+- **A-5 (§6.4; Q-C3).** Step 12's archived inputs are `benchmarks/m02/g10-adapter-halves-v3.json` and
+  `g11-coverage-v3.json` at `bd446abab1bcc26b286ae4a287d1de131d87ceac`, registered by their SHA-256. A failed read, or
+  a hash that differs, stops the RC (§12).
+- **A-6 (§6.6; Q-C4).** The pinned W27 archive is supplied to the runner by `--w27-artifacts`. Without it, (c) fails.
+- **A-7 (§3.1, D1.5; Q-C6).** The release package id is admitted by the schema ADR of ruling 4. RP's own package
+  manifest is filed as `S15`.
+- **A-8 (status).** These are notes, not changes. RP.L08 now passes: `scripts/wheel_data_check.py` exists
+  (`bd672ff7`). Q-13 is measured, so PTC-R1 stays. F-4 is done in `ci.yml`. The standing-mode reason suffixes `D3`
+  and `D4` are the engine's labels (Q-B3).
