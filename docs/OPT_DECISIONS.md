@@ -361,3 +361,9 @@ Totals: TH-R1 18.3 s, M1 5.9 s, C-MW 54.4 s ("verify" also holds report/record w
   PH-split margin: V4 fails and V5 is refused `REGIME_MARGIN_UNSUPPORTED` ×19, so no C-MW start can verify whatever
   Ipopt does (M1 passes the same checks). Default until ruled: recorded, no change (both touch §4.2.3 bounds or §4.7
   margins, i.e. numerics).
+- Final WO-4b gates at `f6caf578`: G1 F0 PASS (M1 50/50, M2 61/61, M3 61/61, M4 61/61, M5 61/61, M6 85/85, M7 52/52,
+  M8 105/105, M9 35/35); G2 vs `c6755d86` identical in both envs; `analytic.py --check`, `performance.py --check`,
+  policy `--check` pass; default env (`test_opt_*.py test_m03_*.py test_e01_*.py test_k01_schemas.py
+  test_m05_study_record.py test_t08_w4_package_data.py`) 765 passed, 1 skipped; audited env on every `nlp`-marked file
+  196 passed (a bare `m03_nlp_check.sh` with no file list errors collecting `test_s10_*` — no mpmath in that env; not
+  OPT's).
