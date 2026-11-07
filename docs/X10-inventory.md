@@ -18,7 +18,9 @@ and what a class means: `docs/X10_DECISIONS.md`.
 | coolprop_extra_present | 0 | 20 | 0 | 0 | 10 |
 
 `any` is every pair off the CoolProp basis; the CoolProp column is measured with the
-optional `coolprop` extra absent and present.
+optional `coolprop` extra absent and present. The CoolProp column is probed on R134a
+alone: admission holds for all 123 CoolProp fluids by construction (it keys on the
+provider id), and a V cell there is R134a's solve only.
 
 ## Matrix
 
@@ -30,7 +32,7 @@ optional `coolprop` extra absent and present.
 | `c1.reactor` | A | B | A | A | absent: A; present: A |
 | `c1.reactor_standin` | A | B | A | A | absent: A; present: A |
 | `c1.reactor_surrogate` | A | U | A | A | absent: A; present: A |
-| `c1.stream_splitter` | A | V | A | A | absent: A; present: A |
+| `c1.stream_splitter` | A | V* | A | A | absent: A; present: A |
 | `c1.tp_flash` | A | V | A | A | absent: A; present: A |
 | `c1.tp_heater` | A | V | A | A | absent: A; present: A |
 | `syn001.adiabatic_mixer` | V | A | A | V | absent: A; present: A |
@@ -43,22 +45,24 @@ optional `coolprop` extra absent and present.
 | `syn001.liquid_pump` | V | A | A | A | absent: A; present: A |
 | `syn001.ph_flash` | V | A | A | V | absent: A; present: A |
 | `syn001.product_sink` | V | A | V | V | absent: P; present: V |
-| `syn001.stream_splitter` | V | A | V | V | absent: P; present: V |
+| `syn001.stream_splitter` | V | A | V | V* | absent: P; present: V* |
 | `syn001.tp_flash` | V | A | A | V | absent: A; present: A |
 | `syn001.tp_heater` | V | A | A | V | absent: A; present: A |
 | `syn001.valve` | V | A | A | V | absent: A; present: A |
-| `thermal.compressor` | A | A | V | V | absent: P; present: V |
-| `thermal.flash` | A | A | V | A | absent: P; present: V |
+| `thermal.compressor` | A | A | V* | V | absent: P; present: V |
+| `thermal.flash` | A | A | V | A | absent: P; present: V* |
 | `thermal.heater` | A | A | V | A | absent: P; present: V |
-| `thermal.mixer` | A | A | V | A | absent: P; present: V |
-| `thermal.pump` | A | A | V | A | absent: P; present: V |
-| `thermal.turbine` | A | A | V | V | absent: P; present: V |
+| `thermal.mixer` | A | A | V | A | absent: P; present: V* |
+| `thermal.pump` | A | A | V | A | absent: P; present: V* |
+| `thermal.turbine` | A | A | V | V* | absent: P; present: V* |
 | `thermal.valve` | A | A | V | A | absent: P; present: V |
 
 Cell key: **V** solved and VERIFIED; **U** solved, not verified; **F** admitted, solve
 failed; **B** bound on a route not solved here; **A** refused at admission
 (`model_unsupported`); **P** refused by the basis' provider preconditions; **R** another
-typed refusal; **E** error; **?** unclassified.
+typed refusal; **E** error; **?** unclassified. A trailing `*` marks a cell solved from a
+state constructed for the probe (`docs/X10_DECISIONS.md` D-2), not from a registered
+revision; it is weaker evidence.
 
 ## Every pair not solved and verified
 

@@ -11,12 +11,15 @@ section only (D-3).
 
 from __future__ import annotations
 
+import importlib.util
 import json
 import os
 import subprocess
 import sys
 
 from conftest import REPO_ROOT
+
+from openflowsheet.application.revision_binding import MODEL_BASES
 
 SCRIPT = REPO_ROOT / "scripts" / "x10_inventory.py"
 INVENTORY = REPO_ROOT / "benchmarks" / "x10" / "inventory.json"
@@ -52,3 +55,33 @@ def test_x10_inventory_pump_on_wilson_stays_refused() -> None:
         measured = pairs[f"{model_id} x wilson-ig-v2"]["env"]["any"]
         assert measured["class"] == "refused_admission"
         assert measured["reason"] == "no_volume"
+
+
+def test_x10_inventory_admission_refusal_iff_registry_does_not_admit() -> None:
+    """The review's independent oracle (S-2): a pair is refused at admission exactly when
+    `MODEL_BASES` does not list its basis, and a basis refusal occurs only with the CoolProp extra
+    absent. Catches a binder that refuses a pair for a reason other than R-288's admission."""
+    pairs = json.loads(INVENTORY.read_text(encoding="utf-8"))["pairs"]
+    assert len(pairs) == 150
+    for key, pair in pairs.items():
+        admits = pair["provider"] in MODEL_BASES[pair["model"]]
+        for env, measured in pair["env"].items():
+            refused = measured["class"] == "refused_admission"
+            assert refused == (not admits), (key, env, measured["class"])
+            if measured["class"] == "refused_basis":
+                assert env == "coolprop_extra_absent", (key, env)
+
+
+def test_x10_inventory_classify_names_no_route() -> None:
+    """S-3: a bound pair whose `select_route` returns `no_route` is a typed refusal, not a failed
+    solve with no detail."""
+    spec = importlib.util.spec_from_file_location("x10_inventory_under_test", SCRIPT)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    attempt = {"revision": "r", "probe": "native", "bind": "bound", "route": {"no_route": "why"}}
+    assert module.classify("thermal.mixer", [attempt]) == {
+        "class": "refused_other",
+        "detail": "no_route(why)",
+    }

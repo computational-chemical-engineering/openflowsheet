@@ -497,6 +497,8 @@ def classify(model_id: str, attempts: Sequence[Mapping[str, Any]]) -> dict[str, 
     route = last.get("route", {})
     if "error" in route:
         return {"class": "error", "detail": route["error"]}
+    if "no_route" in route:
+        return {"class": "refused_other", "detail": f"no_route({route['no_route']})"}
     if "solve_path" in route and route["solve_path"] != "revision_eo":
         return {"class": "bound_not_solved", "detail": route["solve_path"]}
     solve = last.get("solve", {})
@@ -696,7 +698,9 @@ def render(document: Mapping[str, Any]) -> str:
     lines += [
         "",
         "`any` is every pair off the CoolProp basis; the CoolProp column is measured with the",
-        "optional `coolprop` extra absent and present.",
+        "optional `coolprop` extra absent and present. The CoolProp column is probed on R134a",
+        "alone: admission holds for all 123 CoolProp fluids by construction (it keys on the",
+        "provider id), and a V cell there is R134a's solve only.",
         "",
         "## Matrix",
         "",
@@ -722,7 +726,9 @@ def render(document: Mapping[str, Any]) -> str:
         "Cell key: **V** solved and VERIFIED; **U** solved, not verified; **F** admitted, solve",
         "failed; **B** bound on a route not solved here; **A** refused at admission",
         "(`model_unsupported`); **P** refused by the basis' provider preconditions; **R** another",
-        "typed refusal; **E** error; **?** unclassified.",
+        "typed refusal; **E** error; **?** unclassified. A trailing `*` marks a cell solved from a",
+        "state constructed for the probe (`docs/X10_DECISIONS.md` D-2), not from a registered",
+        "revision; it is weaker evidence.",
         "",
         "## Every pair not solved and verified",
         "",
@@ -767,6 +773,7 @@ def render(document: Mapping[str, Any]) -> str:
 def _short(measured: Mapping[str, Any] | None) -> str:
     if measured is None:
         return "–"
+    mark = "*" if _constructed(measured) else ""
     letter = {
         "solved_verified": "V",
         "solved_not_verified": "U",
@@ -778,7 +785,15 @@ def _short(measured: Mapping[str, Any] | None) -> str:
         "error": "E",
         "unclassified": "?",
     }[measured["class"]]
-    return letter
+    return letter + mark
+
+
+def _constructed(measured: Mapping[str, Any]) -> bool:
+    """Whether the pair was solved from a constructed state (D-2), not a registered revision. A
+    refusal before the solve (the absent CoolProp extra) is not a solve and is not marked."""
+    attempts = measured.get("attempts") or [{}]
+    solved = measured["class"] in ("solved_verified", "solved_not_verified", "solve_failed")
+    return solved and attempts[-1].get("probe") == "constructed"
 
 
 # -- the command ----------------------------------------------------------------------------------

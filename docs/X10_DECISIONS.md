@@ -30,14 +30,17 @@ and `--record` in both environments.
   revision (donor + stated feed state and outlet pressures). Otherwise a rebased revision: the model's smallest
   registered revision moved onto the basis (component set; flows spread evenly; routing models swapped for the
   basis' namesakes; the model under test first, so a refusal names it — a refusal naming another model would be
-  `unclassified`; none is). Eight constructed probes, states stated in the table's comments: `thermal.compressor`
+  `unclassified`; none is). Nine constructed pairs on eight flowsheets (the CoolProp pump and turbine share one), states stated in the table's comments: `thermal.compressor`
   on IAPWS-95 and `syn001.stream_splitter` on Wilson (no registered revision); `c1.stream_splitter` on C1 (its only
   revisions route `revision_coupled`); `thermal.turbine` on Wilson (GP-M2 registers INITIALIZATION_FAILED, S11.A81);
-  five on CoolProp. Two states were corrected once each against the models' declared limits, not tuned to pass:
-  the R134a ORC turbine outlet declared `vapor` (a dry expansion contradicts TH-C1's `vapor_liquid`:
-  `isentropic_state_single_phase(T)`), and the Wilson turbine from 395 K to 1.25 bar (400 K → 1.2 bar first gave
-  `isentropic_state_two_phase`, then a derivative-witness probe past the records' 400 K bound). Both attempts stay
-  in the inventory where they are the native ones (GP-M2's failure is recorded beside the constructed success).
+  five pairs on CoolProp. Two states were corrected against the models' declared limits, not tuned to pass: the
+  R134a ORC turbine outlet declared `vapor` once (a dry expansion contradicts TH-C1's `vapor_liquid`:
+  `isentropic_state_single_phase(T)`), and the Wilson turbine twice, ending at 395 K to 1.25 bar (400 K → 1.2 bar
+  first gave `isentropic_state_two_phase`; the next attempt's derivative-witness stencil left the records' 400 K
+  bound; the discarded attempts are not in the inventory). GP-M2's own failure is recorded beside the constructed
+  success. The `thermal.mixer` probe's heater duty (TH-R1's 25 kW → 5 kW, SPEC-H-Q) has no recorded reason: the
+  generator's comment says only "a smaller heater duty", and it was not re-derived in the review-fix round, so read
+  it as a small duty chosen with the R134a state, not tuned to a result; the probe solved VERIFIED.
 - **D-3 (choice): the CoolProp column in two environments.** The shared `.venv` has no `coolprop` extra (F0 D20) and
   CI installs it (`ci.yml:110`). Each CoolProp pair carries `coolprop_extra_absent` and `coolprop_extra_present`;
   `--record` re-measures the current one and keeps the other, `--check` compares the current one. The present one was
@@ -61,7 +64,31 @@ and `--record` in both environments.
 ## Findings to carry (not decided here)
 
 - `c1.reactor_surrogate` on its registered revision (M04's `c1-surrogate.json`): CONVERGED, UNVERIFIED,
-  `derivative_witness.on_pattern: fail`. Recorded, not diagnosed.
+  `derivative_witness.on_pattern: fail`. Diagnosed by the review: see D-8 (class E, L-X10-1).
 - The register's "column on nonideal bases limited" (R-631) is lifted for Wilson today: `syn001.column` on
   `wilson-ig-v2` binds and solves VERIFIED (C-EW). It stays refused on `pr-c1-v1` and the pure fluids.
 - Both pumps stay refused on Wilson (R-819): `model_unsupported`, hint "wilson-ig-v2 has no liquid volume".
+
+## Review-fix round (docs/reviews/X10-review.md, 2026-11-07)
+
+- **D-8 (review M-1): `c1.reactor_surrogate` UNVERIFIED is class E.** The harvest entry for the first manifest's
+  `limitations[4]` moves P → E, to a new support-matrix row `L-X10-1` (benchmarks/t08/support_envelope.yaml, before
+  `L-S11-1`). The row states the measured cause (witness step h = 3e-5 mol/s against per-tube flows 1.4e-4 to
+  4.9e-3 mol/s; truncation, not a Jacobian defect) and that a design-lane follow-up (scaling and certificate policy)
+  owns it. A second manifest at the fix head carries the corrected limitation text ("not diagnosed" dropped) and
+  its own harvest items (5 P, 1 E); the first manifest is kept. `HARVEST_SIZE` (71, 957, 122) → (72, 963, 122).
+  The reviewer's measurements are quoted from the review, not re-run here.
+- **D-9 (review S-1): R134a stands for the 123 CoolProp fluids.** `docs/X10-inventory.md` says so: admission holds
+  for all 123 by construction, a V cell there is R134a's solve only.
+- **D-10 (review S-2): independent admission oracle.** `test_x10_inventory_admission_refusal_iff_registry_does_not_admit`
+  checks over all 150 pairs `refused_admission` iff `provider not in MODEL_BASES[model]`, and `refused_basis` only in
+  `coolprop_extra_absent`. It holds today (no exception).
+- **D-11 (review S-3): `classify()` names `no_route`.** A bound pair whose `select_route` returns `no_route` is
+  `refused_other` with detail `no_route(<reason>)` (no new class, so the table's key and counts are unchanged). Unit
+  test with a constructed input. No pair reaches it today: `benchmarks/x10/inventory.json` is unchanged, `--check`
+  passes. Alternative: a class of its own. Reversible by: one edit in `classify()` and `_short`/`_cell`.
+- **D-12 (review S-4): constructed cells carry `*`.** A trailing `*` in the matrix marks a cell solved (V, U or F)
+  from a constructed state; 9 cells (4 off CoolProp, 5 on it with the extra present). A constructed attempt refused
+  before the solve (CoolProp extra absent) is not marked.
+- **D-13 (review D-2 wording): D-2 corrected** to nine pairs on eight flowsheets, the Wilson turbine corrected twice,
+  and the heater duty's lack of a recorded reason stated.

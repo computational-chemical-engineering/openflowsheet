@@ -969,6 +969,19 @@ limitations:
       - tests/test_m04_wo9_synthetic_loop.py::test_a48_renaming_the_reactor_onto_the_rough_surrogate_is_rejected
       - doc:benchmarks/m04/wo11-b2-it1-v3/record.json
       - doc:docs/derivations/M04-spec.md §20
+  - id: L-X10-1
+    text: >-
+      A `pr-c1-v1` revision whose component flows are small against the column scale (for example
+      M04's per-tube `benchmarks/m04/c1-surrogate.json` on `c1.reactor_surrogate`) solves CONVERGED
+      but certifies UNVERIFIED: `derivative_witness.on_pattern` fails (0.109 against 1e-7). The
+      witness step is set by the column scale, not by the state (here h = 3e-5 mol/s against
+      per-tube flows of 1.4e-4 to 4.9e-3 mol/s, so h/x reaches 14-21 %), and the difference between
+      the analytic Jacobian and the finite difference falls 4.00 times per halving of h. That is
+      truncation error of the check, not a Jacobian defect. A design-lane follow-up (scaling and
+      certificate policy) owns whether the step becomes state-relative or such revisions stay
+      UNVERIFIED by declaration.
+    evidence:
+      - doc:docs/X10-inventory.md
   - id: L-S11-1
     text: >-
       `iapws95-v1` (IAPWS-95, S05) is selected by `record_source: benchmarks/s05/components.yaml`
@@ -8388,9 +8401,10 @@ harvest:
 - manifest: evidence/X10/18d34648b266893fe80971134a12c3f95ad331e5/manifest.json
   item: limitations[4]
   sha256: 766a47ebe2ab0ba3160dafb212ea6c8ea46626f7959c33b4726ada2a45fd0161
-  class: P
-  to: []
-  note: 'scope note: c1.reactor_surrogate CONVERGED/UNVERIFIED (derivative_witness.on_pattern) on its registered revision, recorded for X10 gaps, not diagnosed'
+  class: E
+  to:
+  - L-X10-1
+  note: 'user-facing (X10 review M-1): c1.reactor_surrogate CONVERGED/UNVERIFIED on its registered revision; witness step set by the column scale (L-X10-1)'
 - manifest: evidence/X10/18d34648b266893fe80971134a12c3f95ad331e5/manifest.json
   item: limitations[5]
   sha256: 522e70855648b0708225d45492d8f95aaae6e3017601c43094d8779e6e884528
