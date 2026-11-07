@@ -231,3 +231,65 @@ produced them. The design-lane ruling round is folded into OPT's single `reviewe
   (§4.2.3), else M03's `_bounds`. An unrestricted system (SYN-001; every corpus revision but a held PH split) takes
   M03's code path unchanged. Alternative: one code path for both (column selection by an identity index changes no
   value but re-canonicalises the CSC; G2 would have to prove it). Reversible by: the WO-4 formulation commit.
+- D-24. DECISION: the formulation of a report refused statically (no `NlpFormulation`: the map or start 0 is missing)
+  → decisions under the map's parameter ids where it was found, else the specification ids; start 0 = the
+  specifications' `value`s as the revision writes them when every decision's has one, then explicit and Halton; with
+  no start at all `starts: [[]]` (the schema needs ≥ 1; nothing ran). `model` has `None` fields before the start
+  phase. Alternative: refuse to report (§4.5 asks for an `UNSUPPORTED` report). Reversible by:
+  `revision._request_formulation_record`. **For the reviewer:** the `[[]]` corner (UNKNOWN_DECISION with only start 0).
+- D-25. DECISION: V2/V4/V5 on the revision host → `verify_candidate(..., held=)` (`solve_start` passes the start's
+  system iff the point carries an attempt signature; SYN-001's is `None`, so M03 is untouched — G2): V2's `TAU_GROSS`
+  norm runs over the free columns, held columns must equal the re-solve's exactly (`held_changed`); V4 also fails when
+  the re-solve's signature differs from the start's, listing `PHASE_REGIME_CHANGED(<unit>)` per differing item's unit
+  in `phase_regime_changed`; an expression naming a decision is valued at `{state, decisions}` and its V5 derivative is
+  direct (as an assessment output's `∂G/∂d`). Alternative: a separate revision verifier. Reversible by: the WO-4
+  verification commit.
+- D-26. DECISION: a request with an `assessment` → `optimize_revision` raises `NotImplementedError` (E01's binding at
+  the first certified start, D-18, is not built in this WO-4 slice; the job is WO-6, so no surface reaches it yet).
+  Open WO-4 item. Reversible by: building the binding.
+- D-27. DECISION: record details (§4.8 leaves open) → JSON members hashed by `document_sha256`, bundle files by file
+  SHA-256, all in the manifest's `members`; manifest `environment = {solver: report.solver.environment}`; only
+  certifies that reach `solve_route` write a bundle (D-11); `optimizer.json` writes a non-finite float as its `repr`;
+  the report's `limits.max_iter`/`max_wall_time` are the request's; the start record gains §4.13's `start_record`,
+  `resolve_record` (relative paths), `held_signature`, `candidate_revision_sha256`; the candidate `change_set`,
+  `candidate_revision_sha256`, `resolve_record`. `phase_bounds_active`/`regime_note` are WO-5's. Reversible by:
+  `revision._Record`, `_start_record`, `_candidate_members`.
+- D-28. DECISION: where `START_NOT_CERTIFIED` and `PHASE_REGIME_CHANGED` live → in details, not codes: a start not run
+  is `SOLVER_FAILED` with detail `…; START_NOT_CERTIFIED(<k>, <code>): <why>`; none passing → one
+  `SIMULATION_NOT_READY` per start, detail `START_NOT_CERTIFIED(<k>, <code>): …`, subject `start <k>`; a regime change
+  → `NOT_VERIFIED` (failing V4) with V4's `phase_regime_changed`. The report schema's reason enums gain the static
+  codes (REVISION_MISMATCH, REVISION_UNBOUND, OPTIMIZATION_ROUTE_UNAVAILABLE, DECISION_UNIT_NOT_INTERNAL,
+  DECISION_NOT_CONTINUOUS, TOO_MANY_STARTS, REGIME_MARGIN_UNDEFINED; D-17's follow-through) and the additive
+  `revision`, start and candidate members (§4.13). Alternative: new top-level codes. Reversible by: the schema commit.
+- D-29. DECISION: the analytic flowsheets → generated once from the T05 templates (C1's `U-PHF` `syn001.ph_flash` and
+  `U-HEAT` `syn001.tp_heater`, C3's `U-SPLIT` with `split_fraction` as a `parameters.split_fraction` specification),
+  committed as JSON; constants, requests and mpmath expectations owned by `benchmarks/opt/analytic.py` (`--check`).
+  Every pressure drop is 0 (P = 1e5 Pa). Bubble point of the equimolar feed 347.4412 K; every start ≥ 11.4 K below it,
+  every interior optimum ≥ 23 % of its box from either end (asserted by the script). Reversible by: the files.
+- D-30. DECISION (escalated): §4.13's report members vs the numerical-policy partition → the report is a v2-domain
+  schema whose bytes are frozen, and `optimization_sha256`, `solve_policy_sha256`, `revision_sha256`,
+  `candidate_revision_sha256` are not v2 names (`t08_numerical_policy.py --check`: "(d) unclassified"). Following
+  E01's precedent, the `revision` member is a `$ref` to `optimization-request.schema.json#/$defs/report_revision`
+  (OPT's addendum classifies `optimization_sha256`, `solve_policy_sha256`; `revision_sha256` keeps its earlier class);
+  the flat `candidate_revision_sha256` members of `$defs/start`/`$defs/candidate` are **dropped** — the candidate
+  document's SHA-256 is its record member's (`starts/<k>/candidate-revision.json` in the manifest). For the design
+  lane: keep it so, or carry the hash in a `$ref`'d object. Alternative: list the names in v2 (moves v2's bytes,
+  forbidden). Reversible by: the D-30 commit.
+
+### Gates (WO-4, 2026-11-07, TRS2, worktree `wp/OPT`)
+
+- G7 OPT-A1 (1 start): `KKT_POINT_VERIFIED`, Ipopt 0 in 8 iterations; Q = 9000.00000009091 vs Q* = 9000 (mpmath),
+  rel 1.0e-11 (≤ 1e-7); λ = 0.03 vs λ* = 0.03 (≤ 1e-4 rel); V5 stationarity residual 0.0.
+- G8 OPT-A2 (3 starts, all `KKT_POINT_VERIFIED`, distinct 1, 12–13 iterations): r = 0.3000000000394735 vs 0.3
+  (3.9e-11 ≤ 1e-6); Q = 2700.0000004461704 vs 2700 (rel 1.7e-10 ≤ 1e-6); f = 0.3600000000090909 vs 0.36 (9.1e-12
+  ≤ 1e-8); V5 residual 1.15e-10. OPT-A2b (outlet T decision, TP split): all 3 verified, distinct 1; r err 5.7e-11,
+  T = 330.0000000010101, duty at the certified candidate 2700.0000006032 (rel 2.2e-10), f err 9.1e-12; residual ≤ 2.9e-10.
+- G9 OPT-N1: `NOT_VERIFIED` (Ipopt 0, Q = 16500.0000001 liquid-held), V4 `PHASE_REGIME_CHANGED(U-PHF)`. Route
+  refusals (A02 corpus legacy_eo; `c1-loop-real` revision_coupled): `UNSUPPORTED OPTIMIZATION_ROUTE_UNAVAILABLE`.
+- G2: `scripts/opt_m03_dump.py` base `cd1a5cfa` vs WO-4 (`f2f4ef5e`…): **identical**, default env 22 entries (sha
+  `6e028e8d…`), audited env 25 entries (`8cfe7c7b…`). G1 F0 PASS (M1 50/50 … M9 35/35). Policy `--check` equals v2.
+- Tests: default env `test_opt_*.py test_m03_*.py test_e01_*.py test_k01_schemas.py test_m05_study_record.py
+  test_t08_w4_package_data.py` 754 passed, 1 skipped (before D-30: 2 policy failures, fixed: 341 passed on those
+  files); audited env (`m03_nlp_check.sh`) 26 passed (OPT 4 + M03/E01 22).
+- Not done in WO-4 (next engineer): G17 performance record (TH-R1, M1, C-MW requests), F5 (C-MW L-BFGS), D-26
+  assessment binding, the "multiple output blocks" Pyomo abstraction (phase rows are WO-5's; one block today).
