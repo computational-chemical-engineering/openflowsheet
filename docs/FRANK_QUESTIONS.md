@@ -416,3 +416,19 @@ Design `docs/design/X02-warm-starts.md`. Defaults, acted on unless you say other
   Restarting the *same* design still works (1 iteration, 25 s instead of 194 s). Default: record the check as failed,
   withdraw the speed-up claim for neighbouring designs, keep everything else. Alternative: hold X02 for a redesign.
 
+
+## OPT — optimising your own flowsheets (2026-11-07; ADR 0071 Proposed, ADR 0019 Am. 16)
+
+Design `docs/design/OPT-revision-optimisation.md` §7. Defaults, acted on unless you say otherwise:
+- **Q1:** where decisions are declared: only in a separate optimisation request (the flowsheet document is never
+  edited by the optimiser). Default: request only.
+- **Q2:** optimise flowsheets on the older (legacy) solve route in 0.4 too? Default: no, the standard route only;
+  flowsheets with an external reactor are refused with a reason (the trust-region method is their route).
+- **Q3:** cost and LCA as standalone operations (not only as objectives)? Default: a later package.
+- **Q4:** should replaying an optimisation re-run Ipopt? Default: no — replay re-checks the certified optimum, so it
+  also works on ARM machines without Ipopt.
+- **Q5:** limits per job. Default: 32 starts, 500 iterations and 120 s per start.
+- **Q6:** commit the optimum as a new revision automatically? Default: no; the result carries a change you commit.
+- **Q7:** include optima that sit on a phase boundary (e.g. a flash just at its dew point) in 0.4? Default: yes.
+- **Q8:** audit Ipopt for ARM in 0.4? Default: no (x86-64 only; ARM replays but does not optimise).
+- Also: accept ADR 0071 (it lifts the old "optimisation unsupported" refusal and adds an `optimize` job).

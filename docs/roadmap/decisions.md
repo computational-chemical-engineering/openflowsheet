@@ -303,3 +303,15 @@ for the warm reactor. Alternative: drop the criterion from the gate (engineer's 
 it failed) or hold X02 for a new design. Reversible by: Frank's X02 Q7.
 X02 still merges only after Frank accepts ADR 0070 (Q5 as stated). WO-7 (close-out) next: ADR/note text, full gate, F0,
 manifest `S16` (frozen pattern refuses `X02`; R-878 rule as RP's S15), CI.
+
+## 2026-11-07 — OPT design (`e4316d9c`): note + ADR 0071 (Am. 16)
+
+Recon (M03 NLP is a SYN-001-only library; no surface; E01 cost/LCA unreachable) → architect brief
+`docs/briefs/OPT-architect.md` → design. Key: `revision_eo` only (coupled refused: no exact derivative; legacy declared,
+refused); separate optimisation request document; decisions target `role: fixed` specifications; M03 behind an
+`NlpHost` protocol, SYN-001 bit-identical; V1 truth = cold re-solve on the production route; job operation `optimize`
+(ADR 0019 Am. 16), validate lift (R-129); replay re-checks the certified chain, not Ipopt. WO-1…WO-7, gates G1–G21.
+Frank OPT Q1–Q8 (defaults). Architect least sure of: F1 bit-identical last-attempt residual (G4), F2 duty-spec margin
+vs `orchestrator/region.py`, F3 Ipopt inline vs worker identity (G12), F4 thermal port regimes — for the reviewer.
+DECISION: OPT build starts now on `wp/OPT` (WO-1) while X02 closes and X05 waits for CI. Alternative: wait for Frank's
+Q1–Q8. Reversible by: the defaults are isolated per WO; a late answer reworks the WO it touches.
