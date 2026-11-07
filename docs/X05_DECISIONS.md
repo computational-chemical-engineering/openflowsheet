@@ -47,3 +47,8 @@ Default kept (ADR §11 Q-N1): the rule does not bend; nothing here needs it to.
   and `wp/RP` hold R-942…R-949 unmerged; X05's lines take the next free numbers above them on acceptance, and R-140
   gains its "Lifted by X05" line then. The release procedure's step-4 line (`a19.*` → `x05.*`) is left to `wp/RP`
   (listed in `docs/progress.md`).
+- **D-8 (CI run 42372143366) — T08.A32 admits the packaged lock by name.** `tests/test_t08_w2_inventory.py`'s
+  data-rights inventory (skipped locally when the build backend cannot be installed) refused
+  `src/openflowsheet/_data/requirements.lock` in the sdist on both CI legs and `default-install`. The file is the
+  project's own pin list (names and versions, no third-party content), the case M02 §2.4 already admitted for
+  `adapters/pymrm/reactor-env.lock`; it joins `SHIPPED_DATA` by exact path. Nothing else is admitted.
