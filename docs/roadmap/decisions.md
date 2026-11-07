@@ -230,3 +230,12 @@ key member `start.profile_sha256` only when used (D5), certificate unchanged + d
 identity incl. every recorded experiment key; G5 on the workstation. Frank Q1…Q6 (defaults).
 DECISION: X02 build waits for a free agent slot after RP's manifest re-take (RP is nearer to merge and needed for the
 0.4.0 cut). Alternative: start X02 WO-1 now and queue RP. Reversible by: reordering.
+
+## 2026-11-07 — RP manifest `tested`; X02 WO-1/2 done
+
+RP: manifest `evidence/S15/fd28ff7b…` `tested` (REL.A01–A10, A17–A20 PASS; gate PASS 15070 at `fd28ff7b`; CI
+42320544169 green); main merged into `wp/RP` (`98540811`, F0 PASS); CI on the merge head running, then merge to main.
+X02 (`wp/X02`): WO-1 fixed the shipped defect (failing-first: bundle lacked `warm_start`, reproduce MISMATCH; after: 5/5
+incl. control), WO-2 contract (Am. 15 schemas, admission A1/A2, `explicit-v1`, c_4 link `0af895a0…`, Q26 pins). F0 PASS.
+Questions batched for the X02 reviewer: provisional R-950; c_4 clash with `wp/MSG` (second merger becomes c_5);
+x₀ rejection reason form. Next: WO-3 (outer start), WO-4 (external-start plumbing) on a fresh engineer.
