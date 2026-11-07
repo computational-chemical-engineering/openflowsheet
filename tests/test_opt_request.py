@@ -406,7 +406,7 @@ def test_g11_an_unaudited_platform_is_unavailable_naming_it(
         )
     assert refused.value.error.as_document() == {
         "code": "unsupported",
-        "message": "nlp_solver_unavailable(darwin-arm64)",
+        "message": "nlp_solver_unavailable",
         "detail": {"pointer": "/task"},
         "retryable": False,
     }
@@ -417,7 +417,7 @@ def test_g11_the_application_refuses_before_reading_and_wants_the_request(
 ) -> None:
     """With an audited solver the application's `validate` has no `optimization` member until
     OPT's surface link (WO-6, D-19): `invalid_request` at `/optimization`, audited, nothing
-    read. Without one: `unsupported nlp_solver_unavailable(<platform>)`."""
+    read. Without one: `unsupported nlp_solver_unavailable`."""
     from openflowsheet.application.types import Change, Edit
 
     with LocalApplication.create(tmp_path / "project", project_id="opt-wo3") as app:
@@ -435,7 +435,7 @@ def test_g11_the_application_refuses_before_reading_and_wants_the_request(
         monkeypatch.setattr(closure, "running_platform", lambda: "linux-aarch64")
         with pytest.raises(ApplicationError) as refused:
             app.validate(revision_id, "optimization")
-        assert refused.value.error.message == "nlp_solver_unavailable(linux-aarch64)"
+        assert refused.value.error.message == "nlp_solver_unavailable"
         rows = [row for row in app.store.audit_rows() if row["outcome"] == "refused"]
         assert [(row["operation"], row["code"]) for row in rows] == [
             ("validate", "invalid_request"),
@@ -486,7 +486,7 @@ def test_g11_validate_and_static_readiness_never_import_pyomo_or_cyipopt() -> No
     assert found["loaded"] == []
     assert (found["ready"], found["static"]) == ("READY_FOR_OPTIMIZATION", True)
     if not audited_solver().available:
-        assert found["real"].startswith("nlp_solver_unavailable(")
+        assert found["real"] == "nlp_solver_unavailable"
 
 
 def test_reason_codes_keep_m03s_relative_order() -> None:

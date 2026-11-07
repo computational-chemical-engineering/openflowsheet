@@ -406,7 +406,8 @@ def test_g9_the_offsets_where_both_binders_bind() -> None:
 @pytest.mark.parametrize("task", ["simulation", "optimization"])
 def test_r3_every_corpus_report_validates(task: str) -> None:
     """T08 review 2, Ruling 1 (U05) moved the `optimization` case: no report is built for that
-    task, so every corpus document is refused `unsupported` instead."""
+    task, so every corpus document is refused `unsupported` instead — amended on purpose by ADR
+    0071 (OPT design §4.11): without an audited solver, `nlp_solver_unavailable`."""
     from openflowsheet.application.contract import ApplicationError
 
     for name, build in CORPUS.items():
@@ -415,7 +416,7 @@ def test_r3_every_corpus_report_validates(task: str) -> None:
                 validate(build(), task)
             assert (refused.value.code, refused.value.error.message) == (
                 "unsupported",
-                "task_unsupported(optimization)",
+                "nlp_solver_unavailable",
             ), name
             continue
         report = validate(build(), task)  # type: ignore[arg-type]

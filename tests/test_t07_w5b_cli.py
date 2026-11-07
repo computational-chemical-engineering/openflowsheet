@@ -165,6 +165,17 @@ def single_threaded(monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.setenv(variable, "1")
 
 
+#: ADR 0071 (OPT design §4.11) moved U05's refusal message; the pinned text before and after.
+U05_MESSAGE_BEFORE_OPT = '\\"message\\":\\"task_unsupported(optimization)\\"'
+U05_MESSAGE_OPT = '\\"message\\":\\"nlp_solver_unavailable\\"'
+
+
+def opt_reversed_cli_text(text: str) -> str:
+    """The pins file's text as it was before ADR 0071: U05's refusal message only, once."""
+    assert text.count(U05_MESSAGE_OPT) == 1
+    return text.replace(U05_MESSAGE_OPT, U05_MESSAGE_BEFORE_OPT)
+
+
 def u05_reversed(pins: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """`pins` with U05's entry as T07 captured it: the `validate <CASE>` entry with its task and
     status renamed. Every other entry is returned as it is."""
@@ -185,7 +196,8 @@ def test_the_pins_moved_by_d1s_str05_substitution_u05_and_v2_recording_only() ->
     pins = json.loads(PINS.read_text(encoding="utf-8"))
     (u05,) = (entry for entry in pins if entry["argv"] == U05_ARGV)
     assert u05["exit"] == API_EXIT_CODES["unsupported"]
-    assert json.loads(u05["stdout"])["message"] == "task_unsupported(optimization)"
+    # Amended on purpose (ADR 0071, OPT design §4.11): U05's refusal is the missing solver's.
+    assert json.loads(u05["stdout"])["message"] == "nlp_solver_unavailable"
     restored = json.dumps(u05_reversed(pins), indent=1, ensure_ascii=False) + "\n"
     reversed_pins = v2_reversed_cli_text(d1_str05_reversed_message(renamed_back_cli_text(restored)))
     assert hashlib.sha256(reversed_pins.encode("utf-8")).hexdigest() == PINS_T07_SHA256

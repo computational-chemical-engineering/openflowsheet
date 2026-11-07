@@ -26,7 +26,7 @@
    "optimization"
   ],
   "exit": 14,
-  "stdout": "{\"code\":\"unsupported\",\"detail\":{\"pointer\":\"/task\"},\"message\":\"task_unsupported(optimization)\",\"retryable\":false}\n",
+  "stdout": "{\"code\":\"unsupported\",\"detail\":{\"pointer\":\"/task\"},\"message\":\"nlp_solver_unavailable\",\"retryable\":false}\n",
   "stderr": ""
  },
  {

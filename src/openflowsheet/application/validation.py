@@ -172,13 +172,14 @@ def task_unsupported(task: str) -> ApplicationError:
     return api_error("unsupported", f"task_unsupported({task})", pointer="/task")
 
 
-def nlp_solver_unavailable(platform_id: str) -> ApplicationError:
+def nlp_solver_unavailable() -> ApplicationError:
     """OPT design §4.11 (ADR 0071 D8, D10): `validate(task="optimization")` where no audited NLP
-    solver is available — ADR 0019's `unsupported`, naming the platform, pointer `/task`, raised
-    before the revision is read (U05's place)."""
+    solver is available — ADR 0019's `unsupported`, `nlp_solver_unavailable`, pointer `/task`,
+    raised before the revision is read (U05's place). The message is the same on every platform
+    (D-16); the probe's detail, which names the platform, is the report reason's."""
     from openflowsheet.application.contract import api_error
 
-    return api_error("unsupported", f"nlp_solver_unavailable({platform_id})", pointer="/task")
+    return api_error("unsupported", "nlp_solver_unavailable", pointer="/task")
 
 
 def optimization_request_missing() -> ApplicationError:
@@ -212,7 +213,7 @@ def validate(
 
     `task="optimization"` (OPT design §4.11, ADR 0071 D8, lifting R-129): the solver probe first
     (`solver_probe`, default `closure.audited_solver`) — unavailable raises `unsupported`
-    `nlp_solver_unavailable(<platform>)` and builds no report; then a missing `optimization`
+    `nlp_solver_unavailable` and builds no report; then a missing `optimization`
     raises `invalid_request` at `/optimization`; then this revision's simulation validation and
     the request's static readiness (`studies.nlp.request.static_readiness`) as checks `OPT.<CODE>`.
     Nothing is solved.
@@ -447,12 +448,12 @@ def _validate_optimization(
     solver_probe: Callable[[], Any] | None,
 ) -> ValidationReport:
     """OPT design §4.11: see `validate`."""
-    from openflowsheet.studies.nlp.closure import audited_solver, running_platform
+    from openflowsheet.studies.nlp.closure import audited_solver
     from openflowsheet.studies.nlp.request import STATIC_CODES, static_readiness
 
     availability = (solver_probe or audited_solver)()
     if not availability.available:
-        raise nlp_solver_unavailable(running_platform())
+        raise nlp_solver_unavailable()
     if optimization is None:
         raise optimization_request_missing()
     simulation = validate(document, "simulation", now=now, surrogates=surrogates)

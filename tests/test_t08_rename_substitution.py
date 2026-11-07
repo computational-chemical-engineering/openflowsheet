@@ -136,9 +136,10 @@ def test_with_the_pre_rename_self_hashes_a_run_emits_the_pre_rename_fixtures(
 
 
 def test_the_cli_pins_moved_by_the_rename_only() -> None:
-    from test_t07_w5b_cli import PINS
+    from test_t07_w5b_cli import PINS, opt_reversed_cli_text
 
-    text = PINS.read_text(encoding="utf-8")
+    # Amended on purpose (ADR 0071, OPT design §4.11): U05's refusal message is reversed first.
+    text = opt_reversed_cli_text(PINS.read_text(encoding="utf-8"))
     before = renamed_back_cli_text(text)
     assert before != text
     assert hashlib.sha256(before.encode("utf-8")).hexdigest() == PINS_PRE_RENAME_SHA256

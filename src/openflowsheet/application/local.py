@@ -464,7 +464,7 @@ class LocalApplication:
         ------
         ApplicationError
             `invalid_request` (also the missing `optimization`), `unsupported`
-            (`nlp_solver_unavailable(<platform>)`, before the revision is read) or `not_found`.
+            (`nlp_solver_unavailable`, before the revision is read) or `not_found`.
         """
         self._authorize("validate")
         if task not in TASKS:
@@ -477,13 +477,13 @@ class LocalApplication:
         if task == "optimization":
             # OPT design §4.11 (ADR 0071 D8, lifting R-129 and U05's refusal): the solver probe
             # first, at U05's place, before the revision is read; then the request.
-            from openflowsheet.studies.nlp.closure import audited_solver, running_platform
+            from openflowsheet.studies.nlp.closure import audited_solver
 
             availability = audited_solver()
             if not availability.available:
                 self._refuse(
                     "unsupported",
-                    f"nlp_solver_unavailable({running_platform()})",
+                    "nlp_solver_unavailable",
                     operation="validate",
                     pointer="/task",
                 )

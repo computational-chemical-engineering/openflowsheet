@@ -9,7 +9,7 @@ cover; each test asserts what the code does today and nothing more.
   property package is the revision binder's `model_unsupported(<id>)`.
 - **U05** (T08 review 2, Ruling 1; amended on purpose by OPT, ADR 0071 D8, design §4.11) — on an
   install without an audited NLP solver, `validate(task="optimization")` is ADR 0019's
-  `unsupported`, detail `nlp_solver_unavailable(<platform>)`, audited, before the revision is read
+  `unsupported`, detail `nlp_solver_unavailable`, audited, before the revision is read
   and with no report built; `validation.validate` raises the same refusal; `commit_change` and
   `preview_change` with that task refuse `task_unsupported(optimization)`, audited, at the top of
   `_prepare` (unchanged).
@@ -94,7 +94,7 @@ def test_u05_validate_for_optimization_is_unsupported(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     from openflowsheet.application.types import Change, Edit
-    from openflowsheet.studies.nlp.closure import audited_solver, running_platform
+    from openflowsheet.studies.nlp.closure import audited_solver
 
     if audited_solver().available:
         pytest.skip("an audited NLP solver is installed: U05 is the install without one")
@@ -115,7 +115,7 @@ def test_u05_validate_for_optimization_is_unsupported(
         # the v0.1 refusal of every install; the refusal is now the missing audited solver's.
         assert refused.value.error.as_document() == {
             "code": "unsupported",
-            "message": f"nlp_solver_unavailable({running_platform()})",
+            "message": "nlp_solver_unavailable",
             "detail": {"pointer": "/task"},
             "retryable": False,
         }
