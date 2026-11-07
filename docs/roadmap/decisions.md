@@ -348,3 +348,19 @@ DECISION: open a design-lane follow-up "derivative-witness step relative to the 
 revisions)" for the scaling/certificate policy owner, not inside X10. Alternative: fix in X10 (out of its measurement
 scope). Reversible by: folding it into X10 gaps (0.6).
 I stopped X10's first full gate (stale after the fix round); one gate runs after the fixes.
+
+## 2026-11-07 — OPT WO-3, WO-4, WO-4b done (`wp/OPT` `2dcb5772`)
+
+WO-3: request schema, Halton starts, static readiness, platform-aware probe (linux-x86_64 only), validate lift
+(library path; the application member waits for WO-6's surface link, D-19). WO-4/4b: optimiser on revision flowsheets;
+analytic gates vs mpmath (30 digits): OPT-A1 Q rel 1.0e-11, λ exact; OPT-A2/A2b all starts verified, errors ≤ 2.2e-10;
+OPT-N1 NOT_VERIFIED `PHASE_REGIME_CHANGED(U-PHF)`; legacy/coupled routes refused; OPT-C0 cost objective rel 1.0e-11,
+KKT verified. G2 SYN-001 identical both envs; F0 PASS; 765 + 196 tests. Open for the design lane: D-12, D-18, D-24,
+D-28, D-30, D-32.
+C-MW (297 columns) cannot verify: (1) components exactly zero at the start (ethanol) are unbounded by §4.2.3's
+`zero_at_start_pinned_by_regime` rule but are not pinned on C-MW → Ipopt drives them negative, twin DomainError;
+(2) its 19 held TWO_PHASE stages carry no margin → V4/V5 refuse.
+DECISION: continue with WO-5 (which builds §4.7's held mode and may settle (2)); put (1) — a false premise in §4.2.3 —
+and whatever of (2) WO-5 leaves to OPT's single reviewer pass, not a mid-build architect consult: C-MW is G17's
+performance record, not a pass/fail gate, and no analytic gate depends on it. Alternative: a fresh architect consult
+now. Reversible by: consulting before WO-6 if WO-5 finds the premise blocks it.
