@@ -1,0 +1,43 @@
+{
+ "record": "x02-g5-index-v1",
+ "judged": false,
+ "commit": "69c4a24dcc1d9c8f64ca1cb40c052d3fe58b7144",
+ "environment": "pymrm-6089593-032a050c6cf3 (~/.cache/openflowsheet/external)",
+ "commands": [
+  "OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 PYTHONPATH=src python benchmarks/x02/g5_warm_reactor.py inlets --sequence {g12,cand-C1-P1} --store <E>/artifacts/store-<s> --out <E>/g5abc-<s>.json  (two in parallel)",
+  "... g5_warm_reactor.py part-a-v3 --store <E>/artifacts/store-e --work <E>/artifacts/work-e --out <E>/g5e-v3.json (after adding the subcommand; same code otherwise)"
+ ],
+ "conditions": "machine load ~22 from other users; two campaign workers for G5a-c, one for G5e",
+ "records": {
+  "g5abc-cand-C1-P1.json": "7009e6c538333da865ee73c0447a1c29c60311480752781c45ac887fb2be7d27",
+  "g5abc-g12.json": "adb5ffe79fddd57b70362591a995805203f2a258be90737e84b12f3c7da0a03c",
+  "g5e-v3.json": "640ab6646e2b1b59ce1f32740015511d904f5a9f7fc9680666a4eea7b7e5c1b3"
+ },
+ "artifacts": {
+  "g5abc-cand-C1-P1.log": {
+   "sha256": "bffeeac3903d0be70919164b5bdbe93d658d2aba61f1877ec3b7cc369a3d84b1"
+  },
+  "g5abc-g12.log": {
+   "sha256": "235c7e66a4d0263673a3cd86e02ed36d132cf513caf5de38a75b6ec0b8ff26b2"
+  },
+  "g5e.log": {
+   "sha256": "fc47e0a3ae3d48d98cc34c5538575b1bf3b5d5790417d9eb9a87f636b54a2268"
+  },
+  "store-cand-C1-P1": {
+   "tree_sha256": "9d18ecd708307a50a6b96d5ba7536233813ee08023bae8183290446971b89070",
+   "files": 100
+  },
+  "store-e": {
+   "tree_sha256": "f36f5f2fa873193a66327d00bb6ba64c484e280e908e9c0d93d9c513f051e602",
+   "files": 53
+  },
+  "store-g12": {
+   "tree_sha256": "2f1322636f2978df04db53feb3cf4c20ed8f52df1e15acf3cfa8e28b16626bfa",
+   "files": 100
+  },
+  "work-e": {
+   "tree_sha256": "aed92d0383d1d88e82b025ef4e39053df4574009d0fa68c2b22a0778f4fadaa1",
+   "files": 24
+  }
+ }
+}

@@ -99,6 +99,45 @@ Format: question → choice; alternative; reversible by; commit. Batched for the
   package files, at most two entries) and the pinned per-pattern count 35 → 36. Alternative: no memo (hash two files
   per backend). Reversible by: drop the decorator and both edits.
 
+## WO-5 (the warm reactor)
+
+- **D-22 — G5's second inlet sequence.** The note's two sequences are one: `g12-real-loop-v3.json` `calls[*]` and
+  `trust-region-study-real.coupling/S0.json` iterations carry the same four experiment keys (`47f845db…`,
+  `1b515243…`, `8ff4aa23…`, `7128da88…`; both are the v3 loop cold from (0.15, 80 K)). → The second sequence is the
+  same study's `cand-C1-P1.json` (v3, 4 iterations, T_in = 653.15 K, distinct keys, recorded outlets), so G5 still
+  measures 8 distinct inlets. Alternative: the 4 inlets twice, or a `poll-preheater` candidate. Reversible by:
+  `SEQUENCES` in `benchmarks/x02/g5_warm_reactor.py`. A control recomputes v3's request (inputs and key) at every
+  inlet, so each is the recorded one bit for bit.
+- **D-23 — `WarmReactor` overrides `_window` as well as `outlet`.** A cold call passes straight through to the
+  base's `_window`; a warm one runs `_warm_window`. This reuses the base `evaluate` whole (its `model_exception`
+  window, the four acceptance clauses) for both chains instead of copying it; the note's "on the cold path `outlet`
+  is the only override" holds in effect (a pure delegation), and G5a proves the cold outlet bitwise v3's.
+  Alternative: copy `evaluate`'s post-processing into `evaluate_w`. Reversible by: `child_warm.py` (a new
+  `runner_sha256`, so a new provisional variant).
+- **D-24 — A non-finite warm outlet falls back** (`fallback_from: "nonfinite"`): D7's "any refusal", and the cold
+  path refuses there too. Alternative: let `nonfinite_screen` refuse it without fallback.
+- **D-25 — `diagnostics.start`.** `warm_stages` is a copy of the warm chain's stage records (plus its
+  `model_exception` record on a fallback from one); on a warm `outlet` it duplicates `stages`. `start` is null on a
+  cold request; `profile_sha256` is null on every non-`outlet` answer.
+- **D-26 — A base that fails the pin.** Run as a script: exit 72 before the request is read (the launcher tolerates
+  the broken pipe). Imported (tests): `BaseMismatchError`, never `os._exit`.
+- **D-27 — G5b's metric, concretely.** ξ is taken twice, as N₂ consumed and as NH₃ made / 2 (per tube, from the
+  tube inlet the child saw); the max covers both. n_tot = Σ|n_out|. Walls are the child-measured
+  `execution.timing.wall_s`.
+- **D-28 — G5d's `job_id = (i)`** is resolved as `declared_coupled_start` resolves it (`job_coupling_start` +
+  `external_starts` over the project's store), with `run_revision_session` + `LiveExperiments` as g12 drives the
+  route, minus the job wrapper.
+- **D-29 — Stopped before registration (escalated, not decided).** G5 at commit `69c4a24d`
+  (`evidence/X02/69c4a24d…/g5abc-*.json`): (a) the cold variant's `tube_outlet` is bitwise v3's recorded one at all
+  8 inlets (inputs equal v3's recorded requests; keys differ only by the environment fingerprint). (b) every warm
+  call accepted, `used` 8/8, no fallback; rel max **1.92e-7** (g12 k = 0, ξ by N₂), 1.05e-7 (P1 k = 0), the other
+  six ≤ 8.9e-8 — the note's "pass with a manifest note" band, but registering `max(measured, 1.56e-8)` = 1.92e-7
+  against `precision_floor_rel` 1e-6 breaks I3's "at least one decade below". (c) warm/cold wall 1.53, 2.03, 1.85,
+  4.60 (g12) and 2.93, 0.84, 0.37, 0.93 (P1); totals 287 vs 133 s and 383 vs 420 s, i.e. **21 % slower overall**,
+  not 10–15 % faster: S1 is gone, but the warm chain ran round 2 at 6 of 8 inlets (cold 4 of 8) and its
+  certificates ran longer, which outweighs S1's ~6 s (measured under ~22 load from other users, two workers).
+  The variant is not registered and G5d is not run; both wait for the design lane (§6 stopping rule spirit, Q1).
+
 ## Tokens for MSG's catalogue (§5.9; `wp/MSG` not merged)
 
 | Token | Family / kind | Emitted at |

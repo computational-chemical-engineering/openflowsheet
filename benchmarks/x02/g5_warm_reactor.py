@@ -465,6 +465,34 @@ def _bound(warm: Mapping[str, Any], cold: Mapping[str, Any]) -> dict[str, Any]:
     return {"distance": distance, "bound": bound, "holds": distance <= bound}
 
 
+def part_a_on_v3(store: Path, work: Path, out: Path) -> int:
+    """§7 G5e alone: the v3 loop cold, then restarted from it as a `job_id` source."""
+    v3 = variants.registered_variant(V3_ID)
+    loop = pinned(json.loads(LOOP_V3.read_text(encoding="utf-8")), v3)
+    cold = _run(loop, work / "e-cold", store, "job-000015", None, v3)
+    restart = _run(loop, work / "e-restart", store, "job-000016", Path(cold["record_path"]), v3)
+    summary = {
+        "cold": [cold["verification_status"], cold["outer_iterations"], cold["wall_s"]],
+        "restart": [restart["verification_status"], restart["outer_iterations"], restart["wall_s"]],
+        "w0_equals_cold_final_bitwise": restart["w_hex"][0] == cold["w_hex"][-1],
+        "experiments_evaluated": restart["experiments_evaluated"],
+        "any_start_member": any(
+            item is not None for item in cold["request_starts"] + restart["request_starts"]
+        ),
+    }
+    result = {
+        "record": "x02-g5e-v1",
+        "judged": False,
+        "specification": "docs/design/X02-warm-starts.md §7 G5 (e)",
+        "variant": {"variant_id": v3.variant_id, "sha256": v3.sha256},
+        "summary": summary,
+        "runs": {"cold": cold, "restart": restart},
+    }
+    out.write_text(json.dumps(result, indent=1, ensure_ascii=False) + "\n", "utf-8")
+    print(json.dumps(summary))
+    return 0
+
+
 def loops(store: Path, work: Path, neighbour: str, value: float, out: Path) -> int:
     warm_variant = variants.registered_variant(WARM_ID)
     v3 = variants.registered_variant(V3_ID)
@@ -582,6 +610,10 @@ def main(argv: list[str] | None = None) -> int:
     run.add_argument("--neighbour", default="SPEC-S3-T")
     run.add_argument("--value", type=float, required=True)
     run.add_argument("--out", type=Path, required=True)
+    part_a = commands.add_parser("part-a-v3")
+    part_a.add_argument("--store", type=Path, required=True)
+    part_a.add_argument("--work", type=Path, required=True)
+    part_a.add_argument("--out", type=Path, required=True)
     arguments = parser.parse_args(argv)
     if arguments.command == "variant":
         if arguments.provisional:
@@ -612,6 +644,8 @@ def main(argv: list[str] | None = None) -> int:
     if missing:
         print(f"set {', '.join(missing)}=1", file=sys.stderr)
         return 2
+    if arguments.command == "part-a-v3":
+        return part_a_on_v3(arguments.store, arguments.work, arguments.out)
     if arguments.command == "inlets":
         return inlets(arguments.sequence, arguments.store, arguments.out)
     return loops(
