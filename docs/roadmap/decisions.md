@@ -384,3 +384,12 @@ A-2: zero-at-start free flows form a zero subsystem, held at 0 when square (exac
 guarded; else admitted "unguarded" and listed (R-924) — replaces D-12's refusal. New WO-5b (A-2, A-3), WO-5c (A-1);
 gates G10 amended, G10a–d, G22–G24. Frank: Q7 reworded, Q9 new. Architect least sure of F6 (other certificate checks at
 T_b), F7 (C-MW zero subsystem square), F8 (pr-c1 closure value semantics).
+
+## 2026-11-08 — X10 merged into main (`6b641fd6`); OPT WO-5b done
+
+X10: gate PASS 15161 at `5c5e562d` (first run at `a17a55c9` FAILED on ruff E501 in my merge comment; fixed, re-run);
+CI 42421631998/42421631954 green; on main after merge F0 PASS, support matrix 0 problems. Worktree removed.
+OPT WO-5b (`3554636d`): A-2/A-3 built; G22 PASS (C-MW both starts KKT-verified, 0 DomainError; zero subsystem 63/63
+square, ethanol exactly 0.0 on re-solve: F7 holds); F8: pr-c1 margins None. D-42 (γ–φ held single-phase splits never
+certify under K04's witness) and D-44 (earlier G2 `--nlp` dumps compared UNSUPPORTED reports — environment variables
+missing; `optimize_revision` lacked M03's audit probe) → WO-5c re-takes G2 against `ad971d32` and fixes the probe.
