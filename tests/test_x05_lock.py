@@ -16,6 +16,7 @@ import re
 import subprocess
 import sys
 import tomllib
+import traceback
 from collections.abc import Callable
 from dataclasses import replace
 from pathlib import Path
@@ -320,10 +321,17 @@ def test_a19_the_memo_holds_the_outcome_not_only_the_version(monkeypatch: Any) -
 
     monkeypatch.setattr(lock, "_INSTALLED", {})
     monkeypatch.setattr("importlib.metadata.distribution", failing)
-    for _ in range(2):
-        with pytest.raises(ValueError):
+    raised: list[BaseException] = []
+    depths: list[int] = []
+    for _ in range(3):
+        with pytest.raises(ValueError) as excinfo:
             lock.installed_version("numpy")
+        raised.append(excinfo.value)
+        depths.append(len(traceback.extract_tb(excinfo.value.__traceback__)))
     assert calls == ["numpy"]
+    # D-2: the stored instance is re-raised; review S1: its traceback does not grow per call.
+    assert all(error is raised[0] for error in raised)
+    assert depths[0] == depths[2], depths
 
 
 # -- X05.A20, A25: the static halves -------------------------------------------------------------

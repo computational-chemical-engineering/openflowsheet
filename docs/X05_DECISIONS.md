@@ -24,6 +24,8 @@ Default kept (ADR §11 Q-N1): the rule does not bend; nothing here needs it to.
   class" is memoised. Re-raising the stored instance keeps that class exactly; re-constructing `cls(message)` would
   turn an exception whose constructor takes other arguments (e.g. `UnicodeDecodeError`) into a `TypeError` and
   misname F6. Observable behaviour (the class F6 names, one read per name) is the ADR's.
+  WO-4 (review S1): the instance is raised `with_traceback(None)`, so its traceback no longer grows per call;
+  A19's memo test asserts the depth after the first and third call is equal (it failed first: 4 vs 8).
 - **D-3 (WO-1) — `tests/test_t08_r3_a19_lock_lookup.py` is removed in the WO-1 commit.** WO-1 deletes
   `_checkout_lock`/`_repository_lock`, which that file's unit tests import; WO-2's
   `tests/test_x05_replay_from_the_wheel.py` is its end-to-end replacement (ADR D7.2, §7 WO-2).

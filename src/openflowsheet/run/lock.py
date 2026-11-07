@@ -172,5 +172,7 @@ def installed_version(name: str) -> str | None:
         _INSTALLED[name] = outcome
     outcome = _INSTALLED[name]
     if isinstance(outcome, Exception):
-        raise outcome
+        # The stored instance, with its traceback cleared: each raise appends this call's
+        # frames, so without the reset the memo keeps every call's frames alive (review S1).
+        raise outcome.with_traceback(None)
     return outcome
