@@ -206,7 +206,7 @@ def loops(store: Path, work: Path, neighbour: str, value: float, out: Path) -> i
     bound_iii = _bound(iii_w, iii_c)
     moved_over_bound = moved / bound_iii["bound"] if bound_iii["bound"] > 0 else None
     any_start = any(s is not None for run in found.values() for s in run["request_starts"])
-    summary = {
+    summary: dict[str, Any] = {
         "d_i": {
             "verification_status": i["verification_status"],
             "outer_iterations": i["outer_iterations"],
