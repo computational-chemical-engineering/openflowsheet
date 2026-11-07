@@ -139,6 +139,19 @@ Format: question → choice; alternative; reversible by; commit. Batched for the
   certificates ran longer, which outweighs S1's ~6 s (measured under ~22 load from other users, two workers).
   The variant is not registered and G5d is not run; both wait for the design lane (§6 stopping rule spirit, Q1).
 
+## WO-6 (close-out after the review)
+
+- **D-30 — G5d on v3 (S-2) gets its own script, `benchmarks/x02/g5d_v3_loops.py`.** Ruling 1 retires
+  `g5_warm_reactor.py` (it imports the warm child), so the v3 runs need a script that does not. It keeps the retired
+  script's run helpers (`_run`, `_bound`, `pinned`, `Counted`) verbatim, runs (i) cold, (ii) restart from (i), (iii)
+  the neighbour SPEC-S3-T 673.15 → 675.15 K (the handoff's edit) cold and warm from (i), all on v3 with cold
+  experiments, and evaluates §7 G5 (d)'s criteria beside the measurement (exit 1 if any fails). Job ids 21–24 and a
+  fresh store, so nothing is a cache hit from G5e. Alternative: run the retired script's `loops` from `005d206f`
+  with v3 substituted (not reproducible from a commit). Reversible by: deleting the script and its record.
+- **D-31 — Where the G5d record lives.** `evidence/X02/<C>/g5d-v3.json` with its own `index.json`, where C is the
+  commit the script ran at; beside `evidence/X02/69c4a24d…/` rather than inside it, whose index pins the commit
+  69c4a24d it was measured at. Alternative: add it to that index with a second commit field.
+
 ## Tokens for MSG's catalogue (§5.9; `wp/MSG` not merged)
 
 | Token | Family / kind | Emitted at |
