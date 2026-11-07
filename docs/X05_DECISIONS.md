@@ -54,3 +54,11 @@ Default kept (ADR §11 Q-N1): the rule does not bend; nothing here needs it to.
   `src/openflowsheet/_data/requirements.lock` in the sdist on both CI legs and `default-install`. The file is the
   project's own pin list (names and versions, no third-party content), the case M02 §2.4 already admitted for
   `adapters/pymrm/reactor-env.lock`; it joins `SHIPPED_DATA` by exact path. Nothing else is admitted.
+- **D-9 (WO-4) — the M1 dispatch uses `rc_distribution`, not `release_rc`.** Both inputs start `dist` and
+  `clean-install` on the merged `ci.yml` (`dist`'s `if:` admits either). The review's M1 names `rc_distribution`.
+  `release_rc` would skip `check` and `default-install` (RP §6.10: step 1 is the push run) and add `ptc-r1`
+  (360 min per leg), `rc-steps`, `rc-coolprop` and `rc-ensemble`, none of them X05 evidence. `rc_distribution` runs
+  `check`, `identity`, `default-install`, `dist`, `clean-install`, `bundle-set` and `bundle-replay`.
+- **WO-4 harvest.** The WO-3 manifest (`42c84f1d…`) was committed without its harvest, so T08.A21 and M07a's
+  `HARVEST_SIZE` failed at `82030102`. Its 6 limitations and 4 unsupported checks are classified `P` (process,
+  provenance and scope notes; the four checks are taken by the D-9 dispatch); `HARVEST_SIZE` (71, 957, 126).
