@@ -114,7 +114,11 @@ done (`docs/X05_DECISIONS.md`, D-1…D-7, Q-N1 facts); the Q-F1 pins are the iso
 items: (1) Frank's acceptance of ADR 0069 (Q-F1…F3, `docs/FRANK_QUESTIONS.md`), then ADR 0007 Amendment 2 (ADR 0069
 §13) and the register lines (§12, numbered above `wp/MSG`'s and `wp/RP`'s R-942…R-949); (2) **for RP:**
 `docs/derivations/release-procedure.md` step 4's `a19.*` → `x05.*` (ADR 0069 §7 WO-3), left to `wp/RP` because
-it is unmerged; (3) the single `reviewer` pass against ADR 0069, then merge. Evidence: `evidence/X05/`.
+it is unmerged; (3) the single `reviewer` pass against ADR 0069, then merge. Evidence:
+`evidence/X05/42c84f1d983e30917608f3cd6ddbaf0f29766b1f/manifest.json`, `status: tested`, 27 pass / 4 unsupported
+(A20 sdist bytes, A21, A22 (b), A25 CI: the `dist`/`clean-install` jobs run only on a dispatch, not done). Gate PASS
+(14934 passed, 58 min), F0 PASS (M7 52/52), CI push run 42379232642 green on both `check` legs. (4) A dispatch of the
+RC distribution jobs on `wp/X05` to close those four.
 
 **V03 (0.3.0 release, `wp/V03-rc`, C = `a3e508e3`): WO-8 done in V03 spec §6.1's order (2026-10-31).** S13's manifest `tested` 48/48 (H1 `9e998beb`, generated at G `04c503e5`), ADRs 0053 and 0054 Accepted on it (H2 `e55f9efd`), step 18 at H2 `v0.3.0 tag may be proposed: YES` (log SHA-256 `ad31dc6b…`), A08's R part PASS, F9 4 of 4; build log `docs/V03_RC_DECISIONS.md`. **Next:** hand to Frank for the tag (an agent does not tag or push); after the tag, WO-9 (§5.3). Not `reviewed`.
 
