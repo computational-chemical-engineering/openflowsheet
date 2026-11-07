@@ -793,6 +793,33 @@ def _admissible(
     return value <= 1.0 + epsilon, value
 
 
+def admissibility_value(
+    provider: PropertyProvider,
+    context: EvaluationContext,
+    split: LiftedSplit,
+    regime: Literal["LIQUID", "VAPOR"],
+    state: Mapping[str, float],
+) -> float | None:
+    """The value `_admissible` judges a single-phase branch by at `state` (K03 §8.2): the closure's
+    own test, admissible iff `value ≤ 1 + ε` — ideal K: `Σ x K` (LIQUID) or `Σ y/K` (VAPOR) over the
+    side's composition; a composition-dependent K: `Σ x K(x)` or the incipient-liquid `ΣW`. A pure
+    addition for OPT's regime margins (OPT design §9 A-3); the closure keeps calling `_admissible`.
+
+    `None` where the closure judges the branch by another form (`pr-c1-v1`: `classify`, and a
+    light-gas fraction that must be exactly zero — not "value ≤ 1 + ε") or where the test raises
+    at `state`."""
+    from openflowsheet.verify.checks import VerifierError
+
+    if _pr_c1(provider):
+        return None
+    try:
+        # ε only decides the flag, never the value.
+        _, value = _admissible(provider, context, split, regime, state, 0.0)
+    except (VerifierError, BandError, ValueError, ArithmeticError):
+        return None
+    return float(value)
+
+
 def _gamma_phi_admissible(
     provider: PropertyProvider,
     context: EvaluationContext,

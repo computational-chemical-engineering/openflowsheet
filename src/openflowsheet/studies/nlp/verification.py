@@ -65,7 +65,7 @@ from openflowsheet.studies.nlp.host import (
     ZeroSubsystem,
     as_host,
 )
-from openflowsheet.studies.nlp.phase import PHASE_PREFIX, PhaseRows
+from openflowsheet.studies.nlp.phase import CLOSURE_IDENTITY, PHASE_PREFIX, PhaseRows
 from openflowsheet.studies.sensitivity import (
     TAU_REGIME,
     OutputFunctional,
@@ -375,6 +375,9 @@ def verify_candidate(
             phase_active=held_units,
             phase_rows=active_rows,
             zero=zero,
+            not_closure_test=(
+                _not_closure_test(phase, record, state, rows) if rows is not None else ()
+            ),
         )
     sensitivity, kkt, checks["V5"] = _kkt(
         host, resolved, formulation, constraints, at, active, assessment, rows, held_units
@@ -657,6 +660,7 @@ def _regimes(
     phase_active: Sequence[str] | None = None,
     phase_rows: Sequence[str] = (),
     zero: tuple[ZeroSubsystem | None, ZeroSubsystem | None] | None = None,
+    not_closure_test: Sequence[str] = (),
 ) -> VerificationCheck:
     """V4: every TP split in its declared regime, at least `τ_regime` from the boundary; on a
     held system also the re-solve's attempt signature equal to the start's exactly, else
@@ -664,7 +668,9 @@ def _regimes(
     (`phase_active` not `None`, OPT §4.7) a split whose row is active is not judged by its
     margin: it and the active rows are recorded under `phase_bounds_active`. `zero` is the
     start's and the re-solve's zero subsystem (OPT §9 A-2): unequal as id sets →
-    `ZERO_SUBSYSTEM_CHANGED`; recorded under `zero_subsystem` only where either is non-empty."""
+    `ZERO_SUBSYSTEM_CHANGED`; recorded under `zero_subsystem` only where either is non-empty.
+    `not_closure_test` names the guarded splits whose row is no longer their closure's test at the
+    re-solve (OPT §9 A-3): each fails V4 as `phase_row_not_closure_test(<unit>)`."""
     splits = record.splits
     changed = [split.unit_id for split in splits if declared.get(split.unit_id) != split.regime]
     exempt = set(phase_active or ())
@@ -691,9 +697,34 @@ def _regimes(
     zero_changed = False
     if held is not None and zero is not None and zero != (None, None):
         detail["zero_subsystem"], zero_changed = _zero_subsystems(*zero)
-    return VerificationCheck(
-        "V4", "fail" if changed or near or moved or zero_changed else "pass", detail
-    )
+    if not_closure_test:
+        detail["phase_row_not_closure_test"] = [
+            f"phase_row_not_closure_test({unit})" for unit in not_closure_test
+        ]
+    failed = changed or near or moved or zero_changed or bool(not_closure_test)
+    return VerificationCheck("V4", "fail" if failed else "pass", detail)
+
+
+def _not_closure_test(
+    phase: PhaseRows, record: RegimeRecord, state: Mapping[str, float], rows: _PhaseTerms
+) -> tuple[str, ...]:
+    """OPT §9 A-3: the guarded splits (a split row of the start) whose row at the re-solve is not
+    the closure's test there, `|a/Σn − margin| > 1e-10` (or no margin, or an empty feed)."""
+    margins = {split.unit_id: split.margin for split in record.splits}
+    failing: list[str] = []
+    for row in phase.rows:
+        if not row.split:
+            continue
+        margin = margins.get(row.unit)
+        total = math.fsum(float(state[name]) for name in row.feed)
+        value = rows.point[f"{PHASE_PREFIX}{row.row_id}"]
+        if (
+            margin is None
+            or total == 0.0
+            or not abs(value * row.nominal / total - margin) <= CLOSURE_IDENTITY
+        ):
+            failing.append(row.unit)
+    return tuple(failing)
 
 
 def _zero_subsystems(

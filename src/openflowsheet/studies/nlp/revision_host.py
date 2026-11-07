@@ -56,9 +56,8 @@ from openflowsheet.compile.casadi_backend import (
 from openflowsheet.compile.spec import ProblemSpec
 from openflowsheet.compiled import CompiledProblem, EvaluationContext
 from openflowsheet.models.revision_flowsheet import RevisionFlowsheet, si_unit
-from openflowsheet.models.syn001.equilibrium_form import composition_dependent
-from openflowsheet.numerics.scaling import Scaling
-from openflowsheet.orchestrator.region import RegionResult
+from openflowsheet.numerics.scaling import REGISTERED_NOMINALS, Scaling
+from openflowsheet.orchestrator.region import LiftedSplit, RegionResult, admissibility_value
 from openflowsheet.orchestrator.revision import instances_of
 from openflowsheet.orchestrator.splits import region_splits
 from openflowsheet.orchestrator.trace import SolvePolicy
@@ -84,8 +83,6 @@ from openflowsheet.studies.sensitivity import (
     StudyParameter,
     evaluate_sensitivity,
 )
-from openflowsheet.studies.syn001 import tp_margin
-from openflowsheet.thermo.pr_c1 import PROVIDER_ID as PR_C1_PROVIDER_ID
 from openflowsheet.verify.certificate import CheckPolicy
 from openflowsheet.verify.checks import VerifierError
 
@@ -284,6 +281,21 @@ def decision_map(
     if refusals:
         return tuple(refusals)
     return DecisionMap(MappingProxyType(parameters))
+
+
+def two_phase_margin(
+    split: LiftedSplit, state: Mapping[str, float], kinds: Mapping[str, str]
+) -> float | None:
+    """§9 A-3: a TWO_PHASE split's margin, `min(Σ vapour side, Σ liquid side) / N0` over the
+    sides' `molar_flow` columns, N0 K03's registered `molar_flow` nominal (the one the phase rows
+    use, D-35); `None` when a side has no `molar_flow` column."""
+    sides = []
+    for side in (split.vapor, split.liquid):
+        flows = [float(state[name]) for name in side if kinds.get(name) == "molar_flow"]
+        if not flows:
+            return None
+        sides.append(math.fsum(flows))
+    return min(sides) / float(REGISTERED_NOMINALS["molar_flow"])
 
 
 @dataclass
@@ -589,13 +601,16 @@ class RevisionNlpHost:
         return tuple(row for row in system.rows if row in touches_zero and row not in touches_other)
 
     def regimes(self, point: CertifiedPoint) -> RegimeRecord:
-        """The final attempt signature and every lifted split's (kind, regime, margin) (§4.2.4).
+        """The final attempt signature and every lifted split's (kind, regime, margin) (§4.2.4,
+        §9 A-3): the margin is the region closure's own test at the converged state, for TP- and
+        PH-type splits alike —
 
-        The margin is `tp_margin` at the split's own converged T and P on its feed flows for TP-
-        and PH-type splits alike (D7: the region's closure judges both by the TP test there);
-        `None` for `ZERO_FLOW`, and `None` on a provider whose closure judges a single-phase
-        branch by another test (`pr-c1-v1`'s `classify`, a composition-dependent K's incipient
-        phase) — Q4′ then refuses it (OPT_DECISIONS D-12)."""
+        - LIQUID / VAPOR: `1 − admissibility_value` (`orchestrator/region.py`; ideal K: `Σ x K`
+          or `Σ y/K` over the side's composition, γ–φ: `Σ x K(x)` or the incipient-liquid `ΣW`),
+          `None` where the closure judges by another form (`pr-c1-v1`) or the test raises;
+        - TWO_PHASE: the smaller side's `molar_flow` total over K03's registered `molar_flow`
+          nominal (the closure holds it by `V, L ≥ 0` only), `None` without such a column;
+        - ZERO_FLOW: `None` (V4's exact-dormancy check)."""
         system = self.held_system(point)
         assert point.state is not None
         route = _handle(point).route
@@ -604,9 +619,7 @@ class RevisionNlpHost:
         splits = region_splits(instances_of(flowsheet), flowsheet.units(), flowsheet.components)
         regimes = dict(item for item in system.signature if len(item) == 2)
         provider = flowsheet.provider
-        own_test = not composition_dependent(provider) and (
-            provider.describe().provider_id != PR_C1_PROVIDER_ID
-        )
+        kinds = system.spec.variable_kinds
         metadata = self._compiled_at(point).metadata
         context = EvaluationContext(
             model_version=metadata.model_version,
@@ -620,15 +633,11 @@ class RevisionNlpHost:
             regime = regimes[split.unit]
             kind = splits.closure_types.get(split.unit, "TP")
             margin: float | None = None
-            if regime != "ZERO_FLOW" and own_test:
-                _, margin = tp_margin(
-                    provider,
-                    [float(point.state[name]) for name in split.feed],
-                    float(point.state[split.temperature]),
-                    float(point.state[split.pressure]),
-                    context,
-                    flowsheet.components,
-                )
+            if regime in ("LIQUID", "VAPOR"):
+                value = admissibility_value(provider, context, split, regime, point.state)
+                margin = None if value is None else 1.0 - value
+            elif regime == "TWO_PHASE":
+                margin = two_phase_margin(split, point.state, kinds)
             records.append(SplitRegime(split.unit, split.stream, kind, regime, margin))
         return RegimeRecord(system.signature, tuple(records))
 

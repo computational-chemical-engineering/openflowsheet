@@ -1038,6 +1038,14 @@
           "type": "string",
           "minLength": 1,
           "description": "OPT §4.6 (E01 review N5): present when phase_bounds_active or the assessment's regime_bounds_active is non-empty; the status is relative to the held regime."
+        },
+        "regimes_unguarded": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          },
+          "description": "OPT §9 A-3: the start's held LIQUID/VAPOR splits whose phase row would not be their closure's own test (no row; judged by V4's margin alone). Absent where none."
         }
       }
     },
@@ -1304,6 +1312,14 @@
             }
           },
           "description": "OPT §9 A-2: the start's structurally zero subsystem — the free molar flows exactly 0.0 (columns) and the rows only they enter (rows); held at 0 with the rows dropped when as many, else bounded [0, ∞). Absent where empty."
+        },
+        "regimes_unguarded": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          },
+          "description": "OPT §9 A-3: the start's held LIQUID/VAPOR splits whose phase row would not be their closure's own test (no row; judged by V4's margin alone). Absent where none."
         }
       }
     }

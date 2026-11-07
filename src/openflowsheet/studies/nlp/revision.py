@@ -556,8 +556,8 @@ def _start_record(
     index: int,
     host: RevisionNlpHost,
 ) -> dict[str, Any]:
-    """The report's start record (§8.6) with §4.13's additive members, and the start's zero
-    subsystem (§9 A-2) where it is non-empty."""
+    """The report's start record (§8.6) with §4.13's additive members, the start's zero
+    subsystem (§9 A-2) and its unguarded splits (§9 A-3) where non-empty."""
     point = readiness.point
     held = point.signature if point is not None else None
     if run is None:
@@ -589,6 +589,9 @@ def _start_record(
         zero = host.held_system(point).zero
         if zero is not None:
             record["zero_subsystem"] = zero.as_document()
+        unguarded = host.phase_rows(point).unguarded
+        if unguarded:
+            record["regimes_unguarded"] = list(unguarded)
     return record
 
 
@@ -641,7 +644,7 @@ def _phase_members(
     """§4.7/§4.6: `phase_bounds_active` — the candidate's start's phase rows in V3's active set,
     each with its unit (a split's, or a declared port's stream), its scaled slack and V5's
     multiplier — and `regime_note` when it or the assessment's `regime_bounds_active` is
-    non-empty."""
+    non-empty; `regimes_unguarded` (§9 A-3) where the start has unguarded splits."""
     assert readiness.point is not None
     rows = host.phase_rows(readiness.point)
     multipliers = candidate.kkt.multipliers if candidate.kkt is not None else {}
@@ -658,6 +661,8 @@ def _phase_members(
     members: dict[str, Any] = {"phase_bounds_active": active}
     if active or (assessment is not None and assessment.get("regime_bounds_active")):
         members["regime_note"] = PHASE_REGIME_NOTE
+    if rows.unguarded:
+        members["regimes_unguarded"] = list(rows.unguarded)
     return members
 
 

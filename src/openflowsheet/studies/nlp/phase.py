@@ -18,10 +18,16 @@ certified):
 spec, fed by the split's `(T, P)`, so the row has the same derivative path. `T_sat(P)` is the
 thermal kernel's saturated block (`SaturatedFlowBlock`, the block `sat-T` reads) restricted to its
 `Tsat` output. Each row is divided by its K03 nominal, so the gray box's scale is 1 (as E01's
-admissibility rows, §4.3.1). A held LIQUID/VAPOR split whose provider's closure judges it by
-another test (OPT_DECISIONS D-12: no margin), or whose K-block is composition-dependent, and a
-declared port whose `T_sat` is not defined at the start, have no row: `undefined` names them, and
-the start fails `REGIME_MARGIN_UNDEFINED(<unit>)`.
+admissibility rows, §4.3.1).
+
+Guarded and unguarded (§9 A-3): a LIQUID/VAPOR split keeps its row only where, at the start, the
+row is the closure's own test — `|a/Σn − margin| ≤ 1e-10`, `a` the row times its nominal, `Σn`
+its feed total, `margin` the split's (`1 −` the closure's value); the split is then *guarded*.
+Otherwise (a composition-dependent K, whose K-block is not fed by `(T, P)` alone; no `LnKBlock`
+fed by the split's `(T, P)`; the identity failing) it is *unguarded*: no row, named in
+`unguarded`, judged by V4's margin alone. A held split without a margin (other than ZERO_FLOW:
+`pr-c1-v1`, a test that raised, a TWO_PHASE side without flows) and a declared port whose `T_sat`
+is not defined at the start are `undefined`, and the start fails `REGIME_MARGIN_UNDEFINED(<unit>)`.
 """
 
 from __future__ import annotations
@@ -65,6 +71,8 @@ PHASE_LABEL: Final = "OPT-PHASE-ROWS"
 PHASE_PREFIX: Final = "phase:"
 #: §4.7: a declared port's row is a temperature with nominal 1 K.
 PORT_NOMINAL: Final = 1.0
+#: §9 A-3: a split's row is its closure's test where `|a/Σn − margin|` is at most this.
+CLOSURE_IDENTITY: Final = 1e-10
 
 RowKind = Literal["split_liquid", "split_vapor", "port_liquid", "port_vapor"]
 
@@ -78,6 +86,8 @@ class PhaseRow:
     unit: str
     kind: RowKind
     nominal: float
+    #: A split row's feed flows (`Σn`, §9 A-3's identity); empty for a port row.
+    feed: tuple[str, ...] = field(default=(), compare=False)
 
     @property
     def split(self) -> bool:
@@ -89,12 +99,14 @@ class PhaseRow:
 
 @dataclass
 class PhaseRows:
-    """A start's phase rows (§4.7) over the host spec's variables, and the held regimes no row
-    can hold (`undefined`, by unit or stream, in discovery order)."""
+    """A start's phase rows (§4.7) over the host spec's variables, the held regimes no row can
+    hold (`undefined`, by unit or stream, in discovery order) and the held LIQUID/VAPOR splits
+    whose row would not be their closure's test (`unguarded`, §9 A-3; admitted, no row)."""
 
     rows: tuple[PhaseRow, ...]
     undefined: tuple[str, ...]
     spec: ProblemSpec | None
+    unguarded: tuple[str, ...] = ()
     _twins: dict[tuple[str, ...], ParametricTwin] = field(default_factory=dict, repr=False)
 
     @property
@@ -225,6 +237,48 @@ def _port_row(temperature: str, key: str, sign: float, nominal: float) -> RowBui
     return build
 
 
+@dataclass(frozen=True)
+class _Entry:
+    """A row under construction: its record, its equation and the blocks it reads."""
+
+    row: PhaseRow
+    equation: EquationSpec
+    blocks: tuple[tuple[PropertyBlock, tuple[str, ...]], ...]
+
+
+def _functional(spec: ProblemSpec, entries: Sequence[_Entry]) -> ProblemSpec:
+    """The rows of `entries` as one functional program over the host spec's variables."""
+    blocks: dict[str, tuple[PropertyBlock, tuple[str, ...]]] = {}
+    for entry in entries:
+        for block, inputs in entry.blocks:
+            blocks.setdefault(block.block_id, (block, inputs))
+    functional = ProblemSpec(
+        label=PHASE_LABEL,
+        variable_ids=spec.variable_ids,
+        equations=tuple(entry.equation for entry in entries),
+        parameter_ids=spec.parameter_ids,
+        parameters=spec.parameters,
+        blocks=tuple(block for block, _ in blocks.values()),
+        block_inputs={block_id: inputs for block_id, (_, inputs) in blocks.items()},
+    )
+    functional.validate()
+    return functional
+
+
+def _guarded(spec: ProblemSpec, entry: _Entry, state: Mapping[str, float], margin: float) -> bool:
+    """§9 A-3: the split's row is its closure's test at `state` — `|a/Σn − margin| ≤ 1e-10`, the
+    row evaluated on the float reference path; a row that cannot be evaluated, or an empty feed,
+    is not."""
+    total = math.fsum(float(state[name]) for name in entry.row.feed)
+    if total == 0.0:
+        return False
+    try:
+        value = row_values(_functional(spec, [entry]), state)[entry.row.row_id]
+    except (DomainError, ValueError, ZeroDivisionError, OverflowError):
+        return False
+    return abs(value * entry.row.nominal / total - margin) <= CLOSURE_IDENTITY
+
+
 def phase_rows(
     spec: ProblemSpec,
     state: Mapping[str, float],
@@ -233,14 +287,19 @@ def phase_rows(
     components: Sequence[str],
     context: EvaluationContext,
 ) -> PhaseRows:
-    """§4.7's rows at a start: `splits` are each lifted split's regime record with its feed flow
-    ids, temperature and pressure ids; the declared ports are the spec's `PhaseFlowBlock`s."""
-    equations: list[EquationSpec] = []
-    blocks: dict[str, tuple[PropertyBlock, tuple[str, ...]]] = {}
-    rows: list[PhaseRow] = []
+    """§4.7's rows at a start (§9 A-3: split rows only where guarded): `splits` are each lifted
+    split's regime record with its feed flow ids, temperature and pressure ids; the declared
+    ports are the spec's `PhaseFlowBlock`s."""
+    entries: list[_Entry] = []
     undefined: list[str] = []
+    unguarded: list[str] = []
     flow_nominal = float(REGISTERED_NOMINALS["molar_flow"])
     for record, feed, temperature, pressure in splits:
+        if record.regime == "ZERO_FLOW":
+            continue
+        if record.margin is None:
+            undefined.append(record.unit_id)
+            continue
         if record.regime not in ("LIQUID", "VAPOR"):
             continue
         block = next(
@@ -252,8 +311,8 @@ def phase_rows(
             ),
             None,
         )
-        if record.margin is None or block is None:
-            undefined.append(record.unit_id)
+        if block is None:
+            unguarded.append(record.unit_id)
             continue
         # The feed flows are in component order (as `tp_margin` reads them).
         if len(feed) != len(components):
@@ -261,23 +320,28 @@ def phase_rows(
                 f"{record.unit_id}: {len(feed)} feed flows, {len(components)} components"
             )
         keys = tuple(f"{block.block_id}.lnK_{name}" for name in components)
-        blocks.setdefault(block.block_id, (block, (temperature, pressure)))
         liquid = record.regime == "LIQUID"
         row = PhaseRow(
             f"phase.{record.unit_id}.{'bubble' if liquid else 'dew'}",
             record.unit_id,
             "split_liquid" if liquid else "split_vapor",
             flow_nominal,
+            tuple(feed),
         )
-        rows.append(row)
-        equations.append(
+        entry = _Entry(
+            row,
             EquationSpec(
                 row.row_id,
                 _split_row(feed, keys, 1.0 if liquid else -1.0, flow_nominal),
                 "algebraic",
                 origin=f"OPT §4.7 {row.kind}",
-            )
+            ),
+            ((block, (temperature, pressure)),),
         )
+        if _guarded(spec, entry, state, record.margin):
+            entries.append(entry)
+        else:
+            unguarded.append(record.unit_id)
     ports = [
         block
         for block in spec.blocks
@@ -296,37 +360,34 @@ def phase_rows(
         except DomainError:
             undefined.append(stream)
             continue
-        blocks.setdefault(saturation.block_id, (saturation, (pressure,)))
         row = PhaseRow(
             f"phase.{stream}.{'subcooled' if liquid else 'superheated'}",
             stream,
             "port_liquid" if liquid else "port_vapor",
             PORT_NOMINAL,
         )
-        rows.append(row)
-        equations.append(
-            EquationSpec(
-                row.row_id,
-                _port_row(
-                    temperature,
-                    f"{saturation.block_id}.Tsat",
-                    1.0 if liquid else -1.0,
-                    PORT_NOMINAL,
+        entries.append(
+            _Entry(
+                row,
+                EquationSpec(
+                    row.row_id,
+                    _port_row(
+                        temperature,
+                        f"{saturation.block_id}.Tsat",
+                        1.0 if liquid else -1.0,
+                        PORT_NOMINAL,
+                    ),
+                    "algebraic",
+                    origin=f"OPT §4.7 {row.kind}",
                 ),
-                "algebraic",
-                origin=f"OPT §4.7 {row.kind}",
+                ((saturation, (pressure,)),),
             )
         )
-    if not equations:
-        return PhaseRows((), tuple(undefined), None)
-    functional = ProblemSpec(
-        label=PHASE_LABEL,
-        variable_ids=spec.variable_ids,
-        equations=tuple(equations),
-        parameter_ids=spec.parameter_ids,
-        parameters=spec.parameters,
-        blocks=tuple(block for block, _ in blocks.values()),
-        block_inputs={block_id: inputs for block_id, (_, inputs) in blocks.items()},
+    if not entries:
+        return PhaseRows((), tuple(undefined), None, tuple(unguarded))
+    return PhaseRows(
+        tuple(entry.row for entry in entries),
+        tuple(undefined),
+        _functional(spec, entries),
+        tuple(unguarded),
     )
-    functional.validate()
-    return PhaseRows(tuple(rows), tuple(undefined), functional)

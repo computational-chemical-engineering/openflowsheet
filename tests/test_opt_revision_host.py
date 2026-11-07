@@ -537,11 +537,14 @@ def test_g6_q4_prime_qualifies_a_ph_type_split_held_liquid() -> None:
 def test_a_provider_whose_closure_tests_otherwise_gets_no_margin(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """OPT_DECISIONS D-12: on a composition-dependent K (or `pr-c1-v1`) the closure judges a
-    single-phase branch by another test than `tp_margin`'s, so the split has no margin and Q4′
-    refuses it — shown on the PH flash with the provider's form reported composition-dependent."""
+    """OPT §9 A-3 (F8; supersedes D-12): `pr-c1-v1`'s closure judges a single-phase branch by
+    `classify` and an exactly-zero light-gas fraction, not "value ≤ 1 + ε", so the split has no
+    margin, Q4′ refuses it and the start's phase rows name it undefined — shown on the PH flash
+    with the provider reported `pr-c1-v1`."""
     host, point, _ = _certified("PHF")
-    monkeypatch.setattr(revision_host, "composition_dependent", lambda provider: True)
+    monkeypatch.setattr(region_module, "_pr_c1", lambda provider: True)
+    monkeypatch.setattr(revision_host._handle(point), "phase", None)
+    assert host.phase_rows(point).undefined == ("U-PHF",)
     (split,) = host.regimes(point).splits
     assert (split.kind, split.regime, split.margin) == ("PH", "LIQUID", None)
     (parameter,) = host.decisions.parameters.values()
