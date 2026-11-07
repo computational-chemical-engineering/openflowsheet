@@ -36,13 +36,6 @@ Format: question → choice; alternative; reversible by; commit. Batched for the
   `absent`/`not_declared` x₀ member of an iterate-only declaration) and the iterate's W14-path test land with WO-3.
   Branch-internal state only; nothing merges before WO-6.
 
-## Tokens for MSG's catalogue (§5.9; `wp/MSG` not merged)
-
-| Token | Family / kind | Emitted at |
-| --- | --- | --- |
-| `warm_start_source_missing(<job>)` | api_error message / `input` | `application/admission.py` `admit_warm_start` (A1) |
-| `warm_start_unit_unknown(<unit>)` | api_error message / `input` | `application/admission.py` `admit_warm_start` (A2) |
-
 ## WO-3 (outer start)
 
 - **D-9 — The inner members when no x₀ source was declared.** An iterate-only declaration under a policy whose chain
@@ -78,3 +71,35 @@ Format: question → choice; alternative; reversible by; commit. Batched for the
   the label `event:initializer_rejected@openflowsheet.application.coupled_run.solve_coupled` is added to E9 with
   G3 (c)/(d) as failure and unchanged-physics tests. Alternative: a new row E14. **For the reviewer** (the inventory
   is a T08 release-spec artifact).
+
+## WO-4 (external plumbing)
+
+- **D-15 — Where a missing or mismatched exported profile is caught.** In `OutOfProcessBackend` (`_exported`), so the
+  `protocol_error` is the attempt's own execution status (retried once, as every `protocol_error`), and its
+  envelope a refusal; the runner then reads the checked file, stores it and sets `result.profile_sha256`, re-checking
+  the hash (a change in between is an internal error). The note places the check "in the runner"; status, record and
+  result are the same. Reversible by: `_exported` / `ExperimentRunner._export`.
+- **D-16 — `external` statuses the note leaves open.** A source record that fails the coupling integrity check makes
+  each start-capable unit `rejected` (`external_integrity`); no coupling record is `absent` (`no_profile`). `units`
+  lists every external unit of the target (a cold-only one `absent`, `variant_cold_only`); the member is written iff
+  ≥ 1 is start-capable. Checks in order: capability, source entry/hash, variant (`external_compatibility`), store
+  bytes (`profile_unavailable` / `external_integrity`). Reversible by: `external_starts`.
+- **D-17 — The chain after a rejected opening** restarts from the accepted k = 0 profiles (the rejected opening ran no
+  experiment, so this is inert; written out so it stays so).
+- **D-18 — Trace.** A rejected k = 0 child start records `initializer_rejected` `warm_start_rejected(external_…)` from
+  the same producer (E9, D-14).
+- **D-19 — G0 key recomputation is a CI test** (`tests/test_x02_g0_experiment_keys.py`), not a script: 163 recorded
+  requests (`benchmarks/m05/records` 115, `benchmarks/m07/journey` 48), 0 differences. `benchmarks/m02/` holds no
+  request document (its g10 records carry result keys only).
+- **D-20 — `Experiments.evaluate(…, start=None)`.** Implementers must accept the keyword (mypy holds the protocol):
+  `benchmarks/m02/g12_real_loop.py`'s `TimedExperiments` now forwards it. `solve_coupled` passes `start` only when one
+  is set, so a test double without it still runs every cold variant.
+
+## Tokens for MSG's catalogue (§5.9; `wp/MSG` not merged)
+
+| Token | Family / kind | Emitted at |
+| --- | --- | --- |
+| `warm_start_source_missing(<job>)` | api_error message / `input` | `application/admission.py` `admit_warm_start` (A1) |
+| `warm_start_unit_unknown(<unit>)` | api_error message / `input` | `application/admission.py` `admit_warm_start` (A2) |
+| `warm_start_rejected(coupling_integrity\|coupling_compatibility\|coupling_opening\|route\|external_integrity\|external_compatibility)` | notice | `solve-path.json` `warm_start.coupling` / `.external`; trace `initializer_rejected` (`application/coupled_run.py` `solve_coupled`) |
+| `coupling_warm_start(present\|absent)` | notice | trace `initializer_candidate` (`application/coupled_run.py` `solve_coupled`) |
