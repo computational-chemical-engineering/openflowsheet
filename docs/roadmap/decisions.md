@@ -219,3 +219,14 @@ ADR 0069 Proposed: packaged lock via symlink (D1), exact version check over a fi
 DECISION: build X05 now on `wp/X05` (WO-1…3, one Opus engineer, then a reviewer) before Frank accepts ADR 0069, with
 Q-F1's pins as an isolated commit. Alternative: wait for acceptance. Reversible by: not merging; reverting the pin commit.
 CPU rule (hub, 2026-11-07): one full gate at a time on TRS2; ≤ ~36 busy cores.
+
+## 2026-11-07 — X02 design (`6b807f0e`, `f9e72ff5`): note + ADR 0070 (Am. 15)
+
+Found a shipped defect (Part C): under `T08-warm-v1` a coupled run with > 1 outer iteration does not record its first
+warm start (bundle from the final inner run, `revision_run.py:837`; label `route_initializer`, `coupled_run.py:682`);
+its replay starts cold. Design: `solve_body.warm_start {job_id?, coupling?}` (D1), outer start checked then accepted or
+recorded rejected (D3), warm reactor variant with `child_warm.py` loading the pinned `child.py` (D4), warm experiment
+key member `start.profile_sha256` only when used (D5), certificate unchanged + disclosure (D6). WO-1…6; G0 cold
+identity incl. every recorded experiment key; G5 on the workstation. Frank Q1…Q6 (defaults).
+DECISION: X02 build waits for a free agent slot after RP's manifest re-take (RP is nearer to merge and needed for the
+0.4.0 cut). Alternative: start X02 WO-1 now and queue RP. Reversible by: reordering.

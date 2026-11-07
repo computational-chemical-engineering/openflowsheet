@@ -397,3 +397,15 @@ locked versions. Defaults, already acted on unless you say otherwise:
   replay reason only.
 Also: accept ADR 0069 (it amends ADR 0007's replay-mode rule).
 
+## X02 — warm starts for external and coupled units (2026-11-07; ADR 0070 Proposed, ADR 0019 Am. 15)
+
+Design `docs/design/X02-warm-starts.md`. Defaults, acted on unless you say otherwise:
+- **Q1:** build a warm-start variant of the reactor (`pymrm-6089593-g2-nz800-s123w-v1`; skips the first of three
+  solver stages when given a start; measured gain about 11–15 % per reactor call)? Default: yes. Its cold runs must
+  match today's v3 variant bit for bit.
+- **Q2:** extend the existing `T08-warm-v1` policy to coupled starts? Default: no (a start is declared per solve).
+- **Q3:** allow starts on the `experiment` operation? Default: no.
+- **Q4:** integration with studies: outside X02.
+- **Q5:** accept ADR 0070 and Amendment 15? Default: build on Proposed, merge after your acceptance.
+- **Q6:** the variant id as given. Default: yes.
+
