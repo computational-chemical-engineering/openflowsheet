@@ -1,41 +1,35 @@
-# X02 handoff (build lane) — after WO-4
+# X02 handoff (build lane) — WO-5 stopped at registration (escalated)
 
 Branch `wp/X02` (worktree `.claude/worktrees/x02`). Design: `docs/design/X02-warm-starts.md` (binding), ADR 0070
-(Proposed). Choices: `docs/X02_DECISIONS.md` D-1…D-21. Run tests with `PYTHONPATH=src ../../../.venv/bin/python -m
-pytest` from the worktree (the shared venv imports the main checkout otherwise).
+(Proposed). Choices: `docs/X02_DECISIONS.md` D-1…D-29. Run tests with `PYTHONPATH=src ../../../.venv/bin/python -m
+pytest` from the worktree (the shared venv imports the main checkout otherwise; `MYPYPATH=src` for mypy).
 
 ## Done
 
-- WO-1 Part C, WO-2 contract + explicit x₀ (earlier engineer).
-- **WO-3** outer start: `couple(initial=)`, `CoupledStart`, integrity at resolution (`jobs/runner.py`
-  `declared_coupled_start`), compatibility/bounds/opening in `solve_coupled`, `warm_start.coupling` + R0, replay
-  (`_recorded_coupled_start`), trace messages (E9 producer, D-14). Tests `tests/test_x02_wo3_outer_start.py` (20).
-- **WO-4** external plumbing: `build_request(start=)`, profile store, `start_capable`, backend `start.json` /
-  `profile.json` check, runner export, `pinned_program` by hash, chaining in `solve_coupled`, `ExternalSource` /
-  `external_starts`, `warm_start.external` + R0, replay, D8 disclosure. Synthetic warm child
-  `tests/support/synthetic_warm_child.py`; tests `tests/test_x02_wo4_external.py` (14);
-  `tests/test_x02_g0_experiment_keys.py` (163 requests, 0 differences).
+- WO-1…WO-4 (see the decisions log and earlier commits).
+- **WO-5, built:** `src/openflowsheet/adapters/pymrm/child_warm.py` (sha `1f11b4b1…`; loads `child.py` by path,
+  pinned to v3's runner hash), `benchmarks/x02/variant-s123w-provisional.json`, `tests/test_x02_wo5_warm_child.py`
+  (31, no environment), campaign script `benchmarks/x02/g5_warm_reactor.py` (`inlets`, `part-a-v3`, `loops`,
+  `variant --registered|--loop`).
+- **G5 measured** (`evidence/X02/69c4a24d…/`, index with artifact tree hashes; stores under `artifacts/`):
+  - (a) cold = v3 recorded `tube_outlet` bitwise at 8/8 inlets (D-22: second sequence `cand-C1-P1`, since the
+    note's g12 and S0 sequences are the same four keys);
+  - (b) warm accepted, `used` 8/8, no fallback; rel max **1.92e-7**;
+  - (c) warm **21 % slower** overall (round 2 ran at 6/8 warm vs 4/8 cold; longer certificates);
+  - (e) v3 real loop restart: VERIFIED, 1 outer iteration, w₀ bitwise, 1 call, no `start` member.
+- G0 after WO-5: F0 PASS M1–M9 (50/61/61/61/61/85/52/105/35); v1–v3 variant files unchanged; G0 key test (163,
+  0 differences) and the G0-listed + touched tests: 310 passed.
 
-## Gates measured
+## Blocked (design lane, D-29)
 
-- G3 (stand-in): (a) `job_id` = J_c → 1 outer iteration, final w bitwise J_c's, 1 experiment (a cache hit);
-  (b) J_c w + (0.01, 5 K) → VERIFIED, ‖Δû‖∞ = 0 ≤ bound 1.1e-15; (c) opening rejected, record byte-equal to a cold
-  run's (loop with H₂ make-up 0.725, D-11); (d) compatibility rejection byte-equal; (e) replay MATCH ×3;
-  (f) forged `declared` not MATCH.
-- G0 after WO-3: F0 PASS M1–M9; battery 4158 passed / 1 failed (A33 inventory, fixed by D-14).
-- G0 after WO-4: F0 PASS M1–M9 (unchanged counts); battery t07/t08/m02/m04/m05/m06/x02/a09 + G0 list 4620 passed,
-  56 skipped, 1 failed (T07 G20 global-state allowlist, fixed by D-21: 39 passed on the touched files).
+1. G5b 1.92e-7 lies in the note's "pass with a manifest note" band, but registering it against
+   `precision_floor_rel` 1e-6 violates I3 ("at least one decade below"). Raise the floor, register anyway, or not
+   register?
+2. G5c contradicts §3.1's premise (warm 10–15 % faster): Q1 (build the warm variant) may need re-deciding.
 
-## Next
+## Next (only after a ruling)
 
-- **WO-5** (not started): `src/openflowsheet/adapters/pymrm/child_warm.py` per §5.6, provisional variant
-  `benchmarks/x02/variant-s123w-provisional.json`, the workstation campaign G5a–e. `pinned_program` already selects
-  `child_warm.py` by `runner_sha256` once the file exists (`CHILD_SCRIPTS` in `backends.py`).
-- **WO-6**: MSG entries (tokens table at the end of the decisions log), register entries, progress, manifest,
-  reviewer pass, full gate.
-
-## Open for the reviewer (batched, not decided here)
-
-R-950 provisional number; the c_4 clash with `wp/MSG`; the x₀ rejection-reason form (bare `integrity` in the x₀
-record vs `warm_start_rejected(coupling_…)` in the coupling sub-record); D-11 (note's G3c premise false on the
-registered loop); D-14 (E9 inventory row); the ulp round trip of a declared w₀ through u = w₀/s (D-13 observation).
+- If registered: `python benchmarks/x02/g5_warm_reactor.py variant --registered <rel>`, add the printed sha to
+  `adapters/variants/registry.json`, `variant --loop` (writes `c1-loop-real-s123w.json`), then
+  `loops --store … --work … --value 675.15 --out …` (G5d; neighbour SPEC-S3-T +2 K), ~15 reactor calls.
+- WO-6 as planned (MSG tokens, register entries, progress, manifest, reviewer, full gate).
