@@ -18556,3 +18556,26 @@ on every foundation merge.
 
 **Watch for.** REL.A20 read as "all same-form equal" without A-1's sub-check; a release manifest built from a CI run
 that is not §6.2's push run or the latest dispatch.
+
+## R-970 — The release evidence package id is `REL` and a length-marked code of X.Y.Z, admitted by one additive `work_package` alternative (2026-11-08)
+
+| | |
+| --- | --- |
+| Date | 2026-11-08 |
+| Decided by | design lane (`specifier`), ADR 0074; applied by the build lane in `51c9e7f5` (package S15a) |
+| Normative text | `docs/adr/0074-release-evidence-package-id.md` D1–D4; RP amendment A-9 (`docs/derivations/release-procedure.md` §17.2) |
+| Affected packages | REL (0.4.0 K3 and later releases); RP |
+
+**Decision.** A component below 10 is its digit. A component of k ≥ 2 digits is the k-th lower-case letter followed by
+its digits. Examples: 0.4.0 `REL040`, 1.10.0 `REL1b100`, 11.0.0 `RELb1100`. Pre-releases and post-releases share the
+id. The pattern gains `REL(?:[0-9]|b[1-9][0-9]|c[1-9][0-9]{2}|d[1-9][0-9]{3}){3}`, so components up to 9 999 are
+admitted. Beyond that, D1 is amended by one alternative per letter. `S13`, `S15` and `REL040` stay.
+
+**Rejected.** Ruling 4's `REL[0-9]{3,}` with plain digits (N-4: 1.10.0 and 11.0.0 collide); zero-padded fixed width
+(renames `REL040`); a separator (the line-file schema refuses it, so a second widening); an all-digit width prefix (not
+order-preserving, and admits non-canonical second ids); a generic pattern (ADR 0059 D3).
+
+**Evidence.** RID.A01–RID.A12 in `tests/test_evidence_manifests.py` (`51c9e7f5`).
+
+**Watch for.** An inherited `evidence_package` (ADR 0074 O-3, RP.L11). An id written with plain digits for a component
+≥ 10. `\d` in place of `[0-9]`.
