@@ -46,7 +46,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
-import mpmath as mp
+import mpmath as mp  # type: ignore[import-untyped]
 
 mp.mp.dps = 30
 HERE = Path(__file__).resolve().parent
@@ -348,7 +348,7 @@ def expectations() -> dict[str, Any]:
     assert margins["OPT-A3v/0"] >= 10 and T_IN_V - t_d >= 10, margins
 
     def s(value: Any) -> str:
-        return mp.nstr(value, 30, min_fixed=-30, max_fixed=30)
+        return str(mp.nstr(value, 30, min_fixed=-30, max_fixed=30))
 
     return {
         "source": "benchmarks/opt/analytic.py (mpmath dps 30, SYN-001 coefficient table)",

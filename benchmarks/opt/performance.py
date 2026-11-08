@@ -38,6 +38,7 @@ import platform
 import sys
 import tempfile
 import time
+from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
 
@@ -198,7 +199,7 @@ def run_case(case: str, request: dict[str, Any], records: Path) -> dict[str, Any
     document = json.loads((S11 / CASES[case]).read_bytes())
     events: list[tuple[str, int | None, float]] = []
 
-    def progress(stage: str, info: dict[str, Any]) -> None:
+    def progress(stage: str, info: Mapping[str, Any]) -> None:
         events.append((stage, info.get("start"), time.perf_counter()))
 
     def check() -> None:
