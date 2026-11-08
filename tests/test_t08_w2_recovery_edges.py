@@ -37,8 +37,24 @@ ROOT = Path(__file__).resolve().parents[1]
 INVENTORY = ROOT / "docs" / "recovery-edges.yaml"
 SOURCE = ROOT / "src" / "openflowsheet"
 
-#: Spec §5.6's rows, in its order.
-ROW_IDS = ("E1", "E2", "E3a", "E3b", "E4", "E5", "E6", "E7", "E8", "E9", "E10", "E11", "E12", "E13")
+#: Spec §5.6's rows, in its order, with E3c (ADR 0072, RRC design note §6) after E3b.
+ROW_IDS = (
+    "E1",
+    "E2",
+    "E3a",
+    "E3b",
+    "E3c",
+    "E4",
+    "E5",
+    "E6",
+    "E7",
+    "E8",
+    "E9",
+    "E10",
+    "E11",
+    "E12",
+    "E13",
+)
 ENABLED = ("default", "policy-only", "library-only", "absent")
 EVIDENCE_KINDS = ("identity_compared", "verified_certificate", "guard")
 #: Spec §5.6: the event kinds whose producers the bijection covers.

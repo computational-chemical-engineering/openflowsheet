@@ -246,3 +246,12 @@ results), `40fba287` (runner self-contained), `b91b0ddb` (registration, results 
   coupled and legacy routes recording `absent(not_supplied)` and running the restart. Also, following D-32, the
   "When it applies" list says an operating parameter counts whether written as an instance parameter or pinned by a
   fixed specification on `parameters.<name>`. `mkdocs build --strict` clean; `doc_pages.py --check` up to date.
+- **D-34 (WO-6 rest: E3c).** `docs/recovery-edges.yaml` gains row E3c after E3b, in E3b's fields (design §6): trigger as
+  E3a; preconditions R3–R9b in §5.5's order with their reasons; `max_count` shared with E3a/E3b; `enabled: policy-only`
+  (the inventory's word for §6's "opt-in": offered by explicit id, never the default); label
+  `eo_recovery:<the new value>`; failure tests G4, G5, G6; `unchanged_physics: identity_compared` by the two G2 tests
+  (N1, C3). The note carries M2's sentence, the shared producers (E3a, E9), D-10's reading and O6. Without the row,
+  `test_t08_w2_recovery_edges.py::test_a33_the_bijection_holds` failed on this branch (the new value was emitted by the
+  code, in no row) — a full-gate failure that the WO-5 battery did not include. The test's `ROW_IDS` gains `E3c`
+  (spec §5.6's seed plus E3c; T08 spec §5.6's seed table is not edited). `test_t08_w2_recovery_edges.py` 26 passed,
+  the cited-node run included.

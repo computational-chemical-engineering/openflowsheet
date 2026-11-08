@@ -194,6 +194,53 @@ rows:
       P4's refusal and each rejected pass are recorded through E9's producer
       (`executor._reject_initializer`).
 
+  - id: E3c
+    title: >-
+      EO failure on a revision region → revision continuation from the nearest verified ancestor
+      (recovery edge 3, an action between E3a and E3b)
+    source: ADR 0072; RRC design note §5.3–§5.8; `RRC-revision-v1`
+    trigger: as E3a, when the region has no continuation parameter
+    precondition: >-
+      `eo_recovery = homotopy_or_revision_continuation_or_sequential_restart` (`RRC-revision-v1`,
+      offered by explicit id); in §5.5's order: R3 revision-built flowsheet (else
+      `absent(not_revision_built)`); R4 a source supplied (else `absent(not_supplied)`; the
+      application's own refusal, `absent(no_verified_ancestor)` or an A1–A3 `rejected`, is passed
+      on as supplied); R5 equal `model_version` (else `rejected(model_version)`); R6 a non-empty
+      changed set `D` (else `rejected(no_changed_specification)`); R8 the λ = 0 level's identity is
+      the source's (else `rejected(level_identity)`); R9a the source signature covers the region
+      (else `rejected(opening(coverage:<unit>))`); R9b the opening passes §5.7's check (else
+      `rejected(opening(<check>:<subject>))`). Every refusal records one `initializer_rejected`
+      event and runs E3b unchanged.
+    max_count: '1 per region step (shared with E3a/E3b: edge 3 runs once)'
+    enabled: policy-only
+    labels:
+      - eo_recovery:homotopy_or_revision_continuation_or_sequential_restart
+    failure_tests:
+      - tests/test_rrc_candidates.py::test_g4_net02_is_rescued_from_its_registered_source
+      - tests/test_rrc_candidates.py::test_g5_a_column_case_failing_first_is_rescued_and_closes
+      - tests/test_rrc_edge3.py::test_g6_a_refusal_is_recorded_and_the_restart_runs_unchanged
+    unchanged_physics:
+      kind: identity_compared
+      tests:
+        - tests/test_rrc_edge3.py::test_g2_every_level_has_its_identity
+        - tests/test_rrc_candidates.py::test_g2_every_level_of_the_column_pair_has_its_identity
+      note: >-
+        RRC §8.2 G2 on N1 (NET-02) and C3 (column): the λ = 0 level's `(model_version,
+        constants_sha256)` is the source certificate's; every λ < 1 level differs from the target
+        only at `D`; the λ = 1 instance is the failed solve's, the certificate's and the
+        registered revision's.
+    notes: >-
+      Not a superset of `T06-revision-v2`: a continuation that stops part-way ends the step and
+      the restart is not tried (one recovery per step), so this policy can fail where
+      `T06-revision-v2` converges, and no registered case is rescued by it that
+      `T06-revision-v2` does not rescue. Its producers are shared: `homotopy_step` and
+      `opening_source:eo_recovery_start` are listed under E3a, the refusal event under E9
+      (`executor._reject_initializer`). A `solve-path.json` member `revision_continuation` with
+      status `absent` or `rejected` and no `initializer_rejected` event means the application
+      refused the source and edge 3 never fired (D-10). There is no provider-identity check
+      between the ancestor's run and now: the λ = 0 corrector is the check, and drift ends it
+      `HOMOTOPY_STALLED` at `lambda_reached = 0` (design O6).
+
   - id: E4
     title: bounded phase-attempt restart
     source: ADR 0005; T03 (§4.8)
