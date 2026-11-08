@@ -24,9 +24,9 @@ Cases (requests in `requests/`):
   over certified re-solves with `tac_hand` at each state (`GOLDEN_WIDTH`), its `d_gs`.
 - **OPT-L** (G20): TH-C1 under P4's assessment document (`P4_DOC`: P1 plus an LCA section on
   `test-background-v1`); decision the boiler's outlet temperature `B.T_spec` in [640, 720] K
-  (scale 100 K), started at 650 K; min GWP100 rate/0.01 s.t. net shaft power −W_T − W_P ≥ `W_MIN`
-  (declared scaled by 1e4 W). The impact rises
-  with T and so does the power, so the constraint is active. Expectation: **bisection** on
+  (scale 100 K), started at the revision's 673.15 K and at 650 K; min GWP100 rate/0.01 s.t. net
+  shaft power −W_T − W_P ≥ `W_MIN` (declared scaled by 1e4 W). The impact rises with T and so
+  does the power, so the constraint is active. Expectation: **bisection** on
   W(T) = W_MIN over certified re-solves (`BISECTION_WIDTH`), its `d_root`; `gwp_hand` there, and
   the impact's slope recorded to show the constraint binds.
 
@@ -254,9 +254,10 @@ def requests() -> dict[str, dict[str, Any]]:
                 "upper": None,
             }
         ],
-        # D-70: started on the infeasible side of the power constraint (W(650 K) < W_min). From the
-        # feasible side (the revision's 673.15 K, or 661 K) Ipopt crawls to max_iter (measured).
-        "starts": {"include_revision": False, "explicit": [[650.0]]},
+        # D-70, OPT review S3: the revision's start (673.15 K, feasible side), from which Ipopt
+        # crawls to max_iter (measured; L-OPT-2, kept as a case), and 650 K on the infeasible side
+        # of the power constraint (W(650 K) < W_min), from which it verifies.
+        "starts": {"include_revision": True, "explicit": [[650.0]]},
     }
     return {"OPT-C": cost, "OPT-L": lca}
 

@@ -131,6 +131,10 @@ def test_g20_opt_l_reaches_the_bisection_root_of_the_power_constraint(records: P
     certified candidate state within 1e-9 relative; its multiplier positive (GWP rises with T)."""
     report = _report("OPT-L", records)
     expected = EXPECTED["OPT-L"]
+    # D-70, OPT review S3: the revision's start (673.15 K, feasible side) stalls at max_iter, the
+    # declared limitation L-OPT-2; the 650 K start verifies.
+    classifications = [start["classification"] for start in report["starts"]]
+    assert classifications == ["SOLVER_FAILED", "KKT_POINT_VERIFIED"], classifications
     candidate = report["candidate"]
     checks = _checks(report)
     assert checks["V7"]["outcome"] == "pass", checks["V7"]
