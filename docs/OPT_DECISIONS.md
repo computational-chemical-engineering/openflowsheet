@@ -939,3 +939,7 @@ Totals: TH-R1 18.3 s, M1 5.9 s, C-MW 54.4 s ("verify" also holds report/record w
   (`test_opts_surface_move_decomposes_onto_x02s`), R-960 and `tests/opt_schema_support.py` name c_6. The design note's
   §4.13 states the merge-order rule generically and ADR 0071 "indexed by merge order"; neither names an index, so
   neither changes. Old D_4 `3fb06cad…` is kept in R-960 and the digest test as evidence, not a pin.
+- D-88. Global-state cache count on the merged tree: main 38 (after X02) + OPT's `_request_validator` (D-85) = **39**
+  (`test_t07_global_state.py::test_g20_every_hit_is_allowlisted_and_every_entry_is_hit` passes; the allowlist carries
+  main's entries and OPT's one; `global` 2, `np.random` 3, `random` 1, `ContextVar` 1 unchanged from main). Set in
+  the merge `52616943` (the line conflicted); D-85's "35 → 36" was against the older main.
