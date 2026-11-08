@@ -897,3 +897,12 @@ Totals: TH-R1 18.3 s, M1 5.9 s, C-MW 54.4 s ("verify" also holds report/record w
   `READY_FOR_OPTIMIZATION` (readiness reads `found.ready`, not the results). No test pinned the old `PASS`; new
   `test_opt_cost_lca.py::test_validate_warns_on_the_assessment_checks_it_defers` (OPT-C, OPT-L on TH-C1; the report
   validates against its schema). Guide § validate says so. `test_opt_cost_lca.py` + `test_opt_request.py` 50 passed.
+- WO-8b gates (x86, at `abbd7d2f`, after M2 `5f0da859` + docs `fa0320dc` + S2): G1 F0 PASS (M1 50/50 … M9 35/35);
+  G2 default 22 entries `6e028e8d…`, audited (`--nlp`, only OMP_NUM_THREADS=1, PYTHONNOUSERSITE, PYOMO_CONFIG_DIR) 25
+  entries `b6bbafdb0c83b014…` — both identical; audited `test_opt_benchmarks_nlp` + `test_opt_boundary` +
+  `test_opt_replay_nlp` + `test_opt_job_nlp` + `test_opt_cost_lca_nlp` (G7–G10, G12, G13, G19, G20 incl. S3's
+  [SOLVER_FAILED, KKT_POINT_VERIFIED]) 21 passed, 12 deselected; G22 TH-R1/M1/C-MW all KKT_POINT_VERIFIED (it 10/11,
+  8/8, 10/9; 20.2/6.8/34.9 s); default env `test_opt_*` + layering + `test_t05b_literal` + `test_t06_w18_literal` +
+  `test_t06_f4_literals` + `test_m06_static_scan` + `test_m02_schemas` + `test_m03_schemas` + `test_doc_pages` 356
+  passed, 21 deselected (nlp marker); ruff clean (src tests scripts benchmarks derivations); mypy clean on the 8
+  touched modules.
