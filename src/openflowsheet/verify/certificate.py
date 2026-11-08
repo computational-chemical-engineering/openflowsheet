@@ -61,6 +61,7 @@ from openflowsheet.verify import (
 from openflowsheet.verify.checks import (
     COMPONENTS,
     KIND_TOLERANCE,
+    ONE_SIDED_BASES,
     VerifierError,
     admissibility_checks,
     alias_checks,
@@ -857,6 +858,12 @@ def verify_revision(
         unstenciled=frozenset(name for name, k in classes.items() if k in (1, 2)),
         one_sided=frozenset(name for name, k in classes.items() if k in (3, 4)),
         components=view.components,
+        # ADR 0073 D5 as amended: classes 1 and 2 never share a basis, so the reason follows it.
+        skipped_reason=(
+            "wilson_dormant_liquid_columns"
+            if basis in ONE_SIDED_BASES
+            else "pr_c1_zero_flow_columns"
+        ),
         appended=surrogate_limitations,
         external=external,
     )
@@ -1282,6 +1289,7 @@ def _issue(
     unstenciled: frozenset[str] = frozenset(),
     one_sided: frozenset[str] = frozenset(),
     components: Sequence[str] = (),
+    skipped_reason: str = "pr_c1_zero_flow_columns",
     appended: Sequence[Limitation] = (),
     external: ExternalEvidence | None = None,
 ) -> SolutionCertificate:
@@ -1333,7 +1341,7 @@ def _issue(
         limitations.append(
             Limitation(
                 "derivative_witness_partial",
-                {"columns": skipped, "reason": "pr_c1_zero_flow_columns"},
+                {"columns": skipped, "reason": skipped_reason},
             )
         )
     if external is not None:

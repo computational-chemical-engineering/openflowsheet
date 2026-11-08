@@ -85,7 +85,7 @@ justification is §4.8.4's affinity argument.
 
 **D3 — The dormant liquid side (class 2).** On a γ–φ-IG basis, the columns of a lifted split's liquid side are not
 differenced when every one of them is exactly zero. The `derivative_witness_partial` limitation lists them, in
-R-281's record and R-345's form. No derivative exists there (§4.8.5).
+R-281's record and R-345's form, with the reason `wilson_dormant_liquid_columns` (D5 as amended). No derivative exists there (§4.8.5).
 
 **D4 — Identity.**
 - A column whose registered result passes is untouched.
@@ -97,6 +97,12 @@ R-281's record and R-345's form. No derivative exists there (§4.8.5).
 
 **D5 — No new record.** No field, limitation kind, reason or policy entry is added, so the frozen field sets and the
 policy hash hold. The escalated columns can be recomputed from `x_final`. R-831's Z writes nothing either.
+
+*Amendment, 2026-11-08 (orchestrator decision on review ruling 3, D-1).* One exception: D3's limitation on a γ–φ-IG
+basis carries the reason `wilson_dormant_liquid_columns` instead of R-281's `pr_c1_zero_flow_columns`, which would state something false on a
+Wilson certificate. It is a value of the existing `reason` key of the existing `derivative_witness_partial` record: no
+field, limitation kind or policy entry is added, and the record's form is R-281's. Classes 1 and 2 never share a basis,
+so the reason follows the basis. No registered certificate carries a class-2 record, so nothing registered moves.
 
 ## Alternatives considered
 

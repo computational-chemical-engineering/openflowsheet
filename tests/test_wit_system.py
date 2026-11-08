@@ -150,6 +150,7 @@ def test_a11_a_dormant_wilson_liquid_side_is_listed_not_differenced(
     ]
     (partial,) = (x for x in certificate.limitations if x.kind == "derivative_witness_partial")
     assert partial.detail["columns"] == sorted(liquid)
+    assert partial.detail["reason"] == "wilson_dormant_liquid_columns"  # ADR 0073 D5 as amended
     assert_classes_partition(witnessed)
     if heater_temperature != 385.0:
         return

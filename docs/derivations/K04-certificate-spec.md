@@ -356,7 +356,7 @@ The treatment is therefore R-281's:
 
 - the columns are not differenced;
 - they are listed in the `derivative_witness_partial` limitation, in the R-345 form (`independence_qualification`
-  stays `None`);
+  stays `None`), with the reason `wilson_dormant_liquid_columns` (R-281's record carries `pr_c1_zero_flow_columns`; ADR 0073 D5 as amended);
 - the liquid total `L` keeps the registered central stencil (measured `0.0` at 385 K).
 
 **Closed forms (G2).** Computed from `benchmarks/s10/records.yaml` at GP-C3 with the heater at 385 K: `V = 1.5` mol/s,

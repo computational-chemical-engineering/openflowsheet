@@ -107,3 +107,15 @@ The normative text is the spec; nothing here changes a tolerance, a check meanin
   flash's own (duty, equilibrium, mole, Ndef); the downstream reader is a sink (no rows).
 - **Not measured.** A non-affine downstream reader of a dormant vapour product (Q-WIT-4 unchanged); noted in the
   Q-WIT-4 row. Test `test_f4_a_dormant_vapour_product_of_a_flash_is_differenced_forward` (2 cases).
+
+## D-9 — D-1 reversed (orchestrator decision on review ruling 3): reason `wilson_dormant_liquid_columns`
+
+- **Decision.** ADR 0073 D5 amended (D3 updated to match; spec §4.8.5 names it): on a γ–φ-IG basis the
+  `derivative_witness_partial` record carries `reason: "wilson_dormant_liquid_columns"`; on `pr-c1-v1` it stays
+  `pr_c1_zero_flow_columns`. Same record, same key, no new field or kind; classes 1 and 2 never share a basis, so
+  `verify_revision` picks the reason by basis (`_issue(..., skipped_reason=)`, default the old value, so `_certify`
+  is unchanged).
+- **Name.** `wilson_dormant_liquid_columns`, parallel to `pr_c1_zero_flow_columns` (basis, then what is skipped);
+  rejected `gamma_phi_dormant_liquid_side` (the review's example): `ONE_SIDED_BASES` is exactly the two Wilson bases.
+- **Identity.** No registered certificate carries a class-2 record (F0 to confirm). A11 asserts the new reason.
+- **Reverse by.** Reverting this commit (D-1's literal reading returns).
