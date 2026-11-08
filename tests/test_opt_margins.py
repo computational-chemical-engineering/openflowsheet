@@ -12,7 +12,6 @@ they equal it (guarded). Gate G24 (a)–(d), and V4's identity clause.
 
 from __future__ import annotations
 
-import dataclasses
 import json
 import math
 from collections.abc import Mapping
@@ -152,22 +151,22 @@ def test_g24b_c_mw_two_phase_margins_are_the_smaller_phase_flow() -> None:
 
 @cache
 def _gp_c3_vapour() -> tuple[RevisionNlpHost, CertifiedPoint]:
-    """GP-C3 with its heater above the dew point: the solve converges with H held VAPOR, but K04's
-    certificate is UNVERIFIED there — the derivative witness's stencil steps the held, exactly
-    zero liquid side negative (`witness_stencil_invalid_trial_state(S4.liq.CH3OH)`), as on every
-    single-phase held split on `wilson-ig-v2` (OPT_DECISIONS D-42). So no OPT start can certify
-    here today; the point is relabelled converged to judge A-3's rule on its converged state."""
+    """GP-C3 with its heater above the dew point: the solve converges with H held VAPOR and K04's
+    certificate is VERIFIED. Before WIT (ADR 0073) it was UNVERIFIED on every single-phase held
+    split on `wilson-ig-v2` — the derivative witness's stencil stepped the held, exactly zero
+    liquid side negative (OPT_DECISIONS D-42) — and this point was relabelled converged; WIT's
+    R-982 leaves the dormant liquid side undifferenced and lists it (D-89)."""
     document = gp_c3(GP_C3_VAPOR_T)
     host = _host(document, [DecisionBox("SPEC-H-T", 380.0, 390.0, "K")])
     (parameter,) = host.decisions.parameters.values()
     point = host.certify({parameter: GP_C3_VAPOR_T})
-    assert point.outcome == "CERTIFICATE_NOT_VERIFIED" and point.signature == (("H", "VAPOR"),)
+    assert point.outcome == "CONVERGED" and point.signature == (("H", "VAPOR"),)
     assert point.certificate is not None
-    reasons = {
-        item.get("reason") for item in point.certificate.as_document().get("limitations", [])
-    }
-    assert "witness_stencil_invalid_trial_state(S4.liq.CH3OH)" in reasons
-    return host, dataclasses.replace(point, outcome="CONVERGED")
+    certificate = point.certificate.as_document()
+    assert certificate["verification_status"] == "VERIFIED"
+    reasons = {item.get("reason") for item in certificate.get("limitations", [])}
+    assert reasons == {"wilson_dormant_liquid_columns"}
+    return host, point
 
 
 def test_g24c_a_gamma_phi_vapour_split_is_unguarded_and_admitted() -> None:

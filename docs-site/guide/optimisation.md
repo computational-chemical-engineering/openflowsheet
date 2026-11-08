@@ -162,11 +162,12 @@ listed as `verdict_changed_near_threshold`, not as a mismatch.
   closure is not the phase margin, listed under `regimes_unguarded`), is `NOT_VERIFIED`; so is a
   candidate in the gap where the certificate is rank-limited but no phase row is active.
 - **Which held single-phase splits can start.** On a γ–φ property provider (for example
-  `wilson-ig-v2`) a split held LIQUID or VAPOR never certifies today: the certificate's
-  derivative-witness stencil steps the held zero side negative, so such a start is
-  `START_NOT_CERTIFIED`. An **unguarded** held split is therefore reachable today only on an ideal
-  split with no K-value block. On `pr-c1-v1` a held single-phase split has no phase margin, and the
-  start is refused `REGIME_MARGIN_UNDEFINED`.
+  `wilson-ig-v2`) a split held LIQUID or VAPOR certifies, and can be a start: the certificate's
+  derivative witness leaves the held, exactly zero side undifferenced and lists it (for a held
+  VAPOR split, `wilson_dormant_liquid_columns`). Such a split is **unguarded** (its closure is not
+  the phase margin): the start record names it under `regimes_unguarded`, and a boundary optimum of
+  it is `NOT_VERIFIED`, as above. On `pr-c1-v1` a held single-phase split has no phase margin, and
+  the start is refused `REGIME_MARGIN_UNDEFINED`.
 - **Boundary optima at a thermal port.** A candidate whose thermal port (declared liquid or
   vapour) sits at its saturation row with a rank-limited certificate fails V1: the
   phase-boundary form covers a guarded LIQUID/VAPOR split's phase row only.

@@ -12,8 +12,11 @@ Build decisions: `docs/OPT_DECISIONS.md` (D-1…D-84; WO-8 section at the end).
   implements `studies.nlp.host.RevisionRoutes`; D-77), docs fa0320dc. S2 done abbd7d2f (D-83: WARN).
 ## Next (in order)
 1. Orchestrator: full gate, CI both legs (incl. aarch64 default-env G2 evidence), manifest re-take with D-82's
-   limitation strings (γ–φ held splits START_NOT_CERTIFIED; pr-c1-v1 REGIME_MARGIN_UNDEFINED; thermal-port boundary
-   fails V1; N1 absolute flow thresholds; S1 dormant splits) and the D-70 string updated (starts {673.15 K, 650 K}).
+   limitation strings (pr-c1-v1 REGIME_MARGIN_UNDEFINED; thermal-port boundary fails V1; N1 absolute flow
+   thresholds; S1 dormant splits) and the D-70 string updated (starts {673.15 K, 650 K}). D-82 (a) "γ–φ held splits
+   START_NOT_CERTIFIED" is no longer true after WIT (D-89): GP-C3's held splits certify VERIFIED at 340, 345 K
+   (LIQUID) and 365, 375, 385 K (VAPOR, limitation `wilson_dormant_liquid_columns`); (a) now reads "γ–φ held splits
+   certify and are unguarded (`regimes_unguarded`)".
 2. Human description reviews (D-78) are Frank's.
 ## Measured in WO-8
 - WO-8b gates (all green, numbers in OPT_DECISIONS "WO-8b gates"): G1, G2 both envs identical, audited 21 passed, G22 3/3 verified, default 356 passed.

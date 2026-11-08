@@ -949,3 +949,15 @@ Totals: TH-R1 18.3 s, M1 5.9 s, C-MW 54.4 s ("verify" also holds report/record w
   same `api_error("invalid_request", "request_invalid(<p>): <m>", pointer="/request<p>")` and prints it that way
   (message, pointer and exit unchanged). `test_opt_cli::test_validate_takes_the_request` compared `validate`'s whole
   `detail` to `{"pointer": "/optimization"}`; MSG adds `explanation`, so it now checks the pointer and the chain.
+- D-89. M-4 after WIT (D-42, D-82 (a)): on the merged tree GP-C3's held single-phase splits on `wilson-ig-v2`
+  **verify**, as the WIT ruling predicted (`docs/roadmap/decisions.md` WIT entry: "OPT D-42 GP-C3 held splits
+  verify"). `RevisionNlpHost.certify` at H-T = 340, 345 K: CONVERGED, H LIQUID, certificate VERIFIED, no limitation;
+  at 365, 375, 385 K: CONVERGED, H VAPOR, VERIFIED, limitation `wilson_dormant_liquid_columns` (R-982). Before WIT:
+  UNVERIFIED at every one (`witness_stencil_invalid_trial_state(S4.liq/vap.CH3OH)`). Moved: only
+  `test_opt_margins.py`'s G24 (c) fixture, which asserted the UNVERIFIED certificate and relabelled the point
+  CONVERGED; it now asserts VERIFIED with exactly R-982's limitation and uses the point as certified (the A-3 checks
+  that follow are unchanged and pass). No other `test_opt*` moved (163 passed, the two failures being this and
+  D-86 cont.). Guide § Declared limitations (a): old "a split held LIQUID or VAPOR never certifies today …
+  START_NOT_CERTIFIED; an unguarded held split is reachable only on an ideal split" → new "certifies and can be a
+  start; it is unguarded (`regimes_unguarded`), and a boundary optimum of it is NOT_VERIFIED". Handoff's limitation
+  list for the manifest re-take updated likewise.
