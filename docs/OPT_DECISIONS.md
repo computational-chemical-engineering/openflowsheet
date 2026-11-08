@@ -628,6 +628,21 @@ Totals: TH-R1 18.3 s, M1 5.9 s, C-MW 54.4 s ("verify" also holds report/record w
   decision-space starts (model inputs, R-235's class), not solver state. Default: pin them by full path in the test's
   model-input allow-list (as R-235's `body/inlet/n`), with the scalar inventory extended likewise; not yet done.
   Alternative: drop numeric starts from the job body (moves the request schema, which is frozen as WO-3's).
+- D-59. DECISION: `validate`'s member and the link's register entry → `LocalApplication.validate(revision_id, task,
+  optimization=None)` and the operation's optional member; the `Application` Protocol in `contract.py` (verbatim
+  from `interfaces-frozen.md` §1) is not edited: an added optional keyword keeps the method a structural match, and
+  Amendment 16 lives in ADR 0071 (as 5–15 live in theirs). Register number R-960, provisional (R-950 X02's, R-951…
+  X05's). Reversible by: `49b2b50c`, `2669896b`.
+- D-60. DECISION: R4-G3's test resolver (`test_t07_w5e_application_results._resolved`) met a cycle:
+  `optimization-request.schema.json#/$defs/optimize_body/properties/request` `$ref`s its own document's root, whose
+  `$defs` hold the body again. A cyclic `$ref` met inside a `$defs` member now becomes a `$comment` naming it; one
+  elsewhere still raises. Only inputs that raised before take the branch (no earlier snapshot moved). The MCP binding
+  never descends into `$defs` and serves the schema unchanged. Alternative: move `optimize_body` into
+  `job.schema.json#/$defs` (departs from design §4.10's location). Reversible by: `224f3154`.
+- D-61. FACT: the two description texts changed (design §4.12) void their T08.A18 reviews: `REVIEW.json` holds the new
+  hashes with both reviews pending, so `tests/test_t08_w2_description_reviews.py::test_every_description_is_reviewed_by_both_lanes`
+  is red (4 open: `validate`, `submit_job` × design lane, Frank) until the reviewer and Frank review them (no agent
+  marks them). `validate.md` said the optimization task is refused, false since WO-3.
 - AMENDED_TESTS (WO-6): `tests/test_t07_adr0008_jobs.py::test_c_each_operation_has_exactly_one_request_branch`
   (the `optimize` branch, additive) and `::test_c_an_operation_outside_the_enum_is_refused` (its `optimize` example is
   now an operation; replaced by `optimise`).
