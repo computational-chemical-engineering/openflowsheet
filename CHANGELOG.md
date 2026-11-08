@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+### ST — the stream table (ADR 0068, accepted 2026-11-08)
+
+- The web shell's streams screen (`#/job/{jid}/streams`) shows a run's stream table from
+  `get_stream_table`, below the n, T, P view: per stream its total and its phases, the phase source
+  and the near-phase-boundary flag, phase fractions, flows and enthalpy flows, and the energy
+  summary per unit, in SI units as the columns name them; a value the table does not give carries
+  its reason in plain words (Frank's O3). The shell now calls 18 operations (L-WEB-1).
+
 ### X05 — replay from the wheel (ADR 0069, accepted 2026-11-08)
 
 - The wheel and the sdist carry `requirements.lock` (`openflowsheet/_data/requirements.lock`, a link to

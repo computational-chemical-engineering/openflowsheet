@@ -327,3 +327,21 @@ M3 61/61, M4 61/61, M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 35/35).
   digest of registered constant doubles) exact, and `level_constants_sha256` float only because its vector holds a
   solved `p⁰` (ADR 0010, ADR 0007 D1 row 3); `state_sha256` keeps v2's float class (already classified).
   Needs a design-lane yes/no; the two A1 tests stay red until then.
+- **8b-3 — the web shell shows the stream table (Frank's O3, 2026-11-08).** `apps/web/js/model/stream-table.js`
+  (pure: rows per stream = total + one per phase, the operation's CSV rows; the energy rows; distinct absent
+  reasons as footnotes, each with the catalogue summary's plain words for ST's seven codes, §6.4) and
+  `screens/streams.js` (`get_stream_table` through `api.readWhole`, so paging and elision are followed as the
+  operation pages — `next_cursor`, `$elided`; a refusal other than 401 is shown with its MSG explanation and
+  the n/T/P view stays). DECISION: read whole, not an on-screen pager → the other projected documents' pattern
+  (§5.4); alternative: a "next page" link per `limit`. Reversible by: the screen's `streamTableOf`. Not
+  cached (not in `CACHED`). `routes.js` regenerated (stale since ST's HTTP row: `test_the_route_table_is_
+  generated_from_the_http_rows` was red at `9da2e022` too). `UI_OPERATIONS` 17 → 18, the count-named tests
+  renamed (`…_eighteen…`, static scan, HTTP contract, browser G1); envelope interfaces statement and L-WEB-1
+  ("eighteen"), its evidence test id; `sync-limitations`, `doc_pages.py`, `t07_schema_fixtures.py --write`
+  (message_entry `catalogue.sha256` 7573d7ea… → 3ac1279a…). W26 fixtures: `m06_web_fixtures.py` captures the
+  table per job; per MSG's D6-5 only the new members were taken from a fresh generation (3 `get_stream_table`
+  records — job-000001/2 one view each, job-000003 404 `not_found` — and `numeric_query_members.
+  get_stream_table`); ids, `state_sha256`, `certificate_id` agree with the committed raw members; nothing else
+  in the file moved. Browser smoke: route `/job/job-000002/streams` (table markers) and the job-000003 route
+  gains the refusal marker and `refusals=(404,)`. Docs: `docs/web-shell.md`, `docs-site/guide/interfaces.md`,
+  CHANGELOG (Unreleased, ST).

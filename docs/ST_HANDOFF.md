@@ -30,9 +30,12 @@ R1 empty split refusal; §4.4 dormant-row sentence; paging cost measurement.
 then `5f66c3f7`); register equals main's (MSG = R-975/R-976; ST's duplicate R-942/R-943 dropped). Ruling 5 in
 `stream_table._inputs`/`_decide` (R1′ on the split's own row; no-number on `temperature_degenerate_unlifted(S)`);
 DC-1…DC-6 in `tests/test_st_core.py`; 44 served documents byte-identical; G7/G8/G8u unchanged; F0 PASS.
-**Red, pre-existing, WO-7 must fix:** T08.A20 (envelope lacks `get_stream_table`; count 22 → 23) and ADR 0025 A1
-(`numerical_policy` (d): `data_sha256`, `implementation_sha256` unclassified).
+**WO-8b (2026-11-08, brief `docs/briefs/ST-WO8b-webshell.md`, ST_DECISIONS 8b-1…3).** 1fdb30ad A20 envelope lists
+`get_stream_table` (23; ADR 0068 accepted by Frank 2026-11-08). 4d27b52e **ADR 0025 A1 escalated, not fixed**: SYN-001's
+`data_sha256` hashes registered doubles; default proposed in 8b-2 (both `exact_sha256` in an ST addendum). 3d4a9057
+streams screen shows the stream table (shell 18 operations; L-WEB-1; catalogue 3ac1279a…). Battery 2246 passed, 2
+failed (the two A1 tests only); browser smoke 32 passed locally; node 98 pass; F0 PASS; ruff/format/mypy clean.
 
-**Next: WO-8b** (web-shell display, separate brief), then **WO-7** — evidence manifest, full gate `scripts/gate.sh`, CI on both architectures. When MSG lands:
-merge commit only; re-measure G12 (c_5/c_6 order vs X02), take main's register ids, S2's one-hunk conflict in
-`api_errors.yaml`, re-take `message_entry` fixtures.
+**Next:** design-lane yes/no on 8b-2, then apply it (one commit), then **WO-7** — evidence manifest, CI on both
+architectures. When MSG lands: merge commit only; re-measure G12 (c_5/c_6 order vs X02), take main's register ids,
+S2's one-hunk conflict in `api_errors.yaml`, re-take `message_entry` fixtures; OPT's ADDENDA order (`opt` vs `st`).

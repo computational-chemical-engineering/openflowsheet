@@ -29,3 +29,10 @@ own identity, a revoked grant stops working on the next call, and every call is 
 freedom, runs and traces, certificates and failure bundles, streams, comparisons and the audit
 history — that uses nothing but the HTTP operations. It edits nothing: Solve and Cancel are its
 only actions.
+
+A run's streams screen shows the stream table that `get_stream_table` returns (the same table as
+`openflowsheet streams`): for each stream its total and its phases, where the phases come from
+(`phase_source`) and whether the state lies near a phase boundary, phase fractions, flows and
+enthalpy flows, then the energy summary per unit. Values are in the SI unit the column names. A
+value the table does not give is shown as `—` with the reason in plain words, for example a stream
+whose phase split could not be computed.
