@@ -582,3 +582,64 @@ Totals: TH-R1 18.3 s, M1 5.9 s, C-MW 54.4 s ("verify" also holds report/record w
   test_t08_w4_package_data.py test_e01_b_studies.py test_m05_study_record.py` at the A-1 tree): 446 passed;
   `test_opt_revision_optimize.py` at `1d909ef9` 16 passed; M03 sensitivity core/syn001/reference 61 passed at D-45.
   ruff clean; mypy: the 3 pre-existing `benchmarks/opt`/test errors only. `analytic.py --check` current.
+
+## WO-6 (the `optimize` job, records stored, replay, surfaces, surface link; design §4.8–§4.13)
+
+- Merge of `origin/main` (X10) into `wp/OPT` at `33a59d4d`: clean, no harvest conflict; `t08_support_matrix.py --emit`
+  changed nothing; `HARVEST_SIZE` stays main's (74, 977, 126); `test_m07a_harvest.py` + `test_x10_inventory.py`
+  10 passed; F0 PASS (M1 50/50 … M9 35/35).
+- D-51. DECISION: surface-chain numbering → OPT's link is `c_4` (main holds c_1–c_3 at `33a59d4d`). `wp/MSG` and
+  `wp/X02` each also claim `c_4`; by §4.13 / X02 review ruling 4, **OPT renumbers to the next free index and
+  re-measures its digest on the merged tree if MSG or X02 merges into `main` first**. Reversible by: renumbering.
+- D-52. DECISION: Ipopt interruption (§4.10) → `greybox._Iterations.interrupt` calls the job's check once per
+  iteration; a `JobInterrupted` is kept (`stopped`), the callback returns `False` (Ipopt `User_Requested_Stop`) and
+  `solve_start` re-raises it after Ipopt returns (an exception raised through Ipopt's C callback would not reach the
+  job). Caught by name (`except JobInterrupted`), so `test_t07_interrupt.py`'s lint holds. `interrupt=None` (M03,
+  every library caller without a check) is the old callback. `optimize_revision` passes its `check`. Reversible by:
+  the library-hooks commit.
+- D-53. DECISION: per-start `max_wall_time` (§4.10) → `optimize_revision(wall_time_remaining=)`; the job's is its
+  `wall_time_s` budget minus the time since the body began (an over-estimate by the executor's start-up only: the
+  job's own check, also in every Ipopt iteration, is what ends it `timed_out`). Capped below at 1e-3 s (Ipopt needs
+  > 0). The cap enters `optimizer.json`'s `options` only when the budget binds, i.e. on a job that times out; G12 runs
+  without a binding budget. Reversible by: `revision._start_options`.
+- D-54. DECISION: the `record` stage boundary → inside `optimize_revision`, before the report and manifest are
+  written (`progress("record")` after `check()`), so an interruption at `record` leaves neither (§4.10 "no report and
+  no manifest"). Reversible by: `revision.optimize_revision.finish`.
+- D-55. DECISION: the job's resolve stage → revision `not_found` → `failed(not_found)` (as `solve`); the solver probe
+  again (`failed(unsupported nlp_solver_unavailable)`, the "extra vanished" case); `request_problems` →
+  `failed(invalid_request)` at `/body/request<pointer>` (the schema `$ref` already validated the form at admission;
+  this is the canonical/semantic rest, `retryable: false`); the policies by `resolve_policies` on `revision_eo`
+  (OPT's only route) with the body's solve members (`OptimizeBody.solve_body()`), refusals as `solve`'s. A route that
+  does not bind is the report's (`UNSUPPORTED`, REVISION_UNBOUND/OPTIMIZATION_ROUTE_UNAVAILABLE), not a failure. D-46's
+  unaudited-stack refusal stays a report (`completed`, `UNSUPPORTED(NLP_SOLVER_UNAVAILABLE)`). Reversible by:
+  `runner._Body.optimize`.
+- D-56. DECISION: `EffectiveBudgets.max_property_calls` of an `optimize` job → the body's value as requested (the
+  budget is each production solve's, through its policy); admission does not resolve the policy (§4.10 "everything
+  else is decided in the body"). Reversible by: `local._admit`.
+- D-57. DECISION: record artifacts → every file `<job_id>:optimization/<path>`; each complete bundle under
+  `starts/<k>/` (`start`, `resolve`) by `bundle_rows` (kind `replay_bundle`, members `<bundle id>/<file>`); a bundle
+  without its manifest (interrupted) is not registered; the base revision copy `revision-document.json` is kind
+  `revision_document`; the six new kinds have fixed file names in `ARTIFACT_FILE_NAMES`. The answer
+  `job_result.optimization` is read from the `optimization_report` output (as `reproduce`'s report), not duplicated in
+  `worker_result`. Reversible by: `runner._Body._optimization_record`, `local._result`.
+- D-58. DECISION (escalated, for the reviewer): T07 Q26 "no external state" (`tests/test_t07_q26.py`) finds 8 numeric
+  containers under `submit_job` `body/request` (explicit starts, expression `linear` maps, assessment coefficient
+  arrays/maps) and will find the same under `validate`'s `optimization`. They are the problem's definition and
+  decision-space starts (model inputs, R-235's class), not solver state. Default: pin them by full path in the test's
+  model-input allow-list (as R-235's `body/inlet/n`), with the scalar inventory extended likewise; not yet done.
+  Alternative: drop numeric starts from the job body (moves the request schema, which is frozen as WO-3's).
+- AMENDED_TESTS (WO-6): `tests/test_t07_adr0008_jobs.py::test_c_each_operation_has_exactly_one_request_branch`
+  (the `optimize` branch, additive) and `::test_c_an_operation_outside_the_enum_is_refused` (its `optimize` example is
+  now an operation; replaced by `optimise`).
+
+### Gates (WO-6 part 1, 2026-11-08, TRS2, worktree `wp/OPT`)
+
+- G1 F0 after the main merge (`33a59d4d`): PASS (M1 50/50, M2 61/61, M3 61/61, M4 61/61, M5 61/61, M6 85/85,
+  M7 52/52, M8 105/105, M9 35/35).
+- G2 at the library-hooks tree (audited env, `--nlp`): `b6bbafdb0c83b0148e7a3d324b81ad93e6935e6731833cd325f162e6ec8b9324`,
+  identical to WO-5c's.
+- Audited env `m03_nlp_check.sh -- test_opt_benchmarks_nlp.py test_opt_boundary.py`: 8 passed (G7/G8/G9/G10 with the
+  interrupt hook in the callback).
+- Default env: `test_t07_adr0008_jobs.py test_opt_revision_optimize.py test_opt_request.py test_t07_interrupt.py
+  test_m04_study_job.py test_package_imports.py` 118 passed, 1 failed (`test_a42_…`, surface decomposition: needs
+  `without_opt`); `test_opt_job.py` 2 passed. Surface-chain/digest/Q26 tests fail until part 2 (handoff).

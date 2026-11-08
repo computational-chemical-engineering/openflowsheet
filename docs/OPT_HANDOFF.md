@@ -1,40 +1,46 @@
 # OPT handoff (build lane, branch `wp/OPT`, worktree `.claude/worktrees/opt`)
 
-Design: `docs/design/OPT-revision-optimisation.md` (§4 design, §5/§6 WOs and gates, **§9 amendment A-1…A-4** governs
-where it differs); ADR 0071 (Proposed). Build decisions, facts, gate numbers: `docs/OPT_DECISIONS.md` (D-1…D-50).
+Design: `docs/design/OPT-revision-optimisation.md` (§4.8–§4.13 WO-6, §6 G11–G16, §9.5 G13/G16 extensions); ADR 0071.
+Build decisions, facts, gate numbers: `docs/OPT_DECISIONS.md` (D-1…D-58).
 
 ## Done
 
-- **WO-1…WO-5b** — host … OPT-A3; A-2 zero subsystem, A-3 closure margins (see the log).
-- **WO-5c** (D-45 `16fb2d3f`, A-1 `9a78d67e`, OPT-A3v `9373e15b`, D-46 `1d909ef9`): `studies/nlp/boundary.py`
-  (e1–e6, B, `certificate_target`); `RevisionNlpHost.phase_boundary` / `basis` (admits a boundary point: held system,
-  regimes, Q1′ on its basis); V1 `basis` + B in its detail; candidate `certificate_basis`, `claims.
-  numerical_verification`, `regime_note` boundary words; G10 `xfail` removed (PASS). Tests `test_opt_boundary.py`
-  (G10a–G10d). `optimize_revision` refuses an unaudited NLP stack (D-44 → D-46). G2 re-taken in the audited env
-  against `ad971d32`: identical, solved reports (`b6bbafdb…`).
+- WO-1…WO-5c (see the log). Main (X10) merged at `33a59d4d` (clean; HARVEST_SIZE (74, 977, 126); F0 PASS).
+- **WO-6, part 1** (`c85c8736`, `47f474ad`, `a4ef4d85`): Ipopt interruption hook (`greybox._Iterations.interrupt`),
+  per-start wall-time cap and `record` stage in `optimize_revision` (D-52..D-54; G2 `--nlp` `b6bbafdb…` identical;
+  OPT nlp benchmarks 8 passed); the `optimize` job: `job.schema.json` (enum, branch, `job_result.optimization`, six
+  kinds), `optimization-request.schema.json#/$defs/optimize_body`, `OptimizeBody`, `JobResult.optimization`,
+  `admit_optimize`, `runner._Body.optimize` (stages, artifacts `<job_id>:optimization/<path>`, outputs report then
+  manifest), `local._admit`/`_result` (D-55..D-57). `tests/test_opt_job.py` (G11 job half) 2 passed.
 
-## Open (design lane, at OPT's reviewer pass)
+## Failing now (expected until the surface link): served-surface tests
 
-- For review: D-45 (Q1′ accepts the boundary basis), D-47 (V1 detail shape), D-48 (target rebuilt with the private
-  `_staged_splits`), D-49, D-50 (G10d's a/N0 ≤ 1e-7 vs 1e-6 K inconsistency; test uses 1e-9); D-43, D-39/D-40; earlier
-  D-18, D-24, D-28, D-30, D-32.
-- D-42 (escalated): on `wilson-ig-v2` K04 does not certify a single-phase held split; K04 question.
+`test_m07a_surface_chain.py` (5), `test_t08_w2_surface_digest.py` (4), `test_t07_w5e_application_results.py` (2),
+`test_m04_study_job.py::test_a42_…`, `test_t07_q26.py::test_t07_q26_no_external_state` (D-58).
 
-## Next
+## Next (WO-6, part 2), in order
 
-- **WO-6** (job, replay: `reproduce` recomputes A-1's clauses and B, A-2's V4 clause; G13/G16 extended with OPT-A3),
-  then **WO-7** (user doc: boundary candidates, `certificate_basis`, declared limits; manifest G10a–d, G22–24).
+1. `LocalApplication.validate(revision_id, task, optimization=None)` + `OPERATIONS["validate"]` optional member
+   (`_ref("optimization-request.schema.json")`, decode `_members(..., "optimization")`), calling
+   `validation.validate(doc, task, optimization=)` (D-19); `descriptions/validate.md` and `submit_job.md` texts.
+2. `tests/opt_schema_support.py::without_opt` (pattern `tests/m04_schema_support.py`: enum values `optimize` + six
+   kinds, the `optimize` branch, inlined `optimize_body` by description prefix "OPT design §4.10 (ADR 0071",
+   `job_result.optimization`, `validate`'s `optimization`; restores the two description texts from pre-OPT copies —
+   commit them as fixtures). `scripts/m07a_rc.py` link `c_4` (D-51) + `strip_opt`; register entry R-<next> with
+   D_4 and D_3; item 4 (`description_problems`) judged on the stripped texts. Fix the failing tests above
+   (pattern: X02's diff `git diff origin/main...origin/wp/X02 -- scripts/m07a_rc.py tests/`). Q26 per D-58 default.
+3. Replay (§4.9): `reproduce` / CLI `replay` dispatch on manifest `format == openflowsheet-optimization-v1`
+   (`revision.OPTIMIZATION_FORMAT`); integrity, rerun bundles, V2–V7 + A-1 clauses/B + A-2 V4 recomputed.
+4. CLI `optimize REVISION --request FILE --out DIR [--json]`, `validate --request`.
+5. Tests (audited env): G12 job ≡ library (mask `wall_time_s` in the report and the report's SHA in the manifest),
+   G14 cancel during start 1 of 3 / budget inside Ipopt, G13 (+ committed OPT-A2 fixture ≤ 2 MB, aarch64), G16.
+6. U05 text in `benchmarks/t08/support_envelope.yaml`; G1 F0, G2 at the end.
 
 ## How to run
 
 - Default env: `PYTHONPATH=$PWD/src /home/frankp/Codes/OpenFlowsheet/.venv/bin/python -m pytest …` (serial).
-- Audited env tests: `W=/home/frankp/Codes/OpenFlowsheet/.claude/worktrees/m05; scripts/m03_nlp_check.sh
-  --no-inventory $W/.venv-nlp $W/.reference-downloads/m03-ipopt -- <tests>`. Scripts in the audited env:
-  `OMP_NUM_THREADS=1 PYTHONNOUSERSITE=1 PYOMO_CONFIG_DIR=$W/.venv-nlp/share/pyomo PYTHONPATH=<root>/src:$W/.reference-
-  downloads/m03-ipopt/nlp-test-tools $W/.venv-nlp/bin/python …` (else PyNumero is unaudited; OPT refuses, D-46).
-- G1 `scripts/corpus_identity.py --check`; G2 `scripts/opt_m03_dump.py ROOT OUT [--nlp]` per tree + `cmp` (base by
-  `git worktree add --detach <scratch> ad971d32`); G17 `benchmarks/opt/performance.py RECORDS`. No full gate until
-  WO-7. TRS2 ≤ ~36 cores.
-
-Anchors: `boundary.py` `judge`, `boundary_form`, `certificate_target`; `revision_host.py` `phase_boundary`,
-`held_system`; `verification.py` V1 block in `verify_candidate`; `revision.py` `_phase_members`, D-46 check.
+- Audited env: `W=/home/frankp/Codes/OpenFlowsheet/.claude/worktrees/m05; scripts/m03_nlp_check.sh --no-inventory
+  $W/.venv-nlp $W/.reference-downloads/m03-ipopt -- tests/test_opt_benchmarks_nlp.py` (nlp-marked only).
+- G2: `OMP_NUM_THREADS=1 PYTHONNOUSERSITE=1 PYOMO_CONFIG_DIR=$W/.venv-nlp/share/pyomo PYTHONPATH=$PWD/src:$W/.reference-
+  downloads/m03-ipopt/nlp-test-tools $W/.venv-nlp/bin/python scripts/opt_m03_dump.py $PWD OUT --nlp` → `b6bbafdb…`.
+- No full gate until WO-7. TRS2 ≤ ~36 cores.
