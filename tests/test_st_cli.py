@@ -84,12 +84,19 @@ def streams(*argv: str, capsys: pytest.CaptureFixture[str]) -> tuple[int, str, s
     return code, out, err
 
 
-def _golden_json(text: str) -> str:
-    """The JSON golden with this package's version in `evaluator.package_version`, the one
-    member that moves with a release rather than with the run."""
-    document = json.loads(text)
-    document["evaluator"]["package_version"] = __version__
-    return canonical_json(document).decode("utf-8") + "\n"
+def _golden(form: str) -> str:
+    """The golden of `form` as the CLI prints it. The CSV file is kept with LF line ends
+    (`.gitattributes`: `*.csv text eol=lf`), and the CLI writes RFC 4180's CRLF. The JSON golden
+    takes this package's version in `evaluator.package_version`, the one member that moves with a
+    release rather than with the run."""
+    text = (GOLDEN / FORMATS[form]).read_text(encoding="utf-8")
+    if form == "csv":
+        return text.replace("\n", "\r\n")
+    if form == "json":
+        document = json.loads(text)
+        document["evaluator"]["package_version"] = __version__
+        return canonical_json(document).decode("utf-8") + "\n"
+    return text
 
 
 # ==================================================================================== goldens
@@ -99,9 +106,7 @@ def _golden_json(text: str) -> str:
 def test_th_c1_golden(form: str, bundle: Path, capsys: pytest.CaptureFixture[str]) -> None:
     code, out, err = streams(str(bundle), "--format", form, capsys=capsys)
     assert (code, err) == (0, "")
-    golden = (GOLDEN / FORMATS[form]).read_bytes().decode("utf-8")
-    if form == "json":
-        golden = _golden_json(golden)
+    golden = _golden(form)
     assert out == golden
 
 
@@ -233,7 +238,7 @@ def test_output_writes_the_file_and_prints_nothing(
     target = tmp_path / "table.csv"
     code, out, err = streams(str(bundle), "--format", "csv", "--output", str(target), capsys=capsys)
     assert (code, out, err) == (0, "", "")
-    assert target.read_bytes() == (GOLDEN / "TH-C1.csv").read_bytes()
+    assert target.read_bytes() == _golden("csv").encode("utf-8")
 
 
 # ==================================================================================== exit codes
