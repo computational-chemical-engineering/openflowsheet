@@ -675,3 +675,13 @@ CI `42502713324` green on `5e9274db` (Frank's human review of `explain` included
 holds c_4 (D_4 `eaff4585…`); X02 is next in the merge order (MSG, X02, OPT, RRC, ST) and re-measures its link as c_5.
 Note: worktrees have no `.venv`; the main checkout's editable install imports main's `src`, so a worktree test run
 with it tests main's code. CI is the authority for branch code; re-run targeted tests on main after each merge.
+
+## 2026-11-08 — ST design-lane confirmations (`wp/ST` `e1a05916`)
+
+Specifier: M1-1, M1-2 (n_tot·h = γ–φ `_phase_flow` bitwise; test DC-5), M1-3 (reason corrected), S1-1 confirmed. The
+products-style case cannot occur (binder admits undeclared streams only from heater-style splits), but a neighbouring
+defect does: R1′ fired on any degeneracy row naming the stream, incl. a flash drum's row on its inlet → ruling 5: R1′
+only on `independent_split.<U>.<S>`, no-number branch on `temperature_degenerate_unlifted(<S>)`; DC-1…DC-6. ADR 0068
+D3 amended (dated, quoted) after Frank's acceptance; no served output changes → board item `st-adr0068-am1`
+(default: stands). DECISION: proceed on the amendment without waiting. Alternative: hold ST for Frank. Reversible by:
+reverting WO-8a's ruling-5 commit. Next: ST WO-8a (merge main, ruling 5, R-942/943 clean-up), then WO-8b (web shell).
