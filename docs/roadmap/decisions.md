@@ -450,3 +450,14 @@ the dependency), M3 (six fixture `solve-policy.json` registered as archived outp
 M5 (`without_opt` strip for M02's solve snapshot), M6 (M03 message byte-identical without the extra on aarch64).
 S1–S5. D-61: both descriptions pass the design-lane review; Frank's human review open. CI run 42431066903 (at
 `de18aca2`) failed 7/7/10 on x86/default-install/aarch64, all covered by M1–M6 or D-61.
+
+## 2026-11-08 — OPT WO-8 fix round done (`wp/OPT` `496e003a`); full gate + CI running
+
+M1 (replay floors per judging check), M2 (`RevisionRoutes` protocol in `studies/nlp/host.py`, supplied by
+`application/revision_routes.py`; no application import under `studies/`), M3–M6, S2–S5 done; S1 declared for 0.4
+(D-84); D-61 design-lane reviews recorded (human pending). F0 PASS; G2 identical (default `6e028e8d…`, audited
+`b6bbafdb…`); audited G7–G10/G12/G13/G19/G20 21 passed; G22 all three verify. Incident: a nested sub-agent outlived its
+parent engineer; I committed its edits as WIP while it was still working; no work lost (memory note added).
+DECISION: RRC WO-3 (executor integration) starts now on `wp/RRC` from main instead of waiting for OPT's merge (OPT now
+waits on Frank: description reviews + ADR 0071); whichever merges second resolves the executor conflict (OPT adds
+`RegionResult.final_system`). Alternative: wait. Reversible by: rebasing `wp/RRC` onto `wp/OPT`.
