@@ -20,7 +20,8 @@ them and lists the exact `sha256` names they introduce, and `--check` holds that
 closed-partition rule (M02 design note §3.6). M05's `trust-region-study` follows the same pattern
 (`benchmarks/m05/numerical_policy_external.yaml`, M05 build decision S11): `ADDENDA` lists the
 tables, and each is audited in turn, a name an earlier table classified keeping its class; E01's
-`assessment` schemas follow it too (`benchmarks/e01/numerical_policy_external.yaml`). The
+`assessment` schemas follow it too (`benchmarks/e01/numerical_policy_external.yaml`), then ST's
+`stream-table` schema (`benchmarks/st/numerical_policy_external.yaml`, ST review ruling 6). The
 schemas M04 adds (`surrogate-manifest`, `model-evidence`) are classified the same way, in
 `benchmarks/m04/numerical_policy_surrogate.yaml`.
 
@@ -55,6 +56,7 @@ ADDENDA: Final = (
     EXTERNAL,
     ROOT / "benchmarks" / "m05" / "numerical_policy_external.yaml",
     ROOT / "benchmarks" / "e01" / "numerical_policy_external.yaml",
+    ROOT / "benchmarks" / "st" / "numerical_policy_external.yaml",
 )
 #: M04: the addendum that classifies the M04 schemas' digests, beside M02's.
 SURROGATE: Final = ROOT / "benchmarks" / "m04" / "numerical_policy_surrogate.yaml"

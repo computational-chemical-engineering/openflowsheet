@@ -345,3 +345,6 @@ M3 61/61, M4 61/61, M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 35/35).
   in the file moved. Browser smoke: route `/job/job-000002/streams` (table markers) and the job-000003 route
   gains the refusal marker and `refusals=(404,)`. Docs: `docs/web-shell.md`, `docs-site/guide/interfaces.md`,
   CHANGELOG (Unreleased, ST).
+- **8b-4 — ADR 0025 A1 resolved (ST review ruling 6, `be89d011`).** Both names exact (`benchmarks/st/numerical_policy_external.yaml`);
+  `ADDENDA` gains `st` after `e01`; `test_m05_study_record.py`'s ADDENDA pin amended on purpose. `t08_numerical_policy.py
+  --check` PASS (v2 bytes unchanged `6b449911…`); `tests/test_t08_adr0025.py tests/test_m05_study_record.py` 250 passed.
