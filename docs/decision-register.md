@@ -18067,6 +18067,7 @@ the ADR's condition is the manifest itself.
 | --- | --- |
 | Date | 2026-10-31 |
 | Decided by | design lane (`specifier`), ADR 0055 D1, on Frank's request of 2026-10-31 |
+| Status | Accepted 2026-11-08 (Frank). |
 | Normative text | `docs/adr/0055-standing-release-procedure.md` D1; `docs/derivations/release-procedure.md` (WO-R1) |
 | Evidence | V03's spec, about 920 lines with four amendments (R-872 … R-914); W21 (e) repeated 0.2.0's F1 because step 12 was re-transcribed without the fix (R-909) |
 | Affected packages | every release from 0.4.0; RELEASING; `release.yml` |
@@ -18579,3 +18580,51 @@ order-preserving, and admits non-canonical second ids); a generic pattern (ADR 0
 
 **Watch for.** An inherited `evidence_package` (ADR 0074 O-3, RP.L11). An id written with plain digits for a component
 ≥ 10. `\d` in place of `[0-9]`.
+
+## R-980 — WIT: a failing small-flow component column is re-differenced by an AD-independent escalation; an unresolved one keeps its registered result (2026-11-08)
+
+| | |
+| --- | --- |
+| Date | 2026-11-08 |
+| Decided by | design lane (`specifier`), ADR 0073; accepted by Frank on the decision board, 2026-11-08 |
+| Normative text | `docs/adr/0073-WIT-derivative-witness-small-and-dormant-flows.md`; `docs/derivations/K04-certificate-spec.md` §4.8.1–§4.8.9 |
+| Affected packages | WIT; K04 |
+
+- *Decision.* Trigger: a component column with `x_j > 0` whose registered central result is refused or fails. Method:
+  central fourth order at `h_j 2^−k`, `k ≤ 8`, refused levels skipped, resolved at the first consecutive pair that
+  agrees within `τ_D/10` over every row. The resolved estimate replaces the registered one in both checks. No record.
+- *Rejected.* A state-relative step; a smaller registered step; a larger tolerance; second-order central at halved
+  steps; forward five-point; a Richardson-extrapolated report.
+- *Evidence.* K04 §4.8.3, §4.8.6; L-X10-1 resolves (`k* ≤ 5`, `≤ 4.3e-10`); ADV-06 M is unchanged.
+- *Watch for.* The escalation reading the Jacobian; a passing column escalated; any F0 move; a non-component column
+  escalated.
+
+## R-981 — WIT: on γ–φ-IG, a lifted split's dormant vapour side is differenced one-sided (R-831's stencil); the positive-sibling condition stays everywhere else (2026-11-08)
+
+| | |
+| --- | --- |
+| Date | 2026-11-08 |
+| Decided by | design lane (`specifier`), ADR 0073; accepted by Frank on the decision board, 2026-11-08 |
+| Normative text | `docs/adr/0073-WIT-derivative-witness-small-and-dormant-flows.md`; `docs/derivations/K04-certificate-spec.md` §4.8.1–§4.8.9 |
+| Affected packages | WIT; K04 |
+
+- *Decision.* As D2.
+- *Rejected.* Dropping the positive-sibling condition generally (it guards conventions on liquid sides and on
+  `pr-c1-v1`).
+- *Evidence.* §4.8.4; G1 = 0.5, reproduced bitwise; the class-4 part is 2.39e-11.
+- *Watch for.* The rule applied to a liquid side, to a non-γ–φ-IG basis, or to a stream that is not a split side.
+
+## R-982 — WIT: on γ–φ-IG, a lifted split's dormant liquid side is not differenced and is listed in `derivative_witness_partial` (R-281's record) (2026-11-08)
+
+| | |
+| --- | --- |
+| Date | 2026-11-08 |
+| Decided by | design lane (`specifier`), ADR 0073; accepted by Frank on the decision board, 2026-11-08 |
+| Normative text | `docs/adr/0073-WIT-derivative-witness-small-and-dormant-flows.md`; `docs/derivations/K04-certificate-spec.md` §4.8.1–§4.8.9 |
+| Affected packages | WIT; K04 |
+
+- *Decision.* As D3.
+- *Rejected.* An entry-level exclusion; keeping such states `unsupported`.
+- *Evidence.* §4.8.5's G2 gaps (0.075, 0.26, 0.39 scaled), matched to 4.6e-15 relative.
+- *Watch for.* The exclusion widened to a vapour side, to a side with a positive column, or to another basis without
+  its own non-differentiability evidence.

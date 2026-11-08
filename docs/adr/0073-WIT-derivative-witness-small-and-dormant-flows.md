@@ -1,6 +1,6 @@
 # ADR 0073 — WIT: the derivative witness escalates a failing small-flow column, and treats a γ–φ-IG split's dormant sides by whether a derivative exists
 
-**Status:** **Proposed, 2026-11-08.**
+**Status:** **Accepted, 2026-11-08** (Frank, on the decision board); Q-WIT-1 yes, Q-WIT-2 yes (M-6 part b follows on its own branch). Proposed 2026-11-08.
 - It takes effect on `main` when four things hold:
   - the build lane has implemented K04 §4.8.1–§4.8.9, assertions WIT.A01–WIT.A14 pass, and the moves M-1 to M-3 are
     amended (§4.8.6);
@@ -160,7 +160,7 @@ so the reason follows the basis. No registered certificate carries a class-2 rec
 
 ## Register entries (drafts, unnumbered)
 
-**R-??? — WIT: a failing small-flow component column is re-differenced by an AD-independent escalation; an unresolved
+**R-980 — WIT: a failing small-flow component column is re-differenced by an AD-independent escalation; an unresolved
 one keeps its registered result.**
 - *Decision.* Trigger: a component column with `x_j > 0` whose registered central result is refused or fails. Method:
   central fourth order at `h_j 2^−k`, `k ≤ 8`, refused levels skipped, resolved at the first consecutive pair that
@@ -171,7 +171,7 @@ one keeps its registered result.**
 - *Watch for.* The escalation reading the Jacobian; a passing column escalated; any F0 move; a non-component column
   escalated.
 
-**R-??? — WIT: on γ–φ-IG, a lifted split's dormant vapour side is differenced one-sided (R-831's stencil); the
+**R-981 — WIT: on γ–φ-IG, a lifted split's dormant vapour side is differenced one-sided (R-831's stencil); the
 positive-sibling condition stays everywhere else.**
 - *Decision.* As D2.
 - *Rejected.* Dropping the positive-sibling condition generally (it guards conventions on liquid sides and on
@@ -179,7 +179,7 @@ positive-sibling condition stays everywhere else.**
 - *Evidence.* §4.8.4; G1 = 0.5, reproduced bitwise; the class-4 part is 2.39e-11.
 - *Watch for.* The rule applied to a liquid side, to a non-γ–φ-IG basis, or to a stream that is not a split side.
 
-**R-??? — WIT: on γ–φ-IG, a lifted split's dormant liquid side is not differenced and is listed in
+**R-982 — WIT: on γ–φ-IG, a lifted split's dormant liquid side is not differenced and is listed in
 `derivative_witness_partial` (R-281's record).**
 - *Decision.* As D3.
 - *Rejected.* An entry-level exclusion; keeping such states `unsupported`.
