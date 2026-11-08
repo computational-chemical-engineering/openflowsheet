@@ -155,6 +155,10 @@ listed as `verdict_changed_near_threshold`, not as a mismatch.
 - **Boundary optima at a thermal port.** A candidate whose thermal port (declared liquid or
   vapour) sits at its saturation row with a rank-limited certificate fails V1: the
   phase-boundary form covers a guarded LIQUID/VAPOR split's phase row only.
+- **Dormant splits.** A revision with a split held `ZERO_FLOW` (a dormant branch) is `NOT_VERIFIED`
+  at every candidate today: V4 counts the dormant split, which has no margin, as inside its
+  regime's tolerance, although its exact-dormancy check (the attempt signature) holds. This fails
+  safe; a fix is queued.
 - **Absolute flow thresholds.** A phase row counts as active when |a/N0| ≤ 1e-6 and a two-phase
   split's margin is min(V, L)/N0 ≥ 1e-4, with N0 = 3 mol/s. Both are absolute in flow: on a
   laboratory-scale flowsheet (total flows far below N0) a row can be labelled active at a larger
