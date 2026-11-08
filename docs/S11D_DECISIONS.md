@@ -215,6 +215,9 @@ file list (§5.3); a failure carries no value, so no number is mislabelled, but 
   (`witness_stencil_invalid_trial_state(S4.vap.CH3OH)`), UNVERIFIED. Pinned as a fact by
   `test_oq5_a_liquid_only_lifted_heater_outlet_leaves_the_witness_unsupported`; not widened. Default if the design lane
   does not rule: leave it UNVERIFIED (typed), as OQ-5's text says.
+  *Ruled by ADR 0073 (K04 amendment WIT, A1; Proposed):* the dormant vapour side is differenced forward, GP-C3 at
+  345 K is VERIFIED; the pinning test is replaced by `test_wit_a10_a_liquid_only_lifted_heater_outlet_is_verified`
+  (WIT move M-1).
 - **GP-M1 / GP-M2 (A80, A81) blocked — no WO owns the Wilson machines' evaluate.** `thermal.compressor`/`turbine`
   on `wilson-ig-v2` are refused at construction (`specification_unsupported(<U>.provider)`, C3-4: "D4/D5 wire it");
   §4.4's Wilson path (inlet face by `tp_state.single_phase_enthalpy`, the vapour h-inversion, `stability()` on the

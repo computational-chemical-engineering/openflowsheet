@@ -1,0 +1,31 @@
+{
+ "section": "defaults",
+ "pkg": "W1",
+ "pkgTitle": "Foundation designs for 0.5–0.7 (not urgent)",
+ "kind": "choice",
+ "title": "O-11: how an equation-of-state phase is labelled vapour-like or liquid-like",
+ "body": [
+  "When a unit (a flash, for example) has a single dense or supercritical phase, this label decides whether that phase leaves by the top (vapour) or the bottom (liquid) outlet, so it can change results."
+ ],
+ "defaultKey": "default",
+ "options": [
+  {
+   "key": "default",
+   "label": "Venkatarathnam and Oellrich's phase identification parameter",
+   "detail": ""
+  },
+  {
+   "key": "alt1",
+   "label": "Another rule",
+   "detail": ""
+  },
+  {
+   "key": "other",
+   "label": "Something else",
+   "detail": "Say what in the note."
+  }
+ ],
+ "links": [],
+ "status": "open",
+ "order": 38
+}

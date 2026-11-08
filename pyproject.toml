@@ -26,14 +26,6 @@ dependencies = [
     # LGPL-3.0-or-later and is used through its Python API only; see the third-party notice in
     # README.md (ADR 0006 D5.1).
     "casadi==3.8.0",
-    # ADR 0069 D3.2 (X05; Frank's Q-F1): the four transitive members of the runtime closure, pinned
-    # exactly at requirements.lock's versions, so that a plain `pip install openflowsheet` installs
-    # the closure at the lock and its `environment()` verifies (X05.A25). A lock regeneration that
-    # moves one of the nine moves this list and `run/lock.py`'s `RUNTIME_CLOSURE` with it.
-    "attrs==26.1.0",
-    "jsonschema-specifications==2025.9.1",
-    "referencing==0.37.0",
-    "rpds-py==2026.6.3",
 ]
 
 # PyPI's sidebar (V03-post1): every link absolute, as README.md's (tests/test_readme_current.py).
@@ -131,6 +123,8 @@ openflowsheet = [
 # M02 design note §3.1, §2.4: the registered variants and their registry (append-only package
 # data), and the reactor environment's hash-pinned lock.
 "openflowsheet.adapters" = ["variants/*.json", "pymrm/reactor-env.lock"]
+# MSG design note §3.2: the message catalogue's data files and its released-code list.
+"openflowsheet.messages" = ["catalogue/*.yaml", "catalogue/*.txt"]
 
 [tool.ruff]
 line-length = 100

@@ -384,7 +384,8 @@ def test_a12_the_retrieval_script_reproduces_its_record_or_says_why_not() -> Non
 #: SHA-256 at b843941 (the L01 base) of the C1 files §4.4 lists as unchanged. `coverage.json` is
 #: not pinned: R-460 rewrites it at every version bump, so L01 asserts only its own absence from
 #: it (L01 spec §13.2 (b), R-566; a package byte-pins only files that no registered procedure
-#: rewrites, R-567).
+#: rewrites, R-567). `PINNED` is the L01 base and is never re-pinned; a file moved by another
+#: package's ruling is listed in `MOVED` (L01 spec §15, R-983).
 PINNED = {
     "benchmarks/m01/components.yaml": (
         "6f154f7fbc3f4bef9fe3cb2048983cc19ad13c6b43f40d29fa944e9b719f05b9"
@@ -443,6 +444,43 @@ PINNED = {
 }
 
 
+#: Registered moves of `PINNED` files by packages other than L01 (L01 spec §15, R-983): path ->
+#: (its SHA-256 after the move, the register id of the ruling that moved it). L01 spec §15.3 (g)
+#: checks each entry against the register.
+MOVED = {
+    "src/openflowsheet/models/c1/flash.py": (
+        "b1b47c287086b759b17a2c9fd024988e9aca8ec09514d01df3e0334bf9932e6a",
+        "R-983",  # WIT M-6 part b: c1.tp_flash's near-dew sentence (Frank, Q-WIT-2, 2026-11-08)
+    ),
+}
+
+REGISTER = REPO_ROOT / "docs" / "decision-register.md"
+
+
+def a22_expected() -> dict[str, str]:
+    """L01 spec §15.3 (a): each pinned file's base value, or its registered move's value."""
+    return {p: MOVED[p][0] if p in MOVED else sha for p, sha in PINNED.items()}
+
+
+def a22_move_problems(moved: dict[str, tuple[str, str]], register: str) -> list[str]:
+    """L01 spec §15.3 (g) (R-983): the four checks that a move is a registered ruling."""
+    problems = []
+    for path, (sha, rid) in sorted(moved.items()):
+        if path not in PINNED:
+            problems.append(f"{path}: not a pinned file")
+        elif sha == PINNED[path]:
+            problems.append(f"{path}: the move does not move it")
+        heading = f"\n## {rid} "
+        if register.count(heading) != 1:
+            problems.append(f"{path}: {rid} is not exactly one register heading")
+            continue
+        start = register.index(heading)
+        end = register.find("\n## ", start + 1)
+        if sha not in register[start : end if end >= 0 else None]:
+            problems.append(f"{path}: {rid} does not state the moved SHA-256")
+    return problems
+
+
 def _sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
@@ -452,11 +490,35 @@ def test_a22_the_c1_files_are_byte_identical_to_the_l01_base() -> None:
     assert len(PINNED) == 18  # L01 spec §13.2 (a) (R-566)
     listed = {p for p in PINNED if p.startswith("src/openflowsheet/models/c1/")}
     assert {p.relative_to(REPO_ROOT).as_posix() for p in models} == listed
-    assert {p: _sha256(REPO_ROOT / p) for p in PINNED} == PINNED
+    expected = a22_expected()
+    assert {p: _sha256(REPO_ROOT / p) for p in PINNED} == expected
     assert (
         hashlib.sha256(packaged(pr_c1.RECORDS_PATH).read_bytes()).hexdigest()
-        == PINNED["benchmarks/m01/components.yaml"]
+        == expected["benchmarks/m01/components.yaml"]
     )
+
+
+def test_a22_every_move_is_a_registered_ruling() -> None:
+    # L01 spec §15.3 (g) (R-983), with its controls G-0…G-5 on a synthetic register.
+    assert a22_move_problems(MOVED, REGISTER.read_text(encoding="utf-8")) == []
+    p, q = "src/openflowsheet/models/c1/flash.py", "src/openflowsheet/models/c1/column.py"
+    s, b = MOVED[p][0], PINNED[p]
+    text = (
+        "# Decision register\n\n## R-2 — no move\n\nNothing.\n\n## R-1 — a move\n\n"
+        f"`{p}` moves from `{b}` to `{s}`.\n"
+    )
+    assert a22_move_problems({p: (s, "R-1")}, text) == []
+    assert a22_move_problems({p: (s, "R-3")}, text) == [
+        f"{p}: R-3 is not exactly one register heading"
+    ]
+    assert a22_move_problems({p: (s, "R-2")}, text) == [
+        f"{p}: R-2 does not state the moved SHA-256"
+    ]
+    assert a22_move_problems({p: (b, "R-1")}, text) == [f"{p}: the move does not move it"]
+    assert a22_move_problems({q: (s, "R-1")}, text) == [f"{q}: not a pinned file"]
+    assert a22_move_problems({p: (s, "R-1")}, text + "\n## R-1 — again\n") == [
+        f"{p}: R-1 is not exactly one register heading"
+    ]
 
 
 COVERAGE = REPO_ROOT / "benchmarks" / "m06" / "openidaes450" / "coverage.json"
@@ -503,8 +565,9 @@ def test_a22_the_live_build_does_not_select_pr_lib_v1() -> None:
 
 def test_a22_pr_c1_describes_the_same_identity() -> None:
     capabilities = pr_c1.PrC1Provider().describe()
-    assert capabilities.data_sha256 == PINNED["benchmarks/m01/components.yaml"]
-    assert capabilities.implementation_sha256 == PINNED["src/openflowsheet/thermo/pr_c1.py"]
+    expected = a22_expected()
+    assert capabilities.data_sha256 == expected["benchmarks/m01/components.yaml"]
+    assert capabilities.implementation_sha256 == expected["src/openflowsheet/thermo/pr_c1.py"]
     assert capabilities.components == ("H2", "N2", "NH3", "Ar", "CH4")
 
 

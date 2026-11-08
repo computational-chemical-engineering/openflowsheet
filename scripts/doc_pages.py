@@ -1,12 +1,15 @@
 """DOC (S14): write the documentation site's generated pages from the code.
 
-Two pages are generated, never edited. `docs-site/guide/units.md`: every model the revision binder
+These pages are generated, never edited. `docs-site/guide/units.md`: every model the revision binder
 admits (`MODEL_BUILDERS`), with the property bases it binds on (`MODEL_BASES`) and what its
 signature declares — ports, required parameters, pins and one-of specifications — as the
 application's own `list_models` publishes it (`MODEL_SIGNATURES`). A model added to, or removed
 from, the registry therefore changes the page, and `--check` (run by
 `tests/test_doc_pages.py`) fails until it is regenerated. `docs-site/api/operations.md`: the
 operations table (`OPERATIONS`), each operation with its right, transports, HTTP route and MCP tool.
+`docs-site/messages/<family>.md` (MSG §3.5, §4.12): one page per message family, one section per
+catalogue code, opened by an explicit `<a id="<code>"></a>` anchor — the target of every
+explanation's `docs` URL — showing what `explain` returns (`messages.render.entry_document`).
 
     python scripts/doc_pages.py           # write the pages
     python scripts/doc_pages.py --check   # exit 1 if a page differs
@@ -23,10 +26,19 @@ from typing import Any
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.operations import OPERATIONS
 from openflowsheet.application.revision_binding import MODEL_BASES, MODEL_BUILDERS
+from openflowsheet.messages.catalogue import CATALOGUE, FAMILY_PAGES
+from openflowsheet.messages.render import entry_document
+from openflowsheet.messages.text import STUB_NOTE, format_text
 
 SITE = Path(__file__).resolve().parents[1] / "docs-site"
 PAGE = SITE / "guide" / "units.md"
 OPERATIONS_PAGE = SITE / "api" / "operations.md"
+MESSAGES = SITE / "messages"
+#: The repository's support matrix, which a limitation's row is in (`guide/limitations.md`'s link).
+SUPPORT_MATRIX = (
+    "https://github.com/computational-chemical-engineering/openflowsheet/blob/main/"
+    "docs/support-matrix.md"
+)
 
 #: Provider id -> how the page names the basis (the user guide's property-basis page).
 BASES: Mapping[str, str] = {
@@ -160,11 +172,155 @@ def render_operations() -> str:
     return OPERATIONS_HEADER + "".join(rows) + OPERATIONS_FOOTER
 
 
+# -- the message pages (MSG §3.5, §4.12) ---------------------------------------------------------
+
+#: Family -> (page title, what its codes are), in `FAMILY_PAGES` order.
+FAMILY_TEXT: Mapping[str, tuple[str, str]] = {
+    "api_error": (
+        "API errors",
+        "The error codes every transport returns as `ApiError.code`. A refusal names one of "
+        "them first; its explanation goes on to the more specific code inside it.",
+    ),
+    "refusal": (
+        "Refusals",
+        "The specific reasons a request, a revision, a solve or a project is refused, named "
+        "inside an API error, a validation check or a failed run.",
+    ),
+    "outcome": (
+        "Run outcomes",
+        "How a solve ended (`RunResult.outcome`). Anything but `CONVERGED` comes with a failure "
+        "bundle, and `RunResult.failure` explains it.",
+    ),
+    "check": (
+        "Validation checks",
+        "The checks of a validation report (`checks[].id`), each `PASS`, `FAIL`, `WARN` or "
+        "`NOT_RUN`.",
+    ),
+    "status": (
+        "Statuses",
+        "The words of a validation report's status and of a run's certificate.",
+    ),
+    "limitation": (
+        "Limitations",
+        "One section per row of the support matrix's limitations: what this version does not "
+        "do, or does only under conditions. A not-supported explanation names its limitation.",
+    ),
+    "notice": (
+        "Notices",
+        "Messages that report something worth knowing but are not failures.",
+    ),
+    "job": (
+        "Jobs",
+        "Why a job ended the way it did (`Job.status`, its end reason).",
+    ),
+}
+STUB_LINE = f"*{STUB_NOTE}*"
+
+
+def _escaped(text: str) -> str:
+    """Catalogue text as Markdown prose: a `<param>` display and `&` stay literal outside code
+    spans (inside one, Markdown keeps them as they are)."""
+    parts = text.split("`")
+    if len(parts) % 2 == 0:  # an unpaired backtick: no code span
+        parts = [text]
+    return "`".join(
+        part if index % 2 else part.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+        for index, part in enumerate(parts)
+    )
+
+
+def _link(code: str, here: str) -> str:
+    """A code as a link to its section (another family's page, or this one's anchor)."""
+    entry = CATALOGUE.entry(code)
+    if entry is None:
+        return f"`{code}`"
+    page = FAMILY_PAGES[entry.family]
+    return f"[`{code}`]({'' if page == here else page + '.md'}#{code})"
+
+
+def _section(code: str, here: str) -> str:
+    document = entry_document(code)
+    assert document is not None, code
+    lines = [
+        f'<a id="{code}"></a>',
+        "",
+        f"## `{code}`: {_escaped(document['title'])}",
+        "",
+        f"**Kind:** {CATALOGUE.kind(document['kind']).label}",
+        "",
+    ]
+    if document["deprecated"]:
+        replaced = document["replaced_by"]
+        lines += [
+            f"**Deprecated**{'; replaced by ' + _link(replaced, here) if replaced else ''}.",
+            "",
+        ]
+    if not document["complete"]:
+        lines += [STUB_LINE, ""]
+    fields = (
+        ("Summary", "summary"),
+        ("Context", "context"),
+        ("Where", "where"),
+        ("Why", "why"),
+        ("Do", "action"),
+    )
+    lines += [
+        f"- **{label}:** {_escaped(document[name])}"
+        for label, name in fields
+        if document[name] is not None
+    ]
+    if document["params"]:
+        params = ", ".join(
+            f"`{p['name']}` ({p['type']}{', optional' if p['optional'] else ''})"
+            for p in document["params"]
+        )
+        lines.append(f"- **Parameters:** {params}")
+    gap = document["gap"]
+    if gap is not None:
+        parts = []
+        if gap["limitation"]:
+            parts.append(
+                f"limitation {_link(gap['limitation'], here)} "
+                f"(its row in the [support matrix]({SUPPORT_MATRIX}))"
+            )
+        if gap["capability"]:
+            parts.append(f"missing capability: {_escaped(gap['capability'])}")
+        lines.append(f"- **Not supported:** {'; '.join(parts)}")
+    if document["see_also"]:
+        lines.append(
+            f"- **See also:** {', '.join(_link(other, here) for other in document['see_also'])}"
+        )
+    for example in document["examples"]:
+        lines += ["", "Example:", "", "```text", format_text(example, None), "```"]
+    return "\n".join(lines) + "\n"
+
+
+def render_messages(family: str) -> str:
+    """The page of `family`: its codes in key order, one anchored section each."""
+    title, what = FAMILY_TEXT[family]
+    here = FAMILY_PAGES[family]
+    codes = [entry.code for entry in CATALOGUE.entries() if entry.family == family]
+    head = (
+        f"{MARKER}\n\n# {title}\n\n{what} How to read an explanation, and how to ask for "
+        "one (`openflowsheet explain <code>`, the `explain` operation), is on "
+        "[Messages](index.md).\n"
+    )
+    if not codes:
+        return head + "\nNo code is in this family yet.\n"
+    return head + "".join("\n" + _section(code, here) for code in codes)
+
+
+def message_pages() -> dict[Path, str]:
+    return {
+        MESSAGES / f"{page}.md": render_messages(family) for family, page in FAMILY_PAGES.items()
+    }
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--check", action="store_true", help="exit 1 if a page differs")
     arguments = parser.parse_args(argv)
-    pages = {PAGE: render(), OPERATIONS_PAGE: render_operations()}
+    pages = {PAGE: render(), OPERATIONS_PAGE: render_operations(), **message_pages()}
     if arguments.check:
         stale = [
             path

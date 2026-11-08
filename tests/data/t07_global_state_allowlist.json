@@ -184,6 +184,13 @@
       "justification": "S04 (L01 WO-2, ADR 0043): the same three nullary functions of immutable inputs as pr_c1.py, each computed once per process: load_records (the pr-lib-v1 records' bytes, parsed and checked), parameters (the Peng-Robinson parameters, a pure function of those records) and _implementation_sha256 (the module source's SHA-256, the W0.5 pattern)."
     },
     {
+      "file": "adapters/experiments/backends.py",
+      "line": "@functools.cache",
+      "patterns": ["cache"],
+      "occurrences": 1,
+      "justification": "X02 (ADR 0070 D10, design note \u00a75.5 'memoising the packaged scripts' hashes'): `_packaged_child_sha256`, the SHA-256 of a packaged child script by name (or None when absent), a pure function of package files that are immutable for the process's life; at most one entry per packaged child script (today `child.py` alone, X02 review ruling 1)."
+    },
+    {
       "file": "thermo/iapws95.py",
       "line": "@lru_cache(maxsize=_SATURATION_CACHE_SIZE)",
       "patterns": ["cache"],
@@ -210,6 +217,27 @@
       "patterns": ["cache"],
       "occurrences": 1,
       "justification": "M01 WO-6: nullary _artifact_hash, the module source's SHA-256, immutable for the process's life (the W0.5 pattern of every model module)."
+    },
+    {
+      "file": "messages/audit.py",
+      "line": "global auditor  # noqa: PLW0603",
+      "patterns": ["global"],
+      "occurrences": 2,
+      "justification": "MSG design note §4.2.8 (MSG-G3): the runtime audit switch, set only by tests/conftest.py's pytest_configure and by tests that save and restore it; production never sets it. It records unknown codes and rendering defects and changes no result."
+    },
+    {
+      "file": "messages/template.py",
+      "line": "@lru_cache(maxsize=4096)",
+      "patterns": ["cache"],
+      "occurrences": 1,
+      "justification": "MSG design note §4.2.4: parsed message templates, a pure function of the template string (immutable node tuples); nothing in it depends on a job or a project."
+    },
+    {
+      "file": "application/operations.py",
+      "line": "@cache",
+      "patterns": ["cache"],
+      "occurrences": 1,
+      "justification": "MSG design note §4.7 (WO-3): error_locations, where each operation's response schema references api-error.schema.json; a pure function of OPERATIONS and the published schemas, both immutable for the process's life (an immutable tuple of tuples); it holds no job or request state."
     }
   ]
 }

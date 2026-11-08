@@ -731,6 +731,25 @@
     "body": {
      "code": "forbidden",
      "detail": {
+      "explanation": {
+       "action": "Correct the element named above; `openflowsheet explain <code>` states the rule.",
+       "cause": null,
+       "chain": [
+        "forbidden"
+       ],
+       "code": "forbidden",
+       "complete": false,
+       "docs": "https://computational-chemical-engineering.github.io/openflowsheet/messages/api-errors/#forbidden",
+       "elements": [],
+       "family": "api_error",
+       "gap": null,
+       "hint": null,
+       "kind": "input",
+       "numbers": [],
+       "summary": "The request was refused: forbidden.",
+       "where": null,
+       "why": null
+      },
       "required": [
        "read",
        "policy"
@@ -745,6 +764,25 @@
     "body": {
      "code": "forbidden",
      "detail": {
+      "explanation": {
+       "action": "Correct the element named above; `openflowsheet explain <code>` states the rule.",
+       "cause": null,
+       "chain": [
+        "forbidden"
+       ],
+       "code": "forbidden",
+       "complete": false,
+       "docs": "https://computational-chemical-engineering.github.io/openflowsheet/messages/api-errors/#forbidden",
+       "elements": [],
+       "family": "api_error",
+       "gap": null,
+       "hint": null,
+       "kind": "input",
+       "numbers": [],
+       "summary": "The request was refused: forbidden.",
+       "where": null,
+       "why": null
+      },
       "required": [
        "execute"
       ]
@@ -2236,6 +2274,7 @@
     "run_result": {
      "check_policy_sha256": "21c44e105a1b78428047258af3030b8502957aab5d27f0389c2f143bcb3cf390",
      "error": null,
+     "failure": null,
      "job_id": "job-000001",
      "job_status": "completed",
      "outcome": "CONVERGED",
@@ -2282,6 +2321,7 @@
     "run_result": {
      "check_policy_sha256": "21c44e105a1b78428047258af3030b8502957aab5d27f0389c2f143bcb3cf390",
      "error": null,
+     "failure": null,
      "job_id": "job-000002",
      "job_status": "completed",
      "outcome": "CONVERGED",
@@ -2328,6 +2368,46 @@
     "run_result": {
      "check_policy_sha256": "21c44e105a1b78428047258af3030b8502957aab5d27f0389c2f143bcb3cf390",
      "error": null,
+     "failure": {
+      "chain": [
+       "HOMOTOPY_STALLED",
+       "homotopy_stalled"
+      ],
+      "code": "homotopy_stalled",
+      "explanation": {
+       "action": "Try another initial guess or solve policy; if the failure persists, report it with the failure bundle.",
+       "cause": "Refused: homotopy stalled.",
+       "chain": [
+        "HOMOTOPY_STALLED",
+        "homotopy_stalled"
+       ],
+       "code": "homotopy_stalled",
+       "complete": false,
+       "docs": "https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#homotopy_stalled",
+       "elements": [],
+       "family": "refusal",
+       "gap": null,
+       "hint": null,
+       "kind": "numerical",
+       "numbers": [],
+       "summary": "The solve ended HOMOTOPY_STALLED (homotopy/PTC/active-set stalls).",
+       "where": null,
+       "why": null
+      },
+      "failure_bundle": "job-000003:bundle/failure-bundle.json",
+      "implicated": [],
+      "message": "homotopy_stalled(PHASE_UPDATE_REQUIRED)",
+      "outcome": "HOMOTOPY_STALLED",
+      "params": {
+       "bundle": "job-000003:bundle",
+       "job": "job-000003",
+       "revision": "rev-000004"
+      },
+      "suggested_actions": [
+       "supply_initial_guess"
+      ],
+      "taxonomy": "homotopy/PTC/active-set stalls"
+     },
      "job_id": "job-000003",
      "job_status": "completed",
      "outcome": "HOMOTOPY_STALLED",

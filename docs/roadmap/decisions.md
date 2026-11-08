@@ -450,3 +450,301 @@ the dependency), M3 (six fixture `solve-policy.json` registered as archived outp
 M5 (`without_opt` strip for M02's solve snapshot), M6 (M03 message byte-identical without the extra on aarch64).
 S1–S5. D-61: both descriptions pass the design-lane review; Frank's human review open. CI run 42431066903 (at
 `de18aca2`) failed 7/7/10 on x86/default-install/aarch64, all covered by M1–M6 or D-61.
+
+## 2026-11-08 — OPT WO-8 fix round done (`wp/OPT` `496e003a`); full gate + CI running
+
+M1 (replay floors per judging check), M2 (`RevisionRoutes` protocol in `studies/nlp/host.py`, supplied by
+`application/revision_routes.py`; no application import under `studies/`), M3–M6, S2–S5 done; S1 declared for 0.4
+(D-84); D-61 design-lane reviews recorded (human pending). F0 PASS; G2 identical (default `6e028e8d…`, audited
+`b6bbafdb…`); audited G7–G10/G12/G13/G19/G20 21 passed; G22 all three verify. Incident: a nested sub-agent outlived its
+parent engineer; I committed its edits as WIP while it was still working; no work lost (memory note added).
+DECISION: RRC WO-3 (executor integration) starts now on `wp/RRC` from main instead of waiting for OPT's merge (OPT now
+waits on Frank: description reviews + ADR 0071); whichever merges second resolves the executor conflict (OPT adds
+`RegionResult.final_system`). Alternative: wait. Reversible by: rebasing `wp/RRC` onto `wp/OPT`.
+
+## 2026-11-08 — RRC WO-3/4/5 done (`wp/RRC` `dc205d90`); OPT gate FAIL at `496e003a`
+
+RRC: WO-3 executor integration (G2/G3/G6 pass; F1 4.4e-13, F2 2.0e-14 scaled); WO-4 application (ancestor lookup,
+`solve-path.json` member, replay from the bundle alone: 4 bundles MATCH; `RRC-revision-v1` offered — served
+`solve_policies` digest `74e41d71…` → `94c6ae7c…`, MCP tool list unchanged); WO-5 pre-registered candidate table
+committed before any run (`cba5e8e2`): 10 candidates × 3 policies all reported; G4 N1 (NET-02) BOUND_BLOCKED → VERIFIED,
+1.96e-9 scaled from the restart's root; G5 C3 (M1-recycle) BOUND_BLOCKED → VERIFIED → **L-COL-9 narrowed**, L21
+narrowed. F0 PASS throughout. For the reviewer: D-11 (which edits are continuable, by parameter family), D-5, D-10.
+OPT full gate at `496e003a`: FAIL — 2 failed / 15335 passed (D-61 human reviews, expected; T07 global-state allowlist
+hit `@cache` in `studies/nlp/request.py` from M2) + mypy 3 errors in `benchmarks/opt/` → WO-8c fix running.
+
+## 2026-11-08 — RRC review (`ed522d7c`) → fix round WO-7
+
+Mechanism sound; no code must-fix; nothing changes under the four existing policies. M1 (FQ1 wording: enums widen, no
+member added) → corrected in `docs/FRANK_QUESTIONS.md` now. M2: not a superset of `T06-revision-v2` — all five
+qualifying candidates also converge under T06-revision-v2's restart, in fewer iterations; a stalled continuation can
+fail where T06 succeeds → declare in guide, L21, E3c. S1 amend G2(f)/§5.8 (opening hash covers free columns only); S2
+D-11 partition test; S3 guide wording; S4 renumbering includes the MR-7 test (at acceptance).
+DECISION: N1 (a specification that pins an instance parameter `parameters.<key>` is always refused) → extend §5.4 with
+D-11's family rule as the reviewer recommends, in the fix round. Alternative: keep refusing (fails safe). Reversible
+by: reverting that commit.
+DECISION: N2 → FQ3 re-asked with the measurements; default unchanged (one recovery per step, opt-in). Merge order:
+OPT first, RRC rebases and runs its one full gate there.
+
+## 2026-11-08 — RRC WO-7 done (`wp/RRC` `fe572ad5`)
+
+Review fixes M2 (not-a-superset declared: guide, L21, E3c), S1 (G2(f)/§5.8 hash over free columns), S2 (22 + 7 = 29
+family partition test), S3, N1 (`parameters.<key>` judged by the family rule), E3c row, interfaces-frozen, CHANGELOG,
+D-5/D-6/D-10 note amendments. F0 PASS; RRC tests 71 passed; mypy/ruff clean; support matrix 0 problems. Waiting: OPT
+merge (then rebase + full gate + CI), Frank FQ1 and ADR 0072 (then R-RRC renumbering and ADR D5 wording).
+
+## 2026-11-08 — WIT specification (`5b9eb0f6`, K04 spec §4.8.1–9, ADR 0073 Proposed)
+
+Rule per column: small positive flows whose registered central difference fails → re-differenced at halved steps with
+a fourth-order stencil (k ≤ 8), resolved when successive estimates agree within 1e-8, never reading the AD Jacobian;
+Wilson dormant vapour side → R-831's forward set; Wilson dormant liquid side → not differenced, declared (as R-281).
+No certificate that passes today moves (57 F0 certificates; ADV-06 and GP-C3 354 K values unchanged by prototype);
+intended moves only for today's failures (L-X10-1 surrogate → VERIFIED; OPT D-42 GP-C3 held splits verify).
+Assertions WIT.A01–A14. Frank Q-WIT-1 (default yes).
+DECISION: build WIT now on `wp/WIT`, evidence filed under `evidence/K04/` (a K04 follow-up, as the M02 follow-up was
+filed under M02; ADR 0059 D1 has no WIT id). Alternative: amend ADR 0059 D1 for a WIT id. Reversible by: moving the
+manifest directory. A reviewer pass follows (it touches certificates).
+
+## 2026-11-08 — OPT full gate at `7b7aa770`: 1 failed / 15336 passed
+
+The single failure is `test_every_description_is_reviewed_by_both_lanes` (only Frank's two human reviews pending,
+D-61); mypy and ruff clean. OPT is otherwise ready: after Frank's review of `validate.md`/`submit_job.md` (recorded in
+`REVIEW.json`) and his acceptance of ADR 0071, re-run CI, re-take the manifest as `tested` at that head, merge (no
+squash), F0 on main; then RRC rebases. Merge-time items: surface link c_4 vs X02/MSG (whoever merges later renumbers),
+global-state cache count (OPT and X02 each move 35 → 36: the combined count is 37), HARVEST_SIZE, R-960 provisional.
+
+## 2026-11-08 — WIT built (`wp/WIT` `c32e3e4b`), review `1476a017` → fix round
+
+Build: WIT.A01–A14 pass; surrogate VERIFIED; GP-C3 held splits verify; F0 PASS; passing certificates bitwise.
+Review: must-fix F-1 (a round-off plateau — all four stencil values bitwise equal at two levels — lets the escalation
+"agree" on ≈ 0 and pass a dropped AD term; reproduced on test doubles) → §4.8.3 (c) sentence + WIT.A15. F-2 (skip
+ZERO_FLOW splits in classes 2/4), F-3 (two untested paths), F-4 (flash-style dormant-vapour split unmeasured).
+E-1 ruled honest → M-6 part a (test, docstrings, §4.8.6, R-282 note) now; part b (the `c1.tp_flash` manifest
+sentence moves its artifact hash and F0 M9 entry) → Frank Q-WIT-2.
+DECISION: D-1 → amend ADR 0073 D5 to give Wilson's dormant-liquid columns their own reason (not
+`pr_c1_zero_flow_columns`), while no registered certificate carries one. Alternative: reuse the pr-c1 reason literally.
+Reversible by: reverting that commit.
+
+## 2026-11-08 — WIT fix round done (`wp/WIT` `dbf884ad`); full gate + CI running
+
+F-1 fixed (flat level cannot resolve a column whose coarser stencil was not flat; WIT.A15 7/9 fail before, 9/9 pass
+after); no verdict changed on re-measure (A08, A09, E-1 window). F-2, F-3, F-4 (flash-style dormant vapour holds,
+GP-C1 tp_flash 335/340 K VERIFIED), D-1 (`wilson_dormant_liquid_columns`), M-6 part a. F0 PASS; 31 + 3315 tests.
+DECISION: WIT merges after its full gate, CI on both legs and a `tested` manifest under `evidence/K04/`, with ADR 0073
+Proposed and Q-WIT-1 on its default (as X05 merged on a Proposed ADR); M-6 part b waits for Frank (Q-WIT-2).
+Alternative: hold for Frank's acceptance of ADR 0073. Reversible by: revert the merge.
+
+## 2026-11-08 — WIT manifest id
+
+DECISION: under which id does WIT's evidence manifest file? → `X10a` (`evidence/X10a/dbf884ad…/manifest.json`).
+`K04` (my brief) breaks the v0.1.0 pins (A01.K04.one_manifest, A21 harvest count, the CHANGELOG v0.1.0 review table,
+which globs `[PKT]*`); `K04a` falls into the same glob; `WIT` is not admitted by the frozen manifest id pattern (ADR
+0059 D1) and would need an ADR. WIT is the follow-up that closes X10's L-X10-1, and `X[0-9]{2}[a-z]?` admits `X10a`
+with no schema change. Alternative: an ADR 0059 amendment admitting `WIT`. Reversible by: moving the directory and
+the harvest `manifest:` paths, re-emitting the support matrix.
+
+## 2026-11-08 — WIT merged
+
+`wp/WIT` merged into main `f92af170` (no squash; manifest `evidence/X10a/dbf884ad…` tested, `d0dbd128`). Gate PASS
+15194 at `dbf884ad`; CI 42459637834 green on both legs; on main after merge: F0 PASS M1–M9, support matrix `--check`
+0 problems, harvest/changelog/manifest tests 471 passed. Worktree removed. OPT's merge must now update M-4 (D-42/D-82).
+
+## 2026-11-08 — ST WO-3…6 on top of wp/MSG
+
+DECISION: with every other 0.4 package waiting for Frank, does ST wait for MSG to reach main? → no: ST WO-3…6 build on
+`wp/MSG` merged into `wp/ST` (brief `docs/briefs/ST-build-WO3-6.md`). MSG is reviewed and complete; only Frank's human
+review of the `explain.md` text is pending, which does not touch the registry/catalogue machinery ST needs.
+Alternative: wait idle. Reversible by: `wp/ST` re-merges main after MSG lands; if Frank's review changes MSG beyond the
+text, re-merge `wp/MSG` and re-run ST's targeted tests. WO-7 (manifest, gate, review) waits for MSG on main.
+
+## 2026-11-08 — ADR 0074 (release package id) written; applied as S15a
+
+ADR 0074 (`930f912d`, Proposed): id `REL` + per-component code (digit below 10; k-digit number = k-th lower-case
+letter + digits): 0.4.0 → `REL040` unchanged, 1.10.0 → `REL1b100`, 11.0.0 → `RELb1100` (N-4 settled). Accepted on its
+build-lane condition like ADR 0059 (no Frank decision). Findings recorded, none acted on now: O-3 (nothing ties a line
+file's `evidence_package` to its line → RP amendment RP.L11 before the 0.5 line file), O-4 (ADR 0055 D1 item 5 pointer
+at K-2), O-5 (trailing-newline `$`, no change).
+DECISION: where does ADR 0074 get applied? → package `S15a` (RP's K-1 follow-up), branch `wp/S15a`, full gate + CI +
+manifest before merge. Alternative: fold into `wp/REL040` at the cut. Reversible by: rename the evidence dir.
+DECISION: register id for ADR 0074 → R-970 (R-950…R-969 held provisionally by X02/OPT; RRC drafts unnumbered).
+Alternative: next sequential R-950 and renumber the open branches. Reversible by: renumbering at merge.
+
+## 2026-11-08 — S15a built (ADR 0074 applied)
+
+`wp/S15a` `51c9e7f5` (schema + RID tests alone: 2 files) and `d7cb4dbb` (A-9 as RP §17.2, R-970, ADR 0074 Accepted on
+its condition). RID.A01–A12 pass; `test_evidence_manifests.py` 488 (410 + 78); 11 related files 600 passed; F0 PASS
+(the schema does not enter F0). Full gate and CI started at `d7cb4dbb`; manifest `evidence/S15a/…` after them.
+
+## 2026-11-08 — ST WO-3…6 done; reviewer pass
+
+`wp/ST` `6f55fc19` (main + `wp/MSG` merged + WO-3…6; D3-1…D6-3 in `docs/ST_DECISIONS.md`): G5, G11–G13, G15, A48
+PASS; F0 PASS; served MCP digest `eaff4585…` → `6705fb05…` (c_5 on top of MSG's c_4); targeted 569 passed + G8 xfail
+(E1). Known red: description reviews. ST's single reviewer pass starts now (brief `docs/briefs/ST-reviewer.md`); WO-7
+(manifest, full gate, CI) after the review and after MSG lands on main. New Frank item: `get_stream_table.md` review.
+
+## 2026-11-08 — ST review → fix round
+
+Review `fb6a81f7`: not merge-ready. M1: E1 is a defect in ST's phase rule (R3 TP-flashes temperature-degenerate
+lifted splits: vf 0 and H flow 2016 W low on T05b:SC-1, SC-3 likewise at units), ruling (b) scoped → rule R1′ (carried
+lifted split, as the verifier reads it), G8 unchanged; amends ADR 0068 / design D4 (recorded before Frank accepts).
+S1 per-unit G8; S2 no-bundle `not_found` variant; S3 description approved after 3 edits (design-lane act in
+REVIEW.json, digest re-recorded); S4 route from `solve-path.json`. MSG-merge notes: MSG lands as a merge commit; c_4
+contention with X02 → ST becomes c_6, re-measure G12 at merge; drop ST's duplicate R-942/R-943. Fix round brief
+`docs/briefs/ST-fix-round.md`.
+
+## 2026-11-08 — ST fix round done (`wp/ST` `e16f7e6f`)
+
+M1 R1′ (`e2079456`): SC-1 envelope 2016.0 → 0.0 W, U-VLV 2016.0 → 0.0; SC-3 U-VLV/U-PHF ±2016 → 0; S2 H flow equals the
+verifier's bitwise; only SC-1/SC-3 of 44 served 0.3.0 documents change; G8 passes (xfail removed, max 1.76e-4). S1
+per-unit check (146 rows; corpus judged at the projection, max 2.703 of tol → direct SC-1/SC-3 unit test added);
+A02-360's 2.73e-3 W is the projection (ST Ḣ = `checks.enthalpy_flow` bitwise). S2, S3 (served `ebb4ca84…`; design-lane
+approval recorded in REVIEW.json), S4 (44 documents byte-identical), text amendments, D4-1. F0 PASS; 457 targeted.
+Open for a design-lane confirmation at WO-7 (none reached by any corpus case): M1-1, M1-2 (mixture h → n·h as
+`_phase_flow`), M1-3 (Q4.R12 (b)(ii) dropped), S1-1, and the products-style flash feed with a degeneracy row. ST's
+WO-7 (manifest, full gate, CI) waits for MSG on main (Frank's `explain.md` read) and ADR 0068.
+
+## 2026-11-08 — Frank: no local full gate before a merge when CI is green
+
+Frank: "I feel the checks cost too much time. If CI passes why do it once more?" Measured on WIT: the local gate runs
+the same `scripts/check.sh` as CI, but with fewer tests (15 194 passed / 3 206 skipped, 3 143 of them CoolProp, not
+installed on TRS2) than CI (x86-64 18 291 / 109; aarch64 18 263 / 107); it adds only ~25 host-specific tests (CPU-
+pinned floats, BLAS-thread control, dev-history checks), and costs 1 h 45 on the shared machine.
+Rule now (CLAUDE.md "Gate by risk", amended): CI green on both architectures is the merge condition; F0 runs on main
+after the merge; the local full gate runs only before a release-candidate cut or tag. S15a's running gate stopped.
+
+## 2026-11-08 — S15a merged
+
+`wp/S15a` merged into main `74747966` (manifest `c89c6e2b`, tested on CI 42469977863, first merge under the
+green-CI rule). On main: F0 PASS, support matrix 0 problems, harvest/changelog/manifest tests 507 passed. HARVEST_SIZE
+(76, 988, 126). Worktree removed. RP K-1 closed; K-2 (ADR 0055) and S-6 rehearsal remain before 0.4.0's K3.
+
+## 2026-11-08 — Decision board for Frank
+
+Frank asked for a way to read and answer pending items over remote control. Built a claude.ai artifact (private to
+Frank) https://claude.ai/artifact/WBLrhuGuG9zosGy46Z1b2A: page `docs/decisions-board/index.html`, 40 items in its
+`items` collection generated by `docs/decisions-board/build_items.py` (description texts pulled from the branches with
+their diffs, ADR summaries with GitHub links, every Frank question with its default and alternatives); answers come back
+in the `answers` collection, which the session reads and acts on. New questions: add to `build_items.py`, regenerate,
+write the new item; close an answered one with `status: "closed"`. `FRANK_QUESTIONS.md` stays the record.
+
+## 2026-11-08 — Frank answered all 40 board items
+
+Record: `docs/FRANK_QUESTIONS.md` "Answers — Frank, 2026-11-08". All descriptions approved; ADRs 0055, 0068–0073
+accepted; 0060–0067 stay Proposed; every default confirmed except two reversals: **ST O3** (web-shell display now, in
+ST) and **X05 Q-F1** (do not pin the four transitive dependencies; revert `a58ef5a5`'s effect).
+DECISION: merge order → MSG, X02, OPT, RRC, ST (ST needs MSG; RRC needs OPT; X02/OPT both claim surface link c_4, so
+each later merge re-measures its link). Small follow-ups on their own branches: X05a (Q-F1 reversal), X10b (WIT M-6b,
+Q-WIT-2). Alternative: X02 first. Reversible by: merge order only.
+DECISION: register numbers by block to avoid collisions between branches merging in any order → X02 R-950…959, OPT
+R-960…969, S15a R-970 (used), MSG R-975…979 (its R-942/R-943 renumbered), main-side acceptances (0055, 0069, 0073)
+R-980…989, RRC R-990…999, ST R-1000…1009. Alternative: renumber sequentially at each merge. Reversible by: renumbering.
+
+## 2026-11-08 — X05a built (Frank's Q-F1 = no)
+
+`wp/X05a` `b43d94bc`: revert of `a58ef5a5` alone (`f5736deb`); A25 restated as its inverse (static: Requires-Dist =
+the five direct pins only; floating path: an off-lock transitive member → `lock_sha256 = ""`, members named); ADR 0069
+Accepted with Amendment 1 (Q-F1), ADR 0007 Am. 2; R-985…R-987, R-140 "Lifted by X05". 548 passed, 11 skipped;
+`x05_reference.py --check` PASS; F0 PASS. D-10 (engineer): A25's CI half became a new `t08_rc.py lock-check --state
+installed-free` that computes its expectation from the installed versions (CI's unconstrained install no longer
+verifies by construction). DECISION: keep D-10 (it checks the honest outcome; dropping the CI half would remove a
+check). Alternative: drop the CI half. Reversible by: revert D-10's commit. CI running; manifest `evidence/X05a/` after.
+
+## 2026-11-08 — MSG merge prep done; human reviews must be recorded by Frank
+
+`wp/MSG` `ff5443e3`: main merged twice (DM-1…DM-5), HARVEST_SIZE (78, 997, 129), MSG's R-942/R-943 → R-975/R-976
+(RP's untouched), L41 re-synced after X05's text (catalogue sha `e4f940cc…` → `2252445a…`, two fixtures), D_4
+`eaff4585…` unchanged; F0 PASS; only the description-review test fails. The permission system refused the agent's edit
+recording Frank's human review in REVIEW.json — correct: a human review is not an agent's act. Not worked around.
+Frank records all four (explain; validate, submit_job; get_stream_table) with a script he runs himself
+(`record_frank_reviews.py` in the session scratchpad: checks each text's sha256 against the one shown on the board,
+then commits on wp/MSG, wp/OPT, wp/ST). The filed MSG manifest `9c76b939…` keeps citing R-942/R-943 (evidence at its
+commit); the new manifest cites R-975/R-976.
+
+## 2026-11-08 — X05a merged
+
+CI `42500882154` green on `b43d94bc` (both architectures, identity, default-install). Manifest
+`evidence/X05a/b43d94bc…/manifest.json` tested (`9b21a881`, after merging main as `1f9cdadb`); HARVEST_SIZE
+(76, 988, 126) → (77, 993, 126). Merged `dd16dab8`; F0 PASS on main; harvest + manifest tests 505 passed. The other
+branches (MSG, X10b) re-take HARVEST_SIZE at their merge.
+
+## 2026-11-08 — MSG merged
+
+CI `42502713324` green on `5e9274db` (Frank's human review of `explain` included). Manifest
+`evidence/MSG/5e9274db…/manifest.json` tested, merged with main in `38e46c2a`; HARVEST_SIZE (80, 1007, 129). Merged
+`ed874b17`; on main F0 PASS, harvest/manifests/surface chain/`test_msg_*` 718 passed, 3 xfailed. Surface chain: MSG
+holds c_4 (D_4 `eaff4585…`); X02 is next in the merge order (MSG, X02, OPT, RRC, ST) and re-measures its link as c_5.
+Note: worktrees have no `.venv`; the main checkout's editable install imports main's `src`, so a worktree test run
+with it tests main's code. CI is the authority for branch code; re-run targeted tests on main after each merge.
+
+## 2026-11-08 — ST design-lane confirmations (`wp/ST` `e1a05916`)
+
+Specifier: M1-1, M1-2 (n_tot·h = γ–φ `_phase_flow` bitwise; test DC-5), M1-3 (reason corrected), S1-1 confirmed. The
+products-style case cannot occur (binder admits undeclared streams only from heater-style splits), but a neighbouring
+defect does: R1′ fired on any degeneracy row naming the stream, incl. a flash drum's row on its inlet → ruling 5: R1′
+only on `independent_split.<U>.<S>`, no-number branch on `temperature_degenerate_unlifted(<S>)`; DC-1…DC-6. ADR 0068
+D3 amended (dated, quoted) after Frank's acceptance; no served output changes → board item `st-adr0068-am1`
+(default: stands). DECISION: proceed on the amendment without waiting. Alternative: hold ST for Frank. Reversible by:
+reverting WO-8a's ruling-5 commit. Next: ST WO-8a (merge main, ruling 5, R-942/943 clean-up), then WO-8b (web shell).
+
+## 2026-11-08 — X02 merge prep done (`wp/X02` `51ef7460`); X10b CI green
+
+X02: main merged (`f36b4a56`, 13 conflicts, D-35); link c_5 D_5 `f51b69bf…` (strip X02 → MSG's D_4 `eaff4585…`
+exactly: no interaction, D_4 not re-recorded; D-36); global-state cache count 36 → 38 (main 37 + X02; D-37); ADR 0070
+and ADR 0019 Am. 15 Accepted, R-950 final (c_5), R-951…R-955 (D-38); 1508 passed, 2 skipped (worktree `src`,
+`PYTHONPATH=src`); ruff, format, mypy clean; F0 PASS. CI watched; then manifest re-take at the head, merge.
+X10b: CI `42503117602` green on `c57d449a`; manifest brief `docs/briefs/X10b-manifest.md`.
+Main: ruff E501 on two harvest comment lines after the MSG merge, fixed `89b7e008`. From now on the post-merge check
+on main is F0 **and** `ruff check` + `ruff format --check` (the merge commit's text is not what CI tested).
+
+## 2026-11-08 — X10b merged
+
+Manifest `evidence/X10b/c57d449a…` tested (`d50d6c06`, after merging main `9bf45e98`; `case_hash` = sha256 of
+`models/c1/flash.py` at that commit, `b1b47c28…`, the registered move); HARVEST_SIZE (81, 1015, 129). Merged
+`d5035a76`; on main ruff clean, F0 PASS, harvest/manifests/L01/G7 tests 660 passed, 1 skipped. WIT's follow-ups are
+done. X02 re-takes HARVEST_SIZE at its merge.
+
+## 2026-11-08 — ST WO-8a done (`wp/ST` `9da2e022`)
+
+Main merged twice (`420993d0`, `a333c762`); R-942/943 duplicates dropped (register = main's); ruling 5 in
+`stream_table._inputs`/`_decide` (lifted by the split's own row, unlifted by exact reason); DC-1…DC-6 pass (DC-2/3/4
+fail on the old code); 44 served 0.3.0 documents byte-identical; G7 41 bitwise, G8 1.756e-4, G8u 2.7027 unchanged;
+1581 passed; F0 PASS. Three tests red since `e1a05916` (not WO-8a's): T08.A20 (envelope lacks `get_stream_table`) and
+ADR 0025 A1 ×2 (`data_sha256`, `implementation_sha256` unclassified). Both have build-lane precedents (envelope
+admission; per-package ADDENDA as M04/M05/E01/OPT) → WO-8b part 1, stop if a field hashes floats. ST's link is c_5
+on the branch; at WO-7 it follows X02 (c_5) and OPT (c_6) → c_7. Next: WO-8b (the three tests + web-shell table).
+
+## 2026-11-08 — ST WO-8b (`wp/ST` `3ba9edc3`): web-shell table done; one design-lane classification open
+
+T08.A20: `get_stream_table` admitted to the envelope on four transports (22 → 23 operations), precedent MSG WO-7
+`631a9f3f` after ADR acceptance (ADR 0068 accepted by Frank). Web shell (Frank's O3): streams screen shows the full
+table below n/T/P (per stream total + per phase, `phase_source`, boundary flag, SI columns, null → "—" with reason;
+`flash_failed` notice; unit/overall energy table); `routes.js` regenerated (was stale: a fourth pre-existing red);
+the shell calls 18 operations; message catalogue `7573d7ea…` → `3ac1279a…`. DECISION (engineer): fetch the whole
+table, no on-screen pager. Reversible by: `streamTableOf`. 2246 passed incl. browser smoke 32 (ran locally), node 98;
+F0 PASS. Open: ADR 0025 D2.3 for `data_sha256` (SYN-001 hashes registered float literals) and
+`implementation_sha256` → specifier ruling (brief `docs/briefs/ST-adr0025-classification.md`); default exact (as
+`constants_sha256`).
+
+## 2026-11-08 — X02 CI red on MSG G2 → catalogue entries (`d26bcd38`)
+
+CI `42512488771` on `51ef7460`: 1 failure on all legs, `test_msg_coverage` G2 (X02's three codes had no MSG catalogue
+entry; the merge-prep brief did not list `tests/test_msg_*`). Fix D-39: `warm_start_source_missing`,
+`warm_start_unit_unknown` → `refusal` entries (kind `input` from MSG's kind table; unit param typed `text`);
+`coupling_warm_start` allow-listed (trace label, never rendered). Catalogue `2252445a…` → `9ac2578a…`; D_4, D_5
+unchanged; 378 passed; F0 PASS. Open (non-blocking): the two entries' prose is an engineer's draft → design-lane prose
+check batched with OPT's new catalogue entries. Lesson: merge-prep briefs after MSG list `tests/test_msg_*` (OPT's does).
+
+## 2026-11-08 — ST CI red at 8ce17244 (run 42517844608), fixed at eb1e0936
+
+Three test bugs, no product code: `get_stream_table` had no pre-ST snapshot in `test_m02_schemas` G1c and
+`test_m04_study_job` A42 (now skipped via `ST_OPERATIONS`, as MSG's `explain`); `test_st_core` Q1.A15c assumed
+IAPWS/H2O for every run, but the CoolProp leg adds TH-C2 (R134a) — now uses the run's own provider and basis.
+Missed locally because worktree tests imported main's `src` (the venv trap). ST_DECISIONS CI-1/CI-2. CI re-run pending.
+
+## 2026-11-08 — X02 merged (35aa61e1)
+
+`wp/X02` merged `--no-ff` after CI `42521075017` green on `d26bcd38` (both archs, identity, default-install);
+manifest `evidence/X02/d26bcd38…/manifest.json` tested (c72e41fe, which also merged main; HARVEST_SIZE (83, 1029, 135)).
+On main after the merge: ruff check + format OK; F0 PASS (M1–M9); targeted 1208 passed, 2 skipped. Surface chain now
+c_5 (D_5 `f51b69bf…`); global-state caches 38. Next per the merge order: OPT merge prep (docs/briefs/OPT-merge-prep.md).
+Open: design-lane prose check of X02's D-39 catalogue entries (batched with OPT's); X02 reviewer pass pending.

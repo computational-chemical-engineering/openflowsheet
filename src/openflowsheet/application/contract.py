@@ -12,11 +12,13 @@ or rejected transaction, an `INVALID` report, a non-converged solve, a cancelled
 from __future__ import annotations
 
 import os
+import sys
 from collections.abc import Callable
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Protocol
 
 from openflowsheet.application.types import ApiError, ApiErrorCode
+from openflowsheet.messages import audit
 
 if TYPE_CHECKING:
     from openflowsheet.application.jobs.model import JobStatus
@@ -29,6 +31,7 @@ if TYPE_CHECKING:
         JobRequest,
         JobResult,
         JobWait,
+        MessageEntry,
         ModelRegistryView,
         ProjectSummary,
         ReplayPolicy,
@@ -53,14 +56,40 @@ class ApplicationError(Exception):
     def code(self) -> ApiErrorCode:
         return self.error.code
 
+    @property
+    def explanation(self) -> dict[str, Any]:
+        """MSG §3.3: the error's explanation as Python shows it (surface `python`)."""
+        return self.error.render_explanation("python")
+
+    def __str__(self) -> str:
+        """MSG §4.5: the layered text; its last line is `args[0]`, `"<code>: <message>"`, the
+        pre-MSG string, so an unanchored match on that string still matches. Never convert
+        this error to a document through `str()` (§4.7): use `error.as_document()`."""
+        from openflowsheet.messages.text import format_text
+
+        return format_text(self.explanation, str(self.args[0]))
+
 
 def api_error(
-    code: ApiErrorCode, message: str, *, retryable: bool = False, **detail: Any
+    code: ApiErrorCode, message: str, /, *, retryable: bool = False, **detail: Any
 ) -> ApplicationError:
-    """An `ApplicationError` of `code`, ready to raise."""
+    """An `ApplicationError` of `code`, ready to raise. `code` and `message` are positional, so
+    a `detail` member may be named `code` (`explain`'s `not_found`, ADR 0058 D7)."""
+    if audit.auditor is not None:  # MSG-G3: the codes this machine text carries have entries
+        _observe(code, message, detail, sys._getframe(1).f_globals.get("__name__", ""))
     return ApplicationError(
         ApiError(code=code, message=message, retryable=retryable, detail=detail)
     )
+
+
+def _observe(code: str, message: str, detail: dict[str, Any], caller: str) -> None:
+    auditor = audit.auditor
+    assert auditor is not None
+    auditor.code(code, caller)
+    auditor.observe(message, caller)
+    reason = detail.get("reason")
+    if isinstance(reason, str):
+        auditor.observe(reason, caller)
 
 
 class Application(Protocol):
@@ -151,7 +180,8 @@ class Inspection(Protocol):
     """§4.1, new under ADR 0019: the project, its models, revisions, structure and artifacts.
     Every method is read-only (`read`); every document comes back as a bounded `Projection`.
     `list_audit` is ADR 0019 Amendment 3's (A3.3): the audit, by `seq`; another principal's rows,
-    or all principals', need `policy` as well."""
+    or all principals', need `policy` as well. `explain` is ADR 0058 D7's: a message-catalogue
+    entry, which reads no project state."""
 
     def get_project(self) -> ProjectSummary: ...
 
@@ -206,3 +236,5 @@ class Inspection(Protocol):
         cursor: str | None = None,
         limit: int = 50,
     ) -> Page[AuditRecord]: ...
+
+    def explain(self, code: str) -> MessageEntry: ...

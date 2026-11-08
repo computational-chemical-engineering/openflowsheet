@@ -239,7 +239,9 @@ def _unknown_tool(app: Dispatchable, tool: str) -> ApiError:
 
 
 def _error_result(tool: str, error: ApiError) -> mcp_types.CallToolResult:
-    document = error.as_document()
+    """A refusal as a tool result: the projected document (explained and bounded; projecting
+    an error `dispatch` already projected changes nothing)."""
+    document = project_error(error).as_document()
     return mcp_types.CallToolResult(
         content=[_text(tool, document)], structuredContent=document, isError=True
     )

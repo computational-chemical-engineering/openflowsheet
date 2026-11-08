@@ -59,9 +59,10 @@ Token usage is a constraint. These rules cut it without dropping a review, a gat
     push. Where a committed generator covers the text, run its `--check`.
   - Code, test, schema or benchmark commits run the tests they touch locally. A work-package branch may be pushed
     without the full suite.
-  - The full gate (`scripts/gate.sh`) runs once before a branch merges into `main`, and before any release-candidate
-    cut or tag. Its result is read before the merge is pushed.
-  - CI must be green on both architectures before a branch merges into `main`.
+  - CI green on both architectures is the merge condition for a branch into `main` (Frank, 2026-11-08: CI runs the
+    same `scripts/check.sh` with more tests — the CoolProp extra, the browser — so a local full gate repeats it). After
+    the merge, `scripts/corpus_identity.py --check` (F0) runs on `main` before the push.
+  - The local full gate (`scripts/gate.sh`) runs only before a release-candidate cut or tag.
 - **Unchanged:** one design-lane spec or design pass and one `reviewer` pass per package, and decisions recorded in the
   register.
 

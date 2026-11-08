@@ -197,6 +197,15 @@ ADR 0025 is the new ADR that *Changing this ADR* requires. For records made unde
 
 D2.4, D2.5, D3, D5 and D6 are unchanged.
 
+## Amendment 2 (ADR 0069, X05) — the lock-file hash is a verified one
+
+**D6.** "The lock-file hash" is, from X05 on, the SHA-256 of the package's own `requirements.lock`
+(`openflowsheet/_data/requirements.lock`, the same bytes in a checkout and a wheel), recorded only when each
+distribution of ADR 0069 D3's runtime closure is installed at exactly the version it pins; otherwise it is empty and
+the failing distributions are carried, unrecorded, to replay. **D4.** The table is unchanged; "same lock-file hash"
+means the same verified lock. The reason of the unknown-lock branch is ADR 0069 D5's. D1–D3, D5 and Amendment 1 are
+unchanged.
+
 ## Changing this ADR
 
 D1's rule and D2's policy bind every package that records or compares a float. A new class, a different relative tolerance, a floor that is not a registered threshold, a bitwise promise, or a change to what replay reports requires a new ADR stating the reason, the measurement that justifies it, and the affected requirements, and a decision-register entry. Adding a float to D2.2's table with its threshold's provenance is an ordinary change made by the package that records it (D2.3) and does not reopen this ADR.

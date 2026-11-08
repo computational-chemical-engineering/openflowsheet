@@ -16,7 +16,7 @@ move. Not collected.
   `submit_job.md`), restored from their pre-OPT copies under `tests/fixtures/opt/`.
 
 None of the members is required, so no `required` list changes. What remains must equal the
-surface as the previous link left it (`scripts/m07a_rc.py` link c_4, D-51).
+surface as the previous link left it (`scripts/m07a_rc.py` link c_6 over X02's c_5; D-51, D-87).
 """
 
 from __future__ import annotations

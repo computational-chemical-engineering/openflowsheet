@@ -5,7 +5,7 @@
 
 import { h, isTree } from "../h.js";
 import { link } from "../router.js";
-import { DASH, fmt, pill } from "../text.js";
+import { DASH, explained, fmt, pill } from "../text.js";
 
 // The page sizes the screens ask for; scripts/m06_web_fixtures.py records the same requests.
 export const PAGE = Object.freeze({
@@ -122,6 +122,18 @@ export function rowLink(scope, owner, rowId, label = rowId) {
 }
 
 export { pill };
+
+// MSG (ADR 0058): a run that ended in a failure bundle says why, in its failure's explanation;
+// null for a run without a failure.
+export function failureNotice(run) {
+  const failure = run?.failure ?? null;
+  if (failure === null) return null;
+  return h(
+    "div",
+    { class: "notice notice-bad", "data-ofs-failure": String(failure.code ?? "") },
+    explained(failure.explanation) ?? h("p", null, String(failure.message ?? "")),
+  );
+}
 
 // A table: `headers` are strings or `{text, num: true}`; `rows` are arrays of cells (a `td`
 // tree, or anything a `td` may hold). An empty body reads `empty`.

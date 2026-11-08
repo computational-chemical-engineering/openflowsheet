@@ -27,6 +27,7 @@ from __future__ import annotations
 
 import dataclasses
 import fcntl
+import hashlib
 import json
 import os
 import time
@@ -42,6 +43,8 @@ __all__ = ["EXPERIMENTS_DIR", "LOCK_POLL_S", "ArtifactSink", "ExperimentStore", 
 
 EXPERIMENTS_DIR: Final = "experiments"
 LOCKS_DIR: Final = "locks"
+#: ADR 0070 D6: the content-addressed store of exported start profiles, under `EXPERIMENTS_DIR`.
+PROFILES_DIR: Final = "profiles"
 #: §3.4: a held key's lock is tried again this often.
 LOCK_POLL_S: Final = 0.2
 REQUEST_KIND: Final = "experiment_request"
@@ -140,6 +143,30 @@ class ExperimentStore:
 
     def relpath(self, path: Path) -> str:
         return path.relative_to(self.root).as_posix()
+
+    def profile_path(self, sha256: str) -> Path:
+        """ADR 0070 D6: `experiments/profiles/<sha[0:2]>/<sha>.json`."""
+        return self.base / PROFILES_DIR / sha256[:2] / f"{sha256}.json"
+
+    # -- start profiles (ADR 0070 D6) ------------------------------------------------------------
+
+    def write_profile(self, data: bytes) -> str:
+        """Store an exported profile once, by the SHA-256 of its bytes, and return that hash.
+        Atomic and write-once: a file already present must be byte-equal. No artifact row — a
+        registered result refers to it by hash, as an attempt's working directory is referred to."""
+        sha256 = hashlib.sha256(data).hexdigest()
+        path = self.profile_path(sha256)
+        if path.is_file():
+            if path.read_bytes() != data:
+                raise RuntimeError(f"profile {sha256}: the stored bytes differ from their hash")
+            return sha256
+        _atomic_write(path, data)
+        return sha256
+
+    def profile(self, sha256: str) -> bytes | None:
+        """A stored profile's bytes, or `None` when the store does not hold it."""
+        path = self.profile_path(sha256)
+        return path.read_bytes() if path.is_file() else None
 
     # -- the lock ------------------------------------------------------------------------------
 

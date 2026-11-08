@@ -33,6 +33,7 @@ unmetered provider.
 from __future__ import annotations
 
 import dataclasses
+import hashlib
 import os
 import time
 import uuid
@@ -41,11 +42,13 @@ from dataclasses import dataclass, field
 from typing import Any, Final, Literal
 
 from openflowsheet.adapters.experiments.backends import (
+    PROFILE_FILE,
     Backend,
     Environment,
     Execution,
     InProcessBackend,
     OutOfProcessBackend,
+    start_capable,
     tube_document,
 )
 from openflowsheet.adapters.experiments.request import build_request
@@ -76,7 +79,13 @@ from openflowsheet.thermo import (
     StreamState,
 )
 
-__all__ = ["DETERMINISTIC", "RETRYABLE", "ExperimentOutcome", "ExperimentRunner"]
+__all__ = [
+    "DETERMINISTIC",
+    "RETRYABLE",
+    "ExperimentOutcome",
+    "ExperimentRunner",
+    "start_capable",
+]
 
 ATTEMPT_VERSION: Final = "experiment-attempt-v1"
 RESULT_VERSION: Final = "experiment-result-v1"
@@ -228,6 +237,8 @@ class ExperimentRunner:
         inlet: StreamState,
         components: Sequence[str],
         n_tubes: float,
+        *,
+        start: str | None = None,
     ) -> dict[str, Any]:
         """The keyed request `run` would evaluate for this inlet, with no experiment record
         written: a caller can count a plan's cache misses before running any of it (M04 spec
@@ -239,7 +250,9 @@ class ExperimentRunner:
         environment, _, _ = self._environment(
             variant, backend, int(variant.execution["max_retries"])
         )
-        return build_request(variant, capabilities, n_tubes, components, inlet, environment.sha256)
+        return build_request(
+            variant, capabilities, n_tubes, components, inlet, environment.sha256, start
+        )
 
     def frozen_environment(self, variant: Variant) -> Environment | None:
         """The job's frozen handshake outcome for `variant` (§6.1, R-236), or `None` before its
@@ -255,7 +268,13 @@ class ExperimentRunner:
         n_tubes: float,
         *,
         cache: CacheMode = "use",
+        start: str | None = None,
     ) -> ExperimentOutcome:
+        """One experiment. `start` (ADR 0070 D5) is the SHA-256 of a start profile in the
+        project's profile store, for a start-capable variant only: it enters the request (and so
+        its key), and its bytes go to the child. After an `outlet` of a start-capable variant the
+        child's exported profile is stored and the result carries its `profile_sha256` (D6)."""
+        assert start is None or start_capable(variant), "a start needs a start-capable variant"
         capabilities = self.provider.describe()
         supported(variant, capabilities)
         backend = self.backend(variant)
@@ -265,7 +284,7 @@ class ExperimentRunner:
         first = variant.sha256 not in self._recorded
         self._recorded.add(variant.sha256)
         request = build_request(
-            variant, capabilities, n_tubes, components, inlet, environment.sha256
+            variant, capabilities, n_tubes, components, inlet, environment.sha256, start
         )
         key = request["experiment_key"]
         with self.records.locked(key, check):
@@ -294,7 +313,15 @@ class ExperimentRunner:
                 )
             while True:
                 attempt, envelope, calls = self._attempt(
-                    variant, backend, request, inlet, components, n_tubes, check, existing
+                    variant,
+                    backend,
+                    request,
+                    inlet,
+                    components,
+                    n_tubes,
+                    check,
+                    existing,
+                    self._start_bytes(start),
                 )
                 written.append(attempt)
                 status = attempt["execution"]["status"]
@@ -316,6 +343,31 @@ class ExperimentRunner:
             result = self._result(variant, environment, request, attempt, envelope, calls)
             self.records.write_result(result, self.job_id)
             return ExperimentOutcome(request, result, result["envelope"], False, tuple(written))
+
+    def _start_bytes(self, start: str | None) -> bytes | None:
+        """ADR 0070 (X02 design note §5.5): a start's bytes, read back from the profile store by
+        hash and checked. A hash the run accepted that the store no longer holds, or holds other
+        bytes for, is a damaged store: an internal error, never a silent cold start."""
+        if start is None:
+            return None
+        data = self.records.profile(start)
+        if data is None or hashlib.sha256(data).hexdigest() != start:
+            raise RuntimeError(f"internal_error: the profile store does not hold {start}")
+        return data
+
+    def _export(self, variant: Variant, key: str, attempt: Mapping[str, Any]) -> str | None:
+        """ADR 0070 D6: the exported profile of a start-capable variant's `outlet` attempt, into
+        the profile store; its hash. The backend has already checked the file against the
+        child's reported hash (a mismatch there is that attempt's `protocol_error`)."""
+        execution = attempt["execution"]
+        if not start_capable(variant) or execution["tube_outlet"] is None:
+            return None
+        directory = self.records.attempt_directory(key, int(attempt["attempt"]))
+        data = (directory / PROFILE_FILE).read_bytes()
+        sha256 = self.records.write_profile(data)
+        if sha256 != execution["diagnostics"]["profile_sha256"]:
+            raise RuntimeError(f"internal_error: {key}: profile.json changed after its check")
+        return sha256
 
     # -- one attempt ---------------------------------------------------------------------------
 
@@ -373,6 +425,7 @@ class ExperimentRunner:
         n_tubes: float,
         check: Callable[[], None] | None,
         existing: Mapping[str, Any] | None,
+        start: bytes | None = None,
     ) -> tuple[dict[str, Any], ReactorResult, int]:
         """One evaluation attempt, its record written before it is returned (§3.3)."""
         key = request["experiment_key"]
@@ -392,7 +445,11 @@ class ExperimentRunner:
         seen: list[tuple[TubeInlet, Execution]] = []
 
         def evaluation(tube: TubeInlet) -> Any:
-            execution = backend.evaluate(tube, directory, progress, check)
+            execution = (
+                backend.evaluate(tube, directory, progress, check)
+                if start is None
+                else backend.evaluate(tube, directory, progress, check, start=start)
+            )
             seen.append((tube, execution))
             return execution.answer
 
@@ -493,7 +550,8 @@ class ExperimentRunner:
         calls: int,
     ) -> dict[str, Any]:
         reactor = variant.evaluation.get("reactor")
-        return {
+        profile = self._export(variant, request["experiment_key"], attempt)
+        document: dict[str, Any] = {
             "schema_version": RESULT_VERSION,
             "experiment_key": request["experiment_key"],
             "request_sha256": document_sha256(request),
@@ -510,3 +568,6 @@ class ExperimentRunner:
             "provider_calls": calls,
             "determinism_findings": [],
         }
+        if profile is not None:
+            document["profile_sha256"] = profile
+        return document

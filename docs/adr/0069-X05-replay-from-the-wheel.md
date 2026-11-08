@@ -1,7 +1,8 @@
 # ADR 0069 — Replay from the wheel: `lock_sha256` is recorded only for a lock the installed runtime closure matches
 
-**Status:** **Proposed, 2026-11-07.** It takes effect on `main` when X05's manifest is `tested` and the reviewer pass is
-done. Until then X05 is built on `wp/X05`. Register entries are added on acceptance (drafted in §12).
+**Status:** **Accepted, 2026-11-08** (Frank, on the decision board) with Q-F1 = no; Q-F2, Q-F3 = default (no).
+Amended by Amendment 1 (§14): the four transitive closure members float. Register: R-985, R-986, R-987. (Proposed
+2026-11-07.)
 **Author:** design lane (`specifier`), X05. **Brief:** `docs/briefs/X05-specifier.md` (`e758038c`).
 **Lifts:** R-140 (ADR 0056 row 6, Frank 2026-11-01, R-925): "an installed package replays its own bundles, with the
 environment match stated". It builds T08 release spec §6.3 **B12**, with one stated departure (D3: the runtime closure,
@@ -96,7 +97,7 @@ not looked at. Names are normalised for the comparison only (X05.A07).
 behaviour for a missing `Version`); any other exception propagates to `verify_lock` as F6. The outcome — a version,
 `None`, or the raised class — is memoised per process (D6).
 
-### D3. The runtime closure: registered, measured, no extras, pinned in `Requires-Dist`
+### D3. The runtime closure: registered, measured, no extras; its direct members pinned in `Requires-Dist`
 
 **Registered runtime closure (D3; 9 distributions, PEP 503 names, in this order):** `attrs`, `casadi`, `jsonschema`, `jsonschema-specifications`, `numpy`, `pyyaml`, `referencing`, `rpds-py`, `scipy`.
 
@@ -105,10 +106,12 @@ behaviour for a missing `Version`); any other exception propagates to `verify_lo
    `openflowsheet.run.lock.RUNTIME_CLOSURE`, not computed at run time: computing it needs `packaging` (not a runtime
    dependency) and an installed `openflowsheet` distribution's metadata, which a checkout may not have or may have
    stale (measured: `.venv` carries `openflowsheet==0.1.1` beside `src/`). X05.A10 measures it against the constant.
-2. **The four transitive members are pinned exactly in `[project].dependencies`** at the lock's versions
-   (`attrs==26.1.0`, `jsonschema-specifications==2025.9.1`, `referencing==0.37.0`, `rpds-py==2026.6.3`), beside the
-   five already pinned. A plain `pip install openflowsheet` then installs exactly the closure at the lock, so it
-   verifies (X05.A25). *Frank's preference, Q-F1 (§11), default this.*
+2. **The four transitive members float** (Amendment 1, §14; Frank's Q-F1 = no): `[project].dependencies` pins the
+   five direct members exactly and does not name `attrs`, `jsonschema-specifications`, `referencing` or `rpds-py`. An
+   install constrained by the shipped lock (`pip install -c requirements.lock openflowsheet`) installs the closure at
+   the lock and verifies; a plain, unconstrained `pip install openflowsheet` verifies only if the resolver happens to
+   pick the lock's versions, and otherwise records `""` naming each member off the lock, which the replay reason names
+   (D5; X05.A25).
 3. **Extras are outside the identity**, before and after X05: `server` (no numerics), `coolprop` (hash-pinned in
    `requirements-coolprop.lock`, guarded by the provider's own `coolprop_version_mismatch`, ADR 0046), `nlp` and `lca`
    (their audited environments), `dev`. Their distributions are not checked and `lock_sha256` attests nothing about
@@ -338,7 +341,7 @@ re-solve, is judged by ADR 0007 D2 / ADR 0025's registered policy, which X05 doe
 | X05.A22 | the installed wheel replays the 52 F0 bundles | (a) reference platform, clean environment outside the tree, the wheel: each of the 52 bundles equals M7's registered value (`integrity_ok` true, `exact_replay`, `MATCH`); (b) CI both architectures: `MATCH`, integrity ok, mode `exact_replay` or `compatible_reproduction` (never inspected) | (a) local run recorded in the X05 manifest; (b) CI `clean-install`; each record names `openflowsheet.__file__`, asserted outside the checkout; control: F0's existing one-byte test |
 | X05.A23 | F0 PASS; the existing replay suites pass unedited | `scripts/corpus_identity.py --check` PASS at the X05 head on `ref-x86-64`; `tests/test_k05_replay.py`, `tests/test_f0_corpus_identity.py` pass with an empty diff against the merge base | full gate; the one test file removed is `tests/test_t08_r3_a19_lock_lookup.py` (D7.2) |
 | X05.A24 | L41, the support matrix and the T08 notes restated | envelope L41 = D7.3's text, evidence → the X05 tests; `scripts/t08_support_matrix.py --check` passes; the T08 release spec's L41 and T08.A19 rows carry an X05 note; no live text says the wheel ships no lock | `--check`; `grep` over `docs/support-matrix.md`, `benchmarks/t08/support_envelope.yaml`, `src/`, `.github/workflows/ci.yml` |
-| X05.A25 | the closure pinned in Requires-Dist; an unconstrained install verifies | `[project].dependencies` names == the closure, each `==` the lock's pin; the wheel's non-extra `Requires-Dist` the same; a fresh environment with `pip install <wheel>` and no constraints: `ead4edf1…`, no findings | `tests/test_x05_lock.py` (static half); CI `clean-install` (a second, unconstrained environment) |
+| X05.A25 | the direct five pinned, the transitive four floating; off the lock is named | `[project].dependencies` names == the five direct members, each `==` the lock's pin, and names none of the four transitive members; the wheel's non-extra `Requires-Dist` the same; with the direct five at the lock and a transitive member off it: `""`, an F4 (F3 if absent) per member off it in closure order, and the replay reason R_THIS naming them; control: all nine at the lock verifies; a fresh environment with `pip install <wheel>` and no constraints: verified iff all nine landed at the lock, else `""` naming each one off it | `tests/test_x05_lock.py` (static half and the D5 path); `tests/test_x05_replay_from_the_wheel.py` and CI `clean-install` (`t08_rc.py lock-check --state installed-free`, a second, unconstrained environment) |
 
 ## 7. Work orders (one build engineer, `wp/X05`; Opus — replay identity, reviewer pass required)
 
@@ -443,3 +446,27 @@ A22 (b) and A25's CI half by run id and artifact; A22 (a) by the local command, 
 > the failing distributions are carried, unrecorded, to replay. **D4.** The table is unchanged; "same lock-file hash"
 > means the same verified lock. The reason of the unknown-lock branch is ADR 0069 D5's. D1–D3, D5 and Amendment 1 are
 > unchanged.
+
+## 14. Amendment 1 (Frank's Q-F1, 2026-11-08) — the transitive closure members float
+
+Frank answered Q-F1 (§11) **no** on the decision board (`docs/FRANK_QUESTIONS.md`, "Answers — Frank, 2026-11-08"): users
+keep upgrade freedom over `attrs`, `jsonschema-specifications`, `referencing` and `rpds-py`. §11's alternative is taken
+as written: the four pins leave `[project].dependencies` (the revert of `a58ef5a5`, one isolated commit on `wp/X05a`),
+a plain install records `""` with the floating members named, and X05.A25 is restated as that inverse. D1, D2, D3.1,
+D3.3, D3.4, D4–D7, the registered closure, the 36 states and the reference values other than A25's title are
+unchanged. Only an install constrained by the shipped lock is promised to verify.
+
+Replaced text, D3's heading:
+
+> D3. The runtime closure: registered, measured, no extras, pinned in `Requires-Dist`
+
+Replaced text, D3.2:
+
+> 2. **The four transitive members are pinned exactly in `[project].dependencies`** at the lock's versions
+>    (`attrs==26.1.0`, `jsonschema-specifications==2025.9.1`, `referencing==0.37.0`, `rpds-py==2026.6.3`), beside the
+>    five already pinned. A plain `pip install openflowsheet` then installs exactly the closure at the lock, so it
+>    verifies (X05.A25). *Frank's preference, Q-F1 (§11), default this.*
+
+Replaced text, the X05.A25 row of §6.3:
+
+> | X05.A25 | the closure pinned in Requires-Dist; an unconstrained install verifies | `[project].dependencies` names == the closure, each `==` the lock's pin; the wheel's non-extra `Requires-Dist` the same; a fresh environment with `pip install <wheel>` and no constraints: `ead4edf1…`, no findings | `tests/test_x05_lock.py` (static half); CI `clean-install` (a second, unconstrained environment) |

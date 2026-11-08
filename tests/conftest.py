@@ -30,9 +30,116 @@ TERMINAL_REPORT: list[str] = []
 
 
 def pytest_terminal_summary(terminalreporter: Any) -> None:
-    """Print `TERMINAL_REPORT`'s lines at the end of the run."""
+    """Print `TERMINAL_REPORT`'s lines at the end of the run, then MSG-G3's findings."""
     for line in TERMINAL_REPORT:
         terminalreporter.write_line(line)
+    for line in _msg_audit_findings():
+        terminalreporter.write_line(line, red=True)
+
+
+# -- MSG-G6 (design note §3.6): the corpus's golden texts -------------------------------------
+
+
+def pytest_addoption(parser: Any) -> None:
+    parser.addoption(
+        "--msg-update",
+        action="store_true",
+        default=False,
+        help="rewrite the stored texts of tests/fixtures/msg/corpus.yaml (MSG-G6); review the diff",
+    )
+
+
+# -- MSG-G3 (design note §4.2.8): the runtime audit of emitted codes ---------------------------
+
+
+def pytest_configure(config: Any) -> None:
+    """Every code the package emits at the four audit hooks must have a catalogue entry."""
+    from openflowsheet.messages import audit
+
+    audit.enable()
+
+
+def _msg_audit_findings() -> list[str]:
+    from openflowsheet.messages import audit
+
+    auditor = audit.auditor
+    if auditor is None:
+        return []
+    lines = [
+        f"MSG-G3 miss: {code} (first emitted by {where})" for code, where in auditor.misses.items()
+    ]
+    lines += [f"MSG-G3 defect: {key} (in {where!r})" for key, where in auditor.defects.items()]
+    return sorted(lines)
+
+
+def pytest_sessionfinish(session: Any, exitstatus: int) -> None:
+    """MSG-G3: a code without an entry, or a rendering defect, fails the session."""
+    if _msg_audit_findings() and exitstatus == 0:
+        session.exitstatus = pytest.ExitCode.TESTS_FAILED
+
+
+# -- MSG WO-6 (design note §4.8): the converse of `RunResult.failure`'s invariant --------------
+
+#: Every run result the suite built: (results, with a failure).
+RUN_RESULTS_SEEN = [0, 0]
+
+
+@pytest.fixture(autouse=True, scope="session")
+def _msg_failure_iff_failure_bundle() -> Any:
+    """Every `RunResult` `_run_result` builds has `failure` non-null iff its outputs hold a
+    `failure_bundle` (`__post_init__` checks one direction; this wrapper checks the other, over
+    every solve the suite reads back). The count goes to the terminal summary."""
+    from openflowsheet.application.local import LocalApplication
+
+    built = LocalApplication._run_result
+
+    def checked(self: Any, job: Any) -> Any:
+        result = built(self, job)
+        bundled = any(output.kind == "failure_bundle" for output in result.outputs)
+        assert (result.failure is not None) == bundled, (job.job_id, result.outputs)
+        RUN_RESULTS_SEEN[0] += 1
+        RUN_RESULTS_SEEN[1] += result.failure is not None
+        return result
+
+    with pytest.MonkeyPatch.context() as monkeypatch:
+        monkeypatch.setattr(LocalApplication, "_run_result", checked)
+        yield
+    TERMINAL_REPORT.append(
+        f"MSG WO-6: {RUN_RESULTS_SEEN[0]} run results checked, {RUN_RESULTS_SEEN[1]} with a "
+        "failure; failure non-null iff a failure_bundle output in every one"
+    )
+
+
+#: MSG §4.6: bundles the suite wrote, scanned for the sidecar's keys.
+BUNDLES_SCANNED = [0]
+SIDECAR_KEYS = (b'"diagnosis":', b'"diagnostic":')
+
+
+@pytest.fixture(autouse=True, scope="session")
+def _msg_sidecar_in_no_bundle() -> Any:
+    """MSG §4.6's carrier rule (WO-5a): no artifact, event or manifest of any bundle the suite
+    writes holds the key `diagnosis` or `diagnostic`; the sidecar lives only in the job store's
+    `run.diagnosis`. Wraps `write_bundle` where the two session paths import it."""
+    import openflowsheet.application.revision_run as revision_run
+    import openflowsheet.run.session as session
+
+    written = session.write_bundle
+
+    def scanned(directory: Any, manifest: Any, artifacts: Any) -> Any:
+        complete = written(directory, manifest, artifacts)
+        for path in Path(directory).rglob("*.json"):
+            content = path.read_bytes()
+            assert not any(key in content for key in SIDECAR_KEYS), path
+        BUNDLES_SCANNED[0] += 1
+        return complete
+
+    with pytest.MonkeyPatch.context() as monkeypatch:
+        monkeypatch.setattr(revision_run, "write_bundle", scanned)
+        monkeypatch.setattr(session, "write_bundle", scanned)
+        yield
+    TERMINAL_REPORT.append(
+        f"MSG WO-5a: {BUNDLES_SCANNED[0]} bundles scanned; no sidecar key in any written document"
+    )
 
 
 def _git_ok(*arguments: str) -> bool:

@@ -32,6 +32,7 @@ from typing import Any, Final, Literal
 from openflowsheet.compile.spec import ProblemSpec
 
 __all__ = [
+    "EXPLICIT",
     "RECORD",
     "SELECTION",
     "WARM_START_REJECTED",
@@ -50,6 +51,9 @@ WARM_START_SOURCE: Final = "compatible_warm_start"
 WARM_START_REJECTED: Final = "warm_start_rejected"
 #: §B1's selection rule, the only one in v0.1.
 SELECTION: Final = "store-latest-verified-lineage-v1"
+#: ADR 0070 D2 (ADR 0024's deferred explicit form): the solve request named the source job
+#: (`warm_start.job_id`). An explicit declaration is its own opt-in under any policy.
+EXPLICIT: Final = "explicit-v1"
 #: The record's version (§B2's table).
 RECORD: Final = "warm-start-v1"
 

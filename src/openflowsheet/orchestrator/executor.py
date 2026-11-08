@@ -29,7 +29,7 @@ the general path does not run — the tear path, a specification region — is a
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
-from dataclasses import dataclass, fields, replace
+from dataclasses import dataclass, field, fields, replace
 from typing import Any, Literal
 
 import numpy as np
@@ -37,6 +37,7 @@ import numpy as np
 from openflowsheet.compile.casadi_backend import compile_problem
 from openflowsheet.compile.spec import ProblemSpec
 from openflowsheet.compiled import EvaluationContext
+from openflowsheet.messages.diagnostic import Diagnostic
 from openflowsheet.models.revision_flowsheet import RevisionFlowsheet
 from openflowsheet.models.syn001.flowsheet import FEED_UNIT, WIRING, Syn001Flowsheet
 from openflowsheet.orchestrator import revision
@@ -88,6 +89,7 @@ from openflowsheet.orchestrator.trace import (
     Trace,
 )
 from openflowsheet.orchestrator.warm_start import (
+    EXPLICIT,
     WARM_START_REJECTED,
     WARM_START_SOURCE,
     WarmStartCandidate,
@@ -128,6 +130,9 @@ class StepResult:
     #: ADR 0024 D4: what the compatible warm start did, when the policy's chain names it and no
     #: `user_start` was given; `None` otherwise (every other policy, every other step kind).
     warm_start: WarmStartRecord | None = None
+    #: MSG §4.6: an `INITIALIZATION_FAILED` step's refusing-unit sidecar (`InitialStateFailure.
+    #: diagnostic`). Never serialized; never compared.
+    diagnostic: Diagnostic | None = field(default=None, compare=False, hash=False, repr=False)
 
 
 @dataclass(frozen=True)
@@ -239,9 +244,10 @@ def execute_plan(
     columns are not exactly the declaration's.
 
     `warm_start` (ADR 0024; T08 build-first spec §B2) is the application's source-2 candidate,
-    read only when `policy.initializer_chain` names `compatible_warm_start` and there is no
-    `user_start`, on a revision-built flowsheet's region; then `None` means the lookup found none
-    (recorded `absent`). Its checks and record are `_warm_start`'s.
+    read only when `policy.initializer_chain` names `compatible_warm_start`, or the candidate is
+    the request's explicit source (`explicit-v1`, ADR 0070 D2: its own opt-in under any policy),
+    and there is no `user_start`, on a revision-built flowsheet's region; then `None` means the
+    lookup found none (recorded `absent`). Its checks and record are `_warm_start`'s.
     """
     if user_start is not None:
         if isinstance(flowsheet, Syn001Flowsheet):
@@ -710,7 +716,10 @@ def _solve_revision_region(
             None,
         )
     record: WarmStartRecord | None = None
-    if user_start is None and WARM_START_SOURCE in policy.initializer_chain:
+    if user_start is None and (
+        WARM_START_SOURCE in policy.initializer_chain
+        or (warm_start is not None and warm_start.selection == EXPLICIT)
+    ):
         warm, record, spent = _warm_start(
             index, region, flowsheet, spec, policy, run, spent, warm_start
         )
@@ -735,6 +744,7 @@ def _solve_revision_region(
                 "INITIALIZATION_FAILED",
                 message=start.message,
                 warm_start=record,
+                diagnostic=start.diagnostic,
             ),
             spent,
             None,

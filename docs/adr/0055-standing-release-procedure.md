@@ -1,6 +1,6 @@
 # ADR 0055: A standing release procedure from 0.4.0. One normative text and one generic gate, verdicts carried by evidence fingerprint, acceptances standing by scope fingerprint, one CI run per commit
 
-**Status:** Proposed, 2026-10-31.
+**Status:** **Accepted, 2026-11-08** (Frank, on the decision board) on its restated condition (RP review M-3); Proposed 2026-10-31.
 **Author:** design lane (`specifier`), from the orchestrator's brief on Frank's request of 2026-10-31 ("Is it possible to
 reduce the checking a bit, but still retain quality?").
 **Normative text:** this ADR until WO-R1 delivers `docs/derivations/release-procedure.md` (the *standing procedure*, RP).
@@ -98,7 +98,7 @@ narrower form than proposed, because F-A and F-B show which runs are true duplic
 5. **Release package id.** The evidence package of release X.Y.Z is `REL` followed by the version's digits (0.4.0 →
    `REL040`): branch `wp/REL040`, manifest `evidence/REL040/<C>/manifest.json`, verdicts
    `docs/reviews/REL040-verdicts.md`, RC record `docs/REL040-rc-record.md`. These are line-file fields with these
-   defaults.
+   defaults. The mapping is ADR 0074 D2 (RP A-9): ADR 0074 gives the id's exact form (0.4.0 → `REL040`; components ≥ 10 get a length letter).
 
 ### D2: A verdict carries by evidence fingerprint, and evidence is always re-run (R-916, R-917)
 

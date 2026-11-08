@@ -26,8 +26,8 @@
    "optimization"
   ],
   "exit": 14,
-  "stdout": "{\"code\":\"unsupported\",\"detail\":{\"pointer\":\"/task\"},\"message\":\"nlp_solver_unavailable\",\"retryable\":false}\n",
-  "stderr": ""
+  "stdout": "{\"code\":\"unsupported\",\"detail\":{\"explanation\":{\"action\":\"Read the error's message for the capability it names; the limitations page lists what this version does not support and what to use instead.\",\"cause\":null,\"chain\":[\"unsupported\",\"nlp_solver_unavailable\"],\"code\":\"unsupported\",\"complete\":true,\"docs\":\"https://computational-chemical-engineering.github.io/openflowsheet/messages/api-errors/#unsupported\",\"elements\":[],\"family\":\"api_error\",\"gap\":{\"capability\":null,\"limitation\":null},\"hint\":null,\"kind\":\"not_supported\",\"numbers\":[],\"summary\":\"The request needs something this version does not support.\",\"where\":null,\"why\":\"The request is well formed, but it asks for a capability this version does not have.\"},\"pointer\":\"/task\"},\"message\":\"nlp_solver_unavailable\",\"retryable\":false}\n",
+  "stderr": "The request needs something this version does not support.\n  Why:     The request is well formed, but it asks for a capability this version does not have.\n  Do:      Read the error's message for the capability it names; the limitations page lists what this version does not support and what to use instead.\n  Kind:    Not supported in this version: a limitation of OpenFlowsheet, not an error in your flowsheet.\n  Code:    unsupported (openflowsheet explain unsupported)\n  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/api-errors/#unsupported\n  Details: unsupported: nlp_solver_unavailable\n"
  },
  {
   "argv": [
@@ -130,7 +130,7 @@
   ],
   "exit": 2,
   "stdout": "",
-  "stderr": "<ROOT>/project is not empty; a project is created in a new directory\n"
+  "stderr": "Directory '<ROOT>/project' is not empty: it already holds a project, and project init needs a new or empty directory.\n  Why:     create() makes a new project and never reuses a directory, so a re-run cannot overwrite work silently.\n  Do:      The project is ready to use: pass --project <ROOT>/project to other commands, or run project init with --exist-ok.\n  Kind:    Input problem: something in the flowsheet or the request needs to change.\n  Code:    project_exists (openflowsheet explain project_exists)\n  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#project_exists\n  Details: project_exists: <ROOT>/project\n"
  },
  {
   "argv": [

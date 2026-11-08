@@ -1,0 +1,31 @@
+{
+ "section": "defaults",
+ "pkg": "OPT",
+ "pkgTitle": "Optimising your own flowsheets",
+ "kind": "choice",
+ "title": "Q2: optimise flowsheets on the older (legacy) solve route in 0.4?",
+ "body": [
+  "Flowsheets with an external reactor are refused with a reason; the trust-region method is their route."
+ ],
+ "defaultKey": "default",
+ "options": [
+  {
+   "key": "default",
+   "label": "No, the standard route only",
+   "detail": ""
+  },
+  {
+   "key": "alt1",
+   "label": "Yes, the legacy route too",
+   "detail": ""
+  },
+  {
+   "key": "other",
+   "label": "Something else",
+   "detail": "Say what in the note."
+  }
+ ],
+ "links": [],
+ "status": "open",
+ "order": 17
+}

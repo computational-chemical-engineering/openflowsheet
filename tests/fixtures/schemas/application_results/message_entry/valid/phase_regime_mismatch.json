@@ -1,0 +1,147 @@
+{
+  "action": "Change the phase declared for <stream> to the one that matches the computed state.",
+  "catalogue": {
+    "id": "openflowsheet-messages-v1",
+    "sha256": "9ac2578ab63fc92cc8c4bfac8f14f33ad0245603eae0f67d9ea11e54b5d01979"
+  },
+  "code": "phase_regime_mismatch",
+  "complete": true,
+  "context": null,
+  "deprecated": false,
+  "docs": "https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#phase_regime_mismatch",
+  "examples": [
+    {
+      "action": "Declare 'S4' as vapour. If you expected wet (vapour + liquid), check the specifications that set the conditions upstream of 'S4'.",
+      "cause": "Stream 'S4' is not in its declared phase: it is declared wet (vapour + liquid), but at these conditions it is vapour.",
+      "chain": [
+        "INITIALIZATION_FAILED",
+        "initializer_failed",
+        "phase_regime_mismatch"
+      ],
+      "code": "phase_regime_mismatch",
+      "complete": true,
+      "docs": "https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#phase_regime_mismatch",
+      "elements": [
+        {
+          "id": "T",
+          "path": null,
+          "type": "unit"
+        },
+        {
+          "id": "T",
+          "path": null,
+          "type": "element"
+        },
+        {
+          "id": "S4",
+          "path": null,
+          "type": "stream"
+        }
+      ],
+      "family": "refusal",
+      "gap": null,
+      "hint": null,
+      "kind": "input",
+      "numbers": [
+        {
+          "kind": "molar_enthalpy",
+          "label": "computed value",
+          "name": "value",
+          "unit": "J/mol",
+          "value": 47330.0
+        },
+        {
+          "kind": "molar_enthalpy",
+          "label": "saturated-vapour value",
+          "name": "saturated_vapour",
+          "unit": "J/mol",
+          "value": 46570.0
+        },
+        {
+          "kind": "pressure",
+          "label": "pressure",
+          "name": "pressure",
+          "unit": "Pa",
+          "value": 10000.0
+        }
+      ],
+      "summary": "The solve stopped before its first iteration: unit 'T' could not compute its outlets from the starting values.",
+      "where": "stream 'S4', an outlet of unit 'T'",
+      "why": "At 10000 Pa the enthalpy of 'S4' is 47330 J/mol, above the saturated-vapour value 46570 J/mol, so the stream is vapour, not wet (vapour + liquid)."
+    }
+  ],
+  "family": "refusal",
+  "gap": null,
+  "kind": "input",
+  "params": [
+    {
+      "label": "stream",
+      "name": "stream",
+      "optional": false,
+      "type": "stream"
+    },
+    {
+      "label": "unit",
+      "name": "unit",
+      "optional": true,
+      "type": "unit"
+    },
+    {
+      "label": "declared phase",
+      "name": "declared",
+      "optional": true,
+      "type": "enum"
+    },
+    {
+      "label": "computed phase",
+      "name": "landed",
+      "optional": true,
+      "type": "enum"
+    },
+    {
+      "label": "vapour fraction",
+      "name": "vapour_fraction",
+      "optional": true,
+      "type": "number"
+    },
+    {
+      "label": "property",
+      "name": "property",
+      "optional": true,
+      "type": "enum"
+    },
+    {
+      "label": "computed value",
+      "name": "value",
+      "optional": true,
+      "type": "quantity"
+    },
+    {
+      "label": "saturated-liquid value",
+      "name": "saturated_liquid",
+      "optional": true,
+      "type": "quantity"
+    },
+    {
+      "label": "saturated-vapour value",
+      "name": "saturated_vapour",
+      "optional": true,
+      "type": "quantity"
+    },
+    {
+      "label": "pressure",
+      "name": "pressure",
+      "optional": true,
+      "type": "quantity"
+    }
+  ],
+  "replaced_by": null,
+  "see_also": [
+    "isentropic_state_two_phase",
+    "L-TH-3"
+  ],
+  "summary": "Stream <stream> is not in its declared phase: it is declared <declared>, but at these conditions it is <landed>.",
+  "title": "Declared phase does not match the computed state",
+  "where": "stream <stream>, an outlet of unit <unit> (<unit_model>)",
+  "why": "Each stream carries a declared phase, and a unit computes its outlet only in that phase."
+}

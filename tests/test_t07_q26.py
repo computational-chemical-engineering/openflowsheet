@@ -29,6 +29,12 @@ inventory gains `body/inlet/T`, `body/inlet/P` and `body/n_tubes`. That no path 
 `experiment` body to a solver start, a warm start or a coupling iterate is the companion test,
 `tests/test_m02_experiment_body_isolation.py`.
 
+**X02 (ADR 0070, amending R-088 Q26 and ADR 0020 D7).** A solve may declare its outer start
+w₀ per coupled unit: two scalars by full path and only there, `submit_job`'s
+`body/warm_start/coupling/*/X` and `body/warm_start/coupling/*/dT_K`. They are a start, never a
+constraint: the certificate judges the converged answer. Their W14-path test (design note §7
+G6) lands with the outer start that reads them (X02 WO-3).
+
 **OPT (ADR 0071, ADR 0019 Amendment 16; OPT D-58).** The optimization request — `submit_job`'s
 `optimize` `body/request` and `validate`'s `optimization` — is the problem's definition: decision
 boxes and scales, the objective and constraint expressions (their `linear` maps of output id to
@@ -369,6 +375,8 @@ def test_t07_q26_no_external_state() -> None:
         "P",
         "n_tubes",
         "max_cold_experiments",  # M04: a `surrogate_study`'s budget, a count, not a state
+        "X",  # ADR 0070: a declared coupling start w₀, by full path below
+        "dT_K",
     }, scalars
     assert {path for _, path in scalars if path.endswith("wall_time_s")} == {"budgets/wall_time_s"}
     assert {(o, path) for o, path in scalars if path.split("/")[-1] in ("T", "P", "n_tubes")} == {
@@ -378,6 +386,12 @@ def test_t07_q26_no_external_state() -> None:
     }
     assert {(o, path) for o, path in scalars if path.endswith("max_cold_experiments")} == {
         ("submit_job", "body/budget/max_cold_experiments")
+    }
+    # ADR 0070 (amends R-088 Q26, ADR 0020 D7): the one registered path by which a solver state
+    # enters from outside, as a start only (its W14-path test: X02 design note §7 G6).
+    assert {(o, path) for o, path in scalars if path.split("/")[-1] in ("X", "dT_K")} == {
+        ("submit_job", "body/warm_start/coupling/*/X"),
+        ("submit_job", "body/warm_start/coupling/*/dT_K"),
     }
     untyped = {(f.operation, "/".join(f.path)) for f in findings if f.kind == "untyped"}
     assert untyped == {

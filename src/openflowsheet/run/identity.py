@@ -146,6 +146,24 @@ def r0_projection(artifacts: Mapping[str, Any]) -> dict[str, Any]:
                 ),
                 "projected_ids": [entry[0] for entry in warm_start["projections"]],
             }
+            # ADR 0070 D9 (X02 design note §5.7): a declared outer start's R0 — statuses,
+            # reasons, the source and the unit ids, never a value. Present only when declared.
+            coupling = warm_start.get("coupling")
+            if isinstance(coupling, dict):
+                declared = coupling.get("declared")
+                projection["warm_start"]["coupling"] = {
+                    "source": coupling["source"],
+                    "status": coupling["status"],
+                    "reason": coupling["reason"],
+                    "units": sorted(declared) if isinstance(declared, dict) else [],
+                    "projected": [[entry[0], entry[1]] for entry in coupling["projections"]],
+                }
+            external = warm_start.get("external")
+            if isinstance(external, dict):
+                projection["warm_start"]["external"] = {
+                    unit: {"status": item["status"], "reason": item["reason"]}
+                    for unit, item in sorted(external["units"].items())
+                }
     # T07 ruling round 2 F1.3: the solution state's ids only. Its values and its digest are
     # float-derived and never R0 (ADR 0007; ADR 0008 D2.1). Inert for every earlier bundle.
     solution_state = artifacts.get("solution-state.json")

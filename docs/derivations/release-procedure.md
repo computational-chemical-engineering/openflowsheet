@@ -90,13 +90,14 @@ release.
 `required_adrs`, `frank_items`, `rejudge_waits`, `links_item`, `specification_texts`. Patterns (`covers`, `clause`)
 are the strings of the `re.Pattern`s. Tuples are JSON arrays. `None` is `null`.
 
-**The release package (D1.5).** The release of `X.Y.Z` has the evidence package `REL` followed by the version's
-digits (0.4.0: `REL040`). It gives these defaults: branch `wp/REL040`, release manifest
+**The release package (D1.5).** The release of `X.Y.Z` has the evidence package `REL` followed by the codes of
+X, Y and Z (ADR 0074 D2). A number below 10 is its digit. A number of k ≥ 2 digits is the k-th lower-case letter
+followed by its digits. So 0.4.0 is `REL040`, 0.10.0 is `REL0b100`, and 11.0.0 is `RELb1100`. Its pre-releases and
+post-releases carry the same id (ADR 0074 D2). It gives these defaults: branch `wp/REL040`, release manifest
 `evidence/REL040/<C>/manifest.json`, verdicts `docs/reviews/REL040-verdicts.md`, RC record `docs/REL040-rc-record.md`,
 build log `docs/REL040_RC_DECISIONS.md`. D1.2's top-level `evidence_package` is the `gate_set` field of that name. It
-is not repeated (one value, one place; Q-3). The id `REL` plus digits is admitted by the schema ADR of the RP review's
-ruling 4, which widens the manifest's `work_package` pattern; until it is applied, `t08.problems` refuses
-`evidence/REL040/<C>/manifest.json` (Q-C6). RP's own package manifest is filed as `S15` (C-22). Amendment A-7 (§17.1).
+is not repeated (one value, one place; Q-3). The id is admitted by ADR 0074 D1, one additive alternative of the manifest's
+`work_package` pattern (components up to 9 999). RP's own package manifest is filed as `S15` (C-22). Amendments A-7 (§17.1) and A-9 (§17.2).
 
 ### 3.2 Inheritance and `changed` (REL.A01)
 
@@ -1104,3 +1105,17 @@ the review's (M-1, M-2, S-1 to S-5, S-7, rulings 3 to 7) and WO-R7's tests (`doc
 - **A-8 (status).** These are notes, not changes. RP.L08 now passes: `scripts/wheel_data_check.py` exists
   (`bd672ff7`). Q-13 is measured, so PTC-R1 stays. F-4 is done in `ci.yml`. The standing-mode reason suffixes `D3`
   and `D4` are the engine's labels (Q-B3).
+
+### 17.2 Amendment A-9 (ADR 0074, 2026-11-08)
+
+- **A-9 (§3.1, D1.5; RP review ruling 4, N-4).** D1.5's mapping is ADR 0074 D2, and its admission is ADR 0074 D1.
+  In D1.5, the sentence "The release of `X.Y.Z` has the evidence package `REL` followed by the version's digits
+  (0.4.0: `REL040`)." is replaced by: "The release of `X.Y.Z` has the evidence package `REL` followed by the codes of
+  X, Y and Z (ADR 0074 D2). A number below 10 is its digit. A number of k ≥ 2 digits is the k-th lower-case letter
+  followed by its digits. So 0.4.0 is `REL040`, 0.10.0 is `REL0b100`, and 11.0.0 is `RELb1100`. Its pre-releases and
+  post-releases carry the same id." The sentence "The id `REL` plus digits is admitted by the schema ADR of the RP
+  review's ruling 4, which widens the manifest's `work_package` pattern; until it is applied, `t08.problems` refuses
+  `evidence/REL040/<C>/manifest.json` (Q-C6)." is replaced by: "The id is admitted by ADR 0074 D1, one additive
+  alternative of the manifest's `work_package` pattern (components up to 9 999)." D1.5's closing reference becomes
+  "Amendments A-7 (§17.1) and A-9 (§17.2)." Nothing else in RP changes. Every default that D1.5 names for 0.4.0 is
+  unchanged.

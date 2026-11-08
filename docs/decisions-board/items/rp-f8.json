@@ -1,0 +1,31 @@
+{
+ "section": "later",
+ "pkg": "RP",
+ "pkgTitle": "Release procedure",
+ "kind": "choice",
+ "title": "F-8: one or two messages to you per release?",
+ "body": [
+  "ADR 0055 says each release asks you one message. The procedure plans up to two: the first, before the verdict, asks about lapsed decision items and any claim-set change; the second, after the verdicts, asks about each failing clause without a standing acceptance (at 0.4.0: V14 (b)). An empty message is not sent.",
+  "One message after the verdicts would bring back the `BLOCKED` row and 0.3.0's re-judgement round."
+ ],
+ "defaultKey": "two",
+ "options": [
+  {
+   "key": "two",
+   "label": "Two, the first only when non-empty",
+   "detail": "Reviewer's recommendation."
+  },
+  {
+   "key": "one",
+   "label": "One message after the verdicts",
+   "detail": ""
+  },
+  {
+   "key": "other",
+   "label": "Something else",
+   "detail": "Say what in the note."
+  }
+ ],
+ "status": "open",
+ "order": 35
+}

@@ -1,0 +1,359 @@
+{
+ "work_package": "X02",
+ "commit": "2ab11b664b8dc325edf568cccddea23a46936119",
+ "requirements": [],
+ "status": "tested",
+ "inputs": {
+  "case_id": "ADR 0070 WO-1..WO-7 (package X02) on branch wp/X02; design note docs/design/X02-warm-starts.md (dc3f60ea77fbe535a8be6f6084f7a44929221edbebaf19ae8b638d7faa516349)",
+  "case_hash": "dc3f60ea77fbe535a8be6f6084f7a44929221edbebaf19ae8b638d7faa516349",
+  "environment_lock_hash": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+ },
+ "commands": [
+  {
+   "cmd": "PYTHONPATH=$PWD/src PATH=/home/frankp/Codes/OpenFlowsheet/.venv/bin:$PATH ./scripts/gate.sh",
+   "cwd": ".claude/worktrees/x02",
+   "exit_code": 0
+  },
+  {
+   "cmd": "PYTHONPATH=src:. ../../../.venv/bin/python scripts/corpus_identity.py --check",
+   "cwd": ".claude/worktrees/x02",
+   "exit_code": 0
+  },
+  {
+   "cmd": "PYTHONPATH=src ../../../.venv/bin/python -m pytest -q -p no:cacheprovider tests/test_x02_*.py tests/test_m02_wo9_reactor.py tests/test_m02_wo10_coupled.py tests/test_m02_pymrm_child.py tests/test_m02_experiments.py tests/test_t06_w6_injection.py tests/test_t08_w4_warm_starts.py tests/test_m02_experiment_body_isolation.py tests/test_t07_q26.py tests/test_m07a_surface_chain.py",
+   "cwd": ".claude/worktrees/x02",
+   "exit_code": 0
+  },
+  {
+   "cmd": "OMP_NUM_THREADS=1 PYTHONPATH=src python benchmarks/x02/g5d_v3_loops.py (WO-6 at dcb499ee; evidence/X02/dcb499eee368132a23dc6a08b92407c418d7688b/index.json)",
+   "cwd": ".claude/worktrees/x02",
+   "exit_code": 0
+  },
+  {
+   "cmd": "python benchmarks/x02/g5_warm_reactor.py inlets / part-a-v3 (WO-5 at 69c4a24d; evidence/X02/69c4a24dcc1d9c8f64ca1cb40c052d3fe58b7144/index.json; script removed by review ruling 1)",
+   "cwd": ".claude/worktrees/x02",
+   "exit_code": 0
+  },
+  {
+   "cmd": "gh run view 42398109849 --json jobs (push run at 2ab11b66)",
+   "cwd": ".",
+   "exit_code": 0
+  }
+ ],
+ "checks": [
+  {
+   "id": "X02.G0",
+   "description": "note §7 G0 cold identity: F0 --check and the full gate pass; the seven listed test files unchanged by node id and expectation; every recorded experiment_key recomputes; pinned_program gives child.py for v1-v3",
+   "result": "pass",
+   "value": {
+    "f0": "F0 PASS: M1 50/50, M2 61/61, M3 61/61, M4 61/61, M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 35/35",
+    "gate": "GATE PASS 2ab11b66: 15138 passed, 3206 skipped, 197 deselected, 1 warning in 3425.04s (0:57:05)",
+    "unchanged": "git diff --stat 49506c90...HEAD -- tests/test_m02_wo9_reactor.py tests/test_m02_wo10_coupled.py tests/test_m02_pymrm_child.py tests/test_m02_experiments.py tests/test_t06_w6_injection.py tests/test_t08_w4_warm_starts.py tests/test_m02_experiment_body_isolation.py (empty)",
+    "tests": [
+     "tests/test_x02_g0_experiment_keys.py",
+     "tests/test_x02_wo4_external.py::test_pinned_program_selects_the_child_by_runner_hash"
+    ]
+   }
+  },
+  {
+   "id": "X02.G1",
+   "description": "note §7 G1 Part C: the T08-warm-v1 run's k = 0 warm start accepted and labelled, replay MATCH, control differs",
+   "result": "pass",
+   "value": {
+    "tests": [
+     "tests/test_x02_wo1_part_c.py"
+    ]
+   }
+  },
+  {
+   "id": "X02.G2",
+   "description": "note §7 G2 explicit x0 on revision_eo: explicit-v1 accepted under default, non-VERIFIED source accepted, A1's three refusals, tampered source rejected for integrity, replay MATCH",
+   "result": "pass",
+   "value": {
+    "tests": [
+     "tests/test_x02_wo2_contract.py"
+    ]
+   }
+  },
+  {
+   "id": "X02.G3",
+   "description": "note §7 G3 (a)-(f) outer start on the stand-in loop, and the Δû bound at (b)",
+   "result": "pass",
+   "value": {
+    "tests": [
+     "tests/test_x02_wo3_outer_start.py"
+    ]
+   }
+  },
+  {
+   "id": "X02.G4",
+   "description": "note §7 G4 (a)-(f) external plumbing with the synthetic warm child",
+   "result": "pass",
+   "value": {
+    "tests": [
+     "tests/test_x02_wo4_external.py",
+     "tests/support/synthetic_warm_child.py"
+    ]
+   }
+  },
+  {
+   "id": "X02.G5a",
+   "description": "note §7 G5 (a): the warm variant without a start gives tube_outlet bitwise v3's recorded one at I1..I8 (measured at 69c4a24d; the variant is not registered and its runner left the package, review ruling 1, D-29)",
+   "result": "pass",
+   "value": {
+    "records": [
+     "evidence/X02/69c4a24dcc1d9c8f64ca1cb40c052d3fe58b7144/g5abc-g12.json",
+     "evidence/X02/69c4a24dcc1d9c8f64ca1cb40c052d3fe58b7144/g5abc-cand-C1-P1.json"
+    ],
+    "bitwise": [
+     true,
+     true,
+     true,
+     true,
+     true,
+     true,
+     true,
+     true
+    ]
+   }
+  },
+  {
+   "id": "X02.G5b",
+   "description": "note §7 G5 (b) path independence, amended A-3: pass iff max rel <= precision_floor_rel/10 = 1e-7; otherwise the variant is not registered",
+   "result": "fail",
+   "value": {
+    "measured_max_rel": 1.9234498639047313e-07,
+    "per_sequence_max": {
+     "g12": 1.9234498639047313e-07,
+     "cand-C1-P1": 1.0502256084139641e-07
+    },
+    "all_accepted": true,
+    "consequence": "the variant pymrm-6089593-g2-nz800-s123w-v1 is not registered (note A-3, A-8; ADR 0070 D4, register draft D; D-29); decided by the design lane in docs/reviews/X02-review.md M-1 and ruling 1",
+    "accepted_fail": true,
+    "accepted_in": "docs/reviews/X02-review.md M-1, A-3, A-8 and ruling 1 (design lane): G5 (b) and (c) decided against registration; the runner left the package"
+   },
+   "expected": "max rel <= 1e-7"
+  },
+  {
+   "id": "X02.G5c",
+   "description": "note §7 G5 (c) wall_warm/wall_cold per inlet: report only, no gate",
+   "result": "not_applicable",
+   "value": {
+    "wall_ratio": {
+     "g12": [
+      1.5334107763450804,
+      2.0324427657931023,
+      1.848394160231304,
+      4.601847697263102
+     ],
+     "cand-C1-P1": [
+      2.933631817562174,
+      0.8360023239318076,
+      0.3710358294637094,
+      0.9330729465928319
+     ]
+    },
+    "note": "about 21 % slower overall (D-29); the design lane decided against registration (review M-1)"
+   }
+  },
+  {
+   "id": "X02.G5d_i",
+   "description": "note §7 G5 (d)(i), run on v3 per review S-2: cold VERIFIED, iterates reported",
+   "result": "pass",
+   "value": {
+    "record": "evidence/X02/dcb499eee368132a23dc6a08b92407c418d7688b/g5d-v3.json",
+    "status": "VERIFIED",
+    "outer_iterations": 4,
+    "w_final": [
+     0.1683878312494687,
+     78.67022237085897
+    ],
+    "wall_s": 193.7
+   }
+  },
+  {
+   "id": "X02.G5d_ii",
+   "description": "note §7 G5 (d)(ii) on v3: job_id = (i), same revision: VERIFIED, 1 outer iteration, w0 = w_final bitwise, at most 1 call",
+   "result": "pass",
+   "value": {
+    "record": "evidence/X02/dcb499eee368132a23dc6a08b92407c418d7688b/g5d-v3.json",
+    "status": "VERIFIED",
+    "outer_iterations": 1,
+    "w0_bitwise": true,
+    "experiments_evaluated": 1,
+    "wall_s": 24.7
+   }
+  },
+  {
+   "id": "X02.G5d_iii",
+   "description": "note §7 G5 (d)(iii) on v3, neighbour SPEC-S3-T 673.15 -> 675.15 K: cold and warm VERIFIED, the edit moves û by more than 10 bounds, the Δû bound holds",
+   "result": "pass",
+   "value": {
+    "record": "evidence/X02/dcb499eee368132a23dc6a08b92407c418d7688b/g5d-v3.json",
+    "edit": {
+     "specification": "SPEC-S3-T",
+     "from": 673.15,
+     "to": 675.15
+    },
+    "cold": [
+     "VERIFIED",
+     4
+    ],
+    "warm": [
+     "VERIFIED",
+     4
+    ],
+    "moved_over_bound": 83.65666021559119,
+    "bound": {
+     "distance": 0.0003763574451207674,
+     "bound": 0.0016394384757346745,
+     "holds": true
+    },
+    "wall_s": [
+     181.5,
+     222.7
+    ]
+   }
+  },
+  {
+   "id": "X02.G5d_iii_iterations",
+   "description": "note §7 G5 (d)(iii): the warm run takes fewer outer iterations than the cold one",
+   "result": "fail",
+   "value": {
+    "record": "evidence/X02/dcb499eee368132a23dc6a08b92407c418d7688b/g5d-v3.json",
+    "cold_outer_iterations": 4,
+    "warm_outer_iterations": 4,
+    "wall_s_cold_warm": [
+     181.5,
+     222.7
+    ],
+    "accepted_fail": true,
+    "accepted_in": "D-32 ruling (design lane, main c054530b, 2026-11-07): the criterion stays recorded as failed, not removed and not relaxed; the premise (an outer start near a neighbour's fixed point saves outer iterations) is false for this edit; ADR 0070 withdraws the neighbour-speedup claim (note A-10, ADR 0070 Consequences bullet 1)"
+   },
+   "expected": "warm outer iterations < cold outer iterations"
+  },
+  {
+   "id": "X02.G5e",
+   "description": "note §7 G5 (e) Part A on v3: (d)(ii) with c1-loop-real.json: VERIFIED, 1 outer iteration, all experiments cold",
+   "result": "pass",
+   "value": {
+    "record": "evidence/X02/69c4a24dcc1d9c8f64ca1cb40c052d3fe58b7144/g5e-v3.json",
+    "cold": [
+     "VERIFIED",
+     4,
+     174.9
+    ],
+    "restart": [
+     "VERIFIED",
+     1,
+     24.9
+    ],
+    "w0_bitwise": true,
+    "experiments_evaluated": 1,
+    "any_start_member": false
+   }
+  },
+  {
+   "id": "X02.G6",
+   "description": "note §7 G6 contract and Q26: surface chain with the new link, Q26 pins the two scalar paths, W14-path far iterates never VERIFIED with a failing check, forged bundles (G3f, G4e), every transport",
+   "result": "pass",
+   "value": {
+    "tests": [
+     "tests/test_m07a_surface_chain.py",
+     "tests/test_t07_q26.py",
+     "tests/test_x02_wo3_outer_start.py -k g6",
+     "tests/test_x02_wo3_outer_start.py -k g3f",
+     "tests/test_x02_wo4_external.py -k g4e",
+     "tests/test_x02_wo2_contract.py::test_g6_every_transport_accepts_warm_start_and_refuses_a1"
+    ]
+   }
+  },
+  {
+   "id": "X02.targeted",
+   "description": "the X02 and G0 test files, run alone at this commit",
+   "result": "pass",
+   "value": {
+    "summary": "258 passed in 81.70s"
+   }
+  },
+  {
+   "id": "X02.gate",
+   "description": "the full gate at this commit (scripts/gate.sh), ref-x86-64",
+   "result": "pass",
+   "value": {
+    "gate": "GATE PASS 2ab11b66: 15138 passed, 3206 skipped, 197 deselected, 1 warning in 3425.04s (0:57:05)"
+   }
+  },
+  {
+   "id": "F0.identity",
+   "description": "F0's corpus identity gate (scripts/corpus_identity.py --check)",
+   "result": "pass",
+   "value": {
+    "summary": "F0 PASS: M1 50/50, M2 61/61, M3 61/61, M4 61/61, M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 35/35"
+   }
+  },
+  {
+   "id": "X02.CI",
+   "description": "push CI at 2ab11b66, both architectures",
+   "result": "pass",
+   "value": {
+    "ci": "run 42398109849 (ci): check (ubuntu-latest) success, check (ubuntu-24.04-arm) success, default-install success, identity success; run 42398109762 (Site): success"
+   }
+  }
+ ],
+ "artifacts": [
+  {
+   "path": "docs/design/X02-warm-starts.md",
+   "sha256": "dc3f60ea77fbe535a8be6f6084f7a44929221edbebaf19ae8b638d7faa516349",
+   "description": "the design note, amended A-1..A-10"
+  },
+  {
+   "path": "docs/adr/0070-X02-warm-starts.md",
+   "sha256": "1879058eaf8f8b04a2dc0c9a9343ac784b41e1d1db3a70c845b490f44179f7ab",
+   "description": "ADR 0070 (Proposed)"
+  },
+  {
+   "path": "evidence/X02/dcb499eee368132a23dc6a08b92407c418d7688b/g5d-v3.json",
+   "sha256": "aa9af890a9ed06c0bccd0342faeb1c8e155cfc2bbdfc32352351f61b837c388b",
+   "description": "G5 (d) on v3 (S-2)"
+  },
+  {
+   "path": "evidence/X02/dcb499eee368132a23dc6a08b92407c418d7688b/index.json",
+   "sha256": "289e36b68420f65dbb3d7304a0a65501e466911d1cbb196c3cd9c953580b3612",
+   "description": "G5 (d) record index"
+  },
+  {
+   "path": "evidence/X02/69c4a24dcc1d9c8f64ca1cb40c052d3fe58b7144/g5abc-g12.json",
+   "sha256": "adb5ffe79fddd57b70362591a995805203f2a258be90737e84b12f3c7da0a03c",
+   "description": "G5 (a)-(c), g12 sequence"
+  },
+  {
+   "path": "evidence/X02/69c4a24dcc1d9c8f64ca1cb40c052d3fe58b7144/g5abc-cand-C1-P1.json",
+   "sha256": "7009e6c538333da865ee73c0447a1c29c60311480752781c45ac887fb2be7d27",
+   "description": "G5 (a)-(c), cand-C1-P1 sequence"
+  },
+  {
+   "path": "evidence/X02/69c4a24dcc1d9c8f64ca1cb40c052d3fe58b7144/g5e-v3.json",
+   "sha256": "640ab6646e2b1b59ce1f32740015511d904f5a9f7fc9680666a4eea7b7e5c1b3",
+   "description": "G5 (e), Part A on v3"
+  },
+  {
+   "path": "evidence/X02/69c4a24dcc1d9c8f64ca1cb40c052d3fe58b7144/index.json",
+   "sha256": "28257262f2a81bce226da3be0dc05f1900e33bf4d80e06362e9e362fe93a8fb3",
+   "description": "G5 (a)-(c), (e) record index"
+  }
+ ],
+ "limitations": [
+  "Evidence class: software verification on the stand-in loop, revision_eo and a synthetic warm child (CI), and workstation measurements of the real reactor loop on v3 (G5); the G5 records are measurements, not validation, and the fixtures are regression evidence.",
+  "G5 (d)(iii)'s iteration criterion failed (warm 4 outer iterations = cold 4, 222.7 s against 181.5 s; X02.G5d_iii_iterations) and stays recorded as failed (D-32 ruling): a neighbouring revision starts near its fixed point but is not claimed to converge faster. The package's claims rest on the same-revision restart (G5d (ii), G5e) and cold identity (G0).",
+  "No start-capable reactor variant is registered (G5b 1.92e-7 > 1e-7, G5c about 21 % slower; D-29, review M-1): external models start cold on every call in practice; Part B ships as plumbing tested with a synthetic child. G5 (a)-(c) were measured at 69c4a24d on a runner removed by review ruling 1.",
+  "G5 (d) ran on v3 with cold experiments (review S-2), not on the variant the note's G5 (d) names; records evidence/X02/dcb499eee368132a23dc6a08b92407c418d7688b/ (D-30, D-31).",
+  "requirements is empty: X02 (ADR 0070, a roadmap package) maps to no D/A requirement of docs/requirements.yaml.",
+  "The manifest id is X02: ADR 0059 D1 (R-938) admits X[0-9]{2}, so no S-id alias is used (X02_DECISIONS D-33).",
+  "Status tested, not reviewed: ADR 0070 stays Proposed until Frank accepts it (X02 Q5); the review's must- and should-fix items were applied in WO-6 and WO-7 and are not re-reviewed."
+ ],
+ "review": {
+  "numerical": "pending",
+  "process_model": "pending"
+ }
+}

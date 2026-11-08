@@ -1,0 +1,253 @@
+# X02 build decisions (build lane)
+
+Choices the design note (`docs/design/X02-warm-starts.md`) and ADR 0070 leave open, each isolated and revertible.
+Format: question → choice; alternative; reversible by; commit. Batched for the package's one ruling round.
+
+## WO-1 (Part C)
+
+- **D-1 — Where the k = 0 record is captured.** → In `solve_coupled`'s `solve_inner` closure, on every call with
+  `start is None` (only k = 0 calls it so; a plan refusal there sets `None`), so WO-3's restart (`couple` twice) keeps
+  the record of the coupling that counted without further code. Alternative: a hook in `couple`. Reversible by:
+  revert `30b921a3`.
+
+## WO-2 (contract, explicit x₀)
+
+- **D-2 — Admission order of A1/A2.** → Step 6a: after the policies (steps 4–6), before the budgets (7–8): the
+  request's own members first, then the caller's limits. A1 before A2. Alternative: before step 4. Reversible by: move
+  the block in `admit_solve`.
+- **D-3 — Register number of the surface link.** → `R-950`, provisional (ADR 0070 numbers register entries on
+  acceptance; R-942…R-949 are held by `wp/MSG`/`wp/RP`). **Merge hazard:** `wp/MSG` carries its own link `c_4`
+  (R-943, `without_msg`, `eaff4585…`). Whichever merges second re-chains as `c_5` with the combined tree's digest and
+  re-takes the R4-G3 snapshots of the job operations. Commit `fe563df4`.
+- **D-4 — `profile_sha256` classified in `benchmarks/m02/numerical_policy_external.yaml`.** → `exact_sha256` gains it
+  (the schema member forces a classification, `tests/test_m02_schemas.py` G1). The list is audit-only; the run time
+  reads `rules` only, so no comparison moves. Commit `fe563df4`.
+- **D-5 — The explicit source on the legacy route.** → `solve-path.json`'s `warm_start` is the x₀ record
+  `{selection: explicit-v1, status: rejected, reason: route}`, written by `run_revision_session`; no trace event (the
+  legacy trace is untouched, so its events stay byte-equal to the cold run's). The `coupling` sub-record's
+  `warm_start_rejected(route)` is WO-3's.
+- **D-6 — An explicit source missing at run time** (admitted, then gone). → A candidate with no document, so the
+  `integrity` check rejects it (recorded), never a silent cold start. Not reachable today (artifacts are not deleted).
+- **D-7 — An explicit source replaces the lineage lookup** (§5.2 "Otherwise"): one candidate; when it is rejected the
+  traversal follows, not the lineage. Taken as the note states it; listed because ADR 0024 D3 says "the next source
+  follows".
+- **D-8 — `warm_start.coupling` between WO-2 and WO-3.** → Admitted by the schema and A2, not yet read: the outer
+  start, its `coupling` sub-record (including `revision_eo`'s `rejected(coupling_compatibility)` and the
+  `absent`/`not_declared` x₀ member of an iterate-only declaration) and the iterate's W14-path test land with WO-3.
+  Branch-internal state only; nothing merges before WO-6.
+
+## WO-3 (outer start)
+
+- **D-9 — The inner members when no x₀ source was declared.** An iterate-only declaration under a policy whose chain
+  is empty records `{status: absent, reason: not_declared}` (§5.7) with `selection: explicit-v1` (the declaration's
+  form; no selection rule ran) and no candidate. On `legacy_eo` an iterate-only declaration records the whole member
+  `rejected` (`route`) the same way (§5.2 "the whole member"). A declared `job_id` whose k = 0 inner solve never
+  consulted it (a k = 0 plan refusal, structural, so a cold run refuses too) records `absent` with reason `null`.
+  Alternative: the lineage `selection`. Reversible by: the `warm is None` block in `run_revision_session`.
+- **D-10 — G3 (c)/(d) "byte-identical to J_c's".** J_c ran its experiments live (`cache_hit: false`); every later
+  cold coupling in that project is served them from the store (`cache_hit: true`), so no later run can be byte-equal
+  to J_c itself. The reference is J_c′, a second cold run under the same cache state; the (c)/(d) records are
+  byte-equal to it, and their evaluation counts equal J_c's. Alternative: separate projects (wall times in the
+  attempts then differ). Test-only; `tests/test_x02_wo3_outer_start.py`.
+- **D-11 — G3 (c) needs a loop whose inner solve fails in the bounds.** The note's premise "start from (0.95, −50)"
+  does not hold for the registered stand-in loop: a 12-point grid over the bounds (X ∈ {0, 0.5, 0.95} × ΔT ∈ {−50, 0,
+  100, 250}, all four corners included) opens every time (3–4 inner iterations). G3 (c) takes the loop with its H₂
+  make-up lowered 0.74625 → 0.725 mol/s: X = 0.95 then needs more H₂ than the loop holds (inner fails), while
+  `coupling.initial` (0.15, 80) and the fixed point X = 0.25 do not (cold VERIFIED, 2 outer iterations). The test
+  proves both inner outcomes first, without the feature. **For the reviewer** (premise check). Test-only.
+- **D-12 — Trace messages (§5.9).** On the job's trace (the one the inner solves extend), existing event kinds:
+  `initializer_candidate` `coupling_warm_start(present|absent)` (absent iff the record is `absent` at resolution),
+  then `initializer_rejected` `warm_start_rejected(coupling_…)` before the cold coupling's events. The bundle's
+  `solve-events.json` is the final inner run's trace and is unchanged, so no identity moves.
+- **D-13 — Integrity is the note's three checks** (schema `#/$defs/coupling`, `outcome == CONVERGED`, last `w` 2·n
+  finite numbers), not also `coupling_record_problem`'s per-request key recomputation (the request keys play no part
+  in w₀). Alternative: add it (stricter, a few ms). Reversible by: `job_coupling_start`.
+- **Observation (not a choice), for the reviewer.** `couple` opens at u = w₀/scales (§5.4), so `iterations[0].w` is
+  fl(fl(w₀/s)·s): a declared iterate can move by an ulp (0.95 → 0.9499999999999998 at s = 0.1). A job source's w is
+  itself u·s and round-trips bitwise (G3 (a) measured). Keeping u = w₀/s as the note states.
+- **D-14 — The outer start's `initializer_rejected` producer joins row E9 of `docs/recovery-edges.yaml`.** The note
+  (§5.9) puts `warm_start_rejected(coupling_…)` on `initializer_rejected` events; T08 A33's bijection requires every
+  producer of that kind in a row. It is E9's edge (a start rejected → the next source, here `coupling.initial`), so
+  the label `event:initializer_rejected@openflowsheet.application.coupled_run.solve_coupled` is added to E9 with
+  G3 (c)/(d) as failure and unchanged-physics tests. Alternative: a new row E14. **For the reviewer** (the inventory
+  is a T08 release-spec artifact).
+
+## WO-4 (external plumbing)
+
+- **D-15 — Where a missing or mismatched exported profile is caught.** In `OutOfProcessBackend` (`_exported`), so the
+  `protocol_error` is the attempt's own execution status (retried once, as every `protocol_error`), and its
+  envelope a refusal; the runner then reads the checked file, stores it and sets `result.profile_sha256`, re-checking
+  the hash (a change in between is an internal error). The note places the check "in the runner"; status, record and
+  result are the same. Reversible by: `_exported` / `ExperimentRunner._export`.
+- **D-16 — `external` statuses the note leaves open.** A source record that fails the coupling integrity check makes
+  each start-capable unit `rejected` (`external_integrity`); no coupling record is `absent` (`no_profile`). `units`
+  lists every external unit of the target (a cold-only one `absent`, `variant_cold_only`); the member is written iff
+  ≥ 1 is start-capable. Checks in order: capability, source entry/hash, variant (`external_compatibility`), store
+  bytes (`profile_unavailable` / `external_integrity`). Reversible by: `external_starts`.
+- **D-17 — The chain after a rejected opening** restarts from the accepted k = 0 profiles (the rejected opening ran no
+  experiment, so this is inert; written out so it stays so).
+- **D-18 — Trace.** A rejected k = 0 child start records `initializer_rejected` `warm_start_rejected(external_…)` from
+  the same producer (E9, D-14).
+- **D-19 — G0 key recomputation is a CI test** (`tests/test_x02_g0_experiment_keys.py`), not a script: 163 recorded
+  requests (`benchmarks/m05/records` 115, `benchmarks/m07/journey` 48), 0 differences. `benchmarks/m02/` holds no
+  request document (its g10 records carry result keys only).
+- **D-20 — `Experiments.evaluate(…, start=None)`.** Implementers must accept the keyword (mypy holds the protocol):
+  `benchmarks/m02/g12_real_loop.py`'s `TimedExperiments` now forwards it. `solve_coupled` passes `start` only when one
+  is set, so a test double without it still runs every cold variant.
+- **D-21 — `pinned_program`'s memo (§5.5 "memoising the packaged scripts' hashes") is a module `@functools.cache`.**
+  T07 G20 lists every such process-global: entry added to `tests/data/t07_global_state_allowlist.json` (immutable
+  package files, one entry per packaged child script: today `child.py` alone, after the review's ruling 1) and the
+  pinned per-pattern count 35 → 36 (unchanged by the retirement). Alternative: no memo (hash two files
+  per backend). Reversible by: drop the decorator and both edits.
+
+## WO-5 (the warm reactor)
+
+- **D-22 — G5's second inlet sequence.** The note's two sequences are one: `g12-real-loop-v3.json` `calls[*]` and
+  `trust-region-study-real.coupling/S0.json` iterations carry the same four experiment keys (`47f845db…`,
+  `1b515243…`, `8ff4aa23…`, `7128da88…`; both are the v3 loop cold from (0.15, 80 K)). → The second sequence is the
+  same study's `cand-C1-P1.json` (v3, 4 iterations, T_in = 653.15 K, distinct keys, recorded outlets), so G5 still
+  measures 8 distinct inlets. Alternative: the 4 inlets twice, or a `poll-preheater` candidate. Reversible by:
+  `SEQUENCES` in `benchmarks/x02/g5_warm_reactor.py`. A control recomputes v3's request (inputs and key) at every
+  inlet, so each is the recorded one bit for bit.
+- **D-23 — `WarmReactor` overrides `_window` as well as `outlet`.** A cold call passes straight through to the
+  base's `_window`; a warm one runs `_warm_window`. This reuses the base `evaluate` whole (its `model_exception`
+  window, the four acceptance clauses) for both chains instead of copying it; the note's "on the cold path `outlet`
+  is the only override" holds in effect (a pure delegation), and G5a proves the cold outlet bitwise v3's.
+  Alternative: copy `evaluate`'s post-processing into `evaluate_w`. Reversible by: `child_warm.py` (a new
+  `runner_sha256`, so a new provisional variant).
+- **D-24 — A non-finite warm outlet falls back** (`fallback_from: "nonfinite"`): D7's "any refusal", and the cold
+  path refuses there too. Alternative: let `nonfinite_screen` refuse it without fallback.
+- **D-25 — `diagnostics.start`.** `warm_stages` is a copy of the warm chain's stage records (plus its
+  `model_exception` record on a fallback from one); on a warm `outlet` it duplicates `stages`. `start` is null on a
+  cold request; `profile_sha256` is null on every non-`outlet` answer.
+- **D-26 — A base that fails the pin.** Run as a script: exit 72 before the request is read (the launcher tolerates
+  the broken pipe). Imported (tests): `BaseMismatchError`, never `os._exit`.
+- **D-27 — G5b's metric, concretely.** ξ is taken twice, as N₂ consumed and as NH₃ made / 2 (per tube, from the
+  tube inlet the child saw); the max covers both. n_tot = Σ|n_out|. Walls are the child-measured
+  `execution.timing.wall_s`.
+- **D-28 — G5d's `job_id = (i)`** is resolved as `declared_coupled_start` resolves it (`job_coupling_start` +
+  `external_starts` over the project's store), with `run_revision_session` + `LiveExperiments` as g12 drives the
+  route, minus the job wrapper.
+- **D-29 — Stopped before registration (escalated, not decided).** G5 at commit `69c4a24d`
+  (`evidence/X02/69c4a24d…/g5abc-*.json`): (a) the cold variant's `tube_outlet` is bitwise v3's recorded one at all
+  8 inlets (inputs equal v3's recorded requests; keys differ only by the environment fingerprint). (b) every warm
+  call accepted, `used` 8/8, no fallback; rel max **1.92e-7** (g12 k = 0, ξ by N₂), 1.05e-7 (P1 k = 0), the other
+  six ≤ 8.9e-8 — the note's "pass with a manifest note" band, but registering `max(measured, 1.56e-8)` = 1.92e-7
+  against `precision_floor_rel` 1e-6 breaks I3's "at least one decade below". (c) warm/cold wall 1.53, 2.03, 1.85,
+  4.60 (g12) and 2.93, 0.84, 0.37, 0.93 (P1); totals 287 vs 133 s and 383 vs 420 s, i.e. **21 % slower overall**,
+  not 10–15 % faster: S1 is gone, but the warm chain ran round 2 at 6 of 8 inlets (cold 4 of 8) and its
+  certificates ran longer, which outweighs S1's ~6 s (measured under ~22 load from other users, two workers).
+  The variant is not registered and G5d is not run; both wait for the design lane (§6 stopping rule spirit, Q1).
+
+## WO-6 (close-out after the review)
+
+- **D-30 — G5d on v3 (S-2) gets its own script, `benchmarks/x02/g5d_v3_loops.py`.** Ruling 1 retires
+  `g5_warm_reactor.py` (it imports the warm child), so the v3 runs need a script that does not. It keeps the retired
+  script's run helpers (`_run`, `_bound`, `pinned`, `Counted`) verbatim, runs (i) cold, (ii) restart from (i), (iii)
+  the neighbour SPEC-S3-T 673.15 → 675.15 K (the handoff's edit) cold and warm from (i), all on v3 with cold
+  experiments, and evaluates §7 G5 (d)'s criteria beside the measurement (exit 1 if any fails). Job ids 21–24 and a
+  fresh store, so nothing is a cache hit from G5e. Alternative: run the retired script's `loops` from `005d206f`
+  with v3 substituted (not reproducible from a commit). Reversible by: deleting the script and its record.
+- **D-31 — Where the G5d record lives.** `evidence/X02/<C>/g5d-v3.json` with its own `index.json`, where C is the
+  commit the script ran at; beside `evidence/X02/69c4a24d…/` rather than inside it, whose index pins the commit
+  69c4a24d it was measured at. Alternative: add it to that index with a second commit field.
+
+- **D-32 — G5d (iii) fails "warm takes fewer outer iterations" (escalated, not decided).** `evidence/X02/dcb499ee…/
+  g5d-v3.json`, v3, cold experiments, neighbour SPEC-S3-T 673.15 → 675.15 K. (i) cold VERIFIED, 4 outer, w =
+  (0.168388, 78.670 K), 193.7 s; (ii) restart VERIFIED, 1 outer, w₀ bitwise, 1 call, 24.7 s; (iii) cold VERIFIED 4
+  outer (181.5 s), warm from (i) VERIFIED **4** outer (222.7 s); Δû 3.76e-4 ≤ bound 1.64e-3 (holds); the edit moves
+  û by 0.137 = 83.7 bounds. Trajectories: cold (0.15, 80) → (0.1629, 79.75) → (0.1696, 75.96) → (0.1672, 77.30);
+  warm (0.1684, 78.67) → (0.1675, 77.14) → (0.1673, 77.25) → (0.1672, 77.30): the warm start begins about 2× closer
+  and stays closer, but meets the tolerance at the same k (B₀ = −I, D3, carries no curvature from the source). §7
+  G5 (d) says "If not, escalate: a premise has failed" — Part A's neighbour claim ("restarts near its fixed point")
+  holds for distance, not for iteration count. ADR 0070 Acceptance evidence and Consequences bullet 1 are left
+  unamended until a ruling. Default I would take: record (iii) as measured, qualify Consequences bullet 1 to "a
+  neighbouring revision starts near its fixed point; on the real loop it took as many outer iterations as cold (G5d
+  (iii))", and not gate on iteration count.
+  *Ruling (design lane, main `c054530b`, 2026-11-07):* the criterion stays in the note and the manifest as **failed**
+  (not removed, not relaxed); the premise (an outer start near a neighbour's fixed point saves outer iterations) is
+  recorded false for this edit; ADR 0070 withdraws the neighbour-speedup claim; the package's claims rest on (ii) and
+  identity, as D-29 did for the warm reactor. Rejected: dropping the criterion from the gate (narrows a gate after it
+  failed); holding X02 for a new design. Reversible by Frank's X02 Q7. Carried out in WO-7: note §7 G5 (d)(iii) A-10,
+  ADR 0070 Consequences bullet 1 and Acceptance evidence (status stays Proposed; the review's Acceptance-evidence
+  text applied with it), manifest check `X02.G5d_iii_iterations` with result `fail` (`accepted_fail`, citing D-32).
+
+- **D-33 — The manifest id is `X02`, not the brief's `S16` alias.** The WO-7 brief (and the WO-6 handoff) assumed the
+  frozen pattern `^[PKTMSR][0-9]{2}[a-z]?$` refuses `X02`. That premise is stale: ADR 0059 D1 (Accepted, R-938,
+  `13eac60b`) widened `work_package` to admit `X[0-9]{2}[a-z]?` and rejects S-id aliases for roadmap packages
+  ("reverses the rejected alternative of R-565 and R-878"). Choice: `evidence/X02/2ab11b66…/manifest.json`, next to the
+  G5 records. Alternative: `evidence/S16/…` as briefed (contradicts an accepted ADR). Reversible by moving the
+  directory, its harvest entries and its support-matrix row in one commit.
+
+- **D-34 — G5b is recorded as `fail`, G5c as `not_applicable`; status `tested`.** G5b's amended criterion (A-3) is
+  "pass iff max ≤ floor/10, otherwise not registered"; 1.92e-7 > 1e-7, so the check is `fail`, its consequence (no
+  registration) carried out per review M-1/ruling 1. G5c is report-only. The brief's rule "tested only if every other
+  check is supported" is read as "no check `unsupported`" (the schema's enum); T08's manifest is the precedent for
+  `tested` with design-lane-accepted `fail` checks. Alternative: status `implemented` because two checks fail.
+  Reversible by editing the manifest's status and re-harvesting.
+
+- **D-35 — `main` (MSG, `ed874b17`) merged into `wp/X02` (merge prep, brief `docs/briefs/X02-merge-prep.md` step 1).**
+  13 conflicted files, resolved as earlier merges did: `benchmarks/t08/support_envelope.yaml` combined (main's
+  harvest entries, then X02's ten); `HARVEST_SIZE` (80, 1007, 129) on main + X02's (1, 7, 3) = **(81, 1014, 132)**;
+  `docs/support-matrix.md` regenerated by `scripts/t08_support_matrix.py --emit` (1146 items, 53 manifests), `--check`
+  0 problems; register entries kept from both sides; `revision_run.run_revision` keeps both new keywords
+  (`coupled_start`, X02; `on_diagnosis`, MSG). The conflicts in the surface and snapshot tests forced the layering
+  into this commit: X02's strip runs before MSG's everywhere (`without_msg(without_x02(…))`; the two strippers touch
+  disjoint property sets, and both orders give D_3); `SNAPSHOT_X02` (R4-G3) re-taken over MSG's responses (the same
+  six job operations move, each `without_x02` → its `SNAPSHOT_MSG` value); `m07a_rc.LINKS` gains c_5 (D-36); the
+  global-state count is 38 (D-37). Two of main's comment lines in `tests/test_m07a_harvest.py` over 100 columns were
+  re-wrapped (ruff E501). At this commit only `test_x02_link_c_5_is_x02s_strip_and_digest` fails (R-950's entry
+  does not yet carry D_5 and D_4); D-36's commit makes it pass.
+
+- **D-36 — X02's surface link is c_5, after MSG's c_4 (brief step 2).** Measured on the merge tree `f36b4a56`: the
+  served MCP list digests to D_5 = `f51b69bf66569e35aebead73b66e98d58f24c84016db639536c0ee35181f4c7b`;
+  `strip_x02` gives `eaff4585…` = MSG's D_4 exactly (so X02's members do not interact with MSG's, and D_4 is not
+  re-recorded); `strip_msg ∘ strip_x02` and `strip_x02 ∘ strip_msg` both give D_3 `455d01eb…`. Old → new: link c_4,
+  D_4 `0af895a09d16b40fe85024dd8d2246b955bc79dfdc081afc1fe376bc876b545a` (WO-2, over M04's list) → link c_5,
+  D_5 `f51b69bf…`. `LINKS`, `X02_SERVED_SHA256`, the chain tests (controls (i)–(iv) and the MSG control carry L4;
+  `test_x02_link_c_5_is_x02s_strip_and_digest`, `test_x02_control_c_5_left_in_place`), R-950's entry, ADR 0070's
+  Consequences bullet and `tests/x02_schema_support.py` name c_5. R4-G3: `SNAPSHOT_X02` re-taken over MSG's
+  responses (`submit_job` `c7c943e3…`, `get_job`/`cancel_job` `58acf056…`, `list_jobs` `531d7432…`, `wait_job`
+  `aee140a9…`, `get_job_result` `9347208b…`; WO-2's `c7eb817f…`, `284a9a5f…`, `b7152dfe…`, `e607a7d7…`,
+  `74862334…`). Reversible by: reverting this commit and the merge's chain-test hunks.
+
+- **D-37 — Global-state `cache` count 38 on the merged tree (brief step 3).** X02 moved it 35 → 36 against the old
+  base (D-21: the packaged child-script hash memo, one entry). `main` at `ed874b17` has 37 (MSG's parsed-template
+  `lru_cache` and its response-schema error locations; plus two `global` lines, test-only audit switch). Merged:
+  **36 → 38** (`{"cache": 38, "np.random": 3, "random": 1, "ContextVar": 1, "global": 2}`), pinned by
+  `tests/test_t07_global_state.py::test_g20_every_hit_is_allowlisted_and_every_entry_is_hit` (passes). OPT adds one more at
+  its merge. No allowlist entry changed.
+
+- **D-38 — ADR 0070 and ADR 0019 Amendment 15 → Accepted; register R-950 final, R-951…R-955 (brief step 4).** Frank
+  accepted both on the decision board on 2026-11-08 (`docs/FRANK_QUESTIONS.md` "Answers — Frank, 2026-11-08"; X02
+  Q1 no, Q2/Q3 no, Q6 yes, Q7 default). ADR 0070's status line reads Accepted with "Proposed 2026-11-07" kept; its
+  Amends bullet marks Amendment 15 Accepted; the pointer paragraph its Amends bullet promised is added to ADR 0019
+  ("Amendment 15 … pointer to ADR 0070", in Amendment 4's form) and `docs/interfaces-frozen.md` §2 lists the three
+  members. Register: R-950 is no longer provisional (c_5, D-36); drafts A–E are R-951…R-955 in R-970's entry format
+  (block R-950…R-959; six of ten used) and the ADR's draft letters are replaced by those numbers. Reversible by
+  reverting this commit.
+- **D-39 — Catalogue entries for X02's three scanned codes (MSG G2; brief `docs/briefs/X02-msg-catalogue.md`).** CI
+  `42512488771` on `51ef7460` failed `test_g2_every_scanned_code_has_an_entry_or_a_reason` only. By MSG's rules
+  (note §3.2, §4.2.1, §4.2.6): `warm_start_source_missing` and `warm_start_unit_unknown` are user-facing admission
+  refusals inside `invalid_request` (ADR 0070 D1), so they are **complete `refusal` entries** in `refusals.yaml`, in
+  `task_unsupported`'s form (chain `[invalid_request, <code>]`), kind `input` by the `*_missing`/`*_unknown` row — no
+  judgment call, so no `review: true` (MSG's flag marks an unreviewed *kind*, not prose). The `api_error` family is
+  closed to the 15 `ApiErrorCode`s, so the table below's "api_error message" lands as family `refusal`. The unknown
+  unit's param is `text`, not `unit`: the id is by definition not an instance, so no element link or path derives.
+  The prose is the build lane's draft from `admit_warm_start` and ADR 0070 D1/D3, for the design lane's prose check in
+  X02's review round (MSG note §4.2.6). `coupling_warm_start(present|absent)` is **allow-listed**: a trace
+  `initializer_candidate` label, never passed to an audit hook or rendered (MSG note §3.3: solve events gain
+  nothing in 0.4); its uncoupled twin `compatible_warm_start(…)` has no entry either. The table's "notice" proposal
+  is not taken (MSG note §3.3: the `notice` family is for result flags such as `relabel`). Catalogue digest (the `message_entry`
+  fixtures) `2252445a…9b1cd5` → `9ac2578a…d01979`; `docs-site/messages/refusals.md` regenerated
+  (`doc_pages.py`), fixtures re-taken (`t07_schema_fixtures.py --write`). D_5 and D_4 unchanged (surface digest test
+  passes). Reversible by reverting this commit.
+
+## Tokens for MSG's catalogue (§5.9; `wp/MSG` not merged)
+
+| Token | Family / kind | Emitted at |
+| --- | --- | --- |
+| `warm_start_source_missing(<job>)` | api_error message / `input` | `application/admission.py` `admit_warm_start` (A1) |
+| `warm_start_unit_unknown(<unit>)` | api_error message / `input` | `application/admission.py` `admit_warm_start` (A2) |
+| `warm_start_rejected(coupling_integrity\|coupling_compatibility\|coupling_opening\|external_integrity\|external_compatibility)` | notice | trace `initializer_rejected` only (`application/coupled_run.py` `solve_coupled`, `_rejected`); the `solve-path.json` `warm_start.coupling` / `.external` records carry the bare check name (review S-1); `route` is a record reason only (no trace event) |
+| `coupling_warm_start(present\|absent)` | notice | trace `initializer_candidate` (`application/coupled_run.py` `solve_coupled`) |

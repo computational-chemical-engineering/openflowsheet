@@ -1,0 +1,18 @@
+{
+ "section": "defaults",
+ "pkg": "X05",
+ "pkgTitle": "Replay from the installed package (merged)",
+ "kind": "adr",
+ "title": "Accept ADR 0069: an installed package replays its own bundles",
+ "body": [
+  "An installed `openflowsheet` replays its own replay bundles once it checks that its nine runtime dependencies are at the locked versions. It amends ADR 0007's replay-mode rule. Merged on its default."
+ ],
+ "links": [
+  {
+   "label": "ADR 0069 (full text)",
+   "url": "https://github.com/computational-chemical-engineering/openflowsheet/blob/main/docs/adr/0069-X05-replay-from-the-wheel.md"
+  }
+ ],
+ "status": "open",
+ "order": 30
+}

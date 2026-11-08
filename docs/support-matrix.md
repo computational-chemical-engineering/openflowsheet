@@ -18,7 +18,7 @@ Envelope `v0.2-envelope-dev` (T08 release spec §5). **Unlisted is unsupported**
 | Globalization and recovery | Damped Newton, with or without the terminal refinement (ADR 0018), Anderson recycle (L43), specification continuation via edge 3, sequential restart (ADR 0015); the recovery-edge inventory of spec §5.6 (T08.A33, W2.4); PTC offered as `T08-ptc-v1`, experimental (V14 (b) carried as FAIL, ADR 0021 D3). | `check:T02.A32`<br>`check:T04.A04`<br>`check:T04.A09`<br>`check:T04.A10`<br>`check:T06.A64`<br>`check:T06.A88`<br>`doc:docs/adr/0015-edge3-sequential-restart.md`<br>`doc:docs/adr/0018-newton-terminal-refinement.md` |
 | Verification | The four-word certificate (VERIFIED, RELAXED, UNVERIFIED, FAILED); residual accuracy at registered tolerances, not solution accuracy (ADR 0007 F3; L05); the [A08] regularity screen; energy checks qualified as sharing the provider ([A09]; L06). | `check:K04.A15.verdicts`<br>`check:K04.A18.injected_false_success`<br>`check:K04.A16.supplied_policy`<br>`check:T06.A33`<br>`doc:docs/adr/0007-reproducibility-certificate-policy.md` |
 | Reproducibility | R0 structural identity on Linux x86-64 and aarch64; floats within the numerical policy each record names (`T08-numerical-policy-v2` for v0.1 records, ADR 0025); bitwise agreement reported, never promised (ADR 0007 F1; L07). | `check:K05.G05.two_platform_structural_equality`<br>`check:T06.A45`<br>`check:T07.G1`<br>`doc:docs/adr/0007-reproducibility-certificate-policy.md`<br>`doc:docs/adr/0025-cross-platform-replay-comparison.md` |
-| Interfaces | Python (`LocalApplication`), CLI, HTTP (`/v1`) and MCP over stdio; the twenty-one operations of `OPERATIONS`, each on the transports listed; authority from the credential only (ADR 0019). With `serve-http --ui`, the diagnostic web shell at `/ui/` is a browser client of seventeen of them over HTTP and of nothing else (M06; L-WEB-1 to L-WEB-4). | `tests/test_t07_v17_reference.py::test_g16b_reference_run`<br>`check:T07.G11`<br>`check:T07.G14`<br>`check:T07.D15(b)`<br>`tests/test_m06_http_contract.py::test_g2_every_ui_operation_answers_schema_valid_over_http`<br>`doc:docs/adr/0019-application-contract-v1.md`<br>`doc:docs/web-shell.md` |
+| Interfaces | Python (`LocalApplication`), CLI, HTTP (`/v1`) and MCP over stdio; the twenty-two operations of `OPERATIONS`, each on the transports listed (`explain`, ADR 0058 D7, reads the message catalogue only); authority from the credential only (ADR 0019). With `serve-http --ui`, the diagnostic web shell at `/ui/` is a browser client of seventeen of them over HTTP and of nothing else (M06; L-WEB-1 to L-WEB-4). | `tests/test_t07_v17_reference.py::test_g16b_reference_run`<br>`check:T07.G11`<br>`check:T07.G14`<br>`check:T07.D15(b)`<br>`tests/test_m06_http_contract.py::test_g2_every_ui_operation_answers_schema_valid_over_http`<br>`doc:docs/adr/0019-application-contract-v1.md`<br>`doc:docs/web-shell.md` |
 | Platforms | Linux x86-64 and aarch64, Python 3.13, the one lock (L15). The C1 reactor's runs are measured on x86-64 only (L44). | `check:K05.G05.two_platform_structural_equality`<br>`doc:.github/workflows/ci.yml`<br>`doc:requirements.lock` |
 | External model execution | Since M02, a variant-backed model (`c1.reactor`) runs out of process under the isolation profile `external-subprocess-v1` (ADR 0033 D2): a separate interpreter and dependencies, a separate address space, an environment allowlist, a private working directory, one thread, a wall-clock limit, termination on cancel, forced kill and parent death, output from one validated file, and verified code identity. It is **not a sandbox**: no filesystem confinement, network isolation, memory or CPU quota, or syscall filtering; trust rests on provenance. Linux is registered; macOS best effort; Windows is refused before spawn. The reactor needs the separately built, pinned reactor environment, and a run that used it is R3 (ADR 0034 D6). | `doc:docs/adr/0033-external-model-execution-and-experiment-records.md §D2`<br>`doc:docs/design/M02-pymrm-adapter.md §2.3`<br>`tests/test_m02_kill_chain.py::test_refusals_before_any_spawn`<br>`tests/test_m02_kill_chain.py::test_g3a_a_cooperative_cancel_reaps_the_child_and_propagates`<br>`tests/test_m02_kill_chain.py::test_g3b_a_timeout_ends_the_attempt_timed_out`<br>`tests/test_m02_kill_chain.py::test_g3c_a_child_ignoring_sigterm_is_killed_after_the_grace`<br>`tests/test_m02_kill_chain.py::test_g3d_the_executors_forced_kill_takes_the_worker_and_its_child`<br>`tests/test_m02_kill_chain.py::test_g3e_a_worker_killed_alone_leaves_its_child_to_its_lifeline`<br>`tests/test_m02_kill_chain.py::test_g3f_the_self_deadline_exits_71`<br>`tests/test_m02_kill_chain.py::test_g3g_an_abort_is_a_crash_with_its_signal` |
 
@@ -41,6 +41,7 @@ Envelope `v0.2-envelope-dev` (T08 release spec §5). **Unlisted is unsupported**
 | `cancel_job` | python, cli, http, mcp |
 | `commit_change` | python, cli, http, mcp |
 | `diff_revisions` | python, cli, http, mcp |
+| `explain` | python, cli, http, mcp |
 | `get_artifact` | python, cli, http, mcp |
 | `get_job` | python, cli, http, mcp |
 | `get_job_result` | python, cli, http, mcp |
@@ -141,7 +142,6 @@ Envelope `v0.2-envelope-dev` (T08 release spec §5). **Unlisted is unsupported**
 | L47 | `pr-c1-v1`'s saturated-liquid NH₃ volume is 11–30 % high (240–400 K) and its enthalpy of vaporization 2–5 % high (−7 % at 400 K), against the reference equations of state. No v0.2 loop decision uses either. | `doc:docs/derivations/M01-spec.md §11` |
 | L48 | The C1 loop's convergence is evidenced at the corners and the centre of its registered hard domain only (M02 G11). The inert-fraction floor y_inert ≥ 0.035 sits just above a measured stage-1 failure (0.03 at 653.15 K, 11 MPa, H₂/N₂ 2.5). A failure inside the domain ends in a typed refusal and then `COUPLING_NOT_CONVERGED`, never in a false success. | `check:M02.G11`<br>`doc:docs/design/M02-pymrm-adapter.md §13` |
 | L49 | No promotable surrogate of the real C1 reactor exists in v0.2. M04's one real iteration (plan `b2-it1` on box v2, reactor variant v3) is NOT_PROMOTABLE (`band_not_finite`): 26 of its 632 registered experiments, 5 of them among the 118 calibration draws, end in a deterministic `reactor_not_accepted(certificate)`, more than the n − k = 4 refused draws the conformal band tolerates, so q̂ is infinite. A revision binds `c1.reactor_surrogate` only through a manifest that re-derives PROMOTABLE (R-360), and no further iteration on v3 is admissible (R-364). | `check:M04.A31`<br>`tests/test_m04_wo9_synthetic_loop.py::test_a48_renaming_the_reactor_onto_the_rough_surrogate_is_rejected`<br>`doc:benchmarks/m04/wo11-b2-it1-v3/record.json`<br>`doc:docs/derivations/M04-spec.md §20` |
-| L-X10-1 | A `pr-c1-v1` revision whose component flows are small against the column scale (for example M04's per-tube `benchmarks/m04/c1-surrogate.json` on `c1.reactor_surrogate`) solves CONVERGED but certifies UNVERIFIED: `derivative_witness.on_pattern` fails (0.109 against 1e-7). The witness step is set by the column scale, not by the state (here h = 3e-5 mol/s against per-tube flows of 1.4e-4 to 4.9e-3 mol/s, so h/x reaches 14-21 %), and the difference between the analytic Jacobian and the finite difference falls 4.00 times per halving of h. That is truncation error of the check, not a Jacobian defect. A design-lane follow-up (scaling and certificate policy) owns whether the step becomes state-relative or such revisions stay UNVERIFIED by declaration. | `doc:docs/X10-inventory.md` |
 | L-S11-1 | `iapws95-v1` (IAPWS-95, S05) is selected by `record_source: benchmarks/s05/components.yaml` for the one component H2O, over 273.16–1273.15 K and 10²–10⁸ Pa. The routing models (`syn001.feed_source`, `syn001.product_sink`, `syn001.stream_splitter`) and the seven `thermal.*` models (L-TH-1..8) bind on it; its evidence is S05's validation against the IAPWS-95 reference equation (S05 spec). | `tests/test_s11_routing.py::test_a13_a82_the_admission_matrix`<br>`tests/test_s11_bases.py::test_a09_the_other_bases_have_their_providers`<br>`doc:docs/derivations/S05-IAPWS95-spec.md`<br>`doc:docs/derivations/S11-design.md §4.11` |
 | L-S11-2 | `coolprop-heos-v1` (CoolProp HEOS, S07) is selected by `record_source: benchmarks/s07/components.yaml` for exactly one admitted fluid per revision, among the 123 of S07's table; each fluid keeps S07's tier and domain. The routing models and the seven `thermal.*` models (L-TH-1..8) bind on it, and it needs the `coolprop` extra: without CoolProp installed, binding is refused `basis_unavailable(coolprop-heos-v1)`. | `tests/test_s11_bases.py::test_a09_coolprop_without_its_extra_is_unavailable`<br>`tests/test_s11_bases.py::test_a06_the_coolprop_records_are_the_generators`<br>`tests/test_s11_routing.py::test_a13_a82_the_admission_matrix`<br>`doc:docs/derivations/S07-spec.md`<br>`doc:docs/derivations/S11-design.md §4.11` |
 | L-S11-3 | `wilson-ig-v2` (S10's Wilson activity model with an ideal-gas vapour; `wilson-ig-v1`'s answers with the molar entropy added, S11 units design §4.6) is selected by `record_source: benchmarks/s10/records.yaml` for its three record components (CH3OH, C2H5OH, H2O, in any order), over 300–400 K and 30–200 kPa. The routing models, the column (`syn001.column`, L-COL-1..10), the five K02/T05 units with γ–φ faces and the vapour machines `thermal.compressor` and `thermal.turbine` (L-GP-1..3) bind on it. Its records ship as package data (R-880), so it binds in a wheel. An installation with neither copy is refused `basis_unavailable(wilson-ig-v2)`. The library constructors `WilsonIdealGasProvider()` and `WilsonIdealGasProviderV2()` with no argument read a source checkout only and elsewhere refuse `records_missing`. A library user passes `resources.packaged_path(wilson_ig.RECORDS_PATH)` (R-883). Premises P1–P3 are checked at binding. The S10 VAL-1–3 bands apply, and the VAL-3 latent-heat miss (methanol, +5.72 % against 5 %) is carried. Results are compared across architectures by tolerance, not bitwise. | `tests/test_s11_bases.py::test_a09_wilson_without_its_records_is_unavailable`<br>`tests/test_v03_wilson_ship.py::test_a12_r_811_s_wheel_refusal_is_gone`<br>`tests/test_v03_wilson_ship.py::test_a12_wilson_ig_v1_binds_from_package_data`<br>`tests/test_s11_bases.py::test_a08_the_binder_refuses_unmet_premises`<br>`tests/test_s11_routing.py::test_a13_a82_the_admission_matrix`<br>`tests/test_s11_column_solve.py::test_the_wilson_column_in_a_flowsheet_reproduces_its_registered_root`<br>`doc:docs/derivations/S10-spec.md`<br>`doc:docs/s10-validation-report.md`<br>`doc:docs/derivations/S11-design.md §4.11` |
@@ -172,7 +172,7 @@ Envelope `v0.2-envelope-dev` (T08 release spec §5). **Unlisted is unsupported**
 
 ## Harvest (T08.A21)
 
-1111 items — every `limitations[]` entry and non-`pass` check of the 49 manifests under `evidence/` — each classified once: **E** user-facing (a row above), **S** superseded or closed, **P** provenance or process note (stays in its manifest), **B** v0.2 backlog (spec §6.3). The classification is a build-lane draft for the design-lane review.
+1172 items — every `limitations[]` entry and non-`pass` check of the 55 manifests under `evidence/` — each classified once: **E** user-facing (a row above), **S** superseded or closed, **P** provenance or process note (stays in its manifest), **B** v0.2 backlog (spec §6.3). The classification is a build-lane draft for the design-lane review.
 
 | Package | E | S | P | B |
 | --- | --- | --- | --- | --- |
@@ -191,6 +191,7 @@ Envelope `v0.2-envelope-dev` (T08 release spec §5). **Unlisted is unsupported**
 | M06 | 6 | 0 | 2 | 0 |
 | M07 | 0 | 2 | 2 | 0 |
 | M07a | 0 | 36 | 6 | 0 |
+| MSG | 0 | 0 | 17 | 0 |
 | OPT | 2 | 0 | 6 | 0 |
 | P00 | 0 | 1 | 8 | 0 |
 | P01 | 2 | 2 | 5 | 0 |
@@ -214,6 +215,7 @@ Envelope `v0.2-envelope-dev` (T08 release spec §5). **Unlisted is unsupported**
 | S13a | 0 | 0 | 8 | 0 |
 | S14 | 0 | 0 | 12 | 0 |
 | S15 | 0 | 0 | 14 | 0 |
+| S15a | 0 | 0 | 4 | 1 |
 | T01 | 3 | 3 | 3 | 0 |
 | T02 | 11 | 2 | 7 | 0 |
 | T03 | 9 | 1 | 10 | 1 |
@@ -223,6 +225,10 @@ Envelope `v0.2-envelope-dev` (T08 release spec §5). **Unlisted is unsupported**
 | T06 | 11 | 3 | 14 | 0 |
 | T07 | 3 | 2 | 7 | 2 |
 | T08 | 53 | 0 | 6 | 1 |
+| X02 | 0 | 0 | 20 | 0 |
 | X05 | 0 | 4 | 13 | 0 |
-| X10 | 2 | 0 | 11 | 0 |
-| **all** | 384 | 97 | 620 | 10 |
+| X05a | 0 | 0 | 5 | 0 |
+| X10 | 0 | 2 | 11 | 0 |
+| X10a | 0 | 0 | 4 | 2 |
+| X10b | 0 | 0 | 7 | 1 |
+| **all** | 382 | 99 | 677 | 14 |
