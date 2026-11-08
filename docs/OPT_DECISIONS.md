@@ -994,6 +994,10 @@ Totals: TH-R1 18.3 s, M1 5.9 s, C-MW 54.4 s ("verify" also holds report/record w
   C12 only). Alternative: re-point C12 at `commit_change` with task optimization (still `task_unsupported`), keeping
   its text. Reversible by: reverting this commit. For the design lane (MSG owns the corpus): which mistake C12
   should register, and the review of D-92's new prose (all `review: true`). MSG tests 193 passed, 3 xfailed.
+- D-94. D-91 resolved by the orchestrator (2026-11-09): option (1). ADR 0071's ten drafts take R-961…R-969 in ADR order
+  (nine) and the tenth (R-860 lifts) takes R-988 (unused on main, wp/OPT, wp/RRC, wp/ST). Entered in
+  `docs/decision-register.md` (R-961…R-969 after R-960; R-988 after R-987) in X02's R-951 form, draft text kept; ADR
+  0071's status line and drafts heading now name the numbers.
 - Merge-prep gates (TRS2, OMP_NUM_THREADS=1, default env, `openflowsheet.__file__` = the worktree's `src`): `test_msg_*`
   181 → (after D-93) 193 passed, 3 xfailed (with `test_opt_cli`, `test_t08_rename_substitution`); `test_opt*` 165
   passed, 21 deselected (nlp marker); surface chain + R4-G3 + surface digest + description reviews + W6c + m02/m04

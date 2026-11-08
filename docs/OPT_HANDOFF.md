@@ -13,7 +13,7 @@ Build decisions: `docs/OPT_DECISIONS.md` (D-1…D-84; WO-8 section at the end).
 ## Merge prep — state 2026-11-09 (brief `docs/briefs/OPT-merge-prep.md`; D-86…D-93)
 - main `b31e80ec` merged (`52616943`); c_6 D_6 `3fdc797a…` (strip → D_5 exactly); cache 39; HARVEST_SIZE (84, 1034, 138);
   D-42 lifted by WIT (D-89); ADR 0071 + Am. 16 Accepted (D-90); catalogue `7bbe3d65…` (D-92); C12 re-pointed (D-93).
-- Open: D-91 register numbers for ADR 0071's ten drafts (block holds nine); D-93 C12 and D-92 prose for the design lane.
+- Open: D-93 C12 and D-92 prose for the design lane. (D-91 resolved: D-94.)
 ## Next (in order)
 1. Orchestrator: full gate, CI both legs (incl. aarch64 default-env G2 evidence), manifest re-take with D-82's
    limitation strings (pr-c1-v1 REGIME_MARGIN_UNDEFINED; thermal-port boundary fails V1; N1 absolute flow

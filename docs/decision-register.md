@@ -18720,6 +18720,141 @@ interaction).
 **Watch for.** A strip that removes more than OPT's additions (the controls in `tests/test_m07a_surface_chain.py`).
 A later MCP-visible change moves D_6: it becomes c_7, it does not re-record c_6.
 
+## R-961 — OPT: the optimisation formulation is a separate request document; decisions are `role: fixed` specifications mapped to parameters by bind probes (2026-11-08)
+
+| | |
+| --- | --- |
+| Date | 2026-11-08 (Proposed 2026-11-07) |
+| Decided by | design lane (`architect`), ADR 0071 (OPT design pass); accepted by Frank on the decision board 2026-11-08 (Q1-Q9 defaults); recorded by the build lane at the merge prep (OPT D-91, D-94) |
+| Normative text | ADR 0071 (draft 1); design §3 D2, D3, §4.2.2 |
+| Affected packages | OPT |
+
+**Decision.** The optimisation formulation is a separate request document; decisions are `role: fixed` specifications mapped to parameters by bind probes.
+
+**Rejected.** `role: decision` in the revision; id-text mapping.
+
+**Watch for.** A binder change that lets `role: decision` bind without an ADR.
+
+## R-962 — OPT: decisions on derived quantities = whatever a specification may target (ADR 0032 open item, assigned by ADR 0057) (2026-11-08)
+
+| | |
+| --- | --- |
+| Date | 2026-11-08 (Proposed 2026-11-07) |
+| Decided by | design lane (`architect`), ADR 0071 (OPT design pass); accepted by Frank on the decision board 2026-11-08 (Q1-Q9 defaults); recorded by the build lane at the merge prep (OPT D-91, D-94) |
+| Normative text | ADR 0071 (draft 2); design §3 D3 |
+| Affected packages | OPT |
+
+**Decision.** Decisions on derived quantities = whatever a specification may target (ADR 0032 open item, assigned by ADR 0057).
+
+**Rejected.** Automatic specification swaps.
+
+## R-963 — OPT: the NLP equality set on a revision is the held-regime system of the final converged region attempt (2026-11-08)
+
+| | |
+| --- | --- |
+| Date | 2026-11-08 (Proposed 2026-11-07) |
+| Decided by | design lane (`architect`), ADR 0071 (OPT design pass); accepted by Frank on the decision board 2026-11-08 (Q1-Q9 defaults); recorded by the build lane at the merge prep (OPT D-91, D-94) |
+| Normative text | ADR 0071 (draft 3) |
+| Affected packages | OPT |
+
+**Decision.** The NLP equality set on a revision is the held-regime system of the final converged region attempt.
+
+**Rejected.** Full declaration minus alias rows.
+
+**Evidence.** G4.
+
+**Watch for.** An NLP built on `revision_sensitivity_host`.
+
+## R-964 — OPT: V1 is the cold production route on the candidate document (2026-11-08)
+
+| | |
+| --- | --- |
+| Date | 2026-11-08 (Proposed 2026-11-07) |
+| Decided by | design lane (`architect`), ADR 0071 (OPT design pass); accepted by Frank on the decision board 2026-11-08 (Q1-Q9 defaults); recorded by the build lane at the merge prep (OPT D-91, D-94) |
+| Normative text | ADR 0071 (draft 4); design §3 D6 |
+| Affected packages | OPT |
+
+**Decision.** V1 is the cold production route on the candidate document.
+
+**Rejected.** Warm start from Ipopt's state.
+
+**Watch for.** `warm_start` passed into V1.
+
+## R-965 — OPT: phase regimes held by admissibility rows; a split's margin is the closure's own test (TWO_PHASE: smaller phase flow / N0); rows only where they equal it, else unguarded; Q4 held mode for V5 only (2026-11-08)
+
+| | |
+| --- | --- |
+| Date | 2026-11-08 (Proposed 2026-11-07) |
+| Decided by | design lane (`architect`), ADR 0071 (OPT design pass); accepted by Frank on the decision board 2026-11-08 (Q1-Q9 defaults); recorded by the build lane at the merge prep (OPT D-91, D-94) |
+| Normative text | ADR 0071 (draft 5); design §3 D7, §4.7, §9.3 |
+| Affected packages | OPT |
+
+**Decision.** Phase regimes held by admissibility rows; a split's margin is the closure's own test (TWO_PHASE: smaller phase flow / N0); rows only where they equal it, else unguarded; Q4 held mode for V5 only.
+
+**Rejected.** Refusing PH-type splits; smoothing; `tp_margin` everywhere; refusing splits without a TP margin.
+
+**Watch for.** Q4 `held` used outside V5; a margin computed by a test the closure does not use.
+
+## R-966 — OPT: V1 at a guarded phase boundary passes on the phase-boundary form (2026-11-08)
+
+| | |
+| --- | --- |
+| Date | 2026-11-08 (Proposed 2026-11-07) |
+| Decided by | design lane (`architect`), ADR 0071 (OPT design pass); accepted by Frank on the decision board 2026-11-08 (Q1-Q9 defaults); recorded by the build lane at the merge prep (OPT D-91, D-94) |
+| Normative text | ADR 0071 (draft 6); design §9.1 |
+| Affected packages | OPT |
+
+**Decision.** V1 at a guarded phase boundary passes on the phase-boundary form (the certificate's matrix less the active splits' pinned columns and dropped rows, unchanged screen and thresholds, the certificate's own `grade`).
+
+**Rejected.** `NOT_VERIFIED` at every boundary; interior retreat; the attempt's whole system; a K04-wide change.
+
+**Evidence.** G10, G10a-G10d.
+
+**Watch for.** `studies.nlp.boundary` imported under `verify/` or `orchestrator/`.
+
+## R-967 — OPT: structurally zero flows are held with their rows (zero subsystem), not left unbounded (2026-11-08)
+
+| | |
+| --- | --- |
+| Date | 2026-11-08 (Proposed 2026-11-07) |
+| Decided by | design lane (`architect`), ADR 0071 (OPT design pass); accepted by Frank on the decision board 2026-11-08 (Q1-Q9 defaults); recorded by the build lane at the merge prep (OPT D-91, D-94) |
+| Normative text | ADR 0071 (draft 7); design §9.2 |
+| Affected packages | OPT |
+
+**Decision.** Structurally zero flows are held with their rows (zero subsystem), not left unbounded.
+
+**Rejected.** Unbounded; `[0, ∞)` (degenerate).
+
+**Evidence.** G22, G23.
+
+## R-968 — OPT: R-129/R-191 superseded for `validate(task="optimization")` (2026-11-08)
+
+| | |
+| --- | --- |
+| Date | 2026-11-08 (Proposed 2026-11-07) |
+| Decided by | design lane (`architect`), ADR 0071 (OPT design pass); accepted by Frank on the decision board 2026-11-08 (Q1-Q9 defaults); recorded by the build lane at the merge prep (OPT D-91, D-94) |
+| Normative text | ADR 0071 (draft 8) |
+| Affected packages | OPT |
+
+**Decision.** R-129/R-191 superseded for `validate(task="optimization")`: a `ValidationReport` with a request and an audited solver; `unsupported nlp_solver_unavailable` otherwise.
+
+**Rejected.** Keeping `task_unsupported(optimization)`.
+
+## R-969 — OPT: job operation `optimize` (ADR 0019 Amendment 16); replay re-checks the certification chain, not the search (2026-11-08)
+
+| | |
+| --- | --- |
+| Date | 2026-11-08 (Proposed 2026-11-07) |
+| Decided by | design lane (`architect`), ADR 0071 (OPT design pass); accepted by Frank on the decision board 2026-11-08 (Q1-Q9 defaults); recorded by the build lane at the merge prep (OPT D-91, D-94) |
+| Normative text | ADR 0071 (draft 9); ADR 0019 Amendment 16 |
+| Affected packages | OPT |
+
+**Decision.** Job operation `optimize` (ADR 0019 Amendment 16); replay re-checks the certification chain, not the search.
+
+**Rejected.** `submit_run` now; bitwise Ipopt replay.
+
+**Watch for.** Ipopt imported on a replay path.
+
 ## R-970 — The release evidence package id is `REL` and a length-marked code of X.Y.Z, admitted by one additive `work_package` alternative (2026-11-08)
 
 | | |
@@ -18900,6 +19035,19 @@ is promised to verify. A plain install verifies only if its resolver picks the l
 
 **Watch for.** A lock regeneration that moves a direct pin without `pyproject.toml`; user-facing text promising that a
 plain `pip install` replays exactly.
+
+## R-988 — OPT: R-860 lifts (2026-11-08)
+
+| | |
+| --- | --- |
+| Date | 2026-11-08 (Proposed 2026-11-07) |
+| Decided by | design lane (`architect`), ADR 0071 (OPT design pass); accepted by Frank on the decision board 2026-11-08 (Q1-Q9 defaults); recorded by the build lane at the merge prep (OPT D-91, D-94) |
+| Normative text | ADR 0071 (draft 10); design §3 D10 |
+| Affected packages | OPT |
+
+**Decision.** R-860 lifts: revision NLP host and optimisation bindings lifted; TR assessment objectives, θ decisions, discrete regimes and the standalone assessment binding stay.
+
+This is OPT's tenth draft, numbered outside the block because R-961…R-969 hold nine (D-91).
 
 ## R-983 — L01.A22 (a): the C1 files stay pinned at the L01 base apart from registered moves; WIT M-6 part b moves `models/c1/flash.py` (2026-11-08)
 

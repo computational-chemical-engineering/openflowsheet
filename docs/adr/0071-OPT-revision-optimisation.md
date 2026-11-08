@@ -4,8 +4,8 @@
 Proposed 2026-11-07.
 - Takes effect on `main` when OPT's evidence manifest is `tested` (gates G1–G21 of the design note) and the design-lane
   `reviewer` pass is done. Until then OPT is built on `wp/OPT`.
-- Register entries: R-960 (the surface link c_6). The ten drafts below are added on acceptance; they are not numbered
-  yet: OPT's block R-960…R-969 has nine free numbers (OPT D-91, escalated).
+- Register entries: R-960 (the surface link c_6); R-961…R-969 (the first nine drafts below, in order) and R-988 (the
+  tenth, the R-860 lifts; numbered outside the block because the block holds nine; OPT D-91, D-94).
 - **Amendment A, 2026-11-07** (mid-build consult, design note §9; brief `docs/briefs/OPT-architect-consult.md`): A-1 V1
   may pass on the *phase-boundary form*; A-2 structurally zero flows are held with their rows; A-3 margins are the
   closure's own test and rows are built only where they equal it. Status stays **Proposed**.
@@ -159,30 +159,30 @@ Readiness and report reasons: `OPTIMIZATION_ROUTE_UNAVAILABLE`, `REVISION_UNBOUN
 `START_NOT_CERTIFIED`, `PHASE_REGIME_CHANGED`, `ZERO_SUBSYSTEM_CHANGED` (Amendment A-2). API refusal detail: `nlp_solver_unavailable`. Registered by whichever of
 OPT and MSG merges second.
 
-## Register entries (drafts, unnumbered)
+## Register entries (drafts, numbered)
 
-- **OPT: the optimisation formulation is a separate request document; decisions are `role: fixed` specifications mapped
+- **R-961. OPT: the optimisation formulation is a separate request document; decisions are `role: fixed` specifications mapped
   to parameters by bind probes.** Rejected: `role: decision` in the revision; id-text mapping. Normative: design §3 D2,
   D3, §4.2.2. Watch for: a binder change that lets `role: decision` bind without an ADR.
-- **OPT: decisions on derived quantities = whatever a specification may target (ADR 0032 open item, assigned by
+- **R-962. OPT: decisions on derived quantities = whatever a specification may target (ADR 0032 open item, assigned by
   ADR 0057).** Rejected: automatic specification swaps. Normative: design §3 D3.
-- **OPT: the NLP equality set on a revision is the held-regime system of the final converged region attempt.**
+- **R-963. OPT: the NLP equality set on a revision is the held-regime system of the final converged region attempt.**
   Rejected: full declaration minus alias rows. Evidence: G4. Watch for: an NLP built on `revision_sensitivity_host`.
-- **OPT: V1 is the cold production route on the candidate document.** Rejected: warm start from Ipopt's state.
+- **R-964. OPT: V1 is the cold production route on the candidate document.** Rejected: warm start from Ipopt's state.
   Normative: §3 D6. Watch for: `warm_start` passed into V1.
-- **OPT: phase regimes held by admissibility rows; a split's margin is the closure's own test (TWO_PHASE: smaller
+- **R-965. OPT: phase regimes held by admissibility rows; a split's margin is the closure's own test (TWO_PHASE: smaller
   phase flow / N0); rows only where they equal it, else unguarded; Q4 held mode for V5 only.** Rejected: refusing PH-type
   splits; smoothing; `tp_margin` everywhere; refusing splits without a TP margin. Normative: §3 D7, §4.7, §9.3. Watch
   for: Q4 `held` used outside V5; a margin computed by a test the closure does not use.
-- **OPT: V1 at a guarded phase boundary passes on the phase-boundary form** (the certificate's matrix less the active
+- **R-966. OPT: V1 at a guarded phase boundary passes on the phase-boundary form** (the certificate's matrix less the active
   splits' pinned columns and dropped rows, unchanged screen and thresholds, the certificate's own `grade`). Rejected:
   `NOT_VERIFIED` at every boundary; interior retreat; the attempt's whole system; a K04-wide change. Normative: §9.1.
   Evidence: G10, G10a–G10d. Watch for: `studies.nlp.boundary` imported under `verify/` or `orchestrator/`.
-- **OPT: structurally zero flows are held with their rows (zero subsystem), not left unbounded.** Rejected: unbounded;
+- **R-967. OPT: structurally zero flows are held with their rows (zero subsystem), not left unbounded.** Rejected: unbounded;
   `[0, ∞)` (degenerate). Normative: §9.2. Evidence: G22, G23.
-- **OPT: R-129/R-191 superseded for `validate(task="optimization")`** — a `ValidationReport` with a request and an
+- **R-968. OPT: R-129/R-191 superseded for `validate(task="optimization")`** — a `ValidationReport` with a request and an
   audited solver; `unsupported nlp_solver_unavailable` otherwise. Rejected: keeping `task_unsupported(optimization)`.
-- **OPT: job operation `optimize` (ADR 0019 Amendment 16); replay re-checks the certification chain, not the search.**
+- **R-969. OPT: job operation `optimize` (ADR 0019 Amendment 16); replay re-checks the certification chain, not the search.**
   Rejected: `submit_run` now; bitwise Ipopt replay. Watch for: Ipopt imported on a replay path.
-- **OPT: R-860 lifts** — revision NLP host and optimisation bindings lifted; TR assessment objectives, θ decisions,
+- **R-988. OPT: R-860 lifts** — revision NLP host and optimisation bindings lifted; TR assessment objectives, θ decisions,
   discrete regimes and the standalone assessment binding stay. Normative: §3 D10.
