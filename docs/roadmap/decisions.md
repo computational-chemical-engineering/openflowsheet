@@ -393,3 +393,11 @@ OPT WO-5b (`3554636d`): A-2/A-3 built; G22 PASS (C-MW both starts KKT-verified, 
 square, ethanol exactly 0.0 on re-solve: F7 holds); F8: pr-c1 margins None. D-42 (γ–φ held single-phase splits never
 certify under K04's witness) and D-44 (earlier G2 `--nlp` dumps compared UNSUPPORTED reports — environment variables
 missing; `optimize_revision` lacked M03's audit probe) → WO-5c re-takes G2 against `ad971d32` and fixes the probe.
+
+## 2026-11-08 — OPT WO-5c done (`wp/OPT` `1d909ef9`+); RRC design pass started
+
+WO-5c: A-1 built; F6 held (at T_b every certificate check but regularity passes); G10 PASS (KKT_POINT_VERIFIED on the
+phase-boundary form; |Q−Q*|/Q* 1.9e-11; λ vs closed-form λ* rel 1.9e-11); G10a–d PASS; D-46 unaudited stack refused.
+G2 re-taken properly (D-44): base `ad971d32` vs `1d909ef9` identical in the audited env (`b6bbafdb…`, solved reports)
+and default env (`6e028e8d…`). For the reviewer: D-45 (Q1′ accepts the boundary basis), D-50 (G10d tolerances
+disagree). WO-6 started. RRC: recon → brief `docs/briefs/RRC-architect.md` → architect running (ADR 0072).
