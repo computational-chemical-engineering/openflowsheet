@@ -113,6 +113,9 @@ BOUNDARY_NOTE: Final = (
 
 Progress = Callable[[str, Mapping[str, Any]], None]
 
+#: §4.10: the least Ipopt `max_wall_time` a job's remaining wall time sets (Ipopt needs > 0).
+MIN_WALL_TIME_S: Final = 1e-3
+
 
 def optimization_sha256(
     request_sha256: str,
@@ -179,12 +182,15 @@ def optimize_revision(
     progress: Progress | None = None,
     solver_probe: SolverProbe = audited_solver,
     surrogates: Any = None,
+    wall_time_remaining: Callable[[], float | None] | None = None,
 ) -> OptimizationOutcome:
     """Optimise `document` (a stored revision) by `request` (§4.12). See the module docstring.
 
     Raises `ValueError` for a request with problems (`request_problems`): an invalid input, not
-    a report. `check` is called between stages and may raise to cancel; `progress(stage, info)`
-    is told each stage."""
+    a report. `check` is called between stages, in every Ipopt iteration and (in a job) at every
+    production solve's trace record, and may raise to cancel; `progress(stage, info)` is told
+    each stage. `wall_time_remaining` (a job's, §4.10) caps each start's Ipopt `max_wall_time`
+    at the job's remaining wall time; `None` (or a `None` answer) leaves the request's."""
     check = check or (lambda: None)
     progress = progress or (lambda stage, info: None)
     parsed = OptimizationRequest.of(request)
@@ -208,11 +214,19 @@ def optimize_revision(
         ),
     }
     record = _Record(directory, sha, identity, request, document) if directory else None
+
+    def finish(report: OptimizationReport, points: tuple[StartPoints, ...]) -> OptimizationOutcome:
+        # §4.10: the `record` stage begins before the report and the manifest are written, so
+        # an interruption there leaves neither.
+        check()
+        progress("record", {"status": report.status})
+        return _finish(record, report, points)
+
     progress("resolve", {"ready": static.ready, "codes": list(static.codes)})
     if not static.ready or static.formulation is None or static.decisions is None:
         reasons = static.reasons or _not_run(static)
         report = _unsupported(parsed, static, revision, reasons, document=document)
-        return _finish(record, report, ())
+        return finish(report, ())
     formulation = static.formulation
     sink = _Sink() if record is not None else None
     host = RevisionNlpHost(
@@ -263,7 +277,7 @@ def optimize_revision(
             assessment=assessment_record(formulation, bound.closure(host, starts, static.solver)),
         )
         points = tuple(StartPoints(start.point, None) for start in starts)
-        return _finish(record, report, points)
+        return finish(report, points)
     if len(failures) == len(starts):
         reasons = tuple(
             ReadinessReason("SIMULATION_NOT_READY", failures[index], f"start {index}")
@@ -274,7 +288,7 @@ def optimize_revision(
             parsed, static, revision, reasons, formulation, refused, host.model_record()
         )
         points = tuple(StartPoints(start.point, None) for start in starts)
-        return _finish(record, report, points)
+        return finish(report, points)
 
     check()
     adapter = importlib.import_module(ADAPTER_MODULE)
@@ -298,8 +312,7 @@ def optimize_revision(
             parsed, static, revision, reasons, formulation, refused, host.model_record()
         )
         points = tuple(StartPoints(start.point, None) for start in starts)
-        return _finish(record, report, points)
-    options = {"max_iter": parsed.max_iter, "max_wall_time": parsed.max_wall_time_s}
+        return finish(report, points)
     runs: list[Any] = []
     evidence: list[StartEvidence] = []
     for index, readiness in enumerate(starts):
@@ -309,6 +322,7 @@ def optimize_revision(
             continue
         check()
         progress("optimize", {"start": index})
+        options = _start_options(parsed.max_iter, parsed.max_wall_time_s, wall_time_remaining)
 
         def place(index: int = index) -> None:
             check()
@@ -316,7 +330,13 @@ def optimize_revision(
                 sink.target = (record.path(f"starts/{index}/resolve"), f"opt-{sha[:16]}-r{index}")  # type: ignore[union-attr]
 
         run = adapter.solve_start(
-            host, formulation, readiness, index, options=options, before_verification=place
+            host,
+            formulation,
+            readiness,
+            index,
+            options=options,
+            before_verification=place,
+            interrupt=check,
         )
         runs.append(run)
         evidence.append(run.evidence())
@@ -378,7 +398,20 @@ def optimize_revision(
         )
         for readiness, run in zip(starts, runs, strict=True)
     )
-    return _finish(record, report, points)
+    return finish(report, points)
+
+
+def _start_options(
+    max_iter: int,
+    max_wall_time_s: float,
+    wall_time_remaining: Callable[[], float | None] | None,
+) -> dict[str, Any]:
+    """One start's Ipopt options (§4.10): the request's, `max_wall_time` capped at the job's
+    remaining wall time when there is one (an exhausted budget is the job's check's to end)."""
+    remaining = wall_time_remaining() if wall_time_remaining is not None else None
+    if remaining is not None and remaining < max_wall_time_s:
+        max_wall_time_s = max(remaining, MIN_WALL_TIME_S)
+    return {"max_iter": max_iter, "max_wall_time": max_wall_time_s}
 
 
 @dataclass(frozen=True)
