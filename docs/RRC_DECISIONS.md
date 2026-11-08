@@ -135,3 +135,66 @@ Built on `main` (OPT's executor edits not pulled, per the work order; the merger
 - G6 (a, c, d, e, k) and G7 (four bundles `MATCH`, 0 differences, no lookup) in `tests/test_rrc_application.py`.
 - G8 measured twice in fresh processes (NET-02 store pair): `artifact_r0_sha256` `aa47dabf12e4000a…` both runs.
 - Opening hash (WO-3's open point): no WO-4 case pins a column; NET-02's recovery item opens at `full_state_sha256`.
+
+## WO-5 (2026-11-08)
+
+Commits: `cba5e8e2` (5a: `benchmarks/rrc/cases.yaml`, pushed before any run), `b0c7d1ec` (runner), `96a7129d` (first
+results), `40fba287` (runner self-contained), `b91b0ddb` (registration, results re-taken, gate tests), `395c5f56`
+(L21, L-COL-9).
+
+- **D-17.** DECISION: Where each policy runs → the target under the control, `T06-revision-v2` and `RRC-revision-v1`
+  **in-process** (WO-3's candidate construction), and `RRC-revision-v1` **again in the store** (the application's own
+  `find_source`/A1–A3). The control cannot run in the store (not offered, by §8.1). Selection requires both the
+  in-process record and the store member to be `taken`; on every non-forced candidate the two roots' digests are equal
+  (measured). Alternative: the store leg only for RRC. Reversible by: dropping `store_leg` in `run_case`.
+- **D-18.** DECISION: The control keeps `policy_id = "RRC-revision-v1"`, only `eo_recovery` replaced by `"none"` (§8.1's
+  words). Alternative: a distinct id. No record of the control is stored. Reversible by: `CONTROL` in the harness.
+- **D-19.** DECISION: The column flowsheets bind through the production registration (`MODEL_BUILDERS` has
+  `syn001.column` since I1), not the tests' `column_registered` patch (which installs the same `build_column`). Every
+  column run is `VERIFIED` under it. Alternative: the patch. Reversible by: wrapping `run_case` in the patch.
+- **D-20.** Reading, for the reviewer: "ends in an edge-3 trigger outcome" (Family C's control) is
+  `recovery.eo_recovery_due(outcome, budget, attempts=solver_outcomes(attempts))` on the failed region result, the
+  executor's own predicate.
+- **D-21.** DECISION: Family F has no store leg: the forcing patch is in-process. F1, F2 are reported under all three
+  policies with the forcing on for each. F2's 295 K source was `VERIFIED`; the 298 K fallback was not used.
+- **D-22.** G10's `levels_compiled` counts every compile inside the action, the λ = 1 recompile of `_region` included:
+  4 on a path without rejection = λ = 1 plus §5.10's three λ < 1 levels (0, 1/4, 3/4); C4 (2 rejections) compiled 5.
+- **D-23.** DECISION: The harness lives in `benchmarks/rrc/run_candidates.py` and is self-contained (mypy runs strict
+  over `benchmarks/`; no benchmark module imports a test module). It copies T06's `ALLOWANCE`, the twin-root reader and
+  S02's flow tolerance; `test_the_harness_reads_the_registered_references_as_the_tests_do` holds each equal to the
+  tests' own. A29's feed is read from the revision's pinning specifications (`SPEC-S-IN1-n-<c>`), held equal to
+  `column_case_spec("M1-recycle")`'s. Alternative: a test-side harness. Reversible by: moving the module.
+- **D-24.** DECISION: L21 and L-COL-9 are rewritten in WO-5 (the WO-5 brief), not WO-6, with §6's texts (L-COL-9: the
+  "If G5 passes" branch). L-COL-9's pinned test stays as evidence, unedited: it asserts the column region has no
+  *specification* continuation parameter, still true. The harvest note "carried verbatim" became "narrowed by RRC G5".
+  Reversible by: reverting `395c5f56`.
+- **D-25.** DECISION: `benchmarks/registry.yaml` is not edited. The pairs are registered where the WO-5 row puts them
+  (`benchmarks/rrc/reference_values.yaml`, evidence class regression, the independent checks named and measured);
+  benchmark registration is design-lane-led (CLAUDE.md). Open: whether a registry entry is wanted.
+- **D-26.** Recorded: the first local 5a commit (`dbe59313`) had a YAML syntax error (unquoted `[` in keys). It was
+  amended to `cba5e8e2` (keys quoted, one list item quoted; no content change) before any run and before the push.
+
+### WO-5 measured (x86-64; `benchmarks/rrc/results-ref-x86-64.md`)
+
+- G9: 10 candidates × 3 policies, all reported; three fresh runs (b0c7d1ec ×2, 40fba287): outcomes, iterations,
+  λ-trials, checks and state digests equal.
+- Selected: **N1** (G4) and **C3** (G5). Also qualifying, not registered: N2, N3, C4 (C4: 2 rejected trials, λ = 1/2
+  visited). C1, C2, C5 converge first under every policy (store member `not_reached`).
+- G4 (N1): control `BOUND_BLOCKED` (1 it); RRC `CONVERGED`/`VERIFIED`/`taken`, 12 it, λ 1/4, 3/4, 1, 0 rejected;
+  closed-form worst ratio 0.0109 (S3.liq.C; ≤ 1); restart root 1.96e-9 scaled (≤ 1e-8).
+- G5 (C3, M1-recycle split 0.2 → 0.9): control `BOUND_BLOCKED` (4 it, in the trigger set); RRC
+  `CONVERGED`/`VERIFIED`/`taken`, 22 it, 0 rejected; A29 closure 2.73e-10 (≤ 1); restart root 7.8e-15 scaled.
+  **L-COL-9 narrowed.**
+- F1: item-0 root 4.4e-13 scaled, `D` = both column end parameters. F2: 2.0e-14 scaled.
+- G2 (a)–(f): N1 (`test_rrc_edge3`), C3 (`test_rrc_candidates`). (f) holds on every taken run (7 of 7): every source
+  signature in the table is all `TWO_PHASE`, so no column is pinned; WO-4's forward risk did not bite. O5: no opening
+  refusal anywhere.
+- G7 on the C3 bundle: `MATCH`, 0 differences. G10: recovery 0.12–0.63 s, compile ≤ 0.051 s per level (O4's 10 s far
+  off), property calls 208–2070.
+- **D-27.** Recorded (a G1 finding, fixed): `test_t06_f4_literals.py::test_wo1_no_committed_document_names_the_new_policy_value`
+  failed on `benchmarks/rrc/cases.yaml`, whose two policy comments spelled the `eo_recovery` literals (spelled in code
+  only). The two comments were reworded (`git diff cba5e8e2 -- benchmarks/rrc/cases.yaml`: two comment lines, no key,
+  rule or value); `reference_values.yaml`'s `cases_sha256` follows. The edge-3 test file is not edited.
+- WO-5 battery (rrc ×5, t04_homotopy, t04_edge3, t06_f4 ×7, t06_w4_registry, t07_b3_policies, s11_column_solve):
+  333 passed, 1 failed (D-27); after the fix the failing file and the G9 tests: 22 passed. Support-envelope and
+  surface-content tests: 48 passed. F0 PASS (M1 50/50, M2–M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 35/35).
