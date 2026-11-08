@@ -1,5 +1,5 @@
-"""The command line: `validate`, `solve`, `inspect`, `replay`, `project`, `api`, `serve-http`,
-`serve-mcp`. K06, gates G02 and G06; T07 §10.3, §11.5.
+"""The command line: `validate`, `solve`, `optimize`, `inspect`, `replay`, `project`, `api`,
+`serve-http`, `serve-mcp`. K06, gates G02 and G06; T07 §10.3, §11.5; OPT design §4.12.
 
 Blueprint D15: local Python and CLI share one contract and neither requires a network round
 trip. So this module is thin on purpose — it parses arguments, calls the application layer,
@@ -66,13 +66,16 @@ def _load(path: Path) -> Any:
 def command_validate(arguments: argparse.Namespace) -> int:
     """Blueprint §4.3: a status is computed from a revision and a task, never set.
 
-    A task v0.1 does not validate for (`optimization`, U05) is refused before any analysis: the
-    typed error document is printed as `api` prints one, and the command exits its §5.8 code.
+    `--task optimization` takes the optimization request as `--request FILE` (OPT design §4.11,
+    §4.12). A refusal — no audited NLP solver (`unsupported`, `nlp_solver_unavailable`), or no
+    request (`invalid_request`, `/optimization`) — is printed as `api` prints a typed error
+    document, and the command exits its §5.8 code.
     """
     from openflowsheet.application.contract import ApplicationError
 
+    request = None if arguments.request is None else _load(Path(arguments.request))
     try:
-        report = validate(_load(Path(arguments.revision)), arguments.task)
+        report = validate(_load(Path(arguments.revision)), arguments.task, optimization=request)
     except ApplicationError as refused:
         _print_document(refused.error.as_document())
         return API_EXIT_CODES[refused.code]
@@ -119,6 +122,60 @@ def command_solve(arguments: argparse.Namespace) -> int:
     print(f"structural sha256 {manifest.structural_sha256}")
     print(f"bundle            {directory}")
     return 0 if manifest.verification_status == "VERIFIED" else 1
+
+
+def command_optimize(arguments: argparse.Namespace) -> int:
+    """OPT design §4.12: `optimize_revision` on a revision file, no project — the library entry
+    the `optimize` job calls, under the policies a `revision_eo` solve uses by default
+    (`resolve_policy(DEFAULT_POLICY_ID, "revision_eo")`, `CheckPolicy()`). The record is written
+    to `--out`. A request with problems is refused as `api` refuses one (`invalid_request`, the
+    pointer under `/request`); without an audited NLP solver the report is `UNSUPPORTED`
+    (`NLP_SOLVER_UNAVAILABLE`), and Pyomo and cyipopt are never imported. Exit 0 iff the report
+    is `KKT_POINT_VERIFIED`, as `solve` exits 0 iff its run is `VERIFIED`.
+    """
+    from openflowsheet.application.policies import DEFAULT_POLICY_ID, resolve_policy
+    from openflowsheet.studies.nlp.request import request_problems
+    from openflowsheet.studies.nlp.revision import optimize_revision
+    from openflowsheet.studies.nlp.revision_host import ROUTE
+    from openflowsheet.verify.certificate import CheckPolicy
+
+    document = _load(Path(arguments.revision))
+    request = _load(Path(arguments.request))
+    problems = request_problems(request)
+    if problems:
+        pointer, message = problems[0]
+        error = {
+            "code": "invalid_request",
+            "message": f"request_invalid({pointer}): {message}",
+            "detail": {"pointer": f"/request{pointer}"},
+            "retryable": False,
+        }
+        _print_document(error)
+        return API_EXIT_CODES["invalid_request"]
+    policy = resolve_policy(DEFAULT_POLICY_ID, ROUTE)
+    assert policy is not None, ROUTE
+    outcome = optimize_revision(
+        document,
+        request,
+        directory=Path(arguments.out),
+        solve_policy=policy,
+        check_policy=CheckPolicy(),
+    )
+    report = outcome.report
+    if arguments.json:
+        print(json.dumps(report.as_document(), indent=1, sort_keys=True))
+    else:
+        print(f"status    {report.status}")
+        for reason in report.reason_codes:
+            print(f"  reason  {reason}")
+        for start in report.starts:
+            print(f"  start   {start['start']}: {start['classification']}")
+        if report.candidate is not None:
+            print(f"objective {report.candidate['objective']}")
+            for name, value in sorted(report.candidate["decisions"].items()):
+                print(f"  decision {name} = {value}")
+        print(f"record    {outcome.record_dir}")
+    return 0 if report.status == "KKT_POINT_VERIFIED" else 1
 
 
 def command_inspect(arguments: argparse.Namespace) -> int:
@@ -482,8 +539,20 @@ def build_parser() -> argparse.ArgumentParser:
     validate_command.add_argument(
         "--task", choices=("simulation", "optimization"), default="simulation"
     )
+    validate_command.add_argument(
+        "--request", default=None, help="the optimization request (with --task optimization)"
+    )
     validate_command.add_argument("--json", action="store_true")
     validate_command.set_defaults(handler=command_validate)
+
+    optimize_command = commands.add_parser(
+        "optimize", help="optimise a revision by a request and write the record"
+    )
+    optimize_command.add_argument("revision", help="a ProcessRevision YAML or JSON file")
+    optimize_command.add_argument("--request", required=True, help="the optimization request")
+    optimize_command.add_argument("--out", required=True, help="where to write the record")
+    optimize_command.add_argument("--json", action="store_true")
+    optimize_command.set_defaults(handler=command_optimize)
 
     solve_command = commands.add_parser("solve", help="solve a registered SYN-001 case")
     solve_command.add_argument("case", help="a registered case id, e.g. SYN-001-nominal")
