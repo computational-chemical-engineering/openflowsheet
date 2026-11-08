@@ -602,3 +602,12 @@ approval recorded in REVIEW.json), S4 (44 documents byte-identical), text amendm
 Open for a design-lane confirmation at WO-7 (none reached by any corpus case): M1-1, M1-2 (mixture h → n·h as
 `_phase_flow`), M1-3 (Q4.R12 (b)(ii) dropped), S1-1, and the products-style flash feed with a degeneracy row. ST's
 WO-7 (manifest, full gate, CI) waits for MSG on main (Frank's `explain.md` read) and ADR 0068.
+
+## 2026-11-08 — Frank: no local full gate before a merge when CI is green
+
+Frank: "I feel the checks cost too much time. If CI passes why do it once more?" Measured on WIT: the local gate runs
+the same `scripts/check.sh` as CI, but with fewer tests (15 194 passed / 3 206 skipped, 3 143 of them CoolProp, not
+installed on TRS2) than CI (x86-64 18 291 / 109; aarch64 18 263 / 107); it adds only ~25 host-specific tests (CPU-
+pinned floats, BLAS-thread control, dev-history checks), and costs 1 h 45 on the shared machine.
+Rule now (CLAUDE.md "Gate by risk", amended): CI green on both architectures is the merge condition; F0 runs on main
+after the merge; the local full gate runs only before a release-candidate cut or tag. S15a's running gate stopped.
