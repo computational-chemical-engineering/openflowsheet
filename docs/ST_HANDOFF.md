@@ -1,29 +1,31 @@
-# ST handoff (wp/ST, 2026-11-08) — WO-1…WO-6 done; WO-7 next
+# ST handoff (wp/ST, 2026-11-08) — review fix round done; WO-7 next
 
-**State.** Branch `wp/ST` (worktree `.claude/worktrees/st`) = main `00a508bd` + `wp/MSG` `35403f42` merged
-(56294e49, 22f64c65; brief `docs/briefs/ST-build-WO3-6.md`). Not merged to main; ADR 0068 Proposed (Frank's
-acceptance pending); MSG still waits for Frank. Choices: `docs/ST_DECISIONS.md` (D1-…D6-, E1).
+**State.** Branch `wp/ST` (worktree `.claude/worktrees/st`) = main `00a508bd` + `wp/MSG` `35403f42` merged + WO-1…6 +
+the fix round of `docs/reviews/ST-review.md` (brief `docs/briefs/ST-fix-round.md`). Not merged to main; ADR 0068
+Proposed (Frank's acceptance pending, review amendments folded in); MSG still waits for Frank. Choices and numbers:
+`docs/ST_DECISIONS.md` (§ "Fix round").
 
-**Commits (WO-3…6).** 19c6857c registry entry · 444aa56f operation on every transport (+ surface re-records,
-interfaces-frozen, D3-*) · c93a7216 limitations re-sync · 9328e59c generated pages · bf599747 catalogue (seven
-codes, G5, G15) · 1af221be + 4226829b CLI `streams` (`application/stream_table_format.py`, goldens
-`tests/fixtures/st/cli/`) · e8c8dcae docs (guide, CLI reference, ADR 0019 Amendment 13 pointer).
+**Fix-round commits.** e2079456 M1 rule R1′ · 3a7fb9c3 S1 G8u + A02-360 attribution · faadfcc7 S2 `not_found`
+variant · ae224c25 S3 description edits + design-lane review recorded · 69d5453f S4 recorded route · ee0de60f
+rulings D1-1, D1-6/7, D1-10…14 in note/ADR · 16b90e93 D4-1 prose capabilities.
 
-**Gates.** G11 (transports: conformance 5 clients incl. not_ready/no-bundle/unknown job; `test_st_operation.py`
-not_found member, unsupported, internal_error, unknown job on python/cli/http/mcp) PASS. G12: served MCP
-`eaff4585…` → `6705fb05…`, `without_st` = D_4 exactly; R4-G3 new row = `projection` def (`951b77ea…`), none
-moved; `API_EXIT_CODES` unchanged; schemas vs the merge tree: registry +1 and the new file. G13: F0 PASS after
-WO-3 and at the end; no diff under verify/thermo/models/run/orchestrator/compiled.py vs 22f64c65. G5 against
-the real catalogue PASS; G15 PASS (`absent` → MSG audit). A48 PASS. G8 still `xfail(strict)` (E1).
-**Known red, not ST's to fix:** `test_every_description_is_reviewed_by_both_lanes` (3 open: `explain` human,
-`get_stream_table` design-lane + human — reviews are the reviewers' acts).
+**Gates (fix round).** G8 PASS (xfail and guard removed; max ratio 1.76e-4). SC-1 envelope 2016.0 → 0.0 W,
+U-VLV 2016.0 → 0.0; SC-3 U-VLV 2016.0 → 0.0, U-PHF −2016.0 → 3.64e-12 (tol 1.01e-3). G7 41 bitwise (R1′ streams
+vs `_phase_enthalpy`). G8u: all 52 corpus runs are `judged_at: projection`, so only ratios (max 2.703, A02-360,
+which is the projection: ST = `checks.enthalpy_flow` bitwise at the stored state). Served MCP digest c_5
+`6705fb05…` → `ebb4ca84…`; `without_st` = MSG's `eaff4585…`. `catalogue.sha256` 8fa0c03e → 81d3a6aa (S2) → 7573d7ea
+(D4-1). 44 served 0.3.0 documents: only SC-1, SC-3 move (M1); none move under S4. F0 PASS (M1 50/50 … M9 35/35).
+G13: no diff under verify/thermo/models/run/orchestrator/compiled.py vs 6f55fc19. Targeted battery 457 passed;
+**known red:** `test_every_description_is_reviewed_by_both_lanes` (2 open: `explain`, `get_stream_table` human).
 
-**Design-lane questions for ST's reviewer pass.** D1-1, D1-3, D1-6/D1-7, E1 (WO-1/2); D3-6 (no-bundle
-`not_found` renders "Nothing named …"), D3-7 (c_5's register id, after ADR 0068 acceptance; MSG's R-942/R-943
-collide with RP's), D4-1 (`energy form:<model>` vs §6.4's `energy_form:<model>`, G4 jargon lint), D5-2 (assembly
-resolves every elision, §6.3 named only `/streams`/`/energy`); the `get_stream_table.md` description review.
+**Open for the design lane (logged, defaults applied).** DECISION M1-1 (no-split flagged stream keeps
+`phase_source: flash`, flag false), M1-2 (R1′ mixture-`h` provider uses `n·h` as γ–φ `_phase_flow`), M1-3 (Q4.R12
+(b)(ii) dropped as dead), S1-1 (G8u compares only `energy_balance.<U>`). Fact: a flagged undeclared products-style
+feed would get `flash_failed` though the verifier flashes it; no corpus/served case.
 
-**Next: WO-7** — evidence manifest (`evidence/<ST id>/<commit>/manifest.json`, numbers in the WO-1 handoff
-section of ST_DECISIONS and above), full gate `scripts/gate.sh`, CI on both architectures, the reviewer pass.
-When MSG lands on main: `git merge main` into `wp/ST` (MSG renumbers its register ids; re-check c_5 and the
-surface tests).
+**Not done (review Notes, out of the brief's scope).** Untyped exceptions → `internal_error`; `_quote` null reason;
+R1 empty split refusal; §4.4 dormant-row sentence; paging cost measurement.
+
+**Next: WO-7** — evidence manifest, full gate `scripts/gate.sh`, CI on both architectures. When MSG lands:
+merge commit only; re-measure G12 (c_5/c_6 order vs X02), take main's register ids, S2's one-hunk conflict in
+`api_errors.yaml`, re-take `message_entry` fixtures.

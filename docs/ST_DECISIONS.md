@@ -255,3 +255,6 @@ M3 61/61, M4 61/61, M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 35/35).
   this unit's model" and `property_not_provided`'s "this property from the flowsheet's property basis" (static,
   as every other entry's). G5 asserts the exact text. `catalogue.sha256` `81d3a6aa…` →
   `7573d7ea42c41696f563bcb88cc89cb8d25df51619201086a09ff3ad19d4dd45` (fixtures re-taken; `refusals.md` regenerated).
+- **Fix-round close.** F0 `--check` PASS (M1 50/50, M2 61/61, M3 61/61, M4 61/61, M5 61/61, M6 85/85, M7 52/52,
+  M8 105/105, M9 35/35). Targeted battery (test_st_*, surface digest, chain, R4-G3 no-weakening, descriptions,
+  A48, MSG, doc pages): 457 passed, 1 known red (human reviews of `explain` and `get_stream_table`).
