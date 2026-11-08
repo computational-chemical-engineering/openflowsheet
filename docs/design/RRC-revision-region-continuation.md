@@ -295,10 +295,12 @@ _revision_continuation(step, region, flowsheet, spec, policy, run, spent, state,
                             initializer_source=REVISION_CONTINUATION_SOURCE,
                             reported_signature=candidate.signature))
         if recovered.outcome == "INITIALIZATION_FAILED" and not recovered.attempts:
-            spent = spent'; keep the pre-call `state`; refusal rejected("opening(<check>)")
-            # <check> read from the result exactly as `_warm_start` reads `warm_start_rejected(opening:<check>)`
+            spent = spent'; keep the pre-call `state`; refusal rejected("opening(<check>:<subject>)")
+            # <check>:<subject> read from the result's `revision_continuation_rejected(opening:<check>:<subject>)` (§5.7)
         else:
-            <exactly the homotopy branch's tail>: recovered_provenance(failed.bp, recovered.bp),
+            <the homotopy branch's tail, with the restart's provenance pattern>:
+            recovered_provenance(failed.bp, recovered.bp, first_initializer_source=REVISION_CONTINUATION_SOURCE),
+            # (Amended by the review, D-5: §5.8 names the recovery item's source, so the keyword is required.)
             checkpoint rule, replace(step, outcome, iterations, message, detail, eo_recovery="taken",
             recovered_from=failed, revision_continuation=Record(status="taken", reason=None, D, start_values))
             return
@@ -332,7 +334,9 @@ The restart's preconditions P3 to P5, its records and its `unsupported` reasons 
     as the compatible-warm-start check builds it (`region.py:2157`), with `reported = recovery.reported_signature`.
     This checks coverage, the active-set pinned columns at exactly `+0.0`, the lower bounds on free columns, and that
     the reported signature equals the opening (regimes plus dormancy items);
-  - a refusal ends the solve `INITIALIZATION_FAILED` with message `revision_continuation_rejected(opening:<check>[:<detail>])`.
+  - a refusal ends the solve `INITIALIZATION_FAILED` with message `revision_continuation_rejected(opening:<check>:<subject>)`.
+    `<subject>` is mandatory: the refusal's column, unit or field id (`OpeningRefusal.subject`, R0), never a float.
+    *(Amended by the review, D-6.)*
     No attempt is opened, and it emits exactly the events a refused warm-start opening emits.
 - The identity pair in `OpeningState` is set equal to the requirement's. Identity was established by R5 and R8. The
   requirement's `constants_sha256` is the target's, as for the warm start.
@@ -380,7 +384,10 @@ whether or not edge 3 fired, as ADR 0024 D4 does.
 | `source_parameters` | `{pid: canonical float string}` of `spec_src` | R0 |
 | `candidate` | the `solution-state` document | values R1/R2; digest shape only |
 
-`status = not_reached` means the source was assembled but edge 3 never consulted it. `run.identity.r0_projection` gains one
+`status = not_reached` means the source was assembled but edge 3 never consulted it. `status` `absent` or `rejected` with
+no `initializer_rejected` event in the trace means the application refused the source (no verified ancestor, or an A1–A3
+refusal) and edge 3 never fired; the refusal is recorded as that refusal (D-10). *(Amended by the review.)*
+`run.identity.r0_projection` gains one
 branch for this member, as ADR 0024 did for `warm_start`. A bundle without the member is unaffected.
 
 ### 5.9 Replay

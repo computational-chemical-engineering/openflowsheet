@@ -260,3 +260,8 @@ results), `40fba287` (runner self-contained), `b91b0ddb` (registration, results 
   `get_project.solve_policies` entry.
 - **D-36 (WO-6 rest: CHANGELOG).** `## Unreleased` gains `### RRC — revision-region continuation (ADR 0072,
   Proposed)`, after X05's entry: the policy, M2's non-superset statement, the records, E3c/L21/L-COL-9, the schemas.
+- **D-37 (review rulings on D-5, D-6, D-10).** Design note amended, each marked: §5.5's pseudo-code tail is
+  `recovered_provenance(…, first_initializer_source=REVISION_CONTINUATION_SOURCE)` (D-5), and its opening refusal
+  `rejected("opening(<check>:<subject>)")`; §5.7's message is `revision_continuation_rejected(opening:<check>:<subject>)`
+  with `<subject>` mandatory, never a float (D-6); §5.8 says `absent`/`rejected` with no `initializer_rejected` event
+  means the application refused the source and edge 3 never fired (D-10; E3c's note says the same). Text only.
