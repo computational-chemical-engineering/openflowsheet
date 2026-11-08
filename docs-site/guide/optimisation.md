@@ -60,7 +60,10 @@ A JSON document (`schemas/optimization-request.schema.json`):
 
 `validate` with `task: "optimization"` runs the static checks (codes `OPT.<CODE>`, for example
 `UNKNOWN_DECISION`, `BOUNDS_UNDECLARED`, `START_OUTSIDE_BOUNDS`, `ASSESSMENT_OUTPUT_UNKNOWN`) and
-answers `READY_FOR_OPTIMIZATION` when nothing stops the run. It never solves.
+answers `READY_FOR_OPTIMIZATION` when nothing stops the run. It never solves. With an assessment,
+`ASSESSMENT_OUTPUT_UNKNOWN`, `ASSESSMENT_PARAMETER_STRUCTURAL` and `ASSESSMENT_PARAMETER_DECISION`
+are `WARN` ("not established statically"): the assessment program is planned at a solved state, so
+these are judged at the first certified start.
 
 ## Running it
 

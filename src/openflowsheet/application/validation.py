@@ -433,10 +433,12 @@ OPTIMIZATION_PASSED: Final[Mapping[str, str]] = {
     "NLP_SOLVER_UNAVAILABLE": "an audited NLP solver is available on this platform",
 }
 #: OPT D-18: with an assessment, what E01 decides on the program is judged at the first certified
-#: start, where the program is planned (`AssessmentProgram.build` takes a solved state).
+#: start, where the program is planned (`AssessmentProgram.build` takes a solved state). Nothing is
+#: judged statically, so the check is `WARN` (review S2, D-83), as STR-06 reports what it did not
+#: establish; readiness stands (`NOT_RUN` would withdraw it, R-022).
 ASSESSMENT_AT_START: Final[str] = (
-    "an assessment is given; its program is planned at a solved state, so this is judged at the "
-    "first certified start"
+    "not established statically: an assessment is given; its program is planned at a solved "
+    "state, so this is judged at the first certified start"
 )
 
 
@@ -491,7 +493,7 @@ def _validate_optimization(
             elif code in found.not_run:
                 checks.append(_optimization_check(code, "NOT_RUN", found.not_run[code]))
             elif assessed and code.startswith("ASSESSMENT_"):
-                checks.append(_optimization_check(code, "PASS", ASSESSMENT_AT_START))
+                checks.append(_optimization_check(code, "WARN", ASSESSMENT_AT_START))
             else:
                 checks.append(_optimization_check(code, "PASS", OPTIMIZATION_PASSED[code]))
         status = "READY_FOR_OPTIMIZATION" if found.ready else "INVALID"

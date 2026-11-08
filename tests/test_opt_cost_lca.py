@@ -22,6 +22,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from test_e01_a_report import P1_DOC  # noqa: E402
 from test_e01_b_lca import P4_DOC  # noqa: E402
 
+from openflowsheet.application import validation  # noqa: E402
 from openflowsheet.application.revision_routes import REVISION_ROUTES
 from openflowsheet.application.types import schema_errors  # noqa: E402
 from openflowsheet.studies.nlp.closure import SolverAvailability  # noqa: E402
@@ -59,6 +60,29 @@ def test_the_committed_requests_are_current_valid_and_ready(case: str) -> None:
         request, document, solver_probe=lambda: available, routes=REVISION_ROUTES
     )
     assert readiness.ready, readiness.codes
+
+
+@pytest.mark.parametrize("case", ["OPT-C", "OPT-L"])
+def test_validate_warns_on_the_assessment_checks_it_defers(case: str) -> None:
+    """Review S2 (D-83): with an assessment, the three checks D-18 defers to the first certified
+    start are `WARN` ("not established statically"), never `PASS`; readiness stands."""
+    request = _hand().requests()[case]
+    document = json.loads((REPO / "benchmarks/s11/thermal/TH-C1.json").read_bytes())
+    available = SolverAvailability(True, "test double")
+    report = validation.validate(
+        document, "optimization", optimization=request, solver_probe=lambda: available
+    )
+    assert report.status == "READY_FOR_OPTIMIZATION"
+    deferred = {
+        "OPT.ASSESSMENT_OUTPUT_UNKNOWN",
+        "OPT.ASSESSMENT_PARAMETER_STRUCTURAL",
+        "OPT.ASSESSMENT_PARAMETER_DECISION",
+    }
+    opt = {check.id: check for check in report.checks if check.id.startswith("OPT.")}
+    assert {opt[i].result for i in deferred} == {"WARN"}
+    assert all(opt[i].message.startswith("not established statically") for i in deferred)
+    assert {check.result for i, check in opt.items() if i not in deferred} == {"PASS"}
+    assert schema_errors("validation-report.schema.json", report.as_document()) == []
 
 
 def test_the_hand_model_reproduces_p1() -> None:

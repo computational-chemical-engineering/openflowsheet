@@ -891,3 +891,9 @@ Totals: TH-R1 18.3 s, M1 5.9 s, C-MW 54.4 s ("verify" also holds report/record w
   `routes=REVISION_ROUTES` and the required `solve_policy`/`check_policy` (as `cli.command_optimize` does; the old
   example omitted both policies); design note §4.12's signature line gains `routes` and `interruptions=()`.
   `scripts/doc_pages.py --check`: up to date. Layering re-run at 5f0da859: `test_m04_study` + `test_t07_interrupt` 50 passed.
+- D-83 (done). S2 (as ruled): in `validation._validate_optimization`, with an assessment the three checks D-18 defers
+  (`ASSESSMENT_OUTPUT_UNKNOWN`, `ASSESSMENT_PARAMETER_STRUCTURAL`, `ASSESSMENT_PARAMETER_DECISION`) are `WARN` with
+  "not established statically: … judged at the first certified start" (was `PASS`), as STR-06; status stays
+  `READY_FOR_OPTIMIZATION` (readiness reads `found.ready`, not the results). No test pinned the old `PASS`; new
+  `test_opt_cost_lca.py::test_validate_warns_on_the_assessment_checks_it_defers` (OPT-C, OPT-L on TH-C1; the report
+  validates against its schema). Guide § validate says so. `test_opt_cost_lca.py` + `test_opt_request.py` 50 passed.
