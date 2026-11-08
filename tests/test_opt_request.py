@@ -395,10 +395,20 @@ def test_validate_without_a_request_is_invalid_request_at_optimization() -> None
 def test_g11_an_unaudited_platform_is_unavailable_naming_it(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    solver = audited_solver("linux-aarch64")
-    assert not solver.available
-    assert "the platform linux-aarch64 is not audited" in solver.detail
-    assert "platform" not in audited_solver("linux-x86_64").detail
+    # the extra absent: M03's detail, byte for byte, on any platform (OPT review M6)
+    with monkeypatch.context() as absent:
+        absent.setattr(closure, "NLP_LIBRARIES", ("openflowsheet_no_such_library",))
+        solver = audited_solver("linux-aarch64")
+        assert not solver.available
+        assert solver.detail == audited_solver("linux-x86_64").detail
+        assert "platform" not in solver.detail
+    # the extra present on an unaudited platform: unavailable, naming the platform
+    with monkeypatch.context() as present:
+        present.setattr(closure, "NLP_LIBRARIES", ())
+        solver = audited_solver("linux-aarch64")
+        assert not solver.available
+        assert "the platform linux-aarch64 is not audited" in solver.detail
+        assert "platform" not in audited_solver("linux-x86_64").detail
     monkeypatch.setattr(closure, "running_platform", lambda: "darwin-arm64")
     with pytest.raises(ApplicationError) as refused:
         validation.validate(

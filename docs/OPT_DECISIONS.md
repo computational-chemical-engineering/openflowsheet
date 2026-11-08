@@ -827,3 +827,11 @@ Totals: TH-R1 18.3 s, M1 5.9 s, C-MW 54.4 s ("verify" also holds report/record w
   `opt_schema_support.without_opt` (the surface chain's c_4 strip: the `optimize` enum value and branches, the six
   artifact kinds, `job_result.optimization`, `validate`'s `optimization`) before `without_m04`, the later package first.
   No snapshot re-taken. Before: 1 failed (the `solve` digest); after: file 23 passed.
+- D-76. M6 (as ruled): `closure.audited_solver` appends the platform clause only when the `nlp` extra is present
+  (`missing` empty) on an unaudited platform; with the extra absent the detail is M03's byte for byte on every platform,
+  so M03's default-env report fixture holds on aarch64 (no fixture regenerated). `test_g11_an_unaudited_platform_*`
+  now pins both branches (extra absent: aarch64 detail == x86-64 detail; extra present: aarch64 named). Measured with
+  `running_platform` patched to `linux-aarch64`: `tests/test_m03_schemas.py` 1 failed before (CI's
+  `nlp_1_without_the_extra.json`), 30 passed after; `test_opt_request.py` + M03 schema/formulation files 92 passed.
+  Availability is unchanged in every case (absent extra → unavailable already). G2's aarch64 default-env leg is
+  CI's to read.

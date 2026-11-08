@@ -235,8 +235,10 @@ def audited_solver(platform_id: str | None = None) -> SolverAvailability:
     whether the [A10] `PASS` covers the running platform (OPT design §2.7: linux x86-64 only).
 
     `platform_id` defaults to `running_platform()`; a test names another to take the
-    platform-not-audited path on an audited machine. On an audited platform the detail is M03's,
-    byte for byte; elsewhere the platform's problem is appended, naming it."""
+    platform-not-audited path on an audited machine. On an audited platform, and wherever the
+    extra is absent, the detail is M03's, byte for byte (OPT review M6: M03's report pins it on
+    every platform); where the extra is present on an unaudited platform, the platform's problem
+    is appended, naming it."""
     versions = {name: _version(name) for name in ("ipopt", "cyipopt", "pyomo")}
     running = running_platform() if platform_id is None else platform_id
     missing = [name for name in NLP_LIBRARIES if importlib.util.find_spec(name) is None]
@@ -249,7 +251,7 @@ def audited_solver(platform_id: str | None = None) -> SolverAvailability:
         problems.append(f"the [A10] verdict is {AUDIT_VERDICT}")
     if not NLP_LICENCES_ACCEPTED:
         problems.append("the licences of the `nlp` extra's stack are not accepted (N1)")
-    if running not in AUDITED_PLATFORMS:
+    if running not in AUDITED_PLATFORMS and not missing:
         problems.append(
             f"the platform {running} is not audited (the [A10] PASS covers "
             f"{', '.join(AUDITED_PLATFORMS)})"
