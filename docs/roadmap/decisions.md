@@ -533,3 +533,12 @@ GP-C1 tp_flash 335/340 K VERIFIED), D-1 (`wilson_dormant_liquid_columns`), M-6 p
 DECISION: WIT merges after its full gate, CI on both legs and a `tested` manifest under `evidence/K04/`, with ADR 0073
 Proposed and Q-WIT-1 on its default (as X05 merged on a Proposed ADR); M-6 part b waits for Frank (Q-WIT-2).
 Alternative: hold for Frank's acceptance of ADR 0073. Reversible by: revert the merge.
+
+## 2026-11-08 — WIT manifest id
+
+DECISION: under which id does WIT's evidence manifest file? → `X10a` (`evidence/X10a/dbf884ad…/manifest.json`).
+`K04` (my brief) breaks the v0.1.0 pins (A01.K04.one_manifest, A21 harvest count, the CHANGELOG v0.1.0 review table,
+which globs `[PKT]*`); `K04a` falls into the same glob; `WIT` is not admitted by the frozen manifest id pattern (ADR
+0059 D1) and would need an ADR. WIT is the follow-up that closes X10's L-X10-1, and `X[0-9]{2}[a-z]?` admits `X10a`
+with no schema change. Alternative: an ADR 0059 amendment admitting `WIT`. Reversible by: moving the directory and
+the harvest `manifest:` paths, re-emitting the support matrix.
