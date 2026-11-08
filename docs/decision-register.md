@@ -18566,7 +18566,7 @@ that is not §6.2's push run or the latest dispatch.
 | | |
 | --- | --- |
 | Date | 2026-11-07; re-measured as c_5 on 2026-11-08 |
-| Decided by | build lane, X02 WO-2, applying ADR 0070 (ADR 0019 Amendment 15) and the X02 design note §5.1 ("the surface chain gains one link … with a register entry") in R-457's form; re-ordered after MSG's c_4 (R-976) per X02 review ruling 4 at the merge of `main` into `wp/X02` (D-35, D-36) |
+| Decided by | build lane, X02 WO-2, applying ADR 0070 (Accepted 2026-11-08 by Frank, with ADR 0019 Amendment 15) and the X02 design note §5.1 ("the surface chain gains one link … with a register entry") in R-457's form; re-ordered after MSG's c_4 (R-976) per X02 review ruling 4 at the merge of `main` into `wp/X02` (D-35, D-36) |
 | Normative text | ADR 0070 D1; `docs/design/X02-warm-starts.md` §5.1; `scripts/m07a_rc.py` (link c_5) |
 | Evidence | On the merge tree (`wp/X02` with `main` at `ed874b17` merged, `f36b4a56`) the served MCP tool list digests to `f51b69bf66569e35aebead73b66e98d58f24c84016db639536c0ee35181f4c7b` (D_5). `without_x02` (`tests/x02_schema_support.py`) on it gives `eaff45852d7596816d90d744078f537e46c723e577295d347d9d73aea0942eac`, MSG's D_4 (R-976), exactly, so D_4 is unchanged with X02's members present; `without_msg` then gives D_3 `455d01eb…` (R-457) in either order. The tools are unchanged in name and description, and the six that serve the job request moved (`tests/test_t08_w2_surface_digest.py::test_x02s_surface_move_decomposes_onto_msgs`). At WO-2, over M04's list before MSG, the served digest was `0af895a0…` (evidence, not a pin) |
 | Affected packages | X02; M07a (`scripts/m07a_rc.py`, A37 tests); M07 (the next RC's V17 carry names c_5) |
@@ -18587,6 +18587,103 @@ Re-recording D_4 on the merged tree (MSG's link stands as registered; the strip 
 
 **Watch for.** A strip that removes more than the three members (the controls in `tests/test_m07a_surface_chain.py`).
 A later MCP-visible change moves D_5: it becomes c_6, it does not re-record c_5.
+
+## R-951 — X02: a warm start is declared in the solve request (`solve_body.warm_start`), an explicit declaration is its own opt-in (2026-11-08)
+
+| | |
+| --- | --- |
+| Date | 2026-11-08 (Proposed 2026-11-07) |
+| Decided by | design lane (`architect`), ADR 0070 (X02 design pass, amended per the X02 review); accepted by Frank on the decision board 2026-11-08 (X02 Q1 no, Q2/Q3 no, Q6 yes, Q7 default); recorded by the build lane at the merge prep |
+| Normative text | ADR 0070 R-951 (draft A), D1; ADR 0019 Amendment 15; `docs/design/X02-warm-starts.md` §5.1–§5.3 |
+| Affected packages | X02; T08 (`T08-warm-v1` unchanged); K06/T07 (application contract) |
+
+**Decision.** Starts are declared in `solve_body.warm_start` (`job_id`, `coupling`; ADR 0019 Amendment 15). An explicit
+declaration is its own opt-in. `T08-warm-v1` is unchanged (X02 Q2: no). `coupling_initial.*` stays refused as a
+parameter. Starts on the `experiment` operation are not admitted (X02 Q3: no); integration with studies is outside X02
+(Q4).
+
+**Rejected.** Revision parameters; instance hints; a `SolvePolicy` member; extending `T08-warm-v1`.
+
+**Evidence.** `tests/test_x02_wo2_contract.py` (admission A1–A2, `explicit-v1`); evidence `evidence/X02/2ab11b66…/manifest.json`.
+
+**Watch for.** A start smuggled into a revision or a policy.
+
+## R-952 — X02: a warm experiment request carries its start's `profile_sha256` in its key, only when used (2026-11-08)
+
+| | |
+| --- | --- |
+| Date | 2026-11-08 (Proposed 2026-11-07) |
+| Decided by | design lane (`architect`), ADR 0070 (X02 design pass, amended per the X02 review); accepted by Frank on the decision board 2026-11-08 (X02 Q1 no, Q2/Q3 no, Q6 yes, Q7 default); recorded by the build lane at the merge prep |
+| Normative text | ADR 0070 R-952 (draft B), D5; `docs/design/X02-warm-starts.md` §5.5 |
+| Affected packages | X02; M02 (experiment identity, `ExperimentStore`) |
+
+**Decision.** A warm request carries `start.profile_sha256` inside its key, only when the start is used. Profiles are kept in a
+content-addressed store; bundles carry hashes only.
+
+**Rejected.** The source key in the identity; a request-version bump; lookups that ignore the start.
+
+**Evidence.** `tests/test_x02_g0_experiment_keys.py` (cold keys unchanged), `tests/test_x02_wo4_external.py`.
+
+**Watch for.** Any change that moves a cold key.
+
+## R-953 — X02: certificate verdicts are independent of the start; a warm external answer is bounded by the registered path independence (2026-11-08)
+
+| | |
+| --- | --- |
+| Date | 2026-11-08 (Proposed 2026-11-07) |
+| Decided by | design lane (`architect`), ADR 0070 (X02 design pass, amended per the X02 review); accepted by Frank on the decision board 2026-11-08 (X02 Q1 no, Q2/Q3 no, Q6 yes, Q7 default); recorded by the build lane at the merge prep |
+| Normative text | ADR 0070 R-953 (draft C), D6; `docs/design/X02-warm-starts.md` §5.4, §5.5 |
+| Affected packages | X02; certificate and replay paths |
+
+**Decision.** Verdicts are functions of the final state alone. A warm external answer is bounded by the registered path
+independence, a decade below the floor, and disclosed in `external_model`. The child falls back to the cold chain
+within the attempt.
+
+**Rejected.** A cold re-check; failing on a warm refusal.
+
+**Watch for.** A verdict that reads the start; a warm refusal surfaced as a failure instead of the cold fallback.
+
+## R-954 — X02: no warm reactor variant is registered (G5b, G5c); the neighbour-speedup claim is withdrawn (G5 (d)(iii)) (2026-11-08)
+
+| | |
+| --- | --- |
+| Date | 2026-11-08 (Proposed 2026-11-07) |
+| Decided by | design lane (`architect`), ADR 0070 (X02 design pass, amended per the X02 review); accepted by Frank on the decision board 2026-11-08 (X02 Q1 no, Q2/Q3 no, Q6 yes, Q7 default); recorded by the build lane at the merge prep |
+| Normative text | ADR 0070 R-954 (draft D, as amended by the X02 review), D4, D8, Consequences bullet 1; design note §7 G5 A-3, A-10; D-29, D-32 |
+| Affected packages | X02; M01/M02 (the G2 reactor program, R-224) |
+
+**Decision.** No warm reactor variant is registered (X02 Q1: no): G5b 1.92e-7 > floor/10, G5c about 21 % slower. Programs are
+selected by `runner_sha256`; R-224 is lifted only for start-capable variants, and none is registered. The variant id
+stands as given (X02 Q6: yes). G5 (d)(iii) is recorded as failed (warm 4 = cold 4 outer iterations on v3) and
+ADR 0070 withdraws the claim that a neighbouring design restarts faster (X02 Q7, default); restarting the same design
+(G5 (d)(ii): 1 outer iteration, 1 reactor call) stands.
+
+**Rejected.** Registering with a raised floor (the real loop's T floor ratio would drop from 13 to about 6.8); registering in the
+manifest-note band (contradicts D6); editing or copying `child.py`; dropping the (iii) criterion from the gate after it
+failed; holding X02 for a redesign (Q7's alternative).
+
+**Evidence.** `evidence/X02/69c4a24d…/` (G5b, G5c), `evidence/X02/dcb499ee…/g5d-v3.json` (G5 (d)).
+
+**Watch for.** A start-capable variant registered without its own G5b/G5c pass; the neighbour claim re-asserted without a new
+measurement.
+
+## R-955 — X02: `body/warm_start/coupling/*/{X,dT_K}` is a registered Q26 state-from-outside path; the coupled route records its k = 0 inner start (2026-11-08)
+
+| | |
+| --- | --- |
+| Date | 2026-11-08 (Proposed 2026-11-07) |
+| Decided by | design lane (`architect`), ADR 0070 (X02 design pass, amended per the X02 review); accepted by Frank on the decision board 2026-11-08 (X02 Q1 no, Q2/Q3 no, Q6 yes, Q7 default); recorded by the build lane at the merge prep |
+| Normative text | ADR 0070 R-955 (draft E), "Amends" (ADR 0020 D7, R-088 Q26; R-287), D7; `docs/design/X02-warm-starts.md` §5.7 |
+| Affected packages | X02; T07 (Q26 scalar inventory) |
+
+**Decision.** `body/warm_start/coupling/*/{X,dT_K}` is the registered state-from-outside path, with its W14-path test (amends
+R-088 Q26 and R-287). The coupled route records its k = 0 inner start.
+
+**Rejected.** Admitting the coupling start as an unregistered numeric input.
+
+**Evidence.** `tests/test_t07_q26.py` (the two registered full paths; `test_t07_q26_no_external_state`).
+
+**Watch for.** A second numeric path admitted without a registered exception.
 
 ## R-970 — The release evidence package id is `REL` and a length-marked code of X.Y.Z, admitted by one additive `work_package` alternative (2026-11-08)
 

@@ -1,16 +1,18 @@
 # ADR 0070 — Declared warm starts for coupled and external units: an explicit start in the solve request, a warm-chained reactor variant, and a start-keyed experiment identity
 
-**Status:** **Proposed, 2026-11-07.**
+**Status:** **Accepted, 2026-11-08** (Frank, on the decision board) with ADR 0019 Amendment 15; Q1 no, Q2/Q3 no, Q6
+yes, Q7 default (G5 (d)(iii) failed, claim withdrawn). Proposed 2026-11-07.
 - Takes effect on `main` when X02's manifest is `tested` and the reviewer pass is done. Until then X02 is built on
   `wp/X02`.
-- Register entries are added on acceptance (drafts below).
+- Register entries: R-950 (the surface link c_5) and R-951…R-955 (below).
 
 **Author:** design lane (`architect`), X02 design pass. **Brief:** `docs/briefs/X02-architect.md`.
 
 **Design note:** `docs/design/X02-warm-starts.md` holds the normative detail; the § numbers below refer to it.
 
 **Amends:**
-- **ADR 0019 D1, as Amendment 15.** Three optional members (§5.1):
+- **ADR 0019 D1, as Amendment 15** (**Accepted, 2026-11-08**, with this ADR; Proposed 2026-11-07). Three optional
+  members (§5.1):
   - `job.schema.json#/$defs/solve_body` gains `warm_start: {job_id?, coupling?}`;
   - `experiment.schema.json#/$defs/request` gains `start`;
   - `#/$defs/result` gains `profile_sha256`.
@@ -173,9 +175,9 @@ in an exact cache. Measured (note §3):
 - One `reviewer` pass.
 - `review.numerical` and `review.process_model` are not set by this ADR.
 
-## Register drafts (numbers assigned on acceptance; R-942…R-949 are held by `wp/MSG` and `wp/RP`)
+## Register entries (R-951…R-955, assigned at acceptance from X02's block R-950…R-959)
 
-**A — declared starts.**
+**R-951 — declared starts.**
 - **Decision:**
   - starts are declared in `solve_body.warm_start` (`job_id`, `coupling`; ADR 0019 Am. 15);
   - an explicit declaration is its own opt-in;
@@ -184,7 +186,7 @@ in an exact cache. Measured (note §3):
 - **Rejected:** revision parameters; instance hints; a `SolvePolicy` member; extending `T08-warm-v1`.
 - **Watch for:** a start smuggled into a revision or a policy.
 
-**B — the start-keyed experiment identity.**
+**R-952 — the start-keyed experiment identity.**
 - **Decision:**
   - a warm request carries `start.profile_sha256` inside its key, only when used;
   - content-addressed profile store;
@@ -192,7 +194,7 @@ in an exact cache. Measured (note §3):
 - **Rejected:** the source key in the identity; a request-version bump; lookups that ignore the start.
 - **Watch for:** any change that moves a cold key.
 
-**C — certificate independence.**
+**R-953 — certificate independence.**
 - **Decision:**
   - verdicts are functions of the final state alone;
   - a warm external answer is bounded by the registered path independence, a decade below the floor;
@@ -200,14 +202,14 @@ in an exact cache. Measured (note §3):
   - the child falls back to the cold chain within the attempt.
 - **Rejected:** a cold re-check; failing on a warm refusal.
 
-**D — the warm reactor variant** (*Amended (X02 review, 2026-11-07):*).
+**R-954 — the warm reactor variant** (*Amended (X02 review, 2026-11-07):*).
 - **Decision:** no warm reactor variant is registered (G5b 1.92e-7 > floor/10; G5c −21 %). Programs are selected by
   `runner_sha256`. R-224 is lifted only for start-capable variants, and none is registered.
 - **Rejected:** registering with a raised floor, because the real loop's T floor ratio would drop from 13 to about
   6.8; registering in the manifest-note band, because it contradicts D6; editing or copying `child.py`.
 - **Evidence:** `evidence/X02/69c4a24d…/`.
 
-**E — Q26 exception and coupled record.**
+**R-955 — Q26 exception and coupled record.**
 - **Decision:**
   - `body/warm_start/coupling/*/{X,dT_K}` is the registered state-from-outside path, with its W14-path test (amends
     R-088 Q26 and R-287);

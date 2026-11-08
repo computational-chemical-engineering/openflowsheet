@@ -229,3 +229,15 @@ Amendment 4 is decided in M02's three ADRs; this paragraph points at its parts (
 - **Not unchanged:** the served MCP tool list, widened additively (R-234); with M02's additions removed it is
   Amendment 3's `6c4375b4…` (`tests/test_t08_w2_surface_digest.py`). The measured served digest is in M02's
   evidence manifest.
+
+## Amendment 15 (Accepted 2026-11-08 by Frank, with ADR 0070; Proposed 2026-11-07; X02) — pointer to ADR 0070
+
+Amendment 15 is decided in ADR 0070 ("Amends", D1; X02 design note §5.1); this paragraph points at it. Three optional
+members, none required, so no `required` list changes:
+
+- `job.schema.json#/$defs/solve_body` gains `warm_start: {job_id?, coupling?}` (a declared start, R-951);
+- `experiment.schema.json#/$defs/request` gains `start` (R-952);
+- `experiment.schema.json#/$defs/result` gains `profile_sha256` (R-952).
+
+- **Not unchanged:** the served MCP tool list, widened additively; with X02's additions removed
+  (`tests/x02_schema_support.py`) it is MSG's `eaff4585…` (R-976). The surface link is c_5, R-950.

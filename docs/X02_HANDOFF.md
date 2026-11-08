@@ -14,7 +14,7 @@ Never squash: the evidence pins `69c4a24d`, `005d206f`, `dcb499ee`.
 - S-1 (bare check names in records, wrapped trace messages, new test) and S-3 (G3f pinned to `MISMATCH` +
   `external_request(0, reactor)`) (`bda43556`). Targeted run: X02 WO-1…4 + G0, T07 global state, T08 recovery edges,
   edge identity, warm starts: **111 passed**. mypy clean on touched files.
-- Register: R-950 stays c_4 (`wp/MSG` not merged at WO-6; MSG renumbers per ruling 4) (`81ae7809`).
+- Register: R-950 stayed c_4 at WO-6 (`81ae7809`); at the merge prep it became c_5 after MSG's c_4 (D-36).
 - S-2: `benchmarks/x02/g5d_v3_loops.py` (D-30), record `evidence/X02/dcb499ee…/g5d-v3.json` + `index.json` (D-31).
 
 ## WO-7 done (close-out)
@@ -26,7 +26,12 @@ Never squash: the evidence pins `69c4a24d`, `005d206f`, `dcb499ee`.
 - Manifest `evidence/X02/2ab11b66…/manifest.json`, `tested`, 18 checks (G5b, G5d_iii_iterations `fail` with
   `accepted_fail`; G5c `not_applicable`); harvested (10 P items), `HARVEST_SIZE` (71, 958, 125).
 
+## Merge prep done (brief `docs/briefs/X02-merge-prep.md`)
+
+- D-35 merge of `main` (MSG), D-36 surface link c_5 (D_5 `f51b69bf…`), D-37 cache count 38, D-38 ADR 0070 Accepted,
+  R-951…R-955.
+
 ## Next
 
-Frank accepts ADR 0070 (X02 Q5, Q7); the orchestrator merges `wp/X02` (never squash: evidence pins `69c4a24d`,
-`005d206f`, `dcb499ee`, `2ab11b66`). No `reviewed` is claimed.
+CI green on both architectures at the pushed head; the orchestrator re-takes the manifest and merges `wp/X02` (never
+squash: evidence pins `69c4a24d`, `005d206f`, `dcb499ee`, `2ab11b66`). No `reviewed` is claimed.

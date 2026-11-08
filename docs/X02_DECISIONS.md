@@ -218,6 +218,15 @@ Format: question → choice; alternative; reversible by; commit. Batched for the
   `tests/test_t07_global_state.py::test_g20_every_hit_is_allowlisted_and_every_entry_is_hit` (passes). OPT adds one more at
   its merge. No allowlist entry changed.
 
+- **D-38 — ADR 0070 and ADR 0019 Amendment 15 → Accepted; register R-950 final, R-951…R-955 (brief step 4).** Frank
+  accepted both on the decision board on 2026-11-08 (`docs/FRANK_QUESTIONS.md` "Answers — Frank, 2026-11-08"; X02
+  Q1 no, Q2/Q3 no, Q6 yes, Q7 default). ADR 0070's status line reads Accepted with "Proposed 2026-11-07" kept; its
+  Amends bullet marks Amendment 15 Accepted; the pointer paragraph its Amends bullet promised is added to ADR 0019
+  ("Amendment 15 … pointer to ADR 0070", in Amendment 4's form) and `docs/interfaces-frozen.md` §2 lists the three
+  members. Register: R-950 is no longer provisional (c_5, D-36); drafts A–E are R-951…R-955 in R-970's entry format
+  (block R-950…R-959; six of ten used) and the ADR's draft letters are replaced by those numbers. Reversible by
+  reverting this commit.
+
 ## Tokens for MSG's catalogue (§5.9; `wp/MSG` not merged)
 
 | Token | Family / kind | Emitted at |
