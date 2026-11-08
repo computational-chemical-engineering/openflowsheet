@@ -18694,3 +18694,35 @@ is promised to verify. A plain install verifies only if its resolver picks the l
 
 **Watch for.** A lock regeneration that moves a direct pin without `pyproject.toml`; user-facing text promising that a
 plain `pip install` replays exactly.
+
+## R-983 — L01.A22 (a): the C1 files stay pinned at the L01 base apart from registered moves; WIT M-6 part b moves `models/c1/flash.py` (2026-11-08)
+
+| | |
+| --- | --- |
+| Date | 2026-11-08 |
+| Decided by | design lane (`specifier`), brief `docs/briefs/L01-A22-amendment.md`; the move itself approved by Frank, Q-WIT-2 = yes, 2026-11-08 (`docs/FRANK_QUESTIONS.md`) |
+| Normative text | `docs/derivations/L01-spec.md` §15 (Amendment 4), amending §13.2 (a), (d) and (e) and adding (g) |
+| Evidence | Over the 18 `PINNED` paths, every SHA-256 at `b843941` and `068a492b` equals `PINNED`. At `wp/X10b` `03709167`, only `src/openflowsheet/models/c1/flash.py` differs: `f228a4a3f0fe5f181e42d341c676de4b802c0b5cb7502fa21baa9ffa5abc5c1b` → `b1b47c287086b759b17a2c9fd024988e9aca8ec09514d01df3e0334bf9932e6a` (WIT D-11; F0 M9 re-recorded for that file, M1–M8 equal). F0 M9 holds only 9 of the 18: the 8 `models/c1` modules with an `artifact_hash`, and `thermo/pr_c1.py` |
+| Affected packages | S04 (L01.A22); WIT/X10b (the move); every later package that moves one of the 18 files |
+
+- *Decision.*
+  - `PINNED` keeps the L01 base values and is never re-pinned.
+  - A file may differ from its base value only through a `MOVED` entry: path → (SHA-256 after the move, the register
+    id of the ruling that moved it).
+  - The test checks that the cited id has exactly one `## <id> ` heading and that its entry states the full new
+    SHA-256 (§15.3 (g), with controls G-0…G-5).
+  - The first entry: `src/openflowsheet/models/c1/flash.py` →
+    `b1b47c287086b759b17a2c9fd024988e9aca8ec09514d01df3e0334bf9932e6a`, by this entry.
+  - A later package's ruled move adds its own entry in the moving commit and needs no L01 amendment. No L01 work
+    order adds an entry.
+  - (e)'s "unmodified" refers to L01's own commits and is checked at review time.
+- *Rejected.*
+  - Re-pinning `flash.py` in place: the base value would leave the test, and every later ruled move would cost an L01
+    amendment.
+  - Clause (f)'s review-time form, as R-566 did for `coverage.json`: a relaxation. Nine of the 18 files are outside
+    F0 M9 and would lose their only byte test. R-567 is not engaged, because no procedure rewrites these files.
+  - Deferring the 9 M9 files to F0's registry: two kinds of pin, and a pin that follows any `--record`.
+- *Watch for.*
+  - A `MOVED` entry citing an L01 ruling, or a ruling that does not approve the move.
+  - A changed value in `PINNED`.
+  - A `models/c1/` module added or removed: that is not a move and needs an L01 amendment.
