@@ -556,3 +556,15 @@ DECISION: with every other 0.4 package waiting for Frank, does ST wait for MSG t
 review of the `explain.md` text is pending, which does not touch the registry/catalogue machinery ST needs.
 Alternative: wait idle. Reversible by: `wp/ST` re-merges main after MSG lands; if Frank's review changes MSG beyond the
 text, re-merge `wp/MSG` and re-run ST's targeted tests. WO-7 (manifest, gate, review) waits for MSG on main.
+
+## 2026-11-08 — ADR 0074 (release package id) written; applied as S15a
+
+ADR 0074 (`930f912d`, Proposed): id `REL` + per-component code (digit below 10; k-digit number = k-th lower-case
+letter + digits): 0.4.0 → `REL040` unchanged, 1.10.0 → `REL1b100`, 11.0.0 → `RELb1100` (N-4 settled). Accepted on its
+build-lane condition like ADR 0059 (no Frank decision). Findings recorded, none acted on now: O-3 (nothing ties a line
+file's `evidence_package` to its line → RP amendment RP.L11 before the 0.5 line file), O-4 (ADR 0055 D1 item 5 pointer
+at K-2), O-5 (trailing-newline `$`, no change).
+DECISION: where does ADR 0074 get applied? → package `S15a` (RP's K-1 follow-up), branch `wp/S15a`, full gate + CI +
+manifest before merge. Alternative: fold into `wp/REL040` at the cut. Reversible by: rename the evidence dir.
+DECISION: register id for ADR 0074 → R-970 (R-950…R-969 held provisionally by X02/OPT; RRC drafts unnumbered).
+Alternative: next sequential R-950 and renumber the open branches. Reversible by: renumbering at merge.
