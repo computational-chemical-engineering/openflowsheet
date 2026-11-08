@@ -416,3 +416,15 @@ OPT WO-6 part 1 (`fe615cb6`): `optimize` job built; 13 surface/Q26 tests fail un
 DECISION: OPT D-58 (Q26 allow-lists the request's numeric problem-definition containers by full path, as R-235's
 `body/inlet/n`) → accepted pending the reviewer. Alternative: drop numeric starts (changes the request schema).
 Reversible by: reverting the isolated commit.
+
+## 2026-11-08 — RRC WO-1/WO-2 done (`wp/RRC` `db5934cb`)
+
+Policy value, `RRC-revision-v1` (defined, not offered: D-1), exact-rational revision levels, three schema widenings
+(only their file hashes move: solve-policy, attempt-context, solution-certificate; MCP tool-list digest, registry and
+the four offered policies' hashes unchanged), precondition checks R5/R6/R8/R9a. F0 PASS; 557 + 43 targeted tests; edge-3
+files untouched. WO-3 waits for OPT's executor changes. D-1 (offering the policy moves `get_project.solve_policies`) →
+for RRC's reviewer, done in WO-4.
+DECISION: the derivative-witness step policy (X10 L-X10-1: surrogate UNVERIFIED at small flows; OPT D-42: γ–φ held
+single-phase splits never certify) → queued as one design-lane item after OPT and RRC, not started now: any change to
+K04's witness moves certificate bytes of registered records (an identity move that needs Frank). Alternative: a
+specifier pass now. Reversible by: starting it earlier.
