@@ -18484,6 +18484,10 @@ the sidecar (WO-5) leaking into a serialized artifact; an emitted code without a
   `benchmarks/f0/corpus.json`, matched by path and SHA-256, with a test pinning 36 per guard. A scope correction (the
   guards protect registered input documents; these are archived release outputs). *Rejected:* exemption by structure (a
   directory holding `run-manifest.json`) — a relaxation; an unscanned root; building bundles at check time.
+  *Addendum (OPT review M3, 2026-11-08):* plus the six G13 fixture files of OPT (ADR 0071), same mechanism — the
+  `solve-policy.json` of each `start`/`resolve` bundle in `tests/fixtures/opt/replay/OPT-A2/starts/{0,1,2}`, which OPT's
+  replay reads as written (D-62 a); 42 registered, each guard pins 42. *Rejected:* editing the guards; stripping the
+  fixture.
 - **R-940 (D9)** M9's frozen set includes the legacy unit-model modules whose bytes enter a model's `artifact_hash`,
   enumerated from `MODEL_BUILDERS`' manifests (AST scan as fallback; raise if unresolved). *Rejected:* leaving them out —
   the premise that M1–M8 catch their edits is false (`artifact_hash` enters none of them).
