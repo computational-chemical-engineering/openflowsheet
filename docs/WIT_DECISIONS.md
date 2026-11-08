@@ -88,3 +88,10 @@ The normative text is the spec; nothing here changes a tolerance, a check meanin
   fix, 2 of 2) and the counter-case with a positive feed (classes 2 and 4 kept). WIT system tests 6 passed.
 - **Rejected.** Rewording §4.8.8 to accept the case unmeasured (the review's alternative).
 - **Reverse by.** Reverting the F-2 commit.
+
+## D-7 — F-3: tests for §4.8.3 (d)'s unresolved refusal and (f)'s order rule
+
+- `test_d_an_escalated_registered_refusal_that_never_resolves_keeps_its_refusal`: W2's residual at n_A = 1e-9,
+  all nine levels inadmissible; both checks `unsupported`, `witness_stencil_invalid_trial_state(S1.n.A)`.
+- `test_f_a_resolved_refusal_does_not_end_the_witness_a_later_final_refusal_does`: W2 with `S1.T`'s forward point
+  refused; `S1.n.A` resolves (k* = 6) and both checks name `S1.T`. Tests only; no code change.

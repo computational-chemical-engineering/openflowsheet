@@ -473,3 +473,44 @@ def test_a12_a_fed_split_with_a_dormant_liquid_side_keeps_classes_2_and_4() -> N
     )
     assert {name for name, k in classes.items() if k == 2} == set(liquid)
     assert {name for name, k in classes.items() if k == 4} == set(vapor)
+
+
+# -- §4.8.3 (d) and (f), review F-3 ----------------------------------------------------------------
+
+
+def test_d_an_escalated_registered_refusal_that_never_resolves_keeps_its_refusal() -> None:
+    """§4.8.3 (d), second bullet: W2's residual at n_A = 1e-9 refuses the registered point and
+    every level (2 h_8 = 2.3e-7 > n_A), so the column is unresolved and both checks are
+    `unsupported` with the registered reason, naming the column."""
+    state, residual, jacobian = smooth_case("0.3", "1e-9", "1e-3", "600")
+    checks, escalations = run(tear(residual, jacobian), state)
+    escalation = escalations["S1.n.A"]
+    assert escalation.admissible == (False,) * (ESCALATION_LEVELS + 1)
+    assert escalation.level is None and escalation.scaled is None
+    for which in ("on_pattern", "off_pattern"):
+        check = checks[f"derivative_witness.{which}"]
+        assert check.result == "unsupported"
+        assert check.reason == "witness_stencil_invalid_trial_state(S1.n.A)"
+
+
+def test_f_a_resolved_refusal_does_not_end_the_witness_a_later_final_refusal_does() -> None:
+    """§4.8.3 (f): W2 (`S1.n.A`'s registered point refused, resolved at k* = 6) with `S1.T`'s
+    forward point refused (a domain edge one step above T0, as T06 W2's A42 is for `S1.P`).
+    `S1.T` is not a component column, so its refusal is final: both checks are `unsupported`
+    and name `S1.T`, the later column, not `S1.n.A`."""
+    case = WIT["W2"]
+    state, residual, jacobian = smooth_case(
+        str(case["theta_K"]), case["state"]["S1.n.A"], case["state"]["S1.n.B"], "600"
+    )
+    t0 = state["S1.T"]
+
+    def edged(point: Sequence[float]) -> list[float] | None:
+        return None if point[2] > t0 else residual(point)
+
+    checks, escalations = run(tear(edged, jacobian), state)
+    assert escalations["S1.n.A"].level == case["columns"]["S1.n.A"]["k_star"] == 6
+    assert "S1.T" not in escalations
+    for which in ("on_pattern", "off_pattern"):
+        check = checks[f"derivative_witness.{which}"]
+        assert check.result == "unsupported"
+        assert check.reason == "witness_stencil_invalid_trial_state(S1.T)"
