@@ -98,3 +98,44 @@ too (0 mismatches) with Python `sum`.
 - **D2-5 — registry entry pending.** `schemas/registry.json` is shared with `wp/MSG`; until WO-3 adds the
   entry, `tests/test_t08_w4_package_data.py` fails four tests (A48: the registry must equal the schema
   directory; 43 files against 42 entries). Expected; not loosened.
+
+## WO-3 (operation), on `wp/MSG` merged (brief `docs/briefs/ST-build-WO3-6.md`)
+
+- **D3-1…D3-5 — merge conflicts** (`git merge main` 56294e49, then `git merge wp/MSG` 22f64c65, no squash):
+  D3-1 `benchmarks/t08/support_envelope.yaml` harvest: union, main's entries then MSG's. D3-2
+  `tests/test_m07a_harvest.py` `HARVEST_SIZE` = base (68, 939, 120) + main's (7, 44, 6) + MSG's (2, 9, 3) =
+  (77, 992, 129); the comment keeps both. D3-3 `docs/support-matrix.md` re-emitted by
+  `scripts/t08_support_matrix.py --emit` (1121 items, 50 manifests; `--check` 0 problems). D3-4
+  `tests/test_t08_w2_inventory.py` `SHIPPED_DATA` keeps both `_data/requirements.lock` (X05) and the
+  catalogue files (MSG). D3-5 `docs/decision-register.md`: main's `R-942…R-949` (RP) kept, MSG's `R-942`/`R-943`
+  appended unrenumbered — the id collision is MSG's to resolve at its merge (brief). Harvest and inventory
+  tests: 25 passed.
+- **D3-6 (Q) — a job without a `replay_bundle` output** is `not_found` "job <id> has no replay bundle" with
+  detail `{job_id, run_outcome?}`: there is no bundle, so §6.1's `bundle_id, member, members` cannot be
+  given. The `not_found` entry then renders its default summary ("Nothing named '<job>' exists"), which
+  misreads the case. Ruling wanted: a `not_found` variant for it (MSG's catalogue), or a different detail.
+- **D3-7 (Q) — surface chain link c_5** = (`ADR 0068`, `without_st`, `6705fb05…`) in `scripts/m07a_rc.py`.
+  Its register column names the ADR: ADR 0068 is Proposed and its register entries are written on
+  acceptance; with MSG's R-942/R-943 still colliding, an R-id picked here could collide again.
+- **D3-8 — `_run_outcome(job_id)`** is factored out of `_missing_member` (same keys, same order) and serves
+  both the member detail and the no-bundle refusal. MSG's FB-03b tests pass unchanged.
+- **D3-9 — O2 resolved: no test pins a view's default depth at 4** (`test_t07_w5a_projection` reads the
+  `DEFAULT_DEPTH` constant only); `get_stream_table` defaults to `STREAM_TABLE_DEPTH = 12` (= `MAX_DEPTH`).
+- **D3-10 — refusal shapes.** `unsupported`: message the binder's code text (`basis_unavailable(<id>)`, as
+  admission spells its unsupported codes), detail `{job_id, hint}`. `internal_error`: the core's message,
+  detail `{job_id, bundle_id, reasons?}`. A missing member: message "bundle <id> has no <member>", detail
+  `{job_id, run_outcome?, bundle_id, member, members, members_total?}` through MSG's helper.
+- **D3-11 — `from_bundle(directory, *, source=None)`**: the operation passes `{job_id, bundle_id}`; a
+  directory caller still gets nulls (D1-14).
+- **D3-12 — G12/G13 are measured against the merge tree `22f64c65`** (main + MSG): `git diff main` includes
+  MSG's own schema and code changes until MSG lands. Against it: schemas move only by `registry.json` +1 and
+  the new file; no file under `verify/thermo/models/run/orchestrator` or `compiled.py` changes.
+
+**Surface numbers (G12).** Served MCP list (19 tools): `eaff45852d75…0942eac` (MSG's D_4) →
+`6705fb059ab8b09b6664537d4191728fe8241b3e8bad4de85801d2415effe2d4`; `without_st` of it is D_4 exactly. R4-G3: the
+new row's snapshot is the `projection` `$def`'s, `951b77ea…` (= `get_artifact`'s); no existing snapshot moved.
+`get_stream_table.md`: 1287 characters, SHA-256 `6f98ea4b62220c65e06328b15885f5df8eb5805432f283f7bfff0d2701e8f515`,
+both reviews pending in `REVIEW.json`; `test_every_description_is_reviewed_by_both_lanes` stays red (3 open:
+`explain` human, `get_stream_table` design-lane and human), as it is red on `wp/MSG` (1 open). A48
+(`tests/test_t08_w4_package_data.py`) passes with the registry entry. F0 after WO-3: PASS (M1 50/50, M2 61/61,
+M3 61/61, M4 61/61, M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 35/35).

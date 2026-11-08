@@ -44,7 +44,7 @@ def _text(name: str) -> str:
 
 
 def test_g15_one_description_per_mcp_operation_and_no_other() -> None:
-    assert len(MCP_OPERATIONS) == 18  # ADR 0058 D7 (MSG): `explain` is the 18th
+    assert len(MCP_OPERATIONS) == 19  # ADR 0058 D7 (MSG): `explain`; ADR 0068: `get_stream_table`
     files = sorted(path.stem for path in DESCRIPTIONS.glob("*.md"))
     assert files == MCP_OPERATIONS
     for name in MCP_OPERATIONS:

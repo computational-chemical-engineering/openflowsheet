@@ -36,6 +36,11 @@ function, a registered digest and Frank's carry extended to name it):
   `eaff4585…`, measured at MSG WO-11 after `explain.md`'s review edits
   (`tests/test_t08_w2_surface_digest.py`'s `MSG_SERVED_SHA256`; `1ca06b37…` at WO-7, `b083ffe1…` at
   WO-6, before `explain`).
+- c_5, ADR 0068 (ST, ADR 0019 Amendment 13): the `get_stream_table` tool, stripped by
+  `tests/st_schema_support.py`'s `without_st` (ST G12's decomposition function); `D_5` =
+  `6705fb05…`, measured at ST WO-3 on `wp/ST` with `wp/MSG` merged
+  (`tests/test_t08_w2_surface_digest.py`'s `ST_SERVED_SHA256`). Its register entry is written when
+  ADR 0068 is accepted (ST_DECISIONS D3-7); until then the link names the ADR.
 
 The released 0.2.0a1 ran the two-link chain (its committed record at `C_α²`); a re-run of the
 alpha's step 8 uses this script at the tag.
@@ -99,6 +104,11 @@ V17_C2_FILE_SHA256: Final = {
 #: Its two reviews are `REVIEW.json`'s, which `tests/test_t08_w2_description_reviews.py` holds.
 MSG_FILE_SHA256: Final = {
     "explain": "f1fca282f28f7e1a0f0dc6407bb405734f18b811fc97f7e0f5d0b0afac9b8d3e",
+}
+#: c_5 (ADR 0068): the one tool ST added, `get_stream_table`, its file pinned as MSG's is. Its two
+#: reviews are pending in `REVIEW.json` (design lane at ST's reviewer pass; Frank's).
+ST_FILE_SHA256: Final = {
+    "get_stream_table": "6f98ea4b62220c65e06328b15885f5df8eb5805432f283f7bfff0d2701e8f515",
 }
 #: The two changed files as R-133 carried them: their reviewed hashes in `REVIEW.json` as v0.1.0
 #: released it (`PUBLIC_ROOT`).
@@ -167,6 +177,16 @@ def strip_msg(tools: Tools) -> Tools:
     return stripped
 
 
+def strip_st(tools: Tools) -> Tools:
+    """s_5 (ADR 0068): `tools` without ST's tool (`st_schema_support.without_st`)."""
+    t08_rc._tests_on_path()
+    from st_schema_support import without_st  # noqa: PLC0415
+
+    stripped = without_st(copy.deepcopy(tools))
+    assert isinstance(stripped, list)
+    return stripped
+
+
 @dataclass(frozen=True)
 class Link:
     """One registered surface change c_k: its register entry, its strip function s_k, and the
@@ -202,6 +222,12 @@ LINKS: Final = (
         "R-934",
         strip_msg,
         "eaff45852d7596816d90d744078f537e46c723e577295d347d9d73aea0942eac",
+    ),
+    Link(
+        "c_5",
+        "ADR 0068",
+        strip_st,
+        "6705fb059ab8b09b6664537d4191728fe8241b3e8bad4de85801d2415effe2d4",
     ),
 )
 
@@ -289,16 +315,21 @@ def description_texts() -> dict[str, str]:
 
 def description_problems(texts: Mapping[str, str]) -> list[str]:
     """§5.3 item 4 on `texts` (operation name -> description file): one line per failure. The
-    tools are `v17-c2`'s 17 and MSG's `explain` (c_4), each file at its pinned hash."""
+    tools are `v17-c2`'s 17, MSG's `explain` (c_4) and ST's `get_stream_table` (c_5), each file at
+    its pinned hash."""
     problems: list[str] = []
-    pinned = {**V17_C2_FILE_SHA256, **MSG_FILE_SHA256}
+    pinned = {**V17_C2_FILE_SHA256, **MSG_FILE_SHA256, **ST_FILE_SHA256}
     if sorted(texts) != sorted(pinned):
-        problems.append(f"tools {sorted(texts)} are not v17-c2's 17 and MSG's explain")
+        problems.append(
+            f"tools {sorted(texts)} are not v17-c2's 17, MSG's explain and ST's get_stream_table"
+        )
     for name in sorted(set(texts) & set(pinned)):
         if name in CHANGED:
             expected, source = R133_FILE_SHA256[name], "R-133's"
         elif name in MSG_FILE_SHA256:
             expected, source = MSG_FILE_SHA256[name], "MSG's"
+        elif name in ST_FILE_SHA256:
+            expected, source = ST_FILE_SHA256[name], "ST's"
         else:
             expected, source = V17_C2_FILE_SHA256[name], "v17-c2's"
         found = hashlib.sha256(texts[name].encode("utf-8")).hexdigest()

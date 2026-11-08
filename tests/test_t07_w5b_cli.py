@@ -333,6 +333,7 @@ def scenario(revision_id: str, job_id: str, bundle: Path) -> list[tuple[str, dic
         ("diff_revisions", {"from_revision": revision_id, "to_revision": revision_id}),
         ("inspect_structure", {"revision_id": revision_id, "depth": 2}),
         ("get_artifact", {"artifact_id": state, "pointer": "/variable_ids", "limit": 5}),
+        ("get_stream_table", {"job_id": job_id, "pointer": "/streams", "limit": 2}),  # ADR 0068
         # ADR 0019 Amendment 3 (A3.3); `at` is a clock reading (`CLOCK_MEMBERS`).
         ("list_audit", {"order": "descending", "limit": 4}),
         ("explain", {"code": "not_found"}),  # ADR 0058 D7 (MSG)

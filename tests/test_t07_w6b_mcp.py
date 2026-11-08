@@ -292,6 +292,10 @@ async def _scenario(session: Session, direct: LocalApplication, record: Transcri
         "get_artifact",
         {"artifact_id": state, "pointer": "/variable_ids", "limit": 5},
     )
+    # ADR 0068 (ST): the job's stream table, a page of its streams.
+    await pair(
+        "stream table", "get_stream_table", {"job_id": job_id, "pointer": "/streams", "limit": 2}
+    )
 
     # Refusals: each is the same error document over MCP as in-process.
     await pair("not found", "get_job", {"job_id": "job-999999"})
@@ -300,6 +304,7 @@ async def _scenario(session: Session, direct: LocalApplication, record: Transcri
     await pair("schema", "list_jobs", {"limit": 0})
     await pair("reserved key", "submit_job", solve | {"idempotency_key": "auto:mine"})
     await pair("unknown code", "explain", {"code": "phase_regim_mismatch"})
+    await pair("no job's table", "get_stream_table", {"job_id": "job-999999"})  # ADR 0068
     await pair("key reused", "commit_change", first | {"expected_revision": second})
     big = {**first, "idempotency_key": "w6b-big", "expected_revision": second}
     big["edits"] = [{"operation": "set", "path": ["title"], "value": 2**53 + 1}]
@@ -433,6 +438,7 @@ def test_g14_refusals_reach_mcp_as_tool_errors_with_the_api_error(transcript: Tr
         "schema": "invalid_request",
         "reserved key": "invalid_request",
         "unknown code": "not_found",  # `explain` (ADR 0058 D7)
+        "no job's table": "not_found",  # `get_stream_table` (ADR 0068)
         "key reused": "idempotency_key_reused",
         "non-canonical": "document_not_canonical",
     }

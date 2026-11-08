@@ -426,6 +426,12 @@ class Scenario:
         part = self.ok("state ids 1", "get_artifact", ids)
         self.ok("state ids 2", "get_artifact", {**ids, "cursor": part["next_cursor"]})
         self.step("no pointer", "get_artifact", {"artifact_id": state, "pointer": "/nowhere"})
+        # ADR 0068 (ST): D's stream table, whole and a page of its streams; an unknown job's.
+        table = self.ok("D stream table", "get_stream_table", {"job_id": d})
+        assert table["subject_id"] == f"stream-table:{d}"
+        page = {"job_id": d, "pointer": "/streams", "limit": 1}
+        self.ok("D streams page", "get_stream_table", page)
+        self.step("no job's stream table", "get_stream_table", {"job_id": "job-999999"})
         self.step("state bytes", "artifact_bytes", {"artifact_id": state})
         self.step("bundle bytes", "artifact_bytes", {"artifact_id": f"{d}:bundle"})
 
@@ -495,6 +501,7 @@ class Scenario:
         finally:
             del os.environ[PAUSE_AT_STAGE_VARIABLE]
         self.step("A not ready", "get_job_result", {"job_id": a})
+        self.step("A stream table not ready", "get_stream_table", {"job_id": a})  # ADR 0068
         submitted = self.ok("B submit", "submit_job", solve("s-b"))
         assert submitted["job"]["status"] == "queued"
         b = submitted["job"]["job_id"]
@@ -526,6 +533,7 @@ class Scenario:
             a = pause.job_id
             assert a is not None
             self.step("A not ready", "get_job_result", {"job_id": a})
+            self.step("A stream table not ready", "get_stream_table", {"job_id": a})  # ADR 0068
             running = self.ok("A cancel running", "cancel_job", {"job_id": a})
             assert (running["status"], running["cancel_requested"]) == ("running", True)
         finally:
@@ -540,6 +548,8 @@ class Scenario:
         result = self.ok("A result", "get_job_result", {"job_id": a})
         assert result["error"] is None or result["error"]["code"] != "internal_error"
         self.ok("B job", "get_job", {"job_id": b})
+        # ADR 0068 (ST): B was cancelled while queued and wrote no bundle.
+        self.step("B stream table", "get_stream_table", {"job_id": b})
 
 
 # ================================================================================ the runs

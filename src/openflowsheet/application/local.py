@@ -41,7 +41,7 @@ from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Any, Final, Literal, NoReturn, Self, get_args
 
-from openflowsheet.application import validation
+from openflowsheet.application import stream_table, validation
 from openflowsheet.application.admission import (
     active_jobs_refusal,
     admit_experiment,
@@ -156,6 +156,9 @@ _AUDIT_OPERATION_LIMIT: Final[int] = 128
 MAX_EVENT_PAGE: Final[int] = 500
 #: MSG §3.4 (FB-03b): a `not_found` on a bundle member lists at most this many member names.
 MAX_LISTED_MEMBERS: Final[int] = 64
+#: ST note §6.1: `get_stream_table`'s default depth, `MAX_DEPTH`, so that a stream's phases
+#: arrive whole (the other views keep `DEFAULT_DEPTH`).
+STREAM_TABLE_DEPTH: Final[int] = 12
 
 
 class LocalApplication:
@@ -1459,6 +1462,109 @@ class LocalApplication:
             operation, document, artifact_id, row.sha256, pointer, depth, cursor, limit
         )
 
+    def get_stream_table(
+        self,
+        job_id: str,
+        *,
+        pointer: str = "",
+        depth: int = STREAM_TABLE_DEPTH,
+        cursor: str | None = None,
+        limit: int = DEFAULT_PAGE,
+    ) -> Projection:
+        """ADR 0068 (ST note §6.1): an ended job's stream table and energy summary, the
+        `stream-table-v1` document computed on read from its replay bundle's revision, solution
+        state, certificate and run manifest; any principal's job (`read` covers them all).
+        Nothing is stored: two calls give the same document, and its `sha256` is the
+        document's canonical hash.
+
+        Parameters
+        ----------
+        job_id
+            An ended job with a `replay_bundle` output.
+        pointer
+            A JSON pointer into the document (`/streams` to page the streams); the whole
+            document when empty.
+        depth, cursor, limit
+            Bounds of the projection, and the cursor of its next page.
+
+        Returns
+        -------
+        Projection
+            The value at `pointer`, `subject_id` `stream-table:<job_id>`.
+
+        Raises
+        ------
+        ApplicationError
+            `not_found` for an unknown job, a job without a replay bundle, or a bundle missing a
+            member the report reads (MSG's member detail, as `get_artifact`'s); `not_ready`
+            before the job ends; `unsupported` when the revision's basis cannot be evaluated in
+            this installation (`basis_unavailable(<id>)`, with its `hint`); `internal_error` when
+            the bundle's members are inconsistent.
+        """
+        operation = "get_stream_table"
+        self._authorize(operation)
+        self._check_view(operation, pointer, depth, cursor, limit)
+        job = self._job(job_id, operation)
+        if job.status not in TERMINAL_STATUSES:
+            self._refuse(
+                "not_ready",
+                f"job {job_id} is {job.status}; its stream table exists once it has ended",
+                operation=operation,
+                retryable=True,
+                job_id=job_id,
+                status=job.status,
+            )
+        bundle = next((o for o in job.outputs if o.kind == "replay_bundle"), None)
+        if bundle is None:
+            self._refuse(
+                "not_found",
+                f"job {job_id} has no replay bundle",
+                operation=operation,
+                **self._run_outcome(job_id),
+            )
+        row = self._artifact_row(bundle.artifact_id, operation)
+        try:
+            document = stream_table.from_bundle(
+                self.files_root / row.relpath,
+                source={"job_id": job_id, "bundle_id": row.artifact_id},
+            )
+        except stream_table.StreamTableError as error:
+            if error.code == "not_found":
+                member = error.detail.get("member")
+                self._refuse(
+                    "not_found",
+                    f"bundle {row.artifact_id} has no {member}",
+                    operation=operation,
+                    **{
+                        **self._run_outcome(job_id),
+                        "bundle_id": row.artifact_id,
+                        "member": member,
+                        **self._missing_member(f"{row.artifact_id}/{member}"),
+                    },
+                )
+            if error.code == "unsupported":
+                self._refuse(
+                    "unsupported", error.message, operation=operation, job_id=job_id, **error.detail
+                )
+            self._refuse(
+                "internal_error",
+                error.message,
+                operation=operation,
+                job_id=job_id,
+                bundle_id=row.artifact_id,
+                **error.detail,
+            )
+        return self._project(
+            operation,
+            document,
+            f"stream-table:{job_id}",
+            document_sha256(document),
+            pointer,
+            depth,
+            cursor,
+            limit,
+        )
+
     def list_audit(
         self,
         *,
@@ -1640,12 +1746,18 @@ class LocalApplication:
             found["members_total"] = len(members)
         job_id, colon, suffix = bundle_id.rpartition(":")
         if colon and suffix in ("bundle", "rerun") and self._store.get_job(job_id) is not None:
-            found["job_id"] = job_id
-            worker = self._store.worker_result(job_id)
-            run = worker.get("run") if isinstance(worker, Mapping) else None
-            outcome = run.get("outcome") if isinstance(run, Mapping) else None
-            if isinstance(outcome, str):
-                found["run_outcome"] = outcome
+            found.update(self._run_outcome(job_id))
+        return found
+
+    def _run_outcome(self, job_id: str) -> dict[str, Any]:
+        """`job_id` and, when the job recorded one, its run's `run_outcome` (the members
+        `_missing_member` gives a job's bundle)."""
+        found: dict[str, Any] = {"job_id": job_id}
+        worker = self._store.worker_result(job_id)
+        run = worker.get("run") if isinstance(worker, Mapping) else None
+        outcome = run.get("outcome") if isinstance(run, Mapping) else None
+        if isinstance(outcome, str):
+            found["run_outcome"] = outcome
         return found
 
     def _check_view(

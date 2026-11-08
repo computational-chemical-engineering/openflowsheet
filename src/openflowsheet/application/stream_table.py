@@ -868,9 +868,12 @@ def _read(directory: Path, relative: str, present: Sequence[str]) -> Any:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-def from_bundle(directory: str | Path) -> dict[str, Any]:
+def from_bundle(
+    directory: str | Path, *, source: Mapping[str, str | None] | None = None
+) -> dict[str, Any]:
     """The `stream-table-v1` document of the bundle in `directory` (note §6.2; a library helper,
-    not contract). 0.3.0 bundles included.
+    not contract). 0.3.0 bundles included. `source` is `build`'s (the `job_id` and `bundle_id`
+    the caller knows); both are null when it is omitted.
 
     Raises `StreamTableError`: `not_found` naming the first missing member, `unsupported` when the
     revision's basis cannot be bound here (`basis_unavailable(<id>)`, its hint in `detail`), and
@@ -902,5 +905,5 @@ def from_bundle(directory: str | Path) -> dict[str, Any]:
         certificate,
         manifest,
         provider=provider,
-        source={"job_id": None, "bundle_id": None},
+        source=source if source is not None else {"job_id": None, "bundle_id": None},
     )

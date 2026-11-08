@@ -181,6 +181,26 @@
         }
       ]
     },
+    "get_stream_table": {
+      "tool": "get_stream_table",
+      "file": "get_stream_table.md",
+      "sha256": "6f98ea4b62220c65e06328b15885f5df8eb5805432f283f7bfff0d2701e8f515",
+      "characters": 1287,
+      "reviews": [
+        {
+          "review_kind": "design-lane",
+          "status": "pending_design_review",
+          "reviewed_by": null,
+          "reviewed_at": null
+        },
+        {
+          "review_kind": "human",
+          "status": "pending",
+          "reviewed_by": null,
+          "reviewed_at": null
+        }
+      ]
+    },
     "inspect_structure": {
       "tool": "inspect_structure",
       "file": "inspect_structure.md",
