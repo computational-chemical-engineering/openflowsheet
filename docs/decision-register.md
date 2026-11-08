@@ -18581,7 +18581,7 @@ order-preserving, and admits non-canonical second ids); a generic pattern (ADR 0
 **Watch for.** An inherited `evidence_package` (ADR 0074 O-3, RP.L11). An id written with plain digits for a component
 ≥ 10. `\d` in place of `[0-9]`.
 
-## R-942 — MSG: in 0.4 the diagnostic sidecar has one producer, the traversal hop (review Q1, 2026-11-06)
+## R-975 — MSG: in 0.4 the diagnostic sidecar has one producer, the traversal hop (review Q1, 2026-11-06)
 
 | | |
 | --- | --- |
@@ -18603,7 +18603,7 @@ family F6 replaces. A `ContextVar` collector or render-time property calls (R-93
 capturing `nan`/`inf` (kept as text, review S2); a machine text edit that a `detail_pattern` silently stops matching
 (the corpus's `values` turn red).
 
-## R-943 — `main`'s surface chain gains link c_4 = (R-934/R-937, `without_msg`, `eaff4585…`); the 0.4 RC carry names it (review Q5, 2026-11-06)
+## R-976 — `main`'s surface chain gains link c_4 = (R-934/R-937, `without_msg`, `eaff4585…`); the 0.4 RC carry names it (review Q5, 2026-11-06)
 
 | | |
 | --- | --- |

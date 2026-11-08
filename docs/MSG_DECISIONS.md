@@ -480,7 +480,7 @@ the gate nor the baseline was changed. Default: F0 replaces (a)–(c) (F0 PASS),
 or `inf`; the patterns WO-5a adds use strict decimal groups (`[-+]?[0-9]+(?:\.[0-9]+)?(?:e[-+]?[0-9]+)?`), so they
 cannot capture one anyway. Test with a finite control. Commit `a87881fb`.
 
-**D11-2. WO-5a, the sidecar (review Q1 (a) narrowed; register R-942; note §4.6 amended).** Producer: the traversal
+**D11-2. WO-5a, the sidecar (review Q1 (a) narrowed; register R-975, filed as R-942 (DM-3); note §4.6 amended).** Producer: the traversal
 hop `models/revision_flowsheet.py` `traverse`, which builds `Diagnostic(<code at the head of line 1>, {"detail":
 lines 2+})` (`None` when there are no detail lines). Line 1's code is read lexically (`[A-Za-z]…` followed by `(`, `:`
 or the end), because `models` imports only `messages.diagnostic`. Carriers `FlowsheetPass`, `InitialStateFailure`,
@@ -604,9 +604,9 @@ Test with the cap monkeypatched to 2. Commit `265040df`.
 **D12-4. M3.** `scripts/msg_identity_gate.py --parts` defaults to `bd`; the summary names F0's `corpus_identity.py
 --check` for (a) and (c). Baseline unchanged. Commit `4dff894d`.
 
-**D12-5. M6: R-943.** D_4 measured on the merge tree (`a8267cef`, `origin/main` merged): served 18 tools →
+**D12-5. M6: R-976 (filed as R-943, DM-3).** D_4 measured on the merge tree (`a8267cef`, `origin/main` merged): served 18 tools →
 `eaff4585…`; `without_msg` → `455d01eb…` = D_3. `main`'s register ends at R-941, so R-942 and R-943 are free. The c_4
-test reads R-943's entry for both digests. Commit `9c76b939`.
+test reads R-976's entry for both digests. Commit `9c76b939`.
 
 ## Gate results at the end of WO-12 (code = `9c76b939`)
 
@@ -643,3 +643,16 @@ merge tree: 1074 passed, 2 skipped, 1 failed (the description review, DM-2).
 **DM-1b. Second `git merge main` (`dea3a554`).** `main` moved during DM-1 by two docs commits (ADR 0055/0073
 accepted; register R-980…R-982 for WIT). One conflict, `docs/decision-register.md`: MSG's two entries kept before
 R-980…R-982 (numeric order once renumbered). No code or test changed.
+
+**DM-2. `explain`'s human review — not applied by the build lane.** `explain.md`'s sha256 equals the recorded
+`f1fca282…` at both `35403f42` and the merge tree, and Frank's approval is recorded (`docs/FRANK_QUESTIONS.md`,
+"Answers — Frank, 2026-11-08": "Descriptions approved (human review): `explain` (MSG)"). The agent's edit of
+`REVIEW.json` (human → `reviewed`, Frank Peters, 2026-11-08) was refused by the session's permission system; it is
+left `pending` for the orchestrator or Frank. `test_every_description_is_reviewed_by_both_lanes` stays red until then.
+
+**DM-3. Register renumbering.** MSG's R-942 → **R-975** (the sidecar's producer, review Q1) and R-943 → **R-976** (link
+c_4, review Q5); RP's R-942…R-949 untouched. Changed: the two register headings, `tests/test_m07a_surface_chain.py`
+(docstring and the `## R-976 ` lookup), two envelope notes, `MSG_HANDOFF.md`, D11-2 and D12-5 here. `grep -rn
+"R-94[23]"`: 42 → 34 lines. Left unchanged on purpose: the filed manifest `evidence/MSG/9c76b939…/manifest.json` (three
+mentions; an evidence record at its commit, whose item hashes the envelope pins), D12-5's account of the numbers being
+free at the time, and `main`'s documents that describe the collision itself.
