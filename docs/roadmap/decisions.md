@@ -542,3 +542,9 @@ which globs `[PKT]*`); `K04a` falls into the same glob; `WIT` is not admitted by
 0059 D1) and would need an ADR. WIT is the follow-up that closes X10's L-X10-1, and `X[0-9]{2}[a-z]?` admits `X10a`
 with no schema change. Alternative: an ADR 0059 amendment admitting `WIT`. Reversible by: moving the directory and
 the harvest `manifest:` paths, re-emitting the support matrix.
+
+## 2026-11-08 — WIT merged
+
+`wp/WIT` merged into main `f92af170` (no squash; manifest `evidence/X10a/dbf884ad…` tested, `d0dbd128`). Gate PASS
+15194 at `dbf884ad`; CI 42459637834 green on both legs; on main after merge: F0 PASS M1–M9, support matrix `--check`
+0 problems, harvest/changelog/manifest tests 471 passed. Worktree removed. OPT's merge must now update M-4 (D-42/D-82).

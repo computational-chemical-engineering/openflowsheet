@@ -142,8 +142,12 @@ Am. 1–2). Foundations F0–F8 are designed in wave W1 during 0.4, then built i
   NET-02 and G5 M1-recycle rescued → L-COL-9 narrowed; declared not a superset of T06-revision-v2 (M2). Merges after
   OPT (rebase, one full gate, CI both legs, manifest). **Blocked on Frank:** FQ1 (enum widenings), ADR 0072; then
   register renumbering R-RRC-1…6 (incl. MR-7 test).
-- **Await Frank** (`docs/FRANK_QUESTIONS.md`): `explain.md` (blocks MSG), ADRs 0055/0068/0069/0070/0071/0072, Q-11, F-8,
-  X05 Q-F1…F3, X02 Q1…Q7, OPT Q1…Q9 + description review, RRC FQ1…FQ4.
+- **WIT: MERGED** into main `f92af170` (K04 witness at small/dormant flows, spec §4.8.1–9, ADR 0073 Proposed;
+  manifest `evidence/X10a/dbf884ad…` tested (id X10a, decisions 2026-11-08); gate PASS 15194; CI 42459637834 green;
+  F0 PASS on main; L-X10-1 closed). Open: M-6 part b (flash manifest sentence, Q-WIT-2); M-4 (OPT D-42/D-82) at
+  OPT's merge; on ADR 0073 acceptance: register lines.
+- **Await Frank** (`docs/FRANK_QUESTIONS.md`): `explain.md` (blocks MSG), ADRs 0055/0068/0069/0070/0071/0072/0073, Q-11,
+  F-8, X05 Q-F1…F3, X02 Q1…Q7, OPT Q1…Q9 + description review, RRC FQ1…FQ4, Q-WIT-1/2.
 - **TRS2 CPU rule** (user via hub, 2026-11-07): ≤ ~36 busy cores of 48; one full gate at a time; no tests in several
   worktrees at once. GitHub API: poll CI at most every 10 min (rate limit hit 2026-11-07).
 - Host load ~50 from other users: wall-time budget tests flaky (re-run alone).
