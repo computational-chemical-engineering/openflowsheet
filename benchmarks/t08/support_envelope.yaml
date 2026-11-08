@@ -400,16 +400,26 @@ unsupported:
 
   - id: U05
     capability: >-
-      `validate(task="optimization")`; any study — optimization, parametric sensitivities,
-      sweeps, parameter estimation
+      `validate(task="optimization")` and the `optimize` job without an audited NLP solver; a
+      change with `task: optimization`; the other studies — parametric sensitivities, sweeps,
+      parameter estimation
     outcome: >-
-      `validate` with `task: optimization` ends with ADR 0019's error `unsupported`, detail
-      `task_unsupported(optimization)`, before any analysis; no v0.1 path returns
-      `READY_FOR_OPTIMIZATION` (the value stays in the frozen enum, unused); the other studies
-      have no operation among the twenty-one of `OPERATIONS`; no optimality claim anywhere.
+      ADR 0071 lifts v0.1's refusal of every install (OPT design §4.11): with an audited NLP
+      solver, `validate` given an optimization request returns its report (`READY_FOR_OPTIMIZATION`
+      possible) and `optimize` runs. Without one (the default install, an unaudited platform),
+      `validate` with `task: optimization` ends with ADR 0019's error `unsupported`, message
+      `nlp_solver_unavailable`, pointer `/task`, before the revision is read, and
+      `submit_job(optimize)` is refused the same way at `/operation` with no job created. A change
+      with `task: optimization` (`commit_change`, `preview_change`) is still refused
+      `task_unsupported(optimization)`, audited, with no revision written. The other studies have
+      no operation among the twenty-one of `OPERATIONS`; an optimisation report claims local
+      stationarity at most, never global optimality.
     evidence:
       - tests/test_t08_w2_unsupported.py::test_u05_validate_for_optimization_is_unsupported
       - tests/test_t08_w2_unsupported.py::test_u05_a_change_for_optimization_is_refused_audited
+      - tests/test_opt_job.py::test_g11_submit_job_without_a_solver_is_unsupported_and_creates_no_job
+      - tests/test_opt_cli.py::test_g11_the_cli_without_a_solver_imports_neither_pyomo_nor_cyipopt
+      - doc:docs/adr/0071-OPT-revision-optimisation.md
       - doc:docs/blueprint-v3.1.md
 
   - id: U06
