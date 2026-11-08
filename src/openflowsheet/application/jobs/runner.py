@@ -124,6 +124,8 @@ from openflowsheet.orchestrator.trace import Trace
 from openflowsheet.orchestrator.warm_start import WARM_START_SOURCE, WarmStartCandidate
 from openflowsheet.run.bundle import ARTIFACT_DIR, MANIFEST_NAME, BundleError, read_artifact
 from openflowsheet.run.manifest import policy_sha256
+from openflowsheet.studies.nlp.replay import MANIFEST as OPTIMIZATION_MANIFEST
+from openflowsheet.studies.nlp.replay import is_optimization_record, replay_optimization
 from openflowsheet.studies.surrogate.iterations import predecessors as iteration_predecessors
 from openflowsheet.studies.surrogate.plan import REGISTERED_PLANS, PlanRefusedError
 from openflowsheet.studies.surrogate.study import run_study
@@ -390,6 +392,35 @@ def bundle_rows(
         relpath=directory.relative_to(root).as_posix(),
     )
     return bundle, members
+
+
+def record_rows(
+    root: Path, directory: Path, record_id: str, job_id: str | None
+) -> tuple[ArtifactRow, list[ArtifactRow]]:
+    """An imported optimisation record's row and its manifest's (OPT design §4.9): the record is
+    a `replay_bundle` (what `reproduce` takes; `reproduce` dispatches on its manifest's format),
+    its member `<record id>/optimization-manifest.json` an `optimization_manifest`."""
+    path = directory / OPTIMIZATION_MANIFEST
+    manifest = ArtifactRow(
+        artifact_id=f"{record_id}/{OPTIMIZATION_MANIFEST}",
+        job_id=job_id,
+        kind="optimization_manifest",
+        name=OPTIMIZATION_MANIFEST,
+        sha256=file_sha256(path),
+        size_bytes=path.stat().st_size,
+        relpath=path.relative_to(root).as_posix(),
+        parent_artifact_id=record_id,
+    )
+    record = ArtifactRow(
+        artifact_id=record_id,
+        job_id=job_id,
+        kind="replay_bundle",
+        name=directory.name,
+        sha256=directory_hash(directory),
+        size_bytes=sum(item.stat().st_size for item in directory.rglob("*") if item.is_file()),
+        relpath=directory.relative_to(root).as_posix(),
+    )
+    return record, [manifest]
 
 
 class _Body:
@@ -674,6 +705,9 @@ class _Body:
                 ),
                 None,
             )
+        source = self.context.root / archive.relpath
+        if is_optimization_record(source):
+            return self._reproduce_optimization(source, rerun=body.rerun)
         rerun_directory = self.directory / "rerun"
         rerun_id = f"{self.job.job_id}:rerun"
 
@@ -689,7 +723,7 @@ class _Body:
 
         try:
             reproduction = reproduce_bundle(
-                self.context.root / archive.relpath,
+                source,
                 rerun=body.rerun,
                 rerun_directory=rerun_directory,
                 run_id=f"run-{self.job.job_id}",
@@ -702,6 +736,52 @@ class _Body:
             return _typed_end(error, None)
         except BundleError as error:
             _LOG.warning("job %s: unreadable bundle: %s", self.job.job_id, error)
+            return _failed(
+                _error(
+                    "invalid_request",
+                    "the bundle cannot be read (bundle_unreadable)",
+                    pointer="/body/bundle_artifact_id",
+                ),
+                None,
+            )
+        except _FenceLost:
+            return _failed(_error("internal_error", "fence_lost"), None, "owner_lost")
+        return WorkerResult(
+            status="completed", reason="operation_completed", interruption=None, error=None
+        )
+
+    def _reproduce_optimization(self, record: Path, *, rerun: bool) -> WorkerResult:
+        """OPT design §4.9: an optimisation record is replayed by `replay_optimization`, at this
+        job's stage boundaries. Its re-run bundles are artifacts of the job
+        (`<job_id>:rerun/starts/<k>/<start|resolve>`), registered once `compare` is passed; the
+        replay report is the one output."""
+        rerun_directory = self.directory / "rerun"
+        try:
+            report = replay_optimization(
+                record, rerun=rerun, rerun_directory=rerun_directory, stage=self.at
+            )
+            rows: list[ArtifactRow] = []
+            for directory in sorted(rerun_directory.glob("starts/*/*/")):
+                if not (directory / MANIFEST_NAME).is_file():
+                    continue
+                relative = directory.relative_to(rerun_directory).as_posix()
+                bundle, members = bundle_rows(
+                    self.context.root,
+                    directory,
+                    f"{self.job.job_id}:rerun/{relative}",
+                    self.job.job_id,
+                    producer=True,
+                )
+                rows.extend([bundle, *members])
+            if rows:
+                self._register(rows)
+            self._file_output(REPLAY_REPORT, report.as_document())
+        except JobInterrupted as interrupted:
+            return _interrupted(interrupted, None)
+        except (RunUnsupportedError, VerifierError, SolutionStateMismatchError) as error:
+            return _typed_end(error, None)
+        except BundleError as error:
+            _LOG.warning("job %s: unreadable record: %s", self.job.job_id, error)
             return _failed(
                 _error(
                     "invalid_request",

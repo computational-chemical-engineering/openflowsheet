@@ -63,7 +63,7 @@ from openflowsheet.application.authz import (
 from openflowsheet.application.contract import ApplicationError, Page, Projection, api_error
 from openflowsheet.application.jobs.executor import InlineExecutor, ProcessExecutor
 from openflowsheet.application.jobs.model import JOB_STATUSES, TERMINAL_STATUSES, JobStatus
-from openflowsheet.application.jobs.runner import RunContext, bundle_rows
+from openflowsheet.application.jobs.runner import RunContext, bundle_rows, record_rows
 from openflowsheet.application.policies import APPLICATION_POLICIES, DEFAULT_POLICY_ID
 from openflowsheet.application.projection import (
     DEFAULT_DEPTH,
@@ -141,6 +141,8 @@ from openflowsheet.application.validation import Task, ValidationReport
 from openflowsheet.canonical import canonical_json, document_sha256, first_noncanonical
 from openflowsheet.run.bundle import MANIFEST_NAME
 from openflowsheet.run.replay import ReplayReport
+from openflowsheet.studies.nlp.replay import MANIFEST as OPTIMIZATION_MANIFEST
+from openflowsheet.studies.nlp.replay import is_optimization_record
 
 Executor = Literal["inline", "process"]
 TASKS: tuple[str, ...] = get_args(Task)
@@ -505,9 +507,7 @@ class LocalApplication:
                 "not_found", "no such revision", operation="validate", revision_id=revision_id
             )
         if task != "optimization":
-            return validation.validate(
-                revision.as_document(), task, surrogates=self._surrogates()
-            )
+            return validation.validate(revision.as_document(), task, surrogates=self._surrogates())
         return validation.validate(
             revision.as_document(),
             task,
@@ -1101,7 +1101,9 @@ class LocalApplication:
 
     def _import_bundle(self, source: Path, operation: str) -> str:
         """§4.2 `reproduce`'s import: copy the regular files of `source` (no symlink followed)
-        into `imports/<ordinal>/` and register the copy and its known members."""
+        into `imports/<ordinal>/` and register the copy and its known members. An optimisation
+        record (OPT design §4.9: no `manifest.json`, an `optimization-manifest.json` naming its
+        format) is imported the same way and registered by `record_rows`."""
         if not source.is_dir():
             self._refuse(
                 "not_found",
@@ -1110,7 +1112,12 @@ class LocalApplication:
                 pointer="/bundle_path",
             )
         manifest = source / MANIFEST_NAME
-        if manifest.is_symlink() or not manifest.is_file():
+        record = (
+            not manifest.exists()
+            and not (source / OPTIMIZATION_MANIFEST).is_symlink()
+            and is_optimization_record(source)
+        )
+        if not record and (manifest.is_symlink() or not manifest.is_file()):
             self._refuse(
                 "invalid_request",
                 f"not a replay bundle: no {MANIFEST_NAME}",
@@ -1135,8 +1142,11 @@ class LocalApplication:
                 destination = target / path.relative_to(source)
                 destination.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copyfile(path, destination)
-        bundle, members = bundle_rows(
-            self.files_root, target, f"import-{ordinal:06d}:bundle", None, producer=False
+        bundle_id = f"import-{ordinal:06d}:bundle"
+        bundle, members = (
+            record_rows(self.files_root, target, bundle_id, None)
+            if record
+            else bundle_rows(self.files_root, target, bundle_id, None, producer=False)
         )
         with self._store.writing() as connection:
             self._store.register_artifacts(connection, [bundle, *members])
@@ -1386,7 +1396,12 @@ class LocalApplication:
         row = self._artifact_row(artifact_id, operation)
         if row.kind == "replay_bundle":
             members = self._store.artifact_children(row.artifact_id)
-            manifest = [member for member in members if member.name == MANIFEST_NAME]
+            # An optimisation record's manifest is its `optimization-manifest.json` (§4.9).
+            manifest = [
+                member
+                for member in members
+                if member.name in (MANIFEST_NAME, OPTIMIZATION_MANIFEST)
+            ]
             manifest_path = (
                 self.files_root / manifest[0].relpath
                 if manifest

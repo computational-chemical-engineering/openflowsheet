@@ -186,12 +186,22 @@ def command_replay(arguments: argparse.Namespace) -> int:
     reruns only when its `run_id` is a registered case, and anything else is not rerun —
     `NOT_RUN`, with the reason (`rerun_unsupported(no_revision_document)` for an unknown run id).
     There is no fallback to SYN-001-nominal: a verdict about another problem's rerun is a wrong
-    result. Exit 0 iff the verdict is `MATCH`, or `NOT_RUN` when `--rerun` was not given.
+    result. An optimisation record (OPT design §4.9: its `optimization-manifest.json` names the
+    format) is `replay_optimization`'s, with or without `--rerun`. Exit 0 iff the verdict is
+    `MATCH`, or `NOT_RUN` when `--rerun` was not given.
     """
     from openflowsheet.run.replay import replay
+    from openflowsheet.studies.nlp.replay import is_optimization_record, replay_optimization
 
     directory = Path(arguments.bundle)
-    if arguments.rerun:
+    if is_optimization_record(directory):
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as scratch:
+            report = replay_optimization(
+                directory, rerun=arguments.rerun, rerun_directory=Path(scratch) / "rerun"
+            )
+    elif arguments.rerun:
         import tempfile
 
         from openflowsheet.application.revision_run import reproduce_bundle

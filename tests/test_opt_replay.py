@@ -13,6 +13,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+import pytest
+
 from openflowsheet.studies.nlp.replay import (
     MANIFEST,
     is_optimization_record,
@@ -76,3 +78,56 @@ def test_g11_replay_imports_neither_pyomo_nor_cyipopt() -> None:
         timeout=600,
     )
     assert found.stdout.split("\n")[-2] == "MATCH []", found.stdout[-2000:]
+
+
+# -- §4.9's dispatch: `reproduce` and the CLI's `replay` ------------------------------------------
+
+
+def test_g13_reproduce_imports_and_replays_an_optimization_record(tmp_path: Path) -> None:
+    """`LocalApplication.reproduce` imports the record whole (its `starts/` tree), registers it as
+    a `replay_bundle` with its manifest as member, and the `reproduce` job dispatches on the
+    manifest's format: `MATCH`, the re-run bundles artifacts of the job, the report its one
+    output. Without `rerun`: `inspected_archived_results`."""
+    from openflowsheet.application.local import LocalApplication
+    from openflowsheet.application.types import ReplayPolicy
+
+    with LocalApplication.create(tmp_path / "project", project_id="opt-replay") as app:
+        report = app.reproduce(FIXTURE, ReplayPolicy(rerun=True))
+        assert report.differences == (), report.differences
+        assert report.verdict == "MATCH", report.as_document()
+        imported = app.store.artifact("import-000001:bundle")
+        assert imported is not None and imported.kind == "replay_bundle"
+        copy = app.files_root / imported.relpath
+        assert record_integrity(copy).ok
+        assert [row.name for row in app.store.artifact_children(imported.artifact_id)] == [MANIFEST]
+        viewed = app.get_artifact(imported.artifact_id)
+        recorded = json.loads((FIXTURE / MANIFEST).read_bytes())
+        assert viewed.value["manifest"]["format"] == recorded["format"]
+        assert viewed.value["manifest"]["members"] == recorded["members"]
+        reruns = sorted(
+            row.artifact_id
+            for row in app.store.artifacts_of_kind("replay_bundle")
+            if ":rerun/" in row.artifact_id
+        )
+        starts = sorted(path.name for path in (FIXTURE / "starts").iterdir())
+        assert len(reruns) == 2 * len(starts), reruns
+        inspected = app.reproduce(FIXTURE, ReplayPolicy(rerun=False))
+        assert (inspected.mode, inspected.verdict) == ("inspected_archived_results", "NOT_RUN")
+
+
+def test_g13_the_cli_replays_an_optimization_record(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    from openflowsheet.application.cli import main
+
+    record = tmp_path / "OPT-A2"
+    shutil.copytree(FIXTURE, record)
+    assert main(["replay", str(record), "--rerun", "--json"]) == 0
+    document = json.loads(capsys.readouterr().out)
+    assert (document["verdict"], document["differences"]) == ("MATCH", [])
+    assert main(["replay", str(record)]) == 0
+    assert "inspected_archived_results" in capsys.readouterr().out
+    (record / "starts" / "0" / "candidate-revision.json").write_bytes(b"{}")
+    assert main(["replay", str(record), "--rerun", "--json"]) == 1
+    document = json.loads(capsys.readouterr().out)
+    assert document["integrity"]["tampered"] == ["starts/0/candidate-revision.json"]

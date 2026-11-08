@@ -29,7 +29,7 @@ from __future__ import annotations
 
 import hashlib
 import json
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from pathlib import Path
 from typing import Any, Final
 
@@ -114,12 +114,24 @@ def _starts(directory: Path) -> list[int]:
     return sorted(int(path.name) for path in (directory / "starts").glob("*") if path.is_dir())
 
 
-def replay_optimization(directory: Path, *, rerun: bool, rerun_directory: Path) -> ReplayReport:
+def replay_optimization(
+    directory: Path,
+    *,
+    rerun: bool,
+    rerun_directory: Path,
+    stage: Callable[[str], None] | None = None,
+) -> ReplayReport:
     """§4.9 on the record at `directory` (see the module docstring). A rerun's bundles are
-    written under `rerun_directory`."""
+    written under `rerun_directory`, at `starts/<k>/<start|resolve>`.
+
+    `stage` is called as `reproduce_bundle` calls it (T07 §6.4): `integrity` on entry, `rerun`
+    before the bundles are re-run, `compare` before the report is built; a job's `reproduce`
+    passes its stage boundary (OPT design §4.9)."""
     from openflowsheet.application.revision_run import reproduce_bundle
 
+    at = stage if stage is not None else (lambda _: None)
     directory = Path(directory)
+    at("integrity")
     integrity = record_integrity(directory)
     manifest = _read(directory, MANIFEST)
     recorded_environment = dict(manifest.get("environment") or {})
@@ -130,6 +142,7 @@ def replay_optimization(directory: Path, *, rerun: bool, rerun_directory: Path) 
             if not integrity.ok
             else "rerun not requested: the record was only inspected"
         )
+        at("compare")
         return ReplayReport(
             mode="inspected_archived_results",
             verdict="NOT_RUN",
@@ -142,6 +155,7 @@ def replay_optimization(directory: Path, *, rerun: bool, rerun_directory: Path) 
     reasons: list[str] = []
     modes: list[str] = []
     near: list[str] = []
+    at("rerun")
     for index in _starts(directory):
         for name in BUNDLES:
             bundle = directory / "starts" / str(index) / name
@@ -164,6 +178,7 @@ def replay_optimization(directory: Path, *, rerun: bool, rerun_directory: Path) 
     chain, chain_reasons = _recomputed_chain(directory)
     found += chain
     reasons += chain_reasons
+    at("compare")
     mode: ReplayMode
     verdict: ReplayVerdict
     if not modes or any(item == "inspected_archived_results" for item in modes):
