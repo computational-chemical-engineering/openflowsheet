@@ -211,6 +211,13 @@ Format: question → choice; alternative; reversible by; commit. Batched for the
   `aee140a9…`, `get_job_result` `9347208b…`; WO-2's `c7eb817f…`, `284a9a5f…`, `b7152dfe…`, `e607a7d7…`,
   `74862334…`). Reversible by: reverting this commit and the merge's chain-test hunks.
 
+- **D-37 — Global-state `cache` count 38 on the merged tree (brief step 3).** X02 moved it 35 → 36 against the old
+  base (D-21: the packaged child-script hash memo, one entry). `main` at `ed874b17` has 37 (MSG's parsed-template
+  `lru_cache` and its response-schema error locations; plus two `global` lines, test-only audit switch). Merged:
+  **36 → 38** (`{"cache": 38, "np.random": 3, "random": 1, "ContextVar": 1, "global": 2}`), pinned by
+  `tests/test_t07_global_state.py::test_g20_every_hit_is_allowlisted_and_every_entry_is_hit` (passes). OPT adds one more at
+  its merge. No allowlist entry changed.
+
 ## Tokens for MSG's catalogue (§5.9; `wp/MSG` not merged)
 
 | Token | Family / kind | Emitted at |
