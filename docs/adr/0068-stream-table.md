@@ -61,13 +61,19 @@ member detail), `not_ready`, `unsupported` (`basis_unavailable(<id>)`) and `inte
 - **R1** carried saturated split (`<S>.sat.V`, `<S>.sat.L` present): VAPOR (V) and LIQUID (L) at `(T_sat(P), P)`. The
   stream's `T` is the stored T; a refused `Tsat` nulls the properties only (Q1.R12).
 - **R1′** carried lifted split (from the ST review, 2026-11-08): the stream of a heater-style lifted split (the list
-  `verify_revision` derives from the revision) whose certificate has an `independent_split` row `not_applicable` for
-  `temperature_degenerate` or `fresh_flash_unresolved`: VAPOR and LIQUID from the stored split at the split's (T, P),
-  Ḣ summed from 0.0 as the verifier's `_phase_enthalpy` sums it; `phase_source: "carried_lifted_split"`, not flagged.
-  A flagged stream with no such split that would reach R3 gets no number: `flash_failed(status=temperature_degenerate)`.
+  `verify_revision` derives from the revision) whose certificate has that split's own row, `independent_split.<U>.<S>`,
+  `not_applicable` for `temperature_degenerate` or `fresh_flash_unresolved` (design-lane confirmations, 2026-11-08: a
+  products-style split's row on its drum's inlet does not trigger it): VAPOR and LIQUID from the stored split at the
+  split's (T, P), Ḣ summed from 0.0 as the verifier's `_phase_enthalpy` sums it; `phase_source:
+  "carried_lifted_split"`, not flagged.
 - **R2** declared producer-port phase: that phase at (T, P).
+- **Unlifted** (design-lane confirmations, 2026-11-08): a stream named by a certificate row's reason
+  `temperature_degenerate_unlifted(<S>)` gets no number: no phases, `phase_source: "flash"`, not flagged,
+  `flash_failed(status=temperature_degenerate)`. It is unreachable while the binder admits `vapor_liquid` only on a
+  heater-style outlet, and kept so that the path is never silent.
 - **R3** otherwise: a fresh TP flash of the stream's own (n, T, P), with **no** ε_adm or τ_dew snap. Each substream
-  reports `flash_near_phase_boundary` (Q4.R12 (b) (i); (ii) is decided by R1′ since the ST review).
+  reports `flash_near_phase_boundary` (Q4.R12 (b) (i); (ii) is withdrawn: a heater-style split's own degeneracy row is
+  decided by R1′, and a products-style split's row does not judge its inlet's own state).
 
 A phase is listed iff its amount is `!= 0.0`, of either sign and never clamped, in the order VAPOR, LIQUID, with the
 decision's ids (Q4.R11). Its id is Q4.R1's triple `{family, qualifier, ordinal}`; no rendered string is a key.
@@ -249,3 +255,21 @@ SQ-ST-5 Q2.R11, SQ-ST-6 Q4.R11; each default adopted with the precisions of §17
 Edits 0068-1 to 0068-7 of foundation rulings §17 (Amendment 5) are applied: 0068-1 (Builds on), 0068-2 (D3), 0068-3
 (D5), 0068-4 (Alternatives rejected), 0068-5 (E2–E7, E16), 0068-6 (Riskiest point, Specifier questions) and 0068-7
 (Frozen-list changes).
+
+## Amendment — design-lane confirmations (2026-11-08)
+
+Ruled in `docs/reviews/ST-review.md` §Design-lane confirmations (rulings 3 and 5; rulings 1, 2 and 4 confirm the fix
+round's choices unchanged). D3 is corrected where the ST review's R1′ took any degeneracy row on S for the row of S's
+own split. Replaced text, verbatim:
+
+- R1′: "whose certificate has an `independent_split` row `not_applicable` for `temperature_degenerate` or
+  `fresh_flash_unresolved`" → the split's own row, `independent_split.<U>.<S>`.
+- R1′: "A flagged stream with no such split that would reach R3 gets no number:
+  `flash_failed(status=temperature_degenerate)`." → the **Unlifted** bullet, keyed on the verifier's reason
+  `temperature_degenerate_unlifted(<S>)`.
+- R3: "(Q4.R12 (b) (i); (ii) is decided by R1′ since the ST review)" → (ii) withdrawn, with the reason.
+
+Affected requirements: the same as D3's; no interface, schema, catalogue entry or verifier rule changes. Migration:
+none, because no served 0.3.0 document and no G7, G8 or G8u result moves (the review's F3: the served degeneracy rows
+are SC-1's and SC-3's own U-VLV rows and NP-1's and SC-2's U-PHF rows on a declared S1). Acceptance evidence: the
+review's DC-1…DC-6 and the byte-identity of the 44 served documents.

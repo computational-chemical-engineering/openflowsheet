@@ -150,18 +150,25 @@ P=state[pressure_id(S)])`.
 - **R1′ carried lifted split** (from the ST review, 2026-11-08, M1). *Trigger:* S is the `stream` of a heater-style
   lifted split (its instance lacks the `vapor` + `liquid` port pair, as in the verifier's `degeneracy`), from
   `lifted_splits([(i.unit_id, i.model_id, i.wiring) for i in view.instances], view.components)`, the list
-  `verify_revision` derives (`staged` omitted: stage keys are never flowsheet streams); and the certificate holds an
-  `independent_split` row with subject S, result `not_applicable` and a reason in {`temperature_degenerate`,
-  `fresh_flash_unresolved`}. *Phases:* VAPOR with n = `state[split.vapor]` and LIQUID with n = `state[split.liquid]`,
+  `verify_revision` derives (`staged` omitted: stage keys are never flowsheet streams); and the certificate holds that
+  split's **own** row, id `independent_split.<U>.<S>` with U the split's unit as the certificate names it (`unit_ids`),
+  built as the verifier builds it and never parsed, with result `not_applicable` and a reason in
+  {`temperature_degenerate`, `fresh_flash_unresolved`} (design-lane confirmations, 2026-11-08: a row of another split
+  on S, such as a products-style split's on the drum's inlet, does not trigger R1′; see §4.4).
+  *Phases:* VAPOR with n = `state[split.vapor]` and LIQUID with n = `state[split.liquid]`,
   both at `(state[split.temperature], state[split.pressure])`, each listed iff its amount is `!= 0.0`. *Ḣ:* the
   per-component form summed **from 0.0**, as `_phase_enthalpy` sums it, then `H_V + H_L` (a mixture-`h` provider's
   phase gives `n_p,tot·h`, as `gamma_phi_units._phase_flow`); bitwise the verifier's value, so these streams are in
   G7's bitwise set. `phase_source: "carried_lifted_split"`; `flash_near_phase_boundary` is false, because nothing was
-  flashed; the quoted row stays. **A flagged stream that reaches R3 with no such split** (the verifier's `unlifted`
-  case) is not flashed: `phases: []`, and its phase-derived quantities are null with
-  `flash_failed(stream=S, status="temperature_degenerate")`.
+  flashed; the quoted row stays.
 - **R2 declared.** `declared_phase[S]` is not `None`. `phase_source: "declared"`; one phase of that family,
   n = `st.n`, at (T, P).
+- **Unlifted** (design-lane confirmations, 2026-11-08). A stream the verifier left unlifted, that is S such that some
+  certificate row's `reason` equals `temperature_degenerate_unlifted(<S>)` exactly (`verify.table.blocked_check`,
+  T05b spec §9.2), is not flashed: `phases: []`, `phase_source: "flash"`, `flash_near_phase_boundary: false`, and its
+  phase-derived quantities are null with `flash_failed(stream=S, status="temperature_degenerate")`. Only undeclared
+  streams are unlifted, so this follows R2. It is unreachable while the binder admits `vapor_liquid` only on a
+  heater-style `outlet` port (`instance_contract`, R4's converse); it is kept so that the path is never silent.
 - **R3 flash.** In every other case, `provider.flash(FlashRequest(state=st), context)`, and `phase_source: "flash"`.
   If the status is not `"ok"`, then `phases: []`, and every phase-derived quantity (`h`, `h_mass`, `s`, `s_mass`,
   `rho`, `H_flow`, `S_flow`, `V_flow`, the vapour fractions) is `null` with `flash_failed(stream=S, status=…)`.
@@ -169,7 +176,9 @@ P=state[pressure_id(S)])`.
   and LIQUID from `result.liquid`, each with its outlet `n` in provider order, at the stream's (T, P). There is **no
   snap**. The substream's `flash_near_phase_boundary` is true iff two or more phases are listed and min_p |n_p,tot|/N_P
   ≤ τ_β = 1e-8 (Q4.R12 (b) (i)); it is false for R0–R2. Q4.R12 (b) (ii) (a quoted degeneracy `independent_split`
-  row) no longer reaches a flash: since the ST review (2026-11-08), R1′ decides every such stream.
+  row) is withdrawn (design-lane confirmations, 2026-11-08): a heater-style split's own such row decides the stream by
+  R1′, and a products-style split's, which can reach R3 on the drum's inlet, judges the inlet's composition at the
+  drum's (T, P), not the inlet's state, which the verifier flashes like any other.
 - **Listing.** A phase is listed iff it exists and its total amount is `!= 0.0` (either sign, never clamped; ids never
   renumbered; Q4.R11), ordered VAPOR, LIQUID (registered family order VAPOR, LIQUID, FLUID, SOLID; within a family by
   ordinal). Its id is `{family, qualifier: null, ordinal: 1}`.
@@ -215,6 +224,9 @@ Each stream carries `checks`: every certificate row with `category` in {`phase_a
 the overall section carries the row `id == "energy_balance.envelope"`. A quote is `{index, id, result, scope, value,
 tolerance, reason, near_threshold}`, where `index` is the row's position in the certificate's `checks` array, so the
 full row is at `get_artifact("<bundle>/solution-certificate.json", pointer="/checks/<index>")`.
+A products-style split's rows have the drum's inlet as subject (`LiftedSplit.stream`), so they are quoted on the inlet,
+but they judge the inlet's composition at the drum's (T, P) and do not enter the inlet's phase rule (§4.2; design-lane
+confirmations, 2026-11-08).
 
 ### 4.5 Energy summary (computed at the stored state)
 
@@ -472,8 +484,9 @@ The corpus is F0's RC bundle set plus TH-C1 (`benchmarks/s11/thermal/TH-C1.json`
   provider value shapes (`h` against `h_<c>`). Mitigations: the quoted checks, `judged_at`, and G6–G8. Ruled by Q4.R12
   (Amendment 5): the raw flash stays; `flash_near_phase_boundary` and the quoted `independent_split` rows mark where the
   verifier may have decided otherwise; G16. *Scope of Q4.R12 (a), from the ST review, 2026-11-08:* the raw flash stays
-  wherever the verifier could flash. Where it could not (a degeneracy `independent_split` row), R1′ reads the carried
-  lifted split, or gives no number. *Rejected:* (a) exempting a flagged envelope from G8, which would loosen a gate
+  wherever the verifier could flash. Where it could not, R1′ reads the carried lifted split (a heater-style split's own
+  degeneracy `independent_split` row), or the table gives no number (a stream the verifier left unlifted); design-lane
+  confirmations, 2026-11-08. *Rejected:* (a) exempting a flagged envelope from G8, which would loosen a gate
   around a wrong number (`T05b:SC-1`'s S2 was 2016 W low with a vapour fraction of 0); and reading every lifted split.
 
 ## 13. Specifier questions (scientific semantics; the default applies until ruled)
@@ -487,3 +500,24 @@ is accepted for `h` only (ideal-solution additivity), never for `s` or `v`. **SQ
 amount is `!= 0.0`; a saturated liquid with V = 0 shows one phase, and its vapour fraction is still defined (0.0). Ruled
 2026-11-06 (foundation rulings Amendment 5): SQ-ST-1 Q4.R10, SQ-ST-2 Q1.R11, SQ-ST-3 Q4.R12, SQ-ST-4 Q1.R12, SQ-ST-5
 Q2.R11, SQ-ST-6 Q4.R11.
+
+## Amendment — design-lane confirmations (2026-11-08)
+
+Ruled in `docs/reviews/ST-review.md` §Design-lane confirmations (rulings 3 and 5). A products-style split's
+`independent_split.<U>.<S>` row has the drum's inlet as subject but says nothing about the inlet's own Ḣ, and the
+verifier's `unlifted` streams carry no `independent_split` row. Replaced text, verbatim:
+
+- §4.2 R1′ trigger: "and the certificate holds an `independent_split` row with subject S, result `not_applicable` and
+  a reason in {`temperature_degenerate`, `fresh_flash_unresolved`}." Now: that split's own row,
+  `independent_split.<U>.<S>`.
+- §4.2 R1′, last sentence: "**A flagged stream that reaches R3 with no such split** (the verifier's `unlifted` case)
+  is not flashed: `phases: []`, and its phase-derived quantities are null with `flash_failed(stream=S,
+  status="temperature_degenerate")`." Now: the **Unlifted** bullet after R2, keyed on the reason
+  `temperature_degenerate_unlifted(<S>)`.
+- §4.2 R3: "Q4.R12 (b) (ii) (a quoted degeneracy `independent_split` row) no longer reaches a flash: since the ST
+  review (2026-11-08), R1′ decides every such stream." Now: (b) (ii) withdrawn, with the reason.
+- §12 Riskiest point: "Where it could not (a degeneracy `independent_split` row), R1′ reads the carried lifted split,
+  or gives no number." Now: R1′ for a heater-style split's own row; no number for an unlifted stream.
+- §4.4: one sentence added (a products-style split's rows are quoted on the inlet and do not enter its phase rule).
+
+No served document, G7, G8 or G8u result moves (the review's §Design-lane confirmations, F3 and Acceptance).
