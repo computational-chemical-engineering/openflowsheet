@@ -695,3 +695,10 @@ and ADR 0019 Am. 15 Accepted, R-950 final (c_5), R-951…R-955 (D-38); 1508 pass
 X10b: CI `42503117602` green on `c57d449a`; manifest brief `docs/briefs/X10b-manifest.md`.
 Main: ruff E501 on two harvest comment lines after the MSG merge, fixed `89b7e008`. From now on the post-merge check
 on main is F0 **and** `ruff check` + `ruff format --check` (the merge commit's text is not what CI tested).
+
+## 2026-11-08 — X10b merged
+
+Manifest `evidence/X10b/c57d449a…` tested (`d50d6c06`, after merging main `9bf45e98`; `case_hash` = sha256 of
+`models/c1/flash.py` at that commit, `b1b47c28…`, the registered move); HARVEST_SIZE (81, 1015, 129). Merged
+`d5035a76`; on main ruff clean, F0 PASS, harvest/manifests/L01/G7 tests 660 passed, 1 skipped. WIT's follow-ups are
+done. X02 re-takes HARVEST_SIZE at its merge.
