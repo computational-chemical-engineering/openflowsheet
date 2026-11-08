@@ -177,6 +177,13 @@
       "justification": "S04 (L01 WO-2, ADR 0043): the same three nullary functions of immutable inputs as pr_c1.py, each computed once per process: load_records (the pr-lib-v1 records' bytes, parsed and checked), parameters (the Peng-Robinson parameters, a pure function of those records) and _implementation_sha256 (the module source's SHA-256, the W0.5 pattern)."
     },
     {
+      "file": "adapters/experiments/backends.py",
+      "line": "@functools.cache",
+      "patterns": ["cache"],
+      "occurrences": 1,
+      "justification": "X02 (ADR 0070 D10, design note \u00a75.5 'memoising the packaged scripts' hashes'): `_packaged_child_sha256`, the SHA-256 of a packaged child script by name (or None when absent), a pure function of package files that are immutable for the process's life; at most one entry per packaged child script (today `child.py` alone, X02 review ruling 1)."
+    },
+    {
       "file": "thermo/iapws95.py",
       "line": "@lru_cache(maxsize=_SATURATION_CACHE_SIZE)",
       "patterns": ["cache"],

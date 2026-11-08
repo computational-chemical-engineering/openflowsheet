@@ -64,7 +64,7 @@ from __future__ import annotations
 import json
 import logging
 from collections.abc import Callable, Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Any, Final, Self
 
@@ -76,7 +76,16 @@ from openflowsheet.application.admission import (
     stored_surrogate_manifests,
     surrogate_resolver,
 )
-from openflowsheet.application.coupled_run import LiveExperiments
+from openflowsheet.application.coupled_run import (
+    COUPLING_NAME,
+    CoupledStart,
+    LiveExperiments,
+    external_starts,
+    external_units,
+    iterate_start,
+    job_coupling_start,
+    unit_variant,
+)
 from openflowsheet.application.jobs.interrupt import CancelReason, JobInterrupted
 from openflowsheet.application.jobs.model import (
     ARTIFACT_FILE_NAMES,
@@ -84,6 +93,7 @@ from openflowsheet.application.jobs.model import (
     Interruption,
     TerminalStatus,
 )
+from openflowsheet.application.revision_binding import RevisionBinding
 from openflowsheet.application.revision_run import (
     Route,
     RunUnsupportedError,
@@ -105,11 +115,12 @@ from openflowsheet.application.types import (
     ReproduceBody,
     SolveBody,
     SurrogateStudyBody,
+    WarmStartDeclaration,
 )
 from openflowsheet.canonical import canonical_json, directory_hash, file_sha256
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.orchestrator.trace import Trace
-from openflowsheet.orchestrator.warm_start import WARM_START_SOURCE, WarmStartCandidate
+from openflowsheet.orchestrator.warm_start import EXPLICIT, WARM_START_SOURCE, WarmStartCandidate
 from openflowsheet.run.bundle import ARTIFACT_DIR, MANIFEST_NAME, BundleError, read_artifact
 from openflowsheet.run.manifest import policy_sha256
 from openflowsheet.studies.surrogate.iterations import predecessors as iteration_predecessors
@@ -228,6 +239,59 @@ def warm_start_candidate(
     except (OSError, ValueError):
         document = None
     return WarmStartCandidate(document, source_job_id, source_revision_id)
+
+
+def explicit_warm_start_candidate(context: RunContext, job_id: str) -> WarmStartCandidate:
+    """ADR 0070 D1–D2 (X02 design note §5.2): the candidate a solve request names by
+    `warm_start.job_id` — that solve job's `solution-state.json`, whatever its certificate
+    status, with `selection` `explicit-v1`. Admission checked that the job holds one (A1); a
+    file that does not parse, or a source no longer found, is a candidate with no document,
+    which the orchestrator's `integrity` check rejects (recorded, never a silent cold start)."""
+    store = context.store
+    with store.reading() as connection:
+        found = store.solution_of_job(connection, job_id)
+    if found is None:
+        return WarmStartCandidate(None, job_id, None, EXPLICIT)
+    source_revision_id, relpath = found
+    try:
+        document = json.loads((context.root / relpath).read_bytes())
+    except (OSError, ValueError):
+        document = None
+    return WarmStartCandidate(document, job_id, source_revision_id, EXPLICIT)
+
+
+def declared_coupled_start(
+    context: RunContext, declaration: WarmStartDeclaration | None, bound: Route
+) -> CoupledStart | None:
+    """ADR 0070 D2–D3 (X02 design note §5.2): the declared outer start w₀, with its integrity
+    outcome. A `coupling` iterate is w₀ on any route (the routes without an outer iteration
+    record it rejected); otherwise, on `revision_coupled`, a declared `job_id` gives the last
+    iterate of that job's `external-coupling.json`, the sibling of its `solution-state.json`.
+    `None` when nothing was declared that the route reads. On `revision_coupled` a `job_id` also
+    gives the k = 0 child starts of the start-capable units (ADR 0070 D2, the `external`
+    sub-record), from that record's last iterate and the project's profile store."""
+    if declaration is None:
+        return None
+    path: Path | None = None
+    job = bound.solve_path == "revision_coupled" and declaration.job_id is not None
+    if job:
+        assert declaration.job_id is not None
+        store = context.store
+        with store.reading() as connection:
+            found = store.solution_of_job(connection, declaration.job_id)
+        path = None if found is None else (context.root / found[1]).with_name(COUPLING_NAME)
+    if declaration.coupling is not None:
+        start = iterate_start(declaration.coupling)
+    elif job:
+        start = job_coupling_start(path)
+    else:
+        return None
+    if job:
+        assert isinstance(bound.binding, RevisionBinding)
+        targets = {unit.unit_id: unit_variant(unit) for unit in external_units(bound.binding)}
+        profiles = external_starts(path, targets, ExperimentStore(context.root).profile)
+        start = replace(start, profiles=profiles)
+    return start
 
 
 class _RecordingSink:
@@ -526,13 +590,19 @@ class _Body:
                 )
             selected = bound
             # ADR 0024 D2: the lookup is here, where the store is, and only when the policy opts
-            # in on the route that reads it; the orchestrator never reads the store.
+            # in on the route that reads it; the orchestrator never reads the store. ADR 0070 D2:
+            # a declared `warm_start.job_id` is the candidate instead, on every route (the legacy
+            # route records it rejected).
             warm_start = None
-            if (
+            declared = body.warm_start.job_id if body.warm_start is not None else None
+            if declared is not None:
+                warm_start = explicit_warm_start_candidate(self.context, declared)
+            elif (
                 bound.solve_path in ("revision_eo", "revision_coupled")
                 and WARM_START_SOURCE in policy.initializer_chain
             ):
                 warm_start = warm_start_candidate(self.context, self.job.job_id, body.revision_id)
+            coupled_start = declared_coupled_start(self.context, body.warm_start, bound)
             experiments = None
             if bound.solve_path == "revision_coupled":
                 experiments = self._experiments(sink, emit_records)
@@ -548,6 +618,7 @@ class _Body:
                 trace=trace,
                 stage=self.at,
                 warm_start=warm_start,
+                coupled_start=coupled_start,
                 experiments=experiments,
                 on_iteration=self._outer_iteration,
                 on_diagnosis=diagnoses.append,

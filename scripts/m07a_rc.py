@@ -36,6 +36,11 @@ function, a registered digest and Frank's carry extended to name it):
   `eaff4585…`, measured at MSG WO-11 after `explain.md`'s review edits
   (`tests/test_t08_w2_surface_digest.py`'s `MSG_SERVED_SHA256`; `1ca06b37…` at WO-7, `b083ffe1…` at
   WO-6, before `explain`).
+- c_5, R-950 (ADR 0070, ADR 0019 Amendment 15): X02's `solve_body.warm_start` (and the experiment
+  request's `start` and result's `profile_sha256`, where served), stripped by
+  `tests/x02_schema_support.py`'s `without_x02`; `D_5` = `f51b69bf…`, measured on the tree that
+  merged `main` (MSG's c_4) into `wp/X02` (`tests/test_t08_w2_surface_digest.py`'s
+  `X02_SERVED_SHA256`; `0af895a0…` at X02 WO-2, over M04's list before MSG).
 
 The released 0.2.0a1 ran the two-link chain (its committed record at `C_α²`); a re-run of the
 alpha's step 8 uses this script at the tag.
@@ -167,6 +172,16 @@ def strip_msg(tools: Tools) -> Tools:
     return stripped
 
 
+def strip_x02(tools: Tools) -> Tools:
+    """s_5 (R-950): `tools` without X02's additions (`x02_schema_support.without_x02`)."""
+    t08_rc._tests_on_path()
+    from x02_schema_support import without_x02  # noqa: PLC0415
+
+    stripped = without_x02(copy.deepcopy(tools))
+    assert isinstance(stripped, list)
+    return stripped
+
+
 @dataclass(frozen=True)
 class Link:
     """One registered surface change c_k: its register entry, its strip function s_k, and the
@@ -202,6 +217,12 @@ LINKS: Final = (
         "R-934",
         strip_msg,
         "eaff45852d7596816d90d744078f537e46c723e577295d347d9d73aea0942eac",
+    ),
+    Link(
+        "c_5",
+        "R-950",
+        strip_x02,
+        "f51b69bf66569e35aebead73b66e98d58f24c84016db639536c0ee35181f4c7b",
     ),
 )
 

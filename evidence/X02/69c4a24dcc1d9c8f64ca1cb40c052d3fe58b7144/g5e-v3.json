@@ -1,0 +1,181 @@
+{
+ "record": "x02-g5e-v1",
+ "judged": false,
+ "specification": "docs/design/X02-warm-starts.md §7 G5 (e)",
+ "variant": {
+  "variant_id": "pymrm-6089593-g2-nz800-s123-v3",
+  "sha256": "8b92540adc772a454e212b7054a98da4f7995899955a43a54d07669a70aa203c"
+ },
+ "summary": {
+  "cold": [
+   "VERIFIED",
+   4,
+   174.9
+  ],
+  "restart": [
+   "VERIFIED",
+   1,
+   24.9
+  ],
+  "w0_equals_cold_final_bitwise": true,
+  "experiments_evaluated": 1,
+  "any_start_member": false
+ },
+ "runs": {
+  "cold": {
+   "outcome": "CONVERGED",
+   "verification_status": "VERIFIED",
+   "outer_iterations": 4,
+   "w": [
+    [
+     0.15,
+     80
+    ],
+    [
+     0.16372627516958063,
+     81.29486642063955
+    ],
+    [
+     0.16593954758818488,
+     80.04716618069818
+    ],
+    [
+     0.1683878312494687,
+     78.67022237085897
+    ]
+   ],
+   "w_hex": [
+    [
+     "0x1.3333333333333p-3",
+     "0x1.4000000000000p+6"
+    ],
+    [
+     "0x1.4f4fb8aacb415p-3",
+     "0x1.452df17685578p+6"
+    ],
+    [
+     "0x1.53d81d1008c91p-3",
+     "0x1.40304c54ce4dcp+6"
+    ],
+    [
+     "0x1.58dbb8221630ap-3",
+     "0x1.3aae4ec5ef8c2p+6"
+    ]
+   ],
+   "u_hat": [
+    1.683878312494687,
+    7.867022237085896
+   ],
+   "r_hat": [
+    -4.39586712269735e-05,
+    0.00029179569104087477
+   ],
+   "B_last": [
+    [
+     -0.8395453644483417,
+     -0.015595942444580485
+    ],
+    [
+     -0.9043274174947741,
+     -0.9132771102177578
+    ]
+   ],
+   "experiments_evaluated": 4,
+   "calls": [
+    {
+     "start": null,
+     "span_s": 50.57,
+     "status": "ok"
+    },
+    {
+     "start": null,
+     "span_s": 30.299,
+     "status": "ok"
+    },
+    {
+     "start": null,
+     "span_s": 74.657,
+     "status": "ok"
+    },
+    {
+     "start": null,
+     "span_s": 18.981,
+     "status": "ok"
+    }
+   ],
+   "request_starts": [
+    null,
+    null,
+    null,
+    null
+   ],
+   "warm_start": null,
+   "wall_s": 174.9,
+   "source": null,
+   "record_path": "evidence/X02/69c4a24dcc1d9c8f64ca1cb40c052d3fe58b7144/artifacts/work-e/e-cold/artifacts/external-coupling.json"
+  },
+  "restart": {
+   "outcome": "CONVERGED",
+   "verification_status": "VERIFIED",
+   "outer_iterations": 1,
+   "w": [
+    [
+     0.1683878312494687,
+     78.67022237085897
+    ]
+   ],
+   "w_hex": [
+    [
+     "0x1.58dbb8221630ap-3",
+     "0x1.3aae4ec5ef8c2p+6"
+    ]
+   ],
+   "u_hat": [
+    1.683878312494687,
+    7.867022237085896
+   ],
+   "r_hat": [
+    -4.3989841606029145e-05,
+    0.0002917890609381857
+   ],
+   "B_last": null,
+   "experiments_evaluated": 1,
+   "calls": [
+    {
+     "start": null,
+     "span_s": 24.659,
+     "status": "ok"
+    }
+   ],
+   "request_starts": [
+    null
+   ],
+   "warm_start": {
+    "candidate": null,
+    "coupling": {
+     "declared": {
+      "reactor": {
+       "X": 0.1683878312494687,
+       "dT_K": 78.67022237085897
+      }
+     },
+     "projections": [],
+     "reason": null,
+     "record": "coupling-start-v1",
+     "source": "job",
+     "status": "accepted"
+    },
+    "projections": [],
+    "reason": "not_declared",
+    "record": "warm-start-v1",
+    "selection": "explicit-v1",
+    "source_job_id": null,
+    "source_revision_id": null,
+    "status": "absent"
+   },
+   "wall_s": 24.9,
+   "source": "evidence/X02/69c4a24dcc1d9c8f64ca1cb40c052d3fe58b7144/artifacts/work-e/e-cold/artifacts/external-coupling.json",
+   "record_path": "evidence/X02/69c4a24dcc1d9c8f64ca1cb40c052d3fe58b7144/artifacts/work-e/e-restart/artifacts/external-coupling.json"
+  }
+ }
+}

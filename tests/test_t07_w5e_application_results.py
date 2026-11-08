@@ -36,6 +36,7 @@ from jsonschema import Draft202012Validator
 from m02_schema_support import without_m02
 from m04_schema_support import without_m04
 from msg_schema_support import MSG_OPERATIONS, without_msg
+from x02_schema_support import without_x02
 
 from openflowsheet.application.operations import OPERATIONS, Operation
 from openflowsheet.application.types import SCHEMA_BASE, schema_errors
@@ -218,6 +219,19 @@ SNAPSHOT_MSG: dict[str, str | None] = {
 SNAPSHOT_MSG_EXPLAIN: dict[str, str | None] = {
     "explain": "a4fcafe739c5fa4e6a82cc75170d6b67b915126b5329129f15a84da8a3f26127",
 }
+#: X02 (ADR 0070, ADR 0019 Amendment 15): the operations whose resolved response embeds
+#: `job.schema.json`'s `solve_body`, which gains the optional `warm_start`. Taken at X02 WO-2 over
+#: M04's responses, re-taken when `main` (MSG) was merged into `wp/X02`; with X02's additions
+#: removed (`tests/x02_schema_support.py`) each is its `SNAPSHOT_MSG` (or `SNAPSHOT_M04`) value
+#: again (`test_x02_without_warm_start_every_response_is_its_pre_x02_snapshot`).
+SNAPSHOT_X02: dict[str, str | None] = {
+    "submit_job": "c7c943e33959eb52a9444cac3590d9220c2b949e577b84390d0e4b452a1e216d",
+    "get_job": "58acf056845fbc271e282b7b653c27e98341a719ef8c2b9e02ed64c60c4b2fbf",
+    "cancel_job": "58acf056845fbc271e282b7b653c27e98341a719ef8c2b9e02ed64c60c4b2fbf",
+    "list_jobs": "531d74323c395c369c1e312733360fa4c856045f66b4f591ff84b9d28eed350b",
+    "wait_job": "aee140a905404cbc4541de59eff9fb9d3c2bb6c9e1ca5f410d60fdb28996cc5d",
+    "get_job_result": "9347208b0c04ff78b686323c6f23107fd57612cf80dbe4f1bd59eeaf957e82cf",
+}
 
 
 def _without_specifications(schema: Any) -> Any:
@@ -246,6 +260,7 @@ def test_r4_g3_every_resolved_response_schema_equals_the_snapshot() -> None:
         **SNAPSHOT_M04,
         **SNAPSHOT_MSG,
         **SNAPSHOT_MSG_EXPLAIN,
+        **SNAPSHOT_X02,
     }
     for operation in OPERATIONS.values():
         assert "$ref" not in canonical_json(resolved_response(operation)).decode("utf-8")
@@ -267,11 +282,34 @@ def test_msg_g10_without_failure_every_response_is_its_pre_msg_snapshot() -> Non
     for name, operation in OPERATIONS.items():
         if name in MSG_OPERATIONS:
             continue
-        resolved = resolved_response(operation)
+        # X02's additions (ADR 0070) postdate MSG: they are taken out first.
+        resolved = without_x02(resolved_response(operation))
         assert _digest(without_msg(resolved)) == before[name], name
         if _digest(resolved) != before[name]:
             moved.append(name)
     assert sorted(moved) == sorted(SNAPSHOT_MSG)
+
+
+def test_x02_without_warm_start_every_response_is_its_pre_x02_snapshot() -> None:
+    """X02 (ADR 0070): with X02's three optional members removed, every operation's resolved
+    response is its snapshot before X02 (after MSG), and exactly the operations of `SNAPSHOT_X02`
+    moved."""
+    before = {
+        **SNAPSHOT_AT_B13D556,
+        **SNAPSHOT_AMENDMENT_2,
+        **SNAPSHOT_AMENDMENT_3,
+        **SNAPSHOT_M02,
+        **SNAPSHOT_M04,
+        **SNAPSHOT_MSG,
+        **SNAPSHOT_MSG_EXPLAIN,
+    }
+    moved = []
+    for name, operation in OPERATIONS.items():
+        resolved = resolved_response(operation)
+        assert _digest(without_x02(resolved)) == before[name], name
+        if _digest(resolved) != before[name]:
+            moved.append(name)
+    assert sorted(moved) == sorted(SNAPSHOT_X02)
 
 
 def test_g_r6_6_list_models_moved_only_by_the_approved_additive_member() -> None:
@@ -285,7 +323,9 @@ def test_g_r6_6_list_models_moved_only_by_the_approved_additive_member() -> None
     moved = [
         name
         for name in SNAPSHOT_AT_B13D556
-        if _digest(without_m02(without_m04(without_msg(resolved_response(OPERATIONS[name])))))
+        if _digest(
+            without_m02(without_m04(without_msg(without_x02(resolved_response(OPERATIONS[name])))))
+        )
         != SNAPSHOT_AT_B13D556[name]
     ]
     # `list_audit` is ADR 0019 Amendment 3's row, `explain` ADR 0058 D7's.

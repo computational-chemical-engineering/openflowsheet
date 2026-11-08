@@ -319,6 +319,41 @@
           ],
           "minimum": 1,
           "default": null
+        },
+        "warm_start": {
+          "type": "object",
+          "additionalProperties": false,
+          "minProperties": 1,
+          "properties": {
+            "job_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "coupling": {
+              "type": "object",
+              "minProperties": 1,
+              "propertyNames": {
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+              },
+              "additionalProperties": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "X",
+                  "dT_K"
+                ],
+                "properties": {
+                  "X": {
+                    "type": "number"
+                  },
+                  "dT_K": {
+                    "type": "number"
+                  }
+                }
+              }
+            }
+          },
+          "description": "ADR 0070 (ADR 0019 Amendment 15): a declared start, never a constraint. `job_id` names a solve job of this project whose solution state (and, on the coupled route, final coupling iterate and external profiles) seeds the start; `coupling` declares the outer iterate per coupled unit. The certificate judges the converged answer."
         }
       }
     },

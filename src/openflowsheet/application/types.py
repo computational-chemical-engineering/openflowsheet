@@ -636,29 +636,67 @@ class Budgets:
 
 
 @dataclass(frozen=True)
+class WarmStartDeclaration:
+    """`$defs/solve_body/warm_start` (ADR 0070, ADR 0019 Amendment 15): a declared start, never a
+    constraint. `job_id` names a solve job of this project whose solution state seeds the inner
+    start (`explicit-v1`); `coupling` declares the outer iterate w₀ per coupled unit, as
+    `{unit: (X, dT_K)}`. The certificate judges the converged answer."""
+
+    job_id: str | None = None
+    coupling: Mapping[str, tuple[float, float]] | None = None
+
+    def as_document(self) -> dict[str, Any]:
+        document: dict[str, Any] = {}
+        if self.job_id is not None:
+            document["job_id"] = self.job_id
+        if self.coupling is not None:
+            document["coupling"] = {
+                unit: {"X": x, "dT_K": dt} for unit, (x, dt) in self.coupling.items()
+            }
+        return document
+
+    @classmethod
+    def _build(cls, document: Mapping[str, Any]) -> Self:
+        coupling = document.get("coupling")
+        return cls(
+            job_id=document.get("job_id"),
+            coupling=None
+            if coupling is None
+            else {unit: (item["X"], item["dT_K"]) for unit, item in coupling.items()},
+        )
+
+
+@dataclass(frozen=True)
 class SolveBody:
-    """§5.3 `$defs/solve_body`."""
+    """§5.3 `$defs/solve_body`. `warm_start` (ADR 0070) appears in the document, and so in
+    `request_sha256`, only when it is declared: a request without it is unchanged."""
 
     revision_id: str
     policy_id: str = DEFAULT_SOLVE_POLICY_ID
     check_tolerances: Mapping[str, float] = field(default_factory=dict)
     max_property_calls: int | None = None
+    warm_start: WarmStartDeclaration | None = None
 
     def as_document(self) -> dict[str, Any]:
-        return {
+        document: dict[str, Any] = {
             "revision_id": self.revision_id,
             "policy_id": self.policy_id,
             "check_tolerances": dict(self.check_tolerances),
             "max_property_calls": self.max_property_calls,
         }
+        if self.warm_start is not None:
+            document["warm_start"] = self.warm_start.as_document()
+        return document
 
     @classmethod
     def _build(cls, document: Mapping[str, Any]) -> Self:
+        warm_start = document.get("warm_start")
         return cls(
             revision_id=document["revision_id"],
             policy_id=document.get("policy_id", DEFAULT_SOLVE_POLICY_ID),
             check_tolerances=dict(document.get("check_tolerances", {})),
             max_property_calls=document.get("max_property_calls"),
+            warm_start=None if warm_start is None else WarmStartDeclaration._build(warm_start),
         )
 
 

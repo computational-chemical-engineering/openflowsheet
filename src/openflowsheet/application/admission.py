@@ -21,6 +21,9 @@ The steps, in order:
 5. each `check_tolerances` value is at most the registered `KIND_TOLERANCE` value, else
    `verification_weakening_refused` naming the kind; an unknown kind is `invalid_request` (I3);
 6. `max_property_calls` is at most the resolved policy's, else `budget_exceeds_ceiling`;
+6a. a declared `warm_start` (ADR 0070, X02 design note §5.1) names a `solve` job of this project
+   that holds a `solution_state` (A1), and each `coupling` key is an instance id of the revision
+   (A2), else `invalid_request` at the member's pointer;
 7. `wall_time_s` is at most the capability's `max_wall_time_s`, else `budget_exceeds_ceiling`;
 8. the caller's active jobs are fewer than `max_active_jobs`, else `limit_exceeded`.
 
@@ -70,6 +73,7 @@ from openflowsheet.application.types import (
     ReproduceBody,
     SolveBody,
     SurrogateStudyBody,
+    WarmStartDeclaration,
 )
 from openflowsheet.application.validation import validate
 from openflowsheet.canonical import file_sha256
@@ -130,11 +134,14 @@ def admit_solve(
     limits: Limits,
     active_jobs: int,
     surrogates: SurrogateResolver | None = None,
+    warm_source_found: bool = False,
 ) -> SolveAdmission | ApiError:
     """§5.3's semantic admission of `body` for the stored revision `document` (`None` when the
     store has no revision `revision_id`). `limits` are the caller's capability's; `active_jobs`
     counts the caller's queued and running jobs; `surrogates` resolves the project's
-    SurrogateManifests for the binder (M04 spec §8.2, `surrogate_resolver`)."""
+    SurrogateManifests for the binder (M04 spec §8.2, `surrogate_resolver`);
+    `warm_source_found` says whether `body.warm_start.job_id` names a `solve` job of the project
+    that holds a solution state (the store's `solution_of_job`)."""
     # 1. The revision exists.
     if document is None:
         return _error("not_found", f"no revision {revision_id!r}", revision_id=revision_id)
@@ -164,6 +171,12 @@ def admit_solve(
         return resolved
     policy, check_policy = resolved
 
+    # 6a. A declared start's source and units (ADR 0070).
+    if body.warm_start is not None:
+        refused = admit_warm_start(document, body.warm_start, warm_source_found)
+        if refused is not None:
+            return refused
+
     # 7–8. The wall time and the caller's active jobs are within the capability's limits.
     wall_time_s = admit_budgets(budgets, limits, active_jobs)
     if isinstance(wall_time_s, ApiError):
@@ -177,6 +190,36 @@ def admit_solve(
         check_policy=check_policy,
         wall_time_s=wall_time_s,
     )
+
+
+def admit_warm_start(
+    document: Mapping[str, Any], declaration: WarmStartDeclaration, source_found: bool
+) -> ApiError | None:
+    """Step 6a (ADR 0070 D1; X02 design note §5.1 A1, A2): `None` when the declared start is
+    admissible, else the first refusal. A1: `job_id` names a `solve` job of this project holding
+    a `solution_state` artifact (`source_found`, any certificate status). A2: each `coupling` key
+    is an instance id of the revision; whether that instance is an external unit of the bound
+    route is the run's compatibility check, recorded, not refused."""
+    if declaration.job_id is not None and not source_found:
+        return _error(
+            "invalid_request",
+            f"warm_start_source_missing({declaration.job_id})",
+            pointer="/body/warm_start/job_id",
+        )
+    if declaration.coupling is not None:
+        instances = {
+            str(item.get("id"))
+            for item in document.get("instances") or ()
+            if isinstance(item, Mapping)
+        }
+        for key in declaration.coupling:
+            if key not in instances:
+                return _error(
+                    "invalid_request",
+                    f"warm_start_unit_unknown({key})",
+                    pointer=f"/body/warm_start/coupling/{key}",
+                )
+    return None
 
 
 def resolve_policies(route: Route, body: SolveBody) -> tuple[SolvePolicy, CheckPolicy] | ApiError:
