@@ -798,3 +798,19 @@ Totals: TH-R1 18.3 s, M1 5.9 s, C-MW 54.4 s ("verify" also holds report/record w
 - Not mine: `mypy` (configured files) reports 3 errors in `benchmarks/opt/analytic.py` (mpmath untyped import, a
   no-any-return) and `benchmarks/opt/performance.py` (progress callable type), unchanged since WO-6 — the full gate
   will show them if CI's mypy does.
+
+## WO-8 (review fix round; `docs/reviews/OPT-review.md` at 638523b3, M1–M6, S1–S5, D-50, D-61)
+
+- D-72. M1 (as ruled): `replay.verification_differences` floors each float of `verification.json` at the tolerance of
+  the check whose verdict it feeds (design §4.9 step (3) amended with the review's text): `_verification_floor` maps
+  V2 `scaled_difference_inf` → `TAU_GROSS`; `slacks`, `active_set[].slack`, `constraint_values` (top level and V6's),
+  V4 `splits[].margin` → `TAU_FEAS`; V5/`kkt` `stationarity_residual_inf`, `objective_gradient_scaled`,
+  `constraint_gradients_scaled` → `TAU_KKT`; `kkt.multipliers` → `TAU_SIGN`; `kkt.licq_singular_values` → `TAU_LICQ`
+  × the recorded largest. Mechanism: every floored float pair present at the same place in both documents is compared
+  by `run.compare.floored_difference` (label "floored at <TAU>, OPT §4.9 step (3)") and then masked to the recorded
+  value before the unchanged registered comparison (`differences`, v2) runs, so shapes, strings, outcomes, active sets,
+  `objective`, `decisions`, `assessment_values` and the recorded `tau_*` constants compare exactly as before. No
+  policy file and no floor name changed. Measured: the review's probe (every computed float + 6e-16) gives 5
+  differences before, 0 after, at starts 0–2; CI's aarch64 pair (1.3507706064785907e-10 vs 1.3507661655864922e-10)
+  matches; each floored member moved by twice its floor gives exactly one difference naming that floor. Tests
+  `tests/test_opt_replay.py::test_m1_*` (4); file 14 passed.

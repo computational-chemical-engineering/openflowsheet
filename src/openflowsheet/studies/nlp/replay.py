@@ -36,6 +36,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 from collections.abc import Callable, Mapping
 from pathlib import Path
 from typing import Any, Final
@@ -44,7 +45,7 @@ import numpy as np
 
 from openflowsheet.canonical import document_sha256
 from openflowsheet.run.bundle import MANIFEST_NAME, BundleIntegrity, read_artifact, read_manifest
-from openflowsheet.run.compare import CURRENT_POLICY_ID, differences
+from openflowsheet.run.compare import CURRENT_POLICY_ID, differences, floored_difference
 from openflowsheet.run.manifest import environment
 from openflowsheet.run.replay import ReplayMode, ReplayReport, ReplayVerdict
 
@@ -242,16 +243,121 @@ def _flip_is_near(name: str, holder: Mapping[str, Any], other: Mapping[str, Any]
     return True
 
 
+def _verification_floor(
+    keys: tuple[str | int, ...], recorded: Mapping[str, Any]
+) -> tuple[float, str] | None:
+    """§4.9 step (3) (OPT review M1): the floor of the float at `keys` in `verification.json`,
+    with its label — the tolerance of the V-check whose verdict it feeds, as ADR 0007 D2.2 floors
+    `check.value` at its own tolerance. `None` where the float compares under the registered
+    policy alone: V6's `objective` (and `assessment_values`), relative only, and `decisions`."""
+    from openflowsheet.studies.nlp.verification import (
+        TAU_FEAS,
+        TAU_GROSS,
+        TAU_KKT,
+        TAU_LICQ,
+        TAU_SIGN,
+    )
+
+    feas = (TAU_FEAS, "TAU_FEAS")
+    kkt = (TAU_KKT, "TAU_KKT")
+    head, rest = keys[0], keys[1:]
+    if head in ("slacks", "constraint_values"):
+        return feas
+    if head == "active_set":
+        return feas if rest[-1:] == ("slack",) else None
+    if head == "kkt" and rest:
+        if rest[0] in (
+            "stationarity_residual_inf",
+            "objective_gradient_scaled",
+            "constraint_gradients_scaled",
+        ):
+            return kkt
+        if rest[0] == "multipliers":
+            return TAU_SIGN, "TAU_SIGN"
+        if rest[0] == "licq_singular_values":
+            values = (recorded.get("kkt") or {}).get("licq_singular_values") or []
+            largest = max((abs(float(v)) for v in values if _number(v)), default=0.0)
+            return TAU_LICQ * largest, "TAU_LICQ times the largest"
+        return None
+    if head != "checks" or len(rest) < 2 or not isinstance(rest[0], int):
+        return None
+    checks = recorded.get("checks") or []
+    check = checks[rest[0]].get("check") if rest[0] < len(checks) else None
+    member = (check, rest[1])
+    if member == ("V2", "scaled_difference_inf") and len(rest) == 2:
+        return TAU_GROSS, "TAU_GROSS"
+    if member == ("V4", "splits") and rest[-1:] == ("margin",):
+        return feas
+    if member == ("V5", "stationarity_residual_inf") and len(rest) == 2:
+        return kkt
+    if member == ("V6", "constraint_values"):
+        return feas
+    return None
+
+
+def _number(value: Any) -> bool:
+    return isinstance(value, int | float) and not isinstance(value, bool)
+
+
+def _floored_verification(
+    fresh: Any, recorded: Any, keys: tuple[str | int, ...], document: Mapping[str, Any]
+) -> tuple[Any, list[str]]:
+    """`fresh` with every floored float pair (`_verification_floor`) replaced by the recorded
+    value, and the floored comparison of each such pair. Only leaves present in both documents at
+    the same place are touched: every difference of shape, and every unfloored member, is left to
+    the registered comparison."""
+    if isinstance(recorded, dict) and isinstance(fresh, dict):
+        found: list[str] = []
+        out = dict(fresh)
+        for key in sorted(fresh.keys() & recorded.keys()):
+            out[key], more = _floored_verification(
+                fresh[key], recorded[key], (*keys, key), document
+            )
+            found += more
+        return out, found
+    if isinstance(recorded, list) and isinstance(fresh, list) and len(fresh) == len(recorded):
+        found = []
+        items = []
+        for index, (left, right) in enumerate(zip(fresh, recorded, strict=True)):
+            item, more = _floored_verification(left, right, (*keys, index), document)
+            items.append(item)
+            found += more
+        return items, found
+    if (
+        keys
+        and _number(fresh)
+        and _number(recorded)
+        and (isinstance(fresh, float) or isinstance(recorded, float))
+        and math.isfinite(fresh)
+        and math.isfinite(recorded)
+    ):
+        rule = _verification_floor(keys, document)
+        if rule is not None:
+            where = "<root>" + "".join(
+                f"[{key}]" if isinstance(key, int) else f".{key}" for key in keys
+            )
+            label = f"floored at {rule[1]}, OPT §4.9 step (3)"
+            return recorded, floored_difference(
+                float(fresh), float(recorded), where, rule[0], label, policy_id=CURRENT_POLICY_ID
+            )
+    return fresh, []
+
+
 def verification_differences(
     fresh: Mapping[str, Any], recorded: Mapping[str, Any]
 ) -> tuple[list[str], list[str]]:
     """Step 3's comparison of one start's `verification.json`: `(differences, near)`.
 
-    Every entry of `run.compare.differences` under the registered policy is a difference, except
-    when the active set flipped and every flipped member is near `TAU_ACTIVE`
-    (`_flip_is_near`): then the flip and the entries that depend on the active set alone
-    (`active_set`, `kkt`, V3's `active_set`, every V5 entry) are `near`."""
-    found = differences(dict(fresh), dict(recorded), policy_id=CURRENT_POLICY_ID)
+    Each float is floored at the tolerance of the check whose verdict it feeds (§4.9 step (3),
+    `_verification_floor`; ADR 0007 D2.2's principle, as `check.value`): the solves behind the
+    document are re-run on the replaying machine, and their last bits move across architectures.
+    Every other member compares under the registered policy, outcomes, active sets and
+    classifications exactly. Every entry is a difference, except when the active set flipped
+    and every flipped member is near `TAU_ACTIVE` (`_flip_is_near`): then the flip and the
+    entries that depend on the active set alone (`active_set`, `kkt`, V3's `active_set`, every
+    V5 entry) are `near`."""
+    masked, found = _floored_verification(dict(fresh), dict(recorded), (), recorded)
+    found = differences(masked, dict(recorded), policy_id=CURRENT_POLICY_ID) + found
     flips = active_set_flips(fresh, recorded)
     if not flips:
         return found, []

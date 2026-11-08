@@ -209,3 +209,66 @@ def test_s49_a_classification_moved_by_a_near_flip_is_near_threshold() -> None:
     real, near = classification_differences(report, "X", [], moved, {1} if count > 1 else set())
     assert near == [] and any(entry.startswith("starts/0: classification") for entry in real)
     assert any("status" in entry for entry in real)
+
+
+# §4.9 step (3) (OPT review M1): each float of `verification.json` is floored at the tolerance of
+# the check whose verdict it feeds. The CI aarch64 leg moved start 2's KKT residual by 4.4e-16.
+
+
+def _shifted(document: object, shift: float) -> object:
+    """`document` with every computed float moved by `shift` absolute (ulp-level noise of a
+    re-solve); the registered tolerances it records (`tau_*`, `threshold`) are constants."""
+    if isinstance(document, dict):
+        return {
+            key: value if key.startswith("tau_") or key == "threshold" else _shifted(value, shift)
+            for key, value in document.items()
+        }
+    if isinstance(document, list):
+        return [_shifted(value, shift) for value in document]
+    if isinstance(document, float):
+        return document + shift
+    return document
+
+
+@pytest.mark.parametrize("start", [0, 1, 2])
+def test_m1_ulp_noise_in_every_float_replays_to_match(start: int) -> None:
+    from openflowsheet.studies.nlp.replay import verification_differences
+
+    recorded = json.loads((FIXTURE / "starts" / str(start) / "verification.json").read_bytes())
+    real, near = verification_differences(_shifted(recorded, 6e-16), recorded)
+    assert (real, near) == ([], [])
+    # the CI aarch64 leg's pair (run 42431066903): 4.4e-16 absolute, 3.3e-6 relative
+    fresh = json.loads((FIXTURE / "starts" / str(start) / "verification.json").read_bytes())
+    fresh["kkt"]["stationarity_residual_inf"] *= 1.3507706064785907e-10 / 1.3507661655864922e-10
+    assert verification_differences(fresh, recorded) == ([], [])
+
+
+def test_m1_a_float_beyond_its_check_tolerance_is_a_difference() -> None:
+    from openflowsheet.studies.nlp.replay import verification_differences
+    from openflowsheet.studies.nlp.verification import TAU_FEAS, TAU_GROSS, TAU_KKT, TAU_SIGN
+
+    recorded = json.loads((FIXTURE / "starts" / "1" / "verification.json").read_bytes())
+    checks = [item["check"] for item in recorded["checks"]]
+    cases = [
+        (("kkt", "stationarity_residual_inf"), 2 * TAU_KKT, "TAU_KKT"),
+        (("checks", checks.index("V5"), "stationarity_residual_inf"), 2 * TAU_KKT, "TAU_KKT"),
+        (("checks", checks.index("V2"), "scaled_difference_inf"), 2 * TAU_GROSS, "TAU_GROSS"),
+        (("slacks", "T-min", "lower"), 2 * TAU_FEAS, "TAU_FEAS"),
+        (("active_set", 0, "slack"), 2 * TAU_FEAS, "TAU_FEAS"),
+        (("checks", checks.index("V4"), "splits", 0, "margin"), 2 * TAU_FEAS, "TAU_FEAS"),
+        (("kkt", "multipliers", "T-min"), 2 * TAU_SIGN, "TAU_SIGN"),
+    ]
+    for keys, shift, label in cases:
+        fresh = json.loads((FIXTURE / "starts" / "1" / "verification.json").read_bytes())
+        parent = fresh
+        for key in keys[:-1]:
+            parent = parent[key]
+        parent[keys[-1]] += shift
+        real, near = verification_differences(fresh, recorded)
+        assert near == [] and len(real) == 1 and f"floored at {label}" in real[0], (keys, real)
+    # the objective is compared relative only: 1e-12 absolute on 0.36 matches, 1e-6 relative not
+    fresh = json.loads((FIXTURE / "starts" / "1" / "verification.json").read_bytes())
+    fresh["objective"] += 1e-12
+    assert verification_differences(fresh, recorded) == ([], [])
+    fresh["objective"] *= 1 + 1e-6
+    assert verification_differences(fresh, recorded)[0]

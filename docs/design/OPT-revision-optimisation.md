@@ -421,7 +421,13 @@ the committed candidate revision reproduces the V1 certificate (G16).
 existing run-bundle path is untouched. Steps: (1) integrity of every member against the manifest (missing, tampered,
 unexpected) and of the manifest's identity; (2) with `rerun`: `reproduce_bundle` on every `start/` and `resolve/` bundle;
 (3) with `rerun`: recompute V2–V7 from each re-solved state (and V1's outcome from (2)) and compare with
-`verification.json` (R0 exact; floats within D2; an active-set flip within 1e-9 relative of a threshold is
+`verification.json` (R0 exact; floats under ADR 0007 D2, each float of `verification.json` floored at the tolerance of
+the check whose verdict it feeds (D2.2's principle, as `check.value`): V2 `scaled_difference_inf` at `TAU_GROSS`; V3
+`slacks`, `active_set[].slack`, `constraint_values`, V4 `splits[].margin` and phase-row values at `TAU_FEAS`; V5 and
+`kkt` `stationarity_residual_inf`, `objective_gradient_scaled`, `constraint_gradients_scaled` at `TAU_KKT`,
+`multipliers` at `TAU_SIGN`, `licq_singular_values` at `TAU_LICQ` times the largest; V6 `objective` relative only.
+Outcomes, active sets and classifications stay exact (R0) under the near-threshold rule. No new tolerance. [OPT review
+M1, 2026-11-08] An active-set flip within 1e-9 relative of a threshold is
 `verdict_changed_near_threshold`, F8 D8's rule); (4) the report's classification/aggregation recomputed by
 `classify_starts` from the recorded evidence. One `ReplayReport` (schema unchanged): `integrity` over all members,
 `differences` prefixed `starts/<k>/<member>: `, verdict `MATCH` iff every part matches. Without `rerun`:
