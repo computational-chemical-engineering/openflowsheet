@@ -735,3 +735,40 @@ Totals: TH-R1 18.3 s, M1 5.9 s, C-MW 54.4 s ("verify" also holds report/record w
   analogue). Any other difference, or any far flip, stays a difference (`MISMATCH`). Tests
   `tests/test_opt_replay.py::test_s49_*` (4). Alternative: a flip near threshold still `MISMATCH`, only labelled.
   Reversible by: the D-68 commit.
+- D-69. DECISION: G19/G20's cases (design §6 leaves the decision, box and assessment open) → `benchmarks/opt/cost_lca.py`
+  writes `requests/OPT-C.json`, `requests/OPT-L.json` and `cost_lca.json`. **OPT-C**: TH-C1 under P1's assessment
+  document (E01's TAC program, every item costed), decision `SPEC-P-P` (pump outlet P) in [8.5e5, 1.6e6] Pa, scale
+  1e6, min TAC/1e5, starts explicit 1.0e6 and 1.4e6 (`include_revision: false`: the revision's 3 MPa is outside the box
+  and in another regime, T `units:1`). In the box every item but B is on its size floor and B on pressure piece "1"
+  (asserted at every evaluated state), so TAC is smooth with an interior minimum (no bound case needed). **OPT-L**: TH-C1
+  under P4 (P1 + E01's LCA fragment, `test-background-v1`, `climate_change_test` = IPCC AR6 GWP100 factors), decision
+  `SPEC-B-T` in [640, 720] K, scale 100, min GWP rate/0.01 s.t. (−T.W − P.W)/1e4 ≥ 1.56 (declared scaled, as the schema
+  says). Expectations: golden section (to 1 Pa; TAC's binary64 noise limits it near 0.2 Pa, measured) and bisection
+  (to 1e-7 K) over certified `revision_eo` re-solves (`bind_route` + `solve_route`, `VERIFIED` required), TAC by
+  cost_hand's forms on sizes computed from the state (E01 §4.4.1 Underwood areas, §4.4.5 head from P1's recorded
+  inlet volume, §4.7 chain/opex, §9.2.7 η_m), GWP by lca_hand's unit scores and convention. Self-check: on P1's own
+  state the hand chain reproduces P1's sizes (worst 9.5e-16) and `opex.total` (4.0e-16). The audited env has no
+  mpmath: its test calls `cost_lca.py --at` in an interpreter that has it (`OPENFLOWSHEET_HAND_PYTHON`, else the main
+  checkout's `.venv`). Reversible by: the G19/G20 commit.
+- D-70. DECISION + FACT (for the reviewer): OPT-L starts at 650 K (infeasible side, W = 15411 W < W_min). Measured
+  (audited env): from the feasible side Ipopt crawls to `max_iter` 500 (`SOLVER_FAILED`, V5 fails at the point it
+  stopped) — revision start 673.15 K (decision 673.15 → 672.92 K in 500 iterations, inf_du stuck at 2.56e-4,
+  mu 1.8e-6 from iteration 5, complementarity 4.2e-2), and likewise with objective scale 1e-3, decision scale 10 and
+  a start at 661 K; from 650 K it reaches `KKT_POINT_VERIFIED` in 181 iterations. G19 (no active user constraint)
+  converges in 11. The crawl is the optimiser's robustness on a near-linear objective whose constraint must become
+  active from the interior (monotone mu with L-BFGS); not a correctness defect (nothing is verified that should not
+  be), but a declared limitation and a question for the design lane (e.g. `mu_strategy adaptive`, which moves Ipopt
+  options frozen since M03). Alternative: keep the revision start beside 650 K (status still verified, start 0
+  `SOLVER_FAILED` in the reasons). Reversible by: the request's `starts`.
+
+### Gates (WO-7 part 1, 2026-11-08, TRS2)
+
+- G19 (audited env, `tests/test_opt_cost_lca_nlp.py`): `KKT_POINT_VERIFIED`, both starts verified (11 iterations each),
+  active set empty, V7 pass; P* = 1159042.151276523 Pa vs golden section d_gs = 1159042.380571553 Pa: |Δ| 0.23 Pa
+  ≤ 10 Pa (1e-5·scale); V6 TAC 116859.136761127 vs hand at the certified candidate 116859.13676112708 USD/yr (rel 6e-16
+  ≤ 1e-9).
+- G20 (same): `KKT_POINT_VERIFIED` (181 iterations), active set [W-net-min], λ = 0.2859 > 0, V7 pass;
+  T* = 660.4145192357499 K vs bisection root 660.4145192354918 K: |Δ| 2.6e-10 K ≤ 1e-4 K (1e-6·scale); V6 GWP rate
+  0.024254495503279832 vs hand 0.024254495503279832 kg CO2-eq/s (rel 0 ≤ 1e-9); hand slope +5.19e-6 kg/s/K.
+- Default env: `tests/test_opt_cost_lca.py` 5 passed; `cost_lca.py --check` current; `tests/test_opt_replay.py`
+  10 passed (D-68).

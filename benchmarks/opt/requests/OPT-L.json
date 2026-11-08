@@ -1,0 +1,213 @@
+{
+  "assessment": {
+    "assessment_id": "e01-b2-p4",
+    "basis": {
+      "currency": "USD",
+      "year": 2023
+    },
+    "capital": {
+      "chain": "ebtf-prisma-v1"
+    },
+    "correlation_set": "sslw-idaes-v1",
+    "defaults": {
+      "U_by_service": {
+        "cooling": 500.0,
+        "heating": 800.0
+      }
+    },
+    "derived": [
+      {
+        "denominator": {
+          "terms": {
+            "opex.total": 1.0
+          }
+        },
+        "id": "capex_per_opex",
+        "numerator": {
+          "terms": {
+            "capex.total": 1.0
+          }
+        },
+        "unit": "yr"
+      }
+    ],
+    "fixed_opex": [
+      {
+        "fraction_of": {
+          "fraction": 0.03,
+          "of": "fci"
+        },
+        "line": "maintenance"
+      }
+    ],
+    "items": {
+      "B": {
+        "F_BM": 3.17
+      },
+      "C": {
+        "F_BM": 3.17
+      },
+      "P": {
+        "F_BM": 3.3
+      },
+      "P.drive": {
+        "F_BM": 1.5
+      },
+      "T": {
+        "F_BM": 3.5
+      }
+    },
+    "lca": {
+      "categories": [
+        "climate_change_test"
+      ],
+      "direct_factors": [
+        "gwp100-ipcc-ar6-v1"
+      ],
+      "functional_unit": {
+        "basis": "mass_total",
+        "connection": "S5"
+      },
+      "tables": [
+        "test-background-v1"
+      ]
+    },
+    "materials": [
+      {
+        "basis": "mass_total",
+        "connection": "S1",
+        "lca": [
+          {
+            "activity": "tb.chemical_x",
+            "amount": 1.0,
+            "per": "kg",
+            "table": "test-background-v1"
+          }
+        ],
+        "price": {
+          "per": "kg",
+          "value": 0.002
+        },
+        "role": "raw_material"
+      }
+    ],
+    "operation": {
+      "discount_rate": 0.08,
+      "hours_per_year": 8000.0,
+      "lifetime_years": 20
+    },
+    "schema_version": "assessment-v1",
+    "uncertainty": {
+      "asm:utility.EL.price": {
+        "relative_range": [
+          -0.2,
+          0.2
+        ]
+      }
+    },
+    "utilities": [
+      {
+        "T_supply": 750.0,
+        "dT_min": 10.0,
+        "kind": "heating",
+        "lca": [
+          {
+            "activity": "tb.heat",
+            "amount": 1.0,
+            "per": "MJ",
+            "table": "test-background-v1"
+          }
+        ],
+        "price": {
+          "per": "GJ",
+          "value": 12.0
+        },
+        "utility_id": "HPS"
+      },
+      {
+        "T_supply": 433.15,
+        "dT_min": 10.0,
+        "kind": "heating",
+        "price": {
+          "per": "GJ",
+          "value": 8.0
+        },
+        "utility_id": "LPS"
+      },
+      {
+        "T_return": 303.15,
+        "T_supply": 293.15,
+        "dT_min": 5.0,
+        "kind": "cooling",
+        "price": {
+          "per": "GJ",
+          "value": 0.5
+        },
+        "utility_id": "CW"
+      },
+      {
+        "kind": "electricity",
+        "lca": [
+          {
+            "activity": "tb.electricity",
+            "amount": 1.0,
+            "per": "kWh",
+            "table": "test-background-v1"
+          }
+        ],
+        "price": {
+          "per": "kWh",
+          "value": 0.1
+        },
+        "utility_id": "EL"
+      }
+    ]
+  },
+  "constraints": [
+    {
+      "expression": {
+        "constant": 0,
+        "linear": {
+          "P.W": -0.0001,
+          "T.W": -0.0001
+        },
+        "quadratic": [],
+        "text": "(-T.W - P.W)/W_s"
+      },
+      "id": "W-net-min",
+      "lower": 1.56,
+      "upper": null
+    }
+  ],
+  "decisions": [
+    {
+      "lower": 640.0,
+      "scale": 100.0,
+      "specification_id": "SPEC-B-T",
+      "unit": "K",
+      "upper": 720.0
+    }
+  ],
+  "objective": {
+    "expression": {
+      "constant": 0,
+      "linear": {
+        "assessment:impact.climate_change_test.rate": 1
+      },
+      "quadratic": [],
+      "text": "gwp_rate/gwp_s"
+    },
+    "scale": 0.01,
+    "sense": "minimize"
+  },
+  "problem_id": "OPT-L",
+  "request_format": "openflowsheet-optimization-request-v1",
+  "starts": {
+    "explicit": [
+      [
+        650.0
+      ]
+    ],
+    "include_revision": false
+  }
+}
