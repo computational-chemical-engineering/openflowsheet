@@ -1,0 +1,1586 @@
+# Family `refusal` (MSG design note §4.2.1): lower-snake typed refusal codes.
+catalogue: openflowsheet-messages-v1
+namespace: null
+entries:
+  - code: initializer_failed
+    family: refusal
+    kind: numerical
+    complete: true
+    title: The first pass over the flowsheet stopped at a unit
+    args: [unit]
+    params: {unit: {type: element, label: unit}}
+    summary: "The first pass over the flowsheet could not compute every unit[ (it stopped at {unit})]."
+    why: "Before iterating, OpenFlowsheet computes every unit once, in flow order; this pass stopped."
+    action: "Read the cause; if none is given, supply an initial guess for the recycle streams."
+    examples:
+      - params: {unit: T}
+
+  - code: phase_regime_mismatch
+    family: refusal
+    kind: input
+    complete: true
+    title: Declared phase does not match the computed state
+    args: [stream]
+    # Review Q1 (WO-5a): the sidecar's detail line (`kernel.py` `Mismatch.failure`).
+    detail_pattern: 'declared (?P<declared>vapor_liquid|liquid|vapor), closure (?:LIQUID|VAPOR|SATURATED)(?: beta=(?P<vapour_fraction>[-+]?[0-9]+(?:\.[0-9]+)?(?:e[-+]?[0-9]+)?))?; declare (?P<landed>vapor_liquid|liquid|vapor)'
+    params:
+      stream:           {type: stream, label: stream}
+      unit:             {type: unit, optional: true}
+      declared:         {type: enum, vocabulary: phase_capability, optional: true, label: declared phase}
+      landed:           {type: enum, vocabulary: phase_capability, optional: true, label: computed phase}
+      vapour_fraction:  {type: number, optional: true, label: vapour fraction}
+      property:         {type: enum, vocabulary: state_property, optional: true}
+      value:            {type: quantity, optional: true, label: computed value}
+      saturated_liquid: {type: quantity, optional: true, label: saturated-liquid value}
+      saturated_vapour: {type: quantity, optional: true, label: saturated-vapour value}
+      pressure:         {type: quantity, optional: true, label: pressure}
+    summary: "Stream {stream} is not in its declared phase[: it is declared {declared}, but at these conditions it is {landed}]."
+    where: "stream {stream}[, an outlet of unit {unit}[ ({unit_model})]]"
+    why: "Each stream carries a declared phase, and a unit computes its outlet only in that phase."
+    action: "Change the phase declared for {stream} to the one that matches the computed state."
+    variants:
+      - when: {equals: {landed: vapor}, has: [property, value, saturated_vapour, pressure]}
+        why: "At {pressure} the {property} of {stream} is {value}, above the saturated-vapour value {saturated_vapour}, so the stream is vapour, not {declared}."
+      - when: {equals: {landed: liquid}, has: [property, value, saturated_liquid, pressure]}
+        why: "At {pressure} the {property} of {stream} is {value}, below the saturated-liquid value {saturated_liquid}, so the stream is liquid, not {declared}."
+      - when: {equals: {landed: vapor_liquid}, has: [property, value, saturated_liquid, saturated_vapour, pressure]}
+        why: "At {pressure} the {property} of {stream} is {value}, between the saturated-liquid value {saturated_liquid} and the saturated-vapour value {saturated_vapour}[ (vapour fraction {vapour_fraction})], so the stream is wet, not {declared}."
+      - when: {has: [landed]}
+        action: "Declare {stream} as {landed}[: set {stream_path}.phase_capability to \"{landed!raw}\"]. If you expected {declared}, check the specifications that set the conditions upstream of {stream}."
+    see_also: [isentropic_state_two_phase, L-TH-3]
+    examples:
+      - chain: [INITIALIZATION_FAILED, initializer_failed, phase_regime_mismatch]
+        params: {stream: S4, unit: T, declared: vapor_liquid, landed: vapor, property: h,
+                 value: {value: 47330.0, unit: J/mol, kind: molar_enthalpy},
+                 saturated_vapour: {value: 46570.0, unit: J/mol, kind: molar_enthalpy},
+                 pressure: {value: 10000.0, unit: Pa, kind: pressure}}
+
+  - code: isentropic_state_two_phase
+    family: refusal
+    kind: not_supported
+    complete: true
+    title: A turbine whose ideal outlet would be wet while its outlet is declared vapour
+    args: [unit]
+    # Review Q1 (WO-5a): the sidecar's detail line (`kernel.py` `isentropic_state`). The thermal
+    # kernel's entropy is molar, J/(mol*K) (C02: 146.80 at 10 kPa, the steam tables' 8.1488
+    # kJ/(kg*K) times 18.015268 g/mol).
+    detail_pattern: 's\* = (?P<s_star>[-+]?[0-9]+(?:\.[0-9]+)?(?:e[-+]?[0-9]+)?) lies past the saturated (?P<phase>LIQUID|VAPOR) entropy (?P<s_saturated>[-+]?[0-9]+(?:\.[0-9]+)?(?:e[-+]?[0-9]+)?) at (?P<pressure>[-+]?[0-9]+(?:\.[0-9]+)?(?:e[-+]?[0-9]+)?) Pa'
+    params:
+      unit:        {type: unit}
+      outlet:      {type: stream, optional: true}
+      phase:       {type: enum, vocabulary: phase, optional: true}
+      s_star:      {type: quantity, optional: true, label: ideal (isentropic) outlet entropy, unit: J/(mol*K), quantity_kind: molar_entropy}
+      s_saturated: {type: quantity, optional: true, label: saturated-vapour entropy, unit: J/(mol*K), quantity_kind: molar_entropy}
+      pressure:    {type: quantity, optional: true, label: outlet pressure, unit: Pa, quantity_kind: pressure}
+    summary: "Unit {unit} needs a case this version does not support: its outlet[ {outlet}] is declared vapour, but its ideal (isentropic) outlet state would be wet."
+    why: "This version computes a turbine's ideal outlet in the phase declared for the real outlet.[ Here the ideal outlet entropy {s_star} is below the saturated-vapour entropy {s_saturated} at {pressure}, so the ideal state is two-phase.] This is a limitation of the software (L-TH-4), not an error in your flowsheet."
+    action: "Re-declare the outlet[ {outlet}] as wet (\"vapor_liquid\") if it can be wet at your conditions. If that is refused as a phase mismatch, change the operating conditions (for example the turbine inlet temperature or outlet pressure) until the ideal and the real outlet are in the same phase. Support for this case is planned (the std.turbine model)."
+    variants:
+      # The base's numbers sentence names the saturated-vapour entropy; a LIQUID detail (a pump's
+      # isentropic state past the saturated liquid) must not render it.
+      - when: {equals: {phase: LIQUID}}
+        why: "This version computes a machine's ideal outlet in the phase declared for the real outlet. This is a limitation of the software (L-TH-4), not an error in your flowsheet."
+    gap: {limitation: L-TH-4, capability: "a vapour turbine outlet with a two-phase isentropic reference"}
+    see_also: [phase_regime_mismatch, L-TH-4]
+    examples:
+      - chain: [INITIALIZATION_FAILED, initializer_failed, isentropic_state_two_phase]
+        params: {unit: T, outlet: S4, phase: VAPOR,
+                 s_star: {value: 140.2, unit: J/(mol*K), kind: molar_entropy},
+                 s_saturated: {value: 146.3, unit: J/(mol*K), kind: molar_entropy},
+                 pressure: {value: 10000.0, unit: Pa, kind: pressure}}
+
+  - code: project_exists
+    family: refusal
+    kind: input
+    complete: true
+    title: The directory already holds a project
+    params: {directory: {type: directory}}
+    summary: "Directory {directory} is not empty: it already holds a project, and create() needs a new or empty directory."
+    why: "create() makes a new project and never reuses a directory, so a re-run cannot overwrite work silently."
+    action: "To use the existing project, open it instead."
+    variants:
+      - when: {surface: [python]}
+        action: "To use the existing project, call LocalApplication.open(\"{directory!raw}\"), or call LocalApplication.create(\"{directory!raw}\", exist_ok=True), which opens it."
+      - when: {surface: [cli]}
+        summary: "Directory {directory} is not empty: it already holds a project, and project init needs a new or empty directory."
+        action: "The project is ready to use: pass --project {directory!raw} to other commands, or run project init with --exist-ok."
+    examples: [{params: {directory: plant}}]
+
+  - code: directory_not_empty
+    family: refusal
+    kind: input
+    complete: true
+    title: The directory holds files that are not a project
+    params: {directory: {type: directory}}
+    summary: "Directory {directory} is not empty and does not hold a project; a project needs a new or empty directory."
+    why: "OpenFlowsheet will not mix a project with other files, and exist_ok=True opens only an existing project."
+    action: "Choose a new directory name, or empty this directory first."
+    examples: [{params: {directory: notes}}]
+
+  # Stubs (MSG WO-2): kind by §4.2.1's rules.
+  - code: ASSESSMENT_OBJECTIVE_UNSCALED
+    family: refusal
+    kind: input
+    complete: false
+    title: Assessment objective unscaled
+    summary: 'Refused: assessment objective unscaled.'
+    review: true
+  - code: ASSESSMENT_OUTPUT_UNAVAILABLE
+    family: refusal
+    kind: input
+    complete: false
+    title: Assessment output unavailable
+    summary: 'Refused: assessment output unavailable.'
+    review: true
+  - code: ASSESSMENT_OUTPUT_UNKNOWN
+    family: refusal
+    kind: input
+    complete: false
+    title: Assessment output unknown
+    summary: 'Refused: assessment output unknown.'
+    review: true
+  - code: ASSESSMENT_PARAMETER_DECISION
+    family: refusal
+    kind: input
+    complete: false
+    title: Assessment parameter decision
+    summary: 'Refused: assessment parameter decision.'
+    review: true
+  - code: ASSESSMENT_PARAMETER_STRUCTURAL
+    family: refusal
+    kind: input
+    complete: false
+    title: Assessment parameter structural
+    summary: 'Refused: assessment parameter structural.'
+    review: true
+  - code: ASSESSMENT_REGIME_INADMISSIBLE
+    family: refusal
+    kind: input
+    complete: false
+    title: Assessment regime inadmissible
+    summary: 'Refused: assessment regime inadmissible.'
+    review: true
+  - code: BARE_MODULE_FACTOR_MISSING
+    family: refusal
+    kind: input
+    complete: false
+    title: Bare module factor missing
+    summary: 'Refused: bare module factor missing.'
+    review: true
+  - code: BOUNDS_UNDECLARED
+    family: refusal
+    kind: input
+    complete: false
+    title: Bounds undeclared
+    summary: 'Refused: bounds undeclared.'
+    review: true
+  - code: CORRELATION_OUT_OF_RANGE
+    family: refusal
+    kind: input
+    complete: false
+    title: Correlation out of range
+    summary: 'Refused: correlation out of range.'
+    review: true
+  - code: DECISION_INCONSISTENT_WITH_ELIMINATED_ROWS
+    family: refusal
+    kind: input
+    complete: false
+    title: Decision inconsistent with eliminated rows
+    summary: 'Refused: decision inconsistent with eliminated rows.'
+    review: true
+  - code: ESCALATION_SERIES_MISSING
+    family: refusal
+    kind: input
+    complete: false
+    title: Escalation series missing
+    summary: 'Refused: escalation series missing.'
+    review: true
+  - code: EXCHANGE_RATE_UNAVAILABLE
+    family: refusal
+    kind: input
+    complete: false
+    title: Exchange rate unavailable
+    summary: 'Refused: exchange rate unavailable.'
+    review: true
+  - code: HESSIAN_UNAVAILABLE
+    family: refusal
+    kind: input
+    complete: false
+    title: Hessian unavailable
+    summary: 'Refused: hessian unavailable.'
+    review: true
+  - code: IDENTITY_MISMATCH
+    family: refusal
+    kind: bug
+    complete: false
+    title: Identity mismatch
+    summary: 'Refused: identity mismatch.'
+    review: true
+  - code: INCONSISTENT_WITH_ELIMINATED_ROWS
+    family: refusal
+    kind: input
+    complete: false
+    title: Inconsistent with eliminated rows
+    summary: 'Refused: inconsistent with eliminated rows.'
+    review: true
+  - code: INDEX_YEAR_UNAVAILABLE
+    family: refusal
+    kind: input
+    complete: false
+    title: Index year unavailable
+    summary: 'Refused: index year unavailable.'
+    review: true
+  - code: NLP_SOLVER_UNAVAILABLE
+    family: refusal
+    kind: input
+    complete: false
+    title: Nlp solver unavailable
+    summary: 'Refused: nlp solver unavailable.'
+    review: true
+  - code: NO_CORRELATION
+    family: refusal
+    kind: input
+    complete: false
+    title: No correlation
+    summary: 'Refused: no correlation.'
+    review: true
+  - code: PARAMETER_NOT_DIFFERENTIABLE
+    family: refusal
+    kind: input
+    complete: false
+    title: Parameter not differentiable
+    summary: 'Refused: parameter not differentiable.'
+    review: true
+  - code: PHASE_BOUNDARY
+    family: refusal
+    kind: input
+    complete: false
+    title: Phase boundary
+    summary: 'Refused: phase boundary.'
+    review: true
+  - code: PROJECTION_DOF
+    family: refusal
+    kind: input
+    complete: false
+    title: Projection dof
+    summary: 'Refused: projection dof.'
+    review: true
+  - code: PROJECTION_IMPLICIT_EF_INPUT
+    family: refusal
+    kind: input
+    complete: false
+    title: Projection implicit ef input
+    summary: 'Refused: projection implicit ef input.'
+    review: true
+  - code: PROJECTION_NONSMOOTH
+    family: refusal
+    kind: input
+    complete: false
+    title: Projection nonsmooth
+    summary: 'Refused: projection nonsmooth.'
+    review: true
+  - code: PROJECTION_OMITTED_ROW_UNCERTIFIED
+    family: refusal
+    kind: input
+    complete: false
+    title: Projection omitted row uncertified
+    summary: 'Refused: projection omitted row uncertified.'
+    review: true
+  - code: PROJECTION_SCALES_UNAVAILABLE
+    family: refusal
+    kind: input
+    complete: false
+    title: Projection scales unavailable
+    summary: 'Refused: projection scales unavailable.'
+    review: true
+  - code: PROJECTION_STRUCTURE
+    family: refusal
+    kind: input
+    complete: false
+    title: Projection structure
+    summary: 'Refused: projection structure.'
+    review: true
+  - code: PROJECTION_ZERO_FLOW
+    family: refusal
+    kind: input
+    complete: false
+    title: Projection zero flow
+    summary: 'Refused: projection zero flow.'
+    review: true
+  - code: REGIME_MARGIN_UNSUPPORTED
+    family: refusal
+    kind: not_supported
+    complete: false
+    title: Regime margin unsupported
+    summary: 'Refused: regime margin unsupported.'
+    review: true
+  - code: REGULARITY_INCONCLUSIVE
+    family: refusal
+    kind: input
+    complete: false
+    title: Regularity inconclusive
+    summary: 'Refused: regularity inconclusive.'
+    review: true
+  - code: ROOT_NOT_CONVERGED
+    family: refusal
+    kind: input
+    complete: false
+    title: Root not converged
+    summary: 'Refused: root not converged.'
+    review: true
+  - code: ROOT_NOT_VERIFIED
+    family: refusal
+    kind: input
+    complete: false
+    title: Root not verified
+    summary: 'Refused: root not verified.'
+    review: true
+  - code: SIMULATION_NOT_READY
+    family: refusal
+    kind: input
+    complete: false
+    title: Simulation not ready
+    summary: 'Refused: simulation not ready.'
+    review: true
+  - code: START_NOT_CERTIFIED
+    family: refusal
+    kind: input
+    complete: false
+    title: Start not certified
+    summary: 'Refused: start not certified.'
+    review: true
+  - code: START_OUTSIDE_BOUNDS
+    family: refusal
+    kind: input
+    complete: false
+    title: Start outside bounds
+    summary: 'Refused: start outside bounds.'
+    review: true
+  - code: TRSP_SOLVER_UNAUDITED
+    family: refusal
+    kind: input
+    complete: false
+    title: Trsp solver unaudited
+    summary: 'Refused: trsp solver unaudited.'
+    review: true
+  - code: TRUST_REGION_FRAMEWORK_UNAVAILABLE
+    family: refusal
+    kind: input
+    complete: false
+    title: Trust region framework unavailable
+    summary: 'Refused: trust region framework unavailable.'
+    review: true
+  - code: TRUST_REGION_FRAMEWORK_UNPINNED
+    family: refusal
+    kind: input
+    complete: false
+    title: Trust region framework unpinned
+    summary: 'Refused: trust region framework unpinned.'
+    review: true
+  - code: TWIN_MISMATCH
+    family: refusal
+    kind: bug
+    complete: false
+    title: Twin mismatch
+    summary: 'Refused: twin mismatch.'
+    review: true
+  - code: UNKNOWN_DECISION
+    family: refusal
+    kind: input
+    complete: false
+    title: Unknown decision
+    summary: 'Refused: unknown decision.'
+    review: true
+  - code: UNKNOWN_PARAMETER
+    family: refusal
+    kind: input
+    complete: false
+    title: Unknown parameter
+    summary: 'Refused: unknown parameter.'
+    review: true
+  - code: UNKNOWN_VARIABLE
+    family: refusal
+    kind: input
+    complete: false
+    title: Unknown variable
+    summary: 'Refused: unknown variable.'
+    review: true
+  - code: acceptance_item_unattributed
+    family: refusal
+    kind: input
+    complete: false
+    title: Acceptance item unattributed
+    summary: 'Refused: acceptance item unattributed.'
+    review: true
+  - code: acceptance_undefined
+    family: refusal
+    kind: input
+    complete: false
+    title: Acceptance undefined
+    summary: 'Refused: acceptance undefined.'
+    review: true
+  - code: active_set_cycling
+    family: refusal
+    kind: input
+    complete: false
+    title: Active set cycling
+    summary: 'Refused: active set cycling.'
+    review: true
+  - code: basis_mismatch
+    family: refusal
+    kind: bug
+    complete: false
+    title: Basis mismatch
+    summary: 'Refused: basis mismatch.'
+    review: true
+  - code: basis_premises_unmet
+    family: refusal
+    kind: input
+    complete: false
+    title: Basis premises unmet
+    summary: 'Refused: basis premises unmet.'
+    review: true
+  - code: basis_unavailable
+    family: refusal
+    kind: input
+    complete: false
+    title: Basis unavailable
+    summary: 'Refused: basis unavailable.'
+    review: true
+  - code: block_energy_refused
+    family: refusal
+    kind: input
+    complete: false
+    title: Block energy refused
+    summary: 'Refused: block energy refused.'
+    review: true
+  - code: carried_split_inconsistent
+    family: refusal
+    kind: bug
+    complete: false
+    title: Carried split inconsistent
+    summary: 'Refused: carried split inconsistent.'
+  - code: carried_split_missing
+    family: refusal
+    kind: input
+    complete: false
+    title: Carried split missing
+    summary: 'Refused: carried split missing.'
+  - code: certificate_unmapped
+    family: refusal
+    kind: input
+    complete: false
+    title: Certificate unmapped
+    summary: 'Refused: certificate unmapped.'
+    review: true
+  - code: checkpoint_incompatible
+    family: refusal
+    kind: input
+    complete: false
+    title: Checkpoint incompatible
+    summary: 'Refused: checkpoint incompatible.'
+    review: true
+  - code: closure_route
+    family: refusal
+    kind: input
+    complete: false
+    title: Closure route
+    summary: 'Refused: closure route.'
+    review: true
+  - code: closure_type_unknown
+    family: refusal
+    kind: input
+    complete: false
+    title: Closure type unknown
+    summary: 'Refused: closure type unknown.'
+  - code: component_unknown
+    family: refusal
+    kind: input
+    complete: false
+    title: Component unknown
+    summary: 'Refused: component unknown.'
+  - code: connection_kind_unsupported
+    family: refusal
+    kind: not_supported
+    complete: false
+    title: Connection kind unsupported
+    summary: 'Refused: connection kind unsupported.'
+  - code: continuation_level
+    family: refusal
+    kind: input
+    complete: false
+    title: Continuation level
+    summary: 'Refused: continuation level.'
+    review: true
+  - code: declaration_mismatch
+    family: refusal
+    kind: input
+    complete: false
+    title: Declaration mismatch
+    summary: 'Refused: declaration mismatch.'
+  - code: dormancy_form_configuration_unknown
+    family: refusal
+    kind: input
+    complete: false
+    title: Dormancy form configuration unknown
+    summary: 'Refused: dormancy form configuration unknown.'
+  - code: dormancy_form_disagrees
+    family: refusal
+    kind: bug
+    complete: false
+    title: Dormancy form disagrees
+    summary: 'Refused: dormancy form disagrees.'
+  - code: endpoint_missing
+    family: refusal
+    kind: input
+    complete: false
+    title: Endpoint missing
+    summary: 'Refused: endpoint missing.'
+  - code: energy_reads_undeclared
+    family: refusal
+    kind: input
+    complete: false
+    title: Energy reads undeclared
+    summary: 'Refused: energy reads undeclared.'
+    review: true
+  - code: exchanger_specification
+    family: refusal
+    kind: input
+    complete: false
+    title: Exchanger specification
+    summary: 'Refused: exchanger specification.'
+    review: true
+  - code: external_refused
+    family: refusal
+    kind: input
+    complete: false
+    title: External refused
+    summary: 'Refused: external refused.'
+    review: true
+  - code: external_results_reevaluated
+    family: refusal
+    kind: input
+    complete: false
+    title: External results reevaluated
+    summary: 'Refused: external results reevaluated.'
+    review: true
+  - code: external_results_replayed_from_record
+    family: refusal
+    kind: input
+    complete: false
+    title: External results replayed from record
+    summary: 'Refused: external results replayed from record.'
+    review: true
+  - code: external_runner_unavailable
+    family: refusal
+    kind: input
+    complete: false
+    title: External runner unavailable
+    summary: 'Refused: external runner unavailable.'
+    review: true
+  - code: failure_bundle_unmapped
+    family: refusal
+    kind: bug
+    complete: false
+    title: Failure bundle unmapped
+    summary: 'Refused: failure bundle unmapped.'
+  - code: homotopy_stalled
+    family: refusal
+    kind: numerical
+    complete: false
+    title: Homotopy stalled
+    summary: 'Refused: homotopy stalled.'
+  - code: id_duplicate
+    family: refusal
+    kind: input
+    complete: false
+    title: Id duplicate
+    summary: 'Refused: id duplicate.'
+  - code: id_unsupported
+    family: refusal
+    kind: not_supported
+    complete: false
+    title: Id unsupported
+    summary: 'Refused: id unsupported.'
+  - code: inadmissible_endpoint
+    family: refusal
+    kind: input
+    complete: false
+    title: Inadmissible endpoint
+    summary: 'Refused: inadmissible endpoint.'
+    review: true
+  - code: inadmissible_inlet
+    family: refusal
+    kind: input
+    complete: false
+    title: Inadmissible inlet
+    summary: 'Refused: inadmissible inlet.'
+    review: true
+  - code: inadmissible_phase
+    family: refusal
+    kind: input
+    complete: false
+    title: Inadmissible phase
+    summary: 'Refused: inadmissible phase.'
+    review: true
+  - code: infeasible_spec
+    family: refusal
+    kind: input
+    complete: false
+    title: A column specification outside what the column can deliver
+    summary: "Refused: a column specification asks for more than the column can deliver at these conditions (for example more product than the feed holds)."
+    review: true
+  - code: initial_state_incomplete
+    family: refusal
+    kind: input
+    complete: false
+    title: Initial state incomplete
+    summary: 'Refused: initial state incomplete.'
+    review: true
+  - code: initialization_failed
+    family: refusal
+    kind: input
+    complete: false
+    title: Initialization failed
+    summary: 'Refused: initialization failed.'
+    review: true
+  - code: instance_missing
+    family: refusal
+    kind: input
+    complete: false
+    title: Instance missing
+    summary: 'Refused: instance missing.'
+  - code: invalid_spec
+    family: refusal
+    kind: input
+    complete: false
+    title: Invalid spec
+    summary: 'Refused: invalid spec.'
+    review: true
+  - code: inverse_specification_not_reached
+    family: refusal
+    kind: input
+    complete: false
+    title: Inverse specification not reached
+    summary: 'Refused: inverse specification not reached.'
+    review: true
+  - code: isentropic_state_single_phase
+    family: refusal
+    kind: not_supported
+    complete: true
+    # MSG WO-12 (M1). Emitters: `thermal/machines.py` (with the unit), `thermal/blocks.py` and
+    # `thermal/kernel.py` `isentropic_state`/`_isentropic_temperature` (R-839).
+    title: A machine whose ideal outlet is single-phase, unlike its declared outlet
+    args: [unit]
+    params: {unit: {type: unit, optional: true}}
+    summary: "The machine[ {unit}] needs a case this version does not support: its ideal (isentropic) outlet state is single-phase, not the phase declared for its outlet."
+    why: "This version computes a machine's ideal outlet in the phase declared for the real outlet. Here the outlet is declared wet (\"vapor_liquid\") but the ideal outlet lies outside the two-phase region, or, where the fluid has no two-phase region at the outlet pressure, the ideal outlet is of another phase than the one declared. This is a limitation of the software, not an error in your flowsheet."
+    action: "Declare the outlet with the phase its ideal state has (for example vapour when the ideal state is superheated) if the real outlet has that phase too; otherwise change the operating conditions until the ideal and the real outlet are in the same phase."
+    gap: {limitation: null, capability: "an ideal (isentropic) outlet of another phase than the declared outlet"}
+    see_also: [isentropic_state_two_phase, phase_regime_mismatch]
+    examples:
+      - chain: [INITIALIZATION_FAILED, initializer_failed, isentropic_state_single_phase]
+        params: {unit: T}
+      - params: {}
+  - code: kernel_disagrees
+    family: refusal
+    kind: bug
+    complete: false
+    title: Kernel disagrees
+    summary: 'Refused: kernel disagrees.'
+  - code: kernel_refused
+    family: refusal
+    kind: numerical
+    complete: false
+    title: Kernel refused
+    summary: 'Refused: kernel refused.'
+  - code: legacy_route_not_admitted
+    family: refusal
+    kind: not_supported
+    complete: false
+    title: Legacy route not admitted
+    summary: 'Refused: legacy route not admitted.'
+  - code: lifted_split_definition_disagrees
+    family: refusal
+    kind: bug
+    complete: false
+    title: Lifted split definition disagrees
+    summary: 'Refused: lifted split definition disagrees.'
+  - code: lifted_split_equilibrium_disagrees
+    family: refusal
+    kind: bug
+    complete: false
+    title: Lifted split equilibrium disagrees
+    summary: 'Refused: lifted split equilibrium disagrees.'
+  - code: lifted_split_key_collision
+    family: refusal
+    kind: input
+    complete: false
+    title: Lifted split key collision
+    summary: 'Refused: lifted split key collision.'
+    review: true
+  - code: lifted_split_rows_disagree
+    family: refusal
+    kind: bug
+    complete: false
+    title: Lifted split rows disagree
+    summary: 'Refused: lifted split rows disagree.'
+  - code: lifted_split_unregistered
+    family: refusal
+    kind: input
+    complete: false
+    title: Lifted split unregistered
+    summary: 'Refused: lifted split unregistered.'
+    review: true
+  - code: lifted_split_variables_absent
+    family: refusal
+    kind: input
+    complete: false
+    title: Lifted split variables absent
+    summary: 'Refused: lifted split variables absent.'
+    review: true
+  - code: lifted_split_without_rows
+    family: refusal
+    kind: input
+    complete: false
+    title: Lifted split without rows
+    summary: 'Refused: lifted split without rows.'
+    review: true
+  - code: missing_initial_guess
+    family: refusal
+    kind: input
+    complete: false
+    title: Missing initial guess
+    summary: 'Refused: missing initial guess.'
+    review: true
+  - code: model_unsupported
+    family: refusal
+    kind: not_supported
+    complete: true
+    title: No model with this id is available
+    args: [model]
+    params: {model: {type: text, label: model id}}
+    summary: "No model with the id \"{model!raw}\" is available in this version."
+    why: "Each unit names the model that computes it. This version computes only the models it lists, and a unit's model id must match one of them exactly, prefix included (for example thermal.heater)."
+    action: "Compare the unit's model id with the available models (the list_models operation, or openflowsheet api list_models): correct its spelling, or choose a listed model that does what the unit needs."
+    gap: {limitation: null, capability: "a unit model with this id"}
+    see_also: [revision_not_ready]
+    examples:
+      - params: {model: thermal.boiler}
+  - code: model_variant_mismatch
+    family: refusal
+    kind: bug
+    complete: false
+    title: Model variant mismatch
+    summary: 'Refused: model variant mismatch.'
+    review: true
+  - code: multiple_steady_states_possible
+    family: refusal
+    kind: input
+    complete: false
+    title: Multiple steady states possible
+    summary: 'Refused: multiple steady states possible.'
+    review: true
+  - code: near_critical
+    family: refusal
+    kind: not_supported
+    complete: false
+    title: Near critical
+    summary: 'Refused: near critical.'
+  - code: no_saturation
+    family: refusal
+    kind: input
+    complete: false
+    title: No saturation
+    summary: 'Refused: no saturation.'
+    review: true
+  - code: not_a_directory
+    family: refusal
+    kind: input
+    complete: true
+    title: The path is a file, not a directory
+    params: {directory: {type: directory}}
+    summary: "{directory} is a file, not a directory; a project needs a new or empty directory."
+    why: "A project is a directory that holds its database and its files, so it cannot be made at the path of an existing file."
+    action: "Choose another path for the project, or move or rename the file."
+    see_also: [project_exists, directory_not_empty]
+    examples: [{params: {directory: plant.txt}}]
+  - code: not_a_project
+    family: refusal
+    kind: input
+    complete: true
+    title: The directory does not hold a project
+    params: {directory: {type: directory}}
+    summary: "Directory {directory} is not a project: it holds no project database."
+    why: "Opening a project reads the database (project.sqlite3) that creating the project wrote into its directory. This directory has none: it was never made a project, or it is not the directory you meant."
+    action: "Check the path: give the directory the project was created in, or create a new project here."
+    variants:
+      - when: {surface: [python]}
+        action: "Check the path: give the directory the project was created in, or make a new project here with LocalApplication.create(\"{directory!raw}\")."
+      - when: {surface: [cli]}
+        action: "Check the path given to --project, or make a new project here with project init {directory!raw}."
+    see_also: [project_exists]
+    examples: [{params: {directory: plant}}]
+  - code: not_converged
+    family: refusal
+    kind: numerical
+    complete: false
+    title: Not converged
+    summary: 'Refused: not converged.'
+  - code: opening_not_settled
+    family: refusal
+    kind: input
+    complete: false
+    title: Opening not settled
+    summary: 'Refused: opening not settled.'
+    review: true
+  - code: out_of_domain
+    family: refusal
+    kind: input
+    complete: true
+    title: A state outside the range of the property method
+    # Review Q1 (WO-5a): the provider's own message (P4), e.g. `iapws95.py`'s `out_of_domain:
+    # temperature 200.0 K outside [273.16, 1273.15] K`.
+    detail_pattern: '(?P<what>temperature|pressure) (?P<value>[-+]?[0-9]+(?:\.[0-9]+)?(?:e[-+]?[0-9]+)?) (?P<value_unit>K|Pa) outside \[(?=[-+]?[0-9]+(?:\.[0-9]+)?(?:e[-+]?[0-9]+)?, [-+]?[0-9]+(?:\.[0-9]+)?(?:e[-+]?[0-9]+)?\] (?P<low_unit>K|Pa))(?P<low>[-+]?[0-9]+(?:\.[0-9]+)?(?:e[-+]?[0-9]+)?), (?P<high>[-+]?[0-9]+(?:\.[0-9]+)?(?:e[-+]?[0-9]+)?)\] (?P<high_unit>K|Pa)'
+    params:
+      unit:   {type: unit, optional: true}
+      detail: {type: text, optional: true, label: property method's message}
+      what:   {type: text, optional: true}
+      value:  {type: quantity, optional: true, label: value asked for}
+      low:    {type: quantity, optional: true, label: lower end of the range}
+      high:   {type: quantity, optional: true, label: upper end of the range}
+    summary: "A property calculation[ for unit {unit}] was asked for a state outside the range its property method covers."
+    why: "A property method is valid only over a stated range of temperature and pressure, and outside it OpenFlowsheet stops instead of extrapolating.[ The method reported: {detail!raw}.] For example, water's IAPWS-95 method in this version covers 273.16 K to 1273.15 K and 100 Pa to 100 MPa."
+    action: "Check the temperatures and pressures specified for the streams[ that reach {unit}], for example a feed below the freezing point, and bring them inside the property method's range; the limitations page lists the range of each method."
+    variants:
+      # Review S1: a solve's iterate, not a specified state, left the range.
+      - when: {outer: [ACTIVE_SET_CYCLING, ATTEMPTS_EXHAUSTED, BOUND_BLOCKED, BUDGET_EXHAUSTED, COUPLING_NOT_CONVERGED, EVALUATION_ERROR, HOMOTOPY_STALLED, INNER_SOLVE_INCONSISTENT, LINEAR_SOLVE_FAILED, LINE_SEARCH_FAILED, PTC_STALLED, RECYCLE_STAGNATION, STAGNATION]}
+        kind: numerical
+        action: "The solver reached a state outside the property method's range[ at unit {unit}] while iterating; the specified states may all be inside it. Give initial guesses closer to the expected solution, or check the specifications that drive the solve towards that state; the limitations page lists the range of each method."
+      - when: {has: [what, value, low, high]}
+        why: "A property method is valid only over a stated range of temperature and pressure, and outside it OpenFlowsheet stops instead of extrapolating. Here the {what!raw} {value} is outside the method's range of {low} to {high}."
+    see_also: [initializer_failed]
+    examples:
+      - chain: [INITIALIZATION_FAILED, initializer_failed, out_of_domain]
+        params: {unit: P, what: temperature,
+                 value: {value: 200.0, unit: K, kind: null},
+                 low: {value: 273.16, unit: K, kind: null},
+                 high: {value: 1273.15, unit: K, kind: null}}
+      - chain: [LINE_SEARCH_FAILED, out_of_domain]
+        params: {unit: B}
+  - code: parameter_kind_unsupported
+    family: refusal
+    kind: not_supported
+    complete: false
+    title: Parameter kind unsupported
+    summary: 'Refused: parameter kind unsupported.'
+  - code: parameter_missing
+    family: refusal
+    kind: input
+    complete: false
+    title: Parameter missing
+    summary: 'Refused: parameter missing.'
+  - code: parameter_quantity_invalid
+    family: refusal
+    kind: input
+    complete: false
+    title: Parameter quantity invalid
+    summary: 'Refused: parameter quantity invalid.'
+  - code: parameter_unit_unsupported
+    family: refusal
+    kind: not_supported
+    complete: false
+    title: Parameter unit unsupported
+    summary: 'Refused: parameter unit unsupported.'
+  - code: parameter_unreadable
+    family: refusal
+    kind: input
+    complete: false
+    title: Parameter unreadable
+    summary: 'Refused: parameter unreadable.'
+  - code: parameter_unsupported
+    family: refusal
+    kind: not_supported
+    complete: false
+    title: Parameter unsupported
+    summary: 'Refused: parameter unsupported.'
+  - code: parameter_value_unsupported
+    family: refusal
+    kind: not_supported
+    complete: false
+    title: Parameter value unsupported
+    summary: 'Refused: parameter value unsupported.'
+  - code: ph_outside_domain
+    family: refusal
+    kind: input
+    complete: false
+    title: Ph outside domain
+    summary: 'Refused: ph outside domain.'
+  - code: phase_boundary_on_path
+    family: refusal
+    kind: input
+    complete: false
+    title: Phase boundary on path
+    summary: 'Refused: phase boundary on path.'
+    review: true
+  - code: phase_capability_missing
+    family: refusal
+    kind: input
+    complete: false
+    title: Phase capability missing
+    summary: 'Refused: phase capability missing.'
+  - code: phase_capability_unsupported
+    family: refusal
+    kind: not_supported
+    complete: false
+    title: Phase capability unsupported
+    summary: 'Refused: phase capability unsupported.'
+  - code: phase_contract_unsupported
+    family: refusal
+    kind: not_supported
+    complete: false
+    title: Phase contract unsupported
+    summary: 'Refused: phase contract unsupported.'
+  - code: phase_disappeared
+    family: refusal
+    kind: input
+    complete: false
+    title: Phase disappeared
+    summary: 'Refused: phase disappeared.'
+    review: true
+  - code: phase_not_stable
+    family: refusal
+    kind: input
+    complete: false
+    title: Phase not stable
+    summary: 'Refused: phase not stable.'
+    review: true
+  - code: phase_update
+    family: refusal
+    kind: input
+    complete: false
+    title: Phase update
+    summary: 'Refused: phase update.'
+    review: true
+  - code: phase_wall
+    family: refusal
+    kind: input
+    complete: false
+    title: Phase wall
+    summary: 'Refused: phase wall.'
+    review: true
+  - code: pin_conflict
+    family: refusal
+    kind: input
+    complete: false
+    title: Pin conflict
+    summary: 'Refused: pin conflict.'
+  - code: pin_missing
+    family: refusal
+    kind: input
+    complete: false
+    title: Pin missing
+    summary: 'Refused: pin missing.'
+  - code: plan_refused
+    family: refusal
+    kind: input
+    complete: false
+    title: Plan refused
+    summary: 'Refused: plan refused.'
+    review: true
+  - code: policy_unsupported_on_route
+    family: refusal
+    kind: input
+    complete: false
+    title: Policy unsupported on route
+    summary: 'Refused: policy unsupported on route.'
+    review: true
+  - code: port_direction_conflict
+    family: refusal
+    kind: input
+    complete: false
+    title: Port direction conflict
+    summary: 'Refused: port direction conflict.'
+  - code: port_direction_unsupported
+    family: refusal
+    kind: not_supported
+    complete: false
+    title: Port direction unsupported
+    summary: 'Refused: port direction unsupported.'
+  - code: port_multiplicity_unsupported
+    family: refusal
+    kind: not_supported
+    complete: false
+    title: Port multiplicity unsupported
+    summary: 'Refused: port multiplicity unsupported.'
+  - code: port_not_single
+    family: refusal
+    kind: input
+    complete: false
+    title: Port not single
+    summary: 'Refused: port not single.'
+    review: true
+  - code: port_phase_ambiguous
+    family: refusal
+    kind: input
+    complete: false
+    title: Port phase ambiguous
+    summary: 'Refused: port phase ambiguous.'
+    review: true
+  - code: port_phase_unsupported
+    family: refusal
+    kind: not_supported
+    complete: false
+    title: Port phase unsupported
+    summary: 'Refused: port phase unsupported.'
+  - code: port_unsupported
+    family: refusal
+    kind: not_supported
+    complete: false
+    title: Port unsupported
+    summary: 'Refused: port unsupported.'
+  - code: port_unwired
+    family: refusal
+    kind: input
+    complete: false
+    title: Port unwired
+    summary: 'Refused: port unwired.'
+    review: true
+  - code: pressure_fall
+    family: refusal
+    kind: input
+    complete: true
+    args: [machine]
+    # Review Q1 (WO-5a): the bound's detail line (`machines.py`, `syn001/pump.py`; P5).
+    detail_pattern: 'P_spec = (?P<p_spec>[-+]?[0-9]+(?:\.[0-9]+)?(?:e[-+]?[0-9]+)?) Pa (?:is above|is below|exceeds) the inlet''s (?P<p_inlet>[-+]?[0-9]+(?:\.[0-9]+)?(?:e[-+]?[0-9]+)?) Pa'
+    params:
+      machine: {type: text, label: machine}
+      p_spec:  {type: quantity, optional: true, label: specified outlet pressure, unit: Pa, quantity_kind: pressure}
+      p_inlet: {type: quantity, optional: true, label: inlet pressure, unit: Pa, quantity_kind: pressure}
+      unit:    {type: unit, optional: true}
+    # MSG WO-12 (M1). Emitters: `syn001/pump.py` (pump), `thermal/machines.py` `_bound_code` (every
+    # machine but the turbine: pump, compressor).
+    title: An outlet pressure below the inlet pressure of a machine that can only raise it
+    summary: "The outlet pressure specified for[ unit {unit},] a {machine!raw}, is below its inlet pressure[ ({p_spec} against {p_inlet})]."
+    why: "A pump or a compressor does work on the fluid to raise its pressure, so its outlet pressure cannot be below its inlet pressure. Lowering the pressure takes a valve or a turbine."
+    action: "Give the {machine!raw}[ {unit}] an outlet pressure at or above its inlet pressure[ of {p_inlet}], or lower the pressure upstream of it."
+    see_also: [pressure_rise]
+    examples:
+      - chain: [INITIALIZATION_FAILED, initializer_failed, pressure_fall]
+        params: {machine: pump, unit: P,
+                 p_spec: {value: 50000.0, unit: Pa, kind: pressure},
+                 p_inlet: {value: 100000.0, unit: Pa, kind: pressure}}
+  - code: pressure_outside_domain
+    family: refusal
+    kind: input
+    complete: false
+    title: Pressure outside domain
+    summary: 'Refused: pressure outside domain.'
+  - code: pressure_rise
+    family: refusal
+    kind: input
+    complete: true
+    title: An outlet pressure above the inlet pressure of a unit that can only lower it
+    args: [machine]
+    # Review Q1 (WO-5a): the bound's detail line (`machines.py`, `valve.py`; P5).
+    detail_pattern: 'P_spec = (?P<p_spec>[-+]?[0-9]+(?:\.[0-9]+)?(?:e[-+]?[0-9]+)?) Pa (?:is above|is below|exceeds) the inlet''s (?P<p_inlet>[-+]?[0-9]+(?:\.[0-9]+)?(?:e[-+]?[0-9]+)?) Pa'
+    params:
+      machine: {type: text, label: machine}
+      unit:    {type: unit, optional: true}
+      p_spec:  {type: quantity, optional: true, label: specified outlet pressure, unit: Pa, quantity_kind: pressure}
+      p_inlet: {type: quantity, optional: true, label: inlet pressure, unit: Pa, quantity_kind: pressure}
+    summary: "The outlet pressure specified for[ unit {unit},] a {machine!raw}, is above its inlet pressure[ ({p_spec} against {p_inlet})]."
+    why: "A turbine expands the fluid that passes through it, so it can only lower the pressure. Raising the pressure takes a pump or a compressor."
+    variants:
+      # Review M2: `pressure_rise(valve)` (`thermal/valve.py`, `syn001/valve.py`).
+      - when: {equals: {machine: valve}}
+        why: "A valve throttles the fluid that passes through it, so it can only lower the pressure. Raising the pressure takes a pump or a compressor."
+    action: "Give the {machine!raw}[ {unit}] an outlet pressure at or below its inlet pressure[ of {p_inlet}], or raise the pressure upstream of it (for example a pump's outlet pressure)."
+    examples:
+      - chain: [INITIALIZATION_FAILED, initializer_failed, pressure_rise]
+        params: {machine: turbine, unit: T,
+                 p_spec: {value: 5000000.0, unit: Pa, kind: pressure},
+                 p_inlet: {value: 3000000.0, unit: Pa, kind: pressure}}
+      - chain: [INITIALIZATION_FAILED, initializer_failed, pressure_rise]
+        params: {machine: valve, unit: V,
+                 p_spec: {value: 200000.0, unit: Pa, kind: pressure},
+                 p_inlet: {value: 100000.0, unit: Pa, kind: pressure}}
+  - code: project_id_mismatch
+    family: refusal
+    kind: input
+    complete: true
+    title: The directory holds a project with another id
+    params:
+      directory: {type: directory}
+      project_id: {type: text}
+      existing: {type: text}
+    summary: "Directory {directory} holds the project '{existing!raw}', not '{project_id!raw}'."
+    why: "Asked to reuse an existing project, OpenFlowsheet opens it only when its id is the one requested, so a script never works on another project by mistake."
+    action: "To open the project that is there, ask for its id '{existing!raw}' or give no id; to create '{project_id!raw}', choose another directory."
+    variants:
+      - when: {surface: [cli]}
+        action: "To open the project that is there, pass --project-id {existing!raw} or no --project-id; to create '{project_id!raw}', choose another directory."
+    see_also: [project_exists]
+    examples: [{params: {directory: plant, project_id: plant-b, existing: plant-a}}]
+  - code: projection_unevaluable
+    family: refusal
+    kind: input
+    complete: false
+    title: Projection unevaluable
+    summary: 'Refused: projection unevaluable.'
+    review: true
+  - code: provider_missing
+    family: refusal
+    kind: input
+    complete: false
+    title: Provider missing
+    summary: 'Refused: provider missing.'
+  - code: provider_not_admitted
+    family: refusal
+    kind: not_supported
+    complete: false
+    title: Provider not admitted
+    summary: 'Refused: provider not admitted.'
+  - code: provider_unknown
+    family: refusal
+    kind: input
+    complete: false
+    title: Provider unknown
+    summary: 'Refused: provider unknown.'
+  - code: ptc_mapping_invalid
+    family: refusal
+    kind: input
+    complete: false
+    title: Ptc mapping invalid
+    summary: 'Refused: ptc mapping invalid.'
+  - code: rate_not_finite
+    family: refusal
+    kind: input
+    complete: false
+    title: Rate not finite
+    summary: 'Refused: rate not finite.'
+    review: true
+  - code: reactant_exhausted
+    family: refusal
+    kind: input
+    complete: false
+    title: Reactant exhausted
+    summary: 'Refused: reactant exhausted.'
+    review: true
+  - code: reactor_not_accepted
+    family: refusal
+    kind: not_supported
+    complete: false
+    title: Reactor not accepted
+    summary: 'Refused: reactor not accepted.'
+  - code: recovery_feed_not_positive
+    family: refusal
+    kind: input
+    complete: false
+    title: Recovery feed not positive
+    summary: 'Refused: recovery feed not positive.'
+    review: true
+  - code: redundant_specification
+    family: refusal
+    kind: input
+    complete: false
+    title: Redundant specification
+    summary: 'Refused: redundant specification.'
+    review: true
+  - code: reference_convention_not_reaction_consistent
+    family: refusal
+    kind: input
+    complete: false
+    title: Reference convention not reaction consistent
+    summary: 'Refused: reference convention not reaction consistent.'
+    review: true
+  - code: rerun_unsupported
+    family: refusal
+    kind: not_supported
+    complete: false
+    title: Rerun unsupported
+    summary: 'Refused: rerun unsupported.'
+  - code: restart_pass_rejected
+    family: refusal
+    kind: numerical
+    complete: false
+    title: Restart pass rejected
+    summary: 'Refused: restart pass rejected.'
+  - code: revision_unreadable
+    family: refusal
+    kind: input
+    complete: false
+    title: Revision unreadable
+    summary: 'Refused: revision unreadable.'
+  - code: schema_invalid
+    family: refusal
+    kind: input
+    complete: false
+    title: Schema invalid
+    summary: 'Refused: schema invalid.'
+  - code: single_phase_admissible
+    family: refusal
+    kind: input
+    complete: false
+    title: Single phase admissible
+    summary: 'Refused: single phase admissible.'
+    review: true
+  - code: specification_conflict
+    family: refusal
+    kind: input
+    complete: false
+    title: Specification conflict
+    summary: 'Refused: specification conflict.'
+  - code: specification_free_unused
+    family: refusal
+    kind: input
+    complete: false
+    title: Specification free unused
+    summary: 'Refused: specification free unused.'
+    review: true
+  - code: specification_kind_unknown
+    family: refusal
+    kind: input
+    complete: false
+    title: Specification kind unknown
+    summary: 'Refused: specification kind unknown.'
+  - code: specification_missing
+    family: refusal
+    kind: input
+    complete: true
+    title: A value that no specification fixes
+    args: [column]
+    # Review Q2: the binder's hint names where a specification would go (`revision_binding.py`).
+    detail_pattern: 'object_id: (?P<object>[^,}]+)'
+    params:
+      column: {type: text, label: value left free}
+      object: {type: element, optional: true, label: where a specification would fix it}
+    summary: "The revision is incomplete: no specification fixes {column!raw}[ (on {object})]."
+    why: "A solve needs every value its units leave free to be fixed by exactly one specification. Here {column!raw} is left free, so the equations do not determine the state."
+    action: "Add one fixed specification for {column!raw}[, for example with target {object}]; the check's message lists the kind, unit and target each choice takes."
+    see_also: [specification_unconsumed, revision_not_ready]
+    examples:
+      - chain: [revision_not_ready, specification_missing]
+        params: {column: S4.P, object: S4}
+  - code: specification_pairing_unsupported
+    family: refusal
+    kind: not_supported
+    complete: false
+    title: Specification pairing unsupported
+    summary: 'Refused: specification pairing unsupported.'
+  - code: specification_region_unsupported
+    family: refusal
+    kind: not_supported
+    complete: false
+    title: Specification region unsupported
+    summary: 'Refused: specification region unsupported.'
+  - code: specification_role_unsupported
+    family: refusal
+    kind: not_supported
+    complete: false
+    title: Specification role unsupported
+    summary: 'Refused: specification role unsupported.'
+  - code: specification_target_unknown
+    family: refusal
+    kind: input
+    complete: false
+    title: Specification target unknown
+    summary: 'Refused: specification target unknown.'
+  - code: specification_unconsumed
+    family: refusal
+    kind: input
+    complete: true
+    title: A specification that no unit reads
+    args: [specification]
+    # Review Q2: the binder's hint (`revision_binding.py` `_unconsumed_hint`).
+    detail_pattern: '(?P<unit>[^ ]+) \((?P<model>[^)]+)\) does not read column (?P<column>[^;]+); it reads (?P<reads>[a-z0-9_]+)(?=: )'
+    params:
+      specification: {type: specification}
+      unit:          {type: unit, optional: true}
+      model:         {type: text, optional: true, label: model id}
+      column:        {type: text, optional: true, label: value it sets}
+      reads:         {type: text, optional: true, label: what the unit reads}
+    summary: "Specification {specification} sets a value that no unit reads[: unit {unit} ({model!raw}) does not read {column!raw}]."
+    why: "Each specification must fix a value a unit's model reads. One that nothing reads would be ignored silently, so validation refuses it; it usually means one specification too many, or one on the wrong variable or object."
+    action: "Remove {specification}, or change its target to a value the unit reads[ ({unit} reads {reads!raw}, among others)]; the check's message lists the kind, unit and target each one takes."
+    see_also: [specification_missing, revision_not_ready]
+    examples:
+      - chain: [revision_not_ready, specification_unconsumed]
+        params: {specification: pump-T, unit: P, model: thermal.pump, column: S2.T, reads: outlet_pressure}
+  - code: specification_unsupported
+    family: refusal
+    kind: not_supported
+    complete: false
+    title: Specification unsupported
+    summary: 'Refused: specification unsupported.'
+  - code: specification_value_unreadable
+    family: refusal
+    kind: input
+    complete: false
+    title: Specification value unreadable
+    summary: 'Refused: specification value unreadable.'
+  - code: split_fraction_outside_unit_interval
+    family: refusal
+    kind: input
+    complete: false
+    title: Split fraction outside unit interval
+    summary: 'Refused: split fraction outside unit interval.'
+    review: true
+  - code: staged_model_unread
+    family: refusal
+    kind: input
+    complete: false
+    title: Staged model unread
+    summary: 'Refused: staged model unread.'
+    review: true
+  - code: staged_split_map_disagrees
+    family: refusal
+    kind: bug
+    complete: false
+    title: Staged split map disagrees
+    summary: 'Refused: staged split map disagrees.'
+  - code: staged_split_rows_disagree
+    family: refusal
+    kind: bug
+    complete: false
+    title: Staged split rows disagree
+    summary: 'Refused: staged split rows disagree.'
+  - code: staged_unit_has_rule
+    family: refusal
+    kind: input
+    complete: false
+    title: Staged unit has rule
+    summary: 'Refused: staged unit has rule.'
+    review: true
+  - code: start_outside_model_domain
+    family: refusal
+    kind: input
+    complete: false
+    title: Start outside model domain
+    summary: 'Refused: start outside model domain.'
+    review: true
+  - code: state_mismatch
+    family: refusal
+    kind: bug
+    complete: false
+    title: State mismatch
+    summary: 'Refused: state mismatch.'
+  - code: state_outside_domain
+    family: refusal
+    kind: input
+    complete: false
+    title: State outside domain
+    summary: 'Refused: state outside domain.'
+  - code: surrogate_input_undefined
+    family: refusal
+    kind: input
+    complete: false
+    title: Surrogate input undefined
+    summary: 'Refused: surrogate input undefined.'
+    review: true
+  - code: surrogate_manifest_mismatch
+    family: refusal
+    kind: bug
+    complete: false
+    title: Surrogate manifest mismatch
+    summary: 'Refused: surrogate manifest mismatch.'
+    review: true
+  - code: surrogate_not_promoted
+    family: refusal
+    kind: input
+    complete: false
+    title: Surrogate not promoted
+    summary: 'Refused: surrogate not promoted.'
+    review: true
+  - code: surrogate_output_inadmissible
+    family: refusal
+    kind: input
+    complete: false
+    title: Surrogate output inadmissible
+    summary: 'Refused: surrogate output inadmissible.'
+    review: true
+  - code: surrogate_outside_hard_domain
+    family: refusal
+    kind: input
+    complete: false
+    title: Surrogate outside hard domain
+    summary: 'Refused: surrogate outside hard domain.'
+    review: true
+  - code: syn001_only
+    family: refusal
+    kind: not_supported
+    complete: false
+    title: Syn001 only
+    summary: 'Refused: syn001 only.'
+  - code: task_unsupported
+    family: refusal
+    kind: not_supported
+    complete: true
+    title: Validation for a task this version does not check
+    args: [task]
+    params: {task: {type: text, label: task}}
+    summary: "This version cannot validate a revision for the \"{task!raw}\" task; it validates for simulation only."
+    why: "Validating for optimization would mean checking an optimization formulation (objective, decision variables and their bounds). This version checks none, so it refuses rather than report a revision ready for a task it has not checked."
+    action: "Validate with the task \"simulation\" (openflowsheet validate --task simulation, or task \"simulation\" in the request)."
+    gap: {limitation: null, capability: "validation of an optimization formulation (task \"optimization\")"}
+    see_also: [unsupported]
+    examples:
+      - chain: [unsupported, task_unsupported]
+        params: {task: optimization}
+  - code: tear_path_unsupported
+    family: refusal
+    kind: not_supported
+    complete: false
+    title: Tear path unsupported
+    summary: 'Refused: tear path unsupported.'
+  - code: temperature_cross
+    family: refusal
+    kind: input
+    complete: false
+    title: Temperature cross
+    summary: 'Refused: temperature cross.'
+    review: true
+  - code: temperature_degenerate_unlifted
+    family: refusal
+    kind: input
+    complete: false
+    title: Temperature degenerate unlifted
+    summary: 'Refused: temperature degenerate unlifted.'
+    review: true
+  - code: temperature_outside_domain
+    family: refusal
+    kind: input
+    complete: false
+    title: Temperature outside domain
+    summary: 'Refused: temperature outside domain.'
+  - code: terminal_refinement
+    family: refusal
+    kind: input
+    complete: false
+    title: Terminal refinement
+    summary: 'Refused: terminal refinement.'
+    review: true
+  - code: unknown_specification
+    family: refusal
+    kind: input
+    complete: false
+    title: Unknown specification
+    summary: 'Refused: unknown specification.'
+    review: true
+  - code: user_start_columns
+    family: refusal
+    kind: input
+    complete: false
+    title: User start columns
+    summary: 'Refused: user start columns.'
+    review: true
+  - code: user_start_unsupported
+    family: refusal
+    kind: not_supported
+    complete: false
+    title: User start unsupported
+    summary: 'Refused: user start unsupported.'
+  - code: vapour_only_form_disagrees
+    family: refusal
+    kind: bug
+    complete: false
+    title: Vapour only form disagrees
+    summary: 'Refused: vapour only form disagrees.'
+  - code: zero_flow_conflict
+    family: refusal
+    kind: input
+    complete: false
+    title: Zero flow conflict
+    summary: 'Refused: zero flow conflict.'
+  - code: zero_flow_form_disagrees
+    family: refusal
+    kind: bug
+    complete: false
+    title: Zero flow form disagrees
+    summary: 'Refused: zero flow form disagrees.'
+  - code: zero_flow_form_unknown
+    family: refusal
+    kind: input
+    complete: false
+    title: Zero flow form unknown
+    summary: 'Refused: zero flow form unknown.'
+  - code: zero_flow_form_without_energy_row
+    family: refusal
+    kind: input
+    complete: false
+    title: Zero flow form without energy row
+    summary: 'Refused: zero flow form without energy row.'
+    review: true
+
+  # Stubs (MSG WO-2): kind by §4.2.1's rules.
+  - code: components_unsupported
+    family: refusal
+    kind: not_supported
+    complete: false
+    title: Components unsupported
+    summary: 'Refused: components unsupported.'
+  - code: efficiency_outside_interval
+    family: refusal
+    kind: input
+    complete: false
+    title: Efficiency outside interval
+    summary: 'Refused: efficiency outside interval.'
+    review: true
+  - code: instances_missing
+    family: refusal
+    kind: input
+    complete: false
+    title: Instances missing
+    summary: 'Refused: instances missing.'
+  - code: port_unconnected
+    family: refusal
+    kind: input
+    complete: false
+    title: Port unconnected
+    summary: 'Refused: port unconnected.'
+    review: true
+  - code: specification_kind_unsupported
+    family: refusal
+    kind: not_supported
+    complete: false
+    title: Specification kind unsupported
+    summary: 'Refused: specification kind unsupported.'
+  - code: specification_unit_unsupported
+    family: refusal
+    kind: input
+    complete: true
+    title: A specification's unit that its quantity kind does not take
+    args: [specification]
+    # Review Q2: the check's own text (`revision_flowsheet.py` `Kind … takes the units …`).
+    detail_pattern: 'Kind (?P<quantity>[a-z_]+) takes the units (?P<units>[^\n]+)\.'
+    params:
+      specification: {type: specification}
+      quantity:      {type: text, optional: true, label: quantity kind}
+      units:         {type: text, optional: true, label: units it takes}
+    summary: "Specification {specification} gives its value in a unit its quantity kind does not take[: a {quantity!raw} takes {units!raw}]."
+    why: "Validation accepts for each quantity kind only the units listed for it, spelled exactly: unit symbols are case-sensitive, so a temperature takes \"degC\" but not \"degc\"."
+    action: "Correct the spelling of the unit of {specification}[ to one of {units!raw}], or give the value in one of the accepted units."
+    see_also: [DIM-01, revision_not_ready]
+    examples:
+      - chain: [revision_not_ready, DIM-01, specification_unit_unsupported]
+        params: {specification: boiler-T, quantity: temperature, units: "K, degC, degF"}
+  - code: specification_value_unsupported
+    family: refusal
+    kind: not_supported
+    complete: false
+    title: Specification value unsupported
+    summary: 'Refused: specification value unsupported.'
+  - code: stoichiometry_not_mass_conserving
+    family: refusal
+    kind: input
+    complete: false
+    title: Stoichiometry not mass conserving
+    summary: 'Refused: stoichiometry not mass conserving.'
+    review: true
+  - code: value_outside_model_domain
+    family: refusal
+    kind: input
+    complete: false
+    title: Value outside model domain
+    summary: 'Refused: value outside model domain.'
+    review: true

@@ -228,6 +228,7 @@ async def _scenario(session: Session, direct: LocalApplication, record: Transcri
 
     await pair("project", "get_project", {})
     await pair("models", "list_models", {})
+    await pair("explain", "explain", {"code": "not_found"})  # ADR 0058 D7 (MSG)
     document = CORPUS[NOMINAL]()
     first = {
         "edits": [{"operation": "set", "path": [k], "value": v} for k, v in document.items()],
@@ -298,6 +299,7 @@ async def _scenario(session: Session, direct: LocalApplication, record: Transcri
     await pair("bad pointer", "get_artifact", {"artifact_id": state, "pointer": "/nowhere"})
     await pair("schema", "list_jobs", {"limit": 0})
     await pair("reserved key", "submit_job", solve | {"idempotency_key": "auto:mine"})
+    await pair("unknown code", "explain", {"code": "phase_regim_mismatch"})
     await pair("key reused", "commit_change", first | {"expected_revision": second})
     big = {**first, "idempotency_key": "w6b-big", "expected_revision": second}
     big["edits"] = [{"operation": "set", "path": ["title"], "value": 2**53 + 1}]
@@ -430,6 +432,7 @@ def test_g14_refusals_reach_mcp_as_tool_errors_with_the_api_error(transcript: Tr
         "bad pointer": "not_found",
         "schema": "invalid_request",
         "reserved key": "invalid_request",
+        "unknown code": "not_found",  # `explain` (ADR 0058 D7)
         "key reused": "idempotency_key_reused",
         "non-canonical": "document_not_canonical",
     }

@@ -66,6 +66,23 @@ test("G7: the NET-02 run — summary, 2 attempts with deltas and totals, 27 trac
   assert.equal(tree.p["data-ofs-live"], "0");
 });
 
+// MSG WO-10: a failed run shows its failure's explanation (`run_result.failure.explanation`).
+test("a failed run shows failure.explanation.summary", async () => {
+  const { tree, text, data } = await render(job, { jid: JOB["A02-352"] });
+  const failure = data.bundle.run.failure;
+  assert.equal(typeof failure.explanation.summary, "string");
+  const [notice] = byAttr(tree, "data-ofs-failure", failure.code);
+  assert.ok(notice, "no failure notice");
+  const shown = textOf(notice);
+  assert.ok(shown.includes(failure.explanation.summary), shown);
+  assert.ok(shown.includes(`Do: ${failure.explanation.action}`), shown);
+  assert.ok(text.indexOf(failure.explanation.summary) < text.indexOf("Job events"));
+  // A converged run has no failure, and no notice.
+  const converged = await render(job, { jid: JOB.NET02 });
+  assert.equal(converged.data.bundle.run.failure, null);
+  assert.equal(byAttr(converged.tree, "data-ofs-failure").length, 0);
+});
+
 test("the trace filters by kind and attempt and pages the filtered rows", async () => {
   const { tree, text } = await render(job, { jid: JOB["A02-352"] }, { query: "kind=trial&attempt=4" });
   const rows = tableRows(tree, "residual_inf_unscaled");

@@ -34,6 +34,7 @@ from urllib.parse import quote
 
 import pytest
 from conftest import REPO_ROOT
+from msg_support import machine_detail
 from t07_corpus import CORPUS
 
 from openflowsheet.application.authz import grant, new_token, revoke
@@ -342,8 +343,10 @@ def _scenario(call: Call, raw: Callable[[str, bytes], tuple[int, Any]]) -> list[
         "list_audit",
         {"principal_id": PRINCIPAL, "order": "descending", "cursor": audit["next_cursor"]},
     )  # 422 the other order's cursor
+    step("explain", {"code": "not_found"})  # ADR 0058 D7 (MSG)
     # Refusals a transport can reach.
     step("get_job", {"job_id": "job-999999"})  # 404
+    step("explain", {"code": "phase_regim_mismatch"})  # 404, with suggestions
     step("get_artifact", {"artifact_id": "job-999999:bundle"})  # 404
     step("get_revision", {"revision_id": revision, "depth": 99})  # 422 schema
     step("list_revisions", {"cursor": "not-a-cursor"})  # 422
@@ -383,7 +386,8 @@ def test_g14_every_http_operation_equals_dispatch_as_the_same_principal(
         assert len(got) == len(expected)
         got = [(status, _seq_aligned(document, offset)) for status, document in got]
         served_names = {n for n, row in OPERATIONS.items() if "http" in row.transports}
-        assert len(served_names) == 19  # with ADR 0019 Amendment 3's `list_audit`
+        # 19 with ADR 0019 Amendment 3's `list_audit`, 20 with ADR 0058 D7's `explain`.
+        assert len(served_names) == 20
         for index, ((status, document), (want_status, want)) in enumerate(
             zip(got, expected, strict=True)
         ):
@@ -629,7 +633,7 @@ def test_query_values_are_typed_by_the_request_schema(served: Served) -> None:
     # A cursor is a string whatever it looks like: the schema passes "12", and the method
     # refuses it as a cursor it never issued.
     response = served.client.get("/v1/revisions?cursor=12", headers=served.headers)
-    assert (response.status_code, response.json()["detail"]) == (422, {"pointer": "/cursor"})
+    assert (response.status_code, machine_detail(response.json())) == (422, {"pointer": "/cursor"})
     assert "not one this list issued" in response.json()["message"]
 
 
@@ -656,7 +660,7 @@ def test_unknown_routes_and_methods_answer_in_the_one_error_shape(served: Served
     assert preflight.status_code == 422
     assert not any(key.lower().startswith("access-control-") for key in preflight.headers)
     assert preflight.headers["Allow"] == "GET, POST"
-    assert preflight.json()["detail"] == {"method": "OPTIONS", "allowed": "GET, POST"}
+    assert machine_detail(preflight.json()) == {"method": "OPTIONS", "allowed": "GET, POST"}
 
 
 def test_an_untyped_exception_is_500_with_a_fixed_message(

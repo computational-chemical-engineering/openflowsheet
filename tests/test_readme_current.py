@@ -7,13 +7,20 @@ release `X.Y.Z` and the post-release itself (R-922), and at a `.devN` version be
 newest released version (`RELEASED`, `tests/test_v02_main_version.py`). The cut commit of every
 release updates it (`docs/RELEASING.md`). `[project.urls]`, the links in PyPI's sidebar, has the
 six keys below, every one an `https://` URL. Each check has a negative control.
+
+MSG-G9 (FB-01): the Python quickstart runs twice in one directory, with the change set copied
+there — both runs print `CONVERGED VERIFIED`, and the second opens the project the first made.
 """
 
 from __future__ import annotations
 
+import contextlib
+import io
 import re
+import shutil
 import tomllib
 from collections.abc import Iterable, Mapping
+from pathlib import Path
 
 import pytest
 from conftest import REPO_ROOT
@@ -147,3 +154,40 @@ def test_project_urls_control() -> None:
     ]
     assert url_problems({**good, "Repository": "http://example.org/r"}) != []
     assert url_problems({**good, "Source": "git@github.com:x/y.git"}) != []
+
+
+# ======================================================================= MSG-G9: the quickstart
+
+_PYTHON_BLOCK = re.compile(r"^```python\n(.*?)^```", re.MULTILINE | re.DOTALL)
+RANKINE = REPO_ROOT / "examples" / "rankine-cycle.changeset.json"
+
+
+def quickstart() -> str:
+    """The README's Python quickstart: its first `python` block."""
+    found = _PYTHON_BLOCK.search(README)
+    assert found is not None, "README.md has no ```python block"
+    return found.group(1)
+
+
+def test_msg_g9_the_quickstart_runs_twice_in_one_directory(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from openflowsheet.application.local import LocalApplication
+
+    shutil.copy(RANKINE, tmp_path / RANKINE.name)
+    monkeypatch.chdir(tmp_path)
+    code = compile(quickstart(), "README.md", "exec")
+    printed = []
+    for _ in range(2):
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            exec(code, {"__name__": "__readme__"})
+        printed.append(out.getvalue().split("\n"))
+        with LocalApplication.open(tmp_path / "plant") as app:
+            printed[-1].append(app.project_id)
+    first, second = printed
+    assert first[0] == second[0] == "READY_FOR_SIMULATION"
+    assert first[1] == second[1] == "CONVERGED VERIFIED"
+    assert first[-1] == second[-1]  # the second run opened the project the first created
+    with LocalApplication.open(tmp_path / "plant") as app:
+        assert len(app.list_jobs().items) == 2

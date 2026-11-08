@@ -80,6 +80,8 @@ OPERATION_RIGHTS: Final[Mapping[str, Right]] = {
     "preview_change": "read",
     "get_artifact": "read",
     "list_audit": "read",
+    # ADR 0058 D7 (MSG): a message-catalogue entry
+    "explain": "read",
     # raw export (Python, CLI, HTTP)
     "artifact_bytes": "read",
 }

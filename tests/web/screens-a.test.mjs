@@ -205,6 +205,9 @@ test("G7: the A02-352 failure bundle — outcome, replay identity, counters, a l
   assert.equal(tableRows(tree, "attempt").length, 5);
   assert.ok(text.includes("supply_initial_guess"));
   assert.ok(byAttr(tree, "data-ofs-empty", "1").length >= 2); // implicated sources, check report
+  // MSG WO-10: the outcome reads the run's failure explanation.
+  const [notice] = byAttr(tree, "data-ofs-failure", data.run.failure.code);
+  assert.ok(textOf(notice).includes(data.run.failure.explanation.summary));
 });
 
 test("a converged run has no failure bundle and says so", async () => {

@@ -341,6 +341,7 @@ class Scenario:
         c = self.client
         self.ok("project", "get_project", {})
         self.ok("models", "list_models", {})
+        self.ok("explain", "explain", {"code": "phase_regime_mismatch"})  # ADR 0058 D7 (MSG)
 
         # Revisions: commit, replay, key reuse, preview, validation, pagination, views.
         first = {"edits": _edits(CORPUS[NOMINAL]()), "expected_revision": None}

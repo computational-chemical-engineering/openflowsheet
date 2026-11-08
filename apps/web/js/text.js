@@ -99,6 +99,22 @@ export function status(label) {
   return { tone, glyph: TONES[tone].glyph, word };
 }
 
+// MSG (ADR 0058): an explanation's plain-language lines — its summary, its cause when it has
+// one, and what to do — or null when `explanation` is not one. The machine code and message
+// stay where the caller already shows them.
+export function explained(explanation) {
+  if (explanation === null || typeof explanation !== "object" || typeof explanation.summary !== "string") {
+    return null;
+  }
+  return h(
+    "div",
+    { class: "explanation", "data-ofs-explanation": String(explanation.code ?? "") },
+    h("p", { "data-ofs-explanation-part": "summary" }, h("strong", null, explanation.summary)),
+    explanation.cause ? h("p", { "data-ofs-explanation-part": "cause" }, `Cause: ${explanation.cause}`) : null,
+    explanation.action ? h("p", { "data-ofs-explanation-part": "action" }, `Do: ${explanation.action}`) : null,
+  );
+}
+
 // A status pill: glyph + word + tone, never hue alone.
 export function pill(label) {
   const { tone, glyph, word } = status(label);

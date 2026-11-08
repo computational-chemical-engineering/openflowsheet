@@ -1,0 +1,272 @@
+# Family `api_error` (MSG design note §4.2.1): the 15 `ApiErrorCode`s, kinds normative.
+catalogue: openflowsheet-messages-v1
+namespace: null
+entries:
+  - code: not_found
+    family: api_error
+    kind: input
+    complete: true
+    title: The named object does not exist in this project
+    params:
+      artifact_id: {type: artifact, optional: true}
+      revision_id: {type: revision, optional: true}
+      job_id:      {type: job, optional: true}
+      bundle_id:   {type: bundle, optional: true}
+      member:      {type: text, optional: true}
+      members:     {type: list, optional: true}
+      members_total: {type: number, optional: true, label: files in the bundle}
+      run_outcome: {type: code, optional: true}
+      code:        {type: text, optional: true}
+      suggestions: {type: list, optional: true}
+    summary: "Nothing named[ {artifact_id}][ {revision_id}][ {job_id}] exists in this project."
+    why: "The id is not one this project has recorded."
+    action: "Check the id; a job's outputs list the artifact ids it wrote."
+    variants:
+      # Review S5 (D3-4): `members` is cut at 64 names; `members_total` says so.
+      - when: {has: [bundle_id, member, members, members_total]}
+        summary: "Bundle {bundle_id} has no file '{member!raw}'."
+        why: "This bundle holds {members_total!raw} files, among them {members}."
+        action: "Read one of the files the bundle holds."
+      - when: {has: [bundle_id, member, members, run_outcome], not_equals: {run_outcome: CONVERGED}}
+        summary: "Bundle {bundle_id} has no file '{member!raw}': its run ended {run_outcome} and wrote no solution."
+        why: "A run that does not converge writes a failure bundle instead of a solution state and a certificate. This bundle holds {members}."
+        action: "Check the run's outcome before reading its results; the run result's failure says why it failed[, and '{bundle_id!raw}/failure-bundle.json' holds the evidence]."
+      - when: {has: [bundle_id, member, members]}
+        summary: "Bundle {bundle_id} has no file '{member!raw}'."
+        why: "This bundle holds {members}."
+        action: "Read one of the files the bundle holds."
+      - when: {has: [code, suggestions], not_equals: {suggestions: []}}
+        summary: "There is no message code '{code!raw}'."
+        why: "Codes are case-sensitive and listed in the docs' Messages section."
+        action: "Did you mean {suggestions}?"
+      - when: {has: [code]}
+        summary: "There is no message code '{code!raw}'."
+        why: "Codes are case-sensitive and listed in the docs' Messages section."
+        action: "Check the code's spelling against the docs' Messages section; no message code is close to it."
+    examples:
+      - params: {artifact_id: "job-000004:bundle/solution-state.json", bundle_id: "job-000004:bundle",
+                 member: solution-state.json, members: [failure-bundle.json, run-manifest.json],
+                 run_outcome: INITIALIZATION_FAILED, job_id: job-000004}
+      - params: {artifact_id: "import-000001:bundle/x.json", bundle_id: "import-000001:bundle",
+                 member: x.json, members: [a.json, b.json], members_total: 70}
+
+  - code: unsupported
+    family: api_error
+    kind: not_supported
+    complete: true
+    title: The request needs something this version does not support
+    args: [reason]
+    params: {reason: {type: code, optional: true}}
+    summary: "The request needs something this version does not support."
+    why: "The request is well formed, but it asks for a capability this version does not have."
+    action: "Read the error's message for the capability it names; the limitations page lists what this version does not support and what to use instead."
+    variants:
+      # Review S3: the reason's own explanation only when there is a reason.
+      - when: {has: [reason]}
+        why: "The request is well formed, but it asks for a capability this version does not have. The reason names that capability; its own explanation says what is missing."
+        action: "Read the reason's explanation (openflowsheet explain {reason!raw}) for what is missing and what to do instead."
+    gap: {limitation: null, capability: null}
+    examples:
+      - params: {reason: task_unsupported}
+
+  # MSG WO-12 (review M1): every `api_error` is complete (§4.2.6). Producers: `application/`
+  # `admission.py`, `local.py`, `authz.py`, `operations.py`, `jobs/runner.py`, `jobs/executor.py`,
+  # `bindings/http.py`, `bindings/mcp.py`, `cli.py`.
+  - code: internal_error
+    family: api_error
+    kind: bug
+    complete: true
+    title: An internal error in OpenFlowsheet
+    args: [reason]
+    params: {reason: {type: code, optional: true}}
+    summary: "OpenFlowsheet hit an internal error and could not complete the request."
+    why: "Something inside OpenFlowsheet failed in a way it does not expect: an exception that nothing handled, a consistency check that should always hold, or a job's runner or worker that stopped without a result. The error's message, and the server's or the job's log, say where."
+    action: "Report it with the error's message and the server's or the job's log. If the error is marked retryable, the same request may succeed when it is sent again."
+    examples:
+      - params: {}
+
+  - code: invalid_request
+    family: api_error
+    kind: input
+    complete: true
+    title: The request is not one the operation accepts
+    params: {pointer: {type: pointer, optional: true}}
+    summary: "The request was refused as invalid."
+    why: "The request does not have the form the operation accepts: a member is missing, has the wrong type or value, is given twice, or breaks a rule stated for it. The error's message says which; its pointer, when present, locates the member in the request."
+    action: "Correct the member the message names and send the request again; the operation's schema lists its members."
+    variants:
+      # An empty pointer is the whole request (`bindings/http.py`).
+      - when: {has: [pointer], not_equals: {pointer: ""}}
+        summary: "The request was refused as invalid at {pointer}."
+    examples:
+      - params: {pointer: /body/check_tolerances/pressure}
+      - params: {pointer: ""}
+
+  - code: document_not_canonical
+    family: api_error
+    kind: input
+    complete: true
+    title: A value with no canonical JSON form
+    params: {pointer: {type: pointer, optional: true}}
+    summary: "The request was refused: a value has no canonical JSON form."
+    why: "OpenFlowsheet stores and hashes every document in one canonical JSON form, so that the same content always has the same hash. The value has no such form: it is NaN or an infinity, an integer beyond 2^53 that is not the exact spelling of a double, or a key repeated in one object."
+    action: "Replace the value with a finite number, or remove the repeated key, and send the request again."
+    variants:
+      - when: {has: [pointer], not_equals: {pointer: ""}}
+        summary: "The request was refused: the value at {pointer} has no canonical JSON form."
+    examples:
+      - params: {pointer: /body/inlet/n}
+      - params: {}
+
+  - code: unauthenticated
+    family: api_error
+    kind: input
+    complete: true
+    title: The request carries no valid credential
+    summary: "The request was refused: it carries no credential this project accepts."
+    why: "Every request acts with a credential that the project's policy holds. This request had none, or one that is unknown, malformed, expired or revoked."
+    action: "Send the request with a valid credential (over HTTP, the header 'Authorization: Bearer' followed by the token). If yours has expired or was revoked, ask the project's owner for a new one."
+    examples:
+      - params: {}
+
+  - code: forbidden
+    family: api_error
+    kind: input
+    complete: true
+    title: The credential does not hold the right the operation needs
+    params: {required: {type: list, optional: true}}
+    summary: "The request was refused: the credential does not hold the right this operation needs."
+    why: "Each operation needs a right, and acting on another principal's job needs one more. The credential is valid, but it does not hold every right this operation needs.[ The operation needs {required}.]"
+    action: "Use a credential that holds the rights the message names, or ask the project's owner to grant them."
+    examples:
+      - params: {required: [execute]}
+      - params: {}
+
+  - code: idempotency_key_reused
+    family: api_error
+    kind: input
+    complete: true
+    title: An idempotency key used again with a different request
+    summary: "The request was refused: its idempotency key was already used with a different request."
+    why: "An idempotency key makes a request safe to repeat: the same request under the same key returns the original result instead of acting twice. This key was used before with a different job request or change set, so OpenFlowsheet refuses rather than guess which one was meant."
+    action: "Use a new idempotency key for a new request. To get the original result, repeat the original request with this key."
+    examples:
+      - params: {}
+
+  - code: not_ready
+    family: api_error
+    kind: notice
+    complete: true
+    title: The job has no result yet
+    params:
+      job_id: {type: job, optional: true}
+      status: {type: text, optional: true, label: job status}
+      reason: {type: code, optional: true}
+    summary: "The job[ {job_id}] has no result yet[: it is {status!raw}]."
+    why: "A job's result exists once the job has ended, and this job is still queued or running."
+    action: "Wait for the job to end (for example with wait_job), then ask for its result again."
+    variants:
+      # `local.py` `_unproduced`: a reproduce job that ended without a replay report.
+      - when: {has: [reason]}
+        summary: "The job[ {job_id}] ended[ {status!raw}] without a report."
+        why: "The job ended before it produced its report: it was cancelled, or it ran out of time."
+        action: "Submit the job again if you still need its report; give it a larger wall-time budget if it timed out."
+    examples:
+      - params: {job_id: job-000002, status: running}
+      - params: {job_id: job-000002, status: timed_out, reason: wall_time_exhausted}
+
+  - code: verification_weakening_refused
+    family: api_error
+    kind: input
+    complete: true
+    title: A request that would loosen a verification tolerance
+    args: [kind]
+    params:
+      kind:       {type: text, label: quantity kind}
+      requested:  {type: number, optional: true, label: requested tolerance}
+      registered: {type: number, optional: true, label: registered tolerance}
+    summary: "The request was refused: it would loosen the verifier's tolerance for {kind!raw}[ ({requested} against the registered {registered})]."
+    why: "The verifier judges every solution at registered tolerances, one per quantity kind. A request may tighten a tolerance but never loosen one, so that a solution is never certified at a weaker standard than the registered one."
+    action: "Request a tolerance at or below the registered one[ ({registered})] for {kind!raw}, or omit it to use the registered value."
+    see_also: [RELAXED]
+    examples:
+      - params: {kind: pressure, requested: 1.0, registered: 0.01}
+
+  - code: budget_exceeds_ceiling
+    family: api_error
+    kind: input
+    complete: true
+    title: A budget above its ceiling
+    args: [budget]
+    params:
+      budget:    {type: text, label: budget}
+      requested: {type: number, optional: true, label: requested budget}
+      ceiling:   {type: number, optional: true, label: ceiling}
+    summary: "The request was refused: its budget '{budget!raw}' is above the ceiling[ ({requested} against {ceiling})]."
+    why: "A request may lower a budget but not raise it above its ceiling. The ceiling of the property-call budget is the solve policy's."
+    action: "Request at most the ceiling[ of {ceiling}], or omit the budget to use the default."
+    variants:
+      - when: {equals: {budget: wall_time_s}}
+        why: "A job's wall time, in seconds, may not exceed the ceiling that the credential's capability sets."
+        action: "Request a wall time at most the ceiling[ of {ceiling} s], or omit it to use the capability's default; a longer job needs a capability with a higher ceiling."
+    examples:
+      - params: {budget: max_property_calls, requested: 1000000, ceiling: 200000}
+      - params: {budget: wall_time_s, requested: 7200.0, ceiling: 3600.0}
+
+  - code: limit_exceeded
+    family: api_error
+    kind: input
+    complete: true
+    title: Too many active jobs
+    args: [limit]
+    params:
+      limit:           {type: text, label: limit}
+      active_jobs:     {type: number, optional: true, label: active jobs}
+      max_active_jobs: {type: number, optional: true, label: maximum active jobs}
+    summary: "The request was refused: the caller already has the most queued or running jobs its credential allows[ ({max_active_jobs!raw})]."
+    why: "A credential's capability limits how many of its jobs may be queued or running at once, and this caller is at that limit. The refusal is temporary."
+    action: "Wait for one of your jobs to end, or cancel one, then submit again."
+    examples:
+      - params: {limit: max_active_jobs, active_jobs: 4, max_active_jobs: 4}
+
+  - code: model_replacement_incompatible
+    family: api_error
+    kind: input
+    complete: true
+    title: A model replacement that does not fit the unit it replaces
+    params:
+      instance_id: {type: unit, optional: true}
+      reason:      {type: code, optional: true}
+      cause:       {type: text, optional: true, label: cause}
+    summary: "The change was refused: a replacement model[ for unit {instance_id}] does not fit the model it replaces."
+    why: "A change that replaces a unit's model is checked against the model it replaces: the new model must resolve, keep the same ports, components and conserved quantities, the same property method and reference state, the same degrees of freedom, cover the old operating domain, and declare the derivatives the old one declared. A surrogate model also needs evidence that allows it in. The error's report or message names the checks that failed."
+    action: "Change the replacement model, or its mapping onto the unit, so that the failed checks pass; a surrogate model needs a verdict that allows it in before a revision can use it."
+    examples:
+      - params: {instance_id: R1}
+      - params: {}
+
+  - code: revision_unsupported
+    family: api_error
+    kind: not_supported
+    complete: true
+    title: No way in this version to solve the revision
+    summary: "This version cannot solve the revision as it stands."
+    why: "A solve needs a solver path whose models cover every unit and specification of the revision. None covers this revision, for example because a unit uses a model this version cannot solve, a specification is not read by its unit, or the units are combined in a way the solver does not handle. The error names what did not fit."
+    action: "Read the explanation of the cause the error names: it says whether to change the flowsheet or that the case is a limitation of this version. The limitations page lists what this version can solve."
+    gap: {limitation: null, capability: null}
+    examples:
+      - params: {}
+
+  - code: revision_not_ready
+    family: api_error
+    kind: input
+    complete: true
+    title: The revision does not pass validation for simulation
+    params: {revision: {type: revision, optional: true}}
+    summary: "The revision[ {revision}] is not ready to solve: it does not pass validation for simulation."
+    why: "A solve starts only from a revision whose validation finds it ready for simulation. Validation marks a revision DRAFT when a check could not run, for example because a specification is missing, extra or not read by its unit, or a unit's model is not available; it marks it INVALID when a check fails."
+    action: "Validate the revision and read each check that did not pass (the error's report lists the same checks): its message names the specification, stream or unit to change."
+    see_also: [DIM-01, model_unsupported]
+    examples:
+      - params: {revision: rev-000001}
+      - params: {}
