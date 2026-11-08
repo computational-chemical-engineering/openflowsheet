@@ -74,7 +74,8 @@ __all__ = [
 REVISION_RECOVERY: Final = "homotopy_or_revision_continuation_or_sequential_restart"
 #: §5.4: the top-level members a continuable difference may change (they describe the revision).
 CONTINUABLE_MEMBERS: Final[frozenset[str]] = CONTENT_HASH_EXCLUDED | {"title", "description"}
-#: §5.4: a specification's target paths whose value may be continued — all of `_PATH_KINDS`.
+#: §5.4: a specification's target paths whose value may be continued — all of `_PATH_KINDS`; a
+#: target `parameters.<key>` is continuable when its family is in `CONTINUABLE_PARAMETERS`.
 CONTINUABLE_SPECIFICATION_PATHS: Final[frozenset[str]] = frozenset(
     {"state.n", "state.T", "state.P", "outlet.T", "outlet.P", "duty.Q"}
 )
@@ -196,10 +197,20 @@ def _offending_path(member: str, item: Mapping[str, Any], path: tuple[str, ...])
     if member == "specifications":
         target = item.get("target")
         target_path = target.get("path") if isinstance(target, Mapping) else None
+        # A specification may pin an instance parameter (`parameters.<key>`, S11 §10.5); it is
+        # judged by the instance rule's family test (D-11, review N1).
         return not (
             len(path) == 1
             and path[0] in CONTINUABLE_FIELDS
-            and target_path in CONTINUABLE_SPECIFICATION_PATHS
+            and (
+                target_path in CONTINUABLE_SPECIFICATION_PATHS
+                or (
+                    isinstance(target_path, str)
+                    and target_path.startswith("parameters.")
+                    and target_path.removeprefix("parameters.").split(".", 1)[0]
+                    in CONTINUABLE_PARAMETERS
+                )
+            )
         )
     if member == "instances":
         # A parameter key names its family before the first `.`: `stage_pressure.3`,

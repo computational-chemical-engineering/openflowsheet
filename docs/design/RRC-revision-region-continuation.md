@@ -240,7 +240,12 @@ Diff the source document against the target document with `semantic_diff` and `e
 - **`connections`.** Any element is not continuable.
 - **`specifications`.** A `changed` element is allowed iff every path is one of `("value",)`, `("unit",)` or
   `("meaning",)`, and the item's `target.path` is in `CONTINUABLE_SPECIFICATION_PATHS` = {`state.n`, `state.T`, `state.P`,
-  `outlet.T`, `outlet.P`, `duty.Q`}. That set is all of `_PATH_KINDS`. `added` and `removed` are not continuable.
+  `outlet.T`, `outlet.P`, `duty.Q`}, or is `parameters.<key>` whose family (its text before the first `.`) is in
+  `CONTINUABLE_PARAMETERS` (S11 §10.5 lets a `role: fixed` specification pin an instance parameter; it is judged by the
+  instance rule's family test, D-11). That set is all of `_PATH_KINDS`. `added` and `removed` are not continuable.
+  *(Extended by the review, N1.)*
+- **Family.** An instance parameter's `<name>` below, and a `parameters.<key>` target's, is the key's family: its text
+  before the first `.` (`stage_pressure.3`, `feed_stage.S-IN1`), as the binder types a key (D-11).
 - **`instances`.** A `changed` element is allowed iff every path has the form `("parameters", <name>, …, <field>)`, with
   `<field>` in {`value`, `unit`, `meaning`} and `<name>` in `CONTINUABLE_PARAMETERS`:
   - `pressure_drop`, `split_fraction`, `efficiency`, `outlet_vapor_fraction`, `conversion`, `split`;

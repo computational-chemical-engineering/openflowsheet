@@ -231,3 +231,12 @@ results), `40fba287` (runner self-contained), `b91b0ddb` (registration, results 
   `feed_stage`, `nu`, `damkohler`, `T_ref`, `T_scale`, `coolant_cp`) are disjoint and together exactly the binder's
   `_PARAMETER_KINDS` keys (29). The denied set lives in the test, not in code (default deny needs no list).
   Alternative: a `DENIED_PARAMETERS` constant in `application/revision_continuation.py`. Reversible by: moving it.
+- **D-32 (N1, the orchestrator's decision: do it).** §5.4 extended with the review's text: a `changed` specification
+  whose `target.path` is `parameters.<key>` is continuable iff the key's family (text before the first `.`) is in
+  `CONTINUABLE_PARAMETERS` — one expression in `_offending_path`, the instance rule's family test (D-11), and D-11's
+  family reading is written into §5.4. Tests, one each way
+  (`test_a3_a_specification_pinning_a_parameter_is_judged_by_its_family`): the column's
+  `parameters.condenser_reflux_ratio` moved to a `role: fixed` specification, 2.0 → 4.0, is continuable;
+  `parameters.feed_stage.S-IN1` the same way, value − 1, is `not_continuable(specifications:SPEC-S02-pinned:value)`.
+  The positive half fails without the code change (checked). A3 only; no registered pair has such a specification,
+  so no measured case moves. `test_rrc_application.py` 25 passed.

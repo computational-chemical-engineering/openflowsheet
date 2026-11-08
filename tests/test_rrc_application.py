@@ -200,6 +200,47 @@ def test_a3_a_column_stage_count_is_not_continuable_and_its_end_specifications_a
     )
 
 
+def _pinned_by_specification(key: str, value: float) -> Any:
+    """The column's `key` moved from its instance parameters to a `role: fixed` specification
+    whose target is `parameters.<key>` (S11 §10.5), with `value`."""
+
+    def edit(document: dict[str, Any]) -> None:
+        del _instance(document, "S02")["parameters"][key]
+        document["specifications"].append(
+            {
+                "id": "SPEC-S02-pinned",
+                "kind": "dimensionless",
+                "provenance": "RRC N1 test",
+                "role": "fixed",
+                "target": {
+                    "object_id": "S02",
+                    "object_type": "instance",
+                    "path": f"parameters.{key}",
+                },
+                "tolerance": {"absolute": 1e-09, "relative": 1e-08, "scale": 1.0},
+                "unit": "1",
+                "value": value,
+            }
+        )
+
+    return edit
+
+
+def test_a3_a_specification_pinning_a_parameter_is_judged_by_its_family() -> None:
+    """Review N1 (§5.4 extended): a specification whose target is `parameters.<key>` is
+    continuable iff the key's family is — the reflux ratio 2.0 → 4.0 is, a feed stage is not."""
+    base = committed_case(RECYCLE_CASE)
+    source = _edited(base, _pinned_by_specification("condenser_reflux_ratio", 2.0))
+    target = _edited(base, _pinned_by_specification("condenser_reflux_ratio", 4.0))
+    assert not_continuable(source, target) is None
+    stage = _instance(base, "S02")["parameters"]["feed_stage.S-IN1"]["value"]
+    source = _edited(base, _pinned_by_specification("feed_stage.S-IN1", stage))
+    target = _edited(base, _pinned_by_specification("feed_stage.S-IN1", stage - 1))
+    assert not_continuable(source, target) == (
+        "not_continuable(specifications:SPEC-S02-pinned:value)"
+    )
+
+
 def test_a3_a_kinetic_constant_is_not_continuable_and_the_coolant_is() -> None:
     """G6 (k)'s reason on T08's kinetic CSTR; `coolant_flow` and `T_coolant` are continuable,
     `coolant_cp`, `nu`, `T_ref` and `T_scale` are not."""
