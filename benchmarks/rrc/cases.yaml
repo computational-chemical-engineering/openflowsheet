@@ -1,0 +1,108 @@
+# RRC WO-5a: the pre-registered candidate table (design note
+# `docs/design/RRC-revision-region-continuation.md` §8.1; ADR 0072, Proposed), transcribed verbatim
+# and committed BEFORE ANY CANDIDATE IS RUN, so that the selection is not fitted to the results.
+# Nothing in this file is edited after the first run; a candidate that turns out ineligible or
+# failing stays listed and is reported as such (G9). WO-5b's results are written beside it
+# (`results-<machine class>.json`/`.md`) and the selected pairs to `reference_values.yaml`.
+
+schema: rrc-candidates-v1
+design: docs/design/RRC-revision-region-continuation.md §8.1, §8.2 (G4, G5, F1, F2, G9, G10)
+adr: docs/adr/0072-RRC-revision-region-continuation.md
+
+# Every candidate's target is run under all three; every outcome is reported (G9).
+policies:
+  control:
+    # §8.1: `RRC-revision-v1` with `eo_recovery = "none"`, built in the test and not offered.
+    base: RRC-revision-v1
+    globalization.eo_recovery: none
+    offered: false
+  T06-revision-v2:
+    registered: true # ADR 0018 D6; edge 3 = homotopy_or_sequential_restart (ADR 0015)
+  RRC-revision-v1:
+    offered: true # ADR 0072; edge 3 = homotopy_or_revision_continuation_or_sequential_restart
+
+# A source is eligible iff it is `VERIFIED` under `T06-revision-v2`.
+eligibility: {policy: T06-revision-v2, outcome: CONVERGED, verification_status: VERIFIED}
+
+# The edits name a parameter or specification by the document path the edit writes.
+families:
+  N:
+    gate: G4
+    target:
+      case: SYN-001-T06-NET02 # benchmarks/t06/cases/SYN-001-T06-NET02.yaml (split_fraction 0.95)
+      edit: none # unchanged except that `parent_revision` names the source
+    edit_path: instances[U-SPLIT].parameters.split_fraction.value
+    # Sources differ from NET-02 only in the recycle splitter's `split_fraction`, in this order.
+    sources:
+      - {id: N1, split_fraction: 0.5}
+      - {id: N2, split_fraction: 0.8}
+      - {id: N3, split_fraction: 0.9}
+    # The registered pair is the FIRST eligible Ni (in the order above) whose target under
+    # `RRC-revision-v1` is CONVERGED with VERIFIED, `eo_recovery = taken` and member status `taken`.
+    selection: first_eligible_in_order
+    selection_criteria:
+      RRC-revision-v1:
+        outcome: CONVERGED
+        verification_status: VERIFIED
+        eo_recovery: taken
+        member_status: taken
+  C:
+    gate: G5 # L-COL-9
+    source:
+      case: M1-recycle # benchmarks/s11/flowsheets/M1-recycle.json (U-SPLIT.split_fraction 0.2)
+      edit: none
+    # Targets differ from the source only as listed.
+    targets:
+      - {id: C1, edits: {"instances[U-SPLIT].parameters.split_fraction.value": 0.5}}
+      - {id: C2, edits: {"instances[U-SPLIT].parameters.split_fraction.value": 0.8}}
+      - {id: C3, edits: {"instances[U-SPLIT].parameters.split_fraction.value": 0.9}}
+      - {id: C4, edits: {"instances[U-SPLIT].parameters.split_fraction.value": 0.95}}
+      - id: C5
+        edits:
+          "instances[S02].parameters.condenser_reflux_ratio.value": 4.0 # source 2.0
+          "instances[S02].parameters.reboiler_boilup_ratio.value": 3.0 # source 1.5
+          # split_fraction stays 0.2
+    # The registered L-COL-9 case is the FIRST Ci (in the order above) that meets both:
+    # under the control it ends in an edge-3 trigger outcome (`recovery.eo_recovery_due` on the
+    # final step), and under `RRC-revision-v1` it ends CONVERGED, VERIFIED and `taken`.
+    # If none does, G5 is reported NOT MET and design note §6's fallback L-COL-9 text applies; no
+    # case is constructed after the fact.
+    selection: first_in_order
+    selection_criteria:
+      control: {in_trigger_set: true}
+      RRC-revision-v1:
+        outcome: CONVERGED
+        verification_status: VERIFIED
+        eo_recovery: taken
+        member_status: taken
+  F:
+    gate: [F1, F2]
+    # Edge 3 is forced after a CONVERGED item 0 by patching `executor.eo_recovery_due` to return
+    # True (S01 A17's precedent); item 0's root is then the independent expectation.
+    forced_edge: true
+    cases:
+      - id: F1
+        source: {case: M1-recycle, edit: none}
+        target:
+          case: M1-recycle
+          edits:
+            "instances[S02].parameters.condenser_reflux_ratio.value": 4.0
+            "instances[S02].parameters.reboiler_boilup_ratio.value": 3.0
+      - id: F2
+        source:
+          case: SYN-001-T06-NET03 # registered flash-liquid loop; SPEC-S1-T 300 K
+          edits: {"specifications[SPEC-S1-T].value": 295.0} # 5 K lower
+          # If this source is not VERIFIED under T06-revision-v2, it is 2 K lower instead.
+          fallback_edits: {"specifications[SPEC-S1-T].value": 298.0}
+        target: {case: SYN-001-T06-NET03, edit: none}
+
+# What is reported for every candidate under every policy (G9), whatever it is.
+reported:
+  - source outcome and verification status under T06-revision-v2 (eligibility)
+  - outcome, verification status, eo_recovery, eo_recovery_unsupported
+  - revision-continuation record status and reason (the member's)
+  - iterations (total, and item 0's), attempts
+  - lambda-trials (accepted, rejected), lambda levels, lambda reached, continued parameter ids
+  - the recovery item's opening_state_sha256 against the source's full_state_sha256 (G2 (f))
+  - "G10 timers on every RRC-revision-v1 run that reached the action (wall time of the recovery,
+    levels compiled, compile seconds per level, property calls)"
