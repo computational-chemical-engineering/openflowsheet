@@ -702,3 +702,13 @@ Manifest `evidence/X10b/c57d449a…` tested (`d50d6c06`, after merging main `9bf
 `models/c1/flash.py` at that commit, `b1b47c28…`, the registered move); HARVEST_SIZE (81, 1015, 129). Merged
 `d5035a76`; on main ruff clean, F0 PASS, harvest/manifests/L01/G7 tests 660 passed, 1 skipped. WIT's follow-ups are
 done. X02 re-takes HARVEST_SIZE at its merge.
+
+## 2026-11-08 — ST WO-8a done (`wp/ST` `9da2e022`)
+
+Main merged twice (`420993d0`, `a333c762`); R-942/943 duplicates dropped (register = main's); ruling 5 in
+`stream_table._inputs`/`_decide` (lifted by the split's own row, unlifted by exact reason); DC-1…DC-6 pass (DC-2/3/4
+fail on the old code); 44 served 0.3.0 documents byte-identical; G7 41 bitwise, G8 1.756e-4, G8u 2.7027 unchanged;
+1581 passed; F0 PASS. Three tests red since `e1a05916` (not WO-8a's): T08.A20 (envelope lacks `get_stream_table`) and
+ADR 0025 A1 ×2 (`data_sha256`, `implementation_sha256` unclassified). Both have build-lane precedents (envelope
+admission; per-package ADDENDA as M04/M05/E01/OPT) → WO-8b part 1, stop if a field hashes floats. ST's link is c_5
+on the branch; at WO-7 it follows X02 (c_5) and OPT (c_6) → c_7. Next: WO-8b (the three tests + web-shell table).
