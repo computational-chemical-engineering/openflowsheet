@@ -400,6 +400,22 @@ be met by a constant answer.
 **Proposed → Accepted** when REL.A01–A21 hold in a `tested` manifest of the migration package, the `reviewer` pass on
 WO-R2 to WO-R6 is recorded, and Frank's answers to N-1, N-3 and N-6 are recorded, or their defaults stand.
 
+Pasted from the RP review's ruling 2 (`docs/reviews/RP-review.md`, M-3), verbatim:
+
+> **Acceptance, restated 2026-11-06 for Frank's "1–3 now, 4 later" (RP review, ruling 2).** Proposed → Accepted for
+> D1, D3, D4, D5 and D6 when: REL.A01–A10 and REL.A17–A20 hold in a `tested` manifest of the migration package (filed
+> as `S15`, R-878's rule), with REL.A20 as RP §11.2 and RP amendment A-1 define it; the `reviewer` pass on WO-R2–R4 and
+> WO-R6 is recorded (`docs/reviews/RP-review.md`) and its must-fix items are closed; and N-3 and N-6 stand on their
+> defaults (N-1, N-4 and N-5 lapsed with D2). D2 is not part of this acceptance: R-916, R-917, WO-R5, REL.A11–A16 and
+> A21, `release-audit`, the `strace` parts of WO-R4 and WO-R6, gate item 13 and `gate_row:`. Adopting D2 is a new
+> decision recorded the same way, with its own acceptance condition and an RP amendment. Until then, D3.6's V14 (b)
+> scope is the path fallback. **Notes:** D1.3 resolves by the line file's `role` (RP §3.5, F-1). D3.2's `paths:`
+> selection is RP §8.2 P1–P4, because `git ls-tree -- <globs>` does no glob matching (F-2). D4.2's job list includes
+> `rc-ensemble` (F-4) and, while D2 is deferred, excludes `release-audit` (Q-C1). The wrapper writes each item's
+> record (F-5). D3.4's "carry report" is RP §8.5's lapse report (F-6). REL.A20 is defined by RP §11.2 (F-7). A
+> failure-clause row is asked after `Judged`, in a second message (F-8). WO-R4's junit measurement is read on the push
+> run at the dispatch's commit, because the dispatch skips `check` (Q-C2).
+
 ## Frank's answer (2026-10-31, verbatim) and its effect
 
 Asked in plain words whether to build parts 1–3 (one procedure with a per-line file, D1; standing acceptances, D3; one CI

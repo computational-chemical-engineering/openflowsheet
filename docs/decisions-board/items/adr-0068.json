@@ -1,0 +1,28 @@
+{
+ "section": "blocking",
+ "pkg": "ST",
+ "pkgTitle": "Stream table and energy summary",
+ "kind": "adr",
+ "title": "Accept ADR 0068 (as amended by the review): the stream table",
+ "body": [
+  "A new read-only operation `get_stream_table(job)` on every surface (Python, CLI `openflowsheet streams` as text, JSON or CSV, HTTP, MCP). It is computed when asked from the run's replay bundle: nothing is stored, no released number or replay changes, and 0.3.0 runs get a table too. Values a provider cannot give are shown as absent with a reason, never estimated.",
+  "Amended by the review (rule R1′): a stream whose phase split a flash cannot determine (a temperature-degenerate split) takes the split the solver carries, as the certificate check does, or reports the value as absent. This fixed a 2016 W error on one test case."
+ ],
+ "links": [
+  {
+   "label": "ADR 0068 (full text)",
+   "url": "https://github.com/computational-chemical-engineering/openflowsheet/blob/main/docs/adr/0068-stream-table.md"
+  },
+  {
+   "label": "Design note",
+   "url": "https://github.com/computational-chemical-engineering/openflowsheet/blob/main/docs/design/ST-stream-table.md"
+  },
+  {
+   "label": "Review",
+   "url": "https://github.com/computational-chemical-engineering/openflowsheet/blob/main/docs/reviews/ST-review.md"
+  }
+ ],
+ "unblocks": "ST merges, after MSG.",
+ "status": "open",
+ "order": 9
+}

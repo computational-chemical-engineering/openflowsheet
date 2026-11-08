@@ -1,6 +1,24 @@
 # Questions for Frank
 
+**Answer here:** the decision board https://claude.ai/artifact/WBLrhuGuG9zosGy46Z1b2A shows every open item with its text,
+the default and the options, and saves your answer (source: `docs/decisions-board/`, items built by
+`build_items.py`). This file stays the record.
+
 Questions only Frank can answer (scope, value judgments). Each carries the default that unattended work proceeds on.
+
+## Answers — Frank, 2026-11-08, on the decision board (40 items)
+
+Recorded from https://claude.ai/artifact/WBLrhuGuG9zosGy46Z1b2A (`answers` collection, 15:58–16:17 UTC); no notes given.
+- **Descriptions approved (human review):** `explain` (MSG), `validate` and `submit_job` (OPT), `get_stream_table` (ST).
+- **ADRs accepted:** 0055 (release procedure), 0068 (stream table, as amended: R1′), 0069 (X05), 0070 (X02 + ADR 0019
+  Am. 15), 0071 (OPT + Am. 16), 0072 (RRC), 0073 (WIT). **ADRs 0060–0067 stay Proposed** (default; S1/S7 as reviewed).
+- **Defaults confirmed:** X02 Q1 (no warm variant), Q2, Q3, Q6, Q7 (neighbour speed-up withdrawn); OPT Q1–Q6, Q7 (verify
+  on the reduced form with the phase-boundary flag), Q8, Q9; RRC FQ1 (yes, widen), FQ2, FQ3, FQ4; WIT Q-WIT-1 (yes),
+  Q-WIT-2 (yes, correct the flash sentence); X05 Q-F2, Q-F3; F-8 (two messages); Q-11 (one row); O-11; A2-a.
+- **Defaults reversed:**
+  - **ST O3:** include the stream table in the web shell **now, in ST** (was: a later package).
+  - **X05 Q-F1:** **do not pin** the four transitive runtime dependencies (attrs, jsonschema-specifications,
+    referencing, rpds-py) in `pyproject.toml` (was: pin them; `a58ef5a5`). Revert that isolated commit's effect.
 
 ## Answer — Frank, 2026-11-01: full real-simulator scope; design quality over speed (ADR 0056 Am. 2, R-927)
 
@@ -376,3 +394,116 @@ The standing release procedure is written (`docs/derivations/release-procedure.m
 acceptance that lapses when the accepted thing changes.
 - **Q-11:** keep it as **one row** for both extras (default), or **one row per extra**, so that a change to the lca
   dependency lock re-asks you only about lca.
+
+## RP — one or two messages to you per release? (2026-11-06, F-8)
+
+ADR 0055 D5 says each release asks you one message. The release procedure (RP) plans up to two (RP §8.5): the first, before
+the verdict, asks for lapsed decision items and any claim-set change; the second, after `Judged`, asks for each failing
+clause without a standing acceptance (at 0.4.0, V14 (b)). An empty message is not sent. One message after the verdicts would bring back the `BLOCKED` row and 0.3.0's re-judgement round.
+Default (reviewer's recommendation, `docs/reviews/RP-review.md` ruling 1): keep two, the first only when non-empty.
+
+## X05 — replay from the wheel: three choices (2026-11-07; ADR 0069 §11, Proposed)
+
+An installed `openflowsheet` will replay its own bundles once it checks that its nine runtime dependencies are at the
+locked versions. Defaults, already acted on unless you say otherwise:
+- **Q-F1:** pin the four transitive runtime dependencies (attrs, jsonschema-specifications, referencing, rpds-py)
+  exactly in `pyproject.toml`, so a plain `pip install openflowsheet` can replay its bundles exactly. Default: yes.
+  Cost: users can't freely upgrade those four alongside it.
+- **Q-F2:** warn when a bundle is written without a verified lock? Default: no; decide it together with the messages
+  work (MSG).
+- **Q-F3:** record the writer's lock findings inside the bundle (a schema change)? Default: no; they appear in the
+  replay reason only.
+Also: accept ADR 0069 (it amends ADR 0007's replay-mode rule).
+
+## X02 — warm starts for external and coupled units (2026-11-07; ADR 0070 Proposed, ADR 0019 Am. 15)
+
+Design `docs/design/X02-warm-starts.md`. Defaults, acted on unless you say otherwise:
+- **Q1 (re-asked 2026-11-07 after measurement):** register a warm-start variant of the reactor
+  (`pymrm-6089593-g2-nz800-s123w-v1`)? The design expected 11–15 % faster calls. Measured (G5, 8 inlets): cold runs
+  match today's v3 bit for bit, but warm calls are **about 21 % slower overall** (later stages and certificates ran
+  longer) and differ from cold by up to 1.9e-7 relative. Default now: **no** — do not register it; keep the gains
+  that work (restarting a coupled run from a previous solution: 1 reactor call instead of 4 on the real loop).
+- **Q2:** extend the existing `T08-warm-v1` policy to coupled starts? Default: no (a start is declared per solve).
+- **Q3:** allow starts on the `experiment` operation? Default: no.
+- **Q4:** integration with studies: outside X02.
+- **Q5:** accept ADR 0070 and Amendment 15? Default: build on Proposed, merge after your acceptance.
+- **Q6:** the variant id as given. Default: yes.
+- **Q7 (2026-11-07, measured):** restarting a coupled run from a *neighbouring* design's solution (feed
+  temperature +2 K) was meant to need fewer outer iterations than a cold start. On the real reactor loop it did not:
+  both took 4 iterations, and the warm run took longer (223 s against 182 s), although it started about twice as close.
+  Restarting the *same* design still works (1 iteration, 25 s instead of 194 s). Default: record the check as failed,
+  withdraw the speed-up claim for neighbouring designs, keep everything else. Alternative: hold X02 for a redesign.
+
+
+## OPT — optimising your own flowsheets (2026-11-07; ADR 0071 Proposed, ADR 0019 Am. 16)
+
+Design `docs/design/OPT-revision-optimisation.md` §7. Defaults, acted on unless you say otherwise:
+- **Q1:** where decisions are declared: only in a separate optimisation request (the flowsheet document is never
+  edited by the optimiser). Default: request only.
+- **Q2:** optimise flowsheets on the older (legacy) solve route in 0.4 too? Default: no, the standard route only;
+  flowsheets with an external reactor are refused with a reason (the trust-region method is their route).
+- **Q3:** cost and LCA as standalone operations (not only as objectives)? Default: a later package.
+- **Q4:** should replaying an optimisation re-run Ipopt? Default: no — replay re-checks the certified optimum, so it
+  also works on ARM machines without Ipopt.
+- **Q5:** limits per job. Default: 32 starts, 500 iterations and 120 s per start.
+- **Q6:** commit the optimum as a new revision automatically? Default: no; the result carries a change you commit.
+- **Q7 (reworded 2026-11-08 after measurement):** an optimum that sits exactly at a boiling (bubble) or dew point
+  cannot be certified the ordinary way: the equations are singular there by nature. The amended design verifies it on
+  a reduced form that removes exactly that one direction, and flags the result as a phase-boundary optimum; the
+  ordinary solve certificate stays unverified and the record says which check passed. Default: verify with the flag.
+  Alternative: report such optima as found but not verified.
+- **Q9 (new):** should ordinary `solve` runs use the same reduced check at a boiling/dew point? Default: not in 0.4.
+- **Q8:** audit Ipopt for ARM in 0.4? Default: no (x86-64 only; ARM replays but does not optimise).
+- Also: accept ADR 0071 (it lifts the old "optimisation unsupported" refusal and adds an `optimize` job).
+- **Description review (blocks OPT's `tested`):** the agent-facing texts of `validate` and `submit_job` changed
+  (`src/openflowsheet/application/bindings/descriptions/validate.md`, `submit_job.md` on `wp/OPT`). Each needs your
+  human review, as every MCP description does (T07 §11.3).
+
+## RRC — continuing from an earlier solved version (2026-11-08; ADR 0072 Proposed; your Q30)
+
+Design `docs/design/RRC-revision-region-continuation.md`. When a flowsheet edit fails to converge, RRC can walk the
+operating values gradually from the nearest earlier version that solved and verified, to the new values; every
+intermediate step is a real flowsheet. Defaults, acted on unless you say otherwise:
+- **FQ1 (corrected 2026-11-08 by the RRC review):** three frozen schemas each accept one more value. The solver
+  setting `globalization.eo_recovery` gains the new recovery value. `continuation.type`, in the attempt context and in
+  the certificate's branch provenance, changes from the single value `specification_continuation` to a choice of it
+  or `revision_continuation`. No member is added, and every existing document validates unchanged. Default: build on
+  the branch, merge only after your yes.
+- **FQ2:** make it the default for every revision solve? Default: no — available by policy name (`RRC-revision-v1`)
+  in 0.4.
+- **FQ3 (re-asked 2026-11-08 with measurements):** if the continuation stalls, also try the existing restart? In all
+  five cases where the new policy rescued a failing edit, the existing policy (`T06-revision-v2`) also converged
+  through its restart, in fewer iterations (5 vs 10–12; 8 vs 22–29). With one recovery per step, a stalled
+  continuation ends the step without the restart, so the new policy can fail where the old one succeeds; this is
+  declared. Default: still one recovery per step, opt-in only; any rescue claim, or making it the default (FQ2), first
+  needs a case where the restart fails and the continuation converges. Alternative: restart after a stalled
+  continuation (two recoveries per step).
+- **FQ4:** which edits may be continued? Default: operating values only (temperatures, pressures, flows, duties, split
+  fractions…); not stage counts, feed stages, stoichiometry or kinetic constants.
+- Also: accept ADR 0072.
+
+## WIT — the certificate's derivative check at very small or zero flows (2026-11-08; ADR 0073 Proposed)
+
+Spec `docs/derivations/K04-certificate-spec.md` §4.8.1–§4.8.9. No certificate that passes today changes. Default, acted
+on unless you say otherwise:
+- **Q-WIT-1:** on a Wilson property basis, should a unit whose vapour side is held at exactly zero certify VERIFIED
+  with a declared partial derivative check (the zero liquid-side columns cannot be differenced: no derivative exists
+  there)? Default: yes, as already done for zero flows on `pr-c1-v1` (R-281).
+- Also: accept ADR 0073.
+- **Q-WIT-2 (2026-11-08, from the WIT review):** with the fixed derivative check, an ammonia flash state near its
+  dew point now verifies honestly, so the "near-dew window" sentence in the `c1.tp_flash` model's manifest text
+  (`src/openflowsheet/models/c1/flash.py:343-349`) states an outdated edge. Correcting the sentence changes that
+  model's artifact hash and one frozen corpus entry (F0 M9), though not its `model_version` or any result. Default:
+  correct it in its own commit after your yes; until then the sentence stays as it is.
+
+## ST — review the MCP description of the new `get_stream_table` tool (2026-11-08; blocks ST's merge)
+
+As for `explain`: the text an AI agent reads to decide when to call the stream-table tool,
+`src/openflowsheet/application/bindings/descriptions/get_stream_table.md` on branch `wp/ST`
+(`git show wp/ST:src/openflowsheet/application/bindings/descriptions/get_stream_table.md`). It needs your human
+review ("approved" or what to change) in addition to the design lane's, which ST's reviewer pass gives. Best read
+after that pass (`docs/reviews/ST-review.md`), in case it edits the wording. Default: none — ST cannot merge until you
+have looked at it (ST also waits for MSG and your acceptance of ADR 0068).
+Update 2026-11-08: the design lane approved it after three wording edits (`docs/reviews/ST-review.md`); read the
+edited text once the fix round lands on `wp/ST`. The review also amends ADR 0068 (rule R1′: streams whose phase split a
+flash cannot determine take the solver's carried split, or report the value as absent) — accept the amended text.

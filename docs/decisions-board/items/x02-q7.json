@@ -1,0 +1,31 @@
+{
+ "section": "defaults",
+ "pkg": "X02",
+ "pkgTitle": "Warm starts for external and coupled units",
+ "kind": "choice",
+ "title": "Q7: the speed-up claim for neighbouring designs",
+ "body": [
+  "Restarting a coupled run from a neighbouring design's solution (feed temperature +2 K) was meant to need fewer outer iterations. On the real reactor loop both took 4 iterations, and the warm run took longer (223 s against 182 s). Restarting the same design still works (1 iteration, 25 s instead of 194 s)."
+ ],
+ "defaultKey": "default",
+ "options": [
+  {
+   "key": "default",
+   "label": "Record the check as failed and withdraw that claim",
+   "detail": "Everything else stays."
+  },
+  {
+   "key": "alt1",
+   "label": "Hold X02 for a redesign",
+   "detail": ""
+  },
+  {
+   "key": "other",
+   "label": "Something else",
+   "detail": "Say what in the note."
+  }
+ ],
+ "links": [],
+ "status": "open",
+ "order": 12
+}

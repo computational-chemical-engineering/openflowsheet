@@ -1,0 +1,308 @@
+{
+ "work_package": "S15",
+ "commit": "fd28ff7bc8e3e98c67857c869d6939d1d755f3ed",
+ "requirements": [],
+ "status": "tested",
+ "inputs": {
+  "case_id": "ADR 0055 WO-R1..R7 (package RP): REL.A01-A10, A17-A20 on branch wp/RP; RP docs/derivations/release-procedure.md (6af6d401cefbfff2b7a80f4c6868c491167907801843de08d81a722efb0ec298)",
+  "case_hash": "c59b95c7e4eecd5b47d2ae976cbbb890e70004117f0bd5124893d2f7f11a1879",
+  "environment_lock_hash": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+ },
+ "commands": [
+  {
+   "cmd": "PYTHONPATH=$PWD/src PATH=/home/frankp/Codes/OpenFlowsheet/.venv/bin:$PATH ./scripts/gate.sh",
+   "cwd": ".claude/worktrees/rp",
+   "exit_code": 0
+  },
+  {
+   "cmd": "PYTHONPATH=src:. .venv/bin/python scripts/corpus_identity.py --check",
+   "cwd": ".claude/worktrees/rp",
+   "exit_code": 0
+  },
+  {
+   "cmd": "PYTHONPATH=src:. .venv/bin/python -m pytest -q -p no:cacheprovider tests/test_rel_*.py tests/test_release_workflows.py",
+   "cwd": ".claude/worktrees/rp",
+   "exit_code": 0
+  },
+  {
+   "cmd": "PYTHONPATH=src:. .venv/bin/python scripts/release_evidence_manifest.py --line 0.3 --commit a3e508e3 --k3 295a2e652c6746b0621350112d6e43945d8b114a --ci-json tests/fixtures/rel/s13-ci/ci-run-41108983463.json --ci-json tests/fixtures/rel/s13-ci/ci-run-41108983672.json --manifest-adr 0053 --manifest-adr 0054 --evidence evidence/S13 --out SCRATCH/m.json --rel-a20 evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/manifest.json",
+   "cwd": ".claude/worktrees/rp",
+   "exit_code": 0
+  },
+  {
+   "cmd": "git diff --stat 8cbae73b HEAD -- scripts/v0_1_gate.py scripts/v0_2_gate.py scripts/v0_3_gate.py scripts/s13_evidence_manifest.py tests/test_v03_v0_3_gate.py tests/test_m07a_v0_2_gate.py tests/test_m07_v0_2_gate.py evidence/S13 (empty)",
+   "cwd": ".claude/worktrees/rp",
+   "exit_code": 0
+  },
+  {
+   "cmd": "gh run view 42320544169 --json jobs (push run at fd28ff7b, ci)",
+   "cwd": ".",
+   "exit_code": 0
+  },
+  {
+   "cmd": "gh run view 42320544186 --json conclusion (push run at fd28ff7b, Site)",
+   "cwd": ".",
+   "exit_code": 0
+  },
+  {
+   "cmd": "gh workflow run ci.yml --ref wp/RP -f release_rc=true (run 42156856877 at bd672ff7, WO-R4)",
+   "cwd": ".",
+   "exit_code": 0
+  },
+  {
+   "cmd": "gh run view 42156850745 (the push run at bd672ff7, WO-R4)",
+   "cwd": ".",
+   "exit_code": 0
+  },
+  {
+   "cmd": "PYTHONPATH=src:. .venv/bin/python scripts/release_rc.py local --line 0.4 --commit 88045740 --steps 2,7,8,9,10,13 (WO-R6b; step 13 re-run at df30b36e)",
+   "cwd": ".claude/worktrees/rp",
+   "exit_code": 0
+  },
+  {
+   "cmd": "PYTHONPATH=src:. .venv/bin/python scripts/wheel_data_check.py --commit b69dc0f1 (WO-R6)",
+   "cwd": ".claude/worktrees/rp",
+   "exit_code": 0
+  }
+ ],
+ "checks": [
+  {
+   "id": "REL.A01",
+   "description": "line file 0.4 with one gate_set field changed and not in changed: exit 2 with RP's reason; control listed accepted",
+   "result": "pass",
+   "value": {
+    "tests": "tests/test_rel_release_gate.py -k a01_ (2 passed)"
+   }
+  },
+  {
+   "id": "REL.A02",
+   "description": "release/lines/0.3.json gate_set equals v0_3_gate.GATE_SETS[0] field by field",
+   "result": "pass",
+   "value": {
+    "tests": "tests/test_rel_release_gate.py::test_a02_the_0_3_gate_set_is_v0_3_gate_s_field_by_field (1 passed)"
+   }
+  },
+  {
+   "id": "REL.A03",
+   "description": "release_gate.py --line 0.3 --rc a3e508e3 (dated mode) against v0_3_gate.py at the same checkout; V03.A06/A07's fixtures through both",
+   "result": "pass",
+   "value": {
+    "tests": "tests/test_rel_release_gate.py -k a03_ (21 passed)",
+    "measured": "stdout byte-identical, text and --json (WO-R2, docs/RP_DECISIONS.md)"
+   }
+  },
+  {
+   "id": "REL.A04",
+   "description": "the tests of v0_2_gate.py/v0_3_gate.py pass with node ids unchanged",
+   "result": "pass",
+   "value": {
+    "tests": "tests/test_v03_v0_3_gate.py tests/test_m07a_v0_2_gate.py tests/test_m07_v0_2_gate.py in the full gate (GATE PASS)",
+    "unchanged": "git diff --stat 8cbae73b HEAD over scripts/v0_1_gate.py, v0_2_gate.py, v0_3_gate.py, s13_evidence_manifest.py, the three legacy test files and evidence/S13: empty"
+   }
+  },
+  {
+   "id": "REL.A05",
+   "description": "release.yml's gate step on three versions: generic command, legacy script, refusal",
+   "result": "pass",
+   "value": {
+    "tests": "tests/test_rel_release_gate.py -k a05_ (6 passed)"
+   }
+  },
+  {
+   "id": "REL.A06",
+   "description": "a standing row whose scope is unchanged, dated before Judged: stands, YES",
+   "result": "pass",
+   "value": {
+    "tests": "tests/test_rel_standing_acceptances.py -k a06_ (3 passed)"
+   }
+  },
+  {
+   "id": "REL.A07",
+   "description": "one file of its paths scope changed: lapsed, NO; re-dated: YES; one day earlier: NO",
+   "result": "pass",
+   "value": {
+    "tests": "tests/test_rel_standing_acceptances.py -k a07_ (9 passed)"
+   }
+  },
+  {
+   "id": "REL.A08",
+   "description": "a clause failing at C with no row, or a row for another gate's letter: NO not accepted",
+   "result": "pass",
+   "value": {
+    "tests": "tests/test_rel_standing_acceptances.py -k a08_ (3 passed)"
+   }
+  },
+  {
+   "id": "REL.A09",
+   "description": "a claim-set change lapses Claim set: NO until re-dated",
+   "result": "pass",
+   "value": {
+    "tests": "tests/test_rel_standing_acceptances.py -k a09_ (2 passed)"
+   }
+  },
+  {
+   "id": "REL.A10",
+   "description": "extract:pyproject_extra:nlp: equal across a version-only change, different when nlp gains a package",
+   "result": "pass",
+   "value": {
+    "tests": "tests/test_rel_standing_acceptances.py -k a10_ (4 passed)"
+   }
+  },
+  {
+   "id": "REL.A17",
+   "description": "ci.yml text (the if of check, the junit-x86_64 and junit-aarch64 uploads, the release_rc job list) and step-1 fixtures (green, missing, red aarch64)",
+   "result": "pass",
+   "value": {
+    "tests": "tests/test_rel_ci_release_rc.py, tests/test_rel_rc_items.py, tests/test_release_workflows.py: -k a17 (10 passed)",
+    "dispatch": "run 42156856877 at bd672ff7: success; check, identity, default-install skipped; rc-steps x2, rc-coolprop x2, rc-ensemble, dist, clean-install x2, bundle-set, bundle-replay x2, ptc-r1 x2 success",
+    "push_run": "run 42156850745 at bd672ff7: check success on both legs, identity success, junit-x86_64 and junit-aarch64 present",
+    "push_run_at_head": "run 42320544169 at fd28ff7b: check (ubuntu-latest) success, check (ubuntu-24.04-arm) success, default-install success, identity success"
+   }
+  },
+  {
+   "id": "REL.A18",
+   "description": "RP's coverage table (RP section 14): the first ten rows are the ten register entries, in order, and every section reference resolves",
+   "result": "pass",
+   "value": {
+    "tests": "tests/test_rel_release_gate.py -k a18 (1 passed)",
+    "note": "tests added in WO-R7 (docs/RP_DECISIONS.md C-28)"
+   }
+  },
+  {
+   "id": "REL.A19",
+   "description": "the seed is ADR 0053's six answer cells verbatim at a3e508e3, and S10's real reference states (ADR 0055 D3.6, RP section 8.2)",
+   "result": "pass",
+   "value": {
+    "tests": "tests/test_rel_standing_acceptances.py and tests/test_rel_rc_items.py: -k a19 (10 passed)",
+    "note": "C-28"
+   }
+  },
+  {
+   "id": "REL.A20",
+   "description": "release_evidence_manifest.py over 0.3.0's committed records: each same-form standing assertion has S13's status; RP.S18 in the changed form with A-1's sub-check (RP section 11.2, amendment A-1)",
+   "result": "pass",
+   "value": {
+    "tests": "tests/test_rel_evidence_manifest.py::test_rel_a20_over_0_3_0s_committed_records (1 passed; controls: a same-form check failing; the same with S13's counterpart failing too; zero commands: each FAIL)",
+    "last_line": "REL.A20: PASS",
+    "detail": "RP.S18 (A-1): not_pass 5, outside the changed form none; commands 30: holds"
+   }
+  },
+  {
+   "id": "RP.M-1",
+   "description": "review M-1: standing mode's decision items 1-12 are pinned (mutation of the five engine readers)",
+   "result": "pass",
+   "value": {
+    "mutation": "tests/test_rel_standing_acceptances.py with engine.rc_record_problems, manifest_problems, envelope_problems, adr_problems, links_problems blanked: 6 failed / 50 passed mutated (items 7, 8, 9, 10, 11 (links), 12); before the fixtures 40/40 passed mutated",
+    "unmutated": "56 passed"
+   }
+  },
+  {
+   "id": "RP.L01-L10",
+   "description": "the loader's checks on release/lines/0.4.json at this commit, each control refused",
+   "result": "pass",
+   "value": {
+    "tests": "tests/test_rel_release_gate.py -k 'test_l0 or test_l1 or committed_line_files_load' (inside the 230 passed)"
+   }
+  },
+  {
+   "id": "RP.rel-tests",
+   "description": "tests/test_rel_*.py and tests/test_release_workflows.py, run alone",
+   "result": "pass",
+   "value": {
+    "summary": "230 passed in 34.79s"
+   }
+  },
+  {
+   "id": "RP.gate",
+   "description": "the full gate at this commit (scripts/gate.sh), ref-x86-64",
+   "result": "pass",
+   "value": {
+    "gate": "GATE PASS fd28ff7b: 15070 passed, 3206 skipped, 197 deselected, 1 warning in 3446.26s (log /tmp/gate-fd28ff7b.log)"
+   }
+  },
+  {
+   "id": "F0.identity",
+   "description": "F0's corpus identity gate (scripts/corpus_identity.py --check)",
+   "result": "pass",
+   "value": {
+    "summary": "F0 PASS: M1 50/50, M2 61/61, M3 61/61, M4 61/61, M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 35/35"
+   }
+  },
+  {
+   "id": "RP.CI",
+   "description": "push CI at fd28ff7b, both architectures",
+   "result": "pass",
+   "value": {
+    "ci": "run 42320544169 (ci): check (ubuntu-latest) success, check (ubuntu-24.04-arm) success, default-install success, identity success",
+    "site": "run 42320544186 (Site): success"
+   }
+  },
+  {
+   "id": "RP.RC-local",
+   "description": "release_rc.py local at C (WO-R6b): the steps run here pass, records at 0.3.0's paths and ids",
+   "result": "pass",
+   "value": {
+    "steps": "identity 3/3, corpus 12/12, surface-alpha 8/8, A30 exit 0, certificates 2/2 at 88045740 (1045 s); rc-step13 3/3, 696 tests, 0 failures, 0 skipped at df30b36e (624 s)"
+   }
+  }
+ ],
+ "artifacts": [
+  {
+   "path": "release/lines/0.4.json",
+   "sha256": "c59b95c7e4eecd5b47d2ae976cbbb890e70004117f0bd5124893d2f7f11a1879",
+   "description": "the 0.4 line file"
+  },
+  {
+   "path": "release/lines/0.3.json",
+   "sha256": "b3aa3bf654b43d5e63e6dcac1968c484e10ddce6ee4dbfa7841b037278d0ff87",
+   "description": "the 0.3 transcription"
+  },
+  {
+   "path": "release/acceptances.md",
+   "sha256": "349fffb2c04dc9a07c6689b4e7dd63b8f852626a93e07698bb09a9b168a3595b",
+   "description": "the standing acceptances"
+  },
+  {
+   "path": "scripts/release_gate.py",
+   "sha256": "a71d71009ac1cf53265a788a9db94d4283e9851a784c7091ff46322349b9721b",
+   "description": "the generic gate"
+  },
+  {
+   "path": "scripts/release_rc.py",
+   "sha256": "bff318dd11aa2b4791806fb77c1557d635dd91fc04073848e51768990f135644",
+   "description": "the RC runner"
+  },
+  {
+   "path": "scripts/release_evidence_manifest.py",
+   "sha256": "dd987d0b2bd97e58ae2a7948fac05a9f2e2a55539b90242822f4e46fc26f5b7f",
+   "description": "the release manifest generator"
+  },
+  {
+   "path": "docs/derivations/release-procedure.md",
+   "sha256": "6af6d401cefbfff2b7a80f4c6868c491167907801843de08d81a722efb0ec298",
+   "description": "RP, the release procedure"
+  },
+  {
+   "path": "tests/fixtures/rel/s13-ci/ci-run-41108983463.json",
+   "sha256": "9745bc7ea2ba6ba923c8fcdb4998ada13a8fed273a972cc90fe0e04e140cc97e",
+   "description": "0.3.0's dispatch, as S13 read it"
+  },
+  {
+   "path": "tests/fixtures/rel/s13-ci/ci-run-41108983672.json",
+   "sha256": "c5129900c8d29109de0e486bf64711804c4f361d2728531cfa1c6cb92e811b32",
+   "description": "0.3.0's push run, as S13 read it"
+  }
+ ],
+ "limitations": [
+  "Evidence class: software verification of the release tooling (line files, generic gate, RC runner, evidence manifest generator, CI workflow) on ref-x86-64 and CI x86-64/aarch64; fixtures and the 0.3.0 comparison are regression evidence, not validation.",
+  "RC steps 6, 11, 12, 14, 15 and 16 and the nlp item E01-G6-nlp were not run locally at this head: they need the reactor and IDAES environments, the audited nlp environment and the pinned W27 archive (docs/RP_DECISIONS.md, WO-R6b). Their writers and judges are tested by fixtures (tests/test_rel_rc_local.py); the first real run is 0.4.0's RC (review S-6: a rehearsal at a main commit after the merge and before K3).",
+  "No release_rc dispatch and no step-1 record at this head: the one dispatch (42156856877) and its push run (42156850745) are at bd672ff7 (WO-R4); the push run at fd28ff7b is 42320544169; RC step 1 and the ci subcommand are exercised by fixtures here.",
+  "The manifest id S15 stands for package RP: the frozen schema's work_package pattern refuses RP (R-878's precedent; docs/RP_DECISIONS.md C-22, upheld by the review's ruling 4). The schema ADR admitting REL[0-9]{3,} (review K-1) is not yet applied, so 0.4.0's the release manifest of 0.4.0 (evidence/REL040/, filed under C) would fail t08.problems until it is.",
+  "Not judged here: REL.A11-A16 and A21 (D2, deferred; not part of ADR 0055's restated acceptance). ADR 0055 is not Accepted by this manifest: Frank's acceptance of ADR 0055 (review K-2) and of F-8 (the second message after Judged) is pending, and the review's should-fix items beyond M-1..M-3 are recorded in docs/RP_DECISIONS.md C-23..C-29, not re-established here.",
+  "Status tested, not reviewed: the reviewer pass (docs/reviews/RP-review.md) ruled on parts 1-3 at 05e3e069; its must-fix items M-1 (C-29, the mutation above), M-2 (REL.A20 PASS) and M-3 (ADR 0055's restated acceptance) were applied afterwards and are not re-reviewed."
+ ],
+ "review": {
+  "numerical": "pending",
+  "process_model": "pending"
+ }
+}

@@ -1,0 +1,22 @@
+{
+ "section": "defaults",
+ "pkg": "WIT",
+ "pkgTitle": "Certificate derivative check at very small or zero flows (merged)",
+ "kind": "adr",
+ "title": "Accept ADR 0073: the derivative check at small and dormant flows",
+ "body": [
+  "The certificate's finite-difference check of the Jacobian now refines its step where the registered step leaves the domain or is dominated by truncation, and steps one-sided at held-zero sides. No certificate that passed before changed; former spurious failures became honest verdicts. Merged on its default."
+ ],
+ "links": [
+  {
+   "label": "ADR 0073 (full text)",
+   "url": "https://github.com/computational-chemical-engineering/openflowsheet/blob/main/docs/adr/0073-WIT-derivative-witness-small-and-dormant-flows.md"
+  },
+  {
+   "label": "Review",
+   "url": "https://github.com/computational-chemical-engineering/openflowsheet/blob/main/docs/reviews/WIT-review.md"
+  }
+ ],
+ "status": "open",
+ "order": 29
+}

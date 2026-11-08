@@ -836,16 +836,17 @@ limitations:
       - doc:docs/adr/0006-distribution-data-rights.md §D1
   - id: L41
     text: >-
-      A bundle written by an installed package (wheel or sdist, not the source checkout) carries no
-      dependency-set identity: the package ships no lock file, so its `lock_sha256` is empty and
-      every replay of it is `inspected_archived_results` / `NOT_RUN` ("the dependency set is
-      unknown …"); replayable bundles are written from the source checkout at the lock
-      `ead4edf1…`.
+      A bundle written by an installed package or a checkout whose runtime closure (the 9
+      distributions of ADR 0069 D3) is not at the packaged lock `ead4edf1…` records no
+      dependency-set identity: its `lock_sha256` is empty, every replay of it is
+      `inspected_archived_results` / `NOT_RUN`, and the replaying side's failing distributions are
+      named. Optional extras are not part of the identity.
     evidence:
-      - tests/test_t08_r3_a19_lock_lookup.py::test_the_three_states_end_to_end
-      - tests/test_t08_r3_a19_lock_lookup.py::test_b_an_installed_layout_beneath_a_stray_lock_has_none
+      - tests/test_x05_replay_from_the_wheel.py::test_a15_one_closure_distribution_off_records_empty_naming_it
+      - tests/test_x05_replay_from_the_wheel.py::test_a16_a17_the_replay_matrix
+      - tests/test_x05_lock.py::test_a01_to_a09_each_registered_state
+      - doc:docs/adr/0069-X05-replay-from-the-wheel.md §D7
       - doc:docs/adr/0007-reproducibility-certificate-policy.md §D4
-      - doc:docs/derivations/T08-release-spec.md §5.5
   - id: L42
     text: >-
       `pr-c1-v1` (Peng–Robinson with the light gases vapour-only, ADR 0026), shipped since M01, is
@@ -8352,3 +8353,350 @@ harvest:
   class: P
   to: []
   note: 'process note: the full gate''s reds are explain.md''s pending human review and load-induced browser-smoke and kill-chain timings that pass alone'
+- manifest: evidence/S15/3e7ccf00f4123a7d9085fef775432d81d45aadd3/manifest.json
+  item: limitations[0]
+  sha256: 8262246970f453c7a91b2b75eba8d77d7ca0e01c4a225b2e7e0ef938053a6a35
+  class: P
+  to: []
+  note: 'provenance note: software verification of the release tooling on ref-x86-64 and CI; fixtures and the 0.3.0 comparison are regression evidence, not validation'
+- manifest: evidence/S15/3e7ccf00f4123a7d9085fef775432d81d45aadd3/manifest.json
+  item: limitations[1]
+  sha256: c5724d26c9152d42589b42e39db19ce13695c1f0e86a54e2336f49a9f4bda99c
+  class: P
+  to: []
+  note: 'scope note: RC steps 6, 11, 12, 14-16 and the nlp item not run locally at this head (environments); writers and judges tested by fixtures; first real run is 0.4.0''s RC'
+- manifest: evidence/S15/3e7ccf00f4123a7d9085fef775432d81d45aadd3/manifest.json
+  item: limitations[2]
+  sha256: c1003b3fa14a838d644d73b9f381ae7e9dba97cea1f4945392db3f2a12c98319
+  class: P
+  to: []
+  note: 'process note: no release_rc dispatch and no step-1 record at this head; the dispatch and push run are at bd672ff7 (WO-R4)'
+- manifest: evidence/S15/3e7ccf00f4123a7d9085fef775432d81d45aadd3/manifest.json
+  item: limitations[3]
+  sha256: bfa43a5adc67e6f96399c1897badd73620eb017a8f477aedfb02232216ca2ca1
+  class: P
+  to: []
+  note: 'process note: REL.A20 fails as RP 11.2 states it (RP.S18 vs V03.A27); design-lane ruling Q-C5 open'
+- manifest: evidence/S15/3e7ccf00f4123a7d9085fef775432d81d45aadd3/manifest.json
+  item: limitations[4]
+  sha256: 9fb7b58365a2d9e2a6da5c161b3766473e84c05e7fdf84ff2f14acea9e1cfc00
+  class: P
+  to: []
+  note: 'provenance note: manifest id S15 stands for package RP (frozen work_package pattern; RP_DECISIONS C-22, Q-C6)'
+- manifest: evidence/S15/3e7ccf00f4123a7d9085fef775432d81d45aadd3/manifest.json
+  item: limitations[5]
+  sha256: a932c3cc62131ab43c369c90f1c274043b5315918d291886578a18599da7a19e
+  class: P
+  to: []
+  note: 'scope note: REL.A18/A19 (WO-R1) and REL.A11-A16/A21 (D2, deferred) not judged here; reviewer pass pending'
+- manifest: evidence/S15/3e7ccf00f4123a7d9085fef775432d81d45aadd3/manifest.json
+  item: checks[11]
+  check_id: REL.A20
+  sha256: 85ff25ab5255fec5b922a05c1aa1a110ee7cbf4f0bbf33947fc73524ae6bef89
+  class: P
+  to: []
+  note: 'release-tooling acceptance: REL.A20 not met as written (Q-C5, design lane); no user-facing support claim'
+- manifest: evidence/S15/3e7ccf00f4123a7d9085fef775432d81d45aadd3/manifest.json
+  item: checks[13]
+  check_id: RP.gate
+  sha256: 90bfb4c4ed9f729dbdb5d8308aea0bc4b1c3e7012bcb5bf1e61947f1fe0e2e52
+  class: P
+  to: []
+  note: 'process note: full gate at 3e7ccf00 red only in tests/test_m06_browser_smoke.py (browser went away under host load); module green alone'
+- manifest: evidence/S15/fd28ff7bc8e3e98c67857c869d6939d1d755f3ed/manifest.json
+  item: limitations[0]
+  sha256: 8262246970f453c7a91b2b75eba8d77d7ca0e01c4a225b2e7e0ef938053a6a35
+  class: P
+  to: []
+  note: 'provenance note: software verification of the release tooling on ref-x86-64 and CI; fixtures and the 0.3.0 comparison are regression evidence, not validation'
+- manifest: evidence/S15/fd28ff7bc8e3e98c67857c869d6939d1d755f3ed/manifest.json
+  item: limitations[1]
+  sha256: 77ccf81a7802b3fac92efc392ec7e8692e73d78b0addeb9e60bcd9e776f79941
+  class: P
+  to: []
+  note: 'scope note: RC steps 6, 11, 12, 14-16 and the nlp item not run locally at this head (environments); writers and judges tested by fixtures; first real run is 0.4.0''s RC (rehearsal S-6)'
+- manifest: evidence/S15/fd28ff7bc8e3e98c67857c869d6939d1d755f3ed/manifest.json
+  item: limitations[2]
+  sha256: 829cefc5c2577bdfeedb56c185b7771dfca4d211645d68381bee66de10e3820d
+  class: P
+  to: []
+  note: 'process note: no release_rc dispatch and no step-1 record at this head; the dispatch and push run are at bd672ff7 (WO-R4); the push run at fd28ff7b is 42320544169'
+- manifest: evidence/S15/fd28ff7bc8e3e98c67857c869d6939d1d755f3ed/manifest.json
+  item: limitations[3]
+  sha256: d0fc024a2c11606fe758e504d14e3fcde388b86e689ee6f17153380040323990
+  class: P
+  to: []
+  note: 'provenance note: manifest id S15 stands for package RP (frozen work_package pattern; RP_DECISIONS C-22); REL[0-9]{3,} schema ADR (review K-1) not yet applied'
+- manifest: evidence/S15/fd28ff7bc8e3e98c67857c869d6939d1d755f3ed/manifest.json
+  item: limitations[4]
+  sha256: 4af1c3e07e0fcc2e206dd03f346b5f1df0c6a26fa266379268e12a4be14c1909
+  class: P
+  to: []
+  note: 'scope note: REL.A11-A16/A21 (D2, deferred) not judged; ADR 0055 acceptance by Frank (K-2, F-8) pending; should-fix items recorded in RP_DECISIONS C-23..C-29'
+- manifest: evidence/S15/fd28ff7bc8e3e98c67857c869d6939d1d755f3ed/manifest.json
+  item: limitations[5]
+  sha256: b68d980e60c92228d50076717df850c5b6422e440a50406abd0d8483d9f01f73
+  class: P
+  to: []
+  note: 'process note: status tested, not reviewed; review''s must-fix items M-1..M-3 applied after the reviewer pass and not re-reviewed'
+- manifest: evidence/X05/42c84f1d983e30917608f3cd6ddbaf0f29766b1f/manifest.json
+  item: checks[19]
+  check_id: X05.A20sdist
+  sha256: e11cf46fc625b59d2fd9a3fedca9b7b4f41cd57ac9d5dc3e3099fa6db0914eab
+  class: S
+  to:
+  - check:X05.A20sdist
+  note: 'taken by the WO-4 rc_distribution dispatch, run 42397255469'
+- manifest: evidence/X05/42c84f1d983e30917608f3cd6ddbaf0f29766b1f/manifest.json
+  item: checks[21]
+  check_id: X05.A21
+  sha256: 5297d4f64ee0c95e28b087a8d6a75565882cc90c1dc1ebbf89863c6b1c4e7721
+  class: S
+  to:
+  - check:X05.A21
+  note: 'taken by the WO-4 rc_distribution dispatch, run 42397255469'
+- manifest: evidence/X05/42c84f1d983e30917608f3cd6ddbaf0f29766b1f/manifest.json
+  item: checks[22]
+  check_id: X05.A22b
+  sha256: 106b41edc3caa88c2f376a2687b86d5af3b3f0ec68d229736503ea20e0c3858d
+  class: S
+  to:
+  - check:X05.A22b
+  note: 'taken by the WO-4 rc_distribution dispatch, run 42397255469'
+- manifest: evidence/X05/42c84f1d983e30917608f3cd6ddbaf0f29766b1f/manifest.json
+  item: checks[26]
+  check_id: X05.A25ci
+  sha256: 3457dcd00901f238c258b677c4296922d1662ca50d4d60caaed2175ab7fd9b1d
+  class: S
+  to:
+  - check:X05.A25ci
+  note: 'taken by the WO-4 rc_distribution dispatch, run 42397255469'
+- manifest: evidence/X05/42c84f1d983e30917608f3cd6ddbaf0f29766b1f/manifest.json
+  item: limitations[0]
+  sha256: 944d4b6e8475aaaf162640dd8baf6c8dc049b12690fc55371b2f914a5aa18fec
+  class: P
+  to: []
+  note: 'evidence-class note: identity bookkeeping verified, no empirical validation (ADR 0069 §10)'
+- manifest: evidence/X05/42c84f1d983e30917608f3cd6ddbaf0f29766b1f/manifest.json
+  item: limitations[1]
+  sha256: 538ce4d64b9d3b740b16ced0a19177d53b3358fc93042cd0e542b6ec3bc718e9
+  class: P
+  to: []
+  note: 'process note: ADR 0069 Proposed; Amendment 2 and register lines wait for Frank''s acceptance (D-7)'
+- manifest: evidence/X05/42c84f1d983e30917608f3cd6ddbaf0f29766b1f/manifest.json
+  item: limitations[2]
+  sha256: baf05bef76a4dc19de53e65a70380d75f916282a1da296e7c4153df139e1e419
+  class: P
+  to: []
+  note: 'process note: the four CI halves not dispatched at this head; local substitutes on ref-x86-64; WO-4 dispatch'
+- manifest: evidence/X05/42c84f1d983e30917608f3cd6ddbaf0f29766b1f/manifest.json
+  item: limitations[3]
+  sha256: 6d371e7a29409a2ba9e3b7d3eb28ec0bd453948e64f1c540663202cd7436f946
+  class: P
+  to: []
+  note: 'provenance note: local wheel records at 7f39b199, code unchanged to the manifest commit'
+- manifest: evidence/X05/42c84f1d983e30917608f3cd6ddbaf0f29766b1f/manifest.json
+  item: limitations[4]
+  sha256: 3de33475a22c67b992e6cdd920c415c6cec7a7cb48e775247fb63fdb9c0e6f43
+  class: P
+  to: []
+  note: 'scope note: Q-N1 for .venv-nlp and .venv-lca judged from their build locks; live measurement at the next RC'
+- manifest: evidence/X05/42c84f1d983e30917608f3cd6ddbaf0f29766b1f/manifest.json
+  item: limitations[5]
+  sha256: 24aba2a2c6b111473e560b8dad35e5cff835558893708b5a186595dacb1e600c
+  class: P
+  to: []
+  note: 'process note: RP step 4 a19.* -> x05.* made in X05 WO-4 after RP merged'
+- manifest: evidence/X05/7c8d05e59dcef7c60b260b687b3cc4e06e5cbda0/manifest.json
+  item: limitations[0]
+  sha256: 944d4b6e8475aaaf162640dd8baf6c8dc049b12690fc55371b2f914a5aa18fec
+  class: P
+  to: []
+  note: 'evidence-class note: identity bookkeeping verified, no empirical validation (ADR 0069 §10)'
+- manifest: evidence/X05/7c8d05e59dcef7c60b260b687b3cc4e06e5cbda0/manifest.json
+  item: limitations[1]
+  sha256: 538ce4d64b9d3b740b16ced0a19177d53b3358fc93042cd0e542b6ec3bc718e9
+  class: P
+  to: []
+  note: 'process note: ADR 0069 Proposed; Amendment 2 and register lines wait for Frank''s acceptance (D-7)'
+- manifest: evidence/X05/7c8d05e59dcef7c60b260b687b3cc4e06e5cbda0/manifest.json
+  item: limitations[2]
+  sha256: 5264f62ceeca3b8d4e38b83254a2ef32d858c28f2af8db7b6b718d23c40f8ef1
+  class: P
+  to: []
+  note: 'measurement note: Q-N2 answered, M7 from the wheel MATCH 52/52 on both CI legs (run 42397255469)'
+- manifest: evidence/X05/7c8d05e59dcef7c60b260b687b3cc4e06e5cbda0/manifest.json
+  item: limitations[3]
+  sha256: 241d774868432be9eac4254c9f4ff6af942afe8a1624afcc821b208212d5eb3c
+  class: P
+  to: []
+  note: 'provenance note: A22 (a)''s local wheel record at 7f39b199; src/ changed since only by review S1'
+- manifest: evidence/X05/7c8d05e59dcef7c60b260b687b3cc4e06e5cbda0/manifest.json
+  item: limitations[4]
+  sha256: 3de33475a22c67b992e6cdd920c415c6cec7a7cb48e775247fb63fdb9c0e6f43
+  class: P
+  to: []
+  note: 'scope note: Q-N1 for .venv-nlp and .venv-lca judged from their build locks; live measurement at the next RC'
+- manifest: evidence/X05/7c8d05e59dcef7c60b260b687b3cc4e06e5cbda0/manifest.json
+  item: limitations[5]
+  sha256: 8b55c5789cdc397a4704b097fe24387b77bfef14eb7a0e73f0de9bc88821be1a
+  class: P
+  to: []
+  note: 'process note: the 0.4 gate''s [4, x05.*] pair deferred to the 0.4.0 cut''s specifier pass (49506c90)'
+- manifest: evidence/X05/7c8d05e59dcef7c60b260b687b3cc4e06e5cbda0/manifest.json
+  item: limitations[6]
+  sha256: 21bf8d90355934f0b08f12f5d4ba32a50036794c3671443e2c656e528bb10460
+  class: P
+  to: []
+  note: 'process note: status tested, not reviewed; review M1, M2, S1 applied in WO-4 and not re-reviewed'
+- manifest: evidence/X10/18d34648b266893fe80971134a12c3f95ad331e5/manifest.json
+  item: limitations[0]
+  sha256: 2ba6ae8ca52db5a2ecd923ee1ca7b77daef690d4e5544dc5f8507eb27345feb8
+  class: P
+  to: []
+  note: 'provenance note: a software measurement on ref-x86-64; one minimal flowsheet per admitted pair; not validation'
+- manifest: evidence/X10/18d34648b266893fe80971134a12c3f95ad331e5/manifest.json
+  item: limitations[1]
+  sha256: 328033fc8807a09a85c193308801c39f142e658dc1a432851288df92b480321d
+  class: P
+  to: []
+  note: 'scope note: a measurement package with no D/A requirement; requirements empty'
+- manifest: evidence/X10/18d34648b266893fe80971134a12c3f95ad331e5/manifest.json
+  item: limitations[2]
+  sha256: eeda4365e7dafaa4fb5ac453220f27e11165497f8dc2ed6631193b57fb138765
+  class: P
+  to: []
+  note: 'method note: CoolProp represented by R134a (X10_DECISIONS D-1); the extra-present section measured with CoolProp 8.0.0 from requirements-coolprop.lock in a scratch --target directory (D-3)'
+- manifest: evidence/X10/18d34648b266893fe80971134a12c3f95ad331e5/manifest.json
+  item: limitations[3]
+  sha256: 6bc353925fe863bb1b20bd4dafeefd04051e007f9cbfe8af4ac2d23796848e76
+  class: P
+  to: []
+  note: 'scope note: the coupled C1 reactors bind on revision_coupled and are not solved by the probe (D-4)'
+- manifest: evidence/X10/18d34648b266893fe80971134a12c3f95ad331e5/manifest.json
+  item: limitations[4]
+  sha256: 766a47ebe2ab0ba3160dafb212ea6c8ea46626f7959c33b4726ada2a45fd0161
+  class: S
+  to:
+  - tests/test_wit_system.py::test_a08_the_c1_surrogate_is_verified_by_the_escalation
+  - doc:docs/adr/0073-WIT-derivative-witness-small-and-dormant-flows.md
+  note: 'L-X10-1 closed by ADR 0073 (K04 amendment WIT, WIT.A08): c1.reactor_surrogate CONVERGED/VERIFIED on its registered revision; the failing component columns are re-differenced at halved steps'
+- manifest: evidence/X10/18d34648b266893fe80971134a12c3f95ad331e5/manifest.json
+  item: limitations[5]
+  sha256: 522e70855648b0708225d45492d8f95aaae6e3017601c43094d8779e6e884528
+  class: P
+  to: []
+  note: 'method note: the lifted-by and reason columns are register readings in the generator (D-7)'
+- manifest: evidence/X10/033f19289a891221537769d8024ec7f61c0f4da7/manifest.json
+  item: limitations[0]
+  sha256: 2ba6ae8ca52db5a2ecd923ee1ca7b77daef690d4e5544dc5f8507eb27345feb8
+  class: P
+  to: []
+  note: 'provenance note: a software measurement on ref-x86-64; one minimal flowsheet per admitted pair; not validation'
+- manifest: evidence/X10/033f19289a891221537769d8024ec7f61c0f4da7/manifest.json
+  item: limitations[1]
+  sha256: 328033fc8807a09a85c193308801c39f142e658dc1a432851288df92b480321d
+  class: P
+  to: []
+  note: 'scope note: a measurement package with no D/A requirement; requirements empty'
+- manifest: evidence/X10/033f19289a891221537769d8024ec7f61c0f4da7/manifest.json
+  item: limitations[2]
+  sha256: eeda4365e7dafaa4fb5ac453220f27e11165497f8dc2ed6631193b57fb138765
+  class: P
+  to: []
+  note: 'method note: CoolProp represented by R134a (X10_DECISIONS D-1); the extra-present section measured with CoolProp 8.0.0 from requirements-coolprop.lock in a scratch --target directory (D-3)'
+- manifest: evidence/X10/033f19289a891221537769d8024ec7f61c0f4da7/manifest.json
+  item: limitations[3]
+  sha256: 6bc353925fe863bb1b20bd4dafeefd04051e007f9cbfe8af4ac2d23796848e76
+  class: P
+  to: []
+  note: 'scope note: the coupled C1 reactors bind on revision_coupled and are not solved by the probe (D-4)'
+- manifest: evidence/X10/033f19289a891221537769d8024ec7f61c0f4da7/manifest.json
+  item: limitations[4]
+  sha256: dcaceb11d67f8af0081d9430769d1dce87c5bc4d553e8fb0d769b8bc503eaf5a
+  class: S
+  to:
+  - tests/test_wit_system.py::test_a08_the_c1_surrogate_is_verified_by_the_escalation
+  - doc:docs/adr/0073-WIT-derivative-witness-small-and-dormant-flows.md
+  note: 'L-X10-1 closed by ADR 0073 (K04 amendment WIT, WIT.A08): c1.reactor_surrogate CONVERGED/VERIFIED on its registered revision; the failing component columns are re-differenced at halved steps'
+- manifest: evidence/X10/033f19289a891221537769d8024ec7f61c0f4da7/manifest.json
+  item: limitations[5]
+  sha256: 522e70855648b0708225d45492d8f95aaae6e3017601c43094d8779e6e884528
+  class: P
+  to: []
+  note: 'method note: the lifted-by and reason columns are register readings in the generator (D-7)'
+- manifest: evidence/X10/033f19289a891221537769d8024ec7f61c0f4da7/manifest.json
+  item: limitations[6]
+  sha256: 60bddcd81370268668c374eb5667e7349fca6aaaf9d1e43836723c34df10f4b0
+  class: P
+  to: []
+  note: 'process note: the CoolProp-present section was not re-measured after the review fixes; inventory.json byte-identical'
+- manifest: evidence/X10a/dbf884ad2b037b9643659fa40b5721ab6b4b5e5c/manifest.json
+  item: limitations[0]
+  sha256: 7aef63da8727c0074c0e6a33b2408fd05c4653bf979b997142884fc380c30239
+  class: P
+  to: []
+  note: 'provenance note: software verification on ref-x86-64 under id X10a; reference values are regression fixtures, not validation'
+- manifest: evidence/X10a/dbf884ad2b037b9643659fa40b5721ab6b4b5e5c/manifest.json
+  item: limitations[1]
+  sha256: e6687ab86b192ebb2ea6745643aa8fa12bd6d2854d2617c5f6c572061025b5e2
+  class: P
+  to: []
+  note: 'process note: ADR 0073 Proposed; no reviewed status; the fix round D-5..D-10 not re-reviewed'
+- manifest: evidence/X10a/dbf884ad2b037b9643659fa40b5721ab6b4b5e5c/manifest.json
+  item: limitations[2]
+  sha256: 84e11fba73641fa23ca0023a22f7a3d1c4f8f23351e87219b0b62367848fca52
+  class: B
+  to:
+  - B10
+  note: 'M-6 part b (Q-WIT-2): c1.tp_flash manifest sentence still states the TWO_PHASE edge at 3.4e-5; moves the artifact hash, F0 M9 and the L01.A22 pin — reviewer: B?'
+- manifest: evidence/X10a/dbf884ad2b037b9643659fa40b5721ab6b4b5e5c/manifest.json
+  item: limitations[3]
+  sha256: cfbbe66f89fa55d3a93ad8a2141f05d9519f9bf951bec41ff7958d8f3a3cbca7
+  class: P
+  to: []
+  note: 'process note: M-4 (OPT D-42/D-82) waits for the OPT merge and ADR 0073 acceptance'
+- manifest: evidence/X10a/dbf884ad2b037b9643659fa40b5721ab6b4b5e5c/manifest.json
+  item: limitations[4]
+  sha256: 4072f5f070659632c2455cc91e3917891ea61a1455fa676b977a5f1d2627fdf6
+  class: B
+  to:
+  - B10
+  note: 'Q-WIT-4: a non-affine downstream reader of a dormant vapour product is unmeasured — reviewer: B?'
+- manifest: evidence/X10a/dbf884ad2b037b9643659fa40b5721ab6b4b5e5c/manifest.json
+  item: limitations[5]
+  sha256: 7bcb860c6d47ed88b03335e65802bb1b222407192ccc7a1f31b07d24f02c989a
+  class: P
+  to: []
+  note: 'process note: the review did-not-establish list; gate and CI postdate the review'
+- manifest: evidence/S15a/d7cb4dbb77adeafab943959966e7269a17ca29f3/manifest.json
+  item: limitations[0]
+  sha256: e2a6ebcc9176683cc753bdd91a9ac6273c50de3cf28b79b5ef02606ca548d450
+  class: P
+  to: []
+  note: 'provenance note: software verification on ref-x86-64 under id S15a; ADR 0074 Accepted on its condition; an id is bookkeeping, not validation'
+- manifest: evidence/S15a/d7cb4dbb77adeafab943959966e7269a17ca29f3/manifest.json
+  item: limitations[1]
+  sha256: 674506932d44833ec370a1c9411fc79ba341097ee9e3ee46b400332264f8b25b
+  class: B
+  to:
+  - B10
+  note: 'O-3: nothing ties a line file''s evidence_package to its line; RP.L11 due before the 0.5 line file — reviewer: B?'
+- manifest: evidence/S15a/d7cb4dbb77adeafab943959966e7269a17ca29f3/manifest.json
+  item: limitations[2]
+  sha256: c50f76961bdc83f70525f26c1d3f56f450153b4e72c249b7e1a299ea42acd429
+  class: P
+  to: []
+  note: 'process note: O-4 pointer to ADR 0074 D2 added when K-2 marks ADR 0055 Accepted'
+- manifest: evidence/S15a/d7cb4dbb77adeafab943959966e7269a17ca29f3/manifest.json
+  item: limitations[3]
+  sha256: d8474e5cf4d6f52c8e532c548020150c3d233bafb202e613673409520e11a709
+  class: P
+  to: []
+  note: 'process note: O-5 trailing newline passes every work_package alternative; recommended no change'
+- manifest: evidence/S15a/d7cb4dbb77adeafab943959966e7269a17ca29f3/manifest.json
+  item: limitations[4]
+  sha256: 18f42a614e5dd485e135f2067af8d486677d44468173caaef1212337755cdc95
+  class: P
+  to: []
+  note: 'process note: ADR 0074 section 3 does-not-establish list (line-file id, patch line, trailing newline, no validation)'

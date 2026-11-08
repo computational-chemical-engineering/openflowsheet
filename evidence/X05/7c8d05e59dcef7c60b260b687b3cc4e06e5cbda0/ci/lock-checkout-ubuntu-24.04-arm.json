@@ -1,0 +1,97 @@
+{
+ "bundles": {
+  "off": "/home/runner/work/_temp/rc-install/bundle-off/SYN-001-nominal",
+  "on": "/home/runner/work/_temp/rc-install/bundle/SYN-001-nominal"
+ },
+ "checks": [
+  {
+   "id": "x05.the_checkouts_package",
+   "package": "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet",
+   "result": "pass"
+  },
+  {
+   "expected_metadata_version": "2.2.4",
+   "id": "x05.numpy_metadata_and_import",
+   "imported_version": "2.2.4",
+   "metadata_version": "2.2.4",
+   "result": "pass"
+  },
+  {
+   "expected": {
+    "lock_findings": [],
+    "lock_sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+   },
+   "id": "x05.environment",
+   "lock_findings": [],
+   "lock_sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4",
+   "result": "pass"
+  },
+  {
+   "expected": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4",
+   "found": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4",
+   "id": "x05.bundle_on_records",
+   "result": "pass"
+  },
+  {
+   "expected": {
+    "bundle": "on",
+    "mode": "exact_replay",
+    "reasons": [],
+    "state": "checkout",
+    "verdict": "MATCH"
+   },
+   "id": "x05.replay_on",
+   "integrity_ok": true,
+   "mode": "exact_replay",
+   "reasons": [],
+   "result": "pass",
+   "verdict": "MATCH"
+  },
+  {
+   "expected": "",
+   "found": "",
+   "id": "x05.bundle_off_records",
+   "result": "pass"
+  },
+  {
+   "expected": {
+    "bundle": "off",
+    "mode": "inspected_archived_results",
+    "reason0": "the dependency set is unknown on the archive's side: the archive recorded no verified lock, so nothing is known to match",
+    "state": "checkout",
+    "verdict": "NOT_RUN"
+   },
+   "id": "x05.replay_off",
+   "integrity_ok": true,
+   "mode": "inspected_archived_results",
+   "reasons": [
+    "the dependency set is unknown on the archive's side: the archive recorded no verified lock, so nothing is known to match",
+    "no rerun was supplied"
+   ],
+   "result": "pass",
+   "verdict": "NOT_RUN"
+  }
+ ],
+ "format": "t08-rc-v1",
+ "passed": true,
+ "provenance": {
+  "architecture": "aarch64",
+  "commit": "7c8d05e59dcef7c60b260b687b3cc4e06e5cbda0",
+  "environment_lock_sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4",
+  "github_actions": true,
+  "machine_class": "ci-aarch64",
+  "python": "3.13.18",
+  "threads": {
+   "MKL_NUM_THREADS": "1",
+   "OMP_NUM_THREADS": "1",
+   "OPENBLAS_NUM_THREADS": "1"
+  },
+  "tree_clean": true
+ },
+ "replayed": [
+  "on",
+  "off"
+ ],
+ "state": "checkout",
+ "step": "lock-check"
+}
