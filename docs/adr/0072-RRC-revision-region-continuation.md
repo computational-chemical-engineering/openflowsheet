@@ -126,7 +126,10 @@ The design note §4 gives the full table. In brief:
 
 - **C1. Bytes that move:**
   - the three schema files;
-  - whatever WO-1 measures, which is listed here before acceptance: `schemas/registry.json` entries, a served MCP digest.
+  - measured by WO-1 (`docs/RRC_DECISIONS.md`): the three schema files' SHA-256 move and nothing else that is
+    digested — `schemas/registry.json` (a file list), the served MCP tool-list digest (`455d01eb…`), every offered
+    policy's `policy_sha256` and `numerical_policy_v2.yaml` are unchanged. Offering `RRC-revision-v1` (WO-4, D-1)
+    adds one `get_project.solve_policies` entry, which M07a's MR-7 clause requires a register entry to name.
   - Every existing document validates unchanged, and fixtures regenerate byte-identically.
   - No registered policy, record, bundle, certificate or replay moves (design note §5.11, G1).
 - **C2. Support matrix:**
