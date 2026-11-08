@@ -448,6 +448,7 @@ def _validate_optimization(
     solver_probe: Callable[[], Any] | None,
 ) -> ValidationReport:
     """OPT design §4.11: see `validate`."""
+    from openflowsheet.application.revision_routes import REVISION_ROUTES
     from openflowsheet.studies.nlp.closure import audited_solver
     from openflowsheet.studies.nlp.request import STATIC_CODES, static_readiness
 
@@ -468,7 +469,11 @@ def _validate_optimization(
         status: ValidationStatus = "DRAFT" if simulation.status == "DRAFT" else "INVALID"
     else:
         found = static_readiness(
-            optimization, document, surrogates=surrogates, solver_probe=lambda: availability
+            optimization,
+            document,
+            routes=REVISION_ROUTES,
+            surrogates=surrogates,
+            solver_probe=lambda: availability,
         )
         checks.append(_request_check(found.problems))
         assessed = found.request is not None and found.request.assessment is not None

@@ -48,6 +48,7 @@ from openflowsheet.run.bundle import MANIFEST_NAME, BundleIntegrity, read_artifa
 from openflowsheet.run.compare import CURRENT_POLICY_ID, differences, floored_difference
 from openflowsheet.run.manifest import environment
 from openflowsheet.run.replay import ReplayMode, ReplayReport, ReplayVerdict
+from openflowsheet.studies.nlp.host import RevisionRoutes
 
 FORMAT: Final = "openflowsheet-optimization-v1"
 MANIFEST: Final = "optimization-manifest.json"
@@ -128,18 +129,18 @@ def _starts(directory: Path) -> list[int]:
 def replay_optimization(
     directory: Path,
     *,
+    routes: RevisionRoutes,
     rerun: bool,
     rerun_directory: Path,
     stage: Callable[[str], None] | None = None,
 ) -> ReplayReport:
     """§4.9 on the record at `directory` (see the module docstring). A rerun's bundles are
-    written under `rerun_directory`, at `starts/<k>/<start|resolve>`.
+    written under `rerun_directory`, at `starts/<k>/<start|resolve>`. `routes` are the
+    application's (`host.RevisionRoutes`): `reproduce_bundle` and the recomputation's host.
 
     `stage` is called as `reproduce_bundle` calls it (T07 §6.4): `integrity` on entry, `rerun`
     before the bundles are re-run, `compare` before the report is built; a job's `reproduce`
     passes its stage boundary (OPT design §4.9)."""
-    from openflowsheet.application.revision_run import reproduce_bundle
-
     at = stage if stage is not None else (lambda _: None)
     directory = Path(directory)
     at("integrity")
@@ -174,7 +175,7 @@ def replay_optimization(
                 continue
             prefix = f"starts/{index}/{name}: "
             run_id = read_manifest(bundle)[0].run_id
-            report = reproduce_bundle(
+            report = routes.reproduce(
                 bundle,
                 rerun=True,
                 rerun_directory=Path(rerun_directory) / "starts" / str(index) / name,
@@ -186,7 +187,7 @@ def replay_optimization(
             found += [prefix + item for item in report.differences]
             reasons += [prefix + item for item in report.reasons]
             near += [prefix + item for item in report.verdict_changed_near_threshold]
-    chain, chain_reasons, chain_near = _recomputed_chain(directory)
+    chain, chain_reasons, chain_near = _recomputed_chain(directory, routes)
     found += chain
     reasons += chain_reasons
     near += chain_near
@@ -416,7 +417,9 @@ def classification_differences(
     return found, near
 
 
-def _recomputed_chain(directory: Path) -> tuple[list[str], list[str], list[str]]:
+def _recomputed_chain(
+    directory: Path, routes: RevisionRoutes
+) -> tuple[list[str], list[str], list[str]]:
     """Steps 3 and 4: the differences, the reasons and the near-threshold entries."""
     from openflowsheet.orchestrator.trace import SolvePolicy
     from openflowsheet.run.manifest import policy_sha256
@@ -463,13 +466,17 @@ def _recomputed_chain(directory: Path) -> tuple[list[str], list[str], list[str]]
         )
     # Replay solves no NLP: the probe gates the solver, which replay does not use.
     available = SolverAvailability(True, "replay: no NLP solver is used")
-    static = static_readiness(request, document, solver_probe=lambda: available)
+    static = static_readiness(request, document, routes=routes, solver_probe=lambda: available)
     if not static.ready or static.formulation is None or static.decisions is None:
         return [f"static readiness {list(static.codes)} on replay; the record ran"], [], []
     parsed = OptimizationRequest.of(request)
     formulation = static.formulation
     host = RevisionNlpHost(
-        document, static.decisions, solve_policy=solve_policy, check_policy=check_policy
+        document,
+        static.decisions,
+        routes=routes,
+        solve_policy=solve_policy,
+        check_policy=check_policy,
     )
     spec = host.base_spec()
     starts = []

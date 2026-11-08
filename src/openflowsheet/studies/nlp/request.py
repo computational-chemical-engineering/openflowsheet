@@ -57,6 +57,7 @@ from openflowsheet.studies.nlp.formulation import (
     QuadraticExpression,
     is_assessment_name,
 )
+from openflowsheet.studies.nlp.host import RevisionRoutes
 from openflowsheet.studies.nlp.revision_host import (
     ROUTE,
     DecisionBox,
@@ -424,6 +425,7 @@ def static_readiness(
     request: Mapping[str, Any],
     revision: Mapping[str, Any],
     *,
+    routes: RevisionRoutes,
     surrogates: Any = None,
     solver_probe: SolverProbe = audited_solver,
 ) -> StaticReadiness:
@@ -431,10 +433,7 @@ def static_readiness(
     the decision probes, solves nothing. Every failing reason is listed, in the table's order; a
     check whose input is missing (a request with problems, a revision not on `revision_eo`) is
     in `not_run`. Ready iff no problem, no reason and nothing not run; then `formulation` is the
-    request's `NlpFormulation`."""
-    from openflowsheet.application.binding import refusal_code
-    from openflowsheet.application.revision_run import NoRoute, select_route
-
+    request's `NlpFormulation`. `routes` are the application's (`host.RevisionRoutes`)."""
     solver = solver_probe()
     problems = tuple(request_problems(request))
     reasons: list[ReadinessReason] = []
@@ -522,12 +521,12 @@ def static_readiness(
     ]
     if parsed.include_revision:
         revision_codes.append("START_OUTSIDE_BOUNDS")
-    route = select_route(revision, surrogates=surrogates)
-    if isinstance(route, NoRoute):
+    route = routes.select(revision, surrogates=surrogates)
+    if not routes.is_route(route):
         reasons.append(
             ReadinessReason(
                 "REVISION_UNBOUND",
-                f"REVISION_UNBOUND({refusal_code(route.revision.detail)}): "
+                f"REVISION_UNBOUND({routes.refusal_code(route.revision.detail)}): "
                 f"{route.revision.kind}({route.revision.detail})",
             )
         )
@@ -558,13 +557,15 @@ def static_readiness(
     probed = [box for box in parsed.decisions if _ends(box)]
     unprobed = [box.specification_id for box in parsed.decisions if not _ends(box)]
     try:
-        found = decision_map(revision, probed, surrogates=surrogates) if probed else None
+        found = (
+            decision_map(revision, probed, routes=routes, surrogates=surrogates) if probed else None
+        )
     except RevisionUnboundError as error:
         unbound = error.unbound
         reasons.append(
             ReadinessReason(
                 "REVISION_UNBOUND",
-                f"REVISION_UNBOUND({refusal_code(unbound.detail)}): {error}",
+                f"REVISION_UNBOUND({routes.refusal_code(unbound.detail)}): {error}",
             )
         )
         skip(revision_codes, "the revision does not bind")

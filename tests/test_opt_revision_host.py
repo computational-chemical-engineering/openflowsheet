@@ -26,7 +26,9 @@ import numpy as np
 import pytest
 from t05_w12_support import Feed, Outlet, duty_pin, mini_revision, unit_instance
 
+from openflowsheet.application import revision_routes
 from openflowsheet.application.policies import DEFAULT_POLICY_ID, resolve_policy
+from openflowsheet.application.revision_routes import REVISION_ROUTES
 from openflowsheet.application.revision_run import (
     Route,
     run_revision_session,
@@ -108,11 +110,18 @@ def _unit(document: Mapping[str, Any], specification_id: str) -> str:
 
 def _host(document: Mapping[str, Any], *specifications: str, **kwargs: Any) -> RevisionNlpHost:
     found = decision_map(
-        document, [_box(document, name, _unit(document, name)) for name in specifications]
+        document,
+        [_box(document, name, _unit(document, name)) for name in specifications],
+        routes=REVISION_ROUTES,
     )
     assert isinstance(found, DecisionMap), found
     return RevisionNlpHost(
-        document, found, solve_policy=POLICY, check_policy=CheckPolicy(), **kwargs
+        document,
+        found,
+        solve_policy=POLICY,
+        check_policy=CheckPolicy(),
+        **kwargs,
+        routes=REVISION_ROUTES,
     )
 
 
@@ -304,11 +313,13 @@ def _split_fraction_as_specification() -> dict[str, Any]:
 
 def test_g5_decisions_map_to_their_parameters() -> None:
     th_r1 = _document("TH-R1")
-    found = decision_map(th_r1, [DecisionBox("SPEC-H-Q", 20000.0, 30000.0, "W")])
+    found = decision_map(
+        th_r1, [DecisionBox("SPEC-H-Q", 20000.0, 30000.0, "W")], routes=REVISION_ROUTES
+    )
     assert isinstance(found, DecisionMap)
     assert found.as_document() == {"SPEC-H-Q": "H.Q_spec"}
     split = _split_fraction_as_specification()
-    found = decision_map(split, [DecisionBox("SPEC-SP-r", 0.3, 0.7, "1")])
+    found = decision_map(split, [DecisionBox("SPEC-SP-r", 0.3, 0.7, "1")], routes=REVISION_ROUTES)
     assert isinstance(found, DecisionMap)
     assert found.as_document() == {"SPEC-SP-r": "SP.split_fraction"}
     m1 = _document("M1")
@@ -318,6 +329,7 @@ def test_g5_decisions_map_to_their_parameters() -> None:
             DecisionBox("SPEC-S-IN1-T", 330.0, 340.0, "K"),  # the upper end is the base value
             DecisionBox("SPEC-S-IN1-n-A", 0.2, 0.4, "mol/s"),
         ],
+        routes=REVISION_ROUTES,
     )
     assert isinstance(found, DecisionMap)
     assert found.as_document() == {
@@ -341,6 +353,7 @@ def test_g5_refusals() -> None:
             DecisionBox("SPEC-V-P", 1.5e5, 2.5e5, "Pa"),
             DecisionBox("SPEC-V-P", 1.5e5, 2.5e5, "Pa"),
         ],
+        routes=REVISION_ROUTES,
     )
     assert _codes(found) == [
         ("DECISION_UNIT_NOT_INTERNAL", "SPEC-H-Q"),
@@ -351,7 +364,7 @@ def test_g5_refusals() -> None:
     assert "already another decision's parameter" in found[2].detail
     # A binder refusal at an end of the box: a split fraction above 1.
     split = _split_fraction_as_specification()
-    found = decision_map(split, [DecisionBox("SPEC-SP-r", 0.5, 1.5, "1")])
+    found = decision_map(split, [DecisionBox("SPEC-SP-r", 0.5, 1.5, "1")], routes=REVISION_ROUTES)
     assert _codes(found) == [("DECISION_NOT_CONTINUOUS", "SPEC-SP-r")]
     assert isinstance(found, tuple)
     assert "split_fraction" in found[0].detail or "inadmissible" in found[0].detail, found
@@ -364,7 +377,7 @@ def test_g5_a_probe_that_moves_more_than_its_parameter_is_refused(
     """No v1 specification's value changes the configuration or two parameters, so the probe's
     binding is altered by a test double after the real binder ran."""
     document = _document("TH-R1")
-    real = revision_host.bind_route
+    real = revision_routes.bind_route
     base = real("revision_eo", document)
     assert isinstance(base, Route)
 
@@ -383,8 +396,10 @@ def test_g5_a_probe_that_moves_more_than_its_parameter_is_refused(
         object.__setattr__(spec, "parameters", parameters)
         return Route(route.solve_path, _replace(binding, spec=spec))
 
-    monkeypatch.setattr(revision_host, "bind_route", altered)
-    found = decision_map(document, [DecisionBox("SPEC-H-Q", 20000.0, 30000.0, "W")])
+    monkeypatch.setattr(revision_routes, "bind_route", altered)
+    found = decision_map(
+        document, [DecisionBox("SPEC-H-Q", 20000.0, 30000.0, "W")], routes=REVISION_ROUTES
+    )
     assert _codes(found) == [("DECISION_NOT_CONTINUOUS", "SPEC-H-Q")]
     assert isinstance(found, tuple)
     expected = "configuration_sha256" if change == "configuration" else "P.efficiency"

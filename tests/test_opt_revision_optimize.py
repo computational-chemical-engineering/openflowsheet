@@ -15,6 +15,7 @@ import pytest
 from t07_corpus import A02_FILES, CORPUS
 
 from openflowsheet.application.policies import DEFAULT_POLICY_ID, resolve_policy
+from openflowsheet.application.revision_routes import REVISION_ROUTES
 from openflowsheet.application.revision_run import select_route
 from openflowsheet.application.types import schema_errors
 from openflowsheet.canonical import canonical_json, document_sha256
@@ -54,6 +55,7 @@ def _optimize(document: Any, request: Any, directory: Path | None, probe: Any) -
         solve_policy=POLICY,
         check_policy=CheckPolicy(),
         solver_probe=lambda: probe,
+        routes=REVISION_ROUTES,
     )
 
 
@@ -144,13 +146,14 @@ def test_g11_a_fresh_interpreter_loads_neither_pyomo_nor_cyipopt() -> None:
 import json, sys
 sys.path.insert(0, {str(REPO / "tests")!r})
 from openflowsheet.application.policies import DEFAULT_POLICY_ID, resolve_policy
+from openflowsheet.application.revision_routes import REVISION_ROUTES
 from openflowsheet.studies.nlp.closure import SolverAvailability
 from openflowsheet.studies.nlp.revision import optimize_revision
 from openflowsheet.verify.certificate import CheckPolicy
 opt = {str(OPT)!r}
 document = json.load(open(opt + "/flowsheets/OPT-A1.json"))
 request = json.load(open(opt + "/requests/OPT-A1.json"))
-outcome = optimize_revision(document, request, directory=None,
+outcome = optimize_revision(document, request, directory=None, routes=REVISION_ROUTES,
     solve_policy=resolve_policy(DEFAULT_POLICY_ID, "revision_eo"), check_policy=CheckPolicy(),
     solver_probe=lambda: SolverAvailability(False, "double"))
 assert outcome.report.status == "UNSUPPORTED"

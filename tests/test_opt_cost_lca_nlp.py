@@ -24,6 +24,7 @@ from typing import Any
 import pytest
 
 from openflowsheet.application.policies import DEFAULT_POLICY_ID, resolve_policy
+from openflowsheet.application.revision_routes import REVISION_ROUTES
 from openflowsheet.application.types import schema_errors
 from openflowsheet.studies.nlp.revision import OptimizationOutcome, optimize_revision
 from openflowsheet.verify.certificate import CheckPolicy
@@ -90,6 +91,7 @@ def _run(case: str, directory: Path) -> OptimizationOutcome:
         directory=directory / case,
         solve_policy=POLICY,
         check_policy=CheckPolicy(),
+        routes=REVISION_ROUTES,
     )
 
 

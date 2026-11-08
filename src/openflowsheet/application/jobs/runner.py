@@ -95,6 +95,7 @@ from openflowsheet.application.jobs.model import (
     Interruption,
     TerminalStatus,
 )
+from openflowsheet.application.revision_routes import REVISION_ROUTES
 from openflowsheet.application.revision_run import (
     Route,
     RunUnsupportedError,
@@ -758,7 +759,11 @@ class _Body:
         rerun_directory = self.directory / "rerun"
         try:
             report = replay_optimization(
-                record, rerun=rerun, rerun_directory=rerun_directory, stage=self.at
+                record,
+                routes=REVISION_ROUTES,
+                rerun=rerun,
+                rerun_directory=rerun_directory,
+                stage=self.at,
             )
             rows: list[ArtifactRow] = []
             for directory in sorted(rerun_directory.glob("starts/*/*/")):
@@ -1009,6 +1014,7 @@ class _Body:
                 revision.as_document(),
                 body.request,
                 directory=record_dir,
+                routes=REVISION_ROUTES,
                 solve_policy=policy,
                 check_policy=check_policy,
                 policy_requested=body.policy_id,

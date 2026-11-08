@@ -32,6 +32,7 @@ import pytest
 from openflowsheet.application.jobs.model import TERMINAL_STATUSES
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.policies import DEFAULT_POLICY_ID, resolve_policy
+from openflowsheet.application.revision_routes import REVISION_ROUTES
 from openflowsheet.application.store import JOBS_DIR
 from openflowsheet.application.types import Budgets, Change, Edit, JobRequest
 from openflowsheet.run.identity import r0_projection
@@ -155,6 +156,7 @@ def opt_a2(tmp_path_factory: pytest.TempPathFactory) -> Iterator[tuple[Path, str
         directory=directory / "library",
         solve_policy=POLICY,
         check_policy=CheckPolicy(),
+        routes=REVISION_ROUTES,
     )
     assert outcome.record_dir is not None
     assert outcome.report.status == "KKT_POINT_VERIFIED"

@@ -37,7 +37,6 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Final
 
-from openflowsheet.application.policies import DEFAULT_POLICY_ID
 from openflowsheet.assessment.program import AssessmentProgram, Refusal
 from openflowsheet.assessment.spec import load_assessment
 from openflowsheet.assessment.views import view_of
@@ -78,7 +77,7 @@ from openflowsheet.studies.nlp.formulation import (
     AssessmentClosure,
     NlpFormulation,
 )
-from openflowsheet.studies.nlp.host import CertifiedPoint
+from openflowsheet.studies.nlp.host import CertifiedPoint, RevisionRoutes
 from openflowsheet.studies.nlp.request import (
     OptimizationRequest,
     StaticReadiness,
@@ -175,9 +174,10 @@ def optimize_revision(
     request: Mapping[str, Any],
     *,
     directory: Path | None,
+    routes: RevisionRoutes,
     solve_policy: SolvePolicy,
     check_policy: CheckPolicy,
-    policy_requested: str = DEFAULT_POLICY_ID,
+    policy_requested: str | None = None,
     check: Callable[[], None] | None = None,
     interruptions: tuple[type[BaseException], ...] = (),
     progress: Progress | None = None,
@@ -188,8 +188,10 @@ def optimize_revision(
     """Optimise `document` (a stored revision) by `request` (§4.12). See the module docstring.
 
     Raises `ValueError` for a request with problems (`request_problems`): an invalid input, not
-    a report. `check` is called between stages, in every Ipopt iteration and (in a job) at every
-    production solve's trace record, and may raise to cancel; inside Ipopt's iteration callback
+    a report. `routes` are the application's route operations (`host.RevisionRoutes`, OPT
+    review M2); `policy_requested` `None` is their default policy id. `check` is called between
+    stages, in every Ipopt iteration and (in a job) at every production solve's trace record,
+    and may raise to cancel; inside Ipopt's iteration callback
     an exception of one of the `interruptions` types (a job's `JobInterrupted`) is held and
     re-raised once Ipopt has returned (`greybox.solve_start`); `progress(stage, info)` is told
     each stage. `wall_time_remaining` (a job's, §4.10) caps each start's Ipopt `max_wall_time`
@@ -197,7 +199,9 @@ def optimize_revision(
     check = check or (lambda: None)
     progress = progress or (lambda stage, info: None)
     parsed = OptimizationRequest.of(request)
-    static = static_readiness(request, document, surrogates=surrogates, solver_probe=solver_probe)
+    static = static_readiness(
+        request, document, routes=routes, surrogates=surrogates, solver_probe=solver_probe
+    )
     revision_sha256 = document_sha256(document)
     identity = {
         "request_sha256": parsed.sha256,
@@ -235,6 +239,7 @@ def optimize_revision(
     host = RevisionNlpHost(
         document,
         static.decisions,
+        routes=routes,
         solve_policy=solve_policy,
         check_policy=check_policy,
         policy_requested=policy_requested,

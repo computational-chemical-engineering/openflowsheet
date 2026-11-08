@@ -134,6 +134,7 @@ def command_optimize(arguments: argparse.Namespace) -> int:
     is `KKT_POINT_VERIFIED`, as `solve` exits 0 iff its run is `VERIFIED`.
     """
     from openflowsheet.application.policies import DEFAULT_POLICY_ID, resolve_policy
+    from openflowsheet.application.revision_routes import REVISION_ROUTES
     from openflowsheet.studies.nlp.request import request_problems
     from openflowsheet.studies.nlp.revision import optimize_revision
     from openflowsheet.studies.nlp.revision_host import ROUTE
@@ -158,6 +159,7 @@ def command_optimize(arguments: argparse.Namespace) -> int:
         document,
         request,
         directory=Path(arguments.out),
+        routes=REVISION_ROUTES,
         solve_policy=policy,
         check_policy=CheckPolicy(),
     )
@@ -247,6 +249,7 @@ def command_replay(arguments: argparse.Namespace) -> int:
     format) is `replay_optimization`'s, with or without `--rerun`. Exit 0 iff the verdict is
     `MATCH`, or `NOT_RUN` when `--rerun` was not given.
     """
+    from openflowsheet.application.revision_routes import REVISION_ROUTES
     from openflowsheet.run.replay import replay
     from openflowsheet.studies.nlp.replay import is_optimization_record, replay_optimization
 
@@ -256,7 +259,10 @@ def command_replay(arguments: argparse.Namespace) -> int:
 
         with tempfile.TemporaryDirectory() as scratch:
             report = replay_optimization(
-                directory, rerun=arguments.rerun, rerun_directory=Path(scratch) / "rerun"
+                directory,
+                routes=REVISION_ROUTES,
+                rerun=arguments.rerun,
+                rerun_directory=Path(scratch) / "rerun",
             )
     elif arguments.rerun:
         import tempfile

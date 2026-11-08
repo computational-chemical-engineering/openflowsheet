@@ -36,6 +36,7 @@ def blank(document: Any) -> Any:
 
 def report(case: str, directory: Path) -> Any:
     from openflowsheet.application.policies import DEFAULT_POLICY_ID, resolve_policy
+    from openflowsheet.application.revision_routes import REVISION_ROUTES
     from openflowsheet.studies.nlp.revision import optimize_revision
     from openflowsheet.verify.certificate import CheckPolicy
 
@@ -49,6 +50,7 @@ def report(case: str, directory: Path) -> Any:
         document,
         request,
         directory=directory / case,
+        routes=REVISION_ROUTES,
         solve_policy=policy,
         check_policy=CheckPolicy(),
     )

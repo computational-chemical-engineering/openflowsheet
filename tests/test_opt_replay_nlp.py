@@ -28,6 +28,7 @@ from typing import Any
 import pytest
 
 from openflowsheet.application.policies import DEFAULT_POLICY_ID, resolve_policy
+from openflowsheet.application.revision_routes import REVISION_ROUTES
 from openflowsheet.canonical import canonical_json
 from openflowsheet.studies.nlp.replay import MANIFEST, replay_optimization
 from openflowsheet.studies.nlp.revision import OptimizationOutcome, optimize_revision
@@ -57,6 +58,7 @@ def _run(case: str, directory: Path) -> OptimizationOutcome:
         directory=directory / case,
         solve_policy=POLICY,
         check_policy=CheckPolicy(),
+        routes=REVISION_ROUTES,
     )
 
 
@@ -79,14 +81,18 @@ def _rehash(record: Path, relative: str) -> None:
 @pytest.mark.parametrize("case", ["OPT-A2", "OPT-A3"])
 def test_g13_a_record_replays_to_match(case: str, records: Path, tmp_path: Path) -> None:
     record = _copy(case, records, "match")
-    report = replay_optimization(record, rerun=True, rerun_directory=tmp_path / "rerun")
+    report = replay_optimization(
+        record, rerun=True, rerun_directory=tmp_path / "rerun", routes=REVISION_ROUTES
+    )
     assert report.integrity.ok
     assert report.differences == (), report.differences
     assert (report.mode, report.verdict) in {
         ("exact_replay", "MATCH"),
         ("compatible_reproduction", "MATCH"),
     }, report.as_document()
-    inspected = replay_optimization(record, rerun=False, rerun_directory=tmp_path / "unused")
+    inspected = replay_optimization(
+        record, rerun=False, rerun_directory=tmp_path / "unused", routes=REVISION_ROUTES
+    )
     assert (inspected.mode, inspected.verdict) == ("inspected_archived_results", "NOT_RUN")
     target = os.environ.get("OPT_WRITE_REPLAY_FIXTURE")
     if target and case == "OPT-A2":
@@ -101,7 +107,9 @@ def test_g13_one_tampered_byte_is_an_integrity_failure(records: Path, tmp_path: 
     payload = bytearray(member.read_bytes())
     payload[len(payload) // 2] ^= 0x01
     member.write_bytes(bytes(payload))
-    report = replay_optimization(record, rerun=True, rerun_directory=tmp_path / "rerun")
+    report = replay_optimization(
+        record, rerun=True, rerun_directory=tmp_path / "rerun", routes=REVISION_ROUTES
+    )
     assert not report.integrity.ok
     assert report.integrity.tampered == ("starts/0/candidate-revision.json",)
     assert (report.mode, report.verdict) == ("inspected_archived_results", "NOT_RUN")
@@ -122,7 +130,9 @@ def test_g13_an_edited_verification_float_is_a_mismatch(records: Path, tmp_path:
         document["objective"] = document["objective"] * (1 + 1e-6)
 
     _edit(record, relative, moved)
-    report = replay_optimization(record, rerun=True, rerun_directory=tmp_path / "rerun")
+    report = replay_optimization(
+        record, rerun=True, rerun_directory=tmp_path / "rerun", routes=REVISION_ROUTES
+    )
     assert report.integrity.ok
     assert report.verdict == "MISMATCH"
     assert [d for d in report.differences if d.startswith(relative)], report.differences
@@ -148,7 +158,9 @@ def test_g13_opt_a3_an_edited_boundary_rcond_is_a_mismatch(records: Path, tmp_pa
 
     _edit(record, relative, moved)
     assert found, "OPT-A3's verification records no rcond"
-    report = replay_optimization(record, rerun=True, rerun_directory=tmp_path / "rerun")
+    report = replay_optimization(
+        record, rerun=True, rerun_directory=tmp_path / "rerun", routes=REVISION_ROUTES
+    )
     assert report.integrity.ok
     assert report.verdict == "MISMATCH"
     assert [d for d in report.differences if d.startswith(relative)], report.differences

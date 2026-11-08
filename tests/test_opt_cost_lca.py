@@ -22,6 +22,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from test_e01_a_report import P1_DOC  # noqa: E402
 from test_e01_b_lca import P4_DOC  # noqa: E402
 
+from openflowsheet.application.revision_routes import REVISION_ROUTES
 from openflowsheet.application.types import schema_errors  # noqa: E402
 from openflowsheet.studies.nlp.closure import SolverAvailability  # noqa: E402
 from openflowsheet.studies.nlp.request import static_readiness  # noqa: E402
@@ -54,7 +55,9 @@ def test_the_committed_requests_are_current_valid_and_ready(case: str) -> None:
     assert schema_errors("optimization-request.schema.json", request) == []
     document = json.loads((REPO / "benchmarks/s11/thermal/TH-C1.json").read_bytes())
     available = SolverAvailability(True, "test double")
-    readiness = static_readiness(request, document, solver_probe=lambda: available)
+    readiness = static_readiness(
+        request, document, solver_probe=lambda: available, routes=REVISION_ROUTES
+    )
     assert readiness.ready, readiness.codes
 
 

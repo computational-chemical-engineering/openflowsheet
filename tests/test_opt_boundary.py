@@ -27,6 +27,7 @@ from typing import Any
 import pytest
 
 from openflowsheet.application.policies import DEFAULT_POLICY_ID, resolve_policy
+from openflowsheet.application.revision_routes import REVISION_ROUTES
 from openflowsheet.canonical import canonical_json
 from openflowsheet.orchestrator.revision import instances_of
 from openflowsheet.orchestrator.splits import region_splits
@@ -65,11 +66,15 @@ PERF = {"TH-R1": "thermal/TH-R1.json", "M1": "flowsheets/M1.json", "C-MW": "flow
 def _host(
     document: Mapping[str, Any], boxes: list[DecisionBox], policy: CheckPolicy | None = None
 ) -> RevisionNlpHost:
-    found = decision_map(document, boxes)
+    found = decision_map(document, boxes, routes=REVISION_ROUTES)
     assert isinstance(found, DecisionMap), found
     assert POLICY is not None
     return RevisionNlpHost(
-        document, found, solve_policy=POLICY, check_policy=policy or CheckPolicy()
+        document,
+        found,
+        solve_policy=POLICY,
+        check_policy=policy or CheckPolicy(),
+        routes=REVISION_ROUTES,
     )
 
 

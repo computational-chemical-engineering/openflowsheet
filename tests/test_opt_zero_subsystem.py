@@ -21,6 +21,7 @@ import numpy.typing as npt
 import pytest
 
 from openflowsheet.application.policies import DEFAULT_POLICY_ID, resolve_policy
+from openflowsheet.application.revision_routes import REVISION_ROUTES
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.orchestrator import region as region_module
 from openflowsheet.studies.nlp import revision_host
@@ -46,10 +47,12 @@ ETHANOL_FEED = "SPEC-S-IN1-n-C2H5OH"
 
 
 def _host(document: Mapping[str, Any], boxes: list[DecisionBox]) -> RevisionNlpHost:
-    found = decision_map(document, boxes)
+    found = decision_map(document, boxes, routes=REVISION_ROUTES)
     assert isinstance(found, DecisionMap), found
     assert POLICY is not None
-    return RevisionNlpHost(document, found, solve_policy=POLICY, check_policy=CheckPolicy())
+    return RevisionNlpHost(
+        document, found, solve_policy=POLICY, check_policy=CheckPolicy(), routes=REVISION_ROUTES
+    )
 
 
 @cache

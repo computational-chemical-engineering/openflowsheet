@@ -21,12 +21,19 @@ and its K04 certificate at given decision values):
   decision ids and cached by the host (the same function at every start);
 - `phase_rows(point)`: the phase-regime admissibility rows (§4.7, WO-5); `None` for SYN-001;
 - `model_record()`, `domain()`: the base problem's identity and the provider's declared domain.
+
+**The revision routes** (`RevisionRoutes`, OPT review M2): the binder, the solve, the bundle
+writer and the bundle replay a revision host runs are `application`'s (`revision_run`), and
+`studies` never imports `application` (M04's rule). The application hands its implementation
+(`application.revision_routes.REVISION_ROUTES`) to the revision host, the decision map, the
+static readiness and the replay as `routes`.
 """
 
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
+from pathlib import Path
 from types import MappingProxyType
 from typing import Any, Literal, Protocol
 
@@ -40,6 +47,7 @@ from openflowsheet.models import SpecificationError
 from openflowsheet.models.syn001.flowsheet import Syn001Flowsheet
 from openflowsheet.orchestrator.region import AttemptSystem
 from openflowsheet.orchestrator.tear import Syn001TearProblem
+from openflowsheet.orchestrator.trace import SolvePolicy
 from openflowsheet.studies.sensitivity import (
     Mode,
     OutputFunctional,
@@ -54,7 +62,7 @@ from openflowsheet.studies.syn001 import (
     syn001_sensitivity,
     with_pinned,
 )
-from openflowsheet.verify.certificate import SolutionCertificate
+from openflowsheet.verify.certificate import CheckPolicy, SolutionCertificate
 
 HostKind = Literal["syn001-tear", "revision-eo"]
 
@@ -210,6 +218,81 @@ class NlpHost(Protocol):
     def twin(self, decision_ids: Sequence[str]) -> ParametricTwin: ...
 
     def phase_rows(self, point: CertifiedPoint) -> Any: ...
+
+
+class RevisionRoutes(Protocol):
+    """The application's route operations a revision host runs (module docstring; implemented
+    by `application.revision_routes`). Routes, runs, bindings and refusals are `revision_run`'s
+    and `binding`'s, opaque here (`Any`)."""
+
+    @property
+    def default_policy_id(self) -> str:
+        """The solve-policy id a request that names none asks for (`policies.DEFAULT_POLICY_ID`)."""
+        ...
+
+    @property
+    def unsupported(self) -> type[Exception]:
+        """What `solve` raises for a run with no registered bundle mapping, or a plan T02 refused
+        (`revision_run.RunUnsupportedError`); the job runner reports it as `unsupported(<code>)`."""
+        ...
+
+    def bind(
+        self,
+        solve_path: Literal["revision_eo"],
+        document: Mapping[str, Any],
+        *,
+        surrogates: Any = None,
+    ) -> Any:
+        """`document` bound on `solve_path` (`revision_run.bind_route`, never re-routes): the
+        route, or the binder's refusal (`binding.Unbound`, with `kind` and `detail`)."""
+        ...
+
+    def select(self, document: Mapping[str, Any], *, surrogates: Any = None) -> Any:
+        """The route `document` selects (`revision_run.select_route`), or `NoRoute`, whose
+        `revision` is the revision binder's refusal."""
+        ...
+
+    def is_route(self, bound: Any) -> bool:
+        """Whether `bind`'s or `select`'s answer is a route (`revision_run.Route`)."""
+        ...
+
+    def refusal_code(self, detail: str) -> str:
+        """A refusal's code token (`binding.refusal_code`)."""
+        ...
+
+    def solve(
+        self,
+        route: Any,
+        document: Mapping[str, Any],
+        *,
+        policy: SolvePolicy,
+        check_policy: CheckPolicy,
+        warm_start: Any = None,
+    ) -> Any:
+        """`route`'s run of `document` (`revision_run.solve_route`). Raises `unsupported`; a
+        `VerifierError` propagates."""
+        ...
+
+    def write_bundle(
+        self,
+        run: Any,
+        document: Mapping[str, Any],
+        directory: Path,
+        *,
+        run_id: str,
+        policy: SolvePolicy,
+        check_policy: CheckPolicy,
+        policy_requested: str,
+        started: str,
+        clock: float,
+    ) -> None:
+        """The bundle `run_revision_session` writes for `run` of `document`, at `directory`
+        (`revision_run.write_revision_bundle`)."""
+        ...
+
+    def reproduce(self, directory: Path, *, rerun: bool, rerun_directory: Path, run_id: str) -> Any:
+        """The bundle at `directory` reproduced (`revision_run.reproduce_bundle`)."""
+        ...
 
 
 @dataclass

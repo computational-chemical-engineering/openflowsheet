@@ -26,6 +26,7 @@ from openflowsheet.application import types as application_types
 from openflowsheet.application import validation
 from openflowsheet.application.contract import ApplicationError
 from openflowsheet.application.local import LocalApplication
+from openflowsheet.application.revision_routes import REVISION_ROUTES
 from openflowsheet.application.types import schema_errors
 from openflowsheet.canonical import canonical_json, document_sha256
 from openflowsheet.studies.nlp import closure
@@ -199,7 +200,12 @@ def test_the_formulation_stores_minimize_of_the_signed_scaled_objective() -> Non
 
 
 def test_static_readiness_on_th_r1_is_ready_with_the_mapped_formulation() -> None:
-    found = static_readiness(_fixture("valid", "th_r1_minimal"), _th_r1(), solver_probe=_available)
+    found = static_readiness(
+        _fixture("valid", "th_r1_minimal"),
+        _th_r1(),
+        solver_probe=_available,
+        routes=REVISION_ROUTES,
+    )
     assert (found.problems, found.reasons, dict(found.not_run)) == ((), (), {})
     assert found.ready
     assert found.decisions is not None
@@ -210,7 +216,9 @@ def test_static_readiness_on_th_r1_is_ready_with_the_mapped_formulation() -> Non
 
 
 def test_the_full_fixture_is_ready_on_th_r1() -> None:
-    found = static_readiness(_fixture("valid", "th_r1_full"), _th_r1(), solver_probe=_available)
+    found = static_readiness(
+        _fixture("valid", "th_r1_full"), _th_r1(), solver_probe=_available, routes=REVISION_ROUTES
+    )
     assert found.reasons == () and found.ready
     assert found.starts is not None and len(found.starts) == 4
     assert found.starts[0] == (25000.0, 300.0)
@@ -280,7 +288,7 @@ def test_g18_each_static_reason_alone(code: str) -> None:
     edit, revision, subjects = REASONS[code]
     request = _fixture("valid", "th_r1_minimal")
     edit(request)
-    found = static_readiness(request, revision(), solver_probe=_available)
+    found = static_readiness(request, revision(), solver_probe=_available, routes=REVISION_ROUTES)
     assert found.problems == ()
     assert found.codes == (code,), found.reasons
     assert tuple(sorted(r.subject or "" for r in found.reasons)) == tuple(
@@ -291,7 +299,10 @@ def test_g18_each_static_reason_alone(code: str) -> None:
 
 def test_g18_nlp_solver_unavailable_is_a_reason_and_the_rest_still_runs() -> None:
     found = static_readiness(
-        _fixture("valid", "th_r1_minimal"), _th_r1(), solver_probe=lambda: UNAVAILABLE
+        _fixture("valid", "th_r1_minimal"),
+        _th_r1(),
+        solver_probe=lambda: UNAVAILABLE,
+        routes=REVISION_ROUTES,
     )
     assert found.codes == ("NLP_SOLVER_UNAVAILABLE",)
     assert found.reasons[0].detail == UNAVAILABLE.detail
@@ -305,7 +316,7 @@ def test_the_routes_other_than_revision_eo_are_refused() -> None:
 
     route = select_route(document)
     request = _fixture("valid", "th_r1_minimal")
-    found = static_readiness(request, document, solver_probe=_available)
+    found = static_readiness(request, document, solver_probe=_available, routes=REVISION_ROUTES)
     if getattr(route, "solve_path", None) != "revision_coupled":
         pytest.skip(f"c1-loop-real does not route revision_coupled here ({route!r:.80})")
     assert "OPTIMIZATION_ROUTE_UNAVAILABLE" in found.codes
@@ -317,13 +328,15 @@ def test_zero_starts_is_too_many_starts_and_reasons_keep_the_table_order() -> No
     request["starts"] = {"include_revision": False}
     request["hessian"] = "exact"
     request["decisions"][0]["unit"] = "kW"
-    found = static_readiness(request, _th_r1(), solver_probe=_available)
+    found = static_readiness(request, _th_r1(), solver_probe=_available, routes=REVISION_ROUTES)
     assert found.codes == ("DECISION_UNIT_NOT_INTERNAL", "TOO_MANY_STARTS", "HESSIAN_UNAVAILABLE")
     assert "0 starts" in found.reasons[1].detail
 
 
 def test_an_ill_formed_request_runs_no_other_check() -> None:
-    found = static_readiness(_fixture("invalid", "zero_scale"), _th_r1(), solver_probe=_available)
+    found = static_readiness(
+        _fixture("invalid", "zero_scale"), _th_r1(), solver_probe=_available, routes=REVISION_ROUTES
+    )
     assert found.problems and found.reasons == ()
     assert set(found.not_run) == set(STATIC_CODES) - {"NLP_SOLVER_UNAVAILABLE"}
 
@@ -489,6 +502,7 @@ import json, sys
 sys.path.insert(0, sys.argv[1])
 from openflowsheet.application import validation
 from openflowsheet.application.contract import ApplicationError
+from openflowsheet.application.revision_routes import REVISION_ROUTES
 from openflowsheet.studies.nlp.closure import SolverAvailability
 from openflowsheet.studies.nlp.request import static_readiness
 revision = json.loads(open(sys.argv[2], "rb").read())
@@ -502,7 +516,8 @@ ready = validation.validate(
     revision, "optimization", optimization=request,
     solver_probe=lambda: SolverAvailability(True, "double"),
 ).status
-static = static_readiness(request, revision, solver_probe=lambda: SolverAvailability(True, "d"))
+static = static_readiness(request, revision, routes=REVISION_ROUTES,
+                          solver_probe=lambda: SolverAvailability(True, "d"))
 print(json.dumps({"real": real, "ready": ready, "static": static.ready,
                   "loaded": sorted(m for m in ("pyomo", "cyipopt") if m in sys.modules)}))
 """

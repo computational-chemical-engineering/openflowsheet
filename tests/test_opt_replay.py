@@ -15,6 +15,7 @@ from pathlib import Path
 
 import pytest
 
+from openflowsheet.application.revision_routes import REVISION_ROUTES
 from openflowsheet.studies.nlp.replay import (
     MANIFEST,
     is_optimization_record,
@@ -39,7 +40,9 @@ def test_g13_the_committed_record_is_an_intact_optimization_record() -> None:
 def test_g13_the_committed_record_replays_to_match_without_ipopt(tmp_path: Path) -> None:
     record = tmp_path / "OPT-A2"
     shutil.copytree(FIXTURE, record)
-    report = replay_optimization(record, rerun=True, rerun_directory=tmp_path / "rerun")
+    report = replay_optimization(
+        record, rerun=True, rerun_directory=tmp_path / "rerun", routes=REVISION_ROUTES
+    )
     assert report.integrity.ok
     assert report.differences == (), report.differences
     assert report.verdict == "MATCH", report.as_document()
@@ -50,7 +53,9 @@ def test_g13_an_unexpected_file_fails_integrity(tmp_path: Path) -> None:
     record = tmp_path / "OPT-A2"
     shutil.copytree(FIXTURE, record)
     (record / "starts" / "0" / "extra.json").write_bytes(b"{}")
-    report = replay_optimization(record, rerun=True, rerun_directory=tmp_path / "rerun")
+    report = replay_optimization(
+        record, rerun=True, rerun_directory=tmp_path / "rerun", routes=REVISION_ROUTES
+    )
     assert report.integrity.unexpected == ("starts/0/extra.json",)
     assert (report.mode, report.verdict) == ("inspected_archived_results", "NOT_RUN")
 
@@ -59,12 +64,15 @@ _NO_NLP_IMPORT = """
 import sys, tempfile
 from pathlib import Path
 sys.path.insert(0, sys.argv[1])
+from openflowsheet.application.revision_routes import REVISION_ROUTES
 from openflowsheet.studies.nlp.replay import replay_optimization
 import shutil
 with tempfile.TemporaryDirectory() as work:
     record = Path(work) / "r"
     shutil.copytree(sys.argv[2], record)
-    report = replay_optimization(record, rerun=True, rerun_directory=Path(work) / "x")
+    report = replay_optimization(
+        record, routes=REVISION_ROUTES, rerun=True, rerun_directory=Path(work) / "x"
+    )
 print(report.verdict, sorted(m for m in ("pyomo", "cyipopt") if m in sys.modules))
 """
 

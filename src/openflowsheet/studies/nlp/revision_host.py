@@ -3,9 +3,11 @@
 `RevisionNlpHost` answers the `NlpHost` protocol (`studies/nlp/host.py`) for a revision document:
 
 - **certify** writes the decisions into a copy of the document (§4.2.2's edit), binds it with the
-  recorded route's binder (`bind_route`, R2.5: never re-routes) and solves it with `solve_route`
-  from the registered initializer, cold (`warm_start=None`, D6); with a bundle sink it writes the
-  bundle `run_revision_session` writes for that document (`write_revision_bundle`);
+  recorded route's binder (`routes.bind`, `bind_route`, R2.5: never re-routes) and solves it with
+  `routes.solve` (`solve_route`) from the registered initializer, cold (`warm_start=None`, D6);
+  with a bundle sink it writes the bundle `run_revision_session` writes for that document
+  (`routes.write_bundle`, `write_revision_bundle`); `routes` is the application's
+  (`host.RevisionRoutes`, OPT review M2);
 - **held system** (§4.2.1) is the region's converged attempt (`RegionResult.final_system`) plus
   the plan's eliminated alias rows;
 - **regimes** (§4.2.4) are the final attempt signature and every lifted split's kind, regime and
@@ -37,17 +39,6 @@ from typing import Any, Literal
 
 import numpy as np
 
-from openflowsheet.application.binding import Unbound
-from openflowsheet.application.policies import DEFAULT_POLICY_ID
-from openflowsheet.application.revision_binding import RevisionBinding, SurrogateResolver
-from openflowsheet.application.revision_run import (
-    Route,
-    RouteRun,
-    RunUnsupportedError,
-    bind_route,
-    solve_route,
-    write_revision_bundle,
-)
 from openflowsheet.compile.casadi_backend import (
     ParametricTwin,
     TwinEvaluationError,
@@ -78,6 +69,7 @@ from openflowsheet.studies.nlp.host import (
     HeldSystem,
     HostKind,
     RegimeRecord,
+    RevisionRoutes,
     ZeroSubsystem,
 )
 from openflowsheet.studies.nlp.phase import PhaseRows, phase_rows
@@ -148,7 +140,7 @@ class DecisionMap:
 class RevisionUnboundError(ValueError):
     """The base revision does not bind on `revision_eo`: the binder's refusal is `unbound`."""
 
-    def __init__(self, unbound: Unbound) -> None:
+    def __init__(self, unbound: Any) -> None:
         self.unbound = unbound
         super().__init__(f"{unbound.kind}({unbound.detail})")
 
@@ -184,7 +176,7 @@ def document_at(document: Mapping[str, Any], values: Mapping[str, float]) -> dic
     return edited
 
 
-def _moved(base: RevisionBinding, probe: RevisionBinding) -> tuple[list[str], list[str]]:
+def _moved(base: Any, probe: Any) -> tuple[list[str], list[str]]:
     """What a probe changed: the structural members that differ, and the parameters whose value
     differs bitwise (§4.2.2 step 4)."""
     structural = [
@@ -216,7 +208,8 @@ def decision_map(
     document: Mapping[str, Any],
     decisions: Sequence[DecisionBox],
     *,
-    surrogates: SurrogateResolver | None = None,
+    routes: RevisionRoutes,
+    surrogates: Any = None,
 ) -> DecisionMap | tuple[DecisionRefusal, ...]:
     """§4.2.2: each decision's parameter by bind probes at its box's finite ends, or every
     decision's refusal in request order. Binds `document` once plus at most twice per decision;
@@ -225,10 +218,10 @@ def decision_map(
     A probe may move at most one parameter, to the written value bitwise, and nothing else; a
     probe at the base value moves none. Across a decision's probes exactly one parameter is
     named, and at every probe it holds the written value."""
-    base = bind_route(ROUTE, document, surrogates=surrogates)
-    if not isinstance(base, Route):
+    base = routes.bind(ROUTE, document, surrogates=surrogates)
+    if not routes.is_route(base):
         raise RevisionUnboundError(base)
-    binding: RevisionBinding = base.binding
+    binding = base.binding
     parameters: dict[str, str] = {}
     refusals: list[DecisionRefusal] = []
     for decision in decisions:
@@ -256,8 +249,8 @@ def decision_map(
         probes: list[tuple[float, list[str], Mapping[str, float]]] = []
         why = ""
         for value in ends:
-            probe = bind_route(ROUTE, document_at(document, {name: value}), surrogates=surrogates)
-            if not isinstance(probe, Route):
+            probe = routes.bind(ROUTE, document_at(document, {name: value}), surrogates=surrogates)
+            if not routes.is_route(probe):
                 why = f"{probe.kind}({probe.detail})"
                 break
             structural, moved = _moved(binding, probe.binding)
@@ -313,8 +306,8 @@ class _RevisionPoint:
     what the host derived from them once (the held system, the compiled problem)."""
 
     document: Mapping[str, Any]
-    route: Route | None
-    run: RouteRun | None
+    route: Any
+    run: Any
     system: HeldSystem | None = None
     compiled: CompiledProblem | None = field(default=None, repr=False)
     phase: PhaseRows | None = field(default=None, repr=False)
@@ -339,9 +332,10 @@ def _handle(point: CertifiedPoint) -> _RevisionPoint:
 
 class RevisionNlpHost:
     """A stored revision on `revision_eo` as an NLP host (OPT design §4.2). See the module
-    docstring. `decisions` is the request's decision map (`decision_map`); `sink`, where given,
-    places each certify's bundle; `policy_requested` is the solve policy's id as requested, for
-    the bundle's `solve-path.json`."""
+    docstring. `decisions` is the request's decision map (`decision_map`); `routes` the
+    application's route operations; `sink`, where given, places each certify's bundle;
+    `policy_requested` is the solve policy's id as requested, for the bundle's `solve-path.json`
+    (`None`: the routes' default policy id)."""
 
     kind: HostKind = "revision-eo"
     #: §4.5: a revision needs one certified start, not every one.
@@ -352,21 +346,25 @@ class RevisionNlpHost:
         document: Mapping[str, Any],
         decisions: DecisionMap,
         *,
+        routes: RevisionRoutes,
         solve_policy: SolvePolicy,
         check_policy: CheckPolicy,
-        policy_requested: str = DEFAULT_POLICY_ID,
+        policy_requested: str | None = None,
         sink: BundleSink | None = None,
-        surrogates: SurrogateResolver | None = None,
+        surrogates: Any = None,
     ) -> None:
-        route = bind_route(ROUTE, document, surrogates=surrogates)
-        if not isinstance(route, Route):
+        route = routes.bind(ROUTE, document, surrogates=surrogates)
+        if not routes.is_route(route):
             raise RevisionUnboundError(route)
         self.document = copy.deepcopy(dict(document))
         self.decisions = decisions
+        self.routes = routes
         self.route = route
         self.solve_policy = solve_policy
         self.check_policy = check_policy
-        self.policy_requested = policy_requested
+        self.policy_requested = (
+            routes.default_policy_id if policy_requested is None else policy_requested
+        )
         self.sink = sink
         self.surrogates = surrogates
         self._specifications = decisions.specifications
@@ -376,8 +374,8 @@ class RevisionNlpHost:
     # -- identity --------------------------------------------------------------------------------
 
     @property
-    def binding(self) -> RevisionBinding:
-        return self.route.binding  # type: ignore[no-any-return]
+    def binding(self) -> Any:
+        return self.route.binding
 
     def _base_compiled(self) -> CompiledProblem:
         if self._compiled is None:
@@ -396,7 +394,8 @@ class RevisionNlpHost:
         return {"T": domain["T"], "P": domain["P"]}
 
     def base_spec(self) -> ProblemSpec:
-        return self.binding.spec
+        spec: ProblemSpec = self.binding.spec
+        return spec
 
     # -- the certified point ---------------------------------------------------------------------
 
@@ -413,7 +412,8 @@ class RevisionNlpHost:
 
     def certify(self, decisions: Mapping[str, float]) -> CertifiedPoint:
         """The candidate document at `decisions` (parameter ids), bound by `revision_eo`'s binder
-        and solved by `solve_route` cold (D6); its bundle written when the host has a sink.
+        and solved by `solve_route` cold (D6), through `routes`; its bundle written when the host
+        has a sink.
 
         Outcomes as `CertifiedSolve`'s: `CONVERGED` only with a `VERIFIED` certificate; the plan
         run's outcome; `CERTIFICATE_NOT_VERIFIED` (also when the verifier refused to judge);
@@ -422,8 +422,8 @@ class RevisionNlpHost:
         document = self.document_at(decisions)
         parameters = MappingProxyType({name: float(value) for name, value in decisions.items()})
         started, clock = started_now(), time.monotonic()
-        route = bind_route(ROUTE, document, surrogates=self.surrogates)
-        if not isinstance(route, Route):
+        route = self.routes.bind(ROUTE, document, surrogates=self.surrogates)
+        if not self.routes.is_route(route):
             return CertifiedPoint(
                 outcome="SPECIFICATION_REFUSED",
                 message=f"{route.kind}({route.detail})",
@@ -441,14 +441,14 @@ class RevisionNlpHost:
             raise ValueError(f"defect: the binding does not hold the decisions {drifted} written")
         bound = MappingProxyType({name: float(held[name]) for name in parameters})
         try:
-            result = solve_route(
+            result = self.routes.solve(
                 route,
                 document,
                 policy=self.solve_policy,
                 check_policy=self.check_policy,
                 warm_start=None,
             )
-        except RunUnsupportedError as error:
+        except self.routes.unsupported as error:
             return self._unsolved(document, route, "UNSUPPORTED", str(error), bound)
         except VerifierError as error:
             message = f"verifier_refused: {str(error).splitlines()[0] if str(error) else ''}"
@@ -456,7 +456,7 @@ class RevisionNlpHost:
         bundle_ref = None
         if self.sink is not None:
             directory, run_id = self.sink(document)
-            write_revision_bundle(
+            self.routes.write_bundle(
                 result,
                 document,
                 directory,
@@ -498,7 +498,7 @@ class RevisionNlpHost:
     @staticmethod
     def _unsolved(
         document: Mapping[str, Any],
-        route: Route,
+        route: Any,
         outcome: str,
         message: str,
         parameters: Mapping[str, float],
@@ -774,7 +774,7 @@ class RevisionNlpHost:
             state=state,
             boundary=boundary,
             target=lambda: certificate_target(
-                route.binding,  # type: ignore[union-attr]
+                route.binding,
                 handle.document,
                 state,  # type: ignore[arg-type]
             ),
