@@ -198,3 +198,13 @@ results), `40fba287` (runner self-contained), `b91b0ddb` (registration, results 
 - WO-5 battery (rrc ×5, t04_homotopy, t04_edge3, t06_f4 ×7, t06_w4_registry, t07_b3_policies, s11_column_solve):
   333 passed, 1 failed (D-27); after the fix the failing file and the G9 tests: 22 passed. Support-envelope and
   surface-content tests: 48 passed. F0 PASS (M1 50/50, M2–M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 35/35).
+
+## WO-6 docs (2026-11-08)
+
+- **D-28.** DECISION: WO-6 (this commit) is the user-guide text only: new page `docs-site/guide/revision-continuation.md`
+  (nav entry in `mkdocs.yml`, one-line pointers in `guide/limitations.md` and `guide/concepts.md`). It quotes L21 and
+  L-COL-9 as the support matrix now reads them, and the N1/C3 numbers from `benchmarks/rrc/results-ref-x86-64.md`.
+  Not done, by the WO-6 brief (D-16: no renumbering; no binding-description edits): R-RRC-1…6 renumbering, E3c in
+  `recovery-edges.yaml`, `interfaces-frozen.md`, CHANGELOG, ADR 0072 status line. Reversible by: reverting the commit.
+- Checks: `mkdocs build --strict` clean; `scripts/doc_pages.py --check` up to date; `test_doc_pages.py`,
+  `test_t06_f4_literals.py` 21 passed. The page does not spell the `eo_recovery` literal.

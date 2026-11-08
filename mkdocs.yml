@@ -106,6 +106,7 @@ nav:
       - Unit catalogue: guide/units.md
       - Distillation column: guide/column.md
       - Studies and optimisation: guide/studies.md
+      - Revision continuation: guide/revision-continuation.md
       - Cost estimation and LCA: guide/assessment.md
       - Interfaces: guide/interfaces.md
       - Limitations and support: guide/limitations.md

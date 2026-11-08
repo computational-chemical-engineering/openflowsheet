@@ -23,7 +23,7 @@ Decisions: `docs/RRC_DECISIONS.md` (D-1…D-27). Rewritten in place; this is a p
 ## Next
 - G8 for the registered pairs on both CI legs (WO-4 measured N1's store pair locally, `aa47dabf…`; C3 not yet).
 - Evidence manifest `evidence/RRC/<commit>/manifest.json` (status `tested` only after CI on both architectures).
-- WO-6 docs: renumber R-RRC-1…6 (register, ADR 0072, `test_t08_b50_surface_content.py` `V02_ADDITIONS`); E3c in
+- WO-6 user guide done (D-28, docs-site/guide/revision-continuation.md). Still open: renumber R-RRC-1…6 (register, ADR 0072, `test_t08_b50_surface_content.py` `V02_ADDITIONS`); E3c in
   `recovery-edges.yaml`; `interfaces-frozen.md`; CHANGELOG; ADR 0072 status line. L21/L-COL-9 are done (D-24).
 
 ## Open for the design lane (batched, one reviewer pass over WO-1…WO-5)
