@@ -1599,7 +1599,7 @@ entries:
     where: "unit {unit}"
     why: "The stream table reports a unit's energy balance only where the certificate of the solution holds an energy check for that unit. Units of this model carry none (an external or coupled unit, for example), so the unit's duty, work and stream enthalpy flows are reported, but its balance is not."
     action: "Use a unit model whose energy balance is checked if you need this balance; the stream values around {unit} are unaffected."
-    gap: {limitation: null, capability: "energy form:<model>"}
+    gap: {limitation: null, capability: "an energy balance check for this unit's model"}
     see_also: [stream_enthalpy_absent]
     examples:
       - params: {unit: X1, model: external.coupled}
@@ -1649,7 +1649,7 @@ entries:
     summary: "The property basis {provider!raw} does not provide the property {property!raw}, so the values that need it are not given."
     why: "The stream table reports only what the flowsheet's property basis computes. It does not put an estimate (an ideal-gas density, for example) in place of a property the basis does not offer."
     action: "Use a property basis that provides {property!raw} if you need these values; the other values of the table are unaffected."
-    gap: {limitation: null, capability: "property:<property>"}
+    gap: {limitation: null, capability: "this property from the flowsheet's property basis"}
     see_also: [stream_enthalpy_absent]
     examples:
       - params: {provider: wilson-ig-v2, property: v}

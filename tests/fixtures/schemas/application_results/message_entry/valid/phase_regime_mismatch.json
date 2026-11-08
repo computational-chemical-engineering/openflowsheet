@@ -2,7 +2,7 @@
   "action": "Change the phase declared for <stream> to the one that matches the computed state.",
   "catalogue": {
     "id": "openflowsheet-messages-v1",
-    "sha256": "81d3a6aa2aa5508f93573f47dcd603004b2bc59757d067b64556ca8b0d9be2fb"
+    "sha256": "7573d7ea42c41696f563bcb88cc89cb8d25df51619201086a09ff3ad19d4dd45"
   },
   "code": "phase_regime_mismatch",
   "complete": true,

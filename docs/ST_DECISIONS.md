@@ -251,3 +251,7 @@ M3 61/61, M4 61/61, M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 35/35).
   the verifier's helper of that form sums it"), §4.2 R0/R1 (D1-10, D1-12), §4.5 (D1-11, D1-13, D1-6's port
   entry), §5 (D1-6: ports carry `absent`; D1-7: phase `x`/`w` `[q]|null`, phase fractions `q`), §6.2 (D1-14,
   S4); ADR 0068 D4 (D1-1) and D5 (D1-6/7).
+- **D4-1 ruled: plain prose.** `energy_balance_undefined`'s `gap.capability` is "an energy balance check for
+  this unit's model" and `property_not_provided`'s "this property from the flowsheet's property basis" (static,
+  as every other entry's). G5 asserts the exact text. `catalogue.sha256` `81d3a6aa…` →
+  `7573d7ea42c41696f563bcb88cc89cb8d25df51619201086a09ff3ad19d4dd45` (fixtures re-taken; `refusals.md` regenerated).

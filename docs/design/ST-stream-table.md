@@ -336,12 +336,12 @@ directory lacks (D1-14, from the ST review, 2026-11-08). With the bundle's `solv
 | code | params | family / kind |
 | --- | --- | --- |
 | `zero_flow` (reuse the entry if MSG has one; add `stream`) | `stream` | notice / notice |
-| `property_not_provided` | `provider`, `property` | refusal / not_supported; gap `{limitation: null, capability: "property:<property>"}` |
+| `property_not_provided` | `provider`, `property` | refusal / not_supported; gap `{limitation: null, capability: "this property from the flowsheet's property basis"}` (D4-1, from the ST review, 2026-11-08) |
 | `property_evaluation_failed` | `stream`, `phase`, `property`, `status` | refusal / numerical |
 | `flash_failed` | `stream`, `status` | refusal / numerical |
 | `value_not_finite` | `subject`, `quantity` | refusal / numerical |
 | `stream_enthalpy_absent` | `subject`, `streams` (list) | notice / notice; `see_also` the four above |
-| `energy_balance_undefined` | `unit`, `model` | refusal / not_supported; gap `{limitation: null, capability: "energy_form:<model>"}` |
+| `energy_balance_undefined` | `unit`, `model` | refusal / not_supported; gap `{limitation: null, capability: "an energy balance check for this unit's model"}` (D4-1, from the ST review, 2026-11-08) |
 
 ## 7. Identity and migration
 

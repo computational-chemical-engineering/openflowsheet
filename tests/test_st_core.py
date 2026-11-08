@@ -825,10 +825,16 @@ def test_g5_absence_over_every_corpus_document() -> None:
             raise AssertionError(run) from error
 
 
-#: Note §6.4: each code's (family, kind), its params, and a `not_supported` one's gap capability.
+#: Note §6.4: each code's (family, kind), its params, and a `not_supported` one's gap capability
+#: (ST review D4-1: plain prose, never a substituted `<model>`).
 SECTION_6_4: dict[str, tuple[str, str, set[str], str | None]] = {
     "zero_flow": ("notice", "notice", {"stream"}, None),
-    "property_not_provided": ("refusal", "not_supported", {"provider", "property"}, "property"),
+    "property_not_provided": (
+        "refusal",
+        "not_supported",
+        {"provider", "property"},
+        "this property from the flowsheet's property basis",
+    ),
     "property_evaluation_failed": (
         "refusal",
         "numerical",
@@ -838,7 +844,12 @@ SECTION_6_4: dict[str, tuple[str, str, set[str], str | None]] = {
     "flash_failed": ("refusal", "numerical", {"stream", "status"}, None),
     "value_not_finite": ("refusal", "numerical", {"subject", "quantity"}, None),
     "stream_enthalpy_absent": ("notice", "notice", {"subject", "streams"}, None),
-    "energy_balance_undefined": ("refusal", "not_supported", {"unit", "model"}, "energy form"),
+    "energy_balance_undefined": (
+        "refusal",
+        "not_supported",
+        {"unit", "model"},
+        "an energy balance check for this unit's model",
+    ),
 }
 
 
@@ -859,7 +870,8 @@ def test_g5_every_code_is_a_complete_catalogue_entry() -> None:
             assert gap is None, code
         else:
             assert gap is not None and gap["limitation"] is None, code
-            assert str(gap["capability"]).startswith(f"{capability}:<"), code
+            # ST review D4-1: static prose, as every other `gap.capability` in the catalogue.
+            assert gap["capability"] == capability, code
     see_also = CATALOGUE.entry("stream_enthalpy_absent")
     assert see_also is not None
     assert set(see_also.see_also) >= {

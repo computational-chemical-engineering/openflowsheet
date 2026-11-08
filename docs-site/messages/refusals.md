@@ -667,7 +667,7 @@ Directory 'notes' is not empty and does not hold a project; a project needs a ne
 - **Why:** The stream table reports a unit's energy balance only where the certificate of the solution holds an energy check for that unit. Units of this model carry none (an external or coupled unit, for example), so the unit's duty, work and stream enthalpy flows are reported, but its balance is not.
 - **Do:** Use a unit model whose energy balance is checked if you need this balance; the stream values around &lt;unit&gt; are unaffected.
 - **Parameters:** `unit` (unit), `model` (text)
-- **Not supported:** missing capability: energy form:&lt;model&gt;
+- **Not supported:** missing capability: an energy balance check for this unit's model
 - **See also:** [`stream_enthalpy_absent`](notices.md#stream_enthalpy_absent)
 
 Example:
@@ -1737,7 +1737,7 @@ The property h of the LIQUID phase of stream 'S4' could not be evaluated (status
 - **Why:** The stream table reports only what the flowsheet's property basis computes. It does not put an estimate (an ideal-gas density, for example) in place of a property the basis does not offer.
 - **Do:** Use a property basis that provides &lt;property&gt; if you need these values; the other values of the table are unaffected.
 - **Parameters:** `provider` (text), `property` (text)
-- **Not supported:** missing capability: property:&lt;property&gt;
+- **Not supported:** missing capability: this property from the flowsheet's property basis
 - **See also:** [`stream_enthalpy_absent`](notices.md#stream_enthalpy_absent)
 
 Example:
