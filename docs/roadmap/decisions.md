@@ -675,3 +675,68 @@ CI `42502713324` green on `5e9274db` (Frank's human review of `explain` included
 holds c_4 (D_4 `eaff4585…`); X02 is next in the merge order (MSG, X02, OPT, RRC, ST) and re-measures its link as c_5.
 Note: worktrees have no `.venv`; the main checkout's editable install imports main's `src`, so a worktree test run
 with it tests main's code. CI is the authority for branch code; re-run targeted tests on main after each merge.
+
+## 2026-11-08 — ST design-lane confirmations (`wp/ST` `e1a05916`)
+
+Specifier: M1-1, M1-2 (n_tot·h = γ–φ `_phase_flow` bitwise; test DC-5), M1-3 (reason corrected), S1-1 confirmed. The
+products-style case cannot occur (binder admits undeclared streams only from heater-style splits), but a neighbouring
+defect does: R1′ fired on any degeneracy row naming the stream, incl. a flash drum's row on its inlet → ruling 5: R1′
+only on `independent_split.<U>.<S>`, no-number branch on `temperature_degenerate_unlifted(<S>)`; DC-1…DC-6. ADR 0068
+D3 amended (dated, quoted) after Frank's acceptance; no served output changes → board item `st-adr0068-am1`
+(default: stands). DECISION: proceed on the amendment without waiting. Alternative: hold ST for Frank. Reversible by:
+reverting WO-8a's ruling-5 commit. Next: ST WO-8a (merge main, ruling 5, R-942/943 clean-up), then WO-8b (web shell).
+
+## 2026-11-08 — X02 merge prep done (`wp/X02` `51ef7460`); X10b CI green
+
+X02: main merged (`f36b4a56`, 13 conflicts, D-35); link c_5 D_5 `f51b69bf…` (strip X02 → MSG's D_4 `eaff4585…`
+exactly: no interaction, D_4 not re-recorded; D-36); global-state cache count 36 → 38 (main 37 + X02; D-37); ADR 0070
+and ADR 0019 Am. 15 Accepted, R-950 final (c_5), R-951…R-955 (D-38); 1508 passed, 2 skipped (worktree `src`,
+`PYTHONPATH=src`); ruff, format, mypy clean; F0 PASS. CI watched; then manifest re-take at the head, merge.
+X10b: CI `42503117602` green on `c57d449a`; manifest brief `docs/briefs/X10b-manifest.md`.
+Main: ruff E501 on two harvest comment lines after the MSG merge, fixed `89b7e008`. From now on the post-merge check
+on main is F0 **and** `ruff check` + `ruff format --check` (the merge commit's text is not what CI tested).
+
+## 2026-11-08 — X10b merged
+
+Manifest `evidence/X10b/c57d449a…` tested (`d50d6c06`, after merging main `9bf45e98`; `case_hash` = sha256 of
+`models/c1/flash.py` at that commit, `b1b47c28…`, the registered move); HARVEST_SIZE (81, 1015, 129). Merged
+`d5035a76`; on main ruff clean, F0 PASS, harvest/manifests/L01/G7 tests 660 passed, 1 skipped. WIT's follow-ups are
+done. X02 re-takes HARVEST_SIZE at its merge.
+
+## 2026-11-08 — ST WO-8a done (`wp/ST` `9da2e022`)
+
+Main merged twice (`420993d0`, `a333c762`); R-942/943 duplicates dropped (register = main's); ruling 5 in
+`stream_table._inputs`/`_decide` (lifted by the split's own row, unlifted by exact reason); DC-1…DC-6 pass (DC-2/3/4
+fail on the old code); 44 served 0.3.0 documents byte-identical; G7 41 bitwise, G8 1.756e-4, G8u 2.7027 unchanged;
+1581 passed; F0 PASS. Three tests red since `e1a05916` (not WO-8a's): T08.A20 (envelope lacks `get_stream_table`) and
+ADR 0025 A1 ×2 (`data_sha256`, `implementation_sha256` unclassified). Both have build-lane precedents (envelope
+admission; per-package ADDENDA as M04/M05/E01/OPT) → WO-8b part 1, stop if a field hashes floats. ST's link is c_5
+on the branch; at WO-7 it follows X02 (c_5) and OPT (c_6) → c_7. Next: WO-8b (the three tests + web-shell table).
+
+## 2026-11-08 — ST WO-8b (`wp/ST` `3ba9edc3`): web-shell table done; one design-lane classification open
+
+T08.A20: `get_stream_table` admitted to the envelope on four transports (22 → 23 operations), precedent MSG WO-7
+`631a9f3f` after ADR acceptance (ADR 0068 accepted by Frank). Web shell (Frank's O3): streams screen shows the full
+table below n/T/P (per stream total + per phase, `phase_source`, boundary flag, SI columns, null → "—" with reason;
+`flash_failed` notice; unit/overall energy table); `routes.js` regenerated (was stale: a fourth pre-existing red);
+the shell calls 18 operations; message catalogue `7573d7ea…` → `3ac1279a…`. DECISION (engineer): fetch the whole
+table, no on-screen pager. Reversible by: `streamTableOf`. 2246 passed incl. browser smoke 32 (ran locally), node 98;
+F0 PASS. Open: ADR 0025 D2.3 for `data_sha256` (SYN-001 hashes registered float literals) and
+`implementation_sha256` → specifier ruling (brief `docs/briefs/ST-adr0025-classification.md`); default exact (as
+`constants_sha256`).
+
+## 2026-11-08 — X02 CI red on MSG G2 → catalogue entries (`d26bcd38`)
+
+CI `42512488771` on `51ef7460`: 1 failure on all legs, `test_msg_coverage` G2 (X02's three codes had no MSG catalogue
+entry; the merge-prep brief did not list `tests/test_msg_*`). Fix D-39: `warm_start_source_missing`,
+`warm_start_unit_unknown` → `refusal` entries (kind `input` from MSG's kind table; unit param typed `text`);
+`coupling_warm_start` allow-listed (trace label, never rendered). Catalogue `2252445a…` → `9ac2578a…`; D_4, D_5
+unchanged; 378 passed; F0 PASS. Open (non-blocking): the two entries' prose is an engineer's draft → design-lane prose
+check batched with OPT's new catalogue entries. Lesson: merge-prep briefs after MSG list `tests/test_msg_*` (OPT's does).
+
+## 2026-11-08 — ST CI red at 8ce17244 (run 42517844608), fixed at eb1e0936
+
+Three test bugs, no product code: `get_stream_table` had no pre-ST snapshot in `test_m02_schemas` G1c and
+`test_m04_study_job` A42 (now skipped via `ST_OPERATIONS`, as MSG's `explain`); `test_st_core` Q1.A15c assumed
+IAPWS/H2O for every run, but the CoolProp leg adds TH-C2 (R134a) — now uses the run's own provider and basis.
+Missed locally because worktree tests imported main's `src` (the venv trap). ST_DECISIONS CI-1/CI-2. CI re-run pending.

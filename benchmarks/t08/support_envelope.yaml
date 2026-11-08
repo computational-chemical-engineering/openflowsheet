@@ -8699,6 +8699,55 @@ harvest:
   class: P
   to: []
   note: 'process note: the review did-not-establish list; gate and CI postdate the review'
+- manifest: evidence/X10b/c57d449aaed52ca9cff1b7a737a9161cc3fdd093/manifest.json
+  item: limitations[0]
+  sha256: 56869fc31baa84f4dc6ac1ac7a5666b3c1b0abc1a72de6e34b1f2a5d05692e12
+  class: P
+  to: []
+  note: 'provenance note: software verification on ref-x86-64 under id X10b; a text-and-pin follow-up to X10a; fixtures are regression, not validation'
+- manifest: evidence/X10b/c57d449aaed52ca9cff1b7a737a9161cc3fdd093/manifest.json
+  item: limitations[1]
+  sha256: 932b11a4a7cae4f6272af27a136dcdde1815caf2f035e56f0184d5574f857c12
+  class: P
+  to: []
+  note: 'scope note: one manifest sentence and two docstrings, no numerics moved; the artifact hash, F0 M9 entry and L01.A22 pin move as registered (R-983)'
+- manifest: evidence/X10b/c57d449aaed52ca9cff1b7a737a9161cc3fdd093/manifest.json
+  item: limitations[2]
+  sha256: ddc39409511ebbf97ea7a08ba40b325f2fb3be87decdef9b55da20c7657f9028
+  class: P
+  to: []
+  note: 'scope note: R-983 — F0 M9 guards 9 of L01.A22''s 18 files'
+- manifest: evidence/X10b/c57d449aaed52ca9cff1b7a737a9161cc3fdd093/manifest.json
+  item: limitations[3]
+  sha256: 63ded9234812bbded6510f822819fd514d847ade3351d559f2c8fdaa543ffda3
+  class: P
+  to: []
+  note: 'process note: ADR 0073 Accepted; no reviewed status; the fix round D-5..D-10 not re-reviewed'
+- manifest: evidence/X10b/c57d449aaed52ca9cff1b7a737a9161cc3fdd093/manifest.json
+  item: limitations[4]
+  sha256: 7ccf63c11c79d2b2672e5c082633e05c671fd0c5c3683541c61acdb84fe65214
+  class: P
+  to: []
+  note: 'process note: M-4 (OPT D-42/D-82) waits for the OPT merge; not touched'
+- manifest: evidence/X10b/c57d449aaed52ca9cff1b7a737a9161cc3fdd093/manifest.json
+  item: limitations[5]
+  sha256: 4072f5f070659632c2455cc91e3917891ea61a1455fa676b977a5f1d2627fdf6
+  class: B
+  to:
+  - B10
+  note: 'Q-WIT-4: a non-affine downstream reader of a dormant vapour product is unmeasured — reviewer: B?'
+- manifest: evidence/X10b/c57d449aaed52ca9cff1b7a737a9161cc3fdd093/manifest.json
+  item: limitations[6]
+  sha256: 118a0595085e21983bc18968b1caf46db4039a970bbd2721f409101e130fb328
+  class: P
+  to: []
+  note: 'process note: no local full gate; the merge condition is CI run 42503117602'
+- manifest: evidence/X10b/c57d449aaed52ca9cff1b7a737a9161cc3fdd093/manifest.json
+  item: limitations[7]
+  sha256: 5635c927f1ccd71199ad8d236013888f3e951f3dca80fa52f0af8a4fece9860e
+  class: P
+  to: []
+  note: 'process note: status tested, not reviewed'
 - manifest: evidence/S15a/d7cb4dbb77adeafab943959966e7269a17ca29f3/manifest.json
   item: limitations[0]
   sha256: e2a6ebcc9176683cc753bdd91a9ac6273c50de3cf28b79b5ef02606ca548d450
@@ -8817,6 +8866,69 @@ harvest:
   to: []
   note: 'report-only timing (about 21 % slower warm); decided against registration (review M-1)'
 - manifest: evidence/X02/2ab11b664b8dc325edf568cccddea23a46936119/manifest.json
+  item: checks[11]
+  check_id: X02.G5d_iii_iterations
+  sha256: b3ef26de931dcd5595c8d6f931ed8f0719664ec8f557bce4bb10df65d4a38817
+  class: P
+  to: []
+  note: 'accepted fail (D-32): warm 4 = cold 4 outer iterations; neighbour-speedup claim withdrawn in ADR 0070'
+- manifest: evidence/X02/d26bcd3825ae4f55986a87412c8c1c827497f2c2/manifest.json
+  item: limitations[0]
+  sha256: 993f8cf25a84cb8e5017e48bf8cb04b47f2f660b760e6a11d1e1e90c59e04b3f
+  class: P
+  to: []
+  note: 'provenance note: software verification (stand-in, revision_eo, synthetic child; CI) and workstation measurements on v3; regression evidence, not validation'
+- manifest: evidence/X02/d26bcd3825ae4f55986a87412c8c1c827497f2c2/manifest.json
+  item: limitations[1]
+  sha256: 97aa3d426d760b4ca3f0ff9cb8d835c77a703d7be1f12fdac53d53c448cc22bd
+  class: P
+  to: []
+  note: 'claim note: G5d (iii) iteration criterion failed and stays failed (D-32); neighbour warm start not claimed faster; no support claim made'
+- manifest: evidence/X02/d26bcd3825ae4f55986a87412c8c1c827497f2c2/manifest.json
+  item: limitations[2]
+  sha256: 0c0712f2e5dc931145251da2a6fdbe17926f2b4b9a148817ba50f3ed161c64c3
+  class: P
+  to: []
+  note: 'scope note: no start-capable reactor variant registered (G5b, G5c; D-29, review M-1); Part B is plumbing; external models start cold in practice'
+- manifest: evidence/X02/d26bcd3825ae4f55986a87412c8c1c827497f2c2/manifest.json
+  item: limitations[3]
+  sha256: 379097978e60a0e870a5b24fe1e12f46e6a9cc2e8e697c7e627ab61ca9bb6d76
+  class: P
+  to: []
+  note: 'provenance note: G5 (d) ran on v3 with cold experiments per review S-2 (D-30, D-31)'
+- manifest: evidence/X02/d26bcd3825ae4f55986a87412c8c1c827497f2c2/manifest.json
+  item: limitations[4]
+  sha256: 55088b9173df1f03fab642f4b7a94c3aa87931380e42bc97e3fe87952f807265
+  class: P
+  to: []
+  note: 'provenance note: no D/A requirement maps to X02'
+- manifest: evidence/X02/d26bcd3825ae4f55986a87412c8c1c827497f2c2/manifest.json
+  item: limitations[5]
+  sha256: b5652411b273e4674ecca758d47ccfcb775f17a5c52ef7ff091f575e3fdf15e2
+  class: P
+  to: []
+  note: 'provenance note: manifest id X02 under ADR 0059 D1 (R-938), no S-id alias (D-33)'
+- manifest: evidence/X02/d26bcd3825ae4f55986a87412c8c1c827497f2c2/manifest.json
+  item: limitations[6]
+  sha256: e59acc8addeafa0b33988f6ca16f55706dcda9dd0747f525fa18bdf8dad4066e
+  class: P
+  to: []
+  note: 'process note: status tested, not reviewed; ADR 0070 Accepted (D-38); reviewer pass pending'
+- manifest: evidence/X02/d26bcd3825ae4f55986a87412c8c1c827497f2c2/manifest.json
+  item: checks[6]
+  check_id: X02.G5b
+  sha256: 56a33c4aeb3723d3a5f36c4e5ee4d28a7c7fe27a2648ad3afe331398e91da871
+  class: P
+  to: []
+  note: 'registration gate: G5b 1.92e-7 > 1e-7, variant not registered (review M-1, A-3, A-8); no user-facing support claim'
+- manifest: evidence/X02/d26bcd3825ae4f55986a87412c8c1c827497f2c2/manifest.json
+  item: checks[7]
+  check_id: X02.G5c
+  sha256: 706daabed43e8f728acf322f6c554881d50df54618e469279c93ecf180457a9f
+  class: P
+  to: []
+  note: 'report-only timing (about 21 % slower warm); decided against registration (review M-1)'
+- manifest: evidence/X02/d26bcd3825ae4f55986a87412c8c1c827497f2c2/manifest.json
   item: checks[11]
   check_id: X02.G5d_iii_iterations
   sha256: b3ef26de931dcd5595c8d6f931ed8f0719664ec8f557bce4bb10df65d4a38817
