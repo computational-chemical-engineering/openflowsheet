@@ -5,8 +5,7 @@ where it differs); ADR 0071 (Proposed). Build decisions, facts, gate numbers: `d
 
 ## Done
 
-- **WO-1…WO-5b** — host, revision host, request, formulation, V1–V7, records, phase rows, Q4 held mode, OPT-A3; A-2
-  zero subsystem, A-3 closure margins (see the log).
+- **WO-1…WO-5b** — host … OPT-A3; A-2 zero subsystem, A-3 closure margins (see the log).
 - **WO-5c** (D-45 `16fb2d3f`, A-1 `9a78d67e`, OPT-A3v `9373e15b`, D-46 `1d909ef9`): `studies/nlp/boundary.py`
   (e1–e6, B, `certificate_target`); `RevisionNlpHost.phase_boundary` / `basis` (admits a boundary point: held system,
   regimes, Q1′ on its basis); V1 `basis` + B in its detail; candidate `certificate_basis`, `claims.
@@ -23,9 +22,8 @@ where it differs); ADR 0071 (Proposed). Build decisions, facts, gate numbers: `d
 
 ## Next
 
-- **WO-6** (job `optimize`, replay; A-1's clauses and B recomputed in `reproduce`, A-2's V4 clause; G13/G16 extended
-  with OPT-A3), then **WO-7** (user doc incl. boundary candidates / `certificate_basis`, declared limits; manifest
-  lists G10a–G10d, G22–G24). G17 rerun not required by WO-5c.
+- **WO-6** (job, replay: `reproduce` recomputes A-1's clauses and B, A-2's V4 clause; G13/G16 extended with OPT-A3),
+  then **WO-7** (user doc: boundary candidates, `certificate_basis`, declared limits; manifest G10a–d, G22–24).
 
 ## How to run
 
@@ -33,8 +31,7 @@ where it differs); ADR 0071 (Proposed). Build decisions, facts, gate numbers: `d
 - Audited env tests: `W=/home/frankp/Codes/OpenFlowsheet/.claude/worktrees/m05; scripts/m03_nlp_check.sh
   --no-inventory $W/.venv-nlp $W/.reference-downloads/m03-ipopt -- <tests>`. Scripts in the audited env:
   `OMP_NUM_THREADS=1 PYTHONNOUSERSITE=1 PYOMO_CONFIG_DIR=$W/.venv-nlp/share/pyomo PYTHONPATH=<root>/src:$W/.reference-
-  downloads/m03-ipopt/nlp-test-tools $W/.venv-nlp/bin/python …` (without these variables PyNumero is unaudited and
-  OPT now refuses, D-46).
+  downloads/m03-ipopt/nlp-test-tools $W/.venv-nlp/bin/python …` (else PyNumero is unaudited; OPT refuses, D-46).
 - G1 `scripts/corpus_identity.py --check`; G2 `scripts/opt_m03_dump.py ROOT OUT [--nlp]` per tree + `cmp` (base by
   `git worktree add --detach <scratch> ad971d32`); G17 `benchmarks/opt/performance.py RECORDS`. No full gate until
   WO-7. TRS2 ≤ ~36 cores.
