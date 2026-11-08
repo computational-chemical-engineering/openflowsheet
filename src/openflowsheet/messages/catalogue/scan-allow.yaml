@@ -1,0 +1,11 @@
+# MSG-G2 (design note §3.2): tokens the static scan finds that are not codes, each with its reason.
+# `msg_catalogue.py scan` fails on a found token that has neither an entry nor a line here.
+allow:
+  stage_count: "models/syn001/column_unit.py `_refuse(unit, key, …)`: a key; the code emitted is invalid_spec(<key>)"
+  pressure_profile: "models/syn001/column_unit.py `_refuse(unit, key, …)`: a key; the code emitted is invalid_spec(<key>)"
+  no_feed: "models/syn001/column_unit.py `_refuse(unit, key, …)`: a key; the code emitted is invalid_spec(<key>)"
+  evaluate_phase: "a budget-spend label (`_spend(f\"evaluate_phase(…)\")`), never a message"
+  coupling_iterate: "a replay-difference location label (run/coupled replay), not a refusal code"
+  request_key: "a replay-difference location label (external requests), not a refusal code"
+  external_request: "a replay-difference location label (external requests), not a refusal code"
+  external_result: "a replay-difference location label (external results), not a refusal code"

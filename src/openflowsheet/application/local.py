@@ -95,7 +95,9 @@ from openflowsheet.application.store import (
     IdempotencyKeyReusedError,
     LedgerRow,
     ProjectStore,
+    StoreError,
     atomic_write_bytes,
+    coded_store_error,
 )
 from openflowsheet.application.transactions import (
     EditPathError,
@@ -119,12 +121,14 @@ from openflowsheet.application.types import (
     JobRequest,
     JobResult,
     JobWait,
+    MessageEntry,
     ModelRegistryView,
     ProjectPolicy,
     ProjectSummary,
     ReplayPolicy,
     ReproduceBody,
     RevisionSummary,
+    RunFailure,
     RunResult,
     SemanticDiff,
     ServerInfo,
@@ -150,6 +154,8 @@ MAX_JOB_PAGE: Final[int] = 200
 AUDIT_ORDERS: Final[tuple[str, ...]] = ("ascending", "descending")
 _AUDIT_OPERATION_LIMIT: Final[int] = 128
 MAX_EVENT_PAGE: Final[int] = 500
+#: MSG §3.4 (FB-03b): a `not_found` on a bundle member lists at most this many member names.
+MAX_LISTED_MEMBERS: Final[int] = 64
 
 
 class LocalApplication:
@@ -188,26 +194,64 @@ class LocalApplication:
 
     @classmethod
     def create(
-        cls, directory: str | os.PathLike[str], *, project_id: str | None = None
+        cls,
+        directory: str | os.PathLike[str],
+        *,
+        project_id: str | None = None,
+        exist_ok: bool = False,
     ) -> LocalApplication:
         """A new project in `directory` (absent or empty), opened by the local owner.
+
+        With `exist_ok`, a directory that already holds a project is opened instead (MSG §3.8,
+        FB-01), so a script that creates its project can run twice. It tries to create first
+        and opens only on the typed refusal `project_exists`, so there is no check-then-act
+        race.
 
         Parameters
         ----------
         directory
-            Where the project is created; it must be absent or empty.
+            Where the project is created; it must be absent or empty, or (with `exist_ok`)
+            hold a project.
         project_id
-            The project's id; a fresh `project-<hex>` id when omitted.
+            The project's id; a fresh `project-<hex>` id when omitted. With `exist_ok`, an
+            existing project must have this id when it is given.
+        exist_ok
+            Open the project the directory already holds instead of refusing it.
 
         Returns
         -------
         LocalApplication
-            The new project, opened with the inline executor.
+            The new (or, with `exist_ok`, the existing) project, opened with the inline
+            executor.
+
+        Raises
+        ------
+        StoreError
+            Coded (`.code`): `project_exists` (without `exist_ok`), `project_id_mismatch`,
+            `directory_not_empty` (files that are not a project) or `not_a_directory`.
         """
-        ProjectStore.create(
-            Path(directory),
-            project_id=project_id if project_id is not None else f"project-{uuid.uuid4().hex[:12]}",
-        ).close()
+        try:
+            ProjectStore.create(
+                Path(directory),
+                project_id=project_id
+                if project_id is not None
+                else f"project-{uuid.uuid4().hex[:12]}",
+            ).close()
+        except StoreError as refused:
+            if not exist_ok or refused.code != "project_exists":
+                raise
+            store = ProjectStore.open(Path(directory))
+            try:
+                existing = store.project_id
+            finally:
+                store.close()
+            if project_id is not None and existing != project_id:
+                raise coded_store_error(
+                    "project_id_mismatch",
+                    Path(directory),
+                    project_id=project_id,
+                    existing=existing,
+                ) from None
         return cls.open(directory)
 
     @classmethod
@@ -417,6 +461,7 @@ class LocalApplication:
         self,
         code: ApiErrorCode,
         message: str,
+        /,
         *,
         operation: str,
         request_sha256: str | None = None,
@@ -1020,6 +1065,64 @@ class LocalApplication:
             outputs=job.outputs,
             error=job.error,
             solve_path=run["solve_path"],
+            failure=self._run_failure(job, revision, run),
+        )
+
+    def _run_failure(
+        self, job: Job, revision: Revision, run: Mapping[str, Any]
+    ) -> RunFailure | None:
+        """ADR 0058 D5 (MSG §3.4, §4.8): the failure, derived on read from the stored
+        `failure-bundle.json`, the run's `diagnosis` when the runner recorded one, and the
+        revision document — so a job a 0.3 store holds gets one too (without numbers). A bundle
+        that cannot be read or parsed gives the failure of the outcome alone. Never raises."""
+        from openflowsheet.messages.render import RenderContext, explain_failure
+        from openflowsheet.verify.failure import TAXONOMY
+
+        output = next((o for o in job.outputs if o.kind == "failure_bundle"), None)
+        if output is None:
+            return None
+        bundle: Mapping[str, Any] = {}
+        try:
+            loaded = json.loads(self._artifact_path(output).read_bytes())
+            if isinstance(loaded, Mapping):
+                bundle = loaded
+        except (OSError, ValueError, AssertionError):
+            bundle = {}
+        outcome = bundle.get("outcome")
+        if not isinstance(outcome, str):
+            bundle, outcome = {}, str(run.get("outcome") or "")
+        observations = bundle.get("observations")
+        message = observations.get("message") if isinstance(observations, Mapping) else None
+        message = message if isinstance(message, str) else None
+        taxonomy = bundle.get("taxonomy")
+        # The sidecar explains the bundle's message; without the bundle it has nothing to match.
+        diagnosis = run.get("diagnosis") if bundle else None
+        explanation, params = explain_failure(
+            outcome=outcome,
+            message=message,
+            diagnosis=diagnosis if isinstance(diagnosis, Mapping) else None,
+            context=RenderContext(
+                revision=revision.document,
+                revision_id=revision.revision_id,
+                job_id=job.job_id,
+                bundle_id=output.artifact_id.rpartition("/")[0] or None,
+            ),
+        )
+        return RunFailure(
+            outcome=outcome,
+            taxonomy=taxonomy if isinstance(taxonomy, str) else TAXONOMY.get(outcome, ""),
+            message=message,
+            code=str(explanation["code"]),
+            chain=tuple(str(code) for code in explanation["chain"]),
+            implicated=tuple(str(s) for s in bundle.get("implicated_sources") or ()),
+            suggested_actions=tuple(
+                str(entry["action"])
+                for entry in bundle.get("suggested_actions") or ()
+                if isinstance(entry, Mapping) and "action" in entry
+            ),
+            failure_bundle=output.artifact_id,
+            params=params,
+            explanation=explanation,
         )
 
     def _resolution(self, revision: Revision, body: SolveBody) -> dict[str, Any]:
@@ -1410,6 +1513,28 @@ class LocalApplication:
         next_cursor = _encode_audit_cursor(order, rows[-1].seq) if more else None
         return Page(items=tuple(rows), next_cursor=next_cursor)
 
+    def explain(self, code: str) -> MessageEntry:
+        """ADR 0058 D7 (MSG §3.5, §4.9): the message-catalogue entry `code` — its display
+        templates, params, gap, see-also, rendered examples, docs URL and the catalogue's digest.
+        `read`; it reads no project state. An unknown code is refused `not_found` with
+        `detail {code, suggestions}`: up to five keys within edit distance 3, case-insensitively."""
+        from openflowsheet.messages.render import entry_document, suggestions  # noqa: PLC0415
+
+        name = "explain"
+        self._authorize(name)
+        if not isinstance(code, str):
+            self._refuse("invalid_request", "code is a string", operation=name, pointer="/code")
+        document = entry_document(code)
+        if document is None:
+            self._refuse(
+                "not_found",
+                "no such message code",
+                operation=name,
+                code=code,
+                suggestions=suggestions(code),
+            )
+        return MessageEntry.from_document(document)
+
     def _decode_audit_cursor(self, cursor: str | None, order: str, operation: str) -> int | None:
         """`list_audit`'s cursor, `{order, seq}`, as the `seq` to continue after; `None` for the
         first page. A cursor of the other order, or one this list did not issue, is refused."""
@@ -1488,9 +1613,46 @@ class LocalApplication:
         row = self._store.artifact(artifact_id) if isinstance(artifact_id, str) else None
         if row is None:
             self._refuse(
-                "not_found", "no such artifact", operation=operation, artifact_id=artifact_id
+                "not_found",
+                "no such artifact",
+                operation=operation,
+                artifact_id=artifact_id,
+                **self._missing_member(artifact_id),
             )
         return row
+
+    def _missing_member(self, artifact_id: object) -> dict[str, Any]:
+        """MSG §3.4 (FB-03b): for a missing `<bundle id>/<member>` of a bundle with registered
+        members, what the bundle does hold — `bundle_id`, `member`, `members` (sorted file
+        names, at most `MAX_LISTED_MEMBERS`; `members_total` when cut) and, for a job's bundle
+        (`<job_id>:bundle`, `<job_id>:rerun`), `job_id` and the run's `run_outcome` when the job
+        recorded one.
+        Added detail members only: the message and the existing members are unchanged (I1)."""
+        if not isinstance(artifact_id, str):
+            return {}
+        bundle_id, slash, member = artifact_id.rpartition("/")
+        if not slash or not bundle_id or not member:
+            return {}
+        members = sorted(row.name for row in self._store.artifact_children(bundle_id))
+        if not members:
+            return {}
+        found: dict[str, Any] = {
+            "bundle_id": bundle_id,
+            "member": member,
+            "members": members[:MAX_LISTED_MEMBERS],
+        }
+        if len(members) > MAX_LISTED_MEMBERS:
+            # Review S5 (D3-4): a cut list says so, with the full count.
+            found["members_total"] = len(members)
+        job_id, colon, suffix = bundle_id.rpartition(":")
+        if colon and suffix in ("bundle", "rerun") and self._store.get_job(job_id) is not None:
+            found["job_id"] = job_id
+            worker = self._store.worker_result(job_id)
+            run = worker.get("run") if isinstance(worker, Mapping) else None
+            outcome = run.get("outcome") if isinstance(run, Mapping) else None
+            if isinstance(outcome, str):
+                found["run_outcome"] = outcome
+        return found
 
     def _check_view(
         self, operation: str, pointer: object, depth: object, cursor: object, limit: object

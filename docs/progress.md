@@ -109,12 +109,20 @@ canonicity, T07); ADR 0013 has Amendment 2 (routing on registered tolerances, T0
 
 ## Next executable action
 
-**X02 (warm starts, ADR 0070 Proposed) is tested on `wp/X02` (2026-11-07, WO-7), not reviewed, not merged.** D-32
-ruling carried out: G5 (d)(iii)'s "warm takes fewer outer iterations" stays recorded as **failed** (4 = 4 on v3;
-note A-10, ADR 0070 Consequences bullet 1 withdraws the neighbour-speedup claim). Full gate at `2ab11b66` PASS (15138
-passed), F0 PASS (M1–M9). Manifest `evidence/X02/2ab11b66…/manifest.json` (`tested`; G5b and G5d (iii)-iterations
-`fail`, accepted by design-lane rulings; filed as `X02` per ADR 0059 D1, D-33), harvested. Build log
-`docs/X02_DECISIONS.md` (D-1…D-34). **Next:** Frank accepts ADR 0070 (X02 Q5, Q7), then the orchestrator merges.
+**X02 (warm starts, ADR 0070 Accepted 2026-11-08 by Frank) is tested on `wp/X02`, not reviewed; merge prep done.**
+`main` (MSG) merged into `wp/X02`; X02's surface link is c_5 (R-950) after MSG's c_4; ADR 0070's drafts A–E are
+R-951…R-955. Build log `docs/X02_DECISIONS.md` (D-1…D-38). **Next:** CI green on both architectures at the pushed
+head, then the orchestrator re-takes the manifest and merges (never squash).
+
+**X05 (replay from the wheel, ADR 0069 Proposed) is tested on `wp/X05` (2026-11-07), reviewed once, not `reviewed`.**
+WO-1…WO-4 done (`docs/X05_DECISIONS.md`, D-1…D-9); review `docs/reviews/X05-review.md` (M1, M2, S1 applied in WO-4:
+main merged, RP step 4 `a19.*` → `x05.*`, memo traceback cleared). Evidence:
+`evidence/X05/7c8d05e59dcef7c60b260b687b3cc4e06e5cbda0/manifest.json`, `status: tested`, 31/31 pass: gate PASS at
+`830e7556` (15138 passed, 54 min), F0 PASS (M7 52/52), dispatch run 42397255469 (`rc_distribution`) green on both legs
+(dist, clean-install, check, identity, default-install, bundle-set/replay); Q-N2: MATCH 52/52, compatible on both
+legs. **Next:** Frank's acceptance of ADR 0069 (Q-F1…F3, `docs/FRANK_QUESTIONS.md`), then at the merge ADR 0007
+Amendment 2 (§13), the register lines (§12, R-951… above X02's) and R-140's "Lifted by X05"; then merge. The 0.4 gate's
+`[4, "x05.*"]` pair waits for the 0.4.0 cut's specifier pass (`49506c90`).
 
 **V03 (0.3.0 release, `wp/V03-rc`, C = `a3e508e3`): WO-8 done in V03 spec §6.1's order (2026-10-31).** S13's manifest `tested` 48/48 (H1 `9e998beb`, generated at G `04c503e5`), ADRs 0053 and 0054 Accepted on it (H2 `e55f9efd`), step 18 at H2 `v0.3.0 tag may be proposed: YES` (log SHA-256 `ad31dc6b…`), A08's R part PASS, F9 4 of 4; build log `docs/V03_RC_DECISIONS.md`. **Next:** hand to Frank for the tag (an agent does not tag or push); after the tag, WO-9 (§5.3). Not `reviewed`.
 

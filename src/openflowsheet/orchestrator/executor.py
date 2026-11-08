@@ -29,7 +29,7 @@ the general path does not run — the tear path, a specification region — is a
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
-from dataclasses import dataclass, fields, replace
+from dataclasses import dataclass, field, fields, replace
 from typing import Any, Literal
 
 import numpy as np
@@ -37,6 +37,7 @@ import numpy as np
 from openflowsheet.compile.casadi_backend import compile_problem
 from openflowsheet.compile.spec import ProblemSpec
 from openflowsheet.compiled import EvaluationContext
+from openflowsheet.messages.diagnostic import Diagnostic
 from openflowsheet.models.revision_flowsheet import RevisionFlowsheet
 from openflowsheet.models.syn001.flowsheet import FEED_UNIT, WIRING, Syn001Flowsheet
 from openflowsheet.orchestrator import revision
@@ -129,6 +130,9 @@ class StepResult:
     #: ADR 0024 D4: what the compatible warm start did, when the policy's chain names it and no
     #: `user_start` was given; `None` otherwise (every other policy, every other step kind).
     warm_start: WarmStartRecord | None = None
+    #: MSG §4.6: an `INITIALIZATION_FAILED` step's refusing-unit sidecar (`InitialStateFailure.
+    #: diagnostic`). Never serialized; never compared.
+    diagnostic: Diagnostic | None = field(default=None, compare=False, hash=False, repr=False)
 
 
 @dataclass(frozen=True)
@@ -740,6 +744,7 @@ def _solve_revision_region(
                 "INITIALIZATION_FAILED",
                 message=start.message,
                 warm_start=record,
+                diagnostic=start.diagnostic,
             ),
             spent,
             None,

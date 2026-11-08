@@ -4,6 +4,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 
 import { textOf } from "../../apps/web/js/h.js";
+import { findAll } from "./tree.mjs";
 import { ApiError } from "../../apps/web/js/api.js";
 import { errorView, fatalText, headerView, nextTheme, notFoundView } from "../../apps/web/js/frame.js";
 
@@ -46,6 +47,35 @@ test("the error panel shows the server's ApiError as it came", () => {
     assert.ok(text.includes(part), part);
   }
   assert.ok(textOf(errorView(new Error("boom"))).includes("boom"));
+});
+
+// MSG WO-10 (design note §6): a refused request shows its explanation's summary and action,
+// above the machine code and message, which stay as they came.
+test("a refused request shows explanation.summary and action", () => {
+  const explanation = {
+    code: "revision_not_ready",
+    kind: "input",
+    summary: "The revision is not ready to solve: it does not pass validation for simulation.",
+    cause: null,
+    action: "Validate the revision and read each check that did not pass.",
+  };
+  const error = new ApiError(422, {
+    code: "revision_not_ready",
+    message: "revision 'rev-1' validates DRAFT, not READY_FOR_SIMULATION",
+    retryable: false,
+    detail: { explanation },
+  });
+  const tree = errorView(error);
+  const parts = Object.fromEntries(
+    findAll(tree, (node) => node.p?.["data-ofs-explanation-part"]).map((node) => [node.p["data-ofs-explanation-part"], textOf(node)]),
+  );
+  assert.deepEqual(parts, { summary: explanation.summary, action: `Do: ${explanation.action}` });
+  const text = textOf(tree);
+  for (const part of ["revision_not_ready", "validates DRAFT", "HTTP 422"]) assert.ok(text.includes(part), part);
+  assert.ok(text.indexOf(explanation.summary) < text.indexOf("validates DRAFT"));
+  // A document without an explanation reads as before.
+  const plain = errorView(new ApiError(404, { code: "not_found", message: "m", retryable: false, detail: {} }));
+  assert.equal(findAll(plain, (node) => node.p?.["data-ofs-explanation-part"]).length, 0);
 });
 
 test("an unknown route says so; fatal text names the error", () => {

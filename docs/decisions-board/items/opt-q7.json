@@ -1,0 +1,37 @@
+{
+ "section": "blocking",
+ "pkg": "OPT",
+ "pkgTitle": "Optimising your own flowsheets",
+ "kind": "choice",
+ "title": "Q7: an optimum exactly at a boiling or dew point",
+ "body": [
+  "At a bubble or dew point the flowsheet equations are singular by nature, so the ordinary certificate cannot verify an optimum that sits exactly there (measured: it happens on real cases).",
+  "The amended design checks such an optimum on a reduced form that removes exactly that one direction and flags the result as a phase-boundary optimum. The ordinary solve certificate stays unverified, and the record says which check passed."
+ ],
+ "defaultKey": "flag",
+ "options": [
+  {
+   "key": "flag",
+   "label": "Verify on the reduced form, with the flag",
+   "detail": "Built this way."
+  },
+  {
+   "key": "unverified",
+   "label": "Report such optima as found but not verified",
+   "detail": ""
+  },
+  {
+   "key": "other",
+   "label": "Something else",
+   "detail": "Say what in the note."
+  }
+ ],
+ "links": [
+  {
+   "label": "Design §9 amendment",
+   "url": "https://github.com/computational-chemical-engineering/openflowsheet/blob/main/docs/design/OPT-revision-optimisation.md"
+  }
+ ],
+ "status": "open",
+ "order": 4
+}

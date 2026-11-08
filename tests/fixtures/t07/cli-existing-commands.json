@@ -26,8 +26,8 @@
    "optimization"
   ],
   "exit": 14,
-  "stdout": "{\"code\":\"unsupported\",\"detail\":{\"pointer\":\"/task\"},\"message\":\"task_unsupported(optimization)\",\"retryable\":false}\n",
-  "stderr": ""
+  "stdout": "{\"code\":\"unsupported\",\"detail\":{\"explanation\":{\"action\":\"Validate with the task \\\"simulation\\\" (openflowsheet validate --task simulation, or task \\\"simulation\\\" in the request).\",\"cause\":null,\"chain\":[\"unsupported\",\"task_unsupported\"],\"code\":\"task_unsupported\",\"complete\":true,\"docs\":\"https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#task_unsupported\",\"elements\":[],\"family\":\"refusal\",\"gap\":{\"capability\":\"validation of an optimization formulation (task \\\"optimization\\\")\",\"limitation\":null},\"hint\":null,\"kind\":\"not_supported\",\"numbers\":[],\"summary\":\"This version cannot validate a revision for the \\\"optimization\\\" task; it validates for simulation only.\",\"where\":null,\"why\":\"Validating for optimization would mean checking an optimization formulation (objective, decision variables and their bounds). This version checks none, so it refuses rather than report a revision ready for a task it has not checked.\"},\"pointer\":\"/task\"},\"message\":\"task_unsupported(optimization)\",\"retryable\":false}\n",
+  "stderr": "This version cannot validate a revision for the \"optimization\" task; it validates for simulation only.\n  Why:     Validating for optimization would mean checking an optimization formulation (objective, decision variables and their bounds). This version checks none, so it refuses rather than report a revision ready for a task it has not checked.\n  Do:      Validate with the task \"simulation\" (openflowsheet validate --task simulation, or task \"simulation\" in the request).\n  Kind:    Not supported in this version: a limitation of OpenFlowsheet, not an error in your flowsheet.\n  Code:    task_unsupported, in unsupported (openflowsheet explain task_unsupported)\n  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#task_unsupported\n  Details: unsupported: task_unsupported(optimization)\n"
  },
  {
   "argv": [
@@ -130,7 +130,7 @@
   ],
   "exit": 2,
   "stdout": "",
-  "stderr": "<ROOT>/project is not empty; a project is created in a new directory\n"
+  "stderr": "Directory '<ROOT>/project' is not empty: it already holds a project, and project init needs a new or empty directory.\n  Why:     create() makes a new project and never reuses a directory, so a re-run cannot overwrite work silently.\n  Do:      The project is ready to use: pass --project <ROOT>/project to other commands, or run project init with --exist-ok.\n  Kind:    Input problem: something in the flowsheet or the request needs to change.\n  Code:    project_exists (openflowsheet explain project_exists)\n  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#project_exists\n  Details: project_exists: <ROOT>/project\n"
  },
  {
   "argv": [

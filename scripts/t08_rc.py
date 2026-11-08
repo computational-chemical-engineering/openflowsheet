@@ -12,9 +12,10 @@ Steps (§8.2), the subcommand or job that measures each, and its assertions:
    compares the two architectures — T08.A42.
 3. sdist and wheel built twice — `scripts/t08_dist.py` — T08.A43.
 4. Clean install on both architectures — `install-check`, run by the clean environment's
-   interpreter outside the checkout — T08.A44; the lock lookup and the installed package's
-   bundle replay — `lock-check --state installed` and `--state checkout`, the same interpreter
-   — T08.A19.
+   interpreter outside the checkout — T08.A44; the packaged lock, verified, and the installed
+   package's bundle replay — `lock-check` (five states) and `f0-replay`, the same interpreter —
+   X05.A21, A22 (ADR 0069; T08.A19 retired by its D7.2); `lock-check --state installed-free` in a
+   second, unconstrained environment — X05.A25 (ADR 0069 Amendment 1).
 5. The RC bundle set — `bundles-write` (CI x86-64), `bundles-replay` (fresh x86-64 and aarch64
    runners) — T08.A45; each replay records the policy its bundle names, every bundle must name
    `T08-numerical-policy-v2`, and ADR 0025 A14's three controls run on both runners.
@@ -458,103 +459,326 @@ def step_install_check(arguments: argparse.Namespace) -> int:
     )
 
 
-# -- step 4: the lock lookup (T08.A19) ---------------------------------------------------------
+# -- step 4: the packaged lock, verified, and replay from the wheel (X05, ADR 0069) ------------
 
-#: T08.A19 (c): the replay reason's side, by the state that replays (`run/replay.py` D4).
-A19_UNKNOWN_SIDE: Final = {"installed": "both sides", "checkout": "the archive's side"}
+#: X05's registered values (`docs/derivations/scripts/x05_reference.py`), read as data from the
+#: checkout as the clean-install step reads the lock and the certificate.
+X05_REFERENCE: Final = ROOT / "benchmarks" / "x05" / "reference_values.json"
+#: ADR 0069 §6.2's states; `installed-nolock` is ADR 0069 X05.A14's (no replay cells).
+LOCK_STATES: Final = ("installed", "checkout", "installed-off", "checkout-off", "installed-nolock")
+#: X05.A25 as restated by ADR 0069 Amendment 1 (Frank's Q-F1 = no): the installed package in an
+#: environment made by a plain, unconstrained install of the wheel. Not a §6.2 state, so not in
+#: `LOCK_STATES`; its expectation is computed from the versions installed, not registered.
+UNCONSTRAINED_STATE: Final = "installed-free"
+#: The prefix of `decide_mode`'s unknown-lock reasons (T08.A19's, kept by ADR 0069 D5).
+UNKNOWN_PREFIX: Final = "the dependency set is unknown on "
+
+
+def _copy_without_the_lock(package: Path, root: Path) -> Path:
+    """X05.A14's installed package: a copy of `package` below `root/site-packages` with its
+    `_data/requirements.lock` deleted — never a deletion from the environment later steps use."""
+    import shutil  # noqa: PLC0415
+
+    site = root / "site-packages"
+    shutil.copytree(package, site / "openflowsheet", ignore=shutil.ignore_patterns("__pycache__"))
+    (site / "openflowsheet" / "_data" / "requirements.lock").unlink()
+    return site
 
 
 def step_lock_check(arguments: argparse.Namespace) -> int:
-    """T08.A19 (release spec Amendment R3 5). Run with the clean environment's interpreter from
-    outside the checkout. `installed` imports the installed package (every checkout entry is
-    dropped from `sys.path`), whose environment must contain an unrelated `requirements.lock` in
-    a directory above the package; `checkout` imports this checkout's `src/`. `--bundle` is a
-    `SYN-001-nominal` bundle written by the installed package's CLI, replayed here."""
+    """ADR 0069 X05.A13-A17 (A21 in CI): run with the clean environment's interpreter from outside
+    the checkout. `installed*` import the installed package (the checkout's `sys.path` entries are
+    dropped), which must sit beneath a stray `requirements.lock`; `checkout*` import this
+    checkout's `src/`. `*-off` put `--shadow` (a directory holding only a `numpy` dist-info at
+    another version) first on `sys.path`. `installed-nolock` copies the installed package below
+    `--nolock-root` without its lock. `--bundle-on` and `--bundle-off` are `SYN-001-nominal`
+    bundles written by the installed CLI without and with the shadow; each one given is replayed
+    and judged against its registered cell.
+
+    `installed-free` (X05.A25, ADR 0069 Amendment 1) is the installed package after a plain
+    `pip install <wheel>`: the five direct members are pinned by `Requires-Dist` and must sit at
+    the lock, the four transitive ones float. The environment must verify iff every closure member
+    is at the lock, and otherwise record `""` naming exactly the members off it, which the replay
+    reason then names (ADR 0069 D5). `--shadow`, if given, goes first on `sys.path` here too."""
+    import tomllib  # noqa: PLC0415
+    from dataclasses import replace  # noqa: PLC0415
+    from importlib import metadata  # noqa: PLC0415
+
     state: str = arguments.state
+    reference = json.loads(X05_REFERENCE.read_text(encoding="utf-8"))
     checks: list[dict[str, Any]] = []
-    if state == "installed":
-        # The checkout's entries go; the running environment's own stay (a test's virtual
-        # environment may live inside the checkout; CI's clean one never does).
-        prefix = Path(sys.prefix).resolve()
-        sys.path[:] = [
-            entry
-            for entry in sys.path
-            if not Path(entry or ".").resolve().is_relative_to(ROOT)
-            or Path(entry).resolve().is_relative_to(prefix)
-        ]
+    if state.startswith("installed"):
+        sys.path[:] = outside_the_checkout(sys.path)
     else:
         sys.path.insert(0, str(ROOT / "src"))
+    if state == "installed-nolock":
+        import importlib.util  # noqa: PLC0415
+
+        spec = importlib.util.find_spec("openflowsheet")
+        assert spec is not None and spec.origin is not None, "no installed openflowsheet"
+        sys.path.insert(
+            0, str(_copy_without_the_lock(Path(spec.origin).parent, arguments.nolock_root))
+        )
+    shadow: Path | None = arguments.shadow
+    if state.endswith("-off") and shadow is None:
+        raise SystemExit(f"--state {state} needs --shadow")
+    if shadow is not None and (state.endswith("-off") or state == UNCONSTRAINED_STATE):
+        sys.path.insert(0, str(shadow.resolve()))
+    import numpy  # noqa: PLC0415
+
     import openflowsheet  # noqa: PLC0415
     from openflowsheet.application.revision_run import reproduce_bundle  # noqa: PLC0415
     from openflowsheet.run.bundle import read_manifest  # noqa: PLC0415
     from openflowsheet.run.manifest import environment  # noqa: PLC0415
+    from openflowsheet.run.replay import decide_mode  # noqa: PLC0415
 
     location = Path(openflowsheet.__file__).resolve().parent
-    here = environment()
-    if state == "installed":
-        strays = [
-            str(d / "requirements.lock")
-            for d in location.parents
-            if (d / "requirements.lock").is_file()
-        ]
+    # In a checkout the root's `requirements.lock` is the packaged lock itself, not a stray.
+    strays = [
+        d / "requirements.lock"
+        for d in location.parents
+        if state.startswith("installed") and (d / "requirements.lock").is_file()
+    ]
+    stray_digests = {str(path): sha256_bytes(path.read_bytes()) for path in strays}
+    if state.startswith("installed"):
         check(
             checks,
-            "a19.b_installed_outside_the_tree_beneath_a_stray_lock",
-            not location.is_relative_to(ROOT) and bool(strays),
+            "x05.installed_outside_the_tree_beneath_the_stray",
+            not location.is_relative_to(ROOT)
+            and reference["end_to_end"]["stray"]["sha256"] in stray_digests.values(),
             package=str(location),
-            strays=strays,
+            strays=stray_digests,
+            expected_stray=reference["end_to_end"]["stray"]["sha256"],
         )
-        check(checks, "a19.b_lock_sha256_empty", here.lock_sha256 == "", found=here.lock_sha256)
     else:
         check(
             checks,
-            "a19.a_the_checkouts_package",
+            "x05.the_checkouts_package",
             location == (ROOT / "src" / "openflowsheet").resolve(),
             package=str(location),
         )
-        check(
-            checks,
-            "a19.a_lock_sha256_registered",
-            here.lock_sha256 == LOCK_SHA256,
-            found=here.lock_sha256,
-            expected=LOCK_SHA256,
-        )
-    bundle: Path = arguments.bundle
-    recorded, _ = read_manifest(bundle)
+    # The shadow is seen by `importlib.metadata` while the real numpy is the one imported.
+    pins = {row["name"]: row["locked"] for row in reference["lock"]["runtime_closure"]}
+    seen = metadata.version("numpy")
+    wanted = (
+        reference["end_to_end"]["shadow"]["version"] if state.endswith("-off") else pins["numpy"]
+    )
     check(
         checks,
-        "a19.c_bundle_written_without_a_lock",
-        recorded.environment.lock_sha256 == "",
-        found=recorded.environment.lock_sha256,
+        "x05.numpy_metadata_and_import",
+        seen == wanted and numpy.__version__ == pins["numpy"],
+        metadata_version=seen,
+        imported_version=numpy.__version__,
+        expected_metadata_version=wanted,
     )
-    side = A19_UNKNOWN_SIDE[state]
-    try:
-        with tempfile.TemporaryDirectory() as scratch:
-            report = reproduce_bundle(
-                bundle, rerun=True, rerun_directory=Path(scratch) / "rerun", run_id="rc-a19"
-            ).report
+    here = environment()
+    templates = reference["templates"]
+    expected: dict[str, Any]
+    off_the_lock: list[str] = []
+    off_names: list[str] = []
+    if state == UNCONSTRAINED_STATE:
+        # ADR 0069 D2 restated from the registered pins and the versions `importlib.metadata`
+        # reports, in the closure's order: F3 for a member not installed, F4 for one off its pin.
+        for name, locked in pins.items():
+            try:
+                found: str | None = metadata.version(name)
+            except metadata.PackageNotFoundError:
+                found = None
+            if found != locked:
+                off_names.append(name)
+            if found is None:
+                off_the_lock.append(templates["F3"].format(name=name, locked=locked))
+            elif found != locked:
+                off_the_lock.append(
+                    templates["F4"].format(name=name, installed=found, locked=locked)
+                )
+        # The direct members are pinned by `Requires-Dist` (pyproject's list, which the wheel's
+        # equals, T08.A43), so pip installs them at the lock: none of them may be off it.
+        direct: dict[str, tuple[str, str | None]] = {}
+        for text in tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))["project"][
+            "dependencies"
+        ]:
+            name, version = text.split("==")
+            direct[name] = (version, pins.get(name))
         check(
             checks,
-            f"a19.c_replay_by_{state}",
-            report.mode == "inspected_archived_results"
-            and report.verdict == "NOT_RUN"
-            and any(
-                r.startswith(f"the dependency set is unknown on {side}") for r in report.reasons
-            ),
+            "x05.a25_the_direct_members_at_the_lock",
+            all(version == locked for version, locked in direct.values())
+            and not set(direct) & set(off_names),
+            direct={name: version for name, (version, _) in direct.items()},
+            off_the_lock=off_the_lock,
+        )
+        expected = {
+            "lock_sha256": "" if off_the_lock else reference["lock"]["sha256"],
+            "lock_findings": off_the_lock,
+        }
+    elif state == "installed-nolock":
+        expected = reference["end_to_end"]["missing_lock"]
+    else:
+        expected = reference["end_to_end"]["states"][state]
+    check(
+        checks,
+        "x05.environment",
+        (here.lock_sha256, list(here.lock_findings))
+        == (expected["lock_sha256"], expected["lock_findings"]),
+        lock_sha256=here.lock_sha256,
+        lock_findings=list(here.lock_findings),
+        expected=expected,
+    )
+    if state.startswith("installed"):
+        check(
+            checks,
+            "x05.never_the_strays_hash",
+            here.lock_sha256 not in stray_digests.values(),
+            lock_sha256=here.lock_sha256,
+        )
+    if state == UNCONSTRAINED_STATE:
+        # D5: a bundle recorded with the verified lock, replayed here, names every member off it.
+        verified = replace(here, lock_sha256=reference["lock"]["sha256"], lock_findings=())
+        free_mode, free_reasons = decide_mode(verified, here)
+        if off_the_lock:
+            joined = templates["JOIN"].join(off_the_lock)
+            passed = (free_mode, free_reasons) == (
+                "inspected_archived_results",
+                (templates["R_THIS"].format(findings=joined),),
+            )
+        else:
+            passed = not any(reason.startswith(UNKNOWN_PREFIX) for reason in free_reasons)
+        check(
+            checks,
+            "x05.a25_the_replay_reason_names_the_members_off_the_lock",
+            passed,
+            mode=free_mode,
+            reasons=list(free_reasons),
+        )
+    if state == "installed":
+        # X05.A13's control: the stray would verify, so only reading it could give its hash.
+        registered = reference["end_to_end"]["stray"]["sha256"]
+        matching = [path for path, digest in stray_digests.items() if digest == registered]
+        stray = matching[0] if matching else ""
+        read = environment(lock_path=stray) if stray else None
+        check(
+            checks,
+            "x05.control_the_stray_would_verify",
+            read is not None and (read.lock_sha256, read.lock_findings) == (registered, ()),
+            stray=stray,
+            lock_sha256=None if read is None else read.lock_sha256,
+        )
+    cells = {(c["state"], c["bundle"]): c for c in reference["end_to_end"]["replays"]}
+    replayed: list[str] = []
+    for name, bundle in (("on", arguments.bundle_on), ("off", arguments.bundle_off)):
+        if bundle is None or (state, name) not in cells:
+            continue
+        replayed.append(name)
+        recorded, _ = read_manifest(bundle)
+        written = reference["end_to_end"]["bundles"][name]
+        check(
+            checks,
+            f"x05.bundle_{name}_records",
+            recorded.environment.lock_sha256 == written["lock_sha256"],
+            found=recorded.environment.lock_sha256,
+            expected=written["lock_sha256"],
+        )
+        cell = cells[(state, name)]
+        try:
+            with tempfile.TemporaryDirectory() as scratch:
+                report = reproduce_bundle(
+                    bundle, rerun=True, rerun_directory=Path(scratch) / "rerun", run_id="rc-x05"
+                ).report
+        except Exception as failure:  # noqa: BLE001 - "no exception" is part of the assertion
+            check(checks, f"x05.replay_{name}", False, exception=repr(failure))
+            continue
+        reasons = list(report.reasons)
+        if cell["mode"] == "exact_replay":
+            passed = report.integrity.ok and reasons == cell["reasons"]
+        else:
+            passed = (
+                bool(reasons)
+                and reasons[0] == cell["reason0"]
+                and not any(r.startswith(UNKNOWN_PREFIX) for r in reasons[1:])
+            )
+        check(
+            checks,
+            f"x05.replay_{name}",
+            passed and (report.mode, report.verdict) == (cell["mode"], cell["verdict"]),
             mode=report.mode,
             verdict=report.verdict,
-            reasons=list(report.reasons),
-            expected_side=side,
+            integrity_ok=report.integrity.ok,
+            reasons=reasons,
+            expected=cell,
         )
-    except Exception as failure:  # noqa: BLE001 - T08.A19 (c): "no exception" is the assertion
-        check(checks, f"a19.c_replay_by_{state}", False, exception=repr(failure))
     return finish(
         arguments.out,
         "lock-check",
         checks,
         provenance={**provenance(), "machine_class": machine_class()},  # R-347
         state=state,
-        bundle=str(bundle),
+        replayed=replayed,
+        off_the_lock=off_the_lock,
+        bundles={"on": str(arguments.bundle_on), "off": str(arguments.bundle_off)},
+    )
+
+
+def step_f0_replay(arguments: argparse.Namespace) -> int:
+    """ADR 0069 X05.A22: the installed wheel replays F0's 52 v0.3.0 bundles (`corpus_identity`'s
+    M7, run with the clean environment's interpreter from outside the checkout; the checkout's
+    `sys.path` entries are dropped, so the package replaying is the installed one). On the
+    reference platform each bundle equals M7's registered value; elsewhere `MATCH`, integrity ok
+    and a mode of `exact_replay` or `compatible_reproduction` (never inspected)."""
+    sys.path[:] = outside_the_checkout(sys.path)
+    import openflowsheet  # noqa: PLC0415
+
+    location = Path(openflowsheet.__file__).resolve().parent
+    sys.path.insert(0, str(ROOT / "scripts"))
+    import corpus_identity  # noqa: PLC0415
+
+    registry = json.loads(corpus_identity.REGISTRY.read_text(encoding="utf-8"))
+    registered: dict[str, dict[str, Any]] = registry["measures"]["M7"]
+    platform_class = machine_class()
+    reference = platform_class == registry["reference_platform"]
+    checks: list[dict[str, Any]] = []
+    check(
+        checks,
+        "x05.a22_the_installed_package",
+        not location.is_relative_to(ROOT),
+        package=str(location),
+    )
+    found = corpus_identity.m7()
+    check(
+        checks,
+        "x05.a22_the_bundles",
+        sorted(found) == sorted(registered),
+        count=len(found),
+        registered=len(registered),
+        missing=sorted(set(registered) - set(found)),
+        extra=sorted(set(found) - set(registered)),
+    )
+    if reference:
+        differing = sorted(key for key in registered if found.get(key) != registered[key])
+    else:
+        differing = sorted(
+            key
+            for key in registered
+            if (found.get(key) or {}).get("verdict") != "MATCH"
+            or not (found.get(key) or {}).get("integrity_ok")
+            or (found.get(key) or {}).get("mode") not in ("exact_replay", "compatible_reproduction")
+        )
+    check(
+        checks,
+        "x05.a22_m7_from_the_wheel",
+        not differing and bool(found),
+        judged="registered value" if reference else "MATCH, integrity, exact or compatible",
+        differing={key: found.get(key) for key in differing},
+        modes=dict(Counter(str(value.get("mode")) for value in found.values())),
+        verdicts=dict(Counter(str(value.get("verdict")) for value in found.values())),
+    )
+    return finish(
+        arguments.out,
+        "f0-replay",
+        checks,
+        provenance={**provenance(), "machine_class": platform_class},  # R-347
+        package=str(location),
+        results=found,
     )
 
 
@@ -1330,6 +1554,7 @@ STEPS: Final[dict[str, Callable[[argparse.Namespace], int]]] = {
     "identity": step_identity,
     "install-check": step_install_check,
     "lock-check": step_lock_check,
+    "f0-replay": step_f0_replay,
     "bundles-write": step_bundles_write,
     "bundles-replay": step_bundles_replay,
     "ensemble": step_ensemble,
@@ -1344,14 +1569,19 @@ def main(argv: Sequence[str] | None = None) -> int:
     commands = parser.add_subparsers(dest="step", required=True)
     for name in ("identity", "bundles-write", "ensemble", "surface"):
         commands.add_parser(name).add_argument("--out", type=Path, required=True)
-    for name in ("corpus",):
+    for name in ("corpus", "f0-replay"):
         commands.add_parser(name).add_argument("--out", type=Path, required=True)
     install = commands.add_parser("install-check")
     install.add_argument("--out", type=Path, required=True)
     install.add_argument("--keep", type=Path, default=None, help="copy the smoke bundle here")
     lock = commands.add_parser("lock-check")
-    lock.add_argument("--state", choices=sorted(A19_UNKNOWN_SIDE), required=True)
-    lock.add_argument("--bundle", type=Path, required=True, help="a bundle the installed CLI wrote")
+    lock.add_argument("--state", choices=(*LOCK_STATES, UNCONSTRAINED_STATE), required=True)
+    lock.add_argument("--bundle-on", type=Path, default=None, help="written by the installed CLI")
+    lock.add_argument("--bundle-off", type=Path, default=None, help="written with the shadow")
+    lock.add_argument("--shadow", type=Path, default=None, help="the numpy dist-info directory")
+    lock.add_argument(
+        "--nolock-root", type=Path, default=None, help="where installed-nolock copies"
+    )
     lock.add_argument("--out", type=Path, required=True)
     replay = commands.add_parser("bundles-replay")
     replay.add_argument("--bundles", type=Path, required=True)

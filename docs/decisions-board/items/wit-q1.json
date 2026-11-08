@@ -1,0 +1,31 @@
+{
+ "section": "defaults",
+ "pkg": "WIT",
+ "pkgTitle": "Certificate derivative check at very small or zero flows (merged)",
+ "kind": "choice",
+ "title": "Q-WIT-1: VERIFIED with a declared partial derivative check at a held-zero vapour side?",
+ "body": [
+  "On a Wilson property basis, a unit whose vapour side is held at exactly zero cannot have its zero liquid-side columns differenced (no derivative exists there). The certificate then says VERIFIED with `derivative_witness_partial` declared, as already done for zero flows on `pr-c1-v1` (R-281)."
+ ],
+ "defaultKey": "default",
+ "options": [
+  {
+   "key": "default",
+   "label": "Yes",
+   "detail": ""
+  },
+  {
+   "key": "alt1",
+   "label": "No, report it as unverified",
+   "detail": ""
+  },
+  {
+   "key": "other",
+   "label": "Something else",
+   "detail": "Say what in the note."
+  }
+ ],
+ "links": [],
+ "status": "open",
+ "order": 28
+}

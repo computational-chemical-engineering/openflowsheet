@@ -71,6 +71,8 @@ EXPECTED_RIGHT = {
     "get_artifact": "read",
     # ADR 0019 Amendment 3 (A3.3; M06 WO-3)
     "list_audit": "read",
+    # ADR 0058 D7 (MSG)
+    "explain": "read",
     "artifact_bytes": "read",
 }
 SUBSETS = [
@@ -117,8 +119,8 @@ def expected(rights: tuple[str, ...], operation: str, own: bool = True) -> bool:
 
 
 def test_the_table_names_exactly_the_twenty_operations() -> None:
-    """The 19 protocol methods and `artifact_bytes` (§4.1, §4.3; G11), and ADR 0019 Amendment
-    3's `list_audit`: 21."""
+    """The 19 protocol methods and `artifact_bytes` (§4.1, §4.3; G11), ADR 0019 Amendment 3's
+    `list_audit` and ADR 0058 D7's `explain`: 22."""
     assert dict(OPERATION_RIGHTS) == EXPECTED_RIGHT
     assert len(SUBSETS) == 64
 
@@ -142,7 +144,7 @@ def test_g11_the_decision_matrix_equals_the_table() -> None:
         assert others.allowed == expected(rights, "list_audit", own=False), rights
         everyone = authorize(cap, "list_audit", None)
         assert everyone.allowed == others.allowed, "all principals' rows are others' rows"
-    assert cells == 64 * 21
+    assert cells == 64 * 22  # with ADR 0058 D7's `explain`
 
 
 def test_g11_an_unknown_operation_and_an_expired_capability_are_refused() -> None:

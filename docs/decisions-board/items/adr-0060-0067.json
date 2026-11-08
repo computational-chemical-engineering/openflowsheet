@@ -1,0 +1,45 @@
+{
+ "section": "later",
+ "pkg": "W1",
+ "pkgTitle": "Foundation designs for 0.5–0.7 (not urgent)",
+ "kind": "choice",
+ "title": "Accept ADRs 0060–0067, the foundation designs",
+ "body": [
+  "0060 extension registry and 0061 component data (built in 0.5); 0062 v2 stream and document grammar, 0063 property methods from records, 0064 an N-phase flash that discovers phases (0.5–0.6); 0065 the unit-model framework, 0066 dynamic problems and run kinds, 0067 v2 identity and replay (0.6–0.7). All were reviewed and fixed; each amends the frozen application contract additively, so each needs your yes.",
+  "Two reviewer defaults inside 0067/0065: S1, older v2 bundles re-run after a built-in unit changes and report differences (instead of refusing); S7, retiring a legacy unit family affects only revisions built by the new compiler."
+ ],
+ "defaultKey": "proposed",
+ "options": [
+  {
+   "key": "accept",
+   "label": "Accept all eight",
+   "detail": ""
+  },
+  {
+   "key": "proposed",
+   "label": "Keep them Proposed for now",
+   "detail": "The next designs build on them as written."
+  },
+  {
+   "key": "other",
+   "label": "Accept some, or change S1/S7",
+   "detail": "Say which in the note."
+  }
+ ],
+ "links": [
+  {
+   "label": "P1 review",
+   "url": "https://github.com/computational-chemical-engineering/openflowsheet/blob/main/docs/reviews/W1-P1-review.md"
+  },
+  {
+   "label": "P2 review",
+   "url": "https://github.com/computational-chemical-engineering/openflowsheet/blob/main/docs/reviews/W1-P2-review.md"
+  },
+  {
+   "label": "P3 review",
+   "url": "https://github.com/computational-chemical-engineering/openflowsheet/blob/main/docs/reviews/W1-P3-review.md"
+  }
+ ],
+ "status": "open",
+ "order": 37
+}

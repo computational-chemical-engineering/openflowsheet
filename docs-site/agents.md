@@ -53,7 +53,8 @@ Rules worth giving an agent, because they are how the software is meant to be re
   registered tolerance. Report `RELAXED`, `UNVERIFIED` and `FAILED` as such.
 - **Treat a refusal as an answer.** `model_unsupported(...)`, `revision_not_ready` or
   `INITIALIZATION_FAILED` mean the request is outside what is supported; they are not obstacles to
-  work around by loosening a tolerance or swapping a model silently.
+  work around by loosening a tolerance or swapping a model silently. Read its explanation's
+  `kind` and `action` first (below).
 - **Keep the claims apart.** A verified solve is numerical verification of the stated equations
   at the stated state. It is not empirical validation of the property model, and not an optimality
   claim. The certificate's `statements` say so in words an agent can quote.
@@ -61,6 +62,29 @@ Rules worth giving an agent, because they are how the software is meant to be re
   parameters and accepted specifications, and the degrees of freedom of a revision.
 - **Commit against the head you read.** `commit_change` takes the expected head revision and an
   idempotency key; a conflict is reported, never overwritten.
+
+## Reading what went wrong
+
+Every refusal and every failed solve explains itself, in the same document on every transport
+([Messages](messages/index.md)):
+
+- **A refusal** is an `ApiError` whose `detail.explanation` holds the explanation: `summary`,
+  `cause`, `why` (with the numbers), `action`, `kind`, the `elements` involved, the `numbers`, the
+  `chain` of codes and the `docs` link to the code's section. The machine `code`, `message` and the
+  other `detail` members are unchanged.
+- **A solve that did not converge** returns normally; its `RunResult.failure` (on
+  `get_job_result`) holds the outcome, the stored failure message, the implicated elements, the
+  suggested actions, the failure bundle's artifact id and the same `explanation`. `failure` is
+  `null` for a converged run.
+- **`kind`** says whose move it is: `input` (change the flowsheet or the request),
+  `not_supported` (a limitation; change the approach, not the numbers), `numerical` (the flowsheet
+  may be right; try another start or policy), `bug` (report it), `notice` (not a failure).
+- **`gap`**, on a `not_supported` explanation, names the limitation (its support-matrix row) and the
+  missing capability. It is the answer to "can OpenFlowsheet do this?", and the reason not to
+  retry.
+- **`explain`** (`openflowsheet explain <code>`, the `explain` tool, `GET /v1/explain/{code}`)
+  returns any code's catalogue entry: what it means, the rule, what to do and an example. An
+  unknown code is refused `not_found` with `detail.suggestions`.
 
 ## For agents working on OpenFlowsheet itself
 

@@ -15,11 +15,13 @@ beside a positive sibling, differenced one-sided) and the one-sided part's worst
 
 from __future__ import annotations
 
+import platform
 import time
 from collections.abc import Mapping
 from typing import Any
 
 import pytest
+from conftest import REPO_ROOT, load_json
 from s11_gp_support import (
     CASES,
     GP_M1_INLET,
@@ -31,6 +33,7 @@ from s11_gp_support import (
     gp_c3,
     solve,
 )
+from wit_support import spy
 
 from openflowsheet.application.binding import Unbound
 from openflowsheet.application.policies import T06_REVISION_V2
@@ -65,6 +68,8 @@ from openflowsheet.verify.checks import (
 )
 from openflowsheet.verify.thermal import additive_isentropic_enthalpy
 
+#: K04 amendment WIT's reference values (`docs/derivations/scripts/wit_reference.py`).
+WIT: dict[str, Any] = load_json(REPO_ROOT / "docs/derivations/scripts/wit_reference.json")
 TAU_E = KIND_TOLERANCE["heat_rate"]
 TAU_FLOW = KIND_TOLERANCE["molar_flow"]
 TAU_T = KIND_TOLERANCE["temperature"]
@@ -252,25 +257,52 @@ def test_a71_gp_c3_mixer_of_two_liquids_to_heater(gamma_phi: list[int]) -> None:
     assert witness["one_sided_worst"] <= DERIVATIVE_TOLERANCE / 10, witness
 
 
-def test_oq5_a_liquid_only_lifted_heater_outlet_leaves_the_witness_unsupported(
+@pytest.mark.parametrize(
+    ("heater_temperature", "measured"),
+    [(340.0, 1.3166534529318596e-10), (345.0, 6.871747615377899e-11)],
+)
+def test_wit_a10_a_liquid_only_lifted_heater_outlet_is_verified(
     gamma_phi: list[int],
+    monkeypatch: pytest.MonkeyPatch,
+    heater_temperature: float,
+    measured: float,
 ) -> None:
-    """S11 rulings OQ-5, a fact for the design lane: GP-C3 with the heater at 345 K, below the
-    mixture's bubble point, lifts a liquid-only outlet (β = 0: `S4.vap.<c>` exactly 0.0 for every
-    c, so no column of that phase has a positive sibling and Z leaves them out). The central
-    stencil's backward point is a negative flow, which the vapour enthalpy block refuses, so the
-    witness is `unsupported` and the certificate UNVERIFIED. Recorded, not widened."""
-    document = gp_c3(heater_temperature=345.0)
+    """WIT.A10 (K04 §4.8.4, ADR 0073 D2; replaces S11 rulings OQ-5's recorded fact, move M-1):
+    GP-C3 with the heater below the mixture's bubble point lifts a liquid-only outlet
+    (`S4.vap.<c>` exactly 0.0 for every c). Before amendment WIT the central stencil's backward
+    point was a negative flow, the vapour enthalpy block refused it, and the witness was
+    `unsupported` (`S4.vap.CH3OH`), the certificate UNVERIFIED. Now the dormant vapour side is
+    class 4, differenced by R-831's forward five-point stencil: the rows that read it are affine
+    in it on a gamma-phi-IG basis. The AD entries (`H:HEAT-equilibrium:<c>`, `S4.vap.<c>`) are
+    G1's L S_x / S_F = 0.5, the certificate VERIFIED with no `derivative_witness_partial`, and
+    the class-4 part at most tau_D / 10. Measured on-pattern (TRS2): `measured`."""
+    runs = spy(monkeypatch)
+    document = gp_c3(heater_temperature=heater_temperature)
     binding, plan, run = solve(document)
     assert run.outcome == "CONVERGED" and run.state is not None
     assert all(run.state[f"S4.vap.{c}"] == 0.0 for c in WILSON_BASIS.components)
     certificate = verify_revision(binding, document, run, solve_plan=plan.steps[-1].solve_plan)
-    witness = {c.id: c for c in certificate.checks if c.category == "derivative_witness"}
-    assert {c.result for c in witness.values()} == {"unsupported"}
-    assert {c.reason for c in witness.values()} == {
-        "witness_stencil_invalid_trial_state(S4.vap.CH3OH)"
-    }
-    assert certificate.verification_status == "UNVERIFIED"
+    assert_verified(certificate)
+    (witnessed,) = runs
+    vapour = {f"S4.vap.{c}" for c in WILSON_BASIS.components}
+    assert witnessed.of_class(4) == vapour
+    assert not witnessed.of_class(2)
+    jacobian = witnessed.scaled_jacobian()
+    g1 = float(WIT["GP_C3"]["G1"]["equilibrium_row_vapour_entry_scaled"])
+    for c in WILSON_BASIS.components:
+        assert jacobian[(f"H:HEAT-equilibrium:{c}", f"S4.vap.{c}")] == g1  # an affine row: exact
+    part = derivative_witness(
+        witnessed.target,
+        witnessed.state,
+        unstenciled=frozenset(binding.spec.variable_ids) - vapour,
+        one_sided=frozenset(vapour),
+    )
+    assert [c.result for c in part] == ["pass", "pass"], part
+    assert max(c.value or 0.0 for c in part) <= DERIVATIVE_TOLERANCE / 10
+    on = witnessed.check("on_pattern")
+    assert on.value is not None and on.value <= DERIVATIVE_TOLERANCE
+    if platform.machine() == "x86_64":
+        assert on.value == measured  # bitwise on the reference platform
 
 
 # -- S11 rulings item 11 (R-840): the `ph_kernel` failure labels -----------------------------------

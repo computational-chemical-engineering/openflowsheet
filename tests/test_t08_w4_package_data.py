@@ -93,8 +93,9 @@ def test_every_packaged_file_reads_the_repository_bytes() -> None:
     # Four before M02; M02 (R-317 (b)) added the external addendum. (Not a schema count: the
     # packaged single files, which `PACKAGED` lists.) S05 (R-616) added the IAPWS-95 coefficients;
     # E01 (ADR 0052) the seven assessment data files.
-    # V03 (R-880) Wilson's records and the Kurihara 1993 Table II points.
-    assert sum(1 for r in expected if r in PACKAGED) == 15
+    # V03 (R-880) Wilson's records and the Kurihara 1993 Table II points. X05 (ADR 0069 D1) the
+    # lock `environment()` verifies.
+    assert sum(1 for r in expected if r in PACKAGED) == 16
     for relative, data in expected.items():
         assert packaged(relative).read_bytes() == data, relative
     assert sorted(
@@ -183,10 +184,10 @@ def test_an_unlisted_path_is_refused() -> None:
 
 def test_no_module_reads_schemas_or_benchmarks_by_walking_up_from_its_file() -> None:
     """The pre-W4.2 idiom, `Path(__file__).resolve().parents[3] / "schemas"` and the walk to a
-    parent holding `benchmarks/`, works only in a checkout. (`run/manifest.py`'s walk to
-    `requirements.lock` stays: the lock describes a checkout's environment, not the package. So does
-    `thermo/pr_c1.py`'s `_checkout_records`, taken only when `PACKAGED` lacks the C1 records, which
-    is M01 spec Q-N4 declined: the package then deliberately carries none; M01 review F4.)"""
+    parent holding `benchmarks/`, works only in a checkout. (`run/manifest.py`'s lookup of
+    `requirements.lock` went with X05: the lock is packaged data now, ADR 0069 D1.
+    `thermo/pr_c1.py`'s `_checkout_records` stays, taken only when `PACKAGED` lacks the C1 records,
+    which is M01 spec Q-N4 declined: the package then deliberately carries none; M01 review F4.)"""
     idiom = re.compile(r'/\s*"(schemas|benchmarks)"')
     found = [
         f"{path.relative_to(REPO_ROOT)}:{number}"

@@ -1,0 +1,25 @@
+{
+  "action": "Check the id; a job's outputs list the artifact ids it wrote.",
+  "cause": null,
+  "chain": [
+    "not_found"
+  ],
+  "code": "not_found",
+  "complete": true,
+  "docs": "https://computational-chemical-engineering.github.io/openflowsheet/messages/api-errors/#not_found",
+  "elements": [
+    {
+      "id": "job-999999",
+      "path": null,
+      "type": "job"
+    }
+  ],
+  "family": "api_error",
+  "gap": null,
+  "hint": null,
+  "kind": "input",
+  "numbers": [],
+  "summary": "Nothing named 'job-999999' exists in this project.",
+  "where": null,
+  "why": "The id is not one this project has recorded."
+}

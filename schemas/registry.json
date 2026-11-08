@@ -17,6 +17,7 @@
   "jacobian-result.schema.json",
   "job-event.schema.json",
   "job.schema.json",
+  "message-catalogue.schema.json",
   "model-evidence.schema.json",
   "model-manifest.schema.json",
   "model-replacement.schema.json",

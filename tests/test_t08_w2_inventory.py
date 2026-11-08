@@ -376,7 +376,12 @@ SHIPPED_DATA = re.compile(
     r"|adapters/variants/[a-z0-9.-]+\.json"
     # M02 design note §2.4: the reactor environment's lock — the project's own pin file (names,
     # versions and hashes of distributions it installs elsewhere; none of their content).
-    r"|adapters/pymrm/reactor-env\.lock)$"
+    r"|adapters/pymrm/reactor-env\.lock"
+    # X05 (ADR 0069 D1): the project's own `requirements.lock`, packaged so that `environment()`
+    # verifies the runtime closure against it — names and versions only, as the reactor lock.
+    r"|_data/requirements\.lock"
+    # MSG design note §3.2: the message catalogue's data files, authored in this repository.
+    r"|messages/catalogue/[a-z_-]+\.(yaml|txt))$"
 )
 PACKAGING = re.compile(
     r"^(PKG-INFO|setup\.cfg|pyproject\.toml|README\.md|MANIFEST\.in|LICENSE|NOTICE|"

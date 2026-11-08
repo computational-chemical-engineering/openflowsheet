@@ -38,6 +38,7 @@ from __future__ import annotations
 import copy
 import json
 import re
+import sys
 import tempfile
 import time
 from collections.abc import Callable, Mapping
@@ -85,6 +86,7 @@ from openflowsheet.graph.analysis import analyse, analyse_declaration
 from openflowsheet.graph.process import ProcessGraph
 from openflowsheet.graph.report import StructuralReport
 from openflowsheet.graph.trace import Declaration, StructureUnavailableError, trace_declaration
+from openflowsheet.messages import audit
 from openflowsheet.orchestrator.execution import (
     ExecutionPlan,
     PlanRefusal,
@@ -183,6 +185,8 @@ class RunUnsupportedError(RuntimeError):
     def __init__(self, code: str) -> None:
         super().__init__(code)
         self.code = code
+        if audit.auditor is not None:  # MSG-G3: the reported `unsupported(<code>)` has entries
+            audit.auditor.observe(code, sys._getframe(1).f_globals.get("__name__", ""))
 
 
 # -- routing (R2.1) ---------------------------------------------------------------------------
@@ -815,6 +819,7 @@ def run_revision_session(
     experiments: Experiments | None = None,
     on_iteration: Callable[[int, int], None] | None = None,
     coupled_start: CoupledStart | None = None,
+    on_diagnosis: Callable[[dict[str, Any]], None] | None = None,
 ) -> RunManifest:
     """Solve, verify and write the bundle (§12.3 as amended by R2.4). Mirrors `run_session`.
 
@@ -828,6 +833,9 @@ def run_revision_session(
     `revision_coupled`, the coupling's k = 0 inner solve, X02 Part C) or a start was declared
     (ADR 0070); a declared outer start (`coupled_start`) adds its `coupling` sub-record (X02
     design note §5.7).
+    `on_diagnosis` receives the outcome-defining step's MSG sidecar (design note §4.6) as a
+    document, once the bundle is written, iff it is a failure bundle and the step carries one;
+    the sidecar is in no artifact.
     """
     from openflowsheet.run.session import _numerical_policy_id, _reproducibility_class
 
@@ -955,7 +963,22 @@ def run_revision_session(
         started_at=started,
         elapsed_seconds=time.monotonic() - clock,
     )
-    return write_bundle(Path(directory), manifest, artifacts)
+    complete: RunManifest = write_bundle(Path(directory), manifest, artifacts)
+    diagnosis = _diagnosis(result)
+    if on_diagnosis is not None and diagnosis is not None:
+        on_diagnosis(diagnosis)
+    return complete
+
+
+def _diagnosis(result: RouteRun) -> dict[str, Any] | None:
+    """MSG §4.6: the sidecar of the step that defined a failure bundle's outcome, as a document;
+    `None` without a failure bundle, or when that step carries none."""
+    if result.failure is None or result.run is None or not result.run.steps:
+        return None
+    last = result.run.steps[-1]
+    if last.diagnostic is None or last.outcome != result.failure.outcome:
+        return None
+    return last.diagnostic.as_document()
 
 
 # -- the tear path's registered cases (moved from the CLI, §12.3) -----------------------------

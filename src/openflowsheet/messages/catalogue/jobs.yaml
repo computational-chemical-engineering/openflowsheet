@@ -1,0 +1,142 @@
+# Family `job` (MSG design note §4.2.1). Stubs (MSG WO-2): kind by §4.2.1's rules.
+catalogue: openflowsheet-messages-v1
+namespace: null
+entries:
+  - code: cancel_requested
+    family: job
+    kind: notice
+    complete: true
+    title: The job was cancelled on request
+    summary: "The job ended: it was cancelled on request."
+    why: "Someone with the right to do so cancelled the job (cancel_job) while it was queued or running."
+    action: "Submit the job again if you still need its result."
+    examples: [{params: {}}]
+  - code: cancelled
+    family: job
+    kind: notice
+    complete: true
+    title: The job was cancelled
+    summary: "The job[ {job}] was cancelled before it finished."
+    why: "A job is cancelled when someone asked for it (cancel_job), when the server running it shut down, or when the program running it was interrupted from the keyboard. The ending reason says which."
+    action: "Submit the job again if you still need its result."
+    see_also: [cancel_requested, server_shutdown, keyboard_interrupt]
+    examples: [{params: {}}]
+  - code: completed
+    family: job
+    kind: notice
+    complete: true
+    title: The job ran its operation to the end
+    summary: "The job[ {job}] completed: its operation ran to the end."
+    why: "A completed job ran its operation and stored its results. For a solve this does not mean that the solve converged: the job's result gives the solve's outcome and its verification status."
+    action: "Read the job's result; for a solve, check its outcome and verification status before relying on it."
+    see_also: [CONVERGED, VERIFIED]
+    examples: [{params: {}}]
+  - code: failed
+    family: job
+    kind: notice
+    complete: true
+    title: The job ended without completing its operation
+    summary: "The job[ {job}] failed: it ended without completing its operation."
+    why: "A job fails when its operation raised an error, when the verifier refused to judge its result, when the process that ran it or the program that owned it was lost, or when the project's database reported an error. The job's ending reason says which, and its error says what happened."
+    action: "Read the job's error and ending reason; each has its own explanation."
+    see_also: [operation_error, verifier_refused, worker_lost, owner_lost, store_error]
+    examples: [{params: {}}]
+  - code: keyboard_interrupt
+    family: job
+    kind: notice
+    complete: true
+    title: The job was cancelled by a keyboard interrupt
+    summary: "The job ended: the program running it was interrupted from the keyboard."
+    why: "The program running the job received an interrupt (Ctrl-C), so it cancelled the job before stopping."
+    action: "Submit the job again if you still need its result."
+    examples: [{params: {}}]
+  - code: operation_completed
+    family: job
+    kind: notice
+    complete: false
+    title: Operation completed
+    summary: 'The job ended: operation completed.'
+  - code: operation_error
+    family: job
+    kind: notice
+    complete: false
+    title: Operation error
+    summary: 'The job ended: operation error.'
+  - code: owner_lost
+    family: job
+    kind: bug
+    complete: true
+    title: The program that accepted the job stopped before it finished
+    summary: "The job ended: the program that accepted it stopped, or lost the job, before the job finished."
+    why: "A job belongs to the program (a Python session, the CLI or a server) that accepted it. That program ended or lost its hold on the job while the job was queued or running, so the next program to open the project marked the job failed."
+    action: "Submit the job again from a program that stays open until the job ends, for example by waiting for it (wait_job) before the program exits."
+    examples: [{params: {}}]
+    review: true
+  - code: queued
+    family: job
+    kind: notice
+    complete: false
+    title: Queued
+    summary: 'The job ended: queued.'
+  - code: running
+    family: job
+    kind: notice
+    complete: false
+    title: Running
+    summary: 'The job ended: running.'
+  - code: server_shutdown
+    family: job
+    kind: notice
+    complete: true
+    title: The job was cancelled because its server shut down
+    summary: "The job ended: the server running it shut down before it finished."
+    why: "When the server shuts down cleanly it cancels its queued and running jobs, so none is left half-finished. Nothing was wrong with the job."
+    action: "Submit the job again once the server is back; it may succeed unchanged."
+    examples: [{params: {}}]
+  - code: store_error
+    family: job
+    kind: bug
+    complete: true
+    title: The project database failed while the job ran
+    summary: "The job ended: the project's database reported an error while the job ran."
+    why: "A job reads and writes the project's database (project.sqlite3) as it runs. The database refused an operation, for example because the disk is full, the file is not writable, or another program holds it locked."
+    action: "Check that the project's directory is writable and its disk has free space, then submit the job again. If the error recurs with both in order, report it with the server log."
+    examples: [{params: {}}]
+    review: true
+  - code: timed_out
+    family: job
+    kind: notice
+    complete: true
+    title: The job ran out of wall time
+    summary: "The job[ {job}] timed out: it used its wall-time budget before it finished."
+    why: "Every job may carry a wall-time budget: the request's, or else the credential's default or ceiling. This job reached it and was stopped before it finished."
+    action: "Submit the job again with a larger wall-time budget, within the credential's ceiling."
+    see_also: [wall_time_exhausted, budget_exceeds_ceiling]
+    examples: [{params: {}}]
+  - code: verifier_refused
+    family: job
+    kind: notice
+    complete: false
+    title: Verifier refused
+    summary: 'The job ended: verifier refused.'
+  - code: wall_time_exhausted
+    family: job
+    kind: notice
+    complete: true
+    title: The job used its wall-time budget
+    summary: "The job ended: it used its wall-time budget before it finished."
+    why: "The job carried a wall-time budget, the request's or the credential's default, and was stopped when it reached it."
+    action: "Submit the job again with a larger wall-time budget, within the credential's ceiling."
+    examples: [{params: {}}]
+  - code: worker_lost
+    family: job
+    kind: bug
+    complete: true
+    title: The job's worker process stopped without a result
+    summary: "The job ended: the process that ran it could not be started or stopped without a result."
+    why: "Each job runs in a worker process. That process failed to start, or ended before it reported a result: it crashed, was killed, or ran out of memory. Nothing in the flowsheet is known to be wrong."
+    action: "Submit the job again. If it stops the same way again, report it with the job's log artifact, which the job's error names when one was written."
+    # Review S4: an environment event more often than a defect; no kind in the closed enum fits
+    # (`docs/MSG_DECISIONS.md` D11-10).
+    examples: [{params: {}}]
+    review: true

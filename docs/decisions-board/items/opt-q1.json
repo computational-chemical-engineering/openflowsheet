@@ -1,0 +1,31 @@
+{
+ "section": "defaults",
+ "pkg": "OPT",
+ "pkgTitle": "Optimising your own flowsheets",
+ "kind": "choice",
+ "title": "Q1: where decisions are declared",
+ "body": [
+  "Decision variables and the objective live in a separate optimisation request; the optimiser never edits the flowsheet document."
+ ],
+ "defaultKey": "default",
+ "options": [
+  {
+   "key": "default",
+   "label": "In the request only",
+   "detail": ""
+  },
+  {
+   "key": "alt1",
+   "label": "Also inside the flowsheet document",
+   "detail": ""
+  },
+  {
+   "key": "other",
+   "label": "Something else",
+   "detail": "Say what in the note."
+  }
+ ],
+ "links": [],
+ "status": "open",
+ "order": 16
+}

@@ -10,6 +10,20 @@ python -m pip install openflowsheet
 This installs the simulator, the command line `openflowsheet` and the base dependencies: NumPy,
 SciPy, PyYAML, jsonschema and [CasADi](https://web.casadi.org/), all pinned to exact versions.
 
+!!! note "Installing for exact replay"
+    A run bundle records the hash of the package's dependency lock only when the installed runtime
+    dependencies are exactly at the lock, including jsonschema's own dependencies (`attrs`,
+    `jsonschema-specifications`, `referencing`, `rpds-py`), which a plain install leaves free to
+    upgrade. To install at the lock, constrain the install by the release's `requirements.lock`
+    (in the repository at the release's tag, and in the source distribution):
+
+    ```bash
+    python -m pip install -c requirements.lock openflowsheet
+    ```
+
+    Without it, a bundle written where one of those four differs records no lock, and replay names
+    the distributions that differ.
+
 !!! note "CasADi's licence"
     CasADi is licensed under the LGPL-3.0-or-later. It is a separate package that pip obtains from
     PyPI; OpenFlowsheet uses it through its Python API only and distributes none of its bytes.
