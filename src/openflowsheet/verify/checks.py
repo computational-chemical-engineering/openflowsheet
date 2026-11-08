@@ -13,9 +13,11 @@ that satisfies all 49 assembled rows.
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, Final
 
 import numpy as np
+import numpy.typing as npt
 
 from openflowsheet.compile.reference import state_vector
 from openflowsheet.compile.spec import ProblemSpec
@@ -49,6 +51,7 @@ from openflowsheet.verify import (
 )
 
 if TYPE_CHECKING:
+    from openflowsheet.orchestrator.region import LiftedSplit
     from openflowsheet.verify.zero_flow import ZeroFlowSplit
 
 #: §5.1, from ADR 0001 D6. Pressure and the lifted equilibrium row are the two the K03 work
@@ -867,6 +870,22 @@ ONE_SIDED_BASES: Final = frozenset({"wilson-ig-v1", "wilson-ig-v2"})
 #: five-point one is at roundoff (6.1e-10), 160x below `DERIVATIVE_TOLERANCE`.
 _CENTRAL_OFFSETS: Final = (1.0, -1.0)
 _FORWARD_OFFSETS: Final = (0.0, 1.0, 2.0, 3.0, 4.0)
+#: §4.8.3 (b), amendment WIT (ADR 0073 D1): the escalation's central fourth-order stencil
+#: D_k = (-F(x + 2h) + 8 F(x + h) - 8 F(x - h) + F(x - 2h)) / (12 h), the points evaluated in that
+#: order. One Richardson level of the central one, (4 D2(h) - D2(2h)) / 3: truncation
+#: -h^4 f^(5) / 30, and a roundoff constant of 18/12 against the forward stencil's 128/12.
+_CENTRAL4_OFFSETS: Final = (2.0, 1.0, -1.0, -2.0)
+_CENTRAL4_WEIGHTS: Final = (-1.0, 8.0, -8.0, 1.0)
+#: §4.8.3 (b), K_MAX: levels k = 0..8 at h_j 2^-k, exact in binary64. The deepest measured need is
+#: k* = 5 (the C1 surrogate's S1.n.N2; G7(c)'s S3.n.NH3 after four inadmissible levels); below
+#: h_j / 256 the SYN-001 central floor puts the fourth-order estimate above `DERIVATIVE_TOLERANCE`.
+#: At most 4 (8 + 1) = 36 residual evaluations, spent only on a column that already fails.
+ESCALATION_LEVELS: Final = 8
+#: §4.8.3 (c), eps_res = tau_D / 10: R-831's watch line. Two successive admissible estimates that
+#: agree within it bound the estimator's error to O(eps_res), so a Jacobian error above
+#: 1.1 tau_D is reported and a correct entry is not failed by its estimator. Not lower: the
+#: stencil's measured roundoff plateau on the surrogate's worst column is 4-5e-10.
+RESOLUTION_TOLERANCE: Final = DERIVATIVE_TOLERANCE / 10
 
 
 def one_sided_columns(
@@ -894,12 +913,220 @@ def one_sided_columns(
     return frozenset(found)
 
 
+def component_column(name: str, components: frozenset[str]) -> bool:
+    """§4.8.2: `name` is `<p>.<c>` with `<p>` nonempty and `c` in `components` (R-831's naming
+    predicate, as `one_sided_columns` reads it)."""
+    prefix, _, component = name.rpartition(".")
+    return bool(prefix) and component in components
+
+
+#: §4.8.2's column classes (amendment WIT, ADR 0073), in the table's order.
+#: 1 R-281: a `pr-c1-v1` stream column `<S>.n.<c>` exactly 0.0; not differenced, listed.
+#: 2 A2: on `ONE_SIDED_BASES`, a column of a dormant lifted liquid side; not differenced, listed.
+#: 3 Z (R-831): on `ONE_SIDED_BASES`, a zero component column beside a positive sibling; forward.
+#: 4 A1: on `ONE_SIDED_BASES`, a column of a dormant lifted vapour side; forward, as Z.
+#: 5 registered: central at the registered step, escalated (§4.8.3) when it is not a pass.
+WITNESS_CLASSES: Final = (1, 2, 3, 4, 5)
+
+
+def witness_classes(
+    columns: Sequence[str],
+    state: Mapping[str, float],
+    components: Sequence[str],
+    *,
+    basis: str,
+    streams: Sequence[str] = (),
+    splits: Sequence[LiftedSplit] = (),
+) -> dict[str, int]:
+    """§4.8.2 (amendment WIT, ADR 0073): each column of `columns` in exactly one class of
+    `WITNESS_CLASSES`, the first row of the table that matches at `state`.
+
+    `streams` are the revision's streams (R-281 reads `<S>.n.<c>` over them); `splits` the
+    verifier's own reading of the revision's lifted splits (`lifted_splits(..., staged=...)`),
+    from declarations, never from the solver's attempts. A side is dormant when every column of
+    its tuple is exactly 0.0 (`-0.0` counts as 0.0, as for Z). A split whose feed is all exactly
+    0.0 in `state` (`ZERO_FLOW`) is skipped, so its sides fall to class 5 and §4.8.8's "stays
+    unsupported" holds (review F-2); a feed column absent from `state` is not taken as 0.0.
+    Classes 2-4 are empty on every basis outside `ONE_SIDED_BASES`, class 1 on every basis but
+    `pr-c1-v1`. The witness's `unstenciled` is classes 1 and 2, its `one_sided` classes 3 and 4."""
+    zero_flow = (
+        frozenset(flow_id(stream, component) for stream in streams for component in components)
+        if basis == "pr-c1-v1"
+        else frozenset()
+    )
+    gamma_phi = basis in ONE_SIDED_BASES
+    z = one_sided_columns(columns, state, components) if gamma_phi else frozenset()
+    dormant_liquid: set[str] = set()
+    dormant_vapour: set[str] = set()
+    if gamma_phi:
+        for split in splits:
+            if all(name in state and state[name] == 0.0 for name in split.feed):
+                continue
+            if all(state[name] == 0.0 for name in split.liquid):
+                dormant_liquid.update(split.liquid)
+            if all(state[name] == 0.0 for name in split.vapor):
+                dormant_vapour.update(split.vapor)
+    classes: dict[str, int] = {}
+    for name in columns:
+        if name in zero_flow and state[name] == 0.0:
+            classes[name] = 1
+        elif name in dormant_liquid:
+            classes[name] = 2
+        elif name in z:
+            classes[name] = 3
+        elif name in dormant_vapour:
+            classes[name] = 4
+        else:
+            classes[name] = 5
+    return classes
+
+
+@dataclass(frozen=True)
+class Escalation:
+    """§4.8.3 for one column: `admissible[k]` whether level k's four points all returned `ok`;
+    `gaps[k]` its e_k (None at k = 0 or when level k - 1 or k is inadmissible); `barred[k]`
+    whether admissible level k is flat in a row whose coarser stencil was not (§4.8.3 (c), the
+    flat rule: it can be neither k* nor k* - 1); `level` k*, the first k with
+    e_k <= `RESOLUTION_TOLERANCE` and neither level barred, and `scaled` its estimate D-hat_k* per
+    row; both None when the column does not resolve. Levels above k* are not evaluated."""
+
+    admissible: tuple[bool, ...]
+    gaps: tuple[float | None, ...]
+    barred: tuple[bool, ...]
+    level: int | None
+    scaled: tuple[float, ...] | None
+
+
+def _stencil(
+    compiled: object,
+    context: object,
+    base: npt.NDArray[np.float64],
+    column: int,
+    step: float,
+    offsets: Sequence[float],
+) -> tuple[list[Sequence[float]], str | None]:
+    """F at `base + s step e_column` for each `s` of `offsets`, in that order; on the first
+    point the compiled function does not return `ok`, the points so far and its status."""
+    points: list[Sequence[float]] = []
+    for shift in offsets:
+        point = base.copy()
+        if shift:
+            point[column] += shift * step
+        value = compiled.residual(point, context)  # type: ignore[attr-defined]
+        if value.status != "ok" or value.values is None:
+            return points, str(value.status)
+        points.append(value.values)
+    return points, None
+
+
+def escalate_column(
+    compiled: object,
+    context: object,
+    base: npt.NDArray[np.float64],
+    column: int,
+    step: float,
+    column_scale: float,
+    row_scales: Sequence[float],
+    registered: Sequence[Sequence[float]] | None = None,
+) -> Escalation:
+    """§4.8.3 (b)-(c), amendment WIT (ADR 0073 D1): the central fourth-order difference of
+    `compiled.residual` along `column` at `h_k = step 2^-k`, k = 0..`ESCALATION_LEVELS`, scaled per
+    row (`D * column_scale / row_scales[i]`, the witness's form), until two successive admissible
+    levels agree within `RESOLUTION_TOLERANCE` on every row.
+
+    The flat rule (§4.8.3 (c), review F-1): a level whose four values in some row are equal (a
+    flat stencil) is barred, and can be neither k* nor k* - 1, when a coarser complete stencil of
+    that row was not flat: `registered`, the registered central pair's two points when both were
+    evaluated, or an earlier admissible level. Roundoff that quantizes a row flat makes its
+    estimate 0 at successive levels, which would agree on a wrong value. The test is on the
+    values, not the estimate. A row independent of the column is flat at every level and never
+    bars one.
+
+    It reads the residual, the state, the step and the scales only, never a Jacobian
+    (§4.8.3 (e), WIT.A07): the AD entries enter the trigger and the comparison, not the
+    selection."""
+    admissible: list[bool] = []
+    gaps: list[float | None] = []
+    barred: list[bool] = []
+    # Rows for which a coarser complete stencil was not flat (`==`, so -0.0 equals 0.0; a NaN
+    # value is never equal, so a NaN row is never flat).
+    varied: set[int] = set()
+    if registered is not None:
+        plus, minus = registered
+        varied.update(row for row in range(len(row_scales)) if plus[row] != minus[row])
+    previous: tuple[float, ...] | None = None
+    previous_barred = False
+    for k in range(ESCALATION_LEVELS + 1):
+        h = step * 2.0**-k
+        points, refusal = _stencil(compiled, context, base, column, h, _CENTRAL4_OFFSETS)
+        if refusal is not None:
+            admissible.append(False)
+            gaps.append(None)
+            barred.append(False)
+            previous = None
+            continue
+        flat = {
+            row
+            for row in range(len(row_scales))
+            if all(values[row] == points[0][row] for values in points[1:])
+        }
+        level_barred = bool(flat & varied)
+        varied.update(row for row in range(len(row_scales)) if row not in flat)
+        estimate = []
+        for row, row_scale in enumerate(row_scales):
+            accumulated = 0.0
+            for weight, values in zip(_CENTRAL4_WEIGHTS, points, strict=True):
+                accumulated += weight * values[row]
+            estimate.append(accumulated / (12.0 * h) * column_scale / row_scale)
+        current = tuple(estimate)
+        admissible.append(True)
+        barred.append(level_barred)
+        if previous is None:
+            gaps.append(None)
+        else:
+            differences = [abs(now - before) for now, before in zip(current, previous, strict=True)]
+            gaps.append(max(differences, default=0.0))
+            # `all(<=)` rather than `max <=`, so that a NaN row never resolves a column.
+            if (
+                not level_barred
+                and not previous_barred
+                and all(difference <= RESOLUTION_TOLERANCE for difference in differences)
+            ):
+                return Escalation(tuple(admissible), tuple(gaps), tuple(barred), k, current)
+        previous = current
+        previous_barred = level_barred
+    return Escalation(tuple(admissible), tuple(gaps), tuple(barred), None, None)
+
+
+def _discrepancies(
+    scaled: Sequence[float],
+    column: int,
+    column_scale: float,
+    exact: Mapping[tuple[int, int], float],
+    row_ids: Sequence[str],
+    row_scale: Mapping[str, float],
+) -> tuple[float, float]:
+    """§4.8's two maxima for one differenced column: on-pattern `|J-hat_ij - D-hat_ij|` and
+    off-pattern `|D-hat_ij|`."""
+    on, off = 0.0, 0.0
+    for row, row_id in enumerate(row_ids):
+        entry = exact.get((row, column))
+        if entry is None:
+            off = max(off, abs(scaled[row]))
+        else:
+            scaled_exact = entry * column_scale / row_scale[row_id]
+            on = max(on, abs(scaled_exact - scaled[row]))
+    return on, off
+
+
 def derivative_witness(
     tear: object,
     state: Mapping[str, float],
     *,
     unstenciled: frozenset[str] = frozenset(),
     one_sided: frozenset[str] = frozenset(),
+    components: Sequence[str] = (),
+    escalations: dict[str, Escalation] | None = None,
 ) -> list[CheckResult]:
     """§4.8: central differences of the **compiled 49-row function** against its AD Jacobian.
 
@@ -932,6 +1159,16 @@ def derivative_witness(
     registered step h, and compared in the same scaled form into the same two checks: the set Z of
     `one_sided_columns` on a Wilson basis, empty on every other. Every column stays differenced, so
     no limitation is written.
+
+    Amendment WIT (§4.8.2-§4.8.3, ADR 0073): the callers' `unstenciled` and `one_sided` are
+    `witness_classes`' classes 1-2 and 3-4. Every other column is class 5: central at the
+    registered step, and a column of `components` (`component_column`) with `x_j > 0` whose central
+    result is not a pass — a refused point, or either maximum of its own rows above
+    `DERIVATIVE_TOLERANCE` — is re-differenced by `escalate_column`. A resolved estimate replaces
+    the column's central one in both checks; an unresolved column keeps its registered result
+    exactly, a refusal included. A column whose central result passes is computed exactly as
+    before, so no witness that passes changes. Nothing is recorded (§4.8.3 (g)); `escalations`,
+    when given, receives each escalated column's `Escalation` for a test or a diagnosis.
     """
     from openflowsheet.compile.reference import state_vector
 
@@ -950,49 +1187,70 @@ def derivative_witness(
         for offset in range(jacobian.indptr[column], jacobian.indptr[column + 1]):
             exact[(int(jacobian.indices[offset]), column)] = float(jacobian.data[offset])
 
+    declared = frozenset(components)
+    row_ids = jacobian.row_ids
     worst_on, worst_off = 0.0, 0.0
     for column, name in enumerate(jacobian.col_ids):
         if name in unstenciled:
             continue
         step = FD_RELATIVE_STEP * scaling.column[name]
+        column_scale = scaling.column[name]
         # Central (x + h, x - h), or on Z the forward five-point stencil (x + k h, k = 0..4).
         offsets = _FORWARD_OFFSETS if name in one_sided else _CENTRAL_OFFSETS
-        points = []
-        for shift in offsets:
-            point = base.copy()
-            if shift:
-                point[column] += shift * step
-            value = compiled.residual(point, context)
-            if value.status != "ok" or value.values is None:
-                reason = f"witness_stencil_{value.status}({name})"
-                return [
-                    unsupported(
-                        id=f"derivative_witness.{which}",
-                        category="derivative_witness",
-                        subject="target_jacobian",
-                        reason=reason,
-                    )
-                    for which in ("on_pattern", "off_pattern")
-                ]
-            points.append(value.values)
-        for row, row_id in enumerate(jacobian.row_ids):
-            if name in one_sided:
-                difference = (
-                    -25.0 * points[0][row]
-                    + 48.0 * points[1][row]
-                    - 36.0 * points[2][row]
-                    + 16.0 * points[3][row]
-                    - 3.0 * points[4][row]
-                ) / (12.0 * step)
-            else:
-                difference = (points[0][row] - points[1][row]) / (2.0 * step)
-            scaled = difference * scaling.column[name] / scaling.row[row_id]
-            entry = exact.get((row, column))
-            if entry is None:
-                worst_off = max(worst_off, abs(scaled))
-            else:
-                scaled_exact = entry * scaling.column[name] / scaling.row[row_id]
-                worst_on = max(worst_on, abs(scaled_exact - scaled))
+        points, refusal = _stencil(compiled, context, base, column, step, offsets)
+        on, off = 0.0, 0.0
+        if refusal is None:
+            scaled = []
+            for row, row_id in enumerate(row_ids):
+                if name in one_sided:
+                    difference = (
+                        -25.0 * points[0][row]
+                        + 48.0 * points[1][row]
+                        - 36.0 * points[2][row]
+                        + 16.0 * points[3][row]
+                        - 3.0 * points[4][row]
+                    ) / (12.0 * step)
+                else:
+                    difference = (points[0][row] - points[1][row]) / (2.0 * step)
+                scaled.append(difference * column_scale / scaling.row[row_id])
+            on, off = _discrepancies(scaled, column, column_scale, exact, row_ids, scaling.row)
+        # §4.8.3 (a): a class-5 component column with x_j > 0 whose central result is not a pass.
+        if (
+            name not in one_sided
+            and component_column(name, declared)
+            and base[column] > 0.0
+            and (refusal is not None or on > DERIVATIVE_TOLERANCE or off > DERIVATIVE_TOLERANCE)
+        ):
+            escalation = escalate_column(
+                compiled,
+                context,
+                base,
+                column,
+                step,
+                column_scale,
+                [scaling.row[row_id] for row_id in row_ids],
+                registered=points if refusal is None else None,
+            )
+            if escalations is not None:
+                escalations[name] = escalation
+            if escalation.scaled is not None:
+                refusal = None
+                on, off = _discrepancies(
+                    escalation.scaled, column, column_scale, exact, row_ids, scaling.row
+                )
+        if refusal is not None:
+            reason = f"witness_stencil_{refusal}({name})"
+            return [
+                unsupported(
+                    id=f"derivative_witness.{which}",
+                    category="derivative_witness",
+                    subject="target_jacobian",
+                    reason=reason,
+                )
+                for which in ("on_pattern", "off_pattern")
+            ]
+        worst_on = max(worst_on, on)
+        worst_off = max(worst_off, off)
 
     return [
         evaluated(

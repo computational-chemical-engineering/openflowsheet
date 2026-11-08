@@ -265,6 +265,68 @@
     },
     "tier1_error_scaled": 1.110839e-06
   },
+  "W4": {
+    "c": 2e-07,
+    "configurations": {
+      "BIG=10000,x0=0.0002": {
+        "k_star": null,
+        "k_star_without_flat_rule": 5,
+        "r4_estimate_without_flat_rule": 0.0,
+        "tier1_error_scaled": 0.005539316
+      },
+      "BIG=10000,x0=0.00025": {
+        "k_star": null,
+        "k_star_without_flat_rule": null,
+        "r4_estimate_without_flat_rule": null,
+        "tier1_error_scaled": 0.005331286
+      },
+      "BIG=10000,x0=0.0003": {
+        "k_star": null,
+        "k_star_without_flat_rule": 5,
+        "r4_estimate_without_flat_rule": 0.0,
+        "tier1_error_scaled": 0.005132931
+      },
+      "BIG=100000,x0=0.0002": {
+        "k_star": null,
+        "k_star_without_flat_rule": 3,
+        "r4_estimate_without_flat_rule": 0.0,
+        "tier1_error_scaled": 0.005539316
+      },
+      "BIG=100000,x0=0.00025": {
+        "k_star": null,
+        "k_star_without_flat_rule": 5,
+        "r4_estimate_without_flat_rule": 0.0,
+        "tier1_error_scaled": 0.005331286
+      },
+      "BIG=100000,x0=0.0003": {
+        "k_star": null,
+        "k_star_without_flat_rule": 3,
+        "r4_estimate_without_flat_rule": 0.0,
+        "tier1_error_scaled": 0.005132931
+      },
+      "BIG=30000,x0=0.0002": {
+        "k_star": null,
+        "k_star_without_flat_rule": 4,
+        "r4_estimate_without_flat_rule": 0.0,
+        "tier1_error_scaled": 0.005539316
+      },
+      "BIG=30000,x0=0.00025": {
+        "k_star": null,
+        "k_star_without_flat_rule": 5,
+        "r4_estimate_without_flat_rule": 0.0,
+        "tier1_error_scaled": 0.005331286
+      },
+      "BIG=30000,x0=0.0003": {
+        "k_star": null,
+        "k_star_without_flat_rule": null,
+        "r4_estimate_without_flat_rule": null,
+        "tier1_error_scaled": 0.005132931
+      }
+    },
+    "n_B_mol_per_s": 0.005,
+    "outcome": "unresolved: the registered result (fail) and its value stand",
+    "theta_K": 0.3
+  },
   "claims": [
     "C4: even moments vanish",
     "C4: sum w s = 12, so the weights / (12 h) differentiate exactly",
@@ -275,11 +337,13 @@
     "W0 S1.n.B: the registered central difference passes by 1e3",
     "W0 S1.T: the registered central difference passes by 1e3",
     "W1 S1.n.A: the escalation resolves within K_MAX",
+    "W1 S1.n.A: the flat rule bars no level (only rows independent of the column are flat, at every level)",
     "W1 S1.n.A: e_k* <= EPS_RES/2 (a 2x margin against the binary64 roundoff)",
     "W1 S1.n.A: e_(k*-1) >= 2 EPS_RES (k* does not move by roundoff)",
     "W1 S1.n.A: the binary64 roundoff bound at k* is <= EPS_RES/100",
     "W1 S1.n.A: the escalated estimate is within TOL/100 of the closed form",
     "W1 S1.n.B: the escalation resolves within K_MAX",
+    "W1 S1.n.B: the flat rule bars no level (only rows independent of the column are flat, at every level)",
     "W1 S1.n.B: e_k* <= EPS_RES/2 (a 2x margin against the binary64 roundoff)",
     "W1 S1.n.B: e_(k*-1) >= 2 EPS_RES (k* does not move by roundoff)",
     "W1 S1.n.B: the binary64 roundoff bound at k* is <= EPS_RES/100",
@@ -290,11 +354,13 @@
     "W1 S1.T: the registered central difference is exact (no escalation)",
     "W1 mutation: the escalated error is <= 1/5 of A03's window",
     "W2 S1.n.A: the escalation resolves within K_MAX",
+    "W2 S1.n.A: the flat rule bars no level (only rows independent of the column are flat, at every level)",
     "W2 S1.n.A: e_k* <= EPS_RES/2 (a 2x margin against the binary64 roundoff)",
     "W2 S1.n.A: e_(k*-1) >= 2 EPS_RES (k* does not move by roundoff)",
     "W2 S1.n.A: the binary64 roundoff bound at k* is <= EPS_RES/100",
     "W2 S1.n.A: the escalated estimate is within TOL/100 of the closed form",
     "W2 S1.n.B: the escalation resolves within K_MAX",
+    "W2 S1.n.B: the flat rule bars no level (only rows independent of the column are flat, at every level)",
     "W2 S1.n.B: e_k* <= EPS_RES/2 (a 2x margin against the binary64 roundoff)",
     "W2 S1.n.B: e_(k*-1) >= 2 EPS_RES (k* does not move by roundoff)",
     "W2 S1.n.B: the binary64 roundoff bound at k* is <= EPS_RES/100",
@@ -306,6 +372,9 @@
     "W2 S1.n.B: k* = 4 (no refused level)",
     "W3: the registered central difference fails by >= 10 TOL",
     "W3: every e_k >= 100 EPS_RES, so the column is unresolved",
+    "W4: the registered central difference fails by >= 10 TOL in every configuration",
+    "W4: without the flat rule >= 7 of 9 configurations resolve with D-hat(R4') ~ 0 (a pass on a dropped term of 2 TOL)",
+    "W4: with the flat rule no configuration resolves; the registered result (fail) stands",
     "GP-C3's components are the records'",
     "GP-C3: the heater's outlet carries 1.5 mol/s",
     "G1: the dormant vapour entry is 0.5, not zero",
