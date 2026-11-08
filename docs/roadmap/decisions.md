@@ -626,3 +626,15 @@ Frank) https://claude.ai/artifact/WBLrhuGuG9zosGy46Z1b2A: page `docs/decisions-b
 their diffs, ADR summaries with GitHub links, every Frank question with its default and alternatives); answers come back
 in the `answers` collection, which the session reads and acts on. New questions: add to `build_items.py`, regenerate,
 write the new item; close an answered one with `status: "closed"`. `FRANK_QUESTIONS.md` stays the record.
+
+## 2026-11-08 — Frank answered all 40 board items
+
+Record: `docs/FRANK_QUESTIONS.md` "Answers — Frank, 2026-11-08". All descriptions approved; ADRs 0055, 0068–0073
+accepted; 0060–0067 stay Proposed; every default confirmed except two reversals: **ST O3** (web-shell display now, in
+ST) and **X05 Q-F1** (do not pin the four transitive dependencies; revert `a58ef5a5`'s effect).
+DECISION: merge order → MSG, X02, OPT, RRC, ST (ST needs MSG; RRC needs OPT; X02/OPT both claim surface link c_4, so
+each later merge re-measures its link). Small follow-ups on their own branches: X05a (Q-F1 reversal), X10b (WIT M-6b,
+Q-WIT-2). Alternative: X02 first. Reversible by: merge order only.
+DECISION: register numbers by block to avoid collisions between branches merging in any order → X02 R-950…959, OPT
+R-960…969, S15a R-970 (used), MSG R-975…979 (its R-942/R-943 renumbered), main-side acceptances (0055, 0069, 0073)
+R-980…989, RRC R-990…999, ST R-1000…1009. Alternative: renumber sequentially at each merge. Reversible by: renumbering.

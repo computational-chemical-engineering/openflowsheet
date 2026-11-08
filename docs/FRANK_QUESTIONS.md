@@ -6,6 +6,20 @@ the default and the options, and saves your answer (source: `docs/decisions-boar
 
 Questions only Frank can answer (scope, value judgments). Each carries the default that unattended work proceeds on.
 
+## Answers — Frank, 2026-11-08, on the decision board (40 items)
+
+Recorded from https://claude.ai/artifact/WBLrhuGuG9zosGy46Z1b2A (`answers` collection, 15:58–16:17 UTC); no notes given.
+- **Descriptions approved (human review):** `explain` (MSG), `validate` and `submit_job` (OPT), `get_stream_table` (ST).
+- **ADRs accepted:** 0055 (release procedure), 0068 (stream table, as amended: R1′), 0069 (X05), 0070 (X02 + ADR 0019
+  Am. 15), 0071 (OPT + Am. 16), 0072 (RRC), 0073 (WIT). **ADRs 0060–0067 stay Proposed** (default; S1/S7 as reviewed).
+- **Defaults confirmed:** X02 Q1 (no warm variant), Q2, Q3, Q6, Q7 (neighbour speed-up withdrawn); OPT Q1–Q6, Q7 (verify
+  on the reduced form with the phase-boundary flag), Q8, Q9; RRC FQ1 (yes, widen), FQ2, FQ3, FQ4; WIT Q-WIT-1 (yes),
+  Q-WIT-2 (yes, correct the flash sentence); X05 Q-F2, Q-F3; F-8 (two messages); Q-11 (one row); O-11; A2-a.
+- **Defaults reversed:**
+  - **ST O3:** include the stream table in the web shell **now, in ST** (was: a later package).
+  - **X05 Q-F1:** **do not pin** the four transitive runtime dependencies (attrs, jsonschema-specifications,
+    referencing, rpds-py) in `pyproject.toml` (was: pin them; `a58ef5a5`). Revert that isolated commit's effect.
+
 ## Answer — Frank, 2026-11-01: full real-simulator scope; design quality over speed (ADR 0056 Am. 2, R-927)
 
 Frank, verbatim, answering the FB-08 gap analysis (`docs/USER_FEEDBACK.md` batch 3): "Yes. The aim is a 'real simulator' so all these features need to be on board at some stage, including electrolytes,
