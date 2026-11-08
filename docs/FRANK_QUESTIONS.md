@@ -463,3 +463,12 @@ intermediate step is a real flowsheet. Defaults, acted on unless you say otherwi
 - **FQ4:** which edits may be continued? Default: operating values only (temperatures, pressures, flows, duties, split
   fractions…); not stage counts, feed stages, stoichiometry or kinetic constants.
 - Also: accept ADR 0072.
+
+## WIT — the certificate's derivative check at very small or zero flows (2026-11-08; ADR 0073 Proposed)
+
+Spec `docs/derivations/K04-certificate-spec.md` §4.8.1–§4.8.9. No certificate that passes today changes. Default, acted
+on unless you say otherwise:
+- **Q-WIT-1:** on a Wilson property basis, should a unit whose vapour side is held at exactly zero certify VERIFIED
+  with a declared partial derivative check (the zero liquid-side columns cannot be differenced: no derivative exists
+  there)? Default: yes, as already done for zero flows on `pr-c1-v1` (R-281).
+- Also: accept ADR 0073.

@@ -492,3 +492,15 @@ Review fixes M2 (not-a-superset declared: guide, L21, E3c), S1 (G2(f)/§5.8 hash
 family partition test), S3, N1 (`parameters.<key>` judged by the family rule), E3c row, interfaces-frozen, CHANGELOG,
 D-5/D-6/D-10 note amendments. F0 PASS; RRC tests 71 passed; mypy/ruff clean; support matrix 0 problems. Waiting: OPT
 merge (then rebase + full gate + CI), Frank FQ1 and ADR 0072 (then R-RRC renumbering and ADR D5 wording).
+
+## 2026-11-08 — WIT specification (`5b9eb0f6`, K04 spec §4.8.1–9, ADR 0073 Proposed)
+
+Rule per column: small positive flows whose registered central difference fails → re-differenced at halved steps with
+a fourth-order stencil (k ≤ 8), resolved when successive estimates agree within 1e-8, never reading the AD Jacobian;
+Wilson dormant vapour side → R-831's forward set; Wilson dormant liquid side → not differenced, declared (as R-281).
+No certificate that passes today moves (57 F0 certificates; ADV-06 and GP-C3 354 K values unchanged by prototype);
+intended moves only for today's failures (L-X10-1 surrogate → VERIFIED; OPT D-42 GP-C3 held splits verify).
+Assertions WIT.A01–A14. Frank Q-WIT-1 (default yes).
+DECISION: build WIT now on `wp/WIT`, evidence filed under `evidence/K04/` (a K04 follow-up, as the M02 follow-up was
+filed under M02; ADR 0059 D1 has no WIT id). Alternative: amend ADR 0059 D1 for a WIT id. Reversible by: moving the
+manifest directory. A reviewer pass follows (it touches certificates).
