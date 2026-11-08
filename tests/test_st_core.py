@@ -46,7 +46,7 @@ from openflowsheet.compiled import EvaluationContext
 from openflowsheet.messages import audit
 from openflowsheet.messages.catalogue import CATALOGUE
 from openflowsheet.models import flow_id, pressure_id, temperature_id
-from openflowsheet.models.revision_flowsheet import parse_revision
+from openflowsheet.models.revision_flowsheet import component_basis, parse_revision
 from openflowsheet.models.syn001.tp_state import liquid_flow_id, vapor_flow_id
 from openflowsheet.run.bundle import ARTIFACT_DIR
 from openflowsheet.thermo import PropertyRequest, PropertyResult, StreamState
@@ -370,8 +370,14 @@ def test_q1_a15_c_every_carried_split_is_evaluated_at_tsat() -> None:
             for method, request, _ in rest:
                 assert method == "evaluate_phase" and len(request.properties) == 1
                 assert request.state == StreamState((1.0,), t_sat, pressure)
+            # The verifier's split enthalpy on the run's own basis: IAPWS-95 water for TH-C1,
+            # CoolProp R134a for TH-C2 (where the extra is installed), each on a fresh provider.
             expected = thermal.saturated_enthalpy(
-                Iapws95Provider(), source.variables, name, _context(source), ("H2O",)
+                support.fresh_provider(source),
+                source.variables,
+                name,
+                _context(source),
+                component_basis(source.revision).components,
             )
             assert sub["H_flow"] == expected, (run, name)
     assert seen > 0

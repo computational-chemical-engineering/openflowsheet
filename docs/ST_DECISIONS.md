@@ -348,3 +348,19 @@ M3 61/61, M4 61/61, M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 35/35).
 - **8b-4 — ADR 0025 A1 resolved (ST review ruling 6, `be89d011`).** Both names exact (`benchmarks/st/numerical_policy_external.yaml`);
   `ADDENDA` gains `st` after `e01`; `test_m05_study_record.py`'s ADDENDA pin amended on purpose. `t08_numerical_policy.py
   --check` PASS (v2 bytes unchanged `6b449911…`); `tests/test_t08_adr0025.py tests/test_m05_study_record.py` 250 passed.
+
+## CI-red fix (run 42517844608 at `8ce17244`; brief `docs/briefs/ST-ci-red.md`)
+
+- **CI-1 — `get_stream_table` skipped against pre-ST snapshots (test bug).** `test_m02_schemas.py`
+  `test_g1c_…` and `test_m04_study_job.py` `test_a42_…` loop `OPERATIONS` against snapshots that predate ST's
+  row (`KeyError: 'get_stream_table'`). Both now skip `MSG_OPERATIONS | ST_OPERATIONS` (`tests/st_schema_support.py`,
+  ADR 0068), MSG's established pattern; every other row is still checked, no assertion relaxed.
+  `test_t07_w5e_application_results.py` already skipped it. Not caught locally because the worktree's tests ran
+  against main's editable install.
+- **CI-2 — Q1.A15c on the CoolProp leg (test bug).** `test_q1_a15_c_…` computed the verifier's split enthalpy with
+  `Iapws95Provider()` and components `("H2O",)` for every run; where the extra is installed the corpus adds TH-C2
+  (CoolProp R134a), whose flows are `S*.n.R134a` (`KeyError: 'S3.n.H2O'`). The expectation now uses the run's
+  basis: `support.fresh_provider(source)` and `component_basis(source.revision).components`. IAPWS-95 runs are
+  unchanged (`basis_provider` returns a fresh `Iapws95Provider()`). No product code moved. Recorded counts:
+  carried splits 9 without CoolProp, 12 with (TH-C2's 3 now checked). Reproduced and checked with
+  `CoolProp==8.0.0` installed into a scratch `--target` (numpy removed from it).
