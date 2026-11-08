@@ -240,3 +240,9 @@ results), `40fba287` (runner self-contained), `b91b0ddb` (registration, results 
   `parameters.feed_stage.S-IN1` the same way, value − 1, is `not_continuable(specifications:SPEC-S02-pinned:value)`.
   The positive half fails without the code change (checked). A3 only; no registered pair has such a specification,
   so no measured case moves. `test_rrc_application.py` 25 passed.
+- **D-33 (S3).** The guide's three wording fixes: the ancestor lookup is eager (at job start on every
+  `RRC-revision-v1` solve on `revision_eo`, one ancestor binding and one diff even when edge 3 never fires; only its
+  use waits for the failure); "a third action" (not "a third recovery"); "the `revision_eo` route only", with the
+  coupled and legacy routes recording `absent(not_supplied)` and running the restart. Also, following D-32, the
+  "When it applies" list says an operating parameter counts whether written as an instance parameter or pinned by a
+  fixed specification on `parameters.<name>`. `mkdocs build --strict` clean; `doc_pages.py --check` up to date.

@@ -2,16 +2,18 @@
 
 `RRC-revision-v1` is a solve policy, offered by explicit id like `T08-warm-v1`. It is
 `T06-revision-v2` with one change: when an equation-oriented revision solve ends in a state
-that edge 3 of the recovery order handles, a third recovery is tried between the existing two. It
+that edge 3 of the recovery order handles, a third action is tried between the existing two. It
 is never the default, and no registered policy carries it, so no existing solve changes.
 
 ## What it does
 
 A revision solve that fails on a large edit may succeed if the edit is applied in steps. Under
-this policy, after a failed first attempt, the solve looks for the **nearest ancestor revision
-that has a `VERIFIED` solve**. It then moves the changed operating values from the ancestor's
-values to the target's values in fractions of the way (the λ levels), starting from the
-ancestor's certified root. The first level is the ancestor's own certified problem, bit for bit.
+this policy, every `revision_eo` solve looks up the **nearest ancestor revision that has a
+`VERIFIED` solve** when the job starts. That costs one binding of the ancestor and one diff even
+when edge 3 never fires. Only its use waits for a failed first attempt: the solve then moves the
+changed operating values from the ancestor's values to the target's values in fractions of the
+way (the λ levels), starting from the ancestor's certified root. The first level is the
+ancestor's own certified problem, bit for bit.
 
 The action order for one failed step is:
 
@@ -30,14 +32,16 @@ a **value change of a registered operating specification**:
   `state.T`, `state.P`, `outlet.T`, `outlet.P`, `duty.Q`);
 - the value, unit or meaning of a registered operating parameter, for example a splitter's
   `split_fraction`, `pressure_drop`, `efficiency`, or a column's `condenser_reflux_ratio` and
-  `reboiler_boilup_ratio`.
+  `reboiler_boilup_ratio` — whether it is written as an instance parameter or pinned by a fixed
+  specification whose target is `parameters.<name>`.
 
 Anything else has no continuation: a connection edit, an added or removed item, a changed model,
 role or target, a discrete or model-constant parameter (`stage_count`, `feed_stage`, `nu`,
 `damkohler`, `T_ref`, `T_scale`, `coolant_cp`), and a first solve with no verified ancestor. The
 continuation never changes the active set and follows no folds (limitations L20 and L24).
-The edge is available on revision solves only, and the application looks for an ancestor only
-under this policy, on a run and never on a rerun.
+The edge is available on the `revision_eo` route only. On the coupled and legacy routes the
+policy records `absent(not_supplied)` and runs the restart. The application looks for an
+ancestor only under this policy, on a run and never on a rerun.
 
 ## How a refusal is recorded
 
