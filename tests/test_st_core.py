@@ -1063,6 +1063,75 @@ def test_g8_envelope_agreement() -> None:
     assert not failures, failures
 
 
+#: G8u's E1 regression (ST review M1, S1): before R1′, `T05b:SC-1`'s U-VLV and envelope and
+#: `T05b:SC-3`'s U-VLV and U-PHF closed 2016 W off their quoted rows.
+G8U_E1_RUNS = ("g8/T05b:SC-1", "g8/T05b:SC-3")
+
+
+@cache
+def _g8u() -> tuple[dict[str, tuple[float, float]], dict[str, float], dict[str, int]]:
+    """G8u (ST review S1), per unit: `(failures, max |closure − value|/tolerance by judged_at,
+    counts)`. A unit is compared with its whole-unit row `energy_balance.<U>`; a side row
+    (`.hot`, `.cold`) or the pump's `.work_relation` is another residual, counted only. At
+    `final_state` with every port stream G7-bitwise the closure must equal the value bitwise,
+    otherwise lie within the tolerance; at `projection` the ratio is recorded, not bounded,
+    because the stored state is not what was judged."""
+    failures: dict[str, tuple[float, float]] = {}
+    worst = {"final_state": 0.0, "projection": 0.0}
+    counts = {"bitwise": 0, "bounded": 0, "projection": 0, "other_rows": 0}
+    for run, document in support.documents().items():
+        judged_at = document["judged_at"]
+        bitwise = _g7(run)[0]
+        for entry in document["energy"]["units"]:
+            for row in entry["checks"]:
+                if row["result"] in {"not_applicable", "unsupported", "blocked"}:
+                    continue
+                if row["value"] is None:
+                    continue
+                if row["id"].count(".") != 1:
+                    counts["other_rows"] += 1
+                    continue
+                key = f"{run}|{entry['id']}"
+                closure = entry["closure"]
+                assert closure is not None, (key, entry["absent"])
+                streams = {stream for port in entry["ports"] for stream in port["streams"]}
+                gap = abs(closure - row["value"])
+                if judged_at == "final_state" and streams <= bitwise:
+                    counts["bitwise"] += 1
+                    if closure != row["value"]:
+                        failures[key] = (gap, 0.0)
+                    continue
+                ratio = gap / row["tolerance"]
+                if judged_at == "projection":
+                    counts["projection"] += 1
+                    worst["projection"] = max(worst["projection"], ratio)
+                    continue
+                counts["bounded"] += 1
+                if gap <= row["tolerance"]:
+                    worst["final_state"] = max(worst["final_state"], ratio)
+                else:
+                    failures[key] = (gap, row["tolerance"])
+    return failures, worst, counts
+
+
+def test_g8u_unit_agreement() -> None:
+    failures, worst, counts = _g8u()
+    _record("G8u", max_gap_over_tolerance=worst, counts=counts, failures=failures)
+    assert counts["bitwise"] + counts["bounded"] + counts["projection"] > 0
+    assert not failures, failures
+
+
+def test_g8u_the_e1_units_close_within_their_rows() -> None:
+    """SC-1 and SC-3 are judged at the projection, so G8u only records them; the E1 defect's
+    units are bounded here explicitly (ST review S1: "after M1, SC-1 and SC-3 must pass")."""
+    for run in G8U_E1_RUNS:
+        document = support.document(run)
+        for entry in (*document["energy"]["units"], document["energy"]["overall"]):
+            for row in entry["checks"]:
+                if row["id"].count(".") == 1 and row["value"] is not None:
+                    assert abs(entry["closure"] - row["value"]) <= row["tolerance"], (run, row)
+
+
 def test_r1_prime_reads_the_degenerate_lifted_split() -> None:
     """R1′ (ST review M1): `T05b:SC-1`'s S2, pure B at its boiling point downstream of a valve, is
     a temperature-degenerate heater-style split the verifier did not flash. Its phases are the

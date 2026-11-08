@@ -216,3 +216,17 @@ M3 61/61, M4 61/61, M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 35/35).
 - **Fact (for the design lane):** a flagged *products-style* split's feed (`split.stream` = the drum's inlet)
   that is undeclared would take R1′'s no-split branch (`flash_failed`), although the verifier flashes that feed
   at its own state. No corpus or served case has one (all flagged streams: 4 R1′, 2 declared, 0 no-split).
+- **S1 — G8u (per unit), `test_g8u_unit_agreement`, as the review specifies.** Corpus (52 runs): **every run
+  is `judged_at: projection`**, so 0 units reach the bitwise branch and 0 the bounded branch; 146 whole-unit
+  rows are recorded, max |closure − value|/tolerance **2.703** (`SYN-001-A02-360-liquid-guess` flash; heater
+  2.703 likewise); 11 side rows not compared. G7 after M1: 41 bitwise (SC-1/SC-3 S2 now against
+  `_phase_enthalpy`, before against `checks.enthalpy_flow` of a LIQUID-only flash); G8: 0 failures, max
+  ratio 1.76e-4. `test_g8u_the_e1_units_close_within_their_rows` bounds SC-1/SC-3 explicitly (all ≤ 3.64e-12 W).
+- **DECISION S1-1:** a unit is compared with its whole-unit row `energy_balance.<U>` only; `.hot`/`.cold` and
+  the pump's `.work_relation` are other residuals than `(Q + W) − (H_out − H_in)`. Alternative: compare every
+  row. Reversible by: `_g8u`'s id test.
+- **S1 — A02-360 (2.73e-3 W against 1.01e-3 W): the projection.** At the stored state ST's `H_flow` equals
+  `checks.enthalpy_flow` bitwise for every flowing stream of `SYN-001-A02-360-liquid-guess` (S3, the
+  heater→flash stream, two-phase: 66173.21230169198 W both). So the heater's +2.7297e-3 W and the flash's
+  −2.7297e-3 W are the stored state's own residual; the rows (1.46e-11, 3.64e-12) were judged at the projection
+  x̃. Declared by `judged_at`; no ruling needed.
