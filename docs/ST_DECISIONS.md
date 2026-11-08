@@ -304,3 +304,13 @@ M3 61/61, M4 61/61, M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 35/35).
   `get_stream_table`, A20 count 22) and `test_t08_adr0025.py::test_a1_the_policy_file_is_what_its_generator_emits` /
   `test_a1_a_tampered_policy_file_fails_its_audit` (`t08_numerical_policy.py --check` (d): ST's schema names
   `data_sha256`, `implementation_sha256` unclassified; main passes). Both edit a registered gate input; left for WO-7.
+
+## WO-8b (red tests, web-shell stream table; brief `docs/briefs/ST-WO8b-webshell.md`)
+
+- **8b-1 — T08.A20: the envelope lists `get_stream_table`; A20's count 22 → 23.** Precedent followed exactly: MSG
+  WO-7 `631a9f3f` (`explain`, after ADR 0058 was accepted, `d55be8da`). ST's design-lane act exists: ADR 0068 (ADR 0019
+  Amendment 13), accepted by Frank on the decision board 2026-11-08 (`docs/FRANK_QUESTIONS.md` on main, "ADRs
+  accepted: … 0068 (stream table, as amended: R1′)"). Edits: the interfaces axis statement ("twenty-three", one
+  clause for `get_stream_table`) and its `operations` row `[python, cli, http, mcp]`; `check_a20`'s pinned count and
+  reason; the test's pinned count and comment; `docs/support-matrix.md` re-emitted. `--check` 0 problems;
+  `test_t08_w2_support_envelope.py` 39 passed.
