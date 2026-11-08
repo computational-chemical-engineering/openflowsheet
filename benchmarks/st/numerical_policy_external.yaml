@@ -1,0 +1,28 @@
+# ST (ADR 0068, ADR 0025 D2.3): the `sha256`-bearing property names that ST's schema adds.
+# A separate table beside M02's, M05's and E01's, so that the registered numerical policies
+# (`K04-numerical-policy-v1`, `T08-numerical-policy-v2`) keep their ids and their contents
+# (M02's precedent, its design note §3.6; M05 build decision S11; E01 escalation ESC-A1; ST build
+# decision 8b-2, ruled in `docs/reviews/ST-review.md`, design-lane confirmations, ruling 6).
+#
+# Read by `scripts/t08_numerical_policy.py --check` (the closed partition of `sha256` names, one
+# addendum after another). ST's floats are not classified by this table: it carries no `rules`.
+numerical_policy_external:
+  id: ST-numerical-policy-external-v1
+  schemas:
+  - stream-table.schema.json
+  # `stream-table.schema.json` declares `state_sha256` (the source state's float digest, ADR 0008
+  # D2: it keeps v2's float-digest class and is never listed here) and, under `basis`, the two
+  # digests the property provider's `describe()` reports (blueprint §6.4's exact cache key). Both
+  # are exact: no preimage holds an R1/R2 float (ADR 0007 D1, digest row; ADR 0025 D2).
+  # - `implementation_sha256`: SHA-256 of the provider module's source bytes (wilson-ig-v2: those
+  #   bytes, a newline and v1's digest; CoolProp: the canonical JSON of the module's and the fluid
+  #   table's file digests and the pinned CoolProp version and git revision). Bytes, checked out
+  #   LF on every platform (`.gitattributes`, ADR 0057 D3).
+  # - `data_sha256`: the record or coefficient file's bytes (pr-lib, pr-c1, wilson-ig, iapws95);
+  #   CoolProp's canonical JSON of the pinned version, the fluid name and the registered fluid-data
+  #   digest (strings only); SYN-001's `hash_named_doubles` over its registered constants, which
+  #   are source literals under ADR 0002's big-endian binary64 encoding with nothing solved: R0,
+  #   as `constants_sha256` (v2: exact; ADR 0007 D1, R0 row).
+  exact_sha256:
+  - data_sha256
+  - implementation_sha256
