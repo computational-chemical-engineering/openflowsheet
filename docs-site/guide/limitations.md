@@ -5,6 +5,9 @@
 evidence for every row (a test, a manifest check or a document). This page states its substance in
 plain words.
 
+Each code below links to its explanation in [Messages](../messages/index.md), and each limitation
+row of the support matrix has its own section in [Limitations](../messages/limitations.md).
+
 ## Supported
 
 - **Property bases:** the five of [Property bases](property-bases.md), each within its domain.
@@ -22,25 +25,25 @@ plain words.
 
 | Request | What happens |
 | --- | --- |
-| A property method other than the selectable bases | not representable: a revision has no property-method member; another provider's components are `components_unsupported` |
-| A model not in the registry, or on a basis it does not bind on | `model_unsupported(<id>)` at binding, with the bases it does support |
-| A state outside a basis's domain | `INITIALIZATION_FAILED`, or `invalid_trial_state` inside a solve; never extrapolated |
-| Validation for optimisation through the application | `unsupported` (`task_unsupported(optimization)`) |
+| A property method other than the selectable bases | not representable: a revision has no property-method member; another provider's components are [`components_unsupported`](../messages/refusals.md#components_unsupported) |
+| A model not in the registry, or on a basis it does not bind on | [`model_unsupported(<id>)`](../messages/refusals.md#model_unsupported) at binding, with the bases it does support |
+| A state outside a basis's domain | [`INITIALIZATION_FAILED`](../messages/outcomes.md#INITIALIZATION_FAILED), or `invalid_trial_state` inside a solve; never extrapolated |
+| Validation for optimisation through the application | [`unsupported`](../messages/api-errors.md#unsupported) ([`task_unsupported(optimization)`](../messages/refusals.md#task_unsupported)) |
 | Dynamics or time-varying specifications | not representable; a time member is a schema refusal |
 | Gauge pressure, unregistered unit spellings | refused at validation |
 | Second derivatives through the property callback | reported absent; never zeros |
-| A specification pairing other than one freed column per promoted target | `UNSUPPORTED_RANK_STRUCTURE` at plan construction |
+| A specification pairing other than one freed column per promoted target | [`UNSUPPORTED_RANK_STRUCTURE`](../messages/outcomes.md#UNSUPPORTED_RANK_STRUCTURE) at plan construction |
 | Container or installer artifacts, container replay | not provided |
 
 ## Known limitations worth knowing first
 
-- A `VERIFIED` certificate certifies residuals at registered tolerances; the solution-error bound
+- A [`VERIFIED`](../messages/statuses.md#VERIFIED) certificate certifies residuals at registered tolerances; the solution-error bound
   is recorded, not promised. Energy checks share the property provider with the solver.
 - Bitwise reproduction is reported, never promised across platforms.
 - Pseudo-transient continuation (`T08-ptc-v1`) is experimental.
 - Pure-fluid stream regimes are declared; there is no regime discovery, and a closure in another
-  regime is refused `phase_regime_mismatch`. A dormant single-phase thermal outlet certifies
-  `UNVERIFIED` (rank-deficient).
+  regime is refused [`phase_regime_mismatch`](../messages/refusals.md#phase_regime_mismatch). A dormant single-phase thermal outlet certifies
+  [`UNVERIFIED`](../messages/statuses.md#UNVERIFIED) (rank-deficient).
 - The column: see [Distillation column](column.md#what-the-column-does-not-do).
 - Cancellation is not cooperative inside the verifier.
 - Agent evidence: one pinned model and configuration, over MCP only, not out of sample.

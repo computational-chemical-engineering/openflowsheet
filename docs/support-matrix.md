@@ -18,7 +18,7 @@ Envelope `v0.2-envelope-dev` (T08 release spec §5). **Unlisted is unsupported**
 | Globalization and recovery | Damped Newton, with or without the terminal refinement (ADR 0018), Anderson recycle (L43), specification continuation via edge 3, sequential restart (ADR 0015); the recovery-edge inventory of spec §5.6 (T08.A33, W2.4); PTC offered as `T08-ptc-v1`, experimental (V14 (b) carried as FAIL, ADR 0021 D3). | `check:T02.A32`<br>`check:T04.A04`<br>`check:T04.A09`<br>`check:T04.A10`<br>`check:T06.A64`<br>`check:T06.A88`<br>`doc:docs/adr/0015-edge3-sequential-restart.md`<br>`doc:docs/adr/0018-newton-terminal-refinement.md` |
 | Verification | The four-word certificate (VERIFIED, RELAXED, UNVERIFIED, FAILED); residual accuracy at registered tolerances, not solution accuracy (ADR 0007 F3; L05); the [A08] regularity screen; energy checks qualified as sharing the provider ([A09]; L06). | `check:K04.A15.verdicts`<br>`check:K04.A18.injected_false_success`<br>`check:K04.A16.supplied_policy`<br>`check:T06.A33`<br>`doc:docs/adr/0007-reproducibility-certificate-policy.md` |
 | Reproducibility | R0 structural identity on Linux x86-64 and aarch64; floats within the numerical policy each record names (`T08-numerical-policy-v2` for v0.1 records, ADR 0025); bitwise agreement reported, never promised (ADR 0007 F1; L07). | `check:K05.G05.two_platform_structural_equality`<br>`check:T06.A45`<br>`check:T07.G1`<br>`doc:docs/adr/0007-reproducibility-certificate-policy.md`<br>`doc:docs/adr/0025-cross-platform-replay-comparison.md` |
-| Interfaces | Python (`LocalApplication`), CLI, HTTP (`/v1`) and MCP over stdio; the twenty-one operations of `OPERATIONS`, each on the transports listed; authority from the credential only (ADR 0019). With `serve-http --ui`, the diagnostic web shell at `/ui/` is a browser client of seventeen of them over HTTP and of nothing else (M06; L-WEB-1 to L-WEB-4). | `tests/test_t07_v17_reference.py::test_g16b_reference_run`<br>`check:T07.G11`<br>`check:T07.G14`<br>`check:T07.D15(b)`<br>`tests/test_m06_http_contract.py::test_g2_every_ui_operation_answers_schema_valid_over_http`<br>`doc:docs/adr/0019-application-contract-v1.md`<br>`doc:docs/web-shell.md` |
+| Interfaces | Python (`LocalApplication`), CLI, HTTP (`/v1`) and MCP over stdio; the twenty-two operations of `OPERATIONS`, each on the transports listed (`explain`, ADR 0058 D7, reads the message catalogue only); authority from the credential only (ADR 0019). With `serve-http --ui`, the diagnostic web shell at `/ui/` is a browser client of seventeen of them over HTTP and of nothing else (M06; L-WEB-1 to L-WEB-4). | `tests/test_t07_v17_reference.py::test_g16b_reference_run`<br>`check:T07.G11`<br>`check:T07.G14`<br>`check:T07.D15(b)`<br>`tests/test_m06_http_contract.py::test_g2_every_ui_operation_answers_schema_valid_over_http`<br>`doc:docs/adr/0019-application-contract-v1.md`<br>`doc:docs/web-shell.md` |
 | Platforms | Linux x86-64 and aarch64, Python 3.13, the one lock (L15). The C1 reactor's runs are measured on x86-64 only (L44). | `check:K05.G05.two_platform_structural_equality`<br>`doc:.github/workflows/ci.yml`<br>`doc:requirements.lock` |
 | External model execution | Since M02, a variant-backed model (`c1.reactor`) runs out of process under the isolation profile `external-subprocess-v1` (ADR 0033 D2): a separate interpreter and dependencies, a separate address space, an environment allowlist, a private working directory, one thread, a wall-clock limit, termination on cancel, forced kill and parent death, output from one validated file, and verified code identity. It is **not a sandbox**: no filesystem confinement, network isolation, memory or CPU quota, or syscall filtering; trust rests on provenance. Linux is registered; macOS best effort; Windows is refused before spawn. The reactor needs the separately built, pinned reactor environment, and a run that used it is R3 (ADR 0034 D6). | `doc:docs/adr/0033-external-model-execution-and-experiment-records.md §D2`<br>`doc:docs/design/M02-pymrm-adapter.md §2.3`<br>`tests/test_m02_kill_chain.py::test_refusals_before_any_spawn`<br>`tests/test_m02_kill_chain.py::test_g3a_a_cooperative_cancel_reaps_the_child_and_propagates`<br>`tests/test_m02_kill_chain.py::test_g3b_a_timeout_ends_the_attempt_timed_out`<br>`tests/test_m02_kill_chain.py::test_g3c_a_child_ignoring_sigterm_is_killed_after_the_grace`<br>`tests/test_m02_kill_chain.py::test_g3d_the_executors_forced_kill_takes_the_worker_and_its_child`<br>`tests/test_m02_kill_chain.py::test_g3e_a_worker_killed_alone_leaves_its_child_to_its_lifeline`<br>`tests/test_m02_kill_chain.py::test_g3f_the_self_deadline_exits_71`<br>`tests/test_m02_kill_chain.py::test_g3g_an_abort_is_a_crash_with_its_signal` |
 
@@ -41,6 +41,7 @@ Envelope `v0.2-envelope-dev` (T08 release spec §5). **Unlisted is unsupported**
 | `cancel_job` | python, cli, http, mcp |
 | `commit_change` | python, cli, http, mcp |
 | `diff_revisions` | python, cli, http, mcp |
+| `explain` | python, cli, http, mcp |
 | `get_artifact` | python, cli, http, mcp |
 | `get_job` | python, cli, http, mcp |
 | `get_job_result` | python, cli, http, mcp |
@@ -169,7 +170,7 @@ Envelope `v0.2-envelope-dev` (T08 release spec §5). **Unlisted is unsupported**
 
 ## Harvest (T08.A21)
 
-1119 items — every `limitations[]` entry and non-`pass` check of the 51 manifests under `evidence/` — each classified once: **E** user-facing (a row above), **S** superseded or closed, **P** provenance or process note (stays in its manifest), **B** v0.2 backlog (spec §6.3). The classification is a build-lane draft for the design-lane review.
+1136 items — every `limitations[]` entry and non-`pass` check of the 52 manifests under `evidence/` — each classified once: **E** user-facing (a row above), **S** superseded or closed, **P** provenance or process note (stays in its manifest), **B** v0.2 backlog (spec §6.3). The classification is a build-lane draft for the design-lane review.
 
 | Package | E | S | P | B |
 | --- | --- | --- | --- | --- |
@@ -188,6 +189,7 @@ Envelope `v0.2-envelope-dev` (T08 release spec §5). **Unlisted is unsupported**
 | M06 | 6 | 0 | 2 | 0 |
 | M07 | 0 | 2 | 2 | 0 |
 | M07a | 0 | 36 | 6 | 0 |
+| MSG | 0 | 0 | 17 | 0 |
 | P00 | 0 | 1 | 8 | 0 |
 | P01 | 2 | 2 | 5 | 0 |
 | P02 | 2 | 0 | 12 | 0 |
@@ -224,4 +226,4 @@ Envelope `v0.2-envelope-dev` (T08 release spec §5). **Unlisted is unsupported**
 | X05a | 0 | 0 | 5 | 0 |
 | X10 | 0 | 2 | 11 | 0 |
 | X10a | 0 | 0 | 4 | 2 |
-| **all** | 380 | 99 | 627 | 13 |
+| **all** | 380 | 99 | 644 | 13 |

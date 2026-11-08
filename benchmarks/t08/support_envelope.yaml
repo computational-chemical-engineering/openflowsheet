@@ -278,8 +278,9 @@ axes:
   - id: interfaces
     title: Interfaces
     statement: >-
-      Python (`LocalApplication`), CLI, HTTP (`/v1`) and MCP over stdio; the twenty-one operations of
-      `OPERATIONS`, each on the transports listed; authority from the credential only (ADR 0019).
+      Python (`LocalApplication`), CLI, HTTP (`/v1`) and MCP over stdio; the twenty-two operations of
+      `OPERATIONS`, each on the transports listed (`explain`, ADR 0058 D7, reads the message catalogue
+      only); authority from the credential only (ADR 0019).
       With `serve-http --ui`, the diagnostic web shell at `/ui/` is a browser client of seventeen of
       them over HTTP and of nothing else (M06; L-WEB-1 to L-WEB-4).
     operations:
@@ -287,6 +288,7 @@ axes:
       cancel_job: [python, cli, http, mcp]
       commit_change: [python, cli, http, mcp]
       diff_revisions: [python, cli, http, mcp]
+      explain: [python, cli, http, mcp]
       get_artifact: [python, cli, http, mcp]
       get_job: [python, cli, http, mcp]
       get_job_result: [python, cli, http, mcp]
@@ -8276,6 +8278,111 @@ harvest:
   class: P
   to: []
   note: 'scope note: off the reference platform M4, M6''s run key trails and M7''s replay mode are not judged'
+- manifest: evidence/MSG/b1a82351fa68f4c8676ebd90d21bd55c8649cd36/manifest.json
+  item: limitations[0]
+  sha256: 12e3253ca181d82901a50c0d0051bcb7316a663bb06d109068294988c4961847
+  class: P
+  to: []
+  note: 'provenance note: software verification on ref-x86-64; corpus texts are self-generated regression fixtures; entry prose awaits the reviewer pass'
+- manifest: evidence/MSG/b1a82351fa68f4c8676ebd90d21bd55c8649cd36/manifest.json
+  item: limitations[1]
+  sha256: 7111cd74e30727c0d2b8e606b17314f8e98e62ca7e68b770aa89c9911f366713
+  class: P
+  to: []
+  note: 'scope note: MSG WO-5 (diagnostic sidecar) parked by F0 M9 (R-940); explanations carry no numbers; pending items are strict xfails (MSG_DECISIONS D9-1)'
+- manifest: evidence/MSG/b1a82351fa68f4c8676ebd90d21bd55c8649cd36/manifest.json
+  item: limitations[2]
+  sha256: 931813dc25b9182d43afb636805d2facb38eabbbdb57ce030807965368c0ab33
+  class: P
+  to: []
+  note: 'scope note: a DRAFT revision is explained as revision_not_ready without the element at fault; a unit typo as DIM-01 without the unit text (MSG_DECISIONS D9-2, design lane)'
+- manifest: evidence/MSG/b1a82351fa68f4c8676ebd90d21bd55c8649cd36/manifest.json
+  item: limitations[3]
+  sha256: 9e719f20bebaecfa6ee76425c49d432742d0519e04fd1c57c19099b9b5500197
+  class: P
+  to: []
+  note: 'process note: MSG-G0 (c)''s WO-0 baseline predates F0''s 52 registered v0.3.0 replay fixtures, which F0 M7 judges'
+- manifest: evidence/MSG/b1a82351fa68f4c8676ebd90d21bd55c8649cd36/manifest.json
+  item: checks[6]
+  check_id: MSG-G0.c
+  sha256: f4e66369b274a59feb0a2d6cd3a377e8dba30348e0cb71f14b5563163ef491df
+  class: P
+  to: []
+  note: 'process note: MSG-G0 (c) differs only by F0''s 52 new replay fixtures (156 keys); baseline replays unchanged; design-lane ruling requested (section 7: F0 replaces (a)-(c))'
+- manifest: evidence/MSG/b1a82351fa68f4c8676ebd90d21bd55c8649cd36/manifest.json
+  item: checks[9]
+  check_id: MSG.GATE
+  sha256: 06be01230ffd5e44da2bc39e5979db143b1c40f895504383af0340e780cf0beb
+  class: P
+  to: []
+  note: 'process note: the full suite''s one red is explain.md''s pending reviews (D7-8, merge blocker by design); f6''s wall-time budget failed under load at 0067129c only'
+- manifest: evidence/MSG/9c76b93985915e6b7452b7573514850c477e712b/manifest.json
+  item: limitations[0]
+  sha256: 939896f1facd578303d3a9771c42ebd9c5796d3d1fed5798ed975056ffb59fd7
+  class: P
+  to: []
+  note: 'process note: status implemented; the gate''s one non-load red is explain.md''s pending human review (merge blocker by design); becomes tested when it is recorded'
+- manifest: evidence/MSG/9c76b93985915e6b7452b7573514850c477e712b/manifest.json
+  item: limitations[1]
+  sha256: b90bc326b341222a087cf692dcaa60dce12e03aded18fb788f1e78b741c189c2
+  class: P
+  to: []
+  note: 'provenance note: software verification on ref-x86-64; corpus texts are self-generated regression fixtures; the prose of the WO-12 entries awaits the design-lane prose check'
+- manifest: evidence/MSG/9c76b93985915e6b7452b7573514850c477e712b/manifest.json
+  item: limitations[2]
+  sha256: bf803cde22ff149ce509a4852b401a9f623777d071b85415dd49425d947e429f
+  class: P
+  to: []
+  note: 'scope note: errors render from the error document alone (C08 degc, C10 instance B declared gaps); C01''s numbers deferred to the F6 v2 unit models (R-975)'
+- manifest: evidence/MSG/9c76b93985915e6b7452b7573514850c477e712b/manifest.json
+  item: limitations[3]
+  sha256: 316284b709e36cddd62ab0d38675d1756a6d97f688b3701e5a04eb6f016bac35
+  class: P
+  to: []
+  note: 'scope note: worker_lost, owner_lost, store_error keep kind bug with environment-specific actions (orchestrator default)'
+- manifest: evidence/MSG/9c76b93985915e6b7452b7573514850c477e712b/manifest.json
+  item: limitations[4]
+  sha256: f1fa7210e44f115ccfd989d4f620a52c0aba83582695bd51385265087855591e
+  class: P
+  to: []
+  note: 'process note: the carry naming link c_4 (R-976) is a 0.4 release-candidate item'
+- manifest: evidence/MSG/9c76b93985915e6b7452b7573514850c477e712b/manifest.json
+  item: checks[13]
+  check_id: MSG.GATE
+  sha256: cc3bc32e309dc2d966a8dc2f58e8e338c337fdddc2788126b056ee69a916e921
+  class: P
+  to: []
+  note: 'process note: the full gate''s reds are explain.md''s pending human review and load-induced browser-smoke and kill-chain timings that pass alone'
+- manifest: evidence/MSG/5e9274dbee91dd25d7201f24b025db2498027744/manifest.json
+  item: limitations[0]
+  sha256: b90bc326b341222a087cf692dcaa60dce12e03aded18fb788f1e78b741c189c2
+  class: P
+  to: []
+  note: 'provenance note: software verification on ref-x86-64; corpus texts are self-generated regression fixtures; the prose of the WO-12 entries awaits the design-lane prose check'
+- manifest: evidence/MSG/5e9274dbee91dd25d7201f24b025db2498027744/manifest.json
+  item: limitations[1]
+  sha256: 11ad8184b8b3e77c4a58efc584d9f0be06e5c1a746e2e1f56c58f6e98ca6b451
+  class: P
+  to: []
+  note: 'scope note: errors render from the error document alone (C08 degc, C10 instance B declared gaps); C01''s numbers deferred to the F6 v2 unit models (R-975)'
+- manifest: evidence/MSG/5e9274dbee91dd25d7201f24b025db2498027744/manifest.json
+  item: limitations[2]
+  sha256: 316284b709e36cddd62ab0d38675d1756a6d97f688b3701e5a04eb6f016bac35
+  class: P
+  to: []
+  note: 'scope note: worker_lost, owner_lost, store_error keep kind bug with environment-specific actions (orchestrator default)'
+- manifest: evidence/MSG/5e9274dbee91dd25d7201f24b025db2498027744/manifest.json
+  item: limitations[3]
+  sha256: e2baea979e69be2989aa6831051a890ba05b07ad7203da3adc576b43f7916cfa
+  class: P
+  to: []
+  note: 'process note: the carry naming link c_4 (R-976) is a 0.4 release-candidate item'
+- manifest: evidence/MSG/5e9274dbee91dd25d7201f24b025db2498027744/manifest.json
+  item: limitations[4]
+  sha256: f5f169f7bec328c2f0aa7568fc592b9fb5710349cf83d6808d9e06f99f28c2bf
+  class: P
+  to: []
+  note: 'process note: no local full gate; the merge condition is CI run 42502713324; status tested, not reviewed'
 - manifest: evidence/S15/3e7ccf00f4123a7d9085fef775432d81d45aadd3/manifest.json
   item: limitations[0]
   sha256: 8262246970f453c7a91b2b75eba8d77d7ca0e01c4a225b2e7e0ef938053a6a35

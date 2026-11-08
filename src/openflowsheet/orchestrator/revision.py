@@ -30,12 +30,13 @@ D2): the same traversal continued to eight passes, reconstructed by the same ste
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Final
 
 from openflowsheet.graph.analysis import analyse
 from openflowsheet.graph.report import StructuralReport
 from openflowsheet.graph.trace import trace_declaration
+from openflowsheet.messages.diagnostic import Diagnostic
 from openflowsheet.models import Wiring, duty_id, flow_id, pressure_id, temperature_id
 from openflowsheet.models.revision_flowsheet import FlowsheetPass, RevisionFlowsheet
 from openflowsheet.models.syn001.conversion_reactor import extent_id
@@ -95,6 +96,8 @@ class InitialStateFailure:
 
     unit: str
     code: str
+    #: MSG §4.6: the refusing unit's sidecar (`FlowsheetPass.diagnostic`). Never serialized.
+    diagnostic: Diagnostic | None = field(default=None, compare=False, hash=False, repr=False)
 
     @property
     def message(self) -> str:
@@ -112,7 +115,7 @@ def instances_of(flowsheet: RevisionFlowsheet) -> tuple[tuple[str, str, Wiring],
 def _failure(traversed: FlowsheetPass) -> InitialStateFailure | None:
     if traversed.status == "ok":
         return None
-    return InitialStateFailure(traversed.failed_unit, traversed.code)
+    return InitialStateFailure(traversed.failed_unit, traversed.code, traversed.diagnostic)
 
 
 @dataclass(frozen=True)

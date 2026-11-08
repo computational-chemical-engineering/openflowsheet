@@ -28,6 +28,7 @@ from pathlib import Path
 from typing import Any
 
 import pytest
+from msg_support import machine_detail
 from t07_corpus import CORPUS
 from t07_jobs_support import commit, lifecycle_violations
 
@@ -103,6 +104,8 @@ TABLE: dict[str, tuple[str, tuple[str, str] | None, str | None, tuple[str, ...]]
     "get_artifact": ("read", ("GET", "/v1/artifacts/{artifact_id}"), "get_artifact", ALL),
     # ADR 0019 Amendment 3 (A3.3; M06 WO-3): no MCP tool.
     "list_audit": ("read", ("GET", "/v1/audit"), None, ("python", "cli", "http")),
+    # ADR 0058 D7 (MSG): a message-catalogue entry, on all four transports.
+    "explain": ("read", ("GET", "/v1/explain/{code}"), "explain", ALL),
     "artifact_bytes": (
         "read",
         ("GET", "/v1/artifacts/{artifact_id}/raw"),
@@ -135,7 +138,8 @@ def test_every_protocol_method_is_exactly_one_row() -> None:
         *_protocol_methods(JobControl),
         *_protocol_methods(Inspection),
     ]
-    assert len(methods) == len(set(methods)) == 4 + 7 + 9  # Inspection's ninth: `list_audit`
+    # Inspection's ninth is `list_audit` (ADR 0019 Amendment 3), its tenth `explain` (ADR 0058 D7).
+    assert len(methods) == len(set(methods)) == 4 + 7 + 10
     rows = [operation.method for operation in OPERATIONS.values()]
     assert sorted(rows) == sorted([*methods, "artifact_bytes"])
     for name, operation in OPERATIONS.items():
@@ -154,8 +158,9 @@ def test_the_table_is_section_4_3s() -> None:
     assert {name: op.right for name, op in OPERATIONS.items()} == dict(OPERATION_RIGHTS)
     http = [op.http for op in OPERATIONS.values() if op.http is not None]
     tools = [op.mcp_tool for op in OPERATIONS.values() if op.mcp_tool is not None]
-    # 19 routes with ADR 0019 Amendment 3's `list_audit`, which has no MCP tool (17 stay).
-    assert len(http) == len(set(http)) == 19 and len(tools) == len(set(tools)) == 17
+    # 19 routes with ADR 0019 Amendment 3's `list_audit`, which has no MCP tool (17 stay); ADR 0058
+    # D7's `explain` adds one of each.
+    assert len(http) == len(set(http)) == 20 and len(tools) == len(set(tools)) == 18
     for operation in OPERATIONS.values():
         assert ("http" in operation.transports) == (operation.http is not None)
         assert ("mcp" in operation.transports) == (operation.mcp_tool is not None)
@@ -218,7 +223,7 @@ def test_dispatch_refuses_non_canonical_input_first(app: LocalApplication) -> No
             ({"deep": 2**53 + 1}, "/x/deep"),
         ):
             refused = _refusal(app, name, {"x": value})
-            assert (refused["code"], refused["detail"]) == (
+            assert (refused["code"], machine_detail(refused)) == (
                 "document_not_canonical",
                 {"pointer": pointer},
             )
@@ -250,7 +255,7 @@ def test_dispatch_refuses_a_lone_surrogate_as_non_canonical(app: LocalApplicatio
     ):
         refused = _refusal(app, "commit_change", request)
         assert refused["code"] == "document_not_canonical"
-        assert refused["detail"] == {"pointer": pointer.replace("\udfff", "�")}
+        assert machine_detail(refused) == {"pointer": pointer.replace("\udfff", "�")}
     assert app.list_revisions().items == ()
 
 
@@ -296,7 +301,7 @@ def test_transports_refuse_the_reserved_key_prefix(app: LocalApplication) -> Non
         ),
     ):
         refused = _refusal(app, name, request)
-        assert (refused["code"], refused["detail"]) == (
+        assert (refused["code"], machine_detail(refused)) == (
             "invalid_request",
             {"pointer": "/idempotency_key"},
         )
@@ -374,6 +379,7 @@ def _success_path(app: LocalApplication, tmp_path: Path) -> list[tuple[str, dict
         ("inspect_structure", {"revision_id": revision_id, "depth": 2}),
         ("get_artifact", {"artifact_id": state, "pointer": "/variable_ids", "limit": 5}),
         ("list_audit", {"limit": 3}),
+        ("explain", {"code": "not_found"}),
         ("artifact_bytes", {"artifact_id": state}),
     ]
 
@@ -468,6 +474,7 @@ def _probe(name: str, text: str, other_job: str) -> dict[str, Any]:
         "get_artifact": {"artifact_id": "job-999999:bundle"},
         # Every principal's rows (ADR 0019 Amendment 3): `policy` as well as `read`.
         "list_audit": {"limit": 1},
+        "explain": {"code": "not_found"},
         "artifact_bytes": {"artifact_id": "job-999999:bundle/run-manifest.json"},
     }[name]
 
@@ -505,7 +512,7 @@ def test_g11_every_subset_and_every_operation_through_dispatch(app: LocalApplica
                     assert refused.code != "unauthenticated", (rights, name)
                 assert allowed == (needed <= set(rights)), (rights, name, text)
                 cells += 1
-    assert cells == 64 * 21
+    assert cells == 64 * 22
     assert app.get_job(others_job).status == "completed", "the probes changed nothing"
 
 
@@ -619,6 +626,7 @@ def test_g13_every_response_is_bounded_and_the_raw_export_is_exact(
     call("list_revisions", {})
     call("get_project", {})
     call("list_models", {})
+    call("explain", {"code": "phase_regime_mismatch"})  # ADR 0058 D7 (MSG)
     job = call(
         "submit_job",
         {"operation": "solve", "idempotency_key": "solve-a", "body": {"revision_id": a}},

@@ -6,6 +6,8 @@
 
 ::: openflowsheet.application.types.RunResult
 
+::: openflowsheet.application.types.RunFailure
+
 ::: openflowsheet.application.types.TransactionResult
 
 ::: openflowsheet.application.types.JobRequest

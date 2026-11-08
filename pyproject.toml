@@ -123,6 +123,8 @@ openflowsheet = [
 # M02 design note §3.1, §2.4: the registered variants and their registry (append-only package
 # data), and the reactor environment's hash-pinned lock.
 "openflowsheet.adapters" = ["variants/*.json", "pymrm/reactor-env.lock"]
+# MSG design note §3.2: the message catalogue's data files and its released-code list.
+"openflowsheet.messages" = ["catalogue/*.yaml", "catalogue/*.txt"]
 
 [tool.ruff]
 line-length = 100

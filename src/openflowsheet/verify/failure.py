@@ -20,10 +20,13 @@ never that no answer exists.
 from __future__ import annotations
 
 import re
+import sys
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from types import SimpleNamespace
 from typing import Any, Final, Literal
+
+from openflowsheet.messages import audit
 
 #: §10.1 and K03 §11.1's map from a solver outcome onto blueprint §8.2's minimum taxonomy.
 TAXONOMY: Final[Mapping[str, str]] = {
@@ -181,6 +184,11 @@ def bundle_for(
 ) -> FailureBundle:
     """§10.2: a bundle from a K03 result, with nothing inferred that was not measured."""
     outcome = str(result.outcome)
+    if audit.auditor is not None:  # MSG-G3: the outcome and the message's codes have entries
+        caller = sys._getframe(1).f_globals.get("__name__", "")
+        audit.auditor.code(outcome, caller)
+        if isinstance(result.message, str):
+            audit.auditor.observe(result.message, caller)
     taxonomy = TAXONOMY.get(outcome)
     if taxonomy is None:
         raise ValueError(f"{outcome!r} has no §8.2 class in K03 §11.1's map")

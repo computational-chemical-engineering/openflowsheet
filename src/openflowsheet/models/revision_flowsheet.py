@@ -30,6 +30,7 @@ from typing import Any, Literal, overload
 from openflowsheet.canonical import document_sha256
 from openflowsheet.compile.spec import ProblemSpec
 from openflowsheet.compiled import EvaluationContext
+from openflowsheet.messages.diagnostic import Diagnostic
 from openflowsheet.models import (
     PortDirection,
     SpecificationError,
@@ -882,6 +883,23 @@ def configuration_sha256(
     )
 
 
+#: The code at the head of a message's first line: `code`, `code(args)` or `code: …` (§4.3's
+#: segment, read lexically: this module imports nothing of `messages` but the sidecar's types).
+_HEAD_CODE = re.compile(r"[A-Za-z][A-Za-z0-9]*(?:_[A-Za-z0-9]+)*(?=\(|:|$)")
+
+
+def _sidecar(lines: list[str]) -> Diagnostic | None:
+    """MSG §4.6 as amended by review Q1 (WO-5a): the failing unit's message keeps its numbers on
+    lines 2 and after, which the traversal's one-line `code` drops. They travel as the detail of
+    line 1's code; the catalogue entry's `detail_pattern` reads them at render time. `None` when
+    there is no detail or line 1 does not start with a code."""
+    detail = "\n".join(lines[1:]).strip()
+    head = _HEAD_CODE.match(lines[0])
+    if not detail or head is None:
+        return None
+    return Diagnostic(head.group(0), {"detail": detail})
+
+
 @dataclass(frozen=True)
 class FlowsheetPass:
     """One sequential pass over a revision-built flowsheet (§1.5)."""
@@ -900,6 +918,9 @@ class FlowsheetPass:
     failed_unit: str = ""
     #: The first line of the failing unit's message.
     code: str = ""
+    #: MSG §4.6 (review Q1, WO-5a): the failing unit's detail lines, which `code` drops, as
+    #: `Diagnostic(<line 1's code>, {"detail": lines 2+})`. Never serialized; never compared.
+    diagnostic: Diagnostic | None = field(default=None, compare=False, hash=False, repr=False)
 
 
 @dataclass(frozen=True)
@@ -978,7 +999,9 @@ class RevisionFlowsheet:
         evaluations: dict[str, UnitEvaluation] = {}
         order: list[str] = []
 
-        def fail(unit: str, status: PropertyStatus, code: str) -> FlowsheetPass:
+        def fail(
+            unit: str, status: PropertyStatus, code: str, diagnostic: Diagnostic | None = None
+        ) -> FlowsheetPass:
             return FlowsheetPass(
                 status=status,
                 streams=dict(value),
@@ -988,6 +1011,7 @@ class RevisionFlowsheet:
                 computed_torn=dict(computed_torn),
                 failed_unit=unit,
                 code=code,
+                diagnostic=diagnostic,
             )
 
         pending = list(self.instances)
@@ -1027,11 +1051,8 @@ class RevisionFlowsheet:
                 self.context,
             )
             if evaluation.status != "ok":
-                return fail(
-                    unit.unit_id,
-                    evaluation.status,
-                    (evaluation.message.splitlines() or [""])[0],
-                )
+                lines = evaluation.message.splitlines() or [""]
+                return fail(unit.unit_id, evaluation.status, lines[0], _sidecar(lines))
             for port in _material(unit, "outlet"):
                 for stream in connected.get(port, ()):
                     if stream in torn:
