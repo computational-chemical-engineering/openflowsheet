@@ -28,13 +28,19 @@ only "an `assessment:` name with no assessment" is decided (OPT D-18).
 
 from __future__ import annotations
 
+import json
 import math
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
+from functools import cache
 from typing import Any, Final, Literal
 
-from openflowsheet.application.types import schema_errors
+from jsonschema import Draft202012Validator
+from referencing import Registry
+from referencing.jsonschema import DRAFT202012
+
 from openflowsheet.canonical import canonical_json, document_sha256, first_noncanonical
+from openflowsheet.resources import packaged
 from openflowsheet.studies.nlp.closure import (
     READINESS_ORDER,
     ReadinessCode,
@@ -94,6 +100,36 @@ Sense = Literal["minimize", "maximize"]
 # -- the document --------------------------------------------------------------------------------
 
 
+@cache
+def _request_validator() -> Draft202012Validator:
+    """The request schema's validator, built as `application.types.schema_errors` builds it: the
+    published schemas registered by `$id` in file-name order, the request schema by `$ref` to its
+    `$id`. `studies` never imports `application` (M04's rule), so the reading is repeated here;
+    `test_opt_request` holds the two to the same errors."""
+    published: dict[str, Any] = {}
+    for entry in sorted(packaged("schemas").iterdir(), key=lambda entry: entry.name):
+        if entry.name.endswith(".schema.json"):
+            document = json.loads(entry.read_text(encoding="utf-8"))
+            published[document["$id"]] = document
+    registry: Registry[Any] = Registry().with_resources(
+        (schema_id, DRAFT202012.create_resource(document))
+        for schema_id, document in published.items()
+    )
+    (reference,) = [name for name in published if name.endswith("/" + SCHEMA_REFERENCE)]
+    return Draft202012Validator({"$ref": reference}, registry=registry)
+
+
+def _pointer(path: Sequence[str | int]) -> str:
+    return "".join("/" + str(part).replace("~", "~0").replace("/", "~1") for part in path)
+
+
+def _schema_errors(request: Any) -> list[str]:
+    """Every error of `request` against the request schema, as `<pointer>: <message>` in pointer
+    order (`application.types.schema_errors`'s form)."""
+    found = sorted(_request_validator().iter_errors(request), key=lambda e: list(e.absolute_path))
+    return [f"{_pointer(list(error.absolute_path))}: {error.message}" for error in found]
+
+
 def request_problems(request: Any) -> list[tuple[str, str]]:
     """Every problem of `request` as `(pointer, message)`: none for a well-formed request.
 
@@ -102,7 +138,7 @@ def request_problems(request: Any) -> list[tuple[str, str]]:
     pointer = first_noncanonical(request)
     if pointer is not None:
         return [(pointer, f"document_not_canonical({pointer})")]
-    errors = schema_errors(SCHEMA_REFERENCE, request)
+    errors = _schema_errors(request)
     if errors:
         return [_split(error) for error in errors]
     problems: list[tuple[str, str]] = []

@@ -22,12 +22,14 @@ import pytest
 from jsonschema import Draft202012Validator
 from t07_corpus import A02_FILES, CORPUS
 
+from openflowsheet.application import types as application_types
 from openflowsheet.application import validation
 from openflowsheet.application.contract import ApplicationError
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.types import schema_errors
 from openflowsheet.canonical import canonical_json, document_sha256
 from openflowsheet.studies.nlp import closure
+from openflowsheet.studies.nlp import request as request_module
 from openflowsheet.studies.nlp.closure import SolverAvailability, audited_solver
 from openflowsheet.studies.nlp.request import (
     SCHEMA_REFERENCE,
@@ -71,6 +73,24 @@ def test_g18_the_schema_is_a_draft_2020_12_schema_and_registered() -> None:
     Draft202012Validator.check_schema(schema)
     registry = json.loads((REPO / "schemas" / "registry.json").read_bytes())
     assert SCHEMA_REFERENCE in registry
+
+
+def test_the_request_reader_reports_the_application_schema_errors_bytewise() -> None:
+    """OPT review M2: `studies` reads the request schema itself (it never imports `application`);
+    its errors are `application.types.schema_errors`'s, text and order, on every fixture and on
+    ill-formed documents, and its pointers carry the same RFC 6901 escapes."""
+    documents: list[Any] = [
+        json.loads(path.read_bytes()) for path in sorted(FIXTURES.rglob("*.json"))
+    ]
+    altered = _fixture("valid", "th_r1_minimal")
+    altered["objective"]["a/b~c"] = 1
+    altered["decisions"][0] = {"x~/y": None}
+    documents += [altered, None, [], {}, "request"]
+    for document in documents:
+        expected = schema_errors(SCHEMA_REFERENCE, document)
+        assert request_module._schema_errors(document) == expected, document
+    path = ["a/b~c", 0, "~/"]
+    assert request_module._pointer(path) == application_types._pointer(path) == "/a~1b~0c/0/~0~1"
 
 
 @pytest.mark.parametrize("name", ["th_r1_minimal", "th_r1_full"])
