@@ -8699,6 +8699,55 @@ harvest:
   class: P
   to: []
   note: 'process note: the review did-not-establish list; gate and CI postdate the review'
+- manifest: evidence/X10b/c57d449aaed52ca9cff1b7a737a9161cc3fdd093/manifest.json
+  item: limitations[0]
+  sha256: 56869fc31baa84f4dc6ac1ac7a5666b3c1b0abc1a72de6e34b1f2a5d05692e12
+  class: P
+  to: []
+  note: 'provenance note: software verification on ref-x86-64 under id X10b; a text-and-pin follow-up to X10a; fixtures are regression, not validation'
+- manifest: evidence/X10b/c57d449aaed52ca9cff1b7a737a9161cc3fdd093/manifest.json
+  item: limitations[1]
+  sha256: 932b11a4a7cae4f6272af27a136dcdde1815caf2f035e56f0184d5574f857c12
+  class: P
+  to: []
+  note: 'scope note: one manifest sentence and two docstrings, no numerics moved; the artifact hash, F0 M9 entry and L01.A22 pin move as registered (R-983)'
+- manifest: evidence/X10b/c57d449aaed52ca9cff1b7a737a9161cc3fdd093/manifest.json
+  item: limitations[2]
+  sha256: ddc39409511ebbf97ea7a08ba40b325f2fb3be87decdef9b55da20c7657f9028
+  class: P
+  to: []
+  note: 'scope note: R-983 — F0 M9 guards 9 of L01.A22''s 18 files'
+- manifest: evidence/X10b/c57d449aaed52ca9cff1b7a737a9161cc3fdd093/manifest.json
+  item: limitations[3]
+  sha256: 63ded9234812bbded6510f822819fd514d847ade3351d559f2c8fdaa543ffda3
+  class: P
+  to: []
+  note: 'process note: ADR 0073 Accepted; no reviewed status; the fix round D-5..D-10 not re-reviewed'
+- manifest: evidence/X10b/c57d449aaed52ca9cff1b7a737a9161cc3fdd093/manifest.json
+  item: limitations[4]
+  sha256: 7ccf63c11c79d2b2672e5c082633e05c671fd0c5c3683541c61acdb84fe65214
+  class: P
+  to: []
+  note: 'process note: M-4 (OPT D-42/D-82) waits for the OPT merge; not touched'
+- manifest: evidence/X10b/c57d449aaed52ca9cff1b7a737a9161cc3fdd093/manifest.json
+  item: limitations[5]
+  sha256: 4072f5f070659632c2455cc91e3917891ea61a1455fa676b977a5f1d2627fdf6
+  class: B
+  to:
+  - B10
+  note: 'Q-WIT-4: a non-affine downstream reader of a dormant vapour product is unmeasured — reviewer: B?'
+- manifest: evidence/X10b/c57d449aaed52ca9cff1b7a737a9161cc3fdd093/manifest.json
+  item: limitations[6]
+  sha256: 118a0595085e21983bc18968b1caf46db4039a970bbd2721f409101e130fb328
+  class: P
+  to: []
+  note: 'process note: no local full gate; the merge condition is CI run 42503117602'
+- manifest: evidence/X10b/c57d449aaed52ca9cff1b7a737a9161cc3fdd093/manifest.json
+  item: limitations[7]
+  sha256: 5635c927f1ccd71199ad8d236013888f3e951f3dca80fa52f0af8a4fece9860e
+  class: P
+  to: []
+  note: 'process note: status tested, not reviewed'
 - manifest: evidence/S15a/d7cb4dbb77adeafab943959966e7269a17ca29f3/manifest.json
   item: limitations[0]
   sha256: e2a6ebcc9176683cc753bdd91a9ac6273c50de3cf28b79b5ef02606ca548d450
