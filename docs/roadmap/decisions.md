@@ -416,3 +416,48 @@ OPT WO-6 part 1 (`fe615cb6`): `optimize` job built; 13 surface/Q26 tests fail un
 DECISION: OPT D-58 (Q26 allow-lists the request's numeric problem-definition containers by full path, as R-235's
 `body/inlet/n`) → accepted pending the reviewer. Alternative: drop numeric starts (changes the request schema).
 Reversible by: reverting the isolated commit.
+
+## 2026-11-08 — RRC WO-1/WO-2 done (`wp/RRC` `db5934cb`)
+
+Policy value, `RRC-revision-v1` (defined, not offered: D-1), exact-rational revision levels, three schema widenings
+(only their file hashes move: solve-policy, attempt-context, solution-certificate; MCP tool-list digest, registry and
+the four offered policies' hashes unchanged), precondition checks R5/R6/R8/R9a. F0 PASS; 557 + 43 targeted tests; edge-3
+files untouched. WO-3 waits for OPT's executor changes. D-1 (offering the policy moves `get_project.solve_policies`) →
+for RRC's reviewer, done in WO-4.
+DECISION: the derivative-witness step policy (X10 L-X10-1: surrogate UNVERIFIED at small flows; OPT D-42: γ–φ held
+single-phase splits never certify) → queued as one design-lane item after OPT and RRC, not started now: any change to
+K04's witness moves certificate bytes of registered records (an identity move that needs Frank). Alternative: a
+specifier pass now. Reversible by: starting it earlier.
+
+## 2026-11-08 — OPT WO-6/WO-7 done (`wp/OPT` `48733e55`); reviewer started
+
+WO-6: `optimize` job, c_4 link (D_4 `3fb06cad…`, strip → D_3 `455d01eb…`), replay (re-checks the certified chain; x86
+fixture MATCH without Ipopt), CLI, G11–G16. WO-7: §4.9 near-threshold rule (D-68); G19 interior cost optimum vs golden
+section 0.23 Pa (tol 10 Pa), TAC vs hand rel 6e-16; G20 LCA vs bisection 2.6e-10 K, GWP bitwise; user guide page;
+manifest `evidence/OPT/a46ea80f…` `implemented` (OPT.D61 `fail`, G21 + G13.aarch64 `unsupported`). F0 PASS; G2
+`b6bbafdb…` unchanged.
+OPT cannot reach `tested` until the two changed binding descriptions (`validate.md`, `submit_job.md`) carry the
+design-lane review (OPT's reviewer, now) and Frank's human review (`test_every_description_is_reviewed_by_both_lanes`,
+T07 §11.3). Added to Frank's list. D-70 (Ipopt crawl on OPT-L from the feasible side) → declared limitation L-OPT-2,
+for the reviewer.
+
+## 2026-11-08 — OPT review (`d25c16fb`, CI addendum `638523b3`) → fix round WO-8
+
+Verdict sound: no path to a false KKT_POINT_VERIFIED; no ordinary certificate changes; A-1 sound; unguarded admission
+fails safe. Must-fix M1 (replay floors each verification float at its judging check's tolerance — not new T08-v2
+floor names; aarch64 differed 4.4e-16 abs on `stationarity_residual_inf`), M2 (studies → application imports: invert
+the dependency), M3 (six fixture `solve-policy.json` registered as archived outputs, R-939 addendum), M4 (routes.js),
+M5 (`without_opt` strip for M02's solve snapshot), M6 (M03 message byte-identical without the extra on aarch64).
+S1–S5. D-61: both descriptions pass the design-lane review; Frank's human review open. CI run 42431066903 (at
+`de18aca2`) failed 7/7/10 on x86/default-install/aarch64, all covered by M1–M6 or D-61.
+
+## 2026-11-08 — OPT WO-8 fix round done (`wp/OPT` `496e003a`); full gate + CI running
+
+M1 (replay floors per judging check), M2 (`RevisionRoutes` protocol in `studies/nlp/host.py`, supplied by
+`application/revision_routes.py`; no application import under `studies/`), M3–M6, S2–S5 done; S1 declared for 0.4
+(D-84); D-61 design-lane reviews recorded (human pending). F0 PASS; G2 identical (default `6e028e8d…`, audited
+`b6bbafdb…`); audited G7–G10/G12/G13/G19/G20 21 passed; G22 all three verify. Incident: a nested sub-agent outlived its
+parent engineer; I committed its edits as WIP while it was still working; no work lost (memory note added).
+DECISION: RRC WO-3 (executor integration) starts now on `wp/RRC` from main instead of waiting for OPT's merge (OPT now
+waits on Frank: description reviews + ADR 0071); whichever merges second resolves the executor conflict (OPT adds
+`RegionResult.final_system`). Alternative: wait. Reversible by: rebasing `wp/RRC` onto `wp/OPT`.
