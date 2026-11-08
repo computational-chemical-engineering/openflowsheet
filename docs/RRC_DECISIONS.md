@@ -270,3 +270,7 @@ results), `40fba287` (runner self-contained), `b91b0ddb` (registration, results 
   column end-parameter continuation is mechanism evidence only (F1, forced edge), and glosses the cited
   `test_a_revision_region_has_no_edge_3_continuation` (it asserts no *specification* continuation parameter). The
   test is not renamed. The note is not rendered, so `docs/support-matrix.md` does not move; `--check` 0 problems.
+- **WO-7 gates (2026-11-08, x86-64, head f50f6b5c).** F0 PASS (M1 50/50, M2–M5 61/61, M6 85/85, M7 52/52, M8 105/105,
+  M9 35/35). Edge-3 test files: no WO-7 edit (vs main only `test_t06_f4_literals.py`, D-4). `test_rrc_*.py` 71 passed;
+  literal/doc/envelope/changelog/registry/edge-3 files 187 passed; `test_t08_w2_recovery_edges.py` 26 passed; ruff and
+  ruff format clean; mypy clean (307 files); support matrix `--check` 0; `mkdocs build --strict` clean. Full gate not run.
