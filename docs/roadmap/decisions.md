@@ -504,3 +504,11 @@ Assertions WIT.A01–A14. Frank Q-WIT-1 (default yes).
 DECISION: build WIT now on `wp/WIT`, evidence filed under `evidence/K04/` (a K04 follow-up, as the M02 follow-up was
 filed under M02; ADR 0059 D1 has no WIT id). Alternative: amend ADR 0059 D1 for a WIT id. Reversible by: moving the
 manifest directory. A reviewer pass follows (it touches certificates).
+
+## 2026-11-08 — OPT full gate at `7b7aa770`: 1 failed / 15336 passed
+
+The single failure is `test_every_description_is_reviewed_by_both_lanes` (only Frank's two human reviews pending,
+D-61); mypy and ruff clean. OPT is otherwise ready: after Frank's review of `validate.md`/`submit_job.md` (recorded in
+`REVIEW.json`) and his acceptance of ADR 0071, re-run CI, re-take the manifest as `tested` at that head, merge (no
+squash), F0 on main; then RRC rebases. Merge-time items: surface link c_4 vs X02/MSG (whoever merges later renumbers),
+global-state cache count (OPT and X02 each move 35 → 36: the combined count is 37), HARVEST_SIZE, R-960 provisional.
