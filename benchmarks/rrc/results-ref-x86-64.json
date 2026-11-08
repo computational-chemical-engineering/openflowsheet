@@ -1,7 +1,7 @@
 {
  "candidates": [
   {
-   "case_seconds": 5.157,
+   "case_seconds": 3.799,
    "checks": {
     "g2f_opening_equals_source_full_state": true,
     "net02_closed_form_worst_ratio": [
@@ -56,10 +56,10 @@
      "full_state_sha256": "5c460d18c8805f87fd279bd38eaab1896ecd054662677d03c3381527c433f85a",
      "g10": {
       "compile_seconds": [
-       0.019,
-       0.02,
-       0.019,
-       0.019
+       0.014,
+       0.015,
+       0.014,
+       0.015
       ],
       "compile_values": [
        {
@@ -77,7 +77,7 @@
       ],
       "levels_compiled": 4,
       "property_calls": 360,
-      "recovery_wall_s": 0.21
+      "recovery_wall_s": 0.158
      },
      "homotopy": {
       "accepted": 4,
@@ -103,7 +103,7 @@
      "outcome": "CONVERGED",
      "record_reason": null,
      "record_status": "taken",
-     "seconds": 0.37,
+     "seconds": 0.262,
      "state_sha256": "107be2c670a619d97aa844346f8be01be0889ccd11d8b301e70286ef308f41d4",
      "step_outcome": "CONVERGED",
      "verification_status": "VERIFIED"
@@ -139,7 +139,7 @@
      "outcome": "CONVERGED",
      "record_reason": null,
      "record_status": null,
-     "seconds": 0.445,
+     "seconds": 0.323,
      "state_sha256": "6941f827580e060ec014503f8dd801995b6a58c41b587eb25bedf1717d94db35",
      "step_outcome": "CONVERGED",
      "verification_status": "VERIFIED"
@@ -168,7 +168,7 @@
      "outcome": "BOUND_BLOCKED",
      "record_reason": null,
      "record_status": null,
-     "seconds": 0.142,
+     "seconds": 0.094,
      "state_sha256": "6b2d3d9731a6253abde52388c623b156cb31ff847f16660cbac0774503e08018",
      "step_outcome": "BOUND_BLOCKED",
      "verification_status": null
@@ -199,7 +199,7 @@
     "outcome": "CONVERGED",
     "record_reason": null,
     "record_status": null,
-    "seconds": 0.117,
+    "seconds": 0.082,
     "state_sha256": "c906750befe4fe39883186c5b73525cd144e2a5600c74824de8a3eaa247756ab",
     "step_outcome": "CONVERGED",
     "verification_status": "VERIFIED"
@@ -263,7 +263,7 @@
    }
   },
   {
-   "case_seconds": 3.743,
+   "case_seconds": 3.394,
    "checks": {
     "g2f_opening_equals_source_full_state": true,
     "net02_closed_form_worst_ratio": [
@@ -321,7 +321,7 @@
        0.012,
        0.013,
        0.013,
-       0.012
+       0.013
       ],
       "compile_values": [
        {
@@ -339,7 +339,7 @@
       ],
       "levels_compiled": 4,
       "property_calls": 333,
-      "recovery_wall_s": 0.125
+      "recovery_wall_s": 0.127
      },
      "homotopy": {
       "accepted": 4,
@@ -365,7 +365,7 @@
      "outcome": "CONVERGED",
      "record_reason": null,
      "record_status": "taken",
-     "seconds": 0.232,
+     "seconds": 0.217,
      "state_sha256": "86bc116b532cf7616bad828f336679c5b73ab89a6bfeeb3cbbeeaca2be4ee05d",
      "step_outcome": "CONVERGED",
      "verification_status": "VERIFIED"
@@ -401,7 +401,7 @@
      "outcome": "CONVERGED",
      "record_reason": null,
      "record_status": null,
-     "seconds": 0.33,
+     "seconds": 0.278,
      "state_sha256": "6941f827580e060ec014503f8dd801995b6a58c41b587eb25bedf1717d94db35",
      "step_outcome": "CONVERGED",
      "verification_status": "VERIFIED"
@@ -430,7 +430,7 @@
      "outcome": "BOUND_BLOCKED",
      "record_reason": null,
      "record_status": null,
-     "seconds": 0.089,
+     "seconds": 0.079,
      "state_sha256": "6b2d3d9731a6253abde52388c623b156cb31ff847f16660cbac0774503e08018",
      "step_outcome": "BOUND_BLOCKED",
      "verification_status": null
@@ -461,7 +461,7 @@
     "outcome": "CONVERGED",
     "record_reason": null,
     "record_status": null,
-    "seconds": 0.105,
+    "seconds": 0.089,
     "state_sha256": "8a680b0904eed203157e8d1f9d8eb1f807c22dad881a8335771747e874e4ceba",
     "step_outcome": "CONVERGED",
     "verification_status": "VERIFIED"
@@ -525,7 +525,7 @@
    }
   },
   {
-   "case_seconds": 3.444,
+   "case_seconds": 3.368,
    "checks": {
     "g2f_opening_equals_source_full_state": true,
     "net02_closed_form_worst_ratio": [
@@ -580,10 +580,10 @@
      "full_state_sha256": "7cb00eb93841c6ae88b91acaf025730cc805ec9318342806b5c8f846fc94985a",
      "g10": {
       "compile_seconds": [
-       0.012,
+       0.014,
        0.013,
        0.013,
-       0.012
+       0.013
       ],
       "compile_values": [
        {
@@ -601,7 +601,7 @@
       ],
       "levels_compiled": 4,
       "property_calls": 279,
-      "recovery_wall_s": 0.115
+      "recovery_wall_s": 0.119
      },
      "homotopy": {
       "accepted": 4,
@@ -627,7 +627,7 @@
      "outcome": "CONVERGED",
      "record_reason": null,
      "record_status": "taken",
-     "seconds": 0.206,
+     "seconds": 0.211,
      "state_sha256": "c48634a168a72de2b1af67ad531acf84bd67d8bcc6755e14f266b4b4d85dcbc0",
      "step_outcome": "CONVERGED",
      "verification_status": "VERIFIED"
@@ -663,7 +663,7 @@
      "outcome": "CONVERGED",
      "record_reason": null,
      "record_status": null,
-     "seconds": 0.269,
+     "seconds": 0.275,
      "state_sha256": "6941f827580e060ec014503f8dd801995b6a58c41b587eb25bedf1717d94db35",
      "step_outcome": "CONVERGED",
      "verification_status": "VERIFIED"
@@ -692,7 +692,7 @@
      "outcome": "BOUND_BLOCKED",
      "record_reason": null,
      "record_status": null,
-     "seconds": 0.077,
+     "seconds": 0.078,
      "state_sha256": "6b2d3d9731a6253abde52388c623b156cb31ff847f16660cbac0774503e08018",
      "step_outcome": "BOUND_BLOCKED",
      "verification_status": null
@@ -723,7 +723,7 @@
     "outcome": "CONVERGED",
     "record_reason": null,
     "record_status": null,
-    "seconds": 0.091,
+    "seconds": 0.089,
     "state_sha256": "68e0d79c32df2bb380a123083c7474445c35c8e64ff37a8f8245fc7256af79cf",
     "step_outcome": "CONVERGED",
     "verification_status": "VERIFIED"
@@ -787,7 +787,7 @@
    }
   },
   {
-   "case_seconds": 21.107,
+   "case_seconds": 20.415,
    "checks": {
     "a29_closure": {
      "met": true,
@@ -858,7 +858,7 @@
      "outcome": "CONVERGED",
      "record_reason": null,
      "record_status": null,
-     "seconds": 1.869,
+     "seconds": 1.757,
      "state_sha256": "1614b2c127e6ef57df9e278b2287340ea9cdbb799bca3e0f156fce9694adfbd8",
      "step_outcome": "CONVERGED",
      "verification_status": "VERIFIED"
@@ -888,7 +888,7 @@
      "outcome": "CONVERGED",
      "record_reason": null,
      "record_status": null,
-     "seconds": 1.624,
+     "seconds": 1.735,
      "state_sha256": "1614b2c127e6ef57df9e278b2287340ea9cdbb799bca3e0f156fce9694adfbd8",
      "step_outcome": "CONVERGED",
      "verification_status": "VERIFIED"
@@ -918,7 +918,7 @@
      "outcome": "CONVERGED",
      "record_reason": null,
      "record_status": null,
-     "seconds": 2.021,
+     "seconds": 1.71,
      "state_sha256": "1614b2c127e6ef57df9e278b2287340ea9cdbb799bca3e0f156fce9694adfbd8",
      "step_outcome": "CONVERGED",
      "verification_status": "VERIFIED"
@@ -949,7 +949,7 @@
     "outcome": "CONVERGED",
     "record_reason": null,
     "record_status": null,
-    "seconds": 1.994,
+    "seconds": 1.627,
     "state_sha256": "47f1a3583256e53a415e35e6b04a2d7de0a09a244d533fc7f545b29dba5f1008",
     "step_outcome": "CONVERGED",
     "verification_status": "VERIFIED"
@@ -1006,7 +1006,7 @@
    }
   },
   {
-   "case_seconds": 17.893,
+   "case_seconds": 18.306,
    "checks": {
     "a29_closure": {
      "met": true,
@@ -1077,7 +1077,7 @@
      "outcome": "CONVERGED",
      "record_reason": null,
      "record_status": null,
-     "seconds": 1.691,
+     "seconds": 1.677,
      "state_sha256": "8e343ff566b4fbc7159393cd9e273d160b25c91b947a0df8ad7ca5c61eac8f01",
      "step_outcome": "CONVERGED",
      "verification_status": "VERIFIED"
@@ -1107,7 +1107,7 @@
      "outcome": "CONVERGED",
      "record_reason": null,
      "record_status": null,
-     "seconds": 1.707,
+     "seconds": 1.688,
      "state_sha256": "8e343ff566b4fbc7159393cd9e273d160b25c91b947a0df8ad7ca5c61eac8f01",
      "step_outcome": "CONVERGED",
      "verification_status": "VERIFIED"
@@ -1137,7 +1137,7 @@
      "outcome": "CONVERGED",
      "record_reason": null,
      "record_status": null,
-     "seconds": 1.455,
+     "seconds": 1.678,
      "state_sha256": "8e343ff566b4fbc7159393cd9e273d160b25c91b947a0df8ad7ca5c61eac8f01",
      "step_outcome": "CONVERGED",
      "verification_status": "VERIFIED"
@@ -1168,7 +1168,7 @@
     "outcome": "CONVERGED",
     "record_reason": null,
     "record_status": null,
-    "seconds": 1.259,
+    "seconds": 1.385,
     "state_sha256": "47f1a3583256e53a415e35e6b04a2d7de0a09a244d533fc7f545b29dba5f1008",
     "step_outcome": "CONVERGED",
     "verification_status": "VERIFIED"
@@ -1225,7 +1225,7 @@
    }
   },
   {
-   "case_seconds": 23.723,
+   "case_seconds": 29.571,
    "checks": {
     "a29_closure": {
      "met": true,
@@ -1300,10 +1300,10 @@
      "full_state_sha256": "5eb5531e52ea8865225506ec2bc5b395593aff42650c480badcd31ef15e605b1",
      "g10": {
       "compile_seconds": [
-       0.018,
-       0.018,
-       0.019,
-       0.019
+       0.039,
+       0.04,
+       0.04,
+       0.042
       ],
       "compile_values": [
        {
@@ -1321,7 +1321,7 @@
       ],
       "levels_compiled": 4,
       "property_calls": 1403,
-      "recovery_wall_s": 0.234
+      "recovery_wall_s": 0.506
      },
      "homotopy": {
       "accepted": 4,
@@ -1347,7 +1347,7 @@
      "outcome": "CONVERGED",
      "record_reason": null,
      "record_status": "taken",
-     "seconds": 2.084,
+     "seconds": 2.895,
      "state_sha256": "2bfcd70556a4325453731d8cbb26a2c07691821c2e3ff7945dcd71231e1db560",
      "step_outcome": "CONVERGED",
      "verification_status": "VERIFIED"
@@ -1383,7 +1383,7 @@
      "outcome": "CONVERGED",
      "record_reason": null,
      "record_status": null,
-     "seconds": 6.579,
+     "seconds": 7.834,
      "state_sha256": "7711f69ba8f73cff1c805f136fa1b372c596dbc425cb0934a0ef18c99549ac78",
      "step_outcome": "CONVERGED",
      "verification_status": "VERIFIED"
@@ -1412,7 +1412,7 @@
      "outcome": "BOUND_BLOCKED",
      "record_reason": null,
      "record_status": null,
-     "seconds": 1.86,
+     "seconds": 2.253,
      "state_sha256": "26d219653522a7d5fff1cbb1a604022a43121df6dd49b1aba839902f0c082f19",
      "step_outcome": "BOUND_BLOCKED",
      "verification_status": null
@@ -1443,7 +1443,7 @@
     "outcome": "CONVERGED",
     "record_reason": null,
     "record_status": null,
-    "seconds": 1.457,
+    "seconds": 1.603,
     "state_sha256": "47f1a3583256e53a415e35e6b04a2d7de0a09a244d533fc7f545b29dba5f1008",
     "step_outcome": "CONVERGED",
     "verification_status": "VERIFIED"
@@ -1507,7 +1507,7 @@
    }
   },
   {
-   "case_seconds": 20.738,
+   "case_seconds": 27.533,
    "checks": {
     "a29_closure": {
      "met": true,
@@ -1582,11 +1582,11 @@
      "full_state_sha256": "cf588843d6fa70c1688062f017ee43f955ab4a8d7953c0825eb29d35a52515df",
      "g10": {
       "compile_seconds": [
-       0.032,
-       0.032,
-       0.031,
-       0.032,
-       0.048
+       0.051,
+       0.035,
+       0.034,
+       0.036,
+       0.051
       ],
       "compile_values": [
        {
@@ -1607,7 +1607,7 @@
       ],
       "levels_compiled": 5,
       "property_calls": 2070,
-      "recovery_wall_s": 0.539
+      "recovery_wall_s": 0.631
      },
      "homotopy": {
       "accepted": 5,
@@ -1634,7 +1634,7 @@
      "outcome": "CONVERGED",
      "record_reason": null,
      "record_status": "taken",
-     "seconds": 2.317,
+     "seconds": 2.804,
      "state_sha256": "2c46fe1bb7e3061b5339c3713a97e8a88017c49e11a6c4bb596746ae3b754fcf",
      "step_outcome": "CONVERGED",
      "verification_status": "VERIFIED"
@@ -1670,7 +1670,7 @@
      "outcome": "CONVERGED",
      "record_reason": null,
      "record_status": null,
-     "seconds": 6.228,
+     "seconds": 7.392,
      "state_sha256": "e170a450c4482a17b41976a50a51757f96db76f7b49bd682a372d8462a49821d",
      "step_outcome": "CONVERGED",
      "verification_status": "VERIFIED"
@@ -1699,7 +1699,7 @@
      "outcome": "BOUND_BLOCKED",
      "record_reason": null,
      "record_status": null,
-     "seconds": 1.746,
+     "seconds": 2.047,
      "state_sha256": "9609a40e1fe94f8b8e1bc7f7e97e2887c9d8d204948ffd4eff233cc18df4b755",
      "step_outcome": "BOUND_BLOCKED",
      "verification_status": null
@@ -1730,7 +1730,7 @@
     "outcome": "CONVERGED",
     "record_reason": null,
     "record_status": null,
-    "seconds": 1.358,
+    "seconds": 1.642,
     "state_sha256": "47f1a3583256e53a415e35e6b04a2d7de0a09a244d533fc7f545b29dba5f1008",
     "step_outcome": "CONVERGED",
     "verification_status": "VERIFIED"
@@ -1794,7 +1794,7 @@
    }
   },
   {
-   "case_seconds": 11.649,
+   "case_seconds": 19.048,
    "checks": {
     "a29_closure": {
      "met": true,
@@ -1866,7 +1866,7 @@
      "outcome": "CONVERGED",
      "record_reason": null,
      "record_status": null,
-     "seconds": 1.063,
+     "seconds": 1.664,
      "state_sha256": "eb3e5963fce9e516d815e2fb280722f53b4e0577068d326955351dda535ed8b3",
      "step_outcome": "CONVERGED",
      "verification_status": "VERIFIED"
@@ -1896,7 +1896,7 @@
      "outcome": "CONVERGED",
      "record_reason": null,
      "record_status": null,
-     "seconds": 1.004,
+     "seconds": 1.653,
      "state_sha256": "eb3e5963fce9e516d815e2fb280722f53b4e0577068d326955351dda535ed8b3",
      "step_outcome": "CONVERGED",
      "verification_status": "VERIFIED"
@@ -1926,7 +1926,7 @@
      "outcome": "CONVERGED",
      "record_reason": null,
      "record_status": null,
-     "seconds": 1.026,
+     "seconds": 1.634,
      "state_sha256": "eb3e5963fce9e516d815e2fb280722f53b4e0577068d326955351dda535ed8b3",
      "step_outcome": "CONVERGED",
      "verification_status": "VERIFIED"
@@ -1957,7 +1957,7 @@
     "outcome": "CONVERGED",
     "record_reason": null,
     "record_status": null,
-    "seconds": 0.916,
+    "seconds": 1.573,
     "state_sha256": "47f1a3583256e53a415e35e6b04a2d7de0a09a244d533fc7f545b29dba5f1008",
     "step_outcome": "CONVERGED",
     "verification_status": "VERIFIED"
@@ -2014,7 +2014,7 @@
    }
   },
   {
-   "case_seconds": 18.396,
+   "case_seconds": 17.74,
    "checks": {
     "a29_closure": {
      "met": true,
@@ -2093,10 +2093,10 @@
      "full_state_sha256": "ea5ece33e9d19a755e48f87301ff53e45795996a0f28d6292c905e24fe7213ac",
      "g10": {
       "compile_seconds": [
-       0.019,
-       0.025,
-       0.024,
-       0.089
+       0.033,
+       0.033,
+       0.033,
+       0.044
       ],
       "compile_values": [
        {
@@ -2118,7 +2118,7 @@
       ],
       "levels_compiled": 4,
       "property_calls": 713,
-      "recovery_wall_s": 0.287
+      "recovery_wall_s": 0.291
      },
      "homotopy": {
       "accepted": 4,
@@ -2144,7 +2144,7 @@
      "outcome": "CONVERGED",
      "record_reason": null,
      "record_status": "taken",
-     "seconds": 1.436,
+     "seconds": 2.03,
      "state_sha256": "5f7a13a2f0de568b0d9d04569d516c6b2c988b9b8e757dee686dbb2e58911d5a",
      "step_outcome": "CONVERGED",
      "verification_status": "VERIFIED"
@@ -2180,7 +2180,7 @@
      "outcome": "CONVERGED",
      "record_reason": null,
      "record_status": null,
-     "seconds": 8.565,
+     "seconds": 7.627,
      "state_sha256": "5af39704e9105303ea21064d5e8a3778e3caf3ec0500a506078724de2f32f6dd",
      "step_outcome": "CONVERGED",
      "verification_status": "VERIFIED"
@@ -2210,7 +2210,7 @@
      "outcome": "CONVERGED",
      "record_reason": null,
      "record_status": null,
-     "seconds": 1.872,
+     "seconds": 1.513,
      "state_sha256": "eb3e5963fce9e516d815e2fb280722f53b4e0577068d326955351dda535ed8b3",
      "step_outcome": "CONVERGED",
      "verification_status": "VERIFIED"
@@ -2241,7 +2241,7 @@
     "outcome": "CONVERGED",
     "record_reason": null,
     "record_status": null,
-    "seconds": 1.611,
+    "seconds": 1.443,
     "state_sha256": "47f1a3583256e53a415e35e6b04a2d7de0a09a244d533fc7f545b29dba5f1008",
     "step_outcome": "CONVERGED",
     "verification_status": "VERIFIED"
@@ -2249,7 +2249,7 @@
    "source_eligible": true
   },
   {
-   "case_seconds": 3.341,
+   "case_seconds": 3.03,
    "checks": {
     "g2f_opening_equals_source_full_state": true,
     "scaled_distance_to_item0_root": 1.9539925233402755e-14,
@@ -2309,10 +2309,10 @@
      "full_state_sha256": "a04d924e3f6b7df5667e04672823fd95670b7caa9c0ee346b3e76bf95a1c15a8",
      "g10": {
       "compile_seconds": [
-       0.012,
-       0.014,
-       0.013,
-       0.016
+       0.019,
+       0.019,
+       0.02,
+       0.019
       ],
       "compile_values": [
        {
@@ -2330,7 +2330,7 @@
       ],
       "levels_compiled": 4,
       "property_calls": 208,
-      "recovery_wall_s": 0.087
+      "recovery_wall_s": 0.118
      },
      "homotopy": {
       "accepted": 4,
@@ -2356,7 +2356,7 @@
      "outcome": "CONVERGED",
      "record_reason": null,
      "record_status": "taken",
-     "seconds": 0.203,
+     "seconds": 0.233,
      "state_sha256": "c38c2a04109d30421fbfe4b0b2ad6c366227706b492a9e04dd5d8926b0c0922c",
      "step_outcome": "CONVERGED",
      "verification_status": "VERIFIED"
@@ -2392,7 +2392,7 @@
      "outcome": "CONVERGED",
      "record_reason": null,
      "record_status": null,
-     "seconds": 0.468,
+     "seconds": 0.329,
      "state_sha256": "077e74e6a8defed727bf277b57f855f511915d71769a1a09bfcded68cfaa2d0f",
      "step_outcome": "CONVERGED",
      "verification_status": "VERIFIED"
@@ -2422,7 +2422,7 @@
      "outcome": "CONVERGED",
      "record_reason": null,
      "record_status": null,
-     "seconds": 0.114,
+     "seconds": 0.097,
      "state_sha256": "b829c509f35c05aef093ba98ca3fc6d932bffb58babcddffdee41e4f4714fe56",
      "step_outcome": "CONVERGED",
      "verification_status": "VERIFIED"
@@ -2453,7 +2453,7 @@
     "outcome": "CONVERGED",
     "record_reason": null,
     "record_status": null,
-    "seconds": 0.117,
+    "seconds": 0.103,
     "state_sha256": "d3938086d79c62f7bf90802ce4d0e6578bdd43897753edc5cfff18b9982f4fee",
     "step_outcome": "CONVERGED",
     "verification_status": "VERIFIED"
@@ -2462,7 +2462,7 @@
   }
  ],
  "cases": "benchmarks/rrc/cases.yaml",
- "commit": "b0c7d1ec25599070c5bd2d06dafaa441c3ee96d4",
+ "commit": "40fba287a240ec023e1e87c700fa6917dacf430c",
  "machine": "ref-x86-64",
  "platform": "Linux-6.12.113+deb13-amd64-x86_64-with-glibc2.41",
  "schema": "rrc-candidate-results-v1",

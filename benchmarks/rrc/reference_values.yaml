@@ -1,0 +1,100 @@
+# RRC WO-5b: the registered revision-continuation pairs (design note
+# `docs/design/RRC-revision-region-continuation.md` §8.1, §8.2 G4, G5; ADR 0072, Proposed).
+#
+# Selected by `cases.yaml`'s first-in-order rules (committed before any run, cba5e8e2) from every
+# candidate's results (`results-ref-x86-64.json`, G9), measured at 40fba287 on x86-64; three fresh
+# runs (at b0c7d1ec twice, at 40fba287) gave equal outcomes, iterations, λ-trials and state digests.
+#
+# EVIDENCE CLASS: REGRESSION. Every value below is produced by this implementation; it pins the
+# behaviour and validates nothing. The correctness evidence of each pair is its
+# `independent_checks`: an expectation the code under test does not produce (a closed-form twin
+# root, a root reached by a different path from a different start, an overall material balance).
+# `tests/test_rrc_candidates.py` holds the pairs to both.
+#
+# `state_sha256` is `run_candidates.state_digest` of the run's state (x86-64 only; informational,
+# not a cross-platform identity). `iterations` are the step's (item 0 + the recovery item).
+
+schema_version: 1
+cases: benchmarks/rrc/cases.yaml
+cases_sha256: 97c5b9e56c27b372a65683c406bc5b084ebb8ccc055e688b4ca4b78e527f411c
+results: benchmarks/rrc/results-ref-x86-64.json
+measured_at: 40fba287a2
+machine: ref-x86-64
+
+pairs:
+  G4:
+    candidate: N1 # Family N, first in order; N2 and N3 also qualify (reported, not registered)
+    evidence_class: regression
+    source: {case: SYN-001-T06-NET02, U-SPLIT.split_fraction: 0.5}
+    target: {case: SYN-001-T06-NET02} # split_fraction 0.95, unchanged
+    source_signature: {U-HEAT: TWO_PHASE, U-PHF: TWO_PHASE} # no column pinned: G2 (f) applies
+    control: {outcome: BOUND_BLOCKED, iterations: 1, in_trigger_set: true}
+    T06-revision-v2: {outcome: CONVERGED, verification_status: VERIFIED, iterations: 5}
+    RRC-revision-v1:
+      outcome: CONVERGED
+      verification_status: VERIFIED
+      eo_recovery: taken
+      record_status: taken
+      member_status: taken # the store run's `solve-path.json` member
+      continued: {parameter_ids: [U-SPLIT.split_fraction], start_values: ["0.5"]}
+      iterations: 12
+      lambda_levels: [1/4, 3/4, "1"]
+      rejected_trials: 0
+      state_sha256: 107be2c670a619d97aa844346f8be01be0889ccd11d8b301e70286ef308f41d4
+    independent_checks:
+      closed_form:
+        what: >-
+          ref.closed_form.corpus_cases.SYN-001-T06-NET02 (benchmarks/t06/reference_values.yaml,
+          mpmath twin root) within T06's registered allowances (tests/t06_support.py ALLOWANCE,
+          T02 §6.4), as the largest |x - x_ref| / allowance
+        criterion: 1.0
+        measured: 0.01091876999952547 # at S3.liq.C
+      restart_root:
+        what: >-
+          scaled ||x_RRC - x_restart||_inf (Scaling.from_spec), x_restart = NET-02's root under
+          T06-revision-v2 (the ADR 0015 sequential restart from traversal-G0-pass8-v1)
+        criterion: 1.0e-8
+        measured: 1.958577892461714e-09
+  G5:
+    candidate: C3 # Family C, first in order: C1, C2 converge first under the control
+    evidence_class: regression
+    source: {case: M1-recycle, U-SPLIT.split_fraction: 0.2}
+    target: {case: M1-recycle, U-SPLIT.split_fraction: 0.9}
+    source_signature: # no column pinned: G2 (f) applies
+      {S02.stage.1: TWO_PHASE, S02.stage.2: TWO_PHASE, S02.stage.3: TWO_PHASE, S02.stage.4: TWO_PHASE,
+       S02.stage.5: TWO_PHASE, S02.stage.6: TWO_PHASE, S02.stage.7: TWO_PHASE}
+    control: {outcome: BOUND_BLOCKED, iterations: 4, in_trigger_set: true}
+    T06-revision-v2: {outcome: CONVERGED, verification_status: VERIFIED, iterations: 8}
+    RRC-revision-v1:
+      outcome: CONVERGED
+      verification_status: VERIFIED
+      eo_recovery: taken
+      record_status: taken
+      member_status: taken
+      continued: {parameter_ids: [U-SPLIT.split_fraction], start_values: ["0.2"]}
+      iterations: 22
+      lambda_levels: [1/4, 3/4, "1"]
+      rejected_trials: 0
+      state_sha256: 2bfcd70556a4325453731d8cbb26a2c07691821c2e3ff7945dcd71231e1db560
+    independent_checks:
+      a29_closure:
+        what: >-
+          S11.A29's per-component overall balance, feed = distillate + purge, each within the flow
+          tolerance FLOW_REL * n + FLOW_ABS (tests/test_s02_column_wo2.py), as the largest ratio
+        criterion: 1.0
+        measured: 2.730056617930712e-10
+      restart_root:
+        what: >-
+          scaled ||x_RRC - x_restart||_inf (Scaling.from_spec), x_restart = the target's root under
+          T06-revision-v2 (the sequential restart); not a §8.2 G5 criterion, recorded as the
+          same-branch check §8.2 asks of two VERIFIED roots
+        criterion: 1.0e-8
+        measured: 7.771561172376096e-15
+
+# G10 (recorded, not gated): the edge-3 action's cost on the registered runs and F1, from
+# `results-ref-x86-64.json` at 40fba287 (wall times vary run to run; the counts do not). `levels_compiled` counts every compile inside the action:
+# the λ = 1 recompile of `_region` and each λ < 1 level (§5.10: three on a path with no rejection).
+cost:
+  G4: {recovery_wall_s: 0.158, levels_compiled: 4, lambda_below_1_levels: 3, compile_s_max: 0.015, property_calls: 360}
+  G5: {recovery_wall_s: 0.506, levels_compiled: 4, lambda_below_1_levels: 3, compile_s_max: 0.042, property_calls: 1403}
+  F1: {recovery_wall_s: 0.291, levels_compiled: 4, lambda_below_1_levels: 3, compile_s_max: 0.044, property_calls: 713}
