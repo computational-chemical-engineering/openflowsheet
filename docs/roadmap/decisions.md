@@ -757,3 +757,10 @@ re-pointed to `nlp_solver_unavailable`; F0 PASS; targeted tests green). DECISION
 R-969 in ADR order and the tenth (R-860 lifts) at R-988 (unused everywhere). Alternative: fold two drafts into one entry.
 Reversible by: renumbering before merge. Brief docs/briefs/OPT-register-numbers.md. Design-lane batch (non-blocking):
 prose of X02 D-39 + OPT D-92 catalogue entries, and OPT D-93 (which mistake C12 should register).
+
+## 2026-11-09 — ST CI green at eb1e0936 (run 42527883250); OPT register numbered; RRC brief
+
+ST green on both archs, identity and default-install after the CI-1/CI-2 test fixes; ST still waits for WO-7 (after
+RRC merges: main merge, its chain link, ADR 0068 Accepted + amendment, R-1000…, manifest, CI). OPT: ADR 0071 drafts
+numbered R-961…R-969, R-988 (c1b9b125, D-94); CI pending. RRC merge-prep brief written (docs/briefs/RRC-merge-prep.md):
+ADR 0072 Accepted, FQ1 yes, FQ2–FQ4 default, drafts → R-990…R-995; starts after OPT merges.
