@@ -88,6 +88,8 @@ CODES: Final = frozenset(
 #: The bundle members `build` reads (§4.1), in the order `from_bundle` looks for them.
 MANIFEST: Final = "run-manifest.json"
 ARTIFACTS: Final = ("revision.json", "solution-state.json", "solution-certificate.json")
+#: The route the run recorded (`run/bundle.py`'s `SOLVE_PATH_NAME`), read when the bundle has it.
+SOLVE_PATH: Final = "solve-path.json"
 
 
 # -- absence (D6) ---------------------------------------------------------------------------------
@@ -246,6 +248,7 @@ def _inputs(
     state_doc: Mapping[str, Any],
     certificate: Mapping[str, Any],
     provider: PropertyProvider,
+    route: str | None,
 ) -> _Inputs:
     from openflowsheet.run.solution_state import inconsistencies  # noqa: PLC0415
 
@@ -290,7 +293,7 @@ def _inputs(
         molar_mass={c: float(basis.molecular_weights[c]) for c in view.components},
         declared_phase=_declared_phases(view),
         rows=tuple(enumerate(checks)),
-        unit_ids=_unit_ids(revision, view),
+        unit_ids=_unit_ids(revision, view, route),
         degenerate=degenerate,
         lifted=_heater_style_splits(view) if degenerate else {},
     )
@@ -314,17 +317,26 @@ def _heater_style_splits(view: RevisionView) -> dict[str, LiftedSplit]:
     }
 
 
-def _unit_ids(revision: Mapping[str, Any], view: RevisionView) -> dict[str, str]:
+def _unit_ids(revision: Mapping[str, Any], view: RevisionView, route: str | None) -> dict[str, str]:
     """Each instance's id in the state and the certificate.
 
-    On the revision route an instance names its own variables and rows. A revision with a
-    specification that is not `fixed` can only have been solved on `legacy_eo`, whose state and
-    certificate name the units of the SYN-001 flowsheet (`U-HEAT`); each is the instance the
+    On the revision routes an instance names its own variables and rows. On `legacy_eo` the state
+    and certificate name the units of the SYN-001 flowsheet (`U-HEAT`); each is the instance the
     legacy binder matched to it by stream topology (`application.binding`), read back from that
-    binder's own match. Stream ids are the revision's on both routes.
+    binder's own match. Stream ids are the revision's on every route.
+
+    `route` is the bundle's recorded `solve_path` (`solve-path.json`), which a rerun follows (ST
+    review S4). Without one the route is inferred: a revision with a specification that is not
+    `fixed` can only have been solved on `legacy_eo`.
     """
     own = {instance.unit_id: instance.unit_id for instance in view.instances}
-    if all(entry.get("role") == "fixed" for entry in revision.get("specifications") or ()):
+    if route is None:
+        on_legacy = not all(
+            entry.get("role") == "fixed" for entry in revision.get("specifications") or ()
+        )
+    else:
+        on_legacy = route == "legacy_eo"
+    if not on_legacy:
         return own
     from openflowsheet.application.binding import bind_revision  # noqa: PLC0415
 
@@ -866,15 +878,20 @@ def build(
     *,
     provider: PropertyProvider,
     source: Mapping[str, str | None],
+    solve_path: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """The `stream-table-v1` document of one run (note §4, §5). Pure: no store, no files.
 
     `provider` is a fresh instance of the revision's basis (C-8); `source` carries the `job_id`
-    and `bundle_id` the caller knows (`None` for a bundle directory). Raises `StreamTableError`
+    and `bundle_id` the caller knows (`None` for a bundle directory); `solve_path` is the bundle's
+    `solve-path.json` when it has one (the recorded route). Raises `StreamTableError`
     (`internal_error`) when the state and certificate are inconsistent or the revision does not
     parse.
     """
-    inputs = _inputs(revision, state_doc, certificate, provider)
+    route = solve_path.get("solve_path") if solve_path is not None else None
+    inputs = _inputs(
+        revision, state_doc, certificate, provider, route if isinstance(route, str) else None
+    )
     view = inputs.view
     described = provider.describe()
     ends = {stream: (producer, consumer) for stream, producer, consumer in view.edges}
@@ -966,6 +983,9 @@ def from_bundle(
     provider = provider_for(basis)
     if isinstance(provider, Unbound):
         raise StreamTableError("unsupported", provider.detail, hint=provider.hint)
+    solve_path = (
+        _read(root, f"{ARTIFACT_DIR}/{SOLVE_PATH}", present) if SOLVE_PATH in present else None
+    )
     return build(
         revision,
         state_doc,
@@ -973,4 +993,5 @@ def from_bundle(
         manifest,
         provider=provider,
         source=source if source is not None else {"job_id": None, "bundle_id": None},
+        solve_path=solve_path,
     )

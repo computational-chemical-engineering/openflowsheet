@@ -47,6 +47,7 @@ from openflowsheet.messages import audit
 from openflowsheet.messages.catalogue import CATALOGUE
 from openflowsheet.models import flow_id, pressure_id, temperature_id
 from openflowsheet.models.syn001.tp_state import liquid_flow_id, vapor_flow_id
+from openflowsheet.run.bundle import ARTIFACT_DIR
 from openflowsheet.thermo import PropertyRequest, PropertyResult, StreamState
 from openflowsheet.thermo.iapws95 import Iapws95Provider
 from openflowsheet.thermo.syn001 import Syn001Provider
@@ -1204,6 +1205,62 @@ def test_g10_the_v030_bundles() -> None:
         served += 1
     assert served > 0 and refused > 0
     _record("G10", served=served, refused=refused)
+
+
+# -- S4: the recorded route keys the units (ST review S4) -----------------------------------------
+
+
+def _solve_path(run: str) -> dict[str, Any] | None:
+    path = support.corpus()[run] / ARTIFACT_DIR / stream_table.SOLVE_PATH
+    return json.loads(path.read_text(encoding="utf-8")) if path.is_file() else None
+
+
+def _build_with(source: Members, revision: dict[str, Any], solve_path: Any) -> dict[str, Any]:
+    return stream_table.build(
+        revision,
+        source.state,
+        source.certificate,
+        source.manifest,
+        provider=support.fresh_provider(source),
+        source={"job_id": None, "bundle_id": None},
+        solve_path=solve_path,
+    )
+
+
+def _first_on(route: str) -> str:
+    return next(
+        run for run in support.documents() if (_solve_path(run) or {}).get("solve_path") == route
+    )
+
+
+def _roles(revision: Mapping[str, Any], role: str) -> dict[str, Any]:
+    entries = revision.get("specifications") or []
+    assert entries, revision["revision_id"]
+    return {**revision, "specifications": [{**entry, "role": role} for entry in entries]}
+
+
+def test_s4_the_recorded_route_wins_over_the_specification_roles() -> None:
+    """A `legacy_eo` bundle read with every role `fixed`, and a `revision_eo` bundle read with
+    every role `free`: the recorded route keys the units, and the document is the bundle's."""
+    for route, role in (("legacy_eo", "fixed"), ("revision_eo", "free")):
+        run = _first_on(route)
+        source = members(run)
+        document = _build_with(source, _roles(source.revision, role), _solve_path(run))
+        assert document == support.document(run), (route, run)
+        # The roles alone would key the units the other way (what S4 found untyped).
+        try:
+            inferred: dict[str, Any] | None = _build_with(
+                source, _roles(source.revision, role), None
+            )
+        except (KeyError, stream_table.StreamTableError):
+            inferred = None
+        assert inferred != document, (route, run)
+
+
+def test_s4_without_a_recorded_route_the_roles_decide() -> None:
+    run = _first_on("legacy_eo")
+    source = members(run)
+    assert _build_with(source, source.revision, None) == support.document(run)
 
 
 def test_refusals_name_the_missing_member() -> None:

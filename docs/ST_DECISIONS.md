@@ -241,3 +241,9 @@ M3 61/61, M4 61/61, M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 35/35).
   `ebb4ca841958f26521f8239f40bb0dc67d59d0115dd391a69b87818db64fad22`; `without_st` still MSG's `eaff4585…`.
   `ST_FILE_SHA256` and `interfaces-frozen.md` re-pinned. Surface, chain, description, A48 tests: 178 passed;
   `test_every_description_is_reviewed_by_both_lanes` red with 2 open (`explain` and `get_stream_table` human).
+- **S4 — the recorded route keys the units.** `from_bundle` reads `artifacts/solve-path.json` when the bundle
+  has it and passes it to `build(…, solve_path=)`; `_unit_ids` maps through the legacy binder iff the recorded
+  `solve_path` is `legacy_eo`, and falls back to the role test only without the file. Served 0.3.0 set: 47 of
+  52 bundles record a route (11 `legacy_eo`, 36 `revision_eo`); the 44 documents are byte-identical before and
+  after S4 (`document_sha256` per bundle). Tests: a `legacy_eo` bundle read with every role `fixed` and a
+  `revision_eo` bundle with every role `free` give the bundle's document; the roles alone do not.
