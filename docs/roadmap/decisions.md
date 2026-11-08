@@ -472,3 +472,16 @@ committed before any run (`cba5e8e2`): 10 candidates × 3 policies all reported;
 narrowed. F0 PASS throughout. For the reviewer: D-11 (which edits are continuable, by parameter family), D-5, D-10.
 OPT full gate at `496e003a`: FAIL — 2 failed / 15335 passed (D-61 human reviews, expected; T07 global-state allowlist
 hit `@cache` in `studies/nlp/request.py` from M2) + mypy 3 errors in `benchmarks/opt/` → WO-8c fix running.
+
+## 2026-11-08 — RRC review (`ed522d7c`) → fix round WO-7
+
+Mechanism sound; no code must-fix; nothing changes under the four existing policies. M1 (FQ1 wording: enums widen, no
+member added) → corrected in `docs/FRANK_QUESTIONS.md` now. M2: not a superset of `T06-revision-v2` — all five
+qualifying candidates also converge under T06-revision-v2's restart, in fewer iterations; a stalled continuation can
+fail where T06 succeeds → declare in guide, L21, E3c. S1 amend G2(f)/§5.8 (opening hash covers free columns only); S2
+D-11 partition test; S3 guide wording; S4 renumbering includes the MR-7 test (at acceptance).
+DECISION: N1 (a specification that pins an instance parameter `parameters.<key>` is always refused) → extend §5.4 with
+D-11's family rule as the reviewer recommends, in the fix round. Alternative: keep refusing (fails safe). Reversible
+by: reverting that commit.
+DECISION: N2 → FQ3 re-asked with the measurements; default unchanged (one recovery per step, opt-in). Merge order:
+OPT first, RRC rebases and runs its one full gate there.

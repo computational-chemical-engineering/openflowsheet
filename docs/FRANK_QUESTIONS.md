@@ -446,11 +446,20 @@ Design `docs/design/OPT-revision-optimisation.md` §7. Defaults, acted on unless
 Design `docs/design/RRC-revision-region-continuation.md`. When a flowsheet edit fails to converge, RRC can walk the
 operating values gradually from the nearest earlier version that solved and verified, to the new values; every
 intermediate step is a real flowsheet. Defaults, acted on unless you say otherwise:
-- **FQ1:** three frozen schemas gain optional members (nothing existing changes). Default: build on the branch, merge
-  only after your yes.
+- **FQ1 (corrected 2026-11-08 by the RRC review):** three frozen schemas each accept one more value. The solver
+  setting `globalization.eo_recovery` gains the new recovery value. `continuation.type`, in the attempt context and in
+  the certificate's branch provenance, changes from the single value `specification_continuation` to a choice of it
+  or `revision_continuation`. No member is added, and every existing document validates unchanged. Default: build on
+  the branch, merge only after your yes.
 - **FQ2:** make it the default for every revision solve? Default: no — available by policy name (`RRC-revision-v1`)
   in 0.4.
-- **FQ3:** if the continuation stalls, also try the existing restart? Default: no, one recovery per step (as today).
+- **FQ3 (re-asked 2026-11-08 with measurements):** if the continuation stalls, also try the existing restart? In all
+  five cases where the new policy rescued a failing edit, the existing policy (`T06-revision-v2`) also converged
+  through its restart, in fewer iterations (5 vs 10–12; 8 vs 22–29). With one recovery per step, a stalled
+  continuation ends the step without the restart, so the new policy can fail where the old one succeeds; this is
+  declared. Default: still one recovery per step, opt-in only; any rescue claim, or making it the default (FQ2), first
+  needs a case where the restart fails and the continuation converges. Alternative: restart after a stalled
+  continuation (two recoveries per step).
 - **FQ4:** which edits may be continued? Default: operating values only (temperatures, pressures, flows, duties, split
   fractions…); not stage counts, feed stages, stoichiometry or kinetic constants.
 - Also: accept ADR 0072.
