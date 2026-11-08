@@ -943,3 +943,9 @@ Totals: TH-R1 18.3 s, M1 5.9 s, C-MW 54.4 s ("verify" also holds report/record w
   (`test_t07_global_state.py::test_g20_every_hit_is_allowlisted_and_every_entry_is_hit` passes; the allowlist carries
   main's entries and OPT's one; `global` 2, `np.random` 3, `random` 1, `ContextVar` 1 unchanged from main). Set in
   the merge `52616943` (the line conflicted); D-85's "35 → 36" was against the older main.
+- D-86 (cont., merge fallout found by `test_opt*`): `cli.command_optimize` printed its `invalid_request` refusal as a
+  hand-built document; MSG §3.7 prints every CLI refusal through `_print_refusal` (document with
+  `detail.explanation` on stdout, layered text on stderr, the code's exit). It now raises nothing new: it builds the
+  same `api_error("invalid_request", "request_invalid(<p>): <m>", pointer="/request<p>")` and prints it that way
+  (message, pointer and exit unchanged). `test_opt_cli::test_validate_takes_the_request` compared `validate`'s whole
+  `detail` to `{"pointer": "/optimization"}`; MSG adds `explanation`, so it now checks the pointer and the chain.

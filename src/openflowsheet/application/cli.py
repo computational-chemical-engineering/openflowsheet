@@ -161,6 +161,7 @@ def command_optimize(arguments: argparse.Namespace) -> int:
     (`NLP_SOLVER_UNAVAILABLE`), and Pyomo and cyipopt are never imported. Exit 0 iff the report
     is `KKT_POINT_VERIFIED`, as `solve` exits 0 iff its run is `VERIFIED`.
     """
+    from openflowsheet.application.contract import api_error
     from openflowsheet.application.policies import DEFAULT_POLICY_ID, resolve_policy
     from openflowsheet.application.revision_routes import REVISION_ROUTES
     from openflowsheet.studies.nlp.request import request_problems
@@ -172,15 +173,12 @@ def command_optimize(arguments: argparse.Namespace) -> int:
     request = _load(Path(arguments.request))
     problems = request_problems(request)
     if problems:
+        # Printed as every refusal is (MSG §3.7, `_print_refusal`): the document on stdout with
+        # `detail.explanation`, the layered text on stderr.
         pointer, message = problems[0]
-        error = {
-            "code": "invalid_request",
-            "message": f"request_invalid({pointer}): {message}",
-            "detail": {"pointer": f"/request{pointer}"},
-            "retryable": False,
-        }
-        _print_document(error)
-        return API_EXIT_CODES["invalid_request"]
+        text = f"request_invalid({pointer}): {message}"
+        refused = api_error("invalid_request", text, pointer=f"/request{pointer}")
+        return _print_refusal(refused.error)
     policy = resolve_policy(DEFAULT_POLICY_ID, ROUTE)
     assert policy is not None, ROUTE
     outcome = optimize_revision(

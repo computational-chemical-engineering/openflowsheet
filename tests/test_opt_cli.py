@@ -33,7 +33,9 @@ def test_validate_takes_the_request(
     assert json.loads(capsys.readouterr().out)["status"] == "READY_FOR_OPTIMIZATION"
     assert main(arguments) == API_EXIT_CODES["invalid_request"]
     refused = json.loads(capsys.readouterr().out)
-    assert (refused["code"], refused["detail"]) == ("invalid_request", {"pointer": "/optimization"})
+    assert (refused["code"], refused["detail"]["pointer"]) == ("invalid_request", "/optimization")
+    # MSG §3.7: the refusal carries its explanation (the code's own, `invalid_request`).
+    assert refused["detail"]["explanation"]["chain"][0] == "invalid_request"
 
 
 def test_optimize_refuses_a_request_with_problems(
