@@ -638,3 +638,13 @@ Q-WIT-2). Alternative: X02 first. Reversible by: merge order only.
 DECISION: register numbers by block to avoid collisions between branches merging in any order → X02 R-950…959, OPT
 R-960…969, S15a R-970 (used), MSG R-975…979 (its R-942/R-943 renumbered), main-side acceptances (0055, 0069, 0073)
 R-980…989, RRC R-990…999, ST R-1000…1009. Alternative: renumber sequentially at each merge. Reversible by: renumbering.
+
+## 2026-11-08 — X05a built (Frank's Q-F1 = no)
+
+`wp/X05a` `b43d94bc`: revert of `a58ef5a5` alone (`f5736deb`); A25 restated as its inverse (static: Requires-Dist =
+the five direct pins only; floating path: an off-lock transitive member → `lock_sha256 = ""`, members named); ADR 0069
+Accepted with Amendment 1 (Q-F1), ADR 0007 Am. 2; R-985…R-987, R-140 "Lifted by X05". 548 passed, 11 skipped;
+`x05_reference.py --check` PASS; F0 PASS. D-10 (engineer): A25's CI half became a new `t08_rc.py lock-check --state
+installed-free` that computes its expectation from the installed versions (CI's unconstrained install no longer
+verifies by construction). DECISION: keep D-10 (it checks the honest outcome; dropping the CI half would remove a
+check). Alternative: drop the CI half. Reversible by: revert D-10's commit. CI running; manifest `evidence/X05a/` after.
