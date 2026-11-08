@@ -70,9 +70,10 @@ T08_MANIFEST = "evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/manifest.j
 #: `tested`, 6 and 0) moves it on `wp/X10`; its review-fix manifest (`033f192…`, `tested`, 7
 #: and 0) on `wp/X10`. WIT's manifest, filed as X10a (`dbf884a…`, `tested`, 6 and 0), moves it
 #: on `wp/WIT`. S15a's manifest (`d7cb4db…`, `tested`, 5 and 0) moves it on `wp/S15a`.
-#: MSG's manifest (`b1a8235…`, `implemented`, 4 and 2) moves it on `wp/MSG` (MSG_DECISIONS D9-9);
-#: WO-12's (`9c76b93…`, `implemented`, 5 and 1) moves it again (D12-6).
-HARVEST_SIZE = (78, 997, 129)
+#: X05a's manifest (`b43d94b…`, `tested`, 5 and 0) moved it on `wp/X05a`; MSG's manifest (`b1a8235…`, `implemented`,
+#: 4 and 2) moves it on `wp/MSG` (MSG_DECISIONS D9-9); WO-12's (`9c76b93…`, `implemented`, 5 and 1) moves it again (D12-6); its tested manifest
+#: (`5e9274d…`, `tested`, 5 and 0) moves it on `wp/MSG`.
+HARVEST_SIZE = (80, 1007, 129)
 #: The 0.2.0 release candidate C′ (M07 spec §25, R-485).
 C_PRIME = "ce993651ce37c1343e771b276160bd6623e43500"
 #: The commit tagged v0.2.0.

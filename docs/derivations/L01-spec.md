@@ -1,6 +1,6 @@
 # L01 specification — component-library gaps on the OpenIDAES-450 development half (Water first)
 
-**Status:** Proposed, 2026-10-22; **amended** 2026-10-22 by the `reviewer` (§12: A12 bound and scope, `vapour_unstable`, T08.A32, packaging). **Amended** again 2026-10-22 by the `specifier` (§13, S04 ruling: A22's W27 clause and the library-only provider; R-566, R-567, R-569). **Author:** design lane (`specifier`), package L01, branch `wp/L01`.
+**Status:** Proposed, 2026-10-22; **amended** 2026-10-22 by the `reviewer` (§12: A12 bound and scope, `vapour_unstable`, T08.A32, packaging). **Amended** again 2026-10-22 by the `specifier` (§13, S04 ruling: A22's W27 clause and the library-only provider; R-566, R-567, R-569). **Amended** 2026-11-08 by the `specifier` (§15, after WIT M-6 part b: A22 (a) admits registered moves, (g) checks them; R-983). **Author:** design lane (`specifier`), package L01, branch `wp/L01`.
 **Decision record:** ADR 0043 (Proposed); register R-520…R-527; `docs/L01_DECISIONS.md`.
 **Package id S04 (D1, R-565).** Manifest check ids are `S04.<label>` for this spec's `L01.<label>`.
 **Generator:** `docs/derivations/scripts/l01_projection.py` (`--emit`, `--check`) → `l01_projection.json` beside it.
@@ -587,8 +587,8 @@ from C2. The rule is R-567: a package byte-pins only files that no registered pr
 Replace L01.A22 with:
 
 - **L01.A22** — L01 moves no C1 or W27 identity.
-  - (a) The 18 files of §4.4 that no registered procedure rewrites hash to their `PINNED` SHA-256 values, which are
-    unchanged. These are `benchmarks/m01/components.yaml`, `thermo/pr_c1.py`, `thermo/conventions.py`, the 13
+  - (a) *(amended by §15.3, R-983: registered moves)* The 18 files of §4.4 that no registered procedure rewrites
+    hash to their `PINNED` SHA-256 values, which are unchanged. These are `benchmarks/m01/components.yaml`, `thermo/pr_c1.py`, `thermo/conventions.py`, the 13
     `models/c1/*.py`, `case_facts.json` and `registration.json`. `models/c1/` holds exactly the pinned modules, and the
     packaged C1 records hash as `benchmarks/m01/components.yaml`. `coverage.json` leaves `PINNED`.
   - (b) L01's absence from W27's committed coverage. A helper `w27_absence_problems(data: bytes) -> list[str]`
@@ -603,8 +603,10 @@ Replace L01.A22 with:
     `pr-c1-v1` and does not contain `pr-lib-v1`. W27's snapshot reads that table (W27-R63). The W27 pin test
     `test_committed_coverage_json_is_g14_and_this_builds_classification` holds the live snapshot equal to the
     committed one, apart from `git_commit`, so it carries (b) over to the build.
-  - (d) `pr_c1.describe()`'s two SHA-256 values equal the pinned ones. This clause is unchanged.
-  - (e) The M01, M02, M05 and W27 pin tests pass unmodified. This clause is unchanged.
+  - (d) *(amended by §15.3: (a)'s expected values)* `pr_c1.describe()`'s two SHA-256 values equal the pinned ones.
+    This clause is unchanged.
+  - (e) *(amended by §15.3: "unmodified" is L01's, review-time)* The M01, M02, M05 and W27 pin tests pass
+    unmodified. This clause is unchanged.
   - (f) Review-time, not a test: `git log --first-parent --no-merges b843941..HEAD -- <(a)'s 18 files>
     benchmarks/m06/` is empty on `wp/S04`. A merge from `main` may bring a registered re-take, and that re-take is not
     L01's. The command was measured empty at `e46eb97`.
@@ -783,3 +785,224 @@ Neither point is decided here.
 - **A validation of `pr-lib-v1`** (W27 v2 §8).
 - **Any decision about shipping, F-4 or the C1 file's CAS RNs.**
 - **Whether a release reports a version 2 result** (W27 v2 §9 Q-1).
+
+## 15. Amendment 4 (2026-11-08, design lane `specifier`, after WIT M-6 part b; brief `docs/briefs/L01-A22-amendment.md`; R-983)
+
+This section supersedes the text it quotes. Every other part of the document is unchanged. Every assertion below is an
+exact comparison of strings, lists, sets, counts or SHA-256 values; no tolerance applies.
+
+### 15.1 What changed (measured 2026-11-08)
+
+- **The move.** `wp/X10b` `03709167` applies Frank's Q-WIT-2 = yes (2026-11-08, `docs/FRANK_QUESTIONS.md`). WIT M-6
+  part b corrects the near-dew sentence in `c1.tp_flash`'s manifest text (`docs/WIT_DECISIONS.md` D-11 on that
+  branch; `docs/reviews/WIT-review.md` ruling 1).
+- **What it moves among A22's pins.** Over the 18 `PINNED` paths of `tests/test_l01_records.py`, every SHA-256 at
+  `b843941` (the L01 base) and at `068a492b` (`main`) equals `PINNED`. At `03709167` exactly one differs:
+  `src/openflowsheet/models/c1/flash.py`, from `f228a4a3f0fe5f181e42d341c676de4b802c0b5cb7502fa21baa9ffa5abc5c1b`
+  to `b1b47c287086b759b17a2c9fd024988e9aca8ec09514d01df3e0334bf9932e6a`. `models/c1/` still holds the 13 pinned
+  modules.
+- **What else the commit moves.** It re-records F0 M9's entry for that file to the same value, with M1–M8
+  re-measured equal. It also changes `tests/test_m02_wo8_g7.py`'s assertions on the sentence. `model_version` does
+  not move.
+- **F0 M9 guards 9 of the 18 files, not all of them.** `scripts/corpus_identity.py` `frozen_modules()` holds
+  `thermo/pr_c1.py` and the 8 `models/c1` modules that carry an `artifact_hash`: `feed`, `flash`, `heater`, `mixer`,
+  `reactor`, `reactor_standin`, `sink` and `splitter`. It does not hold these nine:
+  - `models/c1/{__init__,blocks,boundary,phase,units}.py`;
+  - `thermo/conventions.py`;
+  - `benchmarks/m01/components.yaml`;
+  - `case_facts.json` and `registration.json`.
+
+  For those nine, A22 (a) is the only byte test.
+
+A22 (a) therefore fails on `wp/X10b` for a move that is not L01's and that Frank approved. The WIT review requires an
+L01 amendment, not a silent re-pin.
+
+### 15.2 Ruling (R-983)
+
+L01.A22 (a) keeps all 18 byte pins at their L01 base values. A pinned file may differ from its base value only
+through a **registered move**. That is an entry in a new table, `MOVED`, giving the file's SHA-256 after the move and
+the register id of the ruling that moved it. The test checks that the cited entry exists and states that SHA-256
+(§15.3 (g)). WIT M-6 part b is the first registered move, under R-983.
+
+- **Who adds an entry.** The package that moves the file adds it, in the commit that moves it, citing its own
+  ruling's register entry. That ruling must approve the identity move. Where the move changes a model's
+  `artifact_hash` or a provider's identity, as here, the approval is Frank's. No further L01 amendment is needed.
+- **Never L01.** No L01 work order adds a `MOVED` entry, WO-L01-3b included. A move of one of the 18 files by L01 is
+  an L01 identity move: it needs a new L01 amendment and Frank. This is review-time.
+- **`PINNED` is never re-pinned.** Its values stay those at `b843941`. This is review-time.
+- **Not a move.** Adding or removing a `models/c1/` module changes (a)'s set equality. `MOVED` does not cover it; it
+  needs an L01 amendment.
+- **With F0.** For a file in F0 M9, the moving commit also re-records M9. A22 (a) then holds the file at `MOVED`'s
+  value and F0 at M9's, so the two cannot disagree while both pass.
+
+### 15.3 L01.A22 as amended
+
+**Clause (a).** In §13.2, replace:
+
+> (a) The 18 files of §4.4 that no registered procedure rewrites hash to their `PINNED` SHA-256 values, which are
+> unchanged. These are `benchmarks/m01/components.yaml`, `thermo/pr_c1.py`, `thermo/conventions.py`, the 13
+> `models/c1/*.py`, `case_facts.json` and `registration.json`. `models/c1/` holds exactly the pinned modules, and the
+> packaged C1 records hash as `benchmarks/m01/components.yaml`. `coverage.json` leaves `PINNED`.
+
+with:
+
+- (a) The same 18 files hash to their **expected** values:
+  - a file without a `MOVED` entry hashes to its `PINNED` value, the L01 base, unchanged;
+  - a file with a `MOVED` entry hashes to that entry's moved value.
+
+  `len(PINNED) == 18`, and `models/c1/` holds exactly the 13 pinned modules. The packaged C1 records hash to
+  `benchmarks/m01/components.yaml`'s expected value. `coverage.json` stays out of `PINNED`.
+
+  At R-983, `MOVED` has exactly one entry: `src/openflowsheet/models/c1/flash.py` →
+  (`b1b47c287086b759b17a2c9fd024988e9aca8ec09514d01df3e0334bf9932e6a`, `"R-983"`). So 17 files assert their base
+  value, and `flash.py` asserts a value that differs from its base. Without the entry, or with `flash.py` reverted
+  to its base bytes, (a) fails.
+
+**Clause (d).** Replace "equal the pinned ones" with "equal (a)'s expected values for `thermo/pr_c1.py` and
+`benchmarks/m01/components.yaml`". Neither file has a `MOVED` entry, so the compared values do not change.
+
+**Clause (e).** Replace:
+
+> (e) The M01, M02, M05 and W27 pin tests pass unmodified. This clause is unchanged.
+
+with:
+
+- (e) The M01, M02, M05 and W27 pin tests pass. "Unmodified" is review-time, as in (f): L01's own commits do not
+  modify them. A change to one of them that comes with another package's registered move belongs to that package.
+  WIT M-6 part b's change to `tests/test_m02_wo8_g7.py` is one such change.
+
+**Clause (g), new.** Every registered move is a ruling.
+- A helper `a22_move_problems(moved, register) -> list[str]` takes a `MOVED`-shaped mapping and the text of
+  `docs/decision-register.md`. For each entry `path → (sha, rid)`, in sorted path order, it reports:
+  1. `f"{path}: not a pinned file"` when `path` is not a key of `PINNED`. Check 2 is then skipped.
+  2. `f"{path}: the move does not move it"` when `sha == PINNED[path]`.
+  3. `f"{path}: {rid} is not exactly one register heading"` when the text does not contain
+     `"\n## " + rid + " "` exactly once. Check 4 is then skipped.
+  4. `f"{path}: {rid} does not state the moved SHA-256"` when `sha` does not occur in the entry. The entry runs from
+     that heading to the next `"\n## "` or, if there is none, to the end of the text.
+- It returns `[]` on `MOVED` and the committed register.
+
+**Negative controls for (g), in the test, on a synthetic register.** Let:
+- `P` be `src/openflowsheet/models/c1/flash.py`, `S` be `MOVED[P][0]` and `B` be `PINNED[P]`;
+- `Q` be `src/openflowsheet/models/c1/column.py`, which is not pinned;
+- the text `T` be `"# Decision register\n\n## R-2 — no move\n\nNothing.\n\n## R-1 — a move\n\n"` followed by
+  ``f"`{P}` moves from `{B}` to `{S}`.\n"``.
+
+R-1 is the last entry, so its entry runs to the end of `T`. R-2 comes before it, so R-2's entry ends at R-1's
+heading. Each control below changes one input from G-0, and only one check can fire on it. Each control compares the
+whole returned list.
+
+| Id | `moved`, text | Returned list | What it catches |
+| --- | --- | --- | --- |
+| G-0 | `{P: (S, "R-1")}`, `T` | `[]` | a reader that loses the last entry |
+| G-1 | `{P: (S, "R-3")}`, `T` | `[f"{P}: R-3 is not exactly one register heading"]` | a cited ruling that is not registered (check 3) |
+| G-2 | `{P: (S, "R-2")}`, `T` | `[f"{P}: R-2 does not state the moved SHA-256"]` | a ruling that does not state the value (check 4). `S` occurs later, in R-1, so this also shows the entry ends at the next heading |
+| G-3 | `{P: (B, "R-1")}`, `T` | `[f"{P}: the move does not move it"]` | a move to the base value (check 2). `B` occurs in R-1, so check 4 stays silent |
+| G-4 | `{Q: (S, "R-1")}`, `T` | `[f"{Q}: not a pinned file"]` | an entry for an unpinned file (check 1) |
+| G-5 | `{P: (S, "R-1")}`, `T + "\n## R-1 — again\n"` | `[f"{P}: R-1 is not exactly one register heading"]` | a duplicated register id (check 3) |
+
+### 15.4 The test change (build lane, on `wp/X10b`)
+
+**Order.** First bring this commit into `wp/X10b`, by merging `main` or rebasing onto it, because (g) reads R-983
+from the register. Then make one commit on `wp/X10b` that changes only `tests/test_l01_records.py`, as follows.
+
+1. **The `PINNED` comment.** Leave the dict and its values unchanged. Add to its comment: "`PINNED` is the L01 base
+   and is never re-pinned; a file moved by another package's ruling is listed in `MOVED` (L01 spec §15, R-983)."
+2. **Insert after `PINNED`:**
+
+```python
+#: Registered moves of `PINNED` files by packages other than L01 (L01 spec §15, R-983): path ->
+#: (its SHA-256 after the move, the register id of the ruling that moved it). L01 spec §15.3 (g)
+#: checks each entry against the register.
+MOVED = {
+    "src/openflowsheet/models/c1/flash.py": (
+        "b1b47c287086b759b17a2c9fd024988e9aca8ec09514d01df3e0334bf9932e6a",
+        "R-983",  # WIT M-6 part b: c1.tp_flash's near-dew sentence (Frank, Q-WIT-2, 2026-11-08)
+    ),
+}
+
+REGISTER = REPO_ROOT / "docs" / "decision-register.md"
+
+
+def a22_expected() -> dict[str, str]:
+    """L01 spec §15.3 (a): each pinned file's base value, or its registered move's value."""
+    return {p: MOVED[p][0] if p in MOVED else sha for p, sha in PINNED.items()}
+
+
+def a22_move_problems(moved: dict[str, tuple[str, str]], register: str) -> list[str]:
+    """L01 spec §15.3 (g) (R-983): the four checks that a move is a registered ruling."""
+    problems = []
+    for path, (sha, rid) in sorted(moved.items()):
+        if path not in PINNED:
+            problems.append(f"{path}: not a pinned file")
+        elif sha == PINNED[path]:
+            problems.append(f"{path}: the move does not move it")
+        heading = f"\n## {rid} "
+        if register.count(heading) != 1:
+            problems.append(f"{path}: {rid} is not exactly one register heading")
+            continue
+        start = register.index(heading)
+        end = register.find("\n## ", start + 1)
+        if sha not in register[start : end if end >= 0 else None]:
+            problems.append(f"{path}: {rid} does not state the moved SHA-256")
+    return problems
+```
+
+3. **In `test_a22_the_c1_files_are_byte_identical_to_the_l01_base`** (keep its name, because the S04 manifest cites
+   that node id), compare against `expected = a22_expected()` instead of `PINNED`:
+   - `assert {p: _sha256(REPO_ROOT / p) for p in PINNED} == expected`;
+   - the packaged-records assertion compares to `expected["benchmarks/m01/components.yaml"]`.
+
+   `assert len(PINNED) == 18` and the `models/c1/` set equality stay as they are.
+4. **In `test_a22_pr_c1_describes_the_same_identity`**, compare both SHA-256 values to `a22_expected()[...]`
+   instead of `PINNED[...]`.
+5. **Add, after the (a) test:**
+
+```python
+def test_a22_every_move_is_a_registered_ruling() -> None:
+    # L01 spec §15.3 (g) (R-983), with its controls G-0…G-5 on a synthetic register.
+    assert a22_move_problems(MOVED, REGISTER.read_text(encoding="utf-8")) == []
+    p, q = "src/openflowsheet/models/c1/flash.py", "src/openflowsheet/models/c1/column.py"
+    s, b = MOVED[p][0], PINNED[p]
+    text = (
+        "# Decision register\n\n## R-2 — no move\n\nNothing.\n\n## R-1 — a move\n\n"
+        f"`{p}` moves from `{b}` to `{s}`.\n"
+    )
+    assert a22_move_problems({p: (s, "R-1")}, text) == []
+    assert a22_move_problems({p: (s, "R-3")}, text) == [
+        f"{p}: R-3 is not exactly one register heading"
+    ]
+    assert a22_move_problems({p: (s, "R-2")}, text) == [
+        f"{p}: R-2 does not state the moved SHA-256"
+    ]
+    assert a22_move_problems({p: (b, "R-1")}, text) == [f"{p}: the move does not move it"]
+    assert a22_move_problems({q: (s, "R-1")}, text) == [f"{q}: not a pinned file"]
+    assert a22_move_problems({p: (s, "R-1")}, text + "\n## R-1 — again\n") == [
+        f"{p}: R-1 is not exactly one register heading"
+    ]
+```
+
+**Done when:**
+- on `wp/X10b` at that commit, `pytest tests/test_l01_records.py -k a22` passes all A22 tests, including the new one;
+- `ruff check` and `ruff format --check` are clean on the file;
+- F0 `--check` still passes;
+- `docs/WIT_DECISIONS.md` D-11's "Open (design lane): L01.A22" item is closed with a pointer to R-983, and the
+  package's manifest cites both A22 node ids it touched.
+
+Nothing else on the branch changes for this amendment.
+
+### 15.5 What this amendment does not establish
+
+- **That the corrected sentence is true.** WIT review ruling 1 and the G7 manifest test hold that.
+- **That `model_version` and the results are unchanged.** That is WIT D-11's measurement (F0 M1–M8), not A22's.
+- **That a cited ruling approves its move, or is not L01's.** Check 4 shows only that the ruling states the value.
+  Approval and ownership are review-time (§15.2).
+- **Anything about files outside the 18,** about F0 M9's correctness, or about a `models/c1/` module being added or
+  removed.
+- **Any change to (b), (c) or (f).** They, R-566, R-567 and R-569 stand as written. R-567 is not engaged: no
+  registered procedure rewrites the 18 files, and a single ruled move is not such a procedure.
+
+### 15.6 Open questions
+
+None. Frank's approval is not needed for this amendment. He approved the identity move itself (Q-WIT-2); the
+mechanism that records it is a design-lane test rule, of the same kind as R-566 and R-567.

@@ -539,9 +539,6 @@ def test_a35_no_runtime_import_of_the_retrieval_or_reference_tools() -> None:
 
 
 def test_a35_the_runtime_dependencies_are_unchanged() -> None:
-    """M01 added no runtime dependency. The list is still held exactly: X05 (ADR 0069 D3.2,
-    Frank's Q-F1) pinned the runtime closure's four transitive members after the first five, which
-    is the only change since M01, and none of M01's forbidden libraries is among them."""
     project = tomllib.loads((REPO_ROOT / "pyproject.toml").read_text(encoding="utf-8"))["project"]
     assert project["dependencies"] == [
         "numpy==2.2.4",
@@ -549,10 +546,6 @@ def test_a35_the_runtime_dependencies_are_unchanged() -> None:
         "pyyaml==6.0.2",
         "jsonschema==4.26.0",
         "casadi==3.8.0",
-        "attrs==26.1.0",
-        "jsonschema-specifications==2025.9.1",
-        "referencing==0.37.0",
-        "rpds-py==2026.6.3",
     ]
 
 

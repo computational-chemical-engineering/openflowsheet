@@ -3263,6 +3263,7 @@ release note calling V14 passed.
 ## R-140 — v0.1 ships no lock in the wheel; an installed package's bundles replay `NOT_RUN` (L41); the lock lookup is confined to the source checkout
 
 **Lifted as policy (Frank, 2026-11-01; R-925, ADR 0056): package X05.** The behaviour below stays until that package lands.
+**Lifted by X05 (ADR 0069), 2026-11-08; L41 narrowed (D7.3).** See R-985 to R-987.
 
 | | |
 | --- | --- |
@@ -18673,3 +18674,100 @@ MSG's addition into c_3: R-457 makes each MCP-visible change its own link.
 - *Evidence.* §4.8.5's G2 gaps (0.075, 0.26, 0.39 scaled), matched to 4.6e-15 relative.
 - *Watch for.* The exclusion widened to a vapour side, to a side with a positive column, or to another basis without
   its own non-differentiability evidence.
+
+## R-985 — `lock_sha256` is recorded only for a lock the installed runtime closure matches (X05, ADR 0069 D1–D4) (2026-11-08)
+
+| | |
+| --- | --- |
+| Date | 2026-11-08 |
+| Decided by | design lane (`specifier`), ADR 0069; accepted by Frank on the decision board, 2026-11-08 |
+| Normative text | `docs/adr/0069-X05-replay-from-the-wheel.md` D1–D4; ADR 0007 Amendment 2 |
+| Affected packages | X05; K05 and every package that records or replays a bundle |
+
+**Decision.** The wheel carries `requirements.lock` (`openflowsheet/_data/`, a link in the checkout); `environment()`
+hashes it only when the 9 closure distributions are installed at its pins (exact strings), checkout and wheel alike,
+else `""`. Lifts R-140.
+
+**Rejected.** Every lock line (B12's wording; unreachable from a clean install), the lock shipped unchecked (R-140),
+PEP 440 equality, a run-time closure.
+
+**Evidence.** X05.A01–A24 (`tests/test_x05_lock.py`, `tests/test_x05_replay_from_the_wheel.py`; the X05 manifests).
+
+**Watch for.** A lock read from anywhere but the package; a relaxed comparison.
+
+## R-986 — No schema change for X05; the replay reason names the failing distributions (ADR 0069 D5) (2026-11-08)
+
+| | |
+| --- | --- |
+| Date | 2026-11-08 |
+| Decided by | design lane (`specifier`), ADR 0069; accepted by Frank on the decision board, 2026-11-08 |
+| Normative text | `docs/adr/0069-X05-replay-from-the-wheel.md` D5; ADR 0007 Amendment 2 |
+| Affected packages | X05; T07 (the frozen environment document) |
+
+**Decision.** The environment document keeps its eight keys; `Environment.lock_findings` is in memory only, outside
+`as_document()` and equality; `decide_mode`'s unknown-lock reason names this side's failing distributions.
+
+**Rejected.** An environment field (ADR 0019 Amendment 14); recording the writer's findings in the bundle (Q-F3,
+default no).
+
+**Evidence.** X05.A12, A18 (`tests/test_x05_lock.py`).
+
+**Watch for.** Findings leaking into `as_document()` or equality.
+
+## R-987 — The runtime closure's four transitive members float; only the five direct members are pinned in `Requires-Dist` (ADR 0069 D3.2 as amended; Frank's Q-F1 = no) (2026-11-08)
+
+| | |
+| --- | --- |
+| Date | 2026-11-08 |
+| Decided by | design lane (`specifier`), ADR 0069; accepted by Frank on the decision board, 2026-11-08; Q-F1 answered no; ADR 0069 Amendment 1 |
+| Normative text | `docs/adr/0069-X05-replay-from-the-wheel.md` D3.2 and §14 (Amendment 1); ADR 0007 Amendment 2 |
+| Affected packages | X05; X05a |
+
+**Decision.** `[project].dependencies` pins `numpy`, `scipy`, `pyyaml`, `jsonschema` and `casadi` exactly and does not
+name `attrs`, `jsonschema-specifications`, `referencing` or `rpds-py`. X05.A25 is restated as the inverse.
+
+**Rejected.** Exact pins of the four in `Requires-Dist` (D3.2 as proposed, `a58ef5a5`, reverted on `wp/X05a`).
+
+**Reason.** Frank's Q-F1: users keep upgrade freedom over the four.
+
+**Consequence.** Only an install constrained by the shipped lock (`pip install -c requirements.lock openflowsheet`)
+is promised to verify. A plain install verifies only if its resolver picks the lock's versions; otherwise it records
+`""`, and replay names each member off the lock.
+
+**Evidence.** X05.A25 (`tests/test_x05_lock.py`, `tests/test_x05_replay_from_the_wheel.py`; CI `clean-install`,
+`t08_rc.py lock-check --state installed-free`).
+
+**Watch for.** A lock regeneration that moves a direct pin without `pyproject.toml`; user-facing text promising that a
+plain `pip install` replays exactly.
+
+## R-983 — L01.A22 (a): the C1 files stay pinned at the L01 base apart from registered moves; WIT M-6 part b moves `models/c1/flash.py` (2026-11-08)
+
+| | |
+| --- | --- |
+| Date | 2026-11-08 |
+| Decided by | design lane (`specifier`), brief `docs/briefs/L01-A22-amendment.md`; the move itself approved by Frank, Q-WIT-2 = yes, 2026-11-08 (`docs/FRANK_QUESTIONS.md`) |
+| Normative text | `docs/derivations/L01-spec.md` §15 (Amendment 4), amending §13.2 (a), (d) and (e) and adding (g) |
+| Evidence | Over the 18 `PINNED` paths, every SHA-256 at `b843941` and `068a492b` equals `PINNED`. At `wp/X10b` `03709167`, only `src/openflowsheet/models/c1/flash.py` differs: `f228a4a3f0fe5f181e42d341c676de4b802c0b5cb7502fa21baa9ffa5abc5c1b` → `b1b47c287086b759b17a2c9fd024988e9aca8ec09514d01df3e0334bf9932e6a` (WIT D-11; F0 M9 re-recorded for that file, M1–M8 equal). F0 M9 holds only 9 of the 18: the 8 `models/c1` modules with an `artifact_hash`, and `thermo/pr_c1.py` |
+| Affected packages | S04 (L01.A22); WIT/X10b (the move); every later package that moves one of the 18 files |
+
+- *Decision.*
+  - `PINNED` keeps the L01 base values and is never re-pinned.
+  - A file may differ from its base value only through a `MOVED` entry: path → (SHA-256 after the move, the register
+    id of the ruling that moved it).
+  - The test checks that the cited id has exactly one `## <id> ` heading and that its entry states the full new
+    SHA-256 (§15.3 (g), with controls G-0…G-5).
+  - The first entry: `src/openflowsheet/models/c1/flash.py` →
+    `b1b47c287086b759b17a2c9fd024988e9aca8ec09514d01df3e0334bf9932e6a`, by this entry.
+  - A later package's ruled move adds its own entry in the moving commit and needs no L01 amendment. No L01 work
+    order adds an entry.
+  - (e)'s "unmodified" refers to L01's own commits and is checked at review time.
+- *Rejected.*
+  - Re-pinning `flash.py` in place: the base value would leave the test, and every later ruled move would cost an L01
+    amendment.
+  - Clause (f)'s review-time form, as R-566 did for `coverage.json`: a relaxation. Nine of the 18 files are outside
+    F0 M9 and would lose their only byte test. R-567 is not engaged, because no procedure rewrites these files.
+  - Deferring the 9 M9 files to F0's registry: two kinds of pin, and a pin that follows any `--record`.
+- *Watch for.*
+  - A `MOVED` entry citing an L01 ruling, or a ruling that does not approve the move.
+  - A changed value in `PINNED`.
+  - A `models/c1/` module added or removed: that is not a move and needs an L01 amendment.
