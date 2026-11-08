@@ -914,3 +914,28 @@ Totals: TH-R1 18.3 s, M1 5.9 s, C-MW 54.4 s ("verify" also holds report/record w
   default env) against 0.06 ms for a validation, and `request_problems` runs several times per optimization job
   (validate, runner, normalize, revision) and on every `validate` of a document with an optimization. Alternative:
   drop the cache and rebuild per call. Reversible by: reverting the WO-8c allowlist commit and removing the decorator.
+
+### Merge preparation (brief `docs/briefs/OPT-merge-prep.md`, 2026-11-08, TRS2)
+
+- D-86. `git merge main` (main `b31e80ec`: WIT, MSG c_4, X02 c_5, X05a, X10b, S15a) → merge `52616943`. 18 files
+  conflicted, all resolved keeping both sides: `cli.py` (`optimize` and MSG's `explain`), `runner.py` imports, the
+  register (R-960 placed after R-955), `support_envelope.yaml` combined and `docs/support-matrix.md` re-emitted
+  (`t08_support_matrix.py --check`: 0 problems), the guide's limitations table (MSG's code links, OPT's three rows in
+  place of main's "validation for optimisation" row, which OPT makes false), `HARVEST_SIZE` (83, 1029, 135) + OPT's
+  (1, 5, 3) = (84, 1034, 138). One semantic conflict outside the markers: OPT had split `run_revision_session` at the
+  bundle stage (`write_revision_bundle`), and main's bundle code reads `warm_start`, `coupled_start` (X02) and
+  `on_diagnosis` (MSG); they are now keyword parameters of `write_revision_bundle` (default `None`) passed through by
+  `run_revision_session` — main's solves bundle exactly as on main, OPT's host passes none, as before (on
+  `revision_eo` the bundle's warm record is the run's own). CLI pins: only U05 moved (MSG's explanation of OPT's
+  `nlp_solver_unavailable`); `opt_reversed` restores U05's pre-OPT record (`tests/fixtures/opt/pre_opt_u05.json`, main's
+  record) before `msg_reversed`, so `PINS_T07_SHA256` and the pre-rename hash hold. Targeted tests 666 passed (after
+  the control-iv row count fix), mypy (324 files) and ruff clean.
+- D-87. Surface chain: OPT's link is **c_6** (R-960), after X02's c_5. Measured on the merge tree: D_6 =
+  `3fdc797ad64485abf63fb491ebd56aa43dc510e62e9e218b0dd7a8fcc2e38a85`; `strip_opt` on the served list gives
+  `f51b69bf66569e35aebead73b66e98d58f24c84016db639536c0ee35181f4c7b`, main's D_5, exactly — no interaction, D_4 and D_5
+  stand. R4-G3: `SNAPSHOT_OPT` re-taken over `SNAPSHOT_X02` (the same eight operations moved; with `without_opt` each is
+  its pre-OPT value); MSG's and X02's decompositions strip OPT first. `m07a_rc.LINKS`, the chain test (controls
+  renumbered; OPT's link test and its two controls at c_6), the surface-digest test
+  (`test_opts_surface_move_decomposes_onto_x02s`), R-960 and `tests/opt_schema_support.py` name c_6. The design note's
+  §4.13 states the merge-order rule generically and ADR 0071 "indexed by merge order"; neither names an index, so
+  neither changes. Old D_4 `3fb06cad…` is kept in R-960 and the digest test as evidence, not a pin.

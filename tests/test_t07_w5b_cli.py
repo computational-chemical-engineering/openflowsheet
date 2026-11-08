@@ -66,8 +66,9 @@ PINS = REPO_ROOT / "tests" / "fixtures" / "t07" / "cli-existing-commands.json"
 #: SHA-256 of the pins as T07 captured them. T08 D1's STR-05 extension (Frank, 2026-09-29) moved
 #: them by its substitution only, T08 review 2's U05 refusal (Ruling 1) by one entry only, and
 #: ADR 0025 D1.2's recording switch (Frank, 2026-10-02, R-148) by the structural hash `solve` and
-#: `inspect` print only, and MSG (ADR 0058) by the refused `project init`'s stderr and the U05
-#: record only: all reversed, the file is these bytes again.
+#: `inspect` print only, MSG (ADR 0058) by the refused `project init`'s stderr and the U05
+#: record only, and OPT (ADR 0071) by the U05 record only: all reversed, the file is these bytes
+#: again.
 PINS_T07_SHA256 = "86aae0c13e5125a2e26f3441af70878519fdbcac41b3432b5efb64efd1596a6c"
 #: The one pinned command U05 moved: `validate --task optimization` was the `simulation` report
 #: with its task and status renamed, and is now the typed `unsupported` refusal. MSG §3.7 moved
