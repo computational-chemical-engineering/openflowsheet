@@ -19,6 +19,12 @@ the state back to the last accepted level, discarding the corrector's end state.
 `2 Δλ_min` in λ. The homotopy never changes the active set (§4.5): a corrector that meets a phase
 wall or a bound fails, and the λ-trial is rejected.
 
+Revision continuation (ADR 0072; design note `docs/design/RRC-revision-region-continuation.md`
+§5.1) is the same map with another source of `p⁰`: the continued inputs are those whose values
+differ between the nearest verified ancestor revision's declaration and the target's, and `p⁰` is
+the ancestor's values (`Continuation.start_values`), not the opening's. The λ = 0 level is then the
+ancestor's problem, bit for bit.
+
 This module knows nothing of phases or regions: the region solve hands it a corrector per level
 and a way to say which unit a rejected corrector's phase boundary belongs to.
 """
@@ -60,11 +66,25 @@ __all__ = [
 @dataclass(frozen=True)
 class Continuation:
     """A region's continuation parameter (§4.1): the pinned inputs of its promoted specification
-    rows, and the columns those rows specify, in the same order."""
+    rows, and the columns those rows specify, in the same order.
 
-    type: Literal["specification_continuation"]
+    A `revision_continuation` (ADR 0072) continues the pinned inputs whose values differ from the
+    nearest verified ancestor's: it names no columns, and `start_values` holds the ancestor's
+    values of `parameter_ids`, in the same order. A `specification_continuation` has none; its
+    start is read from the opening state."""
+
+    type: Literal["specification_continuation", "revision_continuation"]
     parameter_ids: tuple[str, ...]
     variable_ids: tuple[str, ...]
+    start_values: tuple[float, ...] = ()
+
+    def __post_init__(self) -> None:
+        if self.type == "revision_continuation" and (
+            self.variable_ids != () or len(self.start_values) != len(self.parameter_ids)
+        ):
+            raise ValueError(
+                "a revision continuation names no columns and one start value per parameter"
+            )
 
     def as_context(self) -> dict[str, Any]:
         """`AttemptContext.continuation` (ADR 0010 D7.3)."""
@@ -113,10 +133,21 @@ def level_values(
 
     The arithmetic is done in exact rationals (every double is one), so each level's value is the
     correctly rounded point on the path and does not depend on an evaluation order. `p(1)` is never
-    formed: the λ = 1 level is the target instance itself."""
+    formed: the λ = 1 level is the target instance itself.
+
+    `p_j⁰` is the opening's value of the specified column for a specification continuation, and
+    the recorded ancestor value `start_values[j]` for a revision continuation (ADR 0072), whose
+    `opening` is not read; λ = 0 then returns `start_values` exactly."""
     if lam == 1:
         raise ValueError("the λ = 1 level is the target instance itself; it is never re-bound")
     values: dict[str, float] = {}
+    if continuation.type == "revision_continuation":
+        starts = zip(continuation.parameter_ids, continuation.start_values, strict=True)
+        for parameter, source in starts:
+            star = Fraction(target[parameter])
+            start = Fraction(source)
+            values[parameter] = float(star + (1 - lam) * (start - star))
+        return values
     pairs = zip(continuation.parameter_ids, continuation.variable_ids, strict=True)
     for parameter, column in pairs:
         star = Fraction(target[parameter])

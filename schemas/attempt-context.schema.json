@@ -282,7 +282,10 @@
       ],
       "properties": {
         "type": {
-          "const": "specification_continuation"
+          "enum": [
+            "specification_continuation",
+            "revision_continuation"
+          ]
         },
         "parameter_ids": {
           "type": "array",

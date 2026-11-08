@@ -18,6 +18,12 @@ additions (ADR 0024):
   (T04 §7.7). It is offered: a caller selects it by naming it in `solve_body.policy_id`, and no
   automatic path selects PTC (T04 §7.1). Like `T08-warm-v1`, it is not a
   `benchmarks/registry.yaml` policy.
+- `RRC-revision-v1` (ADR 0072; design note `docs/design/RRC-revision-region-continuation.md`
+  §5.2): `T06-revision-v2` with only `globalization.eo_recovery` changed, to
+  `homotopy_or_revision_continuation_or_sequential_restart`. It is defined here and not yet
+  offered: it enters `APPLICATION_POLICIES` when the executor and the application carry the
+  value's revision continuation (RRC WO-3/WO-4; `docs/RRC_DECISIONS.md` D-1), since until then
+  the value would select no recovery at all.
 
 The chain `T05b-v2` → `T06-revision-v1` → `T06-revision-v2` is constructed **here**, once. It moved
 from `tests/t05b_support.py` and `tests/t06_support.py` (W0 flag E6), which now import it, so the
@@ -45,6 +51,7 @@ __all__ = [
     "INNER_ROUTE",
     "REGISTERED_POLICY_IDS",
     "ROUTE_DEFAULT_POLICY",
+    "RRC_REVISION_V1",
     "T04_W12",
     "T05B_V2",
     "T06_REVISION_V1",
@@ -93,6 +100,17 @@ T08_PTC_V1: Final[SolvePolicy] = replace(
     T06_REVISION_V2,
     policy_id="T08-ptc-v1",
     globalization=replace(T06_REVISION_V2.globalization, eo_core="ptc"),
+)
+
+#: ADR 0072 (RRC design note §5.2): the revision path's policy with revision continuation before
+#: the sequential restart on recovery edge 3. Not offered yet (module docstring; RRC D-1).
+RRC_REVISION_V1: Final[SolvePolicy] = replace(
+    T06_REVISION_V2,
+    policy_id="RRC-revision-v1",
+    globalization=replace(
+        T06_REVISION_V2.globalization,
+        eo_recovery="homotopy_or_revision_continuation_or_sequential_restart",
+    ),
 )
 
 #: §12.2 as amended by R2.3: the policies a solve through the contract may name.
