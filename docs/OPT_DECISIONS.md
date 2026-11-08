@@ -835,3 +835,36 @@ Totals: TH-R1 18.3 s, M1 5.9 s, C-MW 54.4 s ("verify" also holds report/record w
   `nlp_1_without_the_extra.json`), 30 passed after; `test_opt_request.py` + M03 schema/formulation files 92 passed.
   Availability is unchanged in every case (absent extra → unavailable already). G2's aarch64 default-env leg is
   CI's to read.
+- D-78. D-61 (design-lane reviews recorded): the served `validate.md` and `submit_job.md` hash to exactly the reviewed
+  `ec0e770d…` and `123d4e93…` (sha256 of the files at WO-8), so `REVIEW.json` records their `design-lane` review as
+  `reviewed` by "design-lane reviewer, docs/reviews/OPT-review.md (638523b3)", 2026-11-08 (format as the file's other
+  reviewed entries). The `human` reviews stay `pending` (Frank's). `test_every_description_is_reviewed_by_both_lanes`
+  now lists only `submit_job: human pending`, `validate: human pending`; description/MCP files otherwise 104 passed.
+- D-79. D-50 (amended as ruled): design §9.5 G10d now reads "0 < a/N0 ≤ 1e-9", the "|T − T_d| ≤ 1e-6 K" bound following
+  from d(a/N0)/dT ≈ 0.026 K⁻¹ at T_d. The test already bisected to ≤ 1e-9; only its docstring's "(the gate asks
+  ≤ 1e-7)" changed. No check changed.
+- D-80. S5 (as ruled): `tests/test_opt_boundary_clauses.py` calls `boundary.judge` at OPT-A3's Q̂ with (e1)–(e3) as the
+  host gives them: a control (unaltered → passes); (e5) the U-PHF split's pinned set replaced by the liquid-side flows
+  (same count, disjoint; the state zeroed there so (e4)'s value test does not decide first) → fails at (e5), the form
+  not `NO_RANK_LOSS_DETECTED`, its removed columns the substituted ones; (e4) |P| ≠ |D| (one vapour flow fewer), a
+  pinned column 1e-300 ≠ 0.0, a dropped row added to the target's `eliminated` → each fails at (e4) naming the cause.
+  5 passed (default env, 2.8 s).
+- D-81. S3 (as ruled; supersedes D-70's choice, keeps its declared limitation): OPT-L's starts are the revision's
+  (673.15 K, `include_revision: true`) and 650 K. `IPOPT_OPTIONS` unchanged. `cost_lca.py --write`: only
+  `requests/OPT-L.json` changed; `cost_lca.json` byte-identical (d_gs 1159042.380571553 Pa, d_root 660.4145192354918 K).
+  G20 now also pins the start classifications `[SOLVER_FAILED, KKT_POINT_VERIFIED]` (L-OPT-2 as a case).
+- D-82. S4 (as ruled) + N1 ("declare for 0.4"): `docs-site/guide/optimisation.md` § Declared limitations gains (a) D-42:
+  a held single-phase split on a γ–φ provider never certifies (K04's witness stencil steps the held zero side
+  negative) → `START_NOT_CERTIFIED`; the unguarded admission is reachable only on an ideal split with no K-value
+  block; (b) `pr-c1-v1` held single-phase splits → `REGIME_MARGIN_UNDEFINED` (F8); (c) thermal-port boundary
+  candidates fail V1 (A-1 scope); N1 the absolute-in-flow thresholds (|a/N0| ≤ 1e-6, min(V, L)/N0 ≥ 1e-4, N0 = 3
+  mol/s), fail-safe. (d) S1, declared (D-84). The manifest is hand-written per take and is not re-taken in
+  WO-8 (brief): the same four limitations are listed in `docs/OPT_HANDOFF.md` for the re-take, and the D-70 string
+  there must read "starts {673.15 K, 650 K}; start 0 SOLVER_FAILED" (D-81), plus S1's (D-84).
+- D-84. DECISION: S1 (fix or declare) → **declared for 0.4** (guide § Declared limitations "Dormant splits"; manifest at
+  the re-take). Reason: the fix needs a test "on a corpus revision with a dormant split" and none of the OPT/T07
+  corpus revisions certifies with a `ZERO_FLOW` split today (T05b review S3's P2, Q = 0, is the nearest candidate);
+  building it did not fit this work order's budget. The fix as ruled is small and queued: in `verification._regimes`
+  skip `split.regime == "ZERO_FLOW"` from `near` on the held (revision) path only (M03/E01 untouched, `held is None`
+  there), and drop `ZERO_FLOW` splits from the splits `RevisionNlpHost.sensitivity` gives Q4. Alternative: fix now.
+  Reversible by: a follow-up WO that lands the fix and removes the guide bullet.

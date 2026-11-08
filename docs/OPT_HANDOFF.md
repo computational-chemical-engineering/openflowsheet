@@ -1,33 +1,34 @@
 # OPT handoff (build lane, branch `wp/OPT`, worktree `.claude/worktrees/opt`)
 
-Design: `docs/design/OPT-revision-optimisation.md`; ADR 0071. Build decisions, facts, gate numbers:
-`docs/OPT_DECISIONS.md` (D-1…D-71; WO-7 gates at the end).
+Design: `docs/design/OPT-revision-optimisation.md`; ADR 0071. Review: `docs/reviews/OPT-review.md` (638523b3).
+Build decisions: `docs/OPT_DECISIONS.md` (D-1…D-84; WO-8 section at the end; D-77 reserved for M2).
 
-## Done (all work orders WO-1…WO-7)
-- WO-7 (2026-11-08): §4.9 near-threshold active-set flip in replay (`1fd79dfa`, D-68, closes D-62 f); G19 OPT-C
-  (TAC) and G20 OPT-L (GWP) on TH-C1 vs E01 hand models, `benchmarks/opt/cost_lca.py` (`a201c53b`, D-69, D-70); user
-  doc `docs-site/guide/optimisation.md` (`a46ea80f`, D-71); manifest `evidence/OPT/a46ea80f…/manifest.json`, status
-  `implemented`, harvested (`d15b28aa`, L-OPT-1, L-OPT-2, `HARVEST_SIZE` (75, 982, 129)).
-- Final gates at `a46ea80f`: G1 F0 PASS; G2 `b6bbafdb…`; audited 21 passed (G7–G10, G12–G14, G16, G19, G20);
-  G17/G22 C-MW both starts verified; default OPT files 217 passed + the D-61 red test; G3 383 passed.
-## Not done / next (orchestrator)
-1. Full gate (G21) and CI on both legs; read the aarch64 leg for G13's committed fixture. Then re-take the manifest
-   (a new `evidence/OPT/<commit>/`) with OPT.G21/OPT.G13.aarch64 results; `tested` only once OPT.D61 passes.
-2. D-61: the design lane and Frank review the two changed descriptions (`validate`, `submit_job`); until then
-   `test_every_description_is_reviewed_by_both_lanes` is red and the full gate fails.
-3. `mypy` (configured files) shows 3 pre-existing errors in `benchmarks/opt/analytic.py` / `performance.py` — check
-   whether the gate's mypy reports them.
-## Questions for the reviewer / design lane
-- D-70: Ipopt stalls at max_iter on OPT-L from the feasible side (673.15 K, 661 K; also other scalings); verifies
-  from 650 K. Robustness of fixed Ipopt options (monotone mu, L-BFGS) — change options or keep the declared limit?
-- D-68: a near-threshold active-set flip forgives the active-set-dependent entries (active_set, kkt, V3 list, V5)
-  and the classification/status they move; verdict MATCH if nothing else differs.
-- D-69: G19 starts are explicit (revision outside the box); hand TAC in the audited env via a subprocess with mpmath.
-- Open from WO-6: D-58 (Q26 allow-list), D-60 (resolver), D-63 (G12 wall-clock mask), D-66, G13 aarch64 floors.
+## WO-8 (review fix round) — state 2026-11-08
+- Merged origin/main (no harvest conflicts). Done, committed: M1 `c54216f9` (D-72), M4 `7269b3b6` (D-73),
+  M3 `b5bfa8dc` (D-74, R-939 addendum), M5 `61262021` (D-75), M6 `a50c54f2` (D-76), ruff `95b2cf8e`,
+  D-61 design-lane reviews `3bc4e732` (D-78; human reviews pending, Frank's), D-50/G10d `7b7f0b24` (D-79),
+  S5 `b903e8f8` (D-80), S3 `9de44aa7` (D-81), S4 `ee676f89` (D-82), S1 declared `e7ada37b` (D-84).
+- M2 (dependency inversion, D-77): delegated to an opus-engineer in this worktree; at handoff its edits were
+  UNCOMMITTED in cli.py, jobs/runner.py, validation.py, studies/nlp/{host,replay,request,revision,revision_host}.py,
+  performance.py, opt_report_dump.py. Brief: scratchpad M2-brief.md (copy in the WO-8 report). Check `git status`.
+## Next (in order)
+1. Finish/verify M2: `tests/test_m04_study.py` + `tests/test_t07_interrupt.py` green; commit with D-77.
+2. S2 (not done): `application/validation.py` `_validate_optimization`: deferred assessment checks
+   (`assessed and code.startswith("ASSESSMENT_")`) → `"WARN"` with a "not established statically …" text instead of
+   `PASS`/`ASSESSMENT_AT_START`; status stays READY_FOR_OPTIMIZATION; update the test that pins PASS; log D-83.
+3. Gates (none run after M2): G1 `scripts/corpus_identity.py --check`; G2 (below) expect `b6bbafdb…`; audited
+   `test_opt_benchmarks_nlp.py test_opt_boundary.py test_opt_replay_nlp.py test_opt_job_nlp.py
+   test_opt_cost_lca_nlp.py` (G7–G10, G12, G13, G19, G20 — G20 now pins starts [SOLVER_FAILED, KKT_POINT_VERIFIED],
+   unverified); G22 `benchmarks/opt/performance.py`; default `tests/test_opt_*.py`, m02/m03/m06/F0-guard files.
+4. Push wp/OPT; orchestrator: full gate, CI both legs, manifest re-take with D-82's limitation strings
+   (γ–φ held splits START_NOT_CERTIFIED; pr-c1-v1 REGIME_MARGIN_UNDEFINED; thermal-port boundary fails V1; N1
+   absolute flow thresholds; S1 dormant splits) and the D-70 string updated (starts {673.15 K, 650 K}).
+## Measured in WO-8
+- M1: probe 5 differences → 0; CI aarch64 pair matches; test_opt_replay 14 passed. M3 guards+F0 68 passed.
+  M5 m02 23 passed (1 failed before). M6 simulated aarch64 m03_schemas 1 failed → 30 passed. S5 5 passed.
 ## How to run
 - Default env: `PYTHONPATH=$PWD/src /home/frankp/Codes/OpenFlowsheet/.venv/bin/python -m pytest …` (serial).
 - Audited env: `W=/home/frankp/Codes/OpenFlowsheet/.claude/worktrees/m05; OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1
   MKL_NUM_THREADS=1 scripts/m03_nlp_check.sh --no-inventory $W/.venv-nlp $W/.reference-downloads/m03-ipopt -- <tests>`.
 - G2: `OMP_NUM_THREADS=1 PYTHONNOUSERSITE=1 PYOMO_CONFIG_DIR=$W/.venv-nlp/share/pyomo PYTHONPATH=$PWD/src:$W/.reference-
-  downloads/m03-ipopt/nlp-test-tools $W/.venv-nlp/bin/python scripts/opt_m03_dump.py $PWD OUT --nlp` (no BLAS pins).
-- `benchmarks/opt/cost_lca.py --check` re-runs both searches (~90 s, default env).
+  downloads/m03-ipopt/nlp-test-tools $W/.venv-nlp/bin/python scripts/opt_m03_dump.py $PWD OUT --nlp`.
