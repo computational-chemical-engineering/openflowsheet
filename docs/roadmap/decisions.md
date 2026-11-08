@@ -512,3 +512,15 @@ D-61); mypy and ruff clean. OPT is otherwise ready: after Frank's review of `val
 `REVIEW.json`) and his acceptance of ADR 0071, re-run CI, re-take the manifest as `tested` at that head, merge (no
 squash), F0 on main; then RRC rebases. Merge-time items: surface link c_4 vs X02/MSG (whoever merges later renumbers),
 global-state cache count (OPT and X02 each move 35 → 36: the combined count is 37), HARVEST_SIZE, R-960 provisional.
+
+## 2026-11-08 — WIT built (`wp/WIT` `c32e3e4b`), review `1476a017` → fix round
+
+Build: WIT.A01–A14 pass; surrogate VERIFIED; GP-C3 held splits verify; F0 PASS; passing certificates bitwise.
+Review: must-fix F-1 (a round-off plateau — all four stencil values bitwise equal at two levels — lets the escalation
+"agree" on ≈ 0 and pass a dropped AD term; reproduced on test doubles) → §4.8.3 (c) sentence + WIT.A15. F-2 (skip
+ZERO_FLOW splits in classes 2/4), F-3 (two untested paths), F-4 (flash-style dormant-vapour split unmeasured).
+E-1 ruled honest → M-6 part a (test, docstrings, §4.8.6, R-282 note) now; part b (the `c1.tp_flash` manifest
+sentence moves its artifact hash and F0 M9 entry) → Frank Q-WIT-2.
+DECISION: D-1 → amend ADR 0073 D5 to give Wilson's dormant-liquid columns their own reason (not
+`pr_c1_zero_flow_columns`), while no registered certificate carries one. Alternative: reuse the pr-c1 reason literally.
+Reversible by: reverting that commit.

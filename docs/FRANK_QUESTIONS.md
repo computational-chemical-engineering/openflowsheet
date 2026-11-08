@@ -472,3 +472,8 @@ on unless you say otherwise:
   with a declared partial derivative check (the zero liquid-side columns cannot be differenced: no derivative exists
   there)? Default: yes, as already done for zero flows on `pr-c1-v1` (R-281).
 - Also: accept ADR 0073.
+- **Q-WIT-2 (2026-11-08, from the WIT review):** with the fixed derivative check, an ammonia flash state near its
+  dew point now verifies honestly, so the "near-dew window" sentence in the `c1.tp_flash` model's manifest text
+  (`src/openflowsheet/models/c1/flash.py:343-349`) states an outdated edge. Correcting the sentence changes that
+  model's artifact hash and one frozen corpus entry (F0 M9), though not its `model_version` or any result. Default:
+  correct it in its own commit after your yes; until then the sentence stays as it is.
