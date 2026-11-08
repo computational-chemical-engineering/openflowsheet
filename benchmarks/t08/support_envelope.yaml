@@ -7585,7 +7585,10 @@ harvest:
   class: E
   to:
   - L-COL-9
-  note: 'S11''s envelope row L-COL-9, narrowed by RRC G5 (design note §6, ADR 0072)'
+  note: 'S11''s envelope row L-COL-9, narrowed by RRC G5 (design note §6, ADR 0072). G5''s case C3 is
+    a splitter edit inside a column region; continuation in the column''s end parameters is mechanism
+    evidence only (F1, a forced edge). test_a_revision_region_has_no_edge_3_continuation asserts that
+    the column region has no specification-continuation parameter'
 - manifest: evidence/S11/01e72ca464dcb68c489e235d3d5446d450e109e1/manifest.json
   item: limitations[12]
   sha256: 532a226917fb7747cda9fba269420a91ba12973be47913cbaf742adc29ec7135

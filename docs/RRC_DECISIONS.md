@@ -265,3 +265,8 @@ results), `40fba287` (runner self-contained), `b91b0ddb` (registration, results 
   `rejected("opening(<check>:<subject>)")`; §5.7's message is `revision_continuation_rejected(opening:<check>:<subject>)`
   with `<subject>` mandatory, never a float (D-6); §5.8 says `absent`/`rejected` with no `initializer_rejected` event
   means the application refused the source and edge 3 never fired (D-10; E3c's note says the same). Text only.
+- **D-38 (review ruling 5 on D-24, and S4's L-COL-9 half).** L-COL-9's harvest note in
+  `benchmarks/t08/support_envelope.yaml` now says that G5's C3 is a splitter edit inside a column region, that
+  column end-parameter continuation is mechanism evidence only (F1, forced edge), and glosses the cited
+  `test_a_revision_region_has_no_edge_3_continuation` (it asserts no *specification* continuation parameter). The
+  test is not renamed. The note is not rendered, so `docs/support-matrix.md` does not move; `--check` 0 problems.
