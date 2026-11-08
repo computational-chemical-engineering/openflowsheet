@@ -823,3 +823,7 @@ Totals: TH-R1 18.3 s, M1 5.9 s, C-MW 54.4 s ("verify" also holds report/record w
   document re-dumps to its committed bytes, and F0's `--check` does not read the key); `tests/f0_support.py`
   `N_ARCHIVED_OUTPUTS` = 36 + 6; `test_f0_corpus_identity` pins 36 from the 0.3.0 index plus exactly the 6 fixture
   paths. Guards untouched, fixture untouched. R-939 addendum in the register. Three guards + F0 identity: 68 passed.
+- D-75. M5 (as ruled): `test_m02_schemas.py::test_g1c_*` strips OPT's Amendment 16 additions with the existing
+  `opt_schema_support.without_opt` (the surface chain's c_4 strip: the `optimize` enum value and branches, the six
+  artifact kinds, `job_result.optimization`, `validate`'s `optimization`) before `without_m04`, the later package first.
+  No snapshot re-taken. Before: 1 failed (the `solve` digest); after: file 23 passed.
