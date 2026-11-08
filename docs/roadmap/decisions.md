@@ -712,3 +712,15 @@ fail on the old code); 44 served 0.3.0 documents byte-identical; G7 41 bitwise, 
 ADR 0025 A1 ×2 (`data_sha256`, `implementation_sha256` unclassified). Both have build-lane precedents (envelope
 admission; per-package ADDENDA as M04/M05/E01/OPT) → WO-8b part 1, stop if a field hashes floats. ST's link is c_5
 on the branch; at WO-7 it follows X02 (c_5) and OPT (c_6) → c_7. Next: WO-8b (the three tests + web-shell table).
+
+## 2026-11-08 — ST WO-8b (`wp/ST` `3ba9edc3`): web-shell table done; one design-lane classification open
+
+T08.A20: `get_stream_table` admitted to the envelope on four transports (22 → 23 operations), precedent MSG WO-7
+`631a9f3f` after ADR acceptance (ADR 0068 accepted by Frank). Web shell (Frank's O3): streams screen shows the full
+table below n/T/P (per stream total + per phase, `phase_source`, boundary flag, SI columns, null → "—" with reason;
+`flash_failed` notice; unit/overall energy table); `routes.js` regenerated (was stale: a fourth pre-existing red);
+the shell calls 18 operations; message catalogue `7573d7ea…` → `3ac1279a…`. DECISION (engineer): fetch the whole
+table, no on-screen pager. Reversible by: `streamTableOf`. 2246 passed incl. browser smoke 32 (ran locally), node 98;
+F0 PASS. Open: ADR 0025 D2.3 for `data_sha256` (SYN-001 hashes registered float literals) and
+`implementation_sha256` → specifier ruling (brief `docs/briefs/ST-adr0025-classification.md`); default exact (as
+`constants_sha256`).
