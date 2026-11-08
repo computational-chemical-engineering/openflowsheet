@@ -38,9 +38,9 @@ function, a registered digest and Frank's carry extended to name it):
   WO-6, before `explain`).
 - c_5, ADR 0068 (ST, ADR 0019 Amendment 13): the `get_stream_table` tool, stripped by
   `tests/st_schema_support.py`'s `without_st` (ST G12's decomposition function); `D_5` =
-  `6705fb05…`, measured at ST WO-3 on `wp/ST` with `wp/MSG` merged
-  (`tests/test_t08_w2_surface_digest.py`'s `ST_SERVED_SHA256`). Its register entry is written when
-  ADR 0068 is accepted (ST_DECISIONS D3-7); until then the link names the ADR.
+  `ebb4ca84…`, re-measured after the ST review's description edits on `wp/ST` with `wp/MSG` merged
+  (`tests/test_t08_w2_surface_digest.py`'s `ST_SERVED_SHA256`; `6705fb05…` at WO-3). Its register
+  entry is written when ADR 0068 is accepted (ST_DECISIONS D3-7); until then the link names the ADR.
 
 The released 0.2.0a1 ran the two-link chain (its committed record at `C_α²`); a re-run of the
 alpha's step 8 uses this script at the tag.
@@ -105,10 +105,11 @@ V17_C2_FILE_SHA256: Final = {
 MSG_FILE_SHA256: Final = {
     "explain": "f1fca282f28f7e1a0f0dc6407bb405734f18b811fc97f7e0f5d0b0afac9b8d3e",
 }
-#: c_5 (ADR 0068): the one tool ST added, `get_stream_table`, its file pinned as MSG's is. Its two
-#: reviews are pending in `REVIEW.json` (design lane at ST's reviewer pass; Frank's).
+#: c_5 (ADR 0068): the one tool ST added, `get_stream_table`, its file pinned as MSG's is, after the
+#: ST review's three description edits. Its two reviews are `REVIEW.json`'s (design lane recorded,
+#: `docs/reviews/ST-review.md`; Frank's pending).
 ST_FILE_SHA256: Final = {
-    "get_stream_table": "6f98ea4b62220c65e06328b15885f5df8eb5805432f283f7bfff0d2701e8f515",
+    "get_stream_table": "76ac57f3a89b616157986b1b650a2793d1fa3271f705745c8c853249aa59fe1d",
 }
 #: The two changed files as R-133 carried them: their reviewed hashes in `REVIEW.json` as v0.1.0
 #: released it (`PUBLIC_ROOT`).
@@ -227,7 +228,7 @@ LINKS: Final = (
         "c_5",
         "ADR 0068",
         strip_st,
-        "6705fb059ab8b09b6664537d4191728fe8241b3e8bad4de85801d2415effe2d4",
+        "ebb4ca841958f26521f8239f40bb0dc67d59d0115dd391a69b87818db64fad22",
     ),
 )
 

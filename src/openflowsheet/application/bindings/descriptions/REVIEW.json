@@ -184,14 +184,14 @@
     "get_stream_table": {
       "tool": "get_stream_table",
       "file": "get_stream_table.md",
-      "sha256": "6f98ea4b62220c65e06328b15885f5df8eb5805432f283f7bfff0d2701e8f515",
-      "characters": 1287,
+      "sha256": "76ac57f3a89b616157986b1b650a2793d1fa3271f705745c8c853249aa59fe1d",
+      "characters": 1486,
       "reviews": [
         {
           "review_kind": "design-lane",
-          "status": "pending_design_review",
-          "reviewed_by": null,
-          "reviewed_at": null
+          "status": "reviewed",
+          "reviewed_by": "reviewer (design lane), docs/reviews/ST-review.md §Description (approved after its three edits)",
+          "reviewed_at": "2026-11-08"
         },
         {
           "review_kind": "human",

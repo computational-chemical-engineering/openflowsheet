@@ -78,9 +78,11 @@ M04_SERVED_SHA256 = "455d01eb2f420032b27358798e6b331a0120aa1857f02ce3cb785164784
 #: re-measured at MSG WO-11 after `explain.md`'s two review edits (Q6). (Evidence, not a pin: at
 #: WO-7, before the edits, `1ca06b37…`; with `failure` alone, at WO-6, `b083ffe1…`.)
 MSG_SERVED_SHA256 = "eaff45852d7596816d90d744078f537e46c723e577295d347d9d73aea0942eac"
-#: ST G12 (ADR 0068; design note §7): the served digest with the `get_stream_table` tool, measured
-#: at ST WO-3 on `wp/ST` with `wp/MSG` merged. Without that tool it is `MSG_SERVED_SHA256` (c_5).
-ST_SERVED_SHA256 = "6705fb059ab8b09b6664537d4191728fe8241b3e8bad4de85801d2415effe2d4"
+#: ST G12 (ADR 0068; design note §7): the served digest with the `get_stream_table` tool,
+#: re-measured after the ST review's three description edits (2026-11-08) on `wp/ST` with `wp/MSG`
+#: merged. Without that tool it is `MSG_SERVED_SHA256` (c_5). (Evidence, not a pin: at WO-3, before
+#: the edits, `6705fb05…`.)
+ST_SERVED_SHA256 = "ebb4ca841958f26521f8239f40bb0dc67d59d0115dd391a69b87818db64fad22"
 #: The files N1 and N2 changed; the only difference from `v17-c2`'s served texts.
 CHANGED = ("commit_change", "validate")
 #: Each description's SHA-256 as `v17-c2` served it: the table of

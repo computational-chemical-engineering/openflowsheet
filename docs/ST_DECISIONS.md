@@ -234,3 +234,10 @@ M3 61/61, M4 61/61, M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 35/35).
   output]}` after the member variants, the review's wording verbatim; the no-bundle refusal's detail is
   `{job_id, output: "replay_bundle", run_outcome?}`. MSG's file: a one-hunk conflict is accepted at MSG's merge.
   `catalogue.sha256` `8fa0c03e…` → `81d3a6aa…` (message_entry fixtures re-taken; `api-errors.md` regenerated).
+- **S3 — the three description edits, verbatim.** `get_stream_table.md` 1287 → 1486 characters, SHA-256
+  `6f98ea4b…` → `76ac57f3a89b616157986b1b650a2793d1fa3271f705745c8c853249aa59fe1d`. `REVIEW.json`: design-lane
+  `reviewed` (2026-11-08, citing `docs/reviews/ST-review.md` §Description), as MSG's 8c935831; the human review
+  stays `pending`. Served MCP digest (c_5, `ST_SERVED_SHA256`) `6705fb05…` →
+  `ebb4ca841958f26521f8239f40bb0dc67d59d0115dd391a69b87818db64fad22`; `without_st` still MSG's `eaff4585…`.
+  `ST_FILE_SHA256` and `interfaces-frozen.md` re-pinned. Surface, chain, description, A48 tests: 178 passed;
+  `test_every_description_is_reviewed_by_both_lanes` red with 2 open (`explain` and `get_stream_table` human).
