@@ -591,3 +591,14 @@ S1 per-unit G8; S2 no-bundle `not_found` variant; S3 description approved after 
 REVIEW.json, digest re-recorded); S4 route from `solve-path.json`. MSG-merge notes: MSG lands as a merge commit; c_4
 contention with X02 → ST becomes c_6, re-measure G12 at merge; drop ST's duplicate R-942/R-943. Fix round brief
 `docs/briefs/ST-fix-round.md`.
+
+## 2026-11-08 — ST fix round done (`wp/ST` `e16f7e6f`)
+
+M1 R1′ (`e2079456`): SC-1 envelope 2016.0 → 0.0 W, U-VLV 2016.0 → 0.0; SC-3 U-VLV/U-PHF ±2016 → 0; S2 H flow equals the
+verifier's bitwise; only SC-1/SC-3 of 44 served 0.3.0 documents change; G8 passes (xfail removed, max 1.76e-4). S1
+per-unit check (146 rows; corpus judged at the projection, max 2.703 of tol → direct SC-1/SC-3 unit test added);
+A02-360's 2.73e-3 W is the projection (ST Ḣ = `checks.enthalpy_flow` bitwise). S2, S3 (served `ebb4ca84…`; design-lane
+approval recorded in REVIEW.json), S4 (44 documents byte-identical), text amendments, D4-1. F0 PASS; 457 targeted.
+Open for a design-lane confirmation at WO-7 (none reached by any corpus case): M1-1, M1-2 (mixture h → n·h as
+`_phase_flow`), M1-3 (Q4.R12 (b)(ii) dropped), S1-1, and the products-style flash feed with a degeneracy row. ST's
+WO-7 (manifest, full gate, CI) waits for MSG on main (Frank's `explain.md` read) and ADR 0068.
