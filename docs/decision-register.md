@@ -18550,3 +18550,28 @@ on every foundation merge.
 
 **Watch for.** REL.A20 read as "all same-form equal" without A-1's sub-check; a release manifest built from a CI run
 that is not §6.2's push run or the latest dispatch.
+
+---
+
+## R-RRC-6 — `RRC-revision-v1` is offered by name, never a route's default (ADR 0072, Proposed; 2026-11-08)
+
+| | |
+| --- | --- |
+| Date | 2026-11-08 |
+| Decided by | build lane (RRC WO-4, `docs/RRC_DECISIONS.md` D-1), executing ADR 0072 §5.2 and FQ2's default; design-lane review pending. Draft id: numbered with R-RRC-1…5 at ADR 0072's acceptance (RRC WO-6) |
+| Normative text | ADR 0072; design note `docs/design/RRC-revision-region-continuation.md` §5.2, §5.3, §5.8 |
+| Affected packages | RRC; every caller of `get_project` (M07a's MR-7 clause) |
+
+**Decision.** `RRC-revision-v1` — `T06-revision-v2` with only `globalization.eo_recovery` changed, to
+`homotopy_or_revision_continuation_or_sequential_restart` — enters `APPLICATION_POLICIES` and so is served in
+`get_project.solve_policies` (`policy_sha256` `ff2ff84f8172fca9cbfa86334f82f43eed1c0917d0c5c673ce6f1f73de915f19`). It is
+offered, never `ROUTE_DEFAULT_POLICY`'s (FQ2: by name only in 0.4), and, like `T08-warm-v1`, is not a
+`benchmarks/registry.yaml` policy. It was offered only once the executor (WO-3) and the application (WO-4) carry the
+value's revision continuation; before that, the value would have selected no recovery at all.
+
+**Rejected alternatives.** Offering it at WO-1 (a placeholder path: the executor then treated the value as "no edge").
+Making it the revision route's default (FQ2: every future revision run's identity would move, and a rescued answer would
+depend on project history).
+
+**Watch for.** `RRC-revision-v1` in `ROUTE_DEFAULT_POLICY`; a served-content move in `get_project.solve_policies` that
+no register entry names (MR-7, `tests/test_t08_b50_surface_content.py`).

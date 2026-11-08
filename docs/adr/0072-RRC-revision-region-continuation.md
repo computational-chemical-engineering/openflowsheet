@@ -177,3 +177,9 @@ ancestor.**
 **R-RRC-5 — L21 is narrowed; L-COL-9 is narrowed only on a failing-first column case (G5); R-827 is superseded only
 under the new value.**
 - **Watch for:** L-COL-9 claimed lifted on forced-edge evidence alone.
+
+**R-RRC-6 — `RRC-revision-v1` is offered by name, never a route's default.** In the register already (RRC WO-4, D-1),
+under this draft id, because M07a's MR-7 clause needs a register entry to name the served addition; numbered with the
+others at acceptance.
+- **Rejected:** offering it before the executor and the application carry the value; making it a route's default (FQ2).
+- **Watch for:** `RRC-revision-v1` in `ROUTE_DEFAULT_POLICY`.

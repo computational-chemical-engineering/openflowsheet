@@ -20,10 +20,10 @@ additions (ADR 0024):
   `benchmarks/registry.yaml` policy.
 - `RRC-revision-v1` (ADR 0072; design note `docs/design/RRC-revision-region-continuation.md`
   §5.2): `T06-revision-v2` with only `globalization.eo_recovery` changed, to
-  `homotopy_or_revision_continuation_or_sequential_restart`. It is defined here and not yet
-  offered: it enters `APPLICATION_POLICIES` when the executor and the application carry the
-  value's revision continuation (RRC WO-3/WO-4; `docs/RRC_DECISIONS.md` D-1), since until then
-  the value would select no recovery at all.
+  `homotopy_or_revision_continuation_or_sequential_restart`. It is offered by name, never a
+  route's default (FQ2), and, like `T08-warm-v1`, is not a `benchmarks/registry.yaml` policy. It
+  entered `APPLICATION_POLICIES` with the application's half (RRC WO-4; `docs/RRC_DECISIONS.md`
+  D-1), once the executor and the application carry the value's revision continuation.
 
 The chain `T05b-v2` → `T06-revision-v1` → `T06-revision-v2` is constructed **here**, once. It moved
 from `tests/t05b_support.py` and `tests/t06_support.py` (W0 flag E6), which now import it, so the
@@ -103,7 +103,7 @@ T08_PTC_V1: Final[SolvePolicy] = replace(
 )
 
 #: ADR 0072 (RRC design note §5.2): the revision path's policy with revision continuation before
-#: the sequential restart on recovery edge 3. Not offered yet (module docstring; RRC D-1).
+#: the sequential restart on recovery edge 3. Offered by name (module docstring; RRC D-1).
 RRC_REVISION_V1: Final[SolvePolicy] = replace(
     T06_REVISION_V2,
     policy_id="RRC-revision-v1",
@@ -119,6 +119,7 @@ APPLICATION_POLICIES: Final[Mapping[str, SolvePolicy]] = {
     "T04-W12": T04_W12,
     "T08-ptc-v1": T08_PTC_V1,
     "T08-warm-v1": T08_WARM_V1,
+    "RRC-revision-v1": RRC_REVISION_V1,
 }
 #: Every name `benchmarks/registry.yaml` registers a solve policy under — its `policies` keys and
 #: their `policy_id` values, which differ for `T04-HOM-01-edge-off` (policy id `T04-HOM-01`) — a

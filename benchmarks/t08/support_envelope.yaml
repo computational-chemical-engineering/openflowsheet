@@ -221,16 +221,18 @@ axes:
   - id: solve_policies
     title: Solve policies
     statement: >-
-      The four offered policies of B27. `default` resolves to the route's registered policy
-      (`T06-revision-v2` on `revision_eo`, `T04-W12` on `legacy_eo`). PTC is selectable by explicit
-      policy only (`T08-ptc-v1`) and is experimental (L01); compatible warm starts by explicit
-      policy only (`T08-warm-v1`, R-124; L-WS-1, L-WS-2).
-    members: [T04-W12, T06-revision-v2, T08-ptc-v1, T08-warm-v1]
+      The four offered policies of B27, and RRC's. `default` resolves to the route's registered
+      policy (`T06-revision-v2` on `revision_eo`, `T04-W12` on `legacy_eo`). PTC is selectable by
+      explicit policy only (`T08-ptc-v1`) and is experimental (L01); compatible warm starts by
+      explicit policy only (`T08-warm-v1`, R-124; L-WS-1, L-WS-2); revision continuation on
+      recovery edge 3 by explicit policy only (`RRC-revision-v1`, ADR 0072, Proposed).
+    members: [RRC-revision-v1, T04-W12, T06-revision-v2, T08-ptc-v1, T08-warm-v1]
     evidence:
       - tests/test_t07_w5a_inspection.py::test_get_project_states_the_project_and_the_caller
       - tests/test_t07_b3_policies.py::test_an_offered_policy_is_admitted
       - tests/test_t08_ptc_r1_case.py::test_the_policies_are_t06_revision_v2_with_only_the_registered_changes
       - tests/test_t08_w4_warm_starts.py::test_t08_warm_v1_is_t06_revision_v2_with_only_the_chain_changed
+      - tests/test_rrc_edge3.py::test_the_policy_differs_from_t06_revision_v2_in_its_edge_only
       - doc:docs/reviews/T08-verdict-V14b.md
 
   - id: globalization_and_recovery
