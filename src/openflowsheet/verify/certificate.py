@@ -34,7 +34,6 @@ from openflowsheet.compile.casadi_backend import compile_problem
 from openflowsheet.compile.reference import state_vector
 from openflowsheet.compile.spec import ProblemSpec
 from openflowsheet.compiled import CompiledProblem, EvaluationContext
-from openflowsheet.models import flow_id
 from openflowsheet.models.syn001.flowsheet import STREAMS, Syn001Flowsheet
 from openflowsheet.numerics.scaling import Scaling
 from openflowsheet.orchestrator.rank import (
@@ -60,8 +59,8 @@ from openflowsheet.verify import (
     unsupported,
 )
 from openflowsheet.verify.checks import (
+    COMPONENTS,
     KIND_TOLERANCE,
-    ONE_SIDED_BASES,
     VerifierError,
     admissibility_checks,
     alias_checks,
@@ -70,11 +69,11 @@ from openflowsheet.verify.checks import (
     energy_checks,
     label_checks,
     material_checks,
-    one_sided_columns,
     qualification,
     residual_checks,
     routing_tolerances,
     specification_checks,
+    witness_classes,
 )
 from openflowsheet.verify.projection import PROJECTED_CATEGORIES, Projection, project
 
@@ -827,6 +826,14 @@ def verify_revision(
     bounds = [k for k, check in enumerate(table) if check.category == "bounds_and_domain"]
     at = bounds[-1] + 1 if bounds else len(table)
     checks += [*table[:at], *surrogate_checks, *table[at:]]
+    classes = witness_classes(
+        target.spec.variable_ids,
+        final_state,
+        view.components,
+        basis=basis,
+        streams=view.streams,
+        splits=splits,
+    )
     return _issue(
         target,
         result,
@@ -842,22 +849,14 @@ def verify_revision(
         screened=screened,
         projection=projection,
         provider=fresh,
-        # §14.2 B17 *Consequence* as narrowed by §14.3 C2 (R-281): a `pr-c1-v1` revision's
-        # stream component-flow columns that are exactly 0.0 are not differenced by the witness;
-        # none for any other basis.
-        unstenciled=frozenset(
-            name
-            for stream in view.streams
-            for component in view.components
-            if final_state[name := flow_id(stream, component)] == 0.0
-        )
-        if basis == "pr-c1-v1"
-        else frozenset(),
-        # S11 rulings item 2 (R-831): on a Wilson basis, each exactly-zero component column beside
-        # a positive sibling is differenced one-sided (Z); empty on every other basis.
-        one_sided=one_sided_columns(target.spec.variable_ids, final_state, view.components)
-        if basis in ONE_SIDED_BASES
-        else frozenset(),
+        # K04 §4.8.2 (amendment WIT, ADR 0073): not differenced, and listed — §14.2 B17
+        # *Consequence* as narrowed by §14.3 C2 (R-281), a `pr-c1-v1` revision's stream
+        # component-flow columns exactly 0.0 (class 1), and a dormant lifted liquid side on a
+        # Wilson basis (class 2, A2); differenced one-sided — S11 rulings item 2's (R-831) Z
+        # (class 3) and a dormant lifted vapour side on a Wilson basis (class 4, A1).
+        unstenciled=frozenset(name for name, k in classes.items() if k in (1, 2)),
+        one_sided=frozenset(name for name, k in classes.items() if k in (3, 4)),
+        components=view.components,
         appended=surrogate_limitations,
         external=external,
     )
@@ -1168,6 +1167,7 @@ def _certify(
         phase_branch=_phase_branch(final_state),
         screened=screened,
         projection=projection,
+        components=COMPONENTS,
     )
 
 
@@ -1281,6 +1281,7 @@ def _issue(
     provider: PropertyProvider | None = None,
     unstenciled: frozenset[str] = frozenset(),
     one_sided: frozenset[str] = frozenset(),
+    components: Sequence[str] = (),
     appended: Sequence[Limitation] = (),
     external: ExternalEvidence | None = None,
 ) -> SolutionCertificate:
@@ -1300,7 +1301,9 @@ def _issue(
     if external is not None:
         # M02 design note §4.4: the coupling checks are judged with the check set.
         checks += external.checks
-    checks += derivative_witness(target, final_state, unstenciled=unstenciled, one_sided=one_sided)
+    checks += derivative_witness(
+        target, final_state, unstenciled=unstenciled, one_sided=one_sided, components=components
+    )
 
     matrix, scaled_residual = screened.matrix, screened.scaled_residual
     identity, regularity = screened.identity, screened.regularity
