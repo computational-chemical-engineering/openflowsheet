@@ -16,6 +16,7 @@ entries:
       members:     {type: list, optional: true}
       members_total: {type: number, optional: true, label: files in the bundle}
       run_outcome: {type: code, optional: true}
+      output:      {type: text, optional: true}
       code:        {type: text, optional: true}
       suggestions: {type: list, optional: true}
     summary: "Nothing named[ {artifact_id}][ {revision_id}][ {job_id}] exists in this project."
@@ -35,6 +36,11 @@ entries:
         summary: "Bundle {bundle_id} has no file '{member!raw}'."
         why: "This bundle holds {members}."
         action: "Read one of the files the bundle holds."
+      # ST review D3-6: a job that exists but wrote no replay bundle.
+      - when: {has: [job_id, output]}
+        summary: "Job {job_id} wrote no {output!raw} output[: its run ended {run_outcome}]."
+        why: "The stream table is computed from a solve's replay bundle; this job has none."
+        action: "Read the stream table of a solve job that wrote a replay bundle."
       - when: {has: [code, suggestions], not_equals: {suggestions: []}}
         summary: "There is no message code '{code!raw}'."
         why: "Codes are case-sensitive and listed in the docs' Messages section."

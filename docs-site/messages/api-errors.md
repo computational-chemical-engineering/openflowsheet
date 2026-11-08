@@ -243,7 +243,7 @@ The change was refused: a replacement model does not fit the model it replaces.
 - **Summary:** Nothing named &lt;artifact_id&gt; &lt;revision_id&gt; &lt;job_id&gt; exists in this project.
 - **Why:** The id is not one this project has recorded.
 - **Do:** Check the id; a job's outputs list the artifact ids it wrote.
-- **Parameters:** `artifact_id` (artifact, optional), `revision_id` (revision, optional), `job_id` (job, optional), `bundle_id` (bundle, optional), `member` (text, optional), `members` (list, optional), `members_total` (number, optional), `run_outcome` (code, optional), `code` (text, optional), `suggestions` (list, optional)
+- **Parameters:** `artifact_id` (artifact, optional), `revision_id` (revision, optional), `job_id` (job, optional), `bundle_id` (bundle, optional), `member` (text, optional), `members` (list, optional), `members_total` (number, optional), `run_outcome` (code, optional), `output` (text, optional), `code` (text, optional), `suggestions` (list, optional)
 
 Example:
 

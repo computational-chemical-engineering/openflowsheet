@@ -230,3 +230,7 @@ M3 61/61, M4 61/61, M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 35/35).
   heater→flash stream, two-phase: 66173.21230169198 W both). So the heater's +2.7297e-3 W and the flash's
   −2.7297e-3 W are the stored state's own residual; the rows (1.46e-11, 3.64e-12) were judged at the projection
   x̃. Declared by `judged_at`; no ruling needed.
+- **S2 — D3-6 ruled.** `not_found` gains `output: {type: text, optional: true}` and the variant `{has: [job_id,
+  output]}` after the member variants, the review's wording verbatim; the no-bundle refusal's detail is
+  `{job_id, output: "replay_bundle", run_outcome?}`. MSG's file: a one-hunk conflict is accepted at MSG's merge.
+  `catalogue.sha256` `8fa0c03e…` → `81d3a6aa…` (message_entry fixtures re-taken; `api-errors.md` regenerated).

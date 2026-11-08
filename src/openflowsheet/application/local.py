@@ -1520,6 +1520,7 @@ class LocalApplication:
                 "not_found",
                 f"job {job_id} has no replay bundle",
                 operation=operation,
+                output="replay_bundle",
                 **self._run_outcome(job_id),
             )
         row = self._artifact_row(bundle.artifact_id, operation)

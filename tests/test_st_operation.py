@@ -38,6 +38,7 @@ from openflowsheet.application.local import STREAM_TABLE_DEPTH, LocalApplication
 from openflowsheet.application.projection import MAX_DEPTH
 from openflowsheet.application.types import Change, schema_errors
 from openflowsheet.canonical import document_sha256
+from openflowsheet.messages.render import render_error
 from openflowsheet.run.bundle import ARTIFACT_DIR
 
 RANKINE = REPO_ROOT / "examples" / "rankine-cycle.changeset.json"
@@ -224,6 +225,31 @@ def test_g11_an_inconsistent_bundle_is_an_internal_error(
         "bundle_id": f"{jobs.inconsistent}:bundle",
         "reasons": ["state_sha256_mismatch"],
     }
+
+
+@pytest.mark.parametrize("outcome", [None, "INITIALIZATION_FAILED"])
+def test_d3_6_a_job_without_a_replay_bundle_renders_its_own_variant(outcome: str | None) -> None:
+    """ST review D3-6: the refusal names the job and the missing output, never "Nothing named
+    '<job>' exists" (the job exists). The detail is `{job_id, output, run_outcome?}`."""
+    detail: dict[str, Any] = {"operation": "get_stream_table", "job_id": "job-000002"}
+    detail["output"] = "replay_bundle"
+    if outcome is not None:
+        detail["run_outcome"] = outcome
+    rendered = render_error(
+        {
+            "code": "not_found",
+            "message": "job job-000002 has no replay bundle",
+            "retryable": False,
+            "detail": detail,
+        },
+        strict=True,
+    )
+    ended = "" if outcome is None else f": its run ended {outcome}"
+    assert rendered["summary"] == f"Job 'job-000002' wrote no replay_bundle output{ended}."
+    assert rendered["why"] == (
+        "The stream table is computed from a solve's replay bundle; this job has none."
+    )
+    assert rendered["action"] == "Read the stream table of a solve job that wrote a replay bundle."
 
 
 def test_g11_an_unknown_job_is_not_found(
