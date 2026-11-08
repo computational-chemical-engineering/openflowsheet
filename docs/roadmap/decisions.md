@@ -428,3 +428,15 @@ DECISION: the derivative-witness step policy (X10 L-X10-1: surrogate UNVERIFIED 
 single-phase splits never certify) → queued as one design-lane item after OPT and RRC, not started now: any change to
 K04's witness moves certificate bytes of registered records (an identity move that needs Frank). Alternative: a
 specifier pass now. Reversible by: starting it earlier.
+
+## 2026-11-08 — OPT WO-6/WO-7 done (`wp/OPT` `48733e55`); reviewer started
+
+WO-6: `optimize` job, c_4 link (D_4 `3fb06cad…`, strip → D_3 `455d01eb…`), replay (re-checks the certified chain; x86
+fixture MATCH without Ipopt), CLI, G11–G16. WO-7: §4.9 near-threshold rule (D-68); G19 interior cost optimum vs golden
+section 0.23 Pa (tol 10 Pa), TAC vs hand rel 6e-16; G20 LCA vs bisection 2.6e-10 K, GWP bitwise; user guide page;
+manifest `evidence/OPT/a46ea80f…` `implemented` (OPT.D61 `fail`, G21 + G13.aarch64 `unsupported`). F0 PASS; G2
+`b6bbafdb…` unchanged.
+OPT cannot reach `tested` until the two changed binding descriptions (`validate.md`, `submit_job.md`) carry the
+design-lane review (OPT's reviewer, now) and Frank's human review (`test_every_description_is_reviewed_by_both_lanes`,
+T07 §11.3). Added to Frank's list. D-70 (Ipopt crawl on OPT-L from the feasible side) → declared limitation L-OPT-2,
+for the reviewer.

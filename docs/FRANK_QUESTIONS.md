@@ -437,6 +437,9 @@ Design `docs/design/OPT-revision-optimisation.md` §7. Defaults, acted on unless
 - **Q9 (new):** should ordinary `solve` runs use the same reduced check at a boiling/dew point? Default: not in 0.4.
 - **Q8:** audit Ipopt for ARM in 0.4? Default: no (x86-64 only; ARM replays but does not optimise).
 - Also: accept ADR 0071 (it lifts the old "optimisation unsupported" refusal and adds an `optimize` job).
+- **Description review (blocks OPT's `tested`):** the agent-facing texts of `validate` and `submit_job` changed
+  (`src/openflowsheet/application/bindings/descriptions/validate.md`, `submit_job.md` on `wp/OPT`). Each needs your
+  human review, as every MCP description does (T07 §11.3).
 
 ## RRC — continuing from an earlier solved version (2026-11-08; ADR 0072 Proposed; your Q30)
 
