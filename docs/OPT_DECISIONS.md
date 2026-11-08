@@ -887,3 +887,7 @@ Totals: TH-R1 18.3 s, M1 5.9 s, C-MW 54.4 s ("verify" also holds report/record w
   skip `split.regime == "ZERO_FLOW"` from `near` on the held (revision) path only (M03/E01 untouched, `held is None`
   there), and drop `ZERO_FLOW` splits from the splits `RevisionNlpHost.sensitivity` gives Q4. Alternative: fix now.
   Reversible by: a follow-up WO that lands the fix and removes the guide bullet.
+- D-77 (docs, completes D-77's "not done"): the guide's Python example (`docs-site/guide/optimisation.md`) now passes
+  `routes=REVISION_ROUTES` and the required `solve_policy`/`check_policy` (as `cli.command_optimize` does; the old
+  example omitted both policies); design note §4.12's signature line gains `routes` and `interruptions=()`.
+  `scripts/doc_pages.py --check`: up to date. Layering re-run at 5f0da859: `test_m04_study` + `test_t07_interrupt` 50 passed.

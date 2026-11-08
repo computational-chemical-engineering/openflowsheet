@@ -470,8 +470,9 @@ revision is `DRAFT`; else `INVALID`. Validation solves nothing (blueprint §4.3)
 
 ### 4.12 Surfaces
 
-- **Python:** `studies.nlp.revision.optimize_revision(document, request, *, directory, solve_policy, check_policy,
-  check=None, progress=None) -> OptimizationOutcome(report, record_dir, points)` — the library entry the job body calls
+- **Python:** `studies.nlp.revision.optimize_revision(document, request, *, directory, routes, solve_policy,
+  check_policy, check=None, interruptions=(), progress=None) -> OptimizationOutcome(report, record_dir, points)`
+  (`routes`: the application's `revision_routes.REVISION_ROUTES`, OPT review M2, D-77) — the library entry the job body calls
   (as `solve` calls `run_revision_session`); `LocalApplication.submit_job` / `validate` as above.
 - **HTTP/MCP:** `POST /v1/jobs` and the six job tools (new branch); `validate_revision` (new member).
 - **CLI:** `openflowsheet optimize REVISION --request FILE --out DIR [--json]` (direct library run, no project);

@@ -78,9 +78,21 @@ other report). A request with problems prints an `invalid_request` error and wri
 **Python**
 
 ```python
-from openflowsheet.studies.nlp.revision import optimize_revision
+from pathlib import Path
 
-outcome = optimize_revision(document, request, directory="record")
+from openflowsheet.application.policies import DEFAULT_POLICY_ID, resolve_policy
+from openflowsheet.application.revision_routes import REVISION_ROUTES
+from openflowsheet.studies.nlp.revision import optimize_revision
+from openflowsheet.verify.certificate import CheckPolicy
+
+outcome = optimize_revision(
+    document,
+    request,
+    directory=Path("record"),
+    routes=REVISION_ROUTES,
+    solve_policy=resolve_policy(DEFAULT_POLICY_ID, "revision_eo"),
+    check_policy=CheckPolicy(),
+)
 report = outcome.report.as_document()
 ```
 
