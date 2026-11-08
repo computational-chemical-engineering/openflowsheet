@@ -440,3 +440,13 @@ OPT cannot reach `tested` until the two changed binding descriptions (`validate.
 design-lane review (OPT's reviewer, now) and Frank's human review (`test_every_description_is_reviewed_by_both_lanes`,
 T07 §11.3). Added to Frank's list. D-70 (Ipopt crawl on OPT-L from the feasible side) → declared limitation L-OPT-2,
 for the reviewer.
+
+## 2026-11-08 — OPT review (`d25c16fb`, CI addendum `638523b3`) → fix round WO-8
+
+Verdict sound: no path to a false KKT_POINT_VERIFIED; no ordinary certificate changes; A-1 sound; unguarded admission
+fails safe. Must-fix M1 (replay floors each verification float at its judging check's tolerance — not new T08-v2
+floor names; aarch64 differed 4.4e-16 abs on `stationarity_residual_inf`), M2 (studies → application imports: invert
+the dependency), M3 (six fixture `solve-policy.json` registered as archived outputs, R-939 addendum), M4 (routes.js),
+M5 (`without_opt` strip for M02's solve snapshot), M6 (M03 message byte-identical without the extra on aarch64).
+S1–S5. D-61: both descriptions pass the design-lane review; Frank's human review open. CI run 42431066903 (at
+`de18aca2`) failed 7/7/10 on x86/default-install/aarch64, all covered by M1–M6 or D-61.
