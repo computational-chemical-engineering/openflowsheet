@@ -146,6 +146,42 @@ def r0_projection(artifacts: Mapping[str, Any]) -> dict[str, Any]:
                 ),
                 "projected_ids": [entry[0] for entry in warm_start["projections"]],
             }
+        # ADR 0072 (RRC design note §5.8): a revision continuation's R0 — the decision, the
+        # continued ids and their start values (canonical strings of document constants), the
+        # source's declaration identity, signature, document `content_hash` and pinned inputs;
+        # never the provenance ids, a float, or a float-derived digest (`full_state_sha256`, the
+        # candidate's `state_sha256`: shape only). No bundle before RRC has the member.
+        continuation = solve_path.get("revision_continuation")
+        if isinstance(continuation, dict):
+            identity = continuation["source_identity"]
+            source = continuation["source_document"]
+            candidate = continuation["candidate"]
+            ids = candidate.get("variable_ids") if isinstance(candidate, dict) else None
+            projection["revision_continuation"] = {
+                "record": continuation["record"],
+                "selection": continuation["selection"],
+                "status": continuation["status"],
+                "reason": continuation["reason"],
+                "continued": continuation["continued"],
+                "source_identity": (
+                    {
+                        "model_version": identity["model_version"],
+                        "constants_sha256": identity["constants_sha256"],
+                    }
+                    if isinstance(identity, dict)
+                    else None
+                ),
+                "source_signature": continuation["source_signature"],
+                "source_content_hash": (
+                    source.get("content_hash") if isinstance(source, dict) else None
+                ),
+                "source_parameters": continuation["source_parameters"],
+                "candidate_variable_ids": (
+                    sorted(ids)
+                    if isinstance(ids, list) and all(isinstance(name, str) for name in ids)
+                    else None
+                ),
+            }
     # T07 ruling round 2 F1.3: the solution state's ids only. Its values and its digest are
     # float-derived and never R0 (ADR 0007; ADR 0008 D2.1). Inert for every earlier bundle.
     solution_state = artifacts.get("solution-state.json")
