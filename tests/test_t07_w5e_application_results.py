@@ -103,13 +103,24 @@ def _target(document: Any, fragment: str) -> Any:
     return node
 
 
-def _resolved(schema: Any, base: str, published: dict[str, Any], seen: tuple[str, ...]) -> Any:
+def _resolved(
+    schema: Any,
+    base: str,
+    published: dict[str, Any],
+    seen: tuple[str, ...],
+    in_defs: bool = False,
+) -> Any:
+    """`schema` inlined. A cyclic `$ref` raises, except one met inside a `$defs` member, which
+    becomes a `$comment` naming it (OPT D-60): `optimization-request.schema.json`'s
+    `$defs/optimize_body` refers to its own document's root, so inlining that root reaches the
+    body again through its `$defs`. Only inputs that raised before take that branch, so no earlier
+    snapshot moves."""
     if isinstance(schema, list):
-        return [_resolved(item, base, published, seen) for item in schema]
+        return [_resolved(item, base, published, seen, in_defs) for item in schema]
     if not isinstance(schema, dict):
         return schema
     members = {
-        key: _resolved(value, base, published, seen)
+        key: _resolved(value, base, published, seen, in_defs or key == "$defs")
         for key, value in schema.items()
         if key != "$ref"
     }
@@ -117,9 +128,13 @@ def _resolved(schema: Any, base: str, published: dict[str, Any], seen: tuple[str
         return members
     absolute = urljoin(base, schema["$ref"])
     if absolute in seen:
+        if in_defs:
+            return {**members, "$comment": f"recursive reference to {absolute}, not inlined"}
         raise ValueError(f"a cyclic $ref: {absolute}")
     uri, fragment = urldefrag(absolute)
-    target = _resolved(_target(published[uri], fragment), uri, published, (*seen, absolute))
+    target = _resolved(
+        _target(published[uri], fragment), uri, published, (*seen, absolute), in_defs
+    )
     if not members:
         return target
     assert "allOf" not in members, "a $ref beside an allOf"
