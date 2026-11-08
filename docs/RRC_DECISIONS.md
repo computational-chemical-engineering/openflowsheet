@@ -226,3 +226,8 @@ results), `40fba287` (runner self-contained), `b91b0ddb` (registration, results 
   Nothing registered moves: `results-ref-x86-64.json`, `reference_values.yaml` and `cases.yaml` are unedited (the
   committed table, measured at 40fba287, lacks the new key; a re-take would add it). Check: `test_rrc_edge3.py` +
   `test_rrc_candidates.py` 24 passed.
+- **D-31 (S2).** `tests/test_rrc_application.py::test_the_parameter_families_are_partitioned_into_continuable_and_denied`
+  pins D-11's partition: `CONTINUABLE_PARAMETERS` (22) and the test's `DENIED_PARAMETERS` (7: `stage_count`,
+  `feed_stage`, `nu`, `damkohler`, `T_ref`, `T_scale`, `coolant_cp`) are disjoint and together exactly the binder's
+  `_PARAMETER_KINDS` keys (29). The denied set lives in the test, not in code (default deny needs no list).
+  Alternative: a `DENIED_PARAMETERS` constant in `application/revision_continuation.py`. Reversible by: moving it.

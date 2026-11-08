@@ -33,11 +33,13 @@ from t08_cstr_support import liquid_variant_revision
 from openflowsheet.application import revision_continuation as application_module
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.revision_continuation import (
+    CONTINUABLE_PARAMETERS,
     CONTINUABLE_SPECIFICATION_PATHS,
     not_continuable,
 )
 from openflowsheet.application.store import ProjectStore
 from openflowsheet.application.types import JobRequest, ReplayPolicy, SolveBody
+from openflowsheet.models import revision_flowsheet
 from openflowsheet.models.revision_flowsheet import TARGET_PATH_KINDS
 from openflowsheet.orchestrator import executor
 from openflowsheet.run import solution_state
@@ -63,6 +65,24 @@ def _edited(document: dict[str, Any], edit: Any) -> dict[str, Any]:
 
 def test_the_specification_paths_are_all_of_the_binders_target_paths() -> None:
     assert set(TARGET_PATH_KINDS) == CONTINUABLE_SPECIFICATION_PATHS
+
+
+#: D-11 (accepted by the review): the binder's parameter families §5.4 denies — discrete
+#: structure (`stage_count`, `feed_stage`) and model constants (`nu`, `damkohler`, `T_ref`,
+#: `T_scale`, `coolant_cp`).
+DENIED_PARAMETERS = frozenset(
+    {"stage_count", "feed_stage", "nu", "damkohler", "T_ref", "T_scale", "coolant_cp"}
+)
+
+
+def test_the_parameter_families_are_partitioned_into_continuable_and_denied() -> None:
+    """Review S2, §5.4's register rule: every family the binder types is either continuable or
+    denied, never both, so a family added to the binder fails here until a register decision
+    places it (default deny keeps the omission safe meanwhile)."""
+    families = set(revision_flowsheet._PARAMETER_KINDS)
+    assert CONTINUABLE_PARAMETERS.isdisjoint(DENIED_PARAMETERS)
+    assert CONTINUABLE_PARAMETERS | DENIED_PARAMETERS == families
+    assert (len(CONTINUABLE_PARAMETERS), len(DENIED_PARAMETERS), len(families)) == (22, 7, 29)
 
 
 def _split(value: float) -> Any:
