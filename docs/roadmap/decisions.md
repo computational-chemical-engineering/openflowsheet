@@ -733,3 +733,10 @@ entry; the merge-prep brief did not list `tests/test_msg_*`). Fix D-39: `warm_st
 `coupling_warm_start` allow-listed (trace label, never rendered). Catalogue `2252445a…` → `9ac2578a…`; D_4, D_5
 unchanged; 378 passed; F0 PASS. Open (non-blocking): the two entries' prose is an engineer's draft → design-lane prose
 check batched with OPT's new catalogue entries. Lesson: merge-prep briefs after MSG list `tests/test_msg_*` (OPT's does).
+
+## 2026-11-08 — ST CI red at 8ce17244 (run 42517844608), fixed at eb1e0936
+
+Three test bugs, no product code: `get_stream_table` had no pre-ST snapshot in `test_m02_schemas` G1c and
+`test_m04_study_job` A42 (now skipped via `ST_OPERATIONS`, as MSG's `explain`); `test_st_core` Q1.A15c assumed
+IAPWS/H2O for every run, but the CoolProp leg adds TH-C2 (R134a) — now uses the run's own provider and basis.
+Missed locally because worktree tests imported main's `src` (the venv trap). ST_DECISIONS CI-1/CI-2. CI re-run pending.
