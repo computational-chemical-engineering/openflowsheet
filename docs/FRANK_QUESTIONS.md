@@ -437,3 +437,20 @@ Design `docs/design/OPT-revision-optimisation.md` §7. Defaults, acted on unless
 - **Q9 (new):** should ordinary `solve` runs use the same reduced check at a boiling/dew point? Default: not in 0.4.
 - **Q8:** audit Ipopt for ARM in 0.4? Default: no (x86-64 only; ARM replays but does not optimise).
 - Also: accept ADR 0071 (it lifts the old "optimisation unsupported" refusal and adds an `optimize` job).
+- **Description review (blocks OPT's `tested`):** the agent-facing texts of `validate` and `submit_job` changed
+  (`src/openflowsheet/application/bindings/descriptions/validate.md`, `submit_job.md` on `wp/OPT`). Each needs your
+  human review, as every MCP description does (T07 §11.3).
+
+## RRC — continuing from an earlier solved version (2026-11-08; ADR 0072 Proposed; your Q30)
+
+Design `docs/design/RRC-revision-region-continuation.md`. When a flowsheet edit fails to converge, RRC can walk the
+operating values gradually from the nearest earlier version that solved and verified, to the new values; every
+intermediate step is a real flowsheet. Defaults, acted on unless you say otherwise:
+- **FQ1:** three frozen schemas gain optional members (nothing existing changes). Default: build on the branch, merge
+  only after your yes.
+- **FQ2:** make it the default for every revision solve? Default: no — available by policy name (`RRC-revision-v1`)
+  in 0.4.
+- **FQ3:** if the continuation stalls, also try the existing restart? Default: no, one recovery per step (as today).
+- **FQ4:** which edits may be continued? Default: operating values only (temperatures, pressures, flows, duties, split
+  fractions…); not stage counts, feed stages, stoichiometry or kinetic constants.
+- Also: accept ADR 0072.
