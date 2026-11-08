@@ -314,3 +314,16 @@ M3 61/61, M4 61/61, M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 35/35).
   clause for `get_stream_table`) and its `operations` row `[python, cli, http, mcp]`; `check_a20`'s pinned count and
   reason; the test's pinned count and comment; `docs/support-matrix.md` re-emitted. `--check` 0 problems;
   `test_t08_w2_support_envelope.py` 39 passed.
+- **8b-2 — ADR 0025 A1 (`data_sha256`, `implementation_sha256`): STOPPED, not classified (brief's stop rule).**
+  Both are `basis` members copied from the provider's `describe()` (`stream_table.py:944-945`). What they hash:
+  `implementation_sha256` = SHA-256 of the provider module's source bytes (`syn001.py:401`, `pr_lib.py:856`,
+  `wilson_ig_v2.py:117` source + v1's digest) — bytes, exact. `data_sha256` = **ambiguous under the brief's rule**:
+  SYN-001's is `hash_named_doubles` over the registered constants `R, T_REF, P_REF, C_P, T_BOIL_*, L_VAP_*,
+  V_MOLAR_*` (`syn001.py:406-422`) — a digest of floating-point values, though registered constants, not solved
+  state; pr_lib/pr_c1/wilson/iapws95 hash the data file's bytes; CoolProp's the canonical JSON of version, fluid
+  and fluid-file digest. Default proposed (not applied): both in a new `benchmarks/st/numerical_policy_external.yaml`
+  (`ST-numerical-policy-external-v1`, schemas `[stream-table.schema.json]`) as `exact_sha256`, ADDENDA gains `st`
+  after `e01`, `test_m05_study_record.py`'s ADDENDA pin amended — precedent: v2 classes `constants_sha256` (a
+  digest of registered constant doubles) exact, and `level_constants_sha256` float only because its vector holds a
+  solved `p⁰` (ADR 0010, ADR 0007 D1 row 3); `state_sha256` keeps v2's float class (already classified).
+  Needs a design-lane yes/no; the two A1 tests stay red until then.
