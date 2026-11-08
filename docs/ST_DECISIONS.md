@@ -292,3 +292,15 @@ M3 61/61, M4 61/61, M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 35/35).
   (no leaver), so the 4 is a different count basis, not a movement. `test_st_core.py`: 59 passed.
 - **8a-3 — docs pointer.** `docs/roadmap/foundation-rulings.md` Q4.R12 (b): one dated sentence pointing (b) (ii) to
   ADR 0068 D3 as amended (2026-11-08). Nothing else in the file.
+- **8a-4 — second `git merge main` (`5f66c3f7`: X10b, and `89b7e008`'s re-wrap of the two harvest comment lines
+  that failed ruff E501 at `bf357867`).** No conflicts; harvest, envelope, matrix and register equal main's
+  (`HARVEST_SIZE` (81, 1015, 129)); `--emit` re-run without a diff. After it: 44 served documents byte-identical
+  again; ST tests 101 passed; F0 `--check` PASS (M1 50/50, M2 61/61, M3 61/61, M4 61/61, M5 61/61, M6 85/85,
+  M7 52/52, M8 105/105, M9 35/35); `ruff check`, `ruff format --check`, `mypy` (314 files) clean.
+- **8a-5 — targeted battery (after 8a-3; `PYTHONPATH=src`, worktree `src` confirmed by `openflowsheet.__file__`):**
+  test_st_* + surface chain/digest + G12 no-weakening (R4-G3) + w5e/w4e + w6c descriptions + A48 + MSG + doc pages
+  + harvest + evidence manifests + every `test_t08*.py`: 1581 passed, 2 skipped, 3 xfailed, **3 failed, all red
+  already at `e1a05916`**: `test_t08_w2_support_envelope.py::test_a20_the_axes_equal_the_code` (envelope lacks
+  `get_stream_table`, A20 count 22) and `test_t08_adr0025.py::test_a1_the_policy_file_is_what_its_generator_emits` /
+  `test_a1_a_tampered_policy_file_fails_its_audit` (`t08_numerical_policy.py --check` (d): ST's schema names
+  `data_sha256`, `implementation_sha256` unclassified; main passes). Both edit a registered gate input; left for WO-7.

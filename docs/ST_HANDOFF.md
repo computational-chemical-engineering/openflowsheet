@@ -26,6 +26,13 @@ feed would get `flash_failed` though the verifier flashes it; no corpus/served c
 **Not done (review Notes, out of the brief's scope).** Untyped exceptions → `internal_error`; `_quote` null reason;
 R1 empty split refusal; §4.4 dormant-row sentence; paging cost measurement.
 
-**Next: WO-7** — evidence manifest, full gate `scripts/gate.sh`, CI on both architectures. When MSG lands:
+**WO-8a (2026-11-08, brief `docs/briefs/ST-WO8a-ruling5.md`, ST_DECISIONS §WO-8a).** Merged main twice (`bf357867`,
+then `5f66c3f7`); register equals main's (MSG = R-975/R-976; ST's duplicate R-942/R-943 dropped). Ruling 5 in
+`stream_table._inputs`/`_decide` (R1′ on the split's own row; no-number on `temperature_degenerate_unlifted(S)`);
+DC-1…DC-6 in `tests/test_st_core.py`; 44 served documents byte-identical; G7/G8/G8u unchanged; F0 PASS.
+**Red, pre-existing, WO-7 must fix:** T08.A20 (envelope lacks `get_stream_table`; count 22 → 23) and ADR 0025 A1
+(`numerical_policy` (d): `data_sha256`, `implementation_sha256` unclassified).
+
+**Next: WO-8b** (web-shell display, separate brief), then **WO-7** — evidence manifest, full gate `scripts/gate.sh`, CI on both architectures. When MSG lands:
 merge commit only; re-measure G12 (c_5/c_6 order vs X02), take main's register ids, S2's one-hunk conflict in
 `api_errors.yaml`, re-take `message_entry` fixtures.
