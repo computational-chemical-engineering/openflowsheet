@@ -430,7 +430,6 @@ def test_g11_the_application_refuses_before_reading_and_wants_the_request(
     nothing read; given, the static readiness's report. Without a solver: `unsupported
     nlp_solver_unavailable`, before the request is looked at."""
     from openflowsheet.application.operations import OPERATIONS
-
     from openflowsheet.application.types import Change, Edit
 
     with LocalApplication.create(tmp_path / "project", project_id="opt-wo3") as app:

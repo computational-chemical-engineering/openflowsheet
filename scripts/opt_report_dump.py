@@ -1,4 +1,4 @@
-"""Dump OPT's analytic-case reports for a byte comparison between two trees (OPT design §9.5 G23 (c)).
+"""Dump OPT's analytic-case reports for a byte comparison of two trees (OPT design §9.5 G23 (c)).
 
 Runs `optimize_revision` on OPT-A1, A2, A2b, A3, C0 and N1 (`benchmarks/opt/requests`, the
 flowsheets `benchmarks/opt/expected.json` names) with a record directory, and writes one JSON object
