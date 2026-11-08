@@ -275,7 +275,7 @@ def test_g10c_iv_no_ordinary_certificate_path_imports_the_boundary_module() -> N
 
 def test_g10d_a_vapour_cooled_to_its_dew_point_passes_with_the_split_held_vapor() -> None:
     """OPT-A3v: bisection on the cooler duty between the box's lower end (two-phase) and the
-    start (−4000 W, VAPOR) to `0 < a/N0 ≤ 1e-9` (the gate asks ≤ 1e-7); there the outlet is the
+    start (−4000 W, VAPOR) to `0 < a/N0 ≤ 1e-9` (the gate's bound, D-50); there the outlet is the
     dew point within 1e-6 K (mpmath), the certificate rank-limited, and (e1)–(e6) hold with
     A = {U-PHF} held VAPOR (its liquid side pinned and its equilibrium rows dropped)."""
     expected = EXPECTED["OPT-A3v"]
