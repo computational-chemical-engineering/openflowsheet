@@ -148,7 +148,8 @@ in an exact cache. Measured (note §3):
   tolerance, or another steady state where the model has several. This is a change of method, recorded in the bundle
   and disclosed in the certificate, never a change of problem (ADR 0024 Consequences). It is a declared limitation
   (R-924).
-- The `submit_job` schema digest moves: one surface-chain link. V17 is re-established at the next RC.
+- The `submit_job` schema digest moves: one surface-chain link, c_5 (R-950, D_5 `f51b69bf…`, after MSG's c_4).
+  V17 is re-established at the next RC.
 
 ## Migration proof
 

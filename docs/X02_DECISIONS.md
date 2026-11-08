@@ -199,6 +199,18 @@ Format: question → choice; alternative; reversible by; commit. Batched for the
   re-wrapped (ruff E501). At this commit only `test_x02_link_c_5_is_x02s_strip_and_digest` fails (R-950's entry
   does not yet carry D_5 and D_4); D-36's commit makes it pass.
 
+- **D-36 — X02's surface link is c_5, after MSG's c_4 (brief step 2).** Measured on the merge tree `f36b4a56`: the
+  served MCP list digests to D_5 = `f51b69bf66569e35aebead73b66e98d58f24c84016db639536c0ee35181f4c7b`;
+  `strip_x02` gives `eaff4585…` = MSG's D_4 exactly (so X02's members do not interact with MSG's, and D_4 is not
+  re-recorded); `strip_msg ∘ strip_x02` and `strip_x02 ∘ strip_msg` both give D_3 `455d01eb…`. Old → new: link c_4,
+  D_4 `0af895a09d16b40fe85024dd8d2246b955bc79dfdc081afc1fe376bc876b545a` (WO-2, over M04's list) → link c_5,
+  D_5 `f51b69bf…`. `LINKS`, `X02_SERVED_SHA256`, the chain tests (controls (i)–(iv) and the MSG control carry L4;
+  `test_x02_link_c_5_is_x02s_strip_and_digest`, `test_x02_control_c_5_left_in_place`), R-950's entry, ADR 0070's
+  Consequences bullet and `tests/x02_schema_support.py` name c_5. R4-G3: `SNAPSHOT_X02` re-taken over MSG's
+  responses (`submit_job` `c7c943e3…`, `get_job`/`cancel_job` `58acf056…`, `list_jobs` `531d7432…`, `wait_job`
+  `aee140a9…`, `get_job_result` `9347208b…`; WO-2's `c7eb817f…`, `284a9a5f…`, `b7152dfe…`, `e607a7d7…`,
+  `74862334…`). Reversible by: reverting this commit and the merge's chain-test hunks.
+
 ## Tokens for MSG's catalogue (§5.9; `wp/MSG` not merged)
 
 | Token | Family / kind | Emitted at |

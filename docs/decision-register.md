@@ -18561,30 +18561,32 @@ that is not §6.2's push run or the latest dispatch.
 
 ---
 
-## R-950 — `main`'s surface chain gains link c_4 = (ADR 0070, `without_x02`, `0af895a0…`): X02's `solve_body.warm_start` (provisional number)
+## R-950 — `main`'s surface chain gains link c_5 = (ADR 0070, `without_x02`, `f51b69bf…`): X02's `solve_body.warm_start`, after MSG's c_4
 
 | | |
 | --- | --- |
-| Date | 2026-11-07 |
-| Decided by | build lane, X02 WO-2, applying ADR 0070 (Proposed; ADR 0019 Amendment 15) and the X02 design note §5.1 ("the surface chain gains one link … with a register entry") in R-457's form |
-| Normative text | ADR 0070 D1; `docs/design/X02-warm-starts.md` §5.1; `scripts/m07a_rc.py` (link c_4) |
-| Evidence | On `wp/X02` at WO-2 the served MCP tool list digests to `0af895a09d16b40fe85024dd8d2246b955bc79dfdc081afc1fe376bc876b545a`. `without_x02` (`tests/x02_schema_support.py`) on it gives `455d01eb2f420032b27358798e6b331a0120aa1857f02ce3cb7851647849e125`, M04's D_3 (R-457), exactly; the tools are unchanged in name and description, and the six that serve the job request moved (`tests/test_t08_w2_surface_digest.py::test_x02s_surface_move_decomposes_onto_m04s`) |
-| Affected packages | X02; M07a (`scripts/m07a_rc.py`, A37 tests); M07 (the next RC's V17 carry names c_4) |
+| Date | 2026-11-07; re-measured as c_5 on 2026-11-08 |
+| Decided by | build lane, X02 WO-2, applying ADR 0070 (ADR 0019 Amendment 15) and the X02 design note §5.1 ("the surface chain gains one link … with a register entry") in R-457's form; re-ordered after MSG's c_4 (R-976) per X02 review ruling 4 at the merge of `main` into `wp/X02` (D-35, D-36) |
+| Normative text | ADR 0070 D1; `docs/design/X02-warm-starts.md` §5.1; `scripts/m07a_rc.py` (link c_5) |
+| Evidence | On the merge tree (`wp/X02` with `main` at `ed874b17` merged, `f36b4a56`) the served MCP tool list digests to `f51b69bf66569e35aebead73b66e98d58f24c84016db639536c0ee35181f4c7b` (D_5). `without_x02` (`tests/x02_schema_support.py`) on it gives `eaff45852d7596816d90d744078f537e46c723e577295d347d9d73aea0942eac`, MSG's D_4 (R-976), exactly, so D_4 is unchanged with X02's members present; `without_msg` then gives D_3 `455d01eb…` (R-457) in either order. The tools are unchanged in name and description, and the six that serve the job request moved (`tests/test_t08_w2_surface_digest.py::test_x02s_surface_move_decomposes_onto_msgs`). At WO-2, over M04's list before MSG, the served digest was `0af895a0…` (evidence, not a pin) |
+| Affected packages | X02; M07a (`scripts/m07a_rc.py`, A37 tests); M07 (the next RC's V17 carry names c_5) |
 
-**Decision.** `m07a_rc.LINKS` gains c_4 (R-950; strip `without_x02`; D_4 = `0af895a0…`). The three optional members
+**Decision.** `m07a_rc.LINKS` gains c_5 (R-950; strip `without_x02`; D_5 = `f51b69bf…`). The three optional members
 of ADR 0019 Amendment 15 are stripped: `solve_body.warm_start`, the experiment request's `start` and the result's
 `profile_sha256` (the last two are not served on the MCP list today). No description text changes, so no description
-review is triggered (design note §8 F2). V17 is re-established at the next RC under the release procedure.
+review is triggered (design note §8 F2). V17 is re-established at the next RC under the release procedure. The R4-G3
+job-operation snapshots are re-taken over MSG's (`SNAPSHOT_X02`); with X02's members removed each is its
+`SNAPSHOT_MSG` value.
 
-**Number and link (X02 review ruling 4).** R-942…R-949 are RP's on `main`; R-950 was free there at WO-6. `wp/MSG` carries
-its own c_4 and register numbers that collide with RP's, so MSG renumbers in any case. Whichever of X02 and MSG merges
-second renumbers its register entries to the next free numbers, becomes c_5 with the digest of the combined tree
-(measured after its rebase), and re-takes the R4-G3 job-operation snapshots. At X02's WO-6 `wp/MSG` had not merged, so
-this entry stays R-950 with link c_4. ADR 0070's drafts A–E take their numbers at its acceptance.
+**Number and link (X02 review ruling 4).** MSG merged first (`ed874b17`) and holds c_4 (R-976), so X02, merging second,
+is c_5 with the digest of the combined tree. R-950…R-959 is X02's register block (orchestrator decision, merge order
+MSG → X02 → OPT → RRC → ST); ADR 0070's drafts A–E are R-951…R-955.
 
 **Rejected alternatives.** Folding the move into an existing link (R-457: a new MCP-visible change is a new link).
+Re-recording D_4 on the merged tree (MSG's link stands as registered; the strip shows no interaction).
 
 **Watch for.** A strip that removes more than the three members (the controls in `tests/test_m07a_surface_chain.py`).
+A later MCP-visible change moves D_5: it becomes c_6, it does not re-record c_5.
 
 ## R-970 — The release evidence package id is `REL` and a length-marked code of X.Y.Z, admitted by one additive `work_package` alternative (2026-11-08)
 

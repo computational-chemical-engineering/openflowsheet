@@ -13,7 +13,7 @@ or a served MCP tool list:
 
 None of the three is required, so no `required` list changes. With them removed, the served MCP
 digest and every resolved response schema equal their pre-X02 values
-(`tests/test_t08_w2_surface_digest.py`, `scripts/m07a_rc.py` link c_4).
+(`tests/test_t08_w2_surface_digest.py`, `scripts/m07a_rc.py` link c_5, after MSG's c_4).
 """
 
 from __future__ import annotations
