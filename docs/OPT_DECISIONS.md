@@ -986,3 +986,11 @@ Totals: TH-R1 18.3 s, M1 5.9 s, C-MW 54.4 s ("verify" also holds report/record w
   constraint"; matrix re-emitted). `msg_catalogue.py check` PASS (379 entries, 83 complete, review: true on 138);
   catalogue `9ac2578a…` → `7bbe3d65…` (message_entry fixtures); doc pages regenerated; CLI pins: U05 re-captured;
   the guide's limitations rows link the two codes. `test_opt_cli` now checks the `request_invalid` chain.
+- D-93. DECISION (merge fallout in MSG's corpus): MSG corpus case C12 ("validating a revision for the task
+  optimization") recorded `task_unsupported`; ADR 0071 lifts that refusal, so in the default environment the case
+  now emits `unsupported`/`nlp_solver_unavailable` (`test_msg_corpus` G6/G8 failed on the code). → C12 re-pointed at
+  what the software now emits: mistake "… without the audited NLP solver installed", code/chain
+  `nlp_solver_unavailable`, `in_summary` [optimise], `action_token` nlp; texts regenerated with `--msg-update` (diff:
+  C12 only). Alternative: re-point C12 at `commit_change` with task optimization (still `task_unsupported`), keeping
+  its text. Reversible by: reverting this commit. For the design lane (MSG owns the corpus): which mistake C12
+  should register, and the review of D-92's new prose (all `review: true`). MSG tests 193 passed, 3 xfailed.
