@@ -155,8 +155,8 @@ The [A08] evidence stores "derivative accuracy". The compiled Jacobian is exact 
 
 ### 4.8.1 Amendment WIT (2026-11-08): authority, scope, and the text it replaces
 
-**Status.** Proposed with ADR 0073; normative when ADR 0073 is accepted. Until then the witness is §4.8 as it stood, with
-R-281 and R-831. Brief: `docs/briefs/WIT-specifier.md` (X10 review M-1 → L-X10-1; OPT D-42; S11 rulings OQ-5).
+**Status.** Normative: ADR 0073 accepted 2026-11-08 (Frank; R-980…R-982); built and merged as WIT (manifest
+`evidence/X10a/`). Before that the witness was §4.8 as it stood, with R-281 and R-831. Brief: `docs/briefs/WIT-specifier.md` (X10 review M-1 → L-X10-1; OPT D-42; S11 rulings OQ-5).
 
 **Authority.** Blueprint §8.1 ([A08], "derivative accuracy"); §4.8 above; R-281 (ADR 0013 Amendment 3 item 7, as amended
 by R-345); R-831 (S11 rulings item 2); ADR 0001 D2 (a negative flow is refused); ADR 0073.
