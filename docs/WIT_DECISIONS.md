@@ -95,3 +95,15 @@ The normative text is the spec; nothing here changes a tolerance, a check meanin
   all nine levels inadmissible; both checks `unsupported`, `witness_stencil_invalid_trial_state(S1.n.A)`.
 - `test_f_a_resolved_refusal_does_not_end_the_witness_a_later_final_refusal_does`: W2 with `S1.T`'s forward point
   refused; `S1.n.A` resolves (k* = 6) and both checks name `S1.T`. Tests only; no code change.
+
+## D-8 — F-4: A1 measured on a flash-style (products) split — it holds
+
+- **Case.** No corpus flowsheet has a Wilson flash with a dormant vapour product (OPT D-42: GP-C1/C2/C3 are
+  TWO_PHASE; OPT's M-4 states are GP-C3's *heater*, outlet style, = A10). Built from GP-C1 by pinning the
+  `tp_flash` (S3/S4 T) below the bubble point: (335 K, heater 352 K) and (340 K, heater 330 K).
+- **Measured (TRS2).** Both CONVERGED and `VERIFIED`, no limitation; class 4 = `S3.n.<c>` (and `S2.vap.<c>` at
+  heater 330 K); witness on-pattern 3.67e-10 / 2.66e-10. Forward vs AD per class-4 column ≤ 1.32e-10 (worst at the
+  duty rows `D:FLASH-duty`, `H:HEAT-duty`); 330 K flash also measured, ≤ 1.32e-10. The AD rows of `S3.n.<c>` are the
+  flash's own (duty, equilibrium, mole, Ndef); the downstream reader is a sink (no rows).
+- **Not measured.** A non-affine downstream reader of a dormant vapour product (Q-WIT-4 unchanged); noted in the
+  Q-WIT-4 row. Test `test_f4_a_dormant_vapour_product_of_a_flash_is_differenced_forward` (2 cases).
