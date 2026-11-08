@@ -1,0 +1,31 @@
+{
+ "section": "blocking",
+ "pkg": "RRC",
+ "pkgTitle": "Continuing from an earlier solved version",
+ "kind": "choice",
+ "title": "FQ1: three frozen schemas each accept one more value",
+ "body": [
+  "The solver setting `globalization.eo_recovery` gains the new recovery value. `continuation.type`, in the attempt context and in the certificate's branch provenance, changes from the single value `specification_continuation` to a choice of it or `revision_continuation`.",
+  "No member is added, and every existing document validates unchanged."
+ ],
+ "defaultKey": "yes",
+ "options": [
+  {
+   "key": "yes",
+   "label": "Yes, widen them",
+   "detail": "Built this way; merge after your yes."
+  },
+  {
+   "key": "no",
+   "label": "No",
+   "detail": "RRC cannot merge as designed."
+  },
+  {
+   "key": "other",
+   "label": "Something else",
+   "detail": "Say what in the note."
+  }
+ ],
+ "status": "open",
+ "order": 7
+}

@@ -1,0 +1,31 @@
+{
+ "section": "defaults",
+ "pkg": "X05",
+ "pkgTitle": "Replay from the installed package (merged)",
+ "kind": "choice",
+ "title": "Q-F1: pin four transitive dependencies exactly?",
+ "body": [
+  "attrs, jsonschema-specifications, referencing and rpds-py, pinned in `pyproject.toml`, so a plain `pip install openflowsheet` can replay its bundles exactly. Cost: users cannot freely upgrade those four."
+ ],
+ "defaultKey": "default",
+ "options": [
+  {
+   "key": "default",
+   "label": "Yes, pin them",
+   "detail": ""
+  },
+  {
+   "key": "alt1",
+   "label": "No, leave them unpinned",
+   "detail": ""
+  },
+  {
+   "key": "other",
+   "label": "Something else",
+   "detail": "Say what in the note."
+  }
+ ],
+ "links": [],
+ "status": "open",
+ "order": 31
+}

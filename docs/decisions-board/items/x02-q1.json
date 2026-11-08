@@ -1,0 +1,31 @@
+{
+ "section": "defaults",
+ "pkg": "X02",
+ "pkgTitle": "Warm starts for external and coupled units",
+ "kind": "choice",
+ "title": "Q1: register a warm-start variant of the reactor?",
+ "body": [
+  "Measured on 8 inlets: cold runs match today's reactor bit for bit, but warm calls were about 21 % slower overall (later stages and certificates ran longer) and differed from cold by up to 1.9e-7 relative."
+ ],
+ "defaultKey": "default",
+ "options": [
+  {
+   "key": "default",
+   "label": "No, do not register it",
+   "detail": "Keep the gains that work (restarting a coupled run from a previous solution)."
+  },
+  {
+   "key": "alt1",
+   "label": "Register it anyway",
+   "detail": ""
+  },
+  {
+   "key": "other",
+   "label": "Something else",
+   "detail": "Say what in the note."
+  }
+ ],
+ "links": [],
+ "status": "open",
+ "order": 11
+}

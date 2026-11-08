@@ -1,5 +1,9 @@
 # Questions for Frank
 
+**Answer here:** the decision board https://claude.ai/artifact/WBLrhuGuG9zosGy46Z1b2A shows every open item with its text,
+the default and the options, and saves your answer (source: `docs/decisions-board/`, items built by
+`build_items.py`). This file stays the record.
+
 Questions only Frank can answer (scope, value judgments). Each carries the default that unattended work proceeds on.
 
 ## Answer — Frank, 2026-11-01: full real-simulator scope; design quality over speed (ADR 0056 Am. 2, R-927)

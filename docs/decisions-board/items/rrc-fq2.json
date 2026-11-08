@@ -1,0 +1,29 @@
+{
+ "section": "defaults",
+ "pkg": "RRC",
+ "pkgTitle": "Continuing from an earlier solved version",
+ "kind": "choice",
+ "title": "FQ2: make continuation the default for every revision solve?",
+ "body": [],
+ "defaultKey": "default",
+ "options": [
+  {
+   "key": "default",
+   "label": "No, opt-in by policy name in 0.4",
+   "detail": ""
+  },
+  {
+   "key": "alt1",
+   "label": "Yes, make it the default",
+   "detail": ""
+  },
+  {
+   "key": "other",
+   "label": "Something else",
+   "detail": "Say what in the note."
+  }
+ ],
+ "links": [],
+ "status": "open",
+ "order": 24
+}

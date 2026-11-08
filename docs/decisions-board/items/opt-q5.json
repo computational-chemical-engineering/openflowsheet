@@ -1,0 +1,29 @@
+{
+ "section": "defaults",
+ "pkg": "OPT",
+ "pkgTitle": "Optimising your own flowsheets",
+ "kind": "choice",
+ "title": "Q5: limits per optimisation job",
+ "body": [],
+ "defaultKey": "default",
+ "options": [
+  {
+   "key": "default",
+   "label": "32 starts, 500 iterations and 120 s per start",
+   "detail": ""
+  },
+  {
+   "key": "alt1",
+   "label": "Different limits",
+   "detail": ""
+  },
+  {
+   "key": "other",
+   "label": "Something else",
+   "detail": "Say what in the note."
+  }
+ ],
+ "links": [],
+ "status": "open",
+ "order": 20
+}
