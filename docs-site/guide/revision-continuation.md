@@ -88,7 +88,15 @@ never reached.
   (specification continuation). Under `RRC-revision-v1` it also exists for a revision region whose
   nearest verified ancestor has the same declaration and differs only in registered operating
   values. Everywhere else edge 3 is the sequential restart or `unsupported(…)`. Neither
-  continuation changes the active set.
+  continuation changes the active set. `RRC-revision-v1` is not a superset of
+  `T06-revision-v2`: a continuation that stops part-way ends the step and the restart is not
+  tried (one recovery per step), so it can fail where `T06-revision-v2` converges, and no
+  registered case is rescued by it that `T06-revision-v2` does not rescue.
+- **Not a superset of `T06-revision-v2`.** On every measured case where this policy's
+  continuation converged, `T06-revision-v2`'s sequential restart converged as well, in fewer
+  iterations. A continuation that stops part-way ends the step, and the restart is not tried (one
+  recovery per step). This policy can therefore fail where `T06-revision-v2` converges. No
+  registered case is rescued by it that `T06-revision-v2` does not rescue.
 - **L-COL-9.** In a flowsheet a column region has edge-3 continuation only under
   `RRC-revision-v1`, from a verified ancestor that differs only in operating values. A first
   solve, a structural edit (stage count, feed stage, a changed end-specification choice) and the

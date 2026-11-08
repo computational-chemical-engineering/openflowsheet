@@ -208,3 +208,11 @@ results), `40fba287` (runner self-contained), `b91b0ddb` (registration, results 
   `recovery-edges.yaml`, `interfaces-frozen.md`, CHANGELOG, ADR 0072 status line. Reversible by: reverting the commit.
 - Checks: `mkdocs build --strict` clean; `scripts/doc_pages.py --check` up to date; `test_doc_pages.py`,
   `test_t06_f4_literals.py` 21 passed. The page does not spell the `eo_recovery` literal.
+
+## WO-7 review fix round (2026-11-08; review `docs/reviews/RRC-review.md` on main, ed522d7c)
+
+- **D-29 (M2).** Applied: the guide's *Declared limitations* carries the review's five sentences ("Not a superset of
+  `T06-revision-v2`…") verbatim; L21's row in `benchmarks/t08/support_envelope.yaml` gains them as one sentence (and
+  the guide's quoted L21 follows); `docs/support-matrix.md` re-emitted (`t08_support_matrix.py --check` 0 problems).
+  E3c's note carries the same sentence in its own commit (D-34). Checks: `test_t08_w2_support_envelope.py`,
+  `test_t08_w2_unsupported.py`, `test_doc_pages.py`, `test_t06_f4_literals.py`: 77 passed.

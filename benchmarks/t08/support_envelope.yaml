@@ -693,7 +693,10 @@ limitations:
       continuation). Under `RRC-revision-v1`, it also exists for a revision region whose nearest
       verified ancestor has the same declaration and differs only in registered operating values
       (revision continuation, ADR 0072). Everywhere else edge 3 is the sequential restart or
-      `unsupported(…)`. Neither continuation changes the active set.
+      `unsupported(…)`. Neither continuation changes the active set. `RRC-revision-v1` is not a
+      superset of `T06-revision-v2`: a continuation that stops part-way ends the step and the
+      restart is not tried (one recovery per step), so it can fail where `T06-revision-v2`
+      converges, and no registered case is rescued by it that `T06-revision-v2` does not rescue.
     evidence:
       - doc:docs/derivations/T04-globalization-spec.md §14
       - doc:docs/design/RRC-revision-region-continuation.md §6
