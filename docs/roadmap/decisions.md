@@ -724,3 +724,12 @@ table, no on-screen pager. Reversible by: `streamTableOf`. 2246 passed incl. bro
 F0 PASS. Open: ADR 0025 D2.3 for `data_sha256` (SYN-001 hashes registered float literals) and
 `implementation_sha256` → specifier ruling (brief `docs/briefs/ST-adr0025-classification.md`); default exact (as
 `constants_sha256`).
+
+## 2026-11-08 — X02 CI red on MSG G2 → catalogue entries (`d26bcd38`)
+
+CI `42512488771` on `51ef7460`: 1 failure on all legs, `test_msg_coverage` G2 (X02's three codes had no MSG catalogue
+entry; the merge-prep brief did not list `tests/test_msg_*`). Fix D-39: `warm_start_source_missing`,
+`warm_start_unit_unknown` → `refusal` entries (kind `input` from MSG's kind table; unit param typed `text`);
+`coupling_warm_start` allow-listed (trace label, never rendered). Catalogue `2252445a…` → `9ac2578a…`; D_4, D_5
+unchanged; 378 passed; F0 PASS. Open (non-blocking): the two entries' prose is an engineer's draft → design-lane prose
+check batched with OPT's new catalogue entries. Lesson: merge-prep briefs after MSG list `tests/test_msg_*` (OPT's does).
