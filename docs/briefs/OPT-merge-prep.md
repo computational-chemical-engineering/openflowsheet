@@ -37,11 +37,14 @@ and `PYTHONPATH=src`, and confirm `openflowsheet.__file__` is the worktree's cop
    `docs/interfaces-frozen.md` entry if ADR 0071 asks for them on acceptance, as X02 did for ADR 0070). Register:
    R-960 loses "provisional"; ADR 0071's drafted entries take **R-961…** in order (block R-960…969; more than nine →
    stop), format as R-951/R-985.
-6. Targeted tests (one run at a time, `OMP_NUM_THREADS=1`): `tests/test_opt*`, the surface chain / R4-G3 / surface
+6. **MSG catalogue (G2):** every message code OPT adds needs an MSG catalogue entry or an allow-reason
+   (`tests/test_msg_coverage.py`; X02 hit this in CI — follow X02's D-39 commit on main for the pattern; new prose
+   `review: true` if that is MSG's mark for unreviewed text; regenerate catalogue digest, doc pages, fixtures).
+7. Targeted tests (one run at a time, `OMP_NUM_THREADS=1`): `tests/test_msg_*`, `tests/test_opt*`, the surface chain / R4-G3 / surface
    digest / description tests, the global-state cache test, `tests/test_m07a_harvest.py tests/test_t08*.py
    tests/test_evidence_manifests.py`, the WIT tests (`tests/test_wit_*.py`); `scripts/corpus_identity.py --check`
    PASS; `ruff check`, `ruff format --check`, `mypy` clean (whole repo).
-7. Push `wp/OPT`. Do not merge into main and do not write the manifest.
+8. Push `wp/OPT`. Do not merge into main and do not write the manifest.
 
 ## Rules
 
