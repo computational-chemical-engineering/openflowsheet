@@ -994,3 +994,9 @@ Totals: TH-R1 18.3 s, M1 5.9 s, C-MW 54.4 s ("verify" also holds report/record w
   C12 only). Alternative: re-point C12 at `commit_change` with task optimization (still `task_unsupported`), keeping
   its text. Reversible by: reverting this commit. For the design lane (MSG owns the corpus): which mistake C12
   should register, and the review of D-92's new prose (all `review: true`). MSG tests 193 passed, 3 xfailed.
+- Merge-prep gates (TRS2, OMP_NUM_THREADS=1, default env, `openflowsheet.__file__` = the worktree's `src`): `test_msg_*`
+  181 → (after D-93) 193 passed, 3 xfailed (with `test_opt_cli`, `test_t08_rename_substitution`); `test_opt*` 165
+  passed, 21 deselected (nlp marker); surface chain + R4-G3 + surface digest + description reviews + W6c + m02/m04
+  schemas + Q26 + W5b CLI + global state 199 passed; `test_m07a_harvest` + `test_t08*` + `test_evidence_manifests`
+  1113 passed, 2 skipped; `test_wit_*` 31 passed; F0 `corpus_identity.py --check` PASS (M1 50/50 … M9 35/35); ruff,
+  ruff format (1147 files), mypy (324 files) clean.

@@ -10,6 +10,10 @@ Build decisions: `docs/OPT_DECISIONS.md` (D-1…D-84; WO-8 section at the end).
   S5 `b903e8f8` (D-80), S3 `9de44aa7` (D-81), S4 `ee676f89` (D-82), S1 declared `e7ada37b` (D-84).
 - M2 done: 4976cb53, 4f78b10f (greybox `interruptions=`), 83ee89fe + 5f0da859 (`application/revision_routes.py`
   implements `studies.nlp.host.RevisionRoutes`; D-77), docs fa0320dc. S2 done abbd7d2f (D-83: WARN).
+## Merge prep — state 2026-11-09 (brief `docs/briefs/OPT-merge-prep.md`; D-86…D-93)
+- main `b31e80ec` merged (`52616943`); c_6 D_6 `3fdc797a…` (strip → D_5 exactly); cache 39; HARVEST_SIZE (84, 1034, 138);
+  D-42 lifted by WIT (D-89); ADR 0071 + Am. 16 Accepted (D-90); catalogue `7bbe3d65…` (D-92); C12 re-pointed (D-93).
+- Open: D-91 register numbers for ADR 0071's ten drafts (block holds nine); D-93 C12 and D-92 prose for the design lane.
 ## Next (in order)
 1. Orchestrator: full gate, CI both legs (incl. aarch64 default-env G2 evidence), manifest re-take with D-82's
    limitation strings (pr-c1-v1 REGIME_MARGIN_UNDEFINED; thermal-port boundary fails V1; N1 absolute flow
