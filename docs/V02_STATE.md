@@ -134,11 +134,16 @@ Am. 1–2). Foundations F0–F8 are designed in wave W1 during 0.4, then built i
 - **X10 inventory: MERGED** into main `6b641fd6` (manifest `evidence/X10/033f1928…` tested; review M-1 applied:
   L-X10-1 surrogate UNVERIFIED on `c1-surrogate.json`, witness step vs small flows → design-lane follow-up; gate PASS
   15161; CI green). 150 pairs: 41 VERIFIED off CoolProp, 76 refused; table `docs/X10-inventory.md`.
-- **OPT** (`wp/OPT`, ADR 0071 Proposed, Am. 16; design amended §9 `9318904a`): WO-1…5b done (analytic optima ≤ 2e-10;
-  C-MW verifies); WO-5c (phase-boundary form, G2 audited re-take, probe gap) running; then WO-6, WO-7, reviewer.
-  Open for review: D-18, D-24, D-28, D-30, D-32, D-42 (γ–φ held splits vs K04 witness), D-44.
-- **Await Frank** (`docs/FRANK_QUESTIONS.md`): `explain.md` (blocks MSG), ADRs 0055/0068/0069/0070/0071, Q-11, F-8,
-  X05 Q-F1…F3, X02 Q1…Q7, OPT Q1…Q9.
+- **OPT** (`wp/OPT` `7b7aa770`, ADR 0071 Proposed, Am. 16, link c_4/D_4 `3fb06cad…`; design amended §9): WO-1…8c done;
+  review `docs/reviews/OPT-review.md` applied (M1–M6, S1 declared, S2–S5). CI at `496e003a`: only D-61 + the cache
+  allowlist (fixed in `7b7aa770`) fail on all three legs; aarch64 replay MATCH. Full gate re-run at `7b7aa770` running.
+  **Blocked on Frank:** human review of `validate.md`/`submit_job.md` (D-61), ADR 0071. Then manifest `tested`, merge.
+- **RRC** (`wp/RRC` `fe572ad5`, ADR 0072 Proposed): WO-1…7 done; review `docs/reviews/RRC-review.md` applied; G4
+  NET-02 and G5 M1-recycle rescued → L-COL-9 narrowed; declared not a superset of T06-revision-v2 (M2). Merges after
+  OPT (rebase, one full gate, CI both legs, manifest). **Blocked on Frank:** FQ1 (enum widenings), ADR 0072; then
+  register renumbering R-RRC-1…6 (incl. MR-7 test).
+- **Await Frank** (`docs/FRANK_QUESTIONS.md`): `explain.md` (blocks MSG), ADRs 0055/0068/0069/0070/0071/0072, Q-11, F-8,
+  X05 Q-F1…F3, X02 Q1…Q7, OPT Q1…Q9 + description review, RRC FQ1…FQ4.
 - **TRS2 CPU rule** (user via hub, 2026-11-07): ≤ ~36 busy cores of 48; one full gate at a time; no tests in several
   worktrees at once. GitHub API: poll CI at most every 10 min (rate limit hit 2026-11-07).
 - Host load ~50 from other users: wall-time budget tests flaky (re-run alone).

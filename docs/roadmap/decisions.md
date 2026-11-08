@@ -485,3 +485,10 @@ D-11's family rule as the reviewer recommends, in the fix round. Alternative: ke
 by: reverting that commit.
 DECISION: N2 → FQ3 re-asked with the measurements; default unchanged (one recovery per step, opt-in). Merge order:
 OPT first, RRC rebases and runs its one full gate there.
+
+## 2026-11-08 — RRC WO-7 done (`wp/RRC` `fe572ad5`)
+
+Review fixes M2 (not-a-superset declared: guide, L21, E3c), S1 (G2(f)/§5.8 hash over free columns), S2 (22 + 7 = 29
+family partition test), S3, N1 (`parameters.<key>` judged by the family rule), E3c row, interfaces-frozen, CHANGELOG,
+D-5/D-6/D-10 note amendments. F0 PASS; RRC tests 71 passed; mypy/ruff clean; support matrix 0 problems. Waiting: OPT
+merge (then rebase + full gate + CI), Frank FQ1 and ADR 0072 (then R-RRC renumbering and ADR D5 wording).
