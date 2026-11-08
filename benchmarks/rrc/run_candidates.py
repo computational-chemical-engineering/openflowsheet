@@ -46,6 +46,7 @@ import time
 from collections.abc import Iterator, Mapping
 from contextlib import contextmanager
 from dataclasses import dataclass, replace
+from decimal import Decimal
 from pathlib import Path
 from typing import Any, Final
 
@@ -53,11 +54,7 @@ import yaml
 
 HERE: Final = Path(__file__).resolve().parent
 ROOT: Final = HERE.parents[1]
-sys.path[:0] = [str(ROOT / "src"), str(ROOT / "tests")]
-
-from s11_column_support import RECYCLE_CASE, column_case_spec, committed_case  # noqa: E402
-from t06_support import CORPUS, case_document, registered_root, worst_ratio  # noqa: E402
-from test_s02_column_wo2 import FLOW_ABS, FLOW_REL  # noqa: E402
+sys.path[:0] = [str(ROOT / "src")]
 
 from openflowsheet.application.local import LocalApplication  # noqa: E402
 from openflowsheet.application.policies import RRC_REVISION_V1, T06_REVISION_V2  # noqa: E402
@@ -67,6 +64,7 @@ from openflowsheet.application.revision_binding import (  # noqa: E402
 )
 from openflowsheet.application.types import Change, Edit, JobRequest, SolveBody  # noqa: E402
 from openflowsheet.models import flow_id  # noqa: E402
+from openflowsheet.models.syn001 import FLOW_TOLERANCE  # noqa: E402
 from openflowsheet.numerics.scaling import Scaling  # noqa: E402
 from openflowsheet.orchestrator import executor, revision  # noqa: E402
 from openflowsheet.orchestrator.execution import ExecutionPlan  # noqa: E402
@@ -91,6 +89,27 @@ POLICIES: Final[Mapping[str, SolvePolicy]] = {
     "RRC-revision-v1": RRC_REVISION_V1,
 }
 NET02: Final = "SYN-001-T06-NET02"
+RECYCLE_CASE: Final = "M1-recycle"
+S11_FLOWSHEETS: Final = ROOT / "benchmarks" / "s11" / "flowsheets"
+T06_CASES: Final = ROOT / "benchmarks" / "t06" / "cases"
+#: `ref.closed_form.corpus_cases` (T06 spec §4.3), the twin roots of the T06 corpus flowsheets.
+CORPUS: Final[dict[str, Any]] = yaml.safe_load(
+    (ROOT / "benchmarks" / "t06" / "reference_values.yaml").read_text("utf-8")
+)["closed_form"]["corpus_cases"]
+#: T02 §6.4's allowances by column suffix, as `tests/t06_support.py::ALLOWANCE` (held equal by
+#: `tests/test_rrc_candidates.py`).
+ALLOWANCE: Final[Mapping[str, float]] = {
+    "n": 3.1e-7,
+    "T": 1e-5,
+    "P": 0.1,
+    "Q": 1e-2,
+    "W": 1e-2,
+    "xi": 3.1e-7,
+}
+#: S02 §10's state tolerance for flows (S01's R-514), as `tests/test_s02_column_wo2.py`:
+#: rel 1e-6 + 10·τ_flow.
+FLOW_REL: Final = 1e-6
+FLOW_ABS: Final = 10 * FLOW_TOLERANCE
 #: §8.2 G4, F1, F2: two roots of one problem agree to this, scaled by the region's `Scaling`.
 SAME_ROOT: Final = 1e-8
 _PATH = re.compile(r"^(instances|specifications)\[([^\]]+)\]\.(.+)$")
@@ -100,8 +119,11 @@ _PATH = re.compile(r"^(instances|specifications)\[([^\]]+)\]\.(.+)$")
 
 
 def _base(case: str) -> dict[str, Any]:
-    document = committed_case(case) if case == RECYCLE_CASE else case_document(case)
-    return copy.deepcopy(document)
+    if case == RECYCLE_CASE:
+        document: dict[str, Any] = json.loads((S11_FLOWSHEETS / f"{case}.json").read_bytes())
+    else:
+        document = yaml.safe_load((T06_CASES / f"{case}.yaml").read_text("utf-8"))
+    return document
 
 
 def _edited(document: dict[str, Any], edits: Mapping[str, Any] | None) -> dict[str, Any]:
@@ -140,8 +162,8 @@ class Cost:
 @contextmanager
 def _metered(cost: Cost, watch: tuple[str, ...]) -> Iterator[None]:
     """Pass-through timers on edge 3's revision continuation and on the compiles inside it."""
-    original_action = executor._revision_continuation
-    original_compile = executor.compile_problem
+    original_action = getattr(executor, "_revision_continuation")  # noqa: B009
+    original_compile = getattr(executor, "compile_problem")  # noqa: B009
     inside = {"on": False}
 
     def compile_problem(spec: Any, *args: Any, **kwargs: Any) -> Any:
@@ -172,25 +194,25 @@ def _metered(cost: Cost, watch: tuple[str, ...]) -> Iterator[None]:
             inside["on"] = False
             cost.property_calls = flowsheet.provider.calls - before
 
-    executor._revision_continuation = action
-    executor.compile_problem = compile_problem
+    setattr(executor, "_revision_continuation", action)  # noqa: B010
+    setattr(executor, "compile_problem", compile_problem)  # noqa: B010
     try:
         yield
     finally:
-        executor._revision_continuation = original_action
-        executor.compile_problem = original_compile
+        setattr(executor, "_revision_continuation", original_action)  # noqa: B010
+        setattr(executor, "compile_problem", original_compile)  # noqa: B010
 
 
 @contextmanager
 def _forced(on: bool) -> Iterator[None]:
     """§8.1 F: edge 3 due after any outcome (S01 A17's precedent)."""
-    original = executor.eo_recovery_due
+    original = getattr(executor, "eo_recovery_due")  # noqa: B009
     if on:
-        executor.eo_recovery_due = lambda outcome, budget, *, attempts: True
+        setattr(executor, "eo_recovery_due", lambda outcome, budget, *, attempts: True)  # noqa: B010
     try:
         yield
     finally:
-        executor.eo_recovery_due = original
+        setattr(executor, "eo_recovery_due", original)  # noqa: B010
 
 
 # -------------------------------------------------------------------------------- in-process
@@ -423,14 +445,52 @@ def _eligible(solved: Solved) -> tuple[bool, SolutionCertificate | None]:
     return ok, certificate
 
 
-def _closure(state: Mapping[str, float]) -> dict[str, Any]:
+def feed_flows(document: Mapping[str, Any]) -> tuple[tuple[str, float], ...]:
+    """The column flowsheet's feed flows by component, from its pinning specifications
+    (`SPEC-S-IN1-n-<c>`): the revision's declared values, not the solver's."""
+    values = {item["id"]: item["value"] for item in document["specifications"]}
+    return tuple((c, float(values[f"SPEC-S-IN1-n-{c}"])) for c in "ABC")
+
+
+def closure(document: Mapping[str, Any], state: Mapping[str, float]) -> dict[str, Any]:
     """S11.A29's per-component closure: feed = distillate + purge, within the flow tolerance."""
-    (feed,) = column_case_spec(RECYCLE_CASE).inlets()
     worst = 0.0
-    for c, n in zip("ABC", feed.state.n, strict=True):
+    for c, n in feed_flows(document):
         out = state[flow_id("S-DISTILLATE", c)] + state[flow_id("S-PURGE", c)]
         worst = max(worst, abs(out - n) / (FLOW_REL * n + FLOW_ABS))
     return {"worst_ratio": worst, "met": worst <= 1.0}
+
+
+def registered_root(entry: Mapping[str, Any]) -> dict[str, tuple[Decimal, float]]:
+    """A twin root's registered coordinates, `column -> (value, allowance)`, as
+    `tests/t06_support.py::registered_root` reads them (held equal by the gate tests)."""
+    out: dict[str, tuple[Decimal, float]] = {}
+    for stream, state in entry["streams"].items():
+        for component, value in zip("ABC", state["n_mol_per_s"], strict=True):
+            out[f"{stream}.n.{component}"] = (Decimal(value), ALLOWANCE["n"])
+        out[f"{stream}.T"] = (Decimal(state["T_K"]), ALLOWANCE["T"])
+        out[f"{stream}.P"] = (Decimal(state["P_Pa"]), ALLOWANCE["P"])
+        for phase, keys in (
+            ("vap", ("vapor_mol_per_s", "vapor_n_mol_per_s")),
+            ("liq", ("liquid_mol_per_s", "liquid_n_mol_per_s")),
+        ):
+            for key in (key for key in keys if key in state):
+                for component, value in zip("ABC", state[key], strict=True):
+                    out[f"{stream}.{phase}.{component}"] = (Decimal(value), ALLOWANCE["n"])
+    for field, suffix in (("duty_W", "Q"), ("work_W", "W"), ("extent_mol_per_s", "xi")):
+        for unit, value in (entry.get(field) or {}).items():
+            out[f"{unit}.{suffix}"] = (Decimal(value), ALLOWANCE[suffix])
+    return out
+
+
+def worst_ratio(
+    state: Mapping[str, float], expected: Mapping[str, tuple[Decimal, float]]
+) -> tuple[float, str]:
+    """The largest `|x - x_ref| / allowance` over the registered coordinates, and where."""
+    return max(
+        (float(abs(Decimal(state[column]) - value) / Decimal(allowance)), column)
+        for column, (value, allowance) in expected.items()
+    )
 
 
 def run_case(cid: str) -> dict[str, Any]:
@@ -507,7 +567,7 @@ def run_case(cid: str) -> dict[str, Any]:
             ratio, column = worst_ratio(rrc.run.state, registered_root(CORPUS[NET02]))
             checks["net02_closed_form_worst_ratio"] = [ratio, column]
         if family in ("C",) or cid == "F1":
-            checks["a29_closure"] = _closure(rrc.run.state)
+            checks["a29_closure"] = closure(target_doc, rrc.run.state)
     entry["runs"] = runs
     entry["checks"] = checks
     if not forced:
