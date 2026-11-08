@@ -568,3 +568,9 @@ DECISION: where does ADR 0074 get applied? → package `S15a` (RP's K-1 follow-u
 manifest before merge. Alternative: fold into `wp/REL040` at the cut. Reversible by: rename the evidence dir.
 DECISION: register id for ADR 0074 → R-970 (R-950…R-969 held provisionally by X02/OPT; RRC drafts unnumbered).
 Alternative: next sequential R-950 and renumber the open branches. Reversible by: renumbering at merge.
+
+## 2026-11-08 — S15a built (ADR 0074 applied)
+
+`wp/S15a` `51c9e7f5` (schema + RID tests alone: 2 files) and `d7cb4dbb` (A-9 as RP §17.2, R-970, ADR 0074 Accepted on
+its condition). RID.A01–A12 pass; `test_evidence_manifests.py` 488 (410 + 78); 11 related files 600 passed; F0 PASS
+(the schema does not enter F0). Full gate and CI started at `d7cb4dbb`; manifest `evidence/S15a/…` after them.
