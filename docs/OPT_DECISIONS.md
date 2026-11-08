@@ -778,3 +778,23 @@ Totals: TH-R1 18.3 s, M1 5.9 s, C-MW 54.4 s ("verify" also holds report/record w
   warning) and `guide/limitations.md` (the refusal rows: the stale "validation for optimisation → task_unsupported" row
   replaced by ADR 0071's). No binding description changed (D-61's two stay as WO-6 left them). `mkdocs build --strict`
   exit 0. Reversible by: the docs commit.
+
+### Gates (WO-7 final, 2026-11-08, TRS2; at `a46ea80f`)
+
+- G1 F0: PASS (M1 50/50, M2 61/61, M3 61/61, M4 61/61, M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 35/35).
+- G2 (audited env, `--nlp`, `OMP_NUM_THREADS=1` only): `b6bbafdb0c83b0148e7a3d324b81ad93e6935e6731833cd325f162e6ec8b9324`
+  (25 entries), unchanged since WO-5c.
+- Audited env (`m03_nlp_check.sh -- test_opt_benchmarks_nlp.py test_opt_boundary.py test_opt_replay_nlp.py
+  test_opt_job_nlp.py test_opt_cost_lca_nlp.py`): 21 passed (G7–G10, G13 x86, G12, G14, G16, G19, G20).
+- G17/G22 (`benchmarks/opt/performance.py`, audited env): TH-R1 verified 10/11 it 16.5 s; M1 8/8 it 7.6 s; C-MW both
+  starts `KKT_POINT_VERIFIED` (10/9 it, 31.5 s), zero subsystem held 63/63, evaluation errors 0/0, 19 TWO_PHASE margins
+  min 0.18902 ≥ τ_regime 1e-4 at both candidates.
+- Default env: `test_opt_*.py` + description/surface/digest/Q26/application-result/U05 files: 217 passed, 1 failed
+  (`test_every_description_is_reviewed_by_both_lanes`, D-61, by design); G3 `test_e01_*.py test_m03_*.py` 383 passed,
+  1 skipped; `analytic.py --check` and `cost_lca.py --check` current; `mkdocs build --strict` exit 0.
+- Evidence: `evidence/OPT/a46ea80f…/manifest.json`, status `implemented` (OPT.D61 fail; OPT.G21 and OPT.G13.aarch64
+  unsupported = unconfirmed by the build lane); harvested (8 items, L-OPT-1, L-OPT-2), `HARVEST_SIZE` (75, 982, 129),
+  `t08_support_matrix.py --check` 0 problems; harvest/envelope/evidence tests 522 passed.
+- Not mine: `mypy` (configured files) reports 3 errors in `benchmarks/opt/analytic.py` (mpmath untyped import, a
+  no-any-return) and `benchmarks/opt/performance.py` (progress callable type), unchanged since WO-6 — the full gate
+  will show them if CI's mypy does.
