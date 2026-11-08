@@ -73,3 +73,65 @@ Built on `main` (OPT's executor edits not pulled, per the work order; the merger
 - **D-9.** Threading (no choice beyond §5.5's "the way `warm_start` is threaded"): the source reaches `_eo_recovery` from
   all three call sites — the revision region, the warm-started region (`_warm_start`), and SYN-001's region, where R3
   records `absent(not_revision_built)` and the restart's P3 then refuses (`test_r3_a_syn001_region_is_not_revision_built`).
+
+## WO-4 (2026-11-08)
+
+- **D-10.** DECISION: The member's `status` when edge 3 never consulted the source → an assembled candidate is
+  `not_reached` (reason `null`); an application refusal (`absent(no_verified_ancestor)`, an A1–A3 `rejected`) is
+  recorded as that refusal even though no event was emitted. §5.8 defines `not_reached` as "the source was assembled but
+  edge 3 never consulted it", so a source that was never assembled keeps the lookup's or assembly's own verdict, and a
+  rerun passes it back unchanged. Alternative: `not_reached` for every supplied source not consulted, the refusal
+  dropped. Reversible by: the `elif` in `ContinuationSource.member`.
+- **D-11.** DECISION (a reading of §5.4, for the reviewer): an instance parameter's `<name>` is the key's family before
+  the first `.` — `stage_pressure.3`, `feed_stage.S-IN1`, `damkohler.B`, `nu.A` — as the binder reads a key's kind
+  (`models/revision_flowsheet.py:825`, `name.split(".")[0]`). Stage pressures and duties are always indexed keys, so
+  reading the key itself would make them never continuable, against §5.4's list and FQ4's plain words; the denied
+  families (`feed_stage`, `nu`, `damkohler`, …) stay denied. Alternative: the whole key. Reversible by: one
+  expression in `_offending_path`.
+- **D-12.** DECISION: A3's order and spelling (§5.3 says "the first offending element in `element_diff` order") →
+  top-level members first, in code-point order, as `not_continuable(<member>)`; then `element_diff`'s elements
+  (`instances`, `connections`, `specifications`, by id), an added or removed item as `not_continuable(<member>:<id>)`,
+  an unpairable member as `not_continuable(<member>)`, a changed item's first offending path (code-point order) as
+  `not_continuable(<member>:<id>:<dotted path>)`. Alternative: elements before top-level members. Reversible by: the
+  loop order in `not_continuable`.
+- **D-13.** DECISION: A1's order and content → the certificate first: missing, unreadable, or without
+  `model_version`/`constants_sha256`/`root_fingerprint.full_state_sha256`/a final `branch_provenance` signature is
+  `integrity(certificate)`; then the state document must be intact (`warm_start.intact`: schema, ids, its own
+  `state_sha256`) and its `state_sha256` the root's, else `integrity(state_sha256)`. A2's binder refusal is
+  `source_binding(<Unbound.detail>)` (the `RevisionError` code), its identity mismatch `source_identity(model_version)`
+  before `source_identity(constants_sha256)`. Alternative: state before certificate. Reversible by: `_integrity`.
+- **D-14.** DECISION: The R0 projection's branch (§5.8's classes) → `record`, `selection`, `status`, `reason`,
+  `continued`, `source_identity` without `full_state_sha256`, `source_signature`, `source_content_hash` (the source
+  document's `content_hash` only; the body is provenance), `source_parameters` (canonical strings),
+  `candidate_variable_ids` (sorted, the warm-start pattern). Provenance ids, the document body and both float digests
+  are out. Alternative: carry `full_state_sha256` as a shape flag. Reversible by: the block in `run/identity.py`.
+- **D-15.** DECISION: `run_revision_session` called under the new value on `revision_eo` without a source (a direct
+  caller, not the job runner) writes the member as `absent(not_supplied)`, the executor's R4 reason, so the member is
+  written whenever the policy names the value (§5.8). Alternative: no member without a source. Reversible by: the
+  default in `run_revision_session`.
+- **D-16.** D-1 executed: `RRC-revision-v1` is offered (`APPLICATION_POLICIES`). The MR-7 clause needs a register entry
+  naming it, and register numbers are assigned at ADR 0072's acceptance (WO-6; OPT holds up to R-960 on its branch), so
+  the entry is in the register under the draft id **R-RRC-6** (also added to ADR 0072's drafts) and
+  `V02_ADDITIONS["solve_policies"] = {"RRC-revision-v1": "R-RRC-6"}`; WO-6 renumbers both. B50's get_project clause
+  strips RRC's addition exactly once, as it strips M02's and S11's models. The offer also moves
+  `benchmarks/t08/support_envelope.yaml`'s `solve_policies` members (T08.A20 holds the axis equal to
+  `APPLICATION_POLICIES`) and so `docs/support-matrix.md` (regenerated; `t08_support_matrix.py --check` 0 problems).
+  Alternative: a numbered entry now (collision risk across branches). Reversible by: reverting the offer commit.
+
+### Served content moved by the offer (D-1/D-16), measured old → new
+
+| Served | Before | After |
+| --- | --- | --- |
+| `get_project.solve_policies` (sha256 of its canonical JSON, fresh project) | `74e41d71862762ec…` | `94c6ae7c0948d464…` (one entry added) |
+| `RRC-revision-v1` `policy_sha256` (new entry) | — | `ff2ff84f8172fca9cbfa86334f82f43eed1c0917d0c5c673ce6f1f73de915f19` |
+| served MCP tool-list digest (`harness.tool_descriptions_sha256`) | `455d01eb…` | unchanged |
+| `policy_sha256` of the four policies offered before | `1f7d1172…`, `c03d7205…`, `aa0f1257…`, `32f484a1…` | unchanged |
+| `docs/support-matrix.md` (rendering of the envelope) | four policies | five (regenerated) |
+
+### WO-4 gate runs (2026-11-08, at `3968b720`)
+
+- G1 battery 626 passed (list in `RRC_HANDOFF.md`); F0 PASS (M1 50/50, M2–M5 61/61, M6 85/85, M7 52/52, M8 105/105,
+  M9 35/35); edge-3 test files unchanged; `t08_support_matrix.py --check` 0 problems.
+- G6 (a, c, d, e, k) and G7 (four bundles `MATCH`, 0 differences, no lookup) in `tests/test_rrc_application.py`.
+- G8 measured twice in fresh processes (NET-02 store pair): `artifact_r0_sha256` `aa47dabf12e4000a…` both runs.
+- Opening hash (WO-3's open point): no WO-4 case pins a column; NET-02's recovery item opens at `full_state_sha256`.
