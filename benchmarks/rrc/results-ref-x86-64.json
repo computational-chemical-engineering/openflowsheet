@@ -1,0 +1,2473 @@
+{
+ "candidates": [
+  {
+   "case_seconds": 5.157,
+   "checks": {
+    "g2f_opening_equals_source_full_state": true,
+    "net02_closed_form_worst_ratio": [
+     0.01091876999952547,
+     "S3.liq.C"
+    ],
+    "scaled_distance_to_t06_root": 1.958577892461714e-09,
+    "source_signature": [
+     [
+      "U-HEAT",
+      "TWO_PHASE"
+     ],
+     [
+      "U-PHF",
+      "TWO_PHASE"
+     ]
+    ]
+   },
+   "differing_parameters": [
+    "U-SPLIT.split_fraction"
+   ],
+   "family": "N",
+   "forced_edge": false,
+   "id": "N1",
+   "runs": {
+    "RRC-revision-v1": {
+     "attempts": 1,
+     "branch_items": [
+      {
+       "attempt": 0,
+       "core": "newton",
+       "initializer_source": "traversal-G0-v1",
+       "opening_state_sha256": "364af0a903b97186fdea583c007449103810d2c8492cff13b2330a90ed81ab4f"
+      },
+      {
+       "attempt": 1,
+       "core": "homotopy",
+       "initializer_source": "revision_continuation_source",
+       "opening_state_sha256": "f9eb0dd4e8977a98bcb1f9fa2d96450f75ed8da5991dc7cc4aa76bdb65d1683a"
+      }
+     ],
+     "continued": {
+      "parameter_ids": [
+       "U-SPLIT.split_fraction"
+      ],
+      "start_values": [
+       "0.5"
+      ]
+     },
+     "eo_recovery": "taken",
+     "eo_recovery_unsupported": null,
+     "full_state_sha256": "5c460d18c8805f87fd279bd38eaab1896ecd054662677d03c3381527c433f85a",
+     "g10": {
+      "compile_seconds": [
+       0.019,
+       0.02,
+       0.019,
+       0.019
+      ],
+      "compile_values": [
+       {
+        "U-SPLIT.split_fraction": "0.95"
+       },
+       {
+        "U-SPLIT.split_fraction": "0.5"
+       },
+       {
+        "U-SPLIT.split_fraction": "0.6125"
+       },
+       {
+        "U-SPLIT.split_fraction": "0.8374999999999999"
+       }
+      ],
+      "levels_compiled": 4,
+      "property_calls": 360,
+      "recovery_wall_s": 0.21
+     },
+     "homotopy": {
+      "accepted": 4,
+      "lambda_levels": [
+       "1/4",
+       "3/4",
+       "1"
+      ],
+      "lambda_reached": "1",
+      "rejected": 0,
+      "stalled_at": null,
+      "trials": 4,
+      "type": "revision_continuation"
+     },
+     "initializer_rejected": [],
+     "item0": {
+      "in_trigger_set": true,
+      "iterations": 1,
+      "outcome": "BOUND_BLOCKED"
+     },
+     "iterations": 12,
+     "message": "",
+     "outcome": "CONVERGED",
+     "record_reason": null,
+     "record_status": "taken",
+     "seconds": 0.37,
+     "state_sha256": "107be2c670a619d97aa844346f8be01be0889ccd11d8b301e70286ef308f41d4",
+     "step_outcome": "CONVERGED",
+     "verification_status": "VERIFIED"
+    },
+    "T06-revision-v2": {
+     "attempts": 1,
+     "branch_items": [
+      {
+       "attempt": 0,
+       "core": "newton",
+       "initializer_source": "traversal-G0-v1",
+       "opening_state_sha256": "364af0a903b97186fdea583c007449103810d2c8492cff13b2330a90ed81ab4f"
+      },
+      {
+       "attempt": 1,
+       "core": "newton",
+       "initializer_source": "traversal-G0-pass8-v1",
+       "opening_state_sha256": "af88445f70033a13aa4cdf1c985f5f4c60611cc098a774b77fa39a5d7b8db38a"
+      }
+     ],
+     "continued": null,
+     "eo_recovery": "taken",
+     "eo_recovery_unsupported": null,
+     "full_state_sha256": "1cf23ff0233545641caf68beaeb029ad9a9ca0c874203226de3ea98b3294b12d",
+     "initializer_rejected": [],
+     "item0": {
+      "in_trigger_set": true,
+      "iterations": 1,
+      "outcome": "BOUND_BLOCKED"
+     },
+     "iterations": 5,
+     "message": "",
+     "outcome": "CONVERGED",
+     "record_reason": null,
+     "record_status": null,
+     "seconds": 0.445,
+     "state_sha256": "6941f827580e060ec014503f8dd801995b6a58c41b587eb25bedf1717d94db35",
+     "step_outcome": "CONVERGED",
+     "verification_status": "VERIFIED"
+    },
+    "control": {
+     "attempts": 1,
+     "branch_items": [
+      {
+       "attempt": 0,
+       "core": "newton",
+       "initializer_source": "traversal-G0-v1",
+       "opening_state_sha256": "364af0a903b97186fdea583c007449103810d2c8492cff13b2330a90ed81ab4f"
+      }
+     ],
+     "continued": null,
+     "eo_recovery": null,
+     "eo_recovery_unsupported": null,
+     "initializer_rejected": [],
+     "item0": {
+      "in_trigger_set": true,
+      "iterations": 1,
+      "outcome": "BOUND_BLOCKED"
+     },
+     "iterations": 1,
+     "message": "a component sits on its lower bound and the Newton direction points out of the feasible set; no trial can be taken along it",
+     "outcome": "BOUND_BLOCKED",
+     "record_reason": null,
+     "record_status": null,
+     "seconds": 0.142,
+     "state_sha256": "6b2d3d9731a6253abde52388c623b156cb31ff847f16660cbac0774503e08018",
+     "step_outcome": "BOUND_BLOCKED",
+     "verification_status": null
+    }
+   },
+   "source": {
+    "attempts": 1,
+    "branch_items": [
+     {
+      "attempt": 0,
+      "core": "newton",
+      "initializer_source": "traversal-G0-v1",
+      "opening_state_sha256": "24b8a467a66255217411826210e785b30cecaae754c56c8df0e1e526ccae4717"
+     }
+    ],
+    "continued": null,
+    "eo_recovery": null,
+    "eo_recovery_unsupported": null,
+    "full_state_sha256": "f9eb0dd4e8977a98bcb1f9fa2d96450f75ed8da5991dc7cc4aa76bdb65d1683a",
+    "initializer_rejected": [],
+    "item0": {
+     "in_trigger_set": false,
+     "iterations": 3,
+     "outcome": "CONVERGED"
+    },
+    "iterations": 3,
+    "message": "",
+    "outcome": "CONVERGED",
+    "record_reason": null,
+    "record_status": null,
+    "seconds": 0.117,
+    "state_sha256": "c906750befe4fe39883186c5b73525cd144e2a5600c74824de8a3eaa247756ab",
+    "step_outcome": "CONVERGED",
+    "verification_status": "VERIFIED"
+   },
+   "source_eligible": true,
+   "store": {
+    "source": {
+     "artifact_names": [
+      "check-policy.json",
+      "execution-plan.json",
+      "revision.json",
+      "solution-certificate.json",
+      "solution-state.json",
+      "solve-events.json",
+      "solve-path.json",
+      "solve-plan.json",
+      "solve-policy.json",
+      "structural-report.json"
+     ],
+     "job_id": "job-000001",
+     "job_status": "completed",
+     "member_continued": null,
+     "member_reason": null,
+     "member_source_revision_id": null,
+     "member_status": null,
+     "outcome": "CONVERGED",
+     "state_sha256": "c906750befe4fe39883186c5b73525cd144e2a5600c74824de8a3eaa247756ab",
+     "verification_status": "VERIFIED"
+    },
+    "target": {
+     "artifact_names": [
+      "check-policy.json",
+      "execution-plan.json",
+      "revision.json",
+      "solution-certificate.json",
+      "solution-state.json",
+      "solve-events.json",
+      "solve-path.json",
+      "solve-plan.json",
+      "solve-policy.json",
+      "structural-report.json"
+     ],
+     "job_id": "job-000002",
+     "job_status": "completed",
+     "member_continued": {
+      "parameter_ids": [
+       "U-SPLIT.split_fraction"
+      ],
+      "start_values": [
+       "0.5"
+      ]
+     },
+     "member_reason": null,
+     "member_source_revision_id": "rev-000001",
+     "member_status": "taken",
+     "outcome": "CONVERGED",
+     "source_revision_id": "rev-000001",
+     "state_sha256": "107be2c670a619d97aa844346f8be01be0889ccd11d8b301e70286ef308f41d4",
+     "verification_status": "VERIFIED"
+    }
+   }
+  },
+  {
+   "case_seconds": 3.743,
+   "checks": {
+    "g2f_opening_equals_source_full_state": true,
+    "net02_closed_form_worst_ratio": [
+     1.0044680083155812e-07,
+     "S3.liq.C"
+    ],
+    "scaled_distance_to_t06_root": 3.955645884919552e-09,
+    "source_signature": [
+     [
+      "U-HEAT",
+      "TWO_PHASE"
+     ],
+     [
+      "U-PHF",
+      "TWO_PHASE"
+     ]
+    ]
+   },
+   "differing_parameters": [
+    "U-SPLIT.split_fraction"
+   ],
+   "family": "N",
+   "forced_edge": false,
+   "id": "N2",
+   "runs": {
+    "RRC-revision-v1": {
+     "attempts": 1,
+     "branch_items": [
+      {
+       "attempt": 0,
+       "core": "newton",
+       "initializer_source": "traversal-G0-v1",
+       "opening_state_sha256": "364af0a903b97186fdea583c007449103810d2c8492cff13b2330a90ed81ab4f"
+      },
+      {
+       "attempt": 1,
+       "core": "homotopy",
+       "initializer_source": "revision_continuation_source",
+       "opening_state_sha256": "5ff3b7a9b0212b906762bf58e9afbe2981c13ef886a18c7a956faaee71c52919"
+      }
+     ],
+     "continued": {
+      "parameter_ids": [
+       "U-SPLIT.split_fraction"
+      ],
+      "start_values": [
+       "0.8"
+      ]
+     },
+     "eo_recovery": "taken",
+     "eo_recovery_unsupported": null,
+     "full_state_sha256": "3bd4c3c83dc2a498a6780ab9df014d3a82aa6f315786a144436cb613ce6e5e16",
+     "g10": {
+      "compile_seconds": [
+       0.012,
+       0.013,
+       0.013,
+       0.012
+      ],
+      "compile_values": [
+       {
+        "U-SPLIT.split_fraction": "0.95"
+       },
+       {
+        "U-SPLIT.split_fraction": "0.8"
+       },
+       {
+        "U-SPLIT.split_fraction": "0.8375"
+       },
+       {
+        "U-SPLIT.split_fraction": "0.9125"
+       }
+      ],
+      "levels_compiled": 4,
+      "property_calls": 333,
+      "recovery_wall_s": 0.125
+     },
+     "homotopy": {
+      "accepted": 4,
+      "lambda_levels": [
+       "1/4",
+       "3/4",
+       "1"
+      ],
+      "lambda_reached": "1",
+      "rejected": 0,
+      "stalled_at": null,
+      "trials": 4,
+      "type": "revision_continuation"
+     },
+     "initializer_rejected": [],
+     "item0": {
+      "in_trigger_set": true,
+      "iterations": 1,
+      "outcome": "BOUND_BLOCKED"
+     },
+     "iterations": 12,
+     "message": "",
+     "outcome": "CONVERGED",
+     "record_reason": null,
+     "record_status": "taken",
+     "seconds": 0.232,
+     "state_sha256": "86bc116b532cf7616bad828f336679c5b73ab89a6bfeeb3cbbeeaca2be4ee05d",
+     "step_outcome": "CONVERGED",
+     "verification_status": "VERIFIED"
+    },
+    "T06-revision-v2": {
+     "attempts": 1,
+     "branch_items": [
+      {
+       "attempt": 0,
+       "core": "newton",
+       "initializer_source": "traversal-G0-v1",
+       "opening_state_sha256": "364af0a903b97186fdea583c007449103810d2c8492cff13b2330a90ed81ab4f"
+      },
+      {
+       "attempt": 1,
+       "core": "newton",
+       "initializer_source": "traversal-G0-pass8-v1",
+       "opening_state_sha256": "af88445f70033a13aa4cdf1c985f5f4c60611cc098a774b77fa39a5d7b8db38a"
+      }
+     ],
+     "continued": null,
+     "eo_recovery": "taken",
+     "eo_recovery_unsupported": null,
+     "full_state_sha256": "1cf23ff0233545641caf68beaeb029ad9a9ca0c874203226de3ea98b3294b12d",
+     "initializer_rejected": [],
+     "item0": {
+      "in_trigger_set": true,
+      "iterations": 1,
+      "outcome": "BOUND_BLOCKED"
+     },
+     "iterations": 5,
+     "message": "",
+     "outcome": "CONVERGED",
+     "record_reason": null,
+     "record_status": null,
+     "seconds": 0.33,
+     "state_sha256": "6941f827580e060ec014503f8dd801995b6a58c41b587eb25bedf1717d94db35",
+     "step_outcome": "CONVERGED",
+     "verification_status": "VERIFIED"
+    },
+    "control": {
+     "attempts": 1,
+     "branch_items": [
+      {
+       "attempt": 0,
+       "core": "newton",
+       "initializer_source": "traversal-G0-v1",
+       "opening_state_sha256": "364af0a903b97186fdea583c007449103810d2c8492cff13b2330a90ed81ab4f"
+      }
+     ],
+     "continued": null,
+     "eo_recovery": null,
+     "eo_recovery_unsupported": null,
+     "initializer_rejected": [],
+     "item0": {
+      "in_trigger_set": true,
+      "iterations": 1,
+      "outcome": "BOUND_BLOCKED"
+     },
+     "iterations": 1,
+     "message": "a component sits on its lower bound and the Newton direction points out of the feasible set; no trial can be taken along it",
+     "outcome": "BOUND_BLOCKED",
+     "record_reason": null,
+     "record_status": null,
+     "seconds": 0.089,
+     "state_sha256": "6b2d3d9731a6253abde52388c623b156cb31ff847f16660cbac0774503e08018",
+     "step_outcome": "BOUND_BLOCKED",
+     "verification_status": null
+    }
+   },
+   "source": {
+    "attempts": 1,
+    "branch_items": [
+     {
+      "attempt": 0,
+      "core": "newton",
+      "initializer_source": "traversal-G0-v1",
+      "opening_state_sha256": "5222453601071a3a5d97a1ac69efa0fcdd72b3ad9de3dc8a22e462041f24430d"
+     }
+    ],
+    "continued": null,
+    "eo_recovery": null,
+    "eo_recovery_unsupported": null,
+    "full_state_sha256": "5ff3b7a9b0212b906762bf58e9afbe2981c13ef886a18c7a956faaee71c52919",
+    "initializer_rejected": [],
+    "item0": {
+     "in_trigger_set": false,
+     "iterations": 5,
+     "outcome": "CONVERGED"
+    },
+    "iterations": 5,
+    "message": "",
+    "outcome": "CONVERGED",
+    "record_reason": null,
+    "record_status": null,
+    "seconds": 0.105,
+    "state_sha256": "8a680b0904eed203157e8d1f9d8eb1f807c22dad881a8335771747e874e4ceba",
+    "step_outcome": "CONVERGED",
+    "verification_status": "VERIFIED"
+   },
+   "source_eligible": true,
+   "store": {
+    "source": {
+     "artifact_names": [
+      "check-policy.json",
+      "execution-plan.json",
+      "revision.json",
+      "solution-certificate.json",
+      "solution-state.json",
+      "solve-events.json",
+      "solve-path.json",
+      "solve-plan.json",
+      "solve-policy.json",
+      "structural-report.json"
+     ],
+     "job_id": "job-000001",
+     "job_status": "completed",
+     "member_continued": null,
+     "member_reason": null,
+     "member_source_revision_id": null,
+     "member_status": null,
+     "outcome": "CONVERGED",
+     "state_sha256": "8a680b0904eed203157e8d1f9d8eb1f807c22dad881a8335771747e874e4ceba",
+     "verification_status": "VERIFIED"
+    },
+    "target": {
+     "artifact_names": [
+      "check-policy.json",
+      "execution-plan.json",
+      "revision.json",
+      "solution-certificate.json",
+      "solution-state.json",
+      "solve-events.json",
+      "solve-path.json",
+      "solve-plan.json",
+      "solve-policy.json",
+      "structural-report.json"
+     ],
+     "job_id": "job-000002",
+     "job_status": "completed",
+     "member_continued": {
+      "parameter_ids": [
+       "U-SPLIT.split_fraction"
+      ],
+      "start_values": [
+       "0.8"
+      ]
+     },
+     "member_reason": null,
+     "member_source_revision_id": "rev-000001",
+     "member_status": "taken",
+     "outcome": "CONVERGED",
+     "source_revision_id": "rev-000001",
+     "state_sha256": "86bc116b532cf7616bad828f336679c5b73ab89a6bfeeb3cbbeeaca2be4ee05d",
+     "verification_status": "VERIFIED"
+    }
+   }
+  },
+  {
+   "case_seconds": 3.444,
+   "checks": {
+    "g2f_opening_equals_source_full_state": true,
+    "net02_closed_form_worst_ratio": [
+     2.595503408913456e-05,
+     "S3.liq.C"
+    ],
+    "scaled_distance_to_t06_root": 3.949963911509258e-09,
+    "source_signature": [
+     [
+      "U-HEAT",
+      "TWO_PHASE"
+     ],
+     [
+      "U-PHF",
+      "TWO_PHASE"
+     ]
+    ]
+   },
+   "differing_parameters": [
+    "U-SPLIT.split_fraction"
+   ],
+   "family": "N",
+   "forced_edge": false,
+   "id": "N3",
+   "runs": {
+    "RRC-revision-v1": {
+     "attempts": 1,
+     "branch_items": [
+      {
+       "attempt": 0,
+       "core": "newton",
+       "initializer_source": "traversal-G0-v1",
+       "opening_state_sha256": "364af0a903b97186fdea583c007449103810d2c8492cff13b2330a90ed81ab4f"
+      },
+      {
+       "attempt": 1,
+       "core": "homotopy",
+       "initializer_source": "revision_continuation_source",
+       "opening_state_sha256": "bc8401d3a186e460940dd338a8260795c97a75d72975964ea999afc829debacc"
+      }
+     ],
+     "continued": {
+      "parameter_ids": [
+       "U-SPLIT.split_fraction"
+      ],
+      "start_values": [
+       "0.9"
+      ]
+     },
+     "eo_recovery": "taken",
+     "eo_recovery_unsupported": null,
+     "full_state_sha256": "7cb00eb93841c6ae88b91acaf025730cc805ec9318342806b5c8f846fc94985a",
+     "g10": {
+      "compile_seconds": [
+       0.012,
+       0.013,
+       0.013,
+       0.012
+      ],
+      "compile_values": [
+       {
+        "U-SPLIT.split_fraction": "0.95"
+       },
+       {
+        "U-SPLIT.split_fraction": "0.9"
+       },
+       {
+        "U-SPLIT.split_fraction": "0.9125"
+       },
+       {
+        "U-SPLIT.split_fraction": "0.9375"
+       }
+      ],
+      "levels_compiled": 4,
+      "property_calls": 279,
+      "recovery_wall_s": 0.115
+     },
+     "homotopy": {
+      "accepted": 4,
+      "lambda_levels": [
+       "1/4",
+       "3/4",
+       "1"
+      ],
+      "lambda_reached": "1",
+      "rejected": 0,
+      "stalled_at": null,
+      "trials": 4,
+      "type": "revision_continuation"
+     },
+     "initializer_rejected": [],
+     "item0": {
+      "in_trigger_set": true,
+      "iterations": 1,
+      "outcome": "BOUND_BLOCKED"
+     },
+     "iterations": 10,
+     "message": "",
+     "outcome": "CONVERGED",
+     "record_reason": null,
+     "record_status": "taken",
+     "seconds": 0.206,
+     "state_sha256": "c48634a168a72de2b1af67ad531acf84bd67d8bcc6755e14f266b4b4d85dcbc0",
+     "step_outcome": "CONVERGED",
+     "verification_status": "VERIFIED"
+    },
+    "T06-revision-v2": {
+     "attempts": 1,
+     "branch_items": [
+      {
+       "attempt": 0,
+       "core": "newton",
+       "initializer_source": "traversal-G0-v1",
+       "opening_state_sha256": "364af0a903b97186fdea583c007449103810d2c8492cff13b2330a90ed81ab4f"
+      },
+      {
+       "attempt": 1,
+       "core": "newton",
+       "initializer_source": "traversal-G0-pass8-v1",
+       "opening_state_sha256": "af88445f70033a13aa4cdf1c985f5f4c60611cc098a774b77fa39a5d7b8db38a"
+      }
+     ],
+     "continued": null,
+     "eo_recovery": "taken",
+     "eo_recovery_unsupported": null,
+     "full_state_sha256": "1cf23ff0233545641caf68beaeb029ad9a9ca0c874203226de3ea98b3294b12d",
+     "initializer_rejected": [],
+     "item0": {
+      "in_trigger_set": true,
+      "iterations": 1,
+      "outcome": "BOUND_BLOCKED"
+     },
+     "iterations": 5,
+     "message": "",
+     "outcome": "CONVERGED",
+     "record_reason": null,
+     "record_status": null,
+     "seconds": 0.269,
+     "state_sha256": "6941f827580e060ec014503f8dd801995b6a58c41b587eb25bedf1717d94db35",
+     "step_outcome": "CONVERGED",
+     "verification_status": "VERIFIED"
+    },
+    "control": {
+     "attempts": 1,
+     "branch_items": [
+      {
+       "attempt": 0,
+       "core": "newton",
+       "initializer_source": "traversal-G0-v1",
+       "opening_state_sha256": "364af0a903b97186fdea583c007449103810d2c8492cff13b2330a90ed81ab4f"
+      }
+     ],
+     "continued": null,
+     "eo_recovery": null,
+     "eo_recovery_unsupported": null,
+     "initializer_rejected": [],
+     "item0": {
+      "in_trigger_set": true,
+      "iterations": 1,
+      "outcome": "BOUND_BLOCKED"
+     },
+     "iterations": 1,
+     "message": "a component sits on its lower bound and the Newton direction points out of the feasible set; no trial can be taken along it",
+     "outcome": "BOUND_BLOCKED",
+     "record_reason": null,
+     "record_status": null,
+     "seconds": 0.077,
+     "state_sha256": "6b2d3d9731a6253abde52388c623b156cb31ff847f16660cbac0774503e08018",
+     "step_outcome": "BOUND_BLOCKED",
+     "verification_status": null
+    }
+   },
+   "source": {
+    "attempts": 1,
+    "branch_items": [
+     {
+      "attempt": 0,
+      "core": "newton",
+      "initializer_source": "traversal-G0-v1",
+      "opening_state_sha256": "26ff18c8e68df72e86101c00c653b40cfa02c3cd376353eb56cfbb7e090a67ff"
+     }
+    ],
+    "continued": null,
+    "eo_recovery": null,
+    "eo_recovery_unsupported": null,
+    "full_state_sha256": "bc8401d3a186e460940dd338a8260795c97a75d72975964ea999afc829debacc",
+    "initializer_rejected": [],
+    "item0": {
+     "in_trigger_set": false,
+     "iterations": 5,
+     "outcome": "CONVERGED"
+    },
+    "iterations": 5,
+    "message": "",
+    "outcome": "CONVERGED",
+    "record_reason": null,
+    "record_status": null,
+    "seconds": 0.091,
+    "state_sha256": "68e0d79c32df2bb380a123083c7474445c35c8e64ff37a8f8245fc7256af79cf",
+    "step_outcome": "CONVERGED",
+    "verification_status": "VERIFIED"
+   },
+   "source_eligible": true,
+   "store": {
+    "source": {
+     "artifact_names": [
+      "check-policy.json",
+      "execution-plan.json",
+      "revision.json",
+      "solution-certificate.json",
+      "solution-state.json",
+      "solve-events.json",
+      "solve-path.json",
+      "solve-plan.json",
+      "solve-policy.json",
+      "structural-report.json"
+     ],
+     "job_id": "job-000001",
+     "job_status": "completed",
+     "member_continued": null,
+     "member_reason": null,
+     "member_source_revision_id": null,
+     "member_status": null,
+     "outcome": "CONVERGED",
+     "state_sha256": "68e0d79c32df2bb380a123083c7474445c35c8e64ff37a8f8245fc7256af79cf",
+     "verification_status": "VERIFIED"
+    },
+    "target": {
+     "artifact_names": [
+      "check-policy.json",
+      "execution-plan.json",
+      "revision.json",
+      "solution-certificate.json",
+      "solution-state.json",
+      "solve-events.json",
+      "solve-path.json",
+      "solve-plan.json",
+      "solve-policy.json",
+      "structural-report.json"
+     ],
+     "job_id": "job-000002",
+     "job_status": "completed",
+     "member_continued": {
+      "parameter_ids": [
+       "U-SPLIT.split_fraction"
+      ],
+      "start_values": [
+       "0.9"
+      ]
+     },
+     "member_reason": null,
+     "member_source_revision_id": "rev-000001",
+     "member_status": "taken",
+     "outcome": "CONVERGED",
+     "source_revision_id": "rev-000001",
+     "state_sha256": "c48634a168a72de2b1af67ad531acf84bd67d8bcc6755e14f266b4b4d85dcbc0",
+     "verification_status": "VERIFIED"
+    }
+   }
+  },
+  {
+   "case_seconds": 21.107,
+   "checks": {
+    "a29_closure": {
+     "met": true,
+     "worst_ratio": 4.550094363217854e-10
+    },
+    "g2f_opening_equals_source_full_state": null,
+    "scaled_distance_to_t06_root": 0.0,
+    "source_signature": [
+     [
+      "S02.stage.1",
+      "TWO_PHASE"
+     ],
+     [
+      "S02.stage.2",
+      "TWO_PHASE"
+     ],
+     [
+      "S02.stage.3",
+      "TWO_PHASE"
+     ],
+     [
+      "S02.stage.4",
+      "TWO_PHASE"
+     ],
+     [
+      "S02.stage.5",
+      "TWO_PHASE"
+     ],
+     [
+      "S02.stage.6",
+      "TWO_PHASE"
+     ],
+     [
+      "S02.stage.7",
+      "TWO_PHASE"
+     ]
+    ]
+   },
+   "differing_parameters": [
+    "U-SPLIT.split_fraction"
+   ],
+   "family": "C",
+   "forced_edge": false,
+   "id": "C1",
+   "runs": {
+    "RRC-revision-v1": {
+     "attempts": 1,
+     "branch_items": [
+      {
+       "attempt": 0,
+       "core": "newton",
+       "initializer_source": "traversal-G0-v1",
+       "opening_state_sha256": "6449e5b951921cc24b3d046b72b0e6612b5e96619b3cde4e1bc4e1ccf65b37bb"
+      }
+     ],
+     "continued": null,
+     "eo_recovery": null,
+     "eo_recovery_unsupported": null,
+     "full_state_sha256": "137346fe79d344549eeae1d04de342bbcbc51e00b7643154fd5b93595f3b5d04",
+     "initializer_rejected": [],
+     "item0": {
+      "in_trigger_set": false,
+      "iterations": 3,
+      "outcome": "CONVERGED"
+     },
+     "iterations": 3,
+     "message": "",
+     "outcome": "CONVERGED",
+     "record_reason": null,
+     "record_status": null,
+     "seconds": 1.869,
+     "state_sha256": "1614b2c127e6ef57df9e278b2287340ea9cdbb799bca3e0f156fce9694adfbd8",
+     "step_outcome": "CONVERGED",
+     "verification_status": "VERIFIED"
+    },
+    "T06-revision-v2": {
+     "attempts": 1,
+     "branch_items": [
+      {
+       "attempt": 0,
+       "core": "newton",
+       "initializer_source": "traversal-G0-v1",
+       "opening_state_sha256": "6449e5b951921cc24b3d046b72b0e6612b5e96619b3cde4e1bc4e1ccf65b37bb"
+      }
+     ],
+     "continued": null,
+     "eo_recovery": null,
+     "eo_recovery_unsupported": null,
+     "full_state_sha256": "137346fe79d344549eeae1d04de342bbcbc51e00b7643154fd5b93595f3b5d04",
+     "initializer_rejected": [],
+     "item0": {
+      "in_trigger_set": false,
+      "iterations": 3,
+      "outcome": "CONVERGED"
+     },
+     "iterations": 3,
+     "message": "",
+     "outcome": "CONVERGED",
+     "record_reason": null,
+     "record_status": null,
+     "seconds": 1.624,
+     "state_sha256": "1614b2c127e6ef57df9e278b2287340ea9cdbb799bca3e0f156fce9694adfbd8",
+     "step_outcome": "CONVERGED",
+     "verification_status": "VERIFIED"
+    },
+    "control": {
+     "attempts": 1,
+     "branch_items": [
+      {
+       "attempt": 0,
+       "core": "newton",
+       "initializer_source": "traversal-G0-v1",
+       "opening_state_sha256": "6449e5b951921cc24b3d046b72b0e6612b5e96619b3cde4e1bc4e1ccf65b37bb"
+      }
+     ],
+     "continued": null,
+     "eo_recovery": null,
+     "eo_recovery_unsupported": null,
+     "full_state_sha256": "137346fe79d344549eeae1d04de342bbcbc51e00b7643154fd5b93595f3b5d04",
+     "initializer_rejected": [],
+     "item0": {
+      "in_trigger_set": false,
+      "iterations": 3,
+      "outcome": "CONVERGED"
+     },
+     "iterations": 3,
+     "message": "",
+     "outcome": "CONVERGED",
+     "record_reason": null,
+     "record_status": null,
+     "seconds": 2.021,
+     "state_sha256": "1614b2c127e6ef57df9e278b2287340ea9cdbb799bca3e0f156fce9694adfbd8",
+     "step_outcome": "CONVERGED",
+     "verification_status": "VERIFIED"
+    }
+   },
+   "source": {
+    "attempts": 1,
+    "branch_items": [
+     {
+      "attempt": 0,
+      "core": "newton",
+      "initializer_source": "traversal-G0-v1",
+      "opening_state_sha256": "fa5b5b082b064c1b43d6168c1957cb5e8e17c5dd26b5ed12f66dcaa39b209e86"
+     }
+    ],
+    "continued": null,
+    "eo_recovery": null,
+    "eo_recovery_unsupported": null,
+    "full_state_sha256": "0963ab40e908035e68570d69d34617f0ffd9c04931e536c0175e8be3e85887ee",
+    "initializer_rejected": [],
+    "item0": {
+     "in_trigger_set": false,
+     "iterations": 3,
+     "outcome": "CONVERGED"
+    },
+    "iterations": 3,
+    "message": "",
+    "outcome": "CONVERGED",
+    "record_reason": null,
+    "record_status": null,
+    "seconds": 1.994,
+    "state_sha256": "47f1a3583256e53a415e35e6b04a2d7de0a09a244d533fc7f545b29dba5f1008",
+    "step_outcome": "CONVERGED",
+    "verification_status": "VERIFIED"
+   },
+   "source_eligible": true,
+   "store": {
+    "source": {
+     "artifact_names": [
+      "check-policy.json",
+      "execution-plan.json",
+      "revision.json",
+      "solution-certificate.json",
+      "solution-state.json",
+      "solve-events.json",
+      "solve-path.json",
+      "solve-plan.json",
+      "solve-policy.json",
+      "structural-report.json"
+     ],
+     "job_id": "job-000001",
+     "job_status": "completed",
+     "member_continued": null,
+     "member_reason": null,
+     "member_source_revision_id": null,
+     "member_status": null,
+     "outcome": "CONVERGED",
+     "state_sha256": "47f1a3583256e53a415e35e6b04a2d7de0a09a244d533fc7f545b29dba5f1008",
+     "verification_status": "VERIFIED"
+    },
+    "target": {
+     "artifact_names": [
+      "check-policy.json",
+      "execution-plan.json",
+      "revision.json",
+      "solution-certificate.json",
+      "solution-state.json",
+      "solve-events.json",
+      "solve-path.json",
+      "solve-plan.json",
+      "solve-policy.json",
+      "structural-report.json"
+     ],
+     "job_id": "job-000002",
+     "job_status": "completed",
+     "member_continued": null,
+     "member_reason": null,
+     "member_source_revision_id": "rev-000001",
+     "member_status": "not_reached",
+     "outcome": "CONVERGED",
+     "source_revision_id": "rev-000001",
+     "state_sha256": "1614b2c127e6ef57df9e278b2287340ea9cdbb799bca3e0f156fce9694adfbd8",
+     "verification_status": "VERIFIED"
+    }
+   }
+  },
+  {
+   "case_seconds": 17.893,
+   "checks": {
+    "a29_closure": {
+     "met": true,
+     "worst_ratio": 7.280150981148566e-10
+    },
+    "g2f_opening_equals_source_full_state": null,
+    "scaled_distance_to_t06_root": 0.0,
+    "source_signature": [
+     [
+      "S02.stage.1",
+      "TWO_PHASE"
+     ],
+     [
+      "S02.stage.2",
+      "TWO_PHASE"
+     ],
+     [
+      "S02.stage.3",
+      "TWO_PHASE"
+     ],
+     [
+      "S02.stage.4",
+      "TWO_PHASE"
+     ],
+     [
+      "S02.stage.5",
+      "TWO_PHASE"
+     ],
+     [
+      "S02.stage.6",
+      "TWO_PHASE"
+     ],
+     [
+      "S02.stage.7",
+      "TWO_PHASE"
+     ]
+    ]
+   },
+   "differing_parameters": [
+    "U-SPLIT.split_fraction"
+   ],
+   "family": "C",
+   "forced_edge": false,
+   "id": "C2",
+   "runs": {
+    "RRC-revision-v1": {
+     "attempts": 1,
+     "branch_items": [
+      {
+       "attempt": 0,
+       "core": "newton",
+       "initializer_source": "traversal-G0-v1",
+       "opening_state_sha256": "e250f4f00eb9809de34f86d9108cfaef7dfef3c95480c549089af4a1939bf21f"
+      }
+     ],
+     "continued": null,
+     "eo_recovery": null,
+     "eo_recovery_unsupported": null,
+     "full_state_sha256": "90966b4c48752a8873aee9653641db7b249379cdcd2fe79c0b153ae41034531f",
+     "initializer_rejected": [],
+     "item0": {
+      "in_trigger_set": false,
+      "iterations": 9,
+      "outcome": "CONVERGED"
+     },
+     "iterations": 9,
+     "message": "",
+     "outcome": "CONVERGED",
+     "record_reason": null,
+     "record_status": null,
+     "seconds": 1.691,
+     "state_sha256": "8e343ff566b4fbc7159393cd9e273d160b25c91b947a0df8ad7ca5c61eac8f01",
+     "step_outcome": "CONVERGED",
+     "verification_status": "VERIFIED"
+    },
+    "T06-revision-v2": {
+     "attempts": 1,
+     "branch_items": [
+      {
+       "attempt": 0,
+       "core": "newton",
+       "initializer_source": "traversal-G0-v1",
+       "opening_state_sha256": "e250f4f00eb9809de34f86d9108cfaef7dfef3c95480c549089af4a1939bf21f"
+      }
+     ],
+     "continued": null,
+     "eo_recovery": null,
+     "eo_recovery_unsupported": null,
+     "full_state_sha256": "90966b4c48752a8873aee9653641db7b249379cdcd2fe79c0b153ae41034531f",
+     "initializer_rejected": [],
+     "item0": {
+      "in_trigger_set": false,
+      "iterations": 9,
+      "outcome": "CONVERGED"
+     },
+     "iterations": 9,
+     "message": "",
+     "outcome": "CONVERGED",
+     "record_reason": null,
+     "record_status": null,
+     "seconds": 1.707,
+     "state_sha256": "8e343ff566b4fbc7159393cd9e273d160b25c91b947a0df8ad7ca5c61eac8f01",
+     "step_outcome": "CONVERGED",
+     "verification_status": "VERIFIED"
+    },
+    "control": {
+     "attempts": 1,
+     "branch_items": [
+      {
+       "attempt": 0,
+       "core": "newton",
+       "initializer_source": "traversal-G0-v1",
+       "opening_state_sha256": "e250f4f00eb9809de34f86d9108cfaef7dfef3c95480c549089af4a1939bf21f"
+      }
+     ],
+     "continued": null,
+     "eo_recovery": null,
+     "eo_recovery_unsupported": null,
+     "full_state_sha256": "90966b4c48752a8873aee9653641db7b249379cdcd2fe79c0b153ae41034531f",
+     "initializer_rejected": [],
+     "item0": {
+      "in_trigger_set": false,
+      "iterations": 9,
+      "outcome": "CONVERGED"
+     },
+     "iterations": 9,
+     "message": "",
+     "outcome": "CONVERGED",
+     "record_reason": null,
+     "record_status": null,
+     "seconds": 1.455,
+     "state_sha256": "8e343ff566b4fbc7159393cd9e273d160b25c91b947a0df8ad7ca5c61eac8f01",
+     "step_outcome": "CONVERGED",
+     "verification_status": "VERIFIED"
+    }
+   },
+   "source": {
+    "attempts": 1,
+    "branch_items": [
+     {
+      "attempt": 0,
+      "core": "newton",
+      "initializer_source": "traversal-G0-v1",
+      "opening_state_sha256": "fa5b5b082b064c1b43d6168c1957cb5e8e17c5dd26b5ed12f66dcaa39b209e86"
+     }
+    ],
+    "continued": null,
+    "eo_recovery": null,
+    "eo_recovery_unsupported": null,
+    "full_state_sha256": "0963ab40e908035e68570d69d34617f0ffd9c04931e536c0175e8be3e85887ee",
+    "initializer_rejected": [],
+    "item0": {
+     "in_trigger_set": false,
+     "iterations": 3,
+     "outcome": "CONVERGED"
+    },
+    "iterations": 3,
+    "message": "",
+    "outcome": "CONVERGED",
+    "record_reason": null,
+    "record_status": null,
+    "seconds": 1.259,
+    "state_sha256": "47f1a3583256e53a415e35e6b04a2d7de0a09a244d533fc7f545b29dba5f1008",
+    "step_outcome": "CONVERGED",
+    "verification_status": "VERIFIED"
+   },
+   "source_eligible": true,
+   "store": {
+    "source": {
+     "artifact_names": [
+      "check-policy.json",
+      "execution-plan.json",
+      "revision.json",
+      "solution-certificate.json",
+      "solution-state.json",
+      "solve-events.json",
+      "solve-path.json",
+      "solve-plan.json",
+      "solve-policy.json",
+      "structural-report.json"
+     ],
+     "job_id": "job-000001",
+     "job_status": "completed",
+     "member_continued": null,
+     "member_reason": null,
+     "member_source_revision_id": null,
+     "member_status": null,
+     "outcome": "CONVERGED",
+     "state_sha256": "47f1a3583256e53a415e35e6b04a2d7de0a09a244d533fc7f545b29dba5f1008",
+     "verification_status": "VERIFIED"
+    },
+    "target": {
+     "artifact_names": [
+      "check-policy.json",
+      "execution-plan.json",
+      "revision.json",
+      "solution-certificate.json",
+      "solution-state.json",
+      "solve-events.json",
+      "solve-path.json",
+      "solve-plan.json",
+      "solve-policy.json",
+      "structural-report.json"
+     ],
+     "job_id": "job-000002",
+     "job_status": "completed",
+     "member_continued": null,
+     "member_reason": null,
+     "member_source_revision_id": "rev-000001",
+     "member_status": "not_reached",
+     "outcome": "CONVERGED",
+     "source_revision_id": "rev-000001",
+     "state_sha256": "8e343ff566b4fbc7159393cd9e273d160b25c91b947a0df8ad7ca5c61eac8f01",
+     "verification_status": "VERIFIED"
+    }
+   }
+  },
+  {
+   "case_seconds": 23.723,
+   "checks": {
+    "a29_closure": {
+     "met": true,
+     "worst_ratio": 2.730056617930712e-10
+    },
+    "g2f_opening_equals_source_full_state": true,
+    "scaled_distance_to_t06_root": 7.771561172376096e-15,
+    "source_signature": [
+     [
+      "S02.stage.1",
+      "TWO_PHASE"
+     ],
+     [
+      "S02.stage.2",
+      "TWO_PHASE"
+     ],
+     [
+      "S02.stage.3",
+      "TWO_PHASE"
+     ],
+     [
+      "S02.stage.4",
+      "TWO_PHASE"
+     ],
+     [
+      "S02.stage.5",
+      "TWO_PHASE"
+     ],
+     [
+      "S02.stage.6",
+      "TWO_PHASE"
+     ],
+     [
+      "S02.stage.7",
+      "TWO_PHASE"
+     ]
+    ]
+   },
+   "differing_parameters": [
+    "U-SPLIT.split_fraction"
+   ],
+   "family": "C",
+   "forced_edge": false,
+   "id": "C3",
+   "runs": {
+    "RRC-revision-v1": {
+     "attempts": 1,
+     "branch_items": [
+      {
+       "attempt": 0,
+       "core": "newton",
+       "initializer_source": "traversal-G0-v1",
+       "opening_state_sha256": "971d0869c60601574ffc339c71ef56332d0a4af783754e12328d8f48aebf891e"
+      },
+      {
+       "attempt": 1,
+       "core": "homotopy",
+       "initializer_source": "revision_continuation_source",
+       "opening_state_sha256": "0963ab40e908035e68570d69d34617f0ffd9c04931e536c0175e8be3e85887ee"
+      }
+     ],
+     "continued": {
+      "parameter_ids": [
+       "U-SPLIT.split_fraction"
+      ],
+      "start_values": [
+       "0.2"
+      ]
+     },
+     "eo_recovery": "taken",
+     "eo_recovery_unsupported": null,
+     "full_state_sha256": "5eb5531e52ea8865225506ec2bc5b395593aff42650c480badcd31ef15e605b1",
+     "g10": {
+      "compile_seconds": [
+       0.018,
+       0.018,
+       0.019,
+       0.019
+      ],
+      "compile_values": [
+       {
+        "U-SPLIT.split_fraction": "0.9"
+       },
+       {
+        "U-SPLIT.split_fraction": "0.2"
+       },
+       {
+        "U-SPLIT.split_fraction": "0.375"
+       },
+       {
+        "U-SPLIT.split_fraction": "0.725"
+       }
+      ],
+      "levels_compiled": 4,
+      "property_calls": 1403,
+      "recovery_wall_s": 0.234
+     },
+     "homotopy": {
+      "accepted": 4,
+      "lambda_levels": [
+       "1/4",
+       "3/4",
+       "1"
+      ],
+      "lambda_reached": "1",
+      "rejected": 0,
+      "stalled_at": null,
+      "trials": 4,
+      "type": "revision_continuation"
+     },
+     "initializer_rejected": [],
+     "item0": {
+      "in_trigger_set": true,
+      "iterations": 4,
+      "outcome": "BOUND_BLOCKED"
+     },
+     "iterations": 22,
+     "message": "",
+     "outcome": "CONVERGED",
+     "record_reason": null,
+     "record_status": "taken",
+     "seconds": 2.084,
+     "state_sha256": "2bfcd70556a4325453731d8cbb26a2c07691821c2e3ff7945dcd71231e1db560",
+     "step_outcome": "CONVERGED",
+     "verification_status": "VERIFIED"
+    },
+    "T06-revision-v2": {
+     "attempts": 1,
+     "branch_items": [
+      {
+       "attempt": 0,
+       "core": "newton",
+       "initializer_source": "traversal-G0-v1",
+       "opening_state_sha256": "971d0869c60601574ffc339c71ef56332d0a4af783754e12328d8f48aebf891e"
+      },
+      {
+       "attempt": 1,
+       "core": "newton",
+       "initializer_source": "traversal-G0-pass8-v1",
+       "opening_state_sha256": "fb0fdf20343dc288710d89b1d1d7a13eeb9fa2b142a4bf2c4c90e199e9184d30"
+      }
+     ],
+     "continued": null,
+     "eo_recovery": "taken",
+     "eo_recovery_unsupported": null,
+     "full_state_sha256": "ee2bb347a22fb016103f9dc508e6943683fa0fb044d25811a6e67405d81aff11",
+     "initializer_rejected": [],
+     "item0": {
+      "in_trigger_set": true,
+      "iterations": 4,
+      "outcome": "BOUND_BLOCKED"
+     },
+     "iterations": 8,
+     "message": "",
+     "outcome": "CONVERGED",
+     "record_reason": null,
+     "record_status": null,
+     "seconds": 6.579,
+     "state_sha256": "7711f69ba8f73cff1c805f136fa1b372c596dbc425cb0934a0ef18c99549ac78",
+     "step_outcome": "CONVERGED",
+     "verification_status": "VERIFIED"
+    },
+    "control": {
+     "attempts": 1,
+     "branch_items": [
+      {
+       "attempt": 0,
+       "core": "newton",
+       "initializer_source": "traversal-G0-v1",
+       "opening_state_sha256": "971d0869c60601574ffc339c71ef56332d0a4af783754e12328d8f48aebf891e"
+      }
+     ],
+     "continued": null,
+     "eo_recovery": null,
+     "eo_recovery_unsupported": null,
+     "initializer_rejected": [],
+     "item0": {
+      "in_trigger_set": true,
+      "iterations": 4,
+      "outcome": "BOUND_BLOCKED"
+     },
+     "iterations": 4,
+     "message": "a component sits on its lower bound and the Newton direction points out of the feasible set; no trial can be taken along it",
+     "outcome": "BOUND_BLOCKED",
+     "record_reason": null,
+     "record_status": null,
+     "seconds": 1.86,
+     "state_sha256": "26d219653522a7d5fff1cbb1a604022a43121df6dd49b1aba839902f0c082f19",
+     "step_outcome": "BOUND_BLOCKED",
+     "verification_status": null
+    }
+   },
+   "source": {
+    "attempts": 1,
+    "branch_items": [
+     {
+      "attempt": 0,
+      "core": "newton",
+      "initializer_source": "traversal-G0-v1",
+      "opening_state_sha256": "fa5b5b082b064c1b43d6168c1957cb5e8e17c5dd26b5ed12f66dcaa39b209e86"
+     }
+    ],
+    "continued": null,
+    "eo_recovery": null,
+    "eo_recovery_unsupported": null,
+    "full_state_sha256": "0963ab40e908035e68570d69d34617f0ffd9c04931e536c0175e8be3e85887ee",
+    "initializer_rejected": [],
+    "item0": {
+     "in_trigger_set": false,
+     "iterations": 3,
+     "outcome": "CONVERGED"
+    },
+    "iterations": 3,
+    "message": "",
+    "outcome": "CONVERGED",
+    "record_reason": null,
+    "record_status": null,
+    "seconds": 1.457,
+    "state_sha256": "47f1a3583256e53a415e35e6b04a2d7de0a09a244d533fc7f545b29dba5f1008",
+    "step_outcome": "CONVERGED",
+    "verification_status": "VERIFIED"
+   },
+   "source_eligible": true,
+   "store": {
+    "source": {
+     "artifact_names": [
+      "check-policy.json",
+      "execution-plan.json",
+      "revision.json",
+      "solution-certificate.json",
+      "solution-state.json",
+      "solve-events.json",
+      "solve-path.json",
+      "solve-plan.json",
+      "solve-policy.json",
+      "structural-report.json"
+     ],
+     "job_id": "job-000001",
+     "job_status": "completed",
+     "member_continued": null,
+     "member_reason": null,
+     "member_source_revision_id": null,
+     "member_status": null,
+     "outcome": "CONVERGED",
+     "state_sha256": "47f1a3583256e53a415e35e6b04a2d7de0a09a244d533fc7f545b29dba5f1008",
+     "verification_status": "VERIFIED"
+    },
+    "target": {
+     "artifact_names": [
+      "check-policy.json",
+      "execution-plan.json",
+      "revision.json",
+      "solution-certificate.json",
+      "solution-state.json",
+      "solve-events.json",
+      "solve-path.json",
+      "solve-plan.json",
+      "solve-policy.json",
+      "structural-report.json"
+     ],
+     "job_id": "job-000002",
+     "job_status": "completed",
+     "member_continued": {
+      "parameter_ids": [
+       "U-SPLIT.split_fraction"
+      ],
+      "start_values": [
+       "0.2"
+      ]
+     },
+     "member_reason": null,
+     "member_source_revision_id": "rev-000001",
+     "member_status": "taken",
+     "outcome": "CONVERGED",
+     "source_revision_id": "rev-000001",
+     "state_sha256": "2bfcd70556a4325453731d8cbb26a2c07691821c2e3ff7945dcd71231e1db560",
+     "verification_status": "VERIFIED"
+    }
+   }
+  },
+  {
+   "case_seconds": 20.738,
+   "checks": {
+    "a29_closure": {
+     "met": true,
+     "worst_ratio": 1.8200377452871416e-10
+    },
+    "g2f_opening_equals_source_full_state": true,
+    "scaled_distance_to_t06_root": 1.3322315102944533e-09,
+    "source_signature": [
+     [
+      "S02.stage.1",
+      "TWO_PHASE"
+     ],
+     [
+      "S02.stage.2",
+      "TWO_PHASE"
+     ],
+     [
+      "S02.stage.3",
+      "TWO_PHASE"
+     ],
+     [
+      "S02.stage.4",
+      "TWO_PHASE"
+     ],
+     [
+      "S02.stage.5",
+      "TWO_PHASE"
+     ],
+     [
+      "S02.stage.6",
+      "TWO_PHASE"
+     ],
+     [
+      "S02.stage.7",
+      "TWO_PHASE"
+     ]
+    ]
+   },
+   "differing_parameters": [
+    "U-SPLIT.split_fraction"
+   ],
+   "family": "C",
+   "forced_edge": false,
+   "id": "C4",
+   "runs": {
+    "RRC-revision-v1": {
+     "attempts": 1,
+     "branch_items": [
+      {
+       "attempt": 0,
+       "core": "newton",
+       "initializer_source": "traversal-G0-v1",
+       "opening_state_sha256": "99b0c641af179bbab4ec5418c57f155ec5b47fe4b3b6a8d38cd6bca5affd8238"
+      },
+      {
+       "attempt": 1,
+       "core": "homotopy",
+       "initializer_source": "revision_continuation_source",
+       "opening_state_sha256": "0963ab40e908035e68570d69d34617f0ffd9c04931e536c0175e8be3e85887ee"
+      }
+     ],
+     "continued": {
+      "parameter_ids": [
+       "U-SPLIT.split_fraction"
+      ],
+      "start_values": [
+       "0.2"
+      ]
+     },
+     "eo_recovery": "taken",
+     "eo_recovery_unsupported": null,
+     "full_state_sha256": "cf588843d6fa70c1688062f017ee43f955ab4a8d7953c0825eb29d35a52515df",
+     "g10": {
+      "compile_seconds": [
+       0.032,
+       0.032,
+       0.031,
+       0.032,
+       0.048
+      ],
+      "compile_values": [
+       {
+        "U-SPLIT.split_fraction": "0.95"
+       },
+       {
+        "U-SPLIT.split_fraction": "0.2"
+       },
+       {
+        "U-SPLIT.split_fraction": "0.3875"
+       },
+       {
+        "U-SPLIT.split_fraction": "0.7625"
+       },
+       {
+        "U-SPLIT.split_fraction": "0.575"
+       }
+      ],
+      "levels_compiled": 5,
+      "property_calls": 2070,
+      "recovery_wall_s": 0.539
+     },
+     "homotopy": {
+      "accepted": 5,
+      "lambda_levels": [
+       "1/4",
+       "1/2",
+       "3/4",
+       "1"
+      ],
+      "lambda_reached": "1",
+      "rejected": 2,
+      "stalled_at": null,
+      "trials": 7,
+      "type": "revision_continuation"
+     },
+     "initializer_rejected": [],
+     "item0": {
+      "in_trigger_set": true,
+      "iterations": 5,
+      "outcome": "BOUND_BLOCKED"
+     },
+     "iterations": 29,
+     "message": "",
+     "outcome": "CONVERGED",
+     "record_reason": null,
+     "record_status": "taken",
+     "seconds": 2.317,
+     "state_sha256": "2c46fe1bb7e3061b5339c3713a97e8a88017c49e11a6c4bb596746ae3b754fcf",
+     "step_outcome": "CONVERGED",
+     "verification_status": "VERIFIED"
+    },
+    "T06-revision-v2": {
+     "attempts": 1,
+     "branch_items": [
+      {
+       "attempt": 0,
+       "core": "newton",
+       "initializer_source": "traversal-G0-v1",
+       "opening_state_sha256": "99b0c641af179bbab4ec5418c57f155ec5b47fe4b3b6a8d38cd6bca5affd8238"
+      },
+      {
+       "attempt": 1,
+       "core": "newton",
+       "initializer_source": "traversal-G0-pass8-v1",
+       "opening_state_sha256": "832a29a41e57db172096439affed3e6cfe3e3b17a7ffcf80c7fadf4dfa290903"
+      }
+     ],
+     "continued": null,
+     "eo_recovery": "taken",
+     "eo_recovery_unsupported": null,
+     "full_state_sha256": "f183eee09cee61237a46fd3cf48607480ad82d24b3c3ce337a7419e99689c663",
+     "initializer_rejected": [],
+     "item0": {
+      "in_trigger_set": true,
+      "iterations": 5,
+      "outcome": "BOUND_BLOCKED"
+     },
+     "iterations": 8,
+     "message": "",
+     "outcome": "CONVERGED",
+     "record_reason": null,
+     "record_status": null,
+     "seconds": 6.228,
+     "state_sha256": "e170a450c4482a17b41976a50a51757f96db76f7b49bd682a372d8462a49821d",
+     "step_outcome": "CONVERGED",
+     "verification_status": "VERIFIED"
+    },
+    "control": {
+     "attempts": 1,
+     "branch_items": [
+      {
+       "attempt": 0,
+       "core": "newton",
+       "initializer_source": "traversal-G0-v1",
+       "opening_state_sha256": "99b0c641af179bbab4ec5418c57f155ec5b47fe4b3b6a8d38cd6bca5affd8238"
+      }
+     ],
+     "continued": null,
+     "eo_recovery": null,
+     "eo_recovery_unsupported": null,
+     "initializer_rejected": [],
+     "item0": {
+      "in_trigger_set": true,
+      "iterations": 5,
+      "outcome": "BOUND_BLOCKED"
+     },
+     "iterations": 5,
+     "message": "a component sits on its lower bound and the Newton direction points out of the feasible set; no trial can be taken along it",
+     "outcome": "BOUND_BLOCKED",
+     "record_reason": null,
+     "record_status": null,
+     "seconds": 1.746,
+     "state_sha256": "9609a40e1fe94f8b8e1bc7f7e97e2887c9d8d204948ffd4eff233cc18df4b755",
+     "step_outcome": "BOUND_BLOCKED",
+     "verification_status": null
+    }
+   },
+   "source": {
+    "attempts": 1,
+    "branch_items": [
+     {
+      "attempt": 0,
+      "core": "newton",
+      "initializer_source": "traversal-G0-v1",
+      "opening_state_sha256": "fa5b5b082b064c1b43d6168c1957cb5e8e17c5dd26b5ed12f66dcaa39b209e86"
+     }
+    ],
+    "continued": null,
+    "eo_recovery": null,
+    "eo_recovery_unsupported": null,
+    "full_state_sha256": "0963ab40e908035e68570d69d34617f0ffd9c04931e536c0175e8be3e85887ee",
+    "initializer_rejected": [],
+    "item0": {
+     "in_trigger_set": false,
+     "iterations": 3,
+     "outcome": "CONVERGED"
+    },
+    "iterations": 3,
+    "message": "",
+    "outcome": "CONVERGED",
+    "record_reason": null,
+    "record_status": null,
+    "seconds": 1.358,
+    "state_sha256": "47f1a3583256e53a415e35e6b04a2d7de0a09a244d533fc7f545b29dba5f1008",
+    "step_outcome": "CONVERGED",
+    "verification_status": "VERIFIED"
+   },
+   "source_eligible": true,
+   "store": {
+    "source": {
+     "artifact_names": [
+      "check-policy.json",
+      "execution-plan.json",
+      "revision.json",
+      "solution-certificate.json",
+      "solution-state.json",
+      "solve-events.json",
+      "solve-path.json",
+      "solve-plan.json",
+      "solve-policy.json",
+      "structural-report.json"
+     ],
+     "job_id": "job-000001",
+     "job_status": "completed",
+     "member_continued": null,
+     "member_reason": null,
+     "member_source_revision_id": null,
+     "member_status": null,
+     "outcome": "CONVERGED",
+     "state_sha256": "47f1a3583256e53a415e35e6b04a2d7de0a09a244d533fc7f545b29dba5f1008",
+     "verification_status": "VERIFIED"
+    },
+    "target": {
+     "artifact_names": [
+      "check-policy.json",
+      "execution-plan.json",
+      "revision.json",
+      "solution-certificate.json",
+      "solution-state.json",
+      "solve-events.json",
+      "solve-path.json",
+      "solve-plan.json",
+      "solve-policy.json",
+      "structural-report.json"
+     ],
+     "job_id": "job-000002",
+     "job_status": "completed",
+     "member_continued": {
+      "parameter_ids": [
+       "U-SPLIT.split_fraction"
+      ],
+      "start_values": [
+       "0.2"
+      ]
+     },
+     "member_reason": null,
+     "member_source_revision_id": "rev-000001",
+     "member_status": "taken",
+     "outcome": "CONVERGED",
+     "source_revision_id": "rev-000001",
+     "state_sha256": "2c46fe1bb7e3061b5339c3713a97e8a88017c49e11a6c4bb596746ae3b754fcf",
+     "verification_status": "VERIFIED"
+    }
+   }
+  },
+  {
+   "case_seconds": 11.649,
+   "checks": {
+    "a29_closure": {
+     "met": true,
+     "worst_ratio": 3.1273888017610047e-10
+    },
+    "g2f_opening_equals_source_full_state": null,
+    "scaled_distance_to_t06_root": 0.0,
+    "source_signature": [
+     [
+      "S02.stage.1",
+      "TWO_PHASE"
+     ],
+     [
+      "S02.stage.2",
+      "TWO_PHASE"
+     ],
+     [
+      "S02.stage.3",
+      "TWO_PHASE"
+     ],
+     [
+      "S02.stage.4",
+      "TWO_PHASE"
+     ],
+     [
+      "S02.stage.5",
+      "TWO_PHASE"
+     ],
+     [
+      "S02.stage.6",
+      "TWO_PHASE"
+     ],
+     [
+      "S02.stage.7",
+      "TWO_PHASE"
+     ]
+    ]
+   },
+   "differing_parameters": [
+    "S02.stage.1.reflux_ratio*",
+    "S02.stage.7.boilup_ratio*"
+   ],
+   "family": "C",
+   "forced_edge": false,
+   "id": "C5",
+   "runs": {
+    "RRC-revision-v1": {
+     "attempts": 1,
+     "branch_items": [
+      {
+       "attempt": 0,
+       "core": "newton",
+       "initializer_source": "traversal-G0-v1",
+       "opening_state_sha256": "9614aac9d11894ccddfdd465792f7335156cd5cc493780fb4531160b5fc630b3"
+      }
+     ],
+     "continued": null,
+     "eo_recovery": null,
+     "eo_recovery_unsupported": null,
+     "full_state_sha256": "084cc5ed6909178147be20ad9a5e653511e212733b11d2f031c886940853879f",
+     "initializer_rejected": [],
+     "item0": {
+      "in_trigger_set": false,
+      "iterations": 3,
+      "outcome": "CONVERGED"
+     },
+     "iterations": 3,
+     "message": "",
+     "outcome": "CONVERGED",
+     "record_reason": null,
+     "record_status": null,
+     "seconds": 1.063,
+     "state_sha256": "eb3e5963fce9e516d815e2fb280722f53b4e0577068d326955351dda535ed8b3",
+     "step_outcome": "CONVERGED",
+     "verification_status": "VERIFIED"
+    },
+    "T06-revision-v2": {
+     "attempts": 1,
+     "branch_items": [
+      {
+       "attempt": 0,
+       "core": "newton",
+       "initializer_source": "traversal-G0-v1",
+       "opening_state_sha256": "9614aac9d11894ccddfdd465792f7335156cd5cc493780fb4531160b5fc630b3"
+      }
+     ],
+     "continued": null,
+     "eo_recovery": null,
+     "eo_recovery_unsupported": null,
+     "full_state_sha256": "084cc5ed6909178147be20ad9a5e653511e212733b11d2f031c886940853879f",
+     "initializer_rejected": [],
+     "item0": {
+      "in_trigger_set": false,
+      "iterations": 3,
+      "outcome": "CONVERGED"
+     },
+     "iterations": 3,
+     "message": "",
+     "outcome": "CONVERGED",
+     "record_reason": null,
+     "record_status": null,
+     "seconds": 1.004,
+     "state_sha256": "eb3e5963fce9e516d815e2fb280722f53b4e0577068d326955351dda535ed8b3",
+     "step_outcome": "CONVERGED",
+     "verification_status": "VERIFIED"
+    },
+    "control": {
+     "attempts": 1,
+     "branch_items": [
+      {
+       "attempt": 0,
+       "core": "newton",
+       "initializer_source": "traversal-G0-v1",
+       "opening_state_sha256": "9614aac9d11894ccddfdd465792f7335156cd5cc493780fb4531160b5fc630b3"
+      }
+     ],
+     "continued": null,
+     "eo_recovery": null,
+     "eo_recovery_unsupported": null,
+     "full_state_sha256": "084cc5ed6909178147be20ad9a5e653511e212733b11d2f031c886940853879f",
+     "initializer_rejected": [],
+     "item0": {
+      "in_trigger_set": false,
+      "iterations": 3,
+      "outcome": "CONVERGED"
+     },
+     "iterations": 3,
+     "message": "",
+     "outcome": "CONVERGED",
+     "record_reason": null,
+     "record_status": null,
+     "seconds": 1.026,
+     "state_sha256": "eb3e5963fce9e516d815e2fb280722f53b4e0577068d326955351dda535ed8b3",
+     "step_outcome": "CONVERGED",
+     "verification_status": "VERIFIED"
+    }
+   },
+   "source": {
+    "attempts": 1,
+    "branch_items": [
+     {
+      "attempt": 0,
+      "core": "newton",
+      "initializer_source": "traversal-G0-v1",
+      "opening_state_sha256": "fa5b5b082b064c1b43d6168c1957cb5e8e17c5dd26b5ed12f66dcaa39b209e86"
+     }
+    ],
+    "continued": null,
+    "eo_recovery": null,
+    "eo_recovery_unsupported": null,
+    "full_state_sha256": "0963ab40e908035e68570d69d34617f0ffd9c04931e536c0175e8be3e85887ee",
+    "initializer_rejected": [],
+    "item0": {
+     "in_trigger_set": false,
+     "iterations": 3,
+     "outcome": "CONVERGED"
+    },
+    "iterations": 3,
+    "message": "",
+    "outcome": "CONVERGED",
+    "record_reason": null,
+    "record_status": null,
+    "seconds": 0.916,
+    "state_sha256": "47f1a3583256e53a415e35e6b04a2d7de0a09a244d533fc7f545b29dba5f1008",
+    "step_outcome": "CONVERGED",
+    "verification_status": "VERIFIED"
+   },
+   "source_eligible": true,
+   "store": {
+    "source": {
+     "artifact_names": [
+      "check-policy.json",
+      "execution-plan.json",
+      "revision.json",
+      "solution-certificate.json",
+      "solution-state.json",
+      "solve-events.json",
+      "solve-path.json",
+      "solve-plan.json",
+      "solve-policy.json",
+      "structural-report.json"
+     ],
+     "job_id": "job-000001",
+     "job_status": "completed",
+     "member_continued": null,
+     "member_reason": null,
+     "member_source_revision_id": null,
+     "member_status": null,
+     "outcome": "CONVERGED",
+     "state_sha256": "47f1a3583256e53a415e35e6b04a2d7de0a09a244d533fc7f545b29dba5f1008",
+     "verification_status": "VERIFIED"
+    },
+    "target": {
+     "artifact_names": [
+      "check-policy.json",
+      "execution-plan.json",
+      "revision.json",
+      "solution-certificate.json",
+      "solution-state.json",
+      "solve-events.json",
+      "solve-path.json",
+      "solve-plan.json",
+      "solve-policy.json",
+      "structural-report.json"
+     ],
+     "job_id": "job-000002",
+     "job_status": "completed",
+     "member_continued": null,
+     "member_reason": null,
+     "member_source_revision_id": "rev-000001",
+     "member_status": "not_reached",
+     "outcome": "CONVERGED",
+     "source_revision_id": "rev-000001",
+     "state_sha256": "eb3e5963fce9e516d815e2fb280722f53b4e0577068d326955351dda535ed8b3",
+     "verification_status": "VERIFIED"
+    }
+   }
+  },
+  {
+   "case_seconds": 18.396,
+   "checks": {
+    "a29_closure": {
+     "met": true,
+     "worst_ratio": 6.254777603522009e-10
+    },
+    "g2f_opening_equals_source_full_state": true,
+    "scaled_distance_to_item0_root": 4.4457030649406687e-13,
+    "scaled_distance_to_t06_root": 2.7702284910446906e-12,
+    "source_signature": [
+     [
+      "S02.stage.1",
+      "TWO_PHASE"
+     ],
+     [
+      "S02.stage.2",
+      "TWO_PHASE"
+     ],
+     [
+      "S02.stage.3",
+      "TWO_PHASE"
+     ],
+     [
+      "S02.stage.4",
+      "TWO_PHASE"
+     ],
+     [
+      "S02.stage.5",
+      "TWO_PHASE"
+     ],
+     [
+      "S02.stage.6",
+      "TWO_PHASE"
+     ],
+     [
+      "S02.stage.7",
+      "TWO_PHASE"
+     ]
+    ]
+   },
+   "differing_parameters": [
+    "S02.stage.1.reflux_ratio*",
+    "S02.stage.7.boilup_ratio*"
+   ],
+   "family": "F",
+   "forced_edge": true,
+   "id": "F1",
+   "runs": {
+    "RRC-revision-v1": {
+     "attempts": 1,
+     "branch_items": [
+      {
+       "attempt": 0,
+       "core": "newton",
+       "initializer_source": "traversal-G0-v1",
+       "opening_state_sha256": "9614aac9d11894ccddfdd465792f7335156cd5cc493780fb4531160b5fc630b3"
+      },
+      {
+       "attempt": 1,
+       "core": "homotopy",
+       "initializer_source": "revision_continuation_source",
+       "opening_state_sha256": "0963ab40e908035e68570d69d34617f0ffd9c04931e536c0175e8be3e85887ee"
+      }
+     ],
+     "continued": {
+      "parameter_ids": [
+       "S02.stage.1.reflux_ratio*",
+       "S02.stage.7.boilup_ratio*"
+      ],
+      "start_values": [
+       "2.0",
+       "1.5"
+      ]
+     },
+     "eo_recovery": "taken",
+     "eo_recovery_unsupported": null,
+     "full_state_sha256": "ea5ece33e9d19a755e48f87301ff53e45795996a0f28d6292c905e24fe7213ac",
+     "g10": {
+      "compile_seconds": [
+       0.019,
+       0.025,
+       0.024,
+       0.089
+      ],
+      "compile_values": [
+       {
+        "S02.stage.1.reflux_ratio*": "4.0",
+        "S02.stage.7.boilup_ratio*": "3.0"
+       },
+       {
+        "S02.stage.1.reflux_ratio*": "2.0",
+        "S02.stage.7.boilup_ratio*": "1.5"
+       },
+       {
+        "S02.stage.1.reflux_ratio*": "2.5",
+        "S02.stage.7.boilup_ratio*": "1.875"
+       },
+       {
+        "S02.stage.1.reflux_ratio*": "3.5",
+        "S02.stage.7.boilup_ratio*": "2.625"
+       }
+      ],
+      "levels_compiled": 4,
+      "property_calls": 713,
+      "recovery_wall_s": 0.287
+     },
+     "homotopy": {
+      "accepted": 4,
+      "lambda_levels": [
+       "1/4",
+       "3/4",
+       "1"
+      ],
+      "lambda_reached": "1",
+      "rejected": 0,
+      "stalled_at": null,
+      "trials": 4,
+      "type": "revision_continuation"
+     },
+     "initializer_rejected": [],
+     "item0": {
+      "in_trigger_set": false,
+      "iterations": 3,
+      "outcome": "CONVERGED"
+     },
+     "iterations": 12,
+     "message": "",
+     "outcome": "CONVERGED",
+     "record_reason": null,
+     "record_status": "taken",
+     "seconds": 1.436,
+     "state_sha256": "5f7a13a2f0de568b0d9d04569d516c6b2c988b9b8e757dee686dbb2e58911d5a",
+     "step_outcome": "CONVERGED",
+     "verification_status": "VERIFIED"
+    },
+    "T06-revision-v2": {
+     "attempts": 1,
+     "branch_items": [
+      {
+       "attempt": 0,
+       "core": "newton",
+       "initializer_source": "traversal-G0-v1",
+       "opening_state_sha256": "9614aac9d11894ccddfdd465792f7335156cd5cc493780fb4531160b5fc630b3"
+      },
+      {
+       "attempt": 1,
+       "core": "newton",
+       "initializer_source": "traversal-G0-pass8-v1",
+       "opening_state_sha256": "a517188313693d3fc3d6f6ef4bf191e35794dc4544e008a33510714a6677e173"
+      }
+     ],
+     "continued": null,
+     "eo_recovery": "taken",
+     "eo_recovery_unsupported": null,
+     "full_state_sha256": "9101cfad27ffd3297af9ee344efd55a800dfc709ab872a5720c7d91b3ed6ef2c",
+     "initializer_rejected": [],
+     "item0": {
+      "in_trigger_set": false,
+      "iterations": 3,
+      "outcome": "CONVERGED"
+     },
+     "iterations": 4,
+     "message": "",
+     "outcome": "CONVERGED",
+     "record_reason": null,
+     "record_status": null,
+     "seconds": 8.565,
+     "state_sha256": "5af39704e9105303ea21064d5e8a3778e3caf3ec0500a506078724de2f32f6dd",
+     "step_outcome": "CONVERGED",
+     "verification_status": "VERIFIED"
+    },
+    "control": {
+     "attempts": 1,
+     "branch_items": [
+      {
+       "attempt": 0,
+       "core": "newton",
+       "initializer_source": "traversal-G0-v1",
+       "opening_state_sha256": "9614aac9d11894ccddfdd465792f7335156cd5cc493780fb4531160b5fc630b3"
+      }
+     ],
+     "continued": null,
+     "eo_recovery": null,
+     "eo_recovery_unsupported": null,
+     "full_state_sha256": "084cc5ed6909178147be20ad9a5e653511e212733b11d2f031c886940853879f",
+     "initializer_rejected": [],
+     "item0": {
+      "in_trigger_set": false,
+      "iterations": 3,
+      "outcome": "CONVERGED"
+     },
+     "iterations": 3,
+     "message": "",
+     "outcome": "CONVERGED",
+     "record_reason": null,
+     "record_status": null,
+     "seconds": 1.872,
+     "state_sha256": "eb3e5963fce9e516d815e2fb280722f53b4e0577068d326955351dda535ed8b3",
+     "step_outcome": "CONVERGED",
+     "verification_status": "VERIFIED"
+    }
+   },
+   "source": {
+    "attempts": 1,
+    "branch_items": [
+     {
+      "attempt": 0,
+      "core": "newton",
+      "initializer_source": "traversal-G0-v1",
+      "opening_state_sha256": "fa5b5b082b064c1b43d6168c1957cb5e8e17c5dd26b5ed12f66dcaa39b209e86"
+     }
+    ],
+    "continued": null,
+    "eo_recovery": null,
+    "eo_recovery_unsupported": null,
+    "full_state_sha256": "0963ab40e908035e68570d69d34617f0ffd9c04931e536c0175e8be3e85887ee",
+    "initializer_rejected": [],
+    "item0": {
+     "in_trigger_set": false,
+     "iterations": 3,
+     "outcome": "CONVERGED"
+    },
+    "iterations": 3,
+    "message": "",
+    "outcome": "CONVERGED",
+    "record_reason": null,
+    "record_status": null,
+    "seconds": 1.611,
+    "state_sha256": "47f1a3583256e53a415e35e6b04a2d7de0a09a244d533fc7f545b29dba5f1008",
+    "step_outcome": "CONVERGED",
+    "verification_status": "VERIFIED"
+   },
+   "source_eligible": true
+  },
+  {
+   "case_seconds": 3.341,
+   "checks": {
+    "g2f_opening_equals_source_full_state": true,
+    "scaled_distance_to_item0_root": 1.9539925233402755e-14,
+    "scaled_distance_to_t06_root": 2.177102942368947e-13,
+    "source_signature": [
+     [
+      "U-HEAT",
+      "TWO_PHASE"
+     ],
+     [
+      "U-PHF",
+      "TWO_PHASE"
+     ],
+     [
+      "U-COOL",
+      "TWO_PHASE"
+     ],
+     [
+      "U-FL2",
+      "TWO_PHASE"
+     ]
+    ]
+   },
+   "differing_parameters": [
+    "U-FEED.T_spec"
+   ],
+   "family": "F",
+   "forced_edge": true,
+   "id": "F2",
+   "runs": {
+    "RRC-revision-v1": {
+     "attempts": 1,
+     "branch_items": [
+      {
+       "attempt": 0,
+       "core": "newton",
+       "initializer_source": "traversal-G0-v1",
+       "opening_state_sha256": "0216697016519ea27a3c378cf221dce52c958c1c10f3c426304a0de158430175"
+      },
+      {
+       "attempt": 1,
+       "core": "homotopy",
+       "initializer_source": "revision_continuation_source",
+       "opening_state_sha256": "9b4ca308909d8fc2da4228503b0b9262fc26bb936efc047253778dc0443c65a3"
+      }
+     ],
+     "continued": {
+      "parameter_ids": [
+       "U-FEED.T_spec"
+      ],
+      "start_values": [
+       "295.0"
+      ]
+     },
+     "eo_recovery": "taken",
+     "eo_recovery_unsupported": null,
+     "full_state_sha256": "a04d924e3f6b7df5667e04672823fd95670b7caa9c0ee346b3e76bf95a1c15a8",
+     "g10": {
+      "compile_seconds": [
+       0.012,
+       0.014,
+       0.013,
+       0.016
+      ],
+      "compile_values": [
+       {
+        "U-FEED.T_spec": "300.0"
+       },
+       {
+        "U-FEED.T_spec": "295.0"
+       },
+       {
+        "U-FEED.T_spec": "296.25"
+       },
+       {
+        "U-FEED.T_spec": "298.75"
+       }
+      ],
+      "levels_compiled": 4,
+      "property_calls": 208,
+      "recovery_wall_s": 0.087
+     },
+     "homotopy": {
+      "accepted": 4,
+      "lambda_levels": [
+       "1/4",
+       "3/4",
+       "1"
+      ],
+      "lambda_reached": "1",
+      "rejected": 0,
+      "stalled_at": null,
+      "trials": 4,
+      "type": "revision_continuation"
+     },
+     "initializer_rejected": [],
+     "item0": {
+      "in_trigger_set": false,
+      "iterations": 4,
+      "outcome": "CONVERGED"
+     },
+     "iterations": 7,
+     "message": "",
+     "outcome": "CONVERGED",
+     "record_reason": null,
+     "record_status": "taken",
+     "seconds": 0.203,
+     "state_sha256": "c38c2a04109d30421fbfe4b0b2ad6c366227706b492a9e04dd5d8926b0c0922c",
+     "step_outcome": "CONVERGED",
+     "verification_status": "VERIFIED"
+    },
+    "T06-revision-v2": {
+     "attempts": 1,
+     "branch_items": [
+      {
+       "attempt": 0,
+       "core": "newton",
+       "initializer_source": "traversal-G0-v1",
+       "opening_state_sha256": "0216697016519ea27a3c378cf221dce52c958c1c10f3c426304a0de158430175"
+      },
+      {
+       "attempt": 1,
+       "core": "newton",
+       "initializer_source": "traversal-G0-pass8-v1",
+       "opening_state_sha256": "4dd03a486d2bdbb7a35dffb603c4bdbea8be0d5fa079b202ff451fa8f45c843e"
+      }
+     ],
+     "continued": null,
+     "eo_recovery": "taken",
+     "eo_recovery_unsupported": null,
+     "full_state_sha256": "72053ab3e5447fc3c7d76f94437812b1072f6850423ebd4796c9a29ef5ddeb99",
+     "initializer_rejected": [],
+     "item0": {
+      "in_trigger_set": false,
+      "iterations": 4,
+      "outcome": "CONVERGED"
+     },
+     "iterations": 7,
+     "message": "",
+     "outcome": "CONVERGED",
+     "record_reason": null,
+     "record_status": null,
+     "seconds": 0.468,
+     "state_sha256": "077e74e6a8defed727bf277b57f855f511915d71769a1a09bfcded68cfaa2d0f",
+     "step_outcome": "CONVERGED",
+     "verification_status": "VERIFIED"
+    },
+    "control": {
+     "attempts": 1,
+     "branch_items": [
+      {
+       "attempt": 0,
+       "core": "newton",
+       "initializer_source": "traversal-G0-v1",
+       "opening_state_sha256": "0216697016519ea27a3c378cf221dce52c958c1c10f3c426304a0de158430175"
+      }
+     ],
+     "continued": null,
+     "eo_recovery": null,
+     "eo_recovery_unsupported": null,
+     "full_state_sha256": "6c885026da2c2b329c1e81ca0d117f92d0a71931f1b867ac00ab8238a942dae5",
+     "initializer_rejected": [],
+     "item0": {
+      "in_trigger_set": false,
+      "iterations": 4,
+      "outcome": "CONVERGED"
+     },
+     "iterations": 4,
+     "message": "",
+     "outcome": "CONVERGED",
+     "record_reason": null,
+     "record_status": null,
+     "seconds": 0.114,
+     "state_sha256": "b829c509f35c05aef093ba98ca3fc6d932bffb58babcddffdee41e4f4714fe56",
+     "step_outcome": "CONVERGED",
+     "verification_status": "VERIFIED"
+    }
+   },
+   "source": {
+    "attempts": 1,
+    "branch_items": [
+     {
+      "attempt": 0,
+      "core": "newton",
+      "initializer_source": "traversal-G0-v1",
+      "opening_state_sha256": "61afaf4300b8c2b385bae18354202f2f8e260ee28a256dc51c48a90a23f5e8b8"
+     }
+    ],
+    "continued": null,
+    "eo_recovery": null,
+    "eo_recovery_unsupported": null,
+    "full_state_sha256": "9b4ca308909d8fc2da4228503b0b9262fc26bb936efc047253778dc0443c65a3",
+    "initializer_rejected": [],
+    "item0": {
+     "in_trigger_set": false,
+     "iterations": 4,
+     "outcome": "CONVERGED"
+    },
+    "iterations": 4,
+    "message": "",
+    "outcome": "CONVERGED",
+    "record_reason": null,
+    "record_status": null,
+    "seconds": 0.117,
+    "state_sha256": "d3938086d79c62f7bf90802ce4d0e6578bdd43897753edc5cfff18b9982f4fee",
+    "step_outcome": "CONVERGED",
+    "verification_status": "VERIFIED"
+   },
+   "source_eligible": true
+  }
+ ],
+ "cases": "benchmarks/rrc/cases.yaml",
+ "commit": "b0c7d1ec25599070c5bd2d06dafaa441c3ee96d4",
+ "machine": "ref-x86-64",
+ "platform": "Linux-6.12.113+deb13-amd64-x86_64-with-glibc2.41",
+ "schema": "rrc-candidate-results-v1",
+ "selected": {
+  "C": "C3",
+  "N": "N1"
+ }
+}
