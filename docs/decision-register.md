@@ -3263,6 +3263,7 @@ release note calling V14 passed.
 ## R-140 — v0.1 ships no lock in the wheel; an installed package's bundles replay `NOT_RUN` (L41); the lock lookup is confined to the source checkout
 
 **Lifted as policy (Frank, 2026-11-01; R-925, ADR 0056): package X05.** The behaviour below stays until that package lands.
+**Lifted by X05 (ADR 0069), 2026-11-08; L41 narrowed (D7.3).** See R-985 to R-987.
 
 | | |
 | --- | --- |
@@ -18581,6 +18582,51 @@ order-preserving, and admits non-canonical second ids); a generic pattern (ADR 0
 **Watch for.** An inherited `evidence_package` (ADR 0074 O-3, RP.L11). An id written with plain digits for a component
 ≥ 10. `\d` in place of `[0-9]`.
 
+## R-975 — MSG: in 0.4 the diagnostic sidecar has one producer, the traversal hop (review Q1, 2026-11-06)
+
+| | |
+| --- | --- |
+| Date | 2026-11-06 |
+| Decided by | design lane, MSG review Q1 (route (a), narrowed); built as WO-5a |
+| Normative text | `docs/reviews/MSG-review.md` Q1; amendment to `docs/design/MSG-messages.md` §4.6 |
+| Affected packages | MSG; F6 (the v2 unit models, ADR 0065, inherit the kernel-only numbers) |
+
+**Decision.** The sidecar is built where the failing unit's message is cut to its first line
+(`models/revision_flowsheet.py`, outside F0 M9): `Diagnostic(<line 1's code>, {"detail": lines 2+})`. It travels
+`FlowsheetPass` → `InitialStateFailure` → `StepResult` → `run.diagnosis`, and the explained entry's `detail_pattern`
+reads its numbers at render time. Numbers in no message text (P1's `value`, saturated values and `pressure`) are
+deferred to the F6 v2 unit models. This amends note §4.6's producer list only; ADR 0058 D6 and R-936 stand.
+
+**Rejected alternatives.** (b) Reopening the M9 freeze (R-940) to add the P1–P5 producers in `models/thermal/*`, a
+family F6 replaces. A `ContextVar` collector or render-time property calls (R-936's rejected alternatives).
+
+**Watch for.** A sidecar key in any serialized artifact (the session scan in `tests/conftest.py`); a pattern group
+capturing `nan`/`inf` (kept as text, review S2); a machine text edit that a `detail_pattern` silently stops matching
+(the corpus's `values` turn red).
+
+## R-976 — `main`'s surface chain gains link c_4 = (R-934/R-937, `without_msg`, `eaff4585…`); the 0.4 RC carry names it (review Q5, 2026-11-06)
+
+| | |
+| --- | --- |
+| Date | 2026-11-06 |
+| Decided by | design lane, MSG review Q5 and M6 (R-457's form); recorded by the build lane at MSG WO-12 |
+| Normative text | `docs/reviews/MSG-review.md` Q5, M6; ADR 0058 D5, D7; R-457 (the form, and "a new MCP-visible change … is a new link") |
+| Evidence | Measured on the merge tree (`wp/MSG` at `a8267cef`, `origin/main` merged): the served list (18 tools) digests to `eaff45852d7596816d90d744078f537e46c723e577295d347d9d73aea0942eac`; `without_msg` of it digests to `455d01eb2f420032b27358798e6b331a0120aa1857f02ce3cb7851647849e125` = D_3 (R-457), so the chain holds. MSG's only addition is the `explain` tool, its `explain.md` pinned by `m07a_rc.MSG_FILE_SHA256` (D7-7, with a control); no other tool's name or description moved (MSG-G10, `tests/test_t08_w2_surface_digest.py`) |
+| Affected packages | MSG (`scripts/m07a_rc.py` `LINKS`, `tests/test_m07a_surface_chain.py`), M07 (the 0.4 RC's surface step), M07a (the chain's tests) |
+
+**Decision.** `m07a_rc.LINKS` gains c_4 (R-934/R-937; strip `without_msg`, `tests/msg_schema_support.py`;
+D_4 = `eaff45852d7596816d90d744078f537e46c723e577295d347d9d73aea0942eac`, re-measured on the merge tree rather than
+taken from WO-7's `1ca06b37…`, which `explain.md`'s review edits moved). The envelope change is named here: A20's
+21 → 22 and D7-10's five pins follow from ADR 0058 D7 (review Q4). The carry naming c_4 is a release-time item, as
+R-457's is ("Frank's carry is the gate's check at a release, not a `main` test"): it goes on the 0.4 RC list and does
+not block the merge.
+
+**Rejected alternatives.** D_4 from WO-7's measurement (`1ca06b37…`): `main` and `explain.md` moved since. A fold of
+MSG's addition into c_3: R-457 makes each MCP-visible change its own link.
+
+**Watch for.** Any later change to `explain.md` or to a tool description moves D_4: re-measure it, re-pin
+`MSG_SERVED_SHA256` and `MSG_FILE_SHA256`, and amend this entry rather than editing the digest in place.
+
 ## R-980 — WIT: a failing small-flow component column is re-differenced by an AD-independent escalation; an unresolved one keeps its registered result (2026-11-08)
 
 | | |
@@ -18628,6 +18674,71 @@ order-preserving, and admits non-canonical second ids); a generic pattern (ADR 0
 - *Evidence.* §4.8.5's G2 gaps (0.075, 0.26, 0.39 scaled), matched to 4.6e-15 relative.
 - *Watch for.* The exclusion widened to a vapour side, to a side with a positive column, or to another basis without
   its own non-differentiability evidence.
+
+## R-985 — `lock_sha256` is recorded only for a lock the installed runtime closure matches (X05, ADR 0069 D1–D4) (2026-11-08)
+
+| | |
+| --- | --- |
+| Date | 2026-11-08 |
+| Decided by | design lane (`specifier`), ADR 0069; accepted by Frank on the decision board, 2026-11-08 |
+| Normative text | `docs/adr/0069-X05-replay-from-the-wheel.md` D1–D4; ADR 0007 Amendment 2 |
+| Affected packages | X05; K05 and every package that records or replays a bundle |
+
+**Decision.** The wheel carries `requirements.lock` (`openflowsheet/_data/`, a link in the checkout); `environment()`
+hashes it only when the 9 closure distributions are installed at its pins (exact strings), checkout and wheel alike,
+else `""`. Lifts R-140.
+
+**Rejected.** Every lock line (B12's wording; unreachable from a clean install), the lock shipped unchecked (R-140),
+PEP 440 equality, a run-time closure.
+
+**Evidence.** X05.A01–A24 (`tests/test_x05_lock.py`, `tests/test_x05_replay_from_the_wheel.py`; the X05 manifests).
+
+**Watch for.** A lock read from anywhere but the package; a relaxed comparison.
+
+## R-986 — No schema change for X05; the replay reason names the failing distributions (ADR 0069 D5) (2026-11-08)
+
+| | |
+| --- | --- |
+| Date | 2026-11-08 |
+| Decided by | design lane (`specifier`), ADR 0069; accepted by Frank on the decision board, 2026-11-08 |
+| Normative text | `docs/adr/0069-X05-replay-from-the-wheel.md` D5; ADR 0007 Amendment 2 |
+| Affected packages | X05; T07 (the frozen environment document) |
+
+**Decision.** The environment document keeps its eight keys; `Environment.lock_findings` is in memory only, outside
+`as_document()` and equality; `decide_mode`'s unknown-lock reason names this side's failing distributions.
+
+**Rejected.** An environment field (ADR 0019 Amendment 14); recording the writer's findings in the bundle (Q-F3,
+default no).
+
+**Evidence.** X05.A12, A18 (`tests/test_x05_lock.py`).
+
+**Watch for.** Findings leaking into `as_document()` or equality.
+
+## R-987 — The runtime closure's four transitive members float; only the five direct members are pinned in `Requires-Dist` (ADR 0069 D3.2 as amended; Frank's Q-F1 = no) (2026-11-08)
+
+| | |
+| --- | --- |
+| Date | 2026-11-08 |
+| Decided by | design lane (`specifier`), ADR 0069; accepted by Frank on the decision board, 2026-11-08; Q-F1 answered no; ADR 0069 Amendment 1 |
+| Normative text | `docs/adr/0069-X05-replay-from-the-wheel.md` D3.2 and §14 (Amendment 1); ADR 0007 Amendment 2 |
+| Affected packages | X05; X05a |
+
+**Decision.** `[project].dependencies` pins `numpy`, `scipy`, `pyyaml`, `jsonschema` and `casadi` exactly and does not
+name `attrs`, `jsonschema-specifications`, `referencing` or `rpds-py`. X05.A25 is restated as the inverse.
+
+**Rejected.** Exact pins of the four in `Requires-Dist` (D3.2 as proposed, `a58ef5a5`, reverted on `wp/X05a`).
+
+**Reason.** Frank's Q-F1: users keep upgrade freedom over the four.
+
+**Consequence.** Only an install constrained by the shipped lock (`pip install -c requirements.lock openflowsheet`)
+is promised to verify. A plain install verifies only if its resolver picks the lock's versions; otherwise it records
+`""`, and replay names each member off the lock.
+
+**Evidence.** X05.A25 (`tests/test_x05_lock.py`, `tests/test_x05_replay_from_the_wheel.py`; CI `clean-install`,
+`t08_rc.py lock-check --state installed-free`).
+
+**Watch for.** A lock regeneration that moves a direct pin without `pyproject.toml`; user-facing text promising that a
+plain `pip install` replays exactly.
 
 ## R-983 — L01.A22 (a): the C1 files stay pinned at the L01 base apart from registered moves; WIT M-6 part b moves `models/c1/flash.py` (2026-11-08)
 

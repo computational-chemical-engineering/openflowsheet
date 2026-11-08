@@ -659,3 +659,39 @@ Frank records all four (explain; validate, submit_job; get_stream_table) with a 
 (`record_frank_reviews.py` in the session scratchpad: checks each text's sha256 against the one shown on the board,
 then commits on wp/MSG, wp/OPT, wp/ST). The filed MSG manifest `9c76b939…` keeps citing R-942/R-943 (evidence at its
 commit); the new manifest cites R-975/R-976.
+
+## 2026-11-08 — X05a merged
+
+CI `42500882154` green on `b43d94bc` (both architectures, identity, default-install). Manifest
+`evidence/X05a/b43d94bc…/manifest.json` tested (`9b21a881`, after merging main as `1f9cdadb`); HARVEST_SIZE
+(76, 988, 126) → (77, 993, 126). Merged `dd16dab8`; F0 PASS on main; harvest + manifest tests 505 passed. The other
+branches (MSG, X10b) re-take HARVEST_SIZE at their merge.
+
+## 2026-11-08 — MSG merged
+
+CI `42502713324` green on `5e9274db` (Frank's human review of `explain` included). Manifest
+`evidence/MSG/5e9274db…/manifest.json` tested, merged with main in `38e46c2a`; HARVEST_SIZE (80, 1007, 129). Merged
+`ed874b17`; on main F0 PASS, harvest/manifests/surface chain/`test_msg_*` 718 passed, 3 xfailed. Surface chain: MSG
+holds c_4 (D_4 `eaff4585…`); X02 is next in the merge order (MSG, X02, OPT, RRC, ST) and re-measures its link as c_5.
+Note: worktrees have no `.venv`; the main checkout's editable install imports main's `src`, so a worktree test run
+with it tests main's code. CI is the authority for branch code; re-run targeted tests on main after each merge.
+
+## 2026-11-08 — ST design-lane confirmations (`wp/ST` `e1a05916`)
+
+Specifier: M1-1, M1-2 (n_tot·h = γ–φ `_phase_flow` bitwise; test DC-5), M1-3 (reason corrected), S1-1 confirmed. The
+products-style case cannot occur (binder admits undeclared streams only from heater-style splits), but a neighbouring
+defect does: R1′ fired on any degeneracy row naming the stream, incl. a flash drum's row on its inlet → ruling 5: R1′
+only on `independent_split.<U>.<S>`, no-number branch on `temperature_degenerate_unlifted(<S>)`; DC-1…DC-6. ADR 0068
+D3 amended (dated, quoted) after Frank's acceptance; no served output changes → board item `st-adr0068-am1`
+(default: stands). DECISION: proceed on the amendment without waiting. Alternative: hold ST for Frank. Reversible by:
+reverting WO-8a's ruling-5 commit. Next: ST WO-8a (merge main, ruling 5, R-942/943 clean-up), then WO-8b (web shell).
+
+## 2026-11-08 — X02 merge prep done (`wp/X02` `51ef7460`); X10b CI green
+
+X02: main merged (`f36b4a56`, 13 conflicts, D-35); link c_5 D_5 `f51b69bf…` (strip X02 → MSG's D_4 `eaff4585…`
+exactly: no interaction, D_4 not re-recorded; D-36); global-state cache count 36 → 38 (main 37 + X02; D-37); ADR 0070
+and ADR 0019 Am. 15 Accepted, R-950 final (c_5), R-951…R-955 (D-38); 1508 passed, 2 skipped (worktree `src`,
+`PYTHONPATH=src`); ruff, format, mypy clean; F0 PASS. CI watched; then manifest re-take at the head, merge.
+X10b: CI `42503117602` green on `c57d449a`; manifest brief `docs/briefs/X10b-manifest.md`.
+Main: ruff E501 on two harvest comment lines after the MSG merge, fixed `89b7e008`. From now on the post-merge check
+on main is F0 **and** `ruff check` + `ruff format --check` (the merge commit's text is not what CI tested).

@@ -31,6 +31,11 @@ function, a registered digest and Frank's carry extended to name it):
 - c_3, R-295 (ADR 0037 D6, ADR 0019 Amendment 5): M04's `surrogate_study` job kind, stripped by
   `tests/m04_schema_support.py`'s `without_m04` (R-295's decomposition function); `D_3` =
   `455d01eb…`, registered at the alpha's merge into `main` (R-457).
+- c_4, R-934 (ADR 0058 D5, D7): MSG's `RunResult.failure` and its `explain` tool, stripped by
+  `tests/msg_schema_support.py`'s `without_msg` (MSG-G10's decomposition function); `D_4` =
+  `eaff4585…`, measured at MSG WO-11 after `explain.md`'s review edits
+  (`tests/test_t08_w2_surface_digest.py`'s `MSG_SERVED_SHA256`; `1ca06b37…` at WO-7, `b083ffe1…` at
+  WO-6, before `explain`).
 
 The released 0.2.0a1 ran the two-link chain (its committed record at `C_α²`); a re-run of the
 alpha's step 8 uses this script at the tag.
@@ -90,6 +95,11 @@ V17_C2_FILE_SHA256: Final = {
     "validate": "302dc544f519046e25efe6d5a5e83840b6017bfbd36d94a3e3e54435eaae7c12",
     "wait_job": "4a5b99596c771bf6b3254fa9c294e8ad32077de45c3a2e64b93eda0dca37a01c",
 }
+#: c_4 (R-934, ADR 0058 D7): the one tool MSG added, `explain`, its file pinned as `v17-c2`'s are.
+#: Its two reviews are `REVIEW.json`'s, which `tests/test_t08_w2_description_reviews.py` holds.
+MSG_FILE_SHA256: Final = {
+    "explain": "f1fca282f28f7e1a0f0dc6407bb405734f18b811fc97f7e0f5d0b0afac9b8d3e",
+}
 #: The two changed files as R-133 carried them: their reviewed hashes in `REVIEW.json` as v0.1.0
 #: released it (`PUBLIC_ROOT`).
 R133_FILE_SHA256: Final = {
@@ -147,6 +157,16 @@ def strip_m04(tools: Tools) -> Tools:
     return stripped
 
 
+def strip_msg(tools: Tools) -> Tools:
+    """s_4 (R-934): `tools` without MSG's additions (`msg_schema_support.without_msg`)."""
+    t08_rc._tests_on_path()
+    from msg_schema_support import without_msg  # noqa: PLC0415
+
+    stripped = without_msg(copy.deepcopy(tools))
+    assert isinstance(stripped, list)
+    return stripped
+
+
 @dataclass(frozen=True)
 class Link:
     """One registered surface change c_k: its register entry, its strip function s_k, and the
@@ -176,6 +196,12 @@ LINKS: Final = (
         "R-295",
         strip_m04,
         "455d01eb2f420032b27358798e6b331a0120aa1857f02ce3cb7851647849e125",
+    ),
+    Link(
+        "c_4",
+        "R-934",
+        strip_msg,
+        "eaff45852d7596816d90d744078f537e46c723e577295d347d9d73aea0942eac",
     ),
 )
 
@@ -262,15 +288,21 @@ def description_texts() -> dict[str, str]:
 
 
 def description_problems(texts: Mapping[str, str]) -> list[str]:
-    """§5.3 item 4 on `texts` (operation name -> description file): one line per failure."""
+    """§5.3 item 4 on `texts` (operation name -> description file): one line per failure. The
+    tools are `v17-c2`'s 17 and MSG's `explain` (c_4), each file at its pinned hash."""
     problems: list[str] = []
-    if sorted(texts) != sorted(V17_C2_FILE_SHA256):
-        problems.append(f"tools {sorted(texts)} are not v17-c2's 17")
-    for name in sorted(set(texts) & set(V17_C2_FILE_SHA256)):
-        expected = R133_FILE_SHA256[name] if name in CHANGED else V17_C2_FILE_SHA256[name]
+    pinned = {**V17_C2_FILE_SHA256, **MSG_FILE_SHA256}
+    if sorted(texts) != sorted(pinned):
+        problems.append(f"tools {sorted(texts)} are not v17-c2's 17 and MSG's explain")
+    for name in sorted(set(texts) & set(pinned)):
+        if name in CHANGED:
+            expected, source = R133_FILE_SHA256[name], "R-133's"
+        elif name in MSG_FILE_SHA256:
+            expected, source = MSG_FILE_SHA256[name], "MSG's"
+        else:
+            expected, source = V17_C2_FILE_SHA256[name], "v17-c2's"
         found = hashlib.sha256(texts[name].encode("utf-8")).hexdigest()
         if found != expected:
-            source = "R-133's" if name in CHANGED else "v17-c2's"
             problems.append(f"{name}.md: {found} is not {source} {expected}")
     return problems
 

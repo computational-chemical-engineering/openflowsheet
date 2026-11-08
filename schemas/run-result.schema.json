@@ -19,7 +19,8 @@
     "verification_status",
     "structural_sha256",
     "outputs",
-    "error"
+    "error",
+    "failure"
   ],
   "properties": {
     "job_id": {
@@ -121,6 +122,82 @@
           "type": "null"
         }
       ]
+    },
+    "failure": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/run_failure"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "ADR 0058 D5 (MSG §3.4, §4.8): why the solve did not converge, non-null iff `outputs` holds a `failure_bundle`. Derived on read from the stored failure bundle, the run's diagnosis when one was recorded, and the revision document; never part of a bundle."
+    }
+  },
+  "$defs": {
+    "run_failure": {
+      "description": "MSG design note §4.8: `outcome`, `taxonomy`, `message` (`observations.message`, verbatim), `implicated` (`implicated_sources`) and `suggested_actions` (each `action`) are the failure bundle's; `code` is the explained code, `chain` the codes outer → inner, `params` the merged params (a quantity as `{value, unit, kind}`), `failure_bundle` the artifact id of `failure-bundle.json`.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "outcome",
+        "taxonomy",
+        "message",
+        "code",
+        "chain",
+        "implicated",
+        "suggested_actions",
+        "failure_bundle",
+        "params",
+        "explanation"
+      ],
+      "properties": {
+        "outcome": {
+          "type": "string"
+        },
+        "taxonomy": {
+          "type": "string"
+        },
+        "message": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "code": {
+          "type": "string",
+          "minLength": 1
+        },
+        "chain": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "implicated": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "suggested_actions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "failure_bundle": {
+          "type": "string",
+          "minLength": 1
+        },
+        "params": {
+          "type": "object"
+        },
+        "explanation": {
+          "$ref": "https://github.com/frankp/process-runtime/schemas/application-results.schema.json#/$defs/explanation"
+        }
+      }
     }
   }
 }

@@ -1,0 +1,201 @@
+{
+ "work_package": "MSG",
+ "commit": "9c76b93985915e6b7452b7573514850c477e712b",
+ "requirements": [],
+ "status": "implemented",
+ "inputs": {
+  "case_id": "MSG WO-0..12: the beginner-mistake corpus tests/fixtures/msg/corpus.yaml (C01-C12, sha256 8e92ccbd60b813c008ec53e0e966557c6d2037736372c28f54367fe99f0404b0) and MSG-G0's baseline evidence/MSG/af35153979cf35cdf9e0e364e015492db3a41493/identity-baseline.json",
+  "case_hash": "8e92ccbd60b813c008ec53e0e966557c6d2037736372c28f54367fe99f0404b0",
+  "environment_lock_hash": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+ },
+ "commands": [
+  {
+   "cmd": "TMPDIR=/tmp/claude-1003/-home-frankp-Codes-OpenFlowsheet/fd59d98d-797a-4da8-93d6-9c61c6d4bdc7/scratchpad/msg-wo12/tmp PYTHONPATH=$PWD/src PATH=.venv/bin:$PATH ./scripts/gate.sh",
+   "cwd": ".claude/worktrees/msg",
+   "exit_code": 1
+  },
+  {
+   "cmd": "pytest -q tests/test_m06_browser_smoke.py tests/test_m02_kill_chain.py -k 'browser or g3f' (alone, after the gate)",
+   "cwd": ".claude/worktrees/msg",
+   "exit_code": 0
+  },
+  {
+   "cmd": "PYTHONPATH=src python scripts/msg_identity_gate.py --check evidence/MSG/af35153979cf35cdf9e0e364e015492db3a41493/identity-baseline.json --stores /tmp/claude-1003/-home-frankp-Codes-OpenFlowsheet/fd59d98d-797a-4da8-93d6-9c61c6d4bdc7/scratchpad/msg-wo12/tmp/pytest-of-frankp/pytest-0",
+   "cwd": ".claude/worktrees/msg",
+   "exit_code": 0
+  },
+  {
+   "cmd": "PYTHONPATH=src python scripts/corpus_identity.py --check",
+   "cwd": ".claude/worktrees/msg",
+   "exit_code": 0
+  },
+  {
+   "cmd": "python /tmp/claude-1003/-home-frankp-Codes-OpenFlowsheet/fd59d98d-797a-4da8-93d6-9c61c6d4bdc7/scratchpad/msg-wo12/perf.py (fresh process, 3 runs: import, cold CATALOGUE load, median of 1000 render_error / render_failure)",
+   "cwd": ".claude/worktrees/msg",
+   "exit_code": 0
+  }
+ ],
+ "checks": [
+  {
+   "id": "MSG-G0",
+   "description": "identity (b) bundle member digests of the RC set and corpus C01-C03, (d) no key 'explanation' in any store the gate's suite left; (a) and (c) are F0's (review Q3)",
+   "result": "pass",
+   "value": "MSG-G0 PASS: b 0/562 diff (108 bundles); d 0 hit(s) in 442 stores; surface moved: mcp_tools_sha256, operations/explain/request, operations/explain/response, schema_files/application-results.schema.json; a, c: F0 (corpus_identity.py --check)"
+  },
+  {
+   "id": "F0",
+   "description": "scripts/corpus_identity.py --check (covers MSG-G0 (a) and (c), review Q3)",
+   "result": "pass",
+   "value": "F0 PASS: M1 50/50, M2 61/61, M3 61/61, M4 61/61, M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 35/35"
+  },
+  {
+   "id": "MSG-G1",
+   "description": "closed vocabularies (tests/test_msg_coverage.py): every member has an entry; released-codes.txt is a subset of the keys",
+   "result": "pass",
+   "value": {
+    "api_error": 15,
+    "outcome": 22,
+    "status": 12,
+    "job": 16,
+    "check": 15,
+    "limitation": 83,
+    "misses": 0
+   }
+  },
+  {
+   "id": "MSG-G2",
+   "description": "static scan (scripts/msg_catalogue.py scan, run as a test): codes without an entry or an allow-list reason",
+   "result": "pass",
+   "value": {
+    "misses": 0
+   }
+  },
+  {
+   "id": "MSG-G3",
+   "description": "runtime audit over the gate's full suite (tests/conftest.py): codes emitted without an entry, rendering defects",
+   "result": "pass",
+   "value": {
+    "misses": 0,
+    "defects": 0
+   }
+  },
+  {
+   "id": "MSG-G4",
+   "description": "catalogue lint, plus tests/test_msg_coverage.py::test_the_normative_list_is_complete (review M1: the 68 codes of note §4.2.6 complete and lint-clean)",
+   "result": "pass",
+   "value": {
+    "violations": 0,
+    "entries": 366,
+    "complete": 79,
+    "normative_pinned": 68
+   }
+  },
+  {
+   "id": "MSG-G5",
+   "description": "generated files current: doc_pages.py --check, msg_catalogue.py sync-limitations --check (tests/test_doc_pages.py, test_msg_coverage.py)",
+   "result": "pass"
+  },
+  {
+   "id": "MSG-G6",
+   "description": "the corpus C01-C12 (tests/test_msg_corpus.py); remaining strict xfails: C01 numbers (q1c, F6 v2 models), C08 'degc' and C10 instance B (ctx; declared gaps, orchestrator default 903d95b1)",
+   "result": "pass",
+   "value": {
+    "xfailed_strict": 3
+   }
+  },
+  {
+   "id": "MSG-G7",
+   "description": "CLI goldens (tests/test_t07_w5b_cli.py)",
+   "result": "pass"
+  },
+  {
+   "id": "MSG-G8",
+   "description": "one document on Python, CLI, HTTP and MCP for the corpus's transported cases",
+   "result": "pass"
+  },
+  {
+   "id": "MSG-G9",
+   "description": "README quickstart twice in one directory (tests/test_readme_current.py::test_msg_g9_the_quickstart_runs_twice_in_one_directory)",
+   "result": "pass"
+  },
+  {
+   "id": "MSG-G10",
+   "description": "frozen-surface deltas (tests/test_t08_w2_surface_digest.py, tests/test_m07a_surface_chain.py): without_msg of the served list equals M04's registered D_3; the new digests recorded; register R-943 carries both",
+   "result": "pass",
+   "value": {
+    "served_sha256_D4": "eaff45852d7596816d90d744078f537e46c723e577295d347d9d73aea0942eac",
+    "without_msg_sha256_D3": "455d01eb2f420032b27358798e6b331a0120aa1857f02ce3cb7851647849e125",
+    "tools": 18,
+    "added": [
+     "explain"
+    ]
+   }
+  },
+  {
+   "id": "MSG.PERF",
+   "description": "performance (note §7): cold catalogue load <= 200 ms, one render <= 1 ms (median of 1000); fresh process, 3 runs, load average 73-77 on 48 cores",
+   "result": "pass",
+   "value": {
+    "entries": 366,
+    "cold_load_ms": [
+     120,
+     119,
+     111
+    ],
+    "import_ms": [
+     81,
+     90,
+     92
+    ],
+    "render_error_median_ms": [
+     0.082,
+     0.074,
+     0.071
+    ],
+    "render_failure_median_ms": [
+     0.068,
+     0.068,
+     0.064
+    ],
+    "ab_durations": "not re-run at WO-12; the recorded paired A/B is WO-7's (MSG_DECISIONS, gate results at the end of WO-7/WO-8): test_t07_conformance budget scenario pre-MSG 37a521f9 54.1 s vs MSG 48.8 s, same moment; D2-6 at WO-2: cold load 100-119 ms, render median 0.16-0.20 ms"
+   }
+  },
+  {
+   "id": "MSG.GATE",
+   "description": "scripts/gate.sh at the commit: ruff, format, mypy (254 files), node clean; pytest",
+   "result": "fail",
+   "value": {
+    "pytest": "31 failed, 15062 passed, 3207 skipped, 197 deselected, 3 xfailed, 1 error (2:13:11), load average 73-77 on 48 cores; log sha256 a26ab61d62c62ab6c8f2ed72fa6095553d94a6d9e3954ac907ce762abebddb2c",
+    "failures": {
+     "test_t08_w2_description_reviews::test_every_description_is_reviewed_by_both_lanes": "open item 'explain: human pending' - Frank's review of explain.md is not recorded (a merge blocker by design, review M5); no code change makes it pass",
+     "tests/test_m06_browser_smoke.py (29 failed + 1 error)": "the headless browser went away under load (BrowserError, then BrokenPipeError); alone after the gate: passed",
+     "test_m02_kill_chain::test_g3f_the_self_deadline_exits_71": "3.65 s > 3.0 s wall clock under load; alone after the gate: passed (no budget changed)"
+    },
+    "rerun_alone": "32 passed, 13 deselected in 111.54 s"
+   }
+  }
+ ],
+ "artifacts": [
+  {
+   "path": "tests/fixtures/msg/corpus.yaml",
+   "sha256": "8e92ccbd60b813c008ec53e0e966557c6d2037736372c28f54367fe99f0404b0",
+   "description": "the beginner-mistake corpus, C01-C12"
+  },
+  {
+   "path": "evidence/MSG/af35153979cf35cdf9e0e364e015492db3a41493/identity-baseline.json",
+   "sha256": "bc13e6abc91b2b46e2bda6a327f9b4cc888cea007a47b9ef7d2c31fae342a285",
+   "description": "MSG-G0's WO-0 baseline, recorded at 37a521f9 (unchanged)"
+  }
+ ],
+ "limitations": [
+  "Status implemented, not tested: every automated gate passes, but the full gate has one failing test that only Frank's recorded review of explain.md can turn green (test_t08_w2_description_reviews: 'explain: human pending'). It becomes tested when that review is recorded and the gate re-read; no code change is expected.",
+  "Evidence class: software verification (catalogue lint, corpus goldens, transport equality, identity gates) on ref-x86-64. The corpus texts are self-generated regression fixtures. The prose of the 51 entries completed at WO-12 awaits the design-lane prose check (review M1); no test catches a wrong physical claim.",
+  "Declared gaps (orchestrator default, main 903d95b1): errors render from the error document alone, so C08's 'degc' and C10's instance B stay strict xfails; C01's value, saturated values and pressure are deferred to the F6 v2 unit models (R-942).",
+  "worker_lost, owner_lost, store_error keep kind bug with environment-specific actions (orchestrator default, 903d95b1); an environment kind would need a schema and ADR 0058 change.",
+  "The carry naming link c_4 (R-943) is a 0.4 release-candidate item, not a main test."
+ ],
+ "review": {
+  "numerical": "pending",
+  "process_model": "pending"
+ }
+}

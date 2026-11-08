@@ -270,6 +270,26 @@ class ApiError:
     def http_status(self) -> int:
         return API_ERROR_HTTP_STATUS[self.code]
 
+    @property
+    def explanation(self) -> dict[str, Any]:
+        """MSG §3.3: the explanation document a transport attaches as `detail.explanation` —
+        the one this error carries when it was projected, else rendered now (surface null).
+        A property, never a field: it is not in `as_document()` and is stored nowhere (I2)."""
+        carried = self.detail.get("explanation")
+        if isinstance(carried, Mapping):
+            return dict(carried)
+        return self.render_explanation()
+
+    def render_explanation(self, surface: Literal["python", "cli"] | None = None) -> dict[str, Any]:
+        """The explanation rendered from the machine document (any carried one ignored)."""
+        from openflowsheet.messages.render import RenderContext, render_error
+
+        detail = {name: value for name, value in self.detail.items() if name != "explanation"}
+        return render_error(
+            {"code": self.code, "message": self.message, "detail": detail},
+            context=RenderContext(surface=surface),
+        )
+
     def as_document(self) -> dict[str, Any]:
         return {
             "code": self.code,
@@ -1139,8 +1159,113 @@ class JobEvent:
 
 
 @dataclass(frozen=True)
+class RunFailure:
+    """ADR 0058 D5 (MSG §3.4, §4.8): why a solve did not converge, read from its failure bundle.
+
+    `outcome`, `taxonomy`, `message` (`observations.message`, verbatim), `implicated`
+    (`implicated_sources`) and `suggested_actions` (each `action`) are the stored failure
+    bundle's; `code` is the explained code and `chain` the codes outer → inner; `params` the
+    merged params (a quantity as `{value, unit, kind}`); `failure_bundle` the artifact id of
+    `failure-bundle.json`. Derived on read, never stored; `str()` is the layered text.
+    """
+
+    outcome: str
+    taxonomy: str
+    message: str | None
+    code: str
+    chain: tuple[str, ...]
+    implicated: tuple[str, ...]
+    suggested_actions: tuple[str, ...]
+    failure_bundle: str
+    params: Mapping[str, Any]
+    explanation: Mapping[str, Any]
+
+    def as_document(self) -> dict[str, Any]:
+        return {
+            "outcome": self.outcome,
+            "taxonomy": self.taxonomy,
+            "message": self.message,
+            "code": self.code,
+            "chain": list(self.chain),
+            "implicated": list(self.implicated),
+            "suggested_actions": list(self.suggested_actions),
+            "failure_bundle": self.failure_bundle,
+            "params": copy.deepcopy(dict(self.params)),
+            "explanation": copy.deepcopy(dict(self.explanation)),
+        }
+
+    @classmethod
+    def from_document(cls, document: Mapping[str, Any]) -> Self:
+        validate_document("run-result.schema.json#/$defs/run_failure", document)
+        return cls._build(document)
+
+    @classmethod
+    def _build(cls, document: Mapping[str, Any]) -> Self:
+        return cls(
+            outcome=document["outcome"],
+            taxonomy=document["taxonomy"],
+            message=document["message"],
+            code=document["code"],
+            chain=tuple(document["chain"]),
+            implicated=tuple(document["implicated"]),
+            suggested_actions=tuple(document["suggested_actions"]),
+            failure_bundle=document["failure_bundle"],
+            params=dict(document["params"]),
+            explanation=dict(document["explanation"]),
+        )
+
+    def __str__(self) -> str:
+        """MSG §4.5: the layered text; `Details:` is `<observations.message> — <failure bundle
+        artifact id>` (the outcome when the bundle recorded no message)."""
+        from openflowsheet.messages.text import format_text
+
+        return format_text(
+            self.explanation, f"{self.message or self.outcome} — {self.failure_bundle}"
+        )
+
+
+class SolveFailedError(Exception):
+    """MSG §3.4: `RunResult.raise_for_outcome` on a run that did not end converged. Not an
+    `ApplicationError`: a domain outcome is not an `ApiError`. `result` is the run result; the
+    text is the failure's layered text (or, for a job that ended without a failure bundle, its
+    status's)."""
+
+    def __init__(self, result: RunResult) -> None:
+        failure = result.failure
+        machine = (
+            f"{failure.outcome}: {failure.message or failure.outcome}"
+            if failure is not None
+            else f"{result.job_status}: job {result.job_id}"
+        )
+        super().__init__(machine)
+        self.result = result
+
+    def __str__(self) -> str:
+        failure = self.result.failure
+        if failure is not None:
+            return str(failure)
+        from openflowsheet.messages.render import RenderContext, render_code
+        from openflowsheet.messages.text import format_text
+
+        explanation = render_code(
+            self.result.job_status,
+            context=RenderContext(surface="python", job_id=self.result.job_id),
+        )
+        return format_text(explanation, str(self.args[0]))
+
+
+def _failure_document(failure: RunFailure | None) -> dict[str, Any] | None:
+    return failure.as_document() if failure is not None else None
+
+
+@dataclass(frozen=True)
 class RunResult:
-    """§5.7: what a solve job produced. `job_status` is not `verification_status`."""
+    """§5.7: what a solve job produced. `job_status` is not `verification_status`.
+
+    `failure` (ADR 0058 D5) is non-null iff `outputs` holds a `failure_bundle`; it says why the
+    solve did not converge. `error` stays the operational failure (R-095). Verification is
+    separate: a `CONVERGED` run whose certificate is `FAILED` has no `failure`.
+    """
 
     job_id: str
     run_id: str | None
@@ -1156,6 +1281,7 @@ class RunResult:
     outputs: tuple[ArtifactRef, ...]
     error: ApiError | None = None
     solve_path: SolvePath = "revision_eo"
+    failure: RunFailure | None = None
 
     def __post_init__(self) -> None:
         certified = any(output.kind == "solution_certificate" for output in self.outputs)
@@ -1164,6 +1290,26 @@ class RunResult:
                 "verification_status is copied from a solution certificate, and no "
                 "solution_certificate output exists (§5.7)"
             )
+        if self.failure is not None and not any(
+            output.kind == "failure_bundle" for output in self.outputs
+        ):
+            raise ValueError(
+                "failure is read from a failure bundle, and no failure_bundle output exists "
+                "(ADR 0058 D5)"
+            )
+
+    def raise_for_outcome(self) -> Self:
+        """Raise unless the solve ran to its end and wrote no failure bundle; return `self`, so
+        calls chain (MSG §3.4). An operational `error` raises `ApplicationError`; a `failure`,
+        or a job that did not complete, raises `SolveFailedError`. Verification is separate: a
+        converged run whose certificate is not `VERIFIED` does not raise."""
+        if self.error is not None:
+            from openflowsheet.application.contract import ApplicationError
+
+            raise ApplicationError(self.error)
+        if self.failure is not None or self.job_status != "completed":
+            raise SolveFailedError(self)
+        return self
 
     def as_document(self) -> dict[str, Any]:
         return {
@@ -1181,6 +1327,7 @@ class RunResult:
             "structural_sha256": self.structural_sha256,
             "outputs": [output.as_document() for output in self.outputs],
             "error": _error_document(self.error),
+            "failure": _failure_document(self.failure),
         }
 
     @classmethod
@@ -1204,6 +1351,7 @@ class RunResult:
                 outputs=tuple(ArtifactRef._build(output) for output in d["outputs"]),
                 error=_error_build(d["error"]),
                 solve_path=d["solve_path"],
+                failure=RunFailure._build(d["failure"]) if d["failure"] is not None else None,
             ),
             document,
         )
@@ -1623,6 +1771,79 @@ class ModelRegistryView:
 
     def as_document(self) -> dict[str, Any]:
         return {"models": [dict(model) for model in self.models]}
+
+
+@dataclass(frozen=True)
+class MessageEntry:
+    """ADR 0058 D7 (MSG §3.5, §4.9) `explain`: one message-catalogue entry. The five templates
+    (`summary`, `context`, `where`, `why`, `action`) are display forms, `{p}` → `<p>`; `examples`
+    are explanations rendered from the entry's example params; `catalogue` is `{id, sha256}`,
+    which enters no identity. Read from the catalogue alone; no project state."""
+
+    code: str
+    family: str
+    kind: str
+    complete: bool
+    title: str
+    summary: str | None
+    context: str | None
+    where: str | None
+    why: str | None
+    action: str | None
+    params: tuple[Mapping[str, Any], ...]
+    gap: Mapping[str, Any] | None
+    see_also: tuple[str, ...]
+    examples: tuple[Mapping[str, Any], ...]
+    docs: str
+    deprecated: bool
+    replaced_by: str | None
+    catalogue: Mapping[str, Any]
+
+    def as_document(self) -> dict[str, Any]:
+        return {
+            "code": self.code,
+            "family": self.family,
+            "kind": self.kind,
+            "complete": self.complete,
+            "title": self.title,
+            "summary": self.summary,
+            "context": self.context,
+            "where": self.where,
+            "why": self.why,
+            "action": self.action,
+            "params": [dict(param) for param in self.params],
+            "gap": None if self.gap is None else dict(self.gap),
+            "see_also": list(self.see_also),
+            "examples": copy.deepcopy([dict(example) for example in self.examples]),
+            "docs": self.docs,
+            "deprecated": self.deprecated,
+            "replaced_by": self.replaced_by,
+            "catalogue": dict(self.catalogue),
+        }
+
+    @classmethod
+    def from_document(cls, document: Mapping[str, Any]) -> Self:
+        validate_document("application-results.schema.json#/$defs/message_entry", document)
+        return cls(
+            code=document["code"],
+            family=document["family"],
+            kind=document["kind"],
+            complete=document["complete"],
+            title=document["title"],
+            summary=document["summary"],
+            context=document["context"],
+            where=document["where"],
+            why=document["why"],
+            action=document["action"],
+            params=tuple(dict(param) for param in document["params"]),
+            gap=None if document["gap"] is None else dict(document["gap"]),
+            see_also=tuple(document["see_also"]),
+            examples=tuple(copy.deepcopy(dict(example)) for example in document["examples"]),
+            docs=document["docs"],
+            deprecated=document["deprecated"],
+            replaced_by=document["replaced_by"],
+            catalogue=dict(document["catalogue"]),
+        )
 
 
 @dataclass(frozen=True)

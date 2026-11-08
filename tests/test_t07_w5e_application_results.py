@@ -35,6 +35,7 @@ from conftest import REPO_ROOT, load_json
 from jsonschema import Draft202012Validator
 from m02_schema_support import without_m02
 from m04_schema_support import without_m04
+from msg_schema_support import MSG_OPERATIONS, without_msg
 
 from openflowsheet.application.operations import OPERATIONS, Operation
 from openflowsheet.application.types import SCHEMA_BASE, schema_errors
@@ -58,9 +59,13 @@ DEF_OF_OPERATION: dict[str, str] = {
     "diff_revisions": "semantic_diff",
     # ADR 0019 Amendment 3 (A3.3)
     "list_audit": "audit_page",
+    # ADR 0058 D7 (MSG WO-7)
+    "explain": "message_entry",
 }
 #: `revision_summary` and `audit_record` are pages' items, each its own `$def`.
-DEFS = frozenset({*DEF_OF_OPERATION.values(), "revision_summary", "audit_record"})
+#: `explanation` is MSG's (ADR 0058 D3): no operation's response is it, `RunResult.failure` and
+#: a transported `ApiError`'s `detail` carry it.
+DEFS = frozenset({*DEF_OF_OPERATION.values(), "revision_summary", "audit_record", "explanation"})
 #: R4-G3: SHA-256 of `canonical_json` of each operation's fully resolved response schema, taken at
 #: `b13d556` with `resolved_response` below (`None`: no response schema).
 SNAPSHOT_AT_B13D556: dict[str, str | None] = {
@@ -195,6 +200,26 @@ SNAPSHOT_M04: dict[str, str | None] = {
 }
 
 
+#: MSG-G10 (ADR 0058 D5, R-934): `RunResult` gains the required, nullable member `failure`, so
+#: every response that reaches a run result moves. Taken at MSG WO-6; with MSG's additions removed
+#: (`tests/msg_schema_support.py`) each is its value before MSG again
+#: (`test_msg_g10_without_failure_every_response_is_its_pre_msg_snapshot`).
+SNAPSHOT_MSG: dict[str, str | None] = {
+    "solve": "9c4b2e9ac57f55e1b27f8fe51c8701e06c8a001c372efb2369d66e8f6b29611d",
+    "submit_job": "8b41af7869075bc82b0aaae51c436524098a95adf5337cf554aa83571042218e",
+    "get_job": "fa671751435bb82de48af731c8207a30fa09fe4d411d57acacbbfd69c2bf381c",
+    "list_jobs": "b4e10d15c0e000e135467398e17f0162beb67a8d78cf86909df384291a38eca6",
+    "wait_job": "a67fe653b2fb80f6ef2a3ca7cd73f2cbab6091656fae3b38683ff153297a23cc",
+    "cancel_job": "fa671751435bb82de48af731c8207a30fa09fe4d411d57acacbbfd69c2bf381c",
+    "get_job_result": "aec2e54622d8776e59d4e34134e9b5911ddeb7ccce3f29ee496ad0d3e083e526",
+}
+#: MSG-G10 (ADR 0058 D7): the `explain` row is new (`message_entry`). Taken at MSG WO-7; it has no
+#: pre-MSG value, and `without_msg` leaves no other operation's snapshot moved by it.
+SNAPSHOT_MSG_EXPLAIN: dict[str, str | None] = {
+    "explain": "a4fcafe739c5fa4e6a82cc75170d6b67b915126b5329129f15a84da8a3f26127",
+}
+
+
 def _without_specifications(schema: Any) -> Any:
     """`schema` with Amendment 2's member taken out of every pin and option: its property and its
     entry in `required`."""
@@ -212,16 +237,41 @@ def _without_specifications(schema: Any) -> Any:
 
 def test_r4_g3_every_resolved_response_schema_equals_the_snapshot() -> None:
     measured = {name: _digest(resolved_response(op)) for name, op in OPERATIONS.items()}
-    assert len(measured) == 21
+    assert len(measured) == 22
     assert measured == {
         **SNAPSHOT_AT_B13D556,
         **SNAPSHOT_AMENDMENT_2,
         **SNAPSHOT_AMENDMENT_3,
         **SNAPSHOT_M02,
         **SNAPSHOT_M04,
+        **SNAPSHOT_MSG,
+        **SNAPSHOT_MSG_EXPLAIN,
     }
     for operation in OPERATIONS.values():
         assert "$ref" not in canonical_json(resolved_response(operation)).decode("utf-8")
+
+
+def test_msg_g10_without_failure_every_response_is_its_pre_msg_snapshot() -> None:
+    """MSG-G10: with `RunResult.failure` and MSG's `$defs` removed, every operation's resolved
+    response is its snapshot before MSG, and exactly the operations of `SNAPSHOT_MSG` moved; the
+    `explain` row (ADR 0058 D7) is the only operation MSG added."""
+    before = {
+        **SNAPSHOT_AT_B13D556,
+        **SNAPSHOT_AMENDMENT_2,
+        **SNAPSHOT_AMENDMENT_3,
+        **SNAPSHOT_M02,
+        **SNAPSHOT_M04,
+    }
+    assert set(OPERATIONS) - set(before) == MSG_OPERATIONS == set(SNAPSHOT_MSG_EXPLAIN)
+    moved = []
+    for name, operation in OPERATIONS.items():
+        if name in MSG_OPERATIONS:
+            continue
+        resolved = resolved_response(operation)
+        assert _digest(without_msg(resolved)) == before[name], name
+        if _digest(resolved) != before[name]:
+            moved.append(name)
+    assert sorted(moved) == sorted(SNAPSHOT_MSG)
 
 
 def test_g_r6_6_list_models_moved_only_by_the_approved_additive_member() -> None:
@@ -235,10 +285,11 @@ def test_g_r6_6_list_models_moved_only_by_the_approved_additive_member() -> None
     moved = [
         name
         for name in SNAPSHOT_AT_B13D556
-        if _digest(without_m02(without_m04(resolved_response(OPERATIONS[name]))))
+        if _digest(without_m02(without_m04(without_msg(resolved_response(OPERATIONS[name])))))
         != SNAPSHOT_AT_B13D556[name]
     ]
-    assert sorted(set(OPERATIONS) - set(SNAPSHOT_AT_B13D556)) == ["list_audit"]
+    # `list_audit` is ADR 0019 Amendment 3's row, `explain` ADR 0058 D7's.
+    assert sorted(set(OPERATIONS) - set(SNAPSHOT_AT_B13D556)) == ["explain", "list_audit"]
     # ADR 0019 Amendment 3 (A3.2) moves `diff_revisions` too; its own test below.
     assert moved == ["list_models", "diff_revisions"]
 

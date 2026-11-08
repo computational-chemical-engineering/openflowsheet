@@ -39,6 +39,9 @@ LAYERS = [
     # compiled problem's pinned inputs. Above the verifier, because a sensitivity is issued only at
     # a certified root.
     "studies",
+    # MSG's message catalogue and renderer (ADR 0058), imported by `application`; the solver path
+    # imports only `messages.diagnostic`, and the G3 hooks only `messages.audit`.
+    "messages",
 ]
 
 

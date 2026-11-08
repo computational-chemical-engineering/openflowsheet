@@ -25,6 +25,7 @@ analysis as unsupported. That is the same limitation K06's CLI already carries.
 from __future__ import annotations
 
 import copy
+import sys
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field, replace
 from typing import TYPE_CHECKING, Any, Final, Literal
@@ -33,6 +34,7 @@ from openflowsheet.canonical import document_sha256, first_noncanonical
 from openflowsheet.compile.spec import EquationSpec, ProblemSpec
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.graph.process import Connection, ProcessGraph
+from openflowsheet.messages import audit
 from openflowsheet.models import SpecificationError
 from openflowsheet.models.revision_flowsheet import (
     InputMapping,
@@ -285,6 +287,8 @@ class Unbound:
     hint: str | None = field(default=None, compare=False)
 
     def __post_init__(self) -> None:
+        if audit.auditor is not None:  # MSG-G3; frame 1 is the generated `__init__`
+            audit.auditor.observe(self.detail, sys._getframe(2).f_globals.get("__name__", ""))
         if self.hint is not None:
             from openflowsheet.application.projection import bound_text
 

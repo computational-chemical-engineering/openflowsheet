@@ -25,7 +25,7 @@
   "X05.A22": "the installed wheel replays the 52 F0 bundles",
   "X05.A23": "F0 PASS; the existing replay suites pass unedited",
   "X05.A24": "L41, the support matrix and the T08 notes restated",
-  "X05.A25": "the closure pinned in Requires-Dist; an unconstrained install verifies"
+  "X05.A25": "the direct five pinned, the transitive four floating; off the lock is named"
  },
  "cases": [
   {

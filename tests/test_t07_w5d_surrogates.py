@@ -22,6 +22,7 @@ from pathlib import Path
 from typing import Any
 
 import pytest
+from msg_support import machine_detail
 from t07_corpus import CORPUS
 from t07_jobs_support import commit, lifecycle_violations
 from test_t07_w2d_noncanonical import SURROGATES
@@ -158,7 +159,7 @@ def test_r4_g2_dispatch_refuses_at_the_door_with_the_old_pointer(
     refused = raised.value.error.as_document()
     assert schema_errors("api-error.schema.json", refused) == []
     assert refused["code"] == "document_not_canonical"
-    assert refused["detail"] == {"pointer": DISPATCH_POINTER_AT_B13D556[(placement, text)]}
+    assert machine_detail(refused) == {"pointer": DISPATCH_POINTER_AT_B13D556[(placement, text)]}
 
 
 def test_no_unicode_encode_error_escapes_the_canonical_entries(tmp_path: Path) -> None:

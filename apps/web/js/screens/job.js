@@ -12,11 +12,12 @@ import { h, replace } from "../h.js";
 import { attemptsOf, signatureText } from "../model/attempts.js";
 import { filterTrace, pageOf, TRACE_COLUMNS, traceChoices, traceRows } from "../model/trace.js";
 import { link } from "../router.js";
-import { DASH } from "../text.js";
+import { DASH, explained } from "../text.js";
 import {
   allEvents,
   digestBanner,
   facts,
+  failureNotice,
   heading,
   id,
   none,
@@ -297,7 +298,9 @@ export function view(data) {
         ["ended", text(job.ended_at)],
         ["elapsed seconds (run manifest)", num(manifest?.elapsed_seconds)],
       ]),
+      failureNotice(run),
       job.error ? h("p", { class: "notice notice-bad" }, `${job.error.code}: ${job.error.message}`) : null,
+      job.error ? explained(job.error.detail?.explanation) : null,
       cancelControl(data),
     ),
     section(

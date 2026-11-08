@@ -1,0 +1,18 @@
+# MSG design note §4.2.1 (rule C3): the five failure kinds. These texts are normative.
+catalogue: openflowsheet-messages-v1
+kinds:
+  input:
+    label: "Input problem: something in the flowsheet or the request needs to change."
+    default_action: "Correct the element named above; `openflowsheet explain <code>` states the rule."
+  not_supported:
+    label: "Not supported in this version: a limitation of OpenFlowsheet, not an error in your flowsheet."
+    default_action: "See the limitation's docs section for workarounds; support may come in a later version."
+  numerical:
+    label: "Numerical failure: the solver did not find the solution; your flowsheet may be correct."
+    default_action: "Try another initial guess or solve policy; if the failure persists, report it with the failure bundle."
+  bug:
+    label: "Internal error in OpenFlowsheet: please report it."
+    default_action: "Report it at https://github.com/computational-chemical-engineering/openflowsheet/issues with the failure bundle or the server log."
+  notice:
+    label: "Notice: not a failure."
+    default_action: "No action is needed unless the meaning above matters for how you use the result."

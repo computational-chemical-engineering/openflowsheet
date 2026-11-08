@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-### X05 — replay from the wheel (ADR 0069, Proposed)
+### X05 — replay from the wheel (ADR 0069, accepted 2026-11-08)
 
 - The wheel and the sdist carry `requirements.lock` (`openflowsheet/_data/requirements.lock`, a link to
   the root file in a checkout). `environment()` records its SHA-256 only after checking the nine
@@ -13,9 +13,12 @@
   `exact_replay` / `MATCH` where ADR 0007 D4 allows (envelope L41 narrowed).
 - A checkout whose environment is off the lock now records `""` where it recorded the lock's hash
   before. Optional extras are not part of the identity.
-- `[project].dependencies` pins the closure's four transitive members exactly (`attrs==26.1.0`,
-  `jsonschema-specifications==2025.9.1`, `referencing==0.37.0`, `rpds-py==2026.6.3`), so a plain
-  `pip install openflowsheet` verifies.
+- The closure's four transitive members (`attrs`, `jsonschema-specifications`, `referencing`,
+  `rpds-py`) are not pinned in `[project].dependencies` (ADR 0069 Amendment 1, Frank's Q-F1 = no), so
+  users keep upgrade freedom over them. An install constrained by the shipped lock replays exactly:
+  `pip install -c requirements.lock openflowsheet`, with the `requirements.lock` of the release's
+  tag. A plain `pip install openflowsheet` whose resolver picks other versions of those four records
+  `""` and names them in every replay reason.
 - No schema change: the environment document keeps its eight keys.
 
 ## v0.3.0.post1 — the PyPI page: a current README and the project links; no code change
