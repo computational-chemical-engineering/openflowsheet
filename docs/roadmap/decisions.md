@@ -401,3 +401,18 @@ phase-boundary form; |Q−Q*|/Q* 1.9e-11; λ vs closed-form λ* rel 1.9e-11); G1
 G2 re-taken properly (D-44): base `ad971d32` vs `1d909ef9` identical in the audited env (`b6bbafdb…`, solved reports)
 and default env (`6e028e8d…`). For the reviewer: D-45 (Q1′ accepts the boundary basis), D-50 (G10d tolerances
 disagree). WO-6 started. RRC: recon → brief `docs/briefs/RRC-architect.md` → architect running (ADR 0072).
+
+## 2026-11-08 — RRC design (`1566da46`): note + ADR 0072; OPT WO-6 part 1
+
+RRC: "revision continuation" — ADR 0010 D2's map p(λ) = p* + (1−λ)(p_src − p*) from the nearest ancestor revision with
+a VERIFIED solve (same model_version/constants), moving only differing operating values (default-deny allowlist);
+policy `RRC-revision-v1` (new `eo_recovery` value, not default); order spec-continuation → revision continuation →
+ADR 0015 restart, one recovery per step; no registered record moves; three frozen schemas widen additively (Frank
+FQ1). WO-1…6, gates G1–G10 + F1/F2. Least sure: whether any column case fails without edge 3 (L-COL-9 lift), NET-02
+path regime, stored pinned zeros.
+DECISION: RRC build starts now on `wp/RRC` (WO-1, WO-2) beside OPT WO-6b; WO-3 (executor) rebases after OPT merges.
+Merge only after Frank's FQ1. Alternative: wait for Frank. Reversible by: the branch stays unmerged.
+OPT WO-6 part 1 (`fe615cb6`): `optimize` job built; 13 surface/Q26 tests fail until part 2 (WO-6b running).
+DECISION: OPT D-58 (Q26 allow-lists the request's numeric problem-definition containers by full path, as R-235's
+`body/inlet/n`) → accepted pending the reviewer. Alternative: drop numeric starts (changes the request schema).
+Reversible by: reverting the isolated commit.
