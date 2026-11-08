@@ -255,3 +255,6 @@ results), `40fba287` (runner self-contained), `b91b0ddb` (registration, results 
   code, in no row) — a full-gate failure that the WO-5 battery did not include. The test's `ROW_IDS` gains `E3c`
   (spec §5.6's seed plus E3c; T08 spec §5.6's seed table is not edited). `test_t08_w2_recovery_edges.py` 26 passed,
   the cited-node run included.
+- **D-35 (WO-6 rest: freeze list).** `docs/interfaces-frozen.md` §2 gains the ADR 0072 paragraph in M1's accurate
+  words (three schemas each accept one more value; no member added), with C1's measured bytes and the
+  `get_project.solve_policies` entry.
