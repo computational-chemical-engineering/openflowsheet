@@ -643,6 +643,15 @@ Totals: TH-R1 18.3 s, M1 5.9 s, C-MW 54.4 s ("verify" also holds report/record w
   hashes with both reviews pending, so `tests/test_t08_w2_description_reviews.py::test_every_description_is_reviewed_by_both_lanes`
   is red (4 open: `validate`, `submit_job` × design lane, Frank) until the reviewer and Frank review them (no agent
   marks them). `validate.md` said the optimization task is refused, false since WO-3.
+- D-62. DECISION: replay details (§4.9, `studies/nlp/replay.py`) → (a) the policies are read from the first start
+  bundle's `solve-policy.json`/`check-policy.json` and must hash to the manifest identity's; (b) the mode is
+  `exact_replay` iff every bundle reproduction is, `inspected_archived_results` if any is (verdict `NOT_RUN`), else
+  `compatible_reproduction`; (c) `recorded_environment` is the manifest's `environment`, `current_environment`
+  `{"run": environment()}`; (d) identity failures are listed under `tampered` as `optimization-manifest.json#/<member>`;
+  (e) the start phase is re-run on a host without a sink (no bundle written) and the solver probe answers available
+  (replay solves no NLP); (f) `verdict_changed_near_threshold` carries the bundles' entries only: the verification
+  document's active-set flip near a threshold (§4.9's 1e-9 rule) is NOT yet implemented — a flip is a plain
+  difference (`MISMATCH`). Reversible by: `6d30efa0`.
 - AMENDED_TESTS (WO-6): `tests/test_t07_adr0008_jobs.py::test_c_each_operation_has_exactly_one_request_branch`
   (the `optimize` branch, additive) and `::test_c_an_operation_outside_the_enum_is_refused` (its `optimize` example is
   now an operation; replaced by `optimise`).
@@ -658,3 +667,13 @@ Totals: TH-R1 18.3 s, M1 5.9 s, C-MW 54.4 s ("verify" also holds report/record w
 - Default env: `test_t07_adr0008_jobs.py test_opt_revision_optimize.py test_opt_request.py test_t07_interrupt.py
   test_m04_study_job.py test_package_imports.py` 118 passed, 1 failed (`test_a42_…`, surface decomposition: needs
   `without_opt`); `test_opt_job.py` 2 passed. Surface-chain/digest/Q26 tests fail until part 2 (handoff).
+
+### Gates (WO-6b, 2026-11-08, TRS2)
+
+- Default env: `test_m07a_surface_chain.py test_t08_w2_surface_digest.py test_t07_w5e_application_results.py
+  test_m04_study_job.py test_t07_q26.py test_t07_w6b_mcp.py test_t07_w6c_descriptions.py test_t07_w5a_operations.py
+  test_opt_job.py` 172 passed; `test_t08_w2_description_reviews.py` 1 failed (D-61, by design); HTTP/CLI/Q26/global
+  state 65 passed; `test_opt_request.py` + operations + descriptions 137 passed; `test_opt_replay.py` 4 passed.
+- Audited env (`m03_nlp_check.sh -- tests/test_opt_replay_nlp.py`, thread pins 1): 5 passed (G13 x86 half).
+- Surface link c_4: served `3fb06cad02649f1d8489c73551583f496ad38ae8c7109d29ae68166f5998c8a5`, stripped = D_3
+  `455d01eb…`.
