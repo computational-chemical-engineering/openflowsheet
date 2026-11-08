@@ -29,6 +29,7 @@ import pytest
 import yaml
 from s11_column_support import RECYCLE_CASE, column_case_spec
 from t06_support import ALLOWANCE, CORPUS, registered_root
+from test_rrc_edge3 import opening_hash
 from test_s02_column_wo2 import FLOW_ABS, FLOW_REL
 
 from benchmarks.rrc import run_candidates as harness
@@ -140,7 +141,8 @@ def _held(found: dict[str, Any], registered: Mapping[str, Any]) -> None:
     assert {unit: regime for unit, regime in found["checks"]["source_signature"]} == registered[
         "source_signature"
     ]
-    assert found["checks"]["g2f_opening_equals_source_full_state"] is True
+    assert found["checks"]["g2f_opening_equals_source_over_free_columns"] is True
+    assert found["checks"]["g2f_opening_equals_source_full_state"] is True  # no column pinned
 
 
 def test_g4_net02_is_rescued_from_its_registered_source() -> None:
@@ -232,8 +234,8 @@ def test_g2_every_level_of_the_column_pair_has_its_identity() -> None:
             model_version,
             constants,
         )
-    # (f) the recovery item opens at the ancestor's root.
-    assert step.detail.branch_provenance[1]["opening_state_sha256"] == source.full_state_sha256
+    # (f) the recovery item opens at the ancestor's root, over attempt 0's free columns.
+    assert step.detail.branch_provenance[1]["opening_state_sha256"] == opening_hash(step, source)
 
 
 # ------------------------------------------------------------------ G7 on the G5 pair

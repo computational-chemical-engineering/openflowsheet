@@ -216,3 +216,13 @@ results), `40fba287` (runner self-contained), `b91b0ddb` (registration, results 
   the guide's quoted L21 follows); `docs/support-matrix.md` re-emitted (`t08_support_matrix.py --check` 0 problems).
   E3c's note carries the same sentence in its own commit (D-34). Checks: `test_t08_w2_support_envelope.py`,
   `test_t08_w2_unsupported.py`, `test_doc_pages.py`, `test_t06_f4_literals.py`: 77 passed.
+- **D-30 (S1).** Applied the review's amendment text to G2 (f) (§8.2's table) and the §5.8 certificate bullet in the
+  design note copy on this branch, each marked *(Amended by the review, S1.)*. The assertion sites hash the source
+  root over the recovery attempt 0's free columns (`tuple(context.column_scales)` of the attempt-0 homotopy context):
+  `tests/test_rrc_edge3.py` (`opening_hash`, used by G2 and `_same_root`), `tests/test_rrc_candidates.py` (G2 on C3,
+  importing `opening_hash`), and the harness, which now records `g2f_opening_equals_source_over_free_columns` beside
+  the kept special case `g2f_opening_equals_source_full_state`; the G9 test asserts both (the registered signatures
+  pin no column). `opening_hash` asserts `== full_state_sha256` when the free columns are the whole state.
+  Nothing registered moves: `results-ref-x86-64.json`, `reference_values.yaml` and `cases.yaml` are unedited (the
+  committed table, measured at 40fba287, lacks the new key; a re-take would add it). Check: `test_rrc_edge3.py` +
+  `test_rrc_candidates.py` 24 passed.

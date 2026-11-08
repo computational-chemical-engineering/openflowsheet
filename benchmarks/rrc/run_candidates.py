@@ -63,6 +63,7 @@ from openflowsheet.application.revision_binding import (  # noqa: E402
     bind_revision_flowsheet,
 )
 from openflowsheet.application.types import Change, Edit, JobRequest, SolveBody  # noqa: E402
+from openflowsheet.canonical import state_sha256  # noqa: E402
 from openflowsheet.models import flow_id  # noqa: E402
 from openflowsheet.models.syn001 import FLOW_TOLERANCE  # noqa: E402
 from openflowsheet.numerics.scaling import Scaling  # noqa: E402
@@ -544,10 +545,26 @@ def run_case(cid: str) -> dict[str, Any]:
     if ancestor is not None:
         items = runs["RRC-revision-v1"].get("branch_items", [])
         recovery = [i for i in items if i["initializer_source"] == "revision_continuation_source"]
+        # G2 (f) as amended (review S1): the opening hash is the source root over the recovery
+        # attempt 0's free columns, in the region's order. It equals the source's
+        # `full_state_sha256` (the special case, kept) exactly when no column is pinned.
         checks["g2f_opening_equals_source_full_state"] = (
             None
             if not recovery
             else recovery[0]["opening_state_sha256"] == ancestor.full_state_sha256
+        )
+        opened = (
+            []
+            if rrc.step is None
+            else [
+                c for c in rrc.step.detail.contexts if c.core == "homotopy" and c.attempt_index == 0
+            ]
+        )
+        checks["g2f_opening_equals_source_over_free_columns"] = (
+            None
+            if not recovery or len(opened) != 1
+            else recovery[0]["opening_state_sha256"]
+            == state_sha256(ancestor.state, tuple(opened[0].column_scales))
         )
         checks["source_signature"] = [list(pair) for pair in ancestor.signature]
     if rrc.run.outcome == "CONVERGED" and rrc.run.state is not None:

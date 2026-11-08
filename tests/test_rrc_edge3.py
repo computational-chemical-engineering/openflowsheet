@@ -31,7 +31,7 @@ from t06_support import T06_REVISION_POLICY, case_document
 
 from openflowsheet.application.policies import RRC_REVISION_V1
 from openflowsheet.application.revision_binding import RevisionBinding, bind_revision_flowsheet
-from openflowsheet.canonical import encode_doubles
+from openflowsheet.canonical import encode_doubles, state_sha256
 from openflowsheet.numerics.scaling import Scaling
 from openflowsheet.orchestrator import executor, revision
 from openflowsheet.orchestrator import region as region_module
@@ -133,6 +133,19 @@ def restarted() -> Solved:
 @cache
 def continued() -> Solved:
     return solve(net02(), RRC_REVISION_V1, revision_continuation=n1())
+
+
+def opening_hash(step: StepResult, source: RevisionContinuationCandidate) -> str:
+    """G2 (f) as amended (review S1): the source root's hash over the recovery attempt 0's free
+    columns, in the region's order (`column_scales` is built in `free` order). When the source's
+    signature pins no column, the free columns are the whole state and this is the source's
+    `full_state_sha256`, which is asserted as the special case."""
+    (context,) = [c for c in step.detail.contexts if c.core == "homotopy" and c.attempt_index == 0]
+    free = tuple(context.column_scales)
+    digest = state_sha256(source.state, free)
+    if len(free) == len(source.state):
+        assert digest == source.full_state_sha256
+    return digest
 
 
 def scaled_distance(binding: RevisionBinding, x: Any, y: Any) -> float:
@@ -242,8 +255,8 @@ def test_g2_every_level_has_its_identity() -> None:
             target_model_version,
             target_constants,
         )
-    # (f) the recovery item opens at the ancestor's root.
-    assert step.detail.branch_provenance[1]["opening_state_sha256"] == source.full_state_sha256
+    # (f) the recovery item opens at the ancestor's root, over attempt 0's free columns.
+    assert step.detail.branch_provenance[1]["opening_state_sha256"] == opening_hash(step, source)
 
 
 def test_an_inert_value_ignores_a_supplied_source() -> None:
@@ -472,7 +485,7 @@ def _same_root(solved: Solved, ancestor: RevisionContinuationCandidate) -> tuple
     assert step.eo_recovery == "taken"
     record = step.revision_continuation
     assert record is not None and record.status == "taken"
-    assert step.detail.branch_provenance[1]["opening_state_sha256"] == ancestor.full_state_sha256
+    assert step.detail.branch_provenance[1]["opening_state_sha256"] == opening_hash(step, ancestor)
     assert solved.certificate().verification_status == "VERIFIED"
     item0 = step.recovered_from.state
     assert scaled_distance(solved.binding, solved.run.state, item0) <= SAME_ROOT

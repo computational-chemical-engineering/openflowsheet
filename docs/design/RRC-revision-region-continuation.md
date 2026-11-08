@@ -350,7 +350,9 @@ The restart's preconditions P3 to P5, its records and its `unsupported` reasons 
 - The recovery's first `branch_provenance` item has:
   - `core = homotopy` and `opening_source = eo_recovery_start`;
   - `initializer_source = "revision_continuation_source"`, a free string;
-  - `opening_state_sha256` equal to the source's `full_state_sha256`. This is the certificate's link to the source root;
+  - `opening_state_sha256`, the source root's hash over attempt 0's free columns. It equals the source certificate's
+    `full_state_sha256` exactly when the source's final signature pins no column. The link that holds in every case is
+    the `solve-path.json` member (`source_identity`, `candidate`). *(Amended by the review, S1.)*;
   - `continuation = {type: "revision_continuation", parameter_ids, lambda_levels, lambda_reached, rejected_trials}`.
 - Verification is unchanged (R-035, `verify_revision`).
 
@@ -506,7 +508,7 @@ Every candidate's outcomes under the control, `T06-revision-v2` and `RRC-revisio
 | Gate | Invariant | Measured how | Criterion |
 | --- | --- | --- | --- |
 | **G1** inertness | Nothing registered moves | `scripts/corpus_identity.py --check`; `git diff main --` on the four edge-3 test files; `tests/test_t06_w4_registry.py`, `test_t07_b3_policies.py`; schema fixture regeneration | M1–M9 PASS; empty diff, and the files pass; every registered `policy_sha256` unchanged; fixtures byte-identical |
-| **G2** level identity | ADR 0010 D2 and §3 | On the G4 run's trace and records | (a) λ = 0 level identity = the source certificate's `(model_version, constants_sha256)`. (b) Every λ < 1 level's parameter vector differs from the target's only at `D`. (c) λ = 1 identity = the failed solve's = the certificate's = NET-02's registered identity. (d) Every λ is a dyadic `p/q` string. (e) The λ = 1/2 values are bitwise as in WO-1, if λ = 1/2 is visited. (f) The recovery item's `opening_state_sha256` = the source's `full_state_sha256`. |
+| **G2** level identity | ADR 0010 D2 and §3 | On the G4 run's trace and records | (a) λ = 0 level identity = the source certificate's `(model_version, constants_sha256)`. (b) Every λ < 1 level's parameter vector differs from the target's only at `D`. (c) λ = 1 identity = the failed solve's = the certificate's = NET-02's registered identity. (d) Every λ is a dyadic `p/q` string. (e) The λ = 1/2 values are bitwise as in WO-1, if λ = 1/2 is visited. (f) The recovery item's `opening_state_sha256` equals `state_sha256` of the source root over the recovery attempt 0's free columns, in the region's order. The opening's pinned columns are exactly `+0.0` in that root, which §5.7's check establishes. When the source signature pins no column, this is the source's `full_state_sha256`. *(Amended by the review, S1.)* |
 | **G3** controller | Rollback, halving, stall | A stub corrector in `test_rrc_edge3.py` | One rejection at λ = 1/4: the next trial is at λ = 1/8 from the λ = 0 state, bitwise. All rejections: `HOMOTOPY_STALLED` with bracket width ≤ 2/1024 and no certificate. |
 | **G4** revision rescue | A registered failing-first revision converges through the new edge | Family N's pair, under the control and under `RRC-revision-v1` | Control `BOUND_BLOCKED` (NET-02's registered edge-off outcome). RRC `CONVERGED` and `VERIFIED`. Errors against `ref.closed_form.corpus_cases.SYN-001-T06-NET02` within T06's registered NET-02 tolerances. ‖x_RRC − x_restart‖∞, scaled by the region's `Scaling`, ≤ 1e-8, where x_restart is NET-02's root under `T06-revision-v2`. |
 | **G5** column rescue (L-COL-9) | As G4, for a column region | Family C's selected case | Control in the trigger set; RRC `CONVERGED` and `VERIFIED`; S11.A29's per-component closure (feed = distillate + purge) within A29's flow tolerance. If no Ci qualifies, G5 is reported **not met** and §6's fallback text applies. |
