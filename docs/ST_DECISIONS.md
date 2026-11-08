@@ -191,3 +191,28 @@ M3 61/61, M4 61/61, M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 35/35).
   run locally (it executes the notebooks); CI's site job does.
 - **D6-3 — the `message_entry` fixtures re-taken** (`scripts/t07_schema_fixtures.py --write`): only
   `catalogue.sha256` moves, `e4f940cc…` → `8fa0c03e…`, from the L41 re-sync (D4-5) and the seven ST entries.
+
+## Fix round (review `docs/reviews/ST-review.md`, brief `docs/briefs/ST-fix-round.md`)
+
+- **M1 — rule R1′ (ruled, review M1).** `_decide`: R1, then R1′, R2, R3. The degeneracy rows are read once
+  (`_Inputs.degenerate`); the heater-style split list is `orchestrator.splits.lifted_splits` over
+  `view.instances` (no `staged`), filtered by the `vapor`+`liquid` port test, built only when a row exists. The
+  Ḣ of an R1′ phase is accumulated from 0.0 (`_Decision.accumulate`). G8's strict xfail and its guard are removed
+  (G8 passes); G7 compares R1′ streams bitwise against `table._phase_enthalpy(V) + (L)` at the stored state;
+  G16 (c) now asserts R1′ (carried split, no flash call, not flagged) and the no-split case (test-local:
+  `_heater_style_splits` patched to `{}`, since every corpus R3 stream has a split).
+  Closures (`closure` vs quoted value, tol 1.01e-3 W, both `judged_at: projection`), before → after:
+  `T05b:SC-1` envelope 2016.0 → 0.0, U-VLV 2016.0 → 0.0; `T05b:SC-3` envelope 3.64e-12 → 3.64e-12, U-VLV 2016.0
+  → 0.0, U-PHF −2015.9999999999964 → 3.64e-12. Of the 44 served 0.3.0 documents exactly SC-1 and SC-3 move.
+- **DECISION M1-1:** a flagged stream with no heater-style split that would reach R3 keeps `phase_source:
+  "flash"` (the rule that applied) and `flash_near_phase_boundary: false` (nothing flashed, the review's reason
+  for R1′). Alternative: a new source label, or the flag true. Reversible by: `_decide`'s last branch.
+- **DECISION M1-2:** an R1′ phase whose provider returns mixture `h` takes `n_tot·h`, as the γ–φ verifier's
+  `_phase_flow` does (D1-1: "summed as the verifier's helper of that form sums it"); the review's text names the
+  per-component form only (`table._phase_enthalpy`). No corpus case reaches the mixture branch. Alternative:
+  `property_not_provided`. Reversible by: `_Properties.enthalpy_flow`.
+- **DECISION M1-3:** Q4.R12 (b) (ii) is dropped from `_near_boundary`: after R1′ no flagged stream reaches a
+  flash, so it was dead. Note §4.2 and ADR D3 say so.
+- **Fact (for the design lane):** a flagged *products-style* split's feed (`split.stream` = the drum's inlet)
+  that is undeclared would take R1′'s no-split branch (`flash_failed`), although the verifier flashes that feed
+  at its own state. No corpus or served case has one (all flagged streams: 4 R1′, 2 declared, 0 no-split).

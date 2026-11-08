@@ -60,9 +60,14 @@ member detail), `not_ready`, `unsupported` (`basis_unavailable(<id>)`) and `inte
   (Q1.R4); no provider call; `n` and `m` are `+0.0` (Q1.R11).
 - **R1** carried saturated split (`<S>.sat.V`, `<S>.sat.L` present): VAPOR (V) and LIQUID (L) at `(T_sat(P), P)`. The
   stream's `T` is the stored T; a refused `Tsat` nulls the properties only (Q1.R12).
+- **R1′** carried lifted split (from the ST review, 2026-11-08): the stream of a heater-style lifted split (the list
+  `verify_revision` derives from the revision) whose certificate has an `independent_split` row `not_applicable` for
+  `temperature_degenerate` or `fresh_flash_unresolved`: VAPOR and LIQUID from the stored split at the split's (T, P),
+  Ḣ summed from 0.0 as the verifier's `_phase_enthalpy` sums it; `phase_source: "carried_lifted_split"`, not flagged.
+  A flagged stream with no such split that would reach R3 gets no number: `flash_failed(status=temperature_degenerate)`.
 - **R2** declared producer-port phase: that phase at (T, P).
 - **R3** otherwise: a fresh TP flash of the stream's own (n, T, P), with **no** ε_adm or τ_dew snap. Each substream
-  reports `flash_near_phase_boundary` (Q4.R12 (b)).
+  reports `flash_near_phase_boundary` (Q4.R12 (b) (i); (ii) is decided by R1′ since the ST review).
 
 A phase is listed iff its amount is `!= 0.0`, of either sign and never clamped, in the order VAPOR, LIQUID, with the
 decision's ids (Q4.R11). Its id is Q4.R1's triple `{family, qualifier, ordinal}`; no rendered string is a key.
@@ -75,7 +80,7 @@ context (`model_version` and `constants_sha256` from the certificate).
 - Ḣ is summed in the verifier's order, so ST's Ḣ equals the verifier helpers' bitwise wherever the two decide the same
   phases (exit test E7).
 - ST imports from `verify` only `table.{FEED_MODELS, PRODUCT_MODELS, EXTERNAL_DUTY_MODELS, STAGED_DUTY_MODELS,
-  WORK_MODELS}` and `column.duty`.
+  WORK_MODELS}` and `column.duty`; for R1′, `orchestrator.splits.lifted_splits`, the verifier's own split list.
 
 **D5. Quantities, SI only** (note §4.3, §5).
 - Per substream (v1: one, id `mixed`) and per phase: `n`, `m`, `x`, `w`, `n_total`, `m_total`, `H_flow`, `S_flow`,
@@ -122,8 +127,14 @@ phase-or-total).
 - **Both an artifact and an operation.** Two sources of truth, with no good answer to which is authoritative.
 - **Reusing or refactoring the verifier's Ḣ helpers.** They return only scalars, embed verdict snaps, and differ per
   basis form; refactoring them edits `verify/` (an M5 numerics risk).
-- **The carried lifted split for legacy outlets.** It needs the binding's `LiftedSplit` list, which is not in
-  `revision.json`; at a verified state it agrees with the fresh flash within the quoted `independent_split` check.
+- **The carried lifted split for every lifted outlet.** *Amended from the ST review, 2026-11-08:* the first reason
+  given here was false (`verify_revision` derives the list from the revision), and the second holds only where the
+  `independent_split` check ran. Where it did not, R1′ reads the carried split. Everywhere else reading it would move
+  the resolved-split streams off the verifier's arithmetic and lose their E7 bitwise status, and buy nothing, because
+  the flash and the split agree there within the quoted check.
+- **Exempting a flagged envelope from E8** (the ST review's option (a), 2026-11-08). It would loosen a gate around a
+  wrong number: `T05b:SC-1`'s S2 was reported 2016 W low, with a vapour fraction of 0, at a temperature-degenerate
+  stream whose every vapour fraction is consistent.
 - **A typed full-document response, or a flattened record layout.** The first breaks ADR 0019 §4.1's bounded
   projection; the second still elides at depth 4 and loses per-substream grouping.
 - **An ideal-gas density, or a per-component `s` sum, where the provider has none.** Both are inventions (R-924); a
@@ -214,7 +225,8 @@ WO-2 onward start after `wp/MSG` merges into `main`. Files shared with MSG are l
 **Riskiest point:** near a phase boundary, R3's unsnapped flash can decide differently from the verifier, and providers
 deliver h in two value shapes. Both are mitigated by the quoted checks, `judged_at`, and E6–E8. *Ruled by Q4.R12
 (Amendment 5):* the raw flash stays; `flash_near_phase_boundary` and the quoted `independent_split` rows mark where the
-verifier may have decided otherwise; E16 tests it.
+verifier may have decided otherwise; E16 tests it. *Scope of Q4.R12 (a), from the ST review, 2026-11-08:* the raw
+flash stays wherever the verifier could flash; where it could not, R1′ applies (D3).
 
 ## Specifier questions (defaults apply until ruled; note §13)
 

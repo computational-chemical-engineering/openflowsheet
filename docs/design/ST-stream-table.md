@@ -83,6 +83,12 @@ phase; fresh TP flash at the stream's own (n, T, P) without a snap. *Rejected:* 
 the carried lifted split of legacy flash and heater outlets. That split needs the binding's `LiftedSplit` list, which
 `revision.json` does not carry, and at a verified state it equals the fresh flash to within the verifier's own
 `independent_split` check, which the table quotes.
+*Amended from the ST review, 2026-11-08 (M1, rule R1′):* the first reason was false — `verify_revision` derives the
+split list from the parsed revision (`verify/certificate.py:765-770`, `lifted_splits` over `view.instances`) — and the
+second holds only where that check ran. Where the `independent_split` row is `not_applicable` for
+`temperature_degenerate` or `fresh_flash_unresolved`, the verifier did not flash: it read the carried split. There
+R1′ (§4.2) reads it too. Everywhere else the carried lifted split stays rejected, because it would move the
+resolved-split streams off the verifier's arithmetic and lose their G7 bitwise status for nothing.
 
 **D5 — Energy: ST's figures at the stored state, beside the verifier's rows quoted verbatim** (§4.5). ST never
 re-judges. The certificate's energy rows were judged at the projection x̃ (ADR 0013 D1) when
@@ -139,6 +145,19 @@ P=state[pressure_id(S)])`.
   is what the verifier's `_properties` assumes. The stream's `T` is the stored T. A `Tsat` status other than `"ok"`
   nulls every property-derived quantity of the substream and its phases with `property_evaluation_failed(stream=S,
   phase=LIQUID, property=Tsat, status=…)`; amounts, compositions and fractions are still given (Q1.R12).
+- **R1′ carried lifted split** (from the ST review, 2026-11-08, M1). *Trigger:* S is the `stream` of a heater-style
+  lifted split (its instance lacks the `vapor` + `liquid` port pair, as in the verifier's `degeneracy`), from
+  `lifted_splits([(i.unit_id, i.model_id, i.wiring) for i in view.instances], view.components)`, the list
+  `verify_revision` derives (`staged` omitted: stage keys are never flowsheet streams); and the certificate holds an
+  `independent_split` row with subject S, result `not_applicable` and a reason in {`temperature_degenerate`,
+  `fresh_flash_unresolved`}. *Phases:* VAPOR with n = `state[split.vapor]` and LIQUID with n = `state[split.liquid]`,
+  both at `(state[split.temperature], state[split.pressure])`, each listed iff its amount is `!= 0.0`. *Ḣ:* the
+  per-component form summed **from 0.0**, as `_phase_enthalpy` sums it, then `H_V + H_L` (a mixture-`h` provider's
+  phase gives `n_p,tot·h`, as `gamma_phi_units._phase_flow`); bitwise the verifier's value, so these streams are in
+  G7's bitwise set. `phase_source: "carried_lifted_split"`; `flash_near_phase_boundary` is false, because nothing was
+  flashed; the quoted row stays. **A flagged stream that reaches R3 with no such split** (the verifier's `unlifted`
+  case) is not flashed: `phases: []`, and its phase-derived quantities are null with
+  `flash_failed(stream=S, status="temperature_degenerate")`.
 - **R2 declared.** `declared_phase[S]` is not `None`. `phase_source: "declared"`; one phase of that family,
   n = `st.n`, at (T, P).
 - **R3 flash.** In every other case, `provider.flash(FlashRequest(state=st), context)`, and `phase_source: "flash"`.
@@ -147,8 +166,8 @@ P=state[pressure_id(S)])`.
   `n`, `m`, `x`, `w`, `T` and `P` are still given. If the status is `"ok"`, the phases are VAPOR from `result.vapor`
   and LIQUID from `result.liquid`, each with its outlet `n` in provider order, at the stream's (T, P). There is **no
   snap**. The substream's `flash_near_phase_boundary` is true iff two or more phases are listed and min_p |n_p,tot|/N_P
-  ≤ τ_β = 1e-8, or the stream has a quoted `independent_split` row with result `not_applicable` and reason
-  `temperature_degenerate` or `fresh_flash_unresolved` (Q4.R12 (b)); it is false for R0–R2.
+  ≤ τ_β = 1e-8 (Q4.R12 (b) (i)); it is false for R0–R2. Q4.R12 (b) (ii) (a quoted degeneracy `independent_split`
+  row) no longer reaches a flash: since the ST review (2026-11-08), R1′ decides every such stream.
 - **Listing.** A phase is listed iff it exists and its total amount is `!= 0.0` (either sign, never clamped; ids never
   renumbered; Q4.R11), ordered VAPOR, LIQUID (registered family order VAPOR, LIQUID, FLUID, SOLID; within a family by
   ordinal). Its id is `{family, qualifier: null, ordinal: 1}`.
@@ -232,7 +251,7 @@ root: {schema_version: "stream-table-v1",
 stream: {id, from: str|null, to: str|null, T: q, P: number, dormant: bool,
   substreams: [substream], checks: [quote], absent: {name: entry}}
 substream: {id: "mixed", kind: "mixed", components: [str], convention: str,
-  phase_source: str  (registered: zero_flow | carried_split | declared | flash; open),
+  phase_source: str  (registered: zero_flow | carried_split | carried_lifted_split | declared | flash; open),
   flash_near_phase_boundary: bool,
   n: [number], m: [number], x: [q]|null, w: [q]|null, n_total, m_total: number,
   H_flow, S_flow, V_flow, h, h_mass, s, s_mass, rho, vapor_fraction_molar, vapor_fraction_mass: q,
@@ -391,7 +410,8 @@ The corpus is F0's RC bundle set plus TH-C1 (`benchmarks/s11/thermal/TH-C1.json`
   1e-10`, and `y_i = K_i x_i` to 1e-9 relative, with K from the provider's `lnK` at (T, P). This catches a swap of the
   VAPOR and LIQUID outlets.
 - **G7 verifier equivalence (bitwise), same state and context.** In the test only, call the verifier helper of the basis
-  form: R1 `thermal.saturated_enthalpy`; R2 on DECLARED_MIXTURE and GAMMA_PHI forms `forms.enthalpy_flow`; R3
+  form: R1 `thermal.saturated_enthalpy`; R1′ `table._phase_enthalpy` (V) + (L) at the split's `(T, P)` (the ST
+  review, 2026-11-08); R2 on DECLARED_MIXTURE and GAMMA_PHI forms `forms.enthalpy_flow`; R3
   single-phase flashes `checks.enthalpy_flow` (SYN) and `pr_c1.enthalpy_flow` (PR). ST's `H_flow` must equal the
   helper's result bitwise for every such stream; the other cases are counted and reported. Q1.A15 (c); Q4.A14 (a)–(c).
 - **G8 envelope agreement.** Where `judged_at == "final_state"` and every envelope stream is G7-bitwise,
@@ -438,7 +458,10 @@ The corpus is F0's RC bundle set plus TH-C1 (`benchmarks/s11/thermal/TH-C1.json`
   decision, so ST's Ḣ and vapour fraction may differ slightly from what was judged. A second hazard is the two
   provider value shapes (`h` against `h_<c>`). Mitigations: the quoted checks, `judged_at`, and G6–G8. Ruled by Q4.R12
   (Amendment 5): the raw flash stays; `flash_near_phase_boundary` and the quoted `independent_split` rows mark where the
-  verifier may have decided otherwise; G16.
+  verifier may have decided otherwise; G16. *Scope of Q4.R12 (a), from the ST review, 2026-11-08:* the raw flash stays
+  wherever the verifier could flash. Where it could not (a degeneracy `independent_split` row), R1′ reads the carried
+  lifted split, or gives no number. *Rejected:* (a) exempting a flagged envelope from G8, which would loosen a gate
+  around a wrong number (`T05b:SC-1`'s S2 was 2016 W low with a vapour fraction of 0); and reading every lifted split.
 
 ## 13. Specifier questions (scientific semantics; the default applies until ruled)
 

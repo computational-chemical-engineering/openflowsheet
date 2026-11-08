@@ -21,7 +21,7 @@ import math
 from collections.abc import Callable, Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Final
+from typing import TYPE_CHECKING, Any, Final
 
 from openflowsheet import __version__
 from openflowsheet.compiled import EvaluationContext
@@ -51,6 +51,9 @@ from openflowsheet.verify.table import (
     STAGED_DUTY_MODELS,
     WORK_MODELS,
 )
+
+if TYPE_CHECKING:
+    from openflowsheet.orchestrator.region import LiftedSplit
 
 SCHEMA_VERSION: Final = "stream-table-v1"
 #: §4.2's phase rule, named in every document's header.
@@ -207,6 +210,11 @@ class _Inputs:
     rows: tuple[tuple[int, Mapping[str, Any]], ...]
     #: Instance id -> the unit id its state variables and certificate rows carry.
     unit_ids: Mapping[str, str]
+    #: R1′: the streams with a quoted `independent_split` row `not_applicable` for a reason in
+    #: `DEGENERATE_REASONS`, where the verifier did not flash.
+    degenerate: frozenset[str]
+    #: R1′: stream -> the heater-style lifted split whose stream it is (`verify_revision`'s list).
+    lifted: Mapping[str, LiftedSplit]
 
 
 class StreamTableError(Exception):
@@ -259,6 +267,13 @@ def _inputs(
             reasons=list(reasons),
         )
     checks = certificate.get("checks", [])
+    degenerate = frozenset(
+        row["subject"]
+        for row in checks
+        if row.get("category") == "independent_split"
+        and row.get("result") == "not_applicable"
+        and row.get("reason") in DEGENERATE_REASONS
+    )
     return _Inputs(
         view=view,
         state={name: float(value) for name, value in state_doc["variables"].items()},
@@ -276,7 +291,27 @@ def _inputs(
         declared_phase=_declared_phases(view),
         rows=tuple(enumerate(checks)),
         unit_ids=_unit_ids(revision, view),
+        degenerate=degenerate,
+        lifted=_heater_style_splits(view) if degenerate else {},
     )
+
+
+def _heater_style_splits(view: RevisionView) -> dict[str, LiftedSplit]:
+    """R1′: each heater-style lifted split by its stream. The list is `verify_revision`'s
+    (`verify/certificate.py`), from the parsed revision; `staged` is omitted, since a stage key
+    is never a flowsheet stream. Heater-style is the verifier's `degeneracy` test: the instance
+    lacks the `vapor` + `liquid` port pair."""
+    from openflowsheet.orchestrator.splits import lifted_splits  # noqa: PLC0415
+
+    instances = {instance.unit_id: instance for instance in view.instances}
+    splits = lifted_splits(
+        [(i.unit_id, i.model_id, i.wiring) for i in view.instances], view.components
+    )
+    return {
+        split.stream: split
+        for split in splits
+        if not ("vapor" in instances[split.unit].ports and "liquid" in instances[split.unit].ports)
+    }
 
 
 def _unit_ids(revision: Mapping[str, Any], view: RevisionView) -> dict[str, str]:
@@ -342,6 +377,9 @@ class _Decision:
     #: Why the phase list itself is undecided (a failed flash), else `None`.
     undecided: Absent | None = None
     near_boundary: bool = False
+    #: R1′: a per-component `H_p` is accumulated from 0.0, as the verifier's `_phase_enthalpy`
+    #: sums it; otherwise Python `sum`, as `checks.enthalpy_flow` sums it (D1-1).
+    accumulate: bool = False
 
 
 def _listed(family: Phase, n: tuple[float, ...], at: StreamState) -> tuple[_Listed, ...]:
@@ -381,6 +419,21 @@ def _carried_split(inputs: _Inputs, name: str, st: StreamState) -> _Decision:
     return _Decision("carried_split", phases, blocked=blocked)
 
 
+def _carried_lifted_split(inputs: _Inputs, split: LiftedSplit) -> _Decision:
+    """R1′: the stored lifted split, both phases at the split's `(T, P)`, as the verifier's
+    `degeneracy` reads it where it could not flash. Nothing is flashed, so the substream is not
+    flagged; the quoted `independent_split` row says why."""
+    state = inputs.state
+    at_t, at_p = state[split.temperature], state[split.pressure]
+    vapor = tuple(state[column] for column in split.vapor)
+    liquid = tuple(state[column] for column in split.liquid)
+    phases = (
+        *_listed("VAPOR", vapor, StreamState(vapor, at_t, at_p)),
+        *_listed("LIQUID", liquid, StreamState(liquid, at_t, at_p)),
+    )
+    return _Decision("carried_lifted_split", phases, accumulate=True)
+
+
 def _flash(inputs: _Inputs, name: str, st: StreamState) -> _Decision:
     """R3 (Q4.R12): one TP flash at the stream's own `(n, T, P)`, no snap."""
     result = inputs.provider.flash(FlashRequest(state=st), inputs.context)
@@ -400,9 +453,9 @@ def _flash(inputs: _Inputs, name: str, st: StreamState) -> _Decision:
 
 
 def _near_boundary(inputs: _Inputs, name: str, phases: Sequence[_Listed]) -> bool:
-    """Q4.R12 (b): (i) a listed minority fraction `≤ τ_β`, or (ii) a verifier `independent_split`
-    row `not_applicable` for degeneracy or an unresolved fresh flash. A minority fraction whose
-    quotient is not finite is flagged: the decision near it is not known to agree."""
+    """Q4.R12 (b) (i): a listed minority fraction `≤ τ_β`. A minority fraction whose quotient is
+    not finite is flagged: the decision near it is not known to agree. Q4.R12 (b) (ii), a
+    degeneracy `independent_split` row, no longer reaches a flash: R1′ decides such a stream."""
     if len(phases) >= 2:
         amounts = [sum(phase.n) for phase in phases]
         total = 0.0
@@ -411,22 +464,26 @@ def _near_boundary(inputs: _Inputs, name: str, phases: Sequence[_Listed]) -> boo
         fraction = _quotient(min(abs(a) for a in amounts), total, name, "minority_fraction")
         if isinstance(fraction, Absent) or fraction <= TAU_BETA:
             return True
-    return any(
-        row.get("category") == "independent_split"
-        and row.get("subject") == name
-        and row.get("result") == "not_applicable"
-        and row.get("reason") in DEGENERATE_REASONS
-        for _, row in inputs.rows
-    )
+    return False
 
 
 def _decide(inputs: _Inputs, name: str, st: StreamState) -> _Decision:
-    """§4.2's rule, in its order: R0 is decided by the caller, then R1, R2, R3."""
+    """§4.2's rule, in its order: R0 is decided by the caller, then R1, R1′, R2, R3.
+
+    R1′ (the ST review's M1): where the verifier did not flash a stream (`degenerate`), the
+    stream of a heater-style lifted split reads the carried split; any other such stream that
+    would reach R3 gets no flashed number."""
     if vapor_id(name) in inputs.state and liquid_id(name) in inputs.state:
         return _carried_split(inputs, name, st)
+    flagged = name in inputs.degenerate
+    if flagged and name in inputs.lifted:
+        return _carried_lifted_split(inputs, inputs.lifted[name])
     family = inputs.declared_phase.get(name)
     if family is not None:
         return _Decision("declared", _listed(family, st.n, st))
+    if flagged:
+        reason = absent("flash_failed", stream=name, status="temperature_degenerate")
+        return _Decision("flash", (), blocked=reason, undecided=reason)
     return _flash(inputs, name, st)
 
 
@@ -464,9 +521,10 @@ class _Properties:
             )
         return result.values
 
-    def enthalpy_flow(self, phase: _Listed, n_total: float) -> Quantity:
+    def enthalpy_flow(self, phase: _Listed, n_total: float, *, accumulate: bool) -> Quantity:
         """`H_p`: `n_p,tot·h` (mixture form), else `Σ_c n_p,c h_c` (SYN-001's form), summed as the
-        verifier's `checks.enthalpy_flow` sums it (Python `sum`, provider order)."""
+        verifier's helper of that form sums it (D1-1): Python `sum` in provider order as
+        `checks.enthalpy_flow`, or, with `accumulate` (R1′), from 0.0 as `_phase_enthalpy`."""
         values = self._call(phase, "h")
         if isinstance(values, Absent):
             return values
@@ -478,7 +536,13 @@ class _Properties:
         per_component = [float(values[key]) for key in keys]
         if not all(math.isfinite(value) for value in per_component):
             return absent("value_not_finite", subject=self.name, quantity="h")
-        flow = sum(n * h for n, h in zip(phase.n, per_component, strict=True))
+        terms = [n * h for n, h in zip(phase.n, per_component, strict=True)]
+        if accumulate:
+            flow = 0.0
+            for term in terms:
+                flow += term
+        else:
+            flow = sum(terms)
         return _finite(flow, self.name, "H_flow")
 
     def mixture(self, phase: _Listed, prop: str) -> Quantity:
@@ -537,7 +601,7 @@ def _phase(
         s_value: Quantity = decision.blocked
         v_value: Quantity = decision.blocked
     else:
-        enthalpy = properties.enthalpy_flow(phase, n_total)
+        enthalpy = properties.enthalpy_flow(phase, n_total, accumulate=decision.accumulate)
         s_value = properties.mixture(phase, "s")
         v_value = properties.mixture(phase, "v")
         entropy = _product(n_total, s_value, name, "S_flow")

@@ -64,9 +64,11 @@ the property basis with its reference convention — then `components`, `streams
   of the stream on a mole and on a mass basis; they are 0 or 1 for a single-phase stream. There is
   no member called "quality".
 - `phase_source` says where the phases came from: `declared` (the stream's declared phase),
-  `carried_split` (the vapour and liquid the solution carries), `flash` (an equilibrium flash at
-  the stored temperature and pressure) or `zero_flow`. A flashed stream close to a phase boundary
-  has `flash_near_phase_boundary` true: there the solve's verifier may have decided the phases
+  `carried_split` (the vapour and liquid the solution carries), `carried_lifted_split` (the
+  vapour and liquid split the solution carries where the verifier could not recompute it by a
+  flash: a stream at its boiling point, for example), `flash` (an equilibrium flash at the stored
+  temperature and pressure) or `zero_flow`. A flashed stream close to a phase boundary has
+  `flash_near_phase_boundary` true: there the solve's verifier may have decided the phases
   differently.
 
 Enthalpy and entropy are on the basis's reference convention, named in every substream

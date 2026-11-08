@@ -339,7 +339,7 @@
       ]
     },
     "substream": {
-      "description": "v1: one substream, id and kind `mixed`. `phase_source` is registered as zero_flow | carried_split | declared | flash and open. Arrays follow `components` and are given or null whole.",
+      "description": "v1: one substream, id and kind `mixed`. `phase_source` is registered as zero_flow | carried_split | carried_lifted_split | declared | flash and open. Arrays follow `components` and are given or null whole.",
       "type": "object",
       "required": [
         "H_flow",

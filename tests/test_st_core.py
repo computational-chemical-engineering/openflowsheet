@@ -46,6 +46,7 @@ from openflowsheet.compiled import EvaluationContext
 from openflowsheet.messages import audit
 from openflowsheet.messages.catalogue import CATALOGUE
 from openflowsheet.models import flow_id, pressure_id, temperature_id
+from openflowsheet.models.syn001.tp_state import liquid_flow_id, vapor_flow_id
 from openflowsheet.thermo import PropertyRequest, PropertyResult, StreamState
 from openflowsheet.thermo.iapws95 import Iapws95Provider
 from openflowsheet.thermo.syn001 import Syn001Provider
@@ -804,7 +805,7 @@ def assert_g6(document: Mapping[str, Any]) -> None:
             for index, n in enumerate(sub["n"]):
                 listed = math.fsum(phase["n"][index] for phase in sub["phases"])
                 assert abs(listed - n) <= 1e-12 * sub["n_total"]
-        if sub["phase_source"] == "carried_split":
+        if sub["phase_source"] in ("carried_split", "carried_lifted_split"):
             listed = math.fsum(phase["n_total"] for phase in sub["phases"])
             assert abs(listed - sub["n_total"]) <= 1e-9 * sub["n_total"]
         if sub["vapor_fraction_molar"] is not None:
@@ -947,6 +948,33 @@ def _syn_also(provider_id: str, sub: Mapping[str, Any], st: StreamState, context
     return "=checks" if same else "!=checks"
 
 
+def _lifted_enthalpy(source: Members, name: str, context: Any) -> float:
+    """R1′'s comparator: the verifier's `degeneracy` sum for a heater-style split's stream,
+    `_phase_enthalpy(V) + _phase_enthalpy(L)` at the split's `(T, P)`, at the stored state, over
+    `verify_revision`'s split list."""
+    from openflowsheet.models.revision_flowsheet import parse_revision
+    from openflowsheet.orchestrator.splits import lifted_splits
+    from openflowsheet.verify import table
+
+    view = parse_revision({**source.revision, "specifications": []})
+    ports = {instance.unit_id: instance.ports for instance in view.instances}
+    (split,) = [
+        split
+        for split in lifted_splits(
+            [(i.unit_id, i.model_id, i.wiring) for i in view.instances], view.components
+        )
+        if split.stream == name
+        and not ("vapor" in ports[split.unit] and "liquid" in ports[split.unit])
+    ]
+    variables, provider = source.variables, support.fresh_provider(source)
+    at = (variables[split.temperature], variables[split.pressure])
+    vapor = tuple(variables[column] for column in split.vapor)
+    liquid = tuple(variables[column] for column in split.liquid)
+    return table._phase_enthalpy(provider, context, vapor, *at, "VAPOR", name) + (
+        table._phase_enthalpy(provider, context, liquid, *at, "LIQUID", name)
+    )
+
+
 @cache
 def _g7(run: str) -> tuple[frozenset[str], dict[str, str]]:
     """`(bitwise, other)`: the streams whose `H_flow` G7 compared bitwise, and the rest with why
@@ -972,6 +1000,8 @@ def _g7(run: str) -> tuple[frozenset[str], dict[str, str]]:
             continue
         if source_rule == "carried_split":
             expected = thermal.saturated_enthalpy(provider, variables, name, context, components)
+        elif source_rule == "carried_lifted_split" and provider_id == "syn001":
+            expected = _lifted_enthalpy(source, name, context)
         elif source_rule == "declared" and provider_id in {
             "iapws95-v1",
             "coolprop-heos-v1",
@@ -1002,14 +1032,6 @@ def test_g7_verifier_equivalence_bitwise() -> None:
     _record("G7", bitwise=compared, not_compared=counted)
 
 
-#: G8's one failing run (escalated, ST_DECISIONS.md E1): `T05b:SC-1`'s product S2 is a pure
-#: component at its boiling point downstream of a valve. The verifier reads its Ḣ from the stored
-#: lifted split (temperature-degenerate, ADR 0012 D7); the report's raw TP flash (Q4.R12 (a))
-#: lists LIQUID alone, 2016 W below it. The stream is flagged by Q4.R12 (b) (ii) as ruled, but
-#: G8 bounds the envelope closure by the row's tolerance. Not loosened: reported as failing.
-G8_ESCALATED = frozenset({"g8/T05b:SC-1"})
-
-
 @cache
 def _g8() -> tuple[dict[str, tuple[float, float]], float]:
     """`({run: (gap, tolerance)} of the runs failing G8, max passing gap/tolerance)`."""
@@ -1035,16 +1057,24 @@ def _g8() -> tuple[dict[str, tuple[float, float]], float]:
     return failures, worst
 
 
-@pytest.mark.xfail(strict=True, reason="G8 fails on g8/T05b:SC-1; escalated (ST_DECISIONS E1)")
 def test_g8_envelope_agreement() -> None:
     failures, worst = _g8()
     _record("G8", max_passing_gap_over_tolerance=worst, failures=failures)
     assert not failures, failures
 
 
-def test_g8_fails_only_on_the_escalated_run() -> None:
-    failures, _ = _g8()
-    assert set(failures) == G8_ESCALATED, failures
+def test_r1_prime_reads_the_degenerate_lifted_split() -> None:
+    """R1′ (ST review M1): `T05b:SC-1`'s S2, pure B at its boiling point downstream of a valve, is
+    a temperature-degenerate heater-style split the verifier did not flash. Its phases are the
+    stored split's, its Ḣ is bitwise the verifier's (G7), and nothing was flashed."""
+    document = support.document("g8/T05b:SC-1")
+    sub = substream(document, "S2")
+    assert sub["phase_source"] == "carried_lifted_split"
+    assert sub["flash_near_phase_boundary"] is False
+    assert families(sub) == ["VAPOR", "LIQUID"]
+    assert 0.0 < sub["vapor_fraction_molar"] < 1.0
+    assert any(q["reason"] == "temperature_degenerate" for q in stream(document, "S2")["checks"])
+    assert "S2" in _g7("g8/T05b:SC-1")[0]
 
 
 # -- G9: determinism ------------------------------------------------------------------------------
@@ -1277,10 +1307,8 @@ def test_g16_b_far_from_the_boundary(side: str) -> None:
     assert sub["H_flow"] == checks.enthalpy_flow(Syn001Provider(), st, context)
 
 
-@pytest.mark.parametrize("reason", sorted(stream_table.DEGENERATE_REASONS))
-def test_g16_c_a_degeneracy_row_flags_the_stream(reason: str) -> None:
-    source, name = _b_far()
-    row = {
+def _degeneracy_row(name: str, reason: str) -> dict[str, Any]:
+    return {
         "category": "independent_split",
         "id": f"independent_split.st-probe.{name}",
         "independence_qualification": None,
@@ -1293,11 +1321,51 @@ def test_g16_c_a_degeneracy_row_flags_the_stream(reason: str) -> None:
         "tolerance": None,
         "value": None,
     }
-    flagged = build(with_rows(source, [row]))
-    assert substream(flagged, name)["flash_near_phase_boundary"] is True
+
+
+@pytest.mark.parametrize("reason", sorted(stream_table.DEGENERATE_REASONS))
+def test_g16_c_a_degeneracy_row_reads_the_carried_lifted_split(reason: str) -> None:
+    """R1′ (ST review M1, amending Q4.R12 (b) (ii)): a degeneracy row on a heater-style split's
+    stream takes its phases from the stored split, at the split's `(T, P)`; nothing is flashed,
+    so the substream is not flagged, and the row is quoted."""
+    source, name = _b_far()
+    row = _degeneracy_row(name, reason)
+    provider = Recording(support.fresh_provider(source))
+    flagged = build(with_rows(source, [row]), provider)
+    sub = substream(flagged, name)
+    assert sub["phase_source"] == "carried_lifted_split"
+    assert sub["flash_near_phase_boundary"] is False
+    assert not [call for call in provider.calls if call[0] == "flash"]
+    variables = source.variables
+    for phase in sub["phases"]:
+        made = vapor_flow_id if phase["id"]["family"] == "VAPOR" else liquid_flow_id
+        assert phase["n"] == [variables[made(name, c)] + 0.0 for c in SYN_COMPONENTS]
     quoted = stream(flagged, name)["checks"]
     assert quoted[-1]["id"] == row["id"] and quoted[-1]["reason"] == reason
-    assert substream(build(source), name)["flash_near_phase_boundary"] is False
+    assert substream(build(source), name)["phase_source"] == "flash"
+
+
+@pytest.mark.parametrize("reason", sorted(stream_table.DEGENERATE_REASONS))
+def test_g16_c_a_degeneracy_row_without_a_split_gives_no_number(
+    reason: str, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """R1′: a degeneracy row on an undeclared stream that no heater-style split carries (the
+    verifier's `unlifted` case, test-local: no corpus R3 stream lacks a split) gets no flashed
+    number: its phase-derived quantities are null with `flash_failed(temperature_degenerate)`."""
+    monkeypatch.setattr(stream_table, "_heater_style_splits", lambda view: {})
+    source, name = _b_far()
+    provider = Recording(support.fresh_provider(source))
+    sub = substream(build(with_rows(source, [_degeneracy_row(name, reason)]), provider), name)
+    reason_entry = {
+        "code": "flash_failed",
+        "params": {"stream": name, "status": "temperature_degenerate"},
+    }
+    assert sub["phase_source"] == "flash" and sub["phases"] == []
+    assert sub["flash_near_phase_boundary"] is False
+    assert not [call for call in provider.calls if call[0] == "flash"]
+    for member in ("H_flow", "S_flow", "V_flow", "h", "vapor_fraction_molar"):
+        assert sub[member] is None and sub["absent"][member] == reason_entry
+    assert sub["n"] is not None and sub["x"] is not None
 
 
 def test_g16_e_the_corpus_decisions() -> None:
