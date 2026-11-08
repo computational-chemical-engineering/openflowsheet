@@ -477,3 +477,12 @@ on unless you say otherwise:
   (`src/openflowsheet/models/c1/flash.py:343-349`) states an outdated edge. Correcting the sentence changes that
   model's artifact hash and one frozen corpus entry (F0 M9), though not its `model_version` or any result. Default:
   correct it in its own commit after your yes; until then the sentence stays as it is.
+
+## ST — review the MCP description of the new `get_stream_table` tool (2026-11-08; blocks ST's merge)
+
+As for `explain`: the text an AI agent reads to decide when to call the stream-table tool,
+`src/openflowsheet/application/bindings/descriptions/get_stream_table.md` on branch `wp/ST`
+(`git show wp/ST:src/openflowsheet/application/bindings/descriptions/get_stream_table.md`). It needs your human
+review ("approved" or what to change) in addition to the design lane's, which ST's reviewer pass gives. Best read
+after that pass (`docs/reviews/ST-review.md`), in case it edits the wording. Default: none — ST cannot merge until you
+have looked at it (ST also waits for MSG and your acceptance of ADR 0068).

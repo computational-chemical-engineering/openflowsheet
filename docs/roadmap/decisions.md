@@ -574,3 +574,10 @@ Alternative: next sequential R-950 and renumber the open branches. Reversible by
 `wp/S15a` `51c9e7f5` (schema + RID tests alone: 2 files) and `d7cb4dbb` (A-9 as RP §17.2, R-970, ADR 0074 Accepted on
 its condition). RID.A01–A12 pass; `test_evidence_manifests.py` 488 (410 + 78); 11 related files 600 passed; F0 PASS
 (the schema does not enter F0). Full gate and CI started at `d7cb4dbb`; manifest `evidence/S15a/…` after them.
+
+## 2026-11-08 — ST WO-3…6 done; reviewer pass
+
+`wp/ST` `6f55fc19` (main + `wp/MSG` merged + WO-3…6; D3-1…D6-3 in `docs/ST_DECISIONS.md`): G5, G11–G13, G15, A48
+PASS; F0 PASS; served MCP digest `eaff4585…` → `6705fb05…` (c_5 on top of MSG's c_4); targeted 569 passed + G8 xfail
+(E1). Known red: description reviews. ST's single reviewer pass starts now (brief `docs/briefs/ST-reviewer.md`); WO-7
+(manifest, full gate, CI) after the review and after MSG lands on main. New Frank item: `get_stream_table.md` review.
