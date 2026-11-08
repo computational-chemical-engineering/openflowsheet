@@ -764,7 +764,7 @@ A turbine's ideal (isentropic) outlet is computed in the phase declared for its 
 
 *No plain-language explanation is written yet; the summary is the technical one.*
 
-- **Summary:** A bundle written by an installed package (wheel or sdist, not the source checkout) carries no dependency-set identity: the package ships no lock file, so its `lock_sha256` is empty and every replay of it is `inspected_archived_results` / `NOT_RUN` ("the dependency set is unknown …"); replayable bundles are written from the source checkout at the lock `ead4edf1…`.
+- **Summary:** A bundle written by an installed package or a checkout whose runtime closure (the 9 distributions of ADR 0069 D3) is not at the packaged lock `ead4edf1…` records no dependency-set identity: its `lock_sha256` is empty, every replay of it is `inspected_archived_results` / `NOT_RUN`, and the replaying side's failing distributions are named. Optional extras are not part of the identity.
 
 <a id="L42"></a>
 
