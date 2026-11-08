@@ -1,34 +1,29 @@
-# ST handoff (wp/ST, 2026-11-06) — WO-1 and WO-2 done
+# ST handoff (wp/ST, 2026-11-08) — WO-1…WO-6 done; WO-7 next
 
-**State.** Branch `wp/ST` (worktree `.claude/worktrees/st`), from main e91f25d1 + brief e780d2e7. Not merged;
-ADR 0068 still Proposed (Frank's acceptance pending). Choices and escalations: `docs/ST_DECISIONS.md`.
+**State.** Branch `wp/ST` (worktree `.claude/worktrees/st`) = main `00a508bd` + `wp/MSG` `35403f42` merged
+(56294e49, 22f64c65; brief `docs/briefs/ST-build-WO3-6.md`). Not merged to main; ADR 0068 Proposed (Frank's
+acceptance pending); MSG still waits for Frank. Choices: `docs/ST_DECISIONS.md` (D1-…D6-, E1).
 
-**Commits.** c79a99db core `application/stream_table.py` · 1d3c954c legacy-route unit ids (D1-3, revertible) ·
-80346616 `tests/test_st_core.py` + `tests/st_support.py` + decisions · 79e44995 schema
-`schemas/stream-table.schema.json` (= `_data/schemas/…` via symlink), fixtures `tests/fixtures/st/`,
-`tests/test_st_schema.py`.
+**Commits (WO-3…6).** 19c6857c registry entry · 444aa56f operation on every transport (+ surface re-records,
+interfaces-frozen, D3-*) · c93a7216 limitations re-sync · 9328e59c generated pages · bf599747 catalogue (seven
+codes, G5, G15) · 1af221be + 4226829b CLI `streams` (`application/stream_table_format.py`, goldens
+`tests/fixtures/st/cli/`) · e8c8dcae docs (guide, CLI reference, ADR 0019 Amendment 13 pointer).
 
-**Gates (core level).** `pytest tests/test_st_core.py tests/test_st_schema.py`: 62 passed, 1 xfailed (G8,
-strict). G1–G7, G9, G10, G14, G16 pass; **G8 FAILS on g8/T05b:SC-1 (2016 W)**, escalated as E1. F0
-`scripts/corpus_identity.py --check` PASS (M1 50/50 … M9 35/35). No diff under verify/thermo/models/run/
-orchestrator/compiled.py. ruff, ruff format, mypy clean on the new module.
+**Gates.** G11 (transports: conformance 5 clients incl. not_ready/no-bundle/unknown job; `test_st_operation.py`
+not_found member, unsupported, internal_error, unknown job on python/cli/http/mcp) PASS. G12: served MCP
+`eaff4585…` → `6705fb05…`, `without_st` = D_4 exactly; R4-G3 new row = `projection` def (`951b77ea…`), none
+moved; `API_EXIT_CODES` unchanged; schemas vs the merge tree: registry +1 and the new file. G13: F0 PASS after
+WO-3 and at the end; no diff under verify/thermo/models/run/orchestrator/compiled.py vs 22f64c65. G5 against
+the real catalogue PASS; G15 PASS (`absent` → MSG audit). A48 PASS. G8 still `xfail(strict)` (E1).
+**Known red, not ST's to fix:** `test_every_description_is_reviewed_by_both_lanes` (3 open: `explain` human,
+`get_stream_table` design-lane + human — reviews are the reviewers' acts).
 
-**Pending.**
-- `schemas/registry.json` entry for `stream-table.schema.json` (shared with wp/MSG): add in WO-3 after MSG
-  merges. Until then `tests/test_t08_w4_package_data.py` fails 4 tests (A48 registry = schema directory).
-- G5's "every code is a catalogue key" is checked against `stream_table.CODES` only: the catalogue entries
-  are WO-4 (after MSG). G15 likewise.
-- Design-lane questions for ST's reviewer pass: D1-1 (Python `sum` vs "from 0.0"), D1-3 (legacy-route
-  unit ids), D1-6/D1-7 (schema amendments to §5), E1 (G8 on temperature-degenerate lifted splits; note
-  D4's premise that the split list is not derivable from `revision.json` is false).
+**Design-lane questions for ST's reviewer pass.** D1-1, D1-3, D1-6/D1-7, E1 (WO-1/2); D3-6 (no-bundle
+`not_found` renders "Nothing named …"), D3-7 (c_5's register id, after ADR 0068 acceptance; MSG's R-942/R-943
+collide with RP's), D4-1 (`energy form:<model>` vs §6.4's `energy_form:<model>`, G4 jargon lint), D5-2 (assembly
+resolves every elision, §6.3 named only `/streams`/`/energy`); the `get_stream_table.md` description review.
 
-**Next (after wp/MSG merges; `git merge main` first).** WO-3 operation: `LocalApplication.get_stream_table`
-maps `StreamTableError` to `ApplicationError` (`not_found` through MSG's member-detail helper, `unsupported`
-with the hint, `internal_error`); `OPERATIONS` row after `get_artifact`; registry entry; G11–G13. Then WO-4
-catalogue (seven codes), WO-5 CLI `streams`, WO-6 docs, WO-7 manifest + full gate + reviewer.
-
-**Recorded numbers** (for WO-7's manifest; `ST_RECORD=<file>` on the core tests writes them as JSON lines):
-G1 max |closure|/tol 1.34e-7, envelope gap 1.4e-10 W; G2 vf − lever 0.0 (bound 2.3e-7); G3 max rel error
-3.8e-10; G7 41 bitwise (+193 SYN-001 beyond the list, 0 mismatches); G8 max passing ratio 1.8e-4; G10 44
-served, 8 refused; G14 TH-C1 0.023 s, largest (NET03) 0.014 s; G16 (e) syn001 32 R3, 2 flagged, 0
-disagreeing, max c·ε_adm 9.3e-12; pr-c1 0 R3.
+**Next: WO-7** — evidence manifest (`evidence/<ST id>/<commit>/manifest.json`, numbers in the WO-1 handoff
+section of ST_DECISIONS and above), full gate `scripts/gate.sh`, CI on both architectures, the reviewer pass.
+When MSG lands on main: `git merge main` into `wp/ST` (MSG renumbers its register ids; re-check c_5 and the
+surface tests).
