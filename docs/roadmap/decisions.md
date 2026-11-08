@@ -659,3 +659,10 @@ Frank records all four (explain; validate, submit_job; get_stream_table) with a 
 (`record_frank_reviews.py` in the session scratchpad: checks each text's sha256 against the one shown on the board,
 then commits on wp/MSG, wp/OPT, wp/ST). The filed MSG manifest `9c76b939…` keeps citing R-942/R-943 (evidence at its
 commit); the new manifest cites R-975/R-976.
+
+## 2026-11-08 — X05a merged
+
+CI `42500882154` green on `b43d94bc` (both architectures, identity, default-install). Manifest
+`evidence/X05a/b43d94bc…/manifest.json` tested (`9b21a881`, after merging main as `1f9cdadb`); HARVEST_SIZE
+(76, 988, 126) → (77, 993, 126). Merged `dd16dab8`; F0 PASS on main; harvest + manifest tests 505 passed. The other
+branches (MSG, X10b) re-take HARVEST_SIZE at their merge.
