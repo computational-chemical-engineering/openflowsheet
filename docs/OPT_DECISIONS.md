@@ -835,6 +835,25 @@ Totals: TH-R1 18.3 s, M1 5.9 s, C-MW 54.4 s ("verify" also holds report/record w
   `nlp_1_without_the_extra.json`), 30 passed after; `test_opt_request.py` + M03 schema/formulation files 92 passed.
   Availability is unchanged in every case (absent extra → unavailable already). G2's aarch64 default-env leg is
   CI's to read.
+- D-77. M2 (as ruled): dependency inversion; no `studies` module imports `application` (M04's AST scan, all legs).
+  (a) `studies/nlp/host.py` gains the `RevisionRoutes` protocol (bind, select, is_route, refusal_code, solve,
+  write_bundle, reproduce; read-only `default_policy_id`, `unsupported`); `application/revision_routes.py`
+  (`REVISION_ROUTES`) implements it as one-line calls of `revision_run`/`binding`/`policies`. `decision_map`,
+  `RevisionNlpHost`, `static_readiness`, `optimize_revision` and `replay_optimization` take a required keyword
+  `routes`; the runner, the CLI (optimise, replay), validation, `scripts/opt_report_dump.py`,
+  `benchmarks/opt/performance.py` and the OPT tests pass `REVISION_ROUTES`; `policy_requested=None` resolves to
+  `routes.default_policy_id` (= `"default"`, the bytes written unchanged). (b) DECISION: greybox → the caller names
+  its interruption types: `optimize_revision(interruptions=)` → `solve_start(interruptions=)` → `_Iterations` catches
+  exactly those, holds the same object and re-raises it after Ipopt returns; the runner passes `(JobInterrupted,)`.
+  Alternative: a poll callable returning the interruption. (c) DECISION: `request_problems` validates with a local
+  copy of `application.types.schema_errors`' non-consumer reader (same registry, `$ref` wrapper, pointer escapes,
+  order); a new test holds the two equal on every request fixture and on ill-formed documents. Alternative: move
+  the published-schema reader below `application`. Commits 4f78b10f, 4976cb53, 83ee89fe (+ this). Gates (x86):
+  layering (`test_m04_study`, `test_t07_interrupt`) 50 passed; default env `test_opt_*` + `test_m03_*` +
+  `test_e01_*` 546 passed, 1 skipped; G1 F0 PASS (M1 50/50 … M9 35/35); G2 25 entries `b6bbafdb…c8b9324`
+  (identical); G12/G13 audited env (`test_opt_replay_nlp`, `test_opt_job_nlp`) 11 passed; `test_opt_replay` 14
+  passed (G13 record MATCH); mypy on the touched modules clean. Not done: `docs-site/guide/optimisation.md`'s
+  `optimize_revision(...)` example now needs `routes=REVISION_ROUTES`; design note §4.12's signature line likewise.
 - D-78. D-61 (design-lane reviews recorded): the served `validate.md` and `submit_job.md` hash to exactly the reviewed
   `ec0e770d…` and `123d4e93…` (sha256 of the files at WO-8), so `REVIEW.json` records their `design-lane` review as
   `reviewed` by "design-lane reviewer, docs/reviews/OPT-review.md (638523b3)", 2026-11-08 (format as the file's other
