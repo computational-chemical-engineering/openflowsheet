@@ -673,7 +673,8 @@ not "later". Amendment 2: §14 (A1-a; F2 gains Q3.A6, F4 Q3.A5).
   listed and min_p |n_p,tot|/N_P ≤ τ_β = 1e-8 (O-19), or (ii) the certificate holds a row for the stream with category
   `independent_split`, result `not_applicable` and reason `temperature_degenerate` or `fresh_flash_unresolved` (the
   verifier could not recompute that stream by a fresh flash). The stream's quoted checks (note §4.4) include those
-  `independent_split` rows. (c) *What it covers* (§17 argument 4). The verifier reads a flashed two-phase stream as
+  `independent_split` rows. (2026-11-08: (b) (ii) and the rows' effect on the decision are superseded by ADR 0068 D3 as amended, §"Amendment — design-lane confirmations
+  (2026-11-08)".) (c) *What it covers* (§17 argument 4). The verifier reads a flashed two-phase stream as
   single-phase only where a device acts: on SYN-001's form when Σ z K ≤ 1 + ε_adm or Σ z/K ≤ 1 + ε_adm (ε_adm =
   1e-12); on PR-C1's when l_NH3/n_tot ≤ τ_dew = 1e-10; at a lifted split that is temperature-degenerate or unresolved,
   where it reads the stored split. In the first two the report's minority fraction is at most c·ε_adm, c = max(1,

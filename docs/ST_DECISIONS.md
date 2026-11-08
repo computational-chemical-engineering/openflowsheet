@@ -290,3 +290,5 @@ M3 61/61, M4 61/61, M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 35/35).
   R1′ 2, declared with a products-style row 2, no-number 0, none left R1′. **Note:** the ruling quotes the fix
   round's R1′ count as 4; this corpus counts 2 R1′ *streams* (SC-1 S2, SC-3 S2) under the old trigger as well
   (no leaver), so the 4 is a different count basis, not a movement. `test_st_core.py`: 59 passed.
+- **8a-3 — docs pointer.** `docs/roadmap/foundation-rulings.md` Q4.R12 (b): one dated sentence pointing (b) (ii) to
+  ADR 0068 D3 as amended (2026-11-08). Nothing else in the file.
