@@ -2157,25 +2157,8 @@ def _solve_region(
         if warm_start and attempt_index == 0 and recovery is None:
             # ADR 0024 D3: an external start is checked, not silently pinned — T03 §5.1 on the
             # opening this attempt would take, in place of `CHECKPOINT_INCOMPATIBLE`.
-            held = tuple(
-                name
-                for split in active_splits
-                for name in _pinned(split, regimes[split.unit], forms, vapour)
-            )
-            refused = check_opening(
-                OpeningState(
-                    values=current, model_version=identity[0], constants_sha256=identity[1]
-                ),
-                OpeningRequirement(
-                    signature=opening,
-                    model_version=identity[0],
-                    constants_sha256=identity[1],
-                    free=free,
-                    pinned=held,
-                    lower_bounds={
-                        name: 0.0 for name in free if spec.variable_kinds.get(name) == "molar_flow"
-                    },
-                ),
+            refused = _external_opening(
+                current, opening, identity, free, active_splits, regimes, forms, vapour, spec
             )
             if refused is not None:
                 return closed(
@@ -2630,6 +2613,47 @@ def _ptc_attempt(
         observer=wall,
         # T05b spec §7.8 (iii): an empty signature is screened too where there are forms (v2).
         compare_empty=bool(dormancy),
+    )
+
+
+def _external_opening(
+    current: Mapping[str, float],
+    opening: AttemptSignature,
+    identity: tuple[str, str],
+    free: Sequence[str],
+    splits: Sequence[LiftedSplit],
+    regimes: Mapping[str, Regime],
+    forms: Mapping[str, ZeroFlowForm],
+    vapour: Mapping[str, VapourOnlyForm],
+    spec: ProblemSpec,
+    *,
+    reported: AttemptSignature | None = None,
+) -> OpeningRefusal | None:
+    """T03 §5.1's six checks on attempt 0's opening from an external start (a compatible warm
+    start, ADR 0024 D3), before its pinned columns are set: the opening's own identity, its
+    signature's pinned columns in signature order, and a zero lower bound on every free molar
+    flow. `reported` is the signature the source reported for the state, `None` for a source
+    that reports none."""
+    held = tuple(
+        name for split in splits for name in _pinned(split, regimes[split.unit], forms, vapour)
+    )
+    return check_opening(
+        OpeningState(
+            values=current,
+            model_version=identity[0],
+            constants_sha256=identity[1],
+            reported=reported,
+        ),
+        OpeningRequirement(
+            signature=opening,
+            model_version=identity[0],
+            constants_sha256=identity[1],
+            free=free,
+            pinned=held,
+            lower_bounds={
+                name: 0.0 for name in free if spec.variable_kinds.get(name) == "molar_flow"
+            },
+        ),
     )
 
 
