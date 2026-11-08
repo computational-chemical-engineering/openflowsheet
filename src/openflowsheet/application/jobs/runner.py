@@ -1013,6 +1013,7 @@ class _Body:
                 check_policy=check_policy,
                 policy_requested=body.policy_id,
                 check=self._honour_interruption,
+                interruptions=(JobInterrupted,),
                 progress=progress,
                 surrogates=surrogate_resolver(store, self.context.root),
                 wall_time_remaining=remaining,

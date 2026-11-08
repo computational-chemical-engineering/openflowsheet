@@ -71,7 +71,6 @@ from pyomo.contrib.pynumero.interfaces.external_grey_box import (
 )
 from pyomo.contrib.pynumero.interfaces.pyomo_grey_box_nlp import PyomoNLPWithGreyBoxBlocks
 
-from openflowsheet.application.jobs.interrupt import JobInterrupted
 from openflowsheet.compile.casadi_backend import TwinEvaluationError
 from openflowsheet.models.syn001.flowsheet import Syn001Flowsheet
 from openflowsheet.studies.nlp.closure import (
@@ -330,12 +329,13 @@ class _Iterations:
     #: OPT §4.8 `optimizer.json`: one row per iteration (iter, obj, inf_pr, inf_du, mu,
     #: alpha_pr); bounded by `max_iter` + 1.
     rows: list[tuple[int, float, float, float, float, float]] = field(default_factory=list)
-    #: OPT §4.10: a job's interruption check, called once per iteration. Its `JobInterrupted`
-    #: is kept here and Ipopt told to stop (`False`, `User_Requested_Stop`); `solve_start`
-    #: raises it once Ipopt has returned (an exception raised through Ipopt's C callback would
-    #: not reach the job).
+    #: OPT §4.10: a job's interruption check, called once per iteration. An exception of one of
+    #: the caller's `interruptions` types (the job's `JobInterrupted`) is kept here and Ipopt told
+    #: to stop (`False`, `User_Requested_Stop`); `solve_start` raises it once Ipopt has returned
+    #: (an exception raised through Ipopt's C callback would not reach the job).
     interrupt: Callable[[], None] | None = None
-    stopped: JobInterrupted | None = None
+    interruptions: tuple[type[BaseException], ...] = ()
+    stopped: BaseException | None = None
 
     def __call__(
         self,
@@ -356,7 +356,7 @@ class _Iterations:
         if self.interrupt is not None:
             try:
                 self.interrupt()
-            except JobInterrupted as stop:
+            except self.interruptions as stop:
                 self.stopped = stop
                 return False
         self.count = int(iter_count)
@@ -480,6 +480,7 @@ def solve_start(
     options: Mapping[str, Any] | None = None,
     before_verification: Callable[[], None] | None = None,
     interrupt: Callable[[], None] | None = None,
+    interruptions: tuple[type[BaseException], ...] = (),
 ) -> StartRun:
     """Ipopt from one verified start, then V1-V6 on the decisions it returned (spec §8.5).
     `flowsheet` is the NLP host whose readiness certified the start, or a SYN-001 flowsheet.
@@ -488,8 +489,9 @@ def solve_start(
     `max_wall_time`); `before_verification` is called just before V1's re-solve (the record
     writer places that bundle). On a revision host (a point with an attempt signature) V2 and
     V4 are judged against the start's held system. `interrupt` (OPT §4.10, a job's check) runs
-    in Ipopt's intermediate callback; the `JobInterrupted` it raised is re-raised after Ipopt
-    stops, so an interrupted start has no outcome."""
+    in Ipopt's intermediate callback; an exception of one of the `interruptions` types it raised
+    (a job's `JobInterrupted`) is re-raised after Ipopt stops, so an interrupted start has no
+    outcome."""
     host = as_host(flowsheet)
     run = StartRun(index, tuple(readiness.start))
     if readiness.state is None or readiness.regimes is None or readiness.point is None:
@@ -502,7 +504,7 @@ def solve_start(
         model = build_model(nlp, box)
         with _quiet_unexported_scaling():
             pynumero = PyomoNLPWithGreyBoxBlocks(model)
-        iterations = _Iterations(interrupt=interrupt)
+        iterations = _Iterations(interrupt=interrupt, interruptions=interruptions)
         # Explicit, not Pyomo's version-dependent default: an evaluation error is reported to
         # Ipopt (which rejects a trial point), never re-raised to end the run (spec §14 Q-F4).
         problem = CyIpoptNLP(

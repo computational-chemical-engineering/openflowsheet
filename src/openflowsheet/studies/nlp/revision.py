@@ -179,6 +179,7 @@ def optimize_revision(
     check_policy: CheckPolicy,
     policy_requested: str = DEFAULT_POLICY_ID,
     check: Callable[[], None] | None = None,
+    interruptions: tuple[type[BaseException], ...] = (),
     progress: Progress | None = None,
     solver_probe: SolverProbe = audited_solver,
     surrogates: Any = None,
@@ -188,7 +189,9 @@ def optimize_revision(
 
     Raises `ValueError` for a request with problems (`request_problems`): an invalid input, not
     a report. `check` is called between stages, in every Ipopt iteration and (in a job) at every
-    production solve's trace record, and may raise to cancel; `progress(stage, info)` is told
+    production solve's trace record, and may raise to cancel; inside Ipopt's iteration callback
+    an exception of one of the `interruptions` types (a job's `JobInterrupted`) is held and
+    re-raised once Ipopt has returned (`greybox.solve_start`); `progress(stage, info)` is told
     each stage. `wall_time_remaining` (a job's, §4.10) caps each start's Ipopt `max_wall_time`
     at the job's remaining wall time; `None` (or a `None` answer) leaves the request's."""
     check = check or (lambda: None)
@@ -337,6 +340,7 @@ def optimize_revision(
             options=options,
             before_verification=place,
             interrupt=check,
+            interruptions=interruptions,
         )
         runs.append(run)
         evidence.append(run.evidence())
