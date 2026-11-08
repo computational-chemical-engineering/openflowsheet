@@ -1,0 +1,112 @@
+{
+ "bundles": {
+  "off": "/home/runner/work/_temp/rc-install/bundle-off/SYN-001-nominal",
+  "on": "/home/runner/work/_temp/rc-install/bundle/SYN-001-nominal"
+ },
+ "checks": [
+  {
+   "expected_stray": "c2a8f1c164d1798ea4f452360f6bf03e9fea55e19bbdab3053be633cd7ec6250",
+   "id": "x05.installed_outside_the_tree_beneath_the_stray",
+   "package": "/home/runner/work/_temp/clean/lib/python3.13/site-packages/openflowsheet",
+   "result": "pass",
+   "strays": {
+    "/home/runner/work/_temp/requirements.lock": "c2a8f1c164d1798ea4f452360f6bf03e9fea55e19bbdab3053be633cd7ec6250"
+   }
+  },
+  {
+   "expected_metadata_version": "2.2.4",
+   "id": "x05.numpy_metadata_and_import",
+   "imported_version": "2.2.4",
+   "metadata_version": "2.2.4",
+   "result": "pass"
+  },
+  {
+   "expected": {
+    "lock_findings": [],
+    "lock_sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+   },
+   "id": "x05.environment",
+   "lock_findings": [],
+   "lock_sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4",
+   "result": "pass"
+  },
+  {
+   "id": "x05.never_the_strays_hash",
+   "lock_sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4",
+   "result": "pass"
+  },
+  {
+   "id": "x05.control_the_stray_would_verify",
+   "lock_sha256": "c2a8f1c164d1798ea4f452360f6bf03e9fea55e19bbdab3053be633cd7ec6250",
+   "result": "pass",
+   "stray": "/home/runner/work/_temp/requirements.lock"
+  },
+  {
+   "expected": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4",
+   "found": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4",
+   "id": "x05.bundle_on_records",
+   "result": "pass"
+  },
+  {
+   "expected": {
+    "bundle": "on",
+    "mode": "exact_replay",
+    "reasons": [],
+    "state": "installed",
+    "verdict": "MATCH"
+   },
+   "id": "x05.replay_on",
+   "integrity_ok": true,
+   "mode": "exact_replay",
+   "reasons": [],
+   "result": "pass",
+   "verdict": "MATCH"
+  },
+  {
+   "expected": "",
+   "found": "",
+   "id": "x05.bundle_off_records",
+   "result": "pass"
+  },
+  {
+   "expected": {
+    "bundle": "off",
+    "mode": "inspected_archived_results",
+    "reason0": "the dependency set is unknown on the archive's side: the archive recorded no verified lock, so nothing is known to match",
+    "state": "installed",
+    "verdict": "NOT_RUN"
+   },
+   "id": "x05.replay_off",
+   "integrity_ok": true,
+   "mode": "inspected_archived_results",
+   "reasons": [
+    "the dependency set is unknown on the archive's side: the archive recorded no verified lock, so nothing is known to match",
+    "no rerun was supplied"
+   ],
+   "result": "pass",
+   "verdict": "NOT_RUN"
+  }
+ ],
+ "format": "t08-rc-v1",
+ "passed": true,
+ "provenance": {
+  "architecture": "x86_64",
+  "commit": "7c8d05e59dcef7c60b260b687b3cc4e06e5cbda0",
+  "environment_lock_sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4",
+  "github_actions": true,
+  "machine_class": "ci-x86-64",
+  "python": "3.13.18",
+  "threads": {
+   "MKL_NUM_THREADS": "1",
+   "OMP_NUM_THREADS": "1",
+   "OPENBLAS_NUM_THREADS": "1"
+  },
+  "tree_clean": true
+ },
+ "replayed": [
+  "on",
+  "off"
+ ],
+ "state": "installed",
+ "step": "lock-check"
+}

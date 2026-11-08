@@ -1,0 +1,87 @@
+"""X10 inventory (ADR 0056 row 9, R-925): the committed unit × basis inventory is what the code
+measures today.
+
+`scripts/x10_inventory.py --check` rebinds every pair of `MODEL_BUILDERS` × the selectable
+providers, solves each bound `revision_eo` pair once, and compares with
+`benchmarks/x10/inventory.json`; it also checks that `docs/X10-inventory.md` is the inventory's
+rendering. The full matrix takes about 30 s on the reference host (docs/X10_DECISIONS.md D-5), so
+the whole of it is checked, not a subset. The CoolProp column is compared in this environment's
+section only (D-3).
+"""
+
+from __future__ import annotations
+
+import importlib.util
+import json
+import os
+import subprocess
+import sys
+
+from conftest import REPO_ROOT
+
+from openflowsheet.application.revision_binding import MODEL_BASES
+
+SCRIPT = REPO_ROOT / "scripts" / "x10_inventory.py"
+INVENTORY = REPO_ROOT / "benchmarks" / "x10" / "inventory.json"
+
+
+def test_x10_inventory_check_passes() -> None:
+    env = {**os.environ, "PYTHONPATH": str(REPO_ROOT / "src")}
+    done = subprocess.run(
+        [sys.executable, str(SCRIPT), "--check"],
+        cwd=REPO_ROOT,
+        env=env,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert done.returncode == 0, done.stdout + done.stderr[-2000:]
+    assert done.stdout.startswith("X10 inventory: PASS"), done.stdout
+
+
+def test_x10_inventory_records_both_coolprop_environments() -> None:
+    """D-3: the CoolProp column carries a measurement with the extra absent and present."""
+    pairs = json.loads(INVENTORY.read_text(encoding="utf-8"))["pairs"]
+    coolprop = [pair for pair in pairs.values() if pair["provider"] == "coolprop-heos-v1"]
+    assert coolprop
+    for pair in coolprop:
+        assert set(pair["env"]) == {"coolprop_extra_absent", "coolprop_extra_present"}, pair
+
+
+def test_x10_inventory_pump_on_wilson_stays_refused() -> None:
+    """R-819's refusal, as measured: both pumps are refused at admission on Wilson."""
+    pairs = json.loads(INVENTORY.read_text(encoding="utf-8"))["pairs"]
+    for model_id in ("syn001.liquid_pump", "thermal.pump"):
+        measured = pairs[f"{model_id} x wilson-ig-v2"]["env"]["any"]
+        assert measured["class"] == "refused_admission"
+        assert measured["reason"] == "no_volume"
+
+
+def test_x10_inventory_admission_refusal_iff_registry_does_not_admit() -> None:
+    """The review's independent oracle (S-2): a pair is refused at admission exactly when
+    `MODEL_BASES` does not list its basis, and a basis refusal occurs only with the CoolProp extra
+    absent. Catches a binder that refuses a pair for a reason other than R-288's admission."""
+    pairs = json.loads(INVENTORY.read_text(encoding="utf-8"))["pairs"]
+    assert len(pairs) == 150
+    for key, pair in pairs.items():
+        admits = pair["provider"] in MODEL_BASES[pair["model"]]
+        for env, measured in pair["env"].items():
+            refused = measured["class"] == "refused_admission"
+            assert refused == (not admits), (key, env, measured["class"])
+            if measured["class"] == "refused_basis":
+                assert env == "coolprop_extra_absent", (key, env)
+
+
+def test_x10_inventory_classify_names_no_route() -> None:
+    """S-3: a bound pair whose `select_route` returns `no_route` is a typed refusal, not a failed
+    solve with no detail."""
+    spec = importlib.util.spec_from_file_location("x10_inventory_under_test", SCRIPT)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    attempt = {"revision": "r", "probe": "native", "bind": "bound", "route": {"no_route": "why"}}
+    assert module.classify("thermal.mixer", [attempt]) == {
+        "class": "refused_other",
+        "detail": "no_route(why)",
+    }

@@ -117,8 +117,39 @@ Am. 1–2). Foundations F0–F8 are designed in wave W1 during 0.4, then built i
   of F0 D17–D23.
 - **F0: MERGED** into main `97f07dce` (CI 42119225468 green both archs; gate PASS eba4bcb4). Every merge now runs
   `scripts/corpus_identity.py --check`. D20 open: TH-C2 CoolProp case once the host has the coolprop extra.
-- **MSG** (`wp/MSG`): WO-0…4, 6 done; WO-7/8 engineer running; then WO-5 (own engineer), WO-9, WO-10, evidence
-  manifest, reviewer (batched questions in `docs/MSG_DECISIONS.md`), merge after gate + CI + F0 check.
+- **MSG** (`wp/MSG` `35403f42`): WO-0…12 done; review `docs/reviews/MSG-review.md` applied (WO-11/12); manifest
+  `evidence/MSG/9c76b939…` `implemented`; CI fails only `explain: human pending`. **Blocked on Frank's `explain.md`
+  review**, then `tested` + merge. At merge: renumber its R-942/R-943 (RP took R-942…R-949) and its c_4 link vs X02's.
+- **ST** (`wp/ST`, ADR 0068 Proposed, Am. 13): WO-1/2 done (`dff3e439`, `docs/ST_HANDOFF.md`); WO-3…7 wait for
+  wp/MSG's merge (registry entry). G8 T05b:SC-1 strict xfail (E1 for ST's reviewer).
+- **RP: MERGED** into main `ad1ffd74` (manifest `evidence/S15/fd28ff7b…` tested; gate PASS 15070; CI 42374299572
+  green). Before 0.4.0's K3: schema ADR admitting `REL[0-9]{3,}`; S-6 rehearsal of never-run steps; Frank: ADR 0055
+  acceptance, F-8.
+- **X05: MERGED** into main `3e93c9a7` (manifest `evidence/X05/7c8d05e5…` tested 31/31; gate PASS 15138; RC
+  dispatch 42397255469 + push CI green; F0 PASS on main). On Frank's acceptance of ADR 0069: register lines, ADR 0007
+  Am. 2, R-140 "Lifted by X05". Before the cut: `[4, "x05.*"]` in the 0.4 gate (specifier). Frank: Q-F1…F3.
+- **X02** (`wp/X02` `c05a9e84`, ADR 0070 Proposed, Am. 15): WO-1…7 done; manifest `evidence/X02/2ab11b66…` `tested`
+  (G5b, G5d (iii) `fail` with accepted_fail: warm variant not registered, neighbour speed-up withdrawn, D-32); gate
+  PASS 15138; CI green. **Ready; merges after Frank accepts ADR 0070 (Q5).** At merge: R-950, c_4/c_5 vs MSG.
+- **X10 inventory: MERGED** into main `6b641fd6` (manifest `evidence/X10/033f1928…` tested; review M-1 applied:
+  L-X10-1 surrogate UNVERIFIED on `c1-surrogate.json`, witness step vs small flows → design-lane follow-up; gate PASS
+  15161; CI green). 150 pairs: 41 VERIFIED off CoolProp, 76 refused; table `docs/X10-inventory.md`.
+- **OPT** (`wp/OPT` `7b7aa770`, ADR 0071 Proposed, Am. 16, link c_4/D_4 `3fb06cad…`; design amended §9): WO-1…8c done;
+  review `docs/reviews/OPT-review.md` applied (M1–M6, S1 declared, S2–S5). CI at `496e003a`: only D-61 + the cache
+  allowlist (fixed in `7b7aa770`) fail on all three legs; aarch64 replay MATCH. Full gate at `7b7aa770`: only the human-review test fails (15336 passed).
+  **Blocked on Frank:** human review of `validate.md`/`submit_job.md` (D-61), ADR 0071. Then manifest `tested`, merge.
+- **RRC** (`wp/RRC` `fe572ad5`, ADR 0072 Proposed): WO-1…7 done; review `docs/reviews/RRC-review.md` applied; G4
+  NET-02 and G5 M1-recycle rescued → L-COL-9 narrowed; declared not a superset of T06-revision-v2 (M2). Merges after
+  OPT (rebase, one full gate, CI both legs, manifest). **Blocked on Frank:** FQ1 (enum widenings), ADR 0072; then
+  register renumbering R-RRC-1…6 (incl. MR-7 test).
+- **WIT: MERGED** into main `f92af170` (K04 witness at small/dormant flows, spec §4.8.1–9, ADR 0073 Proposed;
+  manifest `evidence/X10a/dbf884ad…` tested (id X10a, decisions 2026-11-08); gate PASS 15194; CI 42459637834 green;
+  F0 PASS on main; L-X10-1 closed). Open: M-6 part b (flash manifest sentence, Q-WIT-2); M-4 (OPT D-42/D-82) at
+  OPT's merge; on ADR 0073 acceptance: register lines.
+- **Await Frank** (`docs/FRANK_QUESTIONS.md`): `explain.md` (blocks MSG), ADRs 0055/0068/0069/0070/0071/0072/0073, Q-11,
+  F-8, X05 Q-F1…F3, X02 Q1…Q7, OPT Q1…Q9 + description review, RRC FQ1…FQ4, Q-WIT-1/2.
+- **TRS2 CPU rule** (user via hub, 2026-11-07): ≤ ~36 busy cores of 48; one full gate at a time; no tests in several
+  worktrees at once. GitHub API: poll CI at most every 10 min (rate limit hit 2026-11-07).
 - Host load ~50 from other users: wall-time budget tests flaky (re-run alone).
 **Next actions for 0.4 (roadmap §0.4; at most 2 agents at a time):**
 1. **Wave 1: done** (MSG architect pass, W1 specifier, P1–P3, reviews; W1 closed R-941).

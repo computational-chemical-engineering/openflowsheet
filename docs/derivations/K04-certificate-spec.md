@@ -24,6 +24,8 @@ Nothing else here changes. Two findings against this document are recorded in T0
 
 **Amendment, 2026-09-25 (design lane, K04-F9; ADR 0013; R-059…R-062).** F9 and F10 above are closed by `docs/derivations/K04-F9-spec.md`: (i) §4.4's energy balances, §4.7's admissibility and independent split, and the routing among their forms are evaluated at the verifier's own one-step Newton projection of `x_final` (the §7 matrix and its factorization) when every row passes and the screen is `NO_RANK_LOSS_DETECTED`, and at `x_final` otherwise; every other check, the certified state and every tolerance are unchanged; `transformations.projection` records which. (ii) §4.4's fresh flash reads a stream within K03 §8.2's `ε_adm` of saturation as single-phase. (iii) A two-phase split whose band the fresh flash cannot resolve at double precision is judged by its stored split (revision table). (iv) §4.7's flash-outlet clause holds for revision-built flowsheets and is discharged by §4.4 in SYN-001's legacy set. `check_policy_sha256` does not move.
 
+**Amendment, 2026-11-08 (design lane, WIT; ADR 0073, Proposed; brief `docs/briefs/WIT-specifier.md`).** §4.8 gains §4.8.1–§4.8.9, the witness's treatment of small and exactly-zero component flows. (i) A component column with a positive flow, whose registered central difference is refused or fails, is re-differenced by an escalation that never reads the AD Jacobian: the central fourth-order stencil at `h_j 2^−k`, `k ≤ 8`, resolved when two successive estimates agree within `τ_D/10` (§4.8.3). An unresolved escalation leaves the registered result. (ii) On a γ–φ-IG basis, a lifted split's dormant vapour side joins R-831's forward five-point set (§4.8.4). Its dormant liquid side, where no derivative exists, is not differenced and is recorded as R-281 records (§4.8.5). The tolerance, the registered step, the two checks, the policy hash and every field set are unchanged. Every certificate whose witness passes under the registered stencil is byte-identical, F0's corpus included (§4.8.6). Assertions WIT.A01–WIT.A15 (§4.8.7); reference values `docs/derivations/scripts/wit_reference.py` → `wit_reference.json`. Normative when ADR 0073 is accepted.
+
 ---
 
 ## 1. Scope, authority, and what is out of scope
@@ -150,6 +152,340 @@ The [A08] evidence stores "derivative accuracy". The compiled Jacobian is exact 
     max_ij |Ĵ_ij − FD_ij| ≤ 1e-7   over the declared pattern;   max off-pattern |FD_ij| ≤ 1e-7.
 
 *Measured* (nominal / 420 K / high recycle): 2.8e-11 / 2.4e-11 / 2.8e-10 at δ = 1e-5; quadratic in δ down to 1e-5 and roundoff-dominated from 1e-6 (2.8e-9) — δ = 1e-5 is the registered step because it is the measured minimum; off-pattern differences are exactly 0.0 at every state (the compiled function is structurally exact). `1e-7` sits 350× above the worst floor and 1600× below the smallest nonzero scaled entry (1.6e-4, *measured*), so a dropped term, a wrong regime or a K at the wrong temperature is caught and roundoff is not. A failed witness makes the verdict `UNVERIFIED` with `derivative_limitation` (§8.2): the residual truths of §4.1–§4.7 stand; the Jacobian-based evidence of §7 does not.
+
+### 4.8.1 Amendment WIT (2026-11-08): authority, scope, and the text it replaces
+
+**Status.** Proposed with ADR 0073; normative when ADR 0073 is accepted. Until then the witness is §4.8 as it stood, with
+R-281 and R-831. Brief: `docs/briefs/WIT-specifier.md` (X10 review M-1 → L-X10-1; OPT D-42; S11 rulings OQ-5).
+
+**Authority.** Blueprint §8.1 ([A08], "derivative accuracy"); §4.8 above; R-281 (ADR 0013 Amendment 3 item 7, as amended
+by R-345); R-831 (S11 rulings item 2); ADR 0001 D2 (a negative flow is refused); ADR 0073.
+
+**The replaced text.** §4.8's sentence
+
+> the runtime witness is a central difference of the *compiled 49-row function* […] at `x_final`, one column at a time,
+> `h_j = 1e-5 · S_x,j`, compared to the AD Jacobian on the scaled entries `Ĵ = S_F⁻¹ J S_x`
+
+now reads: "the runtime witness differences the *compiled function* at `x_final`, one column at a time, each column as
+§4.8.2 assigns it, at the registered step `h_j = 1e-5 · S_x,j` or at the steps §4.8.3 derives from it, and compares
+the result with the AD Jacobian on the scaled entries `Ĵ = S_F⁻¹ J S_x`."
+
+**Unchanged.** `τ_D = DERIVATIVE_TOLERANCE = 1e-7` and `FD_RELATIVE_STEP = 1e-5`; the two checks, their scaled form and
+their meaning; R-281's set and record; R-831's set Z and its stencil; the check policy document (it holds `policy_id`
+and the kind tolerances only, so `check_policy_sha256` does not move: the constants of §4.8.3 are verifier constants,
+as `FD_RELATIVE_STEP` is); every `SolutionCertificate`, `CheckResult` and limitation field set (frozen); the
+regularity screen (§7).
+
+### 4.8.2 The column classes
+
+Definitions.
+
+- A **component column** is a column named `<p>.<c>` with `<p>` nonempty and `c` a declared component of the
+  certificate's basis: R-831's naming predicate (`one_sided_columns`). It covers `<S>.n.<c>`, `<S>.vap.<c>`,
+  `<S>.liq.<c>` and staged split columns.
+- A **γ–φ-IG basis** is one in `ONE_SIDED_BASES` = {`wilson-ig-v1`, `wilson-ig-v2`}, R-831's list (§4.8.9 Q-WIT-3).
+- A **lifted split's vapour side** and **liquid side** are the `vapor` and `liquid` tuples of a `LiftedSplit` in the
+  verifier's own reading of the revision: `lifted_splits(…, staged=…)` in `verify_revision`, the reading that
+  `revision_phase_branch` and the zero-flow form already use. It comes from declarations, never from the solver's
+  attempts or held regimes (R-016). A side is **dormant** at `x_final` when every column of its tuple is exactly `0.0`
+  there; `-0.0` counts as `0.0`, as it does for Z. A split whose `feed` tuple is all exactly `0.0` there (a
+  `ZERO_FLOW` split) has no dormant side for classes 2 and 4: its sides fall to class 5, where `x_j = 0` is not
+  escalated, so the split stays as §4.8.8 states it (review F-2, 2026-11-08).
+
+Every differenced column is in exactly one class; the first row that matches wins.
+
+| # | Class | Condition at `x_final` | Stencil | Record | Source |
+| --- | --- | --- | --- | --- | --- |
+| 1 | R-281 | basis `pr-c1-v1`; a stream column `<S>.n.<c>` exactly `0.0` | none (not differenced) | listed in `derivative_witness_partial` | R-281, R-345, unchanged |
+| 2 | **A2** | γ–φ-IG basis; a column of a dormant **liquid** side | none (not differenced) | listed in `derivative_witness_partial` | §4.8.5, new |
+| 3 | Z | γ–φ-IG basis; a component column exactly `0.0` with a sibling `<p>.<c′>` `> 0` | forward five-point at `h_j` | none | R-831, unchanged |
+| 4 | **A1** | γ–φ-IG basis; a column of a dormant **vapour** side | forward five-point at `h_j`, as Z | none | §4.8.4, new |
+| 5 | registered | every other column | central at `h_j`; **escalation** of §4.8.3 for a component column with `x_j > 0` whose central result is not a pass | none | §4.8; §4.8.3, new |
+
+- Classes 2 and 4 exist only on the revision path (`verify_revision`), the one path with split descriptors and a
+  γ–φ-IG basis.
+- Class 5's escalation applies on every path that calls the witness (`_certify` and `verify_revision`). Each passes its
+  declared components.
+- Classes 3 and 4 are disjoint by construction. A dormant side has no positive sibling inside its own prefix.
+
+### 4.8.3 The escalation (class 5): a Richardson-level central difference at halved steps, selected without the Jacobian
+
+**(a) Trigger.** Column `j` is escalated when all four hold:
+
+- it is a component column;
+- it is in class 5;
+- `x_j > 0`;
+- its registered central result is not a pass. Either a stencil point returned a status other than `ok`, or
+  `max_i |Ĵ_ij − D̂_ij| > τ_D` over the on-pattern rows, or `max_i |D̂_ij| > τ_D` over the off-pattern rows.
+
+No other column is escalated.
+
+**(b) Levels.** For `k = 0, 1, …, K_MAX` with `K_MAX = 8`, the step is `h_k = h_j · 2^−k`. This is exact in binary64: a
+power-of-two scaling of the registered step. Level `k` computes the central fourth-order difference
+
+    D_k = [ −F(x + 2h_k e_j) + 8 F(x + h_k e_j) − 8 F(x − h_k e_j) + F(x − 2h_k e_j) ] / (12 h_k),
+
+evaluating the points in that order, scaled per row: `D̂_k,i = D_k,i · S_x,j / S_F,i`. A level is **admissible** when all
+four evaluations return `ok`. An inadmissible level is skipped and is not a result.
+
+**(c) Resolution.** For `k ≥ 1` with levels `k − 1` and `k` both admissible, `e_k = max_i |D̂_k,i − D̂_k−1,i|` over every
+row (on and off pattern). Levels are evaluated in increasing `k`. The column is **resolved** at the first `k` with
+`e_k ≤ ε_res`, where `ε_res = τ_D / 10 = 1e-8`. That `k` is `k*`, and no level above it is evaluated.
+
+*The flat rule* (review F-1, 2026-11-08). A level whose four values in some row are equal (a **flat** stencil) cannot be
+`k*` or `k* − 1` when a coarser complete stencil of that row was not flat, whether the registered pair or an evaluated
+level. The test is on the values, not the estimate: the accumulated estimate of a flat stencil is not always exactly
+0.0. A row that is independent of the column is flat at every level, the registered pair included, and is unaffected.
+
+**(d) Outcome.**
+
+- *Resolved.* `D̂_k*` replaces the registered central difference of column `j` in both checks: on-pattern
+  `|Ĵ_ij − D̂_k*,i|`, off-pattern `|D̂_k*,i|`. They enter the two maxima and are judged against `τ_D`, as before.
+- *Unresolved* (no `k ≤ K_MAX`). The registered result of column `j` stands exactly as it is today. Either its values
+  enter the maxima, or, when a registered point was refused, both checks are `unsupported` with the registered reason
+  `witness_stencil_<status>(<name>)`.
+
+**(e) Independence from the AD path.** The levels, `e_k`, `k*` and `D̂_k*` are functions of the compiled residual,
+`x_final`, `h_j` and the scales only. The AD Jacobian enters the trigger (a) and the comparison (d), never the
+selection. The escalation is a function that receives no Jacobian (WIT.A07).
+
+**(f) Order and early end.** Columns are processed in `col_ids` order, as now. The witness ends with both checks
+`unsupported` at the first column whose *final* result is a refusal, naming that column, as now. A final refusal is a
+refused registered point that is not escalated or not resolved, or a refused point of a class-3 or class-4 stencil.
+
+**(g) No record.** No field, limitation, qualification or reason is added. R-831's Z adds none either. The escalated
+columns and their `k*` are a deterministic function of `x_final` and the compiled function, and can be recomputed at
+replay.
+
+**Derivation and the constants.**
+
+1. *The stencil is one Richardson level of the registered one.* With `D₂(h)` the central difference,
+   `D_k = (4 D₂(h_k) − D₂(2h_k))/3`. Its weights satisfy `Σ w = Σ w s² = Σ w s⁴ = 0`, `Σ w s = 12`, `Σ w s³ = 0` and
+   `Σ w s⁵ = −48`, so its truncation is `−h⁴ f⁽⁵⁾/30 + O(h⁶)`. These moments are generator claims.
+2. *What `e_k` bounds.* In the asymptotic range `D̂_k − f′ ≈ C h_k⁴`, so `e_k ≈ (15/16)|C| h_k−1⁴` and
+   `|D̂_k − f′| ≈ e_k/15`. Where roundoff `r_k` dominates, `|D̂_k − f′| ≲ r_k ≲ e_k`, except where roundoff quantizes a
+   row's stencil flat: then the estimate is 0 at successive levels, which agree on a wrong value (`e_k ≈ 0`). A row
+   with `|A_i|/S_F,i` large hides a scaled derivative `d̂ ≲ 5.5e-12 · 2^(k−1) · |A_i|/S_F,i` at level `k`. A non-flat
+   quantized numerator cannot do this, because the same numerator at half the step doubles the estimate. The flat rule
+   of (c) excludes that case (WIT.A15). With it the FD side's error at
+   resolution is of order `e_k* ≤ τ_D/10`. A Jacobian error above `1.1 τ_D` is therefore reported, and a correct entry is
+   not failed by its estimator. Measured below: the escalated discrepancies are `≤ 4.3e-10 = τ_D/230`.
+3. *Why `ε_res = τ_D/10`.* It is R-831's factor: a one-sided part above `τ_D/10` is that ruling's *Watch for*. It
+   cannot go lower. The fourth-order stencil's measured roundoff plateau on the surrogate's worst column is 4–5e-10 for
+   `h ≤ 2.3e-7` mol/s, so `τ_D/100 = 1e-9` would sit within 2× of it.
+4. *Why `K_MAX = 8`.*
+   - The deepest measured need is `k* = 5`: the surrogate's `S1.n.N2`, and G7(c)'s `S3.n.NH3` after four inadmissible
+     levels. Three more halvings buy `2¹² = 4096` in fourth-order truncation.
+   - Below `h_8 = h_j/256` (`δ = 3.9e-8`), §4.8's measured SYN-001 central floor `2.8e-15/δ` puts the fourth-order
+     estimate at about 1.1e-7 (its weight sum 18/12 against 2/2), which is above `τ_D`. Deeper levels would resolve only
+     rows of unusually small magnitude, and would add cost.
+   - Cost bound: at most `4 (K_MAX + 1) = 36` residual evaluations per escalated column, spent only on a column that
+     already fails.
+5. *Why the fourth-order central stencil.* Not the registered central stencil at smaller steps, and not the forward
+   one. Measured on the surrogate's `S1.n.N2` (scaled `|Ĵ − D̂|`; the AD Jacobian is consistent there, see §4.8.6):
+
+   | `h` (mol/s) | central (registered form) | central, fourth order | forward five-point |
+   | --- | --- | --- | --- |
+   | 3.0e-5 (`h_j`) | 1.051e-1 | 1.447e-4 | 7.25e-4 |
+   | 1.875e-6 | 4.11e-4 | 2.13e-9 | 1.31e-8 |
+   | 9.375e-7 | 1.03e-4 | 2.55e-10 | 1.43e-9 |
+   | 4.69e-7 | 2.57e-5 | 1.03e-10 | 5.03e-10 |
+   | 2.34e-7 | 6.41e-6 | 5.03e-10 | 4.85e-11 |
+   | 7.3e-9 | 2.23e-9 | 1.19e-8 | 1.24e-7 |
+   | 3.7e-9 | 5.60e-8 | 7.54e-8 | 2.50e-7 |
+
+   - The central difference reaches 2.2e-9 at one step and 5.6e-8 one halving later. Its successive differences are
+     never robustly `≤ ε_res`, so an escalation built on it would not resolve.
+   - The fourth-order stencil resolves at `k = 5` with `e_5 = 1.88e-9`.
+   - The forward stencil's roundoff constant (`Σ|w|/12 = 128/12` against `18/12`) makes it noisier at equal step.
+6. *Why the trigger is the registered result, not a rule on the state.*
+   - **Identity.** A column whose registered result passes is untouched, so every certificate whose witness passes
+     today is unchanged by construction (§4.8.6).
+   - **The failure cannot be predicted from `x_j`.** `S1.n.N2` has `x_j/h_j = 59` and still fails the registered stencil
+     at 0.105. The surrogate's curvature scale is its input box, not the flow. A step relative to `max(|x_j|, floor)`
+     (the brief's first option, X10 review M-1) would move certificates and would still be wrong here.
+7. *Why only component columns with `x_j > 0`.*
+   - It is the brief's scope.
+   - At `x_j = 0` no central stencil exists, and classes 1–4 decide.
+   - Temperatures, pressures and duties have no zero at the domain edge. T06 W2's A42 (a pressure within one step of
+     `P_max`) keeps its registered `unsupported` result.
+
+### 4.8.4 A1: the dormant vapour side on a γ–φ-IG basis (class 4)
+
+On a γ–φ-IG basis every residual row that reads a lifted split's vapour component column is affine in it:
+
+- admission refuses a provider whose vapour `ln φ` is not identically zero (`equilibrium_form.admission`), so
+  `K_i = γ_i(x) P_i^sat(T)/P` reads the liquid only;
+- the equilibrium row `v_i L − K_i l_i V` is affine in `v` with slope `L`;
+- `Vdef` (`V − Σ v`) and the split rows (`v_c + l_c − n_c`) are linear;
+- the vapour enthalpy flow is `Ḣ_V = Σ_i v_i h_i^ig(T)`: an ideal-gas vapour, with `h^E = 0` (the `wilson-ig-v2`
+  header).
+
+So `F` is differentiable at `v = 0`. The one-sided derivative along `+e_j` is the derivative, and the forward five-point
+stencil is exact up to roundoff.
+
+The backward point of the registered central stencil is a negative flow, which is refused (ADR 0001 D2). That is why
+the central stencil fails there (OPT D-42; S11 OQ-5).
+
+Z's positive-sibling condition exists to keep conventions out of the comparison: R-831's *Watch for* names "the rule
+applied to a dormant phase". On the vapour side of a γ–φ-IG split no quantity depends on composition, so there is no
+convention to keep out. That is why A1 extends Z there, and nowhere else.
+
+**Closed form (G1).** GP-C3 with the heater at 345 K has `L = 1.5` mol/s and `V = 0`. There the entry
+(`H:HEAT-equilibrium:<c>`, `S4.vap.<c>`) is `L · S_x/S_F = 1.5 · 3/9 = 0.5` for every `c`.
+
+**Measured on `main`.**
+
+- The AD entry and the forward five-point difference are both 0.5, bitwise.
+- The class-4 part of the witness is 2.39e-11 at `h_j`, and at most 1.06e-9 down to `h_j/8`. It grows as `1/h`, so it
+  is roundoff, not truncation.
+
+### 4.8.5 A2: the dormant liquid side on a γ–φ-IG basis (class 2)
+
+At a dormant liquid side no derivative exists.
+
+- `x = l/Σl` is homogeneous of degree 0 in `l`. So the equilibrium row's directional derivative at `l = 0`, along a
+  direction `d ≥ 0` with `Σ d = 1`, is `−K_i(T, P, d) d_i V`. That is not linear in `d` unless γ is constant.
+- The AD entry there is the K-block's declared convention (`gamma_phi_blocks`): K at the probe `n = (1, …, 1)`, that is
+  `x = (1/3, 1/3, 1/3)` for three components.
+- The forward difference along `+e_c` measures K at `x = e_c`, where `γ_c = 1`.
+- The two differ by an amount that does not depend on the step. R-281 calls this testing a convention against a
+  derivative that does not exist.
+
+The treatment is therefore R-281's:
+
+- the columns are not differenced;
+- they are listed in the `derivative_witness_partial` limitation, in the R-345 form (`independence_qualification`
+  stays `None`), with the reason `wilson_dormant_liquid_columns` (R-281's record carries `pr_c1_zero_flow_columns`; ADR 0073 D5 as amended);
+- the liquid total `L` keeps the registered central stencil (measured `0.0` at 385 K).
+
+**Closed forms (G2).** Computed from `benchmarks/s10/records.yaml` at GP-C3 with the heater at 385 K: `V = 1.5` mol/s,
+`P = 101 325` Pa. The table gives the scaled entries of (`H:HEAT-equilibrium:<c>`, `S4.liq.<c>`), with `S_x/S_F = 3/9`:
+
+| `c` | `P_c^sat` (Pa) | `K_c(probe)` | `K_c(e_c)` | AD entry `−K(probe) V/3` | one-sided `−K(e_c) V/3` | gap |
+| --- | --- | --- | --- | --- | --- | --- |
+| CH3OH | 507203.18808097717 | 4.8558197376887558 | 5.0057062726965425 | −2.4279098688443779 | −2.5028531363482713 | 0.074943267503893353 |
+| C2H5OH | 331688.15599778468 | 3.7920630720982740 | 3.2735075844834412 | −1.8960315360491370 | −1.6367537922417206 | 0.25927774380741641 |
+| H2O | 152525.80857652640 | 2.2909322996493944 | 1.5053126925884668 | −1.1454661498246972 | −0.75265634629423340 | 0.39280980353046380 |
+
+**Measured on `main`.**
+
+- The AD entries lie within 3.2e-15 (relative) of these values.
+- The forward five-point differences lie within 4.6e-15 (relative).
+- The forward value is the same from `h_j` to `h_j/8`, to four digits.
+
+These numbers are the evidence that A2 removes a convention from the comparison, not a defect.
+
+**Rejected.**
+
+- *Difference those columns forward and exclude only the equilibrium rows.* That is an entry-level exclusion: a new
+  record granularity on a frozen limitation format. What it would add to the witness is constant entries (±1) and linear
+  enthalpy coefficients. Every two-phase state of the same unit witnesses those already.
+- *Keep such states `unsupported`.* That refuses certification to every vapour single-phase split on a γ–φ-IG basis for
+  want of a derivative that does not exist, while R-281 certifies the same situation on `pr-c1-v1` with the record.
+
+### 4.8.6 Identity: what stays byte-identical, and what moves
+
+**By construction.**
+
+- A class-5 column whose registered result passes is computed exactly as before.
+- Classes 2 and 4 are non-empty only at a dormant split side. There, today's central backward point is a negative flow.
+  Every γ–φ-IG block that sends those flows to the provider refuses it (ADR 0001 D2), as the heater's `H_S4_vapor` and
+  `H_S4_liquid` do at GP-C3. So today's witness at such a state is `unsupported`, and the certificate is not
+  `VERIFIED`. For the registered corpus this is checked rather than argued: a class-2 or class-4 column in an F0
+  certificate would change its bytes (a new limitation, or a new stencil), and WIT.A13 would fail.
+- Hence every certificate whose witness passes today is byte-identical. That includes every F0 corpus certificate:
+  57 `CONVERGED`, all `VERIFIED`, checked against `benchmarks/f0/corpus.json` M5.
+- No file under `src/openflowsheet/verify/` is in F0's M9 set (35 entries, checked), and the policy hash does not move
+  (§4.8.1). F0 `--check` PASS at the implementing commit is required (WIT.A13).
+
+**Unchanged, measured** at `dda8a6d9` with a prototype of §4.8.3 (TRS2, x86-64):
+
+- GP-C3 at 354 K (S11.A71): on-pattern `2.6013065590468898e-09`.
+- ADV-06 M under `T06-revision-v2`: on-pattern `1.793495859841966e-05`, `fail`. Its 21 component columns escalate and
+  none resolves; the smallest `e_k` is 2.99e-7 = 30 `ε_res`.
+
+**Moves.** Each move below is what this amendment is for, and none is in F0.
+
+| # | Where | Today | After | Evidence |
+| --- | --- | --- | --- | --- |
+| M-1 | `tests/test_s11_gp_solve.py::test_oq5_a_liquid_only_lifted_heater_outlet_leaves_the_witness_unsupported` | GP-C3 at 345 K: both witness checks `unsupported` (`S4.vap.CH3OH`); `UNVERIFIED` | `VERIFIED`; class 4 = the three `S4.vap.<c>`; on-pattern 6.871747615377899e-11 | WIT.A10; the test is replaced, not relaxed |
+| M-2 | `tests/test_m02_wo8_g7.py::test_g7c_at_delta_1e_4_two_phase_is_recorded_unverified` | witness `unsupported` (`S3.n.NH3`, 5.476e-6 mol/s, below one step) | witness `pass` (on-pattern 4.98e-11); verdict still `UNVERIFIED` (`ILL_CONDITIONED`, absolute) | WIT.A09 |
+| M-3 | `scripts/x10_inventory.py` record: `docs/X10-inventory.md`; `benchmarks/t08/support_envelope.yaml` L-X10-1 and its harvest note; `docs/support-matrix.md` | `c1.reactor_surrogate × pr-c1-v1`: solved, not verified | `VERIFIED` (with `near_threshold` on the witness); L-X10-1 closed by ADR 0073 | WIT.A08; `--record`, then `--check` |
+| M-4 | `wp/OPT`: D-42, D-82 (a) and G24 (c)'s relabelled start | a γ–φ held single-phase split never certifies | it certifies (vapour held, with `derivative_witness_partial`; liquid held, with nothing) | OPT's follow-up after ADR 0073; not edited here |
+| M-5 | S11 rulings OQ-5 ("recorded, not widened") | open fact | ruled by ADR 0073 | a cross-reference line on acceptance |
+| M-6 | `tests/test_m02_wo8_g7.py::test_g7c_the_near_dew_window_edges_as_the_manifest_states_them` (added by the review's ruling 1, 2026-11-08; build log E-1) | G7 (c)'s TWO_PHASE window edge at δ = 5.48e-4 (L/n_tot = 3.37e-5), set by the witness step; δ = 5.3e-4 `UNVERIFIED` | the edge between δ = 2.4e-4 (`UNVERIFIED`) and 2.6e-4 (`VERIFIED`), set by the screen's absolute limit `τ_min/(n ε)`, as on the VAPOR side; δ = 5.3e-4 `VERIFIED` with `S3.n.NH3` escalated and resolved | Part a: the test re-bracketed, its docstrings, R-282's note. Part b, `c1.tp_flash`'s manifest sentence (`flash.py`), moves its artifact hash, F0 M9 and L01.A22's byte pin; it waits for Frank |
+
+If any other test's expectation changes at implementation, this document is wrong. Stop and report it (rule 6); do not
+amend the test.
+
+### 4.8.7 Assertions WIT.A01–WIT.A15
+
+- Manifest ids are `K04.WIT.Ann`. `τ_D = 1e-7` and `ε_res = 1e-8`; "scaled" means as in §4.8.
+- `wit` is `docs/derivations/scripts/wit_reference.json`.
+- The analytic cases W0–W3 are test doubles: a `spec` with `variable_ids`, a `compiled` with `residual` and
+  `jacobian`, and the scales, as the generator defines them.
+  - Columns `S1.n.A`, `S1.n.B` (scale 3) and `S1.T` (scale 100). Components (A, B).
+  - Rows `R1 = θ n_A/(n_A + n_B)` (scale 1), `R2 = n_A + n_B − N0` (scale 3) and `R3 = T − T0` (scale 1).
+  - The AD Jacobian is the closed form, rounded to binary64.
+  - A trial point with a negative flow returns status `invalid_trial_state`.
+  - W3 is one column `S1.n.A` = 0.5 and one row `R4 = n_A + 1e-10·(u − ⌊u⌋ − 1/2)`, with `u = n_A·2⁴⁰` and the AD entry
+    declared 1.
+
+| ID | Assertion | Expected | Tolerance and its argument |
+| --- | --- | --- | --- |
+| A01 | `python3 -I docs/derivations/scripts/wit_reference.py --check` passes (56 claims). | `OK` | exact (byte comparison) |
+| A02 | W1 (`θ = 0.3`, `n = (2e-4, 5e-3)`, `T = 600`): `S1.n.A` and `S1.n.B` fail the registered stencil (wit: 5.539e-3 and 2.216e-4), escalate and resolve at `k* = 3` and `2`. Each escalated discrepancy is within wit's bound (1.82e-10, 1.16e-10) + 1e-11. `S1.T` is not escalated and passes (binary64 2.36e-9: roundoff of `T = 600` at `h = 1e-3`). Both checks pass. | `k* = (3, 2)`; pass | `k*` is exact. The generator places `e_k* ≤ ε_res/2` and `e_k*−1 ≥ 2 ε_res`, and binary64 roundoff at `k*` is at most 1.6e-12 (wit), so roundoff cannot move `k*`. The discrepancy tolerance of 1e-11 absorbs binary64 roundoff (measured 1.79e-10 and 1.16e-10 against exact 1.80e-10 and 1.15e-10), and it sits 10⁴× below `τ_D`. The distinct `k*` catch a column-index defect. |
+| A03 | W1 with the scaled AD entry (`R1`, `S1.n.A`) raised by `3 τ_D`: `on_pattern` is `fail`. | value in `[3τ_D − 1e-9, 3τ_D + 1e-9]` | The escalated estimate's error is at most 1.8e-10, a fifth of the window (generator claim). The escalation does not absorb a defect of `3 τ_D` on a column whose registered stencil is off by 5.5e-3. |
+| A04 | W2 (`θ = 0.3`, `n = (5e-6, 1e-3)`): `S1.n.A`'s registered point is refused, levels 0–3 are inadmissible, level 4 is the first, and `k* = 6`. `S1.n.B` fails the registered stencil (3.97e-3) and resolves at `k* = 4`. Both checks pass. | `k* = (6, 4)`; pass | As A02. This assertion checks that `e_k` is formed only between consecutive admissible levels. |
+| A05 | W3: `S1.n.A` fails the registered stencil (wit: 1.110839e-06), escalates, and does not resolve. `on_pattern` is `fail`, with its value bitwise equal to the registered central discrepancy computed by the test. | unresolved; value unchanged | Exact. An unresolved escalation must leave the registered result untouched. wit's smallest `e_k` is 2.5e-6 = 250 `ε_res`. |
+| A06 | W0 (W1's residual at `n = (2, 5)`): every column passes the registered stencil (wit: at most 1.7e-12), and a spy on `residual` counts exactly 2 evaluations per column (6), with no escalation. The values equal the registered central ones bitwise. | 6 evaluations; pass | Exact. This catches an escalation triggered by a passing column, which is the identity guarantee of §4.8.6. |
+| A07 | AD independence: the escalation is a function that takes no Jacobian. Run on W1's `S1.n.A` with a residual-only double (no `jacobian` attribute), it returns `k* = 3` and `D̂_k*` bitwise equal to what the witness uses. | as stated | Exact. |
+| A08 | L-X10-1: `benchmarks/m04/c1-surrogate.json` under `T06-revision-v2` is `CONVERGED` and `VERIFIED`, with limitation kinds exactly `[near_threshold, surrogate_model]`; the `near_threshold` entry names `derivative_witness.on_pattern` (ADR 0007 D2.4: 3.9e-8 lies within 10× of `τ_D`). Both witness checks pass. The escalated set is {`S1.n.NH3`, `S1.n.N2`, `S1.n.Ar`, `S1.n.CH4`, `S1.n.H2`, `S2.n.NH3`}, every member resolves with an escalated discrepancy `≤ τ_D/10`, and on-pattern is `≤ τ_D`. | measured: `k*` = 4, 5, 3, 3, 2, 1; escalated ≤ 4.28e-10; on-pattern 3.9004e-08 | The `τ_D/10` bound has a 230× margin. The overall maximum is a registered central column (`S2.n.CH4`, 3.9e-8): deterministic O(h²) truncation, as C-MW's F-1 (2.6× margin). The set is stable: every member fails the registered stencil by `≥ 2.8 τ_D` (the smallest is `S2.n.NH3`, 2.83e-7), and the largest non-member is 3.9e-8. `k*` is recorded, not asserted (`S1.n.CH4`'s `e_2` is 1.09 `ε_res`). |
+| A09 | G7(c) at δ = 1e-4 (`tests/test_m02_wo8_g7.py`): both witness checks pass. `S3.n.NH3` escalates with levels 0–3 inadmissible and `k* = 5`. The verdict stays `UNVERIFIED` with regularity `ILL_CONDITIONED` (absolute). `derivative_limitation` and `unsupported_check` are absent; `rank_limitation` and `derivative_witness_partial` are present. | as stated | Exact for the structure. Measured on-pattern 4.98e-11 and `e_5` = 8.9e-16. |
+| A10 | GP-C3 with the heater at 340 K and at 345 K: class 4 = {`S4.vap.CH3OH`, `S4.vap.C2H5OH`, `S4.vap.H2O`}. The AD entries (`H:HEAT-equilibrium:<c>`, `S4.vap.<c>`) are 0.5 (G1). Both certificates are `VERIFIED` with no `derivative_witness_partial`, and the class-4 part is `≤ τ_D/10`. At 354 K (S11.A71), classes 2 and 4 are empty and on-pattern equals `2.6013065590468898e-09` bitwise on the reference platform. | measured on-pattern 1.3166534529318596e-10 (340 K) and 6.871747615377899e-11 (345 K) | The G1 entry is exact (an affine row: measured bitwise). `τ_D/10` is R-831's watch line; the measured part is 2.39e-11. |
+| A11 | GP-C3 with the heater at 365, 375 and 385 K: class 2 = the three `S4.liq.<c>`. Each certificate is `VERIFIED`, and `derivative_witness_partial` lists exactly those columns, sorted. At 385 K the AD entries and the forward five-point differences of (`H:HEAT-equilibrium:<c>`, `S4.liq.<c>`) equal G2's values. | G2 | Relative 1e-12. Measured 4.6e-15, so the margin is 200×. The 1e-12 bound stays far below the smallest gap (7.5e-2), so a probe at the wrong composition fails it. |
+| A12 | Class assignment: a single function returns one class per column. Over the states of A08–A11 the five sets are pairwise disjoint and cover every column, and classes 2–4 are empty on every basis other than γ–φ-IG. | as stated | exact |
+| A13 | Identity: `scripts/corpus_identity.py --check` is PASS for M1–M9 at the implementing commit. The full suite passes with exactly the moves M-1 to M-3 amended. | PASS | exact |
+| A14 | Unchanged under escalation: ADV-06 M (`T06-revision-v2`) has `on_pattern` `fail` with value `1.793495859841966e-05` bitwise on the reference platform (T6-A17's band elsewhere), and T06 W2's A42 stays `unsupported` (`S1.P`). | as stated | Exact. This is a regression identity, not a correctness claim. |
+| A15 | W4 (review F-1): one column `S1.n.A` = `x0` (scale 3) and rows `R1 = θ n_A/(n_A + 5e-3)` (scale 1, closed-form AD entry) and `R4′ = (BIG + c n_A) − BIG − c x0` (scale 3, `c = 2e-7`, AD entry declared 0.0: a dropped term of scaled size `2 τ_D`), for `BIG` ∈ {1e4, 3e4, 1e5} × `x0` ∈ {2, 2.5, 3}e-4. The registered stencil fails (wit: ≥ 5.1e-3); the escalation does not resolve; `on_pattern` is `fail` with its value bitwise equal to the registered central discrepancy computed by the test, as in A05. | unresolved; value unchanged | Exact. Without the flat rule 7 of the 9 resolve at `k*` = 3–5 with `D̂(R4′)` = 0.0 and pass (wit), the hole of review F-1. |
+
+### 4.8.8 What amendment WIT does not establish
+
+- **That `F` is differentiable at any state.** The witness compares. A1's premise is argued from the γ–φ-IG form and
+  measured at GP-C3 only.
+- **A selection that cannot be fooled.**
+  - Two levels in the pre-asymptotic range can agree by accident. The result is then a false `fail`, which is
+    conservative.
+  - A false pass would need that accident to coincide with an AD error of the same size and sign.
+  - A Jacobian error equal to the registered stencil's own truncation error still passes the registered stencil and is
+    never escalated. That weakness is the status quo; this amendment neither adds nor removes it.
+- **The regularity of a state with a dormant liquid side.** A2 removes those entries from the witness, but the
+  regularity screen still factors a matrix that contains the probe-convention entries. Whether its local-uniqueness
+  statement holds at such a state is a regularity question, and out of scope (brief).
+- **States not measured.**
+  - A dormant *stream* that is not a split side.
+  - A `ZERO_FLOW` split on a γ–φ-IG basis (both sides and the feed dormant). The feed's `<S>.n.<c>` stays central and
+    refused, so the witness stays `unsupported`.
+  - OPT A-2 zero-subsystem columns that are not component columns of a split side (for example `S5.sat.L`).
+  - Readers of a dormant vapour product stream other than the split's own rows and enthalpy blocks.
+- **A scaling decision.** L-X10-1's root is plant-scale scales (`S_x = 3` mol/s) on a per-tube revision (flows of
+  1e-4 mol/s). It makes `τ_D` a relative demand of about 1e-10 on entries of order 1e3. The escalation resolves it; the
+  scales do not change.
+- **Portability.** `k*` for W1 and W2 is robust by construction (the generator's margins). The system-level values
+  (3.9004e-08 and the rest) are reference-platform measurements, not portable digests (ADR 0007).
+- **Cost at size.** At most 36 evaluations per escalated column, not measured on a large flowsheet whose witness fails
+  on many columns.
+
+### 4.8.9 Open questions, each with a recommended default
+
+| ID | Question | Label | Recommended default |
+| --- | --- | --- | --- |
+| Q-WIT-1 | A2 makes a γ–φ-IG vapour single-phase split `VERIFIED` with a declared partial witness. Should such states rather stay `UNVERIFIED`? | needs the user's preference; it is consistent with R-281 and R-924, so it is not a blocker | **A2 as written.** Reversal is one class-table row, and it moves nothing registered. |
+| Q-WIT-2 | A dormant stream that is not a split side, and a `ZERO_FLOW` split, on a γ–φ-IG basis | needs a fact: GP-C1 or a splitter with a zero fraction on Wilson, certified | **No rule.** The build lane records the first case and returns it to the design lane. |
+| Q-WIT-3 | A new γ–φ-IG basis | needs a fact: vapour `ln φ ≡ 0` at admission, `h^E = 0`, and the G1/G2 measurement on it | **It joins `ONE_SIDED_BASES` only by a register entry**, never by inference from `equilibrium_form`. |
+| Q-WIT-4 | A thermal machine (entropy) or another non-affine reader fed by a dormant vapour product stream | needs a fact: the first such certified case | **A1 as written.** A class-4 column that fails there is reported `fail`, which is conservative, and the build lane escalates it. Measured off the outlet style (review F-4, 2026-11-08): GP-C1 with its `tp_flash` held LIQUID (335 K; and 340 K with the heater's outlet liquid too) has the vapour product `S3.n.<c>` in class 4, read by the flash's own rows and a sink; `VERIFIED`, forward against AD ≤ 1.32e-10. A non-affine downstream reader is still unmeasured. |
+| Q-WIT-5 | Should a certificate record which columns escalated? | needs the user's preference (transparency against a frozen field set) | **No record** (R-831 precedent). A future schema revision may add `derivative_provenance.escalated_columns`. |
 
 ### 4.9 `regularity` — see §7. Includes the absolute-conditioning limit of §7.4.
 
@@ -419,6 +755,8 @@ Once-through: the heater outlet is `TWO_PHASE` (`β_h = 0.10136872342672775985`)
 
 Conventions: `ref` = `benchmarks/k04/reference_values.yaml`; `p01` = `benchmarks/syn001/reference_values.yaml`; `k03` = `benchmarks/k03/reference_values.yaml`; `τ_kind` per §5.1. Manifest `checks[].id = K04.<AID>`; `result ∈ {pass, fail, unsupported, not_applicable}`. Every assertion is evaluated at every state it names.
 
+Amendment WIT (2026-11-08) registers its assertions in §4.8.7 as WIT.A01–WIT.A15, manifest ids `K04.WIT.Ann`; they are not repeated in this table.
+
 | ID | Assertion | Expected | Tolerance and floor |
 | --- | --- | --- | --- |
 | A00 | Generator self-check: `k04_reference.py --check` passes; the committed YAML's SHA-256 equals the header's; the P01 cross-check is among the passed checks. | pass | exact |
@@ -467,6 +805,7 @@ Assertion count: 35 (A00–A34).
 
 - `docs/derivations/scripts/k04_reference.py` — closed forms, `--check`, `--emit`. No `process_runtime`, no oracle, no verifier import. Reads `benchmarks/syn001/reference_values.yaml` in `--check` only to prove agreement; copies nothing from it.
 - `benchmarks/k04/reference_values.yaml` — emitted; SHA-256 in the header; regenerated only by the script; never from the verifier.
+- `docs/derivations/scripts/wit_reference.py` → `docs/derivations/scripts/wit_reference.json` (amendment WIT): W0–W3 closed forms at 50 digits, W3 and W4 in binary64, GP-C3 G1/G2 from `benchmarks/s10/records.yaml`; `--check` byte-compares and refuses to emit when one of its 56 claims fails. Imports nothing from `openflowsheet`.
 - Evidence: `evidence/K04/<commit>/manifest.json` with `requirements: ["D14", "D05", "A08", "A09"]`, one `checks[]` entry per `K04.<AID>` including the `unsupported` ones, `commands` = the actual gate run on both architectures, `limitations` restating §15, `review` unset.
 
 ### 14.2 What `--check` asserts about this document's own numbers
@@ -484,6 +823,7 @@ Assertion count: 35 (A00–A34).
 - **Performance.** A dense SVD at n ≤ 2000 and a 47-column finite difference are affordable here and say nothing at size (ADR 0003 D2.2).
 - **Validation of structural over-specification** (STR-03): `unsupported` until K06 (A22).
 - **Reproducibility of any float.** What a certificate promises across machines is ADR 0007's; nothing here pins a digest (ADR 0008 D2.1).
+- **Amendment WIT's limits** are §4.8.8's.
 - **Human numerical or process-modeling review**: `review.numerical` and `review.process_model` remain `pending`.
 
 ---
@@ -524,6 +864,8 @@ Points where the design turns on a judgement only Frank holds. Each has a recomm
 | Q3 | Should a `checked_partial` `CheckReport` on a failed solve's best iterate be produced by default or only on request? | needs the user's preference (cost vs diagnosis) | By default for every bundle with a checkpoint; it is the cheapest diagnosis a failure can carry, and §8.3 keeps it from reading as success. |
 | Q4 | The `SolutionCertificate` records the two required sentences as text (§8.2). Should the exact wording be frozen in the schema as literals? | needs the user's preference | Freeze them as literals: a sentence that can drift is a claim that can drift. |
 
+Amendment WIT's open questions are §4.8.9's Q-WIT-1 to Q-WIT-5, each with its default.
+
 ---
 
 ## 18. Findings about the brief, the plan, the ADRs and K03
@@ -536,3 +878,6 @@ Points where the design turns on a judgement only Frank holds. Each has a recomm
 6. **The K02 review's Q3 is answered by §4.7 and §4.4 together**, and the measured trivial-root state shows that either alone would do but the envelope alone would not. The envelope's blind spot is now registered (invariant 3), so a later session cannot "simplify" the energy check to the envelope without failing A18.
 7. **The plan's `x² = 0` seed needs a scale-aware limit beside the relative rank test, and the first version of this document put it in the wrong place** (§7.4, amended 2026-09-22). K03's Newton stops at `2⁻¹⁴` with a nonsingular 1 × 1 Jacobian and `rcond₁ = 1`. The first version made the first-order solution-error bound a required check against `τ̂_min`; the Opus session measured `‖Ĵ⁻¹‖₁ = 144.8` at nominal, so that check was ~145× stricter than the residual rule and failed every below-threshold twin of §9 (A17, A27, A28) while every other check passed — the document contradicted its own registered twins, and the cause was a promise the authority does not make (solution accuracy). The amendment keeps the bound as recorded evidence with a statement and puts the limit on the absolute conditioning `‖Ĵ⁻¹‖₁ ≤ τ̂_min / (n ε)`, which is [A08]'s "derivative/evaluation uncertainty" clause made concrete, has a 2000× margin at SYN-001, and has a closed-form bite state (SQ-2). It is additive to plan §6.3's recipe. F3 carries to Frank the only version of the question that is his: whether `VERIFIED` should ever promise solution accuracy.
 8. **No change to the blueprint, the plan, the frozen interfaces or ADR 0001–0008 is required.** ADR 0007 is written beside this document; ADR 0004 D2's "K04's regularity screen calls the same function" is honoured (§7.2); ADR 0008 D2.5's reservation of certificate hashes to ADR 0007 is honoured (ADR 0007 D1).
+9. **(WIT, 2026-11-08) The premise that any change to the witness moves registered certificate bytes is false** (`docs/roadmap/decisions.md`, 2026-11-08, RRC entry). An escalation gated on the registered result leaves every certificate whose witness passes byte-identical, and every F0 certificate is `VERIFIED` (§4.8.6). No registered certificate moves, so no question to Frank is needed for identity.
+10. **(WIT) OPT D-42's two held sides differ in kind.** The vapour side of a γ–φ-IG split is affine in its flows, and a one-sided difference witnesses it (A1). The liquid side has no derivative at zero, and only a record is honest there (A2). "Should the stencil respect held zero sides" therefore has two answers, not one.
+11. **(WIT) X10 review M-1's suggested step relative to `max(|x|, floor)` would not have fixed L-X10-1.** `S1.n.N2` sits 59 steps from zero and fails the registered stencil at 0.105. The surrogate's curvature scale is its input box, not the flow (§4.8.3, item 6). The per-tube revision on plant scales also makes `τ_D` a relative demand of about 1e-10 on entries up to 1.36e3. That is a scaling fact, out of scope here (§4.8.8).

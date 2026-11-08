@@ -128,7 +128,7 @@ Envelope `v0.2-envelope-dev` (T08 release spec §5). **Unlisted is unsupported**
 | L34 | A replay bundle references the CasADi wheel by hash and does not embed it; a replay needs the wheel to remain fetchable. | `doc:docs/adr/0006-distribution-data-rights.md §D1` |
 | L35 | A tear-path solve that exhausts its budget records `attempts = 0`, the start state and no provenance (K03's registered capped-budget shape). | `doc:docs/derivations/T03-phase-controller-spec.md §13` |
 | L40 | The reference-tool data (the IDAES and DWSIM environments, their downloads and their outputs) and OpenIDAES-450 are not distributed: the sdist and the wheel carry the project's own code, its package data (since M01 including the five C1 records, M01 spec §15 Q-N4's default), its licence files, one third-party data file, the IAPWS-95 coefficients `benchmarks/s05/iapws95_coefficients.json`, under IAPWS's terms with their attribution in NOTICE (S05 spec §16, R-616, R-617), and since E01 six third-party assessment data files under `assessment/` (the SSLW cost set transcribed from IDAES under its BSD licence, the PrISMa chain factors, the BLS, Eurostat and Federal Reserve index series, and five IPCC AR6 GWP100 values), each with its attribution in NOTICE (ADR 0052), and since 0.3.0 Wilson's records `benchmarks/s10/records.yaml` and the Kurihara 1993 Table II points `benchmarks/s10/vle/kurihara1993_binaries.csv`, with their attribution in NOTICE (V03 spec §9.1, R-880), and nothing else; every ComponentRecord is synthetic (SYN-001) or one of M01's five real C1 records, each with its identifiers, rights, per-parameter provenance and retrieval equality (M01 spec §3.5, R-158). | `tests/test_t08_w2_inventory.py::test_a32_no_third_party_data_in_the_sdist_or_the_wheel`<br>`tests/test_t08_w2_inventory.py::test_a32_every_component_record_is_synthetic_or_a_vetted_real_record_with_rights`<br>`doc:docs/adr/0006-distribution-data-rights.md §D1` |
-| L41 | A bundle written by an installed package (wheel or sdist, not the source checkout) carries no dependency-set identity: the package ships no lock file, so its `lock_sha256` is empty and every replay of it is `inspected_archived_results` / `NOT_RUN` ("the dependency set is unknown …"); replayable bundles are written from the source checkout at the lock `ead4edf1…`. | `tests/test_t08_r3_a19_lock_lookup.py::test_the_three_states_end_to_end`<br>`tests/test_t08_r3_a19_lock_lookup.py::test_b_an_installed_layout_beneath_a_stray_lock_has_none`<br>`doc:docs/adr/0007-reproducibility-certificate-policy.md §D4`<br>`doc:docs/derivations/T08-release-spec.md §5.5` |
+| L41 | A bundle written by an installed package or a checkout whose runtime closure (the 9 distributions of ADR 0069 D3) is not at the packaged lock `ead4edf1…` records no dependency-set identity: its `lock_sha256` is empty, every replay of it is `inspected_archived_results` / `NOT_RUN`, and the replaying side's failing distributions are named. Optional extras are not part of the identity. | `tests/test_x05_replay_from_the_wheel.py::test_a15_one_closure_distribution_off_records_empty_naming_it`<br>`tests/test_x05_replay_from_the_wheel.py::test_a16_a17_the_replay_matrix`<br>`tests/test_x05_lock.py::test_a01_to_a09_each_registered_state`<br>`doc:docs/adr/0069-X05-replay-from-the-wheel.md §D7`<br>`doc:docs/adr/0007-reproducibility-certificate-policy.md §D4` |
 | L42 | `pr-c1-v1` (Peng–Robinson with the light gases vapour-only, ADR 0026), shipped since M01, is bound by the C1 models (`c1.*`) on their own basis (R-288) and does not share the axes' components and domain: it takes the five real components H2, N2, NH3, Ar, CH4 (the only liquid is pure NH3) over 200–1000 K and 10⁴–3 × 10⁷ Pa. It is validated for pure-component behaviour only, within M01 spec §11's bands (NH3 saturation pressure within 2 %, liquid NH3 and light-gas ln φ within 0.05 of the reference equations of state). There is no mixture VLE validation, and k_ij = 0 for every pair: k_H2–NH3 = 0.1 would move the separator's vapour NH3 fraction y* by −3.1 % (about 3 % per 0.1; spec §4.2). | `check:M01.A38`<br>`check:M01.A39`<br>`check:M01.A40`<br>`doc:docs/derivations/M01-spec.md §11`<br>`doc:docs/derivations/M01-spec.md §4.2`<br>`doc:docs/derivations/M01-spec.md §17`<br>`tests/test_m01_provider.py::test_a04_describe_declares_exactly_the_registered_surface` |
 | L43 | The Anderson recycle, its stagnation restart (recovery edge E1) and the stalled-recycle EO merge (E2) are library capabilities: every shipped unit that can sit in a loop declares exact derivatives, so `auto` resolves to `newton_tear`, and no application-offered policy requests `anderson` (`docs/recovery-edges.yaml`, `enabled: library-only`, R-130). V13 (b)'s and V14 (c)'s evidence for them is library-level. | `tests/test_t08_w2_edge_identity.py::test_e1_e2_no_offered_policy_or_unit_reaches_a_recycle_iteration`<br>`doc:docs/recovery-edges.yaml` |
 | L-WEB-1 | The web shell (`serve-http --ui`) is a diagnostic client of the HTTP binding: it edits nothing (Solve and Cancel are its only effects), calls seventeen operations and no other, computes only display arithmetic (design note §5.6), converts no unit, and judges nothing — the scenario view displays run differences without a registered comparison or allowance. | `tests/test_m06_static_scan.py::test_the_ui_calls_exactly_the_seventeen_operations`<br>`doc:docs/web-shell.md`<br>`doc:docs/design/M06-web-shell.md §5.6` |
@@ -169,7 +169,7 @@ Envelope `v0.2-envelope-dev` (T08 release spec §5). **Unlisted is unsupported**
 
 ## Harvest (T08.A21)
 
-1059 items — every `limitations[]` entry and non-`pass` check of the 45 manifests under `evidence/` — each classified once: **E** user-facing (a row above), **S** superseded or closed, **P** provenance or process note (stays in its manifest), **B** v0.2 backlog (spec §6.3). The classification is a build-lane draft for the design-lane review.
+1109 items — every `limitations[]` entry and non-`pass` check of the 49 manifests under `evidence/` — each classified once: **E** user-facing (a row above), **S** superseded or closed, **P** provenance or process note (stays in its manifest), **B** v0.2 backlog (spec §6.3). The classification is a build-lane draft for the design-lane review.
 
 | Package | E | S | P | B |
 | --- | --- | --- | --- | --- |
@@ -209,6 +209,7 @@ Envelope `v0.2-envelope-dev` (T08 release spec §5). **Unlisted is unsupported**
 | S12b | 0 | 0 | 20 | 0 |
 | S13a | 0 | 0 | 8 | 0 |
 | S14 | 0 | 0 | 12 | 0 |
+| S15 | 0 | 0 | 14 | 0 |
 | T01 | 3 | 3 | 3 | 0 |
 | T02 | 11 | 2 | 7 | 0 |
 | T03 | 9 | 1 | 10 | 1 |
@@ -218,4 +219,7 @@ Envelope `v0.2-envelope-dev` (T08 release spec §5). **Unlisted is unsupported**
 | T06 | 11 | 3 | 14 | 0 |
 | T07 | 3 | 2 | 7 | 2 |
 | T08 | 53 | 0 | 6 | 1 |
-| **all** | 380 | 93 | 576 | 10 |
+| X05 | 0 | 4 | 13 | 0 |
+| X10 | 0 | 2 | 11 | 0 |
+| X10a | 0 | 0 | 4 | 2 |
+| **all** | 380 | 99 | 618 | 12 |

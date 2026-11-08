@@ -1,0 +1,1023 @@
+{
+ "adr": "docs/adr/0069-X05-replay-from-the-wheel.md",
+ "assertions": {
+  "X05.A01": "verifier: matched lock and closure",
+  "X05.A02": "verifier: a closure member at another version",
+  "X05.A03": "verifier: a closure member not installed",
+  "X05.A04": "verifier: the lock lacks a closure member (no vacuous pass)",
+  "X05.A05": "verifier: a missing, unreadable or malformed lock",
+  "X05.A06": "verifier: lock lines outside the closure are hashed, not checked",
+  "X05.A07": "verifier: names normalised, comments and blank lines ignored",
+  "X05.A08": "verifier: versions compare as strings",
+  "X05.A09": "verifier: never raises",
+  "X05.A10": "the registered closure is the measured closure",
+  "X05.A11": "the checkout records the packaged lock; the document keeps its eight keys",
+  "X05.A12": "a matched checkout's environment document is unchanged by X05",
+  "X05.A13": "installed beneath a verifiable stray lock: the packaged lock's hash",
+  "X05.A14": "installed with no packaged lock: empty, never the stray's hash",
+  "X05.A15": "one closure distribution off by a version: empty, the finding named",
+  "X05.A16": "replay matrix, matched cells: exact_replay / MATCH",
+  "X05.A17": "replay matrix, unmatched cells: inspected / NOT_RUN, reason exact",
+  "X05.A18": "decide_mode's reason templates; D4's other branches unchanged",
+  "X05.A19": "one installed-version read per closure member per process",
+  "X05.A20": "the wheel and the sdist carry the lock's bytes at the packaged path",
+  "X05.A21": "the real wheel, clean-install job, both architectures: A13, A15-A17",
+  "X05.A22": "the installed wheel replays the 52 F0 bundles",
+  "X05.A23": "F0 PASS; the existing replay suites pass unedited",
+  "X05.A24": "L41, the support matrix and the T08 notes restated",
+  "X05.A25": "the closure pinned in Requires-Dist; an unconstrained install verifies"
+ },
+ "cases": [
+  {
+   "assertion": "X05.A01",
+   "expect": {
+    "findings": [],
+    "sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+   },
+   "id": "V01",
+   "installed": {
+    "base": "closure",
+    "overrides": {}
+   },
+   "lock": {
+    "edits": [],
+    "sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+   },
+   "why": "the clean-install environment: the closure only, at the lock"
+  },
+  {
+   "assertion": "X05.A01",
+   "expect": {
+    "findings": [],
+    "sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+   },
+   "id": "V02",
+   "installed": {
+    "base": "lock",
+    "overrides": {}
+   },
+   "lock": {
+    "edits": [],
+    "sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+   },
+   "why": "a development environment: every lock line installed"
+  },
+  {
+   "assertion": "X05.A06",
+   "expect": {
+    "findings": [],
+    "sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+   },
+   "id": "V03",
+   "installed": {
+    "base": "lock",
+    "overrides": {
+     "certifi": "2000.1.1",
+     "mcp": null,
+     "pytest": "9.9.9",
+     "ruff": null,
+     "typing-extensions": "0.0.1"
+    }
+   },
+   "lock": {
+    "edits": [],
+    "sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+   },
+   "why": "lines outside the closure off or absent still verify; a check of all 43 lines fails here"
+  },
+  {
+   "assertion": "X05.A02",
+   "expect": {
+    "findings": [
+     "attrs is 26.1.0.post1, the lock pins 26.1.0"
+    ],
+    "sha256": ""
+   },
+   "id": "V04",
+   "installed": {
+    "base": "closure",
+    "overrides": {
+     "attrs": "26.1.0.post1"
+    }
+   },
+   "lock": {
+    "edits": [],
+    "sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+   },
+   "why": "attrs off by a version; one per member catches a checked subset"
+  },
+  {
+   "assertion": "X05.A02",
+   "expect": {
+    "findings": [
+     "casadi is 3.8.0.post1, the lock pins 3.8.0"
+    ],
+    "sha256": ""
+   },
+   "id": "V05",
+   "installed": {
+    "base": "closure",
+    "overrides": {
+     "casadi": "3.8.0.post1"
+    }
+   },
+   "lock": {
+    "edits": [],
+    "sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+   },
+   "why": "casadi off by a version; one per member catches a checked subset"
+  },
+  {
+   "assertion": "X05.A02",
+   "expect": {
+    "findings": [
+     "jsonschema is 4.26.0.post1, the lock pins 4.26.0"
+    ],
+    "sha256": ""
+   },
+   "id": "V06",
+   "installed": {
+    "base": "closure",
+    "overrides": {
+     "jsonschema": "4.26.0.post1"
+    }
+   },
+   "lock": {
+    "edits": [],
+    "sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+   },
+   "why": "jsonschema off by a version; one per member catches a checked subset"
+  },
+  {
+   "assertion": "X05.A02",
+   "expect": {
+    "findings": [
+     "jsonschema-specifications is 2025.9.1.post1, the lock pins 2025.9.1"
+    ],
+    "sha256": ""
+   },
+   "id": "V07",
+   "installed": {
+    "base": "closure",
+    "overrides": {
+     "jsonschema-specifications": "2025.9.1.post1"
+    }
+   },
+   "lock": {
+    "edits": [],
+    "sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+   },
+   "why": "jsonschema-specifications off by a version; one per member catches a checked subset"
+  },
+  {
+   "assertion": "X05.A02",
+   "expect": {
+    "findings": [
+     "numpy is 2.2.4.post1, the lock pins 2.2.4"
+    ],
+    "sha256": ""
+   },
+   "id": "V08",
+   "installed": {
+    "base": "closure",
+    "overrides": {
+     "numpy": "2.2.4.post1"
+    }
+   },
+   "lock": {
+    "edits": [],
+    "sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+   },
+   "why": "numpy off by a version; one per member catches a checked subset"
+  },
+  {
+   "assertion": "X05.A02",
+   "expect": {
+    "findings": [
+     "pyyaml is 6.0.2.post1, the lock pins 6.0.2"
+    ],
+    "sha256": ""
+   },
+   "id": "V09",
+   "installed": {
+    "base": "closure",
+    "overrides": {
+     "pyyaml": "6.0.2.post1"
+    }
+   },
+   "lock": {
+    "edits": [],
+    "sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+   },
+   "why": "pyyaml off by a version; one per member catches a checked subset"
+  },
+  {
+   "assertion": "X05.A02",
+   "expect": {
+    "findings": [
+     "referencing is 0.37.0.post1, the lock pins 0.37.0"
+    ],
+    "sha256": ""
+   },
+   "id": "V10",
+   "installed": {
+    "base": "closure",
+    "overrides": {
+     "referencing": "0.37.0.post1"
+    }
+   },
+   "lock": {
+    "edits": [],
+    "sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+   },
+   "why": "referencing off by a version; one per member catches a checked subset"
+  },
+  {
+   "assertion": "X05.A02",
+   "expect": {
+    "findings": [
+     "rpds-py is 2026.6.3.post1, the lock pins 2026.6.3"
+    ],
+    "sha256": ""
+   },
+   "id": "V11",
+   "installed": {
+    "base": "closure",
+    "overrides": {
+     "rpds-py": "2026.6.3.post1"
+    }
+   },
+   "lock": {
+    "edits": [],
+    "sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+   },
+   "why": "rpds-py off by a version; one per member catches a checked subset"
+  },
+  {
+   "assertion": "X05.A02",
+   "expect": {
+    "findings": [
+     "scipy is 1.15.3.post1, the lock pins 1.15.3"
+    ],
+    "sha256": ""
+   },
+   "id": "V12",
+   "installed": {
+    "base": "closure",
+    "overrides": {
+     "scipy": "1.15.3.post1"
+    }
+   },
+   "lock": {
+    "edits": [],
+    "sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+   },
+   "why": "scipy off by a version; one per member catches a checked subset"
+  },
+  {
+   "assertion": "X05.A03",
+   "expect": {
+    "findings": [
+     "attrs is not installed, the lock pins 26.1.0"
+    ],
+    "sha256": ""
+   },
+   "id": "V13",
+   "installed": {
+    "base": "closure",
+    "overrides": {
+     "attrs": null
+    }
+   },
+   "lock": {
+    "edits": [],
+    "sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+   },
+   "why": "attrs absent; one per member"
+  },
+  {
+   "assertion": "X05.A03",
+   "expect": {
+    "findings": [
+     "casadi is not installed, the lock pins 3.8.0"
+    ],
+    "sha256": ""
+   },
+   "id": "V14",
+   "installed": {
+    "base": "closure",
+    "overrides": {
+     "casadi": null
+    }
+   },
+   "lock": {
+    "edits": [],
+    "sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+   },
+   "why": "casadi absent; one per member"
+  },
+  {
+   "assertion": "X05.A03",
+   "expect": {
+    "findings": [
+     "jsonschema is not installed, the lock pins 4.26.0"
+    ],
+    "sha256": ""
+   },
+   "id": "V15",
+   "installed": {
+    "base": "closure",
+    "overrides": {
+     "jsonschema": null
+    }
+   },
+   "lock": {
+    "edits": [],
+    "sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+   },
+   "why": "jsonschema absent; one per member"
+  },
+  {
+   "assertion": "X05.A03",
+   "expect": {
+    "findings": [
+     "jsonschema-specifications is not installed, the lock pins 2025.9.1"
+    ],
+    "sha256": ""
+   },
+   "id": "V16",
+   "installed": {
+    "base": "closure",
+    "overrides": {
+     "jsonschema-specifications": null
+    }
+   },
+   "lock": {
+    "edits": [],
+    "sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+   },
+   "why": "jsonschema-specifications absent; one per member"
+  },
+  {
+   "assertion": "X05.A03",
+   "expect": {
+    "findings": [
+     "numpy is not installed, the lock pins 2.2.4"
+    ],
+    "sha256": ""
+   },
+   "id": "V17",
+   "installed": {
+    "base": "closure",
+    "overrides": {
+     "numpy": null
+    }
+   },
+   "lock": {
+    "edits": [],
+    "sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+   },
+   "why": "numpy absent; one per member"
+  },
+  {
+   "assertion": "X05.A03",
+   "expect": {
+    "findings": [
+     "pyyaml is not installed, the lock pins 6.0.2"
+    ],
+    "sha256": ""
+   },
+   "id": "V18",
+   "installed": {
+    "base": "closure",
+    "overrides": {
+     "pyyaml": null
+    }
+   },
+   "lock": {
+    "edits": [],
+    "sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+   },
+   "why": "pyyaml absent; one per member"
+  },
+  {
+   "assertion": "X05.A03",
+   "expect": {
+    "findings": [
+     "referencing is not installed, the lock pins 0.37.0"
+    ],
+    "sha256": ""
+   },
+   "id": "V19",
+   "installed": {
+    "base": "closure",
+    "overrides": {
+     "referencing": null
+    }
+   },
+   "lock": {
+    "edits": [],
+    "sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+   },
+   "why": "referencing absent; one per member"
+  },
+  {
+   "assertion": "X05.A03",
+   "expect": {
+    "findings": [
+     "rpds-py is not installed, the lock pins 2026.6.3"
+    ],
+    "sha256": ""
+   },
+   "id": "V20",
+   "installed": {
+    "base": "closure",
+    "overrides": {
+     "rpds-py": null
+    }
+   },
+   "lock": {
+    "edits": [],
+    "sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+   },
+   "why": "rpds-py absent; one per member"
+  },
+  {
+   "assertion": "X05.A03",
+   "expect": {
+    "findings": [
+     "scipy is not installed, the lock pins 1.15.3"
+    ],
+    "sha256": ""
+   },
+   "id": "V21",
+   "installed": {
+    "base": "closure",
+    "overrides": {
+     "scipy": null
+    }
+   },
+   "lock": {
+    "edits": [],
+    "sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+   },
+   "why": "scipy absent; one per member"
+  },
+  {
+   "assertion": "X05.A02",
+   "expect": {
+    "findings": [
+     "numpy is 2.2.5, the lock pins 2.2.4",
+     "scipy is not installed, the lock pins 1.15.3"
+    ],
+    "sha256": ""
+   },
+   "id": "V22",
+   "installed": {
+    "base": "closure",
+    "overrides": {
+     "numpy": "2.2.5",
+     "scipy": null
+    }
+   },
+   "lock": {
+    "edits": [],
+    "sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+   },
+   "why": "two failures: both reported, in closure order, nothing short-circuits"
+  },
+  {
+   "assertion": "X05.A04",
+   "expect": {
+    "findings": [
+     "attrs is in the runtime closure but not in the lock"
+    ],
+    "sha256": ""
+   },
+   "id": "V23",
+   "installed": {
+    "base": "closure",
+    "overrides": {}
+   },
+   "lock": {
+    "edits": [
+     {
+      "line": "attrs==26.1.0",
+      "op": "remove_line"
+     }
+    ],
+    "sha256": "275e5807bc77bcfb396291eb86a374cf6311cc0150634eaf0eefd3ce0c86d2f9"
+   },
+   "why": "the lock lacks attrs: the closure, not the lock's lines, drives the check"
+  },
+  {
+   "assertion": "X05.A04",
+   "expect": {
+    "findings": [
+     "attrs is in the runtime closure but not in the lock",
+     "casadi is in the runtime closure but not in the lock",
+     "jsonschema is in the runtime closure but not in the lock",
+     "jsonschema-specifications is in the runtime closure but not in the lock",
+     "numpy is in the runtime closure but not in the lock",
+     "pyyaml is in the runtime closure but not in the lock",
+     "referencing is in the runtime closure but not in the lock",
+     "rpds-py is in the runtime closure but not in the lock",
+     "scipy is in the runtime closure but not in the lock"
+    ],
+    "sha256": ""
+   },
+   "id": "V24",
+   "installed": {
+    "base": "closure",
+    "overrides": {}
+   },
+   "lock": {
+    "edits": [
+     {
+      "hex": "",
+      "op": "bytes"
+     }
+    ],
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+   },
+   "why": "an empty lock: nine findings; iterating the lock's lines would pass vacuously"
+  },
+  {
+   "assertion": "X05.A05",
+   "expect": {
+    "findings": [
+     "the lock openflowsheet/_data/requirements.lock is malformed at line 25: 'numpy>=2.2.4'"
+    ],
+    "sha256": ""
+   },
+   "id": "V25",
+   "installed": {
+    "base": "closure",
+    "overrides": {}
+   },
+   "lock": {
+    "edits": [
+     {
+      "line": "numpy==2.2.4",
+      "op": "replace_line",
+      "with": "numpy>=2.2.4"
+     }
+    ],
+    "sha256": "fdd70c3a5b931c8bae51e153867a1a36ea566f61631030c4d179ea228f8a285d"
+   },
+   "why": "a range specifier is not a pin"
+  },
+  {
+   "assertion": "X05.A05",
+   "expect": {
+    "findings": [
+     "the lock openflowsheet/_data/requirements.lock is malformed at line 48: 'numpy==2.2.4'"
+    ],
+    "sha256": ""
+   },
+   "id": "V26",
+   "installed": {
+    "base": "closure",
+    "overrides": {}
+   },
+   "lock": {
+    "edits": [
+     {
+      "op": "append",
+      "text": "numpy==2.2.4\n"
+     }
+    ],
+    "sha256": "0cf540de2628ba1323c765cee8ef74af1e0cc30e1d20f36c0b510b104b596ca4"
+   },
+   "why": "a duplicated name is malformed at its second line"
+  },
+  {
+   "assertion": "X05.A05",
+   "expect": {
+    "findings": [
+     "the lock openflowsheet/_data/requirements.lock is malformed at line 25: 'numpy==2.2.4 --hash=sha256:0000000000000000000000000000000000000000000000000000000000000000'"
+    ],
+    "sha256": ""
+   },
+   "id": "V27",
+   "installed": {
+    "base": "closure",
+    "overrides": {}
+   },
+   "lock": {
+    "edits": [
+     {
+      "line": "numpy==2.2.4",
+      "op": "replace_line",
+      "with": "numpy==2.2.4 --hash=sha256:0000000000000000000000000000000000000000000000000000000000000000"
+     }
+    ],
+    "sha256": "031124746df7f85d63288d28aaffbe8d316412b5443927fb51ca11ee8a7958a3"
+   },
+   "why": "a hash option is not this lock's grammar"
+  },
+  {
+   "assertion": "X05.A05",
+   "expect": {
+    "findings": [
+     "the lock openflowsheet/_data/requirements.lock is missing or unreadable"
+    ],
+    "sha256": ""
+   },
+   "id": "V28",
+   "installed": {
+    "base": "closure",
+    "overrides": {}
+   },
+   "lock": {
+    "edits": [
+     {
+      "op": "missing"
+     }
+    ],
+    "sha256": null
+   },
+   "why": "no lock at all"
+  },
+  {
+   "assertion": "X05.A05",
+   "expect": {
+    "findings": [
+     "the lock openflowsheet/_data/requirements.lock is missing or unreadable"
+    ],
+    "sha256": ""
+   },
+   "id": "V29",
+   "installed": {
+    "base": "closure",
+    "overrides": {}
+   },
+   "lock": {
+    "edits": [
+     {
+      "hex": "fffe6e756d70793d3d322e322e340a",
+      "op": "bytes"
+     }
+    ],
+    "sha256": "dcc39ed07f7d9bc7766a851503ca48224037696ae43365c99fe23a0c180980a4"
+   },
+   "why": "bytes that are not UTF-8 are unreadable"
+  },
+  {
+   "assertion": "X05.A07",
+   "expect": {
+    "findings": [],
+    "sha256": "4ec617eb2c914a85fcd9fa7c55e0fb23d086d379cd530c84a98c2470e52e409b"
+   },
+   "id": "V30",
+   "installed": {
+    "base": "closure",
+    "overrides": {}
+   },
+   "lock": {
+    "edits": [
+     {
+      "line": "rpds-py==2026.6.3",
+      "op": "replace_line",
+      "with": "rpds_py==2026.6.3"
+     },
+     {
+      "line": "jsonschema-specifications==2025.9.1",
+      "op": "replace_line",
+      "with": "Jsonschema_Specifications==2025.9.1"
+     },
+     {
+      "line": "PyYAML==6.0.2",
+      "op": "replace_line",
+      "with": "PYYAML==6.0.2"
+     }
+    ],
+    "sha256": "4ec617eb2c914a85fcd9fa7c55e0fb23d086d379cd530c84a98c2470e52e409b"
+   },
+   "why": "three spellings normalise to the closure's names; the hash is of the bytes as written"
+  },
+  {
+   "assertion": "X05.A07",
+   "expect": {
+    "findings": [],
+    "sha256": "be9ac47a3cf944be4e6067ddc0eaca9d56dd47cf4f536acd94afbf948913942c"
+   },
+   "id": "V31",
+   "installed": {
+    "base": "closure",
+    "overrides": {}
+   },
+   "lock": {
+    "edits": [
+     {
+      "line": "numpy==2.2.4",
+      "op": "replace_line",
+      "with": "numpy==2.2.4  # base pin"
+     },
+     {
+      "op": "append",
+      "text": "\n# trailing comment\n"
+     }
+    ],
+    "sha256": "be9ac47a3cf944be4e6067ddc0eaca9d56dd47cf4f536acd94afbf948913942c"
+   },
+   "why": "an inline comment, a blank line and a comment-only line"
+  },
+  {
+   "assertion": "X05.A08",
+   "expect": {
+    "findings": [
+     "numpy is 2.2.4.0, the lock pins 2.2.4"
+    ],
+    "sha256": ""
+   },
+   "id": "V32",
+   "installed": {
+    "base": "closure",
+    "overrides": {
+     "numpy": "2.2.4.0"
+    }
+   },
+   "lock": {
+    "edits": [],
+    "sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+   },
+   "why": "2.2.4.0 is PEP 440-equal to 2.2.4 and is still refused: string equality"
+  },
+  {
+   "assertion": "X05.A08",
+   "expect": {
+    "findings": [
+     "numpy is 2.2.4+local, the lock pins 2.2.4"
+    ],
+    "sha256": ""
+   },
+   "id": "V33",
+   "installed": {
+    "base": "closure",
+    "overrides": {
+     "numpy": "2.2.4+local"
+    }
+   },
+   "lock": {
+    "edits": [],
+    "sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+   },
+   "why": "a local version label is another build"
+  },
+  {
+   "assertion": "X05.A09",
+   "expect": {
+    "findings": [
+     "numpy's installed metadata could not be read: ValueError"
+    ],
+    "sha256": ""
+   },
+   "id": "V34",
+   "installed": {
+    "base": "closure",
+    "overrides": {
+     "numpy": {
+      "raises": "ValueError"
+     }
+    }
+   },
+   "lock": {
+    "edits": [],
+    "sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+   },
+   "why": "a lookup that raises is a finding, never an exception"
+  },
+  {
+   "assertion": "X05.A09",
+   "expect": {
+    "findings": [
+     "numpy's installed metadata could not be read: TypeError"
+    ],
+    "sha256": ""
+   },
+   "id": "V35",
+   "installed": {
+    "base": "closure",
+    "overrides": {
+     "numpy": {
+      "raises": "TypeError"
+     }
+    }
+   },
+   "lock": {
+    "edits": [],
+    "sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+   },
+   "why": "a distribution found with no Version in its metadata: TypeError, not 'not installed'"
+  },
+  {
+   "assertion": "X05.A02",
+   "expect": {
+    "findings": [
+     "numpy is 2.2.4, the lock pins 2.2.5"
+    ],
+    "sha256": ""
+   },
+   "id": "V36",
+   "installed": {
+    "base": "closure",
+    "overrides": {}
+   },
+   "lock": {
+    "edits": [
+     {
+      "line": "numpy==2.2.4",
+      "op": "replace_line",
+      "with": "numpy==2.2.5"
+     }
+    ],
+    "sha256": "8949e6174091d91633b2b2c81298bdeb198e9c0224003bc695ac88b2aef55c2a"
+   },
+   "why": "the lock moved, not the environment: a pin edited to another version"
+  }
+ ],
+ "end_to_end": {
+  "bundles": {
+   "off": {
+    "lock_sha256": "",
+    "written_by": "installed-off"
+   },
+   "on": {
+    "lock_sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4",
+    "written_by": "installed"
+   }
+  },
+  "missing_lock": {
+   "lock_findings": [
+    "the lock openflowsheet/_data/requirements.lock is missing or unreadable"
+   ],
+   "lock_sha256": "",
+   "state": "installed, `_data/requirements.lock` deleted from the installed copy"
+  },
+  "replays": [
+   {
+    "bundle": "on",
+    "mode": "exact_replay",
+    "reasons": [],
+    "state": "installed",
+    "verdict": "MATCH"
+   },
+   {
+    "bundle": "off",
+    "mode": "inspected_archived_results",
+    "reason0": "the dependency set is unknown on the archive's side: the archive recorded no verified lock, so nothing is known to match",
+    "state": "installed",
+    "verdict": "NOT_RUN"
+   },
+   {
+    "bundle": "on",
+    "mode": "exact_replay",
+    "reasons": [],
+    "state": "checkout",
+    "verdict": "MATCH"
+   },
+   {
+    "bundle": "off",
+    "mode": "inspected_archived_results",
+    "reason0": "the dependency set is unknown on the archive's side: the archive recorded no verified lock, so nothing is known to match",
+    "state": "checkout",
+    "verdict": "NOT_RUN"
+   },
+   {
+    "bundle": "on",
+    "mode": "inspected_archived_results",
+    "reason0": "the dependency set is unknown on this side: this side's lock did not verify (numpy is 2.2.5, the lock pins 2.2.4)",
+    "state": "installed-off",
+    "verdict": "NOT_RUN"
+   },
+   {
+    "bundle": "off",
+    "mode": "inspected_archived_results",
+    "reason0": "the dependency set is unknown on both sides: the archive recorded no verified lock, and this side's lock did not verify (numpy is 2.2.5, the lock pins 2.2.4); two unknowns are not a match",
+    "state": "installed-off",
+    "verdict": "NOT_RUN"
+   },
+   {
+    "bundle": "on",
+    "mode": "inspected_archived_results",
+    "reason0": "the dependency set is unknown on this side: this side's lock did not verify (numpy is 2.2.5, the lock pins 2.2.4)",
+    "state": "checkout-off",
+    "verdict": "NOT_RUN"
+   },
+   {
+    "bundle": "off",
+    "mode": "inspected_archived_results",
+    "reason0": "the dependency set is unknown on both sides: the archive recorded no verified lock, and this side's lock did not verify (numpy is 2.2.5, the lock pins 2.2.4); two unknowns are not a match",
+    "state": "checkout-off",
+    "verdict": "NOT_RUN"
+   }
+  ],
+  "shadow": {
+   "dist_info": "numpy-2.2.5.dist-info/METADATA",
+   "metadata": "Metadata-Version: 2.1\nName: numpy\nVersion: 2.2.5\n",
+   "name": "numpy",
+   "version": "2.2.5"
+  },
+  "states": {
+   "checkout": {
+    "lock_findings": [],
+    "lock_sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+   },
+   "checkout-off": {
+    "lock_findings": [
+     "numpy is 2.2.5, the lock pins 2.2.4"
+    ],
+    "lock_sha256": ""
+   },
+   "installed": {
+    "lock_findings": [],
+    "lock_sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+   },
+   "installed-off": {
+    "lock_findings": [
+     "numpy is 2.2.5, the lock pins 2.2.4"
+    ],
+    "lock_sha256": ""
+   }
+  },
+  "stray": {
+   "content": "the packaged lock followed by the suffix",
+   "sha256": "c2a8f1c164d1798ea4f452360f6bf03e9fea55e19bbdab3053be633cd7ec6250",
+   "suffix": "# stray copy, not the packaged lock\n"
+  }
+ },
+ "f0": {
+  "bundles": 52,
+  "directory": "tests/fixtures/f0/v0.3.0-bundles",
+  "m7_registered_values": [
+   {
+    "integrity_ok": true,
+    "mode": "exact_replay",
+    "verdict": "MATCH"
+   }
+  ],
+  "recorded_lock_sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4",
+  "reference_platform": "ref-x86-64",
+  "registered_in": "benchmarks/f0/corpus.json measures.M7"
+ },
+ "generator": "docs/derivations/scripts/x05_reference.py",
+ "lock": {
+  "lines": 47,
+  "packaged_as": "openflowsheet/_data/requirements.lock",
+  "path": "requirements.lock",
+  "pins": 43,
+  "runtime_closure": [
+   {
+    "locked": "26.1.0",
+    "name": "attrs"
+   },
+   {
+    "locked": "3.8.0",
+    "name": "casadi"
+   },
+   {
+    "locked": "4.26.0",
+    "name": "jsonschema"
+   },
+   {
+    "locked": "2025.9.1",
+    "name": "jsonschema-specifications"
+   },
+   {
+    "locked": "2.2.4",
+    "name": "numpy"
+   },
+   {
+    "locked": "6.0.2",
+    "name": "pyyaml"
+   },
+   {
+    "locked": "0.37.0",
+    "name": "referencing"
+   },
+   {
+    "locked": "2026.6.3",
+    "name": "rpds-py"
+   },
+   {
+    "locked": "1.15.3",
+    "name": "scipy"
+   }
+  ],
+  "sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+ },
+ "templates": {
+  "F1": "the lock {where} is missing or unreadable",
+  "F2": "the lock {where} is malformed at line {line}: {text}",
+  "F3": "{name} is not installed, the lock pins {locked}",
+  "F4": "{name} is {installed}, the lock pins {locked}",
+  "F5": "{name} is in the runtime closure but not in the lock",
+  "F6": "{name}'s installed metadata could not be read: {error}",
+  "JOIN": "; ",
+  "NONE": "no verification recorded",
+  "R_ARCHIVE": "the dependency set is unknown on the archive's side: the archive recorded no verified lock, so nothing is known to match",
+  "R_BOTH": "the dependency set is unknown on both sides: the archive recorded no verified lock, and this side's lock did not verify ({findings}); two unknowns are not a match",
+  "R_THIS": "the dependency set is unknown on this side: this side's lock did not verify ({findings})"
+ }
+}

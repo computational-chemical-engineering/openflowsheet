@@ -1,5 +1,23 @@
 # Changelog
 
+## Unreleased
+
+### X05 — replay from the wheel (ADR 0069, Proposed)
+
+- The wheel and the sdist carry `requirements.lock` (`openflowsheet/_data/requirements.lock`, a link to
+  the root file in a checkout). `environment()` records its SHA-256 only after checking the nine
+  distributions of the runtime closure (`attrs`, `casadi`, `jsonschema`, `jsonschema-specifications`,
+  `numpy`, `pyyaml`, `referencing`, `rpds-py`, `scipy`) against it by exact version string, in a
+  checkout and an installed package alike; otherwise it records `""`, and replay names the failing
+  distributions in its reason. An installed package at the lock now replays its own bundles
+  `exact_replay` / `MATCH` where ADR 0007 D4 allows (envelope L41 narrowed).
+- A checkout whose environment is off the lock now records `""` where it recorded the lock's hash
+  before. Optional extras are not part of the identity.
+- `[project].dependencies` pins the closure's four transitive members exactly (`attrs==26.1.0`,
+  `jsonschema-specifications==2025.9.1`, `referencing==0.37.0`, `rpds-py==2026.6.3`), so a plain
+  `pip install openflowsheet` verifies.
+- No schema change: the environment document keeps its eight keys.
+
 ## v0.3.0.post1 — the PyPI page: a current README and the project links; no code change
 
 *A post-release of 0.3.0 (R-922): the same release, republished so that its PyPI page is current.

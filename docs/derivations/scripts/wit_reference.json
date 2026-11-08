@@ -1,0 +1,414 @@
+{
+  "GP_C3": {
+    "G1": {
+      "L_mol_per_s": "1.5000000000000000000",
+      "equilibrium_row_vapour_entry_scaled": "0.50000000000000000000",
+      "temperature_K": 345
+    },
+    "G2": {
+      "V_mol_per_s": "1.5000000000000000000",
+      "components": {
+        "C2H5OH": {
+          "K_at_probe": "3.7920630720982740314",
+          "K_pure": "3.2735075844834412052",
+          "ad_entry_scaled": "-1.8960315360491370157",
+          "gap_scaled": "0.25927774380741641306",
+          "one_sided_derivative_scaled": "-1.6367537922417206026",
+          "psat_Pa": "331688.15599778468012"
+        },
+        "CH3OH": {
+          "K_at_probe": "4.8558197376887558279",
+          "K_pure": "5.0057062726965425348",
+          "ad_entry_scaled": "-2.4279098688443779139",
+          "gap_scaled": "0.074943267503893353492",
+          "one_sided_derivative_scaled": "-2.5028531363482712674",
+          "psat_Pa": "507203.18808097717234"
+        },
+        "H2O": {
+          "K_at_probe": "2.2909322996493944133",
+          "K_pure": "1.5053126925884668034",
+          "ad_entry_scaled": "-1.1454661498246972067",
+          "gap_scaled": "0.39280980353046380496",
+          "one_sided_derivative_scaled": "-0.75265634629423340169",
+          "psat_Pa": "152525.80857652639885"
+        }
+      },
+      "temperature_K": 385
+    },
+    "pressure_Pa": "101325.00000000000000"
+  },
+  "W0": {
+    "state": {
+      "S1.T": "600.00000000000000000",
+      "S1.n.A": "2.0000000000000000000",
+      "S1.n.B": "5.0000000000000000000"
+    },
+    "tier1_error_scaled": {
+      "S1.T": "0.0",
+      "S1.n.A": "1.6867971678777129842e-12",
+      "S1.n.B": "6.7471886715108519369e-13"
+    }
+  },
+  "W1": {
+    "columns": {
+      "S1.n.A": {
+        "escalated_error_bound_scaled": "1.8163657714750241927e-10",
+        "k_star": 3,
+        "levels": [
+          {
+            "admissible": true,
+            "e_k": null,
+            "h": "0.000030000000000000004148",
+            "k": 0,
+            "roundoff_bound_scaled": "2.4695074882346635211e-13",
+            "truncation_error_scaled": "7.3758103530405070983e-7"
+          },
+          {
+            "admissible": true,
+            "e_k": "6.9148797447307477574e-7",
+            "h": "0.000015000000000000002074",
+            "k": 1,
+            "roundoff_bound_scaled": "4.3941905563557815689e-13",
+            "truncation_error_scaled": "4.6093060830975934088e-8"
+          },
+          {
+            "admissible": true,
+            "e_k": "4.3212334421562542235e-8",
+            "h": "7.5000000000000010370e-6",
+            "k": 2,
+            "roundoff_bound_scaled": "8.2388554272279103683e-13",
+            "truncation_error_scaled": "2.8807264094133918534e-9"
+          },
+          {
+            "admissible": true,
+            "e_k": "2.7006824133497012283e-9",
+            "h": "3.7500000000000005185e-6",
+            "k": 3,
+            "roundoff_bound_scaled": "1.5925810838117941911e-12",
+            "truncation_error_scaled": "1.8004399606369062507e-10"
+          }
+        ],
+        "registered_step": "0.000030000000000000004148",
+        "tier1": "evaluated",
+        "tier1_error_scaled": "0.0055393155285817864155"
+      },
+      "S1.n.B": {
+        "escalated_error_bound_scaled": "1.1599989589218669882e-10",
+        "k_star": 2,
+        "levels": [
+          {
+            "admissible": true,
+            "e_k": null,
+            "h": "0.000030000000000000004148",
+            "k": 0,
+            "roundoff_bound_scaled": "1.9439702765810131320e-13",
+            "truncation_error_scaled": "2.9503241412162028393e-8"
+          },
+          {
+            "admissible": true,
+            "e_k": "2.7659518978922991030e-8",
+            "h": "0.000015000000000000002074",
+            "k": 1,
+            "roundoff_bound_scaled": "3.8653799696813955475e-13",
+            "truncation_error_scaled": "1.8437224332390373635e-9"
+          },
+          {
+            "admissible": true,
+            "e_k": "1.7284933768625016894e-9",
+            "h": "7.5000000000000010370e-6",
+            "k": 2,
+            "roundoff_bound_scaled": "7.7083951565102468553e-13",
+            "truncation_error_scaled": "1.1522905637653567413e-10"
+          }
+        ],
+        "registered_step": "0.000030000000000000004148",
+        "tier1": "evaluated",
+        "tier1_error_scaled": "0.00022157262114327145662"
+      }
+    },
+    "jacobian_scaled": {
+      "R1|S1.n.A": "166.42011834319526627",
+      "R1|S1.n.B": "-6.6568047337278106509",
+      "R2|S1.n.A": "1.0000000000000000000",
+      "R2|S1.n.B": "1.0000000000000000000",
+      "R3|S1.T": "100.00000000000000000"
+    },
+    "state": {
+      "S1.T": "600.00000000000000000",
+      "S1.n.A": "0.00020000000000000000000",
+      "S1.n.B": "0.0050000000000000000000"
+    },
+    "theta_K": "0.30000000000000000000"
+  },
+  "W2": {
+    "columns": {
+      "S1.n.A": {
+        "escalated_error_bound_scaled": "1.7057043464667058883e-10",
+        "k_star": 6,
+        "levels": [
+          {
+            "admissible": false,
+            "k": 0
+          },
+          {
+            "admissible": false,
+            "k": 1
+          },
+          {
+            "admissible": false,
+            "k": 2
+          },
+          {
+            "admissible": false,
+            "k": 3
+          },
+          {
+            "admissible": true,
+            "e_k": null,
+            "h": "1.8750000000000002593e-6",
+            "k": 4,
+            "roundoff_bound_scaled": "6.9337348749823897382e-13",
+            "truncation_error_scaled": "4.3183593276263034752e-8"
+          },
+          {
+            "admissible": true,
+            "e_k": "4.0484653925540791258e-8",
+            "h": "9.3750000000000012963e-7",
+            "k": 5,
+            "roundoff_bound_scaled": "1.0916159348269694492e-12",
+            "truncation_error_scaled": "2.6989393507222434938e-9"
+          },
+          {
+            "admissible": true,
+            "e_k": "2.5302561917483746620e-9",
+            "h": "4.6875000000000006481e-7",
+            "k": 6,
+            "roundoff_bound_scaled": "1.8872756728017570305e-12",
+            "truncation_error_scaled": "1.6868315897386883180e-10"
+          }
+        ],
+        "registered_step": "0.000030000000000000004148",
+        "tier1": "refused",
+        "tier1_error_scaled": null
+      },
+      "S1.n.B": {
+        "escalated_error_bound_scaled": "2.1631714769353994909e-10",
+        "k_star": 4,
+        "levels": [
+          {
+            "admissible": true,
+            "e_k": null,
+            "h": "0.000030000000000000004148",
+            "k": 0,
+            "roundoff_bound_scaled": "2.6433881538694199920e-14",
+            "truncation_error_scaled": "0.000014213434048843113385"
+          },
+          {
+            "admissible": true,
+            "e_k": "0.000013328063470349418446",
+            "h": "0.000015000000000000002074",
+            "k": 1,
+            "roundoff_bound_scaled": "5.1241062675007218075e-14",
+            "truncation_error_scaled": "8.8537057849369493803e-7"
+          },
+          {
+            "admissible": true,
+            "e_k": "8.3008114596035851647e-7",
+            "h": "7.5000000000000010370e-6",
+            "k": 2,
+            "roundoff_bound_scaled": "1.0092936587501421720e-13",
+            "truncation_error_scaled": "5.5289432533336421556e-8"
+          },
+          {
+            "admissible": true,
+            "e_k": "5.1834564688640239832e-8",
+            "h": "3.7500000000000005185e-6",
+            "k": 3,
+            "roundoff_bound_scaled": "2.0034099692484025048e-13",
+            "truncation_error_scaled": "3.4548678446961817235e-9"
+          },
+          {
+            "admissible": true,
+            "e_k": "3.2389498783148665498e-9",
+            "h": "1.8750000000000002593e-6",
+            "k": 4,
+            "roundoff_bound_scaled": "3.9918131222477533033e-13",
+            "truncation_error_scaled": "2.1591796638131517376e-10"
+          }
+        ],
+        "registered_step": "0.000030000000000000004148",
+        "tier1": "evaluated",
+        "tier1_error_scaled": "0.0039735431562797017828"
+      }
+    },
+    "jacobian_scaled": {
+      "R1|S1.n.A": "891.06705279572287815",
+      "R1|S1.n.B": "-4.4553352639786143907",
+      "R2|S1.n.A": "1.0000000000000000000",
+      "R2|S1.n.B": "1.0000000000000000000",
+      "R3|S1.T": "100.00000000000000000"
+    },
+    "state": {
+      "S1.T": "600.00000000000000000",
+      "S1.n.A": "5.0000000000000000000e-6",
+      "S1.n.B": "0.0010000000000000000000"
+    },
+    "theta_K": "0.30000000000000000000"
+  },
+  "W3": {
+    "eta_mol_per_s": 1e-10,
+    "min_e_k": 2.499984e-06,
+    "outcome": "unresolved: the registered result (fail) and its value stand",
+    "saw_period_mol_per_s": "2^-40",
+    "state": {
+      "S1.n.A": 0.5
+    },
+    "tier1_error_scaled": 1.110839e-06
+  },
+  "W4": {
+    "c": 2e-07,
+    "configurations": {
+      "BIG=10000,x0=0.0002": {
+        "k_star": null,
+        "k_star_without_flat_rule": 5,
+        "r4_estimate_without_flat_rule": 0.0,
+        "tier1_error_scaled": 0.005539316
+      },
+      "BIG=10000,x0=0.00025": {
+        "k_star": null,
+        "k_star_without_flat_rule": null,
+        "r4_estimate_without_flat_rule": null,
+        "tier1_error_scaled": 0.005331286
+      },
+      "BIG=10000,x0=0.0003": {
+        "k_star": null,
+        "k_star_without_flat_rule": 5,
+        "r4_estimate_without_flat_rule": 0.0,
+        "tier1_error_scaled": 0.005132931
+      },
+      "BIG=100000,x0=0.0002": {
+        "k_star": null,
+        "k_star_without_flat_rule": 3,
+        "r4_estimate_without_flat_rule": 0.0,
+        "tier1_error_scaled": 0.005539316
+      },
+      "BIG=100000,x0=0.00025": {
+        "k_star": null,
+        "k_star_without_flat_rule": 5,
+        "r4_estimate_without_flat_rule": 0.0,
+        "tier1_error_scaled": 0.005331286
+      },
+      "BIG=100000,x0=0.0003": {
+        "k_star": null,
+        "k_star_without_flat_rule": 3,
+        "r4_estimate_without_flat_rule": 0.0,
+        "tier1_error_scaled": 0.005132931
+      },
+      "BIG=30000,x0=0.0002": {
+        "k_star": null,
+        "k_star_without_flat_rule": 4,
+        "r4_estimate_without_flat_rule": 0.0,
+        "tier1_error_scaled": 0.005539316
+      },
+      "BIG=30000,x0=0.00025": {
+        "k_star": null,
+        "k_star_without_flat_rule": 5,
+        "r4_estimate_without_flat_rule": 0.0,
+        "tier1_error_scaled": 0.005331286
+      },
+      "BIG=30000,x0=0.0003": {
+        "k_star": null,
+        "k_star_without_flat_rule": null,
+        "r4_estimate_without_flat_rule": null,
+        "tier1_error_scaled": 0.005132931
+      }
+    },
+    "n_B_mol_per_s": 0.005,
+    "outcome": "unresolved: the registered result (fail) and its value stand",
+    "theta_K": 0.3
+  },
+  "claims": [
+    "C4: even moments vanish",
+    "C4: sum w s = 12, so the weights / (12 h) differentiate exactly",
+    "C4: sum w s^3 = 0, so the stencil is fourth order",
+    "C4: sum w s^5 = -48, truncation -h^4 f^(5) / 30",
+    "EPS_RES = DERIVATIVE_TOLERANCE / 10",
+    "W0 S1.n.A: the registered central difference passes by 1e3",
+    "W0 S1.n.B: the registered central difference passes by 1e3",
+    "W0 S1.T: the registered central difference passes by 1e3",
+    "W1 S1.n.A: the escalation resolves within K_MAX",
+    "W1 S1.n.A: the flat rule bars no level (only rows independent of the column are flat, at every level)",
+    "W1 S1.n.A: e_k* <= EPS_RES/2 (a 2x margin against the binary64 roundoff)",
+    "W1 S1.n.A: e_(k*-1) >= 2 EPS_RES (k* does not move by roundoff)",
+    "W1 S1.n.A: the binary64 roundoff bound at k* is <= EPS_RES/100",
+    "W1 S1.n.A: the escalated estimate is within TOL/100 of the closed form",
+    "W1 S1.n.B: the escalation resolves within K_MAX",
+    "W1 S1.n.B: the flat rule bars no level (only rows independent of the column are flat, at every level)",
+    "W1 S1.n.B: e_k* <= EPS_RES/2 (a 2x margin against the binary64 roundoff)",
+    "W1 S1.n.B: e_(k*-1) >= 2 EPS_RES (k* does not move by roundoff)",
+    "W1 S1.n.B: the binary64 roundoff bound at k* is <= EPS_RES/100",
+    "W1 S1.n.B: the escalated estimate is within TOL/100 of the closed form",
+    "W1 S1.n.A: the registered central difference fails by >= 10 TOL",
+    "W1 S1.n.B: the registered central difference fails by >= 10 TOL",
+    "W1: the two escalated columns resolve at different levels (a shared k* hides a column-indexing defect)",
+    "W1 S1.T: the registered central difference is exact (no escalation)",
+    "W1 mutation: the escalated error is <= 1/5 of A03's window",
+    "W2 S1.n.A: the escalation resolves within K_MAX",
+    "W2 S1.n.A: the flat rule bars no level (only rows independent of the column are flat, at every level)",
+    "W2 S1.n.A: e_k* <= EPS_RES/2 (a 2x margin against the binary64 roundoff)",
+    "W2 S1.n.A: e_(k*-1) >= 2 EPS_RES (k* does not move by roundoff)",
+    "W2 S1.n.A: the binary64 roundoff bound at k* is <= EPS_RES/100",
+    "W2 S1.n.A: the escalated estimate is within TOL/100 of the closed form",
+    "W2 S1.n.B: the escalation resolves within K_MAX",
+    "W2 S1.n.B: the flat rule bars no level (only rows independent of the column are flat, at every level)",
+    "W2 S1.n.B: e_k* <= EPS_RES/2 (a 2x margin against the binary64 roundoff)",
+    "W2 S1.n.B: e_(k*-1) >= 2 EPS_RES (k* does not move by roundoff)",
+    "W2 S1.n.B: the binary64 roundoff bound at k* is <= EPS_RES/100",
+    "W2 S1.n.B: the escalated estimate is within TOL/100 of the closed form",
+    "W2 S1.n.A: the registered central difference is refused",
+    "W2 S1.n.A: levels 0-3 are refused (2 h_k > n_A); level 4 is first",
+    "W2 S1.n.A: k* = 6, after one unresolved pair (e_5 >= 2 EPS_RES)",
+    "W2 S1.n.B: the registered central difference is evaluated and fails by >= 10 TOL",
+    "W2 S1.n.B: k* = 4 (no refused level)",
+    "W3: the registered central difference fails by >= 10 TOL",
+    "W3: every e_k >= 100 EPS_RES, so the column is unresolved",
+    "W4: the registered central difference fails by >= 10 TOL in every configuration",
+    "W4: without the flat rule >= 7 of 9 configurations resolve with D-hat(R4') ~ 0 (a pass on a dropped term of 2 TOL)",
+    "W4: with the flat rule no configuration resolves; the registered result (fail) stands",
+    "GP-C3's components are the records'",
+    "GP-C3: the heater's outlet carries 1.5 mol/s",
+    "G1: the dormant vapour entry is 0.5, not zero",
+    "G2 CH3OH: gamma_c(e_c) = 1",
+    "G2 CH3OH: the AD entry and the one-sided derivative differ by >= 1e3 TOL",
+    "G2 C2H5OH: gamma_c(e_c) = 1",
+    "G2 C2H5OH: the AD entry and the one-sided derivative differ by >= 1e3 TOL",
+    "G2 H2O: gamma_c(e_c) = 1",
+    "G2 H2O: the AD entry and the one-sided derivative differ by >= 1e3 TOL"
+  ],
+  "constants": {
+    "DERIVATIVE_TOLERANCE": 1e-07,
+    "EPS_RES": 1e-08,
+    "FD_RELATIVE_STEP": 1e-05,
+    "K_MAX": 8,
+    "c4_offsets_weights_over_12": [
+      [
+        2,
+        -1
+      ],
+      [
+        1,
+        8
+      ],
+      [
+        -1,
+        -8
+      ],
+      [
+        -2,
+        1
+      ]
+    ]
+  },
+  "format": "wit-reference-v1",
+  "spec": "docs/derivations/K04-certificate-spec.md \u00a74.8.1-\u00a74.8.9"
+}

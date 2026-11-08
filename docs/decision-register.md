@@ -6374,6 +6374,12 @@ limitation.
 >
 > So the certificate is VERIFIED from |δ| ≈ 2.5e-4 on the VAPOR side and from L/n_tot ≈ 3.4e-5 on the TWO_PHASE
 > side, at the measured state. No limit is relaxed.
+>
+> **Note 2026-11-08 (K04 amendment WIT, ADR 0073, move M-6 part a; review `docs/reviews/WIT-review.md` ruling 1):**
+> the witness stencil is no longer one of the three limits. Its escalation resolves `S3.n.NH3` below one step, so the
+> TWO_PHASE edge is now the screen's absolute limit, measured between δ = 2.4e-4 (UNVERIFIED) and 2.6e-4 (VERIFIED).
+> The window ends at |δ| ≈ 2.5e-4 on both sides. `c1.tp_flash`'s manifest sentence still states L/n_tot ≈ 3.4e-5
+> until M-6 part b (an identity move, Frank's decision).
 
 ---
 
@@ -18514,3 +18520,39 @@ Freezing the preview slots too (R-929's rejected alternative).
 
 **Watch for.** A build-lane change to a core item without an ADR amendment; F0 (`scripts/corpus_identity.py --check`)
 on every foundation merge.
+
+---
+
+## R-942…R-949: RP amendments A-1 to A-8 (RP review, 2026-11-06)
+
+| | |
+| --- | --- |
+| Date | 2026-11-06 |
+| Decided by | design lane (`reviewer`), RP review rulings 3–7 and its §17 amendment block; applied by the build lane (WO-R7) |
+| Normative text | `docs/derivations/release-procedure.md` §17.1 (A-1…A-8, verbatim from `docs/reviews/RP-review.md`) and the sections each amends |
+| Affected packages | RP (ADR 0055 WO-R2–R7, manifest `evidence/S15/`); every release from 0.4.0 |
+
+**Decisions.**
+- **R-942 (A-1, §11.2, REL.A20; Q-C5)** RP.S18 moves to the changed-form list; REL.A20 also requires, over 0.3.0's
+  records, RP.S18's `not_pass` ⊆ the changed-form assertions and commands run. *Rejected:* comparing RP.S18 over the
+  same-form checks only — a second definition of RP.S18 that holds only inside REL.A20.
+- **R-943 (A-2, §8.3 (d); Q-B4, S-1)** A row stands only if its scope also reproduces `Fingerprint` at `Accepted at`;
+  else `unsupported (not reproduced at <Accepted at>)`, absent. *Rejected:* evaluating at C only — a replacing row with
+  the old `Accepted at` and C's fingerprint would stand and skip §8.4's date bound.
+- **R-944 (A-3, §5.1; S-2)** The line file and its inherited chain are byte-equal at C and the candidate; the gate
+  exits 2 otherwise (standing mode). *Rejected:* reading the line at the candidate only — an `rc_items` or `gates` edit
+  after C would change what is judged unseen.
+- **R-945 (A-4, §6.2, §6.10; S-3, S-4)** C is pushed on its own as a branch head; the `release_rc` dispatch is the
+  greatest run id at its latest attempt; step 1's record lists every `ci.yml` run at C; the manifest reads exactly the
+  push run and that dispatch and refuses any other. *Rejected:* any run at C counting (`t08._jobs`) — one red plus one
+  green dispatch passed RP.S11.
+- **R-946 (A-5, §6.4; Q-C3, S-5)** Step 12's archived inputs are registered by full commit and SHA-256; a failed read or
+  a differing hash stops the RC. *Rejected:* an abbreviated id read unchecked (a failed `git show` wrote an empty file).
+- **R-947 (A-6, §6.6; Q-C4)** The pinned W27 archive is supplied by `--w27-artifacts`; without it, (c) fails.
+- **R-948 (A-7, §3.1 D1.5; Q-C6, C-22)** The release package id is admitted by a schema ADR (ruling 4, before K3);
+  RP's own package manifest is filed as `S15`. *Rejected:* an S-id rule per release — picking ids does not scale (R-938).
+- **R-949 (A-8, status notes)** RP.L08 passes (`bd672ff7`); Q-13 measured, PTC-R1 stays; F-4 done in `ci.yml`; the
+  standing reason suffixes `D3`/`D4` are the engine's labels (Q-B3). Notes, not changes.
+
+**Watch for.** REL.A20 read as "all same-form equal" without A-1's sub-check; a release manifest built from a CI run
+that is not §6.2's push run or the latest dispatch.

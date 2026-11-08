@@ -1,0 +1,64 @@
+{
+ "bundles": {
+  "off": "None",
+  "on": "None"
+ },
+ "checks": [
+  {
+   "expected_stray": "c2a8f1c164d1798ea4f452360f6bf03e9fea55e19bbdab3053be633cd7ec6250",
+   "id": "x05.installed_outside_the_tree_beneath_the_stray",
+   "package": "/tmp/claude-1003/-home-frankp-Codes-OpenFlowsheet/fd59d98d-797a-4da8-93d6-9c61c6d4bdc7/scratchpad/x05/clean/lib/python3.13/site-packages/openflowsheet",
+   "result": "pass",
+   "strays": {
+    "/tmp/claude-1003/-home-frankp-Codes-OpenFlowsheet/fd59d98d-797a-4da8-93d6-9c61c6d4bdc7/scratchpad/x05/requirements.lock": "c2a8f1c164d1798ea4f452360f6bf03e9fea55e19bbdab3053be633cd7ec6250"
+   }
+  },
+  {
+   "expected_metadata_version": "2.2.4",
+   "id": "x05.numpy_metadata_and_import",
+   "imported_version": "2.2.4",
+   "metadata_version": "2.2.4",
+   "result": "pass"
+  },
+  {
+   "expected": {
+    "lock_findings": [],
+    "lock_sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+   },
+   "id": "x05.environment",
+   "lock_findings": [],
+   "lock_sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4",
+   "result": "pass"
+  },
+  {
+   "id": "x05.never_the_strays_hash",
+   "lock_sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4",
+   "result": "pass"
+  },
+  {
+   "id": "x05.control_the_stray_would_verify",
+   "lock_sha256": "c2a8f1c164d1798ea4f452360f6bf03e9fea55e19bbdab3053be633cd7ec6250",
+   "result": "pass",
+   "stray": "/tmp/claude-1003/-home-frankp-Codes-OpenFlowsheet/fd59d98d-797a-4da8-93d6-9c61c6d4bdc7/scratchpad/x05/requirements.lock"
+  }
+ ],
+ "format": "t08-rc-v1",
+ "passed": true,
+ "provenance": {
+  "architecture": "x86_64",
+  "commit": "7f39b199e98be82b596b91cfb61bb115225d5125",
+  "environment_lock_sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4",
+  "github_actions": false,
+  "machine_class": "ref-x86-64",
+  "python": "3.13.5",
+  "threads": {
+   "MKL_NUM_THREADS": "1",
+   "OMP_NUM_THREADS": "1",
+   "OPENBLAS_NUM_THREADS": "1"
+  },
+  "tree_clean": true
+ },
+ "replayed": [],
+ "state": "installed",
+ "step": "lock-check"
+}

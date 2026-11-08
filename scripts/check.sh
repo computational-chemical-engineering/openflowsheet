@@ -25,7 +25,14 @@ run_step "ruff format" ruff format --check .
 # No path argument: mypy uses the `files` list in pyproject.toml, which covers `src` and, since
 # P01, `benchmarks` (the SYN-001 oracle is an acceptance reference and is type-checked strictly).
 run_step "mypy" mypy
-run_step "pytest" pytest -q -rs
+# RP §6.10 (ADR 0055 D4.4): with OPENFLOWSHEET_JUNIT_DIR set (CI's `check`), pytest and node also
+# write junit there (`pytest.xml`, `node.xml`), uploaded as `junit-<arch>`. Unset, nothing changes.
+junit_pytest=()
+if [ -n "${OPENFLOWSHEET_JUNIT_DIR:-}" ]; then
+    mkdir -p "${OPENFLOWSHEET_JUNIT_DIR}"
+    junit_pytest=(--junitxml="${OPENFLOWSHEET_JUNIT_DIR}/pytest.xml")
+fi
+run_step "pytest" pytest -q -rs "${junit_pytest[@]}"
 
 # M06 (design note §8 Layer B, ADR 0030 D6): the web shell's Node tests, on Node's built-in
 # runner (a test-time tool; no package.json, no npm). The quoted glob is expanded by Node >= 22.
@@ -40,7 +47,13 @@ web_tests() {
         echo "node ${major:-not found}: install Node >= 22 (a test-time tool only) or set OPENFLOWSHEET_SKIP_WEB_TESTS=1"
         return 1
     fi
-    node --test "tests/web/*.test.mjs"
+    if [ -n "${OPENFLOWSHEET_JUNIT_DIR:-}" ]; then
+        node --test --test-reporter=spec --test-reporter-destination=stdout \
+            --test-reporter=junit --test-reporter-destination="${OPENFLOWSHEET_JUNIT_DIR}/node.xml" \
+            "tests/web/*.test.mjs"
+    else
+        node --test "tests/web/*.test.mjs"
+    fi
 }
 run_step "node --test" web_tests
 

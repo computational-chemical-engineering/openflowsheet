@@ -531,6 +531,10 @@ binds three corpus documents: the SYN-001 nominal revision, a C1 revision and a 
 | OQ-6 | CAS RNs in the provider-identity files (S11 §7 Q5; Frank's 2026-10-23 CAS direction) | Frank's preference | **Keep** (Q5's default). If they go, (ii-p) becomes (ii′)-style registered names, (v-p) has nothing to compare, and W27 loses IAPWS-95 matching |
 | OQ-7 | InChI/InChIKey for provider-identity records | Frank's preference | **Not required**. They can be added from CoolProp 8.0.0 in a scratch venv if Frank wants parity with (ii) |
 
+OQ-5 is ruled by ADR 0073 (K04 amendment WIT, §4.8.2–§4.8.5; Proposed, normative on acceptance): a dormant lifted
+vapour side on a γ–φ-IG basis joins Z's forward stencil (class 4, A1), a dormant liquid side is listed in
+`derivative_witness_partial` (class 2, A2). GP-C3 at 345 K is VERIFIED (WIT.A10, move M-5 of §4.8.6).
+
 ## 8. What this document does not establish
 
 - **Item 2** shows that the AD Jacobian agrees with the residual at the absent-component columns. It is no evidence
