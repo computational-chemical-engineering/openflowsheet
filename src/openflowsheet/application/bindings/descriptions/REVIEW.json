@@ -75,9 +75,9 @@
         },
         {
           "review_kind": "human",
-          "status": "pending",
-          "reviewed_by": null,
-          "reviewed_at": null
+          "status": "reviewed",
+          "reviewed_by": "Frank Peters",
+          "reviewed_at": "2026-11-08"
         }
       ]
     },
