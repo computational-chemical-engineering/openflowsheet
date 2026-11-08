@@ -148,8 +148,11 @@ Am. 1–2). Foundations F0–F8 are designed in wave W1 during 0.4, then built i
   manifest `evidence/X10a/dbf884ad…` tested (id X10a, decisions 2026-11-08); gate PASS 15194; CI 42459637834 green;
   F0 PASS on main; L-X10-1 closed). Open: M-6 part b (flash manifest sentence, Q-WIT-2); M-4 (OPT D-42/D-82) at
   OPT's merge; on ADR 0073 acceptance: register lines.
-- **S15a** (`wp/S15a` `d7cb4dbb`, ADR 0074 release package id, Accepted on its condition; R-970): CI 42469977863
-  green; full gate running; then manifest `evidence/S15a/…`, merge. Closes RP K-1.
+- **S15a: MERGED** into main `74747966` (ADR 0074 release package id, Accepted on its condition, R-970, RP A-9 §17.2;
+  manifest `evidence/S15a/d7cb4dbb…` tested on CI 42469977863; F0 PASS on main). RP K-1 closed. Open: O-3 (RP.L11
+  before the 0.5 line file), O-4 (pointer in ADR 0055 at K-2).
+- **Merge rule (Frank, 2026-11-08):** CI green on both archs = merge condition; F0 on main after merge; local full gate
+  only before RC cuts/tags. OPT and RRC no longer need their local gates.
 - **Await Frank** (`docs/FRANK_QUESTIONS.md`): `explain.md` (blocks MSG), ADRs 0055/0068/0069/0070/0071/0072/0073, Q-11,
   F-8, X05 Q-F1…F3, X02 Q1…Q7, OPT Q1…Q9 + description review, RRC FQ1…FQ4, Q-WIT-1/2, `get_stream_table.md`.
 - **TRS2 CPU rule** (user via hub, 2026-11-07): ≤ ~36 busy cores of 48; one full gate at a time; no tests in several

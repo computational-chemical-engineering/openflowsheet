@@ -611,3 +611,9 @@ installed on TRS2) than CI (x86-64 18 291 / 109; aarch64 18 263 / 107); it adds 
 pinned floats, BLAS-thread control, dev-history checks), and costs 1 h 45 on the shared machine.
 Rule now (CLAUDE.md "Gate by risk", amended): CI green on both architectures is the merge condition; F0 runs on main
 after the merge; the local full gate runs only before a release-candidate cut or tag. S15a's running gate stopped.
+
+## 2026-11-08 — S15a merged
+
+`wp/S15a` merged into main `74747966` (manifest `c89c6e2b`, tested on CI 42469977863, first merge under the
+green-CI rule). On main: F0 PASS, support matrix 0 problems, harvest/changelog/manifest tests 507 passed. HARVEST_SIZE
+(76, 988, 126). Worktree removed. RP K-1 closed; K-2 (ADR 0055) and S-6 rehearsal remain before 0.4.0's K3.
