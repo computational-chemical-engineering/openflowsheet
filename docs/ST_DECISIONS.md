@@ -139,3 +139,53 @@ both reviews pending in `REVIEW.json`; `test_every_description_is_reviewed_by_bo
 `explain` human, `get_stream_table` design-lane and human), as it is red on `wp/MSG` (1 open). A48
 (`tests/test_t08_w4_package_data.py`) passes with the registry entry. F0 after WO-3: PASS (M1 50/50, M2 61/61,
 M3 61/61, M4 61/61, M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 35/35).
+
+## WO-4 (catalogue)
+
+- **D4-1 (Q) — `energy_balance_undefined`'s gap capability is `"energy form:<model>"`**, not §6.4's
+  `"energy_form:<model>"`: MSG's G4 jargon lint refuses a snake_case token in `gap.capability`
+  (`lint.jargon("energy_form:<model>")` → `a snake_case token 'energy_form'`). `property:<property>` passes as
+  written. Ruling wanted: accept the spelling, or quote the token.
+- **D4-2 — the two notices go into a new `messages/catalogue/notices.yaml`** (family `notice`, MSG note §4.2.1;
+  its page `docs-site/messages/notices.md` existed empty); the five refusals are appended to `refusals.yaml` in
+  one ST block. `zero_flow` is new (MSG has only `zero_flow_conflict` and its siblings).
+- **D4-3 — param types.** `stream` and `unit` are element types; `subject` (a stream, a unit or `flowsheet`),
+  `phase` (a family, `VAPOR`…), `property`, `provider`, `status`, `quantity` and `model` are `text` (the phase
+  vocabulary has no FLUID or SOLID; `element` would derive a revision path for a stream id); `streams` is a
+  `list`. `status` is optional in `flash_failed` and `property_evaluation_failed`.
+- **D4-4 — G15:** `stream_table.absent` reports each code to MSG's runtime audit (`audit.auditor.code`), as
+  `Unbound` and `api_error` do; the session audit then fails on a code without an entry.
+- **D4-5 — merge follow-up:** `limitations.yaml` re-synced (`msg_catalogue.py sync-limitations`; L41's text from
+  main's X05) and the operations and limitations pages regenerated; `msg_catalogue.py check` PASS (373 entries,
+  86 complete; G1, G2, G4 0; G5 clean).
+
+## WO-5 (CLI)
+
+- **D5-1 — the three forms and the paged assembly live in `application/stream_table_format.py`**, not in
+  `cli.py`: the CLI module is thin by rule (a Python caller gets the same text, blueprint D15). Not in §9's
+  file list.
+- **D5-2 — the assembly resolves every elision, not only `/streams` and `/energy`.** §6.3 pages `/streams` when
+  the view is `truncated`, but a projection cuts a nested array after 20 items without setting `truncated`
+  (`projection._render`). `assemble` follows each `$elided` marker (an object past `depth`, a cut array, a
+  size-capped view), pages arrays with `cursor`, and refuses `internal_error` on a differing `sha256`. Tested at
+  `depth=1, limit=1` against the operation's document.
+- **D5-3 — text layout choices §6.3 leaves open.** Header lines `key: value` (job and judged_at `-` when null);
+  stream blocks headed `stream`; the energy table's unit and model columns 18 wide left-aligned, numbers 14
+  wide right-aligned, the verifier column the quoted rows' results joined by `,`; `overall` reads `H_feeds` and
+  `H_products` under `H_in`/`H_out`; footnote params as `key=value`, a list as `[a, b]`; a phase-less substream
+  shows `-` in `phases`.
+- **D5-4 — a refusal prints the `ApiError` document on stdout only with `--format json`** (as `explain --json`);
+  the layered text is always on stderr. A directory's `not_found` leaves out its null detail members (D1-14).
+- **D5-5 — the JSON golden is compared with `evaluator.package_version` set to the installed version**, the
+  one member that moves with a release rather than with the run.
+- **D5-6 — a CSV quantity cell is `repr(float(value))`**, so a document read back from canonical JSON (where
+  `10000.0` is spelled `10000`) prints as the in-memory one does; the phase qualifier and ordinal print as text.
+
+## WO-6 (docs)
+
+- **D6-1 — the ADR 0019 pointer paragraph (Amendment 13) is written on `wp/ST`**, marked "in effect when ST
+  merges": ADR 0068 says it is added on acceptance, and the branch merges only then.
+- **D6-2 — pages:** `docs-site/guide/stream-table.md` (nav "User guide → Stream table", after Concepts), a
+  `streams` section in `tutorials/cli.md` (the CLI reference), `streams` in `guide/interfaces.md`'s CLI row.
+  The MCP description is WO-3's `get_stream_table.md` (both reviews pending). `mkdocs build --strict` was not
+  run locally (it executes the notebooks); CI's site job does.

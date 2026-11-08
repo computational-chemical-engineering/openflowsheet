@@ -229,3 +229,18 @@ Amendment 4 is decided in M02's three ADRs; this paragraph points at its parts (
 - **Not unchanged:** the served MCP tool list, widened additively (R-234); with M02's additions removed it is
   Amendment 3's `6c4375b4…` (`tests/test_t08_w2_surface_digest.py`). The measured served digest is in M02's
   evidence manifest.
+
+## Amendment 13 (ADR 0068, ST; Proposed 2026-11-06, in effect when ST merges) — pointer to ADR 0068
+
+Amendment 13 is decided in ADR 0068; this paragraph points at it (ST design note §6.1, §7).
+
+- **`Inspection.get_stream_table(job_id, *, pointer="", depth=12, cursor=None, limit=50) -> Projection`.** An ended
+  job's `stream-table-v1` document, computed on read from its replay bundle (nothing stored); `subject_id`
+  `stream-table:<job_id>`, `sha256` the document's canonical hash. Right `read`, every principal's job; all four
+  transports (`GET /v1/jobs/{job_id}/stream-table`; MCP tool `get_stream_table`). Its row follows `get_artifact`.
+- **Refusals, existing codes only.** `not_found` (an unknown job; no replay bundle; a missing member, with MSG's member
+  detail), `not_ready`, `unsupported` (`basis_unavailable(<id>)` with its hint), `internal_error`. D5's `ApiError` and
+  `API_EXIT_CODES` are unchanged.
+- **Schemas.** `stream-table.schema.json` added and registered; no existing schema changes.
+- **Not unchanged:** the served MCP tool list, widened by the one tool (chain link c_5); with it removed it is MSG's
+  `eaff4585…` (`tests/test_t08_w2_surface_digest.py`, `ST_SERVED_SHA256`).

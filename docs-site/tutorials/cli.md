@@ -40,6 +40,22 @@ openflowsheet validate revision.json --json
 
 checks a `ProcessRevision` file (YAML or JSON) without a project.
 
+## A run's stream table
+
+```bash
+openflowsheet streams --project plant --job job-000001             # text, SI units
+openflowsheet streams --project plant --job job-000001 --format csv --output streams.csv
+openflowsheet streams plant/jobs/job-000001/bundle --format json   # a bundle directory
+```
+
+prints each stream's temperature, pressure, flows, composition, vapour fractions, enthalpy,
+entropy and density, then each unit's duty, work and energy balance and the flowsheet's overall
+balance. `--format` is `text` (the default), `json` (the `stream-table-v1` document, as the
+`get_stream_table` operation returns it) or `csv` (one row per stream total and per phase). A value
+that cannot be given is `-` with a footnote naming its reason. The table is computed from the run's
+bundle on every call and stored nowhere; a refusal exits with its error code's number, as `api`
+does. See the [stream table guide](../guide/stream-table.md).
+
 ## Replaying a run
 
 A replay bundle carries everything a run needs to be repeated. Inspect it, or solve again and

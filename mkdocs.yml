@@ -102,6 +102,7 @@ nav:
   - Coding Agents: agents.md
   - User guide:
       - Concepts: guide/concepts.md
+      - Stream table: guide/stream-table.md
       - Property bases: guide/property-bases.md
       - Unit catalogue: guide/units.md
       - Distillation column: guide/column.md

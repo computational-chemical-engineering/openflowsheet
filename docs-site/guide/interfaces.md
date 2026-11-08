@@ -7,7 +7,7 @@ authorisation right, and the same refusals.
 | Transport | How | Notes |
 | --- | --- | --- |
 | Python | `LocalApplication.create(path)`, `.open(path)`, `.in_memory()` | in-process; no network round trip |
-| CLI | `openflowsheet api --project <dir> <operation> --json …`, and the commands `validate`, `replay`, `project` | prints canonical JSON; the exit status encodes the error code |
+| CLI | `openflowsheet api --project <dir> <operation> --json …`, and the commands `validate`, `replay`, `streams`, `project` | prints canonical JSON; the exit status encodes the error code |
 | HTTP | `openflowsheet serve-http --project <dir>` | `/v1/...` routes; bearer token; loopback unless `--allow-remote`; `--ui` adds the read-only web shell |
 | MCP | `openflowsheet serve-mcp --project <dir> --token-file <file>` | stdio; one tool per operation offered on MCP, with reviewed descriptions and output schemas |
 
