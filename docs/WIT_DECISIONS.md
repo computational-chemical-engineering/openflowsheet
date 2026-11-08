@@ -128,3 +128,27 @@ The normative text is the spec; nothing here changes a tolerance, a check meanin
   R-282 gains a dated note. G7 file: 33 passed.
 - **Not done (part b, Frank):** the `c1.tp_flash` manifest sentence (`flash.py:343-349`) — it moves the artifact
   hash, F0 M9's `flash.py` entry and L01.A22's byte pin. The manifest test pins the stale sentence until then.
+
+## D-11 — M-6 part b: the `c1.tp_flash` near-dew sentence (Frank, Q-WIT-2 = yes, 2026-11-08)
+
+- **Sentence.** Before: "on the VAPOR side the certificate is VERIFIED from delta = 2.5e-4 [absolute limit]; on the
+  TWO_PHASE side from L/n_tot = 3.4e-5 (delta = 5.5e-4), below which the derivative witness's central stencil … cannot
+  difference the liquid NH3 flow; … the absolute limit at 1.5e-5". After: "VERIFIED from delta = 2.5e-4 on both sides
+  (on the TWO_PHASE side L/n_tot = 1.5e-5), where the regularity screen's absolute limit … is met"; the witness is
+  stated as no longer a limit (it halves the column's step since WIT), with the old edge kept as history. Numbers
+  are the review's (ruling 1: measured edge between 2.4e-4 and 2.6e-4; R-282's |δ| ≈ 2.48e-4; the manifest's own
+  L/n_tot = 1.5e-5), not re-derived. Module docstring and the manifest test's docstring and assertions follow; the
+  test now also asserts the stale clause is gone.
+- **Identity moves (measured).** `flash.py` SHA-256 = `c1.tp_flash`'s `artifact_hash` and F0 M9's entry:
+  `f228a4a3f0fe…5abc5c1b` → `b1b47c287086…bf9932e6a`. Full `corpus_identity.py --record` on TRS2 (ref-x86-64):
+  registry diff is that one M9 line, so M1–M8 re-measured equal. `model_version` and results do not move (M2–M5).
+- **Open (design lane): L01.A22.** Its (a) byte-pins `models/c1/flash.py` at the L01 base (`f228a4a3…`, spec
+  §13.2 (a), `tests/test_l01_records.py`). The review rules that this pin "needs an L01 amendment, not a silent
+  re-pin", so it is **not** re-pinned here and `test_a22_the_c1_files_are_byte_identical_to_the_l01_base` fails on
+  this branch. Default proposal for the ruling: amend §13.2 (a) so the flash.py pin is `b1b47c28…` by WIT M-6 part b
+  (a manifest-text move, not L01's), or move A22's C1 pins to clause (f)'s review-time form as R-566 did for
+  `coverage.json`. Blocks the merge, not this commit.
+- **Checks (TRS2).** F0 `--check` PASS: M1 50/50, M2-M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 35/35. Targeted
+  tests (G7, `test_wit_*`, L01 records, M02 units/registries/promotion, F0, P01 schemas): 360 passed, 1 skipped,
+  1 failed (L01.A22 (a), above). ruff, ruff format, mypy (303 files) clean.
+- **Reverse by.** Reverting this commit (sentence, test and M9 line move together).
