@@ -36,6 +36,9 @@ registered for that parent with every request inside the box, the hard domain an
 (`invalid_request` at `/body/plan_id`, detail `reason` the plan guard's code); an `it<i>`,
 i ≥ 2, is admitted only when the project's manifests of `it1` … `it<i−1>` of the same parent each
 failed on the coverage test alone (`iteration_not_permitted`, spec §18 A1.2); then steps 7–8.
+An `optimize` (ADR 0071, OPT design §4.10) by `admit_optimize`: an audited NLP solver on this
+platform (`unsupported`, `detail.code = nlp_solver_unavailable`, pointer `/operation`), then steps
+7–8; the revision, the request and the policies are judged in the job, whose report says why.
 
 **Only tightening is admitted** (I3). The effective check policy keeps `REGISTERED_POLICY_ID`, so
 tightening factor 1 is the registered policy byte for byte (R5); the effective solve policy is the
@@ -67,6 +70,7 @@ from openflowsheet.application.types import (
     Budgets,
     ExperimentBody,
     Limits,
+    OptimizeBody,
     ReproduceBody,
     SolveBody,
     SurrogateStudyBody,
@@ -87,6 +91,7 @@ __all__ = [
     "SolveAdmission",
     "admit_budgets",
     "admit_experiment",
+    "admit_optimize",
     "admit_surrogate_study",
     "stored_surrogate_manifests",
     "surrogate_resolver",
@@ -415,5 +420,32 @@ def admit_surrogate_study(
             str(refused),
             pointer="/body/plan_id",
             reason=refused.code,
+        )
+    return admit_budgets(budgets, limits, active_jobs)
+
+
+def admit_optimize(
+    body: OptimizeBody,
+    *,
+    budgets: Budgets,
+    limits: Limits,
+    active_jobs: int,
+    solver_probe: Callable[[], Any] | None = None,
+) -> float | None | ApiError:
+    """OPT design §4.10's admission of an `optimize`: the audited solver probe (`solver_probe`,
+    default `studies.nlp.closure.audited_solver`, which imports neither Pyomo nor cyipopt), then
+    steps 7–8. Nothing else is judged here: a request the job cannot run ends `completed` with
+    an `UNSUPPORTED` report. The job's wall-time budget, or the first refusal."""
+    del body  # judged in the job (§4.10)
+    if solver_probe is None:
+        from openflowsheet.studies.nlp.closure import audited_solver  # noqa: PLC0415
+
+        solver_probe = audited_solver
+    if not solver_probe().available:
+        return ApiError(
+            code="unsupported",
+            message="nlp_solver_unavailable",
+            retryable=False,
+            detail={"code": "nlp_solver_unavailable", "pointer": "/operation"},
         )
     return admit_budgets(budgets, limits, active_jobs)

@@ -333,6 +333,45 @@
           "pattern": "^[0-9a-f]{64}$"
         }
       }
+    },
+    "optimize_body": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "revision_id",
+        "request"
+      ],
+      "description": "OPT design §4.10 (ADR 0071, ADR 0019 Amendment 16): the `optimize` job's body — `job.schema.json#/$defs/solve_body`'s members and the optimization request. The policies are the solve's (the start and V1 re-solves are production solves); the request is judged in the job, not at admission (only the solver probe is).",
+      "properties": {
+        "revision_id": {
+          "type": "string"
+        },
+        "request": {
+          "$ref": "https://github.com/frankp/process-runtime/schemas/optimization-request.schema.json"
+        },
+        "policy_id": {
+          "type": "string",
+          "default": "default",
+          "description": "As `solve_body.policy_id`: a registered application policy id, or the reserved `default`."
+        },
+        "check_tolerances": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "default": {},
+          "description": "As `solve_body.check_tolerances`; a looser value is refused (`verification_weakening_refused`)."
+        },
+        "max_property_calls": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1,
+          "default": null
+        }
+      }
     }
   }
 }

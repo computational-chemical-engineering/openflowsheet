@@ -184,7 +184,8 @@
         "solve",
         "reproduce",
         "experiment",
-        "surrogate_study"
+        "surrogate_study",
+        "optimize"
       ],
       "description": "J3's closed discriminator. A later operation is an added value here and an added branch in `job_request.oneOf`."
     },
@@ -285,6 +286,16 @@
               "$ref": "https://github.com/frankp/process-runtime/schemas/surrogate-manifest.schema.json#/$defs/surrogate_study_body"
             }
           }
+        },
+        {
+          "properties": {
+            "operation": {
+              "const": "optimize"
+            },
+            "body": {
+              "$ref": "https://github.com/frankp/process-runtime/schemas/optimization-request.schema.json#/$defs/optimize_body"
+            }
+          }
         }
       ]
     },
@@ -373,7 +384,13 @@
             "external_coupling",
             "model_replacement_report",
             "surrogate_manifest",
-            "model_evidence"
+            "model_evidence",
+            "optimization_request",
+            "optimization_report",
+            "optimization_manifest",
+            "optimizer_record",
+            "candidate_revision",
+            "candidate_verification"
           ],
           "description": "J1/J5: closed for producers (producer kinds, version 1), open for consumers."
         },
@@ -584,6 +601,17 @@
             }
           ],
           "description": "M04 spec §10.3 (ADR 0037 D6, ADR 0019 Amendment 5): a `surrogate_study` job's answer, present iff the operation is `surrogate_study`; null when the job ended before its study did (cancelled, timed out, failed)."
+        },
+        "optimization": {
+          "oneOf": [
+            {
+              "$ref": "https://github.com/frankp/process-runtime/schemas/optimization-report.schema.json"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "OPT design §4.10 (ADR 0071, ADR 0019 Amendment 16): an `optimize` job's answer, the optimization report, present iff the operation is `optimize`; null when the job ended without a report (cancelled, timed out, failed)."
         }
       },
       "oneOf": [
@@ -633,6 +661,22 @@
           "properties": {
             "operation": {
               "const": "surrogate_study"
+            },
+            "run_result": {
+              "type": "null"
+            },
+            "replay_report": {
+              "type": "null"
+            }
+          }
+        },
+        {
+          "required": [
+            "optimization"
+          ],
+          "properties": {
+            "operation": {
+              "const": "optimize"
             },
             "run_result": {
               "type": "null"

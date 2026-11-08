@@ -45,6 +45,7 @@ from openflowsheet.application import validation
 from openflowsheet.application.admission import (
     active_jobs_refusal,
     admit_experiment,
+    admit_optimize,
     admit_reproduce,
     admit_solve,
     admit_surrogate_study,
@@ -120,6 +121,7 @@ from openflowsheet.application.types import (
     JobResult,
     JobWait,
     ModelRegistryView,
+    OptimizeBody,
     ProjectPolicy,
     ProjectSummary,
     ReplayPolicy,
@@ -907,6 +909,17 @@ class LocalApplication:
                 self._refuse_error(study, operation, request_sha256)
             # R-233 again: a study's experiments are experiments; their calls are their own.
             return EffectiveBudgets(wall_time_s=study, max_property_calls=None)
+        if isinstance(body, OptimizeBody):
+            optimize = admit_optimize(
+                body, budgets=request.budgets, limits=caller.limits, active_jobs=active
+            )
+            if isinstance(optimize, ApiError):
+                self._refuse_error(optimize, operation, request_sha256)
+            # OPT §4.10: the property-call budget is each production solve's (its policy's), as
+            # requested; the policies resolve in the job.
+            return EffectiveBudgets(
+                wall_time_s=optimize, max_property_calls=body.max_property_calls
+            )
         archive = store.artifact(body.bundle_artifact_id)
         wall_time_s = admit_reproduce(
             archive.kind if archive is not None else None,
@@ -981,6 +994,19 @@ class LocalApplication:
                 replay_report=None,
                 error=job.error,
                 surrogate_study=study,
+            )
+        if job.operation == "optimize":
+            # OPT §4.10: the answer is the report the job output, absent when it ended without.
+            optimization = None
+            for output in job.outputs:
+                if output.kind == "optimization_report":
+                    optimization = json.loads(self._artifact_path(output).read_bytes())
+            return JobResult(
+                operation="optimize",
+                run_result=None,
+                replay_report=None,
+                error=job.error,
+                optimization=optimization,
             )
         report = None
         for output in job.outputs:
