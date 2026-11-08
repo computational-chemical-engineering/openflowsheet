@@ -58,3 +58,22 @@ The normative text is the spec; nothing here changes a tolerance, a check meanin
 - **Would need.** A design-lane ruling adding this as M-6 to §4.8.6 (edge now ≈ 2.5e-4 on both sides, set by
   ‖J⁻¹‖₁ ≤ τ_min/(n ε)); then the parametrisation (5.3e-4 → a δ below 2.4e-4) and the manifest sentence change
   in one isolated commit, and whether the manifest text change moves any identity (check F0 M9 / manifest hashes).
+
+## D-5 — F-1 (review must-fix): the flat rule in `escalate_column`
+
+- **Spec.** §4.8.3 (c) gains the review's sentence (a flat level cannot be `k*` or `k* − 1` when a coarser stencil
+  of that row was not flat); derivation item 2 states the exception; WIT.A15 (W4) added; A01 49 → 56 claims.
+- **Choices the sentence leaves to the build lane.** (i) "Coarser stencil" = a *complete* one: the registered pair
+  when both points were evaluated (passed as `escalate_column(..., registered=points)`), or an earlier admissible
+  level; a refused or partial stencil does not count. (ii) Flat = the values compare equal with `==` (−0.0 equals
+  0.0; a NaN is never equal, so a NaN row is never flat — it already cannot resolve, D-4). (iii) `e_k` is still
+  recorded for a barred level (diagnostic); `Escalation.barred[k]` exposes the rule to tests.
+- **Generator.** `wit_reference.py` mirrors the rule in its 50-digit `escalation()` (claim per W1/W2 column: no
+  level barred, so A02/A04's `k*` are unchanged) and adds W4 in binary64: without the rule 7 of 9 configurations
+  resolve with `D̂(R4′) = 0.0` (k* = 3–5), with it none resolves.
+- **Failing first.** A15 before the fix: 7 failed, 2 passed (the two that never resolved); after: 9 passed.
+- **Re-measured under the rule (TRS2).** A08 unchanged: k* = (NH3 4, N2 5, Ar 3, CH4 3, H2 2, S2.NH3 1), escalated
+  ≤ 4.276e-10, on-pattern 3.900405e-08, VERIFIED. A09 unchanged: k* = 5, e_5 = 8.9e-16, on 4.98e-11, UNVERIFIED
+  (absolute). E-1 window unchanged: δ = 1e-4, 2e-4, 2.4e-4 UNVERIFIED; 2.6e-4, 3e-4, 4e-4, 5.3e-4, 5.7e-4 VERIFIED;
+  no level barred anywhere.
+- **Reverse by.** Reverting the F-1 commit.

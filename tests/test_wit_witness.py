@@ -6,7 +6,9 @@ The analytic cases W0-W3 (WIT.A01-A07) are the generator's test doubles
 `R2 = n_A + n_B - N0` (scale 3) and `R3 = T - T0` (scale 1); the AD Jacobian is the closed form
 rounded to binary64, and a trial point with a negative flow returns `invalid_trial_state`. W3 is
 one column `S1.n.A` = 0.5 and one row `R4 = n_A + 1e-10 saw(n_A 2^40)` with its AD entry declared
-1. The expected values are `wit_reference.json`'s; the system cases (A08-A14) are in
+1. W4 (WIT.A15, review F-1) is one column `S1.n.A` with rows `R1` and
+`R4' = (BIG + c n_A) - BIG - c x0` (scale 3), its AD entry declared 0.0. The expected values are
+`wit_reference.json`'s; the system cases (A08-A14) are in
 `tests/test_wit_system.py`.
 """
 
@@ -39,7 +41,7 @@ GENERATOR = REPO_ROOT / "docs" / "derivations" / "scripts" / "wit_reference.py"
 WIT: dict[str, Any] = load_json(
     REPO_ROOT / "docs" / "derivations" / "scripts" / "wit_reference.json"
 )
-CLAIMS = 49
+CLAIMS = 56
 
 COLUMNS = ("S1.n.A", "S1.n.B", "S1.T")
 COLUMN_SCALE = {"S1.n.A": 3.0, "S1.n.B": 3.0, "S1.T": 100.0}
@@ -369,3 +371,56 @@ def test_a07_the_escalation_never_reads_the_jacobian() -> None:
     assert alone.level == 3
     assert alone.scaled is not None
     assert alone.scaled == escalations["S1.n.A"].scaled  # bitwise
+
+
+# -- WIT.A15 (W4, review F-1) ----------------------------------------------------------------------
+#
+# W1's curved row R1 = theta n_A / (n_A + n_B0) beside R4' = (BIG + c n_A) - BIG - c x0, whose true
+# scaled slope is c S_x / S_F = 2e-7 = 2 tau_D and whose AD entry is declared 0.0 (a dropped term).
+# Roundoff quantizes R4' to multiples of ulp(BIG): its stencil is flat at the fine levels R1 needs,
+# so two flat levels agreed on 0.0 and resolved the column to a pass before §4.8.3 (c)'s flat rule.
+
+W4_C = float(WIT["W4"]["c"])
+W4_N_B = float(WIT["W4"]["n_B_mol_per_s"])
+
+
+@pytest.mark.parametrize("big", [1e4, 3e4, 1e5])
+@pytest.mark.parametrize("x0", [2e-4, 2.5e-4, 3e-4])
+def test_a15_a_flat_stencil_does_not_resolve_a_column_whose_coarser_stencil_was_not_flat(
+    big: float, x0: float
+) -> None:
+    theta = float(WIT["W4"]["theta_K"])
+    expected = WIT["W4"]["configurations"][f"BIG={big:g},x0={x0:g}"]
+
+    def residual(point: Sequence[float]) -> list[float] | None:
+        if point[0] < 0:
+            return None
+        return [theta * point[0] / (point[0] + W4_N_B), (big + W4_C * point[0]) - big - W4_C * x0]
+
+    jacobian = {("R1", "S1.n.A"): theta * W4_N_B / (x0 + W4_N_B) ** 2, ("R4", "S1.n.A"): 0.0}
+    target = tear(
+        residual,
+        jacobian,
+        columns=("S1.n.A",),
+        rows=("R1", "R4"),
+        column_scale={"S1.n.A": 3.0},
+        row_scale={"R1": 1.0, "R4": 3.0},
+    )
+    checks, escalations = run(target, {"S1.n.A": x0}, components=("A",))
+    escalation = escalations["S1.n.A"]
+    assert escalation.level is None and escalation.scaled is None
+    if expected["k_star_without_flat_rule"] is not None:
+        # The rule, not the gaps, is what keeps the column unresolved here.
+        assert any(escalation.barred)
+    # The registered central discrepancy, computed here in the witness's form.
+    h = FD_RELATIVE_STEP * 3.0
+    f_plus, f_minus = residual([x0 + h]), residual([x0 - h])
+    assert f_plus is not None and f_minus is not None
+    registered = 0.0
+    for i, (row, scale) in enumerate((("R1", 1.0), ("R4", 3.0))):
+        scaled = (f_plus[i] - f_minus[i]) / (2.0 * h) * 3.0 / scale
+        registered = max(registered, abs(jacobian[(row, "S1.n.A")] * 3.0 / scale - scaled))
+    assert registered == pytest.approx(expected["tier1_error_scaled"], rel=1e-6)
+    on = checks["derivative_witness.on_pattern"]
+    assert on.result == "fail"
+    assert on.value == registered  # bitwise

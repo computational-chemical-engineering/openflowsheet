@@ -24,7 +24,7 @@ Nothing else here changes. Two findings against this document are recorded in T0
 
 **Amendment, 2026-09-25 (design lane, K04-F9; ADR 0013; R-059…R-062).** F9 and F10 above are closed by `docs/derivations/K04-F9-spec.md`: (i) §4.4's energy balances, §4.7's admissibility and independent split, and the routing among their forms are evaluated at the verifier's own one-step Newton projection of `x_final` (the §7 matrix and its factorization) when every row passes and the screen is `NO_RANK_LOSS_DETECTED`, and at `x_final` otherwise; every other check, the certified state and every tolerance are unchanged; `transformations.projection` records which. (ii) §4.4's fresh flash reads a stream within K03 §8.2's `ε_adm` of saturation as single-phase. (iii) A two-phase split whose band the fresh flash cannot resolve at double precision is judged by its stored split (revision table). (iv) §4.7's flash-outlet clause holds for revision-built flowsheets and is discharged by §4.4 in SYN-001's legacy set. `check_policy_sha256` does not move.
 
-**Amendment, 2026-11-08 (design lane, WIT; ADR 0073, Proposed; brief `docs/briefs/WIT-specifier.md`).** §4.8 gains §4.8.1–§4.8.9, the witness's treatment of small and exactly-zero component flows. (i) A component column with a positive flow, whose registered central difference is refused or fails, is re-differenced by an escalation that never reads the AD Jacobian: the central fourth-order stencil at `h_j 2^−k`, `k ≤ 8`, resolved when two successive estimates agree within `τ_D/10` (§4.8.3). An unresolved escalation leaves the registered result. (ii) On a γ–φ-IG basis, a lifted split's dormant vapour side joins R-831's forward five-point set (§4.8.4). Its dormant liquid side, where no derivative exists, is not differenced and is recorded as R-281 records (§4.8.5). The tolerance, the registered step, the two checks, the policy hash and every field set are unchanged. Every certificate whose witness passes under the registered stencil is byte-identical, F0's corpus included (§4.8.6). Assertions WIT.A01–WIT.A14 (§4.8.7); reference values `docs/derivations/scripts/wit_reference.py` → `wit_reference.json`. Normative when ADR 0073 is accepted.
+**Amendment, 2026-11-08 (design lane, WIT; ADR 0073, Proposed; brief `docs/briefs/WIT-specifier.md`).** §4.8 gains §4.8.1–§4.8.9, the witness's treatment of small and exactly-zero component flows. (i) A component column with a positive flow, whose registered central difference is refused or fails, is re-differenced by an escalation that never reads the AD Jacobian: the central fourth-order stencil at `h_j 2^−k`, `k ≤ 8`, resolved when two successive estimates agree within `τ_D/10` (§4.8.3). An unresolved escalation leaves the registered result. (ii) On a γ–φ-IG basis, a lifted split's dormant vapour side joins R-831's forward five-point set (§4.8.4). Its dormant liquid side, where no derivative exists, is not differenced and is recorded as R-281 records (§4.8.5). The tolerance, the registered step, the two checks, the policy hash and every field set are unchanged. Every certificate whose witness passes under the registered stencil is byte-identical, F0's corpus included (§4.8.6). Assertions WIT.A01–WIT.A15 (§4.8.7); reference values `docs/derivations/scripts/wit_reference.py` → `wit_reference.json`. Normative when ADR 0073 is accepted.
 
 ---
 
@@ -230,6 +230,11 @@ four evaluations return `ok`. An inadmissible level is skipped and is not a resu
 row (on and off pattern). Levels are evaluated in increasing `k`. The column is **resolved** at the first `k` with
 `e_k ≤ ε_res`, where `ε_res = τ_D / 10 = 1e-8`. That `k` is `k*`, and no level above it is evaluated.
 
+*The flat rule* (review F-1, 2026-11-08). A level whose four values in some row are equal (a **flat** stencil) cannot be
+`k*` or `k* − 1` when a coarser complete stencil of that row was not flat, whether the registered pair or an evaluated
+level. The test is on the values, not the estimate: the accumulated estimate of a flat stencil is not always exactly
+0.0. A row that is independent of the column is flat at every level, the registered pair included, and is unaffected.
+
 **(d) Outcome.**
 
 - *Resolved.* `D̂_k*` replaces the registered central difference of column `j` in both checks: on-pattern
@@ -256,7 +261,11 @@ replay.
    `D_k = (4 D₂(h_k) − D₂(2h_k))/3`. Its weights satisfy `Σ w = Σ w s² = Σ w s⁴ = 0`, `Σ w s = 12`, `Σ w s³ = 0` and
    `Σ w s⁵ = −48`, so its truncation is `−h⁴ f⁽⁵⁾/30 + O(h⁶)`. These moments are generator claims.
 2. *What `e_k` bounds.* In the asymptotic range `D̂_k − f′ ≈ C h_k⁴`, so `e_k ≈ (15/16)|C| h_k−1⁴` and
-   `|D̂_k − f′| ≈ e_k/15`. Where roundoff `r_k` dominates, `|D̂_k − f′| ≲ r_k ≲ e_k`. Either way the FD side's error at
+   `|D̂_k − f′| ≈ e_k/15`. Where roundoff `r_k` dominates, `|D̂_k − f′| ≲ r_k ≲ e_k`, except where roundoff quantizes a
+   row's stencil flat: then the estimate is 0 at successive levels, which agree on a wrong value (`e_k ≈ 0`). A row
+   with `|A_i|/S_F,i` large hides a scaled derivative `d̂ ≲ 5.5e-12 · 2^(k−1) · |A_i|/S_F,i` at level `k`. A non-flat
+   quantized numerator cannot do this, because the same numerator at half the step doubles the estimate. The flat rule
+   of (c) excludes that case (WIT.A15). With it the FD side's error at
    resolution is of order `e_k* ≤ τ_D/10`. A Jacobian error above `1.1 τ_D` is therefore reported, and a correct entry is
    not failed by its estimator. Measured below: the escalated discrepancies are `≤ 4.3e-10 = τ_D/230`.
 3. *Why `ε_res = τ_D/10`.* It is R-831's factor: a one-sided part above `τ_D/10` is that ruling's *Watch for*. It
@@ -407,7 +416,7 @@ These numbers are the evidence that A2 removes a convention from the comparison,
 If any other test's expectation changes at implementation, this document is wrong. Stop and report it (rule 6); do not
 amend the test.
 
-### 4.8.7 Assertions WIT.A01–WIT.A14
+### 4.8.7 Assertions WIT.A01–WIT.A15
 
 - Manifest ids are `K04.WIT.Ann`. `τ_D = 1e-7` and `ε_res = 1e-8`; "scaled" means as in §4.8.
 - `wit` is `docs/derivations/scripts/wit_reference.json`.
@@ -422,7 +431,7 @@ amend the test.
 
 | ID | Assertion | Expected | Tolerance and its argument |
 | --- | --- | --- | --- |
-| A01 | `python3 -I docs/derivations/scripts/wit_reference.py --check` passes (49 claims). | `OK` | exact (byte comparison) |
+| A01 | `python3 -I docs/derivations/scripts/wit_reference.py --check` passes (56 claims). | `OK` | exact (byte comparison) |
 | A02 | W1 (`θ = 0.3`, `n = (2e-4, 5e-3)`, `T = 600`): `S1.n.A` and `S1.n.B` fail the registered stencil (wit: 5.539e-3 and 2.216e-4), escalate and resolve at `k* = 3` and `2`. Each escalated discrepancy is within wit's bound (1.82e-10, 1.16e-10) + 1e-11. `S1.T` is not escalated and passes (binary64 2.36e-9: roundoff of `T = 600` at `h = 1e-3`). Both checks pass. | `k* = (3, 2)`; pass | `k*` is exact. The generator places `e_k* ≤ ε_res/2` and `e_k*−1 ≥ 2 ε_res`, and binary64 roundoff at `k*` is at most 1.6e-12 (wit), so roundoff cannot move `k*`. The discrepancy tolerance of 1e-11 absorbs binary64 roundoff (measured 1.79e-10 and 1.16e-10 against exact 1.80e-10 and 1.15e-10), and it sits 10⁴× below `τ_D`. The distinct `k*` catch a column-index defect. |
 | A03 | W1 with the scaled AD entry (`R1`, `S1.n.A`) raised by `3 τ_D`: `on_pattern` is `fail`. | value in `[3τ_D − 1e-9, 3τ_D + 1e-9]` | The escalated estimate's error is at most 1.8e-10, a fifth of the window (generator claim). The escalation does not absorb a defect of `3 τ_D` on a column whose registered stencil is off by 5.5e-3. |
 | A04 | W2 (`θ = 0.3`, `n = (5e-6, 1e-3)`): `S1.n.A`'s registered point is refused, levels 0–3 are inadmissible, level 4 is the first, and `k* = 6`. `S1.n.B` fails the registered stencil (3.97e-3) and resolves at `k* = 4`. Both checks pass. | `k* = (6, 4)`; pass | As A02. This assertion checks that `e_k` is formed only between consecutive admissible levels. |
@@ -436,6 +445,7 @@ amend the test.
 | A12 | Class assignment: a single function returns one class per column. Over the states of A08–A11 the five sets are pairwise disjoint and cover every column, and classes 2–4 are empty on every basis other than γ–φ-IG. | as stated | exact |
 | A13 | Identity: `scripts/corpus_identity.py --check` is PASS for M1–M9 at the implementing commit. The full suite passes with exactly the moves M-1 to M-3 amended. | PASS | exact |
 | A14 | Unchanged under escalation: ADV-06 M (`T06-revision-v2`) has `on_pattern` `fail` with value `1.793495859841966e-05` bitwise on the reference platform (T6-A17's band elsewhere), and T06 W2's A42 stays `unsupported` (`S1.P`). | as stated | Exact. This is a regression identity, not a correctness claim. |
+| A15 | W4 (review F-1): one column `S1.n.A` = `x0` (scale 3) and rows `R1 = θ n_A/(n_A + 5e-3)` (scale 1, closed-form AD entry) and `R4′ = (BIG + c n_A) − BIG − c x0` (scale 3, `c = 2e-7`, AD entry declared 0.0: a dropped term of scaled size `2 τ_D`), for `BIG` ∈ {1e4, 3e4, 1e5} × `x0` ∈ {2, 2.5, 3}e-4. The registered stencil fails (wit: ≥ 5.1e-3); the escalation does not resolve; `on_pattern` is `fail` with its value bitwise equal to the registered central discrepancy computed by the test, as in A05. | unresolved; value unchanged | Exact. Without the flat rule 7 of the 9 resolve at `k*` = 3–5 with `D̂(R4′)` = 0.0 and pass (wit), the hole of review F-1. |
 
 ### 4.8.8 What amendment WIT does not establish
 
@@ -742,7 +752,7 @@ Once-through: the heater outlet is `TWO_PHASE` (`β_h = 0.10136872342672775985`)
 
 Conventions: `ref` = `benchmarks/k04/reference_values.yaml`; `p01` = `benchmarks/syn001/reference_values.yaml`; `k03` = `benchmarks/k03/reference_values.yaml`; `τ_kind` per §5.1. Manifest `checks[].id = K04.<AID>`; `result ∈ {pass, fail, unsupported, not_applicable}`. Every assertion is evaluated at every state it names.
 
-Amendment WIT (2026-11-08) registers its assertions in §4.8.7 as WIT.A01–WIT.A14, manifest ids `K04.WIT.Ann`; they are not repeated in this table.
+Amendment WIT (2026-11-08) registers its assertions in §4.8.7 as WIT.A01–WIT.A15, manifest ids `K04.WIT.Ann`; they are not repeated in this table.
 
 | ID | Assertion | Expected | Tolerance and floor |
 | --- | --- | --- | --- |
@@ -792,7 +802,7 @@ Assertion count: 35 (A00–A34).
 
 - `docs/derivations/scripts/k04_reference.py` — closed forms, `--check`, `--emit`. No `process_runtime`, no oracle, no verifier import. Reads `benchmarks/syn001/reference_values.yaml` in `--check` only to prove agreement; copies nothing from it.
 - `benchmarks/k04/reference_values.yaml` — emitted; SHA-256 in the header; regenerated only by the script; never from the verifier.
-- `docs/derivations/scripts/wit_reference.py` → `docs/derivations/scripts/wit_reference.json` (amendment WIT): W0–W3 closed forms at 50 digits, W3 in binary64, GP-C3 G1/G2 from `benchmarks/s10/records.yaml`; `--check` byte-compares and refuses to emit when one of its 49 claims fails. Imports nothing from `openflowsheet`.
+- `docs/derivations/scripts/wit_reference.py` → `docs/derivations/scripts/wit_reference.json` (amendment WIT): W0–W3 closed forms at 50 digits, W3 and W4 in binary64, GP-C3 G1/G2 from `benchmarks/s10/records.yaml`; `--check` byte-compares and refuses to emit when one of its 56 claims fails. Imports nothing from `openflowsheet`.
 - Evidence: `evidence/K04/<commit>/manifest.json` with `requirements: ["D14", "D05", "A08", "A09"]`, one `checks[]` entry per `K04.<AID>` including the `unsupported` ones, `commands` = the actual gate run on both architectures, `limitations` restating §15, `review` unset.
 
 ### 14.2 What `--check` asserts about this document's own numbers

@@ -138,17 +138,38 @@ def scaled_exact(case: dict[str, Any], column: str) -> dict[str, Any]:
     }
 
 
+def flat_rows(
+    residual: Callable[[dict[str, Any]], dict[str, Any] | None],
+    x0: dict[str, Any],
+    column: str,
+    h: Any,
+    stencil: Sequence[tuple[int, int]],
+) -> set[str] | None:
+    """§4.8.3 (c)'s flat rule: the rows whose values at the stencil's points are all equal; None
+    when a point is refused."""
+    values = [residual({**x0, column: x0[column] + offset * h}) for offset, _ in stencil]
+    if any(v is None for v in values):
+        return None
+    return {row for row in ROWS if all(v[row] == values[0][row] for v in values)}  # type: ignore[index]
+
+
 def escalation(case: dict[str, Any], column: str) -> dict[str, Any]:
     """§4.8.3 at 50 digits: the registered central difference, then the levels of the central
-    fourth-order stencil at h_k = h 2^-k, e_k, and k* (the first k with e_k <= EPS_RES)."""
+    fourth-order stencil at h_k = h 2^-k, e_k, and k* (the first k with e_k <= EPS_RES whose
+    levels k - 1 and k are not barred by the flat rule)."""
     x0, residual = case["x0"], case["residual"]
     h0 = mpf(FD_RELATIVE_STEP * float(COLUMN_SCALE[column]))  # the binary64 registered step
     exact = scaled_exact(case, column)
     tier1 = scaled_difference(residual, x0, column, h0, C2, 2)
     tier1_error = None if tier1 is None else max(abs(tier1[r] - exact[r]) for r in ROWS)
+    # Rows for which a coarser complete stencil (the registered pair, then each level) varied.
+    registered_flat = flat_rows(residual, x0, column, h0, C2)
+    varied = set() if registered_flat is None else set(ROWS) - set(registered_flat)
     levels: list[dict[str, Any]] = []
     previous = None
+    previous_barred = False
     selected = None
+    any_barred = False
     for k in range(K_MAX + 1):
         h = h0 * mpf(2) ** -k
         d = scaled_difference(residual, x0, column, h, C4, 12)
@@ -156,6 +177,10 @@ def escalation(case: dict[str, Any], column: str) -> dict[str, Any]:
             levels.append({"k": k, "admissible": False})
             previous = None
             continue
+        flat = set(flat_rows(residual, x0, column, h, C4) or ())
+        barred = bool(flat & varied)
+        any_barred = any_barred or barred
+        varied |= set(ROWS) - flat
         error = max(abs(d[r] - exact[r]) for r in ROWS)
         e_k = None if previous is None else max(abs(d[r] - previous[r]) for r in ROWS)
         # The binary64 roundoff the stencil adds: u * sum|w| * max|F| / (12 h), scaled.
@@ -168,11 +193,25 @@ def escalation(case: dict[str, Any], column: str) -> dict[str, Any]:
         level = {"k": k, "admissible": True, "h": h, "error": error, "e_k": e_k}
         level["roundoff_bound"] = roundoff
         levels.append(level)
-        if selected is None and e_k is not None and e_k <= EPS_RES:
+        if (
+            selected is None
+            and e_k is not None
+            and e_k <= EPS_RES
+            and not barred
+            and not previous_barred
+        ):
             selected = k
             break
         previous = d
-    return {"h0": h0, "tier1": tier1, "tier1_error": tier1_error, "levels": levels, "k": selected}
+        previous_barred = barred
+    return {
+        "h0": h0,
+        "tier1": tier1,
+        "tier1_error": tier1_error,
+        "levels": levels,
+        "k": selected,
+        "barred": any_barred,
+    }
 
 
 def smooth_entry(name: str, case: dict[str, Any], columns: Sequence[str]) -> dict[str, Any]:
@@ -189,6 +228,11 @@ def smooth_entry(name: str, case: dict[str, Any], columns: Sequence[str]) -> dic
         result = escalation(case, column)
         k = result["k"]
         claim(k is not None, f"{name} {column}: the escalation resolves within K_MAX")
+        claim(
+            not result["barred"],
+            f"{name} {column}: the flat rule bars no level (only rows independent of the column "
+            "are flat, at every level)",
+        )
         selected = result["levels"][k]
         before = result["levels"][k - 1]
         # Robust selection: e_k* <= EPS_RES/2 and, when e_(k*-1) exists, e_(k*-1) >= 2 EPS_RES.
@@ -352,6 +396,102 @@ def build_w3() -> dict[str, Any]:
     }
 
 
+# == W4: a row quantized flat by roundoff, evaluated in binary64 (§4.8.3 (c), the flat rule) =======
+#
+# One component column S1.n.A (scale 3 mol/s) at x0; rows R1 = theta n_A / (n_A + N_B) (scale 1),
+# with its closed-form AD entry, and R4' = (BIG + c n_A) - BIG - c x0 (scale 3), with its AD entry
+# declared 0.0 (a dropped term of scaled size c S_x / S_F = 2 TOL). Roundoff quantizes R4' to
+# multiples of ulp(BIG). WIT.A15 (review F-1).
+
+W4_THETA = 0.3
+W4_N_B = 5e-3
+W4_C = 2e-7
+W4_BIG = (1e4, 3e4, 1e5)
+W4_X0 = (2e-4, 2.5e-4, 3e-4)
+
+
+def _w4_residual(big: float, x0: float, n_a: float) -> tuple[float, float]:
+    return W4_THETA * n_a / (n_a + W4_N_B), (big + W4_C * n_a) - big - W4_C * x0
+
+
+def _w4_escalation(big: float, x0: float, *, flat_rule: bool) -> tuple[int | None, float | None]:
+    """§4.8.3 in binary64, in the witness's arithmetic order: k* and D-hat(R4'), or None."""
+    scales = (1.0, 3.0)
+    h0 = FD_RELATIVE_STEP * 3.0
+    plus, minus = _w4_residual(big, x0, x0 + h0), _w4_residual(big, x0, x0 - h0)
+    varied = {i for i in range(2) if plus[i] != minus[i]}
+    previous: list[float] | None = None
+    previous_barred = False
+    for k in range(K_MAX + 1):
+        h = h0 * 2.0**-k
+        points = [_w4_residual(big, x0, x0 + float(offset) * h) for offset, _ in C4]
+        flat = {i for i in range(2) if all(p[i] == points[0][i] for p in points)}
+        barred = flat_rule and bool(flat & varied)
+        varied |= {0, 1} - flat
+        estimate = []
+        for i in range(2):
+            acc = 0.0
+            for (_, weight), values in zip(C4, points, strict=True):
+                acc += float(weight) * values[i]
+            estimate.append(acc / (12.0 * h) * 3.0 / scales[i])
+        if (
+            previous is not None
+            and not barred
+            and not previous_barred
+            and all(abs(a - b) <= float(EPS_RES) for a, b in zip(estimate, previous, strict=True))
+        ):
+            return k, estimate[1]
+        previous, previous_barred = estimate, barred
+    return None, None
+
+
+def build_w4() -> dict[str, Any]:
+    h0 = FD_RELATIVE_STEP * 3.0
+    configurations: dict[str, Any] = {}
+    for big in W4_BIG:
+        for x0 in W4_X0:
+            plus, minus = _w4_residual(big, x0, x0 + h0), _w4_residual(big, x0, x0 - h0)
+            entry = W4_THETA * W4_N_B / (x0 + W4_N_B) ** 2
+            tier1 = max(
+                abs(entry * 3.0 - (plus[0] - minus[0]) / (2.0 * h0) * 3.0),
+                abs(0.0 - (plus[1] - minus[1]) / (2.0 * h0) * 3.0 / 3.0),
+            )
+            without = _w4_escalation(big, x0, flat_rule=False)
+            with_rule = _w4_escalation(big, x0, flat_rule=True)
+            configurations[f"BIG={big:g},x0={x0:g}"] = {
+                "tier1_error_scaled": float(f"{tier1:.6e}"),
+                "k_star_without_flat_rule": without[0],
+                "r4_estimate_without_flat_rule": without[1],
+                "k_star": with_rule[0],
+            }
+    values = list(configurations.values())
+    claim(
+        all(v["tier1_error_scaled"] >= 10 * float(TOL) for v in values),
+        "W4: the registered central difference fails by >= 10 TOL in every configuration",
+    )
+    claim(
+        sum(
+            v["k_star_without_flat_rule"] is not None
+            and abs(v["r4_estimate_without_flat_rule"]) <= 1e-20
+            for v in values
+        )
+        >= 7,
+        "W4: without the flat rule >= 7 of 9 configurations resolve with D-hat(R4') ~ 0 (a pass "
+        "on a dropped term of 2 TOL)",
+    )
+    claim(
+        all(v["k_star"] is None for v in values),
+        "W4: with the flat rule no configuration resolves; the registered result (fail) stands",
+    )
+    return {
+        "theta_K": W4_THETA,
+        "n_B_mol_per_s": W4_N_B,
+        "c": W4_C,
+        "configurations": configurations,
+        "outcome": "unresolved: the registered result (fail) and its value stand",
+    }
+
+
 # == G1, G2: GP-C3's single-phase states on wilson-ig-v2 (§4.8.4, §4.8.5) =========================
 
 THETA_UNIT = mpf(1000)
@@ -464,6 +604,7 @@ def build() -> dict[str, Any]:
         "W1": build_w1(),
         "W2": build_w2(),
         "W3": build_w3(),
+        "W4": build_w4(),
         "GP_C3": build_gp(),
     }
     document["claims"] = list(CLAIMS)

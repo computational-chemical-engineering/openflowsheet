@@ -980,12 +980,15 @@ def witness_classes(
 @dataclass(frozen=True)
 class Escalation:
     """§4.8.3 for one column: `admissible[k]` whether level k's four points all returned `ok`;
-    `gaps[k]` its e_k (None at k = 0 or when level k - 1 or k is inadmissible); `level` k*, the
-    first k with e_k <= `RESOLUTION_TOLERANCE`, and `scaled` its estimate D-hat_k* per row; both
-    None when the column does not resolve. Levels above k* are not evaluated."""
+    `gaps[k]` its e_k (None at k = 0 or when level k - 1 or k is inadmissible); `barred[k]`
+    whether admissible level k is flat in a row whose coarser stencil was not (§4.8.3 (c), the
+    flat rule: it can be neither k* nor k* - 1); `level` k*, the first k with
+    e_k <= `RESOLUTION_TOLERANCE` and neither level barred, and `scaled` its estimate D-hat_k* per
+    row; both None when the column does not resolve. Levels above k* are not evaluated."""
 
     admissible: tuple[bool, ...]
     gaps: tuple[float | None, ...]
+    barred: tuple[bool, ...]
     level: int | None
     scaled: tuple[float, ...] | None
 
@@ -1020,26 +1023,51 @@ def escalate_column(
     step: float,
     column_scale: float,
     row_scales: Sequence[float],
+    registered: Sequence[Sequence[float]] | None = None,
 ) -> Escalation:
     """§4.8.3 (b)-(c), amendment WIT (ADR 0073 D1): the central fourth-order difference of
     `compiled.residual` along `column` at `h_k = step 2^-k`, k = 0..`ESCALATION_LEVELS`, scaled per
     row (`D * column_scale / row_scales[i]`, the witness's form), until two successive admissible
     levels agree within `RESOLUTION_TOLERANCE` on every row.
 
+    The flat rule (§4.8.3 (c), review F-1): a level whose four values in some row are equal (a
+    flat stencil) is barred, and can be neither k* nor k* - 1, when a coarser complete stencil of
+    that row was not flat: `registered`, the registered central pair's two points when both were
+    evaluated, or an earlier admissible level. Roundoff that quantizes a row flat makes its
+    estimate 0 at successive levels, which would agree on a wrong value. The test is on the
+    values, not the estimate. A row independent of the column is flat at every level and never
+    bars one.
+
     It reads the residual, the state, the step and the scales only, never a Jacobian
     (§4.8.3 (e), WIT.A07): the AD entries enter the trigger and the comparison, not the
     selection."""
     admissible: list[bool] = []
     gaps: list[float | None] = []
+    barred: list[bool] = []
+    # Rows for which a coarser complete stencil was not flat (`==`, so -0.0 equals 0.0; a NaN
+    # value is never equal, so a NaN row is never flat).
+    varied: set[int] = set()
+    if registered is not None:
+        plus, minus = registered
+        varied.update(row for row in range(len(row_scales)) if plus[row] != minus[row])
     previous: tuple[float, ...] | None = None
+    previous_barred = False
     for k in range(ESCALATION_LEVELS + 1):
         h = step * 2.0**-k
         points, refusal = _stencil(compiled, context, base, column, h, _CENTRAL4_OFFSETS)
         if refusal is not None:
             admissible.append(False)
             gaps.append(None)
+            barred.append(False)
             previous = None
             continue
+        flat = {
+            row
+            for row in range(len(row_scales))
+            if all(values[row] == points[0][row] for values in points[1:])
+        }
+        level_barred = bool(flat & varied)
+        varied.update(row for row in range(len(row_scales)) if row not in flat)
         estimate = []
         for row, row_scale in enumerate(row_scales):
             accumulated = 0.0
@@ -1048,16 +1076,22 @@ def escalate_column(
             estimate.append(accumulated / (12.0 * h) * column_scale / row_scale)
         current = tuple(estimate)
         admissible.append(True)
+        barred.append(level_barred)
         if previous is None:
             gaps.append(None)
         else:
             differences = [abs(now - before) for now, before in zip(current, previous, strict=True)]
             gaps.append(max(differences, default=0.0))
             # `all(<=)` rather than `max <=`, so that a NaN row never resolves a column.
-            if all(difference <= RESOLUTION_TOLERANCE for difference in differences):
-                return Escalation(tuple(admissible), tuple(gaps), k, current)
+            if (
+                not level_barred
+                and not previous_barred
+                and all(difference <= RESOLUTION_TOLERANCE for difference in differences)
+            ):
+                return Escalation(tuple(admissible), tuple(gaps), tuple(barred), k, current)
         previous = current
-    return Escalation(tuple(admissible), tuple(gaps), None, None)
+        previous_barred = level_barred
+    return Escalation(tuple(admissible), tuple(gaps), tuple(barred), None, None)
 
 
 def _discrepancies(
@@ -1191,6 +1225,7 @@ def derivative_witness(
                 step,
                 column_scale,
                 [scaling.row[row_id] for row_id in row_ids],
+                registered=points if refusal is None else None,
             )
             if escalations is not None:
                 escalations[name] = escalation
