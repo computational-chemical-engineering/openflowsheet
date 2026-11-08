@@ -689,10 +689,16 @@ limitations:
       - check:T04.A07
   - id: L21
     text: >-
-      Specification continuation (edge 3's homotopy) exists only for regions with a promoted
-      specification; elsewhere it is `unsupported(no_continuation_parameter)`.
+      Edge 3's continuation exists for a region with a promoted specification (specification
+      continuation). Under `RRC-revision-v1`, it also exists for a revision region whose nearest
+      verified ancestor has the same declaration and differs only in registered operating values
+      (revision continuation, ADR 0072). Everywhere else edge 3 is the sequential restart or
+      `unsupported(…)`. Neither continuation changes the active set.
     evidence:
       - doc:docs/derivations/T04-globalization-spec.md §14
+      - doc:docs/design/RRC-revision-region-continuation.md §6
+      - tests/test_rrc_candidates.py::test_g4_net02_is_rescued_from_its_registered_source
+      - tests/test_rrc_edge3.py::test_g6_a_refusal_is_recorded_and_the_restart_runs_unchanged
   - id: L22
     text: >-
       Scope of the solver evidence: tear selection is greedy (minimality not claimed); behaviour
@@ -1099,11 +1105,15 @@ limitations:
       - doc:docs/derivations/S11-design.md §4.11
   - id: L-COL-9
     text: >-
-      In a flowsheet a column region has no edge-3 continuation (no revision region has one). The
-      unit's own `evaluate` keeps S02's full standalone path, S08 Stage B included, so the
-      traversal start is the standalone answer.
+      In a flowsheet a column region has edge-3 continuation only under `RRC-revision-v1`, from a
+      verified ancestor that differs only in operating values. A first solve, a structural edit
+      (stage count, feed stage, a changed end-specification choice) and the default policy have
+      none. The unit's own `evaluate` keeps S02's full standalone path, S08 Stage B included, so
+      the traversal start is the standalone answer.
     evidence:
       - tests/test_s11_column_solve.py::test_a_revision_region_has_no_edge_3_continuation
+      - tests/test_rrc_candidates.py::test_g5_a_column_case_failing_first_is_rescued_and_closes
+      - tests/test_rrc_edge3.py::test_f1_a_column_continued_in_its_end_specifications_reaches_item_0s_root
       - tests/test_s11_column_unit.py::test_evaluate_is_the_standalone_solve
       - doc:docs/derivations/S11-design.md §10.8
   - id: L-COL-10
@@ -7572,7 +7582,7 @@ harvest:
   class: E
   to:
   - L-COL-9
-  note: 'S11''s envelope row L-COL-9, carried verbatim'
+  note: 'S11''s envelope row L-COL-9, narrowed by RRC G5 (design note §6, ADR 0072)'
 - manifest: evidence/S11/01e72ca464dcb68c489e235d3d5446d450e109e1/manifest.json
   item: limitations[12]
   sha256: 532a226917fb7747cda9fba269420a91ba12973be47913cbaf742adc29ec7135
