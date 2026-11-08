@@ -189,3 +189,5 @@ M3 61/61, M4 61/61, M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 35/35).
   `streams` section in `tutorials/cli.md` (the CLI reference), `streams` in `guide/interfaces.md`'s CLI row.
   The MCP description is WO-3's `get_stream_table.md` (both reviews pending). `mkdocs build --strict` was not
   run locally (it executes the notebooks); CI's site job does.
+- **D6-3 — the `message_entry` fixtures re-taken** (`scripts/t07_schema_fixtures.py --write`): only
+  `catalogue.sha256` moves, `e4f940cc…` → `8fa0c03e…`, from the L41 re-sync (D4-5) and the seven ST entries.
