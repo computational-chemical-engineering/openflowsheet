@@ -740,3 +740,11 @@ Three test bugs, no product code: `get_stream_table` had no pre-ST snapshot in `
 `test_m04_study_job` A42 (now skipped via `ST_OPERATIONS`, as MSG's `explain`); `test_st_core` Q1.A15c assumed
 IAPWS/H2O for every run, but the CoolProp leg adds TH-C2 (R134a) — now uses the run's own provider and basis.
 Missed locally because worktree tests imported main's `src` (the venv trap). ST_DECISIONS CI-1/CI-2. CI re-run pending.
+
+## 2026-11-08 — X02 merged (35aa61e1)
+
+`wp/X02` merged `--no-ff` after CI `42521075017` green on `d26bcd38` (both archs, identity, default-install);
+manifest `evidence/X02/d26bcd38…/manifest.json` tested (c72e41fe, which also merged main; HARVEST_SIZE (83, 1029, 135)).
+On main after the merge: ruff check + format OK; F0 PASS (M1–M9); targeted 1208 passed, 2 skipped. Surface chain now
+c_5 (D_5 `f51b69bf…`); global-state caches 38. Next per the merge order: OPT merge prep (docs/briefs/OPT-merge-prep.md).
+Open: design-lane prose check of X02's D-39 catalogue entries (batched with OPT's); X02 reviewer pass pending.
