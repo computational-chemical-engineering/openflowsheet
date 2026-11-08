@@ -1,6 +1,11 @@
 # ADR 0074 — The release evidence package id: `REL` and a length-marked version code, admitted by one additive `work_package` alternative
 
-**Status:** **Proposed, 2026-11-08.**
+**Status:** **Accepted, 2026-11-08** — its condition holds: D1 was applied alone in `51c9e7f5` (with RID.A01–A11 in
+`tests/test_evidence_manifests.py`), and that file passes (488 passed) with every committed manifest unchanged. Marked by
+the build lane (package S15a). A-9 is pasted as RP §17.2 and the register entry is R-970. (Proposed 2026-11-08, design
+lane.)
+
+Condition as proposed:
 - It becomes **Accepted** when the build lane has applied D1 alone, in one isolated commit together with the acceptance
   test RID.A01–RID.A12 (§6), and has recorded that `tests/test_evidence_manifests.py` passes with every committed
   manifest unchanged. The build lane marks it, as for ADR 0059. No answer of Frank's is needed: O-1 and O-2 (§8) are

@@ -8592,3 +8592,34 @@ harvest:
   class: P
   to: []
   note: 'process note: the review did-not-establish list; gate and CI postdate the review'
+- manifest: evidence/S15a/d7cb4dbb77adeafab943959966e7269a17ca29f3/manifest.json
+  item: limitations[0]
+  sha256: e2a6ebcc9176683cc753bdd91a9ac6273c50de3cf28b79b5ef02606ca548d450
+  class: P
+  to: []
+  note: 'provenance note: software verification on ref-x86-64 under id S15a; ADR 0074 Accepted on its condition; an id is bookkeeping, not validation'
+- manifest: evidence/S15a/d7cb4dbb77adeafab943959966e7269a17ca29f3/manifest.json
+  item: limitations[1]
+  sha256: 674506932d44833ec370a1c9411fc79ba341097ee9e3ee46b400332264f8b25b
+  class: B
+  to:
+  - B10
+  note: 'O-3: nothing ties a line file''s evidence_package to its line; RP.L11 due before the 0.5 line file — reviewer: B?'
+- manifest: evidence/S15a/d7cb4dbb77adeafab943959966e7269a17ca29f3/manifest.json
+  item: limitations[2]
+  sha256: c50f76961bdc83f70525f26c1d3f56f450153b4e72c249b7e1a299ea42acd429
+  class: P
+  to: []
+  note: 'process note: O-4 pointer to ADR 0074 D2 added when K-2 marks ADR 0055 Accepted'
+- manifest: evidence/S15a/d7cb4dbb77adeafab943959966e7269a17ca29f3/manifest.json
+  item: limitations[3]
+  sha256: d8474e5cf4d6f52c8e532c548020150c3d233bafb202e613673409520e11a709
+  class: P
+  to: []
+  note: 'process note: O-5 trailing newline passes every work_package alternative; recommended no change'
+- manifest: evidence/S15a/d7cb4dbb77adeafab943959966e7269a17ca29f3/manifest.json
+  item: limitations[4]
+  sha256: 18f42a614e5dd485e135f2067af8d486677d44468173caaef1212337755cdc95
+  class: P
+  to: []
+  note: 'process note: ADR 0074 section 3 does-not-establish list (line-file id, patch line, trailing newline, no validation)'
