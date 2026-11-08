@@ -77,3 +77,14 @@ The normative text is the spec; nothing here changes a tolerance, a check meanin
   (absolute). E-1 window unchanged: δ = 1e-4, 2e-4, 2.4e-4 UNVERIFIED; 2.6e-4, 3e-4, 4e-4, 5.3e-4, 5.7e-4 VERIFIED;
   no level barred anywhere.
 - **Reverse by.** Reverting the F-1 commit.
+
+## D-6 — F-2: a `ZERO_FLOW` split has no class 2 or 4
+
+- **Choice.** `witness_classes` skips a split whose `feed` tuple is all exactly 0.0 in `state` (`-0.0` counts as
+  0.0); its sides fall to class 5, where `x_j = 0` is not escalated, so §4.8.8's "stays unsupported" holds. A feed
+  column absent from `state` is not taken as 0.0 (the split is then classified as before; every measured feed is a
+  variable, e.g. G7's `S1.n.<c>`). §4.8.2's dormant definition gains the matching sentence.
+- **Tests.** `test_a12_a_zero_flow_split_falls_to_class_5_on_a_gamma_phi_basis` (0.0 and −0.0; fails before the
+  fix, 2 of 2) and the counter-case with a positive feed (classes 2 and 4 kept). WIT system tests 6 passed.
+- **Rejected.** Rewording §4.8.8 to accept the case unmeasured (the review's alternative).
+- **Reverse by.** Reverting the F-2 commit.

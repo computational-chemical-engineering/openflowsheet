@@ -944,9 +944,11 @@ def witness_classes(
     `streams` are the revision's streams (R-281 reads `<S>.n.<c>` over them); `splits` the
     verifier's own reading of the revision's lifted splits (`lifted_splits(..., staged=...)`),
     from declarations, never from the solver's attempts. A side is dormant when every column of
-    its tuple is exactly 0.0 (`-0.0` counts as 0.0, as for Z). Classes 2-4 are empty on every
-    basis outside `ONE_SIDED_BASES`, class 1 on every basis but `pr-c1-v1`. The witness's
-    `unstenciled` is classes 1 and 2, its `one_sided` classes 3 and 4."""
+    its tuple is exactly 0.0 (`-0.0` counts as 0.0, as for Z). A split whose feed is all exactly
+    0.0 in `state` (`ZERO_FLOW`) is skipped, so its sides fall to class 5 and §4.8.8's "stays
+    unsupported" holds (review F-2); a feed column absent from `state` is not taken as 0.0.
+    Classes 2-4 are empty on every basis outside `ONE_SIDED_BASES`, class 1 on every basis but
+    `pr-c1-v1`. The witness's `unstenciled` is classes 1 and 2, its `one_sided` classes 3 and 4."""
     zero_flow = (
         frozenset(flow_id(stream, component) for stream in streams for component in components)
         if basis == "pr-c1-v1"
@@ -958,6 +960,8 @@ def witness_classes(
     dormant_vapour: set[str] = set()
     if gamma_phi:
         for split in splits:
+            if all(name in state and state[name] == 0.0 for name in split.feed):
+                continue
             if all(state[name] == 0.0 for name in split.liquid):
                 dormant_liquid.update(split.liquid)
             if all(state[name] == 0.0 for name in split.vapor):

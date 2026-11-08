@@ -188,7 +188,9 @@ Definitions.
   verifier's own reading of the revision: `lifted_splits(…, staged=…)` in `verify_revision`, the reading that
   `revision_phase_branch` and the zero-flow form already use. It comes from declarations, never from the solver's
   attempts or held regimes (R-016). A side is **dormant** at `x_final` when every column of its tuple is exactly `0.0`
-  there; `-0.0` counts as `0.0`, as it does for Z.
+  there; `-0.0` counts as `0.0`, as it does for Z. A split whose `feed` tuple is all exactly `0.0` there (a
+  `ZERO_FLOW` split) has no dormant side for classes 2 and 4: its sides fall to class 5, where `x_j = 0` is not
+  escalated, so the split stays as §4.8.8 states it (review F-2, 2026-11-08).
 
 Every differenced column is in exactly one class; the first row that matches wins.
 

@@ -27,6 +27,7 @@ import numpy as np
 import pytest
 from conftest import REPO_ROOT, load_json
 
+from openflowsheet.orchestrator.region import LiftedSplit
 from openflowsheet.verify.checks import (
     DERIVATIVE_TOLERANCE,
     ESCALATION_LEVELS,
@@ -35,6 +36,7 @@ from openflowsheet.verify.checks import (
     Escalation,
     derivative_witness,
     escalate_column,
+    witness_classes,
 )
 
 GENERATOR = REPO_ROOT / "docs" / "derivations" / "scripts" / "wit_reference.py"
@@ -424,3 +426,50 @@ def test_a15_a_flat_stencil_does_not_resolve_a_column_whose_coarser_stencil_was_
     on = checks["derivative_witness.on_pattern"]
     assert on.result == "fail"
     assert on.value == registered  # bitwise
+
+
+# -- WIT.A12, review F-2: a ZERO_FLOW split has no class 2 or 4 ----------------------------------
+
+
+def _split(feed: tuple[str, ...], vapor: tuple[str, ...], liquid: tuple[str, ...]) -> LiftedSplit:
+    return LiftedSplit(
+        unit="U",
+        stream="S1",
+        feed=feed,
+        temperature="U.T",
+        pressure="U.P",
+        vapor=vapor,
+        liquid=liquid,
+        vapor_total="S2.n_tot",
+        liquid_total="S3.n_tot",
+        equilibrium_rows=("U:eq:A", "U:eq:B"),
+        vapor_definition="U:vdef",
+        liquid_definition="U:ldef",
+    )
+
+
+@pytest.mark.parametrize("negative_zero", [False, True])
+def test_a12_a_zero_flow_split_falls_to_class_5_on_a_gamma_phi_basis(negative_zero: bool) -> None:
+    """§4.8.2 / §4.8.8: both sides and the feed exactly 0.0 (a `ZERO_FLOW` split) on
+    `wilson-ig-v2`: classes 2 and 4 are empty and every component column is class 5."""
+    feed, vapor, liquid = ("S1.n.A", "S1.n.B"), ("S2.n.A", "S2.n.B"), ("S3.n.A", "S3.n.B")
+    columns = (*feed, *vapor, *liquid, "U.T")
+    zero = -0.0 if negative_zero else 0.0
+    state = dict.fromkeys(columns, 0.0) | {"S1.n.A": zero, "U.T": 350.0}
+    classes = witness_classes(
+        columns, state, COMPONENTS, basis="wilson-ig-v2", splits=[_split(feed, vapor, liquid)]
+    )
+    assert classes == dict.fromkeys(columns, 5)
+
+
+def test_a12_a_fed_split_with_a_dormant_liquid_side_keeps_classes_2_and_4() -> None:
+    """The counter-case: the same split with a positive feed. Its dormant liquid side is class 2,
+    and a dormant vapour side (both sides dormant, as a classifier input) class 4."""
+    feed, vapor, liquid = ("S1.n.A", "S1.n.B"), ("S2.n.A", "S2.n.B"), ("S3.n.A", "S3.n.B")
+    columns = (*feed, *vapor, *liquid)
+    state = dict.fromkeys(columns, 0.0) | {"S1.n.A": 1.0}
+    classes = witness_classes(
+        columns, state, COMPONENTS, basis="wilson-ig-v2", splits=[_split(feed, vapor, liquid)]
+    )
+    assert {name for name, k in classes.items() if k == 2} == set(liquid)
+    assert {name for name, k in classes.items() if k == 4} == set(vapor)
