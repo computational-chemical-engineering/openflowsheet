@@ -131,10 +131,14 @@ Am. 1–2). Foundations F0–F8 are designed in wave W1 during 0.4, then built i
 - **X02** (`wp/X02` `c05a9e84`, ADR 0070 Proposed, Am. 15): WO-1…7 done; manifest `evidence/X02/2ab11b66…` `tested`
   (G5b, G5d (iii) `fail` with accepted_fail: warm variant not registered, neighbour speed-up withdrawn, D-32); gate
   PASS 15138; CI green. **Ready; merges after Frank accepts ADR 0070 (Q5).** At merge: R-950, c_4/c_5 vs MSG.
-- **OPT** (`wp/OPT`, design `docs/design/OPT-revision-optimisation.md`, ADR 0071 Proposed, Am. 16): WO-1 (NlpHost,
-  SYN-001 bit-identical) and WO-2 (revision host; F1/F2 hold; D-12 for review) done; WO-3 running; WO-4…7 next.
+- **X10 inventory: MERGED** into main `6b641fd6` (manifest `evidence/X10/033f1928…` tested; review M-1 applied:
+  L-X10-1 surrogate UNVERIFIED on `c1-surrogate.json`, witness step vs small flows → design-lane follow-up; gate PASS
+  15161; CI green). 150 pairs: 41 VERIFIED off CoolProp, 76 refused; table `docs/X10-inventory.md`.
+- **OPT** (`wp/OPT`, ADR 0071 Proposed, Am. 16; design amended §9 `9318904a`): WO-1…5b done (analytic optima ≤ 2e-10;
+  C-MW verifies); WO-5c (phase-boundary form, G2 audited re-take, probe gap) running; then WO-6, WO-7, reviewer.
+  Open for review: D-18, D-24, D-28, D-30, D-32, D-42 (γ–φ held splits vs K04 witness), D-44.
 - **Await Frank** (`docs/FRANK_QUESTIONS.md`): `explain.md` (blocks MSG), ADRs 0055/0068/0069/0070/0071, Q-11, F-8,
-  X05 Q-F1…F3, X02 Q1…Q7, OPT Q1…Q8.
+  X05 Q-F1…F3, X02 Q1…Q7, OPT Q1…Q9.
 - **TRS2 CPU rule** (user via hub, 2026-11-07): ≤ ~36 busy cores of 48; one full gate at a time; no tests in several
   worktrees at once. GitHub API: poll CI at most every 10 min (rate limit hit 2026-11-07).
 - Host load ~50 from other users: wall-time budget tests flaky (re-run alone).
