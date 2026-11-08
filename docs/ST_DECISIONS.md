@@ -247,3 +247,7 @@ M3 61/61, M4 61/61, M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 35/35).
   52 bundles record a route (11 `legacy_eo`, 36 `revision_eo`); the 44 documents are byte-identical before and
   after S4 (`document_sha256` per bundle). Tests: a `legacy_eo` bundle read with every role `fixed` and a
   `revision_eo` bundle with every role `free` give the bundle's document; the roles alone do not.
+- **Text amendments (review Rulings), marked "from the ST review, 2026-11-08":** note §4.3 (D1-1: "summed as
+  the verifier's helper of that form sums it"), §4.2 R0/R1 (D1-10, D1-12), §4.5 (D1-11, D1-13, D1-6's port
+  entry), §5 (D1-6: ports carry `absent`; D1-7: phase `x`/`w` `[q]|null`, phase fractions `q`), §6.2 (D1-14,
+  S4); ADR 0068 D4 (D1-1) and D5 (D1-6/7).

@@ -78,7 +78,8 @@ context (`model_version` and `constants_sha256` from the certificate).
   both accepted for h only.
 - s and v are requested each alone, and only if declared.
 - Ḣ is summed in the verifier's order, so ST's Ḣ equals the verifier helpers' bitwise wherever the two decide the same
-  phases (exit test E7).
+  phases (exit test E7). The per-component form is summed as the verifier's helper of that form sums it: built-in
+  `sum` as `checks.enthalpy_flow`, a 0.0-loop as `_phase_enthalpy` for R1′ (D1-1, from the ST review, 2026-11-08).
 - ST imports from `verify` only `table.{FEED_MODELS, PRODUCT_MODELS, EXTERNAL_DUTY_MODELS, STAGED_DUTY_MODELS,
   WORK_MODELS}` and `column.duty`; for R1′, `orchestrator.splits.lifted_splits`, the verifier's own split list.
 
@@ -91,6 +92,9 @@ context (`model_version` and `constants_sha256` from the certificate).
 - Each substream carries `convention`, the provider's reference convention, which applies to every h and s in it.
 - Density is `m / (n·v)`, and only from a provider's `v`.
 - Every quotient is an IEEE division; a non-finite result is null with `value_not_finite` (Q4.R11 (c)).
+- *From the ST review, 2026-11-08 (D1-6, D1-7; note §5):* a unit's port carries an `absent` map; a phase's `x` and `w`
+  are given or null whole, and its `phase_fraction_molar` and `phase_fraction_mass` are nullable, so an underflowed
+  phase mass is `value_not_finite` (Q4.A14 (d)).
 
 **D6. Energy summary** (note §4.5).
 - Per unit (feeds and sinks excluded): `ports` with Ḣ, `H_in`, `H_out`, `Q` and `W` (positive into the unit) and

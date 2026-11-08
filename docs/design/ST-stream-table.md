@@ -132,7 +132,8 @@ Let `st = StreamState(n=(state[flow_id(S,c)] for c in components), T=state[tempe
 P=state[pressure_id(S)])`.
 
 - **R0 dormant** (`st.is_dormant`). `phase_source: "zero_flow"`, `phases: []`, and
-  `n_total = m_total = H_flow = S_flow = V_flow = +0.0`. The arrays `n` and `m` are `+0.0` (a stored −0.0 normalised),
+  `n_total = m_total = H_flow = S_flow = V_flow = +0.0`. The arrays `n` and `m` are `+0.0` (a stored −0.0 normalised;
+  on every stream, not only R0, ADR 0001 D1.5 — D1-10, from the ST review, 2026-11-08),
   and no provider call is made (Q1.R11); `T`, `x`, `w`, `h`, `h_mass`, `s`, `s_mass`, `rho` and both vapour fractions
   are `null`, with `zero_flow(stream=S)`.
 - **R1 carried split.** Both `vapor_id(S)` and `liquid_id(S)` are in `state` (thermal saturated streams, ADR 0051 D1).
@@ -144,7 +145,8 @@ P=state[pressure_id(S)])`.
   state `StreamState((1.0,), T_sat, P)` with the phase's family; the per-mole values do not depend on the amount, which
   is what the verifier's `_properties` assumes. The stream's `T` is the stored T. A `Tsat` status other than `"ok"`
   nulls every property-derived quantity of the substream and its phases with `property_evaluation_failed(stream=S,
-  phase=LIQUID, property=Tsat, status=…)`; amounts, compositions and fractions are still given (Q1.R12).
+  phase=LIQUID, property=Tsat, status=…)`; amounts, compositions and fractions are still given (Q1.R12). A non-finite
+  `Tsat` blocks them alike, with `value_not_finite(subject=S, quantity=Tsat)` (D1-12, from the ST review, 2026-11-08).
 - **R1′ carried lifted split** (from the ST review, 2026-11-08, M1). *Trigger:* S is the `stream` of a heater-style
   lifted split (its instance lacks the `vapor` + `liquid` port pair, as in the verifier's `degeneracy`), from
   `lifted_splits([(i.unit_id, i.model_id, i.wiring) for i in view.instances], view.components)`, the list
@@ -177,7 +179,9 @@ P=state[pressure_id(S)])`.
 - **h (required).** Call `evaluate_phase(PropertyRequest(state_p, family, ("h",)), context)` alone, exactly as the
   verifier does. If `"h"` is in `values` (mixture form): `n_p,tot = sum(n_p)` (Python `sum`, provider order) and
   `H_p = n_p,tot * values["h"]`. Else, if every `f"h_{c}"` is present (SYN-001's ideal-solution form):
-  `H_p = Σ_c n_p,c * values[f"h_{c}"]` from `0.0` in provider order. Else `property_not_provided`. In both forms
+  `H_p = Σ_c n_p,c * values[f"h_{c}"]` in provider order, summed as the verifier's helper of that form sums it (D1-1,
+  from the ST review, 2026-11-08): built-in `sum` (Neumaier-compensated since Python 3.12; `requires-python >=3.13`)
+  as `checks.enthalpy_flow`, and a 0.0-loop as `_phase_enthalpy` for R1′. Else `property_not_provided`. In both forms
   `h_p = H_p / n_p,tot`; for R1, `n_p,tot` is V or L.
 - **s, v (optional).** Requested only if declared in `describe().properties`, each in its **own** call
   `(…, ("s",))` / `(…, ("v",))`; otherwise `property_not_provided(provider, property)`. Only the mixture key is
@@ -223,15 +227,19 @@ full row is at `get_artifact("<bundle>/solution-certificate.json", pointer="/che
     not external and is visible through `ports`.
   - `W`: for a model in `WORK_MODELS`, `state[work_id(U)]`; otherwise `0.0`.
   - `closure = (Q + W) − (H_out − H_in)`, computed **iff** the unit has at least one quoted energy row (the verifier has
-    an energy form for its model). Otherwise it is null, with `energy_balance_undefined(unit, model)`. An absent stream
-    Ḣ makes `H_in`, `H_out` and `closure` null, with `stream_enthalpy_absent(subject=U, streams=[…])`.
+    an energy form for its model). Otherwise it is null, with `energy_balance_undefined(unit, model)`, even when a
+    stream Ḣ is also absent (D1-13, from the ST review, 2026-11-08). An absent stream Ḣ makes `H_in`, `H_out` and `closure` null, with
+    `stream_enthalpy_absent(subject=U, streams=[…])`; the port's `H_flow` carries the same entry in its own `absent`
+    (D1-6).
 - `overall`: `feeds` lists the outlet-port streams of `FEED_MODELS` instances, and `products` the inlet-port streams of
   `PRODUCT_MODELS` instances (declaration order, port order, stream order: the verifier's `_feeds` and `_products`).
   `Q = Σ` over instances (one loop; EXTERNAL → `state[duty_id]`, STAGED → `column.duty`), `W = Σ` over WORK
   instances, `H_feeds` and `H_products` accumulated from 0.0, and
   `closure = (Q + W) − (H_products − H_feeds)`. That is `_envelope_energy`'s arithmetic, in the same order. A
   closed loop has empty lists and a closure of `Q + W`.
-- `convention` (the provider's), `judged_at`, and `verification_status` (the certificate's) sit beside them.
+- `convention` (the provider's), `judged_at`, and `verification_status` (the certificate's) sit beside them: `energy`
+  holds `{convention, units, overall}`, and `judged_at` and `verification_status` sit at the document root, §5's
+  layout (D1-11, from the ST review, 2026-11-08).
 
 ## 5. The document `stream-table-v1` (`_data/schemas/stream-table.schema.json`)
 
@@ -257,11 +265,14 @@ substream: {id: "mixed", kind: "mixed", components: [str], convention: str,
   H_flow, S_flow, V_flow, h, h_mass, s, s_mass, rho, vapor_fraction_molar, vapor_fraction_mass: q,
   phases: [phase], absent: {name: entry}}
 phase: {id: {family: str ^[A-Z][A-Z0-9_]*$, qualifier: str|null ^[A-Za-z0-9_.:-]+$, ordinal: int>=1},
-  n, m: [number], x, w: [number], n_total, m_total, phase_fraction_molar, phase_fraction_mass: number,
+  n, m: [number], x, w: [q]|null, n_total, m_total: number, phase_fraction_molar, phase_fraction_mass: q,
   H_flow, S_flow, V_flow, h, h_mass, s, s_mass, v, rho: q, absent: {name: entry}}
 entry: {code: str, params: {str: str|number|[str]}}
+# D1-6, D1-7 (from the ST review, 2026-11-08): a port carries `absent` (null iff absent holds); a phase's `x` and `w` are given or null
+# whole, and its fractions are `q` (Q4.R11 (c), Q4.A14 (d): an underflowed phase mass).
 quote: {index: int, id, result, scope: str, value, tolerance: q, reason: str, near_threshold: bool}
-unit: {id, model: str, ports: [{port, direction: "inlet"|"outlet", streams: [str], H_flow: q}],
+unit: {id, model: str, ports: [{port, direction: "inlet"|"outlet", streams: [str], H_flow: q,
+  absent: {name: entry}}],
   H_in, H_out: q, Q, W: number, closure: q, checks: [quote], absent: {name: entry}}
 overall: {feeds, products: [str], Q, W: number, H_feeds, H_products, closure: q, checks: [quote],
   absent: {name: entry}}
@@ -291,7 +302,9 @@ job_id, run_outcome`), the same helper as `get_artifact`; an unavailable basis i
 ### 6.2 Python
 
 The method above. `application.stream_table.from_bundle(directory)` is a documented library helper (not contract) for
-bundle directories; 0.3.0 bundles included.
+bundle directories; 0.3.0 bundles included. A directory's `source` has `job_id` and `bundle_id` null, and its
+`not_found` detail uses MSG's member fields (`bundle_id, member, members, job_id, run_outcome`) with nulls for what a
+directory lacks (D1-14, from the ST review, 2026-11-08). With the bundle's `solve-path.json`, the recorded route keys the units (S4).
 
 ### 6.3 CLI
 
