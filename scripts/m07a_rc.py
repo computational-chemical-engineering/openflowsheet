@@ -31,6 +31,15 @@ function, a registered digest and Frank's carry extended to name it):
 - c_3, R-295 (ADR 0037 D6, ADR 0019 Amendment 5): M04's `surrogate_study` job kind, stripped by
   `tests/m04_schema_support.py`'s `without_m04` (R-295's decomposition function); `D_3` =
   `455d01eb…`, registered at the alpha's merge into `main` (R-457).
+- c_4, R-960 (ADR 0071, ADR 0019 Amendment 16): OPT's `optimize` job operation (enum value, the
+  request and result branches, `job_result.optimization`, six artifact kinds), `validate`'s
+  `optimization` member, and the two description texts it changed (`validate.md`,
+  `submit_job.md`, restored from their pre-OPT copies), stripped by
+  `tests/opt_schema_support.py`'s `without_opt`; `D_4` = `3fb06cad…`, measured at OPT WO-6
+  (`tests/test_t08_w2_surface_digest.py`'s `OPT_SERVED_SHA256`). R-960 and the index are
+  provisional (OPT D-51, D-59): if MSG's or X02's c_4 merges into `main` first, OPT renumbers to
+  the next free index and re-measures `D` on its merge tree. Item 4 judges the texts with every
+  link's description change undone (`texts_before_links`).
 
 The released 0.2.0a1 ran the two-link chain (its committed record at `C_α²`); a re-run of the
 alpha's step 8 uses this script at the tag.
@@ -147,6 +156,17 @@ def strip_m04(tools: Tools) -> Tools:
     return stripped
 
 
+def strip_opt(tools: Tools) -> Tools:
+    """s_4 (R-960): `tools` without OPT's additions (`opt_schema_support.without_opt`), with the
+    two description texts OPT changed restored."""
+    t08_rc._tests_on_path()
+    from opt_schema_support import without_opt  # noqa: PLC0415
+
+    stripped = without_opt(copy.deepcopy(tools))
+    assert isinstance(stripped, list)
+    return stripped
+
+
 @dataclass(frozen=True)
 class Link:
     """One registered surface change c_k: its register entry, its strip function s_k, and the
@@ -176,6 +196,12 @@ LINKS: Final = (
         "R-295",
         strip_m04,
         "455d01eb2f420032b27358798e6b331a0120aa1857f02ce3cb7851647849e125",
+    ),
+    Link(
+        "c_4",
+        "R-960",
+        strip_opt,
+        "3fb06cad02649f1d8489c73551583f496ad38ae8c7109d29ae68166f5998c8a5",
     ),
 )
 
@@ -261,6 +287,18 @@ def description_texts() -> dict[str, str]:
     }
 
 
+def texts_before_links(texts: Mapping[str, str]) -> dict[str, str]:
+    """`texts` (operation name -> description file) with every link's description change undone:
+    c_4's two files (OPT) in their pre-OPT form. The earlier links changed no text."""
+    t08_rc._tests_on_path()
+    from opt_schema_support import OPT_DESCRIPTIONS, pre_opt_text  # noqa: PLC0415
+
+    return {
+        name: pre_opt_text(name) if name in OPT_DESCRIPTIONS else text
+        for name, text in texts.items()
+    }
+
+
 def description_problems(texts: Mapping[str, str]) -> list[str]:
     """§5.3 item 4 on `texts` (operation name -> description file): one line per failure."""
     problems: list[str] = []
@@ -325,7 +363,7 @@ def step_surface(arguments: argparse.Namespace) -> int:
     tools = served_tools()
     rows = chain(tools)
     texts = description_texts()
-    problems = description_problems(texts)
+    problems = description_problems(texts_before_links(texts))
     checks: list[dict[str, Any]] = []
     for row in rows:
         suffix = f"{row['link']}_{row['register']}" if row["link"] else row["register"]

@@ -23,6 +23,7 @@ from typing import Any
 
 import pytest
 from m04_schema_support import without_m04
+from opt_schema_support import without_opt
 from t07_jobs_support import lifecycle_violations, response_schema_violations
 
 from openflowsheet.adapters import variants
@@ -280,7 +281,8 @@ def test_a42_m04s_responses_decompose_onto_m02s_snapshots() -> None:
     }
     moved = []
     for name, operation in OPERATIONS.items():
-        resolved = r4.resolved_response(operation)
+        # OPT's additions (ADR 0071) postdate M04: they are taken out first.
+        resolved = without_opt(r4.resolved_response(operation))
         assert r4._digest(without_m04(resolved)) == before[name], name
         if r4._digest(resolved) != before[name]:
             moved.append(name)

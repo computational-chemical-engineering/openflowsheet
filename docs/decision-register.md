@@ -18550,3 +18550,30 @@ on every foundation merge.
 
 **Watch for.** REL.A20 read as "all same-form equal" without A-1's sub-check; a release manifest built from a CI run
 that is not §6.2's push run or the latest dispatch.
+
+## R-960 — `main`'s surface chain gains link c_4 = (ADR 0071, `without_opt`, `3fb06cad…`): OPT's `optimize` job operation, `validate`'s `optimization` member and two description texts (provisional number)
+
+| | |
+| --- | --- |
+| Date | 2026-11-08 |
+| Decided by | build lane, OPT WO-6, applying ADR 0071 (Proposed; ADR 0019 Amendment 16) and OPT design §4.13 in R-457's form (OPT D-51, D-59) |
+| Normative text | ADR 0071 D1, D8; `docs/design/OPT-revision-optimisation.md` §4.10–§4.13; `scripts/m07a_rc.py` (link c_4) |
+| Evidence | On `wp/OPT` at WO-6 the served MCP tool list digests to `3fb06cad02649f1d8489c73551583f496ad38ae8c7109d29ae68166f5998c8a5`. `without_opt` (`tests/opt_schema_support.py`) on it gives `455d01eb2f420032b27358798e6b331a0120aa1857f02ce3cb7851647849e125`, M04's D_3 (R-457), exactly; no tool is added or renamed, the six job tools and `validate_revision` moved, and exactly `validate_revision`'s and `submit_job`'s texts changed (`tests/test_t08_w2_surface_digest.py::test_opts_surface_move_decomposes_onto_m04s`) |
+| Affected packages | OPT; M07a (`scripts/m07a_rc.py`, A37 tests); M07 (the next RC's V17 carry names c_4); T08.A18 (two description reviews) |
+
+**Decision.** `m07a_rc.LINKS` gains c_4 (R-960; strip `strip_opt` = `without_opt`; D_4 = `3fb06cad…`). The strip removes
+Amendment 16's members (`optimize`, its request and result branches, the inlined `optimize_body`,
+`job_result.optimization`, the six artifact kinds, `validate`'s `optimization`) and restores `validate.md` and
+`submit_job.md` from their pre-OPT copies (`tests/fixtures/opt/pre_opt_descriptions/`). §5.3 item 4 is judged on the
+texts with that change undone (`m07a_rc.texts_before_links`). The two changed texts void their reviews: `REVIEW.json`
+records the new hashes with both reviews pending, and `tests/test_t08_w2_description_reviews.py` stays red until the
+design lane and Frank review them (T08.A18's rule; no agent marks them).
+
+**Number and link.** R-950 is X02's on `wp/X02`, R-951… X05's; R-960 is provisional. If MSG's or X02's c_4 merges into
+`main` first, OPT renumbers to the next free index and register number, re-measures D on its merge tree, rebases its
+strip on the merged list (removing only its own additions), and re-takes the R4-G3 job-operation snapshots.
+
+**Rejected alternatives.** Folding the move into an existing link (R-457); leaving `validate.md`'s text, which says the
+optimization task is refused (false since OPT WO-3).
+
+**Watch for.** A strip that removes more than OPT's additions (the controls in `tests/test_m07a_surface_chain.py`).

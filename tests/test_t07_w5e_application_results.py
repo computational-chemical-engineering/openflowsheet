@@ -35,6 +35,7 @@ from conftest import REPO_ROOT, load_json
 from jsonschema import Draft202012Validator
 from m02_schema_support import without_m02
 from m04_schema_support import without_m04
+from opt_schema_support import without_opt
 
 from openflowsheet.application.operations import OPERATIONS, Operation
 from openflowsheet.application.types import SCHEMA_BASE, schema_errors
@@ -210,6 +211,22 @@ SNAPSHOT_M04: dict[str, str | None] = {
 }
 
 
+#: OPT (ADR 0071, ADR 0019 Amendment 16): the operations whose resolved response embeds an enum or
+#: branch OPT widened (the job operation, the request and result branches, the artifact kinds).
+#: Taken at OPT WO-6; with OPT's additions removed (`tests/opt_schema_support.py`) each is its
+#: earlier snapshot again (`test_opt_without_its_additions_every_response_is_its_pre_opt_snapshot`).
+SNAPSHOT_OPT: dict[str, str | None] = {
+    "solve": "b808788cb0fc7eaa3c4c61a7a61960fdc568283279cd3cbc381dd7ba77859dc1",
+    "submit_job": "4e3b8a84ad69b7a6e29e77bf9c3626d1c8a0213ae1b673c8d8f2abf7e206a746",
+    "get_job": "db9af52fff414a5cac5292faeb4a94c9c233a3d7f6cad0cc2c6835a8b79c88d3",
+    "list_jobs": "ca799050747b16e8cb8de85408bae2899a2f56a735c662a2d51f4ecadebf1511",
+    "list_job_events": "751ec851357114a79d56275011fdbe8840e03b36e21d4a2a377fd36e2c364887",
+    "wait_job": "f265fd1c610fdd156ddd9d40898b729152d074654badf6823bc686105250a324",
+    "cancel_job": "db9af52fff414a5cac5292faeb4a94c9c233a3d7f6cad0cc2c6835a8b79c88d3",
+    "get_job_result": "b4f1a8b247ed3f587def25906b851c1b850a7e729f2101f957e00bad9a3747b0",
+}
+
+
 def _without_specifications(schema: Any) -> Any:
     """`schema` with Amendment 2's member taken out of every pin and option: its property and its
     entry in `required`."""
@@ -234,9 +251,29 @@ def test_r4_g3_every_resolved_response_schema_equals_the_snapshot() -> None:
         **SNAPSHOT_AMENDMENT_3,
         **SNAPSHOT_M02,
         **SNAPSHOT_M04,
+        **SNAPSHOT_OPT,
     }
     for operation in OPERATIONS.values():
         assert "$ref" not in canonical_json(resolved_response(operation)).decode("utf-8")
+
+
+def test_opt_without_its_additions_every_response_is_its_pre_opt_snapshot() -> None:
+    """OPT (ADR 0071): with OPT's additions removed, every operation's resolved response is its
+    snapshot before OPT, and exactly the operations of `SNAPSHOT_OPT` moved."""
+    before = {
+        **SNAPSHOT_AT_B13D556,
+        **SNAPSHOT_AMENDMENT_2,
+        **SNAPSHOT_AMENDMENT_3,
+        **SNAPSHOT_M02,
+        **SNAPSHOT_M04,
+    }
+    moved = []
+    for name, operation in OPERATIONS.items():
+        resolved = resolved_response(operation)
+        assert _digest(without_opt(resolved)) == before[name], name
+        if _digest(resolved) != before[name]:
+            moved.append(name)
+    assert sorted(moved) == sorted(SNAPSHOT_OPT)
 
 
 def test_g_r6_6_list_models_moved_only_by_the_approved_additive_member() -> None:
@@ -250,7 +287,7 @@ def test_g_r6_6_list_models_moved_only_by_the_approved_additive_member() -> None
     moved = [
         name
         for name in SNAPSHOT_AT_B13D556
-        if _digest(without_m02(without_m04(resolved_response(OPERATIONS[name]))))
+        if _digest(without_m02(without_m04(without_opt(resolved_response(OPERATIONS[name])))))
         != SNAPSHOT_AT_B13D556[name]
     ]
     assert sorted(set(OPERATIONS) - set(SNAPSHOT_AT_B13D556)) == ["list_audit"]
