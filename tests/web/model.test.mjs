@@ -34,6 +34,7 @@ import {
   principalsOf,
 } from "../../apps/web/js/model/history.js";
 import { BOX_H, BOX_W, layout } from "../../apps/web/js/model/layout.js";
+import { entryText, phaseLabel, plainReason } from "../../apps/web/js/model/stream-table.js";
 import { modelSignature, streamTable, unitPanel } from "../../apps/web/js/model/streams.js";
 import { reportOf, sameStructure, structureIndex } from "../../apps/web/js/model/structure.js";
 import { filterTrace, pageOf, traceChoices, traceRows } from "../../apps/web/js/model/trace.js";
@@ -407,4 +408,16 @@ test("layout: a cycle without a source and a dangling connection", () => {
   assert.deepEqual(drawn.nodes.map((node) => [node.id, node.layer]), [["A", 0], ["B", 1]]);
   assert.deepEqual(drawn.edges.map((edge) => [edge.id, edge.back]), [["x", false], ["y", true]]);
   assert.deepEqual(drawn.dangling, ["z"]);
+});
+
+// ---------------------------------------------------------------------------- stream table (ST)
+
+test("ST: a phase id reads as the text form writes it; an absent entry's key is its sorted params", () => {
+  assert.equal(phaseLabel({ family: "VAPOR", qualifier: null, ordinal: 1 }), "VAPOR");
+  assert.equal(phaseLabel({ family: "LIQUID", qualifier: "aq", ordinal: 2 }), "LIQUID(aq).2");
+  assert.equal(
+    entryText({ code: "stream_enthalpy_absent", params: { subject: "U-MIX", streams: ["S1", "S2"] } }),
+    "stream_enthalpy_absent(streams=S1,S2, subject=U-MIX)",
+  );
+  assert.equal(plainReason({ code: "a_code_the_table_does_not_emit", params: {} }), null);
 });

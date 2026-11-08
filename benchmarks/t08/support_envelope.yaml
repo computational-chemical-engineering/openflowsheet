@@ -282,8 +282,9 @@ axes:
       `OPERATIONS`, each on the transports listed (`explain`, ADR 0058 D7, reads the message catalogue
       only; `get_stream_table`, ADR 0068, computes a finished run's stream table from its bundle and
       stores nothing); authority from the credential only (ADR 0019).
-      With `serve-http --ui`, the diagnostic web shell at `/ui/` is a browser client of seventeen of
-      them over HTTP and of nothing else (M06; L-WEB-1 to L-WEB-4).
+      With `serve-http --ui`, the diagnostic web shell at `/ui/` is a browser client of eighteen of
+      them over HTTP and of nothing else (M06, and ST's `get_stream_table` since Frank's O3;
+      L-WEB-1 to L-WEB-4).
     operations:
       artifact_bytes: [python, cli, http]
       cancel_job: [python, cli, http, mcp]
@@ -880,11 +881,11 @@ limitations:
   - id: L-WEB-1
     text: >-
       The web shell (`serve-http --ui`) is a diagnostic client of the HTTP binding: it edits
-      nothing (Solve and Cancel are its only effects), calls seventeen operations and no other,
+      nothing (Solve and Cancel are its only effects), calls eighteen operations and no other,
       computes only display arithmetic (design note §5.6), converts no unit, and judges nothing —
       the scenario view displays run differences without a registered comparison or allowance.
     evidence:
-      - tests/test_m06_static_scan.py::test_the_ui_calls_exactly_the_seventeen_operations
+      - tests/test_m06_static_scan.py::test_the_ui_calls_exactly_the_eighteen_operations
       - doc:docs/web-shell.md
       - doc:docs/design/M06-web-shell.md §5.6
   - id: L-WEB-2

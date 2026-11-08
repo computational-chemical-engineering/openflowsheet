@@ -6,10 +6,10 @@ anywhere (`XMLHttpRequest`, `WebSocket`, `EventSource`, `sendBeacon`, `innerHTML
 in `js/api.js`; no absolute URL except the SVG namespace name in `js/h.js` and `favicon.svg`; the
 pure modules (`js/model/`) touch no `document`, `window`, `fetch` or storage; `index.html` has no
 inline script, style or handler; every relative module import resolves; the operation names the
-sources call are `ROUTES` keys from the design's list of 17, and `routes.js` is what
-`scripts/m06_web_routes.py` generates; the JS `FORBIDDEN_RANGES` block is Python's; and no
-`OPERATIONS` path is under `/ui`. The browser half (a request recorder) is WO-11's smoke test
-(`tests/test_m06_browser_smoke.py`).
+sources call are `ROUTES` keys from the design's list of 17 and ST's `get_stream_table`, and
+`routes.js` is what `scripts/m06_web_routes.py` generates; the JS `FORBIDDEN_RANGES` block is
+Python's; and no `OPERATIONS` path is under `/ui`. The browser half (a request recorder) is
+WO-11's smoke test (`tests/test_m06_browser_smoke.py`).
 
 WO-11 closes the list with the sinks §5.1 and §7 rule out but §8 A3 does not name: no `console`
 use at all (§7: the token is never logged), no cookie, `window.open`, `postMessage`, `srcdoc`,
@@ -35,7 +35,8 @@ from openflowsheet.application.projection import FORBIDDEN_RANGES
 
 WEB = REPO_ROOT / "apps" / "web"
 JS = WEB / "js"
-#: §6: the operations the shell calls, exactly.
+#: §6: the operations the shell calls, exactly; ST's `get_stream_table` (ADR 0068) since Frank's O3
+#: (2026-11-08: the streams screen shows the stream table).
 UI_OPERATIONS = frozenset(
     {
         "get_project",
@@ -55,6 +56,7 @@ UI_OPERATIONS = frozenset(
         "get_artifact",
         "artifact_bytes",
         "list_audit",
+        "get_stream_table",
     }
 )
 FORBIDDEN_TOKENS = (
@@ -190,7 +192,7 @@ def test_every_called_operation_is_a_listed_route() -> None:
     assert called <= set(_routes()), called - set(_routes())
 
 
-def test_the_ui_calls_exactly_the_seventeen_operations() -> None:
+def test_the_ui_calls_exactly_the_eighteen_operations() -> None:
     assert _called() == UI_OPERATIONS
     assert set(_routes()) >= UI_OPERATIONS
 

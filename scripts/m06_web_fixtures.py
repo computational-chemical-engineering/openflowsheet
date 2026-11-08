@@ -425,6 +425,11 @@ def _capture(rec: Recorder) -> None:
         listing = rec.read_whole("agent-a", "get_artifact", {"artifact_id": bundle})
         for member in listing["files"]:
             rec.ask("agent-a", "artifact_bytes", {"artifact_id": member["artifact_id"]})
+        # #/job/{jid}/streams: ST's stream table (ADR 0068), read whole; a run whose bundle has
+        # no solution state is refused at its first view, and that refusal is the record.
+        first = {"pointer": "", "depth": VIEW_DEPTH, "limit": VIEW_LIMIT, "cursor": None}
+        if rec.ask("agent-a", "get_stream_table", {"job_id": job, **first})["status"] == 200:
+            rec.read_whole("agent-a", "get_stream_table", {"job_id": job})
     # #/history — each principal's own rows, and all principals' as `supervisor-c` (`viewer-b`'s
     # refused request for them is the build's, recorded with its effects). Nothing above is an
     # effect or a refusal, so these lists show exactly the build's rows.

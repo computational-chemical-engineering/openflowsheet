@@ -18,6 +18,7 @@ import * as revision from "../../apps/web/js/screens/revision.js";
 import * as streams from "../../apps/web/js/screens/streams.js";
 import * as validation from "../../apps/web/js/screens/validation.js";
 import { mount } from "../../apps/web/js/h.js";
+import { DASH } from "../../apps/web/js/text.js";
 import { FakeDocument } from "./fake-dom.mjs";
 
 const projectOf = (principal) => body(principal, "get_project", {});
@@ -244,4 +245,76 @@ test("a run without a solution state says so and shows the best checkpoint's ide
   assert.equal(byAttr(tree, "data-ofs-no-state", "1").length, 1);
   assert.ok(text.includes("no solution state recorded for this run"));
   assert.ok(text.includes(data.failure.document.best_checkpoint.state_sha256));
+});
+
+// ST's stream table (ADR 0068; Frank's O3, 2026-11-08) under the streams.
+
+test("ST: the stream table shows each stream's total and phases, its phase source and the reasons for nulls", async () => {
+  const { tree, text, api } = await render(streams, { jid: JOB.NET02 });
+  assert.ok(calls(api).includes("get_stream_table"));
+  assert.equal(byAttr(tree, "data-ofs-stream-table", "1").length, 1);
+  assert.equal(byAttr(tree, "data-ofs-stream-table-warning").length, 0); // VERIFIED
+  assert.ok(byTag(tree, "th").some((th) => textOf(th) === "H_flow (W)"));
+  assert.ok(byTag(tree, "th").some((th) => textOf(th) === "vapor_fraction_molar"));
+  const rows = tableRows(tree, "phase_source");
+  // Six one-phase streams (total + phase) and S3, flashed into two phases (total + 2).
+  assert.equal(rows.length, 6 * 2 + 3);
+  const s3 = rows.filter((row) => row[0] === "S3");
+  assert.deepEqual(s3.map((row) => row.slice(1, 4)), [
+    ["total", "flash", "no"],
+    ["VAPOR", DASH, DASH],
+    ["LIQUID", DASH, DASH],
+  ]);
+  assert.equal(rows.find((row) => row[0] === "S4" && row[1] === "total")[2], "declared");
+  // S3's enthalpy flow, short (the column after S_flow's neighbours: read it by its header).
+  const stTable = byTag(tree, "table").find((t) => byTag(t, "th").some((th) => textOf(th) === "phase_source"));
+  const headers = byTag(stTable, "th").map((th) => textOf(th));
+  const at = headers.indexOf("H_flow (W)");
+  assert.equal(s3[0][at], "230432");
+  // The basis provides no entropy: every null s carries its reason, footnoted once in plain words.
+  const absent = byAttr(tree, "data-ofs-absent");
+  assert.ok(absent.length > 0);
+  assert.ok(absent.every((cell) => cell.p["data-ofs-absent"].startsWith("property_not_provided(")));
+  assert.equal(byAttr(tree, "data-ofs-stream-table-notes").length, 1);
+  assert.ok(text.includes("does not provide the property s, so the values that need it are not given."));
+  const energy = tableRows(tree, "H_in (W)");
+  assert.deepEqual(energy.map((row) => row[0]), ["U-MIX", "U-HEAT", "U-PHF", "U-SPLIT", "overall"]);
+  assert.equal(byAttr(tree, "data-ofs-flash-failed").length, 0);
+});
+
+test("ST: a run whose bundle has no solution state gets the server's refusal; the rest stays", async () => {
+  const { tree, text } = await render(streams, { jid: JOB["A02-352"] });
+  assert.equal(byAttr(tree, "data-ofs-stream-table-refused", "not_found").length, 1);
+  assert.ok(text.includes("The server gives no stream table for this run: not_found"));
+  assert.equal(byAttr(tree, "data-ofs-no-state", "1").length, 1);
+  assert.equal(byAttr(tree, "data-ofs-stream-table", "1").length, 0);
+});
+
+test("ST: a stream the flash could not split gets a plain-language notice and no number", () => {
+  const document = structuredClone(body("agent-a", "get_stream_table", {
+    job_id: JOB.NET02, pointer: "", depth: 12, limit: 200,
+  }).value);
+  // The operation's shape for a failed flash (ST note D4): no phases, the phase-derived values
+  // null with `flash_failed(stream, status)`, flows, T and P kept.
+  const s3 = document.streams.find((stream) => stream.id === "S3").substreams[0];
+  const reason = { code: "flash_failed", params: { stream: "S3", status: "temperature_degenerate" } };
+  s3.phases = [];
+  for (const member of ["h", "H_flow", "vapor_fraction_molar"]) {
+    s3[member] = null;
+    s3.absent[member] = reason;
+  }
+  document.verification_status = "UNVERIFIED";
+  const tree = streams.streamTableSection({ document, refused: null });
+  mount(tree, new FakeDocument().body);
+  const notice = byAttr(tree, "data-ofs-flash-failed", "S3");
+  assert.equal(notice.length, 1);
+  assert.equal(
+    textOf(notice[0]),
+    "The phase split of stream S3 at its temperature and pressure could not be computed (status " +
+      "temperature_degenerate), so its phases and the values per phase are not given; its flows, " +
+      "temperature and pressure are.",
+  );
+  assert.equal(byAttr(tree, "data-ofs-absent", "flash_failed(status=temperature_degenerate, stream=S3)").length, 3);
+  assert.deepEqual(tableRows(tree, "phase_source").filter((row) => row[0] === "S3").map((row) => row[1]), ["total"]);
+  assert.equal(byAttr(tree, "data-ofs-stream-table-warning", "UNVERIFIED").length, 1);
 });

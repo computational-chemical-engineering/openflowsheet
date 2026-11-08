@@ -373,7 +373,7 @@ entries:
   complete: false
   title: L-WEB-1
   summary: 'The web shell (`serve-http --ui`) is a diagnostic client of the HTTP binding: it edits nothing
-    (Solve and Cancel are its only effects), calls seventeen operations and no other, computes only display
+    (Solve and Cancel are its only effects), calls eighteen operations and no other, computes only display
     arithmetic (design note §5.6), converts no unit, and judges nothing — the scenario view displays run
     differences without a registered comparison or allowance.'
 - code: L-WEB-2

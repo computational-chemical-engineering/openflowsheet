@@ -130,6 +130,21 @@ export const ROUTES = freeze({
     "right": "read",
     "verb": "GET"
   },
+  "get_stream_table": {
+    "members": [
+      "cursor",
+      "depth",
+      "job_id",
+      "limit",
+      "pointer"
+    ],
+    "path": "/v1/jobs/{job_id}/stream-table",
+    "path_params": [
+      "job_id"
+    ],
+    "right": "read",
+    "verb": "GET"
+  },
   "inspect_structure": {
     "members": [
       "cursor",
