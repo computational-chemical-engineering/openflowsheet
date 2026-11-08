@@ -289,9 +289,9 @@
       "reviews": [
         {
           "review_kind": "design-lane",
-          "status": "pending_design_review",
-          "reviewed_by": null,
-          "reviewed_at": null
+          "status": "reviewed",
+          "reviewed_by": "design-lane reviewer, docs/reviews/OPT-review.md (638523b3)",
+          "reviewed_at": "2026-11-08"
         },
         {
           "review_kind": "human",
@@ -309,9 +309,9 @@
       "reviews": [
         {
           "review_kind": "design-lane",
-          "status": "pending_design_review",
-          "reviewed_by": null,
-          "reviewed_at": null
+          "status": "reviewed",
+          "reviewed_by": "design-lane reviewer, docs/reviews/OPT-review.md (638523b3)",
+          "reviewed_at": "2026-11-08"
         },
         {
           "review_kind": "human",
