@@ -46,6 +46,7 @@ from openflowsheet.orchestrator.homotopy import Continuation, level_values, rebi
 __all__ = [
     "RECORD",
     "REFUSAL_HEAD",
+    "REVISION_CONTINUATION_REJECTED",
     "REVISION_CONTINUATION_SOURCE",
     "SELECTION",
     "RevisionContinuationCandidate",
@@ -65,6 +66,9 @@ RECORD: Final = "RRC-revision-continuation-v1"
 SELECTION: Final = "store-nearest-verified-ancestor-v1"
 #: The refusal message's head: `revision_continuation_<status>: <reason>` (§5.8).
 REFUSAL_HEAD: Final = "revision_continuation"
+#: The region solve's message when attempt 0's opening is refused (§5.7):
+#: `revision_continuation_rejected(opening:<check>:<subject>)`.
+REVISION_CONTINUATION_REJECTED: Final = f"{REFUSAL_HEAD}_rejected"
 
 RevisionContinuationStatus = Literal["absent", "rejected", "not_reached", "taken"]
 
