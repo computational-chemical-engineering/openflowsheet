@@ -442,7 +442,9 @@ class LocalApplication:
 
     # -------------------------------------------------------------------- Application (frozen)
 
-    def validate(self, revision_id: str, task: Task) -> ValidationReport:
+    def validate(
+        self, revision_id: str, task: Task, optimization: Mapping[str, Any] | None = None
+    ) -> ValidationReport:
         """§4.2: the stored revision's validation report for `task`; no side effects. `read`.
 
         Parameters
@@ -450,11 +452,11 @@ class LocalApplication:
         revision_id
             A revision of this project.
         task
-            `"simulation"` or `"optimization"` (OPT design §4.11, ADR 0071 D8). The request
-            member `optimization` is ADR 0019 Amendment 16's, added to this method with OPT's
-            surface link (WO-6, OPT D-19); until then the optimization task is refused
-            `unsupported` without an audited solver and `invalid_request` at `/optimization`
-            with one. `validation.validate(..., optimization=)` is the library path.
+            `"simulation"` or `"optimization"` (OPT design §4.11, ADR 0071 D8).
+        optimization
+            The optimization request (`optimization-request.schema.json`), ADR 0019 Amendment
+            16's optional member; read only for the optimization task, and required there.
+            The static readiness only: nothing is solved.
 
         Returns
         -------
@@ -489,19 +491,30 @@ class LocalApplication:
                     operation="validate",
                     pointer="/task",
                 )
-            self._refuse(
-                "invalid_request",
-                "task optimization needs an optimization request",
-                operation="validate",
-                pointer="/optimization",
-            )
+            if optimization is None:
+                self._refuse(
+                    "invalid_request",
+                    "task optimization needs an optimization request",
+                    operation="validate",
+                    pointer="/optimization",
+                )
         with self._store.reading() as connection:
             revision = self._store.get_revision(connection, revision_id)
         if revision is None:
             self._refuse(
                 "not_found", "no such revision", operation="validate", revision_id=revision_id
             )
-        return validation.validate(revision.as_document(), task, surrogates=self._surrogates())
+        if task != "optimization":
+            return validation.validate(
+                revision.as_document(), task, surrogates=self._surrogates()
+            )
+        return validation.validate(
+            revision.as_document(),
+            task,
+            surrogates=self._surrogates(),
+            optimization=optimization,
+            solver_probe=lambda: availability,
+        )
 
     def commit_change(
         self, change: Change, expected_revision: str | None, idempotency_key: str

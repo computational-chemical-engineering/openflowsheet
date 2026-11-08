@@ -297,10 +297,13 @@ OPERATIONS: Final[Mapping[str, Operation]] = {
         _row(
             "validate",
             "read",
-            _object({"revision_id": ID, "task": {"enum": ["simulation", "optimization"]}}),
+            _object(
+                {"revision_id": ID, "task": {"enum": ["simulation", "optimization"]}},
+                {"optimization": _ref("optimization-request.schema.json")},
+            ),
             _ref("validation-report.schema.json"),
             ("POST", "/v1/revisions/{revision_id}/validate"),
-            decode=_members("revision_id", "task"),
+            decode=_members("revision_id", "task", "optimization"),
             mcp_tool="validate_revision",
         ),
         _row(

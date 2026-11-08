@@ -284,40 +284,40 @@
     "submit_job": {
       "tool": "submit_job",
       "file": "submit_job.md",
-      "sha256": "61b8509cafb9b4ab101e54622b68b36cf8e938b54df65db105b29b5c36c1771d",
-      "characters": 1356,
+      "sha256": "123d4e939460570be99a682b0fd18b7beb4e323f750a7a5752b5f1a1d9d4d777",
+      "characters": 1494,
       "reviews": [
         {
           "review_kind": "design-lane",
-          "status": "reviewed",
-          "reviewed_by": "reviewer (design lane), docs/reviews/T08-description-review.md",
-          "reviewed_at": "2026-10-01"
+          "status": "pending_design_review",
+          "reviewed_by": null,
+          "reviewed_at": null
         },
         {
           "review_kind": "human",
-          "status": "reviewed",
-          "reviewed_by": "Frank Peters",
-          "reviewed_at": "2026-09-29"
+          "status": "pending",
+          "reviewed_by": null,
+          "reviewed_at": null
         }
       ]
     },
     "validate": {
       "tool": "validate_revision",
       "file": "validate.md",
-      "sha256": "1025385ae14e0fb4dde1b65f79c71e1bff19eb87559e7fa740d3b3357e754d7e",
-      "characters": 1188,
+      "sha256": "ec0e770dfa3f106ca25c908d48cce281d2fb87c10f2c6116377cd479e05d3c96",
+      "characters": 1341,
       "reviews": [
         {
           "review_kind": "design-lane",
-          "status": "reviewed",
-          "reviewed_by": "reviewer (design lane), docs/reviews/T08-description-review.md",
-          "reviewed_at": "2026-10-01"
+          "status": "pending_design_review",
+          "reviewed_by": null,
+          "reviewed_at": null
         },
         {
           "review_kind": "human",
-          "status": "reviewed",
-          "reviewed_by": "Frank Peters",
-          "reviewed_at": "2026-10-01"
+          "status": "pending",
+          "reviewed_by": null,
+          "reviewed_at": null
         }
       ]
     },

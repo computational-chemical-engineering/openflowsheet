@@ -415,9 +415,12 @@ def test_g11_an_unaudited_platform_is_unavailable_naming_it(
 def test_g11_the_application_refuses_before_reading_and_wants_the_request(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    """With an audited solver the application's `validate` has no `optimization` member until
-    OPT's surface link (WO-6, D-19): `invalid_request` at `/optimization`, audited, nothing
-    read. Without one: `unsupported nlp_solver_unavailable`."""
+    """With an audited solver the application's `validate` reads its `optimization` member
+    (ADR 0019 Amendment 16, WO-6): missing, `invalid_request` at `/optimization`, audited,
+    nothing read; given, the static readiness's report. Without a solver: `unsupported
+    nlp_solver_unavailable`, before the request is looked at."""
+    from openflowsheet.application.operations import OPERATIONS
+
     from openflowsheet.application.types import Change, Edit
 
     with LocalApplication.create(tmp_path / "project", project_id="opt-wo3") as app:
@@ -431,10 +434,19 @@ def test_g11_the_application_refuses_before_reading_and_wants_the_request(
             "invalid_request",
             {"pointer": "/optimization"},
         )
+        request = _fixture("valid", "th_r1_minimal")
+        report = app.validate(revision_id, "optimization", request)
+        assert report.status == "READY_FOR_OPTIMIZATION"
+        decoded = OPERATIONS["validate"].decode(
+            {"revision_id": revision_id, "task": "optimization", "optimization": request}
+        )
+        assert app.validate(**decoded) == report
+        assert "optimization" in OPERATIONS["validate"].request_schema["properties"]
+        assert "optimization" not in OPERATIONS["validate"].request_schema["required"]
         monkeypatch.setattr(closure, "audited_solver", lambda: UNAVAILABLE)
         monkeypatch.setattr(closure, "running_platform", lambda: "linux-aarch64")
         with pytest.raises(ApplicationError) as refused:
-            app.validate(revision_id, "optimization")
+            app.validate(revision_id, "optimization", request)
         assert refused.value.error.message == "nlp_solver_unavailable"
         rows = [row for row in app.store.audit_rows() if row["outcome"] == "refused"]
         assert [(row["operation"], row["code"]) for row in rows] == [
