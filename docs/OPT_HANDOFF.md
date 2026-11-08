@@ -11,7 +11,6 @@ Build decisions, facts, gate numbers: `docs/OPT_DECISIONS.md` (D-1…D-62; WO-6b
   `studies/nlp/replay.py` + G13 (`6d30efa0`, D-62; committed fixture `tests/fixtures/opt/replay/OPT-A2`, 588 KB).
 - All 13 previously failing tests pass. Red by design: `test_t08_w2_description_reviews.py` (D-61: two texts await
   the design-lane and Frank's review; no agent marks them).
-
 ## Next (WO-6c), in order
 1. Replay dispatch: `jobs/runner.py:691` (`reproduce` body) and `cli.py:200` (`replay DIR [--rerun]`) call
    `replay.replay_optimization` when `replay.is_optimization_record(dir)`; the job's imported artifact must keep the
@@ -29,12 +28,10 @@ Build decisions, facts, gate numbers: `docs/OPT_DECISIONS.md` (D-1…D-62; WO-6b
    `scripts/t08_support_matrix.py --check` 0 problems.
 6. G1 F0 (`scripts/corpus_identity.py --check`), G2 (audited `--nlp`, expect `b6bbafdb…`; confirm solved reports),
    G7–G10 rerun (`m03_nlp_check.sh -- tests/test_opt_benchmarks_nlp.py test_opt_boundary.py`).
-
 ## Risks / questions for the reviewer
 - G13 aarch64: verification floats are compared under T08-v2 with no registered floors for KKT residuals; near-zero
   values may differ across architectures (x86 default env and audited env both MATCH with 0 differences).
 - D-58 (Q26 allow-list), D-60 (resolver), D-61 (description reviews) await the reviewer's ruling.
-
 ## How to run
 - Default env: `PYTHONPATH=$PWD/src /home/frankp/Codes/OpenFlowsheet/.venv/bin/python -m pytest …` (serial).
 - Audited env: `W=/home/frankp/Codes/OpenFlowsheet/.claude/worktrees/m05; OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1
