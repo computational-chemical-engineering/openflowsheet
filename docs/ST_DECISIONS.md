@@ -274,3 +274,19 @@ M3 61/61, M4 61/61, M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 35/35).
   Merge battery: 717 passed, 1 failed — `test_t08_w2_support_envelope.py::test_a20_the_axes_equal_the_code`,
   **red already at `e1a05916`** (`t08_support_matrix.py --check`, same one problem: the envelope's operations lack
   `get_stream_table` and the A20 count is 22). Not fixed here: it edits a gate's registered count; WO-7 item.
+- **8a-2 — ruling 5 (design-lane confirmations, 2026-11-08), as the review states it.**
+  `application/stream_table.py`: `_Inputs.degenerate` removed; `_inputs` builds `lifted` (heater-style splits whose
+  own row id `f"independent_split.{unit_ids[split.unit]}.{split.stream}"` is among the `independent_split`
+  `not_applicable` rows with a reason in `DEGENERATE_REASONS`) and `unlifted` (streams S with a row reason exactly
+  `temperature_degenerate_unlifted(S)`); `_decide` = R1, R1′ iff `name in lifted`, R2, no-number iff
+  `name in unlifted`, R3; `_near_boundary` docstring (ruling 3). `tests/test_st_core.py`: DC-1 (edited; the own
+  row is `independent_split.U-HEAT.S3` on `g8/SYN-001-T06-NET02`, cross-checked against the verifier's
+  `….S3.total`), DC-2 (new, both reasons), DC-3 (replaces the `_heater_style_splits`-patch test; control `S30`),
+  DC-4 (new; SC-2 S1 undeclared → R3 `[LIQUID]`, `H_flow` == `checks.enthalpy_flow` bitwise), DC-5 (new; mixture-`h`
+  provider, both phases stored), DC-6 (G16 (e)'s record `ruling_5`). Against the pre-ruling code DC-2 ×2, DC-3 and
+  DC-4 fail (DC-4: `phases == []`), DC-1/DC-5 pass. **Numbers:** 44 served 0.3.0 documents byte-identical
+  (`document_sha256` per bundle, 52 bundles, 8 refused `not_found` both times). G7 41 bitwise; G8 0 failures, max
+  1.756e-4; G8u max 2.7027 (146 projection, 11 other rows) — unchanged. DC-6: `unlifted` empty on every corpus run;
+  R1′ 2, declared with a products-style row 2, no-number 0, none left R1′. **Note:** the ruling quotes the fix
+  round's R1′ count as 4; this corpus counts 2 R1′ *streams* (SC-1 S2, SC-3 S2) under the old trigger as well
+  (no leaver), so the 4 is a different count basis, not a movement. `test_st_core.py`: 59 passed.

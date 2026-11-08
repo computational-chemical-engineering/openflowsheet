@@ -46,6 +46,7 @@ from openflowsheet.compiled import EvaluationContext
 from openflowsheet.messages import audit
 from openflowsheet.messages.catalogue import CATALOGUE
 from openflowsheet.models import flow_id, pressure_id, temperature_id
+from openflowsheet.models.revision_flowsheet import parse_revision
 from openflowsheet.models.syn001.tp_state import liquid_flow_id, vapor_flow_id
 from openflowsheet.run.bundle import ARTIFACT_DIR
 from openflowsheet.thermo import PropertyRequest, PropertyResult, StreamState
@@ -1445,10 +1446,10 @@ def test_g16_b_far_from_the_boundary(side: str) -> None:
     assert sub["H_flow"] == checks.enthalpy_flow(Syn001Provider(), st, context)
 
 
-def _degeneracy_row(name: str, reason: str) -> dict[str, Any]:
+def _degeneracy_row(name: str, reason: str, unit: str = "st-probe") -> dict[str, Any]:
     return {
         "category": "independent_split",
-        "id": f"independent_split.st-probe.{name}",
+        "id": f"independent_split.{unit}.{name}",
         "independence_qualification": None,
         "near_threshold": False,
         "reason": reason,
@@ -1461,13 +1462,24 @@ def _degeneracy_row(name: str, reason: str) -> dict[str, Any]:
     }
 
 
+def _own_split_unit(source: Members, name: str) -> str:
+    """U of S's heater-style split, as its rows name it: `independent_split.<U>.<S>.total` is the
+    verifier's own row for that split (ruling 5, DC-1)."""
+    view = parse_revision({**source.revision, "specifications": []})
+    split = stream_table._heater_style_splits(view)[name]
+    unit = stream_table._unit_ids(source.revision, view, None)[split.unit]
+    ids = {row["id"] for row in source.certificate["checks"]}
+    assert f"independent_split.{unit}.{name}.total" in ids  # [pre]
+    return unit
+
+
 @pytest.mark.parametrize("reason", sorted(stream_table.DEGENERATE_REASONS))
 def test_g16_c_a_degeneracy_row_reads_the_carried_lifted_split(reason: str) -> None:
-    """R1′ (ST review M1, amending Q4.R12 (b) (ii)): a degeneracy row on a heater-style split's
-    stream takes its phases from the stored split, at the split's `(T, P)`; nothing is flashed,
-    so the substream is not flagged, and the row is quoted."""
+    """R1′ (ST review M1, keyed by ruling 5; DC-1): a degeneracy row that is S's own heater-style
+    split's, `independent_split.<U>.<S>`, takes S's phases from the stored split, at the split's
+    `(T, P)`; nothing is flashed, so the substream is not flagged, and the row is quoted."""
     source, name = _b_far()
-    row = _degeneracy_row(name, reason)
+    row = _degeneracy_row(name, reason, _own_split_unit(source, name))
     provider = Recording(support.fresh_provider(source))
     flagged = build(with_rows(source, [row]), provider)
     sub = substream(flagged, name)
@@ -1484,16 +1496,49 @@ def test_g16_c_a_degeneracy_row_reads_the_carried_lifted_split(reason: str) -> N
 
 
 @pytest.mark.parametrize("reason", sorted(stream_table.DEGENERATE_REASONS))
-def test_g16_c_a_degeneracy_row_without_a_split_gives_no_number(
-    reason: str, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    """R1′: a degeneracy row on an undeclared stream that no heater-style split carries (the
-    verifier's `unlifted` case, test-local: no corpus R3 stream lacks a split) gets no flashed
-    number: its phase-derived quantities are null with `flash_failed(temperature_degenerate)`."""
-    monkeypatch.setattr(stream_table, "_heater_style_splits", lambda view: {})
+def test_g16_c_another_units_degeneracy_row_diverts_nothing(reason: str) -> None:
+    """Ruling 5 (DC-2): the same row under another unit's id, the shape of a products-style row on
+    a drum's inlet, leaves S to R3, as the verifier flashed it: the substream equals the unflagged
+    build's, and the row is quoted. With DC-1, the id's unit decides."""
+    source, name = _b_far()
+    row = _degeneracy_row(name, reason)
+    provider = Recording(support.fresh_provider(source))
+    flagged = build(with_rows(source, [row]), provider)
+    sub = substream(flagged, name)
+    reference = substream(build(source), name)
+    assert sub["phase_source"] == "flash"
+    assert [call for call in provider.calls if call[0] == "flash"]
+    for member in ("phases", "H_flow", "flash_near_phase_boundary"):
+        assert sub[member] == reference[member], member
+    quoted = stream(flagged, name)["checks"]
+    assert quoted[-1]["id"] == row["id"] and quoted[-1]["reason"] == reason
+
+
+def _unlifted_row(name: str) -> dict[str, Any]:
+    """An energy row the verifier blocks on an `unlifted` stream (`verify.table.blocked_check`)."""
+    return {
+        "category": "energy_balance",
+        "id": "energy_balance.st-probe",
+        "independence_qualification": None,
+        "near_threshold": False,
+        "reason": f"temperature_degenerate_unlifted({name})",
+        "reference": None,
+        "result": "unsupported",
+        "scope": "unsupported",
+        "subject": "st-probe",
+        "tolerance": None,
+        "value": None,
+    }
+
+
+def test_g16_c_an_unlifted_stream_gives_no_number() -> None:
+    """Ruling 5 (DC-3; ruling 1's shape): a stream the verifier's `unlifted` set holds, read off
+    its reason `temperature_degenerate_unlifted(<S>)` exactly, gets no number: its phase-derived
+    quantities are null with `flash_failed(temperature_degenerate)`. Test-local: F2 makes the
+    set empty. The control names `<S>0`, which catches prefix or substring matching."""
     source, name = _b_far()
     provider = Recording(support.fresh_provider(source))
-    sub = substream(build(with_rows(source, [_degeneracy_row(name, reason)]), provider), name)
+    sub = substream(build(with_rows(source, [_unlifted_row(name)]), provider), name)
     reason_entry = {
         "code": "flash_failed",
         "params": {"stream": name, "status": "temperature_degenerate"},
@@ -1504,11 +1549,149 @@ def test_g16_c_a_degeneracy_row_without_a_split_gives_no_number(
     for member in ("H_flow", "S_flow", "V_flow", "h", "vapor_fraction_molar"):
         assert sub[member] is None and sub["absent"][member] == reason_entry
     assert sub["n"] is not None and sub["x"] is not None
+    control = substream(build(with_rows(source, [_unlifted_row(f"{name}0")])), name)
+    assert control["phases"] and control["H_flow"] is not None
+
+
+def test_g16_c_an_undeclared_drum_inlet_is_flashed(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Ruling 5 (DC-4, item 5): `T05b:SC-2` with S1's declared phase removed. S1 carries the drum's
+    products-style row `independent_split.U-PHF.S1`, which judges S1 at the drum's `(T, P)`; the
+    verifier flashed S1 at its own state, and so does R3 (before ruling 5: `flash_failed`)."""
+    declared = stream_table._declared_phases
+
+    def undeclared(view: Any) -> dict[str, Any]:
+        phases = declared(view)
+        assert phases["S1"] is not None  # [pre]
+        phases["S1"] = None
+        return phases
+
+    monkeypatch.setattr(stream_table, "_declared_phases", undeclared)
+    source = members("g8/T05b:SC-2")
+    document = build(source)
+    sub = substream(document, "S1")
+    provider = support.fresh_provider(source)
+    variables = source.variables
+    st = StreamState(
+        tuple(variables[flow_id("S1", c)] for c in provider.describe().components),
+        variables[temperature_id("S1")],
+        variables[pressure_id("S1")],
+    )
+    assert sub["phase_source"] == "flash" and families(sub) == ["LIQUID"]
+    assert sub["H_flow"] == checks.enthalpy_flow(provider, st, _context(source))
+    assert sub["flash_near_phase_boundary"] is False
+    assert "independent_split.U-PHF.S1" in [
+        quote["id"] for quote in stream(document, "S1")["checks"]
+    ]
+
+
+class _MixtureH:
+    """DC-5 (M1-2): SYN-001 answering `("h",)` with the mixture `h` only, `h = Σ_c x_c h_c` from
+    `Syn001Provider`'s values for the requested phase (no `h_<c>` key)."""
+
+    def __init__(self) -> None:
+        self.inner = Syn001Provider()
+
+    def describe(self) -> Any:
+        return self.inner.describe()
+
+    def flash(self, request: Any, context: Any) -> Any:
+        return self.inner.flash(request, context)
+
+    def evaluate_phase(self, request: Any, context: Any) -> Any:
+        result = self.inner.evaluate_phase(request, context)
+        if request.properties != ("h",):
+            return result
+        n = request.state.n
+        total = sum(n)
+        h = sum(
+            n_c / total * result.values[f"h_{c}"] for c, n_c in zip(SYN_COMPONENTS, n, strict=True)
+        )
+        return PropertyResult(status="ok", phase_signature=None, values={"h": h})
+
+
+def test_g16_c_the_carried_lifted_split_with_a_mixture_h() -> None:
+    """R1′ with a mixture-`h` provider (M1-2, DC-5): `H_p = sum(n_p) · h_p`, and `H_flow` is
+    `forms.enthalpy_flow` of each stored phase at the split's `(T, P)`, summed as γ–φ's
+    `degeneracy` sums them through `_phase_flow`."""
+    source, name = _b_far()
+    unit = _own_split_unit(source, name)
+    view = parse_revision({**source.revision, "specifications": []})
+    split = stream_table._heater_style_splits(view)[name]
+    variables = source.variables
+    vapor = tuple(variables[column] for column in split.vapor)
+    liquid = tuple(variables[column] for column in split.liquid)
+    assert sum(vapor) != 0.0 and sum(liquid) != 0.0  # [pre]: both phases stored
+    at_t, at_p = variables[split.temperature], variables[split.pressure]
+    provider = _MixtureH()
+    sub = substream(
+        build(with_rows(source, [_degeneracy_row(name, "temperature_degenerate", unit)]), provider),
+        name,
+    )
+    assert sub["phase_source"] == "carried_lifted_split" and families(sub) == ["VAPOR", "LIQUID"]
+    context = _context(source)
+    for phase, n_p in zip(sub["phases"], (vapor, liquid), strict=True):
+        family = phase["id"]["family"]
+        h_p = provider.evaluate_phase(
+            PropertyRequest(StreamState(n_p, at_t, at_p), family, ("h",)), context
+        ).values["h"]
+        assert phase["H_flow"] == sum(n_p) * h_p
+    assert sub["H_flow"] == forms.enthalpy_flow(
+        provider, StreamState(vapor, at_t, at_p), "VAPOR", context
+    ) + forms.enthalpy_flow(provider, StreamState(liquid, at_t, at_p), "LIQUID", context)
+
+
+def _ruling_5_accounting(run: str, document: Mapping[str, Any], tally: dict[str, Any]) -> None:
+    """DC-6: the verifier's `unlifted` set is empty (F2, executable); R1′ streams, declared streams
+    quoting a products-style degeneracy row, and no-number streams are counted. A stream the
+    pre-ruling-5 trigger (a degeneracy row with subject S, S a heater-style split's stream) sent to
+    R1′ and ruling 5 does not is listed with its rows, and accepted only if its own split's row is
+    not a degeneracy row."""
+    source = members(run)
+    rows = source.certificate["checks"]
+    assert not [
+        row["id"]
+        for row in rows
+        if str(row.get("reason") or "").startswith("temperature_degenerate_unlifted(")
+    ], run
+    degenerate = [
+        row
+        for row in rows
+        if row.get("category") == "independent_split"
+        and row.get("result") == "not_applicable"
+        and row.get("reason") in stream_table.DEGENERATE_REASONS
+    ]
+    view = parse_revision({**source.revision, "specifications": []})
+    recorded = support.corpus()[run] / ARTIFACT_DIR / stream_table.SOLVE_PATH
+    route = json.loads(recorded.read_text())["solve_path"] if recorded.exists() else None
+    unit_ids = stream_table._unit_ids(source.revision, view, route)
+    heater_style = stream_table._heater_style_splits(view) if degenerate else {}
+    for entry in document["streams"]:
+        name = entry["id"]
+        (sub,) = entry["substreams"]
+        own = [row for row in degenerate if row["subject"] == name]
+        if sub["phase_source"] == "carried_lifted_split":
+            tally["r1_prime"] += 1
+        elif sub["phase_source"] == "declared" and own:
+            tally["declared_with_products_style_row"] += 1
+        elif sub["phase_source"] == "flash" and not sub["phases"] and own:
+            tally["no_number"] += 1
+        if own and name in heater_style and sub["phase_source"] != "carried_lifted_split":
+            split = heater_style[name]
+            own_id = f"independent_split.{unit_ids[split.unit]}.{name}"
+            tally["left_r1_prime"].append([run, name, [row["id"] for row in own]])
+            assert own_id not in [row["id"] for row in own], (run, name)
 
 
 def test_g16_e_the_corpus_decisions() -> None:
     recorded: dict[str, dict[str, Any]] = {}
+    ruling_5: dict[str, Any] = {
+        "r1_prime": 0,
+        "declared_with_products_style_row": 0,
+        "no_number": 0,
+        "left_r1_prime": [],
+    }
     for run, document in support.documents().items():
+        _ruling_5_accounting(run, document, ruling_5)
         provider_id = document["basis"]["provider_id"]
         if provider_id not in ("syn001", "pr-c1-v1"):
             continue
@@ -1562,4 +1745,5 @@ def test_g16_e_the_corpus_decisions() -> None:
                 tally["disagreeing"] += 1
                 assert sub["flash_near_phase_boundary"] is True, (run, name)
     assert recorded["syn001"]["r3"] > 0
-    _record("G16e", per_basis=recorded)
+    assert ruling_5["no_number"] == 0
+    _record("G16e", per_basis=recorded, ruling_5=ruling_5)

@@ -212,11 +212,13 @@ class _Inputs:
     rows: tuple[tuple[int, Mapping[str, Any]], ...]
     #: Instance id -> the unit id its state variables and certificate rows carry.
     unit_ids: Mapping[str, str]
-    #: R1′: the streams with a quoted `independent_split` row `not_applicable` for a reason in
-    #: `DEGENERATE_REASONS`, where the verifier did not flash.
-    degenerate: frozenset[str]
-    #: R1′: stream -> the heater-style lifted split whose stream it is (`verify_revision`'s list).
+    #: R1′ (ruling 5): stream -> its heater-style lifted split (`verify_revision`'s list), for the
+    #: splits whose own row `independent_split.<U>.<S>` is `not_applicable` for a reason in
+    #: `DEGENERATE_REASONS`: the verifier read the carried split and did not flash.
     lifted: Mapping[str, LiftedSplit]
+    #: Ruling 5: the streams the verifier's `unlifted` set holds, read off its own reason
+    #: `temperature_degenerate_unlifted(<S>)`; they get no number.
+    unlifted: frozenset[str]
 
 
 class StreamTableError(Exception):
@@ -271,11 +273,27 @@ def _inputs(
         )
     checks = certificate.get("checks", [])
     degenerate = frozenset(
-        row["subject"]
+        row["id"]
         for row in checks
         if row.get("category") == "independent_split"
         and row.get("result") == "not_applicable"
         and row.get("reason") in DEGENERATE_REASONS
+    )
+    unit_ids = _unit_ids(revision, view, route)
+    lifted = (
+        {
+            stream: split
+            for stream, split in _heater_style_splits(view).items()
+            if f"independent_split.{unit_ids[split.unit]}.{split.stream}" in degenerate
+        }
+        if degenerate
+        else {}
+    )
+    row_reasons = {row.get("reason") for row in checks}
+    unlifted = frozenset(
+        stream
+        for stream in view.streams
+        if f"temperature_degenerate_unlifted({stream})" in row_reasons
     )
     return _Inputs(
         view=view,
@@ -293,9 +311,9 @@ def _inputs(
         molar_mass={c: float(basis.molecular_weights[c]) for c in view.components},
         declared_phase=_declared_phases(view),
         rows=tuple(enumerate(checks)),
-        unit_ids=_unit_ids(revision, view, route),
-        degenerate=degenerate,
-        lifted=_heater_style_splits(view) if degenerate else {},
+        unit_ids=unit_ids,
+        lifted=lifted,
+        unlifted=unlifted,
     )
 
 
@@ -467,7 +485,9 @@ def _flash(inputs: _Inputs, name: str, st: StreamState) -> _Decision:
 def _near_boundary(inputs: _Inputs, name: str, phases: Sequence[_Listed]) -> bool:
     """Q4.R12 (b) (i): a listed minority fraction `≤ τ_β`. A minority fraction whose quotient is
     not finite is flagged: the decision near it is not known to agree. Q4.R12 (b) (ii), a
-    degeneracy `independent_split` row, no longer reaches a flash: R1′ decides such a stream."""
+    degeneracy `independent_split` row, stays withdrawn (design-lane confirmations, ruling 3): a
+    stream whose own split's row is one is decided by R1′, and a products-style row on a drum's
+    inlet judges the inlet at the drum's `(T, P)`, while the verifier flashed it at its own."""
     if len(phases) >= 2:
         amounts = [sum(phase.n) for phase in phases]
         total = 0.0
@@ -482,18 +502,19 @@ def _near_boundary(inputs: _Inputs, name: str, phases: Sequence[_Listed]) -> boo
 def _decide(inputs: _Inputs, name: str, st: StreamState) -> _Decision:
     """§4.2's rule, in its order: R0 is decided by the caller, then R1, R1′, R2, R3.
 
-    R1′ (the ST review's M1): where the verifier did not flash a stream (`degenerate`), the
-    stream of a heater-style lifted split reads the carried split; any other such stream that
-    would reach R3 gets no flashed number."""
+    R1′ (the ST review's M1, keyed by ruling 5): a stream whose heater-style split's own row is a
+    degeneracy row reads the carried split, as the verifier did. A stream the verifier's
+    `unlifted` set holds (its reason `temperature_degenerate_unlifted(<S>)`) gets no number;
+    that set holds undeclared streams only, so the branch follows R2. A products-style row on a
+    drum's inlet diverts nothing: the verifier flashed the inlet, and so does R3."""
     if vapor_id(name) in inputs.state and liquid_id(name) in inputs.state:
         return _carried_split(inputs, name, st)
-    flagged = name in inputs.degenerate
-    if flagged and name in inputs.lifted:
+    if name in inputs.lifted:
         return _carried_lifted_split(inputs, inputs.lifted[name])
     family = inputs.declared_phase.get(name)
     if family is not None:
         return _Decision("declared", _listed(family, st.n, st))
-    if flagged:
+    if name in inputs.unlifted:
         reason = absent("flash_failed", stream=name, status="temperature_degenerate")
         return _Decision("flash", (), blocked=reason, undecided=reason)
     return _flash(inputs, name, st)
