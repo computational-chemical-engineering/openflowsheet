@@ -4,7 +4,6 @@ Design: `docs/design/OPT-revision-optimisation.md` (§4.8–§4.13 WO-6, §6 G11
 Build decisions, facts, gate numbers: `docs/OPT_DECISIONS.md` (D-1…D-58).
 
 ## Done
-
 - WO-1…WO-5c (see the log). Main (X10) merged at `33a59d4d` (clean; HARVEST_SIZE (74, 977, 126); F0 PASS).
 - **WO-6, part 1** (`c85c8736`, `47f474ad`, `a4ef4d85`): Ipopt interruption hook (`greybox._Iterations.interrupt`),
   per-start wall-time cap and `record` stage in `optimize_revision` (D-52..D-54; G2 `--nlp` `b6bbafdb…` identical;
@@ -14,12 +13,10 @@ Build decisions, facts, gate numbers: `docs/OPT_DECISIONS.md` (D-1…D-58).
   manifest), `local._admit`/`_result` (D-55..D-57). `tests/test_opt_job.py` (G11 job half) 2 passed.
 
 ## Failing now (expected until the surface link): served-surface tests
-
 `test_m07a_surface_chain.py` (5), `test_t08_w2_surface_digest.py` (4), `test_t07_w5e_application_results.py` (2),
 `test_m04_study_job.py::test_a42_…`, `test_t07_q26.py::test_t07_q26_no_external_state` (D-58).
 
 ## Next (WO-6, part 2), in order
-
 1. `LocalApplication.validate(revision_id, task, optimization=None)` + `OPERATIONS["validate"]` optional member
    (`_ref("optimization-request.schema.json")`, decode `_members(..., "optimization")`), calling
    `validation.validate(doc, task, optimization=)` (D-19); `descriptions/validate.md` and `submit_job.md` texts.
@@ -37,10 +34,7 @@ Build decisions, facts, gate numbers: `docs/OPT_DECISIONS.md` (D-1…D-58).
 6. U05 text in `benchmarks/t08/support_envelope.yaml`; G1 F0, G2 at the end.
 
 ## How to run
-
 - Default env: `PYTHONPATH=$PWD/src /home/frankp/Codes/OpenFlowsheet/.venv/bin/python -m pytest …` (serial).
 - Audited env: `W=/home/frankp/Codes/OpenFlowsheet/.claude/worktrees/m05; scripts/m03_nlp_check.sh --no-inventory
   $W/.venv-nlp $W/.reference-downloads/m03-ipopt -- tests/test_opt_benchmarks_nlp.py` (nlp-marked only).
-- G2: `OMP_NUM_THREADS=1 PYTHONNOUSERSITE=1 PYOMO_CONFIG_DIR=$W/.venv-nlp/share/pyomo PYTHONPATH=$PWD/src:$W/.reference-
-  downloads/m03-ipopt/nlp-test-tools $W/.venv-nlp/bin/python scripts/opt_m03_dump.py $PWD OUT --nlp` → `b6bbafdb…`.
-- No full gate until WO-7. TRS2 ≤ ~36 cores.
+- G2 command: `docs/OPT_DECISIONS.md` WO-5c gates (expect `b6bbafdb…`). No full gate until WO-7; TRS2 ≤ ~36 cores.
