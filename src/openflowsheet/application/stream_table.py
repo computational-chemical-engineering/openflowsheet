@@ -25,6 +25,7 @@ from typing import Any, Final
 
 from openflowsheet import __version__
 from openflowsheet.compiled import EvaluationContext
+from openflowsheet.messages import audit
 from openflowsheet.models import duty_id, flow_id, pressure_id, temperature_id
 from openflowsheet.models.revision_flowsheet import (
     InstanceView,
@@ -102,6 +103,8 @@ class Absent:
 
 def absent(code: str, **params: Any) -> Absent:
     assert code in CODES, code
+    if audit.auditor is not None:  # G15 (MSG-G3): an emitted code must have a catalogue entry
+        audit.auditor.code(code, __name__)
     return Absent(code, params)
 
 

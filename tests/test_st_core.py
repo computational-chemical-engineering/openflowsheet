@@ -43,6 +43,8 @@ from st_support import (
 from openflowsheet.application import stream_table
 from openflowsheet.canonical import canonical_json, document_sha256
 from openflowsheet.compiled import EvaluationContext
+from openflowsheet.messages import audit
+from openflowsheet.messages.catalogue import CATALOGUE
 from openflowsheet.models import flow_id, pressure_id, temperature_id
 from openflowsheet.thermo import PropertyRequest, PropertyResult, StreamState
 from openflowsheet.thermo.iapws95 import Iapws95Provider
@@ -778,6 +780,7 @@ def assert_g5(document: Mapping[str, Any]) -> None:
         for reason in entry["absent"].values():
             assert set(reason) == {"code", "params"}
             assert reason["code"] in stream_table.CODES
+            assert reason["code"] in CATALOGUE  # WO-4: a key of MSG's catalogue
             for value in reason["params"].values():
                 assert isinstance(value, str | int | float) or (
                     isinstance(value, list) and all(isinstance(v, str) for v in value)
@@ -818,6 +821,63 @@ def test_g5_absence_over_every_corpus_document() -> None:
             assert_g5(document)
         except AssertionError as error:
             raise AssertionError(run) from error
+
+
+#: Note §6.4: each code's (family, kind), its params, and a `not_supported` one's gap capability.
+SECTION_6_4: dict[str, tuple[str, str, set[str], str | None]] = {
+    "zero_flow": ("notice", "notice", {"stream"}, None),
+    "property_not_provided": ("refusal", "not_supported", {"provider", "property"}, "property"),
+    "property_evaluation_failed": (
+        "refusal",
+        "numerical",
+        {"stream", "phase", "property", "status"},
+        None,
+    ),
+    "flash_failed": ("refusal", "numerical", {"stream", "status"}, None),
+    "value_not_finite": ("refusal", "numerical", {"subject", "quantity"}, None),
+    "stream_enthalpy_absent": ("notice", "notice", {"subject", "streams"}, None),
+    "energy_balance_undefined": ("refusal", "not_supported", {"unit", "model"}, "energy form"),
+}
+
+
+def test_g5_every_code_is_a_complete_catalogue_entry() -> None:
+    """WO-4 (note §6.4; MSG C3): the seven codes are complete entries of MSG's catalogue, of the
+    family, kind and params the table gives, each with an example, `stream_enthalpy_absent`
+    pointing at the four reasons a stream's enthalpy flow can be missing."""
+    assert set(SECTION_6_4) == stream_table.CODES
+    for code, (family, kind, params, capability) in SECTION_6_4.items():
+        entry = CATALOGUE.entry(code)
+        assert entry is not None, code
+        assert (entry.family, entry.kind, entry.complete) == (family, kind, True), code
+        assert set(entry.params) == params, code
+        assert entry.document["examples"], code
+        assert entry.document.get("why") and entry.document.get("action"), code
+        gap = entry.gap
+        if capability is None:
+            assert gap is None, code
+        else:
+            assert gap is not None and gap["limitation"] is None, code
+            assert str(gap["capability"]).startswith(f"{capability}:<"), code
+    see_also = CATALOGUE.entry("stream_enthalpy_absent")
+    assert see_also is not None
+    assert set(see_also.see_also) >= {
+        "property_not_provided",
+        "property_evaluation_failed",
+        "flash_failed",
+        "value_not_finite",
+    }
+
+
+def test_g15_an_emitted_code_reaches_the_runtime_audit(monkeypatch: pytest.MonkeyPatch) -> None:
+    """G15 (MSG C3): `absent` reports each code to MSG's runtime audit, which fails the session on
+    a code without an entry; a code removed from the catalogue is recorded as a miss."""
+    recorder = audit.Auditor()
+    monkeypatch.setattr(audit, "auditor", recorder)
+    stream_table.absent("zero_flow", stream="S1")
+    assert recorder.misses == {}
+    monkeypatch.setattr(stream_table, "CODES", stream_table.CODES | {"st_probe_code"})
+    stream_table.absent("st_probe_code")
+    assert recorder.misses == {"st_probe_code": "openflowsheet.application.stream_table"}
 
 
 def test_g6_consistency_over_every_corpus_document() -> None:

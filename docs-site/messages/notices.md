@@ -4,4 +4,48 @@
 
 Messages that report something worth knowing but are not failures. How to read an explanation, and how to ask for one (`openflowsheet explain <code>`, the `explain` operation), is on [Messages](index.md).
 
-No code is in this family yet.
+<a id="stream_enthalpy_absent"></a>
+
+## `stream_enthalpy_absent`: An energy total is not given because a stream's enthalpy flow is missing
+
+**Kind:** Notice: not a failure.
+
+- **Summary:** The energy total of &lt;subject&gt; is not given: the enthalpy flow of &lt;streams&gt; is missing.
+- **Why:** An energy total adds the enthalpy flows of the streams that enter or leave. When one of them could not be evaluated, the total cannot be given either. Each missing enthalpy flow carries its own reason in that stream's entry of the table.
+- **Do:** Read the reason given for each stream named; it says what is missing and what to do. The other values of the table are unaffected.
+- **Parameters:** `subject` (text), `streams` (list)
+- **See also:** [`property_not_provided`](refusals.md#property_not_provided), [`property_evaluation_failed`](refusals.md#property_evaluation_failed), [`flash_failed`](refusals.md#flash_failed), [`value_not_finite`](refusals.md#value_not_finite)
+
+Example:
+
+```text
+The energy total of valve is not given: the enthalpy flow of S2 is missing.
+  Why:     An energy total adds the enthalpy flows of the streams that enter or leave. When one of them could not be evaluated, the total cannot be given either. Each missing enthalpy flow carries its own reason in that stream's entry of the table.
+  Do:      Read the reason given for each stream named; it says what is missing and what to do. The other values of the table are unaffected.
+  Kind:    Notice: not a failure.
+  Code:    stream_enthalpy_absent (openflowsheet explain stream_enthalpy_absent)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/notices/#stream_enthalpy_absent
+```
+
+<a id="zero_flow"></a>
+
+## `zero_flow`: A stream without flow has no temperature or properties per amount
+
+**Kind:** Notice: not a failure.
+
+- **Summary:** Stream &lt;stream&gt; carries no flow, so its temperature, composition and properties per amount are not given.
+- **Where:** stream &lt;stream&gt;
+- **Why:** A stream whose every component flow is zero is idle. Its flows, enthalpy flow, entropy flow and volume flow are zero and its pressure is kept, but a temperature, a composition or a property per mole or per kilogram would describe no material, so they are left empty.
+- **Do:** Nothing needs fixing if the stream is meant to be idle. If it should carry material, check the specifications and splits upstream of &lt;stream&gt;.
+- **Parameters:** `stream` (stream)
+
+Example:
+
+```text
+Stream 'S7' carries no flow, so its temperature, composition and properties per amount are not given.
+  Why:     A stream whose every component flow is zero is idle. Its flows, enthalpy flow, entropy flow and volume flow are zero and its pressure is kept, but a temperature, a composition or a property per mole or per kilogram would describe no material, so they are left empty.
+  Do:      Nothing needs fixing if the stream is meant to be idle. If it should carry material, check the specifications and splits upstream of 'S7'.
+  Kind:    Notice: not a failure.
+  Code:    zero_flow (openflowsheet explain zero_flow)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/notices/#zero_flow
+```
