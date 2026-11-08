@@ -136,7 +136,7 @@ Am. 1–2). Foundations F0–F8 are designed in wave W1 during 0.4, then built i
   15161; CI green). 150 pairs: 41 VERIFIED off CoolProp, 76 refused; table `docs/X10-inventory.md`.
 - **OPT** (`wp/OPT` `7b7aa770`, ADR 0071 Proposed, Am. 16, link c_4/D_4 `3fb06cad…`; design amended §9): WO-1…8c done;
   review `docs/reviews/OPT-review.md` applied (M1–M6, S1 declared, S2–S5). CI at `496e003a`: only D-61 + the cache
-  allowlist (fixed in `7b7aa770`) fail on all three legs; aarch64 replay MATCH. Full gate re-run at `7b7aa770` running.
+  allowlist (fixed in `7b7aa770`) fail on all three legs; aarch64 replay MATCH. Full gate at `7b7aa770`: only the human-review test fails (15336 passed).
   **Blocked on Frank:** human review of `validate.md`/`submit_job.md` (D-61), ADR 0071. Then manifest `tested`, merge.
 - **RRC** (`wp/RRC` `fe572ad5`, ADR 0072 Proposed): WO-1…7 done; review `docs/reviews/RRC-review.md` applied; G4
   NET-02 and G5 M1-recycle rescued → L-COL-9 narrowed; declared not a superset of T06-revision-v2 (M2). Merges after
