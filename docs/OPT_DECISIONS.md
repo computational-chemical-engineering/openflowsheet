@@ -906,3 +906,11 @@ Totals: TH-R1 18.3 s, M1 5.9 s, C-MW 54.4 s ("verify" also holds report/record w
   `test_t06_f4_literals` + `test_m06_static_scan` + `test_m02_schemas` + `test_m03_schemas` + `test_doc_pages` 356
   passed, 21 deselected (nlp marker); ruff clean (src tests scripts benchmarks derivations); mypy clean on the 8
   touched modules.
+- D-85. DECISION (WO-8c): M2's `@cache` on `studies/nlp/request.py::_request_validator` (T07 G20 "hits not on the
+  allowlist") → **kept and allowlisted** (`tests/data/t07_global_state_allowlist.json`, cache count 35 → 36; main is
+  also at 35). It is a nullary, content-pinned load of the packaged schema files (immutable for the process's life),
+  the same category as the allowlisted `application/types.py` schema validators it mirrors and M04's surrogate-manifest
+  validators; never mutated, no job or request state. Not removed because a build measured 31.6 ms (mean of 50, x86,
+  default env) against 0.06 ms for a validation, and `request_problems` runs several times per optimization job
+  (validate, runner, normalize, revision) and on every `validate` of a document with an optimization. Alternative:
+  drop the cache and rebuild per call. Reversible by: reverting the WO-8c allowlist commit and removing the decorator.

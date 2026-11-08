@@ -58,6 +58,13 @@
       "justification": "M04: the surrogate-manifest and model-evidence schemas' validators, keyed by schema file name, with their `$ref` registry, all from the packaged schema files (immutable for the process's life); never mutated, no job or request state."
     },
     {
+      "file": "studies/nlp/request.py",
+      "line": "@cache",
+      "patterns": ["cache"],
+      "occurrences": 1,
+      "justification": "OPT WO-8 M2 (D-85): nullary `_request_validator`, the optimization-request schema's validator with its `$ref` registry of the published schemas, all from the packaged schema files (immutable for the process's life); the `application/types.py` reading repeated because `studies` never imports `application`. Never mutated, no job or request state. Kept (not rebuilt per call) because a build costs ~32 ms and `request_problems` runs several times per optimization job and on every validate."
+    },
+    {
       "file": "models/syn001/component_separator.py",
       "line": "@cache",
       "patterns": ["cache"],
