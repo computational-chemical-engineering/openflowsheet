@@ -1,5 +1,5 @@
 """The command line: `validate`, `solve`, `inspect`, `replay`, `project`, `api`, `explain`,
-`serve-http`, `serve-mcp`. K06, gates G02 and G06; T07 §10.3, §11.5.
+`streams`, `serve-http`, `serve-mcp`. K06, gates G02 and G06; T07 §10.3, §11.5.
 
 Blueprint D15: local Python and CLI share one contract and neither requires a network round
 trip. So this module is thin on purpose — it parses arguments, calls the application layer,
@@ -27,6 +27,12 @@ handles prints `internal_error`'s layered text, then the traceback, and exits 1.
 one-shot command closes its project when it returns, and closing a process executor ends every
 job it still runs `cancelled(server_shutdown)` (§9.3) — so the process executor belongs to the
 servers, which live as long as their jobs (build-lane decision W5b-Q1, `docs/T07_DECISIONS.md`).
+
+**ST §6.3 (ADR 0068): `streams` prints a run's stream table** — a project's ended job through
+`get_stream_table` (as `LOCAL_OWNER`, paged and assembled by `stream_table_format.assemble`), or a
+bundle directory through `stream_table.from_bundle` — as `text`, `json` or `csv`
+(`stream_table_format`). A refusal exits `API_EXIT_CODES[code]` with its layered text on stderr
+(and, with `--format json`, the projected `ApiError` document on stdout).
 
 **The servers** (§11.2, §10.2). `serve-http` opens the project with the process executor and
 serves it with `bindings.http.serve` until interrupted (with `--ui`, `bindings.web.serve`, which
@@ -590,6 +596,87 @@ def command_explain(arguments: argparse.Namespace) -> int:
     return 0
 
 
+#: ST §6.3: the printed forms of `streams`.
+STREAM_FORMATS: Final[tuple[str, ...]] = ("text", "json", "csv")
+
+
+def _stream_table_refusal(code: str, message: str, detail: Mapping[str, Any]) -> ApiError:
+    """A `StreamTableError` of a bundle directory as the `ApiError` it maps to (§6.1's codes); the
+    detail members a directory cannot give (`null`, D1-14) are left out."""
+    from openflowsheet.application.contract import api_error
+
+    given = {key: value for key, value in detail.items() if value is not None}
+    if code == "not_found":
+        return api_error("not_found", message, **given).error
+    if code == "unsupported":
+        return api_error("unsupported", message, **given).error
+    return api_error("internal_error", message, **given).error
+
+
+def command_streams(arguments: argparse.Namespace) -> int:
+    """ST §6.3: a run's stream table as text, JSON or CSV — of a project's job
+    (`--project DIR --job JOB_ID`) or of a bundle directory. Exit 0 with the table on stdout (or
+    in `--output`); a refusal exits with its `ApiError` code's number (§11.5); 1 when the project
+    cannot be opened; 2 for a usage error."""
+    from openflowsheet.application import stream_table, stream_table_format
+    from openflowsheet.application.authz import PolicyRefusedError
+    from openflowsheet.application.contract import ApplicationError
+    from openflowsheet.application.local import LocalApplication
+    from openflowsheet.application.operations import dispatch
+    from openflowsheet.application.store import StoreError
+
+    as_json = arguments.format == "json"
+    by_job = arguments.project is not None or arguments.job is not None
+    if by_job == (arguments.bundle is not None) or (
+        by_job and None in (arguments.project, arguments.job)
+    ):
+        print(
+            "streams: give either --project DIR --job JOB_ID or a bundle directory", file=sys.stderr
+        )
+        return 2
+    if by_job:
+        try:
+            application = LocalApplication.open(arguments.project)
+        except (StoreError, PolicyRefusedError) as error:
+            print(_human_text(error), file=sys.stderr)
+            return 1
+        with application:
+
+            def fetch(pointer: str, depth: int, cursor: str | None, limit: int) -> Any:
+                request: dict[str, Any] = {
+                    "job_id": arguments.job,
+                    "pointer": pointer,
+                    "depth": depth,
+                    "limit": limit,
+                }
+                if cursor is not None:
+                    request["cursor"] = cursor
+                return dispatch(application, "get_stream_table", request)
+
+            try:
+                document = stream_table_format.assemble(fetch)
+            except ApplicationError as refused:
+                return _print_refusal(refused.error, document=as_json)
+    else:
+        try:
+            document = stream_table.from_bundle(arguments.bundle)
+        except stream_table.StreamTableError as error:
+            mapped = _stream_table_refusal(error.code, error.message, error.detail)
+            return _print_refusal(mapped, document=as_json)
+    render = {
+        "text": stream_table_format.to_text,
+        "json": stream_table_format.to_json,
+        "csv": stream_table_format.to_csv,
+    }[arguments.format]
+    text = render(document)
+    if arguments.output is None:
+        sys.stdout.write(text)
+    else:
+        with open(arguments.output, "w", encoding="utf-8", newline="") as out:
+            out.write(text)
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="openflowsheet",
@@ -696,6 +783,25 @@ def build_parser() -> argparse.ArgumentParser:
         "--json", action="store_true", help="print the message_entry document instead"
     )
     explain_command.set_defaults(handler=command_explain)
+
+    streams_command = commands.add_parser(
+        "streams",
+        help="print a run's stream table and energy summary",
+        description=(
+            "Print the stream table and energy summary of a project's ended job "
+            "(--project DIR --job JOB_ID) or of a bundle directory, in SI units, as text, "
+            "JSON or CSV. Computed on read from the run's bundle; nothing is stored. Exit 0; "
+            "a refusal exits with its error code's number, as `api` does."
+        ),
+    )
+    streams_command.add_argument("bundle", nargs="?", default=None, help="a bundle directory")
+    streams_command.add_argument("--project", default=None, help="the project directory")
+    streams_command.add_argument("--job", default=None, help="an ended job of the project")
+    streams_command.add_argument("--format", choices=STREAM_FORMATS, default="text")
+    streams_command.add_argument(
+        "--output", default=None, help="write the table to this file and print nothing else"
+    )
+    streams_command.set_defaults(handler=command_streams)
 
     http_command = commands.add_parser("serve-http", help="serve the project over HTTP (§11.2)")
     http_command.add_argument("--project", required=True, help="the project directory")
