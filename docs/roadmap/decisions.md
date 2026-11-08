@@ -548,3 +548,11 @@ the harvest `manifest:` paths, re-emitting the support matrix.
 `wp/WIT` merged into main `f92af170` (no squash; manifest `evidence/X10a/dbf884ad…` tested, `d0dbd128`). Gate PASS
 15194 at `dbf884ad`; CI 42459637834 green on both legs; on main after merge: F0 PASS M1–M9, support matrix `--check`
 0 problems, harvest/changelog/manifest tests 471 passed. Worktree removed. OPT's merge must now update M-4 (D-42/D-82).
+
+## 2026-11-08 — ST WO-3…6 on top of wp/MSG
+
+DECISION: with every other 0.4 package waiting for Frank, does ST wait for MSG to reach main? → no: ST WO-3…6 build on
+`wp/MSG` merged into `wp/ST` (brief `docs/briefs/ST-build-WO3-6.md`). MSG is reviewed and complete; only Frank's human
+review of the `explain.md` text is pending, which does not touch the registry/catalogue machinery ST needs.
+Alternative: wait idle. Reversible by: `wp/ST` re-merges main after MSG lands; if Frank's review changes MSG beyond the
+text, re-merge `wp/MSG` and re-run ST's targeted tests. WO-7 (manifest, gate, review) waits for MSG on main.
