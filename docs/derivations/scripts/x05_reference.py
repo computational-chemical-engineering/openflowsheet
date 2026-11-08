@@ -71,8 +71,9 @@ CLOSURE = (
     "rpds-py",
     "scipy",
 )
-#: The five exact pins `pyproject.toml` declared before X05. D3 adds the other four; the claim in
-#: `declared_dependencies` holds on both sides of that change.
+#: The five exact pins `pyproject.toml` declared before X05 and declares after it: D3.2's pins of
+#: the other four were reverted by Amendment 1 (Frank's Q-F1 = no). The claim in
+#: `declared_dependencies` holds with and without those four.
 PRE_X05_DIRECT = ("casadi", "jsonschema", "numpy", "pyyaml", "scipy")
 WHERE = "openflowsheet/_data/requirements.lock"
 OFF_SUFFIX = ".post1"
@@ -126,7 +127,7 @@ ASSERTIONS = {
     "X05.A22": "the installed wheel replays the 52 F0 bundles",
     "X05.A23": "F0 PASS; the existing replay suites pass unedited",
     "X05.A24": "L41, the support matrix and the T08 notes restated",
-    "X05.A25": "the closure pinned in Requires-Dist; an unconstrained install verifies",
+    "X05.A25": "the direct five pinned, the transitive four floating; off the lock is named",
 }
 
 

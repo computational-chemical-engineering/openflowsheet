@@ -70,7 +70,8 @@ T08_MANIFEST = "evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/manifest.j
 #: `tested`, 6 and 0) moves it on `wp/X10`; its review-fix manifest (`033f192…`, `tested`, 7
 #: and 0) on `wp/X10`. WIT's manifest, filed as X10a (`dbf884a…`, `tested`, 6 and 0), moves it
 #: on `wp/WIT`. S15a's manifest (`d7cb4db…`, `tested`, 5 and 0) moves it on `wp/S15a`.
-HARVEST_SIZE = (76, 988, 126)
+#: X05a's manifest (`b43d94b…`, `tested`, 5 and 0) moves it on `wp/X05a`.
+HARVEST_SIZE = (77, 993, 126)
 #: The 0.2.0 release candidate C′ (M07 spec §25, R-485).
 C_PRIME = "ce993651ce37c1343e771b276160bd6623e43500"
 #: The commit tagged v0.2.0.

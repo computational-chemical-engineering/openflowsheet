@@ -3263,6 +3263,7 @@ release note calling V14 passed.
 ## R-140 — v0.1 ships no lock in the wheel; an installed package's bundles replay `NOT_RUN` (L41); the lock lookup is confined to the source checkout
 
 **Lifted as policy (Frank, 2026-11-01; R-925, ADR 0056): package X05.** The behaviour below stays until that package lands.
+**Lifted by X05 (ADR 0069), 2026-11-08; L41 narrowed (D7.3).** See R-985 to R-987.
 
 | | |
 | --- | --- |
@@ -18628,6 +18629,71 @@ order-preserving, and admits non-canonical second ids); a generic pattern (ADR 0
 - *Evidence.* §4.8.5's G2 gaps (0.075, 0.26, 0.39 scaled), matched to 4.6e-15 relative.
 - *Watch for.* The exclusion widened to a vapour side, to a side with a positive column, or to another basis without
   its own non-differentiability evidence.
+
+## R-985 — `lock_sha256` is recorded only for a lock the installed runtime closure matches (X05, ADR 0069 D1–D4) (2026-11-08)
+
+| | |
+| --- | --- |
+| Date | 2026-11-08 |
+| Decided by | design lane (`specifier`), ADR 0069; accepted by Frank on the decision board, 2026-11-08 |
+| Normative text | `docs/adr/0069-X05-replay-from-the-wheel.md` D1–D4; ADR 0007 Amendment 2 |
+| Affected packages | X05; K05 and every package that records or replays a bundle |
+
+**Decision.** The wheel carries `requirements.lock` (`openflowsheet/_data/`, a link in the checkout); `environment()`
+hashes it only when the 9 closure distributions are installed at its pins (exact strings), checkout and wheel alike,
+else `""`. Lifts R-140.
+
+**Rejected.** Every lock line (B12's wording; unreachable from a clean install), the lock shipped unchecked (R-140),
+PEP 440 equality, a run-time closure.
+
+**Evidence.** X05.A01–A24 (`tests/test_x05_lock.py`, `tests/test_x05_replay_from_the_wheel.py`; the X05 manifests).
+
+**Watch for.** A lock read from anywhere but the package; a relaxed comparison.
+
+## R-986 — No schema change for X05; the replay reason names the failing distributions (ADR 0069 D5) (2026-11-08)
+
+| | |
+| --- | --- |
+| Date | 2026-11-08 |
+| Decided by | design lane (`specifier`), ADR 0069; accepted by Frank on the decision board, 2026-11-08 |
+| Normative text | `docs/adr/0069-X05-replay-from-the-wheel.md` D5; ADR 0007 Amendment 2 |
+| Affected packages | X05; T07 (the frozen environment document) |
+
+**Decision.** The environment document keeps its eight keys; `Environment.lock_findings` is in memory only, outside
+`as_document()` and equality; `decide_mode`'s unknown-lock reason names this side's failing distributions.
+
+**Rejected.** An environment field (ADR 0019 Amendment 14); recording the writer's findings in the bundle (Q-F3,
+default no).
+
+**Evidence.** X05.A12, A18 (`tests/test_x05_lock.py`).
+
+**Watch for.** Findings leaking into `as_document()` or equality.
+
+## R-987 — The runtime closure's four transitive members float; only the five direct members are pinned in `Requires-Dist` (ADR 0069 D3.2 as amended; Frank's Q-F1 = no) (2026-11-08)
+
+| | |
+| --- | --- |
+| Date | 2026-11-08 |
+| Decided by | design lane (`specifier`), ADR 0069; accepted by Frank on the decision board, 2026-11-08; Q-F1 answered no; ADR 0069 Amendment 1 |
+| Normative text | `docs/adr/0069-X05-replay-from-the-wheel.md` D3.2 and §14 (Amendment 1); ADR 0007 Amendment 2 |
+| Affected packages | X05; X05a |
+
+**Decision.** `[project].dependencies` pins `numpy`, `scipy`, `pyyaml`, `jsonschema` and `casadi` exactly and does not
+name `attrs`, `jsonschema-specifications`, `referencing` or `rpds-py`. X05.A25 is restated as the inverse.
+
+**Rejected.** Exact pins of the four in `Requires-Dist` (D3.2 as proposed, `a58ef5a5`, reverted on `wp/X05a`).
+
+**Reason.** Frank's Q-F1: users keep upgrade freedom over the four.
+
+**Consequence.** Only an install constrained by the shipped lock (`pip install -c requirements.lock openflowsheet`)
+is promised to verify. A plain install verifies only if its resolver picks the lock's versions; otherwise it records
+`""`, and replay names each member off the lock.
+
+**Evidence.** X05.A25 (`tests/test_x05_lock.py`, `tests/test_x05_replay_from_the_wheel.py`; CI `clean-install`,
+`t08_rc.py lock-check --state installed-free`).
+
+**Watch for.** A lock regeneration that moves a direct pin without `pyproject.toml`; user-facing text promising that a
+plain `pip install` replays exactly.
 
 ## R-983 — L01.A22 (a): the C1 files stay pinned at the L01 base apart from registered moves; WIT M-6 part b moves `models/c1/flash.py` (2026-11-08)
 
