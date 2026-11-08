@@ -17,9 +17,9 @@ policies:
     globalization.eo_recovery: none
     offered: false
   T06-revision-v2:
-    registered: true # ADR 0018 D6; edge 3 = homotopy_or_sequential_restart (ADR 0015)
+    registered: true # ADR 0018 D6; edge 3 = the sequential restart (ADR 0015)
   RRC-revision-v1:
-    offered: true # ADR 0072; edge 3 = homotopy_or_revision_continuation_or_sequential_restart
+    offered: true # ADR 0072; edge 3 = revision continuation, then the sequential restart
 
 # A source is eligible iff it is `VERIFIED` under `T06-revision-v2`.
 eligibility: {policy: T06-revision-v2, outcome: CONVERGED, verification_status: VERIFIED}

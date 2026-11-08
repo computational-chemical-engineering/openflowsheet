@@ -1,7 +1,8 @@
 # RRC WO-5b: the registered revision-continuation pairs (design note
 # `docs/design/RRC-revision-region-continuation.md` §8.1, §8.2 G4, G5; ADR 0072, Proposed).
 #
-# Selected by `cases.yaml`'s first-in-order rules (committed before any run, cba5e8e2) from every
+# Selected by `cases.yaml`'s first-in-order rules (committed before any run, cba5e8e2; two comments
+# reworded after, RRC D-27, no rule or value changed) from every
 # candidate's results (`results-ref-x86-64.json`, G9), measured at 40fba287 on x86-64; three fresh
 # runs (at b0c7d1ec twice, at 40fba287) gave equal outcomes, iterations, λ-trials and state digests.
 #
@@ -16,7 +17,7 @@
 
 schema_version: 1
 cases: benchmarks/rrc/cases.yaml
-cases_sha256: 97c5b9e56c27b372a65683c406bc5b084ebb8ccc055e688b4ca4b78e527f411c
+cases_sha256: 524bbc1ccc81b2ee3312e58baebbc994d199fcb69d59cdebb8919972b699a131
 results: benchmarks/rrc/results-ref-x86-64.json
 measured_at: 40fba287a2
 machine: ref-x86-64
