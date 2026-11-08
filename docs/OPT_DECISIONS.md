@@ -520,3 +520,65 @@ Totals: TH-R1 18.3 s, M1 5.9 s, C-MW 54.4 s ("verify" also holds report/record w
   5690/64/31922, Ipopt −2/0), 28.1 s (WO-5 54.5 s).
 - Default env battery at `7b1f7242` (`test_opt_*.py test_m03_*.py test_e01_*.py test_k01_schemas.py
   test_m05_study_record.py test_t08_w4_package_data.py`): 790 passed, 1 skipped; mypy and ruff clean on touched files.
+
+## WO-5c (amendment A-1, the phase-boundary form; design §9.1; D-44 follow-ups)
+
+- **F6** (fact, measured before coding, default env): OPT-A3's candidate Q̂ = 14232.354594159335 W re-solves `CONVERGED`,
+  certificate `UNVERIFIED` with the one limitation `rank_limitation(ILL_CONDITIONED, relative)` (rcond₁ 6.19e-13, dim
+  18); every other check passes — residual 18, material 8, energy 2 (+1 `not_applicable` S2), specification 9, bounds
+  13 (+1 n/a S2), phase_admissibility 2, independent_split 4, derivative_witness 2 — the same pattern as the `VERIFIED`
+  point Q* − 1 W; `grade` with `NO_RANK_LOSS_DETECTED` → `VERIFIED`. **Premise holds; G10 proceeds.**
+- D-45. DECISION: V5's sensitivity at a boundary point → Q1′ (M03's "certificate `VERIFIED` for the same state") also
+  passes on `CertificateEvidence.basis = phase_boundary_form` with the certificate `UNVERIFIED`; the basis is recorded
+  in Q1′'s detail only when not `certificate` (M03's bytes unchanged, G2). Only `RevisionNlpHost.sensitivity` sets it,
+  after V1 admitted the point. The design names V5 on the held system but not Q1′ (it would refuse every boundary
+  point `ROOT_NOT_VERIFIED`). Alternative: no study-level certificate (`not_applicable`, weaker). Reversible by:
+  `16fb2d3f`. **For the reviewer.**
+- D-46. DECISION (D-44 gap): `optimize_revision` checks `greybox.environment_problems()` after the starts and before
+  any Ipopt call, exactly where and as M03's `optimize` does → `UNSUPPORTED(NLP_SOLVER_UNAVAILABLE)` with M03's words.
+  Not in the static probe: that would import Pyomo there (G11's fresh-interpreter test forbids it). Reversible by:
+  `1d909ef9`.
+- D-47. DECISION: V1's detail on a revision host always carries `basis` (`certificate`, `phase_boundary_form`, or
+  `null`); a non-`VERIFIED` re-solve is always judged on (e1)–(e6) and a failure records `phase_boundary_form: {clause,
+  reason[, boundary_form]}` (first failing clause). SYN-001's V1 unchanged. `claims.numerical_verification` is present
+  only with a candidate; the candidate's `certificate_basis` always (schema: both optional, the candidate definition is
+  M03's too). Reversible by: `9a78d67e`.
+- D-48. DECISION: the certificate's target and zero-flow tuple are rebuilt in `boundary.py` as `verify_revision` builds
+  them (fresh provider's P domain, `parse_revision`, the private `_staged_splits` imported, not edited); B's row and
+  column ids by `assemble_target`'s own rules (checked against the matrix shape). G10a pins the rebuild byte for byte at
+  five states. Alternative: a public helper factored out of `verify_revision` (edits K04 code). Reversible by: `9a78d67e`.
+- D-49. DECISION: details A-1 leaves open → (e1) "converged" is the route run's outcome `CONVERGED` with a state and a
+  spec; A in `region_splits` order (RegionResult carries no split list), regime from the row kind; (e6) also fails when
+  the host's check policy hash differs from the certificate's `check_policy_sha256` (the certificate's own policy).
+  Reversible by: `9a78d67e`.
+- D-50. FACT/for the design lane (G10d): the gate's "0 < a/N0 ≤ 1e-7" and "|T − T_d| ≤ 1e-6 K" are inconsistent at the
+  loose end — d(a/N0)/dT ≈ Σ y_i/K_i · ∂lnK_i/∂T ≈ 0.026/K at T_d, so a/N0 = 1e-7 is ΔT ≈ 3.9e-6 K. The test bisects to
+  a/N0 ≤ 1e-9 (inside the gate's bound). G10b applies its 5 % rcond₁/ΔQ test at Q̂ too (the text is ambiguous).
+
+### Gates (WO-5c, 2026-11-08, TRS2, worktree `wp/OPT`; D-45 `16fb2d3f`, A-1 `9a78d67e`, OPT-A3v `9373e15b`, D-46 `1d909ef9`)
+
+- **G10** (audited env): **PASS**, `xfail` removed — OPT-A3 `KKT_POINT_VERIFIED`, Q 14232.354594159335 (|Q − Q*|/Q*
+  1.9e-11), V1 basis `phase_boundary_form`, target `ILL_CONDITIONED` rcond₁ 6.19e-13, B `NO_RANK_LOSS_DETECTED` rcond₁
+  0.04347 (dim 14), bundle certificate `UNVERIFIED` (one `rank_limitation`), `phase_bounds_active` U-PHF slack 2.43e-11,
+  λ 0.3739709049025754 vs λ* 0.373970904895325103 (closed form = numeric μ* to 30 digits; rel 1.9e-11); V5 pass,
+  stationarity 0.0; claims `numerical_verification: phase_boundary_form`; OPT-A1 `certificate`.
+- **G10a** PASS: B(A = ∅) screen = certificate `regularity` byte for byte at OPT-A1's V1 state, OPT-A3's Q̂, TH-R1, M1,
+  C-MW certified starts. **G10b** PASS: cert rcond₁/ΔQ = 2.27e-6/W at ΔQ 1, 0.1, 0.01, 1e-3 W and Q̂ (2.73e-7 W; status
+  VERIFIED, VERIFIED, ILL, ILL, ILL); B rcond₁ 0.0434739 at all five; Q1′ pass on basis `phase_boundary_form` at Q̂.
+  **G10c** PASS: (i) Q* + 1e-3 W TWO_PHASE → e2; (ii) non-registered policy → e6 (`RELAXED`, B clean); (iii) no rows →
+  e3, point stays unadmitted; (iv) AST: nothing under `verify/`, `orchestrator/` imports `boundary`. **G10d** PASS
+  (OPT-A3v): 29 bisection steps on [−20000, −4000] W → Q_v −7718.908756971359 W (closed form −7718.908764457, recorded),
+  a/N0 7.07e-10, T − T_d 2.5e-8 K, certificate `ILL_CONDITIONED` rcond₁ 5.3e-12, e1–e6 hold with A = {U-PHF} VAPOR
+  (S3 pinned, `Ndef:liquid` dropped), B rcond₁ 0.02847.
+- **G7/G8/C0/G9** (audited, `m03_nlp_check.sh`: OPT nlp + M03/E01 nlp tests at `1d909ef9`): **30 passed, 0 xfailed**
+  (WO-5b: 29 + 1 xfailed). A1 Q 9000.00000009091 (rel 1.0e-11), λ 0.03; G9 OPT-N1 `INFEASIBLE_REPORTED`.
+- **G1** F0 at `1d909ef9`: PASS (M1 50/50, M2 61/61, M3 61/61, M4 61/61, M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 35/35).
+- **G2 re-take (D-44)**: `scripts/opt_m03_dump.py` on the original base `ad971d32` (temporary worktree, removed) and on
+  `1d909ef9`. Audited env (`OMP_NUM_THREADS=1 PYTHONNOUSERSITE=1 PYOMO_CONFIG_DIR=<m05>/.venv-nlp/share/pyomo`,
+  `--nlp`): both `b6bbafdb0c83b0148e7a3d324b81ad93e6935e6731833cd325f162e6ec8b9324`, **identical**; reports solved —
+  NLP-1 and E01-TAC `KKT_POINT_VERIFIED` (3/3 starts), NLP-INF `INFEASIBLE_REPORTED` (3/3). Default env: both
+  `6e028e8ddaa13948e4be80444f50a41af13ef8f250c3d96f72d3fcee6fa7bbe0`, identical.
+- Default env (`test_opt_*.py test_m03_schemas.py test_m03_nlp_isolation.py test_m03_nlp_status.py
+  test_t08_w4_package_data.py test_e01_b_studies.py test_m05_study_record.py` at the A-1 tree): 446 passed;
+  `test_opt_revision_optimize.py` at `1d909ef9` 16 passed; M03 sensitivity core/syn001/reference 61 passed at D-45.
+  ruff clean; mypy: the 3 pre-existing `benchmarks/opt`/test errors only. `analytic.py --check` current.
