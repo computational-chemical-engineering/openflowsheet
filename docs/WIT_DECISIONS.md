@@ -142,12 +142,10 @@ The normative text is the spec; nothing here changes a tolerance, a check meanin
 - **Identity moves (measured).** `flash.py` SHA-256 = `c1.tp_flash`'s `artifact_hash` and F0 M9's entry:
   `f228a4a3f0fe…5abc5c1b` → `b1b47c287086…bf9932e6a`. Full `corpus_identity.py --record` on TRS2 (ref-x86-64):
   registry diff is that one M9 line, so M1–M8 re-measured equal. `model_version` and results do not move (M2–M5).
-- **Open (design lane): L01.A22.** Its (a) byte-pins `models/c1/flash.py` at the L01 base (`f228a4a3…`, spec
-  §13.2 (a), `tests/test_l01_records.py`). The review rules that this pin "needs an L01 amendment, not a silent
-  re-pin", so it is **not** re-pinned here and `test_a22_the_c1_files_are_byte_identical_to_the_l01_base` fails on
-  this branch. Default proposal for the ruling: amend §13.2 (a) so the flash.py pin is `b1b47c28…` by WIT M-6 part b
-  (a manifest-text move, not L01's), or move A22's C1 pins to clause (f)'s review-time form as R-566 did for
-  `coverage.json`. Blocks the merge, not this commit.
+- **Closed (design lane): L01.A22.** Ruled at 1e77b747: L01 spec §15 (Amendment 4) and R-983. `PINNED` stays the
+  L01 base; `flash.py`'s move to `b1b47c28…` is listed in `MOVED` and checked against the register entry
+  (`tests/test_l01_records.py`, `test_a22_every_move_is_a_registered_ruling`). The (a) test compares to
+  `a22_expected()` and passes.
 - **Checks (TRS2).** F0 `--check` PASS: M1 50/50, M2-M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 35/35. Targeted
   tests (G7, `test_wit_*`, L01 records, M02 units/registries/promotion, F0, P01 schemas): 360 passed, 1 skipped,
   1 failed (L01.A22 (a), above). ruff, ruff format, mypy (303 files) clean.
