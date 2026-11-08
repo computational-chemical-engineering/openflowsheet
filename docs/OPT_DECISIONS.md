@@ -652,6 +652,32 @@ Totals: TH-R1 18.3 s, M1 5.9 s, C-MW 54.4 s ("verify" also holds report/record w
   (replay solves no NLP); (f) `verdict_changed_near_threshold` carries the bundles' entries only: the verification
   document's active-set flip near a threshold (§4.9's 1e-9 rule) is NOT yet implemented — a flip is a plain
   difference (`MISMATCH`). Reversible by: `6d30efa0`.
+- D-63. DECISION (for the reviewer): G12's mask → wall-clock members only, and all of them: each start's
+  `wall_time_s` in the report; each bundle's `run-manifest.json` `started_at`, `elapsed_seconds` and the
+  `manifest_sha256` over them (measured: the only members of the 6 run manifests that differ between the library and
+  the inline job); those files' SHA-256 under the record manifest's `members`. Every other byte of the record is
+  compared as it is (inline and spawned worker). The design says "byte for byte"; two library runs differ in the same
+  members, so no record can meet it unmasked. Alternative: make `run_revision_session` write no clock into the
+  bundle (moves the run-bundle format). Reversible by: `a2020a14` (the test's `_masked`).
+- D-64. DECISION: §4.9's dispatch details → `LocalApplication.reproduce` imports a record (no `manifest.json`, an
+  `optimization-manifest.json` naming the format) as `import-<n>:bundle`, kind `replay_bundle`, with one member, its
+  manifest (`optimization_manifest`; `record_rows`), so `get_artifact` shows the record's manifest; the `reproduce`
+  job dispatches on the copy's format to `replay_optimization(stage=self.at)` (stages as `reproduce_bundle`'s); the
+  re-run bundles are registered as artifacts `<job>:rerun/starts/<k>/<start|resolve>`, not outputs: the report is
+  the job's one output. CLI `replay DIR [--rerun]` dispatches likewise. Reversible by: `0e0c8ea3`.
+- D-65. DECISION: CLI `optimize` → exit 0 iff the report is `KKT_POINT_VERIFIED` (as `solve` exits 0 iff
+  `VERIFIED`), 1 for any other report (`UNSUPPORTED` included); a request with problems prints an `invalid_request`
+  error document (pointer `/request<pointer>`) and exits its §5.8 code, as `validate` prints a refusal; no record is
+  written then. Reversible by: `1001f877`.
+- D-66. FACT (G14): at a cancellation inside start 1's Ipopt the record holds every start's `start` bundle and start
+  0's `resolve` bundle (registered as artifacts); start 0's `optimizer.json`, `candidate-revision.json` and
+  `verification.json` are written with the report (`revision.optimize_revision`, `record.start_members`), so an
+  interrupted job has none of them. G14's "start-0 files" are therefore its two bundles. The design's "per-start
+  files already written stay" holds; writing the per-start members as each start ends would be a change of
+  `optimize_revision`, not made here.
+- D-67. FACT (G16): "R0 content" of a certificate is taken as `run.identity.r0_projection(...)["certificate"]`
+  (status, false-success flag, check ids, results and near-threshold flags, regularity status and dimension,
+  limitation kinds), the projection a run's `artifact_r0_sha256` hashes.
 - AMENDED_TESTS (WO-6): `tests/test_t07_adr0008_jobs.py::test_c_each_operation_has_exactly_one_request_branch`
   (the `optimize` branch, additive) and `::test_c_an_operation_outside_the_enum_is_refused` (its `optimize` example is
   now an operation; replaced by `optimise`).
@@ -677,3 +703,22 @@ Totals: TH-R1 18.3 s, M1 5.9 s, C-MW 54.4 s ("verify" also holds report/record w
 - Audited env (`m03_nlp_check.sh -- tests/test_opt_replay_nlp.py`, thread pins 1): 5 passed (G13 x86 half).
 - Surface link c_4: served `3fb06cad02649f1d8489c73551583f496ad38ae8c7109d29ae68166f5998c8a5`, stripped = D_3
   `455d01eb…`.
+
+### Gates (WO-6c, 2026-11-08, TRS2; at `adab74c4`)
+
+- G1 F0 (`scripts/corpus_identity.py --check`): PASS (M1 50/50, M2 61/61, M3 61/61, M4 61/61, M5 61/61, M6 85/85,
+  M7 52/52, M8 105/105, M9 35/35).
+- G2 (audited env, `--nlp`, `OMP_NUM_THREADS=1 PYTHONNOUSERSITE=1 PYOMO_CONFIG_DIR=<m05>/.venv-nlp/share/pyomo`):
+  `b6bbafdb0c83b0148e7a3d324b81ad93e6935e6731833cd325f162e6ec8b9324`, identical to WO-5c's and WO-6 part 1's; reports
+  solved: NLP-1 and E01-TAC `KKT_POINT_VERIFIED`, NLP-INF `INFEASIBLE_REPORTED`. Protocol fact: setting
+  `OPENBLAS_NUM_THREADS`/`MKL_NUM_THREADS` as well changes the dump (the report's `solver.environment.thread_variables`
+  records them: 6 members, `31532673…`, the same at `c85c8736`, `de18aca2` and `adab74c4`), so G2 sets
+  `OMP_NUM_THREADS` only, as before.
+- Audited env (`m03_nlp_check.sh -- test_opt_benchmarks_nlp.py test_opt_boundary.py test_opt_replay_nlp.py
+  test_opt_job_nlp.py`, thread pins 1): 19 passed — G7–G10 (8), G13 x86 half (5), G12 inline + spawned, G14 cancel +
+  budget, G16 OPT-A2 + OPT-A3 (6).
+- Default env: `test_opt_replay.py` 6 passed (G13 fixture, `reproduce` and CLI dispatch); `test_opt_cli.py` 3 passed
+  (G11 CLI half); CLI/jobs/reproduce/import/surface files (20 files) 314 passed, 1 skipped; support-envelope files
+  343 passed, 1 skipped; `t08_support_matrix.py --check` 0 problems.
+- Default env `test_opt_*.py` + description/application-result/MCP/description-text files: 269 passed, 1 failed
+  (`test_every_description_is_reviewed_by_both_lanes`, D-61, by design), 19 deselected (`nlp`).
