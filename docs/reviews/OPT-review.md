@@ -1,7 +1,8 @@
 # OPT review (design lane, `reviewer`) — `wp/OPT` at 48733e55 against `docs/design/OPT-revision-optimisation.md` incl. §9 and ADR 0071
 
-**Verdict: sound; one must-fix before `tested` (M1, replay's float comparison across architectures), five should-fix
-items, and the two D-61 descriptions pass the design-lane review.** Every reported optimum is judged on a certified
+**Verdict: sound; one numerical must-fix before `tested` (M1, replay's float comparison across architectures), which CI
+has since confirmed on aarch64. CI also shows five mechanical or architectural must-fixes (M2–M6, below M1). There are
+five should-fix items, and the two D-61 descriptions pass the design-lane review.** Every reported optimum is judged on a certified
 re-solve (R-188): `CandidateVerification.passed` needs V1–V5 `pass`, and V1 passes only on a `VERIFIED` certificate or
 on the phase-boundary form, whose (e6) is the certificate's own `grade` returning `VERIFIED` with B's regularity. No
 ordinary certificate can change: `verify/` and `compile/` have no diff on the branch, the orchestrator gains only an
@@ -35,8 +36,62 @@ identical. An OPT-A3-type record will be worse: its V4 margin and phase-row valu
 tolerance (amendment text below): floor each float of `verification.json` at the tolerance of the V-check whose verdict
 it feeds, as ADR 0007 D2.2 floors `check.value` at its own tolerance. `differences` already takes `floor`, so this can
 be done per subtree in `verification_differences`, with no change to a policy file. Add one test: ulp perturbations
-give `MATCH`, and a perturbation above the floor gives `MISMATCH`. If the pending aarch64 leg happens to `MATCH`, M1
-still stands for every other record.
+give `MATCH`, and a perturbation above the floor gives `MISMATCH`.
+
+**M1 confirmed by CI.** Run 42431066903 at `wp/OPT` `de18aca2`, aarch64 leg. `test_g13_the_committed_record_replays_to_match_without_ipopt`
+fails on `starts/2/verification.json` `checks[4].stationarity_residual_inf` and `kkt.stationarity_residual_inf`:
+1.3507706064785907e-10 against 1.3507661655864922e-10. That is 4.4e-16 absolute, 3.3e-6 relative, with "no registered
+floor, ADR 0007 D2.3". `test_g11_replay_imports_neither_pyomo_nor_cyipopt` fails on aarch64 for the same reason: its
+subprocess prints `MISMATCH`. Every other member compared clean, so only the adjoint's least-squares residual moved.
+**Ruling on how to compare:** floor the floats in replay, by the tolerance of the check that judges each one, exactly
+as the amendment text below says. The KKT residual members are floored at `TAU_KKT` (1e-6), which makes this pair
+`MATCH` by a factor of 2e9. Do not register new floor names in `T08-numerical-policy-v2`: its name set and bytes are
+frozen, and OPT's addendum classifies no floats. Do not narrow the floor to the KKT members alone. A boundary record's
+margins and phase-row values (about 1e-11) are the next members to move.
+
+**M2 — `studies/` imports `application/` (M04's layering rule; `test_m04_study.py:626`, all legs).** Five modules do
+it:
+- `nlp/greybox.py` imports `application.jobs.interrupt`;
+- `nlp/replay.py` imports `application.revision_run`;
+- `nlp/request.py` imports `application.binding`, `revision_run` and `types`;
+- `nlp/revision.py` imports `application.policies`;
+- `nlp/revision_host.py` imports `application.binding`, `policies`, `revision_binding` and `revision_run`.
+
+The rule stands; an exemption would need an ADR, and I would reject it. Fix it by dependency inversion, with no change
+of behaviour or bytes. `studies/nlp/host.py` gains a small route protocol (bind, solve, write bundle, reproduce bundle,
+resolve policies), and the application layer supplies the implementation where it builds the host, the readiness check
+and the replay. `greybox` takes the interruption as the caller's `check` callable, which it already receives, and does
+not import the job's exception type. The alternative is to move `revision_host`, `revision` and `replay` under
+`application/` (they orchestrate production runs). It is acceptable but moves more files. Either way, record a D-entry
+and prove the move inert with G1, G2, G12 and G13 at x86 bytes.
+
+**M3 — policy-literal guards (`test_t05b_literal.py:194`, `test_t06_f4_literals.py:118`, `test_t06_w18_literal.py:73`,
+all legs).** The six `solve-policy.json` files under `tests/fixtures/opt/replay/OPT-A2/starts/{0,1,2}/{start,resolve}/artifacts/`
+name the policy value the guards forbid. They are archived outputs in R-939's sense: the replay reads the policies from
+the start bundle (D-62 a). **Ruling:** register them in the archived-output list (`tests/f0_support.archived_outputs`)
+by path and SHA-256, like R-939's 36. Add a register addendum to R-939: "plus the six G13 fixture files of OPT
+(ADR 0071), same mechanism". Do not edit the guards and do not strip the fixture.
+
+**M4 — `apps/web/js/routes.js` stale (`test_m06_static_scan.py:166`, all legs).** Regenerate it with
+`scripts/m06_web_routes.py --write` and commit the result. It is mechanical.
+
+**M5 — M02's response snapshot (`test_m02_schemas.py:263`, `solve`'s resolved response digest, all legs).** OPT's
+additive `job.schema.json` members (the `optimize` enum value and branch, six artifact kinds, the `optimization` result
+member) move the resolved `solve` response. Follow M04's precedent (`without_m04`). Strip exactly Amendment 16's
+additions in the test (`without_opt`), so the test proves that the rest is unchanged. Do not re-take the snapshot.
+
+**M6 — M03's report bytes on aarch64 changed (`test_m03_schemas.py:135`,
+`optimization_report/valid/nlp_1_without_the_extra.json`, aarch64 only).** OPT's `audited_solver(platform_id)` appends
+"the platform linux-aarch64 is not audited (…)" to the solver message even when the extra is absent. So the default-env
+M03 report that the reference fixture pins now differs on aarch64. That breaks §2.3's bit-exactness of M03's report,
+which G2 measured on x86 only. **Ruling:** when the extra is absent, the message stays M03's byte for byte. The
+platform clause is added only where the extra is present on an unaudited platform. Do not regenerate the M03 fixture.
+Then add the aarch64 default-env leg to G2's evidence. (The `DomainError H_S2_liquid 500 K` in that test's log is
+captured stderr from an out-of-domain fixture evaluation, not the failure.)
+
+D-61's red test (`test_every_description_is_reviewed_by_both_lanes`) is expected. My two design-lane verdicts are below,
+and Frank's human review remains open. These CI results predate WO-6c and WO-7, so re-run CI after the fix round before
+reading any of M2–M6 as still open or closed.
 
 ## Should fix
 
@@ -129,7 +184,7 @@ would catch it.
 7. **F2** is answered by A-3: the margin is the closure's own test, confirmed in code. **F3** accept: G12 holds inline
    and spawned under D-63's masks. **No ordinary `solve` certificate changed:** see the verdict. I did not re-run F0;
    the engineers report M1–M9 PASS after every WO.
-8. **`implemented` is right.** For `tested`: M1 done, and CI's aarch64 leg reads G13 `MATCH`. D-61 recorded for both
+8. **`implemented` is right.** For `tested`: M1–M6 done, and CI's aarch64 leg reads G13 and G11 `MATCH`. D-61 recorded for both
    lanes, so `test_every_description_is_reviewed_by_both_lanes` is green. G21 full gate PASS at the merge candidate
    (check whether its mypy step reports the 3 `benchmarks/opt` errors; fix them if it does). CI green on both legs.
    Manifest re-taken at that commit with OPT.G21, OPT.G13.aarch64 and OPT.D61 results. S1–S5 done, or S1 declared.
@@ -176,5 +231,6 @@ follows, because d(a/N0)/dT ≈ 0.026 K⁻¹ at T_d.
 I did not examine `formulation.py`, `greybox.py` (the Ipopt NLP, gradients, the Hessian policy), `request.py` beyond
 "never solves", `closure.classify_starts`, the cost/LCA scripts and the G19/G20 numbers, `performance.py`, the CLI, the
 surface link and chain, or the schemas beyond `optimize_body`. I re-derived no mpmath expectation and ran no audited-env
-test, gate or F0. The aarch64 behaviour in M1 is predicted from the comparison rule and ADR 0007's measured
-cross-architecture differences, not observed; CI's aarch64 leg was still running.
+test, gate or F0. M1 was predicted from the comparison rule and then observed in CI run
+42431066903 (at `de18aca2`, before WO-6c and WO-7). M2–M6 come from that run's log, which I read only by `grep`. I
+re-ran none of them.
