@@ -666,3 +666,12 @@ CI `42500882154` green on `b43d94bc` (both architectures, identity, default-inst
 `evidence/X05a/b43d94bc…/manifest.json` tested (`9b21a881`, after merging main as `1f9cdadb`); HARVEST_SIZE
 (76, 988, 126) → (77, 993, 126). Merged `dd16dab8`; F0 PASS on main; harvest + manifest tests 505 passed. The other
 branches (MSG, X10b) re-take HARVEST_SIZE at their merge.
+
+## 2026-11-08 — MSG merged
+
+CI `42502713324` green on `5e9274db` (Frank's human review of `explain` included). Manifest
+`evidence/MSG/5e9274db…/manifest.json` tested, merged with main in `38e46c2a`; HARVEST_SIZE (80, 1007, 129). Merged
+`ed874b17`; on main F0 PASS, harvest/manifests/surface chain/`test_msg_*` 718 passed, 3 xfailed. Surface chain: MSG
+holds c_4 (D_4 `eaff4585…`); X02 is next in the merge order (MSG, X02, OPT, RRC, ST) and re-measures its link as c_5.
+Note: worktrees have no `.venv`; the main checkout's editable install imports main's `src`, so a worktree test run
+with it tests main's code. CI is the authority for branch code; re-run targeted tests on main after each merge.
