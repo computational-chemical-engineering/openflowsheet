@@ -131,3 +131,81 @@ def test_g13_the_cli_replays_an_optimization_record(
     assert main(["replay", str(record), "--rerun", "--json"]) == 1
     document = json.loads(capsys.readouterr().out)
     assert document["integrity"]["tampered"] == ["starts/0/candidate-revision.json"]
+
+
+# §4.9's near-threshold rule (D-62 f, D-68): an active-set flip of the verification document whose
+# slack lies within 1e-9 relative of `TAU_ACTIVE` is listed under `verdict_changed_near_threshold`.
+
+
+def _flipped(slack_recorded: float, slack_fresh: float) -> tuple[dict, dict]:
+    """The fixture's start-0 document with `T-min` active at `slack_recorded` (recorded) and
+    inactive at `slack_fresh` (fresh): the active set, V3's list, the multiplier and V5 move."""
+    import copy
+
+    from openflowsheet.studies.nlp.verification import TAU_ACTIVE
+
+    assert slack_fresh > TAU_ACTIVE >= slack_recorded
+    recorded = json.loads((FIXTURE / "starts" / "0" / "verification.json").read_bytes())
+    recorded["active_set"][0]["slack"] = slack_recorded
+    recorded["slacks"]["T-min"]["lower"] = slack_recorded
+    fresh = copy.deepcopy(recorded)
+    fresh["slacks"]["T-min"]["lower"] = slack_fresh
+    fresh["active_set"] = []
+    checks = [item["check"] for item in fresh["checks"]]
+    fresh["checks"][checks.index("V3")]["active_set"] = []
+    fresh["checks"][checks.index("V5")]["outcome"] = "fail"
+    fresh["kkt"]["multipliers"] = {}
+    return fresh, recorded
+
+
+def test_s49_an_active_set_flip_near_tau_active_is_near_threshold() -> None:
+    from openflowsheet.studies.nlp.replay import active_set_flips, verification_differences
+    from openflowsheet.studies.nlp.verification import TAU_ACTIVE
+
+    fresh, recorded = _flipped(TAU_ACTIVE * (1 - 1e-12), TAU_ACTIVE * (1 + 1e-12))
+    assert active_set_flips(fresh, recorded) == ("T-min",)
+    real, near = verification_differences(fresh, recorded)
+    assert real == []
+    assert near[0] == "active set flip near tau_active: T-min"
+    assert "<root>.active_set: 0 entries against 1" in near
+    assert any(entry.startswith("<root>.kkt.multipliers.T-min") for entry in near)
+    assert any(entry.endswith("'fail' against 'pass'") for entry in near)
+
+
+def test_s49_a_flip_away_from_tau_active_is_a_difference() -> None:
+    from openflowsheet.studies.nlp.replay import verification_differences
+    from openflowsheet.studies.nlp.verification import TAU_ACTIVE
+
+    # the recorded slack 1e-3 relative inside the threshold: a real flip, not noise
+    fresh, recorded = _flipped(TAU_ACTIVE * (1 - 1e-3), TAU_ACTIVE * (1 + 1e-12))
+    real, near = verification_differences(fresh, recorded)
+    assert near == [] and "<root>.active_set: 0 entries against 1" in real
+    # the fresh slack far outside it, though the recorded one sits at the threshold
+    fresh, recorded = _flipped(TAU_ACTIVE * (1 - 1e-12), TAU_ACTIVE * (1 + 1e-6))
+    real, near = verification_differences(fresh, recorded)
+    assert near == [] and real
+
+
+def test_s49_a_near_flip_does_not_forgive_other_differences() -> None:
+    from openflowsheet.studies.nlp.replay import verification_differences
+    from openflowsheet.studies.nlp.verification import TAU_ACTIVE
+
+    fresh, recorded = _flipped(TAU_ACTIVE * (1 - 1e-12), TAU_ACTIVE * (1 + 1e-12))
+    fresh["objective"] = recorded["objective"] * (1 + 1e-3)
+    real, near = verification_differences(fresh, recorded)
+    assert [entry for entry in real if entry.startswith("<root>.objective")] and near
+
+
+def test_s49_a_classification_moved_by_a_near_flip_is_near_threshold() -> None:
+    from openflowsheet.studies.nlp.replay import classification_differences
+
+    report = json.loads((FIXTURE / "optimization-report.json").read_bytes())
+    count = len(report["starts"])
+    moved = ("NOT_VERIFIED",) + tuple(item["classification"] for item in report["starts"][1:])
+    # start 0 moved and flipped near the threshold: everything it moves is near
+    real, near = classification_differences(report, "X", [], moved, {0})
+    assert real == [] and len(near) == 2
+    # a start that moved without a near flip: a difference, with the report's status
+    real, near = classification_differences(report, "X", [], moved, {1} if count > 1 else set())
+    assert near == [] and any(entry.startswith("starts/0: classification") for entry in real)
+    assert any("status" in entry for entry in real)

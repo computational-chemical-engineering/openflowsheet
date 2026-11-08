@@ -19,6 +19,13 @@ path is untouched. The steps:
    and the recomputed V outcomes, compared with the report's `status`, `reasons` and each start's
    `classification`.
 
+An active-set flip (a member of `verification.json`'s `active_set` in one document and not the
+other) whose slack lies within `NEAR_ACTIVE_RELATIVE` of `TAU_ACTIVE` is the verdict changing near
+its threshold (§4.9, F8 D8's rule, as ADR 0007 D2.4 for a certificate): the flip and what follows
+from the active set alone (`active_set`, `kkt`, V3's `active_set`, V5, and the start's
+classification with the report's status and reasons when only such starts moved) are listed under
+`verdict_changed_near_threshold`, not as differences. Any other difference stays a difference.
+
 One `ReplayReport` (schema unchanged): `integrity` over all members, `differences` prefixed
 `starts/<k>/<member>: `, verdict `MATCH` iff every part matches. Without `rerun`:
 `inspected_archived_results`. No Ipopt and no `nlp` extra are needed: nothing here imports Pyomo
@@ -52,6 +59,9 @@ IDENTITY: Final = (
     "check_policy_sha256",
 )
 BUNDLES: Final = ("start", "resolve")
+#: §4.9: an active-set flip whose slack lies within this relative distance of `TAU_ACTIVE` is a
+#: verdict changed near its threshold, not a defect.
+NEAR_ACTIVE_RELATIVE: Final = 1e-9
 
 
 def is_optimization_record(directory: Path) -> bool:
@@ -175,9 +185,10 @@ def replay_optimization(
             found += [prefix + item for item in report.differences]
             reasons += [prefix + item for item in report.reasons]
             near += [prefix + item for item in report.verdict_changed_near_threshold]
-    chain, chain_reasons = _recomputed_chain(directory)
+    chain, chain_reasons, chain_near = _recomputed_chain(directory)
     found += chain
     reasons += chain_reasons
+    near += chain_near
     at("compare")
     mode: ReplayMode
     verdict: ReplayVerdict
@@ -203,8 +214,104 @@ def replay_optimization(
     )
 
 
-def _recomputed_chain(directory: Path) -> tuple[list[str], list[str]]:
-    """Steps 3 and 4: the differences and the reasons."""
+def _near_active(slack: Any) -> bool:
+    from openflowsheet.studies.nlp.verification import TAU_ACTIVE
+
+    if not isinstance(slack, int | float) or isinstance(slack, bool):
+        return False
+    return abs(abs(float(slack)) - TAU_ACTIVE) <= NEAR_ACTIVE_RELATIVE * TAU_ACTIVE
+
+
+def active_set_flips(fresh: Mapping[str, Any], recorded: Mapping[str, Any]) -> tuple[str, ...]:
+    """The members of `active_set` in exactly one of two verification documents, by name."""
+    names = [{item["name"] for item in doc.get("active_set") or []} for doc in (fresh, recorded)]
+    return tuple(sorted(names[0] ^ names[1]))
+
+
+def _flip_is_near(name: str, holder: Mapping[str, Any], other: Mapping[str, Any]) -> bool:
+    """A flipped member is near its threshold when its slack in the document that holds it lies
+    within `NEAR_ACTIVE_RELATIVE` of `TAU_ACTIVE` and, where the other document records the same
+    slack (a declared constraint's side under `slacks`), so does that one."""
+    item = next(item for item in holder["active_set"] if item["name"] == name)
+    if not _near_active(item.get("slack")):
+        return False
+    if item.get("kind") == "constraint":
+        recorded = (other.get("slacks") or {}).get(item.get("target"), {})
+        if item.get("side") in recorded and not _near_active(recorded[item["side"]]):
+            return False
+    return True
+
+
+def verification_differences(
+    fresh: Mapping[str, Any], recorded: Mapping[str, Any]
+) -> tuple[list[str], list[str]]:
+    """Step 3's comparison of one start's `verification.json`: `(differences, near)`.
+
+    Every entry of `run.compare.differences` under the registered policy is a difference, except
+    when the active set flipped and every flipped member is near `TAU_ACTIVE`
+    (`_flip_is_near`): then the flip and the entries that depend on the active set alone
+    (`active_set`, `kkt`, V3's `active_set`, every V5 entry) are `near`."""
+    found = differences(dict(fresh), dict(recorded), policy_id=CURRENT_POLICY_ID)
+    flips = active_set_flips(fresh, recorded)
+    if not flips:
+        return found, []
+    for name in flips:
+        in_fresh = any(item["name"] == name for item in fresh.get("active_set") or [])
+        holder, other = (fresh, recorded) if in_fresh else (recorded, fresh)
+        if not _flip_is_near(name, holder, other):
+            return found, []
+    checks = [item.get("check") for item in recorded.get("checks") or []]
+    dependent = ["<root>.active_set", "<root>.kkt"]
+    if "V3" in checks:
+        dependent.append(f"<root>.checks[{checks.index('V3')}].active_set")
+    if "V5" in checks:
+        dependent.append(f"<root>.checks[{checks.index('V5')}].")
+    near = [f"active set flip near tau_active: {', '.join(flips)}"]
+    real: list[str] = []
+    for entry in found:
+        (near if entry.startswith(tuple(dependent)) else real).append(entry)
+    return real, near
+
+
+def classification_differences(
+    recorded_report: Mapping[str, Any],
+    status: str,
+    reasons: list[Any],
+    classifications: tuple[str, ...],
+    near_starts: set[int],
+) -> tuple[list[str], list[str]]:
+    """Step 4's comparison: `(differences, near)`. A start whose classification moved is near
+    when its verification document flipped near `TAU_ACTIVE` (`verification_differences`); the
+    report's status and reasons are near when every start that moved is."""
+    from openflowsheet.studies.nlp.revision import REPORT
+
+    recorded_starts = recorded_report.get("starts") or []
+    moved: list[int] = []
+    per_start: list[tuple[int, str]] = []
+    for index, classification in enumerate(classifications):
+        recorded = (
+            recorded_starts[index].get("classification") if index < len(recorded_starts) else None
+        )
+        if recorded != classification:
+            moved.append(index)
+            per_start.append(
+                (index, f"starts/{index}: classification {recorded} recomputed {classification}")
+            )
+    report_level: list[str] = []
+    if status != recorded_report.get("status"):
+        report_level.append(f"{REPORT}: status {recorded_report.get('status')} recomputed {status}")
+    if reasons != recorded_report.get("reasons"):
+        report_level.append(f"{REPORT}: reasons differ when recomputed")
+    forgiven = bool(moved) and all(index in near_starts for index in moved)
+    found: list[str] = [] if forgiven else list(report_level)
+    near: list[str] = list(report_level) if forgiven else []
+    for index, entry in per_start:
+        (near if index in near_starts else found).append(entry)
+    return found, near
+
+
+def _recomputed_chain(directory: Path) -> tuple[list[str], list[str], list[str]]:
+    """Steps 3 and 4: the differences, the reasons and the near-threshold entries."""
     from openflowsheet.orchestrator.trace import SolvePolicy
     from openflowsheet.run.manifest import policy_sha256
     from openflowsheet.studies.nlp.closure import (
@@ -233,7 +340,7 @@ def _recomputed_chain(directory: Path) -> tuple[list[str], list[str]]:
     policies = [directory / "starts" / str(k) / "start" for k in indices]
     policies = [path for path in policies if (path / MANIFEST_NAME).is_file()]
     if not policies:
-        return [], ["no start bundle holds the policies: the chain was not recomputed"]
+        return [], ["no start bundle holds the policies: the chain was not recomputed"], []
     solve_policy = SolvePolicy.from_document(read_artifact(policies[0], "solve-policy.json"))
     check_document = read_artifact(policies[0], "check-policy.json")
     check_policy = CheckPolicy(
@@ -243,12 +350,16 @@ def _recomputed_chain(directory: Path) -> tuple[list[str], list[str]]:
         policy_sha256(solve_policy) != manifest["solve_policy_sha256"]
         or check_policy.sha256 != manifest["check_policy_sha256"]
     ):
-        return ["optimization-manifest.json: the start bundle's policies are not the record's"], []
+        return (
+            ["optimization-manifest.json: the start bundle's policies are not the record's"],
+            [],
+            [],
+        )
     # Replay solves no NLP: the probe gates the solver, which replay does not use.
     available = SolverAvailability(True, "replay: no NLP solver is used")
     static = static_readiness(request, document, solver_probe=lambda: available)
     if not static.ready or static.formulation is None or static.decisions is None:
-        return [f"static readiness {list(static.codes)} on replay; the record ran"], []
+        return [f"static readiness {list(static.codes)} on replay; the record ran"], [], []
     parsed = OptimizationRequest.of(request)
     formulation = static.formulation
     host = RevisionNlpHost(
@@ -266,6 +377,8 @@ def _recomputed_chain(directory: Path) -> tuple[list[str], list[str]]:
         bound = _bind_assessment(parsed.assessment, formulation, host, starts, failures)
         formulation = bound.formulation
     out: list[str] = []
+    near: list[str] = []
+    near_starts: set[int] = set()
     evidence: list[StartEvidence] = []
     recorded_starts = report.get("starts") or []
     for index, readiness in enumerate(starts):
@@ -295,24 +408,18 @@ def _recomputed_chain(directory: Path) -> tuple[list[str], list[str]]:
                 phase=nlp.phase,
             )
             recorded = _read(base, "verification.json")
-            out += [
-                f"starts/{index}/verification.json: {item}"
-                for item in differences(fresh.as_document(), recorded, policy_id=CURRENT_POLICY_ID)
-            ]
+            real, flipped = verification_differences(fresh.as_document(), recorded)
+            out += [f"starts/{index}/verification.json: {item}" for item in real]
+            near += [f"starts/{index}/verification.json: {item}" for item in flipped]
+            if flipped:
+                near_starts.add(index)
             checks = {item.check: item.outcome for item in fresh.checks}
         evidence.append(
             StartEvidence(optimizer.get("ipopt_status"), checks, recorded_start.get("detail"))
         )
     verdict = classify_starts(evidence)
-    if verdict.status != report.get("status"):
-        out.append(f"{REPORT}: status {report.get('status')} recomputed {verdict.status}")
     reasons = [reason.as_document() for reason in verdict.reasons]
-    if reasons != report.get("reasons"):
-        out.append(f"{REPORT}: reasons differ when recomputed")
-    for index, classification in enumerate(verdict.classifications):
-        recorded = (
-            recorded_starts[index].get("classification") if index < len(recorded_starts) else None
-        )
-        if recorded != classification:
-            out.append(f"starts/{index}: classification {recorded} recomputed {classification}")
-    return out, []
+    real, flipped = classification_differences(
+        report, verdict.status, reasons, verdict.classifications, near_starts
+    )
+    return out + real, [], near + flipped

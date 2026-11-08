@@ -722,3 +722,16 @@ Totals: TH-R1 18.3 s, M1 5.9 s, C-MW 54.4 s ("verify" also holds report/record w
   343 passed, 1 skipped; `t08_support_matrix.py --check` 0 problems.
 - Default env `test_opt_*.py` + description/application-result/MCP/description-text files: 269 passed, 1 failed
   (`test_every_description_is_reviewed_by_both_lanes`, D-61, by design), 19 deselected (`nlp`).
+
+## WO-7 (cost and LCA gates, user docs, evidence manifest; design §5, §6 G19–G21, §9.6)
+
+- D-68. DECISION: §4.9's near-threshold rule (closes D-62 f) → `replay.verification_differences`: an active-set flip
+  (a member of `verification.json`'s `active_set` in one document only) is near when the flipped member's slack in
+  the document holding it satisfies ‖s| − τ_active| ≤ 1e-9·τ_active and, for a declared constraint's side, the other
+  document's `slacks` entry does too (a bound's slack is in one document only). If every flip is near, the entries
+  that depend on the active set alone (`active_set`, `kkt`, V3's `active_set`, every V5 entry) and, for a start that
+  flipped near, its classification — with the report's status and reasons when only such starts moved — are listed
+  under `verdict_changed_near_threshold`; the verdict is then `MATCH` if nothing else differs (ADR 0007 D2.4's
+  analogue). Any other difference, or any far flip, stays a difference (`MISMATCH`). Tests
+  `tests/test_opt_replay.py::test_s49_*` (4). Alternative: a flip near threshold still `MISMATCH`, only labelled.
+  Reversible by: the D-68 commit.
