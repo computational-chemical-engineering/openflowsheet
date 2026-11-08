@@ -41,3 +41,20 @@ The normative text is the spec; nothing here changes a tolerance, a check meanin
 - **Choice.** The trigger compares the column's maxima with `>` (a NaN row is dropped by `max`, as the registered
   path has always done); resolution requires `|D̂_k − D̂_k−1| ≤ ε_res` on *every* row (`all(...)`), so a NaN row
   never resolves a column. Not a spec question; recorded because it is a choice the spec does not state.
+
+## E-1 — ESCALATED: an unlisted move (G7(c)'s TWO_PHASE window edge), stopped per §4.8.6 rule 6
+
+- **Fact.** `tests/test_m02_wo8_g7.py::test_g7c_the_near_dew_window_edges_as_the_manifest_states_them[0.00053-UNVERIFIED]`
+  fails: F4 × (1 + 5.3e-4) is now `VERIFIED`. The edge it pins (δ = 5.48e-4, "where the liquid NH3 flow reaches one
+  witness step") was the witness's; the escalation now resolves `S3.n.NH3` there, so the TWO_PHASE edge is the
+  regularity screen's absolute limit. Measured verdicts (TRS2): δ = 1e-4, 2e-4, 2.4e-4 UNVERIFIED (ILL_CONDITIONED
+  absolute; witness pass); δ = 2.6e-4, 3e-4, 4e-4, 5.3e-4, 5.7e-4 VERIFIED (NO_RANK_LOSS_DETECTED; limitation
+  `derivative_witness_partial` only, R-281's zero flows). Not in F0 (F0 PASS).
+- **Also stale.** `c1.tp_flash`'s manifest text (`src/openflowsheet/models/c1/flash.py:343-349`, R-282 as amended)
+  states the TWO_PHASE edge at L/n_tot = 3.4e-5 (δ = 5.5e-4) set by the witness step; the docstring of
+  `test_g7c_as_amended_by_r282` and `test_g7c_the_manifest_states_the_window_at_the_measured_state` repeat it.
+- **Not done.** Neither the test nor the manifest text is amended (spec §4.8.6: "If any other test's expectation
+  changes at implementation, this document is wrong. Stop and report it").
+- **Would need.** A design-lane ruling adding this as M-6 to §4.8.6 (edge now ≈ 2.5e-4 on both sides, set by
+  ‖J⁻¹‖₁ ≤ τ_min/(n ε)); then the parametrisation (5.3e-4 → a δ below 2.4e-4) and the manifest sentence change
+  in one isolated commit, and whether the manifest text change moves any identity (check F0 M9 / manifest hashes).
