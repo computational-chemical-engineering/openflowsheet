@@ -1,6 +1,24 @@
 # Questions for Frank
 
+**Answer here:** the decision board https://claude.ai/artifact/WBLrhuGuG9zosGy46Z1b2A shows every open item with its text,
+the default and the options, and saves your answer (source: `docs/decisions-board/`, items built by
+`build_items.py`). This file stays the record.
+
 Questions only Frank can answer (scope, value judgments). Each carries the default that unattended work proceeds on.
+
+## Answers — Frank, 2026-11-08, on the decision board (40 items)
+
+Recorded from https://claude.ai/artifact/WBLrhuGuG9zosGy46Z1b2A (`answers` collection, 15:58–16:17 UTC); no notes given.
+- **Descriptions approved (human review):** `explain` (MSG), `validate` and `submit_job` (OPT), `get_stream_table` (ST).
+- **ADRs accepted:** 0055 (release procedure), 0068 (stream table, as amended: R1′), 0069 (X05), 0070 (X02 + ADR 0019
+  Am. 15), 0071 (OPT + Am. 16), 0072 (RRC), 0073 (WIT). **ADRs 0060–0067 stay Proposed** (default; S1/S7 as reviewed).
+- **Defaults confirmed:** X02 Q1 (no warm variant), Q2, Q3, Q6, Q7 (neighbour speed-up withdrawn); OPT Q1–Q6, Q7 (verify
+  on the reduced form with the phase-boundary flag), Q8, Q9; RRC FQ1 (yes, widen), FQ2, FQ3, FQ4; WIT Q-WIT-1 (yes),
+  Q-WIT-2 (yes, correct the flash sentence); X05 Q-F2, Q-F3; F-8 (two messages); Q-11 (one row); O-11; A2-a.
+- **Defaults reversed:**
+  - **ST O3:** include the stream table in the web shell **now, in ST** (was: a later package).
+  - **X05 Q-F1:** **do not pin** the four transitive runtime dependencies (attrs, jsonschema-specifications,
+    referencing, rpds-py) in `pyproject.toml` (was: pin them; `a58ef5a5`). Revert that isolated commit's effect.
 
 ## Answer — Frank, 2026-11-01: full real-simulator scope; design quality over speed (ADR 0056 Am. 2, R-927)
 
@@ -477,3 +495,15 @@ on unless you say otherwise:
   (`src/openflowsheet/models/c1/flash.py:343-349`) states an outdated edge. Correcting the sentence changes that
   model's artifact hash and one frozen corpus entry (F0 M9), though not its `model_version` or any result. Default:
   correct it in its own commit after your yes; until then the sentence stays as it is.
+
+## ST — review the MCP description of the new `get_stream_table` tool (2026-11-08; blocks ST's merge)
+
+As for `explain`: the text an AI agent reads to decide when to call the stream-table tool,
+`src/openflowsheet/application/bindings/descriptions/get_stream_table.md` on branch `wp/ST`
+(`git show wp/ST:src/openflowsheet/application/bindings/descriptions/get_stream_table.md`). It needs your human
+review ("approved" or what to change) in addition to the design lane's, which ST's reviewer pass gives. Best read
+after that pass (`docs/reviews/ST-review.md`), in case it edits the wording. Default: none — ST cannot merge until you
+have looked at it (ST also waits for MSG and your acceptance of ADR 0068).
+Update 2026-11-08: the design lane approved it after three wording edits (`docs/reviews/ST-review.md`); read the
+edited text once the fix round lands on `wp/ST`. The review also amends ADR 0068 (rule R1′: streams whose phase split a
+flash cannot determine take the solver's carried split, or report the value as absent) — accept the amended text.

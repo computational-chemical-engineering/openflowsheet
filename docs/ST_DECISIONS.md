@@ -258,3 +258,19 @@ M3 61/61, M4 61/61, M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 35/35).
 - **Fix-round close.** F0 `--check` PASS (M1 50/50, M2 61/61, M3 61/61, M4 61/61, M5 61/61, M6 85/85, M7 52/52,
   M8 105/105, M9 35/35). Targeted battery (test_st_*, surface digest, chain, R4-G3 no-weakening, descriptions,
   A48, MSG, doc pages): 457 passed, 1 known red (human reviews of `explain` and `get_stream_table`).
+
+## WO-8a (merge main, ruling 5, register clean-up; brief `docs/briefs/ST-WO8a-ruling5.md`)
+
+- **8a-1 — `git merge main` (`bf357867`: MSG `ed874b17`, X05a, WIT/X10a, S15a), no squash.** Conflicts:
+  `benchmarks/t08/support_envelope.yaml` two harvest hunks, main's side in both (main now carries MSG's 12 entries
+  before S15/S15a/X05a; ST's side held the same MSG entries a second time) — the file equals main's. `HARVEST_SIZE`
+  = main's (80, 1007, 129) with main's comment (ST adds no manifest). `docs/support-matrix.md` re-emitted (1136
+  items, 52 manifests). `message_entry` fixtures re-taken by `t07_schema_fixtures.py --write`: catalogue
+  `7573d7ea…` (ST's; main's MSG catalogue is the one ST had merged). `docs/reviews/ST-review.md` add/add: `wp/ST`'s
+  (main's text + the design-lane section). **Register:** ST's duplicate MSG entries R-942/R-943 dropped; the file
+  equals main's (R-975/R-976 = MSG; RP's R-942…R-949 untouched). `grep -rn "R-94[23]"` over docs/src/tests/scripts:
+  before 33 lines, after 42 = main's 40 + this log's two historical lines (§WO-3 D3-5). **Surface chain:** no digest
+  moved (`test_m07a_surface_chain.py`, `test_t08_w2_surface_digest.py` pass); ST's c_5 kept as is.
+  Merge battery: 717 passed, 1 failed — `test_t08_w2_support_envelope.py::test_a20_the_axes_equal_the_code`,
+  **red already at `e1a05916`** (`t08_support_matrix.py --check`, same one problem: the envelope's operations lack
+  `get_stream_table` and the A20 count is 22). Not fixed here: it edits a gate's registered count; WO-7 item.

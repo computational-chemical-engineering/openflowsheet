@@ -1,0 +1,28 @@
+{
+ "section": "blocking",
+ "pkg": "OPT",
+ "pkgTitle": "Optimising your own flowsheets",
+ "kind": "adr",
+ "title": "Accept ADR 0071: optimisation of revision flowsheets",
+ "body": [
+  "Lifts the old \"optimisation unsupported\" refusal and adds an `optimize` job: decisions and an objective are declared in a separate optimisation request (the flowsheet is never edited), Ipopt solves it, and the optimum is certified like a solve. It adds to the frozen application contract (ADR 0019 Amendment 16).",
+  "The questions below (Q1–Q9) carry defaults that are already built."
+ ],
+ "links": [
+  {
+   "label": "ADR 0071 (full text)",
+   "url": "https://github.com/computational-chemical-engineering/openflowsheet/blob/main/docs/adr/0071-OPT-revision-optimisation.md"
+  },
+  {
+   "label": "Design note",
+   "url": "https://github.com/computational-chemical-engineering/openflowsheet/blob/main/docs/design/OPT-revision-optimisation.md"
+  },
+  {
+   "label": "Review",
+   "url": "https://github.com/computational-chemical-engineering/openflowsheet/blob/main/docs/reviews/OPT-review.md"
+  }
+ ],
+ "unblocks": "OPT merges; RRC (continuation) merges after it.",
+ "status": "open",
+ "order": 3
+}

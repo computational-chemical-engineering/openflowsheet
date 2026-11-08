@@ -1,0 +1,31 @@
+{
+ "section": "blocking",
+ "pkg": "WIT",
+ "pkgTitle": "Certificate derivative check at very small or zero flows (merged)",
+ "kind": "choice",
+ "title": "Q-WIT-2: correct one outdated sentence in the flash model's description",
+ "body": [
+  "With the fixed derivative check, an ammonia flash state near its dew point now verifies honestly, so the \"near-dew window\" sentence in the `c1.tp_flash` model's manifest text (`src/openflowsheet/models/c1/flash.py:343-349`) states an outdated edge.",
+  "Correcting it changes that model's artifact hash and one frozen identity-corpus entry (F0 M9), but not its `model_version` or any result."
+ ],
+ "defaultKey": "yes",
+ "options": [
+  {
+   "key": "yes",
+   "label": "Yes, correct it",
+   "detail": "In its own commit, with the corpus entry re-recorded."
+  },
+  {
+   "key": "no",
+   "label": "No, leave the sentence",
+   "detail": "The stale edge stays documented as a known inaccuracy."
+  },
+  {
+   "key": "other",
+   "label": "Something else",
+   "detail": "Say what in the note."
+  }
+ ],
+ "status": "open",
+ "order": 10
+}

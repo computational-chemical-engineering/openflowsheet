@@ -1,4 +1,4 @@
-# WIT build decisions (K04 §4.8.1–§4.8.9, ADR 0073 Proposed)
+# WIT build decisions (K04 §4.8.1–§4.8.9, ADR 0073, Accepted 2026-11-08)
 
 Build lane, branch `wp/WIT`. Each entry: the question, the choice, the rejected alternative, how to reverse it.
 The normative text is the spec; nothing here changes a tolerance, a check meaning or a frozen field.

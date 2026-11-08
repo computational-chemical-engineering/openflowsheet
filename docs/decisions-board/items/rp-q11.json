@@ -1,0 +1,30 @@
+{
+ "section": "later",
+ "pkg": "RP",
+ "pkgTitle": "Release procedure",
+ "kind": "choice",
+ "title": "Q-11: your licence acceptance for the coolprop and lca extras",
+ "body": [
+  "Your 2026-10-30 acceptance is carried as a standing acceptance that lapses when the accepted thing changes."
+ ],
+ "defaultKey": "one",
+ "options": [
+  {
+   "key": "one",
+   "label": "One row for both extras",
+   "detail": ""
+  },
+  {
+   "key": "per",
+   "label": "One row per extra",
+   "detail": "A change to the lca lock re-asks you only about lca."
+  },
+  {
+   "key": "other",
+   "label": "Something else",
+   "detail": "Say what in the note."
+  }
+ ],
+ "status": "open",
+ "order": 36
+}

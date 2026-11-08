@@ -1,0 +1,82 @@
+{
+  "work_package": "S15a",
+  "commit": "d7cb4dbb77adeafab943959966e7269a17ca29f3",
+  "requirements": [],
+  "status": "tested",
+  "inputs": {
+    "case_id": "Release evidence package id (ADR 0074 Accepted on its condition; RP Amendment A-9, section 17.2; register R-970): D1 additive work_package alternative for REL plus length-marked components; claims RID.A01-A12 of tests/test_evidence_manifests.py",
+    "case_hash": "ea86c5943c34151d68521f1a3641c63c97843acd48293dd3f8d246e29017c27d",
+    "environment_lock_hash": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+  },
+  "commands": [
+    {
+      "cmd": "OMP_NUM_THREADS=1 PYTHONPATH=src .venv/bin/python -m pytest -q tests/test_evidence_manifests.py",
+      "cwd": "/home/frankp/Codes/OpenFlowsheet/.claude/worktrees/s15a",
+      "exit_code": 0
+    },
+    {
+      "cmd": "OMP_NUM_THREADS=1 PYTHONPATH=src .venv/bin/python -m pytest -q (the 11 related test files)",
+      "cwd": "/home/frankp/Codes/OpenFlowsheet/.claude/worktrees/s15a",
+      "exit_code": 0
+    },
+    {
+      "cmd": "OMP_NUM_THREADS=1 PYTHONPATH=src .venv/bin/python scripts/corpus_identity.py --check",
+      "cwd": "/home/frankp/Codes/OpenFlowsheet/.claude/worktrees/s15a",
+      "exit_code": 0
+    },
+    {
+      "cmd": "PYTHONPATH=src .venv/bin/python scripts/t08_support_matrix.py --emit && PYTHONPATH=src .venv/bin/python scripts/t08_support_matrix.py --check",
+      "cwd": "/home/frankp/Codes/OpenFlowsheet/.claude/worktrees/s15a",
+      "exit_code": 0
+    },
+    {
+      "cmd": "OMP_NUM_THREADS=1 PYTHONPATH=src .venv/bin/python -m pytest -q tests/test_m07a_harvest.py tests/test_t08*.py tests/test_evidence_manifests.py",
+      "cwd": "/home/frankp/Codes/OpenFlowsheet/.claude/worktrees/s15a",
+      "exit_code": 0
+    }
+  ],
+  "checks": [
+    {
+      "id": "RID.A01-A12",
+      "description": "claims RID.A01-A12 in tests/test_evidence_manifests.py at 51c9e7f5/d7cb4dbb (TRS2); A06 over 813616 strings, 28000 accepted",
+      "result": "pass",
+      "value": "tests/test_evidence_manifests.py: 488 passed (410 + 78)"
+    },
+    {
+      "id": "RID.T1",
+      "description": "the 11 related test files at 51c9e7f5/d7cb4dbb (TRS2)",
+      "result": "pass",
+      "value": "600 passed, 28 skipped"
+    },
+    {
+      "id": "RID.F0",
+      "description": "scripts/corpus_identity.py --check",
+      "result": "pass",
+      "value": "F0 PASS M1-M9"
+    },
+    {
+      "id": "RID.C1",
+      "description": "CI ci.yml run 42469977863 on d7cb4dbb: check (ubuntu-latest), check (ubuntu-24.04-arm), identity, default-install (the merge condition of CLAUDE.md 'Gate by risk', amended 2026-11-08)",
+      "result": "pass",
+      "value": "all four jobs success"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "docs/adr/0074-release-evidence-package-id.md",
+      "sha256": "ea86c5943c34151d68521f1a3641c63c97843acd48293dd3f8d246e29017c27d",
+      "description": "ADR 0074, Accepted on its condition (d7cb4dbb)"
+    }
+  ],
+  "limitations": [
+    "Evidence class: software verification on ref-x86-64 (TRS2) under id S15a; the claims RID.A01-A12 are checked over finite sets (ADR 0074 section 6) and section 2.1 argues the rest. No local full gate was run; the merge condition is the CI run recorded in RID.C1. An id is bookkeeping: this is not validation, verification of a model, or review evidence.",
+    "O-3 (ADR 0074 section 8, open): nothing ties a line file's evidence_package to its line. A 0.5 line file that inherits 0.4 without changing evidence_package keeps REL040, and RP.L03 does not refuse an equal field. RP amendment RP.L11 (gate_set.evidence_package equals ADR 0074 D2's id of the line X.Y with .0 appended) is due before the 0.5 line file is written; it cannot bite before then, since the only gate line is 0.4.",
+    "O-4 (ADR 0074 section 8, open): ADR 0055 D1 item 5 carries the same plain-digits wording. RP is the normative text, so A-9 governs. When K-2 marks ADR 0055 Accepted, the marker adds the pointer 'the mapping is ADR 0074 D2 (RP A-9)'. ADR 0074 does not edit ADR 0055.",
+    "O-5 (ADR 0074 section 8, recommended no change): a string with a trailing newline passes every work_package alternative under re.search ($ matches before a final newline), REL040 and S13 included. This is pre-existing and shared; test_manifest_path_matches_contents makes it unreachable for a committed manifest. Refusing it would narrow all alternatives and needs its own ADR.",
+    "Not established (ADR 0074 section 3): that a line file names the right id (O-3); that a patch line (0.4.1 to REL041) is a release package under RP, since RP section 2.2 still requires an amendment for patch lines; that a trailing newline is refused (O-5); any validation, verification or review evidence."
+  ],
+  "review": {
+    "numerical": "pending",
+    "process_model": "pending"
+  }
+}

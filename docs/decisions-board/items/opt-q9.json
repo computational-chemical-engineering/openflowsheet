@@ -1,0 +1,31 @@
+{
+ "section": "defaults",
+ "pkg": "OPT",
+ "pkgTitle": "Optimising your own flowsheets",
+ "kind": "choice",
+ "title": "Q9: should ordinary solves use the reduced boiling/dew-point check too?",
+ "body": [
+  "The check from Q7, applied to `solve` runs that end exactly at a bubble or dew point."
+ ],
+ "defaultKey": "default",
+ "options": [
+  {
+   "key": "default",
+   "label": "Not in 0.4",
+   "detail": ""
+  },
+  {
+   "key": "alt1",
+   "label": "Yes, in 0.4",
+   "detail": ""
+  },
+  {
+   "key": "other",
+   "label": "Something else",
+   "detail": "Say what in the note."
+  }
+ ],
+ "links": [],
+ "status": "open",
+ "order": 23
+}

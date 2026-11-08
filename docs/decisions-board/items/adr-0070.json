@@ -1,0 +1,24 @@
+{
+ "section": "blocking",
+ "pkg": "X02",
+ "pkgTitle": "Warm starts for external and coupled units",
+ "kind": "adr",
+ "title": "Accept ADR 0070 (and ADR 0019 Amendment 15): declared warm starts",
+ "body": [
+  "A solve may declare a starting point taken from an earlier solution, recorded in the run so it replays. Measured: restarting a coupled run from the same design's solution takes 1 reactor iteration instead of 4 (25 s instead of 194 s).",
+  "Two claims were withdrawn after measurement (questions Q1 and Q7 under Defaults): the reactor's own warm-start variant was about 21 % slower, and starting from a neighbouring design did not save iterations."
+ ],
+ "links": [
+  {
+   "label": "ADR 0070 (full text)",
+   "url": "https://github.com/computational-chemical-engineering/openflowsheet/blob/main/docs/adr/0070-X02-warm-starts.md"
+  },
+  {
+   "label": "Design note",
+   "url": "https://github.com/computational-chemical-engineering/openflowsheet/blob/main/docs/design/X02-warm-starts.md"
+  }
+ ],
+ "unblocks": "X02 merges (it is built, tested and green on CI).",
+ "status": "open",
+ "order": 5
+}

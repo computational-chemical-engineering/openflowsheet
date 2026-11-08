@@ -120,8 +120,10 @@ Am. 1–2). Foundations F0–F8 are designed in wave W1 during 0.4, then built i
 - **MSG** (`wp/MSG` `35403f42`): WO-0…12 done; review `docs/reviews/MSG-review.md` applied (WO-11/12); manifest
   `evidence/MSG/9c76b939…` `implemented`; CI fails only `explain: human pending`. **Blocked on Frank's `explain.md`
   review**, then `tested` + merge. At merge: renumber its R-942/R-943 (RP took R-942…R-949) and its c_4 link vs X02's.
-- **ST** (`wp/ST`, ADR 0068 Proposed, Am. 13): WO-1/2 done (`dff3e439`, `docs/ST_HANDOFF.md`); WO-3…7 wait for
-  wp/MSG's merge (registry entry). G8 T05b:SC-1 strict xfail (E1 for ST's reviewer).
+- **ST** (`wp/ST` `e16f7e6f`, ADR 0068 Proposed + R1′ amendment, Am. 13): WO-1…6 done on main + `wp/MSG`; review
+  `docs/reviews/ST-review.md` (`fb6a81f7`) applied (M1 R1′: T05b SC-1/SC-3 2016 W → 0, G8 passes; S1–S4); F0 PASS.
+  WO-7 (manifest, full gate, CI) waits for MSG on main; then re-merge main, re-measure G12 (c_5/c_6). Design-lane
+  confirmations at WO-7: M1-1…M1-3, S1-1 (decisions 2026-11-08). **Frank:** `get_stream_table.md`, ADR 0068.
 - **RP: MERGED** into main `ad1ffd74` (manifest `evidence/S15/fd28ff7b…` tested; gate PASS 15070; CI 42374299572
   green). Before 0.4.0's K3: schema ADR admitting `REL[0-9]{3,}`; S-6 rehearsal of never-run steps; Frank: ADR 0055
   acceptance, F-8.
@@ -146,8 +148,13 @@ Am. 1–2). Foundations F0–F8 are designed in wave W1 during 0.4, then built i
   manifest `evidence/X10a/dbf884ad…` tested (id X10a, decisions 2026-11-08); gate PASS 15194; CI 42459637834 green;
   F0 PASS on main; L-X10-1 closed). Open: M-6 part b (flash manifest sentence, Q-WIT-2); M-4 (OPT D-42/D-82) at
   OPT's merge; on ADR 0073 acceptance: register lines.
+- **S15a: MERGED** into main `74747966` (ADR 0074 release package id, Accepted on its condition, R-970, RP A-9 §17.2;
+  manifest `evidence/S15a/d7cb4dbb…` tested on CI 42469977863; F0 PASS on main). RP K-1 closed. Open: O-3 (RP.L11
+  before the 0.5 line file), O-4 (pointer in ADR 0055 at K-2).
+- **Merge rule (Frank, 2026-11-08):** CI green on both archs = merge condition; F0 on main after merge; local full gate
+  only before RC cuts/tags. OPT and RRC no longer need their local gates.
 - **Await Frank** (`docs/FRANK_QUESTIONS.md`): `explain.md` (blocks MSG), ADRs 0055/0068/0069/0070/0071/0072/0073, Q-11,
-  F-8, X05 Q-F1…F3, X02 Q1…Q7, OPT Q1…Q9 + description review, RRC FQ1…FQ4, Q-WIT-1/2.
+  F-8, X05 Q-F1…F3, X02 Q1…Q7, OPT Q1…Q9 + description review, RRC FQ1…FQ4, Q-WIT-1/2, `get_stream_table.md`.
 - **TRS2 CPU rule** (user via hub, 2026-11-07): ≤ ~36 busy cores of 48; one full gate at a time; no tests in several
   worktrees at once. GitHub API: poll CI at most every 10 min (rate limit hit 2026-11-07).
 - Host load ~50 from other users: wall-time budget tests flaky (re-run alone).

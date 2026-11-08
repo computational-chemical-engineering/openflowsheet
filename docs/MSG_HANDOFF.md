@@ -10,7 +10,7 @@ Branch `wp/MSG`, worktree `.claude/worktrees/msg`. Spec `docs/design/MSG-message
   `tests/test_msg_coverage.py::test_the_normative_list_is_complete` pins 68 codes complete and lint-clean.
 - S4: CHECKPOINT_INCOMPATIBLE → `bug` (D12-2). S5: DIM-01 `review` dropped; `members_total` on a cut list (D12-3).
 - M3: `msg_identity_gate.py --parts` defaults to `bd`; F0 covers (a), (c) (D12-4).
-- M6: register R-943 (c_4, D_4 = `eaff4585…` on the merge tree; `without_msg` → D_3 `455d01eb…`) (D12-5).
+- M6: register R-976 (c_4, D_4 = `eaff4585…` on the merge tree; `without_msg` → D_3 `455d01eb…`) (D12-5).
 - M4: `evidence/MSG/9c76b939…/manifest.json`, status `implemented` (see below).
 
 ## Gates at `9c76b939`

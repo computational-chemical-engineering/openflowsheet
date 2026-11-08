@@ -1,0 +1,29 @@
+{
+ "section": "defaults",
+ "pkg": "X05",
+ "pkgTitle": "Replay from the installed package (merged)",
+ "kind": "choice",
+ "title": "Q-F2: warn when a bundle is written without a verified lock?",
+ "body": [],
+ "defaultKey": "default",
+ "options": [
+  {
+   "key": "default",
+   "label": "No; decide it with the messages work",
+   "detail": ""
+  },
+  {
+   "key": "alt1",
+   "label": "Yes, warn",
+   "detail": ""
+  },
+  {
+   "key": "other",
+   "label": "Something else",
+   "detail": "Say what in the note."
+  }
+ ],
+ "links": [],
+ "status": "open",
+ "order": 32
+}
