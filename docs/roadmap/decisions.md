@@ -524,3 +524,12 @@ sentence moves its artifact hash and F0 M9 entry) → Frank Q-WIT-2.
 DECISION: D-1 → amend ADR 0073 D5 to give Wilson's dormant-liquid columns their own reason (not
 `pr_c1_zero_flow_columns`), while no registered certificate carries one. Alternative: reuse the pr-c1 reason literally.
 Reversible by: reverting that commit.
+
+## 2026-11-08 — WIT fix round done (`wp/WIT` `dbf884ad`); full gate + CI running
+
+F-1 fixed (flat level cannot resolve a column whose coarser stencil was not flat; WIT.A15 7/9 fail before, 9/9 pass
+after); no verdict changed on re-measure (A08, A09, E-1 window). F-2, F-3, F-4 (flash-style dormant vapour holds,
+GP-C1 tp_flash 335/340 K VERIFIED), D-1 (`wilson_dormant_liquid_columns`), M-6 part a. F0 PASS; 31 + 3315 tests.
+DECISION: WIT merges after its full gate, CI on both legs and a `tested` manifest under `evidence/K04/`, with ADR 0073
+Proposed and Q-WIT-1 on its default (as X05 merged on a Proposed ADR); M-6 part b waits for Frank (Q-WIT-2).
+Alternative: hold for Frank's acceptance of ADR 0073. Reversible by: revert the merge.
