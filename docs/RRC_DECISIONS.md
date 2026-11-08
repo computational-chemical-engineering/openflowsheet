@@ -45,3 +45,31 @@ Measured before and after WO-1 on `wp/RRC` (`e45628fd` → WO-1):
 
 The old schema hashes appear only in archived per-commit RC dist lists (`evidence/*/rc/ci/rc-dist/t08-a43-dist.json`,
 `release/rc-trees/*.json`), which describe those past commits and do not move. The next RC tree records the new hashes.
+
+## WO-3 (2026-11-08)
+
+Built on `main` (OPT's executor edits not pulled, per the work order; the merger resolves `RegionResult.final_system`).
+
+- **D-5.** Not a free choice; the design's two sentences disagree and §5.8 decides. §5.5 says the action's tail is
+  "exactly the homotopy branch's tail: `recovered_provenance(failed.bp, recovered.bp)`", but §5.8 names the recovery
+  item's `initializer_source` `revision_continuation_source`, and `recovered_provenance` without
+  `first_initializer_source` requires item 0's source (`traversal-G0-v1`) and raises a defect otherwise. →
+  `recovered_provenance(..., first_initializer_source=REVISION_CONTINUATION_SOURCE)`, the restart's pattern.
+  Alternative: none that keeps §5.8. Reversible by: dropping the keyword (then §5.8 must change).
+- **D-6.** DECISION: The region refusal's message and the recorded reason → `revision_continuation_rejected(opening:
+  <check>:<subject>)` in the region result; the executor records `opening(<check>:<subject>)`, e.g.
+  `opening(active_set:S3.vap.A)` — G6(i)'s form. `<subject>` is `OpeningRefusal.subject` (a column or field id, R0);
+  the observed float is never in the string. Alternative: §5.7's optional `[:<detail>]` omitted (`opening(active_set)`),
+  which loses the column G6(i) names. Reversible by: one f-string in `region.py` and the `removeprefix` in
+  `executor._revision_continuation`.
+- **D-7.** DECISION: Does a passed §5.7 opening check emit `initializer_accepted` (as a passed warm-start check does)? →
+  No. §5.8 lists the action's events as today's `homotopy_step` events only, and the recovery item's provenance already
+  names the source; a new event would be a trace-kind use the design did not list. Alternative: emit
+  `initializer_accepted(revision_continuation_source)`. Reversible by: one `run.record` in `region.py`'s new block.
+- **D-8.** Structure only, isolated in `88b31d23`: the warm start's inline opening check became `_external_opening`
+  (the same requirement, plus an optional `reported`), so the two external starts share one construction.
+  `tests/test_t08_w4_warm_starts.py` 19 passed at that commit; F0 below. Reversible by: reverting `88b31d23` and
+  inlining the check in the new block.
+- **D-9.** Threading (no choice beyond §5.5's "the way `warm_start` is threaded"): the source reaches `_eo_recovery` from
+  all three call sites — the revision region, the warm-started region (`_warm_start`), and SYN-001's region, where R3
+  records `absent(not_revision_built)` and the restart's P3 then refuses (`test_r3_a_syn001_region_is_not_revision_built`).
