@@ -27,6 +27,7 @@ import pytest
 from conftest import REPO_ROOT, load_yaml
 from m02_c1_support import connection, feed_specifications, instance, revision, specification
 from m02_wo8_support import POLICY, Solved, bind, flash_revision, is_positive_zero, solve
+from wit_support import spy
 
 from openflowsheet.compile.casadi_backend import compile_problem
 from openflowsheet.compiled import EvaluationContext
@@ -396,12 +397,19 @@ def test_g7c_k18_just_past_the_band_is_recorded(delta: float) -> None:
 RCOND_PER_DELTA = 4.2316e-4
 
 
-def test_g7c_at_delta_1e_4_two_phase_is_recorded_unverified() -> None:
+def test_g7c_at_delta_1e_4_two_phase_is_recorded_unverified(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     """§14.3 C3 expected δ = 1e-4 VERIFIED near threshold (τ_ill alone). Measured: UNVERIFIED, by
-    two registered limits τ_ill does not include. rcond_1 = 4.23e-8 passes τ_ill = 1e-8, but
+    a registered limit τ_ill does not include. rcond_1 = 4.23e-8 passes τ_ill = 1e-8, but
     ‖J⁻¹‖₁ = 4.66e6 exceeds the screen's absolute limit τ_min/(n ε) = 1.88e6 (n = 24;
-    ILL_CONDITIONED, `absolute`). And the liquid NH3 flow, 6.2e-6 n_tot = 5.5e-6 mol/s, is
-    below one witness step (1e-5 × 3 mol/s), so the central stencil leaves the domain there."""
+    ILL_CONDITIONED, `absolute`). The liquid NH3 flow, 6.2e-6 n_tot = 5.5e-6 mol/s, is below one
+    witness step (1e-5 × 3 mol/s), so the central stencil leaves the domain there; until K04
+    amendment WIT the witness was `unsupported` (`S3.n.NH3`). WIT.A09 (move M-2): `S3.n.NH3`
+    escalates, levels 0–3 inadmissible, and resolves at k* = 5; both witness checks pass
+    (measured on-pattern 4.98e-11, e_5 = 8.9e-16) and the verdict stays UNVERIFIED on the
+    regularity screen alone."""
+    runs = spy(monkeypatch)
     document, solved = _f4(1e-4)
     assert _attempts(solved) == [((("U", "TWO_PHASE"),), "CONVERGED", 0, "")]
     certificate = _certify(solved, document)
@@ -413,10 +421,15 @@ def test_g7c_at_delta_1e_4_two_phase_is_recorded_unverified() -> None:
     assert regularity.inverse_one_norm_threshold is not None
     assert regularity.inverse_one_norm_estimate is not None
     assert regularity.inverse_one_norm_estimate > regularity.inverse_one_norm_threshold
-    witness = [
-        (c.result, c.reason) for c in certificate.checks if c.category == "derivative_witness"
-    ]
-    assert witness == [("unsupported", "witness_stencil_invalid_trial_state(S3.n.NH3)")] * 2
+    witness = [c.result for c in certificate.checks if c.category == "derivative_witness"]
+    assert witness == ["pass", "pass"]
+    (witnessed,) = runs
+    escalation = witnessed.escalations["S3.n.NH3"]
+    assert escalation.admissible[:5] == (False, False, False, False, True)
+    assert escalation.level == 5
+    kinds = {item.kind for item in certificate.limitations}
+    assert "derivative_limitation" not in kinds and "unsupported_check" not in kinds
+    assert {"rank_limitation", "derivative_witness_partial"} <= kinds
     assert certificate.verification_status == "UNVERIFIED"
 
 
