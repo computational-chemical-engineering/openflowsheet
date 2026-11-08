@@ -12,9 +12,10 @@ outside the unit, whose declared-vapour inlet correctly fails (recorded).
 **G7 (c) as amended** (§14.3 C3, R-282): the dew point is a bifurcation. At F4 exactly, E's and
 Ldef's rows are proportional in (L, l_NH3), so the certificate is UNVERIFIED with regularity
 RANK_DEFICIENT — the registered expectation, not a failure. F4 × (1 ± δ) records the near-dew
-window on both sides: rcond_1 = 4.23e-4 δ on each, VERIFIED from δ ≈ 2.5e-4 on the VAPOR side
-(the regularity screen's absolute limit, ‖J⁻¹‖₁ ≤ τ_min/(n ε)) and from δ ≈ 5.5e-4 on the
-TWO_PHASE side (where the witness's central stencil first fits inside the liquid NH3 flow).
+window on both sides: rcond_1 = 4.23e-4 δ on each, VERIFIED from |δ| ≈ 2.5e-4 on both sides (the
+regularity screen's absolute limit, ‖J⁻¹‖₁ ≤ τ_min/(n ε)). Before K04 amendment WIT the TWO_PHASE
+edge was δ ≈ 5.5e-4, where the witness's central stencil first fit inside the liquid NH3 flow
+(M-6).
 """
 
 from __future__ import annotations
@@ -494,7 +495,7 @@ def test_g7c_the_near_dew_window_edges_as_the_manifest_states_them(
     liquid NH3 flow reached one witness step; the escalation now resolves `S3.n.NH3` below it,
     so the next registered limit binds. δ = 5.3e-4, UNVERIFIED before WIT, stays as the VERIFIED
     case that pins the move: `S3.n.NH3` escalates there and resolves. `c1.tp_flash`'s manifest
-    sentence still states the old TWO_PHASE edge (M-6 part b, pending Frank)."""
+    sentence states these edges (M-6 part b)."""
     runs = spy(monkeypatch)
     document, solved = _f4(delta)
     assert _certify(solved, document).verification_status == verdict
@@ -521,17 +522,18 @@ def test_g7c_as_amended_by_r282(delta: float, verdict: str) -> None:
 
 def test_g7c_the_manifest_states_the_window_at_the_measured_state() -> None:
     """R-282 amended: `c1.tp_flash`'s manifest states the window "at the measured state". Its
-    VAPOR edge (|δ| = 2.5e-4) is the bisection test's. Its TWO_PHASE edge (L/n_tot = 3.4e-5,
-    δ = 5.5e-4) was the witness step's and is stale since K04 amendment WIT, whose escalation
-    moves that edge to δ ≈ 2.5e-4 (M-6). Correcting the sentence is M-6 part b, which moves
-    `c1.tp_flash`'s artifact hash, F0 M9 and L01.A22's byte pin; it waits for Frank. Until then
-    this test pins the sentence as it stands."""
+    edges are the bisection test's: |δ| = 2.5e-4 on both sides (on the TWO_PHASE side L/n_tot =
+    1.5e-5), the screen's absolute limit. The old TWO_PHASE edge (L/n_tot = 3.4e-5, δ = 5.5e-4) was
+    the witness step's until K04 amendment WIT, whose escalation moved it (M-6); the sentence
+    keeps it only as history. M-6 part b (Frank, Q-WIT-2, 2026-11-08) corrected the sentence."""
     manifest = TPFlash("U", PROVIDER, 268.15, P, CONTEXT).manifest()
     limitations = manifest["validity"]["limitations"]
     (window,) = [text for text in limitations if "near-dew window" in text]
     assert "R-282 as amended" in window and "At the measured state" in window
-    assert "VAPOR side the certificate is VERIFIED from delta = 2.5e-4" in window
-    assert "TWO_PHASE side from L/n_tot = 3.4e-5 (delta = 5.5e-4)" in window
+    assert "VERIFIED from delta = 2.5e-4 on both sides" in window
+    assert "on the TWO_PHASE side L/n_tot = 1.5e-5" in window
+    assert "The derivative witness is not a limit" in window
+    assert "TWO_PHASE side from L/n_tot = 3.4e-5" not in window
     assert "tau_dew does not move" in window
 
 
