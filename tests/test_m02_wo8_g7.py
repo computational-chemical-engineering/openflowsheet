@@ -476,17 +476,32 @@ def test_g7c_the_vapour_side_law_is_recorded(
 
 @pytest.mark.parametrize(
     ("delta", "verdict"),
-    [(-2.4e-4, "UNVERIFIED"), (-2.6e-4, "VERIFIED"), (5.3e-4, "UNVERIFIED"), (5.7e-4, "VERIFIED")],
+    [
+        (-2.4e-4, "UNVERIFIED"),
+        (-2.6e-4, "VERIFIED"),
+        (2.4e-4, "UNVERIFIED"),
+        (2.6e-4, "VERIFIED"),
+        (5.3e-4, "VERIFIED"),
+    ],
 )
 def test_g7c_the_near_dew_window_edges_as_the_manifest_states_them(
-    delta: float, verdict: str
+    monkeypatch: pytest.MonkeyPatch, delta: float, verdict: str
 ) -> None:
-    """The window's edges, bisected at F4 and stated in `c1.tp_flash`'s manifest: on the VAPOR
-    side (δ < 0) VERIFIED from |δ| = 2.483e-4, where ‖J⁻¹‖₁ meets the absolute limit; on the
-    TWO_PHASE side from δ = 5.480e-4 (L/n_tot = 3.37e-5), where the liquid NH3 flow reaches one
-    witness step. Each edge is asserted 3-4 % to either side."""
+    """The window's edges, bisected at F4: on both sides VERIFIED from |δ| ≈ 2.5e-4, where ‖J⁻¹‖₁
+    meets the screen's absolute limit (2.483e-4 on the VAPOR side; between 2.4e-4 and 2.6e-4 on
+    the TWO_PHASE side). Each edge is asserted 3-4 % to either side. K04 amendment WIT, move M-6
+    (part a): the TWO_PHASE edge was the witness's, δ = 5.480e-4 (L/n_tot = 3.37e-5), where the
+    liquid NH3 flow reached one witness step; the escalation now resolves `S3.n.NH3` below it,
+    so the next registered limit binds. δ = 5.3e-4, UNVERIFIED before WIT, stays as the VERIFIED
+    case that pins the move: `S3.n.NH3` escalates there and resolves. `c1.tp_flash`'s manifest
+    sentence still states the old TWO_PHASE edge (M-6 part b, pending Frank)."""
+    runs = spy(monkeypatch)
     document, solved = _f4(delta)
     assert _certify(solved, document).verification_status == verdict
+    if delta == 5.3e-4:
+        (witnessed,) = runs
+        escalation = witnessed.escalations["S3.n.NH3"]
+        assert escalation.level is not None
 
 
 @pytest.mark.parametrize(
@@ -496,7 +511,8 @@ def test_g7c_the_near_dew_window_edges_as_the_manifest_states_them(
 def test_g7c_as_amended_by_r282(delta: float, verdict: str) -> None:
     """G7 (c) as amended (design note §14.4 D1, R-282 amended): at F4 × (1 + δ) the certificate is
     UNVERIFIED at δ = ±1e-4, inside the measured window on both sides, and VERIFIED at δ = +1e-3
-    (TWO_PHASE) and δ = −1e-2 (VAPOR). The edges are the bisection test's above."""
+    (TWO_PHASE) and δ = −1e-2 (VAPOR). The edges are the bisection test's above: |δ| ≈ 2.5e-4 on
+    both sides since K04 amendment WIT (M-6 part a; the witness stencil is no longer a limit)."""
     document, solved = _f4(delta)
     regime = "TWO_PHASE" if delta > 0 else "VAPOR"
     assert [signature for signature, *_ in _attempts(solved)] == [(("U", regime),)]
@@ -504,9 +520,12 @@ def test_g7c_as_amended_by_r282(delta: float, verdict: str) -> None:
 
 
 def test_g7c_the_manifest_states_the_window_at_the_measured_state() -> None:
-    """R-282 amended: `c1.tp_flash`'s manifest states the window "at the measured state", with
-    the two bisected edges the test above asserts (|δ| = 2.5e-4 VAPOR, L/n_tot = 3.4e-5
-    TWO_PHASE, δ = 5.5e-4)."""
+    """R-282 amended: `c1.tp_flash`'s manifest states the window "at the measured state". Its
+    VAPOR edge (|δ| = 2.5e-4) is the bisection test's. Its TWO_PHASE edge (L/n_tot = 3.4e-5,
+    δ = 5.5e-4) was the witness step's and is stale since K04 amendment WIT, whose escalation
+    moves that edge to δ ≈ 2.5e-4 (M-6). Correcting the sentence is M-6 part b, which moves
+    `c1.tp_flash`'s artifact hash, F0 M9 and L01.A22's byte pin; it waits for Frank. Until then
+    this test pins the sentence as it stands."""
     manifest = TPFlash("U", PROVIDER, 268.15, P, CONTEXT).manifest()
     limitations = manifest["validity"]["limitations"]
     (window,) = [text for text in limitations if "near-dew window" in text]

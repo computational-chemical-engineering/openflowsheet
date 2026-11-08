@@ -6374,6 +6374,12 @@ limitation.
 >
 > So the certificate is VERIFIED from |δ| ≈ 2.5e-4 on the VAPOR side and from L/n_tot ≈ 3.4e-5 on the TWO_PHASE
 > side, at the measured state. No limit is relaxed.
+>
+> **Note 2026-11-08 (K04 amendment WIT, ADR 0073, move M-6 part a; review `docs/reviews/WIT-review.md` ruling 1):**
+> the witness stencil is no longer one of the three limits. Its escalation resolves `S3.n.NH3` below one step, so the
+> TWO_PHASE edge is now the screen's absolute limit, measured between δ = 2.4e-4 (UNVERIFIED) and 2.6e-4 (VERIFIED).
+> The window ends at |δ| ≈ 2.5e-4 on both sides. `c1.tp_flash`'s manifest sentence still states L/n_tot ≈ 3.4e-5
+> until M-6 part b (an identity move, Frank's decision).
 
 ---
 

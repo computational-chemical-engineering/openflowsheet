@@ -119,3 +119,12 @@ The normative text is the spec; nothing here changes a tolerance, a check meanin
   rejected `gamma_phi_dormant_liquid_side` (the review's example): `ONE_SIDED_BASES` is exactly the two Wilson bases.
 - **Identity.** No registered certificate carries a class-2 record (F0 to confirm). A11 asserts the new reason.
 - **Reverse by.** Reverting this commit (D-1's literal reading returns).
+
+## D-10 — E-1 adopted as M-6, part a (review ruling 1)
+
+- `test_g7c_the_near_dew_window_edges_as_the_manifest_states_them`: TWO_PHASE edge re-bracketed at (2.4e-4,
+  UNVERIFIED) / (2.6e-4, VERIFIED); 5.3e-4 kept as VERIFIED, asserting `S3.n.NH3` escalated and resolved (spy).
+  Docstrings of that test, `test_g7c_as_amended_by_r282` and the manifest test updated; spec §4.8.6 gains M-6;
+  R-282 gains a dated note. G7 file: 33 passed.
+- **Not done (part b, Frank):** the `c1.tp_flash` manifest sentence (`flash.py:343-349`) — it moves the artifact
+  hash, F0 M9's `flash.py` entry and L01.A22's byte pin. The manifest test pins the stale sentence until then.
