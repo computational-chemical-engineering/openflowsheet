@@ -28,6 +28,7 @@ repository's `schemas/` directory.
 | `inspect_structure` | read | python, cli, http, mcp | `GET /v1/revisions/{revision_id}/structure` | `inspect_structure` |
 | `preview_change` | read | python, cli, http, mcp | `POST /v1/changes/preview` | `preview_change` |
 | `get_artifact` | read | python, cli, http, mcp | `GET /v1/artifacts/{artifact_id}` | `get_artifact` |
+| `get_stream_table` | read | python, cli, http, mcp | `GET /v1/jobs/{job_id}/stream-table` | `get_stream_table` |
 | `list_audit` | read | python, cli, http | `GET /v1/audit` | — |
 | `explain` | read | python, cli, http, mcp | `GET /v1/explain/{code}` | `explain` |
 | `artifact_bytes` | read | python, cli, http | `GET /v1/artifacts/{artifact_id}/raw` | — |
