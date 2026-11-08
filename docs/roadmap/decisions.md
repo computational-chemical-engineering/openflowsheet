@@ -581,3 +581,13 @@ its condition). RID.A01–A12 pass; `test_evidence_manifests.py` 488 (410 + 78);
 PASS; F0 PASS; served MCP digest `eaff4585…` → `6705fb05…` (c_5 on top of MSG's c_4); targeted 569 passed + G8 xfail
 (E1). Known red: description reviews. ST's single reviewer pass starts now (brief `docs/briefs/ST-reviewer.md`); WO-7
 (manifest, full gate, CI) after the review and after MSG lands on main. New Frank item: `get_stream_table.md` review.
+
+## 2026-11-08 — ST review → fix round
+
+Review `fb6a81f7`: not merge-ready. M1: E1 is a defect in ST's phase rule (R3 TP-flashes temperature-degenerate
+lifted splits: vf 0 and H flow 2016 W low on T05b:SC-1, SC-3 likewise at units), ruling (b) scoped → rule R1′ (carried
+lifted split, as the verifier reads it), G8 unchanged; amends ADR 0068 / design D4 (recorded before Frank accepts).
+S1 per-unit G8; S2 no-bundle `not_found` variant; S3 description approved after 3 edits (design-lane act in
+REVIEW.json, digest re-recorded); S4 route from `solve-path.json`. MSG-merge notes: MSG lands as a merge commit; c_4
+contention with X02 → ST becomes c_6, re-measure G12 at merge; drop ST's duplicate R-942/R-943. Fix round brief
+`docs/briefs/ST-fix-round.md`.

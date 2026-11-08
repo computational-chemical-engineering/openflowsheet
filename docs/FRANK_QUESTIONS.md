@@ -486,3 +486,6 @@ As for `explain`: the text an AI agent reads to decide when to call the stream-t
 review ("approved" or what to change) in addition to the design lane's, which ST's reviewer pass gives. Best read
 after that pass (`docs/reviews/ST-review.md`), in case it edits the wording. Default: none — ST cannot merge until you
 have looked at it (ST also waits for MSG and your acceptance of ADR 0068).
+Update 2026-11-08: the design lane approved it after three wording edits (`docs/reviews/ST-review.md`); read the
+edited text once the fix round lands on `wp/ST`. The review also amends ADR 0068 (rule R1′: streams whose phase split a
+flash cannot determine take the solver's carried split, or report the value as absent) — accept the amended text.
