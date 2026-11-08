@@ -973,3 +973,16 @@ Totals: TH-R1 18.3 s, M1 5.9 s, C-MW 54.4 s ("verify" also holds report/record w
   two drafts into one entry (e.g. "R-129/R-191 superseded" into "job operation `optimize`"), nine entries; (3) all ten
   outside the block (R-988…R-997). Build-lane preference: (1), keeping ADR order and the block. The ADR status line
   says the drafts are unnumbered and why.
+- D-92. MSG catalogue (G2, as X02's D-39 on main): on the merged tree `msg_catalogue.py scan` found 12 OPT codes
+  without an entry. Complete refusal entries (prose from design §4.11 and the emitting code, `review: true`):
+  `nlp_solver_unavailable` (kind `not_supported`, chained in `unsupported`; U05's CLI record now renders it) and
+  `request_invalid` (kind `input`, arg `pointer`, chained in `invalid_request`). Stubs in MSG WO-2's form for the
+  readiness/report reasons, `review: true`: `DECISION_NOT_CONTINUOUS`, `DECISION_UNIT_NOT_INTERNAL`,
+  `REVISION_MISMATCH`, `REVISION_UNBOUND`, `TOO_MANY_STARTS` (kind `input`), `OPTIMIZATION_ROUTE_UNAVAILABLE`,
+  `REGIME_MARGIN_UNDEFINED` (kind `not_supported`). Allow-listed with reasons (labels, never rendered):
+  `k03_kind_bound`, `no_declared_bound` (variable-bound reasons in the optimizer record), `phase_row_not_closure_test`
+  (a V4 detail label). G1: L-OPT-1/L-OPT-2 entered by `sync-limitations`; G4 flagged L-OPT-2's "on the infeasible
+  side" (blueprint §7.7 lint), reworded at the source (`support_envelope.yaml`: "650 K, a start that violates the
+  constraint"; matrix re-emitted). `msg_catalogue.py check` PASS (379 entries, 83 complete, review: true on 138);
+  catalogue `9ac2578a…` → `7bbe3d65…` (message_entry fixtures); doc pages regenerated; CLI pins: U05 re-captured;
+  the guide's limitations rows link the two codes. `test_opt_cli` now checks the `request_invalid` chain.

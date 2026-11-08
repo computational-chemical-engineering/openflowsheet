@@ -659,3 +659,25 @@ entries:
     only; no registered NLP case carries a capital row in a `units:N` regime. A floor's derivative row
     is empty (E01.A18), so E01.A33–A36 show nothing about capital sensitivities through the optimizer.
     P2 is not resized (E01 design §9.7).
+- code: L-OPT-1
+  family: limitation
+  kind: notice
+  complete: false
+  title: L-OPT-1
+  summary: 'Revision optimisation (ADR 0071) runs only on the `revision_eo` route in the audited `nlp`
+    environment on linux-x86_64. Each start holds its phase and assessment regimes: a candidate whose
+    regime changed is NOT_VERIFIED; a boundary optimum is verified only on the single-phase side of a
+    guarded regime (`phase_boundary_form`, flagged, and a plain solve of the committed candidate certifies
+    UNVERIFIED); two-phase-side and unguarded-regime boundary optima and candidates in the rank-limited-but-inactive
+    gap are NOT_VERIFIED; the zero-flow subsystem is held or unresolved per start, all or nothing. KKT_POINT_VERIFIED
+    is numerically verified local stationarity, not optimality.'
+- code: L-OPT-2
+  family: limitation
+  kind: notice
+  complete: false
+  title: L-OPT-2
+  summary: Ipopt runs with fixed options (monotone barrier, limited-memory Hessian). On a nearly linear
+    objective whose constraint must become active from inside the feasible region it can stall at `max_iter`
+    (measured on OPT-L from 673.15 K and 661 K; it verifies from 650 K, a start that violates the constraint).
+    Such a start is reported SOLVER_FAILED, never verified; another start is the remedy. Whether the options
+    change is a design-lane question (OPT_DECISIONS D-70).

@@ -51,6 +51,7 @@ def test_optimize_refuses_a_request_with_problems(
     refused = json.loads(capsys.readouterr().out)
     assert refused["code"] == "invalid_request"
     assert refused["detail"]["pointer"].startswith("/request/objective")
+    assert refused["detail"]["explanation"]["chain"] == ["invalid_request", "request_invalid"]
     assert not out.exists()
 
 

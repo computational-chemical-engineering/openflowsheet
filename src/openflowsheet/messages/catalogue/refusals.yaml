@@ -188,6 +188,20 @@ entries:
     title: Decision inconsistent with eliminated rows
     summary: 'Refused: decision inconsistent with eliminated rows.'
     review: true
+  - code: DECISION_NOT_CONTINUOUS
+    family: refusal
+    kind: input
+    complete: false
+    title: Decision not continuous
+    summary: 'Refused: decision not continuous.'
+    review: true
+  - code: DECISION_UNIT_NOT_INTERNAL
+    family: refusal
+    kind: input
+    complete: false
+    title: Decision unit not internal
+    summary: 'Refused: decision unit not internal.'
+    review: true
   - code: ESCALATION_SERIES_MISSING
     family: refusal
     kind: input
@@ -243,6 +257,13 @@ entries:
     complete: false
     title: No correlation
     summary: 'Refused: no correlation.'
+    review: true
+  - code: OPTIMIZATION_ROUTE_UNAVAILABLE
+    family: refusal
+    kind: not_supported
+    complete: false
+    title: Optimization route unavailable
+    summary: 'Refused: optimization route unavailable.'
     review: true
   - code: PARAMETER_NOT_DIFFERENTIABLE
     family: refusal
@@ -307,6 +328,13 @@ entries:
     title: Projection zero flow
     summary: 'Refused: projection zero flow.'
     review: true
+  - code: REGIME_MARGIN_UNDEFINED
+    family: refusal
+    kind: not_supported
+    complete: false
+    title: Regime margin undefined
+    summary: 'Refused: regime margin undefined.'
+    review: true
   - code: REGIME_MARGIN_UNSUPPORTED
     family: refusal
     kind: not_supported
@@ -320,6 +348,20 @@ entries:
     complete: false
     title: Regularity inconclusive
     summary: 'Refused: regularity inconclusive.'
+    review: true
+  - code: REVISION_MISMATCH
+    family: refusal
+    kind: input
+    complete: false
+    title: Revision mismatch
+    summary: 'Refused: revision mismatch.'
+    review: true
+  - code: REVISION_UNBOUND
+    family: refusal
+    kind: input
+    complete: false
+    title: Revision unbound
+    summary: 'Refused: revision unbound.'
     review: true
   - code: ROOT_NOT_CONVERGED
     family: refusal
@@ -355,6 +397,13 @@ entries:
     complete: false
     title: Start outside bounds
     summary: 'Refused: start outside bounds.'
+    review: true
+  - code: TOO_MANY_STARTS
+    family: refusal
+    kind: input
+    complete: false
+    title: Too many starts
+    summary: 'Refused: too many starts.'
     review: true
   - code: TRSP_SOLVER_UNAUDITED
     family: refusal
@@ -1427,6 +1476,35 @@ entries:
     examples:
       - chain: [unsupported, task_unsupported]
         params: {task: optimization}
+  # OPT (ADR 0071, design §4.11): the optimisation request's refusals.
+  - code: nlp_solver_unavailable
+    family: refusal
+    kind: not_supported
+    complete: true
+    title: Optimisation without the audited NLP solver
+    summary: "This installation cannot optimise: the audited NLP solver is not available here."
+    why: "Optimisation solves with Ipopt, reached through Pyomo and cyipopt, in the versions the licence and binary audit covers: the `nlp` environment on Linux x86-64. Without it this version refuses the optimisation task rather than run an unaudited solver."
+    action: "To optimise, install the audited `nlp` environment on Linux x86-64; to check the revision for a solve, validate it with the task \"simulation\"."
+    gap: {limitation: null, capability: "optimisation without the audited nlp environment, or off Linux x86-64"}
+    see_also: [unsupported]
+    examples:
+      - chain: [unsupported, nlp_solver_unavailable]
+        params: {}
+    review: true
+  - code: request_invalid
+    family: refusal
+    kind: input
+    complete: true
+    title: An optimisation request that breaks its schema or rules
+    args: [pointer]
+    params: {pointer: {type: pointer, label: member}}
+    summary: "The optimisation request is invalid at {pointer}."
+    why: "An optimisation request (its decisions and their boxes, objective, constraints and starts) is checked against the optimisation-request schema and its own rules before anything is solved. The member at {pointer} does not meet them; the detail after the code says how."
+    action: "Correct the request at {pointer} as the detail says and submit it again."
+    examples:
+      - chain: [invalid_request, request_invalid]
+        params: {pointer: /request/decisions/0/upper}
+    review: true
   - code: tear_path_unsupported
     family: refusal
     kind: not_supported

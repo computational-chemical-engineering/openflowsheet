@@ -174,6 +174,26 @@ One section per row of the support matrix's limitations: what this version does 
 
 - **Summary:** A Wilson TP flash near an azeotrope has an E-2 noise floor (S10 §14); a temperature-degenerate split is judged on its stored split.
 
+<a id="L-OPT-1"></a>
+
+## `L-OPT-1`: L-OPT-1
+
+**Kind:** Notice: not a failure.
+
+*No plain-language explanation is written yet; the summary is the technical one.*
+
+- **Summary:** Revision optimisation (ADR 0071) runs only on the `revision_eo` route in the audited `nlp` environment on linux-x86_64. Each start holds its phase and assessment regimes: a candidate whose regime changed is NOT_VERIFIED; a boundary optimum is verified only on the single-phase side of a guarded regime (`phase_boundary_form`, flagged, and a plain solve of the committed candidate certifies UNVERIFIED); two-phase-side and unguarded-regime boundary optima and candidates in the rank-limited-but-inactive gap are NOT_VERIFIED; the zero-flow subsystem is held or unresolved per start, all or nothing. KKT_POINT_VERIFIED is numerically verified local stationarity, not optimality.
+
+<a id="L-OPT-2"></a>
+
+## `L-OPT-2`: L-OPT-2
+
+**Kind:** Notice: not a failure.
+
+*No plain-language explanation is written yet; the summary is the technical one.*
+
+- **Summary:** Ipopt runs with fixed options (monotone barrier, limited-memory Hessian). On a nearly linear objective whose constraint must become active from inside the feasible region it can stall at `max_iter` (measured on OPT-L from 673.15 K and 661 K; it verifies from 650 K, a start that violates the constraint). Such a start is reported SOLVER_FAILED, never verified; another start is the remedy. Whether the options change is a design-lane question (OPT_DECISIONS D-70).
+
 <a id="L-S11-1"></a>
 
 ## `L-S11-1`: L-S11-1

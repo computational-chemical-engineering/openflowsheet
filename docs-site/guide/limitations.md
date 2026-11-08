@@ -28,8 +28,8 @@ row of the support matrix has its own section in [Limitations](../messages/limit
 | A property method other than the selectable bases | not representable: a revision has no property-method member; another provider's components are [`components_unsupported`](../messages/refusals.md#components_unsupported) |
 | A model not in the registry, or on a basis it does not bind on | [`model_unsupported(<id>)`](../messages/refusals.md#model_unsupported) at binding, with the bases it does support |
 | A state outside a basis's domain | [`INITIALIZATION_FAILED`](../messages/outcomes.md#INITIALIZATION_FAILED), or `invalid_trial_state` inside a solve; never extrapolated |
-| Optimisation (`validate` with `task: optimization`, the `optimize` job) without the audited `nlp` environment, or off Linux x86-64 | `unsupported` (`nlp_solver_unavailable`); the library returns an `UNSUPPORTED` report |
-| Optimisation of a coupled (torn) flowsheet or a `legacy_eo` document | `UNSUPPORTED` (`OPTIMIZATION_ROUTE_UNAVAILABLE`) |
+| Optimisation (`validate` with `task: optimization`, the `optimize` job) without the audited `nlp` environment, or off Linux x86-64 | [`unsupported`](../messages/api-errors.md#unsupported) ([`nlp_solver_unavailable`](../messages/refusals.md#nlp_solver_unavailable)); the library returns an `UNSUPPORTED` report |
+| Optimisation of a coupled (torn) flowsheet or a `legacy_eo` document | `UNSUPPORTED` ([`OPTIMIZATION_ROUTE_UNAVAILABLE`](../messages/refusals.md#OPTIMIZATION_ROUTE_UNAVAILABLE)) |
 | A change with `task: optimization` (`commit_change`, `preview_change`) | [`task_unsupported(optimization)`](../messages/refusals.md#task_unsupported) |
 | Dynamics or time-varying specifications | not representable; a time member is a schema refusal |
 | Gauge pressure, unregistered unit spellings | refused at validation |
