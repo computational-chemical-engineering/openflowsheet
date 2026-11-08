@@ -648,3 +648,14 @@ Accepted with Amendment 1 (Q-F1), ADR 0007 Am. 2; R-985…R-987, R-140 "Lifted b
 installed-free` that computes its expectation from the installed versions (CI's unconstrained install no longer
 verifies by construction). DECISION: keep D-10 (it checks the honest outcome; dropping the CI half would remove a
 check). Alternative: drop the CI half. Reversible by: revert D-10's commit. CI running; manifest `evidence/X05a/` after.
+
+## 2026-11-08 — MSG merge prep done; human reviews must be recorded by Frank
+
+`wp/MSG` `ff5443e3`: main merged twice (DM-1…DM-5), HARVEST_SIZE (78, 997, 129), MSG's R-942/R-943 → R-975/R-976
+(RP's untouched), L41 re-synced after X05's text (catalogue sha `e4f940cc…` → `2252445a…`, two fixtures), D_4
+`eaff4585…` unchanged; F0 PASS; only the description-review test fails. The permission system refused the agent's edit
+recording Frank's human review in REVIEW.json — correct: a human review is not an agent's act. Not worked around.
+Frank records all four (explain; validate, submit_job; get_stream_table) with a script he runs himself
+(`record_frank_reviews.py` in the session scratchpad: checks each text's sha256 against the one shown on the board,
+then commits on wp/MSG, wp/OPT, wp/ST). The filed MSG manifest `9c76b939…` keeps citing R-942/R-943 (evidence at its
+commit); the new manifest cites R-975/R-976.
