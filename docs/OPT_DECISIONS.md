@@ -961,3 +961,15 @@ Totals: TH-R1 18.3 s, M1 5.9 s, C-MW 54.4 s ("verify" also holds report/record w
   START_NOT_CERTIFIED; an unguarded held split is reachable only on an ideal split" → new "certifies and can be a
   start; it is unguarded (`regimes_unguarded`), and a boundary optimum of it is NOT_VERIFIED". Handoff's limitation
   list for the manifest re-take updated likewise.
+- D-90. ADR 0071 → **Accepted, 2026-11-08** (Frank, on the decision board) with ADR 0019 Amendment 16; Q1–Q9 defaults;
+  "Proposed 2026-11-07" kept. R-960 loses "provisional" (its heading and "Decided by" row). DECISION: ADR 0071 does not
+  ask for an ADR 0019 pointer paragraph or an `interfaces-frozen.md` entry on acceptance; both are added anyway, in
+  X02's form for Amendment 15 (the frozen job schema, `validate`'s input and the schema list change, and ADR 0019 lists
+  its amendments). Alternative: leave both out (the ADR's "Amends" is the only record). Reversible by: reverting the
+  ADR-acceptance commit's two hunks in `docs/adr/0019-application-contract-v1.md` and `docs/interfaces-frozen.md`.
+- D-91. **STOPPED (brief rule): register numbers for ADR 0071's drafts not assigned.** ADR 0071 § "Register entries"
+  has **ten** drafts; OPT's block R-960…R-969 has nine free numbers after R-960 (R-970 is S15a's). Options: (1) R-961…
+  R-969 for the first nine and the tenth (R-860 lifts) in the next free number after the other blocks (R-988); (2) fold
+  two drafts into one entry (e.g. "R-129/R-191 superseded" into "job operation `optimize`"), nine entries; (3) all ten
+  outside the block (R-988…R-997). Build-lane preference: (1), keeping ADR order and the block. The ADR status line
+  says the drafts are unnumbered and why.

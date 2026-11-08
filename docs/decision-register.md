@@ -18689,12 +18689,12 @@ R-088 Q26 and R-287). The coupled route records its k = 0 inner start.
 
 **Watch for.** A second numeric path admitted without a registered exception.
 
-## R-960 — `main`'s surface chain gains link c_6 = (ADR 0071, `without_opt`, `3fdc797a…`): OPT's `optimize` job operation, `validate`'s `optimization` member and two description texts, after X02's c_5 (provisional number)
+## R-960 — `main`'s surface chain gains link c_6 = (ADR 0071, `without_opt`, `3fdc797a…`): OPT's `optimize` job operation, `validate`'s `optimization` member and two description texts, after X02's c_5
 
 | | |
 | --- | --- |
 | Date | 2026-11-08; re-measured as c_6 on 2026-11-08 |
-| Decided by | build lane, OPT WO-6, applying ADR 0071 (Proposed; ADR 0019 Amendment 16) and OPT design §4.13 in R-457's form (OPT D-51, D-59); renumbered at the merge of `main` into `wp/OPT` (OPT D-87) |
+| Decided by | build lane, OPT WO-6, applying ADR 0071 (Accepted 2026-11-08 by Frank, with ADR 0019 Amendment 16; Proposed 2026-11-07) and OPT design §4.13 in R-457's form (OPT D-51, D-59); renumbered at the merge of `main` into `wp/OPT` (OPT D-87) |
 | Normative text | ADR 0071 D1, D8; `docs/design/OPT-revision-optimisation.md` §4.10–§4.13; `scripts/m07a_rc.py` (link c_6) |
 | Evidence | On the merge tree (`wp/OPT` with `main` at `b31e80ec` merged) the served MCP tool list digests to `3fdc797ad64485abf63fb491ebd56aa43dc510e62e9e218b0dd7a8fcc2e38a85` (D_6). `without_opt` (`tests/opt_schema_support.py`) on it gives `f51b69bf66569e35aebead73b66e98d58f24c84016db639536c0ee35181f4c7b`, X02's D_5 (R-950), exactly; no tool is added or renamed, the six job tools and `validate_revision` moved, and exactly `validate_revision`'s and `submit_job`'s texts changed (`tests/test_t08_w2_surface_digest.py::test_opts_surface_move_decomposes_onto_x02s`). At OPT WO-6, over M04's list before MSG and X02, the same strip gave M04's D_3 `455d01eb…` from `3fb06cad…` |
 | Affected packages | OPT; M07a (`scripts/m07a_rc.py`, A37 tests); M07 (the next RC's V17 carry names c_6); T08.A18 (two description reviews) |

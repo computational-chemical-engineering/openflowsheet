@@ -1,9 +1,11 @@
 # ADR 0071 — OPT: optimisation of revision flowsheets through a separate optimisation request, a held-regime full-space gray box, a cold production re-solve as the truth, and a job operation `optimize`
 
-**Status:** **Proposed, 2026-11-07.**
+**Status:** **Accepted, 2026-11-08** (Frank, on the decision board) with ADR 0019 Amendment 16; Q1–Q9 defaults.
+Proposed 2026-11-07.
 - Takes effect on `main` when OPT's evidence manifest is `tested` (gates G1–G21 of the design note) and the design-lane
   `reviewer` pass is done. Until then OPT is built on `wp/OPT`.
-- Register entries are added on acceptance (drafts below, unnumbered).
+- Register entries: R-960 (the surface link c_6). The ten drafts below are added on acceptance; they are not numbered
+  yet: OPT's block R-960…R-969 has nine free numbers (OPT D-91, escalated).
 - **Amendment A, 2026-11-07** (mid-build consult, design note §9; brief `docs/briefs/OPT-architect-consult.md`): A-1 V1
   may pass on the *phase-boundary form*; A-2 structurally zero flows are held with their rows; A-3 margins are the
   closure's own test and rows are built only where they equal it. Status stays **Proposed**.
@@ -12,7 +14,7 @@
 **Design note:** `docs/design/OPT-revision-optimisation.md` holds the normative detail; § numbers below refer to it.
 
 **Amends:**
-- **ADR 0019 D1, as Amendment 16** (§4.13): job operation `optimize` (enum value, `job_request` branch,
+- **ADR 0019 D1, as Amendment 16** (Accepted 2026-11-08 by Frank, with this ADR; §4.13): job operation `optimize` (enum value, `job_request` branch,
   `job_result.optimization`, six artifact kinds); `validate` input member `optimization`; new
   `schemas/optimization-request.schema.json`; additive optional members of `optimization-report.schema.json`. ADR 0020:
   the `optimize` body's stages, ends, cancellation and outputs (§4.10).

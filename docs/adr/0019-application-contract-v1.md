@@ -241,3 +241,20 @@ members, none required, so no `required` list changes:
 
 - **Not unchanged:** the served MCP tool list, widened additively; with X02's additions removed
   (`tests/x02_schema_support.py`) it is MSG's `eaff4585…` (R-976). The surface link is c_5, R-950.
+
+## Amendment 16 (Accepted 2026-11-08 by Frank, with ADR 0071; Proposed 2026-11-07; OPT) — pointer to ADR 0071
+
+Amendment 16 is decided in ADR 0071 ("Amends"; OPT design note §4.10–§4.13); this paragraph points at it. Additive,
+nothing required, so no `required` list changes:
+
+- `job.schema.json`: the job operation `optimize` (enum value, its `job_request` branch with `optimize_body`, its
+  `job_result` branch) and `job_result.optimization`;
+- six artifact kinds: `optimization_request`, `optimization_report`, `optimization_manifest`, `optimizer_record`,
+  `candidate_revision`, `candidate_verification`;
+- `validate`'s input gains the optional `optimization` member;
+- a new schema, `schemas/optimization-request.schema.json`, and additive optional members of
+  `optimization-report.schema.json`.
+
+- **Not unchanged:** the served MCP tool list, widened additively, and two description texts (`validate.md`,
+  `submit_job.md`); with OPT's additions removed and the two texts restored (`tests/opt_schema_support.py`) it is X02's
+  `f51b69bf…` (R-950). The surface link is c_6, R-960.

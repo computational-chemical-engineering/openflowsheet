@@ -95,6 +95,8 @@ the finite-difference derivative path because the path is recorded.
 
 **X02, ADR 0019 Amendment 15 in ADR 0070 (Accepted by Frank on 2026-11-08; R-950…R-955).** Additive, three optional members: `job.schema.json#/$defs/solve_body` gains `warm_start: {job_id?, coupling?}`; `experiment.schema.json#/$defs/request` gains `start`; `#/$defs/result` gains `profile_sha256`. None is required. With them removed (`tests/x02_schema_support.py`) every resolved response schema and the served MCP list are MSG's (surface link c_5, R-950).
 
+**OPT, ADR 0019 Amendment 16 in ADR 0071 (Accepted by Frank on 2026-11-08; R-960).** Additive: `job.schema.json` gains the job operation `optimize` (enum value, request and result branches, `job_result.optimization`) and six artifact kinds; `validate`'s input gains the optional `optimization` member; `schemas/optimization-request.schema.json` is new, and `optimization-report.schema.json` gains optional members. None is required. With them removed and `validate.md`/`submit_job.md` restored (`tests/opt_schema_support.py`) every resolved response schema and the served MCP list are X02's (surface link c_6, R-960).
+
 ## 3. Semantic rules covered by the freeze
 
 ADR 0001 D1–D5 (units, state definition `nTP-v1`, zero flow, signs, reference conventions) and ADR 0008 D1–D3 (no time at the evaluation boundary, `state_sha256` coverage, per-row accumulation declarations and the balance-row sign convention) are part of this freeze.
