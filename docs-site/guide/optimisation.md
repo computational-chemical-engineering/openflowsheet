@@ -146,6 +146,20 @@ listed as `verdict_changed_near_threshold`, not as a mismatch.
   advance. A boundary optimum on the two-phase side, or of an **unguarded** regime (one whose
   closure is not the phase margin, listed under `regimes_unguarded`), is `NOT_VERIFIED`; so is a
   candidate in the gap where the certificate is rank-limited but no phase row is active.
+- **Which held single-phase splits can start.** On a γ–φ property provider (for example
+  `wilson-ig-v2`) a split held LIQUID or VAPOR never certifies today: the certificate's
+  derivative-witness stencil steps the held zero side negative, so such a start is
+  `START_NOT_CERTIFIED`. An **unguarded** held split is therefore reachable today only on an ideal
+  split with no K-value block. On `pr-c1-v1` a held single-phase split has no phase margin, and the
+  start is refused `REGIME_MARGIN_UNDEFINED`.
+- **Boundary optima at a thermal port.** A candidate whose thermal port (declared liquid or
+  vapour) sits at its saturation row with a rank-limited certificate fails V1: the
+  phase-boundary form covers a guarded LIQUID/VAPOR split's phase row only.
+- **Absolute flow thresholds.** A phase row counts as active when |a/N0| ≤ 1e-6 and a two-phase
+  split's margin is min(V, L)/N0 ≥ 1e-4, with N0 = 3 mol/s. Both are absolute in flow: on a
+  laboratory-scale flowsheet (total flows far below N0) a row can be labelled active at a larger
+  relative closure gap, and a two-phase split with min(V, L) < 3e-4 mol/s fails V4. Both errors
+  fail safe (a start or candidate is not verified, or a point is labelled a boundary point).
 - **Zero flows**: a subsystem of flows that are exactly zero is held at zero per start (`held`);
   when a decision would move one, the subsystem is `unresolved` and those flows are bounded below
   by zero instead. It is all or nothing per start.
