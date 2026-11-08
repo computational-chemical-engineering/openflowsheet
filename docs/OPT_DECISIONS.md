@@ -772,3 +772,9 @@ Totals: TH-R1 18.3 s, M1 5.9 s, C-MW 54.4 s ("verify" also holds report/record w
   0.024254495503279832 vs hand 0.024254495503279832 kg CO2-eq/s (rel 0 ≤ 1e-9); hand slope +5.19e-6 kg/s/K.
 - Default env: `tests/test_opt_cost_lca.py` 5 passed; `cost_lca.py --check` current; `tests/test_opt_replay.py`
   10 passed (D-68).
+- D-71. DECISION: the user doc (design §5 WO-7, §9.6) → a new guide page `docs-site/guide/optimisation.md` ("Optimising
+  a revision": prerequisites, the request, CLI/Python/HTTP/MCP usage, statuses and V1–V7, replay, declared limitations
+  incl. §9.7's risks and D-70's robustness note), linked from `mkdocs.yml`'s nav, `guide/studies.md` (one row, the
+  warning) and `guide/limitations.md` (the refusal rows: the stale "validation for optimisation → task_unsupported" row
+  replaced by ADR 0071's). No binding description changed (D-61's two stay as WO-6 left them). `mkdocs build --strict`
+  exit 0. Reversible by: the docs commit.

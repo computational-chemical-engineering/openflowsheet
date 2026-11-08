@@ -25,7 +25,9 @@ plain words.
 | A property method other than the selectable bases | not representable: a revision has no property-method member; another provider's components are `components_unsupported` |
 | A model not in the registry, or on a basis it does not bind on | `model_unsupported(<id>)` at binding, with the bases it does support |
 | A state outside a basis's domain | `INITIALIZATION_FAILED`, or `invalid_trial_state` inside a solve; never extrapolated |
-| Validation for optimisation through the application | `unsupported` (`task_unsupported(optimization)`) |
+| Optimisation (`validate` with `task: optimization`, the `optimize` job) without the audited `nlp` environment, or off Linux x86-64 | `unsupported` (`nlp_solver_unavailable`); the library returns an `UNSUPPORTED` report |
+| Optimisation of a coupled (torn) flowsheet or a `legacy_eo` document | `UNSUPPORTED` (`OPTIMIZATION_ROUTE_UNAVAILABLE`) |
+| A change with `task: optimization` (`commit_change`, `preview_change`) | `task_unsupported(optimization)` |
 | Dynamics or time-varying specifications | not representable; a time member is a schema refusal |
 | Gauge pressure, unregistered unit spellings | refused at validation |
 | Second derivatives through the property callback | reported absent; never zeros |
@@ -43,6 +45,9 @@ plain words.
   `UNVERIFIED` (rank-deficient).
 - The column: see [Distillation column](column.md#what-the-column-does-not-do).
 - Cancellation is not cooperative inside the verifier.
+- Optimisation holds phase and assessment regimes per start and verifies local stationarity only;
+  its boundary, zero-flow and robustness limits are in
+  [Optimising a revision](optimisation.md#declared-limitations).
 - Agent evidence: one pinned model and configuration, over MCP only, not out of sample.
 
 ## Verification, validation, optimality
