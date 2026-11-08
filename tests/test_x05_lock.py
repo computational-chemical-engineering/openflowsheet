@@ -31,6 +31,9 @@ from openflowsheet.run import lock
 from openflowsheet.run.manifest import Environment, environment
 from openflowsheet.run.replay import decide_mode
 
+sys.path.insert(0, str(REPO_ROOT / "scripts"))
+import t08_dist  # noqa: E402
+
 REFERENCE = json.loads((REPO_ROOT / "benchmarks/x05/reference_values.json").read_text("utf-8"))
 LOCK_FILE = REPO_ROOT / REFERENCE["lock"]["path"]
 LOCK_BYTES = LOCK_FILE.read_bytes()
@@ -192,7 +195,8 @@ def test_a10_the_registered_closure_is_the_measured_closure() -> None:
     assert lock.RUNTIME_CLOSURE == tuple(CLOSURE)
     assert _measured_closure(project["dependencies"]) == set(CLOSURE)
     # Control: the five pre-X05 pins alone reach all nine — the four transitive members are found
-    # by recursion over installed metadata, not read back from `pyproject.toml`.
+    # by recursion over installed metadata, not read back from `pyproject.toml` (which, since
+    # ADR 0069 Amendment 1, declares exactly these five).
     pre_x05 = [
         f"{name}=={CLOSURE[name]}" for name in ("casadi", "jsonschema", "numpy", "pyyaml", "scipy")
     ]
@@ -353,11 +357,55 @@ def test_a20_the_packaged_lock_is_a_link_to_the_root_file() -> None:
     assert named == ["src/openflowsheet/_data/requirements.lock"]
 
 
-def test_a25_the_closure_is_pinned_exactly_in_requires_dist() -> None:
+#: ADR 0069 D3.2 as amended (Amendment 1, Frank's Q-F1 = no): the five direct members stay exact
+#: pins in `Requires-Dist`; the four transitive members of the closure float.
+DIRECT = ("numpy", "scipy", "pyyaml", "jsonschema", "casadi")
+FLOATING = ("attrs", "jsonschema-specifications", "referencing", "rpds-py")
+
+
+def test_a25_requires_dist_pins_the_direct_five_and_leaves_the_transitive_four_floating() -> None:
     project = tomllib.loads((REPO_ROOT / "pyproject.toml").read_text("utf-8"))["project"]
     declared = {}
     for text in project["dependencies"]:
         name, version = text.split("==")
         declared[_normalise(name)] = version
-    assert declared == CLOSURE
+    assert declared == {name: CLOSURE[name] for name in DIRECT}
+    assert set(CLOSURE) == set(DIRECT) | set(FLOATING)
+    # Floating: not named at all, so no specifier of any kind constrains them.
+    named = {
+        _normalise(re.split(r"[\s<>=!~;\[]", text, maxsplit=1)[0])
+        for text in project["dependencies"]
+    }
+    assert not named & set(FLOATING)
+    # The wheel's non-extra `Requires-Dist`, as setuptools writes it (T08.A43 holds the built
+    # wheel to the same function), is the same five.
+    requires = [r for r in t08_dist.expected_requires_dist(project) if "extra ==" not in r]
+    assert requires == sorted(project["dependencies"])
     assert all(_lock_pins()[name] == version for name, version in CLOSURE.items())
+
+
+def test_a25_an_install_off_the_lock_records_empty_and_the_reason_names_the_floating_members() -> (
+    None
+):
+    """The D5 path: the direct five at the lock (their pins), the floating four at whatever an
+    unconstrained resolver picked. Every member off the lock is named, in the closure's order, and
+    replaying a bundle written with the verified lock names them in the reason."""
+    moved = {"attrs": "99.1.0", "referencing": "0.99.0", "rpds-py": "2099.1.1"}
+    found = lock.verify_lock(LOCK_BYTES, _installed({**CLOSURE, **moved}), WHERE)
+    findings = tuple(
+        TEMPLATES["F4"].format(name=name, installed=moved[name], locked=CLOSURE[name])
+        for name in CLOSURE
+        if name in moved
+    )
+    assert found == ("", findings)
+    assert [f.split(" ", 1)[0] for f in findings] == ["attrs", "referencing", "rpds-py"]
+    current = _pinned(*found)
+    assert decide_mode(_pinned(LOCKED), current) == (
+        "inspected_archived_results",
+        (TEMPLATES["R_THIS"].format(findings=TEMPLATES["JOIN"].join(findings)),),
+    )
+    # A floating member that is not installed at all is F3, and still named.
+    missing = lock.verify_lock(LOCK_BYTES, _installed({**CLOSURE, "attrs": None}), WHERE)
+    assert missing == ("", (TEMPLATES["F3"].format(name="attrs", locked=CLOSURE["attrs"]),))
+    # Control: an unconstrained resolver that happens to pick the lock's versions verifies.
+    assert lock.verify_lock(LOCK_BYTES, _installed(dict(CLOSURE)), WHERE) == (LOCKED, ())

@@ -631,7 +631,8 @@ jobs:
     # shadow, and a copy of the installed package without its lock) and the replay of the bundles
     # the installed CLI wrote without (`on`) and with (`off`) the shadow; `f0-replay` replays F0's
     # 52 bundles with the installed wheel; a second environment installs the wheel with no
-    # constraints and must verify the lock as installed.
+    # constraints (X05.A25, ADR 0069 Amendment 1: the transitive members float), where the lock
+    # verifies iff every closure member landed at the lock, else records "" naming each one off it.
     needs: dist
     strategy:
       fail-fast: false
@@ -720,7 +721,7 @@ jobs:
           "$RUNNER_TEMP/clean/bin/python" "$GITHUB_WORKSPACE/scripts/t08_rc.py" f0-replay \
             --out "$RUNNER_TEMP/rc-install/f0-${{ matrix.runner }}.json"
 
-      - name: X05.A25 — an unconstrained install of the wheel verifies the lock
+      - name: X05.A25 — an unconstrained install of the wheel names the members off the lock
         if: always()
         run: |
           python -m venv "$RUNNER_TEMP/free"
@@ -728,7 +729,7 @@ jobs:
           "$RUNNER_TEMP/free/bin/python" -m pip install "$(ls "$RUNNER_TEMP"/rc-dist/dist/*.whl)"
           cd "$RUNNER_TEMP/outside"
           "$RUNNER_TEMP/free/bin/python" "$GITHUB_WORKSPACE/scripts/t08_rc.py" lock-check \
-            --state installed \
+            --state installed-free \
             --out "$RUNNER_TEMP/rc-install/unconstrained-${{ matrix.runner }}.json"
 
       # M06 gate G10 (design note §8 Layer C): the installed wheel serves the diagnostic web
