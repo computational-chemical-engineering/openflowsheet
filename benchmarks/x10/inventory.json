@@ -319,7 +319,7 @@
    }
   }
  },
- "inventory_sha256": "99607a434124946927293b7a5a806bf365bdb456d38db01ae54cba4016e57a92",
+ "inventory_sha256": "d26280842568175fd8d8fa1a6f39b031d73da2b0a3c91ef4f1838d19c3e590d1",
  "library_only": {
   "syn001.cascade": {
    "coolprop-heos-v1": {
@@ -1234,16 +1234,14 @@
         "solve_path": "revision_eo"
        },
        "solve": {
-        "checks_not_passed": [
-         "derivative_witness.on_pattern:fail"
-        ],
+        "checks_not_passed": [],
         "outcome": "CONVERGED",
-        "verification_status": "UNVERIFIED"
+        "verification_status": "VERIFIED"
        }
       }
      ],
-     "class": "solved_not_verified",
-     "detail": "CONVERGED/UNVERIFIED (derivative_witness.on_pattern:fail)"
+     "class": "solved_verified",
+     "detail": "CONVERGED"
     }
    },
    "lifted_by_s10c_s11": null,
@@ -5253,8 +5251,7 @@
   "any": {
    "bound_not_solved": 2,
    "refused_admission": 76,
-   "solved_not_verified": 1,
-   "solved_verified": 41
+   "solved_verified": 42
   },
   "coolprop_extra_absent": {
    "refused_admission": 20,
