@@ -2257,6 +2257,50 @@ This version cannot validate a revision for the "optimization" task; it validate
 
 - **Summary:** Refused: vapour only form disagrees.
 
+<a id="warm_start_source_missing"></a>
+
+## `warm_start_source_missing`: A warm start from a job with no solution state
+
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
+
+- **Summary:** The declared warm start names job &lt;job_id&gt;, which is not a solve job of this project with a solution state.
+- **Why:** A warm start declared by job id starts the solve from that job's solution state, so the job must be a solve job of this project that wrote one. Its certificate status does not matter.
+- **Do:** Name a solve job of this project whose run wrote a solution state, or leave the job id out of the warm start.
+- **Parameters:** `job_id` (job)
+
+Example:
+
+```text
+The declared warm start names job 'job-000003', which is not a solve job of this project with a solution state.
+  Why:     A warm start declared by job id starts the solve from that job's solution state, so the job must be a solve job of this project that wrote one. Its certificate status does not matter.
+  Do:      Name a solve job of this project whose run wrote a solution state, or leave the job id out of the warm start.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    warm_start_source_missing, in invalid_request (openflowsheet explain warm_start_source_missing)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#warm_start_source_missing
+```
+
+<a id="warm_start_unit_unknown"></a>
+
+## `warm_start_unit_unknown`: A coupling start for a unit the revision does not have
+
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
+
+- **Summary:** The declared warm start gives a coupling start for '&lt;unit&gt;', which is not a unit of this revision.
+- **Why:** A warm start may declare the starting values of the coupling per unit, keyed by the unit's instance id, so each key must be a unit of the revision being solved. Whether that unit is coupled on the bound route is checked when the run starts; a start that fails that check is recorded as rejected, not refused.
+- **Do:** Key each coupling start by the instance id of a unit in this revision, or remove the key '&lt;unit&gt;'.
+- **Parameters:** `unit` (text)
+
+Example:
+
+```text
+The declared warm start gives a coupling start for 'R9', which is not a unit of this revision.
+  Why:     A warm start may declare the starting values of the coupling per unit, keyed by the unit's instance id, so each key must be a unit of the revision being solved. Whether that unit is coupled on the bound route is checked when the run starts; a start that fails that check is recorded as rejected, not refused.
+  Do:      Key each coupling start by the instance id of a unit in this revision, or remove the key 'R9'.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    warm_start_unit_unknown, in invalid_request (openflowsheet explain warm_start_unit_unknown)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#warm_start_unit_unknown
+```
+
 <a id="zero_flow_conflict"></a>
 
 ## `zero_flow_conflict`: Zero flow conflict

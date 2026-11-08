@@ -226,6 +226,22 @@ Format: question → choice; alternative; reversible by; commit. Batched for the
   members. Register: R-950 is no longer provisional (c_5, D-36); drafts A–E are R-951…R-955 in R-970's entry format
   (block R-950…R-959; six of ten used) and the ADR's draft letters are replaced by those numbers. Reversible by
   reverting this commit.
+- **D-39 — Catalogue entries for X02's three scanned codes (MSG G2; brief `docs/briefs/X02-msg-catalogue.md`).** CI
+  `42512488771` on `51ef7460` failed `test_g2_every_scanned_code_has_an_entry_or_a_reason` only. By MSG's rules
+  (note §3.2, §4.2.1, §4.2.6): `warm_start_source_missing` and `warm_start_unit_unknown` are user-facing admission
+  refusals inside `invalid_request` (ADR 0070 D1), so they are **complete `refusal` entries** in `refusals.yaml`, in
+  `task_unsupported`'s form (chain `[invalid_request, <code>]`), kind `input` by the `*_missing`/`*_unknown` row — no
+  judgment call, so no `review: true` (MSG's flag marks an unreviewed *kind*, not prose). The `api_error` family is
+  closed to the 15 `ApiErrorCode`s, so the table below's "api_error message" lands as family `refusal`. The unknown
+  unit's param is `text`, not `unit`: the id is by definition not an instance, so no element link or path derives.
+  The prose is the build lane's draft from `admit_warm_start` and ADR 0070 D1/D3, for the design lane's prose check in
+  X02's review round (MSG note §4.2.6). `coupling_warm_start(present|absent)` is **allow-listed**: a trace
+  `initializer_candidate` label, never passed to an audit hook or rendered (MSG note §3.3: solve events gain
+  nothing in 0.4); its uncoupled twin `compatible_warm_start(…)` has no entry either. The table's "notice" proposal
+  is not taken (MSG note §3.3: the `notice` family is for result flags such as `relabel`). Catalogue digest (the `message_entry`
+  fixtures) `2252445a…9b1cd5` → `9ac2578a…d01979`; `docs-site/messages/refusals.md` regenerated
+  (`doc_pages.py`), fixtures re-taken (`t07_schema_fixtures.py --write`). D_5 and D_4 unchanged (surface digest test
+  passes). Reversible by reverting this commit.
 
 ## Tokens for MSG's catalogue (§5.9; `wp/MSG` not merged)
 

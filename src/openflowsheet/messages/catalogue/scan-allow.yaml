@@ -9,3 +9,4 @@ allow:
   request_key: "a replay-difference location label (external requests), not a refusal code"
   external_request: "a replay-difference location label (external requests), not a refusal code"
   external_result: "a replay-difference location label (external results), not a refusal code"
+  coupling_warm_start: "a trace `initializer_candidate` label (application/coupled_run.py `solve_coupled`; X02 note §5.9), never a message; its uncoupled twin is `compatible_warm_start(…)`, built from a constant"
