@@ -381,6 +381,7 @@ PARITY = (
     ("temp=degC", None),
     ("temperature=celsius", None),
     ("eng,pressure=barg", None),
+    ("mole_fraction=%,molar_entropy=kJ/(mol K)", None),
 )
 
 
@@ -442,6 +443,7 @@ def test_a31_parity_on_every_transport(
         "temp=degC|None": (True, "invalid_request"),
         "temperature=celsius|None": (True, "unsupported"),
         "eng,pressure=barg|None": (True, "invalid_request"),
+        "mole_fraction=%,molar_entropy=kJ/(mol K)|None": (False, "ok"),
     }
 
 
