@@ -368,3 +368,33 @@ WO tests and `tests/test_m07_journey.py`: 978 passed, 1 deselected (214 s).
   recorded), or should the re-take run without `src/` on `PYTHONPATH`? Default: a fresh `git worktree add` at K3.
 - Q-S6c: is a reactor child's stderr (`stderr_sha256`) part of the identity the proof requires? It is now, as a
   digest leaf. Default: yes, and the rehearsal is repeated from a fresh worktree after Q-S6b to see whether it recurs.
+
+## S-6 WO-6 rerun from a fresh worktree (build lane, `wp/REL040p` at `00f15a01`, 2026-11-09)
+
+Brief `docs/briefs/REL040-s6-rerun.md`; orchestrator defaults pending the design lane: Q-S6a class `path` kept,
+Q-S6b clean = fresh `git worktree add` (`git status --porcelain --ignored` empty before the run, checked by the run
+script), Q-S6c stderr digest stays in the identity. Same commands and nlp env as WO-6; single process; load 32–35 of
+48. Outputs: session scratchpad `wo6-fresh/` (re-takes, proof logs, the RC records `rc-head/`, `rc-jprime/`). A
+read-only observer copied any non-empty `child.stderr` out of the run's temporary store: none appeared.
+- **S6R-22 PASS.** REAL re-take: exit 0, 3208 s wall, `DECISION_STABLE`, T* = 653.1500351610193, study_cold=48,
+  bijection_violations=0. Proof: `RETAKE-DIGEST-ONLY PASS trust-region-study-real: changed-digests=103 digest=504
+  timing=528 path=128 version=0 platform=4 other=0 environment=equal`. Against WO-6: the sidecar is equal (no
+  egg-info, 17 distributions) and no attempt wrote stderr (WO-6's 104/505 counted that one attempt's stderr digest).
+  S6R-21: the written file set equals the committed one (9 files).
+- **S6R-23 (re-confirmed).** Step 11 at the head re-took IDAES; `m01_idaes_retake_diff.py` → `IDAES-RETAKE PASS
+  differing=environment.platform,inputs.reference_values_yaml_sha256 platform=1 inputs=1 other=0`; the record is
+  byte-identical to WO-6's re-take.
+- **S6R-25 PASS (negative control).** Step 14 at the head: `a60.w24.m05_g10_real_replay` fails (exit 1,
+  `ReplayDivergedError`), `host_platform` 6.12.113 ≠ `record_platform` 6.12.111; every other step 14 check passes.
+  Step 11 at the head: `a40.idaes_numbers_identical` fails on exactly the two members above.
+- **S6R-24: the ruling's expectations met, step 14 still fails on another check.** Scratch J′ = `00f15a01` + one
+  commit copying both re-takes in (`ac48b042`, local, deleted after). Step 11 passed (`a40.idaes_numbers_identical`
+  `differing_members` []). Step 14: `a60.w24.m05_g10_real_replay` pass, `REPLAY PASS REAL differences=0`,
+  `host_platform` = `record_platform` = 6.12.113. But `a60.w24.m03_m05_all_tiers` fails: 1 failed, 665 passed —
+  `tests/test_m05_retake_digest_only.py::test_s6r10_the_committed_real_stem_retaken_on_another_kernel_passes`
+  asserts the committed stem's reactor platform equals the constant `P0` = 6.12.111 (line 279, from WO-1 / `81716c0a`).
+  Any J that commits the re-take fails this test, at the RC's step 14 and in CI. Not changed here.
+
+**Question for the design lane.** Q-S6d: S6R-10 pins the committed REAL stem's platform to `P0`. Default: the test
+reads P0 from the committed stem's coupling records and keeps P1 a synthetic different platform, so it survives every
+cut's re-take; one test-only commit before J. Alternative: J updates `P0`/`P1` alongside the re-take.
