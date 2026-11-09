@@ -833,3 +833,9 @@ G16-b 40/40; F0 PASS. Q1 (`t07_reference.py --check` in CI): no (85.6 s). CI re-
   limitations classified P in support_envelope.yaml, support matrix re-emitted (--check 0 problems), HARVEST_SIZE
   (86, 1046, 140) → (87, 1054, 140); harvest/t08/manifests 1132 passed, 2 skipped. Lesson: every manifest brief carries
   the harvest step. Next: ST WO-7 (docs/briefs/ST-WO7.md).
+
+- 2026-11-09 — ST WO-7 on wp/ST (head 45122519: merge ced1519e, fixes db500230, docs): 12 conflicts, all both-sides;
+  ST link c_5 → c_7 (R-1000), D_7 553b7612…, without_st = D_6 3fdc797a…; ADDENDA m02, m05, e01, opt, st; ADR 0068
+  Accepted (Frank 2026-11-08), D3 amendment kept; register R-1000…1006. Numbers unchanged vs handoff (44 served docs
+  byte-identical, G7 41 bitwise, G8 max 1.756e-4, G8u 2.7027, caches 39, A20 23); catalogue 386/90/129 `03818ed5…`;
+  F0 PASS; ruff clean. CI watched; manifest brief docs/briefs/ST-manifest.md (harvest step included).
