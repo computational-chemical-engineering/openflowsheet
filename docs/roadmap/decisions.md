@@ -947,3 +947,10 @@ G16-b 40/40; F0 PASS. Q1 (`t07_reference.py --check` in CI): no (85.6 s). CI re-
   stderr (empty-file digest with two images). DECISION: Q-S6a keep `path`, Q-S6b clean = fresh `git worktree add`,
   Q-S6c stderr stays in identity; rerun from a fresh worktree first (brief docs/briefs/REL040-s6-rerun.md), design
   lane confirms at its next ruling → alternative: rule first. Reversible by: the ruling.
+- 2026-11-09 — S-6 fresh rerun (99ac9e6e on wp/REL040p): proof PASS `path=128 version=0 platform=4 other=0
+  environment=equal`; S6R-22/23/25 PASS, no stderr written; S6R-24 blocked by a test pinning the old kernel.
+  DECISION: Q-S6d → that test reads the committed record's platform (0282e4d6). Alternative: J updates P0/P1. Reversible
+  by reverting 0282e4d6. Confirmation of Q-S6a–d + X04 D-22 → brief docs/briefs/REL040-s6-confirm.md.
+- 2026-11-09 — X04 CI fix round: wp/X04 at 0f7d9b87 (without_x04 chains, B50 R-1015 member, MCP importorskip, D-21
+  via D-22 catalogue param type `display_unit`, notices page regenerated). Local full suite 1 failed (stale doc page,
+  then fixed). CI watched.
