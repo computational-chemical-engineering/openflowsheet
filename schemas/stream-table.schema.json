@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/frankp/process-runtime/schemas/stream-table.schema.json",
   "title": "StreamTable",
-  "description": "ADR 0068, ST design note §5: `stream-table-v1`, the stream table and energy summary of a run, computed on read from its bundle (`application.stream_table`) and never stored. SI only (C-4). A quantity that cannot be given is null with a typed reason `{code, params}` in its object's `absent` map, and a member is null iff it is a key of `absent` (D6). Open objects (root, stream, substream, phase, unit, port, overall) accept additive v2 members; the phase id, the absent entry and the check quote are closed. A non-additive change is `stream-table-v2`. Every `h`, `s`, `H_flow` and `S_flow` is on the substream's `convention` (the energy section's for its figures). Signs: Q and W positive into the unit; closure = (Q + W) - (H_out - H_in) (C-5).",
+  "description": "ADR 0068, ST design note §5: `stream-table-v1`, the stream table and energy summary of a run, computed on read from its bundle (`application.stream_table`) and never stored. SI only (C-4); a request's display preference adds optional `display` members beside the SI ones and the root `display_units` (ADR 0075 D7.3), which leave every SI member as it is. A quantity that cannot be given is null with a typed reason `{code, params}` in its object's `absent` map, and a member is null iff it is a key of `absent` (D6). Open objects (root, stream, substream, phase, unit, port, overall) accept additive v2 members; the phase id, the absent entry and the check quote are closed. A non-additive change is `stream-table-v2`. Every `h`, `s`, `H_flow` and `S_flow` is on the substream's `convention` (the energy section's for its figures). Signs: Q and W positive into the unit; closure = (Q + W) - (H_out - H_in) (C-5).",
   "type": "object",
   "required": [
     "schema_version",
@@ -153,6 +153,48 @@
         },
         "overall": {
           "$ref": "#/$defs/overall"
+        }
+      }
+    },
+    "display_units": {
+      "description": "ADR 0075 D7.3, D7.5 (X04): the request's display preference as resolved, present iff the request carried `display_units` (`si` included) — the map kind → display unit and the project's ambient pressure, which is non-null iff a gauge unit is in the map. With every `display` member and this member removed, the document is the one returned without `display_units`.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "units",
+        "ambient_pressure"
+      ],
+      "properties": {
+        "units": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "ambient_pressure": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "value",
+                "unit"
+              ],
+              "properties": {
+                "value": {
+                  "type": "number",
+                  "exclusiveMinimum": 0
+                },
+                "unit": {
+                  "const": "Pa"
+                }
+              }
+            }
+          ]
         }
       }
     }
@@ -331,6 +373,171 @@
         },
         "absent": {
           "$ref": "#/$defs/absent"
+        },
+        "display": {
+          "description": "ADR 0075 D7.3 (X04): the converted members of this object in the request's display units, present iff the request carried `display_units` and one of them has a value whose kind is in the resolved map (never empty). A number maps to its display item, an array to an array of the same length with null where the SI element is null; the SI members are unchanged. A display value that is not a finite binary64 number is null with the reason `display_out_of_range`.",
+          "type": "object",
+          "minProperties": 1,
+          "propertyNames": {
+            "enum": [
+              "T",
+              "P"
+            ]
+          },
+          "additionalProperties": {
+            "oneOf": [
+              {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "value",
+                      "unit"
+                    ],
+                    "properties": {
+                      "value": {
+                        "type": "number"
+                      },
+                      "unit": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "value",
+                      "unit",
+                      "reason"
+                    ],
+                    "properties": {
+                      "value": {
+                        "type": "null"
+                      },
+                      "unit": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "reason": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "code",
+                          "params"
+                        ],
+                        "properties": {
+                          "code": {
+                            "const": "display_out_of_range"
+                          },
+                          "params": {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "required": [
+                              "kind",
+                              "unit"
+                            ],
+                            "properties": {
+                              "kind": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "unit": {
+                                "type": "string",
+                                "minLength": 1
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "type": "array",
+                "items": {
+                  "oneOf": [
+                    {
+                      "oneOf": [
+                        {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "value",
+                            "unit"
+                          ],
+                          "properties": {
+                            "value": {
+                              "type": "number"
+                            },
+                            "unit": {
+                              "type": "string",
+                              "minLength": 1
+                            }
+                          }
+                        },
+                        {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "value",
+                            "unit",
+                            "reason"
+                          ],
+                          "properties": {
+                            "value": {
+                              "type": "null"
+                            },
+                            "unit": {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            "reason": {
+                              "type": "object",
+                              "additionalProperties": false,
+                              "required": [
+                                "code",
+                                "params"
+                              ],
+                              "properties": {
+                                "code": {
+                                  "const": "display_out_of_range"
+                                },
+                                "params": {
+                                  "type": "object",
+                                  "additionalProperties": false,
+                                  "required": [
+                                    "kind",
+                                    "unit"
+                                  ],
+                                  "properties": {
+                                    "kind": {
+                                      "type": "string",
+                                      "minLength": 1
+                                    },
+                                    "unit": {
+                                      "type": "string",
+                                      "minLength": 1
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
         }
       },
       "allOf": [
@@ -471,6 +678,31 @@
         },
         "absent": {
           "$ref": "#/$defs/absent"
+        },
+        "display": {
+          "description": "ADR 0075 D7.3 (X04): as the stream's `display`, over this object's converted members.",
+          "type": "object",
+          "minProperties": 1,
+          "propertyNames": {
+            "enum": [
+              "n",
+              "n_total",
+              "m",
+              "m_total",
+              "x",
+              "w",
+              "H_flow",
+              "h",
+              "h_mass",
+              "s",
+              "s_mass",
+              "vapor_fraction_molar",
+              "vapor_fraction_mass"
+            ]
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/stream/properties/display/additionalProperties"
+          }
         }
       },
       "allOf": [
@@ -607,6 +839,31 @@
         },
         "absent": {
           "$ref": "#/$defs/absent"
+        },
+        "display": {
+          "description": "ADR 0075 D7.3 (X04): as the stream's `display`, over this object's converted members.",
+          "type": "object",
+          "minProperties": 1,
+          "propertyNames": {
+            "enum": [
+              "n",
+              "n_total",
+              "m",
+              "m_total",
+              "x",
+              "w",
+              "H_flow",
+              "h",
+              "h_mass",
+              "s",
+              "s_mass",
+              "phase_fraction_molar",
+              "phase_fraction_mass"
+            ]
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/stream/properties/display/additionalProperties"
+          }
         }
       },
       "allOf": [
@@ -669,6 +926,19 @@
         },
         "absent": {
           "$ref": "#/$defs/absent"
+        },
+        "display": {
+          "description": "ADR 0075 D7.3 (X04): as the stream's `display`, over this object's converted members.",
+          "type": "object",
+          "minProperties": 1,
+          "propertyNames": {
+            "enum": [
+              "H_flow"
+            ]
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/stream/properties/display/additionalProperties"
+          }
         }
       },
       "allOf": [
@@ -727,6 +997,23 @@
         },
         "absent": {
           "$ref": "#/$defs/absent"
+        },
+        "display": {
+          "description": "ADR 0075 D7.3 (X04): as the stream's `display`, over this object's converted members.",
+          "type": "object",
+          "minProperties": 1,
+          "propertyNames": {
+            "enum": [
+              "H_in",
+              "H_out",
+              "Q",
+              "W",
+              "closure"
+            ]
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/stream/properties/display/additionalProperties"
+          }
         }
       },
       "allOf": [
@@ -788,6 +1075,23 @@
         },
         "absent": {
           "$ref": "#/$defs/absent"
+        },
+        "display": {
+          "description": "ADR 0075 D7.3 (X04): as the stream's `display`, over this object's converted members.",
+          "type": "object",
+          "minProperties": 1,
+          "propertyNames": {
+            "enum": [
+              "H_feeds",
+              "H_products",
+              "Q",
+              "W",
+              "closure"
+            ]
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/stream/properties/display/additionalProperties"
+          }
         }
       },
       "allOf": [

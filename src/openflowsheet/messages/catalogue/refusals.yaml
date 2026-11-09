@@ -847,6 +847,89 @@ entries:
     action: "Choose another path for the project, or move or rename the file."
     see_also: [project_exists, directory_not_empty]
     examples: [{params: {directory: plant.txt}}]
+  # X04 (ADR 0075 D5, D9): a request's `display_units` text refused. The user's text is
+  # JSON-quoted after ": ", so the legacy grammar reads exactly one code (claim C13).
+  - code: display_units_invalid
+    family: refusal
+    kind: input
+    complete: true
+    title: A display units preference that cannot be read
+    args: [index]
+    detail_pattern: '^"(?P<item>(?:[^"\\]|\\.)*)"$'
+    params:
+      index: {type: number, label: item number (from 0)}
+      item:  {type: text, optional: true, label: item as written}
+    summary: "The display units preference was not read: item {index}[ ({item!raw})] is not a preset or a kind=unit pair it accepts."
+    where: "the request member display_units"
+    why: "display_units is a comma-separated list read left to right. The first item may be a preset (si or eng); every other item is kind=unit, where kind is a quantity kind such as temperature or molar_flow, named at most once. An unknown kind, a missing '=' or unit, a preset after the first item, or a kind named twice is refused, and nothing is converted."
+    action: "Write display_units as an optional preset followed by kind=unit items, for example eng,temperature=degF; the units guide lists the kinds and their units."
+    see_also: [display_unit_unsupported, ambient_pressure_undeclared]
+    examples:
+      - params: {index: 0, item: "temp=degC"}
+      - params: {index: 1, item: "eng"}
+
+  - code: display_unit_unsupported
+    family: refusal
+    kind: not_supported
+    complete: true
+    title: A display unit this version does not offer for the kind
+    args: [kind]
+    detail_pattern: '^"(?P<unit>(?:[^"\\]|\\.)*)"$'
+    params:
+      kind: {type: text, label: quantity kind}
+      unit: {type: text, optional: true, label: unit asked for}
+    summary: "Values of kind {kind!raw} cannot be shown in[ {unit!raw}]: the unit is not one this version offers for that kind."
+    where: "the request member display_units"
+    why: "Each quantity kind is shown in its SI unit or in one of a fixed list of units, each spelled exactly as in the input table: degC, not °C or celsius; bar or barg, not bara. Some kinds, such as molar heat capacity, have no display units besides SI in this version."
+    action: "Use one of the units the units guide lists for {kind!raw}, spelled exactly, or the kind's SI unit to show it unconverted."
+    gap: {limitation: null, capability: null}
+    see_also: [display_units_invalid]
+    examples:
+      - params: {kind: temperature, unit: celsius}
+      - params: {kind: molar_heat_capacity, unit: "kJ/(mol K)"}
+
+  - code: ambient_pressure_undeclared
+    family: refusal
+    kind: input
+    complete: true
+    title: A gauge display unit in a project without an ambient pressure
+    args: [kind]
+    detail_pattern: '^"(?P<unit>(?:[^"\\]|\\.)*)"$'
+    params:
+      kind: {type: text, label: quantity kind}
+      unit: {type: text, optional: true, label: gauge unit asked for}
+    summary: "Pressures cannot be shown as gauge pressures[ in {unit!raw}]: the project has no declared ambient pressure."
+    where: "the request member display_units"
+    why: "A gauge pressure is the absolute pressure minus the ambient pressure of the site. OpenFlowsheet never assumes an ambient pressure (not even one standard atmosphere): it uses the one the project declares, and this project declares none."
+    action: "Ask the project's operator to declare it with openflowsheet project ambient --project DIR --pressure VALUE --unit UNIT, or show pressures in an absolute unit such as bar."
+    see_also: [ambient_pressure_invalid, display_units_invalid]
+    examples:
+      - params: {kind: pressure, unit: barg}
+
+  # X04 (ADR 0075 D6.2, D9): the operator command `project ambient` refuses a declaration.
+  - code: ambient_pressure_invalid
+    family: refusal
+    kind: input
+    complete: true
+    title: An ambient pressure that cannot be declared
+    args: [part]
+    params:
+      part:  {type: text, label: what is wrong (value or unit)}
+      value: {type: text, optional: true, label: value given}
+      unit:  {type: text, optional: true, label: unit given}
+    summary: "The ambient pressure was not declared: its {part!raw} is not accepted[ ({value!raw} {unit!raw})]."
+    why: "The ambient pressure is the absolute pressure gauge readings are measured from, so it must be a finite pressure above zero, written in an absolute unit: Pa, kPa, MPa, bar, atm or psi. A gauge unit (barg, psig) cannot declare it, and other spellings (bara, mmHg) are not accepted. Nothing is assumed in its place, and the project file is left as it was."
+    action: "Declare it again with a finite value above zero in one of Pa, kPa, MPa, bar, atm or psi, for example --pressure 1.01325 --unit bar."
+    variants:
+      - when: {equals: {part: unit}}
+        summary: "The ambient pressure was not declared: the unit[ {unit!raw}] is not an absolute pressure unit it can be written in."
+      - when: {equals: {part: value}}
+        summary: "The ambient pressure was not declared: the value[ {value!raw}] is not a finite pressure above zero[ in {unit!raw}]."
+    see_also: [ambient_pressure_undeclared]
+    examples:
+      - params: {part: value, value: "-1.0", unit: bar}
+      - params: {part: unit, value: "1.0", unit: barg}
+
   - code: not_a_project
     family: refusal
     kind: input

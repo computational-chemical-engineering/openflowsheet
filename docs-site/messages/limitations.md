@@ -376,6 +376,36 @@ A turbine's ideal (isentropic) outlet is computed in the phase declared for its 
 
 - **Summary:** The warm-start source is chosen automatically (the lineage's latest VERIFIED state) under an opt-in policy only; no request-named source exists in v0.1 (v0.2, M03).
 
+<a id="L-X04-1"></a>
+
+## `L-X04-1`: L-X04-1
+
+**Kind:** Notice: not a failure.
+
+*No plain-language explanation is written yet; the summary is the technical one.*
+
+- **Summary:** Gauge pressures are not accepted as inputs: ADR 0016's input rows stand, and a gauge unit (`barg`, `psig`) in a revision or a change is refused with its existing code. Gauge units are display units only, resolved against the project's declared ambient pressure. Input conversion at commit is the planned remedy, not built in 0.4.
+
+<a id="L-X04-2"></a>
+
+## `L-X04-2`: L-X04-2
+
+**Kind:** Notice: not a failure.
+
+*No plain-language explanation is written yet; the summary is the technical one.*
+
+- **Summary:** Display units change responses only. Stored and hashed documents, raw artifacts, check quotes and the web shell's as-solved state table stay SI; a display preference never reaches a run, a bundle, a certificate or a cache key.
+
+<a id="L-X04-3"></a>
+
+## `L-X04-3`: L-X04-3
+
+**Kind:** Notice: not a failure.
+
+*No plain-language explanation is written yet; the summary is the technical one.*
+
+- **Summary:** A number without a display kind or a display row stays SI under every preference: the stream table's `S_flow` (W/K), `V_flow` (m³/s), `rho` (kg/m³), `v` (m³/mol) and `molar_mass`, and every message number without a quantity kind.
+
 <a id="L01"></a>
 
 ## `L01`: L01

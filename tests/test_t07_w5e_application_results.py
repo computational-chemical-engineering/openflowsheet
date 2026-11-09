@@ -39,6 +39,7 @@ from msg_schema_support import MSG_OPERATIONS, without_msg
 from opt_schema_support import without_opt
 from st_schema_support import ST_OPERATIONS
 from x02_schema_support import without_x02
+from x04_schema_support import without_x04
 
 from openflowsheet.application.operations import OPERATIONS, Operation
 from openflowsheet.application.types import SCHEMA_BASE, schema_errors
@@ -271,6 +272,22 @@ SNAPSHOT_OPT: dict[str, str | None] = {
 SNAPSHOT_ST: dict[str, str | None] = {
     "get_stream_table": "951b77ea0f69a0eb8f5cb7d44a9c1c570dd6d05d57b7c72de05a7a7e61208465",
 }
+#: X04 (ADR 0075, ADR 0019 Amendment 17; R-1010): the operations whose resolved response embeds
+#: `project_summary` (`ambient_pressure`, D6.3), an explanation's numbers (`display`, D7.1–D7.2) or
+#: `job_result` (`display_units`, D7.4–D7.5). Taken in X04's final work order over ST's responses;
+#: with X04's additions removed (`tests/x04_schema_support.py`) each is its `SNAPSHOT_ST` (or
+#: earlier) value again (`test_x04_without_its_additions_every_response_is_its_pre_x04_snapshot`).
+SNAPSHOT_X04: dict[str, str | None] = {
+    "get_project": "0124a532c7cf9c5d84850b609253b594346258a6ed83224c47e208e069664ff2",
+    "solve": "e7f66229ba0e6c43c21226fb4db3cd8e273da6838ea95a5423603d89e50bab04",
+    "submit_job": "9a6b2d2623b0c5c98cf3c6726465897834f20bd9a283bdb4797a996c87ca69d6",
+    "get_job": "8d01b63a3caa3f024a5014619cd48f15552fa3a1306df93634eef687c9a4cfe5",
+    "list_jobs": "c7bb7114734034dd108ecc61d10ac72c0b22d494ea4f1b87eae0f9d17efb31a0",
+    "wait_job": "fd16741d814bbae321fb820832fcde74bc229a8a8908078ce3e8255071b9d681",
+    "cancel_job": "8d01b63a3caa3f024a5014619cd48f15552fa3a1306df93634eef687c9a4cfe5",
+    "get_job_result": "866c3ca98e8c4cdf25f6b73cc5049f9d3e28c5bd5ef8cef045fd03e69bb52364",
+    "explain": "eb32f91fcb5209fcf0893734c083a4c6a357e4524557f78c537d5461a9f894c2",
+}
 
 
 def _without_specifications(schema: Any) -> Any:
@@ -302,10 +319,36 @@ def test_r4_g3_every_resolved_response_schema_equals_the_snapshot() -> None:
         **SNAPSHOT_X02,
         **SNAPSHOT_OPT,
         **SNAPSHOT_ST,
+        **SNAPSHOT_X04,
     }
     assert SNAPSHOT_ST["get_stream_table"] == SNAPSHOT_AT_B13D556["get_artifact"]
     for operation in OPERATIONS.values():
         assert "$ref" not in canonical_json(resolved_response(operation)).decode("utf-8")
+
+
+def test_x04_without_its_additions_every_response_is_its_pre_x04_snapshot() -> None:
+    """R4-G3 for X04 (ADR 0075, R-1010): with X04's additions removed every resolved response is
+    its snapshot before X04, and exactly the operations of `SNAPSHOT_X04` moved."""
+    before = {
+        **SNAPSHOT_AT_B13D556,
+        **SNAPSHOT_AMENDMENT_2,
+        **SNAPSHOT_AMENDMENT_3,
+        **SNAPSHOT_M02,
+        **SNAPSHOT_M04,
+        **SNAPSHOT_MSG,
+        **SNAPSHOT_MSG_EXPLAIN,
+        **SNAPSHOT_X02,
+        **SNAPSHOT_OPT,
+        **SNAPSHOT_ST,
+    }
+    assert set(before) == set(OPERATIONS)
+    moved = []
+    for name, operation in OPERATIONS.items():
+        resolved = resolved_response(operation)
+        assert _digest(without_x04(resolved)) == before[name], name
+        if _digest(resolved) != before[name]:
+            moved.append(name)
+    assert sorted(moved) == sorted(SNAPSHOT_X04)
 
 
 def test_opt_without_its_additions_every_response_is_its_pre_opt_snapshot() -> None:
@@ -325,7 +368,8 @@ def test_opt_without_its_additions_every_response_is_its_pre_opt_snapshot() -> N
     for name, operation in OPERATIONS.items():
         if name in ST_OPERATIONS:  # ST's row (ADR 0068) postdates OPT; its own `SNAPSHOT_ST`
             continue
-        resolved = resolved_response(operation)
+        # X04's additions (ADR 0075) postdate OPT: they are taken out first.
+        resolved = without_x04(resolved_response(operation))
         assert _digest(without_opt(resolved)) == before[name], name
         if _digest(resolved) != before[name]:
             moved.append(name)
@@ -352,7 +396,7 @@ def test_msg_g10_without_failure_every_response_is_its_pre_msg_snapshot() -> Non
             continue
         # X02's (ADR 0070) and OPT's (ADR 0071) additions postdate MSG: they are taken out
         # first, the later first.
-        resolved = without_x02(without_opt(resolved_response(operation)))
+        resolved = without_x02(without_opt(without_x04(resolved_response(operation))))
         assert _digest(without_msg(resolved)) == before[name], name
         if _digest(resolved) != before[name]:
             moved.append(name)
@@ -376,8 +420,8 @@ def test_x02_without_warm_start_every_response_is_its_pre_x02_snapshot() -> None
     for name, operation in OPERATIONS.items():
         if name in ST_OPERATIONS:  # ST's row (ADR 0068) postdates X02; its own `SNAPSHOT_ST`
             continue
-        # OPT's additions (ADR 0071) postdate X02: they are taken out first.
-        resolved = without_opt(resolved_response(operation))
+        # OPT's (ADR 0071) and X04's (ADR 0075) additions postdate X02: they are taken out first.
+        resolved = without_opt(without_x04(resolved_response(operation)))
         assert _digest(without_x02(resolved)) == before[name], name
         if _digest(resolved) != before[name]:
             moved.append(name)
@@ -398,7 +442,9 @@ def test_g_r6_6_list_models_moved_only_by_the_approved_additive_member() -> None
         if _digest(
             without_m02(
                 without_m04(
-                    without_msg(without_x02(without_opt(resolved_response(OPERATIONS[name]))))
+                    without_msg(
+                        without_x02(without_opt(without_x04(resolved_response(OPERATIONS[name]))))
+                    )
                 )
             )
         )

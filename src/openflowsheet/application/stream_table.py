@@ -21,6 +21,7 @@ import math
 from collections.abc import Callable, Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
+from types import MappingProxyType
 from typing import TYPE_CHECKING, Any, Final
 
 from openflowsheet import __version__
@@ -43,6 +44,7 @@ from openflowsheet.thermo import (
     PropertyRequest,
     StreamState,
 )
+from openflowsheet.units import DisplayUnits, display_item
 from openflowsheet.verify import column
 from openflowsheet.verify.table import (
     EXTERNAL_DUTY_MODELS,
@@ -954,6 +956,138 @@ def build(
             "units": units,
             "overall": _overall(inputs, enthalpy),
         },
+    }
+
+
+# -- display members (ADR 0075 D7.3) --------------------------------------------------------------
+
+
+def _frozen(table: dict[str, dict[str, str | None]]) -> Mapping[str, Mapping[str, str | None]]:
+    """A read-only copy of a two-level table (C-8: no module-level mutable state)."""
+    return MappingProxyType({name: MappingProxyType(dict(row)) for name, row in table.items()})
+
+
+#: ADR 0075 D7.3 and the X04 test specification's §4 site table: the display kind of every
+#: number-typed member (a number, or an array of numbers) of every object of `stream-table-v1`,
+#: by object; `None` for a number that is never displayed (L-X04-3, verification evidence, an
+#: entry's params, an identity integer). `molar_volume` and `molar_mass` have no display rows in
+#: 0.4, so `v` and `molar_mass` are never displayed either. A pressure here is absolute (D4.2).
+SITES: Final[Mapping[str, Mapping[str, str | None]]] = _frozen(
+    {
+        "stream": {"T": "temperature", "P": "pressure"},
+        "substream": {
+            "n": "molar_flow",
+            "n_total": "molar_flow",
+            "m": "mass_flow",
+            "m_total": "mass_flow",
+            "x": "mole_fraction",
+            "w": "mass_fraction",
+            "H_flow": "enthalpy_flow",
+            "h": "molar_enthalpy",
+            "h_mass": "specific_enthalpy",
+            "s": "molar_entropy",
+            "s_mass": "specific_entropy",
+            "vapor_fraction_molar": "dimensionless",
+            "vapor_fraction_mass": "dimensionless",
+            "S_flow": None,
+            "V_flow": None,
+            "rho": None,
+        },
+        "phase": {
+            "n": "molar_flow",
+            "n_total": "molar_flow",
+            "m": "mass_flow",
+            "m_total": "mass_flow",
+            "x": "mole_fraction",
+            "w": "mass_fraction",
+            "H_flow": "enthalpy_flow",
+            "h": "molar_enthalpy",
+            "h_mass": "specific_enthalpy",
+            "s": "molar_entropy",
+            "s_mass": "specific_entropy",
+            "phase_fraction_molar": "dimensionless",
+            "phase_fraction_mass": "dimensionless",
+            "v": "molar_volume",
+            "S_flow": None,
+            "V_flow": None,
+            "rho": None,
+        },
+        "port": {"H_flow": "enthalpy_flow"},
+        "unit": {
+            "H_in": "enthalpy_flow",
+            "H_out": "enthalpy_flow",
+            "Q": "heat_rate",
+            "W": "power",
+            "closure": "heat_rate",
+        },
+        "overall": {
+            "H_feeds": "enthalpy_flow",
+            "H_products": "enthalpy_flow",
+            "Q": "heat_rate",
+            "W": "power",
+            "closure": "heat_rate",
+        },
+        "component": {"molar_mass": "molar_mass"},
+        "quote": {"index": None, "value": None, "tolerance": None},
+        "entry": {"params": None},
+        # An identity integer, as a quote's `index` (X04 decision D-6).
+        "phase_id": {"ordinal": None},
+    }
+)
+
+
+def _display(holder: Mapping[str, Any], site: str, units: DisplayUnits) -> dict[str, Any]:
+    """`holder` with its `display` member (D7.3) when one of its converted members has a value:
+    a number maps to its display item, an array to an array of the same length holding a display
+    item or `null` where the SI element is `null`."""
+    shown: dict[str, Any] = {}
+    for member, kind in SITES[site].items():
+        value = holder.get(member)
+        if value is None or kind is None or kind not in units:
+            continue
+        if isinstance(value, list):
+            shown[member] = [
+                None if item is None else display_item(float(item), kind, units) for item in value
+            ]
+        else:
+            shown[member] = display_item(float(value), kind, units)
+    return {**holder, "display": shown} if shown else dict(holder)
+
+
+def displayed(document: Mapping[str, Any], units: DisplayUnits) -> dict[str, Any]:
+    """ADR 0075 D7.3: `document` (a `stream-table-v1` document) with the display members of the
+    preference `units` and the root echo `display_units`. Every SI member is left as it is: with
+    each `display` and the root `display_units` removed, the result is `document` (X04 A22)."""
+    streams = [
+        {
+            **_display(stream, "stream", units),
+            "substreams": [
+                {
+                    **_display(substream, "substream", units),
+                    "phases": [_display(phase, "phase", units) for phase in substream["phases"]],
+                }
+                for substream in stream["substreams"]
+            ],
+        }
+        for stream in document["streams"]
+    ]
+    energy = document["energy"]
+    unit_documents = [
+        {
+            **_display(unit, "unit", units),
+            "ports": [_display(port, "port", units) for port in unit["ports"]],
+        }
+        for unit in energy["units"]
+    ]
+    return {
+        **document,
+        "streams": streams,
+        "energy": {
+            **energy,
+            "units": unit_documents,
+            "overall": _display(energy["overall"], "overall", units),
+        },
+        "display_units": units.as_document(),
     }
 
 

@@ -173,7 +173,7 @@ class JobControl(Protocol):
 
     def cancel_job(self, job_id: str) -> Job: ...
 
-    def get_job_result(self, job_id: str) -> JobResult: ...
+    def get_job_result(self, job_id: str, *, display_units: str | None = None) -> JobResult: ...
 
 
 class Inspection(Protocol):
@@ -236,6 +236,7 @@ class Inspection(Protocol):
         depth: int = 12,
         cursor: str | None = None,
         limit: int = 50,
+        display_units: str | None = None,
     ) -> Projection: ...
 
     def list_audit(

@@ -8,11 +8,15 @@
 // Below the streams, ST's stream table (`get_stream_table`, ADR 0068; Frank's O3): phase
 // fractions, per-phase flows and enthalpy flows as the operation returns them, each null shown
 // with the operation's reason for it; a refusal is shown, and the rest of the screen stays.
+// The stream table is read in the viewer's display units (`units.js`; X04 A38): a converted
+// value shows its display unit in the column heading and its SI value and unit in its title.
+// The as-solved state above it stays SI (L-X04-2) and says so.
 
 import { h } from "../h.js";
 import { ENERGY_COLUMNS, QUANTITY_COLUMNS, streamTableView } from "../model/stream-table.js";
 import { modelSignature, streamTable, unitPanel } from "../model/streams.js";
 import { link } from "../router.js";
+import { displayRequest, textUnit } from "../units.js";
 import { DASH, explained, fmt, pill } from "../text.js";
 import { phaseSection, runStructure } from "./certificate.js";
 import {
@@ -35,7 +39,7 @@ export const name = "streams";
 export const pattern = "/job/{jid}/streams";
 
 export async function load(params, api) {
-  const { jid, signal } = params;
+  const { jid, signal, units } = params;
   const bundle = await runBundle(api, jid, { signal });
   const revision = await readMember(api, bundle, "revision.json", { signal });
   const state = await readMember(api, bundle, "solution-state.json", { signal });
@@ -44,16 +48,17 @@ export async function load(params, api) {
     state === null ? await readMember(api, bundle, "failure-bundle.json", { signal }) : null;
   const rows = await runStructure(api, bundle, bundle.run, { signal });
   const models = await api.call("list_models", {}, { signal });
-  const stream = await streamTableOf(api, jid, signal);
+  const stream = await streamTableOf(api, jid, signal, units);
   return { jid, run: bundle.run, revision, state, certificate, failure, rows, models, stream };
 }
 
 // `get_stream_table` read whole (the operation pages its document; `readWhole` follows every
 // cursor and elision): `{document}`, or `{refused}` with the server's `ApiError` document when it
 // gives none for this run (no solution state, a basis this installation cannot evaluate, …).
-async function streamTableOf(api, jid, signal) {
+async function streamTableOf(api, jid, signal, units) {
+  const request = { job_id: jid, ...displayRequest(units) };
   try {
-    return { document: await api.readWhole("get_stream_table", { job_id: jid }, { signal }), refused: null };
+    return { document: await api.readWhole("get_stream_table", request, { signal }), refused: null };
   } catch (error) {
     if (error?.document && error.status !== 401) return { document: null, refused: error.document };
     throw error;
@@ -149,6 +154,11 @@ export function view(data) {
     noState,
     section(
       "Streams",
+      h(
+        "p",
+        { class: "muted", "data-ofs-si-only": "1" },
+        "As solved, in SI units: this table is never converted to display units.",
+      ),
       table(
         headers,
         streams.rows.map((row) => [
@@ -210,8 +220,9 @@ export function view(data) {
 
 // --------------------------------------------------------------------------- stream table
 
-function headerOf(column) {
-  return { text: column.unit ? `${column.member} (${column.unit})` : column.member, num: true };
+// A column heading: the member and its unit — the display unit when the column is converted.
+function headerOf(member, unit) {
+  return { text: unit ? `${member} (${textUnit(unit)})` : member, num: true };
 }
 
 // A cell of the stream table: a number in the current mode, a null with its reason's footnote
@@ -226,7 +237,32 @@ function stCell(cell) {
       h("sup", null, `*${cell.absent.mark}`),
     );
   }
+  if (cell.display) return displayCell(cell);
   return numCell(cell.value);
+}
+
+// A converted cell: the server's display value (never computed here) in the current mode, the SI
+// value and unit as its title; a display without a value shows its reason's mark.
+function displayCell(cell) {
+  const si = `${String(cell.value)} ${cell.unit ?? ""}`.trim();
+  if (cell.displayAbsent) {
+    return h(
+      "td",
+      { class: "num muted", title: `${si}; ${cell.displayAbsent.text}`, "data-ofs-absent": cell.displayAbsent.text },
+      DASH,
+      h("sup", null, `*${cell.displayAbsent.mark}`),
+    );
+  }
+  return h(
+    "td",
+    { class: "num", title: si, "data-ofs-display": cell.display.unit },
+    fmt(cell.display.value, getNumberMode()),
+  );
+}
+
+// `cell` with its column's SI unit (the title of a converted value).
+function withUnit(cell, unit) {
+  return cell === null || cell.display === undefined ? cell : { ...cell, unit };
 }
 
 function refusedNotice(refused) {
@@ -266,22 +302,28 @@ export function streamTableSection(stream) {
         h("p", { class: "notice", "data-ofs-flash-failed": String(note.entry.params?.stream ?? "") }, note.plain),
       ),
       table(
-        ["stream", "phase", "phase_source", "near phase boundary", ...QUANTITY_COLUMNS.map(headerOf)],
+        [
+          "stream",
+          "phase",
+          "phase_source",
+          "near phase boundary",
+          ...QUANTITY_COLUMNS.map((column) => headerOf(column.member, view.units[column.member] ?? column.unit)),
+        ],
         view.rows.map((row) => [
           id(row.stream),
           row.phase,
           row.total ? text(row.phaseSource) : DASH,
           row.total ? (row.nearBoundary ? "yes" : "no") : DASH,
-          ...QUANTITY_COLUMNS.map((column) => stCell(row.cells[column.member])),
+          ...QUANTITY_COLUMNS.map((column) => stCell(withUnit(row.cells[column.member], column.unit))),
         ]),
       ),
       h("h3", null, "Energy"),
       table(
-        ["unit", "model", ...ENERGY_COLUMNS.map((member) => ({ text: `${member} (W)`, num: true }))],
+        ["unit", "model", ...ENERGY_COLUMNS.map((member) => headerOf(member, view.energyUnits[member] ?? "W"))],
         view.energy.map((row) => [
           id(row.subject),
           text(row.model),
-          ...ENERGY_COLUMNS.map((member) => stCell(row.cells[member])),
+          ...ENERGY_COLUMNS.map((member) => stCell(withUnit(row.cells[member], "W"))),
         ]),
       ),
       view.notes.length === 0

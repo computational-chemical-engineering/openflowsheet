@@ -647,6 +647,48 @@
             }
           ],
           "description": "OPT design §4.10 (ADR 0071, ADR 0019 Amendment 16): an `optimize` job's answer, the optimization report, present iff the operation is `optimize`; null when the job ended without a report (cancelled, timed out, failed)."
+        },
+        "display_units": {
+          "description": "ADR 0075 D7.4–D7.5 (ADR 0019 Amendment 17): the request's display preference as resolved, present iff the request carried `display_units` (`si` included) — the map kind → display unit and the project's ambient pressure, which is non-null iff a gauge unit is in the map. Every explanation the result holds is rendered under it; nothing else changes.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "units",
+            "ambient_pressure"
+          ],
+          "properties": {
+            "units": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "ambient_pressure": {
+              "oneOf": [
+                {
+                  "type": "null"
+                },
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "value",
+                    "unit"
+                  ],
+                  "properties": {
+                    "value": {
+                      "type": "number",
+                      "exclusiveMinimum": 0
+                    },
+                    "unit": {
+                      "const": "Pa"
+                    }
+                  }
+                }
+              ]
+            }
+          }
         }
       },
       "oneOf": [

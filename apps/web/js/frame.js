@@ -4,6 +4,7 @@
 
 import { h } from "./h.js";
 import { explained } from "./text.js";
+import { unitChoices } from "./units.js";
 
 // The theme toggle cycles through these; "system" follows `prefers-color-scheme`.
 export const THEMES = ["system", "light", "dark"];
@@ -15,9 +16,11 @@ export function nextTheme(theme) {
 
 // `project`: `get_project`'s document, or null before sign-in.
 // `numbers`: §5.5's global number mode ("short" or "full"), toggled by `onNumbers`.
+// `units`: the viewer's display units (`units.js`), chosen with `onUnits(value)`; the gauge
+// choice is disabled unless the project declares its ambient pressure (X04 A38).
 export function headerView(
   project,
-  { theme = "system", onTheme, onSignOut, numbers = "short", onNumbers } = {},
+  { theme = "system", onTheme, onSignOut, numbers = "short", onNumbers, units = "si", onUnits } = {},
 ) {
   const facts =
     project === null
@@ -57,6 +60,7 @@ export function headerView(
         },
         `numbers: ${numbers}`,
       ),
+      unitsControl(project, units, onUnits),
       project === null
         ? null
         : h(
@@ -68,6 +72,29 @@ export function headerView(
             },
             "sign out",
           ),
+    ),
+  );
+}
+
+// The display-units control: a labelled select of `unitChoices(project)`.
+function unitsControl(project, units, onUnits) {
+  return h(
+    "label",
+    { title: "units of the stream table and failure explanations; the SI values stay in each title" },
+    "units: ",
+    h(
+      "select",
+      {
+        "data-ofs-action": "units",
+        on: onUnits ? { change: (event) => onUnits(event.target.value) } : {},
+      },
+      unitChoices(project).map((choice) =>
+        h(
+          "option",
+          { value: choice.value, selected: choice.value === units, disabled: !choice.enabled },
+          choice.enabled ? choice.label : `${choice.label} (no ambient pressure declared)`,
+        ),
+      ),
     ),
   );
 }

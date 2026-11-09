@@ -67,7 +67,8 @@
             "enum",
             "number",
             "quantity",
-            "list"
+            "list",
+            "display_unit"
           ]
         },
         "label": {

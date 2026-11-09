@@ -147,6 +147,7 @@ from openflowsheet.run.bundle import MANIFEST_NAME
 from openflowsheet.run.replay import ReplayReport
 from openflowsheet.studies.nlp.replay import MANIFEST as OPTIMIZATION_MANIFEST
 from openflowsheet.studies.nlp.replay import is_optimization_record
+from openflowsheet.units import DisplayUnits, DisplayUnitsError, parse_display_units
 
 Executor = Literal["inline", "process"]
 TASKS: tuple[str, ...] = get_args(Task)
@@ -843,11 +844,29 @@ class LocalApplication:
             self._executor.signal_cancel(job_id)
         return self._job(job_id, operation)
 
-    def get_job_result(self, job_id: str) -> JobResult:
+    def get_job_result(self, job_id: str, *, display_units: str | None = None) -> JobResult:
         """§4.2 as amended by R4: `{operation, run_result, replay_report, error}` of an ended
-        job; `not_ready` before it ends."""
+        job; `not_ready` before it ends. `display_units` (ADR 0075 D7.4, ADR 0019 Amendment 17)
+        is a display preference, resolved against the project's declared ambient pressure: the
+        result echoes it and every explanation it holds is rendered under it; its SI content is
+        the result without it."""
         self._authorize("get_job_result")
-        return self._result(job_id, "get_job_result")
+        units = (
+            None if display_units is None else self._display_units(display_units, "get_job_result")
+        )
+        result = self._result(job_id, "get_job_result", display_units=units)
+        return result if units is None else _displayed(result, units)
+
+    def _display_units(self, text: str, operation: str) -> DisplayUnits:
+        """ADR 0075 D5, D9: `text` resolved against the declared ambient; a refusal is audited.
+        An `invalid_request` points at `/display_units`; an `unsupported` carries its message
+        head as `reason` (the code with its kind and unit, X04 decision D-5), which MSG reads."""
+        try:
+            return parse_display_units(text, self._policy.current().ambient_pressure)
+        except DisplayUnitsError as error:
+            pointer = error.pointer
+            detail = {"pointer": pointer} if pointer is not None else {"reason": error.message}
+            self._refuse(error.api_error, error.message, operation=operation, **detail)
 
     # ------------------------------------------------------------------------- the job steps
 
@@ -1026,7 +1045,9 @@ class LocalApplication:
                 return waited.job
             after = waited.events[-1].sequence
 
-    def _result(self, job_id: str, operation: str) -> JobResult:
+    def _result(
+        self, job_id: str, operation: str, *, display_units: DisplayUnits | None = None
+    ) -> JobResult:
         job = self._job(job_id, operation)
         if job.status not in TERMINAL_STATUSES:
             self._refuse(
@@ -1040,7 +1061,7 @@ class LocalApplication:
         if job.operation == "solve":
             return JobResult(
                 operation="solve",
-                run_result=self._run_result(job),
+                run_result=self._run_result(job, display_units=display_units),
                 replay_report=None,
                 error=job.error,
             )
@@ -1094,7 +1115,7 @@ class LocalApplication:
         answer: dict[str, Any] = json.loads(self._artifact_path(chosen).read_bytes())
         return answer
 
-    def _run_result(self, job: Job) -> RunResult:
+    def _run_result(self, job: Job, *, display_units: DisplayUnits | None = None) -> RunResult:
         """§5.7, read from what the job produced: the resolution and run facts its runner
         recorded (`worker_result.run`) and its outputs; a job that never resolved its request
         (cancelled while queued) has its resolution re-derived — a pure function of the stored
@@ -1123,16 +1144,22 @@ class LocalApplication:
             outputs=job.outputs,
             error=job.error,
             solve_path=run["solve_path"],
-            failure=self._run_failure(job, revision, run),
+            failure=self._run_failure(job, revision, run, display_units=display_units),
         )
 
     def _run_failure(
-        self, job: Job, revision: Revision, run: Mapping[str, Any]
+        self,
+        job: Job,
+        revision: Revision,
+        run: Mapping[str, Any],
+        *,
+        display_units: DisplayUnits | None = None,
     ) -> RunFailure | None:
         """ADR 0058 D5 (MSG §3.4, §4.8): the failure, derived on read from the stored
         `failure-bundle.json`, the run's `diagnosis` when the runner recorded one, and the
         revision document — so a job a 0.3 store holds gets one too (without numbers). A bundle
-        that cannot be read or parsed gives the failure of the outcome alone. Never raises."""
+        that cannot be read or parsed gives the failure of the outcome alone. Never raises.
+        The explanation is rendered under `display_units` (ADR 0075 D7.4); `params` stay SI."""
         from openflowsheet.messages.render import RenderContext, explain_failure
         from openflowsheet.verify.failure import TAXONOMY
 
@@ -1164,6 +1191,7 @@ class LocalApplication:
                 revision_id=revision.revision_id,
                 job_id=job.job_id,
                 bundle_id=output.artifact_id.rpartition("/")[0] or None,
+                display_units=display_units,
             ),
         )
         return RunFailure(
@@ -1375,6 +1403,7 @@ class LocalApplication:
             server=ServerInfo(
                 package_version=__version__, git_commit=None, store_schema=STORE_SCHEMA
             ),
+            ambient_pressure=self._policy.current().ambient_pressure,
         )
 
     def list_models(self) -> ModelRegistryView:
@@ -1546,6 +1575,7 @@ class LocalApplication:
         depth: int = STREAM_TABLE_DEPTH,
         cursor: str | None = None,
         limit: int = DEFAULT_PAGE,
+        display_units: str | None = None,
     ) -> Projection:
         """ADR 0068 (ST note §6.1): an ended job's stream table and energy summary, the
         `stream-table-v1` document computed on read from its replay bundle's revision, solution
@@ -1562,6 +1592,11 @@ class LocalApplication:
             document when empty.
         depth, cursor, limit
             Bounds of the projection, and the cursor of its next page.
+        display_units
+            A display preference (ADR 0075 D7.3, ADR 0019 Amendment 17), resolved against the
+            project's declared ambient pressure: each converted number gains a `display` item
+            beside it and the root echoes the preference; the SI members are unchanged, and the
+            `sha256` is the displayed document's.
 
         Returns
         -------
@@ -1575,11 +1610,13 @@ class LocalApplication:
             member the report reads (MSG's member detail, as `get_artifact`'s); `not_ready`
             before the job ends; `unsupported` when the revision's basis cannot be evaluated in
             this installation (`basis_unavailable(<id>)`, with its `hint`); `internal_error` when
-            the bundle's members are inconsistent.
+            the bundle's members are inconsistent; `invalid_request` or `unsupported` for a
+            `display_units` refused by ADR 0075 D9.
         """
         operation = "get_stream_table"
         self._authorize(operation)
         self._check_view(operation, pointer, depth, cursor, limit)
+        units = None if display_units is None else self._display_units(display_units, operation)
         job = self._job(job_id, operation)
         if job.status not in TERMINAL_STATUSES:
             self._refuse(
@@ -1631,6 +1668,8 @@ class LocalApplication:
                 bundle_id=row.artifact_id,
                 **error.detail,
             )
+        if units is not None:
+            document = stream_table.displayed(document, units)
         return self._project(
             operation,
             document,
@@ -2104,6 +2143,27 @@ def _with_report_hashes(
     for report in reports:
         hashes[f"model_replacement:{report.instance_id}"] = document_sha256(report.as_document())
     return {**document, "provenance": {**provenance, "artifact_hashes": hashes}}
+
+
+def _displayed(result: JobResult, units: DisplayUnits) -> JobResult:
+    """ADR 0075 D7.4: `result` with its `error` documents (the root's and the run result's)
+    explained under `units` and the preference echoed. `project_response` keeps an explanation
+    an error already carries (`operations.explained_detail`), so this rendering is the one sent."""
+    run_result = result.run_result
+    if run_result is not None:
+        run_result = replace(run_result, error=_explained(run_result.error, units))
+    return replace(
+        result, run_result=run_result, error=_explained(result.error, units), display_units=units
+    )
+
+
+def _explained(error: ApiError | None, units: DisplayUnits) -> ApiError | None:
+    from openflowsheet.messages.render import RenderContext, render_error
+
+    if error is None:
+        return None
+    explanation = render_error(error.as_document(), context=RenderContext(display_units=units))
+    return replace(error, detail={**error.detail, "explanation": explanation})
 
 
 def _unproduced(job: Job) -> ApiError:

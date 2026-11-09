@@ -51,6 +51,7 @@ from openflowsheet.application.validation import (
 )
 from openflowsheet.canonical import document_sha256
 from openflowsheet.resources import packaged
+from openflowsheet.units import DisplayUnits
 
 if TYPE_CHECKING:
     from openflowsheet.run.replay import ReplayReport
@@ -1479,7 +1480,9 @@ class JobResult:
     any attempt was recorded (cancelled while queued). `surrogate_study` (ADR 0037 D6) is a
     `surrogate_study` job's answer and only its, `None` when the job ended before its study did.
     `optimization` (ADR 0071, OPT design §4.10) is an `optimize` job's report and only its,
-    `None` when the job ended without one.
+    `None` when the job ended without one. `display_units` (ADR 0075 D7.4–D7.5) is the request's
+    resolved display preference, echoed iff the request carried one; the result's explanations
+    were rendered under it.
     """
 
     operation: JobOperation
@@ -1489,6 +1492,7 @@ class JobResult:
     experiment: Mapping[str, Any] | None = None
     surrogate_study: Mapping[str, Any] | None = None
     optimization: Mapping[str, Any] | None = None
+    display_units: DisplayUnits | None = None
 
     def __post_init__(self) -> None:
         if (self.run_result is not None) != (self.operation == "solve"):
@@ -1525,6 +1529,8 @@ class JobResult:
             document["optimization"] = (
                 copy.deepcopy(dict(self.optimization)) if self.optimization is not None else None
             )
+        if self.display_units is not None:
+            document["display_units"] = self.display_units.as_document()
         return document
 
     @classmethod
@@ -1549,9 +1555,22 @@ class JobResult:
                 experiment=d.get("experiment"),
                 surrogate_study=d.get("surrogate_study"),
                 optimization=d.get("optimization"),
+                display_units=_display_units_build(d.get("display_units")),
             ),
             document,
         )
+
+
+def _display_units_build(document: Mapping[str, Any] | None) -> DisplayUnits | None:
+    """A `display_units` echo → its `DisplayUnits`; the ambient is non-null iff a gauge unit is
+    in the map, which the schema cannot state (ADR 0075 D5.4)."""
+    if document is None:
+        return None
+    ambient = document["ambient_pressure"]
+    units = DisplayUnits(document["units"], None if ambient is None else float(ambient["value"]))
+    if units.as_document() != document:
+        raise ValueError("display_units: ambient_pressure is set iff a gauge unit is in the map")
+    return units
 
 
 # ================================================== CapabilityReference and ProjectPolicy §5.9
@@ -1679,8 +1698,20 @@ class ProjectPolicy:
     capabilities: tuple[CapabilityReference, ...]
     executor: ExecutorSettings = field(default_factory=ExecutorSettings)
     schema_version: Literal["project-policy-v1"] = "project-policy-v1"
+    #: ADR 0075 D6: the project's declared ambient pressure, Pa — read by gauge display rows
+    #: only, never by a run. Absent from the document until declared, so an undeclaring
+    #: project's file and `policy_sha256` are what they were before X04.
+    ambient_pressure: float | None = None
 
     def __post_init__(self) -> None:
+        if self.ambient_pressure is not None and not (
+            isinstance(self.ambient_pressure, float)
+            and math.isfinite(self.ambient_pressure)
+            and self.ambient_pressure > 0.0
+        ):
+            raise ValueError(
+                f"ambient_pressure {self.ambient_pressure!r} is not a finite pressure > 0 Pa"
+            )
         ids = [capability.capability_id for capability in self.capabilities]
         if len(ids) != len(set(ids)):
             raise ValueError(f"capability ids repeat: {sorted(ids)}")
@@ -1709,7 +1740,7 @@ class ProjectPolicy:
             "project_id": self.project_id,
             "capabilities": [capability.as_document() for capability in self.capabilities],
             "executor": self.executor.as_document(),
-        }
+        } | ({} if self.ambient_pressure is None else {"ambient_pressure": self.ambient_pressure})
 
     @classmethod
     def from_document(cls, document: Mapping[str, Any]) -> Self:
@@ -1722,6 +1753,9 @@ class ProjectPolicy:
                 capabilities=tuple(CapabilityReference._build(c) for c in d["capabilities"]),
                 executor=ExecutorSettings._build(d["executor"]),
                 schema_version=d["schema_version"],
+                ambient_pressure=(
+                    None if d.get("ambient_pressure") is None else float(d["ambient_pressure"])
+                ),
             ),
             document,
         )
@@ -1834,8 +1868,11 @@ class ProjectSummary:
     rights: tuple[Right, ...]
     limits: Limits
     server: ServerInfo
+    #: ADR 0075 D6.3: the project's declared ambient pressure, Pa, or `None` (undeclared).
+    ambient_pressure: float | None = None
 
     def as_document(self) -> dict[str, Any]:
+        ambient = self.ambient_pressure
         return {
             "project_id": self.project_id,
             "head": self.head,
@@ -1851,6 +1888,7 @@ class ProjectSummary:
             "rights": list(self.rights),
             "limits": self.limits.as_document(),
             "server": self.server.as_document(),
+            "ambient_pressure": None if ambient is None else {"value": ambient, "unit": "Pa"},
         }
 
 

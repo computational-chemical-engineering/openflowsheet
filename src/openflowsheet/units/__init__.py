@@ -18,6 +18,9 @@ input documents; T06 specification §8.5 as amended by A2): a specification valu
 parameter written in a unit of ADR 0016's table is converted to its kind's SI unit, exactly, at
 validation and binding, and the conversion is recorded. Nothing stored is in a non-SI unit. No
 expression evaluation and no state objects. Everything here is a pure function over plain data.
+
+The other direction, for reading only, is `display-conversion-v1` (ADR 0075, `units.display`,
+re-exported here): an SI number a response carries gains a display value beside it.
 """
 
 from __future__ import annotations
@@ -35,6 +38,9 @@ from openflowsheet.canonical import integer_binary64
 
 __all__ = [
     "CONVERSION_ROWS",
+    "DISPLAY_CONVERSION_ID",
+    "DISPLAY_KINDS",
+    "DISPLAY_ROWS",
     "DIMENSION_ORDER",
     "FRACTION_PARAMETERS",
     "KIND_LOWER_BOUNDS_EXCLUSIVE",
@@ -47,6 +53,8 @@ __all__ = [
     "ConversionRule",
     "ConversionSource",
     "Dimension",
+    "DisplayUnits",
+    "DisplayUnitsError",
     "TargetClass",
     "UnitConversion",
     "UnitConversionError",
@@ -55,8 +63,11 @@ __all__ = [
     "combine_kinds",
     "convert_input_value",
     "dimension_of",
+    "display_item",
     "normalize_zero",
+    "parse_display_units",
     "read_number",
+    "text_unit",
 ]
 
 Dimension = tuple[int, int, int, int, int, int, int]
@@ -599,3 +610,16 @@ def convert_input_value(
         component=component if molar_mass is not None else None,
         molar_mass=molar_mass,
     )
+
+
+# -- display-conversion-v1 (ADR 0075), re-exported; it reads the kind tables above --------------
+from openflowsheet.units.display import (  # noqa: E402
+    DISPLAY_CONVERSION_ID,
+    DISPLAY_KINDS,
+    DISPLAY_ROWS,
+    DisplayUnits,
+    DisplayUnitsError,
+    display_item,
+    parse_display_units,
+    text_unit,
+)

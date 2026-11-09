@@ -273,3 +273,27 @@ nothing required, so no `required` list changes:
 - **Not unchanged:** the served MCP tool list, widened additively, and two description texts (`validate.md`,
   `submit_job.md`); with OPT's additions removed and the two texts restored (`tests/opt_schema_support.py`) it is X02's
   `f51b69bf…` (R-950). The surface link is c_6, R-960.
+
+## Amendment 17 (Accepted 2026-11-09 by Frank, with ADR 0075; Proposed 2026-11-09; X04) — pointer to ADR 0075
+
+Amendment 17 is decided in ADR 0075 (D7, D8; X04 test specification §5 M, T); this paragraph points at it. Additive;
+the one `required` list that changes is `project_summary`'s (`ambient_pressure`, nullable, D6.3); nothing stored or
+hashed changes (D11):
+
+- **`JobControl.get_job_result(job_id, *, display_units=None)`** and **`Inspection.get_stream_table(…,
+  display_units=None)`**: an optional display preference (`display_units: {type: string, minLength: 1, maxLength:
+  1024}` in both request schemas; HTTP the query parameter, MCP the tool argument, CLI `api` and `streams
+  --display-units`). It is resolved against the project's declared ambient pressure and echoed as the root
+  `display_units: {units, ambient_pressure}` iff the request carried it. No other operation accepts it (A32).
+- **Schemas.** `job.schema.json#/$defs/job_result` gains the optional root `display_units`; the
+  `application-results.schema.json#/$defs/explanation` `numbers` item gains the optional `display` item
+  (`{value, unit}`, or `{value: null, unit, reason: {code: "display_out_of_range", params: {kind, unit}}}`);
+  `project_summary` gains the required, nullable `ambient_pressure` (D6.3); `project-policy.schema.json` the optional
+  `ambient_pressure`; `stream-table.schema.json` its `display` members and root echo (D7.3).
+- **Refusals.** `invalid_request` with pointer `/display_units` (`display_units_invalid`,
+  `ambient_pressure_undeclared`) and `unsupported` with reason `display_unit_unsupported` (D9). D5's `ApiError` and
+  `API_EXIT_CODES` are unchanged.
+- **Not unchanged:** the served MCP tool list (`get_project`'s and `explain`'s output schemas, two input schemas, two
+  description texts), now `6be1c002…` (chain link c_8 of `scripts/m07a_rc.py`, R-1010; `X04_SERVED_SHA256` in
+  `tests/test_t08_w2_surface_digest.py`); with X04's additions removed (`tests/x04_schema_support.py`) it is ST's
+  `553b7612…` (R-1000) exactly. Nine R4-G3 responses move (`SNAPSHOT_X04`); stripped, each is its earlier snapshot.

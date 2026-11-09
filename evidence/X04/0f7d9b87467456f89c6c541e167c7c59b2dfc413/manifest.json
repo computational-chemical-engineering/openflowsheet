@@ -1,0 +1,330 @@
+{
+  "work_package": "X04",
+  "commit": "0f7d9b87467456f89c6c541e167c7c59b2dfc413",
+  "requirements": [
+    "D08"
+  ],
+  "status": "tested",
+  "inputs": {
+    "case_id": "ADR 0075 (Accepted 2026-11-09, Frank Peters, decision board adr-0075; FQ1-FQ3 default, FQ4 alt1) with its notes; test specification docs/derivations/X04-test-specification.md A1-A40; generator docs/derivations/scripts/x04_reference.py; review docs/reviews/X04-review.md; register R-1010..R-1016; build decisions docs/X04_DECISIONS.md D-1..D-22; state docs/X04_HANDOFF.md; surface c_8, D_8 6be1c002592524126617af8dd65d331513f4a96355f5381dba020ad561a2ba57, without_x04 equal to ST's D_7 553b7612",
+    "case_hash": "3a1a345419c917c718915171c8e7dd69fbc12ac5e3f1e8bf3cc38f5d12b9db65",
+    "environment_lock_hash": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+  },
+  "commands": [
+    {
+      "cmd": "CI ci.yml run 42659368086 on wp/X04 at 0f7d9b87 (check ubuntu-latest, check ubuntu-24.04-arm, default-install success; the check job runs scripts/check.sh)",
+      "cwd": "GitHub Actions",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/check.sh once at 9446a592 (serial): 1 failed (test_doc_pages, stale notices page), 16583 passed; fixed in e33a95e4, test_doc_pages 3 passed",
+      "cwd": ".claude/worktrees/x04",
+      "exit_code": 0
+    },
+    {
+      "cmd": "PYTHONPATH=src .venv/bin/python scripts/corpus_identity.py --check (F0 PASS at the manifest head 1d456c46: M1 50/50, M2-M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 35/35)",
+      "cwd": ".claude/worktrees/x04",
+      "exit_code": 0
+    },
+    {
+      "cmd": "no local full gate was run (CLAUDE.md gate by risk, 2026-11-08)",
+      "cwd": ".",
+      "exit_code": 0
+    }
+  ],
+  "checks": [
+    {
+      "id": "X04.CI",
+      "description": "merge condition: CI green on both architectures",
+      "result": "pass",
+      "value": "CI ci.yml run 42659368086 on wp/X04 at 0f7d9b87 (check ubuntu-latest, check ubuntu-24.04-arm, default-install success; the check job runs scripts/check.sh)"
+    },
+    {
+      "id": "X04.A1",
+      "description": "A1: DISPLAY_ROWS equals the reference rows",
+      "result": "pass",
+      "value": "tests/test_x04_display_core.py::test_a1_display_table_equals_the_reference; recorded by CI ci.yml run 42659368086 on wp/X04 at 0f7d9b87 (check ubuntu-latest, check ubuntu-24.04-arm, default-install success; the check job runs scripts/check.sh) (the full suite, serial, 16583 passed at 9446a592 and test_doc_pages 3 passed after e33a95e4, X04_HANDOFF)"
+    },
+    {
+      "id": "X04.A2",
+      "description": "A2: one registry for both directions",
+      "result": "pass",
+      "value": "tests/test_x04_display_core.py::test_a2_one_registry_for_both_directions; recorded by CI ci.yml run 42659368086 on wp/X04 at 0f7d9b87 (check ubuntu-latest, check ubuntu-24.04-arm, default-install success; the check job runs scripts/check.sh) (the full suite, serial, 16583 passed at 9446a592 and test_doc_pages 3 passed after e33a95e4, X04_HANDOFF)"
+    },
+    {
+      "id": "X04.A3",
+      "description": "A3: display states DS01-DS51",
+      "result": "pass",
+      "value": "tests/test_x04_display_core.py::test_a3_display_states, test_a3_spot_values, test_a3_out_of_range_states_are_the_registered_ones; recorded by CI ci.yml run 42659368086 on wp/X04 at 0f7d9b87 (check ubuntu-latest, check ubuntu-24.04-arm, default-install success; the check job runs scripts/check.sh) (the full suite, serial, 16583 passed at 9446a592 and test_doc_pages 3 passed after e33a95e4, X04_HANDOFF)"
+    },
+    {
+      "id": "X04.A4",
+      "description": "A4: 400 registered round trips",
+      "result": "pass",
+      "value": "tests/test_x04_display_core.py::test_a4_round_trips, test_a4_registered_trips_include_the_plain_rounding_misses; recorded by CI ci.yml run 42659368086 on wp/X04 at 0f7d9b87 (check ubuntu-latest, check ubuntu-24.04-arm, default-install success; the check job runs scripts/check.sh) (the full suite, serial, 16583 passed at 9446a592 and test_doc_pages 3 passed after e33a95e4, X04_HANDOFF)"
+    },
+    {
+      "id": "X04.A5",
+      "description": "A5: sample reproduction by the generator",
+      "result": "pass",
+      "value": "tests/test_x04_display_core.py::test_a5_sample_reproduction; recorded by CI ci.yml run 42659368086 on wp/X04 at 0f7d9b87 (check ubuntu-latest, check ubuntu-24.04-arm, default-install success; the check job runs scripts/check.sh) (the full suite, serial, 16583 passed at 9446a592 and test_doc_pages 3 passed after e33a95e4, X04_HANDOFF)"
+    },
+    {
+      "id": "X04.A6",
+      "description": "A6: preference grammar PU01-PU24",
+      "result": "pass",
+      "value": "tests/test_x04_display_core.py::test_a6_preference_grammar, test_a6_canonical_text, test_a6_display_units_is_an_immutable_mapping; recorded by CI ci.yml run 42659368086 on wp/X04 at 0f7d9b87 (check ubuntu-latest, check ubuntu-24.04-arm, default-install success; the check job runs scripts/check.sh) (the full suite, serial, 16583 passed at 9446a592 and test_doc_pages 3 passed after e33a95e4, X04_HANDOFF)"
+    },
+    {
+      "id": "X04.A7",
+      "description": "A7: kinds decide, never the SI unit",
+      "result": "pass",
+      "value": "tests/test_x04_display_core.py::test_a7_kinds_decide_never_the_si_unit, test_a7_reexported_from_units; recorded by CI ci.yml run 42659368086 on wp/X04 at 0f7d9b87 (check ubuntu-latest, check ubuntu-24.04-arm, default-install success; the check job runs scripts/check.sh) (the full suite, serial, 16583 passed at 9446a592 and test_doc_pages 3 passed after e33a95e4, X04_HANDOFF)"
+    },
+    {
+      "id": "X04.A8",
+      "description": "A8: generator --check and lint",
+      "result": "pass",
+      "value": "tests/test_x04_display_core.py::test_a8_generator_check, test_a8_generator_is_lint_clean; recorded by CI ci.yml run 42659368086 on wp/X04 at 0f7d9b87 (check ubuntu-latest, check ubuntu-24.04-arm, default-install success; the check job runs scripts/check.sh) (the full suite, serial, 16583 passed at 9446a592 and test_doc_pages 3 passed after e33a95e4, X04_HANDOFF)"
+    },
+    {
+      "id": "X04.A9",
+      "description": "A9: declare, read, clear the ambient (AD01-AD05)",
+      "result": "pass",
+      "value": "tests/test_x04_ambient.py::test_a9_*; recorded by CI ci.yml run 42659368086 on wp/X04 at 0f7d9b87 (check ubuntu-latest, check ubuntu-24.04-arm, default-install success; the check job runs scripts/check.sh) (the full suite, serial, 16583 passed at 9446a592 and test_doc_pages 3 passed after e33a95e4, X04_HANDOFF)"
+    },
+    {
+      "id": "X04.A10",
+      "description": "A10: declaration refusals AD06-AD13",
+      "result": "pass",
+      "value": "tests/test_x04_ambient.py::test_a10_*; recorded by CI ci.yml run 42659368086 on wp/X04 at 0f7d9b87 (check ubuntu-latest, check ubuntu-24.04-arm, default-install success; the check job runs scripts/check.sh) (the full suite, serial, 16583 passed at 9446a592 and test_doc_pages 3 passed after e33a95e4, X04_HANDOFF)"
+    },
+    {
+      "id": "X04.A11",
+      "description": "A11: policy bytes unchanged for an undeclaring project",
+      "result": "pass",
+      "value": "tests/test_x04_ambient.py::test_a11_*; recorded by CI ci.yml run 42659368086 on wp/X04 at 0f7d9b87 (check ubuntu-latest, check ubuntu-24.04-arm, default-install success; the check job runs scripts/check.sh) (the full suite, serial, 16583 passed at 9446a592 and test_doc_pages 3 passed after e33a95e4, X04_HANDOFF)"
+    },
+    {
+      "id": "X04.A12",
+      "description": "A12: get_project carries ambient_pressure on every transport",
+      "result": "pass",
+      "value": "tests/test_x04_ambient.py::test_a12_get_project_carries_the_ambient_on_every_transport; recorded by CI ci.yml run 42659368086 on wp/X04 at 0f7d9b87 (check ubuntu-latest, check ubuntu-24.04-arm, default-install success; the check job runs scripts/check.sh) (the full suite, serial, 16583 passed at 9446a592 and test_doc_pages 3 passed after e33a95e4, X04_HANDOFF)"
+    },
+    {
+      "id": "X04.A13",
+      "description": "A13: ambient not in run identity",
+      "result": "pass",
+      "value": "tests/test_x04_ambient.py::test_a13_the_ambient_is_not_in_run_identity (D-2, D-12 for the excluded bundle members); recorded by CI ci.yml run 42659368086 on wp/X04 at 0f7d9b87 (check ubuntu-latest, check ubuntu-24.04-arm, default-install success; the check job runs scripts/check.sh) (the full suite, serial, 16583 passed at 9446a592 and test_doc_pages 3 passed after e33a95e4, X04_HANDOFF)"
+    },
+    {
+      "id": "X04.A14",
+      "description": "A14: ambient reaches only gauge displays",
+      "result": "pass",
+      "value": "tests/test_x04_stream_table.py::test_a14_the_ambient_reaches_only_gauge_displays; recorded by CI ci.yml run 42659368086 on wp/X04 at 0f7d9b87 (check ubuntu-latest, check ubuntu-24.04-arm, default-install success; the check job runs scripts/check.sh) (the full suite, serial, 16583 passed at 9446a592 and test_doc_pages 3 passed after e33a95e4, X04_HANDOFF)"
+    },
+    {
+      "id": "X04.A15",
+      "description": "A15: no preference, no change in messages",
+      "result": "pass",
+      "value": "tests/test_x04_messages.py::test_a15_no_preference_renders_every_example_as_msg_does; recorded by CI ci.yml run 42659368086 on wp/X04 at 0f7d9b87 (check ubuntu-latest, check ubuntu-24.04-arm, default-install success; the check job runs scripts/check.sh) (the full suite, serial, 16583 passed at 9446a592 and test_doc_pages 3 passed after e33a95e4, X04_HANDOFF)"
+    },
+    {
+      "id": "X04.A16",
+      "description": "A16: entropy and pressure in messages",
+      "result": "pass",
+      "value": "tests/test_x04_messages.py::test_a16_entropy_and_pressure, test_a16_raw_and_out_of_range_show_si; recorded by CI ci.yml run 42659368086 on wp/X04 at 0f7d9b87 (check ubuntu-latest, check ubuntu-24.04-arm, default-install success; the check job runs scripts/check.sh) (the full suite, serial, 16583 passed at 9446a592 and test_doc_pages 3 passed after e33a95e4, X04_HANDOFF)"
+    },
+    {
+      "id": "X04.A17",
+      "description": "A17: gauge in a message",
+      "result": "pass",
+      "value": "tests/test_x04_messages.py::test_a17_gauge_in_a_message; recorded by CI ci.yml run 42659368086 on wp/X04 at 0f7d9b87 (check ubuntu-latest, check ubuntu-24.04-arm, default-install success; the check job runs scripts/check.sh) (the full suite, serial, 16583 passed at 9446a592 and test_doc_pages 3 passed after e33a95e4, X04_HANDOFF)"
+    },
+    {
+      "id": "X04.A18",
+      "description": "A18: no kind, no conversion",
+      "result": "pass",
+      "value": "tests/test_x04_messages.py::test_a18_no_kind_no_conversion; recorded by CI ci.yml run 42659368086 on wp/X04 at 0f7d9b87 (check ubuntu-latest, check ubuntu-24.04-arm, default-install success; the check job runs scripts/check.sh) (the full suite, serial, 16583 passed at 9446a592 and test_doc_pages 3 passed after e33a95e4, X04_HANDOFF)"
+    },
+    {
+      "id": "X04.A19",
+      "description": "A19: pressure sites in the catalogue are absolute",
+      "result": "pass",
+      "value": "tests/test_x04_messages.py::test_a19_*; recorded by CI ci.yml run 42659368086 on wp/X04 at 0f7d9b87 (check ubuntu-latest, check ubuntu-24.04-arm, default-install success; the check job runs scripts/check.sh) (the full suite, serial, 16583 passed at 9446a592 and test_doc_pages 3 passed after e33a95e4, X04_HANDOFF)"
+    },
+    {
+      "id": "X04.A20",
+      "description": "A20: get_job_result end to end",
+      "result": "pass",
+      "value": "tests/test_x04_messages.py::test_a20_*; recorded by CI ci.yml run 42659368086 on wp/X04 at 0f7d9b87 (check ubuntu-latest, check ubuntu-24.04-arm, default-install success; the check job runs scripts/check.sh) (the full suite, serial, 16583 passed at 9446a592 and test_doc_pages 3 passed after e33a95e4, X04_HANDOFF)"
+    },
+    {
+      "id": "X04.A21",
+      "description": "A21: no preference: ST's document byte for byte",
+      "result": "pass",
+      "value": "tests/test_x04_stream_table.py::test_a21_without_a_preference_the_document_is_sts; recorded by CI ci.yml run 42659368086 on wp/X04 at 0f7d9b87 (check ubuntu-latest, check ubuntu-24.04-arm, default-install success; the check job runs scripts/check.sh) (the full suite, serial, 16583 passed at 9446a592 and test_doc_pages 3 passed after e33a95e4, X04_HANDOFF)"
+    },
+    {
+      "id": "X04.A22",
+      "description": "A22: strip invariance",
+      "result": "pass",
+      "value": "tests/test_x04_stream_table.py::test_a22_a23_a25_displayed_documents; recorded by CI ci.yml run 42659368086 on wp/X04 at 0f7d9b87 (check ubuntu-latest, check ubuntu-24.04-arm, default-install success; the check job runs scripts/check.sh) (the full suite, serial, 16583 passed at 9446a592 and test_doc_pages 3 passed after e33a95e4, X04_HANDOFF)"
+    },
+    {
+      "id": "X04.A23",
+      "description": "A23: coverage and values over the site table",
+      "result": "pass",
+      "value": "tests/test_x04_stream_table.py::test_a22_a23_a25_displayed_documents, test_a23_the_jobs_exercise_arrays_absences_and_every_object; recorded by CI ci.yml run 42659368086 on wp/X04 at 0f7d9b87 (check ubuntu-latest, check ubuntu-24.04-arm, default-install success; the check job runs scripts/check.sh) (the full suite, serial, 16583 passed at 9446a592 and test_doc_pages 3 passed after e33a95e4, X04_HANDOFF)"
+    },
+    {
+      "id": "X04.A24",
+      "description": "A24: site table complete (D-6 phase_id.ordinal)",
+      "result": "pass",
+      "value": "tests/test_x04_stream_table.py::test_a24_the_site_table_is_complete_and_equals_the_specification; recorded by CI ci.yml run 42659368086 on wp/X04 at 0f7d9b87 (check ubuntu-latest, check ubuntu-24.04-arm, default-install success; the check job runs scripts/check.sh) (the full suite, serial, 16583 passed at 9446a592 and test_doc_pages 3 passed after e33a95e4, X04_HANDOFF)"
+    },
+    {
+      "id": "X04.A25",
+      "description": "A25: root display_units echo",
+      "result": "pass",
+      "value": "tests/test_x04_stream_table.py::test_a22_a23_a25_displayed_documents; tests/test_x04_messages.py::test_a33_an_inconsistent_echo_is_refused; recorded by CI ci.yml run 42659368086 on wp/X04 at 0f7d9b87 (check ubuntu-latest, check ubuntu-24.04-arm, default-install success; the check job runs scripts/check.sh) (the full suite, serial, 16583 passed at 9446a592 and test_doc_pages 3 passed after e33a95e4, X04_HANDOFF)"
+    },
+    {
+      "id": "X04.A26",
+      "description": "A26: gauge through the operation",
+      "result": "pass",
+      "value": "tests/test_x04_stream_table.py::test_a26_gauge_pressures_read_the_declared_ambient; recorded by CI ci.yml run 42659368086 on wp/X04 at 0f7d9b87 (check ubuntu-latest, check ubuntu-24.04-arm, default-install success; the check job runs scripts/check.sh) (the full suite, serial, 16583 passed at 9446a592 and test_doc_pages 3 passed after e33a95e4, X04_HANDOFF)"
+    },
+    {
+      "id": "X04.A27",
+      "description": "A27: paging carries the displayed document's sha256",
+      "result": "pass",
+      "value": "tests/test_x04_stream_table.py::test_a27_every_page_carries_the_displayed_documents_sha256 (N4: cost not measured); recorded by CI ci.yml run 42659368086 on wp/X04 at 0f7d9b87 (check ubuntu-latest, check ubuntu-24.04-arm, default-install success; the check job runs scripts/check.sh) (the full suite, serial, 16583 passed at 9446a592 and test_doc_pages 3 passed after e33a95e4, X04_HANDOFF)"
+    },
+    {
+      "id": "X04.A28",
+      "description": "A28: CLI text form (FQ4 amendment: T [degC] labelled with the degree sign)",
+      "result": "pass",
+      "value": "tests/test_x04_stream_table.py::test_a28_*; recorded by CI ci.yml run 42659368086 on wp/X04 at 0f7d9b87 (check ubuntu-latest, check ubuntu-24.04-arm, default-install success; the check job runs scripts/check.sh) (the full suite, serial, 16583 passed at 9446a592 and test_doc_pages 3 passed after e33a95e4, X04_HANDOFF)"
+    },
+    {
+      "id": "X04.A29",
+      "description": "A29: CLI csv form",
+      "result": "pass",
+      "value": "tests/test_x04_stream_table.py::test_a29_the_csv_form_in_display_units, test_a28_a29_a30_without_the_flag_and_with_si_the_forms_are_sts; recorded by CI ci.yml run 42659368086 on wp/X04 at 0f7d9b87 (check ubuntu-latest, check ubuntu-24.04-arm, default-install success; the check job runs scripts/check.sh) (the full suite, serial, 16583 passed at 9446a592 and test_doc_pages 3 passed after e33a95e4, X04_HANDOFF)"
+    },
+    {
+      "id": "X04.A30",
+      "description": "A30: CLI json form",
+      "result": "pass",
+      "value": "tests/test_x04_stream_table.py::test_a30_the_json_form_is_the_displayed_documents_canonical_json; recorded by CI ci.yml run 42659368086 on wp/X04 at 0f7d9b87 (check ubuntu-latest, check ubuntu-24.04-arm, default-install success; the check job runs scripts/check.sh) (the full suite, serial, 16583 passed at 9446a592 and test_doc_pages 3 passed after e33a95e4, X04_HANDOFF)"
+    },
+    {
+      "id": "X04.A31",
+      "description": "A31: parity on every transport",
+      "result": "pass",
+      "value": "tests/test_x04_stream_table.py::test_a31_*; tests/test_x04_messages.py::test_a31_*; recorded by CI ci.yml run 42659368086 on wp/X04 at 0f7d9b87 (check ubuntu-latest, check ubuntu-24.04-arm, default-install success; the check job runs scripts/check.sh) (the full suite, serial, 16583 passed at 9446a592 and test_doc_pages 3 passed after e33a95e4, X04_HANDOFF)"
+    },
+    {
+      "id": "X04.A32",
+      "description": "A32: display_units closed on every other operation",
+      "result": "pass",
+      "value": "tests/test_x04_messages.py::test_a32_*; recorded by CI ci.yml run 42659368086 on wp/X04 at 0f7d9b87 (check ubuntu-latest, check ubuntu-24.04-arm, default-install success; the check job runs scripts/check.sh) (the full suite, serial, 16583 passed at 9446a592 and test_doc_pages 3 passed after e33a95e4, X04_HANDOFF)"
+    },
+    {
+      "id": "X04.A33",
+      "description": "A33: schemas and round-trip fixtures (in-module cases, D-1)",
+      "result": "pass",
+      "value": "amb/msg/tests/test_x04_stream_table.py::test_a33_*; recorded by CI ci.yml run 42659368086 on wp/X04 at 0f7d9b87 (check ubuntu-latest, check ubuntu-24.04-arm, default-install success; the check job runs scripts/check.sh) (the full suite, serial, 16583 passed at 9446a592 and test_doc_pages 3 passed after e33a95e4, X04_HANDOFF)"
+    },
+    {
+      "id": "X04.A34",
+      "description": "A34: reads write nothing but audit rows",
+      "result": "pass",
+      "value": "tests/test_x04_stream_table.py::test_a34_reads_write_nothing_but_audit_rows; recorded by CI ci.yml run 42659368086 on wp/X04 at 0f7d9b87 (check ubuntu-latest, check ubuntu-24.04-arm, default-install success; the check job runs scripts/check.sh) (the full suite, serial, 16583 passed at 9446a592 and test_doc_pages 3 passed after e33a95e4, X04_HANDOFF)"
+    },
+    {
+      "id": "X04.A35",
+      "description": "A35: F0 unchanged (corpus_identity --check, no change to its expectations)",
+      "result": "pass",
+      "value": "F0 PASS at the manifest head 1d456c46 (docs only above 0f7d9b87): M1 50/50, M2-M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 35/35; D-1 keeps the round-trip fixtures in the test modules so M8 is unchanged"
+    },
+    {
+      "id": "X04.A36",
+      "description": "A36: codes: complete catalogue entries, strict rendering (D-21, D-22)",
+      "result": "pass",
+      "value": "tests/test_x04_messages.py::test_a36_*, test_d7_7_out_of_range_names_the_unit_in_its_text_spelling; recorded by CI ci.yml run 42659368086 on wp/X04 at 0f7d9b87 (check ubuntu-latest, check ubuntu-24.04-arm, default-install success; the check job runs scripts/check.sh) (the full suite, serial, 16583 passed at 9446a592 and test_doc_pages 3 passed after e33a95e4, X04_HANDOFF)"
+    },
+    {
+      "id": "X04.A37",
+      "description": "A37: limitations L-X04-1..3 are envelope rows with evidence",
+      "result": "pass",
+      "value": "tests/test_x04_shell_and_docs.py::test_a37_*; recorded by CI ci.yml run 42659368086 on wp/X04 at 0f7d9b87 (check ubuntu-latest, check ubuntu-24.04-arm, default-install success; the check job runs scripts/check.sh) (the full suite, serial, 16583 passed at 9446a592 and test_doc_pages 3 passed after e33a95e4, X04_HANDOFF)"
+    },
+    {
+      "id": "X04.A38",
+      "description": "A38: web shell units control (FQ4: T (degC) heading with the degree sign; D-14, D-19, D-20)",
+      "result": "pass",
+      "value": "tests/web/x04-units.test.mjs; tests/test_m06_browser_smoke.py; tests/test_x04_shell_and_docs.py::test_d7_7_the_shell_s_text_spelling_mirrors_the_server_s; recorded by CI ci.yml run 42659368086 on wp/X04 at 0f7d9b87 (check ubuntu-latest, check ubuntu-24.04-arm, default-install success; the check job runs scripts/check.sh) (the full suite, serial, 16583 passed at 9446a592 and test_doc_pages 3 passed after e33a95e4, X04_HANDOFF)"
+    },
+    {
+      "id": "X04.A39",
+      "description": "A39: web shell never converts",
+      "result": "pass",
+      "value": "tests/test_x04_shell_and_docs.py::test_a39_*; recorded by CI ci.yml run 42659368086 on wp/X04 at 0f7d9b87 (check ubuntu-latest, check ubuntu-24.04-arm, default-install success; the check job runs scripts/check.sh) (the full suite, serial, 16583 passed at 9446a592 and test_doc_pages 3 passed after e33a95e4, X04_HANDOFF)"
+    },
+    {
+      "id": "X04.A40",
+      "description": "A40: documentation page docs-site/guide/display-units.md (D-13)",
+      "result": "pass",
+      "value": "tests/test_x04_shell_and_docs.py::test_a40_*; recorded by CI ci.yml run 42659368086 on wp/X04 at 0f7d9b87 (check ubuntu-latest, check ubuntu-24.04-arm, default-install success; the check job runs scripts/check.sh) (the full suite, serial, 16583 passed at 9446a592 and test_doc_pages 3 passed after e33a95e4, X04_HANDOFF)"
+    },
+    {
+      "id": "X04.FULLGATE",
+      "description": "full local gate (scripts/gate.sh) not run by choice; the merge condition is CI green on x86-64 and aarch64 (CLAUDE.md gate by risk, 2026-11-08)",
+      "result": "unsupported",
+      "value": {
+        "full_gate": "not run (not required); stays unsupported",
+        "ci": "CI ci.yml run 42659368086 on wp/X04 at 0f7d9b87 (check ubuntu-latest, check ubuntu-24.04-arm, default-install success; the check job runs scripts/check.sh)",
+        "partial": "scripts/check.sh ran once locally at 9446a592: 1 failed (stale notices doc page, fixed in e33a95e4), 16583 passed"
+      }
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "docs/derivations/X04-test-specification.md",
+      "sha256": "3a1a345419c917c718915171c8e7dd69fbc12ac5e3f1e8bf3cc38f5d12b9db65",
+      "description": "test specification A1-A40, section 4 site table, section 8 FQ4 amendment"
+    },
+    {
+      "path": "docs/adr/0075-X04-units-at-the-boundary.md",
+      "sha256": "93b967e603c944901a91d22dacab1dfd6c33a3e1946b4764f2ebf9a368e86566",
+      "description": "ADR 0075, Accepted 2026-11-09 (Frank, decision board adr-0075), with its notes; head 1d456c46 adds the D-22 note"
+    },
+    {
+      "path": "docs/derivations/scripts/x04_reference.py",
+      "sha256": "f1c41ed17712464ff5c0ff73320f62d936b2f0bb8fcce5127532c14a26fa9a05",
+      "description": "reference generator (A5, A8)"
+    },
+    {
+      "path": "docs/reviews/X04-review.md",
+      "sha256": "f861c29d6b6de14a860a2f7d4cd63dd880fae9f3bcc1e3fd2aa318b85c2560de",
+      "description": "design-lane review, sound, no must-fix; S1-S4 applied; N1-N6"
+    },
+    {
+      "path": "docs/X04_DECISIONS.md",
+      "sha256": "25d55692d0cc1a9910773bd4309f073832d5a88a8bca2911a74de3baa0f982e7",
+      "description": "build decisions D-1 to D-22"
+    }
+  ],
+  "limitations": [
+    "Evidence class: software verification of display arithmetic at the boundary against the independent reference generator (A1-A8); SI stays the computed quantity and nothing converted is stored or enters run identity. Status tested, not reviewed: no reviewed status is claimed by the build lane. Both description reviews (get_job_result, get_stream_table) are recorded by Frank's own script.",
+    "Review notes N1-N6 (docs/reviews/X04-review.md) not acted on beyond the documentation edits ordered in the fix round: N4, the cost of a get_stream_table page in eng display (the whole document is rebuilt and displayed on every page, about 105 to 115 microseconds per number), was not measured on the largest example.",
+    "D-22 adds a catalogue parameter type display_unit to schemas/message-catalogue.schema.json (ADR 0075 note at 1d456c46, interfaces-frozen.md clause); the served explain params carry type display_unit, and the response schema's type member is a free string.",
+    "No local full gate was run at the head; the merge condition is CI green on both architectures (CI run 42659368086 at 0f7d9b87). Commit 1d456c46 above it changes only docs (ADR 0075 note, interfaces-frozen.md); F0 was re-run at 1d456c46."
+  ],
+  "review": {
+    "numerical": "pending",
+    "process_model": "pending"
+  }
+}
