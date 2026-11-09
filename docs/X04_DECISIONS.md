@@ -45,3 +45,14 @@ answers for that undeclared project. Nothing else in the file changes.
 *Choice.* `ambient_pressure` is appended to `required` (order has no meaning in JSON Schema); the invalid fixture keeps
 its name and gains the member in its body.
 *Reversible by:* reordering the list and updating the S13/release version-file path.
+
+## D-5. An `unsupported` display refusal carries its message head as `reason`
+
+*Question.* ADR 0075 D9 raises `display_unit_unsupported` as "`unsupported`, reason" without fixing the `reason`
+member's text. The bare code (`reason: "display_unit_unsupported"`) is what MSG reads first (§4.4 candidate order:
+`detail.reason` before the message), and without its args it cannot fill the entry's required `kind`: the explanation
+falls back to the outer `unsupported` entry and fails A36's strict rendering.
+*Choice.* `reason` is the message head, `display_unit_unsupported(<kind>): "<unit>"` — the repo's precedent for a
+reason with args (`surrogate_not_promoted(<id>)`, `local.py`). It renders strictly with its entry (A36 test).
+*Alternative.* No `reason` member (the message alone renders the same), or the bare code with a renderer change.
+*Reversible by:* `LocalApplication._display_units` (one line) and A36's `reason` assertion.
