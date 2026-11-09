@@ -15,6 +15,9 @@ README's Rankine change set, in a fresh project. A case asserts, on every surfac
 - for a case on all four surfaces, one document on Python (dispatched), CLI, HTTP and MCP
   (MSG-G8), its explanation equal to the Python one.
 
+A case's mistake must not depend on the machine: what would make it so is patched for every node
+of the case, the setup included (`CASE_PATCHES`).
+
 A case records the code the software emits (§3.6, Q8). What the design expects and the software
 does not yet emit is a `pending` item: a strict xfail that turns red the day it holds
 (`docs/MSG_DECISIONS.md` D9-1, D9-2).
@@ -44,6 +47,7 @@ from t07_transport_support import (
     ThreadStream,
 )
 from test_msg_docs import docs_url_problems
+from test_opt_request import UNAVAILABLE
 
 from openflowsheet.application import cli
 from openflowsheet.application.authz import grant
@@ -53,6 +57,7 @@ from openflowsheet.application.store import StoreError
 from openflowsheet.application.types import Change, SolveFailedError
 from openflowsheet.messages.catalogue import CATALOGUE
 from openflowsheet.messages.lint import lint_entry
+from openflowsheet.studies.nlp import closure
 
 CORPUS = REPO_ROOT / "tests" / "fixtures" / "msg" / "corpus.yaml"
 RANKINE = REPO_ROOT / "examples" / "rankine-cycle.changeset.json"
@@ -321,6 +326,9 @@ def _c05(base: Path) -> Observed:
 
 
 def _c12(base: Path) -> Observed:
+    # The registered mistake is the default install's: no audited NLP solver (`CASE_PATCHES`).
+    assert closure.audited_solver().available is False
+
     def call(revision: str) -> tuple[str, dict[str, Any]]:
         return "validate", {"revision_id": revision, "task": "optimization"}
 
@@ -343,6 +351,25 @@ SETUP: dict[str, Callable[[Path], Observed]] = {
     "C11": lambda base: _run_failure(base, _rankine(_turbine_compresses)),
     "C12": _c12,
 }
+
+
+def _no_audited_solver(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(closure, "audited_solver", lambda platform_id=None: UNAVAILABLE)
+
+
+#: Patches applied to every node of a case, the setup on first use included, so that the case's
+#: mistake does not depend on the machine. C12: with an audited solver installed, `validate` for
+#: optimisation without a request is `invalid_request`, not the default install's refusal
+#: (ruling `docs/reviews/MSG-catalogue-X02-OPT.md` §4, Amendment 1).
+CASE_PATCHES: dict[str, Callable[[pytest.MonkeyPatch], None]] = {"C12": _no_audited_solver}
+
+
+@pytest.fixture(autouse=True)
+def _case_patches(request: pytest.FixtureRequest, monkeypatch: pytest.MonkeyPatch) -> None:
+    callspec = getattr(request.node, "callspec", None)
+    patch = CASE_PATCHES.get(callspec.params.get("case_id")) if callspec is not None else None
+    if patch is not None:
+        patch(monkeypatch)
 
 
 @pytest.fixture(scope="module")

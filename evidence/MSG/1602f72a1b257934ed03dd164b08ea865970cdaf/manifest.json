@@ -1,0 +1,156 @@
+{
+ "work_package": "MSG",
+ "commit": "1602f72a1b257934ed03dd164b08ea865970cdaf",
+ "requirements": [],
+ "status": "tested",
+ "inputs": {
+  "case_id": "MSG follow-up: catalogue prose ruling docs/reviews/MSG-catalogue-X02-OPT.md (X02/OPT codes, C12 amended), applied at 8906f870 and re-based on main after RRC (merge of ed7718ae) at 1602f72a; corpus tests/fixtures/msg/corpus.yaml (sha256 43c072bdf955969e8bad87a4027b6199ac18f59f649b49c0944516d0713f6aeb)",
+  "case_hash": "43c072bdf955969e8bad87a4027b6199ac18f59f649b49c0944516d0713f6aeb",
+  "environment_lock_hash": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+ },
+ "commands": [
+  {
+   "cmd": "CI ci.yml run 42570096932 on wp/MSGp at 1602f72a: check (ubuntu-latest), check (ubuntu-24.04-arm), identity, default-install",
+   "cwd": "GitHub Actions",
+   "exit_code": 0
+  },
+  {
+   "cmd": "OMP_NUM_THREADS=1 PYTHONPATH=src .venv/bin/python -m pytest -p no:xdist -q tests/test_msg_engine.py tests/test_msg_coverage.py tests/test_msg_corpus.py tests/test_msg_explain.py tests/test_t07_w5b_cli.py tests/test_t07_w5e_application_results.py tests/test_t08_w2_unsupported.py tests/test_opt_cli.py tests/test_t07_conformance.py tests/test_rrc_*.py tests/test_m07a_harvest.py tests/test_t08*.py tests/test_evidence_manifests.py: 1425 passed, 2 skipped, 3 xfailed",
+   "cwd": "TRS2, .claude/worktrees/msgp at 1602f72a (tree before commit)",
+   "exit_code": 0
+  },
+  {
+   "cmd": "PYTHONPATH=src .venv/bin/python scripts/msg_catalogue.py check",
+   "cwd": "TRS2, .claude/worktrees/msgp at 1602f72a",
+   "exit_code": 0
+  },
+  {
+   "cmd": "scripts/t08_support_matrix.py --emit/--check; scripts/msg_catalogue.py sync-limitations/--check; scripts/doc_pages.py/--check; scripts/t07_schema_fixtures.py --write; PYTHONPATH=src:. tests/test_t07_w5b_cli.py --write-pins",
+   "cwd": "TRS2, .claude/worktrees/msgp at 1602f72a",
+   "exit_code": 0
+  },
+  {
+   "cmd": "scripts/corpus_identity.py --check",
+   "cwd": "TRS2, .claude/worktrees/msgp at 1602f72a",
+   "exit_code": 0
+  },
+  {
+   "cmd": "ruff check; ruff format --check (1157 files)",
+   "cwd": "TRS2, .claude/worktrees/msgp at 1602f72a",
+   "exit_code": 0
+  }
+ ],
+ "checks": [
+  {
+   "id": "MSG.CI",
+   "description": "CI run 42570096932 at 1602f72a: check on both architectures, identity, default-install all success; no local full gate (gate by risk)",
+   "result": "pass",
+   "value": {
+    "run": "42570096932"
+   }
+  },
+  {
+   "id": "A1",
+   "description": "msg_catalogue.py check: MSG check PASS, G1 0 missing, G2 0 missing, G4 0 violations, G5 clean. Main after RRC gives 379/83/138; RRC added no catalogue entries, so the counts equal the ruling's 379/83/129 (review count = main's 138 minus 9)",
+   "result": "pass",
+   "value": {
+    "entries": 379,
+    "complete": 83,
+    "review_true": 129
+   }
+  },
+  {
+   "id": "A2",
+   "description": "catalogue digest, carried by the two regenerated message_entry fixtures (tests/test_t07_w5e_application_results.py passes). Moved from the ruling's 5e5026c5... (on pre-RRC main) by RRC's limitation text; main after RRC is 14921a20...",
+   "result": "pass",
+   "value": "e3725b30ceb09f65342e8e28b18607553c8a7d5a15bcff82f6a85aa3d62e4e09"
+  },
+  {
+   "id": "A3",
+   "description": "G4 0 violations; tests/test_msg_engine.py passes (changed entries' examples render, strict)",
+   "result": "pass"
+  },
+  {
+   "id": "A4",
+   "description": "C12: nlp_solver_unavailable / not_supported, chain [unsupported, nlp_solver_unavailable], gap.limitation L-OPT-1; the C12 setup node and the four-transport node ran and passed, not skipped, with closure.audited_solver forced unavailable",
+   "result": "pass"
+  },
+  {
+   "id": "A5",
+   "description": "test_request_invalid_summary_names_the_member[member,root]: 2 passed ('...invalid at /objective/kind.' and '...invalid.')",
+   "result": "pass"
+  },
+  {
+   "id": "A6",
+   "description": "CLI pins: against origin/main only the U05 record differs, in its stderr Why:/Do: lines and in stdout detail.explanation (why, action, gap) only, the deviation recorded at 8906f870 (OPT D-96); PINS_T07_SHA256 holds (tests/test_t07_w5b_cli.py passes)",
+   "result": "pass"
+  },
+  {
+   "id": "A7",
+   "description": "doc_pages.py --check up to date; t08_support_matrix.py --check 0 problems; sync-limitations --check clean",
+   "result": "pass"
+  },
+  {
+   "id": "A8",
+   "description": "G1 0 / G2 0 missing; scan-allow.yaml differs from origin/main in the three reason lines of the ruling only, keys unchanged",
+   "result": "pass"
+  },
+  {
+   "id": "A9",
+   "description": "tests/test_t08_w2_unsupported.py and tests/test_opt_cli.py pass unedited; machine messages unchanged",
+   "result": "pass"
+  },
+  {
+   "id": "MSG.REBASE",
+   "description": "the merged tree differs from origin/main (ed7718ae) in the catalogue, support envelope, generated docs, corpus and CLI pins by exactly 8906f870's per-file diff; hand-written sources merged with no conflict, both sides' entries kept",
+   "result": "pass"
+  },
+  {
+   "id": "F0",
+   "description": "scripts/corpus_identity.py --check at 1602f72a",
+   "result": "pass",
+   "value": "F0 PASS: M1 50/50, M2 61/61, M3 61/61, M4 61/61, M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 35/35"
+  }
+ ],
+ "artifacts": [
+  {
+   "path": "tests/fixtures/msg/corpus.yaml",
+   "sha256": "43c072bdf955969e8bad87a4027b6199ac18f59f649b49c0944516d0713f6aeb",
+   "description": "the beginner-mistake corpus, C12 amended (gap L-OPT-1)"
+  },
+  {
+   "path": "src/openflowsheet/messages/catalogue/refusals.yaml",
+   "sha256": "e9e824de053956e9d476835bc2554de4c34074f1553836cc0a8282e4043f6d4b",
+   "description": "refusal entries with the ruling's prose"
+  },
+  {
+   "path": "tests/fixtures/schemas/application_results/message_entry/valid/phase_regime_mismatch.json",
+   "sha256": "9dcc87850204fac919060411f46699193f65a20c54b2cba331c3111a21cb5ac4",
+   "description": "carries catalogue digest e3725b30..."
+  },
+  {
+   "path": "tests/fixtures/schemas/application_results/message_entry/invalid/missing_code.json",
+   "sha256": "b22ce19f9b8aa6c1b38513e1806a2be8c4f5adf34690d474aee15824b1575240",
+   "description": "carries catalogue digest e3725b30..."
+  },
+  {
+   "path": "tests/fixtures/t07/cli-existing-commands.json",
+   "sha256": "1a6f9e06eb408f1d779369781db95028e55ef7d1bcfa78430c40077d46493c87",
+   "description": "W5b CLI pins, U05 record re-rendered"
+  }
+ ],
+ "limitations": [
+  "Evidence class: software verification (catalogue lint, corpus goldens, transport equality, identity gates) on ref-x86-64 locally and both CI architectures. The ruling checks prose and kinds only; it does not validate the physics or numerics behind the OPT readiness checks (ruling section 7).",
+  "The seven OPT readiness stubs are not completed; their explain output still ends with the kind's default action.",
+  "C12 stays a regression fixture: code, kind, chain and gap come from ADR 0071 D8 / R-968 / OPT section 4.11; its text golden is self-generated. The forced probe proves nothing about the real probe (that is U05's and G11's job).",
+  "No identity is touched: no machine message, schema, bundle or replay change; the catalogue digest is outside every identity (MSG section 3.2, I2); F0 passes.",
+  "Codes and labels outside the ruling's brief are not covered, apart from task_unsupported (warm_start_rejected, PHASE_REGIME_CHANGED and M03's readiness stubs untouched).",
+  "Open finding F1 (ruling section 8): G1's collector misses OPT.* check ids (OPT.REQUEST_SCHEMA and the OPT-prefixed static codes), so the CLI prints no explanation line under a failing OPT check; needs a separate MSG design-lane follow-up.",
+  "Open finding F2 (ruling section 8): the U05 W5b CLI pin depends on the install as C12 did; latent, since the audited environment runs only -m nlp; default no action.",
+  "Two tests skipped in the local run (not the C12 or A5 nodes). Process note: no local full gate at this commit; the merge condition is CI run 42570096932. Status tested, not reviewed."
+ ],
+ "review": {
+  "numerical": "pending",
+  "process_model": "pending"
+ }
+}

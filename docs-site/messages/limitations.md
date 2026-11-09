@@ -192,7 +192,7 @@ One section per row of the support matrix's limitations: what this version does 
 
 *No plain-language explanation is written yet; the summary is the technical one.*
 
-- **Summary:** Ipopt runs with fixed options (monotone barrier, limited-memory Hessian). On a nearly linear objective whose constraint must become active from inside the feasible region it can stall at `max_iter` (measured on OPT-L from 673.15 K and 661 K; it verifies from 650 K, a start that violates the constraint). Such a start is reported SOLVER_FAILED, never verified; another start is the remedy. Whether the options change is a design-lane question (OPT_DECISIONS D-70).
+- **Summary:** Ipopt runs with fixed options (monotone barrier, limited-memory Hessian). On a nearly linear objective whose constraint must become active from inside the feasible region it can stall at `max_iter` (measured on OPT-L from 673.15 K and 661 K; it verifies from 650 K, a start that violates the constraint). Such a start is reported SOLVER_FAILED, never verified; another start is the remedy.
 
 <a id="L-S11-1"></a>
 

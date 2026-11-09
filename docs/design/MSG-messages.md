@@ -309,7 +309,8 @@ is a member of the new result members. `api-error.schema.json` is unchanged.**
 - **Location and form.** `tests/fixtures/msg/corpus.yaml` holds the expected facts. `tests/test_msg_corpus.py` builds
   each situation through the public API, starting from the README's Rankine change set.
 - **Size for 0.4.** 12 cases (§7, MSG-G6), covering every mistake FB-05 principle 9 lists plus FB-05 case 2, a bad model
-  id, a turbine pressure rise and an unsupported task.
+  id, a turbine pressure rise and an unsupported task (C12; since ADR 0071, the default install's missing audited NLP
+  solver — ruling `docs/reviews/MSG-catalogue-X02-OPT.md`).
 - **What a case asserts:**
   - `code` and `kind` exactly;
   - each named element id present in `explanation.elements` and in the summary text;
@@ -1384,7 +1385,9 @@ emitted; for C06–C09, WO-9 first records the actually emitted code (§3.6).
 | C09 | feed temperature outside the provider's range | `out_of_domain` (or as emitted) / input | T and the bounds, if `detail_pattern` extracts them | all four |
 | C10 | unknown model id on an instance | `model_unsupported` / not_supported; `gap.capability` | the instance | all four |
 | C11 | turbine outlet pressure above its inlet | `pressure_rise` / input | T; `p_spec`, `p_inlet` | all four |
-| C12 | `validate --task optimization` | `task_unsupported` / not_supported | the task | all four |
+| C12 | `validate --task optimization` without an audited NLP solver (the probe forced unavailable in the test) | `nlp_solver_unavailable` / not_supported; `gap.limitation` L-OPT-1 | — (`optimise` in the summary; action token `nlp`) | all four |
+
+*C12 amended 2026-11-09 (ADR 0071 R-968; ruling docs/reviews/MSG-catalogue-X02-OPT.md): was `task_unsupported`.*
 
 ---
 
