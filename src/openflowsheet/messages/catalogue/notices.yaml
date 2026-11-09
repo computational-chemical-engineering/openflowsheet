@@ -28,9 +28,9 @@ entries:
     title: A value too large to show in the display unit asked for
     params:
       kind: {type: text, label: quantity kind}
-      unit: {type: text, label: display unit}
-    summary: "A value of kind {kind!raw} is too large to show in {unit!raw}, so it is shown only in its SI unit."
-    why: "Converting the value to {unit!raw} gives a number beyond the largest a double can hold, so the display item carries no value. The SI value beside it is unaffected and is the value to compute with."
+      unit: {type: display_unit, label: display unit}
+    summary: "A value of kind {kind!raw} is too large to show in {unit}, so it is shown only in its SI unit."
+    why: "Converting the value to {unit} gives a number beyond the largest a double can hold, so the display item carries no value. The SI value beside it is unaffected and is the value to compute with."
     action: "Read the SI value, or choose a larger display unit for {kind!raw} (for example kmol/h instead of mol/h)."
     examples:
       - params: {kind: molar_flow, unit: mol/h}

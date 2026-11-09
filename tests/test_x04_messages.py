@@ -278,6 +278,31 @@ def test_d7_7_a_converted_temperature_shows_the_degree_sign(preference: str, tex
     assert schema_errors(EXPLANATION, explanation) == []
 
 
+@pytest.mark.parametrize(
+    ("kind", "unit", "text"),
+    [
+        ("temperature", "degF", "°F"),
+        ("temperature_difference", "degC", "°C"),
+        ("mass_flow", "kg/h", "kg/h"),
+    ],
+)
+def test_d7_7_out_of_range_names_the_unit_in_its_text_spelling(
+    kind: str, unit: str, text: str
+) -> None:
+    """X04 D-21 (FQ4's rule, ADR 0075 D7.7): `display_out_of_range`'s rendered text names its
+    `unit` param in the text spelling; the param itself, a machine member, keeps the D2 one."""
+    entry = CATALOGUE.entry("display_out_of_range")
+    assert entry is not None and entry.params["unit"].type == "display_unit"
+    params = {"kind": kind, "unit": unit}
+    explanation = render_code("display_out_of_range", params, strict=True)
+    assert f"is too large to show in {text}, so" in explanation["summary"]
+    assert f"Converting the value to {text} gives" in explanation["why"]
+    if unit != text:
+        assert all(unit not in str(explanation[field] or "") for field in TEXT_FIELDS)
+    assert params == {"kind": kind, "unit": unit}
+    assert schema_errors(EXPLANATION, explanation) == []
+
+
 # -- A19. Pressure sites in the catalogue are absolute ---------------------------------------------
 
 

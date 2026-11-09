@@ -206,9 +206,21 @@ display item's `unit` for tests and automation (never shown); the stream table's
 footnote form). Alternative: `°F` in the footnote (then it no longer equals the reason). Reversible by: `_label`-style
 mapping in `stream_table_format._reason_text`.
 
-## D-21. Open (reported, not changed): `display_out_of_range`'s rendered text names `{unit!raw}` (FQ4)
+## D-21. Decided (orchestrator, 2026-11-09): `display_out_of_range`'s rendered text names its unit in the text spelling (FQ4)
 
-The catalogue entry's summary/why/action render the param `unit` with `!raw` ("too large to show in degF"). The param is
-a machine member and `!raw` asks for it verbatim, but the sentence is human text; FQ4's rule does not settle it, so it
-is unchanged (`degF`) and put to the design lane. Reaching it needs a temperature beyond about 1e308 K. Changing it
-would mean a `unit`-typed param that renders through `text_unit`, a catalogue/MSG change.
+*Was open.* The entry's summary and why rendered the param `unit` with `!raw` ("too large to show in degF"); FQ4's
+rule did not settle a machine param quoted in human text.
+
+*Decision.* FQ4's rule applies: in rendered text the `unit` param goes through `units.display.text_unit` ("°F"); as a
+machine param (the display item's `reason.params`, a stream-table footnote's `code(params)`) it stays `degF`/`degC`.
+
+Mechanism: D-22. Test: `tests/test_x04_messages.py::test_d7_7_out_of_range_names_the_unit_in_its_text_spelling`.
+
+## D-22. D-21's mechanism: a catalogue param type `display_unit` (CI fix)
+
+A new catalogue param type `display_unit` (the name `unit` is taken: a unit
+operation, §4.2.4) in `schemas/message-catalogue.schema.json`, rendered by `messages/render.py` as
+`text_unit(raw)`; `{unit!raw}` still gives the D2 spelling. `notices.yaml` declares `unit: {type: display_unit}` and
+its templates name `{unit}`. Rejected: a new template conversion (`!unit`), which would widen MSG's template grammar
+(`messages/template.py`) for one entry. The served `explain` params carry `type: display_unit` (the response schema's
+`type` is a free string). Reversible by reverting its commit.

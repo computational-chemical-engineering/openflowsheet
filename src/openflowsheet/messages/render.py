@@ -308,6 +308,10 @@ def _format(typed: _Typed, conversion: template.Conversion, catalogue: Catalogue
     if typed.type == "list":
         items = value if isinstance(value, list | tuple) else [value]
         return ", ".join(_raw(item) for item in items)
+    if typed.type == "display_unit":
+        # ADR 0075 D7.7 (X04 D-21): a display unit in human text takes its text spelling; the
+        # param keeps the D2 spelling (`degF`), and `!raw` gives it.
+        return text_unit(_raw(value))
     return _raw(value)
 
 
