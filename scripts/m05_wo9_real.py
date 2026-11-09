@@ -49,7 +49,11 @@ default run's settings and refusals, written as `<dir>/trust-region-study-real.*
 `benchmarks/`; `scripts/m05_retake_diff.py --digest-only --old-platform` proves it against the
 committed record before it replaces it. It refuses, with exit 2 and the reason, before the run
 starts: when `<dir>` resolves inside the repository, when `<dir>/trust-region-study-real.json`
-exists, or with `--replay`.
+exists, or with `--replay`. Before the temporary store is removed, every non-empty `child.stdout`
+and `child.stderr` of its attempts is copied to `<dir>/child-logs/<relpath>`, the relpath being the
+attempt's `execution.logs.relpaths` value, and the run prints `child-logs kept=<n>`; with n = 0 no
+directory is made (`docs/reviews/REL040-s6-ruling.md` §11.3 WO-7 (b)). The committed logs are all
+empty, so a kept log fails the proof, and its text is what the design lane rules on.
 
 Prints one summary line; exit 0 iff the run's store bijection holds (G7, judged on the run: a
 replay executes nothing), or the replay has no difference. Runs need `OMP_NUM_THREADS=1` (build
@@ -66,6 +70,7 @@ import argparse
 import hashlib
 import json
 import os
+import shutil
 import tempfile
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass
@@ -176,6 +181,30 @@ def restore_store(archive: bytes, root: Path) -> None:
         path = base / relative
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(text, encoding="utf-8")
+
+
+#: Where `--retake-into` keeps the store's non-empty child logs (WO-7 (b)).
+CHILD_LOGS: Final = "child-logs"
+
+
+def keep_child_logs(root: Path, into: Path) -> int:
+    """WO-7 (b) (R-1008, `docs/reviews/REL040-s6-ruling.md` §11.3): copies every non-empty child
+    log that an attempt record of the store under `root` names to `into/child-logs/<relpath>`, the
+    relpath being its `execution.logs.relpaths` value. Returns how many were copied; with none,
+    no directory is made."""
+    kept = 0
+    for attempt in sorted(ExperimentStore(root).base.glob("*/*/attempts/*.json")):
+        execution = json.loads(attempt.read_text(encoding="utf-8")).get("execution") or {}
+        relpaths = (execution.get("logs") or {}).get("relpaths") or {}
+        for relpath in sorted(relpaths.values()):
+            source = root / relpath
+            if not source.is_file() or source.stat().st_size == 0:
+                continue
+            target = into / CHILD_LOGS / relpath
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(source, target)
+            kept += 1
+    return kept
 
 
 @dataclass
@@ -429,6 +458,9 @@ def main(argv: list[str] | None = None) -> int:
         raise SystemExit(f"{stem}.json exists: a committed run is never overwritten in place")
     with tempfile.TemporaryDirectory(prefix="m05-wo9-real-") as root:
         real = run_real(Path(root), archive=archive)
+        if args.retake_into is not None:
+            kept = keep_child_logs(Path(root), args.retake_into.resolve())
+            print(f"child-logs kept={kept}")
     if args.replay:
         # G7's store bijection is the record's (its ledger's executions); a replay executes
         # nothing, so its own store has attempts no replayed request claims, by design.

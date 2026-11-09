@@ -12,6 +12,10 @@ R-1008 (`docs/reviews/REL040-s6-ruling.md` §8 WO-1, S6R-01 to S6R-10): the reac
 clear `platform` is admitted as `platform` when it is `--old-platform` on the committed side and the
 running `platform.platform()` on the re-take side, every other leaf of that fingerprint is pinned,
 and REAL's experiments archive is walked under the digest map.
+
+WO-7 (a) (ruling §11.3, S6R-27): an attempt's log digest (`.execution.logs.stdout_sha256`,
+`.stderr_sha256`) is compared exactly and never enters the map, so a moved log is other, a uniform
+move of every log included.
 """
 
 from __future__ import annotations
@@ -521,6 +525,11 @@ def test_s6r10_a_byte_copy_of_the_committed_real_stem_passes(tmp_path: Path) -> 
     assert passed, lines
     assert "changed-digests=0 " in lines[0]
     assert "version=0 platform=0 other=0 environment=equal" in lines[0]
+    # S6R-27 (4): the summary line printed before WO-7 (`d7258775`).
+    assert lines[0] == (
+        "RETAKE-DIGEST-ONLY PASS trust-region-study-real: changed-digests=0 digest=0 timing=0 "
+        "path=0 version=0 platform=0 other=0 environment=equal"
+    )
 
 
 # A made-up platform, different from whatever kernel the committed REAL record was taken on.
@@ -583,6 +592,11 @@ def test_s6r10_the_committed_real_stem_retaken_on_another_kernel_passes(
     # Each of the 48 cold attempts names its store directory twice, in the archive and in its
     # coupling record's iteration: 96 + 32 log paths.
     assert "path=128 version=0 platform=4 other=0 environment=equal" in lines[0]
+    # S6R-27 (4): the summary line printed before WO-7 (`d7258775`).
+    assert lines[0] == (
+        "RETAKE-DIGEST-ONLY PASS trust-region-study-real: changed-digests=50 digest=431 "
+        "timing=0 path=128 version=0 platform=4 other=0 environment=equal"
+    )
 
 
 # The class `path`: an attempt's log path names its experiment key's store directory.
@@ -640,3 +654,76 @@ def test_a_log_path_that_is_not_its_relabelled_path_is_other(
         and "(not its relabelled path)" in line
         for line in lines
     )
+
+
+# -- S6R-27 (WO-7 (a), ruling §11.3): a log digest is compared exactly, not relabelled ------------
+
+#: The empty file's SHA-256, every committed REAL log's digest (ruling §11.0 G2).
+EMPTY = hashlib.sha256(b"").hexdigest()
+
+
+def _log_digests(documents: dict[str, Any], keys: tuple[str, str]) -> dict[str, Any]:
+    """`_with_logs`, each log's digest the empty file's; the stems' only `EMPTY` leaves."""
+    documents = _with_logs(documents, keys)
+    archive = documents[".experiments.json"]
+    for key in keys:
+        name = f"{key[:2]}/{key}/attempts/1.json"
+        attempt = json.loads(archive[name])
+        attempt["execution"]["logs"] |= {"stderr_sha256": EMPTY, "stdout_sha256": EMPTY}
+        archive[name] = json.dumps(attempt)
+    for name in COUPLINGS:
+        logs = documents[f".coupling/{name}.json"]["attempts"][0]["execution"]["logs"]
+        logs |= {"stderr_sha256": EMPTY, "stdout_sha256": EMPTY}
+    return documents
+
+
+def test_s6r27_relabelled_stems_with_equal_log_digests_pass(tmp_path: Path) -> None:
+    committed = _log_digests(_real(K1, K2), (K1, K2))
+    passed, lines = _run_real(tmp_path, _log_digests(_real(K4, K3), (K4, K3)), None, committed)
+    assert passed, lines
+    assert "path=8 version=0 platform=0 other=0" in lines[0]
+
+
+def test_s6r27_an_archived_attempts_stderr_digest_moving_fails_naming_it(tmp_path: Path) -> None:
+    committed = _log_digests(_real(K1, K2), (K1, K2))
+    retake = _log_digests(_real(K4, K3), (K4, K3))
+    name = f"{K4[:2]}/{K4}/attempts/1.json"
+    attempt = json.loads(retake[".experiments.json"][name])
+    attempt["execution"]["logs"]["stderr_sha256"] = K5
+    retake[".experiments.json"][name] = json.dumps(attempt)
+    passed, lines = _run_real(tmp_path, retake, None, committed)
+    assert not passed
+    assert "other=1 " in lines[0]
+    leaf = f"experiments {K1[:2]}/{K1}/attempts/1.json.execution.logs.stderr_sha256"
+    assert f"  {leaf}: {EMPTY!r} vs {K5!r} (a log digest is compared exactly)" in lines
+
+
+def test_s6r27_a_coupling_iterations_stderr_digest_moving_fails_naming_it(tmp_path: Path) -> None:
+    committed = _log_digests(_real(K1, K2), (K1, K2))
+    retake = _log_digests(_real(K4, K3), (K4, K3))
+    retake[".coupling/S0.json"]["attempts"][0]["execution"]["logs"]["stderr_sha256"] = K5
+    passed, lines = _run_real(tmp_path, retake, None, committed)
+    assert not passed
+    assert "other=1 " in lines[0]
+    leaf = "coupling S0.json.attempts[0].execution.logs.stderr_sha256"
+    assert f"  {leaf}: {EMPTY!r} vs {K5!r} (a log digest is compared exactly)" in lines
+
+
+def test_s6r27_every_log_digest_moving_to_one_common_value_fails(tmp_path: Path) -> None:
+    # A uniform move is a bijection EMPTY -> K5: as a digest it would pass (the tool at `0282e4d6`
+    # does), so this case discriminates. 2 attempts and 2 coupling iterations, 2 logs each.
+    committed = _log_digests(_real(K1, K2), (K1, K2))
+    retake = _log_digests(_real(K4, K3), (K4, K3))
+    archive = retake[".experiments.json"]
+    for key in (K4, K3):
+        name = f"{key[:2]}/{key}/attempts/1.json"
+        attempt = json.loads(archive[name])
+        attempt["execution"]["logs"] |= {"stderr_sha256": K5, "stdout_sha256": K5}
+        archive[name] = json.dumps(attempt)
+    for name in COUPLINGS:
+        logs = retake[f".coupling/{name}.json"]["attempts"][0]["execution"]["logs"]
+        logs |= {"stderr_sha256": K5, "stdout_sha256": K5}
+    passed, lines = _run_real(tmp_path, retake, None, committed)
+    assert not passed
+    assert "other=8 " in lines[0]
+    assert sum("(a log digest is compared exactly)" in line for line in lines) == 8

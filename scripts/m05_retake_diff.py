@@ -65,6 +65,12 @@ admitted iff every 64-hex run in the committed text is a `<key[:2]>/<key>` pair 
 image under the completed map, and the text with each such pair relabelled, as an archive name is,
 equals the re-take text; anything else there is other.
 
+An attempt's log digest (a leaf at a path ending `.execution.logs.stdout_sha256` or
+`.execution.logs.stderr_sha256`, wherever it is walked) is compared exactly, before the digest
+class, and never enters the map: a log's content derives from no experiment key or fingerprint, so
+it must be equal, not relabelled. A difference is other, naming the leaf and both values
+(`docs/reviews/REL040-s6-ruling.md` §11.3 WO-7 (a)).
+
 It prints one line: PASS/FAIL, the changed digests (distinct old values whose new value differs)
 and each class count, then each problem.
 
@@ -160,6 +166,9 @@ LOG_PATH = re.compile(r".*\.execution\.logs\.relpaths\.[a-z]+")
 #: A store directory in such a path: `<key[:2]>/<key>`.
 STORE_DIRECTORY = re.compile(r"(?<![0-9a-f])([0-9a-f]{2})/([0-9a-f]{64})(?![0-9a-f])")
 
+#: An attempt's log digest, compared exactly and kept out of the map (WO-7 (a)).
+LOG_DIGEST = re.compile(r".*\.execution\.logs\.(stdout|stderr)_sha256")
+
 
 @dataclasses.dataclass
 class DigestOnly:
@@ -186,6 +195,10 @@ class DigestOnly:
         as other by `_fingerprint_rules`). With `platform` given, every other differing leaf under
         `FINGERPRINT` is other, a digest included."""
         for path, x, y in replay._walk_pair(a, b, ""):
+            if LOG_DIGEST.fullmatch(path):
+                if not replay._same_leaf(x, y):
+                    self.flag(f"{where}{path}: {x!r} vs {y!r} (a log digest is compared exactly)")
+                continue
             digests = all(isinstance(v, str) and DIGEST.fullmatch(v) for v in (x, y))
             if digests:
                 self.pairs.setdefault(x, set()).add(y)
