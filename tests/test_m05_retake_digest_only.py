@@ -7,6 +7,11 @@ record's clear `frozen.reactor.fingerprint.openflowsheet_version` is admitted as
 is `--old-version` on the committed side and the running version on the re-take side, and each
 frozen unit's `fingerprint_sha256` is bound to its `fingerprint`. Each case writes a committed and a
 re-taken set of the five documents into `tmp_path` and changes one thing.
+
+R-1008 (`docs/reviews/REL040-s6-ruling.md` §8 WO-1, S6R-01 to S6R-10): the reactor fingerprint's
+clear `platform` is admitted as `platform` when it is `--old-platform` on the committed side and the
+running `platform.platform()` on the re-take side, every other leaf of that fingerprint is pinned,
+and REAL's experiments archive is walked under the digest map.
 """
 
 from __future__ import annotations
@@ -15,6 +20,8 @@ import copy
 import importlib.util
 import json
 import math
+import platform
+import shutil
 import sys
 from collections.abc import Callable
 from pathlib import Path
@@ -119,7 +126,7 @@ def test_a_consistent_relabelling_of_two_digests_passes(tmp_path: Path) -> None:
     passed, lines = _run(tmp_path, new=(K4, K3))
     assert passed, lines
     assert lines[0].startswith("RETAKE-DIGEST-ONLY PASS case: changed-digests=2 ")
-    assert "version=0 other=0 environment=equal" in lines[0]
+    assert "version=0 platform=0 other=0 environment=equal" in lines[0]
 
 
 def test_one_float_moved_by_one_ulp_fails_naming_the_leaf(tmp_path: Path) -> None:
@@ -184,7 +191,7 @@ def test_the_version_leaf_pinned_and_bound_passes(tmp_path: Path, running_v1: No
     passed, lines = _run(tmp_path, new=(K3, K4), version=V1, old_version=V0)
     assert passed, lines
     assert lines[0].startswith("RETAKE-DIGEST-ONLY PASS case: changed-digests=3 ")
-    assert "version=1 other=0" in lines[0]
+    assert "version=1 platform=0 other=0" in lines[0]
 
 
 def test_the_version_leaf_without_old_version_fails_naming_it(
@@ -192,7 +199,7 @@ def test_the_version_leaf_without_old_version_fails_naming_it(
 ) -> None:
     passed, lines = _run(tmp_path, new=(K3, K4), version=V1)
     assert not passed
-    assert "version=0 other=1" in lines[0]
+    assert "version=0 platform=0 other=1" in lines[0]
     assert f"  coupling S0.json{RETAKE.VERSION_PATH}: {V0!r} vs {V1!r} (no --old-version)" in lines
 
 
@@ -262,5 +269,254 @@ def test_the_version_moving_at_another_path_is_other(
     _write(new_stem, retake)
     passed, lines = RETAKE.digest_only(old_stem, new_stem, V0)
     assert not passed
-    assert "version=1 other=1" in lines[0]
+    assert "version=1 platform=0 other=1" in lines[0]
     assert f"  {leaf}: {V0!r} vs {V1!r}" in lines
+
+
+# -- R-1008 (S6R-01 to S6R-10): the `platform` class and REAL's experiments archive ---------------
+
+P0 = "Linux-6.12.111+deb13-amd64-x86_64-with-glibc2.41"
+P1 = "Linux-6.12.113+deb13-amd64-x86_64-with-glibc2.41"
+COUPLINGS = ("S0", "cand-C1-P1")
+
+
+@pytest.fixture
+def running_p1(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(platform, "platform", lambda: P1)
+
+
+def _reactor(host: str, **pins: str) -> dict[str, Any]:
+    """A frozen out-of-process reactor on `host`, its fingerprint digest bound; `pins` override
+    the fingerprint's other leaves."""
+    fingerprint = {
+        "export_tree_sha256": "c" * 64,
+        "lock_sha256": "b" * 64,
+        "machine": "x86_64",
+        "platform": host,
+        "python": "3.13.5",
+        **pins,
+    }
+    return {
+        "reactor": {"fingerprint": fingerprint, "fingerprint_sha256": document_sha256(fingerprint)}
+    }
+
+
+def _archive(keys: tuple[str, ...], fingerprint_sha256: str) -> dict[str, str]:
+    """REAL's experiments archive: a request, a result and an attempt per key, as exact text."""
+    files: dict[str, str] = {}
+    for index, key in enumerate(keys):
+        files[f"{key[:2]}/{key}/attempts/1.json"] = json.dumps(
+            {"attempt": 1, "execution": {"timing": {"wall_s": 2.5}}, "experiment_key": key}
+        )
+        files[f"{key[:2]}/{key}/request.json"] = json.dumps(
+            {"environment_fingerprint_sha256": fingerprint_sha256, "experiment_key": key}
+        )
+        files[f"{key[:2]}/{key}/result.json"] = json.dumps({"value": 0.25 + index})
+    return dict(sorted(files.items()))
+
+
+def _real(first: str, second: str, host: str = P0, **pins: str) -> dict[str, Any]:
+    """`_documents` with REAL's shape: a frozen reactor on `host` in two coupling records and the
+    experiments archive."""
+    documents = _documents(first, second)
+    del documents[".coupling/S0.json"]
+    frozen = _reactor(host, **pins)
+    digest = frozen["reactor"]["fingerprint_sha256"]
+    for name, key in zip(COUPLINGS, (first, second), strict=True):
+        documents[f".coupling/{name}.json"] = {
+            "frozen": copy.deepcopy(frozen),
+            "request": {"experiment_key": key, "environment_fingerprint_sha256": digest},
+            "residual": [1.5, -2.0],
+        }
+    documents[".experiments.json"] = _archive((first, second), digest)
+    return documents
+
+
+def _run_real(
+    tmp_path: Path,
+    retake: dict[str, Any],
+    old_platform: str | None = None,
+    committed: dict[str, Any] | None = None,
+) -> tuple[bool, list[str]]:
+    old_stem, new_stem = tmp_path / "old" / "case", tmp_path / "new" / "case"
+    _write(old_stem, _real(K1, K2) if committed is None else committed)
+    _write(new_stem, retake)
+    return RETAKE.digest_only(old_stem, new_stem, None, old_platform)
+
+
+def test_s6r01_the_platform_leaf_pinned_and_bound_passes(tmp_path: Path, running_p1: None) -> None:
+    passed, lines = _run_real(tmp_path, _real(K3, K4, P1), P0)
+    assert passed, lines
+    # K1, K2 and the fingerprint digest moved; the archive's attempts are equal (no timing).
+    assert lines[0].startswith("RETAKE-DIGEST-ONLY PASS case: changed-digests=3 ")
+    assert f"version=0 platform={len(COUPLINGS)} other=0 environment=equal" in lines[0]
+
+
+def test_s6r02_the_platform_leaf_without_old_platform_fails_naming_it(
+    tmp_path: Path, running_p1: None
+) -> None:
+    passed, lines = _run_real(tmp_path, _real(K3, K4, P1))
+    assert not passed
+    assert f"platform=0 other={len(COUPLINGS)}" in lines[0]
+    assert (
+        f"  coupling S0.json{RETAKE.PLATFORM_PATH}: {P0!r} vs {P1!r} (no --old-platform)" in lines
+    )
+
+
+def test_s6r03_an_old_platform_other_than_the_committed_side_fails(
+    tmp_path: Path, running_p1: None
+) -> None:
+    passed, lines = _run_real(tmp_path, _real(K3, K4, P1), "Linux-6.12.110")
+    assert not passed
+    assert any(f"committed {P0!r} is not --old-platform 'Linux-6.12.110'" in x for x in lines)
+
+
+def test_s6r04_a_retake_side_other_than_the_running_platform_fails(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(platform, "platform", lambda: "Linux-6.12.114")
+    passed, lines = _run_real(tmp_path, _real(K3, K4, P1), P0)
+    assert not passed
+    assert any(f"re-take {P1!r} is not the running 'Linux-6.12.114'" in x for x in lines)
+
+
+def test_s6r05_a_platform_move_that_keeps_the_old_fingerprint_digest_fails(
+    tmp_path: Path, running_p1: None
+) -> None:
+    stale = _reactor(P0)["reactor"]["fingerprint_sha256"]
+    retake = _real(K3, K4, P1)
+    for name in COUPLINGS:
+        coupling = retake[f".coupling/{name}.json"]
+        coupling["frozen"]["reactor"]["fingerprint_sha256"] = stale
+        coupling["request"]["environment_fingerprint_sha256"] = stale
+    retake[".experiments.json"] = _archive((K3, K4), stale)
+    passed, lines = _run_real(tmp_path, retake, P0)
+    assert not passed
+    assert any(
+        "coupling S0.json (re-take): frozen.reactor.fingerprint_sha256" in line
+        and "is not document_sha256 of its fingerprint" in line
+        for line in lines
+    )
+
+
+@pytest.mark.parametrize(
+    ("leaf", "value"),
+    [("lock_sha256", "d" * 64), ("export_tree_sha256", "e" * 64), ("python", "3.13.6")],
+)
+def test_s6r06_s6r07_another_fingerprint_leaf_moving_with_the_platform_is_other(
+    tmp_path: Path, running_p1: None, leaf: str, value: str
+) -> None:
+    # The binding is recomputed, so only the pinned leaf itself is wrong.
+    passed, lines = _run_real(tmp_path, _real(K3, K4, P1, **{leaf: value}), P0)
+    assert not passed
+    assert f"platform={len(COUPLINGS)} other={len(COUPLINGS)}" in lines[0]
+    assert any(
+        line.startswith(f"  coupling S0.json.frozen.reactor.fingerprint.{leaf}: ") for line in lines
+    )
+
+
+def _platform_in_record(documents: dict[str, Any], host: str) -> None:
+    documents[".json"]["runs"][0]["platform"] = host
+
+
+def _platform_outside_the_fingerprint(documents: dict[str, Any], host: str) -> None:
+    documents[".coupling/S0.json"]["frozen"]["reactor"]["platform"] = host
+
+
+@pytest.mark.parametrize(
+    ("place", "leaf"),
+    [
+        (_platform_in_record, "record.runs[0].platform"),
+        (_platform_outside_the_fingerprint, "coupling S0.json.frozen.reactor.platform"),
+    ],
+)
+def test_s6r08_the_platform_moving_at_another_path_is_other(
+    tmp_path: Path,
+    running_p1: None,
+    place: Callable[[dict[str, Any], str], None],
+    leaf: str,
+) -> None:
+    committed, retake = _real(K1, K2), _real(K3, K4, P1)
+    place(committed, P0)
+    place(retake, P1)
+    passed, lines = _run_real(tmp_path, retake, P0, committed)
+    assert not passed
+    assert f"platform={len(COUPLINGS)} other=1" in lines[0]
+    assert f"  {leaf}: {P0!r} vs {P1!r}" in lines
+
+
+# S6R-09: the experiments archive.
+
+
+def test_s6r09_a_consistent_relabelling_of_the_archive_passes(tmp_path: Path) -> None:
+    passed, lines = _run_real(tmp_path, _real(K4, K3))
+    assert passed, lines
+    assert "changed-digests=2 " in lines[0]
+    assert "platform=0 other=0" in lines[0]
+
+
+def test_s6r09_one_result_leaf_moved_by_one_ulp_fails_naming_it(tmp_path: Path) -> None:
+    retake = _real(K3, K4)
+    name = f"{K3[:2]}/{K3}/result.json"
+    retake[".experiments.json"][name] = json.dumps({"value": math.nextafter(0.25, math.inf)})
+    passed, lines = _run_real(tmp_path, retake)
+    assert not passed
+    assert "other=1" in lines[0]
+    assert [x for x in lines if x.startswith(f"  experiments {K1[:2]}/{K1}/result.json.value: ")]
+
+
+def test_s6r09_one_archive_file_missing_on_the_retake_side_fails(tmp_path: Path) -> None:
+    retake = _real(K3, K4)
+    del retake[".experiments.json"][f"{K4[:2]}/{K4}/request.json"]
+    passed, lines = _run_real(tmp_path, retake)
+    assert not passed
+    assert any(f"experiments {K2[:2]}/{K2}/request.json: no re-taken file" in x for x in lines)
+
+
+def test_s6r09_two_committed_keys_mapped_to_one_fail(tmp_path: Path) -> None:
+    passed, lines = _run_real(tmp_path, _real(K3, K3))
+    assert not passed
+    assert f"  map: {K3} is the image of two digests" in lines
+
+
+def test_s6r09_an_attempt_differing_only_in_its_wall_time_passes_as_timing(
+    tmp_path: Path,
+) -> None:
+    retake = _real(K3, K4)
+    name = f"{K3[:2]}/{K3}/attempts/1.json"
+    attempt = json.loads(retake[".experiments.json"][name])
+    attempt["execution"]["timing"]["wall_s"] = 3.75
+    retake[".experiments.json"][name] = json.dumps(attempt)
+    passed, lines = _run_real(tmp_path, retake)
+    assert passed, lines
+    assert "timing=1 " in lines[0]
+
+
+def test_s6r09_an_archive_on_one_side_only_fails(tmp_path: Path) -> None:
+    retake = _real(K3, K4)
+    del retake[".experiments.json"]
+    passed, lines = _run_real(tmp_path, retake)
+    assert not passed
+    assert "  experiments: no case.experiments.json on the re-take side" in lines
+
+
+# S6R-10: the committed REAL stem.
+
+REAL = ROOT / "benchmarks" / "m05" / "records" / "trust-region-study-real"
+REAL_SUFFIXES = (".json", ".ledger.json", ".store.json", ".environment.json", ".experiments.json")
+
+
+def _copy_real(stem: Path) -> None:
+    stem.parent.mkdir(parents=True)
+    for suffix in REAL_SUFFIXES:
+        shutil.copyfile(REAL.with_suffix(suffix), stem.with_suffix(suffix))
+    shutil.copytree(REAL.with_suffix(".coupling"), stem.with_suffix(".coupling"))
+
+
+def test_s6r10_a_byte_copy_of_the_committed_real_stem_passes(tmp_path: Path) -> None:
+    new = tmp_path / "new" / REAL.name
+    _copy_real(new)
+    passed, lines = RETAKE.digest_only(REAL, new)
+    assert passed, lines
+    assert "changed-digests=0 " in lines[0]
+    assert "version=0 platform=0 other=0 environment=equal" in lines[0]
