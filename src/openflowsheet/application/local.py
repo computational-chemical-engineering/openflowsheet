@@ -1575,6 +1575,7 @@ class LocalApplication:
         depth: int = STREAM_TABLE_DEPTH,
         cursor: str | None = None,
         limit: int = DEFAULT_PAGE,
+        display_units: str | None = None,
     ) -> Projection:
         """ADR 0068 (ST note §6.1): an ended job's stream table and energy summary, the
         `stream-table-v1` document computed on read from its replay bundle's revision, solution
@@ -1591,6 +1592,11 @@ class LocalApplication:
             document when empty.
         depth, cursor, limit
             Bounds of the projection, and the cursor of its next page.
+        display_units
+            A display preference (ADR 0075 D7.3, ADR 0019 Amendment 17), resolved against the
+            project's declared ambient pressure: each converted number gains a `display` item
+            beside it and the root echoes the preference; the SI members are unchanged, and the
+            `sha256` is the displayed document's.
 
         Returns
         -------
@@ -1604,11 +1610,13 @@ class LocalApplication:
             member the report reads (MSG's member detail, as `get_artifact`'s); `not_ready`
             before the job ends; `unsupported` when the revision's basis cannot be evaluated in
             this installation (`basis_unavailable(<id>)`, with its `hint`); `internal_error` when
-            the bundle's members are inconsistent.
+            the bundle's members are inconsistent; `invalid_request` or `unsupported` for a
+            `display_units` refused by ADR 0075 D9.
         """
         operation = "get_stream_table"
         self._authorize(operation)
         self._check_view(operation, pointer, depth, cursor, limit)
+        units = None if display_units is None else self._display_units(display_units, operation)
         job = self._job(job_id, operation)
         if job.status not in TERMINAL_STATUSES:
             self._refuse(
@@ -1660,6 +1668,8 @@ class LocalApplication:
                 bundle_id=row.artifact_id,
                 **error.detail,
             )
+        if units is not None:
+            document = stream_table.displayed(document, units)
         return self._project(
             operation,
             document,

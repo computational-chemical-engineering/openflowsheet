@@ -236,6 +236,7 @@ class Inspection(Protocol):
         depth: int = 12,
         cursor: str | None = None,
         limit: int = 50,
+        display_units: str | None = None,
     ) -> Projection: ...
 
     def list_audit(
