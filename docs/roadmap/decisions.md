@@ -809,3 +809,9 @@ Only failure: `test_g16b_reference_run[V17-T10-*]` T10-C3 (exact set of offered 
 T08's form (Amendment RRC-1, GC-18, R-996, RRC D-46), sha `621003a8…`; the three frozen documents unchanged; exclusion
 rejected (it would make the expected answer false). Applied: A1–A8 exact (negative control fails GC-18 as stated);
 G16-b 40/40; F0 PASS. Q1 (`t07_reference.py --check` in CI): no (85.6 s). CI re-run pending.
+
+- 2026-11-09 — RRC CI green at 6b892b03 (run 42558001650, both archs, identity, default-install). Manifest engineer
+  launched (brief docs/briefs/RRC-manifest.md). DECISION: wp/MSGp merges with its own MSG follow-up manifest at the
+  re-based head (pattern evidence/MSG/5e9274db…), not folded into OPT's evidence; brief docs/briefs/MSGp-remerge.md
+  (merge main after RRC, keep both sides' hand-written entries, regenerate, re-measure A1–A9 with the digest moving by
+  RRC's additions only). Alternative: OPT follow-up manifest. Reversible by: dropping the manifest commit pre-merge.
