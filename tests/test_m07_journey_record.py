@@ -13,9 +13,11 @@ also replayed with M05's REAL replay (Amendment 2 A2.4), which needs pyomo (the 
 
 from __future__ import annotations
 
+import hashlib
 import importlib.util
 import json
 import re
+import subprocess
 import sys
 from pathlib import Path
 from typing import Any
@@ -196,17 +198,24 @@ def test_a21_a_re_run_names_the_offered_m05_record_tracked_with_its_sha256(
     journey: tuple[Path, dict[str, Any]],
 ) -> None:
     """A2.3 (R-454): a re-run's `offered` names a tracked, unmodified file whose sha256 it states,
-    whose anchor is the one R3's carry rule reads from it, with the reason that anchor gives."""
+    whose anchor is the one R3's carry rule reads from it, with the reason that anchor gives.
+
+    Q-S6e (S-6): the file is read as tracked at the journey's own commit, not from the working
+    tree, so a later J that re-takes the offered record leaves earlier journeys checkable."""
     _, record = journey
     m05 = record["rungs"]["R3"]["m05_record"]
     if m05["carried_from"] != m07.RERUN:
         assert m05["offered"] is None
         return
     offered = m05["offered"]
-    path = REPO_ROOT / offered["path"]
-    assert m07.tracked_unmodified(path)
-    assert m07.sha256_file(path) == offered["sha256"]
-    document = json.loads(path.read_text(encoding="utf-8"))
+    blob = subprocess.run(
+        ["git", "show", f"{record['commit']}:{offered['path']}"],
+        cwd=REPO_ROOT,
+        capture_output=True,
+        check=True,
+    ).stdout
+    assert hashlib.sha256(blob).hexdigest() == offered["sha256"]
+    document = json.loads(blob.decode("utf-8"))
     anchor = m07.m05_run_commit(document) or m07.manifest_anchor(
         offered["sha256"], m07.M05_EVIDENCE
     )

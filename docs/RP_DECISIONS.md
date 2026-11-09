@@ -460,3 +460,13 @@ Question for the design lane, Q-S6e: how does A2.3 read a committed journey's `o
 names — e.g. check `tracked_unmodified` and the sha256 against the file at the journey's own commit (`git show
 <C>:<path>`) rather than the working tree — and does J carry that test change before K3? Default (not applied): the
 historical reading, test-only, one commit before J, under §8.0's rule.
+
+### Q-S6e (orchestrator, 2026-11-09)
+
+S6R-29 found `tests/test_m07_journey_record.py::test_a21_a_re_run_names_the_offered_m05_record_tracked_with_its_sha256`
+(cases `2c508b5`, `2d945b5`, `974c395`) hashing the working tree's `trust-region-study-real.json` against each committed
+journey's `offered.sha256`, so a J that commits the REAL re-take fails it. Decision (the engineer's default): the test
+reads the offered file as tracked at the journey's own `commit` (`git show <commit>:<path>`; CI checks out full
+history) and checks its sha256 and anchor from that blob. Proof: the module passes at head (56 passed) and with the
+working-tree REAL record altered (56 passed). Alternative: J rewrites the three journey records. Test-only commit; the
+design lane rules on it in this package's `reviewer` pass.
