@@ -52,6 +52,7 @@ from openflowsheet.messages.lint import lint
 from openflowsheet.messages.render import (
     RenderContext,
     entry_document,
+    format_number,
     render_code,
     render_error,
     render_failure,
@@ -242,6 +243,40 @@ def test_a16_raw_and_out_of_range_show_si() -> None:
     assert p_inlet["display"] == display_item(1.0e5, "pressure", units)
     assert "(1e+308 kg/s against 14.50 psi)" in huge["summary"]
     assert schema_errors(EXPLANATION, huge) == []
+
+
+@pytest.mark.parametrize(("preference", "text"), [("eng", "°C"), ("temperature=degF", "°F")])
+def test_d7_7_a_converted_temperature_shows_the_degree_sign(preference: str, text: str) -> None:
+    """ADR 0075 D7.7 (FQ4, Frank, 2026-11-09): rendered text shows a converted temperature in
+    `°C`/`°F`; the `numbers` item's `display.unit` stays the D2 spelling."""
+    units = parse_display_units(preference, None)
+    unit = units["temperature"]
+    params = {
+        "unit": "P",
+        "what": "temperature",
+        "value": {"value": 200.0, "unit": "K", "kind": "temperature"},
+        "low": {"value": 273.16, "unit": "K", "kind": "temperature"},
+        "high": {"value": 1273.15, "unit": "K", "kind": "temperature"},
+    }
+    explanation = render_code(
+        "out_of_domain",
+        params,
+        chain=["INITIALIZATION_FAILED", "initializer_failed", "out_of_domain"],
+        context=RenderContext(display_units=units),
+        strict=True,
+    )
+    shown = []
+    for item in explanation["numbers"]:
+        assert item["display"] == display_item(item["value"], "temperature", units)
+        assert item["display"]["unit"] == unit
+        shown.append(f"{format_number(item['display']['value'])} {text}")
+    value, low, high = shown
+    assert (
+        f"temperature {value} is outside the method's range of {low} to {high}."
+        in (explanation["why"])
+    )
+    assert unit not in explanation["why"] and " K " not in explanation["why"]
+    assert schema_errors(EXPLANATION, explanation) == []
 
 
 # -- A19. Pressure sites in the catalogue are absolute ---------------------------------------------

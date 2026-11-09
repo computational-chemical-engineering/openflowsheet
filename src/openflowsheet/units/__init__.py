@@ -67,6 +67,7 @@ __all__ = [
     "normalize_zero",
     "parse_display_units",
     "read_number",
+    "text_unit",
 ]
 
 Dimension = tuple[int, int, int, int, int, int, int]
@@ -620,4 +621,5 @@ from openflowsheet.units.display import (  # noqa: E402
     DisplayUnitsError,
     display_item,
     parse_display_units,
+    text_unit,
 )

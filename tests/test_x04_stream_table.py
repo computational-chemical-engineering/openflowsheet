@@ -545,7 +545,10 @@ def test_a28_the_text_form_in_display_units(
     assert "SI units" not in lines
     pu01 = next(p for p in REFERENCE["preferences"] if p["id"] == "PU01")
     canonical = ",".join(f"{k}={u}" for k, u in sorted(pu01["expected"]["units"].items()))
+    # ADR 0075 D7.7 (FQ4): the canonical text is a machine member and keeps `degC`; the row
+    # labels are human text and show `°C`.
     assert lines[7] == f"display units:       {canonical}"
+    assert "temperature=degC" in lines[7]
     assert lines[8] == ""
     document = table(solved.project, solved.rankine, "eng")["value"]
     streams_ = document["streams"]
@@ -553,7 +556,7 @@ def test_a28_the_text_form_in_display_units(
     substreams = [stream["substreams"][0] for stream in streams_]
     rows = {line[: stream_table_format.LABEL_WIDTH].rstrip(): line for line in lines}
     expected_rows = {
-        "T [degC]": (streams_, "T"),
+        "T [°C]": (streams_, "T"),
         "P [bar]": (streams_, "P"),
         "n [kmol/h]": (substreams, "n_total"),
         "m [kg/h]": (substreams, "m_total"),
@@ -566,6 +569,7 @@ def test_a28_the_text_form_in_display_units(
     }
     for label, (holders, member) in expected_rows.items():
         assert _cells(rows[label]) == [_shown_value(h, member) for h in holders], label
+    assert "T [degC]" not in rows
     header = next(line for line in lines if line.startswith("unit "))
     width = stream_table_format.VALUE_WIDTH
     start = 2 * stream_table_format.LABEL_WIDTH
@@ -681,6 +685,8 @@ def test_d9_an_out_of_range_display_prints_as_an_absent_value(solved: Solved) ->
     reason = {"code": "display_out_of_range", "params": {"kind": "temperature", "unit": "degF"}}
     stream["display"]["T"] = {"value": None, "unit": "degF", "reason": reason}
     text = stream_table_format.to_text(shown)
+    # The label is human text (`°F`, ADR 0075 D7.7); the reason's params are machine members.
+    assert any(line.startswith("T [°F] ") for line in text.splitlines())
     assert "*1 display_out_of_range(kind=temperature, unit=degF)" in text.splitlines()
     rows = list(csv.reader(io.StringIO(stream_table_format.to_csv(shown))))
     row = dict(zip(rows[0], next(r for r in rows[1:] if r[0] == stream["id"]), strict=True))

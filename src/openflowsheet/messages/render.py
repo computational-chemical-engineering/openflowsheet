@@ -49,7 +49,7 @@ from openflowsheet.messages.legacy import (
     parse_check,
     resolve,
 )
-from openflowsheet.units import display_item
+from openflowsheet.units import display_item, text_unit
 
 Surface = Literal["python", "cli", "http", "mcp"]
 Explanation = dict[str, Any]
@@ -289,8 +289,9 @@ def _format(typed: _Typed, conversion: template.Conversion, catalogue: Catalogue
     if typed.type == "quantity":
         display = typed.display
         if display is not None and display["value"] is not None:
-            # ADR 0075 D7.2: a converted quantity, in MSG's format; out of range shows SI.
-            return f"{format_number(display['value'])} {display['unit']}"
+            # ADR 0075 D7.2, D7.7: a converted quantity, in MSG's format and the unit's text
+            # spelling; out of range shows SI.
+            return f"{format_number(display['value'])} {text_unit(display['unit'])}"
         quantity = _quantity(value)
         if quantity is not None:
             return f"{format_number(quantity[0])} {quantity[1]}"
