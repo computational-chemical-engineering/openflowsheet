@@ -821,3 +821,8 @@ G16-b 40/40; F0 PASS. Q1 (`t07_reference.py --check` in CI): no (85.6 s). CI re-
   t08, harvest, manifests, msg, surface chain, global state) 1555 passed, 2 skipped, 3 xfailed. Note: manifest
   requirements D01/D20 only — the schema pattern `^[DA][0-9]{2}$` rejects V20. Next: wp/MSGp re-merge
   (docs/briefs/MSGp-remerge.md), then ST WO-7.
+
+- 2026-11-09 — wp/MSGp re-based on main after RRC: merge 1602f72a (parents 8906f870, ed7718ae); only the two
+  message_entry fixtures conflicted (generated, regenerated). A1 379/83/129 (main after RRC 379/83/138; RRC added no
+  entries); A2 digest e3725b30… (main 14921a20…); A3–A9 hold, merged diff vs main per file = 8906f870's. Tests 1425
+  passed, 2 skipped, 3 xfailed; msg check PASS; F0 PASS; ruff clean. D-96 amended. CI watched; manifest after green.
