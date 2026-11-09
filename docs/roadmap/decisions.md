@@ -857,3 +857,8 @@ G16-b 40/40; F0 PASS. Q1 (`t07_reference.py --check` in CI): no (85.6 s). CI re-
   claims). Board: adr-0075, x04-fq1…fq4. Finding: catalogue `J/(mol*K)` vs ADR 0062 `J/(mol K)` (align at F2).
   DECISION: build starts on the Proposed ADR (engineer A, docs/briefs/X04-build-A.md); merge needs Frank's accept.
   Alternative: wait for the accept. Reversible by: branch not merged.
+
+- 2026-11-09 — Correction: the "schema ADR admitting REL[0-9]{3,}" is done — ADR 0074 (Accepted 2026-11-08, D1 applied
+  in 51c9e7f5; `work_package` admits REL ids). Remaining release prep in one build item, brief
+  docs/briefs/REL040-prep.md (wp/REL040p): x05 gate entry in release/lines/0.4.json; RP.L11 (ADR 0074 O-3 default);
+  S-6 rehearsal (`release_rc.py local`, every step, records in the scratchpad only; no tag/release/publish).
