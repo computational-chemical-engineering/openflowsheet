@@ -63,7 +63,7 @@ def refusal(read: Callable[[str], bytes | None], line: str = "0.4") -> list[str]
     return str(raised.value).splitlines()
 
 
-# -- REL.A01, RP.L01–RP.L10 -----------------------------------------------------------------------
+# -- REL.A01, RP.L01–RP.L11 -----------------------------------------------------------------------
 
 
 def test_the_committed_line_files_load() -> None:
@@ -236,6 +236,44 @@ def test_l10_a_frank_item_without_exactly_one_row() -> None:
     assert refusal(reader(**{"release/acceptances.md": without})) == [
         "line 0.4: RP.L10: 0 rows 'M02 N1' in release/acceptances.md, not 1"
     ]
+
+
+def test_l11_0_4_with_rel050_is_refused_and_rel040_passes() -> None:
+    """RP.L11 (amendment A-10; ADR 0074 O-3): a gate line's `evidence_package` is ADR 0074 D2's id
+    of `<line>.0`. Control: the 0.4 line naming `REL050`. The committed `REL040` passes."""
+    assert LINE_0_4["gate_set"]["evidence_package"] == "REL040"
+    assert release_gate.load_line("0.4", line_0_4(lambda document: None)).name == "0.4"
+
+    def edit(document: dict[str, Any]) -> None:
+        document["gate_set"]["evidence_package"] = "REL050"
+
+    assert refusal(line_0_4(edit)) == [
+        "line 0.4: RP.L11: evidence_package 'REL050' is not 'REL040', ADR 0074 D2's id of 0.4.0"
+    ]
+
+
+@pytest.mark.parametrize(
+    ("release", "expected"),
+    [
+        ("0.4.0", "REL040"),
+        ("0.10.0", "REL0b100"),
+        ("1.10.0", "REL1b100"),
+        ("11.0.0", "RELb1100"),
+        ("0.4.10", "REL04b10"),
+        ("2027.1.0", "RELd202710"),
+        ("0.0.10000", "REL00e10000"),
+    ],
+)
+def test_l11_the_encoder_gives_adr_0074_d2_s_examples(release: str, expected: str) -> None:
+    assert release_gate.release_package_id(release) == expected
+
+
+@pytest.mark.parametrize(
+    "release", ["0.4", "0.4.0.1", "0.04.0", "0.4.0rc1", "1" + "0" * 26 + ".0.0"]
+)
+def test_l11_the_encoder_refuses_what_has_no_id(release: str) -> None:
+    with pytest.raises(ValueError, match="ADR 0074 D2"):
+        release_gate.release_package_id(release)
 
 
 # -- REL.A02: the 0.3 transcription -----------------------------------------------------------

@@ -9,10 +9,11 @@ records it, and decides whether a tag `v<version>` may be **proposed** to Frank 
 ADR 0021 D5).
 
 **The line file** is read in the candidate's tree, with the line files it inherits, and refused
-with exit 2 when any of RP's checks RP.L01–RP.L10 fails (§3.4): the schema, the stem and an
+with exit 2 when any of RP's checks RP.L01–RP.L11 fails (§3.4): the schema, the stem and an
 acyclic `inherits` chain, `changed` exact in both directions against the inherited line (§3.2,
 REL.A01), the `tests` globs and the `criteria`, `documents` and `scripts` paths at `C` (RP.L05,
-RP.L08), the keys of `gates`, the `rc` pairs, the clause grammar, and the decision items. Its
+RP.L08), the keys of `gates`, the `rc` pairs, the clause grammar, the decision items, and a gate
+line's `evidence_package` (RP.L11, ADR 0074 O-3). Its
 `gate_set` is the engine's `GateSet`, with `acceptances` in the place of `policy_adr`. Every line
 admits post-releases as the legacy lines do (RP §7.5, R-922).
 
@@ -83,6 +84,8 @@ ROOT: Final = engine.ROOT
 LINES: Final = "release/lines"
 SCHEMA: Final = f"{LINES}/release-line-v1.schema.json"
 LINE_NAME: Final = re.compile(r"(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)")
+#: ADR 0074 D2: a release segment of exactly three non-negative integers, no leading zeros.
+RELEASE_SEGMENT: Final = re.compile(r"(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)")
 #: RP §3.1: the 18 `GateSet` fields, `policy_adr` renamed `acceptances`, in the engine's order.
 GATE_SET_FIELDS: Final = (
     "name",
@@ -126,6 +129,23 @@ class LineError(ValueError):
 
 
 # -- the line file (RP §3) --------------------------------------------------------------------
+
+
+def release_package_id(release: str) -> str:
+    """ADR 0074 D2: `REL` + code(X) + code(Y) + code(Z) for the release segment `X.Y.Z`, where
+    code(n) is n's digit below 10 and otherwise the k-th lower-case letter and n's k digits
+    (`b` for 10–99, `c` for 100–999, …, `z` for k = 26). Its own encoder of D2's text, not the
+    manifest schema's pattern (ADR 0074 O-3). A segment without exactly three components, or a
+    component of more than 26 digits, has no id: `ValueError` naming it."""
+    if not RELEASE_SEGMENT.fullmatch(release):
+        raise ValueError(f"{release!r} is not a release segment X.Y.Z (ADR 0074 D2)")
+    codes = []
+    for component in release.split("."):
+        k = len(component)
+        if k > 26:
+            raise ValueError(f"{release!r}: {component} has {k} digits, beyond `z` (ADR 0074 D2)")
+        codes.append(component if k == 1 else chr(ord("a") + k - 1) + component)
+    return "REL" + "".join(codes)
 
 
 def line_path(name: str) -> str:
@@ -216,7 +236,7 @@ def _schema_problem(document: Any, schema: Mapping[str, Any]) -> str | None:
 
 def load_line(name: str, read: Callable[[str], bytes | None]) -> Line:
     """The line file `name` and the line files it inherits, each read by `read` (the candidate's
-    tree), checked by RP.L01–RP.L04, RP.L06, RP.L07, RP.L09, RP.L10 and RP.L08's unique ids.
+    tree), checked by RP.L01–RP.L04, RP.L06, RP.L07, RP.L09–RP.L11 and RP.L08's unique ids.
     RP.L05 and RP.L08's scripts are `tree_problems`', at `C`. A failed check is a `LineError`."""
     if not LINE_NAME.fullmatch(name):
         raise LineError(f"--line {name!r} is not <major>.<minor>")
@@ -270,7 +290,7 @@ def inheritance_problems(child: Mapping[str, Any], parent: Mapping[str, Any]) ->
 
 
 def line_problems(line: Line, read: Callable[[str], bytes | None]) -> list[str]:
-    """RP.L06, RP.L07, RP.L08's unique ids, RP.L09 and RP.L10, on the judged line."""
+    """RP.L06, RP.L07, RP.L08's unique ids, RP.L09, RP.L10 and RP.L11, on the judged line."""
     document, at = line.document, f"line {line.name}"
     entry = document["gate_set"]
     claimed, not_claimed = list(entry["claimed"]), list(entry["not_claimed"])
@@ -326,6 +346,13 @@ def line_problems(line: Line, read: Callable[[str], bytes | None]) -> list[str]:
             problems.append(f"{at}: RP.L10: rejudge_waits [{gate}, {item}]: not a frank item")
         if gate not in claimed:
             problems.append(f"{at}: RP.L10: rejudge_waits [{gate}, {item}]: {gate} is not claimed")
+    if document["role"] == "gate":
+        expected = release_package_id(f"{line.name}.0")
+        if entry["evidence_package"] != expected:
+            problems.append(
+                f"{at}: RP.L11: evidence_package {entry['evidence_package']!r} is not "
+                f"{expected!r}, ADR 0074 D2's id of {line.name}.0"
+            )
     return problems
 
 

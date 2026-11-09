@@ -36,7 +36,7 @@ release.
 
 ### 2.1 What it establishes
 
-1. The line-file format `release-line-v1`, its inheritance rule and its loader checks RP.L01–RP.L10 (§3).
+1. The line-file format `release-line-v1`, its inheritance rule and its loader checks RP.L01–RP.L11 (§3).
 2. The rules of judgement, the clause criteria carried, and the criteria that RP itself restates: X31, the V17 carry,
    W25 at J, and W26 as a function of whether W27 is claimed (§4).
 3. K3, C, the RC job's standing steps 1–16, step 17 over the line's items, and step 18's place in the acyclic order
@@ -142,7 +142,7 @@ checked for well-formedness (RP.L05–RP.L07). They are not compared between rel
 `where` and the rule that the wrapper writes the record (§6.7) make D1.2's list precise. D1.2 lists no `where`, and
 D1.3 has a wrapper write each item's record (Q-4, Q-5).
 
-### 3.4 The loader's checks (RP.L01–RP.L10)
+### 3.4 The loader's checks (RP.L01–RP.L11)
 
 `scripts/release_gate.py` (WO-R2) loads a line file and refuses with exit 2 and the stated reason when any check
 fails. Each check has a control: a copy of the committed file with one change, which must be refused.
@@ -165,6 +165,8 @@ fails. Each check has a control: a copy of the committed file with one change, w
 - **RP.L10.** Every `frank_items` entry has exactly one row in the decisions table of `acceptances`; `links_item` and
   every `rejudge_waits` item are in `frank_items`; every `rejudge_waits` gate is claimed. Control: `rejudge_waits`
   gains `["W27", "M02 N1"]`.
+- **RP.L11** (amendment A-10, §17.3; ADR 0074 O-3, 2026-11-09). For `role` `gate`, `gate_set.evidence_package`
+  equals ADR 0074 D2's id of `<line>.0`. Control: `0.4.json` with `REL050`.
 
 RP.L05 and RP.L08 are checked at C (the commit is read with `git`), because the files they name are the candidate's.
 RP.L08 fails today, on purpose: `scripts/wheel_data_check.py`, the script of item `WHEEL-DATA`, does not exist at
@@ -402,7 +404,7 @@ watch item).
 - (P2) WO-R1 to WO-R4 and WO-R6 are merged, after the full gate and CI on both architectures (ADR 0055 §6).
 - (P3) Every `required_adrs` entry is Accepted, or its acceptance route (§9.1) is stated with a condition that can hold
   before step 18.
-- (P4) RP.L01–RP.L10 hold for the line file at K3, with RP.L05 and RP.L08 read at K3.
+- (P4) RP.L01–RP.L11 hold for the line file at K3, with RP.L05 and RP.L08 read at K3.
 - (P5) The open questions of §15 that the cut depends on are answered, or their defaults stand.
 
 ## 6. The RC job
@@ -862,7 +864,7 @@ whether the standing form equals it (§11.2).
 
 ### 11.1 Catalogue
 
-- **RP.S01** (D). The line file passes RP.L01–RP.L10, and `scripts/release_gate.py`'s loader refuses each RP.L
+- **RP.S01** (D). The line file passes RP.L01–RP.L11, and `scripts/release_gate.py`'s loader refuses each RP.L
   control. 0.3.0: V03.A01. Changed form.
 - **RP.S02** (D). `gate_set_of` over the line's version table T-V(M.m). Covered: `M.m.0`, `M.m.0b1`, `M.m.0rc1`,
   `M.m.0rc12`. Not covered: `M.m.0a1`, `M.m.0b0`, `M.m.0rc0`, `M.m.0rc01`, `M.m.0.dev0`, `M.m.0.post1`, `M.m.1`,
@@ -951,7 +953,7 @@ here, so that it cannot be dropped quietly (finding F-7).
 
 The engineer stops on any of these. Nothing is edited, re-run or re-taken to pass. The records are committed as they
 are, and the reasons are reported:
-- RP.L01–RP.L10 fail for the line file at K3 or at C.
+- RP.L01–RP.L11 fail for the line file at K3 or at C.
 - RP.S14 fails (step 8's digest or chain).
 - Step 9's import workload fails on a module that the registration does not name.
 - A default-gate test fails at K3 only because of the version string (§7.3).
@@ -1119,3 +1121,16 @@ the review's (M-1, M-2, S-1 to S-5, S-7, rulings 3 to 7) and WO-R7's tests (`doc
   alternative of the manifest's `work_package` pattern (components up to 9 999)." D1.5's closing reference becomes
   "Amendments A-7 (§17.1) and A-9 (§17.2)." Nothing else in RP changes. Every default that D1.5 names for 0.4.0 is
   unchanged.
+
+### 17.3 Amendment A-10 (ADR 0074 O-3, 2026-11-09)
+
+- **A-10 (§3.4; ADR 0074 O-3, its default).** A loader check is added after RP.L10, pasted from ADR 0074 O-3:
+  "**RP.L11**: for `role` `gate`, `gate_set.evidence_package` equals ADR 0074 D2's id of `<line>.0`. Control:
+  `0.4.json` with `REL050`." Why: a line file that inherits another without changing `evidence_package` keeps the
+  inherited id (a 0.5 line inheriting 0.4 would keep `REL040`); RP.L03 does not refuse an equal field, so that
+  release would share 0.4.0's evidence directory and harvest exclusion. The ranges "RP.L01–RP.L10" of §2 item 1, §3.4's
+  heading, §5 (P4), RP.S01 and §12 read "RP.L01–RP.L11"; §3.4's measured record of 2026-11-06 is unchanged.
+  `scripts/release_gate.py` implements it with its own encoder of D2 (`release_package_id`), not the manifest
+  schema's pattern. Evidence: `tests/test_rel_release_gate.py` `test_l11_*` (the control refused, `REL040` passing,
+  D2's examples, the refusals of a segment without an id). It cannot bite before a second `gate` line: the 0.4 line's
+  id is D2's.

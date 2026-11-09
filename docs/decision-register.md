@@ -19402,3 +19402,24 @@ and the n/T/P view stays. Not cached.
 **Evidence.** Node tests of `apps/web`; browser smoke (route `/job/job-000002/streams`); `tests/test_m06_*` HTTP contract.
 
 **Watch for.** The shell computing a value the operation did not return.
+
+## R-1007 — RP.L11: a gate line's `evidence_package` is ADR 0074 D2's id of `<line>.0` (RP amendment A-10; 2026-11-09)
+
+| | |
+| --- | --- |
+| Date | 2026-11-09 |
+| Decided by | design lane (`specifier`), ADR 0074 O-3's default; applied by the build lane (REL040 prep, `wp/REL040p`) |
+| Normative text | `docs/derivations/release-procedure.md` §3.4 RP.L11 and §17.3 (A-10); `docs/adr/0074-release-evidence-package-id.md` O-3 |
+| Affected packages | REL (every `gate` line from 0.5 on); RP |
+
+**Decision.** The loader refuses a line file whose `role` is `gate` and whose `gate_set.evidence_package` is not ADR
+0074 D2's id of `<line>.0` (0.4 → `REL040`). `scripts/release_gate.py` encodes D2 itself (`release_package_id`).
+
+**Rejected.** No check (a 0.5 line inheriting 0.4 keeps `REL040` and shares its directory and harvest exclusion; RP.L03
+does not refuse an equal field); reusing the manifest schema's `work_package` regex (it admits every D2 id, not the
+line's).
+
+**Evidence.** `tests/test_rel_release_gate.py` `test_l11_*`: `0.4.json` with `REL050` refused, `REL040` passes; D2's
+examples; a segment without an id refused.
+
+**Watch for.** A `gate` line file written by copying another without moving `evidence_package`.
