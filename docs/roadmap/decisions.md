@@ -801,3 +801,11 @@ explanation (MSG §3.7); `code`, `message`, `pointer` unchanged, `PINS_T07_SHA25
 ruling's direct consequence, no new ruling → noted for the design lane's next MSG read. Alternative: a ruling round
 now. Reversible by: a later ruling. Next: after RRC merges, merge main into wp/MSGp, regenerate the digest-carrying
 fixtures (RRC's allow-list also moves the digest), CI, merge — before ST's WO-7.
+
+## 2026-11-09 — RRC CI red on V17-T10 (run 42547017088); ruling a109eea6 applied (wp/RRC 6b892b03)
+
+Only failure: `test_g16b_reference_run[V17-T10-*]` T10-C3 (exact set of offered policies; RRC's R-995 adds
+`RRC-revision-v1`). Ruling `docs/reviews/RRC-v17-t10.md`: a fourth reference document `t07_reference_rrc.json` in
+T08's form (Amendment RRC-1, GC-18, R-996, RRC D-46), sha `621003a8…`; the three frozen documents unchanged; exclusion
+rejected (it would make the expected answer false). Applied: A1–A8 exact (negative control fails GC-18 as stated);
+G16-b 40/40; F0 PASS. Q1 (`t07_reference.py --check` in CI): no (85.6 s). CI re-run pending.
