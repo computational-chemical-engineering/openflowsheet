@@ -398,3 +398,11 @@ read-only observer copied any non-empty `child.stderr` out of the run's temporar
 **Question for the design lane.** Q-S6d: S6R-10 pins the committed REAL stem's platform to `P0`. Default: the test
 reads P0 from the committed stem's coupling records and keeps P1 a synthetic different platform, so it survives every
 cut's re-take; one test-only commit before J. Alternative: J updates `P0`/`P1` alongside the re-take.
+
+### Q-S6d (orchestrator, 2026-11-09)
+
+`test_s6r10_the_committed_real_stem_retaken_on_another_kernel_passes` pinned the committed REAL record's platform to
+the constant `P0` (6.12.111), so any J that commits the K3 re-take would fail it. Decision (the engineer's default):
+the test reads the old platform from the committed record and re-takes onto a made-up platform `P_RETAKE`; the proof
+(`path=128 version=0 platform=4 other=0 environment=equal`) is unchanged. Alternative: J updates P0/P1 with the
+re-take. Test-only commit; the design lane confirms with Q-S6a–c.

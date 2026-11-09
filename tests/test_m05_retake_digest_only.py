@@ -523,23 +523,36 @@ def test_s6r10_a_byte_copy_of_the_committed_real_stem_passes(tmp_path: Path) -> 
     assert "version=0 platform=0 other=0 environment=equal" in lines[0]
 
 
+# A made-up platform, different from whatever kernel the committed REAL record was taken on.
+P_RETAKE = "Linux-0.0.0-s6r10-retake-x86_64-with-glibc0.0"
+
+
 def test_s6r10_the_committed_real_stem_retaken_on_another_kernel_passes(
-    tmp_path: Path, running_p1: None
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
+    # Q-S6d: the committed record's platform is read from the record, not pinned, so a J that
+    # commits the re-take (on whatever kernel) keeps this test meaningful.
+    monkeypatch.setattr(platform, "platform", lambda: P_RETAKE)
     new = tmp_path / "new" / REAL.name
     _copy_real(new)
     couplings = sorted(new.with_suffix(".coupling").glob("*.json"))
     assert len(couplings) == 4
+    committed = {
+        json.loads(path.read_text(encoding="utf-8"))["frozen"]["reactor"]["fingerprint"]["platform"]
+        for path in couplings
+    }
+    assert len(committed) == 1
+    (p_old,) = committed
+    assert p_old != P_RETAKE
     old_fingerprint = {}
     for path in couplings:
         document = json.loads(path.read_text(encoding="utf-8"))
         reactor = document["frozen"]["reactor"]
-        assert reactor["fingerprint"]["platform"] == P0
         old_fingerprint = copy.deepcopy(reactor["fingerprint"])
-        reactor["fingerprint"]["platform"] = P1
+        reactor["fingerprint"]["platform"] = P_RETAKE
         path.write_text(json.dumps(document), encoding="utf-8")
     old_digest = document_sha256(old_fingerprint)
-    new_digest = document_sha256({**old_fingerprint, "platform": P1})
+    new_digest = document_sha256({**old_fingerprint, "platform": P_RETAKE})
     keys = {e["experiment_key"] for e in json.loads(REAL.with_suffix(".store.json").read_bytes())}
     relabel = {old_digest: new_digest}
     relabel |= {k: hashlib.sha256((k + new_digest).encode()).hexdigest() for k in keys}
@@ -564,7 +577,7 @@ def test_s6r10_the_committed_real_stem_retaken_on_another_kernel_passes(
     record["artifacts"]["experiment_store"] = hashlib.sha256(stored).hexdigest()
     new.with_suffix(".json").write_text(json.dumps(record), encoding="utf-8")
 
-    passed, lines = RETAKE.digest_only(REAL, new, None, P0)
+    passed, lines = RETAKE.digest_only(REAL, new, None, p_old)
     assert passed, lines[:20]
     assert lines[0].startswith("RETAKE-DIGEST-ONLY PASS trust-region-study-real: ")
     # Each of the 48 cold attempts names its store directory twice, in the archive and in its
