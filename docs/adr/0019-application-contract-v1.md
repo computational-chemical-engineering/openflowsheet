@@ -274,7 +274,7 @@ nothing required, so no `required` list changes:
   `submit_job.md`); with OPT's additions removed and the two texts restored (`tests/opt_schema_support.py`) it is X02's
   `f51b69bf…` (R-950). The surface link is c_6, R-960.
 
-## Amendment 17 (Proposed 2026-11-09, with ADR 0075; X04) — pointer to ADR 0075
+## Amendment 17 (Accepted 2026-11-09 by Frank, with ADR 0075; Proposed 2026-11-09; X04) — pointer to ADR 0075
 
 Amendment 17 is decided in ADR 0075 (D7, D8; X04 test specification §5 M, T); this paragraph points at it. Additive;
 the one `required` list that changes is `project_summary`'s (`ambient_pressure`, nullable, D6.3); nothing stored or
