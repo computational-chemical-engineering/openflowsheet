@@ -9082,3 +9082,55 @@ harvest:
   class: P
   to: []
   note: 'process note: no local full gate; CI green on both architectures is the merge condition (CLAUDE.md gate by risk)'
+- manifest: evidence/RRC/6b892b036f2fc82167784daa6bce946345b64515/manifest.json
+  item: limitations[0]
+  sha256: d05c11d5fb29af0e9368cbe4bd592c0e388adee865052e090e23dc7c4de511df
+  class: P
+  to: []
+  note: 'provenance note: numerical verification on ref-x86-64; regression fixtures N1 and C3 with named independent checks; not validation'
+- manifest: evidence/RRC/6b892b036f2fc82167784daa6bce946345b64515/manifest.json
+  item: limitations[1]
+  sha256: e58c4637507e2b41f4500c42b90b562cdb6e201b0f5115068a9ec8aa9f3077a5
+  class: P
+  to: []
+  note: 'status note: tested, not reviewed; no local full gate, CI run 42558001650 on both architectures'
+- manifest: evidence/RRC/6b892b036f2fc82167784daa6bce946345b64515/manifest.json
+  item: limitations[2]
+  sha256: 4a966c61cbfe00fb6cbed7b2bc16af869506d723308520e6481b8b65a523326f
+  class: E
+  to:
+  - L21
+  note: 'user-facing: L21 narrowed to specification continuation plus RRC-revision-v1 revision-region continuation (ADR 0072)'
+- manifest: evidence/RRC/6b892b036f2fc82167784daa6bce946345b64515/manifest.json
+  item: limitations[3]
+  sha256: 8fd4551509b36f18ff35310e7d1cb92cb8873dcfb9726c27597d88ac12be3055
+  class: E
+  to:
+  - L-COL-9
+  note: 'user-facing: L-COL-9 narrowed only on the failing-first column case G5/C3; F1 is mechanism evidence (D-38)'
+- manifest: evidence/RRC/6b892b036f2fc82167784daa6bce946345b64515/manifest.json
+  item: limitations[4]
+  sha256: 5c49b78be137ce9d41628b3bf7a61a73477e81583eeba61823a7fea6d8f3b698
+  class: E
+  to:
+  - L21
+  note: 'user-facing: RRC-revision-v1 is not a superset of T06-revision-v2 (review M2, D-29)'
+- manifest: evidence/RRC/6b892b036f2fc82167784daa6bce946345b64515/manifest.json
+  item: limitations[5]
+  sha256: 8e6eee67eb06b19b8ea3cd0420fa3f2e657a36f309d23a6a9721bef898ca3fb3
+  class: P
+  to: []
+  note: 'process note: review notes left as notes (R5, defect-guard, A3 dotted path, G6 counters)'
+- manifest: evidence/RRC/6b892b036f2fc82167784daa6bce946345b64515/manifest.json
+  item: limitations[6]
+  sha256: 9f59b19180eee201cc5c9d2c861b4dc6dc041bbdc50f39ce54a45559c7b738bd
+  class: P
+  to: []
+  note: 'process note: results-ref-x86-64.json lacks the g2f free-columns key until a re-take (D-30)'
+- manifest: evidence/RRC/6b892b036f2fc82167784daa6bce946345b64515/manifest.json
+  item: checks[13]
+  check_id: RRC.FULLGATE
+  sha256: d5c2206860f7a050a91643a1b2a027b99db65471f9cb83ffa7f8dada1b2d6eb0
+  class: P
+  to: []
+  note: 'process note: no local full gate; CI green on both architectures is the merge condition (CLAUDE.md gate by risk)'
