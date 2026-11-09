@@ -917,3 +917,9 @@ G16-b 40/40; F0 PASS. Q1 (`t07_reference.py --check` in CI): no (85.6 s). CI re-
   2026-11-06 reboot); v0.3.0's code diverges the same way. Class c → design-lane ruling with step 11's IDAES record and
   the 0.4 journey J (brief docs/briefs/REL040-s6-ruling.md). Also: `pytest -m nlp` over all tests stops at collection
   (4 modules import mpmath, absent in .venv-nlp) — S-6 runs a selected list; noted.
+
+- 2026-11-09 — S-6 ruling (9f7cd613, docs/reviews/REL040-s6-ruling.md): REAL record re-taken at K3 at every cut on the
+  RC host and committed in J (A-11, R-1008; options "drop kernel from fingerprint" and "ignore fingerprint" rejected);
+  step 11's IDAES record differs only in environment.platform (reference-values change was insert-only, M01 Am. 1) →
+  joins the re-take, proved by new m01_idaes_retake_diff.py; J recorded at the cut, same kernel for J and C; no Frank
+  question. Work order WO-1…WO-6 (S6R-01…25) on wp/REL040p with S6dbg merged in (brief docs/briefs/REL040-s6-apply.md).
