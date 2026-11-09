@@ -815,3 +815,9 @@ G16-b 40/40; F0 PASS. Q1 (`t07_reference.py --check` in CI): no (85.6 s). CI re-
   re-based head (pattern evidence/MSG/5e9274db…), not folded into OPT's evidence; brief docs/briefs/MSGp-remerge.md
   (merge main after RRC, keep both sides' hand-written entries, regenerate, re-measure A1–A9 with the digest moving by
   RRC's additions only). Alternative: OPT follow-up manifest. Reversible by: dropping the manifest commit pre-merge.
+
+- 2026-11-09 — RRC merged into main (cefee08d; evidence/RRC/6b892b03… tested, CI 42558001650; manifest 64e628a8,
+  HARVEST_SIZE (86, 1046, 140)). Post-merge on main: ruff clean, F0 PASS (M1–M9), targeted tests (rrc, V17 reference,
+  t08, harvest, manifests, msg, surface chain, global state) 1555 passed, 2 skipped, 3 xfailed. Note: manifest
+  requirements D01/D20 only — the schema pattern `^[DA][0-9]{2}$` rejects V20. Next: wp/MSGp re-merge
+  (docs/briefs/MSGp-remerge.md), then ST WO-7.
