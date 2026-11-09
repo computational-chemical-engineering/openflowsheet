@@ -1,0 +1,28 @@
+{
+ "section": "blocking",
+ "pkg": "RRC",
+ "pkgTitle": "Continuing from an earlier solved version",
+ "kind": "adr",
+ "title": "Accept ADR 0072: revision-region continuation",
+ "body": [
+  "When an edit to a flowsheet fails to converge, RRC walks the operating values step by step from the nearest earlier version that solved and verified to the new values; every step is a real flowsheet. Measured: it rescued 5 failing edits; the existing restart also rescued all 5, in fewer iterations.",
+  "It is opt-in, by the policy name `RRC-revision-v1`."
+ ],
+ "links": [
+  {
+   "label": "ADR 0072 (full text)",
+   "url": "https://github.com/computational-chemical-engineering/openflowsheet/blob/main/docs/adr/0072-RRC-revision-region-continuation.md"
+  },
+  {
+   "label": "Design note",
+   "url": "https://github.com/computational-chemical-engineering/openflowsheet/blob/main/docs/design/RRC-revision-region-continuation.md"
+  },
+  {
+   "label": "Review",
+   "url": "https://github.com/computational-chemical-engineering/openflowsheet/blob/main/docs/reviews/RRC-review.md"
+  }
+ ],
+ "unblocks": "RRC merges, after OPT.",
+ "status": "open",
+ "order": 6
+}

@@ -35,6 +35,9 @@ from conftest import REPO_ROOT, load_json
 from jsonschema import Draft202012Validator
 from m02_schema_support import without_m02
 from m04_schema_support import without_m04
+from msg_schema_support import MSG_OPERATIONS, without_msg
+from opt_schema_support import without_opt
+from x02_schema_support import without_x02
 
 from openflowsheet.application.operations import OPERATIONS, Operation
 from openflowsheet.application.types import SCHEMA_BASE, schema_errors
@@ -58,9 +61,13 @@ DEF_OF_OPERATION: dict[str, str] = {
     "diff_revisions": "semantic_diff",
     # ADR 0019 Amendment 3 (A3.3)
     "list_audit": "audit_page",
+    # ADR 0058 D7 (MSG WO-7)
+    "explain": "message_entry",
 }
 #: `revision_summary` and `audit_record` are pages' items, each its own `$def`.
-DEFS = frozenset({*DEF_OF_OPERATION.values(), "revision_summary", "audit_record"})
+#: `explanation` is MSG's (ADR 0058 D3): no operation's response is it, `RunResult.failure` and
+#: a transported `ApiError`'s `detail` carry it.
+DEFS = frozenset({*DEF_OF_OPERATION.values(), "revision_summary", "audit_record", "explanation"})
 #: R4-G3: SHA-256 of `canonical_json` of each operation's fully resolved response schema, taken at
 #: `b13d556` with `resolved_response` below (`None`: no response schema).
 SNAPSHOT_AT_B13D556: dict[str, str | None] = {
@@ -103,13 +110,24 @@ def _target(document: Any, fragment: str) -> Any:
     return node
 
 
-def _resolved(schema: Any, base: str, published: dict[str, Any], seen: tuple[str, ...]) -> Any:
+def _resolved(
+    schema: Any,
+    base: str,
+    published: dict[str, Any],
+    seen: tuple[str, ...],
+    in_defs: bool = False,
+) -> Any:
+    """`schema` inlined. A cyclic `$ref` raises, except one met inside a `$defs` member, which
+    becomes a `$comment` naming it (OPT D-60): `optimization-request.schema.json`'s
+    `$defs/optimize_body` refers to its own document's root, so inlining that root reaches the
+    body again through its `$defs`. Only inputs that raised before take that branch, so no earlier
+    snapshot moves."""
     if isinstance(schema, list):
-        return [_resolved(item, base, published, seen) for item in schema]
+        return [_resolved(item, base, published, seen, in_defs) for item in schema]
     if not isinstance(schema, dict):
         return schema
     members = {
-        key: _resolved(value, base, published, seen)
+        key: _resolved(value, base, published, seen, in_defs or key == "$defs")
         for key, value in schema.items()
         if key != "$ref"
     }
@@ -117,9 +135,13 @@ def _resolved(schema: Any, base: str, published: dict[str, Any], seen: tuple[str
         return members
     absolute = urljoin(base, schema["$ref"])
     if absolute in seen:
+        if in_defs:
+            return {**members, "$comment": f"recursive reference to {absolute}, not inlined"}
         raise ValueError(f"a cyclic $ref: {absolute}")
     uri, fragment = urldefrag(absolute)
-    target = _resolved(_target(published[uri], fragment), uri, published, (*seen, absolute))
+    target = _resolved(
+        _target(published[uri], fragment), uri, published, (*seen, absolute), in_defs
+    )
     if not members:
         return target
     assert "allOf" not in members, "a $ref beside an allOf"
@@ -195,6 +217,54 @@ SNAPSHOT_M04: dict[str, str | None] = {
 }
 
 
+#: MSG-G10 (ADR 0058 D5, R-934): `RunResult` gains the required, nullable member `failure`, so
+#: every response that reaches a run result moves. Taken at MSG WO-6; with MSG's additions removed
+#: (`tests/msg_schema_support.py`) each is its value before MSG again
+#: (`test_msg_g10_without_failure_every_response_is_its_pre_msg_snapshot`).
+SNAPSHOT_MSG: dict[str, str | None] = {
+    "solve": "9c4b2e9ac57f55e1b27f8fe51c8701e06c8a001c372efb2369d66e8f6b29611d",
+    "submit_job": "8b41af7869075bc82b0aaae51c436524098a95adf5337cf554aa83571042218e",
+    "get_job": "fa671751435bb82de48af731c8207a30fa09fe4d411d57acacbbfd69c2bf381c",
+    "list_jobs": "b4e10d15c0e000e135467398e17f0162beb67a8d78cf86909df384291a38eca6",
+    "wait_job": "a67fe653b2fb80f6ef2a3ca7cd73f2cbab6091656fae3b38683ff153297a23cc",
+    "cancel_job": "fa671751435bb82de48af731c8207a30fa09fe4d411d57acacbbfd69c2bf381c",
+    "get_job_result": "aec2e54622d8776e59d4e34134e9b5911ddeb7ccce3f29ee496ad0d3e083e526",
+}
+#: MSG-G10 (ADR 0058 D7): the `explain` row is new (`message_entry`). Taken at MSG WO-7; it has no
+#: pre-MSG value, and `without_msg` leaves no other operation's snapshot moved by it.
+SNAPSHOT_MSG_EXPLAIN: dict[str, str | None] = {
+    "explain": "a4fcafe739c5fa4e6a82cc75170d6b67b915126b5329129f15a84da8a3f26127",
+}
+#: X02 (ADR 0070, ADR 0019 Amendment 15): the operations whose resolved response embeds
+#: `job.schema.json`'s `solve_body`, which gains the optional `warm_start`. Taken at X02 WO-2 over
+#: M04's responses, re-taken when `main` (MSG) was merged into `wp/X02`; with X02's additions
+#: removed (`tests/x02_schema_support.py`) each is its `SNAPSHOT_MSG` (or `SNAPSHOT_M04`) value
+#: again (`test_x02_without_warm_start_every_response_is_its_pre_x02_snapshot`).
+SNAPSHOT_X02: dict[str, str | None] = {
+    "submit_job": "c7c943e33959eb52a9444cac3590d9220c2b949e577b84390d0e4b452a1e216d",
+    "get_job": "58acf056845fbc271e282b7b653c27e98341a719ef8c2b9e02ed64c60c4b2fbf",
+    "cancel_job": "58acf056845fbc271e282b7b653c27e98341a719ef8c2b9e02ed64c60c4b2fbf",
+    "list_jobs": "531d74323c395c369c1e312733360fa4c856045f66b4f591ff84b9d28eed350b",
+    "wait_job": "aee140a905404cbc4541de59eff9fb9d3c2bb6c9e1ca5f410d60fdb28996cc5d",
+    "get_job_result": "9347208b0c04ff78b686323c6f23107fd57612cf80dbe4f1bd59eeaf957e82cf",
+}
+#: OPT (ADR 0071, ADR 0019 Amendment 16): the operations whose resolved response embeds an enum or
+#: branch OPT widened (the job operation, the request and result branches, the artifact kinds).
+#: Taken at OPT WO-6, re-taken when `main` (MSG, X02) was merged into `wp/OPT`; with OPT's additions
+#: removed (`tests/opt_schema_support.py`) each is its `SNAPSHOT_X02` (or earlier) value again
+#: (`test_opt_without_its_additions_every_response_is_its_pre_opt_snapshot`).
+SNAPSHOT_OPT: dict[str, str | None] = {
+    "solve": "7e6839850000e0be81db15fcaa59b88bd367d73f5649b6e3844fc16b13ec4ada",
+    "submit_job": "b1b7ebfde3cb0fdffab462dca8765513c5c14336dc20ef62bef3fa5d3092c696",
+    "get_job": "d6514613a8d894e37295b4a38e7120351256fc3a9938806a7d95677f1347e36a",
+    "list_jobs": "386b39be780ea2d036e0b1c060804c79e29c7bfb06ae23b22c16c9347b34dea7",
+    "list_job_events": "751ec851357114a79d56275011fdbe8840e03b36e21d4a2a377fd36e2c364887",
+    "wait_job": "38629f7b22454f174e3e0a13bedc9285292b63757dca93e10c41f26b638c5660",
+    "cancel_job": "d6514613a8d894e37295b4a38e7120351256fc3a9938806a7d95677f1347e36a",
+    "get_job_result": "9a3e82fb0d6f8f89cbd5729489ae82e6c2340e299b7d5a2e9c7ee29024063c8e",
+}
+
+
 def _without_specifications(schema: Any) -> Any:
     """`schema` with Amendment 2's member taken out of every pin and option: its property and its
     entry in `required`."""
@@ -212,16 +282,90 @@ def _without_specifications(schema: Any) -> Any:
 
 def test_r4_g3_every_resolved_response_schema_equals_the_snapshot() -> None:
     measured = {name: _digest(resolved_response(op)) for name, op in OPERATIONS.items()}
-    assert len(measured) == 21
+    assert len(measured) == 22
     assert measured == {
         **SNAPSHOT_AT_B13D556,
         **SNAPSHOT_AMENDMENT_2,
         **SNAPSHOT_AMENDMENT_3,
         **SNAPSHOT_M02,
         **SNAPSHOT_M04,
+        **SNAPSHOT_MSG,
+        **SNAPSHOT_MSG_EXPLAIN,
+        **SNAPSHOT_X02,
+        **SNAPSHOT_OPT,
     }
     for operation in OPERATIONS.values():
         assert "$ref" not in canonical_json(resolved_response(operation)).decode("utf-8")
+
+
+def test_opt_without_its_additions_every_response_is_its_pre_opt_snapshot() -> None:
+    """OPT (ADR 0071): with OPT's additions removed, every operation's resolved response is its
+    snapshot before OPT, and exactly the operations of `SNAPSHOT_OPT` moved."""
+    before = {
+        **SNAPSHOT_AT_B13D556,
+        **SNAPSHOT_AMENDMENT_2,
+        **SNAPSHOT_AMENDMENT_3,
+        **SNAPSHOT_M02,
+        **SNAPSHOT_M04,
+        **SNAPSHOT_MSG,
+        **SNAPSHOT_MSG_EXPLAIN,
+        **SNAPSHOT_X02,
+    }
+    moved = []
+    for name, operation in OPERATIONS.items():
+        resolved = resolved_response(operation)
+        assert _digest(without_opt(resolved)) == before[name], name
+        if _digest(resolved) != before[name]:
+            moved.append(name)
+    assert sorted(moved) == sorted(SNAPSHOT_OPT)
+
+
+def test_msg_g10_without_failure_every_response_is_its_pre_msg_snapshot() -> None:
+    """MSG-G10: with `RunResult.failure` and MSG's `$defs` removed, every operation's resolved
+    response is its snapshot before MSG, and exactly the operations of `SNAPSHOT_MSG` moved; the
+    `explain` row (ADR 0058 D7) is the only operation MSG added."""
+    before = {
+        **SNAPSHOT_AT_B13D556,
+        **SNAPSHOT_AMENDMENT_2,
+        **SNAPSHOT_AMENDMENT_3,
+        **SNAPSHOT_M02,
+        **SNAPSHOT_M04,
+    }
+    assert set(OPERATIONS) - set(before) == MSG_OPERATIONS == set(SNAPSHOT_MSG_EXPLAIN)
+    moved = []
+    for name, operation in OPERATIONS.items():
+        if name in MSG_OPERATIONS:
+            continue
+        # X02's (ADR 0070) and OPT's (ADR 0071) additions postdate MSG: they are taken out
+        # first, the later first.
+        resolved = without_x02(without_opt(resolved_response(operation)))
+        assert _digest(without_msg(resolved)) == before[name], name
+        if _digest(resolved) != before[name]:
+            moved.append(name)
+    assert sorted(moved) == sorted(SNAPSHOT_MSG)
+
+
+def test_x02_without_warm_start_every_response_is_its_pre_x02_snapshot() -> None:
+    """X02 (ADR 0070): with X02's three optional members removed, every operation's resolved
+    response is its snapshot before X02 (after MSG), and exactly the operations of `SNAPSHOT_X02`
+    moved."""
+    before = {
+        **SNAPSHOT_AT_B13D556,
+        **SNAPSHOT_AMENDMENT_2,
+        **SNAPSHOT_AMENDMENT_3,
+        **SNAPSHOT_M02,
+        **SNAPSHOT_M04,
+        **SNAPSHOT_MSG,
+        **SNAPSHOT_MSG_EXPLAIN,
+    }
+    moved = []
+    for name, operation in OPERATIONS.items():
+        # OPT's additions (ADR 0071) postdate X02: they are taken out first.
+        resolved = without_opt(resolved_response(operation))
+        assert _digest(without_x02(resolved)) == before[name], name
+        if _digest(resolved) != before[name]:
+            moved.append(name)
+    assert sorted(moved) == sorted(SNAPSHOT_X02)
 
 
 def test_g_r6_6_list_models_moved_only_by_the_approved_additive_member() -> None:
@@ -235,10 +379,17 @@ def test_g_r6_6_list_models_moved_only_by_the_approved_additive_member() -> None
     moved = [
         name
         for name in SNAPSHOT_AT_B13D556
-        if _digest(without_m02(without_m04(resolved_response(OPERATIONS[name]))))
+        if _digest(
+            without_m02(
+                without_m04(
+                    without_msg(without_x02(without_opt(resolved_response(OPERATIONS[name]))))
+                )
+            )
+        )
         != SNAPSHOT_AT_B13D556[name]
     ]
-    assert sorted(set(OPERATIONS) - set(SNAPSHOT_AT_B13D556)) == ["list_audit"]
+    # `list_audit` is ADR 0019 Amendment 3's row, `explain` ADR 0058 D7's.
+    assert sorted(set(OPERATIONS) - set(SNAPSHOT_AT_B13D556)) == ["explain", "list_audit"]
     # ADR 0019 Amendment 3 (A3.2) moves `diff_revisions` too; its own test below.
     assert moved == ["list_models", "diff_revisions"]
 

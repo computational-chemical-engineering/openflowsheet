@@ -14,7 +14,8 @@ Steps (§8.2), the subcommand or job that measures each, and its assertions:
 4. Clean install on both architectures — `install-check`, run by the clean environment's
    interpreter outside the checkout — T08.A44; the packaged lock, verified, and the installed
    package's bundle replay — `lock-check` (five states) and `f0-replay`, the same interpreter —
-   X05.A21, A22 (ADR 0069; T08.A19 retired by its D7.2).
+   X05.A21, A22 (ADR 0069; T08.A19 retired by its D7.2); `lock-check --state installed-free` in a
+   second, unconstrained environment — X05.A25 (ADR 0069 Amendment 1).
 5. The RC bundle set — `bundles-write` (CI x86-64), `bundles-replay` (fresh x86-64 and aarch64
    runners) — T08.A45; each replay records the policy its bundle names, every bundle must name
    `T08-numerical-policy-v2`, and ADR 0025 A14's three controls run on both runners.
@@ -465,6 +466,10 @@ def step_install_check(arguments: argparse.Namespace) -> int:
 X05_REFERENCE: Final = ROOT / "benchmarks" / "x05" / "reference_values.json"
 #: ADR 0069 §6.2's states; `installed-nolock` is ADR 0069 X05.A14's (no replay cells).
 LOCK_STATES: Final = ("installed", "checkout", "installed-off", "checkout-off", "installed-nolock")
+#: X05.A25 as restated by ADR 0069 Amendment 1 (Frank's Q-F1 = no): the installed package in an
+#: environment made by a plain, unconstrained install of the wheel. Not a §6.2 state, so not in
+#: `LOCK_STATES`; its expectation is computed from the versions installed, not registered.
+UNCONSTRAINED_STATE: Final = "installed-free"
 #: The prefix of `decide_mode`'s unknown-lock reasons (T08.A19's, kept by ADR 0069 D5).
 UNKNOWN_PREFIX: Final = "the dependency set is unknown on "
 
@@ -488,7 +493,15 @@ def step_lock_check(arguments: argparse.Namespace) -> int:
     another version) first on `sys.path`. `installed-nolock` copies the installed package below
     `--nolock-root` without its lock. `--bundle-on` and `--bundle-off` are `SYN-001-nominal`
     bundles written by the installed CLI without and with the shadow; each one given is replayed
-    and judged against its registered cell."""
+    and judged against its registered cell.
+
+    `installed-free` (X05.A25, ADR 0069 Amendment 1) is the installed package after a plain
+    `pip install <wheel>`: the five direct members are pinned by `Requires-Dist` and must sit at
+    the lock, the four transitive ones float. The environment must verify iff every closure member
+    is at the lock, and otherwise record `""` naming exactly the members off it, which the replay
+    reason then names (ADR 0069 D5). `--shadow`, if given, goes first on `sys.path` here too."""
+    import tomllib  # noqa: PLC0415
+    from dataclasses import replace  # noqa: PLC0415
     from importlib import metadata  # noqa: PLC0415
 
     state: str = arguments.state
@@ -507,9 +520,9 @@ def step_lock_check(arguments: argparse.Namespace) -> int:
             0, str(_copy_without_the_lock(Path(spec.origin).parent, arguments.nolock_root))
         )
     shadow: Path | None = arguments.shadow
-    if state.endswith("-off"):
-        if shadow is None:
-            raise SystemExit(f"--state {state} needs --shadow")
+    if state.endswith("-off") and shadow is None:
+        raise SystemExit(f"--state {state} needs --shadow")
+    if shadow is not None and (state.endswith("-off") or state == UNCONSTRAINED_STATE):
         sys.path.insert(0, str(shadow.resolve()))
     import numpy  # noqa: PLC0415
 
@@ -517,6 +530,7 @@ def step_lock_check(arguments: argparse.Namespace) -> int:
     from openflowsheet.application.revision_run import reproduce_bundle  # noqa: PLC0415
     from openflowsheet.run.bundle import read_manifest  # noqa: PLC0415
     from openflowsheet.run.manifest import environment  # noqa: PLC0415
+    from openflowsheet.run.replay import decide_mode  # noqa: PLC0415
 
     location = Path(openflowsheet.__file__).resolve().parent
     # In a checkout the root's `requirements.lock` is the packaged lock itself, not a stray.
@@ -558,11 +572,50 @@ def step_lock_check(arguments: argparse.Namespace) -> int:
         expected_metadata_version=wanted,
     )
     here = environment()
-    expected = (
-        reference["end_to_end"]["missing_lock"]
-        if state == "installed-nolock"
-        else reference["end_to_end"]["states"][state]
-    )
+    templates = reference["templates"]
+    expected: dict[str, Any]
+    off_the_lock: list[str] = []
+    off_names: list[str] = []
+    if state == UNCONSTRAINED_STATE:
+        # ADR 0069 D2 restated from the registered pins and the versions `importlib.metadata`
+        # reports, in the closure's order: F3 for a member not installed, F4 for one off its pin.
+        for name, locked in pins.items():
+            try:
+                found: str | None = metadata.version(name)
+            except metadata.PackageNotFoundError:
+                found = None
+            if found != locked:
+                off_names.append(name)
+            if found is None:
+                off_the_lock.append(templates["F3"].format(name=name, locked=locked))
+            elif found != locked:
+                off_the_lock.append(
+                    templates["F4"].format(name=name, installed=found, locked=locked)
+                )
+        # The direct members are pinned by `Requires-Dist` (pyproject's list, which the wheel's
+        # equals, T08.A43), so pip installs them at the lock: none of them may be off it.
+        direct: dict[str, tuple[str, str | None]] = {}
+        for text in tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))["project"][
+            "dependencies"
+        ]:
+            name, version = text.split("==")
+            direct[name] = (version, pins.get(name))
+        check(
+            checks,
+            "x05.a25_the_direct_members_at_the_lock",
+            all(version == locked for version, locked in direct.values())
+            and not set(direct) & set(off_names),
+            direct={name: version for name, (version, _) in direct.items()},
+            off_the_lock=off_the_lock,
+        )
+        expected = {
+            "lock_sha256": "" if off_the_lock else reference["lock"]["sha256"],
+            "lock_findings": off_the_lock,
+        }
+    elif state == "installed-nolock":
+        expected = reference["end_to_end"]["missing_lock"]
+    else:
+        expected = reference["end_to_end"]["states"][state]
     check(
         checks,
         "x05.environment",
@@ -578,6 +631,25 @@ def step_lock_check(arguments: argparse.Namespace) -> int:
             "x05.never_the_strays_hash",
             here.lock_sha256 not in stray_digests.values(),
             lock_sha256=here.lock_sha256,
+        )
+    if state == UNCONSTRAINED_STATE:
+        # D5: a bundle recorded with the verified lock, replayed here, names every member off it.
+        verified = replace(here, lock_sha256=reference["lock"]["sha256"], lock_findings=())
+        free_mode, free_reasons = decide_mode(verified, here)
+        if off_the_lock:
+            joined = templates["JOIN"].join(off_the_lock)
+            passed = (free_mode, free_reasons) == (
+                "inspected_archived_results",
+                (templates["R_THIS"].format(findings=joined),),
+            )
+        else:
+            passed = not any(reason.startswith(UNKNOWN_PREFIX) for reason in free_reasons)
+        check(
+            checks,
+            "x05.a25_the_replay_reason_names_the_members_off_the_lock",
+            passed,
+            mode=free_mode,
+            reasons=list(free_reasons),
         )
     if state == "installed":
         # X05.A13's control: the stray would verify, so only reading it could give its hash.
@@ -642,6 +714,7 @@ def step_lock_check(arguments: argparse.Namespace) -> int:
         provenance={**provenance(), "machine_class": machine_class()},  # R-347
         state=state,
         replayed=replayed,
+        off_the_lock=off_the_lock,
         bundles={"on": str(arguments.bundle_on), "off": str(arguments.bundle_off)},
     )
 
@@ -1502,7 +1575,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     install.add_argument("--out", type=Path, required=True)
     install.add_argument("--keep", type=Path, default=None, help="copy the smoke bundle here")
     lock = commands.add_parser("lock-check")
-    lock.add_argument("--state", choices=LOCK_STATES, required=True)
+    lock.add_argument("--state", choices=(*LOCK_STATES, UNCONSTRAINED_STATE), required=True)
     lock.add_argument("--bundle-on", type=Path, default=None, help="written by the installed CLI")
     lock.add_argument("--bundle-off", type=Path, default=None, help="written with the shadow")
     lock.add_argument("--shadow", type=Path, default=None, help="the numpy dist-info directory")

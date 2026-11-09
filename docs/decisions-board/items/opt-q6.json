@@ -1,0 +1,31 @@
+{
+ "section": "defaults",
+ "pkg": "OPT",
+ "pkgTitle": "Optimising your own flowsheets",
+ "kind": "choice",
+ "title": "Q6: commit the optimum as a new revision automatically?",
+ "body": [
+  "The result carries a change you commit yourself."
+ ],
+ "defaultKey": "default",
+ "options": [
+  {
+   "key": "default",
+   "label": "No",
+   "detail": ""
+  },
+  {
+   "key": "alt1",
+   "label": "Yes, commit it automatically",
+   "detail": ""
+  },
+  {
+   "key": "other",
+   "label": "Something else",
+   "detail": "Say what in the note."
+  }
+ ],
+ "links": [],
+ "status": "open",
+ "order": 21
+}

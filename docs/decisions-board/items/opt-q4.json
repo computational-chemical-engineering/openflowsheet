@@ -1,0 +1,31 @@
+{
+ "section": "defaults",
+ "pkg": "OPT",
+ "pkgTitle": "Optimising your own flowsheets",
+ "kind": "choice",
+ "title": "Q4: should replaying an optimisation re-run Ipopt?",
+ "body": [
+  "Replay re-checks the certified optimum instead, so it also works on ARM machines without Ipopt."
+ ],
+ "defaultKey": "default",
+ "options": [
+  {
+   "key": "default",
+   "label": "No, re-check the certified optimum",
+   "detail": ""
+  },
+  {
+   "key": "alt1",
+   "label": "Yes, re-run Ipopt",
+   "detail": ""
+  },
+  {
+   "key": "other",
+   "label": "Something else",
+   "detail": "Say what in the note."
+  }
+ ],
+ "links": [],
+ "status": "open",
+ "order": 19
+}

@@ -60,6 +60,17 @@ export const ROUTES = freeze({
     "right": "read",
     "verb": "GET"
   },
+  "explain": {
+    "members": [
+      "code"
+    ],
+    "path": "/v1/explain/{code}",
+    "path_params": [
+      "code"
+    ],
+    "right": "read",
+    "verb": "GET"
+  },
   "get_artifact": {
     "members": [
       "artifact_id",
@@ -216,6 +227,7 @@ export const ROUTES = freeze({
   },
   "validate": {
     "members": [
+      "optimization",
       "revision_id",
       "task"
     ],

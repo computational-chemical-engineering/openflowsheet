@@ -114,12 +114,19 @@ def test_the_registry_holds_no_hollow_entry(registered: dict[str, Any]) -> None:
 
 def test_the_guards_exempt_only_the_registered_archived_outputs(registered: dict[str, Any]) -> None:
     """Ruling D15 (R-939): exactly 36 files, each the `artifacts/solve-policy.json` of a bundle
-    the 0.3.0 index names, registered as `--record` writes them and matching their bytes."""
-    from f0_support import N_ARCHIVED_OUTPUTS, archived_outputs, is_archived_output
+    the 0.3.0 index names, and (its OPT addendum, ADR 0071) exactly the 6 of OPT's G13 fixture's
+    `start` and `resolve` bundles; registered as `--record` writes them and matching their bytes."""
+    from f0_support import (
+        N_ARCHIVED_OUTPUTS,
+        N_OPT_ARCHIVED_OUTPUTS,
+        N_V030_ARCHIVED_OUTPUTS,
+        archived_outputs,
+        is_archived_output,
+    )
 
     exempt = registered["archived_outputs"]
     assert exempt == archived_outputs() == gate.archived_outputs()
-    assert len(exempt) == N_ARCHIVED_OUTPUTS == 36
+    assert len(exempt) == N_ARCHIVED_OUTPUTS == 42
     index = json.loads((gate.V030_BUNDLES / "index.json").read_text(encoding="utf-8"))
     indexed = {
         (gate.V030_BUNDLES / e["directory"] / "artifacts" / "solve-policy.json")
@@ -127,7 +134,15 @@ def test_the_guards_exempt_only_the_registered_archived_outputs(registered: dict
         .as_posix()
         for e in index["entries"]
     }
-    assert set(exempt) <= indexed
+    opt = {
+        (gate.OPT_REPLAY_FIXTURE / "starts" / str(k) / bundle / "artifacts" / "solve-policy.json")
+        .relative_to(ROOT)
+        .as_posix()
+        for k in range(3)
+        for bundle in ("start", "resolve")
+    }
+    assert len(set(exempt) & indexed) == N_V030_ARCHIVED_OUTPUTS == 36
+    assert set(exempt) - indexed == opt and len(opt) == N_OPT_ARCHIVED_OUTPUTS == 6
     assert all(is_archived_output(ROOT / path) for path in exempt)
 
 

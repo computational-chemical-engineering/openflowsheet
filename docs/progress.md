@@ -109,6 +109,11 @@ canonicity, T07); ADR 0013 has Amendment 2 (routing on registered tolerances, T0
 
 ## Next executable action
 
+**X02 (warm starts, ADR 0070 Accepted 2026-11-08 by Frank) is tested on `wp/X02`, not reviewed; merge prep done.**
+`main` (MSG) merged into `wp/X02`; X02's surface link is c_5 (R-950) after MSG's c_4; ADR 0070's drafts A–E are
+R-951…R-955. Build log `docs/X02_DECISIONS.md` (D-1…D-38). **Next:** CI green on both architectures at the pushed
+head, then the orchestrator re-takes the manifest and merges (never squash).
+
 **X05 (replay from the wheel, ADR 0069 Proposed) is tested on `wp/X05` (2026-11-07), reviewed once, not `reviewed`.**
 WO-1…WO-4 done (`docs/X05_DECISIONS.md`, D-1…D-9); review `docs/reviews/X05-review.md` (M1, M2, S1 applied in WO-4:
 main merged, RP step 4 `a19.*` → `x05.*`, memo traceback cleared). Evidence:

@@ -1,0 +1,31 @@
+{
+ "section": "defaults",
+ "pkg": "RRC",
+ "pkgTitle": "Continuing from an earlier solved version",
+ "kind": "choice",
+ "title": "FQ4: which edits may be continued?",
+ "body": [
+  "Continuation walks values gradually, so only edits that keep the flowsheet's structure qualify."
+ ],
+ "defaultKey": "default",
+ "options": [
+  {
+   "key": "default",
+   "label": "Operating values only",
+   "detail": "Temperatures, pressures, flows, duties, split fractions; not stage counts, feed stages, stoichiometry or kinetic constants."
+  },
+  {
+   "key": "alt1",
+   "label": "A wider set",
+   "detail": ""
+  },
+  {
+   "key": "other",
+   "label": "Something else",
+   "detail": "Say what in the note."
+  }
+ ],
+ "links": [],
+ "status": "open",
+ "order": 26
+}

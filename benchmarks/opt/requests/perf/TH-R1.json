@@ -1,0 +1,53 @@
+{
+  "constraints": [],
+  "decisions": [
+    {
+      "lower": 15000.0,
+      "scale": 10000.0,
+      "specification_id": "SPEC-H-Q",
+      "unit": "W",
+      "upper": 35000.0
+    },
+    {
+      "lower": -5000.0,
+      "scale": 1000.0,
+      "specification_id": "SPEC-D-Q",
+      "unit": "W",
+      "upper": 5000.0
+    }
+  ],
+  "objective": {
+    "expression": {
+      "constant": 100.0,
+      "linear": {
+        "S5.n.H2O": -400.0
+      },
+      "quadratic": [
+        {
+          "a": "S5.n.H2O",
+          "b": "S5.n.H2O",
+          "coefficient": 400.0
+        },
+        {
+          "a": "decision:SPEC-D-Q",
+          "b": "decision:SPEC-D-Q",
+          "coefficient": 4e-08
+        }
+      ],
+      "text": "((S5.n.H2O - 0.5)/0.05)^2 + (Q_D/5000)^2"
+    },
+    "sense": "minimize"
+  },
+  "problem_id": "OPT-PERF-TH-R1",
+  "request_format": "openflowsheet-optimization-request-v1",
+  "starts": {
+    "explicit": [
+      [
+        32000.0,
+        -2000.0
+      ]
+    ],
+    "halton": 0,
+    "include_revision": true
+  }
+}

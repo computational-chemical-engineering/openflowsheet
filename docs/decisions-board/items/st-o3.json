@@ -1,0 +1,29 @@
+{
+ "section": "defaults",
+ "pkg": "ST",
+ "pkgTitle": "Stream table and energy summary",
+ "kind": "choice",
+ "title": "O3: show the stream table in the web shell?",
+ "body": [],
+ "defaultKey": "default",
+ "options": [
+  {
+   "key": "default",
+   "label": "Later, in another package",
+   "detail": ""
+  },
+  {
+   "key": "alt1",
+   "label": "Include it in ST now",
+   "detail": ""
+  },
+  {
+   "key": "other",
+   "label": "Something else",
+   "detail": "Say what in the note."
+  }
+ ],
+ "links": [],
+ "status": "open",
+ "order": 27
+}

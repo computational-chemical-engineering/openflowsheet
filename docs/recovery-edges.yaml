@@ -385,21 +385,28 @@ rows:
     source: K03 §10.1; T08 build-first spec §B2 (ADR 0024)
     trigger: >-
       a candidate fails a check: `compatible_warm_start`'s integrity, compatibility, evaluation or
-      opening (`warm_start_rejected(<check>)`)
+      opening; a declared outer start's `coupling_integrity`, `coupling_compatibility` or
+      `coupling_opening`; a declared k = 0 child start's `external_integrity` or
+      `external_compatibility` (trace `warm_start_rejected(<check>)`)
     precondition: >-
-      the policy's `initializer_chain` names a further source (`T08-warm-v1`:
-      `compatible_warm_start` → `traversal-G0-v1`); no `user_start`.
-    max_count: once per source in the chain (one, under `T08-warm-v1`)
-    enabled: policy-only
+      a start is declared in the solve request (`warm_start`), or the policy's chain names
+      `compatible_warm_start`; no `user_start`.
+    max_count: >-
+      once per declared or chained source: x₀, w₀, and each unit's k = 0 child start
+    enabled: default
     labels:
       - event:initializer_rejected@openflowsheet.orchestrator.executor._reject_initializer
+      - event:initializer_rejected@openflowsheet.application.coupled_run.solve_coupled
     failure_tests:
       - tests/test_t08_w4_warm_starts.py::test_b43_an_incompatible_candidate_is_rejected_to_the_traversal
       - tests/test_t08_w4_warm_starts.py::test_b44_a_tampered_candidate_is_rejected_for_integrity
+      - tests/test_x02_wo3_outer_start.py::test_g3c_a_failing_opening_is_rejected_and_the_coupling_starts_cold
+      - tests/test_x02_wo3_outer_start.py::test_g3d_an_iterate_on_another_instance_is_rejected_for_compatibility
     unchanged_physics:
       kind: identity_compared
       tests:
         - tests/test_t08_w4_warm_starts.py::test_b43_an_incompatible_candidate_is_rejected_to_the_traversal
+        - tests/test_x02_wo3_outer_start.py::test_g3c_a_failing_opening_is_rejected_and_the_coupling_starts_cold
       note: >-
         After the rejection, every artifact except events and policy equals the same revision's
         default run, up to the policy id: `revision.json` and `solution-certificate.json`
@@ -412,7 +419,15 @@ rows:
       source is the only place this edge runs. Under the shared producer only
       `warm_start_rejected(<check>)` is this edge (a next source runs); E3b's P4 rejection and the
       terminal rejections (`missing_initial_guess`, a failed traversal) start no next source and
-      are not edges (T08 review 2, Ruling 10).
+      are not edges (T08 review 2, Ruling 10). ADR 0070 D3 (X02 design note §5.4, §5.9): the
+      coupled route's declared outer start w₀ has the same edge — a w₀ rejected for
+      `coupling_integrity`, `coupling_compatibility` or `coupling_opening` is recorded and the
+      coupling starts from the variant's `coupling.initial`; its `external-coupling.json` is then
+      byte-equal to a cold run's (G3 (c), (d)). The same producer records a rejected k = 0 child
+      start (`external_compatibility`, `external_integrity`), after which that unit's k = 0
+      experiment runs cold. X02 review M-2: `enabled: default`, because a declared start takes the
+      edge under the route's `default` policy (`_reject_initializer` in G2's tampered source;
+      `solve_coupled` in G3 (c) and (d)).
 
   - id: E10
     title: 'verifier: fresh-flash check at x_final when the projection is refused'

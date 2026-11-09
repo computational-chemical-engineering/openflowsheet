@@ -1,0 +1,31 @@
+{
+ "section": "defaults",
+ "pkg": "OPT",
+ "pkgTitle": "Optimising your own flowsheets",
+ "kind": "choice",
+ "title": "Q8: audit Ipopt for ARM in 0.4?",
+ "body": [
+  "ARM machines replay optimisations but do not run them."
+ ],
+ "defaultKey": "default",
+ "options": [
+  {
+   "key": "default",
+   "label": "No, x86-64 only",
+   "detail": ""
+  },
+  {
+   "key": "alt1",
+   "label": "Yes, audit ARM now",
+   "detail": ""
+  },
+  {
+   "key": "other",
+   "label": "Something else",
+   "detail": "Say what in the note."
+  }
+ ],
+ "links": [],
+ "status": "open",
+ "order": 22
+}

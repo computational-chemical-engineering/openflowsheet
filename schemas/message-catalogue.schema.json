@@ -1,0 +1,516 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/frankp/process-runtime/schemas/message-catalogue.schema.json",
+  "title": "MessageCatalogue",
+  "description": "MSG design note §4.2 (ADR 0058). One document of the message catalogue: the human explanation of each typed code, rendered on read and stored nowhere (I2). The core documents are package data (`openflowsheet/messages/catalogue/*.yaml`); an extension registers its own under its namespace (§4.11). `kinds.yaml` and `vocabulary.yaml` are the `$defs/kinds_document` and `$defs/vocabulary_document` forms of the same format id.",
+  "$ref": "#/$defs/catalogue_document",
+  "$defs": {
+    "format": {
+      "const": "openflowsheet-messages-v1"
+    },
+    "code": {
+      "type": "string",
+      "pattern": "^[A-Za-z][A-Za-z0-9_-]*(\\.[A-Za-z0-9_-]+)?$",
+      "maxLength": 128
+    },
+    "family": {
+      "enum": [
+        "api_error",
+        "refusal",
+        "outcome",
+        "check",
+        "status",
+        "limitation",
+        "notice",
+        "job"
+      ]
+    },
+    "kind": {
+      "enum": [
+        "input",
+        "not_supported",
+        "numerical",
+        "bug",
+        "notice"
+      ]
+    },
+    "name": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]*$"
+    },
+    "template": {
+      "type": "string",
+      "minLength": 1
+    },
+    "param": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "enum": [
+            "unit",
+            "stream",
+            "port",
+            "specification",
+            "revision",
+            "job",
+            "artifact",
+            "bundle",
+            "directory",
+            "pointer",
+            "element",
+            "code",
+            "text",
+            "enum",
+            "number",
+            "quantity",
+            "list"
+          ]
+        },
+        "label": {
+          "type": "string"
+        },
+        "optional": {
+          "type": "boolean"
+        },
+        "vocabulary": {
+          "$ref": "#/$defs/name"
+        },
+        "unit": {
+          "type": "string",
+          "description": "type quantity: the SI unit when the legacy text carries none (§4.3 rule 5)"
+        },
+        "quantity_kind": {
+          "type": "string",
+          "description": "type quantity: the units.json kind of a legacy-parsed value"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "enum"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "vocabulary"
+            ]
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "vocabulary"
+            ]
+          },
+          "then": {
+            "properties": {
+              "type": {
+                "const": "enum"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "when": {
+      "type": "object",
+      "additionalProperties": false,
+      "minProperties": 1,
+      "properties": {
+        "has": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/name"
+          },
+          "minItems": 1
+        },
+        "equals": {
+          "type": "object",
+          "propertyNames": {
+            "$ref": "#/$defs/name"
+          },
+          "minProperties": 1
+        },
+        "not_equals": {
+          "type": "object",
+          "propertyNames": {
+            "$ref": "#/$defs/name"
+          },
+          "minProperties": 1
+        },
+        "surface": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "python",
+              "cli",
+              "http",
+              "mcp"
+            ]
+          },
+          "minItems": 1
+        },
+        "outer": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/code"
+          },
+          "minItems": 1
+        }
+      }
+    },
+    "variant": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "when"
+      ],
+      "minProperties": 2,
+      "properties": {
+        "when": {
+          "$ref": "#/$defs/when"
+        },
+        "summary": {
+          "$ref": "#/$defs/template"
+        },
+        "context": {
+          "$ref": "#/$defs/template"
+        },
+        "where": {
+          "$ref": "#/$defs/template"
+        },
+        "why": {
+          "$ref": "#/$defs/template"
+        },
+        "action": {
+          "$ref": "#/$defs/template"
+        },
+        "kind": {
+          "$ref": "#/$defs/kind"
+        }
+      }
+    },
+    "entry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "code",
+        "family",
+        "kind",
+        "complete",
+        "title",
+        "summary"
+      ],
+      "properties": {
+        "code": {
+          "$ref": "#/$defs/code"
+        },
+        "family": {
+          "$ref": "#/$defs/family"
+        },
+        "kind": {
+          "$ref": "#/$defs/kind"
+        },
+        "complete": {
+          "type": "boolean"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "args": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/name"
+          }
+        },
+        "detail_pattern": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "params": {
+          "type": "object",
+          "propertyNames": {
+            "$ref": "#/$defs/name"
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/param"
+          }
+        },
+        "summary": {
+          "$ref": "#/$defs/template"
+        },
+        "context": {
+          "$ref": "#/$defs/template"
+        },
+        "where": {
+          "$ref": "#/$defs/template"
+        },
+        "why": {
+          "$ref": "#/$defs/template"
+        },
+        "action": {
+          "$ref": "#/$defs/template"
+        },
+        "variants": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/variant"
+          }
+        },
+        "gap": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "limitation",
+            "capability"
+          ],
+          "properties": {
+            "limitation": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "capability": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
+        },
+        "see_also": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/code"
+          }
+        },
+        "examples": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "params"
+            ],
+            "properties": {
+              "params": {
+                "type": "object"
+              },
+              "chain": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/code"
+                },
+                "minItems": 1
+              }
+            }
+          }
+        },
+        "deprecated": {
+          "type": "boolean"
+        },
+        "replaced_by": {
+          "$ref": "#/$defs/code"
+        },
+        "review": {
+          "type": "boolean"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "complete": {
+                "const": true
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "why",
+              "action",
+              "examples"
+            ],
+            "properties": {
+              "examples": {
+                "minItems": 1
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "complete": {
+                "const": true
+              },
+              "kind": {
+                "const": "not_supported"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "gap"
+            ]
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "gap"
+            ]
+          },
+          "then": {
+            "properties": {
+              "kind": {
+                "const": "not_supported"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "context"
+            ]
+          },
+          "then": {
+            "properties": {
+              "family": {
+                "const": "outcome"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "replaced_by"
+            ]
+          },
+          "then": {
+            "required": [
+              "deprecated"
+            ],
+            "properties": {
+              "deprecated": {
+                "const": true
+              }
+            }
+          }
+        }
+      ]
+    },
+    "catalogue_document": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "catalogue",
+        "namespace",
+        "entries"
+      ],
+      "properties": {
+        "catalogue": {
+          "$ref": "#/$defs/format"
+        },
+        "namespace": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[a-z][a-z0-9_-]*$"
+        },
+        "entries": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/entry"
+          }
+        }
+      }
+    },
+    "kinds_document": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "catalogue",
+        "kinds"
+      ],
+      "properties": {
+        "catalogue": {
+          "$ref": "#/$defs/format"
+        },
+        "kinds": {
+          "type": "object",
+          "required": [
+            "input",
+            "not_supported",
+            "numerical",
+            "bug",
+            "notice"
+          ],
+          "propertyNames": {
+            "$ref": "#/$defs/kind"
+          },
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "label",
+              "default_action"
+            ],
+            "properties": {
+              "label": {
+                "type": "string",
+                "minLength": 1
+              },
+              "default_action": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        }
+      }
+    },
+    "vocabulary_document": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "catalogue",
+        "vocabulary"
+      ],
+      "properties": {
+        "catalogue": {
+          "$ref": "#/$defs/format"
+        },
+        "vocabulary": {
+          "type": "object",
+          "propertyNames": {
+            "$ref": "#/$defs/name"
+          },
+          "additionalProperties": {
+            "type": "object",
+            "minProperties": 1,
+            "additionalProperties": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -29,6 +29,7 @@ repository's `schemas/` directory.
 | `preview_change` | read | python, cli, http, mcp | `POST /v1/changes/preview` | `preview_change` |
 | `get_artifact` | read | python, cli, http, mcp | `GET /v1/artifacts/{artifact_id}` | `get_artifact` |
 | `list_audit` | read | python, cli, http | `GET /v1/audit` | — |
+| `explain` | read | python, cli, http, mcp | `GET /v1/explain/{code}` | `explain` |
 | `artifact_bytes` | read | python, cli, http | `GET /v1/artifacts/{artifact_id}/raw` | — |
 
 ::: openflowsheet.application.operations.dispatch

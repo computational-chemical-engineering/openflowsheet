@@ -1,0 +1,80 @@
+{
+ "work_package": "MSG",
+ "commit": "5e9274dbee91dd25d7201f24b025db2498027744",
+ "requirements": [],
+ "status": "tested",
+ "inputs": {
+  "case_id": "MSG WO-0..12: the beginner-mistake corpus tests/fixtures/msg/corpus.yaml (C01-C12, sha256 8e92ccbd60b813c008ec53e0e966557c6d2037736372c28f54367fe99f0404b0) and MSG-G0's baseline evidence/MSG/af35153979cf35cdf9e0e364e015492db3a41493/identity-baseline.json",
+  "case_hash": "8e92ccbd60b813c008ec53e0e966557c6d2037736372c28f54367fe99f0404b0",
+  "environment_lock_hash": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+ },
+ "commands": [
+  {
+   "cmd": "CI ci.yml run 42502713324 on wp/MSG at 5e9274db: check (ubuntu-latest), check (ubuntu-24.04-arm), identity, default-install",
+   "cwd": "GitHub Actions",
+   "exit_code": 0
+  },
+  {
+   "cmd": "OMP_NUM_THREADS=1 .venv/bin/python -m pytest -q tests/test_m07a_surface_chain.py tests/test_t08_w2_surface_digest.py, the R4-G3 schema tests, tests/test_msg_*.py and the harvest/T08/evidence-manifest tests, at 43c0e900 (MSG_DECISIONS DM-5): surface/description/R4-G3 set 234 passed, 1 failed (DM-2, the description-review test); tests/test_msg_*: 181 passed, 3 xfailed; harvest/T08/evidence manifests: 1074 passed, 2 skipped, 1 failed (DM-2)",
+   "cwd": "TRS2, .claude/worktrees/msg at 43c0e900",
+   "exit_code": 1
+  },
+  {
+   "cmd": "scripts/corpus_identity.py --check at 43c0e900",
+   "cwd": "TRS2, .claude/worktrees/msg at 43c0e900",
+   "exit_code": 0
+  }
+ ],
+ "checks": [
+  {
+   "id": "MSG.CI",
+   "description": "CI run 42502713324 at 5e9274db: check on both architectures, identity, default-install all success; no local full gate was run at this commit (the earlier full gate at 9c76b939 is in docs/MSG_DECISIONS.md)",
+   "result": "pass",
+   "value": {
+    "run": "42502713324"
+   }
+  },
+  {
+   "id": "MSG-G10",
+   "description": "frozen-surface chain unchanged by the merge of main at 43c0e900: tests/test_m07a_surface_chain.py (c_4, D_4) passes; served-list digest D_4 unchanged, nothing re-recorded (DM-5)",
+   "result": "pass",
+   "value": {
+    "served_sha256_D4": "eaff45852d7596816d90d744078f537e46c723e577295d347d9d73aea0942eac"
+   }
+  },
+  {
+   "id": "MSG.DESC",
+   "description": "description-review test (test_t08_w2_description_reviews::test_every_description_is_reviewed_by_both_lanes): the one failure of DM-2 ('explain: human pending') cleared by Frank's recorded human review of explain at 5e9274db (decision board, 2026-11-08); CI at 5e9274db green",
+   "result": "pass"
+  },
+  {
+   "id": "F0",
+   "description": "scripts/corpus_identity.py --check at 43c0e900",
+   "result": "pass",
+   "value": "F0 PASS: M1 50/50, M2 61/61, M3 61/61, M4 61/61, M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 35/35"
+  }
+ ],
+ "artifacts": [
+  {
+   "path": "tests/fixtures/msg/corpus.yaml",
+   "sha256": "8e92ccbd60b813c008ec53e0e966557c6d2037736372c28f54367fe99f0404b0",
+   "description": "the beginner-mistake corpus, C01-C12"
+  },
+  {
+   "path": "evidence/MSG/af35153979cf35cdf9e0e364e015492db3a41493/identity-baseline.json",
+   "sha256": "bc13e6abc91b2b46e2bda6a327f9b4cc888cea007a47b9ef7d2c31fae342a285",
+   "description": "MSG-G0's WO-0 baseline, recorded at 37a521f9 (unchanged)"
+  }
+ ],
+ "limitations": [
+  "Evidence class: software verification (catalogue lint, corpus goldens, transport equality, identity gates) on ref-x86-64. The corpus texts are self-generated regression fixtures. The prose of the 51 entries completed at WO-12 awaits the design-lane prose check (review M1); no test catches a wrong physical claim.",
+  "Declared gaps (orchestrator default, main 903d95b1): errors render from the error document alone, so C08's 'degc' and C10's instance B stay strict xfails; C01's value, saturated values and pressure are deferred to the F6 v2 unit models (R-975).",
+  "worker_lost, owner_lost, store_error keep kind bug with environment-specific actions (orchestrator default, 903d95b1); an environment kind would need a schema and ADR 0058 change.",
+  "The carry naming link c_4 (R-976) is a 0.4 release-candidate item, not a main test.",
+  "Process note: no local full gate at this commit; the merge condition is CI run 42502713324. Status tested, not reviewed."
+ ],
+ "review": {
+  "numerical": "pending",
+  "process_model": "pending"
+ }
+}

@@ -59,6 +59,10 @@ V030_BUNDLES: Final = ROOT / "tests" / "fixtures" / "f0" / "v0.3.0-bundles"
 #: guards that keep this policy's values out of input documents (`tests/f0_support.py`). The other
 #: records (`T04-W12`) carry none of those values and are not registered.
 ARCHIVED_POLICIES: Final = ("T06-revision-v2",)
+#: R-939's addendum (OPT review M3, ADR 0071): the six `solve-policy.json` records of OPT's G13
+#: fixture (the `start` and `resolve` bundles of each start), registered by the same mechanism: a
+#: replay reads the policies from the start bundle as written (D-62 a).
+OPT_REPLAY_FIXTURE: Final = ROOT / "tests" / "fixtures" / "opt" / "replay" / "OPT-A2"
 #: M6's committed request sample (review finding 1): keys recomputed without solving.
 M6_SAMPLE: Final = ROOT / "benchmarks" / "f0" / "m6-requests.json"
 M6_FIRST: Final = 3
@@ -501,13 +505,20 @@ def m7(bundles: Path = V030_BUNDLES) -> dict[str, dict[str, Any]]:
     return result
 
 
-def archived_outputs(bundles: Path = V030_BUNDLES) -> dict[str, str]:
+def archived_outputs(
+    bundles: Path = V030_BUNDLES, opt_fixture: Path = OPT_REPLAY_FIXTURE
+) -> dict[str, str]:
     """Path -> SHA-256 of each indexed bundle's `artifacts/solve-policy.json` whose policy is one
-    of `ARCHIVED_POLICIES`: the guards' registered exemption (R-939)."""
+    of `ARCHIVED_POLICIES`, and of each bundle's in OPT's G13 fixture: the guards' registered
+    exemption (R-939 and its OPT addendum)."""
     index = json.loads((bundles / "index.json").read_text(encoding="utf-8"))
+    paths = [
+        bundles / entry["directory"] / "artifacts" / "solve-policy.json"
+        for entry in index["entries"]
+    ]
+    paths += sorted(opt_fixture.glob("starts/*/*/artifacts/solve-policy.json"))
     found: dict[str, str] = {}
-    for entry in index["entries"]:
-        path = bundles / entry["directory"] / "artifacts" / "solve-policy.json"
+    for path in paths:
         if path.is_file():
             data = path.read_bytes()
             if json.loads(data).get("policy_id") in ARCHIVED_POLICIES:

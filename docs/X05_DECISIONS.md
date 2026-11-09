@@ -62,3 +62,14 @@ Default kept (ADR §11 Q-N1): the rule does not bend; nothing here needs it to.
 - **WO-4 harvest.** The WO-3 manifest (`42c84f1d…`) was committed without its harvest, so T08.A21 and M07a's
   `HARVEST_SIZE` failed at `82030102`. Its 6 limitations and 4 unsupported checks are classified `P` (process,
   provenance and scope notes; the four checks are taken by the D-9 dispatch); `HARVEST_SIZE` (71, 957, 126).
+
+## X05a — Frank's Q-F1 = no (2026-11-08, `wp/X05a`)
+
+- **D-10 — A25's CI half is a new `lock-check` state, `installed-free`, not a sixth §6.2 state.** It is outside
+  `LOCK_STATES` (the ADR's five, which the construct test iterates), and its expectation is computed from the versions
+  `importlib.metadata` reports against the registered pins (F3/F4 in closure order), not registered, since an
+  unconstrained resolver's picks are not fixed. Extra checks: the direct five at the lock; the R_THIS reason names
+  every member off it. `test_a25_the_unconstrained_state_names_a_floating_member_off_the_lock` drives it with and
+  without a shadow `attrs`. Alternative: drop the CI half (A25 static only). Reversible by reverting `1e83ddd7`.
+- **D-11 — the generator's A25 title follows the amended row** (`x05_reference.py` `ASSERTIONS`; the reference JSON
+  re-emitted, only that string moves). Alternative: leave the stale title. Reversible in the same commit.

@@ -1,7 +1,8 @@
 """The operations table and the one dispatch every binding goes through (§4.3, §10.4, §11.6).
 
 `OPERATIONS` is the only routing source: one row per protocol method — `Application`'s four,
-`JobControl`'s seven, `Inspection`'s nine (`list_audit` is ADR 0019 Amendment 3's) — and
+`JobControl`'s seven, `Inspection`'s ten (`list_audit` is ADR 0019 Amendment 3's, `explain`
+ADR 0058 D7's) — and
 `artifact_bytes`, the raw export. A row names its method, the right it needs, its request and
 response schemas, its HTTP verb and path, its MCP tool, the transports that carry it and its tool
 description. Python (through `dispatch`), the
@@ -17,7 +18,8 @@ CLI, HTTP and MCP read this table and nothing else, and add nothing to what it s
 3. the decoding into typed arguments, with the rules no schema states — an idempotency key with
    the reserved prefix `auto:` (§5.1: in-process `solve` and `reproduce` only) is refused here;
 4. the method itself, which authorizes from the credential and nothing else (§10.1);
-5. `project_response`: every string and key of the result bounded (§10.4).
+5. `project_response`: every `ApiError` the result holds explained (MSG §3.3), then every string
+   and key of the result bounded (§10.4).
 
 A refusal at steps 1–3 is audited (§10.7) and raised; a refusal from the method was audited
 there. Every `ApiError` leaves `dispatch` bounded like a response. The Python methods themselves
@@ -37,6 +39,7 @@ from __future__ import annotations
 
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass
+from functools import cache
 from typing import Any, Final, Literal, Protocol
 
 from openflowsheet.application.contract import (
@@ -67,6 +70,7 @@ from openflowsheet.application.types import (
     ReplayPolicy,
     RevisionSummary,
     Right,
+    published_schemas,
     validate_inline,
 )
 from openflowsheet.canonical import first_noncanonical
@@ -130,6 +134,13 @@ JOB_ID: Final = _ref("job.schema.json#/$defs/job_id")
 ARTIFACT_ID: Final = _ref("job.schema.json#/$defs/artifact_id")
 CURSOR: Final = {"type": ["string", "null"], "maxLength": 1024}
 POINTER: Final = {"type": "string", "maxLength": 8192}
+#: ADR 0058 D7: a message code as `explain` takes it (MSG §3.5).
+MESSAGE_CODE: Final = {
+    "type": "string",
+    "minLength": 1,
+    "maxLength": 128,
+    "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]*$",
+}
 
 
 def _limit(maximum: int) -> dict[str, Any]:
@@ -297,10 +308,13 @@ OPERATIONS: Final[Mapping[str, Operation]] = {
         _row(
             "validate",
             "read",
-            _object({"revision_id": ID, "task": {"enum": ["simulation", "optimization"]}}),
+            _object(
+                {"revision_id": ID, "task": {"enum": ["simulation", "optimization"]}},
+                {"optimization": _ref("optimization-request.schema.json")},
+            ),
             _ref("validation-report.schema.json"),
             ("POST", "/v1/revisions/{revision_id}/validate"),
-            decode=_members("revision_id", "task"),
+            decode=_members("revision_id", "task", "optimization"),
             mcp_tool="validate_revision",
         ),
         _row(
@@ -502,6 +516,15 @@ OPERATIONS: Final[Mapping[str, Operation]] = {
             encode=_page_of(AuditRecord.as_document),
             transports=("python", "cli", "http"),
         ),
+        # ADR 0058 D7 (MSG §3.5): a message-catalogue entry; it reads no project state.
+        _row(
+            "explain",
+            "read",
+            _object({"code": MESSAGE_CODE}),
+            _result("message_entry"),
+            ("GET", "/v1/explain/{code}"),
+            decode=_members("code"),
+        ),
         # The raw export (Python, CLI, HTTP; never MCP)
         _row(
             "artifact_bytes",
@@ -524,21 +547,119 @@ _UNKNOWN_NAME_LIMIT: Final[int] = 128
 
 
 def project_error(error: ApiError) -> ApiError:
-    """§10.4 over an error: its message and every string and key of its detail bounded."""
+    """§10.4 over an error: its explanation attached as `detail.explanation` (MSG §3.3), then its
+    message and every string and key of its detail bounded. Idempotent: an error projected
+    once keeps the explanation it carries."""
+    explained = explained_detail(error.as_document())
     return ApiError(
         code=error.code,
         message=bound_text(error.message, TEXT_LIMIT),
         retryable=error.retryable,
-        detail=bound_document(dict(error.detail)),
+        detail=bound_document(explained["detail"]),
     )
 
 
 def project_response(operation: Operation, document: Any) -> Any:
     """§10.4: the response every transport carries for `document` (`operation.encode` of the
-    method's result) — bounded; the raw export's bytes pass as they are."""
+    method's result) — every `ApiError` document it holds explained (MSG §3.3), then bounded;
+    the raw export's bytes pass as they are."""
     if operation.response_schema is None:
         return document
+    for location in error_locations(operation.name):
+        document = _explained_at(document, location)
     return bound_document(document)
+
+
+# ============================================================== explanations (MSG §3.3, §4.7)
+
+_ERROR_SCHEMA: Final[str] = SCHEMA_BASE + "api-error.schema.json#"
+#: A location's step into any array item or any member of a map.
+ANY: Final[str] = "*"
+
+
+def explained_detail(document: Mapping[str, Any]) -> dict[str, Any]:
+    """An `ApiError` document with `detail.explanation` (surface null) attached, unless it
+    carries one already. The explanation is rendered on the way out and stored nowhere (I2)."""
+    from openflowsheet.messages.render import render_error
+
+    detail = document.get("detail")
+    if not isinstance(detail, Mapping):
+        return dict(document)
+    if isinstance(detail.get("explanation"), Mapping):
+        return {**document, "detail": dict(detail)}
+    return {**document, "detail": {**detail, "explanation": render_error(document)}}
+
+
+@cache
+def error_locations(name: str) -> tuple[tuple[str, ...], ...]:
+    """Where `name`'s response schema `$ref`s `api-error.schema.json`: member names, and `ANY`
+    for an array item or a map member. Read from the resolved response schema, so a new
+    `ApiError` member of a result is explained without being listed anywhere."""
+    schema = OPERATIONS[name].response_schema
+    found: set[tuple[str, ...]] = set()
+    if schema is not None:
+        _error_refs(schema, published_schemas(), None, (), (), found)
+    return tuple(sorted(found))
+
+
+def _error_refs(
+    node: Any,
+    documents: Mapping[str, Mapping[str, Any]],
+    base: str | None,
+    path: tuple[str, ...],
+    active: tuple[str, ...],
+    found: set[tuple[str, ...]],
+) -> None:
+    if not isinstance(node, Mapping):
+        return
+    reference = node.get("$ref")
+    if isinstance(reference, str):
+        address, _, fragment = reference.partition("#")
+        document_id = address or base
+        if document_id is None or document_id not in documents:
+            raise ValueError(f"$ref {reference!r} is not into a published schema")
+        if f"{document_id}#{fragment}" == _ERROR_SCHEMA:
+            found.add(path)
+        elif f"{document_id}#{fragment}" not in active:
+            target: Any = documents[document_id]
+            for token in fragment.split("/")[1:]:
+                token = token.replace("~1", "/").replace("~0", "~")
+                target = target[int(token)] if isinstance(target, list) else target[token]
+            _error_refs(
+                target, documents, document_id, path, (*active, f"{document_id}#{fragment}"), found
+            )
+    for keyword in ("allOf", "anyOf", "oneOf"):
+        for branch in node.get(keyword, ()):
+            _error_refs(branch, documents, base, path, active, found)
+    for keyword in ("if", "then", "else"):
+        _error_refs(node.get(keyword), documents, base, path, active, found)
+    for member, schema in (node.get("properties") or {}).items():
+        _error_refs(schema, documents, base, (*path, member), active, found)
+    for schema in (node.get("patternProperties") or {}).values():
+        _error_refs(schema, documents, base, (*path, ANY), active, found)
+    for keyword in ("additionalProperties", "items"):
+        _error_refs(node.get(keyword), documents, base, (*path, ANY), active, found)
+    for schema in node.get("prefixItems", ()):
+        _error_refs(schema, documents, base, (*path, ANY), active, found)
+
+
+def _explained_at(document: Any, location: tuple[str, ...]) -> Any:
+    """`document` with the `ApiError` documents at `location` explained (new containers along
+    the location; nothing the caller holds is mutated)."""
+    if not location:
+        if isinstance(document, Mapping) and isinstance(document.get("code"), str):
+            return explained_detail(document)
+        return document
+    step, rest = location[0], location[1:]
+    if step == ANY:
+        if isinstance(document, list):
+            return [_explained_at(item, rest) for item in document]
+        if isinstance(document, Mapping):
+            return {key: _explained_at(value, rest) for key, value in document.items()}
+        return document
+    if isinstance(document, Mapping) and step in document:
+        return {**document, step: _explained_at(document[step], rest)}
+    return document
 
 
 def dispatch(app: Dispatchable, name: str, request: Any) -> Any:

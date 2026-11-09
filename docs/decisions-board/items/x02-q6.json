@@ -1,0 +1,31 @@
+{
+ "section": "defaults",
+ "pkg": "X02",
+ "pkgTitle": "Warm starts for external and coupled units",
+ "kind": "choice",
+ "title": "Q6: the variant id `pymrm-6089593-g2-nz800-s123w-v1`",
+ "body": [
+  "Only matters if Q1 is reversed."
+ ],
+ "defaultKey": "default",
+ "options": [
+  {
+   "key": "default",
+   "label": "Keep the id as given",
+   "detail": ""
+  },
+  {
+   "key": "alt1",
+   "label": "Use a different id",
+   "detail": ""
+  },
+  {
+   "key": "other",
+   "label": "Something else",
+   "detail": "Say what in the note."
+  }
+ ],
+ "links": [],
+ "status": "open",
+ "order": 15
+}

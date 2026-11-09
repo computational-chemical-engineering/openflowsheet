@@ -1,0 +1,334 @@
+<title>OpenFlowsheet Decisions</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one reading column of decision cards, grouped by package; a sticky tab bar filters by urgency. */
+:root {
+  --bg: #f3f5f4;
+  --surface: #ffffff;
+  --fg: #17211f;
+  --muted: #5b6965;
+  --line: #d6dedb;
+  --accent: #0d6b62;
+  --accent-soft: #e0efec;
+  --ok: #2f7a3b;
+  --ok-soft: #e4f2e6;
+  --warn: #9a5b00;
+  --warn-soft: #fbefdc;
+  --del: #9b2c2c;
+  --del-soft: #f9e5e5;
+  --code-bg: #eef2f1;
+  --font-body: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #111716; --surface: #19211f; --fg: #e4ece9; --muted: #9aaba6; --line: #2c3835;
+    --accent: #5cc4b6; --accent-soft: #173330; --ok: #7ccf88; --ok-soft: #1b3120;
+    --warn: #e7b25c; --warn-soft: #362812; --del: #f09a9a; --del-soft: #3a1d1d; --code-bg: #212b29;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #111716; --surface: #19211f; --fg: #e4ece9; --muted: #9aaba6; --line: #2c3835;
+  --accent: #5cc4b6; --accent-soft: #173330; --ok: #7ccf88; --ok-soft: #1b3120;
+  --warn: #e7b25c; --warn-soft: #362812; --del: #f09a9a; --del-soft: #3a1d1d; --code-bg: #212b29;
+  color-scheme: dark;
+}
+body { background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.55; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+.wrap { max-width: 760px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 20px 64px; }
+header h1 { font-size: 1.6rem; line-height: 1.2; margin: 0 0 6px; text-wrap: balance; }
+header p { margin: 0; color: var(--muted); max-width: 62ch; }
+.counts { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.chip { display: inline-flex; align-items: center; gap: 6px; border-radius: 999px; padding: 2px 10px; font-size: 0.82rem; border: 1px solid var(--line); background: var(--surface); color: var(--muted); font-variant-numeric: tabular-nums; }
+.chip b { color: var(--fg); }
+nav.tabs { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); display: flex; gap: 6px; overflow-x: auto; padding-block: 12px; margin-top: 10px; border-bottom: 1px solid var(--line); }
+nav.tabs button { font: inherit; font-size: 0.9rem; border: 1px solid var(--line); background: var(--surface); color: var(--fg); border-radius: 8px; padding: 6px 12px; white-space: nowrap; cursor: pointer; }
+nav.tabs button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--surface); }
+nav.tabs button:focus-visible, button:focus-visible, textarea:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.tabnote { color: var(--muted); font-size: 0.92rem; margin: 14px 0 0; }
+.pkg { margin-top: 28px; }
+.pkg h2 { font-size: 0.8rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin: 0 0 10px; display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+.pkg h2 span { text-transform: none; letter-spacing: 0; font-size: 0.9rem; color: var(--fg); font-weight: 700; }
+.list { display: grid; gap: 12px; }
+article.item { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; min-width: 0; }
+article.item.answered { border-color: var(--ok); }
+.item-head { display: flex; gap: 10px; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; }
+.item-head h3 { margin: 0; font-size: 1.05rem; line-height: 1.35; text-wrap: balance; min-width: 0; flex: 1 1 260px; }
+.kind { font-size: 0.75rem; letter-spacing: 0.06em; text-transform: uppercase; padding: 2px 8px; border-radius: 6px; background: var(--accent-soft); color: var(--accent); white-space: nowrap; }
+.kind.adr { background: var(--warn-soft); color: var(--warn); }
+.state { font-size: 0.82rem; color: var(--ok); background: var(--ok-soft); border-radius: 6px; padding: 2px 8px; white-space: nowrap; }
+.body p { margin: 10px 0 0; max-width: 68ch; }
+.body code, .opt code { font-family: var(--font-mono); font-size: 0.86em; background: var(--code-bg); padding: 0 4px; border-radius: 4px; overflow-wrap: anywhere; }
+.unblocks { margin-top: 10px; font-size: 0.9rem; color: var(--muted); }
+.unblocks b { color: var(--fg); }
+.text-block { margin-top: 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--code-bg); }
+.text-block .tb-head { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; padding: 8px 12px; border-bottom: 1px solid var(--line); font-size: 0.82rem; color: var(--muted); }
+.text-block .tb-body { padding: 12px; font-family: var(--font-mono); font-size: 0.86rem; line-height: 1.6; white-space: pre-wrap; overflow-wrap: anywhere; max-height: 520px; overflow-y: auto; }
+details.diff { margin-top: 10px; }
+details.diff summary { cursor: pointer; color: var(--accent); font-size: 0.92rem; }
+.diff-row { font-family: var(--font-mono); font-size: 0.82rem; white-space: pre-wrap; overflow-wrap: anywhere; padding: 6px 10px; border-radius: 6px; margin-top: 6px; }
+.diff-row.del { background: var(--del-soft); color: var(--del); }
+.diff-row.add { background: var(--ok-soft); color: var(--ok); }
+.links { display: flex; flex-wrap: wrap; gap: 8px 14px; margin-top: 12px; font-size: 0.92rem; }
+.links a { color: var(--accent); }
+fieldset { border: 0; padding: 0; margin: 14px 0 0; display: grid; gap: 8px; min-width: 0; }
+legend { font-size: 0.82rem; color: var(--muted); padding: 0; margin-bottom: 6px; }
+.opt { display: grid; grid-template-columns: auto 1fr; gap: 4px 10px; align-items: start; border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; cursor: pointer; }
+.opt:has(input:checked) { border-color: var(--accent); background: var(--accent-soft); }
+.opt input { margin-top: 4px; accent-color: var(--accent); }
+.opt .lbl { font-weight: 700; }
+.opt .lbl em { font-style: normal; font-weight: 400; font-size: 0.78rem; color: var(--accent); border: 1px solid var(--accent); border-radius: 4px; padding: 0 5px; margin-left: 6px; }
+.opt .det { grid-column: 2; color: var(--muted); font-size: 0.92rem; }
+textarea { width: 100%; box-sizing: border-box; min-height: 64px; font: inherit; font-size: 0.95rem; border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; background: var(--surface); color: var(--fg); resize: vertical; margin-top: 10px; }
+.actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 10px; }
+.actions button { font: inherit; font-weight: 700; border: 0; border-radius: 8px; padding: 8px 16px; background: var(--accent); color: var(--surface); cursor: pointer; }
+.actions button[disabled] { opacity: 0.5; cursor: default; }
+.actions .msg { font-size: 0.88rem; color: var(--muted); }
+.actions .msg.err { color: var(--del); }
+.empty { margin-top: 28px; padding: 20px; border: 1px dashed var(--line); border-radius: 10px; color: var(--muted); }
+footer { margin-top: 36px; color: var(--muted); font-size: 0.88rem; max-width: 68ch; }
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>OpenFlowsheet decisions</h1>
+    <p>Everything waiting for you, with the text to read and the question to answer. Pick an option, add a note if you like, and press Save. Claude reads the saved answers and acts on them.</p>
+    <div class="counts" id="counts"><span class="chip">Loading the questions…</span></div>
+  </header>
+
+  <nav class="tabs" id="tabs" aria-label="Filter">
+    <button type="button" id="tab-blocking" data-tab="blocking" aria-pressed="true">Blocks a merge</button>
+    <button type="button" id="tab-defaults" data-tab="defaults" aria-pressed="false">Defaults in effect</button>
+    <button type="button" id="tab-later" data-tab="later" aria-pressed="false">Before the release</button>
+    <button type="button" id="tab-answered" data-tab="answered" aria-pressed="false">Answered</button>
+  </nav>
+  <p class="tabnote" id="tabnote"></p>
+
+  <main id="main">
+    <div class="empty" id="empty">The question list is loading. If nothing appears, the board's data could not be reached in this view: open it on claude.ai while signed in.</div>
+  </main>
+
+  <footer>
+    Answers are kept with this page. A question you leave alone keeps its default, which the project is already acting on. Full documents open on GitHub.
+  </footer>
+</div>
+
+<script>
+(() => {
+  const TABS = {
+    blocking: "Nothing here can merge until you answer. The default, where there is one, is already built.",
+    defaults: "Already acted on. Answer only if you disagree; leaving them alone accepts the default.",
+    later: "Needed before the 0.4.0 release is cut, not now.",
+    answered: "What you have saved. You can change an answer and save again."
+  };
+  const state = { items: [], answers: {}, tab: "blocking", db: null, drafts: {} };
+  try { const t = localStorage.getItem("ofs-tab"); if (t && TABS[t]) state.tab = t; } catch (e) {}
+
+  const el = (tag, cls, text) => { const n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; };
+  function inline(parent, s) {
+    String(s).split(/(`[^`]+`)/).forEach(part => {
+      if (part.startsWith("`") && part.endsWith("`") && part.length > 2) parent.appendChild(el("code", null, part.slice(1, -1)));
+      else if (part) parent.appendChild(document.createTextNode(part));
+    });
+    return parent;
+  }
+
+  function optionsFor(it) {
+    if (Array.isArray(it.options) && it.options.length) return it.options;
+    if (it.kind === "review") return [
+      { key: "approve", label: "Approved", detail: "The text can ship as it is." },
+      { key: "changes", label: "Change it", detail: "Write what to change in the note." }
+    ];
+    if (it.kind === "adr") return [
+      { key: "accept", label: "Accept", detail: "The ADR becomes Accepted." },
+      { key: "not_yet", label: "Not yet", detail: "Say what is missing in the note." }
+    ];
+    return [];
+  }
+
+  function renderCounts() {
+    const c = document.getElementById("counts");
+    c.textContent = "";
+    const open = state.items.filter(i => !state.answers[i.id]);
+    const by = s => open.filter(i => i.section === s).length;
+    const add = (n, label) => { const ch = el("span", "chip"); ch.appendChild(el("b", null, String(n))); ch.appendChild(document.createTextNode(" " + label)); c.appendChild(ch); };
+    add(by("blocking"), "block a merge");
+    add(by("defaults"), "defaults in effect");
+    add(by("later"), "before the release");
+    add(Object.keys(state.answers).filter(k => state.items.some(i => i.id === k)).length, "answered");
+  }
+
+  function renderTabs() {
+    document.querySelectorAll("nav.tabs button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.tab === state.tab)));
+    document.getElementById("tabnote").textContent = TABS[state.tab];
+  }
+
+  function card(it) {
+    const a = state.answers[it.id];
+    const art = el("article", "item" + (a ? " answered" : ""));
+    const head = el("div", "item-head");
+    head.appendChild(inline(el("h3"), it.title || it.id));
+    const kindLabel = it.kind === "review" ? "Read the text" : it.kind === "adr" ? "Accept an ADR" : "Choose";
+    head.appendChild(el("span", "kind" + (it.kind === "adr" ? " adr" : ""), kindLabel));
+    if (a) head.appendChild(el("span", "state", "Saved"));
+    art.appendChild(head);
+
+    const body = el("div", "body");
+    (it.body || []).forEach(p => body.appendChild(inline(el("p"), p)));
+    art.appendChild(body);
+    if (it.unblocks) { const u = el("div", "unblocks"); u.appendChild(el("b", null, "Unblocks: ")); inline(u, it.unblocks); art.appendChild(u); }
+
+    if (it.text) {
+      const tb = el("div", "text-block");
+      const th = el("div", "tb-head");
+      th.appendChild(el("span", null, it.textLabel || "The text"));
+      th.appendChild(el("span", null, it.text.length + " characters" + (it.textCap ? " of " + it.textCap : "")));
+      tb.appendChild(th);
+      tb.appendChild(el("div", "tb-body", it.text));
+      art.appendChild(tb);
+    }
+    if (Array.isArray(it.diff) && it.diff.length) {
+      const d = el("details", "diff");
+      d.appendChild(el("summary", null, "What changed from the released text (" + it.diff.length + " sentence" + (it.diff.length > 1 ? "s" : "") + ")"));
+      it.diff.forEach(row => {
+        if (row.old) d.appendChild(el("div", "diff-row del", "− " + row.old));
+        if (row.new) d.appendChild(el("div", "diff-row add", "+ " + row.new));
+      });
+      art.appendChild(d);
+    }
+    if (Array.isArray(it.links) && it.links.length) {
+      const l = el("div", "links");
+      it.links.forEach(x => { const an = el("a", null, x.label); an.href = x.url; an.target = "_blank"; an.rel = "noopener"; l.appendChild(an); });
+      art.appendChild(l);
+    }
+
+    const opts = optionsFor(it);
+    const draft = state.drafts[it.id] || {};
+    const chosen = draft.choice ?? a?.choice ?? null;
+    const fs = el("fieldset");
+    fs.appendChild(el("legend", null, a ? "Your answer (saved)" : "Your answer"));
+    opts.forEach(o => {
+      const lab = el("label", "opt");
+      const inp = document.createElement("input");
+      inp.type = "radio"; inp.name = "q-" + it.id; inp.value = o.key; inp.id = "q-" + it.id + "-" + o.key;
+      inp.checked = chosen === o.key;
+      inp.addEventListener("change", () => { state.drafts[it.id] = { ...(state.drafts[it.id] || {}), choice: o.key }; sync(); });
+      lab.appendChild(inp);
+      const lb = inline(el("span", "lbl"), o.label);
+      if (it.defaultKey && it.defaultKey === o.key) lb.appendChild(el("em", null, "default"));
+      lab.appendChild(lb);
+      if (o.detail) lab.appendChild(inline(el("span", "det"), o.detail));
+      fs.appendChild(lab);
+    });
+    art.appendChild(fs);
+
+    const ta = document.createElement("textarea");
+    ta.id = "note-" + it.id;
+    ta.placeholder = "Note for Claude (optional; needed for “Change it”, “Not yet” or “Other”)";
+    ta.value = draft.note ?? a?.note ?? "";
+    ta.addEventListener("input", () => { state.drafts[it.id] = { ...(state.drafts[it.id] || {}), note: ta.value }; sync(); });
+    art.appendChild(ta);
+
+    const act = el("div", "actions");
+    const btn = el("button", null, a ? "Save change" : "Save answer");
+    btn.type = "button"; btn.id = "save-" + it.id;
+    const msg = el("span", "msg", a ? "Saved " + new Date(a.at).toLocaleString() : "");
+    act.appendChild(btn); act.appendChild(msg);
+    art.appendChild(act);
+
+    function needsNote(k) { return k === "changes" || k === "not_yet" || k === "other"; }
+    function sync() {
+      const d = state.drafts[it.id] || {};
+      const k = d.choice ?? a?.choice ?? null;
+      const n = (d.note ?? a?.note ?? "").trim();
+      const changed = !a || k !== a.choice || n !== (a.note || "").trim();
+      btn.disabled = !state.db || !k || (needsNote(k) && !n) || !changed;
+      if (!state.db) { msg.textContent = "Answers can be saved when the page is opened on claude.ai, signed in."; msg.className = "msg"; }
+      else if (k && needsNote(k) && !n) { msg.textContent = "Add a note saying what to change."; msg.className = "msg"; }
+    }
+    btn.addEventListener("click", async () => {
+      const d = state.drafts[it.id] || {};
+      const k = d.choice ?? a?.choice;
+      const n = (d.note ?? a?.note ?? "").trim();
+      if (!state.db || !k) return;
+      btn.disabled = true; msg.className = "msg"; msg.textContent = "Saving…";
+      try {
+        await state.db.doc("answers/" + it.id).set({ choice: k, note: n, at: new Date().toISOString(), title: it.title || it.id });
+        delete state.drafts[it.id];
+        msg.textContent = "Saved. Tell Claude in chat when you are done.";
+      } catch (e) {
+        msg.className = "msg err";
+        msg.textContent = "Not saved: " + (e && e.message ? e.message : "the store refused the write") + ". Try again.";
+        btn.disabled = false;
+      }
+    });
+    sync();
+    return art;
+  }
+
+  function render() {
+    renderCounts(); renderTabs();
+    const main = document.getElementById("main");
+    main.textContent = "";
+    const shown = state.items.filter(i => state.tab === "answered" ? !!state.answers[i.id] : (i.section === state.tab && !state.answers[i.id]));
+    if (!state.items.length) {
+      main.appendChild(el("div", "empty", state.db ? "No questions are waiting. Claude adds new ones here as they come up." : "The question list is loading. If nothing appears, open this page on claude.ai while signed in."));
+      return;
+    }
+    if (!shown.length) {
+      main.appendChild(el("div", "empty", state.tab === "answered" ? "Nothing answered yet." : "Nothing open in this list."));
+      return;
+    }
+    const groups = new Map();
+    shown.sort((x, y) => (x.order ?? 0) - (y.order ?? 0)).forEach(i => {
+      const key = i.pkg || "Other";
+      if (!groups.has(key)) groups.set(key, { title: i.pkgTitle || "", items: [] });
+      groups.get(key).items.push(i);
+    });
+    groups.forEach((g, key) => {
+      const sec = el("section", "pkg");
+      const h = el("h2", null, key);
+      if (g.title) h.appendChild(el("span", null, g.title));
+      sec.appendChild(h);
+      const list = el("div", "list");
+      g.items.forEach(i => list.appendChild(card(i)));
+      sec.appendChild(list);
+      main.appendChild(sec);
+    });
+  }
+
+  document.getElementById("tabs").addEventListener("click", e => {
+    const b = e.target.closest("button[data-tab]");
+    if (!b) return;
+    state.tab = b.dataset.tab;
+    try { localStorage.setItem("ofs-tab", state.tab); } catch (err) {}
+    render();
+  });
+
+  renderTabs();
+
+  (async () => {
+    const timer = setTimeout(() => {
+      if (!state.items.length) document.getElementById("empty").textContent = "The questions did not load. Open this page on claude.ai while signed in, then reload.";
+    }, 10000);
+    let db = null;
+    try { db = window.claude && window.claude.use ? await window.claude.use("db") : null; } catch (e) { db = null; }
+    if (!db) { clearTimeout(timer); render(); return; }
+    state.db = db;
+    db.collection("items").onSnapshot(snap => {
+      clearTimeout(timer);
+      state.items = snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(i => i.status !== "closed");
+      render();
+    }, () => { clearTimeout(timer); render(); });
+    db.collection("answers").onSnapshot(snap => {
+      const next = {};
+      snap.docs.forEach(d => { next[d.id] = d.data(); });
+      state.answers = next;
+      render();
+    }, () => {});
+  })();
+})();
+</script>

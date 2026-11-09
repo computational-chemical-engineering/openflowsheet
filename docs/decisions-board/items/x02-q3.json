@@ -1,0 +1,29 @@
+{
+ "section": "defaults",
+ "pkg": "X02",
+ "pkgTitle": "Warm starts for external and coupled units",
+ "kind": "choice",
+ "title": "Q3: allow warm starts on the `experiment` operation?",
+ "body": [],
+ "defaultKey": "default",
+ "options": [
+  {
+   "key": "default",
+   "label": "No",
+   "detail": ""
+  },
+  {
+   "key": "alt1",
+   "label": "Yes",
+   "detail": ""
+  },
+  {
+   "key": "other",
+   "label": "Something else",
+   "detail": "Say what in the note."
+  }
+ ],
+ "links": [],
+ "status": "open",
+ "order": 14
+}

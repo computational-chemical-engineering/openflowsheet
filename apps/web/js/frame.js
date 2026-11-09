@@ -3,6 +3,7 @@
 // build does not have. Pure views over plain data, so they run in Node.
 
 import { h } from "./h.js";
+import { explained } from "./text.js";
 
 // The theme toggle cycles through these; "system" follows `prefers-color-scheme`.
 export const THEMES = ["system", "light", "dark"];
@@ -76,8 +77,8 @@ function fact(term, value) {
 }
 
 // An error a screen's load raised: the server's `ApiError` document as it came (code, message,
-// retryable, detail), or the shell's own reading error. Never a stack trace of the shell; that
-// is the fatal panel's.
+// retryable, detail), its explanation's summary, cause and action first (MSG), or the shell's
+// own reading error. Never a stack trace of the shell; that is the fatal panel's.
 export function errorView(error) {
   const document = error?.document;
   if (document && typeof document.code === "string") {
@@ -85,6 +86,7 @@ export function errorView(error) {
       "section",
       { class: "panel", id: "ofs-error", role: "alert", "data-ofs-error-code": document.code },
       h("h1", null, `The server refused: ${document.code}`),
+      explained(document.detail?.explanation),
       h("p", null, String(document.message ?? "")),
       h("p", { class: "muted" }, `HTTP ${error.status}; retryable: ${String(document.retryable)}`),
       h("pre", null, JSON.stringify(document.detail ?? {}, null, 2)),

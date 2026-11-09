@@ -339,7 +339,13 @@ def test_a33_simulation_not_ready() -> None:
 
 
 def test_a33_validate_for_optimization_is_still_r129s_unsupported(tmp_path: Path) -> None:
+    """Amended on purpose (ADR 0071 D8, OPT design §4.11): R-129 is lifted; without an audited
+    solver the refusal is `nlp_solver_unavailable`, before the revision is read."""
     from openflowsheet.application.types import Change, Edit
+    from openflowsheet.studies.nlp.closure import audited_solver
+
+    if audited_solver().available:
+        pytest.skip("an audited NLP solver is installed: A33 is the install without one")
 
     document = CORPUS["SYN-001-nominal"]()
     with LocalApplication.create(tmp_path / "project", project_id="m03-a33") as app:
@@ -349,7 +355,7 @@ def test_a33_validate_for_optimization_is_still_r129s_unsupported(tmp_path: Path
         with pytest.raises(ApplicationError) as refused:
             app.validate(revision_id, "optimization")
     assert refused.value.error.as_document()["code"] == "unsupported"
-    assert refused.value.error.as_document()["message"] == "task_unsupported(optimization)"
+    assert refused.value.error.as_document()["message"] == "nlp_solver_unavailable"
 
 
 # -- A34: optimize() without the extra -------------------------------------------------------------

@@ -1,0 +1,429 @@
+{
+ "record": "x02-g5d-v3-v1",
+ "judged": false,
+ "specification": "docs/design/X02-warm-starts.md §7 G5 (d), on v3 (X02 review S-2)",
+ "variant": {
+  "variant_id": "pymrm-6089593-g2-nz800-s123-v3",
+  "sha256": "8b92540adc772a454e212b7054a98da4f7995899955a43a54d07669a70aa203c"
+ },
+ "summary": {
+  "d_i": {
+   "verification_status": "VERIFIED",
+   "outer_iterations": 4,
+   "w_final": [
+    0.1683878312494687,
+    78.67022237085897
+   ],
+   "wall_s": 193.7
+  },
+  "d_ii": {
+   "verification_status": "VERIFIED",
+   "outer_iterations": 1,
+   "w0_equals_i_final_bitwise": true,
+   "experiments_evaluated": 1,
+   "wall_s": 24.7
+  },
+  "d_iii": {
+   "edit": {
+    "specification": "SPEC-S3-T",
+    "from": 673.15,
+    "to": 675.15
+   },
+   "cold": [
+    "VERIFIED",
+    4
+   ],
+   "warm": [
+    "VERIFIED",
+    4
+   ],
+   "moved_u_hat_inf": 0.13714994750890241,
+   "moved_over_bound": 83.65666021559119,
+   "bound": {
+    "distance": 0.0003763574451207674,
+    "bound": 0.0016394384757346745,
+    "holds": true
+   },
+   "warm_fewer_outer_iterations": false,
+   "wall_s": [
+    181.5,
+    222.7
+   ]
+  },
+  "any_start_member": false
+ },
+ "criteria": {
+  "i_verified": true,
+  "ii_verified_one_iteration": true,
+  "ii_w0_bitwise": true,
+  "ii_at_most_one_call": true,
+  "iii_both_verified": true,
+  "iii_bound_holds": true,
+  "iii_warm_fewer_outer_iterations": false,
+  "iii_edit_moves_w_beyond_10_bounds": true,
+  "all_experiments_cold": true
+ },
+ "runs": {
+  "i_cold": {
+   "outcome": "CONVERGED",
+   "verification_status": "VERIFIED",
+   "outer_iterations": 4,
+   "w": [
+    [
+     0.15,
+     80
+    ],
+    [
+     0.16372627516958063,
+     81.29486642063955
+    ],
+    [
+     0.16593954758818488,
+     80.04716618069818
+    ],
+    [
+     0.1683878312494687,
+     78.67022237085897
+    ]
+   ],
+   "w_hex": [
+    [
+     "0x1.3333333333333p-3",
+     "0x1.4000000000000p+6"
+    ],
+    [
+     "0x1.4f4fb8aacb415p-3",
+     "0x1.452df17685578p+6"
+    ],
+    [
+     "0x1.53d81d1008c91p-3",
+     "0x1.40304c54ce4dcp+6"
+    ],
+    [
+     "0x1.58dbb8221630ap-3",
+     "0x1.3aae4ec5ef8c2p+6"
+    ]
+   ],
+   "u_hat": [
+    1.683878312494687,
+    7.867022237085896
+   ],
+   "r_hat": [
+    -4.39586712269735e-05,
+    0.00029179569104087477
+   ],
+   "B_last": [
+    [
+     -0.8395453644483417,
+     -0.015595942444580485
+    ],
+    [
+     -0.9043274174947741,
+     -0.9132771102177578
+    ]
+   ],
+   "experiments_evaluated": 4,
+   "calls": [
+    {
+     "start": null,
+     "span_s": 57.089,
+     "status": "ok"
+    },
+    {
+     "start": null,
+     "span_s": 27.598,
+     "status": "ok"
+    },
+    {
+     "start": null,
+     "span_s": 83.114,
+     "status": "ok"
+    },
+    {
+     "start": null,
+     "span_s": 25.342,
+     "status": "ok"
+    }
+   ],
+   "request_starts": [
+    null,
+    null,
+    null,
+    null
+   ],
+   "warm_start": null,
+   "wall_s": 193.7,
+   "source": null,
+   "record_path": "evidence/X02/dcb499eee368132a23dc6a08b92407c418d7688b/artifacts/work-d/i/artifacts/external-coupling.json"
+  },
+  "ii_restart": {
+   "outcome": "CONVERGED",
+   "verification_status": "VERIFIED",
+   "outer_iterations": 1,
+   "w": [
+    [
+     0.1683878312494687,
+     78.67022237085897
+    ]
+   ],
+   "w_hex": [
+    [
+     "0x1.58dbb8221630ap-3",
+     "0x1.3aae4ec5ef8c2p+6"
+    ]
+   ],
+   "u_hat": [
+    1.683878312494687,
+    7.867022237085896
+   ],
+   "r_hat": [
+    -4.3989841606029145e-05,
+    0.0002917890609381857
+   ],
+   "B_last": null,
+   "experiments_evaluated": 1,
+   "calls": [
+    {
+     "start": null,
+     "span_s": 24.421,
+     "status": "ok"
+    }
+   ],
+   "request_starts": [
+    null
+   ],
+   "warm_start": {
+    "candidate": null,
+    "coupling": {
+     "declared": {
+      "reactor": {
+       "X": 0.1683878312494687,
+       "dT_K": 78.67022237085897
+      }
+     },
+     "projections": [],
+     "reason": null,
+     "record": "coupling-start-v1",
+     "source": "job",
+     "status": "accepted"
+    },
+    "projections": [],
+    "reason": "not_declared",
+    "record": "warm-start-v1",
+    "selection": "explicit-v1",
+    "source_job_id": null,
+    "source_revision_id": null,
+    "status": "absent"
+   },
+   "wall_s": 24.7,
+   "source": "evidence/X02/dcb499eee368132a23dc6a08b92407c418d7688b/artifacts/work-d/i/artifacts/external-coupling.json",
+   "record_path": "evidence/X02/dcb499eee368132a23dc6a08b92407c418d7688b/artifacts/work-d/ii/artifacts/external-coupling.json"
+  },
+  "iii_cold": {
+   "outcome": "CONVERGED",
+   "verification_status": "VERIFIED",
+   "outer_iterations": 4,
+   "w": [
+    [
+     0.15,
+     80
+    ],
+    [
+     0.1628876621152909,
+     79.75231587342273
+    ],
+    [
+     0.1696005763205738,
+     75.95548782233894
+    ],
+    [
+     0.1672320677980014,
+     77.29872289576994
+    ]
+   ],
+   "w_hex": [
+    [
+     "0x1.3333333333333p-3",
+     "0x1.4000000000000p+6"
+    ],
+    [
+     "0x1.4d980beda815bp-3",
+     "0x1.3f025f17a2730p+6"
+    ],
+    [
+     "0x1.5b578c056fdacp-3",
+     "0x1.2fd26b6652b02p+6"
+    ],
+    [
+     "0x1.567dc430476a5p-3",
+     "0x1.3531e46a2f97ep+6"
+    ]
+   ],
+   "u_hat": [
+    1.672320677980014,
+    7.729872289576994
+   ],
+   "r_hat": [
+    4.499424069381863e-05,
+    -0.00029382393880439395
+   ],
+   "B_last": [
+    [
+     -0.7628342254105843,
+     -0.0015016618536761311
+    ],
+    [
+     -1.3411590459874752,
+     -0.992931392786443
+    ]
+   ],
+   "experiments_evaluated": 4,
+   "calls": [
+    {
+     "start": null,
+     "span_s": 59.722,
+     "status": "ok"
+    },
+    {
+     "start": null,
+     "span_s": 77.152,
+     "status": "ok"
+    },
+    {
+     "start": null,
+     "span_s": 21.883,
+     "status": "ok"
+    },
+    {
+     "start": null,
+     "span_s": 21.836,
+     "status": "ok"
+    }
+   ],
+   "request_starts": [
+    null,
+    null,
+    null,
+    null
+   ],
+   "warm_start": null,
+   "wall_s": 181.5,
+   "source": null,
+   "record_path": "evidence/X02/dcb499eee368132a23dc6a08b92407c418d7688b/artifacts/work-d/iii-cold/artifacts/external-coupling.json"
+  },
+  "iii_warm": {
+   "outcome": "CONVERGED",
+   "verification_status": "VERIFIED",
+   "outer_iterations": 4,
+   "w": [
+    [
+     0.1683878312494687,
+     78.67022237085897
+    ],
+    [
+     0.16751892932453893,
+     77.13718556964534
+    ],
+    [
+     0.1673218737392491,
+     77.24786094531328
+    ],
+    [
+     0.16723803163662398,
+     77.29495932131873
+    ]
+   ],
+   "w_hex": [
+    [
+     "0x1.58dbb8221630ap-3",
+     "0x1.3aae4ec5ef8c2p+6"
+    ],
+    [
+     "0x1.57142a1747550p-3",
+     "0x1.348c7a5fbc708p+6"
+    ],
+    [
+     "0x1.56acd9bcec93bp-3",
+     "0x1.34fdcf42784e0p+6"
+    ],
+    [
+     "0x1.5680e4a436b58p-3",
+     "0x1.352e09d0fadb7p+6"
+    ]
+   ],
+   "u_hat": [
+    1.6723803163662398,
+    7.729495932131873
+   ],
+   "r_hat": [
+    2.8416606567827074e-08,
+    4.920842016531423e-07
+   ],
+   "B_last": [
+    [
+     -0.9893436495655485,
+     -0.041663836756198155
+    ],
+    [
+     -0.05986057761744591,
+     -0.7659426465289696
+    ]
+   ],
+   "experiments_evaluated": 4,
+   "calls": [
+    {
+     "start": null,
+     "span_s": 71.043,
+     "status": "ok"
+    },
+    {
+     "start": null,
+     "span_s": 79.055,
+     "status": "ok"
+    },
+    {
+     "start": null,
+     "span_s": 52.267,
+     "status": "ok"
+    },
+    {
+     "start": null,
+     "span_s": 19.682,
+     "status": "ok"
+    }
+   ],
+   "request_starts": [
+    null,
+    null,
+    null,
+    null
+   ],
+   "warm_start": {
+    "candidate": null,
+    "coupling": {
+     "declared": {
+      "reactor": {
+       "X": 0.1683878312494687,
+       "dT_K": 78.67022237085897
+      }
+     },
+     "projections": [],
+     "reason": null,
+     "record": "coupling-start-v1",
+     "source": "job",
+     "status": "accepted"
+    },
+    "projections": [],
+    "reason": "not_declared",
+    "record": "warm-start-v1",
+    "selection": "explicit-v1",
+    "source_job_id": null,
+    "source_revision_id": null,
+    "status": "absent"
+   },
+   "wall_s": 222.7,
+   "source": "evidence/X02/dcb499eee368132a23dc6a08b92407c418d7688b/artifacts/work-d/i/artifacts/external-coupling.json",
+   "record_path": "evidence/X02/dcb499eee368132a23dc6a08b92407c418d7688b/artifacts/work-d/iii-warm/artifacts/external-coupling.json"
+  }
+ }
+}

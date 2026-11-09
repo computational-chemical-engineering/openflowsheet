@@ -7,6 +7,10 @@ documents. The `artifacts/solve-policy.json` records of the 0.3.0 bundles that F
 needs them as written. They are exempt only by registration: each is listed by path and SHA-256
 in `benchmarks/f0/corpus.json` `archived_outputs` (written by `corpus_identity.py --record`), and a
 guard skips a file only when both match. Every other file, in the bundles or elsewhere, is scanned.
+
+R-939's addendum (OPT review M3, ADR 0071): plus the six `solve-policy.json` records of OPT's G13
+fixture (`tests/fixtures/opt/replay/OPT-A2/starts/<k>/{start,resolve}`), which OPT's replay reads
+as written (D-62 a); same mechanism.
 """
 
 from __future__ import annotations
@@ -19,8 +23,11 @@ from typing import Final
 
 REPO_ROOT: Final = Path(__file__).resolve().parents[1]
 REGISTRY: Final = REPO_ROOT / "benchmarks" / "f0" / "corpus.json"
-#: The number of registered archived outputs, and so of files each guard exempts (R-939).
-N_ARCHIVED_OUTPUTS: Final = 36
+#: The number of registered archived outputs, and so of files each guard exempts: R-939's 36 of
+#: the 0.3.0 bundles and its OPT addendum's 6.
+N_V030_ARCHIVED_OUTPUTS: Final = 36
+N_OPT_ARCHIVED_OUTPUTS: Final = 6
+N_ARCHIVED_OUTPUTS: Final = N_V030_ARCHIVED_OUTPUTS + N_OPT_ARCHIVED_OUTPUTS
 
 
 @cache

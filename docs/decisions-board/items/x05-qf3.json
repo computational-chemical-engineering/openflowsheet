@@ -1,0 +1,31 @@
+{
+ "section": "defaults",
+ "pkg": "X05",
+ "pkgTitle": "Replay from the installed package (merged)",
+ "kind": "choice",
+ "title": "Q-F3: record the writer's lock findings inside the bundle?",
+ "body": [
+  "That would be a schema change."
+ ],
+ "defaultKey": "default",
+ "options": [
+  {
+   "key": "default",
+   "label": "No; they appear in the replay reason only",
+   "detail": ""
+  },
+  {
+   "key": "alt1",
+   "label": "Yes, record them",
+   "detail": ""
+  },
+  {
+   "key": "other",
+   "label": "Something else",
+   "detail": "Say what in the note."
+  }
+ ],
+ "links": [],
+ "status": "open",
+ "order": 33
+}

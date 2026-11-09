@@ -146,6 +146,24 @@ def r0_projection(artifacts: Mapping[str, Any]) -> dict[str, Any]:
                 ),
                 "projected_ids": [entry[0] for entry in warm_start["projections"]],
             }
+            # ADR 0070 D9 (X02 design note §5.7): a declared outer start's R0 — statuses,
+            # reasons, the source and the unit ids, never a value. Present only when declared.
+            coupling = warm_start.get("coupling")
+            if isinstance(coupling, dict):
+                declared = coupling.get("declared")
+                projection["warm_start"]["coupling"] = {
+                    "source": coupling["source"],
+                    "status": coupling["status"],
+                    "reason": coupling["reason"],
+                    "units": sorted(declared) if isinstance(declared, dict) else [],
+                    "projected": [[entry[0], entry[1]] for entry in coupling["projections"]],
+                }
+            external = warm_start.get("external")
+            if isinstance(external, dict):
+                projection["warm_start"]["external"] = {
+                    unit: {"status": item["status"], "reason": item["reason"]}
+                    for unit, item in sorted(external["units"].items())
+                }
         # ADR 0072 (RRC design note §5.8): a revision continuation's R0 — the decision, the
         # continued ids and their start values (canonical strings of document constants), the
         # source's declaration identity, signature, document `content_hash` and pinned inputs;

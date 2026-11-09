@@ -73,13 +73,16 @@ numerical_policy_external:
     model_replacement: []
   # The `sha256`-bearing property names M02's schemas add, all exact digests (none is a float
   # digest, ADR 0007 D1 row 3). The names M02 reuses (`request_sha256`, `stdout_sha256`,
-  # `lock_sha256`, `constants_sha256`, `state_sha256`) keep their T08 classes.
+  # `lock_sha256`, `constants_sha256`, `state_sha256`) keep their T08 classes. `profile_sha256`
+  # (ADR 0070, X02: a start profile's content address, in a warm request's `start` and a
+  # start-capable result) is exact as well.
   exact_sha256:
   - configuration_sha256
   - environment_fingerprint_sha256
   - fingerprint_sha256
   - licence_notice_sha256
   - overlay_sha256
+  - profile_sha256
   - provider_identity_sha256
   - runner_sha256
   - stderr_sha256

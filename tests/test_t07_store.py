@@ -107,6 +107,97 @@ def test_create_refuses_a_non_empty_directory_and_open_refuses_a_non_project(
         LocalApplication.open(tmp_path / "busy")
 
 
+#: MSG §3.8's matrix: the directory's state → (outcome without `exist_ok`, outcome with it). An
+#: outcome is "create", "open" or the coded refusal.
+FB01_MATRIX = {
+    "absent": ("create", "create"),
+    "empty": ("create", "create"),
+    "project": ("project_exists", "open"),
+    "other project": ("project_exists", "project_id_mismatch"),
+    "not a project": ("directory_not_empty", "directory_not_empty"),
+    "file": ("not_a_directory", "not_a_directory"),
+}
+
+
+def _fb01_directory(root: Path, state: str) -> Path:
+    directory = root / "plant"
+    if state == "empty":
+        directory.mkdir()
+    elif state in ("project", "other project"):
+        LocalApplication.create(directory, project_id="p-existing").close()
+    elif state == "not a project":
+        directory.mkdir()
+        (directory / "notes.txt").write_text("x", encoding="utf-8")
+    elif state == "file":
+        directory.write_text("x", encoding="utf-8")
+    return directory
+
+
+@pytest.mark.parametrize("exist_ok", [False, True])
+@pytest.mark.parametrize("state", sorted(FB01_MATRIX))
+def test_msg_fb01_create_gives_the_stated_outcome_for_each_directory_state(
+    tmp_path: Path, state: str, exist_ok: bool
+) -> None:
+    directory = _fb01_directory(tmp_path, state)
+    project_id = "p-other" if state == "other project" else "p-existing"
+    expected = FB01_MATRIX[state][exist_ok]
+    before = sorted(path.name for path in directory.iterdir()) if directory.is_dir() else None
+    if expected in ("create", "open"):
+        with LocalApplication.create(directory, project_id=project_id, exist_ok=exist_ok) as app:
+            assert app.project_id == project_id
+            jobs = app.list_jobs().items
+        assert len(jobs) == 0
+        if expected == "open":
+            assert sorted(path.name for path in directory.iterdir()) == before
+        return
+    with pytest.raises(StoreError) as refused:
+        LocalApplication.create(directory, project_id=project_id, exist_ok=exist_ok)
+    assert refused.value.code == expected
+    assert refused.value.args == (f"{expected}: {directory}",)
+    assert str(refused.value).split("\n")[-1] == f"  Details: {expected}: {directory}"
+    assert refused.value.explanation()["kind"] == "input"
+    assert refused.value.explanation()["family"] == "refusal"
+    if expected in ("project_exists", "directory_not_empty"):
+        assert "is not empty" in str(refused.value).split("\n")[0]
+    if directory.is_dir():
+        assert sorted(path.name for path in directory.iterdir()) == before  # nothing written
+    else:
+        assert directory.read_text(encoding="utf-8") == "x"
+
+
+def test_msg_fb01_the_python_text_of_project_exists_is_the_worked_entry(tmp_path: Path) -> None:
+    """§4.13.4's Python rendering, on the second run of the old quickstart."""
+    directory = tmp_path / "plant"
+    LocalApplication.create(directory).close()
+    with pytest.raises(StoreError) as refused:
+        LocalApplication.create(directory)
+    lines = str(refused.value).split("\n")
+    assert lines[0] == (
+        f"Directory '{directory}' is not empty: it already holds a project, and create() needs "
+        "a new or empty directory."
+    )
+    assert lines[2] == (
+        f'  Do:      To use the existing project, call LocalApplication.open("{directory}"), or '
+        f'call LocalApplication.create("{directory}", exist_ok=True), which opens it.'
+    )
+
+
+def test_msg_fb01_open_on_a_non_project_is_the_coded_not_a_project(tmp_path: Path) -> None:
+    with pytest.raises(StoreError) as refused:
+        ProjectStore.open(tmp_path)
+    assert refused.value.code == "not_a_project"
+    assert refused.value.args == (f"not_a_project: {tmp_path}",)
+    assert "is not a project" in str(refused.value)
+
+
+def test_msg_fb01_an_uncoded_store_error_is_unchanged() -> None:
+    error = StoreError("an audit row joins more than one ledger row")
+    assert error.code is None
+    assert str(error) == "an audit row joins more than one ledger row"
+    reused = IdempotencyKeyReusedError("ab" * 32)
+    assert reused.code is None and str(reused) == reused.args[0]
+
+
 def test_an_executor_this_build_lacks_is_an_explicit_unsupported(tmp_path: Path) -> None:
     """W2 held `executor="process"` to this until W4c built it
     (`tests/test_t07_w4c_process_executor.py`); any other name still gets it."""

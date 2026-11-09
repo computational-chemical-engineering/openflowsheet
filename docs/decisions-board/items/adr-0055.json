@@ -1,0 +1,26 @@
+{
+ "section": "later",
+ "pkg": "RP",
+ "pkgTitle": "Release procedure",
+ "kind": "adr",
+ "title": "Accept ADR 0055: the standing release procedure",
+ "body": [
+  "Every release is judged by one fixed procedure: a release line file, standing acceptances that lapse when the accepted thing changes, a release-candidate run, verdicts per clause and a release evidence manifest. Accepted on its restated condition (review M-3), it closes K-2 before 0.4.0's cut."
+ ],
+ "links": [
+  {
+   "label": "ADR 0055 (full text)",
+   "url": "https://github.com/computational-chemical-engineering/openflowsheet/blob/main/docs/adr/0055-standing-release-procedure.md"
+  },
+  {
+   "label": "Release procedure",
+   "url": "https://github.com/computational-chemical-engineering/openflowsheet/blob/main/docs/derivations/release-procedure.md"
+  },
+  {
+   "label": "Review",
+   "url": "https://github.com/computational-chemical-engineering/openflowsheet/blob/main/docs/reviews/RP-review.md"
+  }
+ ],
+ "status": "open",
+ "order": 34
+}

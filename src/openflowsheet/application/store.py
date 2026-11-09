@@ -31,7 +31,7 @@ from collections.abc import Callable, Iterator, Mapping, Sequence
 from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Final
+from typing import Any, Final, Literal
 
 from openflowsheet._files import atomic_write_bytes as atomic_write_bytes  # re-export, R-237
 from openflowsheet.application.revisions import Revision, content_hash
@@ -100,7 +100,52 @@ _TABLES: Final[tuple[str, ...]] = (
 
 
 class StoreError(RuntimeError):
-    """A project directory or database that cannot be created or opened as asked."""
+    """A project directory or database that cannot be created or opened as asked.
+
+    MSG §3.8: a *coded* one (`code` set: `project_exists`, `directory_not_empty`,
+    `not_a_directory`, `project_id_mismatch`, `not_a_project`) carries the machine message
+    `"<code>: <directory>"` as `args[0]`, and its `str()` is the layered text (surface `python`)
+    ending in that message. An uncoded one behaves exactly as before MSG.
+    """
+
+    def __init__(
+        self, *args: object, code: str | None = None, params: Mapping[str, Any] | None = None
+    ) -> None:
+        super().__init__(*args)
+        self.code = code
+        self.params: Mapping[str, Any] = dict(params or {})
+        if code is not None:
+            from openflowsheet.messages import audit
+
+            if audit.auditor is not None:  # MSG-G3: the code has an entry
+                import sys
+
+                audit.auditor.code(code, sys._getframe(1).f_globals.get("__name__", ""))
+
+    def explanation(self, surface: Literal["python", "cli"] | None = "python") -> dict[str, Any]:
+        """The coded error's explanation on `surface` (MSG §4.4)."""
+        from openflowsheet.messages.render import RenderContext, render_code
+
+        assert self.code is not None, "only a coded StoreError has an explanation"
+        return render_code(self.code, self.params, context=RenderContext(surface=surface))
+
+    def text(self, surface: Literal["python", "cli"] = "python") -> str:
+        """The layered text on `surface`; an uncoded error's plain message."""
+        if self.code is None:
+            return super().__str__()
+        from openflowsheet.messages.text import format_text
+
+        return format_text(self.explanation(surface), str(self.args[0]))
+
+    def __str__(self) -> str:
+        return self.text("python")
+
+
+def coded_store_error(code: str, directory: Path, **params: Any) -> StoreError:
+    """MSG §3.8: the coded `StoreError` of `code` about `directory`."""
+    return StoreError(
+        f"{code}: {directory}", code=code, params={"directory": str(directory), **params}
+    )
 
 
 class IdempotencyKeyReusedError(StoreError):
@@ -250,10 +295,15 @@ class ProjectStore:
 
     @classmethod
     def create(cls, directory: Path, *, project_id: str) -> ProjectStore:
-        """A new project in `directory`, which must be absent or empty."""
+        """A new project in `directory`, which must be absent or empty (MSG §3.8: otherwise the
+        coded `not_a_directory`, `project_exists` or `directory_not_empty`)."""
         directory = Path(directory)
+        if directory.exists() and not directory.is_dir():
+            raise coded_store_error("not_a_directory", directory)
         if directory.exists() and any(directory.iterdir()):
-            raise StoreError(f"{directory} is not empty; a project is created in a new directory")
+            if (directory / DATABASE_NAME).is_file():
+                raise coded_store_error("project_exists", directory)
+            raise coded_store_error("directory_not_empty", directory)
         directory.mkdir(parents=True, exist_ok=True)
         for name in (OWNERS_DIR, JOBS_DIR, IMPORTS_DIR):
             (directory / name).mkdir()
@@ -292,7 +342,7 @@ class ProjectStore:
         directory = Path(directory)
         path = directory / DATABASE_NAME
         if not path.is_file():
-            raise StoreError(f"{directory} is not a project (no {DATABASE_NAME})")
+            raise coded_store_error("not_a_project", directory)
         store = cls(directory, None)
         with store.reading() as connection:
             mode = connection.execute("PRAGMA journal_mode").fetchone()[0]
@@ -1115,6 +1165,27 @@ class ProjectStore:
                 continue
             return str(job_id), str(revision_id), str(artifact[0])
         return None
+
+    @staticmethod
+    def solution_of_job(connection: sqlite3.Connection, job_id: str) -> tuple[str, str] | None:
+        """ADR 0070 D1 (X02 design note §5.1 A1, §5.2): `(revision_id, relpath)` of the
+        `solution_state` artifact of `job_id` when it is a `solve` job of this project that holds
+        one, whatever its certificate status; `None` otherwise (no such job, another operation,
+        or no solution state)."""
+        row = connection.execute(
+            "SELECT request FROM jobs WHERE job_id = ? AND operation = 'solve'", (job_id,)
+        ).fetchone()
+        if row is None:
+            return None
+        artifact = connection.execute(
+            "SELECT relpath FROM artifacts WHERE job_id = ? AND kind = 'solution_state'"
+            " ORDER BY artifact_id LIMIT 1",
+            (job_id,),
+        ).fetchone()
+        if artifact is None:
+            return None
+        revision_id = _load(row[0]).get("body", {}).get("revision_id")
+        return str(revision_id), str(artifact[0])
 
     @staticmethod
     def job_artifact_relpath(connection: sqlite3.Connection, job_id: str, kind: str) -> str | None:

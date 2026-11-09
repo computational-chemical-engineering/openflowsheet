@@ -1,0 +1,377 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/frankp/process-runtime/schemas/optimization-request.schema.json",
+  "title": "Optimization request",
+  "description": "OPT design §4.3, ADR 0071 D2 (Proposed): the optimisation of a stored revision flowsheet — continuous decisions that are the revision's own `role: fixed` specifications, each with a box, a scale and the internal SI unit of its kind; an objective (sense, quadratic expression, scale); inequality constraints; the starts; an optional assessment; solver options; the Hessian policy. The revision is referenced by its problem, never edited. Every number is in the internal SI unit of its quantity. Rules a JSON Schema cannot express (each explicit start has one value per decision; constraint ids are distinct; an expression names at least one variable and no quadratic pair twice; the document is canonical, ADR 0002) are `openflowsheet.studies.nlp.request.request_problems`.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "request_format",
+    "problem_id",
+    "decisions",
+    "objective"
+  ],
+  "properties": {
+    "request_format": {
+      "const": "openflowsheet-optimization-request-v1"
+    },
+    "problem_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The optimisation problem's own id (the formulation's `problem_id`)."
+    },
+    "revision_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "If present, the canonical SHA-256 of the revision the request was written against; a different stored revision is `REVISION_MISMATCH`."
+    },
+    "decisions": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 64,
+      "items": {
+        "$ref": "#/$defs/decision"
+      }
+    },
+    "objective": {
+      "$ref": "#/$defs/objective"
+    },
+    "constraints": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/constraint"
+      },
+      "default": []
+    },
+    "starts": {
+      "$ref": "#/$defs/starts"
+    },
+    "assessment": {
+      "oneOf": [
+        {
+          "$ref": "https://github.com/frankp/process-runtime/schemas/assessment.schema.json"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "The assessment the expressions' `assessment:<output_id>` names refer to (E01, ADR 0052), or null."
+    },
+    "options": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "max_iter": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 500
+        },
+        "max_wall_time_s": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "default": 120
+        }
+      }
+    },
+    "hessian": {
+      "type": "string",
+      "minLength": 1,
+      "default": "limited-memory",
+      "description": "Only `limited-memory` is supported; any other policy is `HESSIAN_UNAVAILABLE` (ADR 0032 D2)."
+    }
+  },
+  "$defs": {
+    "decision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "specification_id",
+        "lower",
+        "upper",
+        "scale",
+        "unit"
+      ],
+      "description": "A `role: fixed` specification of the revision as a decision. A null or empty box is `BOUNDS_UNDECLARED`; a unit other than the internal SI unit of the specification's kind is `DECISION_UNIT_NOT_INTERNAL`.",
+      "properties": {
+        "specification_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "lower": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "upper": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "scale": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "unit": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "objective": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sense",
+        "expression"
+      ],
+      "properties": {
+        "sense": {
+          "enum": [
+            "minimize",
+            "maximize"
+          ]
+        },
+        "expression": {
+          "$ref": "#/$defs/expression"
+        },
+        "scale": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "default": 1
+        }
+      }
+    },
+    "constraint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "expression",
+        "lower",
+        "upper"
+      ],
+      "description": "`lower ≤ expression ≤ upper`, at least one side a number; the expression is declared scaled.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "expression": {
+          "$ref": "#/$defs/expression"
+        },
+        "lower": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "upper": {
+          "type": [
+            "number",
+            "null"
+          ]
+        }
+      },
+      "anyOf": [
+        {
+          "properties": {
+            "lower": {
+              "type": "number"
+            }
+          }
+        },
+        {
+          "properties": {
+            "upper": {
+              "type": "number"
+            }
+          }
+        }
+      ]
+    },
+    "expression": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "`constant + Σ linear[name]·name + Σ coefficient·a·b`. A name is a state variable id, `decision:<specification_id>` (a decision of this request) or `assessment:<output_id>`.",
+      "properties": {
+        "text": {
+          "type": "string",
+          "default": ""
+        },
+        "constant": {
+          "type": "number",
+          "default": 0
+        },
+        "linear": {
+          "type": "object",
+          "propertyNames": {
+            "minLength": 1
+          },
+          "additionalProperties": {
+            "type": "number"
+          },
+          "default": {}
+        },
+        "quadratic": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "a",
+              "b",
+              "coefficient"
+            ],
+            "properties": {
+              "a": {
+                "type": "string",
+                "minLength": 1
+              },
+              "b": {
+                "type": "string",
+                "minLength": 1
+              },
+              "coefficient": {
+                "type": "number"
+              }
+            }
+          },
+          "default": []
+        }
+      }
+    },
+    "starts": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "In order: the revision's own values (if `include_revision`), then `explicit` in order, then Halton points k = 1…`halton`. 1 to 32 in total, else `TOO_MANY_STARTS`.",
+      "properties": {
+        "include_revision": {
+          "type": "boolean",
+          "default": true
+        },
+        "explicit": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "number"
+            }
+          },
+          "default": []
+        },
+        "halton": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 0
+        }
+      }
+    },
+    "report_revision": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "OPT design §4.13 (ADR 0019 Amendment 16): the optimization report's `revision` member — the stored revision, the request and the optimisation's identity (§4.8). Declared here so that its digests are OPT's addendum's (D-30).",
+      "required": [
+        "revision_id",
+        "revision_sha256",
+        "route",
+        "request_sha256",
+        "optimization_sha256",
+        "objective_sense",
+        "decision_parameters",
+        "solve_policy_sha256",
+        "check_policy_sha256"
+      ],
+      "properties": {
+        "revision_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "revision_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "route": {
+          "type": "string",
+          "minLength": 1
+        },
+        "request_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "optimization_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "objective_sense": {
+          "enum": [
+            "minimize",
+            "maximize"
+          ]
+        },
+        "decision_parameters": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "solve_policy_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "check_policy_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    },
+    "optimize_body": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "revision_id",
+        "request"
+      ],
+      "description": "OPT design §4.10 (ADR 0071, ADR 0019 Amendment 16): the `optimize` job's body — `job.schema.json#/$defs/solve_body`'s members and the optimization request. The policies are the solve's (the start and V1 re-solves are production solves); the request is judged in the job, not at admission (only the solver probe is).",
+      "properties": {
+        "revision_id": {
+          "type": "string"
+        },
+        "request": {
+          "$ref": "https://github.com/frankp/process-runtime/schemas/optimization-request.schema.json"
+        },
+        "policy_id": {
+          "type": "string",
+          "default": "default",
+          "description": "As `solve_body.policy_id`: a registered application policy id, or the reserved `default`."
+        },
+        "check_tolerances": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "default": {},
+          "description": "As `solve_body.check_tolerances`; a looser value is refused (`verification_weakening_refused`)."
+        },
+        "max_property_calls": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1,
+          "default": null
+        }
+      }
+    }
+  }
+}

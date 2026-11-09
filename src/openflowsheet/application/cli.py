@@ -1,5 +1,5 @@
-"""The command line: `validate`, `solve`, `inspect`, `replay`, `project`, `api`, `serve-http`,
-`serve-mcp`. K06, gates G02 and G06; T07 §10.3, §11.5.
+"""The command line: `validate`, `solve`, `optimize`, `inspect`, `replay`, `project`, `api`,
+`explain`, `serve-http`, `serve-mcp`. K06, gates G02 and G06; T07 §10.3, §11.5; OPT design §4.12.
 
 Blueprint D15: local Python and CLI share one contract and neither requires a network round
 trip. So this module is thin on purpose — it parses arguments, calls the application layer,
@@ -17,6 +17,11 @@ knowing which of eleven modules to start from.
 JSON. Exit 0 is a domain result, whatever its status; an `ApiError` is printed the same way and
 exits `API_EXIT_CODES[code]`, 2–16 in §5.8's order. Exit 1 means no call was made: the request
 file could not be read or the project could not be opened (the message is on stderr).
+
+**MSG §3.7: machine documents on stdout, human text on stderr.** A refused `api` or `validate`
+prints the projected `ApiError` document (with `detail.explanation`) on stdout and its layered
+text (surface `cli`) on stderr, whether or not stderr is a terminal. An exception no command
+handles prints `internal_error`'s layered text, then the traceback, and exits 1.
 
 `api` runs jobs on the inline executor only. §11.5 names `--executor inline|process`, but a
 one-shot command closes its project when it returns, and closing a process executor ends every
@@ -37,6 +42,8 @@ import ipaddress
 import json
 import os
 import sys
+import textwrap
+import traceback
 from collections.abc import Mapping
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Final, get_args
@@ -46,6 +53,7 @@ from openflowsheet.application.validation import validate
 
 if TYPE_CHECKING:
     from openflowsheet.application.local import LocalApplication
+    from openflowsheet.application.types import ApiError
 
 #: §11.5: an `ApiError`'s exit code, 2–16 in §5.8's table order (`ApiErrorCode`'s order). 0 is a
 #: domain result; 1 is a call that was never made. argparse's own usage error is also 2.
@@ -66,16 +74,18 @@ def _load(path: Path) -> Any:
 def command_validate(arguments: argparse.Namespace) -> int:
     """Blueprint §4.3: a status is computed from a revision and a task, never set.
 
-    A task v0.1 does not validate for (`optimization`, U05) is refused before any analysis: the
-    typed error document is printed as `api` prints one, and the command exits its §5.8 code.
+    `--task optimization` takes the optimization request as `--request FILE` (OPT design §4.11,
+    §4.12). A refusal — no audited NLP solver (`unsupported`, `nlp_solver_unavailable`), or no
+    request (`invalid_request`, `/optimization`) — is printed as `api` prints a typed error
+    document, and the command exits its §5.8 code.
     """
     from openflowsheet.application.contract import ApplicationError
 
+    request = None if arguments.request is None else _load(Path(arguments.request))
     try:
-        report = validate(_load(Path(arguments.revision)), arguments.task)
+        report = validate(_load(Path(arguments.revision)), arguments.task, optimization=request)
     except ApplicationError as refused:
-        _print_document(refused.error.as_document())
-        return API_EXIT_CODES[refused.code]
+        return _print_refusal(refused.error)
     if arguments.json:
         print(json.dumps(report.as_document(), indent=1, sort_keys=True))
         return 0 if report.status != "INVALID" else 1
@@ -88,6 +98,8 @@ def command_validate(arguments: argparse.Namespace) -> int:
         print(f"  [{marks[check.result]}] {check.id}: {check.message}")
         if check.implicated_objects:
             print(f"           implicated: {', '.join(check.implicated_objects)}")
+        if check.result in ("FAIL", "WARN") and (line := _check_line(check.id)) is not None:
+            print(line)
     if report.structural_counts is None:
         print(f"\nstructural counts: not computed — {report.structural_counts_absent_reason}")
     else:
@@ -98,6 +110,19 @@ def command_validate(arguments: argparse.Namespace) -> int:
             f"{counts['unmatched']} unmatched"
         )
     return 0 if report.status != "INVALID" else 1
+
+
+def _check_line(check_id: str) -> str | None:
+    """MSG §3.7: under a FAIL or WARN check whose catalogue entry is complete, its summary and
+    action on one line, indented by 8; `None` for a stub or a check id with no entry."""
+    from openflowsheet.messages.catalogue import CATALOGUE
+    from openflowsheet.messages.render import RenderContext, render_code
+
+    entry = CATALOGUE.entry(check_id)
+    if entry is None or not entry.complete:
+        return None
+    explanation = render_code(check_id, context=RenderContext(surface="cli"))
+    return f"        {explanation['summary']} {explanation['action']}"
 
 
 def command_solve(arguments: argparse.Namespace) -> int:
@@ -118,7 +143,91 @@ def command_solve(arguments: argparse.Namespace) -> int:
     print(f"verification      {manifest.verification_status}")
     print(f"structural sha256 {manifest.structural_sha256}")
     print(f"bundle            {directory}")
+    if "failure-bundle.json" in manifest.artifacts:  # MSG §3.7
+        print()
+        print(_bundle_failure_text(directory))
+    status = manifest.verification_status
+    if status is not None and status != "VERIFIED":
+        print(f"note              {_status_summary(status)}")
     return 0 if manifest.verification_status == "VERIFIED" else 1
+
+
+def command_optimize(arguments: argparse.Namespace) -> int:
+    """OPT design §4.12: `optimize_revision` on a revision file, no project — the library entry
+    the `optimize` job calls, under the policies a `revision_eo` solve uses by default
+    (`resolve_policy(DEFAULT_POLICY_ID, "revision_eo")`, `CheckPolicy()`). The record is written
+    to `--out`. A request with problems is refused as `api` refuses one (`invalid_request`, the
+    pointer under `/request`); without an audited NLP solver the report is `UNSUPPORTED`
+    (`NLP_SOLVER_UNAVAILABLE`), and Pyomo and cyipopt are never imported. Exit 0 iff the report
+    is `KKT_POINT_VERIFIED`, as `solve` exits 0 iff its run is `VERIFIED`.
+    """
+    from openflowsheet.application.contract import api_error
+    from openflowsheet.application.policies import DEFAULT_POLICY_ID, resolve_policy
+    from openflowsheet.application.revision_routes import REVISION_ROUTES
+    from openflowsheet.studies.nlp.request import request_problems
+    from openflowsheet.studies.nlp.revision import optimize_revision
+    from openflowsheet.studies.nlp.revision_host import ROUTE
+    from openflowsheet.verify.certificate import CheckPolicy
+
+    document = _load(Path(arguments.revision))
+    request = _load(Path(arguments.request))
+    problems = request_problems(request)
+    if problems:
+        # Printed as every refusal is (MSG §3.7, `_print_refusal`): the document on stdout with
+        # `detail.explanation`, the layered text on stderr.
+        pointer, message = problems[0]
+        text = f"request_invalid({pointer}): {message}"
+        refused = api_error("invalid_request", text, pointer=f"/request{pointer}")
+        return _print_refusal(refused.error)
+    policy = resolve_policy(DEFAULT_POLICY_ID, ROUTE)
+    assert policy is not None, ROUTE
+    outcome = optimize_revision(
+        document,
+        request,
+        directory=Path(arguments.out),
+        routes=REVISION_ROUTES,
+        solve_policy=policy,
+        check_policy=CheckPolicy(),
+    )
+    report = outcome.report
+    if arguments.json:
+        print(json.dumps(report.as_document(), indent=1, sort_keys=True))
+    else:
+        print(f"status    {report.status}")
+        for reason in report.reason_codes:
+            print(f"  reason  {reason}")
+        for start in report.starts:
+            print(f"  start   {start['start']}: {start['classification']}")
+        if report.candidate is not None:
+            print(f"objective {report.candidate['objective']}")
+            for name, value in sorted(report.candidate["decisions"].items()):
+                print(f"  decision {name} = {value}")
+        print(f"record    {outcome.record_dir}")
+    return 0 if report.status == "KKT_POINT_VERIFIED" else 1
+
+
+def _bundle_failure_text(directory: Path) -> str:
+    """MSG §3.7: the layered text (surface `cli`) of the failure bundle `directory` holds;
+    `Details:` names the bundle file."""
+    from openflowsheet.messages.render import RenderContext, render_failure
+    from openflowsheet.messages.text import format_text
+    from openflowsheet.run.bundle import ARTIFACT_DIR, read_artifact
+
+    bundle = read_artifact(directory, "failure-bundle.json")
+    message = (bundle.get("observations") or {}).get("message")
+    message = message if isinstance(message, str) else None
+    explanation = render_failure(
+        outcome=str(bundle["outcome"]), message=message, context=RenderContext(surface="cli")
+    )
+    path = directory / ARTIFACT_DIR / "failure-bundle.json"
+    return format_text(explanation, f"{message or bundle['outcome']} — {path}")
+
+
+def _status_summary(status: str) -> str:
+    """The catalogue summary of a status code (MSG §3.7's `note` line)."""
+    from openflowsheet.messages.render import RenderContext, render_code
+
+    return str(render_code(status, context=RenderContext(surface="cli"))["summary"])
 
 
 def command_inspect(arguments: argparse.Namespace) -> int:
@@ -169,6 +278,7 @@ def command_inspect(arguments: argparse.Namespace) -> int:
         print(f"  implicated        {bundle['implicated_sources']}")
         for action in bundle["suggested_actions"]:
             print(f"  suggested         {action['action']} (requires permission)")
+        print(textwrap.indent(_bundle_failure_text(directory), "  "))  # MSG §3.7
 
     events = read_artifact(directory, "solve-events.json")
     print(f"\n=== trace  {len(events)} events")
@@ -186,12 +296,26 @@ def command_replay(arguments: argparse.Namespace) -> int:
     reruns only when its `run_id` is a registered case, and anything else is not rerun —
     `NOT_RUN`, with the reason (`rerun_unsupported(no_revision_document)` for an unknown run id).
     There is no fallback to SYN-001-nominal: a verdict about another problem's rerun is a wrong
-    result. Exit 0 iff the verdict is `MATCH`, or `NOT_RUN` when `--rerun` was not given.
+    result. An optimisation record (OPT design §4.9: its `optimization-manifest.json` names the
+    format) is `replay_optimization`'s, with or without `--rerun`. Exit 0 iff the verdict is
+    `MATCH`, or `NOT_RUN` when `--rerun` was not given.
     """
+    from openflowsheet.application.revision_routes import REVISION_ROUTES
     from openflowsheet.run.replay import replay
+    from openflowsheet.studies.nlp.replay import is_optimization_record, replay_optimization
 
     directory = Path(arguments.bundle)
-    if arguments.rerun:
+    if is_optimization_record(directory):
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as scratch:
+            report = replay_optimization(
+                directory,
+                routes=REVISION_ROUTES,
+                rerun=arguments.rerun,
+                rerun_directory=Path(scratch) / "rerun",
+            )
+    elif arguments.rerun:
         import tempfile
 
         from openflowsheet.application.revision_run import reproduce_bundle
@@ -221,14 +345,18 @@ def command_replay(arguments: argparse.Namespace) -> int:
 
 
 def command_project_init(arguments: argparse.Namespace) -> int:
-    """T07 §10.3: a new project directory — store, empty policy, owner and job folders."""
+    """T07 §10.3: a new project directory — store, empty policy, owner and job folders. With
+    `--exist-ok` (MSG §3.8) a directory that holds a project is opened and reported as on
+    creation. A coded refusal prints its layered text (surface `cli`) on stderr."""
     from openflowsheet.application.local import LocalApplication
     from openflowsheet.application.store import StoreError
 
     try:
-        application = LocalApplication.create(arguments.directory, project_id=arguments.project_id)
+        application = LocalApplication.create(
+            arguments.directory, project_id=arguments.project_id, exist_ok=arguments.exist_ok
+        )
     except StoreError as error:
-        print(str(error), file=sys.stderr)
+        print(error.text("cli"), file=sys.stderr)
         return 2
     with application:
         print(f"project   {application.project_id}")
@@ -257,7 +385,7 @@ def command_project_grant(arguments: argparse.Namespace) -> int:
             capability_id=arguments.capability_id,
         )
     except (ValueError, StoreError) as error:
-        print(str(error), file=sys.stderr)
+        print(_human_text(error), file=sys.stderr)
         return 2
     print(f"capability {capability.capability_id}")
     print(f"principal  {capability.principal_id}")
@@ -275,7 +403,7 @@ def command_project_revoke(arguments: argparse.Namespace) -> int:
     try:
         capability = revoke(Path(arguments.project), arguments.capability)
     except (ValueError, StoreError) as error:
-        print(str(error), file=sys.stderr)
+        print(_human_text(error), file=sys.stderr)
         return 2
     print(f"revoked    {capability.capability_id} (principal {capability.principal_id})")
     return 0
@@ -285,6 +413,40 @@ def _print_document(document: Any) -> None:
     from openflowsheet.canonical import canonical_json
 
     sys.stdout.write(canonical_json(document).decode("utf-8") + "\n")
+
+
+def _human_text(error: Exception) -> str:
+    """An error as the command line shows it: a coded `StoreError`'s layered text on the
+    `cli` surface (MSG §3.7), anything else as `str()`."""
+    from openflowsheet.application.store import StoreError
+
+    return error.text("cli") if isinstance(error, StoreError) else str(error)
+
+
+def _print_refusal(error: ApiError, *, document: bool = True) -> int:
+    """MSG §3.7: a refusal's projected document on stdout (unless `document` is false), its
+    layered text (surface `cli`) on stderr; the exit code is the code's (§5.8)."""
+    from openflowsheet.application.operations import project_error
+    from openflowsheet.messages.text import format_text
+
+    projected = project_error(error)
+    if document:
+        _print_document(projected.as_document())
+    explanation = projected.render_explanation("cli")
+    print(format_text(explanation, f"{projected.code}: {projected.message}"), file=sys.stderr)
+    return API_EXIT_CODES[projected.code]
+
+
+def _print_internal_error() -> None:
+    """MSG §3.7: an exception no command handled — `internal_error`'s layered text (kind
+    `bug`) on stderr; the caller prints the traceback after it."""
+    from openflowsheet.messages.render import RenderContext, render_code
+    from openflowsheet.messages.text import format_text
+
+    _, raised, _ = sys.exc_info()
+    details = f"{type(raised).__name__}: {raised}" if raised is not None else None
+    explanation = render_code("internal_error", context=RenderContext(surface="cli"))
+    print(format_text(explanation, details), file=sys.stderr)
 
 
 def _request_text(arguments: argparse.Namespace) -> str:
@@ -302,6 +464,7 @@ def command_api(arguments: argparse.Namespace) -> int:
     from openflowsheet.application.local import LocalApplication
     from openflowsheet.application.operations import OPERATIONS, dispatch
     from openflowsheet.application.store import StoreError
+    from openflowsheet.messages.text import format_text
 
     name = arguments.operation
     operation = OPERATIONS.get(name)
@@ -320,14 +483,13 @@ def command_api(arguments: argparse.Namespace) -> int:
     try:
         application = LocalApplication.open(arguments.project)
     except (StoreError, PolicyRefusedError) as error:
-        print(str(error), file=sys.stderr)
+        print(_human_text(error), file=sys.stderr)
         return 1
     with application:
         try:
             response = dispatch(application, name, _request(application, name, text))
         except ApplicationError as refused:
-            _print_document(refused.error.as_document())
-            return API_EXIT_CODES[refused.code]
+            return _print_refusal(refused.error)
     if isinstance(response, bytes):
         if arguments.raw_out is None:
             sys.stdout.buffer.write(response)
@@ -335,7 +497,26 @@ def command_api(arguments: argparse.Namespace) -> int:
             Path(arguments.raw_out).write_bytes(response)
         return 0
     _print_document(response)
+    for failure in _failures(response):  # MSG §3.7: a run's failure, as text on stderr
+        details = f"{failure['message'] or failure['outcome']} — {failure['failure_bundle']}"
+        print(format_text(failure["explanation"], details), file=sys.stderr)
     return 0
+
+
+def _failures(document: Any) -> list[Mapping[str, Any]]:
+    """Every non-null `RunResult.failure` in a response document, at any nesting, in document
+    order."""
+    found: list[Mapping[str, Any]] = []
+    if isinstance(document, Mapping):
+        for key, value in document.items():
+            if key == "failure" and isinstance(value, Mapping) and "failure_bundle" in value:
+                found.append(value)
+            else:
+                found.extend(_failures(value))
+    elif isinstance(document, list):
+        for item in document:
+            found.extend(_failures(item))
+    return found
 
 
 def _request(application: LocalApplication, name: str, text: str) -> Any:
@@ -424,13 +605,13 @@ def command_serve_http(arguments: argparse.Namespace) -> int:
         try:
             web.static_directory()
         except web.WebShellMissingError as error:
-            print(f"serve-http: refused to start: {error}", file=sys.stderr)
+            print(f"serve-http: refused to start: {_human_text(error)}", file=sys.stderr)
             return 1
         serve = web.serve
     try:
         application = LocalApplication.open(arguments.project, executor="process")
     except (StoreError, PolicyRefusedError) as error:
-        print(f"serve-http: refused to start: {error}", file=sys.stderr)
+        print(f"serve-http: refused to start: {_human_text(error)}", file=sys.stderr)
         return 1
     with application:
         serve(
@@ -456,6 +637,30 @@ def command_serve_mcp(arguments: argparse.Namespace) -> int:
     return serve_mcp(arguments.project, arguments.token_file)
 
 
+def command_explain(arguments: argparse.Namespace) -> int:
+    """MSG §3.5, §3.7: a message code's catalogue entry, with no project — the same
+    `entry_document` the `explain` operation returns. The entry's text on stdout (the
+    `message_entry` document with `--json`), exit 0; an unknown code is `not_found` with
+    `{code, suggestions}`: its layered text on stderr (with `--json`, the projected `ApiError`
+    document on stdout too), exit 6."""
+    from openflowsheet.application.contract import api_error
+    from openflowsheet.messages.render import entry_document, suggestions
+    from openflowsheet.messages.text import format_entry
+
+    code = arguments.code
+    document = entry_document(code)
+    if document is None:
+        refused = api_error(
+            "not_found", "no such message code", code=code, suggestions=suggestions(code)
+        ).error
+        return _print_refusal(refused, document=arguments.json)
+    if arguments.json:
+        _print_document(document)
+    else:
+        print(format_entry(document))
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="openflowsheet",
@@ -472,8 +677,20 @@ def build_parser() -> argparse.ArgumentParser:
     validate_command.add_argument(
         "--task", choices=("simulation", "optimization"), default="simulation"
     )
+    validate_command.add_argument(
+        "--request", default=None, help="the optimization request (with --task optimization)"
+    )
     validate_command.add_argument("--json", action="store_true")
     validate_command.set_defaults(handler=command_validate)
+
+    optimize_command = commands.add_parser(
+        "optimize", help="optimise a revision by a request and write the record"
+    )
+    optimize_command.add_argument("revision", help="a ProcessRevision YAML or JSON file")
+    optimize_command.add_argument("--request", required=True, help="the optimization request")
+    optimize_command.add_argument("--out", required=True, help="where to write the record")
+    optimize_command.add_argument("--json", action="store_true")
+    optimize_command.set_defaults(handler=command_optimize)
 
     solve_command = commands.add_parser("solve", help="solve a registered SYN-001 case")
     solve_command.add_argument("case", help="a registered case id, e.g. SYN-001-nominal")
@@ -499,6 +716,11 @@ def build_parser() -> argparse.ArgumentParser:
     init_command = project_commands.add_parser("init", help="create a project directory")
     init_command.add_argument("directory")
     init_command.add_argument("--project-id", default=None)
+    init_command.add_argument(
+        "--exist-ok",
+        action="store_true",
+        help="open the project the directory already holds instead of refusing it",
+    )
     init_command.set_defaults(handler=command_project_init)
 
     grant_command = project_commands.add_parser(
@@ -544,6 +766,20 @@ def build_parser() -> argparse.ArgumentParser:
     )
     api_command.set_defaults(handler=command_api)
 
+    explain_command = commands.add_parser(
+        "explain",
+        help="explain a message code (no project needed)",
+        description=(
+            "Print a message code's catalogue entry: its title, kind, templates, params, gap "
+            "and examples. Exit 0; an unknown code exits 6 (not_found) with close codes."
+        ),
+    )
+    explain_command.add_argument("code", help="a message code, e.g. phase_regime_mismatch")
+    explain_command.add_argument(
+        "--json", action="store_true", help="print the message_entry document instead"
+    )
+    explain_command.set_defaults(handler=command_explain)
+
     http_command = commands.add_parser("serve-http", help="serve the project over HTTP (§11.2)")
     http_command.add_argument("--project", required=True, help="the project directory")
     http_command.add_argument("--host", default="127.0.0.1")
@@ -573,7 +809,12 @@ def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     arguments = parser.parse_args(argv)
     handler = arguments.handler
-    return int(handler(arguments))
+    try:
+        return int(handler(arguments))
+    except Exception:
+        _print_internal_error()
+        traceback.print_exc()
+        return 1
 
 
 if __name__ == "__main__":

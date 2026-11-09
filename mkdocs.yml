@@ -106,10 +106,21 @@ nav:
       - Unit catalogue: guide/units.md
       - Distillation column: guide/column.md
       - Studies and optimisation: guide/studies.md
+      - Optimising a revision: guide/optimisation.md
       - Revision continuation: guide/revision-continuation.md
       - Cost estimation and LCA: guide/assessment.md
       - Interfaces: guide/interfaces.md
       - Limitations and support: guide/limitations.md
+  - Messages:
+      - Reading a message: messages/index.md
+      - API errors: messages/api-errors.md
+      - Refusals: messages/refusals.md
+      - Run outcomes: messages/outcomes.md
+      - Validation checks: messages/checks.md
+      - Statuses: messages/statuses.md
+      - Limitations: messages/limitations.md
+      - Notices: messages/notices.md
+      - Jobs: messages/jobs.md
   - Python API:
       - Overview: api/index.md
       - LocalApplication: api/local.md

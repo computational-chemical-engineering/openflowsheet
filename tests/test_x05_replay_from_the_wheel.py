@@ -33,6 +33,7 @@ import t08_rc  # noqa: E402
 REFERENCE = json.loads((REPO_ROOT / "benchmarks/x05/reference_values.json").read_text("utf-8"))
 E2E = REFERENCE["end_to_end"]
 LOCKED = REFERENCE["lock"]["sha256"]
+E2E_PINS = {row["name"]: row["locked"] for row in REFERENCE["lock"]["runtime_closure"]}
 UNKNOWN = "the dependency set is unknown on "
 
 
@@ -208,3 +209,49 @@ def test_every_state_passes_every_check(construct: dict[str, Any]) -> None:
     for state in t08_rc.LOCK_STATES:
         failed = [c["id"] for c in _checks(construct, state).values() if c["result"] != "pass"]
         assert failed == [], state
+
+
+@pytest.mark.parametrize("moved", [None, "99.1.0"])
+def test_a25_the_unconstrained_state_names_a_floating_member_off_the_lock(
+    construct: dict[str, Any], moved: str | None, tmp_path: Path
+) -> None:
+    """X05.A25 as restated (ADR 0069 Amendment 1, Frank's Q-F1 = no), through the command CI's
+    unconstrained environment runs: a floating member at another version (a shadow `attrs`
+    dist-info, as a plain resolver could pick) records `""` naming it, and the replay reason names
+    it; at the lock's versions the same state verifies."""
+    templates, pins = REFERENCE["templates"], E2E_PINS
+    arguments = ["lock-check", "--state", t08_rc.UNCONSTRAINED_STATE]
+    if moved is not None:
+        shadow = tmp_path / "shadow"
+        info = shadow / f"attrs-{moved}.dist-info" / "METADATA"
+        info.parent.mkdir(parents=True)
+        info.write_text(f"Metadata-Version: 2.1\nName: attrs\nVersion: {moved}\n", "utf-8")
+        arguments += ["--shadow", str(shadow)]
+    out = tmp_path / "free.json"
+    ran = _python(
+        str(REPO_ROOT / "scripts" / "t08_rc.py"),
+        *arguments,
+        "--out",
+        str(out),
+        cwd=construct["stray"].parent,
+        pythonpath=str(construct["site"]),
+    )
+    assert ran.returncode == 0, ran.stdout + ran.stderr[-2000:]
+    document = json.loads(out.read_text("utf-8"))
+    checks = {entry["id"]: entry for entry in document["checks"]}
+    assert all(entry["result"] == "pass" for entry in checks.values()), checks
+    findings = (
+        []
+        if moved is None
+        else [templates["F4"].format(name="attrs", installed=moved, locked=pins["attrs"])]
+    )
+    environment_ = checks["x05.environment"]
+    assert (environment_["lock_sha256"], environment_["lock_findings"]) == (
+        "" if findings else LOCKED,
+        findings,
+    )
+    reason = checks["x05.a25_the_replay_reason_names_the_members_off_the_lock"]
+    if findings:
+        assert reason["reasons"] == [templates["R_THIS"].format(findings=findings[0])]
+    else:
+        assert not any(r.startswith(UNKNOWN) for r in reason["reasons"])

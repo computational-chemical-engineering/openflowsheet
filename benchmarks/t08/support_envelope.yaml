@@ -280,8 +280,9 @@ axes:
   - id: interfaces
     title: Interfaces
     statement: >-
-      Python (`LocalApplication`), CLI, HTTP (`/v1`) and MCP over stdio; the twenty-one operations of
-      `OPERATIONS`, each on the transports listed; authority from the credential only (ADR 0019).
+      Python (`LocalApplication`), CLI, HTTP (`/v1`) and MCP over stdio; the twenty-two operations of
+      `OPERATIONS`, each on the transports listed (`explain`, ADR 0058 D7, reads the message catalogue
+      only); authority from the credential only (ADR 0019).
       With `serve-http --ui`, the diagnostic web shell at `/ui/` is a browser client of seventeen of
       them over HTTP and of nothing else (M06; L-WEB-1 to L-WEB-4).
     operations:
@@ -289,6 +290,7 @@ axes:
       cancel_job: [python, cli, http, mcp]
       commit_change: [python, cli, http, mcp]
       diff_revisions: [python, cli, http, mcp]
+      explain: [python, cli, http, mcp]
       get_artifact: [python, cli, http, mcp]
       get_job: [python, cli, http, mcp]
       get_job_result: [python, cli, http, mcp]
@@ -402,16 +404,26 @@ unsupported:
 
   - id: U05
     capability: >-
-      `validate(task="optimization")`; any study — optimization, parametric sensitivities,
-      sweeps, parameter estimation
+      `validate(task="optimization")` and the `optimize` job without an audited NLP solver; a
+      change with `task: optimization`; the other studies — parametric sensitivities, sweeps,
+      parameter estimation
     outcome: >-
-      `validate` with `task: optimization` ends with ADR 0019's error `unsupported`, detail
-      `task_unsupported(optimization)`, before any analysis; no v0.1 path returns
-      `READY_FOR_OPTIMIZATION` (the value stays in the frozen enum, unused); the other studies
-      have no operation among the twenty-one of `OPERATIONS`; no optimality claim anywhere.
+      ADR 0071 lifts v0.1's refusal of every install (OPT design §4.11): with an audited NLP
+      solver, `validate` given an optimization request returns its report (`READY_FOR_OPTIMIZATION`
+      possible) and `optimize` runs. Without one (the default install, an unaudited platform),
+      `validate` with `task: optimization` ends with ADR 0019's error `unsupported`, message
+      `nlp_solver_unavailable`, pointer `/task`, before the revision is read, and
+      `submit_job(optimize)` is refused the same way at `/operation` with no job created. A change
+      with `task: optimization` (`commit_change`, `preview_change`) is still refused
+      `task_unsupported(optimization)`, audited, with no revision written. The other studies have
+      no operation among the twenty-one of `OPERATIONS`; an optimisation report claims local
+      stationarity at most, never global optimality.
     evidence:
       - tests/test_t08_w2_unsupported.py::test_u05_validate_for_optimization_is_unsupported
       - tests/test_t08_w2_unsupported.py::test_u05_a_change_for_optimization_is_refused_audited
+      - tests/test_opt_job.py::test_g11_submit_job_without_a_solver_is_unsupported_and_creates_no_job
+      - tests/test_opt_cli.py::test_g11_the_cli_without_a_solver_imports_neither_pyomo_nor_cyipopt
+      - doc:docs/adr/0071-OPT-revision-optimisation.md
       - doc:docs/blueprint-v3.1.md
 
   - id: U06
@@ -981,19 +993,6 @@ limitations:
       - tests/test_m04_wo9_synthetic_loop.py::test_a48_renaming_the_reactor_onto_the_rough_surrogate_is_rejected
       - doc:benchmarks/m04/wo11-b2-it1-v3/record.json
       - doc:docs/derivations/M04-spec.md §20
-  - id: L-X10-1
-    text: >-
-      A `pr-c1-v1` revision whose component flows are small against the column scale (for example
-      M04's per-tube `benchmarks/m04/c1-surrogate.json` on `c1.reactor_surrogate`) solves CONVERGED
-      but certifies UNVERIFIED: `derivative_witness.on_pattern` fails (0.109 against 1e-7). The
-      witness step is set by the column scale, not by the state (here h = 3e-5 mol/s against
-      per-tube flows of 1.4e-4 to 4.9e-3 mol/s, so h/x reaches 14-21 %), and the difference between
-      the analytic Jacobian and the finite difference falls 4.00 times per halving of h. That is
-      truncation error of the check, not a Jacobian defect. A design-lane follow-up (scaling and
-      certificate policy) owns whether the step becomes state-relative or such revisions stay
-      UNVERIFIED by declaration.
-    evidence:
-      - doc:docs/X10-inventory.md
   - id: L-S11-1
     text: >-
       `iapws95-v1` (IAPWS-95, S05) is selected by `record_source: benchmarks/s05/components.yaml`
@@ -1238,6 +1237,32 @@ limitations:
       - tests/test_e01_integration.py::test_p2_is_a_complete_sslw_program_with_floored_exchangers_and_a_sized_drum
       - tests/test_e01_a_cost.py::test_a18_below_s_min_is_the_floor_with_an_empty_derivative_row
       - doc:docs/derivations/E01-design.md §10.10.7
+  - id: L-OPT-1
+    text: >-
+      Revision optimisation (ADR 0071) runs only on the `revision_eo` route in the audited `nlp`
+      environment on linux-x86_64. Each start holds its phase and assessment regimes: a candidate
+      whose regime changed is NOT_VERIFIED; a boundary optimum is verified only on the single-phase
+      side of a guarded regime (`phase_boundary_form`, flagged, and a plain solve of the committed
+      candidate certifies UNVERIFIED); two-phase-side and unguarded-regime boundary optima and
+      candidates in the rank-limited-but-inactive gap are NOT_VERIFIED; the zero-flow subsystem is
+      held or unresolved per start, all or nothing. KKT_POINT_VERIFIED is numerically verified local
+      stationarity, not optimality.
+    evidence:
+      - tests/test_opt_revision_optimize.py::test_g9_routes_other_than_revision_eo_are_unsupported
+      - tests/test_opt_boundary.py::test_g10c_i_a_two_phase_resolve_fails_at_e2
+      - tests/test_opt_margins.py::test_g24c_a_gamma_phi_vapour_split_is_unguarded_and_admitted
+      - tests/test_opt_zero_subsystem.py::test_g23d_a_decision_on_the_zero_feed_leaves_the_subsystem_unresolved
+      - doc:docs-site/guide/optimisation.md
+  - id: L-OPT-2
+    text: >-
+      Ipopt runs with fixed options (monotone barrier, limited-memory Hessian). On a nearly linear
+      objective whose constraint must become active from inside the feasible region it can stall
+      at `max_iter` (measured on OPT-L from 673.15 K and 661 K; it verifies from 650 K, a start that
+      violates the constraint). Such a start is reported SOLVER_FAILED, never verified; another start is
+      the remedy. Whether the options change is a design-lane question (OPT_DECISIONS D-70).
+    evidence:
+      - doc:docs/OPT_DECISIONS.md
+      - doc:docs-site/guide/optimisation.md
 
 harvest:
 - manifest: evidence/K01/b44dea0e96eb61f42f34249eee69a20d1ddb6a8a/manifest.json
@@ -8307,6 +8332,111 @@ harvest:
   class: P
   to: []
   note: 'scope note: off the reference platform M4, M6''s run key trails and M7''s replay mode are not judged'
+- manifest: evidence/MSG/b1a82351fa68f4c8676ebd90d21bd55c8649cd36/manifest.json
+  item: limitations[0]
+  sha256: 12e3253ca181d82901a50c0d0051bcb7316a663bb06d109068294988c4961847
+  class: P
+  to: []
+  note: 'provenance note: software verification on ref-x86-64; corpus texts are self-generated regression fixtures; entry prose awaits the reviewer pass'
+- manifest: evidence/MSG/b1a82351fa68f4c8676ebd90d21bd55c8649cd36/manifest.json
+  item: limitations[1]
+  sha256: 7111cd74e30727c0d2b8e606b17314f8e98e62ca7e68b770aa89c9911f366713
+  class: P
+  to: []
+  note: 'scope note: MSG WO-5 (diagnostic sidecar) parked by F0 M9 (R-940); explanations carry no numbers; pending items are strict xfails (MSG_DECISIONS D9-1)'
+- manifest: evidence/MSG/b1a82351fa68f4c8676ebd90d21bd55c8649cd36/manifest.json
+  item: limitations[2]
+  sha256: 931813dc25b9182d43afb636805d2facb38eabbbdb57ce030807965368c0ab33
+  class: P
+  to: []
+  note: 'scope note: a DRAFT revision is explained as revision_not_ready without the element at fault; a unit typo as DIM-01 without the unit text (MSG_DECISIONS D9-2, design lane)'
+- manifest: evidence/MSG/b1a82351fa68f4c8676ebd90d21bd55c8649cd36/manifest.json
+  item: limitations[3]
+  sha256: 9e719f20bebaecfa6ee76425c49d432742d0519e04fd1c57c19099b9b5500197
+  class: P
+  to: []
+  note: 'process note: MSG-G0 (c)''s WO-0 baseline predates F0''s 52 registered v0.3.0 replay fixtures, which F0 M7 judges'
+- manifest: evidence/MSG/b1a82351fa68f4c8676ebd90d21bd55c8649cd36/manifest.json
+  item: checks[6]
+  check_id: MSG-G0.c
+  sha256: f4e66369b274a59feb0a2d6cd3a377e8dba30348e0cb71f14b5563163ef491df
+  class: P
+  to: []
+  note: 'process note: MSG-G0 (c) differs only by F0''s 52 new replay fixtures (156 keys); baseline replays unchanged; design-lane ruling requested (section 7: F0 replaces (a)-(c))'
+- manifest: evidence/MSG/b1a82351fa68f4c8676ebd90d21bd55c8649cd36/manifest.json
+  item: checks[9]
+  check_id: MSG.GATE
+  sha256: 06be01230ffd5e44da2bc39e5979db143b1c40f895504383af0340e780cf0beb
+  class: P
+  to: []
+  note: 'process note: the full suite''s one red is explain.md''s pending reviews (D7-8, merge blocker by design); f6''s wall-time budget failed under load at 0067129c only'
+- manifest: evidence/MSG/9c76b93985915e6b7452b7573514850c477e712b/manifest.json
+  item: limitations[0]
+  sha256: 939896f1facd578303d3a9771c42ebd9c5796d3d1fed5798ed975056ffb59fd7
+  class: P
+  to: []
+  note: 'process note: status implemented; the gate''s one non-load red is explain.md''s pending human review (merge blocker by design); becomes tested when it is recorded'
+- manifest: evidence/MSG/9c76b93985915e6b7452b7573514850c477e712b/manifest.json
+  item: limitations[1]
+  sha256: b90bc326b341222a087cf692dcaa60dce12e03aded18fb788f1e78b741c189c2
+  class: P
+  to: []
+  note: 'provenance note: software verification on ref-x86-64; corpus texts are self-generated regression fixtures; the prose of the WO-12 entries awaits the design-lane prose check'
+- manifest: evidence/MSG/9c76b93985915e6b7452b7573514850c477e712b/manifest.json
+  item: limitations[2]
+  sha256: bf803cde22ff149ce509a4852b401a9f623777d071b85415dd49425d947e429f
+  class: P
+  to: []
+  note: 'scope note: errors render from the error document alone (C08 degc, C10 instance B declared gaps); C01''s numbers deferred to the F6 v2 unit models (R-975)'
+- manifest: evidence/MSG/9c76b93985915e6b7452b7573514850c477e712b/manifest.json
+  item: limitations[3]
+  sha256: 316284b709e36cddd62ab0d38675d1756a6d97f688b3701e5a04eb6f016bac35
+  class: P
+  to: []
+  note: 'scope note: worker_lost, owner_lost, store_error keep kind bug with environment-specific actions (orchestrator default)'
+- manifest: evidence/MSG/9c76b93985915e6b7452b7573514850c477e712b/manifest.json
+  item: limitations[4]
+  sha256: f1fa7210e44f115ccfd989d4f620a52c0aba83582695bd51385265087855591e
+  class: P
+  to: []
+  note: 'process note: the carry naming link c_4 (R-976) is a 0.4 release-candidate item'
+- manifest: evidence/MSG/9c76b93985915e6b7452b7573514850c477e712b/manifest.json
+  item: checks[13]
+  check_id: MSG.GATE
+  sha256: cc3bc32e309dc2d966a8dc2f58e8e338c337fdddc2788126b056ee69a916e921
+  class: P
+  to: []
+  note: 'process note: the full gate''s reds are explain.md''s pending human review and load-induced browser-smoke and kill-chain timings that pass alone'
+- manifest: evidence/MSG/5e9274dbee91dd25d7201f24b025db2498027744/manifest.json
+  item: limitations[0]
+  sha256: b90bc326b341222a087cf692dcaa60dce12e03aded18fb788f1e78b741c189c2
+  class: P
+  to: []
+  note: 'provenance note: software verification on ref-x86-64; corpus texts are self-generated regression fixtures; the prose of the WO-12 entries awaits the design-lane prose check'
+- manifest: evidence/MSG/5e9274dbee91dd25d7201f24b025db2498027744/manifest.json
+  item: limitations[1]
+  sha256: 11ad8184b8b3e77c4a58efc584d9f0be06e5c1a746e2e1f56c58f6e98ca6b451
+  class: P
+  to: []
+  note: 'scope note: errors render from the error document alone (C08 degc, C10 instance B declared gaps); C01''s numbers deferred to the F6 v2 unit models (R-975)'
+- manifest: evidence/MSG/5e9274dbee91dd25d7201f24b025db2498027744/manifest.json
+  item: limitations[2]
+  sha256: 316284b709e36cddd62ab0d38675d1756a6d97f688b3701e5a04eb6f016bac35
+  class: P
+  to: []
+  note: 'scope note: worker_lost, owner_lost, store_error keep kind bug with environment-specific actions (orchestrator default)'
+- manifest: evidence/MSG/5e9274dbee91dd25d7201f24b025db2498027744/manifest.json
+  item: limitations[3]
+  sha256: e2baea979e69be2989aa6831051a890ba05b07ad7203da3adc576b43f7916cfa
+  class: P
+  to: []
+  note: 'process note: the carry naming link c_4 (R-976) is a 0.4 release-candidate item'
+- manifest: evidence/MSG/5e9274dbee91dd25d7201f24b025db2498027744/manifest.json
+  item: limitations[4]
+  sha256: f5f169f7bec328c2f0aa7568fc592b9fb5710349cf83d6808d9e06f99f28c2bf
+  class: P
+  to: []
+  note: 'process note: no local full gate; the merge condition is CI run 42502713324; status tested, not reviewed'
 - manifest: evidence/S15/3e7ccf00f4123a7d9085fef775432d81d45aadd3/manifest.json
   item: limitations[0]
   sha256: 8262246970f453c7a91b2b75eba8d77d7ca0e01c4a225b2e7e0ef938053a6a35
@@ -8530,10 +8660,11 @@ harvest:
 - manifest: evidence/X10/18d34648b266893fe80971134a12c3f95ad331e5/manifest.json
   item: limitations[4]
   sha256: 766a47ebe2ab0ba3160dafb212ea6c8ea46626f7959c33b4726ada2a45fd0161
-  class: E
+  class: S
   to:
-  - L-X10-1
-  note: 'user-facing (X10 review M-1): c1.reactor_surrogate CONVERGED/UNVERIFIED on its registered revision; witness step set by the column scale (L-X10-1)'
+  - tests/test_wit_system.py::test_a08_the_c1_surrogate_is_verified_by_the_escalation
+  - doc:docs/adr/0073-WIT-derivative-witness-small-and-dormant-flows.md
+  note: 'L-X10-1 closed by ADR 0073 (K04 amendment WIT, WIT.A08): c1.reactor_surrogate CONVERGED/VERIFIED on its registered revision; the failing component columns are re-differenced at halved steps'
 - manifest: evidence/X10/18d34648b266893fe80971134a12c3f95ad331e5/manifest.json
   item: limitations[5]
   sha256: 522e70855648b0708225d45492d8f95aaae6e3017601c43094d8779e6e884528
@@ -8567,10 +8698,11 @@ harvest:
 - manifest: evidence/X10/033f19289a891221537769d8024ec7f61c0f4da7/manifest.json
   item: limitations[4]
   sha256: dcaceb11d67f8af0081d9430769d1dce87c5bc4d553e8fb0d769b8bc503eaf5a
-  class: E
+  class: S
   to:
-  - L-X10-1
-  note: 'user-facing (X10 review M-1): c1.reactor_surrogate CONVERGED/UNVERIFIED on its registered revision; witness step set by the column scale, diagnosed (L-X10-1)'
+  - tests/test_wit_system.py::test_a08_the_c1_surrogate_is_verified_by_the_escalation
+  - doc:docs/adr/0073-WIT-derivative-witness-small-and-dormant-flows.md
+  note: 'L-X10-1 closed by ADR 0073 (K04 amendment WIT, WIT.A08): c1.reactor_surrogate CONVERGED/VERIFIED on its registered revision; the failing component columns are re-differenced at halved steps'
 - manifest: evidence/X10/033f19289a891221537769d8024ec7f61c0f4da7/manifest.json
   item: limitations[5]
   sha256: 522e70855648b0708225d45492d8f95aaae6e3017601c43094d8779e6e884528
@@ -8583,3 +8715,370 @@ harvest:
   class: P
   to: []
   note: 'process note: the CoolProp-present section was not re-measured after the review fixes; inventory.json byte-identical'
+- manifest: evidence/X10a/dbf884ad2b037b9643659fa40b5721ab6b4b5e5c/manifest.json
+  item: limitations[0]
+  sha256: 7aef63da8727c0074c0e6a33b2408fd05c4653bf979b997142884fc380c30239
+  class: P
+  to: []
+  note: 'provenance note: software verification on ref-x86-64 under id X10a; reference values are regression fixtures, not validation'
+- manifest: evidence/X10a/dbf884ad2b037b9643659fa40b5721ab6b4b5e5c/manifest.json
+  item: limitations[1]
+  sha256: e6687ab86b192ebb2ea6745643aa8fa12bd6d2854d2617c5f6c572061025b5e2
+  class: P
+  to: []
+  note: 'process note: ADR 0073 Proposed; no reviewed status; the fix round D-5..D-10 not re-reviewed'
+- manifest: evidence/X10a/dbf884ad2b037b9643659fa40b5721ab6b4b5e5c/manifest.json
+  item: limitations[2]
+  sha256: 84e11fba73641fa23ca0023a22f7a3d1c4f8f23351e87219b0b62367848fca52
+  class: B
+  to:
+  - B10
+  note: 'M-6 part b (Q-WIT-2): c1.tp_flash manifest sentence still states the TWO_PHASE edge at 3.4e-5; moves the artifact hash, F0 M9 and the L01.A22 pin — reviewer: B?'
+- manifest: evidence/X10a/dbf884ad2b037b9643659fa40b5721ab6b4b5e5c/manifest.json
+  item: limitations[3]
+  sha256: cfbbe66f89fa55d3a93ad8a2141f05d9519f9bf951bec41ff7958d8f3a3cbca7
+  class: P
+  to: []
+  note: 'process note: M-4 (OPT D-42/D-82) waits for the OPT merge and ADR 0073 acceptance'
+- manifest: evidence/X10a/dbf884ad2b037b9643659fa40b5721ab6b4b5e5c/manifest.json
+  item: limitations[4]
+  sha256: 4072f5f070659632c2455cc91e3917891ea61a1455fa676b977a5f1d2627fdf6
+  class: B
+  to:
+  - B10
+  note: 'Q-WIT-4: a non-affine downstream reader of a dormant vapour product is unmeasured — reviewer: B?'
+- manifest: evidence/X10a/dbf884ad2b037b9643659fa40b5721ab6b4b5e5c/manifest.json
+  item: limitations[5]
+  sha256: 7bcb860c6d47ed88b03335e65802bb1b222407192ccc7a1f31b07d24f02c989a
+  class: P
+  to: []
+  note: 'process note: the review did-not-establish list; gate and CI postdate the review'
+- manifest: evidence/X10b/c57d449aaed52ca9cff1b7a737a9161cc3fdd093/manifest.json
+  item: limitations[0]
+  sha256: 56869fc31baa84f4dc6ac1ac7a5666b3c1b0abc1a72de6e34b1f2a5d05692e12
+  class: P
+  to: []
+  note: 'provenance note: software verification on ref-x86-64 under id X10b; a text-and-pin follow-up to X10a; fixtures are regression, not validation'
+- manifest: evidence/X10b/c57d449aaed52ca9cff1b7a737a9161cc3fdd093/manifest.json
+  item: limitations[1]
+  sha256: 932b11a4a7cae4f6272af27a136dcdde1815caf2f035e56f0184d5574f857c12
+  class: P
+  to: []
+  note: 'scope note: one manifest sentence and two docstrings, no numerics moved; the artifact hash, F0 M9 entry and L01.A22 pin move as registered (R-983)'
+- manifest: evidence/X10b/c57d449aaed52ca9cff1b7a737a9161cc3fdd093/manifest.json
+  item: limitations[2]
+  sha256: ddc39409511ebbf97ea7a08ba40b325f2fb3be87decdef9b55da20c7657f9028
+  class: P
+  to: []
+  note: 'scope note: R-983 — F0 M9 guards 9 of L01.A22''s 18 files'
+- manifest: evidence/X10b/c57d449aaed52ca9cff1b7a737a9161cc3fdd093/manifest.json
+  item: limitations[3]
+  sha256: 63ded9234812bbded6510f822819fd514d847ade3351d559f2c8fdaa543ffda3
+  class: P
+  to: []
+  note: 'process note: ADR 0073 Accepted; no reviewed status; the fix round D-5..D-10 not re-reviewed'
+- manifest: evidence/X10b/c57d449aaed52ca9cff1b7a737a9161cc3fdd093/manifest.json
+  item: limitations[4]
+  sha256: 7ccf63c11c79d2b2672e5c082633e05c671fd0c5c3683541c61acdb84fe65214
+  class: P
+  to: []
+  note: 'process note: M-4 (OPT D-42/D-82) waits for the OPT merge; not touched'
+- manifest: evidence/X10b/c57d449aaed52ca9cff1b7a737a9161cc3fdd093/manifest.json
+  item: limitations[5]
+  sha256: 4072f5f070659632c2455cc91e3917891ea61a1455fa676b977a5f1d2627fdf6
+  class: B
+  to:
+  - B10
+  note: 'Q-WIT-4: a non-affine downstream reader of a dormant vapour product is unmeasured — reviewer: B?'
+- manifest: evidence/X10b/c57d449aaed52ca9cff1b7a737a9161cc3fdd093/manifest.json
+  item: limitations[6]
+  sha256: 118a0595085e21983bc18968b1caf46db4039a970bbd2721f409101e130fb328
+  class: P
+  to: []
+  note: 'process note: no local full gate; the merge condition is CI run 42503117602'
+- manifest: evidence/X10b/c57d449aaed52ca9cff1b7a737a9161cc3fdd093/manifest.json
+  item: limitations[7]
+  sha256: 5635c927f1ccd71199ad8d236013888f3e951f3dca80fa52f0af8a4fece9860e
+  class: P
+  to: []
+  note: 'process note: status tested, not reviewed'
+- manifest: evidence/S15a/d7cb4dbb77adeafab943959966e7269a17ca29f3/manifest.json
+  item: limitations[0]
+  sha256: e2a6ebcc9176683cc753bdd91a9ac6273c50de3cf28b79b5ef02606ca548d450
+  class: P
+  to: []
+  note: 'provenance note: software verification on ref-x86-64 under id S15a; ADR 0074 Accepted on its condition; an id is bookkeeping, not validation'
+- manifest: evidence/S15a/d7cb4dbb77adeafab943959966e7269a17ca29f3/manifest.json
+  item: limitations[1]
+  sha256: 674506932d44833ec370a1c9411fc79ba341097ee9e3ee46b400332264f8b25b
+  class: B
+  to:
+  - B10
+  note: 'O-3: nothing ties a line file''s evidence_package to its line; RP.L11 due before the 0.5 line file — reviewer: B?'
+- manifest: evidence/S15a/d7cb4dbb77adeafab943959966e7269a17ca29f3/manifest.json
+  item: limitations[2]
+  sha256: c50f76961bdc83f70525f26c1d3f56f450153b4e72c249b7e1a299ea42acd429
+  class: P
+  to: []
+  note: 'process note: O-4 pointer to ADR 0074 D2 added when K-2 marks ADR 0055 Accepted'
+- manifest: evidence/S15a/d7cb4dbb77adeafab943959966e7269a17ca29f3/manifest.json
+  item: limitations[3]
+  sha256: d8474e5cf4d6f52c8e532c548020150c3d233bafb202e613673409520e11a709
+  class: P
+  to: []
+  note: 'process note: O-5 trailing newline passes every work_package alternative; recommended no change'
+- manifest: evidence/S15a/d7cb4dbb77adeafab943959966e7269a17ca29f3/manifest.json
+  item: limitations[4]
+  sha256: 18f42a614e5dd485e135f2067af8d486677d44468173caaef1212337755cdc95
+  class: P
+  to: []
+  note: 'process note: ADR 0074 section 3 does-not-establish list (line-file id, patch line, trailing newline, no validation)'
+- manifest: evidence/X05a/b43d94bc2f6986a10fea2a2d49cb3c04b83ec10c/manifest.json
+  item: limitations[0]
+  sha256: 03c62fcf0800457fe2b1e95ac11c231d690d854073dce75bb2b303e72411c0da
+  class: P
+  to: []
+  note: 'evidence-class note: identity bookkeeping verified, no empirical validation (ADR 0069 section 10)'
+- manifest: evidence/X05a/b43d94bc2f6986a10fea2a2d49cb3c04b83ec10c/manifest.json
+  item: limitations[1]
+  sha256: a7cc59c68a3d7f27b53af74f1624fc096cbce3dbfdd45bd24e43dafc888fcac4
+  class: P
+  to: []
+  note: 'scope note: only a lock-constrained install is promised to verify; a plain install may record an empty lock hash naming the floating members (ADR 0069 Amendment 1, A25)'
+- manifest: evidence/X05a/b43d94bc2f6986a10fea2a2d49cb3c04b83ec10c/manifest.json
+  item: limitations[2]
+  sha256: e2df8654b33310c9fe3fc6b32cab380beb2f66e98531fb312954a1c549a1bca9
+  class: P
+  to: []
+  note: 'scope note: ADR 0069 section 10 does-not-establish list stands (pre-X05 bundles, build identity, extras, other platforms, validation)'
+- manifest: evidence/X05a/b43d94bc2f6986a10fea2a2d49cb3c04b83ec10c/manifest.json
+  item: limitations[3]
+  sha256: 8d55aa643111ea857d3f9d83a758beffe396d66335733e34bda882e068b2deea
+  class: P
+  to: []
+  note: 'process note: no local full gate; the merge condition is CI run 42500882154'
+- manifest: evidence/X05a/b43d94bc2f6986a10fea2a2d49cb3c04b83ec10c/manifest.json
+  item: limitations[4]
+  sha256: 5635c927f1ccd71199ad8d236013888f3e951f3dca80fa52f0af8a4fece9860e
+  class: P
+  to: []
+  note: 'process note: status tested, not reviewed'
+- manifest: evidence/X02/2ab11b664b8dc325edf568cccddea23a46936119/manifest.json
+  item: limitations[0]
+  sha256: 993f8cf25a84cb8e5017e48bf8cb04b47f2f660b760e6a11d1e1e90c59e04b3f
+  class: P
+  to: []
+  note: 'provenance note: software verification (stand-in, revision_eo, synthetic child; CI) and workstation measurements on v3; regression evidence, not validation'
+- manifest: evidence/X02/2ab11b664b8dc325edf568cccddea23a46936119/manifest.json
+  item: limitations[1]
+  sha256: 97aa3d426d760b4ca3f0ff9cb8d835c77a703d7be1f12fdac53d53c448cc22bd
+  class: P
+  to: []
+  note: 'claim note: G5d (iii) iteration criterion failed and stays failed (D-32); neighbour warm start not claimed faster; no support claim made'
+- manifest: evidence/X02/2ab11b664b8dc325edf568cccddea23a46936119/manifest.json
+  item: limitations[2]
+  sha256: 0c0712f2e5dc931145251da2a6fdbe17926f2b4b9a148817ba50f3ed161c64c3
+  class: P
+  to: []
+  note: 'scope note: no start-capable reactor variant registered (G5b, G5c; D-29, review M-1); Part B is plumbing; external models start cold in practice'
+- manifest: evidence/X02/2ab11b664b8dc325edf568cccddea23a46936119/manifest.json
+  item: limitations[3]
+  sha256: 379097978e60a0e870a5b24fe1e12f46e6a9cc2e8e697c7e627ab61ca9bb6d76
+  class: P
+  to: []
+  note: 'provenance note: G5 (d) ran on v3 with cold experiments per review S-2 (D-30, D-31)'
+- manifest: evidence/X02/2ab11b664b8dc325edf568cccddea23a46936119/manifest.json
+  item: limitations[4]
+  sha256: 55088b9173df1f03fab642f4b7a94c3aa87931380e42bc97e3fe87952f807265
+  class: P
+  to: []
+  note: 'provenance note: no D/A requirement maps to X02'
+- manifest: evidence/X02/2ab11b664b8dc325edf568cccddea23a46936119/manifest.json
+  item: limitations[5]
+  sha256: b5652411b273e4674ecca758d47ccfcb775f17a5c52ef7ff091f575e3fdf15e2
+  class: P
+  to: []
+  note: 'provenance note: manifest id X02 under ADR 0059 D1 (R-938), no S-id alias (D-33)'
+- manifest: evidence/X02/2ab11b664b8dc325edf568cccddea23a46936119/manifest.json
+  item: limitations[6]
+  sha256: 11be08e191468709ee46fd5c245623409c2e2b7062db708fffc3b27bd3588233
+  class: P
+  to: []
+  note: 'process note: status tested, not reviewed; ADR 0070 Proposed pending Frank (X02 Q5, Q7)'
+- manifest: evidence/X02/2ab11b664b8dc325edf568cccddea23a46936119/manifest.json
+  item: checks[6]
+  check_id: X02.G5b
+  sha256: 56a33c4aeb3723d3a5f36c4e5ee4d28a7c7fe27a2648ad3afe331398e91da871
+  class: P
+  to: []
+  note: 'registration gate: G5b 1.92e-7 > 1e-7, variant not registered (review M-1, A-3, A-8); no user-facing support claim'
+- manifest: evidence/X02/2ab11b664b8dc325edf568cccddea23a46936119/manifest.json
+  item: checks[7]
+  check_id: X02.G5c
+  sha256: 706daabed43e8f728acf322f6c554881d50df54618e469279c93ecf180457a9f
+  class: P
+  to: []
+  note: 'report-only timing (about 21 % slower warm); decided against registration (review M-1)'
+- manifest: evidence/X02/2ab11b664b8dc325edf568cccddea23a46936119/manifest.json
+  item: checks[11]
+  check_id: X02.G5d_iii_iterations
+  sha256: b3ef26de931dcd5595c8d6f931ed8f0719664ec8f557bce4bb10df65d4a38817
+  class: P
+  to: []
+  note: 'accepted fail (D-32): warm 4 = cold 4 outer iterations; neighbour-speedup claim withdrawn in ADR 0070'
+- manifest: evidence/X02/d26bcd3825ae4f55986a87412c8c1c827497f2c2/manifest.json
+  item: limitations[0]
+  sha256: 993f8cf25a84cb8e5017e48bf8cb04b47f2f660b760e6a11d1e1e90c59e04b3f
+  class: P
+  to: []
+  note: 'provenance note: software verification (stand-in, revision_eo, synthetic child; CI) and workstation measurements on v3; regression evidence, not validation'
+- manifest: evidence/X02/d26bcd3825ae4f55986a87412c8c1c827497f2c2/manifest.json
+  item: limitations[1]
+  sha256: 97aa3d426d760b4ca3f0ff9cb8d835c77a703d7be1f12fdac53d53c448cc22bd
+  class: P
+  to: []
+  note: 'claim note: G5d (iii) iteration criterion failed and stays failed (D-32); neighbour warm start not claimed faster; no support claim made'
+- manifest: evidence/X02/d26bcd3825ae4f55986a87412c8c1c827497f2c2/manifest.json
+  item: limitations[2]
+  sha256: 0c0712f2e5dc931145251da2a6fdbe17926f2b4b9a148817ba50f3ed161c64c3
+  class: P
+  to: []
+  note: 'scope note: no start-capable reactor variant registered (G5b, G5c; D-29, review M-1); Part B is plumbing; external models start cold in practice'
+- manifest: evidence/X02/d26bcd3825ae4f55986a87412c8c1c827497f2c2/manifest.json
+  item: limitations[3]
+  sha256: 379097978e60a0e870a5b24fe1e12f46e6a9cc2e8e697c7e627ab61ca9bb6d76
+  class: P
+  to: []
+  note: 'provenance note: G5 (d) ran on v3 with cold experiments per review S-2 (D-30, D-31)'
+- manifest: evidence/X02/d26bcd3825ae4f55986a87412c8c1c827497f2c2/manifest.json
+  item: limitations[4]
+  sha256: 55088b9173df1f03fab642f4b7a94c3aa87931380e42bc97e3fe87952f807265
+  class: P
+  to: []
+  note: 'provenance note: no D/A requirement maps to X02'
+- manifest: evidence/X02/d26bcd3825ae4f55986a87412c8c1c827497f2c2/manifest.json
+  item: limitations[5]
+  sha256: b5652411b273e4674ecca758d47ccfcb775f17a5c52ef7ff091f575e3fdf15e2
+  class: P
+  to: []
+  note: 'provenance note: manifest id X02 under ADR 0059 D1 (R-938), no S-id alias (D-33)'
+- manifest: evidence/X02/d26bcd3825ae4f55986a87412c8c1c827497f2c2/manifest.json
+  item: limitations[6]
+  sha256: e59acc8addeafa0b33988f6ca16f55706dcda9dd0747f525fa18bdf8dad4066e
+  class: P
+  to: []
+  note: 'process note: status tested, not reviewed; ADR 0070 Accepted (D-38); reviewer pass pending'
+- manifest: evidence/X02/d26bcd3825ae4f55986a87412c8c1c827497f2c2/manifest.json
+  item: checks[6]
+  check_id: X02.G5b
+  sha256: 56a33c4aeb3723d3a5f36c4e5ee4d28a7c7fe27a2648ad3afe331398e91da871
+  class: P
+  to: []
+  note: 'registration gate: G5b 1.92e-7 > 1e-7, variant not registered (review M-1, A-3, A-8); no user-facing support claim'
+- manifest: evidence/X02/d26bcd3825ae4f55986a87412c8c1c827497f2c2/manifest.json
+  item: checks[7]
+  check_id: X02.G5c
+  sha256: 706daabed43e8f728acf322f6c554881d50df54618e469279c93ecf180457a9f
+  class: P
+  to: []
+  note: 'report-only timing (about 21 % slower warm); decided against registration (review M-1)'
+- manifest: evidence/X02/d26bcd3825ae4f55986a87412c8c1c827497f2c2/manifest.json
+  item: checks[11]
+  check_id: X02.G5d_iii_iterations
+  sha256: b3ef26de931dcd5595c8d6f931ed8f0719664ec8f557bce4bb10df65d4a38817
+  class: P
+  to: []
+  note: 'accepted fail (D-32): warm 4 = cold 4 outer iterations; neighbour-speedup claim withdrawn in ADR 0070'
+- manifest: evidence/OPT/a46ea80f2540ef34c93f12d37509ac8dcf050d58/manifest.json
+  item: limitations[0]
+  sha256: 060bd2818a8025f400cbbb18d8b6e4b67af2f07fe43e550148de77980bee7b40
+  class: P
+  to: []
+  note: 'provenance note: numerical verification on ref-x86-64; analytic and hand-model expectations;
+    not validation, not optimality'
+- manifest: evidence/OPT/a46ea80f2540ef34c93f12d37509ac8dcf050d58/manifest.json
+  item: limitations[1]
+  sha256: 18091b95f1d90683a859bc24402171997c322301a525167e1583a5d9fe3b1105
+  class: P
+  to: []
+  note: 'status note: implemented, D-61 reviews open, G21 and G13 aarch64 unconfirmed by the build lane'
+- manifest: evidence/OPT/a46ea80f2540ef34c93f12d37509ac8dcf050d58/manifest.json
+  item: limitations[2]
+  sha256: 6389f20f15de48c57bd7f663ebc7aeb4a295d0935f2ec5e2b9c4b44d93a1f20b
+  class: E
+  to:
+  - L-OPT-1
+  note: 'user-facing: route, platform, held regimes, boundary and zero-subsystem limits (L-OPT-1)'
+- manifest: evidence/OPT/a46ea80f2540ef34c93f12d37509ac8dcf050d58/manifest.json
+  item: limitations[3]
+  sha256: b02df29b3fc43967ec59e83b4067012bc29aa918715685dc9fd192c775be402e
+  class: E
+  to:
+  - L-OPT-2
+  note: 'user-facing: Ipopt stall from the feasible side on OPT-L (D-70, L-OPT-2)'
+- manifest: evidence/OPT/a46ea80f2540ef34c93f12d37509ac8dcf050d58/manifest.json
+  item: limitations[4]
+  sha256: 400b5952eb30f054da49e45b3f224b385f8c86cc2642ea813adcda9f80c582ad
+  class: P
+  to: []
+  note: 'process note: G12 wall-clock mask and D-58/D-60/D-61 await the design-lane review'
+- manifest: evidence/OPT/a46ea80f2540ef34c93f12d37509ac8dcf050d58/manifest.json
+  item: checks[17]
+  check_id: OPT.G13.aarch64
+  sha256: af5fe887aa1aa90b84375894b7bc32f7f46e9b52caa34bd7e81015151eb4d17a
+  class: P
+  to: []
+  note: 'process note: the aarch64 CI leg is read by the orchestrator'
+- manifest: evidence/OPT/a46ea80f2540ef34c93f12d37509ac8dcf050d58/manifest.json
+  item: checks[25]
+  check_id: OPT.G21
+  sha256: bfd605871bd375a1a429fd806e8c77e2238cbe74f824ab131a6abbec08d29416
+  class: P
+  to: []
+  note: 'process note: the full gate and CI run before merge, by the orchestrator'
+- manifest: evidence/OPT/a46ea80f2540ef34c93f12d37509ac8dcf050d58/manifest.json
+  item: checks[29]
+  check_id: OPT.D61
+  sha256: 5f89ad5907b347a59eae21e094f3d77f0636a89061efa10da2281ebf5117ee02
+  class: P
+  to: []
+  note: 'process note: description reviews by the design lane and Frank pending (D-61)'
+- manifest: evidence/OPT/c1b9b1255699b2cd9d1f6c1da120f761dd1e80d6/manifest.json
+  item: limitations[0]
+  sha256: 060bd2818a8025f400cbbb18d8b6e4b67af2f07fe43e550148de77980bee7b40
+  class: P
+  to: []
+  note: 'provenance note: numerical verification on ref-x86-64; analytic and hand-model expectations; not validation, not optimality'
+- manifest: evidence/OPT/c1b9b1255699b2cd9d1f6c1da120f761dd1e80d6/manifest.json
+  item: limitations[1]
+  sha256: 88e364dba2a77fdfd3c0a81347530f68387187cc787a98622735dcc9e570436f
+  class: P
+  to: []
+  note: 'status note: tested, not reviewed; human description reviews recorded by Frank (9869773e); design-lane prose check of D-92 and D-93 pending; no local full gate, CI run 42534167073'
+- manifest: evidence/OPT/c1b9b1255699b2cd9d1f6c1da120f761dd1e80d6/manifest.json
+  item: limitations[2]
+  sha256: 86db2b6c3722d9a5093b0fb0d4b1bc7cf91dc5a3d1de9261808d1154d447f6be
+  class: E
+  to:
+  - L-OPT-1
+  note: 'user-facing: route, platform, held regimes, boundary and zero-subsystem limits; D-82 declared limits and S1 dormant splits (L-OPT-1)'
+- manifest: evidence/OPT/c1b9b1255699b2cd9d1f6c1da120f761dd1e80d6/manifest.json
+  item: limitations[3]
+  sha256: 6b6a930499c104f6967bbc693ba2a96e3a8ca0688bcea1656f3ccab6b2bb2692
+  class: E
+  to:
+  - L-OPT-2
+  note: 'user-facing: Ipopt stall from the feasible side on OPT-L, starts {673.15 K, 650 K} (D-70, L-OPT-2)'
+- manifest: evidence/OPT/c1b9b1255699b2cd9d1f6c1da120f761dd1e80d6/manifest.json
+  item: limitations[4]
+  sha256: a0421966824facbaa86c7387c226315b23d1958ad7c801198a46a914ce71bfb8
+  class: P
+  to: []
+  note: 'process note: G12 wall-clock mask and D-58/D-60 await the design-lane review'
+- manifest: evidence/OPT/c1b9b1255699b2cd9d1f6c1da120f761dd1e80d6/manifest.json
+  item: checks[25]
+  check_id: OPT.G21
+  sha256: 986dc7b30a12baa5dcde07c4743824153d0f8b0f459ed5059fdc3ed506a54fdd
+  class: P
+  to: []
+  note: 'process note: no local full gate; CI green on both architectures is the merge condition (CLAUDE.md gate by risk)'

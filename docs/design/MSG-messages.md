@@ -774,6 +774,19 @@ class Diagnostic:
   (`jobs/runner.py` `WorkerResult.run`). It is written only when a failure bundle is written.
 - The store schema stays `t07-store-v1`: `worker_result` is a JSON blob.
 
+**Amendment (review `docs/reviews/MSG-review.md` Q1, route (a) narrowed; built as WO-5a).** F0 M9 (R-940) froze
+`models/thermal/*`, so in 0.4 the sidecar has **one producer**: the traversal hop
+`models/revision_flowsheet.py` (`traverse`, where the failing unit's message is cut to its first line). It builds
+`Diagnostic(<the code at the head of line 1>, {"detail": lines 2+})`, in P4's form, from the message text the
+unit already returns; no thermal module and no machine text changes (I1). The carriers are `FlowsheetPass`,
+`InitialStateFailure` and `StepResult` (not `Failure` or `UnitEvaluation`). `explain_failure` applies the explained
+entry's `detail_pattern` to the sidecar's `detail` (sidecar params win over its groups), and derives a missing
+`outlet` stream param as the one connection leaving the `unit` param's `outlet` port (§4.2.5). What the detail lines
+carry is delivered: P2's `s_star`, `s_saturated`, `pressure`, `phase`; P5's `p_spec`, `p_inlet`; P4's value and
+range; P1's `declared`, `landed`, `vapour_fraction`. P1's `property`, `value`, `saturated_liquid`,
+`saturated_vapour` and `pressure` are in no text: they are deferred to the F6 v2 unit models (ADR 0065; Q1 (c)),
+and the P1–P5 list below describes that later producer set. ADR 0058 D6 and R-936 are unchanged.
+
 **Producers in 0.4** (exhaustive). Units come from the provider's basis; the engineer confirms the basis (molar or
 mass) at each site, and MSG-G6's case asserts the unit string.
 - **P1.** `Mismatch.failure(stream)` (`kernel.py:543`), code `phase_regime_mismatch`. `Mismatch` gains

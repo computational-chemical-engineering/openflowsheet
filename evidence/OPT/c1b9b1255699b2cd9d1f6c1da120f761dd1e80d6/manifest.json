@@ -1,0 +1,400 @@
+{
+  "work_package": "OPT",
+  "commit": "c1b9b1255699b2cd9d1f6c1da120f761dd1e80d6",
+  "requirements": [
+    "A06",
+    "D16"
+  ],
+  "status": "tested",
+  "inputs": {
+    "case_id": "ADR 0071 (Accepted 2026-11-08, Frank, decision board) with ADR 0019 Amendment 16; register R-960..R-969, R-988; design and review docs/design/OPT-revision-optimisation.md, docs/reviews/OPT-review.md; build decisions D-1..D-95 (docs/OPT_DECISIONS.md); package OPT on branch wp/OPT at c1b9b125; surface chain link c_6, D_6 = 3fdc797ad64485abf63fb491ebd56aa43dc510e62e9e218b0dd7a8fcc2e38a85 (stripping OPT gives D_5 exactly); global-state caches 39; benchmarks: OPT benchmarks: benchmarks/opt/requests (OPT-A1, A2, A2b, A3, C0, N1, C, L; perf TH-R1, M1, C-MW), benchmarks/opt/flowsheets, benchmarks/s11/thermal/TH-C1.json; expectations benchmarks/opt/expected.json (analytic.py, mpmath) and benchmarks/opt/cost_lca.json (cost_lca.py: certified re-solves + E01 hand models)",
+    "case_hash": "d411d75c234da6fc39f595aea2fe45136a1bd61c0b6811d1fc40ecb1cbfd035a",
+    "environment_lock_hash": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+  },
+  "commands": [
+    {
+      "cmd": "CI ci.yml run 42534167073 on wp/OPT at c1b9b125: check (ubuntu-latest), check (ubuntu-24.04-arm), identity, default-install (all success)",
+      "cwd": "GitHub Actions",
+      "exit_code": 0
+    },
+    {
+      "cmd": "W=.claude/worktrees/m05; OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 scripts/m03_nlp_check.sh --no-inventory $W/.venv-nlp $W/.reference-downloads/m03-ipopt -- tests/test_opt_benchmarks_nlp.py tests/test_opt_boundary.py tests/test_opt_replay_nlp.py tests/test_opt_job_nlp.py tests/test_opt_cost_lca_nlp.py (audited env, after the docs-only merge of origin/main 85b858da; 21 passed, 12 deselected)",
+      "cwd": ".claude/worktrees/opt",
+      "exit_code": 0
+    },
+    {
+      "cmd": "W=.claude/worktrees/m05; OMP_NUM_THREADS=1 PYTHONNOUSERSITE=1 PYOMO_CONFIG_DIR=$W/.venv-nlp/share/pyomo PYTHONPATH=src:$W/.reference-downloads/m03-ipopt/nlp-test-tools $W/.venv-nlp/bin/python scripts/opt_m03_dump.py . OUT --nlp && sha256sum OUT (25 entries b6bbafdb0c83b014...); the same without --nlp in the default env (22 entries 6e028e8d...)",
+      "cwd": ".claude/worktrees/opt",
+      "exit_code": 0
+    },
+    {
+      "cmd": "W=.claude/worktrees/m05; OMP_NUM_THREADS=1 PYTHONNOUSERSITE=1 PYOMO_CONFIG_DIR=$W/.venv-nlp/share/pyomo PYTHONPATH=src:$W/.reference-downloads/m03-ipopt/nlp-test-tools $W/.venv-nlp/bin/python benchmarks/opt/performance.py RECORDS",
+      "cwd": ".claude/worktrees/opt",
+      "exit_code": 0
+    },
+    {
+      "cmd": "OMP_NUM_THREADS=1 PYTHONPATH=src python -m pytest -q tests/test_m07a_harvest.py tests/test_t08*.py tests/test_evidence_manifests.py tests/test_opt*.py tests/test_msg_coverage.py tests/test_t07_global_state.py (targeted, after the merge of origin/main)",
+      "cwd": ".claude/worktrees/opt",
+      "exit_code": 0
+    },
+    {
+      "cmd": "PYTHONPATH=src python scripts/t08_support_matrix.py --emit && PYTHONPATH=src python scripts/t08_support_matrix.py --check",
+      "cwd": ".claude/worktrees/opt",
+      "exit_code": 0
+    },
+    {
+      "cmd": "PYTHONPATH=src:. python scripts/corpus_identity.py --check",
+      "cwd": ".claude/worktrees/opt",
+      "exit_code": 0
+    },
+    {
+      "cmd": "ruff check . && ruff format --check .",
+      "cwd": ".claude/worktrees/opt",
+      "exit_code": 0
+    },
+    {
+      "cmd": "records of the earlier manifest at a46ea80f (WO-7 gate numbers; WO-8b gates in docs/OPT_DECISIONS.md) are carried by evidence/OPT/a46ea80f2540ef34c93f12d37509ac8dcf050d58/manifest.json; no local full gate was run (CLAUDE.md gate by risk, 2026-11-08)",
+      "cwd": ".",
+      "exit_code": 0
+    }
+  ],
+  "checks": [
+    {
+      "id": "OPT.G1",
+      "description": "F0 corpus identity M1-M9 at the commit",
+      "result": "pass",
+      "value": "F0 PASS: M1 50/50, M2 61/61, M3 61/61, M4 61/61, M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 35/35"
+    },
+    {
+      "id": "OPT.G2",
+      "description": "M03 regression: opt_m03_dump.py --nlp (SYN-001 A32 reports, E01 sensitivities) canonical bytes unchanged since WO-1 (audited env, OMP_NUM_THREADS=1 only); re-checked at c1b9b125 after the merge of main (WIT), default env 22 entries 6e028e8ddaa13948e4be80444f50a41af13ef8f250c3d96f72d3fcee6fa7bbe0 identical to WO-8b",
+      "result": "pass",
+      "value": {
+        "sha256": "b6bbafdb0c83b0148e7a3d324b81ad93e6935e6731833cd325f162e6ec8b9324",
+        "entries": 25,
+        "masked": "none"
+      },
+      "expected": "b6bbafdb0c83b0148e7a3d324b81ad93e6935e6731833cd325f162e6ec8b9324"
+    },
+    {
+      "id": "OPT.G3",
+      "description": "E01/M03 regression: tests/test_e01_*.py and tests/test_m03_*.py unchanged and passing; sensitivity with system=None byte-identical (inside G2's dump)",
+      "result": "pass",
+      "value": "383 passed, 1 skipped, 22 deselected (nlp)"
+    },
+    {
+      "id": "OPT.G4",
+      "description": "held system on TH-R1, TH-C1, TH-V1, M1, M1-recycle, J1, C-MW: square, disjoint, residual selection bitwise",
+      "result": "pass",
+      "value": "tests/test_opt_revision_host.py passed at the commit (in the default run)"
+    },
+    {
+      "id": "OPT.G5",
+      "description": "decision map and its refusals",
+      "result": "pass",
+      "value": "tests/test_opt_revision_host.py passed at the commit"
+    },
+    {
+      "id": "OPT.G6",
+      "description": "held-system sensitivities vs central differences of certified re-solves (TH-C1, M1, PH flash)",
+      "result": "pass",
+      "value": {
+        "TH-C1": {
+          "fwd_vs_cd": 2.6e-08,
+          "fwd_vs_adj": 4.7e-16
+        },
+        "M1": {
+          "fwd_vs_cd": 1.7e-08,
+          "fwd_vs_adj": 1.9e-16
+        },
+        "measured_at": "WO-2; re-run passing at the commit"
+      },
+      "tolerance": {
+        "fwd_vs_cd": 1e-05,
+        "fwd_vs_adj": 1e-10
+      }
+    },
+    {
+      "id": "OPT.G7",
+      "description": "OPT-A1: Q*, lambda* vs mpmath; KKT_POINT_VERIFIED (audited env)",
+      "result": "pass",
+      "value": {
+        "Q": 9000.00000009091,
+        "Q_rel": 1e-11,
+        "lambda": 0.03
+      },
+      "expected": {
+        "Q": 9000,
+        "lambda": 0.03
+      },
+      "tolerance": {
+        "Q_rel": 1e-07,
+        "lambda_rel": 0.0001
+      }
+    },
+    {
+      "id": "OPT.G8",
+      "description": "OPT-A2 and A2b: r*, Q*, f* vs mpmath; all 3 starts KKT_POINT_VERIFIED, distinct 1 (audited env)",
+      "result": "pass",
+      "value": {
+        "A2_r_err": 4.6e-11,
+        "A2_Q_rel": 1.9e-10,
+        "A2b_r_err": 6.2e-11
+      },
+      "expected": {
+        "r": 0.3,
+        "Q": 2700,
+        "f": 0.36
+      },
+      "tolerance": {
+        "r": 1e-06,
+        "Q_rel": 1e-06,
+        "f": 1e-08
+      }
+    },
+    {
+      "id": "OPT.G9",
+      "description": "OPT-N1 INFEASIBLE_REPORTED after WO-5; coupled and legacy_eo routes UNSUPPORTED OPTIMIZATION_ROUTE_UNAVAILABLE",
+      "result": "pass",
+      "value": "audited and default tests passed at the commit"
+    },
+    {
+      "id": "OPT.G10",
+      "description": "OPT-A3 bubble-point optimum on the phase-boundary form: |T-T_b| <= 1e-6 K, |Q-Q*| <= 1e-7 Q*, lambda vs closed form, V1 basis phase_boundary_form (audited env)",
+      "result": "pass",
+      "value": {
+        "Q": 14232.354594159335,
+        "Q_rel": 1.9e-11,
+        "lambda": 0.3739709049025754,
+        "lambda_rel": 1.9e-11
+      },
+      "expected": {
+        "lambda": 0.3739709048953251
+      },
+      "tolerance": {
+        "Q_rel": 1e-07,
+        "lambda_rel": 0.0001
+      }
+    },
+    {
+      "id": "OPT.G10a",
+      "description": "B with A = empty equals the certificate's regularity document byte for byte",
+      "result": "pass",
+      "value": "tests/test_opt_boundary.py passed at the commit"
+    },
+    {
+      "id": "OPT.G10b",
+      "description": "rcond1/dQ mechanism near Q*; B NO_RANK_LOSS_DETECTED",
+      "result": "pass",
+      "value": {
+        "rcond_per_W": 2.27e-06,
+        "B_rcond": 0.0434739
+      }
+    },
+    {
+      "id": "OPT.G10c",
+      "description": "negatives (e2, e6, e3, AST isolation)",
+      "result": "pass",
+      "value": "tests/test_opt_boundary.py::test_g10c_* passed at the commit"
+    },
+    {
+      "id": "OPT.G10d",
+      "description": "VAPOR symmetry, OPT-A3v dew point",
+      "result": "pass",
+      "value": {
+        "Q_v": -7718.908756971359,
+        "T_minus_T_d": 2.5e-08
+      }
+    },
+    {
+      "id": "OPT.G11",
+      "description": "default install: no pyomo/cyipopt imported; validate/submit_job unsupported nlp_solver_unavailable; library UNSUPPORTED; CLI",
+      "result": "pass",
+      "value": "tests/test_opt_revision_optimize.py, test_opt_job.py, test_opt_cli.py, test_opt_replay.py passed at the commit"
+    },
+    {
+      "id": "OPT.G12",
+      "description": "job == library record (inline and spawned worker), wall-clock members masked (D-63)",
+      "result": "pass",
+      "value": "tests/test_opt_job_nlp.py passed at the commit (audited env)"
+    },
+    {
+      "id": "OPT.G13",
+      "description": "replay: OPT-A2 and OPT-A3 records MATCH with rerun on x86-64; tampered byte -> integrity failure; edited float -> MISMATCH; near-threshold active-set flip -> verdict_changed_near_threshold (D-68)",
+      "result": "pass",
+      "value": "tests/test_opt_replay_nlp.py (audited) and tests/test_opt_replay.py (10, default) passed at the commit"
+    },
+    {
+      "id": "OPT.G13.aarch64",
+      "description": "the committed OPT-A2 fixture record replays to MATCH on the aarch64 CI leg",
+      "result": "pass",
+      "value": {
+        "ci_aarch64": "CI run 42534167073 at c1b9b125: check (ubuntu-24.04-arm) success, with tests/test_opt_replay.py in the default run"
+      }
+    },
+    {
+      "id": "OPT.G14",
+      "description": "cancellation during start 1 and wall-time budget inside Ipopt",
+      "result": "pass",
+      "value": "tests/test_opt_job_nlp.py passed at the commit"
+    },
+    {
+      "id": "OPT.G15",
+      "description": "surface chain with OPT's link c_4",
+      "result": "pass",
+      "value": "tests/test_m07a_surface_chain.py, test_t08_w2_surface_digest.py passed at the commit"
+    },
+    {
+      "id": "OPT.G16",
+      "description": "candidate = simulation: a solve of the committed candidate reproduces V1's R0 certificate (OPT-A2, OPT-A3)",
+      "result": "pass",
+      "value": "tests/test_opt_job_nlp.py passed at the commit"
+    },
+    {
+      "id": "OPT.G17",
+      "description": "performance record (not a threshold), audited env, one process",
+      "result": "pass",
+      "value": {
+        "TH-R1": "KKT_POINT_VERIFIED, 10/11 it, 11.13 s",
+        "M1": "KKT_POINT_VERIFIED, 8/8 it, 4.71 s",
+        "C-MW": "KKT_POINT_VERIFIED, 10/9 it, 28.05 s",
+        "measured_at": "c1b9b125, TRS2 under load"
+      }
+    },
+    {
+      "id": "OPT.G18",
+      "description": "request schema round trips, one test per static readiness reason, Halton points",
+      "result": "pass",
+      "value": "tests/test_opt_request.py passed at the commit"
+    },
+    {
+      "id": "OPT.G19",
+      "description": "OPT-C: TH-C1 under E01's TAC program; interior optimum vs golden section over certified re-solves with cost_hand TAC (audited env)",
+      "result": "pass",
+      "value": {
+        "status": "KKT_POINT_VERIFIED",
+        "P": 1159042.151276523,
+        "d_gs": 1159042.380571553,
+        "abs_err_Pa": 0.23,
+        "TAC_V6": 116859.136761127,
+        "TAC_hand": 116859.13676112708,
+        "TAC_rel": 6e-16,
+        "V7": "pass",
+        "active_set": []
+      },
+      "expected": {
+        "d_gs": 1159042.380571553
+      },
+      "tolerance": {
+        "decision_Pa": 10.0,
+        "TAC_rel": 1e-09
+      }
+    },
+    {
+      "id": "OPT.G20",
+      "description": "OPT-L: TH-C1 min GWP100 rate s.t. net power >= W_min vs bisection over certified re-solves with lca_hand (audited env)",
+      "result": "pass",
+      "value": {
+        "status": "KKT_POINT_VERIFIED",
+        "T": 660.4145192357499,
+        "d_root": 660.4145192354918,
+        "abs_err_K": 2.6e-10,
+        "GWP_V6": 0.024254495503279832,
+        "GWP_hand": 0.024254495503279832,
+        "multiplier": 0.2859,
+        "start": "650 K (D-70)"
+      },
+      "expected": {
+        "d_root": 660.4145192354918
+      },
+      "tolerance": {
+        "decision_K": 0.0001,
+        "GWP_rel": 1e-09
+      }
+    },
+    {
+      "id": "OPT.G21",
+      "description": "full gate (scripts/gate.sh) not run by choice; the merge condition is CI green on x86-64 and aarch64 (CLAUDE.md gate by risk, 2026-11-08)",
+      "result": "unsupported",
+      "value": {
+        "full_gate": "not run (not required); stays unsupported",
+        "ci": "CI run 42534167073 at c1b9b125: check (ubuntu-latest), check (ubuntu-24.04-arm), identity, default-install success"
+      }
+    },
+    {
+      "id": "OPT.G22",
+      "description": "C-MW: zero subsystem held |Z| = |R|, DomainError 0, 19 TWO_PHASE margins >= tau_regime, >= 1 start verified (audited env)",
+      "result": "pass",
+      "value": {
+        "starts": [
+          "KKT_POINT_VERIFIED",
+          "KKT_POINT_VERIFIED"
+        ],
+        "zero_subsystem": "held 63/63",
+        "evaluation_errors": [
+          0,
+          0
+        ],
+        "two_phase_margin_min": 0.18901555913333776,
+        "tau_regime": 0.0001,
+        "measured_at": "re-run at c1b9b125 (D-95): both KKT_POINT_VERIFIED, Ipopt 0"
+      }
+    },
+    {
+      "id": "OPT.G23",
+      "description": "zero subsystem: entrywise zeros, reduced = unreduced sensitivities, inertness, unresolved path",
+      "result": "pass",
+      "value": "tests/test_opt_zero_subsystem.py passed at the commit"
+    },
+    {
+      "id": "OPT.G24",
+      "description": "closure margins: guarded/unguarded rows",
+      "result": "pass",
+      "value": "tests/test_opt_margins.py passed at the commit"
+    },
+    {
+      "id": "OPT.D61",
+      "description": "T08.A18 description reviews of the two changed binding descriptions (validate, submit_job): tests/test_t08_w2_description_reviews.py::test_every_description_is_reviewed_by_both_lanes",
+      "result": "pass",
+      "value": "passes at c1b9b125 in CI; the design-lane reviews are D-78 (3bc4e732) and the human description reviews were recorded by Frank on the branch (9869773e); not an agent review"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "benchmarks/opt/expected.json",
+      "sha256": "5b504045e542925f2155bb007faf0a3b34a0bafb099c368170d7f9f65c397823",
+      "description": "G7-G10 analytic expectations (mpmath, from the SYN-001 coefficient table)"
+    },
+    {
+      "path": "benchmarks/opt/cost_lca.json",
+      "sha256": "22395ad341daadc14c245e7a56967cf74705fe8b3cf2ccdfedc23dad60c066a0",
+      "description": "G19/G20 expectations: golden section and bisection over certified TH-C1 re-solves, E01 hand TAC and GWP"
+    },
+    {
+      "path": "tests/fixtures/opt/replay/OPT-A2/optimization-manifest.json",
+      "sha256": "302797c5164eb3a8636fe6dfdc550191015dfe7ec3440dfcb0f17e57a7e20660",
+      "description": "G13's committed OPT-A2 record (its manifest; members by SHA-256 inside)"
+    },
+    {
+      "path": "docs/OPT_DECISIONS.md",
+      "sha256": "941ebaf368c1cfbdab5819fcfdffe8cb6c13ac5a09071454fb5245904efe23b8",
+      "description": "build decisions D-1..D-95 and every WO's gate numbers"
+    },
+    {
+      "path": "docs-site/guide/optimisation.md",
+      "sha256": "c028ff4b6461504e871017842bc20cc2f99112f783890af0fce7ecd32733938e",
+      "description": "the user doc page"
+    }
+  ],
+  "limitations": [
+    "Evidence class: numerical verification on ref-x86-64 (TRS2): analytic mpmath expectations (G7-G10) and independent hand models over certified production re-solves (G19, G20). Not empirical validation, and not optimality evidence: KKT_POINT_VERIFIED is numerically verified local stationarity of the held-regime problem; second-order conditions are not assessed.",
+    "Status tested, not reviewed: ADR 0071 and ADR 0019 Amendment 16 are Accepted (2026-11-08, Frank, decision board). The human description reviews (validate, submit_job) are recorded by Frank on the branch (9869773e), not by an agent. The design-lane prose check of D-92's catalogue entries and of D-93 (MSG corpus C12) is pending, as is the reviewer pass. No local full gate was run; the merge condition is CI run 42534167073 (CLAUDE.md gate by risk, 2026-11-08).",
+    "Optimising needs the audited nlp environment on linux-x86_64 and the revision_eo route; elsewhere validate/submit_job are unsupported (nlp_solver_unavailable), and coupled or legacy_eo documents are UNSUPPORTED (OPTIMIZATION_ROUTE_UNAVAILABLE). Phase and assessment regimes are held per start; two-phase-side and unguarded-regime boundary optima and the rank-limited-but-inactive gap are NOT_VERIFIED; the zero subsystem is all or nothing per start (design section 9.7). Declared in the guide (D-82): (a) gamma-phi held splits certify and are unguarded (regimes_unguarded); (b) pr-c1-v1 held single-phase splits give REGIME_MARGIN_UNDEFINED; (c) thermal-port boundary candidates fail V1; (d) the N1 absolute flow thresholds (a row is active when |a/N0| is at most 1e-6, a two-phase margin min(V, L)/N0 is at least 1e-4, N0 = 3 mol/s), fail-safe; (e) S1 dormant splits: a revision with a ZERO_FLOW split is NOT_VERIFIED at every candidate (fail-safe, a fix is queued, D-84).",
+    "Robustness (D-70): with Ipopt's fixed options (monotone barrier, limited-memory Hessian) OPT-L stalls at max_iter from the feasible side (starts {673.15 K, 650 K}; start 0 SOLVER_FAILED; 661 K and other scales too) and verifies from 650 K. Such starts are reported SOLVER_FAILED, never verified.",
+    "G12 masks the wall-clock members of the record (D-63); D-58 (Q26 allow-list) and D-60 (resolver) await the design-lane review."
+  ],
+  "review": {
+    "numerical": "pending",
+    "process_model": "pending"
+  }
+}
