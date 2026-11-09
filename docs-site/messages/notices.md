@@ -13,7 +13,7 @@ Messages that report something worth knowing but are not failures. How to read a
 - **Summary:** A value of kind &lt;kind&gt; is too large to show in &lt;unit&gt;, so it is shown only in its SI unit.
 - **Why:** Converting the value to &lt;unit&gt; gives a number beyond the largest a double can hold, so the display item carries no value. The SI value beside it is unaffected and is the value to compute with.
 - **Do:** Read the SI value, or choose a larger display unit for &lt;kind&gt; (for example kmol/h instead of mol/h).
-- **Parameters:** `kind` (text), `unit` (text)
+- **Parameters:** `kind` (text), `unit` (display_unit)
 
 Example:
 
