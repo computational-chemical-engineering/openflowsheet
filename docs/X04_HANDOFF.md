@@ -1,37 +1,35 @@
-# X04 handoff (engineer A done: WO-1–WO-3) — 2026-11-09
+# X04 handoff (engineer B: WO-4 done) — 2026-11-09
 
-Branch `wp/X04`, worktree `.claude/worktrees/x04`. Briefs `docs/briefs/X04-build-A.md`, `-A2.md`; decisions
-`docs/X04_DECISIONS.md` (D-1…D-5, for the design lane's one ruling round).
+Branch `wp/X04`, worktree `.claude/worktrees/x04`. Briefs `docs/briefs/X04-build-A.md`, `-B.md`; decisions
+`docs/X04_DECISIONS.md` (D-1…D-12, for the design lane's one ruling round).
 
 ## State
-- **WO-1 done** (`44dd16db`): `units/display.py` (`DisplayUnits`, `display_item`, `parse_display_units`, `csv_suffix`).
-- **WO-2 done** (`cbd220b6`, `2811d0fd`): project ambient, `get_project.ambient_pressure`, the five D9 catalogue
-  entries. A14 is WO-4's (needs the displayed stream table).
-- **WO-3 done** (`5361491c` render, `c63ef0cd` operation and schemas, `a9a0d33a` description and docs, `68b3ab13`
-  tests): `RenderContext.display_units` gives explanation `numbers` items `display` and renders quantity params from it
-  (`render._measured`, `_display_item`); `get_job_result(job_id, *, display_units=None)` with the root echo
-  `job_result.display_units` and both `error` documents explained under the preference (`local._displayed`);
-  OPERATIONS row `display_units {string, 1..1024}` (`operations.DISPLAY_UNITS`, reuse it for WO-4); schema shapes are
-  inlined (no new `$def`: a `$def` would add a T07 fixture and move F0 M8). `get_job_result.md` +1 sentence,
-  REVIEW.json both reviews pending. ADR 0019 Amendment 17 and the `interfaces-frozen.md` X04 paragraph name WO-4's
-  `get_stream_table` keyword too.
+- **WO-1–WO-3 done** (engineer A): `units/display.py`; project ambient; messages and `get_job_result`.
+- **WO-4 done** (`7371219d` operation, `9dcb6960` schema, `ade02030` formats and CLI, `d15178cf` description,
+  `0d7f8034` tests, `ef69160c` A13 fix, `e71de62b` SITES read-only): `stream_table.SITES` (§4 + `phase_id.ordinal`,
+  D-6), `stream_table.displayed`; `get_stream_table(..., display_units=None)` parses with `_display_units` and hashes
+  the displayed document; OPERATIONS row member `display_units`; schema `display` per object (`propertyNames`, item
+  once by pointer, D-11) and root `display_units`; `stream_table_format` text/csv in display units (D-9, D-10);
+  `streams --display-units` (bundle directory: no ambient, D-8); `get_stream_table.md` 1499 chars (D-7), both
+  reviews pending. `tests/test_x04_stream_table.py`: A14, A21–A31, A33, A34 (+ D-8, D-9), 29 tests.
+- A13 was flaky before WO-4 (3/4 fail at `df59a3df`): run-manifest/bundle `size_bytes` vary with
+  `elapsed_seconds`; fixed in the test (D-12), 4/4 pass.
 
-## Next: WO-4 / WO-5 (engineer B), then X04's final work order
-- WO-4: `get_stream_table(..., display_units=None)` — reuse `LocalApplication._display_units(text, operation)` and
-  `operations.DISPLAY_UNITS`. A32's test (`open_to <= {get_job_result, get_stream_table}`, `mcp_named == open_to`)
-  accepts the new member without edits; A31/A34 for the stream table are WO-4's.
-- Final WO (orchestrator decision 2026-11-09): surface chain link c_8 (register R-1010…), `SNAPSHOT_X04` /
-  `tests/x04_schema_support.without_x04` (pattern `st_schema_support.py`), taken once WO-4/WO-5 schemas are final.
-- Design lane: review `get_job_result.md`'s new sentence (REVIEW.json), rule on D-1…D-5.
+## Next
+- **WO-5** (engineer): web shell units control and the two screens (A38, A39), L-X04-1–3 and `sync-limitations`
+  (A37), `docs-site/guide/units.md` (A40), `evidence/X04/<commit>/manifest.json` (A1–A40).
+- **Final WO** (orchestrator decision 2026-11-09): surface chain link c_8 (R-1010…), `SNAPSHOT_X04` /
+  `tests/x04_schema_support.without_x04` (pattern `st_schema_support.py`) — schemas are now final for WO-3/WO-4
+  (`job.schema.json`, `application-results`, `project-policy`, `stream-table`, both request schemas).
+- Design lane: review `get_job_result.md` and `get_stream_table.md` (REVIEW.json), rule on D-1…D-12.
 
-## Gates (measured at `68b3ab13`)
-- `tests/test_x04_messages.py` 38 passed; targeted battery (x04 ×3, t06 units, schemas_p01, msg_*, t07 w5b/w5e/
-  conformance/global_state/injection/q26, m06 fixtures, rrc_application, m07a, t08 w2 reviews/digest): 1281 passed,
-  29 failed, 3 xfailed. All 29 are the known surface/snapshot family:
-  m07a surface chain 14 (11 before WO-3; +3 because `get_job_result.md` changed: control_iii, msg/st description
-  pins), R4-G3 snapshots 5 (unchanged), `test_t08_w2_surface_digest` 9 (8 already red at `82251ffc`; +1 "differ
-  from V17 C2 in exactly the two reviewed files"), `test_every_description_is_reviewed_by_both_lanes` 1 (red by
-  design until the reviews are recorded).
-- F0 PASS: M1 50/50, M2 61/61, M3 61/61, M4 61/61, M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 35/35.
-- `msg_catalogue.py check` PASS: 391 entries (95 complete), G2 0, G4 0, G5 clean. ruff, ruff format, mypy (touched
-  modules) clean.
+## Gates (measured at `0d7f8034`/`e71de62b`)
+- Targeted battery (x04 ×4, st ×4, t06 units ×2, schemas_p01, msg_*, t07 w5b/w5e/conformance/global_state/injection/
+  q26/w5a_operations/w6a/w6b/w6c, m06 fixtures/http, rrc_application, m07a chain, t08 w2 reviews/digest), serial,
+  `OMP_NUM_THREADS=1`: 1573 passed, 30 failed, 3 xfailed. Baseline `df59a3df` same list: 1544 passed, 30 failed.
+  Known red, identical ids before and after: m07a surface chain 14, w5e R4-G3/snapshots 5, t08 surface digest 9,
+  description reviews 1. The other two after-run failures are fixed and re-run: `test_st_core` C-8 (`e71de62b`;
+  st_core C-8 + x04 stream table + st cli/operation + x04 messages: 95 passed), A13 (D-12). Other failures: 0.
+- F0 PASS (at `0d7f8034`): M1 50/50, M2 61/61, M3 61/61, M4 61/61, M5 61/61, M6 85/85, M7 52/52, M8 105/105,
+  M9 35/35. `msg_catalogue.py check` PASS: 391 entries (95 complete), G2 0, G4 0, G5 clean. ruff, ruff format, mypy
+  (touched modules) clean.
