@@ -28,6 +28,7 @@ import gzip
 import hashlib
 import json
 import os
+import platform
 import re
 import shutil
 import subprocess
@@ -438,7 +439,24 @@ def nlp_selection(
     return equal and len(ids_selected) >= 1 and selected_exit == 0 and bool(modules), value
 
 
-def step14_checks(i: Inputs) -> list[dict[str, Any]]:
+#: The REAL record's first coupling record, under a record directory (A-11 item 4).
+REAL_S0 = "trust-region-study-real.coupling/S0.json"
+
+
+def platform_fields(s0: Path) -> dict[str, Any]:
+    """RP §6.5 (A-11 item 4, R-1008): the runner's `platform.platform()` and the
+    `frozen.reactor.fingerprint.platform` of the REAL coupling record `s0`, `null` with the reason
+    when it cannot be read. Neither is judged; they make §12's host-mismatch stop checkable."""
+    fields: dict[str, Any] = {"host_platform": platform.platform(), "record_platform": None}
+    try:
+        document = json.loads(s0.read_bytes())
+        fields["record_platform"] = document["frozen"]["reactor"]["fingerprint"]["platform"]
+    except (OSError, ValueError, KeyError, TypeError) as error:
+        fields["record_platform_reason"] = f"{s0}: {type(error).__name__}: {error}"
+    return fields
+
+
+def step14_checks(i: Inputs, root: Path = ROOT) -> list[dict[str, Any]]:
     """W24: M03's nlp tier A35–A42, M05 G1–G10, G12, G13, in the audited nlp environment."""
     checks: list[dict[str, Any]] = []
     text = i.log("step14-nlp-check")
@@ -472,6 +490,7 @@ def step14_checks(i: Inputs) -> list[dict[str, Any]]:
         exit_code=i.codes.get("step14-m05-real-replay"),
         last_line=last_line(real),
         command="nlp env: python scripts/m05_wo9_real.py --replay",
+        **platform_fields(root / "benchmarks/m05/records" / REAL_S0),
     )
     _exit(
         checks,
@@ -499,8 +518,10 @@ def step14_checks(i: Inputs) -> list[dict[str, Any]]:
     return checks
 
 
-def step15_checks(i: Inputs) -> list[dict[str, Any]]:
-    """W25 (§4.5): the journey at J carried to C; `check` and `replay` at C."""
+def step15_checks(i: Inputs, root: Path = ROOT) -> list[dict[str, Any]]:
+    """W25 (§4.5): the journey at J carried to C; `check` and `replay` at C. `a21.replay` carries
+    the platform fields of the M05 record the journey's R3 used: its re-run under the journey's
+    `m05/`, else the committed record it carried (A-11 item 4)."""
     checks: list[dict[str, Any]] = []
     line = last_line(i.log("step15-carry"))
     _check(
@@ -514,15 +535,18 @@ def step15_checks(i: Inputs) -> list[dict[str, Any]]:
         command=f"python scripts/release_gate.py --line {i.line} --rc {i.commit} "
         f"--carry-journey {i.journey[:8]}",
     )
-    for name, label, command in (
-        ("check", "step15-check", f"python scripts/m07_journey.py check {i.journey[:8]}"),
+    rerun = root / "benchmarks/m07/journey" / i.journey / "m05"
+    used = rerun if i.journey and rerun.is_dir() else root / "benchmarks/m05/records"
+    for name, label, command, extra in (
+        ("check", "step15-check", f"python scripts/m07_journey.py check {i.journey[:8]}", {}),
         (
             "replay",
             "step15-replay",
             f"nlp env, OMP_NUM_THREADS=1: python scripts/m07_journey.py replay {i.journey[:8]}",
+            platform_fields(used / REAL_S0),
         ),
     ):
-        _exit(checks, f"a21.{name}", i, label, command=command)
+        _exit(checks, f"a21.{name}", i, label, command=command, **extra)
     return checks
 
 

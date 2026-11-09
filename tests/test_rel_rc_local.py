@@ -255,6 +255,75 @@ def test_step15_carry_line_and_the_journey_commands(tmp_path: Path) -> None:
     )
 
 
+# -- A-11 item 4 (R-1008; S6R-17, S6R-18): the platform fields of steps 14 and 15 ------------------
+
+P0 = "Linux-6.12.111+deb13-amd64-x86_64-with-glibc2.41"
+P1 = "Linux-6.12.113+deb13-amd64-x86_64-with-glibc2.41"
+
+
+def _s0(directory: Path, host: str) -> None:
+    path = directory / local.REAL_S0
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        json.dumps({"frozen": {"reactor": {"fingerprint": {"platform": host}}}}), encoding="utf-8"
+    )
+
+
+def test_s6r17_the_real_replay_carries_both_platforms_and_is_judged_on_its_log_alone(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    committed = local.ROOT / "benchmarks/m05/records" / local.REAL_S0
+    leaf = json.loads(committed.read_bytes())["frozen"]["reactor"]["fingerprint"]["platform"]
+    (real,) = [c for c in local.step14_checks(_inputs(tmp_path, {})) if "real_replay" in c["id"]]
+    assert real["host_platform"] == local.platform.platform()
+    assert real["record_platform"] == leaf
+    root = tmp_path / "c"
+    _s0(root / "benchmarks/m05/records", P0)
+    for log, code, result in (
+        ("REPLAY PASS REAL differences=0\n", 0, "pass"),
+        ("REPLAY FAIL REAL differences=48\n", 1, "fail"),
+    ):
+        for host in (P0, P1):
+            monkeypatch.setattr(local.platform, "platform", lambda host=host: host)
+            i = _inputs(tmp_path, {"step14-m05-real-replay": code}, {"step14-m05-real-replay": log})
+            (real,) = [c for c in local.step14_checks(i, root) if "real_replay" in c["id"]]
+            assert real["id"] == "a60.w24.m05_g10_real_replay"
+            assert (real["result"], real["host_platform"], real["record_platform"]) == (
+                result,
+                host,
+                P0,
+            )
+
+
+def _replay(tmp_path: Path, root: Path, journey: str) -> dict[str, Any]:
+    codes = {"step15-carry": 0, "step15-check": 0, "step15-replay": 0}
+    i = _inputs(tmp_path, codes, {}, line="0.4", journey=journey)
+    (replay,) = [c for c in local.step15_checks(i, root) if c["id"] == "a21.replay"]
+    assert replay["result"] == "pass"
+    return replay
+
+
+def test_s6r18_the_journey_replay_reads_the_platform_of_the_m05_record_r3_used(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(local.platform, "platform", lambda: P1)
+    root, journey = tmp_path / "c", "a" * 40
+    _s0(root / "benchmarks/m05/records", P0)
+    carried = _replay(tmp_path, root, journey)
+    assert (carried["host_platform"], carried["record_platform"]) == (P1, P0)
+    _s0(root / "benchmarks/m07/journey" / journey / "m05", P1)
+    rerun = _replay(tmp_path, root, journey)
+    assert (rerun["host_platform"], rerun["record_platform"]) == (P1, P1)
+    (root / "benchmarks/m07/journey" / journey / "m05" / local.REAL_S0).unlink()
+    missing = _replay(tmp_path, root, journey)
+    assert missing["record_platform"] is None
+    assert "FileNotFoundError" in missing["record_platform_reason"]
+    (check,) = [
+        c for c in local.step15_checks(_inputs(tmp_path, {}), root) if c["id"] == "a21.check"
+    ]
+    assert "host_platform" not in check
+
+
 # -- step 16 --------------------------------------------------------------------------------------
 
 
