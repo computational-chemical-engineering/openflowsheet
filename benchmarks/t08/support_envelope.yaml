@@ -9134,3 +9134,51 @@ harvest:
   class: P
   to: []
   note: 'process note: no local full gate; CI green on both architectures is the merge condition (CLAUDE.md gate by risk)'
+- manifest: evidence/MSG/1602f72a1b257934ed03dd164b08ea865970cdaf/manifest.json
+  item: limitations[0]
+  sha256: 2e3dfda1750dc2baad39d385fb1c81c0684485160af9e1e3bc70834de54055d7
+  class: P
+  to: []
+  note: 'provenance note: software verification of catalogue prose and kinds on ref-x86-64 and CI; no validation of OPT readiness physics or numerics'
+- manifest: evidence/MSG/1602f72a1b257934ed03dd164b08ea865970cdaf/manifest.json
+  item: limitations[1]
+  sha256: 34106d9f66fd440727bad4c7a316fe05d44ecf2be0c8e6e46a14ab6bdb1fe15b
+  class: P
+  to: []
+  note: 'scope note: the seven OPT readiness stubs stay stubs; explain ends with the kind''s default action'
+- manifest: evidence/MSG/1602f72a1b257934ed03dd164b08ea865970cdaf/manifest.json
+  item: limitations[2]
+  sha256: d5170150f38be3e26dabd20778eeb0df895e37646a94493271b9d27fbc6fbd68
+  class: P
+  to: []
+  note: 'provenance note: C12 is a regression fixture; its text golden is self-generated; the forced probe proves nothing about the real probe'
+- manifest: evidence/MSG/1602f72a1b257934ed03dd164b08ea865970cdaf/manifest.json
+  item: limitations[3]
+  sha256: ddef5006175365adee0390c48e1c94b47a62d0085c5aca5b48ac094a8e5c1108
+  class: P
+  to: []
+  note: 'scope note: no machine message, schema, bundle or replay change; the catalogue digest is outside every identity'
+- manifest: evidence/MSG/1602f72a1b257934ed03dd164b08ea865970cdaf/manifest.json
+  item: limitations[4]
+  sha256: 6973e2ddc0909330a78521bdccf864754f6dd68b66bb630e7a653749e5b00e3f
+  class: P
+  to: []
+  note: 'scope note: codes and labels outside the ruling''s brief (apart from task_unsupported) are not covered'
+- manifest: evidence/MSG/1602f72a1b257934ed03dd164b08ea865970cdaf/manifest.json
+  item: limitations[5]
+  sha256: b777e34dedd150cc409d63589081ae9073d1e7f1799b69c73e2b9e5b5814624a
+  class: P
+  to: []
+  note: 'process note: open finding F1, G1''s collector misses OPT.* check ids; MSG design-lane follow-up'
+- manifest: evidence/MSG/1602f72a1b257934ed03dd164b08ea865970cdaf/manifest.json
+  item: limitations[6]
+  sha256: d0ffefdea39b00ae34017875a54423a16543a02cd6e9ef1907db172b46a4a7f1
+  class: P
+  to: []
+  note: 'process note: open finding F2, the U05 W5b CLI pin depends on the install; latent, no action by default'
+- manifest: evidence/MSG/1602f72a1b257934ed03dd164b08ea865970cdaf/manifest.json
+  item: limitations[7]
+  sha256: c6577e4f235213a293614ddd8bf6103999825246f36812bc181f044bc53eea0b
+  class: P
+  to: []
+  note: 'process note: no local full gate; two local skips; the merge condition is CI run 42570096932; status tested, not reviewed'

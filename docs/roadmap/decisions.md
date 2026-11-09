@@ -826,3 +826,10 @@ G16-b 40/40; F0 PASS. Q1 (`t07_reference.py --check` in CI): no (85.6 s). CI re-
   message_entry fixtures conflicted (generated, regenerated). A1 379/83/129 (main after RRC 379/83/138; RRC added no
   entries); A2 digest e3725b30… (main 14921a20…); A3–A9 hold, merged diff vs main per file = 8906f870's. Tests 1425
   passed, 2 skipped, 3 xfailed; msg check PASS; F0 PASS; ruff clean. D-96 amended. CI watched; manifest after green.
+
+- 2026-11-09 — wp/MSGp merged into main (74ceab73; evidence/MSG/1602f72a… tested, CI 42570096932; manifest 3ba9ded9).
+  Post-merge on main: ruff clean, F0 PASS, MSG check PASS (379/83/129), targeted tests 860 passed + 1 failed: the
+  harvest size, because the MSGp brief (mine) omitted the harvest step. Fixed on main in one follow-up commit: 8 MSG
+  limitations classified P in support_envelope.yaml, support matrix re-emitted (--check 0 problems), HARVEST_SIZE
+  (86, 1046, 140) → (87, 1054, 140); harvest/t08/manifests 1132 passed, 2 skipped. Lesson: every manifest brief carries
+  the harvest step. Next: ST WO-7 (docs/briefs/ST-WO7.md).
