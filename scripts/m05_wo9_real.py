@@ -457,10 +457,13 @@ def main(argv: list[str] | None = None) -> int:
     if not args.replay and stem.with_suffix(".json").exists():
         raise SystemExit(f"{stem}.json exists: a committed run is never overwritten in place")
     with tempfile.TemporaryDirectory(prefix="m05-wo9-real-") as root:
-        real = run_real(Path(root), archive=archive)
-        if args.retake_into is not None:
-            kept = keep_child_logs(Path(root), args.retake_into.resolve())
-            print(f"child-logs kept={kept}")
+        try:
+            real = run_real(Path(root), archive=archive)
+        finally:
+            # A re-take that raises keeps the logs that explain it (REL040 review N-5).
+            if args.retake_into is not None:
+                kept = keep_child_logs(Path(root), args.retake_into.resolve())
+                print(f"child-logs kept={kept}")
     if args.replay:
         # G7's store bijection is the record's (its ledger's executions); a replay executes
         # nothing, so its own store has attempts no replayed request claims, by design.
