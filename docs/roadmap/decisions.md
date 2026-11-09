@@ -966,3 +966,6 @@ G16-b 40/40; F0 PASS. Q1 (`t07_reference.py --check` in CI): no (85.6 s). CI re-
 - 2026-11-09 — Frank (relayed by the TRS2 crash session): restart jobs and agents; ≤ ~36 busy threads machine-wide,
   `uptime` first, ask vof before using more than ~12 cores, no pytest/mypy in many worktrees at once; tell hub on a
   reset. The quiet-machine decision above is superseded. REL040p finish → docs/briefs/REL040-s6-wo78-finish.md.
+- 2026-11-09 — X04 merged into main (720e5138; evidence/X04/0f7d9b87…, tested, 41 pass + FULLGATE unsupported; CI
+  42659368086). HARVEST_SIZE (89, 1063, 142). Post-merge: ruff clean, F0 PASS (M1–M9), targeted 1801 passed 3 xfailed.
+  Board items adr-0075 and x04-fq4 closed.
