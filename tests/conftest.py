@@ -93,8 +93,8 @@ def _msg_failure_iff_failure_bundle() -> Any:
 
     built = LocalApplication._run_result
 
-    def checked(self: Any, job: Any) -> Any:
-        result = built(self, job)
+    def checked(self: Any, job: Any, **keywords: Any) -> Any:
+        result = built(self, job, **keywords)
         bundled = any(output.kind == "failure_bundle" for output in result.outputs)
         assert (result.failure is not None) == bundled, (job.job_id, result.outputs)
         RUN_RESULTS_SEEN[0] += 1

@@ -883,6 +883,77 @@
                   "string",
                   "null"
                 ]
+              },
+              "display": {
+                "description": "ADR 0075 D7.1–D7.2: the number in the request's display units, present iff the request carried `display_units` and the number's `kind` is in the resolved map; `value`, `unit` and `kind` stay SI. A display value that is not a finite binary64 number is null with the reason `display_out_of_range`.",
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "value",
+                      "unit"
+                    ],
+                    "properties": {
+                      "value": {
+                        "type": "number"
+                      },
+                      "unit": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "value",
+                      "unit",
+                      "reason"
+                    ],
+                    "properties": {
+                      "value": {
+                        "type": "null"
+                      },
+                      "unit": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "reason": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "code",
+                          "params"
+                        ],
+                        "properties": {
+                          "code": {
+                            "const": "display_out_of_range"
+                          },
+                          "params": {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "required": [
+                              "kind",
+                              "unit"
+                            ],
+                            "properties": {
+                              "kind": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "unit": {
+                                "type": "string",
+                                "minLength": 1
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                ]
               }
             }
           }
