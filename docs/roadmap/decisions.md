@@ -894,3 +894,72 @@ G16-b 40/40; F0 PASS. Q1 (`t07_reference.py --check` in CI): no (85.6 s). CI re-
   Battery 1856 passed, 29 known red. F0 PASS; MSG check 394. Board: x04-get-job-result, x04-get-stream-table (Frank's
   human review; he records it with scratchpad/record_frank_reviews_x04.py). Final work order brief
   docs/briefs/X04-final-WO.md. D-13…D-15 left for a design-lane glance (non-blocking).
+
+- 2026-11-09 — X04 final work order done (wp/X04 4c818959): main merged (034bc43c, no conflicts); c_8 R-1010, D_8
+  6be1c002…, without_x04 = D_7 553b7612… exactly; SNAPSHOT_X04 (9 responses); t08_w2 X04_SERVED_SHA256 + decomposition
+  test; register R-1011…1016 (ADR 0075, Proposed); D-16…D-18. Battery 2486 passed, 3 xfailed, 1 failed = the
+  description-review test ("2 open: get_job_result, get_stream_table: human pending"). F0 PASS; MSG check 394/95.
+  Waiting on Frank: ADR 0075 accept and his two human reviews (script record_frank_reviews_x04.py). CI watched at
+  4c818959 (expected red on that one test only).
+
+- 2026-11-09 — 0.4.0 release prep on wp/REL040p (pushed, not merged): c46ef9fc `[4, "x05.*"]` + tests in V18 of
+  release/lines/0.4.json; 9743871e RP.L11 (ADR 0074 O-3) in RP §3.4 + A-10 §17.3, release_gate.py own D2 encoder, R-1007;
+  a1a00e17 S-6 log. S-6 rehearsal at 9743871e (release_rc dispatch 42604498076 green both legs incl. x05 clean-install):
+  steps 2, 6–10, 12, 13, 16 pass; step 11 fails (IDAES record: environment.platform, reference_values_yaml_sha256 →
+  re-take question); step 14 fails (NLP-1 inventory TypeError, start without final_decisions; M05 REAL replay
+  diverges at 673.15 K); step 15 fails (needs a 0.4 journey J; same divergence); 17: E01-G6-nlp fails (same TypeError).
+  0.4.0 is blocked on these. Debug brief docs/briefs/REL040-s6-debug.md (opus-engineer, wp/S6dbg).
+
+- 2026-11-09 — S6dbg (wp/S6dbg 3e25b294, 76d191f2): F-A fixed — the NLP-1 inventory script's `_typed_options` patch took
+  no arguments; since OPT WO-4 (f2f4ef5e) solve_start passes the request's options, so every start failed before Ipopt
+  (class a; fix + nlp test; inventory reproduces, G1–G6 PASS; nlp 212 passed; F0 PASS). F-B is the host kernel:
+  environment_fingerprint_sha256 hashes platform.platform(); 6.12.111 (record, 2026-10-16) → 6.12.113 (since the
+  2026-11-06 reboot); v0.3.0's code diverges the same way. Class c → design-lane ruling with step 11's IDAES record and
+  the 0.4 journey J (brief docs/briefs/REL040-s6-ruling.md). Also: `pytest -m nlp` over all tests stops at collection
+  (4 modules import mpmath, absent in .venv-nlp) — S-6 runs a selected list; noted.
+
+- 2026-11-09 — S-6 ruling (9f7cd613, docs/reviews/REL040-s6-ruling.md): REAL record re-taken at K3 at every cut on the
+  RC host and committed in J (A-11, R-1008; options "drop kernel from fingerprint" and "ignore fingerprint" rejected);
+  step 11's IDAES record differs only in environment.platform (reference-values change was insert-only, M01 Am. 1) →
+  joins the re-take, proved by new m01_idaes_retake_diff.py; J recorded at the cut, same kernel for J and C; no Frank
+  question. Work order WO-1…WO-6 (S6R-01…25) on wp/REL040p with S6dbg merged in (brief docs/briefs/REL040-s6-apply.md).
+
+- 2026-11-09 — Frank's board answers: ADR 0075 **accepted**; both X04 descriptions approved (he records them with
+  record_frank_reviews_x04.py); X04 FQ1–FQ3 defaults; **FQ4 = °C in human text** (not the default degC); 0.4 line
+  acceptance: "ADR-F1…F8 Accepted" moved to 0.5 (roadmap amended here); ADR 0068 D3 amendment stands. Board pinned to
+  Frank's claude.ai sidebar (he asked). DECISION: FQ4 is built on a side branch wp/X04fq4 (from wp/X04 4c818959) so
+  Frank's review script can run on the clean wp/X04 worktree; merged back after → alternative: wait for the script.
+  Reversible by: not merging the side branch.
+
+- 2026-11-09 — Frank recorded his human reviews of get_job_result/get_stream_table on wp/X04 (a39ebfff, his script).
+  FQ4 done on wp/X04fq4 (ADR 0075 Accepted da8f4597; °C/°F in human text via units.display.text_unit, D7.7; D-19…D-21),
+  merged into wp/X04 (3e16b359). X04 CI 42624006442 at 4c818959 red: m02/m04 strip chains lack without_x04, B50 surface
+  content lacks X04, default-install collection error (anyio via the mcp binding in test_x04_messages), plus the
+  then-pending human reviews (digest docs/briefs/X04-ci-red-digest.md). DECISION: D-21 (display_out_of_range shows
+  "degF" in text) → apply FQ4's rule via text_unit; alternative: design-lane wording ruling; reversible by one-line
+  revert. Fix brief docs/briefs/X04-ci-fix.md, with one local full default suite run (the targeted batteries missed
+  these files).
+
+- 2026-11-09 — S-6 ruling applied on wp/REL040p (00f15a01): WO-1…WO-5 (platform class + pinned fingerprint + archive
+  walk; build decision class `path` 81716c0a; --retake-into; m01_idaes_retake_diff.py; steps record both platforms;
+  A-11, R-1008). S6R-01…15, 17–20, 23 pass. WO-6 answer: the kernel change moved no REAL or IDAES number (other=0).
+  S6R-22 FAIL on non-numbers: sidecar 17→18 distributions (a git-ignored egg-info in the worktree) and one attempt's
+  stderr (empty-file digest with two images). DECISION: Q-S6a keep `path`, Q-S6b clean = fresh `git worktree add`,
+  Q-S6c stderr stays in identity; rerun from a fresh worktree first (brief docs/briefs/REL040-s6-rerun.md), design
+  lane confirms at its next ruling → alternative: rule first. Reversible by: the ruling.
+- 2026-11-09 — S-6 fresh rerun (99ac9e6e on wp/REL040p): proof PASS `path=128 version=0 platform=4 other=0
+  environment=equal`; S6R-22/23/25 PASS, no stderr written; S6R-24 blocked by a test pinning the old kernel.
+  DECISION: Q-S6d → that test reads the committed record's platform (0282e4d6). Alternative: J updates P0/P1. Reversible
+  by reverting 0282e4d6. Confirmation of Q-S6a–d + X04 D-22 → brief docs/briefs/REL040-s6-confirm.md.
+- 2026-11-09 — X04 CI fix round: wp/X04 at 0f7d9b87 (without_x04 chains, B50 R-1015 member, MCP importorskip, D-21
+  via D-22 catalogue param type `display_unit`, notices page regenerated). Local full suite 1 failed (stale doc page,
+  then fixed). CI watched.
+- 2026-11-09 — S-6 confirmation round (ruling §11, 513195c1): Q-S6a–d confirmed (Q-S6c sharpened: WO-7 compares log
+  digests exactly); WO-8 (IDAES re-take test pins the kernel too), S6R-29, A-11 item 7 → brief
+  docs/briefs/REL040-s6-wo78.md. A `reviewer` pass on wp/REL040p (WO-1, 3, 4, 7a) follows before its merge.
+  X04 D-22: ADR 0075 note + interfaces-frozen clause applied verbatim on wp/X04 (1d456c46), docs only.
+- 2026-11-09 — TRS2 reset 18:33 (load ~34; hardware fault suspected, reported by Frank). The REL040p engineer was cut
+  off after WO-8 d7258775, WO-7 26ad9d7f, A-11 item 7 0b62c12d (pushed); S6R-29 and WO-7's live proof line not run.
+  X04 CI green at 0f7d9b87 (42659368086); D-22 note 1d456c46 pushed; manifest brief docs/briefs/X04-manifest.md.
+  DECISION: until Frank says otherwise, TRS2 runs one serial process at a time, targeted tests only; S6R-29's
+  default-tier run and any K3 work wait for his go. Alternative: resume the ≤ 36-core rule. Reversible by: Frank's word.

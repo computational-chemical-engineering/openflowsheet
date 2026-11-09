@@ -43,7 +43,7 @@ Format: **package**: what it delivers · needs first · design pass.
 - **F0**: the corpus identity gate, plus line-ending rules for hashed files · nothing · none.
 - **W1**: design wave for all foundations (below) · rulings done · specifier, then architect.
 - Release procedure (ADR 0055 parts 1–3) also runs in 0.4; it is outside this roadmap.
-- *Line acceptance:* F0 green; ADR-F1 to ADR-F8 Accepted; the v2 core schema frozen.
+- *Line acceptance:* F0 green; the v2 core schema frozen. *(Amended 2026-11-09, Frank, decision board `rel04-line-acceptance`: "ADR-F1 to ADR-F8 Accepted" moved to 0.5; ADRs 0060–0067 stay Proposed.)*
 
 ### 0.5: platforms, registry, data and the new schema
 
@@ -54,8 +54,8 @@ Format: **package**: what it delivers · needs first · design pass.
 - **F2**: material model and revision schema v2 · F1, rulings · architect (W1).
 - **F8**: identity and replay v2 · F2, F3 · architect (W1).
 - **X06**: MCP over HTTP, branches, job resume, further solve policies · nothing · architect.
-- *Line acceptance:* a v2 revision with store-pinned records solves on the legacy route on all three OSes; 0.3.0
-  bundles replay everywhere.
+- *Line acceptance:* ADR-F1 to ADR-F8 Accepted (moved from 0.4, Frank 2026-11-09); a v2 revision with store-pinned
+  records solves on the legacy route on all three OSes; 0.3.0 bundles replay everywhere.
 
 ### 0.6: multiphase core and generic units
 
