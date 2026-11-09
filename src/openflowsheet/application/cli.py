@@ -726,10 +726,22 @@ def _stream_table_refusal(code: str, message: str, detail: Mapping[str, Any]) ->
 def _bundle_display_units(text: str) -> DisplayUnits | ApiError:
     """`--display-units` of a bundle directory: the preference resolved without an ambient
     pressure (a directory has no project; X04 decision D-8), or its refusal as the `ApiError`
-    `get_stream_table` raises for it (ADR 0075 D9)."""
+    `get_stream_table` raises for it (ADR 0075 D9). The request schema's bound on the member
+    (1 to 1024 characters) comes first and refuses as `dispatch` does (X04 review S4)."""
     from openflowsheet.application.contract import api_error
+    from openflowsheet.application.operations import OPERATIONS
+    from openflowsheet.application.types import DocumentSchemaError, validate_inline
     from openflowsheet.units import DisplayUnitsError, parse_display_units
 
+    operation = OPERATIONS["get_stream_table"]
+    member = {
+        "type": "object",
+        "properties": {"display_units": operation.request_schema["properties"]["display_units"]},
+    }
+    try:
+        validate_inline(operation.name, member, {"display_units": text})
+    except DocumentSchemaError as error:
+        return api_error("invalid_request", error.message, pointer=error.pointer).error
     try:
         return parse_display_units(text, None)
     except DisplayUnitsError as error:

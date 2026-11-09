@@ -710,6 +710,22 @@ def test_d8_a_bundle_directory_takes_a_preference_without_an_ambient(
     assert err
 
 
+@pytest.mark.parametrize("text", ["", "x" * 1025])
+def test_d8_a_bundle_directory_applies_the_request_bound_first(
+    solved: Solved, text: str, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """X04 review S4: `--display-units` outside 1 to 1024 characters is refused for a bundle
+    directory exactly as for a project's job — by the request schema, at `/display_units`."""
+    printed = []
+    for argv in ([str(solved.bundle(solved.rankine))], _by_job(solved, solved.rankine)):
+        code, out, _ = streams(*argv, "--format", "json", "--display-units", text, capsys=capsys)
+        assert code == API_EXIT_CODES["invalid_request"]
+        refused = json.loads(out)
+        assert refused["detail"]["pointer"] == "/display_units"
+        printed.append((refused["code"], refused["message"], refused["detail"]))
+    assert printed[0] == printed[1]
+
+
 # -- A31. Parity on every transport ----------------------------------------------------------------
 
 PARITY = (
