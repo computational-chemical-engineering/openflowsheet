@@ -1,4 +1,15 @@
-# ST handoff (wp/ST, 2026-11-08) — review fix round done; WO-7 next
+# ST handoff (wp/ST, 2026-11-09) — WO-7 done (main merged, c_7, ADR 0068 Accepted); CI, then the manifest
+
+**Now (WO-7, 2026-11-09, brief `docs/briefs/ST-WO7.md`, ST_DECISIONS §WO-7).** `wp/ST` = main `89af1c30` merged
+(`ced1519e`: MSG, X02, OPT, RRC, MSG catalogue ruling) + post-merge test fixes and registration. ADR 0068 **Accepted
+(Frank Peters, 2026-11-08)**; register R-1000…R-1006. Surface link **c_7** (R-1000): D_7 `553b7612…`, `without_st`
+= D_6 `3fdc797a…` exactly. 44 served 0.3.0 documents byte-identical; G7 41 bitwise, G8 0 failures (max 1.756e-4),
+G8u max 2.7027 — as WO-8b. Cache count 39, A20 23, `HARVEST_SIZE` (87, 1054, 140) = main's, catalogue 386/90
+complete, digest `03818ed5…`. Battery 2394 passed + 4 fixed (56 passed on re-run), node 98, F0 PASS, ruff clean.
+**Next:** CI on both architectures for the pushed head; then the orchestrator briefs the evidence manifest
+(`evidence/ST/<commit>/manifest.json`, `tested`) and the merge. When ST's manifest lands, `HARVEST_SIZE` moves by it.
+
+The sections below are the earlier state, kept for the record.
 
 **State.** Branch `wp/ST` (worktree `.claude/worktrees/st`) = main `00a508bd` + `wp/MSG` `35403f42` merged + WO-1…6 +
 the fix round of `docs/reviews/ST-review.md` (brief `docs/briefs/ST-fix-round.md`). Not merged to main; ADR 0068

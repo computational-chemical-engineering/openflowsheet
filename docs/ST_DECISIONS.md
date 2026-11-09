@@ -364,3 +364,42 @@ M3 61/61, M4 61/61, M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 35/35).
   unchanged (`basis_provider` returns a fresh `Iapws95Provider()`). No product code moved. Recorded counts:
   carried splits 9 without CoolProp, 12 with (TH-C2's 3 now checked). Reproduced and checked with
   `CoolProp==8.0.0` installed into a scratch `--target` (numpy removed from it).
+
+## WO-7 (merge main, chain link c_7, ADR 0068 Accepted, register ids; brief `docs/briefs/ST-WO7.md`)
+
+- **7-1 — `git merge origin/main` (`89af1c30`: MSG, X02, OPT, RRC, MSG catalogue ruling) = `ced1519e`, no rebase.**
+  12 files conflicted, every one resolved keeping both sides; no semantic clash. Surface chain: main's c_5 X02
+  (R-950), c_6 OPT (R-960) kept; ST's link c_5 → **c_7 (R-1000)** in `m07a_rc.LINKS`, the chain test (seven links,
+  controls (i)–(iv), MSG/X02/OPT controls extended by L6) and `test_t08_w2_surface_digest.py` (ST strip applied
+  first in every decomposition; `test_sts_surface_move_decomposes_onto_opts`). ADR 0019: Amendment 13 (ST) before
+  main's 15 and 16. `ADDENDA` m02, m05, e01, **opt, st** (merge order), `test_m05`'s pin and the module docstring
+  amended. Schema tests: ST's `ST_OPERATIONS` skip beside main's `without_x02`/`without_opt`; `SNAPSHOT_ST` after
+  `SNAPSHOT_OPT`. `cli.py` docstring names `optimize` and `streams`. Auto-merged without conflict:
+  `api_errors.yaml`, catalogue YAML, `scan-allow.yaml`, `support_envelope.yaml`, harvest, global-state count,
+  decision register.
+- **7-2 — post-merge test fixes (follow-up commit).** `test_x02_…_pre_x02_snapshot` and `test_opt_…_pre_opt_snapshot`
+  skip `ST_OPERATIONS` (ST's row postdates both; MSG's pattern); ST's description-pin test judges
+  `texts_before_links(texts)` (OPT's two texts are undone first, as control (iii) does); a stray copy of ST's old c_4
+  control body left inside OPT's text control by the merge removed.
+- **7-3 — generators.** `t07_schema_fixtures.py --write`: the two `message_entry` fixtures' `catalogue.sha256`
+  `3ac1279a…` (ST) / `e3725b30…` (main) → `03818ed56421a25c10e692189532721673cc6b2ca01e20ef271521d6f3357978`.
+  `msg_catalogue.py sync-limitations`, `doc_pages.py`, `t08_support_matrix.py --emit`: no diff. `--check` of each, plus
+  `t08_numerical_policy.py --check`, `m06_web_routes.py --check`: 0 problems. CLI pins: `test_t07_w5b_cli.py` passes
+  unchanged, no `--write-pins`.
+- **7-4 — catalogue G2.** `msg_catalogue.py check` PASS: 386 entries (main 379 + ST 7), 90 complete (83 + 7), review
+  on 129 (main's); G1, G2 0 missing; G4 0; released-not-in-catalogue 0.
+- **7-5 — ADR 0068 Accepted (Frank Peters, 2026-11-08)**; D3 amendment text unchanged. Register R-1000 (link c_7),
+  R-1001 (D1/D2/D8 computed on read), R-1002 (D3 phase rule as amended), R-1003 (D4/D5 arithmetic), R-1004 (D6/D7
+  absence, energy summary), R-1005 (ADR 0025 D2.3, ruling 6), R-1006 (web shell, O3). Pointers updated: ADR 0019
+  Amendment 13 heading and digest bullet, `interfaces-frozen.md`, design note header, `st_schema_support` docstring.
+- **7-6 — numbers (merge tree).** D_7 = `553b76122fefd4f09d6e91d16e7096d05b9f7793bb88e1876252dc2213e24894`;
+  `without_st` = `3fdc797ad64485abf63fb491ebd56aa43dc510e62e9e218b0dd7a8fcc2e38a85` = D_6 exactly. Served 0.3.0
+  documents: 52 bundles, 44 `document_sha256` byte-identical to `eb1e0936`, 8 refused `not_found` both times — none
+  moved. G7 41 bitwise; G8 0 failures, max 1.756e-4; G8u max 2.7027 (146 projection, 11 other rows) — all as WO-8b.
+  Global-state cache count 39 (main's; ST adds none). T08.A20 23. `HARVEST_SIZE` (87, 1054, 140) = main's (ST has no
+  manifest yet). Catalogue digest `03818ed5…`.
+- **7-7 — battery** (`PYTHONPATH=src`, worktree `src` confirmed): `test_st_*`, `test_msg_*`, `test_t08*`, surface
+  chain, global state, w5b CLI, w5e, harvest, evidence manifests, conformance, m02/m04/m05 schemas, `test_m06_*`:
+  merge commit 2394 passed, 28 skipped, 3 xfailed, 4 failed (7-2's); after 7-2 the four and their modules 56 passed.
+  Node web tests 98 pass. F0 `--check` PASS (M1 50/50, M2 61/61, M3 61/61, M4 61/61, M5 61/61, M6 85/85, M7 52/52,
+  M8 105/105, M9 35/35). `ruff check`, `ruff format --check` clean. The description-review test passes (both reviews).
