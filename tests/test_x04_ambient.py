@@ -365,12 +365,13 @@ def test_a13_the_ambient_is_not_in_run_identity(tmp_path: Path) -> None:
     names = set(files[0])
     assert any(name.endswith("solution-state.json") for name in names), sorted(names)
     assert any("certificate" in name for name in names), sorted(names)
-    # The run result, every output's hash included — but the hashes over the whole bundle or
-    # its manifest, which cover the manifest's wall-clock members (D-2).
+    # The run result, every output's hash included — but the hashes and sizes of the whole
+    # bundle and of its manifest, which cover the manifest's wall-clock members (D-2; their
+    # length varies with `elapsed_seconds`'s digits, X04 decision D-12).
     documents = [result.as_document() for _, _, result in solved]
     for document in documents:
         for output in document["outputs"]:
             if output["kind"] in ("replay_bundle", "run_manifest"):
-                del output["sha256"]
+                del output["sha256"], output["size_bytes"]
     assert {o["kind"] for o in documents[0]["outputs"]} >= {"solution_certificate"}
     assert documents[1] == documents[0] and documents[2] == documents[0]

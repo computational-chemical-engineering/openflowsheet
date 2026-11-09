@@ -122,3 +122,14 @@ The item is WO-3's (`{value: number, unit}` or `{value: null, unit, reason: disp
 `display_units` as `job_result`'s. So a display entry for `rho` or an empty `display` is refused (A33 test).
 *Alternative.* Six inline copies of the item, or an open `display` map.
 *Reversible by:* the schema edit (one commit).
+
+## D-12. A13 also leaves out the bundle's and the manifest's `size_bytes` (a flaky comparison, found in WO-4)
+
+*Question.* `test_a13_the_ambient_is_not_in_run_identity` failed 3 of 4 runs at `df59a3df` (before WO-4): the run
+results differed in `size_bytes` by one byte (2335 vs 2336, 54307 vs 54308). D-2 drops the `sha256` of the
+`replay_bundle` and `run_manifest` outputs because they cover the manifest's wall-clock members; their sizes cover the
+same members, and `elapsed_seconds`'s digit count varies from run to run. Every bundle file is still compared byte
+for byte (the manifest without its three wall-clock members).
+*Choice.* The test deletes `size_bytes` beside `sha256` for those two outputs. 4 of 4 passes after.
+*Alternative.* A fixed clock (not available through `LocalApplication.solve`, as D-2 says).
+*Reversible by:* the one line in `tests/test_x04_ambient.py`.
