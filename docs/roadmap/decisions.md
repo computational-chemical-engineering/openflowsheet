@@ -772,3 +772,40 @@ ADR 0072 Accepted, FQ1 yes, FQ2–FQ4 default, drafts → R-990…R-995; starts 
 claimed; HARVEST_SIZE (85, 1039, 139)). On main after the merge: ruff OK; F0 PASS (M1–M9); targeted 1609 passed,
 2 skipped, 21 deselected (nlp), 3 xfailed. Surface chain c_6 (D_6 `3fdc797a…`); caches 39. Next: RRC merge prep
 (docs/briefs/RRC-merge-prep.md). Design-lane batch now ready: X02 D-39 + OPT D-92 prose, OPT D-93 (C12).
+
+## 2026-11-09 — MSG catalogue prose ruling for X02/OPT codes (f7da1420)
+
+`docs/reviews/MSG-catalogue-X02-OPT.md`: X02 entries kept/`why` rewritten; OPT `nlp_solver_unavailable` and
+`request_invalid` (arg → `member`, root variant) rewritten; 7 stubs re-titled, kinds final, all `review: true` cleared
+(138 → 129); allow-list reasons corrected; C12 keeps `nlp_solver_unavailable` but forces the solver probe unavailable
+(latent install dependence); `task_unsupported` prose rewritten. Work order §5 (10 steps), acceptance A1–A9. F1 (G1
+misses `OPT.*` check ids; loader forbids `.`) → separate MSG follow-up; F2 (U05 CLI pin install dependence) latent.
+DECISION: apply the work order on a short branch after RRC merges and before ST's WO-7 → both then take it with one
+main merge. Alternative: apply now (RRC, mid-merge of main, would have to re-merge the catalogue digest). Reversible
+by: applying it earlier.
+
+## 2026-11-09 — RRC merge prep done (wp/RRC fcba6656); CI pending
+
+RRC D-39…D-45: main merged (8 conflicts, both sides kept; RRC's `revision_continuation` passes through OPT's
+`write_revision_bundle`); no surface link (served digest = D_6 exactly; ST takes c_7); caches 39; ADR 0072 Accepted,
+R-990…R-995; catalogue: 3 refusal-reason labels allow-listed (digest → `14921a20…`); no ADR 0025 addendum (no new
+sha256 name); G8 had no CI coverage → new `tests/test_rrc_g8_determinism.py` (N1, C3 twice in fresh processes, x86-64
+R0 pins; aarch64 leg checks cross-arch — a different R0 there is a G8 failure to escalate, not a pin to move); T08 B27
+excludes RRC's policy as S11 did its column (design-lane glance at the manifest). F0 PASS; targeted tests green.
+
+## 2026-11-09 — MSG catalogue ruling applied on wp/MSGp (8906f870)
+
+Ruling §5 applied verbatim at base 9295f0fc; A1–A5, A7–A9 exact (digest `5e5026c5…`, review 138 → 129). A6: beyond the
+stated U05 stderr lines, U05's stdout `detail.explanation` (why/action/gap) also moves — the refusal document carries its
+explanation (MSG §3.7); `code`, `message`, `pointer` unchanged, `PINS_T07_SHA256` holds. DECISION: accept as the
+ruling's direct consequence, no new ruling → noted for the design lane's next MSG read. Alternative: a ruling round
+now. Reversible by: a later ruling. Next: after RRC merges, merge main into wp/MSGp, regenerate the digest-carrying
+fixtures (RRC's allow-list also moves the digest), CI, merge — before ST's WO-7.
+
+## 2026-11-09 — RRC CI red on V17-T10 (run 42547017088); ruling a109eea6 applied (wp/RRC 6b892b03)
+
+Only failure: `test_g16b_reference_run[V17-T10-*]` T10-C3 (exact set of offered policies; RRC's R-995 adds
+`RRC-revision-v1`). Ruling `docs/reviews/RRC-v17-t10.md`: a fourth reference document `t07_reference_rrc.json` in
+T08's form (Amendment RRC-1, GC-18, R-996, RRC D-46), sha `621003a8…`; the three frozen documents unchanged; exclusion
+rejected (it would make the expected answer false). Applied: A1–A8 exact (negative control fails GC-18 as stated);
+G16-b 40/40; F0 PASS. Q1 (`t07_reference.py --check` in CI): no (85.6 s). CI re-run pending.
