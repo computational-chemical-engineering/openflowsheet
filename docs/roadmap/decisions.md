@@ -783,3 +783,12 @@ misses `OPT.*` check ids; loader forbids `.`) → separate MSG follow-up; F2 (U0
 DECISION: apply the work order on a short branch after RRC merges and before ST's WO-7 → both then take it with one
 main merge. Alternative: apply now (RRC, mid-merge of main, would have to re-merge the catalogue digest). Reversible
 by: applying it earlier.
+
+## 2026-11-09 — RRC merge prep done (wp/RRC fcba6656); CI pending
+
+RRC D-39…D-45: main merged (8 conflicts, both sides kept; RRC's `revision_continuation` passes through OPT's
+`write_revision_bundle`); no surface link (served digest = D_6 exactly; ST takes c_7); caches 39; ADR 0072 Accepted,
+R-990…R-995; catalogue: 3 refusal-reason labels allow-listed (digest → `14921a20…`); no ADR 0025 addendum (no new
+sha256 name); G8 had no CI coverage → new `tests/test_rrc_g8_determinism.py` (N1, C3 twice in fresh processes, x86-64
+R0 pins; aarch64 leg checks cross-arch — a different R0 there is a G8 failure to escalate, not a pin to move); T08 B27
+excludes RRC's policy as S11 did its column (design-lane glance at the manifest). F0 PASS; targeted tests green.
