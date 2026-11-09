@@ -644,9 +644,12 @@ As alpha §8.3, with R7 1 and R8 1:
 - `benchmarks/t08/support_envelope.yaml` is pinned with `envelope_id: <gate_set.envelope_id>` and
   `release: <version>`. Its header comment gains one line in the pattern of the earlier ones.
 - The records bound to a version or to the RC host are re-taken at K3, from a clean worktree at K3, on the host that
-  runs steps 11, 14 and 15, and are committed together as J (§4.5). Each re-take is written outside the repository and
-  proved by a committed tool, and it replaces the committed files only after its proof prints `PASS`. The proofs'
-  summary lines go into J's commit message and the build log.
+  runs steps 11, 14 and 15, and are committed together as J (§4.5). The clean worktree is a new one, made for the
+  cut's re-takes by `git worktree add --detach <path> <K3>`. Before the first re-take starts, `git status --porcelain
+  --ignored` in it prints nothing, and the build log records that check. A worktree that has held an earlier run, an
+  install or a build is not clean, even when `git status --porcelain` prints nothing. Each re-take is written outside
+  the repository and proved by a committed tool, and it replaces the committed files only after its proof prints
+  `PASS`. The proofs' summary lines go into J's commit message and the build log.
   - The five in-process G10 records (TR-E2, TR-E2-FAR, TR-E2-FD, LOOP-R, LOOP-S), digest-only, proved with
     `scripts/m05_retake_diff.py --digest-only --old-version <the committed records' version>` (R-458).
   - M05's REAL record `benchmarks/m05/records/trust-region-study-real.*`, written by `scripts/m05_wo9_real.py
@@ -1225,6 +1228,11 @@ the review's (M-1, M-2, S-1 to S-5, S-7, rulings 3 to 7) and WO-R7's tests (`doc
        the remedy (R-1008)."
   6. §14 gains the row: "| R-1008 | records bound to the RC host re-taken at K3 on that host and committed in J; their
      proofs; the host-mismatch stop | §7.1, §4.5, §5.1, §12 |".
+  7. (S-6 confirmation round, 2026-11-09.) §7.1's re-take bullet gains the definition of the clean worktree: a new
+     `git worktree add --detach <path> <K3>`, in which `git status --porcelain --ignored` is empty before the first
+     re-take, recorded in the build log. Why: at WO-6 a reused worktree held a git-ignored
+     `src/openflowsheet.egg-info`. With `PYTHONPATH=src` it added `openflowsheet` to the REAL re-take's environment
+     sidecar (17 → 18 distributions), and the proof failed. From a fresh worktree the sidecar was equal.
 
   Why: at S-6 (`9743871e`), steps 11, 14 and 15 failed only because the workstation's kernel moved from `6.12.111`
   to `6.12.113` at its 2026-11-06 reboot. The REAL record (taken 2026-10-16) and the IDAES record (2026-10-08) both
