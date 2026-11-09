@@ -764,3 +764,11 @@ ST green on both archs, identity and default-install after the CI-1/CI-2 test fi
 RRC merges: main merge, its chain link, ADR 0068 Accepted + amendment, R-1000…, manifest, CI). OPT: ADR 0071 drafts
 numbered R-961…R-969, R-988 (c1b9b125, D-94); CI pending. RRC merge-prep brief written (docs/briefs/RRC-merge-prep.md):
 ADR 0072 Accepted, FQ1 yes, FQ2–FQ4 default, drafts → R-990…R-995; starts after OPT merges.
+
+## 2026-11-09 — OPT merged (937223ad)
+
+`wp/OPT` merged `--no-ff` after CI `42534167073` green on `c1b9b125`; manifest `evidence/OPT/c1b9b125…` tested
+(03e40679; audited env 21 passed, G2 hashes and G22 identical to WO-8b, D-95; G21 local full gate "unsupported", not
+claimed; HARVEST_SIZE (85, 1039, 139)). On main after the merge: ruff OK; F0 PASS (M1–M9); targeted 1609 passed,
+2 skipped, 21 deselected (nlp), 3 xfailed. Surface chain c_6 (D_6 `3fdc797a…`); caches 39. Next: RRC merge prep
+(docs/briefs/RRC-merge-prep.md). Design-lane batch now ready: X02 D-39 + OPT D-92 prose, OPT D-93 (C12).
