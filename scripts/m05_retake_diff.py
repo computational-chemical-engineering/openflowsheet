@@ -50,7 +50,9 @@ coupling pair whose fingerprint has it, the committed side equals `--old-platfor
 side the running `platform.platform()` (without `--old-platform`, the two sides are equal); a pair
 that breaks this, or has the leaf on one side only, is other. Every other leaf of such a fingerprint
 must be equal, digests included and not relabelled. Such a pair carries no `openflowsheet_version`,
-so the `version` rule does not apply to it; a pair whose fingerprint has neither leaf is other.
+so the `version` rule does not apply to it, and `--old-version` given beside it is other (A-11
+requires `environment=equal`; `docs/reviews/REL040-review.md` N-3). A pair whose fingerprint has
+neither leaf is other.
 
 REAL's experiments archive (`<stem>.experiments.json`; both stems have it, or neither) is walked
 after the store index, under the map the other documents built: each file name's 64-hex key is
@@ -350,6 +352,9 @@ def _fingerprint_rules(
                 walk.flag(f"{where} ({side}): frozen.{unit}.fingerprint has a platform")
     (had_p, xp), (has_p, yp) = _leaf(a, PLATFORM_PATH), _leaf(b, PLATFORM_PATH)
     if had_p and has_p:
+        if old_version is not None:
+            # A-11 requires `environment=equal`, which `--old-version` would relax (review N-3).
+            walk.flag(f"{where}: --old-version is refused beside the platform")
         running = platform.platform()
         return None, _pinned_rule(
             walk, xp, yp, where, PLATFORM_PATH, "--old-platform", old_platform, running

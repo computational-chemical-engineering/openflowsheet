@@ -812,3 +812,19 @@ def test_wo_r1_every_inner_state_moving_one_to_one_fails(tmp_path: Path) -> None
     n = len(COUPLINGS) * ITERATIONS
     assert f"other={n} " in lines[0]
     assert sum("inner.state_sha256" in line and "compared exactly" in line for line in lines) == n
+
+
+# -- REL040 review N-3: `--old-version` is refused beside a pinned platform ----------------------
+
+
+def test_n3_old_version_with_a_platform_pinned_pair_fails(tmp_path: Path, running_p1: None) -> None:
+    # A-11 requires `environment=equal`; with `--old-version` the tool could print
+    # `PASS ... environment=distributions` for REAL. Passes at `5d0c4121`.
+    old_stem, new_stem = tmp_path / "old" / "case", tmp_path / "new" / "case"
+    _write(old_stem, _real(K1, K2))
+    _write(new_stem, _real(K4, K3, host=P1))
+    passed, lines = RETAKE.digest_only(old_stem, new_stem, V0, P0)
+    assert not passed
+    assert f"platform=2 other={len(COUPLINGS)} " in lines[0]
+    for name in COUPLINGS:
+        assert f"  coupling {name}.json: --old-version is refused beside the platform" in lines
