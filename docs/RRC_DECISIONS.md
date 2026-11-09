@@ -305,3 +305,15 @@ results), `40fba287` (runner self-contained), `b91b0ddb` (registration, results 
   `--check` 0). Records (`docs/briefs/`, `docs/reviews/`, `docs/roadmap/decisions.md`, this log) keep their
   R-RRC ids; `benchmarks/rrc/*.yaml` are pre-registered transcriptions and keep "Proposed". B50/changelog/support
   matrix tests 41 passed.
+- **D-42 (merge prep 5: MSG catalogue G2, as X02 D-39 / OPT D-92).** On the merged tree `msg_catalogue.py scan` found 3
+  RRC codes without an entry: `not_continuable` (A3), `source_binding`, `source_identity` (A2) — the refusal reasons of
+  `application/revision_continuation.py`, recorded in `solve-path.json`'s `revision_continuation` member and the
+  trace's `initializer_rejected` event, after which the restart runs. They reach no audit hook, `explain` or
+  `RunResult.failure` (MSG note §3.3: solve events gain nothing in 0.4), so they are **allow-listed** with reasons in
+  `scan-allow.yaml`, as OPT's record-reason labels were; no complete entry or stub. `sync-limitations` carried RRC's
+  L21 and L-COL-9 texts into `limitations.yaml` (85 entries). `msg_catalogue.py check` PASS: 379 entries (83 complete,
+  296 stubs, review: true on 138); G1 0, G2 0 (235 codes), G4 0, G5 clean. Catalogue `7bbe3d65…` → `14921a20…`;
+  `t07_schema_fixtures.py --write` re-wrote the two `message_entry` fixtures and, for the first time on this branch,
+  the two `project_summary` fixtures with `RRC-revision-v1` in `solve_policies` (served content R-995 names; the
+  branch had not regenerated them since WO-4). `docs-site/messages/limitations.md` regenerated; `doc_pages.py --check`
+  up to date. `test_msg_*`, application-result and schema-fixture tests: 489 passed, 3 xfailed.

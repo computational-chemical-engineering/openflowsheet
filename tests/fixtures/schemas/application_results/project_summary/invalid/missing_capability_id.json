@@ -34,6 +34,10 @@
     },
     "solve_policies": [
       {
+        "policy_id": "RRC-revision-v1",
+        "policy_sha256": "ff2ff84f8172fca9cbfa86334f82f43eed1c0917d0c5c673ce6f1f73de915f19"
+      },
+      {
         "policy_id": "T04-W12",
         "policy_sha256": "1f7d11723fa25d19970a506a8429f55b8365f32c4881f0c4a1e39fcd9d10b6f5"
       },

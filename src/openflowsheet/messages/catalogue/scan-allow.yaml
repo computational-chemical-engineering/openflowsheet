@@ -13,3 +13,6 @@ allow:
   k03_kind_bound: "a variable-bound reason label (studies/nlp/revision_host.py `variable_bounds`, OPT design §4.2.3) in the optimizer record, never a message"
   no_declared_bound: "a variable-bound reason label (studies/nlp/revision_host.py `variable_bounds`, OPT design §4.2.3) in the optimizer record, never a message"
   phase_row_not_closure_test: "a V4 verification-check detail label (studies/nlp/verification.py, OPT design §9.3 A-3) in the candidate verification, never a rendered message"
+  not_continuable: "a revision-continuation refusal reason label (application/revision_continuation.py A3, RRC design §5.3, §5.4) in `solve-path.json`'s `revision_continuation` member and the trace's `initializer_rejected` event; the restart follows, never a message"
+  source_binding: "a revision-continuation refusal reason label (application/revision_continuation.py A2, RRC design §5.3) in `solve-path.json`'s `revision_continuation` member and the trace's `initializer_rejected` event; the restart follows, never a message"
+  source_identity: "a revision-continuation refusal reason label (application/revision_continuation.py A2, RRC design §5.3) in `solve-path.json`'s `revision_continuation` member and the trace's `initializer_rejected` event; the restart follows, never a message"
