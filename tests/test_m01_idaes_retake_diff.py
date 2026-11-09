@@ -1,5 +1,10 @@
-"""R-1008 (`docs/reviews/REL040-s6-ruling.md` §8 WO-3, S6R-11 to S6R-15):
+"""R-1008 (`docs/reviews/REL040-s6-ruling.md` §8 WO-3, S6R-11 to S6R-15, as replaced by §11.4 WO-8):
 `scripts/m01_idaes_retake_diff.py` on copies of the committed IDAES conformance record.
+
+§8.0 (as amended by §11.4): no assertion depends on the host or the date at which the committed
+record was taken. The old platform P0 is read from the record; every new platform and the new
+`environment.python` are made-up literals that no host prints, asserted at import to differ from the
+record's. The stale input hash of S6R-14 is set synthetically on the committed side.
 
 A re-take passes iff every member under step 11's comparator is equal, except `environment.platform`
 moving from `--old-platform` to the running `platform.platform()`, and an `inputs.<name>_sha256`
@@ -41,7 +46,14 @@ def _script() -> ModuleType:
 RETAKE = _script()
 COMMITTED: dict[str, Any] = json.loads(RECORD.read_bytes())
 P0: str = COMMITTED["environment"]["platform"]
-P1 = "Linux-6.12.113+deb13-amd64-x86_64-with-glibc2.41"
+P1 = "Linux-0.0.0-s6r12-retake"
+P_OTHER_RUNNING = "Linux-0.0.0-s6r13-running"
+P_OTHER_OLD = "Linux-0.0.0-s6r13-old"
+PYTHON_MOVED = "0.0.0-s6r15"
+STALE_INPUT_SHA256 = "5" * 64
+for _made_up in (P1, P_OTHER_RUNNING, P_OTHER_OLD):
+    assert _made_up != P0, f"{_made_up!r} must differ from the committed platform"
+assert PYTHON_MOVED != COMMITTED["environment"]["python"]
 
 
 @pytest.fixture
@@ -75,8 +87,12 @@ def test_s6r12_the_platform_pinned_on_both_sides_passes(running_p1: None) -> Non
     ("running", "old_platform", "problem"),
     [
         (P1, None, "(no --old-platform)"),
-        ("Linux-6.12.114", "<committed>", f"re-take {P1!r} is not the running 'Linux-6.12.114'"),
-        (P1, "Linux-6.12.110", "is not --old-platform"),
+        (
+            P_OTHER_RUNNING,
+            "<committed>",
+            f"re-take {P1!r} is not the running {P_OTHER_RUNNING!r}",
+        ),
+        (P1, P_OTHER_OLD, "is not --old-platform"),
     ],
 )
 def test_s6r13_the_platform_without_its_pins_fails(
@@ -93,12 +109,15 @@ def test_s6r13_the_platform_without_its_pins_fails(
 
 
 def test_s6r14_the_reference_values_hash_of_the_tree_file_passes() -> None:
-    # M01 Amendment 1 (`49e99756`) inserted lines after the record was taken (ruling F9).
+    # The committed side carries a made-up stale hash, so the case does not depend on whether the
+    # committed record predates the tree file (ruling §11.4, WO-8).
     actual = hashlib.sha256(REFERENCE_VALUES.read_bytes()).hexdigest()
-    assert actual != COMMITTED["inputs"]["reference_values_yaml_sha256"]
+    assert actual != STALE_INPUT_SHA256
+    committed = _retake()
+    committed["inputs"]["reference_values_yaml_sha256"] = STALE_INPUT_SHA256
     retake = _retake()
     retake["inputs"]["reference_values_yaml_sha256"] = actual
-    passed, lines = RETAKE.retake_diff(COMMITTED, retake)
+    passed, lines = RETAKE.retake_diff(committed, retake)
     assert passed, lines
     assert lines == [
         "IDAES-RETAKE PASS differing=inputs.reference_values_yaml_sha256 platform=0 inputs=1 "
@@ -152,7 +171,7 @@ def _nudge(document: dict[str, Any]) -> str:
 
 
 def _python(document: dict[str, Any]) -> str:
-    document["environment"]["python"] = "3.13.6"
+    document["environment"]["python"] = PYTHON_MOVED
     return "environment.python"
 
 
