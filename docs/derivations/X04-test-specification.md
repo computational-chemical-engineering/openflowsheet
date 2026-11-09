@@ -98,6 +98,7 @@ catching. No finite difference is involved anywhere in X04.
 | overall | `H_feeds`, `H_products` | `enthalpy_flow` | |
 | root `components[]` | `molar_mass` | `molar_mass` | closed object; never displayed |
 | quote (closed) | `index`, `value`, `tolerance` | none | verification evidence stays SI |
+| phase_id (closed) | `ordinal` | none | identity integer, as a quote's index |
 | entry (closed) | numbers in `params` | none | |
 
 ## 5. Assertions

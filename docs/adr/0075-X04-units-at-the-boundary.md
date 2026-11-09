@@ -182,7 +182,9 @@ does not convert back. Display values are for reading; an agent computes with th
    project without a declared ambient is refused, `invalid_request`, `ambient_pressure_undeclared(pressure):
    "<unit>"`. A response without a gauge unit does not depend on it (PU08, A14).
 5. **Outside identity.** It is not in any revision, binding, run, bundle, certificate, cache key or replay. Two projects
-   that differ only in their ambient produce byte-identical runs (A13).
+   that differ only in their ambient produce byte-identical runs (A13). Declaring or clearing it changes
+   `policy_sha256`, which revision, job and audit rows record as the policy in force, as an `executor` change does;
+   that is provenance, not run identity.
 
 ### D7. The machine-readable form
 
@@ -214,7 +216,8 @@ does not convert back. Display values are for reading; an agent computes with th
    headers carry `[unit]` when any energy kind is converted, values are `{:.6g}` of the display value; `csv` replaces a
    column's unit suffix by the display unit's suffix (rule: `/` → `_`; `(`, `)`, spaces dropped; `%` → `pct`; claim C12
    shows the rule gives ST's 13 SI suffixes exactly) and appends `_pct` to a fraction column (`x_<c>_pct`), values
-   `repr(display value)`. With `si`, or without the flag, every rendering is byte-identical to ST's.
+   `repr(display value)`. With `si`, or without the flag, `text` and `csv` are byte-identical to ST's; `json` with
+   `si` adds only the root echo (D7.5).
 
 ### D8. Operations and transports (ADR 0019 Amendment 17)
 

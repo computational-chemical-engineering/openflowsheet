@@ -1,7 +1,8 @@
 # X04 build decisions (engineer A: WO-1–WO-3; engineer B: WO-4, D-6 on)
 
 Build-lane choices the spec (ADR 0075, `docs/derivations/X04-test-specification.md`) leaves open. Each is isolated
-and revertible; none changes a number, an identity or a frozen interface. For the design lane's single ruling round.
+and revertible; none changes a number, an identity or a frozen interface. For the design lane's single ruling round:
+**all twelve ruled** in `docs/reviews/X04-review.md` (2026-11-09), D-7 changed.
 
 ## D-1. A33's round-trip fixtures live in the X04 test modules, not in F0's M8 fixture directories
 
@@ -14,6 +15,7 @@ under `tests/fixtures/schemas/**` adds a node, which M8 reports as "measured, no
 validation, `from_document`/`as_document` identity), with no new file under `tests/fixtures/schemas/`.
 *Alternative.* Add the fixture files and re-record M8 (an F0 expectation change: design-lane call).
 *Reversible by:* moving the cases into fixture files and re-recording M8.
+*Ruled (design lane, 2026-11-09, `docs/reviews/X04-review.md`):* **Keep.** A35 (F0 unchanged) outranks A33's "fixture files". The manifest records A33's fixtures as the in-module round-trip cases.
 
 ## D-2. A13 "byte-identical bundle members" excludes the run manifest's wall-clock members
 
@@ -25,6 +27,7 @@ undeclared and a 95000 Pa project), and so in the `replay_bundle`/`run_manifest`
 certificate, structural hash, cache keys and `artifact_r0_sha256` are all compared.
 *Alternative.* A fixed clock for the three solves (not available through `LocalApplication.solve`).
 *Reversible by:* editing `WALL_CLOCK` in `tests/test_x04_ambient.py`.
+*Ruled (design lane, 2026-11-09, `docs/reviews/X04-review.md`):* **Keep.** Sound, not narrowed: the three members are asserted present; every other manifest member, every bundle file and the certificate are compared.
 
 ## D-3. The M06 web fixture's three recorded `get_project` bodies gain `"ambient_pressure": null`
 
@@ -36,6 +39,7 @@ times: a rewrite would change every timestamp.
 answers for that undeclared project. Nothing else in the file changes.
 *Alternative.* Re-record the fixture (`--write`), or make the member optional (contradicts D6.3).
 *Reversible by:* reverting the commit that carries it.
+*Ruled (design lane, 2026-11-09, `docs/reviews/X04-review.md`):* **Keep.** The edit is exactly the server's answer for an undeclared project.
 
 ## D-4. `project_summary.required` lists `ambient_pressure` last
 
@@ -45,6 +49,7 @@ answers for that undeclared project. Nothing else in the file changes.
 *Choice.* `ambient_pressure` is appended to `required` (order has no meaning in JSON Schema); the invalid fixture keeps
 its name and gains the member in its body.
 *Reversible by:* reordering the list and updating the S13/release version-file path.
+*Ruled (design lane, 2026-11-09, `docs/reviews/X04-review.md`):* **Keep.**
 
 ## D-5. An `unsupported` display refusal carries its message head as `reason`
 
@@ -56,6 +61,7 @@ falls back to the outer `unsupported` entry and fails A36's strict rendering.
 reason with args (`surrogate_not_promoted(<id>)`, `local.py`). It renders strictly with its entry (A36 test).
 *Alternative.* No `reason` member (the message alone renders the same), or the bare code with a renderer change.
 *Reversible by:* `LocalApplication._display_units` (one line) and A36's `reason` assertion.
+*Ruled (design lane, 2026-11-09, `docs/reviews/X04-review.md`):* **Keep.** The bare code cannot fill `kind`. The repo precedent is `surrogate_not_promoted(<id>)`, and it renders strictly (A36).
 
 ## D-6. The stream-table site table also lists the phase id's `ordinal` (never displayed)
 
@@ -66,6 +72,7 @@ does not list, while §4 does list the quote's `index` (also `integer`).
 A24's test asserts `SITES == §4 ∪ {phase_id.ordinal: None}`. No display changes.
 *Alternative.* Count only `number`-typed properties (then §4's `index` is not one), or amend §4.
 *Reversible by:* one entry in `SITES` and A24's expected table.
+*Ruled (design lane, 2026-11-09, `docs/reviews/X04-review.md`):* **Keep.** Spec §4 is amended per N3.
 
 ## D-7. `get_stream_table.md`: the display sentence fits the 1500-character bound by trimming wording
 
@@ -80,6 +87,7 @@ files)", "the property basis is not installed here" → "its property basis is n
 REVIEW.json records the new hash with both reviews pending — the reviewers see the whole changed text.
 *Alternative.* Raise the bound (a T07 §11.3 change), or a shorter sentence without an example.
 *Reversible by:* the description file and its REVIEW.json entry.
+*Ruled (design lane, 2026-11-09, `docs/reviews/X04-review.md`):* **Change:** use the review's text. The trims dropped no fact, but the display sentence omits ADR D3's "compute with SI". Applied: `get_stream_table.md` is the review's text (1500 characters), design-lane review recorded.
 
 ## D-8. `streams DIR --display-units` (a bundle directory) resolves the preference without an ambient
 
@@ -90,6 +98,7 @@ REVIEW.json records the new hash with both reviews pending — the reviewers see
 No audit row (no project).
 *Alternative.* Refuse the flag with a bundle directory (usage error, exit 2), or add an `--ambient-pressure` option.
 *Reversible by:* `cli._bundle_display_units` and its call in `command_streams`.
+*Ruled (design lane, 2026-11-09, `docs/reviews/X04-review.md`):* **Keep,** with S4.
 
 ## D-9. An out-of-range display value prints as an absent value
 
@@ -99,6 +108,7 @@ No audit row (no project).
 names the display unit. No registered stream reaches this (A23 jobs); a test edits a document to hold one.
 *Alternative.* Print the SI value under the display-unit label (wrong unit), or fall back to SI for the whole row.
 *Reversible by:* `stream_table_format._shown` / `_x_cell`.
+*Ruled (design lane, 2026-11-09, `docs/reviews/X04-review.md`):* **Keep.** `-` with a footnote (text) and an empty cell (csv) are ST's absent forms; a value under the wrong unit would be worse.
 
 ## D-10. Text labels without an SI unit gain `[unit]`; energy headers name every unit once one is converted
 
@@ -110,6 +120,7 @@ three kinds.
 Unconverted labels are ST's.
 *Alternative.* Bracket only the converted energy headers.
 *Reversible by:* `stream_table_format._label` and the header block of `to_text`.
+*Ruled (design lane, 2026-11-09, `docs/reviews/X04-review.md`):* **Keep.**
 
 ## D-11. The stream-table schema states `display` per object with `propertyNames`, the item shape once
 
@@ -122,6 +133,7 @@ The item is WO-3's (`{value: number, unit}` or `{value: null, unit, reason: disp
 `display_units` as `job_result`'s. So a display entry for `rho` or an empty `display` is refused (A33 test).
 *Alternative.* Six inline copies of the item, or an open `display` map.
 *Reversible by:* the schema edit (one commit).
+*Ruled (design lane, 2026-11-09, `docs/reviews/X04-review.md`):* **Keep.** Its `propertyNames` enums match `SITES` exactly; the item `oneOf` is loose (array or scalar for any member), which is harmless.
 
 ## D-12. A13 also leaves out the bundle's and the manifest's `size_bytes` (a flaky comparison, found in WO-4)
 
@@ -133,3 +145,4 @@ for byte (the manifest without its three wall-clock members).
 *Choice.* The test deletes `size_bytes` beside `sha256` for those two outputs. 4 of 4 passes after.
 *Alternative.* A fixed clock (not available through `LocalApplication.solve`, as D-2 says).
 *Reversible by:* the one line in `tests/test_x04_ambient.py`.
+*Ruled (design lane, 2026-11-09, `docs/reviews/X04-review.md`):* **Keep.** Sizes cover the same wall-clock members as D-2's hashes. A fixed clock seam would be cleaner later; it is not needed here.
