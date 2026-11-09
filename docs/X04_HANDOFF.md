@@ -37,12 +37,3 @@ ruled, D-7 changed; D-13…D-18 for a design-lane glance, non-blocking).
   and rerun (3 passed). Description-review test passes (Frank's reviews recorded).
 - F0 PASS (M1 50/50, M2–M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 35/35). MSG check PASS 394 entries (95 complete),
   G1/G2 0, G5 clean.
-
-## Earlier gates (measured at `9b38ed11`)
-- Battery (x04 ×5, st ×4, t06 units ×2, schemas_p01, msg_* ×7, t07 w5a ×3/w5b/w5e/conformance/global_state/
-  injection/q26/w6a/w6b/w6c, m06 fixtures/http/static_scan/browser_smoke/contrast, rrc_application, m07a chain +
-  harvest, evidence_manifests, t08_w2 ×10, doc_pages, t05_w11), serial, `OMP_NUM_THREADS=1`: **2486 passed, 1 failed,
-  3 xfailed**. The one: `test_every_description_is_reviewed_by_both_lanes` — `2 open: ['get_job_result: human
-  pending', 'get_stream_table: human pending']` (Frank's).
-- F0 PASS (M1 50/50, M2–M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 35/35). MSG check PASS 394 entries (95 complete),
-  G2 0, G5 clean. `ruff check`, `ruff format --check` clean (1173 files).
