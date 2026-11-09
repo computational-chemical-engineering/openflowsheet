@@ -17,7 +17,9 @@ The alpha's counterpart (V02 alpha release spec §5.2 MR-7; M07a.A51): the diffe
 `c7bbc98`, excluding `server.package_version`, are exactly B50's three named entries plus the v0.2
 additions that register entries name (`V02_ADDITIONS`, each with the entry that names it, checked
 against the register's text). An addition no entry names fails, and so does a named one that is
-not served; each failure names the entry.
+not served; each failure names the entry. X04 (0.4; ADR 0075 D6.3, R-1015) adds a member rather than
+an entry: `get_project`'s `ambient_pressure` (`null` on a fresh project). It is registered the same
+way (`MEMBER_ADDITIONS`) and taken out, present exactly once, before the content is compared.
 """
 
 from __future__ import annotations
@@ -82,6 +84,9 @@ M02_MODELS = tuple(sorted(set(V02_ADDITIONS["models"]) - set(M04_MODELS) - set(S
 NEW_POLICIES = ("T08-ptc-v1", "T08-warm-v1")
 #: RRC's offered policy (ADR 0072; R-995), stripped like M02's and S11's models.
 RRC_POLICIES = tuple(sorted(V02_ADDITIONS["solve_policies"]))
+#: Register-sourced members `c7bbc98`'s content did not have, per operation, each with the entry
+#: that names it: X04's `ambient_pressure` (ADR 0075 D6.3; R-1015), `null` on a fresh project.
+MEMBER_ADDITIONS: dict[str, dict[str, str]] = {"get_project": {"ambient_pressure": "R-1015"}}
 #: `get_project`'s members that the server determines, whatever the project's state.
 SERVER_MEMBERS = ("default_policy_id", "server", "solve_policies")
 
@@ -149,11 +154,14 @@ def test_b50_list_models_differs_by_the_kinetic_cstr_only(served: dict[str, Any]
 def test_b50_get_project_differs_by_the_two_policies_and_the_version_only(
     served: dict[str, Any],
 ) -> None:
-    """With RRC's `RRC-revision-v1` stripped (exactly once; ADR 0072, R-995),
+    """With RRC's `RRC-revision-v1` stripped (exactly once; ADR 0072, R-995) and X04's
+    `ambient_pressure` member taken out (`null` on a fresh project; ADR 0075 D6.3, R-1015),
     `get_project` differs from `c7bbc98`'s by B50's two policies and the version only."""
     today, then = copy.deepcopy(served["get_project"]), copy.deepcopy(FIXTURE["get_project"])
     for document in (today, then):
         del document["server"]["package_version"]
+    assert not set(MEMBER_ADDITIONS["get_project"]) & set(then)
+    assert today.pop("ambient_pressure") is None
     today["solve_policies"] = _taken_out(today["solve_policies"], "policy_id", RRC_POLICIES)
     today["solve_policies"] = _taken_out(today["solve_policies"], "policy_id", NEW_POLICIES)
     assert today == then
@@ -187,6 +195,11 @@ def mr7_problems(served: dict[str, Any]) -> list[str]:
     for documents in (today, then):
         del documents["get_project"]["server"]["package_version"]
     problems: list[str] = []
+    for operation, members in MEMBER_ADDITIONS.items():
+        for name, source in members.items():
+            if name not in today[operation]:
+                problems.append(f"{operation}: `{name}` ({source}) is not served")
+            today[operation].pop(name, None)
     for operation, member, key, named in SURFACE:
         additions = {**dict.fromkeys(named, "T08.B50"), **V02_ADDITIONS[member]}
         ids = [entry[key] for entry in today[operation][member]]
@@ -224,6 +237,9 @@ def test_m07a_a51_each_v0_2_addition_is_named_by_its_register_entry() -> None:
     for member, additions in V02_ADDITIONS.items():
         for entry_id, source in additions.items():
             assert f"`{entry_id}`" in _register_entry(source), (member, entry_id, source)
+    for operation, members in MEMBER_ADDITIONS.items():
+        for name, source in members.items():
+            assert f"`{name}`" in _register_entry(source), (operation, name, source)
     assert not set(V02_ADDITIONS["models"]) & set(NEW_MODELS)
     assert not set(V02_ADDITIONS["solve_policies"]) & set(NEW_POLICIES)
 
@@ -255,3 +271,9 @@ def test_m07a_a51_c_a_registered_addition_removed_fails_naming_it(
     assert mr7_problems(_serve(tmp_path)) == [
         "models: `c1.tp_heater` (R-230) served 0 times, not once"
     ]
+
+
+def test_m07a_a51_d_a_registered_member_removed_fails_naming_it(served: dict[str, Any]) -> None:
+    without = copy.deepcopy(served)
+    del without["get_project"]["ambient_pressure"]
+    assert mr7_problems(without) == ["get_project: `ambient_pressure` (R-1015) is not served"]
