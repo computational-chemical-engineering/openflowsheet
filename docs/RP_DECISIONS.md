@@ -470,3 +470,36 @@ reads the offered file as tracked at the journey's own `commit` (`git show <comm
 history) and checks its sha256 and anchor from that blob. Proof: the module passes at head (56 passed) and with the
 working-tree REAL record altered (56 passed). Alternative: J rewrites the three journey records. Test-only commit; the
 design lane rules on it in this package's `reviewer` pass.
+
+## REL040 review fix round (build lane, `wp/REL040p`, 2026-11-10)
+
+Brief `docs/briefs/REL040-fix-R1.md`; authority `docs/reviews/REL040-review.md` (S-1, WO-R1; N-1, N-3, N-5).
+
+| Item | Commit | What |
+|---|---|---|
+| WO-R1 | `5b8575a4` | `--digest-only`: `.inner.state_sha256`, `.inner.constants_sha256`, `.requests[<n>].inputs_sha256` compared exactly, never in the map; a difference is other, "(a value digest is compared exactly)". Tests: each moved alone → FAIL `other=1` naming the leaf (3 cases); every inner state moved one-to-one → FAIL `other=4`; relabelled stems with equal value digests pass. The 4 moved cases fail at `5d0c4121` (the tool passes them) |
+| N-1 | `cfa46e70` | Q-S6e test asserts `git merge-base --is-ancestor <commit> HEAD` before `git show`; docstring notes full history. A dangling child of HEAD gives rc=1 |
+| N-3 | `c95288f4` | `--old-version` beside a coupling pair whose fingerprint holds the platform is other (A-11's `environment=equal`). New test fails at `5d0c4121` |
+| N-5 | `a385a417` | `m05_wo9_real.py`: `keep_child_logs` in a `finally`, so a re-take that raises keeps its logs. New test (stubbed run that raises) fails at `5d0c4121` |
+| N-4 | — | Not done (brief): step 15 still chooses the M05 record by directory; equivalent for the three committed journeys |
+
+**§2's claim, qualified (WO-R1 (d)).** The REAL digest-only proof holds the clear leaves bitwise and the log and value
+digests (`execution.logs.{stdout,stderr}_sha256`, `inner.{state,constants}_sha256`, `requests[].inputs_sha256`)
+exactly; every other digest (keys, request and record digests, code and input identity) is held only to a bijection,
+with the clear leaves as its guard, so the proof establishes that nothing moved except the platform string at its one
+bound leaf and digests of that kind.
+
+**Lines that must not change (measured at `a385a417`).**
+- Live REAL proof on `.cache/s6r/real-0b62c12d/` (`--old-platform 'Linux-6.12.111+deb13-amd64-x86_64-with-glibc2.41'`):
+  `RETAKE-DIGEST-ONLY PASS trust-region-study-real: changed-digests=103 digest=504 timing=528 path=128 version=0
+  platform=4 other=0 environment=equal`, byte for byte.
+- S77's pair (`git archive 56fb2fa~1` vs `56fb2fa`, five stems, no options): PASS 42/80/71/92/38, digest/timing
+  150/20, 327/35, 219/20, 288/26, 128/20 (as S78), `path=0 version=0 platform=0 other=0 environment=equal`.
+- S6R-10's two lines: pinned by their tests, which pass.
+- The review's S-1 demonstration (the live re-take with its 16 `inner.state_sha256` moved to distinct values): at
+  `5d0c4121` `PASS changed-digests=119 … other=0` (the review's line); at `a385a417` `FAIL changed-digests=103 …
+  other=16`.
+
+**Tests (serial, `OMP_NUM_THREADS=1`).** `tests/test_m05_retake_digest_only.py tests/test_m01_idaes_retake_diff.py
+tests/test_m07_journey_record.py tests/test_m05_wo9_gates.py tests/test_rel_*.py`: 326 passed, 3 deselected. F0 PASS
+(M1 50/50 … M9 35/35). `ruff check`, `ruff format --check` clean. No manifest, no merge.
