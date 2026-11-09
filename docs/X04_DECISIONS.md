@@ -169,3 +169,22 @@ assumed, ADR 0075 D6.4). *Alternative.* Send `"si"` (every fixture re-recorded);
 *Fact, not a choice.* `scripts/m06_web_routes.py --check` failed since WO-3/WO-4 added `display_units` to the two
 request schemas (the route table's `members`); `tests/test_m06_static_scan.py` was outside the targeted battery.
 Regenerated (`--write`), `--check` clean.
+
+## D-16. ST's `get_stream_table.md` pin is judged on its pre-X04 copy (final WO)
+
+`tests/test_m07a_surface_chain.py::test_st_the_added_description_is_pinned_at_its_recorded_hash` compared ST's pin
+(`76ac57f3…`) with `REVIEW.json`, which now records X04's text (`b7ce4ed4…`). It now compares the pin with the pre-X04
+copy (`tests/fixtures/x04/pre_x04_descriptions/get_stream_table.md`, taken from `main` at `b2f89c60`) and judges item 4
+on `texts_before_links`; a new test holds X04's two texts at `REVIEW.json`'s hashes. Alternative: re-pin ST's hash to
+X04's text (loses ST's pin). Reversible by: the test and `texts_before_links`.
+
+## D-17. ADR 0019 Amendment 17's opening said "nothing required" (final WO)
+
+*Fact, corrected.* `project_summary.ambient_pressure` is required and nullable (ADR 0075 D6.3; `interfaces-frozen.md`
+and the amendment's own Schemas bullet say so). The opening now names that one `required` list.
+
+## D-18. Register R-1011…R-1016 group ADR 0075's decisions by concern (final WO)
+
+D1/D7/D11 (boundary, nothing stored) → R-1011; D2/D3 (table, arithmetic) → R-1012; D4 → R-1013; D5 → R-1014; D6 →
+R-1015; D9/D10 (codes, inputs unchanged, R-077's output half) → R-1016. Each is marked Proposed, in effect with Frank's
+accept; ADR 0075 stays Proposed. Alternative: one entry per D (eleven). Reversible by: renumbering within R-1010…1019.
