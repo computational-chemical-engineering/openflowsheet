@@ -748,3 +748,19 @@ manifest `evidence/X02/d26bcd38…/manifest.json` tested (c72e41fe, which also m
 On main after the merge: ruff check + format OK; F0 PASS (M1–M9); targeted 1208 passed, 2 skipped. Surface chain now
 c_5 (D_5 `f51b69bf…`); global-state caches 38. Next per the merge order: OPT merge prep (docs/briefs/OPT-merge-prep.md).
 Open: design-lane prose check of X02's D-39 catalogue entries (batched with OPT's); X02 reviewer pass pending.
+
+## 2026-11-09 — OPT merge prep done (wp/OPT a1963353); D-91 register numbering ruled
+
+Merge prep per docs/briefs/OPT-merge-prep.md: OPT D-86…D-93 (merge of main, c_6 D_6 `3fdc797a…` with stripping OPT
+giving D_5 exactly, caches 39, M-4 verified, ADR 0071 + ADR 0019 Am. 16 Accepted, MSG catalogue G2 entries, corpus C12
+re-pointed to `nlp_solver_unavailable`; F0 PASS; targeted tests green). DECISION (D-91): ADR 0071's ten drafts → R-961…
+R-969 in ADR order and the tenth (R-860 lifts) at R-988 (unused everywhere). Alternative: fold two drafts into one entry.
+Reversible by: renumbering before merge. Brief docs/briefs/OPT-register-numbers.md. Design-lane batch (non-blocking):
+prose of X02 D-39 + OPT D-92 catalogue entries, and OPT D-93 (which mistake C12 should register).
+
+## 2026-11-09 — ST CI green at eb1e0936 (run 42527883250); OPT register numbered; RRC brief
+
+ST green on both archs, identity and default-install after the CI-1/CI-2 test fixes; ST still waits for WO-7 (after
+RRC merges: main merge, its chain link, ADR 0068 Accepted + amendment, R-1000…, manifest, CI). OPT: ADR 0071 drafts
+numbered R-961…R-969, R-988 (c1b9b125, D-94); CI pending. RRC merge-prep brief written (docs/briefs/RRC-merge-prep.md):
+ADR 0072 Accepted, FQ1 yes, FQ2–FQ4 default, drafts → R-990…R-995; starts after OPT merges.
