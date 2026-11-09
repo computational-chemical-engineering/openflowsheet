@@ -975,3 +975,7 @@ G16-b 40/40; F0 PASS. Q1 (`t07_reference.py --check` in CI): no (85.6 s). CI re-
   vs R-1010…1016 resolved by keeping both). Reviewer brief docs/briefs/REL040-reviewer.md.
 - 2026-11-09 — REL040 review (86da7a27): sound; S-1 (three more digests relabelled instead of compared) → WO-R1;
   Q-S6e confirmed; nothing for Frank. Fix brief docs/briefs/REL040-fix-R1.md (WO-R1 + N-1, N-3, N-5; N-4 not done).
+- 2026-11-10 — REL040 fix round: WO-R1 5b8575a4, N-1 cfa46e70, N-3 c95288f4, N-5 a385a417 (wp/REL040p 829aadf4); live
+  REAL proof and S77 unchanged; the S-1 demonstration now FAILs (other=16). DECISION: REL040p's evidence form →
+  evidence/REL040/829aadf4…/manifest.json (the 0.4 line's own package, prep manifest; the RC adds the candidate's).
+  Alternative: a separate id (REL040p). Reversible by moving the file. Brief docs/briefs/REL040-manifest.md.
