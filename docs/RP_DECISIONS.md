@@ -263,3 +263,52 @@ acceptance and notes (M-3), status unchanged.
 - M-1 mutation (the five engine readers blanked), `tests/test_rel_standing_acceptances.py`: before 40 passed
   unmutated, 40 passed mutated; after 56 passed unmutated, 6 failed / 50 passed mutated (items 7, 8, 9, 10,
   11 (links), 12).
+
+## REL040 prep (build lane, `wp/REL040p`, 2026-11-09)
+
+### Choices (each isolated in its commit)
+
+- **x05 gate entry** (`c46ef9fc`): V18, the gate that carries L41/R-140 (`docs/reviews/V03-verdicts.md`), gains
+  `[4, "x05.*"]` and `tests/test_x05_*.py` — X05 review 5(e) and the logged intent of 2026-11-07. No other gate names
+  step 4; `rc_steps` already holds it.
+- **RP.L11** (`9743871e`): ADR 0074 O-3's default as RP amendment A-10 (§3.4, §17.3), register R-1007 (RP amendments
+  are registered by precedent: A-1–A-8 R-942–R-949, A-9 R-970). `release_gate.release_package_id` encodes D2 itself.
+- **The rehearsal's `--rc`**: the runner requires `--rc` inside the checkout (M02's judges read records relative to
+  it), so it was `<worktree>/.cache/s6-rc` (git-ignored, not `docs/` or `evidence/`) and was moved to the scratchpad
+  work directory afterwards. Step 16's dry run and `--w27-artifacts`' hard links land in the worktree's ignored
+  `evidence/M06/W27/artifacts/` by the runner's design; both were removed after the run. Nothing was committed.
+
+### S-6 rehearsal (RP review S-6, ruling 8): `release_rc.py local`, every local step of the 0.4 line
+
+At C = `9743871e` (`main` `612e54a8` + the two commits above), clean, pushed as `wp/REL040p`; 2026-11-09 11:53–14:13
+(load 26–29 of 48 cores at start). Not a candidate C; records only in the session scratchpad. Inputs:
+`--nlp-prefix`/`--nlp-cache` the `m05` worktree's `.venv-nlp` and `.reference-downloads/m03-ipopt` (0.3.0's);
+`--journey 2d945b5d` (0.3.0's J — no 0.4 J exists yet); `--w27-artifacts` the `m06-w27h` archive; `--ci-run
+42604498076`, the `release_rc` dispatch at C (read first: `ci.yml` has no write permission, no secret and no
+publish; it uploads Actions artifacts only). The dispatch concluded `success` on every job, both legs (dist,
+clean-install with the `x05.*` checks, bundle-set/replay, rc-steps, rc-coolprop, rc-ensemble, ptc-r1); the push run
+42604498059 `success`.
+
+| Step | Result | First error line / note |
+| --- | --- | --- |
+| 2 identity | ran, 3/3 pass | |
+| 6 ensemble | ran, 7/7 pass | first run of the port |
+| 7 corpus | ran, 12/12 pass | |
+| 8 surface | ran, 12/12 pass | |
+| 9 A30 | ran, exit 0 | |
+| 10 certificates | ran, 2/2 pass | audits step 12's kept certificates — first run |
+| 11 W22 | **failed**, 2/3 | `a40.idaes_numbers_identical`: differing members `environment.platform`, `inputs.reference_values_yaml_sha256` against the committed IDAES record (`7dc55096…`); a record re-take question, not a runner defect |
+| 12 W21 | ran, 6/6 pass; `r375.audit` pass | first run of the port; A-5's inputs read and hash-checked |
+| 13 W23 | ran, 3/3 pass | |
+| 14 W24 | **failed**, 3/5 | `a60.w24.nlp_tier_and_inventory`: `pytest -m nlp` 211 passed, but the NLP-1 inventory workload raised `TypeError: 'NoneType' object is not subscriptable` (`start["final_decisions"]` is None, `scripts/m03_ipopt_inventory.py` `nlp_1`); `a60.w24.m05_g10_real_replay`: `ReplayDivergedError: replay diverged: a cold execution at {... 'temperature': 673.15 ...}`. `nlp_selection` pass (the `tests/` collection's exit 2 is three `mpmath` imports, not judged, §6.5) |
+| 15 W25 | **failed**, 1/3 | `a21.carry_journey` fail as expected (0.3.0's J; files differ since); `a21.check` pass; `a21.replay` `DIFFERS: replay diverged` (the same cold REAL execution as step 14) |
+| 16 W26 | ran, 4/4 pass | the dry run's `SnapshotUnsupportedError` (`iapws95-v1`, W27-R63) is the expected v1 refusal (d) |
+| 17 items | ran, 7/8 pass | `E01-G6-nlp` fail: the same NLP-1 inventory `TypeError` inside `m03_nlp_check.sh` (its 27 tests pass); `S07-F8`, `PTC-R1` read from the dispatch, pass |
+
+**Runner defects found: none.** Every failure is the checked thing failing, not the port: no fix was made. Three
+findings stop here for the design lane (each would change a number or a record, not the runner): (1) the NLP-1
+inventory workload gets a start without `final_decisions` at C (passed at 0.3.0 in the same environment); (2) M05's
+REAL replay diverges on a cold reactor execution at C (step 14 and step 15's replay), `REPLAY PASS REAL
+differences=0` at 0.3.0 — the C7/V03 notes ran it in `alpha-main`'s `.venv-nlp`, this run in `m05`'s, as 0.3.0's
+`run_local.sh` did, so the environment is the first thing to rule out; (3) step 11's IDAES record differs from the
+committed one in two input/platform members. The 0.4 J must be recorded before step 15 can pass.
