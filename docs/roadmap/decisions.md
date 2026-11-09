@@ -923,3 +923,10 @@ G16-b 40/40; F0 PASS. Q1 (`t07_reference.py --check` in CI): no (85.6 s). CI re-
   step 11's IDAES record differs only in environment.platform (reference-values change was insert-only, M01 Am. 1) →
   joins the re-take, proved by new m01_idaes_retake_diff.py; J recorded at the cut, same kernel for J and C; no Frank
   question. Work order WO-1…WO-6 (S6R-01…25) on wp/REL040p with S6dbg merged in (brief docs/briefs/REL040-s6-apply.md).
+
+- 2026-11-09 — Frank's board answers: ADR 0075 **accepted**; both X04 descriptions approved (he records them with
+  record_frank_reviews_x04.py); X04 FQ1–FQ3 defaults; **FQ4 = °C in human text** (not the default degC); 0.4 line
+  acceptance: "ADR-F1…F8 Accepted" moved to 0.5 (roadmap amended here); ADR 0068 D3 amendment stands. Board pinned to
+  Frank's claude.ai sidebar (he asked). DECISION: FQ4 is built on a side branch wp/X04fq4 (from wp/X04 4c818959) so
+  Frank's review script can run on the clean wp/X04 worktree; merged back after → alternative: wait for the script.
+  Reversible by: not merging the side branch.
