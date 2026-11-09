@@ -963,3 +963,6 @@ G16-b 40/40; F0 PASS. Q1 (`t07_reference.py --check` in CI): no (85.6 s). CI re-
   X04 CI green at 0f7d9b87 (42659368086); D-22 note 1d456c46 pushed; manifest brief docs/briefs/X04-manifest.md.
   DECISION: until Frank says otherwise, TRS2 runs one serial process at a time, targeted tests only; S6R-29's
   default-tier run and any K3 work wait for his go. Alternative: resume the ≤ 36-core rule. Reversible by: Frank's word.
+- 2026-11-09 — Frank (relayed by the TRS2 crash session): restart jobs and agents; ≤ ~36 busy threads machine-wide,
+  `uptime` first, ask vof before using more than ~12 cores, no pytest/mypy in many worktrees at once; tell hub on a
+  reset. The quiet-machine decision above is superseded. REL040p finish → docs/briefs/REL040-s6-wo78-finish.md.
