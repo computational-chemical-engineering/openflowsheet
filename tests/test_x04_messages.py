@@ -32,7 +32,6 @@ from t07_transport_support import (
 )
 
 from openflowsheet.application.authz import grant, set_ambient_pressure
-from openflowsheet.application.bindings.mcp import input_schema
 from openflowsheet.application.contract import ApplicationError
 from openflowsheet.application.local import LocalApplication, _displayed
 from openflowsheet.application.operations import OPERATIONS, dispatch, project_response
@@ -637,6 +636,17 @@ def test_a32_every_other_request_schema_refuses_display_units() -> None:
             assert schema.get("additionalProperties") is False or named, name
     # WO-4 adds `get_stream_table`; no other operation ever.
     assert "get_job_result" in open_to <= {"get_job_result", "get_stream_table"}
+
+
+def test_a32_the_mcp_input_schemas_name_display_units_where_the_requests_do() -> None:
+    pytest.importorskip("mcp")
+    from openflowsheet.application.bindings.mcp import input_schema
+
+    open_to = {
+        name
+        for name, operation in OPERATIONS.items()
+        if "display_units" in operation.request_schema.get("properties", {})
+    }
     mcp_named = {
         name
         for name, operation in OPERATIONS.items()
