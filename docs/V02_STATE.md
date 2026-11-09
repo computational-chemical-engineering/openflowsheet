@@ -122,8 +122,8 @@ Am. 1–2). Foundations F0–F8 are designed in wave W1 during 0.4, then built i
   WO-1…WO-5; `ced0082f`). Board: adr-0075 (accept needed before merge), x04-fq1…fq4 (defaults). **Now:** engineer A
   (`docs/briefs/X04-build-A.md`, WO-1–3 on `wp/X04`), then engineer B (WO-4, WO-5), reviewer pass, CI, manifest.
 - **Before 0.4.0's cut:** board item rel04-line-acceptance (ADR-F1…F8 Accepted is a line condition but Frank kept
-  0060–0067 Proposed; default: move it to 0.5); `[4, "x05.*"]` in `release/lines/0.4.json`; schema ADR admitting
-  `REL[0-9]{3,}`; ADR 0074 O-3 (RP.L11); S-6 rehearsal; local full gate; RC cut and tag need Frank's go. ADR 0055
+  0060–0067 Proposed; default: move it to 0.5); `[4, "x05.*"]` in `release/lines/0.4.json` (the `REL` schema ADR is ADR 0074, done);
+  ADR 0074 O-3 (RP.L11); S-6 rehearsal (brief `docs/briefs/REL040-prep.md`); local full gate; RC cut and tag need Frank's go. ADR 0055
   parts 1–3 are built (release_gate, release_rc*, release_evidence_manifest); WO-R5 deferred by Frank.
 - **Design-lane notes (non-blocking):** RRC D-45 (B27 exclusion) glance; MSG F1 (G1 misses `OPT.*` check ids);
   catalogue `J/(mol*K)` vs ADR 0062 `J/(mol K)`; reviewer passes pending for the 0.4 packages per plan.

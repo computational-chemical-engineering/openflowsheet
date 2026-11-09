@@ -857,3 +857,40 @@ G16-b 40/40; F0 PASS. Q1 (`t07_reference.py --check` in CI): no (85.6 s). CI re-
   claims). Board: adr-0075, x04-fq1…fq4. Finding: catalogue `J/(mol*K)` vs ADR 0062 `J/(mol K)` (align at F2).
   DECISION: build starts on the Proposed ADR (engineer A, docs/briefs/X04-build-A.md); merge needs Frank's accept.
   Alternative: wait for the accept. Reversible by: branch not merged.
+
+- 2026-11-09 — Correction: the "schema ADR admitting REL[0-9]{3,}" is done — ADR 0074 (Accepted 2026-11-08, D1 applied
+  in 51c9e7f5; `work_package` admits REL ids). Remaining release prep in one build item, brief
+  docs/briefs/REL040-prep.md (wp/REL040p): x05 gate entry in release/lines/0.4.json; RP.L11 (ADR 0074 O-3 default);
+  S-6 rehearsal (`release_rc.py local`, every step, records in the scratchpad only; no tag/release/publish).
+
+- 2026-11-09 — X04 engineer A: WO-1 (display core, 44dd16db) and WO-2 (ambient, D9 catalogue entries; cbd220b6,
+  2811d0fd) on wp/X04 (82251ffc); A1–A13 pass (498 + 41 tests), F0 PASS, MSG check 391 entries; decisions D-1…D-4.
+  Known red: surface chain (11; get_project's output schema moves the served digest) and 5 R4-G3 snapshot tests.
+  DECISION: X04 takes chain link c_8 with register block R-1010…1019 (precedent X02 c_5, OPT c_6, ST c_7 by the build
+  lane), taken with SNAPSHOT_X04/without_x04 in X04's final work order after WO-4/WO-5 → alternative: a design-lane
+  ruling first. Reversible by: dropping that commit. WO-3 next (brief docs/briefs/X04-build-A2.md).
+
+- 2026-11-09 — X04 WO-3 done on wp/X04 (df59a3df): render display numbers, get_job_result display_units (schemas,
+  OPERATIONS, description sentence, ADR 0019 Amendment 17, interfaces-frozen), A15–A20, A31–A33, A36 (38 passed); D-5
+  (unsupported refusal's detail.reason = full message head). F0 PASS; MSG check 391/95. Known red 29: surface chain 14,
+  R4-G3 5, t08_w2 surface digest 9, description review 1 — all for X04's final work order (c_8, snapshot, digest,
+  reviews: design-lane in the reviewer pass, human on the board). Next: engineer B WO-4 (docs/briefs/X04-build-B.md).
+
+- 2026-11-09 — X04 WO-4 done on wp/X04 (bb4b21cd): stream-table display members, get_stream_table display_units,
+  schema, formats + `streams --display-units`, description (D-7: 1499/1500 chars), tests 29/29; D-6…D-12. Battery
+  1573 passed; known red unchanged (29 + description review). F0 PASS. DECISION: the reviewer pass (WO-1–WO-4, brief
+  docs/briefs/X04-reviewer.md) runs before WO-5 and the final work order, so a fix round lands before the chain link and
+  snapshot are taken. Alternative: WO-5 first. Reversible by: order only.
+
+- 2026-11-09 — X04 review (6ed59a98, docs/reviews/X04-review.md): sound, no must-fix; S1 parity case, S2 kinded-SI
+  catalogue test, S3 both descriptions approved with edits (texts in the review), S4 bundle-mode length bound; N1–N3
+  doc edits; D-7 changed, others kept; no second reviewer pass needed. Next: fix round + WO-5 (docs/briefs/X04-fix-WO5.md),
+  then the final work order (c_8, SNAPSHOT_X04, digest). Frank's human review of both descriptions goes on the board
+  once the texts are written (sha256 shown).
+
+- 2026-11-09 — X04 fix round + WO-5 done (wp/X04 c4358784): descriptions verbatim from the review
+  (get_job_result 1485 chars sha 3c96f32e…, get_stream_table 1500 chars sha b7ce4ed4…; design-lane reviewed); S1, S2,
+  S4; N1–N3; A37–A40 (web units control, L-X04-1…3, guide page docs-site/guide/display-units.md, D-13); D-14, D-15.
+  Battery 1856 passed, 29 known red. F0 PASS; MSG check 394. Board: x04-get-job-result, x04-get-stream-table (Frank's
+  human review; he records it with scratchpad/record_frank_reviews_x04.py). Final work order brief
+  docs/briefs/X04-final-WO.md. D-13…D-15 left for a design-lane glance (non-blocking).
