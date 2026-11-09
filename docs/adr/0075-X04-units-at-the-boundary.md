@@ -23,6 +23,16 @@ WO-1–WO-5). **Reference:** `docs/derivations/scripts/x04_reference.json`, emit
 - MSG design note §4.5 "X04 slot" (ADR 0058): filled as that note planned — `RenderContext.display_units` is set and
   each `numbers` item may carry `display: {value, unit}`; the SI `value` and `unit` stay.
 - `docs/interfaces-frozen.md`: a paragraph for this ADR (the build lane, with the commit that lands WO-3).
+- *(Note, design lane, 2026-11-09; X04 D-21/D-22.)* `schemas/message-catalogue.schema.json` (ADR 0058,
+  `openflowsheet-messages-v1`): the param `type` enum gains `display_unit`, a display unit whose rendered text is
+  `units.display.text_unit` of its value (`degF` → `°F`, D7.7); its `!raw` rendering and the param value itself keep
+  the D2 spelling. Every existing catalogue stays valid, and MSG's catalogue table (`docs/design/MSG-messages.md`)
+  lists the type. `explain`'s `params[].type` is an unconstrained string in
+  `application-results.schema.json#/$defs/message_entry`, so no response schema moves. `display_out_of_range` declares
+  its `unit` param with this type, so the core catalogue's `sha256` moves, and the two `message_entry` round-trip
+  fixtures carry the new value (that member only). The Consequences bullets "No stored datum, fixture or digest moves"
+  and "The MSG slot is filled without changing MSG's interfaces" are read with this note. Nothing in a run, bundle,
+  manifest or store moves (F0 unchanged).
 
 **Does not amend:** ADR 0001 D1 (internal SI; D1.3's temperature/difference rule is applied, not changed); ADR 0016
 D1–D9 (input conversion, its table, its arithmetic, its refusals); `schemas/units.json` (no kind is added); the
