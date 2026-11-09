@@ -146,3 +146,26 @@ for byte (the manifest without its three wall-clock members).
 *Alternative.* A fixed clock (not available through `LocalApplication.solve`, as D-2 says).
 *Reversible by:* the one line in `tests/test_x04_ambient.py`.
 *Ruled (design lane, 2026-11-09, `docs/reviews/X04-review.md`):* **Keep.** Sizes cover the same wall-clock members as D-2's hashes. A fixed clock seam would be cleaner later; it is not needed here.
+
+## D-13. A40's page is `docs-site/guide/display-units.md`, not `guide/units.md`
+
+*Question.* A40 names `docs-site/guide/units.md`, but that path is the generated "Unit catalogue" (unit operations,
+`scripts/doc_pages.py` `PAGE`, checked by `tests/test_doc_pages.py`).
+*Choice.* A new hand-written page `docs-site/guide/display-units.md` ("Display units", in `mkdocs.yml` after the
+stream table); A40's test reads it. *Alternative.* Rename the unit catalogue (moves a generated page and its links).
+*Reversible by:* moving the page and the test's path (commit `X04 WO-5: docs-site/guide/display-units.md`).
+
+## D-14. The web shell's SI choice sends no `display_units`; a gauge choice without an ambient falls back to SI
+
+*Question.* A38 says the choice "is sent as `display_units`"; for SI that could be `"si"` (adds the root echo) or no
+member. A stored gauge choice can meet a project without an ambient.
+*Choice.* SI sends no member, so the SI screens read exactly the pre-X04 documents (the M06 fixtures and smoke routes
+stay valid); a gauge choice is disabled without a declared ambient and, if stored, resolves to SI there (never
+assumed, ADR 0075 D6.4). *Alternative.* Send `"si"` (every fixture re-recorded); fall back to `eng`.
+*Reversible by:* `apps/web/js/units.js` (`displayRequest`, `effectiveUnits`).
+
+## D-15. `apps/web/js/routes.js` was stale on `wp/X04` (found in WO-5)
+
+*Fact, not a choice.* `scripts/m06_web_routes.py --check` failed since WO-3/WO-4 added `display_units` to the two
+request schemas (the route table's `members`); `tests/test_m06_static_scan.py` was outside the targeted battery.
+Regenerated (`--write`), `--check` clean.
