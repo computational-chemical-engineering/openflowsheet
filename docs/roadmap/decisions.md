@@ -881,3 +881,9 @@ G16-b 40/40; F0 PASS. Q1 (`t07_reference.py --check` in CI): no (85.6 s). CI re-
   1573 passed; known red unchanged (29 + description review). F0 PASS. DECISION: the reviewer pass (WO-1–WO-4, brief
   docs/briefs/X04-reviewer.md) runs before WO-5 and the final work order, so a fix round lands before the chain link and
   snapshot are taken. Alternative: WO-5 first. Reversible by: order only.
+
+- 2026-11-09 — X04 review (6ed59a98, docs/reviews/X04-review.md): sound, no must-fix; S1 parity case, S2 kinded-SI
+  catalogue test, S3 both descriptions approved with edits (texts in the review), S4 bundle-mode length bound; N1–N3
+  doc edits; D-7 changed, others kept; no second reviewer pass needed. Next: fix round + WO-5 (docs/briefs/X04-fix-WO5.md),
+  then the final work order (c_8, SNAPSHOT_X04, digest). Frank's human review of both descriptions goes on the board
+  once the texts are written (sha256 shown).
