@@ -847,3 +847,13 @@ G16-b 40/40; F0 PASS. Q1 (`t07_reference.py --check` in CI): no (85.6 s). CI re-
   acceptance needs ADR-F1…F8 Accepted but Frank kept 0060–0067 Proposed → board item rel04-line-acceptance (default:
   move the condition to 0.5). DECISION: X04 gets a specifier pass (ADR 0075 + test spec) before any build →
   alternative: drop X04 to 0.5. Reversible by: roadmap amendment.
+
+- 2026-11-09 — ST merged into main (a053690d; evidence/ST/45122519… tested, CI 42585666096; manifest de2316e0, harvest
+  5 limitations + 1 check, HARVEST_SIZE (88, 1059, 141)). The X04 specifier's commit ced0082f, made in the main
+  checkout on top of the local merge, pushed the merge before the post-merge checks finished; the checks then passed:
+  ruff clean, F0 PASS, MSG check 386/90/129, matrix 0 problems, targeted tests 1519 passed, 2 skipped, 3 xfailed.
+  Lesson: no merge in the main checkout while a docs agent commits there. Wave MSG → X02 → OPT → RRC → ST complete.
+- 2026-11-09 — X04 specified: ADR 0075 (Proposed), test spec A1–A40, WO-1…WO-5, generator x04_reference.py (17
+  claims). Board: adr-0075, x04-fq1…fq4. Finding: catalogue `J/(mol*K)` vs ADR 0062 `J/(mol K)` (align at F2).
+  DECISION: build starts on the Proposed ADR (engineer A, docs/briefs/X04-build-A.md); merge needs Frank's accept.
+  Alternative: wait for the accept. Reversible by: branch not merged.

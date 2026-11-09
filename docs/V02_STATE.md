@@ -109,30 +109,26 @@ Am. 1–2). Foundations F0–F8 are designed in wave W1 during 0.4, then built i
 `docs/USER_FEEDBACK.md` (tutorial session). Agentic design layer (inside OpenFlowsheet, R-931):
 `docs/agentic-layer/preliminary-plan.md`, not started; textbooks in Zotero (13/13 PDFs).
 **Development resumed 2026-11-05 (Frank).** Position 2026-11-09 (log: `docs/roadmap/decisions.md`; per-package
-`docs/<ID>_DECISIONS.md`). Frank answered every board question 2026-11-08 (`docs/FRANK_QUESTIONS.md` "Answers — Frank,
-2026-11-08"; board artifact `WBLrhuGuG9zosGy46Z1b2A`).
-- **Merge rule (Frank, 2026-11-08):** CI green on both archs = merge condition; manifest `tested` citing the CI run;
-  after the merge on main: `ruff check`, `ruff format --check`, F0 `corpus_identity.py --check`, targeted tests; local
-  full gate only before RC cuts/tags. Worktrees need `PYTHONPATH=src` (main's `.venv` imports main's `src`).
-- **Merge order (0.4):** MSG → X02 → OPT → RRC → ST.
-- **On main:** W1 design closed (R-941; ADR 0060–0067 stay Proposed by Frank's default); F0; RP (S15); X05; X10; WIT
-  (X10a); S15a; **X05a** `dd16dab8`; **MSG** `ed874b17` (c_4); **X10b** `d5035a76` (WIT M-6b, L01 R-983); **X02**
-  `35aa61e1` (c_5 D_5 `f51b69bf…`, R-950…955, caches 38; HARVEST_SIZE (83, 1029, 135)).
-- **OPT** (`wp/OPT` `c1b9b125`, CI 42534167073 green): merge prep done (D-86…D-94: c_6 D_6 `3fdc797a…`, caches 39,
-  ADR 0071 Accepted, R-960…969 + R-988, M-4 verified). **Now:** manifest re-take (brief `docs/briefs/OPT-manifest.md`,
-  incl. audited-env/G2 re-check), then merge.
-- **RRC** (`wp/RRC` `fe572ad5`, ~184 behind): Frank accepted ADR 0072, FQ1 yes, FQ2–FQ4 default. **Next after OPT:**
-  `docs/briefs/RRC-merge-prep.md` (merge main, chain link if the surface moves, R-990…995, catalogue G2, G7/G8 in CI),
-  CI, manifest, merge.
-- **ST** (`wp/ST` `eb1e0936`, CI 42527883250 green): WO-8a/8b done, ADR 0025 ruling 6, CI-1/CI-2 test fixes. **WO-7
-  after RRC:** merge main, next chain link, ADR 0068 Accepted + D3 amendment (board item st-adr0068-am1, default
-  "stands"), R-1000…, catalogue G2, manifest, CI, merge.
-- **Design-lane batch (non-blocking):** prose of X02 D-39 + OPT D-92 catalogue entries (`review: true`); OPT D-93
-  (which mistake MSG corpus C12 registers); reviewer passes still pending for X02 (and the 0.4 packages per plan).
-- **Before 0.4.0's cut:** S-6 rehearsal of never-run steps; 0.4 gate entries (incl. `[4, "x05.*"]`); schema ADR
-  admitting `REL[0-9]{3,}`; ADR 0074 O-3; ADR 0055 parts 1–3; local full gate.
+`docs/<ID>_DECISIONS.md`). Decision board: artifact `WBLrhuGuG9zosGy46Z1b2A` (Frank answers there; read `answers`).
+- **Merge rule (Frank, 2026-11-08):** CI green on both archs = merge condition; manifest `tested` citing the CI run,
+  with its T08 harvest (support_envelope + HARVEST_SIZE); after the merge on main: `ruff check`, `ruff format --check`,
+  F0 `corpus_identity.py --check`, targeted tests; local full gate only before RC cuts/tags. Worktrees need
+  `PYTHONPATH=src` (main's `.venv` imports main's `src`).
+- **Wave merged (2026-11-09):** MSG (c_4), X02 (c_5), OPT (c_6 D_6 `3fdc797a…`), RRC `cefee08d` (ADR 0072, no link),
+  MSGp `74ceab73` (catalogue prose ruling), **ST `a053690d`** (ADR 0068 Accepted, c_7 D_7 `553b7612…`, R-1000…1006).
+  Main: caches 39; HARVEST_SIZE (88, 1059, 141); catalogue 386/90/129; F0 PASS. Also on main: W1 closed (R-941), F0,
+  RP (S15), X05, X05a, X10, X10a (WIT), X10b, S15a.
+- **X04 units at the boundary:** ADR 0075 Proposed + test spec `docs/derivations/X04-test-specification.md` (A1–A40,
+  WO-1…WO-5; `ced0082f`). Board: adr-0075 (accept needed before merge), x04-fq1…fq4 (defaults). **Now:** engineer A
+  (`docs/briefs/X04-build-A.md`, WO-1–3 on `wp/X04`), then engineer B (WO-4, WO-5), reviewer pass, CI, manifest.
+- **Before 0.4.0's cut:** board item rel04-line-acceptance (ADR-F1…F8 Accepted is a line condition but Frank kept
+  0060–0067 Proposed; default: move it to 0.5); `[4, "x05.*"]` in `release/lines/0.4.json`; schema ADR admitting
+  `REL[0-9]{3,}`; ADR 0074 O-3 (RP.L11); S-6 rehearsal; local full gate; RC cut and tag need Frank's go. ADR 0055
+  parts 1–3 are built (release_gate, release_rc*, release_evidence_manifest); WO-R5 deferred by Frank.
+- **Design-lane notes (non-blocking):** RRC D-45 (B27 exclusion) glance; MSG F1 (G1 misses `OPT.*` check ids);
+  catalogue `J/(mol*K)` vs ADR 0062 `J/(mol K)`; reviewer passes pending for the 0.4 packages per plan.
 - **TRS2 CPU rule** (user via hub, 2026-11-07): ≤ ~36 busy cores of 48; one full gate at a time. Poll GitHub CI at most
-  every 10 min. Stale worktrees of merged branches (x05a, msg, x10b, x02, …) may be removed (offered to Frank).
+  every 10 min. Stale worktrees of merged branches may be removed (offered to Frank).
 **Next actions for 0.4 (roadmap §0.4; at most 2 agents at a time):**
 1. **Wave 1: done** (MSG architect pass, W1 specifier, P1–P3, reviews; W1 closed R-941).
 2. **Build lane, after or between the design passes:**
