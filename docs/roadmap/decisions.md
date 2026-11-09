@@ -887,3 +887,10 @@ G16-b 40/40; F0 PASS. Q1 (`t07_reference.py --check` in CI): no (85.6 s). CI re-
   doc edits; D-7 changed, others kept; no second reviewer pass needed. Next: fix round + WO-5 (docs/briefs/X04-fix-WO5.md),
   then the final work order (c_8, SNAPSHOT_X04, digest). Frank's human review of both descriptions goes on the board
   once the texts are written (sha256 shown).
+
+- 2026-11-09 — X04 fix round + WO-5 done (wp/X04 c4358784): descriptions verbatim from the review
+  (get_job_result 1485 chars sha 3c96f32e…, get_stream_table 1500 chars sha b7ce4ed4…; design-lane reviewed); S1, S2,
+  S4; N1–N3; A37–A40 (web units control, L-X04-1…3, guide page docs-site/guide/display-units.md, D-13); D-14, D-15.
+  Battery 1856 passed, 29 known red. F0 PASS; MSG check 394. Board: x04-get-job-result, x04-get-stream-table (Frank's
+  human review; he records it with scratchpad/record_frank_reviews_x04.py). Final work order brief
+  docs/briefs/X04-final-WO.md. D-13…D-15 left for a design-lane glance (non-blocking).
