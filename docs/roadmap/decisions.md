@@ -969,3 +969,7 @@ G16-b 40/40; F0 PASS. Q1 (`t07_reference.py --check` in CI): no (85.6 s). CI re-
 - 2026-11-09 — X04 merged into main (720e5138; evidence/X04/0f7d9b87…, tested, 41 pass + FULLGATE unsupported; CI
   42659368086). HARVEST_SIZE (89, 1063, 142). Post-merge: ruff clean, F0 PASS (M1–M9), targeted 1801 passed 3 xfailed.
   Board items adr-0075 and x04-fq4 closed.
+- 2026-11-09 — REL040p: S6R-29 (78221727) found M07's A2.3 test bound to the working-tree REAL record. DECISION:
+  Q-S6e → read the offered record at the journey's own commit (c8be15dc). Alternative: J rewrites three journeys.
+  Reversible by reverting c8be15dc; ruled in the reviewer pass. Main merged in (5d0c4121; register conflict R-1007/1008
+  vs R-1010…1016 resolved by keeping both). Reviewer brief docs/briefs/REL040-reviewer.md.
