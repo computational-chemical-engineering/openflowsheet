@@ -958,3 +958,8 @@ G16-b 40/40; F0 PASS. Q1 (`t07_reference.py --check` in CI): no (85.6 s). CI re-
   digests exactly); WO-8 (IDAES re-take test pins the kernel too), S6R-29, A-11 item 7 → brief
   docs/briefs/REL040-s6-wo78.md. A `reviewer` pass on wp/REL040p (WO-1, 3, 4, 7a) follows before its merge.
   X04 D-22: ADR 0075 note + interfaces-frozen clause applied verbatim on wp/X04 (1d456c46), docs only.
+- 2026-11-09 — TRS2 reset 18:33 (load ~34; hardware fault suspected, reported by Frank). The REL040p engineer was cut
+  off after WO-8 d7258775, WO-7 26ad9d7f, A-11 item 7 0b62c12d (pushed); S6R-29 and WO-7's live proof line not run.
+  X04 CI green at 0f7d9b87 (42659368086); D-22 note 1d456c46 pushed; manifest brief docs/briefs/X04-manifest.md.
+  DECISION: until Frank says otherwise, TRS2 runs one serial process at a time, targeted tests only; S6R-29's
+  default-tier run and any K3 work wait for his go. Alternative: resume the ≤ 36-core rule. Reversible by: Frank's word.
