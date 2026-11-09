@@ -276,8 +276,9 @@ nothing required, so no `required` list changes:
 
 ## Amendment 17 (Proposed 2026-11-09, with ADR 0075; X04) — pointer to ADR 0075
 
-Amendment 17 is decided in ADR 0075 (D7, D8; X04 test specification §5 M, T); this paragraph points at it. Additive,
-nothing required, so no `required` list changes; nothing stored or hashed changes (D11):
+Amendment 17 is decided in ADR 0075 (D7, D8; X04 test specification §5 M, T); this paragraph points at it. Additive;
+the one `required` list that changes is `project_summary`'s (`ambient_pressure`, nullable, D6.3); nothing stored or
+hashed changes (D11):
 
 - **`JobControl.get_job_result(job_id, *, display_units=None)`** and **`Inspection.get_stream_table(…,
   display_units=None)`**: an optional display preference (`display_units: {type: string, minLength: 1, maxLength:
@@ -292,5 +293,7 @@ nothing required, so no `required` list changes; nothing stored or hashed change
 - **Refusals.** `invalid_request` with pointer `/display_units` (`display_units_invalid`,
   `ambient_pressure_undeclared`) and `unsupported` with reason `display_unit_unsupported` (D9). D5's `ApiError` and
   `API_EXIT_CODES` are unchanged.
-- **Not unchanged:** the served MCP tool list (two input schemas, two description texts); its surface link is taken
-  once X04's schemas are final.
+- **Not unchanged:** the served MCP tool list (`get_project`'s and `explain`'s output schemas, two input schemas, two
+  description texts), now `6be1c002…` (chain link c_8 of `scripts/m07a_rc.py`, R-1010; `X04_SERVED_SHA256` in
+  `tests/test_t08_w2_surface_digest.py`); with X04's additions removed (`tests/x04_schema_support.py`) it is ST's
+  `553b7612…` (R-1000) exactly. Nine R4-G3 responses move (`SNAPSHOT_X04`); stripped, each is its earlier snapshot.

@@ -1,7 +1,8 @@
 # ADR 0075 — X04: units at the boundary — display conversion, display preferences, the project ambient pressure
 
 **Status:** **Proposed, 2026-11-09.** It takes effect when Frank accepts it (decision board) and X04's manifest is
-`tested` with the `reviewer` pass done; X04 is built on `wp/X04`. Register entries are added on acceptance.
+`tested` with the `reviewer` pass done; X04 is built on `wp/X04`. Register entries R-1010 (surface link c_8) and
+R-1011…R-1016 (D1–D10) are recorded as Proposed (X04's final work order); they take effect with the accept.
 **Author:** design lane (`specifier`). **Brief:** `docs/briefs/X04-specifier.md`.
 **Normative text:** this ADR (D1–D11) and `docs/derivations/X04-test-specification.md` (assertions A1–A40, work orders
 WO-1–WO-5). **Reference:** `docs/derivations/scripts/x04_reference.json`, emitted by
