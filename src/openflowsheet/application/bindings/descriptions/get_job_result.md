@@ -1,4 +1,4 @@
-Return an ended job's result: {"operation", "run_result", "replay_report", "error"}. A job that has not ended is refused not_ready; follow it with wait_job first. Optional display_units (for example "eng", or "pressure=barg" once the project declares its ambient pressure) adds a "display" value in those units beside each SI number of every explanation and writes the explanation text in them; the SI values stay as they are.
+Return an ended job's result: {"operation", "run_result", "replay_report", "error"}. A job that has not ended is refused not_ready; follow it with wait_job first. Optional display_units (for example "eng", or "pressure=barg" once the project declares its ambient pressure) adds a "display" value in those units beside each explanation number of a kind it names and writes the explanation text in them; the SI values stay as they are and are the ones to compute with.
 
 Effect: none. Right needed: read.
 

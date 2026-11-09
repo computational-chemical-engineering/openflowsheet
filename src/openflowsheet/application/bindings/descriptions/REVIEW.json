@@ -124,14 +124,14 @@
     "get_job_result": {
       "tool": "get_job_result",
       "file": "get_job_result.md",
-      "sha256": "ff805348581892502c569b2db574257eab1ebf42bac97b34991b8c67fa91213e",
-      "characters": 1445,
+      "sha256": "3c96f32e38724ee07db8028bfa0bc22fb83ef56d9ba11fd9078e8fbf08ccf369",
+      "characters": 1485,
       "reviews": [
         {
           "review_kind": "design-lane",
-          "status": "pending_design_review",
-          "reviewed_by": null,
-          "reviewed_at": null
+          "status": "reviewed",
+          "reviewed_by": "reviewer (design lane), docs/reviews/X04-review.md",
+          "reviewed_at": "2026-11-09"
         },
         {
           "review_kind": "human",
@@ -184,14 +184,14 @@
     "get_stream_table": {
       "tool": "get_stream_table",
       "file": "get_stream_table.md",
-      "sha256": "49d3d9cb578f5149d7c6372db0c15b96592a4274a2e12cf2605a69608a7d3e26",
-      "characters": 1499,
+      "sha256": "b7ce4ed4f8d0433a6b867bfd3e6372e7de8590c3f210abcc91042cf2557677ee",
+      "characters": 1500,
       "reviews": [
         {
           "review_kind": "design-lane",
-          "status": "pending_design_review",
-          "reviewed_by": null,
-          "reviewed_at": null
+          "status": "reviewed",
+          "reviewed_by": "reviewer (design lane), docs/reviews/X04-review.md",
+          "reviewed_at": "2026-11-09"
         },
         {
           "review_kind": "human",
