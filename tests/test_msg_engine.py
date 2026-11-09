@@ -689,6 +689,35 @@ def test_4_13_3_not_found_python_text_ends_with_the_old_string() -> None:
     assert text.endswith("\n  Details: not_found: no such artifact")
 
 
+# -- `request_invalid` names the member inside the request, not the envelope pointer -------------
+# (ruling `docs/reviews/MSG-catalogue-X02-OPT.md` §3.2, A5: the arg is `member`, so `detail.pointer`
+# cannot win over it; the producers are `cli.py` `optimize` and `jobs/runner.py`.)
+
+
+@pytest.mark.parametrize(
+    ("message", "pointer", "summary"),
+    [
+        (
+            "request_invalid(/objective/kind): the objective has no member 'kind'",
+            "/request/objective/kind",
+            "The optimisation request is invalid at /objective/kind.",
+        ),
+        (
+            "request_invalid(): 'decisions' is a required property",
+            "/body/request",
+            "The optimisation request is invalid.",
+        ),
+    ],
+    ids=["member", "root"],
+)
+def test_request_invalid_summary_names_the_member(message: str, pointer: str, summary: str) -> None:
+    document = {"code": "invalid_request", "message": message, "detail": {"pointer": pointer}}
+    explanation = render_error(document, strict=True)
+    assert explanation["chain"] == ["invalid_request", "request_invalid"]
+    assert explanation["summary"] == summary
+    assert explanation["why"].endswith(f" The check reported: {message.split(': ', 1)[1]}.")
+
+
 PROJECT_EXISTS_TEXT = """\
 Directory 'plant' is not empty: it already holds a project, and create() needs a new or empty directory.
   Why:     create() makes a new project and never reuses a directory, so a re-run cannot overwrite work silently.

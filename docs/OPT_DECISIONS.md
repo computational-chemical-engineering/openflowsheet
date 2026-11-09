@@ -1011,3 +1011,12 @@ Totals: TH-R1 18.3 s, M1 5.9 s, C-MW 54.4 s ("verify" also holds report/record w
   `b6bbafdb0c83b014…` (full hashes as in the manifest), identical to WO-8b; G22 (`benchmarks/opt/performance.py`,
   audited) TH-R1 / M1 / C-MW all `KKT_POINT_VERIFIED`, Ipopt 0, it 10/11, 8/8, 10/9 (11.1 / 4.7 / 28.1 s). Nothing
   to explain by D-89. Evidence: `evidence/OPT/c1b9b1255699b2cd9d1f6c1da120f761dd1e80d6/manifest.json`.
+- D-96. MSG catalogue prose ruling applied (`docs/reviews/MSG-catalogue-X02-OPT.md`, design lane, `f7da1420`; brief
+  `docs/briefs/MSG-catalogue-apply.md`) on `wp/MSGp` from `9295f0fc`, in the commit that carries this entry. Entries
+  of `warm_start_unit_unknown`, `nlp_solver_unavailable` (gap L-OPT-1), `request_invalid` (arg `member`, empty-member
+  variant, `detail` param), the seven readiness stubs and `task_unsupported` replaced verbatim; three allow-list
+  reasons; L-OPT-2's last sentence dropped; C12 runs with `closure.audited_solver` forced unavailable
+  (`CASE_PATCHES`, an assertion in `_c12`) and records `gap.limitation` L-OPT-1 (ruling §4, amending D-93). Catalogue
+  digest `7bbe3d65…` → `5e5026c5…`; `review: true` 138 → 129. One literal deviation from the ruling's A6: the U05 CLI
+  pin's stdout changes too, in `detail.explanation` (`why`, `action`, `gap`) only, because the refusal document
+  carries its explanation (MSG §3.7); the machine members are unchanged (I1).
