@@ -21,6 +21,7 @@ import math
 from collections.abc import Callable, Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
+from types import MappingProxyType
 from typing import TYPE_CHECKING, Any, Final
 
 from openflowsheet import __version__
@@ -960,71 +961,79 @@ def build(
 
 # -- display members (ADR 0075 D7.3) --------------------------------------------------------------
 
+
+def _frozen(table: dict[str, dict[str, str | None]]) -> Mapping[str, Mapping[str, str | None]]:
+    """A read-only copy of a two-level table (C-8: no module-level mutable state)."""
+    return MappingProxyType({name: MappingProxyType(dict(row)) for name, row in table.items()})
+
+
 #: ADR 0075 D7.3 and the X04 test specification's §4 site table: the display kind of every
 #: number-typed member (a number, or an array of numbers) of every object of `stream-table-v1`,
 #: by object; `None` for a number that is never displayed (L-X04-3, verification evidence, an
 #: entry's params, an identity integer). `molar_volume` and `molar_mass` have no display rows in
 #: 0.4, so `v` and `molar_mass` are never displayed either. A pressure here is absolute (D4.2).
-SITES: Final[Mapping[str, Mapping[str, str | None]]] = {
-    "stream": {"T": "temperature", "P": "pressure"},
-    "substream": {
-        "n": "molar_flow",
-        "n_total": "molar_flow",
-        "m": "mass_flow",
-        "m_total": "mass_flow",
-        "x": "mole_fraction",
-        "w": "mass_fraction",
-        "H_flow": "enthalpy_flow",
-        "h": "molar_enthalpy",
-        "h_mass": "specific_enthalpy",
-        "s": "molar_entropy",
-        "s_mass": "specific_entropy",
-        "vapor_fraction_molar": "dimensionless",
-        "vapor_fraction_mass": "dimensionless",
-        "S_flow": None,
-        "V_flow": None,
-        "rho": None,
-    },
-    "phase": {
-        "n": "molar_flow",
-        "n_total": "molar_flow",
-        "m": "mass_flow",
-        "m_total": "mass_flow",
-        "x": "mole_fraction",
-        "w": "mass_fraction",
-        "H_flow": "enthalpy_flow",
-        "h": "molar_enthalpy",
-        "h_mass": "specific_enthalpy",
-        "s": "molar_entropy",
-        "s_mass": "specific_entropy",
-        "phase_fraction_molar": "dimensionless",
-        "phase_fraction_mass": "dimensionless",
-        "v": "molar_volume",
-        "S_flow": None,
-        "V_flow": None,
-        "rho": None,
-    },
-    "port": {"H_flow": "enthalpy_flow"},
-    "unit": {
-        "H_in": "enthalpy_flow",
-        "H_out": "enthalpy_flow",
-        "Q": "heat_rate",
-        "W": "power",
-        "closure": "heat_rate",
-    },
-    "overall": {
-        "H_feeds": "enthalpy_flow",
-        "H_products": "enthalpy_flow",
-        "Q": "heat_rate",
-        "W": "power",
-        "closure": "heat_rate",
-    },
-    "component": {"molar_mass": "molar_mass"},
-    "quote": {"index": None, "value": None, "tolerance": None},
-    "entry": {"params": None},
-    # An identity integer, as a quote's `index` (X04 decision D-6).
-    "phase_id": {"ordinal": None},
-}
+SITES: Final[Mapping[str, Mapping[str, str | None]]] = _frozen(
+    {
+        "stream": {"T": "temperature", "P": "pressure"},
+        "substream": {
+            "n": "molar_flow",
+            "n_total": "molar_flow",
+            "m": "mass_flow",
+            "m_total": "mass_flow",
+            "x": "mole_fraction",
+            "w": "mass_fraction",
+            "H_flow": "enthalpy_flow",
+            "h": "molar_enthalpy",
+            "h_mass": "specific_enthalpy",
+            "s": "molar_entropy",
+            "s_mass": "specific_entropy",
+            "vapor_fraction_molar": "dimensionless",
+            "vapor_fraction_mass": "dimensionless",
+            "S_flow": None,
+            "V_flow": None,
+            "rho": None,
+        },
+        "phase": {
+            "n": "molar_flow",
+            "n_total": "molar_flow",
+            "m": "mass_flow",
+            "m_total": "mass_flow",
+            "x": "mole_fraction",
+            "w": "mass_fraction",
+            "H_flow": "enthalpy_flow",
+            "h": "molar_enthalpy",
+            "h_mass": "specific_enthalpy",
+            "s": "molar_entropy",
+            "s_mass": "specific_entropy",
+            "phase_fraction_molar": "dimensionless",
+            "phase_fraction_mass": "dimensionless",
+            "v": "molar_volume",
+            "S_flow": None,
+            "V_flow": None,
+            "rho": None,
+        },
+        "port": {"H_flow": "enthalpy_flow"},
+        "unit": {
+            "H_in": "enthalpy_flow",
+            "H_out": "enthalpy_flow",
+            "Q": "heat_rate",
+            "W": "power",
+            "closure": "heat_rate",
+        },
+        "overall": {
+            "H_feeds": "enthalpy_flow",
+            "H_products": "enthalpy_flow",
+            "Q": "heat_rate",
+            "W": "power",
+            "closure": "heat_rate",
+        },
+        "component": {"molar_mass": "molar_mass"},
+        "quote": {"index": None, "value": None, "tolerance": None},
+        "entry": {"params": None},
+        # An identity integer, as a quote's `index` (X04 decision D-6).
+        "phase_id": {"ordinal": None},
+    }
+)
 
 
 def _display(holder: Mapping[str, Any], site: str, units: DisplayUnits) -> dict[str, Any]:
