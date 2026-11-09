@@ -930,3 +930,12 @@ G16-b 40/40; F0 PASS. Q1 (`t07_reference.py --check` in CI): no (85.6 s). CI re-
   Frank's claude.ai sidebar (he asked). DECISION: FQ4 is built on a side branch wp/X04fq4 (from wp/X04 4c818959) so
   Frank's review script can run on the clean wp/X04 worktree; merged back after → alternative: wait for the script.
   Reversible by: not merging the side branch.
+
+- 2026-11-09 — Frank recorded his human reviews of get_job_result/get_stream_table on wp/X04 (a39ebfff, his script).
+  FQ4 done on wp/X04fq4 (ADR 0075 Accepted da8f4597; °C/°F in human text via units.display.text_unit, D7.7; D-19…D-21),
+  merged into wp/X04 (3e16b359). X04 CI 42624006442 at 4c818959 red: m02/m04 strip chains lack without_x04, B50 surface
+  content lacks X04, default-install collection error (anyio via the mcp binding in test_x04_messages), plus the
+  then-pending human reviews (digest docs/briefs/X04-ci-red-digest.md). DECISION: D-21 (display_out_of_range shows
+  "degF" in text) → apply FQ4's rule via text_unit; alternative: design-lane wording ruling; reversible by one-line
+  revert. Fix brief docs/briefs/X04-ci-fix.md, with one local full default suite run (the targeted batteries missed
+  these files).
