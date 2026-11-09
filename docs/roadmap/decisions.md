@@ -894,3 +894,10 @@ G16-b 40/40; F0 PASS. Q1 (`t07_reference.py --check` in CI): no (85.6 s). CI re-
   Battery 1856 passed, 29 known red. F0 PASS; MSG check 394. Board: x04-get-job-result, x04-get-stream-table (Frank's
   human review; he records it with scratchpad/record_frank_reviews_x04.py). Final work order brief
   docs/briefs/X04-final-WO.md. D-13…D-15 left for a design-lane glance (non-blocking).
+
+- 2026-11-09 — X04 final work order done (wp/X04 4c818959): main merged (034bc43c, no conflicts); c_8 R-1010, D_8
+  6be1c002…, without_x04 = D_7 553b7612… exactly; SNAPSHOT_X04 (9 responses); t08_w2 X04_SERVED_SHA256 + decomposition
+  test; register R-1011…1016 (ADR 0075, Proposed); D-16…D-18. Battery 2486 passed, 3 xfailed, 1 failed = the
+  description-review test ("2 open: get_job_result, get_stream_table: human pending"). F0 PASS; MSG check 394/95.
+  Waiting on Frank: ADR 0075 accept and his two human reviews (script record_frank_reviews_x04.py). CI watched at
+  4c818959 (expected red on that one test only).
