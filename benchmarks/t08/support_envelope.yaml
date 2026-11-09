@@ -1267,6 +1267,35 @@ limitations:
       - doc:docs/OPT_DECISIONS.md
       - doc:docs-site/guide/optimisation.md
 
+  - id: L-X04-1
+    text: >-
+      Gauge pressures are not accepted as inputs: ADR 0016's input rows stand, and a gauge unit
+      (`barg`, `psig`) in a revision or a change is refused with its existing code. Gauge units
+      are display units only, resolved against the project's declared ambient pressure. Input
+      conversion at commit is the planned remedy, not built in 0.4.
+    evidence:
+      - tests/test_x04_display_core.py::test_a6_preference_grammar[PU20]
+      - tests/test_t05_w11_cases.py::test_a_value_outside_its_si_unit_is_refused[barg-pin]
+      - doc:docs/adr/0075-X04-units-at-the-boundary.md §D10
+  - id: L-X04-2
+    text: >-
+      Display units change responses only. Stored and hashed documents, raw artifacts, check
+      quotes and the web shell's as-solved state table stay SI; a display preference never
+      reaches a run, a bundle, a certificate or a cache key.
+    evidence:
+      - tests/test_x04_stream_table.py::test_a21_without_a_preference_the_document_is_sts
+      - tests/test_x04_stream_table.py::test_a23_the_jobs_exercise_arrays_absences_and_every_object
+      - doc:docs/adr/0075-X04-units-at-the-boundary.md §D1
+  - id: L-X04-3
+    text: >-
+      A number without a display kind or a display row stays SI under every preference: the
+      stream table's `S_flow` (W/K), `V_flow` (m³/s), `rho` (kg/m³), `v` (m³/mol) and
+      `molar_mass`, and every message number without a quantity kind.
+    evidence:
+      - tests/test_x04_messages.py::test_a18_no_kind_no_conversion
+      - tests/test_x04_stream_table.py::test_a23_the_jobs_exercise_arrays_absences_and_every_object
+      - doc:docs/adr/0075-X04-units-at-the-boundary.md §D4
+
 harvest:
 - manifest: evidence/K01/b44dea0e96eb61f42f34249eee69a20d1ddb6a8a/manifest.json
   item: limitations[0]
