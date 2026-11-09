@@ -1375,6 +1375,7 @@ class LocalApplication:
             server=ServerInfo(
                 package_version=__version__, git_commit=None, store_schema=STORE_SCHEMA
             ),
+            ambient_pressure=self._policy.current().ambient_pressure,
         )
 
     def list_models(self) -> ModelRegistryView:

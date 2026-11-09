@@ -1679,8 +1679,20 @@ class ProjectPolicy:
     capabilities: tuple[CapabilityReference, ...]
     executor: ExecutorSettings = field(default_factory=ExecutorSettings)
     schema_version: Literal["project-policy-v1"] = "project-policy-v1"
+    #: ADR 0075 D6: the project's declared ambient pressure, Pa — read by gauge display rows
+    #: only, never by a run. Absent from the document until declared, so an undeclaring
+    #: project's file and `policy_sha256` are what they were before X04.
+    ambient_pressure: float | None = None
 
     def __post_init__(self) -> None:
+        if self.ambient_pressure is not None and not (
+            isinstance(self.ambient_pressure, float)
+            and math.isfinite(self.ambient_pressure)
+            and self.ambient_pressure > 0.0
+        ):
+            raise ValueError(
+                f"ambient_pressure {self.ambient_pressure!r} is not a finite pressure > 0 Pa"
+            )
         ids = [capability.capability_id for capability in self.capabilities]
         if len(ids) != len(set(ids)):
             raise ValueError(f"capability ids repeat: {sorted(ids)}")
@@ -1709,7 +1721,7 @@ class ProjectPolicy:
             "project_id": self.project_id,
             "capabilities": [capability.as_document() for capability in self.capabilities],
             "executor": self.executor.as_document(),
-        }
+        } | ({} if self.ambient_pressure is None else {"ambient_pressure": self.ambient_pressure})
 
     @classmethod
     def from_document(cls, document: Mapping[str, Any]) -> Self:
@@ -1722,6 +1734,9 @@ class ProjectPolicy:
                 capabilities=tuple(CapabilityReference._build(c) for c in d["capabilities"]),
                 executor=ExecutorSettings._build(d["executor"]),
                 schema_version=d["schema_version"],
+                ambient_pressure=(
+                    None if d.get("ambient_pressure") is None else float(d["ambient_pressure"])
+                ),
             ),
             document,
         )
@@ -1834,8 +1849,11 @@ class ProjectSummary:
     rights: tuple[Right, ...]
     limits: Limits
     server: ServerInfo
+    #: ADR 0075 D6.3: the project's declared ambient pressure, Pa, or `None` (undeclared).
+    ambient_pressure: float | None = None
 
     def as_document(self) -> dict[str, Any]:
+        ambient = self.ambient_pressure
         return {
             "project_id": self.project_id,
             "head": self.head,
@@ -1851,6 +1869,7 @@ class ProjectSummary:
             "rights": list(self.rights),
             "limits": self.limits.as_document(),
             "server": self.server.as_document(),
+            "ambient_pressure": None if ambient is None else {"value": ambient, "unit": "Pa"},
         }
 
 

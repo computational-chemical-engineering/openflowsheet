@@ -514,6 +514,64 @@ The specific reasons a request, a revision, a solve or a project is refused, nam
 
 - **Summary:** Refused: active set cycling.
 
+<a id="ambient_pressure_invalid"></a>
+
+## `ambient_pressure_invalid`: An ambient pressure that cannot be declared
+
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
+
+- **Summary:** The ambient pressure was not declared: its &lt;part&gt; is not accepted (&lt;value&gt; &lt;unit&gt;).
+- **Why:** The ambient pressure is the absolute pressure gauge readings are measured from, so it must be a finite pressure above zero, written in an absolute unit: Pa, kPa, MPa, bar, atm or psi. A gauge unit (barg, psig) cannot declare it, and other spellings (bara, mmHg) are not accepted. Nothing is assumed in its place, and the project file is left as it was.
+- **Do:** Declare it again with a finite value above zero in one of Pa, kPa, MPa, bar, atm or psi, for example --pressure 1.01325 --unit bar.
+- **Parameters:** `part` (text), `value` (text, optional), `unit` (text, optional)
+- **See also:** [`ambient_pressure_undeclared`](#ambient_pressure_undeclared)
+
+Example:
+
+```text
+The ambient pressure was not declared: the value -1.0 is not a finite pressure above zero in bar.
+  Why:     The ambient pressure is the absolute pressure gauge readings are measured from, so it must be a finite pressure above zero, written in an absolute unit: Pa, kPa, MPa, bar, atm or psi. A gauge unit (barg, psig) cannot declare it, and other spellings (bara, mmHg) are not accepted. Nothing is assumed in its place, and the project file is left as it was.
+  Do:      Declare it again with a finite value above zero in one of Pa, kPa, MPa, bar, atm or psi, for example --pressure 1.01325 --unit bar.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    ambient_pressure_invalid (openflowsheet explain ambient_pressure_invalid)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#ambient_pressure_invalid
+```
+
+Example:
+
+```text
+The ambient pressure was not declared: the unit barg is not an absolute pressure unit it can be written in.
+  Why:     The ambient pressure is the absolute pressure gauge readings are measured from, so it must be a finite pressure above zero, written in an absolute unit: Pa, kPa, MPa, bar, atm or psi. A gauge unit (barg, psig) cannot declare it, and other spellings (bara, mmHg) are not accepted. Nothing is assumed in its place, and the project file is left as it was.
+  Do:      Declare it again with a finite value above zero in one of Pa, kPa, MPa, bar, atm or psi, for example --pressure 1.01325 --unit bar.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    ambient_pressure_invalid (openflowsheet explain ambient_pressure_invalid)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#ambient_pressure_invalid
+```
+
+<a id="ambient_pressure_undeclared"></a>
+
+## `ambient_pressure_undeclared`: A gauge display unit in a project without an ambient pressure
+
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
+
+- **Summary:** Pressures cannot be shown as gauge pressures in &lt;unit&gt;: the project has no declared ambient pressure.
+- **Where:** the request member display_units
+- **Why:** A gauge pressure is the absolute pressure minus the ambient pressure of the site. OpenFlowsheet never assumes an ambient pressure (not even one standard atmosphere): it uses the one the project declares, and this project declares none.
+- **Do:** Ask the project's operator to declare it with openflowsheet project ambient --project DIR --pressure VALUE --unit UNIT, or show pressures in an absolute unit such as bar.
+- **Parameters:** `kind` (text), `unit` (text, optional)
+- **See also:** [`ambient_pressure_invalid`](#ambient_pressure_invalid), [`display_units_invalid`](#display_units_invalid)
+
+Example:
+
+```text
+Pressures cannot be shown as gauge pressures in barg: the project has no declared ambient pressure.
+  Why:     A gauge pressure is the absolute pressure minus the ambient pressure of the site. OpenFlowsheet never assumes an ambient pressure (not even one standard atmosphere): it uses the one the project declares, and this project declares none.
+  Do:      Ask the project's operator to declare it with openflowsheet project ambient --project DIR --pressure VALUE --unit UNIT, or show pressures in an absolute unit such as bar.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    ambient_pressure_undeclared (openflowsheet explain ambient_pressure_undeclared)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#ambient_pressure_undeclared
+```
+
 <a id="basis_mismatch"></a>
 
 ## `basis_mismatch`: Basis mismatch
@@ -684,6 +742,77 @@ Directory 'notes' is not empty and does not hold a project; a project needs a ne
   Kind:    Input problem: something in the flowsheet or the request needs to change.
   Code:    directory_not_empty (openflowsheet explain directory_not_empty)
   Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#directory_not_empty
+```
+
+<a id="display_unit_unsupported"></a>
+
+## `display_unit_unsupported`: A display unit this version does not offer for the kind
+
+**Kind:** Not supported in this version: a limitation of OpenFlowsheet, not an error in your flowsheet.
+
+- **Summary:** Values of kind &lt;kind&gt; cannot be shown in &lt;unit&gt;: the unit is not one this version offers for that kind.
+- **Where:** the request member display_units
+- **Why:** Each quantity kind is shown in its SI unit or in one of a fixed list of units, each spelled exactly as in the input table: degC, not °C or celsius; bar or barg, not bara. Some kinds, such as molar heat capacity, have no display units besides SI in this version.
+- **Do:** Use one of the units the units guide lists for &lt;kind&gt;, spelled exactly, or the kind's SI unit to show it unconverted.
+- **Parameters:** `kind` (text), `unit` (text, optional)
+- **Not supported:** 
+- **See also:** [`display_units_invalid`](#display_units_invalid)
+
+Example:
+
+```text
+Values of kind temperature cannot be shown in celsius: the unit is not one this version offers for that kind.
+  Why:     Each quantity kind is shown in its SI unit or in one of a fixed list of units, each spelled exactly as in the input table: degC, not °C or celsius; bar or barg, not bara. Some kinds, such as molar heat capacity, have no display units besides SI in this version.
+  Do:      Use one of the units the units guide lists for temperature, spelled exactly, or the kind's SI unit to show it unconverted.
+  Kind:    Not supported in this version: a limitation of OpenFlowsheet, not an error in your flowsheet.
+  Code:    display_unit_unsupported (openflowsheet explain display_unit_unsupported)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#display_unit_unsupported
+```
+
+Example:
+
+```text
+Values of kind molar_heat_capacity cannot be shown in kJ/(mol K): the unit is not one this version offers for that kind.
+  Why:     Each quantity kind is shown in its SI unit or in one of a fixed list of units, each spelled exactly as in the input table: degC, not °C or celsius; bar or barg, not bara. Some kinds, such as molar heat capacity, have no display units besides SI in this version.
+  Do:      Use one of the units the units guide lists for molar_heat_capacity, spelled exactly, or the kind's SI unit to show it unconverted.
+  Kind:    Not supported in this version: a limitation of OpenFlowsheet, not an error in your flowsheet.
+  Code:    display_unit_unsupported (openflowsheet explain display_unit_unsupported)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#display_unit_unsupported
+```
+
+<a id="display_units_invalid"></a>
+
+## `display_units_invalid`: A display units preference that cannot be read
+
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
+
+- **Summary:** The display units preference was not read: item &lt;index&gt; (&lt;item&gt;) is not a preset or a kind=unit pair it accepts.
+- **Where:** the request member display_units
+- **Why:** display_units is a comma-separated list read left to right. The first item may be a preset (si or eng); every other item is kind=unit, where kind is a quantity kind such as temperature or molar_flow, named at most once. An unknown kind, a missing '=' or unit, a preset after the first item, or a kind named twice is refused, and nothing is converted.
+- **Do:** Write display_units as an optional preset followed by kind=unit items, for example eng,temperature=degF; the units guide lists the kinds and their units.
+- **Parameters:** `index` (number), `item` (text, optional)
+- **See also:** [`display_unit_unsupported`](#display_unit_unsupported), [`ambient_pressure_undeclared`](#ambient_pressure_undeclared)
+
+Example:
+
+```text
+The display units preference was not read: item 0 (temp=degC) is not a preset or a kind=unit pair it accepts.
+  Why:     display_units is a comma-separated list read left to right. The first item may be a preset (si or eng); every other item is kind=unit, where kind is a quantity kind such as temperature or molar_flow, named at most once. An unknown kind, a missing '=' or unit, a preset after the first item, or a kind named twice is refused, and nothing is converted.
+  Do:      Write display_units as an optional preset followed by kind=unit items, for example eng,temperature=degF; the units guide lists the kinds and their units.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    display_units_invalid (openflowsheet explain display_units_invalid)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#display_units_invalid
+```
+
+Example:
+
+```text
+The display units preference was not read: item 1.000 (eng) is not a preset or a kind=unit pair it accepts.
+  Why:     display_units is a comma-separated list read left to right. The first item may be a preset (si or eng); every other item is kind=unit, where kind is a quantity kind such as temperature or molar_flow, named at most once. An unknown kind, a missing '=' or unit, a preset after the first item, or a kind named twice is refused, and nothing is converted.
+  Do:      Write display_units as an optional preset followed by kind=unit items, for example eng,temperature=degF; the units guide lists the kinds and their units.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    display_units_invalid (openflowsheet explain display_units_invalid)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#display_units_invalid
 ```
 
 <a id="dormancy_form_configuration_unknown"></a>

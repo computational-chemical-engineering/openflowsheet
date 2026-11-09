@@ -337,7 +337,7 @@ def display_item(x: float, kind: str | None, units: Mapping[str, str]) -> dict[s
 
 # -- the preference grammar (ADR 0075 D5) --------------------------------------------------------
 
-DisplayRefusal = Literal[
+DisplayRefusalCode = Literal[
     "display_units_invalid", "display_unit_unsupported", "ambient_pressure_undeclared"
 ]
 
@@ -351,12 +351,12 @@ class DisplayUnitsError(ValueError):
     def __init__(
         self,
         api_error: Literal["invalid_request", "unsupported"],
-        reason: DisplayRefusal,
+        reason: DisplayRefusalCode,
         message: str,
     ) -> None:
         super().__init__(message)
         self.api_error = api_error
-        self.reason: DisplayRefusal = reason
+        self.reason: DisplayRefusalCode = reason
         self.message = message
 
     @property
@@ -366,7 +366,7 @@ class DisplayUnitsError(ValueError):
 
 def _refuse(
     api_error: Literal["invalid_request", "unsupported"],
-    reason: DisplayRefusal,
+    reason: DisplayRefusalCode,
     arg: str | int,
     text: str,
 ) -> DisplayUnitsError:

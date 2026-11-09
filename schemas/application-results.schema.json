@@ -103,7 +103,8 @@
         "revision_count",
         "rights",
         "server",
-        "solve_policies"
+        "solve_policies",
+        "ambient_pressure"
       ],
       "properties": {
         "project_id": {
@@ -182,6 +183,31 @@
               "type": "string"
             }
           }
+        },
+        "ambient_pressure": {
+          "description": "ADR 0075 D6.3: the project's declared ambient pressure (Pa, absolute), or null when none is declared. Read only by gauge display units (`barg`, `psig`).",
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "unit",
+                "value"
+              ],
+              "properties": {
+                "value": {
+                  "type": "number",
+                  "exclusiveMinimum": 0
+                },
+                "unit": {
+                  "const": "Pa"
+                }
+              }
+            }
+          ]
         }
       }
     },

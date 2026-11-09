@@ -4,6 +4,28 @@
 
 Messages that report something worth knowing but are not failures. How to read an explanation, and how to ask for one (`openflowsheet explain <code>`, the `explain` operation), is on [Messages](index.md).
 
+<a id="display_out_of_range"></a>
+
+## `display_out_of_range`: A value too large to show in the display unit asked for
+
+**Kind:** Notice: not a failure.
+
+- **Summary:** A value of kind &lt;kind&gt; is too large to show in &lt;unit&gt;, so it is shown only in its SI unit.
+- **Why:** Converting the value to &lt;unit&gt; gives a number beyond the largest a double can hold, so the display item carries no value. The SI value beside it is unaffected and is the value to compute with.
+- **Do:** Read the SI value, or choose a larger display unit for &lt;kind&gt; (for example kmol/h instead of mol/h).
+- **Parameters:** `kind` (text), `unit` (text)
+
+Example:
+
+```text
+A value of kind molar_flow is too large to show in mol/h, so it is shown only in its SI unit.
+  Why:     Converting the value to mol/h gives a number beyond the largest a double can hold, so the display item carries no value. The SI value beside it is unaffected and is the value to compute with.
+  Do:      Read the SI value, or choose a larger display unit for molar_flow (for example kmol/h instead of mol/h).
+  Kind:    Notice: not a failure.
+  Code:    display_out_of_range (openflowsheet explain display_out_of_range)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/notices/#display_out_of_range
+```
+
 <a id="stream_enthalpy_absent"></a>
 
 ## `stream_enthalpy_absent`: An energy total is not given because a stream's enthalpy flow is missing

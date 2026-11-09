@@ -416,6 +416,43 @@ def command_project_revoke(arguments: argparse.Namespace) -> int:
     return 0
 
 
+def command_project_ambient(arguments: argparse.Namespace) -> int:
+    """ADR 0075 D6.2: declare the project's ambient pressure (`--pressure VALUE --unit UNIT`,
+    converted to Pa by ADR 0016's arithmetic) or clear it (`--clear`); audited as
+    `project_ambient`. Gauge display units read it; no run does."""
+    from openflowsheet.application.authz import ambient_pressure_pa, set_ambient_pressure
+    from openflowsheet.application.store import StoreError
+
+    if arguments.clear == (arguments.pressure is not None or arguments.unit is not None) or (
+        not arguments.clear and (arguments.pressure is None or arguments.unit is None)
+    ):
+        print("give --pressure VALUE --unit UNIT, or --clear", file=sys.stderr)
+        return 2
+    try:
+        pressure = (
+            None
+            if arguments.clear
+            else ambient_pressure_pa(_cli_float(arguments.pressure), arguments.unit)
+        )
+        declared = set_ambient_pressure(Path(arguments.project), pressure)
+    except (ValueError, StoreError) as error:
+        print(_human_text(error), file=sys.stderr)
+        return 2
+    print("ambient pressure cleared" if declared is None else f"ambient pressure {declared!r} Pa")
+    return 0
+
+
+def _cli_float(text: str) -> float:
+    """A command-line number as Python reads it (`nan` and `inf` included: the caller refuses
+    them by name, as an out-of-range value, rather than as a malformed one)."""
+    from openflowsheet.application.authz import ambient_pressure_invalid
+
+    try:
+        return float(text)
+    except ValueError:
+        raise ambient_pressure_invalid("value", text, "") from None
+
+
 def _print_document(document: Any) -> None:
     from openflowsheet.canonical import canonical_json
 
@@ -798,7 +835,8 @@ def build_parser() -> argparse.ArgumentParser:
     replay_command.set_defaults(handler=command_replay)
 
     project_command = commands.add_parser(
-        "project", help="create a project and administer its capability grants"
+        "project",
+        help="create a project and administer its capability grants and ambient pressure",
     )
     project_commands = project_command.add_subparsers(dest="project_command", required=True)
     init_command = project_commands.add_parser("init", help="create a project directory")
@@ -831,6 +869,22 @@ def build_parser() -> argparse.ArgumentParser:
     revoke_command.add_argument("--project", required=True, help="the project directory")
     revoke_command.add_argument("--capability", required=True)
     revoke_command.set_defaults(handler=command_project_revoke)
+
+    ambient_command = project_commands.add_parser(
+        "ambient",
+        help="declare or clear the project's ambient pressure (read by gauge display units only)",
+    )
+    ambient_command.add_argument("--project", required=True, help="the project directory")
+    ambient_command.add_argument(
+        "--pressure", default=None, help="the absolute ambient pressure, in --unit"
+    )
+    ambient_command.add_argument(
+        "--unit", default=None, help="Pa, kPa, MPa, bar, atm or psi (absolute; never gauge)"
+    )
+    ambient_command.add_argument(
+        "--clear", action="store_true", help="remove the declared ambient pressure"
+    )
+    ambient_command.set_defaults(handler=command_project_ambient)
 
     api_command = commands.add_parser(
         "api",

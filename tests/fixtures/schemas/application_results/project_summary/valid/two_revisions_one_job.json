@@ -1,4 +1,5 @@
 {
+  "ambient_pressure": null,
   "capability_id": "local-owner",
   "default_policy_id": "default",
   "head": "syn001-edited",
