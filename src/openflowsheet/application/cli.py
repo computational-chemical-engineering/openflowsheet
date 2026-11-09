@@ -61,6 +61,7 @@ from openflowsheet.application.validation import validate
 if TYPE_CHECKING:
     from openflowsheet.application.local import LocalApplication
     from openflowsheet.application.types import ApiError
+    from openflowsheet.units import DisplayUnits
 
 #: §11.5: an `ApiError`'s exit code, 2–16 in §5.8's table order (`ApiErrorCode`'s order). 0 is a
 #: domain result; 1 is a call that was never made. argparse's own usage error is also 2.
@@ -416,6 +417,43 @@ def command_project_revoke(arguments: argparse.Namespace) -> int:
     return 0
 
 
+def command_project_ambient(arguments: argparse.Namespace) -> int:
+    """ADR 0075 D6.2: declare the project's ambient pressure (`--pressure VALUE --unit UNIT`,
+    converted to Pa by ADR 0016's arithmetic) or clear it (`--clear`); audited as
+    `project_ambient`. Gauge display units read it; no run does."""
+    from openflowsheet.application.authz import ambient_pressure_pa, set_ambient_pressure
+    from openflowsheet.application.store import StoreError
+
+    if arguments.clear == (arguments.pressure is not None or arguments.unit is not None) or (
+        not arguments.clear and (arguments.pressure is None or arguments.unit is None)
+    ):
+        print("give --pressure VALUE --unit UNIT, or --clear", file=sys.stderr)
+        return 2
+    try:
+        pressure = (
+            None
+            if arguments.clear
+            else ambient_pressure_pa(_cli_float(arguments.pressure), arguments.unit)
+        )
+        declared = set_ambient_pressure(Path(arguments.project), pressure)
+    except (ValueError, StoreError) as error:
+        print(_human_text(error), file=sys.stderr)
+        return 2
+    print("ambient pressure cleared" if declared is None else f"ambient pressure {declared!r} Pa")
+    return 0
+
+
+def _cli_float(text: str) -> float:
+    """A command-line number as Python reads it (`nan` and `inf` included: the caller refuses
+    them by name, as an out-of-range value, rather than as a malformed one)."""
+    from openflowsheet.application.authz import ambient_pressure_invalid
+
+    try:
+        return float(text)
+    except ValueError:
+        raise ambient_pressure_invalid("value", text, "") from None
+
+
 def _print_document(document: Any) -> None:
     from openflowsheet.canonical import canonical_json
 
@@ -685,17 +723,49 @@ def _stream_table_refusal(code: str, message: str, detail: Mapping[str, Any]) ->
     return api_error("internal_error", message, **given).error
 
 
+def _bundle_display_units(text: str) -> DisplayUnits | ApiError:
+    """`--display-units` of a bundle directory: the preference resolved without an ambient
+    pressure (a directory has no project; X04 decision D-8), or its refusal as the `ApiError`
+    `get_stream_table` raises for it (ADR 0075 D9). The request schema's bound on the member
+    (1 to 1024 characters) comes first and refuses as `dispatch` does (X04 review S4)."""
+    from openflowsheet.application.contract import api_error
+    from openflowsheet.application.operations import OPERATIONS
+    from openflowsheet.application.types import DocumentSchemaError, validate_inline
+    from openflowsheet.units import DisplayUnitsError, parse_display_units
+
+    operation = OPERATIONS["get_stream_table"]
+    member = {
+        "type": "object",
+        "properties": {"display_units": operation.request_schema["properties"]["display_units"]},
+    }
+    try:
+        validate_inline(operation.name, member, {"display_units": text})
+    except DocumentSchemaError as error:
+        return api_error("invalid_request", error.message, pointer=error.pointer).error
+    try:
+        return parse_display_units(text, None)
+    except DisplayUnitsError as error:
+        pointer = error.pointer
+        detail: dict[str, Any] = (
+            {"pointer": pointer} if pointer is not None else {"reason": error.message}
+        )
+        return api_error(error.api_error, error.message, **detail).error
+
+
 def command_streams(arguments: argparse.Namespace) -> int:
     """ST §6.3: a run's stream table as text, JSON or CSV — of a project's job
     (`--project DIR --job JOB_ID`) or of a bundle directory. Exit 0 with the table on stdout (or
     in `--output`); a refusal exits with its `ApiError` code's number (§11.5); 1 when the project
-    cannot be opened; 2 for a usage error."""
+    cannot be opened; 2 for a usage error. `--display-units TEXT` (ADR 0075 D7.6) prints it in a
+    display preference's units, resolved against the project's ambient pressure (a bundle
+    directory has none)."""
     from openflowsheet.application import stream_table, stream_table_format
     from openflowsheet.application.authz import PolicyRefusedError
     from openflowsheet.application.contract import ApplicationError
     from openflowsheet.application.local import LocalApplication
     from openflowsheet.application.operations import dispatch
     from openflowsheet.application.store import StoreError
+    from openflowsheet.units import DisplayUnits
 
     as_json = arguments.format == "json"
     by_job = arguments.project is not None or arguments.job is not None
@@ -723,6 +793,8 @@ def command_streams(arguments: argparse.Namespace) -> int:
                 }
                 if cursor is not None:
                     request["cursor"] = cursor
+                if arguments.display_units is not None:
+                    request["display_units"] = arguments.display_units
                 return dispatch(application, "get_stream_table", request)
 
             try:
@@ -735,6 +807,11 @@ def command_streams(arguments: argparse.Namespace) -> int:
         except stream_table.StreamTableError as error:
             mapped = _stream_table_refusal(error.code, error.message, error.detail)
             return _print_refusal(mapped, document=as_json)
+        if arguments.display_units is not None:
+            units = _bundle_display_units(arguments.display_units)
+            if not isinstance(units, DisplayUnits):
+                return _print_refusal(units, document=as_json)
+            document = stream_table.displayed(document, units)
     render = {
         "text": stream_table_format.to_text,
         "json": stream_table_format.to_json,
@@ -798,7 +875,8 @@ def build_parser() -> argparse.ArgumentParser:
     replay_command.set_defaults(handler=command_replay)
 
     project_command = commands.add_parser(
-        "project", help="create a project and administer its capability grants"
+        "project",
+        help="create a project and administer its capability grants and ambient pressure",
     )
     project_commands = project_command.add_subparsers(dest="project_command", required=True)
     init_command = project_commands.add_parser("init", help="create a project directory")
@@ -831,6 +909,22 @@ def build_parser() -> argparse.ArgumentParser:
     revoke_command.add_argument("--project", required=True, help="the project directory")
     revoke_command.add_argument("--capability", required=True)
     revoke_command.set_defaults(handler=command_project_revoke)
+
+    ambient_command = project_commands.add_parser(
+        "ambient",
+        help="declare or clear the project's ambient pressure (read by gauge display units only)",
+    )
+    ambient_command.add_argument("--project", required=True, help="the project directory")
+    ambient_command.add_argument(
+        "--pressure", default=None, help="the absolute ambient pressure, in --unit"
+    )
+    ambient_command.add_argument(
+        "--unit", default=None, help="Pa, kPa, MPa, bar, atm or psi (absolute; never gauge)"
+    )
+    ambient_command.add_argument(
+        "--clear", action="store_true", help="remove the declared ambient pressure"
+    )
+    ambient_command.set_defaults(handler=command_project_ambient)
 
     api_command = commands.add_parser(
         "api",
@@ -884,6 +978,14 @@ def build_parser() -> argparse.ArgumentParser:
     streams_command.add_argument("--format", choices=STREAM_FORMATS, default="text")
     streams_command.add_argument(
         "--output", default=None, help="write the table to this file and print nothing else"
+    )
+    streams_command.add_argument(
+        "--display-units",
+        default=None,
+        help=(
+            'also show each number in these units, for example "eng" or "eng,pressure=barg" '
+            "(ADR 0075); the SI values stay"
+        ),
     )
     streams_command.set_defaults(handler=command_streams)
 

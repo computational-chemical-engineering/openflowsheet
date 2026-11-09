@@ -1,6 +1,7 @@
 {
   "expect_error": "'capability_id' is a required property",
   "document": {
+    "ambient_pressure": null,
     "default_policy_id": "default",
     "head": "syn001-edited",
     "job_counts": {

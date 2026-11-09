@@ -3,7 +3,9 @@
 // Reads the run's result and bundle listing, then `failure-bundle.json` through the raw export
 // (digest-checked). Observations and inferred causes are kept apart, each cause with its
 // recorded `kind` (e.g. "hypothesis"): the bundle's inference is shown as the bundle labels it,
-// never promoted to a finding. Every empty section reads "none recorded".
+// never promoted to a finding. Every empty section reads "none recorded". The run's result is
+// read in the viewer's display units (`units.js`; X04 A38): the failure's explanation is the
+// server's, written in them, and each converted number keeps its SI value in its title.
 
 import { h } from "../h.js";
 import { signatureText } from "../model/attempts.js";
@@ -32,8 +34,8 @@ export const name = "failure";
 export const pattern = "/job/{jid}/failure";
 
 export async function load(params, api) {
-  const { jid, signal } = params;
-  const bundle = await runBundle(api, jid, { signal });
+  const { jid, signal, units } = params;
+  const bundle = await runBundle(api, jid, { signal, units });
   const failure = await readMember(api, bundle, "failure-bundle.json", { signal });
   return { jid, run: bundle.run, failure };
 }

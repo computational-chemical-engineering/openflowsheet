@@ -57,6 +57,14 @@ function, a registered digest and Frank's carry extended to name it):
   `553b7612…`, measured on the tree that merged `main` (OPT's c_6) into `wp/ST`
   (`tests/test_t08_w2_surface_digest.py`'s `ST_SERVED_SHA256`; `ebb4ca84…` as c_5 over MSG's list
   before X02 and OPT, `6705fb05…` at ST WO-3; ST WO-7).
+- c_8, R-1010 (ADR 0075, ADR 0019 Amendment 17): X04's display units — `project_summary`'s
+  `ambient_pressure`, an explanation number's `display`, `job_result`'s `display_units`, the
+  `display_units` request member of `get_job_result` and `get_stream_table`, and the two
+  description texts it changed (`get_job_result.md`, `get_stream_table.md`, restored from their
+  pre-X04 copies), stripped by `tests/x04_schema_support.py`'s `without_x04`; `D_8` = `6be1c002…`,
+  measured on the tree that merged `main` (ST's c_7) into `wp/X04`
+  (`tests/test_t08_w2_surface_digest.py`'s `X04_SERVED_SHA256`; X04's final work order). Item 4
+  judges both texts in their pre-X04 form (`texts_before_links`).
 
 The released 0.2.0a1 ran the two-link chain (its committed record at `C_α²`); a re-run of the
 alpha's step 8 uses this script at the tag.
@@ -122,8 +130,9 @@ MSG_FILE_SHA256: Final = {
     "explain": "f1fca282f28f7e1a0f0dc6407bb405734f18b811fc97f7e0f5d0b0afac9b8d3e",
 }
 #: c_7 (R-1000, ADR 0068): the one tool ST added, `get_stream_table`, its file pinned as MSG's is,
-#: after the ST review's three description edits. Its two reviews are `REVIEW.json`'s (design
-#: lane, `docs/reviews/ST-review.md`; Frank's, 2026-11-08).
+#: after the ST review's three description edits. Its two reviews were `REVIEW.json`'s (design
+#: lane, `docs/reviews/ST-review.md`; Frank's, 2026-11-08) until X04's c_8 changed the file; item 4
+#: judges its pre-X04 copy (`texts_before_links`).
 ST_FILE_SHA256: Final = {
     "get_stream_table": "76ac57f3a89b616157986b1b650a2793d1fa3271f705745c8c853249aa59fe1d",
 }
@@ -215,6 +224,17 @@ def strip_opt(tools: Tools) -> Tools:
     return stripped
 
 
+def strip_x04(tools: Tools) -> Tools:
+    """s_8 (R-1010): `tools` without X04's additions (`x04_schema_support.without_x04`), with the
+    two description texts X04 changed restored."""
+    t08_rc._tests_on_path()
+    from x04_schema_support import without_x04  # noqa: PLC0415
+
+    stripped = without_x04(copy.deepcopy(tools))
+    assert isinstance(stripped, list)
+    return stripped
+
+
 def strip_st(tools: Tools) -> Tools:
     """s_7 (R-1000): `tools` without ST's tool (`st_schema_support.without_st`)."""
     t08_rc._tests_on_path()
@@ -278,6 +298,12 @@ LINKS: Final = (
         "R-1000",
         strip_st,
         "553b76122fefd4f09d6e91d16e7096d05b9f7793bb88e1876252dc2213e24894",
+    ),
+    Link(
+        "c_8",
+        "R-1010",
+        strip_x04,
+        "6be1c002592524126617af8dd65d331513f4a96355f5381dba020ad561a2ba57",
     ),
 )
 
@@ -365,15 +391,19 @@ def description_texts() -> dict[str, str]:
 
 def texts_before_links(texts: Mapping[str, str]) -> dict[str, str]:
     """`texts` (operation name -> description file) with every link's description change undone:
-    c_6's two files (OPT) in their pre-OPT form. The earlier links changed no existing text (MSG's
-    c_4 added `explain.md`, pinned at its own hash)."""
+    c_6's two files (OPT) in their pre-OPT form and c_8's two (X04) in their pre-X04 form. The
+    other links changed no existing text (MSG's c_4 added `explain.md`, ST's c_7
+    `get_stream_table.md`, each pinned at its own hash)."""
     t08_rc._tests_on_path()
     from opt_schema_support import OPT_DESCRIPTIONS, pre_opt_text  # noqa: PLC0415
+    from x04_schema_support import X04_DESCRIPTIONS, pre_x04_text  # noqa: PLC0415
 
-    return {
-        name: pre_opt_text(name) if name in OPT_DESCRIPTIONS else text
-        for name, text in texts.items()
-    }
+    def before(name: str, text: str) -> str:
+        if name in X04_DESCRIPTIONS:
+            return pre_x04_text(name)
+        return pre_opt_text(name) if name in OPT_DESCRIPTIONS else text
+
+    return {name: before(name, text) for name, text in texts.items()}
 
 
 def description_problems(texts: Mapping[str, str]) -> list[str]:

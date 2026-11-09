@@ -26,6 +26,7 @@ import * as projectScreen from "./screens/project.js";
 import * as revision from "./screens/revision.js";
 import * as streams from "./screens/streams.js";
 import * as validation from "./screens/validation.js";
+import { effectiveUnits, readUnits, writeUnits } from "./units.js";
 
 // The screens of this build (§6's routes), matched in order.
 const SCREENS = [
@@ -74,6 +75,8 @@ let loginMessage = null;
 let controller = null;
 
 let numbers = "short";
+// The viewer's display units (X04 A38), kept in `localStorage`; in force per project.
+let units = readUnits(local);
 let theme = "system";
 try {
   theme = local?.getItem(THEME_KEY) ?? "system";
@@ -107,6 +110,13 @@ function renderHeader() {
       onNumbers: () => {
         numbers = numbers === "short" ? "full" : "short";
         setNumberMode(numbers);
+        renderHeader();
+        navigate();
+      },
+      units: effectiveUnits(units, project),
+      onUnits: (value) => {
+        units = value;
+        writeUnits(local, units);
         renderHeader();
         navigate();
       },
@@ -194,7 +204,7 @@ async function navigate() {
     else {
       screen = SCREENS.find((candidate) => candidate.name === match.name);
       data = await screen.load(
-        { ...match.values, query: params, signal, project, go },
+        { ...match.values, query: params, signal, project, go, units: effectiveUnits(units, project) },
         api,
       );
       if (signal.aborted) return;

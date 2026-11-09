@@ -13,10 +13,10 @@ never matches a grant whose `token_sha256` is null, which is how `LOCAL_OWNER` �
 limits, null token — is unreachable from any transport (§10.2).
 
 **Policy.** `project-policy.json` is changed only by the operator's CLI (`project init`, `grant`,
-`revoke`), each an atomic replace plus an audit row. `PolicyFile` hot-reloads it on a changed
-`(st_mtime_ns, st_size, st_ino)`; a file that fails its schema is refused and never defaulted —
-the last valid policy stays in force and the refusal is logged, and with no valid policy at all
-nothing opens (§10.3).
+`revoke`, `ambient`), each an atomic replace plus an audit row. `PolicyFile` hot-reloads it on a
+changed `(st_mtime_ns, st_size, st_ino)`; a file that fails its schema is refused and never
+defaulted — the last valid policy stays in force and the refusal is logged, and with no valid
+policy at all nothing opens (§10.3).
 """
 
 from __future__ import annotations
@@ -26,6 +26,7 @@ import hashlib
 import hmac
 import json
 import logging
+import math
 import re
 import secrets
 import threading
@@ -38,6 +39,7 @@ from openflowsheet.application.store import (
     POLICY_NAME,
     AuditEntry,
     ProjectStore,
+    StoreError,
     atomic_write_bytes,
     policy_file_bytes,
 )
@@ -278,10 +280,11 @@ class PolicyAdministrationError(ValueError):
 type PolicyChange = Callable[[ProjectPolicy], tuple[ProjectPolicy, CapabilityReference]]
 
 
-def _administer(
-    directory: Path, operation: str, change: str, apply: PolicyChange
-) -> CapabilityReference:
-    """Read-modify-write the policy under the store's write lock, audited in the same step."""
+def _change_policy(
+    directory: Path, operation: str, apply: Callable[[ProjectPolicy], tuple[ProjectPolicy, str]]
+) -> None:
+    """Read-modify-write the policy under the store's write lock, audited in the same step;
+    `apply` returns the updated policy and the audit row's `effect`."""
     store = ProjectStore.open(directory)
     try:
         path = directory / POLICY_NAME
@@ -292,7 +295,7 @@ def _administer(
                 raise PolicyAdministrationError(
                     f"{path} is not a valid project policy; repair it before changing it ({error})"
                 ) from error
-            updated, subject = apply(policy)
+            updated, effect = apply(policy)
             atomic_write_bytes(path, policy_file_bytes(updated))
             store.audit(
                 connection,
@@ -302,12 +305,26 @@ def _administer(
                     operation=operation,
                     outcome="allowed",
                     request_sha256=updated.policy_sha256,
-                    effect=f"{change}:{subject.capability_id}",
+                    effect=effect,
                 ),
             )
-        return subject
     finally:
         store.close()
+
+
+def _administer(
+    directory: Path, operation: str, change: str, apply: PolicyChange
+) -> CapabilityReference:
+    """A grant change through `_change_policy`, its effect `<change>:<capability_id>`."""
+    subjects: list[CapabilityReference] = []
+
+    def applied(policy: ProjectPolicy) -> tuple[ProjectPolicy, str]:
+        updated, subject = apply(policy)
+        subjects.append(subject)
+        return updated, f"{change}:{subject.capability_id}"
+
+    _change_policy(directory, operation, applied)
+    return subjects[0]
 
 
 def grant(
@@ -363,3 +380,63 @@ def revoke(directory: Path, capability_id: str) -> CapabilityReference:
         return replace(policy, capabilities=kept), removed
 
     return _administer(Path(directory), "project_revoke", "revoke", remove)
+
+
+# ================================================ the project's ambient pressure (ADR 0075 D6)
+
+#: ADR 0075 D6.2: the absolute pressure rows a declaration may be written in. A gauge unit is
+#: refused: the ambient is what a gauge reading is relative to.
+AMBIENT_PRESSURE_UNITS: Final[tuple[str, ...]] = ("Pa", "kPa", "MPa", "bar", "atm", "psi")
+AMBIENT_PRESSURE_CODES: Final = ("ambient_pressure_invalid",)
+
+
+def ambient_pressure_invalid(part: Literal["value", "unit"], value: str, unit: str) -> StoreError:
+    """ADR 0075 D9: the coded refusal `ambient_pressure_invalid(<value|unit>)` (exit 2)."""
+    return StoreError(
+        f"ambient_pressure_invalid({part})",
+        code="ambient_pressure_invalid",
+        params={"part": part, "value": value, "unit": unit},
+    )
+
+
+def ambient_pressure_pa(value: float, unit: str) -> float:
+    """ADR 0075 D6.2: `value unit` as an ambient pressure in Pa — ADR 0016's arithmetic on an
+    absolute `pressure` row, `RN(a·D(v))`, the SI unit the identity. Refused, coded
+    `ambient_pressure_invalid(unit)`, for any other unit (a gauge unit, an alias, a non-row);
+    `ambient_pressure_invalid(value)` for a nonfinite value, a result that is not finite, or one
+    that is not > 0. Never defaulted, clipped or read as gauge."""
+    from openflowsheet.units import UnitConversionError, convert_input_value
+
+    if unit not in AMBIENT_PRESSURE_UNITS:
+        raise ambient_pressure_invalid("unit", repr(value), unit)
+    try:
+        pascal, _record = convert_input_value(
+            "ambient_pressure", value, unit, "pressure", "pressure", "ambient_pressure", None, {}
+        )
+    except UnitConversionError as error:
+        raise ambient_pressure_invalid(
+            "unit" if error.reason == "unit" else "value", repr(value), unit
+        ) from None
+    return _checked_ambient(pascal, repr(value), unit)
+
+
+def _checked_ambient(pascal: float, value: str, unit: str) -> float:
+    if not (math.isfinite(pascal) and pascal > 0.0):
+        raise ambient_pressure_invalid("value", value, unit)
+    return pascal
+
+
+def set_ambient_pressure(directory: Path, pressure: float | None) -> float | None:
+    """ADR 0075 D6.1-D6.2: declare the project's ambient pressure, `pressure` Pa (finite, > 0),
+    or clear it (`None`); an atomic replace of `project-policy.json` audited as
+    `project_ambient`, as `grant`. A refused value raises the coded `StoreError`
+    `ambient_pressure_invalid(value)` and leaves the file unchanged. Returns what is declared."""
+    if pressure is not None:
+        pressure = _checked_ambient(float(pressure), repr(pressure), "Pa")
+
+    def apply(policy: ProjectPolicy) -> tuple[ProjectPolicy, str]:
+        effect = "ambient:cleared" if pressure is None else f"ambient:{pressure!r}"
+        return replace(policy, ambient_pressure=pressure), effect
+
+    _change_policy(Path(directory), "project_ambient", apply)
+    return pressure

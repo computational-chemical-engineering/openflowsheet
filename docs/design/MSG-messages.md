@@ -494,7 +494,7 @@ A catalogue document is `{catalogue: "openflowsheet-messages-v1", namespace: nul
 | `title` | string ≤ 80 | plain noun phrase; the docs heading |
 | `args` | [param name] | names of the legacy positional args of `code(a, b, …)`, in order |
 | `detail_pattern` | regex or null | Python `re` with named groups; applied to the `detail` text param (§4.3), each group a param |
-| `params` | map name → `{type, label?, optional?, vocabulary?}` | `type` ∈ {`unit`, `stream`, `port`, `specification`, `revision`, `job`, `artifact`, `bundle`, `directory`, `pointer`, `element`, `code`, `text`, `enum`, `number`, `quantity`, `list`}. `vocabulary` names a table in `vocabulary.yaml` (for `enum`). Every templated name must be declared here or be a derived/context param (§4.2.5). |
+| `params` | map name → `{type, label?, optional?, vocabulary?}` | `type` ∈ {`unit`, `stream`, `port`, `specification`, `revision`, `job`, `artifact`, `bundle`, `directory`, `pointer`, `element`, `code`, `text`, `enum`, `number`, `quantity`, `list`, `display_unit`} (`display_unit`: X04, ADR 0075 D7.7 — a display unit, rendered in its text spelling, `degC` → `°C`). `vocabulary` names a table in `vocabulary.yaml` (for `enum`). Every templated name must be declared here or be a derived/context param (§4.2.5). |
 | `summary` | template | **required**. Line 1: what and where. |
 | `context` | template | `outcome` entries only: line 1 when this outcome wraps an inner cause (§4.4) |
 | `where` | template | optional |

@@ -134,6 +134,8 @@ JOB_ID: Final = _ref("job.schema.json#/$defs/job_id")
 ARTIFACT_ID: Final = _ref("job.schema.json#/$defs/artifact_id")
 CURSOR: Final = {"type": ["string", "null"], "maxLength": 1024}
 POINTER: Final = {"type": "string", "maxLength": 8192}
+#: ADR 0075 D8: a display preference's text; its grammar is `units.parse_display_units`'s.
+DISPLAY_UNITS: Final = {"type": "string", "minLength": 1, "maxLength": 1024}
 #: ADR 0058 D7: a message code as `explain` takes it (MSG §3.5).
 MESSAGE_CODE: Final = {
     "type": "string",
@@ -420,13 +422,14 @@ OPERATIONS: Final[Mapping[str, Operation]] = {
             ("POST", "/v1/jobs/{job_id}/cancel"),
             decode=_members("job_id"),
         ),
+        # ADR 0075 D8 (ADR 0019 Amendment 17): an optional display preference, echoed.
         _row(
             "get_job_result",
             "read",
-            _object({"job_id": JOB_ID}),
+            _object({"job_id": JOB_ID}, {"display_units": DISPLAY_UNITS}),
             _ref("job.schema.json#/$defs/job_result"),
             ("GET", "/v1/jobs/{job_id}/result"),
-            decode=_members("job_id"),
+            decode=_members("job_id", "display_units"),
         ),
         # Inspection
         _row(
@@ -494,14 +497,15 @@ OPERATIONS: Final[Mapping[str, Operation]] = {
             ("GET", "/v1/artifacts/{artifact_id}"),
             decode=_members("artifact_id", *_VIEW),
         ),
-        # ADR 0068 (ST, ADR 0019 Amendment 13): an ended job's stream table, computed on read.
+        # ADR 0068 (ST, ADR 0019 Amendment 13): an ended job's stream table, computed on read;
+        # ADR 0075 D8 (ADR 0019 Amendment 17): an optional display preference, echoed.
         _row(
             "get_stream_table",
             "read",
-            _object({"job_id": ID}, VIEW_MEMBERS),
+            _object({"job_id": ID}, {**VIEW_MEMBERS, "display_units": DISPLAY_UNITS}),
             _result("projection"),
             ("GET", "/v1/jobs/{job_id}/stream-table"),
-            decode=_members("job_id", *_VIEW),
+            decode=_members("job_id", *_VIEW, "display_units"),
         ),
         # ADR 0019 Amendment 3 (A3.3): the audit, by `seq`. Python, CLI and HTTP; no MCP tool
         # (an MCP tool needs a reviewed description). `order` is a string, not a boolean: the

@@ -687,3 +687,28 @@ entries:
     objective whose constraint must become active from inside the feasible region it can stall at `max_iter`
     (measured on OPT-L from 673.15 K and 661 K; it verifies from 650 K, a start that violates the constraint).
     Such a start is reported SOLVER_FAILED, never verified; another start is the remedy.
+- code: L-X04-1
+  family: limitation
+  kind: notice
+  complete: false
+  title: L-X04-1
+  summary: 'Gauge pressures are not accepted as inputs: ADR 0016''s input rows stand, and a gauge unit
+    (`barg`, `psig`) in a revision or a change is refused with its existing code. Gauge units are display
+    units only, resolved against the project''s declared ambient pressure. Input conversion at commit
+    is the planned remedy, not built in 0.4.'
+- code: L-X04-2
+  family: limitation
+  kind: notice
+  complete: false
+  title: L-X04-2
+  summary: Display units change responses only. Stored and hashed documents, raw artifacts, check quotes
+    and the web shell's as-solved state table stay SI; a display preference never reaches a run, a bundle,
+    a certificate or a cache key.
+- code: L-X04-3
+  family: limitation
+  kind: notice
+  complete: false
+  title: L-X04-3
+  summary: 'A number without a display kind or a display row stays SI under every preference: the stream
+    table''s `S_flow` (W/K), `V_flow` (m³/s), `rho` (kg/m³), `v` (m³/mol) and `molar_mass`, and every
+    message number without a quantity kind.'

@@ -6,6 +6,7 @@
 import { h, isTree } from "../h.js";
 import { link } from "../router.js";
 import { DASH, explained, fmt, pill } from "../text.js";
+import { displayRequest } from "../units.js";
 
 // The page sizes the screens ask for; scripts/m06_web_fixtures.py records the same requests.
 export const PAGE = Object.freeze({
@@ -57,8 +58,8 @@ export async function allEvents(api, jobId, { signal } = {}) {
 // A run's result and bundle listing: `{result, run, bundle, listing, files}`. `run` is the
 // result's `run_result` (null for a job that produced none); `bundle` the replay-bundle output
 // (null without one); `files` the listing's members by name (empty without a bundle).
-export async function runBundle(api, jobId, { signal } = {}) {
-  const result = await api.call("get_job_result", { job_id: jobId }, { signal });
+export async function runBundle(api, jobId, { signal, units } = {}) {
+  const result = await api.call("get_job_result", { job_id: jobId, ...displayRequest(units) }, { signal });
   const run = result.run_result ?? null;
   const bundle = (run?.outputs ?? []).find((output) => output.kind === "replay_bundle") ?? null;
   const listing = bundle

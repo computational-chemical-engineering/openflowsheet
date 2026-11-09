@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/frankp/process-runtime/schemas/project-policy.schema.json",
   "title": "ProjectPolicy",
-  "description": "T07 design note §5.9 and §10.3, ADR 0019 D4. `project-policy.json`: the capability grants of one project and its executor settings. It changes only through audited operator commands, and an invalid file is refused rather than defaulted: a grant must validate before it can confer authority. `capability_id` and every non-null `token_sha256` are unique across `capabilities`; a JSON Schema cannot state either, and `ProjectPolicy.from_document` does.",
+  "description": "T07 design note §5.9 and §10.3, ADR 0019 D4. `project-policy.json`: the capability grants of one project, its executor settings and, once declared, its ambient pressure (ADR 0075 D6). It changes only through audited operator commands, and an invalid file is refused rather than defaulted: a grant must validate before it can confer authority. `capability_id` and every non-null `token_sha256` are unique across `capabilities`; a JSON Schema cannot state either, and `ProjectPolicy.from_document` does.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -39,6 +39,11 @@
           "default": 10
         }
       }
+    },
+    "ambient_pressure": {
+      "description": "ADR 0075 D6: the project's declared ambient pressure, Pa, absolute. Read only by the gauge display rows (`barg`, `psig`) of `display-conversion-v1`; never by a run, a binding, a certificate, a cache key or a replay. Absent until declared with `openflowsheet project ambient`; never assumed.",
+      "type": "number",
+      "exclusiveMinimum": 0
     }
   }
 }

@@ -99,6 +99,7 @@ export const ROUTES = freeze({
   },
   "get_job_result": {
     "members": [
+      "display_units",
       "job_id"
     ],
     "path": "/v1/jobs/{job_id}/result",
@@ -134,6 +135,7 @@ export const ROUTES = freeze({
     "members": [
       "cursor",
       "depth",
+      "display_units",
       "job_id",
       "limit",
       "pointer"

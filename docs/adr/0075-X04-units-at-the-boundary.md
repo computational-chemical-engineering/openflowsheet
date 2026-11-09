@@ -1,7 +1,10 @@
 # ADR 0075 — X04: units at the boundary — display conversion, display preferences, the project ambient pressure
 
-**Status:** **Proposed, 2026-11-09.** It takes effect when Frank accepts it (decision board) and X04's manifest is
-`tested` with the `reviewer` pass done; X04 is built on `wp/X04`. Register entries are added on acceptance.
+**Status:** **Accepted (Frank Peters, 2026-11-09).** Proposed 2026-11-09.
+- Frank's answers on the decision board, 2026-11-09 (`docs/roadmap/decisions.md`): ADR 0075 accepted; FQ1, FQ2 and FQ3
+  **default**; FQ4 **the alternative** — human text shows `°C` and `°F`, machine members keep `degC` and `degF` (D7.7).
+- It takes effect on `main` when X04's manifest is `tested` with the `reviewer` pass done; X04 is built on `wp/X04`.
+  Register entries R-1010 (surface link c_8) and R-1011…R-1016 (D1–D10) are Accepted with it.
 **Author:** design lane (`specifier`). **Brief:** `docs/briefs/X04-specifier.md`.
 **Normative text:** this ADR (D1–D11) and `docs/derivations/X04-test-specification.md` (assertions A1–A40, work orders
 WO-1–WO-5). **Reference:** `docs/derivations/scripts/x04_reference.json`, emitted by
@@ -20,6 +23,16 @@ WO-1–WO-5). **Reference:** `docs/derivations/scripts/x04_reference.json`, emit
 - MSG design note §4.5 "X04 slot" (ADR 0058): filled as that note planned — `RenderContext.display_units` is set and
   each `numbers` item may carry `display: {value, unit}`; the SI `value` and `unit` stay.
 - `docs/interfaces-frozen.md`: a paragraph for this ADR (the build lane, with the commit that lands WO-3).
+- *(Note, design lane, 2026-11-09; X04 D-21/D-22.)* `schemas/message-catalogue.schema.json` (ADR 0058,
+  `openflowsheet-messages-v1`): the param `type` enum gains `display_unit`, a display unit whose rendered text is
+  `units.display.text_unit` of its value (`degF` → `°F`, D7.7); its `!raw` rendering and the param value itself keep
+  the D2 spelling. Every existing catalogue stays valid, and MSG's catalogue table (`docs/design/MSG-messages.md`)
+  lists the type. `explain`'s `params[].type` is an unconstrained string in
+  `application-results.schema.json#/$defs/message_entry`, so no response schema moves. `display_out_of_range` declares
+  its `unit` param with this type, so the core catalogue's `sha256` moves, and the two `message_entry` round-trip
+  fixtures carry the new value (that member only). The Consequences bullets "No stored datum, fixture or digest moves"
+  and "The MSG slot is filled without changing MSG's interfaces" are read with this note. Nothing in a run, bundle,
+  manifest or store moves (F0 unchanged).
 
 **Does not amend:** ADR 0001 D1 (internal SI; D1.3's temperature/difference rule is applied, not changed); ADR 0016
 D1–D9 (input conversion, its table, its arithmetic, its refusals); `schemas/units.json` (no kind is added); the
@@ -182,7 +195,9 @@ does not convert back. Display values are for reading; an agent computes with th
    project without a declared ambient is refused, `invalid_request`, `ambient_pressure_undeclared(pressure):
    "<unit>"`. A response without a gauge unit does not depend on it (PU08, A14).
 5. **Outside identity.** It is not in any revision, binding, run, bundle, certificate, cache key or replay. Two projects
-   that differ only in their ambient produce byte-identical runs (A13).
+   that differ only in their ambient produce byte-identical runs (A13). Declaring or clearing it changes
+   `policy_sha256`, which revision, job and audit rows record as the policy in force, as an `executor` change does;
+   that is provenance, not run identity.
 
 ### D7. The machine-readable form
 
@@ -191,7 +206,8 @@ does not convert back. Display values are for reading; an agent computes with th
    also the spelling ADR 0016 accepts as input. Agents read display values from these items, never from text.
 2. **Messages** (MSG §4.5). Each explanation `numbers` item whose `kind` is in the resolved map gains `display`; its SI
    `value`, `unit` and `kind` are unchanged. Rendered text (summary, cause, where, why, action) shows a converted
-   quantity as `format_number(display.value) + " " + display.unit` (MSG's normative format); an out-of-range display
+   quantity as `format_number(display.value) + " " + text_unit(display.unit)` (MSG's normative format; D7.7,
+   FQ4); an out-of-range display
    and the `!raw` conversion show the SI text. Explanations in a response are rendered with `RenderContext(display_units
    = <the resolved DisplayUnits>)`, which implements `Mapping[str, str]` (MSG's slot type) and carries the ambient.
 3. **The stream table.** Each open object holding a converted number — stream (`T`, `P`), substream, phase, port, unit,
@@ -210,11 +226,22 @@ does not convert back. Display values are for reading; an agent computes with th
    reader can see that its preference arrived and what it resolved to.
 6. **CLI renderings** of the stream table (`openflowsheet streams --display-units TEXT`): `json` is the displayed
    document; `text` replaces the header line `SI units` by `display units:       <canonical text>` and, iff a gauge
-   unit is used, `ambient pressure:    <{:.6g}> Pa`; every row label names its display unit (`T [degC]`), energy-table
-   headers carry `[unit]` when any energy kind is converted, values are `{:.6g}` of the display value; `csv` replaces a
-   column's unit suffix by the display unit's suffix (rule: `/` → `_`; `(`, `)`, spaces dropped; `%` → `pct`; claim C12
-   shows the rule gives ST's 13 SI suffixes exactly) and appends `_pct` to a fraction column (`x_<c>_pct`), values
-   `repr(display value)`. With `si`, or without the flag, every rendering is byte-identical to ST's.
+   unit is used, `ambient pressure:    <{:.6g}> Pa`; every row label names its display unit in its text spelling
+   (`T [°C]`, D7.7), energy-table headers carry `[unit]` (text spelling) when any energy kind is converted, values
+   are `{:.6g}` of the display value; `csv` replaces a column's unit suffix by the display unit's suffix (rule: `/` →
+   `_`; `(`, `)`, spaces dropped; `%` → `pct`; claim C12 shows the rule gives ST's 13 SI suffixes exactly) and
+   appends `_pct` to a fraction column (`x_<c>_pct`), values `repr(display value)`. With `si`, or without the flag,
+   `text` and `csv` are byte-identical to ST's; `json` with `si` adds only the root echo (D7.5).
+7. **Text spelling (FQ4, Frank, 2026-11-09).** Machine members keep the D2 spelling (`degC`, `degF`): the display
+   item's `unit` (D7.1), the `display_units` echo and its canonical text (the CLI `text` header's `display units:` line
+   included), request parsing (ADR 0016's input spelling), schemas, catalogue `params` (a reason's `{kind, unit}`
+   included), and CSV column suffixes (`T_degC`, D7.6). Human text shows `°C` and `°F`: message rendered text (D7.2),
+   the CLI `text` rendering's row labels and energy headers (`T [°C]`), the web shell's labels (column headings,
+   displayed values, the units control), and the guide's description of rendered output. One mapping,
+   `units.display.text_unit` (`degC` → `°C`, `degF` → `°F`, every other unit unchanged), serves every human-text site;
+   the web shell carries it as `textUnit` (`apps/web/js/units.js`), held equal to it by a test.
+   `temperature_difference` maps the same way (its kind, not its spelling, distinguishes it). The mapping changes no
+   number, identity or machine member.
 
 ### D8. Operations and transports (ADR 0019 Amendment 17)
 
@@ -314,6 +341,10 @@ F0 PASS on the branch and on `main` after the merge; CI green on both architectu
 - **FQ3. A project default for display units?** *Default: not in 0.4.*
 - **FQ4. Text spelling.** Human text shows `degC` (the spelling a user types) rather than `°C`. *Default: `degC`
   everywhere, one spelling for input, machine output and text.*
+
+**Answers — Frank, 2026-11-09 (decision board).** FQ1, FQ2, FQ3: the defaults. **FQ4: the alternative — `°C` in human
+text.** Machine members keep the D2 spelling; human text shows `°C` and `°F`. The rule is D7.7; it amends D7.2 and D7.6
+(the text spellings they name) and nothing else.
 
 ## Open questions that need a fact (with defaults)
 
