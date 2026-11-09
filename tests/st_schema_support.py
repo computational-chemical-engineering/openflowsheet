@@ -6,8 +6,9 @@ ST adds one operation, `get_stream_table` (ADR 0019 Amendment 13), whose respons
 resolved response does. The one MCP-visible change is its tool in the served list.
 
 `without_st(node)` takes that tool out of a served MCP tool list (any other node is returned as it
-is, copied). With it removed the served list is MSG's (`MSG_SERVED_SHA256`, link c_4), and every
-R4-G3 snapshot other than the new row's is unchanged (`ST_OPERATIONS`).
+is, copied). With it removed the served list is OPT's (`OPT_SERVED_SHA256`, link c_6; ST's own
+link is c_7, R-1000), and every R4-G3 snapshot other than the new row's is unchanged
+(`ST_OPERATIONS`).
 """
 
 from __future__ import annotations

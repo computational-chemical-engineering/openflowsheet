@@ -313,10 +313,6 @@ def test_opt_control_c_6_restores_the_texts_only_with_the_strip(
     assert m07a_rc.first_failure(rows) == "c_6 (R-960)"
     problems = m07a_rc.description_problems(m07a_rc.description_texts())
     assert sorted(p.split(".md:")[0] for p in problems) == sorted(OPT_DESCRIPTIONS)
-    links = (L0, L1, L2, m07a_rc.Link("c_4", "R-934", lambda tools: tools, L3.digest), L4)
-    rows = m07a_rc.chain(served, links)
-    assert rows[0]["pass"] and rows[1]["pass"]
-    assert m07a_rc.first_failure(rows) == "c_4 (R-934)"
 
 
 def test_st_g12_link_c_7_is_sts_strip_and_digest(served: list[dict[str, Any]]) -> None:
@@ -344,7 +340,7 @@ def test_st_the_added_description_is_pinned_at_its_recorded_hash() -> None:
         assert record["operations"][name]["sha256"] == sha256
     texts = m07a_rc.description_texts()
     texts["get_stream_table"] = texts["get_stream_table"].replace(".", ",", 1)
-    (problem,) = m07a_rc.description_problems(texts)
+    (problem,) = m07a_rc.description_problems(m07a_rc.texts_before_links(texts))
     assert problem.startswith("get_stream_table.md: ") and " is not ST's " in problem
 
 

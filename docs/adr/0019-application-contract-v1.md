@@ -230,7 +230,7 @@ Amendment 4 is decided in M02's three ADRs; this paragraph points at its parts (
   Amendment 3's `6c4375b4…` (`tests/test_t08_w2_surface_digest.py`). The measured served digest is in M02's
   evidence manifest.
 
-## Amendment 13 (ADR 0068, ST; Proposed 2026-11-06, in effect when ST merges) — pointer to ADR 0068
+## Amendment 13 (Accepted 2026-11-08 by Frank, with ADR 0068; Proposed 2026-11-06; ST) — pointer to ADR 0068
 
 Amendment 13 is decided in ADR 0068; this paragraph points at it (ST design note §6.1, §7).
 
@@ -242,8 +242,9 @@ Amendment 13 is decided in ADR 0068; this paragraph points at it (ST design note
   detail), `not_ready`, `unsupported` (`basis_unavailable(<id>)` with its hint), `internal_error`. D5's `ApiError` and
   `API_EXIT_CODES` are unchanged.
 - **Schemas.** `stream-table.schema.json` added and registered; no existing schema changes.
-- **Not unchanged:** the served MCP tool list, widened by the one tool (chain link c_5); with it removed it is MSG's
-  `eaff4585…` (`tests/test_t08_w2_surface_digest.py`, `ST_SERVED_SHA256`).
+- **Not unchanged:** the served MCP tool list, widened by the one tool; with it removed (`tests/st_schema_support.py`)
+  it is OPT's `3fdc797a…` (R-960). The surface link is c_7, R-1000 (`tests/test_t08_w2_surface_digest.py`,
+  `ST_SERVED_SHA256`).
 ## Amendment 15 (Accepted 2026-11-08 by Frank, with ADR 0070; Proposed 2026-11-07; X02) — pointer to ADR 0070
 
 Amendment 15 is decided in ADR 0070 ("Amends", D1; X02 design note §5.1); this paragraph points at it. Three optional

@@ -1,7 +1,7 @@
 # ST — stream table and energy summary (design note)
 
 **Status:** design, 2026-11-06, design lane (`architect`), one pass. Package ST (ADR 0056 Amendment 1; FB-06, FB-02).
-**Decision record:** `docs/adr/0068-stream-table.md` (Proposed; ADR 0019 Amendment 13). This note is the normative
+**Decision record:** `docs/adr/0068-stream-table.md` (Accepted 2026-11-08; ADR 0019 Amendment 13). This note is the normative
 detail the ADR points at. **Inputs:** `docs/briefs/ST-architect.md`, `docs/briefs/ST-recon-digest.md`.
 
 ## 1. Problem and scope

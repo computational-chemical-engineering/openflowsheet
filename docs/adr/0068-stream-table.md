@@ -1,7 +1,10 @@
 # ADR 0068 — Stream table and energy summary: `get_stream_table`, `stream-table-v1`
 
-**Status:** **Proposed, 2026-11-06.** It takes effect on `main` when ST's manifest is `tested` and the reviewer pass is
-done. Until then ST is built on `wp/ST`. Register entries are added on acceptance.
+**Status:** **Accepted (Frank Peters, 2026-11-08)**, on the decision board, with ADR 0019 Amendment 13 and the D3
+amendment of 2026-11-08 below. Proposed 2026-11-06.
+- Takes effect on `main` when ST's manifest is `tested` and the reviewer pass is done. Until then ST is built on `wp/ST`.
+- Register entries: R-1000 (the surface link c_7); R-1001…R-1006 (D1–D8, the ADR 0025 D2.3 classification, the web
+  shell).
 **Author:** design lane (`architect`), ST design pass. **Brief:** `docs/briefs/ST-architect.md`.
 **Design note:** `docs/design/ST-stream-table.md` holds the normative detail; the § numbers below refer to it.
 **Amends:**

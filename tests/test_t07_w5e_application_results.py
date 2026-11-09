@@ -323,6 +323,8 @@ def test_opt_without_its_additions_every_response_is_its_pre_opt_snapshot() -> N
     }
     moved = []
     for name, operation in OPERATIONS.items():
+        if name in ST_OPERATIONS:  # ST's row (ADR 0068) postdates OPT; its own `SNAPSHOT_ST`
+            continue
         resolved = resolved_response(operation)
         assert _digest(without_opt(resolved)) == before[name], name
         if _digest(resolved) != before[name]:
@@ -372,6 +374,8 @@ def test_x02_without_warm_start_every_response_is_its_pre_x02_snapshot() -> None
     }
     moved = []
     for name, operation in OPERATIONS.items():
+        if name in ST_OPERATIONS:  # ST's row (ADR 0068) postdates X02; its own `SNAPSHOT_ST`
+            continue
         # OPT's additions (ADR 0071) postdate X02: they are taken out first.
         resolved = without_opt(resolved_response(operation))
         assert _digest(without_x02(resolved)) == before[name], name

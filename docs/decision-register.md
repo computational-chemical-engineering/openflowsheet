@@ -19236,3 +19236,169 @@ B13's rule, as D-45 did for B27 (B27 measures what T08 delivered, T10-C3 what th
 expectation would be false).
 
 **Watch for.** `t07_reference_t08.json` edited; `RRC-revision-v1` dropped from T10-C3 by B13's rule.
+
+## R-1000 — `main`'s surface chain gains link c_7 = (ADR 0068, `without_st`, `553b7612…`): ST's `get_stream_table` tool, after OPT's c_6
+
+| | |
+| --- | --- |
+| Date | 2026-11-09 (link written as c_5 on `wp/ST` 2026-11-06; re-measured as c_7 at ST WO-7) |
+| Decided by | build lane, ST WO-3 and WO-7, applying ADR 0068 (Accepted 2026-11-08 by Frank, with ADR 0019 Amendment 13; Proposed 2026-11-06) and ST design note §7 in R-457's form; re-chained at the merge of `main` into `wp/ST` (ST WO-7) |
+| Normative text | ADR 0068 D2, "Frozen-list changes"; `docs/design/ST-stream-table.md` §7; `scripts/m07a_rc.py` (link c_7) |
+| Evidence | On the merge tree (`wp/ST` with `main` at `89af1c30` merged) the served MCP tool list digests to `553b76122fefd4f09d6e91d16e7096d05b9f7793bb88e1876252dc2213e24894` (D_7). `without_st` (`tests/st_schema_support.py`) on it gives `3fdc797ad64485abf63fb491ebd56aa43dc510e62e9e218b0dd7a8fcc2e38a85`, OPT's D_6 (R-960), exactly; one tool is added, after `get_artifact`, and no other tool moves (`tests/test_t08_w2_surface_digest.py::test_sts_surface_move_decomposes_onto_opts`). Over MSG's list before X02 and OPT the same strip gave MSG's D_4 `eaff4585…` from `ebb4ca84…` (ST fix round) |
+| Affected packages | ST; M07a (`scripts/m07a_rc.py`, A37 tests); M07 (the next RC's V17 carry names c_7); T08.A18 (one description, both reviews in `REVIEW.json`) |
+
+**Decision.** `m07a_rc.LINKS` gains c_7 (R-1000; strip `strip_st` = `without_st`; D_7 = `553b7612…`). The strip removes
+the one tool. `get_stream_table.md` is a new file pinned at its reviewed hash (`m07a_rc.ST_FILE_SHA256`); ST changes no
+existing description text, so `texts_before_links` is unchanged.
+
+**Number and link.** MSG (c_4, R-976), X02 (c_5, R-950) and OPT (c_6, R-960) merged first, so ST, merging after RRC
+(which added no link), is c_7 with the digest of the combined tree. Its strip removes only its own tool: stripped, the
+merged list is `main`'s D_6 exactly, so D_4…D_6 stand as registered. R-1000…R-1009 is ST's register block.
+
+**Rejected alternatives.** Keeping ST's branch-time c_5 (`ebb4ca84…`) and re-chaining X02 and OPT above it (R-960's
+"watch for": a later change becomes the next link, it does not re-record an earlier one); folding the tool into OPT's
+link (R-457).
+
+**Watch for.** A strip that removes more than the one tool (`tests/test_m07a_surface_chain.py`, ST G12 controls). A
+later MCP-visible change moves D_7: it becomes c_8.
+
+## R-1001 — ST: the stream table is computed on read from the replay bundle, never stored; one `Inspection` operation with existing refusal codes (2026-11-08)
+
+| | |
+| --- | --- |
+| Date | 2026-11-08 (Proposed 2026-11-06) |
+| Decided by | design lane (`architect`), ADR 0068 D1, D2 (ST design pass); accepted by Frank on the decision board 2026-11-08; recorded by the build lane at ST WO-7 |
+| Normative text | ADR 0068 D1, D2, D8; ADR 0019 Amendment 13; `docs/design/ST-stream-table.md` §3, §6.1, §6.3 |
+| Affected packages | ST; K06/T07 (application contract, four transports); M06 (web shell) |
+
+**Decision.** `Inspection.get_stream_table(job_id, *, pointer="", depth=12, cursor=None, limit=50) -> Projection`
+reads `revision.json`, `solution-state.json`, `solution-certificate.json` and `run-manifest.json` from the job's bundle
+and computes a `stream-table-v1` document. Nothing is written to a bundle, manifest, certificate, store or cache; 0.3.0
+bundles are served by the same path. One `OPERATIONS` row after `get_artifact`, right `read`, all four transports,
+response the existing `projection` `$def`; default `depth` 12 (the only view whose default is not 4). Refusals use
+existing codes only (`not_found` with MSG's member detail, `not_ready`, `unsupported` `basis_unavailable(<id>)`,
+`internal_error`); `ApiError` and `API_EXIT_CODES` are unchanged. CLI `openflowsheet streams` (project or bundle
+directory; text, JSON, CSV).
+
+**Rejected.** A run artifact written at solve time (edits the run path, a manifest member in every bundle, cannot serve
+0.3.0 bundles, freezes values at the solve version's provider); both an artifact and an operation (two sources of
+truth); a typed full-document response, or a flattened record layout (ADR 0019 §4.1's bounded projection).
+
+**Evidence.** `tests/test_st_*.py` (G1–G16 of the design note); `tests/test_t08_w2_surface_digest.py` (G12).
+
+**Watch for.** A stream-table member written into a bundle or a cache; a new `ApiError` code for ST.
+
+## R-1002 — ST: the phase rule `st-phase-rule-v1`, with R1′ on the split's own `independent_split` row and no number for an unlifted degenerate stream (2026-11-08)
+
+| | |
+| --- | --- |
+| Date | 2026-11-08 (Proposed 2026-11-06; R1′ from the ST review; amended by the design-lane confirmations 2026-11-08) |
+| Decided by | design lane (`architect`, `reviewer` rulings 3 and 5), ADR 0068 D3 as amended 2026-11-08; accepted by Frank on the decision board 2026-11-08; recorded by the build lane at ST WO-7 |
+| Normative text | ADR 0068 D3 and its "Amendment — design-lane confirmations (2026-11-08)"; `docs/design/ST-stream-table.md` §4.2; foundation rulings Q1.R4, Q1.R11, Q1.R12, Q4.R11, Q4.R12 |
+| Affected packages | ST |
+
+**Decision.** Per stream, first match wins: R0 dormant (no phases, extensives `+0.0`, `zero_flow`); R1 carried
+saturated split at `(T_sat(P), P)`; R1′ carried lifted split, only where the heater-style split's own row
+`independent_split.<U>.<S>` is `not_applicable` for `temperature_degenerate` or `fresh_flash_unresolved` (Ḣ summed as
+the verifier's `_phase_enthalpy`); R2 declared producer-port phase; Unlifted (a reason
+`temperature_degenerate_unlifted(<S>)`): no number, `flash_failed(status=temperature_degenerate)`; R3 a fresh TP flash
+with no ε_adm or τ_dew snap, reporting `flash_near_phase_boundary` (Q4.R12 (b) (i); (ii) withdrawn).
+
+**Rejected.** The carried lifted split for every lifted outlet (moves resolved-split streams off the verifier's
+arithmetic, losing E7 bitwise status, for nothing); R1′ on any degeneracy row on S (the fix round's first form: a
+products-style split's row on its drum's inlet does not judge the inlet); exempting a flagged envelope from E8 (the ST
+review's option (a): loosens a gate around a wrong number, SC-1 S2 2016 W low).
+
+**Evidence.** `tests/test_st_core.py` DC-1…DC-6; G7 (41 streams bitwise), G8, G8u; 44 served 0.3.0 documents
+byte-identical across the amendment (`docs/ST_DECISIONS.md` §WO-8a).
+
+**Watch for.** A τ_dew or ε_adm snap in R3; R1′ triggered by a row other than the split's own.
+
+## R-1003 — ST: the verifier's arithmetic with a fresh provider; SI only; no invented property (2026-11-08)
+
+| | |
+| --- | --- |
+| Date | 2026-11-08 (Proposed 2026-11-06; D1-1, D1-6, D1-7 from the ST review) |
+| Decided by | design lane (`architect`), ADR 0068 D4, D5; accepted by Frank on the decision board 2026-11-08; recorded by the build lane at ST WO-7 |
+| Normative text | ADR 0068 D4, D5; `docs/design/ST-stream-table.md` §4.3, §5; foundation rulings Q2.R11, Q4.R10, Q4.R11 (c); R-924 |
+| Affected packages | ST |
+
+**Decision.** ST evaluates with a fresh provider (`provider_for(basis)`) in the verifier's context (`model_version`,
+`constants_sha256` from the certificate); h is requested alone, as the verifier requests it; s and v each alone and only
+if declared. Ḣ is summed in the verifier's order (built-in `sum` as `checks.enthalpy_flow`, a 0.0-loop as
+`_phase_enthalpy` for R1′), so it equals the verifier's bitwise wherever both decide the same phases (E7). From
+`verify` ST imports only the model tables, `column.duty` and, for R1′, `orchestrator.splits.lifted_splits`. Quantities
+are SI; density is `m / (n·v)` only from a provider's `v`; every quotient is an IEEE division, a non-finite result null
+with `value_not_finite`.
+
+**Rejected.** Reusing or refactoring the verifier's Ḣ helpers (scalars only, verdict snaps, an edit to `verify/`: an
+M5 numerics risk); an ideal-gas density or a per-component `s` sum where the provider has none (inventions, R-924;
+summed pure-component values drop the entropy of mixing, Q2.R11).
+
+**Evidence.** G7 (ST Ḣ equals the verifier's bitwise on 41 streams); G13 (no diff under `verify/`, `thermo/`,
+`models/`, `run/`, `orchestrator/`, `compiled.py` against the branch point).
+
+**Watch for.** An edit to `verify/` for ST; a property value with no provider call behind it.
+
+## R-1004 — ST: absence is an explicit map with catalogue codes; the energy summary quotes the certificate and never re-judges (2026-11-08)
+
+| | |
+| --- | --- |
+| Date | 2026-11-08 (Proposed 2026-11-06) |
+| Decided by | design lane (`architect`), ADR 0068 D6, D7; accepted by Frank on the decision board 2026-11-08; recorded by the build lane at ST WO-7 |
+| Normative text | ADR 0068 D6, D7, "New catalogue codes"; `docs/design/ST-stream-table.md` §4.5, §6.4; ADR 0058 C3 |
+| Affected packages | ST; MSG (seven catalogue entries) |
+
+**Decision.** Every object carries an `absent` map, quantity → `{code, params}`; a value is null iff it has an entry.
+Seven catalogue codes: `zero_flow`, `property_not_provided`, `property_evaluation_failed`, `flash_failed`,
+`value_not_finite`, `stream_enthalpy_absent`, `energy_balance_undefined`, each with a complete catalogue entry (MSG G2).
+Per unit, Ḣ per port, `H_in`, `H_out`, `Q`, `W` and a closure only where the certificate holds an `energy_balance` row;
+the overall envelope in the verifier's definition and order; beside each the certificate's rows quoted with its
+`judged_at`.
+
+**Rejected.** A null without a reason; a re-judged closure (ST would become a second verifier).
+
+**Evidence.** `scripts/msg_catalogue.py check` PASS (G2 0 missing); `tests/test_st_*.py`.
+
+**Watch for.** A verdict computed by ST; an `absent` entry with a code outside the catalogue.
+
+## R-1005 — ST: `data_sha256` and `implementation_sha256` are classified `exact_sha256` in ST's numerical-policy addendum, audited after OPT's (ADR 0025 D2.3; 2026-11-08)
+
+| | |
+| --- | --- |
+| Date | 2026-11-08 |
+| Decided by | design lane (ST review ruling 6), applying ADR 0025 D2.3; built at `be89d011`, `8ce17244`; ADDENDA order set at ST WO-7 by merge order |
+| Normative text | ADR 0025 D2.3; `benchmarks/st/numerical_policy_external.yaml` (`ST-numerical-policy-external-v1`); `scripts/t08_numerical_policy.py` `ADDENDA` |
+| Affected packages | ST; T08 (A1 audit) |
+
+**Decision.** The two `basis` members of `stream-table.schema.json` copied from the provider's `describe()` are digests
+of bytes or of registered constants, not of solved state: both are `exact_sha256`. The addendum is audited after E01's
+and OPT's (`ADDENDA` m02, m05, e01, opt, st).
+
+**Rejected.** `float_sha256` for `data_sha256` (SYN-001's hashes registered constant doubles, which v2 classes exact as
+`constants_sha256`; only a vector holding a solved value is float, ADR 0010).
+
+**Evidence.** `scripts/t08_numerical_policy.py --check` PASS; `tests/test_t08_adr0025.py`, `tests/test_m05_study_record.py`
+(`ADDENDA` pin).
+
+**Watch for.** The v2 policy file's bytes moving (`6b449911…`).
+
+## R-1006 — ST: the web shell's streams screen shows the stream table, read whole (Frank's O3; 2026-11-08)
+
+| | |
+| --- | --- |
+| Date | 2026-11-08 |
+| Decided by | Frank (decision board O3: include the stream table in the web shell); build lane ST WO-8b (8b-3) for the reading pattern |
+| Normative text | `docs/web-shell.md`; `apps/web/js/model/stream-table.js`, `apps/web/js/screens/streams.js`; L-WEB-1 |
+| Affected packages | ST; M06 (web shell, 18 operations) |
+
+**Decision.** The streams screen calls `get_stream_table` through `api.readWhole` (following `next_cursor` and
+`$elided`, as the other projected documents) and shows one row per stream total and phase, the energy rows, and the
+distinct absent reasons as footnotes in the catalogue's plain words. A refusal other than 401 shows its MSG explanation
+and the n/T/P view stays. Not cached.
+
+**Rejected.** An on-screen pager per `limit` (reversible in `streamTableOf`).
+
+**Evidence.** Node tests of `apps/web`; browser smoke (route `/job/job-000002/streams`); `tests/test_m06_*` HTTP contract.
+
+**Watch for.** The shell computing a value the operation did not return.
