@@ -195,6 +195,10 @@ string that names a release identifies that release's D2.4 tree and nothing else
 for it, so a head between releases cannot be dispatched. The version is part of the in-process
 experiment fingerprint, so the five in-process G10 records are re-taken after it changes and the
 re-take is proved with `scripts/m05_retake_diff.py --digest-only` (R-458).
+At every cut, M05's REAL record and M01's IDAES conformance record are also re-taken at K3 on the
+RC host and committed in J, each proved by its tool, because both bind the host's platform string,
+the kernel release included (RP §7.1, R-1008). A kernel upgrade between J and the RC's steps 11, 14
+and 15 means a new J and a new C.
 
 ## Post-releases
 
