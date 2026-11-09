@@ -112,6 +112,32 @@ export function explained(explanation) {
     h("p", { "data-ofs-explanation-part": "summary" }, h("strong", null, explanation.summary)),
     explanation.cause ? h("p", { "data-ofs-explanation-part": "cause" }, `Cause: ${explanation.cause}`) : null,
     explanation.action ? h("p", { "data-ofs-explanation-part": "action" }, `Do: ${explanation.action}`) : null,
+    displayedNumbers(explanation.numbers),
+  );
+}
+
+// The explanation's numbers the server converted (ADR 0075 D7.2; X04 A38): each display value
+// with its unit, its SI value and unit as the title; nothing when no number carries `display`.
+function displayedNumbers(numbers) {
+  const shown = (Array.isArray(numbers) ? numbers : []).filter((item) => item?.display);
+  if (shown.length === 0) return null;
+  return h(
+    "ul",
+    { class: "inline-list", "data-ofs-explanation-numbers": String(shown.length) },
+    shown.map((item) => {
+      const si = `${String(item.value)} ${item.unit}`;
+      const reason = item.display.reason ? `; ${item.display.reason.code}` : "";
+      return h(
+        "li",
+        null,
+        `${item.label ?? item.name}: `,
+        h(
+          "span",
+          { class: "num", title: `${si}${reason}`, "data-ofs-display": String(item.display.unit) },
+          `${fmt(item.display.value)} ${item.display.unit}`,
+        ),
+      );
+    }),
   );
 }
 

@@ -4,7 +4,9 @@
 // one per stream for its mixed total and one per phase under it — the rows of the operation's own
 // CSV form (`stream_table_format.CSV_COLUMNS`). Nothing is computed: every value is the
 // table's, in the SI unit its column names, and a value the table leaves null is shown
-// with the reason the table gives for it (its `absent` entry), never filled in.
+// with the reason the table gives for it (its `absent` entry), never filled in. A table read with
+// `display_units` (ADR 0075 D7.3) carries `display` items beside the SI members: a cell then
+// carries its item, and the column names the display unit (X04 A38); the shell converts nothing.
 
 // The quantity columns, in the CSV form's order: the member read (on the stream for T and P, on
 // the substream for a total row, on the phase for a phase row) and the SI unit of the schema.
@@ -97,6 +99,8 @@ export function plainReason(entry) {
       return `The energy total of ${param(entry, "subject")} is not given: the enthalpy flow of ${param(entry, "streams")} is missing.`;
     case "energy_balance_undefined":
       return `The energy balance of unit ${param(entry, "unit")} (${param(entry, "model")}) is not given: the solution's certificate holds no energy check for it.`;
+    case "display_out_of_range":
+      return `The value is beyond the numbers ${param(entry, "unit")} can show (kind ${param(entry, "kind")}); its SI value is in the cell's title.`;
     default:
       return null;
   }
@@ -122,19 +126,39 @@ function notes() {
 
 // A cell of `object`'s `member`: `{value}` when the table gives a number, `{absent: {mark,
 // text}}` when it gives null with a reason, `{value: null}` for a null without one, and null when
-// the member is not one of the row's (not applicable).
+// the member is not one of the row's (not applicable). A number with a display item also carries
+// `display: {value, unit}` and, when that item has no value, `displayAbsent: {mark, text}` for its
+// reason (`display_out_of_range`).
 function cell(object, member, applies, footnotes) {
   if (!applies) return null;
   const reason = object.absent?.[member];
   if (reason) return { value: null, absent: { mark: footnotes.mark(reason), text: entryText(reason) } };
   const value = object[member];
-  return { value: value === undefined ? null : value };
+  const shown = object.display?.[member];
+  if (value === undefined || value === null || !shown || Array.isArray(shown)) {
+    return { value: value === undefined ? null : value };
+  }
+  const result = { value, display: { value: shown.value, unit: shown.unit } };
+  if (shown.reason) result.displayAbsent = { mark: footnotes.mark(shown.reason), text: entryText(shown.reason) };
+  return result;
+}
+
+// The display unit of each of `members` in `rows` (the unit of its first display item), or null
+// for a member shown in SI.
+function displayUnits(rows, members) {
+  const units = {};
+  for (const member of members) {
+    const shown = rows.map((row) => row.cells[member]?.display).find((item) => item !== undefined);
+    units[member] = shown ? shown.unit : null;
+  }
+  return units;
 }
 
 // `{rows, energy, notes, warning}` of a `stream-table-v1` table (the reply of `get_stream_table`):
 // - `rows`: per stream, its mixed total, then one row per phase — `{stream, phase, total,
 //   phaseSource, nearBoundary, dormant, cells: {member: cell}}` (`phase` "total" on the total row);
 // - `energy`: one row per unit, then the overall row — `{subject, model, cells}`;
+// - `units`, `energyUnits`: per column member, its display unit, or null where it is shown in SI;
 // - `notes`: the distinct reasons for every null, `{mark, entry, text, plain}`; the flash
 //   failures among them are also listed in `flashFailures` for the screen's notice;
 // - `warning`: the verification status when it is not VERIFIED (the text form's first line).
@@ -183,6 +207,8 @@ export function streamTableView(reply) {
   return {
     rows,
     energy,
+    units: displayUnits(rows, QUANTITY_COLUMNS.map((column) => column.member)),
+    energyUnits: displayUnits(energy, ENERGY_COLUMNS),
     notes: footnotes.list,
     flashFailures: footnotes.list.filter((note) => note.entry.code === "flash_failed"),
     warning: status === "VERIFIED" ? null : status,

@@ -451,6 +451,57 @@ def test_g11_every_screen_renders_and_reaches_only_the_contract(shell: Shell, ca
     FINISHED.add(f"g11 {case.principal}:{case.route}")
 
 
+def _fmt_short(x: float) -> str:
+    """`text.js`'s `fmt(x, "short")` for a finite non-integer: 6 significant digits, trailing
+    zeros dropped (the fixed-point range a display temperature falls in)."""
+    assert 1e-4 <= abs(x) < 1e6 and x != int(x), x
+    return f"{x:.6g}"
+
+
+#: X04 A38: the units control's script — choose `eng` as a viewer would, through the select.
+CHOOSE_ENG = (
+    "(() => { const s = document.querySelector('[data-ofs-action=\"units\"]');"
+    " s.value = 'eng'; s.dispatchEvent(new Event('change')); return s.value; })()"
+)
+#: The stream table's total row of stream `%s`: its `T` heading, the cell's text and title.
+T_CELL = """(() => {
+  const table = [...document.querySelectorAll('[data-ofs-stream-table="1"] table')][0];
+  const headers = [...table.querySelectorAll('th')].map((th) => th.textContent);
+  const at = headers.findIndex((text) => text.startsWith('T ('));
+  const row = [...table.querySelectorAll('tbody tr')].find((tr) =>
+    tr.children[0].textContent === %s && tr.children[1].textContent === 'total');
+  return [headers[at], row.children[at].textContent, row.children[at].getAttribute('title')];
+})()"""
+
+
+def test_x04_a38_with_eng_a_stream_s_t_is_the_server_s_display_value(shell: Shell) -> None:
+    """X04 A38: with `eng` chosen in the units control, one known stream's `T` cell shows `fmt`
+    of the stream-table document's `display.T.value`, `degC` in its heading, the SI value in its
+    title; the as-solved table above stays SI."""
+    page, _ = open_route(shell, "/job/job-000002/streams", "supervisor-c")
+    try:
+        assert page.evaluate(CHOOSE_ENG) == "eng"
+        page.wait_ready()
+        assert page.problems() == []
+        shown = dispatch(
+            shell.owner,
+            "get_stream_table",
+            {"job_id": "job-000002", "display_units": "eng", "pointer": "/streams", "limit": 200},
+        )
+        stream = next(s for s in shown["value"] if "T" in (s.get("display") or {}))
+        heading, text, title = page.evaluate(T_CELL % json.dumps(stream["id"]))
+        assert heading == "T (degC)"
+        assert text == _fmt_short(stream["display"]["T"]["value"])
+        value, unit = title.split(" ")
+        assert (float(value), unit) == (stream["T"], "K")
+        dom = page.dom()
+        assert 'data-ofs-si-only="1"' in dom
+        assert ">T (K)<" in dom  # the as-solved table
+    finally:
+        page.close()
+    FINISHED.add("x04 a38 eng")
+
+
 def test_a_bad_token_lands_on_login_with_the_server_s_message(shell: Shell) -> None:
     mark = shell.recorder.mark()
     page = shell.browser.page()
