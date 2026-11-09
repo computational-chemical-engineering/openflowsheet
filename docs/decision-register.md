@@ -19209,3 +19209,30 @@ depend on project history).
 
 **Watch for.** `RRC-revision-v1` in `ROUTE_DEFAULT_POLICY`; a served-content move in `get_project.solve_policies` that
 no register entry names (MR-7, `tests/test_t08_b50_surface_content.py`).
+
+## R-996 — V17-T10 after RRC: a fourth carried-surface reference, `t07_reference_rrc.json`; T08's is frozen (2026-11-09)
+
+| | |
+| --- | --- |
+| Date | 2026-11-09 |
+| Decided by | design lane (`specifier`), ruling `docs/reviews/RRC-v17-t10.md` (main `a109eea6`); applied by the build lane on `wp/RRC` (`docs/RRC_DECISIONS.md` D-46) |
+| Normative text | T07 V17 spec Amendment RRC-1 (GC-18); ruling `docs/reviews/RRC-v17-t10.md` |
+| Affected packages | RRC, and every later package that adds an id to `get_project.solve_policies` |
+
+**Decision.** Each content change to `get_project.solve_policies` that T10-C3 registers gets its own carried-surface
+reference document, generated in Amendment T08-1's form, and every earlier document stays frozen. For RRC:
+`t07_reference.py --emit-rrc` writes `docs/derivations/scripts/t07_reference_rrc.json`, `t07_reference_c2.json`'s
+document with exactly `carry`, `constants.offered_policy_ids` and `tasks.V17-T10.answer.offered_policy_ids.expected`
+changed; the offered set is `["RRC-revision-v1", "T04-W12", "T06-revision-v2", "T08-ptc-v1", "T08-warm-v1"]`. T10-C3
+stays an `exact_set` against those five ids for reference runs from RRC on; T10-C1, T10-C2 and item 7
+(`T06-revision-v1` still not offered) are unchanged. `scorer.CARRIED_SURFACE_REFERENCE_PATH` moves to the new document,
+and with it `reference.run`, G16-b and the RC job's step 8. Frozen and not re-scored: `t07_reference.json`
+(`cba24a92…`, GC-16), `t07_reference_c2.json` (`23b924b8…`, GC-17), `t07_reference_t08.json` (`f946a88f…`,
+GC-18.t08.reference_frozen); `v17-c1`, `v17-c2`, T08.A49's and M07a.A37's G16-b keep their records.
+
+**Rejected alternatives.** Editing `OFFERED_POLICIES_T08` in place (it moves the bytes T08-1's text, GC-17 and
+T08.A49/M07a.A37 describe, and amends a registered amendment in place). Excluding `RRC-revision-v1` from T10-C3 by
+B13's rule, as D-45 did for B27 (B27 measures what T08 delivered, T10-C3 what the served contract offers: the
+expectation would be false).
+
+**Watch for.** `t07_reference_t08.json` edited; `RRC-revision-v1` dropped from T10-C3 by B13's rule.

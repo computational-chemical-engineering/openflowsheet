@@ -348,3 +348,36 @@ results), `40fba287` (runner self-contained), `b91b0ddb` (registration, results 
   21 deselected, 3 xfailed. `test_m07a_harvest.py tests/test_t08*.py tests/test_evidence_manifests.py`: 1119 passed,
   2 skipped, 1 failed (D-45), then `test_t08_evidence_manifest.py` 15 passed. ruff, ruff format (1029 files), mypy
   (328 files) clean. F0 PASS: M1 50/50, M2–M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 35/35.
+- **D-46 (V17-T10 ruling applied; `docs/reviews/RRC-v17-t10.md`, main `a109eea6`, register R-996).** CI run
+  42547017088 was red only on `test_g16b_reference_run[V17-T10-*]` (T10-C3 false: the live `get_project` offers
+  `RRC-revision-v1` as well). Applied E0–E8 verbatim; Q1/Q2 take the ruling's defaults (no `--check` in CI: it takes
+  85.6 s wall here, above Q1's 60 s). R-996 was free on `main` and `wp/RRC`. Commits `7d236315` (E1–E3: generator
+  section 10, `--emit-rrc`, GC-18, spec Amendment RRC-1, the new JSON) and `2ea183f0` (E4–E6).
+  - **A1** (unedited branch, `fcba6656`): `t07_reference.py --check` exit 0; GC-01…GC-15 2808/2808, GC-16 40/40,
+    GC-17 7/7; `t07_reference_t08.json` byte-identical, sha256
+    `f946a88f268acc0b690e24f5fb1c358611b5333e169468bd2ae861f8a13148b9`.
+  - **A2** (after E1–E3): exit 0; 2808/2808, 40/40, 7/7, `claims of Amendment RRC-1 (GC-18): 8 of 8 pass`; four
+    byte-identical lines: `t07_reference.json` `cba24a926815392c6bc6e8dc565f3aecb77109eda8c565cbf05390906b3f1c92`,
+    `t07_reference_c2.json` `23b924b84e72e15c03843228fefeeb856a9d571ca341747712a519de9b947319`,
+    `t07_reference_t08.json` `f946a88f268acc0b690e24f5fb1c358611b5333e169468bd2ae861f8a13148b9`,
+    **`t07_reference_rrc.json` `621003a83d35648fb4623f3ad376aa043bb4cf4acbc0bfafd539aabb4d963e93`** (248556 bytes,
+    written once by `--emit-rrc`; the three frozen files were not re-emitted).
+  - **A3**: `git diff --exit-code main --` the three frozen JSONs: exit 0.
+  - **A4** (by hand): `generator_claims.count` 2863 (T08's 2855 + 8); families added `GC-18.t08` 1,
+    `GC-18.changes_exactly` 1, `GC-18.offered` 2, `GC-18.carry` 1, `GC-18.spec` 3, none removed; top-level key order
+    equal to T08's document's; `constants.offered_policy_ids` = T10's expected = the five ids.
+  - **A5**: `pytest tests/test_t07_v17_reference.py` (server extra present, no skips): 153 passed in 203.8 s, of which
+    G16-b 40 and `test_rrc1_…` 4 (collected 44), G16-g and F6 included.
+  - **A6**: `test_t07_w7b_scorer.py test_t07_v17_c2.py test_t08_b50_surface_content.py test_m07a_surface_chain.py
+    test_t08_evidence_manifest.py`: 212 passed.
+  - **A7** (hand negative control, not committed): `RRC-revision-v1` removed from `OFFERED_POLICIES_RRC`, `--check`
+    exit 1, `FAIL GC-18.offered.adds_exactly_rrc_sorted_unique`, `claims of Amendment RRC-1 (GC-18): 7 of 8 pass`;
+    reverted by `git checkout`.
+  - **A8**: `ruff check` and `ruff format --check` on the four edited Python files clean; `mypy` (pyproject `files`,
+    328 files) clean. A strict mypy of the out-of-scope generator, test and `m07a_rc.py` reports the same 97 errors on
+    `main` and the branch (7 in the generator, none in the edited lines).
+  - Also: `tests/test_rrc_*.py` 73 passed; register readers (`test_l01_records.py test_m07_mr12_extras_v02.py
+    test_v03_post_release.py test_m07a_surface_chain.py test_t08_b50_surface_content.py`) 178 passed, 1 skipped; F0
+    `scripts/corpus_identity.py --check` PASS (M1 50/50, M2–M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 35/35).
+    All serial, `OMP_NUM_THREADS=1`, `/home/frankp/Codes/OpenFlowsheet/.venv/bin/python`, `PYTHONPATH=src`
+    (worktree copy confirmed). **A9** (CI on both architectures) is pending on the push.
