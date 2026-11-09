@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import copy
 import json
+import re
 import sys
 from collections.abc import Iterator
 from pathlib import Path
@@ -56,6 +57,7 @@ from openflowsheet.messages.render import (
     render_failure,
 )
 from openflowsheet.units import DisplayUnits, DisplayUnitsError, display_item, parse_display_units
+from openflowsheet.units.display import DISPLAY_KINDS
 
 REFERENCE: dict[str, Any] = json.loads(
     (REPO_ROOT / "docs" / "derivations" / "scripts" / "x04_reference.json").read_text("utf-8")
@@ -263,6 +265,35 @@ def test_a19_pressure_sites_in_the_catalogue_are_absolute() -> None:
         "pressure_rise.p_spec",
         "pressure_rise.p_inlet",
     }
+
+
+def test_a19_a_kinded_number_is_in_its_kinds_si_unit() -> None:
+    """Review S2: `display_item` reads a kinded number's `value` as the kind's SI unit and never
+    its `unit`. (a) Every kinded declaration and every kinded example quantity says that SI unit
+    (`*` written as a space); (b) no `detail_pattern` captures a `<param>_unit` group for a param
+    any entry declares kinded (a chain may type a group by another entry's declarations)."""
+    seen = 0
+    kinded: set[str] = set()
+    for entry in CATALOGUE.entries():
+        for name, declared in entry.params.items():
+            if declared.quantity_kind is not None:
+                kinded.add(name)
+                unit = (declared.unit or "").replace("*", " ")
+                assert unit == DISPLAY_KINDS[declared.quantity_kind].si_unit, (entry.code, name)
+                seen += 1
+        for example in entry.examples:
+            for name, value in (example.get("params") or {}).items():
+                if isinstance(value, dict) and value.get("kind") is not None:
+                    unit = str(value.get("unit")).replace("*", " ")
+                    assert unit == DISPLAY_KINDS[value["kind"]].si_unit, (entry.code, name)
+                    seen += 1
+    assert kinded and seen > len(kinded)
+    for entry in CATALOGUE.entries():
+        if entry.detail_pattern is None:
+            continue
+        groups = re.compile(entry.detail_pattern).groupindex
+        captured = {g[: -len("_unit")] for g in groups if g.endswith("_unit")}
+        assert not captured & kinded, (entry.code, sorted(captured & kinded))
 
 
 # -- A20. `get_job_result` end to end --------------------------------------------------------------
