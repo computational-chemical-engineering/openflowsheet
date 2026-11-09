@@ -273,3 +273,24 @@ nothing required, so no `required` list changes:
 - **Not unchanged:** the served MCP tool list, widened additively, and two description texts (`validate.md`,
   `submit_job.md`); with OPT's additions removed and the two texts restored (`tests/opt_schema_support.py`) it is X02's
   `f51b69bf…` (R-950). The surface link is c_6, R-960.
+
+## Amendment 17 (Proposed 2026-11-09, with ADR 0075; X04) — pointer to ADR 0075
+
+Amendment 17 is decided in ADR 0075 (D7, D8; X04 test specification §5 M, T); this paragraph points at it. Additive,
+nothing required, so no `required` list changes; nothing stored or hashed changes (D11):
+
+- **`JobControl.get_job_result(job_id, *, display_units=None)`** and **`Inspection.get_stream_table(…,
+  display_units=None)`**: an optional display preference (`display_units: {type: string, minLength: 1, maxLength:
+  1024}` in both request schemas; HTTP the query parameter, MCP the tool argument, CLI `api` and `streams
+  --display-units`). It is resolved against the project's declared ambient pressure and echoed as the root
+  `display_units: {units, ambient_pressure}` iff the request carried it. No other operation accepts it (A32).
+- **Schemas.** `job.schema.json#/$defs/job_result` gains the optional root `display_units`; the
+  `application-results.schema.json#/$defs/explanation` `numbers` item gains the optional `display` item
+  (`{value, unit}`, or `{value: null, unit, reason: {code: "display_out_of_range", params: {kind, unit}}}`);
+  `project_summary` gains the required, nullable `ambient_pressure` (D6.3); `project-policy.schema.json` the optional
+  `ambient_pressure`; `stream-table.schema.json` its `display` members and root echo (D7.3).
+- **Refusals.** `invalid_request` with pointer `/display_units` (`display_units_invalid`,
+  `ambient_pressure_undeclared`) and `unsupported` with reason `display_unit_unsupported` (D9). D5's `ApiError` and
+  `API_EXIT_CODES` are unchanged.
+- **Not unchanged:** the served MCP tool list (two input schemas, two description texts); its surface link is taken
+  once X04's schemas are final.

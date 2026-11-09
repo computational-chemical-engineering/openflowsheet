@@ -124,20 +124,20 @@
     "get_job_result": {
       "tool": "get_job_result",
       "file": "get_job_result.md",
-      "sha256": "7eeab9bbee35cd31f55269dd2cd5de2ba4147d531a58ea4b5103e8c903f3520d",
-      "characters": 1181,
+      "sha256": "ff805348581892502c569b2db574257eab1ebf42bac97b34991b8c67fa91213e",
+      "characters": 1445,
       "reviews": [
         {
           "review_kind": "design-lane",
-          "status": "reviewed",
-          "reviewed_by": "reviewer (design lane), docs/reviews/T08-description-review.md",
-          "reviewed_at": "2026-10-01"
+          "status": "pending_design_review",
+          "reviewed_by": null,
+          "reviewed_at": null
         },
         {
           "review_kind": "human",
-          "status": "reviewed",
-          "reviewed_by": "Frank Peters",
-          "reviewed_at": "2026-09-29"
+          "status": "pending",
+          "reviewed_by": null,
+          "reviewed_at": null
         }
       ]
     },
