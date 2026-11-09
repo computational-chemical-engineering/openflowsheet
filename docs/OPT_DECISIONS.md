@@ -1004,3 +1004,10 @@ Totals: TH-R1 18.3 s, M1 5.9 s, C-MW 54.4 s ("verify" also holds report/record w
   schemas + Q26 + W5b CLI + global state 199 passed; `test_m07a_harvest` + `test_t08*` + `test_evidence_manifests`
   1113 passed, 2 skipped; `test_wit_*` 31 passed; F0 `corpus_identity.py --check` PASS (M1 50/50 … M9 35/35); ruff,
   ruff format (1147 files), mypy (324 files) clean.
+- D-95. Audited-env re-check after the merge of main (WIT's witness; brief `docs/briefs/OPT-manifest.md`, TRS2,
+  2026-11-09, at `c1b9b125` plus the docs-only merge of `origin/main` `85b858da`): no difference from "WO-8b gates".
+  Audited `test_opt_benchmarks_nlp` + `test_opt_boundary` + `test_opt_replay_nlp` + `test_opt_job_nlp` +
+  `test_opt_cost_lca_nlp` 21 passed, 12 deselected; G2 default 22 entries `6e028e8d…` and audited 25 entries
+  `b6bbafdb0c83b014…` (full hashes as in the manifest), identical to WO-8b; G22 (`benchmarks/opt/performance.py`,
+  audited) TH-R1 / M1 / C-MW all `KKT_POINT_VERIFIED`, Ipopt 0, it 10/11, 8/8, 10/9 (11.1 / 4.7 / 28.1 s). Nothing
+  to explain by D-89. Evidence: `evidence/OPT/c1b9b1255699b2cd9d1f6c1da120f761dd1e80d6/manifest.json`.

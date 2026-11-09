@@ -9025,3 +9025,42 @@ harvest:
   class: P
   to: []
   note: 'process note: description reviews by the design lane and Frank pending (D-61)'
+- manifest: evidence/OPT/c1b9b1255699b2cd9d1f6c1da120f761dd1e80d6/manifest.json
+  item: limitations[0]
+  sha256: 060bd2818a8025f400cbbb18d8b6e4b67af2f07fe43e550148de77980bee7b40
+  class: P
+  to: []
+  note: 'provenance note: numerical verification on ref-x86-64; analytic and hand-model expectations; not validation, not optimality'
+- manifest: evidence/OPT/c1b9b1255699b2cd9d1f6c1da120f761dd1e80d6/manifest.json
+  item: limitations[1]
+  sha256: 88e364dba2a77fdfd3c0a81347530f68387187cc787a98622735dcc9e570436f
+  class: P
+  to: []
+  note: 'status note: tested, not reviewed; human description reviews recorded by Frank (9869773e); design-lane prose check of D-92 and D-93 pending; no local full gate, CI run 42534167073'
+- manifest: evidence/OPT/c1b9b1255699b2cd9d1f6c1da120f761dd1e80d6/manifest.json
+  item: limitations[2]
+  sha256: 86db2b6c3722d9a5093b0fb0d4b1bc7cf91dc5a3d1de9261808d1154d447f6be
+  class: E
+  to:
+  - L-OPT-1
+  note: 'user-facing: route, platform, held regimes, boundary and zero-subsystem limits; D-82 declared limits and S1 dormant splits (L-OPT-1)'
+- manifest: evidence/OPT/c1b9b1255699b2cd9d1f6c1da120f761dd1e80d6/manifest.json
+  item: limitations[3]
+  sha256: 6b6a930499c104f6967bbc693ba2a96e3a8ca0688bcea1656f3ccab6b2bb2692
+  class: E
+  to:
+  - L-OPT-2
+  note: 'user-facing: Ipopt stall from the feasible side on OPT-L, starts {673.15 K, 650 K} (D-70, L-OPT-2)'
+- manifest: evidence/OPT/c1b9b1255699b2cd9d1f6c1da120f761dd1e80d6/manifest.json
+  item: limitations[4]
+  sha256: a0421966824facbaa86c7387c226315b23d1958ad7c801198a46a914ce71bfb8
+  class: P
+  to: []
+  note: 'process note: G12 wall-clock mask and D-58/D-60 await the design-lane review'
+- manifest: evidence/OPT/c1b9b1255699b2cd9d1f6c1da120f761dd1e80d6/manifest.json
+  item: checks[25]
+  check_id: OPT.G21
+  sha256: 986dc7b30a12baa5dcde07c4743824153d0f8b0f459ed5059fdc3ed506a54fdd
+  class: P
+  to: []
+  note: 'process note: no local full gate; CI green on both architectures is the merge condition (CLAUDE.md gate by risk)'
