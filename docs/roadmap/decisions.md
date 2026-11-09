@@ -954,3 +954,7 @@ G16-b 40/40; F0 PASS. Q1 (`t07_reference.py --check` in CI): no (85.6 s). CI re-
 - 2026-11-09 — X04 CI fix round: wp/X04 at 0f7d9b87 (without_x04 chains, B50 R-1015 member, MCP importorskip, D-21
   via D-22 catalogue param type `display_unit`, notices page regenerated). Local full suite 1 failed (stale doc page,
   then fixed). CI watched.
+- 2026-11-09 — S-6 confirmation round (ruling §11, 513195c1): Q-S6a–d confirmed (Q-S6c sharpened: WO-7 compares log
+  digests exactly); WO-8 (IDAES re-take test pins the kernel too), S6R-29, A-11 item 7 → brief
+  docs/briefs/REL040-s6-wo78.md. A `reviewer` pass on wp/REL040p (WO-1, 3, 4, 7a) follows before its merge.
+  X04 D-22: ADR 0075 note + interfaces-frozen clause applied verbatim on wp/X04 (1d456c46), docs only.
