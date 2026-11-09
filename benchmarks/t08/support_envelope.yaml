@@ -9251,3 +9251,34 @@ harvest:
   class: P
   to: []
   note: 'process note: no local full gate; CI green on both architectures is the merge condition (CLAUDE.md gate by risk)'
+- manifest: evidence/X04/0f7d9b87467456f89c6c541e167c7c59b2dfc413/manifest.json
+  item: limitations[0]
+  sha256: 66408d254605aac76f26df3b46d8d2945b0f336779bd63274811b71f19114afd
+  class: P
+  to: []
+  note: 'provenance note: software verification of display arithmetic against the independent X04 reference; SI stays the computed quantity; tested, not reviewed'
+- manifest: evidence/X04/0f7d9b87467456f89c6c541e167c7c59b2dfc413/manifest.json
+  item: limitations[1]
+  sha256: 1ccd62210ce151fee1dcfb2611bb984e7d371cd02a285730a7cc9b4b37206a51
+  class: P
+  to: []
+  note: 'process note: review notes N1-N6 not acted on beyond the ordered doc edits; N4 (paging cost in eng display) not measured on the largest example'
+- manifest: evidence/X04/0f7d9b87467456f89c6c541e167c7c59b2dfc413/manifest.json
+  item: limitations[2]
+  sha256: a1573ac584de65b839c1702421a88484d071fa71c58cac1c8ca6b107bf1f45d9
+  class: P
+  to: []
+  note: 'process note: D-22 adds the catalogue param type display_unit to the message-catalogue schema (ADR 0075 note, interfaces-frozen clause)'
+- manifest: evidence/X04/0f7d9b87467456f89c6c541e167c7c59b2dfc413/manifest.json
+  item: limitations[3]
+  sha256: bd9d550c8f8a96e02950b19df1fa67936030af2f1114fcad9b88a3505c80d815
+  class: P
+  to: []
+  note: 'process note: no local full gate at the head; CI run 42659368086 on both architectures is the merge condition; 1d456c46 is docs only'
+- manifest: evidence/X04/0f7d9b87467456f89c6c541e167c7c59b2dfc413/manifest.json
+  item: checks[41]
+  check_id: X04.FULLGATE
+  sha256: 35fbd0ec7994826b0c63ae3a8b4f8f0a285f47c1e9ac59417a45306f140587f4
+  class: P
+  to: []
+  note: 'process note: no local full gate; CI green on both architectures is the merge condition (CLAUDE.md gate by risk)'
