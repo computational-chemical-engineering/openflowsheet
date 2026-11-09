@@ -24,6 +24,7 @@ from m02_schema_support import without_m02
 from m04_schema_support import without_m04
 from msg_schema_support import MSG_OPERATIONS, without_msg
 from opt_schema_support import without_opt
+from st_schema_support import ST_OPERATIONS
 from x02_schema_support import without_x02
 
 from openflowsheet.application.types import SCHEMA_BASE, published_schemas, schema_errors
@@ -261,7 +262,9 @@ def test_g1c_without_m02s_additions_every_response_is_its_pre_m02_snapshot() -> 
     before = {**r4.SNAPSHOT_AT_B13D556, **r4.SNAPSHOT_AMENDMENT_2, **r4.SNAPSHOT_AMENDMENT_3}
     moved = []
     for name, operation in OPERATIONS.items():
-        if name in MSG_OPERATIONS:  # MSG's `explain` row (ADR 0058 D7) postdates the snapshot
+        # MSG's `explain` row (ADR 0058 D7) and ST's `get_stream_table` row (ADR 0068) postdate
+        # the snapshot.
+        if name in MSG_OPERATIONS | ST_OPERATIONS:
             continue
         # M04's (ADR 0037 D6), MSG's (ADR 0058), X02's (ADR 0070) and OPT's (ADR 0071, ADR 0019
         # Amendment 16) additions are taken out first, the later first: they postdate this snapshot.

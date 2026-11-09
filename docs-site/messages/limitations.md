@@ -324,7 +324,7 @@ A turbine's ideal (isentropic) outlet is computed in the phase declared for its 
 
 *No plain-language explanation is written yet; the summary is the technical one.*
 
-- **Summary:** The web shell (`serve-http --ui`) is a diagnostic client of the HTTP binding: it edits nothing (Solve and Cancel are its only effects), calls seventeen operations and no other, computes only display arithmetic (design note §5.6), converts no unit, and judges nothing — the scenario view displays run differences without a registered comparison or allowance.
+- **Summary:** The web shell (`serve-http --ui`) is a diagnostic client of the HTTP binding: it edits nothing (Solve and Cancel are its only effects), calls eighteen operations and no other, computes only display arithmetic (design note §5.6), converts no unit, and judges nothing — the scenario view displays run differences without a registered comparison or allowance.
 
 <a id="L-WEB-2"></a>
 

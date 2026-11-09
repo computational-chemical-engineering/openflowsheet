@@ -1,0 +1,36 @@
+# Family `notice` (MSG design note §4.2.1): what a result reports beside its numbers, not a refusal.
+# ST (ADR 0068; design note §6.4): the stream table's `absent` reasons that are notices. Emitter:
+# `application/stream_table.py`.
+catalogue: openflowsheet-messages-v1
+namespace: null
+entries:
+  - code: stream_enthalpy_absent
+    family: notice
+    kind: notice
+    complete: true
+    title: An energy total is not given because a stream's enthalpy flow is missing
+    args: [subject, streams]
+    params:
+      subject: {type: text, label: unit or flowsheet}
+      streams: {type: list, label: streams}
+    summary: "The energy total of {subject} is not given: the enthalpy flow of {streams} is missing."
+    why: "An energy total adds the enthalpy flows of the streams that enter or leave. When one of them could not be evaluated, the total cannot be given either. Each missing enthalpy flow carries its own reason in that stream's entry of the table."
+    action: "Read the reason given for each stream named; it says what is missing and what to do. The other values of the table are unaffected."
+    see_also: [property_not_provided, property_evaluation_failed, flash_failed, value_not_finite]
+    examples:
+      - params: {subject: valve, streams: [S2]}
+
+  - code: zero_flow
+    family: notice
+    kind: notice
+    complete: true
+    title: A stream without flow has no temperature or properties per amount
+    args: [stream]
+    params:
+      stream: {type: stream, label: stream}
+    summary: "Stream {stream} carries no flow, so its temperature, composition and properties per amount are not given."
+    where: "stream {stream}"
+    why: "A stream whose every component flow is zero is idle. Its flows, enthalpy flow, entropy flow and volume flow are zero and its pressure is kept, but a temperature, a composition or a property per mole or per kilogram would describe no material, so they are left empty."
+    action: "Nothing needs fixing if the stream is meant to be idle. If it should carry material, check the specifications and splits upstream of {stream}."
+    examples:
+      - params: {stream: S7}

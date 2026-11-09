@@ -16,7 +16,7 @@ with the requests the fixtures cannot hold because they act on live state (`wait
 - a raw export's bytes are the bytes its bundle listing registers (SHA-256 and size, and the
   `X-Content-SHA256` header) and satisfy the record schema of their kind.
 
-One test per operation: 17 of 17, each with at least one successful answer.
+One test per operation: 18 of 18, each with at least one successful answer.
 """
 
 from __future__ import annotations
@@ -179,7 +179,7 @@ def _check_raw(served: TestClient, token: str, artifact_id: str, response: Any) 
         assert kind in NO_RECORD_SCHEMA and isinstance(document, dict), kind
 
 
-def test_the_requests_cover_exactly_the_seventeen() -> None:
+def test_the_requests_cover_exactly_the_eighteen() -> None:
     assert set(_requests()) == UI_OPERATIONS
 
 

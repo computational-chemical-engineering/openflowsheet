@@ -181,6 +181,26 @@
         }
       ]
     },
+    "get_stream_table": {
+      "tool": "get_stream_table",
+      "file": "get_stream_table.md",
+      "sha256": "76ac57f3a89b616157986b1b650a2793d1fa3271f705745c8c853249aa59fe1d",
+      "characters": 1486,
+      "reviews": [
+        {
+          "review_kind": "design-lane",
+          "status": "reviewed",
+          "reviewed_by": "reviewer (design lane), docs/reviews/ST-review.md §Description (approved after its three edits)",
+          "reviewed_at": "2026-11-08"
+        },
+        {
+          "review_kind": "human",
+          "status": "reviewed",
+          "reviewed_by": "Frank Peters",
+          "reviewed_at": "2026-11-08"
+        }
+      ]
+    },
     "inspect_structure": {
       "tool": "inspect_structure",
       "file": "inspect_structure.md",

@@ -25,6 +25,7 @@ import pytest
 from m04_schema_support import without_m04
 from msg_schema_support import MSG_OPERATIONS, without_msg
 from opt_schema_support import without_opt
+from st_schema_support import ST_OPERATIONS
 from t07_jobs_support import lifecycle_violations, response_schema_violations
 from x02_schema_support import without_x02
 
@@ -283,7 +284,8 @@ def test_a42_m04s_responses_decompose_onto_m02s_snapshots() -> None:
     }
     moved = []
     for name, operation in OPERATIONS.items():
-        if name in MSG_OPERATIONS:  # MSG's `explain` row (ADR 0058 D7) postdates M04
+        # MSG's `explain` row (ADR 0058 D7) and ST's `get_stream_table` row (ADR 0068) postdate M04.
+        if name in MSG_OPERATIONS | ST_OPERATIONS:
             continue
         # MSG's (ADR 0058), X02's (ADR 0070) and OPT's (ADR 0071) additions postdate M04: they are
         # taken out first, the later first.

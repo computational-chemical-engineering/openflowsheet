@@ -494,6 +494,15 @@ OPERATIONS: Final[Mapping[str, Operation]] = {
             ("GET", "/v1/artifacts/{artifact_id}"),
             decode=_members("artifact_id", *_VIEW),
         ),
+        # ADR 0068 (ST, ADR 0019 Amendment 13): an ended job's stream table, computed on read.
+        _row(
+            "get_stream_table",
+            "read",
+            _object({"job_id": ID}, VIEW_MEMBERS),
+            _result("projection"),
+            ("GET", "/v1/jobs/{job_id}/stream-table"),
+            decode=_members("job_id", *_VIEW),
+        ),
         # ADR 0019 Amendment 3 (A3.3): the audit, by `seq`. Python, CLI and HTTP; no MCP tool
         # (an MCP tool needs a reviewed description). `order` is a string, not a boolean: the
         # HTTP binding converts only numeric query values.

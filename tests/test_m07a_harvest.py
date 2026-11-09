@@ -81,7 +81,8 @@ T08_MANIFEST = "evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/manifest.j
 #: OPT's CI-green re-take (`c1b9b12…`, `tested`, 5 and 1) moves it again on `wp/OPT`.
 #: RRC's first manifest (`6b892b0…`, `tested`, 7 and 1) moves it on `wp/RRC`.
 #: MSG's catalogue-ruling manifest (`1602f72…`, `tested`, 8 and 0) moves it on `main` (MSGp merge).
-HARVEST_SIZE = (87, 1054, 140)
+#: ST's first manifest (`4512251…`, `tested`, 5 and 1) moves it on `wp/ST`.
+HARVEST_SIZE = (88, 1059, 141)
 #: The 0.2.0 release candidate C′ (M07 spec §25, R-485).
 C_PRIME = "ce993651ce37c1343e771b276160bd6623e43500"
 #: The commit tagged v0.2.0.

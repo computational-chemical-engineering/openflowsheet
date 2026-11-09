@@ -37,6 +37,7 @@ from m02_schema_support import without_m02
 from m04_schema_support import without_m04
 from msg_schema_support import MSG_OPERATIONS, without_msg
 from opt_schema_support import without_opt
+from st_schema_support import ST_OPERATIONS
 from x02_schema_support import without_x02
 
 from openflowsheet.application.operations import OPERATIONS, Operation
@@ -63,6 +64,8 @@ DEF_OF_OPERATION: dict[str, str] = {
     "list_audit": "audit_page",
     # ADR 0058 D7 (MSG WO-7)
     "explain": "message_entry",
+    # ADR 0068 (ST): the stream table is a projection, as every other view
+    "get_stream_table": "projection",
 }
 #: `revision_summary` and `audit_record` are pages' items, each its own `$def`.
 #: `explanation` is MSG's (ADR 0058 D3): no operation's response is it, `RunResult.failure` and
@@ -263,6 +266,11 @@ SNAPSHOT_OPT: dict[str, str | None] = {
     "cancel_job": "d6514613a8d894e37295b4a38e7120351256fc3a9938806a7d95677f1347e36a",
     "get_job_result": "9a3e82fb0d6f8f89cbd5729489ae82e6c2340e299b7d5a2e9c7ee29024063c8e",
 }
+#: ST G12 (ADR 0068): the `get_stream_table` row is new; its response is the `projection` `$def`,
+#: so its snapshot is `get_artifact`'s, and no other snapshot moves (`st_schema_support`).
+SNAPSHOT_ST: dict[str, str | None] = {
+    "get_stream_table": "951b77ea0f69a0eb8f5cb7d44a9c1c570dd6d05d57b7c72de05a7a7e61208465",
+}
 
 
 def _without_specifications(schema: Any) -> Any:
@@ -282,7 +290,7 @@ def _without_specifications(schema: Any) -> Any:
 
 def test_r4_g3_every_resolved_response_schema_equals_the_snapshot() -> None:
     measured = {name: _digest(resolved_response(op)) for name, op in OPERATIONS.items()}
-    assert len(measured) == 22
+    assert len(measured) == 23
     assert measured == {
         **SNAPSHOT_AT_B13D556,
         **SNAPSHOT_AMENDMENT_2,
@@ -293,7 +301,9 @@ def test_r4_g3_every_resolved_response_schema_equals_the_snapshot() -> None:
         **SNAPSHOT_MSG_EXPLAIN,
         **SNAPSHOT_X02,
         **SNAPSHOT_OPT,
+        **SNAPSHOT_ST,
     }
+    assert SNAPSHOT_ST["get_stream_table"] == SNAPSHOT_AT_B13D556["get_artifact"]
     for operation in OPERATIONS.values():
         assert "$ref" not in canonical_json(resolved_response(operation)).decode("utf-8")
 
@@ -313,6 +323,8 @@ def test_opt_without_its_additions_every_response_is_its_pre_opt_snapshot() -> N
     }
     moved = []
     for name, operation in OPERATIONS.items():
+        if name in ST_OPERATIONS:  # ST's row (ADR 0068) postdates OPT; its own `SNAPSHOT_ST`
+            continue
         resolved = resolved_response(operation)
         assert _digest(without_opt(resolved)) == before[name], name
         if _digest(resolved) != before[name]:
@@ -331,10 +343,12 @@ def test_msg_g10_without_failure_every_response_is_its_pre_msg_snapshot() -> Non
         **SNAPSHOT_M02,
         **SNAPSHOT_M04,
     }
-    assert set(OPERATIONS) - set(before) == MSG_OPERATIONS == set(SNAPSHOT_MSG_EXPLAIN)
+    # ST's row (ADR 0068) is later than MSG and has its own snapshot (`SNAPSHOT_ST`).
+    assert set(OPERATIONS) - set(before) - ST_OPERATIONS == MSG_OPERATIONS
+    assert MSG_OPERATIONS == set(SNAPSHOT_MSG_EXPLAIN)
     moved = []
     for name, operation in OPERATIONS.items():
-        if name in MSG_OPERATIONS:
+        if name in MSG_OPERATIONS | ST_OPERATIONS:
             continue
         # X02's (ADR 0070) and OPT's (ADR 0071) additions postdate MSG: they are taken out
         # first, the later first.
@@ -360,6 +374,8 @@ def test_x02_without_warm_start_every_response_is_its_pre_x02_snapshot() -> None
     }
     moved = []
     for name, operation in OPERATIONS.items():
+        if name in ST_OPERATIONS:  # ST's row (ADR 0068) postdates X02; its own `SNAPSHOT_ST`
+            continue
         # OPT's additions (ADR 0071) postdate X02: they are taken out first.
         resolved = without_opt(resolved_response(operation))
         assert _digest(without_x02(resolved)) == before[name], name
@@ -388,8 +404,13 @@ def test_g_r6_6_list_models_moved_only_by_the_approved_additive_member() -> None
         )
         != SNAPSHOT_AT_B13D556[name]
     ]
-    # `list_audit` is ADR 0019 Amendment 3's row, `explain` ADR 0058 D7's.
-    assert sorted(set(OPERATIONS) - set(SNAPSHOT_AT_B13D556)) == ["explain", "list_audit"]
+    # `list_audit` is ADR 0019 Amendment 3's row, `explain` ADR 0058 D7's, `get_stream_table`
+    # ADR 0068's.
+    assert sorted(set(OPERATIONS) - set(SNAPSHOT_AT_B13D556)) == [
+        "explain",
+        "get_stream_table",
+        "list_audit",
+    ]
     # ADR 0019 Amendment 3 (A3.2) moves `diff_revisions` too; its own test below.
     assert moved == ["list_models", "diff_revisions"]
 

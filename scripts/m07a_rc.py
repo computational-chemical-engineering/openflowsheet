@@ -52,6 +52,11 @@ function, a registered digest and Frank's carry extended to name it):
   `OPT_SERVED_SHA256`; `3fb06cad…` at OPT WO-6, as c_4 over M04's list before MSG and X02; OPT
   D-51, D-59, D-87). Item 4 judges the texts with every link's description change undone
   (`texts_before_links`).
+- c_7, R-1000 (ADR 0068, ADR 0019 Amendment 13): ST's `get_stream_table` tool, stripped by
+  `tests/st_schema_support.py`'s `without_st` (ST G12's decomposition function); `D_7` =
+  `553b7612…`, measured on the tree that merged `main` (OPT's c_6) into `wp/ST`
+  (`tests/test_t08_w2_surface_digest.py`'s `ST_SERVED_SHA256`; `ebb4ca84…` as c_5 over MSG's list
+  before X02 and OPT, `6705fb05…` at ST WO-3; ST WO-7).
 
 The released 0.2.0a1 ran the two-link chain (its committed record at `C_α²`); a re-run of the
 alpha's step 8 uses this script at the tag.
@@ -115,6 +120,12 @@ V17_C2_FILE_SHA256: Final = {
 #: Its two reviews are `REVIEW.json`'s, which `tests/test_t08_w2_description_reviews.py` holds.
 MSG_FILE_SHA256: Final = {
     "explain": "f1fca282f28f7e1a0f0dc6407bb405734f18b811fc97f7e0f5d0b0afac9b8d3e",
+}
+#: c_7 (R-1000, ADR 0068): the one tool ST added, `get_stream_table`, its file pinned as MSG's is,
+#: after the ST review's three description edits. Its two reviews are `REVIEW.json`'s (design
+#: lane, `docs/reviews/ST-review.md`; Frank's, 2026-11-08).
+ST_FILE_SHA256: Final = {
+    "get_stream_table": "76ac57f3a89b616157986b1b650a2793d1fa3271f705745c8c853249aa59fe1d",
 }
 #: The two changed files as R-133 carried them: their reviewed hashes in `REVIEW.json` as v0.1.0
 #: released it (`PUBLIC_ROOT`).
@@ -204,6 +215,16 @@ def strip_opt(tools: Tools) -> Tools:
     return stripped
 
 
+def strip_st(tools: Tools) -> Tools:
+    """s_7 (R-1000): `tools` without ST's tool (`st_schema_support.without_st`)."""
+    t08_rc._tests_on_path()
+    from st_schema_support import without_st  # noqa: PLC0415
+
+    stripped = without_st(copy.deepcopy(tools))
+    assert isinstance(stripped, list)
+    return stripped
+
+
 @dataclass(frozen=True)
 class Link:
     """One registered surface change c_k: its register entry, its strip function s_k, and the
@@ -251,6 +272,12 @@ LINKS: Final = (
         "R-960",
         strip_opt,
         "3fdc797ad64485abf63fb491ebd56aa43dc510e62e9e218b0dd7a8fcc2e38a85",
+    ),
+    Link(
+        "c_7",
+        "R-1000",
+        strip_st,
+        "553b76122fefd4f09d6e91d16e7096d05b9f7793bb88e1876252dc2213e24894",
     ),
 )
 
@@ -351,16 +378,21 @@ def texts_before_links(texts: Mapping[str, str]) -> dict[str, str]:
 
 def description_problems(texts: Mapping[str, str]) -> list[str]:
     """§5.3 item 4 on `texts` (operation name -> description file): one line per failure. The
-    tools are `v17-c2`'s 17 and MSG's `explain` (c_4), each file at its pinned hash."""
+    tools are `v17-c2`'s 17, MSG's `explain` (c_4) and ST's `get_stream_table` (c_7), each file at
+    its pinned hash."""
     problems: list[str] = []
-    pinned = {**V17_C2_FILE_SHA256, **MSG_FILE_SHA256}
+    pinned = {**V17_C2_FILE_SHA256, **MSG_FILE_SHA256, **ST_FILE_SHA256}
     if sorted(texts) != sorted(pinned):
-        problems.append(f"tools {sorted(texts)} are not v17-c2's 17 and MSG's explain")
+        problems.append(
+            f"tools {sorted(texts)} are not v17-c2's 17, MSG's explain and ST's get_stream_table"
+        )
     for name in sorted(set(texts) & set(pinned)):
         if name in CHANGED:
             expected, source = R133_FILE_SHA256[name], "R-133's"
         elif name in MSG_FILE_SHA256:
             expected, source = MSG_FILE_SHA256[name], "MSG's"
+        elif name in ST_FILE_SHA256:
+            expected, source = ST_FILE_SHA256[name], "ST's"
         else:
             expected, source = V17_C2_FILE_SHA256[name], "v17-c2's"
         found = hashlib.sha256(texts[name].encode("utf-8")).hexdigest()

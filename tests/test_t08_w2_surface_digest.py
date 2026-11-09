@@ -53,6 +53,12 @@ operation (its request and result branches, `job_result.optimization`, six artif
 and the two texts restored from their pre-OPT copies first (`without_opt`,
 `tests/opt_schema_support.py`) the list is X02's served digest `f51b69bf…` exactly
 (`test_opts_surface_move_decomposes_onto_x02s`), and every decomposition below holds as before.
+
+**ST (ADR 0068, ADR 0019 Amendment 13; R-1000) widens it again, additively** — one tool,
+`get_stream_table`, after `get_artifact` — so the served digest moves to `ST_SERVED_SHA256`. With
+ST's tool removed first (`without_st`, `tests/st_schema_support.py`) the list is OPT's served
+digest `3fdc797a…` exactly (`test_sts_surface_move_decomposes_onto_opts`), and every decomposition
+below holds as before.
 """
 
 from __future__ import annotations
@@ -68,6 +74,7 @@ from m02_schema_support import without_m02
 from m04_schema_support import without_m04
 from msg_schema_support import MSG_OPERATIONS, without_msg
 from opt_schema_support import OPT_DESCRIPTIONS, pre_opt_text, without_opt
+from st_schema_support import ST_OPERATIONS, without_st
 from x02_schema_support import without_x02
 
 from openflowsheet.application.operations import OPERATIONS
@@ -77,7 +84,7 @@ DESCRIPTIONS = REPO_ROOT / "src" / "openflowsheet" / "application" / "bindings" 
 V17_C2_TEXTS = REPO_ROOT / "tests" / "fixtures" / "t08" / "v17_c2_descriptions"
 MCP_OPERATIONS = sorted(name for name, op in OPERATIONS.items() if "mcp" in op.transports)
 #: The MCP operations before MSG (ADR 0058 D7 added `explain`, whose text `v17-c2` never served).
-PRE_MSG_MCP_OPERATIONS = sorted(set(MCP_OPERATIONS) - MSG_OPERATIONS)
+PRE_MSG_MCP_OPERATIONS = sorted(set(MCP_OPERATIONS) - MSG_OPERATIONS - ST_OPERATIONS)
 
 #: R-133: the served descriptions' digest after N1 and N2 (`harness.tool_descriptions_sha256`).
 T08_DESCRIPTIONS_SHA256 = "171dd768efcfb24f65d79d83a4f157dcfd1436935bf5106a247b84f3040e4d14"
@@ -101,6 +108,11 @@ X02_SERVED_SHA256 = "f51b69bf66569e35aebead73b66e98d58f24c84016db639536c0ee35181
 #: measured when `main` (X02) was merged into `wp/OPT` (`scripts/m07a_rc.py`'s `D_6`). (Evidence,
 #: not a pin: at OPT WO-6, over M04's list before MSG and X02, `3fb06cad…`.)
 OPT_SERVED_SHA256 = "3fdc797ad64485abf63fb491ebd56aa43dc510e62e9e218b0dd7a8fcc2e38a85"
+#: ST G12 (ADR 0068, R-1000; design note §7): the served digest with the `get_stream_table` tool
+#: over OPT's list, measured when `main` (OPT) was merged into `wp/ST` (`scripts/m07a_rc.py`'s
+#: `D_7`). Without that tool it is `OPT_SERVED_SHA256` (c_7). (Evidence, not a pin: as c_5 over
+#: MSG's list before X02 and OPT, `ebb4ca84…`; at WO-3, before the review's edits, `6705fb05…`.)
+ST_SERVED_SHA256 = "553b76122fefd4f09d6e91d16e7096d05b9f7793bb88e1876252dc2213e24894"
 #: The files N1 and N2 changed; the only difference from `v17-c2`'s served texts.
 CHANGED = ("commit_change", "validate")
 #: Each description's SHA-256 as `v17-c2` served it: the table of
@@ -143,7 +155,9 @@ def _digest(tools: list[dict[str, Any]]) -> str:
 def _served_without_m02(mcp: ModuleType) -> str:
     """The served tool list's digest with M04's and then M02's additive members removed (R-234;
     M04's decomposes onto M02's the same way, `test_m04s_surface_move_decomposes_onto_m02s`)."""
-    return _digest(without_m02(without_m04(without_msg(without_x02(without_opt(_tools(mcp)))))))
+    return _digest(
+        without_m02(without_m04(without_msg(without_x02(without_opt(without_st(_tools(mcp)))))))
+    )
 
 
 def _without_a3_2(tools: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -188,7 +202,9 @@ def test_the_served_digest_is_registered(mcp: ModuleType) -> None:
     assert (
         _digest(
             _without_a3_2(
-                without_m02(without_m04(without_msg(without_x02(without_opt(_tools(mcp))))))
+                without_m02(
+                    without_m04(without_msg(without_x02(without_opt(without_st(_tools(mcp))))))
+                )
             )
         )
         == T08_DESCRIPTIONS_SHA256
@@ -205,7 +221,9 @@ def test_m02s_surface_move_decomposes_onto_the_base(mcp: ModuleType) -> None:
         without_msg(
             without_x02(
                 without_opt(
-                    [tool.model_dump(mode="json", exclude_none=True) for tool in mcp.tools()]
+                    without_st(
+                        [tool.model_dump(mode="json", exclude_none=True) for tool in mcp.tools()]
+                    )
                 )
             )
         )
@@ -258,7 +276,7 @@ def test_restoring_the_two_files_reproduces_v17_c2s_digest(mcp: ModuleType) -> N
         for name in CHANGED
     }
     stripped = _without_a3_2(
-        without_m02(without_m04(without_msg(without_x02(without_opt(_tools(mcp))))))
+        without_m02(without_m04(without_msg(without_x02(without_opt(without_st(_tools(mcp)))))))
     )
     for tool in stripped:
         tool["description"] = texts.get(tool["name"], tool["description"])
@@ -269,7 +287,7 @@ def test_m04s_surface_move_decomposes_onto_m02s(mcp: ModuleType) -> None:
     """M04 (ADR 0037 D6), following R-234: the served list minus M04's additions is M02's served
     list (which in turn decomposes onto the base above), M04 moved it, and M04 changed no tool's
     name or description text."""
-    served = without_msg(without_x02(without_opt(_tools(mcp))))
+    served = without_msg(without_x02(without_opt(without_st(_tools(mcp)))))
     stripped = without_m04(served)
     assert _digest(stripped) != _digest(served)
     assert _digest(without_m02(stripped)) == M02_BASE_SERVED_SHA256
@@ -282,7 +300,9 @@ def test_msgs_surface_move_decomposes_onto_m04s(mcp: ModuleType) -> None:
     """MSG-G10 (ADR 0058, R-934): the served list is `MSG_SERVED_SHA256`; minus MSG's additions it
     is M04's registered list (R-457). MSG added one tool, `explain` (D7), and changed no other
     tool's name or description text."""
-    served = without_x02(without_opt(_tools(mcp)))  # X02's and OPT's additions postdate MSG
+    served = without_x02(
+        without_opt(without_st(_tools(mcp)))
+    )  # X02's and OPT's additions postdate MSG
     stripped = without_msg(served)
     assert _digest(served) == MSG_SERVED_SHA256
     assert _digest(stripped) == M04_SERVED_SHA256
@@ -302,7 +322,7 @@ def test_x02s_surface_move_decomposes_onto_msgs(mcp: ModuleType) -> None:
     MSG's served list (R-934, which decomposes onto M04's above). X02 added no tool and changed no
     tool's name or description text; the tools that moved are the six that serve the job request
     (`solve_body`)."""
-    served = without_opt(_tools(mcp))  # OPT's additions postdate X02
+    served = without_opt(without_st(_tools(mcp)))  # OPT's additions postdate X02
     stripped = without_x02(served)
     assert _digest(served) == X02_SERVED_SHA256
     assert _digest(stripped) == MSG_SERVED_SHA256
@@ -322,7 +342,7 @@ def test_opts_surface_move_decomposes_onto_x02s(mcp: ModuleType) -> None:
     above). OPT added no tool and changed no tool's name; the tools that moved are the six that
     serve the job request or result and `validate`, and the texts that changed are exactly
     `validate`'s and `submit_job`'s."""
-    served = _tools(mcp)
+    served = without_st(_tools(mcp))  # ST's tool postdates OPT
     stripped = without_opt(served)
     assert _digest(served) == OPT_SERVED_SHA256
     assert _digest(stripped) == X02_SERVED_SHA256
@@ -338,3 +358,21 @@ def test_opts_surface_move_decomposes_onto_x02s(mcp: ModuleType) -> None:
         OPERATIONS[name].mcp_tool
         for name in ("submit_job", "get_job", "list_jobs", "wait_job", "cancel_job", "validate")
     } | {OPERATIONS["get_job_result"].mcp_tool}
+
+
+def test_sts_surface_move_decomposes_onto_opts(mcp: ModuleType) -> None:
+    """ST G12 (ADR 0068, R-1000): the served list is `ST_SERVED_SHA256`; minus ST's tool it is
+    OPT's (`OPT_SERVED_SHA256`, which decomposes onto X02's, MSG's and M04's above). ST added one
+    tool, `get_stream_table`, after `get_artifact`, and moved no other tool at all — name,
+    description, input or output schema."""
+    served = _tools(mcp)
+    stripped = without_st(served)
+    assert _digest(served) == ST_SERVED_SHA256
+    assert _digest(stripped) == OPT_SERVED_SHA256
+    names = [t["name"] for t in served]
+    added = [t for t in served if t["name"] in {OPERATIONS[n].mcp_tool for n in ST_OPERATIONS}]
+    assert [t["name"] for t in added] == ["get_stream_table"]
+    assert names.index("get_stream_table") == names.index("get_artifact") + 1
+    assert [t for t in served if t not in added] == stripped
+    (tool,) = added
+    assert tool["description"] == (DESCRIPTIONS / "get_stream_table.md").read_text("utf-8")

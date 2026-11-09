@@ -1,0 +1,168 @@
+{
+  "work_package": "ST",
+  "commit": "451225195aa30af51de139452c66f462904fa84e",
+  "requirements": [],
+  "status": "tested",
+  "inputs": {
+    "case_id": "ADR 0068 (Accepted 2026-11-08, Frank Peters, with its dated D3 amendment); design docs/design/ST-stream-table.md (gates G1-G16 in 11); review docs/reviews/ST-review.md (fix round, rulings, WO-8a ruling 5, WO-8b ruling 6); register R-1000..R-1006; build decisions docs/ST_DECISIONS.md and docs/ST_HANDOFF.md; corpus F0 RC bundles plus TH-C1 plus one solved revision per basis",
+    "case_hash": "c01832569254fee370b20bdc12e19865170b7bae4015d5f2d70e9c3c9e2030f5",
+    "environment_lock_hash": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+  },
+  "commands": [
+    {
+      "cmd": "CI ci.yml run 42585666096 on wp/ST at 45122519: check (ubuntu-latest), check (ubuntu-24.04-arm), identity, default-install (all success); the check job runs scripts/check.sh",
+      "cwd": "GitHub Actions",
+      "exit_code": 0
+    },
+    {
+      "cmd": "ST_RECORD=scratch.jsonl OMP_NUM_THREADS=1 PYTHONPATH=src .venv/bin/python -m pytest -p no:xdist tests/test_st_*.py -q (serial, worktree copy confirmed; 101 passed in 92 s at the head)",
+      "cwd": ".claude/worktrees/st",
+      "exit_code": 0
+    },
+    {
+      "cmd": "PYTHONPATH=src .venv/bin/python scripts/corpus_identity.py --check (F0 PASS at WO-7, ST_DECISIONS WO-7: M1 50/50, M2-M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 35/35); CI identity job success",
+      "cwd": ".claude/worktrees/st",
+      "exit_code": 0
+    },
+    {
+      "cmd": "no local full gate was run (CLAUDE.md gate by risk, 2026-11-08)",
+      "cwd": ".",
+      "exit_code": 0
+    }
+  ],
+  "checks": [
+    {
+      "id": "ST.G1",
+      "description": "Rankine energy (TH-C1, IAPWS-95): unit closures within their quoted rows; envelope gap within its tolerance; duty signs",
+      "result": "pass",
+      "value": "tests/test_st_core.py::test_g1_rankine_energy_closes_within_the_quoted_rows; max |closure|/tol 1.34e-7 (P; T 3.6e-9; B, C 0); H(S5)-H(S1) 60.72602843907 W against duties 60.72602843893 W, envelope gap 1.4e-10 W (tolerance 1.01e-3); re-run at the head (ST_RECORD); CI ci.yml run 42585666096 on wp/ST at 45122519"
+    },
+    {
+      "id": "ST.G2",
+      "description": "lever rule at S4 (R1) and saturated liquid at S5",
+      "result": "pass",
+      "value": "test_g2_s4_vapour_fraction_is_the_lever_rule: vf_molar equals x_lever 0.9017413551233159 (difference 0.0, bound 2.34e-7); test_g2_s5_saturated_liquid: h gap 0.0, V5/n5 0.0; CI ci.yml run 42585666096 on wp/ST at 45122519"
+    },
+    {
+      "id": "ST.G3",
+      "description": "saturation at 450 K against the S05 reference (O6), relative error at most 1e-7",
+      "result": "pass",
+      "value": "test_g3_saturation_at_450_k_against_the_s05_reference: max relative error 3.80e-10 (VAPOR rho), liquid h 1.0e-10, s 7.9e-11; vf_molar exactly 0.5; CI ci.yml run 42585666096 on wp/ST at 45122519"
+    },
+    {
+      "id": "ST.G4",
+      "description": "limiting cases: dormant stream, single phase, SYN-001 mass against mole fractions",
+      "result": "pass",
+      "value": "test_g4_mass_fractions_equal_mole_fractions_on_syn001: max |w-x| 1.79 eps x (at most 8); 9 dormant streams checked (Q1.A14 a); 9 carried splits (Q1.A15 c); vapour-fraction gap (Q4.A13 d) 1.50 eps (at most 8); CI ci.yml run 42585666096 on wp/ST at 45122519"
+    },
+    {
+      "id": "ST.G5",
+      "description": "absence: null iff an absent key, every code a complete catalogue entry, no NaN or inf, canonical JSON",
+      "result": "pass",
+      "value": "tests/test_st_core.py::test_g5_absence_over_every_corpus_document and test_g5_every_code_is_a_complete_catalogue_entry; catalogue 386 entries, 90 complete (ST_DECISIONS 7-4); CI ci.yml run 42585666096 on wp/ST at 45122519"
+    },
+    {
+      "id": "ST.G6",
+      "description": "consistency: sums to one, substream H sums, R3 phase sums, R1 V+L, Rachford-Rice and y = K x on SYN-001 two-phase streams",
+      "result": "pass",
+      "value": "test_g6_consistency_over_every_corpus_document and test_g6_rachford_rice_on_syn001_two_phase_streams; CI ci.yml run 42585666096 on wp/ST at 45122519"
+    },
+    {
+      "id": "ST.G7",
+      "description": "verifier equivalence, bitwise, same state and context",
+      "result": "pass",
+      "value": "test_g7_verifier_equivalence_bitwise: 41 bitwise (R1 prime streams against _phase_enthalpy); counted and not compared: dormant 9, pr-c1-v1:declared 3, syn001:declared 29, syn001:declared=checks 173, syn001:flash=checks 20, wilson-ig-v2:flash 3; CI ci.yml run 42585666096 on wp/ST at 45122519"
+    },
+    {
+      "id": "ST.G8",
+      "description": "envelope agreement (judged_at final_state bitwise, otherwise within tolerance); G8u unit agreement",
+      "result": "pass",
+      "value": "test_g8_envelope_agreement: 0 failures, max passing gap over tolerance 1.756e-4; test_g8u_unit_agreement: 0 failures, projection max 2.7027 (A02-360, ST equals checks.enthalpy_flow bitwise at the stored state); all 52 corpus runs are judged_at projection, none final_state; ST_DECISIONS fix round S1, WO-7; CI ci.yml run 42585666096 on wp/ST at 45122519"
+    },
+    {
+      "id": "ST.G9",
+      "description": "determinism: in-process twice and fresh processes, identical canonical bytes and sha256",
+      "result": "pass",
+      "value": "tests/test_st_core.py::test_g9_determinism_in_process_and_across_processes; CI ci.yml run 42585666096 on wp/ST at 45122519"
+    },
+    {
+      "id": "ST.G10",
+      "description": "0.3.0 bundles: served documents schema-valid and G5, G6; others refused not_found",
+      "result": "pass",
+      "value": "test_g10_the_v030_bundles and tests/test_st_schema.py::test_g10_every_served_v030_document_validates: 44 served, 8 refused; the 44 served documents are byte-identical at c_7 (ST_DECISIONS WO-7); CI ci.yml run 42585666096 on wp/ST at 45122519"
+    },
+    {
+      "id": "ST.G11",
+      "description": "transports: one document on every transport, each section 6.1 refusal on every transport",
+      "result": "pass",
+      "value": "tests/test_st_operation.py test_g11_* and the three contract tests of design 11 G11; tests/test_st_cli.py; CI ci.yml run 42585666096 on wp/ST at 45122519"
+    },
+    {
+      "id": "ST.G12",
+      "description": "surfaces: MCP digest without the tool equals the pre-ST digest; R4-G3 snapshots and API_EXIT_CODES unchanged; schema diff only registry.json and the new file",
+      "result": "pass",
+      "value": "served digest D_7 553b7612 (surface link c_7, R-1000), without_st = D_6 3fdc797a exactly (ST_DECISIONS WO-7); R4-G3 no-weakening tests in the CI check job; CI ci.yml run 42585666096 on wp/ST at 45122519"
+    },
+    {
+      "id": "ST.G13",
+      "description": "identity: corpus_identity --check PASS; no diff under verify, thermo, models, run, orchestrator, compiled.py",
+      "result": "pass",
+      "value": "scripts/corpus_identity.py --check PASS at WO-7 (M1 50/50, M2-M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 35/35; ST_DECISIONS WO-7); CI identity job success; no diff under the verifier, thermo, models, run, orchestrator, compiled.py against 6f55fc19 (ST_DECISIONS fix round)"
+    },
+    {
+      "id": "ST.G14",
+      "description": "performance: at most 0.5 s on TH-C1 and 2 s on the largest corpus case, recorded",
+      "result": "pass",
+      "value": "test_g14_performance, re-run at the head on ref-x86-64 (TRS2): TH-C1 0.0156 s; largest g8/SYN-001-T06-NET03 0.0086 s"
+    },
+    {
+      "id": "ST.G15",
+      "description": "C3: MSG runtime audit passes with ST's emissions",
+      "result": "pass",
+      "value": "tests/test_st_core.py::test_g15_an_emitted_code_reaches_the_runtime_audit; MSG WO-5a, WO-6 audits in the same run; CI ci.yml run 42585666096 on wp/ST at 45122519"
+    },
+    {
+      "id": "ST.G16",
+      "description": "report decision near a phase boundary, Q4.A15 (a)-(e), counts of (e) recorded",
+      "result": "pass",
+      "value": "test_g16_a (bubble achieved/tol 8.9e-3, dew 3.9e-3), g16_b, g16_c (R1 prime on the carried split; unlifted stream gives no number); (e) test_g16_e_the_corpus_decisions: syn001 r3 30, flagged 0, disagreeing 0, max measure 9.3e-12; pr-c1-v1 r3 0, flagged 0; ruling 5: 2 declared with a products-style row, 2 R1 prime, 0 no-number; CI ci.yml run 42585666096 on wp/ST at 45122519"
+    },
+    {
+      "id": "ST.FULLGATE",
+      "description": "full local gate (scripts/gate.sh) not run by choice; the merge condition is CI green on x86-64 and aarch64 (CLAUDE.md gate by risk, 2026-11-08)",
+      "result": "unsupported",
+      "value": {
+        "full_gate": "not run (not required); stays unsupported",
+        "ci": "CI ci.yml run 42585666096 on wp/ST at 45122519: check (ubuntu-latest), check (ubuntu-24.04-arm), identity, default-install success"
+      }
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "docs/design/ST-stream-table.md",
+      "sha256": "c01832569254fee370b20bdc12e19865170b7bae4015d5f2d70e9c3c9e2030f5",
+      "description": "design note, gates G1-G16"
+    },
+    {
+      "path": "docs/adr/0068-stream-table.md",
+      "sha256": "e1331c4dd0fc21ef30c4532bd20749ebdbe4ef0a044dc46ed76b46264d96c6a8",
+      "description": "ADR 0068, Accepted 2026-11-08, with the D3 amendment"
+    },
+    {
+      "path": "docs/ST_DECISIONS.md",
+      "sha256": "7f0d524b44ab2dfd3a2fe999621fcefa9d2dac9f5773540236936c63f6dbd632",
+      "description": "build decisions and measured numbers (fix round, WO-8a, WO-8b, CI-1, CI-2, WO-7)"
+    }
+  ],
+  "limitations": [
+    "Evidence class: software verification with independent expectations where stated (G1 duties, G2 lever rule, G3 S05 reference); the stream table is a derived report, not a verification: all 52 corpus runs are judged_at projection, so G8u reports ratios only (max 2.7027, A02-360) and no run is judged at final_state. Status tested, not reviewed: no reviewed status is claimed by the build lane.",
+    "Open design-lane defaults, applied and logged (ST_HANDOFF): M1-1 (a no-split flagged stream keeps phase_source flash, flag false), M1-2 (the R1 prime mixture-h provider uses n times h as the gamma-phi phase flow), M1-3 (Q4.R12 (b)(ii) dropped as dead), S1-1 (G8u compares only energy_balance of the unit). Fact: a flagged undeclared products-style feed would get flash_failed though the verifier flashes it; no corpus or served case.",
+    "Review notes left as notes, no action ordered (docs/ST_HANDOFF.md, Not done): untyped exceptions give internal_error; the null reason of _quote; the R1 empty-split refusal; the section 4.4 dormant-row sentence; paging cost is not measured.",
+    "The ADR 0068 D3 amendment (2026-11-08) awaits Frank's glance on the decision board; the default stands.",
+    "No local full gate was run; the merge condition is CI green on both architectures (CI run 42585666096 at 45122519). G13 and G12 numbers are those logged at WO-7; G1-G4, G7, G8, G10, G14 and G16 values were re-run at the head."
+  ],
+  "review": {
+    "numerical": "pending",
+    "process_model": "pending"
+  }
+}

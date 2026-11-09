@@ -5,11 +5,15 @@
 // bundle's best checkpoint); `inspect_structure` of the run's revision and `list_models`. Every
 // value is shown in the SI unit its column names (no conversion). Each value links to the rows
 // incident on its column when the run's equation structure is the server's current one (§6.5).
+// Below the streams, ST's stream table (`get_stream_table`, ADR 0068; Frank's O3): phase
+// fractions, per-phase flows and enthalpy flows as the operation returns them, each null shown
+// with the operation's reason for it; a refusal is shown, and the rest of the screen stays.
 
 import { h } from "../h.js";
+import { ENERGY_COLUMNS, QUANTITY_COLUMNS, streamTableView } from "../model/stream-table.js";
 import { modelSignature, streamTable, unitPanel } from "../model/streams.js";
 import { link } from "../router.js";
-import { DASH, fmt } from "../text.js";
+import { DASH, explained, fmt, pill } from "../text.js";
 import { phaseSection, runStructure } from "./certificate.js";
 import {
   digestBanner,
@@ -18,6 +22,7 @@ import {
   heading,
   id,
   none,
+  numCell,
   readMember,
   runBundle,
   runLinks,
@@ -39,7 +44,20 @@ export async function load(params, api) {
     state === null ? await readMember(api, bundle, "failure-bundle.json", { signal }) : null;
   const rows = await runStructure(api, bundle, bundle.run, { signal });
   const models = await api.call("list_models", {}, { signal });
-  return { jid, run: bundle.run, revision, state, certificate, failure, rows, models };
+  const stream = await streamTableOf(api, jid, signal);
+  return { jid, run: bundle.run, revision, state, certificate, failure, rows, models, stream };
+}
+
+// `get_stream_table` read whole (the operation pages its document; `readWhole` follows every
+// cursor and elision): `{document}`, or `{refused}` with the server's `ApiError` document when it
+// gives none for this run (no solution state, a basis this installation cannot evaluate, …).
+async function streamTableOf(api, jid, signal) {
+  try {
+    return { document: await api.readWhole("get_stream_table", { job_id: jid }, { signal }), refused: null };
+  } catch (error) {
+    if (error?.document && error.status !== 401) return { document: null, refused: error.document };
+    throw error;
+  }
 }
 
 // A value cell: the number in the current mode (full value as title), the unit, and — when the
@@ -144,6 +162,7 @@ export function view(data) {
         ]),
       ),
     ),
+    streamTableSection(data.stream),
     section(
       "Units",
       (revision?.instances ?? []).map((instance) => {
@@ -185,6 +204,95 @@ export function view(data) {
     section(
       "Phase splits",
       data.certificate ? phaseSection(data.certificate.document, data.revision) : none(),
+    ),
+  );
+}
+
+// --------------------------------------------------------------------------- stream table
+
+function headerOf(column) {
+  return { text: column.unit ? `${column.member} (${column.unit})` : column.member, num: true };
+}
+
+// A cell of the stream table: a number in the current mode, a null with its reason's footnote
+// mark (the reason's code as its title), or "not applicable" where the row has no such member.
+function stCell(cell) {
+  if (cell === null) return h("td", { class: "num muted", title: "not applicable" }, DASH);
+  if (cell.absent) {
+    return h(
+      "td",
+      { class: "num muted", title: cell.absent.text, "data-ofs-absent": cell.absent.text },
+      DASH,
+      h("sup", null, `*${cell.absent.mark}`),
+    );
+  }
+  return numCell(cell.value);
+}
+
+function refusedNotice(refused) {
+  return h(
+    "div",
+    { class: "notice", "data-ofs-stream-table-refused": String(refused.code ?? "") },
+    h("p", null, `The server gives no stream table for this run: ${refused.code}: ${refused.message}`),
+    explained(refused.detail?.explanation),
+  );
+}
+
+export function streamTableSection(stream) {
+  if (stream === null || stream === undefined) return null;
+  if (stream.document === null) return section("Stream table", refusedNotice(stream.refused));
+  const document = stream.document;
+  const view = streamTableView(document);
+  return section(
+    "Stream table",
+    h(
+      "div",
+      { "data-ofs-stream-table": "1" },
+      facts([
+        ["verification_status", pill(document.verification_status)],
+        ["judged_at", text(document.judged_at)],
+        ["property basis", id(document.basis?.provider_id)],
+        ["convention", text(document.basis?.convention)],
+        ["phase rule", text(document.evaluator?.phase_rule)],
+      ]),
+      view.warning === null
+        ? null
+        : h(
+            "p",
+            { class: "notice notice-bad", "data-ofs-stream-table-warning": view.warning },
+            `The run's verification status is ${view.warning}: the table shows the stored state as it is.`,
+          ),
+      view.flashFailures.map((note) =>
+        h("p", { class: "notice", "data-ofs-flash-failed": String(note.entry.params?.stream ?? "") }, note.plain),
+      ),
+      table(
+        ["stream", "phase", "phase_source", "near phase boundary", ...QUANTITY_COLUMNS.map(headerOf)],
+        view.rows.map((row) => [
+          id(row.stream),
+          row.phase,
+          row.total ? text(row.phaseSource) : DASH,
+          row.total ? (row.nearBoundary ? "yes" : "no") : DASH,
+          ...QUANTITY_COLUMNS.map((column) => stCell(row.cells[column.member])),
+        ]),
+      ),
+      h("h3", null, "Energy"),
+      table(
+        ["unit", "model", ...ENERGY_COLUMNS.map((member) => ({ text: `${member} (W)`, num: true }))],
+        view.energy.map((row) => [
+          id(row.subject),
+          text(row.model),
+          ...ENERGY_COLUMNS.map((member) => stCell(row.cells[member])),
+        ]),
+      ),
+      view.notes.length === 0
+        ? null
+        : h(
+            "ol",
+            { "data-ofs-stream-table-notes": String(view.notes.length) },
+            view.notes.map((note) =>
+              h("li", null, `*${note.mark} `, note.plain ? `${note.plain} ` : null, h("code", null, note.text)),
+            ),
+          ),
     ),
   );
 }

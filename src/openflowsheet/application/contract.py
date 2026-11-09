@@ -181,7 +181,8 @@ class Inspection(Protocol):
     Every method is read-only (`read`); every document comes back as a bounded `Projection`.
     `list_audit` is ADR 0019 Amendment 3's (A3.3): the audit, by `seq`; another principal's rows,
     or all principals', need `policy` as well. `explain` is ADR 0058 D7's: a message-catalogue
-    entry, which reads no project state."""
+    entry, which reads no project state. `get_stream_table` is ADR 0068's (ADR 0019 Amendment
+    13): an ended job's stream table and energy summary, computed on read from its bundle."""
 
     def get_project(self) -> ProjectSummary: ...
 
@@ -223,6 +224,16 @@ class Inspection(Protocol):
         *,
         pointer: str = "",
         depth: int = 4,
+        cursor: str | None = None,
+        limit: int = 50,
+    ) -> Projection: ...
+
+    def get_stream_table(
+        self,
+        job_id: str,
+        *,
+        pointer: str = "",
+        depth: int = 12,
         cursor: str | None = None,
         limit: int = 50,
     ) -> Projection: ...

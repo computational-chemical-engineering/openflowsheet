@@ -1,0 +1,1673 @@
+{
+ "basis": {
+  "convention": "SYN-001-ref-v1",
+  "data_sha256": "44f894ff62f9d4c4d755b146cb1486f3ccc09ddba635982eff1caf8c16f95400",
+  "implementation_sha256": "4e4c37cc8054c7da12965cba80494be5666053e3bf817446053ebdeb8d6a04e7",
+  "provider_id": "syn001",
+  "record_source": "benchmarks/syn001/components.yaml"
+ },
+ "certificate_id": "cert-2b2b3c63e01d",
+ "components": [
+  {
+   "id": "A",
+   "molar_mass": 0.1
+  },
+  {
+   "id": "B",
+   "molar_mass": 0.1
+  },
+  {
+   "id": "C",
+   "molar_mass": 0.1
+  }
+ ],
+ "energy": {
+  "convention": "SYN-001-ref-v1",
+  "overall": {
+   "H_feeds": 0.0,
+   "H_products": 56338.06944674353,
+   "Q": 56338.069446743524,
+   "W": 0.0,
+   "absent": {},
+   "checks": [
+    {
+     "id": "energy_balance.envelope",
+     "index": 80,
+     "near_threshold": false,
+     "reason": "",
+     "result": "pass",
+     "scope": "evaluated",
+     "tolerance": 0.00101,
+     "value": 0
+    }
+   ],
+   "closure": -7.275957614183426e-12,
+   "feeds": [
+    "S1"
+   ],
+   "products": [
+    "S4",
+    "S7"
+   ]
+  },
+  "units": [
+   {
+    "H_in": 0.0,
+    "H_out": 0.0,
+    "Q": 0.0,
+    "W": 0.0,
+    "absent": {},
+    "checks": [
+     {
+      "id": "energy_balance.mixer",
+      "index": 76,
+      "near_threshold": false,
+      "reason": "",
+      "result": "pass",
+      "scope": "evaluated",
+      "tolerance": 0.00101,
+      "value": 0
+     }
+    ],
+    "closure": 0.0,
+    "id": "mixer",
+    "model": "syn001.adiabatic_mixer",
+    "ports": [
+     {
+      "H_flow": 0.0,
+      "absent": {},
+      "direction": "inlet",
+      "port": "inlet",
+      "streams": [
+       "S1",
+       "S6"
+      ]
+     },
+     {
+      "H_flow": 0.0,
+      "absent": {},
+      "direction": "outlet",
+      "port": "outlet",
+      "streams": [
+       "S2"
+      ]
+     }
+    ]
+   },
+   {
+    "H_in": 0.0,
+    "H_out": 23237.850393068577,
+    "Q": 23237.850393068577,
+    "W": 0.0,
+    "absent": {},
+    "checks": [
+     {
+      "id": "energy_balance.heater",
+      "index": 77,
+      "near_threshold": false,
+      "reason": "",
+      "result": "pass",
+      "scope": "evaluated",
+      "tolerance": 0.00101,
+      "value": 9.313225746154785e-10
+     }
+    ],
+    "closure": 0.0,
+    "id": "heater",
+    "model": "syn001.tp_heater",
+    "ports": [
+     {
+      "H_flow": 0.0,
+      "absent": {},
+      "direction": "inlet",
+      "port": "inlet",
+      "streams": [
+       "S2"
+      ]
+     },
+     {
+      "H_flow": 23237.850393068577,
+      "absent": {},
+      "direction": "outlet",
+      "port": "outlet",
+      "streams": [
+       "S3"
+      ]
+     }
+    ]
+   },
+   {
+    "H_in": 23237.850393068577,
+    "H_out": 56338.06944674353,
+    "Q": 33100.21905367495,
+    "W": 0.0,
+    "absent": {},
+    "checks": [
+     {
+      "id": "energy_balance.flash",
+      "index": 78,
+      "near_threshold": false,
+      "reason": "",
+      "result": "pass",
+      "scope": "evaluated",
+      "tolerance": 0.00101,
+      "value": -9.295035852119327e-10
+     }
+    ],
+    "closure": -7.275957614183426e-12,
+    "id": "flash",
+    "model": "syn001.tp_flash",
+    "ports": [
+     {
+      "H_flow": 23237.850393068577,
+      "absent": {},
+      "direction": "inlet",
+      "port": "inlet",
+      "streams": [
+       "S3"
+      ]
+     },
+     {
+      "H_flow": 46502.92386208244,
+      "absent": {},
+      "direction": "outlet",
+      "port": "vapor",
+      "streams": [
+       "S4"
+      ]
+     },
+     {
+      "H_flow": 9835.14558466109,
+      "absent": {},
+      "direction": "outlet",
+      "port": "liquid",
+      "streams": [
+       "S5"
+      ]
+     }
+    ]
+   },
+   {
+    "H_in": 9835.14558466109,
+    "H_out": 9835.14558466109,
+    "Q": 0.0,
+    "W": 0.0,
+    "absent": {},
+    "checks": [
+     {
+      "id": "energy_balance.splitter",
+      "index": 79,
+      "near_threshold": false,
+      "reason": "",
+      "result": "pass",
+      "scope": "evaluated",
+      "tolerance": 0.00101,
+      "value": 0
+     }
+    ],
+    "closure": 0.0,
+    "id": "splitter",
+    "model": "syn001.stream_splitter",
+    "ports": [
+     {
+      "H_flow": 9835.14558466109,
+      "absent": {},
+      "direction": "inlet",
+      "port": "inlet",
+      "streams": [
+       "S5"
+      ]
+     },
+     {
+      "H_flow": 0.0,
+      "absent": {},
+      "direction": "outlet",
+      "port": "recycle",
+      "streams": [
+       "S6"
+      ]
+     },
+     {
+      "H_flow": 9835.14558466109,
+      "absent": {},
+      "direction": "outlet",
+      "port": "purge",
+      "streams": [
+       "S7"
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ "evaluator": {
+  "package_version": "0.4.0.dev0",
+  "phase_rule": "st-phase-rule-v1"
+ },
+ "judged_at": "projection",
+ "schema_version": "stream-table-v1",
+ "source": {
+  "bundle_id": null,
+  "job_id": null,
+  "revision_id": "SYN-001-once-through-r1",
+  "run_id": "run-SYN-001-once-through"
+ },
+ "state_sha256": "2b2b3c63e01dec77083f2862437242b645b4e8d173ba69dc7f557be4b841d773",
+ "streams": [
+  {
+   "P": 100000.0,
+   "T": 300.0,
+   "absent": {},
+   "checks": [
+    {
+     "id": "phase_admissibility.mixer.inlet.S1",
+     "index": 142,
+     "near_threshold": false,
+     "reason": "",
+     "result": "pass",
+     "scope": "evaluated",
+     "tolerance": 1e-06,
+     "value": 0
+    }
+   ],
+   "dormant": false,
+   "from": "feed",
+   "id": "S1",
+   "substreams": [
+    {
+     "H_flow": 0.0,
+     "S_flow": null,
+     "V_flow": null,
+     "absent": {
+      "S_flow": {
+       "code": "property_not_provided",
+       "params": {
+        "property": "s",
+        "provider": "syn001"
+       }
+      },
+      "V_flow": {
+       "code": "property_not_provided",
+       "params": {
+        "property": "v",
+        "provider": "syn001"
+       }
+      },
+      "rho": {
+       "code": "property_not_provided",
+       "params": {
+        "property": "v",
+        "provider": "syn001"
+       }
+      },
+      "s": {
+       "code": "property_not_provided",
+       "params": {
+        "property": "s",
+        "provider": "syn001"
+       }
+      },
+      "s_mass": {
+       "code": "property_not_provided",
+       "params": {
+        "property": "s",
+        "provider": "syn001"
+       }
+      }
+     },
+     "components": [
+      "A",
+      "B",
+      "C"
+     ],
+     "convention": "SYN-001-ref-v1",
+     "flash_near_phase_boundary": false,
+     "h": 0.0,
+     "h_mass": 0.0,
+     "id": "mixed",
+     "kind": "mixed",
+     "m": [
+      0.1,
+      0.1,
+      0.1
+     ],
+     "m_total": 0.30000000000000004,
+     "n": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "n_total": 3.0,
+     "phase_source": "declared",
+     "phases": [
+      {
+       "H_flow": 0.0,
+       "S_flow": null,
+       "V_flow": null,
+       "absent": {
+        "S_flow": {
+         "code": "property_not_provided",
+         "params": {
+          "property": "s",
+          "provider": "syn001"
+         }
+        },
+        "V_flow": {
+         "code": "property_not_provided",
+         "params": {
+          "property": "v",
+          "provider": "syn001"
+         }
+        },
+        "rho": {
+         "code": "property_not_provided",
+         "params": {
+          "property": "v",
+          "provider": "syn001"
+         }
+        },
+        "s": {
+         "code": "property_not_provided",
+         "params": {
+          "property": "s",
+          "provider": "syn001"
+         }
+        },
+        "s_mass": {
+         "code": "property_not_provided",
+         "params": {
+          "property": "s",
+          "provider": "syn001"
+         }
+        },
+        "v": {
+         "code": "property_not_provided",
+         "params": {
+          "property": "v",
+          "provider": "syn001"
+         }
+        }
+       },
+       "h": 0.0,
+       "h_mass": 0.0,
+       "id": {
+        "family": "LIQUID",
+        "ordinal": 1,
+        "qualifier": null
+       },
+       "m": [
+        0.1,
+        0.1,
+        0.1
+       ],
+       "m_total": 0.30000000000000004,
+       "n": [
+        1.0,
+        1.0,
+        1.0
+       ],
+       "n_total": 3.0,
+       "phase_fraction_mass": 1.0,
+       "phase_fraction_molar": 1.0,
+       "rho": null,
+       "s": null,
+       "s_mass": null,
+       "v": null,
+       "w": [
+        0.3333333333333333,
+        0.3333333333333333,
+        0.3333333333333333
+       ],
+       "x": [
+        0.3333333333333333,
+        0.3333333333333333,
+        0.3333333333333333
+       ]
+      }
+     ],
+     "rho": null,
+     "s": null,
+     "s_mass": null,
+     "vapor_fraction_mass": 0.0,
+     "vapor_fraction_molar": 0.0,
+     "w": [
+      0.3333333333333333,
+      0.3333333333333333,
+      0.3333333333333333
+     ],
+     "x": [
+      0.3333333333333333,
+      0.3333333333333333,
+      0.3333333333333333
+     ]
+    }
+   ],
+   "to": "mixer"
+  },
+  {
+   "P": 100000.0,
+   "T": 300.0,
+   "absent": {},
+   "checks": [
+    {
+     "id": "phase_admissibility.mixer.outlet",
+     "index": 144,
+     "near_threshold": false,
+     "reason": "",
+     "result": "pass",
+     "scope": "evaluated",
+     "tolerance": 1e-06,
+     "value": 0
+    },
+    {
+     "id": "phase_admissibility.heater.inlet",
+     "index": 145,
+     "near_threshold": false,
+     "reason": "",
+     "result": "pass",
+     "scope": "evaluated",
+     "tolerance": 1e-06,
+     "value": 0
+    }
+   ],
+   "dormant": false,
+   "from": "mixer",
+   "id": "S2",
+   "substreams": [
+    {
+     "H_flow": 0.0,
+     "S_flow": null,
+     "V_flow": null,
+     "absent": {
+      "S_flow": {
+       "code": "property_not_provided",
+       "params": {
+        "property": "s",
+        "provider": "syn001"
+       }
+      },
+      "V_flow": {
+       "code": "property_not_provided",
+       "params": {
+        "property": "v",
+        "provider": "syn001"
+       }
+      },
+      "rho": {
+       "code": "property_not_provided",
+       "params": {
+        "property": "v",
+        "provider": "syn001"
+       }
+      },
+      "s": {
+       "code": "property_not_provided",
+       "params": {
+        "property": "s",
+        "provider": "syn001"
+       }
+      },
+      "s_mass": {
+       "code": "property_not_provided",
+       "params": {
+        "property": "s",
+        "provider": "syn001"
+       }
+      }
+     },
+     "components": [
+      "A",
+      "B",
+      "C"
+     ],
+     "convention": "SYN-001-ref-v1",
+     "flash_near_phase_boundary": false,
+     "h": 0.0,
+     "h_mass": 0.0,
+     "id": "mixed",
+     "kind": "mixed",
+     "m": [
+      0.1,
+      0.1,
+      0.1
+     ],
+     "m_total": 0.30000000000000004,
+     "n": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "n_total": 3.0,
+     "phase_source": "declared",
+     "phases": [
+      {
+       "H_flow": 0.0,
+       "S_flow": null,
+       "V_flow": null,
+       "absent": {
+        "S_flow": {
+         "code": "property_not_provided",
+         "params": {
+          "property": "s",
+          "provider": "syn001"
+         }
+        },
+        "V_flow": {
+         "code": "property_not_provided",
+         "params": {
+          "property": "v",
+          "provider": "syn001"
+         }
+        },
+        "rho": {
+         "code": "property_not_provided",
+         "params": {
+          "property": "v",
+          "provider": "syn001"
+         }
+        },
+        "s": {
+         "code": "property_not_provided",
+         "params": {
+          "property": "s",
+          "provider": "syn001"
+         }
+        },
+        "s_mass": {
+         "code": "property_not_provided",
+         "params": {
+          "property": "s",
+          "provider": "syn001"
+         }
+        },
+        "v": {
+         "code": "property_not_provided",
+         "params": {
+          "property": "v",
+          "provider": "syn001"
+         }
+        }
+       },
+       "h": 0.0,
+       "h_mass": 0.0,
+       "id": {
+        "family": "LIQUID",
+        "ordinal": 1,
+        "qualifier": null
+       },
+       "m": [
+        0.1,
+        0.1,
+        0.1
+       ],
+       "m_total": 0.30000000000000004,
+       "n": [
+        1.0,
+        1.0,
+        1.0
+       ],
+       "n_total": 3.0,
+       "phase_fraction_mass": 1.0,
+       "phase_fraction_molar": 1.0,
+       "rho": null,
+       "s": null,
+       "s_mass": null,
+       "v": null,
+       "w": [
+        0.3333333333333333,
+        0.3333333333333333,
+        0.3333333333333333
+       ],
+       "x": [
+        0.3333333333333333,
+        0.3333333333333333,
+        0.3333333333333333
+       ]
+      }
+     ],
+     "rho": null,
+     "s": null,
+     "s_mass": null,
+     "vapor_fraction_mass": 0.0,
+     "vapor_fraction_molar": 0.0,
+     "w": [
+      0.3333333333333333,
+      0.3333333333333333,
+      0.3333333333333333
+     ],
+     "x": [
+      0.3333333333333333,
+      0.3333333333333333,
+      0.3333333333333333
+     ]
+    }
+   ],
+   "to": "heater"
+  },
+  {
+   "P": 100000.0,
+   "T": 350.0,
+   "absent": {},
+   "checks": [
+    {
+     "id": "phase_admissibility.heater.S3.closure",
+     "index": 132,
+     "near_threshold": false,
+     "reason": "",
+     "result": "pass",
+     "scope": "evaluated",
+     "tolerance": 1e-06,
+     "value": 0
+    },
+    {
+     "id": "independent_split.heater.S3.total",
+     "index": 133,
+     "near_threshold": false,
+     "reason": "",
+     "result": "pass",
+     "scope": "evaluated",
+     "tolerance": 3.1000000000000006e-08,
+     "value": 3.425038030968608e-14
+    },
+    {
+     "id": "independent_split.heater.S3.A",
+     "index": 134,
+     "near_threshold": false,
+     "reason": "",
+     "result": "pass",
+     "scope": "evaluated",
+     "tolerance": 3.1000000000000006e-08,
+     "value": 2.148281552649678e-14
+    },
+    {
+     "id": "independent_split.heater.S3.B",
+     "index": 135,
+     "near_threshold": false,
+     "reason": "",
+     "result": "pass",
+     "scope": "evaluated",
+     "tolerance": 3.1000000000000006e-08,
+     "value": 9.617306950815419e-15
+    },
+    {
+     "id": "independent_split.heater.S3.C",
+     "index": 136,
+     "near_threshold": false,
+     "reason": "",
+     "result": "pass",
+     "scope": "evaluated",
+     "tolerance": 3.1000000000000006e-08,
+     "value": 3.191891195797325e-15
+    },
+    {
+     "id": "phase_admissibility.flash.S3.closure",
+     "index": 137,
+     "near_threshold": false,
+     "reason": "",
+     "result": "pass",
+     "scope": "evaluated",
+     "tolerance": 1e-06,
+     "value": 0
+    },
+    {
+     "id": "independent_split.flash.S3.total",
+     "index": 138,
+     "near_threshold": false,
+     "reason": "",
+     "result": "pass",
+     "scope": "evaluated",
+     "tolerance": 3.1000000000000006e-08,
+     "value": 0
+    },
+    {
+     "id": "independent_split.flash.S3.A",
+     "index": 139,
+     "near_threshold": false,
+     "reason": "",
+     "result": "pass",
+     "scope": "evaluated",
+     "tolerance": 3.1000000000000006e-08,
+     "value": 0
+    },
+    {
+     "id": "independent_split.flash.S3.B",
+     "index": 140,
+     "near_threshold": false,
+     "reason": "",
+     "result": "pass",
+     "scope": "evaluated",
+     "tolerance": 3.1000000000000006e-08,
+     "value": -5.551115123125783e-17
+    },
+    {
+     "id": "independent_split.flash.S3.C",
+     "index": 141,
+     "near_threshold": false,
+     "reason": "",
+     "result": "pass",
+     "scope": "evaluated",
+     "tolerance": 3.1000000000000006e-08,
+     "value": -5.551115123125783e-17
+    }
+   ],
+   "dormant": false,
+   "from": "heater",
+   "id": "S3",
+   "substreams": [
+    {
+     "H_flow": 23237.850393068577,
+     "S_flow": null,
+     "V_flow": null,
+     "absent": {
+      "S_flow": {
+       "code": "property_not_provided",
+       "params": {
+        "property": "s",
+        "provider": "syn001"
+       }
+      },
+      "V_flow": {
+       "code": "property_not_provided",
+       "params": {
+        "property": "v",
+        "provider": "syn001"
+       }
+      },
+      "rho": {
+       "code": "property_not_provided",
+       "params": {
+        "property": "v",
+        "provider": "syn001"
+       }
+      },
+      "s": {
+       "code": "property_not_provided",
+       "params": {
+        "property": "s",
+        "provider": "syn001"
+       }
+      },
+      "s_mass": {
+       "code": "property_not_provided",
+       "params": {
+        "property": "s",
+        "provider": "syn001"
+       }
+      }
+     },
+     "components": [
+      "A",
+      "B",
+      "C"
+     ],
+     "convention": "SYN-001-ref-v1",
+     "flash_near_phase_boundary": false,
+     "h": 7745.950131022859,
+     "h_mass": 77459.50131022857,
+     "id": "mixed",
+     "kind": "mixed",
+     "m": [
+      0.1,
+      0.1,
+      0.1
+     ],
+     "m_total": 0.30000000000000004,
+     "n": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "n_total": 3.0,
+     "phase_source": "flash",
+     "phases": [
+      {
+       "H_flow": 9758.38124446933,
+       "S_flow": null,
+       "V_flow": null,
+       "absent": {
+        "S_flow": {
+         "code": "property_not_provided",
+         "params": {
+          "property": "s",
+          "provider": "syn001"
+         }
+        },
+        "V_flow": {
+         "code": "property_not_provided",
+         "params": {
+          "property": "v",
+          "provider": "syn001"
+         }
+        },
+        "rho": {
+         "code": "property_not_provided",
+         "params": {
+          "property": "v",
+          "provider": "syn001"
+         }
+        },
+        "s": {
+         "code": "property_not_provided",
+         "params": {
+          "property": "s",
+          "provider": "syn001"
+         }
+        },
+        "s_mass": {
+         "code": "property_not_provided",
+         "params": {
+          "property": "s",
+          "provider": "syn001"
+         }
+        },
+        "v": {
+         "code": "property_not_provided",
+         "params": {
+          "property": "v",
+          "provider": "syn001"
+         }
+        }
+       },
+       "h": 32088.73149623908,
+       "h_mass": 320887.31496239075,
+       "id": {
+        "family": "VAPOR",
+        "ordinal": 1,
+        "qualifier": null
+       },
+       "m": [
+        0.020153742984783368,
+        0.007809825365167575,
+        0.002447048678064172
+       ],
+       "m_total": 0.030410617028015115,
+       "n": [
+        0.20153742984783365,
+        0.07809825365167575,
+        0.024470486780641718
+       ],
+       "n_total": 0.30410617028015113,
+       "phase_fraction_mass": 0.10136872342671706,
+       "phase_fraction_molar": 0.10136872342671704,
+       "rho": null,
+       "s": null,
+       "s_mass": null,
+       "v": null,
+       "w": [
+        0.6627206204404591,
+        0.25681245987126616,
+        0.08046691968827471
+       ],
+       "x": [
+        0.6627206204404591,
+        0.25681245987126616,
+        0.08046691968827471
+       ]
+      },
+      {
+       "H_flow": 13479.469148599244,
+       "S_flow": null,
+       "V_flow": null,
+       "absent": {
+        "S_flow": {
+         "code": "property_not_provided",
+         "params": {
+          "property": "s",
+          "provider": "syn001"
+         }
+        },
+        "V_flow": {
+         "code": "property_not_provided",
+         "params": {
+          "property": "v",
+          "provider": "syn001"
+         }
+        },
+        "rho": {
+         "code": "property_not_provided",
+         "params": {
+          "property": "v",
+          "provider": "syn001"
+         }
+        },
+        "s": {
+         "code": "property_not_provided",
+         "params": {
+          "property": "s",
+          "provider": "syn001"
+         }
+        },
+        "s_mass": {
+         "code": "property_not_provided",
+         "params": {
+          "property": "s",
+          "provider": "syn001"
+         }
+        },
+        "v": {
+         "code": "property_not_provided",
+         "params": {
+          "property": "v",
+          "provider": "syn001"
+         }
+        }
+       },
+       "h": 5000.0,
+       "h_mass": 50000.0,
+       "id": {
+        "family": "LIQUID",
+        "ordinal": 1,
+        "qualifier": null
+       },
+       "m": [
+        0.07984625701521664,
+        0.09219017463483242,
+        0.09755295132193582
+       ],
+       "m_total": 0.26958938297198487,
+       "n": [
+        0.7984625701521664,
+        0.9219017463483241,
+        0.9755295132193582
+       ],
+       "n_total": 2.6958938297198487,
+       "phase_fraction_mass": 0.8986312765732829,
+       "phase_fraction_molar": 0.8986312765732829,
+       "rho": null,
+       "s": null,
+       "s_mass": null,
+       "v": null,
+       "w": [
+        0.2961773054078843,
+        0.34196515314704595,
+        0.3618575414450699
+       ],
+       "x": [
+        0.2961773054078843,
+        0.3419651531470459,
+        0.3618575414450698
+       ]
+      }
+     ],
+     "rho": null,
+     "s": null,
+     "s_mass": null,
+     "vapor_fraction_mass": 0.10136872342671706,
+     "vapor_fraction_molar": 0.10136872342671704,
+     "w": [
+      0.3333333333333333,
+      0.3333333333333333,
+      0.3333333333333333
+     ],
+     "x": [
+      0.3333333333333333,
+      0.3333333333333333,
+      0.3333333333333333
+     ]
+    }
+   ],
+   "to": "flash"
+  },
+  {
+   "P": 100000.0,
+   "T": 360.0,
+   "absent": {},
+   "checks": [],
+   "dormant": false,
+   "from": "flash",
+   "id": "S4",
+   "substreams": [
+    {
+     "H_flow": 46502.92386208244,
+     "S_flow": null,
+     "V_flow": null,
+     "absent": {
+      "S_flow": {
+       "code": "property_not_provided",
+       "params": {
+        "property": "s",
+        "provider": "syn001"
+       }
+      },
+      "V_flow": {
+       "code": "property_not_provided",
+       "params": {
+        "property": "v",
+        "provider": "syn001"
+       }
+      },
+      "rho": {
+       "code": "property_not_provided",
+       "params": {
+        "property": "v",
+        "provider": "syn001"
+       }
+      },
+      "s": {
+       "code": "property_not_provided",
+       "params": {
+        "property": "s",
+        "provider": "syn001"
+       }
+      },
+      "s_mass": {
+       "code": "property_not_provided",
+       "params": {
+        "property": "s",
+        "provider": "syn001"
+       }
+      }
+     },
+     "components": [
+      "A",
+      "B",
+      "C"
+     ],
+     "convention": "SYN-001-ref-v1",
+     "flash_near_phase_boundary": false,
+     "h": 34172.996722185046,
+     "h_mass": 341729.9672218504,
+     "id": "mixed",
+     "kind": "mixed",
+     "m": [
+      0.0702223286069486,
+      0.0453603023074384,
+      0.02049827600792817
+     ],
+     "m_total": 0.13608090692231517,
+     "n": [
+      0.702223286069486,
+      0.45360302307438394,
+      0.2049827600792817
+     ],
+     "n_total": 1.3608090692231516,
+     "phase_source": "declared",
+     "phases": [
+      {
+       "H_flow": 46502.92386208244,
+       "S_flow": null,
+       "V_flow": null,
+       "absent": {
+        "S_flow": {
+         "code": "property_not_provided",
+         "params": {
+          "property": "s",
+          "provider": "syn001"
+         }
+        },
+        "V_flow": {
+         "code": "property_not_provided",
+         "params": {
+          "property": "v",
+          "provider": "syn001"
+         }
+        },
+        "rho": {
+         "code": "property_not_provided",
+         "params": {
+          "property": "v",
+          "provider": "syn001"
+         }
+        },
+        "s": {
+         "code": "property_not_provided",
+         "params": {
+          "property": "s",
+          "provider": "syn001"
+         }
+        },
+        "s_mass": {
+         "code": "property_not_provided",
+         "params": {
+          "property": "s",
+          "provider": "syn001"
+         }
+        },
+        "v": {
+         "code": "property_not_provided",
+         "params": {
+          "property": "v",
+          "provider": "syn001"
+         }
+        }
+       },
+       "h": 34172.996722185046,
+       "h_mass": 341729.9672218504,
+       "id": {
+        "family": "VAPOR",
+        "ordinal": 1,
+        "qualifier": null
+       },
+       "m": [
+        0.0702223286069486,
+        0.0453603023074384,
+        0.02049827600792817
+       ],
+       "m_total": 0.13608090692231517,
+       "n": [
+        0.702223286069486,
+        0.45360302307438394,
+        0.2049827600792817
+       ],
+       "n_total": 1.3608090692231516,
+       "phase_fraction_mass": 1.0,
+       "phase_fraction_molar": 1.0,
+       "rho": null,
+       "s": null,
+       "s_mass": null,
+       "v": null,
+       "w": [
+        0.5160336611148292,
+        0.3333333333333334,
+        0.15063300555183742
+       ],
+       "x": [
+        0.5160336611148293,
+        0.33333333333333337,
+        0.15063300555183742
+       ]
+      }
+     ],
+     "rho": null,
+     "s": null,
+     "s_mass": null,
+     "vapor_fraction_mass": 1.0,
+     "vapor_fraction_molar": 1.0,
+     "w": [
+      0.5160336611148292,
+      0.3333333333333334,
+      0.15063300555183742
+     ],
+     "x": [
+      0.5160336611148293,
+      0.33333333333333337,
+      0.15063300555183742
+     ]
+    }
+   ],
+   "to": "vapor_product"
+  },
+  {
+   "P": 100000.0,
+   "T": 360.0,
+   "absent": {},
+   "checks": [],
+   "dormant": false,
+   "from": "flash",
+   "id": "S5",
+   "substreams": [
+    {
+     "H_flow": 9835.14558466109,
+     "S_flow": null,
+     "V_flow": null,
+     "absent": {
+      "S_flow": {
+       "code": "property_not_provided",
+       "params": {
+        "property": "s",
+        "provider": "syn001"
+       }
+      },
+      "V_flow": {
+       "code": "property_not_provided",
+       "params": {
+        "property": "v",
+        "provider": "syn001"
+       }
+      },
+      "rho": {
+       "code": "property_not_provided",
+       "params": {
+        "property": "v",
+        "provider": "syn001"
+       }
+      },
+      "s": {
+       "code": "property_not_provided",
+       "params": {
+        "property": "s",
+        "provider": "syn001"
+       }
+      },
+      "s_mass": {
+       "code": "property_not_provided",
+       "params": {
+        "property": "s",
+        "provider": "syn001"
+       }
+      }
+     },
+     "components": [
+      "A",
+      "B",
+      "C"
+     ],
+     "convention": "SYN-001-ref-v1",
+     "flash_near_phase_boundary": false,
+     "h": 6000.0,
+     "h_mass": 60000.00000000001,
+     "id": "mixed",
+     "kind": "mixed",
+     "m": [
+      0.02977767139305138,
+      0.054639697692561606,
+      0.07950172399207184
+     ],
+     "m_total": 0.16391909307768482,
+     "n": [
+      0.2977767139305138,
+      0.5463969769256161,
+      0.7950172399207183
+     ],
+     "n_total": 1.6391909307768482,
+     "phase_source": "declared",
+     "phases": [
+      {
+       "H_flow": 9835.14558466109,
+       "S_flow": null,
+       "V_flow": null,
+       "absent": {
+        "S_flow": {
+         "code": "property_not_provided",
+         "params": {
+          "property": "s",
+          "provider": "syn001"
+         }
+        },
+        "V_flow": {
+         "code": "property_not_provided",
+         "params": {
+          "property": "v",
+          "provider": "syn001"
+         }
+        },
+        "rho": {
+         "code": "property_not_provided",
+         "params": {
+          "property": "v",
+          "provider": "syn001"
+         }
+        },
+        "s": {
+         "code": "property_not_provided",
+         "params": {
+          "property": "s",
+          "provider": "syn001"
+         }
+        },
+        "s_mass": {
+         "code": "property_not_provided",
+         "params": {
+          "property": "s",
+          "provider": "syn001"
+         }
+        },
+        "v": {
+         "code": "property_not_provided",
+         "params": {
+          "property": "v",
+          "provider": "syn001"
+         }
+        }
+       },
+       "h": 6000.0,
+       "h_mass": 60000.00000000001,
+       "id": {
+        "family": "LIQUID",
+        "ordinal": 1,
+        "qualifier": null
+       },
+       "m": [
+        0.02977767139305138,
+        0.054639697692561606,
+        0.07950172399207184
+       ],
+       "m_total": 0.16391909307768482,
+       "n": [
+        0.2977767139305138,
+        0.5463969769256161,
+        0.7950172399207183
+       ],
+       "n_total": 1.6391909307768482,
+       "phase_fraction_mass": 1.0,
+       "phase_fraction_molar": 1.0,
+       "rho": null,
+       "s": null,
+       "s_mass": null,
+       "v": null,
+       "w": [
+        0.18166078663538662,
+        0.3333333333333333,
+        0.4850058800312801
+       ],
+       "x": [
+        0.18166078663538662,
+        0.3333333333333333,
+        0.48500588003128003
+       ]
+      }
+     ],
+     "rho": null,
+     "s": null,
+     "s_mass": null,
+     "vapor_fraction_mass": 0.0,
+     "vapor_fraction_molar": 0.0,
+     "w": [
+      0.18166078663538662,
+      0.3333333333333333,
+      0.4850058800312801
+     ],
+     "x": [
+      0.18166078663538662,
+      0.3333333333333333,
+      0.48500588003128003
+     ]
+    }
+   ],
+   "to": "splitter"
+  },
+  {
+   "P": 100000.0,
+   "T": null,
+   "absent": {
+    "T": {
+     "code": "zero_flow",
+     "params": {
+      "stream": "S6"
+     }
+    }
+   },
+   "checks": [
+    {
+     "id": "phase_admissibility.mixer.inlet.S6",
+     "index": 143,
+     "near_threshold": false,
+     "reason": "ZERO_FLOW",
+     "result": "not_applicable",
+     "scope": "not_applicable",
+     "tolerance": null,
+     "value": null
+    }
+   ],
+   "dormant": true,
+   "from": "splitter",
+   "id": "S6",
+   "substreams": [
+    {
+     "H_flow": 0.0,
+     "S_flow": 0.0,
+     "V_flow": 0.0,
+     "absent": {
+      "h": {
+       "code": "zero_flow",
+       "params": {
+        "stream": "S6"
+       }
+      },
+      "h_mass": {
+       "code": "zero_flow",
+       "params": {
+        "stream": "S6"
+       }
+      },
+      "rho": {
+       "code": "zero_flow",
+       "params": {
+        "stream": "S6"
+       }
+      },
+      "s": {
+       "code": "zero_flow",
+       "params": {
+        "stream": "S6"
+       }
+      },
+      "s_mass": {
+       "code": "zero_flow",
+       "params": {
+        "stream": "S6"
+       }
+      },
+      "vapor_fraction_mass": {
+       "code": "zero_flow",
+       "params": {
+        "stream": "S6"
+       }
+      },
+      "vapor_fraction_molar": {
+       "code": "zero_flow",
+       "params": {
+        "stream": "S6"
+       }
+      },
+      "w": {
+       "code": "zero_flow",
+       "params": {
+        "stream": "S6"
+       }
+      },
+      "x": {
+       "code": "zero_flow",
+       "params": {
+        "stream": "S6"
+       }
+      }
+     },
+     "components": [
+      "A",
+      "B",
+      "C"
+     ],
+     "convention": "SYN-001-ref-v1",
+     "flash_near_phase_boundary": false,
+     "h": null,
+     "h_mass": null,
+     "id": "mixed",
+     "kind": "mixed",
+     "m": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "m_total": 0.0,
+     "n": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "n_total": 0.0,
+     "phase_source": "zero_flow",
+     "phases": [],
+     "rho": null,
+     "s": null,
+     "s_mass": null,
+     "vapor_fraction_mass": null,
+     "vapor_fraction_molar": null,
+     "w": null,
+     "x": null
+    }
+   ],
+   "to": "mixer"
+  },
+  {
+   "P": 100000.0,
+   "T": 360.0,
+   "absent": {},
+   "checks": [],
+   "dormant": false,
+   "from": "splitter",
+   "id": "S7",
+   "substreams": [
+    {
+     "H_flow": 9835.14558466109,
+     "S_flow": null,
+     "V_flow": null,
+     "absent": {
+      "S_flow": {
+       "code": "property_not_provided",
+       "params": {
+        "property": "s",
+        "provider": "syn001"
+       }
+      },
+      "V_flow": {
+       "code": "property_not_provided",
+       "params": {
+        "property": "v",
+        "provider": "syn001"
+       }
+      },
+      "rho": {
+       "code": "property_not_provided",
+       "params": {
+        "property": "v",
+        "provider": "syn001"
+       }
+      },
+      "s": {
+       "code": "property_not_provided",
+       "params": {
+        "property": "s",
+        "provider": "syn001"
+       }
+      },
+      "s_mass": {
+       "code": "property_not_provided",
+       "params": {
+        "property": "s",
+        "provider": "syn001"
+       }
+      }
+     },
+     "components": [
+      "A",
+      "B",
+      "C"
+     ],
+     "convention": "SYN-001-ref-v1",
+     "flash_near_phase_boundary": false,
+     "h": 6000.0,
+     "h_mass": 60000.00000000001,
+     "id": "mixed",
+     "kind": "mixed",
+     "m": [
+      0.02977767139305138,
+      0.054639697692561606,
+      0.07950172399207184
+     ],
+     "m_total": 0.16391909307768482,
+     "n": [
+      0.2977767139305138,
+      0.5463969769256161,
+      0.7950172399207183
+     ],
+     "n_total": 1.6391909307768482,
+     "phase_source": "declared",
+     "phases": [
+      {
+       "H_flow": 9835.14558466109,
+       "S_flow": null,
+       "V_flow": null,
+       "absent": {
+        "S_flow": {
+         "code": "property_not_provided",
+         "params": {
+          "property": "s",
+          "provider": "syn001"
+         }
+        },
+        "V_flow": {
+         "code": "property_not_provided",
+         "params": {
+          "property": "v",
+          "provider": "syn001"
+         }
+        },
+        "rho": {
+         "code": "property_not_provided",
+         "params": {
+          "property": "v",
+          "provider": "syn001"
+         }
+        },
+        "s": {
+         "code": "property_not_provided",
+         "params": {
+          "property": "s",
+          "provider": "syn001"
+         }
+        },
+        "s_mass": {
+         "code": "property_not_provided",
+         "params": {
+          "property": "s",
+          "provider": "syn001"
+         }
+        },
+        "v": {
+         "code": "property_not_provided",
+         "params": {
+          "property": "v",
+          "provider": "syn001"
+         }
+        }
+       },
+       "h": 6000.0,
+       "h_mass": 60000.00000000001,
+       "id": {
+        "family": "LIQUID",
+        "ordinal": 1,
+        "qualifier": null
+       },
+       "m": [
+        0.02977767139305138,
+        0.054639697692561606,
+        0.07950172399207184
+       ],
+       "m_total": 0.16391909307768482,
+       "n": [
+        0.2977767139305138,
+        0.5463969769256161,
+        0.7950172399207183
+       ],
+       "n_total": 1.6391909307768482,
+       "phase_fraction_mass": 1.0,
+       "phase_fraction_molar": 1.0,
+       "rho": null,
+       "s": null,
+       "s_mass": null,
+       "v": null,
+       "w": [
+        0.18166078663538662,
+        0.3333333333333333,
+        0.4850058800312801
+       ],
+       "x": [
+        0.18166078663538662,
+        0.3333333333333333,
+        0.48500588003128003
+       ]
+      }
+     ],
+     "rho": null,
+     "s": null,
+     "s_mass": null,
+     "vapor_fraction_mass": 0.0,
+     "vapor_fraction_molar": 0.0,
+     "w": [
+      0.18166078663538662,
+      0.3333333333333333,
+      0.4850058800312801
+     ],
+     "x": [
+      0.18166078663538662,
+      0.3333333333333333,
+      0.48500588003128003
+     ]
+    }
+   ],
+   "to": "purge"
+  }
+ ],
+ "verification_status": "VERIFIED"
+}

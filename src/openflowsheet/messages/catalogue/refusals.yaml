@@ -1689,3 +1689,87 @@ entries:
     title: Value outside model domain
     summary: 'Refused: value outside model domain.'
     review: true
+  # ST (ADR 0068; design note §6.4): the stream table's `absent` reasons that are refusals of one
+  # value. Emitter: `application/stream_table.py`; each leaves the rest of the table unaffected.
+  - code: energy_balance_undefined
+    family: refusal
+    kind: not_supported
+    complete: true
+    title: The energy balance of this unit model is not checked
+    args: [unit, model]
+    params:
+      unit:  {type: unit, label: unit}
+      model: {type: text, label: model}
+    summary: "The energy balance of unit {unit} ({model}) is not given: the solution's certificate holds no energy check for it."
+    where: "unit {unit}"
+    why: "The stream table reports a unit's energy balance only where the certificate of the solution holds an energy check for that unit. Units of this model carry none (an external or coupled unit, for example), so the unit's duty, work and stream enthalpy flows are reported, but its balance is not."
+    action: "Use a unit model whose energy balance is checked if you need this balance; the stream values around {unit} are unaffected."
+    gap: {limitation: null, capability: "an energy balance check for this unit's model"}
+    see_also: [stream_enthalpy_absent]
+    examples:
+      - params: {unit: X1, model: external.coupled}
+  - code: flash_failed
+    family: refusal
+    kind: numerical
+    complete: true
+    title: The phase split of a stream could not be computed
+    args: [stream]
+    params:
+      stream: {type: stream, label: stream}
+      status: {type: text, optional: true, label: status}
+    summary: "The phase split of stream {stream} at its temperature and pressure could not be computed[ (status {status})]."
+    where: "stream {stream}"
+    why: "For a stream whose phases are neither declared nor carried by the solution, the stream table finds them with an equilibrium flash at the stored temperature and pressure. That flash did not succeed, so the phases of {stream} and the values per phase are not given; its flows, temperature and pressure are."
+    action: "Check that the temperature and pressure of {stream} lie in the range the property basis covers. A phase declared for the stream lets the table evaluate it without a flash."
+    see_also: [stream_enthalpy_absent]
+    examples:
+      - params: {stream: S3, status: failed}
+  - code: property_evaluation_failed
+    family: refusal
+    kind: numerical
+    complete: true
+    title: A property of one phase of a stream could not be evaluated
+    args: [stream, phase, property]
+    params:
+      stream:   {type: stream, label: stream}
+      phase:    {type: text, label: phase}
+      property: {type: text, label: property}
+      status:   {type: text, optional: true, label: status}
+    summary: "The property {property!raw} of the {phase!raw} phase of stream {stream} could not be evaluated[ (status {status})]."
+    where: "stream {stream}"
+    why: "The property basis was asked for {property!raw} at the temperature, pressure and composition of this phase and returned no value. The quantities that need it are left empty."
+    action: "Check that the temperature and pressure of {stream} lie in the range the property basis covers; the other values of {stream} are unaffected."
+    see_also: [stream_enthalpy_absent]
+    examples:
+      - params: {stream: S4, phase: LIQUID, property: h, status: out_of_range}
+  - code: property_not_provided
+    family: refusal
+    kind: not_supported
+    complete: true
+    title: The property basis does not provide this property
+    args: [provider, property]
+    params:
+      provider: {type: text, label: property basis}
+      property: {type: text, label: property}
+    summary: "The property basis {provider!raw} does not provide the property {property!raw}, so the values that need it are not given."
+    why: "The stream table reports only what the flowsheet's property basis computes. It does not put an estimate (an ideal-gas density, for example) in place of a property the basis does not offer."
+    action: "Use a property basis that provides {property!raw} if you need these values; the other values of the table are unaffected."
+    gap: {limitation: null, capability: "this property from the flowsheet's property basis"}
+    see_also: [stream_enthalpy_absent]
+    examples:
+      - params: {provider: wilson-ig-v2, property: v}
+  - code: value_not_finite
+    family: refusal
+    kind: numerical
+    complete: true
+    title: A computed value is not a finite number
+    args: [subject, quantity]
+    params:
+      subject:  {type: text, label: "stream, unit or flowsheet"}
+      quantity: {type: text, label: quantity}
+    summary: "The value {quantity!raw} of {subject} is not a finite number, so it is not given."
+    why: "A computed value overflowed, or a quotient had no defined value; the table gives no value rather than an infinite or undefined one."
+    action: "Check the flows and conditions of {subject}: a very large or very small flow can put a value outside the range of floating-point numbers."
+    see_also: [stream_enthalpy_absent]
+    examples:
+      - params: {subject: S6, quantity: H_flow}

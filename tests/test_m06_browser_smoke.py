@@ -15,7 +15,7 @@ serialized DOM. Asserted per route:
   from the address;
 - **G1 (dynamic)**: every request is a static file under `/ui/` or an `OPERATIONS` route with
   its verb; `prt_` occurs in no path or query; the credential travels on contract calls only;
-  the operations reached are among §6's 17 — and over the whole module, exactly the 17;
+  the operations reached are among §6's 18 — and over the whole module, exactly the 18;
 - **G8 (DOM)**: rev-000005's title (markup, then U+202E) renders as text with U+FFFD in place of
   U+202E: no `<img`, no element carrying an `on…` attribute, one script element (the module) —
   on the project list and the revision overview, and, once the hostile revision has been solved,
@@ -386,7 +386,19 @@ ROUTES: Final[tuple[Route, ...]] = (
         (">31487.6",),
         solved=(("job-000001", "U-HEAT.Q", "31487.6"),),
     ),
-    Route("/job/job-000003/streams", "streams", ("no solution state recorded for this run",)),
+    # ST's stream table (ADR 0068, Frank's O3): shown under the streams, phases and their
+    # source named; a run whose bundle has no solution state is refused, and the screen says so.
+    Route(
+        "/job/job-000002/streams",
+        "streams",
+        ('data-ofs-stream-table="1"', ">phase_source<", ">flash<", ">VAPOR<", ">H_flow (W)<"),
+    ),
+    Route(
+        "/job/job-000003/streams",
+        "streams",
+        ("no solution state recorded for this run", 'data-ofs-stream-table-refused="not_found"'),
+        refusals=(404,),
+    ),
     Route(
         "/job/job-000001/row/U-HEAT%3AHEAT-duty",
         "equation",
@@ -729,9 +741,10 @@ def test_the_download_buttons_save_the_recorded_bytes(shell: Shell) -> None:
 # ================================================================================== G1, whole
 
 
-def test_g1_over_the_module_the_browser_reached_exactly_the_seventeen(shell: Shell) -> None:
+def test_g1_over_the_module_the_browser_reached_exactly_the_eighteen(shell: Shell) -> None:
     """Every request of the module's browser sessions (including any between pages) is static or
-    an `OPERATIONS` route, and the operations reached are §6's 17 — no more, no fewer."""
+    an `OPERATIONS` route, and the operations reached are §6's 18 (ST's `get_stream_table` since
+    O3) — no more, no fewer."""
     expected = {f"g11 {case.principal}:{case.route}" for case in ROUTES} | {
         "bad token",
         "g8 /",

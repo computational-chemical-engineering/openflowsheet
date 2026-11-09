@@ -726,6 +726,31 @@ Directory 'notes' is not empty and does not hold a project; a project needs a ne
 
 - **Summary:** Refused: endpoint missing.
 
+<a id="energy_balance_undefined"></a>
+
+## `energy_balance_undefined`: The energy balance of this unit model is not checked
+
+**Kind:** Not supported in this version: a limitation of OpenFlowsheet, not an error in your flowsheet.
+
+- **Summary:** The energy balance of unit &lt;unit&gt; (&lt;model&gt;) is not given: the solution's certificate holds no energy check for it.
+- **Where:** unit &lt;unit&gt;
+- **Why:** The stream table reports a unit's energy balance only where the certificate of the solution holds an energy check for that unit. Units of this model carry none (an external or coupled unit, for example), so the unit's duty, work and stream enthalpy flows are reported, but its balance is not.
+- **Do:** Use a unit model whose energy balance is checked if you need this balance; the stream values around &lt;unit&gt; are unaffected.
+- **Parameters:** `unit` (unit), `model` (text)
+- **Not supported:** missing capability: an energy balance check for this unit's model
+- **See also:** [`stream_enthalpy_absent`](notices.md#stream_enthalpy_absent)
+
+Example:
+
+```text
+The energy balance of unit 'X1' (external.coupled) is not given: the solution's certificate holds no energy check for it.
+  Why:     The stream table reports a unit's energy balance only where the certificate of the solution holds an energy check for that unit. Units of this model carry none (an external or coupled unit, for example), so the unit's duty, work and stream enthalpy flows are reported, but its balance is not.
+  Do:      Use a unit model whose energy balance is checked if you need this balance; the stream values around 'X1' are unaffected.
+  Kind:    Not supported in this version: a limitation of OpenFlowsheet, not an error in your flowsheet.
+  Code:    energy_balance_undefined (openflowsheet explain energy_balance_undefined)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#energy_balance_undefined
+```
+
 <a id="energy_reads_undeclared"></a>
 
 ## `energy_reads_undeclared`: Energy reads undeclared
@@ -795,6 +820,30 @@ Directory 'notes' is not empty and does not hold a project; a project needs a ne
 *No plain-language explanation is written yet; the summary is the technical one.*
 
 - **Summary:** Refused: failure bundle unmapped.
+
+<a id="flash_failed"></a>
+
+## `flash_failed`: The phase split of a stream could not be computed
+
+**Kind:** Numerical failure: the solver did not find the solution; your flowsheet may be correct.
+
+- **Summary:** The phase split of stream &lt;stream&gt; at its temperature and pressure could not be computed (status &lt;status&gt;).
+- **Where:** stream &lt;stream&gt;
+- **Why:** For a stream whose phases are neither declared nor carried by the solution, the stream table finds them with an equilibrium flash at the stored temperature and pressure. That flash did not succeed, so the phases of &lt;stream&gt; and the values per phase are not given; its flows, temperature and pressure are.
+- **Do:** Check that the temperature and pressure of &lt;stream&gt; lie in the range the property basis covers. A phase declared for the stream lets the table evaluate it without a flash.
+- **Parameters:** `stream` (stream), `status` (text, optional)
+- **See also:** [`stream_enthalpy_absent`](notices.md#stream_enthalpy_absent)
+
+Example:
+
+```text
+The phase split of stream 'S3' at its temperature and pressure could not be computed (status failed).
+  Why:     For a stream whose phases are neither declared nor carried by the solution, the stream table finds them with an equilibrium flash at the stored temperature and pressure. That flash did not succeed, so the phases of 'S3' and the values per phase are not given; its flows, temperature and pressure are.
+  Do:      Check that the temperature and pressure of 'S3' lie in the range the property basis covers. A phase declared for the stream lets the table evaluate it without a flash.
+  Kind:    Numerical failure: the solver did not find the solution; your flowsheet may be correct.
+  Code:    flash_failed (openflowsheet explain flash_failed)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#flash_failed
+```
 
 <a id="homotopy_stalled"></a>
 
@@ -1747,6 +1796,54 @@ Directory 'plant' holds the project 'plant-a', not 'plant-b'.
 
 - **Summary:** Refused: projection unevaluable.
 
+<a id="property_evaluation_failed"></a>
+
+## `property_evaluation_failed`: A property of one phase of a stream could not be evaluated
+
+**Kind:** Numerical failure: the solver did not find the solution; your flowsheet may be correct.
+
+- **Summary:** The property &lt;property&gt; of the &lt;phase&gt; phase of stream &lt;stream&gt; could not be evaluated (status &lt;status&gt;).
+- **Where:** stream &lt;stream&gt;
+- **Why:** The property basis was asked for &lt;property&gt; at the temperature, pressure and composition of this phase and returned no value. The quantities that need it are left empty.
+- **Do:** Check that the temperature and pressure of &lt;stream&gt; lie in the range the property basis covers; the other values of &lt;stream&gt; are unaffected.
+- **Parameters:** `stream` (stream), `phase` (text), `property` (text), `status` (text, optional)
+- **See also:** [`stream_enthalpy_absent`](notices.md#stream_enthalpy_absent)
+
+Example:
+
+```text
+The property h of the LIQUID phase of stream 'S4' could not be evaluated (status out_of_range).
+  Why:     The property basis was asked for h at the temperature, pressure and composition of this phase and returned no value. The quantities that need it are left empty.
+  Do:      Check that the temperature and pressure of 'S4' lie in the range the property basis covers; the other values of 'S4' are unaffected.
+  Kind:    Numerical failure: the solver did not find the solution; your flowsheet may be correct.
+  Code:    property_evaluation_failed (openflowsheet explain property_evaluation_failed)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#property_evaluation_failed
+```
+
+<a id="property_not_provided"></a>
+
+## `property_not_provided`: The property basis does not provide this property
+
+**Kind:** Not supported in this version: a limitation of OpenFlowsheet, not an error in your flowsheet.
+
+- **Summary:** The property basis &lt;provider&gt; does not provide the property &lt;property&gt;, so the values that need it are not given.
+- **Why:** The stream table reports only what the flowsheet's property basis computes. It does not put an estimate (an ideal-gas density, for example) in place of a property the basis does not offer.
+- **Do:** Use a property basis that provides &lt;property&gt; if you need these values; the other values of the table are unaffected.
+- **Parameters:** `provider` (text), `property` (text)
+- **Not supported:** missing capability: this property from the flowsheet's property basis
+- **See also:** [`stream_enthalpy_absent`](notices.md#stream_enthalpy_absent)
+
+Example:
+
+```text
+The property basis wilson-ig-v2 does not provide the property v, so the values that need it are not given.
+  Why:     The stream table reports only what the flowsheet's property basis computes. It does not put an estimate (an ideal-gas density, for example) in place of a property the basis does not offer.
+  Do:      Use a property basis that provides v if you need these values; the other values of the table are unaffected.
+  Kind:    Not supported in this version: a limitation of OpenFlowsheet, not an error in your flowsheet.
+  Code:    property_not_provided (openflowsheet explain property_not_provided)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#property_not_provided
+```
+
 <a id="provider_missing"></a>
 
 ## `provider_missing`: Provider missing
@@ -2362,6 +2459,29 @@ A change is checked for the task "simulation" only; this version cannot check it
 *No plain-language explanation is written yet; the summary is the technical one.*
 
 - **Summary:** Refused: user start unsupported.
+
+<a id="value_not_finite"></a>
+
+## `value_not_finite`: A computed value is not a finite number
+
+**Kind:** Numerical failure: the solver did not find the solution; your flowsheet may be correct.
+
+- **Summary:** The value &lt;quantity&gt; of &lt;subject&gt; is not a finite number, so it is not given.
+- **Why:** A computed value overflowed, or a quotient had no defined value; the table gives no value rather than an infinite or undefined one.
+- **Do:** Check the flows and conditions of &lt;subject&gt;: a very large or very small flow can put a value outside the range of floating-point numbers.
+- **Parameters:** `subject` (text), `quantity` (text)
+- **See also:** [`stream_enthalpy_absent`](notices.md#stream_enthalpy_absent)
+
+Example:
+
+```text
+The value H_flow of S6 is not a finite number, so it is not given.
+  Why:     A computed value overflowed, or a quotient had no defined value; the table gives no value rather than an infinite or undefined one.
+  Do:      Check the flows and conditions of S6: a very large or very small flow can put a value outside the range of floating-point numbers.
+  Kind:    Numerical failure: the solver did not find the solution; your flowsheet may be correct.
+  Code:    value_not_finite (openflowsheet explain value_not_finite)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#value_not_finite
+```
 
 <a id="value_outside_model_domain"></a>
 

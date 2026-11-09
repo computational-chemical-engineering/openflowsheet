@@ -1,7 +1,10 @@
 # ADR 0068 — Stream table and energy summary: `get_stream_table`, `stream-table-v1`
 
-**Status:** **Proposed, 2026-11-06.** It takes effect on `main` when ST's manifest is `tested` and the reviewer pass is
-done. Until then ST is built on `wp/ST`. Register entries are added on acceptance.
+**Status:** **Accepted (Frank Peters, 2026-11-08)**, on the decision board, with ADR 0019 Amendment 13 and the D3
+amendment of 2026-11-08 below. Proposed 2026-11-06.
+- Takes effect on `main` when ST's manifest is `tested` and the reviewer pass is done. Until then ST is built on `wp/ST`.
+- Register entries: R-1000 (the surface link c_7); R-1001…R-1006 (D1–D8, the ADR 0025 D2.3 classification, the web
+  shell).
 **Author:** design lane (`architect`), ST design pass. **Brief:** `docs/briefs/ST-architect.md`.
 **Design note:** `docs/design/ST-stream-table.md` holds the normative detail; the § numbers below refer to it.
 **Amends:**
@@ -60,9 +63,20 @@ member detail), `not_ready`, `unsupported` (`basis_unavailable(<id>)`) and `inte
   (Q1.R4); no provider call; `n` and `m` are `+0.0` (Q1.R11).
 - **R1** carried saturated split (`<S>.sat.V`, `<S>.sat.L` present): VAPOR (V) and LIQUID (L) at `(T_sat(P), P)`. The
   stream's `T` is the stored T; a refused `Tsat` nulls the properties only (Q1.R12).
+- **R1′** carried lifted split (from the ST review, 2026-11-08): the stream of a heater-style lifted split (the list
+  `verify_revision` derives from the revision) whose certificate has that split's own row, `independent_split.<U>.<S>`,
+  `not_applicable` for `temperature_degenerate` or `fresh_flash_unresolved` (design-lane confirmations, 2026-11-08: a
+  products-style split's row on its drum's inlet does not trigger it): VAPOR and LIQUID from the stored split at the
+  split's (T, P), Ḣ summed from 0.0 as the verifier's `_phase_enthalpy` sums it; `phase_source:
+  "carried_lifted_split"`, not flagged.
 - **R2** declared producer-port phase: that phase at (T, P).
+- **Unlifted** (design-lane confirmations, 2026-11-08): a stream named by a certificate row's reason
+  `temperature_degenerate_unlifted(<S>)` gets no number: no phases, `phase_source: "flash"`, not flagged,
+  `flash_failed(status=temperature_degenerate)`. It is unreachable while the binder admits `vapor_liquid` only on a
+  heater-style outlet, and kept so that the path is never silent.
 - **R3** otherwise: a fresh TP flash of the stream's own (n, T, P), with **no** ε_adm or τ_dew snap. Each substream
-  reports `flash_near_phase_boundary` (Q4.R12 (b)).
+  reports `flash_near_phase_boundary` (Q4.R12 (b) (i); (ii) is withdrawn: a heater-style split's own degeneracy row is
+  decided by R1′, and a products-style split's row does not judge its inlet's own state).
 
 A phase is listed iff its amount is `!= 0.0`, of either sign and never clamped, in the order VAPOR, LIQUID, with the
 decision's ids (Q4.R11). Its id is Q4.R1's triple `{family, qualifier, ordinal}`; no rendered string is a key.
@@ -73,9 +87,10 @@ context (`model_version` and `constants_sha256` from the certificate).
   both accepted for h only.
 - s and v are requested each alone, and only if declared.
 - Ḣ is summed in the verifier's order, so ST's Ḣ equals the verifier helpers' bitwise wherever the two decide the same
-  phases (exit test E7).
+  phases (exit test E7). The per-component form is summed as the verifier's helper of that form sums it: built-in
+  `sum` as `checks.enthalpy_flow`, a 0.0-loop as `_phase_enthalpy` for R1′ (D1-1, from the ST review, 2026-11-08).
 - ST imports from `verify` only `table.{FEED_MODELS, PRODUCT_MODELS, EXTERNAL_DUTY_MODELS, STAGED_DUTY_MODELS,
-  WORK_MODELS}` and `column.duty`.
+  WORK_MODELS}` and `column.duty`; for R1′, `orchestrator.splits.lifted_splits`, the verifier's own split list.
 
 **D5. Quantities, SI only** (note §4.3, §5).
 - Per substream (v1: one, id `mixed`) and per phase: `n`, `m`, `x`, `w`, `n_total`, `m_total`, `H_flow`, `S_flow`,
@@ -86,6 +101,9 @@ context (`model_version` and `constants_sha256` from the certificate).
 - Each substream carries `convention`, the provider's reference convention, which applies to every h and s in it.
 - Density is `m / (n·v)`, and only from a provider's `v`.
 - Every quotient is an IEEE division; a non-finite result is null with `value_not_finite` (Q4.R11 (c)).
+- *From the ST review, 2026-11-08 (D1-6, D1-7; note §5):* a unit's port carries an `absent` map; a phase's `x` and `w`
+  are given or null whole, and its `phase_fraction_molar` and `phase_fraction_mass` are nullable, so an underflowed
+  phase mass is `value_not_finite` (Q4.A14 (d)).
 
 **D6. Energy summary** (note §4.5).
 - Per unit (feeds and sinks excluded): `ports` with Ḣ, `H_in`, `H_out`, `Q` and `W` (positive into the unit) and
@@ -122,8 +140,14 @@ phase-or-total).
 - **Both an artifact and an operation.** Two sources of truth, with no good answer to which is authoritative.
 - **Reusing or refactoring the verifier's Ḣ helpers.** They return only scalars, embed verdict snaps, and differ per
   basis form; refactoring them edits `verify/` (an M5 numerics risk).
-- **The carried lifted split for legacy outlets.** It needs the binding's `LiftedSplit` list, which is not in
-  `revision.json`; at a verified state it agrees with the fresh flash within the quoted `independent_split` check.
+- **The carried lifted split for every lifted outlet.** *Amended from the ST review, 2026-11-08:* the first reason
+  given here was false (`verify_revision` derives the list from the revision), and the second holds only where the
+  `independent_split` check ran. Where it did not, R1′ reads the carried split. Everywhere else reading it would move
+  the resolved-split streams off the verifier's arithmetic and lose their E7 bitwise status, and buy nothing, because
+  the flash and the split agree there within the quoted check.
+- **Exempting a flagged envelope from E8** (the ST review's option (a), 2026-11-08). It would loosen a gate around a
+  wrong number: `T05b:SC-1`'s S2 was reported 2016 W low, with a vapour fraction of 0, at a temperature-degenerate
+  stream whose every vapour fraction is consistent.
 - **A typed full-document response, or a flattened record layout.** The first breaks ADR 0019 §4.1's bounded
   projection; the second still elides at depth 4 and loses per-substream grouping.
 - **An ideal-gas density, or a per-component `s` sum, where the provider has none.** Both are inventions (R-924); a
@@ -214,7 +238,8 @@ WO-2 onward start after `wp/MSG` merges into `main`. Files shared with MSG are l
 **Riskiest point:** near a phase boundary, R3's unsnapped flash can decide differently from the verifier, and providers
 deliver h in two value shapes. Both are mitigated by the quoted checks, `judged_at`, and E6–E8. *Ruled by Q4.R12
 (Amendment 5):* the raw flash stays; `flash_near_phase_boundary` and the quoted `independent_split` rows mark where the
-verifier may have decided otherwise; E16 tests it.
+verifier may have decided otherwise; E16 tests it. *Scope of Q4.R12 (a), from the ST review, 2026-11-08:* the raw
+flash stays wherever the verifier could flash; where it could not, R1′ applies (D3).
 
 ## Specifier questions (defaults apply until ruled; note §13)
 
@@ -233,3 +258,21 @@ SQ-ST-5 Q2.R11, SQ-ST-6 Q4.R11; each default adopted with the precisions of §17
 Edits 0068-1 to 0068-7 of foundation rulings §17 (Amendment 5) are applied: 0068-1 (Builds on), 0068-2 (D3), 0068-3
 (D5), 0068-4 (Alternatives rejected), 0068-5 (E2–E7, E16), 0068-6 (Riskiest point, Specifier questions) and 0068-7
 (Frozen-list changes).
+
+## Amendment — design-lane confirmations (2026-11-08)
+
+Ruled in `docs/reviews/ST-review.md` §Design-lane confirmations (rulings 3 and 5; rulings 1, 2 and 4 confirm the fix
+round's choices unchanged). D3 is corrected where the ST review's R1′ took any degeneracy row on S for the row of S's
+own split. Replaced text, verbatim:
+
+- R1′: "whose certificate has an `independent_split` row `not_applicable` for `temperature_degenerate` or
+  `fresh_flash_unresolved`" → the split's own row, `independent_split.<U>.<S>`.
+- R1′: "A flagged stream with no such split that would reach R3 gets no number:
+  `flash_failed(status=temperature_degenerate)`." → the **Unlifted** bullet, keyed on the verifier's reason
+  `temperature_degenerate_unlifted(<S>)`.
+- R3: "(Q4.R12 (b) (i); (ii) is decided by R1′ since the ST review)" → (ii) withdrawn, with the reason.
+
+Affected requirements: the same as D3's; no interface, schema, catalogue entry or verifier rule changes. Migration:
+none, because no served 0.3.0 document and no G7, G8 or G8u result moves (the review's F3: the served degeneracy rows
+are SC-1's and SC-3's own U-VLV rows and NP-1's and SC-2's U-PHF rows on a declared S1). Acceptance evidence: the
+review's DC-1…DC-6 and the byte-identity of the 44 served documents.

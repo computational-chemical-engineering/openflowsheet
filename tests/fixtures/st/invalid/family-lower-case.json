@@ -1,0 +1,769 @@
+{
+ "basis": {
+  "convention": "SYN-001-ref-v1",
+  "data_sha256": "44f894ff62f9d4c4d755b146cb1486f3ccc09ddba635982eff1caf8c16f95400",
+  "implementation_sha256": "4e4c37cc8054c7da12965cba80494be5666053e3bf817446053ebdeb8d6a04e7",
+  "provider_id": "syn001",
+  "record_source": "benchmarks/syn001/components.yaml"
+ },
+ "certificate_id": "cert-9554eecf55ae",
+ "components": [
+  {
+   "id": "A",
+   "molar_mass": 0.1
+  },
+  {
+   "id": "B",
+   "molar_mass": 0.1
+  },
+  {
+   "id": "C",
+   "molar_mass": 0.1
+  }
+ ],
+ "energy": {
+  "convention": "SYN-001-ref-v1",
+  "overall": {
+   "H_feeds": 0.0,
+   "H_products": 0.0,
+   "Q": 0.0,
+   "W": 0.0,
+   "absent": {},
+   "checks": [
+    {
+     "id": "energy_balance.envelope",
+     "index": 35,
+     "near_threshold": false,
+     "reason": "",
+     "result": "pass",
+     "scope": "evaluated",
+     "tolerance": 0.00101,
+     "value": 0
+    }
+   ],
+   "closure": 0.0,
+   "feeds": [
+    "S1",
+    "S3"
+   ],
+   "products": [
+    "S2",
+    "S4"
+   ]
+  },
+  "units": [
+   {
+    "H_in": 0.0,
+    "H_out": 0.0,
+    "Q": 0.0,
+    "W": 0.0,
+    "absent": {},
+    "checks": [
+     {
+      "id": "energy_balance.U-HX.hot",
+      "index": 33,
+      "near_threshold": false,
+      "reason": "",
+      "result": "pass",
+      "scope": "evaluated",
+      "tolerance": 0.00101,
+      "value": 0
+     },
+     {
+      "id": "energy_balance.U-HX.cold",
+      "index": 34,
+      "near_threshold": false,
+      "reason": "",
+      "result": "pass",
+      "scope": "evaluated",
+      "tolerance": 0.00101,
+      "value": 0
+     }
+    ],
+    "closure": 0.0,
+    "id": "U-HX",
+    "model": "syn001.heat_exchanger",
+    "ports": [
+     {
+      "H_flow": 0.0,
+      "absent": {},
+      "direction": "inlet",
+      "port": "hot_inlet",
+      "streams": [
+       "S1"
+      ]
+     },
+     {
+      "H_flow": 0.0,
+      "absent": {},
+      "direction": "inlet",
+      "port": "cold_inlet",
+      "streams": [
+       "S3"
+      ]
+     },
+     {
+      "H_flow": 0.0,
+      "absent": {},
+      "direction": "outlet",
+      "port": "hot_outlet",
+      "streams": [
+       "S2"
+      ]
+     },
+     {
+      "H_flow": 0.0,
+      "absent": {},
+      "direction": "outlet",
+      "port": "cold_outlet",
+      "streams": [
+       "S4"
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ "evaluator": {
+  "package_version": "0.4.0.dev0",
+  "phase_rule": "st-phase-rule-v1"
+ },
+ "judged_at": "projection",
+ "schema_version": "stream-table-v1",
+ "source": {
+  "bundle_id": null,
+  "job_id": null,
+  "revision_id": "T05b-DZ-7",
+  "run_id": "run-T05b:DZ-7"
+ },
+ "state_sha256": "9554eecf55ae0a0a695d6e781860d61b0512753eff6bbd426c05f432f1081471",
+ "streams": [
+  {
+   "P": 100000.0,
+   "T": null,
+   "absent": {
+    "T": {
+     "code": "zero_flow",
+     "params": {
+      "stream": "S1"
+     }
+    }
+   },
+   "checks": [
+    {
+     "id": "phase_admissibility.U-HX.hot_inlet",
+     "index": 68,
+     "near_threshold": false,
+     "reason": "ZERO_FLOW",
+     "result": "not_applicable",
+     "scope": "not_applicable",
+     "tolerance": null,
+     "value": null
+    }
+   ],
+   "dormant": true,
+   "from": "U-FEED-0",
+   "id": "S1",
+   "substreams": [
+    {
+     "H_flow": 0.0,
+     "S_flow": 0.0,
+     "V_flow": 0.0,
+     "absent": {
+      "h": {
+       "code": "zero_flow",
+       "params": {
+        "stream": "S1"
+       }
+      },
+      "h_mass": {
+       "code": "zero_flow",
+       "params": {
+        "stream": "S1"
+       }
+      },
+      "rho": {
+       "code": "zero_flow",
+       "params": {
+        "stream": "S1"
+       }
+      },
+      "s": {
+       "code": "zero_flow",
+       "params": {
+        "stream": "S1"
+       }
+      },
+      "s_mass": {
+       "code": "zero_flow",
+       "params": {
+        "stream": "S1"
+       }
+      },
+      "vapor_fraction_mass": {
+       "code": "zero_flow",
+       "params": {
+        "stream": "S1"
+       }
+      },
+      "vapor_fraction_molar": {
+       "code": "zero_flow",
+       "params": {
+        "stream": "S1"
+       }
+      },
+      "w": {
+       "code": "zero_flow",
+       "params": {
+        "stream": "S1"
+       }
+      },
+      "x": {
+       "code": "zero_flow",
+       "params": {
+        "stream": "S1"
+       }
+      }
+     },
+     "components": [
+      "A",
+      "B",
+      "C"
+     ],
+     "convention": "SYN-001-ref-v1",
+     "flash_near_phase_boundary": false,
+     "h": null,
+     "h_mass": null,
+     "id": "mixed",
+     "kind": "mixed",
+     "m": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "m_total": 0.0,
+     "n": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "n_total": 0.0,
+     "phase_source": "zero_flow",
+     "phases": [],
+     "rho": null,
+     "s": null,
+     "s_mass": null,
+     "vapor_fraction_mass": null,
+     "vapor_fraction_molar": null,
+     "w": null,
+     "x": null
+    }
+   ],
+   "to": "U-HX"
+  },
+  {
+   "P": 100000.0,
+   "T": 300.0,
+   "absent": {},
+   "checks": [
+    {
+     "id": "phase_admissibility.U-HX.cold_inlet",
+     "index": 70,
+     "near_threshold": false,
+     "reason": "",
+     "result": "pass",
+     "scope": "evaluated",
+     "tolerance": 1e-06,
+     "value": 0
+    }
+   ],
+   "dormant": false,
+   "from": "U-FEED-1",
+   "id": "S3",
+   "substreams": [
+    {
+     "H_flow": 0.0,
+     "S_flow": null,
+     "V_flow": null,
+     "absent": {
+      "S_flow": {
+       "code": "property_not_provided",
+       "params": {
+        "property": "s",
+        "provider": "syn001"
+       }
+      },
+      "V_flow": {
+       "code": "property_not_provided",
+       "params": {
+        "property": "v",
+        "provider": "syn001"
+       }
+      },
+      "rho": {
+       "code": "property_not_provided",
+       "params": {
+        "property": "v",
+        "provider": "syn001"
+       }
+      },
+      "s": {
+       "code": "property_not_provided",
+       "params": {
+        "property": "s",
+        "provider": "syn001"
+       }
+      },
+      "s_mass": {
+       "code": "property_not_provided",
+       "params": {
+        "property": "s",
+        "provider": "syn001"
+       }
+      }
+     },
+     "components": [
+      "A",
+      "B",
+      "C"
+     ],
+     "convention": "SYN-001-ref-v1",
+     "flash_near_phase_boundary": false,
+     "h": 0.0,
+     "h_mass": 0.0,
+     "id": "mixed",
+     "kind": "mixed",
+     "m": [
+      0.1,
+      0.1,
+      0.1
+     ],
+     "m_total": 0.30000000000000004,
+     "n": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "n_total": 3.0,
+     "phase_source": "declared",
+     "phases": [
+      {
+       "H_flow": 0.0,
+       "S_flow": null,
+       "V_flow": null,
+       "absent": {
+        "S_flow": {
+         "code": "property_not_provided",
+         "params": {
+          "property": "s",
+          "provider": "syn001"
+         }
+        },
+        "V_flow": {
+         "code": "property_not_provided",
+         "params": {
+          "property": "v",
+          "provider": "syn001"
+         }
+        },
+        "rho": {
+         "code": "property_not_provided",
+         "params": {
+          "property": "v",
+          "provider": "syn001"
+         }
+        },
+        "s": {
+         "code": "property_not_provided",
+         "params": {
+          "property": "s",
+          "provider": "syn001"
+         }
+        },
+        "s_mass": {
+         "code": "property_not_provided",
+         "params": {
+          "property": "s",
+          "provider": "syn001"
+         }
+        },
+        "v": {
+         "code": "property_not_provided",
+         "params": {
+          "property": "v",
+          "provider": "syn001"
+         }
+        }
+       },
+       "h": 0.0,
+       "h_mass": 0.0,
+       "id": {
+        "family": "vapor",
+        "ordinal": 1,
+        "qualifier": null
+       },
+       "m": [
+        0.1,
+        0.1,
+        0.1
+       ],
+       "m_total": 0.30000000000000004,
+       "n": [
+        1.0,
+        1.0,
+        1.0
+       ],
+       "n_total": 3.0,
+       "phase_fraction_mass": 1.0,
+       "phase_fraction_molar": 1.0,
+       "rho": null,
+       "s": null,
+       "s_mass": null,
+       "v": null,
+       "w": [
+        0.3333333333333333,
+        0.3333333333333333,
+        0.3333333333333333
+       ],
+       "x": [
+        0.3333333333333333,
+        0.3333333333333333,
+        0.3333333333333333
+       ]
+      }
+     ],
+     "rho": null,
+     "s": null,
+     "s_mass": null,
+     "vapor_fraction_mass": 0.0,
+     "vapor_fraction_molar": 0.0,
+     "w": [
+      0.3333333333333333,
+      0.3333333333333333,
+      0.3333333333333333
+     ],
+     "x": [
+      0.3333333333333333,
+      0.3333333333333333,
+      0.3333333333333333
+     ]
+    }
+   ],
+   "to": "U-HX"
+  },
+  {
+   "P": 100000.0,
+   "T": null,
+   "absent": {
+    "T": {
+     "code": "zero_flow",
+     "params": {
+      "stream": "S2"
+     }
+    }
+   },
+   "checks": [
+    {
+     "id": "phase_admissibility.U-HX.hot_outlet",
+     "index": 69,
+     "near_threshold": false,
+     "reason": "ZERO_FLOW",
+     "result": "not_applicable",
+     "scope": "not_applicable",
+     "tolerance": null,
+     "value": null
+    }
+   ],
+   "dormant": true,
+   "from": "U-HX",
+   "id": "S2",
+   "substreams": [
+    {
+     "H_flow": 0.0,
+     "S_flow": 0.0,
+     "V_flow": 0.0,
+     "absent": {
+      "h": {
+       "code": "zero_flow",
+       "params": {
+        "stream": "S2"
+       }
+      },
+      "h_mass": {
+       "code": "zero_flow",
+       "params": {
+        "stream": "S2"
+       }
+      },
+      "rho": {
+       "code": "zero_flow",
+       "params": {
+        "stream": "S2"
+       }
+      },
+      "s": {
+       "code": "zero_flow",
+       "params": {
+        "stream": "S2"
+       }
+      },
+      "s_mass": {
+       "code": "zero_flow",
+       "params": {
+        "stream": "S2"
+       }
+      },
+      "vapor_fraction_mass": {
+       "code": "zero_flow",
+       "params": {
+        "stream": "S2"
+       }
+      },
+      "vapor_fraction_molar": {
+       "code": "zero_flow",
+       "params": {
+        "stream": "S2"
+       }
+      },
+      "w": {
+       "code": "zero_flow",
+       "params": {
+        "stream": "S2"
+       }
+      },
+      "x": {
+       "code": "zero_flow",
+       "params": {
+        "stream": "S2"
+       }
+      }
+     },
+     "components": [
+      "A",
+      "B",
+      "C"
+     ],
+     "convention": "SYN-001-ref-v1",
+     "flash_near_phase_boundary": false,
+     "h": null,
+     "h_mass": null,
+     "id": "mixed",
+     "kind": "mixed",
+     "m": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "m_total": 0.0,
+     "n": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "n_total": 0.0,
+     "phase_source": "zero_flow",
+     "phases": [],
+     "rho": null,
+     "s": null,
+     "s_mass": null,
+     "vapor_fraction_mass": null,
+     "vapor_fraction_molar": null,
+     "w": null,
+     "x": null
+    }
+   ],
+   "to": "U-SINK-0"
+  },
+  {
+   "P": 100000.0,
+   "T": 300.0,
+   "absent": {},
+   "checks": [
+    {
+     "id": "phase_admissibility.U-HX.cold_outlet",
+     "index": 71,
+     "near_threshold": false,
+     "reason": "",
+     "result": "pass",
+     "scope": "evaluated",
+     "tolerance": 1e-06,
+     "value": 0
+    }
+   ],
+   "dormant": false,
+   "from": "U-HX",
+   "id": "S4",
+   "substreams": [
+    {
+     "H_flow": 0.0,
+     "S_flow": null,
+     "V_flow": null,
+     "absent": {
+      "S_flow": {
+       "code": "property_not_provided",
+       "params": {
+        "property": "s",
+        "provider": "syn001"
+       }
+      },
+      "V_flow": {
+       "code": "property_not_provided",
+       "params": {
+        "property": "v",
+        "provider": "syn001"
+       }
+      },
+      "rho": {
+       "code": "property_not_provided",
+       "params": {
+        "property": "v",
+        "provider": "syn001"
+       }
+      },
+      "s": {
+       "code": "property_not_provided",
+       "params": {
+        "property": "s",
+        "provider": "syn001"
+       }
+      },
+      "s_mass": {
+       "code": "property_not_provided",
+       "params": {
+        "property": "s",
+        "provider": "syn001"
+       }
+      }
+     },
+     "components": [
+      "A",
+      "B",
+      "C"
+     ],
+     "convention": "SYN-001-ref-v1",
+     "flash_near_phase_boundary": false,
+     "h": 0.0,
+     "h_mass": 0.0,
+     "id": "mixed",
+     "kind": "mixed",
+     "m": [
+      0.1,
+      0.1,
+      0.1
+     ],
+     "m_total": 0.30000000000000004,
+     "n": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "n_total": 3.0,
+     "phase_source": "declared",
+     "phases": [
+      {
+       "H_flow": 0.0,
+       "S_flow": null,
+       "V_flow": null,
+       "absent": {
+        "S_flow": {
+         "code": "property_not_provided",
+         "params": {
+          "property": "s",
+          "provider": "syn001"
+         }
+        },
+        "V_flow": {
+         "code": "property_not_provided",
+         "params": {
+          "property": "v",
+          "provider": "syn001"
+         }
+        },
+        "rho": {
+         "code": "property_not_provided",
+         "params": {
+          "property": "v",
+          "provider": "syn001"
+         }
+        },
+        "s": {
+         "code": "property_not_provided",
+         "params": {
+          "property": "s",
+          "provider": "syn001"
+         }
+        },
+        "s_mass": {
+         "code": "property_not_provided",
+         "params": {
+          "property": "s",
+          "provider": "syn001"
+         }
+        },
+        "v": {
+         "code": "property_not_provided",
+         "params": {
+          "property": "v",
+          "provider": "syn001"
+         }
+        }
+       },
+       "h": 0.0,
+       "h_mass": 0.0,
+       "id": {
+        "family": "LIQUID",
+        "ordinal": 1,
+        "qualifier": null
+       },
+       "m": [
+        0.1,
+        0.1,
+        0.1
+       ],
+       "m_total": 0.30000000000000004,
+       "n": [
+        1.0,
+        1.0,
+        1.0
+       ],
+       "n_total": 3.0,
+       "phase_fraction_mass": 1.0,
+       "phase_fraction_molar": 1.0,
+       "rho": null,
+       "s": null,
+       "s_mass": null,
+       "v": null,
+       "w": [
+        0.3333333333333333,
+        0.3333333333333333,
+        0.3333333333333333
+       ],
+       "x": [
+        0.3333333333333333,
+        0.3333333333333333,
+        0.3333333333333333
+       ]
+      }
+     ],
+     "rho": null,
+     "s": null,
+     "s_mass": null,
+     "vapor_fraction_mass": 0.0,
+     "vapor_fraction_molar": 0.0,
+     "w": [
+      0.3333333333333333,
+      0.3333333333333333,
+      0.3333333333333333
+     ],
+     "x": [
+      0.3333333333333333,
+      0.3333333333333333,
+      0.3333333333333333
+     ]
+    }
+   ],
+   "to": "U-SINK-1"
+  }
+ ],
+ "verification_status": "VERIFIED"
+}

@@ -1,7 +1,7 @@
 # ST — stream table and energy summary (design note)
 
 **Status:** design, 2026-11-06, design lane (`architect`), one pass. Package ST (ADR 0056 Amendment 1; FB-06, FB-02).
-**Decision record:** `docs/adr/0068-stream-table.md` (Proposed; ADR 0019 Amendment 13). This note is the normative
+**Decision record:** `docs/adr/0068-stream-table.md` (Accepted 2026-11-08; ADR 0019 Amendment 13). This note is the normative
 detail the ADR points at. **Inputs:** `docs/briefs/ST-architect.md`, `docs/briefs/ST-recon-digest.md`.
 
 ## 1. Problem and scope
@@ -83,6 +83,12 @@ phase; fresh TP flash at the stream's own (n, T, P) without a snap. *Rejected:* 
 the carried lifted split of legacy flash and heater outlets. That split needs the binding's `LiftedSplit` list, which
 `revision.json` does not carry, and at a verified state it equals the fresh flash to within the verifier's own
 `independent_split` check, which the table quotes.
+*Amended from the ST review, 2026-11-08 (M1, rule R1′):* the first reason was false — `verify_revision` derives the
+split list from the parsed revision (`verify/certificate.py:765-770`, `lifted_splits` over `view.instances`) — and the
+second holds only where that check ran. Where the `independent_split` row is `not_applicable` for
+`temperature_degenerate` or `fresh_flash_unresolved`, the verifier did not flash: it read the carried split. There
+R1′ (§4.2) reads it too. Everywhere else the carried lifted split stays rejected, because it would move the
+resolved-split streams off the verifier's arithmetic and lose their G7 bitwise status for nothing.
 
 **D5 — Energy: ST's figures at the stored state, beside the verifier's rows quoted verbatim** (§4.5). ST never
 re-judges. The certificate's energy rows were judged at the projection x̃ (ADR 0013 D1) when
@@ -126,7 +132,8 @@ Let `st = StreamState(n=(state[flow_id(S,c)] for c in components), T=state[tempe
 P=state[pressure_id(S)])`.
 
 - **R0 dormant** (`st.is_dormant`). `phase_source: "zero_flow"`, `phases: []`, and
-  `n_total = m_total = H_flow = S_flow = V_flow = +0.0`. The arrays `n` and `m` are `+0.0` (a stored −0.0 normalised),
+  `n_total = m_total = H_flow = S_flow = V_flow = +0.0`. The arrays `n` and `m` are `+0.0` (a stored −0.0 normalised;
+  on every stream, not only R0, ADR 0001 D1.5 — D1-10, from the ST review, 2026-11-08),
   and no provider call is made (Q1.R11); `T`, `x`, `w`, `h`, `h_mass`, `s`, `s_mass`, `rho` and both vapour fractions
   are `null`, with `zero_flow(stream=S)`.
 - **R1 carried split.** Both `vapor_id(S)` and `liquid_id(S)` are in `state` (thermal saturated streams, ADR 0051 D1).
@@ -138,17 +145,40 @@ P=state[pressure_id(S)])`.
   state `StreamState((1.0,), T_sat, P)` with the phase's family; the per-mole values do not depend on the amount, which
   is what the verifier's `_properties` assumes. The stream's `T` is the stored T. A `Tsat` status other than `"ok"`
   nulls every property-derived quantity of the substream and its phases with `property_evaluation_failed(stream=S,
-  phase=LIQUID, property=Tsat, status=…)`; amounts, compositions and fractions are still given (Q1.R12).
+  phase=LIQUID, property=Tsat, status=…)`; amounts, compositions and fractions are still given (Q1.R12). A non-finite
+  `Tsat` blocks them alike, with `value_not_finite(subject=S, quantity=Tsat)` (D1-12, from the ST review, 2026-11-08).
+- **R1′ carried lifted split** (from the ST review, 2026-11-08, M1). *Trigger:* S is the `stream` of a heater-style
+  lifted split (its instance lacks the `vapor` + `liquid` port pair, as in the verifier's `degeneracy`), from
+  `lifted_splits([(i.unit_id, i.model_id, i.wiring) for i in view.instances], view.components)`, the list
+  `verify_revision` derives (`staged` omitted: stage keys are never flowsheet streams); and the certificate holds that
+  split's **own** row, id `independent_split.<U>.<S>` with U the split's unit as the certificate names it (`unit_ids`),
+  built as the verifier builds it and never parsed, with result `not_applicable` and a reason in
+  {`temperature_degenerate`, `fresh_flash_unresolved`} (design-lane confirmations, 2026-11-08: a row of another split
+  on S, such as a products-style split's on the drum's inlet, does not trigger R1′; see §4.4).
+  *Phases:* VAPOR with n = `state[split.vapor]` and LIQUID with n = `state[split.liquid]`,
+  both at `(state[split.temperature], state[split.pressure])`, each listed iff its amount is `!= 0.0`. *Ḣ:* the
+  per-component form summed **from 0.0**, as `_phase_enthalpy` sums it, then `H_V + H_L` (a mixture-`h` provider's
+  phase gives `n_p,tot·h`, as `gamma_phi_units._phase_flow`); bitwise the verifier's value, so these streams are in
+  G7's bitwise set. `phase_source: "carried_lifted_split"`; `flash_near_phase_boundary` is false, because nothing was
+  flashed; the quoted row stays.
 - **R2 declared.** `declared_phase[S]` is not `None`. `phase_source: "declared"`; one phase of that family,
   n = `st.n`, at (T, P).
+- **Unlifted** (design-lane confirmations, 2026-11-08). A stream the verifier left unlifted, that is S such that some
+  certificate row's `reason` equals `temperature_degenerate_unlifted(<S>)` exactly (`verify.table.blocked_check`,
+  T05b spec §9.2), is not flashed: `phases: []`, `phase_source: "flash"`, `flash_near_phase_boundary: false`, and its
+  phase-derived quantities are null with `flash_failed(stream=S, status="temperature_degenerate")`. Only undeclared
+  streams are unlifted, so this follows R2. It is unreachable while the binder admits `vapor_liquid` only on a
+  heater-style `outlet` port (`instance_contract`, R4's converse); it is kept so that the path is never silent.
 - **R3 flash.** In every other case, `provider.flash(FlashRequest(state=st), context)`, and `phase_source: "flash"`.
   If the status is not `"ok"`, then `phases: []`, and every phase-derived quantity (`h`, `h_mass`, `s`, `s_mass`,
   `rho`, `H_flow`, `S_flow`, `V_flow`, the vapour fractions) is `null` with `flash_failed(stream=S, status=…)`.
   `n`, `m`, `x`, `w`, `T` and `P` are still given. If the status is `"ok"`, the phases are VAPOR from `result.vapor`
   and LIQUID from `result.liquid`, each with its outlet `n` in provider order, at the stream's (T, P). There is **no
   snap**. The substream's `flash_near_phase_boundary` is true iff two or more phases are listed and min_p |n_p,tot|/N_P
-  ≤ τ_β = 1e-8, or the stream has a quoted `independent_split` row with result `not_applicable` and reason
-  `temperature_degenerate` or `fresh_flash_unresolved` (Q4.R12 (b)); it is false for R0–R2.
+  ≤ τ_β = 1e-8 (Q4.R12 (b) (i)); it is false for R0–R2. Q4.R12 (b) (ii) (a quoted degeneracy `independent_split`
+  row) is withdrawn (design-lane confirmations, 2026-11-08): a heater-style split's own such row decides the stream by
+  R1′, and a products-style split's, which can reach R3 on the drum's inlet, judges the inlet's composition at the
+  drum's (T, P), not the inlet's state, which the verifier flashes like any other.
 - **Listing.** A phase is listed iff it exists and its total amount is `!= 0.0` (either sign, never clamped; ids never
   renumbered; Q4.R11), ordered VAPOR, LIQUID (registered family order VAPOR, LIQUID, FLUID, SOLID; within a family by
   ordinal). Its id is `{family, qualifier: null, ordinal: 1}`.
@@ -158,7 +188,9 @@ P=state[pressure_id(S)])`.
 - **h (required).** Call `evaluate_phase(PropertyRequest(state_p, family, ("h",)), context)` alone, exactly as the
   verifier does. If `"h"` is in `values` (mixture form): `n_p,tot = sum(n_p)` (Python `sum`, provider order) and
   `H_p = n_p,tot * values["h"]`. Else, if every `f"h_{c}"` is present (SYN-001's ideal-solution form):
-  `H_p = Σ_c n_p,c * values[f"h_{c}"]` from `0.0` in provider order. Else `property_not_provided`. In both forms
+  `H_p = Σ_c n_p,c * values[f"h_{c}"]` in provider order, summed as the verifier's helper of that form sums it (D1-1,
+  from the ST review, 2026-11-08): built-in `sum` (Neumaier-compensated since Python 3.12; `requires-python >=3.13`)
+  as `checks.enthalpy_flow`, and a 0.0-loop as `_phase_enthalpy` for R1′. Else `property_not_provided`. In both forms
   `h_p = H_p / n_p,tot`; for R1, `n_p,tot` is V or L.
 - **s, v (optional).** Requested only if declared in `describe().properties`, each in its **own** call
   `(…, ("s",))` / `(…, ("v",))`; otherwise `property_not_provided(provider, property)`. Only the mixture key is
@@ -192,6 +224,9 @@ Each stream carries `checks`: every certificate row with `category` in {`phase_a
 the overall section carries the row `id == "energy_balance.envelope"`. A quote is `{index, id, result, scope, value,
 tolerance, reason, near_threshold}`, where `index` is the row's position in the certificate's `checks` array, so the
 full row is at `get_artifact("<bundle>/solution-certificate.json", pointer="/checks/<index>")`.
+A products-style split's rows have the drum's inlet as subject (`LiftedSplit.stream`), so they are quoted on the inlet,
+but they judge the inlet's composition at the drum's (T, P) and do not enter the inlet's phase rule (§4.2; design-lane
+confirmations, 2026-11-08).
 
 ### 4.5 Energy summary (computed at the stored state)
 
@@ -204,15 +239,19 @@ full row is at `get_artifact("<bundle>/solution-certificate.json", pointer="/che
     not external and is visible through `ports`.
   - `W`: for a model in `WORK_MODELS`, `state[work_id(U)]`; otherwise `0.0`.
   - `closure = (Q + W) − (H_out − H_in)`, computed **iff** the unit has at least one quoted energy row (the verifier has
-    an energy form for its model). Otherwise it is null, with `energy_balance_undefined(unit, model)`. An absent stream
-    Ḣ makes `H_in`, `H_out` and `closure` null, with `stream_enthalpy_absent(subject=U, streams=[…])`.
+    an energy form for its model). Otherwise it is null, with `energy_balance_undefined(unit, model)`, even when a
+    stream Ḣ is also absent (D1-13, from the ST review, 2026-11-08). An absent stream Ḣ makes `H_in`, `H_out` and `closure` null, with
+    `stream_enthalpy_absent(subject=U, streams=[…])`; the port's `H_flow` carries the same entry in its own `absent`
+    (D1-6).
 - `overall`: `feeds` lists the outlet-port streams of `FEED_MODELS` instances, and `products` the inlet-port streams of
   `PRODUCT_MODELS` instances (declaration order, port order, stream order: the verifier's `_feeds` and `_products`).
   `Q = Σ` over instances (one loop; EXTERNAL → `state[duty_id]`, STAGED → `column.duty`), `W = Σ` over WORK
   instances, `H_feeds` and `H_products` accumulated from 0.0, and
   `closure = (Q + W) − (H_products − H_feeds)`. That is `_envelope_energy`'s arithmetic, in the same order. A
   closed loop has empty lists and a closure of `Q + W`.
-- `convention` (the provider's), `judged_at`, and `verification_status` (the certificate's) sit beside them.
+- `convention` (the provider's), `judged_at`, and `verification_status` (the certificate's) sit beside them: `energy`
+  holds `{convention, units, overall}`, and `judged_at` and `verification_status` sit at the document root, §5's
+  layout (D1-11, from the ST review, 2026-11-08).
 
 ## 5. The document `stream-table-v1` (`_data/schemas/stream-table.schema.json`)
 
@@ -232,17 +271,20 @@ root: {schema_version: "stream-table-v1",
 stream: {id, from: str|null, to: str|null, T: q, P: number, dormant: bool,
   substreams: [substream], checks: [quote], absent: {name: entry}}
 substream: {id: "mixed", kind: "mixed", components: [str], convention: str,
-  phase_source: str  (registered: zero_flow | carried_split | declared | flash; open),
+  phase_source: str  (registered: zero_flow | carried_split | carried_lifted_split | declared | flash; open),
   flash_near_phase_boundary: bool,
   n: [number], m: [number], x: [q]|null, w: [q]|null, n_total, m_total: number,
   H_flow, S_flow, V_flow, h, h_mass, s, s_mass, rho, vapor_fraction_molar, vapor_fraction_mass: q,
   phases: [phase], absent: {name: entry}}
 phase: {id: {family: str ^[A-Z][A-Z0-9_]*$, qualifier: str|null ^[A-Za-z0-9_.:-]+$, ordinal: int>=1},
-  n, m: [number], x, w: [number], n_total, m_total, phase_fraction_molar, phase_fraction_mass: number,
+  n, m: [number], x, w: [q]|null, n_total, m_total: number, phase_fraction_molar, phase_fraction_mass: q,
   H_flow, S_flow, V_flow, h, h_mass, s, s_mass, v, rho: q, absent: {name: entry}}
 entry: {code: str, params: {str: str|number|[str]}}
+# D1-6, D1-7 (from the ST review, 2026-11-08): a port carries `absent` (null iff absent holds); a phase's `x` and `w` are given or null
+# whole, and its fractions are `q` (Q4.R11 (c), Q4.A14 (d): an underflowed phase mass).
 quote: {index: int, id, result, scope: str, value, tolerance: q, reason: str, near_threshold: bool}
-unit: {id, model: str, ports: [{port, direction: "inlet"|"outlet", streams: [str], H_flow: q}],
+unit: {id, model: str, ports: [{port, direction: "inlet"|"outlet", streams: [str], H_flow: q,
+  absent: {name: entry}}],
   H_in, H_out: q, Q, W: number, closure: q, checks: [quote], absent: {name: entry}}
 overall: {feeds, products: [str], Q, W: number, H_feeds, H_products, closure: q, checks: [quote],
   absent: {name: entry}}
@@ -272,7 +314,9 @@ job_id, run_outcome`), the same helper as `get_artifact`; an unavailable basis i
 ### 6.2 Python
 
 The method above. `application.stream_table.from_bundle(directory)` is a documented library helper (not contract) for
-bundle directories; 0.3.0 bundles included.
+bundle directories; 0.3.0 bundles included. A directory's `source` has `job_id` and `bundle_id` null, and its
+`not_found` detail uses MSG's member fields (`bundle_id, member, members, job_id, run_outcome`) with nulls for what a
+directory lacks (D1-14, from the ST review, 2026-11-08). With the bundle's `solve-path.json`, the recorded route keys the units (S4).
 
 ### 6.3 CLI
 
@@ -304,12 +348,12 @@ bundle directories; 0.3.0 bundles included.
 | code | params | family / kind |
 | --- | --- | --- |
 | `zero_flow` (reuse the entry if MSG has one; add `stream`) | `stream` | notice / notice |
-| `property_not_provided` | `provider`, `property` | refusal / not_supported; gap `{limitation: null, capability: "property:<property>"}` |
+| `property_not_provided` | `provider`, `property` | refusal / not_supported; gap `{limitation: null, capability: "this property from the flowsheet's property basis"}` (D4-1, from the ST review, 2026-11-08) |
 | `property_evaluation_failed` | `stream`, `phase`, `property`, `status` | refusal / numerical |
 | `flash_failed` | `stream`, `status` | refusal / numerical |
 | `value_not_finite` | `subject`, `quantity` | refusal / numerical |
 | `stream_enthalpy_absent` | `subject`, `streams` (list) | notice / notice; `see_also` the four above |
-| `energy_balance_undefined` | `unit`, `model` | refusal / not_supported; gap `{limitation: null, capability: "energy_form:<model>"}` |
+| `energy_balance_undefined` | `unit`, `model` | refusal / not_supported; gap `{limitation: null, capability: "an energy balance check for this unit's model"}` (D4-1, from the ST review, 2026-11-08) |
 
 ## 7. Identity and migration
 
@@ -391,7 +435,8 @@ The corpus is F0's RC bundle set plus TH-C1 (`benchmarks/s11/thermal/TH-C1.json`
   1e-10`, and `y_i = K_i x_i` to 1e-9 relative, with K from the provider's `lnK` at (T, P). This catches a swap of the
   VAPOR and LIQUID outlets.
 - **G7 verifier equivalence (bitwise), same state and context.** In the test only, call the verifier helper of the basis
-  form: R1 `thermal.saturated_enthalpy`; R2 on DECLARED_MIXTURE and GAMMA_PHI forms `forms.enthalpy_flow`; R3
+  form: R1 `thermal.saturated_enthalpy`; R1′ `table._phase_enthalpy` (V) + (L) at the split's `(T, P)` (the ST
+  review, 2026-11-08); R2 on DECLARED_MIXTURE and GAMMA_PHI forms `forms.enthalpy_flow`; R3
   single-phase flashes `checks.enthalpy_flow` (SYN) and `pr_c1.enthalpy_flow` (PR). ST's `H_flow` must equal the
   helper's result bitwise for every such stream; the other cases are counted and reported. Q1.A15 (c); Q4.A14 (a)–(c).
 - **G8 envelope agreement.** Where `judged_at == "final_state"` and every envelope stream is G7-bitwise,
@@ -438,7 +483,11 @@ The corpus is F0's RC bundle set plus TH-C1 (`benchmarks/s11/thermal/TH-C1.json`
   decision, so ST's Ḣ and vapour fraction may differ slightly from what was judged. A second hazard is the two
   provider value shapes (`h` against `h_<c>`). Mitigations: the quoted checks, `judged_at`, and G6–G8. Ruled by Q4.R12
   (Amendment 5): the raw flash stays; `flash_near_phase_boundary` and the quoted `independent_split` rows mark where the
-  verifier may have decided otherwise; G16.
+  verifier may have decided otherwise; G16. *Scope of Q4.R12 (a), from the ST review, 2026-11-08:* the raw flash stays
+  wherever the verifier could flash. Where it could not, R1′ reads the carried lifted split (a heater-style split's own
+  degeneracy `independent_split` row), or the table gives no number (a stream the verifier left unlifted); design-lane
+  confirmations, 2026-11-08. *Rejected:* (a) exempting a flagged envelope from G8, which would loosen a gate
+  around a wrong number (`T05b:SC-1`'s S2 was 2016 W low with a vapour fraction of 0); and reading every lifted split.
 
 ## 13. Specifier questions (scientific semantics; the default applies until ruled)
 
@@ -451,3 +500,24 @@ is accepted for `h` only (ideal-solution additivity), never for `s` or `v`. **SQ
 amount is `!= 0.0`; a saturated liquid with V = 0 shows one phase, and its vapour fraction is still defined (0.0). Ruled
 2026-11-06 (foundation rulings Amendment 5): SQ-ST-1 Q4.R10, SQ-ST-2 Q1.R11, SQ-ST-3 Q4.R12, SQ-ST-4 Q1.R12, SQ-ST-5
 Q2.R11, SQ-ST-6 Q4.R11.
+
+## Amendment — design-lane confirmations (2026-11-08)
+
+Ruled in `docs/reviews/ST-review.md` §Design-lane confirmations (rulings 3 and 5). A products-style split's
+`independent_split.<U>.<S>` row has the drum's inlet as subject but says nothing about the inlet's own Ḣ, and the
+verifier's `unlifted` streams carry no `independent_split` row. Replaced text, verbatim:
+
+- §4.2 R1′ trigger: "and the certificate holds an `independent_split` row with subject S, result `not_applicable` and
+  a reason in {`temperature_degenerate`, `fresh_flash_unresolved`}." Now: that split's own row,
+  `independent_split.<U>.<S>`.
+- §4.2 R1′, last sentence: "**A flagged stream that reaches R3 with no such split** (the verifier's `unlifted` case)
+  is not flashed: `phases: []`, and its phase-derived quantities are null with `flash_failed(stream=S,
+  status="temperature_degenerate")`." Now: the **Unlifted** bullet after R2, keyed on the reason
+  `temperature_degenerate_unlifted(<S>)`.
+- §4.2 R3: "Q4.R12 (b) (ii) (a quoted degeneracy `independent_split` row) no longer reaches a flash: since the ST
+  review (2026-11-08), R1′ decides every such stream." Now: (b) (ii) withdrawn, with the reason.
+- §12 Riskiest point: "Where it could not (a degeneracy `independent_split` row), R1′ reads the carried lifted split,
+  or gives no number." Now: R1′ for a heater-style split's own row; no number for an unlifted stream.
+- §4.4: one sentence added (a products-style split's rows are quoted on the inlet and do not enter its phase rule).
+
+No served document, G7, G8 or G8u result moves (the review's §Design-lane confirmations, F3 and Acceptance).

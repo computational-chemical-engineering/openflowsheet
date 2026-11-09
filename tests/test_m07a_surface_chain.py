@@ -6,10 +6,11 @@ sources. G16-b, the step's other half, runs in the RC job only (40 reference run
 
 On `main` the chain has three links: c_3 (R-295, M04's `surrogate_study` job kind) was registered at
 the alpha's merge (R-457). MSG adds c_4 (R-934, ADR 0058's `RunResult.failure`; MSG-G10), X02
-c_5 (R-950, ADR 0070's `solve_body.warm_start`), and OPT c_6 (R-960, ADR 0071's `optimize` job
+c_5 (R-950, ADR 0070's `solve_body.warm_start`), OPT c_6 (R-960, ADR 0071's `optimize` job
 operation, `validate`'s `optimization` member and the two description texts it changed; OPT D-51,
-D-59, D-87). Every control first asserts that the unmodified served list passes, so no control
-passes merely because the chain already fails. The released 0.2.0a1's step 8 (two links) is
+D-59, D-87), and ST c_7 (R-1000, ADR 0068's `get_stream_table` tool; ST G12). Every control
+first asserts that the unmodified served list passes, so no control passes merely because the
+chain already fails. The released 0.2.0a1's step 8 (two links) is
 read from its committed record at `C_α²`, not re-run (`test_m07a_a37_the_released_step_8_record`).
 """
 
@@ -40,7 +41,7 @@ ALPHA_SURFACE = (
     REPO_ROOT / "evidence" / "M07a" / C_ALPHA_2 / "rc" / "surface" / "rc-alpha-surface.json"
 )
 REGISTER = REPO_ROOT / "docs" / "decision-register.md"
-L0, L1, L2, L3, L4, L5 = m07a_rc.LINKS
+L0, L1, L2, L3, L4, L5, L6 = m07a_rc.LINKS
 
 
 @pytest.fixture
@@ -57,7 +58,8 @@ def assert_the_unmodified_list_passes(served: list[dict[str, Any]]) -> None:
 def test_m07a_a37_the_chain_holds_on_the_served_list(served: list[dict[str, Any]]) -> None:
     rows = m07a_rc.chain(served)
     assert [(r["item"], r["link"]) for r in rows] == [
-        (1, "c_6"),
+        (1, "c_7"),
+        (2, "c_7"),
         (2, "c_6"),
         (2, "c_5"),
         (2, "c_4"),
@@ -89,8 +91,8 @@ def test_m07a_a37_control_i_a_member_added_to_another_tools_output_schema(
     (tool,) = [t for t in served if t["name"] == "get_project"]
     tool["outputSchema"]["properties"]["probe"] = {"type": "string"}
     rows = m07a_rc.chain(served)
-    assert m07a_rc.first_failure(rows) == "c_6 (R-960)"
-    assert [r["pass"] for r in rows[:5]] == [False, False, False, False, False]
+    assert m07a_rc.first_failure(rows) == "c_7 (R-1000)"
+    assert [r["pass"] for r in rows[:6]] == [False] * 6
 
 
 def one_member_too_many(strip: Any) -> Any:
@@ -110,9 +112,9 @@ def test_m07a_a37_control_ii_s_m_strips_one_member_too_many(
 ) -> None:
     assert_the_unmodified_list_passes(served)
     too_many = one_member_too_many(m07a_rc.strip_m04)
-    links = (L0, L1, m07a_rc.Link("c_3", "R-295", too_many, L2.digest), L3, L4, L5)
+    links = (L0, L1, m07a_rc.Link("c_3", "R-295", too_many, L2.digest), L3, L4, L5, L6)
     rows = m07a_rc.chain(served, links)
-    assert all(row["pass"] for row in rows[:4])
+    assert all(row["pass"] for row in rows[:5])
     assert m07a_rc.first_failure(rows) == "c_3 (R-295)"
 
 
@@ -121,9 +123,9 @@ def test_m07a_a37_control_ii_prime_an_inner_link_strips_one_member_too_many(
 ) -> None:
     assert_the_unmodified_list_passes(served)
     too_many = one_member_too_many(m07a_rc.strip_m02)
-    links = (L0, m07a_rc.Link("c_2", "R-234", too_many, L1.digest), L2, L3, L4, L5)
+    links = (L0, m07a_rc.Link("c_2", "R-234", too_many, L1.digest), L2, L3, L4, L5, L6)
     rows = m07a_rc.chain(served, links)
-    assert all(row["pass"] for row in rows[:5])
+    assert all(row["pass"] for row in rows[:6])
     assert m07a_rc.first_failure(rows) == "c_2 (R-234)"
 
 
@@ -137,9 +139,9 @@ def test_m07a_a37_control_iii_one_byte_of_another_description_changed() -> None:
 
 def test_m07a_a37_control_iv_elements_left_in_place(served: list[dict[str, Any]]) -> None:
     assert_the_unmodified_list_passes(served)
-    links = (m07a_rc.Link("c_1", "R-192", lambda tools: tools, L0.digest), L1, L2, L3, L4, L5)
+    links = (m07a_rc.Link("c_1", "R-192", lambda tools: tools, L0.digest), L1, L2, L3, L4, L5, L6)
     rows = m07a_rc.chain(served, links)
-    assert [r["pass"] for r in rows[:6]] == [True] * 6
+    assert [r["pass"] for r in rows[:7]] == [True] * 7
     assert m07a_rc.first_failure(rows) == "c_1 (R-192)"
 
 
@@ -240,9 +242,9 @@ def test_msg_the_added_description_is_pinned_at_its_recorded_hash() -> None:
 def test_msg_g10_control_c_4_left_in_place(served: list[dict[str, Any]]) -> None:
     """A c_4 whose strip takes nothing out fails at c_3: `failure` reaches M04's digest."""
     assert_the_unmodified_list_passes(served)
-    links = (L0, L1, L2, m07a_rc.Link("c_4", "R-934", lambda tools: tools, L3.digest), L4, L5)
+    links = (L0, L1, L2, m07a_rc.Link("c_4", "R-934", lambda tools: tools, L3.digest), L4, L5, L6)
     rows = m07a_rc.chain(served, links)
-    assert rows[0]["pass"] and rows[1]["pass"] and rows[2]["pass"]
+    assert all(row["pass"] for row in rows[:4])
     assert m07a_rc.first_failure(rows) == "c_4 (R-934)"
 
 
@@ -265,9 +267,9 @@ def test_x02_link_c_5_is_x02s_strip_and_digest(served: list[dict[str, Any]]) -> 
 def test_x02_control_c_5_left_in_place(served: list[dict[str, Any]]) -> None:
     """A c_5 whose strip takes nothing out fails at c_5: `warm_start` reaches MSG's digest."""
     assert_the_unmodified_list_passes(served)
-    links = (L0, L1, L2, L3, m07a_rc.Link("c_5", "R-950", lambda tools: tools, L4.digest), L5)
+    links = (L0, L1, L2, L3, m07a_rc.Link("c_5", "R-950", lambda tools: tools, L4.digest), L5, L6)
     rows = m07a_rc.chain(served, links)
-    assert rows[0]["pass"] and rows[1]["pass"]
+    assert all(row["pass"] for row in rows[:3])
     assert m07a_rc.first_failure(rows) == "c_5 (R-950)"
 
 
@@ -291,9 +293,9 @@ def test_opt_link_c_6_is_opts_strip_and_digest(served: list[dict[str, Any]]) -> 
 def test_opt_control_c_6_left_in_place(served: list[dict[str, Any]]) -> None:
     """A c_6 whose strip takes nothing out fails at c_6: OPT's additions reach X02's digest."""
     assert_the_unmodified_list_passes(served)
-    links = (L0, L1, L2, L3, L4, m07a_rc.Link("c_6", "R-960", lambda tools: tools, L5.digest))
+    links = (L0, L1, L2, L3, L4, m07a_rc.Link("c_6", "R-960", lambda tools: tools, L5.digest), L6)
     rows = m07a_rc.chain(served, links)
-    assert rows[0]["pass"]
+    assert rows[0]["pass"] and rows[1]["pass"]
     assert m07a_rc.first_failure(rows) == "c_6 (R-960)"
 
 
@@ -305,9 +307,47 @@ def test_opt_control_c_6_restores_the_texts_only_with_the_strip(
     from opt_schema_support import OPT_DESCRIPTIONS, _without
 
     assert_the_unmodified_list_passes(served)
-    links = (L0, L1, L2, L3, L4, m07a_rc.Link("c_6", "R-960", _without, L5.digest))
+    links = (L0, L1, L2, L3, L4, m07a_rc.Link("c_6", "R-960", _without, L5.digest), L6)
     rows = m07a_rc.chain(served, links)
-    assert rows[0]["pass"]
+    assert rows[0]["pass"] and rows[1]["pass"]
     assert m07a_rc.first_failure(rows) == "c_6 (R-960)"
     problems = m07a_rc.description_problems(m07a_rc.description_texts())
     assert sorted(p.split(".md:")[0] for p in problems) == sorted(OPT_DESCRIPTIONS)
+
+
+def test_st_g12_link_c_7_is_sts_strip_and_digest(served: list[dict[str, Any]]) -> None:
+    """c_7 (R-1000, ADR 0068): `without_st` is the strip, `D_7` the served digest the surface-digest
+    test registers (ST G12), `D_6` is what the strip leaves, and R-1000's register entry carries
+    both (R-457's form)."""
+    import test_t08_w2_surface_digest as surface
+    from st_schema_support import without_st
+
+    assert m07a_rc.strip_st(served) == without_st(copy.deepcopy(served))
+    assert L6.digest == surface.ST_SERVED_SHA256
+    assert m07a_rc.digest(m07a_rc.strip_st(served)) == L5.digest == surface.OPT_SERVED_SHA256
+    register = REGISTER.read_text(encoding="utf-8")
+    start = register.index("\n## R-1000 ")
+    end = register.find("\n## R-", start + 1)
+    entry = register[start : end if end != -1 else None]
+    assert L6.digest in entry and L5.digest in entry
+
+
+def test_st_the_added_description_is_pinned_at_its_recorded_hash() -> None:
+    """§5.3 item 4 with c_7 (R-1000, ADR 0068): `get_stream_table.md` is pinned at `REVIEW.json`'s
+    hash, and one byte of it changed is caught as ST's."""
+    record = json.loads((REPO_ROOT / REVIEW).read_text(encoding="utf-8"))
+    for name, sha256 in m07a_rc.ST_FILE_SHA256.items():
+        assert record["operations"][name]["sha256"] == sha256
+    texts = m07a_rc.description_texts()
+    texts["get_stream_table"] = texts["get_stream_table"].replace(".", ",", 1)
+    (problem,) = m07a_rc.description_problems(m07a_rc.texts_before_links(texts))
+    assert problem.startswith("get_stream_table.md: ") and " is not ST's " in problem
+
+
+def test_st_g12_control_c_7_left_in_place(served: list[dict[str, Any]]) -> None:
+    """A c_7 whose strip takes nothing out fails at c_7: the tool reaches OPT's digest."""
+    assert_the_unmodified_list_passes(served)
+    links = (L0, L1, L2, L3, L4, L5, m07a_rc.Link("c_7", "R-1000", lambda tools: tools, L6.digest))
+    rows = m07a_rc.chain(served, links)
+    assert rows[0]["pass"]
+    assert m07a_rc.first_failure(rows) == "c_7 (R-1000)"

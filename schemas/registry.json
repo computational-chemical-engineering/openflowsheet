@@ -38,6 +38,7 @@
   "solve-plan.schema.json",
   "solve-policy.schema.json",
   "specification.schema.json",
+  "stream-table.schema.json",
   "study.schema.json",
   "surrogate-manifest.schema.json",
   "transaction-result.schema.json",

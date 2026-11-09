@@ -79,6 +79,8 @@ OPERATION_RIGHTS: Final[Mapping[str, Right]] = {
     "inspect_structure": "read",
     "preview_change": "read",
     "get_artifact": "read",
+    # ADR 0068 (ST): an ended job's stream table, as `get_artifact` reads its bundle
+    "get_stream_table": "read",
     "list_audit": "read",
     # ADR 0058 D7 (MSG): a message-catalogue entry
     "explain": "read",

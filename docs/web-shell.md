@@ -82,14 +82,15 @@ The tables below list each screen's reads (§6 of the design note, plus the extr
 | `#/job/{jid}` | Run: summary, attempts, trace, plan, bundle files; live while running; Cancel | `get_job`, `list_job_events`, `wait_job`, `get_job_result`, `get_artifact`, `artifact_bytes` |
 | `#/job/{jid}/certificate` | Certificate | `get_job_result`, `get_artifact`, `artifact_bytes`, `inspect_structure` |
 | `#/job/{jid}/failure` | Failure bundle | `get_job_result`, `get_artifact`, `artifact_bytes` |
-| `#/job/{jid}/streams` | Streams and units | `get_job_result`, `get_artifact`, `artifact_bytes`, `inspect_structure`, `list_models` |
+| `#/job/{jid}/streams` | Streams, stream table and units | `get_job_result`, `get_artifact`, `artifact_bytes`, `inspect_structure`, `list_models`, `get_stream_table` |
 | `#/job/{jid}/row/{row}` | Equation view at a run's state | `get_job_result`, `get_artifact`, `artifact_bytes`, `inspect_structure` |
 | `#/job/{jid}/file/{name}` | One bundle member as a JSON tree, with download | `get_job_result`, `get_artifact`, `artifact_bytes` |
 | `#/compare/rev/{a}/{b}` | Revision comparison | `diff_revisions`, `get_revision` ×2 |
 | `#/compare/run/{j1}/{j2}` | Scenario view (run comparison) | per run: `get_job_result`, `get_artifact`, `artifact_bytes` |
 | `#/history` | Agent history (`?principal=all` or another principal needs `policy`) | `list_audit`, then per linked row: `get_revision`, `diff_revisions`, `validate`, `get_job`, `get_job_result` |
 
-Together these are 17 operations, and the shell calls no other (`tests/test_m06_static_scan.py`, and in a
+Together these are 18 operations — §6's 17 and, since ST (ADR 0068; Frank's O3, 2026-11-08),
+`get_stream_table` — and the shell calls no other (`tests/test_m06_static_scan.py`, and in a
 browser `tests/test_m06_browser_smoke.py`).
 
 ### What each screen does not claim
@@ -137,6 +138,17 @@ browser `tests/test_m06_browser_smoke.py`).
   - The vapour fraction of a phase split is display arithmetic. Components are labelled in the revision's
     component-set order.
   - A run without a solution state says so and shows its best checkpoint.
+  - The stream table is `get_stream_table`'s document as the server computes it from the run's bundle
+    (ADR 0068), read whole: for each stream its total and one row per phase, with the phase source
+    (`declared`, `flash`, `carried_split`, …), the near-phase-boundary flag, phase fractions, flows,
+    `h`, `s`, `rho` and the enthalpy, entropy and volume flows, then the energy summary per unit and
+    overall. Columns are named with their SI unit; nothing is converted or recomputed.
+  - A value the document leaves null shows `—` with a footnote mark; the footnote gives the reason in
+    plain words and its code (`property_not_provided(…)`, …). A stream whose phase split the flash
+    could not compute gets a notice saying so, with the flash's status; its flows, T and P stay.
+  - When the server gives no table (no solution state, a basis this installation cannot evaluate), the
+    screen shows its refusal and the rest of the screen as before. A run that is not `VERIFIED` is
+    flagged above the table; the table judges nothing.
 - **Bundle file.**
   - The member's bytes as stored, read through the raw export and checked against the SHA-256 the bundle
     listing registers: "match", or "mismatch" with a warning banner. Over plain HTTP from another machine
@@ -228,7 +240,7 @@ the 17 operations, the static scan and the CSP.
 | --- | --- |
 | G1, static | `tests/test_m06_static_scan.py` |
 | G1, dynamic | `tests/test_m06_browser_smoke.py`, which runs with a request recorder |
-| G2 | `tests/test_m06_http_contract.py`: all 17 operations over HTTP on the W26 fixture project |
+| G2 | `tests/test_m06_http_contract.py`: all 18 operations over HTTP on the W26 fixture project |
 | G8 | `tests/test_m06_wo4_serving.py` checks the headers; the browser test checks hostile text in the DOM |
 | G11 | `tests/test_m06_browser_smoke.py`: every route renders |
 | Screen logic | Node: `node --test "tests/web/*.test.mjs"` |
