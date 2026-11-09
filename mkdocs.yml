@@ -103,6 +103,7 @@ nav:
   - User guide:
       - Concepts: guide/concepts.md
       - Stream table: guide/stream-table.md
+      - Display units: guide/display-units.md
       - Property bases: guide/property-bases.md
       - Unit catalogue: guide/units.md
       - Distillation column: guide/column.md
