@@ -336,3 +336,15 @@ results), `40fba287` (runner self-contained), `b91b0ddb` (registration, results 
   test — N1 `aa47dabf12e4000a1635c10d950cca3ef4d9db6d1cb5d022c5a82b9dc4aada73` (WO-4's hand measurement), C3
   `f835da24214f7f015e28a398d895c7b37cf1096b863fd58b3493aa04dd009d9e` — so the aarch64 leg checks the
   cross-architecture half against the same value, as §8.2 G8 states it. No workflow change. 2 passed, 25 s.
+- **D-45 (merge prep 8: a branch failure the WO-7 battery missed).** `tests/test_t08_evidence_manifest.py::
+  test_tested_with_v14_b_the_only_fail_and_accepted` failed: T08's regenerated manifest went `implemented` because
+  B27 (`scripts/t08_evidence_manifest.py` `_m_b27`) compares the envelope's `solve_policies` members with T08's four,
+  and since WO-4 the envelope also offers `RRC-revision-v1`. Present on `wp/RRC` before the merge (`fe572ad5` has the
+  envelope member and the unrestricted measure); a full gate would have caught it. Fixed by B13's rule, as S11 I1 did
+  for the model axis (`2587887c`): `_NOT_T08_POLICIES = {"RRC-revision-v1"}`, so B27 still judges T08's four exactly,
+  no case removed. 15 passed.
+- **Merge-prep gates (2026-11-09, x86-64, worktree copy confirmed).** `test_rrc_*` (incl. G8), `test_opt*` (default
+  env), recovery edges, surface chain/digest, global state, descriptions, R4-G3 files, `test_msg_*`: 685 passed,
+  21 deselected, 3 xfailed. `test_m07a_harvest.py tests/test_t08*.py tests/test_evidence_manifests.py`: 1119 passed,
+  2 skipped, 1 failed (D-45), then `test_t08_evidence_manifest.py` 15 passed. ruff, ruff format (1029 files), mypy
+  (328 files) clean. F0 PASS: M1 50/50, M2–M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 35/35.
