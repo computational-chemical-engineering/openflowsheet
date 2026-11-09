@@ -406,3 +406,57 @@ the constant `P0` (6.12.111), so any J that commits the K3 re-take would fail it
 the test reads the old platform from the committed record and re-takes onto a made-up platform `P_RETAKE`; the proof
 (`path=128 version=0 platform=4 other=0 environment=equal`) is unchanged. Alternative: J updates P0/P1 with the
 re-take. Test-only commit; the design lane confirms with Q-S6a–c.
+
+## S-6 confirmation round applied (build lane, `wp/REL040p`, 2026-11-09)
+
+Ruling `docs/reviews/REL040-s6-ruling.md` §11 (Q-S6a–d confirmed). Briefs `docs/briefs/REL040-s6-wo78.md` and, after a
+TRS2 reset, `docs/briefs/REL040-s6-wo78-finish.md`.
+
+| Item | Commit | Measured |
+| --- | --- | --- |
+| WO-8 (§11.4) | `d7258775` | S6R-12…15 under §8.0's no-host-dependence rule: platform literals made up, asserted ≠ P0 at import; S6R-14's tree-file case sets a made-up stale hash on the committed side |
+| WO-7 (§11.3) | `26ad9d7f` | (a) log digests compared exactly, never in the map; (b) `--retake-into` keeps non-empty child logs. S6R-27 (1–3 discriminate against `d7258775`'s tool; 4 pins S6R-10's two lines), S6R-28 |
+| A-11 item 7 (§11.2) | `0b62c12d` | verbatim into RP §7.1 and §17.4; `tests/test_rel_release_gate.py` 60 passed |
+
+At `0b62c12d`: `tests/test_m05_retake_digest_only.py tests/test_m01_idaes_retake_diff.py` 50 passed; the default tier
+(`pytest -q -rs`, serial) 16007 passed, 3206 skipped, 219 deselected, 3 xfailed, 0 failed (3775 s).
+
+**Re-takes at `0b62c12d` (the WO-6 rerun's outputs were on the session's tmpfs and lost in the TRS2 reset; both were
+re-taken, same commands).** Kept git-ignored in the rel040p worktree: `.cache/s6r/real-0b62c12d/` (REAL, proof and run
+logs) and `.cache/s6r/head0b/rc/step11/` (IDAES).
+- REAL: fresh `git worktree add --detach` at `0b62c12d`, `git status --porcelain --ignored` empty before the run; the
+  `m05` worktree's `.venv-nlp` under `env -i` (HOME, PATH, LANG), `OMP_NUM_THREADS=1`, `PYOMO_CONFIG_DIR`,
+  `PYTHONNOUSERSITE=1`, `PYTHONPATH=src:<nlp-test-tools>`; `scripts/m05_wo9_real.py --retake-into <scratch>`. Exit 0,
+  wall 1915 s, `DECISION_STABLE`, T* = 653.1500351610193, study_cold=48, bijection_violations=0, `child-logs kept=0`.
+  The written file set equals the committed one.
+- **WO-7 live proof line** (`scripts/m05_retake_diff.py --digest-only <committed stem> <re-take> --old-platform
+  'Linux-6.12.111+deb13-amd64-x86_64-with-glibc2.41'`, the committed S0 coupling record's platform), with WO-7 (a) in
+  the tool: `RETAKE-DIGEST-ONLY PASS trust-region-study-real: changed-digests=103 digest=504 timing=528 path=128
+  version=0 platform=4 other=0 environment=equal` — byte for byte the WO-6 rerun's (G1) line.
+- IDAES: `release_rc.py local --line 0.4 --steps 11` at `0b62c12d`; the record is byte-identical to WO-6's
+  (`76068ff5…`); `a40.idaes_numbers_identical` fails on `environment.platform`, `inputs.reference_values_yaml_sha256`
+  (expected at the head); `m01_idaes_retake_diff.py` → `IDAES-RETAKE PASS
+  differing=environment.platform,inputs.reference_values_yaml_sha256 platform=1 inputs=1 other=0`.
+
+**S6R-29 (§11.4): FAIL on item 3 — stopped here for the design lane.** J′ = `0b62c12d` + one local commit copying both
+re-takes in (`f056d72f` on `scratch/s6r29j`, fresh worktree; never pushed; deleted after).
+1. Made as S6R-24 did; 9 files changed (8 REAL record files, the environment sidecar equal; the IDAES record).
+2. PASS: the two modules 50 passed at the head and 50 passed at J′, same test ids.
+3. **FAIL**: the default tier at J′ (serial, 3818 s): 3 failed, 16004 passed, 3206 skipped, 219 deselected, 3 xfailed.
+   Same 19216 test ids collected at both (one id differs only by an object address in its repr,
+   `test_t07_w2d_noncanonical…_RepeatedKeys object at 0x…`). The only status changes, pass → fail:
+   `tests/test_m07_journey_record.py::test_a21_a_re_run_names_the_offered_m05_record_tracked_with_its_sha256`
+   `[2c508b5]`, `[2d945b5]`, `[974c395]`: `assert sha256(benchmarks/m05/records/trust-region-study-real.json) ==
+   offered["sha256"]` — `55c36974…` (J′) ≠ `09cf5366…` (committed, and named in those three committed M07 journey
+   records `benchmarks/m07/journey/<C>/journey.json` and in M05's manifests `56fb2fac`, `cfecb15a`). Not a host test as
+   such: A2.3 (R-454) binds each committed journey record to the current bytes of M05's REAL record, so any J that
+   commits the REAL re-take fails these three in CI's default tier. Step 14 (`m03_m05_all_tiers`) does not run this
+   module, which is why S6R-24 did not see it.
+4. J′ deleted (worktree and branch).
+
+**O-6's answer (§11.7): yes, one more module.** Beyond WO-8's module, `tests/test_m07_journey_record.py`'s A2.3 test
+(3 parametrizations) depends on the committed REAL record. Not changed here (brief: no fix without the design lane).
+Question for the design lane, Q-S6e: how does A2.3 read a committed journey's `offered` once J replaces the record it
+names — e.g. check `tracked_unmodified` and the sha256 against the file at the journey's own commit (`git show
+<C>:<path>`) rather than the working tree — and does J carry that test change before K3? Default (not applied): the
+historical reading, test-only, one commit before J, under §8.0's rule.
