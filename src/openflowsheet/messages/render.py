@@ -36,6 +36,7 @@ from openflowsheet.messages.catalogue import (
     TEMPLATE_FIELDS,
     Catalogue,
     Entry,
+    Param,
     parsed,
 )
 from openflowsheet.messages.diagnostic import Diagnostic, Quantity
@@ -48,6 +49,7 @@ from openflowsheet.messages.legacy import (
     parse_check,
     resolve,
 )
+from openflowsheet.units import display_item
 
 Surface = Literal["python", "cli", "http", "mcp"]
 Explanation = dict[str, Any]
@@ -61,7 +63,10 @@ UNBOUND_INPUT_KINDS = frozenset({"conflict", "inadmissible", "incomplete"})
 @dataclass(frozen=True)
 class RenderContext:
     """What a rendering may know besides the chain (§4.2.5): the surface, the revision document,
-    and the ids that are context params. `display_units` is X04's slot and always `None` here."""
+    and the ids that are context params. `display_units` is the request's resolved display
+    preference (ADR 0075 D7.2, a `units.DisplayUnits`, which carries the ambient pressure): with
+    it, every quantity of a kind in the map gains its display item and renders from it; `None`
+    renders SI only."""
 
     surface: Surface | None = None
     revision: Mapping[str, Any] | None = None
@@ -126,6 +131,33 @@ def _quantity(value: object) -> tuple[float, str, str | None] | None:
     return None
 
 
+def _measured(declared: Param, value: object) -> tuple[float, str, str | None] | None:
+    """`(number, unit, kind)` of a `quantity` or `number` param's value, `None` for any other
+    type or a value that is not a finite number. A quantity document's own `kind` wins over the
+    declaration's `quantity_kind`; a bare number takes the declared `unit` and `quantity_kind`."""
+    if declared.type == "quantity":
+        quantity = _quantity(value)
+        if quantity is not None:
+            number, unit, kind = quantity
+            return number, unit, kind if kind is not None else declared.quantity_kind
+        bare = _number(value)
+        return None if bare is None else (bare, declared.unit or "", declared.quantity_kind)
+    if declared.type == "number":
+        bare = _number(value)
+        return None if bare is None else (bare, "", None)
+    return None
+
+
+def _display_item(
+    measured: tuple[float, str, str | None], display_units: Mapping[str, str] | None
+) -> dict[str, Any] | None:
+    """ADR 0075 D7.1–D7.2: the display item of a measured number under the preference, `None`
+    without a preference or when the number's kind is not in it (kinds decide, D4.1)."""
+    if display_units is None:
+        return None
+    return display_item(measured[0], measured[2], display_units)
+
+
 def _pointer(path: Sequence[str | int]) -> str:
     out = ""
     for part in path:
@@ -151,6 +183,7 @@ class _Typed:
     type: str
     value: Any
     vocabulary: str | None = None
+    display: Mapping[str, Any] | None = None
 
 
 class _Scope:
@@ -187,7 +220,11 @@ class _Scope:
             value = self.params.get(name)
             if not _present(value):
                 return None
-            return _Typed(self.types[name], value, declared.vocabulary)
+            measured = _measured(declared, value) if declared.type == "quantity" else None
+            display = (
+                None if measured is None else _display_item(measured, self.context.display_units)
+            )
+            return _Typed(self.types[name], value, declared.vocabulary, display)
         if name in self.derived:
             return self.derived[name]
         if name.endswith(("_path", "_model")):
@@ -250,6 +287,10 @@ def _format(typed: _Typed, conversion: template.Conversion, catalogue: Catalogue
     if typed.type in ELEMENT_TYPES:
         return f"'{_raw(value)}'"
     if typed.type == "quantity":
+        display = typed.display
+        if display is not None and display["value"] is not None:
+            # ADR 0075 D7.2: a converted quantity, in MSG's format; out of range shows SI.
+            return f"{format_number(display['value'])} {display['unit']}"
         quantity = _quantity(value)
         if quantity is not None:
             return f"{format_number(quantity[0])} {quantity[1]}"
@@ -444,7 +485,7 @@ def _from_entry(
         "action": action,
         "hint": request.hint,
         "elements": _elements(request, resolved),
-        "numbers": _numbers(entry, request.params),
+        "numbers": _numbers(entry, request.params, request.context.display_units),
         "gap": entry.gap,
         "chain": codes,
         "docs": entry.docs,
@@ -508,33 +549,28 @@ def _elements(request: _Request, resolved: list[tuple[int, Entry]]) -> list[dict
     return out
 
 
-def _numbers(entry: Entry, params: Mapping[str, Any]) -> list[dict[str, Any]]:
+def _numbers(
+    entry: Entry, params: Mapping[str, Any], display_units: Mapping[str, str] | None
+) -> list[dict[str, Any]]:
     out: list[dict[str, Any]] = []
     for name, declared in entry.params.items():
         if len(out) == MAX_NUMBERS:
             break
-        value = params.get(name)
-        number: float | None
-        unit: str
-        kind: str | None
-        if declared.type == "quantity":
-            quantity = _quantity(value)
-            if quantity is not None:
-                number, unit, kind = quantity
-                kind = kind if kind is not None else declared.quantity_kind
-            else:
-                number = _number(value)
-                unit, kind = declared.unit or "", declared.quantity_kind
-        elif declared.type == "number":
-            number = _number(value)
-            unit, kind = "", None
-        else:
+        measured = _measured(declared, params.get(name))
+        if measured is None:
             continue
-        if number is None:
-            continue
-        out.append(
-            {"name": name, "label": declared.label, "value": number, "unit": unit, "kind": kind}
-        )
+        number, unit, kind = measured
+        item: dict[str, Any] = {
+            "name": name,
+            "label": declared.label,
+            "value": number,
+            "unit": unit,
+            "kind": kind,
+        }
+        display = _display_item(measured, display_units)
+        if display is not None:
+            item["display"] = display
+        out.append(item)
     return out
 
 
