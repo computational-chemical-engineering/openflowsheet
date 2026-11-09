@@ -792,3 +792,12 @@ R-990…R-995; catalogue: 3 refusal-reason labels allow-listed (digest → `1492
 sha256 name); G8 had no CI coverage → new `tests/test_rrc_g8_determinism.py` (N1, C3 twice in fresh processes, x86-64
 R0 pins; aarch64 leg checks cross-arch — a different R0 there is a G8 failure to escalate, not a pin to move); T08 B27
 excludes RRC's policy as S11 did its column (design-lane glance at the manifest). F0 PASS; targeted tests green.
+
+## 2026-11-09 — MSG catalogue ruling applied on wp/MSGp (8906f870)
+
+Ruling §5 applied verbatim at base 9295f0fc; A1–A5, A7–A9 exact (digest `5e5026c5…`, review 138 → 129). A6: beyond the
+stated U05 stderr lines, U05's stdout `detail.explanation` (why/action/gap) also moves — the refusal document carries its
+explanation (MSG §3.7); `code`, `message`, `pointer` unchanged, `PINS_T07_SHA256` holds. DECISION: accept as the
+ruling's direct consequence, no new ruling → noted for the design lane's next MSG read. Alternative: a ruling round
+now. Reversible by: a later ruling. Next: after RRC merges, merge main into wp/MSGp, regenerate the digest-carrying
+fixtures (RRC's allow-list also moves the digest), CI, merge — before ST's WO-7.
