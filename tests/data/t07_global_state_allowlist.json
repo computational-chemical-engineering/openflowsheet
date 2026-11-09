@@ -58,6 +58,13 @@
       "justification": "M04: the surrogate-manifest and model-evidence schemas' validators, keyed by schema file name, with their `$ref` registry, all from the packaged schema files (immutable for the process's life); never mutated, no job or request state."
     },
     {
+      "file": "studies/nlp/request.py",
+      "line": "@cache",
+      "patterns": ["cache"],
+      "occurrences": 1,
+      "justification": "OPT WO-8 M2 (D-85): nullary `_request_validator`, the optimization-request schema's validator with its `$ref` registry of the published schemas, all from the packaged schema files (immutable for the process's life); the `application/types.py` reading repeated because `studies` never imports `application`. Never mutated, no job or request state. Kept (not rebuilt per call) because a build costs ~32 ms and `request_problems` runs several times per optimization job and on every validate."
+    },
+    {
       "file": "models/syn001/component_separator.py",
       "line": "@cache",
       "patterns": ["cache"],
@@ -175,6 +182,13 @@
       "patterns": ["cache"],
       "occurrences": 3,
       "justification": "S04 (L01 WO-2, ADR 0043): the same three nullary functions of immutable inputs as pr_c1.py, each computed once per process: load_records (the pr-lib-v1 records' bytes, parsed and checked), parameters (the Peng-Robinson parameters, a pure function of those records) and _implementation_sha256 (the module source's SHA-256, the W0.5 pattern)."
+    },
+    {
+      "file": "adapters/experiments/backends.py",
+      "line": "@functools.cache",
+      "patterns": ["cache"],
+      "occurrences": 1,
+      "justification": "X02 (ADR 0070 D10, design note \u00a75.5 'memoising the packaged scripts' hashes'): `_packaged_child_sha256`, the SHA-256 of a packaged child script by name (or None when absent), a pure function of package files that are immutable for the process's life; at most one entry per packaged child script (today `child.py` alone, X02 review ruling 1)."
     },
     {
       "file": "thermo/iapws95.py",

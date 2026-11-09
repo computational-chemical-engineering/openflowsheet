@@ -45,6 +45,7 @@ from openflowsheet.application import stream_table, validation
 from openflowsheet.application.admission import (
     active_jobs_refusal,
     admit_experiment,
+    admit_optimize,
     admit_reproduce,
     admit_solve,
     admit_surrogate_study,
@@ -62,7 +63,7 @@ from openflowsheet.application.authz import (
 from openflowsheet.application.contract import ApplicationError, Page, Projection, api_error
 from openflowsheet.application.jobs.executor import InlineExecutor, ProcessExecutor
 from openflowsheet.application.jobs.model import JOB_STATUSES, TERMINAL_STATUSES, JobStatus
-from openflowsheet.application.jobs.runner import RunContext, bundle_rows
+from openflowsheet.application.jobs.runner import RunContext, bundle_rows, record_rows
 from openflowsheet.application.policies import APPLICATION_POLICIES, DEFAULT_POLICY_ID
 from openflowsheet.application.projection import (
     DEFAULT_DEPTH,
@@ -123,6 +124,7 @@ from openflowsheet.application.types import (
     JobWait,
     MessageEntry,
     ModelRegistryView,
+    OptimizeBody,
     ProjectPolicy,
     ProjectSummary,
     ReplayPolicy,
@@ -143,6 +145,8 @@ from openflowsheet.application.validation import Task, ValidationReport
 from openflowsheet.canonical import canonical_json, document_sha256, first_noncanonical
 from openflowsheet.run.bundle import MANIFEST_NAME
 from openflowsheet.run.replay import ReplayReport
+from openflowsheet.studies.nlp.replay import MANIFEST as OPTIMIZATION_MANIFEST
+from openflowsheet.studies.nlp.replay import is_optimization_record
 
 Executor = Literal["inline", "process"]
 TASKS: tuple[str, ...] = get_args(Task)
@@ -488,7 +492,9 @@ class LocalApplication:
 
     # -------------------------------------------------------------------- Application (frozen)
 
-    def validate(self, revision_id: str, task: Task) -> ValidationReport:
+    def validate(
+        self, revision_id: str, task: Task, optimization: Mapping[str, Any] | None = None
+    ) -> ValidationReport:
         """§4.2: the stored revision's validation report for `task`; no side effects. `read`.
 
         Parameters
@@ -496,17 +502,23 @@ class LocalApplication:
         revision_id
             A revision of this project.
         task
-            `"simulation"`. `"optimization"` is refused `unsupported`.
+            `"simulation"` or `"optimization"` (OPT design §4.11, ADR 0071 D8).
+        optimization
+            The optimization request (`optimization-request.schema.json`), ADR 0019 Amendment
+            16's optional member; read only for the optimization task, and required there.
+            The static readiness only: nothing is solved.
 
         Returns
         -------
         ValidationReport
-            The status (`INVALID`, `DRAFT` or `READY_FOR_SIMULATION`) and every check.
+            The status (`INVALID`, `DRAFT`, `READY_FOR_SIMULATION` or, for the optimization
+            task, `READY_FOR_OPTIMIZATION`) and every check.
 
         Raises
         ------
         ApplicationError
-            `invalid_request`, `unsupported` (the optimization task) or `not_found`.
+            `invalid_request` (also the missing `optimization`), `unsupported`
+            (`nlp_solver_unavailable`, before the revision is read) or `not_found`.
         """
         self._authorize("validate")
         if task not in TASKS:
@@ -517,21 +529,40 @@ class LocalApplication:
                 pointer="/task",
             )
         if task == "optimization":
-            # U05 (T08 review 2, Ruling 1): no optimization formulation is checked in v0.1, so no
-            # `READY_FOR_OPTIMIZATION`; refused before the revision is read.
-            self._refuse(
-                "unsupported",
-                "task_unsupported(optimization)",
-                operation="validate",
-                pointer="/task",
-            )
+            # OPT design §4.11 (ADR 0071 D8, lifting R-129 and U05's refusal): the solver probe
+            # first, at U05's place, before the revision is read; then the request.
+            from openflowsheet.studies.nlp.closure import audited_solver
+
+            availability = audited_solver()
+            if not availability.available:
+                self._refuse(
+                    "unsupported",
+                    "nlp_solver_unavailable",
+                    operation="validate",
+                    pointer="/task",
+                )
+            if optimization is None:
+                self._refuse(
+                    "invalid_request",
+                    "task optimization needs an optimization request",
+                    operation="validate",
+                    pointer="/optimization",
+                )
         with self._store.reading() as connection:
             revision = self._store.get_revision(connection, revision_id)
         if revision is None:
             self._refuse(
                 "not_found", "no such revision", operation="validate", revision_id=revision_id
             )
-        return validation.validate(revision.as_document(), task, surrogates=self._surrogates())
+        if task != "optimization":
+            return validation.validate(revision.as_document(), task, surrogates=self._surrogates())
+        return validation.validate(
+            revision.as_document(),
+            task,
+            surrogates=self._surrogates(),
+            optimization=optimization,
+            solver_probe=lambda: availability,
+        )
 
     def commit_change(
         self, change: Change, expected_revision: str | None, idempotency_key: str
@@ -902,8 +933,13 @@ class LocalApplication:
         active = store.active_job_count(caller.principal_id)
         body = request.body
         if isinstance(body, SolveBody):
+            declared = body.warm_start.job_id if body.warm_start is not None else None
             with store.reading() as connection:
                 revision = store.get_revision(connection, body.revision_id)
+                # ADR 0070 A1: the declared source, as the store is at admission.
+                source = (
+                    store.solution_of_job(connection, declared) if declared is not None else None
+                )
             admission = admit_solve(
                 body.revision_id,
                 revision.as_document() if revision is not None else None,
@@ -912,6 +948,7 @@ class LocalApplication:
                 limits=caller.limits,
                 active_jobs=active,
                 surrogates=self._surrogates(),
+                warm_source_found=source is not None,
             )
             if isinstance(admission, ApiError):
                 self._refuse_error(admission, operation, request_sha256)
@@ -939,6 +976,17 @@ class LocalApplication:
                 self._refuse_error(study, operation, request_sha256)
             # R-233 again: a study's experiments are experiments; their calls are their own.
             return EffectiveBudgets(wall_time_s=study, max_property_calls=None)
+        if isinstance(body, OptimizeBody):
+            optimize = admit_optimize(
+                body, budgets=request.budgets, limits=caller.limits, active_jobs=active
+            )
+            if isinstance(optimize, ApiError):
+                self._refuse_error(optimize, operation, request_sha256)
+            # OPT §4.10: the property-call budget is each production solve's (its policy's), as
+            # requested; the policies resolve in the job.
+            return EffectiveBudgets(
+                wall_time_s=optimize, max_property_calls=body.max_property_calls
+            )
         archive = store.artifact(body.bundle_artifact_id)
         wall_time_s = admit_reproduce(
             archive.kind if archive is not None else None,
@@ -1013,6 +1061,19 @@ class LocalApplication:
                 replay_report=None,
                 error=job.error,
                 surrogate_study=study,
+            )
+        if job.operation == "optimize":
+            # OPT §4.10: the answer is the report the job output, absent when it ended without.
+            optimization = None
+            for output in job.outputs:
+                if output.kind == "optimization_report":
+                    optimization = json.loads(self._artifact_path(output).read_bytes())
+            return JobResult(
+                operation="optimize",
+                run_result=None,
+                replay_report=None,
+                error=job.error,
+                optimization=optimization,
             )
         report = None
         for output in job.outputs:
@@ -1152,7 +1213,9 @@ class LocalApplication:
 
     def _import_bundle(self, source: Path, operation: str) -> str:
         """§4.2 `reproduce`'s import: copy the regular files of `source` (no symlink followed)
-        into `imports/<ordinal>/` and register the copy and its known members."""
+        into `imports/<ordinal>/` and register the copy and its known members. An optimisation
+        record (OPT design §4.9: no `manifest.json`, an `optimization-manifest.json` naming its
+        format) is imported the same way and registered by `record_rows`."""
         if not source.is_dir():
             self._refuse(
                 "not_found",
@@ -1161,7 +1224,12 @@ class LocalApplication:
                 pointer="/bundle_path",
             )
         manifest = source / MANIFEST_NAME
-        if manifest.is_symlink() or not manifest.is_file():
+        record = (
+            not manifest.exists()
+            and not (source / OPTIMIZATION_MANIFEST).is_symlink()
+            and is_optimization_record(source)
+        )
+        if not record and (manifest.is_symlink() or not manifest.is_file()):
             self._refuse(
                 "invalid_request",
                 f"not a replay bundle: no {MANIFEST_NAME}",
@@ -1186,8 +1254,11 @@ class LocalApplication:
                 destination = target / path.relative_to(source)
                 destination.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copyfile(path, destination)
-        bundle, members = bundle_rows(
-            self.files_root, target, f"import-{ordinal:06d}:bundle", None, producer=False
+        bundle_id = f"import-{ordinal:06d}:bundle"
+        bundle, members = (
+            record_rows(self.files_root, target, bundle_id, None)
+            if record
+            else bundle_rows(self.files_root, target, bundle_id, None, producer=False)
         )
         with self._store.writing() as connection:
             self._store.register_artifacts(connection, [bundle, *members])
@@ -1437,7 +1508,12 @@ class LocalApplication:
         row = self._artifact_row(artifact_id, operation)
         if row.kind == "replay_bundle":
             members = self._store.artifact_children(row.artifact_id)
-            manifest = [member for member in members if member.name == MANIFEST_NAME]
+            # An optimisation record's manifest is its `optimization-manifest.json` (§4.9).
+            manifest = [
+                member
+                for member in members
+                if member.name in (MANIFEST_NAME, OPTIMIZATION_MANIFEST)
+            ]
             manifest_path = (
                 self.files_root / manifest[0].relpath
                 if manifest

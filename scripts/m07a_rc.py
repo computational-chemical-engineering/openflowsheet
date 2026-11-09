@@ -15,7 +15,9 @@ writes M07a.A37's record:
 4. the MCP tools are exactly the 17 of `V17_C2_FILE_SHA256`, and each description file's SHA-256 is
    that table's value, except `validate` and `commit_change`, whose files are R-133's;
 
-then G16-b, 40 of 40 clean against `t07_reference_t08.json` (unchanged from T08.A49; the loop is
+then G16-b, 40 of 40 clean against the carried-surface reference
+(`scorer.CARRIED_SURFACE_REFERENCE_PATH`: `t07_reference_t08.json` at the alpha,
+`t07_reference_rrc.json` from RRC on, V17 spec Amendment RRC-1; unchanged from T08.A49; the loop is
 `t08_rc.step_surface`'s, restated here because that step is not edited). §5.3's negative controls
 (i)–(iv) are in `tests/test_m07a_surface_chain.py`.
 
@@ -36,11 +38,25 @@ function, a registered digest and Frank's carry extended to name it):
   `eaff4585…`, measured at MSG WO-11 after `explain.md`'s review edits
   (`tests/test_t08_w2_surface_digest.py`'s `MSG_SERVED_SHA256`; `1ca06b37…` at WO-7, `b083ffe1…` at
   WO-6, before `explain`).
-- c_5, ADR 0068 (ST, ADR 0019 Amendment 13): the `get_stream_table` tool, stripped by
-  `tests/st_schema_support.py`'s `without_st` (ST G12's decomposition function); `D_5` =
-  `ebb4ca84…`, re-measured after the ST review's description edits on `wp/ST` with `wp/MSG` merged
-  (`tests/test_t08_w2_surface_digest.py`'s `ST_SERVED_SHA256`; `6705fb05…` at WO-3). Its register
-  entry is written when ADR 0068 is accepted (ST_DECISIONS D3-7); until then the link names the ADR.
+- c_5, R-950 (ADR 0070, ADR 0019 Amendment 15): X02's `solve_body.warm_start` (and the experiment
+  request's `start` and result's `profile_sha256`, where served), stripped by
+  `tests/x02_schema_support.py`'s `without_x02`; `D_5` = `f51b69bf…`, measured on the tree that
+  merged `main` (MSG's c_4) into `wp/X02` (`tests/test_t08_w2_surface_digest.py`'s
+  `X02_SERVED_SHA256`; `0af895a0…` at X02 WO-2, over M04's list before MSG).
+- c_6, R-960 (ADR 0071, ADR 0019 Amendment 16): OPT's `optimize` job operation (enum value, the
+  request and result branches, `job_result.optimization`, six artifact kinds), `validate`'s
+  `optimization` member, and the two description texts it changed (`validate.md`,
+  `submit_job.md`, restored from their pre-OPT copies), stripped by
+  `tests/opt_schema_support.py`'s `without_opt`; `D_6` = `3fdc797a…`, measured on the tree that
+  merged `main` (X02's c_5) into `wp/OPT` (`tests/test_t08_w2_surface_digest.py`'s
+  `OPT_SERVED_SHA256`; `3fb06cad…` at OPT WO-6, as c_4 over M04's list before MSG and X02; OPT
+  D-51, D-59, D-87). Item 4 judges the texts with every link's description change undone
+  (`texts_before_links`).
+- c_7, R-1000 (ADR 0068, ADR 0019 Amendment 13): ST's `get_stream_table` tool, stripped by
+  `tests/st_schema_support.py`'s `without_st` (ST G12's decomposition function); `D_7` =
+  `553b7612…`, measured on the tree that merged `main` (OPT's c_6) into `wp/ST`
+  (`tests/test_t08_w2_surface_digest.py`'s `ST_SERVED_SHA256`; `ebb4ca84…` as c_5 over MSG's list
+  before X02 and OPT, `6705fb05…` at ST WO-3; ST WO-7).
 
 The released 0.2.0a1 ran the two-link chain (its committed record at `C_α²`); a re-run of the
 alpha's step 8 uses this script at the tag.
@@ -105,9 +121,9 @@ V17_C2_FILE_SHA256: Final = {
 MSG_FILE_SHA256: Final = {
     "explain": "f1fca282f28f7e1a0f0dc6407bb405734f18b811fc97f7e0f5d0b0afac9b8d3e",
 }
-#: c_5 (ADR 0068): the one tool ST added, `get_stream_table`, its file pinned as MSG's is, after the
-#: ST review's three description edits. Its two reviews are `REVIEW.json`'s (design lane recorded,
-#: `docs/reviews/ST-review.md`; Frank's pending).
+#: c_7 (R-1000, ADR 0068): the one tool ST added, `get_stream_table`, its file pinned as MSG's is,
+#: after the ST review's three description edits. Its two reviews are `REVIEW.json`'s (design
+#: lane, `docs/reviews/ST-review.md`; Frank's, 2026-11-08).
 ST_FILE_SHA256: Final = {
     "get_stream_table": "76ac57f3a89b616157986b1b650a2793d1fa3271f705745c8c853249aa59fe1d",
 }
@@ -178,8 +194,29 @@ def strip_msg(tools: Tools) -> Tools:
     return stripped
 
 
+def strip_x02(tools: Tools) -> Tools:
+    """s_5 (R-950): `tools` without X02's additions (`x02_schema_support.without_x02`)."""
+    t08_rc._tests_on_path()
+    from x02_schema_support import without_x02  # noqa: PLC0415
+
+    stripped = without_x02(copy.deepcopy(tools))
+    assert isinstance(stripped, list)
+    return stripped
+
+
+def strip_opt(tools: Tools) -> Tools:
+    """s_6 (R-960): `tools` without OPT's additions (`opt_schema_support.without_opt`), with the
+    two description texts OPT changed restored."""
+    t08_rc._tests_on_path()
+    from opt_schema_support import without_opt  # noqa: PLC0415
+
+    stripped = without_opt(copy.deepcopy(tools))
+    assert isinstance(stripped, list)
+    return stripped
+
+
 def strip_st(tools: Tools) -> Tools:
-    """s_5 (ADR 0068): `tools` without ST's tool (`st_schema_support.without_st`)."""
+    """s_7 (R-1000): `tools` without ST's tool (`st_schema_support.without_st`)."""
     t08_rc._tests_on_path()
     from st_schema_support import without_st  # noqa: PLC0415
 
@@ -226,9 +263,21 @@ LINKS: Final = (
     ),
     Link(
         "c_5",
-        "ADR 0068",
+        "R-950",
+        strip_x02,
+        "f51b69bf66569e35aebead73b66e98d58f24c84016db639536c0ee35181f4c7b",
+    ),
+    Link(
+        "c_6",
+        "R-960",
+        strip_opt,
+        "3fdc797ad64485abf63fb491ebd56aa43dc510e62e9e218b0dd7a8fcc2e38a85",
+    ),
+    Link(
+        "c_7",
+        "R-1000",
         strip_st,
-        "ebb4ca841958f26521f8239f40bb0dc67d59d0115dd391a69b87818db64fad22",
+        "553b76122fefd4f09d6e91d16e7096d05b9f7793bb88e1876252dc2213e24894",
     ),
 )
 
@@ -314,9 +363,22 @@ def description_texts() -> dict[str, str]:
     }
 
 
+def texts_before_links(texts: Mapping[str, str]) -> dict[str, str]:
+    """`texts` (operation name -> description file) with every link's description change undone:
+    c_6's two files (OPT) in their pre-OPT form. The earlier links changed no existing text (MSG's
+    c_4 added `explain.md`, pinned at its own hash)."""
+    t08_rc._tests_on_path()
+    from opt_schema_support import OPT_DESCRIPTIONS, pre_opt_text  # noqa: PLC0415
+
+    return {
+        name: pre_opt_text(name) if name in OPT_DESCRIPTIONS else text
+        for name, text in texts.items()
+    }
+
+
 def description_problems(texts: Mapping[str, str]) -> list[str]:
     """§5.3 item 4 on `texts` (operation name -> description file): one line per failure. The
-    tools are `v17-c2`'s 17, MSG's `explain` (c_4) and ST's `get_stream_table` (c_5), each file at
+    tools are `v17-c2`'s 17, MSG's `explain` (c_4) and ST's `get_stream_table` (c_7), each file at
     its pinned hash."""
     problems: list[str] = []
     pinned = {**V17_C2_FILE_SHA256, **MSG_FILE_SHA256, **ST_FILE_SHA256}
@@ -389,7 +451,7 @@ def step_surface(arguments: argparse.Namespace) -> int:
     tools = served_tools()
     rows = chain(tools)
     texts = description_texts()
-    problems = description_problems(texts)
+    problems = description_problems(texts_before_links(texts))
     checks: list[dict[str, Any]] = []
     for row in rows:
         suffix = f"{row['link']}_{row['register']}" if row["link"] else row["register"]

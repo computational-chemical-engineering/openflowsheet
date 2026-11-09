@@ -1,0 +1,618 @@
+{
+ "record": "x02-g5abc-v1",
+ "judged": false,
+ "specification": "docs/design/X02-warm-starts.md §7 G5 (a)-(c); build decision D-22",
+ "sequence": "cand-C1-P1",
+ "source": "benchmarks/m05/records/trust-region-study-real.coupling/cand-C1-P1.json",
+ "variant": {
+  "variant_id": "pymrm-6089593-g2-nz800-s123w-v1",
+  "sha256": "e69cc3a3c7f01c58dfed98f79c334e78c0e49aabfdb50e6ba22575781427f677"
+ },
+ "child_warm_sha256": "1f11b4b1091a1d1fcb253666cd87d5a9d1c6953e780b1e5b27a616a2f1a3bd8c",
+ "summary": {
+  "g5a_bitwise_v3_recorded": [
+   true,
+   true,
+   true,
+   true
+  ],
+  "g5a_v3_keys_recomputed_equal": [
+   false,
+   false,
+   false,
+   false
+  ],
+  "g5a_v3_inputs_equal": [
+   true,
+   true,
+   true,
+   true
+  ],
+  "g5b_rel": [
+   1.0502256084139641e-07,
+   2.8554009890229776e-08,
+   2.8517893408386632e-08,
+   3.6517420944361555e-10
+  ],
+  "g5b_max": 1.0502256084139641e-07,
+  "g5b_used": [
+   true,
+   true,
+   true,
+   true
+  ],
+  "g5b_fallbacks": [],
+  "g5b_all_accepted": true,
+  "g5c_wall_ratio": [
+   2.933631817562174,
+   0.8360023239318076,
+   0.3710358294637094,
+   0.9330729465928319
+  ],
+  "g5c_saved_s": [
+   -74.22249108800315,
+   22.25195146301121,
+   80.9197365840082,
+   7.859777321005822
+  ]
+ },
+ "rows": [
+  {
+   "k": 0,
+   "inlet": {
+    "P": 10000000,
+    "T": 653.1500351610193,
+    "n": [
+     4.468562874251506,
+     1.4895209580838327,
+     0.18966378354114583,
+     0.09999999999999991,
+     0.14999999999999986
+    ]
+   },
+   "v3_key": "f8fd596049f3945a9f43d70c688d1dd28c12b1479a8b8bf4aff4629fe7ef93ee",
+   "v3_key_recomputed_equal": false,
+   "v3_inputs_equal": true,
+   "v3_wall_s": 32.92833043399878,
+   "cold": {
+    "key": "2b9a095675d7dc4a61e0dcc5578601830ab756bdda2477372288193d61a410fe",
+    "cache_hit": false,
+    "envelope": [
+     "ok",
+     "ok"
+    ],
+    "attempts": 1,
+    "execution_status": "completed",
+    "stage": null,
+    "wall_s": 38.38501746499969,
+    "span_s": 40.51,
+    "stage_wall_s": {
+     "S1": 6.47033669600205,
+     "S2": 3.811683040999924,
+     "S3": 1.572380666009849
+    },
+    "certificate_wall_s": 24.095886377996067,
+    "round2": false,
+    "start": null,
+    "profile_sha256": "d8e34e758b8e96a9dce464ed197e0a35e552d6665f3635efd21fc4be86de2d1c",
+    "tube_outlet": {
+     "flows": [
+      0.003701563268342142,
+      0.0012338544227814808,
+      0.0007009969324183592,
+      0.0001000000024888611,
+      0.00015000000373324103
+     ],
+     "temperature": 750.1996875482829,
+     "pressure_drop": 439.8390049729496,
+     "coolant_heat": 3.7458558474869466,
+     "inlet_face_heat_loss": 4.397926156569184
+    },
+    "bitwise_v3_recorded": true
+   },
+   "warm": {
+    "key": "ca3d213df1678c8fa69ad2a05a58ddb185b414fdfe6d96de6fb782b4c172bbf2",
+    "cache_hit": false,
+    "envelope": [
+     "ok",
+     "ok"
+    ],
+    "attempts": 1,
+    "execution_status": "completed",
+    "stage": null,
+    "wall_s": 112.60750855300284,
+    "span_s": 112.616,
+    "stage_wall_s": {
+     "S1": null,
+     "S2": 9.251151828997536,
+     "S3": 3.0184190569998464
+    },
+    "certificate_wall_s": 33.6624396469997,
+    "round2": true,
+    "start": {
+     "profile_sha256": "66bf1df2c6dc91c6d8f7088d687b5b038028d70d96abdafe3c1a3d2dd84700ac",
+     "used": true,
+     "fallback_from": null,
+     "warm_stages": {
+      "S2": {
+       "accepted": true,
+       "converged": true,
+       "steady_state_norm": 0.00017695438251100502,
+       "best_steady_state_norm": 0.00017695438251100502,
+       "steps": 31,
+       "wall_s": 9.251151828997536,
+       "dt_init": 1e-06
+      },
+      "S3": {
+       "accepted": true,
+       "converged": true,
+       "steady_state_norm": 3.893652000692642e-05,
+       "best_steady_state_norm": 3.893652000692642e-05,
+       "steps": 9,
+       "wall_s": 3.0184190569998464,
+       "steady_state_target": 6.4e-05,
+       "defect_round1": 0.00013550050665412755,
+       "round2": {
+        "steps": 9,
+        "converged": true,
+        "steady_state_target": 6.4e-06,
+        "wall_s": 4.697134684000048,
+        "certificate_round1": {
+         "kpi_drift_ok": true,
+         "kpi_drift_rel_max": 0.00034059128371139363,
+         "residual": 4.626884181498898e-05,
+         "wall_s": 59.36752884100133
+        }
+       }
+      }
+     }
+    },
+    "profile_sha256": "617f59ef5a54f66b49b0057a6872e0103595cb0058457a619f5ae6a8dabf0188",
+    "tube_outlet": {
+     "flows": [
+      0.003701563187792175,
+      0.0012338543959307265,
+      0.0007009969293499728,
+      0.0001000000006785928,
+      0.00015000000101788983
+     ],
+     "temperature": 750.1996858579728,
+     "pressure_drop": 439.839003412053,
+     "coolant_heat": 3.7458558278213805,
+     "inlet_face_heat_loss": 4.397927722671605
+    },
+    "start_from_k": 3,
+    "path_independence": {
+     "rel": {
+      "xi_N2": 1.0502256084139641e-07,
+      "xi_NH3": 6.000757980311964e-09,
+      "T_out": 2.2531469182875576e-09,
+      "n_out[H2]": 2.1761067157513992e-08,
+      "n_out[N2]": 2.176168741071621e-08,
+      "n_out[NH3]": 4.3771751678244655e-09,
+      "n_out[Ar]": 1.810268266608282e-08,
+      "n_out[CH4]": 1.810234082618747e-08
+     },
+     "max": 1.0502256084139641e-07,
+     "argmax": "xi_N2"
+    },
+    "wall_ratio": 2.933631817562174
+   }
+  },
+  {
+   "k": 1,
+   "inlet": {
+    "P": 10000000,
+    "T": 653.1500351610193,
+    "n": [
+     3.964973258956493,
+     1.3216577529855027,
+     0.1659056246505232,
+     0.09999999999999991,
+     0.14999999999999986
+    ]
+   },
+   "v3_key": "82bd5001aa16139b9bb0cd424178c84c94d4048b0f3878e8cd7bfb177e6c9cce",
+   "v3_key_recomputed_equal": false,
+   "v3_inputs_equal": true,
+   "v3_wall_s": 88.15379890699842,
+   "cold": {
+    "key": "35abc269423595d29b4d2a05ab3f956848cbe6b4ea617ccb35aa5ed8ba3a1982",
+    "cache_hit": false,
+    "envelope": [
+     "ok",
+     "ok"
+    ],
+    "attempts": 1,
+    "execution_status": "completed",
+    "stage": null,
+    "wall_s": 135.68455356500635,
+    "span_s": 135.716,
+    "stage_wall_s": {
+     "S1": 9.92656248199637,
+     "S2": 5.969552360998932,
+     "S3": 1.2907011149945902
+    },
+    "certificate_wall_s": 45.70246232699719,
+    "round2": true,
+    "start": null,
+    "profile_sha256": "24688addeabb7d9daf51400b5bd01f7482b9065ca3af9f4618b69360ee301a26",
+    "tube_outlet": {
+     "flows": [
+      0.003262098060334911,
+      0.0010873660201116406,
+      0.0006344890999153766,
+      0.00010000000033878193,
+      0.00015000000050817297
+     ],
+     "temperature": 747.119474494164,
+     "pressure_drop": 390.08689785934985,
+     "coolant_heat": 3.5583838894140403,
+     "inlet_face_heat_loss": 4.8855858136130745
+    },
+    "bitwise_v3_recorded": true
+   },
+   "warm": {
+    "key": "adbac6360a8f7b327702b85e148e5e4de14eb7026625de70aa06ab7aca7a51a3",
+    "cache_hit": false,
+    "envelope": [
+     "ok",
+     "ok"
+    ],
+    "attempts": 1,
+    "execution_status": "completed",
+    "stage": null,
+    "wall_s": 113.43260210199514,
+    "span_s": 113.441,
+    "stage_wall_s": {
+     "S1": null,
+     "S2": 5.067395988997305,
+     "S3": 1.2814019240031485
+    },
+    "certificate_wall_s": 40.220205295991036,
+    "round2": true,
+    "start": {
+     "profile_sha256": "d8e34e758b8e96a9dce464ed197e0a35e552d6665f3635efd21fc4be86de2d1c",
+     "used": true,
+     "fallback_from": null,
+     "warm_stages": {
+      "S2": {
+       "accepted": true,
+       "converged": true,
+       "steady_state_norm": 0.0001568441799899749,
+       "best_steady_state_norm": 0.0001568441799899749,
+       "steps": 31,
+       "wall_s": 5.067395988997305,
+       "dt_init": 1e-06
+      },
+      "S3": {
+       "accepted": true,
+       "converged": true,
+       "steady_state_norm": 4.394739334252935e-05,
+       "best_steady_state_norm": 4.394739334252935e-05,
+       "steps": 9,
+       "wall_s": 1.2814019240031485,
+       "steady_state_target": 6.4e-05,
+       "defect_round1": 0.0002112322480991859,
+       "round2": {
+        "steps": 9,
+        "converged": true,
+        "steady_state_target": 6.4e-06,
+        "wall_s": 6.3890545339963865,
+        "certificate_round1": {
+         "kpi_drift_ok": true,
+         "kpi_drift_rel_max": 0.0003718848355703088,
+         "residual": 5.6430775167707164e-05,
+         "wall_s": 58.16992081000353
+        }
+       }
+      }
+     }
+    },
+    "profile_sha256": "bf7377eadf8ea377ee3ba283640753779096e7729abd5917b67cf1ab69f6f12b",
+    "tube_outlet": {
+     "flows": [
+      0.0032620980402649933,
+      0.0010873660134216722,
+      0.0006344890961570044,
+      9.99999997287075e-05,
+      0.00014999999959306145
+     ],
+     "temperature": 747.1194744721516,
+     "pressure_drop": 390.08689785562456,
+     "coolant_heat": 3.558383889344148,
+     "inlet_face_heat_loss": 4.885586026752664
+    },
+    "start_from_k": 0,
+    "path_independence": {
+     "rel": {
+      "xi_N2": 2.8554009890229776e-08,
+      "xi_NH3": 8.020710060395025e-09,
+      "T_out": 2.946300736582447e-11,
+      "n_out[H2]": 6.152456837561099e-09,
+      "n_out[N2]": 6.152453115090414e-09,
+      "n_out[NH3]": 5.923462191380335e-09,
+      "n_out[Ar]": 6.100744346484969e-09,
+      "n_out[CH4]": 6.100743442983158e-09
+     },
+     "max": 2.8554009890229776e-08,
+     "argmax": "xi_N2"
+    },
+    "wall_ratio": 0.8360023239318076
+   }
+  },
+  {
+   "k": 2,
+   "inlet": {
+    "P": 10000000,
+    "T": 653.1500351610193,
+    "n": [
+     3.8683922667319375,
+     1.2894640889106508,
+     0.16134957936408337,
+     0.09999999999999991,
+     0.14999999999999986
+    ]
+   },
+   "v3_key": "4d839ba4f1c4cad76da3cd3989bd321d781240c61317b411872baea1b615a545",
+   "v3_key_recomputed_equal": false,
+   "v3_inputs_equal": true,
+   "v3_wall_s": 85.35229698799958,
+   "cold": {
+    "key": "580db51ea59309a94f020527b7f72019846dad8aa3de2953eea3634a0bb2ad39",
+    "cache_hit": false,
+    "envelope": [
+     "ok",
+     "ok"
+    ],
+    "attempts": 1,
+    "execution_status": "completed",
+    "stage": null,
+    "wall_s": 128.65555841600872,
+    "span_s": 128.665,
+    "stage_wall_s": {
+     "S1": 16.13660945399897,
+     "S2": 10.6150102080137,
+     "S3": 2.236667553006555
+    },
+    "certificate_wall_s": 35.10646141199686,
+    "round2": true,
+    "start": null,
+    "profile_sha256": "bfe343e51ac1684c9a2c436c200ea0e9ca2fe16e1a13538c2f71134f67a2030b",
+    "tube_outlet": {
+     "flows": [
+      0.003177975034852721,
+      0.001059325011617584,
+      0.0006216277646044101,
+      0.00010000000111865208,
+      0.00015000000167797727
+     ],
+     "temperature": 746.4650598438508,
+     "pressure_drop": 380.5698450598866,
+     "coolant_heat": 3.5189016379610067,
+     "inlet_face_heat_loss": 4.973003415730572
+    },
+    "bitwise_v3_recorded": true
+   },
+   "warm": {
+    "key": "bcbba4756dc782a4c0fe79e753d7f3f4ecbc6818dc548d26d59a94200c3545ad",
+    "cache_hit": false,
+    "envelope": [
+     "ok",
+     "ok"
+    ],
+    "attempts": 1,
+    "execution_status": "completed",
+    "stage": null,
+    "wall_s": 47.73582183200051,
+    "span_s": 47.778,
+    "stage_wall_s": {
+     "S1": null,
+     "S2": 5.026939741001115,
+     "S3": 1.7369218329986325
+    },
+    "certificate_wall_s": 38.42183949500031,
+    "round2": false,
+    "start": {
+     "profile_sha256": "24688addeabb7d9daf51400b5bd01f7482b9065ca3af9f4618b69360ee301a26",
+     "used": true,
+     "fallback_from": null,
+     "warm_stages": {
+      "S2": {
+       "accepted": true,
+       "converged": true,
+       "steady_state_norm": 0.0004734008294048982,
+       "best_steady_state_norm": 0.0004734008294048982,
+       "steps": 29,
+       "wall_s": 5.026939741001115,
+       "dt_init": 1e-06
+      },
+      "S3": {
+       "accepted": true,
+       "converged": true,
+       "steady_state_norm": 1.142551682234361e-05,
+       "best_steady_state_norm": 1.142551682234361e-05,
+       "steps": 11,
+       "wall_s": 1.7369218329986325,
+       "steady_state_target": 6.4e-05,
+       "defect_round1": 2.953829866374975e-09,
+       "round2": null
+      }
+     }
+    },
+    "profile_sha256": "39ff792f3699558af880e06676a57ebdc889da44ee7ec55701140d2620ce7971",
+    "tube_outlet": {
+     "flows": [
+      0.0031779750151821567,
+      0.0010593250050545022,
+      0.000621627755170695,
+      0.00010000000009431912,
+      0.00015000000014127958
+     ],
+     "temperature": 746.4650607206731,
+     "pressure_drop": 380.56984557397664,
+     "coolant_heat": 3.5189016512796916,
+     "inlet_face_heat_loss": 4.973003274083691
+    },
+    "start_from_k": 1,
+    "path_independence": {
+     "rel": {
+      "xi_N2": 2.8517893408386632e-08,
+      "xi_NH3": 2.049568151680916e-08,
+      "T_out": 1.1746328158351695e-09,
+      "n_out[H2]": 6.189653476470463e-09,
+      "n_out[N2]": 6.195531686093529e-09,
+      "n_out[NH3]": 1.5175826484880434e-08,
+      "n_out[Ar]": 1.0243329507430021e-08,
+      "n_out[CH4]": 1.0244651149863554e-08
+     },
+     "max": 2.8517893408386632e-08,
+     "argmax": "xi_N2"
+    },
+    "wall_ratio": 0.3710358294637094
+   }
+  },
+  {
+   "k": 3,
+   "inlet": {
+    "P": 10000000,
+    "T": 653.1500351610193,
+    "n": [
+     3.815708871900021,
+     1.271902957300001,
+     0.15886439723020745,
+     0.09999999999999991,
+     0.14999999999999986
+    ]
+   },
+   "v3_key": "c1bc31640f4631e3d12cc7546f1704cfbd7132a7e91c44b28fd695801bbf20a9",
+   "v3_key_recomputed_equal": false,
+   "v3_inputs_equal": true,
+   "v3_wall_s": 85.63864141199883,
+   "cold": {
+    "key": "5fafff9c6f82c743d21c2e6aae056582351a023626bbc859f4076872540845b6",
+    "cache_hit": false,
+    "envelope": [
+     "ok",
+     "ok"
+    ],
+    "attempts": 1,
+    "execution_status": "completed",
+    "stage": null,
+    "wall_s": 117.43797045999963,
+    "span_s": 117.448,
+    "stage_wall_s": {
+     "S1": 6.69419095700141,
+     "S2": 4.1743170480040135,
+     "S3": 0.8789455640071537
+    },
+    "certificate_wall_s": 41.694673019010224,
+    "round2": true,
+    "start": null,
+    "profile_sha256": "66bf1df2c6dc91c6d8f7088d687b5b038028d70d96abdafe3c1a3d2dd84700ac",
+    "tube_outlet": {
+     "flows": [
+      0.003132113591237704,
+      0.0010440378637458952,
+      0.0006145945917634706,
+      0.00010000000027472915,
+      0.00015000000041209314
+     ],
+     "temperature": 746.0986564727579,
+     "pressure_drop": 375.38242192566395,
+     "coolant_heat": 3.496846282100994,
+     "inlet_face_heat_loss": 5.019632155625238
+    },
+    "bitwise_v3_recorded": true
+   },
+   "warm": {
+    "key": "1209355a3524322f856dc688777ebdee2c792781fb7a05366efe21751e7765be",
+    "cache_hit": false,
+    "envelope": [
+     "ok",
+     "ok"
+    ],
+    "attempts": 1,
+    "execution_status": "completed",
+    "stage": null,
+    "wall_s": 109.57819313899381,
+    "span_s": 109.588,
+    "stage_wall_s": {
+     "S1": null,
+     "S2": 9.095326391994604,
+     "S3": 4.027375327001209
+    },
+    "certificate_wall_s": 35.75252809000085,
+    "round2": true,
+    "start": {
+     "profile_sha256": "bfe343e51ac1684c9a2c436c200ea0e9ca2fe16e1a13538c2f71134f67a2030b",
+     "used": true,
+     "fallback_from": null,
+     "warm_stages": {
+      "S2": {
+       "accepted": true,
+       "converged": true,
+       "steady_state_norm": 0.0008149442039444889,
+       "best_steady_state_norm": 0.0008149442039444889,
+       "steps": 26,
+       "wall_s": 9.095326391994604,
+       "dt_init": 1e-06
+      },
+      "S3": {
+       "accepted": true,
+       "converged": true,
+       "steady_state_norm": 2.0135084528852345e-05,
+       "best_steady_state_norm": 2.0135084528852345e-05,
+       "steps": 11,
+       "wall_s": 4.027375327001209,
+       "steady_state_target": 6.4e-05,
+       "defect_round1": 0.0002501535949275363,
+       "round2": {
+        "steps": 10,
+        "converged": true,
+        "steady_state_target": 6.4e-06,
+        "wall_s": 5.064555290999124,
+        "certificate_round1": {
+         "kpi_drift_ok": true,
+         "kpi_drift_rel_max": 0.0001601297092592069,
+         "residual": 3.354854282957735e-05,
+         "wall_s": 51.186926390000735
+        }
+       }
+      }
+     }
+    },
+    "profile_sha256": "c317433bf02eb6c8e97023efb27b0b5691fa71b2d2e7d5905daaac57290d8a95",
+    "tube_outlet": {
+     "flows": [
+      0.0031321135912345172,
+      0.001044037863744821,
+      0.0006145945919298915,
+      0.00010000000028080867,
+      0.0001500000004212124
+     ],
+     "temperature": 746.0986564465061,
+     "pressure_drop": 375.38242188096046,
+     "coolant_heat": 3.4968462807511798,
+     "inlet_face_heat_loss": 5.019632166317791
+    },
+    "start_from_k": 2,
+    "path_independence": {
+     "rel": {
+      "xi_N2": 4.714313613127263e-12,
+      "xi_NH3": 3.6517420944361555e-10,
+      "T_out": 3.518538537908498e-11,
+      "n_out[H2]": 1.0174238361866451e-12,
+      "n_out[N2]": 1.028916239344448e-12,
+      "n_out[NH3]": 2.707816107375011e-10,
+      "n_out[Ar]": 6.079514587711551e-11,
+      "n_out[CH4]": 6.079501035184456e-11
+     },
+     "max": 3.6517420944361555e-10,
+     "argmax": "xi_NH3"
+    },
+    "wall_ratio": 0.9330729465928319
+   }
+  }
+ ]
+}

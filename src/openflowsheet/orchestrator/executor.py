@@ -30,7 +30,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field, fields, replace
-from typing import Any, Literal
+from typing import Any, Literal, cast
 
 import numpy as np
 
@@ -43,7 +43,7 @@ from openflowsheet.models.syn001.flowsheet import FEED_UNIT, WIRING, Syn001Flows
 from openflowsheet.orchestrator import revision
 from openflowsheet.orchestrator.budget import BudgetExhaustedError, PropertyMeter
 from openflowsheet.orchestrator.execution import ExecutionPlan, PlanStep, Region
-from openflowsheet.orchestrator.homotopy import continuation_parameter
+from openflowsheet.orchestrator.homotopy import Continuation, continuation_parameter
 from openflowsheet.orchestrator.mass import (
     MassMapping,
     declared_phases,
@@ -62,11 +62,21 @@ from openflowsheet.orchestrator.region import (
     DormancyForm,
     LiftedSplit,
     RecoveryStart,
+    Regime,
     RegionResult,
     VapourOnlyForm,
     ZeroFlowForm,
     solve_region,
     syn001_lifted_splits,
+)
+from openflowsheet.orchestrator.revision_continuation import (
+    REVISION_CONTINUATION_REJECTED,
+    REVISION_CONTINUATION_SOURCE,
+    RevisionContinuationCandidate,
+    RevisionContinuationRecord,
+    RevisionContinuationRefusal,
+    refusal_message,
+    revision_continuation,
 )
 from openflowsheet.orchestrator.splits import (
     STAGED_MODELS,
@@ -78,6 +88,7 @@ from openflowsheet.orchestrator.splits import (
 )
 from openflowsheet.orchestrator.tear import INITIALIZER_ID, Syn001TearProblem, solve_tear
 from openflowsheet.orchestrator.trace import (
+    AttemptSignature,
     Checkpoint,
     Counters,
     EoRecoveryUnsupported,
@@ -89,6 +100,7 @@ from openflowsheet.orchestrator.trace import (
     Trace,
 )
 from openflowsheet.orchestrator.warm_start import (
+    EXPLICIT,
     WARM_START_REJECTED,
     WARM_START_SOURCE,
     WarmStartCandidate,
@@ -129,9 +141,19 @@ class StepResult:
     #: ADR 0024 D4: what the compatible warm start did, when the policy's chain names it and no
     #: `user_start` was given; `None` otherwise (every other policy, every other step kind).
     warm_start: WarmStartRecord | None = None
+    #: RRC design note §5.5 (ADR 0072): what edge 3's revision continuation decided, when the
+    #: policy names it and edge 3 reached it; `None` otherwise (every other policy and step).
+    revision_continuation: RevisionContinuationRecord | None = None
     #: MSG §4.6: an `INITIALIZATION_FAILED` step's refusing-unit sidecar (`InitialStateFailure.
     #: diagnostic`). Never serialized; never compared.
     diagnostic: Diagnostic | None = field(default=None, compare=False, hash=False, repr=False)
+
+
+#: RRC §5.5: the source `execute_plan` hands edge 3's revision continuation.
+RevisionContinuationSource = RevisionContinuationCandidate | RevisionContinuationRefusal
+
+#: ADR 0072: the `eo_recovery` value whose edge offers the revision continuation.
+_REVISION_RECOVERY = "homotopy_or_revision_continuation_or_sequential_restart"
 
 
 @dataclass(frozen=True)
@@ -152,6 +174,18 @@ class PlanResult:
     def warm_start(self) -> WarmStartRecord | None:
         """ADR 0024 D4: the warm-start record of the step that consulted the source, if any."""
         return next((step.warm_start for step in self.steps if step.warm_start is not None), None)
+
+    @property
+    def revision_continuation(self) -> RevisionContinuationRecord | None:
+        """RRC §5.5: the revision-continuation record of the step whose edge 3 reached it."""
+        return next(
+            (
+                step.revision_continuation
+                for step in self.steps
+                if step.revision_continuation is not None
+            ),
+            None,
+        )
 
 
 def _offset(counters: Counters, by: Counters) -> Counters:
@@ -225,6 +259,7 @@ def execute_plan(
     trace: Trace | None = None,
     user_start: Mapping[str, float] | None = None,
     warm_start: WarmStartCandidate | None = None,
+    revision_continuation: RevisionContinuationSource | None = None,
 ) -> PlanResult:
     """Run `plan`'s steps in order; stop at the first step that does not converge.
 
@@ -243,9 +278,15 @@ def execute_plan(
     columns are not exactly the declaration's.
 
     `warm_start` (ADR 0024; T08 build-first spec §B2) is the application's source-2 candidate,
-    read only when `policy.initializer_chain` names `compatible_warm_start` and there is no
-    `user_start`, on a revision-built flowsheet's region; then `None` means the lookup found none
-    (recorded `absent`). Its checks and record are `_warm_start`'s.
+    read only when `policy.initializer_chain` names `compatible_warm_start`, or the candidate is
+    the request's explicit source (`explicit-v1`, ADR 0070 D2: its own opt-in under any policy),
+    and there is no `user_start`, on a revision-built flowsheet's region; then `None` means the
+    lookup found none (recorded `absent`). Its checks and record are `_warm_start`'s.
+
+    `revision_continuation` (ADR 0072; RRC design note §5.5) is the application's nearest verified
+    ancestor, assembled, or its typed refusal; read only when `policy.globalization.eo_recovery`
+    names the revision continuation and edge 3 reaches it, where `None` is recorded
+    `absent(not_supplied)`. Under every other policy it is ignored and never recorded.
     """
     if user_start is not None:
         if isinstance(flowsheet, Syn001Flowsheet):
@@ -277,7 +318,16 @@ def execute_plan(
         run.open_step(step.index)
         try:
             result, spent, state = _run_step(
-                step, flowsheet, spec, policy, run, spent, state, user_start, warm_start
+                step,
+                flowsheet,
+                spec,
+                policy,
+                run,
+                spent,
+                state,
+                user_start,
+                warm_start,
+                revision_continuation,
             )
         finally:
             run.close_step()
@@ -318,6 +368,7 @@ def _run_step(
     state: dict[str, float] | None,
     user_start: Mapping[str, float] | None = None,
     warm_start: WarmStartCandidate | None = None,
+    revision_continuation: RevisionContinuationSource | None = None,
 ) -> tuple[StepResult, Counters, dict[str, float] | None]:
     if step.kind == "evaluate":
         (unit,) = step.units
@@ -352,7 +403,16 @@ def _run_step(
             result = _missing_guess(step, step.region.missing_guesses[0], run, spent)
         else:
             result, spent, state = _solve_eo(
-                step.index, step.region, flowsheet, spec, policy, run, spent, user_start, warm_start
+                step.index,
+                step.region,
+                flowsheet,
+                spec,
+                policy,
+                run,
+                spent,
+                user_start,
+                warm_start,
+                revision_continuation,
             )
     taken = getattr(result.detail, "checkpoint", None)
     if taken is not None:
@@ -618,10 +678,20 @@ def _solve_eo(
     spent: Counters,
     user_start: Mapping[str, float] | None = None,
     warm_start: WarmStartCandidate | None = None,
+    revision_continuation: RevisionContinuationSource | None = None,
 ) -> tuple[StepResult, Counters, dict[str, float] | None]:
     if not isinstance(flowsheet, Syn001Flowsheet):
         return _solve_revision_region(
-            index, region, flowsheet, spec, policy, run, spent, user_start, warm_start
+            index,
+            region,
+            flowsheet,
+            spec,
+            policy,
+            run,
+            spent,
+            user_start,
+            warm_start,
+            revision_continuation,
         )
     if region.specification_rows:
         # §7.5: the sequential pre-solve with the freed coordinate pinned at its guess.
@@ -664,7 +734,9 @@ def _solve_eo(
         message=result.message,
         detail=result,
     )
-    return _eo_recovery(step, region, flowsheet, spec, policy, run, spent, state, following)
+    return _eo_recovery(
+        step, region, flowsheet, spec, policy, run, spent, state, following, revision_continuation
+    )
 
 
 def _solve_revision_region(
@@ -677,6 +749,7 @@ def _solve_revision_region(
     spent: Counters,
     user_start: Mapping[str, float] | None = None,
     warm_start: WarmStartCandidate | None = None,
+    revision_continuation: RevisionContinuationSource | None = None,
 ) -> tuple[StepResult, Counters, dict[str, float] | None]:
     """T05 §2.3's general branch of `_solve_eo`: the region from `traversal-G0-v1`'s start, or
     from `user_start` (`execute_plan`), recorded `user_guess`, with no closure routes. With no
@@ -714,9 +787,12 @@ def _solve_revision_region(
             None,
         )
     record: WarmStartRecord | None = None
-    if user_start is None and WARM_START_SOURCE in policy.initializer_chain:
+    if user_start is None and (
+        WARM_START_SOURCE in policy.initializer_chain
+        or (warm_start is not None and warm_start.selection == EXPLICIT)
+    ):
         warm, record, spent = _warm_start(
-            index, region, flowsheet, spec, policy, run, spent, warm_start
+            index, region, flowsheet, spec, policy, run, spent, warm_start, revision_continuation
         )
         if warm is not None:
             step, spent, state = warm
@@ -766,7 +842,9 @@ def _solve_revision_region(
         detail=result,
         warm_start=record,
     )
-    return _eo_recovery(step, region, flowsheet, spec, policy, run, spent, state, following)
+    return _eo_recovery(
+        step, region, flowsheet, spec, policy, run, spent, state, following, revision_continuation
+    )
 
 
 def _warm_start(
@@ -778,6 +856,7 @@ def _warm_start(
     run: Trace,
     spent: Counters,
     candidate: WarmStartCandidate | None,
+    revision_source: RevisionContinuationSource | None = None,
 ) -> tuple[tuple[StepResult, Counters, dict[str, float] | None] | None, WarmStartRecord, Counters]:
     """ADR 0024 D3 (T08 build-first spec §B2): source 2. The region solved from the candidate
     when every check holds — the step as `_solve_revision_region` would return it — else `None`
@@ -829,7 +908,9 @@ def _warm_start(
         detail=result,
     )
     return (
-        _eo_recovery(step, region, flowsheet, spec, policy, run, spent, state, following),
+        _eo_recovery(
+            step, region, flowsheet, spec, policy, run, spent, state, following, revision_source
+        ),
         record,
         spent,
     )
@@ -883,20 +964,24 @@ def _eo_recovery(
     spent: Counters,
     state: dict[str, float],
     following: int,
+    revision_source: RevisionContinuationSource | None = None,
 ) -> tuple[StepResult, Counters, dict[str, float]]:
     """T04 §5 (ADR 0010 D3): recovery edge 3 after a region solve, at most once per step.
 
     Preconditions in §5.2's order: the policy names the edge; the region solve ended in a trigger;
     the region has a continuation parameter — else, under `eo_recovery = "homotopy"`,
-    `unsupported(no_continuation_parameter)` is recorded and the failed outcome stands, and under
+    `unsupported(no_continuation_parameter)` is recorded and the failed outcome stands, under
     `"homotopy_or_sequential_restart"` the sequential restart's preconditions decide (ADR 0015;
-    `_sequential_restart`). The count of one is structural: this runs once per region step, on
-    the region solve the step ran, and never on its own recovery.
+    `_sequential_restart`), and under `"homotopy_or_revision_continuation_or_sequential_restart"`
+    the revision continuation comes first (ADR 0072; `_revision_continuation`), from
+    `revision_source`, which no other value reads. The count of one is structural: this runs once
+    per region step, on the region solve the step ran, and never on its own recovery.
     """
     failed = step.detail
     if policy.globalization.eo_recovery not in (
         "homotopy",
         "homotopy_or_sequential_restart",
+        _REVISION_RECOVERY,
     ) or not isinstance(failed, RegionResult):
         return step, spent, state
     if not eo_recovery_due(
@@ -913,6 +998,10 @@ def _eo_recovery(
         if policy.globalization.eo_recovery == "homotopy_or_sequential_restart":
             return _sequential_restart(
                 step, region, flowsheet, spec, policy, run, spent, state, following
+            )
+        if policy.globalization.eo_recovery == _REVISION_RECOVERY:
+            return _revision_continuation(
+                step, region, flowsheet, spec, policy, run, spent, state, following, revision_source
             )
         return (
             replace(
@@ -968,6 +1057,105 @@ def _eo_recovery(
         spent,
         state,
     )
+
+
+def _revision_continuation(
+    step: StepResult,
+    region: Region,
+    flowsheet: Flowsheet,
+    spec: ProblemSpec,
+    policy: SolvePolicy,
+    run: Trace,
+    spent: Counters,
+    state: dict[str, float],
+    following: int,
+    source: RevisionContinuationSource | None,
+) -> tuple[StepResult, Counters, dict[str, float]]:
+    """ADR 0072 (RRC design note §5.5): edge 3's revision continuation, reached when the region
+    has no specification continuation and the policy names it.
+
+    R3: the flowsheet is revision-built, else `absent(not_revision_built)`. R4: a source was
+    supplied, else `absent(not_supplied)`; a supplied refusal is that refusal. R5–R9a:
+    `revision_continuation`'s pure checks. R9b: one region solve, a recovery whose attempt 0 is
+    the homotopy from the ancestor's root in the ancestor's signature, over `D`; its opening is
+    held to T03 §5.1's checks first (`solve_region`), and a refusal there opens no attempt and is
+    `rejected(opening(<check>:<subject>))`. Every refusal is recorded as one
+    `initializer_rejected` event and the step's record, and the ADR 0015 restart then runs exactly
+    as under `homotopy_or_sequential_restart`. A solve that opened an attempt is the step's
+    outcome, whatever it is (FQ3: one recovery per step).
+    """
+    failed = step.detail
+    found: Continuation | RevisionContinuationRefusal
+    if not isinstance(flowsheet, RevisionFlowsheet):
+        found = RevisionContinuationRefusal("absent", "not_revision_built")
+    elif source is None:
+        found = RevisionContinuationRefusal("absent", "not_supplied")
+    elif isinstance(source, RevisionContinuationRefusal):
+        found = source
+    else:
+        found = revision_continuation(source, spec, region)
+    if isinstance(found, Continuation):
+        assert isinstance(source, RevisionContinuationCandidate)
+        units = set(region.signature_units)
+        recovered, spent_after, state_after, _ = _region(
+            region,
+            dict(source.state),
+            flowsheet,
+            spec,
+            policy,
+            run,
+            spent,
+            following,
+            None,
+            RecoveryStart(
+                state=source.state,
+                regimes={
+                    unit: cast(Regime, regime) for unit, regime in source.signature if unit in units
+                },
+                continuation=found,
+                initializer_source=REVISION_CONTINUATION_SOURCE,
+                reported_signature=cast(AttemptSignature, source.signature),
+            ),
+        )
+        if recovered.outcome == "INITIALIZATION_FAILED" and not recovered.attempts:
+            # §5.7's opening check refused the ancestor's root: `opening(<check>:<subject>)`.
+            check = recovered.message.removeprefix(f"{REVISION_CONTINUATION_REJECTED}(opening:")
+            found = RevisionContinuationRefusal("rejected", f"opening({check}")
+            spent = spent_after
+        else:
+            recovered = replace(
+                recovered,
+                branch_provenance=recovered_provenance(
+                    failed.branch_provenance,
+                    recovered.branch_provenance,
+                    first_initializer_source=REVISION_CONTINUATION_SOURCE,
+                ),
+                checkpoint=(
+                    recovered.checkpoint if recovered.checkpoint is not None else failed.checkpoint
+                ),
+            )
+            return (
+                replace(
+                    step,
+                    outcome=recovered.outcome,
+                    iterations=step.iterations + recovered.iterations,
+                    message=recovered.message,
+                    detail=recovered,
+                    eo_recovery="taken",
+                    recovered_from=failed,
+                    revision_continuation=RevisionContinuationRecord(
+                        "taken", None, found.parameter_ids, found.start_values
+                    ),
+                ),
+                spent_after,
+                state_after,
+            )
+    assert isinstance(found, RevisionContinuationRefusal)
+    _reject_initializer(run, spent, refusal_message(found))
+    step = replace(
+        step, revision_continuation=RevisionContinuationRecord(found.status, found.reason)
+    )
+    return _sequential_restart(step, region, flowsheet, spec, policy, run, spent, state, following)
 
 
 def _sequential_restart(
@@ -1136,7 +1324,12 @@ def _region(
     refusal = meter.refusal()
     if refusal is not None:
         result = replace(
-            result, outcome="BUDGET_EXHAUSTED", message=str(refusal), budget="property_calls"
+            result,
+            outcome="BUDGET_EXHAUSTED",
+            message=str(refusal),
+            budget="property_calls",
+            # OPT design §4.2.1: a converged attempt's system belongs to a `CONVERGED` region only.
+            final_system=None,
         )
     before_step = spent
     spent, _, following = _absorb(run, inner, spent, attempts_before)

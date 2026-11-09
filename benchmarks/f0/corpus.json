@@ -35,7 +35,13 @@
   "tests/fixtures/f0/v0.3.0-bundles/g8/T05b%3ANP-1/artifacts/solve-policy.json": "c03d7205fb445b4e3c0d2c5d712c04fc60fbb6bde1f8ff753c7cedffd61c66ab",
   "tests/fixtures/f0/v0.3.0-bundles/g8/T05b%3ASC-1/artifacts/solve-policy.json": "c03d7205fb445b4e3c0d2c5d712c04fc60fbb6bde1f8ff753c7cedffd61c66ab",
   "tests/fixtures/f0/v0.3.0-bundles/g8/T05b%3ASC-2/artifacts/solve-policy.json": "c03d7205fb445b4e3c0d2c5d712c04fc60fbb6bde1f8ff753c7cedffd61c66ab",
-  "tests/fixtures/f0/v0.3.0-bundles/g8/T05b%3ASC-3/artifacts/solve-policy.json": "c03d7205fb445b4e3c0d2c5d712c04fc60fbb6bde1f8ff753c7cedffd61c66ab"
+  "tests/fixtures/f0/v0.3.0-bundles/g8/T05b%3ASC-3/artifacts/solve-policy.json": "c03d7205fb445b4e3c0d2c5d712c04fc60fbb6bde1f8ff753c7cedffd61c66ab",
+  "tests/fixtures/opt/replay/OPT-A2/starts/0/resolve/artifacts/solve-policy.json": "c03d7205fb445b4e3c0d2c5d712c04fc60fbb6bde1f8ff753c7cedffd61c66ab",
+  "tests/fixtures/opt/replay/OPT-A2/starts/0/start/artifacts/solve-policy.json": "c03d7205fb445b4e3c0d2c5d712c04fc60fbb6bde1f8ff753c7cedffd61c66ab",
+  "tests/fixtures/opt/replay/OPT-A2/starts/1/resolve/artifacts/solve-policy.json": "c03d7205fb445b4e3c0d2c5d712c04fc60fbb6bde1f8ff753c7cedffd61c66ab",
+  "tests/fixtures/opt/replay/OPT-A2/starts/1/start/artifacts/solve-policy.json": "c03d7205fb445b4e3c0d2c5d712c04fc60fbb6bde1f8ff753c7cedffd61c66ab",
+  "tests/fixtures/opt/replay/OPT-A2/starts/2/resolve/artifacts/solve-policy.json": "c03d7205fb445b4e3c0d2c5d712c04fc60fbb6bde1f8ff753c7cedffd61c66ab",
+  "tests/fixtures/opt/replay/OPT-A2/starts/2/start/artifacts/solve-policy.json": "c03d7205fb445b4e3c0d2c5d712c04fc60fbb6bde1f8ff753c7cedffd61c66ab"
  },
  "corpus": {
   "M1": "tests/t07_corpus.py CORPUS (T07 W0.2's revisions)",

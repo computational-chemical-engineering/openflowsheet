@@ -1167,6 +1167,39 @@ class ProjectStore:
         return None
 
     @staticmethod
+    def solution_of_job(connection: sqlite3.Connection, job_id: str) -> tuple[str, str] | None:
+        """ADR 0070 D1 (X02 design note §5.1 A1, §5.2): `(revision_id, relpath)` of the
+        `solution_state` artifact of `job_id` when it is a `solve` job of this project that holds
+        one, whatever its certificate status; `None` otherwise (no such job, another operation,
+        or no solution state)."""
+        row = connection.execute(
+            "SELECT request FROM jobs WHERE job_id = ? AND operation = 'solve'", (job_id,)
+        ).fetchone()
+        if row is None:
+            return None
+        artifact = connection.execute(
+            "SELECT relpath FROM artifacts WHERE job_id = ? AND kind = 'solution_state'"
+            " ORDER BY artifact_id LIMIT 1",
+            (job_id,),
+        ).fetchone()
+        if artifact is None:
+            return None
+        revision_id = _load(row[0]).get("body", {}).get("revision_id")
+        return str(revision_id), str(artifact[0])
+
+    @staticmethod
+    def job_artifact_relpath(connection: sqlite3.Connection, job_id: str, kind: str) -> str | None:
+        """The `relpath` of `job_id`'s first artifact of `kind`, as `latest_verified_solution`
+        reads its `solution_state`; `None` when the job has none (ADR 0072: the source's
+        certificate, RRC design note §5.3 A1)."""
+        row = connection.execute(
+            "SELECT relpath FROM artifacts WHERE job_id = ? AND kind = ?"
+            " ORDER BY artifact_id LIMIT 1",
+            (job_id, kind),
+        ).fetchone()
+        return None if row is None else str(row[0])
+
+    @staticmethod
     def evidence_for_revision(connection: sqlite3.Connection, revision_id: str) -> list[str]:
         """ADR 0035 D4 (M02 design note §6.3): `invalidations` — every job of an operation in
         `EVIDENCE_OPERATIONS` whose request names `revision_id`, as `<prefix><job_id>`, in

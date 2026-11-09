@@ -102,7 +102,7 @@ One section per row of the support matrix's limitations: what this version does 
 
 *No plain-language explanation is written yet; the summary is the technical one.*
 
-- **Summary:** In a flowsheet a column region has no edge-3 continuation (no revision region has one). The unit's own `evaluate` keeps S02's full standalone path, S08 Stage B included, so the traversal start is the standalone answer.
+- **Summary:** In a flowsheet a column region has edge-3 continuation only under `RRC-revision-v1`, from a verified ancestor that differs only in operating values. A first solve, a structural edit (stage count, feed stage, a changed end-specification choice) and the default policy have none. The unit's own `evaluate` keeps S02's full standalone path, S08 Stage B included, so the traversal start is the standalone answer.
 
 <a id="L-CSTR-1"></a>
 
@@ -173,6 +173,26 @@ One section per row of the support matrix's limitations: what this version does 
 *No plain-language explanation is written yet; the summary is the technical one.*
 
 - **Summary:** A Wilson TP flash near an azeotrope has an E-2 noise floor (S10 §14); a temperature-degenerate split is judged on its stored split.
+
+<a id="L-OPT-1"></a>
+
+## `L-OPT-1`: L-OPT-1
+
+**Kind:** Notice: not a failure.
+
+*No plain-language explanation is written yet; the summary is the technical one.*
+
+- **Summary:** Revision optimisation (ADR 0071) runs only on the `revision_eo` route in the audited `nlp` environment on linux-x86_64. Each start holds its phase and assessment regimes: a candidate whose regime changed is NOT_VERIFIED; a boundary optimum is verified only on the single-phase side of a guarded regime (`phase_boundary_form`, flagged, and a plain solve of the committed candidate certifies UNVERIFIED); two-phase-side and unguarded-regime boundary optima and candidates in the rank-limited-but-inactive gap are NOT_VERIFIED; the zero-flow subsystem is held or unresolved per start, all or nothing. KKT_POINT_VERIFIED is numerically verified local stationarity, not optimality.
+
+<a id="L-OPT-2"></a>
+
+## `L-OPT-2`: L-OPT-2
+
+**Kind:** Notice: not a failure.
+
+*No plain-language explanation is written yet; the summary is the technical one.*
+
+- **Summary:** Ipopt runs with fixed options (monotone barrier, limited-memory Hessian). On a nearly linear objective whose constraint must become active from inside the feasible region it can stall at `max_iter` (measured on OPT-L from 673.15 K and 661 K; it verifies from 650 K, a start that violates the constraint). Such a start is reported SOLVER_FAILED, never verified; another start is the remedy.
 
 <a id="L-S11-1"></a>
 
@@ -564,7 +584,7 @@ A turbine's ideal (isentropic) outlet is computed in the phase declared for its 
 
 *No plain-language explanation is written yet; the summary is the technical one.*
 
-- **Summary:** Specification continuation (edge 3's homotopy) exists only for regions with a promoted specification; elsewhere it is `unsupported(no_continuation_parameter)`.
+- **Summary:** Edge 3's continuation exists for a region with a promoted specification (specification continuation). Under `RRC-revision-v1`, it also exists for a revision region whose nearest verified ancestor has the same declaration and differs only in registered operating values (revision continuation, ADR 0072). Everywhere else edge 3 is the sequential restart or `unsupported(…)`. Neither continuation changes the active set. `RRC-revision-v1` is not a superset of `T06-revision-v2`: a continuation that stops part-way ends the step and the restart is not tried (one recovery per step), so it can fail where `T06-revision-v2` converges, and no registered case is rescued by it that `T06-revision-v2` does not rescue.
 
 <a id="L22"></a>
 

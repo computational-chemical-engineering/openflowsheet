@@ -45,7 +45,8 @@ def test_the_registered_ids_are_the_registrys() -> None:
     # T08 W4 (ADR 0024 D1) and W3 (ADR 0023): `T08-warm-v1` and `T08-ptc-v1` are offered and are
     # not registry policies — the registry holds exactly the policies its registrations name
     # (`test_t06_w4_registry`), and none names them. Every other offered policy is registered.
-    t08 = {"T08-ptc-v1", "T08-warm-v1"}
+    # RRC (ADR 0072 §5.2; `docs/RRC_DECISIONS.md` D-1) offers `RRC-revision-v1` the same way.
+    t08 = {"T08-ptc-v1", "T08-warm-v1", "RRC-revision-v1"}
     assert set(APPLICATION_POLICIES) - t08 < REGISTERED_POLICY_IDS
     assert t08 <= set(APPLICATION_POLICIES) and not t08 & REGISTERED_POLICY_IDS
     assert "T06-revision-v1" in NOT_OFFERED and "T04-HOM-01-edge-off" in NOT_OFFERED

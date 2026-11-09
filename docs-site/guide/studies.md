@@ -1,8 +1,9 @@
 # Studies and optimisation
 
 The studies layer (`openflowsheet.studies`) works on a compiled problem's pinned inputs. It is a
-library layer: apart from the surrogate study, which runs as a job (`submit_job` with the
-`surrogate_study` operation), it is not an operation of the application contract, and its scope
+library layer: apart from the surrogate study and revision optimisation, which run as jobs
+(`submit_job` with the `surrogate_study` and `optimize` operations), it is not an operation of the
+application contract, and its scope
 is the registered flowsheets it was built and tested on — the SYN-001 flowsheets and the
 ammonia-synthesis (C1) loop.
 
@@ -12,6 +13,7 @@ ammonia-synthesis (C1) loop.
 | Sweeps | a parameter varied over values, each point solved and certified, with its sensitivity | as above |
 | Parameter estimation | least-squares estimates of pinned inputs, using the exact sensitivities | as above |
 | NLP bridge | the flowsheet as a grey box inside Pyomo, solved by Ipopt | needs the `nlp` extra in its audited environment |
+| Revision optimisation | a stored revision optimised over its own specifications, every candidate re-solved and checked (V1–V7), a record that replays; see [Optimising a revision](optimisation.md) | `revision_eo` revisions; the audited `nlp` environment on Linux x86-64 |
 | Surrogates | surrogate models of an expensive unit with their evidence (`SurrogateManifest`) | the C1 reactor |
 | Trust-region study | a trust-region refinement of the C1 loop with surrogate and full-fidelity reactor | the C1 loop |
 | Cost and impact outputs | cost and life-cycle impact as study outputs and NLP objectives (`assessment:<output_id>`), with exact derivatives; see [Cost estimation and LCA](assessment.md) | sensitivities on any solved revision; the NLP on SYN-001 |
@@ -22,7 +24,8 @@ Studies emit `Study` and `OptimizationReport` documents with their schemas.
 !!! warning "No optimality claim"
     Optimality evidence is **not** established for any study. An optimisation result reports what
     the solver returned and how it was checked; it does not claim a global or even a certified
-    local optimum.
+    local optimum. `KKT_POINT_VERIFIED` is numerically verified local stationarity of the
+    held-regime problem ([what verified means](optimisation.md#what-verified-means)).
 
 ## The `nlp` extra
 

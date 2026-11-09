@@ -21,6 +21,9 @@ The steps, in order:
 5. each `check_tolerances` value is at most the registered `KIND_TOLERANCE` value, else
    `verification_weakening_refused` naming the kind; an unknown kind is `invalid_request` (I3);
 6. `max_property_calls` is at most the resolved policy's, else `budget_exceeds_ceiling`;
+6a. a declared `warm_start` (ADR 0070, X02 design note §5.1) names a `solve` job of this project
+   that holds a `solution_state` (A1), and each `coupling` key is an instance id of the revision
+   (A2), else `invalid_request` at the member's pointer;
 7. `wall_time_s` is at most the capability's `max_wall_time_s`, else `budget_exceeds_ceiling`;
 8. the caller's active jobs are fewer than `max_active_jobs`, else `limit_exceeded`.
 
@@ -36,6 +39,9 @@ registered for that parent with every request inside the box, the hard domain an
 (`invalid_request` at `/body/plan_id`, detail `reason` the plan guard's code); an `it<i>`,
 i ≥ 2, is admitted only when the project's manifests of `it1` … `it<i−1>` of the same parent each
 failed on the coverage test alone (`iteration_not_permitted`, spec §18 A1.2); then steps 7–8.
+An `optimize` (ADR 0071, OPT design §4.10) by `admit_optimize`: an audited NLP solver on this
+platform (`unsupported`, `detail.code = nlp_solver_unavailable`, pointer `/operation`), then steps
+7–8; the revision, the request and the policies are judged in the job, whose report says why.
 
 **Only tightening is admitted** (I3). The effective check policy keeps `REGISTERED_POLICY_ID`, so
 tightening factor 1 is the registered policy byte for byte (R5); the effective solve policy is the
@@ -67,9 +73,11 @@ from openflowsheet.application.types import (
     Budgets,
     ExperimentBody,
     Limits,
+    OptimizeBody,
     ReproduceBody,
     SolveBody,
     SurrogateStudyBody,
+    WarmStartDeclaration,
 )
 from openflowsheet.application.validation import validate
 from openflowsheet.canonical import file_sha256
@@ -87,6 +95,7 @@ __all__ = [
     "SolveAdmission",
     "admit_budgets",
     "admit_experiment",
+    "admit_optimize",
     "admit_surrogate_study",
     "stored_surrogate_manifests",
     "surrogate_resolver",
@@ -130,11 +139,14 @@ def admit_solve(
     limits: Limits,
     active_jobs: int,
     surrogates: SurrogateResolver | None = None,
+    warm_source_found: bool = False,
 ) -> SolveAdmission | ApiError:
     """§5.3's semantic admission of `body` for the stored revision `document` (`None` when the
     store has no revision `revision_id`). `limits` are the caller's capability's; `active_jobs`
     counts the caller's queued and running jobs; `surrogates` resolves the project's
-    SurrogateManifests for the binder (M04 spec §8.2, `surrogate_resolver`)."""
+    SurrogateManifests for the binder (M04 spec §8.2, `surrogate_resolver`);
+    `warm_source_found` says whether `body.warm_start.job_id` names a `solve` job of the project
+    that holds a solution state (the store's `solution_of_job`)."""
     # 1. The revision exists.
     if document is None:
         return _error("not_found", f"no revision {revision_id!r}", revision_id=revision_id)
@@ -164,6 +176,12 @@ def admit_solve(
         return resolved
     policy, check_policy = resolved
 
+    # 6a. A declared start's source and units (ADR 0070).
+    if body.warm_start is not None:
+        refused = admit_warm_start(document, body.warm_start, warm_source_found)
+        if refused is not None:
+            return refused
+
     # 7–8. The wall time and the caller's active jobs are within the capability's limits.
     wall_time_s = admit_budgets(budgets, limits, active_jobs)
     if isinstance(wall_time_s, ApiError):
@@ -177,6 +195,36 @@ def admit_solve(
         check_policy=check_policy,
         wall_time_s=wall_time_s,
     )
+
+
+def admit_warm_start(
+    document: Mapping[str, Any], declaration: WarmStartDeclaration, source_found: bool
+) -> ApiError | None:
+    """Step 6a (ADR 0070 D1; X02 design note §5.1 A1, A2): `None` when the declared start is
+    admissible, else the first refusal. A1: `job_id` names a `solve` job of this project holding
+    a `solution_state` artifact (`source_found`, any certificate status). A2: each `coupling` key
+    is an instance id of the revision; whether that instance is an external unit of the bound
+    route is the run's compatibility check, recorded, not refused."""
+    if declaration.job_id is not None and not source_found:
+        return _error(
+            "invalid_request",
+            f"warm_start_source_missing({declaration.job_id})",
+            pointer="/body/warm_start/job_id",
+        )
+    if declaration.coupling is not None:
+        instances = {
+            str(item.get("id"))
+            for item in document.get("instances") or ()
+            if isinstance(item, Mapping)
+        }
+        for key in declaration.coupling:
+            if key not in instances:
+                return _error(
+                    "invalid_request",
+                    f"warm_start_unit_unknown({key})",
+                    pointer=f"/body/warm_start/coupling/{key}",
+                )
+    return None
 
 
 def resolve_policies(route: Route, body: SolveBody) -> tuple[SolvePolicy, CheckPolicy] | ApiError:
@@ -415,5 +463,32 @@ def admit_surrogate_study(
             str(refused),
             pointer="/body/plan_id",
             reason=refused.code,
+        )
+    return admit_budgets(budgets, limits, active_jobs)
+
+
+def admit_optimize(
+    body: OptimizeBody,
+    *,
+    budgets: Budgets,
+    limits: Limits,
+    active_jobs: int,
+    solver_probe: Callable[[], Any] | None = None,
+) -> float | None | ApiError:
+    """OPT design §4.10's admission of an `optimize`: the audited solver probe (`solver_probe`,
+    default `studies.nlp.closure.audited_solver`, which imports neither Pyomo nor cyipopt), then
+    steps 7–8. Nothing else is judged here: a request the job cannot run ends `completed` with
+    an `UNSUPPORTED` report. The job's wall-time budget, or the first refusal."""
+    del body  # judged in the job (§4.10)
+    if solver_probe is None:
+        from openflowsheet.studies.nlp.closure import audited_solver  # noqa: PLC0415
+
+        solver_probe = audited_solver
+    if not solver_probe().available:
+        return ApiError(
+            code="unsupported",
+            message="nlp_solver_unavailable",
+            retryable=False,
+            detail={"code": "nlp_solver_unavailable", "pointer": "/operation"},
         )
     return admit_budgets(budgets, limits, active_jobs)

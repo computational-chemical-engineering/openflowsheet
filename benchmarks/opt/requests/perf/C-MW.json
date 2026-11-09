@@ -1,0 +1,40 @@
+{
+  "constraints": [],
+  "decisions": [
+    {
+      "lower": 335.0,
+      "scale": 10.0,
+      "specification_id": "SPEC-S-IN1-T",
+      "unit": "K",
+      "upper": 348.6155803604359
+    }
+  ],
+  "objective": {
+    "expression": {
+      "constant": 1482.25,
+      "linear": {
+        "COL.stage.20.Q": -0.077
+      },
+      "quadratic": [
+        {
+          "a": "COL.stage.20.Q",
+          "b": "COL.stage.20.Q",
+          "coefficient": 1e-06
+        }
+      ],
+      "text": "((COL.stage.20.Q - 38500)/1000)^2"
+    },
+    "sense": "minimize"
+  },
+  "problem_id": "OPT-PERF-C-MW",
+  "request_format": "openflowsheet-optimization-request-v1",
+  "starts": {
+    "explicit": [
+      [
+        338.0
+      ]
+    ],
+    "halton": 0,
+    "include_revision": true
+  }
+}

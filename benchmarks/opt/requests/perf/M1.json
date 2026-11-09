@@ -1,0 +1,40 @@
+{
+  "constraints": [],
+  "decisions": [
+    {
+      "lower": 320.0,
+      "scale": 10.0,
+      "specification_id": "SPEC-S-IN1-T",
+      "unit": "K",
+      "upper": 348.0
+    }
+  ],
+  "objective": {
+    "expression": {
+      "constant": 144.0,
+      "linear": {
+        "S-DISTILLATE.n.B": -4800.0
+      },
+      "quadratic": [
+        {
+          "a": "S-DISTILLATE.n.B",
+          "b": "S-DISTILLATE.n.B",
+          "coefficient": 40000.0
+        }
+      ],
+      "text": "((S-DISTILLATE.n.B - 0.06)/0.005)^2"
+    },
+    "sense": "minimize"
+  },
+  "problem_id": "OPT-PERF-M1",
+  "request_format": "openflowsheet-optimization-request-v1",
+  "starts": {
+    "explicit": [
+      [
+        325.0
+      ]
+    ],
+    "halton": 0,
+    "include_revision": true
+  }
+}

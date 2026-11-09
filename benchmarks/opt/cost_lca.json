@@ -1,0 +1,50 @@
+{
+  "OPT-C": {
+    "bracket": [
+      1159041.9335069791,
+      1159042.8276361271
+    ],
+    "d_gs": 1159042.380571553,
+    "decision": "P.P_spec",
+    "evaluations": 39,
+    "grid_tac": [
+      116949.86685180732,
+      116908.89261907611,
+      116881.17837013639,
+      116865.05796948532,
+      116859.20286676296,
+      116862.53664231845,
+      116874.17498973366,
+      116893.38255760608,
+      116919.54126865206,
+      116952.12663772919,
+      116990.68978134874
+    ],
+    "tac_at_d_gs": 116859.13676112719,
+    "tolerance_decision": 10.0
+  },
+  "OPT-L": {
+    "bracket": [
+      660.414519160986,
+      660.4145192354918
+    ],
+    "d_root": 660.4145192354918,
+    "decision": "B.T_spec",
+    "evaluations": 35,
+    "gwp_rate_at_d_root": 0.02425449550327849,
+    "gwp_slope_per_K": 5.191380528237594e-06,
+    "net_power_at_d_root": 15600.000000313303,
+    "tolerance_decision": 9.999999999999999e-05
+  },
+  "hand_models": [
+    "benchmarks/e01/cost_hand/cost_hand.py",
+    "benchmarks/e01/lca_hand/lca_hand.py"
+  ],
+  "id": "opt-cost-lca-v1",
+  "p1_check": {
+    "opex_total_relative": 4.0245409263835724e-16,
+    "sizes_worst_relative": 9.485358178542786e-16,
+    "tac": 118855.8759159237
+  },
+  "script": "benchmarks/opt/cost_lca.py"
+}

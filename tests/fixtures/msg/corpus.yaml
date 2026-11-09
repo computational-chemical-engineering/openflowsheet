@@ -348,31 +348,31 @@ cases:
         Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#pressure_rise
         Details: initializer_failed(T): pressure_rise(turbine) — job-000001:bundle/failure-bundle.json
 - id: C12
-  mistake: Validating a revision for the task "optimization".
+  mistake: Validating a revision for the task "optimization" without the audited NLP solver installed.
   surfaces: [python, cli, http, mcp]
-  code: task_unsupported
+  code: nlp_solver_unavailable
   kind: not_supported
-  chain: [unsupported, task_unsupported]
-  in_summary: [optimization]
+  chain: [unsupported, nlp_solver_unavailable]
+  in_summary: [optimise]
   elements: []
   numbers: []
-  action_token: simulation
-  gap: {limitation: null, capability: true}
+  action_token: nlp
+  gap: {limitation: L-OPT-1, capability: true}
   pending: []
   text:
     python: |-
-      This version cannot validate a revision for the "optimization" task; it validates for simulation only.
-        Why:     Validating for optimization would mean checking an optimization formulation (objective, decision variables and their bounds). This version checks none, so it refuses rather than report a revision ready for a task it has not checked.
-        Do:      Validate with the task "simulation" (openflowsheet validate --task simulation, or task "simulation" in the request).
+      This installation cannot optimise: the audited NLP solver is not available here.
+        Why:     Optimisation solves with Ipopt, reached through Pyomo and cyipopt, in the versions whose licences and binaries were audited: the nlp extra's audited environment on Linux x86-64. Without it this version refuses to optimise rather than run an unaudited solver.
+        Do:      To optimise, use the audited nlp environment on Linux x86-64 (user guide, section "The nlp extra"); to check the revision for a solve, validate it with the task "simulation".
         Kind:    Not supported in this version: a limitation of OpenFlowsheet, not an error in your flowsheet.
-        Code:    task_unsupported, in unsupported (openflowsheet explain task_unsupported)
-        Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#task_unsupported
-        Details: unsupported: task_unsupported(optimization)
+        Code:    nlp_solver_unavailable, in unsupported (openflowsheet explain nlp_solver_unavailable)
+        Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#nlp_solver_unavailable
+        Details: unsupported: nlp_solver_unavailable
     cli: |
-      This version cannot validate a revision for the "optimization" task; it validates for simulation only.
-        Why:     Validating for optimization would mean checking an optimization formulation (objective, decision variables and their bounds). This version checks none, so it refuses rather than report a revision ready for a task it has not checked.
-        Do:      Validate with the task "simulation" (openflowsheet validate --task simulation, or task "simulation" in the request).
+      This installation cannot optimise: the audited NLP solver is not available here.
+        Why:     Optimisation solves with Ipopt, reached through Pyomo and cyipopt, in the versions whose licences and binaries were audited: the nlp extra's audited environment on Linux x86-64. Without it this version refuses to optimise rather than run an unaudited solver.
+        Do:      To optimise, use the audited nlp environment on Linux x86-64 (user guide, section "The nlp extra"); to check the revision for a solve, validate it with the task "simulation".
         Kind:    Not supported in this version: a limitation of OpenFlowsheet, not an error in your flowsheet.
-        Code:    task_unsupported, in unsupported (openflowsheet explain task_unsupported)
-        Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#task_unsupported
-        Details: unsupported: task_unsupported(optimization)
+        Code:    nlp_solver_unavailable, in unsupported (openflowsheet explain nlp_solver_unavailable)
+        Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#nlp_solver_unavailable
+        Details: unsupported: nlp_solver_unavailable

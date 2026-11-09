@@ -1091,11 +1091,13 @@ EXTERNAL_M05: dict[str, Any] = t08_numerical_policy.external_policy(
 
 def test_the_m05_addendum_is_audited_after_m02s_and_its_partition_holds() -> None:
     # Amended on purpose (ADR 0052, E01 escalation ESC-A1): E01's addendum is audited after M05's;
-    # ST's after E01's (ADR 0025 D2.3, ST review ruling 6, 2026-11-08).
+    # and (ADR 0071, OPT D-22) OPT's after E01's; ST's after OPT's (ADR 0025 D2.3, ST review
+    # ruling 6, 2026-11-08; merge order).
     assert [path.parent.name for path in t08_numerical_policy.ADDENDA] == [
         "m02",
         "m05",
         "e01",
+        "opt",
         "st",
     ]
     assert EXTERNAL_M05["id"] == "M05-numerical-policy-external-v1"

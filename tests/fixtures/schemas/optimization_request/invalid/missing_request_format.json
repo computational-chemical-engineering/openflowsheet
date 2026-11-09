@@ -1,0 +1,21 @@
+{
+  "problem_id": "th-r1-heater-duty",
+  "decisions": [
+    {
+      "specification_id": "SPEC-H-Q",
+      "lower": 20000.0,
+      "upper": 30000.0,
+      "scale": 10000.0,
+      "unit": "W"
+    }
+  ],
+  "objective": {
+    "sense": "minimize",
+    "expression": {
+      "text": "Q/1e4",
+      "linear": {
+        "decision:SPEC-H-Q": 0.0001
+      }
+    }
+  }
+}

@@ -1,0 +1,26 @@
+{
+ "record": "x02-g5d-index-v1",
+ "judged": false,
+ "commit": "dcb499eee368132a23dc6a08b92407c418d7688b",
+ "environment": "pymrm-6089593-032a050c6cf3 (~/.cache/openflowsheet/external)",
+ "commands": [
+  "OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 PYTHONPATH=$PWD/src .venv/bin/python benchmarks/x02/g5d_v3_loops.py --store <E>/artifacts/store-d --work <E>/artifacts/work-d --value 675.15 --out <E>/g5d-v3.json  (exit 1: criterion iii_warm_fewer_outer_iterations false)"
+ ],
+ "conditions": "machine load ~23-25 from other users (another worktree's full gate running); one campaign worker",
+ "records": {
+  "g5d-v3.json": "aa9af890a9ed06c0bccd0342faeb1c8e155cfc2bbdfc32352351f61b837c388b"
+ },
+ "artifacts": {
+  "g5d.log": {
+   "sha256": "1bd1c018210897078b3039fe8b68453eabe57feefddcd1328ee8112153e9f299"
+  },
+  "store-d": {
+   "tree_sha256": "5ee85f07f3173c38b846375475338e1e4fed36f2b956c55aaea6d9600e44d4d0",
+   "files": 133
+  },
+  "work-d": {
+   "tree_sha256": "7ee2d5f8e1a1bdfe68aca2a2c57be7368cd652838b95abbc001485b35407412f",
+   "files": 48
+  }
+ }
+}

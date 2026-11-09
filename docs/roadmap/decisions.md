@@ -702,3 +702,134 @@ Manifest `evidence/X10b/c57d449a…` tested (`d50d6c06`, after merging main `9bf
 `models/c1/flash.py` at that commit, `b1b47c28…`, the registered move); HARVEST_SIZE (81, 1015, 129). Merged
 `d5035a76`; on main ruff clean, F0 PASS, harvest/manifests/L01/G7 tests 660 passed, 1 skipped. WIT's follow-ups are
 done. X02 re-takes HARVEST_SIZE at its merge.
+
+## 2026-11-08 — ST WO-8a done (`wp/ST` `9da2e022`)
+
+Main merged twice (`420993d0`, `a333c762`); R-942/943 duplicates dropped (register = main's); ruling 5 in
+`stream_table._inputs`/`_decide` (lifted by the split's own row, unlifted by exact reason); DC-1…DC-6 pass (DC-2/3/4
+fail on the old code); 44 served 0.3.0 documents byte-identical; G7 41 bitwise, G8 1.756e-4, G8u 2.7027 unchanged;
+1581 passed; F0 PASS. Three tests red since `e1a05916` (not WO-8a's): T08.A20 (envelope lacks `get_stream_table`) and
+ADR 0025 A1 ×2 (`data_sha256`, `implementation_sha256` unclassified). Both have build-lane precedents (envelope
+admission; per-package ADDENDA as M04/M05/E01/OPT) → WO-8b part 1, stop if a field hashes floats. ST's link is c_5
+on the branch; at WO-7 it follows X02 (c_5) and OPT (c_6) → c_7. Next: WO-8b (the three tests + web-shell table).
+
+## 2026-11-08 — ST WO-8b (`wp/ST` `3ba9edc3`): web-shell table done; one design-lane classification open
+
+T08.A20: `get_stream_table` admitted to the envelope on four transports (22 → 23 operations), precedent MSG WO-7
+`631a9f3f` after ADR acceptance (ADR 0068 accepted by Frank). Web shell (Frank's O3): streams screen shows the full
+table below n/T/P (per stream total + per phase, `phase_source`, boundary flag, SI columns, null → "—" with reason;
+`flash_failed` notice; unit/overall energy table); `routes.js` regenerated (was stale: a fourth pre-existing red);
+the shell calls 18 operations; message catalogue `7573d7ea…` → `3ac1279a…`. DECISION (engineer): fetch the whole
+table, no on-screen pager. Reversible by: `streamTableOf`. 2246 passed incl. browser smoke 32 (ran locally), node 98;
+F0 PASS. Open: ADR 0025 D2.3 for `data_sha256` (SYN-001 hashes registered float literals) and
+`implementation_sha256` → specifier ruling (brief `docs/briefs/ST-adr0025-classification.md`); default exact (as
+`constants_sha256`).
+
+## 2026-11-08 — X02 CI red on MSG G2 → catalogue entries (`d26bcd38`)
+
+CI `42512488771` on `51ef7460`: 1 failure on all legs, `test_msg_coverage` G2 (X02's three codes had no MSG catalogue
+entry; the merge-prep brief did not list `tests/test_msg_*`). Fix D-39: `warm_start_source_missing`,
+`warm_start_unit_unknown` → `refusal` entries (kind `input` from MSG's kind table; unit param typed `text`);
+`coupling_warm_start` allow-listed (trace label, never rendered). Catalogue `2252445a…` → `9ac2578a…`; D_4, D_5
+unchanged; 378 passed; F0 PASS. Open (non-blocking): the two entries' prose is an engineer's draft → design-lane prose
+check batched with OPT's new catalogue entries. Lesson: merge-prep briefs after MSG list `tests/test_msg_*` (OPT's does).
+
+## 2026-11-08 — ST CI red at 8ce17244 (run 42517844608), fixed at eb1e0936
+
+Three test bugs, no product code: `get_stream_table` had no pre-ST snapshot in `test_m02_schemas` G1c and
+`test_m04_study_job` A42 (now skipped via `ST_OPERATIONS`, as MSG's `explain`); `test_st_core` Q1.A15c assumed
+IAPWS/H2O for every run, but the CoolProp leg adds TH-C2 (R134a) — now uses the run's own provider and basis.
+Missed locally because worktree tests imported main's `src` (the venv trap). ST_DECISIONS CI-1/CI-2. CI re-run pending.
+
+## 2026-11-08 — X02 merged (35aa61e1)
+
+`wp/X02` merged `--no-ff` after CI `42521075017` green on `d26bcd38` (both archs, identity, default-install);
+manifest `evidence/X02/d26bcd38…/manifest.json` tested (c72e41fe, which also merged main; HARVEST_SIZE (83, 1029, 135)).
+On main after the merge: ruff check + format OK; F0 PASS (M1–M9); targeted 1208 passed, 2 skipped. Surface chain now
+c_5 (D_5 `f51b69bf…`); global-state caches 38. Next per the merge order: OPT merge prep (docs/briefs/OPT-merge-prep.md).
+Open: design-lane prose check of X02's D-39 catalogue entries (batched with OPT's); X02 reviewer pass pending.
+
+## 2026-11-09 — OPT merge prep done (wp/OPT a1963353); D-91 register numbering ruled
+
+Merge prep per docs/briefs/OPT-merge-prep.md: OPT D-86…D-93 (merge of main, c_6 D_6 `3fdc797a…` with stripping OPT
+giving D_5 exactly, caches 39, M-4 verified, ADR 0071 + ADR 0019 Am. 16 Accepted, MSG catalogue G2 entries, corpus C12
+re-pointed to `nlp_solver_unavailable`; F0 PASS; targeted tests green). DECISION (D-91): ADR 0071's ten drafts → R-961…
+R-969 in ADR order and the tenth (R-860 lifts) at R-988 (unused everywhere). Alternative: fold two drafts into one entry.
+Reversible by: renumbering before merge. Brief docs/briefs/OPT-register-numbers.md. Design-lane batch (non-blocking):
+prose of X02 D-39 + OPT D-92 catalogue entries, and OPT D-93 (which mistake C12 should register).
+
+## 2026-11-09 — ST CI green at eb1e0936 (run 42527883250); OPT register numbered; RRC brief
+
+ST green on both archs, identity and default-install after the CI-1/CI-2 test fixes; ST still waits for WO-7 (after
+RRC merges: main merge, its chain link, ADR 0068 Accepted + amendment, R-1000…, manifest, CI). OPT: ADR 0071 drafts
+numbered R-961…R-969, R-988 (c1b9b125, D-94); CI pending. RRC merge-prep brief written (docs/briefs/RRC-merge-prep.md):
+ADR 0072 Accepted, FQ1 yes, FQ2–FQ4 default, drafts → R-990…R-995; starts after OPT merges.
+
+## 2026-11-09 — OPT merged (937223ad)
+
+`wp/OPT` merged `--no-ff` after CI `42534167073` green on `c1b9b125`; manifest `evidence/OPT/c1b9b125…` tested
+(03e40679; audited env 21 passed, G2 hashes and G22 identical to WO-8b, D-95; G21 local full gate "unsupported", not
+claimed; HARVEST_SIZE (85, 1039, 139)). On main after the merge: ruff OK; F0 PASS (M1–M9); targeted 1609 passed,
+2 skipped, 21 deselected (nlp), 3 xfailed. Surface chain c_6 (D_6 `3fdc797a…`); caches 39. Next: RRC merge prep
+(docs/briefs/RRC-merge-prep.md). Design-lane batch now ready: X02 D-39 + OPT D-92 prose, OPT D-93 (C12).
+
+## 2026-11-09 — MSG catalogue prose ruling for X02/OPT codes (f7da1420)
+
+`docs/reviews/MSG-catalogue-X02-OPT.md`: X02 entries kept/`why` rewritten; OPT `nlp_solver_unavailable` and
+`request_invalid` (arg → `member`, root variant) rewritten; 7 stubs re-titled, kinds final, all `review: true` cleared
+(138 → 129); allow-list reasons corrected; C12 keeps `nlp_solver_unavailable` but forces the solver probe unavailable
+(latent install dependence); `task_unsupported` prose rewritten. Work order §5 (10 steps), acceptance A1–A9. F1 (G1
+misses `OPT.*` check ids; loader forbids `.`) → separate MSG follow-up; F2 (U05 CLI pin install dependence) latent.
+DECISION: apply the work order on a short branch after RRC merges and before ST's WO-7 → both then take it with one
+main merge. Alternative: apply now (RRC, mid-merge of main, would have to re-merge the catalogue digest). Reversible
+by: applying it earlier.
+
+## 2026-11-09 — RRC merge prep done (wp/RRC fcba6656); CI pending
+
+RRC D-39…D-45: main merged (8 conflicts, both sides kept; RRC's `revision_continuation` passes through OPT's
+`write_revision_bundle`); no surface link (served digest = D_6 exactly; ST takes c_7); caches 39; ADR 0072 Accepted,
+R-990…R-995; catalogue: 3 refusal-reason labels allow-listed (digest → `14921a20…`); no ADR 0025 addendum (no new
+sha256 name); G8 had no CI coverage → new `tests/test_rrc_g8_determinism.py` (N1, C3 twice in fresh processes, x86-64
+R0 pins; aarch64 leg checks cross-arch — a different R0 there is a G8 failure to escalate, not a pin to move); T08 B27
+excludes RRC's policy as S11 did its column (design-lane glance at the manifest). F0 PASS; targeted tests green.
+
+## 2026-11-09 — MSG catalogue ruling applied on wp/MSGp (8906f870)
+
+Ruling §5 applied verbatim at base 9295f0fc; A1–A5, A7–A9 exact (digest `5e5026c5…`, review 138 → 129). A6: beyond the
+stated U05 stderr lines, U05's stdout `detail.explanation` (why/action/gap) also moves — the refusal document carries its
+explanation (MSG §3.7); `code`, `message`, `pointer` unchanged, `PINS_T07_SHA256` holds. DECISION: accept as the
+ruling's direct consequence, no new ruling → noted for the design lane's next MSG read. Alternative: a ruling round
+now. Reversible by: a later ruling. Next: after RRC merges, merge main into wp/MSGp, regenerate the digest-carrying
+fixtures (RRC's allow-list also moves the digest), CI, merge — before ST's WO-7.
+
+## 2026-11-09 — RRC CI red on V17-T10 (run 42547017088); ruling a109eea6 applied (wp/RRC 6b892b03)
+
+Only failure: `test_g16b_reference_run[V17-T10-*]` T10-C3 (exact set of offered policies; RRC's R-995 adds
+`RRC-revision-v1`). Ruling `docs/reviews/RRC-v17-t10.md`: a fourth reference document `t07_reference_rrc.json` in
+T08's form (Amendment RRC-1, GC-18, R-996, RRC D-46), sha `621003a8…`; the three frozen documents unchanged; exclusion
+rejected (it would make the expected answer false). Applied: A1–A8 exact (negative control fails GC-18 as stated);
+G16-b 40/40; F0 PASS. Q1 (`t07_reference.py --check` in CI): no (85.6 s). CI re-run pending.
+
+- 2026-11-09 — RRC CI green at 6b892b03 (run 42558001650, both archs, identity, default-install). Manifest engineer
+  launched (brief docs/briefs/RRC-manifest.md). DECISION: wp/MSGp merges with its own MSG follow-up manifest at the
+  re-based head (pattern evidence/MSG/5e9274db…), not folded into OPT's evidence; brief docs/briefs/MSGp-remerge.md
+  (merge main after RRC, keep both sides' hand-written entries, regenerate, re-measure A1–A9 with the digest moving by
+  RRC's additions only). Alternative: OPT follow-up manifest. Reversible by: dropping the manifest commit pre-merge.
+
+- 2026-11-09 — RRC merged into main (cefee08d; evidence/RRC/6b892b03… tested, CI 42558001650; manifest 64e628a8,
+  HARVEST_SIZE (86, 1046, 140)). Post-merge on main: ruff clean, F0 PASS (M1–M9), targeted tests (rrc, V17 reference,
+  t08, harvest, manifests, msg, surface chain, global state) 1555 passed, 2 skipped, 3 xfailed. Note: manifest
+  requirements D01/D20 only — the schema pattern `^[DA][0-9]{2}$` rejects V20. Next: wp/MSGp re-merge
+  (docs/briefs/MSGp-remerge.md), then ST WO-7.
+
+- 2026-11-09 — wp/MSGp re-based on main after RRC: merge 1602f72a (parents 8906f870, ed7718ae); only the two
+  message_entry fixtures conflicted (generated, regenerated). A1 379/83/129 (main after RRC 379/83/138; RRC added no
+  entries); A2 digest e3725b30… (main 14921a20…); A3–A9 hold, merged diff vs main per file = 8906f870's. Tests 1425
+  passed, 2 skipped, 3 xfailed; msg check PASS; F0 PASS; ruff clean. D-96 amended. CI watched; manifest after green.
+
+- 2026-11-09 — wp/MSGp merged into main (74ceab73; evidence/MSG/1602f72a… tested, CI 42570096932; manifest 3ba9ded9).
+  Post-merge on main: ruff clean, F0 PASS, MSG check PASS (379/83/129), targeted tests 860 passed + 1 failed: the
+  harvest size, because the MSGp brief (mine) omitted the harvest step. Fixed on main in one follow-up commit: 8 MSG
+  limitations classified P in support_envelope.yaml, support matrix re-emitted (--check 0 problems), HARVEST_SIZE
+  (86, 1046, 140) → (87, 1054, 140); harvest/t08/manifests 1132 passed, 2 skipped. Lesson: every manifest brief carries
+  the harvest step. Next: ST WO-7 (docs/briefs/ST-WO7.md).

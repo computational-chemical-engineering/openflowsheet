@@ -1,0 +1,74 @@
+{
+  "assessment": {
+    "assessment_id": "opt-c0-heater-utility",
+    "basis": {
+      "currency": "USD",
+      "year": 2020
+    },
+    "correlation_set": "sslw-idaes-v1",
+    "defaults": {
+      "U_by_service": {
+        "heating": 800.0
+      }
+    },
+    "operation": {
+      "discount_rate": 0.08,
+      "hours_per_year": 8000.0,
+      "lifetime_years": 20
+    },
+    "schema_version": "assessment-v1",
+    "utilities": [
+      {
+        "T_supply": 433.15,
+        "dT_min": 10.0,
+        "kind": "heating",
+        "price": {
+          "per": "GJ",
+          "value": 8.0
+        },
+        "utility_id": "LPS"
+      }
+    ]
+  },
+  "constraints": [
+    {
+      "expression": {
+        "constant": 0,
+        "linear": {
+          "S3.T": 1
+        },
+        "quadratic": [],
+        "text": "S3.T"
+      },
+      "id": "T-min",
+      "lower": 330.0,
+      "upper": null
+    }
+  ],
+  "decisions": [
+    {
+      "lower": 1000.0,
+      "scale": 10000.0,
+      "specification_id": "SPEC-Q",
+      "unit": "W",
+      "upper": 11000.0
+    }
+  ],
+  "objective": {
+    "expression": {
+      "constant": 0,
+      "linear": {
+        "assessment:opex.total": 1
+      },
+      "quadratic": [],
+      "text": "opex/opex_s"
+    },
+    "scale": 2304.0,
+    "sense": "minimize"
+  },
+  "problem_id": "OPT-C0",
+  "request_format": "openflowsheet-optimization-request-v1",
+  "starts": {
+    "include_revision": true
+  }
+}

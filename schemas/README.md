@@ -120,6 +120,14 @@ chord correction exceeds the kind tolerance). No field is added or removed and n
 changes; every registered policy keeps `newton` or `ptc`, and the fixtures regenerate identically
 (R-015).
 
+Changed by **RRC** under ADR 0072 (Accepted 2026-11-08; Frank approved the three widenings, FQ1;
+`docs/RRC_DECISIONS.md`): `solve-policy`'s `globalization.eo_recovery` adds
+`homotopy_or_revision_continuation_or_sequential_restart` (edge 3's revision continuation from the nearest
+verified ancestor, before the sequential restart); `attempt-context`'s `continuation.type` and
+`solution-certificate`'s `branch_provenance[].continuation.type` widen from the single literal
+`specification_continuation` to the enum of it and `revision_continuation`. No field is added or removed and no
+default changes; no registered policy carries the new value, and the fixtures regenerate identically (R-015).
+
 Added by **T07** under ADR 0019 (the application contract v1; approved by Frank) — the K06/T07 row
 of the delivery table delivered, plus four schemas that row does not list. The field sets and enums
 are those of design note `docs/design/T07-jobs-and-bindings.md` §5; `Job` and `JobEvent` also carry
@@ -187,3 +195,5 @@ and are not fixtures.
 Added by **M03** under ADR 0031 D7 and ADR 0032 D6 (spec §10, Amendment 1): `study.schema.json` (a sensitivity, sweep or estimation study, with the `$defs` `study_parameter`, `output_functional`, `sensitivity_result` — Q2′ and `LINEAR_SOLVE_FAILED` included — `sweep_point`, `sweep_result` and `estimation_report`) and `optimization-report.schema.json` (`optimize()`'s report, every start with its `classification`); fixtures emitted by real runs (`scripts/m03_schema_fixtures.py`), the cross-field rules in `tests/test_m03_schemas.py`; the schema list is `registry.json` (R-213), not packaged.
 
 Added by **M05** (design note §9.1, ADRs 0038 and 0039): `trust-region-study.schema.json` (`trust-region-study-v1`, a trust-region study's record: spec, runs, candidates with P1–P5, accounting, status and claims); `tests/test_m05_study_record.py` validates records produced by `run_study` on the WO-6 fakes, applies §8.3's arithmetic and the status precedence to them, and takes WO-8's committed records through the same checks. Open point: §9.1's `runs[].ledger {sha256, summary}` is written as `{summary, cold_parent}`, so `sha256` is optional.
+
+Added by **OPT** (design note `docs/design/OPT-revision-optimisation.md` §4.3, ADR 0071 D2, Proposed): `optimization-request.schema.json` (`openflowsheet-optimization-request-v1`, the optimisation of a stored revision: decisions on its `role: fixed` specifications with box, scale and internal unit, objective with sense and scale, constraints, starts, optional assessment, options, Hessian policy); round-trip fixtures in `tests/fixtures/schemas/optimization_request/`, the rules a schema cannot state in `studies/nlp/request.py` (`request_problems`), held by `tests/test_opt_request.py`.

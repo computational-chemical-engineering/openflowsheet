@@ -5,7 +5,10 @@ M03 spec §8.5; ADR 0032 D3. Termination is not feasibility and stationarity is 
 computed on the flowsheet **re-solved at d** by the production solver from the registered
 initializer — never on the optimizer's own state or measures:
 
-- **V1** the re-solve converges and its K04 certificate is `VERIFIED`;
+- **V1** the re-solve converges and its K04 certificate is `VERIFIED` (basis `certificate`); on
+  a revision host, alternatively the certificate is rank-limited only by a guarded LIQUID/VAPOR
+  split at its phase boundary and clauses (e1)–(e6) hold (basis `phase_boundary_form`, OPT §9
+  A-1, `studies/nlp/boundary.py`), the certificate itself staying `UNVERIFIED`;
 - **V2** a gross-error check of the optimizer's state against it (`‖S_x⁻¹(x_opt − x_sim)‖_∞ ≤
   1e-6`; a different branch or a negative-flow pseudo-solution, not a precision claim);
 - **V3** the decisions inside their box exactly, every inequality `ĝ ≥ −τ_feas` on `x_sim`, the
@@ -34,7 +37,7 @@ from __future__ import annotations
 import math
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
-from typing import Any, Final, Literal
+from typing import Any, Final, Literal, Protocol, cast
 
 import numpy as np
 import numpy.typing as npt
@@ -43,8 +46,10 @@ from openflowsheet.assessment.program import Linearization, Refusal
 from openflowsheet.assessment.quantities import ASSESSMENT_PREFIX
 from openflowsheet.compile.casadi_backend import TwinEvaluationError
 from openflowsheet.compile.reference import state_vector
+from openflowsheet.compile.spec import ProblemSpec
 from openflowsheet.models.syn001.flowsheet import Syn001Flowsheet
 from openflowsheet.numerics.scaling import Scaling
+from openflowsheet.studies.nlp.boundary import CERTIFICATE, PHASE_BOUNDARY_FORM, BoundaryVerdict
 from openflowsheet.studies.nlp.formulation import (
     AssessmentBinding,
     AssessmentClosure,
@@ -55,17 +60,21 @@ from openflowsheet.studies.nlp.formulation import (
     assessment_twin,
     is_assessment_name,
 )
+from openflowsheet.studies.nlp.host import (
+    CertifiedPoint,
+    DecisionRefusedError,
+    HeldSystem,
+    NlpHost,
+    RegimeRecord,
+    ZeroSubsystem,
+    as_host,
+)
+from openflowsheet.studies.nlp.phase import CLOSURE_IDENTITY, PHASE_PREFIX, PhaseRows
 from openflowsheet.studies.sensitivity import (
     TAU_REGIME,
     OutputFunctional,
     SensitivityResult,
     StudyParameter,
-)
-from openflowsheet.studies.syn001 import (
-    solve_certified,
-    split_regimes,
-    syn001_sensitivity,
-    with_pinned,
 )
 
 #: Spec §8.5's thresholds.
@@ -87,6 +96,24 @@ CHECKS: Final = ("V1", "V2", "V3", "V4", "V5", "V6", "V7")
 M03_CHECKS: Final = CHECKS[:6]
 #: E01 §4.10.3 V7's code, with the entry as its argument.
 REGIME_CHANGED: Final = "ASSESSMENT_REGIME_CHANGED"
+#: OPT §4.6 V4's code on a held system, with the unit as its argument.
+PHASE_REGIME_CHANGED: Final = "PHASE_REGIME_CHANGED"
+#: OPT §9 A-2 V4's code: the re-solve's zero subsystem is not the start's (as id sets).
+ZERO_SUBSYSTEM_CHANGED: Final = "ZERO_SUBSYSTEM_CHANGED"
+
+
+def _names_decisions(formulation: NlpFormulation) -> bool:
+    """An expression names a decision (OPT §4.3); M03's never do."""
+    ids = set(formulation.decision_ids)
+    return any(name in ids for name in formulation.variables)
+
+
+class _BoundaryHost(Protocol):
+    """A host that judges V1's phase-boundary basis (OPT §9 A-1): `RevisionNlpHost`."""
+
+    def phase_boundary(
+        self, point: CertifiedPoint, held: HeldSystem, phase: PhaseRows | None, *, tau_active: float
+    ) -> BoundaryVerdict: ...
 
 
 @dataclass(frozen=True)
@@ -174,6 +201,12 @@ class CandidateVerification:
     sensitivity: SensitivityResult | None
     #: E01 §4.10.3 V6: the closure's assessment values at `x_sim`; `None` without an assessment.
     assessment_values: Mapping[str, float] | None = None
+    #: OPT §4.6: V1's certified re-solve (its bundle, its document); in memory only, never
+    #: compared or serialised.
+    point: CertifiedPoint | None = field(default=None, compare=False, repr=False)
+    #: OPT §9 A-1: the basis V1 passed on (`certificate`, `phase_boundary_form`) on a revision
+    #: host; `None` where V1 failed and for SYN-001 (whose documents do not carry it).
+    basis: str | None = None
 
     def outcome(self, check: str) -> CheckOutcome:
         return next(item.outcome for item in self.checks if item.check == check)
@@ -209,45 +242,73 @@ class CandidateVerification:
         }
 
 
-def declared_regimes(flowsheet: Syn001Flowsheet, state: Mapping[str, float]) -> dict[str, str]:
-    """The regime of every TP split at a verified start: the formulation's declared regimes."""
-    return {split.unit_id: str(split.regime) for split in split_regimes(flowsheet, state)}
-
-
 def verify_candidate(
-    flowsheet: Syn001Flowsheet,
+    flowsheet: NlpHost | Syn001Flowsheet,
     formulation: NlpFormulation,
     decisions: Sequence[float],
     *,
     regimes: Mapping[str, str],
     optimizer_state: Mapping[str, float] | None = None,
     closure: AssessmentClosure | None = None,
+    held: HeldSystem | None = None,
+    phase: PhaseRows | None = None,
 ) -> CandidateVerification:
     """V1-V6 at `decisions` (spec §8.5), and V7 with an assessment (E01 §4.10.3). `regimes` are
-    the formulation's declared regimes (the start's, `declared_regimes`); `optimizer_state` is
+    the formulation's declared regimes (the start's, `RegimeRecord.declared`); `optimizer_state` is
     the solver's final state by variable id, and without it V2 is `not_evaluated` — so such a
     candidate is never `passed`. `closure` is the gray box's (`FullSpaceNlp.closure`); without
-    it the binding's closure is computed at `x_sim` (the pattern is structural)."""
+    it the binding's closure is computed at `x_sim` (the pattern is structural). `flowsheet` is
+    an NLP host or a SYN-001 flowsheet (`as_host`); the re-solve is the host's `certify`.
+
+    `held` is the start's held system on a revision host (OPT §4.6): V2 then also compares its
+    held columns exactly, and V4 requires the re-solve's attempt signature to equal the start's
+    exactly (`PHASE_REGIME_CHANGED(<unit>)` otherwise). Without it (SYN-001) neither is judged.
+    An expression may name a decision (OPT §4.3): its value is the decision's, and in V5 its
+    derivative is direct, as an assessment output's `∂G/∂d` is.
+
+    `phase` is the start's phase rows (OPT §4.7, the gray box's `FullSpaceNlp.phase`): each is an
+    inequality `row ≥ 0` on `x_sim` (float path) in V3 and a candidate of V5's active set by the
+    chain rule; a split whose row is active is exempt from V4's margin and is passed to the
+    sensitivity as held (Q4's held mode). Without it nothing changes."""
+    host = as_host(flowsheet)
     values = formulation.decision_values(decisions)
-    sheet = with_pinned(flowsheet, values)
-    solve = solve_certified(sheet)
+    try:
+        point = host.certify(values)
+    except DecisionRefusedError as error:
+        # M03 raised the pinning refusal itself here; it still does (the host wraps it).
+        raise error.__cause__ or error from None
     binding = formulation.assessment
     names = CHECKS if binding is not None else M03_CHECKS
     checks: dict[str, VerificationCheck] = {}
-    certificate = solve.certificate
-    checks["V1"] = VerificationCheck(
-        "V1",
-        "pass" if solve.verified else "fail",
-        {
-            "resolve_outcome": solve.outcome,
-            "message": solve.message,
-            "certificate_status": certificate.verification_status if certificate else None,
-        },
-    )
-    state = solve.final_state
-    if state is None:
+    certificate = point.certificate
+    v1: dict[str, Any] = {
+        "resolve_outcome": point.outcome,
+        "message": point.message,
+        "certificate_status": certificate.verification_status if certificate else None,
+    }
+    admitted = point.verified
+    basis: str | None = None
+    if held is not None:
+        # OPT §9 A-1: on a revision host V1 passes on one of two bases, and says which.
+        if point.verified:
+            basis = CERTIFICATE
+            v1["basis"] = basis
+        else:
+            verdict = cast(_BoundaryHost, host).phase_boundary(
+                point, held, phase, tau_active=TAU_ACTIVE
+            )
+            v1.update(verdict.detail())
+            admitted = verdict.passed
+            basis = PHASE_BOUNDARY_FORM if admitted else None
+    checks["V1"] = VerificationCheck("V1", "pass" if admitted else "fail", v1)
+    state = point.state
+    # A revision host's held system and regimes exist only at a certified point (OPT §4.2.1;
+    # §9 A-1: or one V1 passed on the phase-boundary form): any other re-solve fails V1 and is
+    # judged no further.
+    if state is None or (held is not None and not admitted):
+        reason = "no_simulation" if state is None else "resolve_not_certified"
         for check in names[1:]:
-            checks[check] = VerificationCheck(check, "not_evaluated", {"reason": "no_simulation"})
+            checks[check] = VerificationCheck(check, "not_evaluated", {"reason": reason})
         return CandidateVerification(
             decisions=values,
             checks=tuple(checks[check] for check in names),
@@ -260,14 +321,19 @@ def verify_candidate(
             state_sha256=None,
             simulation_state=None,
             sensitivity=None,
+            point=point,
         )
 
-    scaling = Scaling.from_spec(sheet.spec())
-    checks["V2"] = _gross(scaling, state, optimizer_state)
-    checks["V4"] = _regimes(sheet, state, regimes)
+    assert point.spec is not None  # a point with a state was bound
+    scaling = Scaling.from_spec(point.spec)
+    checks["V2"] = _gross(scaling, state, optimizer_state, held)
+    record = host.regimes(point)
+    # §9 A-2: V4 re-derives the zero subsystem at the re-solve (its held system's).
+    zero = (held.zero, host.held_system(point).zero) if held is not None else None
+    checks["V4"] = _regimes(record, regimes, held, point.signature, zero=zero)
     assessment: _Assessment | None = None
     if binding is not None:
-        evaluated = _assessment(sheet, formulation, binding, state, values, closure)
+        evaluated = _assessment(point.spec, formulation, binding, state, values, closure)
         checks["V7"] = _regime_held(binding, state, values)
         if isinstance(evaluated, str):
             for check in ("V3", "V5", "V6"):
@@ -286,18 +352,66 @@ def verify_candidate(
                 state_sha256=certificate.target_state_sha256 if certificate else None,
                 simulation_state=dict(state),
                 sensitivity=None,
+                point=point,
+                basis=basis,
             )
         assessment = evaluated
-    point = state if assessment is None else assessment.point
+    resolved = point
+    at = state if assessment is None else assessment.point
+    if _names_decisions(formulation):
+        at = {**at, **values}
     constraints = formulation.constraints if assessment is None else assessment.constraints
+    rows: _PhaseTerms | None = None
+    if phase is not None and phase.rows:
+        found = _phase_terms(point.spec, phase, state, values)
+        if isinstance(found, str):
+            for check in ("V3", "V5", "V6"):
+                checks[check] = VerificationCheck(
+                    check, "not_evaluated", {"reason": f"phase_rows_not_evaluable: {found}"}
+                )
+            return CandidateVerification(
+                decisions=values,
+                checks=tuple(checks[check] for check in names),
+                objective=None,
+                constraint_values={},
+                slacks={},
+                active_set=(),
+                kkt=None,
+                certificate_id=certificate.certificate_id if certificate else None,
+                state_sha256=certificate.target_state_sha256 if certificate else None,
+                simulation_state=dict(state),
+                sensitivity=None,
+                point=point,
+                basis=basis,
+            )
+        rows = found
+        constraints = (*constraints, *rows.constraints)
+        at = {**at, **rows.point}
     constraint_values = {
-        constraint.constraint_id: constraint.expression.value(point) for constraint in constraints
+        constraint.constraint_id: constraint.expression.value(at) for constraint in constraints
     }
     slacks, active, checks["V3"] = _feasibility(formulation, constraints, values, constraint_values)
+    held_units: tuple[str, ...] = ()
+    if phase is not None:
+        # OPT §4.6 V4: a split whose phase row is active is recorded, not judged by its margin.
+        active_rows = [item.target for item in active if item.target in set(phase.ids)]
+        held_units = tuple(phase.row(row).unit for row in active_rows if phase.row(row).split)
+        checks["V4"] = _regimes(
+            record,
+            regimes,
+            held,
+            point.signature,
+            phase_active=held_units,
+            phase_rows=active_rows,
+            zero=zero,
+            not_closure_test=(
+                _not_closure_test(phase, record, state, rows) if rows is not None else ()
+            ),
+        )
     sensitivity, kkt, checks["V5"] = _kkt(
-        sheet, solve, formulation, constraints, point, active, assessment
+        host, resolved, formulation, constraints, at, active, assessment, rows, held_units
     )
-    objective = formulation.objective.value(point)
+    objective = formulation.objective.value(at)
     v6: dict[str, Any] = {"objective": objective, "constraint_values": dict(constraint_values)}
     if assessment is not None:
         v6["assessment_values"] = dict(assessment.values)
@@ -315,6 +429,8 @@ def verify_candidate(
         simulation_state=dict(state),
         sensitivity=sensitivity,
         assessment_values=None if assessment is None else dict(assessment.values),
+        point=point,
+        basis=basis,
     )
 
 
@@ -336,7 +452,7 @@ class _Assessment:
 
 
 def _assessment(
-    sheet: Syn001Flowsheet,
+    spec: ProblemSpec,
     formulation: NlpFormulation,
     binding: AssessmentBinding,
     state: Mapping[str, float],
@@ -348,7 +464,6 @@ def _assessment(
     decision_ids = formulation.decision_ids
     try:
         if closure is None:
-            spec = sheet.spec()
             twin = assessment_twin(binding, spec.variable_ids, decision_ids)
             x = np.array(state_vector(spec, state), dtype=np.float64)
             closure = assessment_closure(binding, twin, x, decisions)
@@ -386,6 +501,47 @@ def _assessment(
         constraints=(*formulation.constraints, *admissibility),
         d_dx=rows,
         d_dd=direct,
+    )
+
+
+@dataclass(frozen=True)
+class _PhaseTerms:
+    """The phase rows at `(x_sim, d)` (OPT §4.7): their values (float path) under their
+    `phase:<id>` names, the inequalities `row ≥ 0`, and their linearization (`∂a/∂x` by row as
+    `{variable_id: value}`, `∂a/∂d` in decision order)."""
+
+    point: Mapping[str, float]
+    constraints: tuple[InequalityConstraint, ...]
+    d_dx: Mapping[str, Mapping[str, float]]
+    d_dd: Mapping[str, npt.NDArray[np.float64]]
+
+
+def _phase_terms(
+    spec: ProblemSpec,
+    phase: PhaseRows,
+    state: Mapping[str, float],
+    decisions: Mapping[str, float],
+) -> _PhaseTerms | str:
+    """The phase rows at `x_sim`, or why they cannot be evaluated there."""
+    try:
+        evaluated = phase.values(state)
+        x = np.array(state_vector(spec, state), dtype=np.float64)
+        d_dx, d_dd = phase.linearize(x, decisions)
+    except TwinEvaluationError as error:
+        return f"{error}"
+    constraints = tuple(
+        InequalityConstraint(
+            name,
+            QuadraticExpression(linear={f"{PHASE_PREFIX}{name}": 1.0}, text=f"{name} >= 0"),
+            lower=0.0,
+        )
+        for name in phase.ids
+    )
+    return _PhaseTerms(
+        point={f"{PHASE_PREFIX}{name}": float(evaluated[name]) for name in phase.ids},
+        constraints=constraints,
+        d_dx=d_dx,
+        d_dd=d_dd,
     )
 
 
@@ -429,20 +585,31 @@ def _gross(
     scaling: Scaling,
     state: Mapping[str, float],
     optimizer_state: Mapping[str, float] | None,
+    held: HeldSystem | None = None,
 ) -> VerificationCheck:
-    """V2: `‖S_x⁻¹ (x_opt − x_sim)‖_∞ ≤ 1e-6`."""
+    """V2: `‖S_x⁻¹ (x_opt − x_sim)‖_∞ ≤ 1e-6`; on a held system over its free columns, and its
+    held columns equal to the re-solve's exactly (OPT §4.6)."""
     if optimizer_state is None:
         return VerificationCheck("V2", "not_evaluated", {"reason": "no optimizer state supplied"})
     worst_name, worst = "", 0.0
+    held_columns = held.held if held is not None else {}
     for name, value in state.items():
+        if name in held_columns:
+            continue
         difference = abs(optimizer_state[name] - value) / scaling.column[name]
         if difference > worst or not math.isfinite(difference):
             worst_name, worst = name, difference
-    return VerificationCheck(
-        "V2",
-        "pass" if worst <= TAU_GROSS else "fail",
-        {"scaled_difference_inf": worst, "worst_variable": worst_name, "threshold": TAU_GROSS},
-    )
+    detail: dict[str, Any] = {
+        "scaled_difference_inf": worst,
+        "worst_variable": worst_name,
+        "threshold": TAU_GROSS,
+    }
+    moved: list[str] = []
+    if held is not None:
+        moved = sorted(name for name, value in held_columns.items() if state[name] != value)
+        detail["held_columns"] = len(held_columns)
+        detail["held_changed"] = moved
+    return VerificationCheck("V2", "pass" if worst <= TAU_GROSS and not moved else "fail", detail)
 
 
 def _feasibility(
@@ -515,25 +682,131 @@ def _feasibility(
 
 
 def _regimes(
-    sheet: Syn001Flowsheet, state: Mapping[str, float], declared: Mapping[str, str]
+    record: RegimeRecord,
+    declared: Mapping[str, str],
+    held: HeldSystem | None = None,
+    signature: Any = None,
+    *,
+    phase_active: Sequence[str] | None = None,
+    phase_rows: Sequence[str] = (),
+    zero: tuple[ZeroSubsystem | None, ZeroSubsystem | None] | None = None,
+    not_closure_test: Sequence[str] = (),
 ) -> VerificationCheck:
-    """V4: every TP split in its declared regime, at least `τ_regime` from the boundary."""
-    splits = split_regimes(sheet, state)
+    """V4: every TP split in its declared regime, at least `τ_regime` from the boundary; on a
+    held system also the re-solve's attempt signature equal to the start's exactly, else
+    `PHASE_REGIME_CHANGED(<unit>)` for each item that differs (OPT §4.6). With phase rows
+    (`phase_active` not `None`, OPT §4.7) a split whose row is active is not judged by its
+    margin: it and the active rows are recorded under `phase_bounds_active`. `zero` is the
+    start's and the re-solve's zero subsystem (OPT §9 A-2): unequal as id sets →
+    `ZERO_SUBSYSTEM_CHANGED`; recorded under `zero_subsystem` only where either is non-empty.
+    `not_closure_test` names the guarded splits whose row is no longer their closure's test at the
+    re-solve (OPT §9 A-3): each fails V4 as `phase_row_not_closure_test(<unit>)`."""
+    splits = record.splits
     changed = [split.unit_id for split in splits if declared.get(split.unit_id) != split.regime]
+    exempt = set(phase_active or ())
     near = [
-        split.unit_id for split in splits if split.margin is None or not split.margin >= TAU_REGIME
+        split.unit_id
+        for split in splits
+        if (split.margin is None or not split.margin >= TAU_REGIME) and split.unit_id not in exempt
     ]
-    return VerificationCheck(
-        "V4",
-        "fail" if changed or near else "pass",
-        {
-            "splits": [split.as_document() for split in splits],
-            "declared": dict(declared),
-            "regime_changed": changed,
-            "inside_tau_regime": near,
-            "tau_regime": TAU_REGIME,
-        },
+    detail: dict[str, Any] = {
+        "splits": [split.as_document() for split in splits],
+        "declared": dict(declared),
+        "regime_changed": changed,
+        "inside_tau_regime": near,
+        "tau_regime": TAU_REGIME,
+    }
+    moved: list[str] = []
+    if held is not None:
+        moved = _signature_changes(held.signature, signature)
+        detail["held_signature"] = _signature_document(held.signature)
+        detail["signature"] = _signature_document(signature)
+        detail["phase_regime_changed"] = [f"{PHASE_REGIME_CHANGED}({unit})" for unit in moved]
+    if phase_active is not None:
+        detail["phase_bounds_active"] = {"units": list(phase_active), "rows": list(phase_rows)}
+    zero_changed = False
+    if held is not None and zero is not None and zero != (None, None):
+        detail["zero_subsystem"], zero_changed = _zero_subsystems(*zero)
+    if not_closure_test:
+        detail["phase_row_not_closure_test"] = [
+            f"phase_row_not_closure_test({unit})" for unit in not_closure_test
+        ]
+    failed = changed or near or moved or zero_changed or bool(not_closure_test)
+    return VerificationCheck("V4", "fail" if failed else "pass", detail)
+
+
+def _not_closure_test(
+    phase: PhaseRows, record: RegimeRecord, state: Mapping[str, float], rows: _PhaseTerms
+) -> tuple[str, ...]:
+    """OPT §9 A-3: the guarded splits (a split row of the start) whose row at the re-solve is not
+    the closure's test there, `|a/Σn − margin| > 1e-10` (or no margin, or an empty feed). A split
+    the re-solve finds in another regime is not judged here: its row is not that regime's test,
+    and V4 already fails it (`regime_changed`, `PHASE_REGIME_CHANGED`)."""
+    held = {"split_liquid": "LIQUID", "split_vapor": "VAPOR"}
+    resolved = {split.unit_id: split for split in record.splits}
+    failing: list[str] = []
+    for row in phase.rows:
+        if not row.split:
+            continue
+        split = resolved.get(row.unit)
+        if split is None or split.regime != held[row.kind]:
+            continue
+        margin = split.margin
+        total = math.fsum(float(state[name]) for name in row.feed)
+        value = rows.point[f"{PHASE_PREFIX}{row.row_id}"]
+        if (
+            margin is None
+            or total == 0.0
+            or not abs(value * row.nominal / total - margin) <= CLOSURE_IDENTITY
+        ):
+            failing.append(row.unit)
+    return tuple(failing)
+
+
+def _zero_subsystems(
+    start: ZeroSubsystem | None, resolved: ZeroSubsystem | None
+) -> tuple[dict[str, Any], bool]:
+    """V4's zero-subsystem clause (OPT §9 A-2): its record and whether (Z, R) moved."""
+    empty: tuple[frozenset[str], frozenset[str]] = (frozenset(), frozenset())
+    (z0, r0), (z1, r1) = (
+        start.ids() if start is not None else empty,
+        resolved.ids() if resolved is not None else empty,
     )
+    moved = z0 != z1 or r0 != r1
+    record: dict[str, Any] = {
+        "start": None if start is None else start.status,
+        "resolve": None if resolved is None else resolved.status,
+        "columns": len(z0),
+        "rows": len(r0),
+        "columns_changed": sorted(z0 ^ z1),
+        "rows_changed": sorted(r0 ^ r1),
+        "codes": [ZERO_SUBSYSTEM_CHANGED] if moved else [],
+    }
+    return record, moved
+
+
+def _signature_changes(held: Any, resolved: Any) -> list[str]:
+    """The units whose attempt-signature items differ between the start and the re-solve (a
+    lifted split's `(unit, regime)` or a dormancy item), in first-appearance order."""
+    if held == resolved:
+        return []
+    before, after = tuple(held or ()), tuple(resolved or ())
+    units: list[str] = []
+    for item in (*before, *after):
+        if (item in before) != (item in after):
+            unit = str(item[0]) if isinstance(item, tuple) and item else str(item)
+            if unit not in units:
+                units.append(unit)
+    return units or ["<signature>"]
+
+
+def _signature_document(signature: Any) -> list[list[str]] | None:
+    if signature is None:
+        return None
+    return [
+        [str(part) for part in item] if isinstance(item, tuple) else [str(item)]
+        for item in signature
+    ]
 
 
 def _functional(
@@ -542,6 +815,8 @@ def _functional(
     state: Mapping[str, float],
     assessment: _Assessment | None,
     n: int,
+    decision_ids: Sequence[str] = (),
+    phase: _PhaseTerms | None = None,
 ) -> tuple[OutputFunctional | None, npt.NDArray[np.float64] | None]:
     """The expression's linearization at `state`, as a sensitivity output of scale 1: its
     sensitivity is then the scaled gradient with respect to the decisions.
@@ -549,36 +824,52 @@ def _functional(
     An `assessment:<id>` term enters by the chain rule (E01 §4.10.3 V5): its coefficient times
     `∂y/∂x` joins the functional, and times `∂y/∂d` the direct term returned beside it (`None`
     for an expression without one, whose functional is M03's exactly). The functional is `None`
-    when no state variable is left in it."""
+    when no state variable is left in it. A `phase:<id>` term (OPT §4.7) enters by the chain rule
+    as an assessment output's does, from the phase rows' linearization."""
     gradient = expression.gradient(state)
-    named = [name for name in gradient if is_assessment_name(name)]
+    position = {name: index for index, name in enumerate(decision_ids)}
+    named = [
+        name
+        for name in gradient
+        if is_assessment_name(name) or name in position or name.startswith(PHASE_PREFIX)
+    ]
     if not named:
         return OutputFunctional(output_id, gradient, 1.0), None
-    assert assessment is not None
     parts: dict[str, list[float]] = {
-        name: [value] for name, value in gradient.items() if not is_assessment_name(name)
+        name: [value] for name, value in gradient.items() if name not in set(named)
     }
     direct = np.zeros(n)
     for name in named:
         coefficient = gradient[name]
+        if name in position:
+            # OPT §4.3: a decision named in an expression; its derivative is direct.
+            direct[position[name]] += coefficient
+            continue
+        terms: _Assessment | _PhaseTerms | None = assessment
         output = name[len(ASSESSMENT_PREFIX) :]
-        for variable_id, value in assessment.d_dx[output].items():
+        if name.startswith(PHASE_PREFIX):
+            terms, output = phase, name[len(PHASE_PREFIX) :]
+        assert terms is not None
+        for variable_id, value in terms.d_dx[output].items():
             parts.setdefault(variable_id, []).append(coefficient * value)
-        direct += coefficient * assessment.d_dd[output]
+        direct += coefficient * terms.d_dd[output]
     coefficients = {name: math.fsum(values) for name, values in parts.items()}
     return (OutputFunctional(output_id, coefficients, 1.0) if coefficients else None), direct
 
 
 def _kkt(
-    sheet: Syn001Flowsheet,
-    solve: Any,
+    nlp_host: NlpHost,
+    point: CertifiedPoint,
     formulation: NlpFormulation,
     constraints: Sequence[InequalityConstraint],
     state: Mapping[str, float],
     active: Sequence[ActiveConstraint],
     assessment: _Assessment | None,
+    phase: _PhaseTerms | None = None,
+    held: Sequence[str] = (),
 ) -> tuple[SensitivityResult | None, KktEvidence | None, VerificationCheck]:
-    """V5, from M03's adjoint sensitivities at `x_sim` (plus `∂G/∂d` for assessment terms)."""
+    """V5, from M03's adjoint sensitivities at `x_sim` (plus `∂G/∂d` for assessment terms);
+    `held` are the splits whose phase row is active (Q4's held mode, OPT §4.7)."""
     if not all(decision.bounded for decision in formulation.decisions):
         return None, None, VerificationCheck("V5", "not_evaluated", {"reason": "bounds_undeclared"})
     parameters = tuple(
@@ -586,21 +877,24 @@ def _kkt(
         for decision in formulation.decisions
     )
     n = len(formulation.decisions)
-    built = [_functional(OBJECTIVE_OUTPUT, formulation.objective, state, assessment, n)] + [
-        _functional(constraint.constraint_id, constraint.expression, state, assessment, n)
+    ids = formulation.decision_ids
+    built = [
+        _functional(OBJECTIVE_OUTPUT, formulation.objective, state, assessment, n, ids, phase)
+    ] + [
+        _functional(
+            constraint.constraint_id, constraint.expression, state, assessment, n, ids, phase
+        )
         for constraint in constraints
     ]
     outputs = tuple(functional for functional, _ in built if functional is not None)
     if not outputs:
         return None, None, VerificationCheck("V5", "not_evaluated", {"reason": "state_independent"})
-    sensitivity = syn001_sensitivity(
-        sheet,
-        solve.result,
-        parameters=parameters,
-        outputs=outputs,
-        mode="adjoint",
-        certificate=solve.certificate,
-    )
+    if held:
+        sensitivity = nlp_host.sensitivity(
+            point, parameters, outputs, mode="adjoint", held=tuple(held)
+        )
+    else:
+        sensitivity = nlp_host.sensitivity(point, parameters, outputs, mode="adjoint")
     if sensitivity.status != "QUALIFIED" or sensitivity.adjoint is None:
         return (
             sensitivity,

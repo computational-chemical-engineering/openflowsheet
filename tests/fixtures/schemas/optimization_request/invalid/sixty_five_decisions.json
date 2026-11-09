@@ -1,0 +1,470 @@
+{
+  "request_format": "openflowsheet-optimization-request-v1",
+  "problem_id": "th-r1-heater-duty",
+  "decisions": [
+    {
+      "specification_id": "S0",
+      "lower": 20000.0,
+      "upper": 30000.0,
+      "scale": 10000.0,
+      "unit": "W"
+    },
+    {
+      "specification_id": "S1",
+      "lower": 20000.0,
+      "upper": 30000.0,
+      "scale": 10000.0,
+      "unit": "W"
+    },
+    {
+      "specification_id": "S2",
+      "lower": 20000.0,
+      "upper": 30000.0,
+      "scale": 10000.0,
+      "unit": "W"
+    },
+    {
+      "specification_id": "S3",
+      "lower": 20000.0,
+      "upper": 30000.0,
+      "scale": 10000.0,
+      "unit": "W"
+    },
+    {
+      "specification_id": "S4",
+      "lower": 20000.0,
+      "upper": 30000.0,
+      "scale": 10000.0,
+      "unit": "W"
+    },
+    {
+      "specification_id": "S5",
+      "lower": 20000.0,
+      "upper": 30000.0,
+      "scale": 10000.0,
+      "unit": "W"
+    },
+    {
+      "specification_id": "S6",
+      "lower": 20000.0,
+      "upper": 30000.0,
+      "scale": 10000.0,
+      "unit": "W"
+    },
+    {
+      "specification_id": "S7",
+      "lower": 20000.0,
+      "upper": 30000.0,
+      "scale": 10000.0,
+      "unit": "W"
+    },
+    {
+      "specification_id": "S8",
+      "lower": 20000.0,
+      "upper": 30000.0,
+      "scale": 10000.0,
+      "unit": "W"
+    },
+    {
+      "specification_id": "S9",
+      "lower": 20000.0,
+      "upper": 30000.0,
+      "scale": 10000.0,
+      "unit": "W"
+    },
+    {
+      "specification_id": "S10",
+      "lower": 20000.0,
+      "upper": 30000.0,
+      "scale": 10000.0,
+      "unit": "W"
+    },
+    {
+      "specification_id": "S11",
+      "lower": 20000.0,
+      "upper": 30000.0,
+      "scale": 10000.0,
+      "unit": "W"
+    },
+    {
+      "specification_id": "S12",
+      "lower": 20000.0,
+      "upper": 30000.0,
+      "scale": 10000.0,
+      "unit": "W"
+    },
+    {
+      "specification_id": "S13",
+      "lower": 20000.0,
+      "upper": 30000.0,
+      "scale": 10000.0,
+      "unit": "W"
+    },
+    {
+      "specification_id": "S14",
+      "lower": 20000.0,
+      "upper": 30000.0,
+      "scale": 10000.0,
+      "unit": "W"
+    },
+    {
+      "specification_id": "S15",
+      "lower": 20000.0,
+      "upper": 30000.0,
+      "scale": 10000.0,
+      "unit": "W"
+    },
+    {
+      "specification_id": "S16",
+      "lower": 20000.0,
+      "upper": 30000.0,
+      "scale": 10000.0,
+      "unit": "W"
+    },
+    {
+      "specification_id": "S17",
+      "lower": 20000.0,
+      "upper": 30000.0,
+      "scale": 10000.0,
+      "unit": "W"
+    },
+    {
+      "specification_id": "S18",
+      "lower": 20000.0,
+      "upper": 30000.0,
+      "scale": 10000.0,
+      "unit": "W"
+    },
+    {
+      "specification_id": "S19",
+      "lower": 20000.0,
+      "upper": 30000.0,
+      "scale": 10000.0,
+      "unit": "W"
+    },
+    {
+      "specification_id": "S20",
+      "lower": 20000.0,
+      "upper": 30000.0,
+      "scale": 10000.0,
+      "unit": "W"
+    },
+    {
+      "specification_id": "S21",
+      "lower": 20000.0,
+      "upper": 30000.0,
+      "scale": 10000.0,
+      "unit": "W"
+    },
+    {
+      "specification_id": "S22",
+      "lower": 20000.0,
+      "upper": 30000.0,
+      "scale": 10000.0,
+      "unit": "W"
+    },
+    {
+      "specification_id": "S23",
+      "lower": 20000.0,
+      "upper": 30000.0,
+      "scale": 10000.0,
+      "unit": "W"
+    },
+    {
+      "specification_id": "S24",
+      "lower": 20000.0,
+      "upper": 30000.0,
+      "scale": 10000.0,
+      "unit": "W"
+    },
+    {
+      "specification_id": "S25",
+      "lower": 20000.0,
+      "upper": 30000.0,
+      "scale": 10000.0,
+      "unit": "W"
+    },
+    {
+      "specification_id": "S26",
+      "lower": 20000.0,
+      "upper": 30000.0,
+      "scale": 10000.0,
+      "unit": "W"
+    },
+    {
+      "specification_id": "S27",
+      "lower": 20000.0,
+      "upper": 30000.0,
+      "scale": 10000.0,
+      "unit": "W"
+    },
+    {
+      "specification_id": "S28",
+      "lower": 20000.0,
+      "upper": 30000.0,
+      "scale": 10000.0,
+      "unit": "W"
+    },
+    {
+      "specification_id": "S29",
+      "lower": 20000.0,
+      "upper": 30000.0,
+      "scale": 10000.0,
+      "unit": "W"
+    },
+    {
+      "specification_id": "S30",
+      "lower": 20000.0,
+      "upper": 30000.0,
+      "scale": 10000.0,
+      "unit": "W"
+    },
+    {
+      "specification_id": "S31",
+      "lower": 20000.0,
+      "upper": 30000.0,
+      "scale": 10000.0,
+      "unit": "W"
+    },
+    {
+      "specification_id": "S32",
+      "lower": 20000.0,
+      "upper": 30000.0,
+      "scale": 10000.0,
+      "unit": "W"
+    },
+    {
+      "specification_id": "S33",
+      "lower": 20000.0,
+      "upper": 30000.0,
+      "scale": 10000.0,
+      "unit": "W"
+    },
+    {
+      "specification_id": "S34",
+      "lower": 20000.0,
+      "upper": 30000.0,
+      "scale": 10000.0,
+      "unit": "W"
+    },
+    {
+      "specification_id": "S35",
+      "lower": 20000.0,
+      "upper": 30000.0,
+      "scale": 10000.0,
+      "unit": "W"
+    },
+    {
+      "specification_id": "S36",
+      "lower": 20000.0,
+      "upper": 30000.0,
+      "scale": 10000.0,
+      "unit": "W"
+    },
+    {
+      "specification_id": "S37",
+      "lower": 20000.0,
+      "upper": 30000.0,
+      "scale": 10000.0,
+      "unit": "W"
+    },
+    {
+      "specification_id": "S38",
+      "lower": 20000.0,
+      "upper": 30000.0,
+      "scale": 10000.0,
+      "unit": "W"
+    },
+    {
+      "specification_id": "S39",
+      "lower": 20000.0,
+      "upper": 30000.0,
+      "scale": 10000.0,
+      "unit": "W"
+    },
+    {
+      "specification_id": "S40",
+      "lower": 20000.0,
+      "upper": 30000.0,
+      "scale": 10000.0,
+      "unit": "W"
+    },
+    {
+      "specification_id": "S41",
+      "lower": 20000.0,
+      "upper": 30000.0,
+      "scale": 10000.0,
+      "unit": "W"
+    },
+    {
+      "specification_id": "S42",
+      "lower": 20000.0,
+      "upper": 30000.0,
+      "scale": 10000.0,
+      "unit": "W"
+    },
+    {
+      "specification_id": "S43",
+      "lower": 20000.0,
+      "upper": 30000.0,
+      "scale": 10000.0,
+      "unit": "W"
+    },
+    {
+      "specification_id": "S44",
+      "lower": 20000.0,
+      "upper": 30000.0,
+      "scale": 10000.0,
+      "unit": "W"
+    },
+    {
+      "specification_id": "S45",
+      "lower": 20000.0,
+      "upper": 30000.0,
+      "scale": 10000.0,
+      "unit": "W"
+    },
+    {
+      "specification_id": "S46",
+      "lower": 20000.0,
+      "upper": 30000.0,
+      "scale": 10000.0,
+      "unit": "W"
+    },
+    {
+      "specification_id": "S47",
+      "lower": 20000.0,
+      "upper": 30000.0,
+      "scale": 10000.0,
+      "unit": "W"
+    },
+    {
+      "specification_id": "S48",
+      "lower": 20000.0,
+      "upper": 30000.0,
+      "scale": 10000.0,
+      "unit": "W"
+    },
+    {
+      "specification_id": "S49",
+      "lower": 20000.0,
+      "upper": 30000.0,
+      "scale": 10000.0,
+      "unit": "W"
+    },
+    {
+      "specification_id": "S50",
+      "lower": 20000.0,
+      "upper": 30000.0,
+      "scale": 10000.0,
+      "unit": "W"
+    },
+    {
+      "specification_id": "S51",
+      "lower": 20000.0,
+      "upper": 30000.0,
+      "scale": 10000.0,
+      "unit": "W"
+    },
+    {
+      "specification_id": "S52",
+      "lower": 20000.0,
+      "upper": 30000.0,
+      "scale": 10000.0,
+      "unit": "W"
+    },
+    {
+      "specification_id": "S53",
+      "lower": 20000.0,
+      "upper": 30000.0,
+      "scale": 10000.0,
+      "unit": "W"
+    },
+    {
+      "specification_id": "S54",
+      "lower": 20000.0,
+      "upper": 30000.0,
+      "scale": 10000.0,
+      "unit": "W"
+    },
+    {
+      "specification_id": "S55",
+      "lower": 20000.0,
+      "upper": 30000.0,
+      "scale": 10000.0,
+      "unit": "W"
+    },
+    {
+      "specification_id": "S56",
+      "lower": 20000.0,
+      "upper": 30000.0,
+      "scale": 10000.0,
+      "unit": "W"
+    },
+    {
+      "specification_id": "S57",
+      "lower": 20000.0,
+      "upper": 30000.0,
+      "scale": 10000.0,
+      "unit": "W"
+    },
+    {
+      "specification_id": "S58",
+      "lower": 20000.0,
+      "upper": 30000.0,
+      "scale": 10000.0,
+      "unit": "W"
+    },
+    {
+      "specification_id": "S59",
+      "lower": 20000.0,
+      "upper": 30000.0,
+      "scale": 10000.0,
+      "unit": "W"
+    },
+    {
+      "specification_id": "S60",
+      "lower": 20000.0,
+      "upper": 30000.0,
+      "scale": 10000.0,
+      "unit": "W"
+    },
+    {
+      "specification_id": "S61",
+      "lower": 20000.0,
+      "upper": 30000.0,
+      "scale": 10000.0,
+      "unit": "W"
+    },
+    {
+      "specification_id": "S62",
+      "lower": 20000.0,
+      "upper": 30000.0,
+      "scale": 10000.0,
+      "unit": "W"
+    },
+    {
+      "specification_id": "S63",
+      "lower": 20000.0,
+      "upper": 30000.0,
+      "scale": 10000.0,
+      "unit": "W"
+    },
+    {
+      "specification_id": "S64",
+      "lower": 20000.0,
+      "upper": 30000.0,
+      "scale": 10000.0,
+      "unit": "W"
+    }
+  ],
+  "objective": {
+    "sense": "minimize",
+    "expression": {
+      "text": "Q/1e4",
+      "linear": {
+        "decision:SPEC-H-Q": 0.0001
+      }
+    }
+  }
+}

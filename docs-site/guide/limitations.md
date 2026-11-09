@@ -17,7 +17,8 @@ row of the support matrix has its own section in [Limitations](../messages/limit
   cross-unit specifications; exact zero flows. More than one loop or region per plan is not
   exercised by a registered case.
 - **Solve policies:** `T06-revision-v2` (the default for revision solves), `T04-W12`, and by
-  explicit id `T08-warm-v1` and the experimental `T08-ptc-v1`.
+  explicit id `T08-warm-v1`, `RRC-revision-v1` ([Revision continuation](revision-continuation.md)) and
+  the experimental `T08-ptc-v1`.
 - **Interfaces:** Python, CLI, HTTP and MCP, as in [Interfaces](interfaces.md).
 - **Platforms:** Linux x86-64 and aarch64, Python 3.13, with the pinned dependency set.
 
@@ -28,7 +29,9 @@ row of the support matrix has its own section in [Limitations](../messages/limit
 | A property method other than the selectable bases | not representable: a revision has no property-method member; another provider's components are [`components_unsupported`](../messages/refusals.md#components_unsupported) |
 | A model not in the registry, or on a basis it does not bind on | [`model_unsupported(<id>)`](../messages/refusals.md#model_unsupported) at binding, with the bases it does support |
 | A state outside a basis's domain | [`INITIALIZATION_FAILED`](../messages/outcomes.md#INITIALIZATION_FAILED), or `invalid_trial_state` inside a solve; never extrapolated |
-| Validation for optimisation through the application | [`unsupported`](../messages/api-errors.md#unsupported) ([`task_unsupported(optimization)`](../messages/refusals.md#task_unsupported)) |
+| Optimisation (`validate` with `task: optimization`, the `optimize` job) without the audited `nlp` environment, or off Linux x86-64 | [`unsupported`](../messages/api-errors.md#unsupported) ([`nlp_solver_unavailable`](../messages/refusals.md#nlp_solver_unavailable)); the library returns an `UNSUPPORTED` report |
+| Optimisation of a coupled (torn) flowsheet or a `legacy_eo` document | `UNSUPPORTED` ([`OPTIMIZATION_ROUTE_UNAVAILABLE`](../messages/refusals.md#OPTIMIZATION_ROUTE_UNAVAILABLE)) |
+| A change with `task: optimization` (`commit_change`, `preview_change`) | [`task_unsupported(optimization)`](../messages/refusals.md#task_unsupported) |
 | Dynamics or time-varying specifications | not representable; a time member is a schema refusal |
 | Gauge pressure, unregistered unit spellings | refused at validation |
 | Second derivatives through the property callback | reported absent; never zeros |
@@ -46,6 +49,9 @@ row of the support matrix has its own section in [Limitations](../messages/limit
   [`UNVERIFIED`](../messages/statuses.md#UNVERIFIED) (rank-deficient).
 - The column: see [Distillation column](column.md#what-the-column-does-not-do).
 - Cancellation is not cooperative inside the verifier.
+- Optimisation holds phase and assessment regimes per start and verifies local stationarity only;
+  its boundary, zero-flow and robustness limits are in
+  [Optimising a revision](optimisation.md#declared-limitations).
 - Agent evidence: one pinned model and configuration, over MCP only, not out of sample.
 
 ## Verification, validation, optimality

@@ -636,29 +636,67 @@ class Budgets:
 
 
 @dataclass(frozen=True)
+class WarmStartDeclaration:
+    """`$defs/solve_body/warm_start` (ADR 0070, ADR 0019 Amendment 15): a declared start, never a
+    constraint. `job_id` names a solve job of this project whose solution state seeds the inner
+    start (`explicit-v1`); `coupling` declares the outer iterate w₀ per coupled unit, as
+    `{unit: (X, dT_K)}`. The certificate judges the converged answer."""
+
+    job_id: str | None = None
+    coupling: Mapping[str, tuple[float, float]] | None = None
+
+    def as_document(self) -> dict[str, Any]:
+        document: dict[str, Any] = {}
+        if self.job_id is not None:
+            document["job_id"] = self.job_id
+        if self.coupling is not None:
+            document["coupling"] = {
+                unit: {"X": x, "dT_K": dt} for unit, (x, dt) in self.coupling.items()
+            }
+        return document
+
+    @classmethod
+    def _build(cls, document: Mapping[str, Any]) -> Self:
+        coupling = document.get("coupling")
+        return cls(
+            job_id=document.get("job_id"),
+            coupling=None
+            if coupling is None
+            else {unit: (item["X"], item["dT_K"]) for unit, item in coupling.items()},
+        )
+
+
+@dataclass(frozen=True)
 class SolveBody:
-    """§5.3 `$defs/solve_body`."""
+    """§5.3 `$defs/solve_body`. `warm_start` (ADR 0070) appears in the document, and so in
+    `request_sha256`, only when it is declared: a request without it is unchanged."""
 
     revision_id: str
     policy_id: str = DEFAULT_SOLVE_POLICY_ID
     check_tolerances: Mapping[str, float] = field(default_factory=dict)
     max_property_calls: int | None = None
+    warm_start: WarmStartDeclaration | None = None
 
     def as_document(self) -> dict[str, Any]:
-        return {
+        document: dict[str, Any] = {
             "revision_id": self.revision_id,
             "policy_id": self.policy_id,
             "check_tolerances": dict(self.check_tolerances),
             "max_property_calls": self.max_property_calls,
         }
+        if self.warm_start is not None:
+            document["warm_start"] = self.warm_start.as_document()
+        return document
 
     @classmethod
     def _build(cls, document: Mapping[str, Any]) -> Self:
+        warm_start = document.get("warm_start")
         return cls(
             revision_id=document["revision_id"],
             policy_id=document.get("policy_id", DEFAULT_SOLVE_POLICY_ID),
             check_tolerances=dict(document.get("check_tolerances", {})),
             max_property_calls=document.get("max_property_calls"),
+            warm_start=None if warm_start is None else WarmStartDeclaration._build(warm_start),
         )
 
 
@@ -795,19 +833,65 @@ class SurrogateStudyBody:
         )
 
 
-JobBody = SolveBody | ReproduceBody | ExperimentBody | SurrogateStudyBody
+@dataclass(frozen=True)
+class OptimizeBody:
+    """`optimization-request.schema.json#/$defs/optimize_body` (ADR 0071, ADR 0019 Amendment 16;
+    OPT design §4.10): `solve_body`'s members and the optimization request, judged in the job."""
+
+    revision_id: str
+    request: Mapping[str, Any]
+    policy_id: str = DEFAULT_SOLVE_POLICY_ID
+    check_tolerances: Mapping[str, float] = field(default_factory=dict)
+    max_property_calls: int | None = None
+
+    def as_document(self) -> dict[str, Any]:
+        return {
+            "revision_id": self.revision_id,
+            "request": copy.deepcopy(dict(self.request)),
+            "policy_id": self.policy_id,
+            "check_tolerances": dict(self.check_tolerances),
+            "max_property_calls": self.max_property_calls,
+        }
+
+    @classmethod
+    def _build(cls, document: Mapping[str, Any]) -> Self:
+        return cls(
+            revision_id=document["revision_id"],
+            request=copy.deepcopy(dict(document["request"])),
+            policy_id=document.get("policy_id", DEFAULT_SOLVE_POLICY_ID),
+            check_tolerances=dict(document.get("check_tolerances", {})),
+            max_property_calls=document.get("max_property_calls"),
+        )
+
+    def solve_body(self) -> SolveBody:
+        """The solve members as a `SolveBody`: the start and V1 re-solves are production solves,
+        whose policies resolve as a `solve` job's do (`admission.resolve_policies`)."""
+        return SolveBody(
+            revision_id=self.revision_id,
+            policy_id=self.policy_id,
+            check_tolerances=dict(self.check_tolerances),
+            max_property_calls=self.max_property_calls,
+        )
+
+
+JobBody = SolveBody | ReproduceBody | ExperimentBody | SurrogateStudyBody | OptimizeBody
 
 #: J3: one body type per operation, as one `oneOf` branch per enum value in the schema.
 _BODY_TYPES: Final[
     Mapping[
         str,
-        type[SolveBody] | type[ReproduceBody] | type[ExperimentBody] | type[SurrogateStudyBody],
+        type[SolveBody]
+        | type[ReproduceBody]
+        | type[ExperimentBody]
+        | type[SurrogateStudyBody]
+        | type[OptimizeBody],
     ]
 ] = {
     "solve": SolveBody,
     "reproduce": ReproduceBody,
     "experiment": ExperimentBody,
     "surrogate_study": SurrogateStudyBody,
+    "optimize": OptimizeBody,
 }
 
 
@@ -1394,6 +1478,8 @@ class JobResult:
     `result`, or the last `attempt` of a transient outcome, or `None` for a job that ended before
     any attempt was recorded (cancelled while queued). `surrogate_study` (ADR 0037 D6) is a
     `surrogate_study` job's answer and only its, `None` when the job ended before its study did.
+    `optimization` (ADR 0071, OPT design §4.10) is an `optimize` job's report and only its,
+    `None` when the job ended without one.
     """
 
     operation: JobOperation
@@ -1402,6 +1488,7 @@ class JobResult:
     error: ApiError | None
     experiment: Mapping[str, Any] | None = None
     surrogate_study: Mapping[str, Any] | None = None
+    optimization: Mapping[str, Any] | None = None
 
     def __post_init__(self) -> None:
         if (self.run_result is not None) != (self.operation == "solve"):
@@ -1412,6 +1499,8 @@ class JobResult:
             raise ValueError("only an 'experiment' job result carries an experiment record")
         if self.surrogate_study is not None and self.operation != "surrogate_study":
             raise ValueError("only a 'surrogate_study' job result carries a study answer")
+        if self.optimization is not None and self.operation != "optimize":
+            raise ValueError("only an 'optimize' job result carries an optimization report")
 
     def as_document(self) -> dict[str, Any]:
         document: dict[str, Any] = {
@@ -1431,6 +1520,10 @@ class JobResult:
                 copy.deepcopy(dict(self.surrogate_study))
                 if self.surrogate_study is not None
                 else None
+            )
+        if self.operation == "optimize":
+            document["optimization"] = (
+                copy.deepcopy(dict(self.optimization)) if self.optimization is not None else None
             )
         return document
 
@@ -1455,6 +1548,7 @@ class JobResult:
                 error=_error_build(d["error"]),
                 experiment=d.get("experiment"),
                 surrogate_study=d.get("surrogate_study"),
+                optimization=d.get("optimization"),
             ),
             document,
         )

@@ -29,6 +29,21 @@ inventory gains `body/inlet/T`, `body/inlet/P` and `body/n_tubes`. That no path 
 `experiment` body to a solver start, a warm start or a coupling iterate is the companion test,
 `tests/test_m02_experiment_body_isolation.py`.
 
+**X02 (ADR 0070, amending R-088 Q26 and ADR 0020 D7).** A solve may declare its outer start
+w₀ per coupled unit: two scalars by full path and only there, `submit_job`'s
+`body/warm_start/coupling/*/X` and `body/warm_start/coupling/*/dT_K`. They are a start, never a
+constraint: the certificate judges the converged answer. Their W14-path test (design note §7
+G6) lands with the outer start that reads them (X02 WO-3).
+
+**OPT (ADR 0071, ADR 0019 Amendment 16; OPT D-58).** The optimization request — `submit_job`'s
+`optimize` `body/request` and `validate`'s `optimization` — is the problem's definition: decision
+boxes and scales, the objective and constraint expressions (their `linear` maps of output id to
+coefficient), the assessment's coefficients and ranges, and explicit starts in the *decision*
+space. None is a solver state: every start is a production solve of the revision with those
+decision values, certified before it is used (design §4.4). Its eight numeric containers are
+allowed by full path under exactly those two prefixes (`OPT_REQUEST_CONTAINERS`), and its scalars
+are pinned by full path (`OPT_REQUEST_SCALARS`), the same under both.
+
 **(ii) The forged bundle through every transport that reaches reproduce.** A bundle of a run that
 did not converge (`SYN-001-A02-352-vapor-guess-410`, `HOMOTOPY_STALLED`), forged to carry the
 `VERIFIED` certificate of a run that did (`SYN-001-A02-360`), with a consistent index and
@@ -68,7 +83,112 @@ from openflowsheet.run.bundle import read_artifact, read_manifest
 #: §13: the members allowed to be, or contain, numbers.
 ALLOWED = frozenset({"check_tolerances", "budgets", "max_property_calls", "depth", "limit"})
 #: R-235: model inputs allowed by full path (operation, path, kind), nowhere else.
-ALLOWED_BY_PATH = frozenset({("submit_job", "body/inlet/n", "array")})
+#: OPT D-58: the optimization request's numeric containers (path below the request, kind) and its
+#: numeric scalars (path below the request), each under `submit_job`'s `body/request/` and
+#: `validate`'s `optimization/`, and nowhere else.
+OPT_REQUEST_PREFIXES = {"submit_job": "body/request/", "validate": "optimization/"}
+OPT_REQUEST_CONTAINERS = frozenset(
+    {
+        ("assessment/capital/steps/*/terms/*/factor_product", "array"),
+        ("assessment/derived/*/denominator/terms", "map"),
+        ("assessment/derived/*/numerator/terms", "map"),
+        ("assessment/items/*/quote/relative_range", "array"),
+        ("assessment/uncertainty/*/relative_range", "array"),
+        ("constraints/*/expression/linear", "map"),
+        ("objective/expression/linear", "map"),
+        ("starts/explicit/*", "array"),
+    }
+)
+OPT_REQUEST_SCALARS = frozenset(
+    {
+        "assessment/basis/location_factor/value",
+        "assessment/basis/year",
+        "assessment/capital/steps/*/terms/*/factor",
+        "assessment/defaults/F_T",
+        "assessment/defaults/U_by_service/cooling",
+        "assessment/defaults/U_by_service/heating",
+        "assessment/defaults/column_C_SB",
+        "assessment/defaults/column_H_bottom",
+        "assessment/defaults/column_H_top",
+        "assessment/defaults/column_active_area_fraction",
+        "assessment/defaults/column_flooding_fraction",
+        "assessment/defaults/column_overall_efficiency",
+        "assessment/defaults/column_tray_spacing",
+        "assessment/defaults/drive_efficiency",
+        "assessment/defaults/drum_K_SB",
+        "assessment/defaults/drum_LD",
+        "assessment/defaults/drum_fill_fraction",
+        "assessment/defaults/drum_residence_time",
+        "assessment/defaults/generator_efficiency",
+        "assessment/defaults/reactor_LD",
+        "assessment/derived/*/denominator/constant",
+        "assessment/derived/*/numerator/constant",
+        "assessment/fixed_opex/*/constant",
+        "assessment/fixed_opex/*/fraction_of/fraction",
+        "assessment/items/*/C_SB",
+        "assessment/items/*/F_BM",
+        "assessment/items/*/F_T",
+        "assessment/items/*/H_bottom",
+        "assessment/items/*/H_top",
+        "assessment/items/*/K_SB",
+        "assessment/items/*/LD",
+        "assessment/items/*/U",
+        "assessment/items/*/active_area_fraction",
+        "assessment/items/*/dT_min",
+        "assessment/items/*/dormant_liquid_density",
+        "assessment/items/*/drive_efficiency",
+        "assessment/items/*/fill_fraction",
+        "assessment/items/*/flooding_fraction",
+        "assessment/items/*/generator_efficiency",
+        "assessment/items/*/liquid_molar_volume",
+        "assessment/items/*/overall_efficiency",
+        "assessment/items/*/quote/accuracy_class",
+        "assessment/items/*/quote/cost",
+        "assessment/items/*/quote/exponent",
+        "assessment/items/*/quote/size/value",
+        "assessment/items/*/quote/year",
+        "assessment/items/*/residence_time_s",
+        "assessment/items/*/shell_thickness",
+        "assessment/items/*/tray_spacing",
+        "assessment/lca/allocation/factor",
+        "assessment/liquid_molar_volumes/*/value",
+        "assessment/materials/*/lca/*/amount",
+        "assessment/materials/*/price/value",
+        "assessment/materials/*/price/year",
+        "assessment/operation/discount_rate",
+        "assessment/operation/hours_per_year",
+        "assessment/operation/lifetime_years",
+        "assessment/utilities/*/T_return",
+        "assessment/utilities/*/T_supply",
+        "assessment/utilities/*/dT_min",
+        "assessment/utilities/*/export_price/value",
+        "assessment/utilities/*/export_price/year",
+        "assessment/utilities/*/lca/*/amount",
+        "assessment/utilities/*/price/value",
+        "assessment/utilities/*/price/year",
+        "constraints/*/expression/constant",
+        "constraints/*/expression/quadratic/*/coefficient",
+        "constraints/*/lower",
+        "constraints/*/upper",
+        "decisions/*/lower",
+        "decisions/*/scale",
+        "decisions/*/upper",
+        "objective/expression/constant",
+        "objective/expression/quadratic/*/coefficient",
+        "objective/scale",
+        "options/max_iter",
+        "options/max_wall_time_s",
+        "starts/halton",
+    }
+)
+ALLOWED_BY_PATH = frozenset(
+    {("submit_job", "body/inlet/n", "array")}
+    | {
+        (operation, prefix + path, kind)
+        for operation, prefix in OPT_REQUEST_PREFIXES.items()
+        for path, kind in OPT_REQUEST_CONTAINERS
+    }
+)
 NUMERIC = frozenset({"number", "integer"})
 
 
@@ -231,7 +351,18 @@ def test_t07_q26_no_external_state() -> None:
     containers = {(f.operation, "/".join(f.path), f.kind) for f in findings if f.allowed}
     # `check_tolerances` (kind -> number) is the one numeric map; it is found, and allowed.
     assert ("submit_job", "body/check_tolerances", "map") in containers
-    scalars = {(f.operation, "/".join(f.path)) for f in findings if f.kind == "scalar"}
+    every_scalar = {(f.operation, "/".join(f.path)) for f in findings if f.kind == "scalar"}
+    # OPT D-58: the optimization request's scalars, pinned by full path under its two prefixes.
+    for operation, prefix in OPT_REQUEST_PREFIXES.items():
+        found = {
+            p[len(prefix) :] for o, p in every_scalar if o == operation and p.startswith(prefix)
+        }
+        assert found == OPT_REQUEST_SCALARS, (operation, found ^ OPT_REQUEST_SCALARS)
+    scalars = {
+        (o, path)
+        for o, path in every_scalar
+        if not path.startswith(OPT_REQUEST_PREFIXES.get(o, "\0"))
+    }
     names = {path.split("/")[-1] for _, path in scalars}
     assert names == {
         "wall_time_s",  # under `budgets`
@@ -244,6 +375,8 @@ def test_t07_q26_no_external_state() -> None:
         "P",
         "n_tubes",
         "max_cold_experiments",  # M04: a `surrogate_study`'s budget, a count, not a state
+        "X",  # ADR 0070: a declared coupling start w₀, by full path below
+        "dT_K",
     }, scalars
     assert {path for _, path in scalars if path.endswith("wall_time_s")} == {"budgets/wall_time_s"}
     assert {(o, path) for o, path in scalars if path.split("/")[-1] in ("T", "P", "n_tubes")} == {
@@ -253,6 +386,12 @@ def test_t07_q26_no_external_state() -> None:
     }
     assert {(o, path) for o, path in scalars if path.endswith("max_cold_experiments")} == {
         ("submit_job", "body/budget/max_cold_experiments")
+    }
+    # ADR 0070 (amends R-088 Q26, ADR 0020 D7): the one registered path by which a solver state
+    # enters from outside, as a start only (its W14-path test: X02 design note §7 G6).
+    assert {(o, path) for o, path in scalars if path.split("/")[-1] in ("X", "dT_K")} == {
+        ("submit_job", "body/warm_start/coupling/*/X"),
+        ("submit_job", "body/warm_start/coupling/*/dT_K"),
     }
     untyped = {(f.operation, "/".join(f.path)) for f in findings if f.kind == "untyped"}
     assert untyped == {

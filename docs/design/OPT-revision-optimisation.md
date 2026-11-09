@@ -421,7 +421,13 @@ the committed candidate revision reproduces the V1 certificate (G16).
 existing run-bundle path is untouched. Steps: (1) integrity of every member against the manifest (missing, tampered,
 unexpected) and of the manifest's identity; (2) with `rerun`: `reproduce_bundle` on every `start/` and `resolve/` bundle;
 (3) with `rerun`: recompute V2–V7 from each re-solved state (and V1's outcome from (2)) and compare with
-`verification.json` (R0 exact; floats within D2; an active-set flip within 1e-9 relative of a threshold is
+`verification.json` (R0 exact; floats under ADR 0007 D2, each float of `verification.json` floored at the tolerance of
+the check whose verdict it feeds (D2.2's principle, as `check.value`): V2 `scaled_difference_inf` at `TAU_GROSS`; V3
+`slacks`, `active_set[].slack`, `constraint_values`, V4 `splits[].margin` and phase-row values at `TAU_FEAS`; V5 and
+`kkt` `stationarity_residual_inf`, `objective_gradient_scaled`, `constraint_gradients_scaled` at `TAU_KKT`,
+`multipliers` at `TAU_SIGN`, `licq_singular_values` at `TAU_LICQ` times the largest; V6 `objective` relative only.
+Outcomes, active sets and classifications stay exact (R0) under the near-threshold rule. No new tolerance. [OPT review
+M1, 2026-11-08] An active-set flip within 1e-9 relative of a threshold is
 `verdict_changed_near_threshold`, F8 D8's rule); (4) the report's classification/aggregation recomputed by
 `classify_starts` from the recorded evidence. One `ReplayReport` (schema unchanged): `integrity` over all members,
 `differences` prefixed `starts/<k>/<member>: `, verdict `MATCH` iff every part matches. Without `rerun`:
@@ -464,8 +470,9 @@ revision is `DRAFT`; else `INVALID`. Validation solves nothing (blueprint §4.3)
 
 ### 4.12 Surfaces
 
-- **Python:** `studies.nlp.revision.optimize_revision(document, request, *, directory, solve_policy, check_policy,
-  check=None, progress=None) -> OptimizationOutcome(report, record_dir, points)` — the library entry the job body calls
+- **Python:** `studies.nlp.revision.optimize_revision(document, request, *, directory, routes, solve_policy,
+  check_policy, check=None, interruptions=(), progress=None) -> OptimizationOutcome(report, record_dir, points)`
+  (`routes`: the application's `revision_routes.REVISION_ROUTES`, OPT review M2, D-77) — the library entry the job body calls
   (as `solve` calls `run_revision_session`); `LocalApplication.submit_job` / `validate` as above.
 - **HTTP/MCP:** `POST /v1/jobs` and the six job tools (new branch); `validate_revision` (new member).
 - **CLI:** `openflowsheet optimize REVISION --request FILE --out DIR [--json]` (direct library run, no project);
@@ -809,7 +816,7 @@ OPT-report byte check this amendment adds is A-2's inertness proof, G23 (c).
 | **G10a** (new; default env, no Ipopt) | Anchor: B with A = ∅ equals the certificate's `regularity` document byte for byte (canonical JSON) at OPT-A1's and OPT-A3's V1 states and at the certified starts of TH-R1, M1 and C-MW. |
 | **G10b** (new; default env) | Mechanism: certify OPT-A3's flowsheet at Q* − ΔQ, ΔQ ∈ {1, 0.1, 0.01, 1e-3} W, and at Q̂. The certificate's rcond₁/ΔQ lies within 5 % of its value at 1 W (measured 2.27e-6/W); B with A = {heater} is `NO_RANK_LOSS_DETECTED` at every point and its rcond₁ lies within 1 % of its value at 1 W. |
 | **G10c** (new; default env) | Negatives: (i) a re-solve at Q* + 1e-3 W (TWO_PHASE) judged against OPT-A3's revision start → V1 fail at (e2); (ii) OPT-A3's candidate under a non-registered check policy → V1 fail at (e6); (iii) OPT-A3's candidate with A forced empty → V1 fail at (e3); (iv) no module under `verify/` or `orchestrator/` imports `studies.nlp.boundary` (AST). |
-| **G10d** (new; default env) | VAPOR symmetry, certify level (OPT-A3v): the OPT-A1 flowsheet with an A, B, C vapour feed and a cooler duty Q_v at which the held VAPOR split's row has 0 < a/N0 ≤ 1e-7 (bisection on Q, recorded; dew point Σ zᵢ/Kᵢ(T_d, P) = 1 by mpmath, \|T − T_d\| ≤ 1e-6 K): the certificate is rank-limited, (e1)–(e6) hold with A = {cooler}. |
+| **G10d** (new; default env) | VAPOR symmetry, certify level (OPT-A3v): the OPT-A1 flowsheet with an A, B, C vapour feed and a cooler duty Q_v at which the held VAPOR split's row has 0 < a/N0 ≤ 1e-9 (bisection on Q, recorded; dew point Σ zᵢ/Kᵢ(T_d, P) = 1 by mpmath, \|T − T_d\| ≤ 1e-6 K, which follows: d(a/N0)/dT ≈ 0.026 K⁻¹ at T_d; D-50, OPT review 2026-11-08): the certificate is rank-limited, (e1)–(e6) hold with A = {cooler}. |
 | **G22** (new; audited env) | C-MW (the G17 request): zero subsystem `held` with \|Z\| = \|R\| (recorded); twin `DomainError` count 0 on every start; all 19 TWO_PHASE stages have margin ≥ `TAU_REGIME` at each certified start; ≥ 1 start `KKT_POINT_VERIFIED`. Per-start status and V-check results recorded in `docs/OPT_DECISIONS.md`. A failure is escalated with the failing V-check and its numbers; no `xfail` without a design-lane ruling. |
 | **G23** (new; default env) | Zero subsystem: (a) at C-MW's certified start every entry of J[R, ¬Z ∪ decisions] is `== 0.0`, and the reduced held system's residual equals the converged attempt's residual on the remaining rows bitwise; (b) dy/dd of three C-MW state outputs through the reduced and the unreduced held system agree within 1e-10 relative; (c) inertness: Z = ∅ for OPT-A1, A2, A2b, A3, C0, N1, and their reports at A-2's commit equal those at `wp/OPT` `826cc4c4` byte for byte with only G2's named wall-time members masked; (d) unresolved path, static level: a start where a zero flow is moved by a decision (C-MW with its feed's C2H5OH flow specification as a decision, box [0, 0.1] mol/s — or, if that is not a specification, any corpus flowsheet with a zero-valued fixed flow specification) → `zero_subsystem.status = unresolved`, those columns `[0, ∞)` with reason `zero_at_start_unresolved`. |
 | **G24** (new; default env) | Margins: (a) OPT-A1/A2/A3 LIQUID splits: closure margin and `tp_margin` agree within 1e-12 absolute at their certified starts, rows guarded; (b) C-MW's 19 TWO_PHASE margins equal min(phase flow)/N0 recomputed independently from the state, bitwise; C-MW's single-phase held splits (if any) classified guarded/unguarded by the identity test, recorded; (c) a γ–φ VAPOR-held split (a corpus flowsheet if one has it, else a one-flash revision on the S10-C γ–φ provider) → unguarded, start admitted, `regimes_unguarded` names it, margin = 1 − ΣW; (d) a LIQUID split whose closure value is perturbed by 1e-9 (monkeypatch) → unguarded. |

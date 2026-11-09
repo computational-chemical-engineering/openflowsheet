@@ -242,6 +242,7 @@ export const ROUTES = freeze({
   },
   "validate": {
     "members": [
+      "optimization",
       "revision_id",
       "task"
     ],

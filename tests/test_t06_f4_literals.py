@@ -31,6 +31,8 @@ from openflowsheet.orchestrator.trace import (
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 RESTART = "homotopy_or_sequential_restart"
+#: ADR 0072: RRC's value (`tests/test_rrc_continuation.py`).
+REVISION_CONTINUATION = "homotopy_or_revision_continuation_or_sequential_restart"
 REASONS = (
     "no_continuation_parameter",
     "no_restart_initializer",
@@ -67,7 +69,10 @@ def test_wo1_the_literals_are_the_schema_enums() -> None:
     event_schema = load_json(SCHEMA_DIR / "solve-event.schema.json")
     recovery = policy_schema["properties"]["globalization"]["properties"]["eo_recovery"]["enum"]
     hints = typing.get_type_hints(GlobalizationPolicy)
-    assert typing.get_args(hints["eo_recovery"]) == tuple(recovery) == ("homotopy", "none", RESTART)
+    # ADR 0072 (RRC WO-1) widens the same enum once more, after ADR 0015's value; the Literal and
+    # the schema still agree, and ADR 0015's three values keep their order.
+    assert typing.get_args(hints["eo_recovery"]) == tuple(recovery)
+    assert tuple(recovery) == ("homotopy", "none", RESTART, REVISION_CONTINUATION)
     assert typing.get_args(EoRecoveryUnsupported) == REASONS
     assert event_schema["properties"]["eo_recovery_unsupported"]["enum"] == [*REASONS, None]
 

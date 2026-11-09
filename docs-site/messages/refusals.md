@@ -104,6 +104,26 @@ The specific reasons a request, a revision, a solve or a project is refused, nam
 
 - **Summary:** Refused: decision inconsistent with eliminated rows.
 
+<a id="DECISION_NOT_CONTINUOUS"></a>
+
+## `DECISION_NOT_CONTINUOUS`: A decision that is not one continuous parameter
+
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
+
+*No plain-language explanation is written yet; the summary is the technical one.*
+
+- **Summary:** A decision of the optimisation request does not set exactly one flowsheet parameter of its own across its bounds, so it cannot be varied continuously.
+
+<a id="DECISION_UNIT_NOT_INTERNAL"></a>
+
+## `DECISION_UNIT_NOT_INTERNAL`: Decision bounds not in the SI unit of their quantity
+
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
+
+*No plain-language explanation is written yet; the summary is the technical one.*
+
+- **Summary:** The bounds of a decision in the optimisation request are not given in the SI unit of its specification's quantity, the only unit the request accepts for them.
+
 <a id="ESCALATION_SERIES_MISSING"></a>
 
 ## `ESCALATION_SERIES_MISSING`: Escalation series missing
@@ -183,6 +203,16 @@ The specific reasons a request, a revision, a solve or a project is refused, nam
 *No plain-language explanation is written yet; the summary is the technical one.*
 
 - **Summary:** Refused: no correlation.
+
+<a id="OPTIMIZATION_ROUTE_UNAVAILABLE"></a>
+
+## `OPTIMIZATION_ROUTE_UNAVAILABLE`: A revision not on the route optimisation needs
+
+**Kind:** Not supported in this version: a limitation of OpenFlowsheet, not an error in your flowsheet.
+
+*No plain-language explanation is written yet; the summary is the technical one.*
+
+- **Summary:** This version optimises only a revision that solves on the revision_eo route, as one system of equations; this revision solves on another route, which the message names.
 
 <a id="PARAMETER_NOT_DIFFERENTIABLE"></a>
 
@@ -274,6 +304,16 @@ The specific reasons a request, a revision, a solve or a project is refused, nam
 
 - **Summary:** Refused: projection zero flow.
 
+<a id="REGIME_MARGIN_UNDEFINED"></a>
+
+## `REGIME_MARGIN_UNDEFINED`: A start at which a unit's distance from a phase change is undefined
+
+**Kind:** Not supported in this version: a limitation of OpenFlowsheet, not an error in your flowsheet.
+
+*No plain-language explanation is written yet; the summary is the technical one.*
+
+- **Summary:** At this start the optimiser cannot measure how far a unit is from changing phase, so it cannot hold that unit in its phase and cannot use this start.
+
 <a id="REGIME_MARGIN_UNSUPPORTED"></a>
 
 ## `REGIME_MARGIN_UNSUPPORTED`: Regime margin unsupported
@@ -293,6 +333,26 @@ The specific reasons a request, a revision, a solve or a project is refused, nam
 *No plain-language explanation is written yet; the summary is the technical one.*
 
 - **Summary:** Refused: regularity inconclusive.
+
+<a id="REVISION_MISMATCH"></a>
+
+## `REVISION_MISMATCH`: An optimisation request written for another revision
+
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
+
+*No plain-language explanation is written yet; the summary is the technical one.*
+
+- **Summary:** The optimisation request names, by its SHA-256, a revision other than the one being optimised.
+
+<a id="REVISION_UNBOUND"></a>
+
+## `REVISION_UNBOUND`: A revision that cannot be set up for optimisation
+
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
+
+*No plain-language explanation is written yet; the summary is the technical one.*
+
+- **Summary:** The revision could not be set up as a flowsheet to solve, so it cannot be optimised; the code in parentheses names the reason.
 
 <a id="ROOT_NOT_CONVERGED"></a>
 
@@ -343,6 +403,16 @@ The specific reasons a request, a revision, a solve or a project is refused, nam
 *No plain-language explanation is written yet; the summary is the technical one.*
 
 - **Summary:** Refused: start outside bounds.
+
+<a id="TOO_MANY_STARTS"></a>
+
+## `TOO_MANY_STARTS`: A start count outside 1 to 32
+
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
+
+*No plain-language explanation is written yet; the summary is the technical one.*
+
+- **Summary:** The optimisation request asks for no start or for more than 32; a request has 1 to 32 starts in all, counting the revision's own values, the explicit starts and the Halton points.
 
 <a id="TRSP_SOLVER_UNAUDITED"></a>
 
@@ -1152,6 +1222,29 @@ No model with the id "thermal.boiler" is available in this version.
 
 - **Summary:** Refused: near critical.
 
+<a id="nlp_solver_unavailable"></a>
+
+## `nlp_solver_unavailable`: Optimisation without the audited NLP solver
+
+**Kind:** Not supported in this version: a limitation of OpenFlowsheet, not an error in your flowsheet.
+
+- **Summary:** This installation cannot optimise: the audited NLP solver is not available here.
+- **Why:** Optimisation solves with Ipopt, reached through Pyomo and cyipopt, in the versions whose licences and binaries were audited: the nlp extra's audited environment on Linux x86-64. Without it this version refuses to optimise rather than run an unaudited solver.
+- **Do:** To optimise, use the audited nlp environment on Linux x86-64 (user guide, section "The nlp extra"); to check the revision for a solve, validate it with the task "simulation".
+- **Not supported:** limitation [`L-OPT-1`](limitations.md#L-OPT-1) (its row in the [support matrix](https://github.com/computational-chemical-engineering/openflowsheet/blob/main/docs/support-matrix.md)); missing capability: optimisation outside the audited nlp environment on Linux x86-64
+- **See also:** [`unsupported`](api-errors.md#unsupported)
+
+Example:
+
+```text
+This installation cannot optimise: the audited NLP solver is not available here.
+  Why:     Optimisation solves with Ipopt, reached through Pyomo and cyipopt, in the versions whose licences and binaries were audited: the nlp extra's audited environment on Linux x86-64. Without it this version refuses to optimise rather than run an unaudited solver.
+  Do:      To optimise, use the audited nlp environment on Linux x86-64 (user guide, section "The nlp extra"); to check the revision for a solve, validate it with the task "simulation".
+  Kind:    Not supported in this version: a limitation of OpenFlowsheet, not an error in your flowsheet.
+  Code:    nlp_solver_unavailable, in unsupported (openflowsheet explain nlp_solver_unavailable)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#nlp_solver_unavailable
+```
+
 <a id="no_saturation"></a>
 
 ## `no_saturation`: No saturation
@@ -1851,6 +1944,39 @@ The property basis wilson-ig-v2 does not provide the property v, so the values t
 
 - **Summary:** Refused: reference convention not reaction consistent.
 
+<a id="request_invalid"></a>
+
+## `request_invalid`: An optimisation request that breaks its schema or rules
+
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
+
+- **Summary:** The optimisation request is invalid.
+- **Why:** Before anything is solved, an optimisation request (its decisions and their bounds, the objective, the constraints and the starts) is checked against its schema and the rules stated for its members, and this one breaks one of them. The check reported: &lt;detail&gt;.
+- **Do:** Correct the request as the check reports, and send it again.
+- **Parameters:** `member` (pointer), `detail` (text, optional)
+
+Example:
+
+```text
+The optimisation request is invalid at /decisions/0/upper.
+  Why:     Before anything is solved, an optimisation request (its decisions and their bounds, the objective, the constraints and the starts) is checked against its schema and the rules stated for its members, and this one breaks one of them. The check reported: 'high' is not of type 'number'.
+  Do:      Correct the member at /decisions/0/upper as the check reports, and send the request again.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    request_invalid, in invalid_request (openflowsheet explain request_invalid)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#request_invalid
+```
+
+Example:
+
+```text
+The optimisation request is invalid.
+  Why:     Before anything is solved, an optimisation request (its decisions and their bounds, the objective, the constraints and the starts) is checked against its schema and the rules stated for its members, and this one breaks one of them. The check reported: 'decisions' is a required property.
+  Do:      Correct the request as the check reports, and send it again.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    request_invalid, in invalid_request (openflowsheet explain request_invalid)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#request_invalid
+```
+
 <a id="rerun_unsupported"></a>
 
 ## `rerun_unsupported`: Rerun unsupported
@@ -2232,23 +2358,23 @@ Specification 'boiler-T' gives its value in a unit its quantity kind does not ta
 
 <a id="task_unsupported"></a>
 
-## `task_unsupported`: Validation for a task this version does not check
+## `task_unsupported`: A change checked for a task other than simulation
 
 **Kind:** Not supported in this version: a limitation of OpenFlowsheet, not an error in your flowsheet.
 
-- **Summary:** This version cannot validate a revision for the "&lt;task&gt;" task; it validates for simulation only.
-- **Why:** Validating for optimization would mean checking an optimization formulation (objective, decision variables and their bounds). This version checks none, so it refuses rather than report a revision ready for a task it has not checked.
-- **Do:** Validate with the task "simulation" (openflowsheet validate --task simulation, or task "simulation" in the request).
+- **Summary:** A change is checked for the task "simulation" only; this version cannot check it for the "&lt;task&gt;" task.
+- **Why:** Committing or previewing a change validates the new revision for the change's task. Validating for optimization needs an optimization request (decisions, objective and starts), and a change carries none, so this version refuses rather than report a revision ready for a task it has not checked.
+- **Do:** Commit the change with the task "simulation"; then validate the committed revision with the task "optimization" and an optimization request.
 - **Parameters:** `task` (text)
-- **Not supported:** missing capability: validation of an optimization formulation (task "optimization")
+- **Not supported:** missing capability: checking a change for the optimization task when it is committed or previewed
 - **See also:** [`unsupported`](api-errors.md#unsupported)
 
 Example:
 
 ```text
-This version cannot validate a revision for the "optimization" task; it validates for simulation only.
-  Why:     Validating for optimization would mean checking an optimization formulation (objective, decision variables and their bounds). This version checks none, so it refuses rather than report a revision ready for a task it has not checked.
-  Do:      Validate with the task "simulation" (openflowsheet validate --task simulation, or task "simulation" in the request).
+A change is checked for the task "simulation" only; this version cannot check it for the "optimization" task.
+  Why:     Committing or previewing a change validates the new revision for the change's task. Validating for optimization needs an optimization request (decisions, objective and starts), and a change carries none, so this version refuses rather than report a revision ready for a task it has not checked.
+  Do:      Commit the change with the task "simulation"; then validate the committed revision with the task "optimization" and an optimization request.
   Kind:    Not supported in this version: a limitation of OpenFlowsheet, not an error in your flowsheet.
   Code:    task_unsupported, in unsupported (openflowsheet explain task_unsupported)
   Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#task_unsupported
@@ -2376,6 +2502,50 @@ The value H_flow of S6 is not a finite number, so it is not given.
 *No plain-language explanation is written yet; the summary is the technical one.*
 
 - **Summary:** Refused: vapour only form disagrees.
+
+<a id="warm_start_source_missing"></a>
+
+## `warm_start_source_missing`: A warm start from a job with no solution state
+
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
+
+- **Summary:** The declared warm start names job &lt;job_id&gt;, which is not a solve job of this project with a solution state.
+- **Why:** A warm start declared by job id starts the solve from that job's solution state, so the job must be a solve job of this project that wrote one. Its certificate status does not matter.
+- **Do:** Name a solve job of this project whose run wrote a solution state, or leave the job id out of the warm start.
+- **Parameters:** `job_id` (job)
+
+Example:
+
+```text
+The declared warm start names job 'job-000003', which is not a solve job of this project with a solution state.
+  Why:     A warm start declared by job id starts the solve from that job's solution state, so the job must be a solve job of this project that wrote one. Its certificate status does not matter.
+  Do:      Name a solve job of this project whose run wrote a solution state, or leave the job id out of the warm start.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    warm_start_source_missing, in invalid_request (openflowsheet explain warm_start_source_missing)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#warm_start_source_missing
+```
+
+<a id="warm_start_unit_unknown"></a>
+
+## `warm_start_unit_unknown`: A coupling start for a unit the revision does not have
+
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
+
+- **Summary:** The declared warm start gives a coupling start for '&lt;unit&gt;', which is not a unit of this revision.
+- **Why:** A warm start may give, for each unit computed by an external program, starting values for what the flowsheet and that program exchange (the coupling), keyed by the unit's instance id; so each key must be a unit of the revision being solved. Whether the unit is computed by an external program in this solve is checked when the run starts; a start that fails that check is recorded as rejected, not refused.
+- **Do:** Key each coupling start by the instance id of a unit in this revision, or remove the key '&lt;unit&gt;'.
+- **Parameters:** `unit` (text)
+
+Example:
+
+```text
+The declared warm start gives a coupling start for 'R9', which is not a unit of this revision.
+  Why:     A warm start may give, for each unit computed by an external program, starting values for what the flowsheet and that program exchange (the coupling), keyed by the unit's instance id; so each key must be a unit of the revision being solved. Whether the unit is computed by an external program in this solve is checked when the run starts; a start that fails that check is recorded as rejected, not refused.
+  Do:      Key each coupling start by the instance id of a unit in this revision, or remove the key 'R9'.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    warm_start_unit_unknown, in invalid_request (openflowsheet explain warm_start_unit_unknown)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#warm_start_unit_unknown
+```
 
 <a id="zero_flow_conflict"></a>
 

@@ -182,10 +182,13 @@ def test_c_each_operation_has_exactly_one_request_branch() -> None:
         # manifest.
         "surrogate_study": "https://github.com/frankp/process-runtime/schemas/"
         "surrogate-manifest.schema.json#/$defs/surrogate_study_body",
+        # OPT (ADR 0071, ADR 0019 Amendment 16): the `optimize` body lives with its request.
+        "optimize": "https://github.com/frankp/process-runtime/schemas/"
+        "optimization-request.schema.json#/$defs/optimize_body",
     }
 
 
-@pytest.mark.parametrize("operation", ["solve_resume", "optimize", "SOLVE", ""])
+@pytest.mark.parametrize("operation", ["solve_resume", "optimise", "SOLVE", ""])
 def test_c_an_operation_outside_the_enum_is_refused(operation: str) -> None:
     document = {"operation": operation, "idempotency_key": "k", "body": {"revision_id": "r"}}
     assert schema_errors(JOB_REQUEST, document) != []

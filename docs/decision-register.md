@@ -18492,6 +18492,10 @@ the sidecar (WO-5) leaking into a serialized artifact; an emitted code without a
   `benchmarks/f0/corpus.json`, matched by path and SHA-256, with a test pinning 36 per guard. A scope correction (the
   guards protect registered input documents; these are archived release outputs). *Rejected:* exemption by structure (a
   directory holding `run-manifest.json`) — a relaxation; an unscanned root; building bundles at check time.
+  *Addendum (OPT review M3, 2026-11-08):* plus the six G13 fixture files of OPT (ADR 0071), same mechanism — the
+  `solve-policy.json` of each `start`/`resolve` bundle in `tests/fixtures/opt/replay/OPT-A2/starts/{0,1,2}`, which OPT's
+  replay reads as written (D-62 a); 42 registered, each guard pins 42. *Rejected:* editing the guards; stripping the
+  fixture.
 - **R-940 (D9)** M9's frozen set includes the legacy unit-model modules whose bytes enter a model's `artifact_hash`,
   enumerated from `MODEL_BUILDERS`' manifests (AST scan as fallback; raise if unresolved). *Rejected:* leaving them out —
   the premise that M1–M8 catch their edits is false (`artifact_hash` enters none of them).
@@ -18558,6 +18562,298 @@ on every foundation merge.
 
 **Watch for.** REL.A20 read as "all same-form equal" without A-1's sub-check; a release manifest built from a CI run
 that is not §6.2's push run or the latest dispatch.
+
+---
+
+## R-950 — `main`'s surface chain gains link c_5 = (ADR 0070, `without_x02`, `f51b69bf…`): X02's `solve_body.warm_start`, after MSG's c_4
+
+| | |
+| --- | --- |
+| Date | 2026-11-07; re-measured as c_5 on 2026-11-08 |
+| Decided by | build lane, X02 WO-2, applying ADR 0070 (Accepted 2026-11-08 by Frank, with ADR 0019 Amendment 15) and the X02 design note §5.1 ("the surface chain gains one link … with a register entry") in R-457's form; re-ordered after MSG's c_4 (R-976) per X02 review ruling 4 at the merge of `main` into `wp/X02` (D-35, D-36) |
+| Normative text | ADR 0070 D1; `docs/design/X02-warm-starts.md` §5.1; `scripts/m07a_rc.py` (link c_5) |
+| Evidence | On the merge tree (`wp/X02` with `main` at `ed874b17` merged, `f36b4a56`) the served MCP tool list digests to `f51b69bf66569e35aebead73b66e98d58f24c84016db639536c0ee35181f4c7b` (D_5). `without_x02` (`tests/x02_schema_support.py`) on it gives `eaff45852d7596816d90d744078f537e46c723e577295d347d9d73aea0942eac`, MSG's D_4 (R-976), exactly, so D_4 is unchanged with X02's members present; `without_msg` then gives D_3 `455d01eb…` (R-457) in either order. The tools are unchanged in name and description, and the six that serve the job request moved (`tests/test_t08_w2_surface_digest.py::test_x02s_surface_move_decomposes_onto_msgs`). At WO-2, over M04's list before MSG, the served digest was `0af895a0…` (evidence, not a pin) |
+| Affected packages | X02; M07a (`scripts/m07a_rc.py`, A37 tests); M07 (the next RC's V17 carry names c_5) |
+
+**Decision.** `m07a_rc.LINKS` gains c_5 (R-950; strip `without_x02`; D_5 = `f51b69bf…`). The three optional members
+of ADR 0019 Amendment 15 are stripped: `solve_body.warm_start`, the experiment request's `start` and the result's
+`profile_sha256` (the last two are not served on the MCP list today). No description text changes, so no description
+review is triggered (design note §8 F2). V17 is re-established at the next RC under the release procedure. The R4-G3
+job-operation snapshots are re-taken over MSG's (`SNAPSHOT_X02`); with X02's members removed each is its
+`SNAPSHOT_MSG` value.
+
+**Number and link (X02 review ruling 4).** MSG merged first (`ed874b17`) and holds c_4 (R-976), so X02, merging second,
+is c_5 with the digest of the combined tree. R-950…R-959 is X02's register block (orchestrator decision, merge order
+MSG → X02 → OPT → RRC → ST); ADR 0070's drafts A–E are R-951…R-955.
+
+**Rejected alternatives.** Folding the move into an existing link (R-457: a new MCP-visible change is a new link).
+Re-recording D_4 on the merged tree (MSG's link stands as registered; the strip shows no interaction).
+
+**Watch for.** A strip that removes more than the three members (the controls in `tests/test_m07a_surface_chain.py`).
+A later MCP-visible change moves D_5: it becomes c_6, it does not re-record c_5.
+
+## R-951 — X02: a warm start is declared in the solve request (`solve_body.warm_start`), an explicit declaration is its own opt-in (2026-11-08)
+
+| | |
+| --- | --- |
+| Date | 2026-11-08 (Proposed 2026-11-07) |
+| Decided by | design lane (`architect`), ADR 0070 (X02 design pass, amended per the X02 review); accepted by Frank on the decision board 2026-11-08 (X02 Q1 no, Q2/Q3 no, Q6 yes, Q7 default); recorded by the build lane at the merge prep |
+| Normative text | ADR 0070 R-951 (draft A), D1; ADR 0019 Amendment 15; `docs/design/X02-warm-starts.md` §5.1–§5.3 |
+| Affected packages | X02; T08 (`T08-warm-v1` unchanged); K06/T07 (application contract) |
+
+**Decision.** Starts are declared in `solve_body.warm_start` (`job_id`, `coupling`; ADR 0019 Amendment 15). An explicit
+declaration is its own opt-in. `T08-warm-v1` is unchanged (X02 Q2: no). `coupling_initial.*` stays refused as a
+parameter. Starts on the `experiment` operation are not admitted (X02 Q3: no); integration with studies is outside X02
+(Q4).
+
+**Rejected.** Revision parameters; instance hints; a `SolvePolicy` member; extending `T08-warm-v1`.
+
+**Evidence.** `tests/test_x02_wo2_contract.py` (admission A1–A2, `explicit-v1`); evidence `evidence/X02/2ab11b66…/manifest.json`.
+
+**Watch for.** A start smuggled into a revision or a policy.
+
+## R-952 — X02: a warm experiment request carries its start's `profile_sha256` in its key, only when used (2026-11-08)
+
+| | |
+| --- | --- |
+| Date | 2026-11-08 (Proposed 2026-11-07) |
+| Decided by | design lane (`architect`), ADR 0070 (X02 design pass, amended per the X02 review); accepted by Frank on the decision board 2026-11-08 (X02 Q1 no, Q2/Q3 no, Q6 yes, Q7 default); recorded by the build lane at the merge prep |
+| Normative text | ADR 0070 R-952 (draft B), D5; `docs/design/X02-warm-starts.md` §5.5 |
+| Affected packages | X02; M02 (experiment identity, `ExperimentStore`) |
+
+**Decision.** A warm request carries `start.profile_sha256` inside its key, only when the start is used. Profiles are kept in a
+content-addressed store; bundles carry hashes only.
+
+**Rejected.** The source key in the identity; a request-version bump; lookups that ignore the start.
+
+**Evidence.** `tests/test_x02_g0_experiment_keys.py` (cold keys unchanged), `tests/test_x02_wo4_external.py`.
+
+**Watch for.** Any change that moves a cold key.
+
+## R-953 — X02: certificate verdicts are independent of the start; a warm external answer is bounded by the registered path independence (2026-11-08)
+
+| | |
+| --- | --- |
+| Date | 2026-11-08 (Proposed 2026-11-07) |
+| Decided by | design lane (`architect`), ADR 0070 (X02 design pass, amended per the X02 review); accepted by Frank on the decision board 2026-11-08 (X02 Q1 no, Q2/Q3 no, Q6 yes, Q7 default); recorded by the build lane at the merge prep |
+| Normative text | ADR 0070 R-953 (draft C), D6; `docs/design/X02-warm-starts.md` §5.4, §5.5 |
+| Affected packages | X02; certificate and replay paths |
+
+**Decision.** Verdicts are functions of the final state alone. A warm external answer is bounded by the registered path
+independence, a decade below the floor, and disclosed in `external_model`. The child falls back to the cold chain
+within the attempt.
+
+**Rejected.** A cold re-check; failing on a warm refusal.
+
+**Watch for.** A verdict that reads the start; a warm refusal surfaced as a failure instead of the cold fallback.
+
+## R-954 — X02: no warm reactor variant is registered (G5b, G5c); the neighbour-speedup claim is withdrawn (G5 (d)(iii)) (2026-11-08)
+
+| | |
+| --- | --- |
+| Date | 2026-11-08 (Proposed 2026-11-07) |
+| Decided by | design lane (`architect`), ADR 0070 (X02 design pass, amended per the X02 review); accepted by Frank on the decision board 2026-11-08 (X02 Q1 no, Q2/Q3 no, Q6 yes, Q7 default); recorded by the build lane at the merge prep |
+| Normative text | ADR 0070 R-954 (draft D, as amended by the X02 review), D4, D8, Consequences bullet 1; design note §7 G5 A-3, A-10; D-29, D-32 |
+| Affected packages | X02; M01/M02 (the G2 reactor program, R-224) |
+
+**Decision.** No warm reactor variant is registered (X02 Q1: no): G5b 1.92e-7 > floor/10, G5c about 21 % slower. Programs are
+selected by `runner_sha256`; R-224 is lifted only for start-capable variants, and none is registered. The variant id
+stands as given (X02 Q6: yes). G5 (d)(iii) is recorded as failed (warm 4 = cold 4 outer iterations on v3) and
+ADR 0070 withdraws the claim that a neighbouring design restarts faster (X02 Q7, default); restarting the same design
+(G5 (d)(ii): 1 outer iteration, 1 reactor call) stands.
+
+**Rejected.** Registering with a raised floor (the real loop's T floor ratio would drop from 13 to about 6.8); registering in the
+manifest-note band (contradicts D6); editing or copying `child.py`; dropping the (iii) criterion from the gate after it
+failed; holding X02 for a redesign (Q7's alternative).
+
+**Evidence.** `evidence/X02/69c4a24d…/` (G5b, G5c), `evidence/X02/dcb499ee…/g5d-v3.json` (G5 (d)).
+
+**Watch for.** A start-capable variant registered without its own G5b/G5c pass; the neighbour claim re-asserted without a new
+measurement.
+
+## R-955 — X02: `body/warm_start/coupling/*/{X,dT_K}` is a registered Q26 state-from-outside path; the coupled route records its k = 0 inner start (2026-11-08)
+
+| | |
+| --- | --- |
+| Date | 2026-11-08 (Proposed 2026-11-07) |
+| Decided by | design lane (`architect`), ADR 0070 (X02 design pass, amended per the X02 review); accepted by Frank on the decision board 2026-11-08 (X02 Q1 no, Q2/Q3 no, Q6 yes, Q7 default); recorded by the build lane at the merge prep |
+| Normative text | ADR 0070 R-955 (draft E), "Amends" (ADR 0020 D7, R-088 Q26; R-287), D7; `docs/design/X02-warm-starts.md` §5.7 |
+| Affected packages | X02; T07 (Q26 scalar inventory) |
+
+**Decision.** `body/warm_start/coupling/*/{X,dT_K}` is the registered state-from-outside path, with its W14-path test (amends
+R-088 Q26 and R-287). The coupled route records its k = 0 inner start.
+
+**Rejected.** Admitting the coupling start as an unregistered numeric input.
+
+**Evidence.** `tests/test_t07_q26.py` (the two registered full paths; `test_t07_q26_no_external_state`).
+
+**Watch for.** A second numeric path admitted without a registered exception.
+
+## R-960 — `main`'s surface chain gains link c_6 = (ADR 0071, `without_opt`, `3fdc797a…`): OPT's `optimize` job operation, `validate`'s `optimization` member and two description texts, after X02's c_5
+
+| | |
+| --- | --- |
+| Date | 2026-11-08; re-measured as c_6 on 2026-11-08 |
+| Decided by | build lane, OPT WO-6, applying ADR 0071 (Accepted 2026-11-08 by Frank, with ADR 0019 Amendment 16; Proposed 2026-11-07) and OPT design §4.13 in R-457's form (OPT D-51, D-59); renumbered at the merge of `main` into `wp/OPT` (OPT D-87) |
+| Normative text | ADR 0071 D1, D8; `docs/design/OPT-revision-optimisation.md` §4.10–§4.13; `scripts/m07a_rc.py` (link c_6) |
+| Evidence | On the merge tree (`wp/OPT` with `main` at `b31e80ec` merged) the served MCP tool list digests to `3fdc797ad64485abf63fb491ebd56aa43dc510e62e9e218b0dd7a8fcc2e38a85` (D_6). `without_opt` (`tests/opt_schema_support.py`) on it gives `f51b69bf66569e35aebead73b66e98d58f24c84016db639536c0ee35181f4c7b`, X02's D_5 (R-950), exactly; no tool is added or renamed, the six job tools and `validate_revision` moved, and exactly `validate_revision`'s and `submit_job`'s texts changed (`tests/test_t08_w2_surface_digest.py::test_opts_surface_move_decomposes_onto_x02s`). At OPT WO-6, over M04's list before MSG and X02, the same strip gave M04's D_3 `455d01eb…` from `3fb06cad…` |
+| Affected packages | OPT; M07a (`scripts/m07a_rc.py`, A37 tests); M07 (the next RC's V17 carry names c_6); T08.A18 (two description reviews) |
+
+**Decision.** `m07a_rc.LINKS` gains c_6 (R-960; strip `strip_opt` = `without_opt`; D_6 = `3fdc797a…`). The strip removes
+Amendment 16's members (`optimize`, its request and result branches, the inlined `optimize_body`,
+`job_result.optimization`, the six artifact kinds, `validate`'s `optimization`) and restores `validate.md` and
+`submit_job.md` from their pre-OPT copies (`tests/fixtures/opt/pre_opt_descriptions/`). §5.3 item 4 is judged on the
+texts with that change undone (`m07a_rc.texts_before_links`). The two changed texts void their reviews: `REVIEW.json`
+records the new hashes with both reviews pending, and `tests/test_t08_w2_description_reviews.py` stays red until the
+design lane and Frank review them (T08.A18's rule; no agent marks them).
+
+**Number and link.** MSG merged first and holds c_4 (R-976), X02 second and holds c_5 (R-950), so OPT, merging third, is
+c_6 with the digest of the combined tree (design §4.13's merge-order rule). Its strip removes only its own additions:
+stripped, the merged list is `main`'s D_5 exactly, so D_4 and D_5 stand as registered. The R4-G3 job-operation snapshots
+are re-taken over X02's (`SNAPSHOT_OPT`); with OPT's members removed each is its `SNAPSHOT_X02` (or earlier) value.
+R-960…R-969 is OPT's register block (merge order MSG → X02 → OPT → RRC → ST).
+
+**Rejected alternatives.** Folding the move into an existing link (R-457); leaving `validate.md`'s text, which says the
+optimization task is refused (false since OPT WO-3); re-recording D_4 or D_5 on the merged tree (the strip shows no
+interaction).
+
+**Watch for.** A strip that removes more than OPT's additions (the controls in `tests/test_m07a_surface_chain.py`).
+A later MCP-visible change moves D_6: it becomes c_7, it does not re-record c_6.
+
+## R-961 — OPT: the optimisation formulation is a separate request document; decisions are `role: fixed` specifications mapped to parameters by bind probes (2026-11-08)
+
+| | |
+| --- | --- |
+| Date | 2026-11-08 (Proposed 2026-11-07) |
+| Decided by | design lane (`architect`), ADR 0071 (OPT design pass); accepted by Frank on the decision board 2026-11-08 (Q1-Q9 defaults); recorded by the build lane at the merge prep (OPT D-91, D-94) |
+| Normative text | ADR 0071 (draft 1); design §3 D2, D3, §4.2.2 |
+| Affected packages | OPT |
+
+**Decision.** The optimisation formulation is a separate request document; decisions are `role: fixed` specifications mapped to parameters by bind probes.
+
+**Rejected.** `role: decision` in the revision; id-text mapping.
+
+**Watch for.** A binder change that lets `role: decision` bind without an ADR.
+
+## R-962 — OPT: decisions on derived quantities = whatever a specification may target (ADR 0032 open item, assigned by ADR 0057) (2026-11-08)
+
+| | |
+| --- | --- |
+| Date | 2026-11-08 (Proposed 2026-11-07) |
+| Decided by | design lane (`architect`), ADR 0071 (OPT design pass); accepted by Frank on the decision board 2026-11-08 (Q1-Q9 defaults); recorded by the build lane at the merge prep (OPT D-91, D-94) |
+| Normative text | ADR 0071 (draft 2); design §3 D3 |
+| Affected packages | OPT |
+
+**Decision.** Decisions on derived quantities = whatever a specification may target (ADR 0032 open item, assigned by ADR 0057).
+
+**Rejected.** Automatic specification swaps.
+
+## R-963 — OPT: the NLP equality set on a revision is the held-regime system of the final converged region attempt (2026-11-08)
+
+| | |
+| --- | --- |
+| Date | 2026-11-08 (Proposed 2026-11-07) |
+| Decided by | design lane (`architect`), ADR 0071 (OPT design pass); accepted by Frank on the decision board 2026-11-08 (Q1-Q9 defaults); recorded by the build lane at the merge prep (OPT D-91, D-94) |
+| Normative text | ADR 0071 (draft 3) |
+| Affected packages | OPT |
+
+**Decision.** The NLP equality set on a revision is the held-regime system of the final converged region attempt.
+
+**Rejected.** Full declaration minus alias rows.
+
+**Evidence.** G4.
+
+**Watch for.** An NLP built on `revision_sensitivity_host`.
+
+## R-964 — OPT: V1 is the cold production route on the candidate document (2026-11-08)
+
+| | |
+| --- | --- |
+| Date | 2026-11-08 (Proposed 2026-11-07) |
+| Decided by | design lane (`architect`), ADR 0071 (OPT design pass); accepted by Frank on the decision board 2026-11-08 (Q1-Q9 defaults); recorded by the build lane at the merge prep (OPT D-91, D-94) |
+| Normative text | ADR 0071 (draft 4); design §3 D6 |
+| Affected packages | OPT |
+
+**Decision.** V1 is the cold production route on the candidate document.
+
+**Rejected.** Warm start from Ipopt's state.
+
+**Watch for.** `warm_start` passed into V1.
+
+## R-965 — OPT: phase regimes held by admissibility rows; a split's margin is the closure's own test (TWO_PHASE: smaller phase flow / N0); rows only where they equal it, else unguarded; Q4 held mode for V5 only (2026-11-08)
+
+| | |
+| --- | --- |
+| Date | 2026-11-08 (Proposed 2026-11-07) |
+| Decided by | design lane (`architect`), ADR 0071 (OPT design pass); accepted by Frank on the decision board 2026-11-08 (Q1-Q9 defaults); recorded by the build lane at the merge prep (OPT D-91, D-94) |
+| Normative text | ADR 0071 (draft 5); design §3 D7, §4.7, §9.3 |
+| Affected packages | OPT |
+
+**Decision.** Phase regimes held by admissibility rows; a split's margin is the closure's own test (TWO_PHASE: smaller phase flow / N0); rows only where they equal it, else unguarded; Q4 held mode for V5 only.
+
+**Rejected.** Refusing PH-type splits; smoothing; `tp_margin` everywhere; refusing splits without a TP margin.
+
+**Watch for.** Q4 `held` used outside V5; a margin computed by a test the closure does not use.
+
+## R-966 — OPT: V1 at a guarded phase boundary passes on the phase-boundary form (2026-11-08)
+
+| | |
+| --- | --- |
+| Date | 2026-11-08 (Proposed 2026-11-07) |
+| Decided by | design lane (`architect`), ADR 0071 (OPT design pass); accepted by Frank on the decision board 2026-11-08 (Q1-Q9 defaults); recorded by the build lane at the merge prep (OPT D-91, D-94) |
+| Normative text | ADR 0071 (draft 6); design §9.1 |
+| Affected packages | OPT |
+
+**Decision.** V1 at a guarded phase boundary passes on the phase-boundary form (the certificate's matrix less the active splits' pinned columns and dropped rows, unchanged screen and thresholds, the certificate's own `grade`).
+
+**Rejected.** `NOT_VERIFIED` at every boundary; interior retreat; the attempt's whole system; a K04-wide change.
+
+**Evidence.** G10, G10a-G10d.
+
+**Watch for.** `studies.nlp.boundary` imported under `verify/` or `orchestrator/`.
+
+## R-967 — OPT: structurally zero flows are held with their rows (zero subsystem), not left unbounded (2026-11-08)
+
+| | |
+| --- | --- |
+| Date | 2026-11-08 (Proposed 2026-11-07) |
+| Decided by | design lane (`architect`), ADR 0071 (OPT design pass); accepted by Frank on the decision board 2026-11-08 (Q1-Q9 defaults); recorded by the build lane at the merge prep (OPT D-91, D-94) |
+| Normative text | ADR 0071 (draft 7); design §9.2 |
+| Affected packages | OPT |
+
+**Decision.** Structurally zero flows are held with their rows (zero subsystem), not left unbounded.
+
+**Rejected.** Unbounded; `[0, ∞)` (degenerate).
+
+**Evidence.** G22, G23.
+
+## R-968 — OPT: R-129/R-191 superseded for `validate(task="optimization")` (2026-11-08)
+
+| | |
+| --- | --- |
+| Date | 2026-11-08 (Proposed 2026-11-07) |
+| Decided by | design lane (`architect`), ADR 0071 (OPT design pass); accepted by Frank on the decision board 2026-11-08 (Q1-Q9 defaults); recorded by the build lane at the merge prep (OPT D-91, D-94) |
+| Normative text | ADR 0071 (draft 8) |
+| Affected packages | OPT |
+
+**Decision.** R-129/R-191 superseded for `validate(task="optimization")`: a `ValidationReport` with a request and an audited solver; `unsupported nlp_solver_unavailable` otherwise.
+
+**Rejected.** Keeping `task_unsupported(optimization)`.
+
+## R-969 — OPT: job operation `optimize` (ADR 0019 Amendment 16); replay re-checks the certification chain, not the search (2026-11-08)
+
+| | |
+| --- | --- |
+| Date | 2026-11-08 (Proposed 2026-11-07) |
+| Decided by | design lane (`architect`), ADR 0071 (OPT design pass); accepted by Frank on the decision board 2026-11-08 (Q1-Q9 defaults); recorded by the build lane at the merge prep (OPT D-91, D-94) |
+| Normative text | ADR 0071 (draft 9); ADR 0019 Amendment 16 |
+| Affected packages | OPT |
+
+**Decision.** Job operation `optimize` (ADR 0019 Amendment 16); replay re-checks the certification chain, not the search.
+
+**Rejected.** `submit_run` now; bitwise Ipopt replay.
+
+**Watch for.** Ipopt imported on a replay path.
 
 ## R-970 — The release evidence package id is `REL` and a length-marked code of X.Y.Z, admitted by one additive `work_package` alternative (2026-11-08)
 
@@ -18740,6 +19036,19 @@ is promised to verify. A plain install verifies only if its resolver picks the l
 **Watch for.** A lock regeneration that moves a direct pin without `pyproject.toml`; user-facing text promising that a
 plain `pip install` replays exactly.
 
+## R-988 — OPT: R-860 lifts (2026-11-08)
+
+| | |
+| --- | --- |
+| Date | 2026-11-08 (Proposed 2026-11-07) |
+| Decided by | design lane (`architect`), ADR 0071 (OPT design pass); accepted by Frank on the decision board 2026-11-08 (Q1-Q9 defaults); recorded by the build lane at the merge prep (OPT D-91, D-94) |
+| Normative text | ADR 0071 (draft 10); design §3 D10 |
+| Affected packages | OPT |
+
+**Decision.** R-860 lifts: revision NLP host and optimisation bindings lifted; TR assessment objectives, θ decisions, discrete regimes and the standalone assessment binding stay.
+
+This is OPT's tenth draft, numbered outside the block because R-961…R-969 hold nine (D-91).
+
 ## R-983 — L01.A22 (a): the C1 files stay pinned at the L01 base apart from registered moves; WIT M-6 part b moves `models/c1/flash.py` (2026-11-08)
 
 | | |
@@ -18771,3 +19080,159 @@ plain `pip install` replays exactly.
   - A `MOVED` entry citing an L01 ruling, or a ruling that does not approve the move.
   - A changed value in `PINNED`.
   - A `models/c1/` module added or removed: that is not a move and needs an L01 amendment.
+
+## R-990 — RRC: edge 3 on a revision region continues the revision's changed operating values from the nearest verified ancestor (2026-11-08)
+
+| | |
+| --- | --- |
+| Date | 2026-11-08 (Proposed 2026-11-08) |
+| Decided by | design lane (`architect`), ADR 0072 (RRC design pass, amended per the RRC review); accepted by Frank on the decision board 2026-11-08 (FQ1 yes; FQ2, FQ3, FQ4 default); recorded by the build lane at the merge prep |
+| Normative text | ADR 0072 R-990 (draft R-RRC-1), D1–D4; `docs/design/RRC-revision-region-continuation.md` §5.1–§5.7 |
+| Affected packages | RRC; T04/T06 (edge 3), T08 (lineage store) |
+
+**Decision.** Under `homotopy_or_revision_continuation_or_sequential_restart` (ADR 0010 D1, amended), edge 3 on a
+revision-built region continues every changed operating value of the revision together, from the nearest `VERIFIED`
+ancestor's root (`store-nearest-verified-ancestor-v1`) to the target, with ADR 0010 D2's map, controller, identity rule
+and frozen signature (a second applicability, *revision continuation*). The preconditions (ADR 0072 D4) are checked in
+order and the first failure decides.
+
+**Rejected.** Specification rows on revision regions (an empty path); a tear-connection homotopy (level identity);
+split-fraction continuation (a `ZERO_FLOW` endpoint, splitter loops only); heuristic easy values; partial continuation;
+nearest by a parameter distance (a float decision); arclength (deferred).
+
+**Evidence.** `tests/test_rrc_continuation.py`, `tests/test_rrc_edge3.py`, `tests/test_rrc_checks.py`; design note §8
+G2–G4.
+
+**Watch for.** A session building `p⁰` from the failed opening on a revision region; continuing a subset of `D`;
+selecting by a float metric; running this under `homotopy` or `homotopy_or_sequential_restart`.
+
+## R-991 — RRC: the action order is specification continuation, then revision continuation, then the restart, with count 1 (2026-11-08)
+
+| | |
+| --- | --- |
+| Date | 2026-11-08 (Proposed 2026-11-08) |
+| Decided by | design lane (`architect`), ADR 0072 (RRC design pass, amended per the RRC review); accepted by Frank on the decision board 2026-11-08 (FQ1 yes; FQ2, FQ3, FQ4 default); recorded by the build lane at the merge prep |
+| Normative text | ADR 0072 R-991 (draft R-RRC-2), D1; design note §5.5 |
+| Affected packages | RRC; T06 (edge 3), ADR 0015's restart |
+
+**Decision.** Edge 3 under the new value tries specification continuation, then revision continuation, then the
+sequential restart, then `unsupported(<restart reason>)`; one recovery region solve per step. A refusal before any
+attempt opens is recorded and the restart follows; a continuation that opens and stalls ends the step without the
+restart (FQ3, default: declared — the value can fail where `T06-revision-v2` succeeds). Any rescue claim, or making the
+value a default, first needs a case where the restart fails and the continuation converges.
+
+**Rejected.** The restart first (continuation would never be reached where it is needed); a ladder of two recoveries
+per step (FQ3's alternative).
+
+**Evidence.** `tests/test_rrc_edge3.py`; design note §8 G6 (typed refusals, then the restart unchanged).
+
+**Watch for.** A restart run after a *taken* revision continuation; a refusal recorded as `taken`.
+
+## R-992 — RRC: continuable differences are a registered allowlist of operating specifications; default deny (2026-11-08)
+
+| | |
+| --- | --- |
+| Date | 2026-11-08 (Proposed 2026-11-08) |
+| Decided by | design lane (`architect`), ADR 0072 (RRC design pass, amended per the RRC review); accepted by Frank on the decision board 2026-11-08 (FQ1 yes; FQ2, FQ3, FQ4 default); recorded by the build lane at the merge prep |
+| Normative text | ADR 0072 R-992 (draft R-RRC-3), D4 (A3); design note §5.4 |
+| Affected packages | RRC; every unit model whose parameters a revision may change |
+
+**Decision.** Only a registered allowlist of operating values is continuable — temperatures, pressures, flows,
+duties, split fractions (FQ4, default); a specification pinning `parameters.<key>` is judged by its parameter's family
+(review N1). Any other difference refuses with `not_continuable(…)`, and the restart follows.
+
+**Rejected.** Discrete parameters (`stage_count`, `feed_stage`) and model constants (`nu`, `damkohler`, `T_ref`,
+`T_scale`, `coolant_cp`); any difference that leaves `model_version` equal.
+
+**Evidence.** `tests/test_rrc_checks.py`, `tests/test_rrc_application.py`.
+
+**Watch for.** A new unit parameter becoming continuable without a register entry.
+
+## R-993 — RRC: the source is recorded in `solve-path.json` and replays from the bundle alone (2026-11-08)
+
+| | |
+| --- | --- |
+| Date | 2026-11-08 (Proposed 2026-11-08) |
+| Decided by | design lane (`architect`), ADR 0072 (RRC design pass, amended per the RRC review); accepted by Frank on the decision board 2026-11-08 (FQ1 yes; FQ2, FQ3, FQ4 default); recorded by the build lane at the merge prep |
+| Normative text | ADR 0072 R-993 (draft R-RRC-4), D5, D6; design note §5.8, §5.9 |
+| Affected packages | RRC; T08 (replay); run identity (R0 projection) |
+
+**Decision.** `solve-path.json` gains the member `revision_continuation`, written iff the policy names the value on
+`revision_eo`; it is R0 except the provenance ids, the document body and the state values. The rerun rebuilds the source
+from the member, with no lookup and no binding, and re-runs the checks.
+
+**Rejected.** Content-addressing the source outside the bundle; re-binding the ancestor on rerun.
+
+**Evidence.** `tests/test_rrc_application.py`; design note §8 G7 (replay), G8 (R0 determinism).
+
+**Watch for.** A rerun that consults the store.
+
+## R-994 — RRC: L21 is narrowed; L-COL-9 is narrowed only on a failing-first column case (G5); R-827 is superseded only under the new value (2026-11-08)
+
+| | |
+| --- | --- |
+| Date | 2026-11-08 (Proposed 2026-11-08) |
+| Decided by | design lane (`architect`), ADR 0072 (RRC design pass, amended per the RRC review); accepted by Frank on the decision board 2026-11-08 (FQ1 yes; FQ2, FQ3, FQ4 default); recorded by the build lane at the merge prep |
+| Normative text | ADR 0072 R-994 (draft R-RRC-5), C2; Supersedes in part (R-827); design note §6 |
+| Affected packages | RRC; S11 (L-COL-9); T08 (support matrix, recovery-edge inventory E3c) |
+
+**Decision.** L21 is narrowed. L-COL-9 is narrowed only if G5 finds a failing-first column case, else it stays "under
+the registered policies"; G5's C3 is a splitter edit inside a column region, so column end-parameter continuation is
+mechanism evidence only (F1, forced edge). R-827's "no revision region has one" is superseded only under the new value;
+S11.A24′ stays true under every registered policy. `docs/recovery-edges.yaml` gains E3c.
+
+**Rejected.** Lifting L-COL-9 on forced-edge evidence.
+
+**Evidence.** `benchmarks/t08/support_envelope.yaml` (L21, L-COL-9 notes); `tests/test_t08_w2_recovery_edges.py`.
+
+**Watch for.** L-COL-9 claimed lifted on forced-edge evidence alone.
+
+## R-995 — RRC: `RRC-revision-v1` is offered by name, never a route's default (2026-11-08)
+
+| | |
+| --- | --- |
+| Date | 2026-11-08 (entered under the draft id R-RRC-6 at RRC WO-4) |
+| Decided by | build lane (RRC WO-4, `docs/RRC_DECISIONS.md` D-1), executing ADR 0072 §5.2 and FQ2's default; ADR 0072 accepted by Frank on the decision board 2026-11-08 (FQ2 default: by name only in 0.4); numbered with R-990…R-994 at the merge prep |
+| Normative text | ADR 0072 R-995 (draft R-RRC-6), D1; design note `docs/design/RRC-revision-region-continuation.md` §5.2, §5.3, §5.8 |
+| Affected packages | RRC; every caller of `get_project` (M07a's MR-7 clause) |
+
+**Decision.** `RRC-revision-v1` — `T06-revision-v2` with only `globalization.eo_recovery` changed, to
+`homotopy_or_revision_continuation_or_sequential_restart` — enters `APPLICATION_POLICIES` and so is served in
+`get_project.solve_policies` (`policy_sha256` `ff2ff84f8172fca9cbfa86334f82f43eed1c0917d0c5c673ce6f1f73de915f19`). It is
+offered, never `ROUTE_DEFAULT_POLICY`'s (FQ2: by name only in 0.4), and, like `T08-warm-v1`, is not a
+`benchmarks/registry.yaml` policy. It was offered only once the executor (WO-3) and the application (WO-4) carry the
+value's revision continuation; before that, the value would have selected no recovery at all.
+
+**Rejected alternatives.** Offering it at WO-1 (a placeholder path: the executor then treated the value as "no edge").
+Making it the revision route's default (FQ2: every future revision run's identity would move, and a rescued answer would
+depend on project history).
+
+**Watch for.** `RRC-revision-v1` in `ROUTE_DEFAULT_POLICY`; a served-content move in `get_project.solve_policies` that
+no register entry names (MR-7, `tests/test_t08_b50_surface_content.py`).
+
+## R-996 — V17-T10 after RRC: a fourth carried-surface reference, `t07_reference_rrc.json`; T08's is frozen (2026-11-09)
+
+| | |
+| --- | --- |
+| Date | 2026-11-09 |
+| Decided by | design lane (`specifier`), ruling `docs/reviews/RRC-v17-t10.md` (main `a109eea6`); applied by the build lane on `wp/RRC` (`docs/RRC_DECISIONS.md` D-46) |
+| Normative text | T07 V17 spec Amendment RRC-1 (GC-18); ruling `docs/reviews/RRC-v17-t10.md` |
+| Affected packages | RRC, and every later package that adds an id to `get_project.solve_policies` |
+
+**Decision.** Each content change to `get_project.solve_policies` that T10-C3 registers gets its own carried-surface
+reference document, generated in Amendment T08-1's form, and every earlier document stays frozen. For RRC:
+`t07_reference.py --emit-rrc` writes `docs/derivations/scripts/t07_reference_rrc.json`, `t07_reference_c2.json`'s
+document with exactly `carry`, `constants.offered_policy_ids` and `tasks.V17-T10.answer.offered_policy_ids.expected`
+changed; the offered set is `["RRC-revision-v1", "T04-W12", "T06-revision-v2", "T08-ptc-v1", "T08-warm-v1"]`. T10-C3
+stays an `exact_set` against those five ids for reference runs from RRC on; T10-C1, T10-C2 and item 7
+(`T06-revision-v1` still not offered) are unchanged. `scorer.CARRIED_SURFACE_REFERENCE_PATH` moves to the new document,
+and with it `reference.run`, G16-b and the RC job's step 8. Frozen and not re-scored: `t07_reference.json`
+(`cba24a92…`, GC-16), `t07_reference_c2.json` (`23b924b8…`, GC-17), `t07_reference_t08.json` (`f946a88f…`,
+GC-18.t08.reference_frozen); `v17-c1`, `v17-c2`, T08.A49's and M07a.A37's G16-b keep their records.
+
+**Rejected alternatives.** Editing `OFFERED_POLICIES_T08` in place (it moves the bytes T08-1's text, GC-17 and
+T08.A49/M07a.A37 describe, and amends a registered amendment in place). Excluding `RRC-revision-v1` from T10-C3 by
+B13's rule, as D-45 did for B27 (B27 measures what T08 delivered, T10-C3 what the served contract offers: the
+expectation would be false).
+
+**Watch for.** `t07_reference_t08.json` edited; `RRC-revision-v1` dropped from T10-C3 by B13's rule.
