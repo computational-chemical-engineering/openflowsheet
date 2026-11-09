@@ -44,6 +44,7 @@
   "agent-a": {
    "get_project {}": {
     "body": {
+     "ambient_pressure": null,
      "capability_id": "cap-agent-a",
      "default_policy_id": "default",
      "head": "rev-000005",
@@ -415,6 +416,7 @@
   "supervisor-c": {
    "get_project {}": {
     "body": {
+     "ambient_pressure": null,
      "capability_id": "cap-supervisor-c",
      "default_policy_id": "default",
      "head": "rev-000005",
@@ -651,6 +653,7 @@
   "viewer-b": {
    "get_project {}": {
     "body": {
+     "ambient_pressure": null,
      "capability_id": "cap-viewer-b",
      "default_policy_id": "default",
      "head": "rev-000005",
