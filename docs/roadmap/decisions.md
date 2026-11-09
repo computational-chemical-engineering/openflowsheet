@@ -772,3 +772,14 @@ ADR 0072 Accepted, FQ1 yes, FQ2–FQ4 default, drafts → R-990…R-995; starts 
 claimed; HARVEST_SIZE (85, 1039, 139)). On main after the merge: ruff OK; F0 PASS (M1–M9); targeted 1609 passed,
 2 skipped, 21 deselected (nlp), 3 xfailed. Surface chain c_6 (D_6 `3fdc797a…`); caches 39. Next: RRC merge prep
 (docs/briefs/RRC-merge-prep.md). Design-lane batch now ready: X02 D-39 + OPT D-92 prose, OPT D-93 (C12).
+
+## 2026-11-09 — MSG catalogue prose ruling for X02/OPT codes (f7da1420)
+
+`docs/reviews/MSG-catalogue-X02-OPT.md`: X02 entries kept/`why` rewritten; OPT `nlp_solver_unavailable` and
+`request_invalid` (arg → `member`, root variant) rewritten; 7 stubs re-titled, kinds final, all `review: true` cleared
+(138 → 129); allow-list reasons corrected; C12 keeps `nlp_solver_unavailable` but forces the solver probe unavailable
+(latent install dependence); `task_unsupported` prose rewritten. Work order §5 (10 steps), acceptance A1–A9. F1 (G1
+misses `OPT.*` check ids; loader forbids `.`) → separate MSG follow-up; F2 (U05 CLI pin install dependence) latent.
+DECISION: apply the work order on a short branch after RRC merges and before ST's WO-7 → both then take it with one
+main merge. Alternative: apply now (RRC, mid-merge of main, would have to re-merge the catalogue digest). Reversible
+by: applying it earlier.
