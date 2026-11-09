@@ -9185,3 +9185,40 @@ harvest:
   class: P
   to: []
   note: 'process note: no local full gate; two local skips; the merge condition is CI run 42570096932; status tested, not reviewed'
+- manifest: evidence/ST/451225195aa30af51de139452c66f462904fa84e/manifest.json
+  item: limitations[0]
+  sha256: 2d8b78d032a3c6fb56271e42b957288a70eaf54f4976aaf4cc6f4093542a86ae
+  class: P
+  to: []
+  note: 'provenance note: software verification with independent G1-G3 expectations; the stream table is a derived report, all 52 corpus runs judged_at projection, no validation'
+- manifest: evidence/ST/451225195aa30af51de139452c66f462904fa84e/manifest.json
+  item: limitations[1]
+  sha256: 31134d7f261faf846985807b3b01b921f37bc55296a2c223c3e036d01f5ccf7f
+  class: P
+  to: []
+  note: 'process note: open design-lane defaults M1-1, M1-2, M1-3, S1-1 applied and logged (ST_HANDOFF)'
+- manifest: evidence/ST/451225195aa30af51de139452c66f462904fa84e/manifest.json
+  item: limitations[2]
+  sha256: 7a6a655f4b94ef6b44d5a597ed3a29c185123090893f4c467259b3f817500234
+  class: P
+  to: []
+  note: 'process note: review notes left as notes (untyped exceptions, _quote null reason, R1 empty split, 4.4 sentence, paging cost)'
+- manifest: evidence/ST/451225195aa30af51de139452c66f462904fa84e/manifest.json
+  item: limitations[3]
+  sha256: 7cc07b25f3a92e18491dbcecebdc50989b02cba7633c071cabd848b8f7d54bc9
+  class: P
+  to: []
+  note: 'process note: ADR 0068 D3 amendment awaits a glance from Frank on the decision board; the default stands'
+- manifest: evidence/ST/451225195aa30af51de139452c66f462904fa84e/manifest.json
+  item: limitations[4]
+  sha256: 39ac727ec105fc2679254bb4bcdc885a6d03c4891111752c5d222408cc343de1
+  class: P
+  to: []
+  note: 'process note: no local full gate; CI run 42585666096 on both architectures is the merge condition; tested, not reviewed'
+- manifest: evidence/ST/451225195aa30af51de139452c66f462904fa84e/manifest.json
+  item: checks[16]
+  check_id: ST.FULLGATE
+  sha256: 305d337f780d6e47e4d010aa98960659403008f4e8fcfe5ea9a7b469ab2069d5
+  class: P
+  to: []
+  note: 'process note: no local full gate; CI green on both architectures is the merge condition (CLAUDE.md gate by risk)'
