@@ -901,3 +901,11 @@ G16-b 40/40; F0 PASS. Q1 (`t07_reference.py --check` in CI): no (85.6 s). CI re-
   description-review test ("2 open: get_job_result, get_stream_table: human pending"). F0 PASS; MSG check 394/95.
   Waiting on Frank: ADR 0075 accept and his two human reviews (script record_frank_reviews_x04.py). CI watched at
   4c818959 (expected red on that one test only).
+
+- 2026-11-09 — 0.4.0 release prep on wp/REL040p (pushed, not merged): c46ef9fc `[4, "x05.*"]` + tests in V18 of
+  release/lines/0.4.json; 9743871e RP.L11 (ADR 0074 O-3) in RP §3.4 + A-10 §17.3, release_gate.py own D2 encoder, R-1007;
+  a1a00e17 S-6 log. S-6 rehearsal at 9743871e (release_rc dispatch 42604498076 green both legs incl. x05 clean-install):
+  steps 2, 6–10, 12, 13, 16 pass; step 11 fails (IDAES record: environment.platform, reference_values_yaml_sha256 →
+  re-take question); step 14 fails (NLP-1 inventory TypeError, start without final_decisions; M05 REAL replay
+  diverges at 673.15 K); step 15 fails (needs a 0.4 journey J; same divergence); 17: E01-G6-nlp fails (same TypeError).
+  0.4.0 is blocked on these. Debug brief docs/briefs/REL040-s6-debug.md (opus-engineer, wp/S6dbg).
