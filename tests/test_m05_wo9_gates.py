@@ -7,7 +7,8 @@ G10's REAL part is that script's `--replay` (the replay from the record, F-20; t
 the build log). The criteria are §13's G11 row, never loosened here; the optimality outcome is
 reported, not gated (W25), so no test asserts the study status or the decision.
 
-Default gate: reads the committed files; nothing runs.
+Default gate: reads the committed files; nothing runs. S6R-20 (R-1008): `--retake-into`'s three
+refusals, each before the run starts.
 """
 
 from __future__ import annotations
@@ -17,8 +18,10 @@ import json
 import math
 import re
 import sys
+from pathlib import Path
 from typing import Any
 
+import pytest
 from conftest import REPO_ROOT
 
 sys.path.insert(0, str(REPO_ROOT / "tests" / "support"))
@@ -184,3 +187,40 @@ def test_r433_the_extrapolated_wording_is_the_ledger_count_and_the_recorded_flip
     (t_p1,) = p1["decisions"].values()
     assert minus["decisions"] == {"preheater.T_spec": 653.15}
     assert f"{t_p1 - 653.15:.1e}" == "3.5e-05" and "3.5e-5 K apart" in EXTRAPOLATED_LIMITATION
+
+
+# -- S6R-20 (R-1008, `docs/reviews/REL040-s6-ruling.md` §8 WO-2): the re-take's refusals ---------
+
+
+def _refused(argv: list[str], monkeypatch: pytest.MonkeyPatch, capsys: Any) -> str:
+    """`m05_wo9_real.main(argv)`'s exit-2 reason; without OMP_NUM_THREADS=1 no run can start."""
+    monkeypatch.syspath_prepend(str(REPO_ROOT / "scripts"))
+    monkeypatch.delenv("OMP_NUM_THREADS", raising=False)
+    import m05_wo9_real  # noqa: PLC0415
+
+    with pytest.raises(SystemExit) as raised:
+        m05_wo9_real.main(argv)
+    assert raised.value.code == 2
+    return capsys.readouterr().err
+
+
+def test_s6r20_a_retake_inside_the_repository_is_refused(
+    monkeypatch: pytest.MonkeyPatch, capsys: Any
+) -> None:
+    reason = _refused(["--retake-into", str(REPO_ROOT / ".cache" / "retake")], monkeypatch, capsys)
+    assert "lies inside the repository" in reason
+
+
+def test_s6r20_a_retake_over_an_existing_record_is_refused(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: Any
+) -> None:
+    (tmp_path / "trust-region-study-real.json").write_text("{}", encoding="utf-8")
+    reason = _refused(["--retake-into", str(tmp_path)], monkeypatch, capsys)
+    assert "trust-region-study-real.json exists: a re-take never overwrites one" in reason
+
+
+def test_s6r20_a_retake_with_replay_is_refused(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: Any
+) -> None:
+    reason = _refused(["--retake-into", str(tmp_path), "--replay"], monkeypatch, capsys)
+    assert "--retake-into and --replay exclude each other" in reason
