@@ -869,3 +869,9 @@ G16-b 40/40; F0 PASS. Q1 (`t07_reference.py --check` in CI): no (85.6 s). CI re-
   DECISION: X04 takes chain link c_8 with register block R-1010…1019 (precedent X02 c_5, OPT c_6, ST c_7 by the build
   lane), taken with SNAPSHOT_X04/without_x04 in X04's final work order after WO-4/WO-5 → alternative: a design-lane
   ruling first. Reversible by: dropping that commit. WO-3 next (brief docs/briefs/X04-build-A2.md).
+
+- 2026-11-09 — X04 WO-3 done on wp/X04 (df59a3df): render display numbers, get_job_result display_units (schemas,
+  OPERATIONS, description sentence, ADR 0019 Amendment 17, interfaces-frozen), A15–A20, A31–A33, A36 (38 passed); D-5
+  (unsupported refusal's detail.reason = full message head). F0 PASS; MSG check 391/95. Known red 29: surface chain 14,
+  R4-G3 5, t08_w2 surface digest 9, description review 1 — all for X04's final work order (c_8, snapshot, digest,
+  reviews: design-lane in the reviewer pass, human on the board). Next: engineer B WO-4 (docs/briefs/X04-build-B.md).
