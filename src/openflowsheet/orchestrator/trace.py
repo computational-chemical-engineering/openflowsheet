@@ -624,14 +624,22 @@ class GlobalizationPolicy:
     (T04 §11.2), so that the edge is the only thing that changed where it fires.
     `"homotopy_or_sequential_restart"` (ADR 0015 D1) adds edge 3's second action, the sequential
     restart of a revision-built region; it is never the default, so no registered policy
-    document moves (design note `docs/design/T06-F4-recovery.md` §5.8). `eo_core =
+    document moves (design note `docs/design/T06-F4-recovery.md` §5.8).
+    `"homotopy_or_revision_continuation_or_sequential_restart"` (ADR 0072) puts the revision
+    continuation from the nearest verified ancestor between the two; it is never the default
+    either, and only `RRC-revision-v1` carries it. `eo_core =
     "newton_refined"` (ADR 0018 D1) is the Newton core with one terminal refinement at a
     `CONVERGED` exit whose chord correction exceeds the kind tolerance; it is never the default
     either, and every registered policy keeps `"newton"`."""
 
     policy_id: Literal["T04-globalization-v1"] = "T04-globalization-v1"
     eo_core: Literal["newton", "ptc", "newton_refined"] = "newton"
-    eo_recovery: Literal["homotopy", "none", "homotopy_or_sequential_restart"] = "homotopy"
+    eo_recovery: Literal[
+        "homotopy",
+        "none",
+        "homotopy_or_sequential_restart",
+        "homotopy_or_revision_continuation_or_sequential_restart",
+    ] = "homotopy"
     eo_recovery_max_count: Literal[1] = 1
     homotopy: HomotopyPolicy = field(default_factory=HomotopyPolicy)
     ptc: PtcPolicy = field(default_factory=PtcPolicy)

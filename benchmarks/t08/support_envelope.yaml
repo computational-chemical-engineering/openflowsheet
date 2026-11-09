@@ -221,16 +221,18 @@ axes:
   - id: solve_policies
     title: Solve policies
     statement: >-
-      The four offered policies of B27. `default` resolves to the route's registered policy
-      (`T06-revision-v2` on `revision_eo`, `T04-W12` on `legacy_eo`). PTC is selectable by explicit
-      policy only (`T08-ptc-v1`) and is experimental (L01); compatible warm starts by explicit
-      policy only (`T08-warm-v1`, R-124; L-WS-1, L-WS-2).
-    members: [T04-W12, T06-revision-v2, T08-ptc-v1, T08-warm-v1]
+      The four offered policies of B27, and RRC's. `default` resolves to the route's registered
+      policy (`T06-revision-v2` on `revision_eo`, `T04-W12` on `legacy_eo`). PTC is selectable by
+      explicit policy only (`T08-ptc-v1`) and is experimental (L01); compatible warm starts by
+      explicit policy only (`T08-warm-v1`, R-124; L-WS-1, L-WS-2); revision continuation on
+      recovery edge 3 by explicit policy only (`RRC-revision-v1`, ADR 0072, R-995).
+    members: [RRC-revision-v1, T04-W12, T06-revision-v2, T08-ptc-v1, T08-warm-v1]
     evidence:
       - tests/test_t07_w5a_inspection.py::test_get_project_states_the_project_and_the_caller
       - tests/test_t07_b3_policies.py::test_an_offered_policy_is_admitted
       - tests/test_t08_ptc_r1_case.py::test_the_policies_are_t06_revision_v2_with_only_the_registered_changes
       - tests/test_t08_w4_warm_starts.py::test_t08_warm_v1_is_t06_revision_v2_with_only_the_chain_changed
+      - tests/test_rrc_edge3.py::test_the_policy_differs_from_t06_revision_v2_in_its_edge_only
       - doc:docs/reviews/T08-verdict-V14b.md
 
   - id: globalization_and_recovery
@@ -699,10 +701,19 @@ limitations:
       - check:T04.A07
   - id: L21
     text: >-
-      Specification continuation (edge 3's homotopy) exists only for regions with a promoted
-      specification; elsewhere it is `unsupported(no_continuation_parameter)`.
+      Edge 3's continuation exists for a region with a promoted specification (specification
+      continuation). Under `RRC-revision-v1`, it also exists for a revision region whose nearest
+      verified ancestor has the same declaration and differs only in registered operating values
+      (revision continuation, ADR 0072). Everywhere else edge 3 is the sequential restart or
+      `unsupported(…)`. Neither continuation changes the active set. `RRC-revision-v1` is not a
+      superset of `T06-revision-v2`: a continuation that stops part-way ends the step and the
+      restart is not tried (one recovery per step), so it can fail where `T06-revision-v2`
+      converges, and no registered case is rescued by it that `T06-revision-v2` does not rescue.
     evidence:
       - doc:docs/derivations/T04-globalization-spec.md §14
+      - doc:docs/design/RRC-revision-region-continuation.md §6
+      - tests/test_rrc_candidates.py::test_g4_net02_is_rescued_from_its_registered_source
+      - tests/test_rrc_edge3.py::test_g6_a_refusal_is_recorded_and_the_restart_runs_unchanged
   - id: L22
     text: >-
       Scope of the solver evidence: tear selection is greedy (minimality not claimed); behaviour
@@ -1096,11 +1107,15 @@ limitations:
       - doc:docs/derivations/S11-design.md §4.11
   - id: L-COL-9
     text: >-
-      In a flowsheet a column region has no edge-3 continuation (no revision region has one). The
-      unit's own `evaluate` keeps S02's full standalone path, S08 Stage B included, so the
-      traversal start is the standalone answer.
+      In a flowsheet a column region has edge-3 continuation only under `RRC-revision-v1`, from a
+      verified ancestor that differs only in operating values. A first solve, a structural edit
+      (stage count, feed stage, a changed end-specification choice) and the default policy have
+      none. The unit's own `evaluate` keeps S02's full standalone path, S08 Stage B included, so
+      the traversal start is the standalone answer.
     evidence:
       - tests/test_s11_column_solve.py::test_a_revision_region_has_no_edge_3_continuation
+      - tests/test_rrc_candidates.py::test_g5_a_column_case_failing_first_is_rescued_and_closes
+      - tests/test_rrc_edge3.py::test_f1_a_column_continued_in_its_end_specifications_reaches_item_0s_root
       - tests/test_s11_column_unit.py::test_evaluate_is_the_standalone_solve
       - doc:docs/derivations/S11-design.md §10.8
   - id: L-COL-10
@@ -7595,7 +7610,10 @@ harvest:
   class: E
   to:
   - L-COL-9
-  note: 'S11''s envelope row L-COL-9, carried verbatim'
+  note: 'S11''s envelope row L-COL-9, narrowed by RRC G5 (design note §6, ADR 0072). G5''s case C3 is
+    a splitter edit inside a column region; continuation in the column''s end parameters is mechanism
+    evidence only (F1, a forced edge). test_a_revision_region_has_no_edge_3_continuation asserts that
+    the column region has no specification-continuation parameter'
 - manifest: evidence/S11/01e72ca464dcb68c489e235d3d5446d450e109e1/manifest.json
   item: limitations[12]
   sha256: 532a226917fb7747cda9fba269420a91ba12973be47913cbaf742adc29ec7135
@@ -9061,6 +9079,58 @@ harvest:
   item: checks[25]
   check_id: OPT.G21
   sha256: 986dc7b30a12baa5dcde07c4743824153d0f8b0f459ed5059fdc3ed506a54fdd
+  class: P
+  to: []
+  note: 'process note: no local full gate; CI green on both architectures is the merge condition (CLAUDE.md gate by risk)'
+- manifest: evidence/RRC/6b892b036f2fc82167784daa6bce946345b64515/manifest.json
+  item: limitations[0]
+  sha256: d05c11d5fb29af0e9368cbe4bd592c0e388adee865052e090e23dc7c4de511df
+  class: P
+  to: []
+  note: 'provenance note: numerical verification on ref-x86-64; regression fixtures N1 and C3 with named independent checks; not validation'
+- manifest: evidence/RRC/6b892b036f2fc82167784daa6bce946345b64515/manifest.json
+  item: limitations[1]
+  sha256: e58c4637507e2b41f4500c42b90b562cdb6e201b0f5115068a9ec8aa9f3077a5
+  class: P
+  to: []
+  note: 'status note: tested, not reviewed; no local full gate, CI run 42558001650 on both architectures'
+- manifest: evidence/RRC/6b892b036f2fc82167784daa6bce946345b64515/manifest.json
+  item: limitations[2]
+  sha256: 4a966c61cbfe00fb6cbed7b2bc16af869506d723308520e6481b8b65a523326f
+  class: E
+  to:
+  - L21
+  note: 'user-facing: L21 narrowed to specification continuation plus RRC-revision-v1 revision-region continuation (ADR 0072)'
+- manifest: evidence/RRC/6b892b036f2fc82167784daa6bce946345b64515/manifest.json
+  item: limitations[3]
+  sha256: 8fd4551509b36f18ff35310e7d1cb92cb8873dcfb9726c27597d88ac12be3055
+  class: E
+  to:
+  - L-COL-9
+  note: 'user-facing: L-COL-9 narrowed only on the failing-first column case G5/C3; F1 is mechanism evidence (D-38)'
+- manifest: evidence/RRC/6b892b036f2fc82167784daa6bce946345b64515/manifest.json
+  item: limitations[4]
+  sha256: 5c49b78be137ce9d41628b3bf7a61a73477e81583eeba61823a7fea6d8f3b698
+  class: E
+  to:
+  - L21
+  note: 'user-facing: RRC-revision-v1 is not a superset of T06-revision-v2 (review M2, D-29)'
+- manifest: evidence/RRC/6b892b036f2fc82167784daa6bce946345b64515/manifest.json
+  item: limitations[5]
+  sha256: 8e6eee67eb06b19b8ea3cd0420fa3f2e657a36f309d23a6a9721bef898ca3fb3
+  class: P
+  to: []
+  note: 'process note: review notes left as notes (R5, defect-guard, A3 dotted path, G6 counters)'
+- manifest: evidence/RRC/6b892b036f2fc82167784daa6bce946345b64515/manifest.json
+  item: limitations[6]
+  sha256: 9f59b19180eee201cc5c9d2c861b4dc6dc041bbdc50f39ce54a45559c7b738bd
+  class: P
+  to: []
+  note: 'process note: results-ref-x86-64.json lacks the g2f free-columns key until a re-take (D-30)'
+- manifest: evidence/RRC/6b892b036f2fc82167784daa6bce946345b64515/manifest.json
+  item: checks[13]
+  check_id: RRC.FULLGATE
+  sha256: d5c2206860f7a050a91643a1b2a027b99db65471f9cb83ffa7f8dada1b2d6eb0
   class: P
   to: []
   note: 'process note: no local full gate; CI green on both architectures is the merge condition (CLAUDE.md gate by risk)'

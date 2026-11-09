@@ -1020,3 +1020,4 @@ Totals: TH-R1 18.3 s, M1 5.9 s, C-MW 54.4 s ("verify" also holds report/record w
   digest `7bbe3d65…` → `5e5026c5…`; `review: true` 138 → 129. One literal deviation from the ruling's A6: the U05 CLI
   pin's stdout changes too, in `detail.explanation` (`why`, `action`, `gap`) only, because the refusal document
   carries its explanation (MSG §3.7); the machine members are unchanged (I1).
+  Re-based on main after RRC (merge of `cefee08d`): digest `7bbe3d65…` (RRC: `14921a20…`) → `e3725b30…`; 379/83/129.

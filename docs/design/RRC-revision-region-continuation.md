@@ -2,7 +2,7 @@
 
 **Package:** RRC (release 0.4; roadmap `docs/roadmap/roadmap.md:42`; ADR 0057:33). **Lane:** design (`architect`), 2026-11-08.
 **Brief:** `docs/briefs/RRC-architect.md`. **Origin:** Frank's Q30 (`docs/FRANK_QUESTIONS.md:238-239`), R-827, S11 §10.8.
-**ADR:** `docs/adr/0072-RRC-revision-region-continuation.md` (Proposed). It amends ADR 0010 D1, D2, D3 and D7, ADR 0015 D1
+**ADR:** `docs/adr/0072-RRC-revision-region-continuation.md` (Accepted 2026-11-08 by Frank; R-990…R-995). It amends ADR 0010 D1, D2, D3 and D7, ADR 0015 D1
 and ADR 0024, all additively. It reverses nothing, and it supersedes R-827's "no revision region has one" only under the new
 policy value.
 **Status:** design. Nothing here was measured for this note. The code anchors are on `main` at `ec7e90b7`. Where a choice
@@ -240,7 +240,12 @@ Diff the source document against the target document with `semantic_diff` and `e
 - **`connections`.** Any element is not continuable.
 - **`specifications`.** A `changed` element is allowed iff every path is one of `("value",)`, `("unit",)` or
   `("meaning",)`, and the item's `target.path` is in `CONTINUABLE_SPECIFICATION_PATHS` = {`state.n`, `state.T`, `state.P`,
-  `outlet.T`, `outlet.P`, `duty.Q`}. That set is all of `_PATH_KINDS`. `added` and `removed` are not continuable.
+  `outlet.T`, `outlet.P`, `duty.Q`}, or is `parameters.<key>` whose family (its text before the first `.`) is in
+  `CONTINUABLE_PARAMETERS` (S11 §10.5 lets a `role: fixed` specification pin an instance parameter; it is judged by the
+  instance rule's family test, D-11). That set is all of `_PATH_KINDS`. `added` and `removed` are not continuable.
+  *(Extended by the review, N1.)*
+- **Family.** An instance parameter's `<name>` below, and a `parameters.<key>` target's, is the key's family: its text
+  before the first `.` (`stage_pressure.3`, `feed_stage.S-IN1`), as the binder types a key (D-11).
 - **`instances`.** A `changed` element is allowed iff every path has the form `("parameters", <name>, …, <field>)`, with
   `<field>` in {`value`, `unit`, `meaning`} and `<name>` in `CONTINUABLE_PARAMETERS`:
   - `pressure_drop`, `split_fraction`, `efficiency`, `outlet_vapor_fraction`, `conversion`, `split`;
@@ -290,10 +295,12 @@ _revision_continuation(step, region, flowsheet, spec, policy, run, spent, state,
                             initializer_source=REVISION_CONTINUATION_SOURCE,
                             reported_signature=candidate.signature))
         if recovered.outcome == "INITIALIZATION_FAILED" and not recovered.attempts:
-            spent = spent'; keep the pre-call `state`; refusal rejected("opening(<check>)")
-            # <check> read from the result exactly as `_warm_start` reads `warm_start_rejected(opening:<check>)`
+            spent = spent'; keep the pre-call `state`; refusal rejected("opening(<check>:<subject>)")
+            # <check>:<subject> read from the result's `revision_continuation_rejected(opening:<check>:<subject>)` (§5.7)
         else:
-            <exactly the homotopy branch's tail>: recovered_provenance(failed.bp, recovered.bp),
+            <the homotopy branch's tail, with the restart's provenance pattern>:
+            recovered_provenance(failed.bp, recovered.bp, first_initializer_source=REVISION_CONTINUATION_SOURCE),
+            # (Amended by the review, D-5: §5.8 names the recovery item's source, so the keyword is required.)
             checkpoint rule, replace(step, outcome, iterations, message, detail, eo_recovery="taken",
             recovered_from=failed, revision_continuation=Record(status="taken", reason=None, D, start_values))
             return
@@ -327,7 +334,9 @@ The restart's preconditions P3 to P5, its records and its `unsupported` reasons 
     as the compatible-warm-start check builds it (`region.py:2157`), with `reported = recovery.reported_signature`.
     This checks coverage, the active-set pinned columns at exactly `+0.0`, the lower bounds on free columns, and that
     the reported signature equals the opening (regimes plus dormancy items);
-  - a refusal ends the solve `INITIALIZATION_FAILED` with message `revision_continuation_rejected(opening:<check>[:<detail>])`.
+  - a refusal ends the solve `INITIALIZATION_FAILED` with message `revision_continuation_rejected(opening:<check>:<subject>)`.
+    `<subject>` is mandatory: the refusal's column, unit or field id (`OpeningRefusal.subject`, R0), never a float.
+    *(Amended by the review, D-6.)*
     No attempt is opened, and it emits exactly the events a refused warm-start opening emits.
 - The identity pair in `OpeningState` is set equal to the requirement's. Identity was established by R5 and R8. The
   requirement's `constants_sha256` is the target's, as for the warm start.
@@ -350,7 +359,9 @@ The restart's preconditions P3 to P5, its records and its `unsupported` reasons 
 - The recovery's first `branch_provenance` item has:
   - `core = homotopy` and `opening_source = eo_recovery_start`;
   - `initializer_source = "revision_continuation_source"`, a free string;
-  - `opening_state_sha256` equal to the source's `full_state_sha256`. This is the certificate's link to the source root;
+  - `opening_state_sha256`, the source root's hash over attempt 0's free columns. It equals the source certificate's
+    `full_state_sha256` exactly when the source's final signature pins no column. The link that holds in every case is
+    the `solve-path.json` member (`source_identity`, `candidate`). *(Amended by the review, S1.)*;
   - `continuation = {type: "revision_continuation", parameter_ids, lambda_levels, lambda_reached, rejected_trials}`.
 - Verification is unchanged (R-035, `verify_revision`).
 
@@ -373,7 +384,10 @@ whether or not edge 3 fired, as ADR 0024 D4 does.
 | `source_parameters` | `{pid: canonical float string}` of `spec_src` | R0 |
 | `candidate` | the `solution-state` document | values R1/R2; digest shape only |
 
-`status = not_reached` means the source was assembled but edge 3 never consulted it. `run.identity.r0_projection` gains one
+`status = not_reached` means the source was assembled but edge 3 never consulted it. `status` `absent` or `rejected` with
+no `initializer_rejected` event in the trace means the application refused the source (no verified ancestor, or an A1–A3
+refusal) and edge 3 never fired; the refusal is recorded as that refusal (D-10). *(Amended by the review.)*
+`run.identity.r0_projection` gains one
 branch for this member, as ADR 0024 did for `warm_start`. A bundle without the member is unaffected.
 
 ### 5.9 Replay
@@ -506,7 +520,7 @@ Every candidate's outcomes under the control, `T06-revision-v2` and `RRC-revisio
 | Gate | Invariant | Measured how | Criterion |
 | --- | --- | --- | --- |
 | **G1** inertness | Nothing registered moves | `scripts/corpus_identity.py --check`; `git diff main --` on the four edge-3 test files; `tests/test_t06_w4_registry.py`, `test_t07_b3_policies.py`; schema fixture regeneration | M1–M9 PASS; empty diff, and the files pass; every registered `policy_sha256` unchanged; fixtures byte-identical |
-| **G2** level identity | ADR 0010 D2 and §3 | On the G4 run's trace and records | (a) λ = 0 level identity = the source certificate's `(model_version, constants_sha256)`. (b) Every λ < 1 level's parameter vector differs from the target's only at `D`. (c) λ = 1 identity = the failed solve's = the certificate's = NET-02's registered identity. (d) Every λ is a dyadic `p/q` string. (e) The λ = 1/2 values are bitwise as in WO-1, if λ = 1/2 is visited. (f) The recovery item's `opening_state_sha256` = the source's `full_state_sha256`. |
+| **G2** level identity | ADR 0010 D2 and §3 | On the G4 run's trace and records | (a) λ = 0 level identity = the source certificate's `(model_version, constants_sha256)`. (b) Every λ < 1 level's parameter vector differs from the target's only at `D`. (c) λ = 1 identity = the failed solve's = the certificate's = NET-02's registered identity. (d) Every λ is a dyadic `p/q` string. (e) The λ = 1/2 values are bitwise as in WO-1, if λ = 1/2 is visited. (f) The recovery item's `opening_state_sha256` equals `state_sha256` of the source root over the recovery attempt 0's free columns, in the region's order. The opening's pinned columns are exactly `+0.0` in that root, which §5.7's check establishes. When the source signature pins no column, this is the source's `full_state_sha256`. *(Amended by the review, S1.)* |
 | **G3** controller | Rollback, halving, stall | A stub corrector in `test_rrc_edge3.py` | One rejection at λ = 1/4: the next trial is at λ = 1/8 from the λ = 0 state, bitwise. All rejections: `HOMOTOPY_STALLED` with bracket width ≤ 2/1024 and no certificate. |
 | **G4** revision rescue | A registered failing-first revision converges through the new edge | Family N's pair, under the control and under `RRC-revision-v1` | Control `BOUND_BLOCKED` (NET-02's registered edge-off outcome). RRC `CONVERGED` and `VERIFIED`. Errors against `ref.closed_form.corpus_cases.SYN-001-T06-NET02` within T06's registered NET-02 tolerances. ‖x_RRC − x_restart‖∞, scaled by the region's `Scaling`, ≤ 1e-8, where x_restart is NET-02's root under `T06-revision-v2`. |
 | **G5** column rescue (L-COL-9) | As G4, for a column region | Family C's selected case | Control in the trigger set; RRC `CONVERGED` and `VERIFIED`; S11.A29's per-component closure (feed = distillate + purge) within A29's flow tolerance. If no Ci qualifies, G5 is reported **not met** and §6's fallback text applies. |

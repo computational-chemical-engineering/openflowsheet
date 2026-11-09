@@ -26,10 +26,12 @@ Run from the repository root inside the project environment::
     python docs/derivations/scripts/t07_reference.py \
         --emit docs/derivations/scripts/t07_reference.json \
         --emit-c2 docs/derivations/scripts/t07_reference_c2.json \
-        --emit-t08 docs/derivations/scripts/t07_reference_t08.json
+        --emit-t08 docs/derivations/scripts/t07_reference_t08.json \
+        --emit-rrc docs/derivations/scripts/t07_reference_rrc.json
 
-``--emit`` is byte-reproducible. ``--check`` also confirms that the three committed JSON files
-are byte-identical to what ``--emit``, ``--emit-c2`` and ``--emit-t08`` would write.
+``--emit`` is byte-reproducible. ``--check`` also confirms that the four committed JSON files
+are byte-identical to what ``--emit``, ``--emit-c2``, ``--emit-t08`` and ``--emit-rrc`` would
+write.
 
 Two registrations (spec Amendment R6). ``t07_reference.json`` is campaign ``v17-c1``'s, frozen
 at its recorded sha (GC-16.c1.reference_frozen). ``t07_reference_c2.json`` is campaign
@@ -41,6 +43,11 @@ A third document (spec Amendment T08-1, 2026-09-29; T08 build-first spec Amendme
 T08 on (G16-b of T08.A49): ``v17-c2``'s document with exactly the offered solve policies changed
 (GC-17.changes_exactly) and a ``carry`` member. No agent campaign is scored against it, and the
 two campaign documents keep their bytes (GC-16.c1.reference_frozen, GC-17.c2.reference_frozen).
+
+A fourth document (spec Amendment RRC-1, 2026-11-09; ADR 0072 R-995). ``t07_reference_rrc.json``
+is what reference runs of the carried surface are scored against from RRC on: ``v17-c2``'s
+document with exactly the offered solve policies changed (GC-18.changes_exactly) and a ``carry``
+member. ``t07_reference_t08.json`` is frozen (GC-18.t08.reference_frozen).
 """
 
 from __future__ import annotations
@@ -2679,6 +2686,126 @@ def build_t08(
     return t08_document(t08[1]["c2_doc"], claim_summary(merged))
 
 
+# =============================================================================================
+# 10. Amendment RRC-1 (spec; ADR 0072 R-995): the carried surface after RRC
+# =============================================================================================
+#
+# RRC offers one more solve policy, `RRC-revision-v1`, by name (R-995): a content-only addition
+# that keeps V17's carry under F5 as M07a's MR-7 applies it. T10-C3 registered the offered set,
+# so the reference runs of the carried surface from RRC on need an oracle with RRC's set.
+# `t07_reference_t08.json` keeps its bytes (GC-18.t08.reference_frozen); `t07_reference_rrc.json`
+# is c2's document with exactly RRC_CHANGED_PATHS changed.
+
+RRC_JSON = HERE / "t07_reference_rrc.json"
+#: The bytes the reference runs of the carried surface were scored against from T08 to RRC.
+T08_REFERENCE_SHA256 = "f946a88f268acc0b690e24f5fb1c358611b5333e169468bd2ae861f8a13148b9"
+#: The solve policies the contract offers from RRC on (ADR 0072 R-995).
+OFFERED_POLICIES_RRC = (
+    "RRC-revision-v1",
+    "T04-W12",
+    "T06-revision-v2",
+    "T08-ptc-v1",
+    "T08-warm-v1",
+)
+RRC_CHANGED_PATHS = {
+    "carry",
+    "constants.offered_policy_ids",
+    "tasks.V17-T10.answer.offered_policy_ids.expected",
+}
+
+
+def carry_rrc() -> dict[str, Any]:
+    return {
+        "amendment": "T07-v17-tasks-spec.md Amendment RRC-1 (ADR 0072, R-995)",
+        "rule": "F5 (Frank, 2026-09-29) as M07a's MR-7 applies it: a content-only addition to "
+        "get_project.solve_policies that a register entry names (R-995) keeps V17's carry; the "
+        "served tool-list digest and the surface chain are unchanged (ADR 0072 C1)",
+        "base": carry()["base"],
+        "supersedes": {
+            "reference": "docs/derivations/scripts/t07_reference_t08.json",
+            "reference_sha256": T08_REFERENCE_SHA256,
+            "use": "reference runs of the carried surface from T08 up to RRC (T08.A49, "
+            "M07a.A37); frozen, never re-scored against this document",
+        },
+        "use": "reference runs of the carried surface from RRC on (G16-b; RC step 8); no agent "
+        "campaign is scored against this document",
+        "change": "the offered solve policies (T10-C3 and constants.offered_policy_ids): "
+        "RRC-revision-v1 added",
+    }
+
+
+def rrc_document(c2_doc: Mapping[str, Any], summary: dict[str, Any] | None) -> dict[str, Any]:
+    """c2's document with RRC's offered set and a `carry` member; `summary` replaces
+    `generator_claims` when given. `t08_document` with RRC's set and carry."""
+    doc: dict[str, Any] = json.loads(json.dumps(c2_doc))
+    doc["constants"]["offered_policy_ids"] = list(OFFERED_POLICIES_RRC)
+    doc["tasks"]["V17-T10"]["answer"]["offered_policy_ids"]["expected"] = list(OFFERED_POLICIES_RRC)
+    ordered: dict[str, Any] = {}
+    for key, value in doc.items():
+        ordered[key] = value
+        if key == "registration":
+            ordered["carry"] = carry_rrc()
+    if summary is not None:
+        ordered["generator_claims"] = summary
+    return ordered
+
+
+def run_rrc_claims(
+    result: tuple[Claims, dict[str, Any]],
+    r6: tuple[Claims, dict[str, Any]],
+    t08: tuple[Claims, dict[str, Any]],
+) -> tuple[Claims, dict[str, Any]]:
+    """GC-18: every statement Amendment RRC-1 makes about its own document."""
+    c = Claims()
+    t08_sha = hashlib.sha256(dump(build_t08(result, r6, t08))).hexdigest()
+    c.check("GC-18.t08.reference_frozen", t08_sha == T08_REFERENCE_SHA256, t08_sha)
+    c2_doc = t08[1]["c2_doc"]
+    body = rrc_document(c2_doc, None)
+    diff = set(sig_diff(_without(c2_doc, "generator_claims"), _without(body, "generator_claims")))
+    c.check("GC-18.changes_exactly", diff == RRC_CHANGED_PATHS, sorted(diff ^ RRC_CHANGED_PATHS))
+    c.check(
+        "GC-18.offered.adds_exactly_rrc_sorted_unique",
+        set(OFFERED_POLICIES_RRC) - set(OFFERED_POLICIES_T08) == {"RRC-revision-v1"}
+        and set(OFFERED_POLICIES_T08) < set(OFFERED_POLICIES_RRC)
+        and list(OFFERED_POLICIES_RRC) == sorted(set(OFFERED_POLICIES_RRC)),
+        "",
+    )
+    # T10 item 7 asks for T06-revision-v1, which must stay unoffered for its "unsupported"
+    c.check(
+        "GC-18.offered.item_7_still_unoffered",
+        "T06-revision-v1" not in OFFERED_POLICIES_RRC
+        and '"T06-revision-v1"' in body["tasks"]["V17-T10"]["body"],
+        "",
+    )
+    c.check(
+        "GC-18.carry.names_frozen_documents",
+        body["carry"]["base"]["reference_sha256"] == C2_REFERENCE_SHA256
+        and body["carry"]["supersedes"]["reference_sha256"] == T08_REFERENCE_SHA256,
+        "",
+    )
+    spec = SPEC_PATH.read_text(encoding="utf-8") if SPEC_PATH.exists() else ""
+    quoted = "{" + ", ".join(f'"{p}"' for p in OFFERED_POLICIES_RRC) + "}"
+    c.check("GC-18.spec.amendment_present", "## Amendment RRC-1" in spec, "")
+    c.check("GC-18.spec.quotes_offered_set", quoted in spec, quoted)
+    c.check("GC-18.spec.quotes_t08_reference_sha", T08_REFERENCE_SHA256 in spec, "")
+    return c, {"c2_doc": c2_doc}
+
+
+def build_rrc(
+    result: tuple[Claims, dict[str, Any]],
+    r6: tuple[Claims, dict[str, Any]],
+    t08: tuple[Claims, dict[str, Any]],
+    rrc: tuple[Claims, dict[str, Any]],
+) -> dict[str, Any]:
+    if rrc[0].failed:
+        raise SystemExit(
+            f"refusing to emit: {len(rrc[0].failed)} claims fail, first {rrc[0].failed[0]}"
+        )
+    merged = Claims()
+    merged.results = result[0].results + r6[0].results + t08[0].results + rrc[0].results
+    return rrc_document(rrc[1]["c2_doc"], claim_summary(merged))
+
+
 def _report(claims: Claims, label: str) -> bool:
     for name, ok, detail in claims.results:
         if not ok:
@@ -2702,12 +2829,26 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument(
         "--emit-t08", metavar="PATH", help="write the carried-surface reference JSON (T08-1)"
     )
+    parser.add_argument(
+        "--emit-rrc",
+        metavar="PATH",
+        help="write the carried-surface reference JSON after RRC (RRC-1)",
+    )
     args = parser.parse_args(argv)
-    if not args.check and not args.emit and not args.emit_c2 and not args.emit_t08:
-        parser.error("choose --check and/or --emit PATH, --emit-c2 PATH, --emit-t08 PATH")
+    if (
+        not args.check
+        and not args.emit
+        and not args.emit_c2
+        and not args.emit_t08
+        and not args.emit_rrc
+    ):
+        parser.error(
+            "choose --check and/or --emit PATH, --emit-c2 PATH, --emit-t08 PATH, --emit-rrc PATH"
+        )
     result = run_claims()
     r6: tuple[Claims, dict[str, Any]] | None = None
     t08: tuple[Claims, dict[str, Any]] | None = None
+    rrc: tuple[Claims, dict[str, Any]] | None = None
     if args.check:
         ok = _report(result[0], "claims (GC-01…GC-15)")
         if not ok:
@@ -2718,10 +2859,14 @@ def main(argv: Sequence[str] | None = None) -> int:
         t08 = run_t08_claims(result, r6)
         if not _report(t08[0], "claims of Amendment T08-1 (GC-17)"):
             return 1
+        rrc = run_rrc_claims(result, r6, t08)
+        if not _report(rrc[0], "claims of Amendment RRC-1 (GC-18)"):
+            return 1
         for path, fresh in (
             (DEFAULT_JSON, dump(build(result))),
             (C2_JSON, dump(build_c2(result, r6))),
             (T08_JSON, dump(build_t08(result, r6, t08))),
+            (RRC_JSON, dump(build_rrc(result, r6, t08, rrc))),
         ):
             if not path.exists():
                 print(f"FAIL {path} is missing")
@@ -2742,6 +2887,11 @@ def main(argv: Sequence[str] | None = None) -> int:
         r6 = r6 if r6 is not None else run_r6_claims(result)
         t08 = t08 if t08 is not None else run_t08_claims(result, r6)
         _write(args.emit_t08, dump(build_t08(result, r6, t08)))
+    if args.emit_rrc:
+        r6 = r6 if r6 is not None else run_r6_claims(result)
+        t08 = t08 if t08 is not None else run_t08_claims(result, r6)
+        rrc = rrc if rrc is not None else run_rrc_claims(result, r6, t08)
+        _write(args.emit_rrc, dump(build_rrc(result, r6, t08, rrc)))
     return 0
 
 

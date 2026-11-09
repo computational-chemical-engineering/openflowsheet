@@ -17,7 +17,8 @@ row of the support matrix has its own section in [Limitations](../messages/limit
   cross-unit specifications; exact zero flows. More than one loop or region per plan is not
   exercised by a registered case.
 - **Solve policies:** `T06-revision-v2` (the default for revision solves), `T04-W12`, and by
-  explicit id `T08-warm-v1` and the experimental `T08-ptc-v1`.
+  explicit id `T08-warm-v1`, `RRC-revision-v1` ([Revision continuation](revision-continuation.md)) and
+  the experimental `T08-ptc-v1`.
 - **Interfaces:** Python, CLI, HTTP and MCP, as in [Interfaces](interfaces.md).
 - **Platforms:** Linux x86-64 and aarch64, Python 3.13, with the pinned dependency set.
 

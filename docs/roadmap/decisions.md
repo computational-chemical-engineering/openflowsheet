@@ -792,3 +792,32 @@ R-990…R-995; catalogue: 3 refusal-reason labels allow-listed (digest → `1492
 sha256 name); G8 had no CI coverage → new `tests/test_rrc_g8_determinism.py` (N1, C3 twice in fresh processes, x86-64
 R0 pins; aarch64 leg checks cross-arch — a different R0 there is a G8 failure to escalate, not a pin to move); T08 B27
 excludes RRC's policy as S11 did its column (design-lane glance at the manifest). F0 PASS; targeted tests green.
+
+## 2026-11-09 — MSG catalogue ruling applied on wp/MSGp (8906f870)
+
+Ruling §5 applied verbatim at base 9295f0fc; A1–A5, A7–A9 exact (digest `5e5026c5…`, review 138 → 129). A6: beyond the
+stated U05 stderr lines, U05's stdout `detail.explanation` (why/action/gap) also moves — the refusal document carries its
+explanation (MSG §3.7); `code`, `message`, `pointer` unchanged, `PINS_T07_SHA256` holds. DECISION: accept as the
+ruling's direct consequence, no new ruling → noted for the design lane's next MSG read. Alternative: a ruling round
+now. Reversible by: a later ruling. Next: after RRC merges, merge main into wp/MSGp, regenerate the digest-carrying
+fixtures (RRC's allow-list also moves the digest), CI, merge — before ST's WO-7.
+
+## 2026-11-09 — RRC CI red on V17-T10 (run 42547017088); ruling a109eea6 applied (wp/RRC 6b892b03)
+
+Only failure: `test_g16b_reference_run[V17-T10-*]` T10-C3 (exact set of offered policies; RRC's R-995 adds
+`RRC-revision-v1`). Ruling `docs/reviews/RRC-v17-t10.md`: a fourth reference document `t07_reference_rrc.json` in
+T08's form (Amendment RRC-1, GC-18, R-996, RRC D-46), sha `621003a8…`; the three frozen documents unchanged; exclusion
+rejected (it would make the expected answer false). Applied: A1–A8 exact (negative control fails GC-18 as stated);
+G16-b 40/40; F0 PASS. Q1 (`t07_reference.py --check` in CI): no (85.6 s). CI re-run pending.
+
+- 2026-11-09 — RRC CI green at 6b892b03 (run 42558001650, both archs, identity, default-install). Manifest engineer
+  launched (brief docs/briefs/RRC-manifest.md). DECISION: wp/MSGp merges with its own MSG follow-up manifest at the
+  re-based head (pattern evidence/MSG/5e9274db…), not folded into OPT's evidence; brief docs/briefs/MSGp-remerge.md
+  (merge main after RRC, keep both sides' hand-written entries, regenerate, re-measure A1–A9 with the digest moving by
+  RRC's additions only). Alternative: OPT follow-up manifest. Reversible by: dropping the manifest commit pre-merge.
+
+- 2026-11-09 — RRC merged into main (cefee08d; evidence/RRC/6b892b03… tested, CI 42558001650; manifest 64e628a8,
+  HARVEST_SIZE (86, 1046, 140)). Post-merge on main: ruff clean, F0 PASS (M1–M9), targeted tests (rrc, V17 reference,
+  t08, harvest, manifests, msg, surface chain, global state) 1555 passed, 2 skipped, 3 xfailed. Note: manifest
+  requirements D01/D20 only — the schema pattern `^[DA][0-9]{2}$` rejects V20. Next: wp/MSGp re-merge
+  (docs/briefs/MSGp-remerge.md), then ST WO-7.

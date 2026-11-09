@@ -21,6 +21,24 @@
   `""` and names them in every replay reason.
 - No schema change: the environment document keeps its eight keys.
 
+### RRC — revision-region continuation (ADR 0072, Accepted 2026-11-08; R-990…R-995)
+
+- New solve policy `RRC-revision-v1`, offered by explicit id and never the default: `T06-revision-v2`
+  with one more edge-3 action on `revision_eo`. A failed revision solve continues the changed operating
+  values (pinned state, outlet and duty specifications; registered operating parameters such as
+  `split_fraction` or a column's reflux and boil-up) from the nearest ancestor revision with a
+  `VERIFIED` solve, starting at that ancestor's certified root, before the sequential restart. One
+  recovery solve per step; any refusal is recorded and falls through to the restart unchanged.
+- Not a superset of `T06-revision-v2`: on every measured case the restart also converged, in fewer
+  iterations, and a continuation that stops part-way ends the step without trying the restart.
+- Records: the certificate's recovery item (`continuation.type: revision_continuation`), the
+  `solve-path.json` member `revision_continuation` (replayed alone: a rerun does no store lookup), and
+  one `initializer_rejected` event on a refusal. Recovery-edge inventory row E3c; envelope L21 and
+  L-COL-9 narrowed.
+- Schemas: three frozen schemas each accept one more value (`globalization.eo_recovery`;
+  `continuation.type` in the attempt context and the certificate); no member is added and every
+  existing document validates unchanged. No registered policy, record or replay moves.
+
 ## v0.3.0.post1 — the PyPI page: a current README and the project links; no code change
 
 *A post-release of 0.3.0 (R-922): the same release, republished so that its PyPI page is current.

@@ -112,10 +112,11 @@ def expected_route(name: str) -> str | None:
 
 def test_the_application_policies_are_the_registered_ones() -> None:
     """R2.3: two policies, each its route's registered one, each hash its registry entry's; and
-    T08's offered `T08-warm-v1` (ADR 0024 D1) and `T08-ptc-v1` (ADR 0023), which are not registry
-    policies and are checked by construction in `test_t08_w4_warm_starts` and
-    `test_t08_ptc_r1_case`."""
+    T08's offered `T08-warm-v1` (ADR 0024 D1) and `T08-ptc-v1` (ADR 0023), and RRC's offered
+    `RRC-revision-v1` (ADR 0072; RRC D-1), which are not registry policies and are checked by
+    construction in `test_t08_w4_warm_starts`, `test_t08_ptc_r1_case` and `test_rrc_edge3`."""
     assert sorted(APPLICATION_POLICIES) == [
+        "RRC-revision-v1",
         "T04-W12",
         "T06-revision-v2",
         "T08-ptc-v1",

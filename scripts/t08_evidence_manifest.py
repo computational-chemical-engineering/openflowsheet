@@ -802,12 +802,15 @@ def _m_ptc_results(inputs: Inputs) -> Part:
 
 #: `syn001.*` members of the working envelope that are not T08's (B13's rule): S11's column.
 _NOT_T08_SYN001 = frozenset({"syn001.column"})
+#: B13's rule for the policy axis: since RRC (ADR 0072, R-995) the envelope also offers
+#: `RRC-revision-v1`, which is not T08's; B27 judges T08's four.
+_NOT_T08_POLICIES = frozenset({"RRC-revision-v1"})
 
 
 def _m_b27(inputs: Inputs) -> Part:
     envelope = yaml.safe_load(ENVELOPE.read_text(encoding="utf-8"))
     axes = {row["id"]: row for row in envelope["axes"]}
-    policies = sorted(axes["solve_policies"]["members"])
+    policies = sorted(set(axes["solve_policies"]["members"]) - _NOT_T08_POLICIES)
     models = axes["unit_models"]["members"]
     (u07,) = [row for row in envelope["unsupported"] if row["id"] == "U07"]
     limitation_ids = {row["id"] for row in envelope["limitations"]}

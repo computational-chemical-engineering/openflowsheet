@@ -40,7 +40,8 @@ structure and degrees of freedom — and reports each with an id (`SCHEMA-01`, `
 
 The policy `default` resolves to the route's registered policy (`T06-revision-v2` for
 equation-oriented revision solves). `T08-ptc-v1` (pseudo-transient continuation, experimental) and
-`T08-warm-v1` (compatible warm starts) are offered by explicit id. Longer work can run as jobs
+`T08-warm-v1` (compatible warm starts) and `RRC-revision-v1`
+([revision continuation](revision-continuation.md)) are offered by explicit id. Longer work can run as jobs
 (`submit_job`, `wait_job`, `list_job_events`, `cancel_job`).
 
 ## Certificates

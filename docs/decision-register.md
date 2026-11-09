@@ -19080,3 +19080,159 @@ This is OPT's tenth draft, numbered outside the block because R-961…R-969 hold
   - A `MOVED` entry citing an L01 ruling, or a ruling that does not approve the move.
   - A changed value in `PINNED`.
   - A `models/c1/` module added or removed: that is not a move and needs an L01 amendment.
+
+## R-990 — RRC: edge 3 on a revision region continues the revision's changed operating values from the nearest verified ancestor (2026-11-08)
+
+| | |
+| --- | --- |
+| Date | 2026-11-08 (Proposed 2026-11-08) |
+| Decided by | design lane (`architect`), ADR 0072 (RRC design pass, amended per the RRC review); accepted by Frank on the decision board 2026-11-08 (FQ1 yes; FQ2, FQ3, FQ4 default); recorded by the build lane at the merge prep |
+| Normative text | ADR 0072 R-990 (draft R-RRC-1), D1–D4; `docs/design/RRC-revision-region-continuation.md` §5.1–§5.7 |
+| Affected packages | RRC; T04/T06 (edge 3), T08 (lineage store) |
+
+**Decision.** Under `homotopy_or_revision_continuation_or_sequential_restart` (ADR 0010 D1, amended), edge 3 on a
+revision-built region continues every changed operating value of the revision together, from the nearest `VERIFIED`
+ancestor's root (`store-nearest-verified-ancestor-v1`) to the target, with ADR 0010 D2's map, controller, identity rule
+and frozen signature (a second applicability, *revision continuation*). The preconditions (ADR 0072 D4) are checked in
+order and the first failure decides.
+
+**Rejected.** Specification rows on revision regions (an empty path); a tear-connection homotopy (level identity);
+split-fraction continuation (a `ZERO_FLOW` endpoint, splitter loops only); heuristic easy values; partial continuation;
+nearest by a parameter distance (a float decision); arclength (deferred).
+
+**Evidence.** `tests/test_rrc_continuation.py`, `tests/test_rrc_edge3.py`, `tests/test_rrc_checks.py`; design note §8
+G2–G4.
+
+**Watch for.** A session building `p⁰` from the failed opening on a revision region; continuing a subset of `D`;
+selecting by a float metric; running this under `homotopy` or `homotopy_or_sequential_restart`.
+
+## R-991 — RRC: the action order is specification continuation, then revision continuation, then the restart, with count 1 (2026-11-08)
+
+| | |
+| --- | --- |
+| Date | 2026-11-08 (Proposed 2026-11-08) |
+| Decided by | design lane (`architect`), ADR 0072 (RRC design pass, amended per the RRC review); accepted by Frank on the decision board 2026-11-08 (FQ1 yes; FQ2, FQ3, FQ4 default); recorded by the build lane at the merge prep |
+| Normative text | ADR 0072 R-991 (draft R-RRC-2), D1; design note §5.5 |
+| Affected packages | RRC; T06 (edge 3), ADR 0015's restart |
+
+**Decision.** Edge 3 under the new value tries specification continuation, then revision continuation, then the
+sequential restart, then `unsupported(<restart reason>)`; one recovery region solve per step. A refusal before any
+attempt opens is recorded and the restart follows; a continuation that opens and stalls ends the step without the
+restart (FQ3, default: declared — the value can fail where `T06-revision-v2` succeeds). Any rescue claim, or making the
+value a default, first needs a case where the restart fails and the continuation converges.
+
+**Rejected.** The restart first (continuation would never be reached where it is needed); a ladder of two recoveries
+per step (FQ3's alternative).
+
+**Evidence.** `tests/test_rrc_edge3.py`; design note §8 G6 (typed refusals, then the restart unchanged).
+
+**Watch for.** A restart run after a *taken* revision continuation; a refusal recorded as `taken`.
+
+## R-992 — RRC: continuable differences are a registered allowlist of operating specifications; default deny (2026-11-08)
+
+| | |
+| --- | --- |
+| Date | 2026-11-08 (Proposed 2026-11-08) |
+| Decided by | design lane (`architect`), ADR 0072 (RRC design pass, amended per the RRC review); accepted by Frank on the decision board 2026-11-08 (FQ1 yes; FQ2, FQ3, FQ4 default); recorded by the build lane at the merge prep |
+| Normative text | ADR 0072 R-992 (draft R-RRC-3), D4 (A3); design note §5.4 |
+| Affected packages | RRC; every unit model whose parameters a revision may change |
+
+**Decision.** Only a registered allowlist of operating values is continuable — temperatures, pressures, flows,
+duties, split fractions (FQ4, default); a specification pinning `parameters.<key>` is judged by its parameter's family
+(review N1). Any other difference refuses with `not_continuable(…)`, and the restart follows.
+
+**Rejected.** Discrete parameters (`stage_count`, `feed_stage`) and model constants (`nu`, `damkohler`, `T_ref`,
+`T_scale`, `coolant_cp`); any difference that leaves `model_version` equal.
+
+**Evidence.** `tests/test_rrc_checks.py`, `tests/test_rrc_application.py`.
+
+**Watch for.** A new unit parameter becoming continuable without a register entry.
+
+## R-993 — RRC: the source is recorded in `solve-path.json` and replays from the bundle alone (2026-11-08)
+
+| | |
+| --- | --- |
+| Date | 2026-11-08 (Proposed 2026-11-08) |
+| Decided by | design lane (`architect`), ADR 0072 (RRC design pass, amended per the RRC review); accepted by Frank on the decision board 2026-11-08 (FQ1 yes; FQ2, FQ3, FQ4 default); recorded by the build lane at the merge prep |
+| Normative text | ADR 0072 R-993 (draft R-RRC-4), D5, D6; design note §5.8, §5.9 |
+| Affected packages | RRC; T08 (replay); run identity (R0 projection) |
+
+**Decision.** `solve-path.json` gains the member `revision_continuation`, written iff the policy names the value on
+`revision_eo`; it is R0 except the provenance ids, the document body and the state values. The rerun rebuilds the source
+from the member, with no lookup and no binding, and re-runs the checks.
+
+**Rejected.** Content-addressing the source outside the bundle; re-binding the ancestor on rerun.
+
+**Evidence.** `tests/test_rrc_application.py`; design note §8 G7 (replay), G8 (R0 determinism).
+
+**Watch for.** A rerun that consults the store.
+
+## R-994 — RRC: L21 is narrowed; L-COL-9 is narrowed only on a failing-first column case (G5); R-827 is superseded only under the new value (2026-11-08)
+
+| | |
+| --- | --- |
+| Date | 2026-11-08 (Proposed 2026-11-08) |
+| Decided by | design lane (`architect`), ADR 0072 (RRC design pass, amended per the RRC review); accepted by Frank on the decision board 2026-11-08 (FQ1 yes; FQ2, FQ3, FQ4 default); recorded by the build lane at the merge prep |
+| Normative text | ADR 0072 R-994 (draft R-RRC-5), C2; Supersedes in part (R-827); design note §6 |
+| Affected packages | RRC; S11 (L-COL-9); T08 (support matrix, recovery-edge inventory E3c) |
+
+**Decision.** L21 is narrowed. L-COL-9 is narrowed only if G5 finds a failing-first column case, else it stays "under
+the registered policies"; G5's C3 is a splitter edit inside a column region, so column end-parameter continuation is
+mechanism evidence only (F1, forced edge). R-827's "no revision region has one" is superseded only under the new value;
+S11.A24′ stays true under every registered policy. `docs/recovery-edges.yaml` gains E3c.
+
+**Rejected.** Lifting L-COL-9 on forced-edge evidence.
+
+**Evidence.** `benchmarks/t08/support_envelope.yaml` (L21, L-COL-9 notes); `tests/test_t08_w2_recovery_edges.py`.
+
+**Watch for.** L-COL-9 claimed lifted on forced-edge evidence alone.
+
+## R-995 — RRC: `RRC-revision-v1` is offered by name, never a route's default (2026-11-08)
+
+| | |
+| --- | --- |
+| Date | 2026-11-08 (entered under the draft id R-RRC-6 at RRC WO-4) |
+| Decided by | build lane (RRC WO-4, `docs/RRC_DECISIONS.md` D-1), executing ADR 0072 §5.2 and FQ2's default; ADR 0072 accepted by Frank on the decision board 2026-11-08 (FQ2 default: by name only in 0.4); numbered with R-990…R-994 at the merge prep |
+| Normative text | ADR 0072 R-995 (draft R-RRC-6), D1; design note `docs/design/RRC-revision-region-continuation.md` §5.2, §5.3, §5.8 |
+| Affected packages | RRC; every caller of `get_project` (M07a's MR-7 clause) |
+
+**Decision.** `RRC-revision-v1` — `T06-revision-v2` with only `globalization.eo_recovery` changed, to
+`homotopy_or_revision_continuation_or_sequential_restart` — enters `APPLICATION_POLICIES` and so is served in
+`get_project.solve_policies` (`policy_sha256` `ff2ff84f8172fca9cbfa86334f82f43eed1c0917d0c5c673ce6f1f73de915f19`). It is
+offered, never `ROUTE_DEFAULT_POLICY`'s (FQ2: by name only in 0.4), and, like `T08-warm-v1`, is not a
+`benchmarks/registry.yaml` policy. It was offered only once the executor (WO-3) and the application (WO-4) carry the
+value's revision continuation; before that, the value would have selected no recovery at all.
+
+**Rejected alternatives.** Offering it at WO-1 (a placeholder path: the executor then treated the value as "no edge").
+Making it the revision route's default (FQ2: every future revision run's identity would move, and a rescued answer would
+depend on project history).
+
+**Watch for.** `RRC-revision-v1` in `ROUTE_DEFAULT_POLICY`; a served-content move in `get_project.solve_policies` that
+no register entry names (MR-7, `tests/test_t08_b50_surface_content.py`).
+
+## R-996 — V17-T10 after RRC: a fourth carried-surface reference, `t07_reference_rrc.json`; T08's is frozen (2026-11-09)
+
+| | |
+| --- | --- |
+| Date | 2026-11-09 |
+| Decided by | design lane (`specifier`), ruling `docs/reviews/RRC-v17-t10.md` (main `a109eea6`); applied by the build lane on `wp/RRC` (`docs/RRC_DECISIONS.md` D-46) |
+| Normative text | T07 V17 spec Amendment RRC-1 (GC-18); ruling `docs/reviews/RRC-v17-t10.md` |
+| Affected packages | RRC, and every later package that adds an id to `get_project.solve_policies` |
+
+**Decision.** Each content change to `get_project.solve_policies` that T10-C3 registers gets its own carried-surface
+reference document, generated in Amendment T08-1's form, and every earlier document stays frozen. For RRC:
+`t07_reference.py --emit-rrc` writes `docs/derivations/scripts/t07_reference_rrc.json`, `t07_reference_c2.json`'s
+document with exactly `carry`, `constants.offered_policy_ids` and `tasks.V17-T10.answer.offered_policy_ids.expected`
+changed; the offered set is `["RRC-revision-v1", "T04-W12", "T06-revision-v2", "T08-ptc-v1", "T08-warm-v1"]`. T10-C3
+stays an `exact_set` against those five ids for reference runs from RRC on; T10-C1, T10-C2 and item 7
+(`T06-revision-v1` still not offered) are unchanged. `scorer.CARRIED_SURFACE_REFERENCE_PATH` moves to the new document,
+and with it `reference.run`, G16-b and the RC job's step 8. Frozen and not re-scored: `t07_reference.json`
+(`cba24a92…`, GC-16), `t07_reference_c2.json` (`23b924b8…`, GC-17), `t07_reference_t08.json` (`f946a88f…`,
+GC-18.t08.reference_frozen); `v17-c1`, `v17-c2`, T08.A49's and M07a.A37's G16-b keep their records.
+
+**Rejected alternatives.** Editing `OFFERED_POLICIES_T08` in place (it moves the bytes T08-1's text, GC-17 and
+T08.A49/M07a.A37 describe, and amends a registered amendment in place). Excluding `RRC-revision-v1` from T10-C3 by
+B13's rule, as D-45 did for B27 (B27 measures what T08 delivered, T10-C3 what the served contract offers: the
+expectation would be false).
+
+**Watch for.** `t07_reference_t08.json` edited; `RRC-revision-v1` dropped from T10-C3 by B13's rule.
