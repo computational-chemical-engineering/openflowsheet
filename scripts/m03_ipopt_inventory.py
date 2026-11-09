@@ -182,18 +182,25 @@ def stand_in():
 def nlp_1():
     # Spec §8.1's NLP-1 through the adapter (WO-8), with §8.4's options. Only Ipopt's log file is
     # added, so that its banner shows the linear solver it ran (G4); print options change no
-    # numerics. The error is the decisions' scaled distance from the reference optimum.
+    # numerics. The error is the decisions' scaled distance from the reference optimum. The patch
+    # forwards its arguments: `solve_start` passes a request's overrides (OPT §4.3), and a patch
+    # that refused them failed every start before Ipopt ran (S-6 F-A).
     sys.path.insert(0, sys.argv[5])
     from m03_support import flowsheet, nlp_formulation, number, reference
     from openflowsheet.studies.nlp import closure, greybox
     typed = greybox._typed_options
-    greybox._typed_options = lambda: typed() | {"output_file": log, "file_print_level": 5}
+    printing = {"output_file": log, "file_print_level": 5}
+    greybox._typed_options = lambda *args, **kwargs: typed(*args, **kwargs) | printing
     formulation = nlp_formulation()
     report = closure.optimize(formulation, flowsheet({}))
+    starts = report.as_document()["starts"]
+    unsolved = [start["classification"] for start in starts if start["final_decisions"] is None]
+    if unsolved:
+        raise SystemExit(f"NLP-1: {len(unsolved)} start(s) returned no decisions: {unsolved}")
     optimum = reference()["nlp"]["NLP-1"]["reference_optimum"]
     errors = [
         abs(start["final_decisions"][d.parameter_id] - number(optimum[d.parameter_id])) / d.scale
-        for start in report.as_document()["starts"]
+        for start in starts
         for d in formulation.decisions
     ]
     return report.status, max(errors), dict(closure.IPOPT_OPTIONS) | {"output_file": "<log>"}
