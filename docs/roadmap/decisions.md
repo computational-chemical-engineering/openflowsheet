@@ -973,3 +973,5 @@ G16-b 40/40; F0 PASS. Q1 (`t07_reference.py --check` in CI): no (85.6 s). CI re-
   Q-S6e → read the offered record at the journey's own commit (c8be15dc). Alternative: J rewrites three journeys.
   Reversible by reverting c8be15dc; ruled in the reviewer pass. Main merged in (5d0c4121; register conflict R-1007/1008
   vs R-1010…1016 resolved by keeping both). Reviewer brief docs/briefs/REL040-reviewer.md.
+- 2026-11-09 — REL040 review (86da7a27): sound; S-1 (three more digests relabelled instead of compared) → WO-R1;
+  Q-S6e confirmed; nothing for Frank. Fix brief docs/briefs/REL040-fix-R1.md (WO-R1 + N-1, N-3, N-5; N-4 not done).
