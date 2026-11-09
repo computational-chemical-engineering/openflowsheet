@@ -69,7 +69,12 @@ An attempt's log digest (a leaf at a path ending `.execution.logs.stdout_sha256`
 `.execution.logs.stderr_sha256`, wherever it is walked) is compared exactly, before the digest
 class, and never enters the map: a log's content derives from no experiment key or fingerprint, so
 it must be equal, not relabelled. A difference is other, naming the leaf and both values
-(`docs/reviews/REL040-s6-ruling.md` §11.3 WO-7 (a)).
+(`docs/reviews/REL040-s6-ruling.md` §11.3 WO-7 (a)). A value digest is held the same way
+(`docs/reviews/REL040-review.md` S-1, WO-R1): a leaf at a path ending `.inner.state_sha256` or
+`.inner.constants_sha256` (a coupling iteration's inner converged state and its constants) or
+`.requests[<n>].inputs_sha256` (a ledger request's inputs) hashes a computed value that the record
+holds nowhere in clear and that no experiment key, fingerprint or code identity feeds. Every other
+digest is held only to the bijection, with the bitwise clear leaves as its guard.
 
 It prints one line: PASS/FAIL, the changed digests (distinct old values whose new value differs)
 and each class count, then each problem.
@@ -168,6 +173,9 @@ STORE_DIRECTORY = re.compile(r"(?<![0-9a-f])([0-9a-f]{2})/([0-9a-f]{64})(?![0-9a
 
 #: An attempt's log digest, compared exactly and kept out of the map (WO-7 (a)).
 LOG_DIGEST = re.compile(r".*\.execution\.logs\.(stdout|stderr)_sha256")
+#: A value digest, compared exactly and kept out of the map as a log digest is (WO-R1).
+VALUE_DIGEST = re.compile(r".*\.inner\.(state|constants)_sha256|.*\.requests\[\d+\]\.inputs_sha256")
+EXACT_DIGESTS = (("log", LOG_DIGEST), ("value", VALUE_DIGEST))
 
 
 @dataclasses.dataclass
@@ -195,9 +203,12 @@ class DigestOnly:
         as other by `_fingerprint_rules`). With `platform` given, every other differing leaf under
         `FINGERPRINT` is other, a digest included."""
         for path, x, y in replay._walk_pair(a, b, ""):
-            if LOG_DIGEST.fullmatch(path):
+            exact = next((kind for kind, p in EXACT_DIGESTS if p.fullmatch(path)), None)
+            if exact is not None:
                 if not replay._same_leaf(x, y):
-                    self.flag(f"{where}{path}: {x!r} vs {y!r} (a log digest is compared exactly)")
+                    self.flag(
+                        f"{where}{path}: {x!r} vs {y!r} (a {exact} digest is compared exactly)"
+                    )
                 continue
             digests = all(isinstance(v, str) and DIGEST.fullmatch(v) for v in (x, y))
             if digests:

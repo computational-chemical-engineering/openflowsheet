@@ -15,7 +15,9 @@ and REAL's experiments archive is walked under the digest map.
 
 WO-7 (a) (ruling §11.3, S6R-27): an attempt's log digest (`.execution.logs.stdout_sha256`,
 `.stderr_sha256`) is compared exactly and never enters the map, so a moved log is other, a uniform
-move of every log included.
+move of every log included. WO-R1 (`docs/reviews/REL040-review.md` S-1): a value digest
+(`.inner.state_sha256`, `.inner.constants_sha256`, `.requests[<n>].inputs_sha256`) is held the
+same way, a one-to-one move of every inner state included.
 """
 
 from __future__ import annotations
@@ -727,3 +729,86 @@ def test_s6r27_every_log_digest_moving_to_one_common_value_fails(tmp_path: Path)
     assert not passed
     assert "other=8 " in lines[0]
     assert sum("(a log digest is compared exactly)" in line for line in lines) == 8
+
+
+# -- WO-R1 (REL040 review S-1): a value digest is compared exactly, not relabelled ---------------
+
+
+def _value(kind: str, index: int) -> str:
+    return hashlib.sha256(f"{kind} {index}".encode()).hexdigest()
+
+
+#: Two coupling iterations per coupling record, so four inner states across `COUPLINGS`.
+ITERATIONS = 2
+
+
+def _value_digests(documents: dict[str, Any], states: Callable[[int], str]) -> dict[str, Any]:
+    """Each coupling record gains `ITERATIONS` iterations, iteration `i` of record `r` holding the
+    inner state `states(r * ITERATIONS + i)` and one constants digest; each ledger entry gains a
+    request with its own inputs digest."""
+    for r, name in enumerate(COUPLINGS):
+        documents[f".coupling/{name}.json"]["iterations"] = [
+            {
+                "inner": {
+                    "constants_sha256": _value("constants", 0),
+                    "state_sha256": states(r * ITERATIONS + i),
+                }
+            }
+            for i in range(ITERATIONS)
+        ]
+    for index, entry in enumerate(documents[".ledger.json"]):
+        entry["requests"] = [{"inputs_sha256": _value("inputs", index)}]
+    return documents
+
+
+def _states(index: int) -> str:
+    return _value("state", index)
+
+
+def test_wo_r1_relabelled_stems_with_equal_value_digests_pass(tmp_path: Path) -> None:
+    committed = _value_digests(_real(K1, K2), _states)
+    passed, lines = _run_real(tmp_path, _value_digests(_real(K4, K3), _states), None, committed)
+    assert passed, lines
+    assert lines[0].startswith("RETAKE-DIGEST-ONLY PASS case: changed-digests=2 ")
+
+
+def _move_state(documents: dict[str, Any]) -> tuple[str, str]:
+    inner = documents[".coupling/S0.json"]["iterations"][1]["inner"]
+    inner["state_sha256"] = K5
+    return "coupling S0.json.iterations[1].inner.state_sha256", _states(1)
+
+
+def _move_constants(documents: dict[str, Any]) -> tuple[str, str]:
+    inner = documents[".coupling/cand-C1-P1.json"]["iterations"][0]["inner"]
+    inner["constants_sha256"] = K5
+    return "coupling cand-C1-P1.json.iterations[0].inner.constants_sha256", _value("constants", 0)
+
+
+def _move_inputs(documents: dict[str, Any]) -> tuple[str, str]:
+    documents[".ledger.json"][1]["requests"][0]["inputs_sha256"] = K5
+    return "ledger[1].requests[0].inputs_sha256", _value("inputs", 1)
+
+
+@pytest.mark.parametrize("move", [_move_state, _move_constants, _move_inputs])
+def test_wo_r1_one_value_digest_moving_fails_naming_it(
+    tmp_path: Path, move: Callable[[dict[str, Any]], tuple[str, str]]
+) -> None:
+    committed = _value_digests(_real(K1, K2), _states)
+    retake = _value_digests(_real(K4, K3), _states)
+    leaf, old = move(retake)
+    passed, lines = _run_real(tmp_path, retake, None, committed)
+    assert not passed
+    assert "other=1 " in lines[0]
+    assert f"  {leaf}: {old!r} vs {K5!r} (a value digest is compared exactly)" in lines
+
+
+def test_wo_r1_every_inner_state_moving_one_to_one_fails(tmp_path: Path) -> None:
+    # The review's demonstration (S-1): every inner state moves to a new, distinct value. As digests
+    # the moves are a bijection and would pass (the tool at `5d0c4121` does), so this discriminates.
+    committed = _value_digests(_real(K1, K2), _states)
+    retake = _value_digests(_real(K4, K3), lambda index: _value("moved state", index))
+    passed, lines = _run_real(tmp_path, retake, None, committed)
+    assert not passed
+    n = len(COUPLINGS) * ITERATIONS
+    assert f"other={n} " in lines[0]
+    assert sum("inner.state_sha256" in line and "compared exactly" in line for line in lines) == n
