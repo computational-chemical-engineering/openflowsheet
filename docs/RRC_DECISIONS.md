@@ -274,3 +274,22 @@ results), `40fba287` (runner self-contained), `b91b0ddb` (registration, results 
   M9 35/35). Edge-3 test files: no WO-7 edit (vs main only `test_t06_f4_literals.py`, D-4). `test_rrc_*.py` 71 passed;
   literal/doc/envelope/changelog/registry/edge-3 files 187 passed; `test_t08_w2_recovery_edges.py` 26 passed; ruff and
   ruff format clean; mypy clean (307 files); support matrix `--check` 0; `mkdocs build --strict` clean. Full gate not run.
+- **D-39 (merge prep 1: `git merge main`, `ec858608`).** Main at `c1ced8a7` (WIT, MSG c_4, X02 c_5, OPT c_6, X05a,
+  X10b, S15a) merged, no squash or rebase. Eight files conflicted; every hunk kept both sides: the register (main's
+  entries, then R-RRC-6), `interfaces-frozen.md` (X02, OPT, then RRC), `mkdocs.yml` (both guide pages), `store.py`
+  (X02's `solution_of_job` beside `job_artifact_relpath`), `run/identity.py` (X02's coupling R0 inside `warm_start`,
+  RRC's member after), `executor.py` (MSG's `diagnostic` field and `revision_continuation`; both imports), `runner.py`
+  (`coupled_start`, `on_diagnosis`, `revision_continuation`). `revision_run.py`: OPT split the bundle writer out of
+  `run_revision_session` (`write_revision_bundle`, OPT design §4.8); `revision_continuation` is threaded through it,
+  default `None`, so OPT's host (which passes none) is unchanged, and RRC's member is written iff the policy names the
+  value on `revision_eo` — both behaviours hold. `HARVEST_SIZE` stays main's (85, 1039, 139): RRC adds no harvest
+  item; `t08_support_matrix.py --check` 0. ruff, ruff format, mypy (328 files) clean. `test_rrc_*`, `test_opt*`
+  (default env), `test_t08_w2_recovery_edges.py`: 262 passed, 21 deselected.
+- **D-40 (merge prep 2–3: surface chain and global state — no move).** RRC's widenings are on `solve-policy`,
+  `attempt-context` and `solution-certificate`, none in a served MCP tool schema: on the merged tree the served list
+  digests to `3fdc797ad64485abf63fb491ebd56aa43dc510e62e9e218b0dd7a8fcc2e38a85`, main's D_6, exactly
+  (`m07a_rc.digest(m07a_rc.served_tools())`), so RRC is **no chain link**; ST takes c_7.
+  `tests/test_m07a_surface_chain.py::test_m07a_a37_the_chain_holds_on_the_served_list` passes with `LINKS` ending at
+  c_6. The served content move (`get_project.solve_policies` + `RRC-revision-v1`) is MR-7's, named by the register
+  (`tests/test_t08_b50_surface_content.py`). Global-state cache count stays main's 39 (RRC adds no cache;
+  `tests/test_t07_global_state.py` passes). Surface/global-state/description/B50/R4-G3 files: 247 passed.
