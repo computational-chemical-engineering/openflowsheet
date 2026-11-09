@@ -201,13 +201,22 @@ def test_a21_a_re_run_names_the_offered_m05_record_tracked_with_its_sha256(
     whose anchor is the one R3's carry rule reads from it, with the reason that anchor gives.
 
     Q-S6e (S-6): the file is read as tracked at the journey's own commit, not from the working
-    tree, so a later J that re-takes the offered record leaves earlier journeys checkable."""
+    tree, so a later J that re-takes the offered record leaves earlier journeys checkable. The
+    commit must be an ancestor of HEAD (REL040 review N-1): a local object store may still hold a
+    deleted scratch commit that a fresh clone would not. The test needs the full history, as every
+    CI job that runs pytest fetches (`fetch-depth: 0`)."""
     _, record = journey
     m05 = record["rungs"]["R3"]["m05_record"]
     if m05["carried_from"] != m07.RERUN:
         assert m05["offered"] is None
         return
     offered = m05["offered"]
+    ancestry = subprocess.run(
+        ["git", "merge-base", "--is-ancestor", record["commit"], "HEAD"],
+        cwd=REPO_ROOT,
+        capture_output=True,
+    )
+    assert ancestry.returncode == 0, f"journey commit {record['commit']} is not an ancestor of HEAD"
     blob = subprocess.run(
         ["git", "show", f"{record['commit']}:{offered['path']}"],
         cwd=REPO_ROOT,
