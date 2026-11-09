@@ -36,6 +36,7 @@ __all__ = [
     "GAUGE",
     "GAUGE_ROWS",
     "PRESETS",
+    "TEXT_UNITS",
     "DisplayKind",
     "DisplayRow",
     "DisplayUnits",
@@ -44,6 +45,7 @@ __all__ = [
     "display_item",
     "parse_display_units",
     "row_to_si",
+    "text_unit",
 ]
 
 DISPLAY_CONVERSION_ID: Final = "display-conversion-v1"
@@ -93,6 +95,17 @@ def csv_suffix(unit: str) -> str:
     for old, new in (("/", "_"), ("(", ""), (")", ""), (" ", ""), ("%", "pct")):
         unit = unit.replace(old, new)
     return unit
+
+
+#: ADR 0075 D7.7 (FQ4, Frank, 2026-11-09): the units human text spells otherwise. Machine members
+#: (the display item's `unit`, the echo, request parsing, CSV suffixes) keep the D2 spelling.
+TEXT_UNITS: Final[Mapping[str, str]] = MappingProxyType({"degC": "°C", "degF": "°F"})
+
+
+def text_unit(unit: str) -> str:
+    """ADR 0075 D7.7: a display unit as human text shows it — `degC` → `°C`, `degF` → `°F` (for a
+    temperature and a temperature difference alike), every other unit unchanged."""
+    return TEXT_UNITS.get(unit, unit)
 
 
 @dataclass(frozen=True)

@@ -235,7 +235,8 @@ The jobs are those ST's tests already solve: the SYN-001 nominal job and the wat
   every page, equal to `document_sha256` of the full displayed document; the CLI's assembled document equals the
   unpaged one.
 - **A28. CLI text.** `openflowsheet streams --project D --job J --display-units eng`: the header line `SI units` is
-  replaced by `display units:       ` followed by PU01's canonical text; the rows are labelled `T [degC]`, `P [bar]`,
+  replaced by `display units:       ` followed by PU01's canonical text (`degC`, a machine member); the rows are
+  labelled `T [°C]` (amended 2026-11-09, FQ4; §8), `P [bar]`,
   `n [kmol/h]`, `m [kg/h]`, `h [kJ/mol]`, `h [kJ/kg]`, `s [J/(mol K)]`, `s [kJ/(kg K)]`, `rho [kg/m3]`, `H [kW]`; the
   energy headers are `H_in [kW]`, `H_out [kW]`, `Q [kW]`, `W [kW]`, `closure [kW]`; each value is `{:.6g}` of its
   display value (of the SI value where there is none). With `--display-units eng,pressure=barg` and ambient 101325 the
@@ -288,7 +289,8 @@ The jobs are those ST's tests already solve: the SYN-001 nominal job and the wat
   `display_units` by the streams screen's stream-table section and the failure screen. A converted value is shown with
   the display unit in its column heading or text and the SI value and unit in its `title`; the as-solved state table
   stays SI and is labelled so. The browser smoke test, with `eng`, finds one known stream's `T` cell showing the
-  display value of the stream-table document (`fmt` of `display.T.value`) and `degC` in the heading.
+  display value of the stream-table document (`fmt` of `display.T.value`) and `°C` in the heading (`T (°C)`; amended
+  2026-11-09, FQ4; §8).
 - **A39. The web shell never converts.** A static scan of `apps/web/js` finds none of the conversion constants
   `273.15`, `459.67`, `5463`, `45967`, `3600`, `101325`, `0.45359237`, `9.80665` (outside comments); every displayed
   converted number comes from a `display` item.
@@ -333,7 +335,24 @@ refusals stops the work order and goes to the design lane.
 ## 7. Open questions
 
 Carried from ADR 0075, each with its default: **FQ1** input widening (default: none in 0.4), **FQ2** the `eng` preset
-(default: D5.3), **FQ3** a project default (default: none), **FQ4** text spelling (default: `degC`) — *need Frank's
-preference*. **OQ1** the amendment number (default 17), **OQ2** ST on `main` (settled: merged at `a053690d`), **OQ3** a run-time
+(default: D5.3), **FQ3** a project default (default: none), **FQ4** text spelling (default: `degC`) — *answered by
+Frank on 2026-11-09: FQ1–FQ3 their defaults, FQ4 the alternative (`°C` in human text, §8)*. **OQ1** the amendment number (default 17), **OQ2** ST on `main` (settled: merged at `a053690d`), **OQ3** a run-time
 route delivering a quantity number to A20 (default: `pressure_rise` on a valve revision) — *need a fact*, measured as
 stated in the ADR.
+
+## 8. Amendment 2026-11-09 — FQ4: `°C` in human text (Frank)
+
+Frank answered FQ4 on the decision board (2026-11-09) with the alternative: human text shows `°C` and `°F`; machine
+members keep the D2 spelling `degC`, `degF` (ADR 0075 D7.7). The expected texts this changes:
+
+- **A28.** The temperature row label is `T [°C]` (was `T [degC]`); a `degF` preference labels it `T [°F]`. The
+  `display units:` header line keeps the canonical text (`temperature=degC`), and a reason footnote keeps its params
+  (`display_out_of_range(kind=temperature, unit=degF)`): both are machine members.
+- **A38.** The browser smoke test finds `°C` in the heading (`T (°C)`, was `T (degC)`); `data-ofs-display` carries the
+  display item's unit (`degC`). The failure screen's converted numbers read `<value> °C`.
+- **D7.2 text (A15–A20).** A converted temperature in a message's rendered text reads `format_number(display.value)
+  + " °C"` (`°F`); the `numbers` item's `display.unit` stays `degC` (`degF`). No registered message route delivers a
+  temperature-kinded number (the catalogue's kinded params are pressures and molar entropies), so A15–A20's registered
+  texts are unchanged; a test renders `out_of_domain` with temperature-kinded quantities to pin the rule.
+- **Unchanged:** every display item, echo, schema, request (`°C` stays refused as input, D2.4), CSV column (A29:
+  `T_degC`), JSON document (A30), the reference JSON and the generator's 17 claims (no claim covers rendered text).

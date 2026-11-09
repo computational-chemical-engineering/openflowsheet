@@ -6,6 +6,7 @@
 // status label to its glyph, word and tone: a label the table does not list is a failure tone.
 
 import { h } from "./h.js";
+import { textUnit } from "./units.js";
 
 // The table is checked against `openflowsheet.application.projection.FORBIDDEN_RANGES` by
 // tests/test_m06_static_scan.py: keep it a literal between the two marker lines.
@@ -134,7 +135,7 @@ function displayedNumbers(numbers) {
         h(
           "span",
           { class: "num", title: `${si}${reason}`, "data-ofs-display": String(item.display.unit) },
-          `${fmt(item.display.value)} ${item.display.unit}`,
+          `${fmt(item.display.value)} ${textUnit(item.display.unit)}`,
         ),
       );
     }),

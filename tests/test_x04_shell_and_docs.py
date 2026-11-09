@@ -17,6 +17,7 @@ from conftest import REPO_ROOT
 
 from openflowsheet.application import cli
 from openflowsheet.messages.render import entry_document
+from openflowsheet.units.display import TEXT_UNITS
 
 ENVELOPE = REPO_ROOT / "benchmarks" / "t08" / "support_envelope.yaml"
 LIMITATIONS = REPO_ROOT / "src" / "openflowsheet" / "messages" / "catalogue" / "limitations.yaml"
@@ -111,6 +112,20 @@ def test_a39_the_displayed_values_are_the_server_s_display_items() -> None:
     assert "fmt(cell.display.value, getNumberMode())" in streams
     text = (WEB_JS / "text.js").read_text(encoding="utf-8")
     assert "fmt(item.display.value)" in text
+
+
+def test_d7_7_the_shell_s_text_spelling_mirrors_the_server_s() -> None:
+    """ADR 0075 D7.7 (FQ4): `textUnit` in `apps/web/js/units.js` holds `units.display.TEXT_UNITS`
+    exactly, and the shell's two human-text sites use it."""
+    source = (WEB_JS / "units.js").read_text(encoding="utf-8")
+    literal = re.search(r"export const TEXT_UNITS = Object\.freeze\((\{[^}]*\})\);", source)
+    assert literal is not None
+    pairs = dict(re.findall(r'(\w+): "([^"]*)"', literal.group(1)))
+    assert pairs == dict(TEXT_UNITS)
+    streams = (WEB_JS / "screens" / "streams.js").read_text(encoding="utf-8")
+    assert "${member} (${textUnit(unit)})" in streams
+    text = (WEB_JS / "text.js").read_text(encoding="utf-8")
+    assert "${textUnit(item.display.unit)}" in text
 
 
 # -- A40. Documentation ----------------------------------------------------------------------------

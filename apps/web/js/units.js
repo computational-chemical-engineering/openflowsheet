@@ -58,3 +58,13 @@ export function effectiveUnits(value, project) {
 export function displayRequest(value) {
   return value === undefined || value === null || value === "si" ? {} : { display_units: value };
 }
+
+// ADR 0075 D7.7 (FQ4, Frank, 2026-11-09): the units human text spells otherwise — the mirror of
+// `units.display.TEXT_UNITS` (a test holds the two equal). Labels and displayed values use it; a
+// machine member (the display item's unit, `data-ofs-display`, the request) keeps the D2 spelling.
+export const TEXT_UNITS = Object.freeze({ degC: "°C", degF: "°F" });
+
+// `unit` as human text shows it: `degC` → `°C`, `degF` → `°F`, every other unit unchanged.
+export function textUnit(unit) {
+  return Object.hasOwn(TEXT_UNITS, unit) ? TEXT_UNITS[unit] : unit;
+}

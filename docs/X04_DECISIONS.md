@@ -188,3 +188,27 @@ and the amendment's own Schemas bullet say so). The opening now names that one `
 D1/D7/D11 (boundary, nothing stored) → R-1011; D2/D3 (table, arithmetic) → R-1012; D4 → R-1013; D5 → R-1014; D6 →
 R-1015; D9/D10 (codes, inputs unchanged, R-077's output half) → R-1016. Each is marked Proposed, in effect with Frank's
 accept; ADR 0075 stays Proposed. Alternative: one entry per D (eleven). Reversible by: renumbering within R-1010…1019.
+
+## D-19. The web shell carries FQ4's mapping as `textUnit`, held equal to `units.display.TEXT_UNITS` (FQ4)
+
+ADR 0075 D7.7 asks for one mapping (`units.display.text_unit`) at every human-text site; the shell is JavaScript and
+cannot call it, and the server sends no text spelling. `apps/web/js/units.js` gains `TEXT_UNITS`/`textUnit`, used by the
+stream-table column headings (`T (°C)`) and the failure screen's converted numbers (`25 °C`);
+`tests/test_x04_shell_and_docs.py::test_d7_7_the_shell_s_text_spelling_mirrors_the_server_s` parses the literal and
+compares it with the Python table. Alternative: a served text-unit member (a schema change). Reversible by: the two
+call sites and the test.
+
+## D-20. `data-ofs-display` and a reason footnote's params keep the D2 spelling (FQ4)
+
+Classified as machine members under FQ4's rule, not as human text: `data-ofs-display` is a DOM attribute carrying the
+display item's `unit` for tests and automation (never shown); the stream table's `text` footnote
+`display_out_of_range(kind=temperature, unit=degF)` is the reason's code and catalogue `params` printed verbatim (ST's
+footnote form). Alternative: `°F` in the footnote (then it no longer equals the reason). Reversible by: `_label`-style
+mapping in `stream_table_format._reason_text`.
+
+## D-21. Open (reported, not changed): `display_out_of_range`'s rendered text names `{unit!raw}` (FQ4)
+
+The catalogue entry's summary/why/action render the param `unit` with `!raw` ("too large to show in degF"). The param is
+a machine member and `!raw` asks for it verbatim, but the sentence is human text; FQ4's rule does not settle it, so it
+is unchanged (`degF`) and put to the design lane. Reaching it needs a temperature beyond about 1e308 K. Changing it
+would mean a `unit`-typed param that renders through `text_unit`, a catalogue/MSG change.

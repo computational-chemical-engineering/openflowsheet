@@ -14,8 +14,9 @@ was read).
 
 A document produced under a display preference (ADR 0075 D7.3: `display` members and the root
 `display_units`) prints in its display units (D7.6): the text header names the preference (and
-the ambient pressure when a gauge unit is used), each converted row label, energy header and CSV
-column names its display unit, and each converted value is its display value. A display value out
+the ambient pressure when a gauge unit is used), each converted row label and energy header names
+its display unit in its text spelling (`T [°C]`, D7.7), each CSV column in its machine spelling
+(`T_degC`), and each converted value is its display value. A display value out
 of range prints as an absent value with its reason (`text`) or an empty cell (`csv`). Without a
 preference, or with `si`, every form is ST's.
 """
@@ -32,7 +33,7 @@ from openflowsheet.application.projection import ELIDED, MAX_PAGE, escape_token
 from openflowsheet.application.stream_table import SITES
 from openflowsheet.canonical import canonical_json
 from openflowsheet.units import DISPLAY_KINDS
-from openflowsheet.units.display import csv_suffix
+from openflowsheet.units.display import csv_suffix, text_unit
 
 #: `fetch(pointer, depth, cursor, limit)`: one `get_stream_table` projection, as its document.
 Fetch = Callable[[str, int, str | None, int], Mapping[str, Any]]
@@ -146,12 +147,12 @@ def _converted_unit(site: str, member: str, units: Mapping[str, str]) -> str | N
 
 
 def _label(label: str, unit: str | None) -> str:
-    """A text row label naming its display unit: `T [K]` → `T [degC]`, `vf molar` →
-    `vf molar [%]`; unchanged when the row is printed in SI."""
+    """A text row label naming its display unit in its text spelling (ADR 0075 D7.7): `T [K]` →
+    `T [°C]`, `vf molar` → `vf molar [%]`; unchanged when the row is printed in SI."""
     if unit is None:
         return label
     base = label.split(" [", 1)[0]
-    return f"{base} [{unit}]"
+    return f"{base} [{text_unit(unit)}]"
 
 
 def _column(column: str, kind: str | None, units: Mapping[str, str]) -> str:
@@ -491,7 +492,7 @@ def to_text(document: Mapping[str, Any]) -> str:
     if _ENERGY_KINDS & set(units):
         kinds = (SITES["unit"][name] for name in _ENERGY_HEADER)
         names = [
-            f"{name} [{units.get(kind, DISPLAY_KINDS[kind].si_unit)}]"
+            f"{name} [{text_unit(units.get(kind, DISPLAY_KINDS[kind].si_unit))}]"
             for name, kind in zip(_ENERGY_HEADER, kinds, strict=True)
             if kind is not None
         ]

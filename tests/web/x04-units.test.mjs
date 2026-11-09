@@ -14,10 +14,12 @@ import * as failure from "../../apps/web/js/screens/failure.js";
 import * as streams from "../../apps/web/js/screens/streams.js";
 import { DASH } from "../../apps/web/js/text.js";
 import {
+  TEXT_UNITS,
   UNITS_KEY,
   displayRequest,
   effectiveUnits,
   readUnits,
+  textUnit,
   unitChoices,
   writeUnits,
 } from "../../apps/web/js/units.js";
@@ -130,13 +132,15 @@ test("A38: the streams screen sends display_units and shows the server's display
   mount(tree, new FakeDocument().body);
   const si = body("agent-a", "get_stream_table", SI_ARGS).value;
   const headers = byTag(byAttr(tree, "data-ofs-stream-table", "1")[0], "th").map((th) => textOf(th));
-  assert.ok(headers.includes("T (degC)"));
+  assert.ok(headers.includes("T (°C)"));
   assert.ok(headers.includes("P (Pa)")); // not converted: its SI unit stays
   const rows = tableRows(tree, "phase_source");
-  const at = headers.indexOf("T (degC)");
+  const at = headers.indexOf("T (°C)");
   const first = si.streams.findIndex((stream) => stream.T !== null);
   const total = rows.find((row) => row[0] === si.streams[first].id && row[1] === "total");
   assert.equal(total[at], String(100.5 + first));
+  // ADR 0075 D7.7 (FQ4): the heading is human text (`°C`); `data-ofs-display` is the item's unit.
+  assert.ok(!headers.includes("T (degC)"));
   const cells = byAttr(tree, "data-ofs-display", "degC");
   assert.ok(cells.some((cell) => cell.p.title === `${si.streams[first].T} K`));
   // An out-of-range display is a dash with its reason; its SI value stays in the title.
@@ -173,6 +177,7 @@ test("A38: the failure screen sends display_units and lists the converted number
       result.run_result.failure.explanation.numbers = [
         { name: "p_spec", label: "p_spec", value: 2000000.0, unit: "Pa", kind: "pressure", display: { value: 20, unit: "bar" } },
         { name: "n", label: "n", value: 3, unit: "1", kind: null },
+        { name: "t_out", label: "t_out", value: 298.15, unit: "K", kind: "temperature", display: { value: 25, unit: "degC" } },
       ];
       return { status: 200, body: result };
     },
@@ -184,7 +189,16 @@ test("A38: the failure screen sends display_units and lists the converted number
   assert.deepEqual(seen, ["eng"]);
   const tree = failure.view(data);
   mount(tree, new FakeDocument().body);
-  const [list] = byAttr(tree, "data-ofs-explanation-numbers", "1");
-  assert.equal(textOf(list), "p_spec: 20 bar");
+  const [list] = byAttr(tree, "data-ofs-explanation-numbers", "2");
+  assert.deepEqual(byTag(list, "li").map((li) => textOf(li)), ["p_spec: 20 bar", "t_out: 25 °C"]);
   assert.equal(byAttr(list, "data-ofs-display", "bar")[0].p.title, "2000000 Pa");
+  // ADR 0075 D7.7 (FQ4): the text shows `°C`; `data-ofs-display` keeps the item's `degC`.
+  assert.equal(byAttr(list, "data-ofs-display", "degC")[0].p.title, "298.15 K");
+});
+
+test("ADR 0075 D7.7 (FQ4): human text spells degC and degF with the degree sign, every other unit as is", () => {
+  assert.equal(textUnit("degC"), "°C");
+  assert.equal(textUnit("degF"), "°F");
+  for (const unit of ["K", "bar", "barg", "kJ/(mol K)", "%", "constructor", "toString"]) assert.equal(textUnit(unit), unit);
+  assert.deepEqual(TEXT_UNITS, { degC: "°C", degF: "°F" });
 });

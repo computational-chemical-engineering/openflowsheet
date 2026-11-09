@@ -16,7 +16,7 @@ import { h } from "../h.js";
 import { ENERGY_COLUMNS, QUANTITY_COLUMNS, streamTableView } from "../model/stream-table.js";
 import { modelSignature, streamTable, unitPanel } from "../model/streams.js";
 import { link } from "../router.js";
-import { displayRequest } from "../units.js";
+import { displayRequest, textUnit } from "../units.js";
 import { DASH, explained, fmt, pill } from "../text.js";
 import { phaseSection, runStructure } from "./certificate.js";
 import {
@@ -222,7 +222,7 @@ export function view(data) {
 
 // A column heading: the member and its unit — the display unit when the column is converted.
 function headerOf(member, unit) {
-  return { text: unit ? `${member} (${unit})` : member, num: true };
+  return { text: unit ? `${member} (${textUnit(unit)})` : member, num: true };
 }
 
 // A cell of the stream table: a number in the current mode, a null with its reason's footnote

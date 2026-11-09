@@ -2029,7 +2029,7 @@ release note calling V14 passed.
 ## R-077 — Specification values in ADR 0001's input units are converted by `unit-conversion-v1`; every other unit is refused
 
 **Lifted as policy (Frank, 2026-11-01; R-925, ADR 0056): package X04.** The behaviour below stays until that package lands.
-X04's output half (display units beside SI, ADR 0075, Proposed 2026-11-09) is R-1011…R-1016; its input half is ADR 0075
+X04's output half (display units beside SI, ADR 0075, Accepted 2026-11-09) is R-1011…R-1016; its input half is ADR 0075
 FQ1 (R-1016: inputs unchanged in 0.4).
 
 > **Amended 2026-09-26 by R-081 (ADR 0016):** the unit set is widened to ADR 0016's table and instance parameters are converted (Frank's Q11); the arithmetic becomes `RN(a·D(v) + b)` on the decimal `v` denotes — v1's binary reading is reversed because it is not unit-invariant (measured: 75.1 % ≠ 0.751, −40 °C ≠ 233.15 K). STA-03's and A56's values are unchanged; the readers, records (now with `source`, `input_id`) and codes stand; a component reference is judged before a unit.
@@ -19410,7 +19410,7 @@ and the n/T/P view stays. Not cached.
 | | |
 | --- | --- |
 | Date | 2026-11-09 |
-| Decided by | build lane, X04's final work order, applying ADR 0075 (Proposed 2026-11-09, with ADR 0019 Amendment 17; Frank's accept pending) in R-457's form, the number and block by the orchestrator's decision of 2026-11-09 (`docs/roadmap/decisions.md`, "X04 takes chain link c_8 with register block R-1010…1019") |
+| Decided by | build lane, X04's final work order, applying ADR 0075 (Accepted by Frank Peters 2026-11-09, with ADR 0019 Amendment 17) in R-457's form, the number and block by the orchestrator's decision of 2026-11-09 (`docs/roadmap/decisions.md`, "X04 takes chain link c_8 with register block R-1010…1019") |
 | Normative text | ADR 0075 D6.3, D7, D8; ADR 0019 Amendment 17; `scripts/m07a_rc.py` (link c_8) |
 | Evidence | On the merge tree (`wp/X04` with `main` at `b2f89c60` merged; `main` held only docs since ST's merge `a053690d`) the served MCP tool list digests to `6be1c002592524126617af8dd65d331513f4a96355f5381dba020ad561a2ba57` (D_8). `without_x04` (`tests/x04_schema_support.py`) on it gives `553b76122fefd4f09d6e91d16e7096d05b9f7793bb88e1876252dc2213e24894`, ST's D_7 (R-1000), exactly; no tool is added or renamed, `get_project`, `get_job_result`, `get_stream_table` and `explain` moved, and exactly `get_job_result`'s and `get_stream_table`'s texts changed (`tests/test_t08_w2_surface_digest.py::test_x04s_surface_move_decomposes_onto_sts`). R4-G3: nine responses moved (`SNAPSHOT_X04`: `get_project`, `explain` and the seven that reach a job result or run result); stripped, each is its earlier snapshot (`tests/test_t07_w5e_application_results.py::test_x04_without_its_additions_every_response_is_its_pre_x04_snapshot`) |
 | Affected packages | X04; M07a (`scripts/m07a_rc.py`, A37 tests); M07 (the next RC's V17 carry names c_8); T08.A18 (two description reviews) |
@@ -19434,11 +19434,11 @@ interaction); a design-lane ruling on the number first (the build lane took c_5�
 **Watch for.** A strip that removes more than X04's additions (the X04 controls in `tests/test_m07a_surface_chain.py`).
 A later MCP-visible change moves D_8: it becomes c_9.
 
-## R-1011 — X04: units convert at two boundaries only; a display value sits beside the SI value, and nothing stored or hashed changes (2026-11-09, Proposed)
+## R-1011 — X04: units convert at two boundaries only; a display value sits beside the SI value, and nothing stored or hashed changes (2026-11-09, Accepted)
 
 | | |
 | --- | --- |
-| Date | 2026-11-09 (Proposed; takes effect with Frank's accept of ADR 0075) |
+| Date | 2026-11-09 (Accepted by Frank Peters, 2026-11-09, with ADR 0075; Proposed 2026-11-09) |
 | Decided by | design lane (`specifier`), ADR 0075 D1, D7, D11; recorded by the build lane in X04's final work order |
 | Normative text | ADR 0075 D1, D7, D11; `docs/derivations/X04-test-specification.md` (A15, A21, A22, A32, A34, A35); ADR 0057 C4 |
 | Affected packages | X04; MSG (the `RenderContext.display_units` slot); ST (display members); K06/T07 |
@@ -19458,11 +19458,11 @@ web shell (two implementations of one exact rule; C1); a general `convert` opera
 
 **Watch for.** A display value read back as an input; a stored document in display units.
 
-## R-1012 — X04: `display-conversion-v1` — the shortest decimal that converts back, from `D(X)`, with exact rationals; the output table shares ADR 0016's rows (2026-11-09, Proposed)
+## R-1012 — X04: `display-conversion-v1` — the shortest decimal that converts back, from `D(X)`, with exact rationals; the output table shares ADR 0016's rows (2026-11-09, Accepted)
 
 | | |
 | --- | --- |
-| Date | 2026-11-09 (Proposed; takes effect with Frank's accept of ADR 0075) |
+| Date | 2026-11-09 (Accepted by Frank Peters, 2026-11-09, with ADR 0075; Proposed 2026-11-09) |
 | Decided by | design lane (`specifier`), ADR 0075 D2, D3; recorded by the build lane in X04's final work order |
 | Normative text | ADR 0075 D2, D3; `docs/derivations/scripts/x04_reference.py` (claims C03–C09, C16); ADR 0016 D3 |
 | Affected packages | X04 (`units/display.py`) |
@@ -19483,11 +19483,11 @@ round trips); the exhaustive preimage (kept as the generator's independent check
 **Watch for.** A conversion constant outside `units/display.py` (A39 for the web shell); a unit added in one direction
 only (FQ1: both together, by register entry).
 
-## R-1013 — X04: a number converts by its declared kind only; every `pressure` output is absolute; no kind, no conversion (2026-11-09, Proposed)
+## R-1013 — X04: a number converts by its declared kind only; every `pressure` output is absolute; no kind, no conversion (2026-11-09, Accepted)
 
 | | |
 | --- | --- |
-| Date | 2026-11-09 (Proposed; takes effect with Frank's accept of ADR 0075) |
+| Date | 2026-11-09 (Accepted by Frank Peters, 2026-11-09, with ADR 0075; Proposed 2026-11-09) |
 | Decided by | design lane (`specifier`), ADR 0075 D4; recorded by the build lane in X04's final work order |
 | Normative text | ADR 0075 D4; ADR 0001 D1.3; test specification §4 (the site table), A7, A18, A19, A24 |
 | Affected packages | X04; MSG (catalogue params' kinds); ST (member kinds) |
@@ -19506,11 +19506,11 @@ site fails).
 
 **Watch for.** A pressure difference emitted under kind `pressure`.
 
-## R-1014 — X04: display preferences are per request (`display_units`), with presets `si` and `eng` and no project default in 0.4 (2026-11-09, Proposed)
+## R-1014 — X04: display preferences are per request (`display_units`), with presets `si` and `eng` and no project default in 0.4 (2026-11-09, Accepted)
 
 | | |
 | --- | --- |
-| Date | 2026-11-09 (Proposed; takes effect with Frank's accept of ADR 0075; FQ2, FQ3, FQ4 on their defaults) |
+| Date | 2026-11-09 (Accepted by Frank Peters, 2026-11-09, with ADR 0075; FQ2 and FQ3 their defaults, FQ4 the alternative: `°C` in human text) |
 | Decided by | design lane (`specifier`), ADR 0075 D5; recorded by the build lane in X04's final work order |
 | Normative text | ADR 0075 D5, D7.5; test specification PU01–PU24 (claim C14) |
 | Affected packages | X04; M06 (the web shell keeps the viewer's choice in browser storage); CLI (`--display-units`) |
@@ -19519,7 +19519,8 @@ site fails).
 preset | kind "=" unit`; a preset only first; each kind at most once; a unit is the kind's SI unit (removes it) or a
 D2 row. `si` = {}; `eng` = the eleven-kind map of D5.3, with no gauge unit (FQ2). Precedence: the request's member,
 else SI. The resolved preference is echoed as `display_units: {units, ambient_pressure}` iff the request carried one.
-Text shows `degC` (FQ4).
+Machine members (the display item's `unit`, the echo, request parsing, CSV suffixes) keep `degC`/`degF`;
+human text shows `°C`/`°F` through `units.display.text_unit` (FQ4, Frank 2026-11-09; ADR 0075 D7.7).
 
 **Rejected.** Session preferences (no transport has sessions); a project default (deferred, FQ3: every reader's default
 output would depend on project state).
@@ -19528,11 +19529,11 @@ output would depend on project state).
 
 **Watch for.** A preference stored server-side.
 
-## R-1015 — X04: the ambient pressure is declared per project in `project-policy.json`, never assumed and outside run identity (2026-11-09, Proposed)
+## R-1015 — X04: the ambient pressure is declared per project in `project-policy.json`, never assumed and outside run identity (2026-11-09, Accepted)
 
 | | |
 | --- | --- |
-| Date | 2026-11-09 (Proposed; takes effect with Frank's accept of ADR 0075) |
+| Date | 2026-11-09 (Accepted by Frank Peters, 2026-11-09, with ADR 0075; Proposed 2026-11-09) |
 | Decided by | design lane (`specifier`), ADR 0075 D6; recorded by the build lane in X04's final work order |
 | Normative text | ADR 0075 D6; ADR 0057 C4; `schemas/project-policy.schema.json` (`ambient_pressure`) |
 | Affected packages | X04; K06/T07 (`project-policy.json`, `get_project`, the operator CLI) |
@@ -19551,11 +19552,11 @@ transport; two projects differing only in ambient give byte-identical runs).
 
 **Watch for.** The ambient read by anything but a gauge display row.
 
-## R-1016 — X04: gauge and other new units stay output-only in 0.4; ADR 0016's input rows are unchanged; R-077's output half is delivered (2026-11-09, Proposed)
+## R-1016 — X04: gauge and other new units stay output-only in 0.4; ADR 0016's input rows are unchanged; R-077's output half is delivered (2026-11-09, Accepted)
 
 | | |
 | --- | --- |
-| Date | 2026-11-09 (Proposed; takes effect with Frank's accept of ADR 0075; FQ1 on its default) |
+| Date | 2026-11-09 (Accepted by Frank Peters, 2026-11-09, with ADR 0075; FQ1 its default) |
 | Decided by | design lane (`specifier`), ADR 0075 D9, D10; recorded by the build lane in X04's final work order |
 | Normative text | ADR 0075 D9, D10; ADR 0016 D3, D8; R-077 ("lifted as policy … package X04") |
 | Affected packages | X04; T05/T06 (input conversion, unchanged) |

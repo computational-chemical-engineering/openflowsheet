@@ -27,6 +27,12 @@ finite number is `null` with the reason `display_out_of_range`. A malformed pref
 `unsupported` (`display_unit_unsupported`). Without `display_units` every response is exactly
 what it was before display units existed.
 
+Text written for people spells the temperature units with the degree sign: message text reads
+`25.00 °C`, the CLI's text table labels the row `T [°C]` and the web shell heads the column
+`T (°C)` (`°F` likewise). Everything a program reads keeps `degC` and `degF`: the `display` item's
+`unit`, the `display_units` echo (and the CLI's `display units:` header line, which repeats it),
+CSV column names (`T_degC`) and every request — `°C` is not accepted as input.
+
 ## Presets
 
 | Preset | Units |

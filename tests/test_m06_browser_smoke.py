@@ -476,8 +476,8 @@ T_CELL = """(() => {
 
 def test_x04_a38_with_eng_a_stream_s_t_is_the_server_s_display_value(shell: Shell) -> None:
     """X04 A38: with `eng` chosen in the units control, one known stream's `T` cell shows `fmt`
-    of the stream-table document's `display.T.value`, `degC` in its heading, the SI value in its
-    title; the as-solved table above stays SI."""
+    of the stream-table document's `display.T.value`, `°C` in its heading (ADR 0075 D7.7, FQ4),
+    the SI value in its title; the as-solved table above stays SI."""
     page, _ = open_route(shell, "/job/job-000002/streams", "supervisor-c")
     try:
         assert page.evaluate(CHOOSE_ENG) == "eng"
@@ -490,7 +490,7 @@ def test_x04_a38_with_eng_a_stream_s_t_is_the_server_s_display_value(shell: Shel
         )
         stream = next(s for s in shown["value"] if "T" in (s.get("display") or {}))
         heading, text, title = page.evaluate(T_CELL % json.dumps(stream["id"]))
-        assert heading == "T (degC)"
+        assert heading == "T (°C)"
         assert text == _fmt_short(stream["display"]["T"]["value"])
         value, unit = title.split(" ")
         assert (float(value), unit) == (stream["T"], "K")

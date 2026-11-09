@@ -31,7 +31,7 @@ from openflowsheet.units import (
     parse_display_units,
 )
 from openflowsheet.units import display as display_module
-from openflowsheet.units.display import GAUGE_ROWS, PRESETS, row_to_si
+from openflowsheet.units.display import GAUGE_ROWS, PRESETS, TEXT_UNITS, row_to_si, text_unit
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "docs" / "derivations" / "scripts" / "x04_reference.py"
@@ -324,9 +324,26 @@ def test_a7_reexported_from_units() -> None:
         "DisplayUnitsError",
         "display_item",
         "parse_display_units",
+        "text_unit",
     ):
         assert name in units.__all__
         assert getattr(units, name) is getattr(display_module, name)
+
+
+def test_d7_7_text_spelling_maps_degc_and_degf_only() -> None:
+    """ADR 0075 D7.7 (FQ4, Frank, 2026-11-09): human text shows `°C`/`°F`; the display item, a
+    machine member, keeps the D2 spelling; every other D2 unit is its own text spelling."""
+    assert dict(TEXT_UNITS) == {"degC": "°C", "degF": "°F"}
+    assert text_unit("degC") == "°C" and text_unit("degF") == "°F"
+    others = {unit for (_kind, unit) in DISPLAY_ROWS} - set(TEXT_UNITS)
+    assert others and all(text_unit(unit) == unit for unit in others)
+    assert {kind for (kind, unit) in DISPLAY_ROWS if unit in TEXT_UNITS} == {
+        "temperature",
+        "temperature_difference",
+    }
+    for kind in ("temperature", "temperature_difference"):
+        item = display_item(298.15, kind, parse_display_units(f"{kind}=degF", None))
+        assert item is not None and item["unit"] == "degF"
 
 
 # -- A8. Generator ------------------------------------------------------------------------------
