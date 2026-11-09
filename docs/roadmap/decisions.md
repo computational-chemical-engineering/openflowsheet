@@ -862,3 +862,10 @@ G16-b 40/40; F0 PASS. Q1 (`t07_reference.py --check` in CI): no (85.6 s). CI re-
   in 51c9e7f5; `work_package` admits REL ids). Remaining release prep in one build item, brief
   docs/briefs/REL040-prep.md (wp/REL040p): x05 gate entry in release/lines/0.4.json; RP.L11 (ADR 0074 O-3 default);
   S-6 rehearsal (`release_rc.py local`, every step, records in the scratchpad only; no tag/release/publish).
+
+- 2026-11-09 — X04 engineer A: WO-1 (display core, 44dd16db) and WO-2 (ambient, D9 catalogue entries; cbd220b6,
+  2811d0fd) on wp/X04 (82251ffc); A1–A13 pass (498 + 41 tests), F0 PASS, MSG check 391 entries; decisions D-1…D-4.
+  Known red: surface chain (11; get_project's output schema moves the served digest) and 5 R4-G3 snapshot tests.
+  DECISION: X04 takes chain link c_8 with register block R-1010…1019 (precedent X02 c_5, OPT c_6, ST c_7 by the build
+  lane), taken with SNAPSHOT_X04/without_x04 in X04's final work order after WO-4/WO-5 → alternative: a design-lane
+  ruling first. Reversible by: dropping that commit. WO-3 next (brief docs/briefs/X04-build-A2.md).
