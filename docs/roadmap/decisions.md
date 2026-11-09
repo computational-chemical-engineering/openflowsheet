@@ -939,3 +939,11 @@ G16-b 40/40; F0 PASS. Q1 (`t07_reference.py --check` in CI): no (85.6 s). CI re-
   "degF" in text) → apply FQ4's rule via text_unit; alternative: design-lane wording ruling; reversible by one-line
   revert. Fix brief docs/briefs/X04-ci-fix.md, with one local full default suite run (the targeted batteries missed
   these files).
+
+- 2026-11-09 — S-6 ruling applied on wp/REL040p (00f15a01): WO-1…WO-5 (platform class + pinned fingerprint + archive
+  walk; build decision class `path` 81716c0a; --retake-into; m01_idaes_retake_diff.py; steps record both platforms;
+  A-11, R-1008). S6R-01…15, 17–20, 23 pass. WO-6 answer: the kernel change moved no REAL or IDAES number (other=0).
+  S6R-22 FAIL on non-numbers: sidecar 17→18 distributions (a git-ignored egg-info in the worktree) and one attempt's
+  stderr (empty-file digest with two images). DECISION: Q-S6a keep `path`, Q-S6b clean = fresh `git worktree add`,
+  Q-S6c stderr stays in identity; rerun from a fresh worktree first (brief docs/briefs/REL040-s6-rerun.md), design
+  lane confirms at its next ruling → alternative: rule first. Reversible by: the ruling.
