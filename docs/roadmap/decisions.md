@@ -875,3 +875,9 @@ G16-b 40/40; F0 PASS. Q1 (`t07_reference.py --check` in CI): no (85.6 s). CI re-
   (unsupported refusal's detail.reason = full message head). F0 PASS; MSG check 391/95. Known red 29: surface chain 14,
   R4-G3 5, t08_w2 surface digest 9, description review 1 — all for X04's final work order (c_8, snapshot, digest,
   reviews: design-lane in the reviewer pass, human on the board). Next: engineer B WO-4 (docs/briefs/X04-build-B.md).
+
+- 2026-11-09 — X04 WO-4 done on wp/X04 (bb4b21cd): stream-table display members, get_stream_table display_units,
+  schema, formats + `streams --display-units`, description (D-7: 1499/1500 chars), tests 29/29; D-6…D-12. Battery
+  1573 passed; known red unchanged (29 + description review). F0 PASS. DECISION: the reviewer pass (WO-1–WO-4, brief
+  docs/briefs/X04-reviewer.md) runs before WO-5 and the final work order, so a fix round lands before the chain link and
+  snapshot are taken. Alternative: WO-5 first. Reversible by: order only.
