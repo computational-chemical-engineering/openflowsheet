@@ -11,6 +11,13 @@ every part it elided (an object deeper than `depth`, an array cut after its firs
 cut to fit the size cap), each array paged with `limit` and `cursor`. Every view must carry the
 first one's `sha256`; a differing one is refused `internal_error` (the document changed while it
 was read).
+
+A document produced under a display preference (ADR 0075 D7.3: `display` members and the root
+`display_units`) prints in its display units (D7.6): the text header names the preference (and
+the ambient pressure when a gauge unit is used), each converted row label, energy header and CSV
+column names its display unit, and each converted value is its display value. A display value out
+of range prints as an absent value with its reason (`text`) or an empty cell (`csv`). Without a
+preference, or with `si`, every form is ST's.
 """
 
 from __future__ import annotations
@@ -22,7 +29,10 @@ from typing import Any, Final
 
 from openflowsheet.application.contract import api_error
 from openflowsheet.application.projection import ELIDED, MAX_PAGE, escape_token
+from openflowsheet.application.stream_table import SITES
 from openflowsheet.canonical import canonical_json
+from openflowsheet.units import DISPLAY_KINDS
+from openflowsheet.units.display import csv_suffix
 
 #: `fetch(pointer, depth, cursor, limit)`: one `get_stream_table` projection, as its document.
 Fetch = Callable[[str, int, str | None, int], Mapping[str, Any]]
@@ -69,6 +79,15 @@ _CSV_MEMBERS: Final[Mapping[str, str]] = {
     "S_flow_W_K": "S_flow",
     "V_flow_m3_s": "V_flow",
 }
+#: The display kind of each quantity column (ADR 0075 D7.6), and of the per-component `n` and `x`;
+#: a substream's member and a phase's of one name have one kind.
+_CSV_KINDS: Final[Mapping[str, str | None]] = {
+    "T_K": SITES["stream"]["T"],
+    "P_Pa": SITES["stream"]["P"],
+    **{column: {**SITES["substream"], **SITES["phase"]}[m] for column, m in _CSV_MEMBERS.items()},
+    "n": SITES["substream"]["n"],
+    "x": SITES["substream"]["x"],
+}
 #: §6.3: the text form's stream blocks — columns per block, and the label and value widths.
 TEXT_COLUMNS: Final[int] = 6
 LABEL_WIDTH: Final[int] = 18
@@ -92,6 +111,62 @@ _TEXT_ROWS_AFTER_X: Final[tuple[tuple[str, str, bool], ...]] = (
     ("H [W]", "H_flow", False),
 )
 _ENERGY_HEADER: Final[tuple[str, ...]] = ("H_in", "H_out", "Q", "W", "closure")
+#: The energy kinds whose conversion puts a `[unit]` on every energy header (ADR 0075 D7.6).
+_ENERGY_KINDS: Final = frozenset({"enthalpy_flow", "heat_rate", "power"})
+
+
+# -- display (ADR 0075 D7.6) -----------------------------------------------------------------------
+
+
+def _display_units(document: Mapping[str, Any]) -> Mapping[str, str]:
+    """The resolved map kind → display unit the document was produced under (its root
+    `display_units` echo); empty for an SI document and for `si`."""
+    echo = document.get("display_units")
+    return {} if echo is None else echo["units"]
+
+
+def _shown(
+    holder: Mapping[str, Any], site: str, member: str, units: Mapping[str, str]
+) -> tuple[Any, Mapping[str, Any] | None]:
+    """`holder[member]` as printed: the display value when its kind is converted, else the SI
+    value; and the reason when it has none (an absent value's, or `display_out_of_range`)."""
+    value = holder.get(member)
+    if value is None:
+        return None, holder.get("absent", {}).get(member)
+    if SITES[site].get(member) not in units:
+        return value, None
+    item = holder["display"][member]
+    return item["value"], item.get("reason")
+
+
+def _converted_unit(site: str, member: str, units: Mapping[str, str]) -> str | None:
+    """The display unit of `member` of a `site` object, `None` when it is printed in SI."""
+    kind = SITES[site].get(member)
+    return None if kind is None else units.get(kind)
+
+
+def _label(label: str, unit: str | None) -> str:
+    """A text row label naming its display unit: `T [K]` → `T [degC]`, `vf molar` →
+    `vf molar [%]`; unchanged when the row is printed in SI."""
+    if unit is None:
+        return label
+    base = label.split(" [", 1)[0]
+    return f"{base} [{unit}]"
+
+
+def _column(column: str, kind: str | None, units: Mapping[str, str]) -> str:
+    """A CSV column named in its display unit: the SI unit's suffix replaced by the display
+    unit's (`T_K` → `T_degC`), a suffix appended to a fraction column (`x_<c>` → `x_<c>_pct`);
+    unchanged when the column is printed in SI."""
+    if kind is None or kind not in units:
+        return column
+    si = DISPLAY_KINDS[kind].si_unit
+    base = column
+    if si != "1":
+        suffix = f"_{csv_suffix(si)}"
+        assert column.endswith(suffix), (column, suffix)
+        base = column[: -len(suffix)]
+    return f"{base}_{csv_suffix(units[kind])}"
 
 
 # -- assembly --------------------------------------------------------------------------------------
@@ -182,14 +257,20 @@ def _text_cell(value: Any) -> str:
 
 
 def _per_component(
-    components: Sequence[str], holder: Mapping[str, Any], listed: Sequence[str]
+    components: Sequence[str],
+    holder: Mapping[str, Any],
+    listed: Sequence[str],
+    site: str,
+    units: Mapping[str, str],
 ) -> list[str]:
     """`n_<c>` then `x_<c>` cells for each declared component, from `holder`'s arrays, which are
-    in the order of `listed` (the substream's components)."""
+    in the order of `listed` (the substream's components); display values where converted."""
     position = {name: index for index, name in enumerate(listed)}
     cells: list[str] = []
     for member in ("n", "x"):
         values = holder.get(member)
+        if values is not None and SITES[site][member] in units:
+            values = [None if item is None else item["value"] for item in holder["display"][member]]
         for name in components:
             index = position.get(name)
             found = values[index] if isinstance(values, list) and index is not None else None
@@ -198,19 +279,22 @@ def _per_component(
 
 
 def _csv_rows(document: Mapping[str, Any]) -> Iterator[list[str]]:
+    units = _display_units(document)
     components = [component["id"] for component in document["components"]]
     yield [
-        *CSV_COLUMNS,
-        *(f"n_{name}_mol_s" for name in components),
-        *(f"x_{name}" for name in components),
+        *(_column(column, _CSV_KINDS.get(column), units) for column in CSV_COLUMNS),
+        *(_column(f"n_{name}_mol_s", _CSV_KINDS["n"], units) for name in components),
+        *(_column(f"x_{name}", _CSV_KINDS["x"], units) for name in components),
     ]
     for stream in document["streams"]:
         for substream in stream["substreams"]:
             listed = substream["components"]
             head = [stream["id"], substream["id"]]
-            conditions = [_cell(stream["T"]), _cell(stream["P"])]
+            conditions = [_cell(_shown(stream, "stream", m, units)[0]) for m in ("T", "P")]
             total = [
-                "" if column == "phase_fraction_molar" else _cell(substream.get(member))
+                ""
+                if column == "phase_fraction_molar"
+                else _cell(_shown(substream, "substream", member, units)[0])
                 for column, member in _CSV_MEMBERS.items()
             ]
             yield [
@@ -220,12 +304,14 @@ def _csv_rows(document: Mapping[str, Any]) -> Iterator[list[str]]:
                 "",
                 *conditions,
                 *total,
-                *_per_component(components, substream, listed),
+                *_per_component(components, substream, listed, "substream", units),
             ]
             for phase in substream["phases"]:
                 identity = phase["id"]
                 values = [
-                    "" if column.startswith("vapor_fraction") else _cell(phase.get(member))
+                    ""
+                    if column.startswith("vapor_fraction")
+                    else _cell(_shown(phase, "phase", member, units)[0])
                     for column, member in _CSV_MEMBERS.items()
                 ]
                 yield [
@@ -235,7 +321,7 @@ def _csv_rows(document: Mapping[str, Any]) -> Iterator[list[str]]:
                     _text_cell(identity["ordinal"]),
                     *conditions,
                     *values,
-                    *_per_component(components, phase, listed),
+                    *_per_component(components, phase, listed, "phase", units),
                 ]
 
 
@@ -278,11 +364,17 @@ def _reason_text(reason: Mapping[str, Any]) -> str:
     return f"{reason['code']}({params})"
 
 
-def _value(holder: Mapping[str, Any], member: str, notes: _Footnotes) -> str:
-    """A number as `{:.6g}`; an absent one as `-` and its footnote mark."""
-    value = holder.get(member)
+def _value(
+    holder: Mapping[str, Any],
+    site: str,
+    member: str,
+    notes: _Footnotes,
+    units: Mapping[str, str],
+) -> str:
+    """A number as `{:.6g}` (its display value where converted); an absent one, or one whose
+    display value is out of range, as `-` and its footnote mark."""
+    value, reason = _shown(holder, site, member, units)
     if value is None:
-        reason = holder.get("absent", {}).get(member)
         return "-" if reason is None else f"-{notes.mark(reason)}"
     if isinstance(value, float | int) and not isinstance(value, bool):
         return f"{value:.6g}"
@@ -295,7 +387,9 @@ def _row(label: str, cells: Sequence[str]) -> str:
     ).rstrip()
 
 
-def _x_cell(substream: Mapping[str, Any], name: str, notes: _Footnotes) -> str:
+def _x_cell(
+    substream: Mapping[str, Any], name: str, notes: _Footnotes, units: Mapping[str, str]
+) -> str:
     values = substream.get("x")
     if values is None:
         reason = substream.get("absent", {}).get("x")
@@ -303,22 +397,36 @@ def _x_cell(substream: Mapping[str, Any], name: str, notes: _Footnotes) -> str:
     listed = substream["components"]
     if name not in listed:
         return "-"
-    return f"{values[listed.index(name)]:.6g}"
+    index = listed.index(name)
+    if SITES["substream"]["x"] not in units:
+        return f"{values[index]:.6g}"
+    item = substream["display"]["x"][index]
+    if item["value"] is None:
+        return f"-{notes.mark(item['reason'])}"
+    return f"{item['value']:.6g}"
 
 
 def _stream_block(
-    streams: Sequence[Mapping[str, Any]], components: Sequence[str], notes: _Footnotes
+    streams: Sequence[Mapping[str, Any]],
+    components: Sequence[str],
+    notes: _Footnotes,
+    units: Mapping[str, str],
 ) -> list[str]:
     substreams = [stream["substreams"][0] for stream in streams]  # v1: one, `mixed`
     lines = [_row("stream", [stream["id"] for stream in streams])]
-    for label, member, own in _TEXT_ROWS_BEFORE_X:
-        holders = streams if own else substreams
-        lines.append(_row(label, [_value(holder, member, notes) for holder in holders]))
+
+    def rows(table: Sequence[tuple[str, str, bool]]) -> None:
+        for label, member, own in table:
+            holders, site = (streams, "stream") if own else (substreams, "substream")
+            shown = _label(label, _converted_unit(site, member, units))
+            lines.append(_row(shown, [_value(h, site, member, notes, units) for h in holders]))
+
+    rows(_TEXT_ROWS_BEFORE_X)
+    x_label = _converted_unit("substream", "x", units)
     for name in components:
-        lines.append(_row(f"x[{name}]", [_x_cell(sub, name, notes) for sub in substreams]))
-    for label, member, own in _TEXT_ROWS_AFTER_X:
-        holders = streams if own else substreams
-        lines.append(_row(label, [_value(holder, member, notes) for holder in holders]))
+        cells = [_x_cell(sub, name, notes, units) for sub in substreams]
+        lines.append(_row(_label(f"x[{name}]", x_label), cells))
+    rows(_TEXT_ROWS_AFTER_X)
     phases = [
         "+".join(phase["id"]["family"] for phase in sub["phases"]) or "-" for sub in substreams
     ]
@@ -331,9 +439,17 @@ def _verifier(checks: Sequence[Mapping[str, Any]]) -> str:
 
 
 def _energy_row(
-    name: str, model: str, holder: Mapping[str, Any], members: Sequence[str], notes: _Footnotes
+    name: str,
+    model: str,
+    holder: Mapping[str, Any],
+    site: str,
+    members: Sequence[str],
+    notes: _Footnotes,
+    units: Mapping[str, str],
 ) -> str:
-    cells = "".join(f"{_value(holder, member, notes):>{VALUE_WIDTH}}" for member in members)
+    cells = "".join(
+        f"{_value(holder, site, member, notes, units):>{VALUE_WIDTH}}" for member in members
+    )
     return f"{name:<{LABEL_WIDTH}}{model:<{LABEL_WIDTH}}{cells}  {_verifier(holder['checks'])}"
 
 
@@ -354,23 +470,39 @@ def to_text(document: Mapping[str, Any]) -> str:
         f"convention:          {basis['convention']}",
         f"verification status: {status}",
         f"judged_at:           {document['judged_at'] or '-'}",
-        "SI units",
     ]
+    units = _display_units(document)
+    if units:
+        canonical = ",".join(f"{kind}={unit}" for kind, unit in sorted(units.items()))
+        lines.append(f"display units:       {canonical}")
+        ambient = document["display_units"]["ambient_pressure"]
+        if ambient is not None:
+            lines.append(f"ambient pressure:    {ambient['value']:.6g} Pa")
+    else:
+        lines.append("SI units")
     components = [component["id"] for component in document["components"]]
     streams = document["streams"]
     for start in range(0, len(streams), TEXT_COLUMNS):
         lines.append("")
-        lines += _stream_block(streams[start : start + TEXT_COLUMNS], components, notes)
+        lines += _stream_block(streams[start : start + TEXT_COLUMNS], components, notes, units)
     energy = document["energy"]
     lines.append("")
-    header = "".join(f"{name:>{VALUE_WIDTH}}" for name in _ENERGY_HEADER)
+    names: Sequence[str] = _ENERGY_HEADER
+    if _ENERGY_KINDS & set(units):
+        kinds = (SITES["unit"][name] for name in _ENERGY_HEADER)
+        names = [
+            f"{name} [{units.get(kind, DISPLAY_KINDS[kind].si_unit)}]"
+            for name, kind in zip(_ENERGY_HEADER, kinds, strict=True)
+            if kind is not None
+        ]
+    header = "".join(f"{name:>{VALUE_WIDTH}}" for name in names)
     lines.append(f"{'unit':<{LABEL_WIDTH}}{'model':<{LABEL_WIDTH}}{header}  verifier")
     for unit in energy["units"]:
         members = ("H_in", "H_out", "Q", "W", "closure")
-        lines.append(_energy_row(unit["id"], unit["model"], unit, members, notes))
+        lines.append(_energy_row(unit["id"], unit["model"], unit, "unit", members, notes, units))
     overall = energy["overall"]
     members = ("H_feeds", "H_products", "Q", "W", "closure")
-    lines.append(_energy_row("overall", "", overall, members, notes))
+    lines.append(_energy_row("overall", "", overall, "overall", members, notes, units))
     footnotes = notes.lines()
     if footnotes:
         lines.append("")
