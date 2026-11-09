@@ -17,6 +17,7 @@ and REAL's experiments archive is walked under the digest map.
 from __future__ import annotations
 
 import copy
+import hashlib
 import importlib.util
 import json
 import math
@@ -31,7 +32,7 @@ from typing import Any
 import pytest
 
 import openflowsheet
-from openflowsheet.canonical import document_sha256
+from openflowsheet.canonical import canonical_json, document_sha256
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -520,3 +521,109 @@ def test_s6r10_a_byte_copy_of_the_committed_real_stem_passes(tmp_path: Path) -> 
     assert passed, lines
     assert "changed-digests=0 " in lines[0]
     assert "version=0 platform=0 other=0 environment=equal" in lines[0]
+
+
+def test_s6r10_the_committed_real_stem_retaken_on_another_kernel_passes(
+    tmp_path: Path, running_p1: None
+) -> None:
+    new = tmp_path / "new" / REAL.name
+    _copy_real(new)
+    couplings = sorted(new.with_suffix(".coupling").glob("*.json"))
+    assert len(couplings) == 4
+    old_fingerprint = {}
+    for path in couplings:
+        document = json.loads(path.read_text(encoding="utf-8"))
+        reactor = document["frozen"]["reactor"]
+        assert reactor["fingerprint"]["platform"] == P0
+        old_fingerprint = copy.deepcopy(reactor["fingerprint"])
+        reactor["fingerprint"]["platform"] = P1
+        path.write_text(json.dumps(document), encoding="utf-8")
+    old_digest = document_sha256(old_fingerprint)
+    new_digest = document_sha256({**old_fingerprint, "platform": P1})
+    keys = {e["experiment_key"] for e in json.loads(REAL.with_suffix(".store.json").read_bytes())}
+    relabel = {old_digest: new_digest}
+    relabel |= {k: hashlib.sha256((k + new_digest).encode()).hexdigest() for k in keys}
+
+    def rewrite(text: str) -> str:
+        # A store directory `<k[:2]>/<k>` (an attempt's log paths) follows its key, as a name does.
+        for old, image in relabel.items():
+            text = text.replace(f"{old[:2]}/{old}", f"{image[:2]}/{image}").replace(old, image)
+        return text
+
+    for path in [*couplings, *(new.with_suffix(s) for s in REAL_SUFFIXES[:3])]:
+        path.write_text(rewrite(path.read_text(encoding="utf-8")), encoding="utf-8")
+    archive = json.loads(REAL.with_suffix(".experiments.json").read_bytes())
+    renamed = {}
+    for name, text in archive.items():
+        key = name.split("/")[1]
+        image = relabel[key]
+        renamed[f"{image[:2]}/{image}/{name.split('/', 2)[2]}"] = rewrite(text)
+    stored = canonical_json(dict(sorted(renamed.items())))
+    new.with_suffix(".experiments.json").write_bytes(stored)
+    record = json.loads(new.with_suffix(".json").read_bytes())
+    record["artifacts"]["experiment_store"] = hashlib.sha256(stored).hexdigest()
+    new.with_suffix(".json").write_text(json.dumps(record), encoding="utf-8")
+
+    passed, lines = RETAKE.digest_only(REAL, new, None, P0)
+    assert passed, lines[:20]
+    assert lines[0].startswith("RETAKE-DIGEST-ONLY PASS trust-region-study-real: ")
+    # Each of the 48 cold attempts names its store directory twice, in the archive and in its
+    # coupling record's iteration: 96 + 32 log paths.
+    assert "path=128 version=0 platform=4 other=0 environment=equal" in lines[0]
+
+
+# The class `path`: an attempt's log path names its experiment key's store directory.
+
+
+def _logs(key: str) -> dict[str, Any]:
+    return {
+        "relpaths": {
+            name: f"experiments/{key[:2]}/{key}/attempts/1/child.{name}"
+            for name in ("stderr", "stdout")
+        }
+    }
+
+
+def _with_logs(documents: dict[str, Any], keys: tuple[str, str]) -> dict[str, Any]:
+    """Each archived attempt, and each coupling record's request, gains its log paths."""
+    archive = documents[".experiments.json"]
+    for key in keys:
+        name = f"{key[:2]}/{key}/attempts/1.json"
+        attempt = json.loads(archive[name])
+        attempt["execution"]["logs"] = _logs(key)
+        archive[name] = json.dumps(attempt)
+    for name, key in zip(COUPLINGS, keys, strict=True):
+        documents[f".coupling/{name}.json"]["attempts"] = [{"execution": {"logs": _logs(key)}}]
+    return documents
+
+
+def test_log_paths_relabelled_with_their_keys_pass_as_path(tmp_path: Path) -> None:
+    committed = _with_logs(_real(K1, K2), (K1, K2))
+    passed, lines = _run_real(tmp_path, _with_logs(_real(K4, K3), (K4, K3)), None, committed)
+    assert passed, lines
+    assert "path=8 version=0 platform=0 other=0" in lines[0]
+
+
+@pytest.mark.parametrize(
+    ("bend", "why"),
+    [
+        (lambda text: text.replace(f"{K4[:2]}/", f"{K1[:2]}/"), "the directory kept"),
+        (lambda text: text.replace("child.", "kid."), "the text moved"),
+        (lambda text: text.replace(K4, K5), "a key that is not the image"),
+    ],
+)
+def test_a_log_path_that_is_not_its_relabelled_path_is_other(
+    tmp_path: Path, bend: Callable[[str], str], why: str
+) -> None:
+    committed = _with_logs(_real(K1, K2), (K1, K2))
+    retake = _with_logs(_real(K4, K3), (K4, K3))
+    relpaths = retake[".coupling/S0.json"]["attempts"][0]["execution"]["logs"]["relpaths"]
+    relpaths["stderr"] = bend(relpaths["stderr"])
+    passed, lines = _run_real(tmp_path, retake, None, committed)
+    assert not passed, why
+    assert "path=7 " in lines[0] and "other=1" in lines[0], why
+    assert any(
+        "coupling S0.json.attempts[0].execution.logs.relpaths.stderr: " in line
+        and "(not its relabelled path)" in line
+        for line in lines
+    )

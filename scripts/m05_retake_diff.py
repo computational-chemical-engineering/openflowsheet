@@ -58,6 +58,13 @@ relabelled by the map and its two-character directory follows the relabelled key
 image, or a file without a partner on either side, is other. Every file is walked leaf by leaf,
 digest leaves into the map; in an attempt file a `TIMING` leaf is a timing.
 
+A class `path` (REL040 build decision, S-6 apply): an attempt's log path
+(`execution.logs.relpaths.<name>`, in a coupling record or an archived attempt) is
+`experiments/<key[:2]>/<key>/attempts/<n>/child.<name>`, so it moves with its experiment key. It is
+admitted iff every 64-hex run in the committed text is a `<key[:2]>/<key>` pair whose key has an
+image under the completed map, and the text with each such pair relabelled, as an archive name is,
+equals the re-take text; anything else there is other.
+
 It prints one line: PASS/FAIL, the changed digests (distinct old values whose new value differs)
 and each class count, then each problem.
 
@@ -148,6 +155,11 @@ FINGERPRINT = ".frozen.reactor.fingerprint."
 #: An experiments-archive file name: `<key[:2]>/<key>/<rest>`.
 ARCHIVE_NAME = re.compile(r"[0-9a-f]{2}/([0-9a-f]{64})/(.+)")
 
+#: An attempt's log path, which names its experiment key's store directory (class `path`).
+LOG_PATH = re.compile(r".*\.execution\.logs\.relpaths\.[a-z]+")
+#: A store directory in such a path: `<key[:2]>/<key>`.
+STORE_DIRECTORY = re.compile(r"(?<![0-9a-f])([0-9a-f]{2})/([0-9a-f]{64})(?![0-9a-f])")
+
 
 @dataclasses.dataclass
 class DigestOnly:
@@ -157,6 +169,8 @@ class DigestOnly:
     classes: collections.Counter[str] = dataclasses.field(default_factory=collections.Counter)
     pairs: dict[str, set[str]] = dataclasses.field(default_factory=dict)
     other: list[str] = dataclasses.field(default_factory=list)
+    #: Differing log paths, judged once the map is complete (`resolve_paths`).
+    paths: list[tuple[str, str, str]] = dataclasses.field(default_factory=list)
 
     def walk(
         self,
@@ -188,6 +202,9 @@ class DigestOnly:
             if platform is not None and path.startswith(FINGERPRINT):
                 self.flag(f"{where}{path}: {x!r} vs {y!r} (pinned beside the platform)")
                 continue
+            if isinstance(x, str) and isinstance(y, str) and LOG_PATH.fullmatch(path):
+                self.paths.append((f"{where}{path}", x, y))
+                continue
             if digests:
                 self.classes["digest"] += 1
             elif _number(x) and _number(y) and any(p.fullmatch(path) for p in timing):
@@ -195,6 +212,28 @@ class DigestOnly:
             else:
                 self.classes["other"] += 1
                 self.other.append(f"{where}{path}: {x!r} vs {y!r}")
+
+    def resolve_paths(self) -> None:
+        """The class `path`, under the completed map (module docstring)."""
+        for where, x, y in self.paths:
+            moved = self._relabelled_path(x)
+            if moved is not None and moved == y:
+                self.classes["path"] += 1
+            else:
+                self.flag(f"{where}: {x!r} vs {y!r} (not its relabelled path)")
+
+    def _relabelled_path(self, text: str) -> str | None:
+        directories = STORE_DIRECTORY.findall(text)
+        if not directories or len(directories) != len(DIGEST.findall(text)):
+            return None
+        images: list[str] = []
+        for prefix, key in directories:
+            image = self.relabel(key)
+            if prefix != key[:2] or image is None:
+                return None
+            images.append(f"{image[:2]}/{image}")
+        found = iter(images)
+        return STORE_DIRECTORY.sub(lambda _: next(found), text)
 
     def flag(self, line: str) -> None:
         self.classes["other"] += 1
@@ -439,6 +478,7 @@ def digest_only(
     for index, (x, y) in enumerate(pairs or ()):
         walk.walk(x, y, f"store[{index}]")
     _archive(walk, old.with_suffix(".experiments.json"), new.with_suffix(".experiments.json"))
+    walk.resolve_paths()
     environment, problems = _environment(
         old.with_suffix(".environment.json"), new.with_suffix(".environment.json"), old_version
     )
@@ -451,7 +491,8 @@ def digest_only(
     summary = (
         f"RETAKE-DIGEST-ONLY {'PASS' if passed else 'FAIL'} {old.name}: "
         f"changed-digests={walk.changed()} digest={walk.classes['digest']} "
-        f"timing={walk.classes['timing']} version={walk.classes['version']} "
+        f"timing={walk.classes['timing']} path={walk.classes['path']} "
+        f"version={walk.classes['version']} "
         f"platform={walk.classes['platform']} other={walk.classes['other']} "
         f"environment={environment}"
     )
