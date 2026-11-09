@@ -7,10 +7,12 @@ cover; each test asserts what the code does today and nothing more.
 - **U02** — a revision has no property-method member (`process-revision.schema.json`,
   `additionalProperties: false`), so naming one is `SCHEMA-01` `INVALID`; a model of another
   property package is the revision binder's `model_unsupported(<id>)`.
-- **U05** (T08 review 2, Ruling 1) — `validate(task="optimization")` is ADR 0019's `unsupported`,
-  detail `task_unsupported(optimization)`, audited, before the revision is read and with no report
-  built; `validation.validate` raises the same refusal; `commit_change` and `preview_change` with
-  that task refuse the same way, audited, at the top of `_prepare`.
+- **U05** (T08 review 2, Ruling 1; amended on purpose by OPT, ADR 0071 D8, design §4.11) — on an
+  install without an audited NLP solver, `validate(task="optimization")` is ADR 0019's
+  `unsupported`, detail `nlp_solver_unavailable`, audited, before the revision is read
+  and with no report built; `validation.validate` raises the same refusal; `commit_change` and
+  `preview_change` with that task refuse `task_unsupported(optimization)`, audited, at the top of
+  `_prepare` (unchanged).
 - **U06** — ADR 0008 D1: a time-varying specification is not representable; a profile value or a
   time member is `SCHEMA-01` `INVALID`.
 - **U08** (R-110) — branches: a change set naming one is refused by its schema; in-band policy
@@ -92,7 +94,10 @@ def test_u05_validate_for_optimization_is_unsupported(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     from openflowsheet.application.types import Change, Edit
+    from openflowsheet.studies.nlp.closure import audited_solver
 
+    if audited_solver().available:
+        pytest.skip("an audited NLP solver is installed: U05 is the install without one")
     document = CORPUS["SYN-001-nominal"]()
     with LocalApplication.create(tmp_path / "project", project_id="u05") as app:
         edits = tuple(Edit("set", (key,), value) for key, value in document.items())
@@ -106,9 +111,11 @@ def test_u05_validate_for_optimization_is_unsupported(
         monkeypatch.setattr(validation, "ValidationReport", no_report)
         with pytest.raises(ApplicationError) as refused:
             app.validate(revision_id, "optimization")
+        # Amended on purpose (ADR 0071; OPT design §4.11): `task_unsupported(optimization)` was
+        # the v0.1 refusal of every install; the refusal is now the missing audited solver's.
         assert refused.value.error.as_document() == {
             "code": "unsupported",
-            "message": "task_unsupported(optimization)",
+            "message": "nlp_solver_unavailable",
             "detail": {"pointer": "/task"},
             "retryable": False,
         }

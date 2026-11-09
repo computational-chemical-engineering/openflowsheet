@@ -104,6 +104,26 @@ The specific reasons a request, a revision, a solve or a project is refused, nam
 
 - **Summary:** Refused: decision inconsistent with eliminated rows.
 
+<a id="DECISION_NOT_CONTINUOUS"></a>
+
+## `DECISION_NOT_CONTINUOUS`: Decision not continuous
+
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
+
+*No plain-language explanation is written yet; the summary is the technical one.*
+
+- **Summary:** Refused: decision not continuous.
+
+<a id="DECISION_UNIT_NOT_INTERNAL"></a>
+
+## `DECISION_UNIT_NOT_INTERNAL`: Decision unit not internal
+
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
+
+*No plain-language explanation is written yet; the summary is the technical one.*
+
+- **Summary:** Refused: decision unit not internal.
+
 <a id="ESCALATION_SERIES_MISSING"></a>
 
 ## `ESCALATION_SERIES_MISSING`: Escalation series missing
@@ -183,6 +203,16 @@ The specific reasons a request, a revision, a solve or a project is refused, nam
 *No plain-language explanation is written yet; the summary is the technical one.*
 
 - **Summary:** Refused: no correlation.
+
+<a id="OPTIMIZATION_ROUTE_UNAVAILABLE"></a>
+
+## `OPTIMIZATION_ROUTE_UNAVAILABLE`: Optimization route unavailable
+
+**Kind:** Not supported in this version: a limitation of OpenFlowsheet, not an error in your flowsheet.
+
+*No plain-language explanation is written yet; the summary is the technical one.*
+
+- **Summary:** Refused: optimization route unavailable.
 
 <a id="PARAMETER_NOT_DIFFERENTIABLE"></a>
 
@@ -274,6 +304,16 @@ The specific reasons a request, a revision, a solve or a project is refused, nam
 
 - **Summary:** Refused: projection zero flow.
 
+<a id="REGIME_MARGIN_UNDEFINED"></a>
+
+## `REGIME_MARGIN_UNDEFINED`: Regime margin undefined
+
+**Kind:** Not supported in this version: a limitation of OpenFlowsheet, not an error in your flowsheet.
+
+*No plain-language explanation is written yet; the summary is the technical one.*
+
+- **Summary:** Refused: regime margin undefined.
+
 <a id="REGIME_MARGIN_UNSUPPORTED"></a>
 
 ## `REGIME_MARGIN_UNSUPPORTED`: Regime margin unsupported
@@ -293,6 +333,26 @@ The specific reasons a request, a revision, a solve or a project is refused, nam
 *No plain-language explanation is written yet; the summary is the technical one.*
 
 - **Summary:** Refused: regularity inconclusive.
+
+<a id="REVISION_MISMATCH"></a>
+
+## `REVISION_MISMATCH`: Revision mismatch
+
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
+
+*No plain-language explanation is written yet; the summary is the technical one.*
+
+- **Summary:** Refused: revision mismatch.
+
+<a id="REVISION_UNBOUND"></a>
+
+## `REVISION_UNBOUND`: Revision unbound
+
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
+
+*No plain-language explanation is written yet; the summary is the technical one.*
+
+- **Summary:** Refused: revision unbound.
 
 <a id="ROOT_NOT_CONVERGED"></a>
 
@@ -343,6 +403,16 @@ The specific reasons a request, a revision, a solve or a project is refused, nam
 *No plain-language explanation is written yet; the summary is the technical one.*
 
 - **Summary:** Refused: start outside bounds.
+
+<a id="TOO_MANY_STARTS"></a>
+
+## `TOO_MANY_STARTS`: Too many starts
+
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
+
+*No plain-language explanation is written yet; the summary is the technical one.*
+
+- **Summary:** Refused: too many starts.
 
 <a id="TRSP_SOLVER_UNAUDITED"></a>
 
@@ -1103,6 +1173,29 @@ No model with the id "thermal.boiler" is available in this version.
 
 - **Summary:** Refused: near critical.
 
+<a id="nlp_solver_unavailable"></a>
+
+## `nlp_solver_unavailable`: Optimisation without the audited NLP solver
+
+**Kind:** Not supported in this version: a limitation of OpenFlowsheet, not an error in your flowsheet.
+
+- **Summary:** This installation cannot optimise: the audited NLP solver is not available here.
+- **Why:** Optimisation solves with Ipopt, reached through Pyomo and cyipopt, in the versions the licence and binary audit covers: the `nlp` environment on Linux x86-64. Without it this version refuses the optimisation task rather than run an unaudited solver.
+- **Do:** To optimise, install the audited `nlp` environment on Linux x86-64; to check the revision for a solve, validate it with the task "simulation".
+- **Not supported:** missing capability: optimisation without the audited nlp environment, or off Linux x86-64
+- **See also:** [`unsupported`](api-errors.md#unsupported)
+
+Example:
+
+```text
+This installation cannot optimise: the audited NLP solver is not available here.
+  Why:     Optimisation solves with Ipopt, reached through Pyomo and cyipopt, in the versions the licence and binary audit covers: the `nlp` environment on Linux x86-64. Without it this version refuses the optimisation task rather than run an unaudited solver.
+  Do:      To optimise, install the audited `nlp` environment on Linux x86-64; to check the revision for a solve, validate it with the task "simulation".
+  Kind:    Not supported in this version: a limitation of OpenFlowsheet, not an error in your flowsheet.
+  Code:    nlp_solver_unavailable, in unsupported (openflowsheet explain nlp_solver_unavailable)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#nlp_solver_unavailable
+```
+
 <a id="no_saturation"></a>
 
 ## `no_saturation`: No saturation
@@ -1753,6 +1846,28 @@ Directory 'plant' holds the project 'plant-a', not 'plant-b'.
 *No plain-language explanation is written yet; the summary is the technical one.*
 
 - **Summary:** Refused: reference convention not reaction consistent.
+
+<a id="request_invalid"></a>
+
+## `request_invalid`: An optimisation request that breaks its schema or rules
+
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
+
+- **Summary:** The optimisation request is invalid at &lt;pointer&gt;.
+- **Why:** An optimisation request (its decisions and their boxes, objective, constraints and starts) is checked against the optimisation-request schema and its own rules before anything is solved. The member at &lt;pointer&gt; does not meet them; the detail after the code says how.
+- **Do:** Correct the request at &lt;pointer&gt; as the detail says and submit it again.
+- **Parameters:** `pointer` (pointer)
+
+Example:
+
+```text
+The optimisation request is invalid at /request/decisions/0/upper.
+  Why:     An optimisation request (its decisions and their boxes, objective, constraints and starts) is checked against the optimisation-request schema and its own rules before anything is solved. The member at /request/decisions/0/upper does not meet them; the detail after the code says how.
+  Do:      Correct the request at /request/decisions/0/upper as the detail says and submit it again.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    request_invalid, in invalid_request (openflowsheet explain request_invalid)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#request_invalid
+```
 
 <a id="rerun_unsupported"></a>
 

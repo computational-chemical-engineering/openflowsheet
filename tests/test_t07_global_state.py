@@ -132,10 +132,11 @@ def test_g20_every_hit_is_allowlisted_and_every_entry_is_hit() -> None:
     # `coolprop-heos-v1` identity hash (1); S11's `thermal.*` module hash (common.py) and the
     # thermal kernel's fluid limits (2); MSG's parsed-template `lru_cache` (1), its response-schema
     # error locations (1, WO-3) and the test-only audit switch's two `global` lines; X02's packaged
-    # child-script hashes (1, ADR 0070 D10).
+    # child-script hashes (1, ADR 0070 D10); OPT's request-schema validator
+    # (studies/nlp/request.py).
     per_line = Counter(hit for hits, count in found.values() for hit in hits for _ in range(count))
     assert per_line == Counter(
-        {"cache": 38, "np.random": 3, "random": 1, "ContextVar": 1, "global": 2}
+        {"cache": 39, "np.random": 3, "random": 1, "ContextVar": 1, "global": 2}
     )
 
 

@@ -402,16 +402,26 @@ unsupported:
 
   - id: U05
     capability: >-
-      `validate(task="optimization")`; any study — optimization, parametric sensitivities,
-      sweeps, parameter estimation
+      `validate(task="optimization")` and the `optimize` job without an audited NLP solver; a
+      change with `task: optimization`; the other studies — parametric sensitivities, sweeps,
+      parameter estimation
     outcome: >-
-      `validate` with `task: optimization` ends with ADR 0019's error `unsupported`, detail
-      `task_unsupported(optimization)`, before any analysis; no v0.1 path returns
-      `READY_FOR_OPTIMIZATION` (the value stays in the frozen enum, unused); the other studies
-      have no operation among the twenty-one of `OPERATIONS`; no optimality claim anywhere.
+      ADR 0071 lifts v0.1's refusal of every install (OPT design §4.11): with an audited NLP
+      solver, `validate` given an optimization request returns its report (`READY_FOR_OPTIMIZATION`
+      possible) and `optimize` runs. Without one (the default install, an unaudited platform),
+      `validate` with `task: optimization` ends with ADR 0019's error `unsupported`, message
+      `nlp_solver_unavailable`, pointer `/task`, before the revision is read, and
+      `submit_job(optimize)` is refused the same way at `/operation` with no job created. A change
+      with `task: optimization` (`commit_change`, `preview_change`) is still refused
+      `task_unsupported(optimization)`, audited, with no revision written. The other studies have
+      no operation among the twenty-one of `OPERATIONS`; an optimisation report claims local
+      stationarity at most, never global optimality.
     evidence:
       - tests/test_t08_w2_unsupported.py::test_u05_validate_for_optimization_is_unsupported
       - tests/test_t08_w2_unsupported.py::test_u05_a_change_for_optimization_is_refused_audited
+      - tests/test_opt_job.py::test_g11_submit_job_without_a_solver_is_unsupported_and_creates_no_job
+      - tests/test_opt_cli.py::test_g11_the_cli_without_a_solver_imports_neither_pyomo_nor_cyipopt
+      - doc:docs/adr/0071-OPT-revision-optimisation.md
       - doc:docs/blueprint-v3.1.md
 
   - id: U06
@@ -1212,6 +1222,32 @@ limitations:
       - tests/test_e01_integration.py::test_p2_is_a_complete_sslw_program_with_floored_exchangers_and_a_sized_drum
       - tests/test_e01_a_cost.py::test_a18_below_s_min_is_the_floor_with_an_empty_derivative_row
       - doc:docs/derivations/E01-design.md §10.10.7
+  - id: L-OPT-1
+    text: >-
+      Revision optimisation (ADR 0071) runs only on the `revision_eo` route in the audited `nlp`
+      environment on linux-x86_64. Each start holds its phase and assessment regimes: a candidate
+      whose regime changed is NOT_VERIFIED; a boundary optimum is verified only on the single-phase
+      side of a guarded regime (`phase_boundary_form`, flagged, and a plain solve of the committed
+      candidate certifies UNVERIFIED); two-phase-side and unguarded-regime boundary optima and
+      candidates in the rank-limited-but-inactive gap are NOT_VERIFIED; the zero-flow subsystem is
+      held or unresolved per start, all or nothing. KKT_POINT_VERIFIED is numerically verified local
+      stationarity, not optimality.
+    evidence:
+      - tests/test_opt_revision_optimize.py::test_g9_routes_other_than_revision_eo_are_unsupported
+      - tests/test_opt_boundary.py::test_g10c_i_a_two_phase_resolve_fails_at_e2
+      - tests/test_opt_margins.py::test_g24c_a_gamma_phi_vapour_split_is_unguarded_and_admitted
+      - tests/test_opt_zero_subsystem.py::test_g23d_a_decision_on_the_zero_feed_leaves_the_subsystem_unresolved
+      - doc:docs-site/guide/optimisation.md
+  - id: L-OPT-2
+    text: >-
+      Ipopt runs with fixed options (monotone barrier, limited-memory Hessian). On a nearly linear
+      objective whose constraint must become active from inside the feasible region it can stall
+      at `max_iter` (measured on OPT-L from 673.15 K and 661 K; it verifies from 650 K, a start that
+      violates the constraint). Such a start is reported SOLVER_FAILED, never verified; another start is
+      the remedy. Whether the options change is a design-lane question (OPT_DECISIONS D-70).
+    evidence:
+      - doc:docs/OPT_DECISIONS.md
+      - doc:docs-site/guide/optimisation.md
 
 harvest:
 - manifest: evidence/K01/b44dea0e96eb61f42f34249eee69a20d1ddb6a8a/manifest.json
@@ -8935,3 +8971,96 @@ harvest:
   class: P
   to: []
   note: 'accepted fail (D-32): warm 4 = cold 4 outer iterations; neighbour-speedup claim withdrawn in ADR 0070'
+- manifest: evidence/OPT/a46ea80f2540ef34c93f12d37509ac8dcf050d58/manifest.json
+  item: limitations[0]
+  sha256: 060bd2818a8025f400cbbb18d8b6e4b67af2f07fe43e550148de77980bee7b40
+  class: P
+  to: []
+  note: 'provenance note: numerical verification on ref-x86-64; analytic and hand-model expectations;
+    not validation, not optimality'
+- manifest: evidence/OPT/a46ea80f2540ef34c93f12d37509ac8dcf050d58/manifest.json
+  item: limitations[1]
+  sha256: 18091b95f1d90683a859bc24402171997c322301a525167e1583a5d9fe3b1105
+  class: P
+  to: []
+  note: 'status note: implemented, D-61 reviews open, G21 and G13 aarch64 unconfirmed by the build lane'
+- manifest: evidence/OPT/a46ea80f2540ef34c93f12d37509ac8dcf050d58/manifest.json
+  item: limitations[2]
+  sha256: 6389f20f15de48c57bd7f663ebc7aeb4a295d0935f2ec5e2b9c4b44d93a1f20b
+  class: E
+  to:
+  - L-OPT-1
+  note: 'user-facing: route, platform, held regimes, boundary and zero-subsystem limits (L-OPT-1)'
+- manifest: evidence/OPT/a46ea80f2540ef34c93f12d37509ac8dcf050d58/manifest.json
+  item: limitations[3]
+  sha256: b02df29b3fc43967ec59e83b4067012bc29aa918715685dc9fd192c775be402e
+  class: E
+  to:
+  - L-OPT-2
+  note: 'user-facing: Ipopt stall from the feasible side on OPT-L (D-70, L-OPT-2)'
+- manifest: evidence/OPT/a46ea80f2540ef34c93f12d37509ac8dcf050d58/manifest.json
+  item: limitations[4]
+  sha256: 400b5952eb30f054da49e45b3f224b385f8c86cc2642ea813adcda9f80c582ad
+  class: P
+  to: []
+  note: 'process note: G12 wall-clock mask and D-58/D-60/D-61 await the design-lane review'
+- manifest: evidence/OPT/a46ea80f2540ef34c93f12d37509ac8dcf050d58/manifest.json
+  item: checks[17]
+  check_id: OPT.G13.aarch64
+  sha256: af5fe887aa1aa90b84375894b7bc32f7f46e9b52caa34bd7e81015151eb4d17a
+  class: P
+  to: []
+  note: 'process note: the aarch64 CI leg is read by the orchestrator'
+- manifest: evidence/OPT/a46ea80f2540ef34c93f12d37509ac8dcf050d58/manifest.json
+  item: checks[25]
+  check_id: OPT.G21
+  sha256: bfd605871bd375a1a429fd806e8c77e2238cbe74f824ab131a6abbec08d29416
+  class: P
+  to: []
+  note: 'process note: the full gate and CI run before merge, by the orchestrator'
+- manifest: evidence/OPT/a46ea80f2540ef34c93f12d37509ac8dcf050d58/manifest.json
+  item: checks[29]
+  check_id: OPT.D61
+  sha256: 5f89ad5907b347a59eae21e094f3d77f0636a89061efa10da2281ebf5117ee02
+  class: P
+  to: []
+  note: 'process note: description reviews by the design lane and Frank pending (D-61)'
+- manifest: evidence/OPT/c1b9b1255699b2cd9d1f6c1da120f761dd1e80d6/manifest.json
+  item: limitations[0]
+  sha256: 060bd2818a8025f400cbbb18d8b6e4b67af2f07fe43e550148de77980bee7b40
+  class: P
+  to: []
+  note: 'provenance note: numerical verification on ref-x86-64; analytic and hand-model expectations; not validation, not optimality'
+- manifest: evidence/OPT/c1b9b1255699b2cd9d1f6c1da120f761dd1e80d6/manifest.json
+  item: limitations[1]
+  sha256: 88e364dba2a77fdfd3c0a81347530f68387187cc787a98622735dcc9e570436f
+  class: P
+  to: []
+  note: 'status note: tested, not reviewed; human description reviews recorded by Frank (9869773e); design-lane prose check of D-92 and D-93 pending; no local full gate, CI run 42534167073'
+- manifest: evidence/OPT/c1b9b1255699b2cd9d1f6c1da120f761dd1e80d6/manifest.json
+  item: limitations[2]
+  sha256: 86db2b6c3722d9a5093b0fb0d4b1bc7cf91dc5a3d1de9261808d1154d447f6be
+  class: E
+  to:
+  - L-OPT-1
+  note: 'user-facing: route, platform, held regimes, boundary and zero-subsystem limits; D-82 declared limits and S1 dormant splits (L-OPT-1)'
+- manifest: evidence/OPT/c1b9b1255699b2cd9d1f6c1da120f761dd1e80d6/manifest.json
+  item: limitations[3]
+  sha256: 6b6a930499c104f6967bbc693ba2a96e3a8ca0688bcea1656f3ccab6b2bb2692
+  class: E
+  to:
+  - L-OPT-2
+  note: 'user-facing: Ipopt stall from the feasible side on OPT-L, starts {673.15 K, 650 K} (D-70, L-OPT-2)'
+- manifest: evidence/OPT/c1b9b1255699b2cd9d1f6c1da120f761dd1e80d6/manifest.json
+  item: limitations[4]
+  sha256: a0421966824facbaa86c7387c226315b23d1958ad7c801198a46a914ce71bfb8
+  class: P
+  to: []
+  note: 'process note: G12 wall-clock mask and D-58/D-60 await the design-lane review'
+- manifest: evidence/OPT/c1b9b1255699b2cd9d1f6c1da120f761dd1e80d6/manifest.json
+  item: checks[25]
+  check_id: OPT.G21
+  sha256: 986dc7b30a12baa5dcde07c4743824153d0f8b0f459ed5059fdc3ed506a54fdd
+  class: P
+  to: []
+  note: 'process note: no local full gate; CI green on both architectures is the merge condition (CLAUDE.md gate by risk)'

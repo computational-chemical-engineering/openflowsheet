@@ -17,7 +17,17 @@ function a direct caller uses, so a job's bundle *is* that function's bundle (ga
 variant and the inlet), `evaluate` (`adapters.experiments`' runner: key, lock, cache, attempts,
 records), `record` (the outputs). `surrogate_study`: `resolve` (the variant), `study`
 (`studies.surrogate.study.run_study`: the plan, the budget, the experiments one by one, the
-evidence), `record` (the manifest and the evidence).
+evidence), `record` (the manifest and the evidence). `optimize` (OPT design §4.10): `resolve`,
+`starts` (one progress event per start, `starts:<k>`), `optimize` (`optimize:<k>`), `record`.
+
+**Optimisations (ADR 0071, OPT design §4.10).** An `optimize` job calls
+`studies.nlp.revision.optimize_revision` — the library entry, so the job's record is that
+function's (G12) — with the record directory `<job dir>/optimization`. It ends `completed`
+whatever the report's status, its answer the report (`job_result.optimization`); its outputs are
+the report and then the manifest, and every other record file is an artifact of the job
+(`<job_id>:optimization/<path>`, each start's and re-solve's bundle registered as a bundle). The
+interruption check also runs in every Ipopt iteration; an interrupted job keeps the files it wrote
+as artifacts and outputs nothing.
 
 **Experiments (ADR 0033 D9, M02 design note §3.5).** An `experiment` job evaluates one request and
 ends `completed` whatever the experiment's outcome — a refusal or a transient failure is a result,
@@ -63,6 +73,7 @@ from __future__ import annotations
 
 import json
 import logging
+import time
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass, replace
 from pathlib import Path
@@ -94,6 +105,7 @@ from openflowsheet.application.jobs.model import (
     TerminalStatus,
 )
 from openflowsheet.application.revision_binding import RevisionBinding
+from openflowsheet.application.revision_routes import REVISION_ROUTES
 from openflowsheet.application.revision_run import (
     Route,
     RunUnsupportedError,
@@ -111,6 +123,7 @@ from openflowsheet.application.types import (
     ExperimentBody,
     Job,
     JobEnding,
+    OptimizeBody,
     Progress,
     ReproduceBody,
     SolveBody,
@@ -123,6 +136,8 @@ from openflowsheet.orchestrator.trace import Trace
 from openflowsheet.orchestrator.warm_start import EXPLICIT, WARM_START_SOURCE, WarmStartCandidate
 from openflowsheet.run.bundle import ARTIFACT_DIR, MANIFEST_NAME, BundleError, read_artifact
 from openflowsheet.run.manifest import policy_sha256
+from openflowsheet.studies.nlp.replay import MANIFEST as OPTIMIZATION_MANIFEST
+from openflowsheet.studies.nlp.replay import is_optimization_record, replay_optimization
 from openflowsheet.studies.surrogate.iterations import predecessors as iteration_predecessors
 from openflowsheet.studies.surrogate.plan import REGISTERED_PLANS, PlanRefusedError
 from openflowsheet.studies.surrogate.study import run_study
@@ -134,6 +149,7 @@ __all__ = [
     "EXPERIMENT_STAGES",
     "REPRODUCE_STAGES",
     "SOLVE_STAGES",
+    "OPTIMIZE_STAGES",
     "SURROGATE_STUDY_STAGES",
     "RunContext",
     "WorkerResult",
@@ -151,6 +167,10 @@ SOLVE_STAGES: Final[tuple[str, ...]] = ("resolve", "bind", "plan", "solve", "ver
 REPRODUCE_STAGES: Final[tuple[str, ...]] = ("integrity", "rerun", "compare")
 EXPERIMENT_STAGES: Final[tuple[str, ...]] = ("resolve", "evaluate", "record")
 SURROGATE_STUDY_STAGES: Final[tuple[str, ...]] = ("resolve", "study", "record")
+#: OPT design §4.10; `starts` and `optimize` are emitted once per start, as `<stage>:<k>`.
+OPTIMIZE_STAGES: Final[tuple[str, ...]] = ("resolve", "starts", "optimize", "record")
+#: An `optimize` job's record directory under the job's, and its artifact id prefix.
+OPTIMIZATION_DIR: Final[str] = "optimization"
 #: §5.4: the producer kind of each fixed file name.
 KIND_OF_FILE: Final[Mapping[str, str]] = {
     name: kind for kind, name in ARTIFACT_FILE_NAMES.items() if name is not None
@@ -161,6 +181,25 @@ CERTIFICATE: Final[str] = ARTIFACT_FILE_NAMES["solution_certificate"] or ""
 FAILURE: Final[str] = ARTIFACT_FILE_NAMES["failure_bundle"] or ""
 MANIFEST_FILE: Final[str] = ARTIFACT_FILE_NAMES["surrogate_manifest"] or ""
 EVIDENCE_FILE: Final[str] = ARTIFACT_FILE_NAMES["model_evidence"] or ""
+REPORT_FILE: Final[str] = ARTIFACT_FILE_NAMES["optimization_report"] or ""
+OPT_MANIFEST_FILE: Final[str] = ARTIFACT_FILE_NAMES["optimization_manifest"] or ""
+#: OPT design §4.8: the kind of each record member outside its bundles (the base revision's
+#: copy is a `revision_document`, whose bundle file name is `revision.json`).
+OPTIMIZATION_KIND_OF_FILE: Final[Mapping[str, str]] = {
+    **{
+        name: kind
+        for kind in (
+            "optimization_request",
+            "optimization_report",
+            "optimization_manifest",
+            "optimizer_record",
+            "candidate_revision",
+            "candidate_verification",
+        )
+        if (name := ARTIFACT_FILE_NAMES[kind]) is not None
+    },
+    "revision-document.json": "revision_document",
+}
 
 
 @dataclass(frozen=True)
@@ -418,6 +457,35 @@ def bundle_rows(
         relpath=directory.relative_to(root).as_posix(),
     )
     return bundle, members
+
+
+def record_rows(
+    root: Path, directory: Path, record_id: str, job_id: str | None
+) -> tuple[ArtifactRow, list[ArtifactRow]]:
+    """An imported optimisation record's row and its manifest's (OPT design §4.9): the record is
+    a `replay_bundle` (what `reproduce` takes; `reproduce` dispatches on its manifest's format),
+    its member `<record id>/optimization-manifest.json` an `optimization_manifest`."""
+    path = directory / OPTIMIZATION_MANIFEST
+    manifest = ArtifactRow(
+        artifact_id=f"{record_id}/{OPTIMIZATION_MANIFEST}",
+        job_id=job_id,
+        kind="optimization_manifest",
+        name=OPTIMIZATION_MANIFEST,
+        sha256=file_sha256(path),
+        size_bytes=path.stat().st_size,
+        relpath=path.relative_to(root).as_posix(),
+        parent_artifact_id=record_id,
+    )
+    record = ArtifactRow(
+        artifact_id=record_id,
+        job_id=job_id,
+        kind="replay_bundle",
+        name=directory.name,
+        sha256=directory_hash(directory),
+        size_bytes=sum(item.stat().st_size for item in directory.rglob("*") if item.is_file()),
+        relpath=directory.relative_to(root).as_posix(),
+    )
+    return record, [manifest]
 
 
 class _Body:
@@ -714,6 +782,9 @@ class _Body:
                 ),
                 None,
             )
+        source = self.context.root / archive.relpath
+        if is_optimization_record(source):
+            return self._reproduce_optimization(source, rerun=body.rerun)
         rerun_directory = self.directory / "rerun"
         rerun_id = f"{self.job.job_id}:rerun"
 
@@ -729,7 +800,7 @@ class _Body:
 
         try:
             reproduction = reproduce_bundle(
-                self.context.root / archive.relpath,
+                source,
                 rerun=body.rerun,
                 rerun_directory=rerun_directory,
                 run_id=f"run-{self.job.job_id}",
@@ -742,6 +813,56 @@ class _Body:
             return _typed_end(error, None)
         except BundleError as error:
             _LOG.warning("job %s: unreadable bundle: %s", self.job.job_id, error)
+            return _failed(
+                _error(
+                    "invalid_request",
+                    "the bundle cannot be read (bundle_unreadable)",
+                    pointer="/body/bundle_artifact_id",
+                ),
+                None,
+            )
+        except _FenceLost:
+            return _failed(_error("internal_error", "fence_lost"), None, "owner_lost")
+        return WorkerResult(
+            status="completed", reason="operation_completed", interruption=None, error=None
+        )
+
+    def _reproduce_optimization(self, record: Path, *, rerun: bool) -> WorkerResult:
+        """OPT design §4.9: an optimisation record is replayed by `replay_optimization`, at this
+        job's stage boundaries. Its re-run bundles are artifacts of the job
+        (`<job_id>:rerun/starts/<k>/<start|resolve>`), registered once `compare` is passed; the
+        replay report is the one output."""
+        rerun_directory = self.directory / "rerun"
+        try:
+            report = replay_optimization(
+                record,
+                routes=REVISION_ROUTES,
+                rerun=rerun,
+                rerun_directory=rerun_directory,
+                stage=self.at,
+            )
+            rows: list[ArtifactRow] = []
+            for directory in sorted(rerun_directory.glob("starts/*/*/")):
+                if not (directory / MANIFEST_NAME).is_file():
+                    continue
+                relative = directory.relative_to(rerun_directory).as_posix()
+                bundle, members = bundle_rows(
+                    self.context.root,
+                    directory,
+                    f"{self.job.job_id}:rerun/{relative}",
+                    self.job.job_id,
+                    producer=True,
+                )
+                rows.extend([bundle, *members])
+            if rows:
+                self._register(rows)
+            self._file_output(REPLAY_REPORT, report.as_document())
+        except JobInterrupted as interrupted:
+            return _interrupted(interrupted, None)
+        except (RunUnsupportedError, VerifierError, SolutionStateMismatchError) as error:
+            return _typed_end(error, None)
+        except BundleError as error:
+            _LOG.warning("job %s: unreadable record: %s", self.job.job_id, error)
             return _failed(
                 _error(
                     "invalid_request",
@@ -892,6 +1013,157 @@ class _Body:
             study=answer,
         )
 
+    # -- optimize -----------------------------------------------------------------------------
+
+    def optimize(self) -> WorkerResult:
+        """OPT design §4.10: the revision, the solver probe, the request's form and the policies
+        (a `solve`'s, on `revision_eo`) here; everything else is `optimize_revision`'s, whose
+        report says it."""
+        body = self.job.request.body
+        assert isinstance(body, OptimizeBody)
+        self.stages = OPTIMIZE_STAGES
+        store = self.context.store
+        began = time.monotonic()
+        budget = self.job.effective_budgets.wall_time_s
+        record_dir = self.directory / OPTIMIZATION_DIR
+
+        def remaining() -> float | None:
+            return None if budget is None else budget - (time.monotonic() - began)
+
+        def progress(stage: str, info: Mapping[str, Any]) -> None:
+            if stage == "start":
+                self._step(1, f"starts:{info['start']}")
+            elif stage == "optimize":
+                self._step(2, f"optimize:{info['start']}")
+            elif stage == "record":
+                self.at("record")
+
+        try:
+            self.at("resolve")
+            with store.reading() as connection:
+                revision = store.get_revision(connection, body.revision_id)
+            if revision is None:
+                return _failed(_error("not_found", "no such revision"), None)
+            from openflowsheet.studies.nlp.closure import audited_solver  # noqa: PLC0415
+            from openflowsheet.studies.nlp.request import request_problems  # noqa: PLC0415
+            from openflowsheet.studies.nlp.revision import optimize_revision  # noqa: PLC0415
+            from openflowsheet.studies.nlp.revision_host import ROUTE  # noqa: PLC0415
+
+            # §4.10: the extra vanished between admission and the job.
+            if not audited_solver().available:
+                return _failed(
+                    ApiError(
+                        code="unsupported",
+                        message="nlp_solver_unavailable",
+                        retryable=False,
+                        detail={"code": "nlp_solver_unavailable"},
+                    ),
+                    None,
+                )
+            problems = request_problems(body.request)
+            if problems:
+                pointer, message = problems[0]
+                return _failed(
+                    _error(
+                        "invalid_request",
+                        f"request_invalid({pointer}): {message}",
+                        pointer=f"/body/request{pointer}",
+                    ),
+                    None,
+                )
+            resolved = resolve_policies(Route(ROUTE, None), body.solve_body())
+            if isinstance(resolved, ApiError):
+                return _failed(resolved, None)
+            policy, check_policy = resolved
+            # Ruling round 1 R5, as `solve`: the worker's own assertion that nothing loosens.
+            if check_policy.relaxations():
+                kinds = sorted(item.detail["check"] for item in check_policy.relaxations())
+                return _failed(
+                    _error(
+                        "verification_weakening_refused",
+                        f"verification_weakening_refused({','.join(kinds)})",
+                        kind=kinds[0],
+                    ),
+                    None,
+                )
+            optimize_revision(
+                revision.as_document(),
+                body.request,
+                directory=record_dir,
+                routes=REVISION_ROUTES,
+                solve_policy=policy,
+                check_policy=check_policy,
+                policy_requested=body.policy_id,
+                check=self._honour_interruption,
+                interruptions=(JobInterrupted,),
+                progress=progress,
+                surrogates=surrogate_resolver(store, self.context.root),
+                wall_time_remaining=remaining,
+            )
+            for row in self._optimization_record(record_dir):
+                self._emit(output=row.as_ref())
+        except JobInterrupted as interrupted:
+            # §4.10 (as `surrogate_study`): the files already written stay, as artifacts only.
+            try:
+                self._optimization_record(record_dir, finished=False)
+            except _FenceLost:
+                return _failed(_error("internal_error", "fence_lost"), None, "owner_lost")
+            return _interrupted(interrupted, None)
+        except (RunUnsupportedError, VerifierError, SolutionStateMismatchError) as error:
+            return _typed_end(error, None)
+        except _FenceLost:
+            return _failed(_error("internal_error", "fence_lost"), None, "owner_lost")
+        return WorkerResult(
+            status="completed", reason="operation_completed", interruption=None, error=None
+        )
+
+    def _step(self, completed: int, stage: str) -> None:
+        """A per-start progress event (§4.10), honouring an interruption first as `at` does."""
+        if self.on_stage is not None:
+            self.on_stage(stage)
+        self._honour_interruption()
+        self._emit(progress=Progress(completed=completed, total=len(self.stages), stage=stage))
+
+    def _optimization_record(self, record_dir: Path, *, finished: bool = True) -> list[ArtifactRow]:
+        """Register every file of the record as an artifact of the job: each complete bundle
+        under `starts/<k>/` as a bundle (`bundle_rows`), every other file by its kind. Returns
+        the outputs, the report and then the manifest, when `finished`; none otherwise (an
+        interrupted job's are not written, §4.10)."""
+        if not record_dir.is_dir():
+            return []
+        prefix = f"{self.job.job_id}:{OPTIMIZATION_DIR}"
+        rows: list[ArtifactRow] = []
+        bundles = sorted(path for path in record_dir.glob("starts/*/*/") if path.is_dir())
+        for directory in bundles:
+            if not (directory / MANIFEST_NAME).is_file():
+                continue  # interrupted before the bundle was complete
+            relative = directory.relative_to(record_dir).as_posix()
+            bundle, members = bundle_rows(
+                self.context.root, directory, f"{prefix}/{relative}", self.job.job_id, producer=True
+            )
+            rows.extend([bundle, *members])
+        by_path: dict[str, ArtifactRow] = {}
+        for path in sorted(record_dir.rglob("*")):
+            if not path.is_file() or any(path.is_relative_to(b) for b in bundles):
+                continue
+            kind = OPTIMIZATION_KIND_OF_FILE.get(path.name)
+            if kind is None:
+                raise ValueError(f"producer defect: {path.name!r} has no artifact kind (§4.10)")
+            relative = path.relative_to(record_dir).as_posix()
+            by_path[relative] = ArtifactRow(
+                artifact_id=f"{prefix}/{relative}",
+                job_id=self.job.job_id,
+                kind=kind,
+                name=path.name,
+                sha256=file_sha256(path),
+                size_bytes=path.stat().st_size,
+                relpath=path.relative_to(self.context.root).as_posix(),
+            )
+        self._register([*rows, *by_path.values()])
+        if not finished:
+            return []
+        return [by_path[name] for name in (REPORT_FILE, OPT_MANIFEST_FILE) if name in by_path]
+
 
 def execute(
     context: RunContext,
@@ -917,4 +1189,6 @@ def execute(
         return body.experiment()
     if job.operation == "surrogate_study":
         return body.surrogate_study()
+    if job.operation == "optimize":
+        return body.optimize()
     return body.reproduce()

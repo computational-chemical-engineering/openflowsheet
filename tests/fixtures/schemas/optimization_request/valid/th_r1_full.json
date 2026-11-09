@@ -1,0 +1,81 @@
+{
+  "request_format": "openflowsheet-optimization-request-v1",
+  "problem_id": "th-r1-duty-and-feed-temperature",
+  "revision_sha256": "e5605619cefe43f8bbc75d708ad462d6d441043b6a3af3d683d09ceee542b19e",
+  "decisions": [
+    {
+      "specification_id": "SPEC-H-Q",
+      "lower": 20000.0,
+      "upper": 30000.0,
+      "scale": 10000.0,
+      "unit": "W"
+    },
+    {
+      "specification_id": "SPEC-S1-T",
+      "lower": 290.0,
+      "upper": 310.0,
+      "scale": 10.0,
+      "unit": "K"
+    }
+  ],
+  "objective": {
+    "sense": "maximize",
+    "expression": {
+      "text": "S3.T - 0.001*Q + 1e-6*(T1 - 300)^2",
+      "constant": 0.09,
+      "linear": {
+        "S3.T": 1.0,
+        "decision:SPEC-H-Q": -0.001,
+        "decision:SPEC-S1-T": -0.0006
+      },
+      "quadratic": [
+        {
+          "a": "decision:SPEC-S1-T",
+          "b": "decision:SPEC-S1-T",
+          "coefficient": 1e-06
+        }
+      ]
+    },
+    "scale": 100.0
+  },
+  "constraints": [
+    {
+      "id": "outlet-hot-enough",
+      "expression": {
+        "text": "S3.T/100",
+        "linear": {
+          "S3.T": 0.01
+        }
+      },
+      "lower": 3.2,
+      "upper": null
+    },
+    {
+      "id": "outlet-band",
+      "expression": {
+        "text": "S4.T/100",
+        "linear": {
+          "S4.T": 0.01
+        }
+      },
+      "lower": 2.5,
+      "upper": 6.0
+    }
+  ],
+  "starts": {
+    "include_revision": true,
+    "explicit": [
+      [
+        22000.0,
+        295.0
+      ]
+    ],
+    "halton": 2
+  },
+  "assessment": null,
+  "options": {
+    "max_iter": 300,
+    "max_wall_time_s": 60.0
+  },
+  "hessian": "limited-memory"
+}

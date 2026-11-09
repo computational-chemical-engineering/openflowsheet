@@ -837,8 +837,6 @@ def run_revision_session(
     document, once the bundle is written, iff it is a failure bundle and the step carries one;
     the sidecar is in no artifact.
     """
-    from openflowsheet.run.session import _numerical_policy_id, _reproducibility_class
-
     started = started_now()
     clock = time.monotonic()
     result = solve_route(
@@ -854,6 +852,44 @@ def run_revision_session(
         coupled_start=coupled_start,
     )
     (stage if stage is not None else _no_stage)("bundle")
+    return write_revision_bundle(
+        result,
+        document,
+        directory,
+        run_id=run_id,
+        policy=policy,
+        check_policy=check_policy,
+        policy_requested=policy_requested,
+        started=started,
+        clock=clock,
+        warm_start=warm_start,
+        coupled_start=coupled_start,
+        on_diagnosis=on_diagnosis,
+    )
+
+
+def write_revision_bundle(
+    result: RouteRun,
+    document: Mapping[str, Any],
+    directory: Path,
+    *,
+    run_id: str,
+    policy: SolvePolicy,
+    check_policy: CheckPolicy,
+    policy_requested: str,
+    started: str,
+    clock: float,
+    warm_start: WarmStartCandidate | None = None,
+    coupled_start: CoupledStart | None = None,
+    on_diagnosis: Callable[[dict[str, Any]], None] | None = None,
+) -> RunManifest:
+    """`run_revision_session`'s bundle of a route's solve `result`, as it writes it: `started`
+    is the run's start stamp and `clock` its `time.monotonic()` at the start; `warm_start`,
+    `coupled_start` and `on_diagnosis` are `run_revision_session`'s, as the solve was given them.
+    OPT's revision NLP host solves with `solve_route` and writes the same bundle through this,
+    without them (OPT design §4.8)."""
+    from openflowsheet.run.session import _numerical_policy_id, _reproducibility_class
+
     # The route the result was solved on: on `revision_coupled`, its binding is the final inner
     # solve's (at the final w); on every other route it is `route` itself.
     route = result.route

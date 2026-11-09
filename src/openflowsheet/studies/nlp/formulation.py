@@ -35,7 +35,7 @@ before any solver call. No finite-difference, Gauss-Newton or zero Hessian exist
 from __future__ import annotations
 
 import math
-from collections.abc import Mapping, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
 from types import MappingProxyType
 from typing import TYPE_CHECKING, Any, Final
@@ -45,10 +45,13 @@ import numpy.typing as npt
 import scipy.sparse as sp
 
 from openflowsheet.assessment.quantities import ASSESSMENT_PREFIX
-from openflowsheet.compile.casadi_backend import ParametricTwin, compile_parametric_twin
+from openflowsheet.compile.casadi_backend import ParametricTwin
 from openflowsheet.compile.reference import state_vector
 from openflowsheet.models.syn001.flowsheet import Syn001Flowsheet
-from openflowsheet.orchestrator.tear import Syn001TearProblem
+from openflowsheet.numerics.scaling import REGISTERED_NOMINALS, Scaling
+from openflowsheet.orchestrator.region import LABEL_KIND
+from openflowsheet.studies.nlp.host import CertifiedPoint, NlpHost, Syn001NlpHost, as_host
+from openflowsheet.studies.nlp.phase import PHASE_COMPONENT, PhaseRows
 
 if TYPE_CHECKING:
     from openflowsheet.assessment.program import AssessmentProgram
@@ -415,6 +418,23 @@ def assessment_closure(
     )
 
 
+@dataclass(frozen=True)
+class OutputBlock:
+    """One block of the gray box's outputs (OPT §4.4): its ids in order, each one's scale, the
+    ids that are `≥ 0` admissibility rows with their nominals, and its values and Jacobian over
+    the primal (`z` → values in `ids` order; `z` → `[G_x  G_d]` restricted to the primal, a
+    canonical CSC). `constraint` names the Pyomo component that holds its admissibility rows.
+    E01's assessment is one block; WO-5's phase rows are another, each from its own twin."""
+
+    name: str
+    constraint: str
+    ids: tuple[str, ...]
+    scales: Mapping[str, float]
+    admissibility: Mapping[str, float]
+    values: Callable[[npt.NDArray[np.float64]], npt.NDArray[np.float64]] = field(repr=False)
+    jacobian: Callable[[npt.NDArray[np.float64]], sp.csc_matrix] = field(repr=False)
+
+
 def _twin_jacobian(
     twin: ParametricTwin, x: npt.NDArray[np.float64], decisions: Mapping[str, float]
 ) -> sp.csc_matrix:
@@ -439,32 +459,80 @@ class FullSpaceNlp:
     initial point. Evaluation errors from a property block propagate as the twin's
     `TwinEvaluationError`; the solver adapter maps them to a rejected trial point (spec §8.2,
     Q-F4), never to a NaN or a clipped value.
+
+    The problem comes from an NLP host (OPT §4.1) at the start's certified point: its held system
+    (the rows, the alias rows it excludes, the spec) and its twin. M03's calling form — a
+    SYN-001 flowsheet already pinned at the start, and the start's verified state — is kept.
+    On a held system with held columns or label rows (OPT §4.4) `variable_ids` are its free
+    columns in spec order, the held columns are constants at their certified values, and the
+    label rows follow the held rows; `split` still returns the full state vector.
     """
 
     def __init__(
         self,
-        flowsheet: Syn001Flowsheet,
+        flowsheet: NlpHost | Syn001Flowsheet,
         formulation: NlpFormulation,
-        start_state: Mapping[str, float],
+        start_state: CertifiedPoint | Mapping[str, float],
         start: Sequence[float],
     ) -> None:
-        tear = Syn001TearProblem(flowsheet)
-        self.spec = tear.spec
+        host = as_host(flowsheet)
+        point: CertifiedPoint | None = None
+        if isinstance(start_state, CertifiedPoint):
+            if start_state.state is None:
+                raise ValueError("the start's point carries no certified state")
+            point = start_state
+            system = host.held_system(start_state)
+            state = start_state.state
+        elif isinstance(host, Syn001NlpHost):
+            system = host.pinned_system()
+            state = start_state
+        else:
+            raise TypeError("a host other than SYN-001's needs the start's certified point")
+        self.system = system
+        self.spec = system.spec
         self.formulation = formulation
-        self.scaling = tear.scaling
-        eliminated = {row.row_id for row in tear.partition.elimination.eliminated}
-        self.equality_ids = tuple(name for name in self.spec.equation_ids if name not in eliminated)
+        self.scaling = Scaling.from_spec(self.spec)
+        eliminated = set(system.eliminated)
         self.eliminated_ids = tuple(name for name in self.spec.equation_ids if name in eliminated)
-        self.variable_ids = self.spec.variable_ids
+        #: OPT §4.4: the primal is the held system's free columns (spec order), then the
+        #: decisions; the equality rows its rows, then its label rows. SYN-001's system holds
+        #: nothing and keeps every non-alias row in spec order: M03's full space, unchanged.
+        self.restricted = bool(system.held or system.labels)
+        self.label_ids = tuple(row for row, _, _ in system.labels)
+        self.equality_ids = (*system.rows, *self.label_ids)
+        if not self.restricted:
+            kept = tuple(name for name in self.spec.equation_ids if name not in eliminated)
+            if kept != system.rows:
+                raise ValueError("the held system's rows are not the problem's kept rows in order")
+        free = set(system.free)
+        self.variable_ids = tuple(name for name in self.spec.variable_ids if name in free)
         self.decision_ids = formulation.decision_ids
         self.primal_ids = self.variable_ids + self.decision_ids
-        self.twin: ParametricTwin = compile_parametric_twin(self.spec, self.decision_ids)
+        self.twin: ParametricTwin = host.twin(self.decision_ids)
+        self._twin_calls = _block_calls(self.twin)
         self._kept = np.array(
-            [self.spec.equation_ids.index(name) for name in self.equality_ids], dtype=np.intp
+            [self.spec.equation_ids.index(name) for name in system.rows], dtype=np.intp
         )
+        position = {name: index for index, name in enumerate(self.spec.variable_ids)}
+        n_state = len(self.spec.variable_ids)
+        #: Index arrays built once (§4.2.1): the free columns in the full state vector, and the
+        #: primal's columns of `[F_x  F_p]`; each label row's (outlet, source) positions.
+        self._free = np.array([position[name] for name in self.variable_ids], dtype=np.intp)
+        self._columns = np.concatenate(
+            [self._free, n_state + np.arange(len(self.decision_ids), dtype=np.intp)]
+        )
+        self._labels = tuple((position[out], position[src]) for _, out, src in system.labels)
+        self._base_x = np.array(state_vector(self.spec, state), dtype=np.float64)
+        for name, value in system.held.items():
+            self._base_x[position[name]] = float(value)
         self.start = tuple(float(value) for value in start)
-        self.start_state = dict(start_state)
-        self.bounds = self._bounds(flowsheet)
+        self.start_state = dict(state)
+        host_bounds = getattr(host, "bounds", None)
+        if point is not None and callable(host_bounds):
+            # §4.2.3: the host's bounds over its free columns, then the decision boxes.
+            self.bounds = {**host_bounds(point), **self._decision_bounds()}
+        else:
+            self.bounds = self._bounds(host.domain())
         self.counters = {"residual_calls": 0, "jacobian_calls": 0}
         unknown = formulation.unknown_assessment_outputs()
         if unknown:
@@ -476,31 +544,99 @@ class FullSpaceNlp:
         self.output_scales: dict[str, float] = {}
         self.admissibility_nominals: dict[str, float] = {}
         self.closure: AssessmentClosure | None = None
+        #: OPT §4.4: the output blocks in order (E01's assessment, then WO-5's phase rows);
+        #: `output_ids`, `output_scales` and `admissibility_nominals` are their concatenation.
+        self.output_blocks: tuple[OutputBlock, ...] = ()
         if self.assessment is not None:
             self._bind(self.assessment)
+        #: OPT §4.7: the start's held-regime phase rows, the second output block (a revision
+        #: host's; SYN-001's `phase_rows` is `None`, so M03's gray box is unchanged).
+        self.phase: PhaseRows | None = None
+        if point is not None:
+            rows = host.phase_rows(point)
+            if rows is not None and rows.rows:
+                self._hold_phases(rows)
 
     def _bind(self, binding: AssessmentBinding) -> None:
         """The gray box's outputs over the program's twin with the decisions symbolic (E01
         §4.10.2): `assessment_closure` at the start."""
         self.assessment_twin: ParametricTwin = assessment_twin(
-            binding, self.variable_ids, self.decision_ids
+            binding, self.spec.variable_ids, self.decision_ids
         )
         self._assessment_calls = _block_calls(self.assessment_twin)
         x, decisions = self.split(self.initial_point())
         closure = assessment_closure(binding, self.assessment_twin, x, decisions)
         program = binding.program
         self.closure = closure
-        self.output_ids = closure.output_ids
         self._outputs = np.array(
-            [program.output_ids.index(name) for name in self.output_ids], dtype=np.intp
+            [program.output_ids.index(name) for name in closure.output_ids], dtype=np.intp
         )
-        self.output_scales = dict(closure.scales)
-        self.admissibility_nominals = dict(closure.nominals)
+        self._add_block(
+            OutputBlock(
+                name="assessment",
+                constraint="assessment_admissibility",
+                ids=closure.output_ids,
+                scales=MappingProxyType(dict(closure.scales)),
+                admissibility=MappingProxyType(dict(closure.nominals)),
+                values=self._assessment_values,
+                jacobian=self._assessment_output_jacobian,
+            )
+        )
+
+    def _hold_phases(self, rows: PhaseRows) -> None:
+        """The phase rows as an output block over their twin with the decisions symbolic; each
+        row is `a/nominal ≥ 0` already, so its scale is 1 (§4.7)."""
+        self.phase = rows
+        self.phase_twin: ParametricTwin = rows.twin(self.decision_ids)
+        self._add_block(
+            OutputBlock(
+                name="phase",
+                constraint=PHASE_COMPONENT,
+                ids=rows.ids,
+                scales=MappingProxyType({name: 1.0 for name in rows.ids}),
+                admissibility=rows.nominals,
+                values=self._phase_values,
+                jacobian=self._phase_jacobian,
+            )
+        )
+
+    def _phase_values(self, z: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
+        x, decisions = self.split(z)
+        return np.asarray(self.phase_twin.residual(x, decisions), dtype=np.float64)
+
+    def _phase_jacobian(self, z: npt.NDArray[np.float64]) -> sp.csc_matrix:
+        x, decisions = self.split(z)
+        jacobian = _twin_jacobian(self.phase_twin, x, decisions)
+        if self.restricted:
+            jacobian = jacobian[:, self._columns]
+        return sp.csc_matrix(jacobian)
+
+    def _add_block(self, block: OutputBlock) -> None:
+        """Append an output block; its ids must be new."""
+        clash = set(block.ids) & set(self.output_ids)
+        if clash:
+            raise ValueError(f"output ids repeat across blocks: {sorted(clash)}")
+        self.output_blocks = (*self.output_blocks, block)
+        self.output_ids = (*self.output_ids, *block.ids)
+        self.output_scales.update(block.scales)
+        self.admissibility_nominals.update(block.admissibility)
 
     def _assessment_jacobian(
         self, x: npt.NDArray[np.float64], decisions: Mapping[str, float]
     ) -> sp.csc_matrix:
         return _twin_jacobian(self.assessment_twin, x, decisions)
+
+    def _assessment_values(self, z: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
+        x, decisions = self.split(z)
+        values = np.asarray(self.assessment_twin.residual(x, decisions), dtype=np.float64)
+        return values[self._outputs]
+
+    def _assessment_output_jacobian(self, z: npt.NDArray[np.float64]) -> sp.csc_matrix:
+        x, decisions = self.split(z)
+        jacobian = self._assessment_jacobian(x, decisions)[self._outputs, :]
+        if self.restricted:
+            jacobian = jacobian[:, self._columns]
+        return sp.csc_matrix(jacobian)
 
     # -- primal layout -------------------------------------------------------------------------
 
@@ -509,19 +645,28 @@ class FullSpaceNlp:
         return len(self.variable_ids)
 
     def split(self, z: npt.NDArray[np.float64]) -> tuple[npt.NDArray[np.float64], dict[str, float]]:
-        """`z` → (the state vector, the decisions by id)."""
+        """`z` → (the full state vector, the decisions by id); on a held system the held columns
+        are their certified values (§4.2.1)."""
         if z.shape != (len(self.primal_ids),):
             raise ValueError(f"primal has shape {z.shape}; expected ({len(self.primal_ids)},)")
         n = self.n_variables
-        return z[:n], {
+        decisions = {
             name: float(value) for name, value in zip(self.decision_ids, z[n:], strict=True)
         }
+        if not self.restricted:
+            return z[:n], decisions
+        x = self._base_x.copy()
+        x[self._free] = z[:n]
+        return x, decisions
 
     def initial_point(self) -> npt.NDArray[np.float64]:
-        """The verified simulation state at the start decisions (spec §8.2)."""
-        return np.concatenate(
-            [np.array(state_vector(self.spec, self.start_state)), np.array(self.start)]
-        )
+        """The verified simulation state at the start decisions (spec §8.2): on a held system,
+        its free columns."""
+        if not self.restricted:
+            return np.concatenate(
+                [np.array(state_vector(self.spec, self.start_state)), np.array(self.start)]
+            )
+        return np.concatenate([self._base_x[self._free], np.array(self.start)])
 
     # -- evaluation ----------------------------------------------------------------------------
 
@@ -529,7 +674,11 @@ class FullSpaceNlp:
         """`F_K(x; d)`, the kept rows in `equation_ids` order, from the twin."""
         self.counters["residual_calls"] += 1
         x, decisions = self.split(z)
-        return np.asarray(self.twin.residual(x, decisions), dtype=np.float64)[self._kept]
+        rows = np.asarray(self.twin.residual(x, decisions), dtype=np.float64)[self._kept]
+        if not self._labels:
+            return rows
+        labels = np.array([x[out] - x[src] for out, src in self._labels], dtype=np.float64)
+        return np.concatenate([rows, labels])
 
     def equality_jacobian(self, z: npt.NDArray[np.float64]) -> sp.csc_matrix:
         """`[F_x,K  F_p,K]` at `z`: rows the kept rows, columns `primal_ids`; exact, one graph."""
@@ -537,20 +686,51 @@ class FullSpaceNlp:
         x, decisions = self.split(z)
         state = _sparse(self.twin.jacobian_x(x, decisions))
         parameter = _sparse(self.twin.jacobian_p(x, decisions))
-        return sp.csc_matrix(sp.hstack([state, parameter], format="csc")[self._kept, :])
+        full = sp.hstack([state, parameter], format="csc")
+        if not self.restricted:
+            return sp.csc_matrix(full[self._kept, :])
+        rows = full[self._kept, :][:, self._columns]
+        if not self._labels:
+            return sp.csc_matrix(rows)
+        return sp.csc_matrix(sp.vstack([rows, self._label_jacobian()], format="csc"))
+
+    def _label_jacobian(self) -> sp.csc_matrix:
+        """The label rows' constant Jacobian over the primal: `+1` at the outlet, `−1` at the
+        source, where that column is free (decisions never enter a label). Every entry is
+        structural, so the pattern Ipopt is handed never changes."""
+        column = {int(index): k for k, index in enumerate(self._free)}
+        rows, cols, values = [], [], []
+        for k, (out, src) in enumerate(self._labels):
+            for index, value in ((out, 1.0), (src, -1.0)):
+                if index in column:
+                    rows.append(k)
+                    cols.append(column[index])
+                    values.append(value)
+        return sp.csc_matrix(
+            (values, (rows, cols)), shape=(len(self._labels), len(self.primal_ids))
+        )
 
     def output_values(self, z: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
-        """The gray box's outputs `G(x; d)` in `output_ids` order, from the assessment twin."""
+        """The gray box's outputs `G(x; d)` in `output_ids` order: each block's, in block order
+        (one block is passed through as it is)."""
         self.counters["output_calls"] = self.counters.get("output_calls", 0) + 1
-        x, decisions = self.split(z)
-        values = np.asarray(self.assessment_twin.residual(x, decisions), dtype=np.float64)
-        return values[self._outputs]
+        if len(self.output_blocks) == 1:
+            return self.output_blocks[0].values(z)
+        return np.concatenate([block.values(z) for block in self.output_blocks])
 
     def output_jacobian(self, z: npt.NDArray[np.float64]) -> sp.csc_matrix:
-        """`[G_x  G_d]` at `z`: rows `output_ids`, columns `primal_ids`; exact, canonical CSC."""
+        """`[G_x  G_d]` at `z`: rows `output_ids`, columns `primal_ids`; exact, canonical CSC,
+        the blocks stacked in block order (one block is passed through as it is)."""
         self.counters["output_jacobian_calls"] = self.counters.get("output_jacobian_calls", 0) + 1
-        x, decisions = self.split(z)
-        return sp.csc_matrix(self._assessment_jacobian(x, decisions)[self._outputs, :])
+        if len(self.output_blocks) == 1:
+            return self.output_blocks[0].jacobian(z)
+        stacked = sp.vstack([block.jacobian(z) for block in self.output_blocks], format="csc")
+        return sp.csc_matrix(stacked)
+
+    def property_calls(self) -> int:
+        """Property-block callbacks of the twin since this problem was built (the host may
+        reuse one twin across starts)."""
+        return _block_calls(self.twin) - self._twin_calls
 
     def assessment_property_calls(self) -> int:
         """Property-block callbacks of the assessment twin since this problem was built."""
@@ -560,8 +740,7 @@ class FullSpaceNlp:
 
     # -- bounds and scaling --------------------------------------------------------------------
 
-    def _bounds(self, flowsheet: Syn001Flowsheet) -> dict[str, VariableBound]:
-        domain = flowsheet.provider.describe().domain
+    def _bounds(self, domain: Mapping[str, tuple[float, float]]) -> dict[str, VariableBound]:
         temperature, pressure = domain["T"], domain["P"]
         bounds: dict[str, VariableBound] = {}
         for name in self.variable_ids:
@@ -585,6 +764,12 @@ class FullSpaceNlp:
             )
         return bounds
 
+    def _decision_bounds(self) -> dict[str, VariableBound]:
+        return {
+            decision.parameter_id: VariableBound(decision.lower, decision.upper, "decision_box")
+            for decision in self.formulation.decisions
+        }
+
     def bound_arrays(self) -> tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]]:
         """Lower and upper bounds over `primal_ids`, `∓inf` where unbounded."""
         lower = [self.bounds[name].lower for name in self.primal_ids]
@@ -601,8 +786,11 @@ class FullSpaceNlp:
         return np.array(state + decisions)
 
     def equality_scaling(self) -> npt.NDArray[np.float64]:
-        """Ipopt's user scaling of the kept rows: `1/S_F`."""
-        return np.array([1.0 / self.scaling.row[name] for name in self.equality_ids])
+        """Ipopt's user scaling of the kept rows: `1/S_F`; a label row's `S_F` is K03's
+        temperature nominal, as the region scales it (§4.4)."""
+        rows = [1.0 / self.scaling.row[name] for name in self.system.rows]
+        labels = [1.0 / float(REGISTERED_NOMINALS[LABEL_KIND])] * len(self.label_ids)
+        return np.array(rows + labels)
 
     def output_scaling(self) -> npt.NDArray[np.float64]:
         """Ipopt's user scaling of the gray box's output rows: `1/scale` (E01 §4.10.2)."""

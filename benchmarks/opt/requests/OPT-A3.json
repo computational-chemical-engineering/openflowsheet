@@ -1,0 +1,29 @@
+{
+  "constraints": [],
+  "decisions": [
+    {
+      "lower": 1000.0,
+      "scale": 10000.0,
+      "specification_id": "SPEC-Q",
+      "unit": "W",
+      "upper": 20000.0
+    }
+  ],
+  "objective": {
+    "expression": {
+      "constant": 0,
+      "linear": {
+        "S3.T": -1
+      },
+      "quadratic": [],
+      "text": "-S3.T"
+    },
+    "scale": 100.0,
+    "sense": "minimize"
+  },
+  "problem_id": "OPT-A3",
+  "request_format": "openflowsheet-optimization-request-v1",
+  "starts": {
+    "include_revision": true
+  }
+}

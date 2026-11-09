@@ -1,0 +1,63 @@
+{
+  "constraints": [
+    {
+      "expression": {
+        "constant": 0,
+        "linear": {
+          "S3.T": 1
+        },
+        "quadratic": [],
+        "text": "S3.T"
+      },
+      "id": "T-min",
+      "lower": 330.0,
+      "upper": null
+    }
+  ],
+  "decisions": [
+    {
+      "lower": 0.05,
+      "scale": 1.0,
+      "specification_id": "SPEC-r",
+      "unit": "1",
+      "upper": 0.95
+    },
+    {
+      "lower": 500.0,
+      "scale": 10000.0,
+      "specification_id": "SPEC-Q",
+      "unit": "W",
+      "upper": 6000.0
+    }
+  ],
+  "objective": {
+    "expression": {
+      "constant": 0.5625,
+      "linear": {
+        "decision:SPEC-Q": 0.0001,
+        "decision:SPEC-r": -2.25
+      },
+      "quadratic": [
+        {
+          "a": "decision:SPEC-r",
+          "b": "decision:SPEC-r",
+          "coefficient": 2.25
+        }
+      ],
+      "text": "Q/Q_s + c*(r*n_F - n_star)^2/n_s^2"
+    },
+    "sense": "minimize"
+  },
+  "problem_id": "OPT-A2",
+  "request_format": "openflowsheet-optimization-request-v1",
+  "starts": {
+    "explicit": [
+      [
+        0.7,
+        5500.0
+      ]
+    ],
+    "halton": 1,
+    "include_revision": true
+  }
+}

@@ -520,6 +520,13 @@
             "not_assessed",
             "vacuous_at_vertex"
           ]
+        },
+        "numerical_verification": {
+          "enum": [
+            "certificate",
+            "phase_boundary_form"
+          ],
+          "description": "OPT §9 A-1: the basis the candidate's V1 passed on — its re-solve's certificate VERIFIED, or the phase-boundary form (the certificate's own matrix with the boundary splits held, clauses e1-e6; the certificate itself UNVERIFIED). Present on a revision optimisation's report with a candidate; numerical verification, reported apart from optimality evidence."
         }
       }
     },
@@ -550,6 +557,10 @@
           "minLength": 1
         }
       }
+    },
+    "revision": {
+      "$ref": "https://github.com/frankp/process-runtime/schemas/optimization-request.schema.json#/$defs/report_revision",
+      "description": "OPT design §4.13 (ADR 0019 Amendment 16, additive): the stored revision, the optimisation request and the optimisation's identity (§4.8); absent from an M03 SYN-001 report."
     }
   },
   "allOf": [
@@ -628,7 +639,14 @@
                     "SIMULATION_NOT_READY",
                     "ASSESSMENT_REGIME_INADMISSIBLE",
                     "ASSESSMENT_OBJECTIVE_UNSCALED",
-                    "NLP_SOLVER_UNAVAILABLE"
+                    "NLP_SOLVER_UNAVAILABLE",
+                    "REVISION_MISMATCH",
+                    "REVISION_UNBOUND",
+                    "OPTIMIZATION_ROUTE_UNAVAILABLE",
+                    "DECISION_UNIT_NOT_INTERNAL",
+                    "DECISION_NOT_CONTINUOUS",
+                    "TOO_MANY_STARTS",
+                    "REGIME_MARGIN_UNDEFINED"
                   ]
                 }
               }
@@ -689,7 +707,14 @@
             "KKT_POINT_VERIFIED",
             "NOT_VERIFIED",
             "INFEASIBLE_REPORTED",
-            "SOLVER_FAILED"
+            "SOLVER_FAILED",
+            "REVISION_MISMATCH",
+            "REVISION_UNBOUND",
+            "OPTIMIZATION_ROUTE_UNAVAILABLE",
+            "DECISION_UNIT_NOT_INTERNAL",
+            "DECISION_NOT_CONTINUOUS",
+            "TOO_MANY_STARTS",
+            "REGIME_MARGIN_UNDEFINED"
           ]
         },
         "detail": {
@@ -970,6 +995,71 @@
               "type": "null"
             }
           ]
+        },
+        "change_set": {
+          "$ref": "https://github.com/frankp/process-runtime/schemas/change-set.schema.json",
+          "description": "OPT §4.8: the edits that write the candidate's decisions into the base revision; committing it is the user's act."
+        },
+        "resolve_record": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1,
+          "description": "OPT §4.8: V1's re-solve bundle, relative to the optimisation record."
+        },
+        "phase_bounds_active": {
+          "type": "array",
+          "description": "OPT §4.7: the start's held-regime phase rows active at the candidate (V3's active set): the unit (a lifted split's) or stream (a declared thermal port's) it holds, the row, its scaled slack (row / nominal) and V5's multiplier.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "unit",
+              "row",
+              "slack_scaled",
+              "multiplier"
+            ],
+            "properties": {
+              "unit": {
+                "type": "string",
+                "minLength": 1
+              },
+              "row": {
+                "type": "string",
+                "minLength": 1
+              },
+              "slack_scaled": {
+                "type": "number"
+              },
+              "multiplier": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              }
+            }
+          }
+        },
+        "regime_note": {
+          "type": "string",
+          "minLength": 1,
+          "description": "OPT §4.6 (E01 review N5): present when phase_bounds_active or the assessment's regime_bounds_active is non-empty; the status is relative to the held regime."
+        },
+        "regimes_unguarded": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          },
+          "description": "OPT §9 A-3: the start's held LIQUID/VAPOR splits whose phase row would not be their closure's own test (no row; judged by V4's margin alone). Absent where none."
+        },
+        "certificate_basis": {
+          "enum": [
+            "certificate",
+            "phase_boundary_form"
+          ],
+          "description": "OPT §9 A-1: the basis V1 passed on at the candidate (see claims.numerical_verification); with phase_boundary_form, committing the change-set and solving gives an UNVERIFIED certificate (rank limitation at the phase boundary)."
         }
       }
     },
@@ -1176,6 +1266,74 @@
             "INFEASIBLE_REPORTED",
             "SOLVER_FAILED"
           ]
+        },
+        "start_record": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1,
+          "description": "OPT §4.8: the start's certified solve bundle, relative to the optimisation record."
+        },
+        "resolve_record": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1,
+          "description": "OPT §4.8: V1's re-solve bundle, relative to the optimisation record."
+        },
+        "held_signature": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "description": "OPT §4.6: the start's held attempt signature (lifted regimes, then dormancy items)."
+        },
+        "zero_subsystem": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "status",
+            "columns",
+            "rows"
+          ],
+          "properties": {
+            "status": {
+              "enum": [
+                "held",
+                "unresolved"
+              ]
+            },
+            "columns": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "string"
+              }
+            },
+            "rows": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "description": "OPT §9 A-2: the start's structurally zero subsystem — the free molar flows exactly 0.0 (columns) and the rows only they enter (rows); held at 0 with the rows dropped when as many, else bounded [0, ∞). Absent where empty."
+        },
+        "regimes_unguarded": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          },
+          "description": "OPT §9 A-3: the start's held LIQUID/VAPOR splits whose phase row would not be their closure's own test (no row; judged by V4's margin alone). Absent where none."
         }
       }
     }

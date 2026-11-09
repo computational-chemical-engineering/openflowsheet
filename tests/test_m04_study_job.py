@@ -24,6 +24,7 @@ from typing import Any
 import pytest
 from m04_schema_support import without_m04
 from msg_schema_support import MSG_OPERATIONS, without_msg
+from opt_schema_support import without_opt
 from t07_jobs_support import lifecycle_violations, response_schema_violations
 from x02_schema_support import without_x02
 
@@ -284,8 +285,9 @@ def test_a42_m04s_responses_decompose_onto_m02s_snapshots() -> None:
     for name, operation in OPERATIONS.items():
         if name in MSG_OPERATIONS:  # MSG's `explain` row (ADR 0058 D7) postdates M04
             continue
-        # MSG's (ADR 0058) and X02's (ADR 0070) additions postdate M04: they are taken out first.
-        resolved = without_msg(without_x02(r4.resolved_response(operation)))
+        # MSG's (ADR 0058), X02's (ADR 0070) and OPT's (ADR 0071) additions postdate M04: they are
+        # taken out first, the later first.
+        resolved = without_msg(without_x02(without_opt(r4.resolved_response(operation))))
         assert r4._digest(without_m04(resolved)) == before[name], name
         if r4._digest(resolved) != before[name]:
             moved.append(name)

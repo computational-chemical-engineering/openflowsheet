@@ -52,7 +52,7 @@ import math
 import os
 import re
 import time
-from collections.abc import Iterator, Sequence
+from collections.abc import Callable, Iterator, Mapping, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Final
@@ -86,7 +86,6 @@ from openflowsheet.studies.nlp.closure import (
     assessment_record,
     classify_starts,
     formulation_record,
-    model_record,
     report_limits,
     solver_record,
     start_closure,
@@ -102,8 +101,8 @@ from openflowsheet.studies.nlp.formulation import (
     assessment_names,
     is_assessment_name,
 )
+from openflowsheet.studies.nlp.host import NlpHost, as_host
 from openflowsheet.studies.nlp.verification import CandidateVerification, verify_candidate
-from openflowsheet.studies.syn001 import with_pinned
 
 #: Ipopt's integer-valued options among spec §8.4's; every other numeric option is a Number.
 #: cyipopt picks Ipopt's option type from the Python type, so the recorded values (verbatim, spec
@@ -264,11 +263,15 @@ def build_model(nlp: FullSpaceNlp, box: FullSpaceGreyBox) -> Any:
             by_id[name].upper,
         ),
     )
-    admissibility = list(nlp.admissibility_nominals)
-    if nlp.output_ids:
-        # E01 §4.10.2: each admissibility row of the closure is `adm ≥ 0`, scaling 1.
-        model.assessment_admissibility = pyo.Constraint(
-            admissibility, rule=lambda _, name: model.greybox.outputs[name] >= 0.0
+    # OPT §4.4: each output block's admissibility rows are `row ≥ 0`, scaling 1, in a component
+    # of the block's own (E01 §4.10.2's `assessment_admissibility`; WO-5's phase rows).
+    for block in nlp.output_blocks:
+        model.add_component(
+            block.constraint,
+            pyo.Constraint(
+                list(block.admissibility),
+                rule=lambda _, name: model.greybox.outputs[name] >= 0.0,
+            ),
         )
     model.scaling_factor = pyo.Suffix(direction=pyo.Suffix.EXPORT)
     for name, factor in zip(nlp.primal_ids, nlp.primal_scaling(), strict=True):
@@ -286,8 +289,10 @@ def build_model(nlp: FullSpaceNlp, box: FullSpaceGreyBox) -> Any:
         ):
             outputs[name].value = float(value)  # G(x₀)
             model.scaling_factor[outputs[name]] = float(factor)
-        for name in admissibility:
-            model.scaling_factor[model.assessment_admissibility[name]] = 1.0
+        for block in nlp.output_blocks:
+            component = model.component(block.constraint)
+            for name in block.admissibility:
+                model.scaling_factor[component[name]] = 1.0
     return model
 
 
@@ -321,6 +326,17 @@ class _Iterations:
     count: int | None = None
     final: dict[str, float] | None = None
 
+    #: OPT §4.8 `optimizer.json`: one row per iteration (iter, obj, inf_pr, inf_du, mu,
+    #: alpha_pr); bounded by `max_iter` + 1.
+    rows: list[tuple[int, float, float, float, float, float]] = field(default_factory=list)
+    #: OPT §4.10: a job's interruption check, called once per iteration. An exception of one of
+    #: the caller's `interruptions` types (the job's `JobInterrupted`) is kept here and Ipopt told
+    #: to stop (`False`, `User_Requested_Stop`); `solve_start` raises it once Ipopt has returned
+    #: (an exception raised through Ipopt's C callback would not reach the job).
+    interrupt: Callable[[], None] | None = None
+    interruptions: tuple[type[BaseException], ...] = ()
+    stopped: BaseException | None = None
+
     def __call__(
         self,
         nlp: Any,
@@ -337,7 +353,23 @@ class _Iterations:
         alpha_pr: float,
         ls_trials: int,
     ) -> bool:
+        if self.interrupt is not None:
+            try:
+                self.interrupt()
+            except self.interruptions as stop:
+                self.stopped = stop
+                return False
         self.count = int(iter_count)
+        self.rows.append(
+            (
+                int(iter_count),
+                float(obj_value),
+                float(inf_pr),
+                float(inf_du),
+                float(mu),
+                float(alpha_pr),
+            )
+        )
         violations = problem.get_current_violations(scaled=False)
         if violations is not None:
             self.final = {
@@ -381,6 +413,13 @@ class StartRun:
     ipopt_final: dict[str, float] | None = None
     verification: CandidateVerification | None = None
     detail: str | None = None
+    #: OPT §4.8: the per-iteration rows and the options Ipopt ran with (in memory; the report
+    #: does not carry them, the optimisation record's `optimizer.json` does).
+    iteration_rows: list[tuple[int, float, float, float, float, float]] = field(
+        default_factory=list
+    )
+    options: dict[str, int | float | str] = field(default_factory=dict)
+    primal_ids: tuple[str, ...] = ()
 
     def note(self, text: str) -> None:
         """Add to `detail`, which the start's report reason carries (spec §8.5)."""
@@ -418,9 +457,11 @@ class StartRun:
         }
 
 
-def _typed_options() -> dict[str, int | float | str]:
+def _typed_options(
+    overrides: Mapping[str, Any] | None = None,
+) -> dict[str, int | float | str]:
     typed: dict[str, int | float | str] = {}
-    for name, value in IPOPT_OPTIONS.items():
+    for name, value in {**IPOPT_OPTIONS, **(overrides or {})}.items():
         if isinstance(value, str):
             typed[name] = value
         elif name in IPOPT_INTEGER_OPTIONS:
@@ -431,25 +472,39 @@ def _typed_options() -> dict[str, int | float | str]:
 
 
 def solve_start(
-    flowsheet: Syn001Flowsheet,
+    flowsheet: NlpHost | Syn001Flowsheet,
     formulation: NlpFormulation,
     readiness: StartReadiness,
     index: int,
+    *,
+    options: Mapping[str, Any] | None = None,
+    before_verification: Callable[[], None] | None = None,
+    interrupt: Callable[[], None] | None = None,
+    interruptions: tuple[type[BaseException], ...] = (),
 ) -> StartRun:
-    """Ipopt from one verified start, then V1-V6 on the decisions it returned (spec §8.5)."""
+    """Ipopt from one verified start, then V1-V6 on the decisions it returned (spec §8.5).
+    `flowsheet` is the NLP host whose readiness certified the start, or a SYN-001 flowsheet.
+
+    OPT §4.3/§4.6: `options` override `IPOPT_OPTIONS` (a request's `max_iter`,
+    `max_wall_time`); `before_verification` is called just before V1's re-solve (the record
+    writer places that bundle). On a revision host (a point with an attempt signature) V2 and
+    V4 are judged against the start's held system. `interrupt` (OPT §4.10, a job's check) runs
+    in Ipopt's intermediate callback; an exception of one of the `interruptions` types it raised
+    (a job's `JobInterrupted`) is re-raised after Ipopt stops, so an interrupted start has no
+    outcome."""
+    host = as_host(flowsheet)
     run = StartRun(index, tuple(readiness.start))
-    if readiness.state is None or readiness.regimes is None:
+    if readiness.state is None or readiness.regimes is None or readiness.point is None:
         raise ValueError(f"start {index} is not a verified start; readiness should have refused")
     nlp: FullSpaceNlp | None = None
     box: FullSpaceGreyBox | None = None
     try:
-        sheet = with_pinned(flowsheet, formulation.decision_values(readiness.start))
-        nlp = FullSpaceNlp(sheet, formulation, readiness.state, readiness.start)
+        nlp = FullSpaceNlp(host, formulation, readiness.point, readiness.start)
         box = FullSpaceGreyBox(nlp)
         model = build_model(nlp, box)
         with _quiet_unexported_scaling():
             pynumero = PyomoNLPWithGreyBoxBlocks(model)
-        iterations = _Iterations()
+        iterations = _Iterations(interrupt=interrupt, interruptions=interruptions)
         # Explicit, not Pyomo's version-dependent default: an evaluation error is reported to
         # Ipopt (which rejects a trial point), never re-raised to end the run (spec §14 Q-F4).
         problem = CyIpoptNLP(
@@ -461,19 +516,24 @@ def solve_start(
             np.ones(pynumero.n_primals()) if primal_scaling is None else primal_scaling,
             np.ones(pynumero.n_constraints()) if constraint_scaling is None else constraint_scaling,
         )
-        for name, value in _typed_options().items():
+        run.options = _typed_options(options)
+        for name, value in run.options.items():
             problem.add_option(name, value)
         began = time.perf_counter()
         try:
             primal, info = problem.solve(problem.x_init())
         finally:
             run.wall_time_s = time.perf_counter() - began
+        if iterations.stopped is not None:
+            raise iterations.stopped
         run.ipopt_status = int(info["status"])
         message = info["status_msg"]
         run.ipopt_message = message.decode() if isinstance(message, bytes) else str(message)
         run.iterations = iterations.count if iterations.count is not None else 0
         run.ipopt_final = iterations.final
+        run.iteration_rows = iterations.rows
         run.final_primal = _by_primal_id(model, pynumero, nlp, np.asarray(primal))
+        run.primal_ids = nlp.primal_ids
     except Exception as error:  # noqa: BLE001 - spec §8.5 rule 4: an adapter exception is a result
         run.note(f"adapter exception {type(error).__name__}: {_first_line(error)}")
     finally:
@@ -491,15 +551,20 @@ def solve_start(
         return run
     x, decisions = nlp.split(run.final_primal)
     run.final_decisions = tuple(decisions[name] for name in formulation.decision_ids)
-    optimizer_state = dict(zip(nlp.variable_ids, (float(value) for value in x), strict=True))
+    optimizer_state = dict(zip(nlp.spec.variable_ids, (float(value) for value in x), strict=True))
+    held = nlp.system if readiness.point.signature is not None else None
     try:
+        if before_verification is not None:
+            before_verification()
         run.verification = verify_candidate(
-            flowsheet,
+            host,
             formulation,
             run.final_decisions,
             regimes=readiness.regimes,
             optimizer_state=optimizer_state,
             closure=nlp.closure,
+            held=held,
+            phase=nlp.phase,
         )
     except Exception as error:  # noqa: BLE001 - recorded; the start then has no V outcomes
         run.note(f"verification raised {type(error).__name__}: {_first_line(error)}")
@@ -525,13 +590,7 @@ def _by_primal_id(
 def _evaluations(nlp: FullSpaceNlp, box: FullSpaceGreyBox) -> dict[str, int]:
     """Spec §8.6's counters since the start's twin was built: full-space residuals and
     Jacobians, property-block callbacks (value and Jacobian), and failed evaluations."""
-    property_calls = (
-        sum(
-            counts["value_calls"] + counts["jacobian_calls"]
-            for counts in nlp.twin.block_calls().values()
-        )
-        + nlp.assessment_property_calls()
-    )
+    property_calls = nlp.property_calls() + nlp.assessment_property_calls()
     return {
         "residual_calls": nlp.counters["residual_calls"],
         "jacobian_calls": nlp.counters["jacobian_calls"],
@@ -643,7 +702,7 @@ def ipopt_version() -> str:
 
 
 def optimize(
-    formulation: NlpFormulation, flowsheet: Syn001Flowsheet, readiness: Readiness
+    formulation: NlpFormulation, flowsheet: NlpHost | Syn001Flowsheet, readiness: Readiness
 ) -> OptimizationReport:
     """Multistart Ipopt over the full-space gray box and the report (spec §8.5-§8.6).
 
@@ -652,6 +711,7 @@ def optimize(
     `classify_starts` gives each start's classification and the report's status."""
     if readiness.status != "READY_FOR_OPTIMIZATION":
         raise ValueError(f"the adapter needs a ready formulation, not {readiness.status!r}")
+    host = as_host(flowsheet)
     if formulation.hessian != HESSIAN_APPROXIMATION:
         raise ValueError(f"Hessian {formulation.hessian!r}: refused before any solver call")
     solver = dataclasses.replace(
@@ -672,11 +732,10 @@ def optimize(
             solver=solver,
             starts=readiness.starts,
         )
-        return unsupported_report(formulation, flowsheet, refused)
+        return unsupported_report(formulation, host, refused)
 
     runs = [
-        solve_start(flowsheet, formulation, start, index)
-        for index, start in enumerate(readiness.starts)
+        solve_start(host, formulation, start, index) for index, start in enumerate(readiness.starts)
     ]
     verdict = classify_starts([run.evidence() for run in runs])
     records = verdict.start_records([run.record(formulation) for run in runs])
@@ -686,11 +745,9 @@ def optimize(
         formulation=formulation_record(
             formulation,
             readiness.declared_regimes,
-            assessment_record(
-                formulation, start_closure(formulation, flowsheet, readiness), candidate
-            ),
+            assessment_record(formulation, start_closure(formulation, host, readiness), candidate),
         ),
-        model=model_record(flowsheet),
+        model=host.model_record(),
         solver=solver_record(solver, solver_environment()),
         hessian_policy=dict(HESSIAN_POLICY),
         starts=records,

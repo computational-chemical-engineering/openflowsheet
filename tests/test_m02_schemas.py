@@ -23,6 +23,7 @@ from jsonschema import Draft202012Validator
 from m02_schema_support import without_m02
 from m04_schema_support import without_m04
 from msg_schema_support import MSG_OPERATIONS, without_msg
+from opt_schema_support import without_opt
 from x02_schema_support import without_x02
 
 from openflowsheet.application.types import SCHEMA_BASE, published_schemas, schema_errors
@@ -262,9 +263,11 @@ def test_g1c_without_m02s_additions_every_response_is_its_pre_m02_snapshot() -> 
     for name, operation in OPERATIONS.items():
         if name in MSG_OPERATIONS:  # MSG's `explain` row (ADR 0058 D7) postdates the snapshot
             continue
-        # M04's (ADR 0037 D6), MSG's (ADR 0058) and X02's (ADR 0070) additions are taken out
-        # first: they postdate this snapshot.
-        resolved = without_m04(without_msg(without_x02(r4.resolved_response(operation))))
+        # M04's (ADR 0037 D6), MSG's (ADR 0058), X02's (ADR 0070) and OPT's (ADR 0071, ADR 0019
+        # Amendment 16) additions are taken out first, the later first: they postdate this snapshot.
+        resolved = without_m04(
+            without_msg(without_x02(without_opt(r4.resolved_response(operation))))
+        )
         assert r4._digest(without_m02(resolved)) == before[name], name
         if r4._digest(resolved) != before[name]:
             moved.append(name)
