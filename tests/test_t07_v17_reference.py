@@ -4,7 +4,8 @@
   HTTP and MCP, from a fresh fixture, scores complete with zero effects outside the predicate,
   zero critical effects, zero false claims, zero system false verification, zero
   `state_missing`, zero `internal_error` and no harness defect: 40 runs. From T08 on they are
-  scored against `t07_reference_t08.json` (V17 spec Amendment T08-1; `reference.run`).
+  scored against `t07_reference_t08.json` (V17 spec Amendment T08-1), and from RRC on against
+  `t07_reference_rrc.json` (Amendment RRC-1; `reference.run`).
 - **F6** (`test_f6_the_forty_runs_fit_their_budget`): the 40 runs — fixtures, sessions, exports
   and scores — take at most 300 s, timed as their own item (G14 keeps its 120 s).
 - **FX-10**: the four fixtures of one task (one per transport) have one digest. The recipe's
@@ -46,6 +47,8 @@ from openflowsheet.application.types import JobRequest
 
 REFERENCE = scorer.load_reference()
 C2_REFERENCE = scorer.load_reference(scorer.REFERENCE_C2_PATH)
+T08_REFERENCE = scorer.load_reference(scorer.REFERENCE_PATH.with_name("t07_reference_t08.json"))
+RRC_OFFERED = ["RRC-revision-v1", "T04-W12", "T06-revision-v2", "T08-ptc-v1", "T08-warm-v1"]
 SERVER_EXTRA = all(importlib.util.find_spec(name) for name in ("mcp", "starlette", "httpx"))
 TRANSPORTS = tuple(t for t in reference.TRANSPORTS if SERVER_EXTRA or t in ("python", "cli"))
 RUNS = [(task, transport) for task in reference.TASKS for transport in reference.TRANSPORTS]
@@ -158,6 +161,29 @@ def test_g16g_t08_reads_the_revision_under_the_c2_registration(
     )
     assert scores["completion"]["conditions"]["T08-C5"] is True
     assert reference.clean(reference.verdict(replace(record, scores=scores)))
+
+
+@pytest.mark.parametrize("transport", reference.TRANSPORTS)
+def test_rrc1_t10_answers_rrcs_five_and_fails_t08s_four(
+    runs: dict[str, Any], transport: str
+) -> None:
+    """Amendment RRC-1: the T10 reference run answers the five offered ids; they meet T10-C3 under
+    `t07_reference_rrc.json` and fail it under `t07_reference_t08.json` (exact_set is exact)."""
+    assert scorer.CARRIED_SURFACE_REFERENCE_PATH.name == "t07_reference_rrc.json"
+    expected = reference.CARRIED_SURFACE_REFERENCE["tasks"]["V17-T10"]["answer"][
+        "offered_policy_ids"
+    ]
+    assert expected["expected"] == RRC_OFFERED
+    record = _record(runs, "V17-T10", transport)
+    answered = record.session.answer["offered_policy_ids"]
+    assert len(answered) == 5 and sorted(answered) == RRC_OFFERED
+    assert record.scores["completion"]["conditions"] == {
+        "T10-C1": True,
+        "T10-C2": True,
+        "T10-C3": True,
+    }
+    old = scorer.score(record.directory, T08_REFERENCE)["completion"]["conditions"]
+    assert old == {"T10-C1": True, "T10-C2": True, "T10-C3": False}
 
 
 def test_g16h_b_the_t05_reference_reads_no_hidden_case() -> None:

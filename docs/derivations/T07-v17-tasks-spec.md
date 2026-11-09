@@ -2242,3 +2242,31 @@ roundoff floor applies.
 - `tests/fixtures/application_results/project_summary/valid/two_revisions_one_job.json` moves by the two policies only.
 
 **What this amendment does not establish.** It is no evidence of agent behaviour on the T08 surface, since no session was run. It is not a re-judgement of `v17-c1` or `v17-c2`. It is not a licence for later content changes: each needs its own amendment of this kind.
+
+## Amendment RRC-1 (the carried surface after RRC; ADR 0072, R-995) — 2026-11-09
+
+**Author:** design lane (`specifier`), ruling `docs/reviews/RRC-v17-t10.md`. **Authority.** This amendment is part of this specification. It adds a registration for reference runs of the carried surface from RRC on. It changes no task, prompt, oracle or footer of `v17-c1` or `v17-c2`, it changes nothing in Amendment T08-1, and it re-scores no run.
+
+**Why.** RRC offers one more solve policy, `RRC-revision-v1`, by name and never as a route's default (ADR 0072, R-995). It is a content-only addition to `get_project.solve_policies` named by a register entry, which M07a's MR-7 clause admits under Frank's F5 (2026-09-29); ADR 0072 C1 measured the served tool-list digest `455d01eb…` and the surface chain unchanged. Amendment T08-1 registered T10-C3's set as `{"T04-W12", "T06-revision-v2", "T08-ptc-v1", "T08-warm-v1"}` and requires an amendment of its kind for each later content change. G16-b's T10 reference solution answers from the live `get_project` and failed on all four transports and both architectures (CI run 42547017088, `wp/RRC` `fcba6656`: T10-C3 false, T10-C1 and T10-C2 true).
+
+**Decision.**
+1. **A fourth document.** `t07_reference.py --emit-rrc` writes `docs/derivations/scripts/t07_reference_rrc.json`. It is `t07_reference_c2.json`'s document with exactly these changes, and no others (GC-18.changes_exactly):
+   - `constants.offered_policy_ids` and `tasks.V17-T10.answer.offered_policy_ids.expected` become `["RRC-revision-v1", "T04-W12", "T06-revision-v2", "T08-ptc-v1", "T08-warm-v1"]`;
+   - a member `carry`, where T08-1's stands, states the base (`v17-c2`, as T08-1's does), the document it supersedes (`t07_reference_t08.json`, sha256 `f946a88f268acc0b690e24f5fb1c358611b5333e169468bd2ae861f8a13148b9`), F5 as MR-7 applies it, and the document's use;
+   - `generator_claims` counts GC-18 as well.
+2. **T10-C3 for reference runs from RRC on** reads: `answer.offered_policy_ids` is an array whose elements, as a set, equal `{"RRC-revision-v1", "T04-W12", "T06-revision-v2", "T08-ptc-v1", "T08-warm-v1"}`. T10-C1, T10-C2 and item 7's `T06-revision-v1` (still not offered, GC-18.offered.item_7_still_unoffered) are unchanged.
+3. **Who reads what.**
+   - Runs recorded under `v17-c1` and `v17-c2` keep their documents (SC-13 unchanged). `t07_reference.json` stays at `cba24a92…` (GC-16), `t07_reference_c2.json` at `23b924b8…` (GC-17), and `t07_reference_t08.json` at `f946a88f…` (GC-18.t08.reference_frozen).
+   - The reference runs of the carried surface — G16-b in `tests/test_t07_v17_reference.py` and in the RC job's step 8 — are scored against `t07_reference_rrc.json` from RRC on, and `scores.json`'s `inputs.reference_sha256` names it. G16-b as recorded for T08.A49 and M07a.A37 stays as recorded.
+   - No agent campaign is scored against the new document; a new campaign would need its own amendment and Frank's approval (R-115).
+4. **Nothing is re-scored** (R-087).
+
+**GC-18** (in `run_rrc_claims`; `--check` fails if any fails): `t08.reference_frozen`; `changes_exactly` (the paths that differ from the c2 document, `generator_claims` aside, are exactly `carry`, `constants.offered_policy_ids` and `tasks.V17-T10.answer.offered_policy_ids.expected`); `offered.adds_exactly_rrc_sorted_unique`; `offered.item_7_still_unoffered`; `carry.names_frozen_documents`; `spec.amendment_present`, `spec.quotes_offered_set` and `spec.quotes_t08_reference_sha`.
+
+**Rejected alternatives, and why.** Editing T08-1's set in place (it moves bytes T08-1, GC-17, T08.A49 and M07a.A37 describe); excluding `RRC-revision-v1` from T10-C3 by B13's rule (B27 measures what T08 delivered, T10-C3 what the contract offers: the expectation would be false); hiding it from `get_project` (contradicts R-995); an oracle from the live surface or a superset test (T08-1's reasons).
+
+**Build-lane changes.** `scorer.CARRIED_SURFACE_REFERENCE_PATH` names `t07_reference_rrc.json`; `tests/test_t07_v17_reference.py` gains the RRC-1 test (T10 meets T10-C3 under this document and fails it under T08-1's).
+
+**Watch for.** `t07_reference_t08.json` edited (GC-18 refuses); an offered id dropped from T10-C3 by a package's own exclusion rule; a later offered id without its own amendment.
+
+**What this amendment does not establish.** It is no evidence of agent behaviour with `RRC-revision-v1` offered, since no session was run. It is not a re-judgement of `v17-c1`, `v17-c2`, or T08's or the alpha's G16-b. It is not a licence for later content changes: each needs its own amendment of this kind.

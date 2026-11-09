@@ -1,0 +1,175 @@
+{
+  "work_package": "RRC",
+  "commit": "6b892b036f2fc82167784daa6bce946345b64515",
+  "requirements": [
+    "D01",
+    "D20"
+  ],
+  "status": "tested",
+  "inputs": {
+    "case_id": "ADR 0072 (Accepted 2026-11-08, Frank, decision board; FQ1 yes, FQ2-FQ4 default); design docs/design/RRC-revision-region-continuation.md (gates G1-G10, F1, F2 in 8.2); review docs/reviews/RRC-review.md (fix round WO-7); V17-T10 ruling docs/reviews/RRC-v17-t10.md; register R-990..R-996; build decisions D-1..D-46 (docs/RRC_DECISIONS.md); benchmarks benchmarks/rrc (10 candidates, 3 policies; selected N1 and C3)",
+    "case_hash": "17c5cba482988b415f9cf857ac0d3e12e24ef2f849c5a15a0b6a09bff4fc26b8",
+    "environment_lock_hash": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+  },
+  "commands": [
+    {
+      "cmd": "CI ci.yml run 42558001650 on wp/RRC at 6b892b03: check (ubuntu-latest), check (ubuntu-24.04-arm), identity, default-install (all success); the check job runs scripts/check.sh (G7 on both architectures); tests/test_rrc_g8_determinism.py (G8) on both",
+      "cwd": "GitHub Actions",
+      "exit_code": 0
+    },
+    {
+      "cmd": "OMP_NUM_THREADS=1 PYTHONPATH=src .venv/bin/python -m pytest tests/test_rrc_*.py (serial, worktree copy confirmed; 73 passed at the V17-T10 head, RRC_DECISIONS D-46; 685 passed with the surface, global-state and OPT batteries at merge prep, D-44, D-45)",
+      "cwd": ".claude/worktrees/rrc",
+      "exit_code": 0
+    },
+    {
+      "cmd": "PYTHONPATH=src .venv/bin/python scripts/corpus_identity.py --check (F0 PASS: M1 50/50, M2-M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 35/35)",
+      "cwd": ".claude/worktrees/rrc",
+      "exit_code": 0
+    },
+    {
+      "cmd": "PYTHONPATH=src .venv/bin/python benchmarks/rrc/run_candidates.py table (WO-5b, ref-x86-64 at 40fba287; benchmarks/rrc/results-ref-x86-64.md)",
+      "cwd": ".claude/worktrees/rrc",
+      "exit_code": 0
+    },
+    {
+      "cmd": "PYTHONPATH=src .venv/bin/python docs/derivations/scripts/t07_reference.py --check (V17-T10 ruling A2, RRC_DECISIONS D-46); pytest tests/test_t07_v17_reference.py 153 passed",
+      "cwd": ".claude/worktrees/rrc",
+      "exit_code": 0
+    },
+    {
+      "cmd": "no local full gate was run (CLAUDE.md gate by risk, 2026-11-08)",
+      "cwd": ".",
+      "exit_code": 0
+    }
+  ],
+  "checks": [
+    {
+      "id": "RRC.G1",
+      "description": "inertness: F0 corpus identity M1-M9; the four edge-3 test files unedited and passing; registered policy_sha256 unchanged; schema fixtures byte-identical",
+      "result": "pass",
+      "value": "F0 PASS: M1 50/50, M2 61/61, M3 61/61, M4 61/61, M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 35/35 (RRC_DECISIONS D-27, WO-7 gates, merge-prep gates, D-46); CI identity job success; edge-3 files: no RRC edit (D-4 aside)"
+    },
+    {
+      "id": "RRC.G2",
+      "description": "level identity (a)-(f) on the G4 and G5 runs",
+      "result": "pass",
+      "value": "tests/test_rrc_edge3.py (N1) and tests/test_rrc_candidates.py (C3); (f) in the S1 form of D-30; holds on 7 of 7 taken runs; O5: no opening refusal anywhere; CI ci.yml run 42558001650 on wp/RRC at 6b892b03"
+    },
+    {
+      "id": "RRC.G3",
+      "description": "controller: rollback and halving from the lambda = 0 state, bitwise; all rejections give HOMOTOPY_STALLED with bracket width at most 2/1024 and no certificate",
+      "result": "pass",
+      "value": "stub corrector in tests/test_rrc_edge3.py; CI ci.yml run 42558001650 on wp/RRC at 6b892b03"
+    },
+    {
+      "id": "RRC.G4",
+      "description": "revision rescue, Family N selected case N1 under the control and RRC-revision-v1",
+      "result": "pass",
+      "value": "control BOUND_BLOCKED (1 it); RRC CONVERGED/VERIFIED/taken, 12 it, lambda 1/4, 3/4, 1 (0 rejected); closed-form worst ratio 0.0109 (at most 1); restart root difference 1.96e-9 scaled (at most 1e-8); benchmarks/rrc/results-ref-x86-64.md, RRC_DECISIONS WO-5 block"
+    },
+    {
+      "id": "RRC.G5",
+      "description": "column rescue (L-COL-9), Family C selected case C3 (M1-recycle split 0.2 to 0.9)",
+      "result": "pass",
+      "value": "control BOUND_BLOCKED (4 it, in the trigger set); RRC CONVERGED/VERIFIED/taken, 22 it, 0 rejected; A29 closure 2.73e-10 (at most 1); restart root 7.8e-15 scaled; L-COL-9 narrowed on this case only (RRC_DECISIONS WO-5 block, D-38)"
+    },
+    {
+      "id": "RRC.G6",
+      "description": "typed refusals (a)-(k): one constructed case per reason, one initializer_rejected event, then the restart unchanged",
+      "result": "pass",
+      "value": "(a, c, d, e, k) tests/test_rrc_application.py; (b, f-j) tests/test_rrc_edge3.py; CI ci.yml run 42558001650 on wp/RRC at 6b892b03"
+    },
+    {
+      "id": "RRC.G7",
+      "description": "replay --rerun on the G4 and G5 bundles and a G6(a) bundle",
+      "result": "pass",
+      "value": "MATCH, 0 differences, no skip, on both CI legs (exact_replay or the platform's compatible_reproduction): tests/test_rrc_application.py::test_g7_bundles_rerun_to_match_without_a_lookup, tests/test_rrc_candidates.py::test_g7_the_column_pairs_bundle_reruns_to_match (D-44); CI ci.yml run 42558001650 on wp/RRC at 6b892b03"
+    },
+    {
+      "id": "RRC.G8",
+      "description": "determinism: N1 and C3 twice in fresh processes; R0 identical; both CI legs check the x86-64 R0 pins",
+      "result": "pass",
+      "value": "tests/test_rrc_g8_determinism.py, N1 artifact_r0_sha256 aa47dabf12e4000a1635c10d950cca3ef4d9db6d1cb5d022c5a82b9dc4aada73, C3 f835da24214f7f015e28a398d895c7b37cf1096b863fd58b3493aa04dd009d9e; green on x86-64 and aarch64 in CI ci.yml run 42558001650 on wp/RRC at 6b892b03"
+    },
+    {
+      "id": "RRC.G9",
+      "description": "honesty: all 10 candidates, all three policies, every outcome, iterations and lambda-trials",
+      "result": "pass",
+      "value": "benchmarks/rrc/results-ref-x86-64.md; three fresh runs (b0c7d1ec twice, 40fba287) equal in outcomes, iterations, trials, checks and state digests; also qualifying and not registered: N2, N3, C4; C1, C2, C5 converge first under every policy (store member not_reached)"
+    },
+    {
+      "id": "RRC.G10",
+      "description": "cost, recorded and not gated",
+      "result": "pass",
+      "value": "recovery wall time 0.12-0.63 s; compile at most 0.051 s per level (O4 threshold 10 s far off); property calls 208-2070 (benchmarks/rrc/results-ref-x86-64.md)"
+    },
+    {
+      "id": "RRC.F1",
+      "description": "forced edge, column end-parameter continuation reaches the independent root",
+      "result": "pass",
+      "value": "CONVERGED/VERIFIED, 12 it; item-0 root difference 4.4e-13 scaled (at most 1e-8); D contains both column end parameters (results-ref-x86-64.md)"
+    },
+    {
+      "id": "RRC.F2",
+      "description": "forced edge, second mechanism case",
+      "result": "pass",
+      "value": "CONVERGED/VERIFIED, 7 it; scaled difference 2.0e-14 (at most 1e-8) (results-ref-x86-64.md)"
+    },
+    {
+      "id": "RRC.V17-T10",
+      "description": "V17-T10 offered policies after RRC (ruling docs/reviews/RRC-v17-t10.md, R-996): Amendment RRC-1, GC-18, t07_reference_rrc.json",
+      "result": "pass",
+      "value": "t07_reference.py --check exit 0 at the amended head: GC-01..GC-15 2808/2808, GC-16 40/40, GC-17 7/7, GC-18 8 of 8; t07_reference_rrc.json sha256 621003a83d35648fb4623f3ad376aa043bb4cf4acbc0bfafd539aabb4d963e93; G16-b green in CI ci.yml run 42558001650 on wp/RRC at 6b892b03 (RRC_DECISIONS D-46)"
+    },
+    {
+      "id": "RRC.FULLGATE",
+      "description": "full local gate (scripts/gate.sh) not run by choice; the merge condition is CI green on x86-64 and aarch64 (CLAUDE.md gate by risk, 2026-11-08)",
+      "result": "unsupported",
+      "value": {
+        "full_gate": "not run (not required); stays unsupported",
+        "ci": "CI ci.yml run 42558001650 on wp/RRC at 6b892b03: check (ubuntu-latest), check (ubuntu-24.04-arm), identity, default-install success"
+      }
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "benchmarks/rrc/cases.yaml",
+      "sha256": "524bbc1ccc81b2ee3312e58baebbc994d199fcb69d59cdebb8919972b699a131",
+      "description": "WO-5a pre-registered candidate table (design 8.1), transcribed before any run"
+    },
+    {
+      "path": "benchmarks/rrc/reference_values.yaml",
+      "sha256": "17c5cba482988b415f9cf857ac0d3e12e24ef2f849c5a15a0b6a09bff4fc26b8",
+      "description": "registered pairs N1 (G4) and C3 (G5), regression with the independent checks named"
+    },
+    {
+      "path": "benchmarks/rrc/results-ref-x86-64.json",
+      "sha256": "4796f5cda60c819c18475b6e2156ca965c72226d6d43930993fbe933f98cc65a",
+      "description": "G9/G10 candidate table, machine-readable (ref-x86-64, 40fba287)"
+    },
+    {
+      "path": "benchmarks/rrc/results-ref-x86-64.md",
+      "sha256": "f70a4d8ea2b914abdb7c7d6e7e0e2b574f272137b6bc46ec60330ce3b0885b5f",
+      "description": "G9/G10 candidate table, rendered"
+    },
+    {
+      "path": "docs/derivations/scripts/t07_reference_rrc.json",
+      "sha256": "621003a83d35648fb4623f3ad376aa043bb4cf4acbc0bfafd539aabb4d963e93",
+      "description": "V17-T10 fourth carried-surface reference (R-996, Amendment RRC-1)"
+    }
+  ],
+  "limitations": [
+    "Evidence class: numerical verification on ref-x86-64 (TRS2); the registered pairs N1 and C3 are regression fixtures with named independent checks (closed-form NET-02 tolerances, A29 closure, restart root, item-0 root), not empirical validation. aarch64 checks the R0 pins and replay in CI only.",
+    "Status tested, not reviewed: ADR 0072 is Accepted (2026-11-08, Frank); the review docs/reviews/RRC-review.md and its fix round WO-7 are recorded, but no reviewed status is claimed by the build lane. No local full gate was run; the merge condition is CI green on both architectures (CI run 42558001650 at 6b892b03).",
+    "L21 is narrowed, not lifted: edge 3's continuation exists under RRC-revision-v1 for a revision region whose nearest verified ancestor has the same declaration and differs only in registered operating values; everywhere else edge 3 is the sequential restart or unsupported. Neither continuation changes the active set.",
+    "L-COL-9 is narrowed only on the failing-first column case (G5, C3: a splitter edit inside a column region, control BOUND_BLOCKED); column end-parameter continuation is mechanism evidence only (F1, forced edge). A first solve, a structural edit and the default policy have none; a column with a pinned (non-two-phase) source signature has not been measured.",
+    "RRC-revision-v1 is not a superset of T06-revision-v2 (review M2): on every measured case where the continuation converged, the sequential restart converged as well, in fewer iterations; a continuation that stops part-way ends the step and the restart is not tried (one recovery per step), so it can fail where T06-revision-v2 converges; no registered case is rescued that T06-revision-v2 does not rescue.",
+    "Review notes left as notes, no action ordered (docs/RRC_HANDOFF.md): R5 ValueError on a corrupt bundle's rerun; the homotopy defect-guard omission; A3's dotted reason path freezes at release; G6 counters would differ by the spent amount where a refused opening spent property calls.",
+    "benchmarks/rrc/results-ref-x86-64.json (measured at 40fba287) lacks the harness's key g2f_opening_equals_source_over_free_columns (D-30); a future re-take adds it. Nothing registered moved."
+  ],
+  "review": {
+    "numerical": "pending",
+    "process_model": "pending"
+  }
+}

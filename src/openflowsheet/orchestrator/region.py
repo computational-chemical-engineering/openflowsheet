@@ -126,6 +126,7 @@ from openflowsheet.orchestrator.phase_contract import (
     opening_not_settled,
 )
 from openflowsheet.orchestrator.rank import PRESSURE_TOLERANCE
+from openflowsheet.orchestrator.revision_continuation import REVISION_CONTINUATION_REJECTED
 from openflowsheet.orchestrator.roots import branch_found, root_fingerprint
 from openflowsheet.orchestrator.trace import (
     AttemptSignature,
@@ -461,6 +462,11 @@ class RecoveryStart:
     regimes: Mapping[str, Regime]
     continuation: Continuation
     initializer_source: str | None
+    #: RRC design note §5.7 (ADR 0072): the signature the source reported for `state` — a
+    #: revision continuation's ancestor certificate's final signature. `None` is T04's recovery
+    #: from the failed solve's own opening, which is not checked. With a value, attempt 0's
+    #: opening is held to T03 §5.1's checks (`check_opening`) against it before the homotopy.
+    reported_signature: AttemptSignature | None = None
 
 
 class _KernelRefusedError(ValueError):
@@ -1867,7 +1873,12 @@ def solve_region(
     With `recovery` (T04 §5.3) it is edge 3's recovery solve: attempt 0 opens at the failed solve's
     item-0 opening (already projected, so §6.2 does not run again) and runs the homotopy core,
     whose λ < 1 levels `compile_level` compiles from the re-bound declaration; every attempt the
-    contract opens after it runs the Newton core on the target (T04 §4.5).
+    contract opens after it runs the Newton core on the target (T04 §4.5). A recovery with a
+    `reported_signature` (RRC design note §5.7, a revision continuation) opens attempt 0 the same
+    way, at the ancestor's root, and holds that opening to the six checks first, with the reported
+    signature as the source's: a refusal ends the solve `INITIALIZATION_FAILED`,
+    `revision_continuation_rejected(opening:<check>:<subject>)`, with no attempt opened and no
+    event, and the caller records it and takes the restart.
 
     A provider that will not split a lifted stream — at the start, at an admissibility check or at
     a kernel verdict — ends the solve `EVALUATION_ERROR` naming the stream and the provider's
@@ -2201,28 +2212,33 @@ def _solve_region(
                 f"the region with signature {opening} is {len(attempt_rows)} x {len(free)}, "
                 "not square",
             )
+        if recovery is not None and recovery.reported_signature is not None and attempt_index == 0:
+            # RRC design note §5.7: a revision continuation opens at an external root — the
+            # ancestor certificate's — so it is checked as a warm start is, against the signature
+            # the certificate reported, before its pinned columns are set. The identity pair is
+            # the requirement's: R5 and R8 established it (`revision_continuation`).
+            refused = _external_opening(
+                current,
+                opening,
+                identity,
+                free,
+                active_splits,
+                regimes,
+                forms,
+                vapour,
+                spec,
+                reported=recovery.reported_signature,
+            )
+            if refused is not None:
+                return closed(
+                    "INITIALIZATION_FAILED",
+                    f"{REVISION_CONTINUATION_REJECTED}(opening:{refused.check}:{refused.subject})",
+                )
         if warm_start and attempt_index == 0 and recovery is None:
             # ADR 0024 D3: an external start is checked, not silently pinned — T03 §5.1 on the
             # opening this attempt would take, in place of `CHECKPOINT_INCOMPATIBLE`.
-            held = tuple(
-                name
-                for split in active_splits
-                for name in _pinned(split, regimes[split.unit], forms, vapour)
-            )
-            refused = check_opening(
-                OpeningState(
-                    values=current, model_version=identity[0], constants_sha256=identity[1]
-                ),
-                OpeningRequirement(
-                    signature=opening,
-                    model_version=identity[0],
-                    constants_sha256=identity[1],
-                    free=free,
-                    pinned=held,
-                    lower_bounds={
-                        name: 0.0 for name in free if spec.variable_kinds.get(name) == "molar_flow"
-                    },
-                ),
+            refused = _external_opening(
+                current, opening, identity, free, active_splits, regimes, forms, vapour, spec
             )
             if refused is not None:
                 return closed(
@@ -2690,6 +2706,47 @@ def _ptc_attempt(
         observer=wall,
         # T05b spec §7.8 (iii): an empty signature is screened too where there are forms (v2).
         compare_empty=bool(dormancy),
+    )
+
+
+def _external_opening(
+    current: Mapping[str, float],
+    opening: AttemptSignature,
+    identity: tuple[str, str],
+    free: Sequence[str],
+    splits: Sequence[LiftedSplit],
+    regimes: Mapping[str, Regime],
+    forms: Mapping[str, ZeroFlowForm],
+    vapour: Mapping[str, VapourOnlyForm],
+    spec: ProblemSpec,
+    *,
+    reported: AttemptSignature | None = None,
+) -> OpeningRefusal | None:
+    """T03 §5.1's six checks on attempt 0's opening from an external start (a compatible warm
+    start, ADR 0024 D3; a revision continuation's ancestor root, RRC §5.7), before its pinned
+    columns are set: the opening's own identity, its signature's pinned columns in signature
+    order, and a zero lower bound on every free molar flow. `reported` is the signature the
+    source reported for the state, `None` for a source that reports none."""
+    held = tuple(
+        name for split in splits for name in _pinned(split, regimes[split.unit], forms, vapour)
+    )
+    return check_opening(
+        OpeningState(
+            values=current,
+            model_version=identity[0],
+            constants_sha256=identity[1],
+            reported=reported,
+        ),
+        OpeningRequirement(
+            signature=opening,
+            model_version=identity[0],
+            constants_sha256=identity[1],
+            free=free,
+            pinned=held,
+            lower_bounds={
+                name: 0.0 for name in free if spec.variable_kinds.get(name) == "molar_flow"
+            },
+        ),
     )
 
 

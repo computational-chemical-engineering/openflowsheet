@@ -1188,6 +1188,18 @@ class ProjectStore:
         return str(revision_id), str(artifact[0])
 
     @staticmethod
+    def job_artifact_relpath(connection: sqlite3.Connection, job_id: str, kind: str) -> str | None:
+        """The `relpath` of `job_id`'s first artifact of `kind`, as `latest_verified_solution`
+        reads its `solution_state`; `None` when the job has none (ADR 0072: the source's
+        certificate, RRC design note §5.3 A1)."""
+        row = connection.execute(
+            "SELECT relpath FROM artifacts WHERE job_id = ? AND kind = ?"
+            " ORDER BY artifact_id LIMIT 1",
+            (job_id, kind),
+        ).fetchone()
+        return None if row is None else str(row[0])
+
+    @staticmethod
     def evidence_for_revision(connection: sqlite3.Connection, revision_id: str) -> list[str]:
         """ADR 0035 D4 (M02 design note §6.3): `invalidations` — every job of an operation in
         `EVIDENCE_OPERATIONS` whose request names `revision_id`, as `<prefix><job_id>`, in

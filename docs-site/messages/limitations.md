@@ -102,7 +102,7 @@ One section per row of the support matrix's limitations: what this version does 
 
 *No plain-language explanation is written yet; the summary is the technical one.*
 
-- **Summary:** In a flowsheet a column region has no edge-3 continuation (no revision region has one). The unit's own `evaluate` keeps S02's full standalone path, S08 Stage B included, so the traversal start is the standalone answer.
+- **Summary:** In a flowsheet a column region has edge-3 continuation only under `RRC-revision-v1`, from a verified ancestor that differs only in operating values. A first solve, a structural edit (stage count, feed stage, a changed end-specification choice) and the default policy have none. The unit's own `evaluate` keeps S02's full standalone path, S08 Stage B included, so the traversal start is the standalone answer.
 
 <a id="L-CSTR-1"></a>
 
@@ -584,7 +584,7 @@ A turbine's ideal (isentropic) outlet is computed in the phase declared for its 
 
 *No plain-language explanation is written yet; the summary is the technical one.*
 
-- **Summary:** Specification continuation (edge 3's homotopy) exists only for regions with a promoted specification; elsewhere it is `unsupported(no_continuation_parameter)`.
+- **Summary:** Edge 3's continuation exists for a region with a promoted specification (specification continuation). Under `RRC-revision-v1`, it also exists for a revision region whose nearest verified ancestor has the same declaration and differs only in registered operating values (revision continuation, ADR 0072). Everywhere else edge 3 is the sequential restart or `unsupported(…)`. Neither continuation changes the active set. `RRC-revision-v1` is not a superset of `T06-revision-v2`: a continuation that stops part-way ends the step and the restart is not tried (one recovery per step), so it can fail where `T06-revision-v2` converges, and no registered case is rescued by it that `T06-revision-v2` does not rescue.
 
 <a id="L22"></a>
 

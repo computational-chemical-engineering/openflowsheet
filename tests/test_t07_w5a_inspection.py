@@ -93,13 +93,14 @@ def test_get_project_states_the_project_and_the_caller(app: LocalApplication) ->
         (policy_id, policy_sha256(policy))
         for policy_id, policy in sorted(APPLICATION_POLICIES.items())
     )
-    # T08 offers `T08-warm-v1` (ADR 0024 D1) and `T08-ptc-v1` (ADR 0023) beside the two routes'
-    # registered policies.
+    # T08 offers `T08-warm-v1` (ADR 0024 D1) and `T08-ptc-v1` (ADR 0023), and RRC offers
+    # `RRC-revision-v1` (ADR 0072; RRC D-1), beside the two routes' registered policies.
     assert {policy_id for policy_id, _ in empty.solve_policies} == {
         "T06-revision-v2",
         "T04-W12",
         "T08-ptc-v1",
         "T08-warm-v1",
+        "RRC-revision-v1",
     }
     assert empty.default_policy_id == "default"
     assert (empty.principal_id, empty.capability_id) == ("local-owner", "local-owner")

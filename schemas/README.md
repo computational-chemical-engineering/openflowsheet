@@ -120,6 +120,14 @@ chord correction exceeds the kind tolerance). No field is added or removed and n
 changes; every registered policy keeps `newton` or `ptc`, and the fixtures regenerate identically
 (R-015).
 
+Changed by **RRC** under ADR 0072 (Accepted 2026-11-08; Frank approved the three widenings, FQ1;
+`docs/RRC_DECISIONS.md`): `solve-policy`'s `globalization.eo_recovery` adds
+`homotopy_or_revision_continuation_or_sequential_restart` (edge 3's revision continuation from the nearest
+verified ancestor, before the sequential restart); `attempt-context`'s `continuation.type` and
+`solution-certificate`'s `branch_provenance[].continuation.type` widen from the single literal
+`specification_continuation` to the enum of it and `revision_continuation`. No field is added or removed and no
+default changes; no registered policy carries the new value, and the fixtures regenerate identically (R-015).
+
 Added by **T07** under ADR 0019 (the application contract v1; approved by Frank) — the K06/T07 row
 of the delivery table delivered, plus four schemas that row does not list. The field sets and enums
 are those of design note `docs/design/T07-jobs-and-bindings.md` §5; `Job` and `JobEvent` also carry

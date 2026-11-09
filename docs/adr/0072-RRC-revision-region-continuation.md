@@ -1,13 +1,13 @@
 # ADR 0072 — RRC: recovery edge 3 for a revision-built region continues the revision's changed operating values from the nearest verified ancestor, before the sequential restart, under a new opt-in policy value
 
-**Status:** **Proposed, 2026-11-08.**
-- It takes effect on `main` when four things hold:
-  - Frank has approved the three additive schema widenings (FQ1);
-  - RRC's evidence manifest is `tested` (gates G1–G10, F1 and F2 of the design note);
-  - the design-lane `reviewer` pass is done;
-  - `scripts/gate.sh` and CI on both architectures have passed on the merge candidate.
-- Until then RRC is built on `wp/RRC`.
-- Register entries are added on acceptance (drafts below, unnumbered).
+**Status:** **Accepted, 2026-11-08 (Frank).** Proposed 2026-11-08.
+- Frank's answers on the decision board, 2026-11-08 (`docs/FRANK_QUESTIONS.md`, "Answers — Frank, 2026-11-08"): ADR 0072
+  accepted; FQ1 **yes** (the three additive schema widenings, D7); FQ2, FQ3 and FQ4 **default** (D1, R-991, R-992).
+- The design-lane `reviewer` pass is done (`docs/reviews/RRC-review.md`) and its fix round is in.
+- It takes effect on `main` when RRC's evidence manifest is `tested` (gates G1–G10, F1 and F2 of the design note) and
+  CI is green on both architectures. Frank's merge rule (2026-11-08, `CLAUDE.md` "Gate by risk") replaces the
+  `scripts/gate.sh` run on the merge candidate that this ADR first named.
+- Register entries R-990…R-995 (the drafts R-RRC-1…6, in this ADR's order).
 
 **Author:** design lane (`architect`). **Brief:** `docs/briefs/RRC-architect.md`.
 **Design note:** `docs/design/RRC-revision-region-continuation.md` holds the normative detail; § numbers below refer to it.
@@ -56,9 +56,12 @@ same declaration structure. The ADR 0024 store already holds such solves, and re
   - The new value runs edge 3's actions in this order: specification continuation (ADR 0010 D3); else revision
     continuation (D2–D4); else the sequential restart (ADR 0015 D1–D3); else `unsupported(<restart reason>)`.
   - There is still one recovery region solve per step. A revision-continuation refusal before any attempt opens is a
-    precondition failure: it is recorded, and the restart follows.
+    precondition failure: it is recorded, and the restart follows. A continuation that opens and stalls ends the step
+    without the restart, so the value can fail where `T06-revision-v2` succeeds; this is declared (FQ3, default). Any
+    rescue claim, or making the value a default (FQ2), first needs a case where the restart fails and the continuation
+    converges.
   - It is offered as `RRC-revision-v1`, which is `T06-revision-v2` with only this value changed. The `revision_eo`
-    default stays `T06-revision-v2`.
+    default stays `T06-revision-v2`: in 0.4 the value is offered by name only (FQ2, default).
 - **D2. The continuation.**
   - `H(x, λ) = F(x; p(λ))` with `p(λ) = p* + (1 − λ)(p_src − p*)` over `D`, the pinned-input ids whose canonical values
     differ between the source declaration and the target declaration.
@@ -90,7 +93,9 @@ same declaration structure. The ADR 0024 store already holds such solves, and re
   - **Trace:** existing kinds only. A refusal is one `initializer_rejected` event,
     `revision_continuation_<absent|rejected>: <reason>`.
   - **Certificate:** the recovery item has `initializer_source = "revision_continuation_source"` and an
-    `opening_state_sha256` equal to the source root's.
+    `opening_state_sha256` equal to the source root's hash over attempt 0's free columns; it equals the source
+    certificate's `full_state_sha256` only when the source's final signature pins no column (design note §5.8 as
+    amended by the review, S1).
   - **Attempt context and certificate `continuation`:** `{type: "revision_continuation", parameter_ids, …}`.
   - **`solve-path.json`:** gains `revision_continuation` (§5.8), written iff the policy names the value. It is R0 except
     the provenance ids, the document body and the state values.
@@ -126,7 +131,10 @@ The design note §4 gives the full table. In brief:
 
 - **C1. Bytes that move:**
   - the three schema files;
-  - whatever WO-1 measures, which is listed here before acceptance: `schemas/registry.json` entries, a served MCP digest.
+  - measured by WO-1 (`docs/RRC_DECISIONS.md`): the three schema files' SHA-256 move and nothing else that is
+    digested — `schemas/registry.json` (a file list), the served MCP tool-list digest (`455d01eb…`), every offered
+    policy's `policy_sha256` and `numerical_policy_v2.yaml` are unchanged. Offering `RRC-revision-v1` (WO-4, D-1)
+    adds one `get_project.solve_policies` entry, which M07a's MR-7 clause requires a register entry to name.
   - Every existing document validates unchanged, and fixtures regenerate byte-identically.
   - No registered policy, record, bundle, certificate or replay moves (design note §5.11, G1).
 - **C2. Support matrix:**
@@ -144,9 +152,9 @@ The design note §4 gives the full table. In brief:
 - The `reviewer` pass.
 - `review.numerical` and `review.process_model` are not set by this ADR.
 
-## Register entries (drafts, unnumbered)
+## Register entries (R-990…R-995, drafts R-RRC-1…6)
 
-**R-RRC-1 — Edge 3 on a revision region continues the revision's changed operating values from the nearest verified
+**R-990 — Edge 3 on a revision region continues the revision's changed operating values from the nearest verified
 ancestor.**
 - **Decision:** D1–D4.
 - **Rejected:** specification rows on revision regions (an empty path), a tear-connection homotopy (level identity),
@@ -158,19 +166,27 @@ ancestor.**
   - selecting by a float metric;
   - running this under `homotopy` or `homotopy_or_sequential_restart`.
 
-**R-RRC-2 — The action order is specification continuation, then revision continuation, then the restart, with count 1.**
+**R-991 — The action order is specification continuation, then revision continuation, then the restart, with count 1.**
 - **Rejected:** the restart first; a ladder of two recoveries (FQ3).
 - **Watch for:** a restart run after a *taken* revision continuation; a refusal recorded as `taken`.
 
-**R-RRC-3 — Continuable differences are a registered allowlist of operating specifications; default deny.**
+**R-992 — Continuable differences are a registered allowlist of operating specifications; default deny.**
+- **FQ4 (default):** operating values only — temperatures, pressures, flows, duties, split fractions; not stage
+  counts, feed stages, stoichiometry or kinetic constants.
 - **Rejected:** allowing discrete parameters (`stage_count`, `feed_stage`) and model constants (`nu`, `damkohler`,
   `T_ref`, `T_scale`, `coolant_cp`); allowing any difference that leaves `model_version` equal.
 - **Watch for:** a new unit parameter becoming continuable without a register entry.
 
-**R-RRC-4 — The source is recorded in `solve-path.json` and replays from the bundle alone.**
+**R-993 — The source is recorded in `solve-path.json` and replays from the bundle alone.**
 - **Rejected:** content-addressing the source outside the bundle; re-binding the ancestor on rerun.
 - **Watch for:** a rerun that consults the store.
 
-**R-RRC-5 — L21 is narrowed; L-COL-9 is narrowed only on a failing-first column case (G5); R-827 is superseded only
+**R-994 — L21 is narrowed; L-COL-9 is narrowed only on a failing-first column case (G5); R-827 is superseded only
 under the new value.**
 - **Watch for:** L-COL-9 claimed lifted on forced-edge evidence alone.
+
+**R-995 — `RRC-revision-v1` is offered by name, never a route's default.** In the register since RRC WO-4 (D-1),
+under the draft id R-RRC-6, because M07a's MR-7 clause needs a register entry to name the served addition; numbered
+with the others at acceptance.
+- **Rejected:** offering it before the executor and the application carry the value; making it a route's default (FQ2).
+- **Watch for:** `RRC-revision-v1` in `ROUTE_DEFAULT_POLICY`.

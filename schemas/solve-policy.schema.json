@@ -266,9 +266,10 @@
           "enum": [
             "homotopy",
             "none",
-            "homotopy_or_sequential_restart"
+            "homotopy_or_sequential_restart",
+            "homotopy_or_revision_continuation_or_sequential_restart"
           ],
-          "description": "Recovery edge 3's action set. `homotopy`: ADR 0010 D3, the specification continuation. `none`: no recovery. `homotopy_or_sequential_restart` (ADR 0015 D1, T06 F4): the specification continuation when the region has a continuation parameter, else one region solve from the restart initializer `traversal-G0-pass8-v1` on a revision-built flowsheet, else `unsupported`."
+          "description": "Recovery edge 3's action set. `homotopy`: ADR 0010 D3, the specification continuation. `none`: no recovery. `homotopy_or_sequential_restart` (ADR 0015 D1, T06 F4): the specification continuation when the region has a continuation parameter, else one region solve from the restart initializer `traversal-G0-pass8-v1` on a revision-built flowsheet, else `unsupported`. `homotopy_or_revision_continuation_or_sequential_restart` (ADR 0072, RRC): as `homotopy_or_sequential_restart`, with the revision continuation from the nearest verified ancestor revision tried before the restart when the application supplies one; still one recovery solve per step."
         },
         "eo_recovery_max_count": {
           "const": 1

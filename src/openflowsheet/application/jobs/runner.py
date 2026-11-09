@@ -105,6 +105,7 @@ from openflowsheet.application.jobs.model import (
     TerminalStatus,
 )
 from openflowsheet.application.revision_binding import RevisionBinding
+from openflowsheet.application.revision_continuation import continues_revisions, find_source
 from openflowsheet.application.revision_routes import REVISION_ROUTES
 from openflowsheet.application.revision_run import (
     Route,
@@ -671,6 +672,18 @@ class _Body:
             ):
                 warm_start = warm_start_candidate(self.context, self.job.job_id, body.revision_id)
             coupled_start = declared_coupled_start(self.context, body.warm_start, bound)
+            # ADR 0072 (RRC design note §5.3): the nearest verified ancestor, found and assembled
+            # at the same site, iff the policy's edge 3 continues revisions on `revision_eo`.
+            continuation = None
+            if bound.solve_path == "revision_eo" and continues_revisions(policy):
+                continuation = find_source(
+                    store,
+                    self.context.root,
+                    self.job.job_id,
+                    body.revision_id,
+                    document,
+                    surrogates=surrogates,
+                )
             experiments = None
             if bound.solve_path == "revision_coupled":
                 experiments = self._experiments(sink, emit_records)
@@ -690,6 +703,7 @@ class _Body:
                 experiments=experiments,
                 on_iteration=self._outer_iteration,
                 on_diagnosis=diagnoses.append,
+                revision_continuation=continuation,
             )
         except JobInterrupted as interrupted:
             # M02 design note §4.4: an interrupted coupled job keeps the experiment records it

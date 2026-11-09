@@ -131,11 +131,12 @@ CAMPAIGN_REFERENCES: Final[Mapping[str, Path]] = {
     "v17-c1": REFERENCE_PATH,
     "v17-c2": REFERENCE_C2_PATH,
 }
-#: Amendment T08-1: the reference runs of the carried surface (G16-b from T08 on) are scored
-#: against `t07_reference_t08.json` — `v17-c2`'s document with only the offered set changed. A
-#: named entry beside the campaigns', not one of them: no campaign is scored against it, and the
-#: default for an unnamed campaign is unchanged.
-CARRIED_SURFACE_REFERENCE_PATH: Final = REFERENCE_PATH.with_name("t07_reference_t08.json")
+#: Amendments T08-1 and RRC-1: the reference runs of the carried surface (G16-b) are scored
+#: against `t07_reference_rrc.json` from RRC on (`t07_reference_t08.json` from T08 to RRC,
+#: frozen), `v17-c2`'s document with only the offered set changed. A named entry beside the
+#: campaigns', not one of them: no campaign is scored against it, and the default for an unnamed
+#: campaign is unchanged.
+CARRIED_SURFACE_REFERENCE_PATH: Final = REFERENCE_PATH.with_name("t07_reference_rrc.json")
 
 RUN_FILE: Final = "run.json"
 TRANSCRIPT_FILE: Final = "transcript.jsonl"

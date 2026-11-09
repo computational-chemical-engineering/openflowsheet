@@ -107,6 +107,7 @@ nav:
       - Distillation column: guide/column.md
       - Studies and optimisation: guide/studies.md
       - Optimising a revision: guide/optimisation.md
+      - Revision continuation: guide/revision-continuation.md
       - Cost estimation and LCA: guide/assessment.md
       - Interfaces: guide/interfaces.md
       - Limitations and support: guide/limitations.md

@@ -79,6 +79,11 @@ from openflowsheet.application.revision_binding import (
     SurrogateResolver,
     bind_revision_flowsheet,
 )
+from openflowsheet.application.revision_continuation import (
+    ContinuationSource,
+    continues_revisions,
+    recorded_source,
+)
 from openflowsheet.application.structure_index import structure_index
 from openflowsheet.canonical import canonical_json, document_sha256
 from openflowsheet.compile.reference import state_vector
@@ -98,6 +103,7 @@ from openflowsheet.orchestrator.execution import (
 from openflowsheet.orchestrator.executor import PlanResult, execute_plan
 from openflowsheet.orchestrator.region import RegionResult
 from openflowsheet.orchestrator.revision import plan_revision
+from openflowsheet.orchestrator.revision_continuation import RevisionContinuationRefusal
 from openflowsheet.orchestrator.trace import SolvePlan, SolvePolicy, Trace
 from openflowsheet.orchestrator.warm_start import (
     EXPLICIT,
@@ -529,6 +535,7 @@ def solve_route(
     experiments: Experiments | None = None,
     on_iteration: Callable[[int, int], None] | None = None,
     coupled_start: CoupledStart | None = None,
+    revision_continuation: ContinuationSource | None = None,
 ) -> RouteRun:
     """§12.1's steps on `route` (R2.2's table), from the registered initializer (`user_start`
     unset). A `VerifierError` propagates: the verifier refused to judge, so nothing is certified
@@ -543,6 +550,11 @@ def solve_route(
     read only on `revision_eo` and `revision_coupled` (its k = 0 inner solve), under a policy
     whose chain names the source or when it is the request's explicit source (ADR 0070,
     `execute_plan`).
+
+    `revision_continuation` is the source the caller found and assembled (ADR 0072; RRC design
+    note §5.3) or rebuilt from the bundle (§5.9); its candidate or refusal is read only on
+    `revision_eo`, under a policy whose `eo_recovery` names the revision continuation
+    (`execute_plan`).
 
     On `revision_coupled` (M02 design note §4.4) `experiments` runs the experiments — the job's
     runner, or a replay's recorded backend — and `on_iteration(k, max_outer)` is called at each
@@ -589,6 +601,11 @@ def solve_route(
         policy=policy,
         trace=trace,
         warm_start=warm_start if route.solve_path == "revision_eo" else None,
+        revision_continuation=(
+            revision_continuation.found
+            if route.solve_path == "revision_eo" and revision_continuation is not None
+            else None
+        ),
     )
     planned = [step for step in plan.steps if step.kind == "solve_eo"]
     region_plan = (
@@ -820,6 +837,7 @@ def run_revision_session(
     on_iteration: Callable[[int, int], None] | None = None,
     coupled_start: CoupledStart | None = None,
     on_diagnosis: Callable[[dict[str, Any]], None] | None = None,
+    revision_continuation: ContinuationSource | None = None,
 ) -> RunManifest:
     """Solve, verify and write the bundle (§12.3 as amended by R2.4). Mirrors `run_session`.
 
@@ -836,6 +854,10 @@ def run_revision_session(
     `on_diagnosis` receives the outcome-defining step's MSG sidecar (design note §4.6) as a
     document, once the bundle is written, iff it is a failure bundle and the step carries one;
     the sidecar is in no artifact.
+    `revision_continuation` (ADR 0072; RRC design note §5.8) is `solve_route`'s; `solve-path.json`
+    gains the member `revision_continuation` iff the policy names the revision continuation on
+    `revision_eo`, whether or not edge 3 fired, and without a source it records
+    `absent(not_supplied)`.
     """
     started = started_now()
     clock = time.monotonic()
@@ -850,6 +872,7 @@ def run_revision_session(
         experiments=experiments,
         on_iteration=on_iteration,
         coupled_start=coupled_start,
+        revision_continuation=revision_continuation,
     )
     (stage if stage is not None else _no_stage)("bundle")
     return write_revision_bundle(
@@ -865,6 +888,7 @@ def run_revision_session(
         warm_start=warm_start,
         coupled_start=coupled_start,
         on_diagnosis=on_diagnosis,
+        revision_continuation=revision_continuation,
     )
 
 
@@ -882,10 +906,12 @@ def write_revision_bundle(
     warm_start: WarmStartCandidate | None = None,
     coupled_start: CoupledStart | None = None,
     on_diagnosis: Callable[[dict[str, Any]], None] | None = None,
+    revision_continuation: ContinuationSource | None = None,
 ) -> RunManifest:
     """`run_revision_session`'s bundle of a route's solve `result`, as it writes it: `started`
     is the run's start stamp and `clock` its `time.monotonic()` at the start; `warm_start`,
-    `coupled_start` and `on_diagnosis` are `run_revision_session`'s, as the solve was given them.
+    `coupled_start`, `on_diagnosis` and `revision_continuation` are `run_revision_session`'s, as
+    the solve was given them.
     OPT's revision NLP host solves with `solve_route` and writes the same bundle through this,
     without them (OPT design §4.8)."""
     from openflowsheet.run.session import _numerical_policy_id, _reproducibility_class
@@ -940,6 +966,14 @@ def write_revision_bundle(
         if external is not None and route.solve_path == "revision_coupled":
             # ADR 0070 D9 (§5.7): the k = 0 child starts of a job source.
             solve_path["warm_start"]["external"] = external
+    if route.solve_path == "revision_eo" and continues_revisions(policy):
+        source = (
+            revision_continuation
+            if revision_continuation is not None
+            else ContinuationSource(RevisionContinuationRefusal("absent", "not_supplied"))
+        )
+        recorded = result.run.revision_continuation if result.run is not None else None
+        solve_path["revision_continuation"] = source.member(recorded)
     artifacts: dict[str, Any] = {
         "solve-events.json": [event.as_document() for event in trace.events],
         "structural-report.json": result.report.as_document(),
@@ -1115,6 +1149,15 @@ def _recorded_coupled_start(recorded: Any) -> CoupledStart | None:
     return recorded_coupling_start(coupling, member.get("external"))
 
 
+def _recorded_revision_continuation(
+    recorded: Any, document: Mapping[str, Any]
+) -> ContinuationSource | None:
+    """ADR 0072 (RRC design note §5.9): the source a bundle's `solve-path.json` recorded, rebuilt
+    without a lookup or a binding (`recorded_source`), or `None` when there is no member."""
+    member = recorded.get("revision_continuation") if isinstance(recorded, Mapping) else None
+    return recorded_source(member, document) if isinstance(member, Mapping) else None
+
+
 def reproduce_bundle(
     directory: Path,
     *,
@@ -1241,6 +1284,8 @@ def reproduce_bundle(
                 warm_start=_recorded_warm_start(recorded),
                 coupled_start=_recorded_coupled_start(recorded),
                 experiments=experiments,
+                # ADR 0072 (§5.9): the recorded source, never a store lookup.
+                revision_continuation=_recorded_revision_continuation(recorded, document),
             )
         except ReplayDivergenceError as error:
             at("compare")
