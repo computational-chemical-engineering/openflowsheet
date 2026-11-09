@@ -851,11 +851,13 @@ class LocalApplication:
         result echoes it and every explanation it holds is rendered under it; its SI content is
         the result without it."""
         self._authorize("get_job_result")
-        units = None if display_units is None else self._display_units(display_units)
+        units = (
+            None if display_units is None else self._display_units(display_units, "get_job_result")
+        )
         result = self._result(job_id, "get_job_result", display_units=units)
         return result if units is None else _displayed(result, units)
 
-    def _display_units(self, text: str) -> DisplayUnits:
+    def _display_units(self, text: str, operation: str) -> DisplayUnits:
         """ADR 0075 D5, D9: `text` resolved against the declared ambient; a refusal is audited.
         An `invalid_request` points at `/display_units`; an `unsupported` carries its message
         head as `reason` (the code with its kind and unit, X04 decision D-5), which MSG reads."""
@@ -864,7 +866,7 @@ class LocalApplication:
         except DisplayUnitsError as error:
             pointer = error.pointer
             detail = {"pointer": pointer} if pointer is not None else {"reason": error.message}
-            self._refuse(error.api_error, error.message, operation="get_job_result", **detail)
+            self._refuse(error.api_error, error.message, operation=operation, **detail)
 
     # ------------------------------------------------------------------------- the job steps
 
