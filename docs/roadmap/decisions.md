@@ -833,3 +833,17 @@ G16-b 40/40; F0 PASS. Q1 (`t07_reference.py --check` in CI): no (85.6 s). CI re-
   limitations classified P in support_envelope.yaml, support matrix re-emitted (--check 0 problems), HARVEST_SIZE
   (86, 1046, 140) → (87, 1054, 140); harvest/t08/manifests 1132 passed, 2 skipped. Lesson: every manifest brief carries
   the harvest step. Next: ST WO-7 (docs/briefs/ST-WO7.md).
+
+- 2026-11-09 — ST WO-7 on wp/ST (head 45122519: merge ced1519e, fixes db500230, docs): 12 conflicts, all both-sides;
+  ST link c_5 → c_7 (R-1000), D_7 553b7612…, without_st = D_6 3fdc797a…; ADDENDA m02, m05, e01, opt, st; ADR 0068
+  Accepted (Frank 2026-11-08), D3 amendment kept; register R-1000…1006. Numbers unchanged vs handoff (44 served docs
+  byte-identical, G7 41 bitwise, G8 max 1.756e-4, G8u 2.7027, caches 39, A20 23); catalogue 386/90/129 `03818ed5…`;
+  F0 PASS; ruff clean. CI watched; manifest brief docs/briefs/ST-manifest.md (harvest step included).
+
+- 2026-11-09 — 0.4.0 readiness (Frank asked). Recon: ADR 0055 parts 1–3 are largely built (release_gate.py with
+  standing acceptances, release_rc*.py, release_evidence_manifest.py, tests); WO-R5 deferred by Frank. Open before the
+  cut: x05 gate entry in release/lines/0.4.json, schema ADR for REL[0-9]{3,}, ADR 0074 O-3 (RP.L11), S-6 rehearsal,
+  local full gate; ST merge; X04 (no spec exists → specifier pass, brief docs/briefs/X04-specifier.md). Line
+  acceptance needs ADR-F1…F8 Accepted but Frank kept 0060–0067 Proposed → board item rel04-line-acceptance (default:
+  move the condition to 0.5). DECISION: X04 gets a specifier pass (ADR 0075 + test spec) before any build →
+  alternative: drop X04 to 0.5. Reversible by: roadmap amendment.
