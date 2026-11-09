@@ -21,7 +21,7 @@
   `""` and names them in every replay reason.
 - No schema change: the environment document keeps its eight keys.
 
-### RRC — revision-region continuation (ADR 0072, Proposed)
+### RRC — revision-region continuation (ADR 0072, Accepted 2026-11-08; R-990…R-995)
 
 - New solve policy `RRC-revision-v1`, offered by explicit id and never the default: `T06-revision-v2`
   with one more edge-3 action on `revision_eo`. A failed revision solve continues the changed operating

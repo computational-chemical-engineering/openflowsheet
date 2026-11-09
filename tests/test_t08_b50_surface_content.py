@@ -46,8 +46,8 @@ V17_C2 = REPO_ROOT / "benchmarks" / "t07" / "v17" / "runs" / "v17-c2"
 NEW_MODELS = ("syn001.kinetic_cstr",)
 #: MR-7's register-sourced v0.2 additions: per `c7bbc98` content member, each id with the register
 #: entry that names it (R-230: M02's six PR units; R-231: the two bindable C1 reactor ids). v0.2
-#: adds no solve policy; RRC (0.4) adds `RRC-revision-v1` (ADR 0072; draft entry R-RRC-6, numbered
-#: at the ADR's acceptance). The join that serves them is R-280's.
+#: adds no solve policy; RRC (0.4) adds `RRC-revision-v1` (ADR 0072; register entry R-995, the
+#: draft R-RRC-6 numbered at the ADR's acceptance). The join that serves them is R-280's.
 V02_ADDITIONS: dict[str, dict[str, str]] = {
     "models": {
         "c1.adiabatic_mixer": "R-230",
@@ -69,7 +69,7 @@ V02_ADDITIONS: dict[str, dict[str, str]] = {
             for name in ("compressor", "flash", "heater", "mixer", "pump", "turbine", "valve")
         },
     },
-    "solve_policies": {"RRC-revision-v1": "R-RRC-6"},
+    "solve_policies": {"RRC-revision-v1": "R-995"},
 }
 #: M02's join (R-280 (b); R-234's method): the eight C1 models `list_models` serves since M02,
 #: stripped before B50's clause is judged, so the clause stands as T08 registered it.
@@ -80,7 +80,7 @@ S11_MODELS = (
 )
 M02_MODELS = tuple(sorted(set(V02_ADDITIONS["models"]) - set(M04_MODELS) - set(S11_MODELS)))
 NEW_POLICIES = ("T08-ptc-v1", "T08-warm-v1")
-#: RRC's offered policy (ADR 0072; draft entry R-RRC-6), stripped like M02's and S11's models.
+#: RRC's offered policy (ADR 0072; R-995), stripped like M02's and S11's models.
 RRC_POLICIES = tuple(sorted(V02_ADDITIONS["solve_policies"]))
 #: `get_project`'s members that the server determines, whatever the project's state.
 SERVER_MEMBERS = ("default_policy_id", "server", "solve_policies")
@@ -149,7 +149,7 @@ def test_b50_list_models_differs_by_the_kinetic_cstr_only(served: dict[str, Any]
 def test_b50_get_project_differs_by_the_two_policies_and_the_version_only(
     served: dict[str, Any],
 ) -> None:
-    """With RRC's `RRC-revision-v1` stripped (exactly once; ADR 0072, draft entry R-RRC-6),
+    """With RRC's `RRC-revision-v1` stripped (exactly once; ADR 0072, R-995),
     `get_project` differs from `c7bbc98`'s by B50's two policies and the version only."""
     today, then = copy.deepcopy(served["get_project"]), copy.deepcopy(FIXTURE["get_project"])
     for document in (today, then):

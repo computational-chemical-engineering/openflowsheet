@@ -120,7 +120,7 @@ chord correction exceeds the kind tolerance). No field is added or removed and n
 changes; every registered policy keeps `newton` or `ptc`, and the fixtures regenerate identically
 (R-015).
 
-Changed by **RRC** under ADR 0072 (Proposed; the three widenings await Frank's approval, FQ1,
+Changed by **RRC** under ADR 0072 (Accepted 2026-11-08; Frank approved the three widenings, FQ1;
 `docs/RRC_DECISIONS.md`): `solve-policy`'s `globalization.eo_recovery` adds
 `homotopy_or_revision_continuation_or_sequential_restart` (edge 3's revision continuation from the nearest
 verified ancestor, before the sequential restart); `attempt-context`'s `continuation.type` and

@@ -293,3 +293,15 @@ results), `40fba287` (runner self-contained), `b91b0ddb` (registration, results 
   c_6. The served content move (`get_project.solve_policies` + `RRC-revision-v1`) is MR-7's, named by the register
   (`tests/test_t08_b50_surface_content.py`). Global-state cache count stays main's 39 (RRC adds no cache;
   `tests/test_t07_global_state.py` passes). Surface/global-state/description/B50/R4-G3 files: 247 passed.
+- **D-41 (merge prep 4: ADR 0072 accepted).** Status line: Accepted, 2026-11-08 (Frank; decision board, FQ1 yes, FQ2–FQ4
+  default), with Frank's merge rule (CI green on both architectures) in place of the ADR's `scripts/gate.sh` on the
+  merge candidate. Drafts R-RRC-1…6 → **R-990…R-995** in ADR order, entered in the register in X02's R-951 form
+  (R-995 is the WO-4 entry renumbered); `V02_ADDITIONS["solve_policies"]` names R-995. D5's certificate bullet now
+  says "over attempt 0's free columns", equal to `full_state_sha256` only when no column is pinned (design §5.8, S1).
+  FQ2–FQ4 defaults' text applied where the ADR left them open: D1 (by name only in 0.4; a stalled continuation ends
+  the step without the restart, declared; rescue claims and default-on need a restart-fails/continuation-converges
+  case), R-992 (operating values only). Live status mentions updated (CHANGELOG, `interfaces-frozen.md`,
+  `schemas/README.md`, design header, `support_envelope.yaml` row text → `docs/support-matrix.md` re-emitted,
+  `--check` 0). Records (`docs/briefs/`, `docs/reviews/`, `docs/roadmap/decisions.md`, this log) keep their
+  R-RRC ids; `benchmarks/rrc/*.yaml` are pre-registered transcriptions and keep "Proposed". B50/changelog/support
+  matrix tests 41 passed.

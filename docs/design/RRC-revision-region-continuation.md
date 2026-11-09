@@ -2,7 +2,7 @@
 
 **Package:** RRC (release 0.4; roadmap `docs/roadmap/roadmap.md:42`; ADR 0057:33). **Lane:** design (`architect`), 2026-11-08.
 **Brief:** `docs/briefs/RRC-architect.md`. **Origin:** Frank's Q30 (`docs/FRANK_QUESTIONS.md:238-239`), R-827, S11 §10.8.
-**ADR:** `docs/adr/0072-RRC-revision-region-continuation.md` (Proposed). It amends ADR 0010 D1, D2, D3 and D7, ADR 0015 D1
+**ADR:** `docs/adr/0072-RRC-revision-region-continuation.md` (Accepted 2026-11-08 by Frank; R-990…R-995). It amends ADR 0010 D1, D2, D3 and D7, ADR 0015 D1
 and ADR 0024, all additively. It reverses nothing, and it supersedes R-827's "no revision region has one" only under the new
 policy value.
 **Status:** design. Nothing here was measured for this note. The code anchors are on `main` at `ec7e90b7`. Where a choice
