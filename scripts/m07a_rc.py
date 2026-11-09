@@ -15,7 +15,9 @@ writes M07a.A37's record:
 4. the MCP tools are exactly the 17 of `V17_C2_FILE_SHA256`, and each description file's SHA-256 is
    that table's value, except `validate` and `commit_change`, whose files are R-133's;
 
-then G16-b, 40 of 40 clean against `t07_reference_t08.json` (unchanged from T08.A49; the loop is
+then G16-b, 40 of 40 clean against the carried-surface reference
+(`scorer.CARRIED_SURFACE_REFERENCE_PATH`: `t07_reference_t08.json` at the alpha,
+`t07_reference_rrc.json` from RRC on, V17 spec Amendment RRC-1; unchanged from T08.A49; the loop is
 `t08_rc.step_surface`'s, restated here because that step is not edited). §5.3's negative controls
 (i)–(iv) are in `tests/test_m07a_surface_chain.py`.
 
