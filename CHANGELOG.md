@@ -2,6 +2,33 @@
 
 ## Unreleased
 
+## v0.4.0 — unreleased
+
+*Notes at the release candidate C = `84c665477b512548f38a6335f51648732b1fe5bb` (RP §9.2 step 3; line `0.4`, gate
+set `v0.4-gate-v1`, envelope `v0.4-envelope-1`). Nothing below is released until the tag; the tag and every
+publication are Frank's. 0.4.0 claims V11–V20, W21–W26 and X31; W27 is not claimed. The verdicts are
+`docs/reviews/REL040-verdicts.md` (judged 2026-11-10); at C two gates are BLOCKED and two FAIL, as stated below.*
+
+### X02 — declared warm starts (ADR 0070)
+
+- A solve request can name its own start: `solve_body.warm_start` takes an earlier solve job of the project
+  (`job_id`), and a start per coupled unit (`coupling`). A declared start takes precedence over the automatic lineage
+  start; a missing job or an unknown unit is refused at admission (`invalid_request`). A start is an input of the
+  request, not part of the revision and not a policy.
+- 0.4.0 adds this explicit warm-start source (ADR 0070, `solve_body.warm_start`), which the text of envelope row
+  L-WS-2 ("no request-named source exists") predates.
+- Coupled reactors gain a warm-chained variant, and an experiment's identity is keyed by its start. Manifest
+  `evidence/X02/d26bcd38…/manifest.json`.
+
+### OPT — optimisation of revision flowsheets (ADR 0071)
+
+- A new job operation, `optimize`, takes a separate optimisation request on a stored revision: the decisions, the
+  objective, inequality constraints, starts and an optional inline cost or LCA assessment. The revision and its solves
+  are not changed. A decision is a `role: fixed` specification and moves the one parameter it binds.
+- Route `revision_eo` only, surrogate-backed units included; `revision_coupled` and `legacy_eo` are refused
+  `OPTIMIZATION_ROUTE_UNAVAILABLE`. The optimum is re-solved cold by the production solver, and that solve is the
+  answer. Manifest `evidence/OPT/c1b9b125…/manifest.json`.
+
 ### ST — the stream table (ADR 0068, accepted 2026-11-08)
 
 - The web shell's streams screen (`#/job/{jid}/streams`) shows a run's stream table from
@@ -46,6 +73,118 @@
 - Schemas: three frozen schemas each accept one more value (`globalization.eo_recovery`;
   `continuation.type` in the attempt context and the certificate); no member is added and every
   existing document validates unchanged. No registered policy, record or replay moves.
+
+### X04 — units at the boundary (ADR 0075)
+
+- A request can carry `display_units`. The stream table (`get_stream_table`) and run-failure explanations
+  (`get_job_result`) then give each number whose kind the preference names a display value beside its SI value. Gauge
+  units are display units, resolved against the project's declared ambient pressure.
+- Nothing stored or hashed is converted, and a display value is never an input to a run, a cache key, a certificate
+  or a replay. Manifest `evidence/X04/0f7d9b87…/manifest.json`.
+
+### MSG — messages and the code catalogue
+
+- Failures, refusals, warnings and notices take one layered form on every surface (Python API, CLI, HTTP, MCP and the
+  web shell): what and where, why with the numbers that triggered it, what to do, the kind, the stable code and the
+  details. Every code has a catalogue entry and an `explain` operation, and CI fails on an emitted code without one. A
+  run's result now carries its failure reason. MSGp adds the catalogue prose for the warm-start and optimisation codes.
+  Manifests `evidence/MSG/5e9274db…/manifest.json` and `evidence/MSG/1602f72a…/manifest.json`.
+
+### WIT, X10 and X10b — the derivative witness at small and dormant flows (ADR 0073)
+
+- When the derivative check of a component with a small flow fails, the witness repeats it at smaller steps and uses
+  the first two estimates that agree; an unresolved check keeps its registered result. On a γ–φ ideal-gas split, the
+  dormant vapour side is differenced and the dormant liquid side, where no derivative exists, is listed as not
+  differenced. X10b completes M-6 (part b, `c1.tp_flash` near the dew point; Frank's Q-WIT-2). Manifests
+  `evidence/X10a/dbf884ad…/manifest.json` and `evidence/X10b/c57d449a…/manifest.json`.
+- X10 measures which unit × property-basis pairs the revision path refuses today (`docs/X10-inventory.md`). Manifest
+  `evidence/X10/033f1928…/manifest.json`.
+
+### F0 — the corpus identity gate
+
+- A check, run on `main` after each merge, that the registered run corpus (RC step 4's 52 runs and T07's 50
+  revisions) keeps its content digests. Manifest `evidence/F0/eba4bcb4…/manifest.json`.
+
+### The standing release procedure (ADR 0055, ADR 0074)
+
+- From 0.4.0 one procedure and one gate, `scripts/release_gate.py`, serve every minor line, each from its line file
+  (`release/lines/0.4.json`). Frank's acceptances stand by the fingerprint of their scope (`release/acceptances.md`)
+  and lapse when it changes. The release's evidence package is `REL040` (ADR 0074). No change to the simulator.
+  Manifests `evidence/S15/fd28ff7b…/manifest.json`, `evidence/S15a/d7cb4dbb…/manifest.json` and
+  `evidence/S15b/829aadf4…/manifest.json`.
+
+### Gates (V11–V20, W21–W26, X31), as `scripts/release_gate.py --line 0.4 --rc C --markdown` prints them
+
+A FAIL is printed FAIL and a BLOCKED gate BLOCKED.
+
+| Gate | Verdict at C | Required evidence | Clauses and travelling limitations |
+| --- | --- | --- | --- |
+| V11 | PASS | Semantic diff, drafts, task validation, units/references, real migration when applicable | limitations: L38 |
+| V12 | PASS | Required unit library with per-model definition of done | limitations: L02, L26, L27, L28, L29, L30, L-CSTR-1, L-CSTR-2, L-CSTR-3 |
+| V13 | BLOCKED | DM/SCC/BTF, tear and EO, scaling and initialization | blocked: V13 (e): Frank's dated `V17 carry` row naming the eight links R-192 to R-1010 (the 2026-10-30 row lapsed at C); limitations: L10, L22, L23, L24, L36, L38, L43, L-WS-1, L-WS-2 |
+| V14 | FAIL | Homotopy, qualified PTC/SER and three bounded recovery edges | failing: V14 (b); limitations: L01, L08, L20, L21, L43, L-COL-10 |
+| V15 | PASS | Frozen phases, EO cross-unit spec, multiple-root evidence | limitations: L02, L14, L19, L20, L33, L-COL-5 |
+| V16 | PASS | 30+ distinct cases, eight shared comparisons, two both-reference cases where feasible, registered 20x20 ensemble | limitations: L16, L17, L18, L32 |
+| V17 | BLOCKED | Local/HTTP/MCP, ten agent tasks, >=80% success, zero unauthorized actions/false verification | blocked: V17 (a): Frank's dated `V17 carry` row naming the eight links R-192 to R-1010, or a new V17 campaign (the 2026-10-30 row lapsed at C); limitations: L11, L12, L13 |
+| V18 | PASS | Distribution/data gates, local rank evidence, qualified energy checks, all recovery edges tested | limitations: L03, L05, L06, L15, L19, L25, L34, L37, L39, L40, L41 |
+| V19 | PASS | Real-chemistry dossier with usable data/kinetics/property/reference route | — |
+| V20 | PASS | >=95% nominal robustness, correct invalid-structure handling, no adversarial false verification | limitations: L04, L07, L09, L31, L32, L38 |
+| W21 | PASS | PyMRM boundary/accuracy/execution and provenance | limitations: L05, L06, L07, L15, L19, L20, L44, L45, L46, L48 |
+| W22 | PASS | One validated needed nonideal property route | limitations: L42, L47 |
+| W23 | PASS | Surrogate conservation/domain/derivative/default UQ and promotion | limitations: L49 |
+| W24 | PASS | Fixed-topology optimization, eligible trust-region example and parent-model checks | limitations: L19, L44, L46, L48, L49 |
+| W25 | PASS | End-to-end real reactor refinement with honest evidence limits | limitations: L44, L45, L46, L48, L49 |
+| W26 | PASS | Diagnostic web shell through shared contract | limitations: L-WEB-1, L-WEB-2, L-WEB-3, L-WEB-4 |
+| X31 | FAIL | Four matched column cases, invalid specs/phases, two independent references where available | failing: X31 (c); X31 (c) FAIL, accepted by Frank 2026-10-30 (release/acceptances.md D3); limitations: L-COL-1, L-COL-2, L-COL-3, L-COL-4, L-COL-5, L-COL-6, L-COL-7, L-COL-8, L-COL-9, L-COL-10 |
+| W27 | not claimed | External agent benchmark adaptation attempted; inaccessible assets disclosed | — |
+
+- **V13 BLOCKED** on V13 (e) and **V17 BLOCKED** on V17 (a): both wait on Frank's dated `V17 carry` row naming the
+  eight links R-192 to R-1010 (the 2026-10-30 row lapsed at C); V17 can also be met by a new V17 campaign. A BLOCKED
+  gate blocks the tag.
+- **V14 FAIL** on V14 (b): PTC ends at the saddle from 149 of 441 starts on both CI architectures, the registered
+  failure. Its acceptance of 2026-10-30 lapsed at C because `src/openflowsheet/` changed, so it waits on Frank's new
+  row.
+- **X31 FAIL** on X31 (c): S09's three-tool outcome, "met where available, 3 of 4"; its acceptance stands at C.
+
+The accepted failure clause in force at C (RP.S10):
+
+- X31 (c) FAIL, accepted by Frank 2026-10-30 (release/acceptances.md)
+
+**Travelling limitations.** The ids in the table are rows of the envelope `v0.4-envelope-1`
+(`benchmarks/t08/support_envelope.yaml`). V11 also bears on three rows whose ids the verdict table cannot carry
+(finding F-5), so their texts travel here:
+
+- L-X04-1: Gauge pressures are not accepted as inputs: ADR 0016's input rows stand, and a gauge unit (`barg`, `psig`) in a revision or a change is refused with its existing code. Gauge units are display units only, resolved against the project's declared ambient pressure. Input conversion at commit is the planned remedy, not built in 0.4.
+- L-X04-2: Display units change responses only. Stored and hashed documents, raw artifacts, check quotes and the web shell's as-solved state table stay SI; a display preference never reaches a run, a bundle, a certificate or a cache key.
+- L-X04-3: A number without a display kind or a display row stays SI under every preference: the stream table's `S_flow` (W/K), `V_flow` (m³/s), `rho` (kg/m³), `v` (m³/mol) and `molar_mass`, and every message number without a quantity kind.
+
+W21's PASS rests on envelope row L46, which travels with W21, W24 and W25:
+
+- L46: No reactor result has been compared with experimental data by this project. The group's published comparison (Gargiulo et al. 2025 §3.1, of Rossetti et al. 2006's rate law) is the group's evidence. Every real-reactor number is the group's model at the pin, a regression, and its discretization bias is 1.0–1.4 % in NH₃ (M02 design note §13).
+
+**Frank's acceptances.**
+
+<!-- acceptances: filled after Frank's answers -->
+
+### What it is not
+
+- numerical verification, not empirical validation
+- no global optimality
+- Linux only
+- not a sandbox
+- the stand-in reactor is synthetic
+- the optimization routes need the optional nlp extra
+- the CoolProp provider needs the optional coolprop extra
+- cost and LCA results are assessment estimates with an accuracy class
+- cost and LCA are Python-only
+- no ecoinvent data
+- Wilson is vapour-liquid only; no liquid-liquid split
+- no automatic liquid/vapour regime switching for pure fluids
+- X31: one independent reference for the refluxed absorber
+- no rate-based column models
+- no W27 claim in 0.4.0
+- no CFD or Peclet refinement
+- no external benchmark score
 
 ## v0.3.0.post1 — the PyPI page: a current README and the project links; no code change
 
