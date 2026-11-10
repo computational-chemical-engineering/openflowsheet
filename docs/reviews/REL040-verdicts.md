@@ -1,22 +1,24 @@
 # REL040 — verdicts on V11–V20, W21–W26 and X31 for `0.4.0`
 
 **Release candidate:** `84c665477b512548f38a6335f51648732b1fe5bb`   **Judged:** 2026-11-10   **By:** design lane (`verdict`)
+**Re-judged:** 2026-11-10 (V13, V17)
 
 *RP §4.7 and §9.2 step 3 (`docs/derivations/release-procedure.md`). Line `0.4` (`release/lines/0.4.json`, gate set
 `v0.4-gate-v1`), K3 = `49a04731`, J = `e0a3d6b7`. Seventeen claimed gates, judged at C on C's records and on the two
 registered carries that reach C (the journey from J; no V17 carry, see V17). W27 is not claimed and has no row. With D2
 deferred every row is judged here; nothing is carried from `docs/reviews/V03-verdicts.md`, which was read for its form
-only.*
+only. V13 and V17 were then re-judged at the same C on 2026-11-10, on Frank's `V17 carry` row of that day, which now
+carries V17 to C; see "Re-judgement". Every other row stands as first judged.*
 
 | Gate | Verdict | Failing clauses | Travelling limitations | Basis |
 | --- | --- | --- | --- | --- |
 | V11 | PASS | — | L38 | T08 §4.1 with MR-10; K06, T01, T06 and T07 nodes, T08.A10, T08.A35 and M07a.A42 green in step 1 on both architectures (CI push run 42790953372: x86-64 19772 passed, aarch64 19742 passed, no failure; skips audited below, none a clause input) |
 | V12 | PASS | — | L02, L26, L27, L28, L29, L30, L-CSTR-1, L-CSTR-2, L-CSTR-3 | T08 §4.2, denominator unchanged (alpha §5.1; units added since 0.1 are not in it); T05, T05b and build-first B10–B19 nodes green in step 1 on both architectures, none skipped |
-| V13 | BLOCKED | V13 (e): Frank's dated `V17 carry` row naming the eight links R-192 to R-1010 (the 2026-10-30 row lapsed at C) | L10, L22, L23, L24, L36, L38, L43, L-WS-1, L-WS-2 | T08 §4.3 and T08.A71 with MR-7; T01, T02, K03 and B40–B49 nodes green in step 1; B50's counterpart: content by M07a.A51 green in step 1, digest and schemas by the chain at step 8 on three hosts, which holds through eight registered links; the carry MR-7 names is absent at C (lapse report: extract links and served digest differ) |
+| V13 | PASS | — | L10, L22, L23, L24, L36, L38, L43, L-WS-1, L-WS-2 | T08 §4.3 and T08.A71 with MR-7; T01, T02, K03 and B40–B49 nodes green in step 1; B50's counterpart: content by M07a.A51 green in step 1, digest and schemas by the chain at step 8 on three hosts, which holds through eight registered links, under the carry MR-7 names: Frank's `V17 carry` row (release/acceptances.md, accepted 2026-11-10 at C, "V17, and T08.B50's surface" across all eight registers; stands at C, fingerprint 1cb47347…28f3 recomputed here); re-judged 2026-11-10 |
 | V14 | FAIL | V14 (b) | L01, L08, L20, L21, L43, L-COL-10 | T08 §4.4 with T08-verdict-V14b.md; measured at C: step 17's PTC-R1 item ran the registered comparison on both CI legs, PTC ends at the saddle (MID) from 149 of 441 starts on ci-aarch64 (a registered platform) and on ci-x86-64, the class counts of the registered FAIL; typed homotopy and the three recovery edges: T04, T02 and T08.A33 nodes green in step 1; the standing acceptance row lapsed at C (src changed), so Frank's second message asks for it |
 | V15 | PASS | — | L02, L14, L19, L20, L33, L-COL-5 | T08 §4.5; T02, T03 and T06 (ADV-05, THM-09) nodes green in step 1 on both architectures; the five kept step-12 certificates carry uniqueness and dynamic stability NOT_ASSESSED (read here) |
 | V16 | PASS | — | L16, L17, L18, L32 | T08 §4.6; T06 verdict 1 stands (`docs/reviews/T06-verdicts.md` unchanged since 0.3.0's candidate); T08.A48 (T06.A47 9 nodes, T06.A50 17 nodes) passed at step 7 on ref-x86-64, ci-x86-64 and ci-aarch64 |
-| V17 | BLOCKED | V17 (a): Frank's dated `V17 carry` row naming the eight links R-192 to R-1010, or a new V17 campaign (the 2026-10-30 row lapsed at C) | L11, L12, L13 | T08 §4.7 with MR-1, MR-2 and MR-6, and RP §4.4; step 8 on three hosts: served digest 6be1c002…ba57 equals the last registered link's (R-1010), each strip in turn gives 553b7612…, 3fdc797a…, f51b69bf…, eaff4585…, 455d01eb…, 383b4e2c…, 6c4375b4… and 171dd768…, and with v17-c2's texts 6d13e13d…; tools and description files as registered; G16-b 40 of 40 clean on three hosts; the carry covers only R-192, R-234 and R-295 and lapsed |
+| V17 | PASS | — | L11, L12, L13 | T08 §4.7 with MR-1, MR-2 and MR-6, and RP §4.4 (amendment A-12); Frank's `V17 carry` of v17-c2's agent evidence across R-192, R-234, R-295, R-934, R-950, R-960, R-1000 and R-1010 (release/acceptances.md, accepted 2026-11-10 at C; stands at C, fingerprint 1cb47347…28f3 recomputed here; re-judged 2026-11-10); step 8 on three hosts, chain rows exactly (1,c_8), (2,c_8) … (2,c_1), (3,None): served digest 6be1c002…ba57 equals the last registered link's (R-1010), each strip in turn gives 553b7612…, 3fdc797a…, f51b69bf…, eaff4585…, 455d01eb…, 383b4e2c…, 6c4375b4… and 171dd768…, and with v17-c2's texts 6d13e13d…; tools and description files as registered; G16-b 40 of 40 clean on three hosts |
 | V18 | PASS | — | L03, L05, L06, L15, L19, L25, L34, L37, L39, L40, L41 | T08 §4.8 with MR-11 and MR-12; T08.A30 PASS on three hosts (267 modules walked, 264 imported, the three nlp-extra modules refused as registered; required closures 150, 150, 147; nothing undispositioned); no extra new since 0.3.0 (pyproject extras identical), their licence rows stand (coolprop and lca licences, M03 N1); step 17 MR12-coolprop and MR12-lca pass; T08.A34 0 violations over 77 certificates (step 10, and on every CI leg); X05 lock checks pass on both legs (step 4); T08.A31–A33 nodes green |
 | V19 | PASS | — | — | T08 §4.9; ADR 0022 Accepted with Frank's selection (R-145); `docs/v02-real-chemistry-dossier.md` and `benchmarks/t08/v19/` unchanged since 0.3.0's candidate (git diff empty, checked here); the A60–A64 nodes green in step 1 |
 | V20 | PASS | — | L04, L07, L09, L31, L32, L38 | T08 §4.10; T08.A46 S = 437 of 440 on ref-x86-64 and ci-aarch64 (gate 418), the other 3 F-FALSE-SUCCESS-CAUGHT, same-class replay 25 of 25; T08.A47 12 of 12 on three hosts, worst success ratio 0.0968; T08.A10 node green |
@@ -28,21 +30,181 @@ only.*
 | W26 | PASS | — | L-WEB-1, L-WEB-2, L-WEB-3, L-WEB-4 | M07 §7.3 with its first clause as RP §4.6 states it (RP.S19): step 16 4 of 4 (668 M06 nodes passed with the browser required, 0 skipped; node 105 of 105; the 25 named nodes once each, passed; the dry run's exact W27-R63 refusal, exit 1, no summary file); CI x86-64 exports the browser requirement and skips no browser node. G14 not judged at 0.4.0: W27 registration v1 refuses this build (ADR 0050 D9, W27-R63); W27 not claimed |
 | X31 | FAIL | X31 (c) | L-COL-1, L-COL-2, L-COL-3, L-COL-4, L-COL-5, L-COL-6, L-COL-7, L-COL-8, L-COL-9, L-COL-10 | RP §4.3 as pre-registered; RC1–RC4 and their registered matches, and the invalid-specification and phase refusals, green in step 1 on both architectures; S09 verdict 3 unchanged: "met where available, 3 of 4" (RC4, the refluxed absorber, has one reference, BioSTEAM), which RP §4.3 registers as the failure of the reference clause; the standing acceptance row stands at C |
 
+## Re-judgement
+
+**2026-11-10, at the same C = `84c66547…`, under alpha spec §19.2 (R-371) as the line carries it**
+(`release/lines/0.4.json`, `rejudge_waits`: V13 and V17 wait on `V17 carry`; W21 and W24 are not BLOCKED and are not
+listed). Two rows change, in place: V13 and V17 go from `BLOCKED` to `PASS`. No other row changes, and `Judged` stays
+2026-11-10. For the two rows, this section and the edits it names replace the first judgement's text: the two table
+rows, the V13 and V17 sections, the counts and the tag paragraph of "Read this first", the two lapsed state cells and
+the paragraph under "Frank's answers each row waits on", F-1, and the first item of "What would change these
+verdicts". For every clause not named below, the first judgement's text and evidence stand. This is still an agent
+verdict, numerical and procedural only: it sets no `reviewed`, claims no scientific review or human sign-off, and moves
+no tolerance, band or classification rule.
+
+**Clause by clause.**
+- V13 (e), compatible warm starts: **met** (was blocked).
+- V17 (a), a surface to which Frank has carried `v17-c2`'s evidence, with the chain holding: **met** (was blocked).
+- V13 (a)–(d) and V17 (b): met, unchanged.
+- V14 (b): not met, unchanged. Not re-judged; its new row makes the FAIL releasable.
+- X31 (c): not met, unchanged; releasable by its standing row, as first judged.
+
+**Nothing at C has moved.** `git diff 84c66547 5162627b` over the D2.4 paths (`src`, `schemas`, `benchmarks`,
+`requirements.lock`, `pyproject.toml`, `MANIFEST.in`, `README.md`, `LICENSE`, `NOTICE`) and `scripts/m07a_rc.py` is
+empty, and so is `git diff 3e6f0d80 5162627b` over `evidence/REL040/<C>/`. The 124 records that `rc/records.json`
+lists hash-equal at `5162627b` (recomputed here, the six uncommitted ones from their `.gz`). Since the verdict commit
+`3e6f0d80` the branch changed only the acceptances, the ledger, the notes, RP (A-12), the decision register, the
+handoff, two briefs and three ledger tests. The gate at `5162627b` reports `tree check (D2.4): equal to C`.
+
+### The answer read (`release/acceptances.md` at `5162627b`)
+
+| Item read | Row as committed | Checked here at C | What it does here |
+| --- | --- | --- | --- |
+| `V17 carry` (decision item) | `accepted, 2026-11-10`, Frank, verbatim: "Reuse 0.2.0's agent run (Recommended)" (the default in this row; decision board item `rel040-v17-carry`, answered 2026-11-10T13:29:14Z). The default: carry `v17-c2`'s agent evidence "(V17, and T08.B50's surface) across R-192, R-234, R-295, R-934, R-950, R-960, R-1000 and R-1010, with no new agent run at C". Scope `extract:links + extract:served_digest`, fingerprint `1cb47347…28f3`, Accepted at C | **Stands.** Fingerprint recomputed independently of `release_gate.py`: E3 by `ast` on `git show C:scripts/m07a_rc.py` gives the eight registers in `LINKS` order (term `3cce386f…abdf`); E4 from the three step-8 records that `records.json` lists gives `6be1c002…ba57` in all three (term `9fde0389…38a4`); F1 gives `1cb47347…28f3`, equal to the row, and RP §8.2's shell form gives the same. Each of the eight registers appears once in the row as a whole id. Dated on the lapse report's date (2026-11-10, `95ea0ae1`, RP §8.4), ≥ J and ≤ R (Table T7). The cell passes Table T4 | supplies the missing input of V13 (e) and V17 (a) |
+| `V14 (b)` (failure clause) | `accepted, 2026-11-10`, Frank, verbatim: "Accept (Recommended)" (decision board item `rel040-v14b`, 2026-11-10T13:30:17Z), fingerprint `1abcb2af…75d0`, Accepted at C | **Stands.** The fingerprint equals the value the first judgement recomputed at C with shell tools (evidence table above). Dated ≥ J; V14 is not on the `Re-judged` line, so Table T7's lower bound by R does not apply to it | changes no verdict word; V14's FAIL is now releasable (RP §4.1 item 1) |
+
+**Provenance of the answer (evidence class: decision).** The answer has three records, and they agree: the row
+(`5162627b`); `docs/REL040_HANDOFF.md` l.22 (`344da73c`, committed 13:34:10Z), "choice `reuse` = "Reuse 0.2.0's agent
+run (Recommended)", 2026-11-10T13:29:14Z"; and the decision board that the handoff names, read here: its stored answer
+to `rel040-v17-carry` is choice `reuse` at 2026-11-10T13:29:14.798Z with an empty note. This verdict did not witness
+the exchange. It reads the record as the authority's decision, as 0.3.0's re-judgement did.
+
+**Same-day sequencing (a limitation, not a failure).** Table T7 is day-granular, and J, R, the lapse report and the
+answer all fall on 2026-11-10. By the timestamps (UTC): lapse report committed 11:16:02, first judgement 11:35:46
+(`3e6f0d80`), answers 13:29:14 and 13:30:17, rows committed 19:44:23 (`5162627b`), this re-judgement after 19:50. The
+answer came after the first judgement and before this one, which is the case Table T7 row 1 describes. RP §8.5 meant
+the first message to be answered before the verdict; it was answered after, which is why a re-judgement was needed,
+as at 0.3.0.
+
+### V13: BLOCKED to PASS (clause (e) judged again)
+
+- **(e) compatible warm starts: met.** B40–B49 nodes green in step 1 (first judgement). B50's counterpart (MR-7): the
+  content by M07a.A51, green in step 1; the digest and schemas by the chain, step 8, 13 of 13 on three hosts, its rows
+  exactly the ten of RP §4.4 and each passing (read here from the three step-8 records). MR-7 places the digest and
+  schemas "under the same carry (MR-2)". That carry is now Frank's row of 2026-11-10, which covers "V17, and T08.B50's
+  surface" across all eight registers and stands at C. T08.B51 is this judgement itself, on B40–B50 (T08.A71).
+- (a)–(d): met, unchanged.
+- **Against 0.3.0 (PASS after its re-judgement).** Same word, by the same route: a carry lapsed by new links, then
+  replaced by Frank's dated row.
+- **Does not establish:** that agents behave correctly on the 0.4.0 surface, because Frank's carry accepts
+  `v17-c2`'s evidence for it and measures nothing; warm starts beyond exact id-set compatibility (L-WS-1, L-WS-2); X02's
+  explicit source (F-4).
+
+### V17: BLOCKED to PASS (clause (a) judged again)
+
+- **(a) met.** RP §4.4 as amended by A-12 (R-1009): `v17-c2`'s evidence carries to C iff step 8 passes at C with
+  `LINKS` unchanged, where "unchanged" means a `V17 carry` row that stands at C and names the register entry of every
+  link. Each part holds:
+  - the row stands (fingerprint recomputed here) and names R-192, R-234, R-295, R-934, R-950, R-960, R-1000 and R-1010,
+    which are exactly `LINKS` at C;
+  - step 8 passes on three hosts: served digest D_8 = `6be1c002…ba57`; rows `(1,c_8)`, `(2,c_8)` … `(2,c_1)`,
+    `(3,None)`, each passing, giving D_7 … D_0 = `171dd768…` and, with `v17-c2`'s texts, `6d13e13d…` (first
+    judgement; rows re-read here);
+  - alpha §5.3's four conditions for each new link: a register entry, a strip function and a registered digest (first
+    judgement), and Frank's carry extended to name it (this row). MR-2's counterpart, Frank's row naming every link of
+    the chain, is this row. T08 §4.7's "BLOCKED pending a new decision of Frank's" no longer applies: the decision
+    exists.
+- **The reading does not decide it.** RP §4.4 before A-12 asks, for a new link, "Frank's `V17 carry` row replaced, or
+  else a new V17 campaign"; `5162627b` replaced it. The first judgement already applied §4.4 in its n-link form (F-3),
+  and A-12 registered that form before this re-judgement. Under either text the result is met.
+- (b) G16-b 40 of 40 on three hosts: met, unchanged.
+- **Evidence classes.** The chain is identity verification against registered digests, tested on three hosts. The
+  agent evidence is `v17-c2`'s, measured on the R-137 surface; it reaches 0.4.0 only by Frank's decision. No agent ran
+  on the 0.4.0 surface (L12).
+
+### F-6 (new; changes no verdict): the board's question gives the links' packages out of step
+
+The question Frank answered named all five new registers correctly and said what reuse means: "the old agent run
+covers the old interface exactly, and the new tools are covered by their own tests, but not by an agent session". Its
+package labels are shifted: it reads "R-934, R-950 (MSG messages), R-960 (OPT optimisation, X02 warm start), R-1000
+(RRC) and R-1010 (X04 units)", so R-934 has no label, R-950's is wrong, R-960's is half right, R-1000's names RRC (a
+package of this cycle that added no link; R-1000 records that ST merged after it), and only R-1010's is right.
+`LINKS` at C has R-934 MSG (`strip_msg`), R-950 X02 (`strip_x02`), R-960 OPT (`strip_opt`), R-1000 ST (`strip_st`,
+which adds the tool `get_stream_table`) and R-1010 X04 (`strip_x04`). Why it changes no verdict: the registered
+criterion is a standing row that names every link's register (RP §4.4, M07 O3, MR-2). The row does, and so does the
+question. The question also told Frank that new tools are not covered by an
+agent session. Whether his choice depended on the labels is his to say, not this verdict's. **Recommendation (build
+lane):** give Frank the correct mapping in one line with the step-18 report. If he says his answer did not extend to a
+link, the row is withdrawn and V13 and V17 return to `BLOCKED`.
+
+### After this re-judgement
+
+Fifteen PASS, two FAIL (V14 on (b), X31 on (c)), each FAIL with a standing row at C. None BLOCKED. Read through the
+gate's own reader (`v0_2_gate.verdict_document` with the `v0.4-gate-v1` set at C): seventeen rows, these words,
+re-judged 2026-11-10 on (V13, V17), one `Judged` token. Step 18 still needs items outside this document:
+
+1. **The ledger** (`docs/requirements.yaml`, RP.S17): V13 and V17 read `BLOCKED` and must read `PASS`. Until then
+   `tests/test_rel040_ledger.py::test_the_claimed_verdicts_are_the_documents` fails, and the gate refuses on D2.1.
+2. **The notes** (`CHANGELOG.md`, `## v0.4.0`): the gate table and the paragraph that state V13 and V17 `BLOCKED`, and
+   the acceptances placeholder; the table is `release_gate.py --markdown`'s.
+3. **The release manifest** `evidence/REL040/<C>/manifest.json` (RP §9.2 step 4, H1), which the gate already names as
+   missing, and the ADRs whose condition it is (H2).
+4. F-6's line to Frank.
+
+**What would reopen these two rows:** Frank withdrawing or changing the `V17 carry` row, or saying it did not cover a
+link (F-6); a re-recorded answer dated after 2026-11-10 (Table T7 refuses it for this re-judgement); any change to
+`LINKS`, a strip function, a registered digest or the step-8 records, or any change to a D2.4 path, each of which makes
+a new candidate on which every row is judged again; an RP amendment to §4.4 or §8. A new V17 campaign would replace
+the carry: V17 is then judged on its record.
+
+**Limitations that travel with them:** V13 and V17 rest on Frank's carry of `v17-c2`'s agent evidence, measured on the
+R-137 surface; no agent was measured on the 0.4.0 surface, which adds MSG's messages, X02's warm-start member, OPT's
+`optimize`, ST's `get_stream_table` and X04's display units (L12, travelling with V17). V13 (e) covers exact id-set
+compatible warm starts only (L-WS-1, L-WS-2), not X02's explicit source (F-4). The answer and both judgements share
+one date (sequencing note above). The question's labels were shifted (F-6). V14 (b) is an accepted FAIL with PTC
+experimental (L01); X31 (c) is an accepted FAIL, "met where available, 3 of 4".
+
+### Alternatives considered and rejected (this re-judgement)
+
+1. **Keep V13 and V17 `BLOCKED` because the row does not write the served digest in its text, as F-1 asked.**
+   Rejected. RP §4.4, M07 O3, MR-2 and alpha §5.3 ask the row to name every link's register. The served digest is
+   bound by the row's scope: its `served_digest` term is the hash of `6be1c002…ba57`, recomputed here. F-1 asked more
+   than the registered criterion, and the criterion decides.
+2. **Keep them `BLOCKED` because the row names R-934 for c_4 and not R-976.** Rejected. `LINKS` at C gives c_4 the
+   register R-934 (MSG's surface decision); R-976 is the entry that records the link and says "the 0.4 RC carry names
+   it". RP §8.2 (E3) and the gate's M07 O3 check read a link's register from `LINKS`, so R-934 is the id the carry must
+   name, and it does. No registered text asks for both ids.
+3. **Keep them `BLOCKED`, or call the evidence insufficient, because of F-6.** Rejected. The registered input is
+   Frank's dated row naming every register, and it exists and stands. Judging what Frank would have chosen under other
+   labels is not this verdict's to do; the finding goes to him.
+4. **A new judgement with a new `Judged` date.** Rejected. §19.2 item 2 makes the `Re-judged` line the form for gates
+   `BLOCKED` on a registered answer, and nothing at C moved, so the other fifteen rows have no new input.
+5. **Re-judge V14, or edit its row or section, because its row now stands.** Rejected. V14 is not in `rejudge_waits`
+   and Table T8 refuses `(V14)`; an acceptance decides releasability, never the verdict word; and §19.2 item 2 makes a
+   change to an unlisted row a new judgement. The V14 section's "not releasable at C until Frank's new row" is met by
+   the row of 2026-11-10, recorded here.
+6. **V17 carried by F5's "content-only additions keep V17's carry".** Rejected as at the first judgement, and not
+   needed.
+7. **Wait for a new V17 campaign.** Not needed. Frank chose reuse; the campaign stays the alternative if he withdraws.
+8. **Re-read every step record.** Not needed: nothing at C moved. The three step-8 records and all 124 hashes were
+   re-read.
+
+### What this re-judgement does not establish
+
+- That agents behave correctly on the 0.4.0 surface, or that the five new links' additions work beyond their own tests.
+- That Frank's answer was given as recorded beyond the three records read, or what he would have chosen under the
+  correct labels (F-6).
+- Releasability: the ledger, the notes, the release manifest and the ADRs above, and step 18 itself.
+- Any platform or host beyond those the cited step records name.
+- Any scientific or process-model review, human sign-off, or `reviewed` status.
+
 ## Read this first
 
-**The seventeen.** Thirteen PASS (V11, V12, V15, V16, V18, V19, V20, W21, W22, W23, W24, W25, W26). Two FAIL: V14 on
-clause (b) and X31 on clause (c). Two BLOCKED: V13 on clause (e) and V17 on clause (a), both on one missing input,
-Frank's `V17 carry` row for the eight-link surface. 13 + 2 + 2 = 17.
+**The seventeen, after the re-judgement of 2026-11-10.** Fifteen PASS (V11, V12, V13, V15, V16, V17, V18, V19, V20,
+W21, W22, W23, W24, W25, W26). Two FAIL: V14 on clause (b) and X31 on clause (c). None BLOCKED. 15 + 2 + 0 = 17. At the
+first judgement V13 (clause (e)) and V17 (clause (a)) were BLOCKED on one missing input, Frank's `V17 carry` row for
+the eight-link surface (13 + 2 + 2); his row of 2026-11-10 supplied it (see "Re-judgement").
 
-**What blocks the tag today.** BLOCKED blocks the tag (RP §4.1 item 1). V13 and V17 wait on one answer in Frank's first
-message. V14 (b) fails with no standing row (its row lapsed by its `paths:` scope); it is releasable only by a new row
-dated on or after 2026-11-10, which Frank's second message asks for (RP §8.4, §8.5, finding F-8). X31 (c) fails with a
-standing row and is releasable as it stands.
+**What blocks the tag today.** No row is BLOCKED. Both FAILs have standing rows at C: V14 (b) by Frank's row of
+2026-11-10 (Accepted at C, fingerprint `1abcb2af…75d0`), X31 (c) by the row of 2026-10-30. Neither verdict word
+changes, and both FAILs are releasable (RP §4.1 item 1). At the first judgement V14 (b) had no standing row (its row
+lapsed by its `paths:` scope) and V13 and V17 waited on Frank's first message. What step 18 still needs lies outside
+this document: the ledger, the notes and the release manifest ("After this re-judgement").
 
 **Against 0.3.0** (`docs/reviews/V03-verdicts.md`, C = `a3e508e3`, re-judged 2026-10-31; comparison only):
-- V13 and V17: PASS there after re-judgement, BLOCKED here. The surface moved by five registered links (R-934, R-950,
-  R-960, R-1000, R-1010), so the 2026-10-30 carry, written "with no new link at C", lapsed. Same position as 0.3.0's
-  first judgement.
+- V13 and V17: PASS there after re-judgement; BLOCKED here at the first judgement and PASS after re-judgement, the same
+  course. The surface moved by five registered links (R-934, R-950, R-960, R-1000, R-1010), so the 2026-10-30 carry,
+  written "with no new link at C", lapsed; Frank's carry of 2026-11-10 names all eight links.
 - W21: FAIL on (e) at 0.3.0's first judgement, PASS here. Step 12 now keeps and audits G11's 210 experiment results at
   C (RP §6.4), which is exactly what 0.3.0 lacked.
 - V14: FAIL on (b) as at 0.3.0; here the comparison was re-run at C (step 17's PTC-R1 item) rather than argued
@@ -61,18 +223,18 @@ waited for.
 
 | Item or clause | State at C | Rows that wait on it | When it is asked |
 | --- | --- | --- | --- |
-| `V17 carry` | **lapsed** (`extract:links`, `extract:served_digest`): the row names R-192, R-234, R-295 and digest `455d01eb…e125`; at C the links are eight and the served digest is `6be1c002…ba57` | V13 clause (e) BLOCKED, V17 clause (a) BLOCKED | first message (before this verdict; being asked). A replacing row is dated on or after the lapse report, 2026-11-10, and carries the fingerprint taken at C (RP §8.4) |
-| `V14 (b)` | **lapsed** (`paths:src/openflowsheet/**`, 86 changed paths) | V14 FAIL is not releasable without it | second message, after `Judged`; dated on or after 2026-11-10 (RP §8.4, F-8) |
+| `V17 carry` | **lapsed** at the first judgement (`extract:links`, `extract:served_digest`): the row names R-192, R-234, R-295 and digest `455d01eb…e125`; at C the links are eight and the served digest is `6be1c002…ba57`. **Replaced** 2026-11-10 (`5162627b`): stands at C, `1cb47347…28f3` (recomputed here) | V13 clause (e) and V17 clause (a): BLOCKED at the first judgement, met on re-judgement | first message (asked before this verdict, answered 2026-11-10T13:29:14Z, after it). The replacing row is dated on the lapse report's date and carries the fingerprint taken at C (RP §8.4) |
+| `V14 (b)` | **lapsed** at the first judgement (`paths:src/openflowsheet/**`, 86 changed paths). **Replaced** 2026-11-10 (`5162627b`): stands at C, `1abcb2af…75d0` | V14 FAIL, releasable since the replacing row | second message, after `Judged`, answered 2026-11-10T13:30:17Z (RP §8.4, F-8) |
 | `X31 (c)` | stands (fingerprint `59503316…1864`, recomputed here with shell tools) | X31 FAIL, releasable | — |
 | `M02 N1` | stands (`c1b16371…9cf4`, recomputed here) | W21 (c) met | — |
 | `M03 N1` | stands | W24 (a) met | — |
 | `coolprop and lca licences` | stands | V18 (MR-12) met | — |
 | `Claim set` | stands | the claim set judged here | — |
 
-**Re-judgement.** When Frank's dated `V17 carry` row exists, V13 and V17 may be judged again at the same C under the
-line's `rejudge_waits` (alpha §19.2), with one Re-judged line below the header. If he declines the carry, V17 needs
-a new V17 campaign, and until then V13 and V17 stay BLOCKED and no tag is proposed. V14's FAIL is not re-judged by
-Frank's row; the row makes it releasable.
+**Re-judgement.** Frank's dated `V17 carry` row exists (2026-11-10), so V13 and V17 were judged again at the same C
+under the line's `rejudge_waits` (alpha §19.2), with one Re-judged line below the header and the section
+"Re-judgement" after the verdict table. He chose the carry, not a new V17 campaign. V14's FAIL was not re-judged;
+Frank's `V14 (b)` row makes it releasable.
 
 ## Evidence and provenance
 
@@ -125,7 +287,7 @@ case (T05 A00–A30, T05b B00–B36/X00–X26, build-first B10–B19), green in 
 node is skipped. The denominator is T08 §4.2's list; the thermal, Wilson and column units added since are not in it and
 are not judged here. **Does not establish:** anything about units outside the list.
 
-## V13 — BLOCKED on V13 (e)
+## V13 — PASS (re-judged 2026-11-10; first judged BLOCKED on V13 (e))
 
 | Clause | Judgement | Evidence at C |
 | --- | --- | --- |
@@ -133,13 +295,13 @@ are not judged here. **Does not establish:** anything about units outside the li
 | (b) safeguarded recycle and coupled EO | met | T02 A13–A15, A32, A34 nodes; E1/E2 library-level (L43) |
 | (c) scales before iteration | met | K03 and T02 nodes |
 | (d) model initialization | met | K03 §10.1's recorded sources and absences (L10) |
-| (e) compatible warm starts | **blocked** | B40–B49 nodes green in step 1. B50's counterpart (MR-7): content by M07a.A51 (`tests/test_t08_b50_surface_content.py`, in neither skip file), digest and schemas by the chain, step 8, 13 of 13 on three hosts. **Missing:** the carry MR-7 names. Frank's `V17 carry` row ("V17, and T08.B50's surface", across R-192, R-234 and R-295, "with no new link at C") lapsed at C on both its terms |
+| (e) compatible warm starts | **met** (re-judged 2026-11-10; first judged blocked) | B40–B49 nodes green in step 1. B50's counterpart (MR-7): content by M07a.A51 (`tests/test_t08_b50_surface_content.py`, in neither skip file), digest and schemas by the chain, step 8, 13 of 13 on three hosts. The carry MR-7 names: Frank's `V17 carry` row of 2026-11-10 ("V17, and T08.B50's surface", across all eight registers R-192 to R-1010), which stands at C. At the first judgement it was missing: the 2026-10-30 row (across R-192, R-234 and R-295, "with no new link at C") lapsed at C on both its terms |
 
-Why BLOCKED and not FAIL: the missing input is Frank's decision (T08 §3.3), and every part the lanes own holds — the
-chain, the register entries, the strip functions and the registered digests of all eight links. **Does not
-establish:** that the 0.4 surface is acceptable for agents (Frank's carry decides that); warm starts beyond exact id-set
-compatibility (L-WS-1, L-WS-2). X02's explicit warm-start source (ADR 0070) is new capability, not V13 (e)'s evidence
-(finding F-4).
+First judged BLOCKED, not FAIL, because the missing input was Frank's decision (T08 §3.3) while every part the lanes
+own held: the chain, the register entries, the strip functions and the registered digests of all eight links. That
+decision now exists ("Re-judgement"). **Does not establish:** that agents behave correctly on the 0.4 surface (Frank's
+carry accepts `v17-c2`'s evidence for it and measures nothing); warm starts beyond exact id-set compatibility (L-WS-1,
+L-WS-2). X02's explicit warm-start source (ADR 0070) is new capability, not V13 (e)'s evidence (finding F-4).
 
 ## V14 — FAIL on V14 (b)
 
@@ -172,25 +334,29 @@ candidate). T08.A48 at step 7: T06.A47 (9 nodes) and T06.A50 (17 nodes) passed o
 `ci-aarch64`, none skipped. The tool side is not re-run (T08 §4.6). **Does not establish:** agreement beyond the
 registered near-sharp ε (L16); DWSIM's environment past .NET 8's end of life, which is today (L17).
 
-## V17 — BLOCKED on V17 (a)
+## V17 — PASS (re-judged 2026-11-10; first judged BLOCKED on V17 (a))
 
-- **(a) blocked.** The chain holds at C on three hosts (`surface/rc-alpha-surface.json` and both CI legs' copies, 13 of
-  13 each): the served digest `6be1c002…ba57` equals the registered digest of the last link c_8 (R-1010), and each strip
-  applied to the previous strip's output gives, in order, c_7 `553b7612…`, c_6 `3fdc797a…`, c_5 `f51b69bf…`, c_4
+- **(a) met** (re-judged 2026-11-10; first judged blocked). The chain holds at C on three hosts
+  (`surface/rc-alpha-surface.json` and both CI legs' copies, 13 of 13 each): the served digest `6be1c002…ba57` equals
+  the registered digest of the last link c_8 (R-1010), and each strip applied to the previous strip's output gives, in
+  order, c_7 `553b7612…`, c_6 `3fdc797a…`, c_5 `f51b69bf…`, c_4
   `eaff4585…`, c_3 `455d01eb…e125`, c_2 `383b4e2c…`, c_1 `6c4375b4…` and D_0 `171dd768…`; with `v17-c2`'s two texts,
   `6d13e13d…` (R-137). Tools and description files as registered (`a37.item4`, no problems). `LINKS` at C is the eight
   links (c_1 R-192 … c_8 R-1010), each with its register entry (R-976 for c_4, R-950, R-960, R-1000, R-1010).
-  **Missing:** Frank's carry over this surface. RP §4.4: `v17-c2`'s evidence carries to C if and only if step 8 passes
-  with `LINKS` unchanged; it changed, so the 2026-10-30 row (three links, "with no new link at C") lapsed. Alpha §5.3:
-  a new link needs a register entry, a strip, a registered digest and Frank's carry extended to name it; three of four
-  exist, so V17 is BLOCKED. Rejected: reading F5 ("content-only additions keep V17's carry") as covering these links;
-  c_6 and c_8 change description texts and c_7 adds a tool, which are not content-only additions.
+  **The carry.** Frank's `V17 carry` row of 2026-11-10 carries `v17-c2`'s evidence across all eight registers, stands
+  at C (fingerprint `1cb47347…28f3`, recomputed here) and names each register. RP §4.4 (amendment A-12): with that
+  row, `LINKS` is unchanged in §4.4's sense and step 8 passes, so the evidence carries to C. Alpha §5.3's four
+  conditions now hold for each new link. **At the first judgement** this was missing: `LINKS` had changed, the
+  2026-10-30 row (three links, "with no new link at C") lapsed, and three of alpha §5.3's four conditions existed, so
+  V17 was BLOCKED. Rejected then and now: reading F5 ("content-only additions keep V17's carry") as covering these
+  links; c_6 and c_8 change description texts and c_7 adds a tool, which are not content-only additions.
 - **(b) met.** G16-b 40 of 40 clean over Python, CLI, HTTP and MCP on three hosts; records attributable (`a16`).
 
 **Evidence classes.** The chain is identity verification against registered digests. The agent evidence is
-`v17-c2`'s, measured on the R-137 surface; it can reach 0.4.0 only by Frank's decision, or by a new campaign. No agent
-ran on the 0.4.0 surface (L12). **Does not establish:** agent behaviour on the 0.4 surface, which now carries MSG's
-messages, X02's warm-start member, OPT's `optimize`, ST's `get_stream_table` and X04's display units.
+`v17-c2`'s, measured on the R-137 surface; it reaches 0.4.0 by Frank's decision of 2026-11-10 (the other route was a
+new campaign). No agent ran on the 0.4.0 surface (L12). **Does not establish:** agent behaviour on the 0.4 surface,
+which now carries MSG's messages, X02's warm-start member, OPT's `optimize`, ST's `get_stream_table` and X04's display
+units. The question Frank answered gave the new links' packages out of step with `LINKS` (F-6).
 
 ## V18 — PASS
 
@@ -353,7 +519,10 @@ item); validation of any column against data (L-COL-8); a reference for RC4 beyo
   R-950, R-960, R-1000, R-1010 and the served digest `6be1c002592524126617af8dd65d331513f4a96355f5381dba020ad561a2ba57`,
   cover "V17, and T08.B50's surface" as the lapsed row did, be dated on or after 2026-11-10, and carry the fingerprint of
   its scope at C (`extract:links + extract:served_digest`). Without it V13 and V17 stay BLOCKED and step 18 cannot give
-  YES.
+  YES. **Closed 2026-11-10** by Frank's row (`5162627b`): it names the eight links, covers "V17, and T08.B50's
+  surface", is dated 2026-11-10 with Accepted at C, and its fingerprint `1cb47347…28f3` (recomputed here) binds the
+  served digest through the `served_digest` term. It does not write the digest in its text, which no registered
+  criterion asks; F-1 asked more than RP §4.4 does (Re-judgement, alternative 1). V13 and V17 are PASS.
 - **F-2 (notes, before step 18).** No line phrase carries alpha §6.1 (f4)'s four reactor statements, so the gate will
   not catch their absence. The `## v0.4.0` section must carry L46 (or the four statements, as 0.3.0's notes did). W21's
   PASS rests on this; if the tag candidate's notes lack it, W21 must be judged again.
@@ -363,7 +532,8 @@ item); validation of any column against data (L-COL-8); a reference for RC4 beyo
   form ("the last link's registered digest", rows as `LINKS` gives them), which is what step 8 and
   `test_m07a_a37_the_chain_holds_on_the_served_list` check; V13 and V17 are BLOCKED under either reading. The release
   manifest's RP.S14 judgement will meet the same text; an RP amendment restating §4.4 for an n-link chain should come
-  first, so the manifest is not judged on a sentence written for three links.
+  first, so the manifest is not judged on a sentence written for three links. **Resolved** by RP amendment A-12
+  (`08e82e7d`, R-1009). On re-judgement V13 and V17 are PASS under either reading.
 - **F-4 (envelope text).** L-WS-2 still reads "no request-named source exists in v0.1 (v0.2, M03)". ADR 0070 (X02)
   realised the explicit source (`explicit-v1`, `solve_body.warm_start`). The row should be restated so the notes do not
   understate 0.4.0, and V13 (e)'s evidence does not cover the explicit source.
@@ -373,6 +543,9 @@ item); validation of any column against data (L-COL-8); a reference for RC4 beyo
   `L-X04-3`, `L-S11-1` to `L-S11-3` and `L-E01-1`. They cannot be named in a row's travelling column, so a gate they
   bear on (here V11, for L-X04-1 to L-X04-3) cannot carry them by id. Either the pattern or the ids should change, by
   the design lane; until then these rows reach the notes only through the envelope (MR-4).
+
+- **F-6 (re-judgement, 2026-11-10).** The decision board's question for `rel040-v17-carry` gave the five new links'
+  packages out of step with `LINKS`; the ids were right. It changes no verdict; see "Re-judgement".
 
 ## Alternatives considered and rejected
 
@@ -398,7 +571,8 @@ item); validation of any column against data (L-COL-8); a reference for RC4 beyo
 
 - Frank's dated `V17 carry` row as F-1 states: V13 and V17 judged again at the same C (expected PASS if nothing else
   has moved; the re-judgement re-reads nothing but the row). His choice of a new V17 campaign: V17 judged on its record.
-- Frank's dated `V14 (b)` row: V14 stays FAIL, releasable.
+  **Done 2026-11-10:** the row exists, V13 and V17 are PASS; what would reopen them is listed in "Re-judgement".
+- Frank's dated `V14 (b)` row: V14 stays FAIL, releasable. **Recorded 2026-11-10** (`5162627b`).
 - The tag candidate's notes without L46 or the four statements: W21 judged again (F-2).
 - Any record at C whose bytes differ from `rc/records.json`, any step re-run at C with another result, or a new C:
   every row judged again.
@@ -406,7 +580,8 @@ item); validation of any column against data (L-COL-8); a reference for RC4 beyo
 
 ## What this does not establish
 
-- Agent behaviour on the 0.4.0 surface: no agent ran on it (L12); V17 is BLOCKED.
+- Agent behaviour on the 0.4.0 surface: no agent ran on it (L12); V17 is PASS on Frank's carry, which measures
+  nothing on it.
 - Empirical validation of anything beyond W22 (c)'s pure-component bands. The reactor's validation is the group's,
   cited (L46); SYN-001 and its columns are synthetic (L18, L-COL-8).
 - Optimality: the journey's decision sits at the lower bound of the reactor's registered domain; no global optimality.
