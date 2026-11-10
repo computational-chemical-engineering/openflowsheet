@@ -430,3 +430,12 @@ def test_a4_the_generator_refuses_before_it_runs_anything(tmp_path: Path) -> Non
     with pytest.raises(SystemExit, match="2 workflow_dispatch runs given"):
         rem.main(argv)
     assert not (tmp_path / "m.json").exists()
+
+
+def test_rp_s22_reads_harvest_excluded_where_the_manifest_was_written() -> None:
+    """RP.S22 (§5.2): S13's manifest was added in `4ecfc162`, whose tuple names S13; 0.3.0's C
+    itself declared none, and the 0.4 cut's tree names REL040 (orchestrator, 2026-11-10)."""
+    assert rem._harvest_excluded_at("4ecfc1620da73f262edf4c8fd53fb965507681a3") == (
+        "evidence/S13/",
+    )
+    assert rem._harvest_excluded_at(S13.name) == ()
