@@ -22,6 +22,8 @@ PUBLIC_ROOT = "5a350199f1334e52cfd789109a0e1dc944ef328c"
 ALPHA_TAG_COMMIT = "423ae9c54d903f9dcf0ea90fe9639222c1acbda4"
 #: 0.2.0 as released: the commit tagged `v0.2.0` (2026-10-20), R-564.
 RELEASE_0_2_0_COMMIT = "5c82b4cc40dd4fefd3dbce45352910006e5dee13"
+#: 0.3.0 as released: the commit tagged `v0.3.0` (2026-10-31; release run 41186226024).
+RELEASE_0_3_0_COMMIT = "b8f47a044ea5ee2a89230ff95bd6a934f541f615"
 
 
 #: Lines a test reports on every run, passing or failing; `pytest_terminal_summary` prints them

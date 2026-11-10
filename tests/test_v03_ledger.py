@@ -8,7 +8,12 @@ them). X31, the gate 0.3.0 adds, cites S13's manifest at C (`evidence/S13/<C>/ma
 the package that judged it there; the sixteen carried gates keep their 0.2.0 evidence (A26 names
 X31's verdict and evidence only). Every cited manifest of a claimed gate exists. W27 is not
 claimed and keeps its 0.2.0 entry. The working tree's own ledger is covered for all 27 gates by
-`tests/test_requirements_ledger.py`; the tag commit is pinned after the tag (WO-9).
+`tests/test_requirements_ledger.py`.
+
+Since the release these are checks of a past release, as `tests/test_m07_ledger.py`'s are of
+0.2.0: the ledger is read as 0.3.0 released it, from the tag commit `RELEASE_0_3_0_COMMIT`, while
+the verdict document and the cited manifests stay read from the working tree. Later lines write
+their own verdicts into the working tree's ledger (0.4.0: `tests/test_rel040_ledger.py`).
 """
 
 from __future__ import annotations
@@ -20,7 +25,7 @@ from typing import Any
 
 import pytest
 import yaml
-from conftest import RELEASE_0_2_0_COMMIT, REPO_ROOT
+from conftest import RELEASE_0_2_0_COMMIT, RELEASE_0_3_0_COMMIT, REPO_ROOT
 
 sys.path.insert(0, str(REPO_ROOT / "scripts"))
 import v0_2_gate  # noqa: E402
@@ -49,8 +54,17 @@ def entries(text: str) -> dict[str, dict[str, Any]]:
     return found
 
 
+def released(commit: str) -> dict[str, dict[str, Any]]:
+    shown = subprocess.run(
+        ["git", "show", f"{commit}:{LEDGER}"], cwd=REPO_ROOT, capture_output=True, text=True
+    )
+    assert shown.returncode == 0, shown.stderr
+    return entries(shown.stdout)
+
+
 def ledger() -> dict[str, dict[str, Any]]:
-    return entries((REPO_ROOT / LEDGER).read_text(encoding="utf-8"))
+    """The ledger as 0.3.0 released it."""
+    return released(RELEASE_0_3_0_COMMIT)
 
 
 def test_the_claimed_verdicts_are_the_documents(verdicts: str) -> None:
@@ -81,16 +95,9 @@ def test_every_cited_manifest_exists() -> None:
 
 def test_the_unclaimed_gate_is_untouched() -> None:
     """W27 equals its entry in the ledger as 0.2.0 released it."""
-    shown = subprocess.run(
-        ["git", "show", f"{RELEASE_0_2_0_COMMIT}:{LEDGER}"],
-        cwd=REPO_ROOT,
-        capture_output=True,
-        text=True,
-    )
-    assert shown.returncode == 0, shown.stderr
-    released = entries(shown.stdout)
+    before = released(RELEASE_0_2_0_COMMIT)
     found = ledger()
     assert GATE_SET.not_claimed == ("W27",)
     assert {gate: found[gate] for gate in GATE_SET.not_claimed} == {
-        gate: released[gate] for gate in GATE_SET.not_claimed
+        gate: before[gate] for gate in GATE_SET.not_claimed
     }
