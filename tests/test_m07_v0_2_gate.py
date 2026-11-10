@@ -332,6 +332,11 @@ A10_PINS_0_3_0 = (
     ("envelope_id: v0.3-envelope-1\n", "envelope_id: v0.2-envelope-dev\n"),
     ("release: 0.3.0\n", "release: 0.2.0.dev0\n"),
 )
+#: Release procedure §7.2: 0.4.0's envelope pin, undone the same way and appended after 0.3.0's.
+A10_PINS_0_4_0 = (
+    ("envelope_id: v0.4-envelope-1\n", "envelope_id: v0.2-envelope-dev\n"),
+    ("release: 0.4.0\n", "release: 0.2.0.dev0\n"),
+)
 
 
 def _top_level(source: str) -> list[str]:
@@ -376,12 +381,13 @@ def _a10(source: str) -> tuple[ast.FunctionDef, ast.For]:
 
 def test_a31_b_test_a10_differs_from_the_tagged_one_only_by_the_0_2_0_pins() -> None:
     """M07 spec §23.1 (R-475): the edit is the two pairs of `A10_PINS_0_2_0`, appended; V03 spec
-    §5.2 appends `A10_PINS_0_3_0` after them (V03.A04)."""
+    §5.2 appends `A10_PINS_0_3_0` after them (V03.A04); release procedure §7.2 appends
+    `A10_PINS_0_4_0`."""
     tagged_def, tagged_for = _a10(_tagged_alpha_tests())
     now_def, now_for = _a10((REPO_ROOT / ALPHA_TESTS).read_text(encoding="utf-8"))
     assert (
         ast.literal_eval(now_for.iter)
-        == ast.literal_eval(tagged_for.iter) + A10_PINS_0_2_0 + A10_PINS_0_3_0
+        == ast.literal_eval(tagged_for.iter) + A10_PINS_0_2_0 + A10_PINS_0_3_0 + A10_PINS_0_4_0
     )
     now_for.iter = tagged_for.iter
     assert ast.dump(now_def) == ast.dump(tagged_def)
