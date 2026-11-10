@@ -21,7 +21,7 @@ edits a row. Table rows are longer than 120 columns because a table row cannot w
 
 | D3 clause | Frank's acceptance | Scope | Fingerprint | Accepted at |
 | --- | --- | --- | --- | --- |
-| V14 (b) | accepted, 2026-10-30 — Frank, verbatim: "Accept (Recommended)" (the default in this row; asked in plain words after W21's new judgement) | `paths:src/openflowsheet/**,benchmarks/t08/ptc_r1/**,docs/reviews/T08-verdict-V14b.md` | `7506c9086342b8bbe038f9aef651d18e98d3268305937f3c52f4ac999a6f7a77` | `a3e508e35fc5451fe56fa7b70941621992d35b50` |
+| V14 (b) | accepted, 2026-11-10, Frank, verbatim: "Accept (Recommended)" (the default in this row; asked in plain words on the decision board, item `rel040-v14b`, answered 2026-11-10T13:30:17Z) | `paths:src/openflowsheet/**,benchmarks/t08/ptc_r1/**,docs/reviews/T08-verdict-V14b.md` | `1abcb2af52dd7adea49ba73c872c9e84db4638caac4e535d397e3b55197075d0` | `84c665477b512548f38a6335f51648732b1fe5bb` |
 | X31 (c) | accepted, 2026-10-30 — Frank, verbatim: "Accept (Recommended)" (the default in this row; asked in plain words after W21's new judgement) | `paths:docs/reviews/S09-verdicts.md,benchmarks/s03/**,benchmarks/s09/**` | `59503316001e10b9c3760e41271d5be31f515cdd99a6581fe6f6e87276611864` | `a3e508e35fc5451fe56fa7b70941621992d35b50` |
 
 ## Decision items
@@ -29,7 +29,7 @@ edits a row. Table rows are longer than 120 columns because a table row cannot w
 | Frank item | Default | Frank's answer | Scope | Fingerprint | Accepted at |
 | --- | --- | --- | --- | --- | --- |
 | Claim set | V11–V20, W21–W26 and X31 claimed; W27 not claimed (no campaign at 0.3.0). Alternative: claim W27 with a new W27 campaign under registration version 3 (R-808; three canaries and the approved runs; USD 15–45, the scale Frank approved for 0.2.0; about one working day), with C_W cut before C | accepted, 2026-10-30 — Frank, verbatim: "Yes, no W27 claim (Recommended)" (the default in this row; asked in plain words after W21's new judgement) | `extract:claim_set` | `f4a3cfbee85d5c3d6fff6df5c1224e6d68fff7a14d88ff59e4017cb77990a881` | `a3e508e35fc5451fe56fa7b70941621992d35b50` |
-| V17 carry | carry `v17-c2`'s agent evidence (V17, and T08.B50's surface) across R-192, R-234 and R-295, with no new link at C (V03.A23). Alternative: a new V17 campaign (about USD 10, one hour) | accepted, 2026-10-30 — Frank, verbatim: "Reuse 0.2.0's (Recommended)" (the default in this row; asked in plain words after W21's new judgement) | `extract:links + extract:served_digest` | `367fdf465f7793d9c4224da4617130993a05d1f029b749b593d2f97d6c2d98f6` | `a3e508e35fc5451fe56fa7b70941621992d35b50` |
+| V17 carry | carry `v17-c2`'s agent evidence (V17, and T08.B50's surface) across R-192, R-234, R-295, R-934, R-950, R-960, R-1000 and R-1010, with no new agent run at C (V03.A23; RP amendment A-12, R-1009). Alternative: a new V17 campaign (about USD 10 of plan allowance, about one hour) | accepted, 2026-11-10, Frank, verbatim: "Reuse 0.2.0's agent run (Recommended)" (the default in this row; asked in plain words on the decision board, item `rel040-v17-carry`, answered 2026-11-10T13:29:14Z) | `extract:links + extract:served_digest` | `1cb47347f22af819c2fa1b325e1d71b9438916e0107661228c7d56438bc428f3` | `84c665477b512548f38a6335f51648732b1fe5bb` |
 | M02 N1 | ship the reactor child process labelled "not a sandbox" | accepted, 2026-10-30 — Frank, verbatim: "Yes, ship it (Recommended)" (the default in this row; asked in plain words after W21's new judgement) | `paths:src/openflowsheet/adapters/external/**` | `c1b16371d5bd35a668e8ae3b11194ab41459cbf6ce165662dfdbd0015fff9cf4` | `a3e508e35fc5451fe56fa7b70941621992d35b50` |
 | M03 N1 | accept the licences of the optional `nlp` extra | accepted, 2026-10-30 — Frank, verbatim: "Accept (Recommended)" (the default in this row; asked in plain words after W21's new judgement) | `extract:pyproject_extra:nlp + paths:docs/m03-ipopt-audit.md,benchmarks/m03/ipopt-inventory-*.json,scripts/build-m03-ipopt-env.sh` | `8eafbfef5ec2f333e341659182d4d824852c11b6bc4532914a9879715956a430` | `a3e508e35fc5451fe56fa7b70941621992d35b50` |
 | coolprop and lca licences | accept the licence decisions of the two new extras: `coolprop`, R-624 (CoolProp is MIT; its numpy as under R-135); `lca`, R-900 (WO-B1/D04's audit of the pinned Brightway lock). V18 stays PASS | accepted, 2026-10-30 — Frank, verbatim: "Accept (Recommended)" (the default of V03 spec §11 N-11, asked in plain words after W21's new judgement; R-624 and R-900 accepted; V18 stays PASS) | `extract:pyproject_extra:coolprop + extract:pyproject_extra:lca + paths:requirements-coolprop.lock,docs/s07-coolprop-licences.json,benchmarks/e01/brightway/lca-pip.lock,docs/e01-lca-licences.json` | `0bb1c6342c455070cc02bf754274efb4d7fcf8f9180bafefcdbd7783e78b2ce7` | `a3e508e35fc5451fe56fa7b70941621992d35b50` |
@@ -70,4 +70,12 @@ canonical JSON, the exact bytes whose SHA-256 is the term hash.
 
 ## History (not read by the gate)
 
-Replaced rows are moved here unedited, each with the date and the C at which it lapsed. None yet.
+Replaced rows are moved here unedited, each with the date and the C at which it lapsed.
+
+- Lapsed at C = 84c66547, 2026-11-10 (failure clauses):
+
+  | V14 (b) | accepted, 2026-10-30 — Frank, verbatim: "Accept (Recommended)" (the default in this row; asked in plain words after W21's new judgement) | `paths:src/openflowsheet/**,benchmarks/t08/ptc_r1/**,docs/reviews/T08-verdict-V14b.md` | `7506c9086342b8bbe038f9aef651d18e98d3268305937f3c52f4ac999a6f7a77` | `a3e508e35fc5451fe56fa7b70941621992d35b50` |
+
+- Lapsed at C = 84c66547, 2026-11-10 (decision items):
+
+  | V17 carry | carry `v17-c2`'s agent evidence (V17, and T08.B50's surface) across R-192, R-234 and R-295, with no new link at C (V03.A23). Alternative: a new V17 campaign (about USD 10, one hour) | accepted, 2026-10-30 — Frank, verbatim: "Reuse 0.2.0's (Recommended)" (the default in this row; asked in plain words after W21's new judgement) | `extract:links + extract:served_digest` | `367fdf465f7793d9c4224da4617130993a05d1f029b749b593d2f97d6c2d98f6` | `a3e508e35fc5451fe56fa7b70941621992d35b50` |
