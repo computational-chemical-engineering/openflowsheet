@@ -503,7 +503,7 @@ def text_sha256(item: str | Mapping[str, Any]) -> str:
 #: (C4) is R-485's next harvest: it reads every manifest M07a and M07 wrote. S13's own manifest
 #: (V03, written after 0.3.0's C = `a3e508e3`) is excluded from 0.3.0's harvest as M07's was from
 #: 0.2.0's; the next envelope's package harvests it (R-911).
-HARVEST_EXCLUDED: tuple[str, ...] = ("evidence/S13/",)
+HARVEST_EXCLUDED: tuple[str, ...] = ("evidence/REL040/",)
 
 
 def harvest_items(
