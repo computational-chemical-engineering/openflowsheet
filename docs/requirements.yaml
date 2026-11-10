@@ -753,7 +753,10 @@ gates:
   - id: V13
     required_evidence: "DM/SCC/BTF, tear and EO, scaling and initialization"
     owner_packages: [T01, T02]
-    verdict: PASS
+    # 0.4.0 (RP §9.2 step 3, RP.S17): `docs/reviews/REL040-verdicts.md` at C = `84c66547` judges V13 BLOCKED on
+    # clause V13 (e): Frank's dated `V17 carry` row naming the eight links R-192 to R-1010 (the 2026-10-30 row lapsed at
+    # C). It changes only when Frank answers and the verdict agent judges again at the same C.
+    verdict: BLOCKED
     evidence:
       - evidence/K02/1baaf033be114e4e44bf982ecee8716b0f040519/manifest.json
       - evidence/K03/c806f83fd3fb0e71967235000fb517fc1c26efd4/manifest.json
@@ -765,6 +768,9 @@ gates:
   - id: V14
     required_evidence: "Homotopy, qualified PTC/SER and three bounded recovery edges"
     owner_packages: [T04]
+    # 0.4.0 (RP §9.2 step 3, RP.S17): `docs/reviews/REL040-verdicts.md` at C = `84c66547` judges V14 FAIL on clause
+    # V14 (b) (PTC ends at the saddle from 149 of 441 starts, the registered FAIL); its standing acceptance row lapsed
+    # at C, so the FAIL is releasable only with Frank's new row.
     verdict: FAIL
     evidence:
       - evidence/M07/ce993651ce37c1343e771b276160bd6623e43500/manifest.json
@@ -795,7 +801,10 @@ gates:
   - id: V17
     required_evidence: "Local/HTTP/MCP, ten agent tasks, >=80% success, zero unauthorized actions/false verification"
     owner_packages: [T07]
-    verdict: PASS
+    # 0.4.0 (RP §9.2 step 3, RP.S17): `docs/reviews/REL040-verdicts.md` at C = `84c66547` judges V17 BLOCKED on
+    # clause V17 (a): Frank's dated `V17 carry` row naming the eight links R-192 to R-1010, or a new V17 campaign (the
+    # 2026-10-30 row lapsed at C). It changes only when Frank answers and the verdict agent judges again at the same C.
+    verdict: BLOCKED
     evidence:
       - evidence/M07/ce993651ce37c1343e771b276160bd6623e43500/manifest.json
       - evidence/M07a/cc73219a77f6a54579c8acb151ed6fae228c8a4c/manifest.json
@@ -921,6 +930,9 @@ gates:
     # X31 (c): S09's three-tool outcome "met where available, 3 of 4" (RC4 has one independent reference, BioSTEAM) is
     # the registered failure of the reference clause; (a) and (b) are green in step 1 on both architectures. Releasable
     # by ADR 0053's D3 row `X31 (c)` (Frank, `accepted, 2026-10-30`). V03's manifest at C (S13) is cited below.
+    #
+    # 0.4.0 (RP §9.2 step 3, RP.S17): `docs/reviews/REL040-verdicts.md` at C = `84c66547` judges X31 FAIL on clause
+    # X31 (c) again (S09 verdict 3 unchanged); the standing acceptance row `X31 (c)` stands at C.
     verdict: FAIL
     evidence:
       - evidence/S03/930aad1b162d0dc27276e64a5b67ce857a7cdf97/manifest.json
