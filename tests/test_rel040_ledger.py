@@ -4,12 +4,13 @@
 For the seventeen gates the 0.4 line's gate set claims (`release/lines/0.4.json`, read by
 `scripts/release_gate.py`'s own loader) the ledger's verdict equals the verdict document's
 (`docs/reviews/REL040-verdicts.md`, read by the engine's parser as the gate reads it). At C =
-`84c66547` that is 13 PASS, V13 and V17 BLOCKED (both on Frank's `V17 carry` row), V14 FAIL and X31
-FAIL. A BLOCKED row changes only when Frank answers and the verdict agent judges again; this test
-then follows the document. The ledger moves no verdict the document did not move against 0.3.0's
-released ledger; every cited manifest of a claimed gate exists; W27 is not claimed and keeps its
-0.3.0 entry. No gate cites `evidence/REL040/<C>/manifest.json`: it does not exist at the
-candidate (the gate's own manifests item). The working tree's ledger is covered for all 27 gates by
+`84c66547` that was 13 PASS, V13 and V17 BLOCKED (both on Frank's `V17 carry` row), V14 FAIL and X31
+FAIL. After Frank's row (2026-11-10) the verdict agent judged V13 and V17 again at the same C
+(bb4a79f8): 15 PASS, V14 FAIL and X31 FAIL. This test follows the document. The ledger moves
+no verdict the document did not move against 0.3.0's released ledger; every cited manifest of a
+claimed gate exists; W27 is not claimed and keeps its 0.3.0 entry. No gate cites
+`evidence/REL040/<C>/manifest.json`: it does not exist at the candidate (the gate's own manifests
+item). The working tree's ledger is covered for all 27 gates by
 `tests/test_requirements_ledger.py`.
 """
 
@@ -91,7 +92,8 @@ def test_the_claimed_verdicts_are_the_documents(verdicts: str) -> None:
 
 def test_the_ledger_moves_only_what_the_document_moves(verdicts: str) -> None:
     """Against 0.3.0's released ledger, a claimed gate's verdict changes iff the document's
-    differs from it (at C: V13 and V17, PASS to BLOCKED)."""
+    differs from it (after the re-judgement at C: none; V13 and V17 went BLOCKED and back to
+    PASS)."""
     document = v0_2_gate.verdict_document(verdicts, GATE_SET, rc(verdicts))
     before = released()
     moved = {

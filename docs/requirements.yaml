@@ -753,10 +753,10 @@ gates:
   - id: V13
     required_evidence: "DM/SCC/BTF, tear and EO, scaling and initialization"
     owner_packages: [T01, T02]
-    # 0.4.0 (RP §9.2 step 3, RP.S17): `docs/reviews/REL040-verdicts.md` at C = `84c66547` judges V13 BLOCKED on
-    # clause V13 (e): Frank's dated `V17 carry` row naming the eight links R-192 to R-1010 (the 2026-10-30 row lapsed at
-    # C). It changes only when Frank answers and the verdict agent judges again at the same C.
-    verdict: BLOCKED
+    # 0.4.0 (RP §9.2 step 3, RP.S17): `docs/reviews/REL040-verdicts.md` at C = `84c66547` judged V13 BLOCKED on
+    # clause V13 (e), waiting on Frank's dated `V17 carry` row for the eight links R-192 to R-1010. Re-judged PASS at
+    # the same C (bb4a79f8, alpha §19.2) on that row (Frank, 2026-11-10; `release/acceptances.md`, 5162627b).
+    verdict: PASS
     evidence:
       - evidence/K02/1baaf033be114e4e44bf982ecee8716b0f040519/manifest.json
       - evidence/K03/c806f83fd3fb0e71967235000fb517fc1c26efd4/manifest.json
@@ -770,7 +770,7 @@ gates:
     owner_packages: [T04]
     # 0.4.0 (RP §9.2 step 3, RP.S17): `docs/reviews/REL040-verdicts.md` at C = `84c66547` judges V14 FAIL on clause
     # V14 (b) (PTC ends at the saddle from 149 of 441 starts, the registered FAIL); its standing acceptance row lapsed
-    # at C, so the FAIL is releasable only with Frank's new row.
+    # at C; Frank's new row (2026-11-10, `release/acceptances.md`, 5162627b) makes the FAIL releasable.
     verdict: FAIL
     evidence:
       - evidence/M07/ce993651ce37c1343e771b276160bd6623e43500/manifest.json
@@ -801,10 +801,10 @@ gates:
   - id: V17
     required_evidence: "Local/HTTP/MCP, ten agent tasks, >=80% success, zero unauthorized actions/false verification"
     owner_packages: [T07]
-    # 0.4.0 (RP §9.2 step 3, RP.S17): `docs/reviews/REL040-verdicts.md` at C = `84c66547` judges V17 BLOCKED on
-    # clause V17 (a): Frank's dated `V17 carry` row naming the eight links R-192 to R-1010, or a new V17 campaign (the
-    # 2026-10-30 row lapsed at C). It changes only when Frank answers and the verdict agent judges again at the same C.
-    verdict: BLOCKED
+    # 0.4.0 (RP §9.2 step 3, RP.S17): `docs/reviews/REL040-verdicts.md` at C = `84c66547` judged V17 BLOCKED on
+    # clause V17 (a), waiting on Frank's dated `V17 carry` row for the eight links R-192 to R-1010. Re-judged PASS at
+    # the same C (bb4a79f8, alpha §19.2) on that row (Frank, 2026-11-10; `release/acceptances.md`, 5162627b).
+    verdict: PASS
     evidence:
       - evidence/M07/ce993651ce37c1343e771b276160bd6623e43500/manifest.json
       - evidence/M07a/cc73219a77f6a54579c8acb151ed6fae228c8a4c/manifest.json
