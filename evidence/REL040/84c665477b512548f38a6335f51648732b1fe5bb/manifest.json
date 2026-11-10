@@ -1,0 +1,811 @@
+{
+ "work_package": "REL040",
+ "commit": "84c665477b512548f38a6335f51648732b1fe5bb",
+ "requirements": [],
+ "status": "tested",
+ "inputs": {
+  "case_id": "line 0.4 at C: RP.S01-RP.S22 of docs/derivations/release-procedure.md §11.1 (39bc79a97880495fb81eaf26673dd1953d24b5496b60527b75e59f6d4926db3b) and one check per rc_items entry of release/lines/0.4.json (31e7d0f31a26a2b43d64083011290315d7ad9011dde5cf13b21b522a0448a5b7)",
+  "case_hash": "d942ab128c6425a01b9a88f9f230de97d638cdbb87276fd39237ea9c80c00c24",
+  "environment_lock_hash": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+ },
+ "commands": [
+  {
+   "cmd": "gh run view 42790953372 --json databaseId,headSha,conclusion,event,jobs,workflowName,url",
+   "cwd": ".",
+   "exit_code": 0,
+   "stdout_sha256": "ba6dc899bd05967a2fd78182ea63aecde5a984a0f35ee93a54fb6cd124ef227f"
+  },
+  {
+   "cmd": "gh run view 42791067917 --json databaseId,headSha,conclusion,event,jobs,workflowName,url",
+   "cwd": ".",
+   "exit_code": 0,
+   "stdout_sha256": "52663994864f58f127d833830671628d8f5e52ef799a26fced582bb0fae8844f"
+  },
+  {
+   "cmd": ".venv/bin/python -m pytest -q -p no:cacheprovider --basetemp=TMP/RP.S01 --junitxml=evidence/REL040/84c665477b512548f38a6335f51648732b1fe5bb/artifacts/RP.S01.junit.xml tests/test_rel_release_gate.py -k 'committed_line_files_load or test_l0 or test_l1 or test_a01_'",
+   "cwd": ".",
+   "exit_code": 0,
+   "stdout_sha256": "9b4138d2f489e068591c644ae314c646c6755bf6ad37a502cb2b4f83e27e09dc"
+  },
+  {
+   "cmd": ".venv/bin/python -m pytest -q -p no:cacheprovider --basetemp=TMP/RP.S03 --junitxml=evidence/REL040/84c665477b512548f38a6335f51648732b1fe5bb/artifacts/RP.S03.junit.xml tests/test_v03_v0_3_gate.py tests/test_m07a_v0_2_gate.py tests/test_m07_v0_2_gate.py tests/test_rel_release_gate.py::test_a02_the_0_3_gate_set_is_v0_3_gate_s_field_by_field",
+   "cwd": ".",
+   "exit_code": 0,
+   "stdout_sha256": "56ac165488c1ab35fd1966ef7e91bdb0d021615c47b802d266cda052fd1b985f"
+  },
+  {
+   "cmd": ".venv/bin/python -m pytest -q -p no:cacheprovider --basetemp=TMP/RP.S04 --junitxml=evidence/REL040/84c665477b512548f38a6335f51648732b1fe5bb/artifacts/RP.S04.junit.xml tests/test_v03_v0_3_gate.py -k a04_",
+   "cwd": ".",
+   "exit_code": 0,
+   "stdout_sha256": "bb082b9bb25daca729cd28604948788f2b09bacd8723179cacd700628ea7829e"
+  },
+  {
+   "cmd": ".venv/bin/python -m pytest -q -p no:cacheprovider --basetemp=TMP/RP.S06.0 --junitxml=evidence/REL040/84c665477b512548f38a6335f51648732b1fe5bb/artifacts/RP.S06.0.junit.xml tests/test_v03_v0_3_gate.py -k a06_",
+   "cwd": ".",
+   "exit_code": 0,
+   "stdout_sha256": "c5a36bc1f7b9d350db44351cbe1cdbe692990ee563dfabd66385e9d4a98a5cf4"
+  },
+  {
+   "cmd": ".venv/bin/python -m pytest -q -p no:cacheprovider --basetemp=TMP/RP.S06.1 --junitxml=evidence/REL040/84c665477b512548f38a6335f51648732b1fe5bb/artifacts/RP.S06.1.junit.xml tests/test_rel_release_gate.py -k a03_",
+   "cwd": ".",
+   "exit_code": 0,
+   "stdout_sha256": "d48b342f6bdfa95feab8688afb0c07599a084a8953115e05ceba355ae1103bb2"
+  },
+  {
+   "cmd": ".venv/bin/python -m pytest -q -p no:cacheprovider --basetemp=TMP/RP.S06.2 --junitxml=evidence/REL040/84c665477b512548f38a6335f51648732b1fe5bb/artifacts/RP.S06.2.junit.xml tests/test_rel_standing_acceptances.py -k s06_",
+   "cwd": ".",
+   "exit_code": 0,
+   "stdout_sha256": "cd229f2217af690c211e19544772cee6485daabad9656fe2204e8216d05b4d1f"
+  },
+  {
+   "cmd": ".venv/bin/python -m pytest -q -p no:cacheprovider --basetemp=TMP/RP.S07 --junitxml=evidence/REL040/84c665477b512548f38a6335f51648732b1fe5bb/artifacts/RP.S07.junit.xml tests/test_rel_standing_acceptances.py",
+   "cwd": ".",
+   "exit_code": 0,
+   "stdout_sha256": "cc0540932064d1a78d820a3034800ff993b35fe4bb8ae1d4ff465b2ecc2878d2"
+  },
+  {
+   "cmd": ".venv/bin/python -m pytest -q -p no:cacheprovider --basetemp=TMP/RP.S08.0 --junitxml=evidence/REL040/84c665477b512548f38a6335f51648732b1fe5bb/artifacts/RP.S08.0.junit.xml tests/test_v03_v0_3_gate.py -k a08_",
+   "cwd": ".",
+   "exit_code": 0,
+   "stdout_sha256": "0b48eccbb749d2ee0af6f58b4223dc44efdb92709e162613925e7e166ed2a374"
+  },
+  {
+   "cmd": ".venv/bin/python -m pytest -q -p no:cacheprovider --basetemp=TMP/RP.S08.1 --junitxml=evidence/REL040/84c665477b512548f38a6335f51648732b1fe5bb/artifacts/RP.S08.1.junit.xml tests/test_rel_release_gate.py -k 'a03_ or a05_'",
+   "cwd": ".",
+   "exit_code": 0,
+   "stdout_sha256": "bb368aa5ea3ea6ec236ac868fea43d6202e76e84eb32f622cf5ca6dcd889a4d5"
+  },
+  {
+   "cmd": ".venv/bin/python -m pytest -q -p no:cacheprovider --basetemp=TMP/RP.S22 --junitxml=evidence/REL040/84c665477b512548f38a6335f51648732b1fe5bb/artifacts/RP.S22.junit.xml tests/test_m07a_harvest.py -k r911",
+   "cwd": ".",
+   "exit_code": 0,
+   "stdout_sha256": "1df587f9ef759867a59dfbd3852be8a8e25bc04c69ff871e4d9ba74a1ff5f582"
+  },
+  {
+   "cmd": "pytest -q -p no:cacheprovider -m 'pymrm or not pymrm' tests/test_m02_*.py (RC step12/rc-step12.json at C, ref-x86-64; a41.m02_tests_with_reactor: pass)",
+   "cwd": ".",
+   "exit_code": 0
+  },
+  {
+   "cmd": "python docs/derivations/scripts/m04_reference.py --check (RC step13/rc-step13.json at C, ref-x86-64; a60.w23.generator_check: pass)",
+   "cwd": ".",
+   "exit_code": 0
+  },
+  {
+   "cmd": "python scripts/m04_schema_fixtures.py (RC step13/rc-step13.json at C, ref-x86-64; a60.w23.schema_fixtures: pass)",
+   "cwd": ".",
+   "exit_code": 0
+  },
+  {
+   "cmd": "pytest -q -rs -p no:cacheprovider tests/test_m04_*.py tests/test_evidence_manifests.py (RC step13/rc-step13.json at C, ref-x86-64; a60.w23.tests: pass)",
+   "cwd": ".",
+   "exit_code": 0
+  },
+  {
+   "cmd": "scripts/m03_nlp_check.sh PREFIX CACHE -- -o junit_family=xunit1 --junitxml=... {the mark.nlp modules} (RC step14/rc-step14.json at C, ref-x86-64; a60.w24.nlp_tier_and_inventory: pass)",
+   "cwd": ".",
+   "exit_code": 0
+  },
+  {
+   "cmd": "nlp env: pytest -q -rs -p no:cacheprovider -m 'nlp or not nlp' tests/test_m05_*.py tests/test_m03_nlp_isolation.py tests/test_m03_nlp_greybox.py (RC step14/rc-step14.json at C, ref-x86-64; a60.w24.m03_m05_all_tiers: pass)",
+   "cwd": ".",
+   "exit_code": 0
+  },
+  {
+   "cmd": "nlp env: python scripts/m05_wo9_real.py --replay (RC step14/rc-step14.json at C, ref-x86-64; a60.w24.m05_g10_real_replay: pass)",
+   "cwd": ".",
+   "exit_code": 0
+  },
+  {
+   "cmd": "python docs/derivations/scripts/m03_reference.py --check (RC step14/rc-step14.json at C, ref-x86-64; a60.w24.m03_reference_check: pass)",
+   "cwd": ".",
+   "exit_code": 0
+  },
+  {
+   "cmd": "nlp env: pytest --collect-only -q -p no:cacheprovider -m nlp {the modules}; the same over tests/ (its exit status not judged) (RC step14/rc-step14.json at C, ref-x86-64; a60.w24.nlp_selection: pass)",
+   "cwd": ".",
+   "exit_code": 0
+  },
+  {
+   "cmd": "python scripts/release_gate.py --line 0.4 --rc 84c665477b512548f38a6335f51648732b1fe5bb --carry-journey e0a3d6b7 (RC step15/rc-step15.json at C, ref-x86-64; a21.carry_journey: pass)",
+   "cwd": ".",
+   "exit_code": 0
+  },
+  {
+   "cmd": "python scripts/m07_journey.py check e0a3d6b7 (RC step15/rc-step15.json at C, ref-x86-64; a21.check: pass)",
+   "cwd": ".",
+   "exit_code": 0
+  },
+  {
+   "cmd": "nlp env, OMP_NUM_THREADS=1: python scripts/m07_journey.py replay e0a3d6b7 (RC step15/rc-step15.json at C, ref-x86-64; a21.replay: pass)",
+   "cwd": ".",
+   "exit_code": 0
+  },
+  {
+   "cmd": "OPENFLOWSHEET_REQUIRE_BROWSER=1 pytest -q -rs -p no:cacheprovider --junitxml={rc}/step16/m06-tests.junit.xml tests/test_m06_*.py (RC step16/rc-step16.json at C, ref-x86-64; a60.w26.m06_tests: pass)",
+   "cwd": ".",
+   "exit_code": 0
+  },
+  {
+   "cmd": "node --test --test-reporter=spec \"tests/web/*.test.mjs\" (RC step16/rc-step16.json at C, ref-x86-64; a60.w26.web_unit_tests: pass)",
+   "cwd": ".",
+   "exit_code": 0
+  },
+  {
+   "cmd": "python -m benchmarks.m06.w27.dryrun --out evidence/M06/W27/artifacts/dry-run/84c6654 (RC step16/rc-step16.json at C, ref-x86-64; a60.w26.w27_v1_refusal: pass)",
+   "cwd": ".",
+   "exit_code": 1
+  },
+  {
+   "cmd": "python scripts/m07_g11_experiments_audit.py --variant-file benchmarks/m02/variant-v3-provisional.json --runs {rc}/step12/g11-coverage-v3.runs.json --out {rc}/step12/experiments/g11-experiments-audit.json {rc}/step12/experiments/g11-experiments-run1.json {rc}/step12/experiments/g11-experiments-run2.json (RC step12/experiments/rc-step12-experiments.json at C, ref-x86-64; r375.audit: pass)",
+   "cwd": ".",
+   "exit_code": 0
+  },
+  {
+   "cmd": "/home/frankp/.cache/rel040-cut/rc/rcvenv/bin/python scripts/e01_evidence_manifest.py --a48-release-check (RC step17/rc-step17-E01-A48.json at C, ref-x86-64; E01-A48: pass)",
+   "cwd": ".",
+   "exit_code": 0
+  },
+  {
+   "cmd": "/home/frankp/.cache/rel040-cut/rc/cpvenv/bin/python scripts/t07_licence_inventory.py --extra coolprop (RC step17/rc-step17-MR12-coolprop.json at C, ref-x86-64; MR12-coolprop: pass)",
+   "cwd": ".",
+   "exit_code": 0
+  },
+  {
+   "cmd": "/home/frankp/.cache/rel040-cut/rc/rcvenv/bin/python scripts/e01_d04_inventory.py --check (RC step17/rc-step17-MR12-lca.json at C, ref-x86-64; MR12-lca: pass)",
+   "cwd": ".",
+   "exit_code": 0
+  },
+  {
+   "cmd": "/home/frankp/.cache/rel040-cut/rc/venv-lca/bin/python -m pytest -q -rs -p no:cacheprovider tests/test_e01_b_brightway.py tests/test_e01_b_lca.py tests/test_e01_b_tables.py tests/test_e01_b_cost_hand.py (RC step17/rc-step17-E01-G5-lca.json at C, ref-x86-64; E01-G5-lca: pass)",
+   "cwd": ".",
+   "exit_code": 0
+  },
+  {
+   "cmd": "bash scripts/m03_nlp_check.sh /home/frankp/Codes/OpenFlowsheet/.claude/worktrees/m05/.venv-nlp /home/frankp/Codes/OpenFlowsheet/.claude/worktrees/m05/.reference-downloads/m03-ipopt -- -m nlp or not nlp tests/test_e01_b_nlp.py tests/test_e01_integration.py (RC step17/rc-step17-E01-G6-nlp.json at C, ref-x86-64; E01-G6-nlp: pass)",
+   "cwd": ".",
+   "exit_code": 0
+  },
+  {
+   "cmd": "/home/frankp/.cache/rel040-cut/rc/rcvenv/bin/python scripts/wheel_data_check.py --commit 84c665477b512548f38a6335f51648732b1fe5bb (RC step17/rc-step17-WHEEL-DATA.json at C, ref-x86-64; WHEEL-DATA: pass)",
+   "cwd": ".",
+   "exit_code": 0
+  },
+  {
+   "cmd": "PYTHONPATH=src:. .venv/bin/python scripts/release_evidence_manifest.py --line 0.4 --commit 84c665477b512548f38a6335f51648732b1fe5bb --k3 49a0473119a7684ddf44bdf3c59528714f49337a --ci-run 42790953372 --ci-run 42791067917 --tmp /home/eajfpeters/.cache/rel040-tr09-tmp (run at e81429428da5a0c9c17aacb44731aead52bdddd1)",
+   "cwd": ".",
+   "exit_code": 0
+  }
+ ],
+ "checks": [
+  {
+   "id": "RP.S01",
+   "description": "RP.S01 (D): The line file passes RP.L01–RP.L11, and `scripts/release_gate.py`'s loader refuses each RP.L control. 0.3.0: V03.A01. Changed form.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selections": [
+      {
+       "selection": [
+        "tests/test_rel_release_gate.py",
+        "-k",
+        "committed_line_files_load or test_l0 or test_l1 or test_a01_"
+       ],
+       "summary": "29 passed, 31 deselected in 1.26s"
+      }
+     ]
+    },
+    "line": {
+     "line": "release/lines/0.4.json",
+     "chain": [
+      "0.4",
+      "0.3"
+     ],
+     "tree_problems": []
+    }
+   }
+  },
+  {
+   "id": "RP.S02",
+   "description": "RP.S02 (D): `gate_set_of` over the line's version table T-V(M.m). Covered: `M.m.0`, `M.m.0b1`, `M.m.0rc1`, `M.m.0rc12`. Not covered: `M.m.0a1`, `M.m.0b0`, `M.m.0rc0`, `M.m.0rc01`, `M.m.0.dev0`, `M.m.0.post1`, `M.m.1`, `M.m`, `M.m0.0`, `(M+1).m.0`, `M.m.0 ` (trailing space), and, for m ≥ 1, `M.(m-1).0` and `M.(m-1).0rc1`. Each number is written in decimal (`M.m0.0` for 0.3 is `0.30.0`). A post-release form is admitted only by R-922's separate rule (§7.5), never by `covers`. For 0.3 the table is Table T-V3 exactly, 4 covered and 13 not, and the 0.3 and 0.4 `covers` patterns classify their tables correctly (measured 2026-11-06). 0.3.0: V03.A02. Same form.",
+   "result": "pass",
+   "value": {
+    "version_table": {
+     "covered": 4,
+     "not_covered": 13,
+     "misclassified": []
+    }
+   }
+  },
+  {
+   "id": "RP.S03",
+   "description": "RP.S03 (D): The legacy lines are unchanged: their tests pass with node ids unchanged (REL.A04), and their entries equal their registrations. 0.3.0: V03.A03. Same form.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selections": [
+      {
+       "selection": [
+        "tests/test_v03_v0_3_gate.py",
+        "tests/test_m07a_v0_2_gate.py",
+        "tests/test_m07_v0_2_gate.py",
+        "tests/test_rel_release_gate.py::test_a02_the_0_3_gate_set_is_v0_3_gate_s_field_by_field"
+       ],
+       "summary": "364 passed in 7.16s"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "id": "RP.S04",
+   "description": "RP.S04 (D): `test_a10_…`'s loop tuple is `tagged` plus every release's pin pairs in release order (§7.2). A control with two pairs swapped fails `test_a31_b_…`. 0.3.0: V03.A04. Same form.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selections": [
+      {
+       "selection": [
+        "tests/test_v03_v0_3_gate.py",
+        "-k",
+        "a04_"
+       ],
+       "summary": "3 passed, 64 deselected in 0.90s"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "id": "RP.S05",
+   "description": "RP.S05 (D): The clause grammar: under the line's `clause`, `g (a)` parses for every claimed g, while `g (a)` for every not-claimed g and `{first claimed} (A)` do not. Under the inherited line's grammar, `g (a)` does not parse for any g claimed only by this line. 0.3.0: V03.A05. Changed form (generated from the line, not a fixed list).",
+   "result": "pass",
+   "value": {
+    "clause": {
+     "claimed": 17,
+     "not_claimed": 1,
+     "new_claims": [],
+     "wrong": []
+    }
+   }
+  },
+  {
+   "id": "RP.S06",
+   "description": "RP.S06 (D): Decision items 1–12 with the line's values: one YES fixture, and for each item one NO fixture that flips only it, each with its reason. Item 13 (D2) does not exist while D2 is deferred. 0.3.0: V03.A06. Same form.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selections": [
+      {
+       "selection": [
+        "tests/test_v03_v0_3_gate.py",
+        "-k",
+        "a06_"
+       ],
+       "summary": "14 passed, 53 deselected in 0.89s"
+      },
+      {
+       "selection": [
+        "tests/test_rel_release_gate.py",
+        "-k",
+        "a03_"
+       ],
+       "summary": "21 passed, 39 deselected in 1.65s"
+      },
+      {
+       "selection": [
+        "tests/test_rel_standing_acceptances.py",
+        "-k",
+        "s06_"
+       ],
+       "summary": "16 passed, 42 deselected in 0.95s"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "id": "RP.S07",
+   "description": "RP.S07 (D): The standing acceptances (REL.A06–A10). A failing clause without a standing row gives NO; with a standing row, YES; with a lapsed row, NO; with a row re-dated per §8.4, YES; dated one day early, NO. A verdict document with a row for a not-claimed gate exits 2. 0.3.0: V03.A07. Changed form.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selections": [
+      {
+       "selection": [
+        "tests/test_rel_standing_acceptances.py"
+       ],
+       "summary": "58 passed in 1.52s"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "id": "RP.S08",
+   "description": "RP.S08 (D, R): The gate's output grammar. The first line is `{line name} gates ({gate set}) at C = {C}; candidate {ref}`. One row per gate follows, the claimed in order and then each not-claimed gate as `not claimed ({gate set})`. The last line is `v{version} tag may be proposed: YES` or `… NO (k reasons)`. D: the gate's tests, which the manifest judges. R: step 18's own output, recorded in the build log, which the manifest does not judge (R-914). 0.3.0: V03.A08. Same form.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selections": [
+      {
+       "selection": [
+        "tests/test_v03_v0_3_gate.py",
+        "-k",
+        "a08_"
+       ],
+       "summary": "7 passed, 60 deselected in 1.42s"
+      },
+      {
+       "selection": [
+        "tests/test_rel_release_gate.py",
+        "-k",
+        "a03_ or a05_"
+       ],
+       "summary": "27 passed, 33 deselected in 2.00s"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "id": "RP.S09",
+   "description": "RP.S09 (R): At K3 and C, the version-carrying files read the version, and the envelope reads `{envelope_id}`/`{version}` (§7.1). 0.3.0: V03.A09. Same form.",
+   "result": "pass",
+   "value": {
+    "versions": {
+     "version": "0.4.0",
+     "K3": {
+      "commit": "49a0473119a7684ddf44bdf3c59528714f49337a",
+      "not_as_stated": []
+     },
+     "C": {
+      "commit": "84c665477b512548f38a6335f51648732b1fe5bb",
+      "not_as_stated": []
+     }
+    }
+   }
+  },
+  {
+   "id": "RP.S10",
+   "description": "RP.S10 (R): `CHANGELOG.md`'s `## v{version}` holds each registered phrase verbatim, once, and one line per accepted failure clause in force, in §10's form. 0.3.0: V03.A16 and A18. Changed form (the failure lines are new, D3.5).",
+   "result": "pass",
+   "value": {
+    "changelog": {
+     "phrases": 17,
+     "not_once": [],
+     "failure_lines": [
+      "- V14 (b) FAIL, accepted by Frank 2026-11-10 (release/acceptances.md)",
+      "- X31 (c) FAIL, accepted by Frank 2026-10-30 (release/acceptances.md)"
+     ],
+     "not_once_lines": []
+    }
+   }
+  },
+  {
+   "id": "RP.S11",
+   "description": "RP.S11 (R): Every step of `rc_steps` other than 15 and 17 passes at C, and the RC record has a passed row for each step of `rc_steps`. 0.3.0: V03.A20. Same form.",
+   "result": "pass",
+   "value": {
+    "records": {
+     "rc_records": {
+      "identity/rc-identity.json": "passed True, checks {'pass': 3}, at C True",
+      "ensemble/rc-ensemble-ref-x86-64.json": "passed True, checks {'pass': 7}, at C True",
+      "corpus-ref-x86-64.json": "passed True, checks {'pass': 12}, at C True",
+      "surface/rc-alpha-surface.json": "passed True, checks {'pass': 13}, at C True",
+      "a30/t08-a30-x86_64.json": "verdict.pass True",
+      "certificates-ref-x86-64.json": "passed True, checks {'pass': 2}, at C True",
+      "step11/rc-step11.json": "passed True, checks {'pass': 3}, at C True",
+      "step12/rc-step12.json": "passed True, checks {'pass': 6}, at C True",
+      "step13/rc-step13.json": "passed True, checks {'pass': 3}, at C True",
+      "step14/rc-step14.json": "passed True, checks {'pass': 5}, at C True",
+      "step16/rc-step16.json": "passed True, checks {'pass': 4}, at C True"
+     }
+    },
+    "ci": {
+     "ci_runs": [
+      42790953372,
+      42791067917
+     ],
+     "jobs": {
+      "check (ubuntu-latest)": "success",
+      "check (ubuntu-24.04-arm)": "success",
+      "identity": "success",
+      "rc-steps (ubuntu-latest)": "success",
+      "rc-steps (ubuntu-24.04-arm)": "success",
+      "dist": "success",
+      "clean-install (ubuntu-latest)": "success",
+      "clean-install (ubuntu-24.04-arm)": "success",
+      "bundle-set": "success",
+      "bundle-replay (ubuntu-latest)": "success",
+      "bundle-replay (ubuntu-24.04-arm)": "success",
+      "rc-ensemble": "success"
+     }
+    },
+    "rc_record": {
+     "record": "docs/REL040-rc-record.md",
+     "problems": [],
+     "sha256": "9de62f73caf1b1c5402dc9f2385e70cccbc65c3af9a8bc25ad826858bf308e62"
+    }
+   }
+  },
+  {
+   "id": "RP.S12",
+   "description": "RP.S12 (R): Step 15: J's journey record is in C, `--carry-journey J --rc C` reports carried, and `check` and `replay` (bitwise) pass at C. 0.3.0: V03.A21. Same form.",
+   "result": "pass",
+   "value": {
+    "records": {
+     "rc_records": {
+      "step15/rc-step15.json": "passed True, checks {'pass': 3}, at C True"
+     }
+    }
+   }
+  },
+  {
+   "id": "RP.S13",
+   "description": "RP.S13 (R): Every `rc_items` entry passes at C (§6.7). An `unsupported` result is not a pass. 0.3.0: V03.A22. Changed form (one record per item).",
+   "result": "pass",
+   "value": {
+    "items": {
+     "items": {
+      "E01-A48": "pass",
+      "S07-F8": "pass",
+      "MR12-coolprop": "pass",
+      "MR12-lca": "pass",
+      "E01-G5-lca": "pass",
+      "E01-G6-nlp": "pass",
+      "WHEEL-DATA": "pass",
+      "PTC-R1": "pass"
+     }
+    }
+   }
+  },
+  {
+   "id": "RP.S14",
+   "description": "RP.S14 (R): Step 8: with `LINKS` at C written c_1 … c_n in its order, the served digest equals D_n, the last link's registered digest, and the chain's rows are exactly `(1,c_n)`, `(2,c_n)`, `(2,c_{n−1})`, …, `(2,c_1)`, `(3,None)`, each passing (§4.4, amendment A-12). Otherwise the RC stops. 0.3.0: V03.A23. Same form.",
+   "result": "pass",
+   "value": {
+    "records": {
+     "rc_records": {
+      "surface/rc-alpha-surface.json": "passed True, checks {'pass': 13}, at C True"
+     }
+    }
+   }
+  },
+  {
+   "id": "RP.S15",
+   "description": "RP.S15 (CI): Step 1's record (§6.2) passes: the push run at C is green on both legs, and junit is present. The step-1 row records the class ratios that the default gate's tests print (S07 A31, R-627; S11 thermal, R-843, R-845). 0.3.0: V03.A24. Changed form (the push run, not a dispatch's `check`; REL.A17).",
+   "result": "pass",
+   "value": {
+    "records": {
+     "rc_records": {
+      "step1/rc-step1.json": "passed True, checks {'pass': 4}, at C True"
+     }
+    },
+    "step1": {
+     "checks": [
+      "s1.check.aarch64",
+      "s1.check.x86_64",
+      "s1.junit",
+      "s1.push_run"
+     ],
+     "push_run": 42790953372
+    }
+   }
+  },
+  {
+   "id": "RP.S16",
+   "description": "RP.S16 (R): Item 12 in two parts. (a) The manifest: the gate's `adr_problems` at the commit the generator runs at returns no problem other than \"ADR {n} is not Accepted\" for a manifest-conditioned ADR whose status line starts `Status: Proposed`. (b) Step 18: every required ADR Accepted, shown by its YES line in the build log. 0.3.0: V03.A25. Same form.",
+   "result": "pass",
+   "value": {
+    "adrs": {
+     "required": 26,
+     "problems": [],
+     "admitted": [],
+     "manifest_adrs": []
+    }
+   }
+  },
+  {
+   "id": "RP.S17",
+   "description": "RP.S17 (R): The verdict document (§4.7): the header names C once and has one `Judged` line; there is one row per claimed gate, in order; every clause parses. `release/acceptances.md` passes the cell rule and the standing rule (§8.3). The ledger's verdicts are written from the verdict document. 0.3.0: V03.A26. Changed form (standing table).",
+   "result": "pass",
+   "value": {
+    "verdict_document": {
+     "rows": 17,
+     "verdicts": {
+      "FAIL": 2,
+      "PASS": 15
+     },
+     "judged": "2026-11-10"
+    },
+    "acceptances": {
+     "acceptances": "release/acceptances.md",
+     "rows": {
+      "Claim set": "stands",
+      "V17 carry": "stands",
+      "M02 N1": "stands",
+      "M03 N1": "stands",
+      "coolprop and lca licences": "stands",
+      "V14 (b)": "stands",
+      "X31 (c)": "stands"
+     },
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "RP.S18",
+   "description": "RP.S18 (R): The release manifest, in two parts. (a) As its own check: `tested`, listing RP.S01–RP.S22 and the item checks with commands run. That is, every other check passes and commands were run. (b) At §9.2 step 6: step 18's last line is YES, recorded in the build log with the log's SHA-256. 0.3.0: V03.A27. Changed form (its rule (a) quantifies over the catalogue, whose changed-form members cannot pass on 0.3.0's records; amendment A-1, §17.1).",
+   "result": "pass",
+   "value": {
+    "self": {
+     "other_checks": 29,
+     "not_pass": [],
+     "commands": 35
+    }
+   }
+  },
+  {
+   "id": "RP.S19",
+   "description": "RP.S19 (R): Step 16 as §6.6 states it, while W27 is not claimed: 4 of 4 checks pass; the 25 nodes; exit 1 and the exact line. 0.3.0: V03.A32. Same form.",
+   "result": "pass",
+   "value": {
+    "records": {
+     "rc_records": {
+      "step16/rc-step16.json": "passed True, checks {'pass': 4}, at C True"
+     }
+    },
+    "step16": {
+     "checks": [
+      "a60.w26.g15_registered_states",
+      "a60.w26.m06_tests",
+      "a60.w26.w27_v1_refusal",
+      "a60.w26.web_unit_tests"
+     ]
+    }
+   }
+  },
+  {
+   "id": "RP.S20",
+   "description": "RP.S20 (R): Step 14's selection as §6.5 states it: equal sets, and n ≥ 1 recorded. 0.3.0: V03.A33. Changed form (0.3.0 required n = 190).",
+   "result": "pass",
+   "value": {
+    "records": {
+     "rc_records": {
+      "step14/rc-step14.json": "passed True, checks {'pass': 5}, at C True"
+     }
+    },
+    "nlp_selection": {
+     "modules": [
+      "tests/test_e01_b_nlp.py",
+      "tests/test_e01_integration.py",
+      "tests/test_m03_nlp_greybox.py",
+      "tests/test_m05_basis.py",
+      "tests/test_m05_basis_v2_c1.py",
+      "tests/test_m05_c1_projection.py",
+      "tests/test_m05_g10_replay.py",
+      "tests/test_m05_parent.py",
+      "tests/test_m05_projection.py",
+      "tests/test_m05_readiness.py",
+      "tests/test_m05_surrogate_truth.py",
+      "tests/test_m05_trf.py",
+      "tests/test_m05_zero_flow.py",
+      "tests/test_opt_benchmarks_nlp.py",
+      "tests/test_opt_cost_lca_nlp.py",
+      "tests/test_opt_job_nlp.py",
+      "tests/test_opt_replay_nlp.py",
+      "tests/test_rel_rc_local.py"
+     ],
+     "selected_count": 212,
+     "all_count": 212,
+     "equal": true,
+     "selected_exit_code": 0
+    }
+   }
+  },
+  {
+   "id": "RP.S21",
+   "description": "RP.S21 (R): Step 12's experiment record as §6.4 states it: exactly one check, `r375.audit`, with the line. 0.3.0: V03.A34. Changed form (0.3.0's record had the re-run checks (a) and (b)).",
+   "result": "pass",
+   "value": {
+    "records": {
+     "rc_records": {
+      "step12/experiments/rc-step12-experiments.json": "passed True, checks {'pass': 1}, at C True"
+     }
+    },
+    "experiments": {
+     "checks": [
+      "r375.audit"
+     ],
+     "audit_line": "G11 experiments audit: 2 runs, 210 boundary points, 210 results, 210 attempts, 0 without a result, 32 direct points (no records); 6 items + schema: 0 problems; context (job_id): 420 findings: PASS"
+    }
+   }
+  },
+  {
+   "id": "RP.S22",
+   "description": "RP.S22 (D): `HARVEST_EXCLUDED` holds `evidence/{pkg}/` for the release being cut (§5.2). C's tree holds no file under it, every excluded manifest is `evidence/{pkg}/{40 hex}/manifest.json`, and a manifest of a package whose id merely starts with `{pkg}` is still harvested. 0.3.0: the test of V03 §10.5 item 3. Same form.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selections": [
+      {
+       "selection": [
+        "tests/test_m07a_harvest.py",
+        "-k",
+        "r911"
+       ],
+       "summary": "1 passed, 4 deselected in 0.89s"
+      }
+     ]
+    },
+    "harvest": {
+     "harvest_excluded": [
+      "evidence/REL040/"
+     ],
+     "at_c": [],
+     "manifests": [],
+     "sibling_excluded": false
+    }
+   }
+  },
+  {
+   "id": "ITEM.E01-A48",
+   "description": "rc_items E01-A48 (§6.7): E01 G10 (E01.A48): a48_release_check() is pass, 0 unverified primary ranges (V03 17a)",
+   "result": "pass",
+   "value": {
+    "rc_records": {
+     "step17/rc-step17-E01-A48.json": "passed True, checks {'pass': 1}, at C True"
+    },
+    "checks": {
+     "E01-A48": "pass"
+    },
+    "where": "local:project"
+   }
+  },
+  {
+   "id": "ITEM.S07-F8",
+   "description": "rc_items S07-F8 (§6.7): S07 F-8: the CoolProp modules pass with the coolprop lock on both legs (V03 17b, R-906)",
+   "result": "pass",
+   "value": {
+    "rc_records": {
+     "step17/rc-step17-S07-F8.json": "passed True, checks {'pass': 1}, at C True"
+    },
+    "checks": {
+     "S07-F8": "pass"
+    },
+    "where": "ci:rc-coolprop"
+   }
+  },
+  {
+   "id": "ITEM.MR12-coolprop",
+   "description": "rc_items MR12-coolprop (§6.7): MR-12, coolprop extra: G19's inventory of the extra's increment (R-624; V03 17c)",
+   "result": "pass",
+   "value": {
+    "rc_records": {
+     "step17/rc-step17-MR12-coolprop.json": "passed True, checks {'pass': 1}, at C True"
+    },
+    "checks": {
+     "MR12-coolprop": "pass"
+    },
+    "where": "local:coolprop"
+   }
+  },
+  {
+   "id": "ITEM.MR12-lca",
+   "description": "rc_items MR12-lca (§6.7): MR-12, lca extra: WO-B1/D04's licence inventory check, E01.A42 (R-900; V03 17c)",
+   "result": "pass",
+   "value": {
+    "rc_records": {
+     "step17/rc-step17-MR12-lca.json": "passed True, checks {'pass': 1}, at C True"
+    },
+    "checks": {
+     "MR12-lca": "pass"
+    },
+    "where": "local:project"
+   }
+  },
+  {
+   "id": "ITEM.E01-G5-lca",
+   "description": "rc_items E01-G5-lca (§6.7): E01 G5 (E01.A24, A25) in the lca environment (V03 17d)",
+   "result": "pass",
+   "value": {
+    "rc_records": {
+     "step17/rc-step17-E01-G5-lca.json": "passed True, checks {'pass': 1}, at C True"
+    },
+    "checks": {
+     "E01-G5-lca": "pass"
+    },
+    "where": "local:lca"
+   }
+  },
+  {
+   "id": "ITEM.E01-G6-nlp",
+   "description": "rc_items E01-G6-nlp (§6.7): E01 G6 (E01.A33-A36) in the audited nlp environment (V03 17d)",
+   "result": "pass",
+   "value": {
+    "rc_records": {
+     "step17/rc-step17-E01-G6-nlp.json": "passed True, checks {'pass': 1}, at C True"
+    },
+    "checks": {
+     "E01-G6-nlp": "pass"
+    },
+    "where": "local:nlp"
+   }
+  },
+  {
+   "id": "ITEM.WHEEL-DATA",
+   "description": "rc_items WHEEL-DATA (§6.7): the wheel holds the ship set and E01's data; Wilson binds from it (V03.A17, A19)",
+   "result": "pass",
+   "value": {
+    "rc_records": {
+     "step17/rc-step17-WHEEL-DATA.json": "passed True, checks {'pass': 1}, at C True"
+    },
+    "checks": {
+     "WHEEL-DATA": "pass"
+    },
+    "where": "local:project"
+   }
+  },
+  {
+   "id": "ITEM.PTC-R1",
+   "description": "rc_items PTC-R1 (§6.7): T08's registered PTC-R1 comparison runs to completion at C on both legs (N-2)",
+   "result": "pass",
+   "value": {
+    "rc_records": {
+     "step17/rc-step17-PTC-R1.json": "passed True, checks {'pass': 1}, at C True"
+    },
+    "checks": {
+     "PTC-R1": "pass"
+    },
+    "where": "ci:ptc-r1"
+   }
+  }
+ ],
+ "artifacts": [
+  {
+   "path": "docs/REL040-rc-record.md",
+   "sha256": "9de62f73caf1b1c5402dc9f2385e70cccbc65c3af9a8bc25ad826858bf308e62",
+   "description": "the RC record"
+  },
+  {
+   "path": "evidence/REL040/84c665477b512548f38a6335f51648732b1fe5bb/rc/records.json",
+   "sha256": "d942ab128c6425a01b9a88f9f230de97d638cdbb87276fd39237ea9c80c00c24",
+   "description": "the RC records: sha256, size and how each is kept"
+  },
+  {
+   "path": "release/lines/0.4.json",
+   "sha256": "31e7d0f31a26a2b43d64083011290315d7ad9011dde5cf13b21b522a0448a5b7",
+   "description": "the line file"
+  }
+ ],
+ "limitations": [
+  "Evidence class: numerical and software verification at the release candidate C (tests run here; the RC records at C on ref-x86-64; CI on x86-64 and aarch64). Self-generated records are regression evidence, not empirical validation.",
+  "Not harvested into v0.4-envelope-1. This manifest is written after C, and classifying its items would change benchmarks/t08/support_envelope.yaml, a D2.4 path. scripts/t08_support_matrix.py excludes evidence/REL040/, as R-485 and R-911 excluded M07's and S13's manifests from their releases' harvests; the next envelope's package harvests it.",
+  "Step 18 (scripts/release_gate.py --line 0.4 --rc C) is not run or judged here (R-914, RP §6.8): RP.S08's R part, RP.S16 (b) and RP.S18 (b) are judged from its output in the build log."
+ ],
+ "review": {
+  "numerical": "pending",
+  "process_model": "pending"
+ }
+}
