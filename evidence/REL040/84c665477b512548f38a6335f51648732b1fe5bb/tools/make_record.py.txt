@@ -1,0 +1,130 @@
+"""Writes docs/REL040-rc-record.md's per-step table from rc/records.json (RP §6.9). argv: rc_dir out."""
+import json, sys, pathlib
+rc = pathlib.Path(sys.argv[1]); out = pathlib.Path(sys.argv[2])
+C = "84c665477b512548f38a6335f51648732b1fe5bb"
+index = {f["path"]: f for f in json.loads((rc / "records.json").read_text())["files"]}
+art = pathlib.Path(str(rc).replace("/rc", "/artifacts/rc", 1)) if False else None
+src = pathlib.Path(sys.argv[3])  # artifacts/rc, to read the records' checks
+used = set()
+def counts(path):
+    d = json.loads((src / path).read_text())
+    st = [c["result"] for c in d["checks"]]
+    word = "PASS" if d.get("passed") and all(s == "pass" for s in st) else "FAIL"
+    return f"{word} ({st.count('pass')}/{len(st)})"
+def row(step, assertion, where, result, paths, judge=None):
+    for p in paths:
+        assert p in index, p
+        used.add(p)
+    if judge:
+        result = f"{counts(judge)}: {result}" if result else counts(judge)
+    rec = ", ".join(f"`{p}`" for p in paths) or "—"
+    sha = ", ".join(f"`{index[p]['sha256']}`" for p in paths) or "—"
+    return f"| {step} | {assertion} | {where} | {result} | {rec} | {sha} |"
+X, A = "ubuntu-latest", "ubuntu-24.04-arm"
+R = []
+R.append(row(1, "RP §6.2 (D4.1, D4.3)", "CI push run 42790953372 at `C`", "success (push run `success`; `check (ubuntu-latest)` and `check (ubuntu-24.04-arm)` `success`; junit read on both legs)", ["step1/rc-step1.json"], "step1/rc-step1.json"))
+R.append(row(1, "(the two `check` logs, R-376 skip lines)", "CI push run", "—", ["step1/check-x86_64.log", "step1/check-aarch64.log", "step1-skips/x86_64.txt", "step1-skips/aarch64.txt"]))
+R.append(row(2, "T08.A42", "local `ref-x86-64`", "minus-t07 `24af004a…` as registered; unchanged under the trial version `0.1.0`", ["identity/rc-identity.json"], "identity/rc-identity.json"))
+for leg in (X, A):
+    R.append(row(2, "T08.A42", f"CI `rc-steps ({leg})`", "the same digests", [f"ci/rc-steps-{leg}/identity/rc-identity.json"], f"ci/rc-steps-{leg}/identity/rc-identity.json"))
+R.append(row(2, "T08.A42 cross-arch (G05)", "CI push run `identity`", "success (\"G05: R0 structural identity equal across 2 platforms\")", ["ci/job-logs/identity.log"]))
+R.append(row(3, "T08.A43", "CI `dist`", "`a43.version` `0.4.0`; wheel bytes equal across the two builds", ["ci/rc-dist/t08-a43-dist.json"], "ci/rc-dist/t08-a43-dist.json"))
+for leg in (X, A):
+    for r, a in (("install", "T08.A44"), ("lock-installed", "T08.A44 (lock, installed); X05"), ("lock-checkout", "T08.A44 (lock, checkout); X05"),
+                 ("lock-installed-off", "X05 (installed, off)"), ("lock-checkout-off", "X05 (checkout, off)"),
+                 ("lock-installed-nolock", "X05 (installed, no lock)"), ("unconstrained", "X05 (unconstrained)"), ("f0", "X05 (F0 in the clean install)")):
+        p = f"ci/rc-install-{leg}/{r}-{leg}.json"
+        R.append(row(4, a, f"CI `clean-install ({leg})`", "", [p], p))
+R.append(row(5, "T08.A45 write", "CI `bundle-set`", "success (job conclusion; the index carries no check list): `n_b` 52", ["ci/rc-bundles/index.json"]))
+for leg in (X, A):
+    p = f"ci/rc-replay-{leg}/replay-{leg}.json"
+    R.append(row(5, "T08.A45 replay, A14 C1–C3", f"CI `bundle-replay ({leg})`", "`N_b` 52; every bundle matches", [p], p))
+R.append(row(6, "T08.A46, A47 S3", "local `ref-x86-64`", "none verified outside S3 (worst success ratio 0.0968); A33 0; T06 A34 same-class replay 25 of 25 MATCH", ["ensemble/rc-ensemble-ref-x86-64.json"], "ensemble/rc-ensemble-ref-x86-64.json"))
+R.append(row(6, "(run file, report, replay)", "local", "—", ["ensemble/rc-ref-x86-64.json", "ensemble/rc-ref-x86-64.report.txt", "ensemble/rc-ref-x86-64.replay.txt"]))
+R.append(row(6, "T08.A46, A47 S3", "CI `rc-ensemble` (aarch64)", "worst 0.0968; A33 0; replay 25 of 25 MATCH", ["ci/rc-ensemble-ubuntu-24.04-arm/rc-ensemble-ci-aarch64.json"], "ci/rc-ensemble-ubuntu-24.04-arm/rc-ensemble-ci-aarch64.json"))
+R.append(row(6, "(run file, report, replay)", "CI `rc-ensemble`", "—", ["ci/rc-ensemble-ubuntu-24.04-arm/rc-ci-aarch64.json", "ci/rc-ensemble-ubuntu-24.04-arm/rc-ci-aarch64.report.txt", "ci/rc-ensemble-ubuntu-24.04-arm/rc-ci-aarch64.replay.txt"]))
+R.append(row(7, "T08.A47, A48", "local `ref-x86-64`", "A47 T06.A02–A08, A16, A19, A20; A48 T06.A47, A50", ["corpus-ref-x86-64.json"], "corpus-ref-x86-64.json"))
+for leg in (X, A):
+    p = f"ci/rc-steps-{leg}/corpus-{leg}.json"; R.append(row(7, "T08.A47, A48", f"CI `rc-steps ({leg})`", "the same", [p], p))
+R.append(row(8, "alpha §5.3 chain + G16-b (RP §4.4)", "local `ref-x86-64`", "the chain's digests as registered (c_8 `6be1c002…` … c_1 `171dd768…`); G16-b 40 of 40 clean", ["surface/rc-alpha-surface.json"], "surface/rc-alpha-surface.json"))
+for leg in (X, A):
+    p = f"ci/rc-steps-{leg}/surface/rc-alpha-surface.json"; R.append(row(8, "alpha §5.3 chain + G16-b", f"CI `rc-steps ({leg})`", "the same digests; 40 of 40 clean", [p], p))
+R.append(row(9, "T08.A30", "local `ref-x86-64`", "PASS (\"A30 PASS\"): 381 objects in 8 compiled distributions, required closure 150, no undispositioned object in the closure", ["a30/t08-a30-x86_64.json", "a30/a30-inventory-x86_64.json", "a30.log"]))
+R.append(row(9, "T08.A30", f"CI `rc-steps ({X})`", "PASS (\"A30 PASS\"; `rc-steps` success)", [f"ci/rc-steps-{X}/a30/t08-a30-x86_64.json", f"ci/rc-steps-{X}/a30/a30-inventory-x86_64.json", f"ci/rc-steps-{X}/a30.log"]))
+R.append(row(9, "T08.A30", f"CI `rc-steps ({A})`", "PASS (\"A30 PASS\"; `rc-steps` success)", [f"ci/rc-steps-{A}/a30/t08-a30-aarch64.json", f"ci/rc-steps-{A}/a30/a30-inventory-aarch64.json", f"ci/rc-steps-{A}/a30.log"]))
+R.append(row(10, "T08.A34 over steps 2, 6, 8 and 12", "local `ref-x86-64`", "77 certificates audited, 0 violations", ["certificates-ref-x86-64.json"], "certificates-ref-x86-64.json"))
+certs = sorted(p for p in index if p.startswith("step12/certificates/"))
+R.append(row(10, "(step 12's kept G12 certificates, R-348)", "local", "—", certs))
+for p, w in ((f"ci/rc-steps-{X}/certificates-{X}.json", f"CI `rc-steps ({X})`"), (f"ci/rc-steps-{A}/certificates-{A}.json", f"CI `rc-steps ({A})`"),
+             (f"ci/rc-install-{X}/certificates-{X}.json", f"CI `clean-install ({X})`"), (f"ci/rc-install-{A}/certificates-{A}.json", f"CI `clean-install ({A})`"),
+             ("ci/rc-bundle-set-certificates/rc-certificates.json", "CI `bundle-set`")):
+    R.append(row(10, "T08.A34", w, "0 violations", [p], p))
+s11 = sorted(p for p in index if p.startswith("step11/") and p != "step11/rc-step11.json")
+R.append(row(11, "W22 (`external_crosscheck.py --check`; IDAES conformance)", "local `ref-x86-64`, pinned environments", "cross-check exit 0 (\"external-crosscheck.json matches\"); IDAES exit 0; `a40.idaes_numbers_identical`: the re-run equals the committed record (`76068ff5…`), `differing_members` []", ["step11/rc-step11.json"], "step11/rc-step11.json"))
+R.append(row(11, "(cross-check output, venv freezes, IDAES record)", "local", "—", s11))
+R.append(row(12, "W21 (M02 G10–G12, reactor env from `C`'s lock, one thread)", "local `ref-x86-64`", "`a41.*`: env build/verify exit 0, lock `032a050c…`; G10, G11, G12 as M02's judges; M02 tests exit 0", ["step12/rc-step12.json"], "step12/rc-step12.json"))
+s12 = sorted(p for p in index if p.startswith("step12/") and not p.startswith(("step12/certificates/", "step12/experiments/")) and p != "step12/rc-step12.json")
+R.append(row(12, "(G10–G12 records, env manifest, junit)", "local", "—", s12))
+R.append(row(12, "R-375 (G11's experiment results kept and audited, RP §6.4)", "local", "`r375.audit` pass", ["step12/experiments/rc-step12-experiments.json"], "step12/experiments/rc-step12-experiments.json"))
+R.append(row(12, "(the two kept runs and the audit)", "local", "—", ["step12/experiments/g11-experiments-run1.json", "step12/experiments/g11-experiments-run2.json", "step12/experiments/g11-experiments-audit.json"]))
+R.append(row(13, "W23", "local", "`m04_reference.py --check` (\"11943 claims passed\"); `m04_schema_fixtures.py` exit 0; M04 tests exit 0", ["step13/rc-step13.json"], "step13/rc-step13.json"))
+R.append(row(13, "(junit, logs)", "local", "—", sorted(p for p in index if p.startswith("step13/") and p != "step13/rc-step13.json")))
+R.append(row(14, "W24 (RP §6.5)", "local, clean nlp worktree at `C`, m05's `.venv-nlp`", "nlp tier and inventory exit 0; M03/M05 all tiers exit 0; `REPLAY PASS REAL differences=0` with `host_platform` = `record_platform` = `Linux-6.12.113+deb13-amd64-x86_64-with-glibc2.41`; M03 reference byte-identical; nlp selection 212 = 212", ["step14/rc-step14.json"], "step14/rc-step14.json"))
+R.append(row(14, "(junit, module list, logs)", "local", "—", sorted(p for p in index if p.startswith("step14/") and p != "step14/rc-step14.json")))
+R.append(row(15, "W25 (RP §4.5)", "local, nlp env", "the journey at J = `e0a3d6b7` carried; `check: ACCEPT`; `replay: bitwise` with `host_platform` = `record_platform` = `Linux-6.12.113+deb13-amd64-x86_64-with-glibc2.41`", ["step15/rc-step15.json"], "step15/rc-step15.json"))
+R.append(row(15, "(logs)", "local", "—", sorted(p for p in index if p.startswith("step15/") and p != "step15/rc-step15.json")))
+R.append(row(16, "W26 (RP §4.6, §6.6)", "local `ref-x86-64`", "M06 tests with the browser required exit 0; node tests exit 0; G15 0 skipped; (d) the dry run's registered v1 refusal (`SnapshotUnsupportedError`, exit 1, no `summary.json`)", ["step16/rc-step16.json"], "step16/rc-step16.json"))
+R.append(row(16, "(junit, logs)", "local", "—", sorted(p for p in index if p.startswith("step16/") and p != "step16/rc-step16.json")))
+items = json.loads((pathlib.Path(sys.argv[4])).read_text())["rc_items"]
+for it in items:
+    i = it["id"]; p = f"step17/rc-step17-{i}.json"; extra = []
+    if str(it["where"]).startswith("ci:"):
+        job = it["where"][3:]
+        if i == "PTC-R1":
+            extra = sorted(q for q in index if q.startswith("step17/PTC-R1/"))
+        else:
+            extra = sorted(q for q in index if q.startswith(f"ci/{job}-"))
+        res = f"`{job}` `success` on both legs of dispatch 42791067917; artifacts fetched"
+    else:
+        extra = [f"step17/{i}.log"]; res = f"`{it['where']}` exit 0"
+    R.append(row(17, f"{it['assertion']} ({i})", f"`{it['where']}`", res, [p] + extra, p))
+missing = sorted(set(index) - used)
+assert not missing, missing
+head = [
+"# REL040 — the release-candidate record at `C`", "",
+"RP (`docs/derivations/release-procedure.md`) §6.9, in `docs/v03-rc-record.md`'s form. This record **reports**; it judges",
+"no gate. Each Result cell states what the step's record or CI job says, in Ruling 3's status words (`PASS` / `success`;",
+"`FAIL` / `failure` / `skipped` / not measured); the verdicts are the design lane's. Every record the per-step table cites",
+f"is committed under `evidence/REL040/{C}/rc/` at the same relative path (a record over 1 MB",
+f"gzip-compressed beside it), and `rc/records.json` lists all {len(index)} with sha256, size and how each is kept",
+f"({sum(1 for f in index.values() if not f['committed'])} gzip-compressed: {', '.join('`'+p+'`' for p,f in index.items() if not f['committed'])}).", "",
+"## The candidate and the runs", "",
+f"- **`C` = `{C}`** (\"REL040: part 2 log — J e0a3d6b7, journey at J, C b40d48d1\"), the head of",
+"  `wp/REL040`. Package `openflowsheet` `0.4.0`, line `0.4`. K3 = `49a04731` and J = `e0a3d6b7` are its ancestors;",
+"  `C`'s D2.4 tree equals the journey record `b40d48d1`'s (`84c66547` adds only the part-2 log). Its tree record is",
+f"  `release/rc-trees/{C}.json` (R-151).",
+"- **CI push run 42790953372** at `C`: **success** (`check` on both legs, `default-install`, `identity`).",
+"  **`release_rc` dispatch 42791067917** at `C` (attempt 1, the only dispatch at `C`): **success** on every job",
+"  (`dist`, `clean-install`, `bundle-set`, `bundle-replay`, `rc-steps`, `rc-coolprop`, `rc-ensemble`, `ptc-r1`; both",
+"  legs where a job has two). The other jobs were skipped by the dispatch's design (§6.10).",
+"- **Local steps** on `ref-x86-64` (Linux 6.12.113+deb13-amd64, 48 cores) on 2026-11-10, from a detached worktree at",
+"  `C` (`.claude/worktrees/rc-c-040`, `git status --porcelain --ignored` empty when added), through",
+"  `scripts/release_rc.py local --line 0.4` in three invocations (`--steps 2,6,7,8,9,11,13`, then `12,10`, then",
+"  `14,15,16,17`; the TRS2 load rule), every environment built afresh under `~/.cache/rel040-cut/rc/`. Inputs as at",
+"  S-6: m05's `.venv-nlp` and `.reference-downloads/m03-ipopt`, `--journey e0a3d6b7`, the `m06-w27h` W27 archive.",
+"  Every local step's record passed; the only non-zero command exits are `step14-nlp-collect-all` (2) and",
+"  `step16-dryrun` (1), both by design (§6.5, §6.6 (d)), and the first `step17-items` (1, below).",
+"- **Step 17** was then re-run with `release_rc.py items --ci-run 42791067917 --nlp-root <a new clean worktree at",
+"  `C`>` (`git status --porcelain --ignored` empty before the run), after `release_rc.py ci` fetched the dispatch's",
+"  artifacts into `rc/ci/`. That run's records are the ones cited: every item passed. The first, from `local` without",
+"  `--ci-run`, recorded `S07-F8` and `PTC-R1` `unsupported` (\"no --ci-run given\") and every local item pass.",
+"- **Step 1** was written by `release_rc.py step1` from the push run.",
+"- **Steps 14 and 15** compare against records taken on this host's kernel (J's re-takes): `host_platform` =",
+"  `record_platform` in both.", "",
+"## Per step", "",
+f"Paths are relative to `evidence/REL040/{C}/artifacts/rc/` (and, committed, to `…/rc/`).", "",
+"| Step | Assertion | Where | Result (as the record says) | Record | sha256 |",
+"| --- | --- | --- | --- | --- | --- |",
+]
+out.write_text("\n".join(head + R) + "\n", encoding="utf-8")
+print(f"rows {len(R)} cited {len(used)}")

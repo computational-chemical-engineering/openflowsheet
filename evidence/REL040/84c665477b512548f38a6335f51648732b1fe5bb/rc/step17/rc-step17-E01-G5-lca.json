@@ -1,0 +1,47 @@
+{
+ "assertion": "E01 G5 (E01.A24, A25) in the lca environment (V03 17d)",
+ "checks": [
+  {
+   "argv": [
+    "/home/frankp/.cache/rel040-cut/rc/venv-lca/bin/python",
+    "-m",
+    "pytest",
+    "-q",
+    "-rs",
+    "-p",
+    "no:cacheprovider",
+    "tests/test_e01_b_brightway.py",
+    "tests/test_e01_b_lca.py",
+    "tests/test_e01_b_tables.py",
+    "tests/test_e01_b_cost_hand.py"
+   ],
+   "environment": "lca",
+   "exit_status": 0,
+   "id": "E01-G5-lca",
+   "output": "step17/E01-G5-lca.log",
+   "output_sha256": "f7f1730b034023f8b06173a4cea4d0caf89bdcb6726a2ebac91157c90e05e622",
+   "records": {
+    "step1/junit-x86_64/node.xml": "4f46f303e3dd1125af78d3a6dd9054fb1acc269c49aa8c6db253f8fafb9d4088",
+    "step1/junit-x86_64/pytest.xml": "9f38428cb2275243722d4b264db259b797a991d0dc150d642d57c032c9885dbe"
+   },
+   "result": "pass"
+  }
+ ],
+ "format": "t08-rc-v1",
+ "passed": true,
+ "provenance": {
+  "architecture": "x86_64",
+  "commit": "84c665477b512548f38a6335f51648732b1fe5bb",
+  "environment_lock_sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4",
+  "github_actions": false,
+  "machine_class": "ref-x86-64",
+  "python": "3.13.5",
+  "threads": {
+   "MKL_NUM_THREADS": "1",
+   "OMP_NUM_THREADS": "1",
+   "OPENBLAS_NUM_THREADS": "1"
+  },
+  "tree_clean": true
+ },
+ "step": "E01-G5-lca"
+}

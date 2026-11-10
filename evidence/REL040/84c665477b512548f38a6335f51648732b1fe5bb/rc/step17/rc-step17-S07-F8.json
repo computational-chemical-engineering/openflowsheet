@@ -1,0 +1,43 @@
+{
+ "assertion": "S07 F-8: the CoolProp modules pass with the coolprop lock on both legs (V03 17b, R-906)",
+ "checks": [
+  {
+   "artifacts": {
+    "rc-coolprop-ubuntu-24.04-arm/17b-ubuntu-24.04-arm.log": "c5eeaf82281a21f47d57ca13b4aaa378b3667165b1c7cdd15df3976a12a9fe9d",
+    "rc-coolprop-ubuntu-24.04-arm/modules-ubuntu-24.04-arm.txt": "1d2a5e3a94db7f6a93a8db848ec1625a1f41605382567761da189114b32f5a1d",
+    "rc-coolprop-ubuntu-latest/17b-ubuntu-latest.log": "caa30465d56e5f38f97514d491df6ff30e1d214affe17c0683ff8ca5750cf65c",
+    "rc-coolprop-ubuntu-latest/modules-ubuntu-latest.txt": "1d2a5e3a94db7f6a93a8db848ec1625a1f41605382567761da189114b32f5a1d"
+   },
+   "conclusions": {
+    "rc-coolprop (ubuntu-24.04-arm)": "success",
+    "rc-coolprop (ubuntu-latest)": "success"
+   },
+   "download": {
+    "attempt": 1,
+    "exit_status": 0,
+    "files": 4,
+    "run_id": 42791067917
+   },
+   "id": "S07-F8",
+   "job": "rc-coolprop",
+   "result": "pass"
+  }
+ ],
+ "format": "t08-rc-v1",
+ "passed": true,
+ "provenance": {
+  "architecture": "x86_64",
+  "commit": "84c665477b512548f38a6335f51648732b1fe5bb",
+  "environment_lock_sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4",
+  "github_actions": false,
+  "machine_class": "ref-x86-64",
+  "python": "3.13.5",
+  "threads": {
+   "MKL_NUM_THREADS": "1",
+   "OMP_NUM_THREADS": "1",
+   "OPENBLAS_NUM_THREADS": "1"
+  },
+  "tree_clean": true
+ },
+ "step": "S07-F8"
+}

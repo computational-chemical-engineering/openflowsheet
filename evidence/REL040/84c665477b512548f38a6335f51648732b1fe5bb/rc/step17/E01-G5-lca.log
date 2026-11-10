@@ -1,0 +1,4 @@
+............................................                             [100%]
+MSG WO-5a: 0 bundles scanned; no sidecar key in any written document
+MSG WO-6: 0 run results checked, 0 with a failure; failure non-null iff a failure_bundle output in every one
+44 passed in 7.43s

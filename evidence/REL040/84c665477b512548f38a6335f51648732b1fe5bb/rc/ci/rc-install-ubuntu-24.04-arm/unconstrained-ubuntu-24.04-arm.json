@@ -1,0 +1,87 @@
+{
+ "bundles": {
+  "off": "None",
+  "on": "None"
+ },
+ "checks": [
+  {
+   "expected_stray": "c2a8f1c164d1798ea4f452360f6bf03e9fea55e19bbdab3053be633cd7ec6250",
+   "id": "x05.installed_outside_the_tree_beneath_the_stray",
+   "package": "/home/runner/work/_temp/free/lib/python3.13/site-packages/openflowsheet",
+   "result": "pass",
+   "strays": {
+    "/home/runner/work/_temp/requirements.lock": "c2a8f1c164d1798ea4f452360f6bf03e9fea55e19bbdab3053be633cd7ec6250"
+   }
+  },
+  {
+   "expected_metadata_version": "2.2.4",
+   "id": "x05.numpy_metadata_and_import",
+   "imported_version": "2.2.4",
+   "metadata_version": "2.2.4",
+   "result": "pass"
+  },
+  {
+   "direct": {
+    "casadi": "3.8.0",
+    "jsonschema": "4.26.0",
+    "numpy": "2.2.4",
+    "pyyaml": "6.0.2",
+    "scipy": "1.15.3"
+   },
+   "id": "x05.a25_the_direct_members_at_the_lock",
+   "off_the_lock": [
+    "rpds-py is 2026.9.1, the lock pins 2026.6.3"
+   ],
+   "result": "pass"
+  },
+  {
+   "expected": {
+    "lock_findings": [
+     "rpds-py is 2026.9.1, the lock pins 2026.6.3"
+    ],
+    "lock_sha256": ""
+   },
+   "id": "x05.environment",
+   "lock_findings": [
+    "rpds-py is 2026.9.1, the lock pins 2026.6.3"
+   ],
+   "lock_sha256": "",
+   "result": "pass"
+  },
+  {
+   "id": "x05.never_the_strays_hash",
+   "lock_sha256": "",
+   "result": "pass"
+  },
+  {
+   "id": "x05.a25_the_replay_reason_names_the_members_off_the_lock",
+   "mode": "inspected_archived_results",
+   "reasons": [
+    "the dependency set is unknown on this side: this side's lock did not verify (rpds-py is 2026.9.1, the lock pins 2026.6.3)"
+   ],
+   "result": "pass"
+  }
+ ],
+ "format": "t08-rc-v1",
+ "off_the_lock": [
+  "rpds-py is 2026.9.1, the lock pins 2026.6.3"
+ ],
+ "passed": true,
+ "provenance": {
+  "architecture": "aarch64",
+  "commit": "84c665477b512548f38a6335f51648732b1fe5bb",
+  "environment_lock_sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4",
+  "github_actions": true,
+  "machine_class": "ci-aarch64",
+  "python": "3.13.18",
+  "threads": {
+   "MKL_NUM_THREADS": "1",
+   "OMP_NUM_THREADS": "1",
+   "OPENBLAS_NUM_THREADS": "1"
+  },
+  "tree_clean": true
+ },
+ "replayed": [],
+ "state": "installed-free",
+ "step": "lock-check"
+}

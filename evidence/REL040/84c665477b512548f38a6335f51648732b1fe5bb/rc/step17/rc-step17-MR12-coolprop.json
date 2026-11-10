@@ -1,0 +1,37 @@
+{
+ "assertion": "MR-12, coolprop extra: G19's inventory of the extra's increment (R-624; V03 17c)",
+ "checks": [
+  {
+   "argv": [
+    "/home/frankp/.cache/rel040-cut/rc/cpvenv/bin/python",
+    "scripts/t07_licence_inventory.py",
+    "--extra",
+    "coolprop"
+   ],
+   "environment": "coolprop",
+   "exit_status": 0,
+   "id": "MR12-coolprop",
+   "output": "step17/MR12-coolprop.log",
+   "output_sha256": "a7791ab44446856a1f09deb45ff7524ab061b4274ba7c055852b0f4b46f24a4c",
+   "records": {},
+   "result": "pass"
+  }
+ ],
+ "format": "t08-rc-v1",
+ "passed": true,
+ "provenance": {
+  "architecture": "x86_64",
+  "commit": "84c665477b512548f38a6335f51648732b1fe5bb",
+  "environment_lock_sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4",
+  "github_actions": false,
+  "machine_class": "ref-x86-64",
+  "python": "3.13.5",
+  "threads": {
+   "MKL_NUM_THREADS": "1",
+   "OMP_NUM_THREADS": "1",
+   "OPENBLAS_NUM_THREADS": "1"
+  },
+  "tree_clean": true
+ },
+ "step": "MR12-coolprop"
+}

@@ -1,0 +1,114 @@
+{
+ "bundles": {
+  "off": "/home/runner/work/_temp/rc-install/bundle-off/SYN-001-nominal",
+  "on": "/home/runner/work/_temp/rc-install/bundle/SYN-001-nominal"
+ },
+ "checks": [
+  {
+   "expected_stray": "c2a8f1c164d1798ea4f452360f6bf03e9fea55e19bbdab3053be633cd7ec6250",
+   "id": "x05.installed_outside_the_tree_beneath_the_stray",
+   "package": "/home/runner/work/_temp/clean/lib/python3.13/site-packages/openflowsheet",
+   "result": "pass",
+   "strays": {
+    "/home/runner/work/_temp/requirements.lock": "c2a8f1c164d1798ea4f452360f6bf03e9fea55e19bbdab3053be633cd7ec6250"
+   }
+  },
+  {
+   "expected_metadata_version": "2.2.5",
+   "id": "x05.numpy_metadata_and_import",
+   "imported_version": "2.2.4",
+   "metadata_version": "2.2.5",
+   "result": "pass"
+  },
+  {
+   "expected": {
+    "lock_findings": [
+     "numpy is 2.2.5, the lock pins 2.2.4"
+    ],
+    "lock_sha256": ""
+   },
+   "id": "x05.environment",
+   "lock_findings": [
+    "numpy is 2.2.5, the lock pins 2.2.4"
+   ],
+   "lock_sha256": "",
+   "result": "pass"
+  },
+  {
+   "id": "x05.never_the_strays_hash",
+   "lock_sha256": "",
+   "result": "pass"
+  },
+  {
+   "expected": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4",
+   "found": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4",
+   "id": "x05.bundle_on_records",
+   "result": "pass"
+  },
+  {
+   "expected": {
+    "bundle": "on",
+    "mode": "inspected_archived_results",
+    "reason0": "the dependency set is unknown on this side: this side's lock did not verify (numpy is 2.2.5, the lock pins 2.2.4)",
+    "state": "installed-off",
+    "verdict": "NOT_RUN"
+   },
+   "id": "x05.replay_on",
+   "integrity_ok": true,
+   "mode": "inspected_archived_results",
+   "reasons": [
+    "the dependency set is unknown on this side: this side's lock did not verify (numpy is 2.2.5, the lock pins 2.2.4)",
+    "no rerun was supplied"
+   ],
+   "result": "pass",
+   "verdict": "NOT_RUN"
+  },
+  {
+   "expected": "",
+   "found": "",
+   "id": "x05.bundle_off_records",
+   "result": "pass"
+  },
+  {
+   "expected": {
+    "bundle": "off",
+    "mode": "inspected_archived_results",
+    "reason0": "the dependency set is unknown on both sides: the archive recorded no verified lock, and this side's lock did not verify (numpy is 2.2.5, the lock pins 2.2.4); two unknowns are not a match",
+    "state": "installed-off",
+    "verdict": "NOT_RUN"
+   },
+   "id": "x05.replay_off",
+   "integrity_ok": true,
+   "mode": "inspected_archived_results",
+   "reasons": [
+    "the dependency set is unknown on both sides: the archive recorded no verified lock, and this side's lock did not verify (numpy is 2.2.5, the lock pins 2.2.4); two unknowns are not a match",
+    "no rerun was supplied"
+   ],
+   "result": "pass",
+   "verdict": "NOT_RUN"
+  }
+ ],
+ "format": "t08-rc-v1",
+ "off_the_lock": [],
+ "passed": true,
+ "provenance": {
+  "architecture": "aarch64",
+  "commit": "84c665477b512548f38a6335f51648732b1fe5bb",
+  "environment_lock_sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4",
+  "github_actions": true,
+  "machine_class": "ci-aarch64",
+  "python": "3.13.18",
+  "threads": {
+   "MKL_NUM_THREADS": "1",
+   "OMP_NUM_THREADS": "1",
+   "OPENBLAS_NUM_THREADS": "1"
+  },
+  "tree_clean": true
+ },
+ "replayed": [
+  "on",
+  "off"
+ ],
+ "state": "installed-off",
+ "step": "lock-check"
+}
