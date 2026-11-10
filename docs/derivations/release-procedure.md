@@ -36,7 +36,7 @@ release.
 
 ### 2.1 What it establishes
 
-1. The line-file format `release-line-v1`, its inheritance rule and its loader checks RP.L01–RP.L10 (§3).
+1. The line-file format `release-line-v1`, its inheritance rule and its loader checks RP.L01–RP.L11 (§3).
 2. The rules of judgement, the clause criteria carried, and the criteria that RP itself restates: X31, the V17 carry,
    W25 at J, and W26 as a function of whether W27 is claimed (§4).
 3. K3, C, the RC job's standing steps 1–16, step 17 over the line's items, and step 18's place in the acyclic order
@@ -142,7 +142,7 @@ checked for well-formedness (RP.L05–RP.L07). They are not compared between rel
 `where` and the rule that the wrapper writes the record (§6.7) make D1.2's list precise. D1.2 lists no `where`, and
 D1.3 has a wrapper write each item's record (Q-4, Q-5).
 
-### 3.4 The loader's checks (RP.L01–RP.L10)
+### 3.4 The loader's checks (RP.L01–RP.L11)
 
 `scripts/release_gate.py` (WO-R2) loads a line file and refuses with exit 2 and the stated reason when any check
 fails. Each check has a control: a copy of the committed file with one change, which must be refused.
@@ -165,6 +165,8 @@ fails. Each check has a control: a copy of the committed file with one change, w
 - **RP.L10.** Every `frank_items` entry has exactly one row in the decisions table of `acceptances`; `links_item` and
   every `rejudge_waits` item are in `frank_items`; every `rejudge_waits` gate is claimed. Control: `rejudge_waits`
   gains `["W27", "M02 N1"]`.
+- **RP.L11** (amendment A-10, §17.3; ADR 0074 O-3, 2026-11-09). For `role` `gate`, `gate_set.evidence_package`
+  equals ADR 0074 D2's id of `<line>.0`. Control: `0.4.json` with `REL050`.
 
 RP.L05 and RP.L08 are checked at C (the commit is read with `git`), because the files they name are the candidate's.
 RP.L08 fails today, on purpose: `scripts/wheel_data_check.py`, the script of item `WHEEL-DATA`, does not exist at
@@ -316,11 +318,15 @@ new V17 campaign. The release-time edit is not improvised.
 
 M07 §4.6's carry from an earlier release's K fails whenever `carry.journey_files` holds a changed file, and it holds
 `src/openflowsheet/**`. So step 15 re-runs the journey at the journey commit J, under M07 §4–§6 and the registration's
-budgets unchanged. J is K3 plus the re-taken G10 records (R-458, §7.1). The R-908 pattern applies: `carry.journey_files`
+budgets unchanged. J is K3 plus the records re-taken under §7.1 (R-458, R-1008). The R-908 pattern applies: `carry.journey_files`
 holds `benchmarks/m05/**`, so a journey recorded at K3 itself would not carry past those records. R3 carries M05's REAL
 record only if `carry.r3_files` are byte-equal between M05's run commit and J. Otherwise R3 re-runs M05's study at J.
 The record is committed in C's tree, carried from J to C by `--carry-journey J --rc C`, and passes `check` and `replay`
 at C. Honest outcomes (`BUDGET_EXHAUSTED`, `INCOMPLETE`) are recorded as M07 §5 states. Their verdict is the agent's.
+
+The journey at J runs on the host of §7.1's re-takes, and step 15 replays it at C on that host. Its R1 experiments and
+its R3 re-run are bound to that host's platform string through the reactor's fingerprint, as M05's REAL record is.
+0.3.0's journey at `2d945b5d` was recorded on kernel `6.12.111` and does not replay on another kernel (S-6).
 
 ### 4.6 W26 as a function of whether W27 is claimed (R-903)
 
@@ -367,8 +373,8 @@ is judged. The header's `**By:**` names the `verdict` agent, never `carry`.
 
 - **K3** is the cut commit on `main` that declares the version and pins the envelope (§7.1).
 - **C** is K3 plus exactly two kinds of D2.4 change (`v0_1_gate.TREES`: `src/`, `schemas/`, `benchmarks/`,
-  `requirements.lock`, `pyproject.toml`, `MANIFEST.in`, `README.md`, `LICENSE`, `NOTICE`): the re-taken G10 records,
-  whose commit is J (§4.5, R-908), and J's journey record under `benchmarks/m07/journey/<J>/`. Any other commit
+  `requirements.lock`, `pyproject.toml`, `MANIFEST.in`, `README.md`, `LICENSE`, `NOTICE`): the records re-taken
+  under §7.1, whose commit is J (§4.5, R-908, R-1008), and J's journey record under `benchmarks/m07/journey/<J>/`. Any other commit
   between K3 and C changes no D2.4 path, and none holds anything the RC job writes. At 0.3.0, J = `2d945b5d`, and
   `git diff --name-only 2d945b5d a3e508e3` over the D2.4 paths lists only `benchmarks/m07/journey/2d945b5d…/` files.
 - After C, commits outside the D2.4 paths add the RC records, `release/rc-trees/<C>.json` (R-151, written with
@@ -402,7 +408,7 @@ watch item).
 - (P2) WO-R1 to WO-R4 and WO-R6 are merged, after the full gate and CI on both architectures (ADR 0055 §6).
 - (P3) Every `required_adrs` entry is Accepted, or its acceptance route (§9.1) is stated with a condition that can hold
   before step 18.
-- (P4) RP.L01–RP.L10 hold for the line file at K3, with RP.L05 and RP.L08 read at K3.
+- (P4) RP.L01–RP.L11 hold for the line file at K3, with RP.L05 and RP.L08 read at K3.
 - (P5) The open questions of §15 that the cut depends on are answered, or their defaults stand.
 
 ## 6. The RC job
@@ -446,7 +452,9 @@ whose gates are all unclaimed is left out of `rc_steps` by the line file and is 
 14. **W24**: M03's nlp tier A35–A42 and M05 G1–G10, G12 and G13, in the audited nlp environment, in a clean worktree at
     C, with the nlp selection of §6.5. Checks `a60.w24.*`. Gates: W24. RP.S11, RP.S20.
 15. **W25**: the journey at J carried to C; `check` and `replay` at C (§4.5). Checks `a21.carry_journey`, `a21.check`,
-    `a21.replay`. Gates: W25. RP.S12.
+    `a21.replay`. Gates: W25. RP.S12. `a21.replay` carries `host_platform` and `record_platform` in the same way as
+    §6.5's `a60.w24.m05_g10_real_replay`, read from the `S0` coupling record of the M05 record that the journey's R3
+    used: `benchmarks/m07/journey/<J>/m05/` for a re-run, `benchmarks/m05/records/` for a carried record.
 16. **W26** (§4.6, §6.6). Local `ref-x86-64`; the browser leg is CI x86-64's `check` in the push run at C. Checks
     `a60.w26.*`. Gates: W26. RP.S11, RP.S19.
 17. **The line's `rc_items`** (§6.7). Gates: as `gates[*].rc` names them. RP.S13.
@@ -526,6 +534,11 @@ not `tests/`. The record `step14/rc-step14.json` carries that list, and holds:
   audited environment lacks (at 0.3.0 the three `tests/test_s10_*.py` that import `mpmath`) fail to import there.
 
 0.3.0 measured n = 190 over 13 modules. That number is a record of 0.3.0, not a standing expectation (Q-6).
+
+`a60.w24.m05_g10_real_replay` also carries `host_platform`, the runner's `platform.platform()`, and `record_platform`,
+the `frozen.reactor.fingerprint.platform` of the committed REAL record's `S0` coupling record at C. When that record
+cannot be read, `record_platform` is `null` and the check carries the reason. Neither field is judged, and the pass
+rule is unchanged. The fields make §12's host-mismatch stop checkable.
 
 ### 6.6 Step 16 (R-903)
 
@@ -630,8 +643,32 @@ As alpha §8.3, with R7 1 and R8 1:
   `tests/test_m06_w27_coverage.py`. `README.md`'s status names the release (RELEASING "Per release" step 1).
 - `benchmarks/t08/support_envelope.yaml` is pinned with `envelope_id: <gate_set.envelope_id>` and
   `release: <version>`. Its header comment gains one line in the pattern of the earlier ones.
-- The five in-process G10 records are re-taken, digest-only, and the re-take is proved with
-  `scripts/m05_retake_diff.py --digest-only` (R-458). They are committed as J (§4.5).
+- The records bound to a version or to the RC host are re-taken at K3, from a clean worktree at K3, on the host that
+  runs steps 11, 14 and 15, and are committed together as J (§4.5). The clean worktree is a new one, made for the
+  cut's re-takes by `git worktree add --detach <path> <K3>`. Before the first re-take starts, `git status --porcelain
+  --ignored` in it prints nothing, and the build log records that check. A worktree that has held an earlier run, an
+  install or a build is not clean, even when `git status --porcelain` prints nothing. Each re-take is written outside
+  the repository and proved by a committed tool, and it replaces the committed files only after its proof prints
+  `PASS`. The proofs' summary lines go into J's commit message and the build log.
+  - The five in-process G10 records (TR-E2, TR-E2-FAR, TR-E2-FD, LOOP-R, LOOP-S), digest-only, proved with
+    `scripts/m05_retake_diff.py --digest-only --old-version <the committed records' version>` (R-458).
+  - M05's REAL record `benchmarks/m05/records/trust-region-study-real.*`, written by `scripts/m05_wo9_real.py
+    --retake-into <dir>` in the audited nlp environment with `OMP_NUM_THREADS=1`. It is proved with
+    `scripts/m05_retake_diff.py --digest-only <committed stem> <dir>/trust-region-study-real --old-platform <p>`, where
+    p is the committed `S0` coupling record's `frozen.reactor.fingerprint.platform`. The proof must print `PASS` with
+    `version=0`, `other=0` and `environment=equal`. Its `platform` count is the number of coupling records when the
+    host's platform string differs from p, and 0 when it is equal (R-1008).
+  - M01's IDAES conformance record `benchmarks/m01/idaes-conformance.json`, written by
+    `benchmarks/m01/idaes_conformance.py --out <dir>/idaes-conformance.json` in the pinned IDAES environment. It is
+    proved with `scripts/m01_idaes_retake_diff.py <committed> <dir>/idaes-conformance.json --old-platform <p>`, where p
+    is the committed record's `environment.platform`. Only `environment.platform` and `inputs.*_sha256` members may
+    differ, and each such input hash must be the SHA-256 of its file at K3 (R-1008).
+
+  The reactor's environment fingerprint (M02 §2.4) holds `platform.platform()`, the kernel release included, and its
+  digest is part of every experiment key (ADR 0036 D8). M05's REAL record therefore replays (step 14) only on the
+  platform it was taken on. Step 11 compares the IDAES record's `environment` exactly (alpha spec §6.2 W22 (b)). A
+  kernel upgrade on the RC host fails steps 11 and 14 until both records are re-taken on it. After the tag (§7.4), only
+  the five are re-taken, because neither of the other two holds the version.
 - W27's v1 `coverage.json` is not re-taken: the v1 snapshot refuses this build (§4.6).
 
 ### 7.2 A10's pairs
@@ -862,7 +899,7 @@ whether the standing form equals it (§11.2).
 
 ### 11.1 Catalogue
 
-- **RP.S01** (D). The line file passes RP.L01–RP.L10, and `scripts/release_gate.py`'s loader refuses each RP.L
+- **RP.S01** (D). The line file passes RP.L01–RP.L11, and `scripts/release_gate.py`'s loader refuses each RP.L
   control. 0.3.0: V03.A01. Changed form.
 - **RP.S02** (D). `gate_set_of` over the line's version table T-V(M.m). Covered: `M.m.0`, `M.m.0b1`, `M.m.0rc1`,
   `M.m.0rc12`. Not covered: `M.m.0a1`, `M.m.0b0`, `M.m.0rc0`, `M.m.0rc01`, `M.m.0.dev0`, `M.m.0.post1`, `M.m.1`,
@@ -951,7 +988,7 @@ here, so that it cannot be dropped quietly (finding F-7).
 
 The engineer stops on any of these. Nothing is edited, re-run or re-taken to pass. The records are committed as they
 are, and the reasons are reported:
-- RP.L01–RP.L10 fail for the line file at K3 or at C.
+- RP.L01–RP.L11 fail for the line file at K3 or at C.
 - RP.S14 fails (step 8's digest or chain).
 - Step 9's import workload fails on a module that the registration does not name.
 - A default-gate test fails at K3 only because of the version string (§7.3).
@@ -965,6 +1002,12 @@ are, and the reasons are reported:
 - §9.2 step 4's manifest is not `tested`. Then no ADR is marked Accepted, and step 18 is not run for YES.
 - Step 18 at §9.2 step 6 ends in anything but YES, or H2 to H3 touches a file other than the build log and
   `docs/progress.md`.
+- A §7.1 re-take proof does not print `PASS`. The re-take is not committed, and the cut stops before J.
+- Step 11, 14 or 15 fails at C while the host's platform differs from the compared record's: step 11's
+  `differing_members` holds `environment.platform`, or a step 14 or 15 check's `host_platform` differs from its
+  `record_platform`. C's records are committed as they are. The remedy is a new J from the same K3 on this host (§7.1's
+  re-takes and the journey) and a new C. A comparison or replay that sets the platform aside is never the remedy
+  (R-1008).
 
 A lapsed acceptance is not a stop. It is reported in the lapse report and asked in Frank's message (§8.5).
 
@@ -1012,6 +1055,7 @@ that exists.
 | R-476 | the verdict-document tests skip at C while it is absent | §6.2 |
 | R-478 | step 9's workload and the registered nlp-extra modules | §6.1 |
 | R-480 | G11's `--d78` extract, without `--previous-runs` | §6.4 |
+| R-1008 | records bound to the RC host re-taken at K3 on that host and committed in J; their proofs; the host-mismatch stop | §7.1, §4.5, §5.1, §12 |
 
 R-916 and R-917 (D2) are not covered: they are deferred, and §8.2 reserves `gate_row:` for them.
 
@@ -1119,3 +1163,77 @@ the review's (M-1, M-2, S-1 to S-5, S-7, rulings 3 to 7) and WO-R7's tests (`doc
   alternative of the manifest's `work_package` pattern (components up to 9 999)." D1.5's closing reference becomes
   "Amendments A-7 (§17.1) and A-9 (§17.2)." Nothing else in RP changes. Every default that D1.5 names for 0.4.0 is
   unchanged.
+
+### 17.3 Amendment A-10 (ADR 0074 O-3, 2026-11-09)
+
+- **A-10 (§3.4; ADR 0074 O-3, its default).** A loader check is added after RP.L10, pasted from ADR 0074 O-3:
+  "**RP.L11**: for `role` `gate`, `gate_set.evidence_package` equals ADR 0074 D2's id of `<line>.0`. Control:
+  `0.4.json` with `REL050`." Why: a line file that inherits another without changing `evidence_package` keeps the
+  inherited id (a 0.5 line inheriting 0.4 would keep `REL040`); RP.L03 does not refuse an equal field, so that
+  release would share 0.4.0's evidence directory and harvest exclusion. The ranges "RP.L01–RP.L10" of §2 item 1, §3.4's
+  heading, §5 (P4), RP.S01 and §12 read "RP.L01–RP.L11"; §3.4's measured record of 2026-11-06 is unchanged.
+  `scripts/release_gate.py` implements it with its own encoder of D2 (`release_package_id`), not the manifest
+  schema's pattern. Evidence: `tests/test_rel_release_gate.py` `test_l11_*` (the control refused, `REL040` passing,
+  D2's examples, the refusals of a segment without an id). It cannot bite before a second `gate` line: the 0.4 line's
+  id is D2's.
+
+### 17.4 Amendment A-11 (REL040 S-6 ruling, 2026-11-09)
+
+- **A-11 (§4.5, §5.1, §6.1, §6.5, §7.1, §12, §14; R-1008; `docs/reviews/REL040-s6-ruling.md`).** Records bound to
+  the RC host are re-taken at K3 on that host and committed in J. Nothing else in RP changes.
+  1. §7.1's third bullet ("The five in-process G10 records are re-taken, …") is replaced by:
+     "- The records bound to a version or to the RC host are re-taken at K3, from a clean worktree at K3, on the host
+     that runs steps 11, 14 and 15, and are committed together as J (§4.5). Each re-take is written outside the
+     repository and proved by a committed tool, and it replaces the committed files only after its proof prints
+     `PASS`. The proofs' summary lines go into J's commit message and the build log.
+     - The five in-process G10 records (TR-E2, TR-E2-FAR, TR-E2-FD, LOOP-R, LOOP-S), digest-only, proved with
+       `scripts/m05_retake_diff.py --digest-only --old-version <the committed records' version>` (R-458).
+     - M05's REAL record `benchmarks/m05/records/trust-region-study-real.*`, written by `scripts/m05_wo9_real.py
+       --retake-into <dir>` in the audited nlp environment with `OMP_NUM_THREADS=1`. It is proved with
+       `scripts/m05_retake_diff.py --digest-only <committed stem> <dir>/trust-region-study-real --old-platform <p>`,
+       where p is the committed `S0` coupling record's `frozen.reactor.fingerprint.platform`. The proof must print
+       `PASS` with `version=0`, `other=0` and `environment=equal`. Its `platform` count is the number of coupling
+       records when the host's platform string differs from p, and 0 when it is equal (R-1008).
+     - M01's IDAES conformance record `benchmarks/m01/idaes-conformance.json`, written by
+       `benchmarks/m01/idaes_conformance.py --out <dir>/idaes-conformance.json` in the pinned IDAES environment. It is
+       proved with `scripts/m01_idaes_retake_diff.py <committed> <dir>/idaes-conformance.json --old-platform <p>`,
+       where p is the committed record's `environment.platform`. Only `environment.platform` and `inputs.*_sha256`
+       members may differ, and each such input hash must be the SHA-256 of its file at K3 (R-1008).
+
+     The reactor's environment fingerprint (M02 §2.4) holds `platform.platform()`, the kernel release included, and
+     its digest is part of every experiment key (ADR 0036 D8). M05's REAL record therefore replays (step 14) only on
+     the platform it was taken on. Step 11 compares the IDAES record's `environment` exactly (alpha spec §6.2 W22 (b)).
+     A kernel upgrade on the RC host fails steps 11 and 14 until both records are re-taken on it. After the tag
+     (§7.4), only the five are re-taken, because neither of the other two holds the version."
+  2. §4.5: "J is K3 plus the re-taken G10 records (R-458, §7.1)." becomes "J is K3 plus the records re-taken under
+     §7.1 (R-458, R-1008)." §4.5 gains a last paragraph: "The journey at J runs on the host of §7.1's re-takes, and
+     step 15 replays it at C on that host. Its R1 experiments and its R3 re-run are bound to that host's platform
+     string through the reactor's fingerprint, as M05's REAL record is. 0.3.0's journey at `2d945b5d` was recorded on
+     kernel `6.12.111` and does not replay on another kernel (S-6)."
+  3. §5.1, C's bullet: "the re-taken G10 records, whose commit is J (§4.5, R-908)" becomes "the records re-taken
+     under §7.1, whose commit is J (§4.5, R-908, R-1008)".
+  4. §6.5 gains a last paragraph: "`a60.w24.m05_g10_real_replay` also carries `host_platform`, the runner's
+     `platform.platform()`, and `record_platform`, the `frozen.reactor.fingerprint.platform` of the committed REAL
+     record's `S0` coupling record at C. When that record cannot be read, `record_platform` is `null` and the check
+     carries the reason. Neither field is judged, and the pass rule is unchanged. The fields make §12's host-mismatch
+     stop checkable." §6.1 step 15 gains: "`a21.replay` carries `host_platform` and `record_platform` in the same way,
+     read from the `S0` coupling record of the M05 record that the journey's R3 used: `benchmarks/m07/journey/<J>/m05/`
+     for a re-run, `benchmarks/m05/records/` for a carried record."
+  5. §12 gains two stops:
+     "- A §7.1 re-take proof does not print `PASS`. The re-take is not committed, and the cut stops before J.
+     - Step 11, 14 or 15 fails at C while the host's platform differs from the compared record's: step 11's
+       `differing_members` holds `environment.platform`, or a step 14 or 15 check's `host_platform` differs from its
+       `record_platform`. C's records are committed as they are. The remedy is a new J from the same K3 on this host
+       (§7.1's re-takes and the journey) and a new C. A comparison or replay that sets the platform aside is never
+       the remedy (R-1008)."
+  6. §14 gains the row: "| R-1008 | records bound to the RC host re-taken at K3 on that host and committed in J; their
+     proofs; the host-mismatch stop | §7.1, §4.5, §5.1, §12 |".
+  7. (S-6 confirmation round, 2026-11-09.) §7.1's re-take bullet gains the definition of the clean worktree: a new
+     `git worktree add --detach <path> <K3>`, in which `git status --porcelain --ignored` is empty before the first
+     re-take, recorded in the build log. Why: at WO-6 a reused worktree held a git-ignored
+     `src/openflowsheet.egg-info`. With `PYTHONPATH=src` it added `openflowsheet` to the REAL re-take's environment
+     sidecar (17 → 18 distributions), and the proof failed. From a fresh worktree the sidecar was equal.
+
+  Why: at S-6 (`9743871e`), steps 11, 14 and 15 failed only because the workstation's kernel moved from `6.12.111`
+  to `6.12.113` at its 2026-11-06 reboot. The REAL record (taken 2026-10-16) and the IDAES record (2026-10-08) both
+  bind the kernel string, and RP re-took neither.

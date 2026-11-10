@@ -41,11 +41,48 @@ committed side equals `--old-version` and the re-take side the running `openflow
 other. On both sides of every coupling pair, each frozen unit's `fingerprint_sha256` is
 `document_sha256` of its `fingerprint` (the binding: the clear leaf cannot move unless the key's
 fingerprint digest moves with it, and that digest is held to (b) and (c)); a mismatch is other. The
-same text at any other path stays other. It prints one line: PASS/FAIL, the changed digests
-(distinct old values whose new value differs) and each class count, then each problem.
+same text at any other path stays other.
+
+A class `platform` admits one leaf (R-1008; `docs/reviews/REL040-s6-ruling.md` §8 WO-1): the
+coupling records' clear `frozen.reactor.fingerprint.platform`, at exactly that path, which the
+reactor's environment fingerprint holds (M02 design §2.4) and the in-process one does not. On every
+coupling pair whose fingerprint has it, the committed side equals `--old-platform` and the re-take
+side the running `platform.platform()` (without `--old-platform`, the two sides are equal); a pair
+that breaks this, or has the leaf on one side only, is other. Every other leaf of such a fingerprint
+must be equal, digests included and not relabelled. Such a pair carries no `openflowsheet_version`,
+so the `version` rule does not apply to it, and `--old-version` given beside it is other (A-11
+requires `environment=equal`; `docs/reviews/REL040-review.md` N-3). A pair whose fingerprint has
+neither leaf is other.
+
+REAL's experiments archive (`<stem>.experiments.json`; both stems have it, or neither) is walked
+after the store index, under the map the other documents built: each file name's 64-hex key is
+relabelled by the map and its two-character directory follows the relabelled key; a key with no
+image, or a file without a partner on either side, is other. Every file is walked leaf by leaf,
+digest leaves into the map; in an attempt file a `TIMING` leaf is a timing.
+
+A class `path` (REL040 build decision, S-6 apply): an attempt's log path
+(`execution.logs.relpaths.<name>`, in a coupling record or an archived attempt) is
+`experiments/<key[:2]>/<key>/attempts/<n>/child.<name>`, so it moves with its experiment key. It is
+admitted iff every 64-hex run in the committed text is a `<key[:2]>/<key>` pair whose key has an
+image under the completed map, and the text with each such pair relabelled, as an archive name is,
+equals the re-take text; anything else there is other.
+
+An attempt's log digest (a leaf at a path ending `.execution.logs.stdout_sha256` or
+`.execution.logs.stderr_sha256`, wherever it is walked) is compared exactly, before the digest
+class, and never enters the map: a log's content derives from no experiment key or fingerprint, so
+it must be equal, not relabelled. A difference is other, naming the leaf and both values
+(`docs/reviews/REL040-s6-ruling.md` §11.3 WO-7 (a)). A value digest is held the same way
+(`docs/reviews/REL040-review.md` S-1, WO-R1): a leaf at a path ending `.inner.state_sha256` or
+`.inner.constants_sha256` (a coupling iteration's inner converged state and its constants) or
+`.requests[<n>].inputs_sha256` (a ledger request's inputs) hashes a computed value that the record
+holds nowhere in clear and that no experiment key, fingerprint or code identity feeds. Every other
+digest is held only to the bijection, with the bitwise clear leaves as its guard.
+
+It prints one line: PASS/FAIL, the changed digests (distinct old values whose new value differs)
+and each class count, then each problem.
 
     python scripts/m05_retake_diff.py --digest-only <committed-stem> <retake-stem> \
-        [--old-version <v>]
+        [--old-version <v>] [--old-platform <p>]
 """
 
 from __future__ import annotations
@@ -55,6 +92,7 @@ import collections
 import dataclasses
 import hashlib
 import json
+import platform
 import re
 import sys
 from pathlib import Path
@@ -122,6 +160,25 @@ DIGEST = re.compile(r"[0-9a-f]{64}")
 #: pattern, so a new frozen unit or nesting fails closed.
 VERSION_PATH = ".frozen.reactor.fingerprint.openflowsheet_version"
 
+#: The one leaf the class `platform` admits, in a coupling record only (R-1008): exact, as
+#: `VERSION_PATH`. Every other leaf under `FINGERPRINT` beside it is pinned (equal, not relabelled).
+PLATFORM_PATH = ".frozen.reactor.fingerprint.platform"
+FINGERPRINT = ".frozen.reactor.fingerprint."
+
+#: An experiments-archive file name: `<key[:2]>/<key>/<rest>`.
+ARCHIVE_NAME = re.compile(r"[0-9a-f]{2}/([0-9a-f]{64})/(.+)")
+
+#: An attempt's log path, which names its experiment key's store directory (class `path`).
+LOG_PATH = re.compile(r".*\.execution\.logs\.relpaths\.[a-z]+")
+#: A store directory in such a path: `<key[:2]>/<key>`.
+STORE_DIRECTORY = re.compile(r"(?<![0-9a-f])([0-9a-f]{2})/([0-9a-f]{64})(?![0-9a-f])")
+
+#: An attempt's log digest, compared exactly and kept out of the map (WO-7 (a)).
+LOG_DIGEST = re.compile(r".*\.execution\.logs\.(stdout|stderr)_sha256")
+#: A value digest, compared exactly and kept out of the map as a log digest is (WO-R1).
+VALUE_DIGEST = re.compile(r".*\.inner\.(state|constants)_sha256|.*\.requests\[\d+\]\.inputs_sha256")
+EXACT_DIGESTS = (("log", LOG_DIGEST), ("value", VALUE_DIGEST))
+
 
 @dataclasses.dataclass
 class DigestOnly:
@@ -131,6 +188,8 @@ class DigestOnly:
     classes: collections.Counter[str] = dataclasses.field(default_factory=collections.Counter)
     pairs: dict[str, set[str]] = dataclasses.field(default_factory=dict)
     other: list[str] = dataclasses.field(default_factory=list)
+    #: Differing log paths, judged once the map is complete (`resolve_paths`).
+    paths: list[tuple[str, str, str]] = dataclasses.field(default_factory=list)
 
     def walk(
         self,
@@ -139,10 +198,20 @@ class DigestOnly:
         where: str,
         timing: tuple[re.Pattern[str], ...] = (),
         version: bool | None = None,
+        platform: bool | None = None,
     ) -> None:
-        """`version` is given for a coupling pair only: whether its `VERSION_PATH` rule held (each
-        breach already counted as other by `_version_rule`)."""
+        """`version` and `platform` are given for a coupling pair only, when the pair holds that
+        leaf: whether its `VERSION_PATH` or `PLATFORM_PATH` rule held (each breach already counted
+        as other by `_fingerprint_rules`). With `platform` given, every other differing leaf under
+        `FINGERPRINT` is other, a digest included."""
         for path, x, y in replay._walk_pair(a, b, ""):
+            exact = next((kind for kind, p in EXACT_DIGESTS if p.fullmatch(path)), None)
+            if exact is not None:
+                if not replay._same_leaf(x, y):
+                    self.flag(
+                        f"{where}{path}: {x!r} vs {y!r} (a {exact} digest is compared exactly)"
+                    )
+                continue
             digests = all(isinstance(v, str) and DIGEST.fullmatch(v) for v in (x, y))
             if digests:
                 self.pairs.setdefault(x, set()).add(y)
@@ -152,6 +221,16 @@ class DigestOnly:
                 if version:
                     self.classes["version"] += 1
                 continue
+            if platform is not None and path == PLATFORM_PATH:
+                if platform:
+                    self.classes["platform"] += 1
+                continue
+            if platform is not None and path.startswith(FINGERPRINT):
+                self.flag(f"{where}{path}: {x!r} vs {y!r} (pinned beside the platform)")
+                continue
+            if isinstance(x, str) and isinstance(y, str) and LOG_PATH.fullmatch(path):
+                self.paths.append((f"{where}{path}", x, y))
+                continue
             if digests:
                 self.classes["digest"] += 1
             elif _number(x) and _number(y) and any(p.fullmatch(path) for p in timing):
@@ -159,6 +238,28 @@ class DigestOnly:
             else:
                 self.classes["other"] += 1
                 self.other.append(f"{where}{path}: {x!r} vs {y!r}")
+
+    def resolve_paths(self) -> None:
+        """The class `path`, under the completed map (module docstring)."""
+        for where, x, y in self.paths:
+            moved = self._relabelled_path(x)
+            if moved is not None and moved == y:
+                self.classes["path"] += 1
+            else:
+                self.flag(f"{where}: {x!r} vs {y!r} (not its relabelled path)")
+
+    def _relabelled_path(self, text: str) -> str | None:
+        directories = STORE_DIRECTORY.findall(text)
+        if not directories or len(directories) != len(DIGEST.findall(text)):
+            return None
+        images: list[str] = []
+        for prefix, key in directories:
+            image = self.relabel(key)
+            if prefix != key[:2] or image is None:
+                return None
+            images.append(f"{image[:2]}/{image}")
+        found = iter(images)
+        return STORE_DIRECTORY.sub(lambda _: next(found), text)
 
     def flag(self, line: str) -> None:
         self.classes["other"] += 1
@@ -200,10 +301,39 @@ def _leaf(document: Any, path: str) -> tuple[bool, Any]:
     return True, document
 
 
-def _version_rule(walk: DigestOnly, a: Any, b: Any, where: str, old_version: str | None) -> bool:
-    """R-458 A1 on one coupling pair: the `VERSION_PATH` values, and the binding of each frozen
-    unit's `fingerprint_sha256` to its `fingerprint` on both sides. Each breach is other; returns
-    whether the values held (the binding is checked, and counted, regardless)."""
+def _pinned_rule(
+    walk: DigestOnly, x: Any, y: Any, where: str, path: str, option: str, old: Any, running: Any
+) -> bool:
+    """One admitted clear leaf (`VERSION_PATH`, `PLATFORM_PATH`) on one coupling pair: the committed
+    side `old` and the re-take side `running`, or equal sides when `old` is None. Each breach is
+    other; returns whether the rule held."""
+    if old is None:
+        if not replay._same_leaf(x, y):
+            walk.flag(f"{where}{path}: {x!r} vs {y!r} (no {option})")
+            return False
+        return True
+    held = True
+    if x != old:
+        walk.flag(f"{where}{path}: committed {x!r} is not {option} {old!r}")
+        held = False
+    if y != running:
+        walk.flag(f"{where}{path}: re-take {y!r} is not the running {running!r}")
+        held = False
+    return held
+
+
+def _fingerprint_rules(
+    walk: DigestOnly,
+    a: Any,
+    b: Any,
+    where: str,
+    old_version: str | None,
+    old_platform: str | None,
+) -> tuple[bool | None, bool | None]:
+    """R-458 A1 and R-1008 on one coupling pair: the binding of each frozen unit's
+    `fingerprint_sha256` to its `fingerprint` on both sides, then the `PLATFORM_PATH` rule when the
+    pair holds that leaf, else the `VERSION_PATH` rule. Each breach is other. Returns (version
+    held, platform held), None for the rule that does not apply."""
     for side, document in (("committed", a), ("re-take", b)):
         frozen = document.get("frozen") if isinstance(document, dict) else None
         if not isinstance(frozen, dict):
@@ -218,28 +348,32 @@ def _version_rule(walk: DigestOnly, a: Any, b: Any, where: str, old_version: str
                     f"{where} ({side}): frozen.{unit}.fingerprint_sha256 "
                     f"{entry.get('fingerprint_sha256')!r} is not document_sha256 of its fingerprint"
                 )
+            elif unit != "reactor" and "platform" in entry["fingerprint"]:
+                walk.flag(f"{where} ({side}): frozen.{unit}.fingerprint has a platform")
+    (had_p, xp), (has_p, yp) = _leaf(a, PLATFORM_PATH), _leaf(b, PLATFORM_PATH)
+    if had_p and has_p:
+        if old_version is not None:
+            # A-11 requires `environment=equal`, which `--old-version` would relax (review N-3).
+            walk.flag(f"{where}: --old-version is refused beside the platform")
+        running = platform.platform()
+        return None, _pinned_rule(
+            walk, xp, yp, where, PLATFORM_PATH, "--old-platform", old_platform, running
+        )
+    if had_p or has_p:
+        walk.flag(
+            f"{where}{PLATFORM_PATH}: missing on the {'re-take' if had_p else 'committed'} side"
+        )
+        return None, False
     (had, x), (has, y) = _leaf(a, VERSION_PATH), _leaf(b, VERSION_PATH)
     if not (had and has):
         walk.flag(
             f"{where}{VERSION_PATH}: missing on the {'committed' if not had else 're-take'} side"
         )
-        return False
-    held = True
-    if old_version is None:
-        if not replay._same_leaf(x, y):
-            walk.flag(f"{where}{VERSION_PATH}: {x!r} vs {y!r} (no --old-version)")
-            held = False
-    else:
-        if x != old_version:
-            walk.flag(
-                f"{where}{VERSION_PATH}: committed {x!r} is not --old-version {old_version!r}"
-            )
-            held = False
-        running = openflowsheet.__version__
-        if y != running:
-            walk.flag(f"{where}{VERSION_PATH}: re-take {y!r} is not the running {running!r}")
-            held = False
-    return held
+        return False, None
+    running = openflowsheet.__version__
+    return _pinned_rule(
+        walk, x, y, where, VERSION_PATH, "--old-version", old_version, running
+    ), None
 
 
 def _store_pairs(walk: DigestOnly, a: list[Any], b: list[Any]) -> list[tuple[Any, Any]] | None:
@@ -310,9 +444,39 @@ def _environment(old: Path, new: Path, old_version: str | None) -> tuple[str, li
     return "distributions", []
 
 
-def digest_only(old: Path, new: Path, old_version: str | None = None) -> tuple[bool, list[str]]:
-    """R-458: whether the re-take `new` of the committed `old` differs only in digests, under a
-    one-to-one relabelling. Returns (passed, lines): the summary line, then each problem."""
+def _archive(walk: DigestOnly, old: Path, new: Path) -> None:
+    """R-1008 (b): REAL's experiments archive, file by file under the map built so far."""
+    had, has = old.exists(), new.exists()
+    if not (had or has):
+        return
+    if not (had and has):
+        missing, side = (new, "re-take") if had else (old, "committed")
+        walk.flag(f"experiments: no {missing.name} on the {side} side")
+        return
+    a, b = _load(old), _load(new)
+    unpaired = set(b)
+    for name in a:
+        match = ARCHIVE_NAME.fullmatch(name)
+        image = walk.relabel(match.group(1)) if match else None
+        if match is None or image is None:
+            walk.flag(f"experiments {name}: the key has no image under the map")
+            continue
+        partner = f"{image[:2]}/{image}/{match.group(2)}"
+        if partner not in unpaired:
+            walk.flag(f"experiments {name}: no re-taken file {partner}")
+            continue
+        unpaired.discard(partner)
+        timing = (TIMING,) if match.group(2).startswith("attempts/") else ()
+        walk.walk(json.loads(a[name]), json.loads(b[partner]), f"experiments {name}", timing)
+    for name in sorted(unpaired):
+        walk.flag(f"experiments {name}: no committed file")
+
+
+def digest_only(
+    old: Path, new: Path, old_version: str | None = None, old_platform: str | None = None
+) -> tuple[bool, list[str]]:
+    """R-458, R-1008: whether the re-take `new` of the committed `old` differs only in digests,
+    under a one-to-one relabelling. Returns (passed, lines): the summary line, then each problem."""
     walk = DigestOnly()
     a, b = _load(old.with_suffix(".json")), _load(new.with_suffix(".json"))
     a.pop("provenance", None)
@@ -333,8 +497,8 @@ def digest_only(old: Path, new: Path, old_version: str | None = None) -> tuple[b
             continue
         new_files.discard(partner)
         x, y, where = _load(old_dir / name), _load(new_dir / partner), f"coupling {name}"
-        held = _version_rule(walk, x, y, where, old_version)
-        walk.walk(x, y, where, coupling_timing, version=held)
+        version, held = _fingerprint_rules(walk, x, y, where, old_version, old_platform)
+        walk.walk(x, y, where, coupling_timing, version=version, platform=held)
     for name in sorted(new_files):
         walk.classes["other"] += 1
         walk.other.append(f"coupling {name}: no committed file")
@@ -342,6 +506,8 @@ def digest_only(old: Path, new: Path, old_version: str | None = None) -> tuple[b
     pairs = _store_pairs(walk, old_store, _load(new.with_suffix(".store.json")))
     for index, (x, y) in enumerate(pairs or ()):
         walk.walk(x, y, f"store[{index}]")
+    _archive(walk, old.with_suffix(".experiments.json"), new.with_suffix(".experiments.json"))
+    walk.resolve_paths()
     environment, problems = _environment(
         old.with_suffix(".environment.json"), new.with_suffix(".environment.json"), old_version
     )
@@ -354,8 +520,10 @@ def digest_only(old: Path, new: Path, old_version: str | None = None) -> tuple[b
     summary = (
         f"RETAKE-DIGEST-ONLY {'PASS' if passed else 'FAIL'} {old.name}: "
         f"changed-digests={walk.changed()} digest={walk.classes['digest']} "
-        f"timing={walk.classes['timing']} version={walk.classes['version']} "
-        f"other={walk.classes['other']} environment={environment}"
+        f"timing={walk.classes['timing']} path={walk.classes['path']} "
+        f"version={walk.classes['version']} "
+        f"platform={walk.classes['platform']} other={walk.classes['other']} "
+        f"environment={environment}"
     )
     return passed, [summary, *(f"  {line}" for line in problems)]
 
@@ -366,8 +534,11 @@ def main(argv: list[str]) -> int:
         parser.add_argument("committed", type=Path)
         parser.add_argument("retake", type=Path)
         parser.add_argument("--old-version", help="the committed side's openflowsheet version")
+        parser.add_argument("--old-platform", help="the committed side's reactor platform string")
         args = parser.parse_args(argv[1:])
-        passed, lines = digest_only(args.committed, args.retake, args.old_version)
+        passed, lines = digest_only(
+            args.committed, args.retake, args.old_version, args.old_platform
+        )
         print("\n".join(lines))
         return 0 if passed else 1
     old, new = Path(argv[0]), Path(argv[1])

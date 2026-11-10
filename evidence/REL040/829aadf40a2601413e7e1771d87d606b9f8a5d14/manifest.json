@@ -1,0 +1,166 @@
+{
+  "work_package": "REL040",
+  "commit": "829aadf40a2601413e7e1771d87d606b9f8a5d14",
+  "requirements": [],
+  "status": "tested",
+  "inputs": {
+    "case_id": "RP review S-6 ruling docs/reviews/REL040-s6-ruling.md (A-11, R-1008) and review docs/reviews/REL040-review.md; RP.L11 (R-1007); build decisions docs/RP_DECISIONS.md; brief docs/briefs/REL040-manifest.md",
+    "case_hash": "4aa77593415dccc9b86c0e8c171398e12b7c6ec562e3cb236b65a35b7b195e90",
+    "environment_lock_hash": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+  },
+  "commands": [
+    {
+      "cmd": "CI ci.yml run 42716958104 on 829aadf4 (check ubuntu-latest, check ubuntu-24.04-arm, identity, default-install; the check job runs scripts/check.sh)",
+      "cwd": "GitHub Actions",
+      "exit_code": 0
+    },
+    {
+      "cmd": "OMP_NUM_THREADS=1 PYTHONPATH=src .venv/bin/python -m pytest -q tests/test_m05_retake_digest_only.py tests/test_m01_idaes_retake_diff.py tests/test_m07_journey_record.py tests/test_m05_wo9_gates.py tests/test_rel_*.py",
+      "cwd": "/home/frankp/Codes/OpenFlowsheet/.claude/worktrees/rel040p",
+      "exit_code": 0
+    },
+    {
+      "cmd": "OMP_NUM_THREADS=1 PYTHONPATH=src .venv/bin/python scripts/corpus_identity.py --check",
+      "cwd": "/home/frankp/Codes/OpenFlowsheet/.claude/worktrees/rel040p",
+      "exit_code": 0
+    }
+  ],
+  "checks": [
+    {
+      "id": "REL040.x05",
+      "description": "x05 gate entry c46ef9fc: V18 gains [4, x05.*] and tests/test_x05_*.py",
+      "result": "pass",
+      "value": "recorded in docs/RP_DECISIONS.md section REL040 prep, choices (commit c46ef9fc)"
+    },
+    {
+      "id": "REL040.L11",
+      "description": "RP.L11 9743871e: ADR 0074 O-3 default as RP amendment A-10, R-1007; release_gate.release_package_id encodes D2",
+      "result": "pass",
+      "value": "recorded in docs/RP_DECISIONS.md section REL040 prep (commit 9743871e); tests/test_rel_release_gate.py"
+    },
+    {
+      "id": "REL040.S6REH",
+      "description": "S-6 rehearsal a1a00e17: release_rc.py local, every local step of the 0.4 line, at 9743871e",
+      "result": "pass",
+      "value": "step 11 W22 failed 2/3 (a40.idaes_numbers_identical: environment.platform, inputs.reference_values_yaml_sha256, a record re-take question); outcome and per-step table in docs/RP_DECISIONS.md section REL040 prep (commit a1a00e17); a rehearsal, not a record"
+    },
+    {
+      "id": "REL040.S6DBG",
+      "description": "S6dbg F-A 3e25b294: NLP-1 inventory fix, merged via fc93285f",
+      "result": "pass",
+      "value": "recorded in docs/RP_DECISIONS.md section S-6 ruling applied"
+    },
+    {
+      "id": "REL040.WO1-5",
+      "description": "S-6 ruling WO-1 to WO-5 (A-11, R-1008): 5d862052, 81716c0a (class path, build decision), 7a6c3a7f, cb2a3a6c, 4ba52083, 4f8deeb2",
+      "result": "pass",
+      "value": "S6R-01..09, S6R-10, S6R-11..15, S6R-17..20 pass; test_rel_release_gate.py 60 passed; S6R-10 on the committed REAL stem: PASS changed-digests=50 digest=431 timing=0 path=128 version=0 platform=4 other=0 environment=equal; recorded in docs/RP_DECISIONS.md section S-6 ruling applied"
+    },
+    {
+      "id": "REL040.WO6",
+      "description": "WO-6 / fresh rerun proof (brief docs/briefs/REL040-s6-rerun.md): REAL re-take from a fresh worktree at 00f15a01",
+      "result": "pass",
+      "value": "RETAKE-DIGEST-ONLY PASS trust-region-study-real: changed-digests=103 digest=504 timing=528 path=128 version=0 platform=4 other=0 environment=equal; recorded in docs/RP_DECISIONS.md section S-6 WO-6 rerun"
+    },
+    {
+      "id": "REL040.QS6D",
+      "description": "Q-S6d 0282e4d6",
+      "result": "pass",
+      "value": "recorded in docs/RP_DECISIONS.md section S-6 WO-6 rerun and confirmation round (ruling docs/reviews/REL040-s6-ruling.md section 11)"
+    },
+    {
+      "id": "REL040.WO8",
+      "description": "WO-8 d7258775: S6R-12..15 under the no-host-dependence rule",
+      "result": "pass",
+      "value": "S6R-12..15 pass; recorded in docs/RP_DECISIONS.md section S-6 confirmation round"
+    },
+    {
+      "id": "REL040.WO7",
+      "description": "WO-7 26ad9d7f: log digests compared exactly; --retake-into keeps non-empty child logs",
+      "result": "pass",
+      "value": "S6R-27, S6R-28 pass; live proof line RETAKE-DIGEST-ONLY PASS trust-region-study-real: changed-digests=103 digest=504 timing=528 path=128 version=0 platform=4 other=0 environment=equal; recorded in docs/RP_DECISIONS.md section S-6 confirmation round"
+    },
+    {
+      "id": "REL040.A11I7",
+      "description": "A-11 item 7 0b62c12d: verbatim into RP 7.1 and 17.4",
+      "result": "pass",
+      "value": "tests/test_rel_release_gate.py 60 passed; recorded in docs/RP_DECISIONS.md section S-6 confirmation round"
+    },
+    {
+      "id": "REL040.S6R29",
+      "description": "S6R-29 (ruling 11.4) at 0b62c12d: default tier at the head and at J-prime",
+      "result": "pass",
+      "value": "head: 16007 passed, 3206 skipped, 219 deselected, 3 xfailed, 0 failed (3775 s); J-prime: 3 failed, 16004 passed = the three Q-S6e cases (test_a21_a_re_run_names_the_offered_m05_record_tracked_with_its_sha256 2c508b5, 2d945b5, 974c395); recorded in docs/RP_DECISIONS.md section S-6 confirmation round"
+    },
+    {
+      "id": "REL040.QS6E",
+      "description": "Q-S6e c8be15dc: the A2.3 test reads the offered file as tracked at the journey's own commit",
+      "result": "pass",
+      "value": "tests/test_m07_journey_record.py 56 passed at the head and with the working-tree REAL record altered; recorded in docs/RP_DECISIONS.md section Q-S6e"
+    },
+    {
+      "id": "REL040.REVIEW",
+      "description": "reviewer pass docs/reviews/REL040-review.md",
+      "result": "pass",
+      "value": "sound; one substantive finding S-1 (value digests compared only to a bijection), resolved by WO-R1; notes N-1..N-5; review file docs/reviews/REL040-review.md"
+    },
+    {
+      "id": "REL040.FIX",
+      "description": "review fix round: WO-R1 5b8575a4, N-1 cfa46e70, N-3 c95288f4, N-5 a385a417",
+      "result": "pass",
+      "value": "326 passed, 3 deselected (test_m05_retake_digest_only, test_m01_idaes_retake_diff, test_m07_journey_record, test_m05_wo9_gates, test_rel_*); ruff and ruff format clean; recorded in docs/RP_DECISIONS.md section REL040 review fix round"
+    },
+    {
+      "id": "REL040.REAL",
+      "description": "live REAL proof line at a385a417 (.cache/s6r/real-0b62c12d, --old-platform of the committed S0 coupling record)",
+      "result": "pass",
+      "value": "RETAKE-DIGEST-ONLY PASS trust-region-study-real: changed-digests=103 digest=504 timing=528 path=128 version=0 platform=4 other=0 environment=equal; recorded in docs/RP_DECISIONS.md section REL040 review fix round"
+    },
+    {
+      "id": "REL040.S77",
+      "description": "S77 pair (git archive 56fb2fa~1 vs 56fb2fa, five stems, no options) at a385a417",
+      "result": "pass",
+      "value": "PASS 42/80/71/92/38, path=0 version=0 platform=0 other=0 environment=equal; recorded in docs/RP_DECISIONS.md section REL040 review fix round"
+    },
+    {
+      "id": "REL040.F0",
+      "description": "scripts/corpus_identity.py --check at a385a417",
+      "result": "pass",
+      "value": "F0 PASS (M1 50/50 ... M9 35/35); recorded in docs/RP_DECISIONS.md section REL040 review fix round"
+    },
+    {
+      "id": "REL040.CI",
+      "description": "merge condition: CI ci.yml run 42716958104 on 829aadf4",
+      "result": "pass",
+      "value": "check (ubuntu-latest), check (ubuntu-24.04-arm), identity, default-install all success"
+    },
+    {
+      "id": "REL040.FULLGATE",
+      "description": "full local gate (scripts/gate.sh) not run by choice; the merge condition is CI green on x86-64 and aarch64 (CLAUDE.md gate by risk, 2026-11-08)",
+      "result": "unsupported",
+      "value": {
+        "full_gate": "not run (not required); stays unsupported",
+        "ci": "CI ci.yml run 42716958104 on 829aadf4 (check ubuntu-latest, check ubuntu-24.04-arm, identity, default-install success)",
+        "partial": "the default tier ran serially at 0b62c12d (S6R-29): 16007 passed, 0 failed"
+      }
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "docs/reviews/REL040-review.md",
+      "sha256": "4aa77593415dccc9b86c0e8c171398e12b7c6ec562e3cb236b65a35b7b195e90",
+      "description": "the REL040 reviewer pass (sound, S-1)"
+    }
+  ],
+  "limitations": [
+    "Evidence class: release-procedure software verification; the re-takes are rehearsals, not records.",
+    "Prep manifest, not the release evidence: the RC cut adds the candidate's manifest later; K3 re-takes and journey J come at the cut.",
+    "N-2 left as ruled; N-4 not done (step 15 still chooses the M05 record by directory; equivalent for the three committed journeys).",
+    "O-6 settled for the default tier only (the review's O-6 note).",
+    "No local full gate; CI green on both architectures is the merge condition."
+  ],
+  "review": {
+    "numerical": "pending",
+    "process_model": "pending"
+  }
+}

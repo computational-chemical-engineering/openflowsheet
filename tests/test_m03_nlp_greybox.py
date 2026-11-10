@@ -268,6 +268,32 @@ def test_the_pynumero_problem_has_no_hessian_and_ipopt_approximates_it() -> None
     assert greybox._typed_options()["limited_memory_max_history"] == 6
 
 
+def test_the_inventory_workload_print_patch_takes_solve_start_overrides() -> None:
+    """S-6 F-A: the NLP-1 inventory workload (`scripts/m03_ipopt_inventory.py`) wraps
+    `_typed_options` to add Ipopt's log file. `solve_start` passes a request's overrides
+    (OPT §4.3); a wrapper that refused them failed every start before Ipopt ran. The wrapper's
+    own lines, executed against greybox, must forward the overrides and only add print options."""
+    import m03_ipopt_inventory
+
+    from openflowsheet.studies.nlp import greybox
+
+    patch = [
+        line.strip()
+        for line in m03_ipopt_inventory._WORKLOAD.splitlines()
+        if line.strip().startswith(("typed = greybox.", "printing = ", "greybox._typed_options ="))
+    ]
+    assert len(patch) == 3
+    original = greybox._typed_options
+    try:
+        exec("\n".join(patch), {"greybox": greybox, "log": "ipopt.log"})
+        patched = greybox._typed_options({"max_iter": 7})
+    finally:
+        greybox._typed_options = original
+    printing = {"output_file": "ipopt.log", "file_print_level": 5}
+    assert patched == original({"max_iter": 7}) | printing
+    assert patched["max_iter"] == 7
+
+
 # -- A39: no CasADi METIS-closure object, no nlpsol -----------------------------------------------
 
 

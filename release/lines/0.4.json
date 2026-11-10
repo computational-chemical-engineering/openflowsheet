@@ -213,8 +213,8 @@
       "documents": ["benchmarks/t07/v17/runs/v17-c2", "tests/fixtures/t08/v17_c2_descriptions"]
     },
     "V18": {
-      "tests": ["tests/test_t08_*.py"],
-      "rc": [[1, "*"], [9, "*"], [10, "*"], [17, "MR12-coolprop"], [17, "MR12-lca"]],
+      "tests": ["tests/test_t08_*.py", "tests/test_x05_*.py"],
+      "rc": [[1, "*"], [4, "x05.*"], [9, "*"], [10, "*"], [17, "MR12-coolprop"], [17, "MR12-lca"]],
       "criteria": [
         "docs/derivations/release-procedure.md",
         "docs/derivations/V02-alpha-release-spec.md",

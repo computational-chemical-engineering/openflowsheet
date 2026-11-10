@@ -19405,6 +19405,57 @@ and the n/T/P view stays. Not cached.
 
 **Watch for.** The shell computing a value the operation did not return.
 
+## R-1007 — RP.L11: a gate line's `evidence_package` is ADR 0074 D2's id of `<line>.0` (RP amendment A-10; 2026-11-09)
+
+| | |
+| --- | --- |
+| Date | 2026-11-09 |
+| Decided by | design lane (`specifier`), ADR 0074 O-3's default; applied by the build lane (REL040 prep, `wp/REL040p`) |
+| Normative text | `docs/derivations/release-procedure.md` §3.4 RP.L11 and §17.3 (A-10); `docs/adr/0074-release-evidence-package-id.md` O-3 |
+| Affected packages | REL (every `gate` line from 0.5 on); RP |
+
+**Decision.** The loader refuses a line file whose `role` is `gate` and whose `gate_set.evidence_package` is not ADR
+0074 D2's id of `<line>.0` (0.4 → `REL040`). `scripts/release_gate.py` encodes D2 itself (`release_package_id`).
+
+**Rejected.** No check (a 0.5 line inheriting 0.4 keeps `REL040` and shares its directory and harvest exclusion; RP.L03
+does not refuse an equal field); reusing the manifest schema's `work_package` regex (it admits every D2 id, not the
+line's).
+
+**Evidence.** `tests/test_rel_release_gate.py` `test_l11_*`: `0.4.json` with `REL050` refused, `REL040` passes; D2's
+examples; a segment without an id refused.
+
+**Watch for.** A `gate` line file written by copying another without moving `evidence_package`.
+
+## R-1008 — Records bound to the RC host are re-taken at K3 on that host at every cut and committed in J: M05's REAL record (the reactor fingerprint's `platform` is in every experiment key) and M01's IDAES record (step 11 compares its `environment` exactly); each re-take proved by a committed tool; the fingerprint and W22 (b)'s criterion unchanged
+
+| | |
+| --- | --- |
+| Date | 2026-11-09 |
+| Decided by | design lane (`specifier`), REL040 S-6 ruling |
+| Normative text | `docs/reviews/REL040-s6-ruling.md` §2, §3, §8; RP amendment A-11 (§7.1, §4.5, §5.1, §6.1, §6.5, §12, §14) |
+| Evidence | S-6 (`docs/RP_DECISIONS.md` § S-6, `wp/REL040p`); S6dbg F-B (`docs/S6DBG_DECISIONS.md`, `wp/S6dbg`): the live fingerprint digest is `5710568d…` and the recorded one `dfce4150…`. The design lane recomputed `document_sha256` of `S0`'s fingerprint with `6.12.111` → `6.12.113` and got `5710568d…`. Step 11 differs in `environment.platform` and in `inputs.reference_values_yaml_sha256` (M01 Amendment 1, `49e99756`, insertions only, already admitted by W22 (b)). M05 S70: REAL reproduces bitwise on one host in 1454 s |
+| Affected packages | REL040 (the cut), M05 (REAL record, `m05_retake_diff.py`, `m05_wo9_real.py`), M01 (IDAES record, `m01_idaes_retake_diff.py`), M07 (J), RP |
+
+**Decision.** At every cut, M05's REAL record and M01's IDAES conformance record are re-taken at K3 from a clean
+worktree, on the host that runs steps 11, 14 and 15. They are committed in J with the five in-process records. REAL's
+proof is `m05_retake_diff.py --digest-only --old-platform`. It admits the platform leaf only at
+`.frozen.reactor.fingerprint.platform`, bound to its digest, and requires every other fingerprint leaf, the digests
+included, to be equal. It also walks the experiments archive under the digest map. IDAES's proof is
+`m01_idaes_retake_diff.py`. It admits only `environment.platform`, from the committed value to the running host's,
+and input hashes that equal their files at K3. A failed proof stops the cut. A host mismatch at C means a new J and a
+new C.
+
+**Rejected.** *Dropping `platform` from the key-relevant fingerprint*: this changes ADR 0036 D8's key semantics and
+every store, for a 25-minute re-take, as R-458 found for the version. *A replay that ignores the fingerprint*: it
+weakens G10. *Reading `environment.platform` as provenance in step 11*: that changes W22 (b)'s criterion, which RP may
+not do. *A re-take only when the platform differs*: it adds a diagnosis branch to save free compute. *A re-take now on
+`main`*: the host can change again before K3.
+
+**Watch for.** A proof with `other` > 0, meaning a number moved with the host, is a stop for the design lane. So is
+a new RC machine: a changed `machine`, `cpu_model` or `cpu_flags_sha256` fails REAL's proof by design. R-458's watch
+item ("REAL's replay at the new version") is answered: the replay does not depend on the version, and it is bound to
+the host's platform.
+
 ## R-1010 — `main`'s surface chain gains link c_8 = (ADR 0075, `without_x04`, `6be1c002…`): X04's display-units members and two description texts, after ST's c_7
 
 | | |

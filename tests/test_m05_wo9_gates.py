@@ -7,7 +7,9 @@ G10's REAL part is that script's `--replay` (the replay from the record, F-20; t
 the build log). The criteria are §13's G11 row, never loosened here; the optimality outcome is
 reported, not gated (W25), so no test asserts the study status or the decision.
 
-Default gate: reads the committed files; nothing runs.
+Default gate: reads the committed files; nothing runs. S6R-20 (R-1008): `--retake-into`'s three
+refusals, each before the run starts. S6R-28 (WO-7 (b)): a re-take keeps the store's non-empty child
+logs, on a synthetic store that a stubbed run leaves.
 """
 
 from __future__ import annotations
@@ -17,8 +19,11 @@ import json
 import math
 import re
 import sys
+from pathlib import Path
+from types import SimpleNamespace
 from typing import Any
 
+import pytest
 from conftest import REPO_ROOT
 
 sys.path.insert(0, str(REPO_ROOT / "tests" / "support"))
@@ -184,3 +189,116 @@ def test_r433_the_extrapolated_wording_is_the_ledger_count_and_the_recorded_flip
     (t_p1,) = p1["decisions"].values()
     assert minus["decisions"] == {"preheater.T_spec": 653.15}
     assert f"{t_p1 - 653.15:.1e}" == "3.5e-05" and "3.5e-5 K apart" in EXTRAPOLATED_LIMITATION
+
+
+# -- S6R-20 (R-1008, `docs/reviews/REL040-s6-ruling.md` §8 WO-2): the re-take's refusals ---------
+
+
+def _refused(argv: list[str], monkeypatch: pytest.MonkeyPatch, capsys: Any) -> str:
+    """`m05_wo9_real.main(argv)`'s exit-2 reason; without OMP_NUM_THREADS=1 no run can start."""
+    monkeypatch.syspath_prepend(str(REPO_ROOT / "scripts"))
+    monkeypatch.delenv("OMP_NUM_THREADS", raising=False)
+    import m05_wo9_real  # noqa: PLC0415
+
+    with pytest.raises(SystemExit) as raised:
+        m05_wo9_real.main(argv)
+    assert raised.value.code == 2
+    return capsys.readouterr().err
+
+
+def test_s6r20_a_retake_inside_the_repository_is_refused(
+    monkeypatch: pytest.MonkeyPatch, capsys: Any
+) -> None:
+    reason = _refused(["--retake-into", str(REPO_ROOT / ".cache" / "retake")], monkeypatch, capsys)
+    assert "lies inside the repository" in reason
+
+
+def test_s6r20_a_retake_over_an_existing_record_is_refused(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: Any
+) -> None:
+    (tmp_path / "trust-region-study-real.json").write_text("{}", encoding="utf-8")
+    reason = _refused(["--retake-into", str(tmp_path)], monkeypatch, capsys)
+    assert "trust-region-study-real.json exists: a re-take never overwrites one" in reason
+
+
+def test_s6r20_a_retake_with_replay_is_refused(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: Any
+) -> None:
+    reason = _refused(["--retake-into", str(tmp_path), "--replay"], monkeypatch, capsys)
+    assert "--retake-into and --replay exclude each other" in reason
+
+
+# -- S6R-28 (R-1008, ruling §11.3 WO-7 (b)): a re-take keeps the non-empty child logs -------------
+
+
+def _stubbed_retake(
+    tmp_path: Path,
+    logs: dict[str, bytes],
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: Any,
+    raises: Exception | None = None,
+) -> tuple[Path, str]:
+    """`main(["--retake-into", <dir>])` with the run stubbed: it leaves a synthetic store with one
+    attempt whose `child.<name>` logs hold `logs`, and writes nothing; with `raises`, the run then
+    raises it, and so does `main`. Returns (dir, stdout)."""
+    monkeypatch.syspath_prepend(str(REPO_ROOT / "scripts"))
+    monkeypatch.setenv("OMP_NUM_THREADS", "1")
+    import m05_wo9_real  # noqa: PLC0415
+
+    key = "ab" + "c" * 62
+
+    def run_real(root: Path, *, archive: bytes | None = None) -> Any:
+        assert archive is None
+        attempt = root / "experiments" / key[:2] / key / "attempts"
+        (attempt / "1").mkdir(parents=True)
+        relpaths = {name: f"experiments/{key[:2]}/{key}/attempts/1/child.{name}" for name in logs}
+        for name, content in logs.items():
+            (root / relpaths[name]).write_bytes(content)
+        document = {"execution": {"logs": {"relpaths": relpaths}}, "experiment_key": key}
+        (attempt / "1.json").write_text(json.dumps(document), encoding="utf-8")
+        if raises is not None:
+            raise raises
+        return SimpleNamespace(run=SimpleNamespace(bijection=[]))
+
+    monkeypatch.setattr(m05_wo9_real, "run_real", run_real)
+    monkeypatch.setattr(m05_wo9_real, "write", lambda real, *, stem: None)
+    monkeypatch.setattr(m05_wo9_real, "summary", lambda real: "REAL (stubbed)")
+    into = tmp_path / "retake"
+    if raises is None:
+        assert m05_wo9_real.main(["--retake-into", str(into)]) == 0
+    else:
+        with pytest.raises(type(raises)):
+            m05_wo9_real.main(["--retake-into", str(into)])
+    return into, capsys.readouterr().out
+
+
+def test_s6r28_only_the_non_empty_log_is_kept_at_its_relpath(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: Any
+) -> None:
+    logs = {"stderr": b"warning: a changed code path\n", "stdout": b""}
+    into, out = _stubbed_retake(tmp_path, logs, monkeypatch, capsys)
+    assert "child-logs kept=1" in out.splitlines()
+    kept = sorted(p.relative_to(into).as_posix() for p in into.rglob("*") if p.is_file())
+    key = "ab" + "c" * 62
+    assert kept == [f"child-logs/experiments/ab/{key}/attempts/1/child.stderr"]
+    assert (into / kept[0]).read_bytes() == logs["stderr"]
+
+
+def test_s6r28_with_every_log_empty_nothing_is_kept_and_no_directory_made(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: Any
+) -> None:
+    into, out = _stubbed_retake(tmp_path, {"stderr": b"", "stdout": b""}, monkeypatch, capsys)
+    assert "child-logs kept=0" in out.splitlines()
+    assert not (into / "child-logs").exists()
+
+
+def test_n5_a_run_that_raises_still_keeps_its_logs(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: Any
+) -> None:
+    # REL040 review N-5: a crashing re-take keeps the logs that explain it. Fails at `5d0c4121`.
+    logs = {"stderr": b"Traceback: the child failed\n", "stdout": b""}
+    into, out = _stubbed_retake(tmp_path, logs, monkeypatch, capsys, RuntimeError("the run"))
+    assert "child-logs kept=1" in out.splitlines()
+    key = "ab" + "c" * 62
+    kept = into / f"child-logs/experiments/ab/{key}/attempts/1/child.stderr"
+    assert kept.read_bytes() == logs["stderr"]
