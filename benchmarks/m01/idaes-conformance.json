@@ -19,7 +19,7 @@
       "idaes-solvers-ubuntu2204-x86_64.tar.gz": "f370fa258cc457cd84fd9fe4298bde55dfc03374b607e68aa4d38f24ad9730e5"
     },
     "python": "3.13.5",
-    "platform": "Linux-6.12.111+deb13-amd64-x86_64-with-glibc2.41",
+    "platform": "Linux-6.12.113+deb13-amd64-x86_64-with-glibc2.41",
     "packages": {
       "idaes-pse": "2.13.0",
       "pyomo": "6.10.1",
@@ -38,7 +38,7 @@
   },
   "inputs": {
     "components_yaml_sha256": "6f154f7fbc3f4bef9fe3cb2048983cc19ad13c6b43f40d29fa944e9b719f05b9",
-    "reference_values_yaml_sha256": "6cef65b15d02809604b72e4b9b80115aab4b8ef674a241f5b99c73bc1655cc77",
+    "reference_values_yaml_sha256": "46d684cdc1b4086e12be0e4f95502f07150b820887f9fdd9c6de26f6a7f58ebf",
     "records": {
       "H2": {
         "molar_mass": 0.00201588,
