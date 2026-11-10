@@ -173,7 +173,7 @@ All seven rows of `release/acceptances.md` stand at C (`release_gate.py --line 0
 - Claim set (V11 to V20, W21 to W26 and X31 claimed; W27 not claimed): accepted 2026-10-30, stands.
 - V17 carry (the 0.2.0 agent run carried across R-192, R-234, R-295, R-934, R-950, R-960, R-1000 and R-1010):
   accepted 2026-11-10, "Reuse 0.2.0's agent run (Recommended)" (the 2026-10-30 row lapsed at C).
-- M02 N1 (the reactor child process ships labelled "not a sandbox"): accepted 2026-10-30, stands.
+- M02 N1 (the reactor child process ships with its no-isolation label): accepted 2026-10-30, stands.
 - M03 N1 (the licences of the optional `nlp` extra): accepted 2026-10-30, stands.
 - coolprop and lca licences: accepted 2026-10-30, stands.
 
