@@ -308,11 +308,21 @@ applies it and does not choose it. A verdict that writes "met with two reference
 ### 4.4 The V17 carry
 
 `v17-c2`'s evidence carries to C if and only if step 8 (`scripts/m07a_rc.py surface`) passes at C with `LINKS`
-unchanged. At 0.3.0 `LINKS` was c_1 R-192, c_2 R-234 and c_3 R-295. The served digest must equal the last link's
-registered digest, D_3 = `455d01eb…e125`. The chain's rows must be exactly `[(1,c_3),(2,c_3),(2,c_2),(2,c_1),(3,None)]`,
-as `test_m07a_a37_the_chain_holds_on_the_served_list` requires. If the digest differs, the RC stops (§12). A new link
-then needs a register entry, a strip function, a registered digest, and Frank's `V17 carry` row replaced, or else a
-new V17 campaign. The release-time edit is not improvised.
+unchanged. "Unchanged" means that a `V17 carry` row stands at C (§8.3): its scope `extract:links +
+extract:served_digest` (§8.2 (E3), (E4)) reproduces at C, and it names the register entry of every link (M07 O3,
+R-457). Write `LINKS` at C, in its order, as c_1 … c_n. Link c_k has a register entry, a strip function s_k and a
+registered digest D_k, and D_0 is R-133's. The served digest must equal the last link's registered digest, D_n. The
+chain's rows must be exactly these n + 2, in this order: `(1,c_n)`, then `(2,c_k)` for k = n, n−1, …, 1, then
+`(3,None)`. Each is judged as alpha spec §5.3 items 1–3 state, and each passes.
+`test_m07a_a37_the_chain_holds_on_the_served_list` pins the instance that `LINKS` holds.
+- At 0.3.0, n = 3: c_1 R-192, c_2 R-234 and c_3 R-295; D_3 = `455d01eb…e125`; the rows were
+  `[(1,c_3),(2,c_3),(2,c_2),(2,c_1),(3,None)]`.
+- At 0.4.0, n = 8: c_4 R-934, c_5 R-950, c_6 R-960, c_7 R-1000 and c_8 R-1010 follow c_3; D_8 = `6be1c002…ba57`; the
+  rows are `[(1,c_8),(2,c_8),(2,c_7),(2,c_6),(2,c_5),(2,c_4),(2,c_3),(2,c_2),(2,c_1),(3,None)]`.
+
+If the digest differs, the RC stops (§12). A new link then needs a register entry, a strip function, a registered
+digest, and Frank's `V17 carry` row replaced, or else a new V17 campaign. The release-time edit is not improvised.
+(Amendment A-12, §17.5.)
 
 ### 4.5 W25: the journey at J
 
@@ -935,8 +945,9 @@ whether the standing form equals it (§11.2).
   `replay` (bitwise) pass at C. 0.3.0: V03.A21. Same form.
 - **RP.S13** (R). Every `rc_items` entry passes at C (§6.7). An `unsupported` result is not a pass. 0.3.0: V03.A22.
   Changed form (one record per item).
-- **RP.S14** (R). Step 8: the served digest equals the last link's registered digest, and the chain rows are as §4.4
-  states. Otherwise the RC stops. 0.3.0: V03.A23. Same form.
+- **RP.S14** (R). Step 8: with `LINKS` at C written c_1 … c_n in its order, the served digest equals D_n, the last
+  link's registered digest, and the chain's rows are exactly `(1,c_n)`, `(2,c_n)`, `(2,c_{n−1})`, …, `(2,c_1)`,
+  `(3,None)`, each passing (§4.4, amendment A-12). Otherwise the RC stops. 0.3.0: V03.A23. Same form.
 - **RP.S15** (CI). Step 1's record (§6.2) passes: the push run at C is green on both legs, and junit is present. The
   step-1 row records the class ratios that the default gate's tests print (S07 A31, R-627; S11 thermal, R-843, R-845).
   0.3.0: V03.A24. Changed form (the push run, not a dispatch's `check`; REL.A17).
@@ -1237,3 +1248,68 @@ the review's (M-1, M-2, S-1 to S-5, S-7, rulings 3 to 7) and WO-R7's tests (`doc
   Why: at S-6 (`9743871e`), steps 11, 14 and 15 failed only because the workstation's kernel moved from `6.12.111`
   to `6.12.113` at its 2026-11-06 reboot. The REAL record (taken 2026-10-16) and the IDAES record (2026-10-08) both
   bind the kernel string, and RP re-took neither.
+
+### 17.5 Amendment A-12 (REL040 verdict F-3, 2026-11-10)
+
+- **A-12 (§4.4, §11.1 RP.S14; R-1009; `docs/reviews/REL040-verdicts.md` F-3, F-4, F-5).** §4.4 and RP.S14 are
+  restated for a chain of n links. Nothing else in RP changes.
+  1. §4.4's paragraph is replaced by the text that §4.4 now holds. It defines "`LINKS` unchanged" as a standing
+     `V17 carry` row (§8.3), writes `LINKS` at C as c_1 … c_n, and requires the served digest to equal D_n. It
+     requires the rows `(1,c_n)`, `(2,c_n)` … `(2,c_1)`, `(3,None)`, each passing, and gives 0.3.0's chain (n = 3)
+     and 0.4.0's (n = 8) as instances. Its last three sentences are unchanged.
+  2. RP.S14 reads: "Step 8: with `LINKS` at C written c_1 … c_n in its order, the served digest equals D_n, the last
+     link's registered digest, and the chain's rows are exactly `(1,c_n)`, `(2,c_n)`, `(2,c_{n−1})`, …, `(2,c_1)`,
+     `(3,None)`, each passing (§4.4, amendment A-12). Otherwise the RC stops."
+  3. Unchanged: the chain itself (alpha spec §5.3 items 1–3, `m07a_rc.chain`); §8.2's extractors (E3) and (E4);
+     §12's stop; and how the release manifest decides RP.S14 (`Spec("S14", steps=(8,))`, from step 8's record).
+     RP.S14 stays same-form (§11.2). Over 0.3.0's records n = 3, and there the general form is V03.A23's literal
+     one, so REL.A20's equality is unchanged. §14 gains no row, because R-1009 is RP's own amendment, as R-942 to
+     R-949 and R-1007 are. No verdict changes. The verdict document already read RP.S14 in this form, and V13 and
+     V17 are BLOCKED under either reading (F-3).
+
+  Why: §4.4 and RP.S14 named 0.3.0's chain literally (three links, D_3, five rows). At C = `84c66547`, `LINKS` holds
+  eight links: R-192, R-234, R-295, R-934 (MSG), R-950 (X02), R-960 (OPT), R-1000 (ST) and R-1010 (X04). Each was
+  added by its package with a register entry, a strip function and a registered digest. Step 8 passed at C on three
+  hosts: `rc/surface/rc-alpha-surface.json` (ref-x86-64) and `rc/ci/rc-steps-ubuntu-latest/` and
+  `rc/ci/rc-steps-ubuntu-24.04-arm/` (CI), each with 13 of 13 checks. The chain has ten rows `(1,c_8)`, `(2,c_8)` …
+  `(2,c_1)`, `(3,None)` (R-137), each passing. The served digest is
+  `6be1c002592524126617af8dd65d331513f4a96355f5381dba020ad561a2ba57` = D_8. Read literally, the old text would fail
+  RP.S14 on a passing step 8, or read "unchanged" against 0.3.0's list. The general form is what step 8, the test
+  and the verdict already apply. Evidence: those records;
+  `tests/test_m07a_surface_chain.py::test_m07a_a37_the_chain_holds_on_the_served_list`, which pins the n = 8
+  instance; and `tests/test_rel_evidence_manifest.py::test_the_catalogue_is_rp_s01_to_s22_with_their_forms`, which
+  checks that RP.S14 parses and stays same-form.
+
+- **F-4 and F-5: rulings for 0.4.0, not RP changes.** The orchestrator's default holds. The evidence gives no reason
+  to overrule it.
+  1. **F-4 (L-WS-2).** For 0.4.0, `benchmarks/t08/support_envelope.yaml` stays as it is at C. It is a D2.4 path.
+     After C only commits outside D2.4 are admitted (§5.1), and the envelope is pinned at K3 (§7.1). An edit
+     therefore means a new K3, J and C and the RC job again. L-WS-2 ("no request-named source exists in v0.1")
+     understates 0.4.0, but it claims no capability that 0.4.0 lacks. `CHANGELOG.md`'s `## v0.4.0` carries one
+     sentence: 0.4.0 adds an explicit warm-start source, `solve_body.warm_start` (ADR 0070, `explicit-v1`), which
+     L-WS-2's text predates. The sentence neither says nor implies that V13 (e) covers that source. Its evidence is
+     X02's manifest (`evidence/X02/d26bcd38…/`); the verdict's V13 section says it is not V13 (e)'s. The first
+     change after the tag (0.5.0.dev0, the working envelope of R-460) restates L-WS-2 for the explicit source and
+     keeps the id.
+  2. **F-5 (the limitation grammar).** For 0.4.0, no gate tool changes after C. `v0_2_gate.LIMITATION` stays
+     `\bL(?:\d{2}|-[A-Z]+-\d+)\b`. Step 18 runs the engine as it stands at H2 (§9.2 step 6), so a change after C
+     changes what judges C. R-912 rejected "widen now" at 0.3.0 on exactly that ground, and the ground holds
+     unchanged. Widening gains one table cell, V11's travelling column, and no evidence: the verdict's findings
+     change no verdict. L-X04-1, L-X04-2 and L-X04-3 travel by text in three places: the verdict's V11 prose, the
+     envelope at C, and `CHANGELOG.md`'s `## v0.4.0` under V11, where each is named with its envelope text at C.
+     L-S11-1 to L-S11-3 and L-E01-1 travel as they did at 0.3.0 (R-912). R-912's "the next release's gate adopts"
+     reached neither §3.6 nor the 0.4 line before C. It moves to the first change after 0.4.0's tag, with R-912's
+     pattern `\bL(?:\d{2}|-[A-Z][A-Z0-9]*-\d+)\b` and R-912's tests, extended so that `L-X04-1` matches. R-1009
+     amends R-912's timing only.
+  3. Open for the first change after the tag, each with a default:
+     - *Where the widened pattern lives* (design lane, no fact needed). Default: R-912's form, the engine's
+       constant widened. It is a superset, and R-912's tests require 0.2's outputs to stay byte-identical (REL.A04).
+       Alternative: a line-file field, which is a `release-line-v1` schema change.
+     - *L-WS-2's restated text* (build lane, from ADR 0070 D1). Default: the automatic source under an opt-in policy
+       and the explicit source by `solve_body.warm_start`, with the remaining limitation stated in L-WS-1's terms.
+       It is reviewed in that package's single reviewer pass.
+
+  **Does not establish.** A-12 establishes no V17 carry, which needs Frank's replacing row (verdict F-1), and it
+  makes V13 and V17 neither PASS nor FAIL. It says nothing of the chain's content beyond what step 8 checks, and
+  nothing of the explicit warm-start source beyond X02's manifest. It changes neither alpha spec §5.3 nor
+  `scripts/m07a_rc.py`.
