@@ -9282,37 +9282,37 @@ harvest:
   class: P
   to: []
   note: 'process note: no local full gate; CI green on both architectures is the merge condition (CLAUDE.md gate by risk)'
-- manifest: evidence/REL040/829aadf40a2601413e7e1771d87d606b9f8a5d14/manifest.json
+- manifest: evidence/S15b/829aadf40a2601413e7e1771d87d606b9f8a5d14/manifest.json
   item: limitations[0]
   sha256: 1087d725a448b87faf0feb3bf321275d5b0a3c6580a85244d5d4a4a7f1493ab6
   class: P
   to: []
   note: 'process note: release-procedure software verification; re-takes are rehearsals, not records'
-- manifest: evidence/REL040/829aadf40a2601413e7e1771d87d606b9f8a5d14/manifest.json
+- manifest: evidence/S15b/829aadf40a2601413e7e1771d87d606b9f8a5d14/manifest.json
   item: limitations[1]
   sha256: 1cded7962edf338f1c453ef8087b64139623db4120840da3cfa63d71ce4febf8
   class: P
   to: []
   note: 'process note: prep manifest; the RC cut adds the candidate manifest, K3 re-takes and journey J come at the cut'
-- manifest: evidence/REL040/829aadf40a2601413e7e1771d87d606b9f8a5d14/manifest.json
+- manifest: evidence/S15b/829aadf40a2601413e7e1771d87d606b9f8a5d14/manifest.json
   item: limitations[2]
   sha256: dc112feae7dfcb2d130d950f7ccc59e04ac995f9c7b8f23439dae6db7ed9cc0e
   class: P
   to: []
   note: 'process note: review note N-2 left as ruled; N-4 not done (step 15 chooses the M05 record by directory, equivalent for the three committed journeys)'
-- manifest: evidence/REL040/829aadf40a2601413e7e1771d87d606b9f8a5d14/manifest.json
+- manifest: evidence/S15b/829aadf40a2601413e7e1771d87d606b9f8a5d14/manifest.json
   item: limitations[3]
   sha256: 788a600775409d9c0258751c41756dfdef3971f407a00c1c194bb78869226994
   class: P
   to: []
   note: 'process note: O-6 settled for the default tier only (the review O-6 note)'
-- manifest: evidence/REL040/829aadf40a2601413e7e1771d87d606b9f8a5d14/manifest.json
+- manifest: evidence/S15b/829aadf40a2601413e7e1771d87d606b9f8a5d14/manifest.json
   item: limitations[4]
   sha256: beb1687b9ac280eba25f2dde37aff9cce117bca4b0c889924d5d44ce9ae20fc2
   class: P
   to: []
   note: 'process note: no local full gate; CI green on both architectures is the merge condition (CLAUDE.md gate by risk)'
-- manifest: evidence/REL040/829aadf40a2601413e7e1771d87d606b9f8a5d14/manifest.json
+- manifest: evidence/S15b/829aadf40a2601413e7e1771d87d606b9f8a5d14/manifest.json
   item: checks[18]
   check_id: REL040.FULLGATE
   sha256: fb0550f5108813afb14a93694a9bbd3867fd0d26d16cd8e6f281660770ac3fb5

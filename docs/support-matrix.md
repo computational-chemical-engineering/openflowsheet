@@ -201,7 +201,6 @@ Envelope `v0.2-envelope-dev` (T08 release spec §5). **Unlisted is unsupported**
 | P01 | 2 | 2 | 5 | 0 |
 | P02 | 2 | 0 | 12 | 0 |
 | P03 | 2 | 0 | 12 | 0 |
-| REL040 | 0 | 0 | 6 | 0 |
 | RRC | 3 | 0 | 5 | 0 |
 | S01 | 27 | 10 | 12 | 0 |
 | S02 | 18 | 0 | 12 | 0 |
@@ -222,6 +221,7 @@ Envelope `v0.2-envelope-dev` (T08 release spec §5). **Unlisted is unsupported**
 | S14 | 0 | 0 | 12 | 0 |
 | S15 | 0 | 0 | 14 | 0 |
 | S15a | 0 | 0 | 4 | 1 |
+| S15b | 0 | 0 | 6 | 0 |
 | ST | 0 | 0 | 6 | 0 |
 | T01 | 3 | 3 | 3 | 0 |
 | T02 | 11 | 2 | 7 | 0 |
