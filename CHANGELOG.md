@@ -7,7 +7,7 @@
 *Notes at the release candidate C = `84c665477b512548f38a6335f51648732b1fe5bb` (RP §9.2 step 3; line `0.4`, gate
 set `v0.4-gate-v1`, envelope `v0.4-envelope-1`). Nothing below is released until the tag; the tag and every
 publication are Frank's. 0.4.0 claims V11–V20, W21–W26 and X31; W27 is not claimed. The verdicts are
-`docs/reviews/REL040-verdicts.md` (judged 2026-11-10); at C two gates are BLOCKED and two FAIL, as stated below.*
+`docs/reviews/REL040-verdicts.md` (judged 2026-11-10); at C two gates FAIL, each with Frank's standing acceptance, as stated below.*
 
 ### X02 — declared warm starts (ADR 0070)
 
@@ -121,11 +121,11 @@ A FAIL is printed FAIL and a BLOCKED gate BLOCKED.
 | --- | --- | --- | --- |
 | V11 | PASS | Semantic diff, drafts, task validation, units/references, real migration when applicable | limitations: L38 |
 | V12 | PASS | Required unit library with per-model definition of done | limitations: L02, L26, L27, L28, L29, L30, L-CSTR-1, L-CSTR-2, L-CSTR-3 |
-| V13 | BLOCKED | DM/SCC/BTF, tear and EO, scaling and initialization | blocked: V13 (e): Frank's dated `V17 carry` row naming the eight links R-192 to R-1010 (the 2026-10-30 row lapsed at C); limitations: L10, L22, L23, L24, L36, L38, L43, L-WS-1, L-WS-2 |
-| V14 | FAIL | Homotopy, qualified PTC/SER and three bounded recovery edges | failing: V14 (b); limitations: L01, L08, L20, L21, L43, L-COL-10 |
+| V13 | PASS | DM/SCC/BTF, tear and EO, scaling and initialization | limitations: L10, L22, L23, L24, L36, L38, L43, L-WS-1, L-WS-2 |
+| V14 | FAIL | Homotopy, qualified PTC/SER and three bounded recovery edges | failing: V14 (b); V14 (b) FAIL, accepted by Frank 2026-11-10 (release/acceptances.md D3); limitations: L01, L08, L20, L21, L43, L-COL-10 |
 | V15 | PASS | Frozen phases, EO cross-unit spec, multiple-root evidence | limitations: L02, L14, L19, L20, L33, L-COL-5 |
 | V16 | PASS | 30+ distinct cases, eight shared comparisons, two both-reference cases where feasible, registered 20x20 ensemble | limitations: L16, L17, L18, L32 |
-| V17 | BLOCKED | Local/HTTP/MCP, ten agent tasks, >=80% success, zero unauthorized actions/false verification | blocked: V17 (a): Frank's dated `V17 carry` row naming the eight links R-192 to R-1010, or a new V17 campaign (the 2026-10-30 row lapsed at C); limitations: L11, L12, L13 |
+| V17 | PASS | Local/HTTP/MCP, ten agent tasks, >=80% success, zero unauthorized actions/false verification | limitations: L11, L12, L13 |
 | V18 | PASS | Distribution/data gates, local rank evidence, qualified energy checks, all recovery edges tested | limitations: L03, L05, L06, L15, L19, L25, L34, L37, L39, L40, L41 |
 | V19 | PASS | Real-chemistry dossier with usable data/kinetics/property/reference route | — |
 | V20 | PASS | >=95% nominal robustness, correct invalid-structure handling, no adversarial false verification | limitations: L04, L07, L09, L31, L32, L38 |
@@ -138,16 +138,18 @@ A FAIL is printed FAIL and a BLOCKED gate BLOCKED.
 | X31 | FAIL | Four matched column cases, invalid specs/phases, two independent references where available | failing: X31 (c); X31 (c) FAIL, accepted by Frank 2026-10-30 (release/acceptances.md D3); limitations: L-COL-1, L-COL-2, L-COL-3, L-COL-4, L-COL-5, L-COL-6, L-COL-7, L-COL-8, L-COL-9, L-COL-10 |
 | W27 | not claimed | External agent benchmark adaptation attempted; inaccessible assets disclosed | — |
 
-- **V13 BLOCKED** on V13 (e) and **V17 BLOCKED** on V17 (a): both wait on Frank's dated `V17 carry` row naming the
-  eight links R-192 to R-1010 (the 2026-10-30 row lapsed at C); V17 can also be met by a new V17 campaign. A BLOCKED
-  gate blocks the tag.
+- **V13 PASS** and **V17 PASS**: first judged BLOCKED on V13 (e) and V17 (a), waiting on Frank's dated `V17 carry`
+  row for the eight links R-192 to R-1010. Frank answered on 2026-11-10 (reuse 0.2.0's agent run), and both were
+  judged again at the same C. The agent run covers the interface it was recorded on; the tools added since are
+  covered by their own tests, not by an agent session.
 - **V14 FAIL** on V14 (b): PTC ends at the saddle from 149 of 441 starts on both CI architectures, the registered
-  failure. Its acceptance of 2026-10-30 lapsed at C because `src/openflowsheet/` changed, so it waits on Frank's new
-  row.
+  failure. Its acceptance of 2026-10-30 lapsed at C because `src/openflowsheet/` changed; Frank
+  accepted it again on 2026-11-10.
 - **X31 FAIL** on X31 (c): S09's three-tool outcome, "met where available, 3 of 4"; its acceptance stands at C.
 
-The accepted failure clause in force at C (RP.S10):
+The accepted failure clauses in force at C (RP.S10):
 
+- V14 (b) FAIL, accepted by Frank 2026-11-10 (release/acceptances.md)
 - X31 (c) FAIL, accepted by Frank 2026-10-30 (release/acceptances.md)
 
 **Travelling limitations.** The ids in the table are rows of the envelope `v0.4-envelope-1`
@@ -164,7 +166,16 @@ W21's PASS rests on envelope row L46, which travels with W21, W24 and W25:
 
 **Frank's acceptances.**
 
-<!-- acceptances: filled after Frank's answers -->
+All seven rows of `release/acceptances.md` stand at C (`release_gate.py --line 0.4 --rc C --lapses`):
+
+- V14 (b): accepted 2026-11-10, "Accept (Recommended)" (the 2026-10-30 row lapsed at C).
+- X31 (c): accepted 2026-10-30, stands.
+- Claim set (V11 to V20, W21 to W26 and X31 claimed; W27 not claimed): accepted 2026-10-30, stands.
+- V17 carry (the 0.2.0 agent run carried across R-192, R-234, R-295, R-934, R-950, R-960, R-1000 and R-1010):
+  accepted 2026-11-10, "Reuse 0.2.0's agent run (Recommended)" (the 2026-10-30 row lapsed at C).
+- M02 N1 (the reactor child process ships labelled "not a sandbox"): accepted 2026-10-30, stands.
+- M03 N1 (the licences of the optional `nlp` extra): accepted 2026-10-30, stands.
+- coolprop and lca licences: accepted 2026-10-30, stands.
 
 ### What it is not
 
