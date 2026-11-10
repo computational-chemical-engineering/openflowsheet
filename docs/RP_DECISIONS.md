@@ -598,3 +598,47 @@ tests/test_m07_journey_record.py tests/test_m05_wo9_gates.py tests/test_rel_*.py
   threads: G11's 8 workers + runner). Median over invocation B 29.9; other sessions ~30 throughout. No stop: the
   job kept to its 12-thread budget; the machine total did not.
 - No stop of §12 hit. No D2.4 path touched after C.
+
+### Part 4: finish on SMM-TR09 (handoff docs/REL040_HANDOFF.md, 2026-11-10 to 11-11)
+
+TRS2 rebooted; the session on SMM-TR09 finished from `344da73c`. Frank's go on the decision board (`rel040-tr09-go`
+= go, `rel040-dispatch` = auto, 2026-11-10T19:30Z).
+- Before the reboot, the RC artifacts only TRS2 held were copied read-only to TR09
+  (`evidence/REL040/<C>/artifacts/`, git-ignored; `~/.cache/rel040-cut` to `~/.cache/rel040-cut-from-trs2`).
+- Step 1 (`5162627b`): `V14 (b)` and `V17 carry` rows replaced with Frank's board answers verbatim (RP §8.4),
+  fingerprints at C by `release_gate.Scopes`: V14 (b) `1abcb2af…75d0` (339 files), V17 carry `1cb47347…28f3` (links
+  = the eight registers R-192 to R-1010, served digest `6be1c002…ba57`); old rows to the history list. `--lapses`:
+  7 × stands.
+- Step 2: fresh `verdict` agent, `bb4a79f8`: V13 (e) and V17 (a) met, BLOCKED to PASS; 15 PASS, V14 FAIL (b), X31 FAIL
+  (c), 0 BLOCKED. Its finding F-6 (the board question's package labels for R-950, R-960 and R-1000 were off; the
+  register ids were right) was put to Frank: his answer stands with the corrected mapping (TR09 session,
+  2026-11-11). Ledger `ff22f317` (V13, V17 PASS; `tests/test_rel040_ledger.py` docstrings only).
+- Stop hit and resolved: the first replacement of rows broke `test_the_seed_fingerprints_recompute_at_a3e508e3` and
+  `test_rel_a19_the_seed_is_adr_0053_s_six_cells_verbatim` (they read the working file as the seed). Frank approved
+  the test edit (2026-11-11): `SEEDED` reads `release/acceptances.md` at the seeding commit `6714958d` (`266e304b`).
+  The four release-gate test files: 142 passed.
+- Step 3 (`38aefce1`, `e8142942`): `## v0.4.0` gate table as `--markdown` prints it, the two RP.S10 failure lines,
+  the acceptances placeholder filled. The first H1 run failed RP.S10 because the acceptances list repeated the
+  registered phrase "not a sandbox"; reworded in `e8142942`.
+- Host note: `test_m07a_a50_nothing_is_excluded_from_the_harvest_at_c_alpha` fails when the W27 archive sits in the
+  checkout (`evidence/M06/W27/artifacts/extracted/…/manifest.json` is harvested). On TR09 the archive lives outside
+  the repository (`~/.cache/openflowsheet/w27/artifacts`, SHA-256 of the tarball `6d42c02f…4526`), passed by
+  `--w27-artifacts`.
+- **H1 = `0688d296`**: manifest generated at G = `e8142942` (clean tree): `PYTHONPATH=src:. .venv/bin/python
+  scripts/release_evidence_manifest.py --line 0.4 --commit 84c665477b512548f38a6335f51648732b1fe5bb --k3
+  49a0473119a7684ddf44bdf3c59528714f49337a --ci-run 42790953372 --ci-run 42791067917 --tmp
+  ~/.cache/rel040-tr09-tmp` → `REL040 tested 84c66547: 30 checks, 30 pass, 0 fail, 0 unsupported`, exit 0. SHA-256
+  `82052b995f03e75eff8218324cd0bf821a3e73b3f7fc8be37689847bb15c6bbb`.
+- **H2: nothing to mark.** RP.S16 (a): 26 required ADRs, `problems` [], `manifest_adrs` [] (C-20: none by default);
+  every required ADR was already Accepted. H2 = H1.
+- **Step 18 at H2** (HEAD `0688d296`, clean): `PYTHONPATH=src .venv/bin/python scripts/release_gate.py --line 0.4
+  --rc 84c665477b512548f38a6335f51648732b1fe5bb` → exit 0; log `evidence/REL040/<C>/artifacts/step18-H2.log`
+  (git-ignored), SHA-256 `3c6d7a1aaffee728194ecfeee1affbd772ecba41e28da46694a1c0b9e7eacc3f`; last line
+  **`v0.4.0 tag may be proposed: YES`**. Items: tree equal to C; RC record passed; manifests tested; envelope pinned;
+  ADRs every one Accepted; Frank's answers every one accepted (7 standing acceptances, scope unchanged).
+- RP.S08's R part: first line `v0.4 gates (v0.4-gate-v1) at C = 84c66547…; candidate 0688d296…`; 18 gate rows (17
+  claimed in order, then `W27 not claimed (v0.4-gate-v1)`); non-PASS rows V14 = FAIL, X31 = FAIL; last line YES.
+- D2.4: `git diff --name-only <C> HEAD` touches none of `src/ schemas/ benchmarks/ requirements*.lock pyproject.toml
+  MANIFEST.in README.md LICENSE NOTICE`.
+- Next: push `wp/REL040`, CI on both architectures, merge into `main` (F0, ruff, targeted tests), then the release
+  workflow dry run and, on green, the real dispatch (Frank's `auto`). The PyPI approval is Frank's.

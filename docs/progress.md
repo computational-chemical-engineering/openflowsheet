@@ -109,6 +109,13 @@ canonicity, T07); ADR 0013 has Amendment 2 (routing on registered tolerances, T0
 
 ## Next executable action
 
+**REL040 (0.4.0 release, `wp/REL040`, C = `84c66547`), on SMM-TR09 from 2026-11-10.** Acceptance rows (7 stand),
+re-judgement (15 PASS, V14 and X31 FAIL accepted), ledger, notes, H1 manifest `tested` 30/30 (`0688d296`), H2 none,
+step 18 at H2 `v0.4.0 tag may be proposed: YES` (log SHA-256 `3c6d7a1a…`); build log `docs/RP_DECISIONS.md`
+"Part 4". **Next:** push `wp/REL040`, CI on both architectures, merge into `main` (F0, ruff, targeted tests), the
+release workflow dry run, then the real dispatch on green (Frank: `auto`); the PyPI approval is Frank's. After the
+tag: `docs/REL040_HANDOFF.md` "Open after the tag".
+
 **X02 (warm starts, ADR 0070 Accepted 2026-11-08 by Frank) is tested on `wp/X02`, not reviewed; merge prep done.**
 `main` (MSG) merged into `wp/X02`; X02's surface link is c_5 (R-950) after MSG's c_4; ADR 0070's drafts A–E are
 R-951…R-955. Build log `docs/X02_DECISIONS.md` (D-1…D-38). **Next:** CI green on both architectures at the pushed
