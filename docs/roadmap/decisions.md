@@ -982,3 +982,11 @@ G16-b 40/40; F0 PASS. Q1 (`t07_reference.py --check` in CI): no (85.6 s). CI re-
 - 2026-11-10 — REL040 prep merged into main (6f39045c; evidence/REL040/829aadf4…, tested 18 + FULLGATE unsupported;
   CI 42716958104). Post-merge: ruff clean, F0 PASS, targeted 1746 passed. HARVEST_SIZE (90, 1068, 143). Next: 0.4.0
   RC cut, waiting for Frank's go.
+
+- 2026-11-10 — Frank: go for the 0.4.0 RC cut ("Run it."). No tag or publish without a second go.
+  DECISION: REL040's prep manifest leaves evidence/REL040/ → evidence/S15b/829aadf4… (work_package S15b, the RP
+  follow-up after S15/S15a), because RP.S22 (§5.2) needs C's tree to hold nothing under the line's evidence package.
+  Alternative: an RP amendment that admits a prep manifest under the release package. Reversible by: reverting the
+  move commit on wp/REL040. Also S13's manifest is harvested before K3, and HARVEST_EXCLUDED becomes ("evidence/REL040/",)
+  (§5.2's stated 0.4.0 form). Part 1 (pre-K3 + K3) brief docs/briefs/REL040-k3.md, branch wp/REL040; part 2 (J from a
+  fresh worktree at K3, the journey, C) follows; the full gate runs on C's D2.4 tree.
