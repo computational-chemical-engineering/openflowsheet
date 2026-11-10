@@ -990,3 +990,12 @@ G16-b 40/40; F0 PASS. Q1 (`t07_reference.py --check` in CI): no (85.6 s). CI re-
   move commit on wp/REL040. Also S13's manifest is harvested before K3, and HARVEST_EXCLUDED becomes ("evidence/REL040/",)
   (§5.2's stated 0.4.0 form). Part 1 (pre-K3 + K3) brief docs/briefs/REL040-k3.md, branch wp/REL040; part 2 (J from a
   fresh worktree at K3, the journey, C) follows; the full gate runs on C's D2.4 tree.
+
+- 2026-11-10 — 0.4.0 part 1 done on wp/REL040: prep manifest → S15b (44653f94); S13 harvested, HARVEST_EXCLUDED
+  ("evidence/REL040/",), HARVEST_SIZE (91, 1078, 143) (9eceb3aa); **K3 = 49a0473119a7684ddf44bdf3c59528714f49337a**
+  (0.4.0, v0.4-envelope-1). Stop found: REL.A20 over 0.3.0's records failed S03/S04/S22 at K3.
+  DECISION: RP.S22 reads HARVEST_EXCLUDED at the commit that adds the release manifest (working tree before) → c0e5de9b.
+  Alternative: per-line exclusion table in the RP. Reversible by: revert c0e5de9b.
+  DECISION: V03.A04's A10 test compares with every release's pins in order (RP §7.2/RP.S04's wording) → 2650fb8a.
+  Alternative: freeze V03.A04 at 0.3.0's tree. Reversible by: revert 2650fb8a. Both for the design lane's next touch
+  of RP (§11.2 REL.A20 and §7.2). Part-1 list 1845 passed, 4 skipped. Part 2 (J) started.
