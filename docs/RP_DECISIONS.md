@@ -514,3 +514,47 @@ tests/test_m07_journey_record.py tests/test_m05_wo9_gates.py tests/test_rel_*.py
 - OPEN (stop): tests/test_rel_evidence_manifest.py::test_rel_a20_over_0_3_0s_committed_records fails from 9eceb3aa on
   ("RP.S22 same form: fail; S13 test pass: DIFFERS"): _m_harvest reads the live HARVEST_EXCLUDED, now the 0.4 tuple, for the 0.3 line.
   Not a version failure; no expectation edited.
+
+### Part 2: the re-takes (J) and the journey at J (brief docs/briefs/REL040-j.md)
+
+- Run tree: `git worktree add --detach .claude/worktrees/rc-k3-040 49a04731`; `git status --porcelain --ignored`
+  printed 0 lines at 08:32 before the first re-take (host kernel 6.12.113). Outputs and logs: `~/.cache/rel040-cut/`.
+- Re-takes, in parallel (7 single-threaded processes; load 16–19 of 48 at start): the five G10 records by E6/K's
+  recipe, one process per case (`run_case` + `write_files` into `~/.cache/rel040-cut/g10`; driver
+  `~/.cache/rel040-cut/bin/g10_case.py`), 4–7 s each, every record `run_commit` 49a04731, `tree_clean` true;
+  REAL `scripts/m05_wo9_real.py --retake-into`, exit 0, 2110 s, DECISION_STABLE, T* = 653.1500351610193, study_cold
+  48, `child-logs kept=0`, written file set equal to the committed one; IDAES in 8 s.
+- DECISION: IDAES env → `~/.cache/of-rc-v03-a3e508e/idaes-wt/.venv-idaes` (0.3.0's RC step-11 env), run as step 11
+  runs it (`-I`, PYTHONPATH unset, OMP/OPENBLAS/MKL 1, IDAES_DATA). Its sorted `pip freeze` sha256 dfeec96f… equals
+  S-6's step-11 freeze; the record is byte-identical to S-6's (76068ff5…). Alternative: build a new env with
+  `build-reference-envs.sh idaes`. Reversible by: re-taking in a new env.
+- Proofs (all exit 0):
+  - `RETAKE-DIGEST-ONLY PASS trust-region-study-tr-e2-far: changed-digests=79 digest=320 timing=35 path=0 version=7 platform=0 other=0 environment=equal`
+  - `RETAKE-DIGEST-ONLY PASS trust-region-study-tr-e2: changed-digests=41 digest=146 timing=20 path=0 version=4 platform=0 other=0 environment=equal`
+  - `RETAKE-DIGEST-ONLY PASS trust-region-study-loop-s: changed-digests=37 digest=124 timing=20 path=0 version=4 platform=0 other=0 environment=equal`
+  - `RETAKE-DIGEST-ONLY PASS trust-region-study-real: changed-digests=103 digest=504 timing=528 path=128 version=0 platform=4 other=0 environment=equal`
+  - `IDAES-RETAKE PASS differing=environment.platform,inputs.reference_values_yaml_sha256 platform=1 inputs=1 other=0`
+  - `RETAKE-DIGEST-ONLY PASS trust-region-study-loop-r: changed-digests=91 digest=285 timing=26 path=0 version=3 platform=0 other=0 environment=equal`
+  - `RETAKE-DIGEST-ONLY PASS trust-region-study-tr-e2-fd: changed-digests=70 digest=215 timing=20 path=0 version=4 platform=0 other=0 environment=equal`
+  Version leaves 4/7/4/3/4 as 0.3.0; IDAES input hashes equal the K3 files' SHA-256.
+- **J = e0a3d6b78f9d245ff8ed946ae954a9682f3e24c2**: 45 files (44 under `benchmarks/m05/records/`: written/changed
+  TR-E2 8/7, TR-E2-FAR 11/10, TR-E2-FD 8/7, LOOP-R 7/6, LOOP-S 8/6, REAL 9/8; the IDAES record). At J: `-m nlp
+  tests/test_m05_g10_replay.py` 5 passed; `tests/test_m05_*retake*.py tests/test_m01_idaes_retake_diff.py
+  tests/test_m07_journey_record.py` 112 passed, 3 deselected.
+- Journey: clean detached worktree `rc-j-040` at J (`--porcelain --ignored` 0 lines), m05's `.venv-nlp`, env -i,
+  OMP 1, PYOMO_CONFIG_DIR, PYTHONNOUSERSITE=1, PYTHONPATH=src, `--m05-record
+  benchmarks/m05/records/trust-region-study-real.json`, budgets unchanged. Exit 0, 4670 s. refined, T* =
+  653.1500351610193 K BOUND_LOWER, J = 0.4524965242483627; R0 INDIFFERENT, R1 DECIDED 653.15 (cold 36, 2252 s), R2
+  SURROGATE_NOT_PROMOTABLE, R3 DECISION_STABLE (re-run, carry_identity_differs from anchor 49a04731; cold 48, 1970 s).
+  - DECISION: PYOMO_CONFIG_DIR set for the journey (the brief's nlp env; 0.3.0's step 3 did not list it). No leaf
+    beyond the allowed classes moved. Reversible by: re-running the journey without it.
+- **C (proposed) = b40d48d10fac41f807a2e195ee6102bfdebac5e8**, the record under `benchmarks/m07/journey/<J>/` (12
+  files). `check`: ACCEPT. `replay` in a clean worktree at C (`rc-c-040`, 0 lines): bitwise, 26 s;
+  `OMP_NUM_THREADS=2` exit 2. `v0_2_gate.journey_carry(J, C)`: carried. `tests/test_m07_journey_record.py` at C:
+  73 passed, 4 deselected.
+- Against 0.3.0's record at 2d945b5d: 71 of 10794 leaves differ, all in the allowed classes — walls (R0/R1 grid
+  wall_s 9+9, budget spent R0/R1/R3, accounting R0/R1/R3/journey/t_star_resolve, R3 t_star_resolve), digests
+  (coupling_sha256 in R0/R1 grid and artifacts 9×4, R3 candidate coupling_record_sha256, parent_checks R3/journey
+  run_sha256), `commit`, and R3's `m05_record` (path, sha256, offered.sha256, offered.anchor). Every other number
+  bitwise equal; no platform string is a leaf of journey.json. No stop.
+- Peak load seen: 31 (1-min, 10:27, other work); this work ≤ 7 threads.
