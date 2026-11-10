@@ -118,13 +118,14 @@ Am. 1–2). Foundations F0–F8 are designed in wave W1 during 0.4, then built i
   MSGp `74ceab73` (catalogue prose ruling), **ST `a053690d`** (ADR 0068 Accepted, c_7 D_7 `553b7612…`, R-1000…1006).
   Main: caches 39; HARVEST_SIZE (88, 1059, 141); catalogue 386/90/129; F0 PASS. Also on main: W1 closed (R-941), F0,
   RP (S15), X05, X05a, X10, X10a (WIT), X10b, S15a.
-- **X04 units at the boundary:** ADR 0075 Proposed + test spec `docs/derivations/X04-test-specification.md` (A1–A40,
-  WO-1…WO-5; `ced0082f`). Board: adr-0075 (accept needed before merge), x04-fq1…fq4 (defaults). **Now:** engineer A
-  (`docs/briefs/X04-build-A.md`, WO-1–3 on `wp/X04`), then engineer B (WO-4, WO-5), reviewer pass, CI, manifest.
-- **Before 0.4.0's cut:** board item rel04-line-acceptance (ADR-F1…F8 Accepted is a line condition but Frank kept
-  0060–0067 Proposed; default: move it to 0.5); `[4, "x05.*"]` in `release/lines/0.4.json` (the `REL` schema ADR is ADR 0074, done);
-  ADR 0074 O-3 (RP.L11); S-6 rehearsal (brief `docs/briefs/REL040-prep.md`); local full gate; RC cut and tag need Frank's go. ADR 0055
-  parts 1–3 are built (release_gate, release_rc*, release_evidence_manifest); WO-R5 deferred by Frank.
+- **X04 merged** `720e5138` (ADR 0075 Accepted + D-22 note; c_8 D_8 `6be1c002…`, R-1010…1016; evidence
+  `0f7d9b87` tested). **REL040 prep merged** `6f39045c` (x05 gate entry, RP.L11/R-1007, S-6 rulings A-11/R-1008, re-take
+  tooling WO-1…8 + WO-R1; evidence `evidence/REL040/829aadf4…` prep, tested; CI 42716958104). Main: HARVEST_SIZE
+  (90, 1068, 143); F0 PASS.
+- **0.4.0 cut — needs Frank's go.** Remaining: local full gate (`scripts/gate.sh`) on the candidate; K3 on the RC host
+  per A-11: fresh `git worktree add --detach`, re-take the REAL record (`m05_wo9_real.py --retake-into`, ~1 h) and the
+  IDAES record (step 11), prove digest-only; journey J recorded at the cut (R-458); then `release_rc.py`. ADR-F1…F8
+  moved to 0.5 (Frank). TRS2 reset twice under load: ≤ ~36 threads, ≤ ~12 cores per job without asking vof.
 - **Design-lane notes (non-blocking):** RRC D-45 (B27 exclusion) glance; MSG F1 (G1 misses `OPT.*` check ids);
   catalogue `J/(mol*K)` vs ADR 0062 `J/(mol K)`; reviewer passes pending for the 0.4 packages per plan.
 - **TRS2 CPU rule** (user via hub, 2026-11-07): ≤ ~36 busy cores of 48; one full gate at a time. Poll GitHub CI at most

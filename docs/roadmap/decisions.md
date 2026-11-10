@@ -979,3 +979,6 @@ G16-b 40/40; F0 PASS. Q1 (`t07_reference.py --check` in CI): no (85.6 s). CI re-
   REAL proof and S77 unchanged; the S-1 demonstration now FAILs (other=16). DECISION: REL040p's evidence form →
   evidence/REL040/829aadf4…/manifest.json (the 0.4 line's own package, prep manifest; the RC adds the candidate's).
   Alternative: a separate id (REL040p). Reversible by moving the file. Brief docs/briefs/REL040-manifest.md.
+- 2026-11-10 — REL040 prep merged into main (6f39045c; evidence/REL040/829aadf4…, tested 18 + FULLGATE unsupported;
+  CI 42716958104). Post-merge: ruff clean, F0 PASS, targeted 1746 passed. HARVEST_SIZE (90, 1068, 143). Next: 0.4.0
+  RC cut, waiting for Frank's go.
