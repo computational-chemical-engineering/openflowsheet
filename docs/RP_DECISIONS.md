@@ -503,3 +503,14 @@ bound leaf and digests of that kind.
 **Tests (serial, `OMP_NUM_THREADS=1`).** `tests/test_m05_retake_digest_only.py tests/test_m01_idaes_retake_diff.py
 tests/test_m07_journey_record.py tests/test_m05_wo9_gates.py tests/test_rel_*.py`: 326 passed, 3 deselected. F0 PASS
 (M1 50/50 … M9 35/35). `ruff check`, `ruff format --check` clean. No manifest, no merge.
+
+## 0.4.0 cut (build lane, wp/REL040, 2026-11-10)
+
+- Part 1 commits: 44653f94 (prep manifest to S15b), 9eceb3aa (harvest S13; HARVEST_EXCLUDED REL040), K3 49a0473119a7684ddf44bdf3c59528714f49337a.
+- S13 classification: limitations[0-8] class P (provenance/process/release-candidate notes), limitations[9] class E to
+  L-S11-1..3 and L-E01-1 (rows it names). 0 non-pass checks. No scientific judgement needed.
+- K3 also touched: t08_support_matrix.ENVELOPE_ID (as 295a2e65), the pair in tests/test_m07a_v0_2_gate.py's loop, README status
+  (names 0.4.0; the table and prose below are the docs pass's).
+- OPEN (stop): tests/test_rel_evidence_manifest.py::test_rel_a20_over_0_3_0s_committed_records fails from 9eceb3aa on
+  ("RP.S22 same form: fail; S13 test pass: DIFFERS"): _m_harvest reads the live HARVEST_EXCLUDED, now the 0.4 tuple, for the 0.3 line.
+  Not a version failure; no expectation edited.
