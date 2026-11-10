@@ -558,3 +558,43 @@ tests/test_m07_journey_record.py tests/test_m05_wo9_gates.py tests/test_rel_*.py
   run_sha256), `commit`, and R3's `m05_record` (path, sha256, offered.sha256, offered.anchor). Every other number
   bitwise equal; no platform string is a leaf of journey.json. No stop.
 - Peak load seen: 31 (1-min, 10:27, other work); this work ≤ 7 threads.
+
+### Part 3: the RC job at C, the RC records, the lapse report (brief docs/briefs/REL040-rc.md)
+
+- **C = 84c665477b512548f38a6335f51648732b1fe5bb.** Orchestrator's local full gate at C:
+  `GATE PASS 84c66547: 16678 passed, 3206 skipped, 220 deselected, 3 xfailed, 1 warning in 4727.03s (1:18:47)`
+- CI at C: push run 42790953372 **success** (`check` both legs, `default-install`, `identity` "G05: R0 structural
+  identity equal across 2 platforms"); `release_rc` dispatch 42791067917 (attempt 1, the only dispatch at C)
+  **success** on all 13 RC jobs (`dist`, `clean-install` ×2, `bundle-set`, `bundle-replay` ×2, `rc-steps` ×2,
+  `rc-coolprop` ×2, `rc-ensemble`, `ptc-r1` ×2).
+- RC tree: `git worktree add --detach .claude/worktrees/rc-c-040 C`; `git status --porcelain --ignored` 0 lines
+  (09:32:57Z). `--rc evidence/REL040/<C>/artifacts/rc` inside it, `--work ~/.cache/rel040-cut/rc/`, inputs as S-6
+  (m05 `.venv-nlp`, `.reference-downloads/m03-ipopt`, `--journey e0a3d6b7`, `m06-w27h` W27 archive).
+- DECISION: `local` in three invocations (`--steps 2,6,7,8,9,11,13` 09:33–09:49Z; `12,10` 09:49–10:57Z; `14,15,16,17`
+  10:57–11:11Z), so that G11's 8-worker pool (no knob in the runner) ran alone and step 10 still ran after 12 and before
+  `keep_certificates` (C-10). Alternative: one invocation. Reversible by: re-running as one.
+- Exits: invocations A and B exit 0; C exit 1 by C-14 — `step17-items` 1 (`S07-F8`, `PTC-R1` `unsupported`, "no
+  --ci-run given": `local` ran without `--ci-run` per the brief's inputs). Other non-zero command exits are by design:
+  `step14-nlp-collect-all` 2 (§6.5), `step16-dryrun` 1 (the registered `iapws95-v1` `SnapshotUnsupportedError`).
+- Then `release_rc.py ci --ci-run 42791067917` exit 0; `step1` exit 0 (4/4); `items --ci-run 42791067917 --nlp-root
+  ~/.cache/rel040-cut/items-nlp-wt` (new `git worktree add --detach` at C, `--porcelain --ignored` 0 lines at
+  11:11:03Z) exit 0, every item pass. Its step-17 records replace `local`'s first ones and are the cited ones.
+- Records (pass/total): 1 4/4; 2 3/3; 6 7/7; 7 12/12; 8 13/13; 9 "A30 PASS" (381 objects, closure 150); 10 2/2 (77
+  certificates, 0 violations); 11 3/3 (`a40.idaes_numbers_identical` `differing_members` []); 12 6/6 and
+  `r375.audit` pass; 13 3/3; 14 5/5; 15 3/3; 16 4/4; 17 8/8 items. Steps 14/15: `host_platform` = `record_platform`
+  = Linux-6.12.113+deb13-amd64-x86_64-with-glibc2.41. CI records: every one passed (steps 2–10, both legs).
+- `ci/job-logs/identity.log` is the push run's `identity` job log (`gh run view --job 129783085583 --log`), fetched by
+  hand for row 2's G05 (the runner's `ci` reads the dispatch only, where `identity` is skipped).
+- `records` (124 cited, `tools/cited.txt` sha256 33474261…; 6 gzip-compressed) exit 0. SHA-256:
+  `rc/records.json` d942ab128c6425a01b9a88f9f230de97d638cdbb87276fd39237ea9c80c00c24; `docs/REL040-rc-record.md`
+  9de62f73caf1b1c5402dc9f2385e70cccbc65c3af9a8bc25ad826858bf308e62 (68 rows); `release/rc-trees/<C>.json`
+  226faeb0979d0084554d61f174bedba0e7a06fcc6d70536a6f18f13ba86e93e9 (`--write-tree-record` exit 0);
+  `acceptance-lapses.txt` 23c0cf59abf50472bf581ebe8091087a255b1f3d10539b01b86bf680c62b76a7 (`--lapses` exit 0).
+- Commits: f5845744 (records, RC record), 0a46ff06 (tree record), 95ea0ae1 (lapse report).
+- Lapse report (2026-11-10): 5 stand (X31 (c), Claim set, M02 N1, M03 N1, coolprop and lca licences), 2 lapsed, 0
+  unsupported. `V17 carry: lapsed (extract:links; extract:served_digest)`; `V14 (b): lapsed (<86 paths, all under
+  src/openflowsheet/>)`, verbatim in the file.
+- Load: 1-min load above 36 for 9 samples, 09:59–10:09Z, peak 52.84 (10:01Z), while step 12's G11 ran (this job ≤ 10
+  threads: G11's 8 workers + runner). Median over invocation B 29.9; other sessions ~30 throughout. No stop: the
+  job kept to its 12-thread budget; the machine total did not.
+- No stop of §12 hit. No D2.4 path touched after C.
