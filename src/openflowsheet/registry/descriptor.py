@@ -41,7 +41,8 @@ SCHEMA_NAME: Final = "extension-descriptor.schema.json"
 STATUSES: Final = ("declared", "implemented", "tested", "reviewed", "released")
 _RANK: Final = {status: rank for rank, status in enumerate(STATUSES)}
 
-#: D1: kinds whose payload is core at the end of W1, whatever the origin.
+#: D1: kinds whose payload is core at the end of W1. An extension of one is `preview` until the
+#: kind's payload schema is in `PAYLOAD_DEFS` (F1 review SF-4); a built-in is core.
 CORE_KINDS: Final = frozenset({"record_type", "correlation_form", "data_source", "message_entries"})
 #: D1: kinds whose legacy form is core and whose v2 form is `preview` until its ADR is Accepted.
 LEGACY_FORM_KINDS: Final = frozenset({"property_method", "unit_model", "connection_definition"})
@@ -215,9 +216,11 @@ def evidence_class(effective: str, *, builtin: bool, attested: bool) -> str:
 
 
 def stability(kind: str, *, builtin: bool, legacy_form: bool) -> str:
-    """D1's payload stability of one registered descriptor: `core` or `preview`."""
+    """D1's payload stability of one registered descriptor: `core` or `preview`. An extension of
+    a core kind is `preview` while the kind has no payload schema (`PAYLOAD_DEFS`): its payload
+    is checked against nothing yet (F1 review SF-4)."""
     if kind in CORE_KINDS:
-        return "core"
+        return "core" if builtin or kind in PAYLOAD_DEFS else "preview"
     if kind in LEGACY_FORM_KINDS:
         return "core" if legacy_form else "preview"
     if kind in BUILTIN_CORE_KINDS:

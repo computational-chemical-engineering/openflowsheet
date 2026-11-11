@@ -43,7 +43,7 @@ from openflowsheet.registry import (
     RegistryBuildError,
     admit,
 )
-from openflowsheet.registry.descriptor import descriptor_sha256, normalise
+from openflowsheet.registry.descriptor import PAYLOAD_DEFS, descriptor_sha256, normalise, stability
 from openflowsheet.registry.selfhash import SelfHashUnavailableError, implementation_sha256
 from openflowsheet.registry.selfhash import self_sha256 as compute_self_sha256
 from openflowsheet.registry.tokens import (
@@ -385,6 +385,26 @@ def test_a_package_is_registered_whole_with_its_computed_fields() -> None:
     document = unit.as_document()
     assert document["descriptor_sha256"] == unit.descriptor_sha256
     assert "unresolved" not in document
+
+
+def test_an_extension_of_a_core_kind_without_a_payload_schema_is_preview() -> None:
+    """F1 review SF-4: `record_type`, `correlation_form` and `data_source` are core kinds whose
+    payload schemas arrive with ADR 0061's WO; until then an extension of one is `preview`, with
+    `preview_kind`. It becomes core when `PAYLOAD_DEFS` gains the kind."""
+    kinds = ("record_type", "correlation_form", "data_source")
+    package = _package(
+        "acme",
+        [_descriptor(kind, f"acme.{kind}", payload={"anything": True}) for kind in kinds],
+    )
+    registry = _build(packages=[package])
+    for kind in kinds:
+        assert kind not in PAYLOAD_DEFS
+        entry = registry.resolve(kind, f"acme.{kind}")
+        assert entry.stability == "preview", kind
+        assert Coded("preview_kind", {"kind": kind, "id": entry.id}) in entry.evidence_notices()
+    assert stability("message_entries", builtin=False, legacy_form=False) == "core"
+    for kind in kinds:
+        assert stability(kind, builtin=True, legacy_form=False) == "core"
 
 
 def test_an_unregistered_name_is_never_satisfied_and_is_flagged() -> None:
