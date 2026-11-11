@@ -44,10 +44,18 @@ LEGACY_PROVIDERS: Final = frozenset(
 )
 #: The flash specifications ADR-F2/F5 own; `TP` today.
 FLASHES: Final = frozenset({"TP"})
-#: The reference conventions of `docs/interfaces-frozen.md` §3 (ADR 0001 D5 and its amendments);
-#: ADR-F4 adds to this table.
+#: The six reference conventions of `docs/interfaces-frozen.md` §3 (ADR 0001 D5 and its amendments,
+#: the S10 note included): D4's static `convention:` space (ADR 0060 D4, erratum W1-8). ADR-F4 adds
+#: to this table.
 CONVENTIONS: Final = frozenset(
-    {"SYN-001-ref-v1", "PR-C1-ref-v1", "IAPWS95-ref-v1", "COOLPROP-DEF-ref-v1"}
+    {
+        "SYN-001-ref-v1",
+        "PR-C1-ref-v1",
+        "IAPWS95-ref-v1",
+        "COOLPROP-DEF-ref-v1",
+        "WILSON-IG-ref-v1",
+        "S10-VER-ref-v1",
+    }
 )
 #: F4's vocabulary registry. Empty until ADR-F4 installs its validator, so every `vocab:` token is
 #: `capability_unknown` until then (F1 build decision, `docs/F1_DECISIONS.md`).

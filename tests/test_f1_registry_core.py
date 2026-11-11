@@ -23,6 +23,7 @@ import hashlib
 import json
 import os
 import random
+import re
 import subprocess
 import sys
 from collections.abc import Mapping, Sequence
@@ -47,6 +48,7 @@ from openflowsheet.registry.descriptor import PAYLOAD_DEFS, descriptor_sha256, n
 from openflowsheet.registry.selfhash import SelfHashUnavailableError, implementation_sha256
 from openflowsheet.registry.selfhash import self_sha256 as compute_self_sha256
 from openflowsheet.registry.tokens import (
+    CONVENTIONS,
     normalise_provides,
     normalise_requires,
     parse,
@@ -261,6 +263,9 @@ def test_d4_token_grammar_levels_and_satisfaction() -> None:
         ("nope:a", False, True, None, "capability_unknown"),
         ("flash:PH", False, True, None, "capability_unknown"),
         ("convention:SYN-001-ref-v1", False, False, "acme", None),
+        ("convention:WILSON-IG-ref-v1", True, False, "acme", None),
+        ("convention:S10-VER-ref-v1", True, False, "acme", None),
+        ("convention:WILSON-IG-ref-v2", True, False, "acme", "capability_unknown"),
         ("vocab:h", True, True, None, "capability_unknown"),
         ("legacy:syn001", True, True, None, None),
         ("legacy:not-a-provider", False, True, None, "capability_unknown"),
@@ -282,6 +287,45 @@ def test_d4_token_validation(
     assert (None if found is None else found.code) == code
     if found is not None:
         assert dict(found.params) == {"token": parse(token).spelling}
+
+
+def test_the_convention_table_is_held_to_the_frozen_interfaces() -> None:
+    """F1-WO6 SF-5 / W1-8: `CONVENTIONS` is the set of reference conventions that
+    `interfaces-frozen.md` §3 names (ADR 0060 D4's static `convention:` space)."""
+    text = (REPO_ROOT / "docs" / "interfaces-frozen.md").read_text(encoding="utf-8")
+    section = text[text.index("## 3. Semantic rules covered by the freeze") :]
+    named = set(re.findall(r"`([A-Z0-9-]+-ref-v[0-9]+)`", section))
+    assert named <= CONVENTIONS
+    # ADR-F4's additions, when they land, are named in §3 and so in this second assertion.
+    assert CONVENTIONS - named == set()
+
+
+def _legacy_convention_problems(table: Sequence[Mapping[str, Any]]) -> list[str]:
+    problems = []
+    for entry in table:
+        if entry["kind"] != "property_method":
+            continue
+        payload = entry["payload"]
+        values = {payload["reference_convention"]} - {"per_component"}
+        values |= {
+            fluid["reference_convention"] for fluid in (payload.get("per_component") or {}).values()
+        }
+        if not values <= CONVENTIONS:
+            problems.append(entry["id"])
+    return problems
+
+
+def test_every_legacy_reference_convention_is_in_the_convention_table() -> None:
+    """F1-WO6 SF-5: the legacy property methods' conventions, including every fluid of
+    `coolprop-heos-v1`, are tokens of D4's `convention:` space."""
+    table = json.loads(
+        (REPO_ROOT / "src/openflowsheet/registry/builtin/legacy.json").read_text(encoding="utf-8")
+    )
+    assert _legacy_convention_problems(table) == []
+    control = copy.deepcopy(table)
+    (wilson,) = [e for e in control if e["id"] == "wilson-ig-v2"]
+    wilson["payload"]["reference_convention"] = "WILSON-IG-ref-v9"
+    assert _legacy_convention_problems(control) == ["wilson-ig-v2"]
 
 
 # ---------------------------------------------------------------------------------------------

@@ -450,3 +450,8 @@ harvest.
   (`functional_contributor`, `lca`) changes `descriptor_sha256` (`faf8ccb8…3754` to `18fab1d2…3833`), its
   `self_sha256` unchanged. E-F1-12 lost its `lca` branch; a new test resolves the `lca` factory with `bw2data` and
   `bw2calc` masked, and fails against the old `core.json` with `dependency_missing`. FU.B1 to FU.B6 hold as measured.
+- **DECISION WO6-C (SF-5 / W1-8).** Per `docs/reviews/F1-design-followup.md` §7 part C: `CONVENTIONS` holds the six
+  conventions of `interfaces-frozen.md` §3. Three rows were added to `test_d4_token_validation`, and two tests hold the
+  table to §3 and to the legacy table's `reference_convention` values (control: `wilson-ig-v2` set to
+  `WILSON-IG-ref-v9`). Before the table change the two accepting rows and both new tests failed, the legacy check naming
+  `wilson-ig-v1` and `wilson-ig-v2`; the `-v2` row passed before and after. `builtin-sha256.txt` is untouched.
