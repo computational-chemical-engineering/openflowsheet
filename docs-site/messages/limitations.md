@@ -374,7 +374,7 @@ A turbine's ideal (isentropic) outlet is computed in the phase declared for its 
 
 *No plain-language explanation is written yet; the summary is the technical one.*
 
-- **Summary:** The warm-start source is chosen automatically (the lineage's latest VERIFIED state) under an opt-in policy only; no request-named source exists in v0.1 (v0.2, M03).
+- **Summary:** A warm start has two sources: the lineage's latest VERIFIED state, chosen automatically under an opt-in policy only (`T08-warm-v1`), and a solve job of the project named in the request by `solve_body.warm_start` (`explicit-v1`, ADR 0070 D1), which is its own opt-in under any policy. Either is admitted by exact id-set identity only (L-WS-1): a candidate from another topology is a typed rejection to the traversal, not a partial or adapted match. On the `legacy_eo` route a declared source is recorded rejected (`route`).
 
 <a id="L-X04-1"></a>
 

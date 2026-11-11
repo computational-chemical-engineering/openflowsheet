@@ -103,14 +103,13 @@ Excluded; ask Frank: `~/.config/procsim/`, `/home/frankp/s10-papers/`, `~/.cache
 
 ## 6. Platform note: the first cut on TR09 needs re-takes
 
-M05's REAL record and M01's IDAES conformance record bind the host's platform string, kernel release included
-(RP section 7.1, A-11, R-1008; `docs/RELEASING.md:198-201`). TR09's kernel differs from TRS2's
-(`Linux-6.12.111+deb13-amd64-x86_64-with-glibc2.41` was the last old platform, `docs/RP_DECISIONS.md:493`). So at the
-first cut on TR09:
-1. Build `.venv-nlp` and `.venv-idaes` on TR09.
-2. Re-take M05 REAL (command in section 3) and the IDAES conformance record at K3 on the RC host, prove each with
-   its tool (`scripts/m05_retake_diff.py --digest-only`, `RELEASING.md:195-197`), commit in J.
-3. A kernel upgrade between J and the RC steps 11, 14, 15 means a new J and a new C (`RELEASING.md:201-202`).
+The records and judgements bound to the RC host move from TRS2 to TR09 by `docs/reviews/HOSTMOVE-ruling.md`
+(R-1020, RP amendment A-13): its sections 3 to 7 say what moves and how, and its work orders WO-H1 to WO-H5 carry
+it out. In short: the five in-process G10 records were re-baselined on TR09 after the tag (WO-H2); M05's REAL
+record and M01's IDAES record are re-taken at the first TR09 K3 (WO-H4); TR09 joins T06's `ref-x86-64` only by
+WO-H5's proof (RP (P6)). The proofs take the A-13 form: `scripts/m05_retake_diff.py --digest-only --old-version
+<v> --old-host SMM-TRS2` for the five, and `--old-platform <p> --old-host SMM-TRS2` for REAL. A kernel upgrade
+between J and the RC steps 11, 14, 15 still means a new J and a new C (`RELEASING.md`, the R-1008 paragraph).
 Do not carry TRS2's records across as if they matched TR09.
 
 ## 7. Machine-load rule

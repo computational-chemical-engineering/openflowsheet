@@ -420,6 +420,10 @@ watch item).
   before step 18.
 - (P4) RP.L01–RP.L11 hold for the line file at K3, with RP.L05 and RP.L08 read at K3.
 - (P5) The open questions of §15 that the cut depends on are answered, or their defaults stand.
+- (P6) The host that takes §7.1's re-takes, and runs steps 6, 11, 14 and 15, is a member of T06's `ref-x86-64`:
+  `t08_rc.machine_class()` prints `ref-x86-64` there. A host joins the class only by R-1020's proof
+  (`docs/reviews/HOSTMOVE-ruling.md` §7). Otherwise step 6's `a46.registered_class` fails at C, and F0 does not judge
+  M4 there (amendment A-13, §17.6).
 
 ## 6. The RC job
 
@@ -661,13 +665,16 @@ As alpha §8.3, with R7 1 and R8 1:
   the repository and proved by a committed tool, and it replaces the committed files only after its proof prints
   `PASS`. The proofs' summary lines go into J's commit message and the build log.
   - The five in-process G10 records (TR-E2, TR-E2-FAR, TR-E2-FD, LOOP-R, LOOP-S), digest-only, proved with
-    `scripts/m05_retake_diff.py --digest-only --old-version <the committed records' version>` (R-458).
+    `scripts/m05_retake_diff.py --digest-only --old-version <the committed records' version> --old-host <h>` (R-458,
+    R-1020), where h is the committed environment sidecars' `machine`. The proof must print `PASS` with `platform=0`
+    and `other=0`.
   - M05's REAL record `benchmarks/m05/records/trust-region-study-real.*`, written by `scripts/m05_wo9_real.py
     --retake-into <dir>` in the audited nlp environment with `OMP_NUM_THREADS=1`. It is proved with
-    `scripts/m05_retake_diff.py --digest-only <committed stem> <dir>/trust-region-study-real --old-platform <p>`, where
-    p is the committed `S0` coupling record's `frozen.reactor.fingerprint.platform`. The proof must print `PASS` with
-    `version=0`, `other=0` and `environment=equal`. Its `platform` count is the number of coupling records when the
-    host's platform string differs from p, and 0 when it is equal (R-1008).
+    `scripts/m05_retake_diff.py --digest-only <committed stem> <dir>/trust-region-study-real --old-platform <p>
+    --old-host <h>`, where p is the committed `S0` coupling record's `frozen.reactor.fingerprint.platform`, and h is as
+    above. The proof must print `PASS` with `version=0`, `other=0` and `environment` `equal` or `host`. Its `platform`
+    count is the number of coupling records when the host's platform string differs from p, and 0 when it is equal
+    (R-1008).
   - M01's IDAES conformance record `benchmarks/m01/idaes-conformance.json`, written by
     `benchmarks/m01/idaes_conformance.py --out <dir>/idaes-conformance.json` in the pinned IDAES environment. It is
     proved with `scripts/m01_idaes_retake_diff.py <committed> <dir>/idaes-conformance.json --old-platform <p>`, where p
@@ -677,8 +684,15 @@ As alpha §8.3, with R7 1 and R8 1:
   The reactor's environment fingerprint (M02 §2.4) holds `platform.platform()`, the kernel release included, and its
   digest is part of every experiment key (ADR 0036 D8). M05's REAL record therefore replays (step 14) only on the
   platform it was taken on. Step 11 compares the IDAES record's `environment` exactly (alpha spec §6.2 W22 (b)). A
-  kernel upgrade on the RC host fails steps 11 and 14 until both records are re-taken on it. After the tag (§7.4), only
-  the five are re-taken, because neither of the other two holds the version.
+  kernel upgrade on the RC host fails steps 11 and 14 until both records are re-taken on it. The reactor's fingerprint
+  also holds the host's CPU model, the digest of its CPU flags and the pinned environment's absolute directory
+  (`env_allowlist.NUMBA_CACHE_DIR`), and each attempt's cheap fingerprint holds the CPU model. Each M05 record's
+  environment sidecar holds the host name, the CPU model and the CPU count. These, with the platform strings, are
+  R-1020's host-identity leaves. `--old-host` admits exactly them, each from its committed value to the value the
+  running host measures, together with the digests they feed under the one-to-one map. Every other leaf, every number
+  included, stays bitwise equal. A move of the RC host to another machine is therefore a re-take at K3 like any other,
+  and a re-take whose numbers move with the host stops the cut (§12). After the tag (§7.4), only the five are
+  re-taken, because neither of the other two holds the version.
 - W27's v1 `coverage.json` is not re-taken: the v1 snapshot refuses this build (§4.6).
 
 ### 7.2 A10's pairs
@@ -706,7 +720,7 @@ The first D2.4 change after `v<version>` does three things:
 - it sets the next minor's `.dev0` (after `0.4.0`, `0.5.0.dev0`), which sorts after every released version;
 - it returns the envelope to the working form `v0.2-envelope-dev`, `release: 0.2.0.dev0`. That is R-563's fixed token,
   so it needs no A10 pair;
-- it re-takes the five in-process G10 records (R-458).
+- it re-takes the five in-process G10 records (R-458), proved as §7.1 states, with `--old-host` (R-1020).
 
 The next line's file is then written with `inherits` naming this line. A dev version implies the working envelope, and
 a version in `RELEASED` must have that release's D2.4 tree (`tests/test_v02_main_version.py`). `release.yml` refuses a
@@ -1019,6 +1033,7 @@ are, and the reasons are reported:
   `record_platform`. C's records are committed as they are. The remedy is a new J from the same K3 on this host (§7.1's
   re-takes and the journey) and a new C. A comparison or replay that sets the platform aside is never the remedy
   (R-1008).
+- (P6) does not hold at K3: the RC host is not a member of `ref-x86-64`. The cut stops before J (R-1020).
 
 A lapsed acceptance is not a stop. It is reported in the lapse report and asked in Frank's message (§8.5).
 
@@ -1067,6 +1082,7 @@ that exists.
 | R-478 | step 9's workload and the registered nlp-extra modules | §6.1 |
 | R-480 | G11's `--d78` extract, without `--previous-runs` | §6.4 |
 | R-1008 | records bound to the RC host re-taken at K3 on that host and committed in J; their proofs; the host-mismatch stop | §7.1, §4.5, §5.1, §12 |
+| R-1020 | a move of the RC host: host-identity leaves admitted by `--old-host` in §7.1's proofs; the RC host a member of `ref-x86-64` before K3 | §7.1, §7.4, §5.3, §12 |
 
 R-916 and R-917 (D2) are not covered: they are deferred, and §8.2 reserves `gate_row:` for them.
 
@@ -1313,3 +1329,41 @@ the review's (M-1, M-2, S-1 to S-5, S-7, rulings 3 to 7) and WO-R7's tests (`doc
   makes V13 and V17 neither PASS nor FAIL. It says nothing of the chain's content beyond what step 8 checks, and
   nothing of the explicit warm-start source beyond X02's manifest. It changes neither alpha spec §5.3 nor
   `scripts/m07a_rc.py`.
+
+### 17.6 Amendment A-13 (HOSTMOVE ruling, 2026-11-11)
+
+- **A-13 (§5.3, §7.1, §7.4, §12, §14; R-1020; `docs/reviews/HOSTMOVE-ruling.md`).** A move of the RC host to
+  another machine is a re-take with proof. A host joins T06's reference class only by proof. Nothing else in RP
+  changes.
+  1. §7.1, the five's sub-bullet: "proved with `scripts/m05_retake_diff.py --digest-only --old-version <the
+     committed records' version>` (R-458)" becomes "proved with `scripts/m05_retake_diff.py --digest-only
+     --old-version <the committed records' version> --old-host <h>` (R-458, R-1020), where h is the committed
+     environment sidecars' `machine`. The proof must print `PASS` with `platform=0` and `other=0`."
+  2. §7.1, REAL's sub-bullet: "`--old-platform <p>`" becomes "`--old-platform <p> --old-host <h>`", with "and h is as above" added to the sentence that defines p, and
+     "with `version=0`, `other=0` and `environment=equal`" becomes "with `version=0`, `other=0` and `environment`
+     `equal` or `host`".
+  3. §7.1's paragraph after the bullets gains, after its fourth sentence: "The reactor's fingerprint also holds the
+     host's CPU model, the digest of its CPU flags and the pinned environment's absolute directory
+     (`env_allowlist.NUMBA_CACHE_DIR`), and each attempt's cheap fingerprint holds the CPU model. Each M05 record's
+     environment sidecar holds the host name, the CPU model and the CPU count. These, with the platform strings, are
+     R-1020's host-identity leaves. `--old-host` admits exactly them, each from its committed value to the value the
+     running host measures, together with the digests they feed under the one-to-one map. Every other leaf, every
+     number included, stays bitwise equal. A move of the RC host to another machine is therefore a re-take at K3
+     like any other, and a re-take whose numbers move with the host stops the cut (§12)."
+  4. §7.4's third bullet: "it re-takes the five in-process G10 records (R-458)." becomes "it re-takes the five
+     in-process G10 records (R-458), proved as §7.1 states, with `--old-host` (R-1020)."
+  5. §5.3 gains: "(P6) The host that takes §7.1's re-takes, and runs steps 6, 11, 14 and 15, is a member of T06's
+     `ref-x86-64`: `t08_rc.machine_class()` prints `ref-x86-64` there. A host joins the class only by R-1020's
+     proof (`docs/reviews/HOSTMOVE-ruling.md` §7). Otherwise step 6's `a46.registered_class` fails at C, and F0
+     does not judge M4 there."
+  6. §12 gains: "- (P6) does not hold at K3: the RC host is not a member of `ref-x86-64`. The cut stops before J (R-1020)."
+  7. §14 gains the row: "| R-1020 | a move of the RC host: host-identity leaves admitted by `--old-host` in §7.1's
+     proofs; the RC host a member of `ref-x86-64` before K3 | §7.1, §7.4, §5.3, §12 |".
+
+  Unchanged: R-1008's IDAES proof and §6.5's inventory rule. The inventory tool's comparator changes by R-1020
+  (WO-H3), not by RP.
+
+  Why: development moved permanently from SMM-TRS2 to SMM-TR09 on 2026-11-10 (Frank). The five in-process records
+  failed their after-tag proof on TR09 only in the sidecar's host name, CPU model and CPU count, with `other=0`.
+  REAL holds the CPU model, the CPU flags and the environment path in 76 fingerprint leaves, which R-1008's proof
+  holds equal. T06's reference class names TRS2's CPU model, so on TR09 step 6 fails and F0 stops judging M4.

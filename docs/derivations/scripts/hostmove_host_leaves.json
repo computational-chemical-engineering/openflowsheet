@@ -1,0 +1,111 @@
+{
+ "generator": "docs/derivations/scripts/hostmove_host_leaves.py",
+ "m01_idaes": {
+  "environment_members": [
+   "cubic_roots_sha256",
+   "idaes_data_bin_tree_sha256",
+   "idaes_extension_sha256",
+   "idaes_pr_constants",
+   "ipopt_sha256",
+   "ipopt_version",
+   "kind",
+   "lock_sha256",
+   "packages",
+   "pip_freeze_sha256",
+   "platform",
+   "python"
+  ],
+  "platform": "Linux-6.12.113+deb13-amd64-x86_64-with-glibc2.41"
+ },
+ "m03_inventory": {
+  "host": {
+   "libc": "glibc 2.41",
+   "machine": "x86_64"
+  },
+  "pynumero_asl_lookup_without_pyomo_config_dir": "~/.pyomo/lib/libpynumero_ASL.so"
+ },
+ "m05_in_process": {
+  "host_leaves_if_every_host_value_moves": 3,
+  "sidecar_host": {
+   "cpu": "AMD Ryzen Threadripper PRO 5965WX 24-Cores",
+   "cpu_count": 48,
+   "machine": "SMM-TRS2"
+  },
+  "stems": [
+   "trust-region-study-tr-e2",
+   "trust-region-study-tr-e2-far",
+   "trust-region-study-tr-e2-fd",
+   "trust-region-study-loop-r",
+   "trust-region-study-loop-s"
+  ]
+ },
+ "m05_real": {
+  "committed_host_strings": {
+   "cpu_flags_sha256": "4fcf77f7deae649789cc6b0439ecf09771642483889e6beed0a13f09055f64ae",
+   "cpu_model": "AMD Ryzen Threadripper PRO 5965WX 24-Cores",
+   "environment_root": "/home/frankp/.cache/openflowsheet/external",
+   "host_name": "SMM-TRS2",
+   "platform": "Linux-6.12.113+deb13-amd64-x86_64-with-glibc2.41"
+  },
+  "host_leaves_if_every_host_value_moves": 79,
+  "leaves": {
+   ".frozen.reactor.fingerprint.cpu_flags_sha256": {
+    "count": 4,
+    "value": "4fcf77f7deae649789cc6b0439ecf09771642483889e6beed0a13f09055f64ae"
+   },
+   ".frozen.reactor.fingerprint.cpu_model": {
+    "count": 4,
+    "value": "AMD Ryzen Threadripper PRO 5965WX 24-Cores"
+   },
+   ".frozen.reactor.fingerprint.env_allowlist.NUMBA_CACHE_DIR": {
+    "count": 4,
+    "value": "/home/frankp/.cache/openflowsheet/external/pymrm-6089593-032a050c6cf3/numba-cache"
+   },
+   ".frozen.reactor.fingerprint.platform": {
+    "count": 4,
+    "value": "Linux-6.12.113+deb13-amd64-x86_64-with-glibc2.41"
+   },
+   ".iterations[].units.reactor.attempts[].execution.fingerprint.cpu_model": {
+    "count": 16,
+    "value": "AMD Ryzen Threadripper PRO 5965WX 24-Cores"
+   },
+   "archive .execution.fingerprint.cpu_model": {
+    "count": 48,
+    "value": "AMD Ryzen Threadripper PRO 5965WX 24-Cores"
+   }
+  },
+  "platform_leaves": 4,
+  "sidecar_host": {
+   "cpu": "AMD Ryzen Threadripper PRO 5965WX 24-Cores",
+   "cpu_count": 48,
+   "machine": "SMM-TRS2"
+  }
+ },
+ "pinned_commit": "b6cdf552013330c68f2fde7291c5447daae31801",
+ "ruling": "docs/reviews/HOSTMOVE-ruling.md",
+ "t06": {
+  "published_starts_hosts": {
+   "starts-nominal-holdout1.json": {
+    "architecture": "x86_64",
+    "cpu_model": "AMD Ryzen Threadripper PRO 5965WX 24-Cores",
+    "machine_class": "ref-x86-64",
+    "numpy": "2.2.4",
+    "python": "3.13.5",
+    "scipy": "1.15.3"
+   },
+   "starts-nominal-v1.json": {
+    "architecture": "x86_64",
+    "cpu_model": "AMD Ryzen Threadripper PRO 5965WX 24-Cores",
+    "machine_class": "ref-x86-64",
+    "numpy": "2.2.4",
+    "python": "3.13.5",
+    "scipy": "1.15.3"
+   }
+  },
+  "ref-x86-64": {
+   "architecture": "x86_64",
+   "cpu_model": "AMD Ryzen Threadripper PRO 5965WX 24-Cores",
+   "github_actions": false
+  }
+ }
+}

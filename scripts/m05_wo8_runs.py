@@ -239,21 +239,13 @@ def environment() -> dict[str, Any]:
     }
 
 
-def _cpu_model() -> str | None:
-    try:
-        lines = Path("/proc/cpuinfo").read_text(encoding="utf-8").splitlines()
-    except OSError:
-        return None
-    models = (line.split(":", 1)[1].strip() for line in lines if line.startswith("model name"))
-    return next(models, None)
-
-
 def environment_fingerprint() -> dict[str, Any]:
     """The environment a run was made in, beside the record (build log S59): G10 compares two runs
     only when these are equal. The interpreter's packages (every distribution on `sys.path`, name
     and version) and, for a conda environment, its package builds (`conda-meta`, which names the
     native libraries such as OpenBLAS's threading build) are digests; the environment's path is not
-    part of it, so the same environment in another worktree compares equal."""
+    part of it, so the same environment in another worktree compares equal. Its last three members
+    are the host's (`m05_replay.host_identity()`, R-1020)."""
     distributions = sorted(
         {f"{d.metadata['Name']}=={d.version}" for d in importlib.metadata.distributions()}
     )
@@ -266,9 +258,7 @@ def environment_fingerprint() -> dict[str, Any]:
         "distributions_sha256": hashlib.sha256("\n".join(distributions).encode()).hexdigest(),
         "conda_builds": len(builds),
         "conda_builds_sha256": hashlib.sha256("\n".join(builds).encode()).hexdigest(),
-        "machine": platform.node(),
-        "cpu": _cpu_model(),
-        "cpu_count": os.cpu_count(),
+        **replay.host_identity(),
     }
 
 

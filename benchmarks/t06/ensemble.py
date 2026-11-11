@@ -130,6 +130,7 @@ __all__ = [
     "report",
     "rescued",
     "run_start",
+    "same_class_host",
     "setup",
 ]
 
@@ -360,17 +361,29 @@ def machine_class() -> str:
     """§7.5 (A5): the machine class, decided from the host, never written as a literal. The first
     registered class (`ensemble.machine_classes`) whose `github_actions` flag equals whether
     `GITHUB_ACTIONS` is `true`, whose `architecture` is `platform.machine()`, and whose
-    `cpu_model`, where it registers one, is the host's (read as `generator._cpu_model` reads
-    it); otherwise `unregistered(<machine>)`, reported and never gated."""
+    `cpu_models`, where it lists them, include the host's CPU model (read as
+    `generator._cpu_model` reads it; H-1, R-1020); otherwise `unregistered(<machine>)`, reported
+    and never gated."""
     machine = platform.machine()
     on_ci = os.environ.get("GITHUB_ACTIONS") == "true"
     for name, entry in registered()["machine_classes"].items():
         if bool(entry["github_actions"]) != on_ci or entry["architecture"] != machine:
             continue
-        if "cpu_model" in entry and entry["cpu_model"] != generator._cpu_model():
+        if "cpu_models" in entry and generator._cpu_model() not in entry["cpu_models"]:
             continue
         return str(name)
     return f"unregistered({machine})"
+
+
+def same_class_host(a: Mapping[str, Any], b: Mapping[str, Any]) -> bool:
+    """§6.5, A25 and A99 (a) as amended by H-1 (R-1020): two host blocks name the same reference
+    host iff they are equal in every member but `cpu_model`, and both CPU models are listed for
+    `ref-x86-64`. Where this holds, a regeneration with `host.cpu_model` set to the published
+    one must be the published file byte for byte."""
+    listed = registered()["machine_classes"][REFERENCE_CLASS]["cpu_models"]
+    rest_a = {key: value for key, value in a.items() if key != "cpu_model"}
+    rest_b = {key: value for key, value in b.items() if key != "cpu_model"}
+    return rest_a == rest_b and a.get("cpu_model") in listed and b.get("cpu_model") in listed
 
 
 def host() -> dict[str, str]:

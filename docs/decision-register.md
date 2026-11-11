@@ -19660,3 +19660,54 @@ planned remedy, not built in 0.4. R-077's lift is delivered for outputs; its inp
 A37 (limitations).
 
 **Watch for.** A gauge input admitted without the ambient recorded in the change record.
+
+## R-1020: A move of the RC host to another machine is a re-take proved under R-1020's host-identity class (`--old-host`): only the registered host leaves move, and every number stays bitwise equal; T06's `ref-x86-64` lists SMM-TR09's CPU by proof; the m03 inventory's lookup without `PYOMO_CONFIG_DIR` is host state (2026-11-11, Proposed)
+
+| | |
+| --- | --- |
+| Date | 2026-11-11 |
+| Decided by | design lane (`specifier`), HOSTMOVE ruling, after Frank's move of development from SMM-TRS2 to SMM-TR09 (2026-11-10) |
+| Normative text | `docs/reviews/HOSTMOVE-ruling.md` §2 to §7 and §11; RP amendment A-13 (§17.6; §5.3 (P6), §7.1, §7.4, §12, §14); T06 amendment H-1 (ruling §7.4, applied by WO-H5) |
+| Evidence | On SMM-TR09: the five in-process re-takes prove `FAIL` with `other=0`, `platform=0` and the one reason `environment: differs outside distributions_sha256 (['cpu', 'cpu_count', 'machine'])` (`docs/RP_DECISIONS.md`, "0.4.0 after the tag"). REAL holds the host in 79 leaves beside its 4 platform leaves, all at registered paths (`docs/derivations/scripts/hostmove_host_leaves.py`, `--check`). IDAES re-taken: `IDAES-RETAKE PASS differing=environment.platform platform=1 inputs=0 other=0`. The m03 NLP-1 `--check` differs only in `pynumero_asl_lookup_without_pyomo_config_dir` (`~/.pyomo/lib/libpynumero_ASL.so` → `(none)`), and the `trsp-exe` check passes. F0 with the class reported as `ref-x86-64`: `M4 61/61, M6 85/85, M7 52/52`, every measure PASS. T06's ten class-conditioned modules, with the reference CPU reported: every assertion passes, apart from one subprocess artifact (ruling H12). REAL re-taken on SMM-TR09 (2074 s, T* = 653.1500351610193 K): R-1008's proof prints `platform=4 other=76 environment=differs`, and all 77 problem lines lie at the registered host paths, with no number, request, result or log digest differing (ruling §4.3) |
+| Affected packages | V04-after (the five's after-tag re-take); the first cut on SMM-TR09 (REAL, IDAES, step 6, F0); M05 (`m05_retake_diff.py`, `m05_wo8_runs.py`, `tests/support/m05_replay.py`); M03 (`m03_ipopt_inventory.py`); T06 (registry, `ensemble.py`, `t06_ensemble.py`, spec §6.5, §7.5 (A5), A25, A89, A99); RP |
+
+**Decision.** A record taken on host A is replaced by a re-take on host B, and is then the same evidence, iff a
+committed proof shows five things: the re-take was made by the committed writer from a clean worktree; every leaf that
+is not a registered host-identity leaf, a digest, a timing, or a leaf of an already registered class (`version`,
+`platform`, `path`) is bitwise equal, every number included; each host-identity leaf of the re-take equals what host B
+measures; the operator names A (`--old-host`), and A is the committed host name; and the digests move under one
+injective map that no host leaf enters. The registered host-identity leaves are, and only these: the M05 sidecars'
+`machine` (the host name), `cpu` and `cpu_count`; the reactor fingerprint's `platform` (R-1008), `cpu_model`,
+`cpu_flags_sha256` and `env_allowlist.NUMBA_CACHE_DIR` (the same environment directory under the running host's
+external root); every attempt's `execution.fingerprint.cpu_model`; and IDAES's `environment.platform` (R-1008).
+G10's replay, step 11 and step 14 stay exact on the new host. The five are re-baselined on SMM-TR09 now (`--old-version
+0.4.0 --old-host SMM-TRS2`). REAL is re-baselined at the first SMM-TR09 K3 (`--old-platform <p> --old-host SMM-TRS2`;
+expected `host=79`, `platform=4`). IDAES needs nothing new. RP names `--old-host` at every cut. A judgement conditioned
+on a registered host property moves only by proof: SMM-TR09's CPU joins T06's `ref-x86-64` (`cpu_models`, both CPUs
+listed), host blocks are compared by class with `cpu_model` set aside, and RP (P6) requires the RC host to be a member
+before K3. Host state of the account, outside every environment prefix and the repository, is recorded and printed and
+not compared. That is the m03 inventory's `pynumero_asl_lookup_without_pyomo_config_dir`. M03 N1's scope stays
+byte-equal.
+
+**Rejected.**
+- *Drop host members from the sidecar or the reactor fingerprint.* That changes G10's criterion, ADR 0036 D8's keys
+  and every store (R-1008's first rejected alternative).
+- *Compare the sidecar in the replay without the host keys, or read them as provenance.* That is a replay that sets
+  the fingerprint aside, and it weakens G10 (R-1008).
+- *Commit the new host's re-takes as a fresh baseline without proof.* A number that moved with the host would pass
+  unseen.
+- *Admit any value on the re-take side.* A third machine's re-take could then be committed for this host.
+- *Give `--old-host` only when the host differs.* That is a diagnosis branch, for nothing.
+- *Fake `OPENFLOWSHEET_EXTERNAL_ROOT` so that the environment path matches.* That is identity by imitation.
+- *Re-take the m03 inventory per host.* It lapses M03 N1 for a non-licence change, it recurs with every
+  `~/.pyomo/lib` build, and it compares a fact outside the audited route.
+- *Drop the inventory member*, or *install the unaudited library on SMM-TR09.* The first changes the format and loses
+  the hazard's measurement. The second installs the hazard.
+- *Replace TRS2's CPU in `ref-x86-64`*, *register a new class*, *drop the CPU condition*, or *leave SMM-TR09
+  unregistered.* These, in order, contradict the committed files; strand A25, A89, A90 and F0's M4 on no running host;
+  admit machines without proof; and leave step 6 failing and F0's M4 silently unjudged.
+
+**Watch for.** A host-move proof with `other` > 0: a number moved with the host, which stops the cut for the design
+lane. A leaf outside the registered list that names the host, which needs a register entry, not a wider class. F0
+printing `M4 NOT JUDGED` on the RC host, or a class-conditioned test skipping there. A re-take of the m03 inventory,
+which would lapse M03 N1. A third RC machine, which needs its own `--old-host` proof and its own `ref-x86-64` admission.
