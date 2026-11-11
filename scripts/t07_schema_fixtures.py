@@ -289,7 +289,22 @@ def application_results_documents() -> dict[str, Any]:
     documents: dict[str, Any] = {}
     for name, response in responses.items():
         documents[f"application_results/{name}/valid/{RESULTS_VALID[name]}.json"] = response
-        member = schema["$defs"][name]["required"][0]
+        definition = schema["$defs"][name]
+        # F1-WO6 (part A): a `$def` that is only a `$ref` is followed to its target.
+        while list(definition) == ["$ref"]:
+            target, _, pointer = definition["$ref"].partition("#")
+            document = next(
+                loaded
+                for loaded in (
+                    json.loads(path.read_text(encoding="utf-8"))
+                    for path in (ROOT / "schemas").glob("*.json")
+                )
+                if loaded.get("$id") == target
+            )
+            for step in pointer.strip("/").split("/"):
+                document = document[step]
+            definition = document
+        member = definition["required"][0]
         documents[f"application_results/{name}/invalid/missing_{member}.json"] = {
             "expect_error": f"'{member}' is a required property",
             "document": {key: value for key, value in response.items() if key != member},

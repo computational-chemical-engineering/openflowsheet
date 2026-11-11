@@ -439,3 +439,9 @@ harvest.
 - **DECISION W5-9. T08.A32's packaged-data allowlist gains `registry/builtin/tables.sha256`**
   (`tests/test_t08_w2_inventory.py`, `SHIPPED_DATA`), the project's own generated digest record, beside the tables
   WO2 admitted; the full suite found it.
+- **DECISION WO6-A (W5-8).** Per `docs/reviews/F1-design-followup.md` §7 part A: `capability_descriptor`,
+  `capability_page` and `admission_report` moved verbatim into `schemas/registry-snapshot.schema.json`'s `$defs`;
+  `application-results.schema.json` holds a bare `$ref` to each. `t07_schema_fixtures.py` follows such a `$ref` before
+  reading `required`. F1's addendum comment and `interfaces-frozen.md` §2 were edited as specified. New test FU.A6 in
+  `tests/test_f1_operations.py`. FU.A1 to FU.A6 hold as measured: policy digest `6b449911…`, `F1_SERVED_SHA256` and
+  `SNAPSHOT_F1` unmoved, fixtures unchanged.

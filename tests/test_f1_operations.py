@@ -17,6 +17,8 @@ from __future__ import annotations
 
 import contextlib
 import io
+import json
+import shutil
 import sys
 from collections.abc import Iterator
 from pathlib import Path
@@ -47,6 +49,7 @@ from openflowsheet.registry import default_registry, usage
 REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT / "scripts"))
 import msg_catalogue  # noqa: E402
+import t08_numerical_policy  # noqa: E402
 
 ADMITTED = {"pair": {"unit": "thermal.heater", "method": "coolprop-heos-v1"}}
 REFUSED = {"pair": {"unit": "thermal.heater", "method": "wilson-ig-v2"}}
@@ -437,3 +440,28 @@ def test_several_kinds_travel_as_a_list_one_kind_as_a_string() -> None:
     )
     kinds = [item["kind"] for item in both["items"]]
     assert kinds == sorted(kinds) and set(kinds) == {"property_method", "unit_model"}
+
+
+def test_fu_a6_the_partition_still_guards_v2s_domain(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """F1-WO6 FU.A6: with `capability_page` inlined again in `application-results`, a v2-scope
+    schema declares `registry_sha256`, and the partition's audit names it; on the real `schemas/`
+    (the bare `$ref`) it reports nothing."""
+    import yaml
+
+    committed = yaml.safe_load(t08_numerical_policy.V2.read_text(encoding="utf-8"))
+    policy = committed["numerical_policy"]
+    v1 = t08_numerical_policy.v1_policy()
+    assert t08_numerical_policy.audit(policy, v1, t08_numerical_policy.schema_sha256_names()) == []
+    copied = tmp_path / "schemas"
+    shutil.copytree(t08_numerical_policy.SCHEMAS, copied)
+    results = copied / "application-results.schema.json"
+    snapshot = json.loads((copied / "registry-snapshot.schema.json").read_text(encoding="utf-8"))
+    document = json.loads(results.read_text(encoding="utf-8"))
+    document["$defs"]["capability_page"] = snapshot["$defs"]["capability_page"]
+    results.write_text(json.dumps(document, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    monkeypatch.setattr(t08_numerical_policy, "SCHEMAS", copied)
+    assert t08_numerical_policy.audit(policy, v1, t08_numerical_policy.schema_sha256_names()) == [
+        "(d) unclassified sha256 names: ['registry_sha256']; classified but undeclared: []"
+    ]

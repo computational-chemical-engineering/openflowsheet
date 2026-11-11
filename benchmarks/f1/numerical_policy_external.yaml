@@ -10,13 +10,18 @@ numerical_policy_external:
   schemas:
   - extension-descriptor.schema.json
   - registry-snapshot.schema.json
-  # All three are exact digests of bytes and canonical JSON of strings; no preimage holds a float
-  # (ADR 0007 D1, digest row; ADR 0025 D2).
+  # All three are exact digests (ADR 0007 D1, digest row; ADR 0025 D2): each preimage is declared
+  # data or file bytes. A descriptor's `limitations` params and a preview payload may hold numbers,
+  # but they are declared constants, copied, never solved values.
   # - `descriptor_sha256`: `document_sha256` of the normalised descriptor without `status` (D2).
   # - `self_sha256`: SHA-256 of the canonical JSON of [path, SHA-256 of the LF-normalised file
   #   bytes] over the implementation set (D3).
   # - `registry_sha256`: SHA-256 of the canonical JSON of [kind, id, version, descriptor_sha256,
   #   self_sha256] over the registered descriptors (D10).
+  # The responses of `list_capabilities` and `check_admission` (`capability_descriptor`,
+  # `capability_page`, `admission_report`) are `$defs` of `registry-snapshot.schema.json`;
+  # `application-results.schema.json` reaches each by a bare `$ref`, so no `sha256` name enters
+  # v2's domain (ADR 0060 D11; R-1032; E01's and OPT's precedent).
   exact_sha256:
   - descriptor_sha256
   - registry_sha256
