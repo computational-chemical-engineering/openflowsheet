@@ -219,3 +219,62 @@ still `713489f2…`); WO5 pins the value over all tables.
 Not in WO3: catalogue entries for the F1 codes, `factory_unavailable` included (WO4a); the operations (WO4a, WO4b);
 `builtin-sha256.txt` over all tables, CI, manifest (WO5); copying the usage context into executors and deriving
 references from run documents (F8).
+
+## F1-WO4a (operations, pair form), 2026-11-11
+
+Files: `application/capabilities.py` (new: the two operations over a registry), `contract.py` (`Inspection`), `types.py`
+(`CapabilityDescriptor`, `CapabilityPage`, `AdmissionPair`, `AdmissionReport`), `operations.py` rows, `authz.py`
+rights, `local.py`, `cli.py` (`capabilities`, `admission`), `schemas/application-results.schema.json` (three `$defs`),
+`bindings/descriptions/{list_capabilities,check_admission}.md` and `REVIEW.json`, `messages/catalogue/registry.yaml`
+(new) and `api_errors.yaml` (`not_found`), `messages/render.py` (`closest`), `scripts/msg_catalogue.py`,
+`scripts/m07a_rc.py` (c_9), `tests/f1_schema_support.py`, `tests/test_f1_operations.py` (E-F1-10); ADR 0019
+Amendment 7 pointer, `interfaces-frozen.md`, register R-1030; generated pages, routes, fixtures, support envelope.
+
+- **DECISION W4a-1. The F1 codes live in a new `catalogue/registry.yaml`** (refusals and notices together, 15
+  entries, all complete), and MSG-G2's scanner reads the code of `Coded(...)`, so a registry code without an entry
+  fails G2. Alternative: append to `refusals.yaml`/`notices.yaml` and leave `Coded` unscanned (G2 would not see them).
+- **DECISION W4a-2. `list_capabilities.kind` is one kind or a list** (`anyOf`). Over HTTP a query member carries one
+  value (§11.3 refuses a repeated one), so HTTP filters by one kind per request; Python, CLI and MCP take a list.
+  Alternative: a comma-separated string, or a binding change admitting repeated query members. **For the design
+  lane.**
+- **DECISION W4a-3. `check_admission`'s request is a closed object with exactly one of `pair` and `revision`**
+  (`minProperties`/`maxProperties` 1); `revision` is `{type: object}`, its checks are WO4b's. Until WO4b the draft
+  form is refused `unsupported`, and `check_admission.md` says so; WO4b edits that sentence and re-takes D_9 within
+  c_9. Alternative: the pair form only in WO4a (the schema, and the digest, would move twice).
+- **DECISION W4a-4. `AdmissionReport.notices` is every pair's notices once each**, in the registry's notice order
+  (code, then params by name, W1-12). Alternative: report-level notices only for findings outside any pair.
+- **DECISION W4a-5. The default definition** is the one distinct `conn:` name across all of the unit's `requires`
+  clauses; none or several is `invalid_request` at `/pair/definition`. Alternative: only a one-token clause counts.
+- **DECISION W4a-6. An unknown registry id or version is `not_found` with `detail {kind, id, version?,
+  suggestions}`**: close ids by MSG's suggestion rule (`messages.render.closest`, factored out of `suggestions`), or
+  for an unknown version the id's registered versions. `not_found`'s entry gains the optional params `kind`, `id`,
+  `version` and two variants ("No <kind> with the id <id> is registered."). Alternative: a new code.
+- **DECISION W4a-7. The operations look descriptors up through `Registry.descriptors()`**: no usage record (W3-11),
+  and the private `_lookup` stays private.
+- **DECISION W4a-8. The cursor** is the unpadded base64url of the canonical JSON `[kind, id, version]` of the page's
+  last item; the next page is the items after it in (kind, id, version key) order, so it survives later registrations
+  and never repeats an item. Filters are not in it. A cursor that does not decode to three strings with a D2 version
+  is `invalid_request` at `/cursor`.
+- **DECISION W4a-9. CLI conveniences** `capabilities [--kind K]… [--prefix P] [--cursor C] [--limit N]` and
+  `admission --unit U --method M [--definition D] [--unit-version V] [--method-version V] | --revision FILE` print
+  the operation's canonical JSON, through `dispatch` on `LocalApplication.in_memory()` (no project); a refusal as
+  `api` prints it; exit 1 when no call was made. Alternative: `explain`'s direct path; a text rendering.
+- **DECISION W4a-10. `capability_descriptor`** `$ref`s each declared field to `extension-descriptor.schema.json`'s
+  property and each computed field to `registry-snapshot.schema.json#/$defs/extension`'s, closed; `contributed_by`
+  optional. The fixtures mask `registry_sha256`, `self_sha256` and `distribution_version` (`REGISTRY_VOLATILE` in
+  `scripts/t07_schema_fixtures.py`): they follow the code, not the shape.
+- **DECISION W4a-11. Surface link c_9, R-1030, register block R-1030…R-1039** (R-1010…R-1019 is X04's; R-1020 is
+  on `wp/V04-after`). D_9 = `e59f3d22…`; `without_f1` leaves D_8 exactly. Both texts are pinned
+  (`F1_FILE_SHA256`) and recorded pending both reviews, so `test_every_description_is_reviewed_by_both_lanes` is
+  red until the design lane and Frank record theirs (T08.A18's rule, as X04).
+- **DECISION W4a-12. Counts and generated files:** A20's operation count 23 → 25 (envelope, `t08_support_matrix.py`,
+  `docs/support-matrix.md`); `routes.js` 23 routes; the message and operations pages; the `message_entry` fixtures
+  (catalogue digest).
+- **DECISION W4a-13. `capability_missing`'s `gap.capability` is a fixed text**; the missing token is
+  `params.capability`. D5 says `gap.capability` = the third param, but MSG's `gap` is static per entry. **For the
+  design lane:** a templated gap (an MSG change) or the reading "the agentic layer reads `params.capability`".
+- **DECISION W4a-14. `interfaces-frozen.md`** gets the §1 paragraph (two methods, three result-type names, plus
+  `AdmissionPair`) and a §2 paragraph that also records WO1's two schemas, which no WO had listed.
+
+Not in WO4a: the draft form (WO4b); the reviews of the two descriptions (design lane, Frank); `builtin-sha256.txt`,
+CI and the manifest (WO5).
