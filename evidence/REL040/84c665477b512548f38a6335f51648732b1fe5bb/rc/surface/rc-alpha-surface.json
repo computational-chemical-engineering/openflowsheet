@@ -1,0 +1,422 @@
+{
+ "chain": [
+  {
+   "expected": "6be1c002592524126617af8dd65d331513f4a96355f5381dba020ad561a2ba57",
+   "found": "6be1c002592524126617af8dd65d331513f4a96355f5381dba020ad561a2ba57",
+   "item": 1,
+   "link": "c_8",
+   "pass": true,
+   "register": "R-1010"
+  },
+  {
+   "expected": "553b76122fefd4f09d6e91d16e7096d05b9f7793bb88e1876252dc2213e24894",
+   "found": "553b76122fefd4f09d6e91d16e7096d05b9f7793bb88e1876252dc2213e24894",
+   "item": 2,
+   "link": "c_8",
+   "pass": true,
+   "register": "R-1010"
+  },
+  {
+   "expected": "3fdc797ad64485abf63fb491ebd56aa43dc510e62e9e218b0dd7a8fcc2e38a85",
+   "found": "3fdc797ad64485abf63fb491ebd56aa43dc510e62e9e218b0dd7a8fcc2e38a85",
+   "item": 2,
+   "link": "c_7",
+   "pass": true,
+   "register": "R-1000"
+  },
+  {
+   "expected": "f51b69bf66569e35aebead73b66e98d58f24c84016db639536c0ee35181f4c7b",
+   "found": "f51b69bf66569e35aebead73b66e98d58f24c84016db639536c0ee35181f4c7b",
+   "item": 2,
+   "link": "c_6",
+   "pass": true,
+   "register": "R-960"
+  },
+  {
+   "expected": "eaff45852d7596816d90d744078f537e46c723e577295d347d9d73aea0942eac",
+   "found": "eaff45852d7596816d90d744078f537e46c723e577295d347d9d73aea0942eac",
+   "item": 2,
+   "link": "c_5",
+   "pass": true,
+   "register": "R-950"
+  },
+  {
+   "expected": "455d01eb2f420032b27358798e6b331a0120aa1857f02ce3cb7851647849e125",
+   "found": "455d01eb2f420032b27358798e6b331a0120aa1857f02ce3cb7851647849e125",
+   "item": 2,
+   "link": "c_4",
+   "pass": true,
+   "register": "R-934"
+  },
+  {
+   "expected": "383b4e2c004810663a3e3f80c591730bc95894e35736619eacac0f51e51b5403",
+   "found": "383b4e2c004810663a3e3f80c591730bc95894e35736619eacac0f51e51b5403",
+   "item": 2,
+   "link": "c_3",
+   "pass": true,
+   "register": "R-295"
+  },
+  {
+   "expected": "6c4375b478d71c12b1211c17fafe7e58e9dfc0a05e11def2106799a6917631c9",
+   "found": "6c4375b478d71c12b1211c17fafe7e58e9dfc0a05e11def2106799a6917631c9",
+   "item": 2,
+   "link": "c_2",
+   "pass": true,
+   "register": "R-234"
+  },
+  {
+   "expected": "171dd768efcfb24f65d79d83a4f157dcfd1436935bf5106a247b84f3040e4d14",
+   "found": "171dd768efcfb24f65d79d83a4f157dcfd1436935bf5106a247b84f3040e4d14",
+   "item": 2,
+   "link": "c_1",
+   "pass": true,
+   "register": "R-192"
+  },
+  {
+   "expected": "6d13e13d660521c1a39dc245d5237c974a4273b0c3eeadb02d44538ba2669a4d",
+   "found": "6d13e13d660521c1a39dc245d5237c974a4273b0c3eeadb02d44538ba2669a4d",
+   "item": 3,
+   "link": null,
+   "pass": true,
+   "register": "R-137"
+  }
+ ],
+ "checks": [
+  {
+   "expected": "6be1c002592524126617af8dd65d331513f4a96355f5381dba020ad561a2ba57",
+   "found": "6be1c002592524126617af8dd65d331513f4a96355f5381dba020ad561a2ba57",
+   "id": "a37.item1.c_8_r1010",
+   "result": "pass"
+  },
+  {
+   "expected": "553b76122fefd4f09d6e91d16e7096d05b9f7793bb88e1876252dc2213e24894",
+   "found": "553b76122fefd4f09d6e91d16e7096d05b9f7793bb88e1876252dc2213e24894",
+   "id": "a37.item2.c_8_r1010",
+   "result": "pass"
+  },
+  {
+   "expected": "3fdc797ad64485abf63fb491ebd56aa43dc510e62e9e218b0dd7a8fcc2e38a85",
+   "found": "3fdc797ad64485abf63fb491ebd56aa43dc510e62e9e218b0dd7a8fcc2e38a85",
+   "id": "a37.item2.c_7_r1000",
+   "result": "pass"
+  },
+  {
+   "expected": "f51b69bf66569e35aebead73b66e98d58f24c84016db639536c0ee35181f4c7b",
+   "found": "f51b69bf66569e35aebead73b66e98d58f24c84016db639536c0ee35181f4c7b",
+   "id": "a37.item2.c_6_r960",
+   "result": "pass"
+  },
+  {
+   "expected": "eaff45852d7596816d90d744078f537e46c723e577295d347d9d73aea0942eac",
+   "found": "eaff45852d7596816d90d744078f537e46c723e577295d347d9d73aea0942eac",
+   "id": "a37.item2.c_5_r950",
+   "result": "pass"
+  },
+  {
+   "expected": "455d01eb2f420032b27358798e6b331a0120aa1857f02ce3cb7851647849e125",
+   "found": "455d01eb2f420032b27358798e6b331a0120aa1857f02ce3cb7851647849e125",
+   "id": "a37.item2.c_4_r934",
+   "result": "pass"
+  },
+  {
+   "expected": "383b4e2c004810663a3e3f80c591730bc95894e35736619eacac0f51e51b5403",
+   "found": "383b4e2c004810663a3e3f80c591730bc95894e35736619eacac0f51e51b5403",
+   "id": "a37.item2.c_3_r295",
+   "result": "pass"
+  },
+  {
+   "expected": "6c4375b478d71c12b1211c17fafe7e58e9dfc0a05e11def2106799a6917631c9",
+   "found": "6c4375b478d71c12b1211c17fafe7e58e9dfc0a05e11def2106799a6917631c9",
+   "id": "a37.item2.c_2_r234",
+   "result": "pass"
+  },
+  {
+   "expected": "171dd768efcfb24f65d79d83a4f157dcfd1436935bf5106a247b84f3040e4d14",
+   "found": "171dd768efcfb24f65d79d83a4f157dcfd1436935bf5106a247b84f3040e4d14",
+   "id": "a37.item2.c_1_r192",
+   "result": "pass"
+  },
+  {
+   "expected": "6d13e13d660521c1a39dc245d5237c974a4273b0c3eeadb02d44538ba2669a4d",
+   "found": "6d13e13d660521c1a39dc245d5237c974a4273b0c3eeadb02d44538ba2669a4d",
+   "id": "a37.item3.r137",
+   "result": "pass"
+  },
+  {
+   "id": "a37.item4.tools_and_files",
+   "problems": [],
+   "result": "pass"
+  },
+  {
+   "clean": 40,
+   "id": "a37.g16b_clean",
+   "not_clean": [],
+   "result": "pass",
+   "runs": 40
+  },
+  {
+   "id": "a16.g16b_records_attributable",
+   "result": "pass"
+  }
+ ],
+ "first_failure": null,
+ "format": "t08-rc-v1",
+ "passed": true,
+ "provenance": {
+  "architecture": "x86_64",
+  "commit": "84c665477b512548f38a6335f51648732b1fe5bb",
+  "environment_lock_sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4",
+  "github_actions": false,
+  "machine_class": "ref-x86-64",
+  "python": "3.13.5",
+  "threads": {
+   "MKL_NUM_THREADS": "1",
+   "OMP_NUM_THREADS": "1",
+   "OPENBLAS_NUM_THREADS": "1"
+  },
+  "tree_clean": true
+ },
+ "runs": [
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T01",
+   "transport": "python"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T01",
+   "transport": "cli"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T01",
+   "transport": "http"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T01",
+   "transport": "mcp"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T02",
+   "transport": "python"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T02",
+   "transport": "cli"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T02",
+   "transport": "http"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T02",
+   "transport": "mcp"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T03",
+   "transport": "python"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T03",
+   "transport": "cli"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T03",
+   "transport": "http"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T03",
+   "transport": "mcp"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T04",
+   "transport": "python"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T04",
+   "transport": "cli"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T04",
+   "transport": "http"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T04",
+   "transport": "mcp"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T05",
+   "transport": "python"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T05",
+   "transport": "cli"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T05",
+   "transport": "http"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T05",
+   "transport": "mcp"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T06",
+   "transport": "python"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T06",
+   "transport": "cli"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T06",
+   "transport": "http"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T06",
+   "transport": "mcp"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T07",
+   "transport": "python"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T07",
+   "transport": "cli"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T07",
+   "transport": "http"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T07",
+   "transport": "mcp"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T08",
+   "transport": "python"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T08",
+   "transport": "cli"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T08",
+   "transport": "http"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T08",
+   "transport": "mcp"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T09",
+   "transport": "python"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T09",
+   "transport": "cli"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T09",
+   "transport": "http"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T09",
+   "transport": "mcp"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T10",
+   "transport": "python"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T10",
+   "transport": "cli"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T10",
+   "transport": "http"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T10",
+   "transport": "mcp"
+  }
+ ],
+ "step": "surface-alpha"
+}

@@ -422,13 +422,16 @@ def _alpha_tests_with(pairs: tuple[tuple[str, str], ...]) -> str:
     return "".join([*lines[:start], head + replacement, *lines[end:]])
 
 
+#: Every release's pin pairs in release order (RP §7.2, RP.S04): 0.2.0's, 0.3.0's, then each later
+#: release's, as `test_m07_v0_2_gate.py` declares them (0.4.0's appended at 0.4.0's K3).
+RELEASE_PINS = m07.A10_PINS_0_2_0 + m07.A10_PINS_0_3_0 + m07.A10_PINS_0_4_0
+
+
 def _a31_b_holds(source: str) -> bool:
     """`test_a31_b_test_a10_…`'s comparison, applied to `source` as the alpha's test."""
     tagged_def, tagged_for = m07._a10(m07._tagged_alpha_tests())
     now_def, now_for = m07._a10(source)
-    if ast.literal_eval(now_for.iter) != (
-        ast.literal_eval(tagged_for.iter) + m07.A10_PINS_0_2_0 + m07.A10_PINS_0_3_0
-    ):
+    if ast.literal_eval(now_for.iter) != ast.literal_eval(tagged_for.iter) + RELEASE_PINS:
         return False
     now_for.iter = tagged_for.iter
     return ast.dump(now_def) == ast.dump(tagged_def)
@@ -447,10 +450,10 @@ def test_a04_the_committed_test_holds_and_a_swap_fails() -> None:
     _, loop = m07._a10((REPO_ROOT / m07.ALPHA_TESTS).read_text(encoding="utf-8"))
     pairs = ast.literal_eval(loop.iter)
     assert _a31_b_holds(_alpha_tests_with(pairs))
-    tagged = pairs[: len(pairs) - 4]
-    swapped = tagged + m07.A10_PINS_0_3_0 + m07.A10_PINS_0_2_0
+    tagged = pairs[: len(pairs) - len(RELEASE_PINS)]
+    swapped = tagged + m07.A10_PINS_0_3_0 + m07.A10_PINS_0_2_0 + m07.A10_PINS_0_4_0
     assert not _a31_b_holds(_alpha_tests_with(swapped))
-    assert not _a31_b_holds(_alpha_tests_with(tagged + m07.A10_PINS_0_2_0))
+    assert not _a31_b_holds(_alpha_tests_with(tagged + m07.A10_PINS_0_2_0 + m07.A10_PINS_0_3_0))
 
 
 def test_a04_the_pairs_undo_a_0_3_0_pin() -> None:

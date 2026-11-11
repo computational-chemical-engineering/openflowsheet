@@ -18006,6 +18006,10 @@ outputs stay byte-identical.
 - *Widen now.* It changes the engine that judges C, after C, to gain one table cell and no evidence.
 - *Rename the envelope ids.* That is a D2.4 change, and the ids are cited across the tree.
 
+**Amended 2026-11-10 (R-1009).** Only the timing changes. The widening was not made before 0.4.0's C, and R-912's
+own rejection of "widen now" applies there too. It moves to the first change after 0.4.0's tag, with the pattern
+and the tests above, extended so that `L-X04-1` matches. For 0.4.0, L-X04-1 to L-X04-3 travel by text (RP §17.5).
+
 ## R-913 — WO-8 at 0.3.0 is acyclic: S13's manifest `tested` → ADRs 0053 and 0054 Accepted on it → step 18 → build log; the manifest never judges step 18 and is not regenerated after it
 
 | | |
@@ -19455,6 +19459,38 @@ not do. *A re-take only when the platform differs*: it adds a diagnosis branch t
 a new RC machine: a changed `machine`, `cpu_model` or `cpu_flags_sha256` fails REAL's proof by design. R-458's watch
 item ("REAL's replay at the new version") is answered: the replay does not depend on the version, and it is bound to
 the host's platform.
+
+## R-1009 — RP §4.4 and RP.S14 read for a chain of n links: the rows come from `LINKS` in order, and the served digest is the last link's registered digest (RP amendment A-12, REL040 verdict F-3); for 0.4.0 the envelope and the limitation grammar stay as at C, and R-912's widening moves to the first change after the tag (F-4, F-5; 2026-11-10)
+
+| | |
+| --- | --- |
+| Date | 2026-11-10 |
+| Decided by | design lane (`specifier`), RP amendment A-12 on the REL040 verdict's findings F-3, F-4 and F-5; the orchestrator's default for F-4 and F-5, confirmed |
+| Normative text | `docs/derivations/release-procedure.md` §4.4, §11.1 RP.S14 and §17.5 (A-12) |
+| Evidence | `LINKS` in `scripts/m07a_rc.py` at C = `84c66547` has eight links (R-192, R-234, R-295, R-934, R-950, R-960, R-1000, R-1010). Step 8 at C on ref-x86-64 and both CI legs: 13 of 13 checks, ten chain rows `(1,c_8)` … `(2,c_1)`, `(3,None)`, each passing, served digest `6be1c002…ba57` = D_8. `test_m07a_a37_the_chain_holds_on_the_served_list` pins that instance. `docs/reviews/REL040-verdicts.md` F-3 to F-5. `release_evidence_manifest.catalogue()` parses the restated RP.S14 as `(R)`, V03.A23, same form |
+| Affected packages | REL040 (the release manifest's RP.S14 text; `CHANGELOG.md`'s `## v0.4.0`); RP; the first change after 0.4.0's tag (L-WS-2 in the envelope; the gate's limitation pattern) |
+
+**Decision.** §4.4 and RP.S14 are stated for n links. Write `LINKS` at C as c_1 … c_n. The served digest must equal
+D_n, and the chain's rows must be exactly `(1,c_n)`, `(2,c_n)` … `(2,c_1)`, `(3,None)`, each passing. "`LINKS`
+unchanged" means that a `V17 carry` row stands at C (§8.3). 0.3.0 (n = 3) and 0.4.0 (n = 8) are instances. RP.S14
+stays same-form. For 0.4.0, nothing in `benchmarks/t08/support_envelope.yaml` and no gate tool changes after C.
+`CHANGELOG.md`'s `## v0.4.0` names L-X04-1 to L-X04-3 with their envelope texts under V11. It also says in one sentence
+that 0.4.0 adds an explicit warm-start source (`solve_body.warm_start`, ADR 0070), which L-WS-2's text predates. It
+does not credit V13 (e) with that source, whose evidence is X02's manifest. The first change after the tag restates
+L-WS-2 and adopts R-912's pattern `\bL(?:\d{2}|-[A-Z][A-Z0-9]*-\d+)\b` with R-912's tests.
+
+**Rejected.**
+- *Keep the literal three-link text.* RP.S14 would fail on a passing step 8, or "unchanged" would be read against
+  0.3.0's list.
+- *Edit L-WS-2 before the tag.* It is a D2.4 path pinned at K3 (RP §5.1, §7.1). The edit needs a new K3, J and C to
+  correct an understatement.
+- *Widen the limitation pattern before the tag.* This is R-912's own rejected alternative: it changes the engine that
+  judges C, after C (step 18 runs at H2), to gain one table cell and no evidence.
+- *Rename the envelope ids.* It is a D2.4 change, and the ids are cited across the tree (R-912).
+
+**Watch for.** A ninth link that extends `LINKS` but not the test's pinned instance, or that comes without Frank's
+replacing `V17 carry` row. A 0.4.0 notes sentence that credits V13 (e) with the explicit warm-start source. The
+post-tag change dropping R-912's widening a second time.
 
 ## R-1010 — `main`'s surface chain gains link c_8 = (ADR 0075, `without_x04`, `6be1c002…`): X04's display-units members and two description texts, after ST's c_7
 

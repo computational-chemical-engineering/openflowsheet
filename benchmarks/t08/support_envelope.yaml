@@ -8,6 +8,8 @@
 # rulings O5); returned to the working form by the first D2.4 change after the tag (R-460, C7).
 # Pinned at 0.3.0's cut commit K3 as `v0.3-envelope-1`, release 0.3.0 (V03 release spec §5.1); returned to the
 # working form by the first D2.4 change after the tag (V03 release spec §5.3, R-460, WO-9).
+# Pinned at 0.4.0's cut commit K3 as `v0.4-envelope-1`, release 0.4.0 (release procedure §7.1); returned to the
+# working form by the first D2.4 change after the tag (release procedure §7.4, R-460).
 #
 # Machine-readable source of `docs/support-matrix.md`, which `scripts/t08_support_matrix.py --emit`
 # renders and `--check` holds to this file byte for byte (T08.A23). `--check` also compares the
@@ -25,8 +27,8 @@
 #   starts across runs" is no longer true; the GUESS-role half stands.
 # - L18 onward are rows the harvest (W2.2) needed that §5.5's seed does not carry.
 
-envelope_id: v0.2-envelope-dev
-release: 0.2.0.dev0
+envelope_id: v0.4-envelope-1
+release: 0.4.0
 
 axes:
   - id: property_model
@@ -9282,40 +9284,104 @@ harvest:
   class: P
   to: []
   note: 'process note: no local full gate; CI green on both architectures is the merge condition (CLAUDE.md gate by risk)'
-- manifest: evidence/REL040/829aadf40a2601413e7e1771d87d606b9f8a5d14/manifest.json
+- manifest: evidence/S15b/829aadf40a2601413e7e1771d87d606b9f8a5d14/manifest.json
   item: limitations[0]
   sha256: 1087d725a448b87faf0feb3bf321275d5b0a3c6580a85244d5d4a4a7f1493ab6
   class: P
   to: []
   note: 'process note: release-procedure software verification; re-takes are rehearsals, not records'
-- manifest: evidence/REL040/829aadf40a2601413e7e1771d87d606b9f8a5d14/manifest.json
+- manifest: evidence/S15b/829aadf40a2601413e7e1771d87d606b9f8a5d14/manifest.json
   item: limitations[1]
   sha256: 1cded7962edf338f1c453ef8087b64139623db4120840da3cfa63d71ce4febf8
   class: P
   to: []
   note: 'process note: prep manifest; the RC cut adds the candidate manifest, K3 re-takes and journey J come at the cut'
-- manifest: evidence/REL040/829aadf40a2601413e7e1771d87d606b9f8a5d14/manifest.json
+- manifest: evidence/S15b/829aadf40a2601413e7e1771d87d606b9f8a5d14/manifest.json
   item: limitations[2]
   sha256: dc112feae7dfcb2d130d950f7ccc59e04ac995f9c7b8f23439dae6db7ed9cc0e
   class: P
   to: []
   note: 'process note: review note N-2 left as ruled; N-4 not done (step 15 chooses the M05 record by directory, equivalent for the three committed journeys)'
-- manifest: evidence/REL040/829aadf40a2601413e7e1771d87d606b9f8a5d14/manifest.json
+- manifest: evidence/S15b/829aadf40a2601413e7e1771d87d606b9f8a5d14/manifest.json
   item: limitations[3]
   sha256: 788a600775409d9c0258751c41756dfdef3971f407a00c1c194bb78869226994
   class: P
   to: []
   note: 'process note: O-6 settled for the default tier only (the review O-6 note)'
-- manifest: evidence/REL040/829aadf40a2601413e7e1771d87d606b9f8a5d14/manifest.json
+- manifest: evidence/S15b/829aadf40a2601413e7e1771d87d606b9f8a5d14/manifest.json
   item: limitations[4]
   sha256: beb1687b9ac280eba25f2dde37aff9cce117bca4b0c889924d5d44ce9ae20fc2
   class: P
   to: []
   note: 'process note: no local full gate; CI green on both architectures is the merge condition (CLAUDE.md gate by risk)'
-- manifest: evidence/REL040/829aadf40a2601413e7e1771d87d606b9f8a5d14/manifest.json
+- manifest: evidence/S15b/829aadf40a2601413e7e1771d87d606b9f8a5d14/manifest.json
   item: checks[18]
   check_id: REL040.FULLGATE
   sha256: fb0550f5108813afb14a93694a9bbd3867fd0d26d16cd8e6f281660770ac3fb5
   class: P
   to: []
   note: 'process note: no local full gate; CI green on both architectures is the merge condition (CLAUDE.md gate by risk)'
+- manifest: evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/manifest.json
+  item: limitations[0]
+  sha256: fc6e658b2349fbf98bdfa603a28b2ca24b34a4491e8447a6f1b9909801e72677
+  class: P
+  to: []
+  note: 'provenance note: S13''s evidence class (verification at C; self-generated records are regression evidence, not validation)'
+- manifest: evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/manifest.json
+  item: limitations[1]
+  sha256: dd2df36dcf0f5e95b346eb82022d2fa821e1801dbf1df52b8a2af0f808bcb53f
+  class: P
+  to: []
+  note: 'process note: requirements empty; V03''s claims are judged by the verdict document at C (A26)'
+- manifest: evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/manifest.json
+  item: limitations[2]
+  sha256: f02caa849a39b121fec63ad4e5f4c89be0386e8ccc4ccabe1b6ad252665703d2
+  class: P
+  to: []
+  note: 'process note: D-gated assertions are judged by their test nodes with S13a''s selections; S13a''s manifest is cited, not re-used'
+- manifest: evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/manifest.json
+  item: limitations[3]
+  sha256: de81ceebe84e924be4ab1974e75347c4cd36559f96c135d4b9c219fa1a28b4d5
+  class: P
+  to: []
+  note: 'release-candidate item: V03.A24''s ratio classes are read through the CI jobs; the ratios are recorded in docs/v03-rc-record.md'
+- manifest: evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/manifest.json
+  item: limitations[4]
+  sha256: b369448c5f3c9fb92869997cab94ddce77ec4ca257fd3d8f8ea5bbeaf1b6bc59
+  class: P
+  to: []
+  note: 'process note: S11.G8 and S12.G8 read the full gate from its log, run at a commit whose distribution trees equal C''''s'
+- manifest: evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/manifest.json
+  item: limitations[5]
+  sha256: ce4903a24f117eac5f36061662a59697adcfe848d61d7fa840df52e21248b9a7
+  class: P
+  to: []
+  note: 'release-candidate item: step 18 (v0_3_gate.py --rc C) reads this manifest and ADRs 0053 and 0054; its output is recorded in docs/V03_RC_DECISIONS.md'
+- manifest: evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/manifest.json
+  item: limitations[6]
+  sha256: 9e2d2c0200c3d3fbaa1b5851253b18012232ca949f571fd5c0ab961062ac7ce4
+  class: P
+  to: []
+  note: 'process note: ADR.0053 and ADR.0054 conditions and the Proposed/Accepted status rule (R-913)'
+- manifest: evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/manifest.json
+  item: limitations[7]
+  sha256: 5942e5ecf8ee29061ddc4bb473d28eacb71adc2d9f208263b4df0a67eda10b97
+  class: P
+  to: []
+  note: 'process note: S13''''s manifest was not harvested into v0.3-envelope-1 (R-911); this harvest, at the 0.4 envelope, takes it'
+- manifest: evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/manifest.json
+  item: limitations[8]
+  sha256: 9b67ea5dbef01b2f63081a6c7d7fecdb0af243b54b019b93a21583fd0a47fa33
+  class: P
+  to: []
+  note: 'provenance note: V03.A12 (c) judged version-aligned (R-910); the version string is not inert (R-458)'
+- manifest: evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/manifest.json
+  item: limitations[9]
+  sha256: 8c303a354c29516786cc01897e013695da18c2192ab7f013c2650057ab323d63
+  class: E
+  to:
+  - L-S11-1
+  - L-S11-2
+  - L-S11-3
+  - L-E01-1
+  note: 'the four envelope rows the limitation names, carried verbatim'

@@ -1,0 +1,51 @@
+{
+ "assertion": "E01 G6 (E01.A33-A36) in the audited nlp environment (V03 17d)",
+ "checks": [
+  {
+   "argv": [
+    "bash",
+    "scripts/m03_nlp_check.sh",
+    "/home/frankp/Codes/OpenFlowsheet/.claude/worktrees/m05/.venv-nlp",
+    "/home/frankp/Codes/OpenFlowsheet/.claude/worktrees/m05/.reference-downloads/m03-ipopt",
+    "--",
+    "-m",
+    "nlp or not nlp",
+    "tests/test_e01_b_nlp.py",
+    "tests/test_e01_integration.py"
+   ],
+   "environment": "nlp",
+   "exit_status": 0,
+   "id": "E01-G6-nlp",
+   "output": "step17/E01-G6-nlp.log",
+   "output_sha256": "84674cd10780a27b54fce406cc02696eb5581b56b49c26a47dd5c5f368bf42f8",
+   "records": {
+    "ci/job-logs/identity.log": "5aa8e6be4fc6e3c75817b29929020ea97baedd71a5d87a5806e1fc68a07d382e",
+    "step1-skips/aarch64.txt": "1bd472df645a1e12543e862e9d88cd7e88dce41d77ae46e96cfc1cb4f4c9b8b5",
+    "step1-skips/x86_64.txt": "7500e0fb735f86d44907d3edb67979485cac10baf840de3dd31917db115bf31d",
+    "step1/check-aarch64.log": "11a7951fd573de2e0040b10a44593f3e63ecfd80ca0308e09100d76a2bef3b0b",
+    "step1/check-x86_64.log": "ce460be6852ea947caf746ea9a5257b3224c09dc70bae32a9877f3a9236766a4",
+    "step1/junit-aarch64/node.xml": "b705657abd9af6d08d8a6693130868fe6277ab1028382549cc71bb2e9b8b0625",
+    "step1/junit-aarch64/pytest.xml": "b7bae74b526a75425ca1b14e00ca3d98df54f79e7e49afb8c21cc608910eb03d",
+    "step1/rc-step1.json": "f009be339847473410ba4f4478ac0227dcd2b43e2b69c6499eef75bda76e8df8"
+   },
+   "result": "pass"
+  }
+ ],
+ "format": "t08-rc-v1",
+ "passed": true,
+ "provenance": {
+  "architecture": "x86_64",
+  "commit": "84c665477b512548f38a6335f51648732b1fe5bb",
+  "environment_lock_sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4",
+  "github_actions": false,
+  "machine_class": "ref-x86-64",
+  "python": "3.13.5",
+  "threads": {
+   "MKL_NUM_THREADS": "1",
+   "OMP_NUM_THREADS": "1",
+   "OPENBLAS_NUM_THREADS": "1"
+  },
+  "tree_clean": true
+ },
+ "step": "E01-G6-nlp"
+}

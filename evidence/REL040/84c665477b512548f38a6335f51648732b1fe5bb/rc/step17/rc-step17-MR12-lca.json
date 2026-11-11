@@ -1,0 +1,36 @@
+{
+ "assertion": "MR-12, lca extra: WO-B1/D04's licence inventory check, E01.A42 (R-900; V03 17c)",
+ "checks": [
+  {
+   "argv": [
+    "/home/frankp/.cache/rel040-cut/rc/rcvenv/bin/python",
+    "scripts/e01_d04_inventory.py",
+    "--check"
+   ],
+   "environment": "project",
+   "exit_status": 0,
+   "id": "MR12-lca",
+   "output": "step17/MR12-lca.log",
+   "output_sha256": "5404aa7b1a63c8cd668684a787ba6e607a7a9cd2278beba55718cdd73e299329",
+   "records": {},
+   "result": "pass"
+  }
+ ],
+ "format": "t08-rc-v1",
+ "passed": true,
+ "provenance": {
+  "architecture": "x86_64",
+  "commit": "84c665477b512548f38a6335f51648732b1fe5bb",
+  "environment_lock_sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4",
+  "github_actions": false,
+  "machine_class": "ref-x86-64",
+  "python": "3.13.5",
+  "threads": {
+   "MKL_NUM_THREADS": "1",
+   "OMP_NUM_THREADS": "1",
+   "OPENBLAS_NUM_THREADS": "1"
+  },
+  "tree_clean": true
+ },
+ "step": "MR12-lca"
+}

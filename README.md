@@ -14,9 +14,8 @@ same results.
 
 ## Status
 
-**Early development. Version 0.3.0 is released** (31 October 2026, on PyPI and as a GitHub release).
-`0.3.0.post1` is the same release with this description and the project links updated; it changes
-no code.
+**Early development. Version 0.4.0 is released.** Version 0.3.0 was released on 31 October 2026
+(`0.3.0.post1` is the same release with a new description and the project links; it changes no code).
 
 | | |
 | --- | --- |

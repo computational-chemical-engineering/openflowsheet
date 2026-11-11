@@ -503,3 +503,142 @@ bound leaf and digests of that kind.
 **Tests (serial, `OMP_NUM_THREADS=1`).** `tests/test_m05_retake_digest_only.py tests/test_m01_idaes_retake_diff.py
 tests/test_m07_journey_record.py tests/test_m05_wo9_gates.py tests/test_rel_*.py`: 326 passed, 3 deselected. F0 PASS
 (M1 50/50 … M9 35/35). `ruff check`, `ruff format --check` clean. No manifest, no merge.
+
+## 0.4.0 cut (build lane, wp/REL040, 2026-11-10)
+
+- Part 1 commits: 44653f94 (prep manifest to S15b), 9eceb3aa (harvest S13; HARVEST_EXCLUDED REL040), K3 49a0473119a7684ddf44bdf3c59528714f49337a.
+- S13 classification: limitations[0-8] class P (provenance/process/release-candidate notes), limitations[9] class E to
+  L-S11-1..3 and L-E01-1 (rows it names). 0 non-pass checks. No scientific judgement needed.
+- K3 also touched: t08_support_matrix.ENVELOPE_ID (as 295a2e65), the pair in tests/test_m07a_v0_2_gate.py's loop, README status
+  (names 0.4.0; the table and prose below are the docs pass's).
+- OPEN (stop): tests/test_rel_evidence_manifest.py::test_rel_a20_over_0_3_0s_committed_records fails from 9eceb3aa on
+  ("RP.S22 same form: fail; S13 test pass: DIFFERS"): _m_harvest reads the live HARVEST_EXCLUDED, now the 0.4 tuple, for the 0.3 line.
+  Not a version failure; no expectation edited.
+
+### Part 2: the re-takes (J) and the journey at J (brief docs/briefs/REL040-j.md)
+
+- Run tree: `git worktree add --detach .claude/worktrees/rc-k3-040 49a04731`; `git status --porcelain --ignored`
+  printed 0 lines at 08:32 before the first re-take (host kernel 6.12.113). Outputs and logs: `~/.cache/rel040-cut/`.
+- Re-takes, in parallel (7 single-threaded processes; load 16–19 of 48 at start): the five G10 records by E6/K's
+  recipe, one process per case (`run_case` + `write_files` into `~/.cache/rel040-cut/g10`; driver
+  `~/.cache/rel040-cut/bin/g10_case.py`), 4–7 s each, every record `run_commit` 49a04731, `tree_clean` true;
+  REAL `scripts/m05_wo9_real.py --retake-into`, exit 0, 2110 s, DECISION_STABLE, T* = 653.1500351610193, study_cold
+  48, `child-logs kept=0`, written file set equal to the committed one; IDAES in 8 s.
+- DECISION: IDAES env → `~/.cache/of-rc-v03-a3e508e/idaes-wt/.venv-idaes` (0.3.0's RC step-11 env), run as step 11
+  runs it (`-I`, PYTHONPATH unset, OMP/OPENBLAS/MKL 1, IDAES_DATA). Its sorted `pip freeze` sha256 dfeec96f… equals
+  S-6's step-11 freeze; the record is byte-identical to S-6's (76068ff5…). Alternative: build a new env with
+  `build-reference-envs.sh idaes`. Reversible by: re-taking in a new env.
+- Proofs (all exit 0):
+  - `RETAKE-DIGEST-ONLY PASS trust-region-study-tr-e2-far: changed-digests=79 digest=320 timing=35 path=0 version=7 platform=0 other=0 environment=equal`
+  - `RETAKE-DIGEST-ONLY PASS trust-region-study-tr-e2: changed-digests=41 digest=146 timing=20 path=0 version=4 platform=0 other=0 environment=equal`
+  - `RETAKE-DIGEST-ONLY PASS trust-region-study-loop-s: changed-digests=37 digest=124 timing=20 path=0 version=4 platform=0 other=0 environment=equal`
+  - `RETAKE-DIGEST-ONLY PASS trust-region-study-real: changed-digests=103 digest=504 timing=528 path=128 version=0 platform=4 other=0 environment=equal`
+  - `IDAES-RETAKE PASS differing=environment.platform,inputs.reference_values_yaml_sha256 platform=1 inputs=1 other=0`
+  - `RETAKE-DIGEST-ONLY PASS trust-region-study-loop-r: changed-digests=91 digest=285 timing=26 path=0 version=3 platform=0 other=0 environment=equal`
+  - `RETAKE-DIGEST-ONLY PASS trust-region-study-tr-e2-fd: changed-digests=70 digest=215 timing=20 path=0 version=4 platform=0 other=0 environment=equal`
+  Version leaves 4/7/4/3/4 as 0.3.0; IDAES input hashes equal the K3 files' SHA-256.
+- **J = e0a3d6b78f9d245ff8ed946ae954a9682f3e24c2**: 45 files (44 under `benchmarks/m05/records/`: written/changed
+  TR-E2 8/7, TR-E2-FAR 11/10, TR-E2-FD 8/7, LOOP-R 7/6, LOOP-S 8/6, REAL 9/8; the IDAES record). At J: `-m nlp
+  tests/test_m05_g10_replay.py` 5 passed; `tests/test_m05_*retake*.py tests/test_m01_idaes_retake_diff.py
+  tests/test_m07_journey_record.py` 112 passed, 3 deselected.
+- Journey: clean detached worktree `rc-j-040` at J (`--porcelain --ignored` 0 lines), m05's `.venv-nlp`, env -i,
+  OMP 1, PYOMO_CONFIG_DIR, PYTHONNOUSERSITE=1, PYTHONPATH=src, `--m05-record
+  benchmarks/m05/records/trust-region-study-real.json`, budgets unchanged. Exit 0, 4670 s. refined, T* =
+  653.1500351610193 K BOUND_LOWER, J = 0.4524965242483627; R0 INDIFFERENT, R1 DECIDED 653.15 (cold 36, 2252 s), R2
+  SURROGATE_NOT_PROMOTABLE, R3 DECISION_STABLE (re-run, carry_identity_differs from anchor 49a04731; cold 48, 1970 s).
+  - DECISION: PYOMO_CONFIG_DIR set for the journey (the brief's nlp env; 0.3.0's step 3 did not list it). No leaf
+    beyond the allowed classes moved. Reversible by: re-running the journey without it.
+- **C (proposed) = b40d48d10fac41f807a2e195ee6102bfdebac5e8**, the record under `benchmarks/m07/journey/<J>/` (12
+  files). `check`: ACCEPT. `replay` in a clean worktree at C (`rc-c-040`, 0 lines): bitwise, 26 s;
+  `OMP_NUM_THREADS=2` exit 2. `v0_2_gate.journey_carry(J, C)`: carried. `tests/test_m07_journey_record.py` at C:
+  73 passed, 4 deselected.
+- Against 0.3.0's record at 2d945b5d: 71 of 10794 leaves differ, all in the allowed classes — walls (R0/R1 grid
+  wall_s 9+9, budget spent R0/R1/R3, accounting R0/R1/R3/journey/t_star_resolve, R3 t_star_resolve), digests
+  (coupling_sha256 in R0/R1 grid and artifacts 9×4, R3 candidate coupling_record_sha256, parent_checks R3/journey
+  run_sha256), `commit`, and R3's `m05_record` (path, sha256, offered.sha256, offered.anchor). Every other number
+  bitwise equal; no platform string is a leaf of journey.json. No stop.
+- Peak load seen: 31 (1-min, 10:27, other work); this work ≤ 7 threads.
+
+### Part 3: the RC job at C, the RC records, the lapse report (brief docs/briefs/REL040-rc.md)
+
+- **C = 84c665477b512548f38a6335f51648732b1fe5bb.** Orchestrator's local full gate at C:
+  `GATE PASS 84c66547: 16678 passed, 3206 skipped, 220 deselected, 3 xfailed, 1 warning in 4727.03s (1:18:47)`
+- CI at C: push run 42790953372 **success** (`check` both legs, `default-install`, `identity` "G05: R0 structural
+  identity equal across 2 platforms"); `release_rc` dispatch 42791067917 (attempt 1, the only dispatch at C)
+  **success** on all 13 RC jobs (`dist`, `clean-install` ×2, `bundle-set`, `bundle-replay` ×2, `rc-steps` ×2,
+  `rc-coolprop` ×2, `rc-ensemble`, `ptc-r1` ×2).
+- RC tree: `git worktree add --detach .claude/worktrees/rc-c-040 C`; `git status --porcelain --ignored` 0 lines
+  (09:32:57Z). `--rc evidence/REL040/<C>/artifacts/rc` inside it, `--work ~/.cache/rel040-cut/rc/`, inputs as S-6
+  (m05 `.venv-nlp`, `.reference-downloads/m03-ipopt`, `--journey e0a3d6b7`, `m06-w27h` W27 archive).
+- DECISION: `local` in three invocations (`--steps 2,6,7,8,9,11,13` 09:33–09:49Z; `12,10` 09:49–10:57Z; `14,15,16,17`
+  10:57–11:11Z), so that G11's 8-worker pool (no knob in the runner) ran alone and step 10 still ran after 12 and before
+  `keep_certificates` (C-10). Alternative: one invocation. Reversible by: re-running as one.
+- Exits: invocations A and B exit 0; C exit 1 by C-14 — `step17-items` 1 (`S07-F8`, `PTC-R1` `unsupported`, "no
+  --ci-run given": `local` ran without `--ci-run` per the brief's inputs). Other non-zero command exits are by design:
+  `step14-nlp-collect-all` 2 (§6.5), `step16-dryrun` 1 (the registered `iapws95-v1` `SnapshotUnsupportedError`).
+- Then `release_rc.py ci --ci-run 42791067917` exit 0; `step1` exit 0 (4/4); `items --ci-run 42791067917 --nlp-root
+  ~/.cache/rel040-cut/items-nlp-wt` (new `git worktree add --detach` at C, `--porcelain --ignored` 0 lines at
+  11:11:03Z) exit 0, every item pass. Its step-17 records replace `local`'s first ones and are the cited ones.
+- Records (pass/total): 1 4/4; 2 3/3; 6 7/7; 7 12/12; 8 13/13; 9 "A30 PASS" (381 objects, closure 150); 10 2/2 (77
+  certificates, 0 violations); 11 3/3 (`a40.idaes_numbers_identical` `differing_members` []); 12 6/6 and
+  `r375.audit` pass; 13 3/3; 14 5/5; 15 3/3; 16 4/4; 17 8/8 items. Steps 14/15: `host_platform` = `record_platform`
+  = Linux-6.12.113+deb13-amd64-x86_64-with-glibc2.41. CI records: every one passed (steps 2–10, both legs).
+- `ci/job-logs/identity.log` is the push run's `identity` job log (`gh run view --job 129783085583 --log`), fetched by
+  hand for row 2's G05 (the runner's `ci` reads the dispatch only, where `identity` is skipped).
+- `records` (124 cited, `tools/cited.txt` sha256 33474261…; 6 gzip-compressed) exit 0. SHA-256:
+  `rc/records.json` d942ab128c6425a01b9a88f9f230de97d638cdbb87276fd39237ea9c80c00c24; `docs/REL040-rc-record.md`
+  9de62f73caf1b1c5402dc9f2385e70cccbc65c3af9a8bc25ad826858bf308e62 (68 rows); `release/rc-trees/<C>.json`
+  226faeb0979d0084554d61f174bedba0e7a06fcc6d70536a6f18f13ba86e93e9 (`--write-tree-record` exit 0);
+  `acceptance-lapses.txt` 23c0cf59abf50472bf581ebe8091087a255b1f3d10539b01b86bf680c62b76a7 (`--lapses` exit 0).
+- Commits: f5845744 (records, RC record), 0a46ff06 (tree record), 95ea0ae1 (lapse report).
+- Lapse report (2026-11-10): 5 stand (X31 (c), Claim set, M02 N1, M03 N1, coolprop and lca licences), 2 lapsed, 0
+  unsupported. `V17 carry: lapsed (extract:links; extract:served_digest)`; `V14 (b): lapsed (<86 paths, all under
+  src/openflowsheet/>)`, verbatim in the file.
+- Load: 1-min load above 36 for 9 samples, 09:59–10:09Z, peak 52.84 (10:01Z), while step 12's G11 ran (this job ≤ 10
+  threads: G11's 8 workers + runner). Median over invocation B 29.9; other sessions ~30 throughout. No stop: the
+  job kept to its 12-thread budget; the machine total did not.
+- No stop of §12 hit. No D2.4 path touched after C.
+
+### Part 4: finish on SMM-TR09 (handoff docs/REL040_HANDOFF.md, 2026-11-10 to 11-11)
+
+TRS2 rebooted; the session on SMM-TR09 finished from `344da73c`. Frank's go on the decision board (`rel040-tr09-go`
+= go, `rel040-dispatch` = auto, 2026-11-10T19:30Z).
+- Before the reboot, the RC artifacts only TRS2 held were copied read-only to TR09
+  (`evidence/REL040/<C>/artifacts/`, git-ignored; `~/.cache/rel040-cut` to `~/.cache/rel040-cut-from-trs2`).
+- Step 1 (`5162627b`): `V14 (b)` and `V17 carry` rows replaced with Frank's board answers verbatim (RP §8.4),
+  fingerprints at C by `release_gate.Scopes`: V14 (b) `1abcb2af…75d0` (339 files), V17 carry `1cb47347…28f3` (links
+  = the eight registers R-192 to R-1010, served digest `6be1c002…ba57`); old rows to the history list. `--lapses`:
+  7 × stands.
+- Step 2: fresh `verdict` agent, `bb4a79f8`: V13 (e) and V17 (a) met, BLOCKED to PASS; 15 PASS, V14 FAIL (b), X31 FAIL
+  (c), 0 BLOCKED. Its finding F-6 (the board question's package labels for R-950, R-960 and R-1000 were off; the
+  register ids were right) was put to Frank: his answer stands with the corrected mapping (TR09 session,
+  2026-11-11). Ledger `ff22f317` (V13, V17 PASS; `tests/test_rel040_ledger.py` docstrings only).
+- Stop hit and resolved: the first replacement of rows broke `test_the_seed_fingerprints_recompute_at_a3e508e3` and
+  `test_rel_a19_the_seed_is_adr_0053_s_six_cells_verbatim` (they read the working file as the seed). Frank approved
+  the test edit (2026-11-11): `SEEDED` reads `release/acceptances.md` at the seeding commit `6714958d` (`266e304b`).
+  The four release-gate test files: 142 passed.
+- Step 3 (`38aefce1`, `e8142942`): `## v0.4.0` gate table as `--markdown` prints it, the two RP.S10 failure lines,
+  the acceptances placeholder filled. The first H1 run failed RP.S10 because the acceptances list repeated the
+  registered phrase "not a sandbox"; reworded in `e8142942`.
+- Host note: `test_m07a_a50_nothing_is_excluded_from_the_harvest_at_c_alpha` fails when the W27 archive sits in the
+  checkout (`evidence/M06/W27/artifacts/extracted/…/manifest.json` is harvested). On TR09 the archive lives outside
+  the repository (`~/.cache/openflowsheet/w27/artifacts`, SHA-256 of the tarball `6d42c02f…4526`), passed by
+  `--w27-artifacts`.
+- **H1 = `0688d296`**: manifest generated at G = `e8142942` (clean tree): `PYTHONPATH=src:. .venv/bin/python
+  scripts/release_evidence_manifest.py --line 0.4 --commit 84c665477b512548f38a6335f51648732b1fe5bb --k3
+  49a0473119a7684ddf44bdf3c59528714f49337a --ci-run 42790953372 --ci-run 42791067917 --tmp
+  ~/.cache/rel040-tr09-tmp` → `REL040 tested 84c66547: 30 checks, 30 pass, 0 fail, 0 unsupported`, exit 0. SHA-256
+  `82052b995f03e75eff8218324cd0bf821a3e73b3f7fc8be37689847bb15c6bbb`.
+- **H2: nothing to mark.** RP.S16 (a): 26 required ADRs, `problems` [], `manifest_adrs` [] (C-20: none by default);
+  every required ADR was already Accepted. H2 = H1.
+- **Step 18 at H2** (HEAD `0688d296`, clean): `PYTHONPATH=src .venv/bin/python scripts/release_gate.py --line 0.4
+  --rc 84c665477b512548f38a6335f51648732b1fe5bb` → exit 0; log `evidence/REL040/<C>/artifacts/step18-H2.log`
+  (git-ignored), SHA-256 `3c6d7a1aaffee728194ecfeee1affbd772ecba41e28da46694a1c0b9e7eacc3f`; last line
+  **`v0.4.0 tag may be proposed: YES`**. Items: tree equal to C; RC record passed; manifests tested; envelope pinned;
+  ADRs every one Accepted; Frank's answers every one accepted (7 standing acceptances, scope unchanged).
+- RP.S08's R part: first line `v0.4 gates (v0.4-gate-v1) at C = 84c66547…; candidate 0688d296…`; 18 gate rows (17
+  claimed in order, then `W27 not claimed (v0.4-gate-v1)`); non-PASS rows V14 = FAIL, X31 = FAIL; last line YES.
+- D2.4: `git diff --name-only <C> HEAD` touches none of `src/ schemas/ benchmarks/ requirements*.lock pyproject.toml
+  MANIFEST.in README.md LICENSE NOTICE`.
+- Next: push `wp/REL040`, CI on both architectures, merge into `main` (F0, ruff, targeted tests), then the release
+  workflow dry run and, on green, the real dispatch (Frank's `auto`). The PyPI approval is Frank's.

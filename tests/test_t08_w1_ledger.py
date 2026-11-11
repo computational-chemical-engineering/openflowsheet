@@ -11,18 +11,24 @@ are PASS (spec §3.3: a gate met with limitations is PASS, and the limitations t
 evidence list is the gate's owner manifests, the ones that script reads.
 
 The T08 manifest does not exist until W5.3; its clause is checked from the moment one is committed.
+
+Since the release the verdict clause is a check of a past release: the V gates' verdicts are read
+from the ledger as 0.1.0 released it (`PUBLIC_ROOT`, R-150), because later lines write their own
+verdicts into the working tree's ledger (0.4.0: V13 and V17 BLOCKED, `tests/test_rel040_ledger.py`).
 """
 
 from __future__ import annotations
 
 import importlib.util
 import re
+import subprocess
 from pathlib import Path
 from types import ModuleType
 from typing import Any
 
 import pytest
 import yaml
+from conftest import PUBLIC_ROOT
 
 ROOT = Path(__file__).resolve().parents[1]
 SPEC = ROOT / "docs" / "derivations" / "T08-release-spec.md"
@@ -104,9 +110,22 @@ def _recorded_verdicts() -> dict[str, str]:
     return found
 
 
+def _released_gates() -> dict[str, dict[str, Any]]:
+    """The ledger's gates as 0.1.0 released it (`PUBLIC_ROOT`)."""
+    shown = subprocess.run(
+        ["git", "show", f"{PUBLIC_ROOT}:docs/requirements.yaml"],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+    )
+    assert shown.returncode == 0, shown.stderr
+    return {gate["id"]: gate for gate in yaml.safe_load(shown.stdout)["gates"]}
+
+
 def test_a02_v_gate_verdicts_are_only_the_recorded_ones() -> None:
     recorded = _recorded_verdicts()
-    got = {gate: _gates()[gate]["verdict"] for gate in V_GATES}
+    released = _released_gates()
+    got = {gate: released[gate]["verdict"] for gate in V_GATES}
     assert got == {gate: recorded.get(gate) for gate in V_GATES}
 
 

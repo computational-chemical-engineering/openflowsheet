@@ -1,0 +1,115 @@
+::tests.test_e01_b_brightway: collection skipped
+tests.test_c2_openidaes450_split::test_a25a_writer_reproduces_the_committed_file_from_the_archive: pinned archive absent
+tests.test_evidence_manifests::test_manifest_commit_exists_in_repository[evidence/K01/b44dea0e96eb61f42f34249eee69a20d1ddb6a8a/manifest.json]: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): b44dea0e96eb61f42f34249eee69a20d1ddb6a8a is not in this repository's history
+tests.test_evidence_manifests::test_manifest_commit_exists_in_repository[evidence/K02/1baaf033be114e4e44bf982ecee8716b0f040519/manifest.json]: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): 1baaf033be114e4e44bf982ecee8716b0f040519 is not in this repository's history
+tests.test_evidence_manifests::test_manifest_commit_exists_in_repository[evidence/K03/c806f83fd3fb0e71967235000fb517fc1c26efd4/manifest.json]: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): c806f83fd3fb0e71967235000fb517fc1c26efd4 is not in this repository's history
+tests.test_evidence_manifests::test_manifest_commit_exists_in_repository[evidence/K04/bf3d9eef3698e364ceb9d1aaafb80e6ed16b5e29/manifest.json]: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): bf3d9eef3698e364ceb9d1aaafb80e6ed16b5e29 is not in this repository's history
+tests.test_evidence_manifests::test_manifest_commit_exists_in_repository[evidence/K05/b0a7fe766c35f6491dfc53ecab3101199d221850/manifest.json]: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): b0a7fe766c35f6491dfc53ecab3101199d221850 is not in this repository's history
+tests.test_evidence_manifests::test_manifest_commit_exists_in_repository[evidence/K06/cda68cd446be27992051d43422336ad5f9430fe8/manifest.json]: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): cda68cd446be27992051d43422336ad5f9430fe8 is not in this repository's history
+tests.test_evidence_manifests::test_manifest_commit_exists_in_repository[evidence/P00/07a7ff01fd2767f7ad34a6442c5a817536ac0a6d/manifest.json]: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): 07a7ff01fd2767f7ad34a6442c5a817536ac0a6d is not in this repository's history
+tests.test_evidence_manifests::test_manifest_commit_exists_in_repository[evidence/P01/05406c803a95e8c154476607c5c3db6de84f78e4/manifest.json]: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): 05406c803a95e8c154476607c5c3db6de84f78e4 is not in this repository's history
+tests.test_evidence_manifests::test_manifest_commit_exists_in_repository[evidence/P02/507dccfaa46fa905b651ba96de65c2ea8c9f3ca1/manifest.json]: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): 507dccfaa46fa905b651ba96de65c2ea8c9f3ca1 is not in this repository's history
+tests.test_evidence_manifests::test_manifest_commit_exists_in_repository[evidence/P03/449cf3d6618f301242e07083d6f7d1c127566ac4/manifest.json]: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): 449cf3d6618f301242e07083d6f7d1c127566ac4 is not in this repository's history
+tests.test_evidence_manifests::test_manifest_commit_exists_in_repository[evidence/T01/00a71f4562b7bd80441df50cf64b53064d832b78/manifest.json]: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): 00a71f4562b7bd80441df50cf64b53064d832b78 is not in this repository's history
+tests.test_evidence_manifests::test_manifest_commit_exists_in_repository[evidence/T02/b68585f775cc2b009ae1b130eebb865150cf943c/manifest.json]: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): b68585f775cc2b009ae1b130eebb865150cf943c is not in this repository's history
+tests.test_evidence_manifests::test_manifest_commit_exists_in_repository[evidence/T03/6ac24be9da572a90b198ba91b81d603f082cfa74/manifest.json]: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): 6ac24be9da572a90b198ba91b81d603f082cfa74 is not in this repository's history
+tests.test_evidence_manifests::test_manifest_commit_exists_in_repository[evidence/T04/53cd23b29d3701e3a464fa1edaa455a9a1d6fbf5/manifest.json]: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): 53cd23b29d3701e3a464fa1edaa455a9a1d6fbf5 is not in this repository's history
+tests.test_evidence_manifests::test_manifest_commit_exists_in_repository[evidence/T05/91ac0103c1040175560d74d9afa2a091a8d25b2d/manifest.json]: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): 91ac0103c1040175560d74d9afa2a091a8d25b2d is not in this repository's history
+tests.test_evidence_manifests::test_manifest_commit_exists_in_repository[evidence/T05b/ba9a27b422834138daeff98481072c65db8b3744/manifest.json]: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): ba9a27b422834138daeff98481072c65db8b3744 is not in this repository's history
+tests.test_evidence_manifests::test_manifest_commit_exists_in_repository[evidence/T06/ebec629d63e32fb1984b56ad31372c960cd0ae2f/manifest.json]: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): ebec629d63e32fb1984b56ad31372c960cd0ae2f is not in this repository's history
+tests.test_evidence_manifests::test_manifest_commit_exists_in_repository[evidence/T07/5f3d3ea25e8349b83c8f8382df3c793532971ca4/manifest.json]: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): 5f3d3ea25e8349b83c8f8382df3c793532971ca4 is not in this repository's history
+tests.test_evidence_manifests::test_manifest_commit_exists_in_repository[evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/manifest.json]: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): 67c66d98587f23bd7dfe8da28a8facccc92da21e is not in this repository's history
+tests.test_k05_schemas::test_the_manifest_fixtures_certificate_hash_is_the_emitted_one: the fixture records platform ('x86_64', 'Linux', '3.13.5', 'scipy-openblas'), this run is ('x86_64', 'Linux', '3.13.18', 'scipy-openblas'): certificate floats are not promised bitwise across platforms (ADR 0007, blueprint §8.3)
+tests.test_l01_records::test_a12_the_retrieval_script_reproduces_its_record_or_says_why_not: retrieval re-run not possible here: SKIPPED: components-crosscheck.json not recomputed: source distributions absent or off the pins {'chemicals': None, 'thermo': None, 'cantera': None} (pins {'chemicals': '1.5.2', 'thermo': '0.6.1', 'CoolProp': '8.0.0', 'cantera': '3.2.0', 'PyYAML': '6.0.2'}; L01 spec section 4.1)
+tests.test_m04_prewarm::test_a40_the_prewarm_script_under_the_process_executor_changes_no_bit: A40 names max_workers = 4 and R-250 caps it at the physical cores (2 here); checked on a host with 4 or more (E39)
+tests.test_m04_quadratic::test_a49_the_fits_coefficients_are_bitwise_equal_at_one_and_eight_blas_threads: the negative control is vacuous on this host (4 CPUs): the unpinned fit at 1 and 8 BLAS threads agrees bitwise; the pinned claims above held (E40)
+tests.test_m04_schemas::test_a35_the_fixtures_are_what_the_code_emits_today: the R0 members agree; floats compared on x86_64/Haswell only (R1/R2 across platforms, spec §18 A1.3), this is x86_64/SkylakeX (E41)
+tests.test_m06_w27_coverage::test_a21_every_card_hashes_as_registered: pinned archive absent (scripts/m06_w27_acquire.py)
+tests.test_m06_w27_coverage::test_extraction_equals_case_facts_json: pinned archive absent (scripts/m06_w27_acquire.py)
+tests.test_m06_w27_harness::test_a21_a22_on_a_real_case: pinned archive absent (scripts/m06_w27_acquire.py)
+tests.test_m06_w27_harness::test_a23_run_record: pinned archive absent (scripts/m06_w27_acquire.py)
+tests.test_m06_w27_harness::test_a79a_the_registered_model_states: pinned archive absent (scripts/m06_w27_acquire.py)
+tests.test_m06_w27_harness::test_a79b_an_unpinned_attempt_through_the_harness: pinned archive absent (scripts/m06_w27_acquire.py)
+tests.test_m06_w27_harness::test_a_fresh_project_and_the_export: pinned archive absent (scripts/m06_w27_acquire.py)
+tests.test_m06_w27_harness::test_cli_confirm_canaries_preflight_and_spend_on_stubs: pinned archive absent (scripts/m06_w27_acquire.py)
+tests.test_m06_w27_harness::test_p2_pins_and_checks_pass_at_registration: pinned archive absent (scripts/m06_w27_acquire.py)
+tests.test_m06_w27_harness::test_p6_p7_p8_on_stub_canaries: pinned archive absent (scripts/m06_w27_acquire.py)
+tests.test_m06_w27_scorer::test_harness_states[W27-S01]: pinned archive absent (scripts/m06_w27_acquire.py)
+tests.test_m06_w27_scorer::test_harness_states[W27-S02]: pinned archive absent (scripts/m06_w27_acquire.py)
+tests.test_m06_w27_scorer::test_harness_states[W27-S03]: pinned archive absent (scripts/m06_w27_acquire.py)
+tests.test_m06_w27_scorer::test_harness_states[W27-S04]: pinned archive absent (scripts/m06_w27_acquire.py)
+tests.test_m06_w27_scorer::test_harness_states[W27-S05]: pinned archive absent (scripts/m06_w27_acquire.py)
+tests.test_m06_w27_scorer::test_harness_states[W27-S06]: pinned archive absent (scripts/m06_w27_acquire.py)
+tests.test_m06_w27_scorer::test_harness_states[W27-S07]: pinned archive absent (scripts/m06_w27_acquire.py)
+tests.test_m06_w27_scorer::test_harness_states[W27-S08]: pinned archive absent (scripts/m06_w27_acquire.py)
+tests.test_m06_w27_scorer::test_harness_states[W27-S09]: pinned archive absent (scripts/m06_w27_acquire.py)
+tests.test_m06_w27_scorer::test_harness_states[W27-S10]: pinned archive absent (scripts/m06_w27_acquire.py)
+tests.test_m06_w27_scorer::test_harness_states[W27-S17]: pinned archive absent (scripts/m06_w27_acquire.py)
+tests.test_m06_w27_scorer::test_harness_states[W27-S18]: pinned archive absent (scripts/m06_w27_acquire.py)
+tests.test_m06_w27_scorer::test_harness_states[W27-S19]: pinned archive absent (scripts/m06_w27_acquire.py)
+tests.test_m06_w27_scorer::test_harness_states[W27-S20]: pinned archive absent (scripts/m06_w27_acquire.py)
+tests.test_m06_w27_scorer::test_rescoring_is_byte_identical: pinned archive absent (scripts/m06_w27_acquire.py)
+tests.test_m06_w27_scorer::test_s04_replays_a_real_bundle_and_s18_catches_a_tampered_one: pinned archive absent (scripts/m06_w27_acquire.py)
+tests.test_msg_corpus::test_g6_pending_holds[C01-numbers]: MSG review Q1 (c): a number only the thermal kernel knows, in no message text; deferred to the F6 v2 unit models (ADR 0065)
+tests.test_msg_corpus::test_g6_pending_holds[C08-summary]: MSG review Q2: an ApiError renders from its own document (projection, I2); the spec's unit text and the instance id need the revision document as render context
+tests.test_msg_corpus::test_g6_pending_holds[C10-elements]: MSG review Q2: an ApiError renders from its own document (projection, I2); the spec's unit text and the instance id need the revision document as render context
+tests.test_s05_envelope::test_a26_a31_a_built_wheel_holds_the_coefficient_file_and_the_notice: OFS_S05_BUILD_PYTHON (a Python with setuptools)
+tests.test_s07_registration::test_a29_a_built_sdist_and_wheel_hold_no_coolprop_file_and_no_fluid_json: OFS_S07_BUILD_PYTHON (a Python with setuptools)
+tests.test_st_cli::test_an_unavailable_basis_exits_unsupported: the coolprop extra is installed; TH-C2 is served
+tests.test_st_core::test_an_unavailable_basis_is_refused: the coolprop extra is installed; TH-C2 is served
+tests.test_st_operation::test_g11_an_unavailable_basis_is_unsupported_with_its_hint: the coolprop extra is installed; TH-C2 is served
+tests.test_t06_w28_records::test_generate_refuses_to_overwrite_or_to_force_the_holdout: generate writes on ref-x86-64 only (A97 (b) checks the refusal)
+tests.test_t06_w31_runs::test_a98a_src_differs_from_run_2s_only_by_w24_and_w25: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): f636452 is not in this repository's history
+tests.test_t06_w31_runs::test_a99b_the_holdout_starts_commit_precedes_every_holdout_run: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): 6018ebccbe99a3e9d19cf4f966d10dc292195170 is not in this repository's history
+tests.test_t07_evidence_manifest::test_a_c1_row_never_decides_g17: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): fbd322a is not in this repository's history
+tests.test_t07_evidence_manifest::test_a_failed_test_fails_its_check_and_keeps_the_status: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): fbd322a is not in this repository's history
+tests.test_t07_evidence_manifest::test_a_file_outside_the_campaigns_sums_fails_g17: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): fbd322a is not in this repository's history
+tests.test_t07_evidence_manifest::test_a_met_row_judging_c2_that_cites_c1_beside_it_does_not_re_judge_c1: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): fbd322a is not in this repository's history
+tests.test_t07_evidence_manifest::test_a_missing_measurement_is_not_a_pass[ci]: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): fbd322a is not in this repository's history
+tests.test_t07_evidence_manifest::test_a_missing_measurement_is_not_a_pass[g18]: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): fbd322a is not in this repository's history
+tests.test_t07_evidence_manifest::test_a_missing_measurement_is_not_a_pass[identity]: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): fbd322a is not in this repository's history
+tests.test_t07_evidence_manifest::test_a_moved_identity_digest_fails_g1: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): fbd322a is not in this repository's history
+tests.test_t07_evidence_manifest::test_c1_is_pending_without_its_record_and_fails_when_its_record_changes: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): fbd322a is not in this repository's history
+tests.test_t07_evidence_manifest::test_c1_needs_its_redaction_note: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): fbd322a is not in this repository's history
+tests.test_t07_evidence_manifest::test_every_cited_record_is_in_its_file: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): fbd322a is not in this repository's history
+tests.test_t07_evidence_manifest::test_g16c_and_the_exports_cover_both_campaigns: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): fbd322a is not in this repository's history
+tests.test_t07_evidence_manifest::test_g17_follows_the_verdict_and_the_arithmetic[**INSUFFICIENT EVIDENCE.**-True-mechanical5-unsupported]: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): fbd322a is not in this repository's history
+tests.test_t07_evidence_manifest::test_g17_follows_the_verdict_and_the_arithmetic[**MET.** 27 of 30.-True-mechanical0-pass]: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): fbd322a is not in this repository's history
+tests.test_t07_evidence_manifest::test_g17_follows_the_verdict_and_the_arithmetic[**MET.**-False-mechanical2-fail]: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): fbd322a is not in this repository's history
+tests.test_t07_evidence_manifest::test_g17_follows_the_verdict_and_the_arithmetic[**MET.**-True-mechanical3-fail]: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): fbd322a is not in this repository's history
+tests.test_t07_evidence_manifest::test_g17_follows_the_verdict_and_the_arithmetic[**MET.**-True-mechanical4-fail]: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): fbd322a is not in this repository's history
+tests.test_t07_evidence_manifest::test_g17_follows_the_verdict_and_the_arithmetic[**NOT MET.** 19 of 30.-True-mechanical1-fail]: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): fbd322a is not in this repository's history
+tests.test_t07_evidence_manifest::test_g17_is_judged_on_the_c2_rows_and_c1_is_reported_alongside: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): fbd322a is not in this repository's history
+tests.test_t07_evidence_manifest::test_g17_is_never_pass_without_the_verdict_file: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): fbd322a is not in this repository's history
+tests.test_t07_evidence_manifest::test_g17_is_pending_without_the_campaign: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): fbd322a is not in this repository's history
+tests.test_t07_evidence_manifest::test_reviewed_is_never_set_even_when_every_check_passes: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): fbd322a is not in this repository's history
+tests.test_t07_evidence_manifest::test_the_manifest_validates_and_holds_no_angle_bracketed_text: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): fbd322a is not in this repository's history
+tests.test_t07_evidence_manifest::test_the_review_has_a_check_per_m_and_s_finding_each_with_a_fix: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): fbd322a is not in this repository's history
+tests.test_t07_evidence_manifest::test_v17_reads_its_own_rows[None-unsupported]: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): fbd322a is not in this repository's history
+tests.test_t07_evidence_manifest::test_v17_reads_its_own_rows[| 2 | V17 `{sha}` | **MET.** |-pass]: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): fbd322a is not in this repository's history
+tests.test_t07_evidence_manifest::test_v17_reads_its_own_rows[| 2 | V17 `{sha}` | **NOT MET.** |-fail]: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): fbd322a is not in this repository's history
+tests.test_t07_evidence_manifest::test_v17_reads_its_own_rows[| 2 | V17-T05-1 `{sha}` | **NOT MET.** |-unsupported]: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): fbd322a is not in this repository's history
+tests.test_t08_evidence_manifest::test_a_failed_or_skipped_node_keeps_the_status[failed]: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): 67c66d98587f23bd7dfe8da28a8facccc92da21e is not in this repository's history
+tests.test_t08_evidence_manifest::test_a_failed_or_skipped_node_keeps_the_status[skipped]: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): 67c66d98587f23bd7dfe8da28a8facccc92da21e is not in this repository's history
+tests.test_t08_evidence_manifest::test_a_selector_that_ran_nothing_fails: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): 67c66d98587f23bd7dfe8da28a8facccc92da21e is not in this repository's history
+tests.test_t08_evidence_manifest::test_a_tampered_rc_record_fails_its_checks: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): 67c66d98587f23bd7dfe8da28a8facccc92da21e is not in this repository's history
+tests.test_t08_evidence_manifest::test_an_unaccepted_fail_keeps_the_status: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): 67c66d98587f23bd7dfe8da28a8facccc92da21e is not in this repository's history
+tests.test_t08_evidence_manifest::test_b20_carries_the_attestation_and_its_disclosures: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): 67c66d98587f23bd7dfe8da28a8facccc92da21e is not in this repository's history
+tests.test_t08_evidence_manifest::test_ci_at_another_head_establishes_nothing: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): 67c66d98587f23bd7dfe8da28a8facccc92da21e is not in this repository's history
+tests.test_t08_evidence_manifest::test_one_check_per_catalogue_assertion_and_no_other: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): 67c66d98587f23bd7dfe8da28a8facccc92da21e is not in this repository's history
+tests.test_t08_evidence_manifest::test_only_a02s_pending_clause_may_skip_before_the_manifest_exists: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): 67c66d98587f23bd7dfe8da28a8facccc92da21e is not in this repository's history
+tests.test_t08_evidence_manifest::test_tested_with_v14_b_the_only_fail_and_accepted: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): 67c66d98587f23bd7dfe8da28a8facccc92da21e is not in this repository's history
+tests.test_t08_evidence_manifest::test_the_envelope_rows_and_the_gate_words_travel: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): 67c66d98587f23bd7dfe8da28a8facccc92da21e is not in this repository's history
+tests.test_t08_evidence_manifest::test_the_gate_may_only_miss_the_manifest_being_written: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): 67c66d98587f23bd7dfe8da28a8facccc92da21e is not in this repository's history
+tests.test_t08_evidence_manifest::test_the_manifest_validates_and_holds_no_angle_bracketed_text: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): 67c66d98587f23bd7dfe8da28a8facccc92da21e is not in this repository's history
+tests.test_t08_ptc_r1_case::test_b20_case_json_carries_the_amended_registration: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): 30243f9c9956fb7ec6970f62156f864cd35d0aa0 is not in this repository's history
+tests.test_t08_ptc_r1_case::test_b20_git_order: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): 9f5f29d7063ae5102c535d94d5f18f20db6480c2 is not in this repository's history
+tests.test_t08_ptc_r1_diagnostic::test_a_rerun_that_differs_is_refused: no committed PTC-R1 results for ci-x86-64 on this CPU model
+tests.test_t08_ptc_r1_diagnostic::test_the_rerun_reproduces_the_committed_record[MID-0]: no committed PTC-R1 results for ci-x86-64 on this CPU model
+tests.test_t08_ptc_r1_diagnostic::test_the_rerun_reproduces_the_committed_record[MID-1]: no committed PTC-R1 results for ci-x86-64 on this CPU model
+tests.test_t08_ptc_r1_diagnostic::test_the_rerun_reproduces_the_committed_record[MID-2]: no committed PTC-R1 results for ci-x86-64 on this CPU model
+tests.test_t08_ptc_r1_diagnostic::test_the_rerun_reproduces_the_committed_record[control-0]: no committed PTC-R1 results for ci-x86-64 on this CPU model
+tests.test_t08_ptc_r1_diagnostic::test_the_rerun_reproduces_the_committed_record[control-2]: no committed PTC-R1 results for ci-x86-64 on this CPU model
+tests.test_t08_w1_ledger::test_a02_the_t08_manifest_is_listed_once_it_exists[V19]: not in A02
+tests.test_t08_w4_v0_1_gate::test_git_and_the_record_agree_at_the_v0_1_0_bump: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): 67c66d98587f23bd7dfe8da28a8facccc92da21e is not in this repository's history
+tests.test_t08_w4_v0_1_gate::test_the_committed_record_of_c_is_c_s: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): 67c66d98587f23bd7dfe8da28a8facccc92da21e is not in this repository's history

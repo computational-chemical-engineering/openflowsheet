@@ -1,0 +1,42 @@
+{
+ "checks": [
+  {
+   "exit_code": 0,
+   "freeze_sha256": "234a3787c1e8b294640d2eeeed719c33821421279435488dfb1744226206fbc1",
+   "id": "a40.crosscheck_exit",
+   "last_line": "external-crosscheck.json matches",
+   "record_sha256": "72a2732e5c22517786b1b2e1f2419de8223e88a959b001c3ee47aea56c408f39",
+   "result": "pass"
+  },
+  {
+   "exit_code": 0,
+   "id": "a40.idaes_exit",
+   "result": "pass"
+  },
+  {
+   "committed_sha256": "76068ff5e851ad702ce33cd1ea48a1433acd18741f14098b6528804e03185ebd",
+   "differing_members": [],
+   "freeze_sha256": "dfeec96faebeb6bedab5eb1c069df7344282d0002fe92fb191f2c55c73af82c6",
+   "id": "a40.idaes_numbers_identical",
+   "rerun_sha256": "76068ff5e851ad702ce33cd1ea48a1433acd18741f14098b6528804e03185ebd",
+   "result": "pass"
+  }
+ ],
+ "format": "t08-rc-v1",
+ "passed": true,
+ "provenance": {
+  "architecture": "x86_64",
+  "commit": "84c665477b512548f38a6335f51648732b1fe5bb",
+  "environment_lock_sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4",
+  "github_actions": false,
+  "machine_class": "ref-x86-64",
+  "python": "3.13.5",
+  "threads": {
+   "MKL_NUM_THREADS": "1",
+   "OMP_NUM_THREADS": "1",
+   "OPENBLAS_NUM_THREADS": "1"
+  },
+  "tree_clean": true
+ },
+ "step": "external-records"
+}

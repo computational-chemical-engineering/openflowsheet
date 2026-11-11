@@ -7,8 +7,9 @@ limitations and 2 non-pass checks are classified E/S/P/B with pointers like ever
 manifest, which is written after `C_α` (R-320), and `evidence/M07/`, M07's own, which is written
 after C′; both belong to the next harvest (R-485). Those assertions about `C_α`, C′ and the
 0.2.0 tag stand as history. After 0.2.0 the next harvest (C4) reads M07a's three manifests and
-M07's. At 0.3.0 `HARVEST_EXCLUDED` names `evidence/S13/`, S13's own manifest, written after 0.3.0's
-C (R-911), as R-485 excluded M07's from 0.2.0's harvest. The harvest's size is held
+M07's. At 0.3.0 `HARVEST_EXCLUDED` named `evidence/S13/`, S13's own manifest, written after 0.3.0's
+C (R-911), as R-485 excluded M07's from 0.2.0's harvest. At 0.4.0 it names `evidence/REL040/`,
+the 0.4 line's own package, written after C; S13's manifest is harvested. The harvest's size is held
 equal to `HARVEST_SIZE`, which M07a's manifest quotes at `C_α` (MR-5); a new manifest moves it,
 and this test with it.
 
@@ -83,8 +84,9 @@ T08_MANIFEST = "evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/manifest.j
 #: MSG's catalogue-ruling manifest (`1602f72…`, `tested`, 8 and 0) moves it on `main` (MSGp merge).
 #: ST's first manifest (`4512251…`, `tested`, 5 and 1) moves it on `wp/ST`.
 #: X04's manifest (`0f7d9b8…`, `tested`, 4 and 1) moves it on `wp/X04`.
-#: REL040's prep manifest (`829aadf…`, `tested`, 5 and 1) moves it on `wp/REL040p`.
-HARVEST_SIZE = (90, 1068, 143)
+#: S15b's (REL040 prep) manifest (`829aadf…`, `tested`, 5 and 1) moves it on `wp/REL040p`.
+#: S13's manifest (`a3e508e…`, `tested`, 10 and 0), harvested for 0.4.0, moves it on `wp/REL040`.
+HARVEST_SIZE = (91, 1078, 143)
 #: The 0.2.0 release candidate C′ (M07 spec §25, R-485).
 C_PRIME = "ce993651ce37c1343e771b276160bd6623e43500"
 #: The commit tagged v0.2.0.
@@ -163,9 +165,9 @@ def test_m07a_a50_nothing_is_excluded_from_the_harvest_at_c_alpha() -> None:
 
 def test_c4_the_post_0_2_0_harvest_reads_m07a_and_m07() -> None:
     """R-485's next harvest (C4): nothing is excluded, and every item of the manifests R-485
-    deferred is in the harvest and classified once in the envelope. Only S13's own directory is
-    excluded (R-911)."""
-    assert matrix.HARVEST_EXCLUDED == ("evidence/S13/",)
+    deferred is in the harvest and classified once in the envelope. Only REL040's own directory is
+    excluded at 0.4.0 (0.3.0 excluded `evidence/S13/`, R-911)."""
+    assert matrix.HARVEST_EXCLUDED == ("evidence/REL040/",)
     items = matrix.harvest_items()
     classified = [(entry["manifest"], entry["item"]) for entry in matrix.load()["harvest"]]
     for directory, size in DEFERRED_BY_R485.items():
@@ -188,8 +190,13 @@ def test_r911_s13s_manifest_is_excluded_and_nothing_else() -> None:
     ).stdout
     assert listed == "", listed
     excluded = [path for path in matrix._manifests() if path.startswith(matrix.HARVEST_EXCLUDED)]
-    assert all(re.fullmatch(r"evidence/S13/[0-9a-f]{40}/manifest\.json", path) for path in excluded)
-    assert S13A_MANIFEST in {path for path, _ in matrix.harvest_items()}
+    assert all(
+        re.fullmatch(r"evidence/REL040/[0-9a-f]{40}/manifest\.json", path) for path in excluded
+    )
+    harvested = {path for path, _ in matrix.harvest_items()}
+    assert S13A_MANIFEST in harvested
+    # 0.4.0's harvest takes S13's manifest, which 0.3.0's excluded (R-911).
+    assert any(path.startswith("evidence/S13/") for path in harvested)
 
 
 def test_m07a_a50_t08s_manifest_is_harvested_in_full() -> None:

@@ -41,6 +41,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import ast
 import json
 import re
 import sys
@@ -407,12 +408,31 @@ def _m_clause(inputs: Inputs) -> Part:
 _HEX40 = re.compile(r"^evidence/[^/]+/[0-9a-f]{40}/manifest\.json$")
 
 
+def _harvest_excluded_at(commit: str) -> tuple[str, ...]:
+    """`HARVEST_EXCLUDED` as `scripts/t08_support_matrix.py` declares it at `commit`."""
+    source = t08._git("show", f"{commit}:scripts/t08_support_matrix.py")
+    declared = re.search(r"^HARVEST_EXCLUDED: tuple\[str, \.\.\.\] = (.*)$", source, re.M)
+    if declared is None:
+        raise SystemExit(f"RP.S22: no HARVEST_EXCLUDED in t08_support_matrix.py at {commit}")
+    value = ast.literal_eval(declared.group(1))
+    if not isinstance(value, tuple) or not all(isinstance(item, str) for item in value):
+        raise SystemExit(f"RP.S22: HARVEST_EXCLUDED at {commit} is not a tuple of str")
+    return value
+
+
 def _m_harvest(inputs: Inputs) -> Part:
     """RP.S22 (§5.2): `HARVEST_EXCLUDED` holds `evidence/<pkg>/`; C's tree holds nothing under
     it; every excluded manifest is `evidence/<pkg>/<40 hex>/manifest.json`; a package whose id
-    merely starts with `<pkg>` is still harvested."""
-    excluded = t08_support_matrix.HARVEST_EXCLUDED
+    merely starts with `<pkg>` is still harvested. The tuple is the one declared where the release
+    manifest is written: at the commit that adds `evidence/<pkg>/<C>/manifest.json` once it is
+    committed (so a later release's exclusion does not judge an earlier one, REL.A20), and in the
+    working tree before that (orchestrator, 2026-11-10, 0.4.0 cut)."""
     prefix = f"evidence/{inputs.gate_set.evidence_package}/"
+    commit = t08._git("rev-parse", f"{inputs.commit}^{{commit}}").strip()
+    added = t08._git(
+        "log", "--diff-filter=A", "--format=%H", "--", f"{prefix}{commit}/manifest.json"
+    ).split()
+    excluded = _harvest_excluded_at(added[-1]) if added else t08_support_matrix.HARVEST_EXCLUDED
     at_c = t08._git("ls-tree", "-r", "--name-only", inputs.commit, "--", prefix).splitlines()
     manifests = sorted(
         str(path.relative_to(ROOT))

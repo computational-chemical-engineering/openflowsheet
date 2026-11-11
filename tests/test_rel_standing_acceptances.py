@@ -54,8 +54,12 @@ def _read(path: str) -> bytes | None:
 
 LINE = release_gate.load_line("0.4", _read)
 SET = LINE.gate_set
+# The seed as WO-R1 committed it (RP §8.4 replaces lapsed rows in the working file; REL.A19 and the
+# seed recomputation are about the seed, so they read it at the commit that seeded it).
+SEED_COMMIT = "6714958d"
 SEEDED = release_gate.standing_acceptances(
-    (REPO_ROOT / "release" / "acceptances.md").read_text("utf-8"), "release/acceptances.md"
+    release_gate.git("show", f"{SEED_COMMIT}:release/acceptances.md").decode("utf-8"),
+    "release/acceptances.md",
 )
 assert SEEDED is not None
 SCOPE = {row.item: row.scope for row in (*SEEDED.failures, *SEEDED.decisions)}

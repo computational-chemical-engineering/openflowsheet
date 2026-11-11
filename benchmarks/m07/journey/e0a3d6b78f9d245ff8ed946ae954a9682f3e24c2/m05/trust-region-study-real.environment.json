@@ -1,0 +1,11 @@
+{
+ "omp_num_threads": "1",
+ "python": "3.13.5 | packaged by conda-forge | (main, Jun 16 2025, 08:27:50) [GCC 13.3.0]",
+ "distributions": 14,
+ "distributions_sha256": "443a440f2e7bfe3a6fc56e58e027224c8f7157036bb0c8a69c8fad98164bada1",
+ "conda_builds": 41,
+ "conda_builds_sha256": "d7a1dc8c079dd2a385912a44a775c1d394fe2f7bc7debdfc1ab894d872eaafa2",
+ "machine": "SMM-TRS2",
+ "cpu": "AMD Ryzen Threadripper PRO 5965WX 24-Cores",
+ "cpu_count": 48
+}
