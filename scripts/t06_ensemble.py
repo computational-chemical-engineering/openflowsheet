@@ -40,6 +40,7 @@ sys.path.insert(0, str(ROOT / "tests"))
 sys.path.insert(0, str(ROOT))
 
 from t06_ensemble_support import HOLDOUT_FILE, STARTS_FILE, ensemble_cases  # noqa: E402
+from t08_rename_substitution import starts_substituted_back  # noqa: E402
 
 from benchmarks.t06 import ensemble, generator  # noqa: E402
 from openflowsheet.canonical import canonical_json  # noqa: E402
@@ -116,14 +117,22 @@ def check(arguments: argparse.Namespace) -> int:
     """§6.5 as amended by H-1 (R-1020): on the reference machine class the regeneration, with its
     `host.cpu_model` set to the published one, is byte-identical (`ensemble.same_class_host`
     decides the same reference host); elsewhere the regenerated document is reported against
-    the file under the numerical policy."""
+    the file under the numerical policy.
+
+    Both comparisons, and the report, read the regeneration with R-149's two registered self-hash
+    pairs undone (`starts_substituted_back`): the published start sets keep the pre-rename
+    hashes, and R-149 compares the live ones "substituted back". Any other value of either hash
+    stays a difference (V04-after review MF-1)."""
     path = Path(arguments.file) if arguments.file else _starts_file(arguments.holdout)
     published = path.read_bytes()
     recorded = json.loads(published)
-    regenerated = _generate(arguments.holdout)
-    raw = canonical_json(regenerated)
+    live = _generate(arguments.holdout)
     print(f"published sha256 {hashlib.sha256(published).hexdigest()}")
-    print(f"regenerated sha256 {hashlib.sha256(raw).hexdigest()}")
+    print(f"regenerated sha256 {hashlib.sha256(canonical_json(live)).hexdigest()}")
+    regenerated, undone = starts_substituted_back(live)
+    raw = canonical_json(regenerated)
+    if undone:
+        print(f"R-149: {', '.join(undone)} compared substituted back")
     if raw == published:
         print("byte-identical")
         return 0

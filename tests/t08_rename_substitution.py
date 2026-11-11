@@ -178,10 +178,31 @@ W5C_PRE_RENAME_SHA256 = "eaf1fbfab6f2be50090e8576d3ee1500e7181c9c293a6be7f23c5d9
 W3A_PRE_RENAME_SHA256 = "00330b0ba182f465dc18ea2973df56842eccc051d745e875457d0226568fce8f"
 
 
+def starts_substituted_back(document: dict[str, Any]) -> tuple[dict[str, Any], list[str]]:
+    """A regenerated T06 start set with R-149's two registered pairs undone, and the paths undone.
+
+    `generator_sha256` and the provider block's `implementation_sha256` are put back to their
+    pre-rename values where, and only where, each is the registered new value. Any other value,
+    and every other member, is left as it is, so that a comparison still sees it. The one rule
+    for `scripts/t06_ensemble.py check` (V04-after review MF-1) and the tests: explicit
+    comparisons, no `assert`, which `python -O` strips."""
+    substituted = dict(document)
+    undone: list[str] = []
+    if document.get("generator_sha256") == GENERATOR_SHA256[0]:
+        substituted["generator_sha256"] = GENERATOR_SHA256[1]
+        undone.append("generator_sha256")
+    provider = document.get("provider")
+    if isinstance(provider, dict) and provider.get("implementation_sha256") == PROVIDER_SHA256[0]:
+        substituted["provider"] = {**provider, "implementation_sha256": PROVIDER_SHA256[1]}
+        undone.append("provider.implementation_sha256")
+    return substituted, undone
+
+
 def renamed_back_starts(document: dict[str, Any]) -> dict[str, Any]:
     """A regenerated T06 start set with its two self-hashes as before the rename: the provider
     block's `implementation_sha256` and `generator_sha256`, each checked to be the new value."""
     assert document["generator_sha256"] == GENERATOR_SHA256[0]
     assert document["provider"]["implementation_sha256"] == PROVIDER_SHA256[0]
-    provider = {**document["provider"], "implementation_sha256": PROVIDER_SHA256[1]}
-    return {**document, "generator_sha256": GENERATOR_SHA256[1], "provider": provider}
+    substituted, undone = starts_substituted_back(document)
+    assert undone == ["generator_sha256", "provider.implementation_sha256"]
+    return substituted

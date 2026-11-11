@@ -3,6 +3,8 @@ class `ref-x86-64` lists its CPU models (T06 amendment H-1). `machine_class()` t
 `ensemble.same_class_host` decides "same reference host", and `scripts/t06_ensemble.py check`
 compares a regeneration on `ref-x86-64` byte for byte with `host.cpu_model` set to the published
 one.
+With R-149's two registered self-hash pairs undone first (`tests/t08_rename_substitution.py`,
+V04-after review MF-1, HM-34's synthetic legs).
 
 The running host's CPU model is read only through `generator._cpu_model`, which the tests patch.
 `check` is run on synthetic documents (`_generate` patched); no starts file is read or written.
@@ -20,6 +22,7 @@ from typing import Any
 
 import pytest
 from conftest import REPO_ROOT, load_yaml
+from t08_rename_substitution import GENERATOR_SHA256, PROVIDER_SHA256
 
 from benchmarks.t06 import ensemble, generator
 from openflowsheet.canonical import canonical_json
@@ -31,7 +34,9 @@ LISTED = (TRS2_CPU, TR09_CPU)
 #: Made-up literals (§11.0): no committed value and not the running host's.
 MADE_UP_CPU = "cpu-hm31"
 MADE_UP_NUMPY = "0.0.0-hm32"
-for _literal in (MADE_UP_CPU, MADE_UP_NUMPY):
+MADE_UP_SHA256 = "34" * 32
+assert MADE_UP_SHA256 not in (*GENERATOR_SHA256, *PROVIDER_SHA256)
+for _literal in (MADE_UP_CPU, MADE_UP_NUMPY, MADE_UP_SHA256):
     assert _literal not in LISTED and _literal != generator._cpu_model(), _literal
     assert _literal not in (REPO_ROOT / "benchmarks" / "registry.yaml").read_text("utf-8")
 
@@ -61,13 +66,18 @@ def _host(cpu: str, **changed: str) -> dict[str, str]:
     }
 
 
-def _document(cpu: str, u: float = 0.3) -> dict[str, Any]:
-    """A synthetic starts document: a host block and one start's one accepted `u`."""
-    return {
+def _document(cpu: str, u: float = 0.3, **hashes: str) -> dict[str, Any]:
+    """A synthetic starts document: a host block and one start's one accepted `u`; with
+    `generator` and `provider`, the two self-hashes."""
+    document: dict[str, Any] = {
         "format": "t06-starts-hm33",
         "host": _host(cpu),
         "cases": [{"case": "HM-33", "starts": [{"start": 0, "draws": [{"u": u}]}]}],
     }
+    if hashes:
+        document["generator_sha256"] = hashes["generator"]
+        document["provider"] = {"provider_id": "hm34", "implementation_sha256": hashes["provider"]}
+    return document
 
 
 def _check(
@@ -155,3 +165,33 @@ def test_hm33_control_an_unlisted_model_is_reported_and_exits_0(
     regenerated = _document(MADE_UP_CPU, u=math.nextafter(0.3, 1.0))
     assert _check(monkeypatch, tmp_path, published, regenerated) == 0
     assert "another host: reported" in capsys.readouterr().out
+
+
+#: The published start sets' self-hashes, R-149's old values, and the live ones, its new values.
+PUBLISHED_HASHES = {"generator": GENERATOR_SHA256[1], "provider": PROVIDER_SHA256[1]}
+LIVE_HASHES = {"generator": GENERATOR_SHA256[0], "provider": PROVIDER_SHA256[0]}
+
+
+def test_hm34_r149s_new_hashes_are_compared_substituted_back_exits_0(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    published = _document(TRS2_CPU, **PUBLISHED_HASHES)
+    regenerated = _document(TR09_CPU, **LIVE_HASHES)
+    assert _check(monkeypatch, tmp_path, published, regenerated) == 0
+    out = capsys.readouterr().out
+    undone = "generator_sha256, provider.implementation_sha256"
+    assert f"R-149: {undone} compared substituted back" in out
+    assert f"identical but for host.cpu_model ({TR09_CPU})" in out
+
+
+def test_hm34_a_generator_hash_neither_registered_value_exits_1(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    published = _document(TRS2_CPU, **PUBLISHED_HASHES)
+    regenerated = _document(TR09_CPU, **{**LIVE_HASHES, "generator": MADE_UP_SHA256})
+    assert _check(monkeypatch, tmp_path, published, regenerated) == 1
+    out = capsys.readouterr().out
+    assert "R-149: provider.implementation_sha256 compared substituted back" in out
+    assert "same host: a defect" in out
+    assert "identical but for" not in out
+    assert MADE_UP_SHA256 in out
