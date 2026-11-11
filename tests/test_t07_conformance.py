@@ -342,6 +342,18 @@ class Scenario:
         self.ok("project", "get_project", {})
         self.ok("models", "list_models", {})
         self.ok("explain", "explain", {"code": "phase_regime_mismatch"})  # ADR 0058 D7 (MSG)
+        # ADR 0060 D11 (F1): the registry, a page and an admission; an unknown unit's.
+        self.ok("capabilities", "list_capabilities", {"kind": "unit_model", "limit": 3})
+        self.ok(
+            "admission",
+            "check_admission",
+            {"pair": {"unit": "thermal.heater", "method": "coolprop-heos-v1"}},
+        )
+        self.step(
+            "no such unit",
+            "check_admission",
+            {"pair": {"unit": "thermal.heatr", "method": "coolprop-heos-v1"}},
+        )
 
         # Revisions: commit, replay, key reuse, preview, validation, pagination, views.
         first = {"edits": _edits(CORPUS[NOMINAL]()), "expected_revision": None}

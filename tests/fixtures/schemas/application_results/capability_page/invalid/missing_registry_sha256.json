@@ -1,0 +1,3104 @@
+{
+  "expect_error": "'registry_sha256' is a required property",
+  "document": {
+    "items": [
+      {
+        "data_rights": null,
+        "descriptor_format": "openflowsheet-extension-v1",
+        "descriptor_sha256": "6d865b1214e2a460a0e5ec567024668a3a85099bc5497ba010f317b7470f5365",
+        "distribution": "openflowsheet",
+        "distribution_version": "0.4.0",
+        "effective_status": "released",
+        "entry_point": null,
+        "evidence_class": "core",
+        "id": "coolprop-heos-v1",
+        "implementation": {
+          "factory": {
+            "attribute": "basis_provider",
+            "key": null,
+            "module": "openflowsheet.application.revision_binding"
+          },
+          "modules": [
+            "openflowsheet/thermo/_coolprop_heos_fluids.py",
+            "openflowsheet/thermo/coolprop_heos.py"
+          ]
+        },
+        "kind": "property_method",
+        "limitations": [],
+        "origin": "builtin",
+        "payload": {
+          "bases": [
+            {
+              "components": [
+                "H2O"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "CO2"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "N2"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "O2"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "Ar"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "CH4"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "C2H6"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "C3H8"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "H2"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "1-Butene"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "Acetone"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "Ammonia"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "Benzene"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "CarbonMonoxide"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "CarbonylSulfide"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "Chlorine"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "cis-2-Butene"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "CycloHexane"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "Cyclopentane"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "CycloPropane"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "D4"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "D5"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "Deuterium"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "Dichloroethane"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "DiethylEther"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "DimethylCarbonate"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "DimethylEther"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "Ethanol"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "EthylBenzene"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "Ethylene"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "EthyleneOxide"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "Fluorine"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "HeavyWater"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "HFE143m"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "HydrogenChloride"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "HydrogenSulfide"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "IsoButane"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "IsoButene"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "Isohexane"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "Isopentane"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "Krypton"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "m-Xylene"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "MD3M"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "MD4M"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "MDM"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "Methanol"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "MethylLinoleate"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "MethylLinolenate"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "MethylOleate"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "MethylPalmitate"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "MethylStearate"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "MM"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "n-Butane"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "n-Decane"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "n-Dodecane"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "n-Hexane"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "n-Nonane"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "n-Octane"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "n-Pentane"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "n-Perfluorobutane"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "n-Perfluorohexane"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "n-Perfluoropentane"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "n-Undecane"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "Neon"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "Neopentane"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "NitrousOxide"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "Novec649"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "o-Xylene"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "OrthoDeuterium"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "OrthoHydrogen"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "p-Xylene"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "ParaDeuterium"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "Propylene"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "PropyleneGlycol"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "Propyne"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "R11"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "R1123"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "R113"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "R1130_E"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "R1132_E"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "R114"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "R115"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "R116"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "R12"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "R1224YDZ"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "R123"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "R1233zd_E"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "R1234yf"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "R1234ze_E"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "R1234ze_Z"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "R124"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "R1243zf"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "R125"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "R13"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "R1336mzz_E"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "R1336mzz_Z"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "R134a"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "R13I1"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "R14"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "R141b"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "R142b"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "R143a"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "R152A"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "R21"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "R218"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "R22"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "R227EA"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "R23"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "R236FA"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "R245ca"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "R245fa"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "R32"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "R365MFC"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "R40"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "R41"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "RC318"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "SulfurDioxide"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "SulfurHexafluoride"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "Tetrahydrofuran"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "Toluene"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "trans-2-Butene"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "VinylChloride"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            },
+            {
+              "components": [
+                "Xenon"
+              ],
+              "record_source": "benchmarks/s07/components.yaml"
+            }
+          ],
+          "derivative_inputs": [
+            "T",
+            "P"
+          ],
+          "flashes": [
+            "TP"
+          ],
+          "legacy_provider_id": "coolprop-heos-v1",
+          "per_component": {
+            "1-Butene": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_1-Butene"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_1-Butene",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "Acetone": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_Acetone"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_Acetone",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "Ammonia": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_Ammonia"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_Ammonia",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "Ar": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_Ar"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_Ar",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "Benzene": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_Benzene"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_Benzene",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "C2H6": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_C2H6"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_C2H6",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "C3H8": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_C3H8"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_C3H8",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "CH4": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_CH4"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_CH4",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "CO2": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_CO2"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_CO2",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "CarbonMonoxide": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_CarbonMonoxide"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_CarbonMonoxide",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "CarbonylSulfide": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_CarbonylSulfide"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_CarbonylSulfide",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "Chlorine": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_Chlorine"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_Chlorine",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "CycloHexane": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_CycloHexane"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_CycloHexane",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "CycloPropane": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_CycloPropane"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_CycloPropane",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "Cyclopentane": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_Cyclopentane"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_Cyclopentane",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "D4": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_D4"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_D4",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "D5": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_D5"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_D5",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "Deuterium": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_Deuterium"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_Deuterium",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "Dichloroethane": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_Dichloroethane"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_Dichloroethane",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "DiethylEther": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_DiethylEther"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_DiethylEther",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "DimethylCarbonate": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_DimethylCarbonate"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_DimethylCarbonate",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "DimethylEther": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_DimethylEther"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_DimethylEther",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "Ethanol": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_Ethanol"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_Ethanol",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "EthylBenzene": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_EthylBenzene"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_EthylBenzene",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "Ethylene": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_Ethylene"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_Ethylene",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "EthyleneOxide": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_EthyleneOxide"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_EthyleneOxide",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "Fluorine": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_Fluorine"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_Fluorine",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "H2": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_H2"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_H2",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "H2O": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_H2O"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_H2O",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "HFE143m": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_HFE143m"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_HFE143m",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "HeavyWater": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_HeavyWater"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_HeavyWater",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "HydrogenChloride": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_HydrogenChloride"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_HydrogenChloride",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "HydrogenSulfide": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_HydrogenSulfide"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_HydrogenSulfide",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "IsoButane": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_IsoButane"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_IsoButane",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "IsoButene": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_IsoButene"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_IsoButene",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "Isohexane": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_Isohexane"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_Isohexane",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "Isopentane": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_Isopentane"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_Isopentane",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "Krypton": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_Krypton"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_Krypton",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "MD3M": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_MD3M"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_MD3M",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "MD4M": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_MD4M"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_MD4M",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "MDM": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_MDM"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_MDM",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "MM": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_MM"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_MM",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "Methanol": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_Methanol"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_Methanol",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "MethylLinoleate": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_MethylLinoleate"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_MethylLinoleate",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "MethylLinolenate": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_MethylLinolenate"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_MethylLinolenate",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "MethylOleate": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_MethylOleate"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_MethylOleate",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "MethylPalmitate": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_MethylPalmitate"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_MethylPalmitate",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "MethylStearate": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_MethylStearate"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_MethylStearate",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "N2": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_N2"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_N2",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "Neon": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_Neon"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_Neon",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "Neopentane": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_Neopentane"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_Neopentane",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "NitrousOxide": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_NitrousOxide"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_NitrousOxide",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "Novec649": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_Novec649"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_Novec649",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "O2": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_O2"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_O2",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "OrthoDeuterium": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_OrthoDeuterium"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_OrthoDeuterium",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "OrthoHydrogen": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_OrthoHydrogen"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_OrthoHydrogen",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "ParaDeuterium": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_ParaDeuterium"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_ParaDeuterium",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "Propylene": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_Propylene"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_Propylene",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "PropyleneGlycol": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_PropyleneGlycol"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_PropyleneGlycol",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "Propyne": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_Propyne"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_Propyne",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "R11": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_R11"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_R11",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "R1123": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_R1123"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_R1123",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "R113": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_R113"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_R113",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "R1130_E": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_R1130_E"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_R1130_E",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "R1132_E": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_R1132_E"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_R1132_E",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "R114": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_R114"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_R114",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "R115": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_R115"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_R115",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "R116": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_R116"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_R116",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "R12": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_R12"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_R12",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "R1224YDZ": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_R1224YDZ"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_R1224YDZ",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "R123": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_R123"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_R123",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "R1233zd_E": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_R1233zd_E"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_R1233zd_E",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "R1234yf": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_R1234yf"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_R1234yf",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "R1234ze_E": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_R1234ze_E"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_R1234ze_E",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "R1234ze_Z": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_R1234ze_Z"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_R1234ze_Z",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "R124": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_R124"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_R124",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "R1243zf": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_R1243zf"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_R1243zf",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "R125": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_R125"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_R125",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "R13": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_R13"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_R13",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "R1336mzz_E": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_R1336mzz_E"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_R1336mzz_E",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "R1336mzz_Z": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_R1336mzz_Z"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_R1336mzz_Z",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "R134a": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_R134a"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_R134a",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "R13I1": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_R13I1"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_R13I1",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "R14": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_R14"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_R14",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "R141b": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_R141b"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_R141b",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "R142b": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_R142b"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_R142b",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "R143a": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_R143a"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_R143a",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "R152A": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_R152A"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_R152A",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "R21": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_R21"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_R21",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "R218": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_R218"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_R218",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "R22": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_R22"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_R22",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "R227EA": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_R227EA"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_R227EA",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "R23": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_R23"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_R23",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "R236FA": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_R236FA"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_R236FA",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "R245ca": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_R245ca"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_R245ca",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "R245fa": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_R245fa"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_R245fa",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "R32": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_R32"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_R32",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "R365MFC": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_R365MFC"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_R365MFC",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "R40": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_R40"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_R40",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "R41": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_R41"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_R41",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "RC318": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_RC318"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_RC318",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "SulfurDioxide": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_SulfurDioxide"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_SulfurDioxide",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "SulfurHexafluoride": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_SulfurHexafluoride"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_SulfurHexafluoride",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "Tetrahydrofuran": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_Tetrahydrofuran"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_Tetrahydrofuran",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "Toluene": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_Toluene"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_Toluene",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "VinylChloride": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_VinylChloride"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_VinylChloride",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "Xenon": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_Xenon"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_Xenon",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "cis-2-Butene": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_cis-2-Butene"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_cis-2-Butene",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "m-Xylene": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_m-Xylene"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_m-Xylene",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "n-Butane": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_n-Butane"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_n-Butane",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "n-Decane": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_n-Decane"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_n-Decane",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "n-Dodecane": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_n-Dodecane"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_n-Dodecane",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "n-Hexane": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_n-Hexane"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_n-Hexane",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "n-Nonane": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_n-Nonane"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_n-Nonane",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "n-Octane": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_n-Octane"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_n-Octane",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "n-Pentane": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_n-Pentane"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_n-Pentane",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "n-Perfluorobutane": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_n-Perfluorobutane"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_n-Perfluorobutane",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "n-Perfluorohexane": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_n-Perfluorohexane"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_n-Perfluorohexane",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "n-Perfluoropentane": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_n-Perfluoropentane"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_n-Perfluoropentane",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "n-Undecane": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_n-Undecane"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_n-Undecane",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "o-Xylene": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_o-Xylene"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_o-Xylene",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "p-Xylene": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_p-Xylene"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_p-Xylene",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            },
+            "trans-2-Butene": {
+              "derivative_inputs": [
+                "T",
+                "P",
+                "n_trans-2-Butene"
+              ],
+              "properties": [
+                "h",
+                "s",
+                "v",
+                "Z",
+                "cp",
+                "lnphi_trans-2-Butene",
+                "Psat",
+                "Tsat"
+              ],
+              "reference_convention": "COOLPROP-DEF-ref-v1"
+            }
+          },
+          "phases": [
+            "LIQUID",
+            "VAPOR"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "per_component",
+          "selectable": true,
+          "verifier_fresh": true
+        },
+        "pip_extra": "coolprop",
+        "platforms": [
+          "any"
+        ],
+        "provides": [
+          "conn:nTP-v1",
+          "legacy:coolprop-heos-v1"
+        ],
+        "requires": [],
+        "self_sha256": "a0c6cdcba16b210010260066a20d6868fcf71a0c16c627b6c5d996a928656de2",
+        "stability": "core",
+        "status": "released",
+        "title": "Legacy property method coolprop-heos-v1",
+        "version": "1.0.0"
+      },
+      {
+        "data_rights": null,
+        "descriptor_format": "openflowsheet-extension-v1",
+        "descriptor_sha256": "461c591e1c7ef62da5be9d63d1a1c74030057dae52faf75610a0bdab2137bd47",
+        "distribution": "openflowsheet",
+        "distribution_version": "0.4.0",
+        "effective_status": "released",
+        "entry_point": null,
+        "evidence_class": "core",
+        "id": "iapws95-v1",
+        "implementation": {
+          "factory": {
+            "attribute": "basis_provider",
+            "key": null,
+            "module": "openflowsheet.application.revision_binding"
+          },
+          "modules": [
+            "openflowsheet/thermo/iapws95.py"
+          ]
+        },
+        "kind": "property_method",
+        "limitations": [],
+        "origin": "builtin",
+        "payload": {
+          "bases": [
+            {
+              "components": [
+                "H2O"
+              ],
+              "record_source": "benchmarks/s05/components.yaml"
+            }
+          ],
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_H2O"
+          ],
+          "flashes": [
+            "TP"
+          ],
+          "legacy_provider_id": "iapws95-v1",
+          "per_component": null,
+          "phases": [
+            "LIQUID",
+            "VAPOR"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_H2O",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "IAPWS95-ref-v1",
+          "selectable": true,
+          "verifier_fresh": true
+        },
+        "pip_extra": null,
+        "platforms": [
+          "any"
+        ],
+        "provides": [
+          "conn:nTP-v1",
+          "legacy:iapws95-v1"
+        ],
+        "requires": [],
+        "self_sha256": "6d0f88cff5b34dc43f9dc75bb2b925c3fe9020d7e3722d39037765bc6d1a0df2",
+        "stability": "core",
+        "status": "released",
+        "title": "Legacy property method iapws95-v1",
+        "version": "1.0.0"
+      }
+    ],
+    "next_cursor": "WyJwcm9wZXJ0eV9tZXRob2QiLCJpYXB3czk1LXYxIiwiMS4wLjAiXQ"
+  }
+}

@@ -19,6 +19,7 @@ from typing import Any
 
 import pytest
 from conftest import REPO_ROOT, load_json, load_yaml
+from f1_schema_support import F1_OPERATIONS
 from jsonschema import Draft202012Validator
 from m02_schema_support import without_m02
 from m04_schema_support import without_m04
@@ -265,7 +266,7 @@ def test_g1c_without_m02s_additions_every_response_is_its_pre_m02_snapshot() -> 
     for name, operation in OPERATIONS.items():
         # MSG's `explain` row (ADR 0058 D7) and ST's `get_stream_table` row (ADR 0068) postdate
         # the snapshot.
-        if name in MSG_OPERATIONS | ST_OPERATIONS:
+        if name in MSG_OPERATIONS | ST_OPERATIONS | F1_OPERATIONS:
             continue
         # M04's (ADR 0037 D6), MSG's (ADR 0058), X02's (ADR 0070), OPT's (ADR 0071, ADR 0019
         # Amendment 16) and X04's (ADR 0075, Amendment 17) additions are taken out first, the later

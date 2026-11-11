@@ -19711,3 +19711,84 @@ byte-equal.
 lane. A leaf outside the registered list that names the host, which needs a register entry, not a wider class. F0
 printing `M4 NOT JUDGED` on the RC host, or a class-conditioned test skipping there. A re-take of the m03 inventory,
 which would lapse M03 N1. A third RC machine, which needs its own `--old-host` proof and its own `ref-x86-64` admission.
+
+## R-1030 — the surface chain gains link c_9 = (ADR 0060 D11, `without_f1`, `e2c44b6b…`): F1's `list_capabilities` and `check_admission` tools, after X04's c_8
+
+| | |
+| --- | --- |
+| Date | 2026-11-11 |
+| Decided by | build lane, F1-WO4a, applying ADR 0060 D11 (ADR 0019 Amendment 7; Proposed 2026-11-05, core frozen by R-941) in R-457's form, as X04's final work order took c_8 (R-1010). Number and block by the build lane: R-1020 is held by `wp/V04-after`, so F1 reserves R-1030…R-1039 |
+| Normative text | ADR 0060 D11; ADR 0019 Amendment 7; `scripts/m07a_rc.py` (link c_9) |
+| Evidence | On `wp/F1` (WO1…WO3 done, `main` at `b6cdf552` contained) the served MCP tool list digested to `e59f3d22aef5fa8106d87ca64a01b33cff433ea33a78e6aa2cd959532d053ee3` at F1-WO4a. F1-WO4b's draft form changed `check_admission.md` (no schema), and the list digested to `24966bee7d0e06a55dddade7a8da3f89167c1575288f51248eb0844f4a9d7dbe`. The F1 review's fix round applied the design lane's edits to both texts (`docs/reviews/F1-review.md`, rulings), and the list now digests to `e2c44b6b9c2a7f5689ed4f2fd96b6e9804d1a63e60a5c620d29b5b5d594bcebb` (D_9). `without_f1` (`tests/f1_schema_support.py`) leaves `6be1c002592524126617af8dd65d331513f4a96355f5381dba020ad561a2ba57` = D_8 exactly, and the chain holds down to R-133's `D_0` (`tests/test_m07a_surface_chain.py`, `tests/test_t08_w2_surface_digest.py::test_f1s_surface_move_decomposes_onto_x04s`) |
+| Affected packages | F1; M07a (`scripts/m07a_rc.py`, A37 tests); M07 (the next RC's V17 carry names c_9); T08.A18 (two description reviews) |
+
+**Decision.** `m07a_rc.LINKS` gains c_9 (R-1030; strip `strip_f1` = `without_f1`; D_9 = `e2c44b6b…`, re-taken at F1-WO4b from WO4a's `e59f3d22…` and at the F1 review's fix round from `24966bee…`). The strip removes
+the two tools F1 added, `list_capabilities` and `check_admission`; F1 changes no existing tool, text or response
+schema (`application-results.schema.json` gains three `$defs`; every other R4-G3 snapshot is unchanged). §5.3 item 4
+pins the two new files at their own hashes (`m07a_rc.F1_FILE_SHA256`). Both texts await the design lane's review (F1's
+reviewer pass) and Frank's; `REVIEW.json` records them pending, so `tests/test_t08_w2_description_reviews.py` stays
+red until both are recorded (T08.A18's rule; no agent marks it). A review edit to either text moves D_9: the edit
+re-takes D_9 and this entry's digest within F1, not as a new link.
+
+**Rejected alternatives.** A link per operation (one ADR, one package, one move); taking the next number after
+R-1016 (R-1017…) inside X04's block (R-1010…R-1019 is X04's).
+
+**Watch for.** A strip that removes more than F1's two tools (`test_f1_control_c_9_left_in_place`). A later
+MCP-visible change moves D_9: it becomes c_10. F1-WO4b changed no schema, but it did change `check_admission.md`'s
+description of the draft form, so it re-took D_9 (`e59f3d22…` → `24966bee…`). The F1 review's fix round applied the
+design lane's edits to both texts and re-took D_9 again (`24966bee…` → `e2c44b6b…`).
+
+## R-1031: ADR 0060's errata are one design-lane amendment of its frozen core, edited in place before acceptance: the F1 review's MF-1 set and the F1 design follow-up's four edits (2026-11-11)
+
+| | |
+| --- | --- |
+| Date | 2026-11-11 |
+| Decided by | design lane: the F1 review (`docs/reviews/F1-review.md`, MF-1 and its rulings W2-2, W2-5/W3-10, W3-12, W4a-13, W4b-4 and "49"), applied by the build lane (`docs/F1_DECISIONS.md` F-1); the F1 design follow-up (`docs/reviews/F1-design-followup.md`, rulings F-4, F-5, W1-8, W5-8). Under R-941 a core item changes only by a design-lane ADR amendment: this is that amendment, registered once, as MF-1 asks |
+| Normative text | ADR 0060, sections "Errata (F1 review, 2026-11-11)" and "Errata (F1 design follow-up, 2026-11-11)", with D1, D2, D4, D5, D6, D8, D11, D12, E-F1-11 and the code table as edited; `docs/interfaces-frozen.md` §3 (the S10 note, ADR 0047 C1) for D4's source |
+| Affected packages | F1 (F1-WO6); ADR 0061's work order (payload schemas land with `records.json`); F4 (the `convention:` table, `pip_extra`); F8 (extensions used, the v1 version rule); X01 rest |
+
+**Decision.** ADR 0060 stays Proposed and is amended in place before Frank's acceptance, so that the frozen core text and
+the shipped build agree. The edits: D6's legacy payload gains `per_component` (W2-2); D5 and the code table read
+`gap.capability` as fixed text and `params.capability` as the missing token (W4a-13); the code table gains
+`factory_unavailable` (W3-10); D8 resolves a schema_version 1 revision's units to version 1.0.0 (W3-12); E-F1-11 counts 50
+revisions, split 38/12 (W4b-4); D2's `pip_extra` is the extra the implementation needs in order to be constructed and
+run, so the built-in `lca` contributor's is null (F-4); a kind D1 marks core is core per descriptor only once its payload
+schema is installed, extensions of it `preview` until then (F-5); D4's `convention` space is the six conventions of
+`interfaces-frozen.md` §3 (W1-8); D11's three result shapes live in `registry-snapshot.schema.json` (W5-8, R-1032).
+
+**Rejected.** A separate ADR amending ADR 0060: it is Proposed, and an in-place edit with an errata table is the form
+its two earlier review sections used. Leaving frozen text and build at odds until after acceptance: Frank would accept a
+contract the shipped schema contradicts (MF-1's scenario). One entry per erratum: they are one amendment round of one
+ADR.
+
+**Watch for.** Reading `pip_extra` as "any optional dependency of the implementation set": it brings back the refusal
+of a contributor E01 runs without the extra. A built-in table of `record_type`, `correlation_form` or `data_source`
+landing without its payload schema. The static `convention:` table drifting from `interfaces-frozen.md` §3 (F1-WO6
+part C's test reads §3).
+
+## R-1032: F1's response shapes live in `registry-snapshot.schema.json`, and `application-results.schema.json` reaches them by bare `$ref`s, so ADR 0025 D2.3's partition holds with v2's data and its audit unchanged (W5-8; 2026-11-11)
+
+| | |
+| --- | --- |
+| Date | 2026-11-11 |
+| Decided by | design lane, F1 design follow-up ruling 1 (W5-8, escalated by the build lane at F1-WO5), applying ADR 0025 D2.3 and the addenda mechanism (M02 design note §3.6; R-1005's form); built by F1-WO6 part A |
+| Normative text | ADR 0060 D11 ("Where the shapes live"); `benchmarks/f1/numerical_policy_external.yaml`; `docs/reviews/F1-design-followup.md` §2 and F1-WO6 part A |
+| Evidence | Measured at `a6a760bf` (SMM-TR09). Moving the three `$defs` verbatim and leaving bare `$ref`s leaves the served digest D_9 = `e2c44b6b…` and both `SNAPSHOT_F1` digests (`d786a16f…`, `d04b9839…`) unchanged; a perturbation of a moved body moves both, so the measure is live. On a copy of `schemas/` so changed, `t08_numerical_policy.py --check` passes with v2's bytes `6b449911…` unchanged, and, with the fixture generator following a bare `$ref` (part A), 535 of 536 selected tests pass (the four red tests and two of their files, the six F1 suites, R4-G3, the surface digest and chain, and five other readers of `application-results`); the 536th needs `.git`, absent from the copy, and passes in the worktree. Listing `application-results.schema.json` in F1's addendum instead fails A1(d): "classified but undeclared: `content_sha256`" |
+| Affected packages | F1 (F1-WO6 part A, which blocks F1's merge); T08 (A1, unchanged); every later package that adds a `sha256` name to a response |
+
+**Decision.** WO4a declared `descriptor_sha256`, `registry_sha256` and `self_sha256` as property names in three `$defs`
+of `application-results.schema.json`, a schema in v2's domain, and only F1's addendum classifies them. The definitions
+move, unchanged, to `registry-snapshot.schema.json`, an F1 schema the addendum covers. `application-results` keeps a
+`$def` of each name that is a bare `$ref`. This is option (b) of W5-8. Its premise that (b) moves D_9 and the R4-G3
+snapshots does not hold for a verbatim move, because both are taken over the `$ref`-resolved schema.
+
+**Rejected.** (a) Extending "a reused name keeps its class" to v2-scope schemas: it rewrites the audit of an Accepted
+ADR's assertion (ADR 0025 A1(d)), so v2's data would no longer list every name its own schemas declare. Two packages
+(E01, OPT) already solved this case by structure. (c) A v3 policy: a new policy id for a bookkeeping matter, when every
+record is compared under the policy it names (R-147). (d) Listing `application-results.schema.json` in F1's addendum
+(one line): it fails A1(d), because `content_sha256` is declared only there, and it hands a shared contract schema
+(ADR 0019's) to one package's table: no later addendum may list it, so every later `sha256` name in it would have to enter F1's table.
+
+**Watch for.** A later package that needs an addendum-classified name in a v2-scope schema: it uses the same structure
+(an object in its own schema, reached by a bare `$ref`), or the design lane amends ADR 0025. The build lane never edits
+the audit to fit. A `$def` of `application-results` that is a `$ref` with siblings is inlined as `allOf` and moves D_9.

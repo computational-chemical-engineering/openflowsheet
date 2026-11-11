@@ -1,0 +1,6247 @@
+[
+  {
+    "data_rights": null,
+    "descriptor_format": "openflowsheet-extension-v1",
+    "id": "nTP-v1",
+    "implementation": {
+      "factory": null,
+      "modules": []
+    },
+    "kind": "connection_definition",
+    "limitations": [],
+    "payload": {
+      "legacy": true,
+      "state_definition": "nTP-v1"
+    },
+    "pip_extra": null,
+    "platforms": [
+      "any"
+    ],
+    "provides": [
+      "conn:nTP-v1"
+    ],
+    "requires": [],
+    "status": "released",
+    "title": "Legacy connection definition nTP-v1",
+    "version": "1.0.0"
+  },
+  {
+    "data_rights": null,
+    "descriptor_format": "openflowsheet-extension-v1",
+    "id": "coolprop-heos-v1",
+    "implementation": {
+      "factory": {
+        "attribute": "basis_provider",
+        "key": null,
+        "module": "openflowsheet.application.revision_binding"
+      },
+      "modules": [
+        "openflowsheet/thermo/_coolprop_heos_fluids.py",
+        "openflowsheet/thermo/coolprop_heos.py"
+      ]
+    },
+    "kind": "property_method",
+    "limitations": [],
+    "payload": {
+      "bases": [
+        {
+          "components": [
+            "H2O"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "CO2"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "N2"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "O2"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "Ar"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "CH4"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "C2H6"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "C3H8"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "H2"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "1-Butene"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "Acetone"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "Ammonia"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "Benzene"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "CarbonMonoxide"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "CarbonylSulfide"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "Chlorine"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "cis-2-Butene"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "CycloHexane"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "Cyclopentane"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "CycloPropane"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "D4"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "D5"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "Deuterium"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "Dichloroethane"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "DiethylEther"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "DimethylCarbonate"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "DimethylEther"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "Ethanol"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "EthylBenzene"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "Ethylene"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "EthyleneOxide"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "Fluorine"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "HeavyWater"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "HFE143m"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "HydrogenChloride"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "HydrogenSulfide"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "IsoButane"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "IsoButene"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "Isohexane"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "Isopentane"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "Krypton"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "m-Xylene"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "MD3M"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "MD4M"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "MDM"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "Methanol"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "MethylLinoleate"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "MethylLinolenate"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "MethylOleate"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "MethylPalmitate"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "MethylStearate"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "MM"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "n-Butane"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "n-Decane"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "n-Dodecane"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "n-Hexane"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "n-Nonane"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "n-Octane"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "n-Pentane"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "n-Perfluorobutane"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "n-Perfluorohexane"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "n-Perfluoropentane"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "n-Undecane"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "Neon"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "Neopentane"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "NitrousOxide"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "Novec649"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "o-Xylene"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "OrthoDeuterium"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "OrthoHydrogen"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "p-Xylene"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "ParaDeuterium"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "Propylene"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "PropyleneGlycol"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "Propyne"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "R11"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "R1123"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "R113"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "R1130_E"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "R1132_E"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "R114"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "R115"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "R116"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "R12"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "R1224YDZ"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "R123"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "R1233zd_E"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "R1234yf"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "R1234ze_E"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "R1234ze_Z"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "R124"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "R1243zf"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "R125"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "R13"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "R1336mzz_E"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "R1336mzz_Z"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "R134a"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "R13I1"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "R14"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "R141b"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "R142b"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "R143a"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "R152A"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "R21"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "R218"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "R22"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "R227EA"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "R23"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "R236FA"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "R245ca"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "R245fa"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "R32"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "R365MFC"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "R40"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "R41"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "RC318"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "SulfurDioxide"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "SulfurHexafluoride"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "Tetrahydrofuran"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "Toluene"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "trans-2-Butene"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "VinylChloride"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        },
+        {
+          "components": [
+            "Xenon"
+          ],
+          "record_source": "benchmarks/s07/components.yaml"
+        }
+      ],
+      "derivative_inputs": [
+        "T",
+        "P"
+      ],
+      "flashes": [
+        "TP"
+      ],
+      "legacy_provider_id": "coolprop-heos-v1",
+      "per_component": {
+        "1-Butene": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_1-Butene"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_1-Butene",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "Acetone": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_Acetone"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_Acetone",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "Ammonia": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_Ammonia"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_Ammonia",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "Ar": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_Ar"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_Ar",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "Benzene": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_Benzene"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_Benzene",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "C2H6": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_C2H6"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_C2H6",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "C3H8": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_C3H8"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_C3H8",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "CH4": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_CH4"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_CH4",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "CO2": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_CO2"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_CO2",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "CarbonMonoxide": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_CarbonMonoxide"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_CarbonMonoxide",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "CarbonylSulfide": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_CarbonylSulfide"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_CarbonylSulfide",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "Chlorine": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_Chlorine"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_Chlorine",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "CycloHexane": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_CycloHexane"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_CycloHexane",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "CycloPropane": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_CycloPropane"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_CycloPropane",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "Cyclopentane": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_Cyclopentane"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_Cyclopentane",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "D4": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_D4"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_D4",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "D5": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_D5"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_D5",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "Deuterium": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_Deuterium"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_Deuterium",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "Dichloroethane": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_Dichloroethane"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_Dichloroethane",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "DiethylEther": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_DiethylEther"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_DiethylEther",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "DimethylCarbonate": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_DimethylCarbonate"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_DimethylCarbonate",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "DimethylEther": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_DimethylEther"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_DimethylEther",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "Ethanol": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_Ethanol"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_Ethanol",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "EthylBenzene": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_EthylBenzene"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_EthylBenzene",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "Ethylene": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_Ethylene"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_Ethylene",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "EthyleneOxide": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_EthyleneOxide"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_EthyleneOxide",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "Fluorine": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_Fluorine"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_Fluorine",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "H2": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_H2"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_H2",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "H2O": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_H2O"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_H2O",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "HFE143m": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_HFE143m"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_HFE143m",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "HeavyWater": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_HeavyWater"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_HeavyWater",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "HydrogenChloride": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_HydrogenChloride"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_HydrogenChloride",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "HydrogenSulfide": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_HydrogenSulfide"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_HydrogenSulfide",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "IsoButane": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_IsoButane"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_IsoButane",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "IsoButene": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_IsoButene"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_IsoButene",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "Isohexane": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_Isohexane"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_Isohexane",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "Isopentane": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_Isopentane"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_Isopentane",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "Krypton": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_Krypton"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_Krypton",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "MD3M": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_MD3M"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_MD3M",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "MD4M": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_MD4M"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_MD4M",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "MDM": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_MDM"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_MDM",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "MM": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_MM"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_MM",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "Methanol": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_Methanol"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_Methanol",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "MethylLinoleate": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_MethylLinoleate"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_MethylLinoleate",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "MethylLinolenate": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_MethylLinolenate"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_MethylLinolenate",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "MethylOleate": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_MethylOleate"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_MethylOleate",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "MethylPalmitate": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_MethylPalmitate"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_MethylPalmitate",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "MethylStearate": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_MethylStearate"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_MethylStearate",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "N2": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_N2"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_N2",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "Neon": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_Neon"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_Neon",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "Neopentane": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_Neopentane"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_Neopentane",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "NitrousOxide": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_NitrousOxide"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_NitrousOxide",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "Novec649": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_Novec649"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_Novec649",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "O2": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_O2"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_O2",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "OrthoDeuterium": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_OrthoDeuterium"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_OrthoDeuterium",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "OrthoHydrogen": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_OrthoHydrogen"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_OrthoHydrogen",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "ParaDeuterium": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_ParaDeuterium"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_ParaDeuterium",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "Propylene": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_Propylene"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_Propylene",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "PropyleneGlycol": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_PropyleneGlycol"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_PropyleneGlycol",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "Propyne": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_Propyne"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_Propyne",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "R11": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_R11"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_R11",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "R1123": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_R1123"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_R1123",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "R113": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_R113"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_R113",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "R1130_E": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_R1130_E"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_R1130_E",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "R1132_E": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_R1132_E"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_R1132_E",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "R114": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_R114"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_R114",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "R115": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_R115"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_R115",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "R116": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_R116"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_R116",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "R12": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_R12"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_R12",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "R1224YDZ": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_R1224YDZ"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_R1224YDZ",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "R123": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_R123"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_R123",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "R1233zd_E": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_R1233zd_E"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_R1233zd_E",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "R1234yf": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_R1234yf"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_R1234yf",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "R1234ze_E": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_R1234ze_E"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_R1234ze_E",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "R1234ze_Z": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_R1234ze_Z"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_R1234ze_Z",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "R124": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_R124"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_R124",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "R1243zf": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_R1243zf"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_R1243zf",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "R125": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_R125"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_R125",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "R13": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_R13"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_R13",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "R1336mzz_E": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_R1336mzz_E"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_R1336mzz_E",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "R1336mzz_Z": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_R1336mzz_Z"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_R1336mzz_Z",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "R134a": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_R134a"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_R134a",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "R13I1": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_R13I1"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_R13I1",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "R14": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_R14"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_R14",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "R141b": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_R141b"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_R141b",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "R142b": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_R142b"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_R142b",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "R143a": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_R143a"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_R143a",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "R152A": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_R152A"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_R152A",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "R21": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_R21"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_R21",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "R218": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_R218"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_R218",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "R22": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_R22"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_R22",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "R227EA": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_R227EA"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_R227EA",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "R23": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_R23"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_R23",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "R236FA": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_R236FA"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_R236FA",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "R245ca": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_R245ca"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_R245ca",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "R245fa": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_R245fa"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_R245fa",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "R32": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_R32"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_R32",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "R365MFC": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_R365MFC"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_R365MFC",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "R40": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_R40"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_R40",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "R41": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_R41"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_R41",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "RC318": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_RC318"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_RC318",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "SulfurDioxide": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_SulfurDioxide"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_SulfurDioxide",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "SulfurHexafluoride": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_SulfurHexafluoride"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_SulfurHexafluoride",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "Tetrahydrofuran": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_Tetrahydrofuran"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_Tetrahydrofuran",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "Toluene": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_Toluene"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_Toluene",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "VinylChloride": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_VinylChloride"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_VinylChloride",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "Xenon": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_Xenon"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_Xenon",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "cis-2-Butene": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_cis-2-Butene"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_cis-2-Butene",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "m-Xylene": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_m-Xylene"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_m-Xylene",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "n-Butane": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_n-Butane"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_n-Butane",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "n-Decane": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_n-Decane"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_n-Decane",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "n-Dodecane": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_n-Dodecane"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_n-Dodecane",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "n-Hexane": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_n-Hexane"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_n-Hexane",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "n-Nonane": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_n-Nonane"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_n-Nonane",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "n-Octane": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_n-Octane"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_n-Octane",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "n-Pentane": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_n-Pentane"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_n-Pentane",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "n-Perfluorobutane": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_n-Perfluorobutane"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_n-Perfluorobutane",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "n-Perfluorohexane": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_n-Perfluorohexane"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_n-Perfluorohexane",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "n-Perfluoropentane": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_n-Perfluoropentane"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_n-Perfluoropentane",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "n-Undecane": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_n-Undecane"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_n-Undecane",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "o-Xylene": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_o-Xylene"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_o-Xylene",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "p-Xylene": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_p-Xylene"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_p-Xylene",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        },
+        "trans-2-Butene": {
+          "derivative_inputs": [
+            "T",
+            "P",
+            "n_trans-2-Butene"
+          ],
+          "properties": [
+            "h",
+            "s",
+            "v",
+            "Z",
+            "cp",
+            "lnphi_trans-2-Butene",
+            "Psat",
+            "Tsat"
+          ],
+          "reference_convention": "COOLPROP-DEF-ref-v1"
+        }
+      },
+      "phases": [
+        "LIQUID",
+        "VAPOR"
+      ],
+      "properties": [
+        "h",
+        "s",
+        "v",
+        "Z",
+        "cp",
+        "Psat",
+        "Tsat"
+      ],
+      "reference_convention": "per_component",
+      "selectable": true,
+      "verifier_fresh": true
+    },
+    "pip_extra": "coolprop",
+    "platforms": [
+      "any"
+    ],
+    "provides": [
+      "conn:nTP-v1",
+      "legacy:coolprop-heos-v1"
+    ],
+    "requires": [],
+    "status": "released",
+    "title": "Legacy property method coolprop-heos-v1",
+    "version": "1.0.0"
+  },
+  {
+    "data_rights": null,
+    "descriptor_format": "openflowsheet-extension-v1",
+    "id": "iapws95-v1",
+    "implementation": {
+      "factory": {
+        "attribute": "basis_provider",
+        "key": null,
+        "module": "openflowsheet.application.revision_binding"
+      },
+      "modules": [
+        "openflowsheet/thermo/iapws95.py"
+      ]
+    },
+    "kind": "property_method",
+    "limitations": [],
+    "payload": {
+      "bases": [
+        {
+          "components": [
+            "H2O"
+          ],
+          "record_source": "benchmarks/s05/components.yaml"
+        }
+      ],
+      "derivative_inputs": [
+        "T",
+        "P",
+        "n_H2O"
+      ],
+      "flashes": [
+        "TP"
+      ],
+      "legacy_provider_id": "iapws95-v1",
+      "per_component": null,
+      "phases": [
+        "LIQUID",
+        "VAPOR"
+      ],
+      "properties": [
+        "h",
+        "s",
+        "v",
+        "Z",
+        "cp",
+        "lnphi_H2O",
+        "Psat",
+        "Tsat"
+      ],
+      "reference_convention": "IAPWS95-ref-v1",
+      "selectable": true,
+      "verifier_fresh": true
+    },
+    "pip_extra": null,
+    "platforms": [
+      "any"
+    ],
+    "provides": [
+      "conn:nTP-v1",
+      "legacy:iapws95-v1"
+    ],
+    "requires": [],
+    "status": "released",
+    "title": "Legacy property method iapws95-v1",
+    "version": "1.0.0"
+  },
+  {
+    "data_rights": null,
+    "descriptor_format": "openflowsheet-extension-v1",
+    "id": "pr-c1-v1",
+    "implementation": {
+      "factory": {
+        "attribute": "basis_provider",
+        "key": null,
+        "module": "openflowsheet.application.revision_binding"
+      },
+      "modules": [
+        "openflowsheet/thermo/pr_c1.py"
+      ]
+    },
+    "kind": "property_method",
+    "limitations": [],
+    "payload": {
+      "bases": [
+        {
+          "components": [
+            "H2",
+            "N2",
+            "NH3",
+            "Ar",
+            "CH4"
+          ],
+          "record_source": "benchmarks/m01/components.yaml"
+        }
+      ],
+      "derivative_inputs": [
+        "T",
+        "P",
+        "n_H2",
+        "n_N2",
+        "n_NH3",
+        "n_Ar",
+        "n_CH4"
+      ],
+      "flashes": [
+        "TP"
+      ],
+      "legacy_provider_id": "pr-c1-v1",
+      "per_component": null,
+      "phases": [
+        "LIQUID",
+        "VAPOR"
+      ],
+      "properties": [
+        "h",
+        "Z",
+        "v",
+        "lnphi_H2",
+        "lnphi_N2",
+        "lnphi_NH3",
+        "lnphi_Ar",
+        "lnphi_CH4"
+      ],
+      "reference_convention": "PR-C1-ref-v1",
+      "selectable": true,
+      "verifier_fresh": true
+    },
+    "pip_extra": null,
+    "platforms": [
+      "any"
+    ],
+    "provides": [
+      "conn:nTP-v1",
+      "legacy:pr-c1-v1"
+    ],
+    "requires": [],
+    "status": "released",
+    "title": "Legacy property method pr-c1-v1",
+    "version": "1.0.0"
+  },
+  {
+    "data_rights": null,
+    "descriptor_format": "openflowsheet-extension-v1",
+    "id": "pr-lib-v1",
+    "implementation": {
+      "factory": {
+        "attribute": "basis_provider",
+        "key": null,
+        "module": "openflowsheet.application.revision_binding"
+      },
+      "modules": [
+        "openflowsheet/thermo/pr_lib.py"
+      ]
+    },
+    "kind": "property_method",
+    "limitations": [],
+    "payload": {
+      "bases": [],
+      "derivative_inputs": [
+        "T",
+        "P",
+        "n_H2",
+        "n_N2",
+        "n_Ar",
+        "n_CH4",
+        "n_H2O",
+        "n_CO2",
+        "n_O2",
+        "n_C2H6",
+        "n_C3H8"
+      ],
+      "flashes": [],
+      "legacy_provider_id": "pr-lib-v1",
+      "per_component": null,
+      "phases": [
+        "VAPOR"
+      ],
+      "properties": [
+        "h",
+        "Z",
+        "v",
+        "lnphi_H2",
+        "lnphi_N2",
+        "lnphi_Ar",
+        "lnphi_CH4",
+        "lnphi_H2O",
+        "lnphi_CO2",
+        "lnphi_O2",
+        "lnphi_C2H6",
+        "lnphi_C3H8"
+      ],
+      "reference_convention": "PR-C1-ref-v1",
+      "selectable": false,
+      "verifier_fresh": false
+    },
+    "pip_extra": null,
+    "platforms": [
+      "any"
+    ],
+    "provides": [
+      "conn:nTP-v1",
+      "legacy:pr-lib-v1"
+    ],
+    "requires": [],
+    "status": "released",
+    "title": "Legacy property method pr-lib-v1",
+    "version": "1.0.0"
+  },
+  {
+    "data_rights": null,
+    "descriptor_format": "openflowsheet-extension-v1",
+    "id": "syn001",
+    "implementation": {
+      "factory": {
+        "attribute": "basis_provider",
+        "key": null,
+        "module": "openflowsheet.application.revision_binding"
+      },
+      "modules": [
+        "openflowsheet/thermo/syn001.py"
+      ]
+    },
+    "kind": "property_method",
+    "limitations": [],
+    "payload": {
+      "bases": [
+        {
+          "components": [
+            "A",
+            "B",
+            "C"
+          ],
+          "record_source": "benchmarks/syn001/components.yaml"
+        }
+      ],
+      "derivative_inputs": [
+        "T",
+        "P"
+      ],
+      "flashes": [
+        "TP"
+      ],
+      "legacy_provider_id": "syn001",
+      "per_component": null,
+      "phases": [
+        "LIQUID",
+        "VAPOR"
+      ],
+      "properties": [
+        "h",
+        "lnK"
+      ],
+      "reference_convention": "SYN-001-ref-v1",
+      "selectable": true,
+      "verifier_fresh": true
+    },
+    "pip_extra": null,
+    "platforms": [
+      "any"
+    ],
+    "provides": [
+      "conn:nTP-v1",
+      "legacy:syn001"
+    ],
+    "requires": [],
+    "status": "released",
+    "title": "Legacy property method syn001",
+    "version": "1.0.0"
+  },
+  {
+    "data_rights": null,
+    "descriptor_format": "openflowsheet-extension-v1",
+    "id": "wilson-ig-v1",
+    "implementation": {
+      "factory": {
+        "attribute": "basis_provider",
+        "key": null,
+        "module": "openflowsheet.application.revision_binding"
+      },
+      "modules": [
+        "openflowsheet/thermo/wilson_ig.py"
+      ]
+    },
+    "kind": "property_method",
+    "limitations": [],
+    "payload": {
+      "bases": [],
+      "derivative_inputs": [
+        "T",
+        "P",
+        "n_CH3OH",
+        "n_C2H5OH",
+        "n_H2O"
+      ],
+      "flashes": [
+        "TP"
+      ],
+      "legacy_provider_id": "wilson-ig-v1",
+      "per_component": null,
+      "phases": [
+        "LIQUID",
+        "VAPOR"
+      ],
+      "properties": [
+        "h",
+        "lnphi_CH3OH",
+        "lnphi_C2H5OH",
+        "lnphi_H2O"
+      ],
+      "reference_convention": "WILSON-IG-ref-v1",
+      "selectable": false,
+      "verifier_fresh": false
+    },
+    "pip_extra": null,
+    "platforms": [
+      "any"
+    ],
+    "provides": [
+      "conn:nTP-v1",
+      "legacy:wilson-ig-v1"
+    ],
+    "requires": [],
+    "status": "released",
+    "title": "Legacy property method wilson-ig-v1",
+    "version": "1.0.0"
+  },
+  {
+    "data_rights": null,
+    "descriptor_format": "openflowsheet-extension-v1",
+    "id": "wilson-ig-v2",
+    "implementation": {
+      "factory": {
+        "attribute": "basis_provider",
+        "key": null,
+        "module": "openflowsheet.application.revision_binding"
+      },
+      "modules": [
+        "openflowsheet/thermo/wilson_ig.py",
+        "openflowsheet/thermo/wilson_ig_v2.py"
+      ]
+    },
+    "kind": "property_method",
+    "limitations": [],
+    "payload": {
+      "bases": [
+        {
+          "components": [
+            "CH3OH",
+            "C2H5OH",
+            "H2O"
+          ],
+          "record_source": "benchmarks/s10/records.yaml"
+        }
+      ],
+      "derivative_inputs": [
+        "T",
+        "P",
+        "n_CH3OH",
+        "n_C2H5OH",
+        "n_H2O"
+      ],
+      "flashes": [
+        "TP"
+      ],
+      "legacy_provider_id": "wilson-ig-v2",
+      "per_component": null,
+      "phases": [
+        "LIQUID",
+        "VAPOR"
+      ],
+      "properties": [
+        "h",
+        "lnphi_CH3OH",
+        "lnphi_C2H5OH",
+        "lnphi_H2O",
+        "s"
+      ],
+      "reference_convention": "WILSON-IG-ref-v1",
+      "selectable": true,
+      "verifier_fresh": true
+    },
+    "pip_extra": null,
+    "platforms": [
+      "any"
+    ],
+    "provides": [
+      "conn:nTP-v1",
+      "legacy:wilson-ig-v2"
+    ],
+    "requires": [],
+    "status": "released",
+    "title": "Legacy property method wilson-ig-v2",
+    "version": "1.0.0"
+  },
+  {
+    "data_rights": null,
+    "descriptor_format": "openflowsheet-extension-v1",
+    "id": "c1.adiabatic_mixer",
+    "implementation": {
+      "factory": {
+        "attribute": "MODEL_BUILDERS",
+        "key": "c1.adiabatic_mixer",
+        "module": "openflowsheet.application.revision_binding"
+      },
+      "modules": [
+        "openflowsheet/models/c1/mixer.py"
+      ]
+    },
+    "kind": "unit_model",
+    "limitations": [],
+    "payload": {
+      "bindable": true,
+      "family": "c1",
+      "signature": {
+        "choices": [],
+        "model_id": "c1.adiabatic_mixer",
+        "pins": [],
+        "ports": [
+          {
+            "direction": "inlet",
+            "kind": "material",
+            "multiplicity": "many",
+            "name": "inlet"
+          },
+          {
+            "direction": "outlet",
+            "kind": "material",
+            "multiplicity": 1,
+            "name": "outlet"
+          }
+        ],
+        "required": [],
+        "zero": [
+          "pressure_drop"
+        ]
+      }
+    },
+    "pip_extra": null,
+    "platforms": [
+      "any"
+    ],
+    "provides": [],
+    "requires": [
+      [
+        "conn:nTP-v1"
+      ],
+      [
+        "legacy:pr-c1-v1"
+      ]
+    ],
+    "status": "released",
+    "title": "Legacy unit model c1.adiabatic_mixer",
+    "version": "1.0.0"
+  },
+  {
+    "data_rights": null,
+    "descriptor_format": "openflowsheet-extension-v1",
+    "id": "c1.feed_source",
+    "implementation": {
+      "factory": {
+        "attribute": "MODEL_BUILDERS",
+        "key": "c1.feed_source",
+        "module": "openflowsheet.application.revision_binding"
+      },
+      "modules": [
+        "openflowsheet/models/c1/feed.py"
+      ]
+    },
+    "kind": "unit_model",
+    "limitations": [],
+    "payload": {
+      "bindable": true,
+      "family": "c1",
+      "signature": {
+        "choices": [],
+        "model_id": "c1.feed_source",
+        "pins": [
+          {
+            "name": "flows",
+            "port": "outlet",
+            "quantity": "flow",
+            "specifications": [
+              {
+                "component": "{component}",
+                "fixes": [
+                  "flows"
+                ],
+                "kind": "molar_flow",
+                "object_id": "{connection:outlet}",
+                "object_type": "connection",
+                "path": "state.n",
+                "si_unit": "mol/s"
+              }
+            ]
+          },
+          {
+            "name": "temperature",
+            "port": "outlet",
+            "quantity": "temperature",
+            "specifications": [
+              {
+                "component": null,
+                "fixes": [
+                  "temperature"
+                ],
+                "kind": "temperature",
+                "object_id": "{connection:outlet}",
+                "object_type": "connection",
+                "path": "state.T",
+                "si_unit": "K"
+              },
+              {
+                "component": null,
+                "fixes": [
+                  "temperature"
+                ],
+                "kind": "temperature",
+                "object_id": "{instance}",
+                "object_type": "instance",
+                "path": "outlet.T",
+                "si_unit": "K"
+              }
+            ]
+          },
+          {
+            "name": "pressure",
+            "port": "outlet",
+            "quantity": "pressure",
+            "specifications": [
+              {
+                "component": null,
+                "fixes": [
+                  "pressure"
+                ],
+                "kind": "pressure",
+                "object_id": "{connection:outlet}",
+                "object_type": "connection",
+                "path": "state.P",
+                "si_unit": "Pa"
+              },
+              {
+                "component": null,
+                "fixes": [
+                  "pressure"
+                ],
+                "kind": "pressure",
+                "object_id": "{instance}",
+                "object_type": "instance",
+                "path": "outlet.P",
+                "si_unit": "Pa"
+              }
+            ]
+          }
+        ],
+        "ports": [
+          {
+            "direction": "outlet",
+            "kind": "material",
+            "multiplicity": 1,
+            "name": "outlet"
+          }
+        ],
+        "required": [],
+        "zero": []
+      }
+    },
+    "pip_extra": null,
+    "platforms": [
+      "any"
+    ],
+    "provides": [],
+    "requires": [
+      [
+        "conn:nTP-v1"
+      ],
+      [
+        "legacy:pr-c1-v1"
+      ]
+    ],
+    "status": "released",
+    "title": "Legacy unit model c1.feed_source",
+    "version": "1.0.0"
+  },
+  {
+    "data_rights": null,
+    "descriptor_format": "openflowsheet-extension-v1",
+    "id": "c1.product_sink",
+    "implementation": {
+      "factory": {
+        "attribute": "MODEL_BUILDERS",
+        "key": "c1.product_sink",
+        "module": "openflowsheet.application.revision_binding"
+      },
+      "modules": [
+        "openflowsheet/models/c1/sink.py"
+      ]
+    },
+    "kind": "unit_model",
+    "limitations": [],
+    "payload": {
+      "bindable": true,
+      "family": "c1",
+      "signature": {
+        "choices": [],
+        "model_id": "c1.product_sink",
+        "pins": [],
+        "ports": [
+          {
+            "direction": "inlet",
+            "kind": "material",
+            "multiplicity": 1,
+            "name": "inlet"
+          }
+        ],
+        "required": [],
+        "zero": []
+      }
+    },
+    "pip_extra": null,
+    "platforms": [
+      "any"
+    ],
+    "provides": [],
+    "requires": [
+      [
+        "conn:nTP-v1"
+      ],
+      [
+        "legacy:pr-c1-v1"
+      ]
+    ],
+    "status": "released",
+    "title": "Legacy unit model c1.product_sink",
+    "version": "1.0.0"
+  },
+  {
+    "data_rights": null,
+    "descriptor_format": "openflowsheet-extension-v1",
+    "id": "c1.reactor",
+    "implementation": {
+      "factory": {
+        "attribute": "MODEL_BUILDERS",
+        "key": "c1.reactor",
+        "module": "openflowsheet.application.revision_binding"
+      },
+      "modules": [
+        "openflowsheet/models/c1/reactor.py"
+      ]
+    },
+    "kind": "unit_model",
+    "limitations": [],
+    "payload": {
+      "bindable": true,
+      "family": "c1",
+      "signature": {
+        "choices": [],
+        "model_id": "c1.reactor",
+        "pins": [],
+        "ports": [
+          {
+            "direction": "inlet",
+            "kind": "material",
+            "multiplicity": 1,
+            "name": "inlet"
+          },
+          {
+            "direction": "outlet",
+            "kind": "material",
+            "multiplicity": 1,
+            "name": "outlet"
+          },
+          {
+            "direction": "inlet",
+            "kind": "energy",
+            "multiplicity": 1,
+            "name": "duty"
+          }
+        ],
+        "required": [
+          "n_tubes"
+        ],
+        "zero": []
+      }
+    },
+    "pip_extra": null,
+    "platforms": [
+      "any"
+    ],
+    "provides": [],
+    "requires": [
+      [
+        "conn:nTP-v1"
+      ],
+      [
+        "legacy:pr-c1-v1"
+      ]
+    ],
+    "status": "released",
+    "title": "Legacy unit model c1.reactor",
+    "version": "1.0.0"
+  },
+  {
+    "data_rights": null,
+    "descriptor_format": "openflowsheet-extension-v1",
+    "id": "c1.reactor_standin",
+    "implementation": {
+      "factory": {
+        "attribute": "MODEL_BUILDERS",
+        "key": "c1.reactor_standin",
+        "module": "openflowsheet.application.revision_binding"
+      },
+      "modules": [
+        "openflowsheet/models/c1/reactor.py",
+        "openflowsheet/models/c1/reactor_standin.py"
+      ]
+    },
+    "kind": "unit_model",
+    "limitations": [],
+    "payload": {
+      "bindable": true,
+      "family": "c1",
+      "signature": {
+        "choices": [],
+        "model_id": "c1.reactor_standin",
+        "pins": [],
+        "ports": [
+          {
+            "direction": "inlet",
+            "kind": "material",
+            "multiplicity": 1,
+            "name": "inlet"
+          },
+          {
+            "direction": "outlet",
+            "kind": "material",
+            "multiplicity": 1,
+            "name": "outlet"
+          },
+          {
+            "direction": "inlet",
+            "kind": "energy",
+            "multiplicity": 1,
+            "name": "duty"
+          }
+        ],
+        "required": [
+          "n_tubes"
+        ],
+        "zero": []
+      }
+    },
+    "pip_extra": null,
+    "platforms": [
+      "any"
+    ],
+    "provides": [],
+    "requires": [
+      [
+        "conn:nTP-v1"
+      ],
+      [
+        "legacy:pr-c1-v1"
+      ]
+    ],
+    "status": "released",
+    "title": "Legacy unit model c1.reactor_standin",
+    "version": "1.0.0"
+  },
+  {
+    "data_rights": null,
+    "descriptor_format": "openflowsheet-extension-v1",
+    "id": "c1.reactor_surrogate",
+    "implementation": {
+      "factory": {
+        "attribute": "MODEL_BUILDERS",
+        "key": "c1.reactor_surrogate",
+        "module": "openflowsheet.application.revision_binding"
+      },
+      "modules": [
+        "openflowsheet/models/c1/reactor.py"
+      ]
+    },
+    "kind": "unit_model",
+    "limitations": [],
+    "payload": {
+      "bindable": true,
+      "family": "c1",
+      "signature": {
+        "choices": [],
+        "model_id": "c1.reactor_surrogate",
+        "pins": [],
+        "ports": [
+          {
+            "direction": "inlet",
+            "kind": "material",
+            "multiplicity": 1,
+            "name": "inlet"
+          },
+          {
+            "direction": "outlet",
+            "kind": "material",
+            "multiplicity": 1,
+            "name": "outlet"
+          },
+          {
+            "direction": "inlet",
+            "kind": "energy",
+            "multiplicity": 1,
+            "name": "duty"
+          }
+        ],
+        "required": [
+          "n_tubes"
+        ],
+        "zero": []
+      }
+    },
+    "pip_extra": null,
+    "platforms": [
+      "any"
+    ],
+    "provides": [],
+    "requires": [
+      [
+        "conn:nTP-v1"
+      ],
+      [
+        "legacy:pr-c1-v1"
+      ]
+    ],
+    "status": "released",
+    "title": "Legacy unit model c1.reactor_surrogate",
+    "version": "1.0.0"
+  },
+  {
+    "data_rights": null,
+    "descriptor_format": "openflowsheet-extension-v1",
+    "id": "c1.stream_splitter",
+    "implementation": {
+      "factory": {
+        "attribute": "MODEL_BUILDERS",
+        "key": "c1.stream_splitter",
+        "module": "openflowsheet.application.revision_binding"
+      },
+      "modules": [
+        "openflowsheet/models/c1/splitter.py"
+      ]
+    },
+    "kind": "unit_model",
+    "limitations": [],
+    "payload": {
+      "bindable": true,
+      "family": "c1",
+      "signature": {
+        "choices": [],
+        "model_id": "c1.stream_splitter",
+        "pins": [],
+        "ports": [
+          {
+            "direction": "inlet",
+            "kind": "material",
+            "multiplicity": 1,
+            "name": "inlet"
+          },
+          {
+            "direction": "outlet",
+            "kind": "material",
+            "multiplicity": 1,
+            "name": "recycle"
+          },
+          {
+            "direction": "outlet",
+            "kind": "material",
+            "multiplicity": 1,
+            "name": "purge"
+          }
+        ],
+        "required": [
+          "split_fraction"
+        ],
+        "zero": []
+      }
+    },
+    "pip_extra": null,
+    "platforms": [
+      "any"
+    ],
+    "provides": [],
+    "requires": [
+      [
+        "conn:nTP-v1"
+      ],
+      [
+        "legacy:pr-c1-v1"
+      ]
+    ],
+    "status": "released",
+    "title": "Legacy unit model c1.stream_splitter",
+    "version": "1.0.0"
+  },
+  {
+    "data_rights": null,
+    "descriptor_format": "openflowsheet-extension-v1",
+    "id": "c1.tp_flash",
+    "implementation": {
+      "factory": {
+        "attribute": "MODEL_BUILDERS",
+        "key": "c1.tp_flash",
+        "module": "openflowsheet.application.revision_binding"
+      },
+      "modules": [
+        "openflowsheet/models/c1/flash.py"
+      ]
+    },
+    "kind": "unit_model",
+    "limitations": [],
+    "payload": {
+      "bindable": true,
+      "family": "c1",
+      "signature": {
+        "choices": [],
+        "model_id": "c1.tp_flash",
+        "pins": [
+          {
+            "name": "temperature",
+            "port": "vapor",
+            "quantity": "temperature",
+            "specifications": [
+              {
+                "component": null,
+                "fixes": [
+                  "temperature"
+                ],
+                "kind": "temperature",
+                "object_id": "{connection:vapor}",
+                "object_type": "connection",
+                "path": "state.T",
+                "si_unit": "K"
+              },
+              {
+                "component": null,
+                "fixes": [
+                  "temperature",
+                  "liquid_temperature"
+                ],
+                "kind": "temperature",
+                "object_id": "{instance}",
+                "object_type": "instance",
+                "path": "outlet.T",
+                "si_unit": "K"
+              }
+            ]
+          },
+          {
+            "name": "pressure",
+            "port": "vapor",
+            "quantity": "pressure",
+            "specifications": [
+              {
+                "component": null,
+                "fixes": [
+                  "pressure"
+                ],
+                "kind": "pressure",
+                "object_id": "{connection:vapor}",
+                "object_type": "connection",
+                "path": "state.P",
+                "si_unit": "Pa"
+              },
+              {
+                "component": null,
+                "fixes": [
+                  "pressure",
+                  "liquid_pressure"
+                ],
+                "kind": "pressure",
+                "object_id": "{instance}",
+                "object_type": "instance",
+                "path": "outlet.P",
+                "si_unit": "Pa"
+              }
+            ]
+          },
+          {
+            "name": "liquid_temperature",
+            "port": "liquid",
+            "quantity": "temperature",
+            "specifications": [
+              {
+                "component": null,
+                "fixes": [
+                  "liquid_temperature"
+                ],
+                "kind": "temperature",
+                "object_id": "{connection:liquid}",
+                "object_type": "connection",
+                "path": "state.T",
+                "si_unit": "K"
+              },
+              {
+                "component": null,
+                "fixes": [
+                  "liquid_temperature",
+                  "temperature"
+                ],
+                "kind": "temperature",
+                "object_id": "{instance}",
+                "object_type": "instance",
+                "path": "outlet.T",
+                "si_unit": "K"
+              }
+            ]
+          },
+          {
+            "name": "liquid_pressure",
+            "port": "liquid",
+            "quantity": "pressure",
+            "specifications": [
+              {
+                "component": null,
+                "fixes": [
+                  "liquid_pressure"
+                ],
+                "kind": "pressure",
+                "object_id": "{connection:liquid}",
+                "object_type": "connection",
+                "path": "state.P",
+                "si_unit": "Pa"
+              },
+              {
+                "component": null,
+                "fixes": [
+                  "liquid_pressure",
+                  "pressure"
+                ],
+                "kind": "pressure",
+                "object_id": "{instance}",
+                "object_type": "instance",
+                "path": "outlet.P",
+                "si_unit": "Pa"
+              }
+            ]
+          }
+        ],
+        "ports": [
+          {
+            "direction": "inlet",
+            "kind": "material",
+            "multiplicity": 1,
+            "name": "inlet"
+          },
+          {
+            "direction": "outlet",
+            "kind": "material",
+            "multiplicity": 1,
+            "name": "vapor"
+          },
+          {
+            "direction": "outlet",
+            "kind": "material",
+            "multiplicity": 1,
+            "name": "liquid"
+          },
+          {
+            "direction": "inlet",
+            "kind": "energy",
+            "multiplicity": 1,
+            "name": "duty"
+          }
+        ],
+        "required": [],
+        "zero": [
+          "pressure_drop"
+        ]
+      }
+    },
+    "pip_extra": null,
+    "platforms": [
+      "any"
+    ],
+    "provides": [],
+    "requires": [
+      [
+        "conn:nTP-v1"
+      ],
+      [
+        "legacy:pr-c1-v1"
+      ]
+    ],
+    "status": "released",
+    "title": "Legacy unit model c1.tp_flash",
+    "version": "1.0.0"
+  },
+  {
+    "data_rights": null,
+    "descriptor_format": "openflowsheet-extension-v1",
+    "id": "c1.tp_heater",
+    "implementation": {
+      "factory": {
+        "attribute": "MODEL_BUILDERS",
+        "key": "c1.tp_heater",
+        "module": "openflowsheet.application.revision_binding"
+      },
+      "modules": [
+        "openflowsheet/models/c1/heater.py"
+      ]
+    },
+    "kind": "unit_model",
+    "limitations": [],
+    "payload": {
+      "bindable": true,
+      "family": "c1",
+      "signature": {
+        "choices": [],
+        "model_id": "c1.tp_heater",
+        "pins": [
+          {
+            "name": "outlet_temperature",
+            "port": "outlet",
+            "quantity": "temperature",
+            "specifications": [
+              {
+                "component": null,
+                "fixes": [
+                  "outlet_temperature"
+                ],
+                "kind": "temperature",
+                "object_id": "{connection:outlet}",
+                "object_type": "connection",
+                "path": "state.T",
+                "si_unit": "K"
+              },
+              {
+                "component": null,
+                "fixes": [
+                  "outlet_temperature"
+                ],
+                "kind": "temperature",
+                "object_id": "{instance}",
+                "object_type": "instance",
+                "path": "outlet.T",
+                "si_unit": "K"
+              }
+            ]
+          }
+        ],
+        "ports": [
+          {
+            "direction": "inlet",
+            "kind": "material",
+            "multiplicity": 1,
+            "name": "inlet"
+          },
+          {
+            "direction": "outlet",
+            "kind": "material",
+            "multiplicity": 1,
+            "name": "outlet"
+          },
+          {
+            "direction": "inlet",
+            "kind": "energy",
+            "multiplicity": 1,
+            "name": "duty"
+          }
+        ],
+        "required": [],
+        "zero": [
+          "pressure_drop"
+        ]
+      }
+    },
+    "pip_extra": null,
+    "platforms": [
+      "any"
+    ],
+    "provides": [],
+    "requires": [
+      [
+        "conn:nTP-v1"
+      ],
+      [
+        "legacy:pr-c1-v1"
+      ]
+    ],
+    "status": "released",
+    "title": "Legacy unit model c1.tp_heater",
+    "version": "1.0.0"
+  },
+  {
+    "data_rights": null,
+    "descriptor_format": "openflowsheet-extension-v1",
+    "id": "syn001.adiabatic_mixer",
+    "implementation": {
+      "factory": {
+        "attribute": "MODEL_BUILDERS",
+        "key": "syn001.adiabatic_mixer",
+        "module": "openflowsheet.application.revision_binding"
+      },
+      "modules": [
+        "openflowsheet/models/syn001/mixer.py"
+      ]
+    },
+    "kind": "unit_model",
+    "limitations": [],
+    "payload": {
+      "bindable": true,
+      "family": "syn001",
+      "signature": {
+        "choices": [],
+        "model_id": "syn001.adiabatic_mixer",
+        "pins": [],
+        "ports": [
+          {
+            "direction": "inlet",
+            "kind": "material",
+            "multiplicity": "many",
+            "name": "inlet"
+          },
+          {
+            "direction": "outlet",
+            "kind": "material",
+            "multiplicity": 1,
+            "name": "outlet"
+          }
+        ],
+        "required": [],
+        "zero": [
+          "pressure_drop"
+        ]
+      }
+    },
+    "pip_extra": null,
+    "platforms": [
+      "any"
+    ],
+    "provides": [],
+    "requires": [
+      [
+        "conn:nTP-v1"
+      ],
+      [
+        "legacy:syn001",
+        "legacy:wilson-ig-v2"
+      ]
+    ],
+    "status": "released",
+    "title": "Legacy unit model syn001.adiabatic_mixer",
+    "version": "1.0.0"
+  },
+  {
+    "data_rights": null,
+    "descriptor_format": "openflowsheet-extension-v1",
+    "id": "syn001.cascade",
+    "implementation": {
+      "factory": null,
+      "modules": []
+    },
+    "kind": "unit_model",
+    "limitations": [],
+    "payload": {
+      "bindable": false,
+      "family": "syn001",
+      "signature": null
+    },
+    "pip_extra": null,
+    "platforms": [
+      "any"
+    ],
+    "provides": [],
+    "requires": [
+      [
+        "conn:nTP-v1"
+      ]
+    ],
+    "status": "released",
+    "title": "Legacy unit model syn001.cascade",
+    "version": "1.0.0"
+  },
+  {
+    "data_rights": null,
+    "descriptor_format": "openflowsheet-extension-v1",
+    "id": "syn001.column",
+    "implementation": {
+      "factory": {
+        "attribute": "MODEL_BUILDERS",
+        "key": "syn001.column",
+        "module": "openflowsheet.application.revision_binding"
+      },
+      "modules": [
+        "openflowsheet/models/syn001/column_unit.py"
+      ]
+    },
+    "kind": "unit_model",
+    "limitations": [],
+    "payload": {
+      "bindable": true,
+      "family": "syn001",
+      "signature": {
+        "choices": [],
+        "model_id": "syn001.column",
+        "pins": [],
+        "ports": [
+          {
+            "direction": "inlet",
+            "kind": "material",
+            "multiplicity": "many",
+            "name": "feed"
+          },
+          {
+            "direction": "inlet",
+            "kind": "material",
+            "multiplicity": 1,
+            "name": "top"
+          },
+          {
+            "direction": "inlet",
+            "kind": "material",
+            "multiplicity": 1,
+            "name": "bottom"
+          },
+          {
+            "direction": "outlet",
+            "kind": "material",
+            "multiplicity": 1,
+            "name": "distillate"
+          },
+          {
+            "direction": "outlet",
+            "kind": "material",
+            "multiplicity": 1,
+            "name": "bottoms"
+          }
+        ],
+        "required": [
+          "stage_count"
+        ],
+        "zero": []
+      }
+    },
+    "pip_extra": null,
+    "platforms": [
+      "any"
+    ],
+    "provides": [],
+    "requires": [
+      [
+        "conn:nTP-v1"
+      ],
+      [
+        "legacy:syn001",
+        "legacy:wilson-ig-v2"
+      ]
+    ],
+    "status": "released",
+    "title": "Legacy unit model syn001.column",
+    "version": "1.0.0"
+  },
+  {
+    "data_rights": null,
+    "descriptor_format": "openflowsheet-extension-v1",
+    "id": "syn001.component_separator",
+    "implementation": {
+      "factory": {
+        "attribute": "MODEL_BUILDERS",
+        "key": "syn001.component_separator",
+        "module": "openflowsheet.application.revision_binding"
+      },
+      "modules": [
+        "openflowsheet/models/syn001/component_separator.py"
+      ]
+    },
+    "kind": "unit_model",
+    "limitations": [],
+    "payload": {
+      "bindable": true,
+      "family": "syn001",
+      "signature": {
+        "choices": [],
+        "model_id": "syn001.component_separator",
+        "pins": [],
+        "ports": [
+          {
+            "direction": "inlet",
+            "kind": "material",
+            "multiplicity": 1,
+            "name": "inlet"
+          },
+          {
+            "direction": "outlet",
+            "kind": "material",
+            "multiplicity": 1,
+            "name": "top"
+          },
+          {
+            "direction": "outlet",
+            "kind": "material",
+            "multiplicity": 1,
+            "name": "bottom"
+          },
+          {
+            "direction": "inlet",
+            "kind": "energy",
+            "multiplicity": 1,
+            "name": "duty"
+          }
+        ],
+        "required": [
+          "split.{component}"
+        ],
+        "zero": []
+      }
+    },
+    "pip_extra": null,
+    "platforms": [
+      "any"
+    ],
+    "provides": [],
+    "requires": [
+      [
+        "conn:nTP-v1"
+      ],
+      [
+        "legacy:syn001"
+      ]
+    ],
+    "status": "released",
+    "title": "Legacy unit model syn001.component_separator",
+    "version": "1.0.0"
+  },
+  {
+    "data_rights": null,
+    "descriptor_format": "openflowsheet-extension-v1",
+    "id": "syn001.conversion_reactor",
+    "implementation": {
+      "factory": {
+        "attribute": "MODEL_BUILDERS",
+        "key": "syn001.conversion_reactor",
+        "module": "openflowsheet.application.revision_binding"
+      },
+      "modules": [
+        "openflowsheet/models/syn001/conversion_reactor.py"
+      ]
+    },
+    "kind": "unit_model",
+    "limitations": [],
+    "payload": {
+      "bindable": true,
+      "family": "syn001",
+      "signature": {
+        "choices": [
+          {
+            "name": "energy_specification",
+            "options": [
+              {
+                "name": "outlet_temperature",
+                "port": "outlet",
+                "quantity": "temperature",
+                "specifications": [
+                  {
+                    "component": null,
+                    "fixes": [
+                      "outlet_temperature"
+                    ],
+                    "kind": "temperature",
+                    "object_id": "{connection:outlet}",
+                    "object_type": "connection",
+                    "path": "state.T",
+                    "si_unit": "K"
+                  }
+                ]
+              },
+              {
+                "name": "duty",
+                "port": null,
+                "quantity": "duty",
+                "specifications": [
+                  {
+                    "component": null,
+                    "fixes": [
+                      "duty"
+                    ],
+                    "kind": "heat_rate",
+                    "object_id": "{instance}",
+                    "object_type": "instance",
+                    "path": "duty.Q",
+                    "si_unit": "W"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "model_id": "syn001.conversion_reactor",
+        "pins": [],
+        "ports": [
+          {
+            "direction": "inlet",
+            "kind": "material",
+            "multiplicity": 1,
+            "name": "inlet"
+          },
+          {
+            "direction": "outlet",
+            "kind": "material",
+            "multiplicity": 1,
+            "name": "outlet"
+          },
+          {
+            "direction": "inlet",
+            "kind": "energy",
+            "multiplicity": 1,
+            "name": "duty"
+          }
+        ],
+        "required": [
+          "nu.{component}",
+          "conversion.{key}",
+          "pressure_drop"
+        ],
+        "zero": []
+      }
+    },
+    "pip_extra": null,
+    "platforms": [
+      "any"
+    ],
+    "provides": [],
+    "requires": [
+      [
+        "conn:nTP-v1"
+      ],
+      [
+        "legacy:syn001"
+      ]
+    ],
+    "status": "released",
+    "title": "Legacy unit model syn001.conversion_reactor",
+    "version": "1.0.0"
+  },
+  {
+    "data_rights": null,
+    "descriptor_format": "openflowsheet-extension-v1",
+    "id": "syn001.feed_source",
+    "implementation": {
+      "factory": {
+        "attribute": "MODEL_BUILDERS",
+        "key": "syn001.feed_source",
+        "module": "openflowsheet.application.revision_binding"
+      },
+      "modules": [
+        "openflowsheet/models/syn001/feed.py"
+      ]
+    },
+    "kind": "unit_model",
+    "limitations": [],
+    "payload": {
+      "bindable": true,
+      "family": "syn001",
+      "signature": {
+        "choices": [],
+        "model_id": "syn001.feed_source",
+        "pins": [
+          {
+            "name": "flows",
+            "port": "outlet",
+            "quantity": "flow",
+            "specifications": [
+              {
+                "component": "{component}",
+                "fixes": [
+                  "flows"
+                ],
+                "kind": "molar_flow",
+                "object_id": "{connection:outlet}",
+                "object_type": "connection",
+                "path": "state.n",
+                "si_unit": "mol/s"
+              }
+            ]
+          },
+          {
+            "name": "temperature",
+            "port": "outlet",
+            "quantity": "temperature",
+            "specifications": [
+              {
+                "component": null,
+                "fixes": [
+                  "temperature"
+                ],
+                "kind": "temperature",
+                "object_id": "{connection:outlet}",
+                "object_type": "connection",
+                "path": "state.T",
+                "si_unit": "K"
+              },
+              {
+                "component": null,
+                "fixes": [
+                  "temperature"
+                ],
+                "kind": "temperature",
+                "object_id": "{instance}",
+                "object_type": "instance",
+                "path": "outlet.T",
+                "si_unit": "K"
+              }
+            ]
+          },
+          {
+            "name": "pressure",
+            "port": "outlet",
+            "quantity": "pressure",
+            "specifications": [
+              {
+                "component": null,
+                "fixes": [
+                  "pressure"
+                ],
+                "kind": "pressure",
+                "object_id": "{connection:outlet}",
+                "object_type": "connection",
+                "path": "state.P",
+                "si_unit": "Pa"
+              },
+              {
+                "component": null,
+                "fixes": [
+                  "pressure"
+                ],
+                "kind": "pressure",
+                "object_id": "{instance}",
+                "object_type": "instance",
+                "path": "outlet.P",
+                "si_unit": "Pa"
+              }
+            ]
+          }
+        ],
+        "ports": [
+          {
+            "direction": "outlet",
+            "kind": "material",
+            "multiplicity": 1,
+            "name": "outlet"
+          }
+        ],
+        "required": [],
+        "zero": []
+      }
+    },
+    "pip_extra": null,
+    "platforms": [
+      "any"
+    ],
+    "provides": [],
+    "requires": [
+      [
+        "conn:nTP-v1"
+      ],
+      [
+        "legacy:syn001",
+        "legacy:iapws95-v1",
+        "legacy:coolprop-heos-v1",
+        "legacy:wilson-ig-v2"
+      ]
+    ],
+    "status": "released",
+    "title": "Legacy unit model syn001.feed_source",
+    "version": "1.0.0"
+  },
+  {
+    "data_rights": null,
+    "descriptor_format": "openflowsheet-extension-v1",
+    "id": "syn001.heat_exchanger",
+    "implementation": {
+      "factory": {
+        "attribute": "MODEL_BUILDERS",
+        "key": "syn001.heat_exchanger",
+        "module": "openflowsheet.application.revision_binding"
+      },
+      "modules": [
+        "openflowsheet/models/syn001/heat_exchanger.py"
+      ]
+    },
+    "kind": "unit_model",
+    "limitations": [],
+    "payload": {
+      "bindable": true,
+      "family": "syn001",
+      "signature": {
+        "choices": [
+          {
+            "name": "specification",
+            "options": [
+              {
+                "name": "hot_outlet_temperature",
+                "port": "hot_outlet",
+                "quantity": "temperature",
+                "specifications": [
+                  {
+                    "component": null,
+                    "fixes": [
+                      "hot_outlet_temperature"
+                    ],
+                    "kind": "temperature",
+                    "object_id": "{connection:hot_outlet}",
+                    "object_type": "connection",
+                    "path": "state.T",
+                    "si_unit": "K"
+                  }
+                ]
+              },
+              {
+                "name": "cold_outlet_temperature",
+                "port": "cold_outlet",
+                "quantity": "temperature",
+                "specifications": [
+                  {
+                    "component": null,
+                    "fixes": [
+                      "cold_outlet_temperature"
+                    ],
+                    "kind": "temperature",
+                    "object_id": "{connection:cold_outlet}",
+                    "object_type": "connection",
+                    "path": "state.T",
+                    "si_unit": "K"
+                  }
+                ]
+              },
+              {
+                "name": "duty",
+                "port": null,
+                "quantity": "duty",
+                "specifications": [
+                  {
+                    "component": null,
+                    "fixes": [
+                      "duty"
+                    ],
+                    "kind": "heat_rate",
+                    "object_id": "{instance}",
+                    "object_type": "instance",
+                    "path": "duty.Q",
+                    "si_unit": "W"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "model_id": "syn001.heat_exchanger",
+        "pins": [],
+        "ports": [
+          {
+            "direction": "inlet",
+            "kind": "material",
+            "multiplicity": 1,
+            "name": "hot_inlet"
+          },
+          {
+            "direction": "outlet",
+            "kind": "material",
+            "multiplicity": 1,
+            "name": "hot_outlet"
+          },
+          {
+            "direction": "inlet",
+            "kind": "material",
+            "multiplicity": 1,
+            "name": "cold_inlet"
+          },
+          {
+            "direction": "outlet",
+            "kind": "material",
+            "multiplicity": 1,
+            "name": "cold_outlet"
+          }
+        ],
+        "required": [],
+        "zero": []
+      }
+    },
+    "pip_extra": null,
+    "platforms": [
+      "any"
+    ],
+    "provides": [],
+    "requires": [
+      [
+        "conn:nTP-v1"
+      ],
+      [
+        "legacy:syn001"
+      ]
+    ],
+    "status": "released",
+    "title": "Legacy unit model syn001.heat_exchanger",
+    "version": "1.0.0"
+  },
+  {
+    "data_rights": null,
+    "descriptor_format": "openflowsheet-extension-v1",
+    "id": "syn001.kinetic_cstr",
+    "implementation": {
+      "factory": {
+        "attribute": "MODEL_BUILDERS",
+        "key": "syn001.kinetic_cstr",
+        "module": "openflowsheet.application.revision_binding"
+      },
+      "modules": [
+        "openflowsheet/models/syn001/kinetic_cstr.py"
+      ]
+    },
+    "kind": "unit_model",
+    "limitations": [],
+    "payload": {
+      "bindable": true,
+      "family": "syn001",
+      "signature": {
+        "choices": [],
+        "model_id": "syn001.kinetic_cstr",
+        "pins": [],
+        "ports": [
+          {
+            "direction": "inlet",
+            "kind": "material",
+            "multiplicity": 1,
+            "name": "inlet"
+          },
+          {
+            "direction": "outlet",
+            "kind": "material",
+            "multiplicity": 1,
+            "name": "outlet"
+          },
+          {
+            "direction": "inlet",
+            "kind": "energy",
+            "multiplicity": 1,
+            "name": "duty"
+          }
+        ],
+        "required": [
+          "nu.{component}",
+          "damkohler.{key}",
+          "T_ref",
+          "T_scale",
+          "coolant_flow",
+          "coolant_cp",
+          "T_coolant",
+          "pressure_drop"
+        ],
+        "zero": []
+      }
+    },
+    "pip_extra": null,
+    "platforms": [
+      "any"
+    ],
+    "provides": [],
+    "requires": [
+      [
+        "conn:nTP-v1"
+      ],
+      [
+        "legacy:syn001"
+      ]
+    ],
+    "status": "released",
+    "title": "Legacy unit model syn001.kinetic_cstr",
+    "version": "1.0.0"
+  },
+  {
+    "data_rights": null,
+    "descriptor_format": "openflowsheet-extension-v1",
+    "id": "syn001.liquid_pump",
+    "implementation": {
+      "factory": {
+        "attribute": "MODEL_BUILDERS",
+        "key": "syn001.liquid_pump",
+        "module": "openflowsheet.application.revision_binding"
+      },
+      "modules": [
+        "openflowsheet/models/syn001/pump.py"
+      ]
+    },
+    "kind": "unit_model",
+    "limitations": [],
+    "payload": {
+      "bindable": true,
+      "family": "syn001",
+      "signature": {
+        "choices": [],
+        "model_id": "syn001.liquid_pump",
+        "pins": [
+          {
+            "name": "outlet_pressure",
+            "port": "outlet",
+            "quantity": "pressure",
+            "specifications": [
+              {
+                "component": null,
+                "fixes": [
+                  "outlet_pressure"
+                ],
+                "kind": "pressure",
+                "object_id": "{connection:outlet}",
+                "object_type": "connection",
+                "path": "state.P",
+                "si_unit": "Pa"
+              },
+              {
+                "component": null,
+                "fixes": [
+                  "outlet_pressure"
+                ],
+                "kind": "pressure",
+                "object_id": "{instance}",
+                "object_type": "instance",
+                "path": "outlet.P",
+                "si_unit": "Pa"
+              }
+            ]
+          }
+        ],
+        "ports": [
+          {
+            "direction": "inlet",
+            "kind": "material",
+            "multiplicity": 1,
+            "name": "inlet"
+          },
+          {
+            "direction": "outlet",
+            "kind": "material",
+            "multiplicity": 1,
+            "name": "outlet"
+          },
+          {
+            "direction": "inlet",
+            "kind": "energy",
+            "multiplicity": 1,
+            "name": "work"
+          }
+        ],
+        "required": [
+          "efficiency"
+        ],
+        "zero": []
+      }
+    },
+    "pip_extra": null,
+    "platforms": [
+      "any"
+    ],
+    "provides": [],
+    "requires": [
+      [
+        "conn:nTP-v1"
+      ],
+      [
+        "legacy:syn001"
+      ]
+    ],
+    "status": "released",
+    "title": "Legacy unit model syn001.liquid_pump",
+    "version": "1.0.0"
+  },
+  {
+    "data_rights": null,
+    "descriptor_format": "openflowsheet-extension-v1",
+    "id": "syn001.ph_flash",
+    "implementation": {
+      "factory": {
+        "attribute": "MODEL_BUILDERS",
+        "key": "syn001.ph_flash",
+        "module": "openflowsheet.application.revision_binding"
+      },
+      "modules": [
+        "openflowsheet/models/syn001/ph_flash.py"
+      ]
+    },
+    "kind": "unit_model",
+    "limitations": [],
+    "payload": {
+      "bindable": true,
+      "family": "syn001",
+      "signature": {
+        "choices": [],
+        "model_id": "syn001.ph_flash",
+        "pins": [
+          {
+            "name": "duty",
+            "port": null,
+            "quantity": "duty",
+            "specifications": [
+              {
+                "component": null,
+                "fixes": [
+                  "duty"
+                ],
+                "kind": "heat_rate",
+                "object_id": "{instance}",
+                "object_type": "instance",
+                "path": "duty.Q",
+                "si_unit": "W"
+              }
+            ]
+          }
+        ],
+        "ports": [
+          {
+            "direction": "inlet",
+            "kind": "material",
+            "multiplicity": 1,
+            "name": "inlet"
+          },
+          {
+            "direction": "outlet",
+            "kind": "material",
+            "multiplicity": 1,
+            "name": "vapor"
+          },
+          {
+            "direction": "outlet",
+            "kind": "material",
+            "multiplicity": 1,
+            "name": "liquid"
+          },
+          {
+            "direction": "inlet",
+            "kind": "energy",
+            "multiplicity": 1,
+            "name": "duty"
+          }
+        ],
+        "required": [
+          "pressure_drop"
+        ],
+        "zero": []
+      }
+    },
+    "pip_extra": null,
+    "platforms": [
+      "any"
+    ],
+    "provides": [],
+    "requires": [
+      [
+        "conn:nTP-v1"
+      ],
+      [
+        "legacy:syn001",
+        "legacy:wilson-ig-v2"
+      ]
+    ],
+    "status": "released",
+    "title": "Legacy unit model syn001.ph_flash",
+    "version": "1.0.0"
+  },
+  {
+    "data_rights": null,
+    "descriptor_format": "openflowsheet-extension-v1",
+    "id": "syn001.product_sink",
+    "implementation": {
+      "factory": {
+        "attribute": "MODEL_BUILDERS",
+        "key": "syn001.product_sink",
+        "module": "openflowsheet.application.revision_binding"
+      },
+      "modules": [
+        "openflowsheet/models/syn001/sink.py"
+      ]
+    },
+    "kind": "unit_model",
+    "limitations": [],
+    "payload": {
+      "bindable": true,
+      "family": "syn001",
+      "signature": {
+        "choices": [],
+        "model_id": "syn001.product_sink",
+        "pins": [],
+        "ports": [
+          {
+            "direction": "inlet",
+            "kind": "material",
+            "multiplicity": 1,
+            "name": "inlet"
+          }
+        ],
+        "required": [],
+        "zero": []
+      }
+    },
+    "pip_extra": null,
+    "platforms": [
+      "any"
+    ],
+    "provides": [],
+    "requires": [
+      [
+        "conn:nTP-v1"
+      ],
+      [
+        "legacy:syn001",
+        "legacy:iapws95-v1",
+        "legacy:coolprop-heos-v1",
+        "legacy:wilson-ig-v2"
+      ]
+    ],
+    "status": "released",
+    "title": "Legacy unit model syn001.product_sink",
+    "version": "1.0.0"
+  },
+  {
+    "data_rights": null,
+    "descriptor_format": "openflowsheet-extension-v1",
+    "id": "syn001.stream_splitter",
+    "implementation": {
+      "factory": {
+        "attribute": "MODEL_BUILDERS",
+        "key": "syn001.stream_splitter",
+        "module": "openflowsheet.application.revision_binding"
+      },
+      "modules": [
+        "openflowsheet/models/syn001/splitter.py"
+      ]
+    },
+    "kind": "unit_model",
+    "limitations": [],
+    "payload": {
+      "bindable": true,
+      "family": "syn001",
+      "signature": {
+        "choices": [],
+        "model_id": "syn001.stream_splitter",
+        "pins": [],
+        "ports": [
+          {
+            "direction": "inlet",
+            "kind": "material",
+            "multiplicity": 1,
+            "name": "inlet"
+          },
+          {
+            "direction": "outlet",
+            "kind": "material",
+            "multiplicity": 1,
+            "name": "recycle"
+          },
+          {
+            "direction": "outlet",
+            "kind": "material",
+            "multiplicity": 1,
+            "name": "purge"
+          }
+        ],
+        "required": [
+          "split_fraction"
+        ],
+        "zero": []
+      }
+    },
+    "pip_extra": null,
+    "platforms": [
+      "any"
+    ],
+    "provides": [],
+    "requires": [
+      [
+        "conn:nTP-v1"
+      ],
+      [
+        "legacy:syn001",
+        "legacy:iapws95-v1",
+        "legacy:coolprop-heos-v1",
+        "legacy:wilson-ig-v2"
+      ]
+    ],
+    "status": "released",
+    "title": "Legacy unit model syn001.stream_splitter",
+    "version": "1.0.0"
+  },
+  {
+    "data_rights": null,
+    "descriptor_format": "openflowsheet-extension-v1",
+    "id": "syn001.tp_flash",
+    "implementation": {
+      "factory": {
+        "attribute": "MODEL_BUILDERS",
+        "key": "syn001.tp_flash",
+        "module": "openflowsheet.application.revision_binding"
+      },
+      "modules": [
+        "openflowsheet/models/syn001/flash.py"
+      ]
+    },
+    "kind": "unit_model",
+    "limitations": [],
+    "payload": {
+      "bindable": true,
+      "family": "syn001",
+      "signature": {
+        "choices": [],
+        "model_id": "syn001.tp_flash",
+        "pins": [
+          {
+            "name": "temperature",
+            "port": "vapor",
+            "quantity": "temperature",
+            "specifications": [
+              {
+                "component": null,
+                "fixes": [
+                  "temperature"
+                ],
+                "kind": "temperature",
+                "object_id": "{connection:vapor}",
+                "object_type": "connection",
+                "path": "state.T",
+                "si_unit": "K"
+              },
+              {
+                "component": null,
+                "fixes": [
+                  "temperature",
+                  "liquid_temperature"
+                ],
+                "kind": "temperature",
+                "object_id": "{instance}",
+                "object_type": "instance",
+                "path": "outlet.T",
+                "si_unit": "K"
+              }
+            ]
+          },
+          {
+            "name": "pressure",
+            "port": "vapor",
+            "quantity": "pressure",
+            "specifications": [
+              {
+                "component": null,
+                "fixes": [
+                  "pressure"
+                ],
+                "kind": "pressure",
+                "object_id": "{connection:vapor}",
+                "object_type": "connection",
+                "path": "state.P",
+                "si_unit": "Pa"
+              },
+              {
+                "component": null,
+                "fixes": [
+                  "pressure",
+                  "liquid_pressure"
+                ],
+                "kind": "pressure",
+                "object_id": "{instance}",
+                "object_type": "instance",
+                "path": "outlet.P",
+                "si_unit": "Pa"
+              }
+            ]
+          },
+          {
+            "name": "liquid_temperature",
+            "port": "liquid",
+            "quantity": "temperature",
+            "specifications": [
+              {
+                "component": null,
+                "fixes": [
+                  "liquid_temperature"
+                ],
+                "kind": "temperature",
+                "object_id": "{connection:liquid}",
+                "object_type": "connection",
+                "path": "state.T",
+                "si_unit": "K"
+              },
+              {
+                "component": null,
+                "fixes": [
+                  "liquid_temperature",
+                  "temperature"
+                ],
+                "kind": "temperature",
+                "object_id": "{instance}",
+                "object_type": "instance",
+                "path": "outlet.T",
+                "si_unit": "K"
+              }
+            ]
+          },
+          {
+            "name": "liquid_pressure",
+            "port": "liquid",
+            "quantity": "pressure",
+            "specifications": [
+              {
+                "component": null,
+                "fixes": [
+                  "liquid_pressure"
+                ],
+                "kind": "pressure",
+                "object_id": "{connection:liquid}",
+                "object_type": "connection",
+                "path": "state.P",
+                "si_unit": "Pa"
+              },
+              {
+                "component": null,
+                "fixes": [
+                  "liquid_pressure",
+                  "pressure"
+                ],
+                "kind": "pressure",
+                "object_id": "{instance}",
+                "object_type": "instance",
+                "path": "outlet.P",
+                "si_unit": "Pa"
+              }
+            ]
+          }
+        ],
+        "ports": [
+          {
+            "direction": "inlet",
+            "kind": "material",
+            "multiplicity": 1,
+            "name": "inlet"
+          },
+          {
+            "direction": "outlet",
+            "kind": "material",
+            "multiplicity": 1,
+            "name": "vapor"
+          },
+          {
+            "direction": "outlet",
+            "kind": "material",
+            "multiplicity": 1,
+            "name": "liquid"
+          },
+          {
+            "direction": "inlet",
+            "kind": "energy",
+            "multiplicity": 1,
+            "name": "duty"
+          }
+        ],
+        "required": [],
+        "zero": [
+          "pressure_drop"
+        ]
+      }
+    },
+    "pip_extra": null,
+    "platforms": [
+      "any"
+    ],
+    "provides": [],
+    "requires": [
+      [
+        "conn:nTP-v1"
+      ],
+      [
+        "legacy:syn001",
+        "legacy:wilson-ig-v2"
+      ]
+    ],
+    "status": "released",
+    "title": "Legacy unit model syn001.tp_flash",
+    "version": "1.0.0"
+  },
+  {
+    "data_rights": null,
+    "descriptor_format": "openflowsheet-extension-v1",
+    "id": "syn001.tp_heater",
+    "implementation": {
+      "factory": {
+        "attribute": "MODEL_BUILDERS",
+        "key": "syn001.tp_heater",
+        "module": "openflowsheet.application.revision_binding"
+      },
+      "modules": [
+        "openflowsheet/models/syn001/heater.py"
+      ]
+    },
+    "kind": "unit_model",
+    "limitations": [],
+    "payload": {
+      "bindable": true,
+      "family": "syn001",
+      "signature": {
+        "choices": [],
+        "model_id": "syn001.tp_heater",
+        "pins": [
+          {
+            "name": "outlet_temperature",
+            "port": "outlet",
+            "quantity": "temperature",
+            "specifications": [
+              {
+                "component": null,
+                "fixes": [
+                  "outlet_temperature"
+                ],
+                "kind": "temperature",
+                "object_id": "{connection:outlet}",
+                "object_type": "connection",
+                "path": "state.T",
+                "si_unit": "K"
+              },
+              {
+                "component": null,
+                "fixes": [
+                  "outlet_temperature"
+                ],
+                "kind": "temperature",
+                "object_id": "{instance}",
+                "object_type": "instance",
+                "path": "outlet.T",
+                "si_unit": "K"
+              }
+            ]
+          }
+        ],
+        "ports": [
+          {
+            "direction": "inlet",
+            "kind": "material",
+            "multiplicity": 1,
+            "name": "inlet"
+          },
+          {
+            "direction": "outlet",
+            "kind": "material",
+            "multiplicity": 1,
+            "name": "outlet"
+          },
+          {
+            "direction": "inlet",
+            "kind": "energy",
+            "multiplicity": 1,
+            "name": "duty"
+          }
+        ],
+        "required": [],
+        "zero": [
+          "pressure_drop"
+        ]
+      }
+    },
+    "pip_extra": null,
+    "platforms": [
+      "any"
+    ],
+    "provides": [],
+    "requires": [
+      [
+        "conn:nTP-v1"
+      ],
+      [
+        "legacy:syn001",
+        "legacy:wilson-ig-v2"
+      ]
+    ],
+    "status": "released",
+    "title": "Legacy unit model syn001.tp_heater",
+    "version": "1.0.0"
+  },
+  {
+    "data_rights": null,
+    "descriptor_format": "openflowsheet-extension-v1",
+    "id": "syn001.valve",
+    "implementation": {
+      "factory": {
+        "attribute": "MODEL_BUILDERS",
+        "key": "syn001.valve",
+        "module": "openflowsheet.application.revision_binding"
+      },
+      "modules": [
+        "openflowsheet/models/syn001/valve.py"
+      ]
+    },
+    "kind": "unit_model",
+    "limitations": [],
+    "payload": {
+      "bindable": true,
+      "family": "syn001",
+      "signature": {
+        "choices": [],
+        "model_id": "syn001.valve",
+        "pins": [
+          {
+            "name": "outlet_pressure",
+            "port": "outlet",
+            "quantity": "pressure",
+            "specifications": [
+              {
+                "component": null,
+                "fixes": [
+                  "outlet_pressure"
+                ],
+                "kind": "pressure",
+                "object_id": "{connection:outlet}",
+                "object_type": "connection",
+                "path": "state.P",
+                "si_unit": "Pa"
+              },
+              {
+                "component": null,
+                "fixes": [
+                  "outlet_pressure"
+                ],
+                "kind": "pressure",
+                "object_id": "{instance}",
+                "object_type": "instance",
+                "path": "outlet.P",
+                "si_unit": "Pa"
+              }
+            ]
+          }
+        ],
+        "ports": [
+          {
+            "direction": "inlet",
+            "kind": "material",
+            "multiplicity": 1,
+            "name": "inlet"
+          },
+          {
+            "direction": "outlet",
+            "kind": "material",
+            "multiplicity": 1,
+            "name": "outlet"
+          }
+        ],
+        "required": [],
+        "zero": []
+      }
+    },
+    "pip_extra": null,
+    "platforms": [
+      "any"
+    ],
+    "provides": [],
+    "requires": [
+      [
+        "conn:nTP-v1"
+      ],
+      [
+        "legacy:syn001",
+        "legacy:wilson-ig-v2"
+      ]
+    ],
+    "status": "released",
+    "title": "Legacy unit model syn001.valve",
+    "version": "1.0.0"
+  },
+  {
+    "data_rights": null,
+    "descriptor_format": "openflowsheet-extension-v1",
+    "id": "thermal.compressor",
+    "implementation": {
+      "factory": {
+        "attribute": "MODEL_BUILDERS",
+        "key": "thermal.compressor",
+        "module": "openflowsheet.application.revision_binding"
+      },
+      "modules": [
+        "openflowsheet/models/thermal/machines.py"
+      ]
+    },
+    "kind": "unit_model",
+    "limitations": [],
+    "payload": {
+      "bindable": true,
+      "family": "thermal",
+      "signature": {
+        "choices": [],
+        "model_id": "thermal.compressor",
+        "pins": [
+          {
+            "name": "outlet_pressure",
+            "port": "outlet",
+            "quantity": "pressure",
+            "specifications": [
+              {
+                "component": null,
+                "fixes": [
+                  "outlet_pressure"
+                ],
+                "kind": "pressure",
+                "object_id": "{connection:outlet}",
+                "object_type": "connection",
+                "path": "state.P",
+                "si_unit": "Pa"
+              },
+              {
+                "component": null,
+                "fixes": [
+                  "outlet_pressure"
+                ],
+                "kind": "pressure",
+                "object_id": "{instance}",
+                "object_type": "instance",
+                "path": "outlet.P",
+                "si_unit": "Pa"
+              }
+            ]
+          }
+        ],
+        "ports": [
+          {
+            "direction": "inlet",
+            "kind": "material",
+            "multiplicity": 1,
+            "name": "inlet"
+          },
+          {
+            "direction": "outlet",
+            "kind": "material",
+            "multiplicity": 1,
+            "name": "outlet"
+          },
+          {
+            "direction": "inlet",
+            "kind": "energy",
+            "multiplicity": 1,
+            "name": "work"
+          }
+        ],
+        "required": [
+          "efficiency"
+        ],
+        "zero": []
+      }
+    },
+    "pip_extra": null,
+    "platforms": [
+      "any"
+    ],
+    "provides": [],
+    "requires": [
+      [
+        "conn:nTP-v1"
+      ],
+      [
+        "legacy:iapws95-v1",
+        "legacy:coolprop-heos-v1",
+        "legacy:wilson-ig-v2"
+      ]
+    ],
+    "status": "released",
+    "title": "Legacy unit model thermal.compressor",
+    "version": "1.0.0"
+  },
+  {
+    "data_rights": null,
+    "descriptor_format": "openflowsheet-extension-v1",
+    "id": "thermal.flash",
+    "implementation": {
+      "factory": {
+        "attribute": "MODEL_BUILDERS",
+        "key": "thermal.flash",
+        "module": "openflowsheet.application.revision_binding"
+      },
+      "modules": [
+        "openflowsheet/models/thermal/flash.py"
+      ]
+    },
+    "kind": "unit_model",
+    "limitations": [],
+    "payload": {
+      "bindable": true,
+      "family": "thermal",
+      "signature": {
+        "choices": [],
+        "model_id": "thermal.flash",
+        "pins": [
+          {
+            "name": "duty",
+            "port": null,
+            "quantity": "duty",
+            "specifications": [
+              {
+                "component": null,
+                "fixes": [
+                  "duty"
+                ],
+                "kind": "heat_rate",
+                "object_id": "{instance}",
+                "object_type": "instance",
+                "path": "duty.Q",
+                "si_unit": "W"
+              }
+            ]
+          }
+        ],
+        "ports": [
+          {
+            "direction": "inlet",
+            "kind": "material",
+            "multiplicity": 1,
+            "name": "inlet"
+          },
+          {
+            "direction": "outlet",
+            "kind": "material",
+            "multiplicity": 1,
+            "name": "vapor"
+          },
+          {
+            "direction": "outlet",
+            "kind": "material",
+            "multiplicity": 1,
+            "name": "liquid"
+          },
+          {
+            "direction": "inlet",
+            "kind": "energy",
+            "multiplicity": 1,
+            "name": "duty"
+          }
+        ],
+        "required": [
+          "pressure_drop"
+        ],
+        "zero": []
+      }
+    },
+    "pip_extra": null,
+    "platforms": [
+      "any"
+    ],
+    "provides": [],
+    "requires": [
+      [
+        "conn:nTP-v1"
+      ],
+      [
+        "legacy:iapws95-v1",
+        "legacy:coolprop-heos-v1"
+      ]
+    ],
+    "status": "released",
+    "title": "Legacy unit model thermal.flash",
+    "version": "1.0.0"
+  },
+  {
+    "data_rights": null,
+    "descriptor_format": "openflowsheet-extension-v1",
+    "id": "thermal.heater",
+    "implementation": {
+      "factory": {
+        "attribute": "MODEL_BUILDERS",
+        "key": "thermal.heater",
+        "module": "openflowsheet.application.revision_binding"
+      },
+      "modules": [
+        "openflowsheet/models/thermal/heater.py"
+      ]
+    },
+    "kind": "unit_model",
+    "limitations": [],
+    "payload": {
+      "bindable": true,
+      "family": "thermal",
+      "signature": {
+        "choices": [
+          {
+            "name": "specification",
+            "options": [
+              {
+                "name": "outlet_temperature",
+                "port": "outlet",
+                "quantity": "temperature",
+                "specifications": [
+                  {
+                    "component": null,
+                    "fixes": [
+                      "outlet_temperature"
+                    ],
+                    "kind": "temperature",
+                    "object_id": "{connection:outlet}",
+                    "object_type": "connection",
+                    "path": "state.T",
+                    "si_unit": "K"
+                  }
+                ]
+              },
+              {
+                "name": "duty",
+                "port": null,
+                "quantity": "duty",
+                "specifications": [
+                  {
+                    "component": null,
+                    "fixes": [
+                      "duty"
+                    ],
+                    "kind": "heat_rate",
+                    "object_id": "{instance}",
+                    "object_type": "instance",
+                    "path": "duty.Q",
+                    "si_unit": "W"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "model_id": "thermal.heater",
+        "pins": [],
+        "ports": [
+          {
+            "direction": "inlet",
+            "kind": "material",
+            "multiplicity": 1,
+            "name": "inlet"
+          },
+          {
+            "direction": "outlet",
+            "kind": "material",
+            "multiplicity": 1,
+            "name": "outlet"
+          },
+          {
+            "direction": "inlet",
+            "kind": "energy",
+            "multiplicity": 1,
+            "name": "duty"
+          }
+        ],
+        "required": [],
+        "zero": []
+      }
+    },
+    "pip_extra": null,
+    "platforms": [
+      "any"
+    ],
+    "provides": [],
+    "requires": [
+      [
+        "conn:nTP-v1"
+      ],
+      [
+        "legacy:iapws95-v1",
+        "legacy:coolprop-heos-v1"
+      ]
+    ],
+    "status": "released",
+    "title": "Legacy unit model thermal.heater",
+    "version": "1.0.0"
+  },
+  {
+    "data_rights": null,
+    "descriptor_format": "openflowsheet-extension-v1",
+    "id": "thermal.mixer",
+    "implementation": {
+      "factory": {
+        "attribute": "MODEL_BUILDERS",
+        "key": "thermal.mixer",
+        "module": "openflowsheet.application.revision_binding"
+      },
+      "modules": [
+        "openflowsheet/models/thermal/mixer.py"
+      ]
+    },
+    "kind": "unit_model",
+    "limitations": [],
+    "payload": {
+      "bindable": true,
+      "family": "thermal",
+      "signature": {
+        "choices": [],
+        "model_id": "thermal.mixer",
+        "pins": [],
+        "ports": [
+          {
+            "direction": "inlet",
+            "kind": "material",
+            "multiplicity": "many",
+            "name": "inlet"
+          },
+          {
+            "direction": "outlet",
+            "kind": "material",
+            "multiplicity": 1,
+            "name": "outlet"
+          }
+        ],
+        "required": [],
+        "zero": []
+      }
+    },
+    "pip_extra": null,
+    "platforms": [
+      "any"
+    ],
+    "provides": [],
+    "requires": [
+      [
+        "conn:nTP-v1"
+      ],
+      [
+        "legacy:iapws95-v1",
+        "legacy:coolprop-heos-v1"
+      ]
+    ],
+    "status": "released",
+    "title": "Legacy unit model thermal.mixer",
+    "version": "1.0.0"
+  },
+  {
+    "data_rights": null,
+    "descriptor_format": "openflowsheet-extension-v1",
+    "id": "thermal.pump",
+    "implementation": {
+      "factory": {
+        "attribute": "MODEL_BUILDERS",
+        "key": "thermal.pump",
+        "module": "openflowsheet.application.revision_binding"
+      },
+      "modules": [
+        "openflowsheet/models/thermal/machines.py"
+      ]
+    },
+    "kind": "unit_model",
+    "limitations": [],
+    "payload": {
+      "bindable": true,
+      "family": "thermal",
+      "signature": {
+        "choices": [],
+        "model_id": "thermal.pump",
+        "pins": [
+          {
+            "name": "outlet_pressure",
+            "port": "outlet",
+            "quantity": "pressure",
+            "specifications": [
+              {
+                "component": null,
+                "fixes": [
+                  "outlet_pressure"
+                ],
+                "kind": "pressure",
+                "object_id": "{connection:outlet}",
+                "object_type": "connection",
+                "path": "state.P",
+                "si_unit": "Pa"
+              },
+              {
+                "component": null,
+                "fixes": [
+                  "outlet_pressure"
+                ],
+                "kind": "pressure",
+                "object_id": "{instance}",
+                "object_type": "instance",
+                "path": "outlet.P",
+                "si_unit": "Pa"
+              }
+            ]
+          }
+        ],
+        "ports": [
+          {
+            "direction": "inlet",
+            "kind": "material",
+            "multiplicity": 1,
+            "name": "inlet"
+          },
+          {
+            "direction": "outlet",
+            "kind": "material",
+            "multiplicity": 1,
+            "name": "outlet"
+          },
+          {
+            "direction": "inlet",
+            "kind": "energy",
+            "multiplicity": 1,
+            "name": "work"
+          }
+        ],
+        "required": [
+          "efficiency"
+        ],
+        "zero": []
+      }
+    },
+    "pip_extra": null,
+    "platforms": [
+      "any"
+    ],
+    "provides": [],
+    "requires": [
+      [
+        "conn:nTP-v1"
+      ],
+      [
+        "legacy:iapws95-v1",
+        "legacy:coolprop-heos-v1"
+      ]
+    ],
+    "status": "released",
+    "title": "Legacy unit model thermal.pump",
+    "version": "1.0.0"
+  },
+  {
+    "data_rights": null,
+    "descriptor_format": "openflowsheet-extension-v1",
+    "id": "thermal.turbine",
+    "implementation": {
+      "factory": {
+        "attribute": "MODEL_BUILDERS",
+        "key": "thermal.turbine",
+        "module": "openflowsheet.application.revision_binding"
+      },
+      "modules": [
+        "openflowsheet/models/thermal/machines.py"
+      ]
+    },
+    "kind": "unit_model",
+    "limitations": [],
+    "payload": {
+      "bindable": true,
+      "family": "thermal",
+      "signature": {
+        "choices": [],
+        "model_id": "thermal.turbine",
+        "pins": [
+          {
+            "name": "outlet_pressure",
+            "port": "outlet",
+            "quantity": "pressure",
+            "specifications": [
+              {
+                "component": null,
+                "fixes": [
+                  "outlet_pressure"
+                ],
+                "kind": "pressure",
+                "object_id": "{connection:outlet}",
+                "object_type": "connection",
+                "path": "state.P",
+                "si_unit": "Pa"
+              },
+              {
+                "component": null,
+                "fixes": [
+                  "outlet_pressure"
+                ],
+                "kind": "pressure",
+                "object_id": "{instance}",
+                "object_type": "instance",
+                "path": "outlet.P",
+                "si_unit": "Pa"
+              }
+            ]
+          }
+        ],
+        "ports": [
+          {
+            "direction": "inlet",
+            "kind": "material",
+            "multiplicity": 1,
+            "name": "inlet"
+          },
+          {
+            "direction": "outlet",
+            "kind": "material",
+            "multiplicity": 1,
+            "name": "outlet"
+          },
+          {
+            "direction": "inlet",
+            "kind": "energy",
+            "multiplicity": 1,
+            "name": "work"
+          }
+        ],
+        "required": [
+          "efficiency"
+        ],
+        "zero": []
+      }
+    },
+    "pip_extra": null,
+    "platforms": [
+      "any"
+    ],
+    "provides": [],
+    "requires": [
+      [
+        "conn:nTP-v1"
+      ],
+      [
+        "legacy:iapws95-v1",
+        "legacy:coolprop-heos-v1",
+        "legacy:wilson-ig-v2"
+      ]
+    ],
+    "status": "released",
+    "title": "Legacy unit model thermal.turbine",
+    "version": "1.0.0"
+  },
+  {
+    "data_rights": null,
+    "descriptor_format": "openflowsheet-extension-v1",
+    "id": "thermal.valve",
+    "implementation": {
+      "factory": {
+        "attribute": "MODEL_BUILDERS",
+        "key": "thermal.valve",
+        "module": "openflowsheet.application.revision_binding"
+      },
+      "modules": [
+        "openflowsheet/models/thermal/valve.py"
+      ]
+    },
+    "kind": "unit_model",
+    "limitations": [],
+    "payload": {
+      "bindable": true,
+      "family": "thermal",
+      "signature": {
+        "choices": [],
+        "model_id": "thermal.valve",
+        "pins": [
+          {
+            "name": "outlet_pressure",
+            "port": "outlet",
+            "quantity": "pressure",
+            "specifications": [
+              {
+                "component": null,
+                "fixes": [
+                  "outlet_pressure"
+                ],
+                "kind": "pressure",
+                "object_id": "{connection:outlet}",
+                "object_type": "connection",
+                "path": "state.P",
+                "si_unit": "Pa"
+              },
+              {
+                "component": null,
+                "fixes": [
+                  "outlet_pressure"
+                ],
+                "kind": "pressure",
+                "object_id": "{instance}",
+                "object_type": "instance",
+                "path": "outlet.P",
+                "si_unit": "Pa"
+              }
+            ]
+          }
+        ],
+        "ports": [
+          {
+            "direction": "inlet",
+            "kind": "material",
+            "multiplicity": 1,
+            "name": "inlet"
+          },
+          {
+            "direction": "outlet",
+            "kind": "material",
+            "multiplicity": 1,
+            "name": "outlet"
+          }
+        ],
+        "required": [],
+        "zero": []
+      }
+    },
+    "pip_extra": null,
+    "platforms": [
+      "any"
+    ],
+    "provides": [],
+    "requires": [
+      [
+        "conn:nTP-v1"
+      ],
+      [
+        "legacy:iapws95-v1",
+        "legacy:coolprop-heos-v1"
+      ]
+    ],
+    "status": "released",
+    "title": "Legacy unit model thermal.valve",
+    "version": "1.0.0"
+  }
+]

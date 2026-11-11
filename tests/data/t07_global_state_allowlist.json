@@ -238,6 +238,34 @@
       "patterns": ["cache"],
       "occurrences": 1,
       "justification": "MSG design note §4.7 (WO-3): error_locations, where each operation's response schema references api-error.schema.json; a pure function of OPERATIONS and the published schemas, both immutable for the process's life (an immutable tuple of tuples); it holds no job or request state."
+    },
+    {
+      "file": "registry/descriptor.py",
+      "line": "@cache",
+      "patterns": ["cache"],
+      "occurrences": 1,
+      "justification": "F1 (ADR 0060 D2): the extension-descriptor schema's validators, keyed by the subschema pointer (envelope, package, a kind's payload), with their `$ref` registry, all from the packaged schema file (immutable for the process's life); never mutated, no job, request or registry state."
+    },
+    {
+      "file": "registry/__init__.py",
+      "line": "global _process_registry  # noqa: PLW0603",
+      "patterns": ["global"],
+      "occurrences": 1,
+      "justification": "F1 (ADR 0060 D8): `default_registry()`, the process registry, built once under `_process_lock` from the packaged built-in tables and the installed entry points (F1-WO3) and then closed (`register` raises `registry_closed`); every later call returns the same instance. No job or request state; tests build their own instances with `Registry.build` and never mutate it."
+    },
+    {
+      "file": "registry/__init__.py",
+      "line": "_build_state = threading.local()",
+      "patterns": ["threading.local"],
+      "occurrences": 1,
+      "justification": "F1-WO3 (ADR 0060 D8): per thread, the depth of `Registry.build` calls running on that thread and whether it is building the process registry. It makes a message-catalogue lookup made during a build raise (`catalogue lookup during registry build`) and a re-entrant `default_registry()` raise rather than deadlock. Set and reset around each build on the building thread only; no job, request or registry content."
+    },
+    {
+      "file": "registry/__init__.py",
+      "line": "_usage: Final[ContextVar[Usage | None]] = ContextVar(\"openflowsheet_registry_usage\", default=None)",
+      "patterns": ["ContextVar"],
+      "occurrences": 1,
+      "justification": "F1-WO3 (ADR 0060 D8): the usage recorder, the cross-check of a run's extensions used. A ContextVar by D8's design, so concurrent runs record separately: `usage()` sets a fresh record for its block and resets it on exit; `resolve` and `factory` add to the active record only. Default `None` (nothing recorded); a run's executor copies the context into its workers."
     }
   ]
 }

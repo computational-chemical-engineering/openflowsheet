@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import os
 import sys
-from collections.abc import Callable
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Protocol
 
@@ -23,8 +23,10 @@ from openflowsheet.messages import audit
 if TYPE_CHECKING:
     from openflowsheet.application.jobs.model import JobStatus
     from openflowsheet.application.types import (
+        AdmissionReport,
         AuditOrder,
         AuditRecord,
+        CapabilityPage,
         Change,
         Job,
         JobEvent,
@@ -182,7 +184,10 @@ class Inspection(Protocol):
     `list_audit` is ADR 0019 Amendment 3's (A3.3): the audit, by `seq`; another principal's rows,
     or all principals', need `policy` as well. `explain` is ADR 0058 D7's: a message-catalogue
     entry, which reads no project state. `get_stream_table` is ADR 0068's (ADR 0019 Amendment
-    13): an ended job's stream table and energy summary, computed on read from its bundle."""
+    13): an ended job's stream table and energy summary, computed on read from its bundle.
+    `list_capabilities` and `check_admission` are ADR 0060 D11's (ADR 0019 Amendment 7): the
+    extension registry's descriptors, and D5's admission verdict on a (unit, method, definition)
+    pair; both read the registry, not the project."""
 
     def get_project(self) -> ProjectSummary: ...
 
@@ -250,3 +255,19 @@ class Inspection(Protocol):
     ) -> Page[AuditRecord]: ...
 
     def explain(self, code: str) -> MessageEntry: ...
+
+    def list_capabilities(
+        self,
+        *,
+        kind: str | Sequence[str] | None = None,
+        id_prefix: str | None = None,
+        cursor: str | None = None,
+        limit: int = 50,
+    ) -> CapabilityPage: ...
+
+    def check_admission(
+        self,
+        *,
+        pair: Mapping[str, Any] | None = None,
+        revision: Mapping[str, Any] | None = None,
+    ) -> AdmissionReport: ...

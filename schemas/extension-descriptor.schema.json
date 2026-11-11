@@ -1,0 +1,570 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/frankp/process-runtime/schemas/extension-descriptor.schema.json",
+  "title": "ExtensionDescriptor",
+  "description": "DRAFT until ADR 0060 is Accepted (F1-WO1). ADR 0060 D2: one extension of one kind (D1), as its author declares it. The registry normalises it (D2: token levels `:0` dropped, clauses and their tokens sorted and deduplicated, `provides` keeping the highest level per (space, name), `modules` and `limitations` sorted) and hashes the normalised document without `status` (`descriptor_sha256`); the computed fields (`self_sha256`, `origin`, `evidence_class`, ...) are never declared. `payload` is validated by the kind's payload schema (`$defs/payload_<kind>` where one exists; a `preview` kind's payload need only be an object); a descriptor of the built-in table `legacy` (D6, F1-WO2) is validated by its kind's legacy form instead (`$defs/payload_<kind>_legacy`). `$defs/package` is D7's extension package document. Rules a JSON Schema cannot state (token spaces, D4; the namespace prefix, D7; `conn:<id>` of a connection definition) are `openflowsheet.registry`'s.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "descriptor_format",
+    "kind",
+    "id",
+    "version",
+    "title",
+    "status",
+    "requires",
+    "provides",
+    "limitations",
+    "platforms",
+    "pip_extra",
+    "data_rights",
+    "implementation",
+    "payload"
+  ],
+  "properties": {
+    "descriptor_format": {
+      "const": "openflowsheet-extension-v1"
+    },
+    "kind": {
+      "enum": [
+        "property_method",
+        "property_source",
+        "unit_model",
+        "connection_definition",
+        "attribute_kind",
+        "derived_quantity",
+        "kinetics_kind",
+        "stability_trial_set",
+        "phase_family",
+        "discrete_coordinate",
+        "record_type",
+        "correlation_form",
+        "data_source",
+        "record_generator",
+        "solver_route",
+        "run_kind",
+        "functional_contributor",
+        "exchange_format",
+        "revision_section",
+        "semantic_role",
+        "equipment_class",
+        "message_entries"
+      ]
+    },
+    "id": {
+      "$ref": "#/$defs/id"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80
+    },
+    "status": {
+      "enum": [
+        "declared",
+        "implemented",
+        "tested",
+        "reviewed",
+        "released"
+      ]
+    },
+    "requires": {
+      "type": "array",
+      "items": {
+        "type": "array",
+        "minItems": 1,
+        "items": {
+          "$ref": "#/$defs/token"
+        }
+      }
+    },
+    "provides": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/token"
+      }
+    },
+    "limitations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "code",
+          "params"
+        ],
+        "properties": {
+          "code": {
+            "type": "string",
+            "minLength": 1
+          },
+          "params": {
+            "type": "object",
+            "additionalProperties": {
+              "type": [
+                "string",
+                "number"
+              ]
+            }
+          }
+        }
+      }
+    },
+    "platforms": {
+      "anyOf": [
+        {
+          "type": "array",
+          "const": [
+            "any"
+          ]
+        },
+        {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "linux-x86_64",
+              "linux-aarch64",
+              "windows-x86_64",
+              "macos-x86_64",
+              "macos-arm64"
+            ]
+          }
+        }
+      ]
+    },
+    "pip_extra": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "minLength": 1
+    },
+    "data_rights": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "source",
+            "licence_stated"
+          ],
+          "properties": {
+            "source": {
+              "type": "string"
+            },
+            "licence_stated": {
+              "type": "string"
+            }
+          }
+        }
+      ]
+    },
+    "implementation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "modules",
+        "factory"
+      ],
+      "properties": {
+        "modules": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^(?:(?!\\.\\.?/)[^/\\\\]+/)*(?!\\.\\.?$)[^/\\\\]+$"
+          }
+        },
+        "factory": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "module",
+                "attribute",
+                "key"
+              ],
+              "properties": {
+                "module": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)*$"
+                },
+                "attribute": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+                },
+                "key": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "contributed_by": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "actor",
+        "session",
+        "date"
+      ],
+      "properties": {
+        "actor": {
+          "type": "string",
+          "minLength": 1
+        },
+        "session": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "date": {
+          "type": "string",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        }
+      }
+    },
+    "payload": {
+      "type": "object"
+    }
+  },
+  "$defs": {
+    "id": {
+      "type": "string",
+      "maxLength": 128,
+      "pattern": "^[A-Za-z][A-Za-z0-9_-]*(\\.[A-Za-z0-9][A-Za-z0-9_-]*)*$"
+    },
+    "token": {
+      "type": "string",
+      "pattern": "^[a-z_]+:[A-Za-z0-9][A-Za-z0-9_.+-]*(:(0|[1-9][0-9]*))?$"
+    },
+    "payload_message_entries": {
+      "description": "ADR 0060 D7: a YAML document in MSG's format (ADR 0058), read through `importlib.resources`.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "catalogue"
+      ],
+      "properties": {
+        "catalogue": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "package",
+            "path"
+          ],
+          "properties": {
+            "package": {
+              "type": "string",
+              "minLength": 1
+            },
+            "path": {
+              "type": "string",
+              "pattern": "^(?:(?!\\.\\.?/)[^/\\\\]+/)*(?!\\.\\.?$)[^/\\\\]+$"
+            }
+          }
+        }
+      }
+    },
+    "names": {
+      "description": "A list of distinct non-empty names, in the order their source gives them.",
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "payload_property_method_legacy": {
+      "description": "ADR 0060 D6: a legacy property method's payload, read by `scripts/registry_builtin.py` from the provider: `legacy_provider_id` is its module's `PROVIDER_ID`; `phases`, `flashes`, `properties`, `reference_convention` and `derivative_inputs` a constructed provider's `describe()` (`derivative_inputs` are the keys of its `derivative_order`); `bases` the `selectable_bases()` entries with its provider id; `selectable` whether `bases` is non-empty; `verifier_fresh` its membership in the verifier's `FRESH_PROVIDERS`. A provider constructed per component (`coolprop-heos-v1`, one per fluid) has `reference_convention` `per_component`, and `per_component` maps each component to the members that vary with it; its top-level `properties` and `derivative_inputs` are those every component declares, in describe order. `per_component` is null for every other provider.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "legacy_provider_id",
+        "phases",
+        "flashes",
+        "properties",
+        "reference_convention",
+        "per_component",
+        "derivative_inputs",
+        "bases",
+        "selectable",
+        "verifier_fresh"
+      ],
+      "properties": {
+        "legacy_provider_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "phases": {
+          "$ref": "#/$defs/names"
+        },
+        "flashes": {
+          "$ref": "#/$defs/names"
+        },
+        "properties": {
+          "$ref": "#/$defs/names"
+        },
+        "reference_convention": {
+          "type": "string",
+          "minLength": 1
+        },
+        "per_component": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "object",
+              "minProperties": 1,
+              "additionalProperties": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "reference_convention",
+                  "properties",
+                  "derivative_inputs"
+                ],
+                "properties": {
+                  "reference_convention": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "properties": {
+                    "$ref": "#/$defs/names"
+                  },
+                  "derivative_inputs": {
+                    "$ref": "#/$defs/names"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "derivative_inputs": {
+          "$ref": "#/$defs/names"
+        },
+        "bases": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "record_source",
+              "components"
+            ],
+            "properties": {
+              "record_source": {
+                "type": "string",
+                "minLength": 1
+              },
+              "components": {
+                "$ref": "#/$defs/names",
+                "minItems": 1
+              }
+            }
+          }
+        },
+        "selectable": {
+          "type": "boolean"
+        },
+        "verifier_fresh": {
+          "type": "boolean"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "bases": {
+                "maxItems": 0
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "selectable": {
+                "const": false
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "selectable": {
+                "const": true
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "reference_convention": {
+                "const": "per_component"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "per_component": {
+                "type": "object"
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "per_component": {
+                "type": "null"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "payload_unit_model_legacy": {
+      "description": "ADR 0060 D6: a legacy unit's payload. `family` is the first segment of its id; `signature` is its `list_models` entry verbatim (ADR 0019 Amendment 2; the shape of `application-results.schema.json` `$defs/model_registry_view`), null iff `bindable` is false (only `syn001.cascade`).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "family",
+        "bindable",
+        "signature"
+      ],
+      "properties": {
+        "family": {
+          "enum": [
+            "syn001",
+            "c1",
+            "thermal"
+          ]
+        },
+        "bindable": {
+          "type": "boolean"
+        },
+        "signature": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "model_id",
+                "ports",
+                "required",
+                "zero",
+                "pins",
+                "choices"
+              ],
+              "properties": {
+                "model_id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "ports": {
+                  "type": "array"
+                },
+                "required": {
+                  "type": "array"
+                },
+                "zero": {
+                  "type": "array"
+                },
+                "pins": {
+                  "type": "array"
+                },
+                "choices": {
+                  "type": "array"
+                }
+              }
+            }
+          ]
+        }
+      },
+      "if": {
+        "properties": {
+          "bindable": {
+            "const": false
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "signature": {
+            "type": "null"
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "signature": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    "payload_connection_definition_legacy": {
+      "description": "ADR 0060 D6: the legacy connection definition's payload (`nTP-v1`, ADR 0001 D2.1).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "legacy",
+        "state_definition"
+      ],
+      "properties": {
+        "legacy": {
+          "const": true
+        },
+        "state_definition": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "package": {
+      "description": "ADR 0060 D7: the document an `openflowsheet.extensions` entry point's callable returns. Every descriptor id starts with `<namespace>.`.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "package_format",
+        "namespace",
+        "descriptors"
+      ],
+      "properties": {
+        "package_format": {
+          "const": "openflowsheet-extension-package-v1"
+        },
+        "namespace": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]*$"
+        },
+        "descriptors": {
+          "type": "array",
+          "items": {
+            "$ref": "#"
+          }
+        }
+      }
+    }
+  }
+}

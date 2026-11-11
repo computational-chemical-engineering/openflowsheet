@@ -243,7 +243,7 @@ The change was refused: a replacement model does not fit the model it replaces.
 - **Summary:** Nothing named &lt;artifact_id&gt; &lt;revision_id&gt; &lt;job_id&gt; exists in this project.
 - **Why:** The id is not one this project has recorded.
 - **Do:** Check the id; a job's outputs list the artifact ids it wrote.
-- **Parameters:** `artifact_id` (artifact, optional), `revision_id` (revision, optional), `job_id` (job, optional), `bundle_id` (bundle, optional), `member` (text, optional), `members` (list, optional), `members_total` (number, optional), `run_outcome` (code, optional), `output` (text, optional), `code` (text, optional), `suggestions` (list, optional)
+- **Parameters:** `artifact_id` (artifact, optional), `revision_id` (revision, optional), `job_id` (job, optional), `bundle_id` (bundle, optional), `member` (text, optional), `members` (list, optional), `members_total` (number, optional), `run_outcome` (code, optional), `output` (text, optional), `code` (text, optional), `suggestions` (list, optional), `kind` (text, optional), `id` (text, optional), `version` (text, optional)
 
 Example:
 
@@ -262,6 +262,17 @@ Example:
 Bundle 'import-000001:bundle' has no file 'x.json'.
   Why:     This bundle holds 70 files, among them a.json, b.json.
   Do:      Read one of the files the bundle holds.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    not_found (openflowsheet explain not_found)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/api-errors/#not_found
+```
+
+Example:
+
+```text
+No unit_model with the id thermal.heatr is registered.
+  Why:     The extension registry holds the unit models, property methods, stream definitions and other extensions this installation provides; it is not part of the project.
+  Do:      Did you mean thermal.heater? The list_capabilities operation lists every registered extension.
   Kind:    Input problem: something in the flowsheet or the request needs to change.
   Code:    not_found (openflowsheet explain not_found)
   Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/api-errors/#not_found

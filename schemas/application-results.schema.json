@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/frankp/process-runtime/schemas/application-results.schema.json",
   "title": "ApplicationResults",
-  "description": "T07 design note §11.3–§11.4 and ruling round 4 (W5a-Q2); ADR 0019 Amendment 1. The response shapes of the JobControl and Inspection operations in `OPERATIONS` that have no published schema of their own, one `$def` each, named in snake_case after the Python result type (`types.py`, `contract.py`), a page `<item>_page`. The members are those `operations.py` stated at `9b541df`, moved unchanged. Every string and key of a response is bounded (§10.4) before it is carried. `job`, `job-event`, `job_result`, `run-result`, `transaction-result`, `validation-report` and `replay-report` stay in their own schemas, referenced from here.",
+  "description": "T07 design note §11.3–§11.4 and ruling round 4 (W5a-Q2); ADR 0019 Amendment 1. The response shapes of the JobControl and Inspection operations in `OPERATIONS` that have no published schema of their own, one `$def` each, named in snake_case after the Python result type (`types.py`, `contract.py`), a page `<item>_page`. The members are those `operations.py` stated at `9b541df`, moved unchanged. Every string and key of a response is bounded (§10.4) before it is carried. `job`, `job-event`, `job_result`, `run-result`, `transaction-result`, `validation-report` and `replay-report` stay in their own schemas, referenced from here. ADR 0060 D11 (ADR 0019 Amendment 7) adds `capability_page` (its items `capability_descriptor`) and `admission_report`.",
   "$defs": {
     "submit_result": {
       "type": "object",
@@ -1184,6 +1184,15 @@
           }
         }
       }
+    },
+    "capability_descriptor": {
+      "$ref": "https://github.com/frankp/process-runtime/schemas/registry-snapshot.schema.json#/$defs/capability_descriptor"
+    },
+    "capability_page": {
+      "$ref": "https://github.com/frankp/process-runtime/schemas/registry-snapshot.schema.json#/$defs/capability_page"
+    },
+    "admission_report": {
+      "$ref": "https://github.com/frankp/process-runtime/schemas/registry-snapshot.schema.json#/$defs/admission_report"
     }
   }
 }

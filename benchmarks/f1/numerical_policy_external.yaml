@@ -1,0 +1,28 @@
+# F1 (ADR 0060 D2, D3, D10; ADR 0025 D2.3): the `sha256`-bearing property names that F1's schemas
+# add. A separate table beside M02's, M05's, E01's, OPT's and ST's, so that the registered numerical
+# policies (`K04-numerical-policy-v1`, `T08-numerical-policy-v2`) keep their ids and their contents
+# (M02's precedent, its design note §3.6; F1 build decision in `docs/F1_DECISIONS.md`).
+#
+# Read by `scripts/t08_numerical_policy.py --check` (the closed partition of `sha256` names, one
+# addendum after another). F1's schemas carry no floats: the table carries no `rules`.
+numerical_policy_external:
+  id: F1-numerical-policy-external-v1
+  schemas:
+  - extension-descriptor.schema.json
+  - registry-snapshot.schema.json
+  # All three are exact digests (ADR 0007 D1, digest row; ADR 0025 D2): each preimage is declared
+  # data or file bytes. A descriptor's `limitations` params and a preview payload may hold numbers,
+  # but they are declared constants, copied, never solved values.
+  # - `descriptor_sha256`: `document_sha256` of the normalised descriptor without `status` (D2).
+  # - `self_sha256`: SHA-256 of the canonical JSON of [path, SHA-256 of the LF-normalised file
+  #   bytes] over the implementation set (D3).
+  # - `registry_sha256`: SHA-256 of the canonical JSON of [kind, id, version, descriptor_sha256,
+  #   self_sha256] over the registered descriptors (D10).
+  # The responses of `list_capabilities` and `check_admission` (`capability_descriptor`,
+  # `capability_page`, `admission_report`) are `$defs` of `registry-snapshot.schema.json`;
+  # `application-results.schema.json` reaches each by a bare `$ref`, so no `sha256` name enters
+  # v2's domain (ADR 0060 D11; R-1032; E01's and OPT's precedent).
+  exact_sha256:
+  - descriptor_sha256
+  - registry_sha256
+  - self_sha256

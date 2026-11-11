@@ -4,6 +4,29 @@
 
 Messages that report something worth knowing but are not failures. How to read an explanation, and how to ask for one (`openflowsheet explain <code>`, the `explain` operation), is on [Messages](index.md).
 
+<a id="capability_unresolved"></a>
+
+## `capability_unresolved`: A capability names something that is not registered
+
+**Kind:** Notice: not a failure.
+
+- **Summary:** The capability &lt;token&gt; names something that is not registered, so it is never met.
+- **Why:** A capability whose name is the id of a registered stream definition, phase family or other registered extension is met only while that extension is registered. This one is not, so no provider meets it; when it is one of several alternatives the others still count.
+- **Do:** Install the extension that registers it if the capability is needed; otherwise nothing needs doing.
+- **Parameters:** `token` (text)
+- **See also:** [`capability_missing`](refusals.md#capability_missing)
+
+Example:
+
+```text
+The capability conn:acme.slurry names something that is not registered, so it is never met.
+  Why:     A capability whose name is the id of a registered stream definition, phase family or other registered extension is met only while that extension is registered. This one is not, so no provider meets it; when it is one of several alternatives the others still count.
+  Do:      Install the extension that registers it if the capability is needed; otherwise nothing needs doing.
+  Kind:    Notice: not a failure.
+  Code:    capability_unresolved (openflowsheet explain capability_unresolved)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/notices/#capability_unresolved
+```
+
 <a id="display_out_of_range"></a>
 
 ## `display_out_of_range`: A value too large to show in the display unit asked for
@@ -24,6 +47,50 @@ A value of kind molar_flow is too large to show in mol/h, so it is shown only in
   Kind:    Notice: not a failure.
   Code:    display_out_of_range (openflowsheet explain display_out_of_range)
   Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/notices/#display_out_of_range
+```
+
+<a id="extension_unreviewed"></a>
+
+## `extension_unreviewed`: A result used an extension nobody has reviewed
+
+**Kind:** Notice: not a failure.
+
+- **Summary:** The extension &lt;id&gt; (&lt;origin&gt;) has not been reviewed.
+- **Why:** An installed or contributed extension counts as reviewed only with an attestation for its exact code and descriptor. Without one, every result that uses it carries this notice. It says nothing about whether the extension is correct, only that no review vouches for it.
+- **Do:** Weigh the result accordingly, or have the extension reviewed and its attestation recorded.
+- **Parameters:** `id` (text), `origin` (text)
+
+Example:
+
+```text
+The extension acme.slurry-mixer (installed) has not been reviewed.
+  Why:     An installed or contributed extension counts as reviewed only with an attestation for its exact code and descriptor. Without one, every result that uses it carries this notice. It says nothing about whether the extension is correct, only that no review vouches for it.
+  Do:      Weigh the result accordingly, or have the extension reviewed and its attestation recorded.
+  Kind:    Notice: not a failure.
+  Code:    extension_unreviewed (openflowsheet explain extension_unreviewed)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/notices/#extension_unreviewed
+```
+
+<a id="preview_kind"></a>
+
+## `preview_kind`: A result used an extension of a kind still in preview
+
+**Kind:** Notice: not a failure.
+
+- **Summary:** The &lt;kind&gt; &lt;id&gt; is of a kind whose format is still in preview.
+- **Why:** The format of some extension kinds is not yet frozen and may change in a later version. Results that use such an extension carry this notice.
+- **Do:** Expect the extension's descriptor format to change; nothing needs doing now.
+- **Parameters:** `kind` (text), `id` (text)
+
+Example:
+
+```text
+The functional_contributor acme.cost is of a kind whose format is still in preview.
+  Why:     The format of some extension kinds is not yet frozen and may change in a later version. Results that use such an extension carry this notice.
+  Do:      Expect the extension's descriptor format to change; nothing needs doing now.
+  Kind:    Notice: not a failure.
+  Code:    preview_kind (openflowsheet explain preview_kind)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/notices/#preview_kind
 ```
 
 <a id="stream_enthalpy_absent"></a>

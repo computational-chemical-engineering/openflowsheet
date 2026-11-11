@@ -20,7 +20,7 @@ the test-suite audit each fallback is recorded as a defect, which fails the sess
 from __future__ import annotations
 
 import math
-from collections.abc import Mapping, Sequence
+from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass, replace
 from typing import Any, Literal
 
@@ -854,13 +854,20 @@ def _distance(a: str, b: str) -> int:
 def suggestions(code: str, catalogue: Catalogue = CATALOGUE) -> list[str]:
     """§3.5: up to `MAX_SUGGESTIONS` catalogue keys within Levenshtein distance
     `MAX_SUGGESTION_DISTANCE` of `code`, compared case-insensitively, sorted by (distance, key)."""
-    folded = code.casefold()
+    return closest(code, catalogue.keys())
+
+
+def closest(text: str, candidates: Iterable[str]) -> list[str]:
+    """`suggestions`' rule over any `candidates`: up to `MAX_SUGGESTIONS` of them within
+    Levenshtein distance `MAX_SUGGESTION_DISTANCE` of `text`, compared case-insensitively, sorted
+    by (distance, candidate). The registry's ids use it too (ADR 0060 D11)."""
+    folded = text.casefold()
     scored = sorted(
-        (distance, key)
-        for key in catalogue.keys()
-        if (distance := _distance(folded, key.casefold())) <= MAX_SUGGESTION_DISTANCE
+        (distance, candidate)
+        for candidate in set(candidates)
+        if (distance := _distance(folded, candidate.casefold())) <= MAX_SUGGESTION_DISTANCE
     )
-    return [key for _, key in scored[:MAX_SUGGESTIONS]]
+    return [candidate for _, candidate in scored[:MAX_SUGGESTIONS]]
 
 
 def _display(entry: Entry, name: str) -> str | None:

@@ -21,6 +21,26 @@
         }
       ]
     },
+    "check_admission": {
+      "tool": "check_admission",
+      "file": "check_admission.md",
+      "sha256": "e758eeb60054cb4dbc200a0106d5919edd8e3ede618a58e46345bda509d03a65",
+      "characters": 1488,
+      "reviews": [
+        {
+          "review_kind": "design-lane",
+          "status": "reviewed",
+          "reviewed_by": "reviewer (design lane), docs/reviews/F1-review.md (approved with edits, applied in de11ec84)",
+          "reviewed_at": "2026-11-11"
+        },
+        {
+          "review_kind": "human",
+          "status": "reviewed",
+          "reviewed_by": "Frank Peters",
+          "reviewed_at": "2026-11-11"
+        }
+      ]
+    },
     "commit_change": {
       "tool": "commit_change",
       "file": "commit_change.md",
@@ -218,6 +238,26 @@
           "status": "reviewed",
           "reviewed_by": "Frank Peters",
           "reviewed_at": "2026-09-29"
+        }
+      ]
+    },
+    "list_capabilities": {
+      "tool": "list_capabilities",
+      "file": "list_capabilities.md",
+      "sha256": "4999ee1af99efa6261ce1a4524a42b65a975704d3a7f1edd0ae73964e337fd5e",
+      "characters": 1467,
+      "reviews": [
+        {
+          "review_kind": "design-lane",
+          "status": "reviewed",
+          "reviewed_by": "reviewer (design lane), docs/reviews/F1-review.md (approved with edits, applied in de11ec84)",
+          "reviewed_at": "2026-11-11"
+        },
+        {
+          "review_kind": "human",
+          "status": "reviewed",
+          "reviewed_by": "Frank Peters",
+          "reviewed_at": "2026-11-11"
         }
       ]
     },

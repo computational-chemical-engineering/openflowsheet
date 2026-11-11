@@ -22,6 +22,7 @@ from pathlib import Path
 from typing import Any
 
 import pytest
+from f1_schema_support import F1_OPERATIONS
 from m04_schema_support import without_m04
 from msg_schema_support import MSG_OPERATIONS, without_msg
 from opt_schema_support import without_opt
@@ -286,7 +287,7 @@ def test_a42_m04s_responses_decompose_onto_m02s_snapshots() -> None:
     moved = []
     for name, operation in OPERATIONS.items():
         # MSG's `explain` row (ADR 0058 D7) and ST's `get_stream_table` row (ADR 0068) postdate M04.
-        if name in MSG_OPERATIONS | ST_OPERATIONS:
+        if name in MSG_OPERATIONS | ST_OPERATIONS | F1_OPERATIONS:
             continue
         # MSG's (ADR 0058), X02's (ADR 0070), OPT's (ADR 0071) and X04's (ADR 0075) additions
         # postdate M04: they are taken out first, the later first.

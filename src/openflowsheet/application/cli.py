@@ -1,6 +1,6 @@
 """The command line: `validate`, `solve`, `optimize`, `inspect`, `replay`, `project`, `api`,
-`explain`, `streams`, `serve-http`, `serve-mcp`. K06, gates G02 and G06; T07 §10.3, §11.5; OPT
-design §4.12.
+`explain`, `streams`, `capabilities`, `admission`, `serve-http`, `serve-mcp`. K06, gates G02 and
+G06; T07 §10.3, §11.5; OPT design §4.12; ADR 0060 D11.
 
 Blueprint D15: local Python and CLI share one contract and neither requires a network round
 trip. So this module is thin on purpose — it parses arguments, calls the application layer,
@@ -57,6 +57,7 @@ from typing import TYPE_CHECKING, Any, Final, get_args
 
 from openflowsheet.application.types import ApiErrorCode
 from openflowsheet.application.validation import validate
+from openflowsheet.registry import default_registry
 
 if TYPE_CHECKING:
     from openflowsheet.application.local import LocalApplication
@@ -706,6 +707,61 @@ def command_explain(arguments: argparse.Namespace) -> int:
     return 0
 
 
+def _registry_operation(name: str, request: Mapping[str, Any]) -> int:
+    """ADR 0060 D11's CLI conveniences: `name` (`list_capabilities`, `check_admission`) with
+    `request`, through `dispatch` on a throw-away in-memory application, so the document is the
+    operation's on every transport. Neither operation reads the project, so none is named. The
+    response as canonical JSON on stdout, exit 0; a refusal as `api` prints it."""
+    from openflowsheet.application.contract import ApplicationError
+    from openflowsheet.application.local import LocalApplication
+    from openflowsheet.application.operations import dispatch
+
+    with LocalApplication.in_memory() as application:
+        try:
+            response = dispatch(application, name, dict(request))
+        except ApplicationError as refused:
+            return _print_refusal(refused.error)
+    _print_document(response)
+    return 0
+
+
+def command_capabilities(arguments: argparse.Namespace) -> int:
+    """ADR 0060 D11: `list_capabilities` — a page of the extension registry's descriptors."""
+    request: dict[str, Any] = {"limit": arguments.limit}
+    if arguments.kind:
+        request["kind"] = list(arguments.kind)
+    for member, value in (("id_prefix", arguments.prefix), ("cursor", arguments.cursor)):
+        if value is not None:
+            request[member] = value
+    return _registry_operation("list_capabilities", request)
+
+
+def command_admission(arguments: argparse.Namespace) -> int:
+    """ADR 0060 D11: `check_admission` — the pair form from `--unit` and `--method`, or the
+    draft form from `--revision FILE`."""
+    import yaml
+
+    if arguments.revision is not None:
+        if arguments.unit is not None or arguments.method is not None:
+            print("give --revision or --unit and --method, not both", file=sys.stderr)
+            return 1
+        try:
+            revision = _load(Path(arguments.revision))
+        except (OSError, ValueError, yaml.YAMLError) as error:
+            print(f"cannot read the revision: {error}", file=sys.stderr)
+            return 1
+        return _registry_operation("check_admission", {"revision": revision})
+    if arguments.unit is None or arguments.method is None:
+        print("give --unit and --method, or --revision FILE", file=sys.stderr)
+        return 1
+    pair = {"unit": arguments.unit, "method": arguments.method}
+    for member in ("definition", "unit_version", "method_version"):
+        value = getattr(arguments, member)
+        if value is not None:
+            pair[member] = value
+    return _registry_operation("check_admission", {"pair": pair})
+
+
 #: ST §6.3: the printed forms of `streams`.
 STREAM_FORMATS: Final[tuple[str, ...]] = ("text", "json", "csv")
 
@@ -962,6 +1018,43 @@ def build_parser() -> argparse.ArgumentParser:
     )
     explain_command.set_defaults(handler=command_explain)
 
+    capabilities_command = commands.add_parser(
+        "capabilities",
+        help="list the extension registry's descriptors (no project needed)",
+        description=(
+            "Print a page of the registered extensions (unit models, property methods, stream "
+            "definitions, ...) with what each requires and provides, as the list_capabilities "
+            "operation returns it (canonical JSON). Exit 0; a refusal exits with its error "
+            "code's number, as `api` does."
+        ),
+    )
+    capabilities_command.add_argument(
+        "--kind", action="append", default=None, help="only this kind (repeatable)"
+    )
+    capabilities_command.add_argument("--prefix", default=None, help="only ids with this prefix")
+    capabilities_command.add_argument("--cursor", default=None, help="a page's next_cursor")
+    capabilities_command.add_argument("--limit", type=int, default=50, help="1 to 200")
+    capabilities_command.set_defaults(handler=command_capabilities)
+
+    admission_command = commands.add_parser(
+        "admission",
+        help="check whether a unit model is admitted with a property method (no project needed)",
+        description=(
+            "Print the check_admission operation's report (canonical JSON) for --unit and "
+            "--method, on --definition (default: the one stream definition the unit requires), "
+            "or for the units of --revision FILE. Exit 0 whatever the verdict (read "
+            '"admitted"); a refusal exits with its error code number, as `api` does; 1 '
+            "means no call was made."
+        ),
+    )
+    admission_command.add_argument("--unit", default=None, help="a unit model id")
+    admission_command.add_argument("--method", default=None, help="a property method id")
+    admission_command.add_argument("--definition", default=None, help="a stream definition id")
+    admission_command.add_argument("--unit-version", default=None, help="default: the highest")
+    admission_command.add_argument("--method-version", default=None, help="default: the highest")
+    admission_command.add_argument("--revision", default=None, help="a revision document file")
+    admission_command.set_defaults(handler=command_admission)
+
     streams_command = commands.add_parser(
         "streams",
         help="print a run's stream table and energy summary",
@@ -1019,6 +1112,7 @@ def main(argv: list[str] | None = None) -> int:
     arguments = parser.parse_args(argv)
     handler = arguments.handler
     try:
+        default_registry()  # ADR 0060 D8: the process registry is built at start
         return int(handler(arguments))
     except Exception:
         _print_internal_error()

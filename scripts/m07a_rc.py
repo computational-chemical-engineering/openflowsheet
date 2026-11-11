@@ -65,6 +65,12 @@ function, a registered digest and Frank's carry extended to name it):
   measured on the tree that merged `main` (ST's c_7) into `wp/X04`
   (`tests/test_t08_w2_surface_digest.py`'s `X04_SERVED_SHA256`; X04's final work order). Item 4
   judges both texts in their pre-X04 form (`texts_before_links`).
+- c_9, R-1030 (ADR 0060 D11, ADR 0019 Amendment 7): F1's two tools, `list_capabilities` and
+  `check_admission`, stripped by `tests/f1_schema_support.py`'s `without_f1`; `D_9` =
+  `e2c44b6b…`, re-taken at the F1 review's fix round on `wp/F1` when the design lane's review
+  edited both texts (`e59f3d22…` at F1-WO4a, `24966bee…` at F1-WO4b, when the draft form changed
+  `check_admission.md`; `tests/test_t08_w2_surface_digest.py`'s `F1_SERVED_SHA256`). F1 changed
+  no existing text; its two files are pinned at their own hashes (`F1_FILE_SHA256`).
 
 The released 0.2.0a1 ran the two-link chain (its committed record at `C_α²`); a re-run of the
 alpha's step 8 uses this script at the tag.
@@ -135,6 +141,12 @@ MSG_FILE_SHA256: Final = {
 #: judges its pre-X04 copy (`texts_before_links`).
 ST_FILE_SHA256: Final = {
     "get_stream_table": "76ac57f3a89b616157986b1b650a2793d1fa3271f705745c8c853249aa59fe1d",
+}
+#: c_9 (R-1030, ADR 0060 D11): the two tools F1 added, their files pinned as ST's is. Their reviews
+#: (design lane; Frank's) are pending in `REVIEW.json`.
+F1_FILE_SHA256: Final = {
+    "check_admission": "e758eeb60054cb4dbc200a0106d5919edd8e3ede618a58e46345bda509d03a65",
+    "list_capabilities": "4999ee1af99efa6261ce1a4524a42b65a975704d3a7f1edd0ae73964e337fd5e",
 }
 #: The two changed files as R-133 carried them: their reviewed hashes in `REVIEW.json` as v0.1.0
 #: released it (`PUBLIC_ROOT`).
@@ -245,6 +257,16 @@ def strip_st(tools: Tools) -> Tools:
     return stripped
 
 
+def strip_f1(tools: Tools) -> Tools:
+    """s_9 (R-1030): `tools` without F1's two tools (`f1_schema_support.without_f1`)."""
+    t08_rc._tests_on_path()
+    from f1_schema_support import without_f1  # noqa: PLC0415
+
+    stripped = without_f1(copy.deepcopy(tools))
+    assert isinstance(stripped, list)
+    return stripped
+
+
 @dataclass(frozen=True)
 class Link:
     """One registered surface change c_k: its register entry, its strip function s_k, and the
@@ -304,6 +326,12 @@ LINKS: Final = (
         "R-1010",
         strip_x04,
         "6be1c002592524126617af8dd65d331513f4a96355f5381dba020ad561a2ba57",
+    ),
+    Link(
+        "c_9",
+        "R-1030",
+        strip_f1,
+        "e2c44b6b9c2a7f5689ed4f2fd96b6e9804d1a63e60a5c620d29b5b5d594bcebb",
     ),
 )
 
@@ -393,7 +421,8 @@ def texts_before_links(texts: Mapping[str, str]) -> dict[str, str]:
     """`texts` (operation name -> description file) with every link's description change undone:
     c_6's two files (OPT) in their pre-OPT form and c_8's two (X04) in their pre-X04 form. The
     other links changed no existing text (MSG's c_4 added `explain.md`, ST's c_7
-    `get_stream_table.md`, each pinned at its own hash)."""
+    `get_stream_table.md`, F1's c_9 `list_capabilities.md` and `check_admission.md`, each pinned
+    at its own hash)."""
     t08_rc._tests_on_path()
     from opt_schema_support import OPT_DESCRIPTIONS, pre_opt_text  # noqa: PLC0415
     from x04_schema_support import X04_DESCRIPTIONS, pre_x04_text  # noqa: PLC0415
@@ -408,13 +437,14 @@ def texts_before_links(texts: Mapping[str, str]) -> dict[str, str]:
 
 def description_problems(texts: Mapping[str, str]) -> list[str]:
     """§5.3 item 4 on `texts` (operation name -> description file): one line per failure. The
-    tools are `v17-c2`'s 17, MSG's `explain` (c_4) and ST's `get_stream_table` (c_7), each file at
-    its pinned hash."""
+    tools are `v17-c2`'s 17, MSG's `explain` (c_4), ST's `get_stream_table` (c_7) and F1's
+    `list_capabilities` and `check_admission` (c_9), each file at its pinned hash."""
     problems: list[str] = []
-    pinned = {**V17_C2_FILE_SHA256, **MSG_FILE_SHA256, **ST_FILE_SHA256}
+    pinned = {**V17_C2_FILE_SHA256, **MSG_FILE_SHA256, **ST_FILE_SHA256, **F1_FILE_SHA256}
     if sorted(texts) != sorted(pinned):
         problems.append(
-            f"tools {sorted(texts)} are not v17-c2's 17, MSG's explain and ST's get_stream_table"
+            f"tools {sorted(texts)} are not v17-c2's 17, MSG's explain, ST's get_stream_table "
+            "and F1's list_capabilities and check_admission"
         )
     for name in sorted(set(texts) & set(pinned)):
         if name in CHANGED:
@@ -423,6 +453,8 @@ def description_problems(texts: Mapping[str, str]) -> list[str]:
             expected, source = MSG_FILE_SHA256[name], "MSG's"
         elif name in ST_FILE_SHA256:
             expected, source = ST_FILE_SHA256[name], "ST's"
+        elif name in F1_FILE_SHA256:
+            expected, source = F1_FILE_SHA256[name], "F1's"
         else:
             expected, source = V17_C2_FILE_SHA256[name], "v17-c2's"
         found = hashlib.sha256(texts[name].encode("utf-8")).hexdigest()

@@ -373,6 +373,8 @@ def scenario(revision_id: str, job_id: str, bundle: Path) -> list[tuple[str, dic
         # ADR 0019 Amendment 3 (A3.3); `at` is a clock reading (`CLOCK_MEMBERS`).
         ("list_audit", {"order": "descending", "limit": 4}),
         ("explain", {"code": "not_found"}),  # ADR 0058 D7 (MSG)
+        ("list_capabilities", {"kind": "unit_model", "limit": 3}),  # ADR 0060 D11 (F1)
+        ("check_admission", {"pair": {"unit": "thermal.heater", "method": "coolprop-heos-v1"}}),
         ("artifact_bytes", {"artifact_id": state}),
     ]
 

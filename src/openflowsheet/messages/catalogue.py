@@ -4,7 +4,9 @@ The core catalogue is package data, `catalogue/*.yaml`, each file one document o
 `schemas/message-catalogue.schema.json`; `kinds.yaml` and `vocabulary.yaml` are that schema's two
 table forms. `CATALOGUE` is the lazy process singleton: the core is read on first use, an extension
 may `register()` its own namespaced document until the first lookup, and the first lookup freezes
-the key set (§4.11). Codes are stable: a key is never removed or renamed, only deprecated.
+the key set (§4.11). Its first lookup builds the extension registry first (ADR 0060 D8), which
+registers every installed extension's document, so they are present whatever the call order.
+Codes are stable: a key is never removed or renamed, only deprecated.
 
 Neither the format id nor the content digest enters any identity, hash or explanation (§3.2).
 """
@@ -221,7 +223,11 @@ class Catalogue:
     """The merged catalogue: the core documents plus registered extensions (§4.11)."""
 
     def __init__(
-        self, core: Mapping[str, str] | None = None, *, validate_core: bool | None = None
+        self,
+        core: Mapping[str, str] | None = None,
+        *,
+        validate_core: bool | None = None,
+        registry_first: bool = False,
     ) -> None:
         #: `{file name: YAML text}`; `None` reads the package's `catalogue/*.yaml`.
         self._core_texts = core
@@ -238,6 +244,9 @@ class Catalogue:
         self._validators: _Validators | None = None
         #: `sha256()`, computed once: the merged entries cannot change after the first lookup.
         self._sha256: str | None = None
+        #: The process catalogue's: the first lookup builds the extension registry, which
+        #: registers the extensions' documents, before it freezes (ADR 0060 D8).
+        self._registry_first = registry_first
 
     # -- loading ----------------------------------------------------------------------------
 
@@ -332,6 +341,10 @@ class Catalogue:
     # -- lookup (freezes) -------------------------------------------------------------------
 
     def _frozen_entries(self) -> dict[str, Entry]:
+        if self._registry_first and not self._frozen:
+            from openflowsheet.registry import before_catalogue_freeze  # noqa: PLC0415
+
+            before_catalogue_freeze()
         entries = self._load()
         self._frozen = True
         return entries
@@ -371,7 +384,7 @@ class Catalogue:
         return self._sha256
 
 
-CATALOGUE: Final[Catalogue] = Catalogue()
+CATALOGUE: Final[Catalogue] = Catalogue(registry_first=True)
 
 
 def register(document: Mapping[str, Any], *, namespace: str) -> None:

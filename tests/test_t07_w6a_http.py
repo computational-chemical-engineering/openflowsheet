@@ -345,11 +345,16 @@ def _scenario(call: Call, raw: Callable[[str, bytes], tuple[int, Any]]) -> list[
         {"principal_id": PRINCIPAL, "order": "descending", "cursor": audit["next_cursor"]},
     )  # 422 the other order's cursor
     step("explain", {"code": "not_found"})  # ADR 0058 D7 (MSG)
+    step("list_capabilities", {"kind": "unit_model", "limit": 3})  # ADR 0060 D11 (F1)
+    step("check_admission", {"pair": {"unit": "thermal.heater", "method": "coolprop-heos-v1"}})
     # Refusals a transport can reach.
     step("get_job", {"job_id": "job-999999"})  # 404
     step("explain", {"code": "phase_regim_mismatch"})  # 404, with suggestions
     step("get_artifact", {"artifact_id": "job-999999:bundle"})  # 404
     step("get_stream_table", {"job_id": "job-999999"})  # 404 (ADR 0068)
+    step(
+        "check_admission", {"pair": {"unit": "thermal.heatr", "method": "coolprop-heos-v1"}}
+    )  # 404, with suggestions (ADR 0060)
     step("get_revision", {"revision_id": revision, "depth": 99})  # 422 schema
     step("list_revisions", {"cursor": "not-a-cursor"})  # 422
     step("submit_job", {**solve, "idempotency_key": "auto:mine"})  # 422 reserved key
@@ -389,8 +394,8 @@ def test_g14_every_http_operation_equals_dispatch_as_the_same_principal(
         got = [(status, _seq_aligned(document, offset)) for status, document in got]
         served_names = {n for n, row in OPERATIONS.items() if "http" in row.transports}
         # 19 with ADR 0019 Amendment 3's `list_audit`, 20 with ADR 0058 D7's `explain`, 21 with
-        # ADR 0068's `get_stream_table`.
-        assert len(served_names) == 21
+        # ADR 0068's `get_stream_table`, 23 with ADR 0060 D11's two.
+        assert len(served_names) == 23
         for index, ((status, document), (want_status, want)) in enumerate(
             zip(got, expected, strict=True)
         ):

@@ -2040,6 +2040,86 @@ class AuditRecord:
         }
 
 
+@dataclass(frozen=True)
+class CapabilityDescriptor:
+    """ADR 0060 D11 (ADR 0019 Amendment 7) `list_capabilities`: one registered descriptor — its
+    declared fields, normalised (D2), and the registry's computed ones (`self_sha256`,
+    `descriptor_sha256`, `origin`, `distribution`, `distribution_version`, `entry_point`,
+    `effective_status`, `evidence_class`, `stability`): `Registered.as_document()`."""
+
+    document: Mapping[str, Any]
+
+    def as_document(self) -> dict[str, Any]:
+        return copy.deepcopy(dict(self.document))
+
+
+@dataclass(frozen=True)
+class CapabilityPage:
+    """ADR 0060 D11 `list_capabilities`: one page of registered descriptors, sorted by (kind, id,
+    version key), with the registry's identity (`registry_sha256`, D10). `next_cursor` continues
+    after this page's last item, or is `None` on the last page."""
+
+    registry_sha256: str
+    items: tuple[CapabilityDescriptor, ...]
+    next_cursor: str | None
+
+    def as_document(self) -> dict[str, Any]:
+        return {
+            "registry_sha256": self.registry_sha256,
+            "items": [item.as_document() for item in self.items],
+            "next_cursor": self.next_cursor,
+        }
+
+
+@dataclass(frozen=True)
+class AdmissionPair:
+    """ADR 0060 D11: D5's verdict on one (unit, method, definition) triple, with the versions it
+    was taken on. `instance` is the revision's unit instance (the draft form), else `None`;
+    `refusal` and each notice are the registry's `{code, params}`."""
+
+    instance: str | None
+    unit: str
+    unit_version: str
+    method: str
+    method_version: str
+    definition: str
+    admitted: bool
+    refusal: Mapping[str, Any] | None
+    notices: tuple[Mapping[str, Any], ...]
+
+    def as_document(self) -> dict[str, Any]:
+        return {
+            "instance": self.instance,
+            "unit": self.unit,
+            "unit_version": self.unit_version,
+            "method": self.method,
+            "method_version": self.method_version,
+            "definition": self.definition,
+            "admitted": self.admitted,
+            "refusal": None if self.refusal is None else copy.deepcopy(dict(self.refusal)),
+            "notices": [copy.deepcopy(dict(notice)) for notice in self.notices],
+        }
+
+
+@dataclass(frozen=True)
+class AdmissionReport:
+    """ADR 0060 D11 `check_admission`: the verdict on each pair, `admitted` their conjunction,
+    and `notices` every pair's notices, sorted and without repeats (F1 decision W4a-4)."""
+
+    registry_sha256: str
+    admitted: bool
+    pairs: tuple[AdmissionPair, ...]
+    notices: tuple[Mapping[str, Any], ...]
+
+    def as_document(self) -> dict[str, Any]:
+        return {
+            "registry_sha256": self.registry_sha256,
+            "admitted": self.admitted,
+            "pairs": [pair.as_document() for pair in self.pairs],
+            "notices": [copy.deepcopy(dict(notice)) for notice in self.notices],
+        }
+
+
 def validate_inline(label: str, schema: Mapping[str, Any], document: Any) -> None:
     """Raise `DocumentSchemaError` (named `label`) unless `document` satisfies `schema`: a schema
     that is not published itself but may `$ref` the published ones — `operations`' request and

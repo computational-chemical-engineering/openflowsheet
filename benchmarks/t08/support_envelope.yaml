@@ -282,16 +282,18 @@ axes:
   - id: interfaces
     title: Interfaces
     statement: >-
-      Python (`LocalApplication`), CLI, HTTP (`/v1`) and MCP over stdio; the twenty-three operations of
+      Python (`LocalApplication`), CLI, HTTP (`/v1`) and MCP over stdio; the twenty-five operations of
       `OPERATIONS`, each on the transports listed (`explain`, ADR 0058 D7, reads the message catalogue
       only; `get_stream_table`, ADR 0068, computes a finished run's stream table from its bundle and
-      stores nothing); authority from the credential only (ADR 0019).
+      stores nothing; `list_capabilities` and `check_admission`, ADR 0060 D11, read the extension
+      registry only); authority from the credential only (ADR 0019).
       With `serve-http --ui`, the diagnostic web shell at `/ui/` is a browser client of eighteen of
       them over HTTP and of nothing else (M06, and ST's `get_stream_table` since Frank's O3;
       L-WEB-1 to L-WEB-4).
     operations:
       artifact_bytes: [python, cli, http]
       cancel_job: [python, cli, http, mcp]
+      check_admission: [python, cli, http, mcp]
       commit_change: [python, cli, http, mcp]
       diff_revisions: [python, cli, http, mcp]
       explain: [python, cli, http, mcp]
@@ -303,6 +305,7 @@ axes:
       get_stream_table: [python, cli, http, mcp]
       inspect_structure: [python, cli, http, mcp]
       list_audit: [python, cli, http]
+      list_capabilities: [python, cli, http, mcp]
       list_job_events: [python, cli, http, mcp]
       list_jobs: [python, cli, http, mcp]
       list_models: [python, cli, http, mcp]
@@ -9392,3 +9395,57 @@ harvest:
   - L-S11-3
   - L-E01-1
   note: 'the four envelope rows the limitation names, carried verbatim'
+- manifest: evidence/F1/a423093f2f67b83cb6f4a2d5314d27a6b0c1cbf5/manifest.json
+  item: limitations[0]
+  sha256: dc13684b8b102b9e2f4c5be0f27fc17e1b5fe7eea74985b1d008f5e1004b51a9
+  class: P
+  to: []
+  note: 'provenance note: software verification of the extension registry against independent expectations; tested evidence, not reviewed'
+- manifest: evidence/F1/a423093f2f67b83cb6f4a2d5314d27a6b0c1cbf5/manifest.json
+  item: limitations[1]
+  sha256: 3c40a3aac6e161e34cec519504148d4c755e611056a0212182c4d18cfa08d968
+  class: P
+  to: []
+  note: 'provenance note: requirements empty, F1 maps to no D/A requirement (0.5 foundation package)'
+- manifest: evidence/F1/a423093f2f67b83cb6f4a2d5314d27a6b0c1cbf5/manifest.json
+  item: limitations[2]
+  sha256: d4609783ae9940855ccd304063aee6a290f28573ffcba6bb3370c611fbfbe844
+  class: P
+  to: []
+  note: 'provenance note: E-F1-5 on Linux x86-64 and both CI legs; Windows and macOS pending until the X07a legs exist (outside the platforms row)'
+- manifest: evidence/F1/a423093f2f67b83cb6f4a2d5314d27a6b0c1cbf5/manifest.json
+  item: limitations[3]
+  sha256: fa2874d18e3b26b15c8bc8c81f5c16203a394650d706871b974bd1648b0727f3
+  class: P
+  to: []
+  note: 'provenance note: module paths compared exact-case; a wrong-case path resolves on a case-insensitive file system (outside the Linux platforms row)'
+- manifest: evidence/F1/a423093f2f67b83cb6f4a2d5314d27a6b0c1cbf5/manifest.json
+  item: limitations[4]
+  sha256: 605709acebb39c260924c482c518e72858d424f2806f7c955bcabf7ec2d0247e
+  class: P
+  to: []
+  note: 'provenance note: a zip or frozen build cannot compute the built-in self-hashes and the process registry fails to build (outside the platforms row)'
+- manifest: evidence/F1/a423093f2f67b83cb6f4a2d5314d27a6b0c1cbf5/manifest.json
+  item: limitations[5]
+  sha256: e981d516b2301f8d660fc48ebb0dd55a196f9695edfb7e4c9fc36d87023c9efe
+  class: P
+  to: []
+  note: 'process note: SF-8 trusts the digest for descriptor_problem only; registry_builtin --check validates in full in CI'
+- manifest: evidence/F1/a423093f2f67b83cb6f4a2d5314d27a6b0c1cbf5/manifest.json
+  item: limitations[6]
+  sha256: fe6d050780e12dcd7121ec0064e6ed9402f0ef5c637ecd2924f0f1e858aa3d42
+  class: P
+  to: []
+  note: 'provenance note: the follow-up''s predicted digests are regression expectations computed with the code under test'
+- manifest: evidence/F1/a423093f2f67b83cb6f4a2d5314d27a6b0c1cbf5/manifest.json
+  item: limitations[7]
+  sha256: 8fcd71160c4a7e1463ecb966fa4a1c2dc725d4fb4bd6cbfa159415c9a38ab3e4
+  class: P
+  to: []
+  note: 'process note: no local full gate; the default-marker suite ran once in a clean worktree; CI both legs is the merge condition'
+- manifest: evidence/F1/a423093f2f67b83cb6f4a2d5314d27a6b0c1cbf5/manifest.json
+  item: limitations[8]
+  sha256: 01c806182b33b373c4d75ea776cb375e0bfead96a10b67480a0952f3b3c466b9
+  class: P
+  to: []
+  note: 'provenance note: other local commands ran at b37ba8ff, which differs from a423093f only in scripts/t07_schema_fixtures.py'

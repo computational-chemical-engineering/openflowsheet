@@ -1,7 +1,8 @@
 # ADR 0060 — F1: one extension registry, computed admission, `list_capabilities` and `check_admission`
 
-**Status:** **Proposed, 2026-11-05.** Design wave W1, pass P1 (ADR 0057, R-928). Takes effect when Accepted after the W1
-reviewer pass over ADRs 0060 and 0061; built in 0.5 on `wp/F1`.
+**Status:** **Accepted (Frank Peters, 2026-11-11, decision board `f1-adr0060-accept`: "Accept (Recommended)"),
+with the errata of R-1031.** Proposed 2026-11-05, design wave W1, pass P1 (ADR 0057, R-928); W1 reviewer pass over
+ADRs 0060 and 0061; built in 0.5 on `wp/F1`. Register entries R-1030 to R-1032 are Accepted with it.
 **Author:** design lane (`architect`). **Brief:** `docs/roadmap/brief-architect-W1-P1.md`.
 **Refines:** `docs/roadmap/target-architecture.md` §3 F1, §2.4.2, §2.6 C2, §2.7.3. Departures from the note are marked
 **[departure]** with their reason.
@@ -76,6 +77,16 @@ end except the slots R-929 keeps `preview` to the end of 0.6. A descriptor of a 
 registered and listed, and every admission report and run report that uses it carries the notice
 `preview_kind(<kind>, <id>)` (D9).
 
+**A core kind before its payload schema** (erratum, F1 design follow-up: F-5). For `record_type`, `correlation_form`
+and `data_source`, **core** names the payload ADR 0061 freezes. A descriptor of such a kind has a core payload only once
+the kind's payload schema is installed in `extension-descriptor.schema.json` (`registry/descriptor.py` `PAYLOAD_DEFS`
+names it). Until then a non-built-in descriptor of the kind is validated as an object only (D2), its `stability` is
+`preview`, and it carries `preview_kind(<kind>, <id>)` (D9). It becomes `core` when the schema lands, with no edit of
+its own; a payload the new schema refuses then quarantines its package (`extension_invalid`, D7). A built-in descriptor
+of such a kind is never registered without its payload schema: ADR 0061's work order installs the three schemas in the
+commit that adds `records.json`, and `scripts/registry_builtin.py` refuses a built-in of a kind this table marks core
+whose payload schema is not installed (F1-WO6 part D). `message_entries`' schema is F1's and is installed.
+
 ### D2. The descriptor (`schemas/extension-descriptor.schema.json`, draft 2020-12, closed objects)
 
 | Field | Type | Rule |
@@ -90,7 +101,7 @@ registered and listed, and every admission report and run report that uses it ca
 | `provides` | array of tokens | D4 |
 | `limitations` | array of `{code, params}`; `code` a catalogued code, `params` an object of strings and numbers | typed limitations (R-924). `code` is validated, without a catalogue lookup, against the core catalogue's keys plus the codes of the package's own pre-validated `message_entries` document (D7), since a lookup during build raises (D8) |
 | `platforms` | `["any"]` or a non-empty subset of `linux-x86_64`, `linux-aarch64`, `windows-x86_64`, `macos-x86_64`, `macos-arm64` | declarative; never consulted by admission (D5) |
-| `pip_extra` | string or null | the extra that installs the implementation's optional dependencies |
+| `pip_extra` | string or null | the extra of the declaring distribution whose requirements the implementation needs in order to be constructed and run; factory resolution refuses `dependency_missing(<id>, <extra>)` while one of them is not installed (D5). Null when the implementation runs without any extra: a dependency that only a separate optional path needs, where that path refuses by itself, is not named. So the built-in `lca` contributor's is null: Brightway serves only E01's offline adapter, which refuses `UNSUPPORTED(LCA_ENGINE_UNAVAILABLE)` without it (erratum, F1 design follow-up: F-4) |
 | `data_rights` | null or `{source, licence_stated}` (strings) | the author's statement for data the extension ships; the project's assessment lives in ADR 0061's rights register |
 | `implementation` | `{modules: [path…], factory: null \| {module, attribute, key: string \| null}}` | `modules`: POSIX paths relative to the import root (`openflowsheet/thermo/pr_c1.py`), code and data files, unique; may be empty only for a descriptor whose payload is all its content. `factory`: resolved lazily (D7); `key` indexes a mapping attribute (`MODEL_BUILDERS[key]`) |
 | `contributed_by` | absent or `{actor, session: string \| null, date: YYYY-MM-DD}` | written by the agentic layer for an extension it contributed (D9) |
@@ -146,7 +157,7 @@ Spaces are a closed table, frozen at W1's end (additions by ADR amendment):
 | `vocab` | F4's vocabulary registry (a validator ADR-F4 installs) | any |
 | `flash` | a static table owned by ADR-F2/F5 (`TP` today) | any |
 | `attr`, `derived`, `kinetics`, `trial_set` | ids of the kinds of D1 | any |
-| `convention` | the convention list of `interfaces-frozen.md` §3 plus ADR-F4 additions (a static table) | any |
+| `convention` | the convention list of `interfaces-frozen.md` §3 (six at F1: `SYN-001-ref-v1`, `PR-C1-ref-v1`, `IAPWS95-ref-v1`, `COOLPROP-DEF-ref-v1`, `WILSON-IG-ref-v1`, `S10-VER-ref-v1`; erratum, F1 design follow-up: W1-8) plus ADR-F4 additions (a static table) | any |
 | `legacy` | the 7 legacy provider ids (static, frozen) | **built-in legacy descriptors only** |
 | `x` | `x:<namespace>.<name>`: extension-to-extension contracts | only descriptors of extension `<namespace>` |
 
@@ -190,16 +201,17 @@ tokens for every definition it supports, and admitting against P_m would admit a
 
 `render(clause)` is the token for a one-token clause, else the tokens joined by `|` (`legacy:syn001|legacy:wilson-ig-v2`).
 A unit declares the definitions its material side accepts with a `conn:` clause in `requires`; P_d always contains
-`conn:<definition id>`. `capability_missing` has kind `not_supported` and `gap.capability` = its third parameter, which
-is what R-931's agentic layer reads (ADR 0058 entry field `gap`).
+`conn:<definition id>`. `capability_missing` has kind `not_supported`; its third parameter, `params.capability`, is the
+missing token, and that is what R-931's agentic layer reads. `gap.capability` is the entry's fixed text: MSG keeps
+static gaps (ADR 0058 entry field `gap`). (Erratum, F1 review: W4a-13.)
 
 `admission_matrix(registry, definition)` returns every (unit, method) verdict over the registered `unit_model` ×
 `property_method` descriptors, sorted by (unit id, unit version, method id, method version): the input of §2.4.3's
 coverage matrix (built by F6).
 
 Admission does not check platforms, component coverage, parameters or anything a revision supplies. Factory resolution
-checks platforms (`platform_unsupported(<id>, <platform>)`) and optional dependencies (`dependency_missing(<id>,
-<extra>)`); validation checks the rest.
+checks platforms (`platform_unsupported(<id>, <platform>)`) and the requirements of the descriptor's `pip_extra`
+(`dependency_missing(<id>, <extra>)`, D2); validation checks the rest.
 
 ### D6. Legacy registration, without a byte edit
 
@@ -216,6 +228,7 @@ differing pointers; it prints one summary line. The registry reads the JSON at b
 | --- | --- |
 | `legacy_provider_id` | the module's `PROVIDER_ID` |
 | `phases`, `flashes`, `properties`, `reference_convention` (string, or `"per_component"` for CoolProp) | a constructed provider's `describe()` (CoolProp: one per fluid; the table records the fluid → convention map) |
+| `per_component` (erratum, F1 review: W2-2) | null, or for CoolProp a map fluid to `{reference_convention, properties, derivative_inputs}`; the top-level lists are those every fluid declares, in describe order |
 | `derivative_inputs` | the module's declared inputs (`DERIVATIVE_INPUTS`, or `describe().derivative_order` keys) |
 | `bases` | `selectable_bases()` entries with this provider id: `{record_source, components}` (127 bases in all) |
 | `selectable` | whether `bases` is non-empty (false for `pr-lib-v1`, `wilson-ig-v1`) |
@@ -322,7 +335,9 @@ start.
 
 **Extensions used.** A run's *extensions used* (D9) are derived from its documents, not from a recorder: the unit ids
 and versions of its revision, the data lock's methods, its connection definitions, the record types it reads and the
-contributors its assessment document names, each looked up in the registry snapshot (D10). A recorder alone could lose
+contributors its assessment document names, each looked up in the registry snapshot (D10). A schema_version 1
+revision's unit references resolve to the legacy descriptor's version (1.0.0); `model.version` is never a registry
+version (erratum, F1 review: W3-12). v2 revisions carry registry versions (ADR-F2). A recorder alone could lose
 the flag: it misses a factory result cached across runs, a worker thread that does not inherit the context, and a
 concurrent run if the context were process-global. **Usage recorder (cross-check).** `registry.resolve(kind, id,
 version=None)` (highest version when `None`) and factory resolution append (kind, id, version) to the active
@@ -381,6 +396,14 @@ method_version, definition, admitted, refusal: {code, params} \| null, notices}]
 the unit's single `conn:` requirement when it has exactly one, else required (`invalid_request`); versions default to
 the highest registered. An unknown id is `not_found` with `detail.suggestions`.
 
+**Where the shapes live** (erratum, F1 design follow-up: W5-8; R-1032). `CapabilityDescriptor`, `CapabilityPage` and
+`AdmissionReport` are the `$defs` `capability_descriptor`, `capability_page` and `admission_report` of
+`registry-snapshot.schema.json`. `application-results.schema.json` holds a `$def` of each name that is a bare `$ref` to
+it, so the operation rows, the served schemas and their R4-G3 snapshots are those of the shapes themselves. The
+`sha256` names the shapes declare (`descriptor_sha256`, `self_sha256`, `registry_sha256`) stay in F1's schemas, whose
+numerical-policy addendum classifies them (ADR 0025 D2.3, E01's and OPT's precedent). No `$def` of
+`application-results.schema.json` declares one of those names.
+
 The **draft form** in 0.5 accepts a v1 revision: for each unit instance, the pair (instance model id, the provider id
 `component_basis(document)` selects, `nTP-v1`); `admitted` is the conjunction. A v2 document is refused
 `revision_unsupported` until ADR-F2's validator lands; F2 then adds its checks (anchors, basis compatibility, solid roles,
@@ -393,8 +416,9 @@ the token grammar, the space table and satisfaction (D4); the admission algorith
 `admission_matrix` (D5); the legacy payloads and the reserved `legacy` space (D6); discovery, namespace, ordering,
 quarantine and trust rules (D7); build and closing (D8); evidence rules and the flag (D9); snapshot and
 `registry_sha256` (D10); the two operations and their result shapes (D11); the payloads marked core in D1.
-**Preview:** the payloads D1 assigns to later ADRs until those are Accepted, the kinds owned by X packages, and extension
-`functional_contributor` descriptors (D1).
+**Preview:** the payloads D1 assigns to later ADRs until those are Accepted, the kinds owned by X packages, extension
+`functional_contributor` descriptors (D1), and a non-built-in descriptor of a kind D1 marks core while that kind's
+payload schema is not installed (D1, erratum F-5).
 
 **Admission scope.** The frozen core is the token grammar, satisfaction and D5 for **single-side units**: one unit-level
 `requires` evaluated against one method. In note §2.3.8 a unit evaluates each side with its own method set, and a stream
@@ -476,9 +500,11 @@ single-side unit keeps D5's verdict unchanged.
 - **E-F1-10 Operations.** Three requests per operation return identical canonical documents on python, CLI, HTTP and
   MCP; every new code has a catalogue entry (MSG G1/G2 pass); MCP digest re-taken; R4-G3 snapshots of existing
   operations unchanged.
-- **E-F1-11 Draft admission.** For each of F0's M1 revisions (49), every instance is admitted; replacing one instance's
-  model with one `MODEL_BASES` does not admit on that basis gives `capability_missing` from `check_admission` and
-  `model_unsupported` from the binder, for the same instance.
+- **E-F1-11 Draft admission.** For each of F0's M1 revisions (50), every instance is admitted; replacing one instance's
+  model with one `MODEL_BASES` does not admit on that basis gives `capability_missing` from `check_admission` on all
+  50, and `model_unsupported` from the binder, for the same instance, on the 38 revisions the binder reads as far as its
+  model check. On the other 12 the binder refuses before its model check; that refusal is pinned and unchanged by the
+  replacement. (Erratum, F1 review: the miscount "49" and W4b-4.)
 - **E-F1-12 Contributors.** A dummy extension `functional_contributor` is registered and listed (`stability`
   `preview`); E01's `_REGISTERED` is unchanged; E01's assessment identity tests and F0 pass.
 
@@ -488,9 +514,10 @@ single-side unit keeps D5's verdict unchanged.
 
 | Code | Family | Kind |
 | --- | --- | --- |
-| `capability_missing(<unit>, <method>, <capability>)` | refusal | `not_supported` (`gap.capability` = third param) |
+| `capability_missing(<unit>, <method>, <capability>)` | refusal | `not_supported` (the missing token is `params.capability`; `gap.capability` is fixed text) |
 | `capability_unknown(<token>)`, `reserved_capability(<token>)`, `reserved_namespace(<namespace>)`, `namespace_conflict(<namespace>)`, `extension_invalid(<entry point>, <pointer>)`, `extension_load_failed(<entry point>)`, `self_hash_unavailable(<id>, <path>)` | refusal | `input` |
 | `platform_unsupported(<id>, <platform>)`, `dependency_missing(<id>, <extra>)` | refusal | `not_supported` |
+| `factory_unavailable(<kind>, <id>)` (erratum, F1 review: W3-10): a null factory, or a legacy method with `selectable: false` | refusal | `not_supported` |
 | `extension_unreviewed(<id>, <origin>)`, `preview_kind(<kind>, <id>)`, `capability_unresolved(<token>)` | notice | `notice` |
 | `registry_closed` | refusal | `bug` |
 
@@ -596,3 +623,34 @@ Status stays Proposed. Cross-ADR edit from the W1 P3 review's consolidated list.
 | S2, departure 6 | D9 propagation: extensions used are a structural `RunManifest` member (ADR 0067 D2); the evidence report, not the certificate, carries the notices (ADR 0067 D6). |
 
 Not applied: none of the edits for this ADR.
+
+## Errata (F1 review, 2026-11-11)
+
+Status stays Proposed. The F1 review (`docs/reviews/F1-review.md`, MF-1 and the rulings) records departures of the build
+on `wp/F1` from frozen core text (R-941) that the design lane has ruled on. The text above is edited in place; no core
+decision changes beyond what the rulings say, and no code moves. Registered as R-1031 (MF-1's one register entry).
+
+| Ruling | Edit |
+| --- | --- |
+| W2-2 | D6: the legacy payload gains `per_component`: null, or for CoolProp a map fluid to `{reference_convention, properties, derivative_inputs}`; the top-level lists are those every fluid declares, in describe order. |
+| W4a-13 | D5 and the code table: `gap.capability` is the entry's fixed text; the agent reads the missing token in `params.capability`. |
+| W3-10 (and W2-5) | Code table: `factory_unavailable(<kind>, <id>)`, refusal, `not_supported`, for a null factory and for a legacy method with `selectable: false`. D6's factory stays `basis_provider`. |
+| "49" and W4b-4 | E-F1-11: 50 revisions; `capability_missing` on all 50, `model_unsupported` for the same instance on 38, the other 12 refused first by the binder, pinned and unchanged. |
+| W3-12 | D8: a schema_version 1 revision's unit references resolve to the legacy descriptor's version (1.0.0); `model.version` is never a registry version. |
+
+**Not applied here:** D4's convention source (ruling W1-8) waited for the design lane's `interfaces-frozen.md` §3 note
+that ADR 0047 C1 requires. The note is written, and the follow-up below applies the edit.
+
+## Errata (F1 design follow-up, 2026-11-11)
+
+Status stays Proposed. The design lane's follow-up (`docs/reviews/F1-design-followup.md`) rules on the items the F1
+review and its fix round left open. The text above is edited in place. F1-WO6 builds what these edits require; until it
+lands, the build differs from D1, D2, D4 and D11 exactly as the follow-up's rulings state. Both errata sections are one
+amendment of this ADR's frozen core (R-941), registered once as R-1031; the schema placement of D11 is R-1032.
+
+| Ruling | Edit |
+| --- | --- |
+| F-4 | D2 `pip_extra`: the extra whose requirements the implementation needs in order to be constructed and run; null when it runs without any extra, so the built-in `lca` contributor's is null. D5's last paragraph refers to D2. |
+| F-5 | D1: a kind D1 marks core has a core payload per descriptor only once its payload schema is installed; until then a non-built-in descriptor of it is `preview` and carries `preview_kind`; a built-in of it is refused by the generator. D12's preview list gains that case. |
+| W1-8 (SF-5) | D4 `convention` source: the six conventions of `interfaces-frozen.md` §3, now that its S10 note is written (ADR 0047 C1). |
+| W5-8 | D11: the three result shapes are `$defs` of `registry-snapshot.schema.json`, reached from `application-results.schema.json` by bare `$ref`s, so ADR 0025 D2.3's partition holds with v2 and its audit unchanged (R-1032). |

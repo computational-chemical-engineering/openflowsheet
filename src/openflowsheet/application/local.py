@@ -36,12 +36,12 @@ import sqlite3
 import tempfile
 import time
 import uuid
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Any, Final, Literal, NoReturn, Self, get_args
 
-from openflowsheet.application import stream_table, validation
+from openflowsheet.application import capabilities, stream_table, validation
 from openflowsheet.application.admission import (
     active_jobs_refusal,
     admit_experiment,
@@ -107,10 +107,12 @@ from openflowsheet.application.transactions import (
     semantic_diff,
 )
 from openflowsheet.application.types import (
+    AdmissionReport,
     ApiError,
     ApiErrorCode,
     AuditOrder,
     AuditRecord,
+    CapabilityPage,
     CapabilityReference,
     Change,
     DocumentSchemaError,
@@ -143,6 +145,7 @@ from openflowsheet.application.types import (
 )
 from openflowsheet.application.validation import Task, ValidationReport
 from openflowsheet.canonical import canonical_json, document_sha256, first_noncanonical
+from openflowsheet.registry import default_registry
 from openflowsheet.run.bundle import MANIFEST_NAME
 from openflowsheet.run.replay import ReplayReport
 from openflowsheet.studies.nlp.replay import MANIFEST as OPTIMIZATION_MANIFEST
@@ -293,6 +296,7 @@ class LocalApplication:
         LocalApplication
             The opened project. Close it with `close`, or use it as a context manager.
         """
+        default_registry()  # ADR 0060 D8: the process registry is built at start
         process: ProcessExecutor | None = None
         if isinstance(executor, ProcessExecutor):
             process = executor
@@ -335,6 +339,7 @@ class LocalApplication:
         LocalApplication
             A throw-away project; its files live in a scratch directory removed on `close`.
         """
+        default_registry()  # ADR 0060 D8: the process registry is built at start
         project_id = f"memory-{uuid.uuid4().hex[:12]}"
         store = ProjectStore.in_memory(project_id=project_id)
         policy = StaticPolicy(
@@ -1750,6 +1755,48 @@ class LocalApplication:
                 suggestions=suggestions(code),
             )
         return MessageEntry.from_document(document)
+
+    def list_capabilities(
+        self,
+        *,
+        kind: str | Sequence[str] | None = None,
+        id_prefix: str | None = None,
+        cursor: str | None = None,
+        limit: int = 50,
+    ) -> CapabilityPage:
+        """ADR 0060 D11 (ADR 0019 Amendment 7): a page of the process registry's descriptors —
+        each declared and computed field (D2), sorted by (kind, id, version key) — of `kind` (one
+        or several) whose id starts with `id_prefix`. `read`; it reads the registry, not the
+        project. A cursor this list did not issue is refused `invalid_request`, as is any argument
+        the operation's request schema refuses (rule C1; F1 review SF-1)."""
+        name = "list_capabilities"
+        self._authorize(name)
+        self._check_limit(limit, MAX_PAGE, name)
+        try:
+            return capabilities.capability_page(
+                default_registry(), kind=kind, id_prefix=id_prefix, cursor=cursor, limit=limit
+            )
+        except ApplicationError as refused:
+            self._refuse_error(refused.error, name, None)
+
+    def check_admission(
+        self,
+        *,
+        pair: Mapping[str, Any] | None = None,
+        revision: Mapping[str, Any] | None = None,
+    ) -> AdmissionReport:
+        """ADR 0060 D11 (ADR 0019 Amendment 7): D5's verdict on a (unit, method, definition)
+        pair of the process registry, versions defaulting to the highest registered and the
+        definition to the unit's one `conn:` requirement. `read`; it reads the registry, not the
+        project. An unknown id is `not_found` with `detail.suggestions`. The draft form
+        (`revision`, a schema_version 1 document) takes one pair per unit instance on the
+        property method its component set selects and `nTP-v1`."""
+        name = "check_admission"
+        self._authorize(name)
+        try:
+            return capabilities.admission_report(default_registry(), pair=pair, revision=revision)
+        except ApplicationError as refused:
+            self._refuse_error(refused.error, name, None)
 
     def _decode_audit_cursor(self, cursor: str | None, order: str, operation: str) -> int | None:
         """`list_audit`'s cursor, `{order, seq}`, as the `seq` to continue after; `None` for the

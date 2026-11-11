@@ -32,6 +32,16 @@ export const ROUTES = freeze({
     "right": "execute",
     "verb": "POST"
   },
+  "check_admission": {
+    "members": [
+      "pair",
+      "revision"
+    ],
+    "path": "/v1/admission/check",
+    "path_params": [],
+    "right": "read",
+    "verb": "POST"
+  },
   "commit_change": {
     "members": [
       "author",
@@ -171,6 +181,18 @@ export const ROUTES = freeze({
       "principal_id"
     ],
     "path": "/v1/audit",
+    "path_params": [],
+    "right": "read",
+    "verb": "GET"
+  },
+  "list_capabilities": {
+    "members": [
+      "cursor",
+      "id_prefix",
+      "kind",
+      "limit"
+    ],
+    "path": "/v1/capabilities",
     "path_params": [],
     "right": "read",
     "verb": "GET"

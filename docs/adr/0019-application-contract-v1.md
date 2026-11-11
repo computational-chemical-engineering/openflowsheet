@@ -230,6 +230,28 @@ Amendment 4 is decided in M02's three ADRs; this paragraph points at its parts (
   Amendment 3's `6c4375b4…` (`tests/test_t08_w2_surface_digest.py`). The measured served digest is in M02's
   evidence manifest.
 
+## Amendment 7 (Accepted 2026-11-11 with ADR 0060, Frank Peters; proposed 2026-11-05; F1) — pointer to ADR 0060
+
+Amendment 7 is decided in ADR 0060 D11 (F1-WO4a); this paragraph points at it. Additive:
+
+- **`Inspection.list_capabilities(*, kind=None, id_prefix=None, cursor=None, limit=50) -> CapabilityPage`** and
+  **`Inspection.check_admission(*, pair=None, revision=None) -> AdmissionReport`**: the extension registry's
+  descriptors, and D5's admission verdict on a (unit, method, definition) pair. Right `read`; both read the registry,
+  not the project. All four transports (`GET /v1/capabilities`, `POST /v1/admission/check`; MCP tools of the same
+  names; CLI `api`, plus `openflowsheet capabilities` and `openflowsheet admission`). Their rows follow `explain`.
+- **Refusals, existing codes only.** `invalid_request` (the schema; a cursor this list did not issue; a pair whose unit
+  requires no single definition, pointer `/pair/definition`; a member the draft form cannot read, pointer
+  `/revision/<pointer>`), `not_found` (an unknown id or version, `detail {kind, id, version?, suggestions}`; in the
+  draft form an unregistered model id refuses the whole report, with `pointer` `/revision/instances/<i>/model/id`),
+  `revision_unsupported` (the draft form: a schema_version other than 1; a component set that selects no method, with
+  `detail.unbound`). D5's `ApiError` and `API_EXIT_CODES` are unchanged. The registry's own codes (`capability_missing`, the quarantine reasons, the notices) travel inside the
+  result as `{code, params}`, each a catalogue entry.
+- **Schemas.** `application-results.schema.json` gains `capability_page`, `capability_descriptor` and
+  `admission_report`; no existing `$def` changes.
+- **Not unchanged:** the served MCP tool list, widened by the two tools; with them removed (`tests/f1_schema_support.py`)
+  it is X04's `6be1c002…` (R-1010) exactly. The surface link is c_9, R-1030 (`F1_SERVED_SHA256` in
+  `tests/test_t08_w2_surface_digest.py`). No other R4-G3 response moves.
+
 ## Amendment 13 (Accepted 2026-11-08 by Frank, with ADR 0068; Proposed 2026-11-06; ST) — pointer to ADR 0068
 
 Amendment 13 is decided in ADR 0068; this paragraph points at it (ST design note §6.1, §7).

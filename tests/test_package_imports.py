@@ -42,6 +42,9 @@ LAYERS = [
     # MSG's message catalogue and renderer (ADR 0058), imported by `application`; the solver path
     # imports only `messages.diagnostic`, and the G3 hooks only `messages.audit`.
     "messages",
+    # F1's extension registry (ADR 0060): descriptors, capability tokens, admission and the
+    # registry snapshot. It imports `messages` only inside a build (D8), and no application module.
+    "registry",
 ]
 
 

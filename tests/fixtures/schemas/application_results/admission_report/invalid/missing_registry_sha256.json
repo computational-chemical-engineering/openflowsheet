@@ -1,0 +1,27 @@
+{
+  "expect_error": "'registry_sha256' is a required property",
+  "document": {
+    "admitted": false,
+    "notices": [],
+    "pairs": [
+      {
+        "admitted": false,
+        "definition": "nTP-v1",
+        "instance": null,
+        "method": "wilson-ig-v2",
+        "method_version": "1.0.0",
+        "notices": [],
+        "refusal": {
+          "code": "capability_missing",
+          "params": {
+            "capability": "legacy:coolprop-heos-v1|legacy:iapws95-v1",
+            "method": "wilson-ig-v2",
+            "unit": "thermal.heater"
+          }
+        },
+        "unit": "thermal.heater",
+        "unit_version": "1.0.0"
+      }
+    ]
+  }
+}

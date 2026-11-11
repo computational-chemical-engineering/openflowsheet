@@ -1,0 +1,437 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/frankp/process-runtime/schemas/registry-snapshot.schema.json",
+  "title": "RegistrySnapshot",
+  "description": "DRAFT until ADR 0060 is Accepted (F1-WO1). ADR 0060 D10: what the extension registry loaded, the §2.7.3 registry snapshot F8 records in `Environment` (non-structural). `registry_sha256` = SHA-256 of the canonical JSON of `[[kind, id, version, descriptor_sha256, self_sha256], ...]` over the registered descriptors sorted by (kind, id, version key): it excludes evidence fields, distribution versions and quarantine records (D9, D10). `extensions` are sorted by (kind, id, version key) and `quarantined` by their rows' canonical JSON bytes; the order and the hash are `openflowsheet.registry.snapshot`'s.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "snapshot_format",
+    "registry_sha256",
+    "extensions",
+    "quarantined"
+  ],
+  "properties": {
+    "snapshot_format": {
+      "const": "openflowsheet-registry-snapshot-v1"
+    },
+    "registry_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "extensions": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/extension"
+      }
+    },
+    "quarantined": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/quarantine"
+      }
+    }
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "extension": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "id",
+        "version",
+        "self_sha256",
+        "descriptor_sha256",
+        "origin",
+        "distribution",
+        "distribution_version",
+        "entry_point",
+        "status",
+        "effective_status",
+        "evidence_class",
+        "stability"
+      ],
+      "properties": {
+        "kind": {
+          "$ref": "extension-descriptor.schema.json#/properties/kind"
+        },
+        "id": {
+          "$ref": "extension-descriptor.schema.json#/$defs/id"
+        },
+        "version": {
+          "$ref": "extension-descriptor.schema.json#/properties/version"
+        },
+        "self_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "descriptor_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "origin": {
+          "enum": [
+            "builtin",
+            "installed",
+            "contributed"
+          ]
+        },
+        "distribution": {
+          "type": "string",
+          "minLength": 1
+        },
+        "distribution_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "entry_point": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "status": {
+          "enum": [
+            "declared",
+            "implemented",
+            "tested",
+            "reviewed",
+            "released"
+          ]
+        },
+        "effective_status": {
+          "enum": [
+            "declared",
+            "implemented",
+            "tested",
+            "reviewed",
+            "released"
+          ]
+        },
+        "evidence_class": {
+          "enum": [
+            "core",
+            "reviewed",
+            "unreviewed"
+          ]
+        },
+        "stability": {
+          "enum": [
+            "core",
+            "preview"
+          ]
+        }
+      }
+    },
+    "quarantine": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "distribution",
+        "distribution_version",
+        "entry_point",
+        "code",
+        "params"
+      ],
+      "properties": {
+        "distribution": {
+          "type": "string",
+          "minLength": 1
+        },
+        "distribution_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "entry_point": {
+          "type": "string",
+          "minLength": 1
+        },
+        "code": {
+          "type": "string",
+          "minLength": 1
+        },
+        "params": {
+          "type": "object",
+          "additionalProperties": {
+            "type": [
+              "string",
+              "number"
+            ]
+          }
+        }
+      }
+    },
+    "capability_descriptor": {
+      "description": "ADR 0060 D11 (ADR 0019 Amendment 7): one registered extension descriptor, its declared fields normalised (D2, `extension-descriptor.schema.json`) and the registry's computed fields (D9, D10, as a `registry-snapshot.schema.json` extension row states them).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "descriptor_format",
+        "kind",
+        "id",
+        "version",
+        "title",
+        "status",
+        "requires",
+        "provides",
+        "limitations",
+        "platforms",
+        "pip_extra",
+        "data_rights",
+        "implementation",
+        "payload",
+        "self_sha256",
+        "descriptor_sha256",
+        "origin",
+        "distribution",
+        "distribution_version",
+        "entry_point",
+        "effective_status",
+        "evidence_class",
+        "stability"
+      ],
+      "properties": {
+        "descriptor_format": {
+          "$ref": "https://github.com/frankp/process-runtime/schemas/extension-descriptor.schema.json#/properties/descriptor_format"
+        },
+        "kind": {
+          "$ref": "https://github.com/frankp/process-runtime/schemas/extension-descriptor.schema.json#/properties/kind"
+        },
+        "id": {
+          "$ref": "https://github.com/frankp/process-runtime/schemas/extension-descriptor.schema.json#/properties/id"
+        },
+        "version": {
+          "$ref": "https://github.com/frankp/process-runtime/schemas/extension-descriptor.schema.json#/properties/version"
+        },
+        "title": {
+          "$ref": "https://github.com/frankp/process-runtime/schemas/extension-descriptor.schema.json#/properties/title"
+        },
+        "status": {
+          "$ref": "https://github.com/frankp/process-runtime/schemas/extension-descriptor.schema.json#/properties/status"
+        },
+        "requires": {
+          "$ref": "https://github.com/frankp/process-runtime/schemas/extension-descriptor.schema.json#/properties/requires"
+        },
+        "provides": {
+          "$ref": "https://github.com/frankp/process-runtime/schemas/extension-descriptor.schema.json#/properties/provides"
+        },
+        "limitations": {
+          "$ref": "https://github.com/frankp/process-runtime/schemas/extension-descriptor.schema.json#/properties/limitations"
+        },
+        "platforms": {
+          "$ref": "https://github.com/frankp/process-runtime/schemas/extension-descriptor.schema.json#/properties/platforms"
+        },
+        "pip_extra": {
+          "$ref": "https://github.com/frankp/process-runtime/schemas/extension-descriptor.schema.json#/properties/pip_extra"
+        },
+        "data_rights": {
+          "$ref": "https://github.com/frankp/process-runtime/schemas/extension-descriptor.schema.json#/properties/data_rights"
+        },
+        "implementation": {
+          "$ref": "https://github.com/frankp/process-runtime/schemas/extension-descriptor.schema.json#/properties/implementation"
+        },
+        "contributed_by": {
+          "$ref": "https://github.com/frankp/process-runtime/schemas/extension-descriptor.schema.json#/properties/contributed_by"
+        },
+        "payload": {
+          "$ref": "https://github.com/frankp/process-runtime/schemas/extension-descriptor.schema.json#/properties/payload"
+        },
+        "self_sha256": {
+          "$ref": "https://github.com/frankp/process-runtime/schemas/registry-snapshot.schema.json#/$defs/extension/properties/self_sha256"
+        },
+        "descriptor_sha256": {
+          "$ref": "https://github.com/frankp/process-runtime/schemas/registry-snapshot.schema.json#/$defs/extension/properties/descriptor_sha256"
+        },
+        "origin": {
+          "$ref": "https://github.com/frankp/process-runtime/schemas/registry-snapshot.schema.json#/$defs/extension/properties/origin"
+        },
+        "distribution": {
+          "$ref": "https://github.com/frankp/process-runtime/schemas/registry-snapshot.schema.json#/$defs/extension/properties/distribution"
+        },
+        "distribution_version": {
+          "$ref": "https://github.com/frankp/process-runtime/schemas/registry-snapshot.schema.json#/$defs/extension/properties/distribution_version"
+        },
+        "entry_point": {
+          "$ref": "https://github.com/frankp/process-runtime/schemas/registry-snapshot.schema.json#/$defs/extension/properties/entry_point"
+        },
+        "effective_status": {
+          "$ref": "https://github.com/frankp/process-runtime/schemas/registry-snapshot.schema.json#/$defs/extension/properties/effective_status"
+        },
+        "evidence_class": {
+          "$ref": "https://github.com/frankp/process-runtime/schemas/registry-snapshot.schema.json#/$defs/extension/properties/evidence_class"
+        },
+        "stability": {
+          "$ref": "https://github.com/frankp/process-runtime/schemas/registry-snapshot.schema.json#/$defs/extension/properties/stability"
+        }
+      }
+    },
+    "capability_page": {
+      "description": "ADR 0060 D11 `list_capabilities`: a page of registered descriptors sorted by (kind, id, version key), the registry's identity, and the cursor of the next page (null on the last).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "registry_sha256",
+        "items",
+        "next_cursor"
+      ],
+      "properties": {
+        "registry_sha256": {
+          "$ref": "https://github.com/frankp/process-runtime/schemas/registry-snapshot.schema.json#/$defs/sha256"
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/capability_descriptor"
+          }
+        },
+        "next_cursor": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 1024
+        }
+      }
+    },
+    "admission_report": {
+      "description": "ADR 0060 D11 `check_admission`: D5's verdict on each (unit, method, definition) pair with the versions it was taken on (`instance`: the revision's unit instance in the draft form, else null), `admitted` their conjunction, and every pair's notices once each; a refusal and a notice are the registry's `{code, params}`, each code a catalogue entry.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "registry_sha256",
+        "admitted",
+        "pairs",
+        "notices"
+      ],
+      "properties": {
+        "registry_sha256": {
+          "$ref": "https://github.com/frankp/process-runtime/schemas/registry-snapshot.schema.json#/$defs/sha256"
+        },
+        "admitted": {
+          "type": "boolean"
+        },
+        "pairs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "instance",
+              "unit",
+              "unit_version",
+              "method",
+              "method_version",
+              "definition",
+              "admitted",
+              "refusal",
+              "notices"
+            ],
+            "properties": {
+              "instance": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "unit": {
+                "$ref": "https://github.com/frankp/process-runtime/schemas/extension-descriptor.schema.json#/$defs/id"
+              },
+              "unit_version": {
+                "$ref": "https://github.com/frankp/process-runtime/schemas/extension-descriptor.schema.json#/properties/version"
+              },
+              "method": {
+                "$ref": "https://github.com/frankp/process-runtime/schemas/extension-descriptor.schema.json#/$defs/id"
+              },
+              "method_version": {
+                "$ref": "https://github.com/frankp/process-runtime/schemas/extension-descriptor.schema.json#/properties/version"
+              },
+              "definition": {
+                "$ref": "https://github.com/frankp/process-runtime/schemas/extension-descriptor.schema.json#/$defs/id"
+              },
+              "admitted": {
+                "type": "boolean"
+              },
+              "refusal": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "code",
+                      "params"
+                    ],
+                    "properties": {
+                      "code": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 128
+                      },
+                      "params": {
+                        "type": "object",
+                        "additionalProperties": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "notices": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "code",
+                    "params"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 128
+                    },
+                    "params": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "notices": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "code",
+              "params"
+            ],
+            "properties": {
+              "code": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "params": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

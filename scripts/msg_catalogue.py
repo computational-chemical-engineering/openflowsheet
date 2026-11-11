@@ -9,8 +9,9 @@
 Each command prints one summary line and exits 0 only on a pass.
 
 **G2, the static scan** (§3.2), over `src/openflowsheet/**/*.py`, finds code literals at emission
-sites: the code argument of `api_error(...)`, `_refuse(...)` and `Failure(...)` (the first
-code-shaped string constant among the first two positional args); the code of
+sites: the code argument of `api_error(...)`, `_refuse(...)`, `Failure(...)` and the registry's
+`Coded(...)` (ADR 0060; the first code-shaped string constant among the first two positional
+args); the code of
 `RunUnsupportedError(...)` and the `code=` keyword of `StoreError(...)`; string constants in
 assignments to names ending `_CODES`; the string arguments of a `Literal[...]` assigned to a name
 ending `Code`; and every string constant or f-string head that begins `snake_case(` (a lower-snake
@@ -41,7 +42,9 @@ SCAN_ALLOW: Final = CATALOGUE_DIR / "scan-allow.yaml"
 _CALL_HEAD: Final = re.compile(r"^([a-z][a-z0-9]*(?:_[a-z0-9]+)+)\(")
 _CODE_SHAPED: Final = re.compile(r"^[A-Za-z][A-Za-z0-9]*(?:_[A-Za-z0-9]+)+$")
 #: Calls whose code is one of their first two positional args.
-_CODE_CALLS: Final = frozenset({"api_error", "_refuse", "Failure", "RunUnsupportedError"})
+_CODE_CALLS: Final = frozenset(
+    {"api_error", "_refuse", "Failure", "RunUnsupportedError", "Coded"}  # Coded: ADR 0060
+)
 
 
 def _modules() -> None:
