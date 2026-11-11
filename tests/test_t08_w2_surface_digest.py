@@ -137,9 +137,10 @@ ST_SERVED_SHA256 = "553b76122fefd4f09d6e91d16e7096d05b9f7793bb88e1876252dc2213e2
 #: (`scripts/m07a_rc.py`'s `D_8`). Without them it is `ST_SERVED_SHA256` (c_8).
 X04_SERVED_SHA256 = "6be1c002592524126617af8dd65d331513f4a96355f5381dba020ad561a2ba57"
 #: F1 (ADR 0060 D11, R-1030): the served digest with F1's two tools over X04's list, measured at
-#: F1-WO4a on `wp/F1` and re-taken at F1-WO4b, whose draft form changed `check_admission.md`
+#: F1-WO4a on `wp/F1`, re-taken at F1-WO4b, whose draft form changed `check_admission.md`, and at
+#: the F1 review's fix round, which applied the design lane's edits to both texts
 #: (`scripts/m07a_rc.py`'s `D_9`). Without them it is `X04_SERVED_SHA256` (c_9).
-F1_SERVED_SHA256 = "24966bee7d0e06a55dddade7a8da3f89167c1575288f51248eb0844f4a9d7dbe"
+F1_SERVED_SHA256 = "e2c44b6b9c2a7f5689ed4f2fd96b6e9804d1a63e60a5c620d29b5b5d594bcebb"
 #: The files N1 and N2 changed; the only difference from `v17-c2`'s served texts.
 CHANGED = ("commit_change", "validate")
 #: Each description's SHA-256 as `v17-c2` served it: the table of

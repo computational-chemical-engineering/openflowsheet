@@ -24,8 +24,8 @@
     "check_admission": {
       "tool": "check_admission",
       "file": "check_admission.md",
-      "sha256": "ec6b3349d305688baa4e70d9ef2d21e960e16cfedf04689e30f99f32d32a34fb",
-      "characters": 1489,
+      "sha256": "e758eeb60054cb4dbc200a0106d5919edd8e3ede618a58e46345bda509d03a65",
+      "characters": 1488,
       "reviews": [
         {
           "review_kind": "design-lane",
@@ -244,8 +244,8 @@
     "list_capabilities": {
       "tool": "list_capabilities",
       "file": "list_capabilities.md",
-      "sha256": "dfe5fcb59d9c83fe4b1d977801a027915685634c261098658a89f25a65a574a2",
-      "characters": 1360,
+      "sha256": "4999ee1af99efa6261ce1a4524a42b65a975704d3a7f1edd0ae73964e337fd5e",
+      "characters": 1467,
       "reviews": [
         {
           "review_kind": "design-lane",
