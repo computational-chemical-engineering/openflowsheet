@@ -840,3 +840,52 @@ checkout's `.venv` with `PYTHONPATH=src`. Not pushed, not merged. **WO-H5 stops 
   issues in 331 files. Further readers of the registry's classes (`test_m07_rc_records`, `test_m07a_rc_records`,
   `test_hostmove_host_leaves`, `test_t06_w4_registry`) with the new module: 72 passed.
 - **Not done here.** HM-34 (above). The package's `reviewer` pass (WO-H1, WO-H3, WO-H5).
+
+## V04-after fix round
+
+Review `docs/reviews/V04-after-review.md` (MF-1, SF-1, SF-2, rulings (a) to (e)); SMM-TR09 (2950X). Commits
+`99be191a`, `f70a26db`, `b087da06`, `a318a763`; every live run below at `a318a763`, clean tree.
+
+- **`99be191a`: ruling (c), kept and pinned.** `tests/test_m05_retake_digest_only.py`
+  `test_hm10_unmoved_host_leaves_are_held_to_the_running_host`: an unmoved REAL-like pair, byte-equal sidecars,
+  `--old-host` the committed machine, the running host patched to the re-take's literals → `FAIL`, `other=10`
+  (`_host_leaf_count` less the sidecar's three), `environment=equal host=0`, each flagged line a re-take leaf "is not
+  the running" value, the fingerprint's and an archived attempt's `cpu_model` named. Mutation check: conditioning
+  `m05_retake_diff.py`'s rule on the leaf having moved (`and not replay._same_leaf(x, y)`) fails this test alone,
+  1 failed, 74 passed; reverted.
+- **`f70a26db`: MF-1.** `tests/t08_rename_substitution.starts_substituted_back(document)` undoes R-149's two registered
+  pairs (`generator_sha256` `509b01fb…` → `7f426aa9…`, `provider.implementation_sha256` `4e4c37cc…` → `67e47281…`),
+  each only where the live value is the registered new one, by explicit comparison; it returns the paths undone.
+  `renamed_back_starts` keeps its checks and applies it (one rule, N-5). `scripts/t06_ensemble.py check` reads the
+  regeneration through it before both comparisons and the report, and prints `R-149: <paths> compared substituted
+  back`; `regenerated sha256` stays the live document's. HM-34's synthetic legs beside HM-33: new hashes in the
+  regeneration, old in the file, only `cpu_model` differing → exit 0 with the line; a made-up generator hash
+  (`"34" * 32`) → exit 1, `same host: a defect`, the hash reported. `tests/test_t06_hostmove_ref_class.py`: 24 passed.
+  - DECISION: the substitution lives in `tests/t08_rename_substitution.py`, which the script imports as it already
+    imports `t06_ensemble_support` (N-5).
+- **`b087da06`: ruling (d).** **(H-1)** at A90 ("Expected on `ref-x86-64` … on every listed CPU model") and A98 (b)
+  (run 2r on SMM-TRS2, a committed record not re-run).
+- **`a318a763`: the ruling.** §7.3 item 3's addendum (MF-1, citing R-149's "their tests compare the live hashes
+  substituted back"; no new register entry); §8 classifies `tests/test_t08_ptc_r1_diagnostic.py` (SF-1, ADR 0007 F1;
+  no code change, the review prescribes none); the erratum at both "36 files" places (ruling (e)).
+- **Correction (ruling (a)).** In the WO-H5 log above, "`check` has exited 1 on every host since v0.1.0" reads: on the
+  reference host; reported elsewhere (exit 0 on CI's runners).
+- **HM-34 (live): PASS.** `PYTHONPATH=src:. python scripts/t06_ensemble.py check`: published `3a7bd49c…`, regenerated
+  `a137cbd4…`, `R-149: generator_sha256, provider.implementation_sha256 compared substituted back`, `identical but for
+  host.cpu_model (AMD Ryzen Threadripper 2950X 16-Core Processor)`, exit 0. `check --holdout`: published `debbbdc5…`,
+  regenerated `8640fc3b…`, the same two lines, exit 0. §7.3 holds in full; `a7606285` stands.
+- **HM-25 (live, RP §6.5's form, SF-2): PASS.** As step 14 runs it, `env -i HOME PATH LANG bash
+  scripts/m03_nlp_check.sh <.venv-nlp> <.reference-downloads/m03-ipopt> -- -o junit_family=xunit1 --junitxml=…
+  --basetemp=… <the 18 modules grep -l 'mark.nlp' tests/test_*.py lists>`: `212 passed, 75 deselected`, `--- pytest
+  -m nlp: exit 0`; the NLP-1 leg prints `host state (not compared): pynumero_asl_lookup_without_pyomo_config_dir
+  '~/.pyomo/lib/libpynumero_ASL.so' -> '(none)'` and `--check passed … (G1 PASS … G6 PASS)`; the `trsp-exe` leg
+  passes; exit 0. Ruling (b): `mpmath` is added to no lock.
+- **Checks.** `ruff check .` all passed; `ruff format --check .` 1180 files formatted; `mypy` (check.sh's form) no
+  issues in 331 files. The ten H12 modules: 254 passed, 2 skipped (both R-150 history), as HM-36.
+  `tests/test_t06_hostmove_ref_class.py`, `test_m05_retake_digest_only.py`, `test_hostmove_host_leaves.py`,
+  `test_m05_wo8_gates.py`, and the readers of `t08_rename_substitution` (`test_t08_rename_substitution.py`,
+  `test_t07_identity.py`, `test_k05_schemas.py`): 150 passed. F0, `scripts/corpus_identity.py --check`: `F0 PASS: M1
+  50/50, M2 61/61, M3 61/61, M4 61/61, M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 35/35`.
+- **Open.** N-3 (`release/lines/0.5.json` needs an owner) and N-4 (a per-start comparison at the first TR09 cut), as
+  the review leaves them; ruling (b)'s default (`m03_nlp_check.sh` defaulting to §6.5's module list) for a later M03
+  or RP maintenance package.
