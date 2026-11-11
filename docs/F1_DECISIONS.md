@@ -330,3 +330,46 @@ Files: `application/capabilities.py` (the draft form), docstrings in `local.py` 
 
 Not in WO4b: the reviews of the two descriptions (design lane, Frank); a v1 `model.version` mapping (W3-12);
 `builtin-sha256.txt`, CI and the manifest (WO5).
+
+## F1 review fix round, 2026-11-11
+
+Applies `docs/reviews/F1-review.md`: MF-1, SF-1 to SF-4, SF-6, SF-7, the unregistered-model ruling (N-5) and the
+design lane's edits to the two descriptions. Not here: SF-5 (waits for the design lane's `interfaces-frozen.md` §3
+note, ADR 0047 C1; ruling W1-8), SF-8 (WO5), W1-17 (left as ruled), N-1 to N-4 and N-6.
+
+- **DECISION F-1. MF-1 is edited in place and listed in "Errata (F1 review, 2026-11-11)"**, in the form of the ADR's
+  earlier "review applied" sections: D5 and the code table (W4a-13, W3-10), D6 (W2-2), D8 (W3-12), E-F1-11 (50; the
+  38/12 split). D4's convention source (W1-8) is not edited: it waits for the §3 note. The review's MF-1 also asks
+  for "one register entry"; the brief limited this round to the ADR text, so none is added. **For the design lane:**
+  the register entry, if wanted, is theirs to number.
+- **DECISION F-2. SF-1's checks live in `capabilities.py`, the limit in `LocalApplication`.** `capability_page`
+  refuses a bad `kind` or `id_prefix`; `admission_report` a pair or revision the request schema refuses (ids and
+  versions against the descriptor schema's own grammar, `schema_problem`); `list_capabilities` calls `_check_limit`
+  as every paged method does. Each refusal is `invalid_request` at the pointer `dispatch` gives (a bad item of a kind
+  list is `/kind`, as the schema's `anyOf` reports it), and is audited. Alternative: validate the arguments against
+  the operation row's request schema in `local.py`, which would import `operations` into the transport.
+- **DECISION F-3. SF-2: a distribution whose metadata cannot be read is skipped, not quarantined.** It names no entry
+  point, and most distributions on the path are not extensions; the class goes to the log. `_add_guarded` quarantines
+  any unforeseen exception as `extension_invalid(<entry point>, "")` but lets `RegistryBuildError` (a built-in's
+  failure, or the namespace clash discovery prevents) raise, as D8 says.
+- **DECISION F-4. SF-3 checks presence only.** The extra's requirements are the declaring distribution's
+  `Requires-Dist` entries whose marker names the extra (PEP 685 names); a version mismatch is not refused. Without
+  metadata (a source tree on the path) the import decides, as before. Consequence: the built-in `lca` contributor
+  (`pip_extra: lca`) is now refused `dependency_missing(lca, lca)` where bw2data or bw2calc is absent, as D5 reads;
+  E-F1-12 and the legacy factory test expect the refusal when the extra's modules are absent. No production code
+  calls `Registry.factory` yet. **For the design lane:** confirm the `lca` reading.
+- **DECISION F-5. SF-4 as prescribed:** an extension of `record_type`, `correlation_form` or `data_source` is
+  `preview` until `PAYLOAD_DEFS` names the kind. D1's table still says **core** for those kinds; the review lists no
+  erratum for it. **For the design lane:** whether D1 gains a sentence ("extensions `preview` until the payload
+  schema lands").
+- **DECISION F-6. SF-6 recomputes F0's attribution in the test** (import each M9 model module, read `MODEL_ID` and
+  `MODEL_IDS`), with D6's two exceptions stated from the ADR, not read from the generator; its mutation swaps
+  `pr-c1-v1`'s and `pr-lib-v1`'s sets.
+- **DECISION F-7. N-5: `not_found` for the whole report, plus `detail.pointer`** `/revision/instances/<i>/model/id`;
+  the pair form's `not_found` carries no pointer. SF-7 rewrites Amendment 7's refusal list to match, with a test
+  that the list names the three codes the draft form gives.
+- **DECISION F-8. The descriptions take the review's edits verbatim:** `list_capabilities.md` 1467 characters
+  (`4999ee1a…`), `check_admission.md` 1488 (`e758eeb6…`); D_9 = `F1_SERVED_SHA256` `24966bee…` → `e2c44b6b…`, re-taken
+  within c_9 and R-1030. `REVIEW.json`'s review form has no field for a review given with edits (statuses
+  `pending_design_review`, `reviewed`, `changes_requested`; no note), so both reviews stay pending and
+  `test_every_description_is_reviewed_by_both_lanes` stays red until the reviewers record them.
