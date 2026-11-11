@@ -179,6 +179,16 @@ jobs:
         if: ${{ !cancelled() }}
         run: python docs/derivations/scripts/s11_thermal_reference.py --check
 
+      # F1 (ADR 0060 E-F1-5, F1-WO5): the built-in registry's registry_sha256 equals the committed
+      # constant (tests/fixtures/registry/builtin-sha256.txt) on each architecture, in fresh
+      # processes with PYTHONHASHSEED=0 and =random, as its own step so that each leg's result is
+      # readable whatever else the full suite above did; the generator's line prints the value.
+      - name: F1 E-F1-5 built-in registry identity (ADR 0060)
+        if: ${{ !cancelled() }}
+        run: |
+          python -m pytest -q tests/test_f1_builtin_identity.py
+          python scripts/registry_builtin.py --check
+
       # S07 (spec §20.9, R-627): A31's per-row report, whatever the outcome.
       - name: S07 A31 report (spec §20.9)
         if: always()
