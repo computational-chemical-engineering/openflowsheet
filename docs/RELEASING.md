@@ -199,6 +199,11 @@ At every cut, M05's REAL record and M01's IDAES conformance record are also re-t
 RC host and committed in J, each proved by its tool, because both bind the host's platform string,
 the kernel release included (RP §7.1, R-1008). A kernel upgrade between J and the RC's steps 11, 14
 and 15 means a new J and a new C.
+When the RC host moves to another machine, the same re-takes carry the records across. Their proofs
+name the committed host (`--old-host`) and admit only R-1020's host-identity leaves: the host name,
+the CPU model, the CPU count, the CPU flags, the platform string and the pinned environment's
+directory. Every number must stay bitwise equal. The new host must first be a member of T06's
+`ref-x86-64` (RP (P6)).
 
 ## Post-releases
 
