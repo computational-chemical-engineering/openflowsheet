@@ -57,6 +57,7 @@ from typing import TYPE_CHECKING, Any, Final, get_args
 
 from openflowsheet.application.types import ApiErrorCode
 from openflowsheet.application.validation import validate
+from openflowsheet.registry import default_registry
 
 if TYPE_CHECKING:
     from openflowsheet.application.local import LocalApplication
@@ -1019,6 +1020,7 @@ def main(argv: list[str] | None = None) -> int:
     arguments = parser.parse_args(argv)
     handler = arguments.handler
     try:
+        default_registry()  # ADR 0060 D8: the process registry is built at start
         return int(handler(arguments))
     except Exception:
         _print_internal_error()

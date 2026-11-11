@@ -143,6 +143,7 @@ from openflowsheet.application.types import (
 )
 from openflowsheet.application.validation import Task, ValidationReport
 from openflowsheet.canonical import canonical_json, document_sha256, first_noncanonical
+from openflowsheet.registry import default_registry
 from openflowsheet.run.bundle import MANIFEST_NAME
 from openflowsheet.run.replay import ReplayReport
 from openflowsheet.studies.nlp.replay import MANIFEST as OPTIMIZATION_MANIFEST
@@ -293,6 +294,7 @@ class LocalApplication:
         LocalApplication
             The opened project. Close it with `close`, or use it as a context manager.
         """
+        default_registry()  # ADR 0060 D8: the process registry is built at start
         process: ProcessExecutor | None = None
         if isinstance(executor, ProcessExecutor):
             process = executor
@@ -335,6 +337,7 @@ class LocalApplication:
         LocalApplication
             A throw-away project; its files live in a scratch directory removed on `close`.
         """
+        default_registry()  # ADR 0060 D8: the process registry is built at start
         project_id = f"memory-{uuid.uuid4().hex[:12]}"
         store = ProjectStore.in_memory(project_id=project_id)
         policy = StaticPolicy(

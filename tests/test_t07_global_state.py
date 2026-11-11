@@ -137,7 +137,14 @@ def test_g20_every_hit_is_allowlisted_and_every_entry_is_hit() -> None:
     # its process registry's one `global` line (registry/__init__.py, `default_registry`).
     per_line = Counter(hit for hits, count in found.values() for hit in hits for _ in range(count))
     assert per_line == Counter(
-        {"cache": 40, "np.random": 3, "random": 1, "ContextVar": 1, "global": 3}
+        {
+            "cache": 40,
+            "np.random": 3,
+            "random": 1,
+            "ContextVar": 2,
+            "global": 3,
+            "threading.local": 1,
+        }
     )
 
 

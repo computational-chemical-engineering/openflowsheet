@@ -39,15 +39,16 @@ def lf(data: bytes) -> bytes:
     return data.replace(b"\r\n", b"\n")
 
 
-def file_sha(root: Path, path: str) -> str:
-    """SHA-256 of the LF-normalised bytes of `<root>/<path>` (`path` POSIX, relative)."""
-    target = root.joinpath(*path.split("/"))
-    if not target.is_file():
+def file_sha(root: Path | None, path: str) -> str:
+    """SHA-256 of the LF-normalised bytes of `<root>/<path>` (`path` POSIX, relative). No root
+    (a namespace package or a zip import, D3) resolves no path."""
+    target = None if root is None else root.joinpath(*path.split("/"))
+    if target is None or not target.is_file():
         raise SelfHashUnavailableError(path)
     return hashlib.sha256(lf(target.read_bytes())).hexdigest()
 
 
-def self_sha256(root: Path, modules: Iterable[str]) -> str:
+def self_sha256(root: Path | None, modules: Iterable[str]) -> str:
     """D3's `self_sha256` of an implementation set below the import root `root`."""
     ordered = sorted(set(modules), key=lambda path: path.encode("utf-8"))
     return hashlib.sha256(
