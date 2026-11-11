@@ -49,7 +49,7 @@ from openflowsheet.canonical import canonical_json
 from openflowsheet.messages.render import closest
 from openflowsheet.models.revision_flowsheet import RevisionError, component_basis
 from openflowsheet.registry import Registered, Registry
-from openflowsheet.registry.descriptor import sort_key
+from openflowsheet.registry.descriptor import schema_problem, sort_key
 from openflowsheet.registry.legacy import CONNECTION_DEFINITION
 from openflowsheet.registry.tokens import Coded, parse
 
@@ -58,6 +58,14 @@ DEFAULT_LIMIT: Final[int] = 50
 MAX_LIMIT: Final[int] = 200
 #: D2's version grammar, which a cursor's version must meet.
 _VERSION: Final = re.compile(r"^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$")
+#: The members of a pair, and the descriptor schema's subschema each must meet (D11's request).
+_PAIR_MEMBERS: Final[Mapping[str, str]] = {
+    "unit": "/$defs/id",
+    "method": "/$defs/id",
+    "definition": "/$defs/id",
+    "unit_version": "/properties/version",
+    "method_version": "/properties/version",
+}
 #: The kind names `not_found` uses in its message.
 _KIND_TEXT: Final[Mapping[str, str]] = {
     "unit_model": "unit model",
@@ -67,6 +75,28 @@ _KIND_TEXT: Final[Mapping[str, str]] = {
 
 
 # ======================================================================= list_capabilities
+
+
+def _unreadable(pointer: str, message: str) -> Exception:
+    """`invalid_request` at `pointer`: an argument the operation's request schema refuses, so
+    the Python transport refuses it as `dispatch` does (rule C1; F1 review SF-1)."""
+    return api_error("invalid_request", message, pointer=pointer)
+
+
+def _check_page_request(kind: object, id_prefix: object) -> None:
+    """D11's request for `list_capabilities`: `kind` one kind or a non-empty list of distinct
+    kinds, `id_prefix` a string of 1 to 128 characters (`cursor` is `_after`'s)."""
+    if kind is not None:
+        kinds = (kind,) if isinstance(kind, str) else kind
+        if (
+            not isinstance(kinds, Sequence)
+            or not kinds
+            or any(schema_problem(each, "/properties/kind") is not None for each in kinds)
+            or len(set(kinds)) != len(kinds)
+        ):
+            raise _unreadable("/kind", "kind is a registry kind or a list of distinct kinds")
+    if id_prefix is not None and (not isinstance(id_prefix, str) or not 1 <= len(id_prefix) <= 128):
+        raise _unreadable("/id_prefix", "id_prefix is a string of 1 to 128 characters")
 
 
 def encode_cursor(entry: Registered) -> str:
@@ -104,7 +134,9 @@ def capability_page(
     limit: int = DEFAULT_LIMIT,
 ) -> CapabilityPage:
     """D11 `list_capabilities`: the registered descriptors of `kind` (one kind or several; all
-    when `None`) whose id starts with `id_prefix`, after `cursor`, at most `limit`."""
+    when `None`) whose id starts with `id_prefix`, after `cursor`, at most `limit`. The caller
+    checks `limit` (`LocalApplication._check_limit`)."""
+    _check_page_request(kind, id_prefix)
     kinds = None if kind is None else ((kind,) if isinstance(kind, str) else tuple(kind))
     entries = [
         entry
@@ -138,7 +170,7 @@ def _registered(
     of_kind = registry.descriptors((kind,))
     versions = [entry for entry in of_kind if entry.id == identifier]
     if not versions:
-        where = {} if pointer is None else {"pointer": pointer}
+        where: dict[str, Any] = {} if pointer is None else {"pointer": pointer}
         raise api_error(
             "not_found",
             f"no {_KIND_TEXT[kind]} with this id is registered",
@@ -160,6 +192,23 @@ def _registered(
         version=version,
         suggestions=[entry.version for entry in versions],
     )
+
+
+def _check_pair(pair: object) -> None:
+    """D11's request for the pair form: `unit` and `method` ids, and optionally `definition`,
+    `unit_version` and `method_version`, each meeting the descriptor schema's grammar."""
+    if not isinstance(pair, Mapping) or not {"unit", "method"} <= set(pair) <= set(_PAIR_MEMBERS):
+        raise _unreadable(
+            "/pair",
+            "pair is an object with unit and method and optionally definition, unit_version "
+            "and method_version",
+        )
+    for member, definition in _PAIR_MEMBERS.items():
+        if member in pair and schema_problem(pair[member], definition) is not None:
+            raise _unreadable(
+                f"/pair/{member}",
+                f"{member} is a registry {'version' if 'version' in member else 'id'}",
+            )
 
 
 def default_definition(unit: Registered) -> str | None:
@@ -278,6 +327,8 @@ def admission_report(
     if (pair is None) == (revision is None):
         raise api_error("invalid_request", "send exactly one of pair and revision")
     if revision is not None:
+        if not isinstance(revision, Mapping):
+            raise _unreadable("/revision", "revision is a ProcessRevision document, an object")
         method, instances = _draft_pairs(revision)
         verdicts = [
             _pair(
@@ -289,6 +340,7 @@ def admission_report(
             for index, (instance, model) in enumerate(instances)
         ]
     else:
+        _check_pair(pair)
         assert pair is not None
         verdicts = [_pair(registry, pair)]
     pairs = tuple(verdict for verdict, _ in verdicts)

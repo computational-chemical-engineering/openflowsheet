@@ -363,6 +363,50 @@ def test_exactly_one_form_is_required(request_document: dict[str, Any]) -> None:
     assert refused and document["code"] == "invalid_request"
 
 
+#: F1 review SF-1: arguments the request schema refuses on `dispatch`, sent to the Python
+#: transport directly. Each is the same typed refusal at the same pointer on both (rule C1).
+UNREADABLE_ARGUMENTS: tuple[tuple[str, dict[str, Any], str], ...] = (
+    ("list_capabilities", {"limit": 0}, "/limit"),
+    ("list_capabilities", {"limit": 10000}, "/limit"),
+    ("list_capabilities", {"limit": True}, "/limit"),
+    ("list_capabilities", {"kind": "bogus"}, "/kind"),
+    ("list_capabilities", {"kind": ["unit_model", "bogus"]}, "/kind"),
+    ("list_capabilities", {"kind": []}, "/kind"),
+    ("list_capabilities", {"kind": ["unit_model", "unit_model"]}, "/kind"),
+    ("list_capabilities", {"id_prefix": 5}, "/id_prefix"),
+    ("list_capabilities", {"id_prefix": ""}, "/id_prefix"),
+    ("check_admission", {"pair": {"unit": 5, "method": "syn001"}}, "/pair/unit"),
+    ("check_admission", {"pair": {"unit": "Bad Id", "method": "syn001"}}, "/pair/unit"),
+    ("check_admission", {"pair": {**ADMITTED["pair"], "definition": None}}, "/pair/definition"),
+    ("check_admission", {"pair": {**ADMITTED["pair"], "unit_version": 1}}, "/pair/unit_version"),
+    (
+        "check_admission",
+        {"pair": {**ADMITTED["pair"], "method_version": "1"}},
+        "/pair/method_version",
+    ),
+    ("check_admission", {"pair": {**ADMITTED["pair"], "extra": 1}}, "/pair"),
+    ("check_admission", {"pair": {"unit": "thermal.heater"}}, "/pair"),
+    ("check_admission", {"pair": "x"}, "/pair"),
+    ("check_admission", {"revision": "x"}, "/revision"),
+)
+
+
+@pytest.mark.parametrize(("name", "arguments", "pointer"), UNREADABLE_ARGUMENTS)
+def test_the_python_transport_refuses_what_the_request_schema_refuses(
+    name: str, arguments: dict[str, Any], pointer: str
+) -> None:
+    refused, over_dispatch = _dispatch(arguments, name)
+    assert refused and over_dispatch["code"] == "invalid_request"
+    assert over_dispatch["detail"]["pointer"] == pointer
+    with LocalApplication.in_memory() as app:
+        with pytest.raises(ApplicationError) as direct:
+            getattr(app, name)(**arguments)
+        rows = app.list_audit(operation=name).items
+    assert direct.value.error.code == "invalid_request"
+    assert direct.value.error.detail["pointer"] == pointer
+    assert [(row.outcome, row.code) for row in rows] == [("refused", "invalid_request")]
+
+
 def test_a_refusal_is_audited() -> None:
     with LocalApplication.in_memory() as app:
         with pytest.raises(ApplicationError):

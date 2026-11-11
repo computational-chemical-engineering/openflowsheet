@@ -1767,9 +1767,11 @@ class LocalApplication:
         """ADR 0060 D11 (ADR 0019 Amendment 7): a page of the process registry's descriptors —
         each declared and computed field (D2), sorted by (kind, id, version key) — of `kind` (one
         or several) whose id starts with `id_prefix`. `read`; it reads the registry, not the
-        project. A cursor this list did not issue is refused `invalid_request`."""
+        project. A cursor this list did not issue is refused `invalid_request`, as is any argument
+        the operation's request schema refuses (rule C1; F1 review SF-1)."""
         name = "list_capabilities"
         self._authorize(name)
+        self._check_limit(limit, MAX_PAGE, name)
         try:
             return capabilities.capability_page(
                 default_registry(), kind=kind, id_prefix=id_prefix, cursor=cursor, limit=limit
