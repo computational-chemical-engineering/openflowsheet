@@ -443,6 +443,10 @@ def differences(old: object, new: object, pointer: str = "") -> list[str]:
     return [] if type(old) is type(new) and old == new else [pointer]
 
 
+def _shown(path: Path) -> str:
+    return path.relative_to(ROOT).as_posix() if path.is_relative_to(ROOT) else str(path)
+
+
 def _summary(rows: Sequence[Mapping[str, Any]]) -> str:
     kinds: dict[str, int] = {}
     for row in rows:
@@ -457,14 +461,14 @@ def check() -> int:
     rows = table()
     text = render(rows)
     if not TABLE.is_file():
-        print(f"registry_builtin --check: FAILED, {TABLE.relative_to(ROOT)} is missing")
+        print(f"registry_builtin --check: FAILED, {_shown(TABLE)} is missing")
         return 1
     committed = TABLE.read_text(encoding="utf-8")
     if committed != text:
         found = differences(json.loads(committed), json.loads(text))
         shown = ", ".join(found[:10]) + (f" (+{len(found) - 10} more)" if len(found) > 10 else "")
         print(
-            f"registry_builtin --check: FAILED, {TABLE.relative_to(ROOT)} differs at "
+            f"registry_builtin --check: FAILED, {_shown(TABLE)} differs at "
             f"{len(found)} pointer(s): {shown or 'formatting only'}"
         )
         return 1
@@ -481,8 +485,7 @@ def write() -> int:
     TABLE.parent.mkdir(parents=True, exist_ok=True)
     TABLE.write_text(render(rows), encoding="utf-8")
     print(
-        f"registry_builtin --write: {len(rows)} descriptors ({_summary(rows)}) "
-        f"to {TABLE.relative_to(ROOT)}"
+        f"registry_builtin --write: {len(rows)} descriptors ({_summary(rows)}) to {_shown(TABLE)}"
     )
     return 0
 
