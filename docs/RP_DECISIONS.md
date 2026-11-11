@@ -790,3 +790,53 @@ class) are not done here. Not pushed, not merged.
   `reviewer` pass (WO-H1, WO-H3, WO-H5). M07's R3 carry paths include `scripts/m05_wo8_runs.py`,
   `tests/support/m05_replay.py` and `benchmarks/m05`, which WO-H1 and WO-H2 changed; REAL is re-taken at the first
   TR09 K3 in any case.
+
+## HOSTMOVE build (WO-H5)
+
+`docs/reviews/HOSTMOVE-ruling.md` §7 and WO-H5 on `wp/V04-after` from `1fba2bba`, on SMM-TR09 (2950X). Main
+checkout's `.venv` with `PYTHONPATH=src`. Not pushed, not merged. **WO-H5 stops at HM-34 for the design lane**
+(below); every other assertion holds.
+
+- **`a7606285`: the class lists its models.** `benchmarks/registry.yaml` `ensemble.machine_classes.ref-x86-64` is
+  `{github_actions: false, architecture: x86_64, cpu_models: [5965WX, 2950X]}`, no `cpu_model`.
+  `ensemble.machine_class()` tests membership; `ensemble.same_class_host(a, b)` is the one helper;
+  `scripts/t06_ensemble.py check` uses it in place of host equality and, on `ref-x86-64`, compares the regeneration
+  with `host.cpu_model` set to the published one byte for byte (exit 1 otherwise; prints `identical but for
+  host.cpu_model (<model>)`). Tests changed as WO-H5 lists them: A25, A99 (a), A97 (b) (registry pin, host but for a
+  listed model, the 2950X case), W18's `_on_the_reference_cpu`, W29's local v1 `cpu_model`. HM-30 to HM-33 in
+  `tests/test_t06_hostmove_ref_class.py`: 22 passed (HM-33 with two controls: only `cpu_model` differs, exit 0 with
+  the line; an unlisted model, reported, exit 0).
+  - DECISION: HM-30 to HM-33 live in a new module, as WO-H3's did; the made-up literals (`cpu-hm31`, `0.0.0-hm32`)
+    are asserted at import to differ from the listed models, the registry text and `generator._cpu_model()`.
+  - DECISION: W18's module docstring reads "a listed `ref-x86-64` CPU model (H-1)"; no assertion changed.
+- **`e6a43e87`: H-1 in `docs/derivations/T06-corpus-spec.md`.** A last section `## Amendment H-1 (2026-11-11): the
+  reference class lists its CPU models` (Author, Authority, Changes, then §7.4's text verbatim) and the marks
+  **(H-1)** in §6.5, §7.5 (A5) item 2, A25, A89 and A99 (a).
+  - DECISION: A90 is not marked; H-1 item 3 states it, and WO-H5 names the marks in five places only.
+- **HM-34 (live): FAIL.** `PYTHONPATH=src:. python scripts/t06_ensemble.py check` and `check --holdout`, clean tree
+  at `e6a43e87`: each prints `not byte-identical; 3 differences under the numerical policy (same host: a defect)`,
+  exit 1. The three are `generator_sha256` (`509b01fb…` against `7f426aa9…`), `provider.implementation_sha256`
+  (`4e4c37cc…` against `67e47281…`) and `host.cpu_model`. The first two are R-149's rename: `generator.py` and
+  `thermo/syn001.py` with `openflowsheet` replaced by `process_runtime` hash to exactly `7f426aa9…` and `67e47281…`.
+  So `check` has exited 1 on every host since v0.1.0, independent of H-1: it never undoes the substitution that the
+  tests undo (`tests/t08_rename_substitution.renamed_back_starts`). With it undone, A25's and A99 (a)'s tests show the
+  only other member is `host.cpu_model` (HM-36). Not changed here: the brief stops WO-H5 on a live failure, and
+  making `check` compare substituted back changes what the script compares (R-149). Proposed for the design lane:
+  `check` applies `renamed_back_starts` to the regeneration before both comparisons, as A25's test does.
+- **HM-35 (live, control):** the ten modules of H12 with `-s`, junit, and a plugin (not committed) patching
+  `generator._cpu_model` to `cpu-hm35` in the test process: `a89_refinement_asserted` `False` in 6 of 6; `A25 on` and
+  `A99 (a) on` printed; the generate test skips `generate writes on ref-x86-64 only`. 252 passed, 3 skipped,
+  1 failed: `test_the_install_check_record_carries_the_machine_class` (`'ref-x86-64' == 'unregistered(x86_64)'`),
+  H12's measurement artifact (its subprocess computes the real class).
+- **HM-36 (live): PASS.** The ten modules unpatched, `-s`, junit: 254 passed, 2 skipped (both R-150 history),
+  0 failed; `a89_refinement_asserted` `True` in 6 of 6; no `A25 on` and no `A99 (a) on` line.
+- **HM-37 (live): PASS.** `scripts/corpus_identity.py --check` at `e6a43e87`: `F0 PASS: M1 50/50, M2 61/61, M3 61/61,
+  M4 61/61, M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 35/35`.
+- **HM-38 (live): PASS.** `scripts/t08_rc.py ensemble --out <scratch>` at `e6a43e87`: `rc-ensemble-ref-x86-64.json`,
+  every check `pass`: `a46.registered_class`, `a46.run_and_report`, `a46.gate` (437 SUCCESS, 3
+  F-FALSE-SUCCESS-CAUGHT, S_min 418, complete), `a47.no_verified_outside_s3`, `a34.ensemble_certificates`,
+  `a46.t06_a34_same_class_replay` (25 of 25 MATCH), `a46.registered_runs_untouched`.
+- **Checks.** `ruff check .` all passed; `ruff format --check .` 1180 files formatted; `mypy` (check.sh's form) no
+  issues in 331 files. Further readers of the registry's classes (`test_m07_rc_records`, `test_m07a_rc_records`,
+  `test_hostmove_host_leaves`, `test_t06_w4_registry`) with the new module: 72 passed.
+- **Not done here.** HM-34 (above). The package's `reviewer` pass (WO-H1, WO-H3, WO-H5).
