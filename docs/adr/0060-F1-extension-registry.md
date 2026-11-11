@@ -190,8 +190,9 @@ tokens for every definition it supports, and admitting against P_m would admit a
 
 `render(clause)` is the token for a one-token clause, else the tokens joined by `|` (`legacy:syn001|legacy:wilson-ig-v2`).
 A unit declares the definitions its material side accepts with a `conn:` clause in `requires`; P_d always contains
-`conn:<definition id>`. `capability_missing` has kind `not_supported` and `gap.capability` = its third parameter, which
-is what R-931's agentic layer reads (ADR 0058 entry field `gap`).
+`conn:<definition id>`. `capability_missing` has kind `not_supported`; its third parameter, `params.capability`, is the
+missing token, and that is what R-931's agentic layer reads. `gap.capability` is the entry's fixed text: MSG keeps
+static gaps (ADR 0058 entry field `gap`). (Erratum, F1 review: W4a-13.)
 
 `admission_matrix(registry, definition)` returns every (unit, method) verdict over the registered `unit_model` ×
 `property_method` descriptors, sorted by (unit id, unit version, method id, method version): the input of §2.4.3's
@@ -216,6 +217,7 @@ differing pointers; it prints one summary line. The registry reads the JSON at b
 | --- | --- |
 | `legacy_provider_id` | the module's `PROVIDER_ID` |
 | `phases`, `flashes`, `properties`, `reference_convention` (string, or `"per_component"` for CoolProp) | a constructed provider's `describe()` (CoolProp: one per fluid; the table records the fluid → convention map) |
+| `per_component` (erratum, F1 review: W2-2) | null, or for CoolProp a map fluid to `{reference_convention, properties, derivative_inputs}`; the top-level lists are those every fluid declares, in describe order |
 | `derivative_inputs` | the module's declared inputs (`DERIVATIVE_INPUTS`, or `describe().derivative_order` keys) |
 | `bases` | `selectable_bases()` entries with this provider id: `{record_source, components}` (127 bases in all) |
 | `selectable` | whether `bases` is non-empty (false for `pr-lib-v1`, `wilson-ig-v1`) |
@@ -322,7 +324,9 @@ start.
 
 **Extensions used.** A run's *extensions used* (D9) are derived from its documents, not from a recorder: the unit ids
 and versions of its revision, the data lock's methods, its connection definitions, the record types it reads and the
-contributors its assessment document names, each looked up in the registry snapshot (D10). A recorder alone could lose
+contributors its assessment document names, each looked up in the registry snapshot (D10). A schema_version 1
+revision's unit references resolve to the legacy descriptor's version (1.0.0); `model.version` is never a registry
+version (erratum, F1 review: W3-12). v2 revisions carry registry versions (ADR-F2). A recorder alone could lose
 the flag: it misses a factory result cached across runs, a worker thread that does not inherit the context, and a
 concurrent run if the context were process-global. **Usage recorder (cross-check).** `registry.resolve(kind, id,
 version=None)` (highest version when `None`) and factory resolution append (kind, id, version) to the active
@@ -476,9 +480,11 @@ single-side unit keeps D5's verdict unchanged.
 - **E-F1-10 Operations.** Three requests per operation return identical canonical documents on python, CLI, HTTP and
   MCP; every new code has a catalogue entry (MSG G1/G2 pass); MCP digest re-taken; R4-G3 snapshots of existing
   operations unchanged.
-- **E-F1-11 Draft admission.** For each of F0's M1 revisions (49), every instance is admitted; replacing one instance's
-  model with one `MODEL_BASES` does not admit on that basis gives `capability_missing` from `check_admission` and
-  `model_unsupported` from the binder, for the same instance.
+- **E-F1-11 Draft admission.** For each of F0's M1 revisions (50), every instance is admitted; replacing one instance's
+  model with one `MODEL_BASES` does not admit on that basis gives `capability_missing` from `check_admission` on all
+  50, and `model_unsupported` from the binder, for the same instance, on the 38 revisions the binder reads as far as its
+  model check. On the other 12 the binder refuses before its model check; that refusal is pinned and unchanged by the
+  replacement. (Erratum, F1 review: the miscount "49" and W4b-4.)
 - **E-F1-12 Contributors.** A dummy extension `functional_contributor` is registered and listed (`stability`
   `preview`); E01's `_REGISTERED` is unchanged; E01's assessment identity tests and F0 pass.
 
@@ -488,9 +494,10 @@ single-side unit keeps D5's verdict unchanged.
 
 | Code | Family | Kind |
 | --- | --- | --- |
-| `capability_missing(<unit>, <method>, <capability>)` | refusal | `not_supported` (`gap.capability` = third param) |
+| `capability_missing(<unit>, <method>, <capability>)` | refusal | `not_supported` (the missing token is `params.capability`; `gap.capability` is fixed text) |
 | `capability_unknown(<token>)`, `reserved_capability(<token>)`, `reserved_namespace(<namespace>)`, `namespace_conflict(<namespace>)`, `extension_invalid(<entry point>, <pointer>)`, `extension_load_failed(<entry point>)`, `self_hash_unavailable(<id>, <path>)` | refusal | `input` |
 | `platform_unsupported(<id>, <platform>)`, `dependency_missing(<id>, <extra>)` | refusal | `not_supported` |
+| `factory_unavailable(<kind>, <id>)` (erratum, F1 review: W3-10): a null factory, or a legacy method with `selectable: false` | refusal | `not_supported` |
 | `extension_unreviewed(<id>, <origin>)`, `preview_kind(<kind>, <id>)`, `capability_unresolved(<token>)` | notice | `notice` |
 | `registry_closed` | refusal | `bug` |
 
@@ -596,3 +603,20 @@ Status stays Proposed. Cross-ADR edit from the W1 P3 review's consolidated list.
 | S2, departure 6 | D9 propagation: extensions used are a structural `RunManifest` member (ADR 0067 D2); the evidence report, not the certificate, carries the notices (ADR 0067 D6). |
 
 Not applied: none of the edits for this ADR.
+
+## Errata (F1 review, 2026-11-11)
+
+Status stays Proposed. The F1 review (`docs/reviews/F1-review.md`, MF-1 and the rulings) records departures of the build
+on `wp/F1` from frozen core text (R-941) that the design lane has ruled on. The text above is edited in place; no core
+decision changes beyond what the rulings say, and no code moves.
+
+| Ruling | Edit |
+| --- | --- |
+| W2-2 | D6: the legacy payload gains `per_component`: null, or for CoolProp a map fluid to `{reference_convention, properties, derivative_inputs}`; the top-level lists are those every fluid declares, in describe order. |
+| W4a-13 | D5 and the code table: `gap.capability` is the entry's fixed text; the agent reads the missing token in `params.capability`. |
+| W3-10 (and W2-5) | Code table: `factory_unavailable(<kind>, <id>)`, refusal, `not_supported`, for a null factory and for a legacy method with `selectable: false`. D6's factory stays `basis_provider`. |
+| "49" and W4b-4 | E-F1-11: 50 revisions; `capability_missing` on all 50, `model_unsupported` for the same instance on 38, the other 12 refused first by the binder, pinned and unchanged. |
+| W3-12 | D8: a schema_version 1 revision's unit references resolve to the legacy descriptor's version (1.0.0); `model.version` is never a registry version. |
+
+**Not applied here:** D4's convention source (ruling W1-8) waits for the design lane's `interfaces-frozen.md` §3 note
+that ADR 0047 C1 requires; F1 then adds the two conventions (SF-5) and D4's source cell reads "§3 (six conventions)".
