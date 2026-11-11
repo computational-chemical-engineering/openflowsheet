@@ -31,6 +31,8 @@ repository's `schemas/` directory.
 | `get_stream_table` | read | python, cli, http, mcp | `GET /v1/jobs/{job_id}/stream-table` | `get_stream_table` |
 | `list_audit` | read | python, cli, http | `GET /v1/audit` | — |
 | `explain` | read | python, cli, http, mcp | `GET /v1/explain/{code}` | `explain` |
+| `list_capabilities` | read | python, cli, http, mcp | `GET /v1/capabilities` | `list_capabilities` |
+| `check_admission` | read | python, cli, http, mcp | `POST /v1/admission/check` | `check_admission` |
 | `artifact_bytes` | read | python, cli, http | `GET /v1/artifacts/{artifact_id}/raw` | — |
 
 ::: openflowsheet.application.operations.dispatch

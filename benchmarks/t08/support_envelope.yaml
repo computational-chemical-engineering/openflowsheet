@@ -282,16 +282,18 @@ axes:
   - id: interfaces
     title: Interfaces
     statement: >-
-      Python (`LocalApplication`), CLI, HTTP (`/v1`) and MCP over stdio; the twenty-three operations of
+      Python (`LocalApplication`), CLI, HTTP (`/v1`) and MCP over stdio; the twenty-five operations of
       `OPERATIONS`, each on the transports listed (`explain`, ADR 0058 D7, reads the message catalogue
       only; `get_stream_table`, ADR 0068, computes a finished run's stream table from its bundle and
-      stores nothing); authority from the credential only (ADR 0019).
+      stores nothing; `list_capabilities` and `check_admission`, ADR 0060 D11, read the extension
+      registry only); authority from the credential only (ADR 0019).
       With `serve-http --ui`, the diagnostic web shell at `/ui/` is a browser client of eighteen of
       them over HTTP and of nothing else (M06, and ST's `get_stream_table` since Frank's O3;
       L-WEB-1 to L-WEB-4).
     operations:
       artifact_bytes: [python, cli, http]
       cancel_job: [python, cli, http, mcp]
+      check_admission: [python, cli, http, mcp]
       commit_change: [python, cli, http, mcp]
       diff_revisions: [python, cli, http, mcp]
       explain: [python, cli, http, mcp]
@@ -303,6 +305,7 @@ axes:
       get_stream_table: [python, cli, http, mcp]
       inspect_structure: [python, cli, http, mcp]
       list_audit: [python, cli, http]
+      list_capabilities: [python, cli, http, mcp]
       list_job_events: [python, cli, http, mcp]
       list_jobs: [python, cli, http, mcp]
       list_models: [python, cli, http, mcp]

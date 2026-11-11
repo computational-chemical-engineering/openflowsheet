@@ -113,6 +113,9 @@ TABLE: dict[str, tuple[str, tuple[str, str] | None, str | None, tuple[str, ...]]
     "list_audit": ("read", ("GET", "/v1/audit"), None, ("python", "cli", "http")),
     # ADR 0058 D7 (MSG): a message-catalogue entry, on all four transports.
     "explain": ("read", ("GET", "/v1/explain/{code}"), "explain", ALL),
+    # ADR 0060 D11 (F1; ADR 0019 Amendment 7): the extension registry, on all four transports.
+    "list_capabilities": ("read", ("GET", "/v1/capabilities"), "list_capabilities", ALL),
+    "check_admission": ("read", ("POST", "/v1/admission/check"), "check_admission", ALL),
     "artifact_bytes": (
         "read",
         ("GET", "/v1/artifacts/{artifact_id}/raw"),
@@ -146,8 +149,9 @@ def test_every_protocol_method_is_exactly_one_row() -> None:
         *_protocol_methods(Inspection),
     ]
     # Inspection's ninth is `list_audit` (ADR 0019 Amendment 3), its tenth `explain` (ADR 0058 D7),
-    # its eleventh `get_stream_table` (ADR 0068).
-    assert len(methods) == len(set(methods)) == 4 + 7 + 11
+    # its eleventh `get_stream_table` (ADR 0068), its twelfth and thirteenth `list_capabilities`
+    # and `check_admission` (ADR 0060 D11).
+    assert len(methods) == len(set(methods)) == 4 + 7 + 13
     rows = [operation.method for operation in OPERATIONS.values()]
     assert sorted(rows) == sorted([*methods, "artifact_bytes"])
     for name, operation in OPERATIONS.items():
@@ -167,8 +171,9 @@ def test_the_table_is_section_4_3s() -> None:
     http = [op.http for op in OPERATIONS.values() if op.http is not None]
     tools = [op.mcp_tool for op in OPERATIONS.values() if op.mcp_tool is not None]
     # 19 routes with ADR 0019 Amendment 3's `list_audit`, which has no MCP tool (17 stay); ADR 0058
-    # D7's `explain` adds one of each, and ADR 0068's `get_stream_table` one more.
-    assert len(http) == len(set(http)) == 21 and len(tools) == len(set(tools)) == 19
+    # D7's `explain` adds one of each, ADR 0068's `get_stream_table` one more, and ADR 0060
+    # D11's `list_capabilities` and `check_admission` two more.
+    assert len(http) == len(set(http)) == 23 and len(tools) == len(set(tools)) == 21
     for operation in OPERATIONS.values():
         assert ("http" in operation.transports) == (operation.http is not None)
         assert ("mcp" in operation.transports) == (operation.mcp_tool is not None)
@@ -389,6 +394,8 @@ def _success_path(app: LocalApplication, tmp_path: Path) -> list[tuple[str, dict
         ("get_stream_table", {"job_id": job_id, "pointer": "/streams", "limit": 2}),
         ("list_audit", {"limit": 3}),
         ("explain", {"code": "not_found"}),
+        ("list_capabilities", {"kind": "unit_model", "id_prefix": "thermal.", "limit": 2}),
+        ("check_admission", {"pair": {"unit": "thermal.heater", "method": "coolprop-heos-v1"}}),
         ("artifact_bytes", {"artifact_id": state}),
     ]
 
@@ -485,12 +492,14 @@ def _probe(name: str, text: str, other_job: str) -> dict[str, Any]:
         # Every principal's rows (ADR 0019 Amendment 3): `policy` as well as `read`.
         "list_audit": {"limit": 1},
         "explain": {"code": "not_found"},
+        "list_capabilities": {"limit": 1},  # ADR 0060 D11 (F1)
+        "check_admission": {"pair": {"unit": "thermal.heater", "method": "coolprop-heos-v1"}},
         "artifact_bytes": {"artifact_id": "job-999999:bundle/run-manifest.json"},
     }[name]
 
 
 def test_g11_every_subset_and_every_operation_through_dispatch(app: LocalApplication) -> None:
-    """64 right subsets × 23 operations, plus `cancel_job` of another principal's job and
+    """64 right subsets × 25 operations, plus `cancel_job` of another principal's job and
     `list_audit` of every principal's rows (ADR 0019 Amendment 3), through
     `dispatch`: allowed iff §10.1's table says so, whatever the grant's note or the request's
     text says."""
@@ -522,7 +531,7 @@ def test_g11_every_subset_and_every_operation_through_dispatch(app: LocalApplica
                     assert refused.code != "unauthenticated", (rights, name)
                 assert allowed == (needed <= set(rights)), (rights, name, text)
                 cells += 1
-    assert cells == 64 * 23  # with ADR 0068's `get_stream_table`
+    assert cells == 64 * 25  # with ADR 0068's `get_stream_table` and ADR 0060 D11's two
     assert app.get_job(others_job).status == "completed", "the probes changed nothing"
 
 
@@ -637,6 +646,8 @@ def test_g13_every_response_is_bounded_and_the_raw_export_is_exact(
     call("get_project", {})
     call("list_models", {})
     call("explain", {"code": "phase_regime_mismatch"})  # ADR 0058 D7 (MSG)
+    call("list_capabilities", {"id_prefix": "thermal."})  # ADR 0060 D11 (F1)
+    call("check_admission", {"pair": {"unit": "thermal.heater", "method": "coolprop-heos-v1"}})
     job = call(
         "submit_job",
         {"operation": "solve", "idempotency_key": "solve-a", "body": {"revision_id": a}},

@@ -19,6 +19,10 @@ entries:
       output:      {type: text, optional: true}
       code:        {type: text, optional: true}
       suggestions: {type: list, optional: true}
+      # ADR 0060 D11 (F1-WO4a): an id the extension registry does not hold.
+      kind:        {type: text, optional: true, label: extension kind}
+      id:          {type: text, optional: true, label: extension id}
+      version:     {type: text, optional: true, label: version}
     summary: "Nothing named[ {artifact_id}][ {revision_id}][ {job_id}] exists in this project."
     why: "The id is not one this project has recorded."
     action: "Check the id; a job's outputs list the artifact ids it wrote."
@@ -49,12 +53,23 @@ entries:
         summary: "There is no message code '{code!raw}'."
         why: "Codes are case-sensitive and listed in the docs' Messages section."
         action: "Check the code's spelling against the docs' Messages section; no message code is close to it."
+      # ADR 0060 D11: `list_capabilities`' and `check_admission`'s ids name registered extensions,
+      # which belong to the installation, not to the project.
+      - when: {has: [kind, id, suggestions], not_equals: {suggestions: []}}
+        summary: "No {kind!raw} with the id {id!raw}[ and version {version!raw}] is registered."
+        why: "The extension registry holds the unit models, property methods, stream definitions and other extensions this installation provides; it is not part of the project."
+        action: "Did you mean {suggestions}? The list_capabilities operation lists every registered extension."
+      - when: {has: [kind, id]}
+        summary: "No {kind!raw} with the id {id!raw}[ and version {version!raw}] is registered."
+        why: "The extension registry holds the unit models, property methods, stream definitions and other extensions this installation provides; it is not part of the project."
+        action: "Check the id; the list_capabilities operation lists every registered extension."
     examples:
       - params: {artifact_id: "job-000004:bundle/solution-state.json", bundle_id: "job-000004:bundle",
                  member: solution-state.json, members: [failure-bundle.json, run-manifest.json],
                  run_outcome: INITIALIZATION_FAILED, job_id: job-000004}
       - params: {artifact_id: "import-000001:bundle/x.json", bundle_id: "import-000001:bundle",
                  member: x.json, members: [a.json, b.json], members_total: 70}
+      - params: {kind: unit_model, id: thermal.heatr, suggestions: [thermal.heater]}
 
   - code: unsupported
     family: api_error

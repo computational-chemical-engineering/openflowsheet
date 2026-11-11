@@ -41,7 +41,11 @@ project's `submit_job` audit rows, `list_audit` with `operation: submit_job`) an
 (ADR 0058 D3) adds `explanation`: the `detail.explanation` of `get_job`'s refusal of an unknown
 job, as `dispatch` carries it; and (ADR 0058 D7) `message_entry`: `explain`'s response for
 `phase_regime_mismatch`, which carries the catalogue's digest, so a catalogue edit is followed by
-`--write`.
+`--write`. F1 (ADR 0060 D11) adds `capability_page` (`list_capabilities` of the property methods,
+two to a page) and its first item, `capability_descriptor`, and `admission_report`
+(`check_admission` of `thermal.heater` with `wilson-ig-v2`, refused `capability_missing`); the
+registry's identity, an implementation's self-hash and the distribution's version change with the
+code, not the shape, and are masked like the timestamps.
 "Regenerates identically" is `stable` equality, as for the jobs
 (`tests/test_t07_w5e_application_results.py`).
 
@@ -119,7 +123,12 @@ RESULTS_VALID = {
     "audit_page": "one_submit",
     "explanation": "not_found_job",
     "message_entry": "phase_regime_mismatch",
+    "capability_page": "two_property_methods",
+    "capability_descriptor": "first_property_method",
+    "admission_report": "heater_with_wilson_refused",
 }
+#: F1 (ADR 0060 D10, D11): members that follow the code, not the response's shape.
+REGISTRY_VOLATILE = frozenset({"registry_sha256", "self_sha256", "distribution_version"})
 
 
 def _pin_threads() -> None:
@@ -265,6 +274,12 @@ def application_results_documents() -> dict[str, Any]:
                 raise SystemExit("get_job of an unknown job was not refused")
             # MSG (ADR 0058 D7): `explain`'s response, a catalogue entry.
             responses["message_entry"] = call("explain", {"code": "phase_regime_mismatch"})
+            # F1 (ADR 0060 D11): a page of the registry and its first item; a refused pair.
+            page = call("list_capabilities", {"kind": "property_method", "limit": 2})
+            responses["capability_page"] = page
+            responses["capability_descriptor"] = page["items"][0]
+            pair = {"unit": "thermal.heater", "method": "wilson-ig-v2"}
+            responses["admission_report"] = call("check_admission", {"pair": pair})
             violations = lifecycle_violations(application)
             if violations:
                 raise SystemExit(f"the fixture job breaks the lifecycle: {violations}")
@@ -302,13 +317,16 @@ def documents() -> dict[str, Any]:
 
 
 def stable(document: Any) -> Any:
-    """`document` with the members that differ between generations masked: timestamps, and the
-    `sha256` and `size_bytes` of every artifact reference."""
+    """`document` with the members that differ between generations masked: timestamps, the
+    `sha256` and `size_bytes` of every artifact reference, and the registry's code-bound members
+    (`REGISTRY_VOLATILE`)."""
     if isinstance(document, dict):
         reference = {"kind", "artifact_id", "sha256", "size_bytes", "name"} == set(document)
         return {
             key: "<volatile>"
-            if key in TIMESTAMPS or (reference and key in ("sha256", "size_bytes"))
+            if key in TIMESTAMPS
+            or key in REGISTRY_VOLATILE
+            or (reference and key in ("sha256", "size_bytes"))
             else stable(value)
             for key, value in document.items()
         }

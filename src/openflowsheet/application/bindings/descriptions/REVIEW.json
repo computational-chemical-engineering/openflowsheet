@@ -21,6 +21,26 @@
         }
       ]
     },
+    "check_admission": {
+      "tool": "check_admission",
+      "file": "check_admission.md",
+      "sha256": "1033c6c881b2eacfafab9093ced99712039f9c152745b91cc217e5bc63d30ddc",
+      "characters": 1388,
+      "reviews": [
+        {
+          "review_kind": "design-lane",
+          "status": "pending_design_review",
+          "reviewed_by": null,
+          "reviewed_at": null
+        },
+        {
+          "review_kind": "human",
+          "status": "pending",
+          "reviewed_by": null,
+          "reviewed_at": null
+        }
+      ]
+    },
     "commit_change": {
       "tool": "commit_change",
       "file": "commit_change.md",
@@ -218,6 +238,26 @@
           "status": "reviewed",
           "reviewed_by": "Frank Peters",
           "reviewed_at": "2026-09-29"
+        }
+      ]
+    },
+    "list_capabilities": {
+      "tool": "list_capabilities",
+      "file": "list_capabilities.md",
+      "sha256": "dfe5fcb59d9c83fe4b1d977801a027915685634c261098658a89f25a65a574a2",
+      "characters": 1360,
+      "reviews": [
+        {
+          "review_kind": "design-lane",
+          "status": "pending_design_review",
+          "reviewed_by": null,
+          "reviewed_at": null
+        },
+        {
+          "review_kind": "human",
+          "status": "pending",
+          "reviewed_by": null,
+          "reviewed_at": null
         }
       ]
     },

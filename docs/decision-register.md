@@ -19660,3 +19660,28 @@ planned remedy, not built in 0.4. R-077's lift is delivered for outputs; its inp
 A37 (limitations).
 
 **Watch for.** A gauge input admitted without the ambient recorded in the change record.
+
+## R-1030 — the surface chain gains link c_9 = (ADR 0060 D11, `without_f1`, `e59f3d22…`): F1's `list_capabilities` and `check_admission` tools, after X04's c_8
+
+| | |
+| --- | --- |
+| Date | 2026-11-11 |
+| Decided by | build lane, F1-WO4a, applying ADR 0060 D11 (ADR 0019 Amendment 7; Proposed 2026-11-05, core frozen by R-941) in R-457's form, as X04's final work order took c_8 (R-1010). Number and block by the build lane: R-1020 is held by `wp/V04-after`, so F1 reserves R-1030…R-1039 |
+| Normative text | ADR 0060 D11; ADR 0019 Amendment 7; `scripts/m07a_rc.py` (link c_9) |
+| Evidence | On `wp/F1` (WO1…WO3 done, `main` at `b6cdf552` contained) the served MCP tool list digests to `e59f3d22aef5fa8106d87ca64a01b33cff433ea33a78e6aa2cd959532d053ee3` (D_9). `without_f1` (`tests/f1_schema_support.py`) leaves `6be1c002592524126617af8dd65d331513f4a96355f5381dba020ad561a2ba57` = D_8 exactly, and the chain holds down to R-133's `D_0` (`tests/test_m07a_surface_chain.py`, `tests/test_t08_w2_surface_digest.py::test_f1s_surface_move_decomposes_onto_x04s`) |
+| Affected packages | F1; M07a (`scripts/m07a_rc.py`, A37 tests); M07 (the next RC's V17 carry names c_9); T08.A18 (two description reviews) |
+
+**Decision.** `m07a_rc.LINKS` gains c_9 (R-1030; strip `strip_f1` = `without_f1`; D_9 = `e59f3d22…`). The strip removes
+the two tools F1 added, `list_capabilities` and `check_admission`; F1 changes no existing tool, text or response
+schema (`application-results.schema.json` gains three `$defs`; every other R4-G3 snapshot is unchanged). §5.3 item 4
+pins the two new files at their own hashes (`m07a_rc.F1_FILE_SHA256`). Both texts await the design lane's review (F1's
+reviewer pass) and Frank's; `REVIEW.json` records them pending, so `tests/test_t08_w2_description_reviews.py` stays
+red until both are recorded (T08.A18's rule; no agent marks it). A review edit to either text moves D_9: the edit
+re-takes D_9 and this entry's digest within F1, not as a new link.
+
+**Rejected alternatives.** A link per operation (one ADR, one package, one move); taking the next number after
+R-1016 (R-1017…) inside X04's block (R-1010…R-1019 is X04's).
+
+**Watch for.** A strip that removes more than F1's two tools (`test_f1_control_c_9_left_in_place`). A later
+MCP-visible change moves D_9: it becomes c_10. F1-WO4b changes no schema, but it does change `check_admission.md`'s
+sentence on the draft form, so it re-takes D_9.

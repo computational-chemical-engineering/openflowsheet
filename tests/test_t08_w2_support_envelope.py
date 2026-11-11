@@ -60,9 +60,9 @@ def test_the_envelope_has_spec_5_1s_form(envelope: dict[str, Any]) -> None:
 
 def test_a20_the_axes_equal_the_code(envelope: dict[str, Any], facts: dict[str, Any]) -> None:
     assert MATRIX.check_a20(envelope, facts) == []
-    # Spec §9's 20, ADR 0019 Amendment 3's `list_audit`, ADR 0058 D7's `explain` and ADR 0068's
-    # `get_stream_table`.
-    assert len(facts["operations"]) == 23
+    # Spec §9's 20, ADR 0019 Amendment 3's `list_audit`, ADR 0058 D7's `explain`, ADR 0068's
+    # `get_stream_table` and ADR 0060 D11's `list_capabilities` and `check_admission`.
+    assert len(facts["operations"]) == 25
     # Spec §9's 13 SYN-001 models, literal unchanged; M02's join adds the eight C1 models (R-280),
     # the stand-in synthetic only (R-280 (c)); W27 Amendment 3 adds M04's surrogate (R-301), which
     # has no variant, so it is not synthetic only. S11 binds S02's column (ADR 0050, R-810;

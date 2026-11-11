@@ -1,8 +1,9 @@
 """The operations table and the one dispatch every binding goes through (§4.3, §10.4, §11.6).
 
 `OPERATIONS` is the only routing source: one row per protocol method — `Application`'s four,
-`JobControl`'s seven, `Inspection`'s ten (`list_audit` is ADR 0019 Amendment 3's, `explain`
-ADR 0058 D7's) — and
+`JobControl`'s seven, `Inspection`'s thirteen (`list_audit` is ADR 0019 Amendment 3's, `explain`
+ADR 0058 D7's, `get_stream_table` ADR 0068's, `list_capabilities` and `check_admission` ADR 0060
+D11's) — and
 `artifact_bytes`, the raw export. A row names its method, the right it needs, its request and
 response schemas, its HTTP verb and path, its MCP tool, the transports that carry it and its tool
 description. Python (through `dispatch`), the
@@ -145,6 +146,12 @@ MESSAGE_CODE: Final = {
 }
 
 
+#: ADR 0060 D11: an extension's kind, id and version as the registry's descriptor states them.
+EXTENSION_KIND: Final = _ref("extension-descriptor.schema.json#/properties/kind")
+EXTENSION_ID: Final = _ref("extension-descriptor.schema.json#/$defs/id")
+EXTENSION_VERSION: Final = _ref("extension-descriptor.schema.json#/properties/version")
+
+
 def _limit(maximum: int) -> dict[str, Any]:
     return {"type": "integer", "minimum": 1, "maximum": maximum}
 
@@ -190,6 +197,44 @@ def _result(name: str) -> dict[str, str]:
     """A JobControl or Inspection response shape: `$defs/<name>` of
     `application-results.schema.json` (ADR 0019 Amendment 1)."""
     return _ref(f"application-results.schema.json#/$defs/{name}")
+
+
+#: ADR 0060 D11: `list_capabilities`. `kind` is one kind or several: over HTTP a query member
+#: carries one value (a repeated one is refused, §11.3), so one kind travels as a string.
+LIST_CAPABILITIES_REQUEST: Final = _object(
+    {},
+    {
+        "kind": {
+            "anyOf": [
+                EXTENSION_KIND,
+                {"type": "array", "minItems": 1, "uniqueItems": True, "items": EXTENSION_KIND},
+            ]
+        },
+        "id_prefix": {"type": "string", "minLength": 1, "maxLength": 128},
+        "cursor": CURSOR,
+        "limit": _limit(MAX_PAGE),
+    },
+)
+#: ADR 0060 D11: `check_admission`, exactly one of the pair form and the draft form (a revision
+#: document, which F1-WO4b's check reads; this schema asks only for an object).
+CHECK_ADMISSION_REQUEST: Final = {
+    **_object(
+        {},
+        {
+            "pair": _object(
+                {"unit": EXTENSION_ID, "method": EXTENSION_ID},
+                {
+                    "definition": EXTENSION_ID,
+                    "unit_version": EXTENSION_VERSION,
+                    "method_version": EXTENSION_VERSION,
+                },
+            ),
+            "revision": {"type": "object"},
+        },
+    ),
+    "minProperties": 1,
+    "maxProperties": 1,
+}
 
 
 # ================================================================================= decoding
@@ -537,6 +582,24 @@ OPERATIONS: Final[Mapping[str, Operation]] = {
             _result("message_entry"),
             ("GET", "/v1/explain/{code}"),
             decode=_members("code"),
+        ),
+        # ADR 0060 D11 (F1, ADR 0019 Amendment 7): the extension registry; neither reads the
+        # project.
+        _row(
+            "list_capabilities",
+            "read",
+            LIST_CAPABILITIES_REQUEST,
+            _result("capability_page"),
+            ("GET", "/v1/capabilities"),
+            decode=_members("kind", "id_prefix", "cursor", "limit"),
+        ),
+        _row(
+            "check_admission",
+            "read",
+            CHECK_ADMISSION_REQUEST,
+            _result("admission_report"),
+            ("POST", "/v1/admission/check"),
+            decode=_members("pair", "revision"),
         ),
         # The raw export (Python, CLI, HTTP; never MCP)
         _row(

@@ -229,6 +229,12 @@ async def _scenario(session: Session, direct: LocalApplication, record: Transcri
     await pair("project", "get_project", {})
     await pair("models", "list_models", {})
     await pair("explain", "explain", {"code": "not_found"})  # ADR 0058 D7 (MSG)
+    await pair("capabilities", "list_capabilities", {"kind": "unit_model", "limit": 3})  # F1
+    await pair(
+        "admission",
+        "check_admission",
+        {"pair": {"unit": "thermal.heater", "method": "coolprop-heos-v1"}},
+    )
     document = CORPUS[NOMINAL]()
     first = {
         "edits": [{"operation": "set", "path": [k], "value": v} for k, v in document.items()],
@@ -305,6 +311,11 @@ async def _scenario(session: Session, direct: LocalApplication, record: Transcri
     await pair("reserved key", "submit_job", solve | {"idempotency_key": "auto:mine"})
     await pair("unknown code", "explain", {"code": "phase_regim_mismatch"})
     await pair("no job's table", "get_stream_table", {"job_id": "job-999999"})  # ADR 0068
+    await pair(
+        "no such unit",
+        "check_admission",
+        {"pair": {"unit": "thermal.heatr", "method": "coolprop-heos-v1"}},
+    )  # ADR 0060
     await pair("key reused", "commit_change", first | {"expected_revision": second})
     big = {**first, "idempotency_key": "w6b-big", "expected_revision": second}
     big["edits"] = [{"operation": "set", "path": ["title"], "value": 2**53 + 1}]
@@ -439,6 +450,7 @@ def test_g14_refusals_reach_mcp_as_tool_errors_with_the_api_error(transcript: Tr
         "reserved key": "invalid_request",
         "unknown code": "not_found",  # `explain` (ADR 0058 D7)
         "no job's table": "not_found",  # `get_stream_table` (ADR 0068)
+        "no such unit": "not_found",  # `check_admission` (ADR 0060 D11)
         "key reused": "idempotency_key_reused",
         "non-canonical": "document_not_canonical",
     }

@@ -86,6 +86,9 @@ OPERATION_RIGHTS: Final[Mapping[str, Right]] = {
     "list_audit": "read",
     # ADR 0058 D7 (MSG): a message-catalogue entry
     "explain": "read",
+    # ADR 0060 D11 (F1, ADR 0019 Amendment 7): the extension registry's listing and admission
+    "list_capabilities": "read",
+    "check_admission": "read",
     # raw export (Python, CLI, HTTP)
     "artifact_bytes": "read",
 }
