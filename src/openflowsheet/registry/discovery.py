@@ -115,11 +115,18 @@ def entry_points(path: Sequence[str] | None = None) -> tuple[Discovered, ...]:
     )
     found = []
     for distribution in distributions:
-        name = distribution.metadata["Name"]
-        if not name:
+        try:
+            name = distribution.metadata["Name"]
+            if not name:
+                continue
+            version = str(distribution.version)
+            declared = list(distribution.entry_points.select(group=GROUP))
+        except Exception as error:  # noqa: BLE001 (D7: never fatal; it names no entry point)
+            _logger.warning(
+                "a distribution's metadata could not be read; skipped: %s", type(error).__name__
+            )
             continue
-        for entry_point in distribution.entry_points.select(group=GROUP):
-            found.append(Discovered(normalised_name(name), str(distribution.version), entry_point))
+        found.extend(Discovered(normalised_name(name), version, point) for point in declared)
     return tuple(found)
 
 

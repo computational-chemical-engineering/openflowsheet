@@ -38,6 +38,7 @@ from the references a run's documents make (D8, D9).
 from __future__ import annotations
 
 import importlib
+import logging
 import platform
 import threading
 from collections.abc import Callable, Iterable, Iterator, Mapping, Sequence
@@ -202,6 +203,8 @@ def _limitation_problem(document: Mapping[str, Any], codes: frozenset[str]) -> s
     return None
 
 
+_logger = logging.getLogger(__name__)
+
 #: The registry's per-thread build state: the depth of `Registry.build` calls running on this
 #: thread (a catalogue lookup then raises, D8) and whether it is building the process registry.
 _build_state = threading.local()
@@ -285,7 +288,7 @@ class Registry:
                     )
                 )
             for item in loaded:
-                registry._add_package(
+                registry._add_guarded(
                     ExtensionPackage(
                         item.found.distribution,
                         item.found.distribution_version,
@@ -296,7 +299,7 @@ class Registry:
                     attested,
                 )
             for package in packages:
-                registry._add_package(package, attested)
+                registry._add_guarded(package, attested)
             registry._resolve()
             if catalogue_register is not None:
                 for key in sorted(registry._catalogues, key=lambda k: (k[0].encode("utf-8"), k[1])):
@@ -325,6 +328,32 @@ class Registry:
             raise RegistryBuildError(
                 Coded("self_hash_unavailable", {"id": str(document["id"]), "path": error.path})
             ) from None
+
+    def _add_guarded(self, package: ExtensionPackage, attestations: frozenset[Attestation]) -> None:
+        """`_add_package`, where an exception no check anticipates quarantines the package
+        `extension_invalid(<entry point>, "")`, its class logged as `discover` logs a load
+        failure: a broken extension is never fatal (D7; F1 review SF-2). Nothing of the package
+        is registered by then, since `_add_package` registers only after every check."""
+        try:
+            self._add_package(package, attestations)
+        except RegistryBuildError:
+            raise
+        except Exception as error:  # noqa: BLE001 (D7: any failure quarantines; class logged)
+            _logger.warning(
+                "extension %r of %s %s could not be added: %s",
+                package.entry_point,
+                package.distribution,
+                package.distribution_version,
+                type(error).__name__,
+            )
+            self._quarantined.append(
+                Quarantine(
+                    package.distribution,
+                    package.distribution_version,
+                    package.entry_point,
+                    Coded("extension_invalid", {"entry_point": package.entry_point, "pointer": ""}),
+                )
+            )
 
     def _add_package(self, package: ExtensionPackage, attestations: frozenset[Attestation]) -> None:
         """Register a package whole or quarantine it with its first problem (D7): per descriptor

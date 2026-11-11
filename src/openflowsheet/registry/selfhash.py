@@ -41,11 +41,16 @@ def lf(data: bytes) -> bytes:
 
 def file_sha(root: Path | None, path: str) -> str:
     """SHA-256 of the LF-normalised bytes of `<root>/<path>` (`path` POSIX, relative). No root
-    (a namespace package or a zip import, D3) resolves no path."""
+    (a namespace package or a zip import, D3) resolves no path. A file the process cannot read
+    (`OSError`) is unavailable too (F1 review SF-2)."""
     target = None if root is None else root.joinpath(*path.split("/"))
-    if target is None or not target.is_file():
-        raise SelfHashUnavailableError(path)
-    return hashlib.sha256(lf(target.read_bytes())).hexdigest()
+    try:
+        if target is None or not target.is_file():
+            raise SelfHashUnavailableError(path)
+        data = target.read_bytes()
+    except OSError:
+        raise SelfHashUnavailableError(path) from None
+    return hashlib.sha256(lf(data)).hexdigest()
 
 
 def self_sha256(root: Path | None, modules: Iterable[str]) -> str:

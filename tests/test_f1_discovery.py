@@ -196,6 +196,88 @@ def test_e_f1_6_each_bad_package_is_quarantined_alone_and_the_build_completes(
     assert built.resolve("unit_model", "good.unit").self_sha256 != hashlib.sha256(b"[]").hexdigest()
 
 
+@pytest.mark.skipif(
+    sys.platform == "win32" or os.geteuid() == 0, reason="mode 000 does not stop this reader"
+)
+def test_a_module_file_it_cannot_read_quarantines_its_package(site: FakeSite) -> None:
+    """F1 review SF-2: an unreadable module file (mode 000) is `self_hash_unavailable` for its
+    package, never a build failure (D7: a broken extension is never fatal)."""
+    _good(site)
+    module = site.module_name("locked")
+    site.add(
+        "locked-dist",
+        "locked",
+        [
+            _unit(
+                "locked.unit",
+                implementation={"modules": [f"{module}/kernel.py"], "factory": None},
+            )
+        ],
+        files={"kernel.py": "VALUE = 1\n"},
+    )
+    kernel = site.directory() / module / "kernel.py"
+    kernel.chmod(0)
+    try:
+        built = _build(site)
+    finally:
+        kernel.chmod(0o644)
+    assert _quarantined(built) == {
+        "locked-dist": (
+            "self_hash_unavailable",
+            {"id": "locked.unit", "path": f"{module}/kernel.py"},
+        )
+    }
+    assert _installed(built) == {"good.unit"} and built.closed
+
+
+def test_an_unexpected_failure_in_a_package_quarantines_it_alone(
+    site: FakeSite, monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
+) -> None:
+    """F1 review SF-2: an exception no check anticipates, raised while a package is added,
+    quarantines that package `extension_invalid(<entry point>, "")` with the class logged."""
+    _good(site)
+    site.add("odd-dist", "odd", [_unit("odd.unit")])
+    original = registry_module._registered
+
+    def registered(document: Any, *args: Any) -> Any:
+        if str(document["id"]).startswith("odd."):
+            raise LookupError("unforeseen")
+        return original(document, *args)
+
+    monkeypatch.setattr(registry_module, "_registered", registered)
+    with caplog.at_level("WARNING", logger="openflowsheet.registry"):
+        built = _build(site)
+    assert _quarantined(built) == {
+        "odd-dist": ("extension_invalid", {"entry_point": "odd", "pointer": ""})
+    }
+    assert _installed(built) == {"good.unit"} and built.closed
+    assert "LookupError" in caplog.text and "unforeseen" not in caplog.text
+
+
+def test_a_distribution_whose_metadata_cannot_be_read_is_skipped(
+    site: FakeSite, monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
+) -> None:
+    """F1 review SF-2: a distribution on the path whose metadata raises names no entry point to
+    quarantine; it is skipped with its class logged, and discovery of the others completes."""
+
+    class Unreadable:
+        @property
+        def metadata(self) -> Any:
+            raise PermissionError("metadata")
+
+    _good(site)
+    distributions = discovery.importlib.metadata.distributions
+
+    def with_unreadable(**kwargs: Any) -> list[Any]:
+        return [Unreadable(), *distributions(**kwargs)]
+
+    monkeypatch.setattr(discovery.importlib.metadata, "distributions", with_unreadable)
+    with caplog.at_level("WARNING", logger="openflowsheet.registry"):
+        built = _build(site)
+    assert (built.quarantined, _installed(built)) == ((), {"good.unit"})
+    assert "PermissionError" in caplog.text
+
+
 def test_e_f1_6_an_unresolved_alternative_is_admitted_with_a_notice(site: FakeSite) -> None:
     site.add(
         "beta-dist", "beta", [_unit("beta.unit", requires=[["conn:nTP-v1", "conn:acme.slurry"]])]
