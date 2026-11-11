@@ -83,3 +83,68 @@ Not in WO1 (stated in `registry/__init__.py`): `default_registry()` and the buil
 entry-point discovery and namespace rules; message-catalogue registration and the MSG pre-freeze call; validation of
 `limitations` codes against the catalogue (D2; needs the package's message document, WO3); factory resolution
 (`platform_unsupported`, `dependency_missing`); the usage recorder on `resolve`.
+
+## F1-WO2 (legacy built-ins), 2026-11-11
+
+Files: `scripts/registry_builtin.py`, `src/openflowsheet/registry/builtin/legacy.json` (generated),
+`src/openflowsheet/registry/legacy.py`, `default_registry()` in `registry/__init__.py`, the legacy payload `$defs` of
+`schemas/extension-descriptor.schema.json`, `tests/test_f1_legacy_builtins.py`. `registry_sha256` of the legacy
+table on this checkout: `713489f2…` (not committed; WO5 pins `builtin-sha256.txt`).
+
+- **DECISION W2-1. The legacy payload schemas apply to the built-in table `legacy` only.**
+  `descriptor.LEGACY_PAYLOAD_DEFS` maps `property_method`, `unit_model`, `connection_definition` to
+  `$defs/payload_<kind>_legacy`; `descriptor_problem(..., legacy_form=True)` uses it and refuses any other kind in
+  that table (`/kind`). `PAYLOAD_DEFS` stays kind-wide (`message_entries`). Alternative: kind-wide `PAYLOAD_DEFS`
+  entries, which would force the legacy shape on extension (v2, `preview`) descriptors of these kinds (D1).
+- **DECISION W2-2. CoolProp's payload has a `per_component` member.** `describe()` varies per fluid not only in
+  `reference_convention` but in `properties` (`lnphi_<fluid>`) and derivative inputs (`n_<fluid>`). `per_component`
+  maps each of the 123 fluids to `{reference_convention, properties, derivative_inputs}`; the top-level `properties`
+  and `derivative_inputs` are those every fluid declares, in describe order (`h s v Z cp Psat Tsat`; `T P`);
+  `reference_convention` is `per_component`. `per_component` is null for the other six. **For the design lane:**
+  D6's closed payload names a fluid → convention map but no member for it; this adds one member carrying it and the
+  per-fluid lists. Alternatives: the union of the lists (not faithful per fluid); one descriptor per fluid.
+- **DECISION W2-3. Payload member types.** `phases`, `flashes`, `properties`, `derivative_inputs`: distinct non-empty
+  strings in describe order (`$defs/names`). `derivative_inputs` are the keys of `describe().derivative_order`
+  (orders are not recorded; every legacy order is 1), equal to `DERIVATIVE_INPUTS` where a module declares it.
+  `signature` is typed to its six top-level members; the inner shape stays `application-results`'
+  `model_registry_view`'s. The schema states three cross-member rules: `selectable` iff `bases` is non-empty;
+  `per_component` an object iff `reference_convention` is `per_component`; `signature` null iff not `bindable`.
+- **DECISION W2-4. The synthetic fixture's `legacy` table now satisfies the legacy payloads** (its payloads were
+  placeholders), so its pinned E-F1-5 constant moved `c20a546d…` → `5334b185…`; the independent recomputation in
+  `test_f1_registry_core.py` agrees. Alternative: rename the synthetic table, losing its legacy-stability case.
+- **DECISION W2-5. How the generator constructs providers.** Through `basis_provider` for each selectable basis
+  (CoolProp once per fluid); `pr-lib-v1` and `wilson-ig-v1`, which no basis selects, by their own constructors (it
+  raises if either becomes selectable). The tests construct all seven by their own classes, an independent route.
+  `implementation.factory` is `revision_binding:basis_provider` for all seven, as D6 states, although
+  `basis_provider` cannot construct `pr-lib-v1` or `wilson-ig-v1`. **For WO3 / the design lane:** factory
+  resolution for those two must refuse (or D6 names another factory for unselectable providers).
+- **DECISION W2-6. Implementation-set attribution.** Providers: `corpus_identity._hashed_files` of the provider
+  class's module (F0's own scan: `coolprop-heos-v1` + `_coolprop_heos_fluids.py`, `wilson-ig-v2` + `wilson_ig.py`).
+  Units: F0's cross-check rule (`test_m9_holds_every_legacy_unit_module_d9`): an M9 legacy unit module is attributed
+  to every id it declares as `MODEL_ID` or in `MODEL_IDS`. So `c1.reactor_standin` = `c1/reactor.py` +
+  `c1/reactor_standin.py` (both declare it); `thermal.pump`, `compressor`, `turbine` = `thermal/machines.py`;
+  `c1.reactor_surrogate`, which F0 attributes none to, = `c1/reactor.py` (D6's fallback, R-301). Union = M9's 35.
+- **DECISION W2-7. Signatures come from the public `LocalApplication.in_memory().list_models()`.** **For WO3:** when
+  `in_memory` starts calling `default_registry()`, `--write` must still run with a stale or absent table (for
+  example by building signatures with the binder's `_model_view` instead, or by tolerating a build failure there).
+- **DECISION W2-8. Table format and loading.** A JSON array sorted by (kind, id), indent 2, keys sorted, UTF-8,
+  final LF; the table name is the file stem. `registry/legacy.py` reads it through `importlib.resources`; package
+  data `"openflowsheet.registry" = ["builtin/*.json"]`; T08.A32's `SHIPPED_DATA` lists `registry/builtin/*.json` as
+  the project's own data. Envelope fields: titles `Legacy property method <id>`, `Legacy unit model <id>`,
+  `Legacy connection definition nTP-v1`; `limitations []`, `data_rights null`, `platforms ["any"]`; `pip_extra`
+  `coolprop` (the one extra in `pyproject.toml` naming CoolProp) for `coolprop-heos-v1`, else null.
+- **DECISION W2-9. `syn001.cascade` requires `[["conn:nTP-v1"]]`** (D6's "none" read as no legacy clause); legacy
+  units provide nothing. Its refusal is step 0's `model_unsupported` either way.
+- **DECISION W2-10. `default_registry()`:** a module-level `_process_registry` set once under a `threading.Lock`,
+  through one `global` line (T07 G20 allowlist entry; the `global` count 2 → 3). WO2 builds it from `legacy.json`
+  alone. Alternative: `functools.cache`, which does not guarantee one build under concurrent first calls.
+- **DECISION W2-11. `--check`** compares the committed bytes with the regenerated ones; on a difference it prints
+  the JSON pointers (first ten and the count, or "formatting only"); on success it also builds a registry from the
+  committed table and prints its `registry_sha256`. D3's import-closure check has nothing to check yet (no v2
+  built-in).
+- **DECISION W2-12. E-F1-2's probe method** provides every token a registered descriptor names outside `legacy`
+  (only `conn:nTP-v1` today) and every static non-`legacy` name (`flash:TP`, the four conventions): a stronger
+  probe than the registered set alone, which is a single token.
+
+Not in WO2: entry points in `default_registry()` and the call sites of D8 (WO3); `core.json`, `records.json`;
+the real-built-ins constant of E-F1-5 (WO5).
