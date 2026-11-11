@@ -109,20 +109,15 @@ canonicity, T07); ADR 0013 has Amendment 2 (routing on registered tolerances, T0
 
 ## Next executable action
 
-**0.4.0 released (tag `v0.4.0` = `b6cdf552`, run 42937243741); the PyPI upload waits for Frank's approval in
-the `pypi` environment (decision board `rel040-pypi-approve`).** Development moved to SMM-TR09 (2026-11-10).
+**0.4.0 released and published (tag `v0.4.0` = `b6cdf552`, run 42937243741; PyPI and GitHub release 2026-11-11).** Development moved to SMM-TR09 (2026-11-10).
 
 **0.5 line (from 2026-11-11, SMM-TR09):**
 - `wp/V04-after` merged `47ee6677`: 0.5.0.dev0, working envelope, R-912 grammar, L-WS-2, host move TRS2 to TR09
   (R-1020, RP A-13, T06 H-1; G10 records re-baselined; F0 judges all nine checks on TR09). Review
   `docs/reviews/V04-after-review.md`, fix round applied.
-- **F1 (extension registry, ADR 0060) built on `wp/F1`, local only** (head `1295223f`): WO1 to WO6, review
-  `docs/reviews/F1-review.md` and fix round, design follow-up `docs/reviews/F1-design-followup.md` (R-1031 errata,
-  R-1032), new surface link c_9 (R-1030). Build log `docs/F1_DECISIONS.md`. Manifest `evidence/F1/ed4b059a…` is
-  `implemented`. **Blocked on Frank:** (1) `gh auth refresh -h github.com -s workflow` (commit 0ad16a00 edits
-  ci.yml, so the branch cannot be pushed without it); (2) board items `f1-adr0060-accept`, `f1-list-capabilities`,
-  `f1-check-admission`. **Next:** push, CI on both legs, re-take the manifest `tested` citing the CI run, merge,
-  then F0, ruff and targeted tests on main.
+- **F1 (extension registry) merged `aa2d0a4d`** (ADR 0060 Accepted, Frank 2026-11-11; R-1030 to R-1032; surface
+  link c_9; both tool texts reviewed by both lanes; evidence `evidence/F1/a423093f…` tested, CI 43027599928 and
+  43044509802). 0.4.0 is on PyPI and GitHub (Frank approved 2026-11-11).
 - **Then (roadmap 0.5):** F3 (component data, ADR 0061) and F2 (ADR 0062) after F1; X07a (Windows/macOS CI legs,
   needs the `workflow` scope); X01 rest; X06; `release/lines/0.5.json` (needs a design pass, V04-after review N-3);
   `m03_nlp_check.sh` to use RP §6.5's module list (V04-after review ruling (b)).
