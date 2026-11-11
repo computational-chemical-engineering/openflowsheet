@@ -109,12 +109,23 @@ canonicity, T07); ADR 0013 has Amendment 2 (routing on registered tolerances, T0
 
 ## Next executable action
 
-**REL040 (0.4.0 release, `wp/REL040`, C = `84c66547`), on SMM-TR09 from 2026-11-10.** Acceptance rows (7 stand),
-re-judgement (15 PASS, V14 and X31 FAIL accepted), ledger, notes, H1 manifest `tested` 30/30 (`0688d296`), H2 none,
-step 18 at H2 `v0.4.0 tag may be proposed: YES` (log SHA-256 `3c6d7a1a…`); build log `docs/RP_DECISIONS.md`
-"Part 4". **Next:** push `wp/REL040`, CI on both architectures, merge into `main` (F0, ruff, targeted tests), the
-release workflow dry run, then the real dispatch on green (Frank: `auto`); the PyPI approval is Frank's. After the
-tag: `docs/REL040_HANDOFF.md` "Open after the tag".
+**0.4.0 released (tag `v0.4.0` = `b6cdf552`, run 42937243741); the PyPI upload waits for Frank's approval in
+the `pypi` environment (decision board `rel040-pypi-approve`).** Development moved to SMM-TR09 (2026-11-10).
+
+**0.5 line (from 2026-11-11, SMM-TR09):**
+- `wp/V04-after` merged `47ee6677`: 0.5.0.dev0, working envelope, R-912 grammar, L-WS-2, host move TRS2 to TR09
+  (R-1020, RP A-13, T06 H-1; G10 records re-baselined; F0 judges all nine checks on TR09). Review
+  `docs/reviews/V04-after-review.md`, fix round applied.
+- **F1 (extension registry, ADR 0060) built on `wp/F1`, local only** (head `1295223f`): WO1 to WO6, review
+  `docs/reviews/F1-review.md` and fix round, design follow-up `docs/reviews/F1-design-followup.md` (R-1031 errata,
+  R-1032), new surface link c_9 (R-1030). Build log `docs/F1_DECISIONS.md`. Manifest `evidence/F1/ed4b059a…` is
+  `implemented`. **Blocked on Frank:** (1) `gh auth refresh -h github.com -s workflow` (commit 0ad16a00 edits
+  ci.yml, so the branch cannot be pushed without it); (2) board items `f1-adr0060-accept`, `f1-list-capabilities`,
+  `f1-check-admission`. **Next:** push, CI on both legs, re-take the manifest `tested` citing the CI run, merge,
+  then F0, ruff and targeted tests on main.
+- **Then (roadmap 0.5):** F3 (component data, ADR 0061) and F2 (ADR 0062) after F1; X07a (Windows/macOS CI legs,
+  needs the `workflow` scope); X01 rest; X06; `release/lines/0.5.json` (needs a design pass, V04-after review N-3);
+  `m03_nlp_check.sh` to use RP §6.5's module list (V04-after review ruling (b)).
 
 **X02 (warm starts, ADR 0070 Accepted 2026-11-08 by Frank) is tested on `wp/X02`, not reviewed; merge prep done.**
 `main` (MSG) merged into `wp/X02`; X02's surface link is c_5 (R-950) after MSG's c_4; ADR 0070's drafts A–E are
