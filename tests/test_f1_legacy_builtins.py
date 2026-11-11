@@ -25,6 +25,7 @@ import ast
 import copy
 import hashlib
 import importlib
+import inspect
 import json
 import sys
 import threading
@@ -411,6 +412,63 @@ def test_e_f1_4_the_implementation_sets_are_f0s_m9_set(registry: Registry) -> No
     assert union == frozen, f"only in the registry: {sorted(union - frozen)}; " + (
         f"only in M9: {sorted(frozen - union)}"
     )
+
+
+def _declarers() -> dict[str, set[str]]:
+    """Model id -> the M9 modules under `models/` that declare it as `MODEL_ID` or in
+    `MODEL_IDS` (F0's rule, R-940), each module imported by its own path. D6's two exceptions:
+    `c1.reactor_surrogate`, which no file declares, takes the files of `c1.reactor` (R-301), and
+    `syn001.cascade` (not in M9) takes none."""
+    found: dict[str, set[str]] = {CASCADE: set()}
+    for path in corpus_identity.frozen_modules():
+        if not path.startswith("src/openflowsheet/models/"):
+            continue
+        module = importlib.import_module(path[len("src/") : -len(".py")].replace("/", "."))
+        declared = {getattr(module, "MODEL_ID", None), *getattr(module, "MODEL_IDS", ())}
+        for model in declared - {None}:
+            found.setdefault(str(model), set()).add(path[len("src/") :])
+    assert "c1.reactor_surrogate" not in found
+    found["c1.reactor_surrogate"] = found["c1.reactor"]
+    return found
+
+
+def _attribution_problems(
+    modules: Mapping[tuple[str, str], Sequence[str]], declarers: Mapping[str, set[str]]
+) -> list[str]:
+    """The descriptors whose `modules` miss the file that holds their code: a method's provider
+    class file, a unit's declaring M9 module(s)."""
+    problems = []
+    providers = {name: built[0] for name, built in _constructed().items()}
+    for (kind, identifier), held in sorted(modules.items()):
+        if kind == "property_method":
+            source = Path(inspect.getfile(type(providers[identifier]))).resolve()
+            expected = {source.relative_to(SOURCE.resolve()).as_posix()}
+        else:
+            expected = declarers[identifier]
+        if not expected <= set(held):
+            problems.append(f"{kind} {identifier}: {sorted(expected - set(held))}")
+    return problems
+
+
+def test_e_f1_4_each_descriptor_holds_its_own_modules(registry: Registry) -> None:
+    """F1 review SF-6: the union check above cannot see a swap between two descriptors; this
+    pins each descriptor's own file, and a swap of `pr-c1-v1`'s and `pr-lib-v1`'s sets fails."""
+    modules = {
+        (entry.kind, entry.id): entry.document["implementation"]["modules"]
+        for entry in registry.descriptors(("property_method", "unit_model"))
+    }
+    declarers = _declarers()
+    assert len(modules) == 38
+    assert _attribution_problems(modules, declarers) == []
+    assert all(declarers[i] for k, i in modules if k == "unit_model" and i != CASCADE)
+    assert modules[("unit_model", CASCADE)] == []
+    swapped = dict(modules)
+    c1, lib = ("property_method", "pr-c1-v1"), ("property_method", "pr-lib-v1")
+    swapped[c1], swapped[lib] = modules[lib], modules[c1]
+    assert [problem.split(":")[0] for problem in _attribution_problems(swapped, declarers)] == [
+        "property_method pr-c1-v1",
+        "property_method pr-lib-v1",
+    ]
 
 
 def test_e_f1_4_every_self_hash_recomputes(registry: Registry) -> None:
