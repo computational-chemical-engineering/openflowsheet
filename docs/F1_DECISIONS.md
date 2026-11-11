@@ -278,3 +278,55 @@ Amendment 7 pointer, `interfaces-frozen.md`, register R-1030; generated pages, r
 
 Not in WO4a: the draft form (WO4b); the reviews of the two descriptions (design lane, Frank); `builtin-sha256.txt`,
 CI and the manifest (WO5).
+
+## F1-WO4b (draft form), 2026-11-11
+
+Files: `application/capabilities.py` (the draft form), docstrings in `local.py` and `operations.py`,
+`bindings/descriptions/check_admission.md` and `REVIEW.json`, `scripts/m07a_rc.py` (`F1_FILE_SHA256`, D_9),
+`tests/test_t08_w2_surface_digest.py` (`F1_SERVED_SHA256`), register R-1030 (re-taken in place),
+`interfaces-frozen.md` (one clause), `tests/test_f1_draft_admission.py` (new, E-F1-11),
+`tests/test_f1_operations.py` (draft requests on the four transports). No schema and no R4-G3 snapshot moves.
+
+- **DECISION W4b-1. The draft form reads `schema_version`, `component_set` and each instance's `id` and `model.id`,
+  nothing else.** A member it cannot read is `invalid_request` at `/revision/<pointer>` (`schema_version` not an
+  integer, `component_set` not an object, `instances` empty or not an array, an instance not an object, an empty or
+  missing `id` or `model.id`). Alternative: validate `process-revision.schema.json` first, which a draft without
+  `semantic_role`, `parameters` or `policy` fails although admission does not validate a revision (D5, D11).
+- **DECISION W4b-2. Versions: the revision's `model.version` is not read**; each pair is taken at the highest
+  registered versions, D11's default for the pair form. E-F1-11 needs no mapping rule, so W3-12's question stays
+  open; WO3 recorded no default for it. **For the design lane:** if a v1 `model.version` should ever select a registry
+  version (W3-12, D8's extensions used), the draft form follows that rule.
+- **DECISION W4b-3. What refuses the whole report, and what one pair.** An integer `schema_version` other than 1 is
+  `revision_unsupported` (D11 names v2; later versions are not readable either). `components_unsupported` from
+  `component_basis` (a CoolProp revision without exactly one admitted fluid) is `revision_unsupported` with
+  `detail.unbound` `unsupported(components_unsupported)` and the binder's `hint`, the string form a solve's
+  admission and the job runner use. A model id no `unit_model` is registered under is `not_found` with
+  `detail {kind, id, suggestions}`, as in the pair form. A registered unit that is not bindable (`syn001.cascade`)
+  is that pair's `model_unsupported` (D5 step 0). **For the design lane:** alternative for an unregistered id, that
+  instance's pair refused `model_unsupported(<model>)` (the binder's code), keeping the report whole.
+- **DECISION W4b-4. E-F1-11's binder half on the revisions the binder refuses earlier.** Every instance of every M1
+  revision is replaced once (300 replacements), its model cycled through the 14 models `MODEL_BASES` does not admit on
+  SYN-001, the variant-backed `c1.reactor` and `c1.reactor_standin` excepted (the binder refuses an unpinned one
+  `model_variant_mismatch` before R-288's check). On 38 revisions (216 replacements) the binder gives
+  `model_unsupported(<replacement>)`, and only the replaced instance has that model. The other 12 (the eleven A02
+  revisions, GUESS specifications, `specification_role_unsupported`; T06-STR06, `specification_unsupported`) are
+  refused by the revision binder's reader before its model check; the test pins them (`BINDER_REFUSES_FIRST`) and
+  holds their refusal unchanged by the replacement. `check_admission` refuses the replaced instance
+  `capability_missing` on all 50. **For the design lane:** whether this reading of "for the same instance" is
+  accepted, or E-F1-11 names the 38.
+- **DECISION W4b-5. F0's M1 holds 50 revisions, not 49.** `benchmarks/f0/corpus.json`'s M1 equals T07's `CORPUS`
+  (W0.2's 50); the test pins 50. **For the design lane:** E-F1-11's "(49)" reads as a miscount.
+- **DECISION W4b-6. The description and D_9.** `check_admission.md` describes the draft form's request and the
+  pairs' `instance` in place of "refused unsupported in this build"; to stay within G15's 1500 characters (1489 now)
+  it does not name the v2 refusal. Hash `ec6b3349…`, recorded pending both reviews; `F1_FILE_SHA256` follows. D_9
+  `e59f3d22…` → `24966bee…`, re-taken within c_9 and R-1030 as that entry's "Watch for" says; `without_f1` still
+  leaves D_8 exactly.
+- **DECISION W4b-7. Both forms call `Registry.admit`** with the looked-up ids and versions (the pair form called
+  `capability.admit` on the same three descriptors: one function, one verdict; E-F1-10's documents are unchanged).
+  In-process, neither or both forms is `invalid_request` (was `unsupported`); the request schema refuses both on every
+  transport before the call.
+- **DECISION W4b-8. E-F1-10's fixture gains three draft requests** (admitted; one instance refused; schema_version 2),
+  identical on Python, CLI, HTTP and MCP.
+
+Not in WO4b: the reviews of the two descriptions (design lane, Frank); a v1 `model.version` mapping (W3-12);
+`builtin-sha256.txt`, CI and the manifest (WO5).
