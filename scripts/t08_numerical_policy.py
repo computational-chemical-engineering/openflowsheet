@@ -59,6 +59,8 @@ ADDENDA: Final = (
     ROOT / "benchmarks" / "e01" / "numerical_policy_external.yaml",
     ROOT / "benchmarks" / "opt" / "numerical_policy_external.yaml",
     ROOT / "benchmarks" / "st" / "numerical_policy_external.yaml",
+    # F1 (ADR 0060): the extension descriptor and the registry snapshot.
+    ROOT / "benchmarks" / "f1" / "numerical_policy_external.yaml",
 )
 #: M04: the addendum that classifies the M04 schemas' digests, beside M02's.
 SURROGATE: Final = ROOT / "benchmarks" / "m04" / "numerical_policy_surrogate.yaml"

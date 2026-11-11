@@ -1,0 +1,166 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/frankp/process-runtime/schemas/registry-snapshot.schema.json",
+  "title": "RegistrySnapshot",
+  "description": "DRAFT until ADR 0060 is Accepted (F1-WO1). ADR 0060 D10: what the extension registry loaded, the §2.7.3 registry snapshot F8 records in `Environment` (non-structural). `registry_sha256` = SHA-256 of the canonical JSON of `[[kind, id, version, descriptor_sha256, self_sha256], ...]` over the registered descriptors sorted by (kind, id, version key): it excludes evidence fields, distribution versions and quarantine records (D9, D10). `extensions` are sorted by (kind, id, version key) and `quarantined` by their rows' canonical JSON bytes; the order and the hash are `openflowsheet.registry.snapshot`'s.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "snapshot_format",
+    "registry_sha256",
+    "extensions",
+    "quarantined"
+  ],
+  "properties": {
+    "snapshot_format": {
+      "const": "openflowsheet-registry-snapshot-v1"
+    },
+    "registry_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "extensions": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/extension"
+      }
+    },
+    "quarantined": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/quarantine"
+      }
+    }
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "extension": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "id",
+        "version",
+        "self_sha256",
+        "descriptor_sha256",
+        "origin",
+        "distribution",
+        "distribution_version",
+        "entry_point",
+        "status",
+        "effective_status",
+        "evidence_class",
+        "stability"
+      ],
+      "properties": {
+        "kind": {
+          "$ref": "extension-descriptor.schema.json#/properties/kind"
+        },
+        "id": {
+          "$ref": "extension-descriptor.schema.json#/$defs/id"
+        },
+        "version": {
+          "$ref": "extension-descriptor.schema.json#/properties/version"
+        },
+        "self_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "descriptor_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "origin": {
+          "enum": [
+            "builtin",
+            "installed",
+            "contributed"
+          ]
+        },
+        "distribution": {
+          "type": "string",
+          "minLength": 1
+        },
+        "distribution_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "entry_point": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "status": {
+          "enum": [
+            "declared",
+            "implemented",
+            "tested",
+            "reviewed",
+            "released"
+          ]
+        },
+        "effective_status": {
+          "enum": [
+            "declared",
+            "implemented",
+            "tested",
+            "reviewed",
+            "released"
+          ]
+        },
+        "evidence_class": {
+          "enum": [
+            "core",
+            "reviewed",
+            "unreviewed"
+          ]
+        },
+        "stability": {
+          "enum": [
+            "core",
+            "preview"
+          ]
+        }
+      }
+    },
+    "quarantine": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "distribution",
+        "distribution_version",
+        "entry_point",
+        "code",
+        "params"
+      ],
+      "properties": {
+        "distribution": {
+          "type": "string",
+          "minLength": 1
+        },
+        "distribution_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "entry_point": {
+          "type": "string",
+          "minLength": 1
+        },
+        "code": {
+          "type": "string",
+          "minLength": 1
+        },
+        "params": {
+          "type": "object",
+          "additionalProperties": {
+            "type": [
+              "string",
+              "number"
+            ]
+          }
+        }
+      }
+    }
+  }
+}
