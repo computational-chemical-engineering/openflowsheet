@@ -293,13 +293,15 @@ def application_results_documents() -> dict[str, Any]:
         # F1-WO6 (part A): a `$def` that is only a `$ref` is followed to its target.
         while list(definition) == ["$ref"]:
             target, _, pointer = definition["$ref"].partition("#")
+            # Sorted, and only JSON objects: `schemas/registry.json` is a list (F1-WO1), and
+            # directory order differs between checkouts.
             document = next(
                 loaded
                 for loaded in (
                     json.loads(path.read_text(encoding="utf-8"))
-                    for path in (ROOT / "schemas").glob("*.json")
+                    for path in sorted((ROOT / "schemas").glob("*.json"))
                 )
-                if loaded.get("$id") == target
+                if isinstance(loaded, dict) and loaded.get("$id") == target
             )
             for step in pointer.strip("/").split("/"):
                 document = document[step]
