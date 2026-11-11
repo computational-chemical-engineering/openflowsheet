@@ -257,6 +257,7 @@ def test_components_the_basis_refuses_are_the_binders_refusal() -> None:
 
 
 def test_an_unregistered_model_is_not_found_with_suggestions() -> None:
+    """The whole report is `not_found`, and its pointer names the instance (F1 review N-5)."""
     revision = CORPUS["SYN-001-nominal"]()
     revision["instances"][2]["model"]["id"] = "syn001.tp_heatr"
     document = _refused(revision)
@@ -264,6 +265,17 @@ def test_an_unregistered_model_is_not_found_with_suggestions() -> None:
     assert document["detail"]["kind"] == "unit_model"
     assert document["detail"]["id"] == "syn001.tp_heatr"
     assert "syn001.tp_heater" in document["detail"]["suggestions"]
+    assert document["detail"]["pointer"] == "/revision/instances/2/model/id"
+
+
+def test_the_pair_forms_not_found_names_no_instance() -> None:
+    with LocalApplication.in_memory() as app:
+        with pytest.raises(ApplicationError) as refused:
+            dispatch(
+                app, "check_admission", {"pair": {"unit": "syn001.tp_heatr", "method": "syn001"}}
+            )
+    detail = refused.value.error.as_document()["detail"]
+    assert "pointer" not in detail and detail["id"] == "syn001.tp_heatr"
 
 
 def test_a_library_only_model_is_model_unsupported_for_its_instance() -> None:

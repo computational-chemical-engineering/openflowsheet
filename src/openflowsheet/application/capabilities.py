@@ -24,8 +24,9 @@ registry version and is not read; F1 decision W4b-2); `admitted` is their conjun
 admission does not validate a revision (D5; W4b-1). A later `schema_version` is
 `revision_unsupported` (ADR-F2's validator reads v2). `components_unsupported` from the basis
 selection is `revision_unsupported` with the binder's refusal as `unbound` (`<kind>(<code>)`, as
-a solve's) and its `hint`. A model id no unit model is registered under is `not_found` with
-`detail.suggestions`, as in the pair form (W4b-3).
+a solve's) and its `hint`. A model id no unit model is registered under is `not_found` for the
+whole report with `detail.suggestions`, as in the pair form (W4b-3), and `detail.pointer` names
+the instance (`/revision/instances/<i>/model/id`; F1 review N-5).
 """
 
 from __future__ import annotations
@@ -124,18 +125,27 @@ def capability_page(
 # ========================================================================= check_admission
 
 
-def _registered(registry: Registry, kind: str, identifier: str, version: str | None) -> Registered:
+def _registered(
+    registry: Registry,
+    kind: str,
+    identifier: str,
+    version: str | None,
+    pointer: str | None = None,
+) -> Registered:
     """The descriptor (kind, id, version), the highest version when `version` is `None`, read
-    without recording a use; `not_found` with close ids (or the id's versions) otherwise."""
+    without recording a use; `not_found` with close ids (or the id's versions) otherwise. An
+    unknown id's refusal carries `pointer` when one is given (the draft form's instance)."""
     of_kind = registry.descriptors((kind,))
     versions = [entry for entry in of_kind if entry.id == identifier]
     if not versions:
+        where = {} if pointer is None else {"pointer": pointer}
         raise api_error(
             "not_found",
             f"no {_KIND_TEXT[kind]} with this id is registered",
             kind=kind,
             id=identifier,
             suggestions=closest(identifier, (entry.id for entry in of_kind)),
+            **where,
         )
     if version is None:
         return versions[-1]  # `descriptors` sorts by version key last
@@ -165,9 +175,12 @@ def default_definition(unit: Registered) -> str | None:
 
 
 def _pair(
-    registry: Registry, pair: Mapping[str, Any], instance: str | None = None
+    registry: Registry,
+    pair: Mapping[str, Any],
+    instance: str | None = None,
+    unit_pointer: str | None = None,
 ) -> tuple[AdmissionPair, tuple[Coded, ...]]:
-    unit = _registered(registry, "unit_model", pair["unit"], pair.get("unit_version"))
+    unit = _registered(registry, "unit_model", pair["unit"], pair.get("unit_version"), unit_pointer)
     method = _registered(registry, "property_method", pair["method"], pair.get("method_version"))
     definition_id = pair.get("definition")
     if definition_id is None:
@@ -271,8 +284,9 @@ def admission_report(
                 registry,
                 {"unit": model, "method": method, "definition": CONNECTION_DEFINITION},
                 instance,
+                f"/revision/instances/{index}/model/id",
             )
-            for instance, model in instances
+            for index, (instance, model) in enumerate(instances)
         ]
     else:
         assert pair is not None
