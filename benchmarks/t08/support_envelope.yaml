@@ -9395,3 +9395,90 @@ harvest:
   - L-S11-3
   - L-E01-1
   note: 'the four envelope rows the limitation names, carried verbatim'
+- manifest: evidence/F1/ed4b059ac050174e2be87f395ee7eb35288be11e/manifest.json
+  item: limitations[0]
+  sha256: 22359b14e95127e302db1eaf04bf6b624bc86c28b19ea9d562d162dba19a03d3
+  class: P
+  to: []
+  note: 'provenance note: software verification of the extension registry against independent expectations; tested evidence, not reviewed'
+- manifest: evidence/F1/ed4b059ac050174e2be87f395ee7eb35288be11e/manifest.json
+  item: limitations[1]
+  sha256: 3c40a3aac6e161e34cec519504148d4c755e611056a0212182c4d18cfa08d968
+  class: P
+  to: []
+  note: 'provenance note: requirements empty, F1 maps to no D/A requirement (0.5 foundation package)'
+- manifest: evidence/F1/ed4b059ac050174e2be87f395ee7eb35288be11e/manifest.json
+  item: limitations[2]
+  sha256: 698b702ea446c07cf74c6d70df0b36c8252513fa80c128a4f64e3e7218e1522d
+  class: P
+  to: []
+  note: 'process note: CI not yet run at the head; the E-F1-5 workflow step needs the workflow scope to push; re-taken at the CI-green head'
+- manifest: evidence/F1/ed4b059ac050174e2be87f395ee7eb35288be11e/manifest.json
+  item: limitations[3]
+  sha256: 330672bf997d8583900149e7d93537df184f448842e95ce072dcb966ebe2edff
+  class: P
+  to: []
+  note: 'process note: ADR 0025 D2.3 sha256 partition red on F1''s three names in application-results; waits for a design-lane ruling'
+- manifest: evidence/F1/ed4b059ac050174e2be87f395ee7eb35288be11e/manifest.json
+  item: limitations[4]
+  sha256: ebe0aab849d9a1f804dcbc1d0c2891f9a69c70902b08d729fe81ed0d87dc051b
+  class: P
+  to: []
+  note: 'process note: the two tool descriptions await the design lane''s and Frank''s recorded reviews (T08.A18)'
+- manifest: evidence/F1/ed4b059ac050174e2be87f395ee7eb35288be11e/manifest.json
+  item: limitations[5]
+  sha256: fa2874d18e3b26b15c8bc8c81f5c16203a394650d706871b974bd1648b0727f3
+  class: P
+  to: []
+  note: 'provenance note: module paths compared exact-case; a wrong-case path resolves on a case-insensitive file system (outside the Linux platforms row)'
+- manifest: evidence/F1/ed4b059ac050174e2be87f395ee7eb35288be11e/manifest.json
+  item: limitations[6]
+  sha256: 605709acebb39c260924c482c518e72858d424f2806f7c955bcabf7ec2d0247e
+  class: P
+  to: []
+  note: 'provenance note: a zip or frozen build cannot compute the built-in self-hashes and the process registry fails to build (outside the platforms row)'
+- manifest: evidence/F1/ed4b059ac050174e2be87f395ee7eb35288be11e/manifest.json
+  item: limitations[7]
+  sha256: edc7d09e61e46b4f4f37062757ab34a56bb9c6d0a3f5f5a84d720c0bd3783ef3
+  class: P
+  to: []
+  note: 'provenance note: E-F1-5 on Windows and macOS pending until the X07a legs exist (outside the platforms row)'
+- manifest: evidence/F1/ed4b059ac050174e2be87f395ee7eb35288be11e/manifest.json
+  item: limitations[8]
+  sha256: e981d516b2301f8d660fc48ebb0dd55a196f9695edfb7e4c9fc36d87023c9efe
+  class: P
+  to: []
+  note: 'process note: SF-8 trusts the digest for descriptor_problem only; registry_builtin --check validates in full in CI'
+- manifest: evidence/F1/ed4b059ac050174e2be87f395ee7eb35288be11e/manifest.json
+  item: limitations[9]
+  sha256: a6753b5fd2749061657d4a07d66f1da9c15efd8dd42c7ccb28d9a02fe7163459
+  class: P
+  to: []
+  note: 'process note: design-lane questions F-4, F-5, W1-17, SF-5 left open in F1_DECISIONS'
+- manifest: evidence/F1/ed4b059ac050174e2be87f395ee7eb35288be11e/manifest.json
+  item: limitations[10]
+  sha256: afdb3d257a8c9f1eaec762004ce8acefc2fbd2daf4701cbace274a0a1ff94e83
+  class: P
+  to: []
+  note: 'process note: no local full gate; CI green on both architectures is the merge condition (CLAUDE.md gate by risk)'
+- manifest: evidence/F1/ed4b059ac050174e2be87f395ee7eb35288be11e/manifest.json
+  item: checks[0]
+  check_id: F1.CI
+  sha256: 9258be439e08e7d736328c710af3b565727b4f72ba86745666295b27e774c22a
+  class: P
+  to: []
+  note: 'process note: CI pending at the head; the manifest is re-taken with the run id'
+- manifest: evidence/F1/ed4b059ac050174e2be87f395ee7eb35288be11e/manifest.json
+  item: checks[14]
+  check_id: F1.ADR0025
+  sha256: bd4f452d57d2f6ff6b9985048e46c86614931f8d8b367d02c3bba75f688677ac
+  class: P
+  to: []
+  note: 'process note: ADR 0025 partition check red on F1''s names in application-results; design-lane ruling pending'
+- manifest: evidence/F1/ed4b059ac050174e2be87f395ee7eb35288be11e/manifest.json
+  item: checks[15]
+  check_id: F1.DESCRIPTIONS
+  sha256: 049e7c645005a4ed7854e4743d1f8621fe9c1a6f4d6f774fb17709068497a735
+  class: P
+  to: []
+  note: 'process note: T08.A18 description reviews pending (Frank, design lane)'

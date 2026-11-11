@@ -86,7 +86,8 @@ T08_MANIFEST = "evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/manifest.j
 #: X04's manifest (`0f7d9b8…`, `tested`, 4 and 1) moves it on `wp/X04`.
 #: S15b's (REL040 prep) manifest (`829aadf…`, `tested`, 5 and 1) moves it on `wp/REL040p`.
 #: S13's manifest (`a3e508e…`, `tested`, 10 and 0), harvested for 0.4.0, moves it on `wp/REL040`.
-HARVEST_SIZE = (91, 1078, 143)
+#: F1's manifest (`ed4b059…`, `implemented`, 11 and 3) moves it on `wp/F1`.
+HARVEST_SIZE = (92, 1089, 146)
 #: The 0.2.0 release candidate C′ (M07 spec §25, R-485).
 C_PRIME = "ce993651ce37c1343e771b276160bd6623e43500"
 #: The commit tagged v0.2.0.
