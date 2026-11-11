@@ -23,6 +23,8 @@ from __future__ import annotations
 
 import contextvars
 import hashlib
+import importlib.metadata
+import importlib.util
 import json
 import os
 import subprocess
@@ -95,6 +97,16 @@ def _installed(registry: Registry) -> set[str]:
 def _unit(identifier: str, **fields: Any) -> dict[str, Any]:
     fields.setdefault("requires", [["conn:nTP-v1"]])
     return descriptor("unit_model", identifier, **fields)
+
+
+def _installed_extra(*modules: str) -> bool:
+    """Whether an extra of the installed `openflowsheet` counts as present: every one of its
+    `modules` imports, or no distribution metadata names its requirements (F1 review SF-3)."""
+    try:
+        importlib.metadata.metadata("openflowsheet")
+    except importlib.metadata.PackageNotFoundError:
+        return True
+    return all(importlib.util.find_spec(module) is not None for module in modules)
 
 
 def _good(site: FakeSite, namespace: str = "good") -> None:
@@ -523,6 +535,12 @@ def test_e_f1_12_an_extension_contributor_is_listed_preview_and_never_reaches_e0
     for name in program.CONTRIBUTOR_ORDER:
         builtin = built.resolve("functional_contributor", name)
         assert builtin.evidence_class == "core"
+        if name == "lca" and not _installed_extra("bw2data", "bw2calc"):
+            # The `lca` extra is absent: refused before the factory (F1 review SF-3).
+            with pytest.raises(FactoryRefusedError) as raised:
+                built.factory("functional_contributor", name)
+            assert raised.value.reason == Coded("dependency_missing", {"id": "lca", "extra": "lca"})
+            continue
         assert built.factory("functional_contributor", name) is before[name]
     assert program._REGISTERED == before
 
@@ -552,7 +570,18 @@ def test_factory_resolution_of_the_legacy_built_ins(builtins: Registry) -> None:
             else revision_binding.MODEL_BUILDERS[entry.id]
         )
         assert found is expected, entry.id
+    # Without CoolProp installed, its method is refused before its factory (F1 review SF-3).
+    coolprop = (
+        {}
+        if _installed_extra("CoolProp")
+        else {
+            "coolprop-heos-v1": Coded(
+                "dependency_missing", {"id": "coolprop-heos-v1", "extra": "coolprop"}
+            )
+        }
+    )
     assert refused == {
+        **coolprop,
         "pr-lib-v1": Coded("factory_unavailable", {"kind": "property_method", "id": "pr-lib-v1"}),
         "wilson-ig-v1": Coded(
             "factory_unavailable", {"kind": "property_method", "id": "wilson-ig-v1"}
@@ -613,6 +642,35 @@ def test_factory_refuses_platform_and_dependency(site: FakeSite) -> None:
         "dependency_missing", {"id": "needs.extra", "extra": "needs-extra"}
     )
     assert built.factory("unit_model", "needs.keyed") == 2
+
+
+def test_a_missing_extra_is_dependency_missing_before_the_factory_returns(
+    builtins: Registry, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """F1 review SF-3: `coolprop-heos-v1`'s factory module imports CoolProp lazily, so an import
+    check alone returned `basis_provider` without CoolProp. The extra's requirements, read from
+    the declaring distribution's metadata, are checked first."""
+    try:
+        importlib.metadata.metadata("openflowsheet")
+    except importlib.metadata.PackageNotFoundError:
+        pytest.skip("openflowsheet is not installed: no metadata names the extra's requirements")
+    distribution = importlib.metadata.distribution
+
+    def masked(name: str) -> importlib.metadata.Distribution:
+        if discovery.normalised_name(name) == "coolprop":
+            raise importlib.metadata.PackageNotFoundError(name)
+        return distribution(name)
+
+    monkeypatch.setattr(importlib.metadata, "distribution", masked)
+    monkeypatch.setitem(sys.modules, "CoolProp", None)
+    with pytest.raises(FactoryRefusedError) as raised:
+        builtins.factory("property_method", "coolprop-heos-v1")
+    assert raised.value.reason == Coded(
+        "dependency_missing", {"id": "coolprop-heos-v1", "extra": "coolprop"}
+    )
+    from openflowsheet.application import revision_binding
+
+    assert builtins.factory("property_method", "iapws95-v1") is revision_binding.basis_provider
 
 
 def test_the_usage_recorder_records_resolve_and_factory_in_its_context(builtins: Registry) -> None:

@@ -38,8 +38,10 @@ from the references a run's documents make (D8, D9).
 from __future__ import annotations
 
 import importlib
+import importlib.metadata
 import logging
 import platform
+import re
 import threading
 from collections.abc import Callable, Iterable, Iterator, Mapping, Sequence
 from contextlib import contextmanager
@@ -547,8 +549,11 @@ class Registry:
           factory, or a legacy property method no basis selects (`selectable` false; the binder's
           `basis_provider` cannot construct `pr-lib-v1` or `wilson-ig-v1`, W2-5);
         - `platform_unsupported(<id>, <platform>)` when `platforms` excludes this platform;
-        - `dependency_missing(<id>, <extra>)` when the factory's import fails for want of the
-          optional dependency its `pip_extra` installs."""
+        - `dependency_missing(<id>, <extra>)` when a requirement of its `pip_extra`, read from
+          the declaring distribution's metadata, is not installed (a factory module may import
+          the dependency lazily, as `coolprop-heos-v1`'s does; F1 review SF-3), or, for an
+          extension, when the factory's import fails and `pip_extra` is set. A built-in's
+          `ImportError` propagates: it is a bug."""
         entry = self.resolve(kind, identifier, version)
         declared = entry.document["implementation"]["factory"]
         legacy_unselectable = (
@@ -567,10 +572,12 @@ class Registry:
                 Coded("platform_unsupported", {"id": entry.id, "platform": here})
             )
         extra = entry.document["pip_extra"]
+        if extra is not None and _extra_missing(entry.distribution, extra):
+            raise FactoryRefusedError(Coded("dependency_missing", {"id": entry.id, "extra": extra}))
         try:
             module = importlib.import_module(declared["module"])
         except ImportError:
-            if extra is None:
+            if extra is None or entry.origin == "builtin":
                 raise
             raise FactoryRefusedError(
                 Coded("dependency_missing", {"id": entry.id, "extra": extra})
@@ -606,6 +613,34 @@ class Registry:
                 )
             ),
         )
+
+
+#: A `Requires-Dist` value's project name (PEP 508), and the marker clause naming an extra.
+_REQUIREMENT_NAME: Final = re.compile(r"\s*([A-Za-z0-9](?:[A-Za-z0-9._-]*[A-Za-z0-9])?)")
+_EXTRA_MARKER: Final = re.compile(r"""extra\s*==\s*["']([^"']+)["']""")
+
+
+def _extra_missing(distribution: str, extra: str) -> bool:
+    """Whether a requirement of `distribution`'s extra `extra` (its `Requires-Dist` entries
+    whose marker names the extra; names compared normalised, PEP 685) is not installed. Only
+    presence is checked. A distribution without metadata (a source tree on the path) names no
+    requirement, and the factory's import decides (F1 review SF-3)."""
+    try:
+        requirements = importlib.metadata.metadata(distribution).get_all("Requires-Dist") or []
+    except importlib.metadata.PackageNotFoundError:
+        return False
+    wanted = discovery.normalised_name(extra)
+    for requirement in requirements:
+        _, _, marker = requirement.partition(";")
+        named = {discovery.normalised_name(name) for name in _EXTRA_MARKER.findall(marker)}
+        project = _REQUIREMENT_NAME.match(requirement)
+        if wanted not in named or project is None:
+            continue
+        try:
+            importlib.metadata.distribution(project.group(1))
+        except importlib.metadata.PackageNotFoundError:
+            return True
+    return False
 
 
 def current_platform() -> str:
