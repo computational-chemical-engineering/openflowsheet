@@ -78,11 +78,34 @@ it must be equal, not relabelled. A difference is other, naming the leaf and bot
 holds nowhere in clear and that no experiment key, fingerprint or code identity feeds. Every other
 digest is held only to the bijection, with the bitwise clear leaves as its guard.
 
+A class `host` (R-1020; `docs/reviews/HOSTMOVE-ruling.md` §2, WO-H1) admits a move of the RC host
+to another machine, and only with `--old-host <h>`, h the committed host name. Every running value
+is read once, by `_running_host()`. Its leaves, and only these:
+- the environment sidecar's `machine`, `cpu` and `cpu_count`. The committed `machine` must be h,
+  also when the bytes are equal. The differing keys must lie in these three and
+  `distributions_sha256`, with equal key lists in equal order. When a host key differs, all three
+  re-take values are the running host's (`m05_replay.host_identity()`), the committed bytes are the
+  writer's (`json.dumps(..., indent=1)` and a newline), and the re-take bytes are the committed
+  document with the differing keys replaced, written the same way. `distributions_sha256` keeps the
+  rule above. The result is `equal`, `distributions`, `host` or `distributions+host`;
+- on a coupling pair that holds `PLATFORM_PATH`, the reactor fingerprint's `cpu_model` and
+  `cpu_flags_sha256` (the re-take side is the running reactor child's `_cpu()`) and
+  `env_allowlist.NUMBA_CACHE_DIR` (both sides end in the same two path components, and the re-take
+  side is those two under the running `external_root()`);
+- an attempt's `.execution.fingerprint.cpu_model`, wherever it is walked: the committed side is the
+  committed reactor `cpu_model`, the re-take side the running one.
+
+Each such leaf is judged before the digest class and never enters the map, and each committed role
+holds one value across all pairs. Every other leaf is held as without `--old-host`, so a number
+never moves with the host. The summary line gains ` host=<n>`, the differing leaves admitted.
+Without `--old-host`, the three fingerprint leaves are pinned beside the platform and the sidecar is
+compared as above, and every printed line is the one before R-1020.
+
 It prints one line: PASS/FAIL, the changed digests (distinct old values whose new value differs)
 and each class count, then each problem.
 
     python scripts/m05_retake_diff.py --digest-only <committed-stem> <retake-stem> \
-        [--old-version <v>] [--old-platform <p>]
+        [--old-version <v>] [--old-platform <p>] [--old-host <h>]
 """
 
 from __future__ import annotations
@@ -91,6 +114,7 @@ import argparse
 import collections
 import dataclasses
 import hashlib
+import importlib.util
 import json
 import platform
 import re
@@ -179,6 +203,38 @@ LOG_DIGEST = re.compile(r".*\.execution\.logs\.(stdout|stderr)_sha256")
 VALUE_DIGEST = re.compile(r".*\.inner\.(state|constants)_sha256|.*\.requests\[\d+\]\.inputs_sha256")
 EXACT_DIGESTS = (("log", LOG_DIGEST), ("value", VALUE_DIGEST))
 
+#: R-1020's host-identity leaves of an M05 environment sidecar, in the writer's order.
+SIDECAR_HOST = ("machine", "cpu", "cpu_count")
+#: R-1020's host-identity leaves of a reactor fingerprint beside `PLATFORM_PATH` (exact paths), and
+#: the running value each one's re-take side is held to.
+FINGERPRINT_HOST = {
+    FINGERPRINT + "cpu_model": "cpu_model",
+    FINGERPRINT + "cpu_flags_sha256": "cpu_flags_sha256",
+    FINGERPRINT + "env_allowlist.NUMBA_CACHE_DIR": "numba_cache_dir",
+}
+#: An attempt's cheap fingerprint's one host leaf (M02 §2.4), wherever it is walked (R-1020).
+ATTEMPT_CPU = re.compile(r".*\.execution\.fingerprint\.cpu_model")
+#: The reactor child, which measures the fingerprint's CPU leaves; it imports no `openflowsheet`.
+CHILD = REPO_ROOT / "src" / "openflowsheet" / "adapters" / "pymrm" / "child.py"
+
+
+def _running_host() -> dict[str, Any]:
+    """R-1020: every value the running host measures, read here and nowhere else: the sidecar's
+    three (`m05_replay.host_identity()`), the reactor child's `_cpu()` and the external root."""
+    from openflowsheet.adapters.experiments.backends import external_root  # noqa: PLC0415
+
+    spec = importlib.util.spec_from_file_location("m05_retake_diff_child", CHILD)
+    assert spec is not None and spec.loader is not None
+    child = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(child)
+    cpu_model, cpu_flags_sha256 = child._cpu()
+    return {
+        **replay.host_identity(),
+        "cpu_model": cpu_model,
+        "cpu_flags_sha256": cpu_flags_sha256,
+        "external_root": external_root(),
+    }
+
 
 @dataclasses.dataclass
 class DigestOnly:
@@ -190,6 +246,11 @@ class DigestOnly:
     other: list[str] = dataclasses.field(default_factory=list)
     #: Differing log paths, judged once the map is complete (`resolve_paths`).
     paths: list[tuple[str, str, str]] = dataclasses.field(default_factory=list)
+    #: With `--old-host` (R-1020): the class `host` applies.
+    host: bool = False
+    #: Every host-identity leaf walked, `(where, role, committed, re-take)`, judged once the
+    #: committed roles are all known (`resolve_hosts`).
+    hosts: list[tuple[str, str, Any, Any]] = dataclasses.field(default_factory=list)
 
     def walk(
         self,
@@ -211,6 +272,10 @@ class DigestOnly:
                     self.flag(
                         f"{where}{path}: {x!r} vs {y!r} (a {exact} digest is compared exactly)"
                     )
+                continue
+            role = self._host_role(path, platform)
+            if role is not None:
+                self.hosts.append((f"{where}{path}", role, x, y))
                 continue
             digests = all(isinstance(v, str) and DIGEST.fullmatch(v) for v in (x, y))
             if digests:
@@ -238,6 +303,47 @@ class DigestOnly:
             else:
                 self.classes["other"] += 1
                 self.other.append(f"{where}{path}: {x!r} vs {y!r}")
+
+    def _host_role(self, path: str, platform: bool | None) -> str | None:
+        """The class `host`'s role of the leaf at `path`, or None (R-1020)."""
+        if not self.host:
+            return None
+        if platform is not None and path in FINGERPRINT_HOST:
+            return FINGERPRINT_HOST[path]
+        return "attempt_cpu_model" if ATTEMPT_CPU.fullmatch(path) else None
+
+    def resolve_hosts(self, running: dict[str, Any]) -> None:
+        """The class `host` (R-1020): each committed fingerprint role holds one value, an attempt's
+        committed CPU model is that of the committed reactor, and each re-take side is what the
+        running host measures. Each differing leaf that holds is counted."""
+        committed: dict[str, list[Any]] = {}
+        for _, role, x, _ in self.hosts:
+            if role != "attempt_cpu_model" and x not in committed.setdefault(role, []):
+                committed[role].append(x)
+        for role, values in committed.items():
+            if len(values) > 1:
+                self.flag(f"host: the committed {role} holds {len(values)} values {values!r}")
+        reactor_cpu = committed.get("cpu_model", [])
+        for where, role, x, y in self.hosts:
+            held = True
+            if role == "attempt_cpu_model":
+                if reactor_cpu != [x]:
+                    self.flag(f"{where}: committed {x!r} is not the committed reactor cpu_model")
+                    held = False
+                expected = running["cpu_model"]
+            elif role == "numba_cache_dir":
+                tail = Path(x).parts[-2:] if isinstance(x, str) else ()
+                if len(tail) != 2 or not isinstance(y, str) or Path(y).parts[-2:] != tail:
+                    self.flag(f"{where}: {x!r} vs {y!r} (not the same environment directory)")
+                    continue
+                expected = str(running["external_root"].joinpath(*tail))
+            else:
+                expected = running[role]
+            if y != expected:
+                self.flag(f"{where}: re-take {y!r} is not the running {expected!r}")
+                held = False
+            if held and not replay._same_leaf(x, y):
+                self.classes["host"] += 1
 
     def resolve_paths(self) -> None:
         """The class `path`, under the completed map (module docstring)."""
@@ -428,20 +534,70 @@ def _environment(old: Path, new: Path, old_version: str | None) -> tuple[str, li
         != after
     ):
         return "differs", ["environment: the bytes differ beyond distributions_sha256"]
+    return "distributions", _distributions_rule(a["distributions_sha256"], old_version)
+
+
+def _distributions_rule(committed: str, old_version: str | None) -> list[str]:
+    """Condition (d)'s `distributions_sha256`: the running environment's distribution list with the
+    `openflowsheet==` line set to `old_version` reproduces the `committed` digest."""
     if old_version is None:
-        return "distributions", [
-            "environment: distributions_sha256 differs; --old-version is required"
-        ]
+        return ["environment: distributions_sha256 differs; --old-version is required"]
     try:
         recomputed = _distributions_sha256(old_version)
     except LookupError as error:
-        return "distributions", [f"environment: {error}"]
-    if recomputed != a["distributions_sha256"]:
-        return "distributions", [
+        return [f"environment: {error}"]
+    if recomputed != committed:
+        return [
             f"environment: openflowsheet=={old_version} gives {recomputed}, "
-            f"not the committed {a['distributions_sha256']}"
+            f"not the committed {committed}"
         ]
-    return "distributions", []
+    return []
+
+
+def _writer(document: dict[str, Any]) -> bytes:
+    """An environment sidecar's bytes as `m05_wo8_runs` writes them."""
+    return (json.dumps(document, indent=1) + "\n").encode()
+
+
+def _host_environment(
+    old: Path, new: Path, old_version: str | None, old_host: str, running: dict[str, Any]
+) -> tuple[str, list[str], int]:
+    """Condition (d) with `--old-host` (R-1020): ('equal' | 'distributions' | 'host' |
+    'distributions+host', problems, the host keys admitted)."""
+    before, after = old.read_bytes(), new.read_bytes()
+    a, b = json.loads(before), json.loads(after)
+    problems = []
+    if (machine := a.get("machine")) != old_host:
+        problems.append(
+            f"environment: the committed machine {machine!r} is not --old-host {old_host!r}"
+        )
+    if before == after:
+        return "equal", problems, 0
+    allowed = {"distributions_sha256", *SIDECAR_HOST}
+    differing = [k for k in a if k in b and a[k] != b[k]]
+    outside = sorted(set(a) ^ set(b) | {k for k in differing if k not in allowed})
+    if outside or list(a) != list(b):
+        reason = f"outside distributions_sha256 and the host keys ({outside})" if outside else ""
+        return "differs", [*problems, f"environment: differs {reason or 'in its key order'}"], 0
+    host = [k for k in differing if k in SIDECAR_HOST]
+    if not host:
+        environment, more = _environment(old, new, old_version)
+        return environment, problems + more, 0
+    problems += [
+        f"environment: re-take {k} {b[k]!r} is not the running {running[k]!r}"
+        for k in SIDECAR_HOST
+        if b[k] != running[k]
+    ]
+    if before != _writer(a) or after != _writer({**a, **{k: b[k] for k in differing}}):
+        problems.append("environment: the bytes are not the writer's beyond the differing keys")
+    admitted = 0 if problems else len(host)
+    if "distributions_sha256" not in differing:
+        return "host", problems, admitted
+    return (
+        "distributions+host",
+        problems + _distributions_rule(a["distributions_sha256"], old_version),
+        admitted,
+    )
 
 
 def _archive(walk: DigestOnly, old: Path, new: Path) -> None:
@@ -473,11 +629,16 @@ def _archive(walk: DigestOnly, old: Path, new: Path) -> None:
 
 
 def digest_only(
-    old: Path, new: Path, old_version: str | None = None, old_platform: str | None = None
+    old: Path,
+    new: Path,
+    old_version: str | None = None,
+    old_platform: str | None = None,
+    old_host: str | None = None,
 ) -> tuple[bool, list[str]]:
-    """R-458, R-1008: whether the re-take `new` of the committed `old` differs only in digests,
-    under a one-to-one relabelling. Returns (passed, lines): the summary line, then each problem."""
-    walk = DigestOnly()
+    """R-458, R-1008, R-1020: whether the re-take `new` of the committed `old` differs only in
+    digests, under a one-to-one relabelling, and with `old_host` in R-1020's host-identity leaves.
+    Returns (passed, lines): the summary line, then each problem."""
+    walk = DigestOnly(host=old_host is not None)
     a, b = _load(old.with_suffix(".json")), _load(new.with_suffix(".json"))
     a.pop("provenance", None)
     b.pop("provenance", None)
@@ -508,9 +669,17 @@ def digest_only(
         walk.walk(x, y, f"store[{index}]")
     _archive(walk, old.with_suffix(".experiments.json"), new.with_suffix(".experiments.json"))
     walk.resolve_paths()
-    environment, problems = _environment(
-        old.with_suffix(".environment.json"), new.with_suffix(".environment.json"), old_version
-    )
+    sidecars = old.with_suffix(".environment.json"), new.with_suffix(".environment.json")
+    if old_host is None:
+        environment, problems = _environment(*sidecars, old_version)
+        host = ""
+    else:
+        running = _running_host()
+        walk.resolve_hosts(running)
+        environment, problems, admitted = _host_environment(
+            *sidecars, old_version, old_host, running
+        )
+        host = f" host={walk.classes['host'] + admitted}"
     problems = walk.other + problems
     problems += [
         f"map: {old} has two images {sorted(walk.pairs[old])}" for old in walk.not_a_function()
@@ -523,7 +692,7 @@ def digest_only(
         f"timing={walk.classes['timing']} path={walk.classes['path']} "
         f"version={walk.classes['version']} "
         f"platform={walk.classes['platform']} other={walk.classes['other']} "
-        f"environment={environment}"
+        f"environment={environment}{host}"
     )
     return passed, [summary, *(f"  {line}" for line in problems)]
 
@@ -535,9 +704,10 @@ def main(argv: list[str]) -> int:
         parser.add_argument("retake", type=Path)
         parser.add_argument("--old-version", help="the committed side's openflowsheet version")
         parser.add_argument("--old-platform", help="the committed side's reactor platform string")
+        parser.add_argument("--old-host", help="the committed environment sidecars' machine")
         args = parser.parse_args(argv[1:])
         passed, lines = digest_only(
-            args.committed, args.retake, args.old_version, args.old_platform
+            args.committed, args.retake, args.old_version, args.old_platform, args.old_host
         )
         print("\n".join(lines))
         return 0 if passed else 1

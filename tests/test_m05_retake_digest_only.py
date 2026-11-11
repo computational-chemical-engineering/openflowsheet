@@ -24,13 +24,15 @@ from __future__ import annotations
 
 import copy
 import hashlib
+import importlib
 import importlib.util
 import json
 import math
 import platform
+import re
 import shutil
 import sys
-from collections.abc import Callable
+from collections.abc import Callable, Iterator
 from pathlib import Path
 from types import ModuleType
 from typing import Any
@@ -828,3 +830,459 @@ def test_n3_old_version_with_a_platform_pinned_pair_fails(tmp_path: Path, runnin
     assert f"platform=2 other={len(COUPLINGS)} " in lines[0]
     for name in COUPLINGS:
         assert f"  coupling {name}.json: --old-version is refused beside the platform" in lines
+
+
+# -- R-1020 (`docs/reviews/HOSTMOVE-ruling.md` §11, WO-H1, HM-01 to HM-18): the class `host` -------
+
+HOSTMOVE = ROOT / "docs" / "derivations" / "scripts" / "hostmove_host_leaves.py"
+#: The committed side's host, set synthetically, and the re-take's: made-up literals (§11.0).
+OLD_HOST = {"machine": "host-hm-committed", "cpu": "cpu-hm-committed", "cpu_count": 96}
+NEW_HOST = {"machine": "host-hm02", "cpu": "cpu-hm02", "cpu_count": 3}
+OLD_FLAGS, NEW_FLAGS = "d" * 64, "e" * 64
+OLD_ROOT, NEW_ROOT = "/home/hm-committed/.cache/openflowsheet/external", Path("/home/hm02/external")
+ENV_DIR = "pymrm-0000000-hm0000000000"
+OLD_PLATFORM, NEW_PLATFORM = "Linux-0.0.0-hm10-committed", "Linux-0.0.0-hm10"
+#: An environment sidecar in the writer's key order, on the committed host.
+SIDECAR = {
+    "omp_num_threads": "1",
+    "python": "3.13.5 (hm)",
+    "distributions": 17,
+    "distributions_sha256": K5,
+    "conda_builds": 41,
+    "conda_builds_sha256": "9" * 64,
+    **OLD_HOST,
+}
+MOVED = {**SIDECAR, **NEW_HOST}
+
+
+def _hostmove() -> ModuleType:
+    spec = importlib.util.spec_from_file_location("hostmove_host_leaves", HOSTMOVE)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def _literals_are_made_up() -> None:
+    """§11.0: no literal is a committed host value or one the running host measures."""
+    real = json.loads(REAL.with_suffix(".environment.json").read_bytes())
+    fingerprint = json.loads(next(REAL.with_suffix(".coupling").glob("*.json")).read_bytes())
+    fingerprint = fingerprint["frozen"]["reactor"]["fingerprint"]
+    known = {str(value) for value in RETAKE._running_host().values()}
+    known |= {str(real[key]) for key in RETAKE.SIDECAR_HOST}
+    known |= {fingerprint["cpu_model"], fingerprint["cpu_flags_sha256"], fingerprint["platform"]}
+    known |= {fingerprint["env_allowlist"]["NUMBA_CACHE_DIR"], platform.platform()}
+    literals = [*OLD_HOST.values(), *NEW_HOST.values(), OLD_FLAGS, NEW_FLAGS, OLD_ROOT]
+    literals += [NEW_ROOT, OLD_PLATFORM, NEW_PLATFORM]
+    assert not {str(literal) for literal in literals} & known
+
+
+_literals_are_made_up()
+
+
+def _running(**override: Any) -> dict[str, Any]:
+    """`_running_host()` on the re-take's host."""
+    values = {**NEW_HOST, "cpu_model": NEW_HOST["cpu"], "cpu_flags_sha256": NEW_FLAGS}
+    return {**values, "external_root": NEW_ROOT, **override}
+
+
+@pytest.fixture
+def running_hm(monkeypatch: pytest.MonkeyPatch) -> Callable[..., None]:
+    """The running host is the re-take's; call the fixture's value to override one of its
+    values."""
+
+    def patch(**override: Any) -> None:
+        monkeypatch.setattr(RETAKE, "_running_host", lambda: _running(**override))
+
+    patch()
+    monkeypatch.setattr(platform, "platform", lambda: NEW_PLATFORM)
+    return patch
+
+
+def _writer(document: dict[str, Any]) -> str:
+    return json.dumps(document, indent=1) + "\n"
+
+
+def _run_host(
+    tmp_path: Path,
+    retake_sidecar: dict[str, Any],
+    *,
+    old_host: str | None = OLD_HOST["machine"],
+    committed_sidecar: dict[str, Any] = SIDECAR,
+    committed: dict[str, Any] | None = None,
+    retake: dict[str, Any] | None = None,
+    old_version: str | None = None,
+    old_platform: str | None = None,
+    text: Callable[[dict[str, Any]], str] = _writer,
+) -> tuple[bool, list[str]]:
+    """The in-process pair of `_run` (or `committed` and `retake`), with the writer's sidecars."""
+    old_stem, new_stem = tmp_path / "old" / "case", tmp_path / "new" / "case"
+    _write(old_stem, _documents(K1, K2) if committed is None else committed)
+    _write(new_stem, _documents(K3, K4) if retake is None else retake)
+    Path(f"{old_stem}.environment.json").write_text(_writer(committed_sidecar), encoding="utf-8")
+    Path(f"{new_stem}.environment.json").write_text(text(retake_sidecar), encoding="utf-8")
+    return RETAKE.digest_only(old_stem, new_stem, old_version, old_platform, old_host)
+
+
+def test_hm01_the_writers_sidecar_keys_and_host_values() -> None:
+    sys.path.insert(0, str(ROOT / "scripts"))
+    runs = importlib.import_module("m05_wo8_runs")
+    written = runs.environment_fingerprint()
+    assert tuple(written) == _hostmove().SIDECAR_KEYS
+    host = sys.modules["m05_replay"].host_identity()
+    assert list(host) == list(RETAKE.SIDECAR_HOST)
+    assert list(written.items())[-3:] == list(host.items())
+
+
+def test_hm02_the_three_host_keys_moved_to_the_running_host_pass(
+    tmp_path: Path, running_hm: Callable[..., None]
+) -> None:
+    passed, lines = _run_host(tmp_path / "moved", MOVED)
+    assert passed, lines
+    assert lines[0].endswith(" other=0 environment=host host=3")
+    # The same pair without the move: every other count is equal.
+    passed, still = _run_host(tmp_path / "still", SIDECAR)
+    assert passed, still
+    assert still[0].endswith(" other=0 environment=equal host=0")
+    assert lines[0].rsplit(" environment=", 1)[0] == still[0].rsplit(" environment=", 1)[0]
+
+
+def test_hm03_without_old_host_the_move_fails_as_before(
+    tmp_path: Path, running_hm: Callable[..., None]
+) -> None:
+    passed, lines = _run_host(tmp_path, MOVED, old_host=None)
+    assert not passed
+    # The lines the tool printed at `c57c2ca0` for this pair.
+    assert lines == [
+        "RETAKE-DIGEST-ONLY FAIL case: changed-digests=2 digest=7 timing=0 path=0 version=0 "
+        "platform=0 other=0 environment=differs",
+        "  environment: differs outside distributions_sha256 (['cpu', 'cpu_count', 'machine'])",
+    ]
+
+
+@pytest.mark.parametrize("retake_sidecar", [MOVED, SIDECAR], ids=["moved", "byte-equal"])
+def test_hm04_an_old_host_other_than_the_committed_machine_fails(
+    tmp_path: Path, running_hm: Callable[..., None], retake_sidecar: dict[str, Any]
+) -> None:
+    passed, lines = _run_host(tmp_path, retake_sidecar, old_host="host-hm04")
+    assert not passed
+    assert (
+        "  environment: the committed machine 'host-hm-committed' is not --old-host 'host-hm04'"
+        in lines
+    )
+
+
+@pytest.mark.parametrize(
+    ("key", "value"), [("machine", "host-hm05"), ("cpu", "cpu-hm05"), ("cpu_count", 5)]
+)
+def test_hm05_a_retake_value_other_than_the_running_hosts_fails(
+    tmp_path: Path, running_hm: Callable[..., None], key: str, value: Any
+) -> None:
+    running_hm(**{key: value})
+    passed, lines = _run_host(tmp_path, MOVED)
+    assert not passed
+    assert f"  environment: re-take {key} {NEW_HOST[key]!r} is not the running {value!r}" in lines
+    assert " host=0" in lines[0]
+
+
+@pytest.mark.parametrize(
+    ("key", "value"),
+    [
+        ("omp_num_threads", "2"),
+        ("python", "3.13.6 (hm06)"),
+        ("distributions", 18),
+        ("conda_builds", 42),
+        ("conda_builds_sha256", "8" * 64),
+    ],
+)
+def test_hm06_one_more_differing_key_fails_naming_it(
+    tmp_path: Path, running_hm: Callable[..., None], key: str, value: Any
+) -> None:
+    passed, lines = _run_host(tmp_path, {**MOVED, key: value})
+    assert not passed
+    assert "environment=differs host=0" in lines[0]
+    assert (
+        f"  environment: differs outside distributions_sha256 and the host keys (['{key}'])"
+        in lines
+    )
+
+
+@pytest.mark.parametrize("reproduced", [True, False])
+def test_hm07_host_keys_and_distributions_sha256(
+    tmp_path: Path,
+    running_hm: Callable[..., None],
+    running_v1: None,
+    monkeypatch: pytest.MonkeyPatch,
+    reproduced: bool,
+) -> None:
+    recomputed = K5 if reproduced else "7" * 64
+    monkeypatch.setattr(RETAKE, "_distributions_sha256", lambda version: recomputed)
+    passed, lines = _run_host(
+        tmp_path,
+        {**MOVED, "distributions_sha256": "6" * 64},
+        retake=_documents(K3, K4, version=V1),
+        old_version=V0,
+    )
+    assert "environment=distributions+host host=3" in lines[0]
+    assert passed is reproduced, lines
+    if not reproduced:
+        assert f"  environment: openflowsheet=={V0} gives {recomputed}, not the committed {K5}" in (
+            lines
+        )
+
+
+def _swapped(document: dict[str, Any]) -> str:
+    keys = list(document)
+    keys[-3], keys[-2] = keys[-2], keys[-3]
+    return _writer({key: document[key] for key in keys})
+
+
+@pytest.mark.parametrize(
+    "text", [lambda d: json.dumps(d, indent=2) + "\n", _swapped], ids=["indent-2", "swapped"]
+)
+def test_hm08_retake_bytes_that_are_not_the_writers_fail(
+    tmp_path: Path, running_hm: Callable[..., None], text: Callable[[dict[str, Any]], str]
+) -> None:
+    passed, lines = _run_host(tmp_path, MOVED, text=text)
+    assert not passed
+    assert " host=0" in lines[0]
+
+
+def test_hm09_byte_equal_sidecars_with_the_committed_machine_pass(
+    tmp_path: Path, running_hm: Callable[..., None]
+) -> None:
+    passed, lines = _run_host(tmp_path, SIDECAR)
+    assert passed, lines
+    assert lines[0].endswith(" other=0 environment=equal host=0")
+
+
+# HM-10 to HM-17: a REAL-like pair on S6R-01's synthetic reactor, its host leaves moving.
+
+#: R-1020's host-identity paths, restated here so that the count below is the test's own.
+HOST_PATH = re.compile(
+    r"\.frozen\.reactor\.fingerprint\.(cpu_model|cpu_flags_sha256|env_allowlist\.NUMBA_CACHE_DIR)"
+    r"|.*\.execution\.fingerprint\.cpu_model"
+)
+
+
+def _host_real(
+    first: str,
+    second: str,
+    *,
+    moved: bool,
+    change: Callable[[dict[str, Any]], None] | None = None,
+) -> dict[str, Any]:
+    """`_real` with REAL's host leaves: the reactor fingerprint's CPU model, CPU flags and
+    environment directory, and a CPU model in each attempt's cheap fingerprint, in a coupling
+    iteration and in the archive; on the re-take's host if `moved`, else on the committed one.
+    `change` edits the fingerprint before it is bound."""
+    host, flags, root, on = (
+        (NEW_HOST, NEW_FLAGS, str(NEW_ROOT), NEW_PLATFORM)
+        if moved
+        else (OLD_HOST, OLD_FLAGS, OLD_ROOT, OLD_PLATFORM)
+    )
+    fingerprint = _reactor(on)["reactor"]["fingerprint"]
+    fingerprint |= {
+        "cpu_flags_sha256": flags,
+        "cpu_model": host["cpu"],
+        "env_allowlist": {"NUMBA_CACHE_DIR": f"{root}/{ENV_DIR}/numba-cache", "PATH": "/usr/bin"},
+        "packages": {"numpy": "2.2.4", "pymrm": "2.5.0"},
+        "thread_env": {"OMP_NUM_THREADS": "1"},
+    }
+    if change is not None:
+        change(fingerprint)
+    digest = document_sha256(fingerprint)
+    documents = _real(first, second, on)
+    for name, key in zip(COUPLINGS, (first, second), strict=True):
+        coupling = documents[f".coupling/{name}.json"]
+        coupling["frozen"]["reactor"] = {
+            "fingerprint": copy.deepcopy(fingerprint),
+            "fingerprint_sha256": digest,
+        }
+        coupling["request"]["environment_fingerprint_sha256"] = digest
+        execution = {"fingerprint": {"cpu_model": host["cpu"]}}
+        attempt = {"attempt": 1, "execution": execution, "experiment_key": key}
+        coupling["iterations"] = [{"units": {"reactor": {"attempts": [attempt]}}}]
+    archive = _archive((first, second), digest)
+    for name in [name for name in archive if "/attempts/" in name]:
+        attempt = json.loads(archive[name])
+        attempt["execution"]["fingerprint"] = {"cpu_model": host["cpu"]}
+        archive[name] = json.dumps(attempt)
+    documents[".experiments.json"] = archive
+    return documents
+
+
+def _host_leaf_count(documents: dict[str, Any]) -> int:
+    """The test's own count of the re-take's host leaves: the paths of `HOST_PATH` in the coupling
+    records and the archived attempts, and the sidecar's three keys."""
+
+    def paths(node: Any, path: str) -> Iterator[str]:
+        if isinstance(node, dict):
+            for key, value in node.items():
+                yield from paths(value, f"{path}.{key}")
+        elif isinstance(node, list):
+            for index, value in enumerate(node):
+                yield from paths(value, f"{path}[{index}]")
+        else:
+            yield path
+
+    found = 0
+    for suffix, document in documents.items():
+        if suffix.startswith(".coupling/"):
+            found += sum(1 for path in paths(document, "") if HOST_PATH.fullmatch(path))
+    for text in documents[".experiments.json"].values():
+        found += sum(1 for path in paths(json.loads(text), "") if HOST_PATH.fullmatch(path))
+    return found + len(NEW_HOST)
+
+
+def _run_host_real(
+    tmp_path: Path,
+    retake: dict[str, Any],
+    *,
+    committed: dict[str, Any] | None = None,
+    old_host: str | None = OLD_HOST["machine"],
+) -> tuple[bool, list[str]]:
+    committed = _host_real(K1, K2, moved=False) if committed is None else committed
+    return _run_host(
+        tmp_path,
+        MOVED,
+        committed=committed,
+        retake=retake,
+        old_host=old_host,
+        old_platform=OLD_PLATFORM,
+    )
+
+
+def test_hm10_a_real_like_pair_moved_to_the_running_host_passes(
+    tmp_path: Path, running_hm: Callable[..., None]
+) -> None:
+    retake = _host_real(K3, K4, moved=True)
+    passed, lines = _run_host_real(tmp_path, retake)
+    assert passed, lines
+    # Four leaves per coupling record (three in the fingerprint, one attempt), one per archived
+    # attempt, and the sidecar's three.
+    count = _host_leaf_count(retake)
+    assert count == 4 * len(COUPLINGS) + 2 + 3
+    assert lines[0].endswith(f" platform={len(COUPLINGS)} other=0 environment=host host={count}"), (
+        lines[0]
+    )
+
+
+def test_hm11_without_old_host_the_real_like_pair_fails_naming_the_leaves(
+    tmp_path: Path, running_hm: Callable[..., None]
+) -> None:
+    passed, lines = _run_host_real(tmp_path, _host_real(K3, K4, moved=True), old_host=None)
+    assert not passed
+    assert "environment=differs" in lines[0] and " host=" not in lines[0]
+    assert int(lines[0].split(" other=")[1].split()[0]) > 0
+    for leaf in ("cpu_model", "cpu_flags_sha256", "env_allowlist.NUMBA_CACHE_DIR"):
+        assert any(f".frozen.reactor.fingerprint.{leaf}: " in line for line in lines), leaf
+
+
+def test_hm12_another_environment_directory_fails(
+    tmp_path: Path, running_hm: Callable[..., None]
+) -> None:
+    def other_lock(fingerprint: dict[str, Any]) -> None:
+        directory = f"{NEW_ROOT}/pymrm-0000000-hm1200000000/numba-cache"
+        fingerprint["env_allowlist"]["NUMBA_CACHE_DIR"] = directory
+
+    passed, lines = _run_host_real(tmp_path, _host_real(K3, K4, moved=True, change=other_lock))
+    assert not passed
+    assert any("NUMBA_CACHE_DIR" in x and "not the same environment directory" in x for x in lines)
+
+
+def _one_archived_attempt(documents: dict[str, Any], key: str, cpu: str) -> None:
+    name = f"{key[:2]}/{key}/attempts/1.json"
+    attempt = json.loads(documents[".experiments.json"][name])
+    attempt["execution"]["fingerprint"]["cpu_model"] = cpu
+    documents[".experiments.json"][name] = json.dumps(attempt)
+
+
+def test_hm13_an_archived_attempt_on_another_cpu_fails(
+    tmp_path: Path, running_hm: Callable[..., None]
+) -> None:
+    retake = _host_real(K3, K4, moved=True)
+    _one_archived_attempt(retake, K3, "cpu-hm13")
+    passed, lines = _run_host_real(tmp_path / "retake", retake)
+    assert not passed
+    attempt = f"  experiments {K1[:2]}/{K1}/attempts/1.json.execution.fingerprint.cpu_model: "
+    assert f"{attempt}re-take 'cpu-hm13' is not the running 'cpu-hm02'" in lines
+
+    committed = _host_real(K1, K2, moved=False)
+    _one_archived_attempt(committed, K2, "cpu-hm13")
+    passed, lines = _run_host_real(tmp_path / "committed", retake, committed=committed)
+    assert not passed
+    attempt = f"  experiments {K2[:2]}/{K2}/attempts/1.json.execution.fingerprint.cpu_model: "
+    assert f"{attempt}committed 'cpu-hm13' is not the committed reactor cpu_model" in lines
+
+
+def _set(path: str, value: Any) -> Callable[[dict[str, Any]], None]:
+    def change(fingerprint: dict[str, Any]) -> None:
+        *parents, leaf = path.split(".")
+        node = fingerprint
+        for parent in parents:
+            node = node[parent]
+        node[leaf] = value
+
+    return change
+
+
+@pytest.mark.parametrize(
+    ("path", "value"),
+    [
+        ("lock_sha256", "7" * 64),
+        ("python", "3.13.6"),
+        ("packages.numpy", "2.2.5"),
+        ("thread_env.OMP_NUM_THREADS", "2"),
+    ],
+)
+def test_hm14_another_fingerprint_leaf_moving_with_the_host_is_other(
+    tmp_path: Path, running_hm: Callable[..., None], path: str, value: Any
+) -> None:
+    retake = _host_real(K3, K4, moved=True, change=_set(path, value))
+    passed, lines = _run_host_real(tmp_path, retake)
+    assert not passed
+    assert f" other={len(COUPLINGS)} " in lines[0]
+    assert all(
+        any(f"coupling {name}.json.frozen.reactor.fingerprint.{path}: " in x for x in lines)
+        for name in COUPLINGS
+    )
+
+
+def test_hm15_cpu_flags_moved_with_the_fingerprint_digest_kept_fails(
+    tmp_path: Path, running_hm: Callable[..., None]
+) -> None:
+    retake = _host_real(K3, K4, moved=True, change=_set("cpu_flags_sha256", OLD_FLAGS))
+    for name in COUPLINGS:
+        retake[f".coupling/{name}.json"]["frozen"]["reactor"]["fingerprint"]["cpu_flags_sha256"] = (
+            NEW_FLAGS
+        )
+    passed, lines = _run_host_real(tmp_path, retake)
+    assert not passed
+    assert any(
+        "frozen.reactor.fingerprint_sha256" in x and "is not document_sha256" in x for x in lines
+    )
+
+
+def test_hm16_one_archived_result_moved_by_one_ulp_fails_naming_it(
+    tmp_path: Path, running_hm: Callable[..., None]
+) -> None:
+    retake = _host_real(K3, K4, moved=True)
+    name = f"{K3[:2]}/{K3}/result.json"
+    retake[".experiments.json"][name] = json.dumps({"value": math.nextafter(0.25, math.inf)})
+    passed, lines = _run_host_real(tmp_path, retake)
+    assert not passed
+    assert "other=1 " in lines[0]
+    assert [x for x in lines if x.startswith(f"  experiments {K1[:2]}/{K1}/result.json.value: ")]
+
+
+def test_hm17_the_cpu_model_outside_the_registered_leaves_is_other(
+    tmp_path: Path, running_hm: Callable[..., None]
+) -> None:
+    committed, retake = _host_real(K1, K2, moved=False), _host_real(K3, K4, moved=True)
+    committed[".json"]["runs"][0]["cpu"] = OLD_HOST["cpu"]
+    retake[".json"]["runs"][0]["cpu"] = NEW_HOST["cpu"]
+    passed, lines = _run_host_real(tmp_path, retake, committed=committed)
+    assert not passed
+    assert "other=1 " in lines[0]
+    assert "  record.runs[0].cpu: 'cpu-hm-committed' vs 'cpu-hm02'" in lines
