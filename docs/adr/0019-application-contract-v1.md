@@ -240,9 +240,11 @@ Amendment 7 is decided in ADR 0060 D11 (F1-WO4a); this paragraph points at it. A
   not the project. All four transports (`GET /v1/capabilities`, `POST /v1/admission/check`; MCP tools of the same
   names; CLI `api`, plus `openflowsheet capabilities` and `openflowsheet admission`). Their rows follow `explain`.
 - **Refusals, existing codes only.** `invalid_request` (the schema; a cursor this list did not issue; a pair whose unit
-  requires no single definition, pointer `/pair/definition`), `not_found` (an unknown id or version, `detail {kind,
-  id, version?, suggestions}`), `unsupported` (the draft form until F1-WO4b). D5's `ApiError` and `API_EXIT_CODES` are
-  unchanged. The registry's own codes (`capability_missing`, the quarantine reasons, the notices) travel inside the
+  requires no single definition, pointer `/pair/definition`; a member the draft form cannot read, pointer
+  `/revision/<pointer>`), `not_found` (an unknown id or version, `detail {kind, id, version?, suggestions}`; in the
+  draft form an unregistered model id refuses the whole report, with `pointer` `/revision/instances/<i>/model/id`),
+  `revision_unsupported` (the draft form: a schema_version other than 1; a component set that selects no method, with
+  `detail.unbound`). D5's `ApiError` and `API_EXIT_CODES` are unchanged. The registry's own codes (`capability_missing`, the quarantine reasons, the notices) travel inside the
   result as `{code, params}`, each a catalogue entry.
 - **Schemas.** `application-results.schema.json` gains `capability_page`, `capability_descriptor` and
   `admission_report`; no existing `$def` changes.

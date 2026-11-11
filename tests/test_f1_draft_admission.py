@@ -307,3 +307,15 @@ def test_the_cli_convenience_prints_the_operations_document(tmp_path: Path) -> N
     with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
         code = main(["admission", "--revision", str(path)])
     assert code == API_EXIT_CODES["revision_unsupported"]
+
+
+def test_adr_0019_amendment_7_names_the_draft_forms_refusals() -> None:
+    """F1 review SF-7: Amendment 7's refusal list is the one the draft form gives (the three codes
+    the tests above pin), and no longer names `unsupported` for it."""
+    adr = (REPO_ROOT / "docs/adr/0019-application-contract-v1.md").read_text(encoding="utf-8")
+    amendment = adr.split("## Amendment 7 ", 1)[1].split("\n## ", 1)[0]
+    (refusals,) = [part for part in amendment.split("\n- ") if part.startswith("**Refusals")]
+    for code in ("invalid_request", "not_found", "revision_unsupported"):
+        assert f"`{code}`" in refusals, code
+    assert "`unsupported`" not in refusals
+    assert "/revision/instances/<i>/model/id" in refusals
