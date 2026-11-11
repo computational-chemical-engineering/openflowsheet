@@ -67,9 +67,10 @@ function, a registered digest and Frank's carry extended to name it):
   judges both texts in their pre-X04 form (`texts_before_links`).
 - c_9, R-1030 (ADR 0060 D11, ADR 0019 Amendment 7): F1's two tools, `list_capabilities` and
   `check_admission`, stripped by `tests/f1_schema_support.py`'s `without_f1`; `D_9` =
-  `e59f3d22…`, measured at F1-WO4a on `wp/F1` (`tests/test_t08_w2_surface_digest.py`'s
-  `F1_SERVED_SHA256`; re-taken if the design lane's review edits the two texts). F1 changed no
-  existing text; its two files are pinned at their own hashes (`F1_FILE_SHA256`).
+  `24966bee…`, re-taken at F1-WO4b on `wp/F1` when the draft form changed `check_admission.md`
+  (`e59f3d22…` at F1-WO4a; `tests/test_t08_w2_surface_digest.py`'s `F1_SERVED_SHA256`; re-taken
+  if the design lane's review edits the two texts). F1 changed no existing text; its two files
+  are pinned at their own hashes (`F1_FILE_SHA256`).
 
 The released 0.2.0a1 ran the two-link chain (its committed record at `C_α²`); a re-run of the
 alpha's step 8 uses this script at the tag.
@@ -144,7 +145,7 @@ ST_FILE_SHA256: Final = {
 #: c_9 (R-1030, ADR 0060 D11): the two tools F1 added, their files pinned as ST's is. Their reviews
 #: (design lane; Frank's) are pending in `REVIEW.json`.
 F1_FILE_SHA256: Final = {
-    "check_admission": "1033c6c881b2eacfafab9093ced99712039f9c152745b91cc217e5bc63d30ddc",
+    "check_admission": "ec6b3349d305688baa4e70d9ef2d21e960e16cfedf04689e30f99f32d32a34fb",
     "list_capabilities": "dfe5fcb59d9c83fe4b1d977801a027915685634c261098658a89f25a65a574a2",
 }
 #: The two changed files as R-133 carried them: their reviewed hashes in `REVIEW.json` as v0.1.0
@@ -330,7 +331,7 @@ LINKS: Final = (
         "c_9",
         "R-1030",
         strip_f1,
-        "e59f3d22aef5fa8106d87ca64a01b33cff433ea33a78e6aa2cd959532d053ee3",
+        "24966bee7d0e06a55dddade7a8da3f89167c1575288f51248eb0844f4a9d7dbe",
     ),
 )
 

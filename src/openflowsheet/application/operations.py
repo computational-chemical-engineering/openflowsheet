@@ -216,7 +216,8 @@ LIST_CAPABILITIES_REQUEST: Final = _object(
     },
 )
 #: ADR 0060 D11: `check_admission`, exactly one of the pair form and the draft form (a revision
-#: document, which F1-WO4b's check reads; this schema asks only for an object).
+#: document, whose members `capabilities.admission_report` reads; this schema asks only for an
+#: object).
 CHECK_ADMISSION_REQUEST: Final = {
     **_object(
         {},

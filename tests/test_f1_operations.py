@@ -9,6 +9,8 @@
   `tests/test_m07a_surface_chain.py`; the R4-G3 snapshots of the existing operations are
   `tests/test_t07_w5e_application_results.py` (`SNAPSHOT_F1` holds only the two new rows).
 - D11's paging, filters, defaults and refusals, on the process registry.
+- F1-WO4b: three draft-form requests (`DRAFT_REQUESTS`) give one document on every transport too;
+  E-F1-11 and the draft form's own checks are `tests/test_f1_draft_admission.py`.
 """
 
 from __future__ import annotations
@@ -21,6 +23,7 @@ from pathlib import Path
 from typing import Any
 
 import pytest
+from t07_corpus import CORPUS
 from t07_transport_support import (
     CliClient,
     Client,
@@ -55,6 +58,21 @@ LIST_REQUESTS: tuple[dict[str, Any], ...] = (
     {"cursor": "not-a-cursor"},
 )
 ADMISSION_REQUESTS: tuple[dict[str, Any], ...] = (ADMITTED, REFUSED, UNKNOWN)
+
+
+def _draft(model: str | None = None, schema_version: int = 1) -> dict[str, Any]:
+    revision = CORPUS["SYN-001-T06-NET02"]()
+    if model is not None:
+        revision["instances"][0]["model"]["id"] = model
+    return {"revision": {**revision, "schema_version": schema_version}}
+
+
+#: F1-WO4b: the draft form's three: admitted, one instance refused, a schema_version 2 revision.
+DRAFT_REQUESTS: tuple[dict[str, Any], ...] = (
+    _draft(),
+    _draft("thermal.heater"),
+    _draft(schema_version=2),
+)
 #: ADR 0060's code table, and WO3's `factory_unavailable` (W3-10).
 F1_CODES = {
     "capability_missing": "refusal",
@@ -122,12 +140,13 @@ def outcomes(tmp_path_factory: pytest.TempPathFactory) -> Outcomes:
             "mcp": McpClient(projects["mcp"], granted["mcp"][0]),
         }
         try:
-            for name, requests in (
-                ("list_capabilities", LIST_REQUESTS),
-                ("check_admission", ADMISSION_REQUESTS),
+            for key, name, requests in (
+                ("list_capabilities", "list_capabilities", LIST_REQUESTS),
+                ("check_admission", "check_admission", ADMISSION_REQUESTS),
+                ("check_admission (draft)", "check_admission", DRAFT_REQUESTS),
             ):
                 for index, request in enumerate(requests):
-                    found[(name, index)] = {
+                    found[(key, index)] = {
                         transport: client.call(name, request)
                         for transport, client in clients.items()
                     }
@@ -137,7 +156,9 @@ def outcomes(tmp_path_factory: pytest.TempPathFactory) -> Outcomes:
     return found
 
 
-@pytest.mark.parametrize("name", ["list_capabilities", "check_admission"])
+@pytest.mark.parametrize(
+    "name", ["list_capabilities", "check_admission", "check_admission (draft)"]
+)
 def test_e_f1_10_three_requests_give_one_document_on_every_transport(
     outcomes: Outcomes, name: str
 ) -> None:
@@ -321,9 +342,16 @@ def test_an_unknown_id_or_version_is_not_found_with_suggestions(
     assert document["detail"]["explanation"]["summary"].endswith("is registered.")
 
 
-def test_the_draft_form_is_refused_unsupported_until_wo4b() -> None:
+def test_the_draft_form_reads_a_revision() -> None:
+    """WO4b: the draft form's verdicts (WO4a refused it `unsupported`)."""
+    _, admitted = _dispatch(DRAFT_REQUESTS[0], "check_admission")
+    assert admitted["admitted"] is True
+    assert [pair["instance"] for pair in admitted["pairs"]] == [
+        entry["id"] for entry in DRAFT_REQUESTS[0]["revision"]["instances"]
+    ]
     refused, document = _dispatch({"revision": {"title": "t"}}, "check_admission")
-    assert refused and document["code"] == "unsupported"
+    assert refused and document["code"] == "invalid_request"
+    assert document["detail"]["pointer"] == "/revision/schema_version"
 
 
 @pytest.mark.parametrize(

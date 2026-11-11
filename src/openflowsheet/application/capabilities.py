@@ -14,8 +14,18 @@ stays valid whatever was registered since, and a page never repeats an item.
 versions defaulting to the highest registered. The definition defaults to the unit's one `conn:`
 requirement when it names exactly one. An unknown id or version is `not_found` with
 `detail {kind, id, version?, suggestions}`. Admission is a query, not a use: nothing is recorded
-in the usage record (F1 decision W3-11). The draft form (a revision document) is F1-WO4b's; until
-then it is refused `unsupported`.
+in the usage record (F1 decision W3-11).
+
+The draft form (F1-WO4b) takes a schema_version 1 revision: one pair per unit instance, in
+document order, (the instance's model id, the provider id `component_basis(document)` selects,
+`nTP-v1`), each at the highest registered versions (the revision's `model.version` is not a
+registry version and is not read; F1 decision W4b-2); `admitted` is their conjunction. It reads
+`schema_version`, the component set and the instances' ids and model ids, nothing else:
+admission does not validate a revision (D5; W4b-1). A later `schema_version` is
+`revision_unsupported` (ADR-F2's validator reads v2). `components_unsupported` from the basis
+selection is `revision_unsupported` with the binder's refusal as `unbound` (`<kind>(<code>)`, as
+a solve's) and its `hint`. A model id no unit model is registered under is `not_found` with
+`detail.suggestions`, as in the pair form (W4b-3).
 """
 
 from __future__ import annotations
@@ -36,9 +46,10 @@ from openflowsheet.application.types import (
 )
 from openflowsheet.canonical import canonical_json
 from openflowsheet.messages.render import closest
+from openflowsheet.models.revision_flowsheet import RevisionError, component_basis
 from openflowsheet.registry import Registered, Registry
-from openflowsheet.registry.capability import admit
 from openflowsheet.registry.descriptor import sort_key
+from openflowsheet.registry.legacy import CONNECTION_DEFINITION
 from openflowsheet.registry.tokens import Coded, parse
 
 #: D11: a page's default and largest size.
@@ -153,7 +164,9 @@ def default_definition(unit: Registered) -> str | None:
     return names.pop() if len(names) == 1 else None
 
 
-def _pair(registry: Registry, pair: Mapping[str, Any]) -> tuple[AdmissionPair, tuple[Coded, ...]]:
+def _pair(
+    registry: Registry, pair: Mapping[str, Any], instance: str | None = None
+) -> tuple[AdmissionPair, tuple[Coded, ...]]:
     unit = _registered(registry, "unit_model", pair["unit"], pair.get("unit_version"))
     method = _registered(registry, "property_method", pair["method"], pair.get("method_version"))
     definition_id = pair.get("definition")
@@ -167,9 +180,15 @@ def _pair(registry: Registry, pair: Mapping[str, Any]) -> tuple[AdmissionPair, t
                 pointer="/pair/definition",
             )
     definition = _registered(registry, "connection_definition", definition_id, None)
-    admission = admit(unit, method, definition)
+    admission = registry.admit(
+        unit.id,
+        method.id,
+        definition.id,
+        unit_version=unit.version,
+        method_version=method.version,
+    )
     verdict = AdmissionPair(
-        instance=None,
+        instance=instance,
         unit=unit.id,
         unit_version=unit.version,
         method=method.id,
@@ -180,6 +199,52 @@ def _pair(registry: Registry, pair: Mapping[str, Any]) -> tuple[AdmissionPair, t
         notices=tuple(notice.as_document() for notice in admission.notices),
     )
     return verdict, admission.notices
+
+
+def _invalid(pointer: str, message: str) -> Exception:
+    return api_error("invalid_request", message, pointer=f"/revision{pointer}")
+
+
+def _draft_pairs(revision: Mapping[str, Any]) -> tuple[str, list[tuple[str, str]]]:
+    """D11's draft form: the provider id the revision's component set selects, and its
+    (instance id, model id) pairs in document order. Reads `schema_version`, `component_set` and
+    each instance's `id` and `model.id`, and nothing else (F1 decision W4b-1)."""
+    version = revision.get("schema_version")
+    if not isinstance(version, int) or isinstance(version, bool):
+        raise _invalid("/schema_version", "a revision states its schema_version, an integer")
+    if version != 1:
+        raise api_error(
+            "revision_unsupported",
+            f"check_admission reads a schema_version 1 revision in this build, not {version}",
+        )
+    if not isinstance(revision.get("component_set", {}), Mapping):
+        raise _invalid("/component_set", "component_set is an object")
+    instances = revision.get("instances")
+    if not isinstance(instances, Sequence) or isinstance(instances, str) or not instances:
+        raise _invalid("/instances", "instances is a non-empty array of unit instances")
+    found: list[tuple[str, str]] = []
+    for index, instance in enumerate(instances):
+        where = f"/instances/{index}"
+        if not isinstance(instance, Mapping):
+            raise _invalid(where, "a unit instance is an object")
+        identifier = instance.get("id")
+        if not isinstance(identifier, str) or not identifier:
+            raise _invalid(f"{where}/id", "a unit instance has an id, a non-empty string")
+        model = instance.get("model")
+        model_id = model.get("id") if isinstance(model, Mapping) else None
+        if not isinstance(model_id, str) or not model_id:
+            raise _invalid(f"{where}/model/id", "a unit instance names its model by id")
+        found.append((identifier, model_id))
+    try:
+        method = component_basis(revision).provider_id
+    except RevisionError as error:
+        raise api_error(
+            "revision_unsupported",
+            "the revision's component set selects no property method",
+            unbound=f"{error.kind}({error.code})",
+            hint=error.hint,
+        ) from error
+    return method, found
 
 
 def _union(notices: Sequence[tuple[Coded, ...]]) -> tuple[Mapping[str, Any], ...]:
@@ -195,15 +260,23 @@ def admission_report(
     pair: Mapping[str, Any] | None = None,
     revision: Mapping[str, Any] | None = None,
 ) -> AdmissionReport:
-    """D11 `check_admission`. The pair form: one pair's verdict. The draft form (`revision`) is
-    refused `unsupported` until F1-WO4b."""
-    if revision is not None or pair is None:
-        raise api_error(
-            "unsupported",
-            "check_admission on a revision document is not available in this build; send a "
-            "pair {unit, method, definition}",
-        )
-    verdicts = [_pair(registry, pair)]
+    """D11 `check_admission`. The pair form: one pair's verdict. The draft form (`revision`, a
+    schema_version 1 document): one verdict per unit instance, `admitted` their conjunction."""
+    if (pair is None) == (revision is None):
+        raise api_error("invalid_request", "send exactly one of pair and revision")
+    if revision is not None:
+        method, instances = _draft_pairs(revision)
+        verdicts = [
+            _pair(
+                registry,
+                {"unit": model, "method": method, "definition": CONNECTION_DEFINITION},
+                instance,
+            )
+            for instance, model in instances
+        ]
+    else:
+        assert pair is not None
+        verdicts = [_pair(registry, pair)]
     pairs = tuple(verdict for verdict, _ in verdicts)
     return AdmissionReport(
         registry_sha256=registry.registry_sha256,

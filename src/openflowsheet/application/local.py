@@ -1786,8 +1786,9 @@ class LocalApplication:
         """ADR 0060 D11 (ADR 0019 Amendment 7): D5's verdict on a (unit, method, definition)
         pair of the process registry, versions defaulting to the highest registered and the
         definition to the unit's one `conn:` requirement. `read`; it reads the registry, not the
-        project. An unknown id is `not_found` with `detail.suggestions`; the draft form
-        (`revision`) is refused `unsupported` until F1-WO4b."""
+        project. An unknown id is `not_found` with `detail.suggestions`. The draft form
+        (`revision`, a schema_version 1 document) takes one pair per unit instance on the
+        property method its component set selects and `nTP-v1`."""
         name = "check_admission"
         self._authorize(name)
         try:
