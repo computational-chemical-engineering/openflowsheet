@@ -1,0 +1,218 @@
+{
+  "legacy": [
+    {
+      "descriptor_format": "openflowsheet-extension-v1",
+      "kind": "connection_definition",
+      "id": "nTP-v1",
+      "version": "1.0.0",
+      "title": "nTP-v1",
+      "status": "released",
+      "requires": [],
+      "provides": [
+        "conn:nTP-v1"
+      ],
+      "limitations": [],
+      "platforms": [
+        "any"
+      ],
+      "pip_extra": null,
+      "data_rights": null,
+      "implementation": {
+        "modules": [],
+        "factory": null
+      },
+      "payload": {
+        "legacy": true,
+        "state_definition": "nTP-v1"
+      }
+    },
+    {
+      "descriptor_format": "openflowsheet-extension-v1",
+      "kind": "property_method",
+      "id": "syn001",
+      "version": "1.0.0",
+      "title": "syn001",
+      "status": "released",
+      "requires": [],
+      "provides": [
+        "legacy:syn001",
+        "conn:nTP-v1"
+      ],
+      "limitations": [],
+      "platforms": [
+        "any"
+      ],
+      "pip_extra": null,
+      "data_rights": null,
+      "implementation": {
+        "modules": [
+          "synth_ext/kernel.py"
+        ],
+        "factory": null
+      },
+      "payload": {}
+    },
+    {
+      "descriptor_format": "openflowsheet-extension-v1",
+      "kind": "property_method",
+      "id": "wilson-ig-v2",
+      "version": "1.0.0",
+      "title": "wilson-ig-v2",
+      "status": "released",
+      "requires": [],
+      "provides": [
+        "conn:nTP-v1",
+        "legacy:wilson-ig-v2:0"
+      ],
+      "limitations": [],
+      "platforms": [
+        "any"
+      ],
+      "pip_extra": null,
+      "data_rights": null,
+      "implementation": {
+        "modules": [
+          "synth_ext/data.json",
+          "synth_ext/kernel.py"
+        ],
+        "factory": null
+      },
+      "payload": {}
+    },
+    {
+      "descriptor_format": "openflowsheet-extension-v1",
+      "kind": "unit_model",
+      "id": "syn001.pump",
+      "version": "1.0.0",
+      "title": "syn001.pump",
+      "status": "released",
+      "requires": [
+        [
+          "legacy:syn001"
+        ],
+        [
+          "conn:nTP-v1"
+        ]
+      ],
+      "provides": [],
+      "limitations": [],
+      "platforms": [
+        "any"
+      ],
+      "pip_extra": null,
+      "data_rights": null,
+      "implementation": {
+        "modules": [
+          "synth_ext/__init__.py"
+        ],
+        "factory": null
+      },
+      "payload": {
+        "bindable": true
+      }
+    },
+    {
+      "descriptor_format": "openflowsheet-extension-v1",
+      "kind": "unit_model",
+      "id": "syn001.flash",
+      "version": "1.0.0",
+      "title": "syn001.flash",
+      "status": "released",
+      "requires": [
+        [
+          "conn:nTP-v1"
+        ],
+        [
+          "legacy:wilson-ig-v2",
+          "legacy:syn001"
+        ]
+      ],
+      "provides": [],
+      "limitations": [],
+      "platforms": [
+        "any"
+      ],
+      "pip_extra": null,
+      "data_rights": null,
+      "implementation": {
+        "modules": [
+          "synth_ext/__init__.py",
+          "synth_ext/kernel.py"
+        ],
+        "factory": null
+      },
+      "payload": {
+        "bindable": true
+      }
+    },
+    {
+      "descriptor_format": "openflowsheet-extension-v1",
+      "kind": "unit_model",
+      "id": "syn001.cascade",
+      "version": "1.0.0",
+      "title": "syn001.cascade",
+      "status": "released",
+      "requires": [],
+      "provides": [],
+      "limitations": [],
+      "platforms": [
+        "any"
+      ],
+      "pip_extra": null,
+      "data_rights": null,
+      "implementation": {
+        "modules": [],
+        "factory": null
+      },
+      "payload": {
+        "bindable": false
+      }
+    }
+  ],
+  "core": [
+    {
+      "descriptor_format": "openflowsheet-extension-v1",
+      "kind": "functional_contributor",
+      "id": "cost",
+      "version": "1.0.0",
+      "title": "cost",
+      "status": "released",
+      "requires": [],
+      "provides": [],
+      "limitations": [],
+      "platforms": [
+        "any"
+      ],
+      "pip_extra": null,
+      "data_rights": null,
+      "implementation": {
+        "modules": [],
+        "factory": null
+      },
+      "payload": {}
+    },
+    {
+      "descriptor_format": "openflowsheet-extension-v1",
+      "kind": "phase_family",
+      "id": "std.L",
+      "version": "1.0.0",
+      "title": "std.L",
+      "status": "tested",
+      "requires": [],
+      "provides": [
+        "phase:std.L"
+      ],
+      "limitations": [],
+      "platforms": [
+        "any"
+      ],
+      "pip_extra": null,
+      "data_rights": null,
+      "implementation": {
+        "modules": [],
+        "factory": null
+      },
+      "payload": {}
+    }
+  ]
+}
