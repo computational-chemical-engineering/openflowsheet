@@ -20,6 +20,10 @@ M05 adds no product-level replay or compare (R-253, R-271).
 
 The record file's own sha256 is a provenance digest; it is never compared between runs.
 
+`host_identity()`: the running host's three host-identity values of an M05 environment sidecar
+(R-1020), read by the writer (`m05_wo8_runs.environment_fingerprint`) and by the re-take proof
+(`scripts/m05_retake_diff.py --old-host`) through this one function.
+
 **REAL's replay from the record** (WO-9, F-20, build log S68): the study is re-run over its
 restored experiment store, so every reactor request is served from the record and the counts a
 store hit changes differ by design.
@@ -40,6 +44,8 @@ store hit changes differ by design.
 from __future__ import annotations
 
 import hashlib
+import os
+import platform
 import re
 from collections.abc import Iterator, Mapping
 from functools import cache
@@ -59,6 +65,22 @@ DIGEST_PATHS: Final = (
     re.compile(r"\.artifacts\.coupled_runs\[\d+\]\.sha256"),
 )
 HEX64: Final = re.compile(r"[0-9a-f]{64}")
+
+
+def _cpu_model() -> str | None:
+    try:
+        lines = Path("/proc/cpuinfo").read_text(encoding="utf-8").splitlines()
+    except OSError:
+        return None
+    models = (line.split(":", 1)[1].strip() for line in lines if line.startswith("model name"))
+    return next(models, None)
+
+
+def host_identity() -> dict[str, Any]:
+    """R-1020: the sidecar's host-identity members, in the writer's order: the host name
+    (`platform.node()`), the first `model name` of `/proc/cpuinfo` (None without one) and
+    `os.cpu_count()`."""
+    return {"machine": platform.node(), "cpu": _cpu_model(), "cpu_count": os.cpu_count()}
 
 
 def _excluded(path: Path, table: str) -> tuple[re.Pattern[str], ...]:

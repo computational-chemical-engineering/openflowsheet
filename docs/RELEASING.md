@@ -181,7 +181,7 @@ refused as not covered until M07 registers the 0.2.0 gate set.
 that sorts after the tagged version, and returns the envelope to its working form
 (`v0.2-envelope-dev`, `release: 0.2.0.dev0`, R-193). After `0.2.0a1`, `main` carries
 `0.2.0a2.dev0`; `0.2.0.dev0` would sort before the release it follows. After `0.2.0`, `main` carries
-`0.3.0.dev0` (C7), with the envelope again in its working form; after `0.3.0`, `0.4.0.dev0` (V03 WO-9). The working form's id and label are a fixed token for `main`'s
+`0.3.0.dev0` (C7), with the envelope again in its working form; after `0.3.0`, `0.4.0.dev0` (V03 WO-9); after `0.4.0`, `0.5.0.dev0` (release procedure §7.4). The working form's id and label are a fixed token for `main`'s
 unreleased working envelope, not "v0.2 under development"; the token stays across releases (V03 spec §5.3, R-563):
 each release adds only its own two pin pairs. The version is set in
 `pyproject.toml`, `src/openflowsheet/__init__.py`, the two `project_summary` fixtures and
@@ -199,6 +199,11 @@ At every cut, M05's REAL record and M01's IDAES conformance record are also re-t
 RC host and committed in J, each proved by its tool, because both bind the host's platform string,
 the kernel release included (RP §7.1, R-1008). A kernel upgrade between J and the RC's steps 11, 14
 and 15 means a new J and a new C.
+When the RC host moves to another machine, the same re-takes carry the records across. Their proofs
+name the committed host (`--old-host`) and admit only R-1020's host-identity leaves: the host name,
+the CPU model, the CPU count, the CPU flags, the platform string and the pinned environment's
+directory. Every number must stay bitwise equal. The new host must first be a member of T06's
+`ref-x86-64` (RP (P6)).
 
 ## Post-releases
 

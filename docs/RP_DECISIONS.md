@@ -642,3 +642,250 @@ TRS2 rebooted; the session on SMM-TR09 finished from `344da73c`. Frank's go on t
   MANIFEST.in README.md LICENSE NOTICE`.
 - Next: push `wp/REL040`, CI on both architectures, merge into `main` (F0, ruff, targeted tests), then the release
   workflow dry run and, on green, the real dispatch (Frank's `auto`). The PyPI approval is Frank's.
+
+## 0.4.0 after the tag (V04-after, SMM-TR09)
+
+RP §7.4 and §17.5 (R-1009, F-4, F-5) on `wp/V04-after`, from `main` = `b6cdf552` (the commit tagged `v0.4.0`), in the
+pattern of 0.3.0's WO-9 (`1b4263a6`, `94c9f217`, `bbdbd8b5`, `712f0c59`, merge `cde1a3c2`). Main checkout's `.venv`
+with `PYTHONPATH=src`; the nlp env `.venv-nlp` built on this host. Not pushed, not merged.
+
+- **`b618f2fe`: 0.5.0.dev0 and the working envelope.** Version `0.5.0.dev0` in RP §7.1's set (`pyproject.toml`,
+  `__init__.py`, the two `project_summary` fixtures, `test_m06_w27_coverage.py`); `RELEASED` gains `"0.4.0":
+  b6cdf552…` (`git rev-list -n1 v0.4.0`), read by `test_readme_current.py` too. README's status already names 0.4.0,
+  the newest release, which is what a `.devN` version requires; unchanged. Envelope `v0.2-envelope-dev` /
+  `0.2.0.dev0` and `ENVELOPE_ID` (the header's 0.4.0 line already named the return); `t08_support_matrix.py --emit`,
+  `--check` 0 problems. RELEASING "After a tag" names 0.5.0.dev0. A10's pairs unchanged (R-563's token). Tests
+  reading the version and the envelope: 1306 passed, 5 skipped (registered conditions).
+- **The G10 re-take (R-458): taken and proved here, not committed. OPEN (stop).** Clean tree: `git worktree add
+  --detach .claude/worktrees/v04-after-retake b618f2fe`, `git status --porcelain --ignored` 0 lines (02:22:41 +01:00),
+  removed afterwards. E6/K's recipe (`run_case` + `write_files`, REL040's `g10_case.py`) per case into the session
+  scratch, `env -i`, `OMP_NUM_THREADS=1`, `PYOMO_CONFIG_DIR=<nlp>/share/pyomo`, `PYTHONNOUSERSITE=1`,
+  `PYTHONPATH=src:<nlp-test-tools>` (the tools installed from `benchmarks/m03/nlp-test.lock` with `--require-hashes`
+  into the scratch). Each case exit 0 in 5–7 s; every record `run_commit` `b618f2fe…`, `tree_clean` true.
+  `scripts/m05_retake_diff.py --digest-only --old-version 0.4.0` against the committed records:
+  - `RETAKE-DIGEST-ONLY FAIL trust-region-study-tr-e2: changed-digests=41 digest=146 timing=20 path=0 version=4 platform=0 other=0 environment=differs`
+  - `RETAKE-DIGEST-ONLY FAIL trust-region-study-tr-e2-far: changed-digests=79 digest=320 timing=35 path=0 version=7 platform=0 other=0 environment=differs`
+  - `RETAKE-DIGEST-ONLY FAIL trust-region-study-tr-e2-fd: changed-digests=70 digest=215 timing=20 path=0 version=4 platform=0 other=0 environment=differs`
+  - `RETAKE-DIGEST-ONLY FAIL trust-region-study-loop-r: changed-digests=91 digest=285 timing=26 path=0 version=3 platform=0 other=0 environment=differs`
+  - `RETAKE-DIGEST-ONLY FAIL trust-region-study-loop-s: changed-digests=37 digest=124 timing=20 path=0 version=4 platform=0 other=0 environment=differs`
+
+  Each with the one reason `environment: differs outside distributions_sha256 (['cpu', 'cpu_count', 'machine'])`:
+  the committed records were taken on SMM-TRS2 (`AMD Ryzen Threadripper PRO 5965WX`, 48), this host is SMM-TR09
+  (`2950X`, 16). The distribution list reproduces the committed hash once the nlp-test-tools are on the path (a
+  first run without them also differed in `distributions`). The record, ledger, coupling and store counts equal
+  0.3.0's and 0.4.0's exactly, `other=0`. G10 is a same-machine criterion (`m05_wo8_runs.environment_fingerprint`
+  holds `platform.node()`), and RP §7.1 replaces committed files only after `PASS`, so nothing was copied. At
+  `b618f2fe` with the 0.4.0 records: the default-tier record tests 493 passed, 22 deselected; AM-23 (`-m nlp
+  tests/test_m05_g10_replay.py`, `.venv-nlp`) 5 failed, as expected before a re-take (the version moves the
+  fingerprint; G10's environment would also differ here). The REAL replay (`bbdbd8b5`'s check) was not run: the REAL
+  record replays only on its platform (RP §7.1).
+  To finish on SMM-TRS2 (the RC host): a new clean detached worktree at `b618f2fe`, REL040's
+  `~/.cache/rel040-cut/bin/g10_case.py` per case with the same environment and m05's `.venv-nlp` and nlp-test-tools,
+  then the five proofs above. Expected: the same five lines with `PASS` and `environment=equal`. Then copy the 36
+  files over `benchmarks/m05/records/`, commit, AM-23 5 passed, and `scripts/m05_wo9_real.py --replay` →
+  `REPLAY PASS REAL differences=0`.
+- **`35d0b77f`: R-912's limitation grammar (R-1009, F-5).** `v0_2_gate.LIMITATION` =
+  `\bL(?:\d{2}|-[A-Z][A-Z0-9]*-\d+)\b`. DECISION: RP §17.5 item 3's default, the engine's constant widened, not a
+  line-file field. R-912's tests plus `L-X04-1..3` (`test_r912_*` in `tests/test_m07_v0_2_gate.py`, 21): the widened
+  ids match now and not before, today's ids under both, `L-s11-1`, `L-S11-`, `LS11-1`, `L-11-1` under neither; the
+  four released verdict documents (0.2.0a1, 0.2.0, 0.3.0, 0.4.0) parse to equal `VerdictDocument`s under both
+  patterns, and `LIMITATION` is read only by that parser, so their outputs are unchanged (REL.A04); a control (an
+  `L-X04-1` in a Basis cell) shows the comparison can fail. `v0_1_gate`'s copy untouched (A13). Gate and ledger
+  tests: 622 passed, 2 skipped.
+- **`cfab93e7`: L-WS-2 restated (F-4, ADR 0070 D1), id kept.** Both sources: the lineage's latest VERIFIED state
+  under an opt-in policy only (`T08-warm-v1`), and a solve job named by `solve_body.warm_start` (`explicit-v1`), its
+  own opt-in under any policy; either admitted by exact id-set identity only (L-WS-1), a candidate from another
+  topology a typed rejection to the traversal. DECISION: one more sentence beyond the default, the `legacy_eo` route
+  records a declared source rejected (`route`), with its X02 test as evidence; reversible by dropping it. Evidence
+  gains `test_g2_an_explicit_source_is_its_own_opt_in_under_default`,
+  `test_the_legacy_route_records_a_declared_source_rejected` and ADR 0070. Regenerated by their generators: the
+  support matrix (`--check` 0 problems), the catalogue's `limitations.yaml` (`msg_catalogue.py sync-limitations`;
+  `check` PASS) and `docs-site/messages/limitations.md` (`doc_pages.py`; `--check` up to date). No test pins the
+  row's text; HARVEST_SIZE unchanged (`test_m07a_harvest.py` passes). **`ff0b7292`**: the catalogue's sha256 moved, so the
+  two `message_entry` fixtures are re-taken by `scripts/t07_schema_fixtures.py --write` (only that digest moves, as
+  X04's `9284233e`); no committed record embeds the catalogue digest. To review in the package's reviewer pass (RP §17.5 item 3). Not changed: L10
+  still names only `T08-warm-v1`'s fallback.
+- **Checks at `cfab93e7`.** `ruff check .` all passed; `ruff format --check .` 1176 files formatted; `mypy` (check.sh's
+  form) no issues in 331 files; F0 `scripts/corpus_identity.py --check`: `F0 PASS: M1 50/50, M2 61/61, M3 61/61, M4
+  NOT JUDGED, M5 61/61, M6 70/70, M7 52/52, M8 105/105, M9 35/35`. Targeted tests (version, README, W27 coverage,
+  fixtures, gates and ledgers, release, T08 envelope and W4, harvest, changelog, surface chain, msg and doc pages,
+  X02 contract, X04 docs, S05 envelope, M05 records, M07 journey) at `cfab93e7`: 2061 passed, 1 failed, 5
+  skipped (registered conditions), 22 deselected, 3 xfailed; the failure was the fixture test fixed by `ff0b7292`,
+  whose file then passed (26). The full gate was not run (CI is the
+  merge condition).
+- **Not done here.** The G10 re-take's commit, AM-23 at the re-take and the REAL replay (above, SMM-TRS2);
+  `release/lines/0.5.json` (RP §7.4: written with `inherits: "0.4"`) is left to a design pass.
+
+## HOSTMOVE build (WO-H1, H2, H3, H6)
+
+`docs/reviews/HOSTMOVE-ruling.md` §11 on `wp/V04-after` from `884a91d3`, on SMM-TR09. Main checkout's `.venv` with
+`PYTHONPATH=src`; `.venv-nlp` for the proofs, AM-23 and the nlp tier. WO-H4 (the first TR09 cut) and WO-H5 (T06's
+class) are not done here. Not pushed, not merged.
+
+- **`64074f8a` (WO-H1): `m05_retake_diff.py --digest-only --old-host <h>`, the class `host`.** `host_identity()` and
+  `_cpu_model` in `tests/support/m05_replay.py`; `environment_fingerprint()` builds its last three members from it
+  (output unchanged). `_running_host()` reads every running value once (`host_identity()`, the child's `_cpu()` by
+  file path, `external_root()`). HM-01 to HM-17 in `tests/test_m05_retake_digest_only.py`: 74 passed (45 existing
+  unchanged, HM-18). HM-03's two lines are those c57c2ca0's tool prints on the same stems (run from a detached
+  worktree at `c57c2ca0`). HM-18's pairs, both tools: S77's pair (`56fb2fa^` vs `56fb2fa`, no flag) prints the same
+  five lines (42/80/71/92/38, `environment=equal`), and H3's re-takes with `--old-version 0.4.0` and no `--old-host`
+  print byte-identical output (10 lines). Touched modules (`test_m05_wo8_gates`, `_basis_v2_c1`, `test_m07_journey`,
+  `test_m05_g10_replay` default tier): 196 passed, 1 failed before the commit (`test_a21`, which compares HEAD with
+  the working tree of M07's carry paths), passed after it.
+  - DECISION: the three fingerprint leaves and the attempt CPU model are held to the running host whenever
+    `--old-host` is given, equal or not (WO-H1 (c), (d) state no condition); the sidecar's running check applies only
+    when a host key differs, as (b) states, so HM-09 passes on byte-equal sidecars. Reversible by guarding the check
+    in `resolve_hosts` with `not _same_leaf(x, y)`.
+  - DECISION: HM-01 runs in the default tier, in the same module: `m05_wo8_runs` imports in the default `.venv`.
+  - DECISION: HM-18's S77 and c57c2ca0 comparisons are a measurement here, not a committed test: they need two
+    historical trees. S6R-10's two summary lines stay asserted literally by the existing tests.
+  - Information (not WO-H4): REAL proved with the new tool against the ruling's H7 re-take, `--old-platform
+    Linux-6.12.113+deb13-amd64-x86_64-with-glibc2.41 --old-host SMM-TRS2`: `RETAKE-DIGEST-ONLY PASS
+    trust-region-study-real: changed-digests=103 digest=504 timing=528 path=128 version=0 platform=4 other=0
+    environment=host host=79`, R-1020's expected `host=79`, `platform=4`. Changed digests are 103, not R-1008's tool's
+    104, because `cpu_flags_sha256` no longer enters the map.
+- **`eb448c38` (WO-H2): the five re-baselined on SMM-TR09.** Fresh re-takes (DECISION: rather than H3's files, so
+  that `run_commit` names a commit holding the proof tool; H3's files also print the five PASS lines below, timings
+  included). Clean tree: `git worktree add --detach .claude/worktrees/v04-after-retake 64074f8a`, `git status
+  --porcelain --ignored` 0 lines (2026-11-11T03:42:22+01:00), removed afterwards. H3's recipe (`g10_case.py`:
+  `run_case` + `write_files`), `env -i HOME PATH LANG=C.UTF-8 OMP_NUM_THREADS=1 PYOMO_CONFIG_DIR=<nlp>/share/pyomo
+  PYTHONNOUSERSITE=1 PYTHONPATH=src:<nlp-test-tools>`, into the session scratch; each case exit 0 in 4 to 6 s,
+  `run_commit` `64074f8a…`, `tree_clean` true. Proof against `git archive HEAD benchmarks/m05/records`, `.venv-nlp`
+  with the same environment, `scripts/m05_retake_diff.py --digest-only <old> <new> --old-version 0.4.0 --old-host
+  SMM-TRS2`, each exit 0 (HM-19):
+  - `RETAKE-DIGEST-ONLY PASS trust-region-study-tr-e2: changed-digests=41 digest=146 timing=20 path=0 version=4 platform=0 other=0 environment=host host=3`
+  - `RETAKE-DIGEST-ONLY PASS trust-region-study-tr-e2-far: changed-digests=79 digest=320 timing=35 path=0 version=7 platform=0 other=0 environment=host host=3`
+  - `RETAKE-DIGEST-ONLY PASS trust-region-study-tr-e2-fd: changed-digests=70 digest=215 timing=20 path=0 version=4 platform=0 other=0 environment=host host=3`
+  - `RETAKE-DIGEST-ONLY PASS trust-region-study-loop-r: changed-digests=91 digest=285 timing=26 path=0 version=3 platform=0 other=0 environment=host host=3`
+  - `RETAKE-DIGEST-ONLY PASS trust-region-study-loop-s: changed-digests=37 digest=124 timing=20 path=0 version=4 platform=0 other=0 environment=host host=3`
+
+  The 42 files of the five stems were replaced; 41 differ. The ruling's "36" is the count of the earlier re-takes
+  (`e0a3d6b7`, `94c9f217`), at which the five sidecars did not move; `loop-s.ledger.json` is byte-equal, as then.
+  HM-20: AM-23 (`-m nlp tests/test_m05_g10_replay.py`, `.venv-nlp`, OMP 1, `PYOMO_CONFIG_DIR`, `PYTHONNOUSERSITE=1`,
+  the nlp-test-tools) at `eb448c38`: 5 passed; at its parent `64074f8a`: 5 failed, each naming `environment
+  machine: 'SMM-TRS2' recorded, 'SMM-TR09' now` and the CPU (the control). HM-21: `git diff --name-only HEAD~1 HEAD`
+  lists 41 files, all under the five stems; `tests/test_m05_*.py` and `tests/test_m07_journey.py` default tier: 621
+  passed, 170 deselected.
+- **`79535fe8` (WO-H3): the inventory's host state.** `_comparable` sets aside
+  `pynumero_asl_lookup_without_pyomo_config_dir`; `host_state_drift` prints the line. HM-22 to HM-24 in
+  `tests/test_m03_inventory_host_state.py`: 3 passed. HM-25 (`scripts/m03_nlp_check.sh .venv-nlp
+  .reference-downloads/m03-ipopt`): the NLP-1 inventory leg prints `host state (not compared):
+  pynumero_asl_lookup_without_pyomo_config_dir '~/.pyomo/lib/libpynumero_ASL.so' -> '(none)'` and `--check passed:
+  … (G1 PASS G2 PASS G3 PASS G4 PASS G5 PASS G6 PASS)`, exit 0; the `trsp-exe` leg passes, exit 0. The script
+  itself exits 1: its `pytest -m nlp` leg stops at collection on four modules that import `mpmath`, which
+  `.venv-nlp` lacks (`test_opt_phase_rows`, `test_s10_dwsim`, `test_s10_idaes`, `test_s10_records`; unchanged since
+  `c57c2ca0`, the known collection error of this file's W24 row). Information: the same leg with those four
+  `--ignore`d: 212 passed, 2 skipped. HM-26: `git diff --quiet c57c2ca0 HEAD -- docs/m03-ipopt-audit.md
+  benchmarks/m03/ scripts/build-m03-ipopt-env.sh` exit 0.
+- **WO-H6 (this commit): documents.** `docs/RELEASING.md` gains the host-move paragraph after R-1008's;
+  `docs/NEW_HOST_SETUP.md` §6 points to the ruling's §3 to §7 and WO-H1 to WO-H5, with the A-13 command form, and
+  keeps "Do not carry TRS2's records across as if they matched TR09". `tests/test_hostmove_host_leaves.py` runs
+  `hostmove_host_leaves.py --check` (`hostmove_host_leaves: PASS`): 1 passed.
+- **Checks at the WO-H6 commit.** `ruff check .` all passed; `ruff format --check .` 1179 files formatted; `mypy`
+  (check.sh's form) no issues in 331 files; F0 `scripts/corpus_identity.py --check`: `F0 PASS: M1 50/50, M2 61/61,
+  M3 61/61, M4 NOT JUDGED, M5 61/61, M6 70/70, M7 52/52, M8 105/105, M9 35/35` (M4 waits for WO-H5). Tests reading
+  the touched files (m03 inventory, RP and register readers, release gate, standing acceptances, the generator
+  check, changelog, README, surface chain, ledgers): 408 passed, 1 skipped, 19 deselected.
+- **Not done here.** WO-H4 (REAL and IDAES at the first TR09 K3) and WO-H5 (T06's reference class). The package's
+  `reviewer` pass (WO-H1, WO-H3, WO-H5). M07's R3 carry paths include `scripts/m05_wo8_runs.py`,
+  `tests/support/m05_replay.py` and `benchmarks/m05`, which WO-H1 and WO-H2 changed; REAL is re-taken at the first
+  TR09 K3 in any case.
+
+## HOSTMOVE build (WO-H5)
+
+`docs/reviews/HOSTMOVE-ruling.md` §7 and WO-H5 on `wp/V04-after` from `1fba2bba`, on SMM-TR09 (2950X). Main
+checkout's `.venv` with `PYTHONPATH=src`. Not pushed, not merged. **WO-H5 stops at HM-34 for the design lane**
+(below); every other assertion holds.
+
+- **`a7606285`: the class lists its models.** `benchmarks/registry.yaml` `ensemble.machine_classes.ref-x86-64` is
+  `{github_actions: false, architecture: x86_64, cpu_models: [5965WX, 2950X]}`, no `cpu_model`.
+  `ensemble.machine_class()` tests membership; `ensemble.same_class_host(a, b)` is the one helper;
+  `scripts/t06_ensemble.py check` uses it in place of host equality and, on `ref-x86-64`, compares the regeneration
+  with `host.cpu_model` set to the published one byte for byte (exit 1 otherwise; prints `identical but for
+  host.cpu_model (<model>)`). Tests changed as WO-H5 lists them: A25, A99 (a), A97 (b) (registry pin, host but for a
+  listed model, the 2950X case), W18's `_on_the_reference_cpu`, W29's local v1 `cpu_model`. HM-30 to HM-33 in
+  `tests/test_t06_hostmove_ref_class.py`: 22 passed (HM-33 with two controls: only `cpu_model` differs, exit 0 with
+  the line; an unlisted model, reported, exit 0).
+  - DECISION: HM-30 to HM-33 live in a new module, as WO-H3's did; the made-up literals (`cpu-hm31`, `0.0.0-hm32`)
+    are asserted at import to differ from the listed models, the registry text and `generator._cpu_model()`.
+  - DECISION: W18's module docstring reads "a listed `ref-x86-64` CPU model (H-1)"; no assertion changed.
+- **`e6a43e87`: H-1 in `docs/derivations/T06-corpus-spec.md`.** A last section `## Amendment H-1 (2026-11-11): the
+  reference class lists its CPU models` (Author, Authority, Changes, then §7.4's text verbatim) and the marks
+  **(H-1)** in §6.5, §7.5 (A5) item 2, A25, A89 and A99 (a).
+  - DECISION: A90 is not marked; H-1 item 3 states it, and WO-H5 names the marks in five places only.
+- **HM-34 (live): FAIL.** `PYTHONPATH=src:. python scripts/t06_ensemble.py check` and `check --holdout`, clean tree
+  at `e6a43e87`: each prints `not byte-identical; 3 differences under the numerical policy (same host: a defect)`,
+  exit 1. The three are `generator_sha256` (`509b01fb…` against `7f426aa9…`), `provider.implementation_sha256`
+  (`4e4c37cc…` against `67e47281…`) and `host.cpu_model`. The first two are R-149's rename: `generator.py` and
+  `thermo/syn001.py` with `openflowsheet` replaced by `process_runtime` hash to exactly `7f426aa9…` and `67e47281…`.
+  So `check` has exited 1 on every host since v0.1.0, independent of H-1: it never undoes the substitution that the
+  tests undo (`tests/t08_rename_substitution.renamed_back_starts`). With it undone, A25's and A99 (a)'s tests show the
+  only other member is `host.cpu_model` (HM-36). Not changed here: the brief stops WO-H5 on a live failure, and
+  making `check` compare substituted back changes what the script compares (R-149). Proposed for the design lane:
+  `check` applies `renamed_back_starts` to the regeneration before both comparisons, as A25's test does.
+- **HM-35 (live, control):** the ten modules of H12 with `-s`, junit, and a plugin (not committed) patching
+  `generator._cpu_model` to `cpu-hm35` in the test process: `a89_refinement_asserted` `False` in 6 of 6; `A25 on` and
+  `A99 (a) on` printed; the generate test skips `generate writes on ref-x86-64 only`. 252 passed, 3 skipped,
+  1 failed: `test_the_install_check_record_carries_the_machine_class` (`'ref-x86-64' == 'unregistered(x86_64)'`),
+  H12's measurement artifact (its subprocess computes the real class).
+- **HM-36 (live): PASS.** The ten modules unpatched, `-s`, junit: 254 passed, 2 skipped (both R-150 history),
+  0 failed; `a89_refinement_asserted` `True` in 6 of 6; no `A25 on` and no `A99 (a) on` line.
+- **HM-37 (live): PASS.** `scripts/corpus_identity.py --check` at `e6a43e87`: `F0 PASS: M1 50/50, M2 61/61, M3 61/61,
+  M4 61/61, M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 35/35`.
+- **HM-38 (live): PASS.** `scripts/t08_rc.py ensemble --out <scratch>` at `e6a43e87`: `rc-ensemble-ref-x86-64.json`,
+  every check `pass`: `a46.registered_class`, `a46.run_and_report`, `a46.gate` (437 SUCCESS, 3
+  F-FALSE-SUCCESS-CAUGHT, S_min 418, complete), `a47.no_verified_outside_s3`, `a34.ensemble_certificates`,
+  `a46.t06_a34_same_class_replay` (25 of 25 MATCH), `a46.registered_runs_untouched`.
+- **Checks.** `ruff check .` all passed; `ruff format --check .` 1180 files formatted; `mypy` (check.sh's form) no
+  issues in 331 files. Further readers of the registry's classes (`test_m07_rc_records`, `test_m07a_rc_records`,
+  `test_hostmove_host_leaves`, `test_t06_w4_registry`) with the new module: 72 passed.
+- **Not done here.** HM-34 (above). The package's `reviewer` pass (WO-H1, WO-H3, WO-H5).
+
+## V04-after fix round
+
+Review `docs/reviews/V04-after-review.md` (MF-1, SF-1, SF-2, rulings (a) to (e)); SMM-TR09 (2950X). Commits
+`99be191a`, `f70a26db`, `b087da06`, `a318a763`; every live run below at `a318a763`, clean tree.
+
+- **`99be191a`: ruling (c), kept and pinned.** `tests/test_m05_retake_digest_only.py`
+  `test_hm10_unmoved_host_leaves_are_held_to_the_running_host`: an unmoved REAL-like pair, byte-equal sidecars,
+  `--old-host` the committed machine, the running host patched to the re-take's literals → `FAIL`, `other=10`
+  (`_host_leaf_count` less the sidecar's three), `environment=equal host=0`, each flagged line a re-take leaf "is not
+  the running" value, the fingerprint's and an archived attempt's `cpu_model` named. Mutation check: conditioning
+  `m05_retake_diff.py`'s rule on the leaf having moved (`and not replay._same_leaf(x, y)`) fails this test alone,
+  1 failed, 74 passed; reverted.
+- **`f70a26db`: MF-1.** `tests/t08_rename_substitution.starts_substituted_back(document)` undoes R-149's two registered
+  pairs (`generator_sha256` `509b01fb…` → `7f426aa9…`, `provider.implementation_sha256` `4e4c37cc…` → `67e47281…`),
+  each only where the live value is the registered new one, by explicit comparison; it returns the paths undone.
+  `renamed_back_starts` keeps its checks and applies it (one rule, N-5). `scripts/t06_ensemble.py check` reads the
+  regeneration through it before both comparisons and the report, and prints `R-149: <paths> compared substituted
+  back`; `regenerated sha256` stays the live document's. HM-34's synthetic legs beside HM-33: new hashes in the
+  regeneration, old in the file, only `cpu_model` differing → exit 0 with the line; a made-up generator hash
+  (`"34" * 32`) → exit 1, `same host: a defect`, the hash reported. `tests/test_t06_hostmove_ref_class.py`: 24 passed.
+  - DECISION: the substitution lives in `tests/t08_rename_substitution.py`, which the script imports as it already
+    imports `t06_ensemble_support` (N-5).
+- **`b087da06`: ruling (d).** **(H-1)** at A90 ("Expected on `ref-x86-64` … on every listed CPU model") and A98 (b)
+  (run 2r on SMM-TRS2, a committed record not re-run).
+- **`a318a763`: the ruling.** §7.3 item 3's addendum (MF-1, citing R-149's "their tests compare the live hashes
+  substituted back"; no new register entry); §8 classifies `tests/test_t08_ptc_r1_diagnostic.py` (SF-1, ADR 0007 F1;
+  no code change, the review prescribes none); the erratum at both "36 files" places (ruling (e)).
+- **Correction (ruling (a)).** In the WO-H5 log above, "`check` has exited 1 on every host since v0.1.0" reads: on the
+  reference host; reported elsewhere (exit 0 on CI's runners).
+- **HM-34 (live): PASS.** `PYTHONPATH=src:. python scripts/t06_ensemble.py check`: published `3a7bd49c…`, regenerated
+  `a137cbd4…`, `R-149: generator_sha256, provider.implementation_sha256 compared substituted back`, `identical but for
+  host.cpu_model (AMD Ryzen Threadripper 2950X 16-Core Processor)`, exit 0. `check --holdout`: published `debbbdc5…`,
+  regenerated `8640fc3b…`, the same two lines, exit 0. §7.3 holds in full; `a7606285` stands.
+- **HM-25 (live, RP §6.5's form, SF-2): PASS.** As step 14 runs it, `env -i HOME PATH LANG bash
+  scripts/m03_nlp_check.sh <.venv-nlp> <.reference-downloads/m03-ipopt> -- -o junit_family=xunit1 --junitxml=…
+  --basetemp=… <the 18 modules grep -l 'mark.nlp' tests/test_*.py lists>`: `212 passed, 75 deselected`, `--- pytest
+  -m nlp: exit 0`; the NLP-1 leg prints `host state (not compared): pynumero_asl_lookup_without_pyomo_config_dir
+  '~/.pyomo/lib/libpynumero_ASL.so' -> '(none)'` and `--check passed … (G1 PASS … G6 PASS)`; the `trsp-exe` leg
+  passes; exit 0. Ruling (b): `mpmath` is added to no lock.
+- **Checks.** `ruff check .` all passed; `ruff format --check .` 1180 files formatted; `mypy` (check.sh's form) no
+  issues in 331 files. The ten H12 modules: 254 passed, 2 skipped (both R-150 history), as HM-36.
+  `tests/test_t06_hostmove_ref_class.py`, `test_m05_retake_digest_only.py`, `test_hostmove_host_leaves.py`,
+  `test_m05_wo8_gates.py`, and the readers of `t08_rename_substitution` (`test_t08_rename_substitution.py`,
+  `test_t07_identity.py`, `test_k05_schemas.py`): 150 passed. F0, `scripts/corpus_identity.py --check`: `F0 PASS: M1
+  50/50, M2 61/61, M3 61/61, M4 61/61, M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 35/35`.
+- **Open.** N-3 (`release/lines/0.5.json` needs an owner) and N-4 (a per-start comparison at the first TR09 cut), as
+  the review leaves them; ruling (b)'s default (`m03_nlp_check.sh` defaulting to §6.5's module list) for a later M03
+  or RP maintenance package.

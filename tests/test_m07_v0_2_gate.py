@@ -34,6 +34,7 @@ import yaml
 from conftest import REPO_ROOT
 
 sys.path.insert(0, str(REPO_ROOT / "scripts"))
+import release_gate  # noqa: E402
 import v0_1_gate  # noqa: E402
 import v0_2_gate  # noqa: E402
 
@@ -478,6 +479,72 @@ def test_a33_a_re_judgement_may_list_w24() -> None:
     with pytest.raises(ValueError, match="not blocked on a registered answer"):
         line = f"**Re-judged:** {JUDGED} (W25)"
         v0_2_gate.verdict_document(document(ALL_PASS, rejudged=line), V02, RC)
+
+
+# -- R-912, R-1009: the limitation grammar -----------------------------------------------------
+
+#: The pattern before R-912's widening (0.2.0 to 0.4.0), for the comparisons below.
+LIMITATION_BEFORE = re.compile(r"\bL(?:\d{2}|-[A-Z]+-\d+)\b")
+#: Ids with a digit in the middle part, refused before the widening: R-912's four and X04's.
+WIDENED = ["L-S11-1", "L-S11-2", "L-S11-3", "L-E01-1", "L-X04-1", "L-X04-2", "L-X04-3"]
+#: Ids accepted before the widening.
+TODAY = ["L46", "L-COL-10", "L-WEB-1", "L-CSTR-3"]
+#: Not envelope ids, under either pattern.
+NOT_IDS = ["L-s11-1", "L-S11-", "LS11-1", "L-11-1"]
+
+
+@pytest.mark.parametrize(
+    ("entry", "before", "now"),
+    [(entry, False, True) for entry in WIDENED]
+    + [(entry, True, True) for entry in TODAY]
+    + [(entry, False, False) for entry in NOT_IDS],
+)
+def test_r912_the_limitation_grammar(entry: str, before: bool, now: bool) -> None:
+    assert bool(LIMITATION_BEFORE.fullmatch(entry)) is before
+    assert bool(v0_2_gate.LIMITATION.fullmatch(entry)) is now
+
+
+def test_r912_a_travelling_l_x04_1_is_read() -> None:
+    rows = ALL_PASS | {"V11": ("PASS", "—", "L38, L-X04-1")}
+    parsed = v0_2_gate.verdict_document(document(rows), V02, RC)
+    assert parsed.rows["V11"].limitations == ("L38", "L-X04-1")
+    rows = ALL_PASS | {"V11": ("PASS", "—", "L38, L-x04-1")}
+    with pytest.raises(ValueError, match=r"V11, Travelling limitations: .*'L-x04-1'"):
+        v0_2_gate.verdict_document(document(rows), V02, RC)
+
+
+def _committed_verdicts() -> list[tuple[v0_2_gate.GateSet, str]]:
+    def read(path: str) -> bytes | None:
+        file = REPO_ROOT / path
+        return file.read_bytes() if file.is_file() else None
+
+    lines = [release_gate.load_line(name, read).gate_set for name in ("0.3", "0.4")]
+    return [(gate_set, gate_set.verdict_document) for gate_set in (ALPHA, V02, *lines)]
+
+
+@pytest.mark.parametrize(
+    ("gate_set", "path"), _committed_verdicts(), ids=lambda value: getattr(value, "name", value)
+)
+def test_r912_every_committed_verdict_document_reads_as_before(
+    gate_set: v0_2_gate.GateSet, path: str, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The widening is a superset, and the released documents (0.2.0a1, 0.2.0, 0.3.0 and 0.4.0)
+    read exactly as under the old pattern, so the engine's outputs for them are unchanged."""
+    text = (REPO_ROOT / path).read_text(encoding="utf-8")
+    (rc,) = v0_2_gate.RELEASE_CANDIDATE_VALUE.findall(text)
+    now = v0_2_gate.verdict_document(text, gate_set, rc)
+    monkeypatch.setattr(v0_2_gate, "LIMITATION", LIMITATION_BEFORE)
+    assert v0_2_gate.verdict_document(text, gate_set, rc) == now
+
+
+def test_r912_the_comparison_can_fail(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Control: a Basis cell naming `L-X04-1` read as prose before the widening and is refused
+    now (an id outside its column), so the comparison above would see a changed reading."""
+    text = document(ALL_PASS).replace("§W25; evidence at C |", "§W25; see L-X04-1 |")
+    with pytest.raises(ValueError, match=r"W25, Basis: holds \['L-X04-1'\]"):
+        v0_2_gate.verdict_document(text, V02, RC)
+    monkeypatch.setattr(v0_2_gate, "LIMITATION", LIMITATION_BEFORE)
+    assert v0_2_gate.verdict_document(text, V02, RC).rows["W25"].verdict == "PASS"
 
 
 # -- M07.A34: decision items 1–12 --------------------------------------------------------------

@@ -34,6 +34,8 @@ SPEC = (REPO_ROOT / "docs" / "derivations" / "T06-corpus-spec.md").read_text("ut
 REGISTRY: dict[str, Any] = load_yaml(REPO_ROOT / "benchmarks" / "registry.yaml")
 CASES = {case.case: case for case in ensemble_cases()}
 REFERENCE_CPU = "AMD Ryzen Threadripper PRO 5965WX 24-Cores"
+#: H-1 (R-1020): SMM-TR09's CPU, the second model `ref-x86-64` lists.
+SECOND_REFERENCE_CPU = "AMD Ryzen Threadripper 2950X 16-Core Processor"
 
 
 def _script() -> ModuleType:
@@ -63,6 +65,7 @@ def _start(case: str, index: int) -> dict[str, Any]:
         ("true", "x86_64", "AMD EPYC 7763 64-Core Processor", "ci-x86-64"),
         ("true", "aarch64", "aarch64", "ci-aarch64"),
         (None, "x86_64", REFERENCE_CPU, "ref-x86-64"),
+        (None, "x86_64", SECOND_REFERENCE_CPU, "ref-x86-64"),
         (None, "x86_64", "Intel(R) Xeon(R) Platinum 8370C", "unregistered(x86_64)"),
         (None, "aarch64", "aarch64", "unregistered(aarch64)"),
         ("false", "x86_64", REFERENCE_CPU, "ref-x86-64"),
@@ -84,12 +87,14 @@ def test_a97b_the_machine_class_is_decided_from_the_host(
 
 
 def test_a97b_the_registered_classes_and_the_generators_literal() -> None:
-    """The registry's classes are §7.5's three, the reference CPU is registered, and the harness
-    never writes a class as a literal: `host()` is `generator.host()` with the class replaced,
-    so on `ref-x86-64` it is the block the published starts record."""
+    """The registry's classes are §7.5's three, the reference CPU models are listed (H-1: the
+    5965WX, then the 2950X), and the harness never writes a class as a literal: `host()` is
+    `generator.host()` with the class replaced, so on `ref-x86-64` it is the block the published
+    starts record but for a listed `cpu_model`."""
     classes = REGISTRY["ensemble"]["machine_classes"]
     assert set(classes) == {"ref-x86-64", "ci-x86-64", "ci-aarch64"}
-    assert classes["ref-x86-64"]["cpu_model"] == REFERENCE_CPU
+    assert classes["ref-x86-64"]["cpu_models"] == [REFERENCE_CPU, SECOND_REFERENCE_CPU]
+    assert "cpu_model" not in classes["ref-x86-64"]
     assert {name: entry["runner"] for name, entry in classes.items() if "runner" in entry} == {
         "ci-x86-64": "ubuntu-latest",
         "ci-aarch64": "ubuntu-24.04-arm",
@@ -101,7 +106,10 @@ def test_a97b_the_registered_classes_and_the_generators_literal() -> None:
         k: v for k, v in generator.host().items() if k != "machine_class"
     }
     if ensemble.machine_class() == ensemble.REFERENCE_CLASS:
-        assert host == PUBLISHED["host"]
+        assert {k: v for k, v in host.items() if k != "cpu_model"} == {
+            k: v for k, v in PUBLISHED["host"].items() if k != "cpu_model"
+        }
+        assert host["cpu_model"] in classes["ref-x86-64"]["cpu_models"]
 
 
 @pytest.mark.parametrize("holdout", [False, True])

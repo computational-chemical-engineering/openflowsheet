@@ -4,7 +4,7 @@ Spec `docs/derivations/T06-corpus-spec.md` §6–§7, §10 (Amendments 1, 2 and 
 repository root with the project environment (`PYTHONPATH=src:.`).
 
     python scripts/t06_ensemble.py generate [--holdout]    # the starts file, once, on ref-x86-64
-    python scripts/t06_ensemble.py check [--holdout]       # regenerates; bytes on ref-x86-64
+    python scripts/t06_ensemble.py check [--holdout]       # regenerates; bytes on ref-x86-64 (H-1)
     python scripts/t06_ensemble.py run --run-id ID --out R.json [--allow-dirty]
                                        [--cases NET-01 …] [--starts 0 1 …]
     python scripts/t06_ensemble.py report R.json [--out report.txt] [--require-gate]
@@ -40,6 +40,7 @@ sys.path.insert(0, str(ROOT / "tests"))
 sys.path.insert(0, str(ROOT))
 
 from t06_ensemble_support import HOLDOUT_FILE, STARTS_FILE, ensemble_cases  # noqa: E402
+from t08_rename_substitution import starts_substituted_back  # noqa: E402
 
 from benchmarks.t06 import ensemble, generator  # noqa: E402
 from openflowsheet.canonical import canonical_json  # noqa: E402
@@ -113,20 +114,36 @@ def generate(arguments: argparse.Namespace) -> int:
 
 
 def check(arguments: argparse.Namespace) -> int:
-    """§6.5: on the reference machine class the regeneration is byte-identical; elsewhere the
-    regenerated document is reported against the file under the numerical policy."""
+    """§6.5 as amended by H-1 (R-1020): on the reference machine class the regeneration, with its
+    `host.cpu_model` set to the published one, is byte-identical (`ensemble.same_class_host`
+    decides the same reference host); elsewhere the regenerated document is reported against
+    the file under the numerical policy.
+
+    Both comparisons, and the report, read the regeneration with R-149's two registered self-hash
+    pairs undone (`starts_substituted_back`): the published start sets keep the pre-rename
+    hashes, and R-149 compares the live ones "substituted back". Any other value of either hash
+    stays a difference (V04-after review MF-1)."""
     path = Path(arguments.file) if arguments.file else _starts_file(arguments.holdout)
     published = path.read_bytes()
     recorded = json.loads(published)
-    regenerated = _generate(arguments.holdout)
-    raw = canonical_json(regenerated)
+    live = _generate(arguments.holdout)
     print(f"published sha256 {hashlib.sha256(published).hexdigest()}")
-    print(f"regenerated sha256 {hashlib.sha256(raw).hexdigest()}")
+    print(f"regenerated sha256 {hashlib.sha256(canonical_json(live)).hexdigest()}")
+    regenerated, undone = starts_substituted_back(live)
+    raw = canonical_json(regenerated)
+    if undone:
+        print(f"R-149: {', '.join(undone)} compared substituted back")
     if raw == published:
         print("byte-identical")
         return 0
+    same_host = ensemble.same_class_host(regenerated["host"], recorded["host"])
+    if same_host:
+        model = regenerated["host"]["cpu_model"]
+        published_model = {**regenerated["host"], "cpu_model": recorded["host"]["cpu_model"]}
+        if canonical_json({**regenerated, "host": published_model}) == published:
+            print(f"identical but for host.cpu_model ({model})")
+            return 0
     found = differences(regenerated, recorded, policy_id="K04-numerical-policy-v1")
-    same_host = regenerated["host"] == recorded["host"]
     print(
         f"not byte-identical; {len(found)} differences under the numerical policy "
         f"({'same host: a defect' if same_host else 'another host: reported'})"

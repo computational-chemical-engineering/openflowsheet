@@ -180,11 +180,13 @@ def test_a24_absent_components_are_held_at_positive_zero_in_the_holdout() -> Non
 
 
 def test_a99a_the_holdout_regenerates_byte_for_byte_on_the_reference_machine_class() -> None:
-    """A25's rule (`check --holdout`): bytes on the generating host; elsewhere reported. The two
+    """A25's rule (`check --holdout`): bytes on the reference machine class, with the regenerated
+    `host.cpu_model` replaced by the holdout's **(H-1)**; elsewhere reported. The two
     self-hashes are compared as before the rename (R-149)."""
     regenerated = renamed_back_starts(_regenerated())
-    if regenerated["host"] == HOLDOUT["host"]:
-        assert canonical_json(regenerated) == HOLDOUT_BYTES
+    if ensemble.same_class_host(regenerated["host"], HOLDOUT["host"]):
+        host = {**regenerated["host"], "cpu_model": HOLDOUT["host"]["cpu_model"]}
+        assert canonical_json({**regenerated, "host": host}) == HOLDOUT_BYTES
     else:
         found = differences(regenerated, HOLDOUT, policy_id="K04-numerical-policy-v1")
         print(f"A99 (a) on {regenerated['host']}: {len(found)} differences from the holdout")
