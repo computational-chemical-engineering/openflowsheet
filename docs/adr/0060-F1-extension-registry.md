@@ -1,7 +1,8 @@
 # ADR 0060 — F1: one extension registry, computed admission, `list_capabilities` and `check_admission`
 
-**Status:** **Proposed, 2026-11-05.** Design wave W1, pass P1 (ADR 0057, R-928). Takes effect when Accepted after the W1
-reviewer pass over ADRs 0060 and 0061; built in 0.5 on `wp/F1`.
+**Status:** **Accepted (Frank Peters, 2026-11-11, decision board `f1-adr0060-accept`: "Accept (Recommended)"),
+with the errata of R-1031.** Proposed 2026-11-05, design wave W1, pass P1 (ADR 0057, R-928); W1 reviewer pass over
+ADRs 0060 and 0061; built in 0.5 on `wp/F1`. Register entries R-1030 to R-1032 are Accepted with it.
 **Author:** design lane (`architect`). **Brief:** `docs/roadmap/brief-architect-W1-P1.md`.
 **Refines:** `docs/roadmap/target-architecture.md` §3 F1, §2.4.2, §2.6 C2, §2.7.3. Departures from the note are marked
 **[departure]** with their reason.

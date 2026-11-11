@@ -230,7 +230,7 @@ Amendment 4 is decided in M02's three ADRs; this paragraph points at its parts (
   Amendment 3's `6c4375b4…` (`tests/test_t08_w2_surface_digest.py`). The measured served digest is in M02's
   evidence manifest.
 
-## Amendment 7 (Proposed 2026-11-05 with ADR 0060; core frozen by R-941; F1) — pointer to ADR 0060
+## Amendment 7 (Accepted 2026-11-11 with ADR 0060, Frank Peters; proposed 2026-11-05; F1) — pointer to ADR 0060
 
 Amendment 7 is decided in ADR 0060 D11 (F1-WO4a); this paragraph points at it. Additive:
 
