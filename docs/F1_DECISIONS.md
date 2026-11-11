@@ -71,6 +71,13 @@ is Accepted" in their `description`), `tests/test_f1_registry_core.py`, `tests/f
   `tests/fixtures/registry/synthetic-builtin-sha256.txt`, over `tests/fixtures/registry/synthetic/` (a table file and a
   three-file import root). WO5 commits `builtin-sha256.txt` for the real built-ins. The test also recomputes the value
   with `hashlib` and `json.dumps`, independent of `openflowsheet.canonical`.
+- **DECISION W1-17. D1's kind list is stated once, as the schema's `kind` enum; no Python tuple repeats it.** Found by
+  V03.A31(a) (`tests/test_v03_semantic_roles.py`: no file under `src/` contains the text `semantic_role`, the proxy
+  for "nothing reads ADR 0054's revision role"), which a kind name in `src/` would fail although the registry reads no
+  role. The A31 claim stays true: the registry never reads a revision. `tests/test_f1_registry_core.py` holds the enum
+  to D1's table. **For the design lane:** A31(a) is a text scan; once ADR-F6 registers `semantic_role` descriptors
+  (a source module naming the kind), A31(a) needs an amendment that scopes it to readers of the revision field.
+  Alternative: narrow A31 now (a check relaxed by the build lane: not taken).
 
 Not in WO1 (stated in `registry/__init__.py`): `default_registry()` and the built-in table files (WO2, WO3);
 entry-point discovery and namespace rules; message-catalogue registration and the MSG pre-freeze call; validation of

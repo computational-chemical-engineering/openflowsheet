@@ -146,6 +146,35 @@ def test_each_schema_is_a_draft_2020_12_schema_published_by_its_id(name: str) ->
     assert published_schemas()[SCHEMA_BASE + name] == document
 
 
+def test_d1_the_kind_enum_is_the_closed_list_of_22() -> None:
+    """D1's table, transcribed here; the package states it once, in the schema's enum."""
+    document = json.loads((REPO_ROOT / "schemas" / SCHEMAS[0]).read_text(encoding="utf-8"))
+    assert document["properties"]["kind"]["enum"] == [
+        "property_method",
+        "property_source",
+        "unit_model",
+        "connection_definition",
+        "attribute_kind",
+        "derived_quantity",
+        "kinetics_kind",
+        "stability_trial_set",
+        "phase_family",
+        "discrete_coordinate",
+        "record_type",
+        "correlation_form",
+        "data_source",
+        "record_generator",
+        "solver_route",
+        "run_kind",
+        "functional_contributor",
+        "exchange_format",
+        "revision_section",
+        "semantic_role",
+        "equipment_class",
+        "message_entries",
+    ]
+
+
 def test_a_built_registrys_snapshot_and_descriptors_pass_their_schemas() -> None:
     registry = _build(packages=[_acme()])
     assert schema_errors("registry-snapshot.schema.json", registry.snapshot()) == []

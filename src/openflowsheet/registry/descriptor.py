@@ -35,31 +35,7 @@ DESCRIPTOR_FORMAT: Final = "openflowsheet-extension-v1"
 PACKAGE_FORMAT: Final = "openflowsheet-extension-package-v1"
 SCHEMA_NAME: Final = "extension-descriptor.schema.json"
 
-#: D1's closed kind list, in its table's order (22 kinds).
-KINDS: Final = (
-    "property_method",
-    "property_source",
-    "unit_model",
-    "connection_definition",
-    "attribute_kind",
-    "derived_quantity",
-    "kinetics_kind",
-    "stability_trial_set",
-    "phase_family",
-    "discrete_coordinate",
-    "record_type",
-    "correlation_form",
-    "data_source",
-    "record_generator",
-    "solver_route",
-    "run_kind",
-    "functional_contributor",
-    "exchange_format",
-    "revision_section",
-    "semantic_role",
-    "equipment_class",
-    "message_entries",
-)
+#: D1's closed kind list (22 kinds) is the schema's `kind` enum, its one statement in the package.
 
 #: D2's evidence statuses, in increasing order.
 STATUSES: Final = ("declared", "implemented", "tested", "reviewed", "released")
