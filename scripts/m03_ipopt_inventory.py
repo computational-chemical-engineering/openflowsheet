@@ -42,6 +42,14 @@ The environment is built by `scripts/build-m03-ipopt-env.sh`. `--check` exits 0 
 record equals the committed one; objects of the host platform (glibc, owned by a dpkg package) are
 compared by path and package only, and a changed hash there is printed as drift, not a failure: the
 platform is not part of the route. Exit status of a write is 0 iff G1–G6 all pass.
+
+`pynumero_asl_lookup_without_pyomo_config_dir` is host state (R-1020;
+`docs/reviews/HOSTMOVE-ruling.md` §6): the library Pyomo finds with `PYOMO_CONFIG_DIR` unset is a
+function of the account's `~/.pyomo/lib`, outside the audited environment's prefix and the
+repository. The route never takes that lookup: it sets `PYOMO_CONFIG_DIR`, its own lookup
+(`workload.<order>.pynumero_asl`) is compared, and the adapter refuses a library whose SHA-256 is
+not the audited one. The record keeps writing the member; `--check` sets it aside, as it sets aside
+`host.libc`, and prints it when it differs (`host state (not compared): ...`).
 """
 
 from __future__ import annotations
@@ -1082,8 +1090,22 @@ def build_record(env: Path, workload: str) -> dict[str, Any]:
     }
 
 
+#: Members of the record that are host state, recorded and printed but not compared (R-1020).
+HOST_STATE = ("pynumero_asl_lookup_without_pyomo_config_dir",)
+
+
+def host_state_drift(committed: dict[str, Any], record: dict[str, Any]) -> list[str]:
+    """`--check`'s line for each `HOST_STATE` member whose value differs from the committed one."""
+    return [
+        f"host state (not compared): {key} {committed.get(key)!r} -> {record.get(key)!r}"
+        for key in HOST_STATE
+        if committed.get(key) != record.get(key)
+    ]
+
+
 def _comparable(record: dict[str, Any]) -> tuple[dict[str, Any], dict[str, Any]]:
-    """The record with platform objects reduced to path and package, and those objects' drift."""
+    """The record with platform objects reduced to path and package, and those objects' drift;
+    `host.libc` and the `HOST_STATE` members are set aside."""
     record = json.loads(json.dumps(record))
     platform_rows = {}
     for row in record["objects"]:
@@ -1097,6 +1119,8 @@ def _comparable(record: dict[str, Any]) -> tuple[dict[str, Any], dict[str, Any]]
             for notice in row["licence"]["notices"]:
                 notice.pop("sha256", None)
     record["host"].pop("libc", None)
+    for key in HOST_STATE:
+        record.pop(key, None)
     return record, platform_rows
 
 
@@ -1131,6 +1155,8 @@ def main() -> int:
         for path in sorted(set(new_platform) | set(old_platform)):
             if new_platform.get(path) != old_platform.get(path):
                 print(f"platform drift (not compared): {path}")
+        for line in host_state_drift(committed, record):
+            print(line)
         if new != old:
             changed = sorted(key for key in set(new) | set(old) if new.get(key) != old.get(key))
             print(f"--check FAILED: {arguments.out} differs in {', '.join(changed)}")
