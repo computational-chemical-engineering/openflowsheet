@@ -1,0 +1,106 @@
+[
+  {
+    "data_rights": null,
+    "descriptor_format": "openflowsheet-extension-v1",
+    "id": "cost",
+    "implementation": {
+      "factory": {
+        "attribute": "CostContributor",
+        "key": null,
+        "module": "openflowsheet.assessment.cost.contributor"
+      },
+      "modules": [
+        "openflowsheet/assessment/cost/__init__.py",
+        "openflowsheet/assessment/cost/capital.py",
+        "openflowsheet/assessment/cost/contributor.py",
+        "openflowsheet/assessment/cost/derived.py",
+        "openflowsheet/assessment/cost/forms.py",
+        "openflowsheet/assessment/cost/index.py",
+        "openflowsheet/assessment/cost/operating.py",
+        "openflowsheet/assessment/cost/quotes.py",
+        "openflowsheet/assessment/cost/sets.py",
+        "openflowsheet/assessment/cost/uncertainty.py"
+      ]
+    },
+    "kind": "functional_contributor",
+    "limitations": [],
+    "payload": {},
+    "pip_extra": null,
+    "platforms": [
+      "any"
+    ],
+    "provides": [],
+    "requires": [],
+    "status": "released",
+    "title": "Assessment contributor cost",
+    "version": "1.0.0"
+  },
+  {
+    "data_rights": null,
+    "descriptor_format": "openflowsheet-extension-v1",
+    "id": "derived",
+    "implementation": {
+      "factory": {
+        "attribute": "DerivedContributor",
+        "key": null,
+        "module": "openflowsheet.assessment.cost.derived"
+      },
+      "modules": [
+        "openflowsheet/assessment/cost/__init__.py",
+        "openflowsheet/assessment/cost/capital.py",
+        "openflowsheet/assessment/cost/contributor.py",
+        "openflowsheet/assessment/cost/derived.py",
+        "openflowsheet/assessment/cost/forms.py",
+        "openflowsheet/assessment/cost/index.py",
+        "openflowsheet/assessment/cost/operating.py",
+        "openflowsheet/assessment/cost/quotes.py",
+        "openflowsheet/assessment/cost/sets.py",
+        "openflowsheet/assessment/cost/uncertainty.py"
+      ]
+    },
+    "kind": "functional_contributor",
+    "limitations": [],
+    "payload": {},
+    "pip_extra": null,
+    "platforms": [
+      "any"
+    ],
+    "provides": [],
+    "requires": [],
+    "status": "released",
+    "title": "Assessment contributor derived",
+    "version": "1.0.0"
+  },
+  {
+    "data_rights": null,
+    "descriptor_format": "openflowsheet-extension-v1",
+    "id": "lca",
+    "implementation": {
+      "factory": {
+        "attribute": "LcaContributor",
+        "key": null,
+        "module": "openflowsheet.assessment.lca.section"
+      },
+      "modules": [
+        "openflowsheet/assessment/lca/__init__.py",
+        "openflowsheet/assessment/lca/brightway.py",
+        "openflowsheet/assessment/lca/impact.py",
+        "openflowsheet/assessment/lca/inventory.py",
+        "openflowsheet/assessment/lca/section.py",
+        "openflowsheet/assessment/lca/tables.py"
+      ]
+    },
+    "kind": "functional_contributor",
+    "limitations": [],
+    "payload": {},
+    "pip_extra": "lca",
+    "platforms": [
+      "any"
+    ],
+    "provides": [],
+    "requires": [],
+    "status": "released",
+    "title": "Assessment contributor lca",
+    "version": "1.0.0"
+  }
+]

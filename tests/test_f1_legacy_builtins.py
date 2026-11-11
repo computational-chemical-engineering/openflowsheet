@@ -440,7 +440,7 @@ def test_e_f1_4_a_crlf_copy_hashes_the_same(registry: Registry, tmp_path: Path) 
 def test_the_generator_check_is_clean(capsys: pytest.CaptureFixture[str]) -> None:
     assert registry_builtin.main(["--check"]) == 0
     (line,) = capsys.readouterr().out.splitlines()
-    assert line.startswith("registry_builtin --check: clean, 39 descriptors")
+    assert line.startswith("registry_builtin --check: clean, 42 descriptors in 2 tables")
 
 
 def test_the_generator_check_reports_a_changed_table_by_pointer(
@@ -507,7 +507,11 @@ def test_default_registry_is_built_once_and_closed(registry: Registry) -> None:
     first = default_registry()
     assert all(found is first for found in seen) and len(seen) == 8
     assert first.closed
-    assert first.registry_sha256 == registry.registry_sha256
+    # The process registry holds every built-in table (F1-WO3: `core.json` too), the legacy one
+    # unchanged, and no extension in this environment.
+    assert first.descriptors(("unit_model", "property_method", "connection_definition")) == (
+        registry.descriptors(("unit_model", "property_method", "connection_definition"))
+    )
     assert isinstance(first.resolve("unit_model", "syn001.tp_flash"), Registered)
     with pytest.raises(RuntimeError, match="registry_closed"):
         first.register(first.resolve("unit_model", "syn001.tp_flash"))

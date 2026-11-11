@@ -1,13 +1,16 @@
-"""F1-WO2 (ADR 0060 D6): the legacy built-in table, generated from the legacy code.
+"""F1-WO2, F1-WO3 (ADR 0060 D6, D7): the built-in tables, generated from the code they describe.
 
-    python scripts/registry_builtin.py --write   # writes the table
-    python scripts/registry_builtin.py --check   # regenerates it in memory and compares
+    python scripts/registry_builtin.py --write   # writes the tables
+    python scripts/registry_builtin.py --check   # regenerates them in memory and compares
 
-The table is `src/openflowsheet/registry/builtin/legacy.json` (package data). `--check` fails with
-the JSON pointers at which the committed table differs from the regenerated one.
+The tables are package data under `src/openflowsheet/registry/builtin/`: `legacy.json` (D6) and
+`core.json` (D7: the E01 contributors). `--check` fails with the JSON pointers at which a
+committed table differs from the regenerated one.
 
 Each prints one summary line and exits 0 only on success. `--check` also builds a registry from
-the committed table, so a table the registry would refuse fails it.
+the committed tables, so a table the registry would refuse fails it. `--write` never builds the
+process registry, so it runs with a stale or missing table (signatures come from the binder's
+tables through `local._model_view`, the function `list_models` maps them with).
 
 The table holds D6's 39 legacy descriptors: the connection definition `nTP-v1`, the 7 legacy
 property methods and the 31 legacy units. What the generator reads:
@@ -23,6 +26,12 @@ property methods and the 31 legacy units. What the generator reads:
   declaring it as `MODEL_ID` or in `MODEL_IDS`, F0's own cross-check rule).
 
 It never reads `MODEL_BASES`, so E-F1-1's comparison of the admitted set with it is independent.
+
+`core.json` holds D1's three built-in `functional_contributor` descriptors, E01's `cost`, `lca` and
+`derived` (ADR 0052): read from `CONTRIBUTOR_ORDER`, `CONTRIBUTOR_MODULES` and each module's
+`register_contributor(<name>, <factory>)` call (by AST, so nothing is registered or constructed);
+the implementation set is every `*.py` under the directory of the module defining the factory
+(D6). They are listed only: the registry never calls `register_contributor` (D1, risk 4).
 """
 
 from __future__ import annotations
@@ -42,6 +51,7 @@ from typing import Any, Final
 ROOT: Final = Path(__file__).resolve().parent.parent
 SOURCE: Final = ROOT / "src"
 TABLE: Final = SOURCE / "openflowsheet" / "registry" / "builtin" / "legacy.json"
+CORE_TABLE: Final = SOURCE / "openflowsheet" / "registry" / "builtin" / "core.json"
 
 #: D6's connection definition, which every legacy method provides and every legacy unit requires.
 CONNECTION: Final = "nTP-v1"
@@ -121,6 +131,8 @@ BINDER: Final = "openflowsheet.application.revision_binding"
 METHOD_FACTORY: Final = {"module": BINDER, "attribute": "basis_provider", "key": None}
 #: The `reference_convention` of a provider constructed once per component (D6).
 PER_COMPONENT: Final = "per_component"
+#: E01's contributors whose implementation needs an extra of `pyproject.toml` (Brightway, `lca`).
+CONTRIBUTOR_EXTRA: Final[Mapping[str, str]] = {"lca": "lca"}
 
 
 def _modules() -> None:
@@ -315,12 +327,20 @@ def methods() -> list[dict[str, Any]]:
 
 
 def _signatures() -> list[dict[str, Any]]:
-    """`list_models`' entries, as the operation returns them."""
-    from openflowsheet.application.local import LocalApplication
+    """`list_models`' entries: the operation's own mapping (`local._model_view`) of each
+    `MODEL_SIGNATURES` entry, sorted by model id, into its own result type. Not through an
+    application, whose construction builds the process registry from the tables written here
+    (W2-7); `tests/test_f1_legacy_builtins.py` holds this equal to `list_models()`."""
+    from openflowsheet.application import local
+    from openflowsheet.application.revision_binding import MODEL_SIGNATURES
+    from openflowsheet.application.types import ModelRegistryView
 
-    models: list[dict[str, Any]] = (
-        LocalApplication.in_memory().list_models().as_document()["models"]
+    view = ModelRegistryView(
+        models=tuple(
+            local._model_view(MODEL_SIGNATURES[model_id]) for model_id in sorted(MODEL_SIGNATURES)
+        )
     )
+    models: list[dict[str, Any]] = view.as_document()["models"]
     return models
 
 
@@ -408,10 +428,78 @@ def connection_definition() -> dict[str, Any]:
     )
 
 
+# -- the E01 contributors (core.json) ---------------------------------------------------------
+
+
+def _registered_factory(module: str, name: str) -> str:
+    """The attribute `module` passes to `register_contributor(name, <attribute>)`, by AST."""
+    spec = importlib.util.find_spec(module)
+    if spec is None or spec.origin is None:
+        raise ValueError(f"{module}: no file")
+    tree = ast.parse(Path(spec.origin).read_text(encoding="utf-8"))
+    found = [
+        node.args[1].id
+        for node in ast.walk(tree)
+        if isinstance(node, ast.Call)
+        and isinstance(node.func, ast.Name)
+        and node.func.id == "register_contributor"
+        and len(node.args) == 2
+        and isinstance(node.args[0], ast.Constant)
+        and node.args[0].value == name
+        and isinstance(node.args[1], ast.Name)
+    ]
+    if len(found) != 1:
+        raise ValueError(f"{module}: {len(found)} register_contributor({name!r}, ...) calls")
+    return found[0]
+
+
+def contributors() -> list[dict[str, Any]]:
+    """D1's built-in `functional_contributor` descriptors: E01's contributors, in its order."""
+    from openflowsheet.assessment.program import CONTRIBUTOR_MODULES, CONTRIBUTOR_ORDER
+
+    found = []
+    for name in CONTRIBUTOR_ORDER:
+        module = CONTRIBUTOR_MODULES[name]
+        attribute = _registered_factory(module, name)
+        defining = getattr(importlib.import_module(module), attribute).__module__
+        directory = (SOURCE / _import_path(defining)).parent
+        modules = [path.relative_to(SOURCE).as_posix() for path in directory.rglob("*.py")]
+        found.append(
+            _descriptor(
+                "functional_contributor",
+                name,
+                f"Assessment contributor {name}",
+                requires=[],
+                provides=[],
+                modules=modules,
+                factory={"module": defining, "attribute": attribute, "key": None},
+                payload={},
+                pip_extra=CONTRIBUTOR_EXTRA.get(name),
+            )
+        )
+    return found
+
+
+# -- the tables ------------------------------------------------------------------------------
+
+
+def _sorted(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    return sorted(rows, key=lambda row: (row["kind"].encode("utf-8"), row["id"].encode("utf-8")))
+
+
 def table() -> list[dict[str, Any]]:
     """The legacy table, sorted by (kind, id)."""
-    rows = [connection_definition(), *methods(), *units()]
-    return sorted(rows, key=lambda row: (row["kind"].encode("utf-8"), row["id"].encode("utf-8")))
+    return _sorted([connection_definition(), *methods(), *units()])
+
+
+def core_table() -> list[dict[str, Any]]:
+    """The core table (`core.json`), sorted by (kind, id)."""
+    return _sorted(contributors())
+
+
+def tables() -> dict[Path, list[dict[str, Any]]]:
+    """Each built-in table's file and its regenerated rows."""
+    return {TABLE: table(), CORE_TABLE: core_table()}
 
 
 def render(rows: Sequence[Mapping[str, Any]]) -> str:
@@ -456,44 +544,49 @@ def _summary(rows: Sequence[Mapping[str, Any]]) -> str:
 
 def check() -> int:
     from openflowsheet.registry import Registry
-    from openflowsheet.registry.legacy import TABLE_NAME
 
-    rows = table()
-    text = render(rows)
-    if not TABLE.is_file():
-        print(f"registry_builtin --check: FAILED, {_shown(TABLE)} is missing")
-        return 1
-    committed = TABLE.read_text(encoding="utf-8")
-    if committed != text:
-        found = differences(json.loads(committed), json.loads(text))
-        shown = ", ".join(found[:10]) + (f" (+{len(found) - 10} more)" if len(found) > 10 else "")
-        print(
-            f"registry_builtin --check: FAILED, {_shown(TABLE)} differs at "
-            f"{len(found)} pointer(s): {shown or 'formatting only'}"
-        )
-        return 1
-    registry = Registry.build(builtin_tables={TABLE_NAME: json.loads(committed)})
+    committed: dict[str, list[dict[str, Any]]] = {}
+    rows: list[dict[str, Any]] = []
+    for path, regenerated in tables().items():
+        text = render(regenerated)
+        if not path.is_file():
+            print(f"registry_builtin --check: FAILED, {_shown(path)} is missing")
+            return 1
+        held = path.read_text(encoding="utf-8")
+        if held != text:
+            found = differences(json.loads(held), json.loads(text))
+            shown = ", ".join(found[:10]) + (
+                f" (+{len(found) - 10} more)" if len(found) > 10 else ""
+            )
+            print(
+                f"registry_builtin --check: FAILED, {_shown(path)} differs at "
+                f"{len(found)} pointer(s): {shown or 'formatting only'}"
+            )
+            return 1
+        committed[path.stem] = json.loads(held)
+        rows.extend(regenerated)
+    registry = Registry.build(builtin_tables=committed)
     print(
-        f"registry_builtin --check: clean, {len(rows)} descriptors ({_summary(rows)}); "
-        f"registry_sha256 {registry.registry_sha256}"
+        f"registry_builtin --check: clean, {len(rows)} descriptors in {len(committed)} tables "
+        f"({_summary(rows)}); registry_sha256 {registry.registry_sha256}"
     )
     return 0
 
 
 def write() -> int:
-    rows = table()
-    TABLE.parent.mkdir(parents=True, exist_ok=True)
-    TABLE.write_text(render(rows), encoding="utf-8")
-    print(
-        f"registry_builtin --write: {len(rows)} descriptors ({_summary(rows)}) to {_shown(TABLE)}"
-    )
+    written = []
+    for path, rows in tables().items():
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(render(rows), encoding="utf-8")
+        written.append(f"{len(rows)} descriptors ({_summary(rows)}) to {_shown(path)}")
+    print("registry_builtin --write: " + "; ".join(written))
     return 0
 
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=(__doc__ or "").split("\n", 1)[0])
     mode = parser.add_mutually_exclusive_group(required=True)
-    mode.add_argument("--write", action="store_true", help="write the legacy table")
+    mode.add_argument("--write", action="store_true", help="write the built-in tables")
     mode.add_argument("--check", action="store_true", help="regenerate in memory and compare")
     arguments = parser.parse_args(argv)
     _modules()
