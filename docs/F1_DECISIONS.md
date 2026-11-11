@@ -148,3 +148,74 @@ table on this checkout: `713489f2…` (not committed; WO5 pins `builtin-sha256.t
 
 Not in WO2: entry points in `default_registry()` and the call sites of D8 (WO3); `core.json`, `records.json`;
 the real-built-ins constant of E-F1-5 (WO5).
+
+## F1-WO3 (discovery and integration), 2026-11-11
+
+Files: `src/openflowsheet/registry/discovery.py` (new), `registry/__init__.py`, `registry/selfhash.py`,
+`registry/builtin/core.json` (generated), `scripts/registry_builtin.py`, `messages/catalogue.py` (the pre-freeze
+call), the D8 call sites (`application/local.py`, `cli.py`, `bindings/http.py`, `bindings/mcp.py`),
+`tests/f1_harness.py` (fake distributions), `tests/test_f1_discovery.py`; T07's allowlist and counts. The process
+registry now holds 42 built-ins; its `registry_sha256` on this checkout is `f4722624…` (the legacy table alone is
+still `713489f2…`); WO5 pins the value over all tables.
+
+- **DECISION W3-1. The entry point's name is the `entry_point` string** in quarantine rows, snapshot rows and
+  `extension_invalid`/`extension_load_failed` params (it is the namespace, D7). The document's `namespace` must
+  equal it, else `extension_invalid(<entry point>, /namespace)`. Alternative: `name = value` spelled out.
+- **DECISION W3-2. Discovery order and what is loaded.** Entry points are read from `importlib.metadata.distributions`
+  (every copy, so one distribution seen twice is visible), distribution names normalised by PEP 503; deduplicated
+  on (normalised name, version, entry-point name); sorted by (name, entry point, version, value). Checks, first
+  wins: `namespace_conflict` (two (name, version) pairs declare it; both quarantined), `reserved_namespace` (D7's six
+  plus the first segment of every built-in id), then load (`extension_load_failed`, any `Exception`, its class
+  logged). A package quarantined by name is not loaded. Alternative: load every entry point first.
+- **DECISION W3-3. Import root of an entry-point package:** `find_spec` of the entry point's top-level module; the
+  directory above a package's `__init__.py`, or a module's directory. A namespace package or zip import has no
+  root: each non-empty `modules` is then `self_hash_unavailable(<id>, <first path>)` (`selfhash` takes `None`).
+- **DECISION W3-4. Message catalogues are pre-validated on a scratch `Catalogue()`** with MSG's own `register`
+  (schema, namespace, prefix, clashes), so step 4 cannot fail; a failure, or a resource that cannot be read, is
+  `extension_invalid(<entry point>, /descriptors/<i>/payload/catalogue)`. Codes are unique across a package's
+  documents. Step 4 registers them sorted by (id, version key). `Registry.build(catalogue_register=None)` (the
+  default, tests) registers none; `default_registry()` passes `messages.catalogue.register`.
+- **DECISION W3-5. Limitation codes** (D2) are checked after the per-descriptor pass, against the core codes (a
+  lookup on a throw-away `Catalogue()`, made only when a descriptor has limitations) plus the codes of the package's
+  own catalogues; a miss is `extension_invalid(<entry point>, /descriptors/<i>/limitations/<j>/code)`, declared
+  order; for a built-in it raises. Alternative: a new code.
+- **DECISION W3-6. The pre-freeze call.** `Catalogue(registry_first=True)` is the process `CATALOGUE` only; while not
+  frozen its lookups call `registry.before_catalogue_freeze()`, which raises `RuntimeError("catalogue lookup during
+  registry build")` on a thread running any `Registry.build` (a `threading.local` depth) and otherwise calls
+  `default_registry()`. A re-entrant `default_registry()` on its building thread raises instead of deadlocking.
+  T07: one `threading.local` and one `ContextVar` (the usage recorder) allowlisted; counts `ContextVar` 1 → 2,
+  `threading.local` 0 → 1.
+- **DECISION W3-7. D8 call sites:** `LocalApplication.open` (so `create`) and `in_memory`; `cli.main` inside its
+  `try`, after argument parsing. The HTTP and MCP servers start through `cli.main` (`serve-http`, `serve-mcp`) and
+  serve an application `LocalApplication.open` made, so both calls precede them; the bindings themselves may import
+  only the dispatch surface (T07 G14, `test_t07_w6a_http.py`, `test_t07_w6b_mcp.py`), so they carry no call.
+- **DECISION W3-8. `core.json`:** `functional_contributor` `cost`, `lca`, `derived`, version `1.0.0`, status
+  `released` (the three shipped in the `v0.4.0` tag), title `Assessment contributor <name>`, `payload {}`;
+  `factory` = the class each module passes to `register_contributor` (read by AST, so the generator registers
+  nothing); `modules` = every `*.py` under the defining module's directory (D6; `cost` and `derived` share
+  `assessment/cost/`); `pip_extra` `lca` for `lca` (Brightway), else null. The generator writes and checks both
+  tables; its summary line names the table count.
+- **DECISION W3-9. `--write` with a stale or missing table (W2-7):** the generator no longer constructs an
+  application; signatures are `local._model_view` over `MODEL_SIGNATURES`, sorted (its key set equals
+  `MODEL_BUILDERS`'s, which the generator may not name). A test holds them equal to `list_models()`, and another runs
+  `write()` with the process registry unbuilt and its table reader raising. `legacy.json` is byte-identical.
+- **DECISION W3-10. Factory resolution** (`Registry.factory`) returns the attribute (indexed by `key`); nothing is
+  constructed. Refusals (`FactoryRefusedError`), in order: `factory_unavailable(<kind>, <id>)` for a null factory or
+  a legacy-form method with `selectable: false` (`pr-lib-v1`, `wilson-ig-v1`, W2-5; also `syn001.cascade`);
+  `platform_unsupported(<id>, <platform>)`; `dependency_missing(<id>, <extra>)` when the import fails and
+  `pip_extra` is set (else the `ImportError` propagates). **For the design lane:** `factory_unavailable` is not in
+  the ADR's code table; alternatives are `model_unsupported` (units only) or D6 naming another factory.
+- **DECISION W3-11. Usage recorder:** `usage()` sets a fresh `Usage` in a `ContextVar` for its block; `resolve` and
+  `factory` add (kind, id, version). `admit`, `admission_matrix` and `extensions_used` use an unrecorded lookup
+  (queries, not uses). Nested blocks record into the innermost only. No executor copies the context yet (F8).
+- **DECISION W3-12. Extensions used:** `Registry.extensions_used(references)` over (kind, id, version or `None` =
+  highest) references; rows carry identity and D9's evidence fields; unmatched references are listed apart;
+  `notices()` is D9's flag. Extracting the references from a run's documents is left to F8. **For the design lane:**
+  a revision's `model.version` (`0.0.0-declared`, `0.3.28`, …) is not a registry version, so "the unit ids and
+  versions of its revision" (D8) needs a mapping rule.
+- **DECISION W3-13. E-F1-7's process paths run in fresh interpreters** (the test process's catalogue is frozen by
+  then); the in-process tests check the guard and a test catalogue.
+
+Not in WO3: catalogue entries for the F1 codes, `factory_unavailable` included (WO4a); the operations (WO4a, WO4b);
+`builtin-sha256.txt` over all tables, CI, manifest (WO5); copying the usage context into executors and deriving
+references from run documents (F8).
