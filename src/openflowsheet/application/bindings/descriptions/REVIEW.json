@@ -29,15 +29,15 @@
       "reviews": [
         {
           "review_kind": "design-lane",
-          "status": "pending_design_review",
-          "reviewed_by": null,
-          "reviewed_at": null
+          "status": "reviewed",
+          "reviewed_by": "reviewer (design lane), docs/reviews/F1-review.md (approved with edits, applied in de11ec84)",
+          "reviewed_at": "2026-11-11"
         },
         {
           "review_kind": "human",
-          "status": "pending",
-          "reviewed_by": null,
-          "reviewed_at": null
+          "status": "reviewed",
+          "reviewed_by": "Frank Peters",
+          "reviewed_at": "2026-11-11"
         }
       ]
     },
@@ -249,15 +249,15 @@
       "reviews": [
         {
           "review_kind": "design-lane",
-          "status": "pending_design_review",
-          "reviewed_by": null,
-          "reviewed_at": null
+          "status": "reviewed",
+          "reviewed_by": "reviewer (design lane), docs/reviews/F1-review.md (approved with edits, applied in de11ec84)",
+          "reviewed_at": "2026-11-11"
         },
         {
           "review_kind": "human",
-          "status": "pending",
-          "reviewed_by": null,
-          "reviewed_at": null
+          "status": "reviewed",
+          "reviewed_by": "Frank Peters",
+          "reviewed_at": "2026-11-11"
         }
       ]
     },
