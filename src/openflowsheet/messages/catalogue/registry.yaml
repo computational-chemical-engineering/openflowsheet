@@ -1,0 +1,242 @@
+# F1, the extension registry (ADR 0060, code table; F1-WO4a): the registry's refusals,
+# quarantine reasons and notices. Params are strings (F1 decision W1-12). Emitters:
+# `registry/capability.py` (admission, D5), `registry/__init__.py` and `registry/discovery.py`
+# (quarantine, D7; factories, W3-10), `registry/descriptor.py` (the evidence flag, D9).
+catalogue: openflowsheet-messages-v1
+namespace: null
+entries:
+  # D5: a (unit, method, definition) triple that is not admitted.
+  - code: capability_missing
+    family: refusal
+    kind: not_supported
+    complete: true
+    title: The unit model cannot be used with this property method
+    args: [unit, method, capability]
+    params:
+      unit:       {type: text, label: unit model}
+      method:     {type: text, label: property method}
+      capability: {type: text, label: capability}
+    summary: "Unit model {unit!raw} is not admitted with property method {method!raw}: nothing provides {capability!raw}."
+    why: "A unit model states the capabilities it needs from the property method and from the stream definition, and a property method states those it needs from the stream definition. A pair is admitted only when every stated need is met. A capability written as several tokens separated by a vertical bar is met by any one of them."
+    action: "Choose a property method that provides {capability!raw}, or a unit model that does not need it. The list_capabilities operation lists what each registered model and method requires and provides; check_admission tests a pair."
+    gap: {limitation: null, capability: "a property method or stream definition that provides the capability the error names"}
+    see_also: [model_unsupported, capability_unresolved]
+    examples:
+      - params: {unit: thermal.heater, method: pr-lib-v1, capability: "conn:nTP-v1"}
+
+  # D4: an unknown token in a static space, or an unknown space; quarantines the package (D7).
+  - code: capability_unknown
+    family: refusal
+    kind: input
+    complete: true
+    title: An extension names a capability the registry does not know
+    args: [token]
+    params: {token: {type: text, label: capability}}
+    summary: "The capability {token!raw} is not known, so the extension that declares it is not loaded."
+    why: "A capability is written space:name, with an optional level. Its space must be one of the registry's spaces, and in a space whose names are a fixed list (vocab, flash, convention, legacy) the name must be on that list. One unknown capability keeps the whole extension package out of the registry; other packages are unaffected."
+    action: "Correct the capability in the extension's descriptor, or remove it, and reinstall the extension."
+    see_also: [reserved_capability]
+    examples:
+      - params: {token: "flash:PH"}
+
+  # D4: a `legacy:` token named by a non-built-in, or an `x:` token outside its namespace.
+  - code: reserved_capability
+    family: refusal
+    kind: input
+    complete: true
+    title: An extension names a capability reserved for others
+    args: [token]
+    params: {token: {type: text, label: capability}}
+    summary: "The capability {token!raw} is reserved, so the extension that declares it is not loaded."
+    why: "Capabilities in the legacy space describe the property methods built into OpenFlowsheet; no extension may require or provide them, because the built-in unit models cannot run on an extension's method. A capability in the x space may be provided only by an extension of the namespace it names."
+    action: "Remove the capability from the extension's descriptor, or, for an x capability, provide it from the extension whose namespace it names."
+    see_also: [capability_unknown]
+    examples:
+      - params: {token: "legacy:syn001"}
+
+  # D7: a namespace reserved for the built-ins.
+  - code: reserved_namespace
+    family: refusal
+    kind: input
+    complete: true
+    title: An extension uses a reserved namespace
+    args: [namespace]
+    params: {namespace: {type: text, label: namespace}}
+    summary: "The namespace {namespace!raw} is reserved, so the extension package that uses it is not loaded."
+    why: "An extension's namespace is the name of its entry point, and every id it registers starts with it. The first segment of every built-in id, and openflowsheet, core, std, legacy, x and user, are reserved so that an extension can never take a built-in's id."
+    action: "Rename the extension's entry point to a namespace of its own, and start every id the package declares with it."
+    see_also: [namespace_conflict]
+    examples:
+      - params: {namespace: thermal}
+
+  # D7: two distributions declare one namespace; both are quarantined.
+  - code: namespace_conflict
+    family: refusal
+    kind: input
+    complete: true
+    title: Two installed extensions use the same namespace
+    args: [namespace]
+    params: {namespace: {type: text, label: namespace}}
+    summary: "Two installed distributions declare the namespace {namespace!raw}, so neither is loaded."
+    why: "A namespace identifies one extension. When two different distributions declare it, the registry cannot tell which one an id belongs to, so it loads neither. One distribution found twice on the import path is not a conflict."
+    action: "Uninstall one of the two distributions, or give one of them another namespace."
+    see_also: [reserved_namespace]
+    examples:
+      - params: {namespace: acme}
+
+  # D7: the package document fails the schema, the namespace or the id prefix rule.
+  - code: extension_invalid
+    family: refusal
+    kind: input
+    complete: true
+    title: An extension package does not match the descriptor format
+    args: [entry_point, pointer]
+    params:
+      entry_point: {type: text, label: entry point}
+      pointer:     {type: text, label: location in the package document}
+    summary: "The extension package of entry point {entry_point!raw} is not valid at {pointer!raw}, so it is not loaded."
+    why: "Every extension package is checked before anything of it is registered: its document against the extension descriptor schema, its namespace against the entry point's name, each id against the namespace, each message catalogue against the message format, and each limitation code against the catalogue. The location is a JSON pointer into the package document."
+    action: "Correct the package document at the location given and reinstall the extension."
+    examples:
+      - params: {entry_point: acme, pointer: /descriptors/0/version}
+
+  # D7: the entry point could not be loaded, or its callable raised.
+  - code: extension_load_failed
+    family: refusal
+    kind: input
+    complete: true
+    title: An extension's entry point could not be loaded
+    args: [entry_point]
+    params: {entry_point: {type: text, label: entry point}}
+    summary: "The entry point {entry_point!raw} could not be loaded, or raised an error, so its extension is not loaded."
+    why: "The registry imports each extension's entry point and calls it for its package document. The import failed or the call raised an exception; the exception's class is written to the log, not to this message."
+    action: "Import the entry point's module in the same Python environment to see the error, correct the extension and reinstall it."
+    examples:
+      - params: {entry_point: acme}
+
+  # D3: a self-hash path that does not resolve to a regular file.
+  - code: self_hash_unavailable
+    family: refusal
+    kind: input
+    complete: true
+    title: A file of an extension's implementation cannot be read
+    args: [id, path]
+    params:
+      id:   {type: text, label: extension id}
+      path: {type: text, label: file}
+    summary: "The file {path!raw} of extension {id!raw} cannot be read, so its package is not loaded."
+    why: "The registry identifies each extension by a hash of the files its descriptor lists, read from the directory its top-level package is installed in. This file is not a regular file there. Extensions installed as a zip file or as a namespace package have no such directory and cannot be hashed."
+    action: "Install the extension as an ordinary package directory, and list in its descriptor only files the package contains."
+    examples:
+      - params: {id: acme.slurry-mixer, path: acme/units/mixer.py}
+
+  # W3-10: a factory is null, or the method is registered but not selectable.
+  - code: factory_unavailable
+    family: refusal
+    kind: not_supported
+    complete: true
+    title: A registered extension cannot be constructed
+    args: [kind, id]
+    params:
+      kind: {type: text, label: extension kind}
+      id:   {type: text, label: extension id}
+    summary: "The {kind!raw} {id!raw} is registered and listed, but this version cannot construct it."
+    why: "Some registered extensions are listed so that their capabilities can be inspected, but they have no constructor this version may use: their descriptor names none, or the property method is registered without being selectable for a flowsheet."
+    action: "Choose another {kind!raw}; the list_capabilities operation lists the registered ones."
+    gap: {limitation: null, capability: "a constructor for this registered extension"}
+    see_also: [platform_unsupported, dependency_missing]
+    examples:
+      - params: {kind: property_method, id: pr-lib-v1}
+
+  # D7, factory resolution: the descriptor's `platforms` exclude this platform.
+  - code: platform_unsupported
+    family: refusal
+    kind: not_supported
+    complete: true
+    title: An extension does not run on this platform
+    args: [id, platform]
+    params:
+      id:       {type: text, label: extension id}
+      platform: {type: text, label: platform}
+    summary: "The extension {id!raw} does not run on {platform!raw}."
+    why: "An extension's descriptor lists the platforms its implementation runs on. Admission does not depend on the platform, but constructing the extension does, and this platform is not on its list."
+    action: "Run on one of the platforms the extension lists, or choose another extension that provides the same capabilities."
+    gap: {limitation: null, capability: "this extension on this platform"}
+    see_also: [dependency_missing]
+    examples:
+      - params: {id: acme.slurry-mixer, platform: linux-aarch64}
+
+  # D7, factory resolution: the implementation's optional dependencies are not installed.
+  - code: dependency_missing
+    family: refusal
+    kind: not_supported
+    complete: true
+    title: An extension's optional dependencies are not installed
+    args: [id, extra]
+    params:
+      id:    {type: text, label: extension id}
+      extra: {type: text, label: install extra}
+    summary: "The extension {id!raw} needs the optional dependencies of the extra {extra!raw}, which are not installed."
+    why: "An extension's descriptor names the install extra that brings its optional dependencies. Importing its implementation failed, so those dependencies are missing from this Python environment."
+    action: "Install the extra, for example pip install with the package name followed by [{extra!raw}], then retry."
+    gap: {limitation: null, capability: "the optional dependencies of this extension"}
+    see_also: [platform_unsupported]
+    examples:
+      - params: {id: lca, extra: lca}
+
+  # D8: `register` on a closed registry, a programming error.
+  - code: registry_closed
+    family: refusal
+    kind: bug
+    complete: true
+    title: Something tried to register an extension after the registry was built
+    summary: "An extension was registered after the registry was built and closed."
+    why: "The registry is built once, at start, from the built-in tables and the installed entry points, and then closed so that what is loaded cannot change during a session. Registering afterwards is a programming error."
+    action: "Report this as a bug, with the steps that led to it."
+    examples:
+      - params: {}
+
+  # D9: the evidence flag; D4: an unregistered name in a registry-derived space.
+  - code: extension_unreviewed
+    family: notice
+    kind: notice
+    complete: true
+    title: A result used an extension nobody has reviewed
+    args: [id, origin]
+    params:
+      id:     {type: text, label: extension id}
+      origin: {type: text, label: origin}
+    summary: "The extension {id!raw} ({origin!raw}) has not been reviewed."
+    why: "An installed or contributed extension counts as reviewed only with an attestation for its exact code and descriptor. Without one, every result that uses it carries this notice. It says nothing about whether the extension is correct, only that no review vouches for it."
+    action: "Weigh the result accordingly, or have the extension reviewed and its attestation recorded."
+    examples:
+      - params: {id: acme.slurry-mixer, origin: installed}
+
+  - code: preview_kind
+    family: notice
+    kind: notice
+    complete: true
+    title: A result used an extension of a kind still in preview
+    args: [kind, id]
+    params:
+      kind: {type: text, label: extension kind}
+      id:   {type: text, label: extension id}
+    summary: "The {kind!raw} {id!raw} is of a kind whose format is still in preview."
+    why: "The format of some extension kinds is not yet frozen and may change in a later version. Results that use such an extension carry this notice."
+    action: "Expect the extension's descriptor format to change; nothing needs doing now."
+    examples:
+      - params: {kind: functional_contributor, id: acme.cost}
+
+  - code: capability_unresolved
+    family: notice
+    kind: notice
+    complete: true
+    title: A capability names something that is not registered
+    args: [token]
+    params: {token: {type: text, label: capability}}
+    summary: "The capability {token!raw} names something that is not registered, so it is never met."
+    why: "A capability whose name is the id of a registered stream definition, phase family or other registered extension is met only while that extension is registered. This one is not, so no provider meets it; when it is one of several alternatives the others still count."
+    action: "Install the extension that registers it if the capability is needed; otherwise nothing needs doing."
+    see_also: [capability_missing]
+    examples:
+      - params: {token: "conn:acme.slurry"}

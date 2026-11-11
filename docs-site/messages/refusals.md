@@ -612,6 +612,53 @@ Pressures cannot be shown as gauge pressures in barg: the project has no declare
 
 - **Summary:** Refused: block energy refused.
 
+<a id="capability_missing"></a>
+
+## `capability_missing`: The unit model cannot be used with this property method
+
+**Kind:** Not supported in this version: a limitation of OpenFlowsheet, not an error in your flowsheet.
+
+- **Summary:** Unit model &lt;unit&gt; is not admitted with property method &lt;method&gt;: nothing provides &lt;capability&gt;.
+- **Why:** A unit model states the capabilities it needs from the property method and from the stream definition, and a property method states those it needs from the stream definition. A pair is admitted only when every stated need is met. A capability written as several tokens separated by a vertical bar is met by any one of them.
+- **Do:** Choose a property method that provides &lt;capability&gt;, or a unit model that does not need it. The list_capabilities operation lists what each registered model and method requires and provides; check_admission tests a pair.
+- **Parameters:** `unit` (text), `method` (text), `capability` (text)
+- **Not supported:** missing capability: a property method or stream definition that provides the capability the error names
+- **See also:** [`model_unsupported`](#model_unsupported), [`capability_unresolved`](notices.md#capability_unresolved)
+
+Example:
+
+```text
+Unit model thermal.heater is not admitted with property method pr-lib-v1: nothing provides conn:nTP-v1.
+  Why:     A unit model states the capabilities it needs from the property method and from the stream definition, and a property method states those it needs from the stream definition. A pair is admitted only when every stated need is met. A capability written as several tokens separated by a vertical bar is met by any one of them.
+  Do:      Choose a property method that provides conn:nTP-v1, or a unit model that does not need it. The list_capabilities operation lists what each registered model and method requires and provides; check_admission tests a pair.
+  Kind:    Not supported in this version: a limitation of OpenFlowsheet, not an error in your flowsheet.
+  Code:    capability_missing (openflowsheet explain capability_missing)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#capability_missing
+```
+
+<a id="capability_unknown"></a>
+
+## `capability_unknown`: An extension names a capability the registry does not know
+
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
+
+- **Summary:** The capability &lt;token&gt; is not known, so the extension that declares it is not loaded.
+- **Why:** A capability is written space:name, with an optional level. Its space must be one of the registry's spaces, and in a space whose names are a fixed list (vocab, flash, convention, legacy) the name must be on that list. One unknown capability keeps the whole extension package out of the registry; other packages are unaffected.
+- **Do:** Correct the capability in the extension's descriptor, or remove it, and reinstall the extension.
+- **Parameters:** `token` (text)
+- **See also:** [`reserved_capability`](#reserved_capability)
+
+Example:
+
+```text
+The capability flash:PH is not known, so the extension that declares it is not loaded.
+  Why:     A capability is written space:name, with an optional level. Its space must be one of the registry's spaces, and in a space whose names are a fixed list (vocab, flash, convention, legacy) the name must be on that list. One unknown capability keeps the whole extension package out of the registry; other packages are unaffected.
+  Do:      Correct the capability in the extension's descriptor, or remove it, and reinstall the extension.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    capability_unknown (openflowsheet explain capability_unknown)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#capability_unknown
+```
+
 <a id="carried_split_inconsistent"></a>
 
 ## `carried_split_inconsistent`: Carried split inconsistent
@@ -721,6 +768,30 @@ Pressures cannot be shown as gauge pressures in barg: the project has no declare
 *No plain-language explanation is written yet; the summary is the technical one.*
 
 - **Summary:** Refused: declaration mismatch.
+
+<a id="dependency_missing"></a>
+
+## `dependency_missing`: An extension's optional dependencies are not installed
+
+**Kind:** Not supported in this version: a limitation of OpenFlowsheet, not an error in your flowsheet.
+
+- **Summary:** The extension &lt;id&gt; needs the optional dependencies of the extra &lt;extra&gt;, which are not installed.
+- **Why:** An extension's descriptor names the install extra that brings its optional dependencies. Importing its implementation failed, so those dependencies are missing from this Python environment.
+- **Do:** Install the extra, for example pip install with the package name followed by &lt;extra&gt;, then retry.
+- **Parameters:** `id` (text), `extra` (text)
+- **Not supported:** missing capability: the optional dependencies of this extension
+- **See also:** [`platform_unsupported`](#platform_unsupported)
+
+Example:
+
+```text
+The extension lca needs the optional dependencies of the extra lca, which are not installed.
+  Why:     An extension's descriptor names the install extra that brings its optional dependencies. Importing its implementation failed, so those dependencies are missing from this Python environment.
+  Do:      Install the extra, for example pip install with the package name followed by lca, then retry.
+  Kind:    Not supported in this version: a limitation of OpenFlowsheet, not an error in your flowsheet.
+  Code:    dependency_missing (openflowsheet explain dependency_missing)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#dependency_missing
+```
 
 <a id="directory_not_empty"></a>
 
@@ -900,6 +971,50 @@ The energy balance of unit 'X1' (external.coupled) is not given: the solution's 
 
 - **Summary:** Refused: exchanger specification.
 
+<a id="extension_invalid"></a>
+
+## `extension_invalid`: An extension package does not match the descriptor format
+
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
+
+- **Summary:** The extension package of entry point &lt;entry_point&gt; is not valid at &lt;pointer&gt;, so it is not loaded.
+- **Why:** Every extension package is checked before anything of it is registered: its document against the extension descriptor schema, its namespace against the entry point's name, each id against the namespace, each message catalogue against the message format, and each limitation code against the catalogue. The location is a JSON pointer into the package document.
+- **Do:** Correct the package document at the location given and reinstall the extension.
+- **Parameters:** `entry_point` (text), `pointer` (text)
+
+Example:
+
+```text
+The extension package of entry point acme is not valid at /descriptors/0/version, so it is not loaded.
+  Why:     Every extension package is checked before anything of it is registered: its document against the extension descriptor schema, its namespace against the entry point's name, each id against the namespace, each message catalogue against the message format, and each limitation code against the catalogue. The location is a JSON pointer into the package document.
+  Do:      Correct the package document at the location given and reinstall the extension.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    extension_invalid (openflowsheet explain extension_invalid)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#extension_invalid
+```
+
+<a id="extension_load_failed"></a>
+
+## `extension_load_failed`: An extension's entry point could not be loaded
+
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
+
+- **Summary:** The entry point &lt;entry_point&gt; could not be loaded, or raised an error, so its extension is not loaded.
+- **Why:** The registry imports each extension's entry point and calls it for its package document. The import failed or the call raised an exception; the exception's class is written to the log, not to this message.
+- **Do:** Import the entry point's module in the same Python environment to see the error, correct the extension and reinstall it.
+- **Parameters:** `entry_point` (text)
+
+Example:
+
+```text
+The entry point acme could not be loaded, or raised an error, so its extension is not loaded.
+  Why:     The registry imports each extension's entry point and calls it for its package document. The import failed or the call raised an exception; the exception's class is written to the log, not to this message.
+  Do:      Import the entry point's module in the same Python environment to see the error, correct the extension and reinstall it.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    extension_load_failed (openflowsheet explain extension_load_failed)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#extension_load_failed
+```
+
 <a id="external_refused"></a>
 
 ## `external_refused`: External refused
@@ -939,6 +1054,30 @@ The energy balance of unit 'X1' (external.coupled) is not given: the solution's 
 *No plain-language explanation is written yet; the summary is the technical one.*
 
 - **Summary:** Refused: external runner unavailable.
+
+<a id="factory_unavailable"></a>
+
+## `factory_unavailable`: A registered extension cannot be constructed
+
+**Kind:** Not supported in this version: a limitation of OpenFlowsheet, not an error in your flowsheet.
+
+- **Summary:** The &lt;kind&gt; &lt;id&gt; is registered and listed, but this version cannot construct it.
+- **Why:** Some registered extensions are listed so that their capabilities can be inspected, but they have no constructor this version may use: their descriptor names none, or the property method is registered without being selectable for a flowsheet.
+- **Do:** Choose another &lt;kind&gt;; the list_capabilities operation lists the registered ones.
+- **Parameters:** `kind` (text), `id` (text)
+- **Not supported:** missing capability: a constructor for this registered extension
+- **See also:** [`platform_unsupported`](#platform_unsupported), [`dependency_missing`](#dependency_missing)
+
+Example:
+
+```text
+The property_method pr-lib-v1 is registered and listed, but this version cannot construct it.
+  Why:     Some registered extensions are listed so that their capabilities can be inspected, but they have no constructor this version may use: their descriptor names none, or the property method is registered without being selectable for a flowsheet.
+  Do:      Choose another property_method; the list_capabilities operation lists the registered ones.
+  Kind:    Not supported in this version: a limitation of OpenFlowsheet, not an error in your flowsheet.
+  Code:    factory_unavailable (openflowsheet explain factory_unavailable)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#factory_unavailable
+```
 
 <a id="failure_bundle_unmapped"></a>
 
@@ -1341,6 +1480,29 @@ No model with the id "thermal.boiler" is available in this version.
 
 - **Summary:** Refused: multiple steady states possible.
 
+<a id="namespace_conflict"></a>
+
+## `namespace_conflict`: Two installed extensions use the same namespace
+
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
+
+- **Summary:** Two installed distributions declare the namespace &lt;namespace&gt;, so neither is loaded.
+- **Why:** A namespace identifies one extension. When two different distributions declare it, the registry cannot tell which one an id belongs to, so it loads neither. One distribution found twice on the import path is not a conflict.
+- **Do:** Uninstall one of the two distributions, or give one of them another namespace.
+- **Parameters:** `namespace` (text)
+- **See also:** [`reserved_namespace`](#reserved_namespace)
+
+Example:
+
+```text
+Two installed distributions declare the namespace acme, so neither is loaded.
+  Why:     A namespace identifies one extension. When two different distributions declare it, the registry cannot tell which one an id belongs to, so it loads neither. One distribution found twice on the import path is not a conflict.
+  Do:      Uninstall one of the two distributions, or give one of them another namespace.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    namespace_conflict (openflowsheet explain namespace_conflict)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#namespace_conflict
+```
+
 <a id="near_critical"></a>
 
 ## `near_critical`: Near critical
@@ -1700,6 +1862,30 @@ The solve stopped before its first iteration: unit 'T' could not compute its out
 *No plain-language explanation is written yet; the summary is the technical one.*
 
 - **Summary:** Refused: plan refused.
+
+<a id="platform_unsupported"></a>
+
+## `platform_unsupported`: An extension does not run on this platform
+
+**Kind:** Not supported in this version: a limitation of OpenFlowsheet, not an error in your flowsheet.
+
+- **Summary:** The extension &lt;id&gt; does not run on &lt;platform&gt;.
+- **Why:** An extension's descriptor lists the platforms its implementation runs on. Admission does not depend on the platform, but constructing the extension does, and this platform is not on its list.
+- **Do:** Run on one of the platforms the extension lists, or choose another extension that provides the same capabilities.
+- **Parameters:** `id` (text), `platform` (text)
+- **Not supported:** missing capability: this extension on this platform
+- **See also:** [`dependency_missing`](#dependency_missing)
+
+Example:
+
+```text
+The extension acme.slurry-mixer does not run on linux-aarch64.
+  Why:     An extension's descriptor lists the platforms its implementation runs on. Admission does not depend on the platform, but constructing the extension does, and this platform is not on its list.
+  Do:      Run on one of the platforms the extension lists, or choose another extension that provides the same capabilities.
+  Kind:    Not supported in this version: a limitation of OpenFlowsheet, not an error in your flowsheet.
+  Code:    platform_unsupported (openflowsheet explain platform_unsupported)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#platform_unsupported
+```
 
 <a id="policy_unsupported_on_route"></a>
 
@@ -2073,6 +2259,27 @@ The property basis wilson-ig-v2 does not provide the property v, so the values t
 
 - **Summary:** Refused: reference convention not reaction consistent.
 
+<a id="registry_closed"></a>
+
+## `registry_closed`: Something tried to register an extension after the registry was built
+
+**Kind:** Internal error in OpenFlowsheet: please report it.
+
+- **Summary:** An extension was registered after the registry was built and closed.
+- **Why:** The registry is built once, at start, from the built-in tables and the installed entry points, and then closed so that what is loaded cannot change during a session. Registering afterwards is a programming error.
+- **Do:** Report this as a bug, with the steps that led to it.
+
+Example:
+
+```text
+An extension was registered after the registry was built and closed.
+  Why:     The registry is built once, at start, from the built-in tables and the installed entry points, and then closed so that what is loaded cannot change during a session. Registering afterwards is a programming error.
+  Do:      Report this as a bug, with the steps that led to it.
+  Kind:    Internal error in OpenFlowsheet: please report it.
+  Code:    registry_closed (openflowsheet explain registry_closed)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#registry_closed
+```
+
 <a id="request_invalid"></a>
 
 ## `request_invalid`: An optimisation request that breaks its schema or rules
@@ -2116,6 +2323,52 @@ The optimisation request is invalid.
 
 - **Summary:** Refused: rerun unsupported.
 
+<a id="reserved_capability"></a>
+
+## `reserved_capability`: An extension names a capability reserved for others
+
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
+
+- **Summary:** The capability &lt;token&gt; is reserved, so the extension that declares it is not loaded.
+- **Why:** Capabilities in the legacy space describe the property methods built into OpenFlowsheet; no extension may require or provide them, because the built-in unit models cannot run on an extension's method. A capability in the x space may be provided only by an extension of the namespace it names.
+- **Do:** Remove the capability from the extension's descriptor, or, for an x capability, provide it from the extension whose namespace it names.
+- **Parameters:** `token` (text)
+- **See also:** [`capability_unknown`](#capability_unknown)
+
+Example:
+
+```text
+The capability legacy:syn001 is reserved, so the extension that declares it is not loaded.
+  Why:     Capabilities in the legacy space describe the property methods built into OpenFlowsheet; no extension may require or provide them, because the built-in unit models cannot run on an extension's method. A capability in the x space may be provided only by an extension of the namespace it names.
+  Do:      Remove the capability from the extension's descriptor, or, for an x capability, provide it from the extension whose namespace it names.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    reserved_capability (openflowsheet explain reserved_capability)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#reserved_capability
+```
+
+<a id="reserved_namespace"></a>
+
+## `reserved_namespace`: An extension uses a reserved namespace
+
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
+
+- **Summary:** The namespace &lt;namespace&gt; is reserved, so the extension package that uses it is not loaded.
+- **Why:** An extension's namespace is the name of its entry point, and every id it registers starts with it. The first segment of every built-in id, and openflowsheet, core, std, legacy, x and user, are reserved so that an extension can never take a built-in's id.
+- **Do:** Rename the extension's entry point to a namespace of its own, and start every id the package declares with it.
+- **Parameters:** `namespace` (text)
+- **See also:** [`namespace_conflict`](#namespace_conflict)
+
+Example:
+
+```text
+The namespace thermal is reserved, so the extension package that uses it is not loaded.
+  Why:     An extension's namespace is the name of its entry point, and every id it registers starts with it. The first segment of every built-in id, and openflowsheet, core, std, legacy, x and user, are reserved so that an extension can never take a built-in's id.
+  Do:      Rename the extension's entry point to a namespace of its own, and start every id the package declares with it.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    reserved_namespace (openflowsheet explain reserved_namespace)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#reserved_namespace
+```
+
 <a id="restart_pass_rejected"></a>
 
 ## `restart_pass_rejected`: Restart pass rejected
@@ -2145,6 +2398,28 @@ The optimisation request is invalid.
 *No plain-language explanation is written yet; the summary is the technical one.*
 
 - **Summary:** Refused: schema invalid.
+
+<a id="self_hash_unavailable"></a>
+
+## `self_hash_unavailable`: A file of an extension's implementation cannot be read
+
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
+
+- **Summary:** The file &lt;path&gt; of extension &lt;id&gt; cannot be read, so its package is not loaded.
+- **Why:** The registry identifies each extension by a hash of the files its descriptor lists, read from the directory its top-level package is installed in. This file is not a regular file there. Extensions installed as a zip file or as a namespace package have no such directory and cannot be hashed.
+- **Do:** Install the extension as an ordinary package directory, and list in its descriptor only files the package contains.
+- **Parameters:** `id` (text), `path` (text)
+
+Example:
+
+```text
+The file acme/units/mixer.py of extension acme.slurry-mixer cannot be read, so its package is not loaded.
+  Why:     The registry identifies each extension by a hash of the files its descriptor lists, read from the directory its top-level package is installed in. This file is not a regular file there. Extensions installed as a zip file or as a namespace package have no such directory and cannot be hashed.
+  Do:      Install the extension as an ordinary package directory, and list in its descriptor only files the package contains.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    self_hash_unavailable (openflowsheet explain self_hash_unavailable)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#self_hash_unavailable
+```
 
 <a id="single_phase_admissible"></a>
 
