@@ -1286,3 +1286,26 @@ def test_hm17_the_cpu_model_outside_the_registered_leaves_is_other(
     assert not passed
     assert "other=1 " in lines[0]
     assert "  record.runs[0].cpu: 'cpu-hm-committed' vs 'cpu-hm02'" in lines
+
+
+def test_hm10_unmoved_host_leaves_are_held_to_the_running_host(
+    tmp_path: Path, running_hm: Callable[..., None]
+) -> None:
+    """Ruling (c) of `docs/reviews/V04-after-review.md`: with `--old-host`, the reactor
+    fingerprint's and the attempts' CPU leaves are held to the running host also where they did
+    not move (WO-H1 (c) and (d) state no condition). An unmoved REAL-like pair, proved on another
+    host than the one that took the re-take, fails naming the re-take leaves."""
+    committed, retake = _host_real(K1, K2, moved=False), _host_real(K3, K4, moved=False)
+    passed, lines = _run_host(tmp_path, SIDECAR, committed=committed, retake=retake)
+    assert not passed
+    # Every host leaf of the re-take but the sidecar's, which is byte-equal: (b) states its
+    # condition, (c) and (d) do not.
+    count = _host_leaf_count(retake) - len(NEW_HOST)
+    assert lines[0].endswith(f" other={count} environment=equal host=0"), lines[0]
+    flagged = [x for x in lines if x.startswith("  ")]
+    assert len(flagged) == count
+    assert all(" is not the running " in x for x in flagged), flagged
+    held = f": re-take {OLD_HOST['cpu']!r} is not the running {NEW_HOST['cpu']!r}"
+    assert f"  coupling S0.json.frozen.reactor.fingerprint.cpu_model{held}" in lines
+    attempt = f"  experiments {K1[:2]}/{K1}/attempts/1.json.execution.fingerprint.cpu_model"
+    assert f"{attempt}{held}" in lines
