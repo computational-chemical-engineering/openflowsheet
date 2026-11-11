@@ -642,3 +642,76 @@ TRS2 rebooted; the session on SMM-TR09 finished from `344da73c`. Frank's go on t
   MANIFEST.in README.md LICENSE NOTICE`.
 - Next: push `wp/REL040`, CI on both architectures, merge into `main` (F0, ruff, targeted tests), then the release
   workflow dry run and, on green, the real dispatch (Frank's `auto`). The PyPI approval is Frank's.
+
+## 0.4.0 after the tag (V04-after, SMM-TR09)
+
+RP §7.4 and §17.5 (R-1009, F-4, F-5) on `wp/V04-after`, from `main` = `b6cdf552` (the commit tagged `v0.4.0`), in the
+pattern of 0.3.0's WO-9 (`1b4263a6`, `94c9f217`, `bbdbd8b5`, `712f0c59`, merge `cde1a3c2`). Main checkout's `.venv`
+with `PYTHONPATH=src`; the nlp env `.venv-nlp` built on this host. Not pushed, not merged.
+
+- **`b618f2fe`: 0.5.0.dev0 and the working envelope.** Version `0.5.0.dev0` in RP §7.1's set (`pyproject.toml`,
+  `__init__.py`, the two `project_summary` fixtures, `test_m06_w27_coverage.py`); `RELEASED` gains `"0.4.0":
+  b6cdf552…` (`git rev-list -n1 v0.4.0`), read by `test_readme_current.py` too. README's status already names 0.4.0,
+  the newest release, which is what a `.devN` version requires; unchanged. Envelope `v0.2-envelope-dev` /
+  `0.2.0.dev0` and `ENVELOPE_ID` (the header's 0.4.0 line already named the return); `t08_support_matrix.py --emit`,
+  `--check` 0 problems. RELEASING "After a tag" names 0.5.0.dev0. A10's pairs unchanged (R-563's token). Tests
+  reading the version and the envelope: 1306 passed, 5 skipped (registered conditions).
+- **The G10 re-take (R-458): taken and proved here, not committed. OPEN (stop).** Clean tree: `git worktree add
+  --detach .claude/worktrees/v04-after-retake b618f2fe`, `git status --porcelain --ignored` 0 lines (02:22:41 +01:00),
+  removed afterwards. E6/K's recipe (`run_case` + `write_files`, REL040's `g10_case.py`) per case into the session
+  scratch, `env -i`, `OMP_NUM_THREADS=1`, `PYOMO_CONFIG_DIR=<nlp>/share/pyomo`, `PYTHONNOUSERSITE=1`,
+  `PYTHONPATH=src:<nlp-test-tools>` (the tools installed from `benchmarks/m03/nlp-test.lock` with `--require-hashes`
+  into the scratch). Each case exit 0 in 5–7 s; every record `run_commit` `b618f2fe…`, `tree_clean` true.
+  `scripts/m05_retake_diff.py --digest-only --old-version 0.4.0` against the committed records:
+  - `RETAKE-DIGEST-ONLY FAIL trust-region-study-tr-e2: changed-digests=41 digest=146 timing=20 path=0 version=4 platform=0 other=0 environment=differs`
+  - `RETAKE-DIGEST-ONLY FAIL trust-region-study-tr-e2-far: changed-digests=79 digest=320 timing=35 path=0 version=7 platform=0 other=0 environment=differs`
+  - `RETAKE-DIGEST-ONLY FAIL trust-region-study-tr-e2-fd: changed-digests=70 digest=215 timing=20 path=0 version=4 platform=0 other=0 environment=differs`
+  - `RETAKE-DIGEST-ONLY FAIL trust-region-study-loop-r: changed-digests=91 digest=285 timing=26 path=0 version=3 platform=0 other=0 environment=differs`
+  - `RETAKE-DIGEST-ONLY FAIL trust-region-study-loop-s: changed-digests=37 digest=124 timing=20 path=0 version=4 platform=0 other=0 environment=differs`
+
+  Each with the one reason `environment: differs outside distributions_sha256 (['cpu', 'cpu_count', 'machine'])`:
+  the committed records were taken on SMM-TRS2 (`AMD Ryzen Threadripper PRO 5965WX`, 48), this host is SMM-TR09
+  (`2950X`, 16). The distribution list reproduces the committed hash once the nlp-test-tools are on the path (a
+  first run without them also differed in `distributions`). The record, ledger, coupling and store counts equal
+  0.3.0's and 0.4.0's exactly, `other=0`. G10 is a same-machine criterion (`m05_wo8_runs.environment_fingerprint`
+  holds `platform.node()`), and RP §7.1 replaces committed files only after `PASS`, so nothing was copied. At
+  `b618f2fe` with the 0.4.0 records: the default-tier record tests 493 passed, 22 deselected; AM-23 (`-m nlp
+  tests/test_m05_g10_replay.py`, `.venv-nlp`) 5 failed, as expected before a re-take (the version moves the
+  fingerprint; G10's environment would also differ here). The REAL replay (`bbdbd8b5`'s check) was not run: the REAL
+  record replays only on its platform (RP §7.1).
+  To finish on SMM-TRS2 (the RC host): a new clean detached worktree at `b618f2fe`, REL040's
+  `~/.cache/rel040-cut/bin/g10_case.py` per case with the same environment and m05's `.venv-nlp` and nlp-test-tools,
+  then the five proofs above. Expected: the same five lines with `PASS` and `environment=equal`. Then copy the 36
+  files over `benchmarks/m05/records/`, commit, AM-23 5 passed, and `scripts/m05_wo9_real.py --replay` →
+  `REPLAY PASS REAL differences=0`.
+- **`35d0b77f`: R-912's limitation grammar (R-1009, F-5).** `v0_2_gate.LIMITATION` =
+  `\bL(?:\d{2}|-[A-Z][A-Z0-9]*-\d+)\b`. DECISION: RP §17.5 item 3's default, the engine's constant widened, not a
+  line-file field. R-912's tests plus `L-X04-1..3` (`test_r912_*` in `tests/test_m07_v0_2_gate.py`, 21): the widened
+  ids match now and not before, today's ids under both, `L-s11-1`, `L-S11-`, `LS11-1`, `L-11-1` under neither; the
+  four released verdict documents (0.2.0a1, 0.2.0, 0.3.0, 0.4.0) parse to equal `VerdictDocument`s under both
+  patterns, and `LIMITATION` is read only by that parser, so their outputs are unchanged (REL.A04); a control (an
+  `L-X04-1` in a Basis cell) shows the comparison can fail. `v0_1_gate`'s copy untouched (A13). Gate and ledger
+  tests: 622 passed, 2 skipped.
+- **`cfab93e7`: L-WS-2 restated (F-4, ADR 0070 D1), id kept.** Both sources: the lineage's latest VERIFIED state
+  under an opt-in policy only (`T08-warm-v1`), and a solve job named by `solve_body.warm_start` (`explicit-v1`), its
+  own opt-in under any policy; either admitted by exact id-set identity only (L-WS-1), a candidate from another
+  topology a typed rejection to the traversal. DECISION: one more sentence beyond the default, the `legacy_eo` route
+  records a declared source rejected (`route`), with its X02 test as evidence; reversible by dropping it. Evidence
+  gains `test_g2_an_explicit_source_is_its_own_opt_in_under_default`,
+  `test_the_legacy_route_records_a_declared_source_rejected` and ADR 0070. Regenerated by their generators: the
+  support matrix (`--check` 0 problems), the catalogue's `limitations.yaml` (`msg_catalogue.py sync-limitations`;
+  `check` PASS) and `docs-site/messages/limitations.md` (`doc_pages.py`; `--check` up to date). No test pins the
+  row's text; HARVEST_SIZE unchanged (`test_m07a_harvest.py` passes). **`ff0b7292`**: the catalogue's sha256 moved, so the
+  two `message_entry` fixtures are re-taken by `scripts/t07_schema_fixtures.py --write` (only that digest moves, as
+  X04's `9284233e`); no committed record embeds the catalogue digest. To review in the package's reviewer pass (RP §17.5 item 3). Not changed: L10
+  still names only `T08-warm-v1`'s fallback.
+- **Checks at `cfab93e7`.** `ruff check .` all passed; `ruff format --check .` 1176 files formatted; `mypy` (check.sh's
+  form) no issues in 331 files; F0 `scripts/corpus_identity.py --check`: `F0 PASS: M1 50/50, M2 61/61, M3 61/61, M4
+  NOT JUDGED, M5 61/61, M6 70/70, M7 52/52, M8 105/105, M9 35/35`. Targeted tests (version, README, W27 coverage,
+  fixtures, gates and ledgers, release, T08 envelope and W4, harvest, changelog, surface chain, msg and doc pages,
+  X02 contract, X04 docs, S05 envelope, M05 records, M07 journey) at `cfab93e7`: 2061 passed, 1 failed, 5
+  skipped (registered conditions), 22 deselected, 3 xfailed; the failure was the fixture test fixed by `ff0b7292`,
+  whose file then passed (26). The full gate was not run (CI is the
+  merge condition).
+- **Not done here.** The G10 re-take's commit, AM-23 at the re-take and the REAL replay (above, SMM-TRS2);
+  `release/lines/0.5.json` (RP §7.4: written with `inherits: "0.4"`) is left to a design pass.
