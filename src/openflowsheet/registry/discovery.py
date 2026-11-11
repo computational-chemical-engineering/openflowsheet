@@ -113,7 +113,7 @@ def entry_points(path: Sequence[str] | None = None) -> tuple[Discovered, ...]:
         if path is None
         else importlib.metadata.distributions(path=list(path))
     )
-    found = []
+    found: list[Discovered] = []
     for distribution in distributions:
         try:
             name = distribution.metadata["Name"]
