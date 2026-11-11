@@ -53,6 +53,16 @@ BUILTIN_CORE_KINDS: Final = frozenset({"functional_contributor"})
 PAYLOAD_DEFS: Final[Mapping[str, str]] = MappingProxyType(
     {"message_entries": "payload_message_entries"}
 )
+#: D6's legacy-form payload schemas, by kind. They apply to the descriptors of the built-in table
+#: named `legacy` only, which must be of one of these kinds; a descriptor of these kinds from
+#: anywhere else has the v2 form, `preview` until its ADR is Accepted (D1).
+LEGACY_PAYLOAD_DEFS: Final[Mapping[str, str]] = MappingProxyType(
+    {
+        "property_method": "payload_property_method_legacy",
+        "unit_model": "payload_unit_model_legacy",
+        "connection_definition": "payload_connection_definition_legacy",
+    }
+)
 
 
 def version_key(version: str) -> tuple[int, int, int]:
@@ -117,17 +127,20 @@ def schema_problem(document: object, pointer: str = "") -> str | None:
     return _pointer(first.absolute_path)
 
 
-def descriptor_problem(document: Mapping[str, Any]) -> str | None:
+def descriptor_problem(document: Mapping[str, Any], *, legacy_form: bool = False) -> str | None:
     """The pointer, relative to the descriptor, of its first problem: the envelope schema, a node
-    with no canonical JSON form (ADR 0002 D3), the kind's payload schema, then D5's `conn:<id>` of
-    a connection definition (`P_d` always contains it). `None` when the descriptor is valid."""
+    with no canonical JSON form (ADR 0002 D3), the kind's payload schema (its legacy form's when
+    `legacy_form`, D6), then D5's `conn:<id>` of a connection definition (`P_d` always contains
+    it). `None` when the descriptor is valid."""
     found = schema_problem(document)
     if found is not None:
         return found
     found = first_noncanonical(document)
     if found is not None:
         return found
-    definition = PAYLOAD_DEFS.get(document["kind"])
+    if legacy_form and document["kind"] not in LEGACY_PAYLOAD_DEFS:
+        return "/kind"
+    definition = (LEGACY_PAYLOAD_DEFS if legacy_form else PAYLOAD_DEFS).get(document["kind"])
     if definition is not None:
         inner = schema_problem(document["payload"], f"/$defs/{definition}")
         if inner is not None:

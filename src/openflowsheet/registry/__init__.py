@@ -208,7 +208,7 @@ class Registry:
         self, document: Mapping[str, Any], source: Source, attestations: frozenset[Attestation]
     ) -> Registered:
         identity = f"{document.get('kind')}:{document.get('id')}@{document.get('version')}"
-        pointer = descriptor_problem(document)
+        pointer = descriptor_problem(document, legacy_form=source.legacy_form)
         if pointer is not None:
             raise RegistryBuildError(
                 Coded("extension_invalid", {"entry_point": identity, "pointer": pointer})

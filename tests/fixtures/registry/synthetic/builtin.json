@@ -50,7 +50,37 @@
         ],
         "factory": null
       },
-      "payload": {}
+      "payload": {
+        "legacy_provider_id": "syn001",
+        "phases": [
+          "LIQUID",
+          "VAPOR"
+        ],
+        "flashes": [
+          "TP"
+        ],
+        "properties": [
+          "h",
+          "lnK"
+        ],
+        "reference_convention": "SYN-001-ref-v1",
+        "per_component": null,
+        "derivative_inputs": [
+          "T",
+          "P"
+        ],
+        "bases": [
+          {
+            "record_source": "synth/components.yaml",
+            "components": [
+              "A",
+              "B"
+            ]
+          }
+        ],
+        "selectable": true,
+        "verifier_fresh": true
+      }
     },
     {
       "descriptor_format": "openflowsheet-extension-v1",
@@ -77,7 +107,37 @@
         ],
         "factory": null
       },
-      "payload": {}
+      "payload": {
+        "legacy_provider_id": "wilson-ig-v2",
+        "phases": [
+          "LIQUID",
+          "VAPOR"
+        ],
+        "flashes": [
+          "TP"
+        ],
+        "properties": [
+          "h",
+          "lnK"
+        ],
+        "reference_convention": "SYN-001-ref-v1",
+        "per_component": null,
+        "derivative_inputs": [
+          "T",
+          "P"
+        ],
+        "bases": [
+          {
+            "record_source": "synth/components.yaml",
+            "components": [
+              "A",
+              "B"
+            ]
+          }
+        ],
+        "selectable": true,
+        "verifier_fresh": true
+      }
     },
     {
       "descriptor_format": "openflowsheet-extension-v1",
@@ -108,7 +168,16 @@
         "factory": null
       },
       "payload": {
-        "bindable": true
+        "family": "syn001",
+        "bindable": true,
+        "signature": {
+          "model_id": "syn001.pump",
+          "ports": [],
+          "required": [],
+          "zero": [],
+          "pins": [],
+          "choices": []
+        }
       }
     },
     {
@@ -142,7 +211,16 @@
         "factory": null
       },
       "payload": {
-        "bindable": true
+        "family": "syn001",
+        "bindable": true,
+        "signature": {
+          "model_id": "syn001.flash",
+          "ports": [],
+          "required": [],
+          "zero": [],
+          "pins": [],
+          "choices": []
+        }
       }
     },
     {
@@ -165,7 +243,9 @@
         "factory": null
       },
       "payload": {
-        "bindable": false
+        "family": "syn001",
+        "bindable": false,
+        "signature": null
       }
     }
   ],
