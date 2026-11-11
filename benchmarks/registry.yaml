@@ -2678,10 +2678,15 @@ ensemble:
   #: Spec §7.5 (A5), R-090: the machine classes, decided from the host by the harness's
   #: `machine_class()` (never `generator.py`'s literal): the first class whose `github_actions`
   #: flag is whether GITHUB_ACTIONS=true, whose architecture is platform.machine(), and whose
-  #: cpu_model, where one is registered, is /proc/cpuinfo's; anything else is
-  #: unregistered(<machine>), reported and never gated. `runner` is the CI job's.
+  #: cpu_models, where the class lists them, include /proc/cpuinfo's model name; anything else
+  #: is unregistered(<machine>), reported and never gated. `runner` is the CI job's.
+  #: T06 amendment H-1 (R-1020): ref-x86-64 lists SMM-TRS2's 5965WX, where the published starts
+  #: and the holdout were generated, and SMM-TR09's 2950X, admitted by HOSTMOVE §7.3's proof.
   machine_classes:
-    ref-x86-64: {github_actions: false, architecture: x86_64, cpu_model: AMD Ryzen Threadripper PRO 5965WX 24-Cores}
+    ref-x86-64:
+      github_actions: false
+      architecture: x86_64
+      cpu_models: [AMD Ryzen Threadripper PRO 5965WX 24-Cores, AMD Ryzen Threadripper 2950X 16-Core Processor]
     ci-x86-64: {github_actions: true, architecture: x86_64, runner: ubuntu-latest}
     ci-aarch64: {github_actions: true, architecture: aarch64, runner: ubuntu-24.04-arm}
   time_ceiling_s: 60

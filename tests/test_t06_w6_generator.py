@@ -273,12 +273,15 @@ def test_the_generator_does_not_read_the_core() -> None:
 
 
 def test_a25_the_starts_regenerate_byte_for_byte_on_the_reference_machine_class() -> None:
-    """§6.5: on the generating host the regeneration is the published file byte for byte; on any
-    other host the regenerated document is reported against it under `K04-numerical-policy-v1`
-    and never replaces it (a report there, not a gate). **(A3)** The regeneration carries the
-    live provider's block (A3.11: after ADR 0017 the file is `3a7bd49c…`, re-emitted for the
-    provider hash alone). Since the rename (R-149) the live provider and generator hashes are the
-    file's with the package's name substituted, and they are compared substituted back."""
+    """§6.5: on the reference machine class the regeneration is the published file byte for byte;
+    on any other host the regenerated document is reported against it under
+    `K04-numerical-policy-v1` and never replaces it (a report there, not a gate). **(H-1)** On
+    `ref-x86-64` (`ensemble.same_class_host`) the bytes are compared with the regenerated
+    `host.cpu_model` replaced by the published file's; every other member of `host` is compared.
+    **(A3)** The regeneration carries the live provider's block (A3.11: after ADR 0017 the file
+    is `3a7bd49c…`, re-emitted for the provider hash alone). Since the rename (R-149) the live
+    provider and generator hashes are the file's with the package's name substituted, and they
+    are compared substituted back."""
     assert (
         PUBLISHED["provider"]
         == renamed_back_starts(
@@ -286,8 +289,9 @@ def test_a25_the_starts_regenerate_byte_for_byte_on_the_reference_machine_class(
         )["provider"]
     )
     regenerated = renamed_back_starts(_regenerated())
-    if regenerated["host"] == PUBLISHED["host"]:
-        assert canonical_json(regenerated) == PUBLISHED_BYTES
+    if ensemble.same_class_host(regenerated["host"], PUBLISHED["host"]):
+        host = {**regenerated["host"], "cpu_model": PUBLISHED["host"]["cpu_model"]}
+        assert canonical_json({**regenerated, "host": host}) == PUBLISHED_BYTES
     else:
         found = differences(regenerated, PUBLISHED, policy_id="K04-numerical-policy-v1")
         print(f"A25 on {regenerated['host']}: {len(found)} differences from the published starts")

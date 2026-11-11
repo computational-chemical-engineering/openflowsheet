@@ -7,7 +7,7 @@ v1 stays defined as run 1's policy (A95). A89 re-runs six published THM-09 start
 and two of its successes (6, 19; 0.37 and 0.97). Each must end `CONVERGED`, `VERIFIED`, `SUCCESS`,
 with S3's worst ratio `≤ 0.1` — ADR 0018's first-order promise (allowance / 10) — on every host.
 The refinement clause (exactly one fired on `S3.T` or `S4.T` and kept, chord `ρ_max` > 1 before)
-is asserted only on the registered `ref-x86-64` CPU model and recorded elsewhere (T06 spec
+is asserted only on a listed `ref-x86-64` CPU model (H-1) and recorded elsewhere (T06 spec
 Amendment T08-1, R-141): whether ADR 0018 fires is a floating-point decision that is not portable.
 """
 
@@ -84,9 +84,9 @@ def _thm09(index: int) -> tuple[Any, dict[str, Any]]:
 
 
 def _on_the_reference_cpu() -> bool:
-    """Amendment T08-1: the host's CPU model is `ref-x86-64`'s registered one."""
+    """Amendment T08-1, as amended by H-1: the host's CPU model is one `ref-x86-64` lists."""
     reference = ensemble.registered()["machine_classes"][ensemble.REFERENCE_CLASS]
-    return bool(generator._cpu_model() == reference["cpu_model"])
+    return bool(generator._cpu_model() in reference["cpu_models"])
 
 
 @pytest.mark.parametrize("index", A89_STARTS)

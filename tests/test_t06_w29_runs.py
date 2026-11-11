@@ -110,7 +110,7 @@ def test_a97e_each_files_class_is_its_entrys(entry: dict[str, Any]) -> None:
     registered = classes[entry["machine_class"]]
     if entry["ci_runner"] is None:
         assert not registered["github_actions"] and entry["ci_run"] is None
-        assert document["host"]["cpu_model"] == registered["cpu_model"]
+        assert document["host"]["cpu_model"] in registered["cpu_models"]
     else:
         assert registered["github_actions"] and registered["runner"] == entry["ci_runner"]
         assert isinstance(entry["ci_run"], int)
