@@ -455,3 +455,7 @@ harvest.
   table to §3 and to the legacy table's `reference_convention` values (control: `wilson-ig-v2` set to
   `WILSON-IG-ref-v9`). Before the table change the two accepting rows and both new tests failed, the legacy check naming
   `wilson-ig-v1` and `wilson-ig-v2`; the `-v2` row passed before and after. `builtin-sha256.txt` is untouched.
+- **DECISION WO6-D (F-5).** Per `docs/reviews/F1-design-followup.md` §7 part D: `scripts/registry_builtin.py`
+  gains `payload_schema_problems`, and `main` runs it before `--write` and `--check` do anything; it prints one line
+  per built-in descriptor of a `CORE_KINDS` kind absent from `PAYLOAD_DEFS` and exits 1. FU.D1 and FU.D2 are the new
+  test in `tests/test_f1_discovery.py` (which also checks both modes' exit status and output); FU.D3 passes unedited.

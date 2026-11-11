@@ -782,3 +782,26 @@ def test_the_process_registry_holds_every_builtin_table() -> None:
         "lca",
         "derived",
     }
+
+
+def test_the_generator_refuses_a_core_kind_without_a_payload_schema(
+    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """F1-WO6 F-5: a built-in descriptor of a core kind (ADR 0060 D1) whose payload schema is not
+    installed is refused by `--write` and `--check`, one line per descriptor, exit 1."""
+    committed = {path.stem: rows for path, rows in registry_builtin.tables().items()}
+    assert registry_builtin.payload_schema_problems(committed) == []
+    synthetic = {"records": [descriptor("record_type", "syn.record")]}
+    assert registry_builtin.payload_schema_problems(synthetic) == [
+        "built-in records/record_type/syn.record: kind record_type is core (ADR 0060 D1) but its "
+        "payload schema is not installed"
+    ]
+    monkeypatch.setattr(
+        registry_builtin, "tables", lambda: {Path("records.json"): synthetic["records"]}
+    )
+    for mode in ("--write", "--check"):
+        assert registry_builtin.main([mode]) == 1
+        assert capsys.readouterr().out.splitlines() == [
+            "built-in records/record_type/syn.record: kind record_type is core (ADR 0060 D1) but "
+            "its payload schema is not installed"
+        ]

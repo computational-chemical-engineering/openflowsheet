@@ -574,6 +574,30 @@ def registry_constant(committed: Mapping[str, Sequence[Mapping[str, Any]]]) -> s
     return Registry.build(builtin_tables=committed).registry_sha256
 
 
+def payload_schema_problems(tables_by_name: Mapping[str, Sequence[Mapping[str, Any]]]) -> list[str]:
+    """F1-WO6 F-5: one line per built-in descriptor whose kind is core (ADR 0060 D1) while its
+    payload schema is not installed (`PAYLOAD_DEFS`): the registry would serve it as core with a
+    payload nothing validates."""
+    from openflowsheet.registry.descriptor import CORE_KINDS, PAYLOAD_DEFS
+
+    return [
+        f"built-in {name}/{row['kind']}/{row['id']}: kind {row['kind']} is core (ADR 0060 D1) "
+        "but its payload schema is not installed"
+        for name, rows in tables_by_name.items()
+        for row in rows
+        if row["kind"] in CORE_KINDS and row["kind"] not in PAYLOAD_DEFS
+    ]
+
+
+def _refused() -> int | None:
+    """Exit status 1, after printing the problems, when a regenerated table holds a descriptor of
+    a core kind with no payload schema; `None` when there is none."""
+    problems = payload_schema_problems({path.stem: rows for path, rows in tables().items()})
+    for problem in problems:
+        print(problem)
+    return 1 if problems else None
+
+
 def check() -> int:
     committed: dict[str, list[dict[str, Any]]] = {}
     texts: dict[str, str] = {}
@@ -642,6 +666,9 @@ def main(argv: list[str] | None = None) -> int:
     mode.add_argument("--check", action="store_true", help="regenerate in memory and compare")
     arguments = parser.parse_args(argv)
     _modules()
+    refused = _refused()
+    if refused is not None:
+        return refused
     return write() if arguments.write else check()
 
 
