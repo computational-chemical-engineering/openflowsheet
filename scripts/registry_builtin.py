@@ -144,8 +144,9 @@ BINDER: Final = "openflowsheet.application.revision_binding"
 METHOD_FACTORY: Final = {"module": BINDER, "attribute": "basis_provider", "key": None}
 #: The `reference_convention` of a provider constructed once per component (D6).
 PER_COMPONENT: Final = "per_component"
-#: E01's contributors whose implementation needs an extra of `pyproject.toml` (Brightway, `lca`).
-CONTRIBUTOR_EXTRA: Final[Mapping[str, str]] = {"lca": "lca"}
+#: E01's contributors run without any extra; Brightway serves only the offline adapter, which
+#: refuses `UNSUPPORTED(LCA_ENGINE_UNAVAILABLE)` by itself (ADR 0060 D2, erratum F-4).
+CONTRIBUTOR_EXTRA: Final[Mapping[str, str]] = {}
 
 
 def _modules() -> None:

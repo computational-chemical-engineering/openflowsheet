@@ -445,3 +445,8 @@ harvest.
   reading `required`. F1's addendum comment and `interfaces-frozen.md` §2 were edited as specified. New test FU.A6 in
   `tests/test_f1_operations.py`. FU.A1 to FU.A6 hold as measured: policy digest `6b449911…`, `F1_SERVED_SHA256` and
   `SNAPSHOT_F1` unmoved, fixtures unchanged.
+- **DECISION WO6-B (F-4).** Per `docs/reviews/F1-design-followup.md` §7 part B: `CONTRIBUTOR_EXTRA` is `{}`; the
+  tables were regenerated with `--write`. `registry_sha256` is `f251447d…`; `lca`'s `pip_extra` is `null`; only
+  (`functional_contributor`, `lca`) changes `descriptor_sha256` (`faf8ccb8…3754` to `18fab1d2…3833`), its
+  `self_sha256` unchanged. E-F1-12 lost its `lca` branch; a new test resolves the `lca` factory with `bw2data` and
+  `bw2calc` masked, and fails against the old `core.json` with `dependency_missing`. FU.B1 to FU.B6 hold as measured.

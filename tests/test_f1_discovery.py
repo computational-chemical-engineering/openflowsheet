@@ -535,14 +535,22 @@ def test_e_f1_12_an_extension_contributor_is_listed_preview_and_never_reaches_e0
     for name in program.CONTRIBUTOR_ORDER:
         builtin = built.resolve("functional_contributor", name)
         assert builtin.evidence_class == "core"
-        if name == "lca" and not _installed_extra("bw2data", "bw2calc"):
-            # The `lca` extra is absent: refused before the factory (F1 review SF-3).
-            with pytest.raises(FactoryRefusedError) as raised:
-                built.factory("functional_contributor", name)
-            assert raised.value.reason == Coded("dependency_missing", {"id": "lca", "extra": "lca"})
-            continue
         assert built.factory("functional_contributor", name) is before[name]
     assert program._REGISTERED == before
+
+
+def test_the_lca_contributor_resolves_without_brightway(monkeypatch: pytest.MonkeyPatch) -> None:
+    """F1-WO6 F-4: E01's `LcaContributor` runs without the `lca` extra (Brightway serves only the
+    offline adapter), so its descriptor names no `pip_extra` and its factory resolves."""
+    from openflowsheet.assessment import program
+    from openflowsheet.assessment.lca.section import LcaContributor
+
+    program._registered()
+    monkeypatch.setitem(sys.modules, "bw2data", None)
+    monkeypatch.setitem(sys.modules, "bw2calc", None)
+    built = Registry.build(builtin_tables=discovery.builtin_tables())
+    factory = built.factory("functional_contributor", "lca")
+    assert factory is LcaContributor and factory is program._REGISTERED["lca"]
 
 
 # ---------------------------------------------------------------------------------------------

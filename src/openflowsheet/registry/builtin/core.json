@@ -93,7 +93,7 @@
     "kind": "functional_contributor",
     "limitations": [],
     "payload": {},
-    "pip_extra": "lca",
+    "pip_extra": null,
     "platforms": [
       "any"
     ],
