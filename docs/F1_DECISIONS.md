@@ -412,11 +412,30 @@ harvest.
   the S07 and S11 steps (`if: !cancelled()`, readable per leg whatever the suite did): `pytest
   tests/test_f1_builtin_identity.py` and the generator's `--check` line, which prints the value. The X07a legs
   (Windows, macOS) are recorded `pending` (ADR 0060 risk 7).
-- **DECISION W5-6. N4 and N5 are declared limits in the manifest**, harvested class E to the `platforms` row (Linux
-  x86-64 and aarch64, the lock): N4, module paths are compared exact-case, so on a case-insensitive file system a
+- **DECISION W5-6. N4 and N5 are declared limits in the manifest**, harvested class P: both lie outside the
+  `platforms` axis (Linux x86-64 and aarch64, the lock), and an E item must point to an `L`/`U` row, of which none
+  covers them (adding one is the envelope's owner's call). N4, module paths are compared exact-case, so on a case-insensitive file system a
   wrong-case path resolves where Linux quarantines it; N5, a zip or frozen build has no files under the built-in
-  import root, and the process registry fails to build. The other limitations are class P.
+  import root, and the process registry fails to build. Every F1 item is class P.
 - **DECISION W5-7. The manifest is written by hand in X04's form** (no X04 generator exists; `8e6687c0` wrote it after
   CI). CI for the final head does not exist yet, so the `F1.CI` check is `unsupported` with the value "pending" and
   every exit test cites the local command that ran; the manifest is re-taken at the CI-green head with the run id,
-  as X04's was. Status `tested`; nothing is marked `reviewed`.
+  as X04's was. Status **`implemented`**, not `tested` as briefed, because of W5-8: four registered gate tests are red
+  on F1's account, and the F1 review conditions `tested` on the two description reviews. The re-take at the
+  CI-green head, after W5-8's ruling, carries `tested`. Nothing is marked `reviewed`.
+- **DECISION W5-8. ADR 0025 D2.3's `sha256` partition is red since F1-WO4a, and is escalated, not fixed.** Found by
+  the default-marker suite at `0ad16a00` (serial, 1 h 16 min: 6 failed, 20155 passed, 107 skipped, 3 xfailed).
+  `scripts/t08_numerical_policy.py --check`: "(d) unclassified sha256 names: descriptor_sha256, registry_sha256,
+  self_sha256". WO4a's three `$defs` in `application-results.schema.json`, a v2-scope schema, declare the names
+  that F1's addendum classifies exact for its own two schemas only; the same at `7557df1d`. Red:
+  `test_e01_a_links.py::test_the_policy_check_passes_with_v2_unchanged`,
+  `test_m04_numerical_policy.py::test_a37_the_sha256_partition_follows_the_schemas`, and
+  `test_t08_adr0025.py::test_a1_the_policy_file_is_what_its_generator_emits` and `::test_a1_a_tampered_policy_file_
+  fails_its_audit`. CI's `check` job fails on them. Each remedy needs the design lane: (a) extend the partition's
+  reuse rule ("a name reused keeps its class") to v2-scope schemas that reuse an addendum's name, which keeps v2's
+  bytes and id; (b) restructure the three `$defs` so that no `*sha256` property is declared in
+  `application-results` (moves D_9 and the R4-G3 snapshots); (c) a v3 policy listing the names. *I would:* (a),
+  the smallest, and the class is the one W1-15 already gave these names. No check was relaxed.
+- **DECISION W5-9. T08.A32's packaged-data allowlist gains `registry/builtin/tables.sha256`**
+  (`tests/test_t08_w2_inventory.py`, `SHIPPED_DATA`), the project's own generated digest record, beside the tables
+  WO2 admitted; the full suite found it.

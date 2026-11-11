@@ -383,8 +383,9 @@ SHIPPED_DATA = re.compile(
     # MSG design note §3.2: the message catalogue's data files, authored in this repository.
     r"|messages/catalogue/[a-z_-]+\.(yaml|txt)"
     # F1 (ADR 0060 D6): the registry's built-in tables, generated from the project's own code by
-    # `scripts/registry_builtin.py` (ids, signatures, record-source paths; no third-party data).
-    r"|registry/builtin/[a-z_-]+\.json)$"
+    # `scripts/registry_builtin.py` (ids, signatures, record-source paths; no third-party data),
+    # and since F1-WO5 (review SF-8) its record of their digests, `tables.sha256`.
+    r"|registry/builtin/([a-z_-]+\.json|tables\.sha256))$"
 )
 PACKAGING = re.compile(
     r"^(PKG-INFO|setup\.cfg|pyproject\.toml|README\.md|MANIFEST\.in|LICENSE|NOTICE|"
