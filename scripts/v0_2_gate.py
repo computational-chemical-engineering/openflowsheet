@@ -126,7 +126,11 @@ NONE: Final = "—"
 
 #: The alpha's clause grammar (V11–V20, W21, W22): `v0.2-alpha-gate-v1`'s `clause` (M07.A31).
 CLAUSE: Final = re.compile(r"\b(?:V(?:1[1-9]|20)|W2[12]) \([a-z0-9]+\)")
-LIMITATION: Final = re.compile(r"\bL(?:\d{2}|-[A-Z]+-\d+)\b")
+#: An envelope id: `L` and two digits, or `L-<middle>-<n>` with an upper-case middle that may hold
+#: digits after its first letter (`L-S11-1`, `L-X04-1`). R-912's widening of `L-<LETTERS>-<n>`, made
+#: by the first change after 0.4.0's tag (R-1009). A superset: the released verdict documents read
+#: as before (`tests/test_m07_v0_2_gate.py`, `test_r912_*`).
+LIMITATION: Final = re.compile(r"\bL(?:\d{2}|-[A-Z][A-Z0-9]*-\d+)\b")
 DATE: Final = re.compile(r"\d{4}-\d{2}-\d{2}")
 #: Table T4's cell rule (§7.2 item 3, Amendment 1 (review) F1), matched against the bare,
 #: lower-cased cell: the date comes right after the word, so `accepted (i), …` is no acceptance.
