@@ -112,7 +112,7 @@ env -i HOME="$HOME" PATH="$PATH" LANG=C.UTF-8 OMP_NUM_THREADS=1 PYOMO_CONFIG_DIR
   `distributions_sha256`, `conda_builds`, `conda_builds_sha256`).
 - **Pass:** each case prints `RETAKE-DIGEST-ONLY PASS … path=0 version=<v> platform=0 other=0 environment=host host=3`
   with exit 0, and with changed-digests, digest and version equal to H3's (HM-19).
-- **Then:** the 36 files replace `benchmarks/m05/records/trust-region-study-{tr-e2,tr-e2-far,tr-e2-fd,loop-r,loop-s}.*`
+- **Then:** the 36 files [*erratum, V04-after review (e): 41: the 36 of a same-host re-take and the five sidecars*] replace `benchmarks/m05/records/trust-region-study-{tr-e2,tr-e2-far,tr-e2-fd,loop-r,loop-s}.*`
   in one commit, whose message carries the five lines. AM-23 on TR09 at that commit: 5 passed (HM-20).
 - **Not run here:** REAL's replay. REAL's record names SMM-TRS2 and is re-taken at the first TR09 K3 (§4). RP §7.4
   does not ask for it after a tag, and on TR09 it fails by H5 until then.
@@ -275,6 +275,11 @@ On TR09, at the commit that applies H-1, without any measurement wrapper:
    `PASS`, with M4 judged (HM-37);
 3. `scripts/t06_ensemble.py check` and `check --holdout` print the new identical-but-for-`host.cpu_model` line and exit
    0 (HM-34);
+   *Addendum (2026-11-11, V04-after review MF-1, design lane):* `check` compares the regeneration with R-149's two
+   registered pairs undone (`generator_sha256` `509b01fb…` to `7f426aa9…`, `provider.implementation_sha256`
+   `4e4c37cc…` to `67e47281…`), each only where the live value is the registered new one, because R-149 states that
+   the start sets' "tests compare the live hashes substituted back"; any other value stays a difference. No new
+   register entry: R-149 registers the substitution, R-1020 the class.
 4. `scripts/t08_rc.py ensemble --out <scratch>` writes `rc-ensemble-ref-x86-64.json` with every check `pass`:
    `a46.registered_class`, `a46.run_and_report`, `a46.gate`, `a47.no_verified_outside_s3`,
    `a34.ensemble_certificates`, `a46.t06_a34_same_class_replay` and `a46.registered_runs_untouched` (HM-38).
@@ -334,6 +339,11 @@ no expectation is edited.
 - **Records under `evidence/**`.** They are archival. No step replays them.
 - **The platform literals in `tests/test_m05_retake_digest_only.py` and `tests/test_rel_rc_local.py`.** They are
   synthetic, and the running platform is patched (S-6 §11.4's rule).
+- **`tests/test_t08_ptc_r1_diagnostic.py`'s PTC-R1 re-run** (V04-after review SF-1). It is conditioned on the CPU model
+  by ADR 0007 F1, not by the class: it re-runs the committed `results-<machine_class>.json` only where that record's
+  `host.cpu_model` is the running one, and skips by design, with its reason, on a CPU without its own record (on
+  TR09, 6 skipped, as before H-1 under `unregistered(x86_64)`). PTC-R1's RC item runs on the CI dispatch. A record for
+  the 2950X is T08's choice, at the first TR09 cut at the earliest.
 
 ## 9. RP amendment A-13 (verbatim; added as §17.6, with the section edits it names)
 
@@ -492,7 +502,7 @@ Assertions, in `tests/test_m05_retake_digest_only.py`, on synthetic stems in the
   coupling records and store index is unchanged, and its counts are deterministic for fixed files. They are regression
   values, measured by the tool itself (H3), and are not an independent expectation of the numbers. The independent
   part is `other=0`: every non-digest leaf is bitwise equal to the 0.4.0 records.
-- Copy the 36 files over the five stems in one commit, whose message holds the five lines.
+- Copy the 36 files [*erratum, V04-after review (e): 41: the 36 of a same-host re-take and the five sidecars*] over the five stems in one commit, whose message holds the five lines.
 - **HM-20** (live): at that commit on TR09, `-m nlp tests/test_m05_g10_replay.py` in `.venv-nlp` (OMP 1,
   `PYOMO_CONFIG_DIR`, `PYTHONNOUSERSITE=1`, the nlp-test-tools) → 5 passed. At its parent the same command → 5 failed,
   each naming an `environment` difference (the control).
