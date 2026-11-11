@@ -245,6 +245,13 @@
       "patterns": ["cache"],
       "occurrences": 1,
       "justification": "F1 (ADR 0060 D2): the extension-descriptor schema's validators, keyed by the subschema pointer (envelope, package, a kind's payload), with their `$ref` registry, all from the packaged schema file (immutable for the process's life); never mutated, no job, request or registry state."
+    },
+    {
+      "file": "registry/__init__.py",
+      "line": "global _process_registry  # noqa: PLW0603",
+      "patterns": ["global"],
+      "occurrences": 1,
+      "justification": "F1 (ADR 0060 D8): `default_registry()`, the process registry, built once under `_process_lock` from the packaged built-in tables and then closed (`register` raises `registry_closed`); every later call returns the same instance. No job or request state; tests build their own instances with `Registry.build` and never mutate it."
     }
   ]
 }
