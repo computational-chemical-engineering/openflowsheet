@@ -125,8 +125,9 @@ openflowsheet = [
 "openflowsheet.adapters" = ["variants/*.json", "pymrm/reactor-env.lock"]
 # MSG design note §3.2: the message catalogue's data files and its released-code list.
 "openflowsheet.messages" = ["catalogue/*.yaml", "catalogue/*.txt"]
-# F1 (ADR 0060 D6, D7): the generated built-in tables (`scripts/registry_builtin.py`).
-"openflowsheet.registry" = ["builtin/*.json"]
+# F1 (ADR 0060 D6, D7): the generated built-in tables and their digest record (SF-8),
+# written by `scripts/registry_builtin.py`.
+"openflowsheet.registry" = ["builtin/*.json", "builtin/tables.sha256"]
 
 [tool.ruff]
 line-length = 100

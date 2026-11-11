@@ -255,6 +255,7 @@ class Registry:
         builtin_root: Path | None = None,
         builtin_version: str | None = None,
         catalogue_register: CatalogueRegister | None = None,
+        prevalidated: frozenset[str] = frozenset(),
     ) -> Registry:
         """Build and close an independent registry (D8 steps 1 to 6).
 
@@ -264,7 +265,11 @@ class Registry:
         containing the `openflowsheet` package); `attestations` are the project's review
         records (D9; none exist in 0.5); `catalogue_register` receives each registered
         extension's message catalogue, sorted by id (the process registry passes MSG's
-        `register`; `None` registers none). A catalogue lookup on this thread meanwhile raises."""
+        `register`; `None` registers none); `prevalidated` names built-in tables whose schema
+        validation is skipped, because their bytes have the digest the generator recorded
+        (`discovery.checked_builtin_tables()`, SF-8: only the process registry passes it; tokens,
+        limitation codes and self-hashes are checked as for every table). A catalogue lookup on
+        this thread meanwhile raises."""
         if builtin_version is None:
             import openflowsheet  # noqa: PLC0415
 
@@ -277,8 +282,9 @@ class Registry:
                 source = Source(
                     BUILTIN_DISTRIBUTION, builtin_version, None, root, True, table == LEGACY_TABLE
                 )
+                validated = table in prevalidated
                 for document in builtin_tables[table]:
-                    registry.register(registry._builtin(document, source, attested))
+                    registry.register(registry._builtin(document, source, attested, validated))
             reserved = discovery.RESERVED_NAMESPACES | {
                 entry.id.split(".", 1)[0] for entry in registry._entries.values()
             }
@@ -311,10 +317,16 @@ class Registry:
         return registry
 
     def _builtin(
-        self, document: Mapping[str, Any], source: Source, attestations: frozenset[Attestation]
+        self,
+        document: Mapping[str, Any],
+        source: Source,
+        attestations: frozenset[Attestation],
+        validated: bool = False,
     ) -> Registered:
         identity = f"{document.get('kind')}:{document.get('id')}@{document.get('version')}"
-        pointer = descriptor_problem(document, legacy_form=source.legacy_form)
+        pointer = (
+            None if validated else descriptor_problem(document, legacy_form=source.legacy_form)
+        )
         if pointer is None and document["limitations"]:
             pointer = _limitation_problem(document, self._messages.core_codes())
         if pointer is not None:
@@ -756,7 +768,9 @@ _process_registry: Registry | None = None
 def default_registry() -> Registry:
     """D8: the process registry, built once under a lock from the built-in tables and the entry
     points on `sys.path`, its extensions' message catalogues registered with MSG, and closed;
-    every later call returns the same instance. Its `register` raises
+    a built-in table whose bytes have the generator's recorded digest skips its schema
+    validation (SF-8; an edited table is validated in full). Every later call returns the same
+    instance. Its `register` raises
     `RuntimeError("registry_closed")`. Called again on the thread building it, it raises
     rather than deadlock."""
     global _process_registry  # noqa: PLW0603
@@ -771,10 +785,12 @@ def default_registry() -> Registry:
 
             _build_state.process = True
             try:
+                tables, prevalidated = discovery.checked_builtin_tables()
                 _process_registry = Registry.build(
-                    builtin_tables=discovery.builtin_tables(),
+                    builtin_tables=tables,
                     entry_points=discovery.entry_points(),
                     catalogue_register=catalogue.register,
+                    prevalidated=prevalidated,
                 )
             finally:
                 _build_state.process = False

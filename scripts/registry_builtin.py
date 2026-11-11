@@ -1,11 +1,20 @@
 """F1-WO2, F1-WO3 (ADR 0060 D6, D7): the built-in tables, generated from the code they describe.
 
-    python scripts/registry_builtin.py --write   # writes the tables
+    python scripts/registry_builtin.py --write   # writes the tables and the two digests
     python scripts/registry_builtin.py --check   # regenerates them in memory and compares
 
 The tables are package data under `src/openflowsheet/registry/builtin/`: `legacy.json` (D6) and
 `core.json` (D7: the E01 contributors). `--check` fails with the JSON pointers at which a
 committed table differs from the regenerated one.
+
+Two digests are written beside them and held by `--check`:
+
+- `registry/builtin/tables.sha256`, each table's `discovery.table_sha256` (its name, its bytes and
+  the descriptor schema's bytes; F1 review SF-8): the process registry skips the schema
+  validation of a table that still has its recorded digest;
+- `tests/fixtures/registry/builtin-sha256.txt`, E-F1-5's constant: `registry_sha256` of
+  `Registry.build(builtin_tables=discovery.builtin_tables())` (review N-6; no extension enters),
+  built with full validation. A changed table or implementation module moves it.
 
 Each prints one summary line and exits 0 only on success. `--check` also builds a registry from
 the committed tables, so a table the registry would refuse fails it. `--write` never builds the
@@ -52,6 +61,10 @@ ROOT: Final = Path(__file__).resolve().parent.parent
 SOURCE: Final = ROOT / "src"
 TABLE: Final = SOURCE / "openflowsheet" / "registry" / "builtin" / "legacy.json"
 CORE_TABLE: Final = SOURCE / "openflowsheet" / "registry" / "builtin" / "core.json"
+#: SF-8: each table's `discovery.table_sha256`, package data beside the tables.
+DIGEST_RECORD: Final = SOURCE / "openflowsheet" / "registry" / "builtin" / "tables.sha256"
+#: E-F1-5: the built-in registry's `registry_sha256`.
+CONSTANT: Final = ROOT / "tests" / "fixtures" / "registry" / "builtin-sha256.txt"
 
 #: D6's connection definition, which every legacy method provides and every legacy unit requires.
 CONNECTION: Final = "nTP-v1"
@@ -542,10 +555,27 @@ def _summary(rows: Sequence[Mapping[str, Any]]) -> str:
     return ", ".join(f"{count} {kind}" for kind, count in sorted(kinds.items()))
 
 
-def check() -> int:
+def digest_record(texts: Mapping[str, str]) -> str:
+    """`tables.sha256`: one line `<table_sha256>  <name>` per table, by name."""
+    from openflowsheet.registry import discovery
+
+    schema = discovery.descriptor_schema_bytes()
+    return "".join(
+        f"{discovery.table_sha256(name, texts[name].encode('utf-8'), schema)}  {name}\n"
+        for name in sorted(texts, key=lambda name: name.encode("utf-8"))
+    )
+
+
+def registry_constant(committed: Mapping[str, Sequence[Mapping[str, Any]]]) -> str:
+    """E-F1-5's constant: `registry_sha256` of the built-ins alone, fully validated."""
     from openflowsheet.registry import Registry
 
+    return Registry.build(builtin_tables=committed).registry_sha256
+
+
+def check() -> int:
     committed: dict[str, list[dict[str, Any]]] = {}
+    texts: dict[str, str] = {}
     rows: list[dict[str, Any]] = []
     for path, regenerated in tables().items():
         text = render(regenerated)
@@ -564,21 +594,42 @@ def check() -> int:
             )
             return 1
         committed[path.stem] = json.loads(held)
+        texts[path.stem] = held
         rows.extend(regenerated)
-    registry = Registry.build(builtin_tables=committed)
+    record = digest_record(texts)
+    if not DIGEST_RECORD.is_file() or DIGEST_RECORD.read_text(encoding="utf-8") != record:
+        print(f"registry_builtin --check: FAILED, {_shown(DIGEST_RECORD)} is missing or stale")
+        return 1
+    constant = registry_constant(committed)
+    held_constant = CONSTANT.read_text(encoding="utf-8").strip() if CONSTANT.is_file() else None
+    if held_constant != constant:
+        print(
+            f"registry_builtin --check: FAILED, {_shown(CONSTANT)} holds {held_constant}, "
+            f"the built-in registry_sha256 is {constant}"
+        )
+        return 1
     print(
         f"registry_builtin --check: clean, {len(rows)} descriptors in {len(committed)} tables "
-        f"({_summary(rows)}); registry_sha256 {registry.registry_sha256}"
+        f"({_summary(rows)}); table digests held; registry_sha256 {constant}"
     )
     return 0
 
 
 def write() -> int:
     written = []
+    texts: dict[str, str] = {}
+    committed: dict[str, list[dict[str, Any]]] = {}
     for path, rows in tables().items():
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(render(rows), encoding="utf-8")
+        texts[path.stem] = render(rows)
+        committed[path.stem] = json.loads(texts[path.stem])
+        path.write_text(texts[path.stem], encoding="utf-8")
         written.append(f"{len(rows)} descriptors ({_summary(rows)}) to {_shown(path)}")
+    DIGEST_RECORD.write_text(digest_record(texts), encoding="utf-8")
+    constant = registry_constant(committed)
+    CONSTANT.parent.mkdir(parents=True, exist_ok=True)
+    CONSTANT.write_text(constant + "\n", encoding="utf-8")
+    written.append(f"{_shown(DIGEST_RECORD)}; registry_sha256 {constant} to {_shown(CONSTANT)}")
     print("registry_builtin --write: " + "; ".join(written))
     return 0
 

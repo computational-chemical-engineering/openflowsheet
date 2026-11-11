@@ -743,10 +743,16 @@ def test_the_generator_writes_without_building_the_process_registry(
     legacy, core = tmp_path / "legacy.json", tmp_path / "core.json"
     monkeypatch.setattr(registry_builtin, "TABLE", legacy)
     monkeypatch.setattr(registry_builtin, "CORE_TABLE", core)
+    record, constant = tmp_path / "tables.sha256", tmp_path / "builtin-sha256.txt"
+    monkeypatch.setattr(registry_builtin, "DIGEST_RECORD", record)
+    monkeypatch.setattr(registry_builtin, "CONSTANT", constant)
     assert registry_builtin.write() == 0
     builtin = SOURCE / "openflowsheet" / "registry" / "builtin"
     assert legacy.read_bytes() == (builtin / "legacy.json").read_bytes()
     assert core.read_bytes() == (builtin / "core.json").read_bytes()
+    assert record.read_bytes() == (builtin / "tables.sha256").read_bytes()
+    fixture = REPO_ROOT / "tests" / "fixtures" / "registry" / "builtin-sha256.txt"
+    assert constant.read_bytes() == fixture.read_bytes()
 
 
 def test_the_generators_signatures_are_list_models() -> None:

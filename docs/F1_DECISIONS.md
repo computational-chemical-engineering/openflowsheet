@@ -373,3 +373,50 @@ note, ADR 0047 C1; ruling W1-8), SF-8 (WO5), W1-17 (left as ruled), N-1 to N-4 a
   within c_9 and R-1030. `REVIEW.json`'s review form has no field for a review given with edits (statuses
   `pending_design_review`, `reviewed`, `changes_requested`; no note), so both reviews stay pending and
   `test_every_description_is_reviewed_by_both_lanes` stays red until the reviewers record them.
+
+## F1-WO5 (close-out), 2026-11-11
+
+Files: the merge of `origin/main` (`47ee6677`); `registry/discovery.py`, `registry/__init__.py` (SF-8);
+`scripts/registry_builtin.py`; `src/openflowsheet/registry/builtin/tables.sha256` and
+`tests/fixtures/registry/builtin-sha256.txt` (generated); `pyproject.toml` (package data);
+`tests/test_f1_builtin_identity.py`; `.github/workflows/ci.yml`; `evidence/F1/<commit>/manifest.json` and its T08
+harvest.
+
+- **DECISION W5-1. The merge keeps both register entries.** `docs/decision-register.md`: main's R-1020 and F1's
+  R-1030 were both appended after R-1016; both kept, R-1020 first. The two `message_entry` fixtures (catalogue
+  sha256, moved on both sides) were re-taken with `scripts/t07_schema_fixtures.py --write` over the merged catalogue
+  (`000dba96…`), as main's `ff0b7292` did. F0 after the merge judges M4 on this host (main's T06 H-1): PASS, M4 61/61.
+- **DECISION W5-2. SF-8, Frank's default "skip-revalidate": the digest stands for the schema validation only.**
+  `discovery.table_sha256(name, table, schema)` = SHA-256 of `<name>\n<sha256(table bytes)>\n<sha256(schema
+  bytes)>\n`; the name enters because it selects the legacy payload form. The generator writes one line per table to
+  `registry/builtin/tables.sha256` (package data; not `*.json`, so `builtin_tables()` never reads it as a table) and
+  `--check` holds it. `default_registry()` reads the tables' bytes once (`discovery.checked_builtin_tables()`) and
+  passes the matching names as `Registry.build(prevalidated=...)`; for those tables `descriptor_problem` (envelope
+  schema, canonical-JSON check, payload schema, a definition's own `conn:`) is skipped. Still run for every table:
+  token validation, limitation codes, normalisation and the self-hash (D10's identity). `Registry.build` validates
+  everything by default; only the process registry passes `prevalidated`. A tampered table, a reformatted table, a
+  changed schema or a missing record has no matching digest and is validated in full
+  (`tests/test_f1_builtin_identity.py`; its mutation control shows the skip is real). Residual: a change to
+  `descriptor_problem`'s own code is outside the digest; `--check`, which builds with full validation, catches it in
+  CI. Not done: the review's "also cache `registry_sha256`": it is not on the start path.
+- **DECISION W5-3. SF-8's numbers (SMM-TR09, fresh processes, `PYTHONHASHSEED=0`, median of 15, taken twice).** Cold
+  start to the first catalogue lookup (`import openflowsheet.messages.catalogue`, then `CATALOGUE.entry(
+  "capability_missing")`, which builds the process registry): before (merge commit `10acc4a5`) 0.259 s and 0.261 s
+  in total, of which `Registry.build` 0.102 s; after 0.182 s and 0.183 s, of which `Registry.build` 0.025 s. The
+  rest is the import (0.027 s), entry-point discovery and MSG's catalogue load.
+- **DECISION W5-4. E-F1-5's real constant is generated (review N1, N-6).** `registry_builtin.py --write` writes
+  `tests/fixtures/registry/builtin-sha256.txt` = `registry_sha256` of `Registry.build(builtin_tables=committed)`
+  (the built-ins alone, fully validated; no extension enters), and `--check` holds it: `f4722624…`, WO3's value. A
+  changed table or implementation module moves it, and `--check` names both values.
+- **DECISION W5-5. CI runs E-F1-5 as a step of the `check` job on both legs**, after S11's line, in the pattern of
+  the S07 and S11 steps (`if: !cancelled()`, readable per leg whatever the suite did): `pytest
+  tests/test_f1_builtin_identity.py` and the generator's `--check` line, which prints the value. The X07a legs
+  (Windows, macOS) are recorded `pending` (ADR 0060 risk 7).
+- **DECISION W5-6. N4 and N5 are declared limits in the manifest**, harvested class E to the `platforms` row (Linux
+  x86-64 and aarch64, the lock): N4, module paths are compared exact-case, so on a case-insensitive file system a
+  wrong-case path resolves where Linux quarantines it; N5, a zip or frozen build has no files under the built-in
+  import root, and the process registry fails to build. The other limitations are class P.
+- **DECISION W5-7. The manifest is written by hand in X04's form** (no X04 generator exists; `8e6687c0` wrote it after
+  CI). CI for the final head does not exist yet, so the `F1.CI` check is `unsupported` with the value "pending" and
+  every exit test cites the local command that ran; the manifest is re-taken at the CI-green head with the run id,
+  as X04's was. Status `tested`; nothing is marked `reviewed`.

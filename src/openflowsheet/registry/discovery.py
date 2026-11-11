@@ -5,6 +5,12 @@ The **built-in tables** are package data, `registry/builtin/*.json` (generated b
 `openflowsheet.extensions` is read from every distribution on the path, copies included, so that
 one distribution seen twice can be told from two distributions declaring one namespace.
 
+The generator also records each built-in table's digest (`table_sha256`: the table's name, its
+bytes and the descriptor schema's bytes) in `registry/builtin/tables.sha256`, and its `--check`
+holds the record. `prevalidated_tables` names the tables whose packaged bytes still have the
+recorded digest; `default_registry()` skips their schema validation (F1 review SF-8). A table
+edited after `--check`, or a changed schema, has another digest and is validated in full.
+
 `discover` turns the entry points into loaded extension packages and quarantine records, in this
 order, first problem wins:
 
@@ -28,6 +34,7 @@ of `limitations` codes, without a lookup on the process catalogue (D2, D8).
 
 from __future__ import annotations
 
+import hashlib
 import importlib.metadata
 import importlib.util
 import json
@@ -50,6 +57,12 @@ __all__ = [
     "CatalogueCheck",
     "Discovered",
     "builtin_tables",
+    "checked_builtin_tables",
+    "descriptor_schema_bytes",
+    "prevalidated_tables",
+    "recorded_table_digests",
+    "table_digests",
+    "table_sha256",
     "discover",
     "entry_points",
     "normalised_name",
@@ -65,17 +78,86 @@ RESERVED_NAMESPACES: Final = frozenset({"openflowsheet", "core", "std", "legacy"
 PACKAGE_FORMAT: Final = "openflowsheet-extension-package-v1"
 #: The built-in tables' package-data directory, relative to `openflowsheet.registry`.
 BUILTIN_DIRECTORY: Final = "builtin"
+#: The generator's record of each built-in table's `table_sha256`, in that directory (SF-8).
+DIGEST_RECORD: Final = "tables.sha256"
+
+
+def _builtin_bytes() -> dict[str, bytes]:
+    """Every built-in table's bytes (`registry/builtin/*.json`), by file stem, read through
+    `importlib.resources`."""
+    directory = resources.files("openflowsheet.registry").joinpath(BUILTIN_DIRECTORY)
+    return {
+        entry.name.removesuffix(".json"): entry.read_bytes()
+        for entry in sorted(directory.iterdir(), key=lambda item: item.name.encode("utf-8"))
+        if entry.name.endswith(".json")
+    }
 
 
 def builtin_tables() -> dict[str, list[dict[str, Any]]]:
     """Every built-in table (`registry/builtin/*.json`), by file stem, read through
     `importlib.resources`."""
-    directory = resources.files("openflowsheet.registry").joinpath(BUILTIN_DIRECTORY)
-    tables: dict[str, list[dict[str, Any]]] = {}
-    for entry in sorted(directory.iterdir(), key=lambda item: item.name.encode("utf-8")):
-        if entry.name.endswith(".json"):
-            tables[entry.name.removesuffix(".json")] = json.loads(entry.read_text(encoding="utf-8"))
-    return tables
+    return {name: json.loads(data.decode("utf-8")) for name, data in _builtin_bytes().items()}
+
+
+def table_sha256(name: str, table: bytes, schema: bytes) -> str:
+    """SF-8: the digest that stands for a built-in table having passed its schema validation:
+    SHA-256 of `<name>\n<SHA-256 of the table's bytes>\n<SHA-256 of the descriptor schema's
+    bytes>\n` (hex digests). The name enters because it selects the legacy payload form."""
+    line = f"{name}\n{hashlib.sha256(table).hexdigest()}\n{hashlib.sha256(schema).hexdigest()}\n"
+    return hashlib.sha256(line.encode("utf-8")).hexdigest()
+
+
+def descriptor_schema_bytes() -> bytes:
+    """The packaged descriptor schema's bytes, as `table_sha256` takes them."""
+    from openflowsheet.registry.descriptor import SCHEMA_NAME  # noqa: PLC0415
+    from openflowsheet.resources import packaged  # noqa: PLC0415
+
+    return packaged(f"schemas/{SCHEMA_NAME}").read_bytes()
+
+
+def _digests(data: Mapping[str, bytes]) -> dict[str, str]:
+    schema = descriptor_schema_bytes()
+    return {name: table_sha256(name, table, schema) for name, table in data.items()}
+
+
+def table_digests() -> dict[str, str]:
+    """`table_sha256` of every packaged built-in table, by table name."""
+    return _digests(_builtin_bytes())
+
+
+def recorded_table_digests() -> dict[str, str]:
+    """The generator's record (`tables.sha256`, lines `<digest>  <name>`), by table name; empty
+    when the record is absent."""
+    record = resources.files("openflowsheet.registry").joinpath(BUILTIN_DIRECTORY, DIGEST_RECORD)
+    if not record.is_file():
+        return {}
+    recorded: dict[str, str] = {}
+    for line in record.read_text(encoding="utf-8").splitlines():
+        digest, _, name = line.partition("  ")
+        if name:
+            recorded[name] = digest
+    return recorded
+
+
+def _prevalidated(data: Mapping[str, bytes]) -> frozenset[str]:
+    recorded = recorded_table_digests()
+    return frozenset(
+        name for name, digest in _digests(data).items() if recorded.get(name) == digest
+    )
+
+
+def prevalidated_tables() -> frozenset[str]:
+    """SF-8: the built-in tables whose packaged bytes, with the descriptor schema's, have the
+    digest the generator recorded and `--check` holds; their schema validation may be skipped."""
+    return _prevalidated(_builtin_bytes())
+
+
+def checked_builtin_tables() -> tuple[dict[str, list[dict[str, Any]]], frozenset[str]]:
+    """`builtin_tables()` and `prevalidated_tables()` from one read of the tables' bytes, so the
+    tables parsed are the bytes digested (the process registry's source, SF-8)."""
+    data = _builtin_bytes()
+    tables = {name: json.loads(table.decode("utf-8")) for name, table in data.items()}
+    return tables, _prevalidated(data)
 
 
 def normalised_name(name: str) -> str:
