@@ -53,8 +53,8 @@ contents of its module- and class-level dicts, lists and sets, and the attribute
 instances). Before each test it restores that state, drops repository modules a previous test
 imported, and clears every `functools` cache of the repository. Each test so starts as it would in a
 fresh process after collection, and work a memo or cache would otherwise have done once, for the
-first test, is attributed to every test that needs it. Test outcomes are unchanged by this (measured:
-docs/S16_DECISIONS.md).
+first test, is attributed to every test that needs it. At a9e733e4, 5 of 20284 tests fail under the
+build and pass without it (docs/S16_DECISIONS.md, B-6); their map is that of the failing run.
 
 `--workers N` runs the build under pytest-xdist; the context of a test is per worker process, so
 attribution does not change (measured: docs/S16_DECISIONS.md). One test file has node ids that

@@ -19792,3 +19792,27 @@ record is compared under the policy it names (R-147). (d) Listing `application-r
 **Watch for.** A later package that needs an addendum-classified name in a v2-scope schema: it uses the same structure
 (an object in its own schema, reached by a bare `$ref`), or the design lane amends ADR 0025. The build lane never edits
 the audit to fit. A `$def` of `application-results` that is a `$ref` with siblings is inlined as `allOf` and moves D_9.
+
+## R-1040: Test-impact selection is an inner-loop aid only: CI on both architectures stays the merge gate, F0 after the merge (S16; 2026-11-12)
+
+| | |
+| --- | --- |
+| Date | 2026-11-12 |
+| Decided by | Frank (S16 brief: "full work package, no design pass, one bounded reviewer pass later"; selection an inner-loop aid, fail-safe); recorded by the build lane, S16. Number: F1 reserved R-1030…R-1039 (W4a-11) and the F1 design follow-up keeps R-1033…R-1039 free for F1, so S16 takes R-1040 |
+| Normative text | `docs/test-impact.md`; CLAUDE.md "Gate by risk" (unchanged) |
+| Evidence | `docs/S16_DECISIONS.md` ("Recall"); `evidence/S16/` recall record |
+| Affected packages | S16; every later refactor campaign that uses `scripts/test_impact.py` |
+
+**Decision.** `scripts/test_impact.py select` and `run` choose the tests a change can affect from a per-test
+coverage and open-file map built at a base commit (`requirements-testmap.lock`, a separate venv). They serve the
+inner loop of a refactor or a work order only. Whenever the selection cannot be sure it falls back to the full
+default-marker suite and says why. The merge condition into `main` is unchanged: CI green on both architectures,
+then F0 on `main` before the push.
+
+**Rejected.** Selection as a merge gate. A map is built from one process layout on one host at one base, and its
+recall is shown by seeded changes, not proved: state reached outside the open record (non-Python children, deep
+memos), the CoolProp and browser legs CI adds, and the arm64 leg are outside it. A missed test would then reach
+`main` unseen, while the cost it saves at merge time (one CI run per branch) is not the bottleneck.
+
+**Watch for.** A proposal to skip CI or F0 because "the selection passed". A refactor campaign that runs on a
+stale map: `select` falls back when the base is not an ancestor of `HEAD` or the map's tree hash differs.
