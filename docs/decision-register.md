@@ -19792,3 +19792,29 @@ record is compared under the policy it names (R-147). (d) Listing `application-r
 **Watch for.** A later package that needs an addendum-classified name in a v2-scope schema: it uses the same structure
 (an object in its own schema, reached by a bare `$ref`), or the design lane amends ADR 0025. The build lane never edits
 the audit to fit. A `$def` of `application-results` that is a `$ref` with siblings is inlined as `allOf` and moves D_9.
+
+## R-1034: OpenFlowsheet continues on the full roadmap through 1.0, and performance is a first-class criterion: if CasADi cannot deliver at scale, an alternative backend route must exist (Frank, 2026-11-12)
+
+| | |
+| --- | --- |
+| Date | 2026-11-12 |
+| Decided by | **Frank, 2026-11-12**, in the research-TR09 session, quoted there and relayed to this session; confirmed by Frank in the OpenFlowsheet session on SMM-TR09 the same day ("Yes, record both") |
+| Normative text | Scope: `docs/roadmap/roadmap.md` (ADR 0057) unchanged, all lines 0.4 to 1.0. Backend: blueprint D02 (`CompiledProblem` with the residual/Jacobian callback adapter as the second route), ADR 0003 D2.2, ADR 0065 E-F6-15, target architecture risk R1 / A7 |
+| Evidence | Frank's words: (1) "I will continue, but keep also 0.8 to 1.0." (asked whether to move to DWSIM instead); (2) "For me, performance is always important. So, if CasADi cannot bring that we should have an alternative too." ADR 0003 chose CasADi on n = 17 only (358 µs against Pyomo's 895 µs per Newton iteration at the boundary); D2.2 does not rank the routes at scale; the scale evidence is E-F6-15 (0.6) |
+| Affected packages | the roadmap's 0.8 to 1.0 lines (kept); F6 and every package that fixes the compiled-problem route; a scale probe and, if warranted, an architect pass on the backend (planned after the S16 refactor campaign) |
+
+**Decision.** (1) The project continues on the full roadmap of ADR 0057, including the 0.8 to 1.0 lines (the
+breadth packages X12 to X26 stay); moving to another simulator is rejected. (2) Performance is a first-class design
+criterion alongside correctness. CasADi stays the primary route while it meets the scale targets, but the project must
+keep a working alternative route available: no structure may be fixed so that only CasADi can serve a compiled problem
+(D02's callback route behind `CompiledProblem` is the named alternative). The scale question is answered by
+measurement before F6 fixes more units on CasADi, not only at E-F6-15.
+
+**Rejected.** Moving development to DWSIM (Frank's question, answered "continue"). Waiting for E-F6-15 in 0.6 as the
+first scale evidence: by then many units would be built on one route. Committing now to a second backend without
+numbers: the alternatives (CasADi SX or MX, C code generation, the D02 callback route with compiled kernels, KLU or a
+reused symbolic factorization) are ranked only after a scale probe shows where the time goes.
+
+**Watch for.** A design that makes `CompiledProblem` CasADi-only. Units built ahead of the scale numbers in ways that
+would block the callback route. A scale probe whose log-log slopes exceed E-F6-15's 1.3: that triggers the architect
+pass.
