@@ -74,3 +74,13 @@ limitations) by whoever may change D2.4 paths, then the manifest.
 
 - (b) history replay: each of ~10 bases needs its own map, 70 min each with 12 workers here: about 12 h,
   and merged commits pass their suite, so recall would be vacuous. Not done.
+
+- **B-9. A per-test timeout in the recall (2026-11-12, orchestrator).** The first recall run hung on case
+  `app-owner-instance`: with `owner_instance=None`, `store.start_job` fences on `owner_instance = ?`, which never
+  matches NULL, so `executor._run` returns, the job stays queued and `_wait_until_ended` (local.py) waits with
+  `math.inf`. One worker spun for 5 h; after it was killed, a second test waited idle for 2 h more. The run was
+  stopped. `requirements-testmap.lock` now pins pytest-timeout 2.4.0 and `scripts/s16_recall.py` passes
+  `--timeout=900` to every pytest run, the full suite and `test_impact.py run` (slowest baseline test 337 s with 12
+  workers). A timed-out test fails, so the hang counts as a detection with the test named. The silent queued job is
+  a product weakness, outside S16. Alternative: an external watchdog (it missed the idle wait). Reversible by: this
+  commit.

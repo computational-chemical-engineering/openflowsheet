@@ -238,6 +238,10 @@ def _git(*args: str, cwd: Path) -> str:
     return done.stdout
 
 
+#: Per-test limit (pytest-timeout, requirements-testmap.lock). A mutation can leave a job queued
+#: and a test waiting forever (app-owner-instance did); it then fails after the limit. The
+#: slowest baseline test took 337 s.
+TIMEOUT = "--timeout=900"
 FAILED = re.compile(r"^(?:FAILED|ERROR) (\S+?)(?: - .*)?$")
 
 
@@ -245,7 +249,7 @@ def _suite(tree: Path, workers: int, log: Path) -> tuple[set[str], str, float]:
     """The full default-marker suite: failing node ids, the summary lines, wall seconds."""
     environment = dict(os.environ, PYTHONPATH="src", OMP_NUM_THREADS="1")
     environment.update(OPENBLAS_NUM_THREADS="1", MKL_NUM_THREADS="1")
-    base = [sys.executable, "-m", "pytest", "-q", "-p", "no:cacheprovider", "-rfE"]
+    base = [sys.executable, "-m", "pytest", "-q", "-p", "no:cacheprovider", "-rfE", TIMEOUT]
     ignored = [f"--ignore={name}" for name in XDIST_SERIAL]
     runs = [base + ["-n", str(workers), *ignored], base + list(XDIST_SERIAL)]
     failures: set[str] = set()
@@ -333,6 +337,8 @@ def main() -> int:
                 str(args.map),
                 "--log",
                 str(logs / f"{case}.run.log"),
+                "--",
+                TIMEOUT,
             )
             record["run"] = {"exit": ran.returncode, "summary": ran.stdout.strip()}
         if case == "app-owner-instance":

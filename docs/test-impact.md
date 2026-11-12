@@ -18,7 +18,7 @@ python3.13 -m venv .venv-testmap
 .venv-testmap/bin/python -m pip install --no-deps --require-hashes -r requirements-testmap.lock
 ```
 
-`requirements-testmap.lock` pins coverage, pytest-cov and pytest-xdist (and execnet). `build` puts
+`requirements-testmap.lock` pins coverage, pytest-cov, pytest-xdist (and execnet) and pytest-timeout. `build` puts
 two files into this venv's site-packages: `ofs_testmap_runtime.py` (a copy of
 `scripts/test_impact_runtime.py`) and `ofs_testmap.pth`, which imports it at every start-up. The
 runtime does nothing unless a build is active; nothing is written into the repository.
