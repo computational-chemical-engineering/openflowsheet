@@ -9449,3 +9449,51 @@ harvest:
   class: P
   to: []
   note: 'provenance note: other local commands ran at b37ba8ff, which differs from a423093f only in scripts/t07_schema_fixtures.py'
+- manifest: evidence/S16/84872685f6aa661a67bd900439e4b4bfc614b37e/manifest.json
+  item: limitations[0]
+  sha256: beee26ed1337053bb2ed3766baf18b8bff7883600ddbc732bc08503cecd0509e
+  class: P
+  to: []
+  note: 'provenance note: development-tool verification, implemented until CI; review pending'
+- manifest: evidence/S16/84872685f6aa661a67bd900439e4b4bfc614b37e/manifest.json
+  item: limitations[1]
+  sha256: 304491232609ef868e1096df483b7ad296001c8946146677abdcac33f677d1b2
+  class: P
+  to: []
+  note: 'provenance note: requirements empty, a development-process package (R-1040)'
+- manifest: evidence/S16/84872685f6aa661a67bd900439e4b4bfc614b37e/manifest.json
+  item: limitations[2]
+  sha256: 46e8b802ff0a7c5d5f3f170168a0edeb335b9555c1d95e4617f676c9763bcaa4
+  class: P
+  to: []
+  note: 'process note: selection is an inner-loop aid; CI both legs stays the merge gate (R-1040)'
+- manifest: evidence/S16/84872685f6aa661a67bd900439e4b4bfc614b37e/manifest.json
+  item: limitations[3]
+  sha256: 148a0ba327f2e1b85fcd2d86f9e365b7102ffb883c873543fcee8e8c79d28e90
+  class: P
+  to: []
+  note: 'provenance note: the open record sees Python-level opens only'
+- manifest: evidence/S16/84872685f6aa661a67bd900439e4b4bfc614b37e/manifest.json
+  item: limitations[4]
+  sha256: e01f826771fd390b02f46dfbbe8805e15e1d8f069e6f9d9a802c79b40db193b5
+  class: P
+  to: []
+  note: 'provenance note: recall is measured by seeded changes, not proved'
+- manifest: evidence/S16/84872685f6aa661a67bd900439e4b4bfc614b37e/manifest.json
+  item: limitations[5]
+  sha256: 806142a083f716a024405d218b43608867926542c5395aeed905ccac5b3482e8
+  class: P
+  to: []
+  note: 'provenance note: 5 of 20284 tests fail only under the map build'
+- manifest: evidence/S16/84872685f6aa661a67bd900439e4b4bfc614b37e/manifest.json
+  item: limitations[6]
+  sha256: 254ed0bb54cd35ae9bdff4f5800655da2156bd9dbcd2898bbbaa0af485a28ab6
+  class: P
+  to: []
+  note: 'provenance note: recall results in S16_DECISIONS and recall.json; history replay not done'
+- manifest: evidence/S16/84872685f6aa661a67bd900439e4b4bfc614b37e/manifest.json
+  item: limitations[7]
+  sha256: 37956d225125b9b2a91ab12ba174453db89990422cdaa657af54c11c768c3bc2
+  class: P
+  to: []
+  note: 'provenance note: the build is Linux-only; select and run need only the standard library'
