@@ -120,3 +120,9 @@ tiers detected the mutation": `tests` "detected" (exit 2: the missing S16 script
 `mcp_digest` missed (13.7 s); ruff and mypy passed and do not count (`behaviour = false`). The PASS is vacuous: the
 only detecting tier fails at the unmutated HEAD as well. No test names `K06-cli@`, so this literal is not covered by
 F0, the digest, or (by grep) any test. Re-run the self-test once S16 lands.
+
+- **DECISION D8 (2026-11-12). Re-pin cce-code-health at `83614510eae16f11dd595b1fcd38c27b43703837`** (code_health's
+  fix of the seven tool issues WO-1 reported: self-test runs every behaviour tier unmutated first and fails if one
+  fails; `codehealth config --check`; `[gate] prefix` with `{gitdir}`; one path matcher). Until S16's
+  `scripts/test_impact.py` is on this branch, the self-test fails by design ("tier tests fails without mutation").
+  Alternative: keep 0cf99531, whose self-test PASS at WO-1 was vacuous. Reversible by: the pin line.
