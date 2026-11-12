@@ -1,0 +1,77 @@
+# S17: cce-code-health configuration (docs/code-health.md). Format: the docstring of
+# cce_code_health/gate.py at the commit requirements-codehealth.txt pins. The gate reads this file
+# from the base commit, so a step cannot loosen its own gate, and `.codehealth/*` is always forbidden
+# in a step: change this file in a separate commit, never inside a campaign step.
+schema = 1
+profile = "python@0"
+
+[scope]
+# fnmatch on repository paths; '*' also matches '/'. Only .py files are in scope, and a step may
+# touch only in-scope files.
+include = ["src/openflowsheet/application/*"]
+
+[gate]
+# F0's 35 M9 modules (benchmarks/f0/corpus.json): run in the base tree, so the registered list.
+frozen_cmd = "python3 scripts/codehealth_frozen.py"
+frozen = [
+    "schemas/*",
+    "src/openflowsheet/application/bindings/descriptions/*",
+    "src/openflowsheet/messages/catalogue/*",
+    "src/openflowsheet/**/*.md",
+    "src/openflowsheet/**/*.yaml",
+    "benchmarks/f0/*",
+]
+forbid = ["tests/*", "benchmarks/*", "requirements*", "pyproject.toml", "evidence/*", "schemas/*"]
+literals = true
+public_api = true
+
+[gate.env]
+PYTHONHASHSEED = "0"
+OMP_NUM_THREADS = "1"
+OPENBLAS_NUM_THREADS = "1"
+MKL_NUM_THREADS = "1"
+
+# Every tier runs in the tree under test (the head worktree, or the self-test's). The project
+# environment is the main checkout's .venv, found through the git common directory so that it
+# resolves from any worktree; OPENFLOWSHEET_VENV overrides it. PYTHONPATH=src makes each Python
+# tier import the tree under test, not the editable install's checkout (docs/code-health.md).
+# `behaviour = false`: a lint or type failure never counts as detecting the self-test's mutation.
+
+[[gate.tier]]
+name = "ruff"
+kind = "command"
+cadence = "step"
+behaviour = false
+cmd = 'V="${OPENFLOWSHEET_VENV:-$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")/.venv}/bin"; "$V/ruff" check {files} && "$V/ruff" format --check {files}'
+
+[[gate.tier]]
+name = "mypy"
+kind = "command"
+cadence = "step"
+behaviour = false
+# Unrestricted, as scripts/check.sh runs it (S17 D4): warm, it takes under a second, and a
+# restricted run would not check the callers of a changed private helper.
+cmd = 'V="${OPENFLOWSHEET_VENV:-$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")/.venv}/bin"; "$V/mypy"'
+
+[[gate.tier]]
+name = "tests"
+kind = "command"
+cadence = "step"
+# S16's test-impact selection; fails until scripts/test_impact.py lands (the campaign waits for S16).
+cmd = 'V="${OPENFLOWSHEET_VENV:-$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")/.venv}/bin"; PYTHONPATH=src "$V/python" scripts/test_impact.py run --base {base}'
+
+[[gate.tier]]
+name = "f0"
+kind = "command"
+cadence = "step"
+cmd = 'V="${OPENFLOWSHEET_VENV:-$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")/.venv}/bin"; PYTHONPATH=src "$V/python" scripts/corpus_identity.py --check'
+
+[[gate.tier]]
+name = "mcp_digest"
+kind = "command"
+cadence = "step"
+cmd = 'V="${OPENFLOWSHEET_VENV:-$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")/.venv}/bin"; PYTHONPATH=src "$V/python" -m pytest -q -p no:cacheprovider tests/test_t08_w2_surface_digest.py tests/test_m07a_surface_chain.py'
+
+# No campaign-cadence tier (S17 D5): the repository runs scripts/gate.sh only before a release
+# candidate, and CI green on both architectures is the merge condition, so CI on x86-64 and aarch64
+# is the campaign-end check (docs/code-health.md).
