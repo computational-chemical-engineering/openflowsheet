@@ -133,3 +133,9 @@ F0, the digest, or (by grep) any test. Re-run the self-test once S16 lands.
   (exit 124). `tests` runs serially (`test_impact.py run` has no workers option), so its limit is the widest.
   The tool kills only the tier's shell on a timeout (reported to code_health). Alternative: no limits and a watchdog.
   Reversible by: the five `timeout` lines.
+- **DECISION D10 (2026-11-12). Re-pin cce-code-health at `7628e7375cb9ce9574f5a54b8811b99c9314169e`** (code_health's
+  fix of the timeout orphan issue reported with D9: a tier runs in its own session; on a timeout or interrupt the gate
+  sends SIGTERM to the process group, then SIGKILL after 5 s, and kills stragglers of a tier that ended normally;
+  timeout stays exit 124; 72 tool tests pass, 3 new). Installed as 0.1.1.dev14+g7628e7375; `config --check` OK.
+  The tool's `frozen_cmd` has no timeout (a quick git-level check). Alternative: stay on 83614510 and rely on a
+  watchdog. Reversible by: the pin line.

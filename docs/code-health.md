@@ -19,8 +19,8 @@ dependency, complexipy, by version; the file is outside the release identity (R-
     .venv-codehealth/bin/python -m pip install -r requirements-codehealth.txt
     .venv-codehealth/bin/codehealth --help
 
-After a re-pin, add `--force-reinstall --no-deps` to the install line: the tool's version string (0.2.0.dev0) does
-not change between commits, so pip otherwise keeps the old build. `pip freeze | grep cce` shows the installed commit.
+After a re-pin, add `--force-reinstall --no-deps` to the install line: before cec6dbe the tool's version string did
+not change between commits, so pip kept the old build (since then it carries the commit, e.g. 0.1.1.dev14+g7628e7375). `pip freeze | grep cce` shows the installed commit.
 
 `scan`, `diff` and `hotspots` are static: they read files through git and need no OpenFlowsheet install. `gate` runs
 the tiers below, which call the project environment themselves.
@@ -70,8 +70,8 @@ never counts as the self-test detecting its mutation. The gate stops at the firs
 
 Every tier has a `timeout` (ruff 300 s, mypy 900, tests 3600, f0 1800, mcp_digest 600). A timeout fails the tier
 with exit 124: a mutation or a bad step can leave a job queued and a test waiting forever (S16's recall hit this with
-`owner_instance=None`). At the pinned commit the gate kills only the tier's shell on a timeout, so pytest processes
-below it may survive; check for orphans after a timeout (reported to the tool, 2026-11-12).
+`owner_instance=None`). From the pinned commit 7628e73 on, the gate runs each tier in its own process group and on a
+timeout sends SIGTERM to the group, then SIGKILL after 5 s, so no pytest worker survives it (S17 D10).
 
 There is no campaign-cadence tier: CI green on both architectures is the campaign-end check (the repository runs
 `scripts/gate.sh` only before a release-candidate cut).
