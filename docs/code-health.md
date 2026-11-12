@@ -19,6 +19,9 @@ dependency, complexipy, by version; the file is outside the release identity (R-
     .venv-codehealth/bin/python -m pip install -r requirements-codehealth.txt
     .venv-codehealth/bin/codehealth --help
 
+After a re-pin, add `--force-reinstall --no-deps` to the install line: the tool's version string (0.2.0.dev0) does
+not change between commits, so pip otherwise keeps the old build. `pip freeze | grep cce` shows the installed commit.
+
 `scan`, `diff` and `hotspots` are static: they read files through git and need no OpenFlowsheet install. `gate` runs
 the tiers below, which call the project environment themselves.
 
