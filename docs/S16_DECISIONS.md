@@ -84,3 +84,10 @@ limitations) by whoever may change D2.4 paths, then the manifest.
   workers). A timed-out test fails, so the hang counts as a detection with the test named. The silent queued job is
   a product weakness, outside S16. Alternative: an external watchdog (it missed the idle wait). Reversible by: this
   commit.
+- **B-10. app-owner-instance runs with a 60 s per-test limit and its selected run with `-x` (2026-11-12,
+  orchestrator).** Run 2 (B-9 limits) stalled on this case: 669 tests execute the mutated `_context` body
+  (`select --lines src/openflowsheet/application/local.py:429-431`), and each that waits for its job sits out the
+  limit, up to 14 h at 900 s with 12 workers. At 60 s the full run takes at most about an hour. A slow test cut
+  off by the lower limit (16 baseline tests exceed 60 s) can only add a false miss, which is checked by hand; it
+  cannot hide a real one. The selected run is serial and only has to fail, so it stops at the first failure.
+  Other cases keep 900 s. Reversible by: CASE_TIMEOUT and CASE_RUN_ARGS in scripts/s16_recall.py.

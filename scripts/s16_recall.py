@@ -242,14 +242,22 @@ def _git(*args: str, cwd: Path) -> str:
 #: and a test waiting forever (app-owner-instance did); it then fails after the limit. The
 #: slowest baseline test took 337 s.
 TIMEOUT = "--timeout=900"
+#: app-owner-instance leaves every job queued: 669 tests execute the mutated line, and each one that
+#: waits for its job would sit out 900 s (up to 14 h with 12 workers). Its limit is 60 s. A slow
+#: test cut off by it can only add a false miss (checked by hand), never hide a real one.
+CASE_TIMEOUT = {"app-owner-instance": "--timeout=60"}
+#: Its selected run is serial and only has to show that the selection fails: stop at the first.
+CASE_RUN_ARGS = {"app-owner-instance": ("-x",)}
 FAILED = re.compile(r"^(?:FAILED|ERROR) (\S+?)(?: - .*)?$")
 
 
-def _suite(tree: Path, workers: int, log: Path) -> tuple[set[str], str, float]:
+def _suite(
+    tree: Path, workers: int, log: Path, timeout: str = TIMEOUT
+) -> tuple[set[str], str, float]:
     """The full default-marker suite: failing node ids, the summary lines, wall seconds."""
     environment = dict(os.environ, PYTHONPATH="src", OMP_NUM_THREADS="1")
     environment.update(OPENBLAS_NUM_THREADS="1", MKL_NUM_THREADS="1")
-    base = [sys.executable, "-m", "pytest", "-q", "-p", "no:cacheprovider", "-rfE", TIMEOUT]
+    base = [sys.executable, "-m", "pytest", "-q", "-p", "no:cacheprovider", "-rfE", timeout]
     ignored = [f"--ignore={name}" for name in XDIST_SERIAL]
     runs = [base + ["-n", str(workers), *ignored], base + list(XDIST_SERIAL)]
     failures: set[str] = set()
@@ -309,7 +317,9 @@ def main() -> int:
         fallback = chosen.stderr.strip() if chosen.returncode == 3 else None
         if chosen.returncode not in (0, 3):
             raise SystemExit(f"{case}: select exit {chosen.returncode}: {chosen.stderr}")
-        failures, summary, wall = _suite(tree, args.workers, logs / f"{case}.log")
+        failures, summary, wall = _suite(
+            tree, args.workers, logs / f"{case}.log", CASE_TIMEOUT.get(case, TIMEOUT)
+        )
         new = failures - baseline
         files = {n for n in nodes if "::" not in n}
         missed = sorted(
@@ -338,7 +348,8 @@ def main() -> int:
                 "--log",
                 str(logs / f"{case}.run.log"),
                 "--",
-                TIMEOUT,
+                CASE_TIMEOUT.get(case, TIMEOUT),
+                *CASE_RUN_ARGS.get(case, ()),
             )
             record["run"] = {"exit": ran.returncode, "summary": ran.stdout.strip()}
         if case == "app-owner-instance":
