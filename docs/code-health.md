@@ -68,6 +68,11 @@ the main checkout's code, not the code under test. `behaviour = false` marks ruf
 never counts as the self-test detecting its mutation. The gate stops at the first failing tier unless
 `keep_going = true`.
 
+Every tier has a `timeout` (ruff 300 s, mypy 900, tests 3600, f0 1800, mcp_digest 600). A timeout fails the tier
+with exit 124: a mutation or a bad step can leave a job queued and a test waiting forever (S16's recall hit this with
+`owner_instance=None`). At the pinned commit the gate kills only the tier's shell on a timeout, so pytest processes
+below it may survive; check for orphans after a timeout (reported to the tool, 2026-11-12).
+
 There is no campaign-cadence tier: CI green on both architectures is the campaign-end check (the repository runs
 `scripts/gate.sh` only before a release-candidate cut).
 

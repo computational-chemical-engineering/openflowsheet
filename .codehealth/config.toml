@@ -36,9 +36,12 @@ MKL_NUM_THREADS = "1"
 # resolves from any worktree; OPENFLOWSHEET_VENV overrides it. PYTHONPATH=src makes each Python
 # tier import the tree under test, not the editable install's checkout (docs/code-health.md).
 # `behaviour = false`: a lint or type failure never counts as detecting the self-test's mutation.
+# `timeout` (s): a hung tier fails as exit 124 (S17 D9; a mutation can leave a job queued and a
+# test waiting forever, as in S16's recall). `tests` runs serially, so its limit is the widest.
 
 [[gate.tier]]
 name = "ruff"
+timeout = 300
 kind = "command"
 cadence = "step"
 behaviour = false
@@ -46,6 +49,7 @@ cmd = 'V="${OPENFLOWSHEET_VENV:-$(dirname "$(git rev-parse --path-format=absolut
 
 [[gate.tier]]
 name = "mypy"
+timeout = 900
 kind = "command"
 cadence = "step"
 behaviour = false
@@ -55,6 +59,7 @@ cmd = 'V="${OPENFLOWSHEET_VENV:-$(dirname "$(git rev-parse --path-format=absolut
 
 [[gate.tier]]
 name = "tests"
+timeout = 3600
 kind = "command"
 cadence = "step"
 # S16's test-impact selection; fails until scripts/test_impact.py lands (the campaign waits for S16).
@@ -62,12 +67,14 @@ cmd = 'V="${OPENFLOWSHEET_VENV:-$(dirname "$(git rev-parse --path-format=absolut
 
 [[gate.tier]]
 name = "f0"
+timeout = 1800
 kind = "command"
 cadence = "step"
 cmd = 'V="${OPENFLOWSHEET_VENV:-$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")/.venv}/bin"; PYTHONPATH=src "$V/python" scripts/corpus_identity.py --check'
 
 [[gate.tier]]
 name = "mcp_digest"
+timeout = 600
 kind = "command"
 cadence = "step"
 cmd = 'V="${OPENFLOWSHEET_VENV:-$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")/.venv}/bin"; PYTHONPATH=src "$V/python" -m pytest -q -p no:cacheprovider tests/test_t08_w2_surface_digest.py tests/test_m07a_surface_chain.py'

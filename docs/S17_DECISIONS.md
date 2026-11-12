@@ -126,3 +126,10 @@ F0, the digest, or (by grep) any test. Re-run the self-test once S16 lands.
   fails; `codehealth config --check`; `[gate] prefix` with `{gitdir}`; one path matcher). Until S16's
   `scripts/test_impact.py` is on this branch, the self-test fails by design ("tier tests fails without mutation").
   Alternative: keep 0cf99531, whose self-test PASS at WO-1 was vacuous. Reversible by: the pin line.
+- **DECISION D9 (2026-11-12). Every gate tier gets a `timeout`** (ruff 300 s, mypy 900, tests 3600, f0 1800,
+  mcp_digest 600). S16's recall hung 5 h on the mutation `owner_instance=None`: `store.start_job` fences on
+  `owner_instance = ?`, which never matches NULL, so `executor._run` returns, the job stays queued and
+  `_wait_until_ended` waits with `math.inf`. A step or a self-test mutation can do the same; a timeout fails the tier
+  (exit 124). `tests` runs serially (`test_impact.py run` has no workers option), so its limit is the widest.
+  The tool kills only the tier's shell on a timeout (reported to code_health). Alternative: no limits and a watchdog.
+  Reversible by: the five `timeout` lines.
