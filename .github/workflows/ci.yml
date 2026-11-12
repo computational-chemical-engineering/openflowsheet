@@ -320,6 +320,31 @@ jobs:
           print(f"G05: R0 structural identity equal across {len(names)} platforms")
           PY
 
+  codehealth:
+    # S17 (docs/code-health.md): cce-code-health's debt ratchet over the push or PR range against
+    # origin/main, informational only: it never blocks (`continue-on-error`) and runs no tests. The
+    # tool is a development tool in its own environment, outside the release identity; `diff` reads
+    # the scope from origin/main's `.codehealth/config.toml` (the whole tree while main has none).
+    if: ${{ github.event_name != 'workflow_dispatch' }}
+    continue-on-error: true
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.13"
+
+      - name: Install cce-code-health into a fresh environment
+        run: |
+          python -m venv "${RUNNER_TEMP}/codehealth"
+          "${RUNNER_TEMP}/codehealth/bin/python" -m pip install -r requirements-codehealth.txt
+
+      - name: Debt ratchet against origin/main (informational)
+        run: '"${RUNNER_TEMP}/codehealth/bin/codehealth" diff --base origin/main --head HEAD'
+
   ensemble:
     # T06 spec §6.6 (A5), §7.6 (A5), A98, A99: the closing records on both CI architectures, at
     # one commit — run 2r (run 2's 440 published starts re-run with the v2 record, for A90) and
