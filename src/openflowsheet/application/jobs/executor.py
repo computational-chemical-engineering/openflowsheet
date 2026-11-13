@@ -361,23 +361,16 @@ class ProcessExecutor:
     # -- the supervisor thread ----------------------------------------------------------------
 
     def _supervise(self) -> None:
+        """The supervisor thread's loop: it returns once `shutdown` has ended every job, or once
+        the store has failed `SHUTDOWN_STORE_ATTEMPTS` polls in a row after it
+        (`_abandon_jobs_and_kill_workers`)."""
         failures = 0  # consecutive failing polls since `shutdown` (rf1-Q1)
         while True:
             with self._condition:
                 if self._closing and not self._slots and not self._queue:
                     return
                 if self._closing and failures >= SHUTDOWN_STORE_ATTEMPTS:
-                    abandoned = list(self._slots.values())
-                    _LOG.error(
-                        "process executor: shutdown gave up on a failing store; jobs %s stay as"
-                        " recorded until the next open ends them failed(owner_lost)",
-                        sorted({*self._slots, *self._queue}),
-                    )
-                    self._slots.clear()
-                    self._queue.clear()
-                    for slot in abandoned:  # no worker outlives the shutdown
-                        if slot.launched and slot.process.is_alive():
-                            _kill_tree(slot.process)
+                    self._abandon_jobs_and_kill_workers()
                     return
                 admitted: list[str] = []
                 while self._queue and len(self._slots) + len(admitted) < self.settings.max_workers:
@@ -423,6 +416,22 @@ class ProcessExecutor:
                     # Idle or failing, it sleeps until `run` or `shutdown` notifies, or a poll.
                     busy = self._slots or self._queue
                     self._condition.wait(SUPERVISOR_POLL_S if busy else None)
+
+    def _abandon_jobs_and_kill_workers(self) -> None:
+        """rf1-Q1, under the condition's lock: give up on a store that keeps failing after
+        `shutdown`. Log the jobs left as recorded, forget every slot and queued id, and kill each
+        launched worker still alive, so that no worker outlives the shutdown."""
+        abandoned = list(self._slots.values())
+        _LOG.error(
+            "process executor: shutdown gave up on a failing store; jobs %s stay as"
+            " recorded until the next open ends them failed(owner_lost)",
+            sorted({*self._slots, *self._queue}),
+        )
+        self._slots.clear()
+        self._queue.clear()
+        for slot in abandoned:  # no worker outlives the shutdown
+            if slot.launched and slot.process.is_alive():
+                _kill_tree(slot.process)
 
     def _launch(self, job_id: str) -> None:
         """Start a worker for a job still queued; a job cancelled meanwhile needs none."""
