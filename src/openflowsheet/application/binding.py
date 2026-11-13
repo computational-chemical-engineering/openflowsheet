@@ -778,44 +778,11 @@ def bind_revision_or_reason(document: Mapping[str, Any]) -> Binding | Unbound:
         )
     spec = replace(spec, parameters=overridden)
 
-    promoted: list[EquationSpec] = []
-    promoted_columns: dict[str, str] = {}
-    parameters = dict(spec.parameters)
-    parameter_ids = list(spec.parameter_ids)
-    for name, columns in targets.items():
-        for column in columns:
-            if column in pinned.values() or column not in spec.variable_ids:
-                continue
-            row_id = f"{_SPEC_ROW_PREFIX}{name}"
-            parameter = f"{_SPEC_ROW_PREFIX}{name}"
-            promoted.append(
-                EquationSpec(
-                    equation_id=row_id,
-                    build=_promotion_row(column, parameter),
-                    accumulation="algebraic",
-                    origin=f"revision#{name}",
-                )
-            )
-            parameter_ids.append(parameter)
-            parameters[parameter] = values[name]
-            specification_ids[row_id] = name
-            promoted_columns[row_id] = column
-            row_units[row_id] = column.split(".", 1)[0] if column.split(".", 1)[0] in WIRING else ""
-
-    if promoted:
-        spec = replace(
-            spec,
-            equations=(*spec.equations, *promoted),
-            parameter_ids=tuple(parameter_ids),
-            parameters=parameters,
-            # A specification row pins one column, so it is that column's kind: a duty row is
-            # scaled and judged as a duty. Without it the row has no scale, and K03 §4 refuses a
-            # silent 1.0 (SCALE_UNAVAILABLE) — correctly.
-            row_kinds={
-                **spec.row_kinds,
-                **{row: spec.variable_kinds[column] for row, column in promoted_columns.items()},
-            },
-        )
+    spec, promotions = _promote_specifications(spec, targets, values, pinned)
+    promoted_columns = {row_id: column for row_id, (_, column) in promotions.items()}
+    for row_id, (name, column) in promotions.items():
+        specification_ids[row_id] = name
+        row_units[row_id] = column.split(".", 1)[0] if column.split(".", 1)[0] in WIRING else ""
 
     return Binding(
         spec=spec,
@@ -840,6 +807,55 @@ def bind_revision_or_reason(document: Mapping[str, Any]) -> Binding | Unbound:
         constants_sha256="0" * 64,
         input_mapping=InputMapping(declared_components=declared, conversions=conversions),
     )
+
+
+def _promote_specifications(
+    spec: ProblemSpec,
+    targets: Mapping[str, tuple[str, ...]],
+    values: Mapping[str, float],
+    pinned: Mapping[str, str],
+) -> tuple[ProblemSpec, dict[str, tuple[str, str]]]:
+    """§5.1: `spec` with a row `SPEC:<id>` for each column a fixed specification targets (in
+    `targets`, at its value in `values`) that is a column of `spec` and that no unit row in
+    `pinned` already pins; and those rows, by row id, each with its specification id and column.
+    `spec` is returned as it is when no column is promoted."""
+    promoted: list[EquationSpec] = []
+    promotions: dict[str, tuple[str, str]] = {}
+    parameters = dict(spec.parameters)
+    parameter_ids = list(spec.parameter_ids)
+    for name, columns in targets.items():
+        for column in columns:
+            if column in pinned.values() or column not in spec.variable_ids:
+                continue
+            row_id = f"{_SPEC_ROW_PREFIX}{name}"
+            parameter = f"{_SPEC_ROW_PREFIX}{name}"
+            promoted.append(
+                EquationSpec(
+                    equation_id=row_id,
+                    build=_promotion_row(column, parameter),
+                    accumulation="algebraic",
+                    origin=f"revision#{name}",
+                )
+            )
+            parameter_ids.append(parameter)
+            parameters[parameter] = values[name]
+            promotions[row_id] = (name, column)
+
+    if promoted:
+        spec = replace(
+            spec,
+            equations=(*spec.equations, *promoted),
+            parameter_ids=tuple(parameter_ids),
+            parameters=parameters,
+            # A specification row pins one column, so it is that column's kind: a duty row is
+            # scaled and judged as a duty. Without it the row has no scale, and K03 §4 refuses a
+            # silent 1.0 (SCALE_UNAVAILABLE) — correctly.
+            row_kinds={
+                **spec.row_kinds,
+                **{row: spec.variable_kinds[column] for row, (_, column) in promotions.items()},
+            },
+        )
+    return spec, promotions
 
 
 def _instance_contracts(document: Mapping[str, Any], components: Sequence[str]) -> Unbound | None:
