@@ -113,7 +113,7 @@ def apply_edits(base: Mapping[str, Any], edits: Sequence[Edit]) -> dict[str, Any
 
 def _apply(document: dict[str, Any], edit: Edit, index: int) -> None:
     """Apply edit number `index` to `document` in place: walk its path to the node it acts on
-    (an object member by `_enter_or_create_member`, an array element by `_check_array_index`),
+    (an object member by `_ensure_member`, an array element by `_check_array_index`),
     then edit that node (`_apply_at`). A `remove` whose parent is absent returns from the walk.
     """
     path = edit.path
@@ -122,7 +122,8 @@ def _apply(document: dict[str, Any], edit: Edit, index: int) -> None:
     for depth, key in enumerate(walk):
         here = json_pointer(path[: depth + 1])
         if isinstance(node, dict):
-            if not _enter_or_create_member(node, key, edit, index, depth, here):
+            following = path[depth + 1] if depth + 1 < len(path) else None
+            if not _ensure_member(node, key, following, edit, index, here):
                 return  # an absent parent holds no key to remove
         elif isinstance(node, list):
             _check_array_index(node, key, index, here)
@@ -132,20 +133,24 @@ def _apply(document: dict[str, Any], edit: Edit, index: int) -> None:
     _apply_at(node, edit, index)
 
 
-def _enter_or_create_member(
-    node: dict[str, Any], key: str | int, edit: Edit, index: int, depth: int, here: str
+def _ensure_member(
+    node: dict[str, Any],
+    key: str | int,
+    following: str | int | None,
+    edit: Edit,
+    index: int,
+    here: str,
 ) -> bool:
-    """One step of edit `index`'s walk into the object `node`: `key` at `depth` of its path.
+    """One step of edit `index`'s walk into the object `node`: True when member `key` exists,
+    after creating it if needed; `following` is the path's next key (`None` at its end).
 
     An integer key is refused. An absent member is created as an empty object for a `set` whose
     next key is a string (K06) and refused for anything else, except that a `remove` returns
-    False: an absent parent holds no key to remove. True means the walk enters `node[key]`.
+    False: an absent parent holds no key to remove.
     """
-    path = edit.path
     if not isinstance(key, str):
         raise EditPathError(index, here, "an integer indexes an array; this is an object")
     if key not in node:
-        following = path[depth + 1] if depth + 1 < len(path) else None
         if edit.operation == "remove":
             return False
         if edit.operation == "set" and isinstance(following, str):
