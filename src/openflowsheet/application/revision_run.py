@@ -930,42 +930,7 @@ def write_revision_bundle(
         "route_reason": route.reason,
         "policy_requested": policy_requested,
     }
-    # X02 Part C: on `revision_coupled` the candidate is read by the k = 0 inner solve only, so
-    # the record is that solve's, whatever the coupling's number of outer iterations.
-    if route.solve_path == "revision_coupled":
-        warm = result.initial_warm
-    else:
-        warm = result.run.warm_start if result.run is not None else None
-    explicit = warm_start is not None and warm_start.selection == EXPLICIT
-    if warm is None and route.solve_path == "legacy_eo" and (explicit or coupled_start is not None):
-        # ADR 0070 (X02 design note §5.2): the legacy route reads no start; a declared one is
-        # recorded rejected, and the solve ran as without it.
-        warm = WarmStartRecord("rejected", "route", warm_start, selection=EXPLICIT)
-    coupling_member: Mapping[str, Any] | None = None
-    if coupled_start is not None:
-        # ADR 0070 D3 (§5.2, §5.7): the outer start's record — the coupling's own on
-        # `revision_coupled`; on the routes without an outer iteration, rejected.
-        if route.solve_path == "revision_coupled":
-            coupling_member = result.coupling_start
-        else:
-            coupling_member = unused_coupling_start(
-                coupled_start,
-                "coupling_compatibility" if route.solve_path == "revision_eo" else "route",
-            )
-        if warm is None:
-            # §5.7: a start declared without an x₀ source (an iterate only, under a policy whose
-            # chain is empty) records the inner members `absent`, `not_declared`.
-            warm = WarmStartRecord(
-                "absent", "not_declared" if warm_start is None else None, selection=EXPLICIT
-            )
-    if warm is not None:
-        solve_path["warm_start"] = warm.as_document()
-        if coupling_member is not None:
-            solve_path["warm_start"]["coupling"] = dict(coupling_member)
-        external = coupled_start.external if coupled_start is not None else None
-        if external is not None and route.solve_path == "revision_coupled":
-            # ADR 0070 D9 (§5.7): the k = 0 child starts of a job source.
-            solve_path["warm_start"]["external"] = external
+    _record_warm_start(solve_path, result, warm_start, coupled_start)
     if route.solve_path == "revision_eo" and continues_revisions(policy):
         source = (
             revision_continuation
@@ -1038,6 +1003,70 @@ def write_revision_bundle(
     if on_diagnosis is not None and diagnosis is not None:
         on_diagnosis(diagnosis)
     return complete
+
+
+def _record_warm_start(
+    solve_path: dict[str, Any],
+    result: RouteRun,
+    warm_start: WarmStartCandidate | None,
+    coupled_start: CoupledStart | None,
+) -> None:
+    """`write_revision_bundle`'s `warm_start` member of `solve-path.json` for `result`, set in
+    `solve_path` when the run records a start."""
+    route = result.route
+    warm = _inner_start_record(result, warm_start, coupled_start)
+    coupling_member: Mapping[str, Any] | None = None
+    if coupled_start is not None:
+        coupling_member = _outer_start_record(result, coupled_start)
+        if warm is None:
+            # §5.7: a start declared without an x₀ source (an iterate only, under a policy whose
+            # chain is empty) records the inner members `absent`, `not_declared`.
+            warm = WarmStartRecord(
+                "absent", "not_declared" if warm_start is None else None, selection=EXPLICIT
+            )
+    if warm is not None:
+        solve_path["warm_start"] = warm.as_document()
+        if coupling_member is not None:
+            solve_path["warm_start"]["coupling"] = dict(coupling_member)
+        external = coupled_start.external if coupled_start is not None else None
+        if external is not None and route.solve_path == "revision_coupled":
+            # ADR 0070 D9 (§5.7): the k = 0 child starts of a job source.
+            solve_path["warm_start"]["external"] = external
+
+
+def _inner_start_record(
+    result: RouteRun,
+    warm_start: WarmStartCandidate | None,
+    coupled_start: CoupledStart | None,
+) -> WarmStartRecord | None:
+    """`_record_warm_start`'s record of the inner solve's start, before an outer start's
+    default."""
+    route = result.route
+    # X02 Part C: on `revision_coupled` the candidate is read by the k = 0 inner solve only, so
+    # the record is that solve's, whatever the coupling's number of outer iterations.
+    if route.solve_path == "revision_coupled":
+        warm = result.initial_warm
+    else:
+        warm = result.run.warm_start if result.run is not None else None
+    explicit = warm_start is not None and warm_start.selection == EXPLICIT
+    if warm is None and route.solve_path == "legacy_eo" and (explicit or coupled_start is not None):
+        # ADR 0070 (X02 design note §5.2): the legacy route reads no start; a declared one is
+        # recorded rejected, and the solve ran as without it.
+        warm = WarmStartRecord("rejected", "route", warm_start, selection=EXPLICIT)
+    return warm
+
+
+def _outer_start_record(result: RouteRun, coupled_start: CoupledStart) -> Mapping[str, Any] | None:
+    """`_record_warm_start`'s record of a declared outer start."""
+    route = result.route
+    # ADR 0070 D3 (§5.2, §5.7): the outer start's record — the coupling's own on
+    # `revision_coupled`; on the routes without an outer iteration, rejected.
+    if route.solve_path == "revision_coupled":
+        return result.coupling_start
+    return unused_coupling_start(
+        coupled_start,
+        "coupling_compatibility" if route.solve_path == "revision_eo" else "route",
+    )
 
 
 def _diagnosis(result: RouteRun) -> dict[str, Any] | None:
