@@ -380,21 +380,8 @@ class ProcessExecutor:
             # job's end is recorded, so a job is never left `queued` or `running` behind a
             # transient error (T07 review S1).
             retry = self._launch_admitted(admitted)
-            finished: list[_Slot] = []
-            failed = bool(retry)
-            try:
-                ended = self._watch()
-            except Exception:
-                _LOG.exception("process executor: a supervisor poll failed")
-                ended, failed = [], True
-            for slot in ended:
-                try:
-                    self._finish(slot)
-                except Exception:
-                    _LOG.exception("process executor: job %s: ending failed", slot.job_id)
-                    failed = True
-                    continue
-                finished.append(slot)
+            finished, unrecorded = self._end_exited()
+            failed = bool(retry) or unrecorded
             with self._condition:
                 self._queue.extendleft(reversed(retry))
                 for slot in finished:
@@ -436,6 +423,27 @@ class ProcessExecutor:
                 _LOG.exception("process executor: job %s: launching failed", job_id)
                 return admitted[index:]
         return []
+
+    def _end_exited(self) -> tuple[list[_Slot], bool]:
+        """One poll (`_watch`) and the owner's end (`_finish`) of each worker it finds exited:
+        the slots whose end is recorded, and whether the poll or an end failed. A failing poll
+        ends nothing; a slot whose end failed stays out of the list, for a later poll to retry."""
+        finished: list[_Slot] = []
+        try:
+            ended = self._watch()
+        except Exception:
+            _LOG.exception("process executor: a supervisor poll failed")
+            return finished, True
+        failed = False
+        for slot in ended:
+            try:
+                self._finish(slot)
+            except Exception:
+                _LOG.exception("process executor: job %s: ending failed", slot.job_id)
+                failed = True
+                continue
+            finished.append(slot)
+        return finished, failed
 
     def _launch(self, job_id: str) -> None:
         """Start a worker for a job still queued; a job cancelled meanwhile needs none."""
