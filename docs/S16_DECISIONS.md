@@ -149,3 +149,20 @@ limitations) by whoever may change D2.4 paths, then the manifest.
   change. A modified non-Python docs file still selects its openers. Real map: `docs/adr/0007-zz-second.md` added
   and a changed `c2_openidaes450_split.py` both fall back. Alternative: select the readers of the added file's
   directory (the open record holds files, not directory listings). Reversible by: this commit.
+- **B-17. Tests the map does not fully describe (2026-11-13, review S5).** (a) A test whose build outcome is not
+  passed or skipped (failed, or unknown) is in every selection: its line set stops where it failed. At a9e733e4
+  these are the 5 B-6 tests, which add `test_m04_wo9_synthetic_loop.py`, `test_t07_v17_reference.py` (its f6 test
+  took 331 s under coverage) and `test_x02_wo4_external.py` to every selection (the projection `render` probe: 52
+  files, against 51). (b) The runtime listed a test's shared fixtures before the test ran, so a fixture requested
+  through `request.getfixturevalue` linked no test: the a9e733e4 map has 1 such context of 207,
+  `fixture:tests/test_s10c_band_point.py::real`. The runtime now also reads the fixtures pytest added to the
+  item's request, just before teardown (pinned by a small pytest run of the runtime's `_shared_fixtures`). For
+  maps built before this, `select` maps a fixture context of a test module to that module as well (only its tests
+  can request it; all `getfixturevalue` calls at a9e733e4 request module fixtures of their own file), and falls
+  back on a fixture context outside a test module that links no test. (c) 20284 tests in the map against 20285 in
+  the serial baseline: `tests/test_e01_b_brightway.py` calls `pytest.importorskip("bw2data")` at module level, and
+  the test-map venv has no bw2data, so pytest counts 1 skipped for the module, which has no test item and no map
+  row. The counts agree: baseline 20175 passed + 107 skipped (106 tests + that module) + 3 xfailed; map 20170
+  passed + 5 failed (B-6) + 109 skipped (106 + 3 xfailed, recorded as skipped). The module is skipped in the full
+  suite of that venv too, so nothing is lost. Alternative for (a): select a failed test only by its truncated
+  lines. Reversible by: this commit.

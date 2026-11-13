@@ -180,6 +180,12 @@ class TestMap:
         self.db = sqlite3.connect(f"file:{path}?mode=ro", uri=True)
         self.meta = dict(self.db.execute("SELECT key, value FROM meta"))
         self.nodeids = {nodeid for (nodeid,) in self.db.execute("SELECT nodeid FROM tests")}
+        #: Tests that did not pass or skip in the build: their line sets stop where they failed.
+        self.unsure = {
+            nodeid
+            for nodeid, outcome in self.db.execute("SELECT nodeid, outcome FROM tests")
+            if outcome not in ("passed", "skipped")
+        }
         measured = self.meta.get("source_dirs")
         self.source_dirs = tuple(measured.split(",")) if measured else LEGACY_SOURCE_DIRS
 
@@ -225,7 +231,7 @@ class TestMap:
             if context in self.nodeids:
                 selected.add(context)
             elif context.startswith("fixture:"):
-                selected |= {
+                users = {
                     nodeid
                     for (nodeid,) in self.db.execute(
                         "SELECT nodeid FROM tests JOIN test_fixtures ON test_id = tests.id"
@@ -233,6 +239,14 @@ class TestMap:
                         (context,),
                     )
                 }
+                # A fixture of a test module serves only that module's tests, linked or not (a
+                # map before B-17 does not link `request.getfixturevalue` users).
+                owner = context.removeprefix("fixture:").rpartition("::")[0].split("::", 1)[0]
+                if is_test_module(owner):
+                    users.add(owner)
+                elif not users:
+                    raise FallbackError(f"{where} ran in fixture {context!r}, which no test uses")
+                selected |= users
             else:
                 raise FallbackError(f"{where} ran under an unattributed context {context!r}")
         return selected
@@ -615,7 +629,8 @@ def select(base: str, map_dir: Path | None = None, cwd: Path = ROOT) -> Selectio
                 selected |= _python_rule(test_map, change, sha, cwd)
             else:
                 selected |= _open_rule(test_map, path, required=True)
-        return Selection(_collapse(selected))
+        # A test that failed in the build recorded only the lines before its failure (B-17).
+        return Selection(_collapse(selected | test_map.unsure))
     except FallbackError as reason:
         return Selection(fallback=str(reason))
 

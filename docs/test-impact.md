@@ -43,8 +43,9 @@ The map records, per test:
 - every repository file it, or a Python subprocess of it, opens for reading (an audit hook on
   "open"): the message catalogues, `schemas/*.json`, the MCP description files, benchmark data and
   fixtures;
-- the class-, module- and session-scoped fixtures it uses. Work done while such a fixture is set up
-  is recorded under the fixture and counts for every test that uses it.
+- the class-, module- and session-scoped fixtures it uses, those it names and those it requests
+  while it runs (`request.getfixturevalue`, B-17). Work done while such a fixture is set up is
+  recorded under the fixture and counts for every test that uses it.
 
 Work at import or collection time is recorded under the collection context. To keep it there and not
 in whichever test imports a module first, the build imports all of `openflowsheet` and `benchmarks`
@@ -107,6 +108,12 @@ refactor loop's "the target must be covered" check and for mutant checks.
 - A blank or comment-only line selects nothing.
 - A changed test module selects all of its own tests (the file) plus its lines' normal mapping.
 - A non-`.py` file maps through the open record: the tests that opened it.
+- Work done in a test module's own shared fixture also selects that module (a map built before B-17
+  does not link the tests that request a fixture through `request.getfixturevalue`). Work done in a
+  shared fixture no test is linked to, outside a test module, falls back.
+- A test that failed in the build is always selected: its line set stops where it failed (B-17).
+  At a9e733e4 that adds 3 files to every selection (`test_m04_wo9_synthetic_loop.py`,
+  `test_t07_v17_reference.py`, `test_x02_wo4_external.py`; the B-6 failures).
 - A changed non-Python file under `docs/` selects the tests that opened it, and nothing if none did.
   A `docs/*.py` file is mapped like source (tests import some in-process, B-16).
 

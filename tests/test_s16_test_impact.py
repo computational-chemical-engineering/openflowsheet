@@ -8,7 +8,9 @@ nor a built map: they run in the main venv and in CI. The map build itself needs
 from __future__ import annotations
 
 import importlib.util
+import json
 import os
+import sqlite3
 import subprocess
 import sys
 from pathlib import Path
@@ -360,6 +362,94 @@ def test_deleting_a_statement_without_a_line_event_selects_its_function(
 def test_deleting_a_module_level_statement_falls_back(repo) -> None:
     _edit(repo[0], "src/pkg/mod.py", '"""A module."""\n', "")
     assert "import-time code changed" in (_select(repo).fallback or "")
+
+
+def _with_map_rows(map_dir: Path, *statements: tuple[str, tuple[object, ...]]) -> None:
+    with sqlite3.connect(map_dir / "map.sqlite") as db:
+        for statement, values in statements:
+            db.execute(statement, values)
+
+
+def test_a_test_that_failed_in_the_build_is_always_selected(repo) -> None:
+    """B-17: its line set stops where it failed, so no change can be shown not to reach it."""
+    root, base, map_dir = repo
+    _with_map_rows(map_dir, ("UPDATE tests SET outcome = 'failed' WHERE nodeid = ?", (T4,)))
+    _edit(root, "src/pkg/mod.py", "    y = x + 1", "    y = x + 2")
+    assert _select(repo).nodes == {T1, T4}
+
+
+def test_an_unlinked_fixture_selects_its_test_module_or_falls_back(repo) -> None:
+    """B-17: a module's fixture requested through `request.getfixturevalue` links no test in a map
+    built before B-17; its module is known, a conftest fixture's users are not."""
+    root, base, map_dir = repo
+    data = ti.MapData()
+    data.meta = {"base": base, "tree": ti.tree_of(base, root)}
+    data.tests = {T1: "passed"}
+    data.add_lines(
+        "src/pkg/mod.py",
+        "fixture:tests/test_c.py::real",
+        ti.numbits([_lines(MODULE, "        return count")[0]]),
+    )
+    data.add_lines(
+        "src/pkg/mod.py", "fixture:tests::orphan", ti.numbits(_lines(MODULE, "    return 0"))
+    )
+    data.write(map_dir / "map.sqlite")
+    _edit(root, "src/pkg/mod.py", "        return count", "        return count + 0")
+    assert _select(repo).nodes == {"tests/test_c.py"}
+    _edit(root, "src/pkg/mod.py", "    return 0", "    return -1")
+    assert "which no test uses" in (_select(repo).fallback or "")
+
+
+def test_runtime_links_fixtures_requested_while_a_test_runs(tmp_path: Path) -> None:
+    """B-17: `_shared_fixtures` sees a module fixture a test requests via `getfixturevalue`."""
+    (tmp_path / "test_dyn.py").write_text(
+        "import pytest\n\n\n"
+        "@pytest.fixture(scope='module')\ndef shared():\n    return 1\n\n\n"
+        "@pytest.fixture(scope='session')\ndef named():\n    return 2\n\n\n"
+        "@pytest.fixture\ndef local():\n    return 3\n\n\n"
+        "def test_static(named, local):\n    pass\n\n\n"
+        "def test_dynamic(request):\n    assert request.getfixturevalue('shared') == 1\n"
+    )
+    (tmp_path / "recorder.py").write_text(
+        "import importlib.util, json, os, pytest\n"
+        "spec = importlib.util.spec_from_file_location('rt', os.environ['RUNTIME'])\n"
+        "rt = importlib.util.module_from_spec(spec)\n"
+        "spec.loader.exec_module(rt)\n"
+        "seen = {}\n\n\n"
+        "@pytest.hookimpl(wrapper=True)\n"
+        "def pytest_runtest_teardown(item, nextitem):\n"
+        "    seen[item.nodeid] = sorted(rt._shared_fixtures(item))\n"
+        "    return (yield)\n\n\n"
+        "def pytest_sessionfinish(session):\n"
+        "    open('seen.json', 'w').write(json.dumps(seen))\n"
+    )
+    environment = dict(
+        os.environ,
+        RUNTIME=str(ROOT / "scripts" / "test_impact_runtime.py"),
+        PYTHONPATH=str(tmp_path),
+    )
+    done = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "pytest",
+            "-q",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "recorder",
+            "test_dyn.py",
+        ],
+        cwd=tmp_path,
+        env=environment,
+        capture_output=True,
+        text=True,
+    )
+    assert done.returncode == 0, done.stdout + done.stderr
+    assert json.loads((tmp_path / "seen.json").read_text()) == {
+        "test_dyn.py::test_static": ["fixture:test_dyn.py::named"],
+        "test_dyn.py::test_dynamic": ["fixture:test_dyn.py::shared"],
+    }
 
 
 # -- fallbacks -------------------------------------------------------------------------------------

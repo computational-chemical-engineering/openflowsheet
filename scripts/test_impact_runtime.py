@@ -308,17 +308,39 @@ def _wrapper(function: Any) -> Any:
     return pytest.hookimpl(wrapper=True)(function)
 
 
+def _shared_fixtures(item: Any) -> set[str]:
+    """The class-, module-, package- and session-scoped fixtures `item` uses: those it names, and
+    those it requests while it runs (`request.getfixturevalue`), which pytest adds to the item's
+    request as it sets them up (docs/S16_DECISIONS.md, B-17)."""
+    definitions = [
+        definition
+        for name in item.fixturenames
+        for definition in item._fixtureinfo.name2fixturedefs.get(name, ())
+    ]
+    request = getattr(item, "_request", None)
+    if request:
+        definitions += list(getattr(request, "_fixture_defs", {}).values())
+    return {
+        _fixture_key(definition)
+        for definition in definitions
+        if getattr(definition, "scope", "function") != "function" and hasattr(definition, "baseid")
+    }
+
+
+#: Fixtures a test requested while it ran, read before its teardown resets the request.
+_requested: dict[str, set[str]] = {}
+
+
+@_wrapper
+def pytest_runtest_teardown(item: Any, nextitem: Any) -> Any:
+    _requested[item.nodeid] = _shared_fixtures(item)
+    return (yield)
+
+
 @_wrapper
 def pytest_runtest_protocol(item: Any, nextitem: Any) -> Any:
     assert _run is not None
-    fixtures = sorted(
-        {
-            _fixture_key(definition)
-            for name in item.fixturenames
-            for definition in item._fixtureinfo.name2fixturedefs.get(name, ())
-            if definition.scope != "function"
-        }
-    )
+    fixtures = _shared_fixtures(item)
     _clear_caches()
     _switch(item.nodeid)
     try:
@@ -328,7 +350,7 @@ def pytest_runtest_protocol(item: Any, nextitem: Any) -> Any:
         record = {
             "nodeid": item.nodeid,
             "path": item.nodeid.split("::", 1)[0],
-            "fixtures": fixtures,
+            "fixtures": sorted(fixtures | _requested.pop(item.nodeid, set())),
             "outcome": _outcomes.pop(item.nodeid, "unknown"),
         }
         with (_run / "tests" / f"{os.getpid()}.jsonl").open("a", encoding="utf-8") as stream:
