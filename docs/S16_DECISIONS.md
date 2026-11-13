@@ -125,3 +125,9 @@ limitations) by whoever may change D2.4 paths, then the manifest.
   (three tests at a9e733e4, listed in docs/test-impact.md; none is affected by a new, uncalled function).
   Alternative: an AST walk of the bindings of the def's scope (misses other scopes, MROs across files and
   `hasattr`). Reversible by: this commit.
+- **B-14. An added line selects the tests of every base function with its qualified name (2026-11-13, review
+  S2).** `_new_line` took the first base function of the qualified name, so a line added to the second
+  `project.render` (`application/projection.py:292`, the `else` twin of :282) selected the first one's tests. It now
+  takes the union of the bodies of all of them. Real map: that insertion selects 51 files, against 42 before (the
+  review counted 9 missed files of 26 that execute the second `render`). Alternative: the one base function the
+  hunk maps onto (needs a line mapping across the diff; the union is a superset). Reversible by: this commit.

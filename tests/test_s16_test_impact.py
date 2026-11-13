@@ -93,8 +93,23 @@ name = "x"
 testpaths = ["tests"]
 """
 
+TWINS = """\
+import os
+
+if os.name == "nt":
+
+    def render():
+        return "first"
+
+else:
+
+    def render():
+        return "second"
+"""
+
 FILES = {
     "src/pkg/mod.py": MODULE,
+    "src/pkg/twins.py": TWINS,
     "src/pkg/unseen.py": "def u():\n    return 1\n",
     "tests/test_a.py": TEST_MODULE,
     "tests/conftest.py": "",
@@ -159,6 +174,8 @@ def repo(tmp_path: Path) -> tuple[Path, str, Path]:
     )
     data.add_lines("src/pkg/mod.py", T3, ti.numbits(_lines(MODULE, "        return 1")))
     data.add_lines("src/pkg/mod.py", T4, ti.numbits(_lines(MODULE, "        return 2")))
+    data.add_lines("src/pkg/twins.py", T1, ti.numbits(_lines(TWINS, '        return "first"')))
+    data.add_lines("src/pkg/twins.py", T2, ti.numbits(_lines(TWINS, '        return "second"')))
     module_level = _lines(
         MODULE, "LIMIT = 3", "def f(x):", "BOOTED = boot()", '    return "import time"'
     )
@@ -294,6 +311,17 @@ def test_a_new_def_that_shadows_a_name_the_base_mentions_falls_back(repo, name: 
     assert "import-time code changed" in (_select(repo).fallback or "")
     _edit(repo[0], "src/pkg/mod.py", f"def {name}():", "def _fresh_name():")
     assert _select(repo).nodes == set() and _select(repo).fallback is None
+
+
+def test_a_line_added_to_one_of_two_same_named_functions_selects_both(repo) -> None:
+    """B-14: the base has two `render`s (if/else); the new side cannot say which one it edits."""
+    _edit(
+        repo[0],
+        "src/pkg/twins.py",
+        '        return "second"',
+        '        x = 1\n        return "second"',
+    )
+    assert _select(repo).nodes == {T1, T2}
 
 
 # -- fallbacks -------------------------------------------------------------------------------------

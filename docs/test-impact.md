@@ -94,8 +94,8 @@ refactor loop's "the target must be covered" check and for mutant checks.
 
 - A changed `.py` line maps through line coverage at the base's line numbers: the tests that
   executed the statement holding it. A line the change adds or rewrites selects every test that
-  executed any line of the enclosing function's body (the base's function of the same qualified
-  name).
+  executed any line of the enclosing function's body (every base function of the same qualified
+  name: `if`/`else` twins, property setters and overloads share one, B-14).
 - A new function or method (undecorated, in a module or a class without bases, with a name that
   occurs nowhere in the base's tree as a whole word) selects nothing by itself: only changed code
   can call it, and that code selects its own tests. This is what makes an extract-function step

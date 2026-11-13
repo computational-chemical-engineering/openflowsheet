@@ -539,7 +539,8 @@ def _new_line(
     added: set[int],
     mentioned: Callable[[str], bool],
 ) -> set[str]:
-    """An added or rewritten line: the tests of the innermost enclosing function the base has."""
+    """An added or rewritten line: the tests of the innermost enclosing function the base has
+    (of every base function with its qualified name)."""
     chain = new.path_to(line)
     functions = [
         node
@@ -547,12 +548,16 @@ def _new_line(
         if isinstance(node, ast.FunctionDef | ast.AsyncFunctionDef) and line > _header_end(node)
     ]
     for function in reversed(functions):
-        for base_function in old.qualnames.get(new.qualname(function), []):
-            if isinstance(base_function, ast.FunctionDef | ast.AsyncFunctionDef):
-                where = f"{path}:{line} (in {new.qualname(function)})"
-                return test_map.tests_of(
-                    test_map.line_contexts(path, _body_lines(base_function)), where
-                )
+        name = new.qualname(function)
+        # Every base function of that name: `if`/`else` twins, property setters, overloads (B-14).
+        bodies = [
+            _body_lines(each)
+            for each in old.qualnames.get(name, [])
+            if isinstance(each, ast.FunctionDef | ast.AsyncFunctionDef)
+        ]
+        if bodies:
+            where = f"{path}:{line} (in {name})"
+            return test_map.tests_of(test_map.line_contexts(path, set().union(*bodies)), where)
     outer = next((n for n in chain if isinstance(n, ast.FunctionDef | ast.AsyncFunctionDef)), None)
     if outer is not None and _fresh_definition(outer, new, added, mentioned):
         return set()
