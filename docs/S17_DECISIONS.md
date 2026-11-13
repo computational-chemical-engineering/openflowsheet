@@ -227,3 +227,14 @@ F0, the digest, or (by grep) any test. Re-run the self-test once S16 lands.
   as a range. `[architecture]` layer and cycle rules are added to the config as a ratchet (no new violation; existing
   ones recorded) before the first restructure step. Frank reviews the splits after the run. Alternative: Frank
   approves each plan himself (splits a day later), or no splits in S17. Reversible by: reverting a split's range.
+- **DECISION D19 (2026-11-13, Frank). Outward-facing interfaces may be renamed and restructured.** Frank: "it is still
+  fine with me to rename or restructure outward facing interfaces. OpenFlowsheet is still in its initial stage. It is
+  better to do the design well now, then already being locked in by earlier choices." S17 itself stays bitwise and
+  API-preserving (refactor and restructure classes, old import paths re-exported), because that is what its gates
+  prove unattended. Interface redesign (renames, moved or merged public names, CLI/Python/HTTP/MCP surface, dropping
+  the re-exports S17 adds) is a separate package right after S17 merges, before S18: plan §2.1/§2.2 interfaces are
+  frozen and change only by a design-lane ADR (`docs/implementation-plan.md` "Interface freeze"), so it starts from an
+  `architect` proposal and an ADR, with tests and fixtures updated in the same package and no compatibility shims
+  required. The S17 restructure architect pass (D18) also lists interface-redesign candidates with evidence, as that
+  package's input. Alternative: mix API changes into S17 (its gates could then no longer prove behaviour unchanged).
+  Reversible by: this entry.
