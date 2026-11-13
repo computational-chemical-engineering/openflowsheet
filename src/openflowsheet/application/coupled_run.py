@@ -1102,29 +1102,9 @@ def solve_coupled(
         _coupling_event(trace, "initializer_candidate", f"coupling_warm_start({present})")
         coupling_start = dict(start.record)
         if start.record["status"] == "accepted":
-            assert start.declared is not None
-            if set(start.declared) != set(unit_ids):
-                coupling_start = _coupling_record(
-                    start.source, "rejected", "coupling_compatibility", start.declared
-                )
-            else:
-                w0, projections = _project(start.declared, block)
-                opened = couple(
-                    unit_ids, block, solve_inner, evaluate, on_iteration=on_iteration, initial=w0
-                )
-                if _opening_failed(opened):
-                    coupling_start = _coupling_record(
-                        start.source,
-                        "rejected",
-                        "coupling_opening",
-                        start.declared,
-                        projections,
-                    )
-                else:
-                    coupling = opened
-                    coupling_start = _coupling_record(
-                        start.source, "accepted", None, start.declared, projections
-                    )
+            coupling, coupling_start = _open_outer_start(
+                start, unit_ids, block, solve_inner, evaluate, on_iteration
+            )
         if coupling_start["status"] == "rejected":
             _coupling_event(trace, "initializer_rejected", _rejected(str(coupling_start["reason"])))
     if coupling is None:
@@ -1150,6 +1130,37 @@ def solve_coupled(
     return CoupledSolve(
         coupling, units, coupling.final.payload, record, initial_warm, coupling_start
     )
+
+
+def _open_outer_start(
+    start: CoupledStart,
+    unit_ids: Sequence[str],
+    block: CouplingBlock,
+    solve_inner: Callable[[Mapping[str, tuple[float, float]], Any], InnerSolve],
+    evaluate: Callable[[str, UnitInlet], ExternalAnswer],
+    on_iteration: Callable[[int, int], None] | None,
+) -> tuple[CouplingRun | None, dict[str, Any]]:
+    """ADR 0070 D3 steps 2 to 4 (X02 design note §5.4) on an `accepted` declared start:
+    compatibility (its unit ids are `unit_ids`), `bounds` (`_project`) and the opening, a coupling
+    from the projected w₀. Returns that coupling with §5.7's `coupling` sub-record; the coupling is
+    `None` when the start is rejected (`coupling_compatibility`, or `coupling_opening` when the
+    opened coupling ended at its k = 0 inner solve)."""
+    assert start.declared is not None
+    if set(start.declared) != set(unit_ids):
+        return None, _coupling_record(
+            start.source, "rejected", "coupling_compatibility", start.declared
+        )
+    w0, projections = _project(start.declared, block)
+    opened = couple(unit_ids, block, solve_inner, evaluate, on_iteration=on_iteration, initial=w0)
+    if _opening_failed(opened):
+        return None, _coupling_record(
+            start.source,
+            "rejected",
+            "coupling_opening",
+            start.declared,
+            projections,
+        )
+    return opened, _coupling_record(start.source, "accepted", None, start.declared, projections)
 
 
 # -- the certificate's evidence (§4.4) -------------------------------------------------------------
