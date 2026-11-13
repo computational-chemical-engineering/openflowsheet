@@ -1980,15 +1980,9 @@ def bind_revision_flowsheet(
     unbindable = _model_refusal(view.instances, view.basis)
     if unbindable is not None:
         return unbindable
-    manifests: dict[str, Mapping[str, Any]] = {}
-    for instance in view.instances:
-        # M04 spec §8.2 (ADR 0037 D2): a surrogate is pinned by its manifest's SHA-256, resolved
-        # through the injected resolver and checked; `revision_unsupported` otherwise.
-        if instance.model_id == c1_surrogate.MODEL_ID:
-            manifest = _resolve_surrogate(instance, surrogates)
-            if manifest is None:
-                return Unbound("unsupported", f"surrogate_manifest_mismatch({instance.unit_id})")
-            manifests[instance.unit_id] = manifest
+    manifests = _surrogate_manifests(view.instances, surrogates)
+    if isinstance(manifests, Unbound):
+        return manifests
 
     # Metered from construction: the declaration's property blocks capture the provider here,
     # and a plan run counts their calls (T02; `PropertyMeter`). The provider is the one the
@@ -2139,3 +2133,21 @@ def _model_refusal(instances: Sequence[InstanceView], basis: ComponentBasis) -> 
         if basis.provider_id not in MODEL_BASES[instance.model_id]:
             return _basis_refusal(instance.model_id, basis)
     return None
+
+
+def _surrogate_manifests(
+    instances: Sequence[InstanceView], surrogates: SurrogateResolver | None
+) -> dict[str, Mapping[str, Any]] | Unbound:
+    """Each `c1.reactor_surrogate` instance's manifest by instance id (ids are unique in a
+    parsed revision, `id_duplicate`), resolved through `surrogates`; the first instance whose
+    manifest does not resolve is refused instead."""
+    manifests: dict[str, Mapping[str, Any]] = {}
+    for instance in instances:
+        # M04 spec §8.2 (ADR 0037 D2): a surrogate is pinned by its manifest's SHA-256, resolved
+        # through the injected resolver and checked; `revision_unsupported` otherwise.
+        if instance.model_id == c1_surrogate.MODEL_ID:
+            manifest = _resolve_surrogate(instance, surrogates)
+            if manifest is None:
+                return Unbound("unsupported", f"surrogate_manifest_mismatch({instance.unit_id})")
+            manifests[instance.unit_id] = manifest
+    return manifests
