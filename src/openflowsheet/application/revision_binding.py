@@ -1999,16 +1999,9 @@ def bind_revision_flowsheet(
     # S11 design §10.2 step 9 (R-822): no instance id is a lifted-split key a staged unit supplies.
     # The reader's id rule refuses the dotted spelling first (R-838); this is the binder's guard,
     # a set intersection of the supplied keys with the ids, not parsing.
-    ids = {instance.unit_id for instance in view.instances}
-    owners = split_owners(staged_units([unit for _, unit, _, _ in built]))
-    for key, owner in owners.items():
-        if key in ids:
-            return Unbound(
-                "unsupported",
-                f"id_unsupported({key})",
-                hint=f"Instance id `{key}` is a lifted-split key of instance `{owner}`; "
-                "rename the instance.",
-            )
+    shadowed = _split_key_refusal(view.instances, [unit for _, unit, _, _ in built])
+    if shadowed is not None:
+        return shadowed
 
     for instance, unit, _, _ in built:
         miswired = _port_refusal(instance, unit)
@@ -2177,4 +2170,22 @@ def _port_refusal(instance: InstanceView, unit: UnitModel) -> Unbound | None:
     for name, spec_port in declared.items():
         if spec_port.kind == "material" and name not in instance.ports:
             return Unbound("incomplete", f"port_unwired({instance.unit_id}.{name})")
+    return None
+
+
+def _split_key_refusal(
+    instances: Sequence[InstanceView], units: Sequence[UnitModel]
+) -> Unbound | None:
+    """S11 design §10.2 step 9 (R-822): `None` when no instance id is a lifted-split key the
+    staged `units` supply, else the refusal of the first such key in `split_owners`' order."""
+    ids = {instance.unit_id for instance in instances}
+    owners = split_owners(staged_units(units))
+    for key, owner in owners.items():
+        if key in ids:
+            return Unbound(
+                "unsupported",
+                f"id_unsupported({key})",
+                hint=f"Instance id `{key}` is a lifted-split key of instance `{owner}`; "
+                "rename the instance.",
+            )
     return None
