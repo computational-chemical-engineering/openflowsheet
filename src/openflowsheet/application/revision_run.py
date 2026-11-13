@@ -611,13 +611,8 @@ def solve_route(
             return RouteRun(
                 route, plan, report, run, region_plan, certificate, None, _judged(run, run)
             )
-        solved = [step for step in run.steps if step.kind == "solve_eo"]
-        if (
-            route.solve_path == "legacy_eo"
-            and len(solved) == 1
-            and isinstance(solved[0].detail, RegionResult)
-        ):
-            detail = solved[0].detail
+        detail = _legacy_region_result(route, run)
+        if detail is not None:
             at("verify")
             certificate = _run_identity(
                 verify_bound(
@@ -666,6 +661,19 @@ def _region_plan(route: Route, plan: ExecutionPlan) -> SolvePlan | None:
         else (planned[0].solve_plan if len(planned) == 1 else None)
     )
     return region_plan
+
+
+def _legacy_region_result(route: Route, run: PlanResult) -> RegionResult | None:
+    """`solve_route`'s region result of a converged `legacy_eo` run: its one `solve_eo` step's,
+    or `None` without exactly one (R2.2's certified case)."""
+    solved = [step for step in run.steps if step.kind == "solve_eo"]
+    if (
+        route.solve_path == "legacy_eo"
+        and len(solved) == 1
+        and isinstance(solved[0].detail, RegionResult)
+    ):
+        return solved[0].detail
+    return None
 
 
 def _refused_plan(route: Route, plan: PlanRefusal, report: StructuralReport) -> RouteRun:
