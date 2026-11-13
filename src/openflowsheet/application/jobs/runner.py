@@ -136,7 +136,7 @@ from openflowsheet.compiled import EvaluationContext
 from openflowsheet.orchestrator.trace import Trace
 from openflowsheet.orchestrator.warm_start import EXPLICIT, WARM_START_SOURCE, WarmStartCandidate
 from openflowsheet.run.bundle import ARTIFACT_DIR, MANIFEST_NAME, BundleError, read_artifact
-from openflowsheet.run.manifest import policy_sha256
+from openflowsheet.run.manifest import RunManifest, policy_sha256
 from openflowsheet.studies.nlp.replay import MANIFEST as OPTIMIZATION_MANIFEST
 from openflowsheet.studies.nlp.replay import is_optimization_record, replay_optimization
 from openflowsheet.studies.surrogate.iterations import predecessors as iteration_predecessors
@@ -721,7 +721,47 @@ class _Body:
             return _typed_end(error, run, selected)
         except _FenceLost:
             return _failed(_error("internal_error", "fence_lost"), run, "owner_lost")
+        return self._bundled_end(directory, manifest, run, diagnoses)
 
+    def _experiments(self, sink: ArtifactSink, emit: Callable[[], None]) -> LiveExperiments:
+        """The coupled route's experiments (M02 design note §4.3, §6.1): one runner for the job —
+        one handshake per variant, frozen — recording into the project's experiment store through
+        the job's sink, its records emitted as outputs after each experiment. The provider is a
+        fresh, unmetered one: an experiment's property calls are its own (R-233)."""
+        runner = ExperimentRunner(
+            ExperimentStore(self.context.root, sink),
+            PrC1Provider(),
+            EvaluationContext(model_version=COUPLING_CONTEXT, constants_sha256="0" * 64),
+            job_id=self.job.job_id,
+            check=self.check,
+        )
+        return LiveExperiments(runner, on_evaluated=emit)
+
+    def _outer_iteration(self, k: int, max_outer: int) -> None:
+        """M02 design note §4.4: one progress event per outer iteration. Its counts are the
+        `solve` stage's — a job's progress total is fixed and its count never goes back (§6.3
+        rule 7) — and the iteration is named in `stage` (build log D54)."""
+        self._honour_interruption()
+        self._emit(
+            progress=Progress(
+                completed=self.stages.index("solve"),
+                total=len(self.stages),
+                stage=f"solve:outer {k + 1}/{max_outer}",
+            )
+        )
+
+    def _bundled_end(
+        self,
+        directory: Path,
+        manifest: RunManifest,
+        run: dict[str, Any] | None,
+        diagnoses: list[dict[str, Any]],
+    ) -> WorkerResult:
+        """A solve's end with a bundle, once its session has run into `directory`: register the
+        bundle, emit its judged artifact (the certificate, else the failure), its manifest and
+        the bundle itself as outputs, and complete the run record `run` from `manifest`, the
+        certificate's verdict and the last of `diagnoses` (MSG §4.6). A lost fence ends the job
+        `failed(owner_lost)`."""
         bundle, members = self._bundle(directory, f"{self.job.job_id}:bundle")
         by_name = {member.name: member for member in members}
         judged = by_name.get(CERTIFICATE) or by_name[FAILURE]
@@ -750,33 +790,6 @@ class _Body:
             interruption=None,
             error=None,
             run=run,
-        )
-
-    def _experiments(self, sink: ArtifactSink, emit: Callable[[], None]) -> LiveExperiments:
-        """The coupled route's experiments (M02 design note §4.3, §6.1): one runner for the job —
-        one handshake per variant, frozen — recording into the project's experiment store through
-        the job's sink, its records emitted as outputs after each experiment. The provider is a
-        fresh, unmetered one: an experiment's property calls are its own (R-233)."""
-        runner = ExperimentRunner(
-            ExperimentStore(self.context.root, sink),
-            PrC1Provider(),
-            EvaluationContext(model_version=COUPLING_CONTEXT, constants_sha256="0" * 64),
-            job_id=self.job.job_id,
-            check=self.check,
-        )
-        return LiveExperiments(runner, on_evaluated=emit)
-
-    def _outer_iteration(self, k: int, max_outer: int) -> None:
-        """M02 design note §4.4: one progress event per outer iteration. Its counts are the
-        `solve` stage's — a job's progress total is fixed and its count never goes back (§6.3
-        rule 7) — and the iteration is named in `stage` (build log D54)."""
-        self._honour_interruption()
-        self._emit(
-            progress=Progress(
-                completed=self.stages.index("solve"),
-                total=len(self.stages),
-                stage=f"solve:outer {k + 1}/{max_outer}",
-            )
         )
 
     # -- reproduce ----------------------------------------------------------------------------
