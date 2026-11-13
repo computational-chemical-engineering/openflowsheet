@@ -947,25 +947,7 @@ def write_revision_bundle(
         "check-policy.json": check_policy_document(check_policy),
         "solve-path.json": solve_path,
     }
-    if isinstance(result.plan, ExecutionPlan):
-        artifacts["execution-plan.json"] = result.plan.as_document()
-    if result.solve_plan is not None:
-        artifacts["solve-plan.json"] = result.solve_plan.as_document()
-    if result.certificate is not None:
-        artifacts["solution-certificate.json"] = result.certificate.as_document()
-        # Ruling round 2 F1.1: the judged state, iff there is a certificate; its digest must be
-        # the certificate's, or nothing is written (a producer defect, never a substitute state).
-        assert result.state is not None
-        spec = route.binding.spec
-        state = solution_state.document(spec.variable_ids, state_vector(spec, result.state))
-        if state["state_sha256"] != result.certificate.target_state_sha256:
-            raise SolutionStateMismatchError("solution_state_mismatch")
-        artifacts[solution_state.NAME] = state
-    else:
-        assert result.failure is not None
-        artifacts["failure-bundle.json"] = result.failure.as_document()
-    if result.coupling is not None:
-        artifacts[COUPLING_NAME] = dict(result.coupling)
+    _add_outcome_artifacts(artifacts, result)
 
     # R0 of the documents **as written**: ADR 0002 spells an integral float as an integer, and
     # `execution_plan_r0` keeps a float as its `repr` but an integer as itself, so the projection
@@ -1003,6 +985,31 @@ def write_revision_bundle(
     if on_diagnosis is not None and diagnosis is not None:
         on_diagnosis(diagnosis)
     return complete
+
+
+def _add_outcome_artifacts(artifacts: dict[str, Any], result: RouteRun) -> None:
+    """`write_revision_bundle`'s artifacts of `result`'s plan and outcome, added to `artifacts`
+    after the documents every bundle carries."""
+    route = result.route
+    if isinstance(result.plan, ExecutionPlan):
+        artifacts["execution-plan.json"] = result.plan.as_document()
+    if result.solve_plan is not None:
+        artifacts["solve-plan.json"] = result.solve_plan.as_document()
+    if result.certificate is not None:
+        artifacts["solution-certificate.json"] = result.certificate.as_document()
+        # Ruling round 2 F1.1: the judged state, iff there is a certificate; its digest must be
+        # the certificate's, or nothing is written (a producer defect, never a substitute state).
+        assert result.state is not None
+        spec = route.binding.spec
+        state = solution_state.document(spec.variable_ids, state_vector(spec, result.state))
+        if state["state_sha256"] != result.certificate.target_state_sha256:
+            raise SolutionStateMismatchError("solution_state_mismatch")
+        artifacts[solution_state.NAME] = state
+    else:
+        assert result.failure is not None
+        artifacts["failure-bundle.json"] = result.failure.as_document()
+    if result.coupling is not None:
+        artifacts[COUPLING_NAME] = dict(result.coupling)
 
 
 def _record_warm_start(
