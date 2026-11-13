@@ -91,3 +91,119 @@ cmd = 'V="${OPENFLOWSHEET_VENV:-$(dirname "$(git rev-parse --path-format=absolut
 # No campaign-cadence tier (S17 D5): the repository runs scripts/gate.sh only before a release
 # candidate, and CI green on both architectures is the merge condition, so CI on x86-64 and aarch64
 # is the campaign-end check (docs/code-health.md).
+
+# S17 D20: layering ratchet (design note and plan review in the campaign record).
+[architecture]
+# S17 D18 ratchet (design note S17-architecture.md section 2). Imports are read at every nesting
+# level; `if TYPE_CHECKING:` imports are ignored. A layer entry is one module; `layers` is a
+# total order, top to bottom, and an importer may not import a module listed above it. The
+# order states the target architecture: the violations recorded at adoption are the ones the
+# planned splits remove (S17 R1 to R5).
+# Violations recorded at adoption (11), each with the step that removes it (plan review, S17):
+#   types -> validation, store -> validation, authz -> validation       R1 split-validation-report
+#   local -> transactions, revision_continuation -> transactions        R2 split-revision-edits
+#   column_binding -> revision_binding, thermal_binding -> revision_binding   R3 split-revision-binding
+#   revision_binding -> binding                                          R4 split-binding-common
+#   jobs.worker -> jobs.executor                                         R5 (move _defect, refactor mode)
+#   types -> contract, revision_run -> validation                        stay: interface package (D19 items D3, D4)
+# A violation is keyed by module pair: the two that stay absorb any new import between the same pair.
+roots = ["src"]
+type_checking = false
+cycle_depth = 4
+
+[[architecture.layers]]
+name = "application-layers"
+order = [
+    # surfaces
+    "openflowsheet.application.cli",
+    "openflowsheet.application.serving",
+    "openflowsheet.application.bindings",
+    # facade: K06's Application over LocalApplication, then LocalApplication
+    "openflowsheet.application.transactions",
+    "openflowsheet.application.local",
+    # services
+    "openflowsheet.application.jobs.executor",
+    "openflowsheet.application.jobs.worker",
+    "openflowsheet.application.jobs.runner",
+    "openflowsheet.application.admission",
+    "openflowsheet.application.stream_table_format",
+    "openflowsheet.application.stream_table",
+    "openflowsheet.application.capabilities",
+    "openflowsheet.application.operations",
+    # revision engine: validator, routes and runs, binders
+    "openflowsheet.application.replacement",
+    "openflowsheet.application.trust_region_parent",
+    "openflowsheet.application.validation",
+    "openflowsheet.application.revision_routes",
+    "openflowsheet.application.revision_run",
+    "openflowsheet.application.revision_continuation",
+    "openflowsheet.application.structure_index",
+    "openflowsheet.application.coupled_run",
+    "openflowsheet.application.binding",
+    "openflowsheet.application.revision_binding",
+    "openflowsheet.application.column_binding",
+    "openflowsheet.application.thermal_binding",
+    # persistence
+    "openflowsheet.application.authz",
+    "openflowsheet.application.store",
+    # contract vocabulary
+    "openflowsheet.application.projection",
+    "openflowsheet.application.contract",
+    "openflowsheet.application.types",
+    # foundation
+    "openflowsheet.application.policies",
+    "openflowsheet.application.revisions",
+    "openflowsheet.application.jobs.interrupt",
+    "openflowsheet.application.jobs.model",
+]
+
+[[architecture.forbid]]
+name = "transports-through-operations"
+from = ["openflowsheet.application.bindings"]
+to = [
+    "openflowsheet.application.cli",
+    "openflowsheet.application.serving",
+    "openflowsheet.application.transactions",
+    "openflowsheet.application.local",
+    "openflowsheet.application.jobs.executor",
+    "openflowsheet.application.jobs.worker",
+    "openflowsheet.application.jobs.runner",
+    "openflowsheet.application.admission",
+    "openflowsheet.application.stream_table_format",
+    "openflowsheet.application.stream_table",
+    "openflowsheet.application.capabilities",
+    "openflowsheet.application.replacement",
+    "openflowsheet.application.trust_region_parent",
+    "openflowsheet.application.validation",
+    "openflowsheet.application.revision_routes",
+    "openflowsheet.application.revision_run",
+    "openflowsheet.application.revision_continuation",
+    "openflowsheet.application.structure_index",
+    "openflowsheet.application.coupled_run",
+    "openflowsheet.application.binding",
+    "openflowsheet.application.revision_binding",
+    "openflowsheet.application.column_binding",
+    "openflowsheet.application.thermal_binding",
+    "openflowsheet.application.authz",
+    "openflowsheet.application.store",
+]
+reason = "bindings/__init__.py: each binding reads operations.OPERATIONS, goes through operations.dispatch and adds nothing (T07 design note 11.6)"
+
+[[architecture.forbid]]
+name = "engine-not-persistence"
+from = [
+    "openflowsheet.application.replacement",
+    "openflowsheet.application.trust_region_parent",
+    "openflowsheet.application.validation",
+    "openflowsheet.application.revision_routes",
+    "openflowsheet.application.revision_run",
+    "openflowsheet.application.revision_continuation",
+    "openflowsheet.application.structure_index",
+    "openflowsheet.application.coupled_run",
+    "openflowsheet.application.binding",
+    "openflowsheet.application.revision_binding",
+    "openflowsheet.application.column_binding",
+    "openflowsheet.application.thermal_binding",
+]
+to = ["openflowsheet.application.store", "openflowsheet.application.authz"]
+reason = "the revision engine computes; persistence and authorization belong to the services above it (no engine module imports them at run time today; revision_continuation.py:57 is under TYPE_CHECKING) (S17 plan review)"

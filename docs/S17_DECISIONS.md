@@ -238,3 +238,24 @@ F0, the digest, or (by grep) any test. Re-run the self-test once S16 lands.
   required. The S17 restructure architect pass (D18) also lists interface-redesign candidates with evidence, as that
   package's input. Alternative: mix API changes into S17 (its gates could then no longer prove behaviour unchanged).
   Reversible by: this entry.
+- **Work order 3 (2026-11-13, opus-engineer):** coupled_run.py 83.8 -> 21.0 in 8 attempts (7 accepted, 1 gate-fail
+  reset; run-log steps 33 to 40). `solve_coupled` 58.8 -> 11.0; the rest of its outer-start block stays because
+  `test_t08_w2_recovery_edges.py::test_a33` ties each `initializer_rejected` emission to its enclosing function
+  (`docs/recovery-edges.yaml:399` names `solve_coupled`): moving it needs an inventory edit, outside a step.
+- **Architecture pass (2026-11-13, architect; plan review by reviewer).** Counting imports inside functions, 24 of 39
+  modules of `application/` form one cycle (83 edges), rooted in validation.py (a low-level report vocabulary plus a
+  high-level validator). Splits R1 `validation_report`, R2 `revision_edits`, R3 `model_signatures` +
+  `model_builders` (recomputed after work order 4), R4 `binding_common`, R5 (move `_defect` within `jobs/`) take the
+  cycle to 6 edges and the layer violations from 11 to 2. Local.py, types.py, store.py, cli.py, contract/operations
+  and revision_run.py wait for the interface package (D19). Design note, draft plans and the review are copied into the
+  tree at campaign end (D12).
+- **DECISION D20 (2026-11-13). Re-pin at `a34015853daf4fb750b9e097f48080ec13a0001c` (0.1.1.dev46; restructure
+  `_binders` no longer fails on keyword-only parameters without a default, found by the architecture pass) and add the
+  `[architecture]` table to `.codehealth/config.toml` as a ratchet.** The table is one total layer order of all 39
+  modules (target architecture), forbid rules `transports-through-operations` and `engine-not-persistence`, imports
+  read at every nesting level, `TYPE_CHECKING` ignored. `codehealth arch` at 93218f5c: 11 recorded violations
+  (listed in the table's comment, each with the split that removes it), 1 cycle of 83 edges; the gate fails a step that
+  adds a violation or a cycle edge. Scan at `CB` on the new pin equals `s17-base.json` (totals, 39 files, 988
+  functions). Each split's plan file and its new modules' layer entries go in one orchestrator commit directly before
+  the split's step, which is the step's gate base (the gate reads config and plan at `--base`). Alternative: no
+  ratchet (a later step could add an upward import unnoticed). Reversible by: the `[architecture]` tables and the pin.
