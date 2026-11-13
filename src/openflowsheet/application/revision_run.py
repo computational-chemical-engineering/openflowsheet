@@ -932,13 +932,7 @@ def write_revision_bundle(
     }
     _record_warm_start(solve_path, result, warm_start, coupled_start)
     if route.solve_path == "revision_eo" and continues_revisions(policy):
-        source = (
-            revision_continuation
-            if revision_continuation is not None
-            else ContinuationSource(RevisionContinuationRefusal("absent", "not_supplied"))
-        )
-        recorded = result.run.revision_continuation if result.run is not None else None
-        solve_path["revision_continuation"] = source.member(recorded)
+        _record_revision_continuation(solve_path, result, revision_continuation)
     artifacts: dict[str, Any] = {
         "solve-events.json": [event.as_document() for event in trace.events],
         "structural-report.json": result.report.as_document(),
@@ -1010,6 +1004,22 @@ def _add_outcome_artifacts(artifacts: dict[str, Any], result: RouteRun) -> None:
         artifacts["failure-bundle.json"] = result.failure.as_document()
     if result.coupling is not None:
         artifacts[COUPLING_NAME] = dict(result.coupling)
+
+
+def _record_revision_continuation(
+    solve_path: dict[str, Any],
+    result: RouteRun,
+    revision_continuation: ContinuationSource | None,
+) -> None:
+    """`write_revision_bundle`'s `revision_continuation` member of `solve-path.json` for `result`
+    on `revision_eo`, set in `solve_path`; an unsupplied source is recorded `absent`."""
+    source = (
+        revision_continuation
+        if revision_continuation is not None
+        else ContinuationSource(RevisionContinuationRefusal("absent", "not_supplied"))
+    )
+    recorded = result.run.revision_continuation if result.run is not None else None
+    solve_path["revision_continuation"] = source.member(recorded)
 
 
 def _record_warm_start(
