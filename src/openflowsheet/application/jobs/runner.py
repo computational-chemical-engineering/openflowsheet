@@ -104,8 +104,12 @@ from openflowsheet.application.jobs.model import (
     Interruption,
     TerminalStatus,
 )
-from openflowsheet.application.revision_binding import RevisionBinding
-from openflowsheet.application.revision_continuation import continues_revisions, find_source
+from openflowsheet.application.revision_binding import RevisionBinding, SurrogateResolver
+from openflowsheet.application.revision_continuation import (
+    ContinuationSource,
+    continues_revisions,
+    find_source,
+)
 from openflowsheet.application.revision_routes import REVISION_ROUTES
 from openflowsheet.application.revision_run import (
     Route,
@@ -660,18 +664,7 @@ class _Body:
             selected = bound
             warm_start = self._warm_start(body, bound, policy)
             coupled_start = declared_coupled_start(self.context, body.warm_start, bound)
-            # ADR 0072 (RRC design note §5.3): the nearest verified ancestor, found and assembled
-            # at the same site, iff the policy's edge 3 continues revisions on `revision_eo`.
-            continuation = None
-            if bound.solve_path == "revision_eo" and continues_revisions(policy):
-                continuation = find_source(
-                    store,
-                    self.context.root,
-                    self.job.job_id,
-                    body.revision_id,
-                    document,
-                    surrogates=surrogates,
-                )
+            continuation = self._continuation(body, bound, policy, document, surrogates)
             experiments = None
             if bound.solve_path == "revision_coupled":
                 experiments = self._experiments(sink, emit_records)
@@ -727,6 +720,28 @@ class _Body:
             and WARM_START_SOURCE in policy.initializer_chain
         ):
             return warm_start_candidate(self.context, self.job.job_id, body.revision_id)
+        return None
+
+    def _continuation(
+        self,
+        body: SolveBody,
+        bound: Route,
+        policy: SolvePolicy,
+        document: dict[str, Any],
+        surrogates: SurrogateResolver,
+    ) -> ContinuationSource | None:
+        """ADR 0072 (RRC design note §5.3): the nearest verified ancestor of the revision
+        `document`, found and assembled at the site of the warm-start lookup (`_warm_start`), iff
+        the policy's edge 3 continues revisions on `revision_eo`; `None` otherwise."""
+        if bound.solve_path == "revision_eo" and continues_revisions(policy):
+            return find_source(
+                self.context.store,
+                self.context.root,
+                self.job.job_id,
+                body.revision_id,
+                document,
+                surrogates=surrogates,
+            )
         return None
 
     def _experiments(self, sink: ArtifactSink, emit: Callable[[], None]) -> LiveExperiments:
