@@ -133,7 +133,7 @@ from openflowsheet.application.types import (
 )
 from openflowsheet.canonical import canonical_json, directory_hash, file_sha256
 from openflowsheet.compiled import EvaluationContext
-from openflowsheet.orchestrator.trace import Trace
+from openflowsheet.orchestrator.trace import SolvePolicy, Trace
 from openflowsheet.orchestrator.warm_start import EXPLICIT, WARM_START_SOURCE, WarmStartCandidate
 from openflowsheet.run.bundle import ARTIFACT_DIR, MANIFEST_NAME, BundleError, read_artifact
 from openflowsheet.run.manifest import RunManifest, policy_sha256
@@ -658,19 +658,7 @@ class _Body:
                     run,
                 )
             selected = bound
-            # ADR 0024 D2: the lookup is here, where the store is, and only when the policy opts
-            # in on the route that reads it; the orchestrator never reads the store. ADR 0070 D2:
-            # a declared `warm_start.job_id` is the candidate instead, on every route (the legacy
-            # route records it rejected).
-            warm_start = None
-            declared = body.warm_start.job_id if body.warm_start is not None else None
-            if declared is not None:
-                warm_start = explicit_warm_start_candidate(self.context, declared)
-            elif (
-                bound.solve_path in ("revision_eo", "revision_coupled")
-                and WARM_START_SOURCE in policy.initializer_chain
-            ):
-                warm_start = warm_start_candidate(self.context, self.job.job_id, body.revision_id)
+            warm_start = self._warm_start(body, bound, policy)
             coupled_start = declared_coupled_start(self.context, body.warm_start, bound)
             # ADR 0072 (RRC design note §5.3): the nearest verified ancestor, found and assembled
             # at the same site, iff the policy's edge 3 continues revisions on `revision_eo`.
@@ -722,6 +710,24 @@ class _Body:
         except _FenceLost:
             return _failed(_error("internal_error", "fence_lost"), run, "owner_lost")
         return self._bundled_end(directory, manifest, run, diagnoses)
+
+    def _warm_start(
+        self, body: SolveBody, bound: Route, policy: SolvePolicy
+    ) -> WarmStartCandidate | None:
+        """The solve's warm-start candidate on the route `bound`. ADR 0024 D2: the lookup is
+        here, where the store is, and only when `policy` opts in on the route that reads it; the
+        orchestrator never reads the store. ADR 0070 D2: a declared `warm_start.job_id` is the
+        candidate instead, on every route (the legacy route records it rejected). `None` when
+        nothing is declared and the policy does not opt in on a route that reads it."""
+        declared = body.warm_start.job_id if body.warm_start is not None else None
+        if declared is not None:
+            return explicit_warm_start_candidate(self.context, declared)
+        if (
+            bound.solve_path in ("revision_eo", "revision_coupled")
+            and WARM_START_SOURCE in policy.initializer_chain
+        ):
+            return warm_start_candidate(self.context, self.job.job_id, body.revision_id)
+        return None
 
     def _experiments(self, sink: ArtifactSink, emit: Callable[[], None]) -> LiveExperiments:
         """The coupled route's experiments (M02 design note §4.3, §6.1): one runner for the job —
