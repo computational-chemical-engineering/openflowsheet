@@ -1078,14 +1078,6 @@ class _Body:
         def remaining() -> float | None:
             return None if budget is None else budget - (time.monotonic() - began)
 
-        def progress(stage: str, info: Mapping[str, Any]) -> None:
-            if stage == "start":
-                self._step(1, f"starts:{info['start']}")
-            elif stage == "optimize":
-                self._step(2, f"optimize:{info['start']}")
-            elif stage == "record":
-                self.at("record")
-
         try:
             self.at("resolve")
             with store.reading() as connection:
@@ -1144,7 +1136,7 @@ class _Body:
                 policy_requested=body.policy_id,
                 check=self._honour_interruption,
                 interruptions=(JobInterrupted,),
-                progress=progress,
+                progress=self._optimize_progress,
                 surrogates=surrogate_resolver(store, self.context.root),
                 wall_time_remaining=remaining,
             )
@@ -1164,6 +1156,17 @@ class _Body:
         return WorkerResult(
             status="completed", reason="operation_completed", interruption=None, error=None
         )
+
+    def _optimize_progress(self, stage: str, info: Mapping[str, Any]) -> None:
+        """`optimize_revision`'s progress callback (§4.10): a per-start event (`_step`) as a
+        start begins and as its optimisation begins, and the `record` stage boundary (`at`);
+        any other stage emits nothing."""
+        if stage == "start":
+            self._step(1, f"starts:{info['start']}")
+        elif stage == "optimize":
+            self._step(2, f"optimize:{info['start']}")
+        elif stage == "record":
+            self.at("record")
 
     def _step(self, completed: int, stage: str) -> None:
         """A per-start progress event (§4.10), honouring an interruption first as `at` does."""
