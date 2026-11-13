@@ -85,7 +85,7 @@
       "id": "S16.TESTS",
       "description": "tests/test_s16_test_impact.py: diff parsing, line-to-test mapping on a synthetic map, every fallback rule, exit codes, the open-record mapping; runs without coverage",
       "result": "pass",
-      "value": "36 passed (main .venv)"
+      "value": "60 passed in 3.43 s (main .venv), ef915499"
     },
     {
       "id": "S16.LINT",
@@ -97,7 +97,7 @@
       "id": "S16.F0",
       "description": "F0 unchanged: S16 touches no src/, schema or benchmark data",
       "result": "pass",
-      "value": "corpus_identity.py --check PASS, the same counts as F1's manifest"
+      "value": "corpus_identity.py --check PASS: M1 50/50, M2-M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 35/35"
     },
     {
       "id": "S16.IDENTITY",
@@ -110,6 +110,24 @@
       "description": "the map builds at a clean base with per-test contexts, subprocess coverage and the open record; serial and -n 4 partial maps agree",
       "result": "pass",
       "value": "a9e733e4: 20284 tests, 4204 s, 25.0 MB; equivalence on 5 files: outcomes 53/53 equal, opens and fixtures identical, 5 of 1101 line sets differ (tests/conftest.py, run/lock.py), docs/S16_DECISIONS.md B-6"
+    },
+    {
+      "id": "S16.RECALL",
+      "description": "seeded-change recall: scripts/s16_recall.py at base a9e733e4, 12 workers, per-test limit 900 s (60 s for app-owner-instance, B-10); a miss is a test that fails in the full suite with the change and is not selected",
+      "result": "pass",
+      "value": "run 3 (node-level selection): 16 of 17 cases 0 missed, app-owner-instance 60 missed, both refactor runs exit 1, led to B-11; run 4 (whole files): app-owner-instance 86 files, 693 new failures, 8 missed, all among 14 tests verified to pass on the mutated tree without a limit (false misses of the 60 s limit), both refactors 51 files, 0 failures, run exit 0; run 5 (ef915499's rules): s1-shadow-import and s4-docs-added fall back, s2-render-twin 52 files 8 failures, s3-nonlocal 38 files 5, shared-catalogue 29 files 1, all 0 missed, refactor-extract-authz 36 files run exit 0; 0 real misses. recall-run3/4/5.json beside this manifest"
+    },
+    {
+      "id": "S16.CI",
+      "description": "CI, scripts/check.sh with the CI extras, on both architectures at ef915499",
+      "result": "pass",
+      "value": "run 43365514889: check (ubuntu-latest) success, check (ubuntu-24.04-arm) success, default-install success, identity success; earlier run 43354463657 at 40270b62 green on both legs"
+    },
+    {
+      "id": "S16.REVIEW_DOC",
+      "description": "design-lane review of the package (reviewer agent), docs/reviews/S16-review.md",
+      "result": "pass",
+      "value": "findings X1, S1 to S6 and a note, all addressed by B-12 to B-19 (docs/S16_DECISIONS.md); the review block stays pending until human sign-off"
     }
   ],
   "artifacts": [
