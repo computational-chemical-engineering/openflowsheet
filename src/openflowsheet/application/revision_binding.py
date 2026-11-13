@@ -645,15 +645,7 @@ def instance_contract(
     from openflowsheet.orchestrator.splits import SPLIT_RULES
 
     parameters = _parameters(view, signature, components)
-    for template in signature.required:
-        if not template.endswith("{key}"):
-            continue
-        keyed = _expand(template, view, components)
-        if not keyed:
-            name = template.removesuffix("{key}").removesuffix(".")
-            raise RevisionError("incomplete", f"parameter_missing({view.unit_id}.{name})")
-        if len(keyed) > 1:
-            raise RevisionError("unsupported", f"parameter_unsupported({view.unit_id}.{keyed[1]})")
+    _require_one_keyed(view, signature, components)
     for port, phase in _PORT_PHASES.get(signature.model_id, ()):
         for each in tuple(view.ports) if port == "*" else (port,):
             _require_phase(view, each, phase)
@@ -672,6 +664,23 @@ def instance_contract(
                 _phase_hint(view, port, _ONE_PHASE),
             )
     return parameters
+
+
+def _require_one_keyed(
+    view: InstanceView, signature: ModelSignature, components: Sequence[str]
+) -> None:
+    """R6's `{key}` rule: each `{key}` template in `signature.required` names exactly one of
+    `view`'s parameters. Raises `RevisionError` for the first template that names none
+    (`parameter_missing`) or several (`parameter_unsupported`, naming the second)."""
+    for template in signature.required:
+        if not template.endswith("{key}"):
+            continue
+        keyed = _expand(template, view, components)
+        if not keyed:
+            name = template.removesuffix("{key}").removesuffix(".")
+            raise RevisionError("incomplete", f"parameter_missing({view.unit_id}.{name})")
+        if len(keyed) > 1:
+            raise RevisionError("unsupported", f"parameter_unsupported({view.unit_id}.{keyed[1]})")
 
 
 # -- the six K02 builders (§1.3's table) --------------------------------------------------------
