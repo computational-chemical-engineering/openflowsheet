@@ -114,3 +114,14 @@ limitations) by whoever may change D2.4 paths, then the manifest.
   measured here: no full-suite runs in this round). The map lifecycle for S17 (a map per accepted step, or one
   campaign base) is S17's choice, not made here. Alternative: rewrite `-n` after `--` into the split. Reversible by:
   this commit.
+- **B-13. A new def is fresh only if its name occurs nowhere in the base's tree (2026-11-13, review S1).**
+  `_fresh_definition` checked only def and class names, so a new def shadowing an imported or assigned name selected
+  nothing (review probe: `def state_sha256` appended to `numerics/newton.py`, which imports and calls it; 206 files
+  missed). Now `git grep -w -F` of the name in the base's tree must find nothing; otherwise the new def falls back as
+  import-time code. This bounds every binding in every scope (imports, assignments, loop, `with` and `except`
+  targets, `global`), sibling-base methods a base-less mixin could override in an MRO, and literal
+  `getattr`/`hasattr` access, without walking scopes. Checked on the real map: the probe now falls back
+  (`newton.py:928: import-time code changed`). Residual: code that enumerates a namespace without naming the def
+  (three tests at a9e733e4, listed in docs/test-impact.md; none is affected by a new, uncalled function).
+  Alternative: an AST walk of the bindings of the def's scope (misses other scopes, MROs across files and
+  `hasattr`). Reversible by: this commit.

@@ -31,7 +31,7 @@ import sysconfig
 import tempfile
 import time
 import tokenize
-from collections.abc import Iterable, Iterator
+from collections.abc import Callable, Iterable, Iterator
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -410,22 +410,36 @@ def _code_lines(text: str) -> set[int]:
     return lines
 
 
-def _fresh_definition(node: ast.stmt, base: Source, new: Source, added: set[int]) -> bool:
-    """A new, undecorated def whose name nothing at the base binds: only changed code reaches it."""
+def _mentioned_at(base: str, cwd: Path, name: str) -> bool:
+    """Whether any file of the base's tree holds `name` as a whole word (an error counts as yes)."""
+    found = subprocess.run(
+        ["git", "grep", "-q", "-w", "-F", "-e", name, base, "--"], cwd=cwd, capture_output=True
+    )
+    return found.returncode != 1
+
+
+def _fresh_definition(
+    node: ast.stmt, new: Source, added: set[int], mentioned: Callable[[str], bool]
+) -> bool:
+    """A new, undecorated def whose name the base never mentions: only changed code reaches it.
+
+    The name must occur nowhere in the base's tree, as a whole word (`mentioned`): then it binds,
+    shadows or overrides nothing the base binds in any scope (an import, an assignment, a loop or
+    `with` target, a `global`, a sibling base's method in a mixin's MRO), and no base code reaches
+    it by a literal `getattr`/`hasattr` (docs/S16_DECISIONS.md, B-13)."""
     import builtins
 
     if not isinstance(node, ast.FunctionDef | ast.AsyncFunctionDef) or node.decorator_list:
         return False
     if not set(range(_start(node), _end(node) + 1)) <= added:
         return False
-    name = new.qualname(node)
-    if name in base.qualnames or node.name in dir(builtins) or node.name.startswith("__"):
+    if node.name in dir(builtins) or node.name.startswith("__") or mentioned(node.name):
         return False
-    owner = name.rpartition(".")[0]
+    owner = new.qualname(node).rpartition(".")[0]
     if owner:  # a method: only of a class with no bases, so it overrides nothing
         classes = new.qualnames.get(owner, [])
         return all(isinstance(c, ast.ClassDef) and not (c.bases or c.keywords) for c in classes)
-    return not any(isinstance(n, ast.Global) and node.name in n.names for n in ast.walk(base.tree))
+    return True
 
 
 # -- selection -------------------------------------------------------------------------------------
@@ -510,12 +524,20 @@ def _python_rule(test_map: TestMap, change: Change, base: str, cwd: Path) -> set
         for line in sorted(added):
             if not new.is_code(line):
                 continue
-            selected |= _new_line(test_map, path, line, old, new, added)
+            selected |= _new_line(
+                test_map, path, line, old, new, added, lambda name: _mentioned_at(base, cwd, name)
+            )
     return selected
 
 
 def _new_line(
-    test_map: TestMap, path: str, line: int, old: Source, new: Source, added: set[int]
+    test_map: TestMap,
+    path: str,
+    line: int,
+    old: Source,
+    new: Source,
+    added: set[int],
+    mentioned: Callable[[str], bool],
 ) -> set[str]:
     """An added or rewritten line: the tests of the innermost enclosing function the base has."""
     chain = new.path_to(line)
@@ -532,7 +554,7 @@ def _new_line(
                     test_map.line_contexts(path, _body_lines(base_function)), where
                 )
     outer = next((n for n in chain if isinstance(n, ast.FunctionDef | ast.AsyncFunctionDef)), None)
-    if outer is not None and _fresh_definition(outer, old, new, added):
+    if outer is not None and _fresh_definition(outer, new, added, mentioned):
         return set()
     raise FallbackError(f"{path}:{line}: import-time code changed")
 

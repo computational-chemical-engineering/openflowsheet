@@ -281,6 +281,21 @@ def test_a_new_method_of_a_plain_class_selects_nothing_more(repo) -> None:
     assert _select(repo).nodes == set() and _select(repo).fallback is None
 
 
+@pytest.mark.parametrize("name", ["LIMIT", "total", "CONSTANT", "method"])
+def test_a_new_def_that_shadows_a_name_the_base_mentions_falls_back(repo, name: str) -> None:
+    """B-13: an assignment (LIMIT), a local (total), another file's name (CONSTANT), a sibling
+    class's method (method): the new def may rebind or override what base code reaches."""
+    _edit(
+        repo[0],
+        "src/pkg/mod.py",
+        "BOOTED = boot()\n",
+        f"BOOTED = boot()\n\n\ndef {name}():\n    return 1\n",
+    )
+    assert "import-time code changed" in (_select(repo).fallback or "")
+    _edit(repo[0], "src/pkg/mod.py", f"def {name}():", "def _fresh_name():")
+    assert _select(repo).nodes == set() and _select(repo).fallback is None
+
+
 # -- fallbacks -------------------------------------------------------------------------------------
 
 

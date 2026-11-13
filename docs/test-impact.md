@@ -96,9 +96,11 @@ refactor loop's "the target must be covered" check and for mutant checks.
   executed the statement holding it. A line the change adds or rewrites selects every test that
   executed any line of the enclosing function's body (the base's function of the same qualified
   name).
-- A new function or method (undecorated, a name the base does not bind, no override of a base
-  class's method) selects nothing by itself: only changed code can call it, and that code selects
-  its own tests. This is what makes an extract-function step cheap.
+- A new function or method (undecorated, in a module or a class without bases, with a name that
+  occurs nowhere in the base's tree as a whole word) selects nothing by itself: only changed code
+  can call it, and that code selects its own tests. This is what makes an extract-function step
+  cheap. A new def whose name the base mentions anywhere (an import, an assignment, a local, a
+  method of another class, a `getattr` literal) may shadow or override it and falls back (B-13).
 - A blank or comment-only line selects nothing.
 - A changed test module selects all of its own tests (the file) plus its lines' normal mapping.
 - A non-`.py` file maps through the open record: the tests that opened it.
@@ -137,6 +139,11 @@ changed file is one the map has seen.
 - State the restore does not reach (an attribute of an object held deeper than a module-level
   instance, a class attribute rebound by a test, state outside the repository's modules) can still
   attribute shared work to the first test that does it.
+- A new def is found by code that enumerates a namespace (`vars(module)`, `dir()`,
+  `inspect.getmembers`) without naming it; that code is not selected. At a9e733e4 three tests do so
+  (`test_st_core.py::test_c8…`, mutable module state; `test_s11_thermal_verifier.py`, which patches
+  every callable of `kernel`; `test_t07_w5a_operations.py`, public methods of `Protocol` classes,
+  which have bases and are never fresh); none changes its verdict for a new, uncalled function.
 - A change that only moves lines (a comment, a blank line) selects nothing, although line numbers in
   tracebacks and warnings move.
 - `node --test` (the web shell's tests in `tests/web/`) is not mapped: a change under `tests/web/`
