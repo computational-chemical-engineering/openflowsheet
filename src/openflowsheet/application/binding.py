@@ -735,30 +735,10 @@ def bind_revision_or_reason(document: Mapping[str, Any]) -> Binding | Unbound:
     )
     freed_columns = {row_id: pinned[row_id] for row_id in removed}
     if removed:
-        spec = replace(
-            spec,
-            equations=tuple(
-                equation for equation in spec.equations if equation.equation_id not in removed
-            ),
-            row_kinds={row: kind for row, kind in spec.row_kinds.items() if row not in removed},
-        )
+        spec = _without_rows(spec, removed)
         pinned = {row_id: column for row_id, column in pinned.items() if row_id not in removed}
         for row_id in removed:
             row_units.pop(row_id, None)
-        # A removed row's parameter that no remaining row reads is not part of the function any
-        # more. Left in, it would carry the freed coordinate's guess (or, with no guess, the
-        # flowsheet's declared default) into `constants_sha256`, and two revisions differing only
-        # in their initial guess would be two problems — `same_root` NOT_COMPARABLE (T03 A20).
-        from openflowsheet.graph.trace import parameters_read
-
-        still_read = set().union(*parameters_read(spec).values())
-        orphaned = [name for name in spec.parameter_ids if name not in still_read]
-        if orphaned:
-            spec = replace(
-                spec,
-                parameter_ids=tuple(n for n in spec.parameter_ids if n not in set(orphaned)),
-                parameters={n: v for n, v in spec.parameters.items() if n not in set(orphaned)},
-            )
 
     # The declaration must carry the values the *revision* declares, not the ones the flowsheet
     # happens to be parameterized by. `Syn001Flowsheet` takes a single pressure, so a revision
@@ -807,6 +787,32 @@ def bind_revision_or_reason(document: Mapping[str, Any]) -> Binding | Unbound:
         constants_sha256="0" * 64,
         input_mapping=InputMapping(declared_components=declared, conversions=conversions),
     )
+
+
+def _without_rows(spec: ProblemSpec, removed: tuple[str, ...]) -> ProblemSpec:
+    """`spec` without the rows `removed` and without every parameter no remaining row reads."""
+    spec = replace(
+        spec,
+        equations=tuple(
+            equation for equation in spec.equations if equation.equation_id not in removed
+        ),
+        row_kinds={row: kind for row, kind in spec.row_kinds.items() if row not in removed},
+    )
+    # A removed row's parameter that no remaining row reads is not part of the function any
+    # more. Left in, it would carry the freed coordinate's guess (or, with no guess, the
+    # flowsheet's declared default) into `constants_sha256`, and two revisions differing only
+    # in their initial guess would be two problems — `same_root` NOT_COMPARABLE (T03 A20).
+    from openflowsheet.graph.trace import parameters_read
+
+    still_read = set().union(*parameters_read(spec).values())
+    orphaned = [name for name in spec.parameter_ids if name not in still_read]
+    if orphaned:
+        spec = replace(
+            spec,
+            parameter_ids=tuple(n for n in spec.parameter_ids if n not in set(orphaned)),
+            parameters={n: v for n, v in spec.parameters.items() if n not in set(orphaned)},
+        )
+    return spec
 
 
 def _promote_specifications(
