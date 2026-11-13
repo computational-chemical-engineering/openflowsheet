@@ -564,31 +564,10 @@ def bind_revision_or_reason(document: Mapping[str, Any]) -> Binding | Unbound:
 
     from openflowsheet.models.syn001.flowsheet import WIRING
 
-    instances = document.get("instances") or ()
-    if not instances or any(
-        not str((entry.get("model") or {}).get("id", "")).startswith("syn001.")
-        for entry in instances
-    ):
-        return Unbound(
-            "unsupported",
-            "the structural analysis binds the registered SYN-001 revisions only; this revision "
-            "uses models it does not know (T01 specification §5, §16)",
-        )
-
-    edges = _connections(document)
-    if not edges:
-        return Unbound(
-            "unsupported", "the revision declares no material connection the binding can read"
-        )
-
     wiring_edges = _wiring_edges(WIRING)
-    matched = _match_instances(edges, _topology(wiring_edges))
-    if matched is None:
-        return Unbound(
-            "unsupported",
-            "the revision's connections do not match the SYN-001 flowsheet's topology, which is "
-            "the only one the binding knows",
-        )
+    matched = _matched_syn001(document, wiring_edges)
+    if isinstance(matched, Unbound):
+        return matched
     units_by_instance = {instance: unit for unit, instance in matched.items()}
 
     # T06 spec §8.6: a permuted component set is mapped onto the provider's order before any
@@ -783,6 +762,39 @@ def bind_revision_or_reason(document: Mapping[str, Any]) -> Binding | Unbound:
         constants_sha256="0" * 64,
         input_mapping=InputMapping(declared_components=declared, conversions=conversions),
     )
+
+
+def _matched_syn001(
+    document: Mapping[str, Any], wiring_edges: Sequence[tuple[str, str, str]]
+) -> dict[str, str] | Unbound:
+    """SYN-001's unit id -> the revision instance id matched to it on `wiring_edges`, the
+    flowsheet's material edges, or the refusal: an instance naming a model outside SYN-001 (or no
+    instance), no material connection, or connections of another topology."""
+    instances = document.get("instances") or ()
+    if not instances or any(
+        not str((entry.get("model") or {}).get("id", "")).startswith("syn001.")
+        for entry in instances
+    ):
+        return Unbound(
+            "unsupported",
+            "the structural analysis binds the registered SYN-001 revisions only; this revision "
+            "uses models it does not know (T01 specification §5, §16)",
+        )
+
+    edges = _connections(document)
+    if not edges:
+        return Unbound(
+            "unsupported", "the revision declares no material connection the binding can read"
+        )
+
+    matched = _match_instances(edges, _topology(wiring_edges))
+    if matched is None:
+        return Unbound(
+            "unsupported",
+            "the revision's connections do not match the SYN-001 flowsheet's topology, which is "
+            "the only one the binding knows",
+        )
+    return matched
 
 
 def _pinned_specifications(
