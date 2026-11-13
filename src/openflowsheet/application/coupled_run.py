@@ -1024,54 +1024,12 @@ def solve_coupled(
 
     def solve_inner(w: Mapping[str, tuple[float, float]], start: Any) -> InnerSolve:
         nonlocal initial_warm
-        bound = at_coupling(binding, w)
-        inner_trace = Trace()
-        label = "route_initializer" if start is None else "user_start"
-        model_version, constants = declaration_identity(bound.spec)
-        try:
-            plan, report = plan_revision(bound, policy, trace=inner_trace)
-            if isinstance(plan, PlanRefusal):
-                if start is None:
-                    initial_warm = None
-                payload = InnerRun(bound, plan, report, None)
-                return InnerSolve(
-                    str(plan.outcome), None, {}, None, label, constants, None, payload
-                )
-            run = execute_plan(
-                plan=plan,
-                flowsheet=bound.flowsheet,
-                spec=bound.spec,
-                policy=policy,
-                trace=inner_trace,
-                user_start=start,
-                warm_start=warm_start if start is None else None,
-            )
-            if start is None:
-                # X02 Part C: the k = 0 record, and the label of a start the candidate gave.
-                initial_warm = run.warm_start
-                if initial_warm is not None and initial_warm.status == "accepted":
-                    label = WARM_START_SOURCE
-        finally:
-            if trace is not None:
-                trace.extend(inner_trace.events)
-        payload = InnerRun(bound, plan, report, run)
-        iterations = sum(step.iterations for step in run.steps)
-        if run.outcome != "CONVERGED" or run.state is None:
-            return InnerSolve(
-                str(run.outcome), None, {}, iterations, label, constants, None, payload
-            )
-        state = dict(run.state)
-        digest = solution_state.document(bound.spec.variable_ids, state_vector(bound.spec, state))
-        return InnerSolve(
-            "CONVERGED",
-            state,
-            {unit.unit_id: inlet_of(bound, unit, state) for unit in units},
-            iterations,
-            label,
-            constants,
-            str(digest["state_sha256"]),
-            payload,
+        inner, warm = _solve_inner(
+            at_coupling(binding, w), start, units, policy=policy, trace=trace, warm_start=warm_start
         )
+        if start is None:
+            initial_warm = warm
+        return inner
 
     # ADR 0070 D2/D4 (§5.5): a start-capable variant chains its starts inside a run — each
     # experiment starts from the unit's most recent `ok` profile, in evaluation order (so a live
@@ -1130,6 +1088,68 @@ def solve_coupled(
     return CoupledSolve(
         coupling, units, coupling.final.payload, record, initial_warm, coupling_start
     )
+
+
+def _solve_inner(
+    bound: RevisionBinding,
+    start: Any,
+    units: Sequence[C1Reactor],
+    *,
+    policy: SolvePolicy,
+    trace: Trace | None,
+    warm_start: WarmStartCandidate | None,
+) -> tuple[InnerSolve, WarmStartRecord | None]:
+    """§4.3: one inner solve of `bound` (the binding at a coupling w) from `start`, the previous
+    inner solution, or from the route's initializer chain when `start` is `None` (k = 0, the only
+    solve that reads `warm_start`). Its events go to the job's `trace`, also when planning or
+    execution raises. Returns the solve, labelled `compatible_warm_start` when a k = 0 run opened
+    from the candidate, with the k = 0 run's warm-start record (X02 Part C); the record is `None`
+    when the plan was refused or `start` is not `None`."""
+    inner_trace = Trace()
+    label = "route_initializer" if start is None else "user_start"
+    model_version, constants = declaration_identity(bound.spec)
+    warm: WarmStartRecord | None = None
+    try:
+        plan, report = plan_revision(bound, policy, trace=inner_trace)
+        if isinstance(plan, PlanRefusal):
+            payload = InnerRun(bound, plan, report, None)
+            refused = InnerSolve(str(plan.outcome), None, {}, None, label, constants, None, payload)
+            return refused, None
+        run = execute_plan(
+            plan=plan,
+            flowsheet=bound.flowsheet,
+            spec=bound.spec,
+            policy=policy,
+            trace=inner_trace,
+            user_start=start,
+            warm_start=warm_start if start is None else None,
+        )
+        if start is None:
+            # X02 Part C: the k = 0 record, and the label of a start the candidate gave.
+            warm = run.warm_start
+            if warm is not None and warm.status == "accepted":
+                label = WARM_START_SOURCE
+    finally:
+        if trace is not None:
+            trace.extend(inner_trace.events)
+    payload = InnerRun(bound, plan, report, run)
+    iterations = sum(step.iterations for step in run.steps)
+    if run.outcome != "CONVERGED" or run.state is None:
+        failed = InnerSolve(str(run.outcome), None, {}, iterations, label, constants, None, payload)
+        return failed, warm
+    state = dict(run.state)
+    digest = solution_state.document(bound.spec.variable_ids, state_vector(bound.spec, state))
+    converged = InnerSolve(
+        "CONVERGED",
+        state,
+        {unit.unit_id: inlet_of(bound, unit, state) for unit in units},
+        iterations,
+        label,
+        constants,
+        str(digest["state_sha256"]),
+        payload,
+    )
+    return converged, warm
 
 
 def _open_outer_start(
