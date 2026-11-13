@@ -582,6 +582,9 @@ class _Body:
     # -- solve --------------------------------------------------------------------------------
 
     def solve(self) -> WorkerResult:
+        """Run a solve job: resolve and bind its route, then the start sources (`_warm_start`,
+        `declared_coupled_start`, `_continuation`) and the experiments (`_experiments`), the
+        session, and the bundle (`_bundled_end`); a typed error ends it typed."""
         body = self.job.request.body
         assert isinstance(body, SolveBody)
         self.stages = SOLVE_STAGES
@@ -711,7 +714,8 @@ class _Body:
         here, where the store is, and only when `policy` opts in on the route that reads it; the
         orchestrator never reads the store. ADR 0070 D2: a declared `warm_start.job_id` is the
         candidate instead, on every route (the legacy route records it rejected). `None` when
-        nothing is declared and the policy does not opt in on a route that reads it."""
+        nothing is declared and the policy does not opt in on a route that reads it, or when the
+        opted-in lineage has no verified solution (`warm_start_candidate`)."""
         declared = body.warm_start.job_id if body.warm_start is not None else None
         if declared is not None:
             return explicit_warm_start_candidate(self.context, declared)
@@ -730,9 +734,10 @@ class _Body:
         document: dict[str, Any],
         surrogates: SurrogateResolver,
     ) -> ContinuationSource | None:
-        """ADR 0072 (RRC design note §5.3): the nearest verified ancestor of the revision
-        `document`, found and assembled at the site of the warm-start lookup (`_warm_start`), iff
-        the policy's edge 3 continues revisions on `revision_eo`; `None` otherwise."""
+        """ADR 0072 (RRC design note §5.3): the continuation source of the revision `document`
+        (the nearest verified ancestor, or the refusal §5.3 records in its `found`), found and
+        assembled here, where the store is, as the warm-start lookup is (ADR 0024 D2), iff the
+        policy's edge 3 continues revisions on `revision_eo`; `None` otherwise."""
         if bound.solve_path == "revision_eo" and continues_revisions(policy):
             return find_source(
                 self.context.store,

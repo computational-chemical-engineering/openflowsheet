@@ -363,7 +363,10 @@ class ProcessExecutor:
     def _supervise(self) -> None:
         """The supervisor thread's loop: it returns once `shutdown` has ended every job, or once
         the store has failed `SHUTDOWN_STORE_ATTEMPTS` polls in a row after it
-        (`_abandon_jobs_and_kill_workers`)."""
+        (`_abandon_jobs_and_kill_workers`). Each pass admits queued ids (`_admit`), launches them
+        (`_launch_admitted`), polls the workers and ends those that exited
+        (`_poll_and_end_exited`), then requeues what failed and waits, with backoff after
+        `shutdown`."""
         failures = 0  # consecutive failing polls since `shutdown` (rf1-Q1)
         while True:
             with self._condition:
@@ -378,8 +381,8 @@ class ProcessExecutor:
             # job's end is recorded, so a job is never left `queued` or `running` behind a
             # transient error (T07 review S1).
             retry = self._launch_admitted(admitted)
-            finished, unrecorded = self._end_exited()
-            failed = bool(retry) or unrecorded
+            finished, ending_failed = self._poll_and_end_exited()
+            failed = bool(retry) or ending_failed
             with self._condition:
                 self._queue.extendleft(reversed(retry))
                 for slot in finished:
@@ -430,8 +433,9 @@ class ProcessExecutor:
                 return admitted[index:]
         return []
 
-    def _end_exited(self) -> tuple[list[_Slot], bool]:
-        """One poll (`_watch`) and the owner's end (`_finish`) of each worker it finds exited:
+    def _poll_and_end_exited(self) -> tuple[list[_Slot], bool]:
+        """One poll (`_watch`, §8.2: it also signals the due cancel and wall-time stops and kills
+        workers past their grace) and the owner's end (`_finish`) of each worker it finds exited:
         the slots whose end is recorded, and whether the poll or an end failed. A failing poll
         ends nothing; a slot whose end failed stays out of the list, for a later poll to retry."""
         finished: list[_Slot] = []
