@@ -55,17 +55,17 @@
       "exit_code": 0
     },
     {
-      "cmd": "python scripts/s16_recall.py --base a9e733e4 --map ~/.cache/openflowsheet/testmap/a9e733e4d3eb63bf16068efeebe2643522aceb34 --out <scratch>/s16recall3/recall.json --workers 12 (reconstructed from the driver usage, the driver does not log its command line; run 3, B-10 tool; 17 cases + 2 refactors; recall-run3.json)",
+      "cmd": "python scripts/s16_recall.py --base a9e733e4 --map ~/.cache/openflowsheet/testmap/a9e733e4d3eb63bf16068efeebe2643522aceb34 --out $SCRATCH/s16recall3/recall.json --workers 12 (reconstructed from the driver usage, the driver does not log its command line; run 3, B-10 tool; 17 cases + 2 refactors; recall-run3.json)",
       "cwd": ".",
       "exit_code": 0
     },
     {
-      "cmd": "python scripts/s16_recall.py --base a9e733e4 --map ~/.cache/openflowsheet/testmap/a9e733e4d3eb63bf16068efeebe2643522aceb34 --out <scratch>/s16recall4/recall.json --workers 12 --cases app-owner-instance,refactor-rename-local,refactor-extract-function (reconstructed from the driver usage, the driver does not log its command line; run 4, B-11 whole-file widening; recall-run4.json)",
+      "cmd": "python scripts/s16_recall.py --base a9e733e4 --map ~/.cache/openflowsheet/testmap/a9e733e4d3eb63bf16068efeebe2643522aceb34 --out $SCRATCH/s16recall4/recall.json --workers 12 --cases app-owner-instance,refactor-rename-local,refactor-extract-function (reconstructed from the driver usage, the driver does not log its command line; run 4, B-11 whole-file widening; recall-run4.json)",
       "cwd": ".",
       "exit_code": 0
     },
     {
-      "cmd": "python scripts/s16_recall.py --base a9e733e4 --map ~/.cache/openflowsheet/testmap/a9e733e4d3eb63bf16068efeebe2643522aceb34 --out <scratch>/s16recall5/recall.json --workers 12 --cases s1-shadow-import,s2-render-twin,s3-nonlocal,s4-docs-added,shared-catalogue,refactor-extract-authz (reconstructed from the driver usage, the driver does not log its command line; run 5, after B-12 to B-19, tool at ef915499; recall-run5.json)",
+      "cmd": "python scripts/s16_recall.py --base a9e733e4 --map ~/.cache/openflowsheet/testmap/a9e733e4d3eb63bf16068efeebe2643522aceb34 --out $SCRATCH/s16recall5/recall.json --workers 12 --cases s1-shadow-import,s2-render-twin,s3-nonlocal,s4-docs-added,shared-catalogue,refactor-extract-authz (reconstructed from the driver usage, the driver does not log its command line; run 5, after B-12 to B-19, tool at ef915499; recall-run5.json)",
       "cwd": ".",
       "exit_code": 0
     },
