@@ -1804,13 +1804,7 @@ def _unadmitted(model_id: str, provider_id: str) -> str | None:
     if model_id in ROUTING_MODELS or model_id in _C1_ROUTING:
         return None
     if model_id.startswith("thermal."):
-        if provider_id in (SYN001_PROVIDER_ID, C1_PROVIDER_ID):
-            return _UNADMITTED["no_entropy"]
-        if provider_id == _WILSON:
-            if model_id == _THERMAL_PUMP:
-                return _UNADMITTED["no_volume"]
-            return _UNADMITTED["lifted"].format(namesake=_LIFTED_NAMESAKE[model_id])
-        return None
+        return _unadmitted_thermal(model_id, provider_id)
     if provider_id in (_IAPWS95, _COOLPROP):
         namesake = _THERMAL_NAMESAKE.get(model_id)
         if namesake is not None:
@@ -1820,6 +1814,19 @@ def _unadmitted(model_id: str, provider_id: str) -> str | None:
         if model_id == _LIQUID_PUMP.model_id:
             return _UNADMITTED["no_volume"]
         return _UNADMITTED["gamma_phi" if model_id.startswith("syn001.") else "c1_physics"]
+    return None
+
+
+def _unadmitted_thermal(model_id: str, provider_id: str) -> str | None:
+    """`_unadmitted` for a `thermal.*` model (S11 design §4.4): no entropy on SYN-001's or C1's
+    basis; on Wilson's, no liquid volume for the pump and the SYN-001 namesake to use for the
+    others; `None` on any other basis."""
+    if provider_id in (SYN001_PROVIDER_ID, C1_PROVIDER_ID):
+        return _UNADMITTED["no_entropy"]
+    if provider_id == _WILSON:
+        if model_id == _THERMAL_PUMP:
+            return _UNADMITTED["no_volume"]
+        return _UNADMITTED["lifted"].format(namesake=_LIFTED_NAMESAKE[model_id])
     return None
 
 
