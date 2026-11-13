@@ -54,7 +54,8 @@ A miss stays a miss in the log.
 
 Brief a fresh `reviewer` with the commit range only (`git log`, `git show`), the review question from the
 refactor-loop skill, and a 20-line verdict per step. Revert rejected steps with `git revert` (no history rewrite),
-log `review-reject`, and add a "when not" to the playbook.
+gate the revert with `gate.sh --revert <sha>`, log `review-reject` with `--reason`, and add a "when not" to the
+playbook. Review notes that need only renames or docstrings: one follow-up commit gated with `gate.sh --no-gain`.
 
 ## Every ~10 attempts
 

@@ -176,3 +176,23 @@ F0, the digest, or (by grep) any test. Re-run the self-test once S16 lands.
   difference found. Both reverted in 76a00379 (conflicts with the later step f1646388 resolved to the pre-step code;
   `_constants_for_shape` byte-identical to before b29aea3c); behaviour tiers on 76a00379: selection 113 files 3490
   passed, F0 PASS, MCP digest 40 passed; ruff, mypy clean. Full verdict: `<git-common-dir>/codehealth/runs/s17-review1.md`.
+- **DECISION D15 (2026-11-13). Re-pin cce-code-health at `8a10c8580dba650dd0187c43e0aeb5438309e1eb`** (0.1.1.dev43;
+  code_health's answers to S17's third feedback round, through 092aaeea, plus two C++-only commits): the self-test
+  honours `--ref-base`; `gate --revert SHA` gates a commit that exactly undoes an earlier one (review rejects);
+  `meta.head`; seed recipe `check-ladder` and an anti-patterns section; `codehealth coupling`, `[architecture]` rules,
+  `--mode restructure --plan` and a PostToolUse edit hook (none of these four is enabled in S17; the hook stays off
+  because the plugin is not updated during the campaign). Proof of comparability: `codehealth scan --ref <CB>` on the
+  new pin equals `s17-base.json` in totals (debt 855.0, health 7.22), in all 39 file debts and in all 988 function
+  debts (`<git-common-dir>/codehealth/runs/s17-base-8a10c858.json`). gate.sh gains `--revert <sha>` and `--no-gain
+  <sha>` (names-only follow-ups from review notes). Alternative: stay on 5646ad1a and check reverts by hand.
+  Reversible by: the pin line and gate.sh.
+- **Review 2 (2026-11-13, reviewer agent):** the first 5 steps of work order 2 (binding.py, 76a00379..0fd8079b): 5
+  accepted (4 with notes), no behaviour difference found. Notes: rename `_without_rows` (it also drops orphaned
+  parameters) and `_assembly_starts` (defaults, not starts); state collision precedence in keyed helpers. A
+  pre-existing finding outside S17: `_promote_specifications` builds row id `SPEC:<name>` per specification, not per
+  column (binding.py:868 at 0fd8079b); reachability unchecked, referred to the design lane. Full verdict:
+  `<git-common-dir>/codehealth/runs/s17-review2.md`.
+- **Work order 2 (2026-11-13, opus-engineer):** 13 attempts, 13 accepted (run-log steps 19 to 31), binding.py debt
+  134.2 -> 43.6 (`bind_revision_or_reason` 73.2 -> 22.6, `legacy_admission` 23.0 -> 1.0). Every gate ran the full
+  suite (about 800 s): S16's `select` reports `binding.py:345 (base) runs at import or collection time in the pytest
+  process`, so any change in `revision_probe` and the binder selects everything (correct, only slower).

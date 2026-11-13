@@ -38,7 +38,10 @@
   `test_m07_journey.py::test_a21...`, fails on any uncommitted change under `src/`). On a failed gate,
   `git reset --hard <last accepted>`: no failed step stays in history. Never `git stash` bare (shared stash stack).
 - Rejected steps found by a review are undone by the orchestrator (`git revert`, conflicts resolved to the pre-step
-  code), checked by the behaviour tiers directly (the gate's debt rule refuses a revert).
+  code) and gated with `gate.sh --revert <rejected sha>` (D15), then logged with `codehealth log --result
+  review-reject --reason "<review N: reason>"`. A names-, docstring- or order-only follow-up from a review's notes is
+  gated with `gate.sh --no-gain <last accepted sha>` (behaviour tiers, no gain check) and logged as `accepted` with
+  recipe `review-note`.
 - Docs and config changes are separate commits by the orchestrator, outside steps.
 
 ## Running jobs

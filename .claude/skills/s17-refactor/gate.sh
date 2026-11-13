@@ -2,6 +2,8 @@
 # S17 blind gate runner: one summary line; full log, JSON report and PID in the run directory.
 # usage: gate.sh <last accepted sha> [label]          a refactor step, committed provisionally (D14)
 #        gate.sh --self-test <path:line[:N]> [label]  the self-test (gate G-SELF)
+#        gate.sh --revert <rejected sha> [label]        HEAD exactly undoes <rejected sha> (review reject, D15)
+#        gate.sh --no-gain <last accepted sha> [label]  names/docstrings only, no gain check (D15)
 # The campaign base (docs/S17_STATE.md) is passed as --ref-base: the tests tier's map (D13).
 # Stop a run with: kill -INT "$(cat <tag>.pid)"
 set -u
@@ -12,6 +14,12 @@ OUT="$GC/codehealth/runs/s17-gates"
 mkdir -p "$OUT"
 if [ "${1:-}" = "--self-test" ]; then
     args=(gate --self-test --mutate "$2" --ref-base "$CB"); label="${3:-selftest}"
+elif [ "${1:-}" = "--revert" ]; then
+    # HEAD is a commit that exactly undoes $2 (review reject); base = the commit before HEAD (D15).
+    args=(gate --mode refactor --revert "$2" --base "$(git rev-parse HEAD~1)" --ref-base "$CB"); label="${3:-revert}"
+elif [ "${1:-}" = "--no-gain" ]; then
+    # names, docstrings or ordering only (review notes): behaviour tiers, no gain check (D15).
+    args=(gate --mode refactor --base "$2" --ref-base "$CB"); label="${3:-nogain}"
 else
     args=(gate --mode refactor --base "$1" --ref-base "$CB" --require-gain); label="${2:-step}"
 fi
