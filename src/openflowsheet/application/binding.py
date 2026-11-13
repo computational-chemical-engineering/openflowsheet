@@ -610,25 +610,10 @@ def bind_revision_or_reason(document: Mapping[str, Any]) -> Binding | Unbound:
     values = {
         str(entry.get("id")): converted.get(str(entry.get("id")), 0.0) for entry in specifications
     }
-    # T02 §7.5, made binding by T03 §9: a `role: free` specification frees its column whether or
-    # not it carries a value; with a value, that is the start. Without one (a specification then
-    # carries `bounds`), the column is still freed and the missing start is recorded, so the solve
-    # ends INITIALIZATION_FAILED instead of silently keeping the column fixed (T02 review N9).
     freed = [
         entry for entry in (document.get("specifications") or ()) if entry.get("role") == "free"
     ]
-    guesses = {
-        column: converted[str(entry.get("id"))]
-        for entry in freed
-        if entry.get("value") is not None
-        for column in _column_targets(entry, graph, units_by_instance)
-    }
-    missing_guesses = tuple(
-        column
-        for entry in freed
-        if entry.get("value") is None
-        for column in _column_targets(entry, graph, units_by_instance)
-    )
+    guesses, missing_guesses = _starts(freed, converted, graph, units_by_instance)
     assembly = _assembly_starts(guesses, missing_guesses)
     if isinstance(assembly, Unbound):
         return assembly
@@ -778,6 +763,33 @@ def _matched_syn001(
             "the only one the binding knows",
         )
     return matched
+
+
+def _starts(
+    freed: Sequence[Mapping[str, Any]],
+    converted: Mapping[str, float],
+    graph: ProcessGraph,
+    units_by_instance: Mapping[str, str],
+) -> tuple[dict[str, float], tuple[str, ...]]:
+    """The start of each column a `role: free` specification in `freed` targets, by column, from
+    its value in SI in `converted`; and the columns whose specification carries no value."""
+    # T02 §7.5, made binding by T03 §9: a `role: free` specification frees its column whether or
+    # not it carries a value; with a value, that is the start. Without one (a specification then
+    # carries `bounds`), the column is still freed and the missing start is recorded, so the solve
+    # ends INITIALIZATION_FAILED instead of silently keeping the column fixed (T02 review N9).
+    guesses = {
+        column: converted[str(entry.get("id"))]
+        for entry in freed
+        if entry.get("value") is not None
+        for column in _column_targets(entry, graph, units_by_instance)
+    }
+    missing_guesses = tuple(
+        column
+        for entry in freed
+        if entry.get("value") is None
+        for column in _column_targets(entry, graph, units_by_instance)
+    )
+    return guesses, missing_guesses
 
 
 def _assembly_starts(
