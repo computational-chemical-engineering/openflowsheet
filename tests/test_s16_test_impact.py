@@ -130,6 +130,7 @@ FILES = {
     "tests/data.json": "{}\n",
     "docs/guide.md": "guide\n",
     "docs/other.md": "other\n",
+    "docs/tool.py": "def run():\n    return 1\n",
     "data/table.yaml": "a: 1\n",
     "data/boot.json": "{}\n",
     "data/unseen.txt": "x\n",
@@ -466,10 +467,34 @@ def test_a_data_file_selects_the_tests_that_opened_it(repo) -> None:
 def test_docs_select_only_their_readers(repo) -> None:
     root = repo[0]
     _edit(root, "docs/other.md", "other", "changed")
-    (root / "docs/new.md").write_text("new\n")
     assert _select(repo).nodes == set() and _select(repo).fallback is None
     _edit(root, "docs/guide.md", "guide", "changed")
     assert _select(repo).nodes == {T1}
+
+
+@pytest.mark.parametrize("kind", ["added", "deleted"])
+def test_an_added_or_deleted_docs_file_falls_back(repo, kind: str) -> None:
+    """B-16: tests glob the docs tree (test_t02_identity.py reads docs/adr/0007-*.md)."""
+    root = repo[0]
+    if kind == "added":
+        (root / "docs/new.md").write_text("new\n")
+    else:
+        (root / "docs/other.md").unlink()
+    assert "new or deleted file" in (_select(repo).fallback or "")
+
+
+def test_a_docs_script_maps_like_source_once_the_map_measures_docs(repo) -> None:
+    """B-16: a map without `source_dirs` did not measure docs/*.py, so a change there falls back."""
+    root, base, map_dir = repo
+    _edit(root, "docs/tool.py", "return 1", "return 2")
+    assert "does not measure its directory" in (_select(repo).fallback or "")
+    data = ti.MapData()
+    data.meta = {"base": base, "tree": ti.tree_of(base, root), "source_dirs": "src,tests,docs"}
+    data.tests = {T1: "passed", T3: "passed"}
+    data.add_lines("docs/tool.py", T3, ti.numbits([2]))
+    data.add_lines("docs/tool.py", ti.COLLECTION, ti.numbits([1]))
+    data.write(map_dir / "map.sqlite")
+    assert _select(repo).nodes == {T3}
 
 
 # -- the command line ------------------------------------------------------------------------------

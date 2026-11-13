@@ -37,9 +37,9 @@ back: tests and outcomes, pytest's exit code, wall time, map size.
 
 The map records, per test:
 
-- the lines of `src/`, `scripts/`, `benchmarks/` and `tests/` it executes, its subprocesses included
-  (98 test files spawn the CLI; each child starts coverage itself and inherits the test's context
-  through its parent process);
+- the lines of `src/`, `scripts/`, `benchmarks/`, `tests/` and `docs/` it executes, its
+  subprocesses included (98 test files spawn the CLI; each child starts coverage itself and
+  inherits the test's context through its parent process);
 - every repository file it, or a Python subprocess of it, opens for reading (an audit hook on
   "open"): the message catalogues, `schemas/*.json`, the MCP description files, benchmark data and
   fixtures;
@@ -107,7 +107,8 @@ refactor loop's "the target must be covered" check and for mutant checks.
 - A blank or comment-only line selects nothing.
 - A changed test module selects all of its own tests (the file) plus its lines' normal mapping.
 - A non-`.py` file maps through the open record: the tests that opened it.
-- `docs/` selects nothing, except a docs file a test opens.
+- A changed non-Python file under `docs/` selects the tests that opened it, and nothing if none did.
+  A `docs/*.py` file is mapped like source (tests import some in-process, B-16).
 
 One map serves a campaign of refactor steps while the base stays an ancestor of `HEAD` and every
 changed file is one the map has seen.
@@ -119,7 +120,10 @@ changed file is one the map has seen.
 - a `conftest.py`, a `tests/*_support.py`, anything under `tests/support/`, `pytest.ini`, `tox.ini`,
   `setup.cfg` or the pytest section of `pyproject.toml` changed;
 - a file under `tests/` that is not a test module changed (data, fixtures, helpers);
-- a file was added or deleted anywhere but `docs/`, or changed type or mode;
+- a file was added or deleted anywhere, `docs/` included (tests list and glob that tree), or
+  changed type or mode;
+- a changed `.py` file lies in a directory the map did not measure (`docs/` in a map built before
+  B-16);
 - import-time code changed: a module- or class-level statement, a `def` or `class` header, a
   decorator, a test module's module-level code;
 - a changed line, or a file a test opened, ran or was read at import or collection time in the

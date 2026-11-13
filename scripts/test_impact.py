@@ -7,10 +7,10 @@
 
 `build` runs the default-marker suite at a clean worktree of the base commit under coverage, in the
 test-map venv (requirements-testmap.lock), and writes a map: for every test, the lines of `src/`,
-`scripts/`, `benchmarks/` and `tests/` it executes (its subprocesses included) and the repository
-files it opens for reading (scripts/test_impact_runtime.py). `select` maps the diff from the base
-to the working tree onto node ids; `run` runs them. Whenever the selection cannot be sure it falls
-back to the full default-marker suite and says why (exit code 3 from `select`).
+`scripts/`, `benchmarks/`, `tests/` and `docs/` it executes (its subprocesses included) and the
+repository files it opens for reading (scripts/test_impact_runtime.py). `select` maps the diff from
+the base to the working tree onto node ids; `run` runs them. Whenever the selection cannot be sure
+it falls back to the full default-marker suite and says why (exit code 3 from `select`).
 
 CI on both architectures stays the merge gate; selection never replaces it (R-1040).
 """
@@ -37,7 +37,9 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 CACHE = Path.home() / ".cache" / "openflowsheet" / "testmap"
-SOURCE_DIRS = ("src", "scripts", "benchmarks", "tests")
+SOURCE_DIRS = ("src", "scripts", "benchmarks", "tests", "docs")
+#: What a map without a `source_dirs` entry measured (built before docs/ was added, B-16).
+LEGACY_SOURCE_DIRS = ("src", "scripts", "benchmarks", "tests")
 EXIT_FULL = 3
 COLLECTION = ""
 MAP_FORMAT = 1
@@ -178,6 +180,8 @@ class TestMap:
         self.db = sqlite3.connect(f"file:{path}?mode=ro", uri=True)
         self.meta = dict(self.db.execute("SELECT key, value FROM meta"))
         self.nodeids = {nodeid for (nodeid,) in self.db.execute("SELECT nodeid FROM tests")}
+        measured = self.meta.get("source_dirs")
+        self.source_dirs = tuple(measured.split(",")) if measured else LEGACY_SOURCE_DIRS
 
     def _file_id(self, path: str) -> int | None:
         row = self.db.execute("SELECT id FROM files WHERE path = ?", (path,)).fetchone()
@@ -490,8 +494,8 @@ def _fallback_rule(change: Change, base: str, cwd: Path) -> str | None:
     """The path rules that need no map (docs/test-impact.md, "Fallbacks")."""
     path = change.path
     name = path.rsplit("/", 1)[-1]
-    if change.status in ("A", "D"):
-        return None if path.startswith("docs/") else f"{path}: new or deleted file"
+    if change.status in ("A", "D"):  # docs/ too: tests list and glob that tree (B-16)
+        return f"{path}: new or deleted file"
     if change.status != "M":
         return f"{path}: changed type or mode ({change.status})"
     if name == "conftest.py":
@@ -600,9 +604,11 @@ def select(base: str, map_dir: Path | None = None, cwd: Path = ROOT) -> Selectio
             if reason is not None:
                 raise FallbackError(reason)
             path = change.path
-            if path.startswith("docs/"):
-                if change.status == "M":
-                    selected |= _open_rule(test_map, path, required=False)
+            if path.endswith(".py") and path.split("/", 1)[0] in SOURCE_DIRS:
+                if path.split("/", 1)[0] not in test_map.source_dirs:
+                    raise FallbackError(f"{path}: the map does not measure its directory (B-16)")
+            if path.startswith("docs/") and not path.endswith(".py"):
+                selected |= _open_rule(test_map, path, required=False)
             elif path.endswith(".py"):
                 if is_test_module(path):
                     selected.add(path)
@@ -741,6 +747,7 @@ def build(base: str, out: Path | None, workers: int, extra: list[str]) -> int:
         "workers": str(workers),
         "tests": str(len(data.tests)),
         "pytest_args": " ".join(extra),
+        "source_dirs": ",".join(SOURCE_DIRS),
     }
     data.write(out / "map.sqlite")
     (out / "meta.json").write_text(json.dumps(data.meta, indent=2) + "\n")

@@ -139,3 +139,13 @@ limitations) by whoever may change D2.4 paths, then the manifest.
   213 files executing `evaluate`); deleting `global auditor` in `messages/audit.py:57` falls back (`enable()` runs
   at collection), against 26 files before. Alternative: every old-side line maps to its whole function (wider for
   every deletion). Reversible by: this commit.
+- **B-16. docs/ is measured, and an added or deleted docs file falls back (2026-11-13, review S4).** Tests glob the
+  docs tree (`tests/test_t02_identity.py:51` unpacks `docs/adr/0007-*.md` into a 1-tuple), so an added or deleted
+  file under `docs/` now falls back like one anywhere else. `docs` joins `SOURCE_DIRS`, so the build measures the 94
+  `docs/**/*.py` files (tests import some in-process: `c2_openidaes450_split.py` by all 40 tests of its test file, of
+  which only 3 recorded it as an open), and `select` maps a changed `docs/*.py` through `_python_rule` like source.
+  A map records the directories it measured (`meta.source_dirs`); a `.py` change in a directory the map did not
+  measure falls back, so the a9e733e4 map (no entry: `src,scripts,benchmarks,tests`) falls back on any `docs/*.py`
+  change. A modified non-Python docs file still selects its openers. Real map: `docs/adr/0007-zz-second.md` added
+  and a changed `c2_openidaes450_split.py` both fall back. Alternative: select the readers of the added file's
+  directory (the open record holds files, not directory listings). Reversible by: this commit.
