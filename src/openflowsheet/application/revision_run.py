@@ -1358,16 +1358,7 @@ def reproduce_bundle(
         coupling_found += _coupling_constants_guard(route, record)
     at("rerun")
     with tempfile.TemporaryDirectory(prefix="ofs-replay-") as scratch:
-        experiments = (
-            None
-            if coupling is None
-            else RecordedExperiments(
-                coupling,
-                provider=PrC1Provider(),
-                scratch=Path(scratch),
-                policy_id=manifest.numerical_policy_id,
-            )
-        )
+        experiments = _recorded_experiments(coupling, scratch, manifest)
         try:
             rerun_manifest = run_revision_session(
                 route,
@@ -1504,6 +1495,23 @@ def _digests_for_shape(key: str, value: Any, theirs: Any) -> bool:
         and isinstance(theirs, str)
         and _HEX64.fullmatch(value)
         and _HEX64.fullmatch(theirs)
+    )
+
+
+def _recorded_experiments(
+    coupling: Mapping[str, Any] | None, scratch: str, manifest: RunManifest
+) -> RecordedExperiments | None:
+    """`reproduce_bundle`'s replay backend of a recorded coupling (M02 design note §7.2), in the
+    `scratch` directory; `None` without a coupling."""
+    return (
+        None
+        if coupling is None
+        else RecordedExperiments(
+            coupling,
+            provider=PrC1Provider(),
+            scratch=Path(scratch),
+            policy_id=manifest.numerical_policy_id,
+        )
     )
 
 
