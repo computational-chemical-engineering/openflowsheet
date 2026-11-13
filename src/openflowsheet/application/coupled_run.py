@@ -1070,21 +1070,7 @@ def solve_coupled(
         last.update(initial_profiles)
         coupling = couple(unit_ids, block, solve_inner, evaluate, on_iteration=on_iteration)
     assert coupling.final is not None and isinstance(coupling.final.payload, InnerRun)
-    frozen = {
-        unit_id: entry
-        for unit_id, variant in unit_variants.items()
-        if (entry := experiments.frozen(variant)) is not None
-    }
-    record = {
-        "schema_version": COUPLING_VERSION,
-        "route": ROUTE,
-        "variants": {unit_id: dict(variant.document) for unit_id, variant in unit_variants.items()},
-        "frozen": frozen,
-        "coupling_block": dict(block_document),
-        "iterations": [dict(item) for item in coupling.iterations],
-        "outcome": coupling.outcome,
-        "reason": coupling.reason,
-    }
+    record = _external_record(experiments, unit_variants, block_document, coupling)
     return CoupledSolve(
         coupling, units, coupling.final.payload, record, initial_warm, coupling_start
     )
@@ -1181,6 +1167,32 @@ def _open_outer_start(
             projections,
         )
     return opened, _coupling_record(start.source, "accepted", None, start.declared, projections)
+
+
+def _external_record(
+    experiments: Experiments,
+    unit_variants: Mapping[str, Variant],
+    block_document: Mapping[str, Any],
+    coupling: CouplingRun,
+) -> dict[str, Any]:
+    """§7.1: `external-coupling.json` at the coupling's end: every unit's variant, the frozen
+    identities `experiments` gives (by unit, in `unit_variants`' order; a unit with none is left
+    out), the coupling block, and the coupling's iterations, outcome and reason."""
+    frozen = {
+        unit_id: entry
+        for unit_id, variant in unit_variants.items()
+        if (entry := experiments.frozen(variant)) is not None
+    }
+    return {
+        "schema_version": COUPLING_VERSION,
+        "route": ROUTE,
+        "variants": {unit_id: dict(variant.document) for unit_id, variant in unit_variants.items()},
+        "frozen": frozen,
+        "coupling_block": dict(block_document),
+        "iterations": [dict(item) for item in coupling.iterations],
+        "outcome": coupling.outcome,
+        "reason": coupling.reason,
+    }
 
 
 # -- the certificate's evidence (§4.4) -------------------------------------------------------------
