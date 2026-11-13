@@ -755,7 +755,8 @@ def _structural(
 
     An `inadmissible` refusal — a value the document fixes that the model it names refuses at
     construction — is `CAP-01`'s finding (stage `capability`), with the structural checks
-    `NOT_RUN`; so the revision is `INVALID`, as a `conflict` is.
+    `NOT_RUN`; so the revision is `INVALID`, as a `conflict` is. `_refused_checks` builds the
+    checks of any refusal.
 
     A revision no binder reads gets `NOT_RUN` checks and a named reason rather than a silent pass
     — a validator that reported `READY_FOR_SIMULATION` because it could not look would be the
@@ -764,75 +765,8 @@ def _structural(
     report, refusal, pins, fallback, *_ = _analysed(document, surrogates)
 
     if refusal is not None:
-        if refusal.kind == "conflict":
-            # A real defect, found before any analysis: two specifications fix one quantity to
-            # different values. It is `STR-04`'s finding, reported as one.
-            reason = f"the structural analysis did not run: {refusal.detail}"
-            return (
-                [
-                    Check(
-                        id=check_id,
-                        stage="structural_analysis",
-                        result="FAIL" if check_id == "STR-04" else "NOT_RUN",
-                        message=refusal.detail
-                        if check_id == "STR-04"
-                        else _not_run(reason, refusal.hint),
-                        implicated_objects=refusal.implicated if check_id == "STR-04" else (),
-                    )
-                    for check_id in ("STR-01", "STR-02", "STR-03", "STR-04", "STR-05")
-                ],
-                None,
-                reason,
-                fallback,
-            )
-        if refusal.kind == "inadmissible":
-            # Ruling round 5, S3: the document asks the model it names for a value outside that
-            # model's declared domain. A finding about the document, as `DIM-01`'s is.
-            reason = f"the structural analysis did not run: {refusal.detail}"
-            capability = Check(
-                id="CAP-01",
-                stage="capability",
-                result="FAIL",
-                message=refusal.detail,
-                implicated_objects=refusal.implicated,
-            )
-            return (
-                [
-                    capability,
-                    *(
-                        Check(
-                            id=check_id,
-                            stage="structural_analysis",
-                            result="NOT_RUN",
-                            message=_not_run(reason, refusal.hint),
-                        )
-                        for check_id in ("STR-01", "STR-02", "STR-03", "STR-04", "STR-05")
-                    ),
-                ],
-                None,
-                reason,
-                fallback,
-            )
-        reason = (
-            f"the revision is incomplete: {refusal.detail}"
-            if refusal.kind == "incomplete"
-            else f"this revision cannot be analysed by T01's binding: {refusal.detail}"
-        )
-        return (
-            [
-                Check(
-                    id=check_id,
-                    stage="structural_analysis",
-                    result="NOT_RUN",
-                    message=_not_run(reason, refusal.hint),
-                    implicated_objects=refusal.implicated,
-                )
-                for check_id in ("STR-01", "STR-02", "STR-03", "STR-04", "STR-05")
-            ],
-            None,
-            reason,
-            fallback,
-        )
+        checks, reason = _refused_checks(refusal)
+        return checks, None, reason, fallback
 
     if report.finding == "UNSUPPORTED":
         detail = report.unsupported[0].detail if report.unsupported else "the trace failed"
@@ -866,6 +800,75 @@ def _structural(
         for check in structural_checks(report)
     ]
     return checks, report.structural_counts, None, fallback
+
+
+def _refused_checks(refusal: Unbound) -> tuple[list[Check], str]:
+    """`_structural`'s checks when a binder refused, and the reason the analysis did not run: a
+    `conflict` is `STR-04`'s `FAIL`; an `inadmissible` value is `CAP-01`'s `FAIL` before the
+    structural checks; any other refusal (`incomplete`, `unsupported`) leaves them `NOT_RUN`."""
+    if refusal.kind == "conflict":
+        # A real defect, found before any analysis: two specifications fix one quantity to
+        # different values. It is `STR-04`'s finding, reported as one.
+        reason = f"the structural analysis did not run: {refusal.detail}"
+        return (
+            [
+                Check(
+                    id=check_id,
+                    stage="structural_analysis",
+                    result="FAIL" if check_id == "STR-04" else "NOT_RUN",
+                    message=refusal.detail
+                    if check_id == "STR-04"
+                    else _not_run(reason, refusal.hint),
+                    implicated_objects=refusal.implicated if check_id == "STR-04" else (),
+                )
+                for check_id in ("STR-01", "STR-02", "STR-03", "STR-04", "STR-05")
+            ],
+            reason,
+        )
+    if refusal.kind == "inadmissible":
+        # Ruling round 5, S3: the document asks the model it names for a value outside that
+        # model's declared domain. A finding about the document, as `DIM-01`'s is.
+        reason = f"the structural analysis did not run: {refusal.detail}"
+        capability = Check(
+            id="CAP-01",
+            stage="capability",
+            result="FAIL",
+            message=refusal.detail,
+            implicated_objects=refusal.implicated,
+        )
+        return (
+            [
+                capability,
+                *(
+                    Check(
+                        id=check_id,
+                        stage="structural_analysis",
+                        result="NOT_RUN",
+                        message=_not_run(reason, refusal.hint),
+                    )
+                    for check_id in ("STR-01", "STR-02", "STR-03", "STR-04", "STR-05")
+                ),
+            ],
+            reason,
+        )
+    reason = (
+        f"the revision is incomplete: {refusal.detail}"
+        if refusal.kind == "incomplete"
+        else f"this revision cannot be analysed by T01's binding: {refusal.detail}"
+    )
+    return (
+        [
+            Check(
+                id=check_id,
+                stage="structural_analysis",
+                result="NOT_RUN",
+                message=_not_run(reason, refusal.hint),
+                implicated_objects=refusal.implicated,
+            )
+            for check_id in ("STR-01", "STR-02", "STR-03", "STR-04", "STR-05")
+        ],
+        reason,
+    )
 
 
 def structural_checks(report: Any) -> list[Check]:
