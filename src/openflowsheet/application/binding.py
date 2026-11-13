@@ -619,20 +619,7 @@ def bind_revision_or_reason(document: Mapping[str, Any]) -> Binding | Unbound:
     if contract is not None:
         return contract
     converted, parameter_values, conversions = inputs
-    states = _state_columns(document, components)
-    graph = ProcessGraph(
-        units=tuple(WIRING),
-        connections=tuple(
-            Connection(
-                stream_id=stream,
-                producer=source,
-                consumer=target,
-                state_columns=states.get(stream, ()),
-            )
-            for stream, source, target in sorted(set(wiring_edges))
-        ),
-        instance_ids=matched,
-    )
+    graph = _process_graph(document, components, WIRING, wiring_edges, matched)
 
     specifications = [
         entry for entry in (document.get("specifications") or ()) if entry.get("role") == "fixed"
@@ -790,6 +777,32 @@ def _matched_syn001(
             "the only one the binding knows",
         )
     return matched
+
+
+def _process_graph(
+    document: Mapping[str, Any],
+    components: Sequence[str],
+    wiring: Mapping[str, Any],
+    wiring_edges: Sequence[tuple[str, str, str]],
+    matched: Mapping[str, str],
+) -> ProcessGraph:
+    """The graph of the flowsheet `wiring`: its units, a connection per material edge in
+    `wiring_edges` with the state columns `document` gives its stream over `components`, and the
+    instance matched to each unit."""
+    states = _state_columns(document, components)
+    return ProcessGraph(
+        units=tuple(wiring),
+        connections=tuple(
+            Connection(
+                stream_id=stream,
+                producer=source,
+                consumer=target,
+                state_columns=states.get(stream, ()),
+            )
+            for stream, source, target in sorted(set(wiring_edges))
+        ),
+        instance_ids=matched,
+    )
 
 
 def _starts(
