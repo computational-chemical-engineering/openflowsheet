@@ -426,3 +426,55 @@ def test_select_lines(repo, capsys: pytest.CaptureFixture[str]) -> None:
     assert selection.nodes == {T3, T4}
     collection = ti.select_lines(f"src/pkg/mod.py:{line - 1}-{line + 30}", base, map_dir, cwd=root)
     assert "import or collection time" in (collection.fallback or "")
+
+
+# -- run (B-12) ------------------------------------------------------------------------------------
+
+
+def test_runs_keep_the_xdist_serial_files_out_of_the_xdist_call(monkeypatch) -> None:
+    serial = "tests/test_serial.py"
+    monkeypatch.setattr(ti, "XDIST_SERIAL", (serial,))
+    fallback = ti.Selection(fallback="why")
+    assert ti._runs(fallback, 0) == [([], [])]
+    assert ti._runs(fallback, 4) == [(["-n", "4", f"--ignore={serial}"], []), ([serial], [])]
+    mixed = ti.Selection({"tests/test_a.py", serial})
+    assert ti._runs(mixed, 0) == [([], ["tests/test_a.py", serial])]
+    assert ti._runs(mixed, 4) == [(["-n", "4"], ["tests/test_a.py"]), ([], [serial])]
+    assert ti._runs(ti.Selection({serial}), 4) == [([], [serial])]
+    assert ti._runs(ti.Selection({"tests/test_a.py"}), 4) == [(["-n", "4"], ["tests/test_a.py"])]
+
+
+@pytest.mark.parametrize(
+    ("codes", "expected"), [((0, 0), 0), ((0, 1), 1), ((1, 0), 1), ((0, 5), 0)]
+)
+def test_run_with_workers_makes_two_calls_and_one_line(
+    repo, tmp_path: Path, monkeypatch, capsys, codes: tuple[int, int], expected: int
+) -> None:
+    root, base, map_dir = repo
+    monkeypatch.setattr(ti, "XDIST_SERIAL", ("tests/test_a.py",))
+    _edit(root, "src/pkg/mod.py", "LIMIT = 3", "LIMIT = 4")  # a fallback: both calls run
+    calls: list[list[str]] = []
+
+    def fake_call(command: list[str], *, stdout, **_: object) -> int:
+        calls.append(command)
+        first = len(calls) == 1
+        stdout.write("..\n2 passed, 1 skipped in 0.5s\n" if first else "1 failed in 0.1s\n")
+        stdout.flush()
+        return codes[len(calls) - 1]
+
+    monkeypatch.setattr(ti.subprocess, "call", fake_call)
+    log = tmp_path / "run.log"
+    assert ti.run(base, map_dir, log, ["--timeout=9"], root, workers=3) == expected
+    assert len(calls) == 2
+    assert calls[0][-4:] == ["--timeout=9", "-n", "3", "--ignore=tests/test_a.py"]
+    assert calls[1][-2:] == ["--timeout=9", "tests/test_a.py"]
+    out = capsys.readouterr().out.splitlines()
+    assert len(out) == 1 and "2 passed, 1 skipped, 1 failed" in out[0]
+    assert ("PASS" if expected == 0 else f"FAIL (exit {expected})") in out[0]
+
+
+def test_run_refuses_workers_after_the_separator(repo, tmp_path: Path) -> None:
+    root, base, map_dir = repo
+    for extra in (["-n", "4"], ["-n4"], ["--numprocesses=4"]):
+        with pytest.raises(SystemExit, match="--workers"):
+            ti.run(base, map_dir, tmp_path / "run.log", extra, root)

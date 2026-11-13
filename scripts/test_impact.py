@@ -3,7 +3,7 @@
     test_impact.py build  [--base SHA] [--out DIR] [--workers N]
     test_impact.py select --base SHA [--map DIR]
     test_impact.py select --lines PATH:START-END [--base SHA] [--map DIR]
-    test_impact.py run    --base SHA [--map DIR] [--log FILE] [-- PYTEST-ARGS...]
+    test_impact.py run    --base SHA [--map DIR] [--log FILE] [--workers N] [-- PYTEST-ARGS...]
 
 `build` runs the default-marker suite at a clean worktree of the base commit under coverage, in the
 test-map venv (requirements-testmap.lock), and writes a map: for every test, the lines of `src/`,
@@ -717,9 +717,53 @@ def build(base: str, out: Path | None, workers: int, extra: list[str]) -> int:
 # -- run -------------------------------------------------------------------------------------------
 
 SUMMARY = re.compile(r"^=*\s*(\d+ (?:passed|failed|error|skipped|deselected).*?) in [\d.]+s")
+COUNT = re.compile(r"(\d+) (\w+)")
+NO_TESTS = 5  # pytest's exit code when it collected nothing
 
 
-def run(base: str, map_dir: Path | None, log: Path | None, extra: list[str], repo: Path) -> int:
+def _runs(selection: Selection, workers: int) -> list[tuple[list[str], list[str]]]:
+    """The pytest calls of a run as (arguments, node ids): one call, or with workers an xdist call
+    and a serial one.
+
+    `XDIST_SERIAL` files abort an xdist session (B-4), so with workers they run in a second, serial
+    call, on a fallback and whenever the selection holds them (docs/S16_DECISIONS.md, B-12)."""
+    if selection.fallback is not None:
+        if workers <= 0:
+            return [([], [])]
+        ignored = [f"--ignore={name}" for name in XDIST_SERIAL]
+        return [(["-n", str(workers), *ignored], []), (list(XDIST_SERIAL), [])]
+    nodes = sorted(selection.nodes)
+    if workers <= 0:
+        return [([], nodes)]
+    serial = [node for node in nodes if node.split("::", 1)[0] in XDIST_SERIAL]
+    parallel = [node for node in nodes if node.split("::", 1)[0] not in XDIST_SERIAL]
+    calls = [(["-n", str(workers)], parallel)] if parallel else []
+    return calls + ([([], serial)] if serial else [])
+
+
+def _counts(text: str) -> dict[str, int]:
+    """pytest's closing counts (`3 passed, 1 skipped`) of one run's output, by kind."""
+    match = next((m for m in map(SUMMARY.match, reversed(text.splitlines())) if m), None)
+    counts: dict[str, int] = {}
+    for number, kind in COUNT.findall(match.group(1) if match else ""):
+        kind = "error" if kind == "errors" else kind
+        counts[kind] = counts.get(kind, 0) + int(number)
+    return counts
+
+
+def run(
+    base: str,
+    map_dir: Path | None,
+    log: Path | None,
+    extra: list[str],
+    repo: Path,
+    workers: int = 0,
+) -> int:
+    if any(
+        arg in ("-n", "--numprocesses") or arg.startswith(("-n", "--numprocesses="))
+        for arg in extra
+    ):
+        raise SystemExit("run takes workers as --workers N, which keeps XDIST_SERIAL serial (B-12)")
     selection = select(base, map_dir, repo).whole_files()
     sha = git("rev-parse", "--short", "HEAD", cwd=repo).strip()
     log = log or Path(os.environ.get("TMPDIR", "/tmp")) / f"test-impact-{sha}.log"
@@ -729,27 +773,43 @@ def run(base: str, map_dir: Path | None, log: Path | None, extra: list[str], rep
     elif not selection.nodes:
         print(f"TEST-IMPACT PASS {sha}: selected 0, fallback no, nothing to run")
         return 0
-    else:
-        arguments = log.with_suffix(".args")
-        arguments.write_text("".join(f"{node}\n" for node in sorted(selection.nodes)))
-        command.append(f"@{arguments}")
     started = time.monotonic()
     environment = dict(os.environ, PYTHONPATH="src")
+    codes: list[int] = []
+    counts: dict[str, int] = {}
     with log.open("w") as stream:
-        exit_code = subprocess.call(
-            command, cwd=repo, env=environment, stdout=stream, stderr=subprocess.STDOUT
-        )
+        for index, (arguments, nodes) in enumerate(_runs(selection, workers)):
+            each = command + arguments
+            if nodes:  # through an @file, without shell splitting
+                listing = log.with_suffix(f".{index}.args")
+                listing.write_text("".join(f"{node}\n" for node in nodes))
+                each.append(f"@{listing}")
+            stream.write(f"$ {' '.join(each)}\n")
+            stream.flush()
+            start = stream.tell()
+            codes.append(
+                subprocess.call(
+                    each, cwd=repo, env=environment, stdout=stream, stderr=subprocess.STDOUT
+                )
+            )
+            stream.flush()
+            with log.open() as reader:
+                reader.seek(start)
+                for kind, number in _counts(reader.read()).items():
+                    counts[kind] = counts.get(kind, 0) + number
     wall = time.monotonic() - started
-    counts = next(
-        (m.group(1) for m in map(SUMMARY.match, reversed(log.read_text().splitlines())) if m),
-        "no pytest summary",
+    # A part that collected nothing (an extra -k, say) is not a failure while another part ran.
+    ran = [code for code in codes if code != NO_TESTS] or codes
+    exit_code = max(ran)
+    summary = (
+        ", ".join(f"{number} {kind}" for kind, number in counts.items()) or "no pytest summary"
     )
     verdict = "PASS" if exit_code == 0 else f"FAIL (exit {exit_code})"
     selected = "all" if selection.fallback else str(len(selection.nodes))
     fallback = "yes" if selection.fallback else "no"
     print(
-        f"TEST-IMPACT {verdict} {sha}: selected {selected}, fallback {fallback}, {counts}, "
-        f"wall {wall:.0f}s (log {log})"
+        f"TEST-IMPACT {verdict} {sha}: selected {selected}, fallback {fallback}, {summary}, "
+        f"pytest calls {len(codes)}, wall {wall:.0f}s (log {log})"
     )
     return exit_code
 
@@ -783,12 +843,15 @@ def main(argv: list[str] | None = None) -> int:
     run_parser.add_argument("--base", required=True)
     run_parser.add_argument("--map", type=Path)
     run_parser.add_argument("--log", type=Path)
+    run_parser.add_argument(
+        "--workers", type=int, default=0, help="pytest-xdist workers (XDIST_SERIAL runs serially)"
+    )
     run_parser.add_argument("pytest_args", nargs="*", help="after --: extra pytest arguments")
     args = parser.parse_args(argv)
     if args.command == "build":
         return build(args.base, args.out, args.workers, args.pytest_args)
     if args.command == "run":
-        return run(args.base, args.map, args.log, args.pytest_args, args.repo or ROOT)
+        return run(args.base, args.map, args.log, args.pytest_args, args.repo or ROOT, args.workers)
     if args.lines:
         selection = select_lines(args.lines, args.base, args.map, args.repo or ROOT)
     else:

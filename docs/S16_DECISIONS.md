@@ -104,3 +104,13 @@ limitations) by whoever may change D2.4 paths, then the manifest.
   that runs a changed line for tests in another file; none seen in the recall. Alternative: per-fixture
   attribution of setup coverage (does not cover a module-level cache filled inside a test). Reversible by: this
   commit.
+- **B-12. `run --workers N` splits `XDIST_SERIAL` as `build` does (2026-11-13, review X1).** With workers, a
+  fallback runs the full suite as an xdist call with `--ignore` of each `XDIST_SERIAL` file plus a serial call of
+  those files; a selection runs its other files under xdist and its `XDIST_SERIAL` files serially. One summary line
+  sums the calls' counts; the exit code is the largest of the calls' codes, where exit 5 (nothing collected) counts
+  only when every call has it. `-n`/`--numprocesses` after `--` is refused, because it would put the serial file
+  into an xdist session (B-4). The review's serial fallback took 4570 to 5252 s, past S17's 3600 s tier; with
+  `--workers 12` in `.venv-testmap` it is the build's xdist time without coverage (estimate about 13 min, not
+  measured here: no full-suite runs in this round). The map lifecycle for S17 (a map per accepted step, or one
+  campaign base) is S17's choice, not made here. Alternative: rewrite `-n` after `--` into the split. Reversible by:
+  this commit.

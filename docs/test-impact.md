@@ -65,7 +65,7 @@ pytest arguments (`build -- tests/test_x.py`) is a partial map, which `select` r
 
 ```sh
 .venv-testmap/bin/python scripts/test_impact.py select --base <sha>
-.venv-testmap/bin/python scripts/test_impact.py run --base <sha> [-- -n 8]
+.venv-testmap/bin/python scripts/test_impact.py run --base <sha> [--workers 12] [-- PYTEST-ARGS]
 .venv-testmap/bin/python scripts/test_impact.py select --base <sha> --lines src/x.py:120-134
 ```
 
@@ -79,8 +79,13 @@ standard library, so the main `.venv` can run it too.
 
 `run` runs the selection (whole test files through an `@file`, without shell splitting) or, on a fallback,
 the full default-marker suite, and prints one line: selected count, fallback yes or no, pytest's
-counts, wall time; the full log goes to `$TMPDIR/test-impact-<sha>.log` (or `--log`). Its exit code
-is pytest's. `--repo DIR` (before the subcommand) selects in another checkout.
+counts, wall time; the full log goes to `$TMPDIR/test-impact-<sha>.log` (or `--log`). `--workers N`
+runs it under pytest-xdist and, like `build`, keeps the `XDIST_SERIAL` files out of the xdist call:
+they run in a second, serial call, on a fallback and whenever the selection holds them (B-12).
+`-n` after `--` is refused for that reason. The line sums both calls' counts; the exit code is
+nonzero when either call fails (a call that collected nothing, exit 5, counts only if both did).
+`--workers` needs pytest-xdist, which only the test-map venv has. `--repo DIR` (before the
+subcommand) selects in another checkout.
 
 `select --lines PATH:START-END` lists the tests that execute those lines at the map's base, for a
 refactor loop's "the target must be covered" check and for mutant checks.
