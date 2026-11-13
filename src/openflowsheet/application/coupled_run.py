@@ -1038,12 +1038,7 @@ def solve_coupled(
     last: dict[str, str] = dict(initial_profiles)
 
     def evaluate(unit_id: str, inlet: UnitInlet) -> ExternalAnswer:
-        variant = unit_variants[unit_id]
-        start = last.get(unit_id) if start_capable(variant) else None
-        if start is None:
-            answer = experiments.evaluate(by_id[unit_id], variant, inlet)
-        else:
-            answer = experiments.evaluate(by_id[unit_id], variant, inlet, start=start)
+        answer = _chained_evaluate(experiments, by_id[unit_id], unit_variants[unit_id], inlet, last)
         if answer.status == "ok" and answer.profile_sha256 is not None:
             last[unit_id] = answer.profile_sha256
         return answer
@@ -1136,6 +1131,22 @@ def _solve_inner(
         payload,
     )
     return converged, warm
+
+
+def _chained_evaluate(
+    experiments: Experiments,
+    unit: C1Reactor,
+    variant: Variant,
+    inlet: UnitInlet,
+    last: Mapping[str, str],
+) -> ExternalAnswer:
+    """ADR 0070 D2/D4 (§5.5): `unit`'s experiment at `inlet`, started from `last[unit_id]` (the
+    unit's most recent `ok` profile) when `variant` is start-capable and `last` holds one, else
+    without a start. `last` is only read; the caller records the answer's profile."""
+    start = last.get(unit.unit_id) if start_capable(variant) else None
+    if start is None:
+        return experiments.evaluate(unit, variant, inlet)
+    return experiments.evaluate(unit, variant, inlet, start=start)
 
 
 def _open_outer_start(
