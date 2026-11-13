@@ -14,7 +14,9 @@ Lower code-health debt in `application/` without any change in behaviour (bitwis
 - Branch `wp/S17`, worktree `.claude/worktrees/s17`. Config at D11, playbook stub and D12 at `CB`.
 - S16 merged into `main` (fc552176, pushed); `main` merged into `wp/S17` (e215e0ed); `CB` = 1fd6826b.
 - Map at `CB` built: `~/.cache/openflowsheet/testmap/1fd6826b2f433c73c4c41ef6ccad1dcb903985c8/`. G-MAP and G-SELF
-  pass. Work order 1 (`<git-common-dir>/codehealth/briefs/S17-WO1.md`, revision_run.py) given to an engineer.
+  pass. Work order 1 done (revision_run.py 136.0 -> 55.1 after review 1's two reverts; 76a00379). D13 re-pin and
+  D14 commit-then-gate in 86cf8c6a; playbook a0685522. Work order 2 (binding.py) issued:
+  `<git-common-dir>/codehealth/briefs/S17-WO2.md`. Review 2 after its first 5 accepted steps (from 76a00379 on).
 
 ## Next actions
 
@@ -34,7 +36,7 @@ Lower code-health debt in `application/` without any change in behaviour (bitwis
 | gate | when | pass criterion | result |
 | --- | --- | --- | --- |
 | G-MAP | map at `CB` | build exit 0 or 1; at least 20284 tests in the map; failing tests a subset of the 5 B-6 failures of S16 (`docs/S16_DECISIONS.md` B-6) plus at most 2 others, each named | PASS: 20356 tests, 3125 s, 25.1 MB; 6 failed: the 5 B-6 failures (test_m04_wo9 a25, a29; test_t07_v17_reference f6; test_x02_wo4 g4e x2) and `test_evidence_manifests` on the S16 manifest's `<scratch>` placeholders, a real defect, fixed on `main` (88da7f68) and merged (0ef4d4ca) |
-| G-SELF | before step 1 | `codehealth gate --self-test --mutate <path:line>` on a literal that `select --lines` maps to at least one test: SELF-TEST PASS with the `tests` tier failing with exit 1 (a test failure, not exit 2 or 124); unmutated, the `tests` tier passes | PASS: `revision_run.py:614` 0 -> 1 (`solve_route`); unmutated 12 files, 1154 passed, 152 s; mutated exit 1, 110 files, 92 failed, 190 errors, 345 s; f0 detected, mcp_digest missed |
+| G-SELF | before step 1 | `codehealth gate --self-test --mutate <path:line>` on a literal that `select --lines` maps to at least one test: SELF-TEST PASS with the `tests` tier failing with exit 1 (a test failure, not exit 2 or 124); unmutated, the `tests` tier passes | PASS: `revision_run.py:614` 0 -> 1 (`solve_route`); unmutated 12 files, 1154 passed, 152 s; mutated exit 1, 110 files, 92 failed, 190 errors, 345 s; f0 detected, mcp_digest missed. Re-run on pin 5646ad1a (D13), `revision_run.py:661:1` (moved): tests exit 1 against baseline 0 (full-suite fallback: the self-test ignores `--ref-base`, 850 s), f0 detected, mcp_digest missed: PASS |
 | G-STEP | every step | gate exit 0 and `codehealth diff --base <last accepted>` shows the touched files' debt strictly lower | per step in the run log |
 | G-REVIEW | every 5 accepted steps | fresh `reviewer` on the diffs; rejected steps reverted and logged `review-reject` | |
 | G-END-DEBT | campaign end | `application/` debt at least 30 % below its value at `CB`; `revision_run.py` and `binding.py` each at least 45 % lower; no new brain function | |
