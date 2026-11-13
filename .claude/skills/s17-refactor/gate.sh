@@ -4,6 +4,8 @@
 #        gate.sh --self-test <path:line[:N]> [label]  the self-test (gate G-SELF)
 #        gate.sh --revert <rejected sha> [label]        HEAD exactly undoes <rejected sha> (review reject, D15)
 #        gate.sh --no-gain <last accepted sha> [label]  names/docstrings only, no gain check (D15)
+#        gate.sh --restructure <plan commit> <plan path> [label]  a module split (D18); base = the commit that
+#                                                       added the plan and the layer entries (the gate reads both at base)
 # The map base MB (docs/S17_STATE.md, D16) is passed as --ref-base: the tests tier's map (D13).
 # Stop a run with: kill -INT "$(cat <tag>.pid)"
 set -u
@@ -19,6 +21,9 @@ if [ "${1:-}" = "--self-test" ]; then
 elif [ "${1:-}" = "--revert" ]; then
     # HEAD is a commit that exactly undoes $2 (review reject); base = the commit before HEAD (D15).
     args=(gate --mode refactor --revert "$2" --base "$(git rev-parse HEAD~1)" --ref-base "$MB"); label="${3:-revert}"
+elif [ "${1:-}" = "--restructure" ]; then
+    # a split under an approved plan: behaviour tiers plus plan checks, no gain check (D18, D20).
+    args=(gate --mode restructure --plan "$3" --base "$2" --ref-base "$MB"); label="${4:-restructure}"
 elif [ "${1:-}" = "--no-gain" ]; then
     # names, docstrings or ordering only (review notes): behaviour tiers, no gain check (D15).
     args=(gate --mode refactor --base "$2" --ref-base "$MB"); label="${3:-nogain}"
