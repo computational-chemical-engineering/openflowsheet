@@ -30,10 +30,13 @@ in the worktree and ListAgents before the next one.
 
 ## A work order
 
-A file under `docs/briefs/S17-WO<n>.md`, committed by the orchestrator. It names:
+A file `$(git rev-parse --git-common-dir)/codehealth/briefs/S17-WO<n>.md`, outside the tree (D12: a file added
+after the campaign base makes every selection fall back to the full suite); copied to `docs/briefs/` at campaign end.
+It names:
 
 - `docs/S17_RULES.md` and the tool's refactor-loop skill (which it follows step by step);
-- the last accepted commit (the first step's gate base) and `OFS_MAP_BASE` = `CB`;
+- the gate base of each step: `HEAD` just before the step (the last accepted commit, or a docs commit of the
+  orchestrator after it), and `OFS_MAP_BASE` = `CB`;
 - the targets: file and function, with debt from `codehealth scan --json`; targets that failed three times are out;
 - the gate command: `.claude/skills/s17-refactor/gate.sh <last accepted> <label>` (background, wait for it);
 - the stop condition: targets done, or about 150k context, or three consecutive failures; commit what is accepted;
@@ -60,7 +63,8 @@ log `review-reject`, and add a "when not" to the playbook.
 ## Closing the campaign
 
 1. Stop rule met (state file "Budget", or G-END reached).
-2. Copy the run log to `.codehealth/runs/s17.jsonl` (docs commit); playbook commit.
+2. Copy the run log to `.codehealth/runs/s17.jsonl` and the briefs to `docs/briefs/` (docs commit); playbook commit.
+   No file is added to the tree before this point (D12).
 3. Scan at the final commit; fill G-END in the state file; write the S17 manifest (`sonnet-implementer`,
    status `tested` only after CI); T08 harvest rows for its limitations.
 4. Push `wp/S17`; CI green on both legs (G-END-CI); merge into `main` (merge commit); F0 on `main`; push.

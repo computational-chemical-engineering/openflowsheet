@@ -148,3 +148,10 @@ F0, the digest, or (by grep) any test. Re-run the self-test once S16 lands.
   test-map venv has pytest-xdist (the main `.venv` has not) and pytest-timeout (B-9 of S16: a hung test fails, named,
   inside the tier's 3600 s). This supersedes D9's "`tests` runs serially". Alternative: per-step maps, or the main
   `.venv` serially (a fallback would take over an hour). Reversible by: the `tests` tier's `cmd` line.
+- **DECISION D12 (2026-11-13). No file is added to the tree between the campaign base and the campaign end.** S16's
+  `select` falls back to the full suite when any file was added since the map's base (tests list and glob trees), and
+  with `OFS_MAP_BASE` every change since the campaign base counts. So `.codehealth/playbook.md` is committed as a stub
+  before the campaign base, work orders live in `$(git rev-parse --git-common-dir)/codehealth/briefs/` like the run
+  log, and both are copied into the tree at campaign end. Edits of existing files (state file, playbook, decisions)
+  are fine: a changed non-Python file selects the tests that opened it. A step's gate base is `HEAD` just before the
+  step. Alternative: rebuild the map after each addition (70 min). Reversible by: this entry and the skill text.
