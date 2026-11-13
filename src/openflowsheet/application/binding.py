@@ -1047,14 +1047,7 @@ def _refused_at_construction(
         except SpecificationError as fixed:
             first = _first_line(fixed)
         else:
-            starts = tuple(
-                str(entry.get("id"))
-                for entry in freed
-                if entry.get("value") is not None
-                and any(
-                    column in guesses for column in _column_targets(entry, graph, units_by_instance)
-                )
-            )
+            starts = _guessing_specifications(freed, guesses, graph, units_by_instance)
             return Unbound(
                 "incomplete", f"start_outside_model_domain({', '.join(starts)}): {first}", starts
             )
@@ -1066,6 +1059,22 @@ def _refused_at_construction(
         "inadmissible",
         f"value_outside_model_domain: {first}",
         (instance,) if instance is not None else (),
+    )
+
+
+def _guessing_specifications(
+    freed: Sequence[Mapping[str, Any]],
+    guesses: Mapping[str, float],
+    graph: ProcessGraph,
+    units_by_instance: Mapping[str, str],
+) -> tuple[str, ...]:
+    """The ids of the `role: free` specifications in `freed` that carry a value and target a
+    column in `guesses`: those that gave the starts."""
+    return tuple(
+        str(entry.get("id"))
+        for entry in freed
+        if entry.get("value") is not None
+        and any(column in guesses for column in _column_targets(entry, graph, units_by_instance))
     )
 
 
