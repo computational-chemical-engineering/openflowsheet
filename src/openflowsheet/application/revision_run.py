@@ -578,17 +578,7 @@ def solve_route(
             coupled_start=coupled_start,
         )
     at("plan")
-    try:
-        if route.solve_path == "revision_eo":
-            plan, report = plan_revision(binding, policy, trace=trace)
-        else:
-            plan, report = legacy_plan(binding, policy)
-    except UnsupportedRankStructureError as error:
-        # T02 §7.1 refuses the plan before any evaluation, with no `PlanRefusal` and so no
-        # registered bundle: §12.3's `plan_refused(<code>)`. Admission keeps it off every route
-        # `select_route` gives (C5, review-2 S3); a recorded route re-bound by `bind_route`, which
-        # never re-admits (R2.5), can still reach it.
-        raise RunUnsupportedError("plan_refused(UNSUPPORTED_RANK_STRUCTURE)") from error
+    plan, report = _route_plan(route, policy, trace)
 
     if isinstance(plan, PlanRefusal):
         return _refused_plan(route, plan, report)
@@ -649,6 +639,26 @@ def solve_route(
         kinds = ",".join(step.kind for step in plan.steps)
         raise RunUnsupportedError(f"certificate_unmapped({route.solve_path},{kinds})")
     return _failed_run(route, plan, report, run, region_plan)
+
+
+def _route_plan(
+    route: Route, policy: SolvePolicy, trace: Trace | None
+) -> tuple[ExecutionPlan | PlanRefusal, StructuralReport]:
+    """`solve_route`'s plan of `route` (a route without an outer iteration) and its structural
+    report."""
+    binding = route.binding
+    try:
+        if route.solve_path == "revision_eo":
+            plan, report = plan_revision(binding, policy, trace=trace)
+        else:
+            plan, report = legacy_plan(binding, policy)
+    except UnsupportedRankStructureError as error:
+        # T02 §7.1 refuses the plan before any evaluation, with no `PlanRefusal` and so no
+        # registered bundle: §12.3's `plan_refused(<code>)`. Admission keeps it off every route
+        # `select_route` gives (C5, review-2 S3); a recorded route re-bound by `bind_route`, which
+        # never re-admits (R2.5), can still reach it.
+        raise RunUnsupportedError("plan_refused(UNSUPPORTED_RANK_STRUCTURE)") from error
+    return plan, report
 
 
 def _refused_plan(route: Route, plan: PlanRefusal, report: StructuralReport) -> RouteRun:
