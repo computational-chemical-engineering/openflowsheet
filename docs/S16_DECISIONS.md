@@ -166,3 +166,15 @@ limitations) by whoever may change D2.4 paths, then the manifest.
   passed + 5 failed (B-6) + 109 skipped (106 + 3 xfailed, recorded as skipped). The module is skipped in the full
   suite of that venv too, so nothing is lost. Alternative for (a): select a failed test only by its truncated
   lines. Reversible by: this commit.
+- **B-18. The open record's frame filter, as it behaves (2026-11-13, review note on `runtime:42`).** The filter was
+  written to walk the standard library and drop opens whose first other frame is pytest, pluggy, coverage, xdist,
+  execnet or the runtime. In a venv `platstdlib` is the venv's `lib/python3.13`, a prefix of site-packages, so it
+  walked every installed package too, and the drop list never matched. Fixing it as written would drop every open:
+  the walk starts at the runtime's own `_audit` frame, which the drop list names. The behaviour it has is the safe
+  one (more opens recorded; pytest reading `pyproject.toml` at start-up is why a `pyproject.toml` change always falls
+  back), so the code now states it: the walk passes the standard library, installed packages (purelib and platlib
+  named) and the runtime itself, drops an open that meets an import frame, and records any other; the dead drop list
+  is gone. No repository path contains a dropped name (`git ls-files`), so maps are unchanged. A test drives the
+  audit hook through synthetic library and frozen-import frames. Alternative: a real drop list of pytest's frames,
+  started past the runtime's own frame (fewer `pyproject.toml` fallbacks, new risk of a dropped read). Reversible by:
+  this commit.

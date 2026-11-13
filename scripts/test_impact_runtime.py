@@ -9,7 +9,8 @@ imports it at start-up. It stays inert unless `ofs_testmap_active.json` sits nex
   CLI subprocess a test spawns is measured too; a pytest process switches the dynamic context per
   test, a subprocess carries the context of the ancestor that spawned it as its static context;
 - records every repository file the process opens for reading (a `sys.addaudithook` on "open"),
-  keyed by the same context, except imports and pytest's own reads (assertion rewriting, conftest);
+  keyed by the same context, except imports (pytest's own reads, such as its configuration, are
+  recorded: docs/S16_DECISIONS.md, B-18);
 - as a pytest plugin (`-p ofs_testmap_runtime`), names the context: the test's node id while a test
   runs; `fixture:<baseid>::<name>` while a fixture of class, module, package or session scope is
   set up (its work is shared by every test that uses it, so the map attributes it to all of them);
@@ -39,8 +40,14 @@ _root = ""
 _context = COLLECTION
 _opens: set[tuple[str, str]] = set()
 _coverage: Any = None
-_stdlib = tuple({sysconfig.get_paths()["stdlib"], sysconfig.get_paths()["platstdlib"], "<frozen"})
-_internal = ("/_pytest/", "/pluggy/", "/coverage/", "/xdist/", "/execnet/", "ofs_testmap_runtime")
+_paths = sysconfig.get_paths()
+#: Code walked through to find who opened a file: the standard library and every installed package
+#: (in a venv, `platstdlib` is the venv's `lib/pythonX.Y`, which holds site-packages; purelib and
+#: platlib say so explicitly), this runtime included. An open whose walk meets an import frame is
+#: an import and is dropped; every other open is recorded, pytest's own reads included (B-7, B-18).
+_library = tuple(
+    {_paths["stdlib"], _paths["platstdlib"], _paths["purelib"], _paths["platlib"], "<frozen"}
+)
 
 
 def _ancestors(pid: int) -> list[int]:
@@ -94,12 +101,12 @@ def _record_open(path: Any, mode: Any, flags: int) -> None:
     if relative.startswith(".git/") or relative == ".git":
         return
     frame = sys._getframe(1)
-    while frame is not None and frame.f_code.co_filename.startswith(_stdlib):
+    while frame is not None and (
+        frame.f_code.co_filename.startswith(_library) or frame.f_code.co_filename == __file__
+    ):
         if frame.f_code.co_filename.startswith("<frozen importlib"):
             return  # an import: coverage sees the module's lines
         frame = frame.f_back
-    if frame is not None and any(part in frame.f_code.co_filename for part in _internal):
-        return
     _opens.add((_context, relative))
 
 

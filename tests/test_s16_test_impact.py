@@ -256,6 +256,50 @@ def test_runtime_is_inert_without_an_active_build() -> None:
         runtime.pytest_configure(None)
 
 
+def test_runtime_open_record_walks_library_frames_and_drops_imports(
+    tmp_path: Path, monkeypatch
+) -> None:
+    """B-18: the audit hook walks past the standard library, installed packages and itself to the
+    opener; an open reached from an import frame is dropped, any other read is recorded."""
+    import sysconfig
+
+    runtime = _load("test_impact_runtime")
+    (tmp_path / "data.txt").write_text("x")
+    (tmp_path / "folder").mkdir()
+    monkeypatch.setattr(runtime, "_root", f"{tmp_path}/")
+    monkeypatch.setattr(runtime, "_context", "ctx")
+    monkeypatch.setattr(runtime, "_opens", set())
+
+    def caller(filename: str, inner: object = None) -> object:
+        namespace: dict[str, object] = {}
+        exec(compile("def call(f, *a):\n    return f(*a)\n", filename, "exec"), namespace)
+        call = namespace["call"]
+        return call if inner is None else (lambda f, *a: call(inner, f, *a))
+
+    library = sysconfig.get_paths()["purelib"] + "/somelib/io.py"
+    frozen = "<frozen importlib._bootstrap_external>"
+    path = str(tmp_path / "data.txt")
+
+    def recorded(via: object, name: str = path, mode: object = "r", flags: int = 0) -> bool:
+        runtime._opens.clear()
+        via(runtime._audit, "open", (name, mode, flags))  # type: ignore[operator]
+        assert runtime._opens <= {("ctx", "data.txt")}
+        return bool(runtime._opens)
+
+    direct = lambda f, *a: f(*a)  # noqa: E731
+    assert recorded(direct)  # from a repository frame
+    assert recorded(direct, mode=None, flags=os.O_RDONLY)  # os.open
+    assert recorded(caller(library))  # through an installed package
+    assert not recorded(caller(frozen))  # an import
+    assert not recorded(caller(library, caller(frozen)))  # an import, deeper
+    assert not recorded(direct, mode="w")
+    assert not recorded(direct, mode=None, flags=os.O_WRONLY)
+    assert not recorded(direct, name=str(tmp_path / "folder"))  # a directory
+    assert not recorded(direct, name="/etc/hostname")  # outside the repository
+    monkeypatch.chdir(tmp_path)
+    assert recorded(direct, name="data.txt")  # relative to the working directory
+
+
 # -- line coverage ---------------------------------------------------------------------------------
 
 
