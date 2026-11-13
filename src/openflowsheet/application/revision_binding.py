@@ -1992,27 +1992,9 @@ def bind_revision_flowsheet(
     if isinstance(bound_provider, Unbound):
         return bound_provider
     provider = PropertyMeter(bound_provider)
-    built: list[tuple[InstanceView, UnitModel, Configuration, _PinReader]] = []
-    for instance in view.instances:
-        reader = _PinReader(instance.pins)
-        builder = MODEL_BUILDERS[instance.model_id]
-        if instance.unit_id in manifests:
-            builder = partial(_c1_reactor_surrogate_of, manifest=manifests[instance.unit_id])
-        try:
-            unit, configuration = builder(
-                replace(instance, pins=reader), provider, _CONTEXT, view.components
-            )
-        except RevisionError as error:
-            return Unbound(error.kind, error.code, hint=error.hint)
-        except SpecificationError as error:
-            # T07 ruling round 5, S3: this binder refuses `role: free`, so every value a model
-            # refuses here is one the document fixes.
-            return _inadmissible(error, instance.unit_id)
-        if unit.model_id != instance.model_id or unit.unit_id != instance.unit_id:
-            raise ValueError(
-                f"builder for {instance.model_id} built {unit.model_id} {unit.unit_id!r}"
-            )
-        built.append((instance, unit, configuration, reader))
+    built = _built_instances(view.instances, provider, view.components, manifests)
+    if isinstance(built, Unbound):
+        return built
 
     # S11 design §10.2 step 9 (R-822): no instance id is a lifted-split key a staged unit supplies.
     # The reader's id rule refuses the dotted spelling first (R-838); this is the binder's guard,
@@ -2151,3 +2133,37 @@ def _surrogate_manifests(
                 return Unbound("unsupported", f"surrogate_manifest_mismatch({instance.unit_id})")
             manifests[instance.unit_id] = manifest
     return manifests
+
+
+def _built_instances(
+    instances: Sequence[InstanceView],
+    provider: PropertyProvider,
+    components: tuple[str, ...],
+    manifests: Mapping[str, Mapping[str, Any]],
+) -> list[tuple[InstanceView, UnitModel, Configuration, _PinReader]] | Unbound:
+    """Each instance in order with the unit and configuration its model's builder makes on
+    `provider` (a surrogate's with its manifest in `manifests`) and the reader of its pins; the
+    first builder's refusal instead. Raises `ValueError` when a builder builds another model or
+    unit id than the instance names."""
+    built: list[tuple[InstanceView, UnitModel, Configuration, _PinReader]] = []
+    for instance in instances:
+        reader = _PinReader(instance.pins)
+        builder = MODEL_BUILDERS[instance.model_id]
+        if instance.unit_id in manifests:
+            builder = partial(_c1_reactor_surrogate_of, manifest=manifests[instance.unit_id])
+        try:
+            unit, configuration = builder(
+                replace(instance, pins=reader), provider, _CONTEXT, components
+            )
+        except RevisionError as error:
+            return Unbound(error.kind, error.code, hint=error.hint)
+        except SpecificationError as error:
+            # T07 ruling round 5, S3: this binder refuses `role: free`, so every value a model
+            # refuses here is one the document fixes.
+            return _inadmissible(error, instance.unit_id)
+        if unit.model_id != instance.model_id or unit.unit_id != instance.unit_id:
+            raise ValueError(
+                f"builder for {instance.model_id} built {unit.model_id} {unit.unit_id!r}"
+            )
+        built.append((instance, unit, configuration, reader))
+    return built
