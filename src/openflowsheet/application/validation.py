@@ -31,6 +31,7 @@ if TYPE_CHECKING:
     from openflowsheet.application.revision_binding import SurrogateResolver
     from openflowsheet.graph.process import ProcessGraph
     from openflowsheet.graph.trace import Declaration
+    from openflowsheet.models.revision_flowsheet import RevisionError
     from openflowsheet.studies.nlp.closure import ReadinessCode
     from openflowsheet.studies.nlp.request import StaticReadiness
     from openflowsheet.units import UnitConversion
@@ -1069,23 +1070,28 @@ def _dimensions(
     not judged: `COMP-03` fails it, and the unit never changes the diagnosis of a component error
     (ADR 0016 D5); the message says which were skipped. Specifications are judged first, in
     document order, then parameters by instance declaration order and, within an instance, by
-    parameter name in code-point order (ADR 0016 D6). `_dimensions_check` then builds the check
-    from what was judged.
+    parameter name in code-point order (ADR 0016 D6): `_judged_specifications`, then
+    `_judged_parameters`. `_dimensions_check` then builds the check from what was judged.
     """
-    from openflowsheet.application.binding import HINT_LIMIT
-    from openflowsheet.application.projection import bound_text
-    from openflowsheet.models.revision_flowsheet import (
-        RevisionError,
-        convert_specification,
-        read_parameter,
+    conversions, refusals, skipped = _judged_specifications(
+        components, specifications, molecular_weights
     )
-    from openflowsheet.units import read_number
+    parameter_conversions, parameter_refusals = _judged_parameters(instances, molecular_weights)
+    return _dimensions_check(
+        conversions + parameter_conversions, refusals + parameter_refusals, skipped
+    )
 
-    def _with_hint(error: RevisionError) -> str:
-        """The code, then its hint (ruling round 6, B2), bounded as an `Unbound`'s is."""
-        if error.hint is None:
-            return error.code
-        return f"{error.code}. {bound_text(error.hint, HINT_LIMIT)}"
+
+def _judged_specifications(
+    components: Sequence[str],
+    specifications: Sequence[Mapping[str, Any]],
+    molecular_weights: Mapping[str, float],
+) -> tuple[list[UnitConversion], list[tuple[str, str]], list[str]]:
+    """`_dimensions`' first phase: every specification value, in document order, through
+    `unit-conversion-v2`. Returns the conversions, the refusals as `(specification id, code with
+    hint)`, and the ids of specifications skipped for a component outside `components`."""
+    from openflowsheet.models.revision_flowsheet import RevisionError, convert_specification
+    from openflowsheet.units import read_number
 
     conversions: list[UnitConversion] = []
     refusals: list[tuple[str, str]] = []
@@ -1107,6 +1113,19 @@ def _dimensions(
             continue
         if conversion is not None:
             conversions.append(conversion)
+    return conversions, refusals, skipped
+
+
+def _judged_parameters(
+    instances: Sequence[Mapping[str, Any]], molecular_weights: Mapping[str, float]
+) -> tuple[list[UnitConversion], list[tuple[str, str]]]:
+    """`_dimensions`' second phase: every instance parameter through R6, by instance declaration
+    order and, within an instance, by parameter name in code-point order. Returns the
+    conversions and the refusals as `(<instance>.<parameter>, code with hint)`."""
+    from openflowsheet.models.revision_flowsheet import RevisionError, read_parameter
+
+    conversions: list[UnitConversion] = []
+    refusals: list[tuple[str, str]] = []
     for instance in instances:
         unit = str(instance.get("id", ""))
         parameters = instance.get("parameters") or {}
@@ -1120,8 +1139,7 @@ def _dimensions(
                 continue
             if conversion is not None:
                 conversions.append(conversion)
-
-    return _dimensions_check(conversions, refusals, skipped)
+    return conversions, refusals
 
 
 def _dimensions_check(
@@ -1170,6 +1188,16 @@ def _dimensions_check(
         + unjudged,
         implicated_objects=tuple(c.input_id for c in conversions),
     )
+
+
+def _with_hint(error: RevisionError) -> str:
+    """The code, then its hint (ruling round 6, B2), bounded as an `Unbound`'s is."""
+    from openflowsheet.application.binding import HINT_LIMIT
+    from openflowsheet.application.projection import bound_text
+
+    if error.hint is None:
+        return error.code
+    return f"{error.code}. {bound_text(error.hint, HINT_LIMIT)}"
 
 
 #: The parameter families keyed by component id (`nu.<c>`, `conversion.<c>`, `split.<c>`).
