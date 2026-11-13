@@ -14,14 +14,15 @@ Lower code-health debt in `application/` without any change in behaviour (bitwis
 - Branch `wp/S17`, worktree `.claude/worktrees/s17`. Config at D11, playbook stub and D12 at `CB`.
 - S16 merged into `main` (fc552176, pushed); `main` merged into `wp/S17` (e215e0ed); `CB` = 1fd6826b.
 - Map at `CB` built: `~/.cache/openflowsheet/testmap/1fd6826b2f433c73c4c41ef6ccad1dcb903985c8/`. G-MAP and G-SELF
-  pass. Work order 1 done (revision_run.py 136.0 -> 55.1 after review 1's two reverts; 76a00379). D13 re-pin and
-  D14 commit-then-gate in 86cf8c6a; playbook a0685522. Work order 2 (binding.py) issued:
-  `<git-common-dir>/codehealth/briefs/S17-WO2.md`. Review 2 after its first 5 accepted steps (from 76a00379 on).
+  pass. Work orders 1 to 4 done (revision_run.py 136.0 -> 55.1, binding.py 134.2 -> 43.6, coupled_run.py
+  83.8 -> 21.0, revision_binding.py 85.4 -> 11.5); reviews 1 to 5, 0 open rejects; review notes fixed through
+  140ce084 (run-log step 49). `[architecture]` ratchet in the config (D20). Next: work order 5 (jobs/model.py,
+  transactions.py), brief `<git-common-dir>/codehealth/briefs/S17-WO5.md`, base 62713395 or later.
 
 ## Next actions
 
-1. (done) `CB`, map, G-MAP, G-SELF, baseline. Work orders 1 and 2, reviews 1 to 3, D13 to D16.
-2. Work orders 3 to 8 (D17), one engineer at a time; review every 5 accepted steps; briefs in
+1. (done) `CB`, map, G-MAP, G-SELF, baseline. Work orders 1 to 4, reviews 1 to 5, D13 to D20.
+2. Work orders 5 to 8 (D17), one engineer at a time; review every 5 accepted steps; briefs in
    `<git-common-dir>/codehealth/briefs/S17-WO<n>.md`. Gates use the map at `MB` (D16).
 3. Restructure phase (D18): `[architecture]` ratchet in the config; `architect` drafts split plans from `codehealth
    coupling` / `arch`; `reviewer` checks each; orchestrator commits accepted plans; restructure work orders.
