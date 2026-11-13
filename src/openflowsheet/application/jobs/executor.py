@@ -379,15 +379,8 @@ class ProcessExecutor:
             # an admitted id goes back to the head of the queue, and a slot leaves only once its
             # job's end is recorded, so a job is never left `queued` or `running` behind a
             # transient error (T07 review S1).
-            retry: list[str] = []
+            retry = self._launch_admitted(admitted)
             finished: list[_Slot] = []
-            for index, job_id in enumerate(admitted):
-                try:
-                    self._launch(job_id)
-                except Exception:
-                    _LOG.exception("process executor: job %s: launching failed", job_id)
-                    retry = admitted[index:]
-                    break
             failed = bool(retry)
             try:
                 ended = self._watch()
@@ -432,6 +425,17 @@ class ProcessExecutor:
         for slot in abandoned:  # no worker outlives the shutdown
             if slot.launched and slot.process.is_alive():
                 _kill_tree(slot.process)
+
+    def _launch_admitted(self, admitted: list[str]) -> list[str]:
+        """Launch the admitted jobs in order (`_launch`), stopping at the first that fails: the
+        ids from that one on, which the caller puts back at the head of the queue, or none."""
+        for index, job_id in enumerate(admitted):
+            try:
+                self._launch(job_id)
+            except Exception:
+                _LOG.exception("process executor: job %s: launching failed", job_id)
+                return admitted[index:]
+        return []
 
     def _launch(self, job_id: str) -> None:
         """Start a worker for a job still queued; a job cancelled meanwhile needs none."""
