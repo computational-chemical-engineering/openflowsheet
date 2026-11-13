@@ -11,23 +11,23 @@ Lower code-health debt in `application/` without any change in behaviour (bitwis
 
 ## Position (2026-11-13)
 
-- Branch `wp/S17`, worktree `.claude/worktrees/s17`. Config at D11 (`5797f84b`).
-- Waiting for S16 to merge into `main` (manifest re-take at ef915499 running; CI 43365514889).
-- Campaign base: not yet set. It is the `wp/S17` commit after `main` (with S16) is merged in.
+- Branch `wp/S17`, worktree `.claude/worktrees/s17`. Config at D11, playbook stub and D12 at `CB`.
+- S16 merged into `main` (fc552176, pushed); `main` merged into `wp/S17` (e215e0ed); `CB` = 1fd6826b.
+- Map build at `CB` running (started 2026-11-13; log `scratchpad/s17_map_build.out` of the session, map in
+  `~/.cache/openflowsheet/testmap/1fd6826b2f433c73c4c41ef6ccad1dcb903985c8/`).
 
 ## Next actions
 
-1. After S16 is on `main`: `git merge main` into `wp/S17` (merge commit). That commit is the campaign base `CB`.
-   Record its sha below.
+1. (done) Merge `main` into `wp/S17`; `CB` fixed.
 2. Build the map: `.venv-testmap/bin/python scripts/test_impact.py build --base CB --workers 12` (about 70 min,
    background). Gate G-MAP.
 3. Self-test: gate G-SELF.
-4. Baseline scan and hotspots at `CB` (record below; the numbers in S17_DECISIONS are at `6d195c49` with tool 0.2.0.dev0).
+4. (done) Baseline scan at `CB`, below.
 5. Refactor loop (skill), first targets `revision_run.py`, then `binding.py`.
 
 ## Campaign base
 
-- `CB` = (unset)
+- `CB` = `1fd6826b2f433c73c4c41ef6ccad1dcb903985c8`
 - `OFS_MAP_BASE` = `CB` for every gate run.
 
 ## Gates (criteria fixed 2026-11-13, before any run)
@@ -51,7 +51,20 @@ are sequential); about 150k context per engineer, then a fresh one continues fro
 
 ## Baseline at `CB`
 
-(to be filled: application/ debt, NLOC, health; the top 10 hotspots)
+`codehealth scan` at `CB` (JSON: `<git-common-dir>/codehealth/runs/s17-base.json`): 39 files, 17939 NLOC, debt
+855.0 (47.66/kNLOC), health 7.22, functions with debt 93/988, brain 6, file smells 7. Identical to the numbers at
+`6d195c49` in S17_DECISIONS (`application/` unchanged since).
+
+G-END targets from this: `application/` debt at most 598.5; `revision_run.py` (136.0) at most 74.8; `binding.py`
+(134.2) at most 73.8.
+
+Hotspots (commits x debt): revision_run.py 2584, revision_binding.py 1879, local.py 1244, coupled_run.py 1173,
+validation.py 521, cli.py 520, jobs/runner.py 475, binding.py 403, jobs/model.py 217, operations.py 180.
+
+Largest functions by debt: revision_run.py `write_revision_bundle` 46.9 (cog 46, 119 NLOC, line 895),
+`reproduce_bundle` 44.0 (cog 48, 160 NLOC, line 1161), `solve_route` 16.1 (line 526), `run_revision_session` 10.0,
+`_solve_coupled` 8.0, `_constants_for_shape` 8.0; binding.py `bind_revision_or_reason` 73.2 (cog 70, 232 NLOC, line
+556), `legacy_admission` 23.0 (line 424), `_refused_at_construction` 13.0, `_read_inputs` 9.0, `revision_probe` 8.0.
 
 ## Open decisions (defaults in force)
 
