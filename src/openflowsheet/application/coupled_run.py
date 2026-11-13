@@ -584,24 +584,7 @@ class RecordedExperiments:
             raise ReplayDivergenceError(f"{where}: the record's experiment is {unit_id}'s")
         recorded = entry["request"]
         state = StreamState(n=inlet.n, temperature=inlet.T, pressure=inlet.P)
-        fresh = None
-        if variant.kind == "out_of_process":
-            frozen = self.record["frozen"].get(unit.unit_id)
-            if frozen is None:
-                raise ReplayDivergenceError(f"{where}: the record froze no environment")
-            request = build_request(
-                variant,
-                self.provider.describe(),
-                unit.n_tubes,
-                unit.components,
-                state,
-                str(frozen["fingerprint_sha256"]),
-                start,
-            )
-        else:
-            assert start is None, "an in-process variant takes no start (ADR 0070 D4)"
-            fresh = self.runner.run(variant, state, unit.components, unit.n_tubes)
-            request = dict(fresh.request)
+        request, fresh = self._request_at(unit, variant, state, start, where)
         if _identity(request) != _identity(recorded):
             names = sorted(
                 key
@@ -634,6 +617,31 @@ class RecordedExperiments:
         return answer_of(
             recorded, result, envelope, entry["attempts"], entry["cache_hit"], attributed=request
         )
+
+    def _request_at(
+        self, unit: C1Reactor, variant: Variant, state: StreamState, start: str | None, where: str
+    ) -> tuple[dict[str, Any], Any]:
+        """§7.2: the experiment's request recomputed at the rerun's inlet `state`, with the fresh
+        run of an in-process variant (the stand-in, re-evaluated in `scratch`). An out-of-process
+        variant is not run (`None`): its request is built against the record's frozen environment,
+        and a record that froze none raises `ReplayDivergenceError`."""
+        if variant.kind == "out_of_process":
+            frozen = self.record["frozen"].get(unit.unit_id)
+            if frozen is None:
+                raise ReplayDivergenceError(f"{where}: the record froze no environment")
+            request = build_request(
+                variant,
+                self.provider.describe(),
+                unit.n_tubes,
+                unit.components,
+                state,
+                str(frozen["fingerprint_sha256"]),
+                start,
+            )
+            return request, None
+        assert start is None, "an in-process variant takes no start (ADR 0070 D4)"
+        fresh = self.runner.run(variant, state, unit.components, unit.n_tubes)
+        return dict(fresh.request), fresh
 
     def frozen(self, variant: Variant) -> Mapping[str, Any] | None:
         for entry in self.record["frozen"].values():
