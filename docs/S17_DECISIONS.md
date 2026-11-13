@@ -259,3 +259,17 @@ F0, the digest, or (by grep) any test. Re-run the self-test once S16 lands.
   functions). Each split's plan file and its new modules' layer entries go in one orchestrator commit directly before
   the split's step, which is the step's gate base (the gate reads config and plan at `--base`). Alternative: no
   ratchet (a later step could add an upward import unnoticed). Reversible by: the `[architecture]` tables and the pin.
+- **Review 4 (2026-11-13, reviewer) on work order 3 (577fd426..93218f5c):** 7 accepted (3 with a note), 0 rejects, no
+  behaviour difference. Notes fixed in 6a025d12 (`_request_at` -> `_rerun_request` typed `ExperimentOutcome | None`;
+  `fresh_result: Mapping[str, Any] | None`; `_solve_inner` -> `_run_inner`; a comment on the chain reset), run-log
+  step 48 accepted-neutral. Playbook rules 10 (extended), 12, 13 and a when-not row.
+- **Work order 4 (2026-11-13, opus-engineer):** revision_binding.py 85.4 -> 11.5 in 7 attempts, all accepted (run-log
+  steps 41 to 47). `bind_revision_flowsheet` 68.4 -> 9.5 (cognitive 22, no longer a brain function), stopped by the
+  when-not row for threading locals; `instance_contract` 7.0 -> 0; `_unadmitted` 10.0 -> 2.0.
+- **Review 5 (2026-11-13, reviewer) on work order 4 (5a21f253..e0c43abe):** 7 accepted (5 with a note), 0 rejects, no
+  behaviour difference. Notes fixed in 140ce084 (helper order, `PropertyMeter` type, phase list in the docstring).
+  Kept: `_basis_refusal` (always returns an Unbound) keeps its name, because tests/test_s11_routing.py imports it; a
+  rename belongs in the D19 package or a names pass that edits the test. Not done: hoisting `_variant_backed_models()`
+  out of the per-instance loop in `_model_refusal` (about 2 ms per instance; a performance change, not a refactor
+  step). Playbook rules 5 and 7 extended, 12 refined, 14, a when-not row. `_unadmitted` is peeled no further (one
+  family table, units design §4.7).
