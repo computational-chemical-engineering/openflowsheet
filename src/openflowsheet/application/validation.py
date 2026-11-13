@@ -31,6 +31,8 @@ if TYPE_CHECKING:
     from openflowsheet.application.revision_binding import SurrogateResolver
     from openflowsheet.graph.process import ProcessGraph
     from openflowsheet.graph.trace import Declaration
+    from openflowsheet.studies.nlp.closure import ReadinessCode
+    from openflowsheet.studies.nlp.request import StaticReadiness
 
 Task = Literal["simulation", "optimization"]
 ValidationStatus = Literal["DRAFT", "READY_FOR_SIMULATION", "READY_FOR_OPTIMIZATION", "INVALID"]
@@ -480,22 +482,7 @@ def _validate_optimization(
         checks.append(_request_check(found.problems))
         assessed = found.request is not None and found.request.assessment is not None
         for code in STATIC_CODES:
-            failing = [reason for reason in found.reasons if reason.code == code]
-            if failing:
-                checks.append(
-                    _optimization_check(
-                        code,
-                        "FAIL",
-                        "; ".join(reason.detail for reason in failing),
-                        tuple(dict.fromkeys(r.subject for r in failing if r.subject)),
-                    )
-                )
-            elif code in found.not_run:
-                checks.append(_optimization_check(code, "NOT_RUN", found.not_run[code]))
-            elif assessed and code.startswith("ASSESSMENT_"):
-                checks.append(_optimization_check(code, "WARN", ASSESSMENT_AT_START))
-            else:
-                checks.append(_optimization_check(code, "PASS", OPTIMIZATION_PASSED[code]))
+            checks.append(_static_check(code, found, assessed))
         status = "READY_FOR_OPTIMIZATION" if found.ready else "INVALID"
     return ValidationReport(
         revision_id=simulation.revision_id,
@@ -525,6 +512,25 @@ def _optimization_check(
 ) -> Check:
     stage: Stage = "capability" if code in OPTIMIZATION_CAPABILITY_CODES else "structural_analysis"
     return Check(f"OPT.{code}", stage, result, message, implicated)
+
+
+def _static_check(code: ReadinessCode, found: StaticReadiness, assessed: bool) -> Check:
+    """Design §4.5's static row for one `code` of `found`: `FAIL` with every failing reason,
+    `NOT_RUN` with why it could not run, `WARN` for an `ASSESSMENT_` check when an assessment is
+    given (OPT D-18, `assessed`), and `PASS` otherwise."""
+    failing = [reason for reason in found.reasons if reason.code == code]
+    if failing:
+        return _optimization_check(
+            code,
+            "FAIL",
+            "; ".join(reason.detail for reason in failing),
+            tuple(dict.fromkeys(r.subject for r in failing if r.subject)),
+        )
+    if code in found.not_run:
+        return _optimization_check(code, "NOT_RUN", found.not_run[code])
+    if assessed and code.startswith("ASSESSMENT_"):
+        return _optimization_check(code, "WARN", ASSESSMENT_AT_START)
+    return _optimization_check(code, "PASS", OPTIMIZATION_PASSED[code])
 
 
 def _first_schema_error(document: Mapping[str, Any]) -> tuple[str, str] | None:
