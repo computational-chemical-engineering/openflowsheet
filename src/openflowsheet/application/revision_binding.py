@@ -1977,24 +1977,9 @@ def bind_revision_flowsheet(
     except RevisionError as error:
         return Unbound(error.kind, error.code, hint=error.hint)
 
-    for instance in view.instances:
-        # M02 design note §6.1 (ADR 0035 D1): a variant-backed model is pinned by variant id
-        # and SHA-256, resolved against the registry; a native model's `version` is unread.
-        if instance.model_id in _variant_backed_models() and (
-            variants.resolve(instance.model_id, instance.model_version, instance.model_artifact_ref)
-            is None
-        ):
-            return Unbound("unsupported", f"model_variant_mismatch({instance.unit_id})")
-    for instance in view.instances:
-        # R-288: a model binds on the bases `MODEL_BASES` lists for it, and nowhere else.
-        if instance.model_id not in MODEL_BASES:
-            return Unbound(
-                "unsupported",
-                f"model_unsupported({instance.model_id})",
-                hint=_LIBRARY_ONLY_HINTS.get(instance.model_id),
-            )
-        if view.basis.provider_id not in MODEL_BASES[instance.model_id]:
-            return _basis_refusal(instance.model_id, view.basis)
+    unbindable = _model_refusal(view.instances, view.basis)
+    if unbindable is not None:
+        return unbindable
     manifests: dict[str, Mapping[str, Any]] = {}
     for instance in view.instances:
         # M04 spec §8.2 (ADR 0037 D2): a surrogate is pinned by its manifest's SHA-256, resolved
@@ -2129,3 +2114,28 @@ def bind_revision_flowsheet(
         },
         surrogate_manifests=manifests,
     )
+
+
+def _model_refusal(instances: Sequence[InstanceView], basis: ComponentBasis) -> Unbound | None:
+    """`bind_revision_flowsheet`'s model checks: `None` when every instance's model is pinned to
+    a variant the registry resolves (if variant-backed) and binds on `basis`, else the first
+    refusal; every instance's variant is checked before any instance's basis."""
+    for instance in instances:
+        # M02 design note §6.1 (ADR 0035 D1): a variant-backed model is pinned by variant id
+        # and SHA-256, resolved against the registry; a native model's `version` is unread.
+        if instance.model_id in _variant_backed_models() and (
+            variants.resolve(instance.model_id, instance.model_version, instance.model_artifact_ref)
+            is None
+        ):
+            return Unbound("unsupported", f"model_variant_mismatch({instance.unit_id})")
+    for instance in instances:
+        # R-288: a model binds on the bases `MODEL_BASES` lists for it, and nowhere else.
+        if instance.model_id not in MODEL_BASES:
+            return Unbound(
+                "unsupported",
+                f"model_unsupported({instance.model_id})",
+                hint=_LIBRARY_ONLY_HINTS.get(instance.model_id),
+            )
+        if basis.provider_id not in MODEL_BASES[instance.model_id]:
+            return _basis_refusal(instance.model_id, basis)
+    return None
