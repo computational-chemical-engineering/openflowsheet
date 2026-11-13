@@ -446,26 +446,9 @@ def legacy_admission(
     specifications = list(document.get("specifications") or ())
     columns = binding.specification_targets
     free = [entry for entry in specifications if entry.get("role") == "free"]
-    fixed_by: dict[str, str] = {}
-    for entry in specifications:
-        if entry.get("role") == "fixed":
-            for column in columns.get(str(entry.get("id")), ()):
-                fixed_by.setdefault(column, str(entry.get("id")))
-
-    for entry in free:
-        name = str(entry.get("id"))
-        reached = columns.get(name, ())
-        if not reached:
-            path = str((entry.get("target") or {}).get("path", ""))
-            return _free_unused(name, _hint_no_coordinate(name, path))
-        shared = next((column for column in reached if column in fixed_by), None)
-        if shared is not None:
-            return _free_unused(
-                name,
-                f"{name} and fixed specification {fixed_by[shared]} both target "
-                f"{_document_column(shared, binding)}. A coordinate is fixed or free, not both: "
-                "remove one of them.",
-            )
+    unreached = _free_reach(specifications, free, binding)
+    if unreached is not None:
+        return unreached
 
     probed, targets = revision_probe(document, binding)
     if probed is not None:
@@ -492,6 +475,38 @@ def legacy_admission(
 
     if len(binding.freed) != 1 or len(binding.promoted) != 1:
         return _unpaired(free, targets, binding)
+    return None
+
+
+def _free_reach(
+    specifications: Sequence[Mapping[str, Any]],
+    free: Sequence[Mapping[str, Any]],
+    binding: Binding,
+) -> Unbound | None:
+    """`legacy_admission`'s C1: `None` when every specification in `free` reaches a coordinate in
+    `binding.specification_targets` and none that a `role: fixed` one in `specifications` reaches,
+    else the first free specification's refusal."""
+    columns = binding.specification_targets
+    fixed_by: dict[str, str] = {}
+    for entry in specifications:
+        if entry.get("role") == "fixed":
+            for column in columns.get(str(entry.get("id")), ()):
+                fixed_by.setdefault(column, str(entry.get("id")))
+
+    for entry in free:
+        name = str(entry.get("id"))
+        reached = columns.get(name, ())
+        if not reached:
+            path = str((entry.get("target") or {}).get("path", ""))
+            return _free_unused(name, _hint_no_coordinate(name, path))
+        shared = next((column for column in reached if column in fixed_by), None)
+        if shared is not None:
+            return _free_unused(
+                name,
+                f"{name} and fixed specification {fixed_by[shared]} both target "
+                f"{_document_column(shared, binding)}. A coordinate is fixed or free, not both: "
+                "remove one of them.",
+            )
     return None
 
 
