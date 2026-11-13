@@ -1244,6 +1244,24 @@ def _reproduce_registered(
     return Reproduction(replay(directory, fresh), read_manifest(Path(rerun_directory))[0])
 
 
+def _recorded_policies(
+    directory: Path, manifest: RunManifest
+) -> tuple[SolvePolicy, CheckPolicy] | None:
+    """`reproduce_bundle`'s policy documents of the bundle in `directory`, or `None` when they do
+    not read or do not recompute to `manifest`'s hashes."""
+    try:
+        policy = SolvePolicy.from_document(read_artifact(directory, "solve-policy.json"))
+        check = read_artifact(directory, "check-policy.json")
+        check_policy = CheckPolicy(policy_id=check["policy_id"], tolerances=check["tolerances"])
+        matches = (
+            policy_sha256(policy) == manifest.policy_sha256
+            and check_policy.sha256 == manifest.check_policy_sha256
+        )
+    except (ValueError, TypeError, KeyError):
+        return None
+    return (policy, check_policy) if matches else None
+
+
 def reproduce_bundle(
     directory: Path,
     *,
@@ -1291,19 +1309,11 @@ def reproduce_bundle(
         at("compare")
         return Reproduction(_inspected(directory, "rerun_unsupported(no_solve_path)"))
     recorded = read_artifact(directory, "solve-path.json")
-    try:
-        policy = SolvePolicy.from_document(read_artifact(directory, "solve-policy.json"))
-        check = read_artifact(directory, "check-policy.json")
-        check_policy = CheckPolicy(policy_id=check["policy_id"], tolerances=check["tolerances"])
-        matches = (
-            policy_sha256(policy) == manifest.policy_sha256
-            and check_policy.sha256 == manifest.check_policy_sha256
-        )
-    except (ValueError, TypeError, KeyError):
-        matches = False
-    if not matches:
+    policies = _recorded_policies(directory, manifest)
+    if policies is None:
         at("compare")
         return Reproduction(_inspected(directory, "policy_document_mismatch"))
+    policy, check_policy = policies
 
     solve_path = recorded.get("solve_path") if isinstance(recorded, Mapping) else None
     document = read_artifact(directory, "revision.json")
