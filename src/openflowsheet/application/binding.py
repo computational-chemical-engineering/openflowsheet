@@ -1087,7 +1087,20 @@ def _read_inputs(
             converted[name] = value
         if conversion is not None:
             conversions.append(conversion)
+    parameters = _read_parameters(document)
+    if isinstance(parameters, Unbound):
+        return parameters
+    parameter_values, parameter_conversions = parameters
+    return converted, parameter_values, (*conversions, *parameter_conversions)
+
+
+def _read_parameters(
+    document: Mapping[str, Any],
+) -> tuple[dict[tuple[str, str], float], list[UnitConversion]] | Unbound:
+    """Every instance parameter in `document` in SI, by (instance, name), with the conversions
+    made, each instance's in order of input id (R6, `read_parameter`); or the first refusal."""
     parameters: dict[tuple[str, str], float] = {}
+    conversions: list[UnitConversion] = []
     for instance in document.get("instances") or ():
         unit = str(instance.get("id"))
         converted_here: list[UnitConversion] = []
@@ -1100,7 +1113,7 @@ def _read_inputs(
             if conversion is not None:
                 converted_here.append(conversion)
         conversions.extend(sorted(converted_here, key=lambda conversion: conversion.input_id))
-    return converted, parameters, tuple(conversions)
+    return parameters, conversions
 
 
 #: The state definitions this binding knows how to name coordinates for. `nTP-v1` is ADR 0001
