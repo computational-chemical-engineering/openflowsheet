@@ -43,7 +43,7 @@ import re
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, replace
 from pathlib import Path
-from typing import Any, Final, Literal, Protocol
+from typing import TYPE_CHECKING, Any, Final, Literal, Protocol
 
 from openflowsheet.adapters.experiments.backends import start_capable, unmeasured_fingerprint
 from openflowsheet.adapters.experiments.request import build_request, experiment_key
@@ -81,6 +81,9 @@ from openflowsheet.run.compare import KIND_FLOOR, differences, floored_differenc
 from openflowsheet.thermo import StreamState
 from openflowsheet.verify import CheckResult, Limitation
 from openflowsheet.verify.certificate import ExternalEvidence
+
+if TYPE_CHECKING:
+    from openflowsheet.adapters.experiments.runner import ExperimentOutcome
 
 __all__ = [
     "COUPLING_NAME",
@@ -584,7 +587,7 @@ class RecordedExperiments:
             raise ReplayDivergenceError(f"{where}: the record's experiment is {unit_id}'s")
         recorded = entry["request"]
         state = StreamState(n=inlet.n, temperature=inlet.T, pressure=inlet.P)
-        request, fresh = self._request_at(unit, variant, state, start, where)
+        request, fresh = self._rerun_request(unit, variant, state, start, where)
         if _identity(request) != _identity(recorded):
             names = sorted(
                 key
@@ -611,9 +614,9 @@ class RecordedExperiments:
             recorded, result, envelope, entry["attempts"], entry["cache_hit"], attributed=request
         )
 
-    def _request_at(
+    def _rerun_request(
         self, unit: C1Reactor, variant: Variant, state: StreamState, start: str | None, where: str
-    ) -> tuple[dict[str, Any], Any]:
+    ) -> tuple[dict[str, Any], ExperimentOutcome | None]:
         """§7.2: the experiment's request recomputed at the rerun's inlet `state`, with the fresh
         run of an in-process variant (the stand-in, re-evaluated in `scratch`). An out-of-process
         variant is not run (`None`): its request is built against the record's frozen environment,
@@ -641,14 +644,15 @@ class RecordedExperiments:
         k: int,
         unit_id: str,
         recorded: Mapping[str, Any] | None,
-        fresh: Any,
+        fresh_result: Mapping[str, Any] | None,
         envelope: Mapping[str, Any],
     ) -> list[str]:
-        """R-317 (b): a re-evaluated in-process result (`fresh`, its `envelope`) against the
-        recorded one: `outcome class` when exactly one of the two is `None`, none when both are,
-        else each envelope difference outside its floor (`envelope_differences`)."""
-        if recorded is None or fresh is None:
-            if (recorded is None) != (fresh is None):
+        """R-317 (b): a re-evaluated in-process result (`fresh_result`) against the recorded one,
+        with `envelope` the fresh run's envelope: `outcome class` when exactly one of the two
+        results is `None`, none when both are, else each envelope difference outside its floor
+        (`envelope_differences`)."""
+        if recorded is None or fresh_result is None:
+            if (recorded is None) != (fresh_result is None):
                 return [f"external_result({k}, {unit_id}): outcome class"]
             return []
         return [
@@ -1056,7 +1060,7 @@ def solve_coupled(
 
     def solve_inner(w: Mapping[str, tuple[float, float]], start: Any) -> InnerSolve:
         nonlocal initial_warm
-        inner, warm = _solve_inner(
+        inner, warm = _run_inner(
             at_coupling(binding, w), start, units, policy=policy, trace=trace, warm_start=warm_start
         )
         if start is None:
@@ -1093,6 +1097,8 @@ def solve_coupled(
         if coupling_start["status"] == "rejected":
             _coupling_event(trace, "initializer_rejected", _rejected(str(coupling_start["reason"])))
     if coupling is None:
+        # A rejected w₀ may have advanced the chain; the coupling from `coupling.initial` restarts
+        # it from the job source's profiles.
         last.clear()
         last.update(initial_profiles)
         coupling = couple(unit_ids, block, solve_inner, evaluate, on_iteration=on_iteration)
@@ -1103,7 +1109,7 @@ def solve_coupled(
     )
 
 
-def _solve_inner(
+def _run_inner(
     bound: RevisionBinding,
     start: Any,
     units: Sequence[C1Reactor],
