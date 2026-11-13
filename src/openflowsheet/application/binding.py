@@ -629,26 +629,9 @@ def bind_revision_or_reason(document: Mapping[str, Any]) -> Binding | Unbound:
         if entry.get("value") is None
         for column in _column_targets(entry, graph, units_by_instance)
     )
-    # The flowsheet object is parameterized by every coordinate it models; a freed coordinate with
-    # no guess takes the flowsheet's own declared default *for assembly only*: it reaches the
-    # removed pin row's parameter, which is then dropped from the declaration with the row (no
-    # remaining row reads it), and the executor refuses before a pre-solve could use it as a
-    # start (`missing_guesses`).
-    defaults = {column: _declared_default(column) for column in missing_guesses}
-    undefaulted = [column for column, value in defaults.items() if value is None]
-    if undefaulted:
-        # A coordinate the flowsheet cannot be assembled without, and with no start given: a
-        # typed reason, never an exception (review M2).
-        return Unbound(
-            "incomplete",
-            "a role: free specification without a value frees a coordinate the flowsheet has no "
-            "declared default for: " + ", ".join(undefaulted),
-            tuple(undefaulted),
-        )
-    assembly = {
-        **guesses,
-        **{column: value for column, value in defaults.items() if value is not None},
-    }
+    assembly = _assembly_starts(guesses, missing_guesses)
+    if isinstance(assembly, Unbound):
+        return assembly
 
     try:
         # The flowsheet object needs a value for every coordinate it is parameterized by. A freed
@@ -795,6 +778,34 @@ def _matched_syn001(
             "the only one the binding knows",
         )
     return matched
+
+
+def _assembly_starts(
+    guesses: Mapping[str, float], missing_guesses: Sequence[str]
+) -> dict[str, float] | Unbound:
+    """The value each freed column is assembled at: its start in `guesses`, or for a column in
+    `missing_guesses` the flowsheet's declared default; or the refusal naming the columns in
+    `missing_guesses` that have no declared default."""
+    # The flowsheet object is parameterized by every coordinate it models; a freed coordinate with
+    # no guess takes the flowsheet's own declared default *for assembly only*: it reaches the
+    # removed pin row's parameter, which is then dropped from the declaration with the row (no
+    # remaining row reads it), and the executor refuses before a pre-solve could use it as a
+    # start (`missing_guesses`).
+    defaults = {column: _declared_default(column) for column in missing_guesses}
+    undefaulted = [column for column, value in defaults.items() if value is None]
+    if undefaulted:
+        # A coordinate the flowsheet cannot be assembled without, and with no start given: a
+        # typed reason, never an exception (review M2).
+        return Unbound(
+            "incomplete",
+            "a role: free specification without a value frees a coordinate the flowsheet has no "
+            "declared default for: " + ", ".join(undefaulted),
+            tuple(undefaulted),
+        )
+    return {
+        **guesses,
+        **{column: value for column, value in defaults.items() if value is not None},
+    }
 
 
 def _pinned_specifications(
