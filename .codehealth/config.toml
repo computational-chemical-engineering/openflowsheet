@@ -37,7 +37,8 @@ MKL_NUM_THREADS = "1"
 # tier import the tree under test, not the editable install's checkout (docs/code-health.md).
 # `behaviour = false`: a lint or type failure never counts as detecting the self-test's mutation.
 # `timeout` (s): a hung tier fails as exit 124 (S17 D9; a mutation can leave a job queued and a
-# test waiting forever, as in S16's recall). `tests` runs serially, so its limit is the widest.
+# test waiting forever, as in S16's recall). `tests` has the widest limit: a fallback runs the
+# full suite (about 15 min with 12 workers).
 
 [[gate.tier]]
 name = "ruff"
@@ -62,8 +63,11 @@ name = "tests"
 timeout = 3600
 kind = "command"
 cadence = "step"
-# S16's test-impact selection; fails until scripts/test_impact.py lands (the campaign waits for S16).
-cmd = 'V="${OPENFLOWSHEET_VENV:-$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")/.venv}/bin"; PYTHONPATH=src "$V/python" scripts/test_impact.py run --base {base}'
+# S16's test-impact selection (S17 D11). It runs in the test-map venv (pytest-xdist and
+# pytest-timeout; OPENFLOWSHEET_TESTMAP_VENV overrides it) under 12 workers, with a 900 s limit
+# per test. The map is of the campaign base: OFS_MAP_BASE names it, and the selection is then
+# cumulative since that base, a superset of the step's own. Without OFS_MAP_BASE it is {base}.
+cmd = 'V="${OPENFLOWSHEET_TESTMAP_VENV:-$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")/.venv-testmap}/bin"; PYTHONPATH=src "$V/python" scripts/test_impact.py run --base "${OFS_MAP_BASE:-{base}}" --workers 12 -- --timeout=900'
 
 [[gate.tier]]
 name = "f0"

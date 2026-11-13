@@ -139,3 +139,12 @@ F0, the digest, or (by grep) any test. Re-run the self-test once S16 lands.
   timeout stays exit 124; 72 tool tests pass, 3 new). Installed as 0.1.1.dev14+g7628e7375; `config --check` OK.
   The tool's `frozen_cmd` has no timeout (a quick git-level check). Alternative: stay on 83614510 and rely on a
   watchdog. Reversible by: the pin line.
+- **DECISION D11 (2026-11-13). The `tests` tier runs S16's selection in `.venv-testmap` with 12 workers, a 900 s
+  per-test limit and the map of the campaign base** (`run --base "${OFS_MAP_BASE:-{base}}" --workers 12 --
+  --timeout=900`). A map takes about 70 min (20284 tests at a9e733e4), so one map per step base is too slow; a map of
+  the campaign base serves every step while that base is an ancestor of `HEAD` (docs/test-impact.md), and the
+  selection, cumulative since the campaign base, is a superset of the step's own, so it stays sound and grows only
+  with the campaign. `OFS_MAP_BASE` cannot live in the config: the config commit is itself the campaign base. The
+  test-map venv has pytest-xdist (the main `.venv` has not) and pytest-timeout (B-9 of S16: a hung test fails, named,
+  inside the tier's 3600 s). This supersedes D9's "`tests` runs serially". Alternative: per-step maps, or the main
+  `.venv` serially (a fallback would take over an hour). Reversible by: the `tests` tier's `cmd` line.

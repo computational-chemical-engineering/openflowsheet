@@ -57,7 +57,7 @@ in a separate commit, outside a campaign step.
 | --- | --- | --- |
 | `ruff` | `ruff check {files} && ruff format --check {files}` | no |
 | `mypy` | `mypy`, unrestricted, as `scripts/check.sh` runs it | no |
-| `tests` | `scripts/test_impact.py run --base {base}` (S16's test-impact selection) | yes |
+| `tests` | `scripts/test_impact.py run --base "${OFS_MAP_BASE:-{base}}" --workers 12 -- --timeout=900` in `.venv-testmap` (S16's selection, S17 D11) | yes |
 | `f0` | `scripts/corpus_identity.py --check` | yes |
 | `mcp_digest` | `pytest tests/test_t08_w2_surface_digest.py tests/test_m07a_surface_chain.py` | yes |
 
@@ -76,8 +76,17 @@ timeout sends SIGTERM to the group, then SIGKILL after 5 s, so no pytest worker 
 There is no campaign-cadence tier: CI green on both architectures is the campaign-end check (the repository runs
 `scripts/gate.sh` only before a release-candidate cut).
 
-The `tests` tier fails until S16 delivers `scripts/test_impact.py`. That is intended: the campaign does not start
-before S16.
+The `tests` tier runs in the test-map venv (`.venv-testmap` next to `.venv`, docs/test-impact.md "Install";
+`OPENFLOWSHEET_TESTMAP_VENV` overrides it), because only that venv has pytest-xdist and pytest-timeout. A coverage map
+takes about 70 minutes to build, so a campaign builds one, at its base, and sets `OFS_MAP_BASE` to that commit for
+every gate run:
+
+    .venv-testmap/bin/python scripts/test_impact.py build --base <campaign base> --workers 12
+    OFS_MAP_BASE=<campaign base> .venv-codehealth/bin/codehealth gate --mode refactor --base <last accepted>
+
+The selection is then of every change since the campaign base, a superset of the step's own; the map stays valid
+while the campaign base is an ancestor of `HEAD`. Without `OFS_MAP_BASE` the tier selects against the step base
+`{base}` and needs a map of it (otherwise it falls back to the full suite, about 15 minutes with 12 workers).
 
 The gate keeps its base worktree under `$(git rev-parse --git-common-dir)/codehealth/base-<sha>` and reuses it; the
 self-test uses `codehealth/selftest` there and removes it. `git worktree remove --force` removes a stale base tree.
