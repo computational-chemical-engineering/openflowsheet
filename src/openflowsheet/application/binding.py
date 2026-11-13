@@ -668,14 +668,7 @@ def bind_revision_or_reason(document: Mapping[str, Any]) -> Binding | Unbound:
     pinned = _pinned_columns(spec)
     specification_ids = _pinned_specifications(pinned, targets)
 
-    # A unit row pinning a column the revision *frees* is removed: the adjusted variable of a
-    # cross-unit specification (T02 §7.1). Only a column no fixed specification also targets.
-    fixed_columns = {column for columns in targets.values() for column in columns}
-    removed = tuple(
-        row_id
-        for row_id, column in pinned.items()
-        if column in assembly and column not in fixed_columns
-    )
+    removed = _freed_rows(pinned, assembly, targets)
     freed_columns = {row_id: pinned[row_id] for row_id in removed}
     if removed:
         spec = _without_rows(spec, removed)
@@ -831,6 +824,23 @@ def _pinned_specifications(
             if column in columns:
                 specification_ids[row_id] = name
     return specification_ids
+
+
+def _freed_rows(
+    pinned: Mapping[str, str],
+    assembly: Mapping[str, float],
+    targets: Mapping[str, tuple[str, ...]],
+) -> tuple[str, ...]:
+    """The unit rows in `pinned` whose column is freed (a column in `assembly`) and is targeted by
+    no fixed specification in `targets`."""
+    # A unit row pinning a column the revision *frees* is removed: the adjusted variable of a
+    # cross-unit specification (T02 §7.1). Only a column no fixed specification also targets.
+    fixed_columns = {column for columns in targets.values() for column in columns}
+    return tuple(
+        row_id
+        for row_id, column in pinned.items()
+        if column in assembly and column not in fixed_columns
+    )
 
 
 def _without_rows(spec: ProblemSpec, removed: tuple[str, ...]) -> ProblemSpec:
