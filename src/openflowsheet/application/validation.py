@@ -204,8 +204,8 @@ def validate(
     optimization: Mapping[str, Any] | None = None,
     solver_probe: Callable[[], Any] | None = None,
 ) -> ValidationReport:
-    """Blueprint §4.3's order: schema, dimensions, connectivity, components, then structural
-    analysis.
+    """Blueprint §4.3's order: schema (`_schema_stage`), dimensions, connectivity, components,
+    then structural analysis.
 
     `now` is read once, when the report is made, for `provenance.timestamp` (T07 ruling round 1
     R3); it is injectable so that a test can fix it. Nothing else in the report depends on it.
@@ -222,80 +222,10 @@ def validate(
     """
     if task == "optimization":
         return _validate_optimization(document, optimization, now, surrogates, solver_probe)
-    checks: list[Check] = []
-
-    # R-088 Q29 (T07 design note §12.5): a document with no canonical JSON form — a NaN, an
-    # infinity, an integer that is not the canonical spelling of a binary64 (ADR 0002
-    # Amendment 1) anywhere, read or not — is refused here, naming the node,
-    # before any later stage can reach a digest that would raise untyped. A canonical document
-    # never enters this branch, so its report is unchanged byte for byte.
-    pointer = first_noncanonical(document)
-    if pointer is not None:
-        return ValidationReport(
-            revision_id=_revision_id(document),
-            task=task,
-            status="INVALID",
-            checks=(
-                Check(
-                    id="SCHEMA-01",
-                    stage="schema",
-                    result="FAIL",
-                    message=f"document_not_canonical({pointer})",
-                    implicated_objects=(pointer,),
-                ),
-            ),
-            structural_counts=None,
-            structural_counts_absent_reason="the revision is not well formed",
-            provenance={"produced_by": SCHEMA_ONLY_PRODUCED_BY, "timestamp": now()},
-        )
-
-    missing = [key for key in REQUIRED_KEYS if key not in document]
-    checks.append(
-        Check(
-            id="SCHEMA-01",
-            stage="schema",
-            result="PASS" if not missing else "FAIL",
-            message="every required key present" if not missing else f"missing {missing}",
-            implicated_objects=tuple(missing),
-        )
-    )
-    if missing:
-        return ValidationReport(
-            revision_id=_revision_id(document),
-            task=task,
-            status="INVALID",
-            checks=tuple(checks),
-            structural_counts=None,
-            structural_counts_absent_reason="the revision is not well formed",
-            provenance={"produced_by": SCHEMA_ONLY_PRODUCED_BY, "timestamp": now()},
-        )
-
-    # T07 ruling round 5, S3: the frozen revision schema, applied. A document it refuses has a
-    # shape the later stages were never written for, and reached them untyped (review S3). The
-    # first error in `schema_errors`' order (by path, `_raise_first`'s rule) is reported. The PASS
-    # message above stays: every required key is still present.
-    schema_error = _first_schema_error(document)
-    if schema_error is not None:
-        pointer, message = schema_error
-        return ValidationReport(
-            revision_id=_revision_id(document),
-            task=task,
-            status="INVALID",
-            checks=(
-                Check(
-                    id="SCHEMA-01",
-                    stage="schema",
-                    result="FAIL",
-                    message=f"schema_invalid({pointer}): {message}",
-                    # The root's pointer is empty and names no object; the report's own schema
-                    # requires a non-empty id.
-                    implicated_objects=(pointer,) if pointer else (),
-                ),
-            ),
-            structural_counts=None,
-            structural_counts_absent_reason="the revision is not well formed",
-            provenance={"produced_by": SCHEMA_ONLY_PRODUCED_BY, "timestamp": now()},
-        )
+    schema = _schema_stage(document, task, now)
+    if isinstance(schema, ValidationReport):
+        return schema
+    checks: list[Check] = [schema]
 
     instances = list(document.get("instances") or [])
     connections = list(document.get("connections") or [])
@@ -531,6 +461,86 @@ def _static_check(code: ReadinessCode, found: StaticReadiness, assessed: bool) -
     if assessed and code.startswith("ASSESSMENT_"):
         return _optimization_check(code, "WARN", ASSESSMENT_AT_START)
     return _optimization_check(code, "PASS", OPTIMIZATION_PASSED[code])
+
+
+def _schema_stage(
+    document: Mapping[str, Any], task: Task, now: Callable[[], str]
+) -> Check | ValidationReport:
+    """Blueprint §4.3's schema stage of `validate`: `SCHEMA-01`'s `PASS`, or the schema-only
+    `INVALID` report of the first refusal, in this order: a document with no canonical JSON form,
+    a missing required key, the frozen revision schema's first error. `now` is read only for a
+    refusal's report."""
+    # R-088 Q29 (T07 design note §12.5): a document with no canonical JSON form — a NaN, an
+    # infinity, an integer that is not the canonical spelling of a binary64 (ADR 0002
+    # Amendment 1) anywhere, read or not — is refused here, naming the node,
+    # before any later stage can reach a digest that would raise untyped. A canonical document
+    # never enters this branch, so its report is unchanged byte for byte.
+    pointer = first_noncanonical(document)
+    if pointer is not None:
+        return ValidationReport(
+            revision_id=_revision_id(document),
+            task=task,
+            status="INVALID",
+            checks=(
+                Check(
+                    id="SCHEMA-01",
+                    stage="schema",
+                    result="FAIL",
+                    message=f"document_not_canonical({pointer})",
+                    implicated_objects=(pointer,),
+                ),
+            ),
+            structural_counts=None,
+            structural_counts_absent_reason="the revision is not well formed",
+            provenance={"produced_by": SCHEMA_ONLY_PRODUCED_BY, "timestamp": now()},
+        )
+
+    missing = [key for key in REQUIRED_KEYS if key not in document]
+    required = Check(
+        id="SCHEMA-01",
+        stage="schema",
+        result="PASS" if not missing else "FAIL",
+        message="every required key present" if not missing else f"missing {missing}",
+        implicated_objects=tuple(missing),
+    )
+    if missing:
+        return ValidationReport(
+            revision_id=_revision_id(document),
+            task=task,
+            status="INVALID",
+            checks=(required,),
+            structural_counts=None,
+            structural_counts_absent_reason="the revision is not well formed",
+            provenance={"produced_by": SCHEMA_ONLY_PRODUCED_BY, "timestamp": now()},
+        )
+
+    # T07 ruling round 5, S3: the frozen revision schema, applied. A document it refuses has a
+    # shape the later stages were never written for, and reached them untyped (review S3). The
+    # first error in `schema_errors`' order (by path, `_raise_first`'s rule) is reported. The PASS
+    # message above stays: every required key is still present.
+    schema_error = _first_schema_error(document)
+    if schema_error is not None:
+        pointer, message = schema_error
+        return ValidationReport(
+            revision_id=_revision_id(document),
+            task=task,
+            status="INVALID",
+            checks=(
+                Check(
+                    id="SCHEMA-01",
+                    stage="schema",
+                    result="FAIL",
+                    message=f"schema_invalid({pointer}): {message}",
+                    # The root's pointer is empty and names no object; the report's own schema
+                    # requires a non-empty id.
+                    implicated_objects=(pointer,) if pointer else (),
+                ),
+            ),
+            structural_counts=None,
+            structural_counts_absent_reason="the revision is not well formed",
+            provenance={"produced_by": SCHEMA_ONLY_PRODUCED_BY, "timestamp": now()},
+        )
+    return required
 
 
 def _first_schema_error(document: Mapping[str, Any]) -> tuple[str, str] | None:
