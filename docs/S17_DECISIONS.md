@@ -155,3 +155,24 @@ F0, the digest, or (by grep) any test. Re-run the self-test once S16 lands.
   log, and both are copied into the tree at campaign end. Edits of existing files (state file, playbook, decisions)
   are fine: a changed non-Python file selects the tests that opened it. A step's gate base is `HEAD` just before the
   step. Alternative: rebuild the map after each addition (70 min). Reversible by: this entry and the skill text.
+- **DECISION D13 (2026-11-13). Re-pin cce-code-health at `5646ad1af337ead0a2cf26578e6545de34ac4d94`** (code_health's
+  answer to S17's feedback, 88 tool tests): `{ref_base}` in tier commands, so the `tests` tier reads the campaign base
+  from `gate --ref-base` instead of `OFS_MAP_BASE`; `detect_exit = [1, 124]` on `tests`, `f0` and `mcp_digest` (in the
+  self-test any other nonzero exit is an error, not a detection); `--require-gain` (exit 0 means accept: debt over
+  the touched files strictly lower); `codehealth log` writes the run-log line from the gate JSON; exit codes,
+  `debt_before`/`debt_after` and `head_tree` in the gate JSON; `end_line` and `qualname` in the scan. Installed as
+  0.1.1.dev16+g5646ad1af. Work order 1 ran on 7628e737; its gate JSONs lack `head_tree`, so its two review-reject
+  lines were written by script from the engineer's lines. Alternative: stay on 7628e737 with `OFS_MAP_BASE` and
+  hand-written log lines. Reversible by: the pin line, the tier `cmd` and `detect_exit` lines, gate.sh.
+- **DECISION D14 (2026-11-13). Commit, then gate.** `tests/test_m07_journey.py::test_a21_the_carry_identity_...` fails
+  whenever `src/openflowsheet` has uncommitted changes (`carry_identical` in `scripts/m07_journey.py` needs a clean
+  tree), so a step gated on an uncommitted tree always fails the `tests` tier. Work order 1's engineer found it and
+  committed each step provisionally, gated it against the last accepted commit, and reset (`git reset --hard`) on a
+  failure; no failed step is in history. Adopted as the rule. It also fits `codehealth log`, which requires HEAD's tree
+  to equal the judged tree. Alternative: exclude the test from the tier (a weaker gate) or make the test tolerate a
+  dirty tree (a test change, outside a refactor campaign). Reversible by: the "Git" section of `docs/S17_RULES.md`.
+- **Review 1 (2026-11-13, reviewer agent):** 12 steps of work order 1 (8df70461..5d46d5fb): 10 accepted, 2 rejected
+  for readability (b29aea3c mutual recursion; 5d46d5fb a helper bundling two unrelated post-steps); no behaviour
+  difference found. Both reverted in 76a00379 (conflicts with the later step f1646388 resolved to the pre-step code;
+  `_constants_for_shape` byte-identical to before b29aea3c); behaviour tiers on 76a00379: selection 113 files 3490
+  passed, F0 PASS, MCP digest 40 passed; ruff, mypy clean. Full verdict: `<git-common-dir>/codehealth/runs/s17-review1.md`.

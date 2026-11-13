@@ -27,7 +27,7 @@ Lower code-health debt in `application/` without any change in behaviour (bitwis
 ## Campaign base
 
 - `CB` = `1fd6826b2f433c73c4c41ef6ccad1dcb903985c8`
-- `OFS_MAP_BASE` = `CB` for every gate run.
+- `CB` is passed as `--ref-base` to every gate run (gate.sh, D13).
 
 ## Gates (criteria fixed 2026-11-13, before any run)
 

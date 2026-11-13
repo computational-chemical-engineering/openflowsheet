@@ -35,10 +35,11 @@ after the campaign base makes every selection fall back to the full suite); copi
 It names:
 
 - `docs/S17_RULES.md` and the tool's refactor-loop skill (which it follows step by step);
-- the gate base of each step: `HEAD` just before the step (the last accepted commit, or a docs commit of the
-  orchestrator after it), and `OFS_MAP_BASE` = `CB`;
+- the gate base of each step: the last accepted commit, or a docs commit of the orchestrator after it (`HEAD`
+  before the step's provisional commit); gate.sh passes `CB` as `--ref-base`;
 - the targets: file and function, with debt from `codehealth scan --json`; targets that failed three times are out;
-- the gate command: `.claude/skills/s17-refactor/gate.sh <last accepted> <label>` (background, wait for it);
+- the gate command: `.claude/skills/s17-refactor/gate.sh <last accepted> <label>` (background, wait for it), after a
+  provisional commit of the step (D14), and `codehealth log` after it (`docs/S17_RULES.md`);
 - the stop condition: targets done, or about 150k context, or three consecutive failures; commit what is accepted;
 - the report: about 20 lines, accepted and failed steps with debt before and after and the failing tier.
 - "Do not spawn sub-agents yourself."

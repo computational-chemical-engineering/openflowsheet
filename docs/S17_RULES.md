@@ -11,8 +11,8 @@
 
 ## Settled
 
-- Tool: cce-code-health at `7628e737` in `.venv-codehealth` (D10). Config `.codehealth/config.toml` (D1 to D11).
-- The `tests` tier is S16's selection in `.venv-testmap` with the map of the campaign base (`OFS_MAP_BASE`, D11).
+- Tool: cce-code-health at `5646ad1a` in `.venv-codehealth` (D13). Config `.codehealth/config.toml` (D1 to D13).
+- The `tests` tier is S16's selection in `.venv-testmap` with the map of the campaign base (`{ref_base}`, D11, D13).
 - Scope: `src/openflowsheet/application/*.py`. Frozen and forbidden paths: as the config says; the gate enforces them.
 
 ## Rejected (do not reopen)
@@ -34,12 +34,17 @@
 
 - One accepted step, one commit: `refactor(application/<file>): <what>` with trailers `Codehealth-Class: refactor`,
   `Codehealth-Recipe: <id>`, `Codehealth-Debt: <before> -> <after>`, plus the session's Co-Authored-By line.
-- A failed step: `git checkout -- <files>`; never commit it. Never `git stash` bare (shared stash stack).
+- Commit, then gate (D14): a step is committed provisionally and gated against the last accepted commit (a test,
+  `test_m07_journey.py::test_a21...`, fails on any uncommitted change under `src/`). On a failed gate,
+  `git reset --hard <last accepted>`: no failed step stays in history. Never `git stash` bare (shared stash stack).
+- Rejected steps found by a review are undone by the orchestrator (`git revert`, conflicts resolved to the pre-step
+  code), checked by the behaviour tiers directly (the gate's debt rule refuses a revert).
 - Docs and config changes are separate commits by the orchestrator, outside steps.
 
 ## Running jobs
 
-- Gate: `.claude/skills/s17-refactor/gate.sh <last accepted sha> <label>`. One summary line; full log and JSON under
+- Gate: `.claude/skills/s17-refactor/gate.sh <last accepted sha> <label>` (runs `gate --ref-base <CB>
+  --require-gain`: exit 0 means accept, debt strictly lower). One summary line; full log and JSON under
   `$(git rev-parse --git-common-dir)/codehealth/runs/s17-gates/`; the PID in `<tag>.pid`; stop with `kill -INT PID`
   (the gate then kills its tier's process group).
 - Run the gate in the background and wait for its completion notice; read the log only on failure (`grep`, `tail`).
@@ -47,7 +52,8 @@
 
 ## Evidence standard
 
-- Every accepted step: gate exit 0, debt lower (from `codehealth diff`), one line in
-  `$(git rev-parse --git-common-dir)/codehealth/runs/s17.jsonl` in the skill's format.
-- Every attempt is logged, failures included, with the failing tier.
+- Every attempt is logged with `codehealth log --gate-json <the gate's json> --campaign s17 --target
+  <path::qualname> --recipe <id> --model <name>`, run after the gate (for an accepted step, HEAD is the step's
+  commit; for a failed one, before the reset). Never hand-write a log line. The tool infers accepted, gate-fail
+  (with the tier) or no-gain.
 - Numbers come from tool output, never from memory.

@@ -37,7 +37,9 @@ MKL_NUM_THREADS = "1"
 # tier import the tree under test, not the editable install's checkout (docs/code-health.md).
 # `behaviour = false`: a lint or type failure never counts as detecting the self-test's mutation.
 # `timeout` (s): a hung tier fails as exit 124 (S17 D9; a mutation can leave a job queued and a
-# test waiting forever, as in S16's recall). `tests` has the widest limit: a fallback runs the
+# test waiting forever, as in S16's recall). `detect_exit` (S17 D13): in the self-test only a
+# test failure (1) or a timeout (124) counts as detecting the mutation, any other code is an error.
+# `tests` has the widest limit: a fallback runs the
 # full suite (about 15 min with 12 workers).
 
 [[gate.tier]]
@@ -63,17 +65,19 @@ name = "tests"
 timeout = 3600
 kind = "command"
 cadence = "step"
-# S16's test-impact selection (S17 D11). It runs in the test-map venv (pytest-xdist and
+detect_exit = [1, 124]
+# S16's test-impact selection (S17 D11, D13). It runs in the test-map venv (pytest-xdist and
 # pytest-timeout; OPENFLOWSHEET_TESTMAP_VENV overrides it) under 12 workers, with a 900 s limit
-# per test. The map is of the campaign base: OFS_MAP_BASE names it, and the selection is then
-# cumulative since that base, a superset of the step's own. Without OFS_MAP_BASE it is {base}.
-cmd = 'V="${OPENFLOWSHEET_TESTMAP_VENV:-$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")/.venv-testmap}/bin"; PYTHONPATH=src "$V/python" scripts/test_impact.py run --base "${OFS_MAP_BASE:-{base}}" --workers 12 -- --timeout=900'
+# per test. The map is of the campaign base, {ref_base} (`gate --ref-base`; default {base}): the
+# selection is then cumulative since that base, a superset of the step's own.
+cmd = 'V="${OPENFLOWSHEET_TESTMAP_VENV:-$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")/.venv-testmap}/bin"; PYTHONPATH=src "$V/python" scripts/test_impact.py run --base {ref_base} --workers 12 -- --timeout=900'
 
 [[gate.tier]]
 name = "f0"
 timeout = 1800
 kind = "command"
 cadence = "step"
+detect_exit = [1, 124]
 cmd = 'V="${OPENFLOWSHEET_VENV:-$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")/.venv}/bin"; PYTHONPATH=src "$V/python" scripts/corpus_identity.py --check'
 
 [[gate.tier]]
@@ -81,6 +85,7 @@ name = "mcp_digest"
 timeout = 600
 kind = "command"
 cadence = "step"
+detect_exit = [1, 124]
 cmd = 'V="${OPENFLOWSHEET_VENV:-$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")/.venv}/bin"; PYTHONPATH=src "$V/python" -m pytest -q -p no:cacheprovider tests/test_t08_w2_surface_digest.py tests/test_m07a_surface_chain.py'
 
 # No campaign-cadence tier (S17 D5): the repository runs scripts/gate.sh only before a release
