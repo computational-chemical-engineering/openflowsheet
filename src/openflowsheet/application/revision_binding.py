@@ -2011,19 +2011,9 @@ def bind_revision_flowsheet(
             )
 
     for instance, unit, _, _ in built:
-        declared = {port.name: port for port in unit.ports()}
-        for port, connected in instance.ports.items():
-            spec_port = declared.get(port)
-            where = f"{instance.unit_id}.{port}"
-            if spec_port is None or spec_port.kind != "material":
-                return Unbound("unsupported", f"port_unsupported({where})")
-            if spec_port.direction != instance.directions[port]:
-                return Unbound("unsupported", f"port_direction_unsupported({where})")
-            if spec_port.multiplicity == 1 and len(connected) != 1:
-                return Unbound("unsupported", f"port_multiplicity_unsupported({where})")
-        for name, spec_port in declared.items():
-            if spec_port.kind == "material" and name not in instance.ports:
-                return Unbound("incomplete", f"port_unwired({instance.unit_id}.{name})")
+        miswired = _port_refusal(instance, unit)
+        if miswired is not None:
+            return miswired
 
     for instance, _, _, reader in built:
         unread = [column for column in instance.pins if column not in reader.read]
@@ -2167,3 +2157,24 @@ def _built_instances(
             )
         built.append((instance, unit, configuration, reader))
     return built
+
+
+def _port_refusal(instance: InstanceView, unit: UnitModel) -> Unbound | None:
+    """`None` when every port `instance` wires is a material port `unit.ports()` declares, with
+    the declared direction and (for a single port) one connection, and every declared material
+    port is wired; else the first refusal, checking the wired ports in order before the
+    declared ones."""
+    declared = {port.name: port for port in unit.ports()}
+    for port, connected in instance.ports.items():
+        spec_port = declared.get(port)
+        where = f"{instance.unit_id}.{port}"
+        if spec_port is None or spec_port.kind != "material":
+            return Unbound("unsupported", f"port_unsupported({where})")
+        if spec_port.direction != instance.directions[port]:
+            return Unbound("unsupported", f"port_direction_unsupported({where})")
+        if spec_port.multiplicity == 1 and len(connected) != 1:
+            return Unbound("unsupported", f"port_multiplicity_unsupported({where})")
+    for name, spec_port in declared.items():
+        if spec_port.kind == "material" and name not in instance.ports:
+            return Unbound("incomplete", f"port_unwired({instance.unit_id}.{name})")
+    return None
