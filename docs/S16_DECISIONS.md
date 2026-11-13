@@ -179,3 +179,15 @@ limitations) by whoever may change D2.4 paths, then the manifest.
   audit hook through synthetic library and frozen-import frames. Alternative: a real drop list of pytest's frames,
   started past the runtime's own frame (fewer `pyproject.toml` fallbacks, new risk of a dropped read). Reversible by:
   this commit.
+- **B-19. Six recall cases for the review's rules (2026-11-13, review S6).** `scripts/s16_recall.py` gains
+  `s1-shadow-import` (a `def canonical_json` appended to `application/projection.py`, which imports and calls it),
+  `s2-render-twin` (a line added to the second `project.render`), `s3-nonlocal` (`nonlocal initial_warm` deleted in
+  `application/coupled_run.py`), `s4-docs-added` (a new `docs/adr/0007-*.md`; `test_t02_identity.py:51` expects one),
+  `shared-catalogue` (`application/cli.py::_check_line` pops its entry from the `CATALOGUE` process singleton, so
+  later tests in the same process that never run `_check_line` can fail), and `refactor-extract-authz` (a helper
+  extracted in `application/authz.py`; the full suite must show 0 failures and the selected run must pass). An
+  empty `old` creates a file; the driver stages the case's named paths, not `-a`. Dry selection at a9e733e4 with
+  this branch's tool: s1 and s4 fall back, s2 selects 52 files, s3 38, shared-catalogue 29, the authz refactor 36
+  (all including the 3 B-17 files). Not run: the recall needs the host for hours; the orchestrator runs it. A first
+  refactor candidate in `binding.py` was dropped: its line runs at collection, so it falls back. Alternative: fewer,
+  `if`-only mutations (the review's objection). Reversible by: this commit.

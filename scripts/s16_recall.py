@@ -29,7 +29,7 @@ APP = "src/openflowsheet/application"
 XDIST_SERIAL = ("tests/test_t07_w2d_noncanonical.py",)
 
 #: (id, kind, [(path, old, new), ...]); kind is "behaviour", "data" or "refactor". `old` occurs
-#: exactly once in its file at the base.
+#: exactly once in its file at the base; an empty `old` creates `path`, which the base lacks.
 CASES: list[tuple[str, str, list[tuple[str, str, str]]]] = [
     (
         "app-owner-instance",
@@ -207,6 +207,75 @@ CASES: list[tuple[str, str, list[tuple[str, str, str]]]] = [
 ]
 
 
+#: Seeded slips for the review's selection rules (docs/reviews/S16-review.md S6; B-13 to B-16),
+#: a change to state another file's tests share, and a refactor whose selected run must pass.
+CASES += [
+    (
+        "s1-shadow-import",  # B-13: a new def rebinds an imported name the module calls
+        "behaviour",
+        [
+            (
+                f"{APP}/projection.py",
+                "    return len(canonical_json(bound_document(document)))\n",
+                "    return len(canonical_json(bound_document(document)))\n\n\n"
+                "def canonical_json(value: Any) -> bytes:\n"
+                "    return json.dumps(value, sort_keys=True).encode()\n",
+            )
+        ],
+    ),
+    (
+        "s2-render-twin",  # B-14: a line added to the second of two same-named functions
+        "behaviour",
+        [
+            (
+                f"{APP}/projection.py",
+                "            return _render(target, pointer, 0, at)\n",
+                "            at = at + 1\n            return _render(target, pointer, 0, at)\n",
+            )
+        ],
+    ),
+    (
+        "s3-nonlocal",  # B-15: a deleted statement that has no line event
+        "behaviour",
+        [(f"{APP}/coupled_run.py", "        nonlocal initial_warm\n", "")],
+    ),
+    (
+        "s4-docs-added",  # B-16: tests glob the docs tree (test_t02_identity.py:51)
+        "behaviour",
+        [("docs/adr/0007-zz-s16-recall-seeded.md", "", "# Seeded by the S16 recall\n")],
+    ),
+    (
+        "shared-catalogue",  # a change in cli.py to the catalogue singleton every message reads
+        "behaviour",
+        [
+            (
+                f"{APP}/cli.py",
+                "    entry = CATALOGUE.entry(check_id)\n",
+                "    entry = CATALOGUE._frozen_entries().pop(check_id, None)\n",
+            )
+        ],
+    ),
+    (
+        "refactor-extract-authz",  # a pure refactor: 0 full-suite failures, its run must pass
+        "refactor",
+        [
+            (
+                f"{APP}/authz.py",
+                "if len(kept) == len(policy.capabilities):",
+                "if _nothing_revoked(kept, policy.capabilities):",
+            ),
+            (
+                f"{APP}/authz.py",
+                "def revoke(directory: Path, capability_id: str) -> CapabilityReference:\n",
+                "def _nothing_revoked(kept: object, capabilities: object) -> bool:\n"
+                "    return len(kept) == len(capabilities)  # type: ignore[arg-type]\n\n\n"
+                "def revoke(directory: Path, capability_id: str) -> CapabilityReference:\n",
+            ),
+        ],
+    ),
+]
+
+
 def _data_edits(case: str, tree: Path) -> list[tuple[str, str, str]]:
     """The data cases' edits: one value each, in a file the tests read."""
     if case == "data-catalogue-yaml":
@@ -222,6 +291,21 @@ def _data_edits(case: str, tree: Path) -> list[tuple[str, str, str]]:
     text = (tree / path).read_text()
     line = next(x for x in text.splitlines() if x.strip())
     return [(path, line, line + " Seeded.")]
+
+
+def _apply(case: str, tree: Path, edits: list[tuple[str, str, str]]) -> None:
+    """Make a case's edits in `tree`: `old` replaced where it occurs once, or a new file."""
+    for path, old, new in edits:
+        target = tree / path
+        if not old:
+            if target.exists():
+                raise SystemExit(f"{case}: {path} exists at the base")
+            target.write_text(new)
+            continue
+        text = target.read_text()
+        if text.count(old) != 1:
+            raise SystemExit(f"{case}: {old!r} occurs {text.count(old)} times in {path}")
+        target.write_text(text.replace(old, new))
 
 
 def _git(*args: str, cwd: Path) -> str:
@@ -306,12 +390,9 @@ def main() -> int:
         tree = work / case
         _git("worktree", "add", "--detach", str(tree), base, cwd=ROOT)
         edits = edits or _data_edits(case, tree)
-        for path, old, new in edits:
-            text = (tree / path).read_text()
-            if text.count(old) != 1:
-                raise SystemExit(f"{case}: {old!r} occurs {text.count(old)} times in {path}")
-            (tree / path).write_text(text.replace(old, new))
-        _git("commit", "-qam", f"S16 recall case {case}", cwd=tree)
+        _apply(case, tree, edits)
+        _git("add", "--", *sorted({path for path, _, _ in edits}), cwd=tree)
+        _git("commit", "-qm", f"S16 recall case {case}", cwd=tree)
         chosen = _tool("--repo", str(tree), "select", "--base", base, "--map", str(args.map))
         nodes = chosen.stdout.split()
         fallback = chosen.stderr.strip() if chosen.returncode == 3 else None

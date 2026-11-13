@@ -717,3 +717,23 @@ def test_run_refuses_workers_after_the_separator(repo, tmp_path: Path) -> None:
     for extra in (["-n", "4"], ["-n4"], ["--numprocesses=4"]):
         with pytest.raises(SystemExit, match="--workers"):
             ti.run(base, map_dir, tmp_path / "run.log", extra, root)
+
+
+# -- the recall driver -----------------------------------------------------------------------------
+
+
+def test_recall_cases_cover_the_review_rules_and_apply_their_edits(tmp_path: Path) -> None:
+    """S6 of docs/reviews/S16-review.md: a case per rule B-13 to B-16, shared state, a refactor."""
+    recall = _load("s16_recall")
+    ids = {case for case, _, _ in recall.CASES}
+    wanted = {"s1-shadow-import", "s2-render-twin", "s3-nonlocal", "s4-docs-added"}
+    assert wanted | {"shared-catalogue", "refactor-extract-authz"} <= ids
+    (tmp_path / "a.py").write_text("x = 1\ny = 2\n")
+    (tmp_path / "docs").mkdir()
+    recall._apply("c", tmp_path, [("a.py", "y = 2", "y = 3"), ("docs/n.md", "", "new\n")])
+    assert (tmp_path / "a.py").read_text() == "x = 1\ny = 3\n"
+    assert (tmp_path / "docs/n.md").read_text() == "new\n"
+    with pytest.raises(SystemExit, match="exists at the base"):
+        recall._apply("c", tmp_path, [("a.py", "", "z\n")])
+    with pytest.raises(SystemExit, match="occurs 0 times"):
+        recall._apply("c", tmp_path, [("a.py", "y = 2", "y = 4")])
