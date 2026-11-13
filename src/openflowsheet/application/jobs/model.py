@@ -185,105 +185,221 @@ def check_lifecycle(job: Job, events: Sequence[JobEvent]) -> list[LifecycleViola
     opaque ending event has no payload this checker can read, so it is exempt from rule 6 and
     from rule 13's (b) and last (c) clause. Rule 8 is a warning, not a violation:
     `lifecycle_warnings`.
+
+    Each rule is one helper, called in rule order from `_check_sequences` (rule 1) to
+    `_check_transitions` (rule 13); the violations are their concatenation in that order.
     """
-    found: list[LifecycleViolation] = []
+    # The views of the stream several rules read: the ending events (J5: `ends_job`), the known
+    # events, the known `started` events, and the one known ending event (None for no ending
+    # event, several, or an opaque one).
+    enders = [index for index, event in enumerate(events) if event.ends_job]
+    known = [event for event in events if event.known]
+    started = [index for index, event in enumerate(known) if event.kind == "started"]
+    ender = events[enders[0]] if len(enders) == 1 and events[enders[0]].known else None
 
-    def violation(rule: int, message: str) -> None:
-        found.append(LifecycleViolation(rule, message))
+    found = _check_sequences(events)
+    found += _check_opening(events)
+    found += _check_ending_events(job, events, enders)
+    found += _check_started(job, known, started)
+    found += _check_outputs(job, known)
+    found += _check_ending_payload(job, ender)
+    found += _check_progress(known)
+    found += _check_operation(job)
+    found += _check_event_owners(job, events)
+    found += _check_event_count(job, events)
+    found += _check_transitions(job, bool(started), ender, known)
+    return found
 
-    # Rule 1: dense sequences from 0 (J6).
+
+def _check_sequences(events: Sequence[JobEvent]) -> list[LifecycleViolation]:
+    """§6.3 rule 1: dense sequences from 0 (J6)."""
     sequences = [event.sequence for event in events]
     if sequences != list(range(len(events))):
-        violation(1, f"sequences are {sequences}, not 0..{len(events) - 1}")
+        return [LifecycleViolation(1, f"sequences are {sequences}, not 0..{len(events) - 1}")]
+    return []
 
-    # Rule 2: the stream opens with `accepted`.
+
+def _check_opening(events: Sequence[JobEvent]) -> list[LifecycleViolation]:
+    """§6.3 rule 2: the stream opens with `accepted`."""
     if not events or events[0].kind != "accepted":
         first = events[0].kind if events else None
-        violation(2, f"the first event is {first!r}, not 'accepted'")
+        return [LifecycleViolation(2, f"the first event is {first!r}, not 'accepted'")]
+    return []
 
-    # Rule 3: exactly one ending event iff the job is terminal, and it is last (J5: `ends_job`).
-    enders = [index for index, event in enumerate(events) if event.ends_job]
+
+def _check_ending_events(
+    job: Job, events: Sequence[JobEvent], enders: Sequence[int]
+) -> list[LifecycleViolation]:
+    """§6.3 rule 3: exactly one ending event iff the job is terminal, and it is last (J5).
+
+    `enders` are the positions in `events` of the events whose `ends_job` is set.
+    """
+    found: list[LifecycleViolation] = []
     terminal = job.status in TERMINAL_STATUSES
     if terminal and len(enders) != 1:
-        violation(3, f"a {job.status} job has {len(enders)} ending events, not exactly one")
+        found.append(
+            LifecycleViolation(
+                3, f"a {job.status} job has {len(enders)} ending events, not exactly one"
+            )
+        )
     if not terminal and enders:
-        violation(3, f"a {job.status} job has {len(enders)} ending event(s), not none")
+        found.append(
+            LifecycleViolation(3, f"a {job.status} job has {len(enders)} ending event(s), not none")
+        )
     for index in enders:
         if index != len(events) - 1:
-            violation(3, f"the ending event at position {index} is not last")
+            found.append(LifecycleViolation(3, f"the ending event at position {index} is not last"))
+    return found
 
-    known = [event for event in events if event.known]
 
-    # Rule 4: `started` at most once, before any progress or output, and only if the job ran.
-    started = [index for index, event in enumerate(known) if event.kind == "started"]
+def _check_started(
+    job: Job, known: Sequence[JobEvent], started: Sequence[int]
+) -> list[LifecycleViolation]:
+    """§6.3 rule 4: `started` at most once, before any progress or output, and only if the job ran.
+
+    `known` are the stream's known events and `started` the positions in `known` of its
+    `started` events.
+    """
+    found: list[LifecycleViolation] = []
     if len(started) > 1:
-        violation(4, f"'started' appears {len(started)} times")
+        found.append(LifecycleViolation(4, f"'started' appears {len(started)} times"))
     working = [index for index, event in enumerate(known) if event.kind in ("progress", "output")]
     if working and (not started or started[0] > working[0]):
-        violation(4, "a progress or output event precedes 'started'")
+        found.append(LifecycleViolation(4, "a progress or output event precedes 'started'"))
     if started and job.started_at is None:
-        violation(4, "'started' was recorded for a job that never ran (started_at is null)")
+        found.append(
+            LifecycleViolation(
+                4, "'started' was recorded for a job that never ran (started_at is null)"
+            )
+        )
+    return found
 
-    # Rule 5: the job's outputs are exactly the output events' references, in order (J1, J2).
+
+def _check_outputs(job: Job, known: Sequence[JobEvent]) -> list[LifecycleViolation]:
+    """§6.3 rule 5: the job's outputs are exactly the output events' references, in order (J1, J2).
+
+    `known` are the stream's known events.
+    """
     emitted = [event.output for event in known if event.kind == "output"]
     if emitted != list(job.outputs):
-        violation(5, "the job's outputs are not the output events' references in order")
+        return [
+            LifecycleViolation(
+                5, "the job's outputs are not the output events' references in order"
+            )
+        ]
+    return []
 
-    # Rule 6: the job's status and ending are the ending event's.
-    if len(enders) == 1 and events[enders[0]].known:
-        ending = events[enders[0]].ending
-        if ending is None or job.status != ending.status:
-            ended_as = ending.status if ending is not None else None
-            violation(6, f"the job is {job.status!r} but its ending event says {ended_as!r}")
-        if job.ending != ending:
-            violation(6, "the job's ending is not its ending event's")
 
-    # Rule 7: progress counts never go back, and the total is fixed within a job.
+def _check_ending_payload(job: Job, ender: JobEvent | None) -> list[LifecycleViolation]:
+    """§6.3 rule 6: the job's status and ending are the ending event's.
+
+    `ender` is the stream's one known ending event; None (no ending event, several, or an opaque
+    one) exempts the job from this rule.
+    """
+    if ender is None:
+        return []
+    found: list[LifecycleViolation] = []
+    ending = ender.ending
+    if ending is None or job.status != ending.status:
+        ended_as = ending.status if ending is not None else None
+        found.append(
+            LifecycleViolation(
+                6, f"the job is {job.status!r} but its ending event says {ended_as!r}"
+            )
+        )
+    if job.ending != ending:
+        found.append(LifecycleViolation(6, "the job's ending is not its ending event's"))
+    return found
+
+
+def _check_progress(known: Sequence[JobEvent]) -> list[LifecycleViolation]:
+    """§6.3 rule 7: progress counts never go back, and the total is fixed within a job.
+
+    `known` are the stream's known events.
+    """
+    found: list[LifecycleViolation] = []
     progress = [event.progress for event in known if event.progress is not None]
     completed = [item.completed for item in progress]
     if completed != sorted(completed):
-        violation(7, f"progress.completed decreases: {completed}")
+        found.append(LifecycleViolation(7, f"progress.completed decreases: {completed}"))
     totals = {item.total for item in progress}
     if len(totals) > 1:
-        violation(7, f"progress.total changes within the job: {sorted(totals, key=str)}")
+        found.append(
+            LifecycleViolation(
+                7, f"progress.total changes within the job: {sorted(totals, key=str)}"
+            )
+        )
+    return found
 
-    # Rule 9: the job's operation is its request's.
+
+def _check_operation(job: Job) -> list[LifecycleViolation]:
+    """§6.3 rule 9: the job's operation is its request's."""
     if job.operation != job.request.operation:
-        violation(9, f"operation {job.operation!r} differs from the request's")
+        return [LifecycleViolation(9, f"operation {job.operation!r} differs from the request's")]
+    return []
 
-    # Rule 11 (ruling round 1 R6): every event is this job's.
+
+def _check_event_owners(job: Job, events: Sequence[JobEvent]) -> list[LifecycleViolation]:
+    """§6.3 rule 11 (ruling round 1 R6): every event is this job's."""
     strangers = sorted({event.job_id for event in events if event.job_id != job.job_id})
     if strangers:
-        violation(11, f"events of other jobs {strangers} are in {job.job_id}'s stream")
+        return [
+            LifecycleViolation(11, f"events of other jobs {strangers} are in {job.job_id}'s stream")
+        ]
+    return []
 
-    # Rule 12 (R6): the job's event count is its stream's length, read in one snapshot.
+
+def _check_event_count(job: Job, events: Sequence[JobEvent]) -> list[LifecycleViolation]:
+    """§6.3 rule 12 (R6): the job's event count is its stream's length, read in one snapshot."""
     if job.event_count != len(events):
-        violation(12, f"event_count is {job.event_count}, and the stream has {len(events)} events")
+        return [
+            LifecycleViolation(
+                12, f"event_count is {job.event_count}, and the stream has {len(events)} events"
+            )
+        ]
+    return []
 
-    # Rule 13 (ruling round 5b, S6): §6.1's transition relation. `ran`: a `started` event.
+
+def _check_transitions(
+    job: Job, ran: bool, ender: JobEvent | None, known: Sequence[JobEvent]
+) -> list[LifecycleViolation]:
+    """§6.3 rule 13 (ruling round 5b, S6): §6.1's transition relation.
+
+    `ran` is whether the stream has a known `started` event. `ender` is the stream's one known
+    ending event; None (no ending event, several, or an opaque one) exempts clause (b) and the
+    last check of (c). `known` are the stream's known events.
+    """
+    found: list[LifecycleViolation] = []
     # (a) The status and `started_at` agree with the stream.
-    ran = bool(started)
     if job.status == "queued" and ran:
-        violation(13, "a queued job has a 'started' event")
+        found.append(LifecycleViolation(13, "a queued job has a 'started' event"))
     if job.status == "running" and not ran:
-        violation(13, "a running job has no 'started' event")
+        found.append(LifecycleViolation(13, "a running job has no 'started' event"))
     if job.started_at is not None and not ran:
-        violation(13, "started_at is set, and the stream has no 'started' event")
+        found.append(
+            LifecycleViolation(13, "started_at is set, and the stream has no 'started' event")
+        )
     # (b) An ending only a job that ran can reach. An opaque ending event is exempt (J5).
-    ender = events[enders[0]] if len(enders) == 1 and events[enders[0]].known else None
     ended = ender.ending if ender is not None else None
     pair = (ended.status, ended.reason) if ended is not None else None
     if pair in REQUIRES_STARTED and not ran:
-        violation(13, f"the job ended {pair} and never started")
+        found.append(LifecycleViolation(13, f"the job ended {pair} and never started"))
     # (c) At most one request, the flag iff a request, and a request behind a requested cancel.
     requests = sum(1 for event in known if event.kind == "cancel_requested")
     if requests > 1:
-        violation(13, f"'cancel_requested' appears {requests} times")
+        found.append(LifecycleViolation(13, f"'cancel_requested' appears {requests} times"))
     if job.cancel_requested != (requests > 0):
-        violation(13, f"cancel_requested is {job.cancel_requested}, with {requests} request(s)")
+        found.append(
+            LifecycleViolation(
+                13, f"cancel_requested is {job.cancel_requested}, with {requests} request(s)"
+            )
+        )
     if pair == ("cancelled", "cancel_requested") and not requests:
-        violation(13, "the job ended ('cancelled', 'cancel_requested') with no request")
-
+        found.append(
+            LifecycleViolation(
+                13, "the job ended ('cancelled', 'cancel_requested') with no request"
+            )
+        )
     return found
 
 
