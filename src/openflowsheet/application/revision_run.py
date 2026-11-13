@@ -1229,6 +1229,21 @@ def _recorded_revision_continuation(
     return recorded_source(member, document) if isinstance(member, Mapping) else None
 
 
+def _reproduce_registered(
+    directory: Path, manifest: RunManifest, rerun_directory: Path, run_id: str, at: Stage
+) -> Reproduction:
+    """`reproduce_bundle` on a bundle without `revision.json` (K05's SYN-001 shape): a rerun of
+    its registered case, or `inspected_archived_results` when `run_id` names none."""
+    case = registered_case(manifest.run_id)
+    if case is None:
+        at("compare")
+        return Reproduction(_inspected(directory, "rerun_unsupported(no_revision_document)"))
+    at("rerun")
+    fresh = rerun_registered(case, Path(rerun_directory), run_id=run_id)
+    at("compare")
+    return Reproduction(replay(directory, fresh), read_manifest(Path(rerun_directory))[0])
+
+
 def reproduce_bundle(
     directory: Path,
     *,
@@ -1270,14 +1285,7 @@ def reproduce_bundle(
         return Reproduction(replay(directory, None))
 
     if "revision.json" not in manifest.artifacts:
-        case = registered_case(manifest.run_id)
-        if case is None:
-            at("compare")
-            return Reproduction(_inspected(directory, "rerun_unsupported(no_revision_document)"))
-        at("rerun")
-        fresh = rerun_registered(case, Path(rerun_directory), run_id=run_id)
-        at("compare")
-        return Reproduction(replay(directory, fresh), read_manifest(Path(rerun_directory))[0])
+        return _reproduce_registered(directory, manifest, rerun_directory, run_id, at)
 
     if "solve-path.json" not in manifest.artifacts:
         at("compare")
