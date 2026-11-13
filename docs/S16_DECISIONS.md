@@ -59,8 +59,27 @@ reviewer pass later. Tool: `scripts/test_impact.py` (+ `scripts/test_impact_runt
 ## Recall
 
 Driver: `scripts/s16_recall.py --base a9e733e4 --map ~/.cache/openflowsheet/testmap/a9e733e4… --workers 12`
-(17 seeded cases: 10 in `application/`, 4 elsewhere in `src/`, 3 data files; 2 refactors). Results:
-pending at the time of this commit; see the next commit.
+(17 seeded cases: 10 in `application/`, 4 elsewhere in `src/`, 3 data files; 2 refactors), 12 workers, per-test
+timeout 900 s (60 s for app-owner-instance, B-10). Baseline at a9e733e4: 20080 passed, 107 skipped, 3 xfailed, plus 95
+serial passed, 0 failing. Per-case outputs: `evidence/S16/<sha>/recall-run3.json`, `recall-run4.json`,
+`recall-run5.json`.
+
+| Run | Tool | Case | Selected | Fallback | New failures | Missed |
+|---|---|---|---|---|---|---|
+| 3 | B-10, node level | 17 cases | 0 to 792 | 6 cases | 0 to 2282 | 16 cases 0; app-owner-instance 60 |
+| 3 | B-10 | refactor-rename-local, refactor-extract-function | 353 | no | 0 | 0; both runs exit 1 (m06 order dependency) |
+| 4 | B-11, whole file | app-owner-instance | 86 files | no | 693 | 8 |
+| 4 | B-11 | refactor-rename-local, refactor-extract-function | 51 files | no | 0 | 0; run exit 0 |
+| 5 | B-12 to B-19 | s1-shadow-import | 0 | yes | 1 | 0 |
+| 5 | | s2-render-twin | 52 files | no | 8 | 0 |
+| 5 | | s3-nonlocal | 38 files | no | 5 | 0 |
+| 5 | | s4-docs-added | 0 | yes | 1 | 0 |
+| 5 | | shared-catalogue | 29 files | no | 1 | 0 |
+| 5 | | refactor-extract-authz | 36 files | no | 0 | 0; run exit 0 |
+
+Run 3 led to B-11. Run 4's 8 misses all lie among the 14 tests verified to pass on the mutated tree without a time
+limit: the 60 s limit made them false misses (B-11). Run 5 measures the tool after B-12 to B-19 (review S1 to S6).
+Result: 0 real misses over all cases. Not done: the history replay (b).
 
 ## T08 harvest and the manifest (stopped, escalated)
 
@@ -69,7 +88,8 @@ pending at the time of this commit; see the next commit.
 `tests/test_t08_w2_support_envelope.py` family. A S16 manifest with limitations therefore needs harvest
 rows in `benchmarks/t08/support_envelope.yaml`, a D2.4 path. Per the brief, the manifest is not committed;
 the envelope is untouched. Choice I would make: a harvest commit in F1's form (`B`/`S` classes for the
-limitations) by whoever may change D2.4 paths, then the manifest.
+limitations) by whoever may change D2.4 paths, then the manifest. The harvest rows were then done in dfd7caf2 (for
+the manifest at 84872685) and again for the manifest at ef915499.
 
 ## Not done
 
