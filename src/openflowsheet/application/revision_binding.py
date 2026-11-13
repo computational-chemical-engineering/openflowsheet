@@ -28,7 +28,7 @@ import importlib.util
 from collections.abc import Callable, Iterator, Mapping, Sequence
 from dataclasses import dataclass, field, replace
 from functools import partial
-from typing import Any, Final, Literal, overload
+from typing import TYPE_CHECKING, Any, Final, Literal, overload
 
 from openflowsheet.adapters import variants
 from openflowsheet.application.binding import Unbound, _column_owners
@@ -111,6 +111,9 @@ from openflowsheet.studies.surrogate import reactor as c1_surrogate
 from openflowsheet.studies.surrogate.manifest import check_manifest
 from openflowsheet.thermo import Phase, PropertyProvider
 from openflowsheet.thermo.pr_c1 import PROVIDER_ID as C1_PROVIDER_ID
+
+if TYPE_CHECKING:
+    from openflowsheet.orchestrator.budget import PropertyMeter
 
 __all__ = [
     "MODEL_BASES",
@@ -1977,7 +1980,11 @@ def bind_revision_flowsheet(
     """Build and bind a revision's flowsheet, or say which of R-022's kinds prevented it (§1.4).
 
     `surrogates` resolves a `c1.reactor_surrogate` instance's manifest by its SHA-256 (M04 spec
-    §8.2); without one, such an instance is refused `surrogate_manifest_mismatch(<instance>)`."""
+    §8.2); without one, such an instance is refused `surrogate_manifest_mismatch(<instance>)`.
+
+    Phases, in order, each returning its first refusal: `_model_refusal` (M02 §6.1 variants,
+    then R-288 bases), `_surrogate_manifests`, `_built_instances` (on the metered provider),
+    `_split_key_refusal` (R-822), `_port_refusal` per instance, then the unconsumed-pin check."""
     from openflowsheet.orchestrator.budget import PropertyMeter
 
     # R-088 Q29 (T07 design note §12.5): a non-canonical number is refused typed at entry,
@@ -2136,7 +2143,7 @@ def _surrogate_manifests(
 
 def _built_instances(
     instances: Sequence[InstanceView],
-    provider: PropertyProvider,
+    provider: PropertyMeter,
     components: tuple[str, ...],
     manifests: Mapping[str, Mapping[str, Any]],
 ) -> list[tuple[InstanceView, UnitModel, Configuration, _PinReader]] | Unbound:
@@ -2168,27 +2175,6 @@ def _built_instances(
     return built
 
 
-def _port_refusal(instance: InstanceView, unit: UnitModel) -> Unbound | None:
-    """`None` when every port `instance` wires is a material port `unit.ports()` declares, with
-    the declared direction and (for a single port) one connection, and every declared material
-    port is wired; else the first refusal, checking the wired ports in order before the
-    declared ones."""
-    declared = {port.name: port for port in unit.ports()}
-    for port, connected in instance.ports.items():
-        spec_port = declared.get(port)
-        where = f"{instance.unit_id}.{port}"
-        if spec_port is None or spec_port.kind != "material":
-            return Unbound("unsupported", f"port_unsupported({where})")
-        if spec_port.direction != instance.directions[port]:
-            return Unbound("unsupported", f"port_direction_unsupported({where})")
-        if spec_port.multiplicity == 1 and len(connected) != 1:
-            return Unbound("unsupported", f"port_multiplicity_unsupported({where})")
-    for name, spec_port in declared.items():
-        if spec_port.kind == "material" and name not in instance.ports:
-            return Unbound("incomplete", f"port_unwired({instance.unit_id}.{name})")
-    return None
-
-
 def _split_key_refusal(
     instances: Sequence[InstanceView], units: Sequence[UnitModel]
 ) -> Unbound | None:
@@ -2204,4 +2190,25 @@ def _split_key_refusal(
                 hint=f"Instance id `{key}` is a lifted-split key of instance `{owner}`; "
                 "rename the instance.",
             )
+    return None
+
+
+def _port_refusal(instance: InstanceView, unit: UnitModel) -> Unbound | None:
+    """`None` when every port `instance` wires is a material port `unit.ports()` declares, with
+    the declared direction and (for a port of multiplicity 1) one connection, and every declared
+    material port is wired; else the first refusal, checking the wired ports in order before the
+    declared ones."""
+    declared = {port.name: port for port in unit.ports()}
+    for port, connected in instance.ports.items():
+        spec_port = declared.get(port)
+        where = f"{instance.unit_id}.{port}"
+        if spec_port is None or spec_port.kind != "material":
+            return Unbound("unsupported", f"port_unsupported({where})")
+        if spec_port.direction != instance.directions[port]:
+            return Unbound("unsupported", f"port_direction_unsupported({where})")
+        if spec_port.multiplicity == 1 and len(connected) != 1:
+            return Unbound("unsupported", f"port_multiplicity_unsupported({where})")
+    for name, spec_port in declared.items():
+        if spec_port.kind == "material" and name not in instance.ports:
+            return Unbound("incomplete", f"port_unwired({instance.unit_id}.{name})")
     return None
