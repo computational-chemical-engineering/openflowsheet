@@ -602,16 +602,9 @@ class RecordedExperiments:
         else:
             self.reevaluated += 1
             envelope = dict(fresh.envelope)
-            if result is None or fresh.result is None:
-                if (result is None) != (fresh.result is None):
-                    self.differences.append(f"external_result({k}, {unit.unit_id}): outcome class")
-            else:
-                self.differences += [
-                    f"external_result({k}, {unit.unit_id}){line}"
-                    for line in envelope_differences(
-                        envelope, result["envelope"], policy_id=self.policy_id
-                    )
-                ]
+            self.differences += self._result_differences(
+                k, unit.unit_id, result, fresh.result, envelope
+            )
         # R-317 (a): the rerun's record embeds the recorded (served) documents; the answer is
         # attributed to the request recomputed here, at the rerun's inlet.
         return answer_of(
@@ -642,6 +635,28 @@ class RecordedExperiments:
         assert start is None, "an in-process variant takes no start (ADR 0070 D4)"
         fresh = self.runner.run(variant, state, unit.components, unit.n_tubes)
         return dict(fresh.request), fresh
+
+    def _result_differences(
+        self,
+        k: int,
+        unit_id: str,
+        recorded: Mapping[str, Any] | None,
+        fresh: Any,
+        envelope: Mapping[str, Any],
+    ) -> list[str]:
+        """R-317 (b): a re-evaluated in-process result (`fresh`, its `envelope`) against the
+        recorded one: `outcome class` when exactly one of the two is `None`, none when both are,
+        else each envelope difference outside its floor (`envelope_differences`)."""
+        if recorded is None or fresh is None:
+            if (recorded is None) != (fresh is None):
+                return [f"external_result({k}, {unit_id}): outcome class"]
+            return []
+        return [
+            f"external_result({k}, {unit_id}){line}"
+            for line in envelope_differences(
+                envelope, recorded["envelope"], policy_id=self.policy_id
+            )
+        ]
 
     def frozen(self, variant: Variant) -> Mapping[str, Any] | None:
         for entry in self.record["frozen"].values():
