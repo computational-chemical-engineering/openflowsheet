@@ -634,8 +634,8 @@ def bind_revision_or_reason(document: Mapping[str, Any]) -> Binding | Unbound:
     freed = [
         entry for entry in (document.get("specifications") or ()) if entry.get("role") == "free"
     ]
-    guesses, missing_guesses = _starts(freed, converted, graph, units_by_instance)
-    assembly = _assembly_starts(guesses, missing_guesses)
+    guesses, missing_guesses = _guesses(freed, converted, graph, units_by_instance)
+    assembly = _assembly_values(guesses, missing_guesses)
     if isinstance(assembly, Unbound):
         return assembly
 
@@ -692,7 +692,7 @@ def bind_revision_or_reason(document: Mapping[str, Any]) -> Binding | Unbound:
     removed = _freed_rows(pinned, assembly, targets)
     freed_columns = {row_id: pinned[row_id] for row_id in removed}
     if removed:
-        spec = _without_rows(spec, removed)
+        spec = _without_rows_and_orphaned_parameters(spec, removed)
         pinned = {row_id: column for row_id, column in pinned.items() if row_id not in removed}
         for row_id in removed:
             row_units.pop(row_id, None)
@@ -788,7 +788,8 @@ def _process_graph(
 ) -> ProcessGraph:
     """The graph of the flowsheet `wiring`: its units, a connection per material edge in
     `wiring_edges` with the state columns `document` gives its stream over `components`, and the
-    instance matched to each unit."""
+    instance matched to each unit. Its `column_owners` is left empty here: the caller adds them
+    once the spec is assembled (R-019)."""
     states = _state_columns(document, components)
     return ProcessGraph(
         units=tuple(wiring),
@@ -805,7 +806,7 @@ def _process_graph(
     )
 
 
-def _starts(
+def _guesses(
     freed: Sequence[Mapping[str, Any]],
     converted: Mapping[str, float],
     graph: ProcessGraph,
@@ -832,12 +833,12 @@ def _starts(
     return guesses, missing_guesses
 
 
-def _assembly_starts(
+def _assembly_values(
     guesses: Mapping[str, float], missing_guesses: Sequence[str]
 ) -> dict[str, float] | Unbound:
     """The value each freed column is assembled at: its start in `guesses`, or for a column in
-    `missing_guesses` the flowsheet's declared default; or the refusal naming the columns in
-    `missing_guesses` that have no declared default."""
+    `missing_guesses` the flowsheet's declared default (the default wins for a column in both); or
+    the refusal naming the columns in `missing_guesses` that have no declared default."""
     # The flowsheet object is parameterized by every coordinate it models; a freed coordinate with
     # no guess takes the flowsheet's own declared default *for assembly only*: it reaches the
     # removed pin row's parameter, which is then dropped from the declaration with the row (no
@@ -890,7 +891,9 @@ def _freed_rows(
     )
 
 
-def _without_rows(spec: ProblemSpec, removed: tuple[str, ...]) -> ProblemSpec:
+def _without_rows_and_orphaned_parameters(
+    spec: ProblemSpec, removed: tuple[str, ...]
+) -> ProblemSpec:
     """`spec` without the rows `removed` and without every parameter no remaining row reads."""
     spec = replace(
         spec,
@@ -925,7 +928,8 @@ def _promote_specifications(
     """§5.1: `spec` with a row `SPEC:<id>` for each column a fixed specification targets (in
     `targets`, at its value in `values`) that is a column of `spec` and that no unit row in
     `pinned` already pins; and those rows, by row id, each with its specification id and column.
-    `spec` is returned as it is when no column is promoted."""
+    `spec` is returned as it is when no column is promoted. The row id is per specification, so
+    for a specification with several promotable columns the last column is the one recorded."""
     promoted: list[EquationSpec] = []
     promotions: dict[str, tuple[str, str]] = {}
     parameters = dict(spec.parameters)
