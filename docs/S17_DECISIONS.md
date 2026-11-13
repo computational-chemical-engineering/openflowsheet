@@ -196,3 +196,34 @@ F0, the digest, or (by grep) any test. Re-run the self-test once S16 lands.
   134.2 -> 43.6 (`bind_revision_or_reason` 73.2 -> 22.6, `legacy_admission` 23.0 -> 1.0). Every gate ran the full
   suite (about 800 s): S16's `select` reports `binding.py:345 (base) runs at import or collection time in the pytest
   process`, so any change in `revision_probe` and the binder selects everything (correct, only slower).
+- **DECISION D16 (2026-11-13). Map base MB = `3fa719737549094622ce3b124b2f8341c555f335` (3fa71973) for the tests tier; re-pin
+  cce-code-health at `efdab0a4f9f67253837b59cb8f89d4868b323b6b`.** Every work order 2 gate ran the full suite
+  (S16's `select`: binding.py code runs at collection time), and with the map at `CB` every later step would too,
+  since binding.py differs from `CB`. Map rebuilt at 3fa71973 (after work order 2, the review-note step and the
+  playbook): 20356 tests, 3955 s, 4 failed (a subset of the 5 B-6 failures; G-MAP criterion met). gate.sh passes
+  `--ref-base MB`; `CB` stays the debt baseline for G-END. D12 now counts from MB (no file added after MB until a
+  restructure step). coupled_run.py's `solve_coupled` body selects 133 tests at MB. revision_binding.py's
+  `bind_revision_flowsheet` runs at collection time, so its steps still run the full suite. The re-pin (0.1.1.dev44)
+  adds `codehealth log --result accepted-neutral` (a step gated without `--require-gain`, debt not raised) and
+  `--head SHA`; step 32 (9d0498fd) is logged that way. Scan at `CB` on the new pin: totals, 39 file debts and 988
+  function debts equal `s17-base.json`. Alternative: stay on the `CB` map (about 14 min per gate). Reversible by:
+  `MB` in gate.sh and the pin line.
+- **DECISION D17 (2026-11-13, Frank). Finish all campaigns; stretch target.** Frank: "Let's finish all campaigns. A
+  debt of 598.5 still sounds high." G-END stays the pass/fail gate as written before the run (application/ debt at
+  most 598.5). Stretch target: application/ debt about 400 (realistic floor 350 to 400: complexity that is real,
+  declarative code such as `cli.build_parser`, and reviewers' stop rules). Work orders 3 to 8: coupled_run.py,
+  revision_binding.py, `jobs/model.check_lifecycle` + `transactions._apply`, `jobs/executor._supervise` +
+  `jobs/runner._Body.solve`, validation.py, the remaining functions of debt 10 or more. Review every 5 accepted steps.
+- **DECISION D18 (2026-11-13, Frank). Restructure (module splits) inside S17, plans approved by the orchestrator
+  under Frank's delegation.** Frank: "using the newly extended tools to reduce interdependence and restructure is
+  worthwhile", and chose "Delegate to orchestrator" for the plan approval the tool requires
+  (`.codehealth/restructure/<id>.toml`, `approved_by`). This settles the open decision "Module splits" in
+  `docs/S17_STATE.md`. Order: after the function-level work orders (new files make S16's selection fall back, D12).
+  An `architect` drafts one plan per split from `codehealth coupling`, `codehealth arch` and the large files; a
+  fresh `reviewer` checks each plan; the orchestrator commits an accepted plan with `approved_by = "orchestrator
+  under Frank's delegation of 2026-11-13 (D18)"`. Limits on every plan: only files under
+  `src/openflowsheet/application/`; every old import path kept as a re-export; no public name renamed or removed;
+  behaviour bitwise (`gate --mode restructure`). Each split is one contiguous range of commits, so it can be reverted
+  as a range. `[architecture]` layer and cycle rules are added to the config as a ratchet (no new violation; existing
+  ones recorded) before the first restructure step. Frank reviews the splits after the run. Alternative: Frank
+  approves each plan himself (splits a day later), or no splits in S17. Reversible by: reverting a split's range.

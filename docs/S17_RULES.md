@@ -40,8 +40,9 @@
 - Rejected steps found by a review are undone by the orchestrator (`git revert`, conflicts resolved to the pre-step
   code) and gated with `gate.sh --revert <rejected sha>` (D15), then logged with `codehealth log --result
   review-reject --reason "<review N: reason>"`. A names-, docstring- or order-only follow-up from a review's notes is
-  gated with `gate.sh --no-gain <last accepted sha>` (behaviour tiers, no gain check) and logged as `accepted` with
-  recipe `review-note`.
+  gated with `gate.sh --no-gain <last accepted sha>` (behaviour tiers, no gain check) and logged with `--result
+  accepted-neutral --reason "<review N note>"` and recipe `review-note`. `codehealth log --head <step sha>` logs a
+  step after a later commit (D16).
 - Docs and config changes are separate commits by the orchestrator, outside steps.
 
 ## Running jobs

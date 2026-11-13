@@ -20,16 +20,19 @@ Lower code-health debt in `application/` without any change in behaviour (bitwis
 
 ## Next actions
 
-1. (done) Merge `main` into `wp/S17`; `CB` fixed.
-2. (done) Map at `CB`, G-MAP.
-3. (done) Self-test, G-SELF.
-4. (done) Baseline scan at `CB`, below.
-5. Refactor loop (skill), first targets `revision_run.py`, then `binding.py`.
+1. (done) `CB`, map, G-MAP, G-SELF, baseline. Work orders 1 and 2, reviews 1 to 3, D13 to D16.
+2. Work orders 3 to 8 (D17), one engineer at a time; review every 5 accepted steps; briefs in
+   `<git-common-dir>/codehealth/briefs/S17-WO<n>.md`. Gates use the map at `MB` (D16).
+3. Restructure phase (D18): `[architecture]` ratchet in the config; `architect` drafts split plans from `codehealth
+   coupling` / `arch`; `reviewer` checks each; orchestrator commits accepted plans; restructure work orders.
+4. Campaign end: copy run log, reviews and briefs into the tree; final scan, G-END; manifest; CI both legs; merge into
+   `main`; F0; push; report to Frank (splits for his review).
 
 ## Campaign base
 
 - `CB` = `1fd6826b2f433c73c4c41ef6ccad1dcb903985c8`
-- `CB` is passed as `--ref-base` to every gate run (gate.sh, D13).
+- `CB` is the debt baseline (G-END).
+- `MB` = `3fa719737549094622ce3b124b2f8341c555f335`: the map base, passed as `--ref-base` to every gate run since D16 (`~/.cache/openflowsheet/testmap/<MB>/`).
 
 ## Gates (criteria fixed 2026-11-13, before any run)
 
@@ -69,6 +72,7 @@ Largest functions by debt: revision_run.py `write_revision_bundle` 46.9 (cog 46,
 
 ## Open decisions (defaults in force)
 
-- Module splits (a new module changes the public API): proposed to Frank only, never done.
+- Module splits: settled by D18 (Frank, 2026-11-13): inside S17 after the function-level work orders, plans approved
+  by the orchestrator under Frank's delegation, old import paths kept as re-exports.
 - The silent queued job (`owner_instance=None`, S16 B-9) is a product weakness; a finding for a separate package needs
   Frank's yes. Not part of S17.
