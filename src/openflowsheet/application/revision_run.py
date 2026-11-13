@@ -1425,26 +1425,37 @@ def _constants_for_shape(fresh: Any, archived: Any) -> Any:
     archive's; anything else is left for `replay` to compare, so a malformed digest is a
     difference. The final digest's R0 guard is `final_constants`'s recomputation."""
     if isinstance(fresh, dict) and isinstance(archived, dict):
-        shaped: dict[str, Any] = {}
-        for key, value in fresh.items():
-            theirs = archived.get(key)
-            if (
-                key == "constants_sha256"
-                and isinstance(value, str)
-                and isinstance(theirs, str)
-                and _HEX64.fullmatch(value)
-                and _HEX64.fullmatch(theirs)
-            ):
-                shaped[key] = theirs
-            else:
-                shaped[key] = _constants_for_shape(value, theirs) if key in archived else value
-        return shaped
+        return _constants_for_shape_mapping(fresh, archived)
     if isinstance(fresh, list) and isinstance(archived, list):
         return [
             _constants_for_shape(value, archived[index]) if index < len(archived) else value
             for index, value in enumerate(fresh)
         ]
     return fresh
+
+
+def _constants_for_shape_mapping(fresh: dict[str, Any], archived: dict[str, Any]) -> dict[str, Any]:
+    """`_constants_for_shape` of two documents."""
+    shaped: dict[str, Any] = {}
+    for key, value in fresh.items():
+        theirs = archived.get(key)
+        if _digests_for_shape(key, value, theirs):
+            shaped[key] = theirs
+        else:
+            shaped[key] = _constants_for_shape(value, theirs) if key in archived else value
+    return shaped
+
+
+def _digests_for_shape(key: str, value: Any, theirs: Any) -> bool:
+    """`_constants_for_shape`'s test: `value` and `theirs` are both a well-formed
+    `constants_sha256`."""
+    return bool(
+        key == "constants_sha256"
+        and isinstance(value, str)
+        and isinstance(theirs, str)
+        and _HEX64.fullmatch(value)
+        and _HEX64.fullmatch(theirs)
+    )
 
 
 def _with_differences(report: ReplayReport, found: list[str]) -> ReplayReport:
