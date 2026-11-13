@@ -39,8 +39,9 @@ reviewer pass later. Tool: `scripts/test_impact.py` (+ `scripts/test_impact_runt
   and `::test_g4e_replay_of_the_chained_run_matches` (module-scoped state the restore resets), and
   `test_t07_v17_reference.py::test_f6_the_forty_runs_fit_their_budget` (331 s against a 300 s budget under
   coverage). Their map is that of the failing run. Open: re-snapshot after each shared fixture's setup.
-- **B-7. Open record filters.** Imports (frozen importlib frames) and pytest's own reads are not recorded;
-  directory opens and paths relative to a `dir_fd` (which `shutil.rmtree` uses) are dropped.
+- **B-7. Open record filters.** Imports (frozen importlib frames) are not recorded; directory opens and paths
+  relative to a `dir_fd` (which `shutil.rmtree` uses) are dropped. Corrected by B-18: pytest's own reads are
+  recorded, not dropped as this entry first said.
 - **B-8. tests/ data falls back.** As the brief states, a changed file under `tests/` that is not a test
   module falls back, fixtures and data included; they are not mapped through the open record.
 
