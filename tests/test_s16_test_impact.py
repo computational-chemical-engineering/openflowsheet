@@ -50,6 +50,18 @@ def g(x):
     return total
 
 
+def counter():
+    """Count."""
+    count = 0
+
+    def bump():
+        nonlocal count
+        count += 1
+        return count
+
+    return bump()
+
+
 def h():
     return "fixture work"
 
@@ -174,6 +186,8 @@ def repo(tmp_path: Path) -> tuple[Path, str, Path]:
     )
     data.add_lines("src/pkg/mod.py", T3, ti.numbits(_lines(MODULE, "        return 1")))
     data.add_lines("src/pkg/mod.py", T4, ti.numbits(_lines(MODULE, "        return 2")))
+    data.add_lines("src/pkg/mod.py", T1, ti.numbits(_lines(MODULE, "        count += 1")))
+    data.add_lines("src/pkg/mod.py", T2, ti.numbits(_lines(MODULE, "    count = 0")))
     data.add_lines("src/pkg/twins.py", T1, ti.numbits(_lines(TWINS, '        return "first"')))
     data.add_lines("src/pkg/twins.py", T2, ti.numbits(_lines(TWINS, '        return "second"')))
     module_level = _lines(
@@ -322,6 +336,29 @@ def test_a_line_added_to_one_of_two_same_named_functions_selects_both(repo) -> N
         '        x = 1\n        return "second"',
     )
     assert _select(repo).nodes == {T1, T2}
+
+
+@pytest.mark.parametrize(
+    ("old", "new", "expected"),
+    [
+        ("        nonlocal count\n", "", {T1}),
+        ('    """Count."""\n', "", {T1, T2}),
+        ("        nonlocal count\n", "        # nonlocal count\n", {T1}),
+    ],
+    ids=["nonlocal", "docstring", "commented-out"],
+)
+def test_deleting_a_statement_without_a_line_event_selects_its_function(
+    repo, old: str, new: str, expected: set[str]
+) -> None:
+    """B-15: coverage never records `nonlocal` or a docstring, so their deletion maps to the tests
+    of the enclosing function's body (the nested `bump` or the whole `counter`)."""
+    _edit(repo[0], "src/pkg/mod.py", old, new)
+    assert _select(repo).nodes == expected
+
+
+def test_deleting_a_module_level_statement_falls_back(repo) -> None:
+    _edit(repo[0], "src/pkg/mod.py", '"""A module."""\n', "")
+    assert "import-time code changed" in (_select(repo).fallback or "")
 
 
 # -- fallbacks -------------------------------------------------------------------------------------

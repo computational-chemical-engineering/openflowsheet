@@ -367,6 +367,20 @@ class Source:
                 return node
         return None
 
+    def is_silent(self, line: int) -> bool:
+        """Whether the statement at `line` leaves no line event of its own for coverage to record
+        (`global`, `nonlocal`, `pass`, a docstring or other constant expression, a bare annotation):
+        deleting it changes what its function does without changing a covered line (B-15)."""
+        chain = self.path_to(line)
+        if not chain:
+            return True
+        node = chain[-1]
+        if isinstance(node, ast.AnnAssign):
+            return node.value is None
+        if isinstance(node, ast.Expr):
+            return isinstance(node.value, ast.Constant)
+        return isinstance(node, ast.Global | ast.Nonlocal | ast.Pass)
+
     def qualname(self, scope: Scope) -> str:
         for name, scopes in self.qualnames.items():
             if any(s is scope for s in scopes):
@@ -515,12 +529,14 @@ def _python_rule(test_map: TestMap, change: Change, base: str, cwd: Path) -> set
         for line in range(old_start, old_start + old_count):
             if not old.is_code(line):
                 continue
-            if old.function_of(line) is None:
+            function = old.function_of(line)
+            if function is None:
                 raise FallbackError(f"{path}:{line} (base): import-time code changed")
+            lines = old.statement_lines(line)
+            if old.is_silent(line):  # no line event of its own: the enclosing function's tests
+                lines |= _body_lines(function)
             where = f"{path}:{line} (base)"
-            selected |= test_map.tests_of(
-                test_map.line_contexts(path, old.statement_lines(line)), where
-            )
+            selected |= test_map.tests_of(test_map.line_contexts(path, lines), where)
         for line in sorted(added):
             if not new.is_code(line):
                 continue

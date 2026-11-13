@@ -131,3 +131,11 @@ limitations) by whoever may change D2.4 paths, then the manifest.
   takes the union of the bodies of all of them. Real map: that insertion selects 51 files, against 42 before (the
   review counted 9 missed files of 26 that execute the second `render`). Alternative: the one base function the
   hunk maps onto (needs a line mapping across the diff; the union is a superset). Reversible by: this commit.
+- **B-15. A statement without a line event maps to its function's tests (2026-11-13, review S3).** Coverage never
+  records `global`, `nonlocal`, `pass`, a docstring or other constant expression, or an annotation without a value,
+  so deleting one selected nothing (only the file's openers). An old-side line whose statement is one of these now
+  adds every test of the enclosing base function's body; at module or class level it falls back as before. Real
+  map: deleting `nonlocal running` (`numerics/newton.py:301`) selects 234 files (the review counted 2392 tests in
+  213 files executing `evaluate`); deleting `global auditor` in `messages/audit.py:57` falls back (`enable()` runs
+  at collection), against 26 files before. Alternative: every old-side line maps to its whole function (wider for
+  every deletion). Reversible by: this commit.

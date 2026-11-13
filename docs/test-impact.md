@@ -101,6 +101,9 @@ refactor loop's "the target must be covered" check and for mutant checks.
   can call it, and that code selects its own tests. This is what makes an extract-function step
   cheap. A new def whose name the base mentions anywhere (an import, an assignment, a local, a
   method of another class, a `getattr` literal) may shadow or override it and falls back (B-13).
+- A deleted or rewritten statement that leaves no line event of its own (`global`, `nonlocal`,
+  `pass`, a docstring or other constant expression, a bare annotation) selects every test of the
+  enclosing function's body; at module or class level it falls back (B-15).
 - A blank or comment-only line selects nothing.
 - A changed test module selects all of its own tests (the file) plus its lines' normal mapping.
 - A non-`.py` file maps through the open record: the tests that opened it.
