@@ -33,6 +33,7 @@ if TYPE_CHECKING:
     from openflowsheet.graph.trace import Declaration
     from openflowsheet.studies.nlp.closure import ReadinessCode
     from openflowsheet.studies.nlp.request import StaticReadiness
+    from openflowsheet.units import UnitConversion
 
 Task = Literal["simulation", "optimization"]
 ValidationStatus = Literal["DRAFT", "READY_FOR_SIMULATION", "READY_FOR_OPTIMIZATION", "INVALID"]
@@ -1065,7 +1066,8 @@ def _dimensions(
     not judged: `COMP-03` fails it, and the unit never changes the diagnosis of a component error
     (ADR 0016 D5); the message says which were skipped. Specifications are judged first, in
     document order, then parameters by instance declaration order and, within an instance, by
-    parameter name in code-point order (ADR 0016 D6).
+    parameter name in code-point order (ADR 0016 D6). `_dimensions_check` then builds the check
+    from what was judged.
     """
     from openflowsheet.application.binding import HINT_LIMIT
     from openflowsheet.application.projection import bound_text
@@ -1074,7 +1076,7 @@ def _dimensions(
         convert_specification,
         read_parameter,
     )
-    from openflowsheet.units import UNIT_CONVERSION_ID, UnitConversion, read_number
+    from openflowsheet.units import read_number
 
     def _with_hint(error: RevisionError) -> str:
         """The code, then its hint (ruling round 6, B2), bounded as an `Unbound`'s is."""
@@ -1115,6 +1117,19 @@ def _dimensions(
                 continue
             if conversion is not None:
                 conversions.append(conversion)
+
+    return _dimensions_check(conversions, refusals, skipped)
+
+
+def _dimensions_check(
+    conversions: Sequence[UnitConversion],
+    refusals: Sequence[tuple[str, str]],
+    skipped: Sequence[str],
+) -> Check:
+    """`DIM-01` from what `_dimensions` judged: `FAIL` with every refusal's code and its name
+    (`refusals`, as `(name, code)`), else `PASS` naming every conversion (or that there was none),
+    and the specifications not judged for a component outside the set (`skipped`)."""
+    from openflowsheet.units import UNIT_CONVERSION_ID
 
     if refusals:
         return Check(
