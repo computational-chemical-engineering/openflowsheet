@@ -112,6 +112,9 @@ def apply_edits(base: Mapping[str, Any], edits: Sequence[Edit]) -> dict[str, Any
 
 
 def _apply(document: dict[str, Any], edit: Edit, index: int) -> None:
+    """Apply edit number `index` to `document` in place: walk its path to the node it acts on,
+    then edit that node (`_apply_at`). A `remove` whose parent is absent returns from the walk.
+    """
     path = edit.path
     walk = path if edit.operation == "append" else path[:-1]
     node: Any = document
@@ -136,7 +139,14 @@ def _apply(document: dict[str, Any], edit: Edit, index: int) -> None:
         else:
             raise EditPathError(index, here, "the path runs through a scalar")
         node = node[key]
+    _apply_at(node, edit, index)
 
+
+def _apply_at(node: Any, edit: Edit, index: int) -> None:
+    """Apply edit number `index` at `node`, the end of its walk: the array an `append` extends,
+    or the object or array that holds the last key of a `set` or `remove`.
+    """
+    path = edit.path
     if edit.operation == "append":
         if not isinstance(node, list):
             raise EditPathError(index, json_pointer(path), "append needs an array here")
