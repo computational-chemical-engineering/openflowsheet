@@ -112,7 +112,8 @@ def apply_edits(base: Mapping[str, Any], edits: Sequence[Edit]) -> dict[str, Any
 
 
 def _apply(document: dict[str, Any], edit: Edit, index: int) -> None:
-    """Apply edit number `index` to `document` in place: walk its path to the node it acts on,
+    """Apply edit number `index` to `document` in place: walk its path to the node it acts on
+    (an object member by `_enter_or_create_member`, an array element by `_check_array_index`),
     then edit that node (`_apply_at`). A `remove` whose parent is absent returns from the walk.
     """
     path = edit.path
@@ -121,25 +122,45 @@ def _apply(document: dict[str, Any], edit: Edit, index: int) -> None:
     for depth, key in enumerate(walk):
         here = json_pointer(path[: depth + 1])
         if isinstance(node, dict):
-            if not isinstance(key, str):
-                raise EditPathError(index, here, "an integer indexes an array; this is an object")
-            if key not in node:
-                following = path[depth + 1] if depth + 1 < len(path) else None
-                if edit.operation == "remove":
-                    return  # an absent parent holds no key to remove
-                if edit.operation == "set" and isinstance(following, str):
-                    node[key] = {}
-                else:
-                    raise EditPathError(index, here, "no such member")
+            if not _enter_or_create_member(node, key, edit, index, depth, here):
+                return  # an absent parent holds no key to remove
         elif isinstance(node, list):
-            if not isinstance(key, int):
-                raise EditPathError(index, here, "a string indexes an object; this is an array")
-            if key >= len(node):
-                raise EditPathError(index, here, f"index {key} is past the array's {len(node)}")
+            _check_array_index(node, key, index, here)
         else:
             raise EditPathError(index, here, "the path runs through a scalar")
         node = node[key]
     _apply_at(node, edit, index)
+
+
+def _enter_or_create_member(
+    node: dict[str, Any], key: str | int, edit: Edit, index: int, depth: int, here: str
+) -> bool:
+    """One step of edit `index`'s walk into the object `node`: `key` at `depth` of its path.
+
+    An integer key is refused. An absent member is created as an empty object for a `set` whose
+    next key is a string (K06) and refused for anything else, except that a `remove` returns
+    False: an absent parent holds no key to remove. True means the walk enters `node[key]`.
+    """
+    path = edit.path
+    if not isinstance(key, str):
+        raise EditPathError(index, here, "an integer indexes an array; this is an object")
+    if key not in node:
+        following = path[depth + 1] if depth + 1 < len(path) else None
+        if edit.operation == "remove":
+            return False
+        if edit.operation == "set" and isinstance(following, str):
+            node[key] = {}
+        else:
+            raise EditPathError(index, here, "no such member")
+    return True
+
+
+def _check_array_index(node: list[Any], key: str | int, index: int, here: str) -> None:
+    """One step of edit `index`'s walk into the array `node`: `key` must be an existing index."""
+    if not isinstance(key, int):
+        raise EditPathError(index, here, "a string indexes an object; this is an array")
+    if key >= len(node):
+        raise EditPathError(index, here, f"index {key} is past the array's {len(node)}")
 
 
 def _apply_at(node: Any, edit: Edit, index: int) -> None:
