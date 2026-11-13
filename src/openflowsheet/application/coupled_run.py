@@ -855,31 +855,40 @@ def external_starts(
     entries = record["iterations"][-1]["units"] if record is not None else {}
     found: dict[str, ExternalSource] = {}
     for unit_id, variant in sorted(targets.items()):
-        if not start_capable(variant):
-            found[unit_id] = ExternalSource("absent", "variant_cold_only")
-            continue
-        if status == "rejected":
-            found[unit_id] = ExternalSource("rejected", "external_integrity")
-            continue
-        entry = entries.get(unit_id)
-        request = entry.get("request") if isinstance(entry, Mapping) else None
-        result = entry.get("result") if isinstance(entry, Mapping) else None
-        profile = result.get("profile_sha256") if isinstance(result, Mapping) else None
-        if not isinstance(request, Mapping) or not isinstance(profile, str):
-            found[unit_id] = ExternalSource("absent", "no_profile")
-            continue
-        key = str(request["experiment_key"])
-        if request["model"]["artifact_ref"] != variant.sha256:
-            found[unit_id] = ExternalSource("rejected", "external_compatibility", key, profile)
-            continue
-        data = stored(profile)
-        if data is None:
-            found[unit_id] = ExternalSource("absent", "profile_unavailable", key, profile)
-        elif hashlib.sha256(data).hexdigest() != profile:
-            found[unit_id] = ExternalSource("rejected", "external_integrity", key, profile)
-        else:
-            found[unit_id] = ExternalSource("accepted", None, key, profile)
+        found[unit_id] = _external_source(unit_id, variant, status, entries, stored)
     return found
+
+
+def _external_source(
+    unit_id: str,
+    variant: Variant,
+    status: str,
+    entries: Mapping[str, Any],
+    stored: Callable[[str], bytes | None],
+) -> ExternalSource:
+    """ADR 0070 D2 (§5.2): one target unit's k = 0 child start, by `external_starts`' checks in
+    order: the variant is start-capable, the source record passed integrity (`status`), its
+    entry for the unit (in `entries`) has a request and a `profile_sha256`, the request names
+    `variant`, and `stored` holds bytes that hash to the profile."""
+    if not start_capable(variant):
+        return ExternalSource("absent", "variant_cold_only")
+    if status == "rejected":
+        return ExternalSource("rejected", "external_integrity")
+    entry = entries.get(unit_id)
+    request = entry.get("request") if isinstance(entry, Mapping) else None
+    result = entry.get("result") if isinstance(entry, Mapping) else None
+    profile = result.get("profile_sha256") if isinstance(result, Mapping) else None
+    if not isinstance(request, Mapping) or not isinstance(profile, str):
+        return ExternalSource("absent", "no_profile")
+    key = str(request["experiment_key"])
+    if request["model"]["artifact_ref"] != variant.sha256:
+        return ExternalSource("rejected", "external_compatibility", key, profile)
+    data = stored(profile)
+    if data is None:
+        return ExternalSource("absent", "profile_unavailable", key, profile)
+    if hashlib.sha256(data).hexdigest() != profile:
+        return ExternalSource("rejected", "external_integrity", key, profile)
+    return ExternalSource("accepted", None, key, profile)
 
 
 def recorded_coupling_start(
