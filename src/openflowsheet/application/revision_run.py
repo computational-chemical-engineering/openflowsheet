@@ -597,12 +597,7 @@ def solve_route(
             else None
         ),
     )
-    planned = [step for step in plan.steps if step.kind == "solve_eo"]
-    region_plan = (
-        plan.steps[-1].solve_plan
-        if route.solve_path == "revision_eo"
-        else (planned[0].solve_plan if len(planned) == 1 else None)
-    )
+    region_plan = _region_plan(route, plan)
 
     if run.outcome == "CONVERGED":
         if route.solve_path == "revision_eo" and run.state is not None:
@@ -659,6 +654,18 @@ def _route_plan(
         # never re-admits (R2.5), can still reach it.
         raise RunUnsupportedError("plan_refused(UNSUPPORTED_RANK_STRUCTURE)") from error
     return plan, report
+
+
+def _region_plan(route: Route, plan: ExecutionPlan) -> SolvePlan | None:
+    """`solve_route`'s solve plan of `plan`'s region: the final step's on `revision_eo`; on
+    `legacy_eo` its one `solve_eo` step's, or `None` without exactly one."""
+    planned = [step for step in plan.steps if step.kind == "solve_eo"]
+    region_plan = (
+        plan.steps[-1].solve_plan
+        if route.solve_path == "revision_eo"
+        else (planned[0].solve_plan if len(planned) == 1 else None)
+    )
+    return region_plan
 
 
 def _refused_plan(route: Route, plan: PlanRefusal, report: StructuralReport) -> RouteRun:
