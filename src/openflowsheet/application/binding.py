@@ -461,16 +461,9 @@ def legacy_admission(
     if probed is not None:
         return probed
 
-    freed = set(binding.freed.values())
-    for entry in free:
-        name = str(entry.get("id"))
-        unfreed = next((column for column in columns[name] if column not in freed), None)
-        if unfreed is not None:
-            return _free_unused(
-                name,
-                f"{name} targets {_document_column(unfreed, binding)}, which the SYN-001 "
-                "formulation that solves free specifications does not pin, so it cannot be freed.",
-            )
+    unfreed = _free_unfreed(free, binding)
+    if unfreed is not None:
+        return unfreed
 
     promoted = set(binding.promoted.values())
     for name, target_refusal in targets:
@@ -513,6 +506,25 @@ def _free_reach(
                 f"{name} and fixed specification {fixed_by[shared]} both target "
                 f"{_document_column(shared, binding)}. A coordinate is fixed or free, not both: "
                 "remove one of them.",
+            )
+    return None
+
+
+def _free_unfreed(free: Sequence[Mapping[str, Any]], binding: Binding) -> Unbound | None:
+    """`legacy_admission`'s C3: `None` when `binding` frees every column each specification in
+    `free` targets, else the first free specification's refusal."""
+    freed = set(binding.freed.values())
+    for entry in free:
+        name = str(entry.get("id"))
+        unfreed = next(
+            (column for column in binding.specification_targets[name] if column not in freed),
+            None,
+        )
+        if unfreed is not None:
+            return _free_unused(
+                name,
+                f"{name} targets {_document_column(unfreed, binding)}, which the SYN-001 "
+                "formulation that solves free specifications does not pin, so it cannot be freed.",
             )
     return None
 
