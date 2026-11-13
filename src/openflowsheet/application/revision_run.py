@@ -1341,53 +1341,9 @@ def reproduce_bundle(
         name: read_artifact(Path(rerun_directory), name) for name in rerun_manifest.artifacts
     }
     if coupling is not None:
-        # R-341's R0 guard digests the rerun record as written, before any digest in it is
-        # replaced for shape.
-        fresh_record_sha256 = (
-            document_sha256(artifacts[COUPLING_NAME]) if COUPLING_NAME in artifacts else None
+        artifacts, classified_bitwise = _shape_coupled_artifacts(
+            directory, manifest, artifacts, coupling, coupling_found
         )
-        # §14.5 D8 (R-308) items 1 and 3: the inner solves' constants digests for shape, in the
-        # record and in every artifact that carries the final one (build log D94; item 2 guards
-        # it; the manifest is not compared), and the iterates under the archive's policy.
-        artifacts = {
-            name: _constants_for_shape(document, read_artifact(directory, name))
-            if name in manifest.artifacts
-            else document
-            for name, document in artifacts.items()
-        }
-        if COUPLING_NAME in artifacts:
-            fresh_record = artifacts[COUPLING_NAME]
-            coupling_found += iterate_differences(
-                fresh_record, coupling, manifest.numerical_policy_id
-            )
-            # R-317 (b): the record's floats at their registered floors; `replay` compares the
-            # rest. A float taken from the record is not a bitwise match.
-            shaped, floored = record_differences(
-                fresh_record, coupling, manifest.numerical_policy_id
-            )
-            coupling_found += floored
-            artifacts[COUPLING_NAME] = shaped
-            classified_bitwise = shaped == fresh_record
-        # Build log D130 (D124): a failure bundle's compact copy of the record by the same rules,
-        # its `record_sha256` for shape, each side's guarded by its own record's digest (R-341).
-        failure = artifacts.get(FAILURE_NAME)
-        if FAILURE_NAME in manifest.artifacts and isinstance(failure, dict):
-            archived = read_artifact(directory, FAILURE_NAME)
-            fresh_copy = failure.get("observations", {}).get("external_coupling")
-            archived_copy = archived.get("observations", {}).get("external_coupling")
-            if isinstance(fresh_copy, dict) and isinstance(archived_copy, dict):
-                shaped_copy, floored = compact_differences(
-                    fresh_copy,
-                    archived_copy,
-                    coupling["coupling_block"],
-                    manifest.numerical_policy_id,
-                    fresh_record_sha256=fresh_record_sha256,
-                    recorded_record_sha256=document_sha256(coupling),
-                )
-                coupling_found += floored
-                classified_bitwise = classified_bitwise and shaped_copy == fresh_copy
-                observations = {**failure["observations"], "external_coupling": shaped_copy}
-                artifacts[FAILURE_NAME] = {**failure, "observations": observations}
     at("compare")
     # On `revision_coupled` the state is written over the final inner spec, whose columns and
     # kinds are the route's binding's (w moves constants only).
@@ -1398,6 +1354,63 @@ def reproduce_bundle(
     if experiments is not None and coupling is not None:
         report = _replayed_from_record(report, experiments, coupling)
     return Reproduction(_with_differences(report, coupling_found), rerun_manifest)
+
+
+def _shape_coupled_artifacts(
+    directory: Path,
+    manifest: RunManifest,
+    artifacts: dict[str, Any],
+    coupling: Mapping[str, Any],
+    found: list[str],
+) -> tuple[dict[str, Any], bool]:
+    """`reproduce_bundle`'s rerun `artifacts` of a `revision_coupled` bundle, shaped against the
+    archive in `directory` and its recorded `coupling`; the differences found are added to
+    `found`, and the flag is false when a float was taken from the record."""
+    classified_bitwise = True
+    # R-341's R0 guard digests the rerun record as written, before any digest in it is
+    # replaced for shape.
+    fresh_record_sha256 = (
+        document_sha256(artifacts[COUPLING_NAME]) if COUPLING_NAME in artifacts else None
+    )
+    # §14.5 D8 (R-308) items 1 and 3: the inner solves' constants digests for shape, in the
+    # record and in every artifact that carries the final one (build log D94; item 2 guards
+    # it; the manifest is not compared), and the iterates under the archive's policy.
+    artifacts = {
+        name: _constants_for_shape(document, read_artifact(directory, name))
+        if name in manifest.artifacts
+        else document
+        for name, document in artifacts.items()
+    }
+    if COUPLING_NAME in artifacts:
+        fresh_record = artifacts[COUPLING_NAME]
+        found += iterate_differences(fresh_record, coupling, manifest.numerical_policy_id)
+        # R-317 (b): the record's floats at their registered floors; `replay` compares the
+        # rest. A float taken from the record is not a bitwise match.
+        shaped, floored = record_differences(fresh_record, coupling, manifest.numerical_policy_id)
+        found += floored
+        artifacts[COUPLING_NAME] = shaped
+        classified_bitwise = shaped == fresh_record
+    # Build log D130 (D124): a failure bundle's compact copy of the record by the same rules,
+    # its `record_sha256` for shape, each side's guarded by its own record's digest (R-341).
+    failure = artifacts.get(FAILURE_NAME)
+    if FAILURE_NAME in manifest.artifacts and isinstance(failure, dict):
+        archived = read_artifact(directory, FAILURE_NAME)
+        fresh_copy = failure.get("observations", {}).get("external_coupling")
+        archived_copy = archived.get("observations", {}).get("external_coupling")
+        if isinstance(fresh_copy, dict) and isinstance(archived_copy, dict):
+            shaped_copy, floored = compact_differences(
+                fresh_copy,
+                archived_copy,
+                coupling["coupling_block"],
+                manifest.numerical_policy_id,
+                fresh_record_sha256=fresh_record_sha256,
+                recorded_record_sha256=document_sha256(coupling),
+            )
+            found += floored
+            classified_bitwise = classified_bitwise and shaped_copy == fresh_copy
+            observations = {**failure["observations"], "external_coupling": shaped_copy}
+            artifacts[FAILURE_NAME] = {**failure, "observations": observations}
+    return artifacts, classified_bitwise
 
 
 _HEX64: Final = re.compile(r"[0-9a-f]{64}")
