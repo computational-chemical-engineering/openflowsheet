@@ -1399,11 +1399,9 @@ def reproduce_bundle(
     # On `revision_coupled` the state is written over the final inner spec, whose columns and
     # kinds are the route's binding's (w moves constants only).
     rerun_result = Rerun(artifacts, variable_kinds=declared_kinds(route.binding.spec))
-    report = replay(directory, rerun_result)
-    if not classified_bitwise and report.bitwise_floats:
-        report = replace(report, bitwise_floats=False)
-    if experiments is not None and coupling is not None:
-        report = _replayed_from_record(report, experiments, coupling)
+    report = _classified_report(
+        replay(directory, rerun_result), classified_bitwise, experiments, coupling
+    )
     return Reproduction(_with_differences(report, coupling_found), rerun_manifest)
 
 
@@ -1507,6 +1505,21 @@ def _digests_for_shape(key: str, value: Any, theirs: Any) -> bool:
         and _HEX64.fullmatch(value)
         and _HEX64.fullmatch(theirs)
     )
+
+
+def _classified_report(
+    report: ReplayReport,
+    classified_bitwise: bool,
+    experiments: RecordedExperiments | None,
+    coupling: Mapping[str, Any] | None,
+) -> ReplayReport:
+    """`reproduce_bundle`'s `replay` report with its float classification after shaping, and a
+    coupled rerun's experiments as replayed from the record."""
+    if not classified_bitwise and report.bitwise_floats:
+        report = replace(report, bitwise_floats=False)
+    if experiments is not None and coupling is not None:
+        report = _replayed_from_record(report, experiments, coupling)
+    return report
 
 
 def _with_differences(report: ReplayReport, found: list[str]) -> ReplayReport:
