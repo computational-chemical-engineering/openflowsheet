@@ -342,24 +342,13 @@ def revision_probe(
     error. The loop runs the revision binder at most once more than there are fixed
     specifications; only a specification the document itself fixes can be a target."""
     from openflowsheet.application.revision_binding import bind_revision_flowsheet
-    from openflowsheet.models.revision_flowsheet import si_unit
 
     probe = copy.deepcopy(dict(document))
     specifications = list(probe.get("specifications") or ())
     fixed = {str(entry.get("id")) for entry in specifications if entry.get("role") == "fixed"}
     for entry in specifications:
-        if entry.get("role") != "free":
-            continue
-        entry["role"] = "fixed"
-        if entry.get("value") is None:
-            if binding is None:
-                raise ValueError(
-                    f"revision_probe: free specification {entry.get('id')!r} has no value and "
-                    "no legacy binding gives its start"
-                )
-            entry["value"] = _declared_default(binding.specification_targets[str(entry["id"])][0])
-            entry["unit"] = si_unit(str(entry.get("kind")))
-            entry.pop("bounds", None)
+        if entry.get("role") == "free":
+            _read_as_fixed(entry, binding)
 
     targets: list[tuple[str, Unbound]] = []
     while True:
@@ -387,6 +376,24 @@ def revision_probe(
             targets.append((name, result))
             continue
         return result, tuple(targets)
+
+
+def _read_as_fixed(entry: dict[str, Any], binding: Binding | None) -> None:
+    """Rewrite the probe's `role: free` specification `entry` in place as `role: fixed`; one
+    without a value starts at `_declared_default` of its first column in `binding`, in SI.
+    Raises `ValueError` when it has no value and there is no `binding`."""
+    from openflowsheet.models.revision_flowsheet import si_unit
+
+    entry["role"] = "fixed"
+    if entry.get("value") is None:
+        if binding is None:
+            raise ValueError(
+                f"revision_probe: free specification {entry.get('id')!r} has no value and "
+                "no legacy binding gives its start"
+            )
+        entry["value"] = _declared_default(binding.specification_targets[str(entry["id"])][0])
+        entry["unit"] = si_unit(str(entry.get("kind")))
+        entry.pop("bounds", None)
 
 
 def _free_unused(name: str, hint: str) -> Unbound:
