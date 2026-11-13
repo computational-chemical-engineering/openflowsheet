@@ -1262,6 +1262,21 @@ def _recorded_policies(
     return (policy, check_policy) if matches else None
 
 
+def _coupling_constants_guard(route: Route, record: Mapping[str, Any]) -> list[str]:
+    """`reproduce_bundle`'s difference of a coupling record whose final constants digest does not
+    recompute (§14.5 D8 item 2), or none."""
+    found: list[str] = []
+    # §14.5 D8 (R-308) item 2: the constants digest's R0 guard, by recomputation.
+    constants = final_constants(route.binding, record)
+    if constants is not None and constants[0] != constants[1]:
+        final = record["iterations"][-1]
+        found.append(
+            f"coupling_constants: {constants[1]} rebuilt at the record's final w "
+            f"{final['w']!r} (k = {final['k']}), against the recorded {constants[0]}"
+        )
+    return found
+
+
 def reproduce_bundle(
     directory: Path,
     *,
@@ -1340,14 +1355,7 @@ def reproduce_bundle(
             return Reproduction(
                 _inspected(directory, f"rerun_unsupported(external_coupling_invalid({problem}))")
             )
-        # §14.5 D8 (R-308) item 2: the constants digest's R0 guard, by recomputation.
-        constants = final_constants(route.binding, record)
-        if constants is not None and constants[0] != constants[1]:
-            final = record["iterations"][-1]
-            coupling_found.append(
-                f"coupling_constants: {constants[1]} rebuilt at the record's final w "
-                f"{final['w']!r} (k = {final['k']}), against the recorded {constants[0]}"
-            )
+        coupling_found += _coupling_constants_guard(route, record)
     at("rerun")
     with tempfile.TemporaryDirectory(prefix="ofs-replay-") as scratch:
         experiments = (
