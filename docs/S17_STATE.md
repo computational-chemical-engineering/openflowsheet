@@ -13,15 +13,14 @@ Lower code-health debt in `application/` without any change in behaviour (bitwis
 
 - Branch `wp/S17`, worktree `.claude/worktrees/s17`. Config at D11, playbook stub and D12 at `CB`.
 - S16 merged into `main` (fc552176, pushed); `main` merged into `wp/S17` (e215e0ed); `CB` = 1fd6826b.
-- Map build at `CB` running (started 2026-11-13; log `scratchpad/s17_map_build.out` of the session, map in
-  `~/.cache/openflowsheet/testmap/1fd6826b2f433c73c4c41ef6ccad1dcb903985c8/`).
+- Map at `CB` built: `~/.cache/openflowsheet/testmap/1fd6826b2f433c73c4c41ef6ccad1dcb903985c8/`. G-MAP and G-SELF
+  pass. Work order 1 (`<git-common-dir>/codehealth/briefs/S17-WO1.md`, revision_run.py) given to an engineer.
 
 ## Next actions
 
 1. (done) Merge `main` into `wp/S17`; `CB` fixed.
-2. Build the map: `.venv-testmap/bin/python scripts/test_impact.py build --base CB --workers 12` (about 70 min,
-   background). Gate G-MAP.
-3. Self-test: gate G-SELF.
+2. (done) Map at `CB`, G-MAP.
+3. (done) Self-test, G-SELF.
 4. (done) Baseline scan at `CB`, below.
 5. Refactor loop (skill), first targets `revision_run.py`, then `binding.py`.
 
@@ -34,8 +33,8 @@ Lower code-health debt in `application/` without any change in behaviour (bitwis
 
 | gate | when | pass criterion | result |
 | --- | --- | --- | --- |
-| G-MAP | map at `CB` | build exit 0 or 1; at least 20284 tests in the map; failing tests a subset of the 5 B-6 failures of S16 (`docs/S16_DECISIONS.md` B-6) plus at most 2 others, each named | |
-| G-SELF | before step 1 | `codehealth gate --self-test --mutate <path:line>` on a literal that `select --lines` maps to at least one test: SELF-TEST PASS with the `tests` tier failing with exit 1 (a test failure, not exit 2 or 124); unmutated, the `tests` tier passes | |
+| G-MAP | map at `CB` | build exit 0 or 1; at least 20284 tests in the map; failing tests a subset of the 5 B-6 failures of S16 (`docs/S16_DECISIONS.md` B-6) plus at most 2 others, each named | PASS: 20356 tests, 3125 s, 25.1 MB; 6 failed: the 5 B-6 failures (test_m04_wo9 a25, a29; test_t07_v17_reference f6; test_x02_wo4 g4e x2) and `test_evidence_manifests` on the S16 manifest's `<scratch>` placeholders, a real defect, fixed on `main` (88da7f68) and merged (0ef4d4ca) |
+| G-SELF | before step 1 | `codehealth gate --self-test --mutate <path:line>` on a literal that `select --lines` maps to at least one test: SELF-TEST PASS with the `tests` tier failing with exit 1 (a test failure, not exit 2 or 124); unmutated, the `tests` tier passes | PASS: `revision_run.py:614` 0 -> 1 (`solve_route`); unmutated 12 files, 1154 passed, 152 s; mutated exit 1, 110 files, 92 failed, 190 errors, 345 s; f0 detected, mcp_digest missed |
 | G-STEP | every step | gate exit 0 and `codehealth diff --base <last accepted>` shows the touched files' debt strictly lower | per step in the run log |
 | G-REVIEW | every 5 accepted steps | fresh `reviewer` on the diffs; rejected steps reverted and logged `review-reject` | |
 | G-END-DEBT | campaign end | `application/` debt at least 30 % below its value at `CB`; `revision_run.py` and `binding.py` each at least 45 % lower; no new brain function | |
