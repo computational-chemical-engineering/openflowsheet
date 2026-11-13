@@ -719,11 +719,7 @@ def bind_revision_or_reason(document: Mapping[str, Any]) -> Binding | Unbound:
     )
 
     pinned = _pinned_columns(spec)
-    specification_ids: dict[str, str] = {}
-    for row_id, column in pinned.items():
-        for name, columns in targets.items():
-            if column in columns:
-                specification_ids[row_id] = name
+    specification_ids = _pinned_specifications(pinned, targets)
 
     # A unit row pinning a column the revision *frees* is removed: the adjusted variable of a
     # cross-unit specification (T02 §7.1). Only a column no fixed specification also targets.
@@ -787,6 +783,19 @@ def bind_revision_or_reason(document: Mapping[str, Any]) -> Binding | Unbound:
         constants_sha256="0" * 64,
         input_mapping=InputMapping(declared_components=declared, conversions=conversions),
     )
+
+
+def _pinned_specifications(
+    pinned: Mapping[str, str], targets: Mapping[str, tuple[str, ...]]
+) -> dict[str, str]:
+    """Each unit row in `pinned` whose column a fixed specification in `targets` targets, by row
+    id, with that specification's id (the last in `targets` when several target the column)."""
+    specification_ids: dict[str, str] = {}
+    for row_id, column in pinned.items():
+        for name, columns in targets.items():
+            if column in columns:
+                specification_ids[row_id] = name
+    return specification_ids
 
 
 def _without_rows(spec: ProblemSpec, removed: tuple[str, ...]) -> ProblemSpec:
