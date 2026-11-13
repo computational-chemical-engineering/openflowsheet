@@ -273,3 +273,22 @@ F0, the digest, or (by grep) any test. Re-run the self-test once S16 lands.
   out of the per-instance loop in `_model_refusal` (about 2 ms per instance; a performance change, not a refactor
   step). Playbook rules 5 and 7 extended, 12 refined, 14, a when-not row. `_unadmitted` is peeled no further (one
   family table, units design §4.7).
+- **Work order 5 (2026-11-13, opus-engineer):** 3 attempts, all accepted (run-log steps 50 to 52). jobs/model.py
+  54.2 -> 1.0 (`check_lifecycle` restructured as the §6.3 rule table, one `_check_*` per rule); transactions.py
+  47.0 -> 11.0 (`_apply` 40.0 -> 0). `semantic_diff` (7.0) left: both candidate steps were a same-complexity move or
+  under 2 points; it moves with R2. DECISION: leave it. Alternative: the guard-clause variant (7.0 -> 5.0).
+  Reversible by: a later step.
+- **Review 6 (2026-11-13, reviewer) on work order 5 (263cbf44..cae099ae):** 3 accepted (1 with a note), 0 rejects,
+  no behaviour difference (the hoisted views cannot raise on any JobEvent). Note fixed in 7cf38820
+  (`_enter_or_create_member` -> `_ensure_member`, takes `following`), run-log step 61. Not done: merging
+  `_check_array_index` with its inline twin in `_apply_at` drops string literals, which the bitwise gate refuses.
+- **Work order 6 (2026-11-13, opus-engineer):** 8 attempts, all accepted (run-log steps 53 to 60). jobs/executor.py
+  37.0 -> 12.0 (`_supervise` 33.0 -> 8.0); jobs/runner.py 29.7 -> 8.5 (`solve` 21.6 -> 5.1, `optimize` 6.1 -> 1.4).
+  Stopped where the remainder carries loop state or handlers read the locals. Left for a behaviour-level change: the
+  duplicated R5 `verification_weakening_refused` block in `solve` and `optimize` (merging drops literals);
+  `optimize`'s refusal ladder (moving it reorders four lazy `studies.nlp.*` imports). Noted:
+  tests/test_t07_w2d_noncanonical.py is not collectable under xdist (object addresses in test ids).
+- **Review 7 (2026-11-13, reviewer) on work order 6 (cae099ae..8d07d95b):** 8 accepted (4 with a note), 0 rejects, no
+  behaviour difference. Notes fixed in 18562395 (`_end_exited` -> `_poll_and_end_exited`, `ending_failed`,
+  docstrings for `_supervise`, `solve`, `_warm_start`, `_continuation`). Playbook: rules 4, 7, 8, 10 extended, 15
+  and 16, accepted forms, a when-not row (reviews 6 and 7).
