@@ -1,0 +1,202 @@
+{
+  "work_package": "S16",
+  "commit": "ef915499e6678f3d50b57d3e9af20152d7d03bdd",
+  "requirements": [],
+  "status": "tested",
+  "inputs": {
+    "case_id": "S16 brief (orchestrator, 2026-11-12): per-test coverage and test-impact selection; R-1040; docs/test-impact.md",
+    "case_hash": "7445a73d12ef00f3a5cc7982266a5af0ff46b51c96ffe681a81fcae990ea5ed0",
+    "environment_lock_hash": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+  },
+  "commands": [
+    {
+      "cmd": "PYTHONPATH=src .venv/bin/python -m pytest -q -p no:cacheprovider tests/test_s16_test_impact.py (36 passed, main .venv without coverage)",
+      "cwd": ".claude/worktrees/s16",
+      "exit_code": 0
+    },
+    {
+      "cmd": ".venv/bin/ruff check . (all checks passed); .venv/bin/ruff format --check . (1204 files formatted); .venv/bin/mypy (no issues in 340 source files)",
+      "cwd": ".claude/worktrees/s16",
+      "exit_code": 0
+    },
+    {
+      "cmd": "PYTHONPATH=src .venv/bin/python scripts/corpus_identity.py --check (F0 PASS: M1 50/50, M2-M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 35/35)",
+      "cwd": ".claude/worktrees/s16",
+      "exit_code": 0
+    },
+    {
+      "cmd": "PYTHONPATH=src .venv/bin/python scripts/t08_support_matrix.py --check (0 problems, with S16's harvest rows)",
+      "cwd": ".claude/worktrees/s16",
+      "exit_code": 0
+    },
+    {
+      "cmd": ".venv-testmap/bin/python scripts/test_impact.py build --base a9e733e4 --workers 12 (20284 tests: 20170 passed, 109 skipped, 5 failed under the build only; wall 4204 s; map 25.0 MB)",
+      "cwd": ".",
+      "exit_code": 1
+    },
+    {
+      "cmd": "PYTHONPATH=src pytest -q -p no:cacheprovider -rs in a clean detached worktree of a9e733e4, .venv-testmap, serial, threads 1 (20175 passed, 107 skipped, 220 deselected, 3 xfailed in 5249 s)",
+      "cwd": ".",
+      "exit_code": 0
+    },
+    {
+      "cmd": "PYTHONPATH=src /home/eajfpeters/Code/OpenFlowsheet/.venv/bin/python -m pytest -q -p no:cacheprovider tests/test_s16_test_impact.py (60 passed in 3.43 s) at ef915499",
+      "cwd": ".claude/worktrees/s16",
+      "exit_code": 0
+    },
+    {
+      "cmd": "ruff check . (All checks passed); ruff format --check . (1204 files already formatted); mypy (Success: no issues found in 340 source files); main .venv, at ef915499",
+      "cwd": ".claude/worktrees/s16",
+      "exit_code": 0
+    },
+    {
+      "cmd": "PYTHONPATH=src .venv/bin/python scripts/corpus_identity.py --check (F0 PASS: M1 50/50, M2-M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 35/35) at ef915499",
+      "cwd": ".claude/worktrees/s16",
+      "exit_code": 0
+    },
+    {
+      "cmd": "python scripts/s16_recall.py --base a9e733e4 --map ~/.cache/openflowsheet/testmap/a9e733e4d3eb63bf16068efeebe2643522aceb34 --out <scratch>/s16recall3/recall.json --workers 12 (reconstructed from the driver usage, the driver does not log its command line; run 3, B-10 tool; 17 cases + 2 refactors; recall-run3.json)",
+      "cwd": ".",
+      "exit_code": 0
+    },
+    {
+      "cmd": "python scripts/s16_recall.py --base a9e733e4 --map ~/.cache/openflowsheet/testmap/a9e733e4d3eb63bf16068efeebe2643522aceb34 --out <scratch>/s16recall4/recall.json --workers 12 --cases app-owner-instance,refactor-rename-local,refactor-extract-function (reconstructed from the driver usage, the driver does not log its command line; run 4, B-11 whole-file widening; recall-run4.json)",
+      "cwd": ".",
+      "exit_code": 0
+    },
+    {
+      "cmd": "python scripts/s16_recall.py --base a9e733e4 --map ~/.cache/openflowsheet/testmap/a9e733e4d3eb63bf16068efeebe2643522aceb34 --out <scratch>/s16recall5/recall.json --workers 12 --cases s1-shadow-import,s2-render-twin,s3-nonlocal,s4-docs-added,shared-catalogue,refactor-extract-authz (reconstructed from the driver usage, the driver does not log its command line; run 5, after B-12 to B-19, tool at ef915499; recall-run5.json)",
+      "cwd": ".",
+      "exit_code": 0
+    },
+    {
+      "cmd": "gh run view 43365514889 --json conclusion,jobs: check (ubuntu-latest) success, check (ubuntu-24.04-arm) success (CI at ef915499); earlier run 43354463657 at 40270b62 green on both legs",
+      "cwd": ".",
+      "exit_code": 0
+    },
+    {
+      "cmd": "PYTHONPATH=src .venv/bin/python scripts/t08_support_matrix.py --check (0 problems, with the harvest rows for this manifest)",
+      "cwd": ".claude/worktrees/s16",
+      "exit_code": 0
+    }
+  ],
+  "checks": [
+    {
+      "id": "S16.TESTS",
+      "description": "tests/test_s16_test_impact.py: diff parsing, line-to-test mapping on a synthetic map, every fallback rule, exit codes, the open-record mapping; runs without coverage",
+      "result": "pass",
+      "value": "60 passed in 3.43 s (main .venv), ef915499"
+    },
+    {
+      "id": "S16.LINT",
+      "description": "ruff check, ruff format --check, mypy as scripts/check.sh runs it (mypy covers src and benchmarks, not scripts)",
+      "result": "pass",
+      "value": "ruff clean; 1204 files formatted; mypy no issues in 340 source files"
+    },
+    {
+      "id": "S16.F0",
+      "description": "F0 unchanged: S16 touches no src/, schema or benchmark data",
+      "result": "pass",
+      "value": "corpus_identity.py --check PASS: M1 50/50, M2-M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 35/35"
+    },
+    {
+      "id": "S16.IDENTITY",
+      "description": "no release-identity path: git diff --name-only origin/main...HEAD lists no src/, schemas/, requirements.lock, pyproject.toml, MANIFEST.in, README, LICENSE, NOTICE or workflow file; benchmarks/ only the T08 harvest rows",
+      "result": "pass",
+      "value": "docs, scripts, tests, requirements-testmap.lock, evidence/S16, benchmarks/t08/support_envelope.yaml (harvest rows only), tests/test_m07a_harvest.py (HARVEST_SIZE)"
+    },
+    {
+      "id": "S16.BUILD",
+      "description": "the map builds at a clean base with per-test contexts, subprocess coverage and the open record; serial and -n 4 partial maps agree",
+      "result": "pass",
+      "value": "a9e733e4: 20284 tests, 4204 s, 25.0 MB; equivalence on 5 files: outcomes 53/53 equal, opens and fixtures identical, 5 of 1101 line sets differ (tests/conftest.py, run/lock.py), docs/S16_DECISIONS.md B-6"
+    },
+    {
+      "id": "S16.RECALL",
+      "description": "seeded-change recall: scripts/s16_recall.py at base a9e733e4, 12 workers, per-test limit 900 s (60 s for app-owner-instance, B-10); a miss is a test that fails in the full suite with the change and is not selected",
+      "result": "pass",
+      "value": "run 3 (node-level selection): 16 of 17 cases 0 missed, app-owner-instance 60 missed, both refactor runs exit 1, led to B-11; run 4 (whole files): app-owner-instance 86 files, 693 new failures, 8 missed, all among 14 tests verified to pass on the mutated tree without a limit (false misses of the 60 s limit), both refactors 51 files, 0 failures, run exit 0; run 5 (ef915499's rules): s1-shadow-import and s4-docs-added fall back, s2-render-twin 52 files 8 failures, s3-nonlocal 38 files 5, shared-catalogue 29 files 1, all 0 missed, refactor-extract-authz 36 files run exit 0; 0 real misses. recall-run3/4/5.json beside this manifest"
+    },
+    {
+      "id": "S16.CI",
+      "description": "CI, scripts/check.sh with the CI extras, on both architectures at ef915499",
+      "result": "pass",
+      "value": "run 43365514889: check (ubuntu-latest) success, check (ubuntu-24.04-arm) success, default-install success, identity success; earlier run 43354463657 at 40270b62 green on both legs"
+    },
+    {
+      "id": "S16.REVIEW_DOC",
+      "description": "design-lane review of the package (reviewer agent), docs/reviews/S16-review.md",
+      "result": "pass",
+      "value": "findings X1, S1 to S6 and a note, all addressed by B-12 to B-19 (docs/S16_DECISIONS.md); the review block stays pending until human sign-off"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "scripts/test_impact.py",
+      "sha256": "1d6a3761d041c3ecb771e47636aa3d18c9501178ae387cc46b3d381981d68210",
+      "description": "the CLI: build, select, run"
+    },
+    {
+      "path": "scripts/test_impact_runtime.py",
+      "sha256": "5f8214431ec7f9b649414f2454386ca48dfa3c01067ca46cb4412e3f9715e257",
+      "description": "the build's in-process runtime"
+    },
+    {
+      "path": "scripts/s16_recall.py",
+      "sha256": "f9a3a1f13152f673603b582945283e15840fc03d65b9011955564eff53fb372c",
+      "description": "the seeded-change recall driver"
+    },
+    {
+      "path": "requirements-testmap.lock",
+      "sha256": "e342922197a5e9f024dd9b95a77bf9fdbee63dfa343eda02b37736216677044a",
+      "description": "the tools' hash-pinned increment"
+    },
+    {
+      "path": "docs/test-impact.md",
+      "sha256": "7445a73d12ef00f3a5cc7982266a5af0ff46b51c96ffe681a81fcae990ea5ed0",
+      "description": "the tool's documentation, limitations included"
+    },
+    {
+      "path": "docs/S16_DECISIONS.md",
+      "sha256": "7ec29f6c1c762d324a83bcda758c5232bc5567ecb9552add8d7354fff8a07906",
+      "description": "build decisions B-1 to B-19, measurements, recall"
+    },
+    {
+      "path": "docs/reviews/S16-review.md",
+      "sha256": "ee86d987ca28dccae16fc6f5e95e99674e66f55e37d2a1bba0dcd02ece728ce4",
+      "description": "design-lane review: X1, S1 to S6 and a note"
+    },
+    {
+      "path": "evidence/S16/ef915499e6678f3d50b57d3e9af20152d7d03bdd/recall-run3.json",
+      "sha256": "3ac1b41eee92bc8637eb738b5e1b0a5a4f27989cbbbb3eb8827434b4775bfde6",
+      "description": "recall run 3: B-10 tool, node-level selection"
+    },
+    {
+      "path": "evidence/S16/ef915499e6678f3d50b57d3e9af20152d7d03bdd/recall-run4.json",
+      "sha256": "349b4e1cf055b9069531dbe39682bd0accf54294f36ac1425f7512f62168a9a1",
+      "description": "recall run 4: B-11 whole-file widening"
+    },
+    {
+      "path": "evidence/S16/ef915499e6678f3d50b57d3e9af20152d7d03bdd/recall-run5.json",
+      "sha256": "acc04bb9c1a23144f6ad552c10e5ad5ca080dd30d3cc8bea32e08911ea68f8f4",
+      "description": "recall run 5: after B-12 to B-19"
+    }
+  ],
+  "limitations": [
+    "Evidence class: software verification of a development tool (test-impact selection), not of the simulator. Status is tested: CI is green on both legs at ef915499 (run 43365514889) and the design lane has reviewed it (docs/reviews/S16-review.md, all findings addressed by B-12 to B-19); the review block stays pending until human sign-off.",
+    "Requirements empty: S16 maps to no D/A requirement; it is a development-process package (R-1040).",
+    "Selection is an inner-loop aid only (R-1040): CI on both architectures stays the merge gate, with F0 on main after the merge. A passing selection is never merge evidence.",
+    "The open-file record sees only Python-level opens in the test-map venv's interpreter and its Python children: files read only by non-Python children (git, bash, node) are invisible to it, and a file read both ways maps only to its Python readers.",
+    "Shared state the build's restore does not reach (objects held deeper than a module-level instance, rebound class attributes, state outside the repository's modules) can still attribute shared work to the first test that does it; seeded changes measure the recall, they do not prove it.",
+    "At a9e733e4, 5 of 20284 tests fail under the map build and pass without it (4 from module-scoped state the restore resets, 1 timing budget under coverage); their map is that of the failing run (docs/S16_DECISIONS.md B-6).",
+    "The recall check's per-case results are in recall-run3.json, recall-run4.json and recall-run5.json beside this manifest and in docs/S16_DECISIONS.md, Recall; the history replay (b) was not done (one map per base, about 70 min each).",
+    "The map is built on Linux x86-64 (SMM-TR09, 16 cores) with pytest-xdist; the build reads /proc for the process chain, so it is Linux-only. select and run need only the standard library.",
+    "Namespace enumeration (vars(module), dir(), inspect.getmembers) does not select tests for a new def (docs/test-impact.md, Limitations).",
+    "A session-scoped fixture that runs a changed line for tests in another file is a residual risk of whole-file widening (B-11).",
+    "A map built before B-16 and B-17 needs a rebuild to measure docs/*.py and to link getfixturevalue fixtures; until then select falls back on any docs/*.py change."
+  ],
+  "review": {
+    "numerical": "pending",
+    "process_model": "pending"
+  }
+}
