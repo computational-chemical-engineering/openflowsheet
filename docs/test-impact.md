@@ -70,11 +70,14 @@ pytest arguments (`build -- tests/test_x.py`) is a partial map, which `select` r
 ```
 
 `select` compares the working tree with the base (staged, unstaged and untracked files) and prints
-node ids, one per line, on stdout, with the count or the fallback reason on stderr. Exit 0 is a
+the selected test files, one per line, on stdout, with the count or the fallback reason on stderr.
+Every selected node id is widened to its whole file: a module-scoped fixture or cache makes a file's
+later tests depend on lines only its first test records, and some files' tests depend on an earlier
+test's state (S16 B-11). `select --nodes` prints the node ids before widening. Exit 0 is a
 selection, exit 3 means "run the full suite", anything else is an error. `select` needs only the
 standard library, so the main `.venv` can run it too.
 
-`run` runs the selection (node ids through an `@file`, without shell splitting) or, on a fallback,
+`run` runs the selection (whole test files through an `@file`, without shell splitting) or, on a fallback,
 the full default-marker suite, and prints one line: selected count, fallback yes or no, pytest's
 counts, wall time; the full log goes to `$TMPDIR/test-impact-<sha>.log` (or `--log`). Its exit code
 is pytest's. `--repo DIR` (before the subcommand) selects in another checkout.

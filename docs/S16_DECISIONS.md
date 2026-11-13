@@ -91,3 +91,16 @@ limitations) by whoever may change D2.4 paths, then the manifest.
   off by the lower limit (16 baseline tests exceed 60 s) can only add a false miss, which is checked by hand; it
   cannot hide a real one. The selected run is serial and only has to fail, so it stops at the first failure.
   Other cases keep 900 s. Reversible by: CASE_TIMEOUT and CASE_RUN_ARGS in scripts/s16_recall.py.
+- **B-11. `run` and `select` widen to whole test files (2026-11-13, orchestrator).** Recall run 3 (B-10): 16 of 17
+  cases 0 missed; app-owner-instance 60 missed, and both refactor cases' selected runs failed (exit 1) with 0
+  failures in the full suite. 46 misses were in `test_t07_g12_no_weakening.py` (10 of its 63 tests selected): its
+  `runs` cache solves on first use, so only the first test records the changed line, and the others fail with
+  "idempotency key already used". The refactor failure is `test_m06_browser_smoke.py::test_g8...`, which needs an
+  earlier test of its file to have solved rev-000005. Both are one cause: a file's tests share module state.
+  `Selection.whole_files()` widens every node id to its file; `run` and `select` use it, `select --nodes` prints
+  node ids, `select --lines` (coverage strength) stays per test. On run 3's data the widening leaves 14 misses in
+  app-owner-instance (103 files), all 60 s timeouts of slow tests in files without a selected test (B-10's false
+  misses; checked by running them on the mutated tree without a limit). Residual risk: a session-scoped fixture
+  that runs a changed line for tests in another file; none seen in the recall. Alternative: per-fixture
+  attribution of setup coverage (does not cover a module-level cache filled inside a test). Reversible by: this
+  commit.

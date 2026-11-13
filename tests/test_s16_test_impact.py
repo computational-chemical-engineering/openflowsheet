@@ -400,11 +400,23 @@ def test_exit_codes_and_output(repo, capsys: pytest.CaptureFixture[str], monkeyp
     monkeypatch.setattr(ti, "ROOT", root)
     monkeypatch.chdir(root)
     _edit(root, "src/pkg/mod.py", "    y = x + 1", "    y = x + 2")
-    assert ti.main(["select", "--base", base, "--map", str(map_dir)]) == 0
+    assert ti.main(["select", "--base", base, "--map", str(map_dir), "--nodes"]) == 0
     assert capsys.readouterr().out == f"{T1}\n"
+    # B-11: the default output is the whole test file of every selected node id.
+    assert ti.main(["select", "--base", base, "--map", str(map_dir)]) == 0
+    assert capsys.readouterr().out == "tests/test_a.py\n"
     _edit(root, "src/pkg/mod.py", "LIMIT = 3", "LIMIT = 4")
     assert ti.main(["select", "--base", base, "--map", str(map_dir)]) == ti.EXIT_FULL == 3
     assert "full suite: src/pkg/mod.py:" in capsys.readouterr().err
+
+
+def test_whole_files_widens_node_ids_and_keeps_a_fallback() -> None:
+    """B-11: a module-scoped fixture or cache makes a file's later tests depend on lines only the
+    first test records, so a selected node id runs its whole file."""
+    widened = ti.Selection({T1, T3, T4, "tests/test_c.py"}).whole_files()
+    assert widened.nodes == {"tests/test_a.py", "tests/test_b.py", "tests/test_c.py"}
+    assert widened.fallback is None
+    assert ti.Selection(fallback="why").whole_files() == ti.Selection(fallback="why")
 
 
 def test_select_lines(repo, capsys: pytest.CaptureFixture[str]) -> None:

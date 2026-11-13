@@ -436,6 +436,17 @@ class Selection:
     nodes: set[str] = field(default_factory=set)
     fallback: str | None = None
 
+    def whole_files(self) -> Selection:
+        """Every selected node id widened to its whole test file (docs/S16_DECISIONS.md B-11).
+
+        Per-test coverage records a line only for the test that ran it. A module-scoped fixture or
+        a module-level cache runs in the first test that needs it, so the file's later tests depend
+        on the line without recording it (recall: 46 misses in test_t07_g12_no_weakening.py), and
+        a file whose tests use an earlier test's state fails when run in part
+        (test_m06_browser_smoke.py). A whole file runs in its own order with its own fixtures.
+        """
+        return Selection({node.split("::", 1)[0] for node in self.nodes}, self.fallback)
+
 
 def is_test_module(path: str) -> bool:
     name = path.rsplit("/", 1)[-1]
@@ -709,7 +720,7 @@ SUMMARY = re.compile(r"^=*\s*(\d+ (?:passed|failed|error|skipped|deselected).*?)
 
 
 def run(base: str, map_dir: Path | None, log: Path | None, extra: list[str], repo: Path) -> int:
-    selection = select(base, map_dir, repo)
+    selection = select(base, map_dir, repo).whole_files()
     sha = git("rev-parse", "--short", "HEAD", cwd=repo).strip()
     log = log or Path(os.environ.get("TMPDIR", "/tmp")) / f"test-impact-{sha}.log"
     command = [sys.executable, "-m", "pytest", "-q", "-p", "no:cacheprovider", "-rs", *extra]
@@ -765,6 +776,9 @@ def main(argv: list[str] | None = None) -> int:
     select_parser.add_argument("--base", default="HEAD")
     select_parser.add_argument("--map", type=Path)
     select_parser.add_argument("--lines", help="PATH:START-END: the tests executing those lines")
+    select_parser.add_argument(
+        "--nodes", action="store_true", help="print node ids, not their whole test files (B-11)"
+    )
     run_parser = commands.add_parser("run", help="run the selection (or the full suite)")
     run_parser.add_argument("--base", required=True)
     run_parser.add_argument("--map", type=Path)
@@ -779,6 +793,8 @@ def main(argv: list[str] | None = None) -> int:
         selection = select_lines(args.lines, args.base, args.map, args.repo or ROOT)
     else:
         selection = select(args.base, args.map, args.repo or ROOT)
+        if not args.nodes:
+            selection = selection.whole_files()
     if selection.fallback is not None:
         print(f"full suite: {selection.fallback}", file=sys.stderr)
         return EXIT_FULL
