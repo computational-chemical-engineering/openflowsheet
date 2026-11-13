@@ -372,9 +372,7 @@ class ProcessExecutor:
                 if self._closing and failures >= SHUTDOWN_STORE_ATTEMPTS:
                     self._abandon_jobs_and_kill_workers()
                     return
-                admitted: list[str] = []
-                while self._queue and len(self._slots) + len(admitted) < self.settings.max_workers:
-                    admitted.append(self._queue.popleft())
+                admitted = self._admit()
             # The supervisor outlives a store error, and the next poll retries what it interrupted:
             # an admitted id goes back to the head of the queue, and a slot leaves only once its
             # job's end is recorded, so a job is never left `queued` or `running` behind a
@@ -412,6 +410,14 @@ class ProcessExecutor:
         for slot in abandoned:  # no worker outlives the shutdown
             if slot.launched and slot.process.is_alive():
                 _kill_tree(slot.process)
+
+    def _admit(self) -> list[str]:
+        """§9.1, under the condition's lock: take ids from the head of the queue while a worker
+        slot is free (`settings.max_workers`, counting the slots held and the ids taken)."""
+        admitted: list[str] = []
+        while self._queue and len(self._slots) + len(admitted) < self.settings.max_workers:
+            admitted.append(self._queue.popleft())
+        return admitted
 
     def _launch_admitted(self, admitted: list[str]) -> list[str]:
         """Launch the admitted jobs in order (`_launch`), stopping at the first that fails: the
