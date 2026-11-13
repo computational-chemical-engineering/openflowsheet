@@ -1,0 +1,111 @@
+{
+  "work_package": "S16",
+  "commit": "84872685f6aa661a67bd900439e4b4bfc614b37e",
+  "requirements": [],
+  "status": "implemented",
+  "inputs": {
+    "case_id": "S16 brief (orchestrator, 2026-11-12): per-test coverage and test-impact selection; R-1040; docs/test-impact.md",
+    "case_hash": "b6371fcf82730effeae310bd1002ad3688a96efbd943d0c41ae737660381050f",
+    "environment_lock_hash": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+  },
+  "commands": [
+    {
+      "cmd": "PYTHONPATH=src .venv/bin/python -m pytest -q -p no:cacheprovider tests/test_s16_test_impact.py (36 passed, main .venv without coverage)",
+      "cwd": ".claude/worktrees/s16",
+      "exit_code": 0
+    },
+    {
+      "cmd": ".venv/bin/ruff check . (all checks passed); .venv/bin/ruff format --check . (1204 files formatted); .venv/bin/mypy (no issues in 340 source files)",
+      "cwd": ".claude/worktrees/s16",
+      "exit_code": 0
+    },
+    {
+      "cmd": "PYTHONPATH=src .venv/bin/python scripts/corpus_identity.py --check (F0 PASS: M1 50/50, M2-M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 35/35)",
+      "cwd": ".claude/worktrees/s16",
+      "exit_code": 0
+    },
+    {
+      "cmd": "PYTHONPATH=src .venv/bin/python scripts/t08_support_matrix.py --check (0 problems, with S16's harvest rows)",
+      "cwd": ".claude/worktrees/s16",
+      "exit_code": 0
+    },
+    {
+      "cmd": ".venv-testmap/bin/python scripts/test_impact.py build --base a9e733e4 --workers 12 (20284 tests: 20170 passed, 109 skipped, 5 failed under the build only; wall 4204 s; map 25.0 MB)",
+      "cwd": ".",
+      "exit_code": 1
+    },
+    {
+      "cmd": "PYTHONPATH=src pytest -q -p no:cacheprovider -rs in a clean detached worktree of a9e733e4, .venv-testmap, serial, threads 1 (20175 passed, 107 skipped, 220 deselected, 3 xfailed in 5249 s)",
+      "cwd": ".",
+      "exit_code": 0
+    }
+  ],
+  "checks": [
+    {
+      "id": "S16.TESTS",
+      "description": "tests/test_s16_test_impact.py: diff parsing, line-to-test mapping on a synthetic map, every fallback rule, exit codes, the open-record mapping; runs without coverage",
+      "result": "pass",
+      "value": "36 passed (main .venv)"
+    },
+    {
+      "id": "S16.LINT",
+      "description": "ruff check, ruff format --check, mypy as scripts/check.sh runs it (mypy covers src and benchmarks, not scripts)",
+      "result": "pass",
+      "value": "ruff clean; 1204 files formatted; mypy no issues in 340 source files"
+    },
+    {
+      "id": "S16.F0",
+      "description": "F0 unchanged: S16 touches no src/, schema or benchmark data",
+      "result": "pass",
+      "value": "corpus_identity.py --check PASS, the same counts as F1's manifest"
+    },
+    {
+      "id": "S16.IDENTITY",
+      "description": "no release-identity path: git diff --name-only origin/main...HEAD lists no src/, schemas/, requirements.lock, pyproject.toml, MANIFEST.in, README, LICENSE, NOTICE or workflow file; benchmarks/ only the T08 harvest rows",
+      "result": "pass",
+      "value": "docs, scripts, tests, requirements-testmap.lock, evidence/S16, benchmarks/t08/support_envelope.yaml (harvest rows only), tests/test_m07a_harvest.py (HARVEST_SIZE)"
+    },
+    {
+      "id": "S16.BUILD",
+      "description": "the map builds at a clean base with per-test contexts, subprocess coverage and the open record; serial and -n 4 partial maps agree",
+      "result": "pass",
+      "value": "a9e733e4: 20284 tests, 4204 s, 25.0 MB; equivalence on 5 files: outcomes 53/53 equal, opens and fixtures identical, 5 of 1101 line sets differ (tests/conftest.py, run/lock.py), docs/S16_DECISIONS.md B-6"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "scripts/test_impact.py",
+      "sha256": "8961926a1cb97d7e753b0e1f326614f39c3f3f5bafe820b6a6b5b41a895631f9",
+      "description": "the CLI: build, select, run"
+    },
+    {
+      "path": "scripts/test_impact_runtime.py",
+      "sha256": "efe101ee4ff011b80f0cf76568ffdf536efca738bd00f158206a4448a1cca1ce",
+      "description": "the build's in-process runtime"
+    },
+    {
+      "path": "requirements-testmap.lock",
+      "sha256": "406a49a6b66a7143a7e477dd9c149694580959c4ac703f7511e991e96d253603",
+      "description": "the tools' hash-pinned increment"
+    },
+    {
+      "path": "docs/S16_DECISIONS.md",
+      "sha256": "6aef65783b68d5fb56defc70202cd8cddcdc773dd6663501e519b81f29d93551",
+      "description": "build decisions B-1 to B-8, measurements, recall"
+    }
+  ],
+  "limitations": [
+    "Evidence class: software verification of a development tool (test-impact selection), not of the simulator. Status is implemented: CI on both legs has not run on this commit; the review block stays pending.",
+    "Requirements empty: S16 maps to no D/A requirement; it is a development-process package (R-1040).",
+    "Selection is an inner-loop aid only (R-1040): CI on both architectures stays the merge gate, with F0 on main after the merge. A passing selection is never merge evidence.",
+    "The open-file record sees only Python-level opens in the test-map venv's interpreter and its Python children: files read only by non-Python children (git, bash, node) are invisible to it, and a file read both ways maps only to its Python readers.",
+    "Shared state the build's restore does not reach (objects held deeper than a module-level instance, rebound class attributes, state outside the repository's modules) can still attribute shared work to the first test that does it; seeded changes measure the recall, they do not prove it.",
+    "At a9e733e4, 5 of 20284 tests fail under the map build and pass without it (4 from module-scoped state the restore resets, 1 timing budget under coverage); their map is that of the failing run (docs/S16_DECISIONS.md B-6).",
+    "The recall check's per-case results are in docs/S16_DECISIONS.md and in evidence/S16/ beside this manifest (recall.json); the history replay (b) was not done (one map per base, about 70 min each).",
+    "The map is built on Linux x86-64 (SMM-TR09, 16 cores) with pytest-xdist; the build reads /proc for the process chain, so it is Linux-only. select and run need only the standard library."
+  ],
+  "review": {
+    "numerical": "pending",
+    "process_model": "pending"
+  }
+}

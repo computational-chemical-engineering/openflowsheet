@@ -1,0 +1,142 @@
+{
+ "base": "a9e733e4d3eb63bf16068efeebe2643522aceb34",
+ "cases": [
+  {
+   "case": "baseline",
+   "failures": [],
+   "summary": "20080 passed, 107 skipped, 3 xfailed, 12 warnings in 782.23s (0:13:02) | 95 passed in 24.39s"
+  },
+  {
+   "case": "s1-shadow-import",
+   "kind": "behaviour",
+   "edits": [
+    {
+     "path": "src/openflowsheet/application/projection.py",
+     "old": "    return len(canonical_json(bound_document(document)))\n",
+     "new": "    return len(canonical_json(bound_document(document)))\n\n\ndef canonical_json(value: Any) -> bytes:\n    return json.dumps(value, sort_keys=True).encode()\n"
+    }
+   ],
+   "selected": 0,
+   "fallback": "full suite: src/openflowsheet/application/projection.py:320: import-time code changed",
+   "full_suite_failures": [
+    "tests/test_m06_wo6_expander_fixture.py::test_the_expander_fixture_is_the_server_s_projection"
+   ],
+   "missed": [],
+   "full_suite_summary": "1 failed, 20079 passed, 107 skipped, 3 xfailed, 12 warnings in 784.51s (0:13:04) | 95 passed in 24.43s",
+   "full_suite_seconds": 810
+  },
+  {
+   "case": "s2-render-twin",
+   "kind": "behaviour",
+   "edits": [
+    {
+     "path": "src/openflowsheet/application/projection.py",
+     "old": "            return _render(target, pointer, 0, at)\n",
+     "new": "            at = at + 1\n            return _render(target, pointer, 0, at)\n"
+    }
+   ],
+   "selected": 52,
+   "fallback": null,
+   "full_suite_failures": [
+    "tests/test_m06_wo6_expander_fixture.py::test_the_expander_fixture_is_the_server_s_projection",
+    "tests/test_st_cli.py::test_the_paged_assembly_at_limit_1_is_the_whole_document",
+    "tests/test_t07_w5a_projection.py::test_depth_elides_objects_and_arrays_below_it",
+    "tests/test_t07_w5a_projection.py::test_the_rules_hold_on_every_corpus_revision",
+    "tests/test_t07_w5a_projection.py::test_the_rules_hold_on_every_corpus_structure",
+    "tests/test_t07_w5a_projection.py::test_the_size_cap_lowers_the_depth_deterministically",
+    "tests/test_t07_w5a_projection.py::test_the_size_cap_on_the_whole_corpus_at_once",
+    "tests/test_t07_w5e_application_results.py::test_the_fixtures_are_what_real_responses_emit_today"
+   ],
+   "missed": [],
+   "full_suite_summary": "8 failed, 20072 passed, 107 skipped, 3 xfailed, 12 warnings in 789.06s (0:13:09) | 95 passed in 24.22s",
+   "full_suite_seconds": 815
+  },
+  {
+   "case": "s3-nonlocal",
+   "kind": "behaviour",
+   "edits": [
+    {
+     "path": "src/openflowsheet/application/coupled_run.py",
+     "old": "        nonlocal initial_warm\n",
+     "new": ""
+    }
+   ],
+   "selected": 38,
+   "fallback": null,
+   "full_suite_failures": [
+    "tests/test_x02_wo1_part_c.py::test_g1_control_without_the_record_the_rerun_starts_cold_and_differs",
+    "tests/test_x02_wo1_part_c.py::test_g1_reproducing_the_warm_run_matches",
+    "tests/test_x02_wo1_part_c.py::test_g1_the_k0_warm_start_is_recorded_and_labelled",
+    "tests/test_x02_wo3_outer_start.py::test_g3a_the_same_revision_restart_converges_at_k0_with_w_bitwise",
+    "tests/test_x02_wo3_outer_start.py::test_g3e_replay_reproduces_the_record_and_matches[same]"
+   ],
+   "missed": [],
+   "full_suite_summary": "5 failed, 20075 passed, 107 skipped, 3 xfailed, 12 warnings in 796.14s (0:13:16) | 95 passed in 24.45s",
+   "full_suite_seconds": 822
+  },
+  {
+   "case": "s4-docs-added",
+   "kind": "behaviour",
+   "edits": [
+    {
+     "path": "docs/adr/0007-zz-s16-recall-seeded.md",
+     "old": "",
+     "new": "# Seeded by the S16 recall\n"
+    }
+   ],
+   "selected": 0,
+   "fallback": "full suite: docs/adr/0007-zz-s16-recall-seeded.md: new or deleted file",
+   "full_suite_failures": [
+    "tests/test_t02_identity.py::test_a34_adr_0007_d2_2_carries_both_rows_with_the_window"
+   ],
+   "missed": [],
+   "full_suite_summary": "1 failed, 20079 passed, 107 skipped, 3 xfailed, 12 warnings in 808.11s (0:13:28) | 95 passed in 24.38s",
+   "full_suite_seconds": 834
+  },
+  {
+   "case": "shared-catalogue",
+   "kind": "behaviour",
+   "edits": [
+    {
+     "path": "src/openflowsheet/application/cli.py",
+     "old": "    entry = CATALOGUE.entry(check_id)\n",
+     "new": "    entry = CATALOGUE._frozen_entries().pop(check_id, None)\n"
+    }
+   ],
+   "selected": 29,
+   "fallback": null,
+   "full_suite_failures": [
+    "tests/test_msg_surfaces.py::test_validate_adds_a_line_under_a_failing_check_with_a_complete_entry"
+   ],
+   "missed": [],
+   "full_suite_summary": "1 failed, 20079 passed, 107 skipped, 3 xfailed, 12 warnings in 776.54s (0:12:56) | 95 passed in 24.29s",
+   "full_suite_seconds": 802
+  },
+  {
+   "case": "refactor-extract-authz",
+   "kind": "refactor",
+   "edits": [
+    {
+     "path": "src/openflowsheet/application/authz.py",
+     "old": "if len(kept) == len(policy.capabilities):",
+     "new": "if _nothing_revoked(kept, policy.capabilities):"
+    },
+    {
+     "path": "src/openflowsheet/application/authz.py",
+     "old": "def revoke(directory: Path, capability_id: str) -> CapabilityReference:\n",
+     "new": "def _nothing_revoked(kept: object, capabilities: object) -> bool:\n    return len(kept) == len(capabilities)  # type: ignore[arg-type]\n\n\ndef revoke(directory: Path, capability_id: str) -> CapabilityReference:\n"
+    }
+   ],
+   "selected": 36,
+   "fallback": null,
+   "full_suite_failures": [],
+   "missed": [],
+   "full_suite_summary": "20080 passed, 107 skipped, 3 xfailed, 12 warnings in 783.33s (0:13:03) | 95 passed in 24.10s",
+   "full_suite_seconds": 809,
+   "run": {
+    "exit": 0,
+    "summary": "TEST-IMPACT PASS 78a3c930: selected 36, fallback no, 1092 passed, 1 skipped, pytest calls 1, wall 452s (log /tmp/claude-1000/-home-eajfpeters-Code-OpenFlowsheet/8ae41059-9228-49b7-864b-91d6a33b5a1a/scratchpad/s16recall5/logs/refactor-extract-authz.run.log)"
+   }
+  }
+ ]
+}
