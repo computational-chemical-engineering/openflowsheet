@@ -80,6 +80,7 @@ from openflowsheet.models import temperature_id
 from openflowsheet.models.c1.phase import classify
 from openflowsheet.models.lifted import INADMISSIBLE_BRANCH as INADMISSIBLE_BRANCH
 from openflowsheet.models.lifted import LABEL_KIND as LABEL_KIND
+from openflowsheet.models.lifted import AdmissibilityRefusal
 from openflowsheet.models.lifted import Branch as Branch
 from openflowsheet.models.lifted import ClosureType as ClosureType
 from openflowsheet.models.lifted import DormancyForm as DormancyForm
@@ -149,7 +150,13 @@ from openflowsheet.orchestrator.trace import (
     fraction_string,
 )
 from openflowsheet.orchestrator.warm_start import WARM_START_REJECTED, WARM_START_SOURCE
-from openflowsheet.thermo import FlashRequest, Phase, PropertyProvider, StreamState
+from openflowsheet.thermo import (
+    FlashRequest,
+    Phase,
+    PropertyProvider,
+    PropertyRequest,
+    StreamState,
+)
 from openflowsheet.thermo.pr_c1 import LIGHT
 from openflowsheet.thermo.pr_c1 import PROVIDER_ID as PR_C1_PROVIDER_ID
 
@@ -592,6 +599,26 @@ def _contract_kernel(
     return _KernelAnswer(regime, values)
 
 
+def _reference_k_values(
+    provider: PropertyProvider,
+    temperature: float,
+    pressure: float,
+    context: EvaluationContext,
+) -> tuple[float, ...]:
+    """`K_i(T, P)` from the provider, for the ideal-K admissibility sums of K03 §8.2.
+
+    The verifier's `k_values` restated: the same request and the same `math.exp`,
+    so bitwise the same K. Restated because the region may not import the verifier (R-016, ADR
+    0076 I-15); `tests/test_s19_i15_admissibility_refusal.py` pins the two equal."""
+    reference = StreamState(n=(1.0, 1.0, 1.0), temperature=temperature, pressure=pressure)
+    result = provider.evaluate_phase(
+        PropertyRequest(state=reference, phase="LIQUID", properties=("lnK",)), context
+    )
+    if result.status != "ok":
+        raise AdmissibilityRefusal(f"the verifier's own K-values returned {result.status}")
+    return tuple(math.exp(result.values[f"lnK_{component}"]) for component in ("A", "B", "C"))
+
+
 def _admissible(
     provider: PropertyProvider,
     context: EvaluationContext,
@@ -614,9 +641,9 @@ def _admissible(
         return _pr_admissible(provider, context, split, regime, state)
     if composition_dependent(provider):
         return _gamma_phi_admissible(provider, context, split, regime, state, epsilon)
-    from openflowsheet.verify.checks import k_values
-
-    constants = k_values(provider, state[split.temperature], state[split.pressure], context)
+    constants = _reference_k_values(
+        provider, state[split.temperature], state[split.pressure], context
+    )
     side = split.liquid if regime == "LIQUID" else split.vapor
     amounts = [state[name] for name in side]
     total = sum(amounts)
@@ -645,14 +672,12 @@ def admissibility_value(
     `None` where the closure judges the branch by another form (`pr-c1-v1`: `classify`, and a
     light-gas fraction that must be exactly zero — not "value ≤ 1 + ε") or where the test raises
     at `state`."""
-    from openflowsheet.verify.checks import VerifierError
-
     if _pr_c1(provider):
         return None
     try:
         # ε only decides the flag, never the value.
         _, value = _admissible(provider, context, split, regime, state, 0.0)
-    except (VerifierError, BandError, ValueError, ArithmeticError):
+    except (AdmissibilityRefusal, BandError, ValueError, ArithmeticError):
         return None
     return float(value)
 
@@ -669,9 +694,7 @@ def _gamma_phi_admissible(
     `Σ x_i K_i(T, P, x)` with `x` the liquid side's composition (`gamma_phi.ln_k`), VAPOR's is
     `ΣW` of the incipient liquid against the vapour side (`gamma_phi.incipient_liquid`); admissible
     iff `value ≤ 1 + ε`. An empty side is admissible with value `0.0`, as in the SYN-001 rule. A
-    `BandError` is a `VerifierError`, which the screen converts to `invalid_trial_state`."""
-    from openflowsheet.verify.checks import VerifierError
-
+    `BandError` is an `AdmissibilityRefusal`, which the screen converts to `invalid_trial_state`."""
     side = split.liquid if regime == "LIQUID" else split.vapor
     amounts = [state[name] for name in side]
     total = sum(amounts)
@@ -688,7 +711,7 @@ def _gamma_phi_admissible(
                 provider, temperature, pressure, fractions, context
             )
     except BandError as error:
-        raise VerifierError(
+        raise AdmissibilityRefusal(
             f"the kernel refused {split.unit}'s regime ({split.stream}): {error.status}: "
             f"{error.message}"
         ) from error
@@ -705,10 +728,9 @@ def _pr_admissible(
     """B14 on a single-phase branch of a `pr-c1-v1` split, `admissibility_epsilon` unread:
     VAPOR iff `classify` of the feed at the split's `(T, P)` is VAPOR, with its value; LIQUID iff
     no light gas flows in the feed and `classify` is LIQUID, with value `n_light / n_tot`. A
-    provider refusal is a `VerifierError`, which the screen converts to `invalid_trial_state`.
-    A dormant feed is admissible with value `0.0`, as the K03 rule's empty side is."""
-    from openflowsheet.verify.checks import VerifierError
-
+    provider refusal is an `AdmissibilityRefusal`, which the screen converts to
+    `invalid_trial_state`. A dormant feed is admissible with value `0.0`, as the K03 rule's empty
+    side is."""
     feed = tuple(state[name] for name in split.feed)
     total = sum(feed)
     if total == 0.0:
@@ -717,7 +739,7 @@ def _pr_admissible(
         provider, context, feed, state[split.temperature], state[split.pressure]
     )
     if answer is None:
-        raise VerifierError(
+        raise AdmissibilityRefusal(
             f"the kernel refused {split.unit}'s regime ({split.stream}): {result.status}: "
             f"{result.message}"
         )
@@ -1523,8 +1545,6 @@ def _build_screen(
     one comparison per outlet): an item the attempt does not run, or runs against a flowing
     trigger, makes the reported signature differ, and the trial is phase-rejected."""
 
-    from openflowsheet.verify.checks import VerifierError
-
     def screen(state: dict[str, float]) -> AttemptSignature | Evaluation:
         # The screen calls the provider outside the compiled residual, so it converts a refusal
         # exactly as the residual does (review S1): a spent budget is an `error` evaluation (the
@@ -1534,7 +1554,7 @@ def _build_screen(
             return reported_signature(state)
         except BudgetExhaustedError as exhausted:
             return Evaluation(status="error", message=str(exhausted))
-        except VerifierError as refused:
+        except AdmissibilityRefusal as refused:
             return Evaluation(status="invalid_trial_state", message=str(refused))
 
     def reported_signature(state: dict[str, float]) -> AttemptSignature | Evaluation:

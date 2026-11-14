@@ -71,6 +71,7 @@ from openflowsheet.adapters.variants import Variant
 from openflowsheet.canonical import document_sha256
 from openflowsheet.models import flow_id, temperature_id
 from openflowsheet.models.c1.reactor import C1Reactor
+from openflowsheet.models.lifted import AdmissibilityRefusal
 from openflowsheet.orchestrator.coupling import UnitInlet
 from openflowsheet.orchestrator.execution import PlanRefusal
 from openflowsheet.orchestrator.executor import execute_plan
@@ -314,7 +315,7 @@ class C1Parent:
                 check_policy=self.check_policy,
                 experiments=self.experiments,
             )
-        except VerifierError as error:
+        except (VerifierError, AdmissibilityRefusal) as error:
             return failed(f"verifier_refused({error})")
         if isinstance(result, str):
             return failed(f"unsupported({result})")
@@ -461,7 +462,7 @@ class C1Parent:
                     policy=self.policy,
                     check_policy=self.check_policy,
                 )
-            except VerifierError:
+            except (VerifierError, AdmissibilityRefusal):
                 return P2Reference(f"{P2_A_SOURCE}:verifier_refused", math.nan, {})
             if isinstance(result, str):
                 return P2Reference(f"{P2_A_SOURCE}:unsupported({result})", math.nan, {})

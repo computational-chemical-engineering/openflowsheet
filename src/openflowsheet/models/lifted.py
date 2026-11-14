@@ -33,6 +33,15 @@ INADMISSIBLE_BRANCH: Final[Mapping[str, str]] = {
 }
 
 
+class AdmissibilityRefusal(RuntimeError):  # noqa: N818 - the name is ADR 0076 I-15's
+    """The region's single-phase admissibility test (K03 §8.2) could not be evaluated: the
+    provider refused the K-values, or the gamma-phi or `pr-c1-v1` kernel refused the regime.
+
+    Not a verdict and not the verifier's `VerifierError` (R-016, ADR 0076 I-15): the screen turns
+    it into `invalid_trial_state`, `admissibility_value` into `None`, and on the converged path
+    it propagates to the route solve's caller, which ends it as a verifier refusal."""
+
+
 @dataclass(frozen=True)
 class LiftedSplit:
     """One lifted phase split: the variables that carry it and the rows that define it."""

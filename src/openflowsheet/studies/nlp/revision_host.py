@@ -47,6 +47,7 @@ from openflowsheet.compile.casadi_backend import (
 )
 from openflowsheet.compile.spec import ProblemSpec
 from openflowsheet.compiled import CompiledProblem, EvaluationContext
+from openflowsheet.models.lifted import AdmissibilityRefusal
 from openflowsheet.models.revision_flowsheet import RevisionFlowsheet, si_unit
 from openflowsheet.numerics.scaling import REGISTERED_NOMINALS, Scaling
 from openflowsheet.orchestrator.region import LiftedSplit, RegionResult, admissibility_value
@@ -450,7 +451,7 @@ class RevisionNlpHost:
             )
         except self.routes.unsupported as error:
             return self._unsolved(document, route, "UNSUPPORTED", str(error), bound)
-        except VerifierError as error:
+        except (VerifierError, AdmissibilityRefusal) as error:
             message = f"verifier_refused: {str(error).splitlines()[0] if str(error) else ''}"
             return self._unsolved(document, route, "CERTIFICATE_NOT_VERIFIED", message, bound)
         bundle_ref = None

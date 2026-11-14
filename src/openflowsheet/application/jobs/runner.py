@@ -138,6 +138,7 @@ from openflowsheet.application.types import (
 )
 from openflowsheet.canonical import canonical_json, directory_hash, file_sha256
 from openflowsheet.compiled import EvaluationContext
+from openflowsheet.models.lifted import AdmissibilityRefusal
 from openflowsheet.orchestrator.trace import SolvePolicy, Trace
 from openflowsheet.orchestrator.warm_start import EXPLICIT, WARM_START_SOURCE, WarmStartCandidate
 from openflowsheet.run.bundle import ARTIFACT_DIR, MANIFEST_NAME, BundleError, read_artifact
@@ -412,6 +413,15 @@ def _interrupted(interrupted: JobInterrupted, run: Mapping[str, Any] | None) -> 
     )
 
 
+#: The errors `_typed_end` ends a job on, each with its registered typed failure.
+_TYPED_ENDS = (
+    RunUnsupportedError,
+    VerifierError,
+    AdmissibilityRefusal,
+    SolutionStateMismatchError,
+)
+
+
 def _typed_end(
     error: Exception, run: Mapping[str, Any] | None, route: Route | None = None
 ) -> WorkerResult:
@@ -424,7 +434,7 @@ def _typed_end(
     if isinstance(error, RunUnsupportedError):
         # W3-Q1: a record with no registered mapping is `unsupported(<code>)`, never a bundle.
         return _failed(_error("unsupported", error.code, reason=error.code, **where), run)
-    if isinstance(error, VerifierError):
+    if isinstance(error, VerifierError | AdmissibilityRefusal):
         # The verifier refused to judge; its text may carry revision ids, so it goes to the log
         # only (D9 (4)).
         _LOG.warning("verifier refused: %s", error)
@@ -719,7 +729,7 @@ class _Body:
         except KeyboardInterrupt:
             self.partial_trace(trace)
             raise
-        except (RunUnsupportedError, VerifierError, SolutionStateMismatchError) as error:
+        except _TYPED_ENDS as error:
             return _typed_end(error, run, selected)
         except _FenceLost:
             return _failed(_error("internal_error", "fence_lost"), run, "owner_lost")
@@ -880,7 +890,7 @@ class _Body:
             self._file_output(REPLAY_REPORT, reproduction.report.as_document())
         except JobInterrupted as interrupted:
             return _interrupted(interrupted, None)
-        except (RunUnsupportedError, VerifierError, SolutionStateMismatchError) as error:
+        except _TYPED_ENDS as error:
             return _typed_end(error, None)
         except BundleError as error:
             _LOG.warning("job %s: unreadable bundle: %s", self.job.job_id, error)
@@ -930,7 +940,7 @@ class _Body:
             self._file_output(REPLAY_REPORT, report.as_document())
         except JobInterrupted as interrupted:
             return _interrupted(interrupted, None)
-        except (RunUnsupportedError, VerifierError, SolutionStateMismatchError) as error:
+        except _TYPED_ENDS as error:
             return _typed_end(error, None)
         except BundleError as error:
             _LOG.warning("job %s: unreadable record: %s", self.job.job_id, error)
@@ -1172,7 +1182,7 @@ class _Body:
             except _FenceLost:
                 return _failed(_error("internal_error", "fence_lost"), None, "owner_lost")
             return _interrupted(interrupted, None)
-        except (RunUnsupportedError, VerifierError, SolutionStateMismatchError) as error:
+        except _TYPED_ENDS as error:
             return _typed_end(error, None)
         except _FenceLost:
             return _failed(_error("internal_error", "fence_lost"), None, "owner_lost")
