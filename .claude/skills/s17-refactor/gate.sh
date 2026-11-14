@@ -4,8 +4,8 @@
 #        gate.sh --self-test <path:line[:N]> [label]  the self-test (gate G-SELF)
 #        gate.sh --revert <rejected sha> [label]        HEAD exactly undoes <rejected sha> (review reject, D15)
 #        gate.sh --no-gain <last accepted sha> [label]  names/docstrings only, no gain check (D15)
-#        gate.sh --restructure <plan commit> <plan path> [label]  a module split (D18); base = the commit that
-#                                                       added the plan and the layer entries (the gate reads both at base)
+#        gate.sh --restructure <last accepted sha> <plan path> [label]  a module split (D18); the plan and the
+#                                                       layer entries must be committed at or before that base (the gate reads both at base)
 # The map base MB (docs/S17_STATE.md, D16) is passed as --ref-base: the tests tier's map (D13).
 # Stop a run with: kill -INT "$(cat <tag>.pid)"
 set -u

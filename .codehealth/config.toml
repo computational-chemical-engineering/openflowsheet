@@ -141,11 +141,16 @@ order = [
     "openflowsheet.application.coupled_run",
     "openflowsheet.application.binding",
     "openflowsheet.application.revision_binding",
+    "openflowsheet.application.model_builders",
     "openflowsheet.application.column_binding",
     "openflowsheet.application.thermal_binding",
+    "openflowsheet.application.model_signatures",
     # persistence
     "openflowsheet.application.authz",
     "openflowsheet.application.store",
+    # edit algebra and binder vocabulary (S17 R2, R4)
+    "openflowsheet.application.revision_edits",
+    "openflowsheet.application.binding_common",
     # contract vocabulary
     "openflowsheet.application.projection",
     "openflowsheet.application.contract",
@@ -155,6 +160,7 @@ order = [
     "openflowsheet.application.revisions",
     "openflowsheet.application.jobs.interrupt",
     "openflowsheet.application.jobs.model",
+    "openflowsheet.application.validation_report",
 ]
 
 [[architecture.forbid]]
@@ -186,6 +192,10 @@ to = [
     "openflowsheet.application.thermal_binding",
     "openflowsheet.application.authz",
     "openflowsheet.application.store",
+    "openflowsheet.application.model_builders",
+    "openflowsheet.application.model_signatures",
+    "openflowsheet.application.revision_edits",
+    "openflowsheet.application.binding_common",
 ]
 reason = "bindings/__init__.py: each binding reads operations.OPERATIONS, goes through operations.dispatch and adds nothing (T07 design note 11.6)"
 
@@ -204,6 +214,8 @@ from = [
     "openflowsheet.application.revision_binding",
     "openflowsheet.application.column_binding",
     "openflowsheet.application.thermal_binding",
+    "openflowsheet.application.model_builders",
+    "openflowsheet.application.model_signatures",
 ]
 to = ["openflowsheet.application.store", "openflowsheet.application.authz"]
 reason = "the revision engine computes; persistence and authorization belong to the services above it (no engine module imports them at run time today; revision_continuation.py:57 is under TYPE_CHECKING) (S17 plan review)"

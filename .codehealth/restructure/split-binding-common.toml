@@ -1,0 +1,13 @@
+# S17 restructure plan, APPROVED 2026-11-14 (design note .git/codehealth/design/S17-architecture.md, section 3).
+# The orchestrator replaces approved_by after the reviewer's pass and commits this file as
+# .codehealth/restructure/split-binding-common.toml after work order 8 (D12: an added file sends every later gate
+# to the full suite). Names measured at wp/S17 48dd64c3.
+id = "split-binding-common"
+approved_by = "orchestrator (OpenFlowsheet-TR09 build lane) under Frank's delegation of 2026-11-13, S17 D18; plan reviews runs/s17-review-plans.md, runs/s17-review-plan-r3.md"
+reason = "the revision binder imports the legacy binder module only for the refusal vocabulary and the column-ownership convention (revision_binding.py:34: Unbound, _column_owners), while binding.py:344 calls the revision binder: a two-module cycle. The shared vocabulary moves to a leaf and revision_binding imports it: import-cycle edges 10 -> 8, layer violations 4 -> 3 (numbers after R1 to R3 in the ranked order; requires split-validation-report)"
+new_files = ["src/openflowsheet/application/binding_common.py"]
+new_public = [
+    "src/openflowsheet/application/binding_common.py:Unbound",
+    "src/openflowsheet/application/binding_common.py:HINT_LIMIT",
+    "src/openflowsheet/application/binding_common.py:refusal_code",
+]

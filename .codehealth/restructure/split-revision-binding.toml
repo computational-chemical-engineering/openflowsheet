@@ -1,0 +1,179 @@
+# S17 restructure plan, APPROVED 2026-11-14 (design note .git/codehealth/design/S17-architecture.md, section 3, R3).
+# The orchestrator replaces approved_by after the reviewer's pass and commits this file as
+# .codehealth/restructure/split-revision-binding.toml after work order 8 (D12: an added file sends every later gate
+# to the full suite). Names and lines re-measured at wp/S17 e3a36046 (after WO4 5a21f253..e0c43abe and 140ce084).
+#
+# HOW MEASURED. design/split_closure.py (stdlib; `python3 -I split_closure.py revision_binding.py thermal_binding.py
+# column_binding.py` on copies at the base; exit 1 on a STOP hit). refs(S) = every ast.Name in top-level statement S
+# that a non-import top-level statement binds; closures are transitive. model_signatures = closure(the 17 public
+# names below + the 13 names thermal_binding.py:34 and column_binding.py:18 import); model_builders =
+# closure(MODEL_BUILDERS, resolve_surrogate, SurrogateResolver) minus model_signatures. Lines = statement span plus
+# the comment lines directly above it. Re-run it at the plan base if revision_binding.py changes again; a changed
+# partition means this comment block is stale (the new_public list cannot change under refactor mode).
+# STOP checks: neither closure reaches RevisionBinding, bind_revision_flowsheet, provider_for, basis_provider,
+# SELECTABLE_BASES, _CONTEXT or Unbound (names or imports); model_signatures uses no model_builders name and imports
+# nothing from openflowsheet.application. No STOP hit.
+#
+# MOVE to model_signatures.py: 73 names, 662 lines (revision_binding.py lines at e3a36046, comment spans included),
+# in this order:
+#   Configuration 146, Builder 147-150, PinQuantity 205, PinColumn 208-224, SpecificationChoice 227-233,
+#   ModelSignature 236-269, Encoding 275-303, _QUANTITY_SUFFIX 306, _encoding 309-318, pin_encodings 321-351,
+#   _object_id 354-360, _pin_column_ids 363-371, render_encoding 374-400, _missing_pin_hint 403-414,
+#   _named_first 417-422, _missing_choice_hint 425-431, _phase_hint 460-466, TARGET_PATH_HEADING 488-489,
+#   LIST_MODELS_LINE 490, target_path_table 493-511, _expand 517-524, _parameters 536-559, _stream 562-566,
+#   _pin 569-576, _columns 579-586, _column 589-591, _pinned 594-597, _require_phase 600-607, _PORT_PHASES 615-632,
+#   instance_contract 635-669, _require_one_keyed 672-686, _FEED_SOURCE 707-715, _ADIABATIC_MIXER 742-744,
+#   _TP_HEATER 764-769, _TP_FLASH 794-806, _STREAM_SPLITTER 840-842, _PRODUCT_SINK 861, _ONE_PHASE 878-879,
+#   _PH_FLASH 916-921, _VALVE 946-950, _LIQUID_PUMP 974-979, _CONVERSION_REACTOR 1001-1011, _KINETIC_CSTR 1050-1066,
+#   _COLUMN 1104-1112, _COMPONENT_SEPARATOR 1128-1132, _HEAT_EXCHANGER 1160-1173, _C1_FEED_SOURCE 1216-1224,
+#   _C1_ADIABATIC_MIXER 1250-1252, _C1_TP_HEATER 1268-1273, _C1_TP_FLASH 1294-1306, _C1_STREAM_SPLITTER 1337-1339,
+#   _C1_PRODUCT_SINK 1357, _C1_REACTOR 1370-1378, _C1_REACTOR_STANDIN 1379-1381, _C1_REACTOR_SURROGATE 1412-1419,
+#   _SYN001_SIGNATURES 1490-1506, _THERMAL_HEATER 1510-1525, _THERMAL_VALVE 1526-1530, _THERMAL_MIXER 1531,
+#   _THERMAL_FLASH 1532-1537, _THERMAL_MACHINES 1538-1547, _THERMAL_SIGNATURES 1548-1554, _C1_SIGNATURES 1573-1586,
+#   MODEL_SIGNATURES 1588-1594, _IAPWS95 1596, _COOLPROP 1597, _WILSON 1598-1599, S11_BASES 1600-1601,
+#   ROUTING_MODELS 1602-1603, _GAMMA_PHI_MODELS 1604-1611, _PURE_FLUID_BASES 1612-1614, _WILSON_MACHINES 1615-1618,
+#   MODEL_BASES 1620-1642
+# MOVE to model_builders.py: 31 names, 551 lines, in this order:
+#   SurrogateResolver 151-154, _names 527-533, _inlet_phase 610-612, _routing_fields 692-704, _feed_source 718-739,
+#   _adiabatic_mixer 747-761, _tp_heater 772-791, _tp_flash 809-837, _stream_splitter 845-858, _product_sink 864-872,
+#   _declared_phase 882-892, _one_specification 895-913, _ph_flash 924-943, _valve 953-971, _liquid_pump 982-998,
+#   _conversion_reactor 1014-1047, _kinetic_cstr 1069-1101, _syn001_column 1115-1125, _component_separator
+#   1135-1157, _heat_exchanger 1176-1205, _c1_feed_source 1227-1247, _c1_adiabatic_mixer 1255-1265,
+#   _c1_tp_heater 1276-1291, _c1_tp_flash 1309-1334, _c1_stream_splitter 1342-1354, _c1_product_sink 1360-1367,
+#   _c1_reactor 1384-1409, _c1_reactor_surrogate 1449-1455, resolve_surrogate 1465-1487, _thermal_builder 1557-1570,
+#   MODEL_BUILDERS 1650-1682
+# STAY in revision_binding.py: 39 statements, 629 lines: __all__ (untouched), _CONTEXT, RevisionBinding,
+#   specification_rows, _first_encodings, _unconsumed_hint, _instance_targets, _c1_reactor_surrogate_of,
+#   _resolve_surrogate, _INSTANCE_TARGETS, _NAMESAKES, _SAME_FUNCTION, _SelectableBases, SELECTABLE_BASES,
+#   _basis_refusal, _UNADMITTED, _THERMAL_NAMESAKE, _LIFTED_NAMESAKE, _THERMAL_PUMP, _COLUMN_MODEL, _C1_ROUTING,
+#   _unadmitted, _unadmitted_thermal, _LIBRARY_ONLY_HINTS, _PinReader, _first_line, _inadmissible, _refusing_unit,
+#   _variant_backed_models, basis_provider, COOLPROP_UNAVAILABLE_HINT, provider_for, _wilson_refusal,
+#   bind_revision_flowsheet, _model_refusal, _surrogate_manifests, _built_instances, _split_key_refusal,
+#   _port_refusal.
+# WO4 helpers: _require_one_keyed moves with its only caller instance_contract (it calls ModelSignature, _expand,
+#   both moving with it); _model_refusal, _surrogate_manifests, _built_instances, _split_key_refusal, _port_refusal
+#   stay with their only caller bind_revision_flowsheet; _unadmitted_thermal stays with _unadmitted. Each lands with
+#   its caller and everything it calls except _built_instances -> MODEL_BUILDERS, Configuration (imported back).
+#
+# SECTION HEADERS (free-standing `# --` blocks at 203, 272, 514, 689, 875, 1208-1213, 1508): each is copied, verbatim,
+#   into every file that keeps or receives a statement between it and the next header, directly above the first
+#   such statement (comments only; no AST or literal effect). `#:` and `#` lines directly above a statement move with
+#   it. No other comment, docstring or line inside a moved statement changes (ast.dump identity is gated).
+#
+# REVISION_BINDING.PY IMPORTS AFTER THE STEP (all inside the main import block, above `if TYPE_CHECKING:`, in the
+#   order `ruff check --select I --fix` produces; it splits each `N as N` into its own statement):
+#   re-exports `N as N` from model_signatures (19): the 17 public names below,
+#     _columns (tests/test_t07_r6_hints.py:44), _COLUMN (tests/s11_column_support.py:23)
+#   re-exports `N as N` from model_builders (4): MODEL_BUILDERS, SurrogateResolver, resolve_surrogate,
+#     _c1_reactor_surrogate (read as `rb._c1_reactor_surrogate`, tests/test_m04_wo7_surrogate_unit.py:317)
+#   plain (used by the remaining code, 24): from model_signatures import _named_first, _FEED_SOURCE,
+#     _ADIABATIC_MIXER, _TP_HEATER, _TP_FLASH, _STREAM_SPLITTER, _PRODUCT_SINK, _PH_FLASH, _VALVE, _LIQUID_PUMP,
+#     _C1_FEED_SOURCE, _C1_ADIABATIC_MIXER, _C1_TP_HEATER, _C1_TP_FLASH, _C1_STREAM_SPLITTER, _C1_PRODUCT_SINK,
+#     _C1_REACTOR_SURROGATE, _THERMAL_HEATER, _THERMAL_VALVE, _THERMAL_MIXER, _THERMAL_FLASH, _IAPWS95, _COOLPROP,
+#     _WILSON
+#   NOT re-exported: _THERMAL_MACHINES, _column, _missing_choice_hint, _pin, _pinned (private; their one importer,
+#     thermal_binding.py:34, is retargeted in this commit; nothing else reads them through revision_binding).
+#   drop (unused after the move; these 50 leave ruff F401 and F821 clean on the scratch): Callable, Literal;
+#     Port, duty_id; column_unit,
+#     component_separator, conversion_reactor, feed, flash, heat_exchanger, heater, kinetic_cstr, mixer, ph_flash,
+#     pump, sink, splitter, valve (models.syn001); COLUMN_MODEL_ID; AdiabaticMixer, ComponentSeparator,
+#     ConversionReactor, FeedSource, HeatExchanger, KineticCSTR, LiquidPump, PHFlash, ProductSink, StreamSplitter,
+#     TPFlash, TPHeater, Valve; c1_feed .. c1_splitter (7); thermal_flash, thermal_heater, thermal_mixer,
+#     thermal_valve; PHASE_CAPABILITIES, TARGET_PATH_KINDS, WILSON_BASIS, required_kind, si_unit; check_manifest;
+#     Phase. KEEP although tests read them: importlib.util (tests patch `revision_binding.importlib.util`),
+#     split_owners (tests/test_s11_staged_splits.py:197 patches it; only remaining code calls it), Unbound.
+# NEW-FILE IMPORTS: exactly the names the moved statements use, from the same modules and in the same alias form
+#   as revision_binding.py:27-113 (ruff F401/F821 clean on the scratch simulation). model_signatures imports nothing
+#   from openflowsheet.application and needs no TYPE_CHECKING block. model_builders imports, at top, 40 names from
+#   model_signatures: Builder, Configuration, ModelSignature, PinColumn, instance_contract, _columns, _column, _pin,
+#   _pinned, _stream, _expand, _require_phase, _phase_hint, _missing_pin_hint, _missing_choice_hint, _ONE_PHASE,
+#   _THERMAL_SIGNATURES and 23 signature constants: _FEED_SOURCE, _ADIABATIC_MIXER, _TP_HEATER, _TP_FLASH,
+#   _STREAM_SPLITTER, _PRODUCT_SINK, _PH_FLASH, _VALVE, _LIQUID_PUMP, _CONVERSION_REACTOR, _KINETIC_CSTR, _COLUMN,
+#   _COMPONENT_SEPARATOR, _HEAT_EXCHANGER, _C1_FEED_SOURCE, _C1_ADIABATIC_MIXER, _C1_TP_HEATER, _C1_TP_FLASH,
+#   _C1_STREAM_SPLITTER, _C1_PRODUCT_SINK, _C1_REACTOR, _C1_REACTOR_STANDIN, _C1_REACTOR_SURROGATE.
+# LAZY IMPORTS that move, unchanged and still inside their function: revision_binding.py:648 (SPLIT_RULES, in
+#   instance_contract) -> model_signatures; :1123 (column_binding.build_column, in _syn001_column) and :1566
+#   (thermal_binding.BUILDERS, in _thermal_builder's inner build) -> model_builders. They could become top-level
+#   imports now (no cycle remains) but are not changed in this step. Lazy imports that stay: 1904-1925, 1959-1960,
+#   1988, and the TYPE_CHECKING import of PropertyMeter (116).
+# RETARGETED (this commit, the only importers changed): column_binding.py:18 (Configuration) and
+#   thermal_binding.py:34-48 (13 names) -> openflowsheet.application.model_signatures. Every other importer keeps
+#   the revision_binding path until D19.
+# CONFIG COMMIT BEFORE THE STEP (D20): layers order: "openflowsheet.application.model_builders" directly after
+#   "...revision_binding", "openflowsheet.application.model_signatures" after "...jobs.model" (after
+#   validation_report if R1 landed first); both appended to the transports rule's `to`. Recommended (open question):
+#   model_builders also in engine-not-persistence `from` (measured: no new violation).
+#
+# PATCH / SETITEM / __module__ RISKS (grep of src, tests, scripts, benchmarks, examples at e3a36046; all safe):
+#   monkeypatch.setattr(revision_binding, "MODEL_BUILDERS", {...}) tests/test_t07_w5a_inspection.py:133 rebinds the
+#     old module's global: still effective because its only call-time reader, _built_instances, stays there. Keep it
+#     so: no moved statement may read MODEL_BUILDERS.
+#   monkeypatch.setitem on revision_binding.MODEL_BUILDERS / MODEL_SIGNATURES / MODEL_BASES (s11_column_support.py:
+#     196-198, test_m02_wo11_promotion.py:323-325, test_m02_wo8_region.py:272, test_t05_w1c_executor.py:300, 302):
+#     same dict objects through the re-export.
+#   setattr(revision_binding, "split_owners"), setattr(revision_binding.importlib.util, "find_spec"),
+#     setattr(<revision_binding>, "bind_revision_flowsheet"): their readers all stay.
+#   F1 registry factory {"module": "openflowsheet.application.revision_binding", "attribute": "MODEL_BUILDERS"}
+#     (scripts/registry_builtin.py:143, 411; tests/test_f1_legacy_builtins.py:374): resolves through the re-export;
+#     the generator reads BINDER, not __module__, so the registry is unchanged. F0 M9 is untouched (no file here
+#     holds an implementation_sha256). Changed __module__ (now model_signatures/model_builders) of the moved
+#     classes and functions: nothing in src, tests, scripts or benchmarks compares it; the S16 test-impact map has no
+#     rows for the two new files until rebuilt (selection falls back to the full suite).
+#
+# EXPECTED `codehealth arch` (measured on scratch simulations of e3a36046, config edited as above):
+#   base 11 violations, 1 cycle 24 nodes 83 edges | R3 alone 9, 1 cycle 22 nodes 79 edges | R1 then R3 6, cycle
+#   edges 29 | R1, R2 then R3 4 violations, 4 cycles {binding, revision_binding} {contract, types}
+#   {jobs.executor, jobs.worker} {revision_routes, revision_run, validation}, 10 edges (R1+R2 before R3: 6, 14).
+#   Removed violations: column_binding -> revision_binding, thermal_binding -> revision_binding; no new identity.
+# SCRATCH VERIFICATION of the whole step as specified here: ruff check and format clean; mypy --strict clean
+#   (342 files); every application module imports; the 23 re-exports are the same objects as in the new modules;
+#   the gate's literal multiset unchanged; public_api_problems with this plan []; ast.dump of all 143 top-level
+#   statements identical base -> head; the 21 test files named in the risk list above plus
+#   test_s11_column_registration, test_s11_column_application, test_t07_w5c_signatures, test_f1_discovery:
+#   1092 passed, 2 skipped. Not run: the full suite (the gate's tests tier runs it).
+# DOCSTRING ROT left for a later refactor commit (moved docstrings are identity-gated): revision_binding.py:1-23,
+#   column_binding.py:3-6, thermal_binding.py:4-6, _syn001_column and _thermal_builder docstrings, _COLUMN's comment.
+# PLAN REVIEW (reviewer, 2026-11-14, runs/s17-review-plan-r3.md): approve with changes, accepted by the orchestrator.
+# These override the comment block below where they differ:
+# 1. model_builders is also seeded with `_c1_reactor_surrogate_of` (split_closure.py BLD_SEEDS updated). Re-run at
+#    e3a36046: model_signatures 73 names, 662 lines; model_builders 32 names, 576 lines; stays 38 names, 604 lines.
+#    The binder's `partial(_c1_reactor_surrogate_of, ...)` imports it from model_builders; `_C1_REACTOR_SURROGATE`
+#    leaves revision_binding's plain imports if nothing else there reads it.
+# 2. Layer order: model_signatures directly after thermal_binding (not after jobs.model); both new modules in the
+#    engine-not-persistence rule's `from` list and the transports rule's `to` list. Re-measure `codehealth arch`.
+# 3. Each new file opens with a module docstring stating what it holds (model_signatures: signatures, pin readers,
+#    instance_contract, MODEL_BASES, the target-path table, and Builder/Configuration so the plugins never import
+#    model_builders; model_builders: the builder catalogue, importing model_signatures at top and the plugins lazily).
+# 4. Section-header comments copied into model_signatures are reworded there (revision_binding.py:514 "builder
+#    helpers" over the pin readers; :689, :875, :1208 "... builders" over signature constants).
+# Before R4, a --no-gain docstring commit: `_syn001_column` (:1121-1122) and `_thermal_builder` (:1558) docstrings
+# (their lazy-import cycle no longer exists), revision_binding's module docstring, column_binding.py:3-6,
+# thermal_binding.py:4-6, `_COLUMN`'s comment, refusals.yaml:1378, models/revision_flowsheet.py:19.
+# After the step, run tests/test_s11_thermal_binding.py and tests/test_s11_column_unit.py each in isolation once.
+
+id = "split-revision-binding"
+approved_by = "orchestrator (OpenFlowsheet-TR09 build lane) under Frank's delegation of 2026-11-13, S17 D18; plan reviews runs/s17-review-plans.md, runs/s17-review-plan-r3.md"
+reason = "revision_binding.py (2214 lines) holds the unit-model signature catalogue and pin readers (73 names, 662 lines), the builder catalogue (32 names, 576 lines) and the binder (38 statements, 604 lines); its plugins column_binding.py:18 and thermal_binding.py:34 import it at module level (13 names, 9 private) while it imports them inside functions (revision_binding.py:1123, 1566). Signatures move to a leaf, builders to a module above them, the plugins import the leaf: layer violations 6 -> 4 and import-cycle edges 14 -> 10 after R1 and R2 (11 -> 9 and 83 -> 79 if R3 runs first)"
+new_files = ["src/openflowsheet/application/model_signatures.py", "src/openflowsheet/application/model_builders.py"]
+new_public = [
+    "src/openflowsheet/application/model_signatures.py:Builder",
+    "src/openflowsheet/application/model_signatures.py:Configuration",
+    "src/openflowsheet/application/model_signatures.py:Encoding",
+    "src/openflowsheet/application/model_signatures.py:LIST_MODELS_LINE",
+    "src/openflowsheet/application/model_signatures.py:MODEL_BASES",
+    "src/openflowsheet/application/model_signatures.py:MODEL_SIGNATURES",
+    "src/openflowsheet/application/model_signatures.py:ModelSignature",
+    "src/openflowsheet/application/model_signatures.py:PinColumn",
+    "src/openflowsheet/application/model_signatures.py:PinQuantity",
+    "src/openflowsheet/application/model_signatures.py:ROUTING_MODELS",
+    "src/openflowsheet/application/model_signatures.py:S11_BASES",
+    "src/openflowsheet/application/model_signatures.py:SpecificationChoice",
+    "src/openflowsheet/application/model_signatures.py:TARGET_PATH_HEADING",
+    "src/openflowsheet/application/model_signatures.py:instance_contract",
+    "src/openflowsheet/application/model_signatures.py:pin_encodings",
+    "src/openflowsheet/application/model_signatures.py:render_encoding",
+    "src/openflowsheet/application/model_signatures.py:target_path_table",
+    "src/openflowsheet/application/model_builders.py:MODEL_BUILDERS",
+    "src/openflowsheet/application/model_builders.py:SurrogateResolver",
+    "src/openflowsheet/application/model_builders.py:resolve_surrogate",
+]
