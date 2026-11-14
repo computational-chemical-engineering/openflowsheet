@@ -23,15 +23,19 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
   step), ADR 0076 proposed. Config committed: scope `src/openflowsheet/*`, `repo-layers`, forbid
   `verifier-not-through-the-solver`; adoption 14 violations, 10 cycles, 79 cycle edges.
 - Frozen (F0 M9, 35 modules, debt 565.2): untouched until W5 (S19_DECISIONS, Q1).
-- Running (2026-11-14): G-SELF (`numerics/newton.py:776`, full suite); W1 lane a (`opus-engineer`, brief
-  `<git-common-dir>/codehealth/briefs/S19-W1a.md`, worktree `s19a`, branch `wp/S19-a`) and lane b (`S19-W1b.md`,
-  `s19b`, `wp/S19-b`), both from 094a3aa1; `reviewer` on ADR 0076.
+- W1 lanes merged (2026-11-14): lane a A1 to A4 (9f409826), lane b A6 to A8 (b16dd300); every step gated 15/15 on
+  the full suite. At b16dd300: `codehealth arch --depth 4` 11 violations, 6 cycles, 20 cycle edges (= table 4.1 after
+  A8 with A5 still to do: 8 + 3); `patch_noop` 0 of 243. A6 part 1's passing re-gate is not in the run log (the tool
+  refuses a second entry for one tree and base; JSON `s19-gates/20261114T111827-s19b-A6a-r2.json`).
+- Running: lane c (`S19-W2c.md`: A5 `numerics.solve_record`, splits B1, B8-executor; worktree `s19c`), lane d
+  (`S19-W2d.md`: splits B6, B5 with B5a, B8-certificate; `s19d`), both from b16dd300; `reviewer` R-W1 on the W1 moves
+  (`S19-R-W1.md`). ADR 0076 acceptance sent to the hub's decision desk (id `ofs-adr0076-accept`).
 
 ## Next actions
 
-1. G-SELF (full suite, mutation outside application/).
-2. W1: lane a (A1 to A4, `s19a`) and lane b (A6 to A8, `s19b`) in parallel; then A5 alone; merge lanes into `wp/S19`.
-3. W2 splits in pairs (design note 4.2); then the map at `wp/S19` (`MB`), G-MAP.
+1. R-W1 verdict: fixes as `--no-gain` steps in a later lane; a blocker reverts its step.
+2. W2: lanes c and d (above); then a models lane (B3, B2, B4); merge each lane into `wp/S19` after its report.
+3. After W2: the map at `wp/S19` (`MB`), G-MAP.
 4. W3 function-level per package group; reviews per the sensitivity tiers.
 5. ADR 0076: `reviewer` pass, Frank's acceptance, rulings A15, A11, I-10; then W4. W5: frozen modules after a
    `specifier` identity ruling. Merge into `main` after each phase (CI both legs, F0).
