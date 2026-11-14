@@ -421,12 +421,12 @@ I-12d, I-19. Hard constraints: I-14 after I-9; I-5 before I-12a; I-10 before I-1
 
 ## Frank questions (value judgments; each has a default so work proceeds)
 
-- **FQ-A** No shims versus frozen identity. Default: F0 M9 and the built-in registry hash change once, in W5, under one
+- **FQ-A** (decided by Frank, 2026-11-14: the default) No shims versus frozen identity. Default: F0 M9 and the built-in registry hash change once, in W5, under one
   `specifier` ruling; the I-19 exceptions live until then; no permanent re-exports.
-- **FQ-B** I-14, a process that has not imported the registry. Default: the hook is installed by the registry,
+- **FQ-B** (decided by Frank, 2026-11-14: the default) I-14, a process that has not imported the registry. Default: the hook is installed by the registry,
   `application.errors` and `application.jobs.worker`, with fresh-interpreter tests. A process with none freezes core
   only, and a late extension registration then raises (rather than crashing every library-only lookup).
-- **FQ-C** I-11, deleting the public K06 facade and its `record_run` behaviour. Default: delete; the behaviour lives
+- **FQ-C** (decided by Frank, 2026-11-14: the default) I-11, deleting the public K06 facade and its `record_run` behaviour. Default: delete; the behaviour lives
   in the service that owns runs (jobs in the store, ADR 0035 D4), with no in-memory successor; tests and the K06
   script ported; ADR 0019's facade paragraph superseded here.
 - **FQ1** Does the legacy binder route stay supported? Default: yes, unchanged in S19.
