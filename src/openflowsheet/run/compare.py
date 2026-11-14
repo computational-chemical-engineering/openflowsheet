@@ -340,46 +340,17 @@ def _differences_v1(
             elif key not in emitted:
                 found.append(f"{where}.{key}: present in the committed document only")
             elif path == "" and (key in PROVENANCE_SUBTREES or key in VOLATILE_FIELDS):
-                if not _well_formed_provenance(committed[key], emitted[key]):
-                    found.append(
-                        f"{where}.{key}: {type(emitted[key]).__name__} where the recorded "
-                        f"document has {type(committed[key]).__name__}. Provenance is not "
-                        "compared for value, but its shape is."
-                    )
+                found += _provenance_v1(where, key, emitted, committed)
             elif key in UNREPRODUCIBLE_COUNTS:
-                if not isinstance(emitted[key], int) or emitted[key] < 0:
-                    found.append(
-                        f"{where}.{key}: {emitted[key]!r} is not a count. Its value is not "
-                        "compared, its kind is."
-                    )
+                found += _count_v1(where, key, emitted)
             elif is_float_digest(key):
-                if not _well_formed_digest(emitted[key]):
-                    found.append(
-                        f"{where}.{key}: {emitted[key]!r} is not 64 lowercase hex digits or "
-                        "empty. Its value is not compared (ADR 0008 D2.1), its shape is."
-                    )
+                found += _float_digest_v1(where, key, emitted)
             elif key == "certificate_id" and _digest_derived_id(committed, emitted):
-                # K04 §9's `certificate_id` is the target hash when no plan names the solve
-                # (`cert-` + the first 12 hex digits of `target_state_sha256`): a digest of
-                # floating-point state, so its value is not compared (ADR 0008 D2.1). What is
-                # compared is that it is exactly the emitted document's own digest prefix.
-                expected = f"cert-{emitted['target_state_sha256'][:12]}"
-                if emitted[key] != expected:
-                    found.append(
-                        f"{where}.{key}: {emitted[key]!r} is not {expected!r}, the prefix of the "
-                        "document's own target_state_sha256"
-                    )
+                found += _certificate_id_v1(where, key, emitted)
             elif key in WINDOW_SELECTORS:
-                if not _number_or_none(emitted[key]):
-                    found.append(f"{where}.{key}: {emitted[key]!r} is not a number or null")
+                found += _window_selector_v1(where, key, emitted)
             elif key in COMPARABILITY_WINDOW and not _inside_window(key, committed):
-                if not _number_or_none(emitted[key]) or (emitted[key] is None) != (
-                    committed[key] is None
-                ):
-                    found.append(
-                        f"{where}.{key}: {emitted[key]!r} against {committed[key]!r} — outside "
-                        "the comparability window the value is not compared, its shape is"
-                    )
+                found += _windowed_shape_v1(where, key, emitted, committed)
             else:
                 floor = None
                 source = SELF_FLOORED.get(key)
@@ -418,6 +389,78 @@ def _differences_v1(
     if emitted != committed:
         found.append(f"{where}: {emitted!r} against {committed!r}")
     return found
+
+
+def _provenance_v1(
+    where: str, key: str, emitted: Mapping[str, Any], committed: Mapping[str, Any]
+) -> list[str]:
+    """v1 on a root-anchored provenance field `key`: compared for shape, never for value."""
+    if not _well_formed_provenance(committed[key], emitted[key]):
+        return [
+            f"{where}.{key}: {type(emitted[key]).__name__} where the recorded "
+            f"document has {type(committed[key]).__name__}. Provenance is not "
+            "compared for value, but its shape is."
+        ]
+    return []
+
+
+def _count_v1(where: str, key: str, emitted: Mapping[str, Any]) -> list[str]:
+    """v1 on an unreproducible count `key`: compared for kind (an int >= 0), never for value."""
+    if not isinstance(emitted[key], int) or emitted[key] < 0:
+        return [
+            f"{where}.{key}: {emitted[key]!r} is not a count. Its value is not "
+            "compared, its kind is."
+        ]
+    return []
+
+
+def _float_digest_v1(where: str, key: str, emitted: Mapping[str, Any]) -> list[str]:
+    """v1 on a float digest `key`: its shape, never its value (ADR 0008 D2.1)."""
+    if not _well_formed_digest(emitted[key]):
+        return [
+            f"{where}.{key}: {emitted[key]!r} is not 64 lowercase hex digits or "
+            "empty. Its value is not compared (ADR 0008 D2.1), its shape is."
+        ]
+    return []
+
+
+def _certificate_id_v1(where: str, key: str, emitted: Mapping[str, Any]) -> list[str]:
+    """v1 on a `certificate_id` that `_digest_derived_id` found built from the target hash.
+
+    K04 §9's `certificate_id` is the target hash when no plan names the solve (`cert-` + the
+    first 12 hex digits of `target_state_sha256`): a digest of floating-point state, so its value
+    is not compared (ADR 0008 D2.1). What is compared is that it is exactly the emitted
+    document's own digest prefix.
+    """
+    expected = f"cert-{emitted['target_state_sha256'][:12]}"
+    if emitted[key] != expected:
+        return [
+            f"{where}.{key}: {emitted[key]!r} is not {expected!r}, the prefix of the "
+            "document's own target_state_sha256"
+        ]
+    return []
+
+
+def _window_selector_v1(where: str, key: str, emitted: Mapping[str, Any]) -> list[str]:
+    """v1 on a comparability window's selector `key`: compared for kind, a number or null."""
+    if not _number_or_none(emitted[key]):
+        return [f"{where}.{key}: {emitted[key]!r} is not a number or null"]
+    return []
+
+
+def _windowed_shape_v1(
+    where: str, key: str, emitted: Mapping[str, Any], committed: Mapping[str, Any]
+) -> list[str]:
+    """v1 on a windowed float `key` outside its window: compared for shape, never for value.
+
+    Its shape is a number or null, and null on one side exactly when null on the other.
+    """
+    if not _number_or_none(emitted[key]) or (emitted[key] is None) != (committed[key] is None):
+        return [
+            f"{where}.{key}: {emitted[key]!r} against {committed[key]!r} — outside "
+            "the comparability window the value is not compared, its shape is"
+        ]
+    return []
 
 
 # == T08-numerical-policy-v2 (ADR 0025) =========================================================
