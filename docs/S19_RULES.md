@@ -55,6 +55,13 @@
   silent no-op the gate cannot see; 0 of 243 at d90b498f). A flag stops the step; the orchestrator retargets the
   test outside the gate. Quote its summary line in the step's commit message.
 
+- Retarget before the plan (S19_DECISIONS, 2026-11-14): when a move needs tests, scripts or test data to follow
+  it (patch targets, file paths, allowlist entries), the retarget is its own commit placed BEFORE the plan commit:
+  retarget, plan, step; gate against the plan commit. A retarget commit changes only where a patch or path points
+  (a name patched in a module that keeps a call site and in one that gains one is patched in both); never an
+  assertion, an expected value or a test case. An engineer writes one only when its brief or the orchestrator
+  authorises that step's retarget, and a `reviewer` reads it before the step is gated.
+
 ## Running jobs
 
 - Gate: `.claude/skills/s19-refactor/gate.sh` (same modes as S17's: step, `--no-gain`, `--revert`,
