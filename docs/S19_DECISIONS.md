@@ -192,3 +192,10 @@
   without the entries the new modules fall in the models layer and add 9 violations). **DECISION B4: `_phase` moves to
   `cascade_spec` and `_k_values` to `cascade_init`** (the design note kept them with validation, but the new modules
   reach them and they reach nothing else; cascade.py imports them back; simulated 8/6/20 unchanged, 58/58 verbatim).
+- **2026-11-14, lane d part 3: B5-rows accepted** (retarget f1abdbdf, plan 65cd174f, step f6a8f240 gate 16/16, docs
+  fcc56a97 15/15; `verify/flowsheet_rows.py`; arch 11/6/18 -> 11/5/16, the table <-> gamma_phi_units cycle gone).
+  **B6 failed its gate only on `tests/test_p03_a30_workload.py:148`** (the registered `nlp`-extra module list, R-478):
+  the two new Pyomo-importing modules are unregistered; work kept on `wip/S19-B6`. **DECISION: register them**
+  (decision register R-1041); the next lane d engineer extends `NLP_EXTRA_MODULES` in the retarget commit and rebuilds
+  B6. Notes for the docs pass: `test_m03_nlp_isolation` skips by a `projection` prefix (new modules pass by accident,
+  `projection_support` is not walked); m05's docstring says "only projection and trf"; A30 counts change per module.
