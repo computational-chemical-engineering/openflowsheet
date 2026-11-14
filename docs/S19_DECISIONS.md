@@ -93,3 +93,20 @@
   12:09 UTC; the session's own run of `decision_desk_verify.py` reported VERIFIED). Consequence: the ADR's status is
   Accepted; its interface steps run in W4 as planned (after W2 and W3); I-1 lands in A5 as a move with a re-export,
   which W4 drops (R4 not taken). Rulings A15, A11 and I-10 are still due before W4.
+- **2026-11-14, R-W1 (`reviewer` on the W1 moves, brief `S19-R-W1.md`): merge as is; no blocker.** Checked beyond the
+  gate: `__all__` unchanged in all 17 touched modules, every base name still bound at its old path, no persisted
+  `__module__`, no import-time registrations moved, patch_noop 0 of 243 plus a grep for patches of names the moved code
+  reads. Findings and their disposition:
+  (1) A8 `assessment/sizing/__init__.py` keeps 35 incidental imports as `X as X` re-exports (the public-API check
+  counts every `__init__` import as public). Removing them removes public names, so it is an ADR 0076 W4 step (with
+  I-19's re-export drop), not a W2/W3 step.
+  (2) A4: the forbid rule checks direct imports; `verify/certificate.py:1064` calls `rank.eliminate_alias_rows` with
+  rank's default tolerance, now `models.lifted_tolerance.PRESSURE_TOLERANCE` (same object as before A4, bitwise
+  equal). W4 item under I-2: the certificate passes the verifier's own tolerance explicitly; to be confirmed by the
+  design lane with the A15 ruling (R-016).
+  (3) Comment and docstring fixes (`--no-gain` steps): `models/lifted_tolerance.py:24-25` (dated reason; in lane c's
+  brief), `assessment/linearization.py:3-4` ("these three": two) and its lazy import at 38-42 (now unnecessary): W3
+  group G4.
+  (4) Process: the A4 config edit was authorised by the orchestrator's addendum to lane a (SendMessage, 2026-11-14:
+  "In A4's plan commit you may also add openflowsheet.models.lifted_tolerance to that forbid rule's `to` list"); the
+  brief file was not updated. From now on addenda are appended to the brief file as well.
