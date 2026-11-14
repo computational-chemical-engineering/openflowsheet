@@ -23,357 +23,76 @@ Column ids (build decision, `docs/S01_DECISIONS.md`): stage `j`'s columns are
 from __future__ import annotations
 
 import math
-import re
-from collections.abc import Callable, Mapping, Sequence
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from typing import Final, Literal
 
 from openflowsheet.canonical import normalize_zero
 from openflowsheet.compile.reference import row_values
-from openflowsheet.compile.spec import (
-    EquationSpec,
-    ProblemSpec,
-    QuantityKind,
-    RowBuilder,
-)
-from openflowsheet.compiled import EvaluationContext, RowAccumulation
-from openflowsheet.models import (
-    Accumulation,
-    Contribution,
-    DeclaredEquation,
-    Holdup,
-    SpecificationError,
-    flow_id,
-    origin,
-    pressure_id,
-    row_id,
-    temperature_id,
-)
+from openflowsheet.compiled import EvaluationContext
+from openflowsheet.models import pressure_id, temperature_id
 from openflowsheet.models.lifted import Regime
 from openflowsheet.models.lifted_tolerance import KIND_TOLERANCE
-from openflowsheet.models.rows import (
-    balance_row,
-    definition_row,
-    energy_row,
-    equilibrium_row,
-    specification_row,
-)
+from openflowsheet.models.rows import balance_row
 from openflowsheet.models.syn001 import (
-    COMPONENTS,
-    ENERGY,
-    MOLAR_FLOW,
-    MOLE,
     P_MAX,
     P_MIN,
-    POWER,
-    PRESSURE,
     PROVIDER_ID,
     REFERENCE_CONVENTION,
     T_MAX,
     T_MIN,
-    TEMPERATURE,
 )
-from openflowsheet.models.syn001.blocks import EnthalpyFlowBlock, LnKBlock
 from openflowsheet.models.syn001.cascade_failure import (
     CascadeFailure as CascadeFailure,
 )
 from openflowsheet.models.syn001.cascade_failure import (
     FailureOutcome as FailureOutcome,
 )
-from openflowsheet.models.syn001.equilibrium_form import composition_dependent
-from openflowsheet.models.syn001.gamma_phi import _ln_k
-from openflowsheet.models.syn001.saturation_band import BandError, band_temperature
-from openflowsheet.models.syn001.tp_state import (
-    enthalpy_block_id,
-    enthalpy_flow,
-    lnk_block_id,
-    single_phase_admissible,
-)
-from openflowsheet.thermo import Phase, PropertyProvider, PropertyRequest, StreamState
-
-MODEL_ID: Final = "syn001.cascade"
-
-#: Where the equations are stated.
-SPECIFICATION: Final = "docs/derivations/S01-spec.md §2"
-
-#: Spec §6's registered initializer.
-INITIALIZER_ID: Final = "s01-kremser-cmo-v1"
-
-#: Spec §6.2 (DECISION 7): `β̄` is clamped to this interval, and each CMO total is floored at
-#: `CMO_FLOOR · F`.
-BETA_BOUNDS: Final = (0.1, 0.9)
-CMO_FLOOR: Final = 0.1
+from openflowsheet.models.syn001.cascade_init import BETA_BOUNDS as BETA_BOUNDS
+from openflowsheet.models.syn001.cascade_init import CMO_FLOOR as CMO_FLOOR
+from openflowsheet.models.syn001.cascade_init import INITIALIZER_ID as INITIALIZER_ID
+from openflowsheet.models.syn001.cascade_init import KremserInitial as KremserInitial
+from openflowsheet.models.syn001.cascade_init import KValues as KValues
+from openflowsheet.models.syn001.cascade_init import _inflow_sum, _inlet_columns
+from openflowsheet.models.syn001.cascade_init import _k_values as _k_values
+from openflowsheet.models.syn001.cascade_init import kremser_initial as kremser_initial
+from openflowsheet.models.syn001.cascade_init import thomas as thomas
+from openflowsheet.models.syn001.cascade_rows import _token as _token
+from openflowsheet.models.syn001.cascade_rows import declared_problem as declared_problem
+from openflowsheet.models.syn001.cascade_rows import declared_rows as declared_rows
+from openflowsheet.models.syn001.cascade_spec import _TOKEN as _TOKEN
+from openflowsheet.models.syn001.cascade_spec import BOTTOM as BOTTOM
+from openflowsheet.models.syn001.cascade_spec import EQUATIONS as EQUATIONS
+from openflowsheet.models.syn001.cascade_spec import MODEL_ID as MODEL_ID
+from openflowsheet.models.syn001.cascade_spec import SPECIFICATION as SPECIFICATION
+from openflowsheet.models.syn001.cascade_spec import TOP as TOP
+from openflowsheet.models.syn001.cascade_spec import CascadeSpec as CascadeSpec
+from openflowsheet.models.syn001.cascade_spec import InletState as InletState
+from openflowsheet.models.syn001.cascade_spec import PlacedInlet as PlacedInlet
+from openflowsheet.models.syn001.cascade_spec import SideFeed as SideFeed
+from openflowsheet.models.syn001.cascade_spec import _parameter as _parameter
+from openflowsheet.models.syn001.cascade_spec import _phase as _phase
+from openflowsheet.models.syn001.cascade_spec import energy_row_id as energy_row_id
+from openflowsheet.models.syn001.cascade_spec import inlet_row_id as inlet_row_id
+from openflowsheet.models.syn001.cascade_spec import inlet_stream as inlet_stream
+from openflowsheet.models.syn001.cascade_spec import label_column as label_column
+from openflowsheet.models.syn001.cascade_spec import label_row_id as label_row_id
+from openflowsheet.models.syn001.cascade_spec import liquid_id as liquid_id
+from openflowsheet.models.syn001.cascade_spec import liquid_total_id as liquid_total_id
+from openflowsheet.models.syn001.cascade_spec import mixed_id as mixed_id
+from openflowsheet.models.syn001.cascade_spec import stage_duty_id as stage_duty_id
+from openflowsheet.models.syn001.cascade_spec import stage_prefix as stage_prefix
+from openflowsheet.models.syn001.cascade_spec import stage_pressure_id as stage_pressure_id
+from openflowsheet.models.syn001.cascade_spec import stage_row_id as stage_row_id
+from openflowsheet.models.syn001.cascade_spec import stage_temperature_id as stage_temperature_id
+from openflowsheet.models.syn001.cascade_spec import vapor_id as vapor_id
+from openflowsheet.models.syn001.cascade_spec import vapor_total_id as vapor_total_id
+from openflowsheet.models.syn001.saturation_band import band_temperature as band_temperature
+from openflowsheet.models.syn001.tp_state import enthalpy_flow, single_phase_admissible
+from openflowsheet.thermo import Phase, PropertyProvider, StreamState
 
 #: The declared inlet phases S01 accepts; any other is `unsupported(two_phase_inlet:<port>)`.
 INLET_PHASES: Final[tuple[Phase, ...]] = ("LIQUID", "VAPOR")
-
-#: The two fixed ports. Side feeds carry their own port names.
-TOP: Final = "top"
-BOTTOM: Final = "bottom"
-
-#: `K_i(T, P)` in component order. The initializer's injection point (spec §10 A02).
-KValues = Callable[[float, float], Sequence[float]]
-
-# Block ids are CasADi names (`tp_state._token`), so a unit id or port that cannot be one is
-# refused when the rows are built rather than sanitized into a collision.
-_TOKEN = re.compile(r"^[A-Za-z][A-Za-z0-9]*(?:_[A-Za-z0-9]+)*$")
-
-
-# -- declarations --------------------------------------------------------------------------------
-
-EQUATIONS: Final[tuple[DeclaredEquation, ...]] = (
-    DeclaredEquation(
-        equation_id="CAS-mix",
-        statement=(
-            "(l_i,j-1 or top_i) + (v_i,j+1 or bottom_i) + sum side_i@j - m_ij = 0 for every "
-            "stage j and component i"
-        ),
-        dependencies=("stage.l", "stage.v", "stage.m", "inlet.n"),
-        conditional_class="unconditional",
-        accumulation=Accumulation(kind="algebraic"),
-        dimension=MOLAR_FLOW,
-        source=SPECIFICATION,
-    ),
-    DeclaredEquation(
-        equation_id="CAS-mole",
-        statement="m_ij - v_ij - l_ij = 0 for every stage j and component i",
-        dependencies=("stage.m", "stage.v", "stage.l"),
-        conditional_class="unconditional",
-        accumulation=Accumulation(
-            kind="holdup_balance",
-            holdup=Holdup(
-                symbol="N_i", quantity="component moles held on the stage", dimension=MOLE
-            ),
-        ),
-        dimension=MOLAR_FLOW,
-        source=SPECIFICATION,
-    ),
-    DeclaredEquation(
-        equation_id="CAS-equilibrium",
-        statement="v_ij L_j - K_i(T_j, P_j) l_ij V_j = 0 for every stage j and component i",
-        dependencies=("stage.v", "stage.l", "stage.L", "stage.V", "stage.T", "stage.P"),
-        conditional_class="phase_conditional",
-        accumulation=Accumulation(kind="algebraic"),
-        source=SPECIFICATION,
-    ),
-    DeclaredEquation(
-        equation_id="CAS-Ldef",
-        statement="L_j - sum_i l_ij = 0 for every stage j",
-        dependencies=("stage.L", "stage.l"),
-        conditional_class="unconditional",
-        accumulation=Accumulation(kind="algebraic"),
-        dimension=MOLAR_FLOW,
-        source=SPECIFICATION,
-    ),
-    DeclaredEquation(
-        equation_id="CAS-Vdef",
-        statement="V_j - sum_i v_ij = 0 for every stage j",
-        dependencies=("stage.V", "stage.v"),
-        conditional_class="unconditional",
-        accumulation=Accumulation(kind="algebraic"),
-        dimension=MOLAR_FLOW,
-        source=SPECIFICATION,
-    ),
-    DeclaredEquation(
-        equation_id="CAS-energy",
-        statement=(
-            "Q_j + Hdot_in,j - Hdot^V(v_j, T_j) - Hdot^L(l_j, T_j, P_j) = 0 for every stage j, "
-            "Q_j positive into the stage"
-        ),
-        dependencies=("stage.Q", "stage.l", "stage.v", "stage.T", "stage.P", "inlet"),
-        conditional_class="unconditional",
-        accumulation=Accumulation(
-            kind="holdup_balance",
-            holdup=Holdup(
-                symbol="U", quantity="internal energy of the stage contents", dimension=ENERGY
-            ),
-        ),
-        dimension=POWER,
-        source=SPECIFICATION,
-    ),
-    DeclaredEquation(
-        equation_id="CAS-P",
-        statement="P_j - P_j* = 0 for every stage j",
-        dependencies=("stage.P", "parameters.P_spec"),
-        conditional_class="unconditional",
-        accumulation=Accumulation(kind="algebraic"),
-        dimension=PRESSURE,
-        source=SPECIFICATION,
-    ),
-    DeclaredEquation(
-        equation_id="CAS-Q",
-        statement="Q_j - Q_j* = 0 for every stage j",
-        dependencies=("stage.Q", "parameters.Q_spec"),
-        conditional_class="unconditional",
-        accumulation=Accumulation(kind="algebraic"),
-        dimension=POWER,
-        source=SPECIFICATION,
-    ),
-    DeclaredEquation(
-        equation_id="CAS-inlet-n",
-        statement="n_ik - n_ik* = 0 for every inlet k and component i",
-        dependencies=("inlet.n", "parameters.n_spec"),
-        conditional_class="unconditional",
-        accumulation=Accumulation(kind="algebraic"),
-        dimension=MOLAR_FLOW,
-        source=SPECIFICATION,
-    ),
-    DeclaredEquation(
-        equation_id="CAS-inlet-T",
-        statement="T_k - T_k* = 0 for every inlet k",
-        dependencies=("inlet.T", "parameters.T_spec"),
-        conditional_class="unconditional",
-        accumulation=Accumulation(kind="algebraic"),
-        dimension=TEMPERATURE,
-        source=SPECIFICATION,
-    ),
-    DeclaredEquation(
-        equation_id="CAS-inlet-P",
-        statement="P_k - P_k* = 0 for every inlet k",
-        dependencies=("inlet.P", "parameters.P_spec"),
-        conditional_class="unconditional",
-        accumulation=Accumulation(kind="algebraic"),
-        dimension=PRESSURE,
-        source=SPECIFICATION,
-    ),
-)
-
-
-# -- the specification ---------------------------------------------------------------------------
-
-
-@dataclass(frozen=True)
-class InletState:
-    """One external inlet's fixed `nTP` state and declared phase (spec §3).
-
-    `phase` is a plain string so a declaration S01 does not support reaches `validate` and is
-    refused there (R6) rather than failing a type check somewhere else.
-    """
-
-    n: tuple[float, ...]
-    temperature: float
-    pressure: float
-    phase: str
-
-
-@dataclass(frozen=True)
-class SideFeed:
-    """An inlet at a declared stage. `port` names it in row ids and refusal codes."""
-
-    port: str
-    stage: int
-    state: InletState
-
-
-@dataclass(frozen=True)
-class PlacedInlet:
-    """An inlet with the stage it enters: `top` at 1, `bottom` at N, side feeds where declared."""
-
-    port: str
-    stage: int
-    state: InletState
-
-
-@dataclass(frozen=True)
-class CascadeSpec:
-    """The S01 specification set (spec §3): N, `P_j*`, `Q_j*` and every inlet.
-
-    Nothing is checked on construction; `validate` applies spec §5 and answers with a typed
-    refusal, so an invalid specification can be stated and refused rather than raising.
-    """
-
-    unit_id: str
-    stage_count: int
-    #: `P_j*`, Pa, one per stage, top to bottom.
-    pressures: tuple[float, ...]
-    #: `Q_j*`, W, positive into the stage (ADR 0001 D4.1); `0` is adiabatic.
-    duties: tuple[float, ...]
-    top: InletState
-    bottom: InletState
-    sides: tuple[SideFeed, ...] = ()
-    components: tuple[str, ...] = COMPONENTS
-
-    def inlets(self) -> tuple[PlacedInlet, ...]:
-        """`top`, `bottom`, then the side feeds in declaration order — the order every sum over
-        inlets is formed in (the generator's)."""
-        return (
-            PlacedInlet(TOP, 1, self.top),
-            PlacedInlet(BOTTOM, self.stage_count, self.bottom),
-            *(PlacedInlet(side.port, side.stage, side.state) for side in self.sides),
-        )
-
-
-# -- names ---------------------------------------------------------------------------------------
-
-
-def stage_prefix(unit: str, stage: int) -> str:
-    return f"{unit}.stage.{stage}"
-
-
-def liquid_id(unit: str, stage: int, component: str) -> str:
-    return f"{stage_prefix(unit, stage)}.l.{component}"
-
-
-def vapor_id(unit: str, stage: int, component: str) -> str:
-    return f"{stage_prefix(unit, stage)}.v.{component}"
-
-
-def mixed_id(unit: str, stage: int, component: str) -> str:
-    return f"{stage_prefix(unit, stage)}.m.{component}"
-
-
-def liquid_total_id(unit: str, stage: int) -> str:
-    return f"{stage_prefix(unit, stage)}.L"
-
-
-def vapor_total_id(unit: str, stage: int) -> str:
-    return f"{stage_prefix(unit, stage)}.V"
-
-
-def stage_temperature_id(unit: str, stage: int) -> str:
-    return f"{stage_prefix(unit, stage)}.T"
-
-
-def stage_pressure_id(unit: str, stage: int) -> str:
-    return f"{stage_prefix(unit, stage)}.P"
-
-
-def stage_duty_id(unit: str, stage: int) -> str:
-    return f"{stage_prefix(unit, stage)}.Q"
-
-
-def inlet_stream(unit: str, port: str) -> str:
-    return f"{unit}.inlet.{port}"
-
-
-def stage_row_id(unit: str, stage: int, kind: str, *component: str) -> str:
-    """`<U>:stage:<j>:<kind>[:<c>]` (spec §12 WO-1)."""
-    return row_id(unit, "stage", str(stage), kind, *component)
-
-
-def inlet_row_id(unit: str, port: str, kind: str, *component: str) -> str:
-    return row_id(unit, "inlet", port, kind, *component)
-
-
-def energy_row_id(unit: str, stage: int) -> str:
-    return stage_row_id(unit, stage, "energy")
-
-
-def label_row_id(unit: str, stage: int) -> str:
-    """The `ZERO_FLOW` label row `T_j − T_label` that replaces `energy_j` (spec §4.2). A row of an
-    attempt's system, not of the declaration."""
-    return stage_row_id(unit, stage, "label")
-
-
-def label_column(spec: CascadeSpec, stage: int) -> str:
-    """Spec §4.3 (DECISION 4): `T_{j−1}` for j > 1, the `top` inlet's temperature for j = 1."""
-    if stage == 1:
-        return temperature_id(inlet_stream(spec.unit_id, TOP))
-    return stage_temperature_id(spec.unit_id, stage - 1)
-
-
-def _parameter(column: str) -> str:
-    return f"{column}*"
 
 
 # -- spec §5: validation -------------------------------------------------------------------------
@@ -407,49 +126,6 @@ def property_method_refusal(unit: str, provider: PropertyProvider) -> CascadeFai
         f"{REFERENCE_CONVENTION!r}), whose K is composition-independent; the supported nonideal "
         "scope is empty (S03 §9)",
     )
-
-
-def _k_values(
-    provider: PropertyProvider,
-    context: EvaluationContext,
-    components: tuple[str, ...],
-    temperature: float,
-    pressure: float,
-    *,
-    liquid: Sequence[float] | None = None,
-) -> tuple[float, ...]:
-    """`K_i(T, P)` from the provider's `lnK`, as the rows' `LnKBlock` asks for it.
-
-    For a composition-dependent form (S10-C design note §4.9) `K_i(T, P, liquid)` from
-    `gamma_phi`'s `ln φ_i^L` at the liquid `liquid` (a composition or flows), which is then
-    required (`ValueError` if `None`); SYN-001 ignores `liquid` and makes today's call.
-    """
-    if composition_dependent(provider):
-        if liquid is None:
-            raise ValueError("a composition-dependent K needs the liquid it is evaluated at")
-        try:
-            values, _, _ = _ln_k(provider, components, temperature, pressure, liquid, context, ())
-        except BandError as error:
-            raise RuntimeError(
-                f"lnK at T = {temperature!r} K, P = {pressure!r} Pa: {error.status}: "
-                f"{error.message}"
-            ) from error
-        return tuple(math.exp(value) for value in values)
-    result = provider.evaluate_phase(
-        PropertyRequest(
-            state=StreamState(
-                n=(1.0,) * len(components), temperature=temperature, pressure=pressure
-            ),
-            phase="LIQUID",
-            properties=("lnK",),
-        ),
-        context,
-    )
-    if result.status != "ok":
-        raise RuntimeError(
-            f"lnK at T = {temperature!r} K, P = {pressure!r} Pa: {result.status}: {result.message}"
-        )
-    return tuple(math.exp(result.values[f"lnK_{name}"]) for name in components)
 
 
 def _enthalpy_flow(
@@ -646,305 +322,6 @@ def energy_precheck(
     )
 
 
-def _phase(state: InletState) -> Phase:
-    if state.phase == "LIQUID":
-        return "LIQUID"
-    if state.phase == "VAPOR":
-        return "VAPOR"
-    raise ValueError(f"inlet phase {state.phase!r} is not LIQUID or VAPOR; validate first")
-
-
-# -- spec §2: declared rows ----------------------------------------------------------------------
-
-
-def _token(text: str) -> str:
-    if not _TOKEN.match(text):
-        raise SpecificationError(
-            f"{text!r} cannot name a property block: a letter followed by letters, digits and "
-            "non-consecutive underscores"
-        )
-    return text
-
-
-def declared_rows(
-    spec: CascadeSpec, provider: PropertyProvider, context: EvaluationContext
-) -> Contribution:
-    """The §2 columns, rows, blocks and pinned inputs: `14N + (C + 2) n_in` of each.
-
-    The cascade owns every column it declares (stage and inlet), so all of them are in
-    `variable_ids`. Stage j's columns come first, in stage order, then each inlet's. Call after
-    `validate`.
-    """
-    unit, components = _token(spec.unit_id), spec.components
-    count = spec.stage_count
-    inlets = spec.inlets()
-    for inlet in inlets:
-        _token(inlet.port)
-
-    variables: list[str] = []
-    variable_kinds: dict[str, QuantityKind] = {}
-    equations: list[EquationSpec] = []
-    row_kinds: dict[str, QuantityKind] = {}
-    blocks: list[LnKBlock | EnthalpyFlowBlock] = []
-    block_inputs: dict[str, tuple[str, ...]] = {}
-    parameter_ids: list[str] = []
-    parameters: dict[str, float] = {}
-
-    def column(name: str, kind: QuantityKind) -> None:
-        variables.append(name)
-        variable_kinds[name] = kind
-
-    def row(
-        equation_id: str,
-        build: RowBuilder,
-        accumulation: RowAccumulation,
-        family: str,
-        kind: QuantityKind,
-    ) -> None:
-        equations.append(
-            EquationSpec(
-                equation_id=equation_id,
-                build=build,
-                accumulation=accumulation,
-                origin=origin(MODEL_ID, family),
-            )
-        )
-        row_kinds[equation_id] = kind
-
-    def pin(name: str, value: float) -> str:
-        parameter = _parameter(name)
-        parameter_ids.append(parameter)
-        parameters[parameter] = normalize_zero(float(value))
-        return parameter
-
-    # Enthalpy blocks: one per (stage, phase) outlet and one per inlet. Each internal stream has
-    # one block, read with + by the stage it enters and with - by the stage it leaves, so the
-    # overall energy closure of spec §2 cancels term by term.
-    vapor_keys: dict[int, tuple[str, ...]] = {}
-    liquid_keys: dict[int, tuple[str, ...]] = {}
-    lnk_keys: dict[int, str] = {}
-    for stage in range(1, count + 1):
-        token = f"{unit}_s{stage}"
-        lnk = LnKBlock(provider, components, context, block_id=lnk_block_id(token))
-        blocks.append(lnk)
-        block_inputs[lnk.block_id] = (
-            stage_temperature_id(unit, stage),
-            stage_pressure_id(unit, stage),
-        )
-        lnk_keys[stage] = lnk.block_id
-        outlets: tuple[
-            tuple[Phase, Callable[[str, int, str], str], dict[int, tuple[str, ...]]], ...
-        ]
-        outlets = (("VAPOR", vapor_id, vapor_keys), ("LIQUID", liquid_id, liquid_keys))
-        for phase, flows, keys in outlets:
-            block = EnthalpyFlowBlock(
-                provider, components, phase, context, block_id=enthalpy_block_id(token, phase)
-            )
-            blocks.append(block)
-            block_inputs[block.block_id] = (
-                *(flows(unit, stage, c) for c in components),
-                stage_temperature_id(unit, stage),
-                stage_pressure_id(unit, stage),
-            )
-            keys[stage] = tuple(f"{block.block_id}.{out}" for out in block.output_ids)
-    inlet_keys: dict[str, tuple[str, ...]] = {}
-    for inlet in inlets:
-        stream = inlet_stream(unit, inlet.port)
-        phase = _phase(inlet.state)
-        block = EnthalpyFlowBlock(
-            provider,
-            components,
-            phase,
-            context,
-            block_id=enthalpy_block_id(f"{unit}_in_{inlet.port}", phase),
-        )
-        blocks.append(block)
-        block_inputs[block.block_id] = (
-            *(flow_id(stream, c) for c in components),
-            temperature_id(stream),
-            pressure_id(stream),
-        )
-        inlet_keys[inlet.port] = tuple(f"{block.block_id}.{out}" for out in block.output_ids)
-
-    sides_at: dict[int, list[PlacedInlet]] = {}
-    for inlet in inlets[2:]:
-        sides_at.setdefault(inlet.stage, []).append(inlet)
-
-    for stage in range(1, count + 1):
-        for c in components:
-            column(liquid_id(unit, stage, c), "molar_flow")
-        for c in components:
-            column(vapor_id(unit, stage, c), "molar_flow")
-        for c in components:
-            column(mixed_id(unit, stage, c), "molar_flow")
-        column(liquid_total_id(unit, stage), "molar_flow")
-        column(vapor_total_id(unit, stage), "molar_flow")
-        column(stage_temperature_id(unit, stage), "temperature")
-        column(stage_pressure_id(unit, stage), "pressure")
-        column(stage_duty_id(unit, stage), "heat_rate")
-
-        sides = sides_at.get(stage, [])
-        for c in components:
-            above = (
-                flow_id(inlet_stream(unit, TOP), c) if stage == 1 else liquid_id(unit, stage - 1, c)
-            )
-            below = (
-                flow_id(inlet_stream(unit, BOTTOM), c)
-                if stage == count
-                else vapor_id(unit, stage + 1, c)
-            )
-            inflow = (above, below, *(flow_id(inlet_stream(unit, s.port), c) for s in sides))
-            row(
-                stage_row_id(unit, stage, "mix", c),
-                balance_row(inflow, (mixed_id(unit, stage, c),)),
-                "algebraic",
-                "CAS-mix",
-                "molar_flow",
-            )
-        for c in components:
-            row(
-                stage_row_id(unit, stage, "mole", c),
-                balance_row(
-                    (mixed_id(unit, stage, c),),
-                    (vapor_id(unit, stage, c), liquid_id(unit, stage, c)),
-                ),
-                "holdup_balance",
-                "CAS-mole",
-                "molar_flow",
-            )
-        for c in components:
-            row(
-                stage_row_id(unit, stage, "eq", c),
-                equilibrium_row(
-                    vapor_id(unit, stage, c),
-                    liquid_id(unit, stage, c),
-                    vapor_total_id(unit, stage),
-                    liquid_total_id(unit, stage),
-                    f"{lnk_keys[stage]}.lnK_{c}",
-                ),
-                "algebraic",
-                "CAS-equilibrium",
-                "molar_flow_squared",
-            )
-        row(
-            stage_row_id(unit, stage, "Ldef"),
-            definition_row(
-                liquid_total_id(unit, stage), tuple(liquid_id(unit, stage, c) for c in components)
-            ),
-            "algebraic",
-            "CAS-Ldef",
-            "molar_flow",
-        )
-        row(
-            stage_row_id(unit, stage, "Vdef"),
-            definition_row(
-                vapor_total_id(unit, stage), tuple(vapor_id(unit, stage, c) for c in components)
-            ),
-            "algebraic",
-            "CAS-Vdef",
-            "molar_flow",
-        )
-        enthalpy_in = (
-            *(inlet_keys[TOP] if stage == 1 else liquid_keys[stage - 1]),
-            *(inlet_keys[BOTTOM] if stage == count else vapor_keys[stage + 1]),
-            *(key for s in sides for key in inlet_keys[s.port]),
-        )
-        row(
-            energy_row_id(unit, stage),
-            energy_row(
-                enthalpy_in,
-                (*vapor_keys[stage], *liquid_keys[stage]),
-                source=stage_duty_id(unit, stage),
-            ),
-            "holdup_balance",
-            "CAS-energy",
-            "heat_rate",
-        )
-        row(
-            stage_row_id(unit, stage, "P"),
-            specification_row(
-                stage_pressure_id(unit, stage),
-                pin(stage_pressure_id(unit, stage), spec.pressures[stage - 1]),
-            ),
-            "algebraic",
-            "CAS-P",
-            "pressure",
-        )
-        row(
-            stage_row_id(unit, stage, "Q"),
-            specification_row(
-                stage_duty_id(unit, stage),
-                pin(stage_duty_id(unit, stage), spec.duties[stage - 1]),
-            ),
-            "algebraic",
-            "CAS-Q",
-            "heat_rate",
-        )
-
-    for inlet in inlets:
-        stream = inlet_stream(unit, inlet.port)
-        for c in components:
-            column(flow_id(stream, c), "molar_flow")
-        column(temperature_id(stream), "temperature")
-        column(pressure_id(stream), "pressure")
-        for c, value in zip(components, inlet.state.n, strict=True):
-            row(
-                inlet_row_id(unit, inlet.port, "n", c),
-                specification_row(flow_id(stream, c), pin(flow_id(stream, c), value)),
-                "algebraic",
-                "CAS-inlet-n",
-                "molar_flow",
-            )
-        row(
-            inlet_row_id(unit, inlet.port, "T"),
-            specification_row(
-                temperature_id(stream), pin(temperature_id(stream), inlet.state.temperature)
-            ),
-            "algebraic",
-            "CAS-inlet-T",
-            "temperature",
-        )
-        row(
-            inlet_row_id(unit, inlet.port, "P"),
-            specification_row(pressure_id(stream), pin(pressure_id(stream), inlet.state.pressure)),
-            "algebraic",
-            "CAS-inlet-P",
-            "pressure",
-        )
-
-    return Contribution(
-        variable_ids=tuple(variables),
-        equations=tuple(equations),
-        blocks=tuple(blocks),
-        block_inputs=block_inputs,
-        parameter_ids=tuple(parameter_ids),
-        parameters=parameters,
-        variable_kinds=variable_kinds,
-        row_kinds=row_kinds,
-    )
-
-
-def declared_problem(rows: Contribution, label: str = MODEL_ID) -> ProblemSpec:
-    """The declared rows as a `ProblemSpec`, for the float evaluator (`compile.reference`).
-
-    `label` is a placeholder for evaluation only: the compiled problem's label, which identity
-    depends on, is WO-2's to fix.
-    """
-    problem = ProblemSpec(
-        label=label,
-        variable_ids=rows.variable_ids,
-        equations=rows.equations,
-        parameter_ids=rows.parameter_ids,
-        parameters=rows.parameters,
-        blocks=rows.blocks,
-        block_inputs=rows.block_inputs,
-        variable_kinds=rows.variable_kinds,
-        row_kinds=rows.row_kinds,
-    )
-    problem.validate()
-    return problem
-
-
 # -- spec §4.2: regime forms ---------------------------------------------------------------------
 
 
@@ -996,194 +373,6 @@ def regime_form(spec: CascadeSpec, stage: int, regime: Regime) -> RegimeForm:
             label_column(spec, stage),
         ),
     )
-
-
-# -- spec §6: the initializer --------------------------------------------------------------------
-
-
-@dataclass(frozen=True)
-class KremserInitial:
-    """`x_K` of spec §6 and the intermediate quantities A03 checks."""
-
-    z: tuple[float, ...]
-    beta: float
-    beta_clamped: float
-    pbar: float
-    tbar: float
-    #: `L_j`, `V_j` of step 4 (CMO, floored), before step 5 replaces them by the sums.
-    liquid_cmo: tuple[float, ...]
-    vapor_cmo: tuple[float, ...]
-    #: `l_ij`, `v_ij`, indexed `[j - 1][i]`.
-    liquid: tuple[tuple[float, ...], ...]
-    vapor: tuple[tuple[float, ...], ...]
-    #: Every declared column, in `declared_rows` order.
-    state: Mapping[str, float]
-    initializer: str = INITIALIZER_ID
-
-
-def thomas(
-    sub: Sequence[float], diag: Sequence[float], sup: Sequence[float], rhs: Sequence[float]
-) -> list[float]:
-    """The Thomas algorithm without pivoting (spec §6.5): stable on the cascade's weakly
-    column-diagonally-dominant, irreducible matrix. `sub[0]` and `sup[-1]` are not read."""
-    n = len(diag)
-    c = [0.0] * n
-    d = [0.0] * n
-    c[0], d[0] = sup[0] / diag[0], rhs[0] / diag[0]
-    for j in range(1, n):
-        m = diag[j] - sub[j] * c[j - 1]
-        c[j] = sup[j] / m if j < n - 1 else 0.0
-        d[j] = (rhs[j] - sub[j] * d[j - 1]) / m
-    out = [0.0] * n
-    out[-1] = d[-1]
-    for j in range(n - 2, -1, -1):
-        out[j] = d[j] - c[j] * out[j + 1]
-    return out
-
-
-def kremser_initial(
-    spec: CascadeSpec,
-    provider: PropertyProvider,
-    context: EvaluationContext,
-    *,
-    k_values: KValues | None = None,
-) -> KremserInitial | CascadeFailure:
-    """Spec §6 `s01-kremser-cmo-v1`, on a validated, flowing specification.
-
-    `k_values` replaces the provider's `K_i(T̄, P_j*)` in step 5 only (spec §10 A02 injects a
-    constant `K` to reach the Kremser closed form); `T̄` is always the provider's band
-    temperature. An all-dormant specification has no initializer: it is §4.6's
-    (`dormant_answer`), and asking here is misuse.
-    """
-    unit, components = spec.unit_id, spec.components
-    count = spec.stage_count
-    inlets = spec.inlets()
-    width = len(components)
-    totals = [sum(inlet.state.n[i] for inlet in inlets) for i in range(width)]
-    big_f = sum(totals)
-    if big_f == 0.0:
-        raise ValueError(f"{unit}: every inlet is dormant; spec §4.6 answers it, not §6")
-    z = tuple(a / big_f for a in totals)
-    beta = sum(sum(i.state.n) for i in inlets if i.state.phase == "VAPOR") / big_f
-    beta_clamped = min(max(beta, BETA_BOUNDS[0]), BETA_BOUNDS[1])
-    pbar = sum(spec.pressures) / count
-
-    band = band_temperature(provider, totals, pbar, beta_clamped, context)
-    if band.position != "inside" or band.temperature is None:
-        return CascadeFailure(
-            "INITIALIZATION_FAILED",
-            f"initialization_failed({INITIALIZER_ID}, tbar_outside_domain)",
-            f"{unit}: T(beta = {beta_clamped!r}) at P = {pbar!r} Pa is {band.position} the domain",
-        )
-    tbar = band.temperature
-
-    floor = CMO_FLOOR * big_f
-    liquid_cmo = tuple(
-        max(
-            sum(sum(i.state.n) for i in inlets if i.state.phase == "LIQUID" and i.stage <= j),
-            floor,
-        )
-        for j in range(1, count + 1)
-    )
-    vapor_cmo = tuple(
-        max(
-            sum(sum(i.state.n) for i in inlets if i.state.phase == "VAPOR" and i.stage >= j),
-            floor,
-        )
-        for j in range(1, count + 1)
-    )
-
-    def provider_k(temperature: float, pressure: float) -> Sequence[float]:
-        return _k_values(provider, context, components, temperature, pressure)
-
-    k_of = k_values if k_values is not None else provider_k
-    k_stage = [tuple(k_of(tbar, spec.pressures[j])) for j in range(count)]
-    liquid = [[0.0] * width for _ in range(count)]
-    vapor = [[0.0] * width for _ in range(count)]
-    for i in range(width):
-        strip = [k_stage[j][i] * vapor_cmo[j] / liquid_cmo[j] for j in range(count)]
-        rhs = [-sum(f.state.n[i] for f in inlets if f.stage == j + 1) for j in range(count)]
-        column = thomas(
-            [1.0] * count,
-            [-(1.0 + strip[j]) for j in range(count)],
-            [strip[j + 1] if j + 1 < count else 0.0 for j in range(count)],
-            rhs,
-        )
-        for j in range(count):
-            liquid[j][i] = column[j]
-            vapor[j][i] = strip[j] * column[j]
-
-    state = _initial_state(spec, provider, context, liquid, vapor, tbar)
-    return KremserInitial(
-        z=z,
-        beta=beta,
-        beta_clamped=beta_clamped,
-        pbar=pbar,
-        tbar=tbar,
-        liquid_cmo=liquid_cmo,
-        vapor_cmo=vapor_cmo,
-        liquid=tuple(tuple(row) for row in liquid),
-        vapor=tuple(tuple(row) for row in vapor),
-        state=state,
-    )
-
-
-def _inflow_sum(spec: CascadeSpec, values: Mapping[str, float], stage: int, c: str) -> float:
-    """The `mix` row's inflow, summed in the row's own order, so `mix` vanishes exactly."""
-    unit, count = spec.unit_id, spec.stage_count
-    above = flow_id(inlet_stream(unit, TOP), c) if stage == 1 else liquid_id(unit, stage - 1, c)
-    below = (
-        flow_id(inlet_stream(unit, BOTTOM), c) if stage == count else vapor_id(unit, stage + 1, c)
-    )
-    total = values[above] + values[below]
-    for side in spec.sides:
-        if side.stage == stage:
-            total = total + values[flow_id(inlet_stream(unit, side.port), c)]
-    return total
-
-
-def _inlet_columns(spec: CascadeSpec) -> dict[str, float]:
-    values: dict[str, float] = {}
-    for inlet in spec.inlets():
-        stream = inlet_stream(spec.unit_id, inlet.port)
-        for c, a in zip(spec.components, inlet.state.n, strict=True):
-            values[flow_id(stream, c)] = normalize_zero(float(a))
-        values[temperature_id(stream)] = float(inlet.state.temperature)
-        values[pressure_id(stream)] = float(inlet.state.pressure)
-    return values
-
-
-def _initial_state(
-    spec: CascadeSpec,
-    provider: PropertyProvider,
-    context: EvaluationContext,
-    liquid: Sequence[Sequence[float]],
-    vapor: Sequence[Sequence[float]],
-    tbar: float,
-) -> dict[str, float]:
-    """Spec §6.5's last step: totals as sums, `T_j = T̄`, `P_j = P_j*`, `m` from `mix`, `Q_j` from
-    `energy_j`."""
-    unit, components = spec.unit_id, spec.components
-    values = _inlet_columns(spec)
-    for j in range(spec.stage_count):
-        stage = j + 1
-        for i, c in enumerate(components):
-            values[liquid_id(unit, stage, c)] = liquid[j][i]
-            values[vapor_id(unit, stage, c)] = vapor[j][i]
-        values[liquid_total_id(unit, stage)] = sum(liquid[j])
-        values[vapor_total_id(unit, stage)] = sum(vapor[j])
-        values[stage_temperature_id(unit, stage)] = tbar
-        values[stage_pressure_id(unit, stage)] = float(spec.pressures[j])
-        values[stage_duty_id(unit, stage)] = 0.0
-    for stage in range(1, spec.stage_count + 1):
-        for c in components:
-            values[mixed_id(unit, stage, c)] = _inflow_sum(spec, values, stage, c)
-    problem = declared_problem(declared_rows(spec, provider, context))
-    residual = row_values(problem, values)
-    for stage in range(1, spec.stage_count + 1):
-        # energy_j at Q_j = 0 is `0 + Hdot_in - Hdot_out`; Q_j closes it.
-        values[stage_duty_id(unit, stage)] = normalize_zero(-residual[energy_row_id(unit, stage)])
-    return {name: values[name] for name in problem.variable_ids}
 
 
 # -- spec §4.6: every inlet dormant --------------------------------------------------------------
