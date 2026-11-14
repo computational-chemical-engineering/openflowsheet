@@ -30,11 +30,11 @@ from openflowsheet.models.syn001.column import (
     ProfileInitial,
     _initial_state,
 )
-from openflowsheet.models.syn001.column_solve import (
+from openflowsheet.models.syn001.column_acceptance import _admissibility
+from openflowsheet.models.syn001.column_endpoint import (
     MAX_SWEEPS,
     SWEEP_COMPOSITION_TOLERANCE,
     SWEEP_TOLERANCE,
-    _admissibility,
     liquid_compositions,
     relaxed_compositions,
     stage_ratios,
