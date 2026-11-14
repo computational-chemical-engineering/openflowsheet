@@ -31,8 +31,12 @@ elif [ "${1:-}" = "--no-gain" ]; then
 else
     args=(gate --mode refactor --base "$1" --ref-base "$MB" --require-gain); label="${2:-step}"
 fi
+# One gate at a time per clone: the suite holds wall-time budget tests (t07_v17_reference f6) that fail under the
+# load of two concurrent full suites (G-SELF 2026-11-14: 333 s against 300 s). Parallel lanes queue here.
+exec 9>"$OUT/gate.lock"
+flock 9
 tag="$(date +%Y%m%dT%H%M%S)-$label"
-"$CH" "${args[@]}" --json "$OUT/$tag.json" --log "$OUT/$tag.tiers.log" > "$OUT/$tag.log" 2>&1 &
+"$CH" "${args[@]}" --json "$OUT/$tag.json" --log "$OUT/$tag.tiers.log" > "$OUT/$tag.log" 2>&1 9>&- &
 pid=$!
 echo "$pid" > "$OUT/$tag.pid"
 wait "$pid"; rc=$?
