@@ -199,3 +199,10 @@
   (decision register R-1041); the next lane d engineer extends `NLP_EXTRA_MODULES` in the retarget commit and rebuilds
   B6. Notes for the docs pass: `test_m03_nlp_isolation` skips by a `projection` prefix (new modules pass by accident,
   `projection_support` is not walked); m05's docstring says "only projection and trf"; A30 counts change per module.
+- **2026-11-14, R-W2d (`reviewer` on lane d): merge; merged as 5d203c13** (arch at the tip 8 / 5 / 16, patch_noop 0
+  of 243). Finding 1 (fix) applied: `projection_support` imported with Pyomo blocked in `test_m05_isolation`
+  (commit after the merge, falsifier quoted). Notes for the docs pass: `certificate.py:331-333` docstring vs the
+  re-exported `run_checks` (the default provider is read in `verdict`); blank lines that split shared comments from
+  their constants (`projection_zero_flows.py:27-35`, `flowsheet_rows.py:20-28`, `table_kit.py:31-55`);
+  `table.py:15-18` "every formula below"; `scripts/k04_evidence_manifest.py:428`, `m07a_evidence_manifest.py:341`,
+  the m03 prefix skip, A30 per-module counts.
