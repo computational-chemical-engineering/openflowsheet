@@ -952,66 +952,109 @@ class LocalApplication:
         request_sha256: str,
     ) -> EffectiveBudgets:
         """§5.3's semantic admission; a refusal creates no job and no ledger row, and is
-        audited. The effective budgets the job will run under."""
-        store = self._store
-        active = store.active_job_count(caller.principal_id)
+        audited. The effective budgets the job will run under.
+
+        One admission per job family: `_solve_admission`, `_experiment_admission`,
+        `_surrogate_study_admission`, `_optimize_admission` and `_reproduce_admission`. Raised: the
+        family's refusal (`_refuse_error`)."""
+        active = self._store.active_job_count(caller.principal_id)
         body = request.body
+        admitted: EffectiveBudgets | ApiError
         if isinstance(body, SolveBody):
-            declared = body.warm_start.job_id if body.warm_start is not None else None
-            with store.reading() as connection:
-                revision = store.get_revision(connection, body.revision_id)
-                # ADR 0070 A1: the declared source, as the store is at admission.
-                source = (
-                    store.solution_of_job(connection, declared) if declared is not None else None
-                )
-            admission = admit_solve(
-                body.revision_id,
-                revision.as_document() if revision is not None else None,
-                body,
-                budgets=request.budgets,
-                limits=caller.limits,
-                active_jobs=active,
-                surrogates=self._surrogates(),
-                warm_source_found=source is not None,
-            )
-            if isinstance(admission, ApiError):
-                self._refuse_error(admission, operation, request_sha256)
-            return EffectiveBudgets(
-                wall_time_s=admission.wall_time_s,
-                max_property_calls=admission.policy.max_property_calls,
-            )
-        if isinstance(body, ExperimentBody):
-            admitted = admit_experiment(
-                body, budgets=request.budgets, limits=caller.limits, active_jobs=active
-            )
-            if isinstance(admitted, ApiError):
-                self._refuse_error(admitted, operation, request_sha256)
-            # R-233: an experiment's property calls are its own, never a solve's budget.
-            return EffectiveBudgets(wall_time_s=admitted[1], max_property_calls=None)
-        if isinstance(body, SurrogateStudyBody):
-            study = admit_surrogate_study(
-                body,
-                budgets=request.budgets,
-                limits=caller.limits,
-                active_jobs=active,
-                manifests=lambda: stored_surrogate_manifests(store, self.files_root),
-            )
-            if isinstance(study, ApiError):
-                self._refuse_error(study, operation, request_sha256)
-            # R-233 again: a study's experiments are experiments; their calls are their own.
-            return EffectiveBudgets(wall_time_s=study, max_property_calls=None)
-        if isinstance(body, OptimizeBody):
-            optimize = admit_optimize(
-                body, budgets=request.budgets, limits=caller.limits, active_jobs=active
-            )
-            if isinstance(optimize, ApiError):
-                self._refuse_error(optimize, operation, request_sha256)
-            # OPT §4.10: the property-call budget is each production solve's (its policy's), as
-            # requested; the policies resolve in the job.
-            return EffectiveBudgets(
-                wall_time_s=optimize, max_property_calls=body.max_property_calls
-            )
-        archive = store.artifact(body.bundle_artifact_id)
+            admitted = self._solve_admission(body, request, caller, active)
+        elif isinstance(body, ExperimentBody):
+            admitted = self._experiment_admission(body, request, caller, active)
+        elif isinstance(body, SurrogateStudyBody):
+            admitted = self._surrogate_study_admission(body, request, caller, active)
+        elif isinstance(body, OptimizeBody):
+            admitted = self._optimize_admission(body, request, caller, active)
+        else:
+            admitted = self._reproduce_admission(body, request, caller, active)
+        if isinstance(admitted, ApiError):
+            self._refuse_error(admitted, operation, request_sha256)
+        return admitted
+
+    def _solve_admission(
+        self, body: SolveBody, request: JobRequest, caller: CapabilityReference, active: int
+    ) -> EffectiveBudgets | ApiError:
+        """`admit_solve` on the revision and the declared warm-start source as the store is at
+        admission: the solve's budgets, or the refusal."""
+        store = self._store
+        declared = body.warm_start.job_id if body.warm_start is not None else None
+        with store.reading() as connection:
+            revision = store.get_revision(connection, body.revision_id)
+            # ADR 0070 A1: the declared source, as the store is at admission.
+            source = store.solution_of_job(connection, declared) if declared is not None else None
+        admission = admit_solve(
+            body.revision_id,
+            revision.as_document() if revision is not None else None,
+            body,
+            budgets=request.budgets,
+            limits=caller.limits,
+            active_jobs=active,
+            surrogates=self._surrogates(),
+            warm_source_found=source is not None,
+        )
+        if isinstance(admission, ApiError):
+            return admission
+        return EffectiveBudgets(
+            wall_time_s=admission.wall_time_s,
+            max_property_calls=admission.policy.max_property_calls,
+        )
+
+    def _experiment_admission(
+        self, body: ExperimentBody, request: JobRequest, caller: CapabilityReference, active: int
+    ) -> EffectiveBudgets | ApiError:
+        """`admit_experiment`: the experiment's budgets, or the refusal."""
+        admitted = admit_experiment(
+            body, budgets=request.budgets, limits=caller.limits, active_jobs=active
+        )
+        if isinstance(admitted, ApiError):
+            return admitted
+        # R-233: an experiment's property calls are its own, never a solve's budget.
+        return EffectiveBudgets(wall_time_s=admitted[1], max_property_calls=None)
+
+    def _surrogate_study_admission(
+        self,
+        body: SurrogateStudyBody,
+        request: JobRequest,
+        caller: CapabilityReference,
+        active: int,
+    ) -> EffectiveBudgets | ApiError:
+        """`admit_surrogate_study` against the stored surrogate manifests: the study's budgets,
+        or the refusal."""
+        store = self._store
+        study = admit_surrogate_study(
+            body,
+            budgets=request.budgets,
+            limits=caller.limits,
+            active_jobs=active,
+            manifests=lambda: stored_surrogate_manifests(store, self.files_root),
+        )
+        if isinstance(study, ApiError):
+            return study
+        # R-233 again: a study's experiments are experiments; their calls are their own.
+        return EffectiveBudgets(wall_time_s=study, max_property_calls=None)
+
+    def _optimize_admission(
+        self, body: OptimizeBody, request: JobRequest, caller: CapabilityReference, active: int
+    ) -> EffectiveBudgets | ApiError:
+        """`admit_optimize`: the study's budgets, or the refusal."""
+        optimize = admit_optimize(
+            body, budgets=request.budgets, limits=caller.limits, active_jobs=active
+        )
+        if isinstance(optimize, ApiError):
+            return optimize
+        # OPT §4.10: the property-call budget is each production solve's (its policy's), as
+        # requested; the policies resolve in the job.
+        return EffectiveBudgets(wall_time_s=optimize, max_property_calls=body.max_property_calls)
+
+    def _reproduce_admission(
+        self, body: ReproduceBody, request: JobRequest, caller: CapabilityReference, active: int
+    ) -> EffectiveBudgets | ApiError:
+        """`admit_reproduce` on the kind of the archive the body names: the rerun's budgets, or
+        the refusal."""
+        archive = self._store.artifact(body.bundle_artifact_id)
         wall_time_s = admit_reproduce(
             archive.kind if archive is not None else None,
             body,
@@ -1020,7 +1063,7 @@ class LocalApplication:
             active_jobs=active,
         )
         if isinstance(wall_time_s, ApiError):
-            self._refuse_error(wall_time_s, operation, request_sha256)
+            return wall_time_s
         return EffectiveBudgets(wall_time_s=wall_time_s, max_property_calls=None)
 
     def _job(self, job_id: str, operation: str) -> Job:
