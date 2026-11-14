@@ -1,7 +1,8 @@
 """`syn001.column` compiled and solved: S02 spec §7 and §8 (WO-2), §7.3 as §18.2 (WO-2b).
 
-`column.py` holds the unit layer (WO-1): the specification, its §5 refusals, the §2 rows, the
-regime forms and the §6 initializer. This module compiles those rows and runs spec §7's path on
+`column.py` holds the unit layer (WO-1) with `column_spec`, `column_validation` and `column_rows`
+(S19 B2): the specification, its §5 refusals, the §2 rows, the regime forms and the §6
+initializer. This module compiles those rows and runs spec §7's path on
 them, calling `orchestrator.region.solve_region` unchanged, through S01's `run_region`:
 
 1. validate (§5); an all-dormant column (possible only without ends, §5 S10) is S01 §4.6's;

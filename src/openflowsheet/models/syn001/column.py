@@ -7,9 +7,11 @@ equilibrium stage but the saturated-liquid block of §2.2. Every equilibrium sta
 rows (spec §2 of S01) under S01's ids; the condenser's and the reboiler's slot row is the column
 specification of §2.1 in place of `Q_j − Q_j*`.
 
-**This module is the unit layer only** (S02 spec §12 WO-1): the specification object and its §5
-refusals, the §2 declared rows, the per-stage regime forms with §2.3's label, and the §6
-analytic initializer `s02-profile-cmo-v1`. The pre-solve, the target and acceptance are WO-2's.
+**The unit layer only** (S02 spec §12 WO-1), in four modules (S19 B2): `column_spec` holds the
+specification object, the declarations and the column's ids, `column_validation` its §5
+refusals and `column_rows` the §2 declared rows; this module holds the per-stage regime forms
+with §2.3's label and the §6 analytic initializer `s02-profile-cmo-v1`, and re-exports the
+other three's names. The pre-solve, the target and acceptance are WO-2's.
 
 Column ids beyond S01's (build decision, `docs/S02_DECISIONS.md`): the total condenser's are
 `<U>.stage.1.{r,d}.<c>`, `<U>.stage.1.{phi,D}` and S01's `<U>.stage.1.{T,P,Q}` for `T_c`, `P_c`,
