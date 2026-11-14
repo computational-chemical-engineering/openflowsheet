@@ -412,31 +412,17 @@ def degeneracy(
         else:
             unresolved[split.unit] = floor if floor is not None else math.inf
             template = UNRESOLVED_ENTHALPY_NOTE
-        vapor = tuple(state[column] for column in split.vapor)
-        liquid = tuple(state[column] for column in split.liquid)
-        if products:
-            products_phases: tuple[tuple[str, tuple[float, ...], Phase], ...] = (
-                (vapor_stream, vapor, "VAPOR"),
-                (liquid_stream, liquid, "LIQUID"),
-            )
-            for stream, flows, phase in products_phases:
-                if stream_of(state, stream).is_dormant:
-                    continue
-                enthalpy[stream] = _phase_enthalpy(
-                    provider,
-                    context,
-                    flows,
-                    state[temperature_id(stream)],
-                    state[pressure_id(stream)],
-                    phase,
-                    stream,
-                )
-                notes[stream] = template.format(stream=stream)
-        else:
-            stream = split.stream
-            enthalpy[stream] = _phase_enthalpy(
-                provider, context, vapor, temperature, pressure, "VAPOR", stream
-            ) + _phase_enthalpy(provider, context, liquid, temperature, pressure, "LIQUID", stream)
+        split_enthalpy = _split_enthalpies(
+            provider,
+            context,
+            state,
+            split,
+            temperature,
+            pressure,
+            (vapor_stream, liquid_stream) if products else None,
+        )
+        for stream, value in split_enthalpy.items():
+            enthalpy[stream] = value
             notes[stream] = template.format(stream=stream)
 
     declared = _producer_phases(view)
@@ -457,3 +443,49 @@ def degeneracy(
         )
         notes[stream] = DECLARED_ENTHALPY_NOTE.format(stream=stream, phase=capability)
     return Degeneracy(distances, enthalpy, notes, frozenset(unlifted), unresolved)
+
+
+def _split_enthalpies(
+    provider: PropertyProvider,
+    context: EvaluationContext,
+    state: Mapping[str, float],
+    split: LiftedSplit,
+    temperature: float,
+    pressure: float,
+    products: tuple[str, str] | None,
+) -> dict[str, float]:
+    """§9.1 at `state`: the enthalpy a degenerate or unresolved split gives each of its streams,
+    read from the state's split rather than from a fresh flash.
+
+    `products` are a products-style split's vapour and liquid streams: each one that is not
+    dormant gets its own phase's enthalpy at its own `(T, P)`, vapour first. None is a
+    heater-style split: its stream gets `Σ v_i h_i^V(T, P) + Σ l_i h_i^L(T, P)` at the split's
+    `temperature` and `pressure`. Raises `VerifierError` when the verifier's own phase
+    evaluation fails."""
+    vapor = tuple(state[column] for column in split.vapor)
+    liquid = tuple(state[column] for column in split.liquid)
+    if products is not None:
+        vapor_stream, liquid_stream = products
+        products_phases: tuple[tuple[str, tuple[float, ...], Phase], ...] = (
+            (vapor_stream, vapor, "VAPOR"),
+            (liquid_stream, liquid, "LIQUID"),
+        )
+        found: dict[str, float] = {}
+        for stream, flows, phase in products_phases:
+            if stream_of(state, stream).is_dormant:
+                continue
+            found[stream] = _phase_enthalpy(
+                provider,
+                context,
+                flows,
+                state[temperature_id(stream)],
+                state[pressure_id(stream)],
+                phase,
+                stream,
+            )
+        return found
+    stream = split.stream
+    return {
+        stream: _phase_enthalpy(provider, context, vapor, temperature, pressure, "VAPOR", stream)
+        + _phase_enthalpy(provider, context, liquid, temperature, pressure, "LIQUID", stream)
+    }
