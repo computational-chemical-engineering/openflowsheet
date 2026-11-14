@@ -160,3 +160,16 @@
   later `region_attempts` move whose closure then allows it. Retarget set at this base: 22 patches (tests t03, t04,
   t05b, t08, opt_revision_host; scripts t03, t04, t05b evidence manifests); region keeps `ph_state as ph_state`.
   Alternative: no split until W3. Rejected: 2056 NLOC does not fit a function step's review.
+- **DECISION B1 (revised): parked until ADR 0076 I-15 lands; I-15 is pulled forward to the first step after the W2
+  re-pin.** B1's gate (20261114T153247-b1-region, run-log step 20) failed on `architecture`: the restructure ratchet
+  (cce_code_health/architecture.py, `ratchet`) excuses a violation from a new file only when the same edge leaves the
+  old module, and region.py keeps a lazy `verify.checks` import (`VerifierError`, region.py:401 at the step head), so
+  `region_phase -> verify.checks` is new. The earlier "accepted at 9/6/20" entry is withdrawn: it would need the gate
+  weakened. I-15 (accepted ADR; the solver stops importing the verifier, `AdmissibilityRefusal` in `models.lifted`)
+  removes those imports, after which B1 is 0/0 and passes the ratchet. Alternatives: (a) a tool exception for a
+  declared twin edge (rejected: a gate exception for a dependency the ADR removes anyway); (b) reroute region's own
+  `VerifierError` import through region_phase (rejected: a non-verbatim change to an S1 file to satisfy a counter).
+  The retarget (99dfc975), plan (3799bcd4) and step (4f036b4b) are kept on `wip/S19-B1`; after I-15 they are rebuilt at
+  the new base. Its docstring follow-up must also fix `studies/nlp/revision_host.py:93, 622` (they name region.py as
+  the home of `_region_problem` and `admissibility_value`). wp/S19-c (A5 and follow-ups) merged as 537e32a7: arch 8 /
+  6 / 20, patch_noop 0 of 243.
