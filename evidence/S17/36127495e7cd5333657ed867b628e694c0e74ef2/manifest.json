@@ -142,7 +142,7 @@
   ],
   "limitations": [
     "Evidence class: software verification of behaviour-preserving refactors (bitwise: literal multiset, public API, F0 corpus identity, MCP digest, test suite), not a validation of the simulator. The gates prove the tested behaviour unchanged; behaviour no test or corpus pins is covered only by the reviewers reading each step.",
-    "Status is implemented until CI is green on both legs; the review block stays pending until human sign-off. The module splits were approved by the orchestrator under Frank's delegation (D18) and are listed for his review.",
+    "The status follows CI on both legs (check S17.G-END-CI); the review block stays pending until human sign-off. The module splits were approved by the orchestrator under Frank's delegation (D18) and are listed for his review.",
     "Requirements empty: S17 maps to no D/A requirement; it is a development-process package.",
     "Budget: 71 function-level attempts against the 60 written in docs/S17_STATE.md before the run; D17 widened the scope and the count was not re-fixed (a miss of the budget line, not of a gate).",
     "Left for the D19 interface package: old import paths kept as re-exports, private names that now cross modules, two comments outside the scope that still name revision_binding (refusals.yaml:1378, models/revision_flowsheet.py:19), LocalApplication._prepare at debt 6.6 (a dead initializer the literal check keeps).",
