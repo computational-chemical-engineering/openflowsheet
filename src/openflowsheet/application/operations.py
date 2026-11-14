@@ -701,15 +701,22 @@ def _error_refs(
         if f"{document_id}#{fragment}" == _ERROR_SCHEMA:
             found.add(path)
         elif f"{document_id}#{fragment}" not in active:
-            target: Any = documents[document_id]
-            for token in fragment.split("/")[1:]:
-                token = token.replace("~1", "/").replace("~0", "~")
-                target = target[int(token)] if isinstance(target, list) else target[token]
+            target = _pointer_target(documents[document_id], fragment)
             _error_refs(
                 target, documents, document_id, path, (*active, f"{document_id}#{fragment}"), found
             )
     for schema, location in _subschemas(node, path):
         _error_refs(schema, documents, base, location, active, found)
+
+
+def _pointer_target(document: Mapping[str, Any], fragment: str) -> Any:
+    """The value the JSON pointer `fragment` (RFC 6901, `~1` and `~0` unescaped) names in
+    `document`: an array step is an index, an object step a member name."""
+    target: Any = document
+    for token in fragment.split("/")[1:]:
+        token = token.replace("~1", "/").replace("~0", "~")
+        target = target[int(token)] if isinstance(target, list) else target[token]
+    return target
 
 
 def _subschemas(
