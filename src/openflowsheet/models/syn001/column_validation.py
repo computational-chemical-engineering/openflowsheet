@@ -40,6 +40,7 @@ from openflowsheet.models.syn001.column_spec import (
     REBOILER,
     REBOILER_KINDS,
     ColumnSpec,
+    EndSpecification,
     _specification,
     product_flow_id,
     product_total_id,
@@ -551,10 +552,32 @@ def _form_kind_refusal(spec: ColumnSpec, form: EquilibriumForm | None) -> Cascad
 
 def _inverse_refusal(spec: ColumnSpec) -> CascadeFailure | None:
     """S06 §5 I1–I6, in that order, on a specification that passed S1–S10. Each rule is applied
-    to the condenser end, then the reboiler end, before the next rule."""
-    unit, count, components = spec.unit_id, spec.stage_count, spec.components
+    to the condenser end, then the reboiler end, before the next rule.
+
+    One helper per clause: `_inverse_attribute_refusal` (I1), `_inverse_value_refusal` (I2), then,
+    given the component feeds `F_c`, `_absent_component_refusal` (I3), `_stage_band_refusal` (I4)
+    and `_redundancy_or_mass_balance_refusal` (I5, I6). `ValueError` from `_split_feasible` when
+    I6 meets more than three present components.
+    """
     given = {end: _specification(spec, end) for end in spec.ends()}
-    # I1: the attribute
+    refusal = _inverse_attribute_refusal(spec, given) or _inverse_value_refusal(spec, given)
+    if refusal is not None:
+        return refusal
+    feeds = component_feeds(spec)
+    return (
+        _absent_component_refusal(spec, given, feeds)
+        or _stage_band_refusal(spec, given)
+        or _redundancy_or_mass_balance_refusal(spec, given, feeds)
+    )
+
+
+def _inverse_attribute_refusal(
+    spec: ColumnSpec, given: Mapping[str, EndSpecification]
+) -> CascadeFailure | None:
+    """I1, the attribute: the first end whose specification carries a component or a stage its
+    kind does not take, a temperature without an integer stage in `1..N`, or a component kind
+    without a component of `spec.components`, else `None`."""
+    unit, count, components = spec.unit_id, spec.stage_count, spec.components
     for end, found in given.items():
         if found.kind == "temperature":
             stage = found.stage
@@ -574,15 +597,30 @@ def _inverse_refusal(spec: ColumnSpec) -> CascadeFailure | None:
                 f"{unit}: {end} {found.kind} with component {found.component!r} and stage "
                 f"{found.stage!r} (N = {count}, components {components})",
             )
-    # I2: the value
+    return None
+
+
+def _inverse_value_refusal(
+    spec: ColumnSpec, given: Mapping[str, EndSpecification]
+) -> CascadeFailure | None:
+    """I2, the value: the first end of an inverse kind whose value is not finite, or, for a
+    component kind, not in `(0, 1)`, else `None`."""
+    unit = spec.unit_id
     for end, found in given.items():
         if found.kind not in INVERSE_KINDS:
             continue
         value = found.value
         if not math.isfinite(value) or (found.kind in COMPONENT_KINDS and not 0.0 < value < 1.0):
             return _invalid(f"{found.kind}:{end}", f"{unit}: {end} {found.kind} = {value!r}")
-    feeds = component_feeds(spec)
-    # I3: an absent component
+    return None
+
+
+def _absent_component_refusal(
+    spec: ColumnSpec, given: Mapping[str, EndSpecification], feeds: tuple[float, ...]
+) -> CascadeFailure | None:
+    """I3, an absent component: the first end whose component specification names a component
+    with `F_c = 0`, else `None`."""
+    unit, components = spec.unit_id, spec.components
     for end, found in given.items():
         if found.kind in COMPONENT_KINDS:
             assert found.component is not None
@@ -592,7 +630,15 @@ def _inverse_refusal(spec: ColumnSpec) -> CascadeFailure | None:
                     f"infeasible_spec(absent_component:{end})",
                     f"{unit}: {end} {found.kind} of {found.component}, which no inlet carries",
                 )
-    # I4: the stage band (§4)
+    return None
+
+
+def _stage_band_refusal(
+    spec: ColumnSpec, given: Mapping[str, EndSpecification]
+) -> CascadeFailure | None:
+    """I4, the stage band (§4): the first temperature specification outside the open
+    `stage_band` of its stage, else `None`."""
+    unit = spec.unit_id
     for found in given.values():
         if found.kind == "temperature":
             assert found.stage is not None
@@ -604,6 +650,16 @@ def _inverse_refusal(spec: ColumnSpec) -> CascadeFailure | None:
                     f"{unit}: T_{found.stage}* = {found.value!r} K outside the open band "
                     f"({low!r}, {high!r}) K at P_{found.stage}*",
                 )
+    return None
+
+
+def _redundancy_or_mass_balance_refusal(
+    spec: ColumnSpec, given: Mapping[str, EndSpecification], feeds: tuple[float, ...]
+) -> CascadeFailure | None:
+    """I5, redundant specifications (two temperatures on one stage, or `_split_rows` of lower
+    rank than its row count), then I6, no product split (`_split_feasible` refuses the rows),
+    else `None`. The rows are exact on the binary64 feeds."""
+    unit = spec.unit_id
     # I5: redundant specifications
     stages = [found.stage for found in given.values() if found.kind == "temperature"]
     totals = [Fraction(feed) for feed in feeds]
