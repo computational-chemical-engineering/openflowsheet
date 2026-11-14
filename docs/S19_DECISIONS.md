@@ -110,3 +110,25 @@
   (4) Process: the A4 config edit was authorised by the orchestrator's addendum to lane a (SendMessage, 2026-11-14:
   "In A4's plan commit you may also add openflowsheet.models.lifted_tolerance to that forbid rule's `to` list"); the
   brief file was not updated. From now on addenda are appended to the brief file as well.
+- **DECISION: a step that needs a test, script or test-data retarget gets an orchestrator-authorised retarget commit
+  placed BEFORE its plan commit.** Order: retarget commit (tests/, scripts/ or tests/data only; patch targets, file
+  paths or allowlist entries follow the moved code; no assertion, expected value or test case changes; at that commit
+  alone the affected tests may fail), then the plan commit, then the step commit, gated against the plan commit. The
+  gate's scope then covers only the step, and its full suite at the step's head runs with the retargeted tests. First
+  use: A5 (lane c's gate failed only on `test_t07_global_state.py::test_g20...`, whose allowlist named
+  `orchestrator/trace.py` for `INTERRUPT_CHECK`; retarget 42756ce1, re-based plan ae26a1da, step c0221eed).
+  Alternative: retarget after the step and re-gate. Rejected: the scope check fails on any out-of-scope path in
+  base..HEAD. Reversible by: none needed (each retarget is its own commit).
+- **DECISION: B8-executor is skipped** (lane c): `orchestrator/executor.py` has no section headers; the
+  split-declaration helpers need the `Flowsheet` alias that stays, the EO-recovery group reaches `StepResult` and
+  `_region` and is patched by tests, and the only closed group is about 30 NLOC (85 with helpers). Two tiny modules
+  would be fragmenting (rejected in S19_RULES). executor.py (1057 NLOC) is left for W3 function-level work, which also
+  shrinks it.
+- **DECISION: B1 (region split) proceeds with a retarget commit as above, not a new partition.** Lane c found the
+  partition clean (closures: `region_phase` reaches nothing that stays; `region_problem` reaches only `region_phase`;
+  `region_attempts` out), but test patches of `region.X` would stop reaching moved call sites: fully lost `_rederive`,
+  `_reset_outlet`, `ph_state`; partly lost `check_opening`, `_contract_kernel`, `_pr_c1`, `_ph_closure`, `_kernel`,
+  `_admissible` (tests t03, t05b, t08, opt_revision_host) and the same in `scripts/t03_evidence_manifest.py`,
+  `scripts/t05b_evidence_manifest.py`. Any split of region meets the same patches, so a different partition does not
+  help. The retarget patches every module that holds a call site of the patched name (both, where calls stay in
+  region too). A `reviewer` reads the retarget diff before the step is gated.
