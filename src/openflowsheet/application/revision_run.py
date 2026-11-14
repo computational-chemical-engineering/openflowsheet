@@ -1297,65 +1297,31 @@ def reproduce_bundle(
 
     `stage` (§6.4) is called with `integrity` on entry, `rerun` before a rerun, and `compare`
     before the report is built; a rerun's bundle is complete in `rerun_directory` by `compare`.
+
+    The rungs that re-run nothing are `_rerunnable_manifest`, `_recorded_route` and
+    `_valid_coupling_record`, in that order; each stages `compare` before its reproduction.
     """
     at = stage if stage is not None else _no_stage
     directory = Path(directory)
     at("integrity")
-    if not rerun:
-        at("compare")
-        return Reproduction(_inspected(directory))
-    if not verify_bundle(directory).ok:
-        at("compare")
-        return Reproduction(replay(directory, None))
-    manifest, _ = read_manifest(directory)
-    if decide_mode(manifest.environment, environment())[0] == "inspected_archived_results":
-        at("compare")
-        return Reproduction(_inspected(directory))
-    if manifest.numerical_policy_id not in KNOWN_POLICY_IDS:
-        # ADR 0025 (Q4): a record under a policy this build does not know is not re-run;
-        # `replay` names the policy as the reason.
-        at("compare")
-        return Reproduction(replay(directory, None))
+    manifest = _rerunnable_manifest(directory, rerun, at)
+    if isinstance(manifest, Reproduction):
+        return manifest
 
     if "revision.json" not in manifest.artifacts:
         return _reproduce_registered(directory, manifest, rerun_directory, run_id, at)
 
-    if "solve-path.json" not in manifest.artifacts:
-        at("compare")
-        return Reproduction(_inspected(directory, "rerun_unsupported(no_solve_path)"))
-    recorded = read_artifact(directory, "solve-path.json")
-    policies = _recorded_policies(directory, manifest)
-    if policies is None:
-        at("compare")
-        return Reproduction(_inspected(directory, "policy_document_mismatch"))
-    policy, check_policy = policies
-
-    solve_path = recorded.get("solve_path") if isinstance(recorded, Mapping) else None
-    document = read_artifact(directory, "revision.json")
-    route = bind_route(solve_path, document) if solve_path in SOLVE_PATHS else None
-    if not isinstance(route, Route):
-        at("compare")
-        return Reproduction(
-            _inspected(directory, f"rerun_unsupported(route_unbound({solve_path}))")
-        )
-    coupling: Mapping[str, Any] | None = None
+    found = _recorded_route(directory, manifest, at)
+    if isinstance(found, Reproduction):
+        return found
+    recorded, (policy, check_policy), document, route = found
+    coupling = _valid_coupling_record(directory, manifest, route, at)
+    if isinstance(coupling, Reproduction):
+        return coupling
     coupling_found: list[str] = []
     classified_bitwise = True
-    if route.solve_path == "revision_coupled":
-        # M02 design note §7.2 step 1: the record against its schema, and each embedded request's
-        # key against its content.
-        if COUPLING_NAME not in manifest.artifacts:
-            at("compare")
-            return Reproduction(_inspected(directory, "rerun_unsupported(no_external_coupling)"))
-        record: Mapping[str, Any] = read_artifact(directory, COUPLING_NAME)
-        coupling = record
-        problem = coupling_record_problem(record)
-        if problem is not None:
-            at("compare")
-            return Reproduction(
-                _inspected(directory, f"rerun_unsupported(external_coupling_invalid({problem}))")
-            )
-        coupling_found += _coupling_constants_guard(route, record)
+    if coupling is not None:
+        coupling_found += _coupling_constants_guard(route, coupling)
     at("rerun")
     with tempfile.TemporaryDirectory(prefix="ofs-replay-") as scratch:
         experiments = _recorded_experiments(coupling, scratch, manifest)
@@ -1396,6 +1362,80 @@ def reproduce_bundle(
     if experiments is not None and coupling is not None:
         report = _replayed_from_record(report, experiments, coupling)
     return Reproduction(_with_differences(report, coupling_found), rerun_manifest)
+
+
+def _rerunnable_manifest(directory: Path, rerun: bool, at: Stage) -> RunManifest | Reproduction:
+    """`reproduce_bundle`'s first rungs: the manifest of a bundle that may be re-run, or, after
+    `compare` is staged, the archive's reproduction when `rerun` is false, when the archive fails
+    its integrity check, when the environment already decides `inspected_archived_results`
+    (ADR 0007 D4) or when the manifest's numerical policy is not one this build knows."""
+    if not rerun:
+        at("compare")
+        return Reproduction(_inspected(directory))
+    if not verify_bundle(directory).ok:
+        at("compare")
+        return Reproduction(replay(directory, None))
+    manifest, _ = read_manifest(directory)
+    if decide_mode(manifest.environment, environment())[0] == "inspected_archived_results":
+        at("compare")
+        return Reproduction(_inspected(directory))
+    if manifest.numerical_policy_id not in KNOWN_POLICY_IDS:
+        # ADR 0025 (Q4): a record under a policy this build does not know is not re-run;
+        # `replay` names the policy as the reason.
+        at("compare")
+        return Reproduction(replay(directory, None))
+    return manifest
+
+
+def _recorded_route(
+    directory: Path, manifest: RunManifest, at: Stage
+) -> tuple[Any, tuple[SolvePolicy, CheckPolicy], Any, Route] | Reproduction:
+    """R2.5's recorded route of a bundle with `revision.json`: the `solve-path.json` record, the
+    policy documents (`_recorded_policies`), the revision document and the route bound to it.
+    Or, after `compare` is staged, the archive inspected with the reason no rerun happens: no
+    `solve-path.json`, policy documents that do not recompute to the manifest's hashes, or a
+    recorded solve path that does not bind."""
+    if "solve-path.json" not in manifest.artifacts:
+        at("compare")
+        return Reproduction(_inspected(directory, "rerun_unsupported(no_solve_path)"))
+    recorded = read_artifact(directory, "solve-path.json")
+    policies = _recorded_policies(directory, manifest)
+    if policies is None:
+        at("compare")
+        return Reproduction(_inspected(directory, "policy_document_mismatch"))
+
+    solve_path = recorded.get("solve_path") if isinstance(recorded, Mapping) else None
+    document = read_artifact(directory, "revision.json")
+    route = bind_route(solve_path, document) if solve_path in SOLVE_PATHS else None
+    if not isinstance(route, Route):
+        at("compare")
+        return Reproduction(
+            _inspected(directory, f"rerun_unsupported(route_unbound({solve_path}))")
+        )
+    return recorded, policies, document, route
+
+
+def _valid_coupling_record(
+    directory: Path, manifest: RunManifest, route: Route, at: Stage
+) -> Mapping[str, Any] | None | Reproduction:
+    """The bundle's external coupling record on `revision_coupled` (`None` on any other route).
+    Or, after `compare` is staged, the archive inspected with the reason no rerun happens: no
+    record, or one that fails its check."""
+    if route.solve_path != "revision_coupled":
+        return None
+    # M02 design note §7.2 step 1: the record against its schema, and each embedded request's
+    # key against its content.
+    if COUPLING_NAME not in manifest.artifacts:
+        at("compare")
+        return Reproduction(_inspected(directory, "rerun_unsupported(no_external_coupling)"))
+    record: Mapping[str, Any] = read_artifact(directory, COUPLING_NAME)
+    problem = coupling_record_problem(record)
+    if problem is not None:
+        at("compare")
+        return Reproduction(
+            _inspected(directory, f"rerun_unsupported(external_coupling_invalid({problem}))")
+        )
+    return record
 
 
 def _shape_coupled_artifacts(
