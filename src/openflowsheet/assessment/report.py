@@ -147,31 +147,17 @@ def _estimate_class(items: Sequence[Mapping[str, Any]]) -> int | None:
 def report_body(
     program: AssessmentProgram, x: Mapping[str, float], *, state_sha256: str, uncertainty: bool
 ) -> dict[str, Any]:
-    """The report without `provenance` (the part A39 compares byte for byte)."""
+    """The report without `provenance` (the part A39 compares byte for byte). The values at `x`
+    come from `_checked_values`; when it returns a refusal instead, the refusal joins `refusals` and
+    every output is `null`."""
     refusals: list[Refusal] = list(program.refusals)
     withheld: dict[str, str] = dict(program.unavailable)
-    values: Mapping[str, float] | None
-    try:
-        # The `derived` section reports each undefined ratio below; the guard would null them all.
-        evaluated = program.evaluate(x, domain_guard=False)
-    except TwinEvaluationError as error:
-        refusals.append(Refusal("ASSESSMENT_EVALUATION_FAILED", "", str(error)))
-        values = None
+    values: Mapping[str, float] | None = None
+    checked = _checked_values(program, x)
+    if isinstance(checked, Refusal):
+        refusals.append(checked)
     else:
-        assert isinstance(evaluated, Mapping)
-        values = evaluated
-    if values is not None:
-        tau = _feasibility_tolerance()
-        violated = [
-            n
-            for n in program.admissibility_ids
-            if values[n] < -tau and n not in program.domain_rows
-        ]
-        if violated:
-            refusals.append(
-                Refusal("ASSESSMENT_REGIME_INADMISSIBLE", ",".join(violated), f"tau_feas={tau}")
-            )
-            values = None
+        values = checked
     plans = program.plans
     sections = {
         name: plan.section(values if values is not None else {})
@@ -281,6 +267,28 @@ def report_body(
         "excluded": list(cost.get("excluded", ())),
         "statement": aace.STATEMENT,
     }
+
+
+def _checked_values(
+    program: AssessmentProgram, x: Mapping[str, float]
+) -> Mapping[str, float] | Refusal:
+    """The program's outputs at `x` on the float path, or the one refusal that withholds them all:
+    `ASSESSMENT_EVALUATION_FAILED` when the evaluation raises `TwinEvaluationError`,
+    `ASSESSMENT_REGIME_INADMISSIBLE` when an admissibility row that is not a domain row is below
+    `-tau_feas`."""
+    try:
+        # The report's `derived` section reports each undefined ratio; the guard would null all.
+        evaluated = program.evaluate(x, domain_guard=False)
+    except TwinEvaluationError as error:
+        return Refusal("ASSESSMENT_EVALUATION_FAILED", "", str(error))
+    assert isinstance(evaluated, Mapping)
+    tau = _feasibility_tolerance()
+    violated = [
+        n for n in program.admissibility_ids if evaluated[n] < -tau and n not in program.domain_rows
+    ]
+    if violated:
+        return Refusal("ASSESSMENT_REGIME_INADMISSIBLE", ",".join(violated), f"tau_feas={tau}")
+    return evaluated
 
 
 def _listed(program: AssessmentProgram, group: Mapping[str, float | None]) -> list[dict[str, Any]]:
