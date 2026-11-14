@@ -6,7 +6,8 @@ Checked by inspection of the source (AST, so a commented or quoted name cannot p
 - the glass-box modules import nothing from `openflowsheet.models` — a row or property equation
   re-authored there would be a second model;
 - `pyomo` is imported only under `studies/nlp/` and `studies/trust_region/` (ADR 0038's
-  allow-list), and under `studies/trust_region/` only by `projection` and `trf`;
+  allow-list), and under `studies/trust_region/` only by `projection`, `projection_checks`,
+  `projection_zero_flows` and `trf`;
 - nothing outside `studies/trust_region/` imports it or names `PyomoAlgebra`, so no route and no
   `compile_problem` path can reach it;
 - the Pyomo-free modules of the package import with Pyomo blocked (M03 G6's rule; the walk of
@@ -28,8 +29,21 @@ PYOMO_PACKAGES = (
     SRC / "openflowsheet" / "studies" / "nlp",
     PACKAGE,
 )
-PYOMO_MODULES_IN_PACKAGE = {"projection.py", "trf.py"}
-GLASS_BOX_MODULES = ("projection.py", "holders.py", "trf.py", "trf_state.py")
+PYOMO_MODULES_IN_PACKAGE = {
+    "projection.py",
+    "projection_checks.py",
+    "projection_zero_flows.py",
+    "trf.py",
+}
+GLASS_BOX_MODULES = (
+    "projection.py",
+    "projection_support.py",
+    "projection_checks.py",
+    "projection_zero_flows.py",
+    "holders.py",
+    "trf.py",
+    "trf_state.py",
+)
 
 
 def imported_modules(path: Path) -> set[str]:

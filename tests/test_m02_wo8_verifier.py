@@ -74,8 +74,10 @@ def test_the_verifier_builds_its_fresh_provider_from_the_basis() -> None:
 
 
 def test_the_verifier_module_does_not_import_the_binders_constructor() -> None:
-    source = (REPO_ROOT / "src" / "openflowsheet" / "verify" / "certificate.py").read_text()
-    assert "basis_provider(" not in source and "import basis_provider" not in source
+    # certificate.py and verdict.py, the part S19 B8 split out of it.
+    for name in ("certificate.py", "verdict.py"):
+        source = (REPO_ROOT / "src" / "openflowsheet" / "verify" / name).read_text()
+        assert "basis_provider(" not in source and "import basis_provider" not in source, name
 
 
 # -- R-016: pr_c1.py's imports ------------------------------------------------------------------
