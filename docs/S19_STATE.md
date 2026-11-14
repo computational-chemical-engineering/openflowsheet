@@ -23,6 +23,9 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
   step), ADR 0076 proposed. Config committed: scope `src/openflowsheet/*`, `repo-layers`, forbid
   `verifier-not-through-the-solver`; adoption 14 violations, 10 cycles, 79 cycle edges.
 - Frozen (F0 M9, 35 modules, debt 565.2): untouched until W5 (S19_DECISIONS, Q1).
+- Running (2026-11-14): G-SELF (`numerics/newton.py:776`, full suite); W1 lane a (`opus-engineer`, brief
+  `<git-common-dir>/codehealth/briefs/S19-W1a.md`, worktree `s19a`, branch `wp/S19-a`) and lane b (`S19-W1b.md`,
+  `s19b`, `wp/S19-b`), both from 094a3aa1; `reviewer` on ADR 0076.
 
 ## Next actions
 
