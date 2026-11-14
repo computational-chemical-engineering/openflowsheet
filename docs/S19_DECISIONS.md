@@ -132,3 +132,22 @@
   `scripts/t05b_evidence_manifest.py`. Any split of region meets the same patches, so a different partition does not
   help. The retarget patches every module that holds a call site of the patched name (both, where calls stay in
   region too). A `reviewer` reads the retarget diff before the lane is merged.
+- **2026-11-14, lane d: B8-certificate accepted** (plan 7af19207, step ad7ad338 `verify/verdict.py`, gate 16/16; docs
+  follow-up 97ef27ea 15/15). B6 and B5 stopped as the rules require; rulings:
+- **DECISION B6: a third module `studies/trust_region/projection_support.py` holds what both new modules reach:
+  `OMITTED_ROW_REASON`, `RefusalCode`, `ProjectionRefusedError`, `OmittedRow`, `_RowDerivatives`, `_float_rows`;
+  `_Assembly`, `ZeroBlock`, `ZeroEliminated` move with `projection_zero_flows`.** projection.py re-exports every public
+  name, so callers see the same objects at the same paths; the module for the result vocabulary is a W4 naming
+  question, not a W2 one. Alternative: leave projection.py whole for W3. Rejected: 1343 NLOC does not fit a function
+  step's review. Expected arch 0 / 0 at the base.
+- **DECISION B5: the design note's B5a numbers (table 4.1: -1 cycle, -4 edges) were wrong.** `verify/gamma_phi_units.py:65`
+  imports `MODEL_CHECKS`, `REACTING_MODELS`, two notes, `Degeneracy` and the flowsheet envelope rows
+  (`_envelope_material`, `_envelope_energy`, table.py:1152-1257) from table at module level, while table imports
+  gamma_phi_units lazily (table.py:1728); lane d's simulation of B5a gives 11/6/18 with that cycle intact. Ruling: B5
+  is planned at its base by simulation (the plan's numbers are what `codehealth arch` gives on a scratch tree of the
+  intended moves, written before the run). The goal is that no module-level import of gamma_phi_units or thermal
+  reaches table: everything they import from table moves down with the B5 groups (unit_checks with
+  `_ModelChecksTable` and `MODEL_CHECKS`, split_checks with `Degeneracy`), plus a fourth module for the flowsheet
+  envelope rows if they are needed below table. `MODEL_CHECKS` stays one object (re-exported). STOP if a group's
+  closure reaches what stays, or if any module mutates `MODEL_CHECKS` at import time in an order the move would change.
+  Table 4.1's later rows are re-derived at each base anyway.
