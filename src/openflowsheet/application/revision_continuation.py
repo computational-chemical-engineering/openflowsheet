@@ -38,8 +38,8 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Final
 
 from openflowsheet.application.revision_binding import RevisionBinding, bind_revision_flowsheet
+from openflowsheet.application.revision_edits import ELEMENT_MEMBERS, element_diff
 from openflowsheet.application.revisions import CONTENT_HASH_EXCLUDED
-from openflowsheet.application.transactions import ELEMENT_MEMBERS, element_diff
 from openflowsheet.canonical import canonical_json
 from openflowsheet.orchestrator.execution import declaration_identity
 from openflowsheet.orchestrator.revision_continuation import (

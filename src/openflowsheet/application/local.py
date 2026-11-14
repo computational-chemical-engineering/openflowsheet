@@ -85,6 +85,12 @@ from openflowsheet.application.revision_binding import (
     SurrogateResolver,
     pin_encodings,
 )
+from openflowsheet.application.revision_edits import (
+    EditPathError,
+    apply_edits,
+    revision_diff,
+    semantic_diff,
+)
 from openflowsheet.application.revision_run import Route, route_structure, select_route
 from openflowsheet.application.revisions import Revision
 from openflowsheet.application.store import (
@@ -99,12 +105,6 @@ from openflowsheet.application.store import (
     StoreError,
     atomic_write_bytes,
     coded_store_error,
-)
-from openflowsheet.application.transactions import (
-    EditPathError,
-    apply_edits,
-    revision_diff,
-    semantic_diff,
 )
 from openflowsheet.application.types import (
     AdmissionReport,
