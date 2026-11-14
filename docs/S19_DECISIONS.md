@@ -12,3 +12,9 @@
 - **DECISION: design first (A1, `architect`) for the whole tree before any step.** Alternative: start function-level
   steps on the worst files at once. Rejected: 10 cycles across packages and seven files over 1000 NLOC need a target
   layer order and split plans first, or steps would be undone by the splits. Reversible by: none needed (no code).
+- **2026-11-14, Frank: more agents allowed for S19.** "Do S19. You can use more agents if needed, I have decided to
+  use a reset later this week." This relaxes the CLAUDE.md limit of 2 agents at a time for this campaign (the file is
+  not edited). Applied as: up to 3 or 4 agents when their work is on disjoint files or read-only (engineers on
+  separate branches per package group, a reviewer, the design lane); never two engineers on one branch. Missing
+  codehealth features go to the code_health session (sent 2026-11-14: `arch --config`, cycle and package views
+  without layers, per-package scan aggregation, the scan JSON schema, a branch-safe run log).
