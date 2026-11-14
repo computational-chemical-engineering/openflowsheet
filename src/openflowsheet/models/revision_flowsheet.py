@@ -561,19 +561,9 @@ def _read(
             if object_id not in producers:
                 raise RevisionError("incomplete", f"specification_target_unknown({name})")
             owner = producers[object_id]
-            component = target.get("component")
-            if path == "state.n" and component in components:
-                columns: tuple[str, ...] = (flow_id(object_id, str(component)),)
-            elif path == "state.T" and component is None:
-                columns = (temperature_id(object_id),)
-            elif path == "state.P" and component is None:
-                columns = (pressure_id(object_id),)
-            else:
-                raise RevisionError(
-                    "unsupported",
-                    f"specification_unsupported({name})",
-                    _CONNECTION_HINT.format(components=component_set),
-                )
+            columns = _connection_columns(
+                name, object_id, path, target.get("component"), components, component_set
+            )
         elif object_type == "instance":
             if object_id not in instances:
                 raise RevisionError("incomplete", f"specification_target_unknown({name})")
@@ -587,29 +577,7 @@ def _read(
                         "conflict", f"specification_conflict({name}, {owner}.{parameter})"
                     )
                 continue
-            if path in ("outlet.T", "outlet.P"):
-                outlets = [
-                    stream
-                    for port, direction in record["directions"].items()
-                    if direction == "outlet"
-                    for stream in record["ports"][port]
-                ]
-                if not outlets:
-                    raise RevisionError(
-                        "unsupported",
-                        f"specification_unsupported({name})",
-                        _instance_hint(owner, record["model"], targets),
-                    )
-                identify = temperature_id if path == "outlet.T" else pressure_id
-                columns = tuple(identify(stream) for stream in outlets)
-            elif path == "duty.Q":
-                columns = (duty_id(owner),)
-            else:
-                raise RevisionError(
-                    "unsupported",
-                    f"specification_unsupported({name})",
-                    _instance_hint(owner, record["model"], targets),
-                )
+            columns = _instance_columns(name, owner, path, record, targets)
         else:
             raise RevisionError("unsupported", f"specification_unsupported({name})")
         pins: dict[str, float] = instances[owner]["pins"]
@@ -646,6 +614,62 @@ def _read(
         basis=basis,
     )
     return view, {column: tuple(names) for column, names in sources.items()}
+
+
+def _connection_columns(
+    name: str,
+    stream: str,
+    path: str,
+    component: Any,
+    components: tuple[str, ...],
+    component_set: str,
+) -> tuple[str, ...]:
+    """R5: the column a `connection` target fixes on `stream`: `state.n` with a `component` in
+    `components`, or `state.T` or `state.P` without one; any other path refuses specification
+    `name` as unsupported, with the connection hint over `component_set`."""
+    if path == "state.n" and component in components:
+        return (flow_id(stream, str(component)),)
+    if path == "state.T" and component is None:
+        return (temperature_id(stream),)
+    if path == "state.P" and component is None:
+        return (pressure_id(stream),)
+    raise RevisionError(
+        "unsupported",
+        f"specification_unsupported({name})",
+        _CONNECTION_HINT.format(components=component_set),
+    )
+
+
+def _instance_columns(
+    name: str, owner: str, path: str, record: Mapping[str, Any], targets: Mapping[str, str]
+) -> tuple[str, ...]:
+    """R5: the columns an `instance` target other than a parameter fixes on `owner`, whose reader
+    record is `record`: `outlet.T` or `outlet.P` on every stream at an outlet port, in port then
+    connection order, or `duty.Q`; a path outside these, or an outlet path on an instance without
+    an outlet stream, refuses specification `name` as unsupported, with the instance hint from
+    `targets`."""
+    if path in ("outlet.T", "outlet.P"):
+        outlets = [
+            stream
+            for port, direction in record["directions"].items()
+            if direction == "outlet"
+            for stream in record["ports"][port]
+        ]
+        if not outlets:
+            raise RevisionError(
+                "unsupported",
+                f"specification_unsupported({name})",
+                _instance_hint(owner, record["model"], targets),
+            )
+        identify = temperature_id if path == "outlet.T" else pressure_id
+        return tuple(identify(stream) for stream in outlets)
+    if path == "duty.Q":
+        return (duty_id(owner),)
+    raise RevisionError(
+        "unsupported",
+        f"specification_unsupported({name})",
+        _instance_hint(owner, record["model"], targets),
+    )
 
 
 def _optional_text(value: Any) -> str | None:
