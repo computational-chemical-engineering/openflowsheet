@@ -131,3 +131,10 @@ def test_a_failure_for_another_spec_carries_none() -> None:
     failure = solve_column(replace(SPECS["M1"], condenser="subcooled"), PROVIDER)
     assert isinstance(failure, CascadeFailure)
     assert failure.warnings == ()
+
+
+def test_a_cascade_failure_is_always_truthy() -> None:
+    """column_validation chains its refusals with `or`: a failure, with or without warnings, is
+    truthy, so the chain stops at the first one."""
+    assert bool(CascadeFailure("INVALID_SPECIFICATION", "x"))
+    assert bool(CascadeFailure("INVALID_SPECIFICATION", "x", warnings=WARNING))
