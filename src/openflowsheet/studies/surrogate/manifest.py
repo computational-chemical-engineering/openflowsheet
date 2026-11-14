@@ -73,7 +73,7 @@ from openflowsheet.studies.surrogate.quadratic import (
     FIT_METHOD_ID,
     OUTPUT_MAP_ID,
 )
-from openflowsheet.studies.surrogate.study import MODEL_ID, Observation, SurrogateEvaluation
+from openflowsheet.studies.surrogate.records import MODEL_ID, Observation, SurrogateEvaluation
 
 __all__ = [
     "ASSUMPTIONS",
