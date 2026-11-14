@@ -38,7 +38,7 @@ produced response to its operation's response schema.
 
 from __future__ import annotations
 
-from collections.abc import Callable, Mapping
+from collections.abc import Callable, Iterator, Mapping
 from dataclasses import dataclass
 from functools import cache
 from typing import Any, Final, Literal, Protocol
@@ -687,6 +687,9 @@ def _error_refs(
     active: tuple[str, ...],
     found: set[tuple[str, ...]],
 ) -> None:
+    """Add to `found` the location of every `$ref` to `_ERROR_SCHEMA` under `node`: a `$ref` is
+    followed into its published document unless it is in `active` (a cycle), then every
+    `_subschemas` member is walked at its location."""
     if not isinstance(node, Mapping):
         return
     reference = node.get("$ref")
@@ -705,19 +708,31 @@ def _error_refs(
             _error_refs(
                 target, documents, document_id, path, (*active, f"{document_id}#{fragment}"), found
             )
+    for schema, location in _subschemas(node, path):
+        _error_refs(schema, documents, base, location, active, found)
+
+
+def _subschemas(
+    node: Mapping[str, Any], path: tuple[str, ...]
+) -> Iterator[tuple[Any, tuple[str, ...]]]:
+    """`node`'s subschemas in walking order, each with its location: `allOf`, `anyOf`, `oneOf`,
+    `if`, `then` and `else` at `path`; `properties` at `path` and the member name;
+    `patternProperties`, `additionalProperties`, `items` and `prefixItems` at `path` and `ANY`.
+    An absent `if`, `then`, `else`, `additionalProperties` or `items` comes as `None`. Lazy, so
+    each member is read when the walk reaches it."""
     for keyword in ("allOf", "anyOf", "oneOf"):
         for branch in node.get(keyword, ()):
-            _error_refs(branch, documents, base, path, active, found)
+            yield branch, path
     for keyword in ("if", "then", "else"):
-        _error_refs(node.get(keyword), documents, base, path, active, found)
+        yield node.get(keyword), path
     for member, schema in (node.get("properties") or {}).items():
-        _error_refs(schema, documents, base, (*path, member), active, found)
+        yield schema, (*path, member)
     for schema in (node.get("patternProperties") or {}).values():
-        _error_refs(schema, documents, base, (*path, ANY), active, found)
+        yield schema, (*path, ANY)
     for keyword in ("additionalProperties", "items"):
-        _error_refs(node.get(keyword), documents, base, (*path, ANY), active, found)
+        yield node.get(keyword), (*path, ANY)
     for schema in node.get("prefixItems", ()):
-        _error_refs(schema, documents, base, (*path, ANY), active, found)
+        yield schema, (*path, ANY)
 
 
 def _explained_at(document: Any, location: tuple[str, ...]) -> Any:
