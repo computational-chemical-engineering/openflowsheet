@@ -131,4 +131,4 @@
   `_admissible` (tests t03, t05b, t08, opt_revision_host) and the same in `scripts/t03_evidence_manifest.py`,
   `scripts/t05b_evidence_manifest.py`. Any split of region meets the same patches, so a different partition does not
   help. The retarget patches every module that holds a call site of the patched name (both, where calls stay in
-  region too). A `reviewer` reads the retarget diff before the step is gated.
+  region too). A `reviewer` reads the retarget diff before the lane is merged.

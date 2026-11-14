@@ -60,7 +60,7 @@
   retarget, plan, step; gate against the plan commit. A retarget commit changes only where a patch or path points
   (a name patched in a module that keeps a call site and in one that gains one is patched in both); never an
   assertion, an expected value or a test case. An engineer writes one only when its brief or the orchestrator
-  authorises that step's retarget, and a `reviewer` reads it before the step is gated.
+  authorises that step's retarget, and a `reviewer` reads it before the lane is merged.
 
 ## Running jobs
 
