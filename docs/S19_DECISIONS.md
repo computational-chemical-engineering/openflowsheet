@@ -301,3 +301,13 @@
   names, so a huge -> large downgrade counts as new); reported to the tool owner; the step is re-gated unchanged on
   the fix. Docs pass: `scripts/t03_evidence_manifest.py:1880` (same source rule, expects region.py),
   `scripts/s08b_evidence_manifest.py:96`.
+- **2026-11-15, registry-hashed files wait for W5 (orchestrator, under FQ-A).** G4 run 1 found that any edit to a
+  file in a built-in descriptor's implementation set (`src/openflowsheet/registry/builtin/*.json`) changes
+  `registry_sha256` and fails `test_f1_legacy_builtins`, `test_f1_builtin_identity` (x3) and `test_f1_discovery`
+  (fixture `tests/fixtures/registry/builtin-sha256.txt`). FQ-A puts that hash change in W5 under one design-lane
+  ruling, so W3 and W4 leave these 45 files alone: `assessment/cost/*` (10), `assessment/lca/*` (6),
+  `models/c1/*` (8 unit files), `models/syn001/` unit files (14: column_unit, component_separator,
+  conversion_reactor, feed, flash, heater, heat_exchanger, kinetic_cstr, mixer, ph_flash, pump, sink, splitter,
+  valve), `models/thermal/*` (5), and 8 `thermo/` providers. Rejected: a fixture regeneration per step (would
+  change the hash many times, against FQ-A). G4 run 1 gate-fails on `cost/sets.py` (steps 37, 40) stand as fails;
+  the targets move to W5 with the frozen modules.
