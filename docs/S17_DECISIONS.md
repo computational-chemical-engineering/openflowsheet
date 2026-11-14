@@ -318,3 +318,43 @@ F0, the digest, or (by grep) any test. Re-run the self-test once S16 lands.
   step. A `--no-gain` docstring commit lands before R4 (stale and false docstrings listed in the R3 plan, plus
   transactions.py:24-27 and types.py:16-18). After S17: retarget `scripts/s16_recall.py:70` case
   `app-transactions-diff` (its line moves to revision_edits.py) when the S16 map is rebuilt.
+- **Work order 8b (2026-11-14, opus-engineer):** 5 attempts, 4 accepted, 1 gate-fail (run-log steps 74 to 78):
+  revision_continuation.py 13.0 -> 6.0 (`not_continuable` 7.0 -> 0), revision_run.py 55.1 -> 44.6
+  (`reproduce_bundle` 10.5 -> 0, the no-rerun ladder restructured whole), local.py 37.7 -> 23.6 (`_admit` 9.1 -> 0,
+  `_prepare` 11.6 -> 6.6). Scope total 333.4 -> 301.8. The gate-fail (a48e3d58) restructured `_prepare`'s snapshot
+  ladder whole, which leaves the initializer `revision_id = ""` dead; the literal check refuses dropping it.
+  DECISION: `_prepare` stays at 6.6. Alternative: keep the dead initializer (games the rule) or an exception to the
+  literal check (none exists). Reversible by: re-applying a48e3d58 in a commit that declares the literal drop (D19
+  package). Review 10 agreed.
+- **Review 10 (2026-11-14, reviewer) on work order 8b (f0297f13..37d854d7):** 4 accepted (3 with a note), 0 rejects,
+  no behaviour difference (`runs/s17-review10.md`). Notes fixed in dbe6a5d3 (`_recorded_route` -> `_rerun_inputs`,
+  `budgets`, docstrings, ADR 0035 citation in `_check_promotion`), run-log step 81.
+- **Splits (2026-11-14, opus-engineer, D18):** the orchestrator committed the four approved plans and the new modules'
+  layer entries in c14ff7fc. R1 99039d73 (validation_report), R2 4e6235d9 (revision_edits), R3 90ceed5e
+  (model_signatures, model_builders), R4 d8cd43fd (binding_common), R5 74bf9cbc (`_defect` to jobs/runner); each
+  passed its gate (restructure mode for R1 to R4, `--no-gain` for R5) with the full suite, `ast.dump` identity of
+  every moved statement, debt unchanged (run-log steps 79, 80, 82, 85, 86). `codehealth arch`: 11 violations / 83
+  cycle edges -> 8/33, 6/14, 4/10, 3/8, 2/6, exactly the numbers fixed in the design note before the runs. Left: the
+  cycles {contract, types} and {revision_routes, revision_run, validation} (D19 input).
+- **Docstring commit before R4 (2026-11-14, orchestrator):** 6172eddb also touched `messages/catalogue/refusals.yaml`
+  (frozen) and `models/revision_flowsheet.py` (outside the scope); the gate failed on `frozen` and `scope` (run-log
+  step 83), reset. Redone on `application/` only as 50423927 (step 84). DECISION: the two outside comments
+  (refusals.yaml:1378, models/revision_flowsheet.py:19 still name `revision_binding`) wait for the D19 package.
+  Alternative: an ungated docs commit on wp/S17. Reversible by: a one-line commit in D19.
+- **Review 11 (2026-11-14, reviewer) on the splits R1 to R5:** 5 accepted (2 with a note), 0 rejects; an independent
+  AST, order and comment check of every moved statement and an AST scan of src, tests, scripts, benchmarks and
+  examples for imports, attribute reads and patches on the old modules (`.codehealth/runs/s17-review11.md`). Notes
+  fixed in 3de8018c (section headers R3 carried over, a docstring), run-log step 87. Its D19 input: re-exports to drop
+  per module with their importers, private names that now cross modules (`_column_owners`, `_defect`, the pin readers
+  and signature constants), names in the wrong module (`utc_timestamp` in validation_report; the pin readers as a
+  builder-kit module), and two stale references outside the scope (scripts/registry_builtin.py:134,
+  scripts/s16_recall.py:70).
+- **Campaign end (2026-11-14, orchestrator).** Final scan at 3de8018c: 44 files, 18589 NLOC, debt 301.8 (855.0 at
+  `CB`, -64.7 %), health 8.49 (7.22), brain functions 0 (6), file smells 6 (7). revision_run.py 136.0 -> 44.6
+  (-67.2 %), binding.py 134.2 -> 43.6 (-67.5 %). G-END-DEBT: PASS on all three criteria and no new brain function;
+  the D17 stretch target (about 400) is met. `codehealth arch`: 2 violations, 2 cycles of 6 edges (11 and one cycle of
+  83 edges at the D20 ratchet). Budget: 71 function-level attempts against the 60 written in the state file before
+  the run; D17 (Frank) widened the scope to work orders 3 to 8 and the count was not re-fixed: recorded as a miss of
+  the budget line, not of a gate. Run log, reviews and briefs copied into the tree (`.codehealth/runs/`,
+  `docs/briefs/S17-*.md`, the design note as `docs/briefs/S17-architecture.md`); the split-closure scripts and the scan
+  JSONs stay in `<git-common-dir>/codehealth/` and are hashed in the manifest.

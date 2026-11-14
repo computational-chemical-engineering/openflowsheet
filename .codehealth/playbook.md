@@ -7,7 +7,9 @@ memory).
 ## Rules for new code
 
 1. Extract along a concept the spec or an ADR names (inner and outer start, a solve-path member, the policy documents),
-   and keep its citation comment with it. (S17 review 1: 4193249e, 4749d62d, a6b4ec14)
+   and keep its citation comment with it. (S17 review 1: 4193249e, 4749d62d, a6b4ec14) When a cited check moves into
+   a helper and its preparation stays in the caller, the helper's docstring carries the citation, and a caller
+   comment sentence that now describes the helper is dropped. (review 10: 37d854d7, fixed in dbe6a5d3)
 2. Keep a whole early-return branch, with its stage or side-effect calls, as one unit. (70064af5)
 3. A function that finds differences returns them; the caller collects (`found += _check(...)`). No appending through
    a list parameter. (c9f3c531 against a6b4ec14)
@@ -30,7 +32,8 @@ memory).
    code's own comment sets apart (a declared default is not a start). A helper whose bool means "the caller goes on"
    is named for the state it guarantees, not for the caller's next action. (review 2: 81203d61, 0fd8079b; fixed in
    9d0498fd; review 6: cae099ae `_ensure_member`, fixed in 7cf38820; review 7: af6741e5 `_poll_and_end_exited`,
-   fixed in 18562395)
+   fixed in 18562395) A stage helper that returns a tuple is named for the whole tuple; with three or more values,
+   consider a NamedTuple. (review 10: 58a22104 `_recorded_route`, fixed in dbe6a5d3 as `_rerun_inputs`)
 9. A helper whose output is keyed by id states in its docstring which entry wins when keys collide. (review 2: d41c8028)
 10. Moving a statement across an early return, or a lazy import into a helper, changes when it runs: keep the order,
     or state in the commit message that the statement is pure. A store moved later: the commit names every statement
@@ -41,7 +44,9 @@ memory).
     statement in the same call path that already loads the module, or by a module body without import-time effects;
     "loaded by some entry module" does not count, and "an import only binds names" holds only for a module already
     loaded. A commit that says "the same exceptions" either lists every type the moved code can raise or lists none.
-    (review 8: 02ce7453, corrected in ac9d221c; review 9: 4a8bcecf)
+    (review 8: 02ce7453, corrected in ac9d221c; review 9: 4a8bcecf) A helper's `None` ("not applicable") that
+    replaces a branch the caller took on another value: the commit shows that the value the helper reads cannot
+    itself be `None`. (review 10: 58a22104 `_valid_coupling_record`)
 11. loop-body-extract keeps the loop's guard in the caller, so the loop still reads as one sentence. (review 3: 5fe1f040)
 12. A helper's parameter and return types are no weaker than the values they carry: `Any` where mypy inferred a type
     is a regression (import the type under `TYPE_CHECKING`). Widening to what the callee needs is fine unless the
@@ -51,14 +56,19 @@ memory).
     name a module helper apart from a closure it serves. When phase helpers replace one loop's accumulators, each
     phase's result is named for its phase (never one bare and one qualified). A closure lifted to module scope is
     renamed when its name relied on the enclosing function. (review 4: a3f998be, 4a8a1129, fixed in 6a025d12;
-    review 8: a450f6d8, 02ce7453, fixed in ac9d221c)
+    review 8: a450f6d8, 02ce7453, fixed in ac9d221c) The caller's local in the a450f6d8 form is named for the
+    outcome, never with a name a lifted branch keeps for its own local. (review 10: 420b299e `admitted`, 58a22104
+    `found`; fixed in dbe6a5d3)
 14. A commit message describes the moved unit in the terms the docstring uses. (review 5: b92b0490)
 15. A lifted check with a verbatim twin elsewhere in the module (same messages): name the twin in the commit. Merging
     the two drops string literals, which the bitwise gate refuses, so the merge waits for a behaviour-level change.
     (review 6: cae099ae, transactions.py `_check_array_index` and `_apply_at`; WO6: runner.py `solve` and `optimize`
     share the R5 `verification_weakening_refused` block) Before naming a helper after a standard (RFC 6901, JSON
     Schema), grep the shared layer for an implementation; name it as the twin, the differences that block the merge,
-    and the subset the helper implements. (review 9: 4a8bcecf, `_pointer_target` vs `projection.resolve`)
+    and the subset the helper implements. (review 9: 4a8bcecf, `_pointer_target` vs `projection.resolve`) A whole
+    restructure that would leave an initializer dead: never keep the dead initializer to pass the literal check;
+    leave the ladder and list it for a commit that declares the literal drop. (review 10: `_prepare` at 6.6,
+    gate-fail a48e3d58)
 16. An order claim on collected findings is only as good as a test that pins the ordered list; set comparisons do not
     pin order. Say which in the commit, and which list the test pins. (review 6: b5451805, tests compare rule sets;
     review 8: 02ce7453, A74 pins conversions only)
@@ -71,7 +81,22 @@ with the caller dispatching by `isinstance` when the PASS value shares its const
 caller's local named for the outcome (a450f6d8); a structural walker lifts its child enumeration into a lazy
 generator with the recursion left in the walker, only if the walk never mutates the node, and the generator is never
 materialised to a list (2b2d079f); sibling builders for spec-named record kinds may share one parameter list, never
-merged into one builder with a kind flag (0b1537e6).
+merged into one builder with a kind flag (0b1537e6); per-family admission helpers return `T | Error` and the caller
+issues the single refusal, when only an isinstance check and a return sit between the call and the refusal and the
+refusal function is NoReturn (420b299e).
+
+## Restructure (module splits, D18)
+
+1. A split moves top-level statements verbatim (`ast.dump` identity per statement, gated), so section-header
+   comments travel with the first statement under them. After the split, check every header in the old and new
+   files against what it now heads, and fix them in a `--no-gain` follow-up; also any docstring that names the old
+   module as the home of a moved name. (review 11: 90ceed5e, fixed in 50423927 and 3de8018c)
+2. Comments outside the campaign scope that name a moved module (a frozen catalogue, a model module) fail the gate's
+   `scope` and `frozen` checks: list them for the package that owns those files, never in a gated step. (run-log
+   step 83, 6172eddb)
+3. Before each split, re-derive the move set and the importer list at the base, and fix the expected `codehealth
+   arch` numbers in the plan before the run; a mismatch stops the split. (R1 to R5: 8/33, 6/14, 4/10, 3/8, 2/6,
+   all met)
 
 ## Refactor recipes
 
@@ -95,3 +120,8 @@ once: the dirty-tree test, D14), 2 review-rejects. extract-phase 12 accepts, dec
 Work order 2 (binding.py, pin 5646ad1a): 13 attempts, 13 accepted (extract-phase 12, loop-body-extract 1), 0
 gate-fails; reviews 2 and 3: 0 rejects, notes applied in 9d0498fd (names and docstrings, gated `--no-gain`).
 binding.py 134.2 -> 43.6.
+
+Campaign totals (run log, 87 entries): extract-phase 59 accepted, 5 gate-fails (literals 3, tests 2), 1 review-reject;
+loop-body-extract 4 accepted; decompose-conditional 1 accepted, 1 review-reject; review-note 11 (10 accepted-neutral,
+1 gate-fail on scope and frozen); split 4 and move-private 1, all accepted-neutral. Reviews 1 to 11: 2 rejects, both
+in review 1.
