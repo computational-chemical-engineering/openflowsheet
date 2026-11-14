@@ -1,0 +1,11 @@
+# S19 restructure plan, step A3 (design note docs/briefs/S19-architecture.md section 2 "Cycle 1", table 4.1 row A3).
+# Written by the lane-a engineer under work order S19-W1a; names and numbers measured at wp/S19-a 55e8b09a.
+id = "leaf-kind-tolerance"
+approved_by = "orchestrator (OpenFlowsheet-TR09 build lane) under Frank's delegation of 2026-11-14 (S19 rules); design note S19-architecture.md section 2 and table 4.1 A3, work order S19-W1a"
+reason = "verify.saturation imports verify.checks only for KIND_TOLERANCE (saturation.py:33) while checks imports saturation: the two-module cycle left after A2. The verifier's KIND_TOLERANCE and the two constants of its closure defined in checks, PRESSURE_TOLERANCE and EQUILIBRIUM_TOLERANCE (checks.py:57-61, :65-72), move verbatim to the leaf verify/kind_tolerance.py (imports Mapping, Final and the three syn001 tolerances); ADMISSIBILITY_EPSILON between them stays. checks re-exports all three; saturation imports KIND_TOLERANCE from the leaf. The solver's own KIND_TOLERANCE (region.py:184) is a separate object (R-016) and is not touched. No other importer is retargeted. Expected codehealth arch --depth 4: measured at base 14 violations, 10 cycles, 30 cycle edges; table 4.1 delta A3 (0, -1, -2) gives 14 violations, 9 cycles, 28 cycle edges"
+new_files = ["src/openflowsheet/verify/kind_tolerance.py"]
+new_public = [
+    "src/openflowsheet/verify/kind_tolerance.py:PRESSURE_TOLERANCE",
+    "src/openflowsheet/verify/kind_tolerance.py:EQUILIBRIUM_TOLERANCE",
+    "src/openflowsheet/verify/kind_tolerance.py:KIND_TOLERANCE",
+]
