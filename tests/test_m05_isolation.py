@@ -148,6 +148,7 @@ def test_the_pyomo_free_modules_import_with_pyomo_blocked() -> None:
         "import openflowsheet.studies.trust_region.holders\n"
         "import openflowsheet.studies.trust_region.trf_state as state\n"
         "import openflowsheet.studies.trust_region.checks\n"
+        "import openflowsheet.studies.trust_region.projection_support\n"
         "import openflowsheet.studies.trust_region.study as study\n"
         "readiness = state.framework_readiness(version=state.PYOMO_VERSION)\n"
         "assert study.trust_region_readiness().codes == ('TRUST_REGION_FRAMEWORK_UNAVAILABLE',)\n"
