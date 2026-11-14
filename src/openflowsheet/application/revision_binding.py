@@ -237,12 +237,7 @@ def _instance_targets(signature: ModelSignature) -> str:
     )
 
 
-# -- the six M02 C1 builders (design note §8, §14.2; WO-8.2) ------------------------------------
-#
-# The C1 units are their own classes (`models.c1`): SYN-001's carry SYN-001 constants in their
-# manifests and row origins. Their signatures read what SYN-001's read, port for port, so the
-# verifier's rules (`verify.table`) read the same pins. They bind only on the C1 basis, which
-# `MODEL_BASES` states and the binder enforces (R-288); the builders do not check it.
+# -- a C1 reactor's surrogate manifest (M04 spec §8.2; the builders are in `model_builders`) -------
 
 
 def _resolve_surrogate(
@@ -252,7 +247,7 @@ def _resolve_surrogate(
     return resolve_surrogate(instance.model_version, instance.model_artifact_ref, surrogates)
 
 
-# -- the `thermal.*` family (S11 units design §4.4, §5.4 I1b) -----------------------------------
+# -- the binder: target paths, bases, admissibility, `bind_revision_flowsheet` ---------------------
 
 #: Model id -> what an instance of it takes as a target path, for `parse_revision`'s
 #: `specification_unsupported` hint on an instance target (ruling round 6, B2).

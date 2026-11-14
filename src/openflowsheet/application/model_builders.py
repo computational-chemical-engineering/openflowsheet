@@ -247,7 +247,7 @@ def _product_sink(
     return unit, {}
 
 
-# -- the six T05 builders (§1.3's table, W11) ----------------------------------------------------
+# -- the T05 builders (§1.3's table, W11) ----------------------------------------------------------
 
 
 def _declared_phase(view: InstanceView, port: str) -> Phase:
@@ -489,7 +489,7 @@ def _heat_exchanger(
     }
 
 
-# -- the six M02 C1 builders (design note §8, §14.2; WO-8.2) ------------------------------------
+# -- the M02 C1 builders (design note §8, §14.2; WO-8.2) -------------------------------------------
 #
 # The C1 units are their own classes (`models.c1`): SYN-001's carry SYN-001 constants in their
 # manifests and row origins. Their signatures read what SYN-001's read, port for port, so the

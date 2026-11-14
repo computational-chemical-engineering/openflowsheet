@@ -545,7 +545,7 @@ _STREAM_SPLITTER: Final = ModelSignature(
 _PRODUCT_SINK: Final = ModelSignature(model_id=sink.MODEL_ID, ports=sink.PORTS)
 
 
-# -- the six T05 signatures (§1.3's table, W11) --------------------------------------------------
+# -- the T05 signatures (§1.3's table, W11) --------------------------------------------------------
 
 
 #: A port whose rule is `liquid` or `vapor` (not lifted), in the document's words.
@@ -641,7 +641,7 @@ _HEAT_EXCHANGER: Final = ModelSignature(
 )
 
 
-# -- the six M02 C1 signatures (design note §8, §14.2; WO-8.2) ----------------------------------
+# -- the M02 C1 signatures (design note §8, §14.2; WO-8.2) -----------------------------------------
 #
 # The C1 units are their own classes (`models.c1`): SYN-001's carry SYN-001 constants in their
 # manifests and row origins. Their signatures read what SYN-001's read, port for port, so the

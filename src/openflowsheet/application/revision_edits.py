@@ -5,7 +5,7 @@ Edits: `apply_edits` applies a change's `Edit`s in order to a copy of a revision
 `json_pointer` writes the paths. Diffs: `semantic_diff` compares two revision documents,
 `element_diff` compares their elements by id (ADR 0019 Amendment 3), and `revision_diff` is the
 two together. Nothing here reads or writes a store: `local` and `revision_continuation` import
-from here, and `transactions` re-exports every name for K06's callers.
+from here, and `transactions` re-exports every public name for K06's callers.
 """
 
 from __future__ import annotations
