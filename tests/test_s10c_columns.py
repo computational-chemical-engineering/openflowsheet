@@ -20,6 +20,7 @@ from typing import Any
 import pytest
 from test_s10c_blocks import CONTEXT, REAL, REFERENCE, UNIT, M1Block, column_spec
 
+import openflowsheet.models.syn001.column_endpoint as column_endpoint
 import openflowsheet.models.syn001.column_rows as column_rows_module
 import openflowsheet.models.syn001.column_solve as column_solve
 from openflowsheet.compile.reference import row_values
@@ -345,7 +346,7 @@ def test_m4_undamped_sweeps_exhaust_on_c_ew(monkeypatch: pytest.MonkeyPatch) -> 
     assert not isinstance(initial, CascadeFailure), initial
     damped = bubble_point_endpoint(spec, REAL, initial)
     assert isinstance(damped, BubblePointEndpoint), damped
-    monkeypatch.setattr(column_solve, "SWEEP_RELAXATION", 1.0)
+    monkeypatch.setattr(column_endpoint, "SWEEP_RELAXATION", 1.0)
     undamped = bubble_point_endpoint(spec, REAL, initial)
     assert isinstance(undamped, CascadeFailure), undamped
     assert undamped.cause == f"initialization_failed({PRESOLVE_ID}, sweeps_exhausted)"

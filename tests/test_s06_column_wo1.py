@@ -21,6 +21,7 @@ from conftest import REPO_ROOT
 
 import openflowsheet.models.syn001.cascade_solve as cascade_solve_module
 import openflowsheet.models.syn001.column as column_module
+import openflowsheet.models.syn001.column_compile as column_compile_module
 import openflowsheet.models.syn001.column_solve as column_solve_module
 import openflowsheet.models.syn001.column_validation as column_validation_module
 from openflowsheet.compile.reference import row_values
@@ -364,8 +365,9 @@ def test_a02_refusal_probes(name: str, monkeypatch: pytest.MonkeyPatch) -> None:
     def refuse(*args: Any, **kwargs: Any) -> Any:
         raise AssertionError(f"A02: {name} reached evaluation")
 
-    for attribute in ("profile_initial", "declared_rows", "bubble_point_endpoint"):
+    for attribute in ("profile_initial", "bubble_point_endpoint"):
         monkeypatch.setattr(column_solve_module, attribute, refuse)
+    monkeypatch.setattr(column_compile_module, "declared_rows", refuse)
     monkeypatch.setattr(cascade_solve_module, "solve_region", refuse)
     provider = _R5OnlyProvider()
     admissible = column_module.single_phase_admissible

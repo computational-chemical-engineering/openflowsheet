@@ -28,6 +28,7 @@ from test_s08_blocks import F1, P3
 from test_s08_roots import check_root
 
 import openflowsheet.models.syn001.cascade_solve as cascade_solve_module
+import openflowsheet.models.syn001.column_acceptance as acceptance_module
 import openflowsheet.models.syn001.column_blocks as blocks_module
 import openflowsheet.models.syn001.column_solve as solve_module
 from openflowsheet.canonical import state_sha256
@@ -550,6 +551,7 @@ def test_a14a_stage_b_disabled_fails_a05(monkeypatch: pytest.MonkeyPatch) -> Non
 def test_a14d_an_infinite_tolerance_fails_a09(monkeypatch: pytest.MonkeyPatch) -> None:
     """A14 (d): with `τ₆ = ∞`, F1's near-trivial Stage-A state is accepted and A09 fails."""
     monkeypatch.setattr(solve_module, "TWO_PHASE_SATURATION_TOLERANCE", math.inf)
+    monkeypatch.setattr(acceptance_module, "TWO_PHASE_SATURATION_TOLERANCE", math.inf)
     answer = solve_column(F1, PROVIDER)
     with pytest.raises(AssertionError):
         check_a09_route(answer)
