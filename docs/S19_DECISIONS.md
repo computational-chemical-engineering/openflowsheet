@@ -242,3 +242,12 @@
   wait, and a resumed engineer rereads its whole context). Targets per group: `<git-common-dir>/codehealth/briefs/S19-W3-targets.md`
   (scan at df29751f: debt 6370.9, health 7.69, 44 brain functions); the common brief `S19-W3-common.md`. First pair:
   G4 (assessment) and G2 (models), which do not touch the I-15 files; G1 and G3 after I-15 and B1 land.
+- **2026-11-14, I-15 part 2: the interface gate refuses the step on `literals` only** (s19 steps 35, 36; step 65249dcb
+  and plan b1171394 parked on `wip/S19-I15`; tests a68186eb and 6acc7ad9 accepted on wp/S19-f). The ADR's verbatim K
+  copy adds `'LIQUID'`, `'ok'` and the message prefix to region.py; interface mode has no allowance for added
+  literals. Outside the gate on 65249dcb: 284 targeted tests pass (I-15 file, region, M05 parent, revision host, jobs,
+  error mapping, M07 journey, the K pin draft over 59 `(T, P)` pairs of the 44 F0 bundles with a solution state);
+  F0 PASS on M1 to M9; arch 7/4/14 -> 6/4/14. **DECISION: ask the tool owner for a declared-literals key in the
+  interface plan (exact entries, listed in the gate JSON), not an override.** Alternative (b), a shared lower K
+  function, rejected by the ADR itself (R-016). I-15 and B1 wait for the tool release; W3 G4 and G2 continue.
+  Note for waits: `pgrep -f "test_impact.py build"` matches its own loop; use `[t]est_impact.py build`.
