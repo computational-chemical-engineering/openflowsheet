@@ -2,7 +2,7 @@
   "work_package": "S19",
   "commit": "17967ccbb943e1c76ec200a17a4a25b74e1e4f1d",
   "requirements": [],
-  "status": "implemented",
+  "status": "tested",
   "inputs": {
     "case_id": "S19 (Frank, 2026-11-14: excellent code health before further development); docs/S19_RULES.md; ADR 0076 (accepted 2026-11-14); this manifest covers phases W1 and W2, merged into main by Frank's Decision Desk sign-off ofs-s19-w2-merge-main",
     "case_hash": "5eeed71c010876cf1d33daba9a8ca952d7cba0f89bfac1deab0c62b235598a65",
@@ -26,6 +26,11 @@
     },
     {
       "cmd": "scripts/test_impact.py build (test map at bec6dbe6)",
+      "cwd": ".claude/worktrees/s19",
+      "exit_code": 0
+    },
+    {
+      "cmd": "gh run watch 43637097255 --exit-status",
       "cwd": ".claude/worktrees/s19",
       "exit_code": 0
     }
@@ -60,6 +65,12 @@
       "description": "codehealth arch --depth 4 against design note table 4.1",
       "result": "pass",
       "value": "violations/cycles/cycle edges 14/10/79 -> 7/4/14"
+    },
+    {
+      "id": "S19.G-END-CI",
+      "description": "CI green on ubuntu-latest and ubuntu-24.04-arm at the branch commit to be merged (default-install, codehealth and identity jobs green too)",
+      "result": "pass",
+      "value": "run 43637097255 at dbf48605 (the manifest commit on 17967ccb); the earlier run 43624124511 at bec6dbe6 failed only ruff on .claude/skills/s19-refactor/patch_noop.py, fixed in 17967ccb"
     }
   ],
   "artifacts": [
