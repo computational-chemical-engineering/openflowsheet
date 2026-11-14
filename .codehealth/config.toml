@@ -8,7 +8,7 @@ profile = "python@0"
 [scope]
 # fnmatch on repository paths; '*' also matches '/'. Only .py files are in scope, and a step may
 # touch only in-scope files.
-include = ["src/openflowsheet/application/*"]
+include = ["src/openflowsheet/*"]
 
 [gate]
 # F0's 35 M9 modules (benchmarks/f0/corpus.json): run in the base tree, so the registered list.
@@ -162,6 +162,63 @@ order = [
     "openflowsheet.application.jobs.model",
     "openflowsheet.application.validation_report",
 ]
+
+[[architecture.layers]]
+name = "repo-layers"
+# S19 design note section 1. Package = layer; module entries where a package straddles a layer.
+# Recorded at adoption (12), each with the step that removes it (section 4, table 4.1):
+#   numerics.anderson|newton|ptc -> orchestrator.trace                 A5 (I-1, trace to numerics)
+#   models.syn001.cascade|column -> orchestrator.region                A4 (lifted vocabulary to models)
+#   models.syn001.column_blocks -> models.syn001.column_solve          B3 (column_solve split)
+#   assessment.program -> studies.nlp.verification                     A6 (V-tolerances leaf)
+#   messages.catalogue -> registry                                     A11 (freeze hook)
+#   assessment.spec -> application.types                              A12 (schema check to foundation)
+#   run.bundle -> application.policies                                 A13 (I-3)
+#   run.session -> application.binding                                 A14 (I-4)
+#   orchestrator.region -> verify.checks                               A15 (design lane, R-016)
+order = [
+    "openflowsheet.application",
+    "openflowsheet.run.session",
+    "openflowsheet.studies",
+    "openflowsheet.assessment",
+    "openflowsheet.studies.nlp.tolerances",
+    "openflowsheet.adapters",
+    "openflowsheet.verify",
+    "openflowsheet.run",
+    "openflowsheet.models.syn001.column_unit",
+    "openflowsheet.models.syn001.column_solve",
+    "openflowsheet.models.syn001.column_blocks",
+    "openflowsheet.models.syn001.cascade_solve",
+    "openflowsheet.orchestrator",
+    "openflowsheet.run.solution_state",
+    "openflowsheet.models",
+    "openflowsheet.thermo",
+    "openflowsheet.graph",
+    "openflowsheet.numerics",
+    "openflowsheet.compile",
+    "openflowsheet.registry",
+    "openflowsheet.messages",
+    "openflowsheet.units",
+    "openflowsheet.serialize",
+    "openflowsheet.compiled",
+    "openflowsheet.canonical",
+    "openflowsheet.resources",
+    "openflowsheet._files",
+    "openflowsheet.ir",
+    "openflowsheet",
+]
+
+[[architecture.forbid]]
+name = "verifier-not-through-the-solver"
+from = ["openflowsheet.verify"]
+to = [
+    "openflowsheet.orchestrator.region", "openflowsheet.orchestrator.executor",
+    "openflowsheet.orchestrator.execution", "openflowsheet.orchestrator.homotopy",
+    "openflowsheet.orchestrator.recovery", "openflowsheet.orchestrator.coupling",
+    "openflowsheet.orchestrator.merge", "openflowsheet.orchestrator.attempts",
+    "openflowsheet.numerics.newton", "openflowsheet.numerics.ptc", "openflowsheet.numerics.anderson",
+]
+reason = "R-016: the verifier shares no solve code (it may read structure: rank, splits, tear)"
 
 [[architecture.forbid]]
 name = "transports-through-operations"
