@@ -173,3 +173,14 @@
   the new base. Its docstring follow-up must also fix `studies/nlp/revision_host.py:93, 622` (they name region.py as
   the home of `_region_problem` and `admissibility_value`). wp/S19-c (A5 and follow-ups) merged as 537e32a7: arch 8 /
   6 / 20, patch_noop 0 of 243.
+- **2026-11-14, lane d part 2: B5-kit (1b495bac), B5-units (b8bb13be), B5-split (49779ad6) and the docs follow-up
+  (3c3bdefe) accepted, each gate 16/16 or 15/15; arch 11/6/20 -> 11/6/18.** Lane d stopped B5-rows and B6 on tests that
+  read sources by path. That exposed a coverage gap: `test_t05_table_independence` (R-016 import rule) and
+  `test_m02_wo8_verifier` (no `basis_provider`) read only table.py and certificate.py, so code moved out of them by B5
+  and B8 was no longer scanned. **DECISION: restore coverage now and make it a standing check.** Retarget 63983c82
+  (orchestrator, on wp/S19-d): the same assertions over each split module; falsifier quoted. New rule in
+  `S19_RULES.md` "Source-reading tests". A grep over W1, A5 and the splits found no other test that reads a moved
+  file (scripts that hash file lists for evidence manifests, e.g. `scripts/s0*_evidence_manifest.py`,
+  `k03`/`k04`, are noted for the docs pass). Authorised next (lane d part 3): B5-rows with `flowsheet_rows.py` added to
+  the table rule's module list before its plan; B6 with `tests/test_m05_isolation.py:31-32` (Pyomo allowlist,
+  `GLASS_BOX_MODULES`) extended to the new projection modules before its plan.

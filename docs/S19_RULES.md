@@ -62,6 +62,13 @@
   assertion, an expected value or a test case. An engineer writes one only when its brief or the orchestrator
   authorises that step's retarget, and a `reviewer` reads it before the lane is merged.
 
+- Source-reading tests (S19_DECISIONS, 2026-11-14): some tests read a module's source by path (R-016 import rules,
+  isolation allowlists). After a move their rule silently stops covering the moved code, which no gate tier sees.
+  Before every move: `grep -rn "<dir>/<file>.py\|\"<file>.py\"" tests scripts` for the old file; every test that
+  reads it gets the new modules added in the retarget commit (same assertions, over each module), with a falsifier
+  (a forbidden line appended to a new module must fail it) run and quoted in the commit message. Evidence-manifest
+  scripts that hash file lists are noted for the docs pass, not retargeted in a step.
+
 ## Running jobs
 
 - Gate: `.claude/skills/s19-refactor/gate.sh` (same modes as S17's: step, `--no-gain`, `--revert`,
