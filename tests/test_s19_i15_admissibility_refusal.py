@@ -40,9 +40,11 @@ from openflowsheet.application import revision_run
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.revision_routes import ApplicationRevisionRoutes
 from openflowsheet.compiled import EvaluationContext
+from openflowsheet.models.lifted import AdmissibilityRefusal
 from openflowsheet.orchestrator.region import (
     LiftedSplit,
     _LiftedOps,
+    _reference_k_values,
     _screen,
     admissibility_value,
 )
@@ -55,6 +57,7 @@ from openflowsheet.thermo.pr_c1 import COMPONENTS as PR_C1_COMPONENTS
 from openflowsheet.thermo.pr_c1 import PrC1Provider
 from openflowsheet.thermo.syn001 import Syn001Provider, _flash_failure
 from openflowsheet.verify.certificate import CheckPolicy
+from openflowsheet.verify.checks import VerifierError, k_values
 
 CONTEXT = EvaluationContext(model_version="S19-I15@" + "0" * 64, constants_sha256="0" * 64)
 #: `_LiftedOps.converged` reads the policy's `admissibility_epsilon` only.
@@ -207,9 +210,16 @@ def test_admissibility_value_is_none_under_a_refusal(raiser: str) -> None:
 @pytest.mark.parametrize("raiser", list(RAISERS))
 def test_the_converged_path_lets_a_refusal_propagate(raiser: str) -> None:
     *_, text = RAISERS[raiser]()
-    with pytest.raises(RuntimeError) as refused:
+    with pytest.raises(AdmissibilityRefusal) as refused:
         _converge(raiser)
     assert str(refused.value) == text
+
+
+def test_the_refusal_is_a_runtime_error_and_not_the_verifiers() -> None:
+    """ADR 0076 I-15: `AdmissibilityRefusal` is a `RuntimeError`, not a `VerifierError` (R-016)."""
+    assert AdmissibilityRefusal.__mro__[1] is RuntimeError
+    assert not issubclass(AdmissibilityRefusal, VerifierError)
+    assert not issubclass(VerifierError, AdmissibilityRefusal)
 
 
 @pytest.fixture
@@ -241,6 +251,7 @@ def test_the_jobs_runner_ends_a_converged_refusal_verifier_refused(
     assert result.error is not None
     assert (result.error.code, result.error.message) == ("unsupported", "verifier_refused")
     assert result.error.detail["solve_path"] == "revision_eo"
+    assert result.error.detail["exception"] == "AdmissibilityRefusal"  # ADR 0076: deliberate
     assert text not in str(result.error.as_document())  # D9 (4): the text goes to the log only
     assert f"verifier refused: {text}" in caplog.messages
     assert result.outputs == () and not (app.files_root / "jobs" / job.job_id / "bundle").exists()
@@ -318,3 +329,48 @@ def test_the_nlp_host_outcome_is_unchanged(raiser: str) -> None:
         f"verifier_refused: {text}",
     )
     assert (point.state, point.certificate) == (None, None)
+
+
+# -- the ideal-K restatement (after the step) ------------------------------------------------------
+
+#: F0's RC bundle set as written at v0.3.0 (M7's corpus): the converged states of its runs.
+F0_BUNDLES = REPO_ROOT / "tests" / "fixtures" / "f0" / "v0.3.0-bundles"
+
+
+def _f0_temperatures_and_pressures() -> list[tuple[float, float]]:
+    """Every stream `(T, P)` in the F0 bundles' solution states, sorted: a superset of the lifted
+    splits' `(T, P)` (a split's temperature and pressure are stream variables of the state)."""
+    found: set[tuple[float, float]] = set()
+    for path in sorted(F0_BUNDLES.glob("*/*/artifacts/solution-state.json")):
+        variables = json.loads(path.read_text(encoding="utf-8"))["variables"]
+        for name, value in variables.items():
+            pressure = f"{name[:-2]}.P"
+            if name.endswith(".T") and pressure in variables:
+                found.add((float(value), float(variables[pressure])))
+    return sorted(found)
+
+
+F0_STATES = _f0_temperatures_and_pressures()
+
+
+def test_the_f0_bundles_hold_states() -> None:
+    """The K pin below is not vacuous: 44 bundles with a solution state, 59 distinct `(T, P)`."""
+    assert len(F0_STATES) == 59
+
+
+@pytest.mark.parametrize(("temperature", "pressure"), F0_STATES)
+def test_the_region_k_values_are_the_verifier_k_values_bitwise(
+    temperature: float, pressure: float
+) -> None:
+    """`_reference_k_values` restates `verify.checks.k_values` (R-016): bitwise equal K at every
+    F0 state, by `float.hex`; a refusal has the same text."""
+    provider = Syn001Provider()
+    try:
+        expected = [value.hex() for value in k_values(provider, temperature, pressure, CONTEXT)]
+    except VerifierError as error:
+        with pytest.raises(AdmissibilityRefusal) as refused:
+            _reference_k_values(provider, temperature, pressure, CONTEXT)
+        assert str(refused.value) == str(error)
+        return
+    found = [value.hex() for value in _reference_k_values(provider, temperature, pressure, CONTEXT)]
+    assert found == expected

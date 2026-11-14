@@ -17,6 +17,7 @@ import yaml
 from conftest import REPO_ROOT
 
 from openflowsheet.compiled import EvaluationContext
+from openflowsheet.models.lifted import AdmissibilityRefusal
 from openflowsheet.orchestrator.region import LiftedSplit, _admissible
 from openflowsheet.thermo.wilson_ig import WilsonIdealGasProvider
 
@@ -103,10 +104,10 @@ def test_an_empty_side_is_admissible_with_value_zero(regime: str) -> None:
 
 
 @pytest.mark.parametrize(("regime", "side"), [("LIQUID", "liquid"), ("VAPOR", "vapor")])
-def test_a_provider_refusal_is_a_verifier_error(regime: str, side: str) -> None:
-    """Outside the records' T domain the provider refuses; the screen's refusal (its class is
-    pinned after ADR 0076 I-15's step, which replaces `VerifierError` in the region)."""
-    with pytest.raises(RuntimeError, match="the kernel refused F's regime"):
+def test_a_provider_refusal_is_an_admissibility_refusal(regime: str, side: str) -> None:
+    """Outside the records' T domain the provider refuses; the region raises its own
+    `AdmissibilityRefusal` (ADR 0076 I-15), not the verifier's `VerifierError`."""
+    with pytest.raises(AdmissibilityRefusal, match="the kernel refused F's regime"):
         _admissible(PROVIDER, CONTEXT, SPLIT, regime, _state(side, Z, 250.0), 0.0)  # type: ignore[arg-type]
 
 
