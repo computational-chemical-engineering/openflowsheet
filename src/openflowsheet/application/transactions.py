@@ -21,21 +21,26 @@ the old answer, which is what K06's key-only lookup did.
 **Atomic grouping.** A `ChangeSet` applies whole or not at all, so a draft is never left half
 edited by a failure in the middle.
 
-**T07.** The transaction core — `apply_edits` and `semantic_diff` here, persistence and the
-ledger in `LocalApplication.commit_change` — is shared: K06's `Application` below is a thin
-façade over an in-memory `LocalApplication`, and `Edit`, `ChangeSet`, `SemanticDiff` and
-`TransactionResult` are the contract's own types, re-exported from here.
+**T07.** The transaction core — `apply_edits` and `semantic_diff` in `revision_edits` (S17 R2,
+re-exported here), persistence and the ledger in `LocalApplication.commit_change` — is shared:
+K06's `Application` below is a thin façade over an in-memory `LocalApplication`, and `Edit`,
+`ChangeSet`, `SemanticDiff` and `TransactionResult` are the contract's own types, re-exported
+from here.
 """
 
 from __future__ import annotations
 
-import copy
-from collections.abc import Mapping, Sequence
 from dataclasses import replace
-from typing import TYPE_CHECKING, Any, Final
+from typing import TYPE_CHECKING
 
+from openflowsheet.application.revision_edits import ELEMENT_MEMBERS as ELEMENT_MEMBERS
+from openflowsheet.application.revision_edits import EditPathError as EditPathError
+from openflowsheet.application.revision_edits import apply_edits as apply_edits
+from openflowsheet.application.revision_edits import element_diff as element_diff
+from openflowsheet.application.revision_edits import json_pointer as json_pointer
+from openflowsheet.application.revision_edits import revision_diff as revision_diff
+from openflowsheet.application.revision_edits import semantic_diff as semantic_diff
 from openflowsheet.application.revisions import (
-    CONTENT_HASH_EXCLUDED,
     Revision,
     RevisionError,
 )
@@ -43,7 +48,6 @@ from openflowsheet.application.store import AuditEntry
 from openflowsheet.application.types import (
     ChangeSet,
     DiffElement,
-    DiffMember,
     Edit,
     EditOperation,
     SemanticDiff,
@@ -73,199 +77,6 @@ __all__ = [
     "revision_diff",
     "semantic_diff",
 ]
-
-
-# ==================================================================== the transaction core
-
-
-class EditPathError(ValueError):
-    """§5.2 `edit_path_invalid`: edit `edit_index` cannot be applied at `pointer`."""
-
-    def __init__(self, edit_index: int, pointer: str, reason: str) -> None:
-        super().__init__(f"edit {edit_index} at {pointer or '/'}: {reason}")
-        self.edit_index = edit_index
-        self.pointer = pointer
-        self.reason = reason
-
-
-def json_pointer(path: Sequence[str | int]) -> str:
-    """RFC 6901: `/`-joined, `~` as `~0` and `/` as `~1`."""
-    return "".join("/" + str(part).replace("~", "~0").replace("/", "~1") for part in path)
-
-
-def apply_edits(base: Mapping[str, Any], edits: Sequence[Edit]) -> dict[str, Any]:
-    """Apply `edits` in order to a copy of `base`; `EditPathError` names the first bad one.
-
-    §5.2: strings index objects and integers index arrays. `set` on an object key creates or
-    replaces it, creating missing *object* parents (K06); on an array index the index must
-    exist. `append` needs an existing array at its path. `remove` on an object key removes it,
-    and an absent key — or an absent parent — is a no-op (K06); on an array index the index must
-    exist and later elements shift down. Anything else is refused, never guessed at.
-
-    Applied to a copy: a failure part way through leaves the base untouched, which is what
-    "grouped atomically" has to mean for a draft nobody wants half-edited.
-    """
-    document = copy.deepcopy(dict(base))
-    for index, edit in enumerate(edits):
-        _apply(document, edit, index)
-    return document
-
-
-def _apply(document: dict[str, Any], edit: Edit, index: int) -> None:
-    path = edit.path
-    walk = path if edit.operation == "append" else path[:-1]
-    node: Any = document
-    for depth, key in enumerate(walk):
-        here = json_pointer(path[: depth + 1])
-        if isinstance(node, dict):
-            if not isinstance(key, str):
-                raise EditPathError(index, here, "an integer indexes an array; this is an object")
-            if key not in node:
-                following = path[depth + 1] if depth + 1 < len(path) else None
-                if edit.operation == "remove":
-                    return  # an absent parent holds no key to remove
-                if edit.operation == "set" and isinstance(following, str):
-                    node[key] = {}
-                else:
-                    raise EditPathError(index, here, "no such member")
-        elif isinstance(node, list):
-            if not isinstance(key, int):
-                raise EditPathError(index, here, "a string indexes an object; this is an array")
-            if key >= len(node):
-                raise EditPathError(index, here, f"index {key} is past the array's {len(node)}")
-        else:
-            raise EditPathError(index, here, "the path runs through a scalar")
-        node = node[key]
-
-    if edit.operation == "append":
-        if not isinstance(node, list):
-            raise EditPathError(index, json_pointer(path), "append needs an array here")
-        node.append(copy.deepcopy(edit.value))
-        return
-
-    last = path[-1]
-    here = json_pointer(path)
-    if isinstance(node, dict):
-        if not isinstance(last, str):
-            raise EditPathError(index, here, "an integer indexes an array; this is an object")
-        if edit.operation == "set":
-            node[last] = copy.deepcopy(edit.value)
-        else:
-            node.pop(last, None)
-    elif isinstance(node, list):
-        if not isinstance(last, int):
-            raise EditPathError(index, here, "a string indexes an object; this is an array")
-        if last >= len(node):
-            raise EditPathError(index, here, f"index {last} is past the array's {len(node)}")
-        if edit.operation == "set":
-            node[last] = copy.deepcopy(edit.value)
-        else:
-            del node[last]
-    else:
-        raise EditPathError(index, json_pointer(path[:-1]), "the path runs through a scalar")
-
-
-def semantic_diff(before: Mapping[str, Any], after: Mapping[str, Any]) -> SemanticDiff:
-    """Paths added, removed and changed in the revision's content.
-
-    Descriptive fields are excluded on purpose: two revisions differing only in their title are
-    the same process, and a diff that said otherwise would make every retitle look like an
-    edit to the model.
-    """
-    added: list[str] = []
-    removed: list[str] = []
-    changed: list[str] = []
-
-    def walk(left: Any, right: Any, path: str) -> None:
-        if isinstance(left, Mapping) and isinstance(right, Mapping):
-            for key in sorted(set(left) | set(right)):
-                if not path and key in CONTENT_HASH_EXCLUDED:
-                    continue
-                where = f"{path}.{key}" if path else key
-                if key not in left:
-                    added.append(where)
-                elif key not in right:
-                    removed.append(where)
-                else:
-                    walk(left[key], right[key], where)
-        elif left != right:
-            changed.append(path)
-
-    walk(before, after, "")
-    return SemanticDiff(tuple(added), tuple(removed), tuple(changed))
-
-
-#: ADR 0019 Amendment 3 (A3.2): the members `element_diff` pairs, in its order.
-ELEMENT_MEMBERS: Final[tuple[DiffMember, ...]] = ("instances", "connections", "specifications")
-
-
-def _by_id(items: Any) -> dict[str, Any] | None:
-    """`items` keyed by `id` when it is a list of objects each with a string `id`, unique; else
-    `None` (the member cannot be paired)."""
-    if not isinstance(items, list):
-        return None
-    keyed: dict[str, Any] = {}
-    for item in items:
-        if not isinstance(item, Mapping) or not isinstance(item.get("id"), str):
-            return None
-        if item["id"] in keyed:
-            return None
-        keyed[item["id"]] = item
-    return keyed
-
-
-def _item_paths(left: Any, right: Any) -> tuple[tuple[str, ...], ...]:
-    """Every path `semantic_diff`'s walk reports inside one item — keys added, keys removed,
-    values changed; objects recursed by key, every other value compared atomically — as key
-    tuples from the item's root, in code-point order."""
-    paths: list[tuple[str, ...]] = []
-
-    def walk(old: Any, new: Any, path: tuple[str, ...]) -> None:
-        if isinstance(old, Mapping) and isinstance(new, Mapping):
-            for key in set(old) | set(new):
-                if key not in old or key not in new:
-                    paths.append((*path, key))
-                else:
-                    walk(old[key], new[key], (*path, key))
-        elif old != new:
-            paths.append(path)
-
-    walk(left, right, ())
-    return tuple(sorted(paths))
-
-
-def element_diff(before: Mapping[str, Any], after: Mapping[str, Any]) -> tuple[DiffElement, ...]:
-    """ADR 0019 Amendment 3 (A3.2; M06 design note §4.2): the items of `instances`,
-    `connections` and `specifications` that differ, paired by `id`. `diff_revisions`'s only.
-
-    Where every item of a member is an object with a string `id`, unique, in both revisions: an id
-    only in `after` is `added`, only in `before` `removed`, in both with unequal items `changed`
-    with its `paths`. Otherwise a member that differs is one entry with `id` `None`. Items that
-    differ only in order give no entry (the coarse `changed` still names the member). Ordered by
-    member, then by `id` in code-point order. No member is excluded inside an item:
-    `CONTENT_HASH_EXCLUDED` is top-level only."""
-    elements: list[DiffElement] = []
-    for member in ELEMENT_MEMBERS:
-        old, new = before.get(member), after.get(member)
-        left, right = _by_id(old), _by_id(new)
-        if left is None or right is None:
-            if old != new:
-                elements.append(DiffElement(member, None, "changed"))
-            continue
-        for item_id in sorted(set(left) | set(right)):
-            if item_id not in left:
-                elements.append(DiffElement(member, item_id, "added"))
-            elif item_id not in right:
-                elements.append(DiffElement(member, item_id, "removed"))
-            elif left[item_id] != right[item_id]:
-                paths = _item_paths(left[item_id], right[item_id])
-                elements.append(DiffElement(member, item_id, "changed", paths))
-    return tuple(elements)
-
-
-def revision_diff(before: Mapping[str, Any], after: Mapping[str, Any]) -> SemanticDiff:
-    """`diff_revisions`'s result: `semantic_diff`, unchanged, with its `elements`."""
-    return replace(semantic_diff(before, after), elements=element_diff(before, after))
 
 
 # ================================================================ K06's façade over the core

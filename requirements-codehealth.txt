@@ -1,0 +1,13 @@
+# S17: cce-code-health, the code-health measuring tool and behaviour gate (`codehealth`) for the
+# refactor campaigns (docs/code-health.md, docs/S17_DECISIONS.md). A development tool only: it is
+# not a package extra, never ships in the wheel and is never imported by src/. It runs from its own
+# environment and needs no OpenFlowsheet install for its static analysis (scan, diff, hotspots);
+# the gate's command tiers call the project environment (.venv) themselves. Install it with
+#     python3.13 -m venv .venv-codehealth
+#     .venv-codehealth/bin/python -m pip install -r requirements-codehealth.txt
+# pip's hash mode cannot take a VCS URL, so the full commit SHA is the content pin of the tool, and
+# its one dependency, complexipy (the cognitive-complexity scorer behind every debt number), is
+# pinned by version so that the recorded baseline does not drift (S17 DECISION D2). This file is
+# outside the release identity: run manifests record requirements.lock's hash only (R-140).
+cce-code-health @ git+https://github.com/computational-chemical-engineering/cce-code-health@a34015853daf4fb750b9e097f48080ec13a0001c
+complexipy==8.3.0

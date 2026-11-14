@@ -1,0 +1,221 @@
+# S17: cce-code-health configuration (docs/code-health.md). Format: the docstring of
+# cce_code_health/gate.py at the commit requirements-codehealth.txt pins. The gate reads this file
+# from the base commit, so a step cannot loosen its own gate, and `.codehealth/*` is always forbidden
+# in a step: change this file in a separate commit, never inside a campaign step.
+schema = 1
+profile = "python@0"
+
+[scope]
+# fnmatch on repository paths; '*' also matches '/'. Only .py files are in scope, and a step may
+# touch only in-scope files.
+include = ["src/openflowsheet/application/*"]
+
+[gate]
+# F0's 35 M9 modules (benchmarks/f0/corpus.json): run in the base tree, so the registered list.
+frozen_cmd = "python3 scripts/codehealth_frozen.py"
+frozen = [
+    "schemas/*",
+    "src/openflowsheet/application/bindings/descriptions/*",
+    "src/openflowsheet/messages/catalogue/*",
+    "src/openflowsheet/**/*.md",
+    "src/openflowsheet/**/*.yaml",
+    "benchmarks/f0/*",
+]
+forbid = ["tests/*", "benchmarks/*", "requirements*", "pyproject.toml", "evidence/*", "schemas/*"]
+literals = true
+public_api = true
+
+[gate.env]
+PYTHONHASHSEED = "0"
+OMP_NUM_THREADS = "1"
+OPENBLAS_NUM_THREADS = "1"
+MKL_NUM_THREADS = "1"
+
+# Every tier runs in the tree under test (the head worktree, or the self-test's). The project
+# environment is the main checkout's .venv, found through the git common directory so that it
+# resolves from any worktree; OPENFLOWSHEET_VENV overrides it. PYTHONPATH=src makes each Python
+# tier import the tree under test, not the editable install's checkout (docs/code-health.md).
+# `behaviour = false`: a lint or type failure never counts as detecting the self-test's mutation.
+# `timeout` (s): a hung tier fails as exit 124 (S17 D9; a mutation can leave a job queued and a
+# test waiting forever, as in S16's recall). `detect_exit` (S17 D13): in the self-test only a
+# test failure (1) or a timeout (124) counts as detecting the mutation, any other code is an error.
+# `tests` has the widest limit: a fallback runs the
+# full suite (about 15 min with 12 workers).
+
+[[gate.tier]]
+name = "ruff"
+timeout = 300
+kind = "command"
+cadence = "step"
+behaviour = false
+cmd = 'V="${OPENFLOWSHEET_VENV:-$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")/.venv}/bin"; "$V/ruff" check {files} && "$V/ruff" format --check {files}'
+
+[[gate.tier]]
+name = "mypy"
+timeout = 900
+kind = "command"
+cadence = "step"
+behaviour = false
+# Unrestricted, as scripts/check.sh runs it (S17 D4): warm, it takes under a second, and a
+# restricted run would not check the callers of a changed private helper.
+cmd = 'V="${OPENFLOWSHEET_VENV:-$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")/.venv}/bin"; "$V/mypy"'
+
+[[gate.tier]]
+name = "tests"
+timeout = 3600
+kind = "command"
+cadence = "step"
+detect_exit = [1, 124]
+# S16's test-impact selection (S17 D11, D13). It runs in the test-map venv (pytest-xdist and
+# pytest-timeout; OPENFLOWSHEET_TESTMAP_VENV overrides it) under 12 workers, with a 900 s limit
+# per test. The map is of the campaign base, {ref_base} (`gate --ref-base`; default {base}): the
+# selection is then cumulative since that base, a superset of the step's own.
+cmd = 'V="${OPENFLOWSHEET_TESTMAP_VENV:-$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")/.venv-testmap}/bin"; PYTHONPATH=src "$V/python" scripts/test_impact.py run --base {ref_base} --workers 12 -- --timeout=900'
+
+[[gate.tier]]
+name = "f0"
+timeout = 1800
+kind = "command"
+cadence = "step"
+detect_exit = [1, 124]
+cmd = 'V="${OPENFLOWSHEET_VENV:-$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")/.venv}/bin"; PYTHONPATH=src "$V/python" scripts/corpus_identity.py --check'
+
+[[gate.tier]]
+name = "mcp_digest"
+timeout = 600
+kind = "command"
+cadence = "step"
+detect_exit = [1, 124]
+cmd = 'V="${OPENFLOWSHEET_VENV:-$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")/.venv}/bin"; PYTHONPATH=src "$V/python" -m pytest -q -p no:cacheprovider tests/test_t08_w2_surface_digest.py tests/test_m07a_surface_chain.py'
+
+# No campaign-cadence tier (S17 D5): the repository runs scripts/gate.sh only before a release
+# candidate, and CI green on both architectures is the merge condition, so CI on x86-64 and aarch64
+# is the campaign-end check (docs/code-health.md).
+
+# S17 D20: layering ratchet (design note and plan review in the campaign record).
+[architecture]
+# S17 D18 ratchet (design note S17-architecture.md section 2). Imports are read at every nesting
+# level; `if TYPE_CHECKING:` imports are ignored. A layer entry is one module; `layers` is a
+# total order, top to bottom, and an importer may not import a module listed above it. The
+# order states the target architecture: the violations recorded at adoption are the ones the
+# planned splits remove (S17 R1 to R5).
+# Violations recorded at adoption (11), each with the step that removes it (plan review, S17):
+#   types -> validation, store -> validation, authz -> validation       R1 split-validation-report
+#   local -> transactions, revision_continuation -> transactions        R2 split-revision-edits
+#   column_binding -> revision_binding, thermal_binding -> revision_binding   R3 split-revision-binding
+#   revision_binding -> binding                                          R4 split-binding-common
+#   jobs.worker -> jobs.executor                                         R5 (move _defect, refactor mode)
+#   types -> contract, revision_run -> validation                        stay: interface package (D19 items D3, D4)
+# A violation is keyed by module pair: the two that stay absorb any new import between the same pair.
+roots = ["src"]
+type_checking = false
+cycle_depth = 4
+
+[[architecture.layers]]
+name = "application-layers"
+order = [
+    # surfaces
+    "openflowsheet.application.cli",
+    "openflowsheet.application.serving",
+    "openflowsheet.application.bindings",
+    # facade: K06's Application over LocalApplication, then LocalApplication
+    "openflowsheet.application.transactions",
+    "openflowsheet.application.local",
+    # services
+    "openflowsheet.application.jobs.executor",
+    "openflowsheet.application.jobs.worker",
+    "openflowsheet.application.jobs.runner",
+    "openflowsheet.application.admission",
+    "openflowsheet.application.stream_table_format",
+    "openflowsheet.application.stream_table",
+    "openflowsheet.application.capabilities",
+    "openflowsheet.application.operations",
+    # revision engine: validator, routes and runs, binders
+    "openflowsheet.application.replacement",
+    "openflowsheet.application.trust_region_parent",
+    "openflowsheet.application.validation",
+    "openflowsheet.application.revision_routes",
+    "openflowsheet.application.revision_run",
+    "openflowsheet.application.revision_continuation",
+    "openflowsheet.application.structure_index",
+    "openflowsheet.application.coupled_run",
+    "openflowsheet.application.binding",
+    "openflowsheet.application.revision_binding",
+    "openflowsheet.application.model_builders",
+    "openflowsheet.application.column_binding",
+    "openflowsheet.application.thermal_binding",
+    "openflowsheet.application.model_signatures",
+    # persistence
+    "openflowsheet.application.authz",
+    "openflowsheet.application.store",
+    # edit algebra and binder vocabulary (S17 R2, R4)
+    "openflowsheet.application.revision_edits",
+    "openflowsheet.application.binding_common",
+    # contract vocabulary
+    "openflowsheet.application.projection",
+    "openflowsheet.application.contract",
+    "openflowsheet.application.types",
+    # foundation
+    "openflowsheet.application.policies",
+    "openflowsheet.application.revisions",
+    "openflowsheet.application.jobs.interrupt",
+    "openflowsheet.application.jobs.model",
+    "openflowsheet.application.validation_report",
+]
+
+[[architecture.forbid]]
+name = "transports-through-operations"
+from = ["openflowsheet.application.bindings"]
+to = [
+    "openflowsheet.application.cli",
+    "openflowsheet.application.serving",
+    "openflowsheet.application.transactions",
+    "openflowsheet.application.local",
+    "openflowsheet.application.jobs.executor",
+    "openflowsheet.application.jobs.worker",
+    "openflowsheet.application.jobs.runner",
+    "openflowsheet.application.admission",
+    "openflowsheet.application.stream_table_format",
+    "openflowsheet.application.stream_table",
+    "openflowsheet.application.capabilities",
+    "openflowsheet.application.replacement",
+    "openflowsheet.application.trust_region_parent",
+    "openflowsheet.application.validation",
+    "openflowsheet.application.revision_routes",
+    "openflowsheet.application.revision_run",
+    "openflowsheet.application.revision_continuation",
+    "openflowsheet.application.structure_index",
+    "openflowsheet.application.coupled_run",
+    "openflowsheet.application.binding",
+    "openflowsheet.application.revision_binding",
+    "openflowsheet.application.column_binding",
+    "openflowsheet.application.thermal_binding",
+    "openflowsheet.application.authz",
+    "openflowsheet.application.store",
+    "openflowsheet.application.model_builders",
+    "openflowsheet.application.model_signatures",
+    "openflowsheet.application.revision_edits",
+    "openflowsheet.application.binding_common",
+]
+reason = "bindings/__init__.py: each binding reads operations.OPERATIONS, goes through operations.dispatch and adds nothing (T07 design note 11.6)"
+
+[[architecture.forbid]]
+name = "engine-not-persistence"
+from = [
+    "openflowsheet.application.replacement",
+    "openflowsheet.application.trust_region_parent",
+    "openflowsheet.application.validation",
+    "openflowsheet.application.revision_routes",
+    "openflowsheet.application.revision_run",
+    "openflowsheet.application.revision_continuation",
+    "openflowsheet.application.structure_index",
+    "openflowsheet.application.coupled_run",
+    "openflowsheet.application.binding",
+    "openflowsheet.application.revision_binding",
+    "openflowsheet.application.column_binding",
+    "openflowsheet.application.thermal_binding",
+    "openflowsheet.application.model_builders",
+    "openflowsheet.application.model_signatures",
+]
+to = ["openflowsheet.application.store", "openflowsheet.application.authz"]
+reason = "the revision engine computes; persistence and authorization belong to the services above it (no engine module imports them at run time today; revision_continuation.py:57 is under TYPE_CHECKING) (S17 plan review)"

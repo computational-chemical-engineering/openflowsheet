@@ -224,9 +224,8 @@ def _run(
     hooks: _TestHooks | None,
 ) -> None:
     # Imported here, after the redirection: what these imports print belongs in the log.
-    from openflowsheet.application.jobs.executor import _defect
     from openflowsheet.application.jobs.interrupt import interruptible
-    from openflowsheet.application.jobs.runner import RunContext, WorkerResult, execute
+    from openflowsheet.application.jobs.runner import RunContext, WorkerResult, _defect, execute
     from openflowsheet.application.store import ProjectStore
 
     store = ProjectStore.open(directory)

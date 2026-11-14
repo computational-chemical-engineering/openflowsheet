@@ -280,6 +280,8 @@ def _per_component(
 
 
 def _csv_rows(document: Mapping[str, Any]) -> Iterator[list[str]]:
+    """`to_csv`'s rows: the header, then for each (stream, substream) in document order its
+    `_total_row` and a `_phase_row` per phase."""
     units = _display_units(document)
     components = [component["id"] for component in document["components"]]
     yield [
@@ -292,38 +294,64 @@ def _csv_rows(document: Mapping[str, Any]) -> Iterator[list[str]]:
             listed = substream["components"]
             head = [stream["id"], substream["id"]]
             conditions = [_cell(_shown(stream, "stream", m, units)[0]) for m in ("T", "P")]
-            total = [
-                ""
-                if column == "phase_fraction_molar"
-                else _cell(_shown(substream, "substream", member, units)[0])
-                for column, member in _CSV_MEMBERS.items()
-            ]
-            yield [
-                *head,
-                "",
-                "",
-                "",
-                *conditions,
-                *total,
-                *_per_component(components, substream, listed, "substream", units),
-            ]
+            yield _total_row(head, conditions, substream, listed, components, units)
             for phase in substream["phases"]:
-                identity = phase["id"]
-                values = [
-                    ""
-                    if column.startswith("vapor_fraction")
-                    else _cell(_shown(phase, "phase", member, units)[0])
-                    for column, member in _CSV_MEMBERS.items()
-                ]
-                yield [
-                    *head,
-                    identity["family"],
-                    _text_cell(identity["qualifier"]),
-                    _text_cell(identity["ordinal"]),
-                    *conditions,
-                    *values,
-                    *_per_component(components, phase, listed, "phase", units),
-                ]
+                yield _phase_row(head, conditions, phase, listed, components, units)
+
+
+def _total_row(
+    head: list[str],
+    conditions: list[str],
+    substream: Mapping[str, Any],
+    listed: Sequence[str],
+    components: Sequence[str],
+    units: Mapping[str, str],
+) -> list[str]:
+    """A substream's total row: `head`, empty phase columns, the stream's `conditions`, the
+    substream's quantities (an empty `phase_fraction_molar`) and its per-component cells."""
+    total = [
+        ""
+        if column == "phase_fraction_molar"
+        else _cell(_shown(substream, "substream", member, units)[0])
+        for column, member in _CSV_MEMBERS.items()
+    ]
+    return [
+        *head,
+        "",
+        "",
+        "",
+        *conditions,
+        *total,
+        *_per_component(components, substream, listed, "substream", units),
+    ]
+
+
+def _phase_row(
+    head: list[str],
+    conditions: list[str],
+    phase: Mapping[str, Any],
+    listed: Sequence[str],
+    components: Sequence[str],
+    units: Mapping[str, str],
+) -> list[str]:
+    """A phase row: `head`, the phase's identity, the stream's `conditions` repeated, the
+    phase's quantities (empty vapour-fraction columns) and its per-component cells."""
+    identity = phase["id"]
+    values = [
+        ""
+        if column.startswith("vapor_fraction")
+        else _cell(_shown(phase, "phase", member, units)[0])
+        for column, member in _CSV_MEMBERS.items()
+    ]
+    return [
+        *head,
+        identity["family"],
+        _text_cell(identity["qualifier"]),
+        _text_cell(identity["ordinal"]),
+        *conditions,
+        *values,
+        *_per_component(components, phase, listed, "phase", units),
+    ]
 
 
 def to_csv(document: Mapping[str, Any]) -> str:

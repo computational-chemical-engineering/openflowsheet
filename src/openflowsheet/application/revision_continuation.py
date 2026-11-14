@@ -38,8 +38,8 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Final
 
 from openflowsheet.application.revision_binding import RevisionBinding, bind_revision_flowsheet
+from openflowsheet.application.revision_edits import ELEMENT_MEMBERS, element_diff
 from openflowsheet.application.revisions import CONTENT_HASH_EXCLUDED
-from openflowsheet.application.transactions import ELEMENT_MEMBERS, element_diff
 from openflowsheet.canonical import canonical_json
 from openflowsheet.orchestrator.execution import declaration_identity
 from openflowsheet.orchestrator.revision_continuation import (
@@ -192,6 +192,60 @@ class ContinuationSource:
 # -- A3: the continuable differences (§5.4) -------------------------------------------------------
 
 
+def not_continuable(
+    source_document: Mapping[str, Any], target_document: Mapping[str, Any]
+) -> str | None:
+    """A3: the first difference §5.4 does not allow, as `not_continuable(<member>[:<id>[:<path>]])`,
+    or `None` when every difference is a continuable one.
+
+    Top-level members first, in code-point order (a changed member outside
+    `CONTINUABLE_MEMBERS` and `element_diff`'s three); then `element_diff`'s elements in its order
+    — member, id — and within an element its paths in code-point order. `connections` are never
+    continuable; an added or removed item never is; an unpairable member is named alone.
+
+    The two orders are `_member_difference` and `_element_difference`."""
+    found = _member_difference(source_document, target_document)
+    if found is not None:
+        return found
+    return _element_difference(source_document, target_document)
+
+
+def _member_difference(
+    source_document: Mapping[str, Any], target_document: Mapping[str, Any]
+) -> str | None:
+    """The first top-level member, in code-point order, that is outside `CONTINUABLE_MEMBERS` and
+    `element_diff`'s three and is added, removed or changed, as `not_continuable(<member>)`; `None`
+    when there is none."""
+    for key in sorted(set(source_document) | set(target_document)):
+        if key in CONTINUABLE_MEMBERS or key in ELEMENT_MEMBERS:
+            continue
+        if key not in source_document or key not in target_document:
+            return f"not_continuable({key})"
+        if source_document[key] != target_document[key]:
+            return f"not_continuable({key})"
+    return None
+
+
+def _element_difference(
+    source_document: Mapping[str, Any], target_document: Mapping[str, Any]
+) -> str | None:
+    """The first of `element_diff`'s elements, in its order, that §5.4 does not allow: an
+    unpairable member as `not_continuable(<member>)`, an added or removed item as
+    `not_continuable(<member>:<id>)`, a changed item's first offending path (`_offending_path`)
+    as `not_continuable(<member>:<id>:<path>)`; `None` when there is none."""
+    for element in element_diff(source_document, target_document):
+        member, item_id = element.member, element.id
+        if item_id is None:
+            return f"not_continuable({member})"
+        if element.change != "changed":
+            return f"not_continuable({member}:{item_id})"
+        (item,) = [entry for entry in target_document[member] if entry["id"] == item_id]
+        for path in element.paths:
+            if _offending_path(member, item, path):
+                return f"not_continuable({member}:{item_id}:{'.'.join(path)})"
+    return None
+
+
 def _offending_path(member: str, item: Mapping[str, Any], path: tuple[str, ...]) -> bool:
     """Whether one changed path of a paired `member` item is outside §5.4's allowlist."""
     if member == "specifications":
@@ -223,36 +277,6 @@ def _offending_path(member: str, item: Mapping[str, Any], path: tuple[str, ...])
             and path[-1] in CONTINUABLE_FIELDS
         )
     return True
-
-
-def not_continuable(
-    source_document: Mapping[str, Any], target_document: Mapping[str, Any]
-) -> str | None:
-    """A3: the first difference §5.4 does not allow, as `not_continuable(<member>[:<id>[:<path>]])`,
-    or `None` when every difference is a continuable one.
-
-    Top-level members first, in code-point order (a changed member outside
-    `CONTINUABLE_MEMBERS` and `element_diff`'s three); then `element_diff`'s elements in its order
-    — member, id — and within an element its paths in code-point order. `connections` are never
-    continuable; an added or removed item never is; an unpairable member is named alone."""
-    for key in sorted(set(source_document) | set(target_document)):
-        if key in CONTINUABLE_MEMBERS or key in ELEMENT_MEMBERS:
-            continue
-        if key not in source_document or key not in target_document:
-            return f"not_continuable({key})"
-        if source_document[key] != target_document[key]:
-            return f"not_continuable({key})"
-    for element in element_diff(source_document, target_document):
-        member, item_id = element.member, element.id
-        if item_id is None:
-            return f"not_continuable({member})"
-        if element.change != "changed":
-            return f"not_continuable({member}:{item_id})"
-        (item,) = [entry for entry in target_document[member] if entry["id"] == item_id]
-        for path in element.paths:
-            if _offending_path(member, item, path):
-                return f"not_continuable({member}:{item_id}:{'.'.join(path)})"
-    return None
 
 
 # -- A1, A2 and the candidate ---------------------------------------------------------------------

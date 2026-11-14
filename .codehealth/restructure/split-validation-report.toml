@@ -1,0 +1,113 @@
+# S17 restructure plan, APPROVED 2026-11-14 (design note .git/codehealth/design/S17-architecture.md, section 3, R1).
+# The orchestrator replaces approved_by after the reviewer's pass and commits this file as
+# .codehealth/restructure/split-validation-report.toml after work order 8 (D12: an added file sends every later gate
+# to the full suite). Names and lines re-measured at wp/S17 f3cef5cc (after WO5 263cbf44..cae099ae and 7cf38820,
+# WO7 e3a36046..02ce7453). Plan review of 2026-11-13 (runs/s17-review-plans.md): approved; its checks are below.
+#
+# HOW MEASURED. design/split_closure_r1r2.py (stdlib; `python3 -I split_closure_r1r2.py <tree>` on a `git archive`
+# copy of the base; exit 1 on a STOP hit). refs(S) = every ast.Name in top-level statement S that a non-import
+# top-level statement binds; the move set is the transitive closure of the 8 public names below. STOP checks: the
+# closure reaches none of validate, structural_checks, structural_analysis, structural_refusal, REQUIRED_KEYS,
+# PRODUCED_BY, _revision_id, _structural, _analysed, and the moved code imports nothing from
+# openflowsheet.application. No STOP hit: the closure is exactly the 8 seeds (no private name moves).
+#
+# MOVE to validation_report.py: 8 names, 8 statements, 93 lines (validation.py lines at f3cef5cc, `#:` comment
+# lines directly above a statement included), verbatim, in this order:
+#   Task 39, ValidationStatus 40, utc_timestamp 64-68, Stage 79-88, Result 89, EvidenceClass 90-92,
+#   Check 95-132 (decorator included), ValidationReport 135-168 (decorator included)
+# STAY in validation.py: every other top-level statement (42 besides imports, the TYPE_CHECKING block counted),
+#   among them all of WO7's helpers, each with its only callers: _static_check (_validate_optimization),
+#   _schema_stage (validate), _dimensions_check, _judged_specifications, _judged_parameters (_dimensions),
+#   _refused_checks (_structural), _with_hint (_judged_specifications, _judged_parameters). Four of them read
+#   moved names (Check; _schema_stage also Task and constructs ValidationReport) through validation's re-export
+#   bindings; no moved statement reads any staying name (closure above).
+# PRE-SPLIT COMMIT (WO7 follow-up, lands before this plan's config commit): `_with_hint` -> `_code_with_hint`, moved
+#   after `_judged_parameters`; validate's local `schema` -> `schema_outcome`. It touches validation.py below line
+#   170 only, so the line numbers above hold. Re-run split_closure_r1r2.py at the plan base: the partition must be
+#   the same 8 names; if it differs, this comment block is stale and the step stops.
+#
+# VALIDATION.PY AFTER THE STEP:
+#   cut the 5 spans 39-40, 64-68, 79-92, 95-132, 135-168 with the blank lines that separated them, so `ruff format
+#     --check` passes (it accepts the two blank lines left between the TYPE_CHECKING block and REQUIRED_KEYS's `#:`).
+#   imports: `from dataclasses import dataclass, field, replace` -> `from dataclasses import replace`; drop `Literal`
+#     from the typing import; add 8 re-exports `from openflowsheet.application.validation_report import N as N`,
+#     one statement each (ruff isort's output), directly above `from openflowsheet.canonical import
+#     first_noncanonical`, in the order Check, EvidenceClass, Result, Stage, Task, ValidationReport,
+#     ValidationStatus, utc_timestamp. The `if TYPE_CHECKING:` block is unchanged. validation.py has no __all__.
+#   The re-exports serve both the old import path and validation's own code (7 of the 8 names are read there;
+#     EvidenceClass only by importers).
+# NEW FILE validation_report.py: a module docstring (it holds the report vocabulary of blueprint §4.3 as the frozen
+#   schema fixes it: ValidationReport, Check, the Literal vocabularies Task, ValidationStatus, Stage, Result,
+#   EvidenceClass, and utc_timestamp, the timestamp the report's provenance, the store and authz stamp with; nothing
+#   is validated here; validation re-exports every name; it is a leaf so types, store and authz import it without the
+#   validator), `from __future__ import annotations`, then exactly: `from collections.abc import Mapping`,
+#   `from dataclasses import dataclass, field`, `from typing import Any, Literal`. No TYPE_CHECKING block, no
+#   __all__, no openflowsheet import. Then the 8 statements in the order above, separated as ruff format wants.
+# LAZY IMPORTS that move, unchanged and still inside their function: validation.py:66 (`from datetime import UTC,
+#   datetime`, in utc_timestamp). Every other lazy import stays (174, 184, 191, 236, 387-389, 399, 552, 613-624,
+#   707, 882-883, 1093-1094, 1125, 1153, 1195-1196).
+# RETARGETED (this commit, the only importers changed): types.py:47-51 (Check, Task, ValidationReport), store.py:55
+#   (utc_timestamp) and its comment at :54 (`validation.utc_timestamp` -> `validation_report.utc_timestamp`),
+#   authz.py:54 (utc_timestamp) -> openflowsheet.application.validation_report. NOT retargeted (old path until
+#   D19): local.py:146 (Task, ValidationReport; local also imports the validation module at :44, so the edge stays
+#   either way), contract.py:46 (under TYPE_CHECKING), tests, scripts/msg_catalogue.py:162, docs-site/api.
+# CONFIG COMMIT BEFORE THE STEP (D20; the step's parent, and the gate's --base): in [[architecture.layers]] order,
+#   "openflowsheet.application.validation_report" appended after "openflowsheet.application.jobs.model" (last).
+#   Not in the transports rule's `to` (vocabulary, like types) and not in engine-not-persistence `from`.
+#
+# PATCH / SETATTR / __module__ RISKS (AST scan of src, tests, scripts, benchmarks, examples at f3cef5cc; all safe):
+#   monkeypatch.setattr(validation, "ValidationReport", no_report) tests/test_t08_w2_unsupported.py:111: still
+#     effective, because every construction of ValidationReport stays in validation.py and reads its global there.
+#     Keep it so: no moved statement constructs ValidationReport (none does).
+#   monkeypatch.setattr(validation_module, "structural_checks") tests/test_t07_w3b_validation.py:258: reader stays.
+#   Outside readers of moved names through validation (13 import statements): contract.py:46, local.py:146,
+#     scripts/msg_catalogue.py:162, tests/test_msg_coverage.py:89, test_t06_w12_units_v2.py:36,
+#     test_t06_w1a_units.py:36, test_t06_w25_integers.py:35, test_t07_w3b_validation.py:50 and :243, plus the three
+#     retargeted ones: all bound through the re-exports, same objects.
+#   scripts/msg_catalogue.py:151 reads validation.py's TEXT for check ids `"XXX-NN"`: none is in a moved statement,
+#     so the G1 vocabulary is unchanged.
+#   __module__ of Check, ValidationReport and utc_timestamp becomes validation_report: nothing in src or tests
+#     compares it, nothing pickles them; scripts/test_impact_runtime.py:191 maps classes by __module__, so the S16
+#     test-impact map has no rows for the new file until rebuilt (selection falls back to the full suite, D12).
+#   Importing types, store or authz no longer imports validation (its module body is constants and defs only).
+#   docs-site/api/validation.md:3,5 (`::: openflowsheet.application.validation.ValidationReport` / `.Check`) become
+#     aliases: `mkdocs build --strict` must pass (measured below).
+#
+# EXPECTED `codehealth arch` (measured on the scratch simulation of f3cef5cc, config edited as above):
+#   base 39 files, 11 violations, 1 cycle 24 nodes 83 edges | after R1 40 files, 8 violations, 3 cycles
+#   (11 nodes 25 edges; {binding, column_binding, revision_binding, thermal_binding} 6; {contract, types} 2),
+#   33 edges, 0 warnings. Removed violations: types -> validation, store -> validation, authz -> validation.
+# SCRATCH VERIFICATION (2026-11-14; the step exactly as specified here, applied to a `git archive` copy of f3cef5cc
+#   whose parent commit held this plan and the config edit): `codehealth gate --mode restructure --base <that
+#   commit> --config <trial>` (the base config's static rules; tiers ruff, mypy and a focused tests tier) passed
+#   13/13: config, frozen, forbid, scope, plan, literals, public_api, architecture (3 violations removed),
+#   numeric-literals, debt 19.4 -> 19.4, ruff, mypy (src and benchmarks), tests: 792 passed in tests/
+#   test_t08_w2_unsupported, test_msg_coverage, test_t07_w3b_validation, test_t06_w25_integers, test_t06_w1a_units,
+#   test_t06_w12_units_v2, test_t07_types, test_t07_authz, test_k06_application, test_t07_s3_validation,
+#   test_m06_wo3_list_audit, test_t07_transactions, test_m06_wo2_diff_elements, test_rrc_continuation,
+#   test_rrc_application, test_adr_0002_a1_integers, test_t08_w2_surface_digest. ast.dump of all 50 non-import
+#   top-level statements identical base -> head (8 of them now in validation_report); string-literal multiset over
+#   the 5 touched files 1472 = 1472; all 40 application modules import; the 8 re-exports are the same objects as
+#   in validation_report; importing types, store or authz no longer imports validation. `mkdocs build --strict`
+#   (CI's install: requirements.lock, coolprop lock, the project, requirements-docs.txt): exit 0, no new warning,
+#   and docs-site/api/validation renders text-identical to the base build.
+#   NOT RUN: the full suite and f0 (the real gate's tiers); mcp_digest, whose
+#   tests/test_m07a_surface_chain.py::test_m07a_a37_registered_values_equal_their_sources runs `git show 5a350199`
+#   and fails on any copy without the history (test_t08_w2_surface_digest.py passed above).
+# DOCSTRING ROT: none (no moved docstring names its old module; validation.py's module docstring is about the
+#   validator and stays true).
+
+id = "split-validation-report"
+approved_by = "orchestrator (OpenFlowsheet-TR09 build lane) under Frank's delegation of 2026-11-13, S17 D18; plan reviews runs/s17-review-plans.md, runs/s17-review-plan-r3.md"
+reason = "validation.py is both the report vocabulary that types.py:47, store.py:55 and authz.py:54 import at module level and the validator that imports the revision engine inside functions (validation.py:387, 613-624); the vocabulary (8 names, 93 lines) moves to a leaf module and those three importers are retargeted: layer violations 11 -> 8, import-cycle edges 83 -> 33"
+new_files = ["src/openflowsheet/application/validation_report.py"]
+new_public = [
+    "src/openflowsheet/application/validation_report.py:Task",
+    "src/openflowsheet/application/validation_report.py:ValidationStatus",
+    "src/openflowsheet/application/validation_report.py:utc_timestamp",
+    "src/openflowsheet/application/validation_report.py:Stage",
+    "src/openflowsheet/application/validation_report.py:Result",
+    "src/openflowsheet/application/validation_report.py:EvidenceClass",
+    "src/openflowsheet/application/validation_report.py:Check",
+    "src/openflowsheet/application/validation_report.py:ValidationReport",
+]

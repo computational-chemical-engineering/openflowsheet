@@ -14,7 +14,7 @@ unknown event that ends the job is still seen to end it.
 
 `Edit`, `ChangeSet`, `SemanticDiff` and `TransactionResult` are defined here once and re-exported
 from K06's `transactions.py`, whose imports keep working; the transaction core that produces them
-lives there (W2b).
+(`apply_edits`, `semantic_diff`) lives in `revision_edits` (W2b; S17 R2).
 """
 
 from __future__ import annotations
@@ -44,7 +44,7 @@ from openflowsheet.application.jobs.model import (
     JobStatus,
     TerminalStatus,
 )
-from openflowsheet.application.validation import (
+from openflowsheet.application.validation_report import (
     Check,
     Task,
     ValidationReport,

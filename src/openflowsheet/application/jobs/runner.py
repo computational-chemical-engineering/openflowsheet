@@ -73,6 +73,7 @@ from __future__ import annotations
 
 import json
 import logging
+import sqlite3
 import time
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass, replace
@@ -104,8 +105,12 @@ from openflowsheet.application.jobs.model import (
     Interruption,
     TerminalStatus,
 )
-from openflowsheet.application.revision_binding import RevisionBinding
-from openflowsheet.application.revision_continuation import continues_revisions, find_source
+from openflowsheet.application.revision_binding import RevisionBinding, SurrogateResolver
+from openflowsheet.application.revision_continuation import (
+    ContinuationSource,
+    continues_revisions,
+    find_source,
+)
 from openflowsheet.application.revision_routes import REVISION_ROUTES
 from openflowsheet.application.revision_run import (
     Route,
@@ -133,10 +138,10 @@ from openflowsheet.application.types import (
 )
 from openflowsheet.canonical import canonical_json, directory_hash, file_sha256
 from openflowsheet.compiled import EvaluationContext
-from openflowsheet.orchestrator.trace import Trace
+from openflowsheet.orchestrator.trace import SolvePolicy, Trace
 from openflowsheet.orchestrator.warm_start import EXPLICIT, WARM_START_SOURCE, WarmStartCandidate
 from openflowsheet.run.bundle import ARTIFACT_DIR, MANIFEST_NAME, BundleError, read_artifact
-from openflowsheet.run.manifest import policy_sha256
+from openflowsheet.run.manifest import RunManifest, policy_sha256
 from openflowsheet.studies.nlp.replay import MANIFEST as OPTIMIZATION_MANIFEST
 from openflowsheet.studies.nlp.replay import is_optimization_record, replay_optimization
 from openflowsheet.studies.surrogate.iterations import predecessors as iteration_predecessors
@@ -256,6 +261,23 @@ class WorkerResult:
             run=document["run"],
             study=document.get("study"),
         )
+
+
+def _defect(error: Exception) -> WorkerResult:
+    """An exception that escaped the operation body: `failed`, with no text of it in the error
+    (D9 (4): the traceback goes to the log)."""
+    store = isinstance(error, sqlite3.Error)
+    return WorkerResult(
+        status="failed",
+        reason="store_error" if store else "operation_error",
+        interruption=None,
+        error=ApiError(
+            code="internal_error",
+            message=f"the job runner raised {type(error).__name__}; see the log",
+            retryable=store,
+            detail={"exception": type(error).__name__},
+        ),
+    )
 
 
 def warm_start_candidate(
@@ -578,6 +600,9 @@ class _Body:
     # -- solve --------------------------------------------------------------------------------
 
     def solve(self) -> WorkerResult:
+        """Run a solve job: resolve and bind its route, then the start sources (`_warm_start`,
+        `declared_coupled_start`, `_continuation`) and the experiments (`_experiments`), the
+        session, and the bundle (`_bundled_end`); a typed error ends it typed."""
         body = self.job.request.body
         assert isinstance(body, SolveBody)
         self.stages = SOLVE_STAGES
@@ -658,32 +683,9 @@ class _Body:
                     run,
                 )
             selected = bound
-            # ADR 0024 D2: the lookup is here, where the store is, and only when the policy opts
-            # in on the route that reads it; the orchestrator never reads the store. ADR 0070 D2:
-            # a declared `warm_start.job_id` is the candidate instead, on every route (the legacy
-            # route records it rejected).
-            warm_start = None
-            declared = body.warm_start.job_id if body.warm_start is not None else None
-            if declared is not None:
-                warm_start = explicit_warm_start_candidate(self.context, declared)
-            elif (
-                bound.solve_path in ("revision_eo", "revision_coupled")
-                and WARM_START_SOURCE in policy.initializer_chain
-            ):
-                warm_start = warm_start_candidate(self.context, self.job.job_id, body.revision_id)
+            warm_start = self._warm_start(body, bound, policy)
             coupled_start = declared_coupled_start(self.context, body.warm_start, bound)
-            # ADR 0072 (RRC design note §5.3): the nearest verified ancestor, found and assembled
-            # at the same site, iff the policy's edge 3 continues revisions on `revision_eo`.
-            continuation = None
-            if bound.solve_path == "revision_eo" and continues_revisions(policy):
-                continuation = find_source(
-                    store,
-                    self.context.root,
-                    self.job.job_id,
-                    body.revision_id,
-                    document,
-                    surrogates=surrogates,
-                )
+            continuation = self._continuation(body, bound, policy, document, surrogates)
             experiments = None
             if bound.solve_path == "revision_coupled":
                 experiments = self._experiments(sink, emit_records)
@@ -721,7 +723,89 @@ class _Body:
             return _typed_end(error, run, selected)
         except _FenceLost:
             return _failed(_error("internal_error", "fence_lost"), run, "owner_lost")
+        return self._bundled_end(directory, manifest, run, diagnoses)
 
+    def _warm_start(
+        self, body: SolveBody, bound: Route, policy: SolvePolicy
+    ) -> WarmStartCandidate | None:
+        """The solve's warm-start candidate on the route `bound`. ADR 0024 D2: the lookup is
+        here, where the store is, and only when `policy` opts in on the route that reads it; the
+        orchestrator never reads the store. ADR 0070 D2: a declared `warm_start.job_id` is the
+        candidate instead, on every route (the legacy route records it rejected). `None` when
+        nothing is declared and the policy does not opt in on a route that reads it, or when the
+        opted-in lineage has no verified solution (`warm_start_candidate`)."""
+        declared = body.warm_start.job_id if body.warm_start is not None else None
+        if declared is not None:
+            return explicit_warm_start_candidate(self.context, declared)
+        if (
+            bound.solve_path in ("revision_eo", "revision_coupled")
+            and WARM_START_SOURCE in policy.initializer_chain
+        ):
+            return warm_start_candidate(self.context, self.job.job_id, body.revision_id)
+        return None
+
+    def _continuation(
+        self,
+        body: SolveBody,
+        bound: Route,
+        policy: SolvePolicy,
+        document: dict[str, Any],
+        surrogates: SurrogateResolver,
+    ) -> ContinuationSource | None:
+        """ADR 0072 (RRC design note §5.3): the continuation source of the revision `document`
+        (the nearest verified ancestor, or the refusal §5.3 records in its `found`), found and
+        assembled here, where the store is, as the warm-start lookup is (ADR 0024 D2), iff the
+        policy's edge 3 continues revisions on `revision_eo`; `None` otherwise."""
+        if bound.solve_path == "revision_eo" and continues_revisions(policy):
+            return find_source(
+                self.context.store,
+                self.context.root,
+                self.job.job_id,
+                body.revision_id,
+                document,
+                surrogates=surrogates,
+            )
+        return None
+
+    def _experiments(self, sink: ArtifactSink, emit: Callable[[], None]) -> LiveExperiments:
+        """The coupled route's experiments (M02 design note §4.3, §6.1): one runner for the job —
+        one handshake per variant, frozen — recording into the project's experiment store through
+        the job's sink, its records emitted as outputs after each experiment. The provider is a
+        fresh, unmetered one: an experiment's property calls are its own (R-233)."""
+        runner = ExperimentRunner(
+            ExperimentStore(self.context.root, sink),
+            PrC1Provider(),
+            EvaluationContext(model_version=COUPLING_CONTEXT, constants_sha256="0" * 64),
+            job_id=self.job.job_id,
+            check=self.check,
+        )
+        return LiveExperiments(runner, on_evaluated=emit)
+
+    def _outer_iteration(self, k: int, max_outer: int) -> None:
+        """M02 design note §4.4: one progress event per outer iteration. Its counts are the
+        `solve` stage's — a job's progress total is fixed and its count never goes back (§6.3
+        rule 7) — and the iteration is named in `stage` (build log D54)."""
+        self._honour_interruption()
+        self._emit(
+            progress=Progress(
+                completed=self.stages.index("solve"),
+                total=len(self.stages),
+                stage=f"solve:outer {k + 1}/{max_outer}",
+            )
+        )
+
+    def _bundled_end(
+        self,
+        directory: Path,
+        manifest: RunManifest,
+        run: dict[str, Any] | None,
+        diagnoses: list[dict[str, Any]],
+    ) -> WorkerResult:
+        """A solve's end with a bundle, once its session has run into `directory`: register the
+        bundle, emit its judged artifact (the certificate, else the failure), its manifest and
+        the bundle itself as outputs, and complete the run record `run` from `manifest`, the
+        certificate's verdict and the last of `diagnoses` (MSG §4.6). A lost fence ends the job
+        `failed(owner_lost)`."""
         bundle, members = self._bundle(directory, f"{self.job.job_id}:bundle")
         by_name = {member.name: member for member in members}
         judged = by_name.get(CERTIFICATE) or by_name[FAILURE]
@@ -750,33 +834,6 @@ class _Body:
             interruption=None,
             error=None,
             run=run,
-        )
-
-    def _experiments(self, sink: ArtifactSink, emit: Callable[[], None]) -> LiveExperiments:
-        """The coupled route's experiments (M02 design note §4.3, §6.1): one runner for the job —
-        one handshake per variant, frozen — recording into the project's experiment store through
-        the job's sink, its records emitted as outputs after each experiment. The provider is a
-        fresh, unmetered one: an experiment's property calls are its own (R-233)."""
-        runner = ExperimentRunner(
-            ExperimentStore(self.context.root, sink),
-            PrC1Provider(),
-            EvaluationContext(model_version=COUPLING_CONTEXT, constants_sha256="0" * 64),
-            job_id=self.job.job_id,
-            check=self.check,
-        )
-        return LiveExperiments(runner, on_evaluated=emit)
-
-    def _outer_iteration(self, k: int, max_outer: int) -> None:
-        """M02 design note §4.4: one progress event per outer iteration. Its counts are the
-        `solve` stage's — a job's progress total is fixed and its count never goes back (§6.3
-        rule 7) — and the iteration is named in `stage` (build log D54)."""
-        self._honour_interruption()
-        self._emit(
-            progress=Progress(
-                completed=self.stages.index("solve"),
-                total=len(self.stages),
-                stage=f"solve:outer {k + 1}/{max_outer}",
-            )
         )
 
     # -- reproduce ----------------------------------------------------------------------------
@@ -1044,14 +1101,6 @@ class _Body:
         def remaining() -> float | None:
             return None if budget is None else budget - (time.monotonic() - began)
 
-        def progress(stage: str, info: Mapping[str, Any]) -> None:
-            if stage == "start":
-                self._step(1, f"starts:{info['start']}")
-            elif stage == "optimize":
-                self._step(2, f"optimize:{info['start']}")
-            elif stage == "record":
-                self.at("record")
-
         try:
             self.at("resolve")
             with store.reading() as connection:
@@ -1110,7 +1159,7 @@ class _Body:
                 policy_requested=body.policy_id,
                 check=self._honour_interruption,
                 interruptions=(JobInterrupted,),
-                progress=progress,
+                progress=self._optimize_progress,
                 surrogates=surrogate_resolver(store, self.context.root),
                 wall_time_remaining=remaining,
             )
@@ -1130,6 +1179,17 @@ class _Body:
         return WorkerResult(
             status="completed", reason="operation_completed", interruption=None, error=None
         )
+
+    def _optimize_progress(self, stage: str, info: Mapping[str, Any]) -> None:
+        """`optimize_revision`'s progress callback (§4.10): a per-start event (`_step`) as a
+        start begins and as its optimisation begins, and the `record` stage boundary (`at`);
+        any other stage emits nothing."""
+        if stage == "start":
+            self._step(1, f"starts:{info['start']}")
+        elif stage == "optimize":
+            self._step(2, f"optimize:{info['start']}")
+        elif stage == "record":
+            self.at("record")
 
     def _step(self, completed: int, stage: str) -> None:
         """A per-start progress event (§4.10), honouring an interruption first as `at` does."""

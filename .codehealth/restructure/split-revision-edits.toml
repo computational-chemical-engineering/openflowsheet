@@ -1,0 +1,113 @@
+# S17 restructure plan, APPROVED 2026-11-14 (design note .git/codehealth/design/S17-architecture.md, section 3, R2).
+# The orchestrator replaces approved_by after the reviewer's pass and commits this file as
+# .codehealth/restructure/split-revision-edits.toml after work order 8 (D12: an added file sends every later gate
+# to the full suite). Names and lines re-measured at wp/S17 f3cef5cc (after WO5 263cbf44..cae099ae and 7cf38820).
+# Runs after R1 (else the new module joins the large cycle). Plan review of 2026-11-13 (runs/s17-review-plans.md):
+# approved; its checks are below.
+#
+# HOW MEASURED. design/split_closure_r1r2.py (stdlib; `python3 -I split_closure_r1r2.py <tree>` on a `git archive`
+# copy of the base; exit 1 on a STOP hit). refs(S) = every ast.Name in top-level statement S that a non-import
+# top-level statement binds; the move set is the transitive closure of the 7 public names below. STOP checks: the
+# closure reaches none of Operation, RevisionStoreView, Application, __all__, and the moved code imports from
+# openflowsheet.application only revisions and types. No STOP hit.
+#
+# MOVE to revision_edits.py: 13 names, 13 statements, 200 lines (transactions.py lines at f3cef5cc), verbatim,
+#   in this order; together they are the one contiguous range 81-304:
+#   EditPathError 81-88, json_pointer 91-93, apply_edits 96-111, _apply 114-133, _ensure_member 136-160,
+#   _check_array_index 163-168, _apply_at 171-201, semantic_diff 204-231, ELEMENT_MEMBERS 234-235 (`#:` line
+#   included), _by_id 238-250, _item_paths 253-270, element_diff 273-299, revision_diff 302-304
+# WO5 helpers land with their callers and callees: _ensure_member, _check_array_index and _apply_at have the one
+#   caller _apply, whose one caller is apply_edits; they call only EditPathError and json_pointer, which move too.
+#   _by_id and _item_paths have the one caller element_diff. No moved statement reads a staying name.
+# STAY in transactions.py: `Operation`, `__all__` (untouched), RevisionStoreView, Application.
+# SECTION HEADER transactions.py:78 (`# ==== ... the transaction core`): deleted, not copied. No statement of
+#   transactions.py stays under it, and the new module's docstring says what the file holds. The header at :307
+#   (`# ==== ... K06's façade over the core`) stays.
+#
+# TRANSACTIONS.PY AFTER THE STEP:
+#   cut lines 78-306 (the header, the 13 statements and the blank lines down to the façade header), leaving the two
+#     blank lines between `__all__` and the façade header.
+#   imports: drop `import copy` and `from collections.abc import Mapping, Sequence`; `from typing import
+#     TYPE_CHECKING, Any, Final` -> `from typing import TYPE_CHECKING`; drop CONTENT_HASH_EXCLUDED from the
+#     revisions import and DiffMember from the types import. KEEP `from dataclasses import replace`
+#     (Application.commit), Revision, RevisionError, AuditEntry, ChangeSet, EditOperation, TransactionResult, and
+#     DiffElement, Edit, SemanticDiff (no code reads them any more, but `__all__` lists them, which satisfies F401;
+#     tests/test_t07_transactions.py:110 checks `transactions.<name> is types.<name>`).
+#   add 7 re-exports `from openflowsheet.application.revision_edits import N as N`, one statement each (ruff isort's
+#     output), directly above `from openflowsheet.application.revisions import (`, in the order ELEMENT_MEMBERS,
+#     EditPathError, apply_edits, element_diff, json_pointer, revision_diff, semantic_diff. The `if TYPE_CHECKING:`
+#     import of LocalApplication is unchanged.
+# NEW FILE revision_edits.py: a module docstring naming both halves (plan review): edits (apply_edits applies a
+#   change's Edits in order to a copy of a revision document; EditPathError names the first one that cannot be
+#   applied, §5.2; json_pointer writes its paths) and diffs (semantic_diff, element_diff by id per ADR 0019
+#   Amendment 3, revision_diff the two together); nothing here reads or writes a store; local and
+#   revision_continuation import from here and transactions re-exports for K06's callers. Then `from __future__
+#   import annotations` and exactly: `import copy`, `from collections.abc import Mapping, Sequence`, `from
+#   dataclasses import replace`, `from typing import Any, Final`, `from openflowsheet.application.revisions import
+#   CONTENT_HASH_EXCLUDED`, `from openflowsheet.application.types import DiffElement, DiffMember, Edit,
+#   SemanticDiff`. No TYPE_CHECKING block, no __all__. Then the 13 statements in the order above.
+# LAZY IMPORTS: none moves. Staying: transactions.py:384 (local.LocalApplication, in Application.__init__) and the
+#   TYPE_CHECKING import of LocalApplication (:54).
+# RETARGETED (this commit, the only importers changed): local.py:103-108 (EditPathError, apply_edits,
+#   revision_diff, semantic_diff) and revision_continuation.py:42 (ELEMENT_MEMBERS, element_diff) ->
+#   openflowsheet.application.revision_edits. local.py keeps importing BY NAME (`from ...revision_edits import
+#   EditPathError, apply_edits, revision_diff, semantic_diff`, wherever ruff isort places it), never as a module:
+#   tests/test_t08_w2_unsupported.py:150 patches `local.apply_edits`, read at call time by local.py:2045 (_prepare).
+#   NOT retargeted (old path until D19): tests/test_k06_application.py:32, tests/test_m06_wo2_diff_elements.py:24,
+#   scripts/k06_evidence_manifest.py:35 (it imports no moved name).
+# CONFIG COMMIT BEFORE THE STEP (D20; the step's parent, and the gate's --base): in [[architecture.layers]] order,
+#   "openflowsheet.application.revision_edits" directly after "openflowsheet.application.store", i.e. first under
+#   `# contract vocabulary`, before "openflowsheet.application.projection"; and appended to the
+#   transports-through-operations rule's `to` list (after "openflowsheet.application.store"). Not in
+#   engine-not-persistence `from` (it is not engine code).
+#
+# PATCH / SETATTR / __module__ RISKS (AST scan of src, tests, scripts, benchmarks, examples at f3cef5cc):
+#   monkeypatch.setattr(local, "apply_edits", no_build) tests/test_t08_w2_unsupported.py:150: still effective
+#     because local binds the name itself (above).
+#   Outside readers of moved names through transactions: tests/test_k06_application.py:32 (semantic_diff),
+#     tests/test_m06_wo2_diff_elements.py:24 (element_diff, revision_diff, semantic_diff), plus the two retargeted
+#     ones: re-exports, same objects. No private moved name is read outside transactions.py; nothing patches
+#     `transactions.<moved name>`.
+#   scripts/s16_recall.py:70, case `app-transactions-diff`, edits `            if old != new:` in transactions.py;
+#     after R2 that line is in revision_edits.py (element_diff), so a recall run whose --base is at or after R2
+#     exits "occurs 0 times in transactions.py". Outside D18's file limit; tests/test_s16_test_impact.py checks only
+#     case ids and `_apply` on a temp file, so no test fails. Retarget the case's path with the S16 map rebuild.
+#   __module__ of EditPathError and the six functions becomes revision_edits: local.py:2046 catches EditPathError
+#     by identity (same class object); nothing in src or tests compares __module__; scripts/test_impact_runtime.py:191
+#     maps classes by __module__, so the S16 map has no rows for the new file until rebuilt (full-suite fallback).
+#   scripts/k06_evidence_manifest.py:319 lists transactions.py as K06's source: a historical evidence generator,
+#     not rerun; leave it.
+#
+# EXPECTED `codehealth arch` (measured on the scratch simulation of f3cef5cc with R1 applied first, config edited
+#   for R1 and R2 as above): 41 files, 6 violations (column_binding -> revision_binding, jobs.worker ->
+#   jobs.executor, revision_binding -> binding, revision_run -> validation, thermal_binding -> revision_binding,
+#   types -> contract), 4 cycles {binding, column_binding, revision_binding, thermal_binding} 6 edges,
+#   {contract, types} 2, {jobs.executor, jobs.worker} 2, {revision_routes, revision_run, validation} 4: 14 edges,
+#   0 warnings. Removed violations: local -> transactions, revision_continuation -> transactions.
+# SCRATCH VERIFICATION (2026-11-14; on the R1 scratch head, committed, plus this plan and the R2 config edit as
+#   the step's parent; the step exactly as specified here): the restructure gate with the base config's static
+#   rules and tiers ruff, mypy and the same focused tests tier as R1 passed 13/13: config, frozen, forbid, scope,
+#   plan, literals, public_api, architecture (2 violations removed), numeric-literals, debt 61.7 -> 61.7, ruff,
+#   mypy (src and benchmarks), tests 792 passed. ast.dump of all 18 non-import top-level statements identical
+#   (13 now in revision_edits); string-literal multiset over the 4 touched files 574 = 574; all 40 application
+#   modules import; the 7 re-exports are the same objects as in revision_edits; `local.apply_edits is
+#   revision_edits.apply_edits` and `apply_edits` is in vars(local); importing local no longer imports
+#   transactions. No docs-site page points mkdocstrings at transactions (mkdocs not rerun for R2).
+#   NOT RUN: the full suite, f0 and mcp_digest (same reasons as R1).
+# DOCSTRING ROT left for the --no-gain docstring commit planned before R4 (moved docstrings are identity-gated):
+#   transactions.py:24-27 ("The transaction core: `apply_edits` and `semantic_diff` here ..."), types.py:16-18
+#   ("the transaction core that produces them lives there").
+
+id = "split-revision-edits"
+approved_by = "orchestrator (OpenFlowsheet-TR09 build lane) under Frank's delegation of 2026-11-13, S17 D18; plan reviews runs/s17-review-plans.md, runs/s17-review-plan-r3.md"
+reason = "transactions.py holds the pure edit and diff algebra (transactions.py:81-304, 13 names, 200 lines) that local.py:103 and revision_continuation.py:42 import, and K06's facade over LocalApplication (RevisionStoreView, Application; lazy import of local at :384); the algebra moves to a leaf and its two importers are retargeted: layer violations 8 -> 6, import-cycle edges 33 -> 14 (after split-validation-report)"
+new_files = ["src/openflowsheet/application/revision_edits.py"]
+new_public = [
+    "src/openflowsheet/application/revision_edits.py:EditPathError",
+    "src/openflowsheet/application/revision_edits.py:json_pointer",
+    "src/openflowsheet/application/revision_edits.py:apply_edits",
+    "src/openflowsheet/application/revision_edits.py:semantic_diff",
+    "src/openflowsheet/application/revision_edits.py:ELEMENT_MEMBERS",
+    "src/openflowsheet/application/revision_edits.py:element_diff",
+    "src/openflowsheet/application/revision_edits.py:revision_diff",
+]

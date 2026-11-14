@@ -9563,3 +9563,39 @@ harvest:
   class: P
   to: []
   note: 'process note: a map built before B-16 and B-17 needs a rebuild to measure docs/*.py and link getfixturevalue fixtures'
+- manifest: evidence/S17/36127495e7cd5333657ed867b628e694c0e74ef2/manifest.json
+  item: limitations[0]
+  sha256: 7b392185d6f4db1fa18ba1fff9c8a432374f4a27ba3033b578bc6a9555a94f24
+  class: P
+  to: []
+  note: 'provenance note: software verification of behaviour-preserving refactors, not validation; unpinned behaviour is covered by review only'
+- manifest: evidence/S17/36127495e7cd5333657ed867b628e694c0e74ef2/manifest.json
+  item: limitations[1]
+  sha256: 7c71b69aca76cc94dfd99e6acb2f6faa2965cf88a940793099488dd1b6f9d379
+  class: P
+  to: []
+  note: 'provenance note: status follows CI on both legs; review pending; module splits listed for Frank''s review (D18)'
+- manifest: evidence/S17/36127495e7cd5333657ed867b628e694c0e74ef2/manifest.json
+  item: limitations[2]
+  sha256: d9e946edc3f339fcb5be7e4e0c33414af87958731ed931b4cffb74be2c3ad863
+  class: P
+  to: []
+  note: 'provenance note: requirements empty, a development-process package'
+- manifest: evidence/S17/36127495e7cd5333657ed867b628e694c0e74ef2/manifest.json
+  item: limitations[3]
+  sha256: 48f706863c8615275c15e5bc80cf6eb2dc670c80217e9e7dde6423b93cee9ef1
+  class: P
+  to: []
+  note: 'process note: 71 function-level attempts against a budget of 60 (a budget miss, not a gate miss)'
+- manifest: evidence/S17/36127495e7cd5333657ed867b628e694c0e74ef2/manifest.json
+  item: limitations[4]
+  sha256: 850c01cc6e696c0898fde1ad77e15fc06c4083e1acf4423a402644cceb27fac3
+  class: P
+  to: []
+  note: 'process note: re-exports, cross-module private names and two out-of-scope comments are left for the D19 interface package'
+- manifest: evidence/S17/36127495e7cd5333657ed867b628e694c0e74ef2/manifest.json
+  item: limitations[5]
+  sha256: a6a175eb0d1fda954fc8768c76f1f3a660112334cbc4cdeb73e06505d7de1aa5
+  class: P
+  to: []
+  note: 'process note: remaining debt is concentrated in five application modules'

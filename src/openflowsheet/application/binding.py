@@ -25,16 +25,18 @@ analysis as unsupported. That is the same limitation K06's CLI already carries.
 from __future__ import annotations
 
 import copy
-import sys
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field, replace
-from typing import TYPE_CHECKING, Any, Final, Literal
+from typing import TYPE_CHECKING, Any, Final
 
+from openflowsheet.application.binding_common import HINT_LIMIT as HINT_LIMIT
+from openflowsheet.application.binding_common import Unbound as Unbound
+from openflowsheet.application.binding_common import _column_owners
+from openflowsheet.application.binding_common import refusal_code as refusal_code
 from openflowsheet.canonical import document_sha256, first_noncanonical
 from openflowsheet.compile.spec import EquationSpec, ProblemSpec
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.graph.process import Connection, ProcessGraph
-from openflowsheet.messages import audit
 from openflowsheet.models import SpecificationError
 from openflowsheet.models.revision_flowsheet import (
     InputMapping,
@@ -261,49 +263,6 @@ def structural_inputs(flowsheet: Any) -> tuple[ProblemSpec, ProcessGraph, dict[s
     return spec, graph, row_units
 
 
-@dataclass(frozen=True)
-class Unbound:
-    """Why a revision could not be bound, in the kinds that call for different statuses.
-
-    Decided by Frank on 2026-09-24 (register R-022), refining F1 of the T01 review. The kinds are
-    not interchangeable: a revision whose specifications contradict each other has a real defect;
-    one missing a specification is incomplete, which blueprint §4.3 calls `DRAFT` in so many
-    words; and one this binding cannot read may be perfectly fine, so reporting it as a fault
-    would repeat the old `UNSUPPORTED_RANK_STRUCTURE` mistake of describing the tool as if it were
-    the revision.
-
-    T07 ruling round 5, S3 adds `inadmissible`: a value the document *fixes* that the model it
-    names refuses at construction (`SpecificationError`), outside that model's declared domain.
-    A finding about the document, like `conflict`. A refused *start* is `incomplete` (blueprint
-    §4.3: "a poor guess is not proof that the specified process is impossible").
-    """
-
-    kind: Literal["conflict", "inadmissible", "incomplete", "unsupported"]
-    detail: str
-    implicated: tuple[str, ...] = ()
-    #: What would be accepted (T07 ruling round 6, B2), beside the unchanged code in `detail`;
-    #: bounded to `HINT_LIMIT` code points by `bound_text` (§10.4). Not part of equality: two
-    #: refusals with one code are one refusal.
-    hint: str | None = field(default=None, compare=False)
-
-    def __post_init__(self) -> None:
-        if audit.auditor is not None:  # MSG-G3; frame 1 is the generated `__init__`
-            audit.auditor.observe(self.detail, sys._getframe(2).f_globals.get("__name__", ""))
-        if self.hint is not None:
-            from openflowsheet.application.projection import bound_text
-
-            object.__setattr__(self, "hint", bound_text(self.hint, HINT_LIMIT))
-
-
-#: Ruling round 6, B2: `bound_text` bounds each hint to 512 code points.
-HINT_LIMIT: Final = 512
-
-
-def refusal_code(detail: str) -> str:
-    """A refusal's code token: its `detail` up to the first `(` (T07 ruling round 6, B1)."""
-    return detail.split("(", 1)[0]
-
-
 def legacy_answers(document: Mapping[str, Any], refusal: Unbound) -> bool:
     """Whether `legacy_eo` may solve a revision the revision binder refused with `refusal` (T07
     design note ruling round 6, B1, amending R2.1): only a refusal of `role: free`, on a revision
@@ -342,24 +301,13 @@ def revision_probe(
     error. The loop runs the revision binder at most once more than there are fixed
     specifications; only a specification the document itself fixes can be a target."""
     from openflowsheet.application.revision_binding import bind_revision_flowsheet
-    from openflowsheet.models.revision_flowsheet import si_unit
 
     probe = copy.deepcopy(dict(document))
     specifications = list(probe.get("specifications") or ())
     fixed = {str(entry.get("id")) for entry in specifications if entry.get("role") == "fixed"}
     for entry in specifications:
-        if entry.get("role") != "free":
-            continue
-        entry["role"] = "fixed"
-        if entry.get("value") is None:
-            if binding is None:
-                raise ValueError(
-                    f"revision_probe: free specification {entry.get('id')!r} has no value and "
-                    "no legacy binding gives its start"
-                )
-            entry["value"] = _declared_default(binding.specification_targets[str(entry["id"])][0])
-            entry["unit"] = si_unit(str(entry.get("kind")))
-            entry.pop("bounds", None)
+        if entry.get("role") == "free":
+            _read_as_fixed(entry, binding)
 
     targets: list[tuple[str, Unbound]] = []
     while True:
@@ -387,6 +335,24 @@ def revision_probe(
             targets.append((name, result))
             continue
         return result, tuple(targets)
+
+
+def _read_as_fixed(entry: dict[str, Any], binding: Binding | None) -> None:
+    """Rewrite the probe's `role: free` specification `entry` in place as `role: fixed`; one
+    without a value starts at `_declared_default` of its first column in `binding`, in SI.
+    Raises `ValueError` when it has no value and there is no `binding`."""
+    from openflowsheet.models.revision_flowsheet import si_unit
+
+    entry["role"] = "fixed"
+    if entry.get("value") is None:
+        if binding is None:
+            raise ValueError(
+                f"revision_probe: free specification {entry.get('id')!r} has no value and "
+                "no legacy binding gives its start"
+            )
+        entry["value"] = _declared_default(binding.specification_targets[str(entry["id"])][0])
+        entry["unit"] = si_unit(str(entry.get("kind")))
+        entry.pop("bounds", None)
 
 
 def _free_unused(name: str, hint: str) -> Unbound:
@@ -446,6 +412,40 @@ def legacy_admission(
     specifications = list(document.get("specifications") or ())
     columns = binding.specification_targets
     free = [entry for entry in specifications if entry.get("role") == "free"]
+    unreached = _free_reach(specifications, free, binding)
+    if unreached is not None:
+        return unreached
+
+    probed, targets = revision_probe(document, binding)
+    if probed is not None:
+        return probed
+
+    unfreed = _free_unfreed(free, binding)
+    if unfreed is not None:
+        return unfreed
+
+    promoted = set(binding.promoted.values())
+    for name, target_refusal in targets:
+        reached = columns.get(name, ())
+        if not reached or not set(reached) <= promoted:
+            return target_refusal
+    if promoted != {column for name, _ in targets for column in columns.get(name, ())}:
+        return refusal
+
+    if len(binding.freed) != 1 or len(binding.promoted) != 1:
+        return _unpaired(free, targets, binding)
+    return None
+
+
+def _free_reach(
+    specifications: Sequence[Mapping[str, Any]],
+    free: Sequence[Mapping[str, Any]],
+    binding: Binding,
+) -> Unbound | None:
+    """`legacy_admission`'s C1: `None` when every specification in `free` reaches a coordinate in
+    `binding.specification_targets` and none that a `role: fixed` one in `specifications` reaches,
+    else the first free specification's refusal."""
+    columns = binding.specification_targets
     fixed_by: dict[str, str] = {}
     for entry in specifications:
         if entry.get("role") == "fixed":
@@ -466,32 +466,25 @@ def legacy_admission(
                 f"{_document_column(shared, binding)}. A coordinate is fixed or free, not both: "
                 "remove one of them.",
             )
+    return None
 
-    probed, targets = revision_probe(document, binding)
-    if probed is not None:
-        return probed
 
+def _free_unfreed(free: Sequence[Mapping[str, Any]], binding: Binding) -> Unbound | None:
+    """`legacy_admission`'s C3: `None` when `binding` frees every column each specification in
+    `free` targets, else the first free specification's refusal."""
     freed = set(binding.freed.values())
     for entry in free:
         name = str(entry.get("id"))
-        unfreed = next((column for column in columns[name] if column not in freed), None)
+        unfreed = next(
+            (column for column in binding.specification_targets[name] if column not in freed),
+            None,
+        )
         if unfreed is not None:
             return _free_unused(
                 name,
                 f"{name} targets {_document_column(unfreed, binding)}, which the SYN-001 "
                 "formulation that solves free specifications does not pin, so it cannot be freed.",
             )
-
-    promoted = set(binding.promoted.values())
-    for name, target_refusal in targets:
-        reached = columns.get(name, ())
-        if not reached or not set(reached) <= promoted:
-            return target_refusal
-    if promoted != {column for name, _ in targets for column in columns.get(name, ())}:
-        return refusal
-
-    if len(binding.freed) != 1 or len(binding.promoted) != 1:
-        return _unpaired(free, targets, binding)
     return None
 
 
@@ -564,31 +557,10 @@ def bind_revision_or_reason(document: Mapping[str, Any]) -> Binding | Unbound:
 
     from openflowsheet.models.syn001.flowsheet import WIRING
 
-    instances = document.get("instances") or ()
-    if not instances or any(
-        not str((entry.get("model") or {}).get("id", "")).startswith("syn001.")
-        for entry in instances
-    ):
-        return Unbound(
-            "unsupported",
-            "the structural analysis binds the registered SYN-001 revisions only; this revision "
-            "uses models it does not know (T01 specification §5, §16)",
-        )
-
-    edges = _connections(document)
-    if not edges:
-        return Unbound(
-            "unsupported", "the revision declares no material connection the binding can read"
-        )
-
     wiring_edges = _wiring_edges(WIRING)
-    matched = _match_instances(edges, _topology(wiring_edges))
-    if matched is None:
-        return Unbound(
-            "unsupported",
-            "the revision's connections do not match the SYN-001 flowsheet's topology, which is "
-            "the only one the binding knows",
-        )
+    matched = _matched_syn001(document, wiring_edges)
+    if isinstance(matched, Unbound):
+        return matched
     units_by_instance = {instance: unit for unit, instance in matched.items()}
 
     # T06 spec §8.6: a permuted component set is mapped onto the provider's order before any
@@ -606,20 +578,7 @@ def bind_revision_or_reason(document: Mapping[str, Any]) -> Binding | Unbound:
     if contract is not None:
         return contract
     converted, parameter_values, conversions = inputs
-    states = _state_columns(document, components)
-    graph = ProcessGraph(
-        units=tuple(WIRING),
-        connections=tuple(
-            Connection(
-                stream_id=stream,
-                producer=source,
-                consumer=target,
-                state_columns=states.get(stream, ()),
-            )
-            for stream, source, target in sorted(set(wiring_edges))
-        ),
-        instance_ids=matched,
-    )
+    graph = _process_graph(document, components, WIRING, wiring_edges, matched)
 
     specifications = [
         entry for entry in (document.get("specifications") or ()) if entry.get("role") == "fixed"
@@ -631,45 +590,13 @@ def bind_revision_or_reason(document: Mapping[str, Any]) -> Binding | Unbound:
     values = {
         str(entry.get("id")): converted.get(str(entry.get("id")), 0.0) for entry in specifications
     }
-    # T02 §7.5, made binding by T03 §9: a `role: free` specification frees its column whether or
-    # not it carries a value; with a value, that is the start. Without one (a specification then
-    # carries `bounds`), the column is still freed and the missing start is recorded, so the solve
-    # ends INITIALIZATION_FAILED instead of silently keeping the column fixed (T02 review N9).
     freed = [
         entry for entry in (document.get("specifications") or ()) if entry.get("role") == "free"
     ]
-    guesses = {
-        column: converted[str(entry.get("id"))]
-        for entry in freed
-        if entry.get("value") is not None
-        for column in _column_targets(entry, graph, units_by_instance)
-    }
-    missing_guesses = tuple(
-        column
-        for entry in freed
-        if entry.get("value") is None
-        for column in _column_targets(entry, graph, units_by_instance)
-    )
-    # The flowsheet object is parameterized by every coordinate it models; a freed coordinate with
-    # no guess takes the flowsheet's own declared default *for assembly only*: it reaches the
-    # removed pin row's parameter, which is then dropped from the declaration with the row (no
-    # remaining row reads it), and the executor refuses before a pre-solve could use it as a
-    # start (`missing_guesses`).
-    defaults = {column: _declared_default(column) for column in missing_guesses}
-    undefaulted = [column for column, value in defaults.items() if value is None]
-    if undefaulted:
-        # A coordinate the flowsheet cannot be assembled without, and with no start given: a
-        # typed reason, never an exception (review M2).
-        return Unbound(
-            "incomplete",
-            "a role: free specification without a value frees a coordinate the flowsheet has no "
-            "declared default for: " + ", ".join(undefaulted),
-            tuple(undefaulted),
-        )
-    assembly = {
-        **guesses,
-        **{column: value for column, value in defaults.items() if value is not None},
-    }
+    guesses, missing_guesses = _guesses(freed, converted, graph, units_by_instance)
+    assembly = _assembly_values(guesses, missing_guesses)
+    if isinstance(assembly, Unbound):
+        return assembly
 
     try:
         # The flowsheet object needs a value for every coordinate it is parameterized by. A freed
@@ -719,46 +646,15 @@ def bind_revision_or_reason(document: Mapping[str, Any]) -> Binding | Unbound:
     )
 
     pinned = _pinned_columns(spec)
-    specification_ids: dict[str, str] = {}
-    for row_id, column in pinned.items():
-        for name, columns in targets.items():
-            if column in columns:
-                specification_ids[row_id] = name
+    specification_ids = _pinned_specifications(pinned, targets)
 
-    # A unit row pinning a column the revision *frees* is removed: the adjusted variable of a
-    # cross-unit specification (T02 §7.1). Only a column no fixed specification also targets.
-    fixed_columns = {column for columns in targets.values() for column in columns}
-    removed = tuple(
-        row_id
-        for row_id, column in pinned.items()
-        if column in assembly and column not in fixed_columns
-    )
+    removed = _freed_rows(pinned, assembly, targets)
     freed_columns = {row_id: pinned[row_id] for row_id in removed}
     if removed:
-        spec = replace(
-            spec,
-            equations=tuple(
-                equation for equation in spec.equations if equation.equation_id not in removed
-            ),
-            row_kinds={row: kind for row, kind in spec.row_kinds.items() if row not in removed},
-        )
+        spec = _without_rows_and_orphaned_parameters(spec, removed)
         pinned = {row_id: column for row_id, column in pinned.items() if row_id not in removed}
         for row_id in removed:
             row_units.pop(row_id, None)
-        # A removed row's parameter that no remaining row reads is not part of the function any
-        # more. Left in, it would carry the freed coordinate's guess (or, with no guess, the
-        # flowsheet's declared default) into `constants_sha256`, and two revisions differing only
-        # in their initial guess would be two problems — `same_root` NOT_COMPARABLE (T03 A20).
-        from openflowsheet.graph.trace import parameters_read
-
-        still_read = set().union(*parameters_read(spec).values())
-        orphaned = [name for name in spec.parameter_ids if name not in still_read]
-        if orphaned:
-            spec = replace(
-                spec,
-                parameter_ids=tuple(n for n in spec.parameter_ids if n not in set(orphaned)),
-                parameters={n: v for n, v in spec.parameters.items() if n not in set(orphaned)},
-            )
 
     # The declaration must carry the values the *revision* declares, not the ones the flowsheet
     # happens to be parameterized by. `Syn001Flowsheet` takes a single pressure, so a revision
@@ -778,44 +674,11 @@ def bind_revision_or_reason(document: Mapping[str, Any]) -> Binding | Unbound:
         )
     spec = replace(spec, parameters=overridden)
 
-    promoted: list[EquationSpec] = []
-    promoted_columns: dict[str, str] = {}
-    parameters = dict(spec.parameters)
-    parameter_ids = list(spec.parameter_ids)
-    for name, columns in targets.items():
-        for column in columns:
-            if column in pinned.values() or column not in spec.variable_ids:
-                continue
-            row_id = f"{_SPEC_ROW_PREFIX}{name}"
-            parameter = f"{_SPEC_ROW_PREFIX}{name}"
-            promoted.append(
-                EquationSpec(
-                    equation_id=row_id,
-                    build=_promotion_row(column, parameter),
-                    accumulation="algebraic",
-                    origin=f"revision#{name}",
-                )
-            )
-            parameter_ids.append(parameter)
-            parameters[parameter] = values[name]
-            specification_ids[row_id] = name
-            promoted_columns[row_id] = column
-            row_units[row_id] = column.split(".", 1)[0] if column.split(".", 1)[0] in WIRING else ""
-
-    if promoted:
-        spec = replace(
-            spec,
-            equations=(*spec.equations, *promoted),
-            parameter_ids=tuple(parameter_ids),
-            parameters=parameters,
-            # A specification row pins one column, so it is that column's kind: a duty row is
-            # scaled and judged as a duty. Without it the row has no scale, and K03 §4 refuses a
-            # silent 1.0 (SCALE_UNAVAILABLE) — correctly.
-            row_kinds={
-                **spec.row_kinds,
-                **{row: spec.variable_kinds[column] for row, column in promoted_columns.items()},
-            },
-        )
+    spec, promotions = _promote_specifications(spec, targets, values, pinned)
+    promoted_columns = {row_id: column for row_id, (_, column) in promotions.items()}
+    for row_id, (name, column) in promotions.items():
+        specification_ids[row_id] = name
+        row_units[row_id] = column.split(".", 1)[0] if column.split(".", 1)[0] in WIRING else ""
 
     return Binding(
         spec=spec,
@@ -840,6 +703,229 @@ def bind_revision_or_reason(document: Mapping[str, Any]) -> Binding | Unbound:
         constants_sha256="0" * 64,
         input_mapping=InputMapping(declared_components=declared, conversions=conversions),
     )
+
+
+def _matched_syn001(
+    document: Mapping[str, Any], wiring_edges: Sequence[tuple[str, str, str]]
+) -> dict[str, str] | Unbound:
+    """SYN-001's unit id -> the revision instance id matched to it on `wiring_edges`, the
+    flowsheet's material edges, or the refusal: an instance naming a model outside SYN-001 (or no
+    instance), no material connection, or connections of another topology."""
+    instances = document.get("instances") or ()
+    if not instances or any(
+        not str((entry.get("model") or {}).get("id", "")).startswith("syn001.")
+        for entry in instances
+    ):
+        return Unbound(
+            "unsupported",
+            "the structural analysis binds the registered SYN-001 revisions only; this revision "
+            "uses models it does not know (T01 specification §5, §16)",
+        )
+
+    edges = _connections(document)
+    if not edges:
+        return Unbound(
+            "unsupported", "the revision declares no material connection the binding can read"
+        )
+
+    matched = _match_instances(edges, _topology(wiring_edges))
+    if matched is None:
+        return Unbound(
+            "unsupported",
+            "the revision's connections do not match the SYN-001 flowsheet's topology, which is "
+            "the only one the binding knows",
+        )
+    return matched
+
+
+def _process_graph(
+    document: Mapping[str, Any],
+    components: Sequence[str],
+    wiring: Mapping[str, Any],
+    wiring_edges: Sequence[tuple[str, str, str]],
+    matched: Mapping[str, str],
+) -> ProcessGraph:
+    """The graph of the flowsheet `wiring`: its units, a connection per material edge in
+    `wiring_edges` with the state columns `document` gives its stream over `components`, and the
+    instance matched to each unit. Its `column_owners` is left empty here: the caller adds them
+    once the spec is assembled (R-019)."""
+    states = _state_columns(document, components)
+    return ProcessGraph(
+        units=tuple(wiring),
+        connections=tuple(
+            Connection(
+                stream_id=stream,
+                producer=source,
+                consumer=target,
+                state_columns=states.get(stream, ()),
+            )
+            for stream, source, target in sorted(set(wiring_edges))
+        ),
+        instance_ids=matched,
+    )
+
+
+def _guesses(
+    freed: Sequence[Mapping[str, Any]],
+    converted: Mapping[str, float],
+    graph: ProcessGraph,
+    units_by_instance: Mapping[str, str],
+) -> tuple[dict[str, float], tuple[str, ...]]:
+    """The start of each column a `role: free` specification in `freed` targets, by column, from
+    its value in SI in `converted`; and the columns whose specification carries no value."""
+    # T02 §7.5, made binding by T03 §9: a `role: free` specification frees its column whether or
+    # not it carries a value; with a value, that is the start. Without one (a specification then
+    # carries `bounds`), the column is still freed and the missing start is recorded, so the solve
+    # ends INITIALIZATION_FAILED instead of silently keeping the column fixed (T02 review N9).
+    guesses = {
+        column: converted[str(entry.get("id"))]
+        for entry in freed
+        if entry.get("value") is not None
+        for column in _column_targets(entry, graph, units_by_instance)
+    }
+    missing_guesses = tuple(
+        column
+        for entry in freed
+        if entry.get("value") is None
+        for column in _column_targets(entry, graph, units_by_instance)
+    )
+    return guesses, missing_guesses
+
+
+def _assembly_values(
+    guesses: Mapping[str, float], missing_guesses: Sequence[str]
+) -> dict[str, float] | Unbound:
+    """The value each freed column is assembled at: its start in `guesses`, or for a column in
+    `missing_guesses` the flowsheet's declared default (the default wins for a column in both); or
+    the refusal naming the columns in `missing_guesses` that have no declared default."""
+    # The flowsheet object is parameterized by every coordinate it models; a freed coordinate with
+    # no guess takes the flowsheet's own declared default *for assembly only*: it reaches the
+    # removed pin row's parameter, which is then dropped from the declaration with the row (no
+    # remaining row reads it), and the executor refuses before a pre-solve could use it as a
+    # start (`missing_guesses`).
+    defaults = {column: _declared_default(column) for column in missing_guesses}
+    undefaulted = [column for column, value in defaults.items() if value is None]
+    if undefaulted:
+        # A coordinate the flowsheet cannot be assembled without, and with no start given: a
+        # typed reason, never an exception (review M2).
+        return Unbound(
+            "incomplete",
+            "a role: free specification without a value frees a coordinate the flowsheet has no "
+            "declared default for: " + ", ".join(undefaulted),
+            tuple(undefaulted),
+        )
+    return {
+        **guesses,
+        **{column: value for column, value in defaults.items() if value is not None},
+    }
+
+
+def _pinned_specifications(
+    pinned: Mapping[str, str], targets: Mapping[str, tuple[str, ...]]
+) -> dict[str, str]:
+    """Each unit row in `pinned` whose column a fixed specification in `targets` targets, by row
+    id, with that specification's id (the last in `targets` when several target the column)."""
+    specification_ids: dict[str, str] = {}
+    for row_id, column in pinned.items():
+        for name, columns in targets.items():
+            if column in columns:
+                specification_ids[row_id] = name
+    return specification_ids
+
+
+def _freed_rows(
+    pinned: Mapping[str, str],
+    assembly: Mapping[str, float],
+    targets: Mapping[str, tuple[str, ...]],
+) -> tuple[str, ...]:
+    """The unit rows in `pinned` whose column is freed (a column in `assembly`) and is targeted by
+    no fixed specification in `targets`."""
+    # A unit row pinning a column the revision *frees* is removed: the adjusted variable of a
+    # cross-unit specification (T02 §7.1). Only a column no fixed specification also targets.
+    fixed_columns = {column for columns in targets.values() for column in columns}
+    return tuple(
+        row_id
+        for row_id, column in pinned.items()
+        if column in assembly and column not in fixed_columns
+    )
+
+
+def _without_rows_and_orphaned_parameters(
+    spec: ProblemSpec, removed: tuple[str, ...]
+) -> ProblemSpec:
+    """`spec` without the rows `removed` and without every parameter no remaining row reads."""
+    spec = replace(
+        spec,
+        equations=tuple(
+            equation for equation in spec.equations if equation.equation_id not in removed
+        ),
+        row_kinds={row: kind for row, kind in spec.row_kinds.items() if row not in removed},
+    )
+    # A removed row's parameter that no remaining row reads is not part of the function any
+    # more. Left in, it would carry the freed coordinate's guess (or, with no guess, the
+    # flowsheet's declared default) into `constants_sha256`, and two revisions differing only
+    # in their initial guess would be two problems — `same_root` NOT_COMPARABLE (T03 A20).
+    from openflowsheet.graph.trace import parameters_read
+
+    still_read = set().union(*parameters_read(spec).values())
+    orphaned = [name for name in spec.parameter_ids if name not in still_read]
+    if orphaned:
+        spec = replace(
+            spec,
+            parameter_ids=tuple(n for n in spec.parameter_ids if n not in set(orphaned)),
+            parameters={n: v for n, v in spec.parameters.items() if n not in set(orphaned)},
+        )
+    return spec
+
+
+def _promote_specifications(
+    spec: ProblemSpec,
+    targets: Mapping[str, tuple[str, ...]],
+    values: Mapping[str, float],
+    pinned: Mapping[str, str],
+) -> tuple[ProblemSpec, dict[str, tuple[str, str]]]:
+    """§5.1: `spec` with a row `SPEC:<id>` for each column a fixed specification targets (in
+    `targets`, at its value in `values`) that is a column of `spec` and that no unit row in
+    `pinned` already pins; and those rows, by row id, each with its specification id and column.
+    `spec` is returned as it is when no column is promoted. The row id is per specification, so
+    for a specification with several promotable columns the last column is the one recorded."""
+    promoted: list[EquationSpec] = []
+    promotions: dict[str, tuple[str, str]] = {}
+    parameters = dict(spec.parameters)
+    parameter_ids = list(spec.parameter_ids)
+    for name, columns in targets.items():
+        for column in columns:
+            if column in pinned.values() or column not in spec.variable_ids:
+                continue
+            row_id = f"{_SPEC_ROW_PREFIX}{name}"
+            parameter = f"{_SPEC_ROW_PREFIX}{name}"
+            promoted.append(
+                EquationSpec(
+                    equation_id=row_id,
+                    build=_promotion_row(column, parameter),
+                    accumulation="algebraic",
+                    origin=f"revision#{name}",
+                )
+            )
+            parameter_ids.append(parameter)
+            parameters[parameter] = values[name]
+            promotions[row_id] = (name, column)
+
+    if promoted:
+        spec = replace(
+            spec,
+            equations=(*spec.equations, *promoted),
+            parameter_ids=tuple(parameter_ids),
+            parameters=parameters,
+            # A specification row pins one column, so it is that column's kind: a duty row is
+            # scaled and judged as a duty. Without it the row has no scale, and K03 §4 refuses a
+            # silent 1.0 (SCALE_UNAVAILABLE) — correctly.
+            row_kinds={
+                **spec.row_kinds,
+                **{row: spec.variable_kinds[column] for row, (_, column) in promotions.items()},
+            },
+        )
+    return spec, promotions
 
 
 def _instance_contracts(document: Mapping[str, Any], components: Sequence[str]) -> Unbound | None:
@@ -937,14 +1023,7 @@ def _refused_at_construction(
         except SpecificationError as fixed:
             first = _first_line(fixed)
         else:
-            starts = tuple(
-                str(entry.get("id"))
-                for entry in freed
-                if entry.get("value") is not None
-                and any(
-                    column in guesses for column in _column_targets(entry, graph, units_by_instance)
-                )
-            )
+            starts = _guessing_specifications(freed, guesses, graph, units_by_instance)
             return Unbound(
                 "incomplete", f"start_outside_model_domain({', '.join(starts)}): {first}", starts
             )
@@ -956,6 +1035,22 @@ def _refused_at_construction(
         "inadmissible",
         f"value_outside_model_domain: {first}",
         (instance,) if instance is not None else (),
+    )
+
+
+def _guessing_specifications(
+    freed: Sequence[Mapping[str, Any]],
+    guesses: Mapping[str, float],
+    graph: ProcessGraph,
+    units_by_instance: Mapping[str, str],
+) -> tuple[str, ...]:
+    """The ids of the `role: free` specifications in `freed` that carry a value and target a
+    column in `guesses`: those that gave the starts."""
+    return tuple(
+        str(entry.get("id"))
+        for entry in freed
+        if entry.get("value") is not None
+        and any(column in guesses for column in _column_targets(entry, graph, units_by_instance))
     )
 
 
@@ -996,7 +1091,20 @@ def _read_inputs(
             converted[name] = value
         if conversion is not None:
             conversions.append(conversion)
+    parameters = _read_parameters(document)
+    if isinstance(parameters, Unbound):
+        return parameters
+    parameter_values, parameter_conversions = parameters
+    return converted, parameter_values, (*conversions, *parameter_conversions)
+
+
+def _read_parameters(
+    document: Mapping[str, Any],
+) -> tuple[dict[tuple[str, str], float], list[UnitConversion]] | Unbound:
+    """Every instance parameter in `document` in SI, by (instance, name), with the conversions
+    made, each instance's in order of input id (R6, `read_parameter`); or the first refusal."""
     parameters: dict[tuple[str, str], float] = {}
+    conversions: list[UnitConversion] = []
     for instance in document.get("instances") or ():
         unit = str(instance.get("id"))
         converted_here: list[UnitConversion] = []
@@ -1009,7 +1117,7 @@ def _read_inputs(
             if conversion is not None:
                 converted_here.append(conversion)
         conversions.extend(sorted(converted_here, key=lambda conversion: conversion.input_id))
-    return converted, parameters, tuple(conversions)
+    return parameters, conversions
 
 
 #: The state definitions this binding knows how to name coordinates for. `nTP-v1` is ADR 0001
@@ -1107,26 +1215,6 @@ def _honour_declared_values(
         parameters[parameter] = resolved
 
     return parameters
-
-
-def _column_owners(
-    columns: Sequence[str], streams: Mapping[str, str], units: Sequence[str]
-) -> dict[str, str]:
-    """Which unit owns each column: the producer of its stream, or the unit its id names.
-
-    The naming convention lives here, in the layer that knows this flowsheet, and not in the
-    structural layer (register R-019). `streams` maps a stream id to its producing unit; a column
-    belongs to a stream when its id begins with that stream and a separator, which covers the
-    lifted split (`<stream>.vap.<component>`) as well as the declared state.
-    """
-    owners: dict[str, str] = {}
-    for column in columns:
-        head = column.split(".", 1)[0]
-        if head in units:
-            owners[column] = head
-        elif head in streams:
-            owners[column] = streams[head]
-    return owners
 
 
 def _wiring_edges(wiring: Mapping[str, Any]) -> list[tuple[str, str, str]]:

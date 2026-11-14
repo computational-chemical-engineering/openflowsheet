@@ -1,0 +1,17 @@
+# S17 review 11 (splits R1 to R5), reviewer agent, 2026-11-14
+
+99039d73 | accept | R1: AST, order and `#:` comment identity of every moved statement; 8 re-exports in `N as N` form; only types, store, authz retargeted; the `validation.ValidationReport` patch (tests/test_t08_w2_unsupported.py:111) still bites (every construction stays in validation.py); no check id moved (msg_catalogue.py:151).
+4e6235d9 | accept-with-note | R2: identity; 7 re-exports; local binds apply_edits by name (patch at test_t08_w2_unsupported.py:150 still bites); no src module imports transactions any more (its body only defines). Note: revision_edits.py:7-8 "re-exports every name" -> every public name.
+90ceed5e | accept-with-note | R3: 145 statements = 40 + 74 + 33 (incl. module docstrings); 23 re-exports, 24 plain imports as planned incl. review change 1; moved code reads none of the names tests patch on revision_binding; no audited producer moved; plugins rely on no import side effect. Headers carried into revision_binding mislead (note 1).
+d8cd43fd | accept | R4: identity; 3 re-exports; `_column_owners` plain import read only by binding; `sys._getframe(2)` (binding_common.py:47) still resolves to the constructing module; no construction site moved.
+74bf9cbc | accept | R5: verbatim; executor.py:68 re-export; worker.py:227-229 loads interrupt, runner, store in the same order as executor's import block did, after the log redirection; the child never loads executor (Process target worker.main, no executor-defined argument); nothing patches executor._defect.
+
+Notes:
+1. revision_binding.py:254 "the `thermal.*` family" heads the whole binder; :238 "the six M02 C1 builders" heads only `_resolve_surrogate`. Reword (fixed in 3de8018c).
+2. model_signatures :548 "six T05" heads 9, :644 "six M02 C1" heads 9; model_builders.py:250 likewise (inherited miscount; fixed in 3de8018c).
+3. R3 isolated runs of test_s11_thermal_binding.py and test_s11_column_unit.py: not in the commit message (the engineer's report: 71 and 36 passed, PYTHONPATH=worktree/src).
+4. D19 re-exports to drop after retargeting importers: validation (8: local.py:146, contract.py:46, scripts/msg_catalogue.py:162, docs-site/api/validation.md:3,5, tests); transactions (7: tests/test_k06_application.py:32, tests/test_m06_wo2_diff_elements.py:24); revision_binding (23, incl. private _columns, _COLUMN, _c1_reactor_surrogate); binding (3); executor._defect (tests/test_t07_w4e_error_mapping.py:35 only).
+5. D19 private names crossing modules, want public names: _column_owners (binding_common.py:63), _defect (runner.py:266), the private pin readers and signature constants in model_signatures (model_builders imports 40, revision_binding 24, thermal_binding 5).
+6. D19 names in the wrong module: utc_timestamp (validation_report.py:20) is the store/authz clock; the pin readers in model_signatures (_pin, _columns, _stream, _require_phase, ~337-497) are builder helpers, there only for thermal_binding: a small builder-kit module.
+7. Stale outside the gate's scope: scripts/registry_builtin.py:134 "revision_binding.py:1819" (stale before R3); scripts/s16_recall.py:70 edits transactions.py (R2 plan notes it).
+8. Method: independent AST/order/comment script over all five commits; AST scan of src, tests, scripts, benchmarks, examples for imports, attribute reads and patches on the old modules. No tests run; arch numbers, c14ff7fc and isort placement not re-checked.

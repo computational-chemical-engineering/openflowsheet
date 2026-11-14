@@ -20,9 +20,17 @@ says as much rather than implying otherwise.
 from __future__ import annotations
 
 from collections.abc import Callable, Mapping, Sequence
-from dataclasses import dataclass, field, replace
-from typing import TYPE_CHECKING, Any, Final, Literal, NamedTuple
+from dataclasses import replace
+from typing import TYPE_CHECKING, Any, Final, NamedTuple
 
+from openflowsheet.application.validation_report import Check as Check
+from openflowsheet.application.validation_report import EvidenceClass as EvidenceClass
+from openflowsheet.application.validation_report import Result as Result
+from openflowsheet.application.validation_report import Stage as Stage
+from openflowsheet.application.validation_report import Task as Task
+from openflowsheet.application.validation_report import ValidationReport as ValidationReport
+from openflowsheet.application.validation_report import ValidationStatus as ValidationStatus
+from openflowsheet.application.validation_report import utc_timestamp as utc_timestamp
 from openflowsheet.canonical import first_noncanonical
 
 if TYPE_CHECKING:
@@ -31,9 +39,11 @@ if TYPE_CHECKING:
     from openflowsheet.application.revision_binding import SurrogateResolver
     from openflowsheet.graph.process import ProcessGraph
     from openflowsheet.graph.trace import Declaration
+    from openflowsheet.models.revision_flowsheet import RevisionError
+    from openflowsheet.studies.nlp.closure import ReadinessCode
+    from openflowsheet.studies.nlp.request import StaticReadiness
+    from openflowsheet.units import UnitConversion
 
-Task = Literal["simulation", "optimization"]
-ValidationStatus = Literal["DRAFT", "READY_FOR_SIMULATION", "READY_FOR_OPTIMIZATION", "INVALID"]
 
 #: The keys a revision must carry to be a revision at all (schema `required`).
 REQUIRED_KEYS: Final[tuple[str, ...]] = (
@@ -57,111 +67,12 @@ SCHEMA_ONLY_PRODUCED_BY: Final[str] = "K06 validator; schema only"
 MISSING_REVISION_ID: Final[str] = "(missing)"
 
 
-def utc_timestamp() -> str:
-    """T07 design note §5.1's timestamp: RFC 3339 UTC with microseconds. Never R0."""
-    from datetime import UTC, datetime
-
-    return datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-
-
 def _revision_id(document: Mapping[str, Any]) -> str:
     """R3: the document's `revision_id` when it is non-empty (its `str()` if it is not a
     string), else `"(missing)"` — the frozen schema requires a non-empty string."""
     value = document.get("revision_id")
     text = "" if value is None else str(value)
     return text or MISSING_REVISION_ID
-
-
-#: Blueprint §4.3's stage order, as the frozen `validation-report.schema.json` enumerates it.
-Stage = Literal[
-    "schema",
-    "dimensions",
-    "graph_connectivity",
-    "component_reference_compatibility",
-    "conditional_classification",
-    "capability",
-    "structural_analysis",
-]
-Result = Literal["PASS", "FAIL", "WARN", "NOT_RUN"]
-#: Blueprint §4.3: a rank or conflict search must label which of these it is. T01 emits only
-#: `structural` and assertion A23 holds it to that; the other two belong to K04 and T06.
-EvidenceClass = Literal["structural", "local_numerical", "verified_minimal_subset"]
-
-
-@dataclass(frozen=True)
-class Check:
-    """One validation check, in the vocabulary the frozen schema fixes.
-
-    `result` distinguishes a check that ran and failed (`FAIL`) from one that could not run
-    (`NOT_RUN`) — the distinction K06 carried as `scope` and the schema carries here. Both are
-    kept: `passed` and `scope` remain as derived properties because the CLI and the evidence
-    generators read them, and because "did it pass" and "did it run" are different questions.
-    """
-
-    id: str
-    stage: Stage
-    result: Result
-    message: str
-    implicated_objects: tuple[str, ...] = ()
-    evidence_class: EvidenceClass = "structural"
-
-    @property
-    def passed(self) -> bool:
-        return self.result == "PASS"
-
-    @property
-    def scope(self) -> Literal["evaluated", "unsupported"]:
-        return "unsupported" if self.result == "NOT_RUN" else "evaluated"
-
-    @property
-    def detail(self) -> str:
-        return self.message
-
-    def as_document(self) -> dict[str, Any]:
-        return {
-            "id": self.id,
-            "stage": self.stage,
-            "result": self.result,
-            "message": self.message,
-            "implicated_objects": list(self.implicated_objects),
-            "evidence_class": self.evidence_class,
-        }
-
-
-@dataclass(frozen=True)
-class ValidationReport:
-    """Tied to a revision and a task. Recomputed on demand, never stored as a badge."""
-
-    revision_id: str
-    task: Task
-    status: ValidationStatus
-    checks: tuple[Check, ...]
-    structural_counts: Mapping[str, int] | None = None
-    structural_counts_absent_reason: str | None = None
-    #: `{produced_by, timestamp}` (R3): production metadata, not part of the result. `status`
-    #: and every check are a pure function of (document, task); two reports of one revision
-    #: differ at most here, so equality ignores it — and every byte-identity or idempotency
-    #: comparison compares `as_document()` without it.
-    provenance: Mapping[str, Any] = field(default_factory=dict, compare=False)
-
-    def as_document(self) -> dict[str, Any]:
-        document: dict[str, Any] = {
-            "revision_id": self.revision_id,
-            "task": self.task,
-            "status": self.status,
-            "checks": [check.as_document() for check in self.checks],
-            "provenance": dict(self.provenance),
-        }
-        if self.structural_counts is not None:
-            document["structural_counts"] = dict(self.structural_counts)
-        else:
-            document["structural_counts"] = None
-            document["structural_counts_absent_reason"] = self.structural_counts_absent_reason
-        return document
-
-    @property
-    def ready(self) -> bool:
-        return self.status in ("READY_FOR_SIMULATION", "READY_FOR_OPTIMIZATION")
 
 
 def task_unsupported(task: str) -> ApplicationError:
@@ -202,8 +113,8 @@ def validate(
     optimization: Mapping[str, Any] | None = None,
     solver_probe: Callable[[], Any] | None = None,
 ) -> ValidationReport:
-    """Blueprint §4.3's order: schema, dimensions, connectivity, components, then structural
-    analysis.
+    """Blueprint §4.3's order: schema (`_schema_stage`), dimensions, connectivity, components,
+    then structural analysis.
 
     `now` is read once, when the report is made, for `provenance.timestamp` (T07 ruling round 1
     R3); it is injectable so that a test can fix it. Nothing else in the report depends on it.
@@ -220,80 +131,10 @@ def validate(
     """
     if task == "optimization":
         return _validate_optimization(document, optimization, now, surrogates, solver_probe)
-    checks: list[Check] = []
-
-    # R-088 Q29 (T07 design note §12.5): a document with no canonical JSON form — a NaN, an
-    # infinity, an integer that is not the canonical spelling of a binary64 (ADR 0002
-    # Amendment 1) anywhere, read or not — is refused here, naming the node,
-    # before any later stage can reach a digest that would raise untyped. A canonical document
-    # never enters this branch, so its report is unchanged byte for byte.
-    pointer = first_noncanonical(document)
-    if pointer is not None:
-        return ValidationReport(
-            revision_id=_revision_id(document),
-            task=task,
-            status="INVALID",
-            checks=(
-                Check(
-                    id="SCHEMA-01",
-                    stage="schema",
-                    result="FAIL",
-                    message=f"document_not_canonical({pointer})",
-                    implicated_objects=(pointer,),
-                ),
-            ),
-            structural_counts=None,
-            structural_counts_absent_reason="the revision is not well formed",
-            provenance={"produced_by": SCHEMA_ONLY_PRODUCED_BY, "timestamp": now()},
-        )
-
-    missing = [key for key in REQUIRED_KEYS if key not in document]
-    checks.append(
-        Check(
-            id="SCHEMA-01",
-            stage="schema",
-            result="PASS" if not missing else "FAIL",
-            message="every required key present" if not missing else f"missing {missing}",
-            implicated_objects=tuple(missing),
-        )
-    )
-    if missing:
-        return ValidationReport(
-            revision_id=_revision_id(document),
-            task=task,
-            status="INVALID",
-            checks=tuple(checks),
-            structural_counts=None,
-            structural_counts_absent_reason="the revision is not well formed",
-            provenance={"produced_by": SCHEMA_ONLY_PRODUCED_BY, "timestamp": now()},
-        )
-
-    # T07 ruling round 5, S3: the frozen revision schema, applied. A document it refuses has a
-    # shape the later stages were never written for, and reached them untyped (review S3). The
-    # first error in `schema_errors`' order (by path, `_raise_first`'s rule) is reported. The PASS
-    # message above stays: every required key is still present.
-    schema_error = _first_schema_error(document)
-    if schema_error is not None:
-        pointer, message = schema_error
-        return ValidationReport(
-            revision_id=_revision_id(document),
-            task=task,
-            status="INVALID",
-            checks=(
-                Check(
-                    id="SCHEMA-01",
-                    stage="schema",
-                    result="FAIL",
-                    message=f"schema_invalid({pointer}): {message}",
-                    # The root's pointer is empty and names no object; the report's own schema
-                    # requires a non-empty id.
-                    implicated_objects=(pointer,) if pointer else (),
-                ),
-            ),
-            structural_counts=None,
-            structural_counts_absent_reason="the revision is not well formed",
-            provenance={"produced_by": SCHEMA_ONLY_PRODUCED_BY, "timestamp": now()},
-        )
+    schema_outcome = _schema_stage(document, task, now)
+    if isinstance(schema_outcome, ValidationReport):
+        return schema_outcome
+    checks: list[Check] = [schema_outcome]
 
     instances = list(document.get("instances") or [])
     connections = list(document.get("connections") or [])
@@ -480,22 +321,7 @@ def _validate_optimization(
         checks.append(_request_check(found.problems))
         assessed = found.request is not None and found.request.assessment is not None
         for code in STATIC_CODES:
-            failing = [reason for reason in found.reasons if reason.code == code]
-            if failing:
-                checks.append(
-                    _optimization_check(
-                        code,
-                        "FAIL",
-                        "; ".join(reason.detail for reason in failing),
-                        tuple(dict.fromkeys(r.subject for r in failing if r.subject)),
-                    )
-                )
-            elif code in found.not_run:
-                checks.append(_optimization_check(code, "NOT_RUN", found.not_run[code]))
-            elif assessed and code.startswith("ASSESSMENT_"):
-                checks.append(_optimization_check(code, "WARN", ASSESSMENT_AT_START))
-            else:
-                checks.append(_optimization_check(code, "PASS", OPTIMIZATION_PASSED[code]))
+            checks.append(_static_check(code, found, assessed))
         status = "READY_FOR_OPTIMIZATION" if found.ready else "INVALID"
     return ValidationReport(
         revision_id=simulation.revision_id,
@@ -525,6 +351,105 @@ def _optimization_check(
 ) -> Check:
     stage: Stage = "capability" if code in OPTIMIZATION_CAPABILITY_CODES else "structural_analysis"
     return Check(f"OPT.{code}", stage, result, message, implicated)
+
+
+def _static_check(code: ReadinessCode, found: StaticReadiness, assessed: bool) -> Check:
+    """Design §4.5's static row for one `code` of `found`: `FAIL` with every failing reason,
+    `NOT_RUN` with why it could not run, `WARN` for an `ASSESSMENT_` check when an assessment is
+    given (OPT D-18, `assessed`), and `PASS` otherwise."""
+    failing = [reason for reason in found.reasons if reason.code == code]
+    if failing:
+        return _optimization_check(
+            code,
+            "FAIL",
+            "; ".join(reason.detail for reason in failing),
+            tuple(dict.fromkeys(r.subject for r in failing if r.subject)),
+        )
+    if code in found.not_run:
+        return _optimization_check(code, "NOT_RUN", found.not_run[code])
+    if assessed and code.startswith("ASSESSMENT_"):
+        return _optimization_check(code, "WARN", ASSESSMENT_AT_START)
+    return _optimization_check(code, "PASS", OPTIMIZATION_PASSED[code])
+
+
+def _schema_stage(
+    document: Mapping[str, Any], task: Task, now: Callable[[], str]
+) -> Check | ValidationReport:
+    """Blueprint §4.3's schema stage of `validate`: `SCHEMA-01`'s `PASS`, or the schema-only
+    `INVALID` report of the first refusal, in this order: a document with no canonical JSON form,
+    a missing required key, the frozen revision schema's first error. `now` is read only for a
+    refusal's report."""
+    # R-088 Q29 (T07 design note §12.5): a document with no canonical JSON form — a NaN, an
+    # infinity, an integer that is not the canonical spelling of a binary64 (ADR 0002
+    # Amendment 1) anywhere, read or not — is refused here, naming the node,
+    # before any later stage can reach a digest that would raise untyped. A canonical document
+    # never enters this branch, so its report is unchanged byte for byte.
+    pointer = first_noncanonical(document)
+    if pointer is not None:
+        return ValidationReport(
+            revision_id=_revision_id(document),
+            task=task,
+            status="INVALID",
+            checks=(
+                Check(
+                    id="SCHEMA-01",
+                    stage="schema",
+                    result="FAIL",
+                    message=f"document_not_canonical({pointer})",
+                    implicated_objects=(pointer,),
+                ),
+            ),
+            structural_counts=None,
+            structural_counts_absent_reason="the revision is not well formed",
+            provenance={"produced_by": SCHEMA_ONLY_PRODUCED_BY, "timestamp": now()},
+        )
+
+    missing = [key for key in REQUIRED_KEYS if key not in document]
+    required = Check(
+        id="SCHEMA-01",
+        stage="schema",
+        result="PASS" if not missing else "FAIL",
+        message="every required key present" if not missing else f"missing {missing}",
+        implicated_objects=tuple(missing),
+    )
+    if missing:
+        return ValidationReport(
+            revision_id=_revision_id(document),
+            task=task,
+            status="INVALID",
+            checks=(required,),
+            structural_counts=None,
+            structural_counts_absent_reason="the revision is not well formed",
+            provenance={"produced_by": SCHEMA_ONLY_PRODUCED_BY, "timestamp": now()},
+        )
+
+    # T07 ruling round 5, S3: the frozen revision schema, applied. A document it refuses has a
+    # shape the later stages were never written for, and reached them untyped (review S3). The
+    # first error in `schema_errors`' order (by path, `_raise_first`'s rule) is reported. The PASS
+    # message above stays: every required key is still present.
+    schema_error = _first_schema_error(document)
+    if schema_error is not None:
+        pointer, message = schema_error
+        return ValidationReport(
+            revision_id=_revision_id(document),
+            task=task,
+            status="INVALID",
+            checks=(
+                Check(
+                    id="SCHEMA-01",
+                    stage="schema",
+                    result="FAIL",
+                    message=f"schema_invalid({pointer}): {message}",
+                    # The root's pointer is empty and names no object; the report's own schema
+                    # requires a non-empty id.
+                    implicated_objects=(pointer,) if pointer else (),
+                ),
+            ),
+            structural_counts=None,
+            structural_counts_absent_reason="the revision is not well formed",
+            provenance={"produced_by": SCHEMA_ONLY_PRODUCED_BY, "timestamp": now()},
+        )
+    return required
 
 
 def _first_schema_error(document: Mapping[str, Any]) -> tuple[str, str] | None:
@@ -738,7 +663,8 @@ def _structural(
 
     An `inadmissible` refusal — a value the document fixes that the model it names refuses at
     construction — is `CAP-01`'s finding (stage `capability`), with the structural checks
-    `NOT_RUN`; so the revision is `INVALID`, as a `conflict` is.
+    `NOT_RUN`; so the revision is `INVALID`, as a `conflict` is. `_refused_checks` builds the
+    checks of any refusal.
 
     A revision no binder reads gets `NOT_RUN` checks and a named reason rather than a silent pass
     — a validator that reported `READY_FOR_SIMULATION` because it could not look would be the
@@ -747,75 +673,8 @@ def _structural(
     report, refusal, pins, fallback, *_ = _analysed(document, surrogates)
 
     if refusal is not None:
-        if refusal.kind == "conflict":
-            # A real defect, found before any analysis: two specifications fix one quantity to
-            # different values. It is `STR-04`'s finding, reported as one.
-            reason = f"the structural analysis did not run: {refusal.detail}"
-            return (
-                [
-                    Check(
-                        id=check_id,
-                        stage="structural_analysis",
-                        result="FAIL" if check_id == "STR-04" else "NOT_RUN",
-                        message=refusal.detail
-                        if check_id == "STR-04"
-                        else _not_run(reason, refusal.hint),
-                        implicated_objects=refusal.implicated if check_id == "STR-04" else (),
-                    )
-                    for check_id in ("STR-01", "STR-02", "STR-03", "STR-04", "STR-05")
-                ],
-                None,
-                reason,
-                fallback,
-            )
-        if refusal.kind == "inadmissible":
-            # Ruling round 5, S3: the document asks the model it names for a value outside that
-            # model's declared domain. A finding about the document, as `DIM-01`'s is.
-            reason = f"the structural analysis did not run: {refusal.detail}"
-            capability = Check(
-                id="CAP-01",
-                stage="capability",
-                result="FAIL",
-                message=refusal.detail,
-                implicated_objects=refusal.implicated,
-            )
-            return (
-                [
-                    capability,
-                    *(
-                        Check(
-                            id=check_id,
-                            stage="structural_analysis",
-                            result="NOT_RUN",
-                            message=_not_run(reason, refusal.hint),
-                        )
-                        for check_id in ("STR-01", "STR-02", "STR-03", "STR-04", "STR-05")
-                    ),
-                ],
-                None,
-                reason,
-                fallback,
-            )
-        reason = (
-            f"the revision is incomplete: {refusal.detail}"
-            if refusal.kind == "incomplete"
-            else f"this revision cannot be analysed by T01's binding: {refusal.detail}"
-        )
-        return (
-            [
-                Check(
-                    id=check_id,
-                    stage="structural_analysis",
-                    result="NOT_RUN",
-                    message=_not_run(reason, refusal.hint),
-                    implicated_objects=refusal.implicated,
-                )
-                for check_id in ("STR-01", "STR-02", "STR-03", "STR-04", "STR-05")
-            ],
-            None,
-            reason,
-            fallback,
-        )
+        checks, reason = _refused_checks(refusal)
+        return checks, None, reason, fallback
 
     if report.finding == "UNSUPPORTED":
         detail = report.unsupported[0].detail if report.unsupported else "the trace failed"
@@ -849,6 +708,75 @@ def _structural(
         for check in structural_checks(report)
     ]
     return checks, report.structural_counts, None, fallback
+
+
+def _refused_checks(refusal: Unbound) -> tuple[list[Check], str]:
+    """`_structural`'s checks when a binder refused, and the reason the analysis did not run: a
+    `conflict` is `STR-04`'s `FAIL`; an `inadmissible` value is `CAP-01`'s `FAIL` before the
+    structural checks; any other refusal (`incomplete`, `unsupported`) leaves them `NOT_RUN`."""
+    if refusal.kind == "conflict":
+        # A real defect, found before any analysis: two specifications fix one quantity to
+        # different values. It is `STR-04`'s finding, reported as one.
+        reason = f"the structural analysis did not run: {refusal.detail}"
+        return (
+            [
+                Check(
+                    id=check_id,
+                    stage="structural_analysis",
+                    result="FAIL" if check_id == "STR-04" else "NOT_RUN",
+                    message=refusal.detail
+                    if check_id == "STR-04"
+                    else _not_run(reason, refusal.hint),
+                    implicated_objects=refusal.implicated if check_id == "STR-04" else (),
+                )
+                for check_id in ("STR-01", "STR-02", "STR-03", "STR-04", "STR-05")
+            ],
+            reason,
+        )
+    if refusal.kind == "inadmissible":
+        # Ruling round 5, S3: the document asks the model it names for a value outside that
+        # model's declared domain. A finding about the document, as `DIM-01`'s is.
+        reason = f"the structural analysis did not run: {refusal.detail}"
+        capability = Check(
+            id="CAP-01",
+            stage="capability",
+            result="FAIL",
+            message=refusal.detail,
+            implicated_objects=refusal.implicated,
+        )
+        return (
+            [
+                capability,
+                *(
+                    Check(
+                        id=check_id,
+                        stage="structural_analysis",
+                        result="NOT_RUN",
+                        message=_not_run(reason, refusal.hint),
+                    )
+                    for check_id in ("STR-01", "STR-02", "STR-03", "STR-04", "STR-05")
+                ),
+            ],
+            reason,
+        )
+    reason = (
+        f"the revision is incomplete: {refusal.detail}"
+        if refusal.kind == "incomplete"
+        else f"this revision cannot be analysed by T01's binding: {refusal.detail}"
+    )
+    return (
+        [
+            Check(
+                id=check_id,
+                stage="structural_analysis",
+                result="NOT_RUN",
+                message=_not_run(reason, refusal.hint),
+                implicated_objects=refusal.implicated,
+            )
+            for check_id in ("STR-01", "STR-02", "STR-03", "STR-04", "STR-05")
+        ],
+        reason,
+    )
 
 
 def structural_checks(report: Any) -> list[Check]:
@@ -1049,22 +977,30 @@ def _dimensions(
     not judged: `COMP-03` fails it, and the unit never changes the diagnosis of a component error
     (ADR 0016 D5); the message says which were skipped. Specifications are judged first, in
     document order, then parameters by instance declaration order and, within an instance, by
-    parameter name in code-point order (ADR 0016 D6).
+    parameter name in code-point order (ADR 0016 D6): `_judged_specifications`, then
+    `_judged_parameters`. `_dimensions_check` then builds the check from what was judged.
     """
-    from openflowsheet.application.binding import HINT_LIMIT
-    from openflowsheet.application.projection import bound_text
-    from openflowsheet.models.revision_flowsheet import (
-        RevisionError,
-        convert_specification,
-        read_parameter,
+    specification_conversions, specification_refusals, skipped = _judged_specifications(
+        components, specifications, molecular_weights
     )
-    from openflowsheet.units import UNIT_CONVERSION_ID, UnitConversion, read_number
+    parameter_conversions, parameter_refusals = _judged_parameters(instances, molecular_weights)
+    return _dimensions_check(
+        specification_conversions + parameter_conversions,
+        specification_refusals + parameter_refusals,
+        skipped,
+    )
 
-    def _with_hint(error: RevisionError) -> str:
-        """The code, then its hint (ruling round 6, B2), bounded as an `Unbound`'s is."""
-        if error.hint is None:
-            return error.code
-        return f"{error.code}. {bound_text(error.hint, HINT_LIMIT)}"
+
+def _judged_specifications(
+    components: Sequence[str],
+    specifications: Sequence[Mapping[str, Any]],
+    molecular_weights: Mapping[str, float],
+) -> tuple[list[UnitConversion], list[tuple[str, str]], list[str]]:
+    """`_dimensions`' first phase: every specification value, in document order, through
+    `unit-conversion-v2`. Returns the conversions, the refusals as `(specification id, code with
+    hint)`, and the ids of specifications skipped for a component outside `components`."""
+    from openflowsheet.models.revision_flowsheet import RevisionError, convert_specification
+    from openflowsheet.units import read_number
 
     conversions: list[UnitConversion] = []
     refusals: list[tuple[str, str]] = []
@@ -1082,10 +1018,23 @@ def _dimensions(
         try:
             _, conversion = convert_specification(entry, value, molecular_weights)
         except RevisionError as error:
-            refusals.append((name, _with_hint(error)))
+            refusals.append((name, _code_with_hint(error)))
             continue
         if conversion is not None:
             conversions.append(conversion)
+    return conversions, refusals, skipped
+
+
+def _judged_parameters(
+    instances: Sequence[Mapping[str, Any]], molecular_weights: Mapping[str, float]
+) -> tuple[list[UnitConversion], list[tuple[str, str]]]:
+    """`_dimensions`' second phase: every instance parameter through R6, by instance declaration
+    order and, within an instance, by parameter name in code-point order. Returns the
+    conversions and the refusals as `(<instance>.<parameter>, code with hint)`."""
+    from openflowsheet.models.revision_flowsheet import RevisionError, read_parameter
+
+    conversions: list[UnitConversion] = []
+    refusals: list[tuple[str, str]] = []
     for instance in instances:
         unit = str(instance.get("id", ""))
         parameters = instance.get("parameters") or {}
@@ -1095,10 +1044,32 @@ def _dimensions(
                     unit, parameter, parameters[parameter], molecular_weights
                 )
             except RevisionError as error:
-                refusals.append((f"{unit}.{parameter}", _with_hint(error)))
+                refusals.append((f"{unit}.{parameter}", _code_with_hint(error)))
                 continue
             if conversion is not None:
                 conversions.append(conversion)
+    return conversions, refusals
+
+
+def _code_with_hint(error: RevisionError) -> str:
+    """The code, then its hint (ruling round 6, B2), bounded as an `Unbound`'s is."""
+    from openflowsheet.application.binding import HINT_LIMIT
+    from openflowsheet.application.projection import bound_text
+
+    if error.hint is None:
+        return error.code
+    return f"{error.code}. {bound_text(error.hint, HINT_LIMIT)}"
+
+
+def _dimensions_check(
+    conversions: Sequence[UnitConversion],
+    refusals: Sequence[tuple[str, str]],
+    skipped: Sequence[str],
+) -> Check:
+    """`DIM-01` from what `_dimensions` judged: `FAIL` with every refusal's code and its name
+    (`refusals`, as `(name, code)`), else `PASS` naming every conversion (or that there was none),
+    and the specifications not judged for a component outside the set (`skipped`)."""
+    from openflowsheet.units import UNIT_CONVERSION_ID
 
     if refusals:
         return Check(

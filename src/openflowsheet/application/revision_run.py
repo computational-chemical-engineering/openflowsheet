@@ -578,17 +578,7 @@ def solve_route(
             coupled_start=coupled_start,
         )
     at("plan")
-    try:
-        if route.solve_path == "revision_eo":
-            plan, report = plan_revision(binding, policy, trace=trace)
-        else:
-            plan, report = legacy_plan(binding, policy)
-    except UnsupportedRankStructureError as error:
-        # T02 §7.1 refuses the plan before any evaluation, with no `PlanRefusal` and so no
-        # registered bundle: §12.3's `plan_refused(<code>)`. Admission keeps it off every route
-        # `select_route` gives (C5, review-2 S3); a recorded route re-bound by `bind_route`, which
-        # never re-admits (R2.5), can still reach it.
-        raise RunUnsupportedError("plan_refused(UNSUPPORTED_RANK_STRUCTURE)") from error
+    plan, report = _route_plan(route, policy, trace)
 
     if isinstance(plan, PlanRefusal):
         return _refused_plan(route, plan, report)
@@ -607,12 +597,7 @@ def solve_route(
             else None
         ),
     )
-    planned = [step for step in plan.steps if step.kind == "solve_eo"]
-    region_plan = (
-        plan.steps[-1].solve_plan
-        if route.solve_path == "revision_eo"
-        else (planned[0].solve_plan if len(planned) == 1 else None)
-    )
+    region_plan = _region_plan(route, plan)
 
     if run.outcome == "CONVERGED":
         if route.solve_path == "revision_eo" and run.state is not None:
@@ -626,13 +611,8 @@ def solve_route(
             return RouteRun(
                 route, plan, report, run, region_plan, certificate, None, _judged(run, run)
             )
-        solved = [step for step in run.steps if step.kind == "solve_eo"]
-        if (
-            route.solve_path == "legacy_eo"
-            and len(solved) == 1
-            and isinstance(solved[0].detail, RegionResult)
-        ):
-            detail = solved[0].detail
+        detail = _legacy_region_result(route, run)
+        if detail is not None:
             at("verify")
             certificate = _run_identity(
                 verify_bound(
@@ -649,6 +629,51 @@ def solve_route(
         kinds = ",".join(step.kind for step in plan.steps)
         raise RunUnsupportedError(f"certificate_unmapped({route.solve_path},{kinds})")
     return _failed_run(route, plan, report, run, region_plan)
+
+
+def _route_plan(
+    route: Route, policy: SolvePolicy, trace: Trace | None
+) -> tuple[ExecutionPlan | PlanRefusal, StructuralReport]:
+    """`solve_route`'s plan of `route` (a route without an outer iteration) and its structural
+    report."""
+    binding = route.binding
+    try:
+        if route.solve_path == "revision_eo":
+            plan, report = plan_revision(binding, policy, trace=trace)
+        else:
+            plan, report = legacy_plan(binding, policy)
+    except UnsupportedRankStructureError as error:
+        # T02 §7.1 refuses the plan before any evaluation, with no `PlanRefusal` and so no
+        # registered bundle: §12.3's `plan_refused(<code>)`. Admission keeps it off every route
+        # `select_route` gives (C5, review-2 S3); a recorded route re-bound by `bind_route`, which
+        # never re-admits (R2.5), can still reach it.
+        raise RunUnsupportedError("plan_refused(UNSUPPORTED_RANK_STRUCTURE)") from error
+    return plan, report
+
+
+def _region_plan(route: Route, plan: ExecutionPlan) -> SolvePlan | None:
+    """`solve_route`'s solve plan of `plan`'s region: the final step's on `revision_eo`; on
+    `legacy_eo` its one `solve_eo` step's, or `None` without exactly one."""
+    planned = [step for step in plan.steps if step.kind == "solve_eo"]
+    region_plan = (
+        plan.steps[-1].solve_plan
+        if route.solve_path == "revision_eo"
+        else (planned[0].solve_plan if len(planned) == 1 else None)
+    )
+    return region_plan
+
+
+def _legacy_region_result(route: Route, run: PlanResult) -> RegionResult | None:
+    """`solve_route`'s region result of a converged `legacy_eo` run: its one `solve_eo` step's,
+    or `None` without exactly one (R2.2's certified case)."""
+    solved = [step for step in run.steps if step.kind == "solve_eo"]
+    if (
+        route.solve_path == "legacy_eo"
+        and len(solved) == 1
+        and isinstance(solved[0].detail, RegionResult)
+    ):
+        return solved[0].detail
+    return None
 
 
 def _refused_plan(route: Route, plan: PlanRefusal, report: StructuralReport) -> RouteRun:
@@ -930,50 +955,9 @@ def write_revision_bundle(
         "route_reason": route.reason,
         "policy_requested": policy_requested,
     }
-    # X02 Part C: on `revision_coupled` the candidate is read by the k = 0 inner solve only, so
-    # the record is that solve's, whatever the coupling's number of outer iterations.
-    if route.solve_path == "revision_coupled":
-        warm = result.initial_warm
-    else:
-        warm = result.run.warm_start if result.run is not None else None
-    explicit = warm_start is not None and warm_start.selection == EXPLICIT
-    if warm is None and route.solve_path == "legacy_eo" and (explicit or coupled_start is not None):
-        # ADR 0070 (X02 design note §5.2): the legacy route reads no start; a declared one is
-        # recorded rejected, and the solve ran as without it.
-        warm = WarmStartRecord("rejected", "route", warm_start, selection=EXPLICIT)
-    coupling_member: Mapping[str, Any] | None = None
-    if coupled_start is not None:
-        # ADR 0070 D3 (§5.2, §5.7): the outer start's record — the coupling's own on
-        # `revision_coupled`; on the routes without an outer iteration, rejected.
-        if route.solve_path == "revision_coupled":
-            coupling_member = result.coupling_start
-        else:
-            coupling_member = unused_coupling_start(
-                coupled_start,
-                "coupling_compatibility" if route.solve_path == "revision_eo" else "route",
-            )
-        if warm is None:
-            # §5.7: a start declared without an x₀ source (an iterate only, under a policy whose
-            # chain is empty) records the inner members `absent`, `not_declared`.
-            warm = WarmStartRecord(
-                "absent", "not_declared" if warm_start is None else None, selection=EXPLICIT
-            )
-    if warm is not None:
-        solve_path["warm_start"] = warm.as_document()
-        if coupling_member is not None:
-            solve_path["warm_start"]["coupling"] = dict(coupling_member)
-        external = coupled_start.external if coupled_start is not None else None
-        if external is not None and route.solve_path == "revision_coupled":
-            # ADR 0070 D9 (§5.7): the k = 0 child starts of a job source.
-            solve_path["warm_start"]["external"] = external
+    _record_warm_start(solve_path, result, warm_start, coupled_start)
     if route.solve_path == "revision_eo" and continues_revisions(policy):
-        source = (
-            revision_continuation
-            if revision_continuation is not None
-            else ContinuationSource(RevisionContinuationRefusal("absent", "not_supplied"))
-        )
-        recorded = result.run.revision_continuation if result.run is not None else None
-        solve_path["revision_continuation"] = source.member(recorded)
+        _record_revision_continuation(solve_path, result, revision_continuation)
     artifacts: dict[str, Any] = {
         "solve-events.json": [event.as_document() for event in trace.events],
         "structural-report.json": result.report.as_document(),
@@ -982,25 +966,7 @@ def write_revision_bundle(
         "check-policy.json": check_policy_document(check_policy),
         "solve-path.json": solve_path,
     }
-    if isinstance(result.plan, ExecutionPlan):
-        artifacts["execution-plan.json"] = result.plan.as_document()
-    if result.solve_plan is not None:
-        artifacts["solve-plan.json"] = result.solve_plan.as_document()
-    if result.certificate is not None:
-        artifacts["solution-certificate.json"] = result.certificate.as_document()
-        # Ruling round 2 F1.1: the judged state, iff there is a certificate; its digest must be
-        # the certificate's, or nothing is written (a producer defect, never a substitute state).
-        assert result.state is not None
-        spec = route.binding.spec
-        state = solution_state.document(spec.variable_ids, state_vector(spec, result.state))
-        if state["state_sha256"] != result.certificate.target_state_sha256:
-            raise SolutionStateMismatchError("solution_state_mismatch")
-        artifacts[solution_state.NAME] = state
-    else:
-        assert result.failure is not None
-        artifacts["failure-bundle.json"] = result.failure.as_document()
-    if result.coupling is not None:
-        artifacts[COUPLING_NAME] = dict(result.coupling)
+    _add_outcome_artifacts(artifacts, result)
 
     # R0 of the documents **as written**: ADR 0002 spells an integral float as an integer, and
     # `execution_plan_r0` keeps a float as its `repr` but an integer as itself, so the projection
@@ -1038,6 +1004,111 @@ def write_revision_bundle(
     if on_diagnosis is not None and diagnosis is not None:
         on_diagnosis(diagnosis)
     return complete
+
+
+def _add_outcome_artifacts(artifacts: dict[str, Any], result: RouteRun) -> None:
+    """`write_revision_bundle`'s artifacts of `result`'s plan and outcome, added to `artifacts`
+    after the documents every bundle carries."""
+    route = result.route
+    if isinstance(result.plan, ExecutionPlan):
+        artifacts["execution-plan.json"] = result.plan.as_document()
+    if result.solve_plan is not None:
+        artifacts["solve-plan.json"] = result.solve_plan.as_document()
+    if result.certificate is not None:
+        artifacts["solution-certificate.json"] = result.certificate.as_document()
+        # Ruling round 2 F1.1: the judged state, iff there is a certificate; its digest must be
+        # the certificate's, or nothing is written (a producer defect, never a substitute state).
+        assert result.state is not None
+        spec = route.binding.spec
+        state = solution_state.document(spec.variable_ids, state_vector(spec, result.state))
+        if state["state_sha256"] != result.certificate.target_state_sha256:
+            raise SolutionStateMismatchError("solution_state_mismatch")
+        artifacts[solution_state.NAME] = state
+    else:
+        assert result.failure is not None
+        artifacts["failure-bundle.json"] = result.failure.as_document()
+    if result.coupling is not None:
+        artifacts[COUPLING_NAME] = dict(result.coupling)
+
+
+def _record_revision_continuation(
+    solve_path: dict[str, Any],
+    result: RouteRun,
+    revision_continuation: ContinuationSource | None,
+) -> None:
+    """`write_revision_bundle`'s `revision_continuation` member of `solve-path.json` for `result`
+    on `revision_eo`, set in `solve_path`; an unsupplied source is recorded `absent`."""
+    source = (
+        revision_continuation
+        if revision_continuation is not None
+        else ContinuationSource(RevisionContinuationRefusal("absent", "not_supplied"))
+    )
+    recorded = result.run.revision_continuation if result.run is not None else None
+    solve_path["revision_continuation"] = source.member(recorded)
+
+
+def _record_warm_start(
+    solve_path: dict[str, Any],
+    result: RouteRun,
+    warm_start: WarmStartCandidate | None,
+    coupled_start: CoupledStart | None,
+) -> None:
+    """`write_revision_bundle`'s `warm_start` member of `solve-path.json` for `result`, set in
+    `solve_path` when the run records a start."""
+    route = result.route
+    warm = _inner_start_record(result, warm_start, coupled_start)
+    coupling_member: Mapping[str, Any] | None = None
+    if coupled_start is not None:
+        coupling_member = _outer_start_record(result, coupled_start)
+        if warm is None:
+            # §5.7: a start declared without an x₀ source (an iterate only, under a policy whose
+            # chain is empty) records the inner members `absent`, `not_declared`.
+            warm = WarmStartRecord(
+                "absent", "not_declared" if warm_start is None else None, selection=EXPLICIT
+            )
+    if warm is not None:
+        solve_path["warm_start"] = warm.as_document()
+        if coupling_member is not None:
+            solve_path["warm_start"]["coupling"] = dict(coupling_member)
+        external = coupled_start.external if coupled_start is not None else None
+        if external is not None and route.solve_path == "revision_coupled":
+            # ADR 0070 D9 (§5.7): the k = 0 child starts of a job source.
+            solve_path["warm_start"]["external"] = external
+
+
+def _inner_start_record(
+    result: RouteRun,
+    warm_start: WarmStartCandidate | None,
+    coupled_start: CoupledStart | None,
+) -> WarmStartRecord | None:
+    """`_record_warm_start`'s record of the inner solve's start, before an outer start's
+    default."""
+    route = result.route
+    # X02 Part C: on `revision_coupled` the candidate is read by the k = 0 inner solve only, so
+    # the record is that solve's, whatever the coupling's number of outer iterations.
+    if route.solve_path == "revision_coupled":
+        warm = result.initial_warm
+    else:
+        warm = result.run.warm_start if result.run is not None else None
+    explicit = warm_start is not None and warm_start.selection == EXPLICIT
+    if warm is None and route.solve_path == "legacy_eo" and (explicit or coupled_start is not None):
+        # ADR 0070 (X02 design note §5.2): the legacy route reads no start; a declared one is
+        # recorded rejected, and the solve ran as without it.
+        warm = WarmStartRecord("rejected", "route", warm_start, selection=EXPLICIT)
+    return warm
+
+
+def _outer_start_record(result: RouteRun, coupled_start: CoupledStart) -> Mapping[str, Any] | None:
+    """`_record_warm_start`'s record of a declared outer start."""
+    route = result.route
+    # ADR 0070 D3 (§5.2, §5.7): the outer start's record — the coupling's own on
+    # `revision_coupled`; on the routes without an outer iteration, rejected.
+    if route.solve_path == "revision_coupled":
+        return result.coupling_start
+    return unused_coupling_start(
+        coupled_start,
+        "coupling_compatibility" if route.solve_path == "revision_eo" else "route",
+    )
 
 
 def _diagnosis(result: RouteRun) -> dict[str, Any] | None:
@@ -1158,6 +1229,54 @@ def _recorded_revision_continuation(
     return recorded_source(member, document) if isinstance(member, Mapping) else None
 
 
+def _reproduce_registered(
+    directory: Path, manifest: RunManifest, rerun_directory: Path, run_id: str, at: Stage
+) -> Reproduction:
+    """`reproduce_bundle` on a bundle without `revision.json` (K05's SYN-001 shape): a rerun of
+    its registered case, or `inspected_archived_results` when `run_id` names none."""
+    case = registered_case(manifest.run_id)
+    if case is None:
+        at("compare")
+        return Reproduction(_inspected(directory, "rerun_unsupported(no_revision_document)"))
+    at("rerun")
+    fresh = rerun_registered(case, Path(rerun_directory), run_id=run_id)
+    at("compare")
+    return Reproduction(replay(directory, fresh), read_manifest(Path(rerun_directory))[0])
+
+
+def _recorded_policies(
+    directory: Path, manifest: RunManifest
+) -> tuple[SolvePolicy, CheckPolicy] | None:
+    """`reproduce_bundle`'s policy documents of the bundle in `directory`, or `None` when they do
+    not read or do not recompute to `manifest`'s hashes."""
+    try:
+        policy = SolvePolicy.from_document(read_artifact(directory, "solve-policy.json"))
+        check = read_artifact(directory, "check-policy.json")
+        check_policy = CheckPolicy(policy_id=check["policy_id"], tolerances=check["tolerances"])
+        matches = (
+            policy_sha256(policy) == manifest.policy_sha256
+            and check_policy.sha256 == manifest.check_policy_sha256
+        )
+    except (ValueError, TypeError, KeyError):
+        return None
+    return (policy, check_policy) if matches else None
+
+
+def _coupling_constants_guard(route: Route, record: Mapping[str, Any]) -> list[str]:
+    """`reproduce_bundle`'s difference of a coupling record whose final constants digest does not
+    recompute (§14.5 D8 item 2), or none."""
+    found: list[str] = []
+    # §14.5 D8 (R-308) item 2: the constants digest's R0 guard, by recomputation.
+    constants = final_constants(route.binding, record)
+    if constants is not None and constants[0] != constants[1]:
+        final = record["iterations"][-1]
+        found.append(
+            f"coupling_constants: {constants[1]} rebuilt at the record's final w "
+            f"{final['w']!r} (k = {final['k']}), against the recorded {constants[0]}"
+        )
+    return found
+
+
 def reproduce_bundle(
     directory: Path,
     *,
@@ -1178,99 +1297,34 @@ def reproduce_bundle(
 
     `stage` (§6.4) is called with `integrity` on entry, `rerun` before a rerun, and `compare`
     before the report is built; a rerun's bundle is complete in `rerun_directory` by `compare`.
+
+    The rungs that re-run nothing are `_rerunnable_manifest`, `_rerun_inputs` and
+    `_valid_coupling_record`, in that order; each stages `compare` before its reproduction.
     """
     at = stage if stage is not None else _no_stage
     directory = Path(directory)
     at("integrity")
-    if not rerun:
-        at("compare")
-        return Reproduction(_inspected(directory))
-    if not verify_bundle(directory).ok:
-        at("compare")
-        return Reproduction(replay(directory, None))
-    manifest, _ = read_manifest(directory)
-    if decide_mode(manifest.environment, environment())[0] == "inspected_archived_results":
-        at("compare")
-        return Reproduction(_inspected(directory))
-    if manifest.numerical_policy_id not in KNOWN_POLICY_IDS:
-        # ADR 0025 (Q4): a record under a policy this build does not know is not re-run;
-        # `replay` names the policy as the reason.
-        at("compare")
-        return Reproduction(replay(directory, None))
+    manifest = _rerunnable_manifest(directory, rerun, at)
+    if isinstance(manifest, Reproduction):
+        return manifest
 
     if "revision.json" not in manifest.artifacts:
-        case = registered_case(manifest.run_id)
-        if case is None:
-            at("compare")
-            return Reproduction(_inspected(directory, "rerun_unsupported(no_revision_document)"))
-        at("rerun")
-        fresh = rerun_registered(case, Path(rerun_directory), run_id=run_id)
-        at("compare")
-        return Reproduction(replay(directory, fresh), read_manifest(Path(rerun_directory))[0])
+        return _reproduce_registered(directory, manifest, rerun_directory, run_id, at)
 
-    if "solve-path.json" not in manifest.artifacts:
-        at("compare")
-        return Reproduction(_inspected(directory, "rerun_unsupported(no_solve_path)"))
-    recorded = read_artifact(directory, "solve-path.json")
-    try:
-        policy = SolvePolicy.from_document(read_artifact(directory, "solve-policy.json"))
-        check = read_artifact(directory, "check-policy.json")
-        check_policy = CheckPolicy(policy_id=check["policy_id"], tolerances=check["tolerances"])
-        matches = (
-            policy_sha256(policy) == manifest.policy_sha256
-            and check_policy.sha256 == manifest.check_policy_sha256
-        )
-    except (ValueError, TypeError, KeyError):
-        matches = False
-    if not matches:
-        at("compare")
-        return Reproduction(_inspected(directory, "policy_document_mismatch"))
-
-    solve_path = recorded.get("solve_path") if isinstance(recorded, Mapping) else None
-    document = read_artifact(directory, "revision.json")
-    route = bind_route(solve_path, document) if solve_path in SOLVE_PATHS else None
-    if not isinstance(route, Route):
-        at("compare")
-        return Reproduction(
-            _inspected(directory, f"rerun_unsupported(route_unbound({solve_path}))")
-        )
-    coupling: Mapping[str, Any] | None = None
+    rerun_inputs = _rerun_inputs(directory, manifest, at)
+    if isinstance(rerun_inputs, Reproduction):
+        return rerun_inputs
+    recorded, (policy, check_policy), document, route = rerun_inputs
+    coupling = _valid_coupling_record(directory, manifest, route, at)
+    if isinstance(coupling, Reproduction):
+        return coupling
     coupling_found: list[str] = []
     classified_bitwise = True
-    if route.solve_path == "revision_coupled":
-        # M02 design note §7.2 step 1: the record against its schema, and each embedded request's
-        # key against its content.
-        if COUPLING_NAME not in manifest.artifacts:
-            at("compare")
-            return Reproduction(_inspected(directory, "rerun_unsupported(no_external_coupling)"))
-        record: Mapping[str, Any] = read_artifact(directory, COUPLING_NAME)
-        coupling = record
-        problem = coupling_record_problem(record)
-        if problem is not None:
-            at("compare")
-            return Reproduction(
-                _inspected(directory, f"rerun_unsupported(external_coupling_invalid({problem}))")
-            )
-        # §14.5 D8 (R-308) item 2: the constants digest's R0 guard, by recomputation.
-        constants = final_constants(route.binding, record)
-        if constants is not None and constants[0] != constants[1]:
-            final = record["iterations"][-1]
-            coupling_found.append(
-                f"coupling_constants: {constants[1]} rebuilt at the record's final w "
-                f"{final['w']!r} (k = {final['k']}), against the recorded {constants[0]}"
-            )
+    if coupling is not None:
+        coupling_found += _coupling_constants_guard(route, coupling)
     at("rerun")
     with tempfile.TemporaryDirectory(prefix="ofs-replay-") as scratch:
-        experiments = (
-            None
-            if coupling is None
-            else RecordedExperiments(
-                coupling,
-                provider=PrC1Provider(),
-                scratch=Path(scratch),
-                policy_id=manifest.numerical_policy_id,
-            )
-        )
+        experiments = _recorded_experiments(coupling, scratch, manifest)
         try:
             rerun_manifest = run_revision_session(
                 route,
@@ -1295,53 +1349,9 @@ def reproduce_bundle(
         name: read_artifact(Path(rerun_directory), name) for name in rerun_manifest.artifacts
     }
     if coupling is not None:
-        # R-341's R0 guard digests the rerun record as written, before any digest in it is
-        # replaced for shape.
-        fresh_record_sha256 = (
-            document_sha256(artifacts[COUPLING_NAME]) if COUPLING_NAME in artifacts else None
+        artifacts, classified_bitwise = _shape_coupled_artifacts(
+            directory, manifest, artifacts, coupling, coupling_found
         )
-        # §14.5 D8 (R-308) items 1 and 3: the inner solves' constants digests for shape, in the
-        # record and in every artifact that carries the final one (build log D94; item 2 guards
-        # it; the manifest is not compared), and the iterates under the archive's policy.
-        artifacts = {
-            name: _constants_for_shape(document, read_artifact(directory, name))
-            if name in manifest.artifacts
-            else document
-            for name, document in artifacts.items()
-        }
-        if COUPLING_NAME in artifacts:
-            fresh_record = artifacts[COUPLING_NAME]
-            coupling_found += iterate_differences(
-                fresh_record, coupling, manifest.numerical_policy_id
-            )
-            # R-317 (b): the record's floats at their registered floors; `replay` compares the
-            # rest. A float taken from the record is not a bitwise match.
-            shaped, floored = record_differences(
-                fresh_record, coupling, manifest.numerical_policy_id
-            )
-            coupling_found += floored
-            artifacts[COUPLING_NAME] = shaped
-            classified_bitwise = shaped == fresh_record
-        # Build log D130 (D124): a failure bundle's compact copy of the record by the same rules,
-        # its `record_sha256` for shape, each side's guarded by its own record's digest (R-341).
-        failure = artifacts.get(FAILURE_NAME)
-        if FAILURE_NAME in manifest.artifacts and isinstance(failure, dict):
-            archived = read_artifact(directory, FAILURE_NAME)
-            fresh_copy = failure.get("observations", {}).get("external_coupling")
-            archived_copy = archived.get("observations", {}).get("external_coupling")
-            if isinstance(fresh_copy, dict) and isinstance(archived_copy, dict):
-                shaped_copy, floored = compact_differences(
-                    fresh_copy,
-                    archived_copy,
-                    coupling["coupling_block"],
-                    manifest.numerical_policy_id,
-                    fresh_record_sha256=fresh_record_sha256,
-                    recorded_record_sha256=document_sha256(coupling),
-                )
-                coupling_found += floored
-                classified_bitwise = classified_bitwise and shaped_copy == fresh_copy
-                observations = {**failure["observations"], "external_coupling": shaped_copy}
-                artifacts[FAILURE_NAME] = {**failure, "observations": observations}
     at("compare")
     # On `revision_coupled` the state is written over the final inner spec, whose columns and
     # kinds are the route's binding's (w moves constants only).
@@ -1352,6 +1362,138 @@ def reproduce_bundle(
     if experiments is not None and coupling is not None:
         report = _replayed_from_record(report, experiments, coupling)
     return Reproduction(_with_differences(report, coupling_found), rerun_manifest)
+
+
+def _rerunnable_manifest(directory: Path, rerun: bool, at: Stage) -> RunManifest | Reproduction:
+    """`reproduce_bundle`'s first rungs: the manifest of a bundle that may be re-run, or, after
+    `compare` is staged, the archive's reproduction when `rerun` is false, when the archive fails
+    its integrity check, when the environment already decides `inspected_archived_results`
+    (ADR 0007 D4) or when the manifest's numerical policy is not one this build knows."""
+    if not rerun:
+        at("compare")
+        return Reproduction(_inspected(directory))
+    if not verify_bundle(directory).ok:
+        at("compare")
+        return Reproduction(replay(directory, None))
+    manifest, _ = read_manifest(directory)
+    if decide_mode(manifest.environment, environment())[0] == "inspected_archived_results":
+        at("compare")
+        return Reproduction(_inspected(directory))
+    if manifest.numerical_policy_id not in KNOWN_POLICY_IDS:
+        # ADR 0025 (Q4): a record under a policy this build does not know is not re-run;
+        # `replay` names the policy as the reason.
+        at("compare")
+        return Reproduction(replay(directory, None))
+    return manifest
+
+
+def _rerun_inputs(
+    directory: Path, manifest: RunManifest, at: Stage
+) -> tuple[Any, tuple[SolvePolicy, CheckPolicy], Any, Route] | Reproduction:
+    """R2.5's rerun inputs of a bundle with `revision.json`: the `solve-path.json` record, the
+    policy documents (`_recorded_policies`), the revision document and the recorded route bound
+    to it.
+    Or, after `compare` is staged, the archive inspected with the reason no rerun happens: no
+    `solve-path.json`, policy documents that do not recompute to the manifest's hashes, or a
+    recorded solve path that does not bind."""
+    if "solve-path.json" not in manifest.artifacts:
+        at("compare")
+        return Reproduction(_inspected(directory, "rerun_unsupported(no_solve_path)"))
+    recorded = read_artifact(directory, "solve-path.json")
+    policies = _recorded_policies(directory, manifest)
+    if policies is None:
+        at("compare")
+        return Reproduction(_inspected(directory, "policy_document_mismatch"))
+
+    solve_path = recorded.get("solve_path") if isinstance(recorded, Mapping) else None
+    document = read_artifact(directory, "revision.json")
+    route = bind_route(solve_path, document) if solve_path in SOLVE_PATHS else None
+    if not isinstance(route, Route):
+        at("compare")
+        return Reproduction(
+            _inspected(directory, f"rerun_unsupported(route_unbound({solve_path}))")
+        )
+    return recorded, policies, document, route
+
+
+def _valid_coupling_record(
+    directory: Path, manifest: RunManifest, route: Route, at: Stage
+) -> Mapping[str, Any] | None | Reproduction:
+    """The bundle's external coupling record on `revision_coupled` (`None` on any other route).
+    Or, after `compare` is staged, the archive inspected with the reason no rerun happens: no
+    record, or one that fails its check."""
+    if route.solve_path != "revision_coupled":
+        return None
+    # M02 design note §7.2 step 1: the record against its schema, and each embedded request's
+    # key against its content.
+    if COUPLING_NAME not in manifest.artifacts:
+        at("compare")
+        return Reproduction(_inspected(directory, "rerun_unsupported(no_external_coupling)"))
+    record: Mapping[str, Any] = read_artifact(directory, COUPLING_NAME)
+    problem = coupling_record_problem(record)
+    if problem is not None:
+        at("compare")
+        return Reproduction(
+            _inspected(directory, f"rerun_unsupported(external_coupling_invalid({problem}))")
+        )
+    return record
+
+
+def _shape_coupled_artifacts(
+    directory: Path,
+    manifest: RunManifest,
+    artifacts: dict[str, Any],
+    coupling: Mapping[str, Any],
+    found: list[str],
+) -> tuple[dict[str, Any], bool]:
+    """`reproduce_bundle`'s rerun `artifacts` of a `revision_coupled` bundle, shaped against the
+    archive in `directory` and its recorded `coupling`; the differences found are added to
+    `found`, and the flag is false when a float was taken from the record."""
+    classified_bitwise = True
+    # R-341's R0 guard digests the rerun record as written, before any digest in it is
+    # replaced for shape.
+    fresh_record_sha256 = (
+        document_sha256(artifacts[COUPLING_NAME]) if COUPLING_NAME in artifacts else None
+    )
+    # §14.5 D8 (R-308) items 1 and 3: the inner solves' constants digests for shape, in the
+    # record and in every artifact that carries the final one (build log D94; item 2 guards
+    # it; the manifest is not compared), and the iterates under the archive's policy.
+    artifacts = {
+        name: _constants_for_shape(document, read_artifact(directory, name))
+        if name in manifest.artifacts
+        else document
+        for name, document in artifacts.items()
+    }
+    if COUPLING_NAME in artifacts:
+        fresh_record = artifacts[COUPLING_NAME]
+        found += iterate_differences(fresh_record, coupling, manifest.numerical_policy_id)
+        # R-317 (b): the record's floats at their registered floors; `replay` compares the
+        # rest. A float taken from the record is not a bitwise match.
+        shaped, floored = record_differences(fresh_record, coupling, manifest.numerical_policy_id)
+        found += floored
+        artifacts[COUPLING_NAME] = shaped
+        classified_bitwise = shaped == fresh_record
+    # Build log D130 (D124): a failure bundle's compact copy of the record by the same rules,
+    # its `record_sha256` for shape, each side's guarded by its own record's digest (R-341).
+    failure = artifacts.get(FAILURE_NAME)
+    if FAILURE_NAME in manifest.artifacts and isinstance(failure, dict):
+        archived = read_artifact(directory, FAILURE_NAME)
+        fresh_copy = failure.get("observations", {}).get("external_coupling")
+        archived_copy = archived.get("observations", {}).get("external_coupling")
+        if isinstance(fresh_copy, dict) and isinstance(archived_copy, dict):
+            shaped_copy, floored = compact_differences(
+                fresh_copy,
+                archived_copy,
+                coupling["coupling_block"],
+                manifest.numerical_policy_id,
+                fresh_record_sha256=fresh_record_sha256,
+                recorded_record_sha256=document_sha256(coupling),
+            )
+            found += floored
+            classified_bitwise = classified_bitwise and shaped_copy == fresh_copy
+            observations = {**failure["observations"], "external_coupling": shaped_copy}
+            artifacts[FAILURE_NAME] = {**failure, "observations": observations}
+    return artifacts, classified_bitwise
 
 
 _HEX64: Final = re.compile(r"[0-9a-f]{64}")
@@ -1386,6 +1528,23 @@ def _constants_for_shape(fresh: Any, archived: Any) -> Any:
             for index, value in enumerate(fresh)
         ]
     return fresh
+
+
+def _recorded_experiments(
+    coupling: Mapping[str, Any] | None, scratch: str, manifest: RunManifest
+) -> RecordedExperiments | None:
+    """`reproduce_bundle`'s replay backend of a recorded coupling (M02 design note §7.2), in the
+    `scratch` directory; `None` without a coupling."""
+    return (
+        None
+        if coupling is None
+        else RecordedExperiments(
+            coupling,
+            provider=PrC1Provider(),
+            scratch=Path(scratch),
+            policy_id=manifest.numerical_policy_id,
+        )
+    )
 
 
 def _with_differences(report: ReplayReport, found: list[str]) -> ReplayReport:

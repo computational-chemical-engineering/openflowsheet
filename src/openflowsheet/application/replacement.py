@@ -565,6 +565,9 @@ def _contains(outer: Any, inner: Any) -> bool:
 
 
 def _validity(old: _Side, new: _Side) -> FacetResult:
+    """`not_applicable` when either side does not bind (`_unavailable`); else the declared
+    domain's intervals and phases, then, when the new side has a hard domain,
+    `_hard_domain_narrowings`; every narrowing found fails the facet."""
     unavailable = _unavailable("validity", old, new)
     if unavailable is not None:
         return unavailable
@@ -580,23 +583,34 @@ def _validity(old: _Side, new: _Side) -> FacetResult:
         narrower.append(f"phases {lost} lost")
     old_hard, new_hard = old.hard_domain, new.hard_domain
     if new_hard is not None:
-        for name in HARD_INTERVALS:
-            inner = None if old_hard is None else old_hard.get(name)
-            if not _contains(new_hard.get(name), inner):
-                narrower.append(f"hard_domain.{name} {inner} -> {new_hard.get(name)}")
-        inner_max = None if old_hard is None else old_hard.get("inert_max")
-        if inner_max is None or float(new_hard["inert_max"]) < float(inner_max):
-            narrower.append(f"hard_domain.inert_max {inner_max} -> {new_hard['inert_max']}")
-        # ADR 0027 Amendment 3: an absent inert floor is 0, and a higher floor is narrower.
-        inner_min = None if old_hard is None else old_hard.get("inert_min")
-        outer_min = new_hard.get("inert_min")
-        if float(outer_min or 0.0) > float(inner_min or 0.0):
-            narrower.append(f"hard_domain.inert_min {inner_min} -> {outer_min}")
+        narrower += _hard_domain_narrowings(old_hard, new_hard)
     if narrower:
         return FacetResult(
             "validity", "fail", "the new domain does not contain the old: " + "; ".join(narrower)
         )
     return FacetResult("validity", "pass", "the new declared domain contains the old")
+
+
+def _hard_domain_narrowings(
+    old_hard: Mapping[str, Any] | None, new_hard: Mapping[str, Any]
+) -> list[str]:
+    """Where `new_hard` does not contain `old_hard` (`None`: the old side has none), in this
+    order: the intervals of `HARD_INTERVALS` (an absent interval is unbounded), the inert ceiling
+    (an absent old one is always narrowed), the inert floor (an absent one is 0)."""
+    narrower: list[str] = []
+    for name in HARD_INTERVALS:
+        inner = None if old_hard is None else old_hard.get(name)
+        if not _contains(new_hard.get(name), inner):
+            narrower.append(f"hard_domain.{name} {inner} -> {new_hard.get(name)}")
+    inner_max = None if old_hard is None else old_hard.get("inert_max")
+    if inner_max is None or float(new_hard["inert_max"]) < float(inner_max):
+        narrower.append(f"hard_domain.inert_max {inner_max} -> {new_hard['inert_max']}")
+    # ADR 0027 Amendment 3: an absent inert floor is 0, and a higher floor is narrower.
+    inner_min = None if old_hard is None else old_hard.get("inert_min")
+    outer_min = new_hard.get("inert_min")
+    if float(outer_min or 0.0) > float(inner_min or 0.0):
+        narrower.append(f"hard_domain.inert_min {inner_min} -> {outer_min}")
+    return narrower
 
 
 def _named(key: tuple[Any, Any, Any] | None) -> str:

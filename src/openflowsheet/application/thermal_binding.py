@@ -1,10 +1,10 @@
 """The revision builders of the `thermal.*` family (S11 units design §4.4; ADR 0051; WO-C4).
 
 `SIGNATURES` holds the seven models' signatures, `BUILDERS` their builders in the `Builder` shape of
-`revision_binding`, and `BASES` the bases they bind on. Since the integration WO I1b (units
+`model_signatures`, and `BASES` the bases they bind on. Since the integration WO I1b (units
 design §5.4) they are rows of `MODEL_SIGNATURES`, `MODEL_BUILDERS` and `MODEL_BASES`; the
-signatures are defined in `revision_binding` (this module imports it, as `column_binding` does),
-whose builders import `BUILDERS` at the call.
+signatures are defined in `model_signatures` (this module imports it, as `column_binding` does),
+and `model_builders`' builders import `BUILDERS` at the call.
 
 **A port's form is its connection's declared `phase_capability`** (ADR 0051 D1): `liquid` and
 `vapor` are single-phase, `vapor_liquid` is SATURATED, a stream on the saturation line whose
@@ -31,7 +31,7 @@ from __future__ import annotations
 from collections.abc import Callable, Mapping, Sequence
 from typing import Final
 
-from openflowsheet.application.revision_binding import (
+from openflowsheet.application.model_signatures import (
     _THERMAL_FLASH,
     _THERMAL_HEATER,
     _THERMAL_MACHINES,
@@ -326,7 +326,7 @@ def _machine_builder(machine: str) -> Builder:
     return build
 
 
-# -- the registry rows (`revision_binding`'s tables hold them since I1b) -------------------------
+# -- the registry rows (`model_signatures`' and `model_builders`' tables hold them since I1b) -----
 
 #: Model id -> signature: what each builder reads, for `list_models` (T07 §4.2).
 SIGNATURES: Final[Mapping[str, ModelSignature]] = {

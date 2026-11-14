@@ -45,7 +45,6 @@ import logging
 import multiprocessing
 import os
 import signal
-import sqlite3
 import threading
 import time
 from collections import deque
@@ -66,6 +65,7 @@ from openflowsheet.application.jobs.interrupt import (
 )
 from openflowsheet.application.jobs.model import TERMINAL_STATUSES
 from openflowsheet.application.jobs.runner import RunContext, WorkerResult, execute
+from openflowsheet.application.jobs.runner import _defect as _defect
 from openflowsheet.application.store import JOBS_DIR, ArtifactRow
 from openflowsheet.application.types import ApiError, ExecutorSettings, Job, JobEnding
 from openflowsheet.canonical import file_sha256
@@ -215,23 +215,6 @@ class InlineExecutor:
         )
 
 
-def _defect(error: Exception) -> WorkerResult:
-    """An exception that escaped the operation body: `failed`, with no text of it in the error
-    (D9 (4): the traceback goes to the log)."""
-    store = isinstance(error, sqlite3.Error)
-    return WorkerResult(
-        status="failed",
-        reason="store_error" if store else "operation_error",
-        interruption=None,
-        error=ApiError(
-            code="internal_error",
-            message=f"the job runner raised {type(error).__name__}; see the log",
-            retryable=store,
-            detail={"exception": type(error).__name__},
-        ),
-    )
-
-
 #: Why the supervisor is stopping a worker (§8.2).
 StopReason = Literal["cancel_requested", "server_shutdown", "wall_time_exhausted"]
 
@@ -361,54 +344,28 @@ class ProcessExecutor:
     # -- the supervisor thread ----------------------------------------------------------------
 
     def _supervise(self) -> None:
+        """The supervisor thread's loop: it returns once `shutdown` has ended every job, or once
+        the store has failed `SHUTDOWN_STORE_ATTEMPTS` polls in a row after it
+        (`_abandon_jobs_and_kill_workers`). Each pass admits queued ids (`_admit`), launches them
+        (`_launch_admitted`), polls the workers and ends those that exited
+        (`_poll_and_end_exited`), then requeues what failed and waits, with backoff after
+        `shutdown`."""
         failures = 0  # consecutive failing polls since `shutdown` (rf1-Q1)
         while True:
             with self._condition:
                 if self._closing and not self._slots and not self._queue:
                     return
                 if self._closing and failures >= SHUTDOWN_STORE_ATTEMPTS:
-                    abandoned = list(self._slots.values())
-                    _LOG.error(
-                        "process executor: shutdown gave up on a failing store; jobs %s stay as"
-                        " recorded until the next open ends them failed(owner_lost)",
-                        sorted({*self._slots, *self._queue}),
-                    )
-                    self._slots.clear()
-                    self._queue.clear()
-                    for slot in abandoned:  # no worker outlives the shutdown
-                        if slot.launched and slot.process.is_alive():
-                            _kill_tree(slot.process)
+                    self._abandon_jobs_and_kill_workers()
                     return
-                admitted: list[str] = []
-                while self._queue and len(self._slots) + len(admitted) < self.settings.max_workers:
-                    admitted.append(self._queue.popleft())
+                admitted = self._admit()
             # The supervisor outlives a store error, and the next poll retries what it interrupted:
             # an admitted id goes back to the head of the queue, and a slot leaves only once its
             # job's end is recorded, so a job is never left `queued` or `running` behind a
             # transient error (T07 review S1).
-            retry: list[str] = []
-            finished: list[_Slot] = []
-            for index, job_id in enumerate(admitted):
-                try:
-                    self._launch(job_id)
-                except Exception:
-                    _LOG.exception("process executor: job %s: launching failed", job_id)
-                    retry = admitted[index:]
-                    break
-            failed = bool(retry)
-            try:
-                ended = self._watch()
-            except Exception:
-                _LOG.exception("process executor: a supervisor poll failed")
-                ended, failed = [], True
-            for slot in ended:
-                try:
-                    self._finish(slot)
-                except Exception:
-                    _LOG.exception("process executor: job %s: ending failed", slot.job_id)
-                    failed = True
-                    continue
-                finished.append(slot)
+            retry = self._launch_admitted(admitted)
+            finished, ending_failed = self._poll_and_end_exited()
+            failed = bool(retry) or ending_failed
             with self._condition:
                 self._queue.extendleft(reversed(retry))
                 for slot in finished:
@@ -423,6 +380,63 @@ class ProcessExecutor:
                     # Idle or failing, it sleeps until `run` or `shutdown` notifies, or a poll.
                     busy = self._slots or self._queue
                     self._condition.wait(SUPERVISOR_POLL_S if busy else None)
+
+    def _abandon_jobs_and_kill_workers(self) -> None:
+        """rf1-Q1, under the condition's lock: give up on a store that keeps failing after
+        `shutdown`. Log the jobs left as recorded, forget every slot and queued id, and kill each
+        launched worker still alive, so that no worker outlives the shutdown."""
+        abandoned = list(self._slots.values())
+        _LOG.error(
+            "process executor: shutdown gave up on a failing store; jobs %s stay as"
+            " recorded until the next open ends them failed(owner_lost)",
+            sorted({*self._slots, *self._queue}),
+        )
+        self._slots.clear()
+        self._queue.clear()
+        for slot in abandoned:  # no worker outlives the shutdown
+            if slot.launched and slot.process.is_alive():
+                _kill_tree(slot.process)
+
+    def _admit(self) -> list[str]:
+        """§9.1, under the condition's lock: take ids from the head of the queue while a worker
+        slot is free (`settings.max_workers`, counting the slots held and the ids taken)."""
+        admitted: list[str] = []
+        while self._queue and len(self._slots) + len(admitted) < self.settings.max_workers:
+            admitted.append(self._queue.popleft())
+        return admitted
+
+    def _launch_admitted(self, admitted: list[str]) -> list[str]:
+        """Launch the admitted jobs in order (`_launch`), stopping at the first that fails: the
+        ids from that one on, which the caller puts back at the head of the queue, or none."""
+        for index, job_id in enumerate(admitted):
+            try:
+                self._launch(job_id)
+            except Exception:
+                _LOG.exception("process executor: job %s: launching failed", job_id)
+                return admitted[index:]
+        return []
+
+    def _poll_and_end_exited(self) -> tuple[list[_Slot], bool]:
+        """One poll (`_watch`, §8.2: it also signals the due cancel and wall-time stops and kills
+        workers past their grace) and the owner's end (`_finish`) of each worker it finds exited:
+        the slots whose end is recorded, and whether the poll or an end failed. A failing poll
+        ends nothing; a slot whose end failed stays out of the list, for a later poll to retry."""
+        finished: list[_Slot] = []
+        try:
+            ended = self._watch()
+        except Exception:
+            _LOG.exception("process executor: a supervisor poll failed")
+            return finished, True
+        failed = False
+        for slot in ended:
+            try:
+                self._finish(slot)
+            except Exception:
+                _LOG.exception("process executor: job %s: ending failed", slot.job_id)
+                failed = True
+                continue
+            finished.append(slot)
+        return finished, failed
 
     def _launch(self, job_id: str) -> None:
         """Start a worker for a job still queued; a job cancelled meanwhile needs none."""

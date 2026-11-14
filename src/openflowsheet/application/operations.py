@@ -38,7 +38,7 @@ produced response to its operation's response schema.
 
 from __future__ import annotations
 
-from collections.abc import Callable, Mapping
+from collections.abc import Callable, Iterator, Mapping
 from dataclasses import dataclass
 from functools import cache
 from typing import Any, Final, Literal, Protocol
@@ -687,6 +687,10 @@ def _error_refs(
     active: tuple[str, ...],
     found: set[tuple[str, ...]],
 ) -> None:
+    """Add to `found` the location of every `$ref` to `_ERROR_SCHEMA` under `node`: a `$ref` is
+    followed into its published document unless it is in `active` (a cycle), then every
+    `_subschemas` member is walked at its location. Raises `ValueError` for a `$ref` into a
+    document that is not in `documents` (a schema that is not published)."""
     if not isinstance(node, Mapping):
         return
     reference = node.get("$ref")
@@ -698,26 +702,50 @@ def _error_refs(
         if f"{document_id}#{fragment}" == _ERROR_SCHEMA:
             found.add(path)
         elif f"{document_id}#{fragment}" not in active:
-            target: Any = documents[document_id]
-            for token in fragment.split("/")[1:]:
-                token = token.replace("~1", "/").replace("~0", "~")
-                target = target[int(token)] if isinstance(target, list) else target[token]
+            target = _pointer_target(documents[document_id], fragment)
             _error_refs(
                 target, documents, document_id, path, (*active, f"{document_id}#{fragment}"), found
             )
+    for schema, location in _subschemas(node, path):
+        _error_refs(schema, documents, base, location, active, found)
+
+
+def _pointer_target(document: Mapping[str, Any], fragment: str) -> Any:
+    """The value the JSON pointer `fragment` names in `document`: an array step is an index, an
+    object step a member name, `~1` and `~0` unescaped. A lax subset of RFC 6901, enough for the
+    published schemas: a fragment without a leading `/` names the whole document, `int` accepts a
+    sign or leading zeros, there is no percent-decoding, and stepping into a scalar raises
+    `TypeError`. The strict form is `projection.resolve`; `bindings/mcp.py`'s `_resolve` repeats
+    this walk with its prologue (S17 review 9: not merged, the accepted inputs and exceptions
+    differ)."""
+    target: Any = document
+    for token in fragment.split("/")[1:]:
+        token = token.replace("~1", "/").replace("~0", "~")
+        target = target[int(token)] if isinstance(target, list) else target[token]
+    return target
+
+
+def _subschemas(
+    node: Mapping[str, Any], path: tuple[str, ...]
+) -> Iterator[tuple[Any, tuple[str, ...]]]:
+    """`node`'s subschemas in walking order, each with its location: `allOf`, `anyOf`, `oneOf`,
+    `if`, `then` and `else` at `path`; `properties` at `path` and the member name;
+    `patternProperties`, `additionalProperties`, `items` and `prefixItems` at `path` and `ANY`.
+    An absent `if`, `then`, `else`, `additionalProperties` or `items` comes as `None`. Lazy, so
+    each member is read when the walk reaches it."""
     for keyword in ("allOf", "anyOf", "oneOf"):
         for branch in node.get(keyword, ()):
-            _error_refs(branch, documents, base, path, active, found)
+            yield branch, path
     for keyword in ("if", "then", "else"):
-        _error_refs(node.get(keyword), documents, base, path, active, found)
+        yield node.get(keyword), path
     for member, schema in (node.get("properties") or {}).items():
-        _error_refs(schema, documents, base, (*path, member), active, found)
+        yield schema, (*path, member)
     for schema in (node.get("patternProperties") or {}).values():
-        _error_refs(schema, documents, base, (*path, ANY), active, found)
+        yield schema, (*path, ANY)
     for keyword in ("additionalProperties", "items"):
-        _error_refs(node.get(keyword), documents, base, (*path, ANY), active, found)
+        yield node.get(keyword), (*path, ANY)
     for schema in node.get("prefixItems", ()):
-        _error_refs(schema, documents, base, (*path, ANY), active, found)
+        yield schema, (*path, ANY)
 
 
 def _explained_at(document: Any, location: tuple[str, ...]) -> Any:
