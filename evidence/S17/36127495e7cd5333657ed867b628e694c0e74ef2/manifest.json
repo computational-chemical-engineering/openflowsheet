@@ -1,0 +1,155 @@
+{
+  "work_package": "S17",
+  "commit": "36127495e7cd5333657ed867b628e694c0e74ef2",
+  "requirements": [],
+  "status": "implemented",
+  "inputs": {
+    "case_id": "S17 brief (orchestrator, 2026-11-12): code-health campaign 1 on src/openflowsheet/application/; docs/S17_RULES.md; D17, D18 (Frank)",
+    "case_hash": "e52695febecb21d75570bb2bec46e5c1dade69e7664bb17c4a542438ec04ce5b",
+    "environment_lock_hash": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+  },
+  "commands": [
+    {
+      "cmd": ".venv-codehealth/bin/codehealth gate --mode refactor|restructure ... (via .claude/skills/s17-refactor/gate.sh, one run per attempt: tiers ruff, mypy, tests (map-selected or the full suite), f0, mcp_digest; checks literals, public API, frozen, scope, architecture, debt); 87 runs logged in .codehealth/runs/s17.jsonl, 79 accepted or accepted-neutral, 6 gate-fail, 2 review-reject",
+      "cwd": ".claude/worktrees/s17",
+      "exit_code": 0
+    },
+    {
+      "cmd": ".venv-codehealth/bin/codehealth scan --ref 3de8018c (44 files, 18589 NLOC, debt 301.8, health 8.49, brain 0, file smells 6)",
+      "cwd": ".claude/worktrees/s17",
+      "exit_code": 0
+    },
+    {
+      "cmd": ".venv-codehealth/bin/codehealth arch (44 files, 2 violations, 2 cycles of 6 edges)",
+      "cwd": ".claude/worktrees/s17",
+      "exit_code": 0
+    }
+  ],
+  "checks": [
+    {
+      "id": "S17.G-MAP",
+      "description": "test map at CB",
+      "result": "pass",
+      "value": "20356 tests; 6 failures, the 5 S16 B-6 failures plus test_evidence_manifests on the S16 manifest (docs/S17_STATE.md)"
+    },
+    {
+      "id": "S17.G-SELF",
+      "description": "gate self-test: a mutated literal fails the tests tier",
+      "result": "pass",
+      "value": "revision_run.py:614 mutated: tests tier exit 1, 92 failed; unmutated passes"
+    },
+    {
+      "id": "S17.G-STEP",
+      "description": "every accepted step: gate exit 0 and debt of the touched files strictly lower (neutral for review notes and splits)",
+      "result": "pass",
+      "value": "64 accepted with gain, 15 accepted-neutral; every gate run logged"
+    },
+    {
+      "id": "S17.G-REVIEW",
+      "description": "fresh reviewer every 5 accepted steps; rejects reverted",
+      "result": "pass",
+      "value": "reviews 1 to 11; 2 rejects (review 1), both reverted and logged"
+    },
+    {
+      "id": "S17.G-END-DEBT",
+      "description": "application/ debt at least 30 % below CB; revision_run.py and binding.py each at least 45 % lower; no new brain function",
+      "result": "pass",
+      "value": "855.0 -> 301.8 (-64.7 %); revision_run.py 136.0 -> 44.6 (-67.2 %); binding.py 134.2 -> 43.6 (-67.5 %); brain 6 -> 0"
+    },
+    {
+      "id": "S17.ARCH",
+      "description": "module splits R1 to R5 (D18): codehealth arch after each split equals the number fixed in the design note before the run",
+      "result": "pass",
+      "value": "violations/cycle edges 11/83 -> 8/33, 6/14, 4/10, 3/8, 2/6"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": ".codehealth/runs/s17.jsonl",
+      "sha256": "5456ef2f32c43808e32cf02d1c719dcbeb808158a0c7fb0764204f698488be0f",
+      "description": "the run log: 87 attempts, one line per gated attempt, written by codehealth log"
+    },
+    {
+      "path": ".codehealth/playbook.md",
+      "sha256": "6a58f5ed58a7b927481bfdbd2cf035b93738f1f638f17829c9e12085bc345958",
+      "description": "the campaign playbook: rules 1 to 16, accepted forms, when-not rows, restructure rules, totals"
+    },
+    {
+      "path": ".codehealth/config.toml",
+      "sha256": "dda09c5b6b901f345ca8d974593c13ecceee95677ff4e633d7c253901f16d9a0",
+      "description": "the codehealth config: scope, tiers, the [architecture] ratchet with the new modules (D20)"
+    },
+    {
+      "path": ".codehealth/restructure/split-binding-common.toml",
+      "sha256": "a721c96cc2b0586b8f321962bf8ed49393e2514faf9f6edbf2e0e256d65b28a2",
+      "description": "an approved split plan (D18)"
+    },
+    {
+      "path": ".codehealth/restructure/split-revision-binding.toml",
+      "sha256": "b31be7b83d8b0847366d5e4ff4f3ce638711ea683e952dae23d544910dd5f945",
+      "description": "an approved split plan (D18)"
+    },
+    {
+      "path": ".codehealth/restructure/split-revision-edits.toml",
+      "sha256": "50eeb342217d927b2adbf334ea32d5b9d29ba928353509030013991acd23b68a",
+      "description": "an approved split plan (D18)"
+    },
+    {
+      "path": ".codehealth/restructure/split-validation-report.toml",
+      "sha256": "0a98ff5e6d2cba9d3909cef4598261b6d0c4b823e7a64023d475323d0b21550a",
+      "description": "an approved split plan (D18)"
+    },
+    {
+      "path": ".codehealth/runs/s17-review11.md",
+      "sha256": "edf34c06ab6c03c51ff600e48d929fa2de87843764bc99ef94e65be1d2261a73",
+      "description": "review 11: the splits R1 to R5"
+    },
+    {
+      "path": "docs/S17_DECISIONS.md",
+      "sha256": "a60d5ad0e8c8df6c36418985aaaccb1b0a861955041d47424374f9ac2a622af7",
+      "description": "decisions D1 to D20, per work order and review, campaign end"
+    },
+    {
+      "path": "docs/S17_STATE.md",
+      "sha256": "96dc2603a7ee6039f51826b3e9c1b175085c94e4d8c0502e7f91c473da1620ad",
+      "description": "state: gates with criteria fixed before the run, and results"
+    },
+    {
+      "path": "docs/briefs/S17-architecture.md",
+      "sha256": "b620e057e4c0939dc6d6f10702e10d7a41a17cb66931ed174994b167b190649c",
+      "description": "the split design note (architect), section 5 fixes the arch numbers"
+    },
+    {
+      "path": "git-common-dir codehealth/runs/s17-base.json (outside the tree)",
+      "sha256": "e744f14faae3457700ff1dabb8f4abc35193f8cc3921f27f4f9894501d423244",
+      "description": "scan at CB: debt 855.0, health 7.22"
+    },
+    {
+      "path": "git-common-dir codehealth/runs/s17-scan-final-3de8018c.json (outside the tree)",
+      "sha256": "8c10a45f657a7f90aa624c5599c283bd176b91e74bc636937c51c8fd2538df5b",
+      "description": "final scan at 3de8018c: debt 301.8, health 8.49"
+    },
+    {
+      "path": "git-common-dir codehealth/design/split_closure.py (outside the tree)",
+      "sha256": "be8eaef14c2c1c7f6f04942402e68c04e055ec2a7bf860bda8dd81b5249f6321",
+      "description": "R3 move-set closure script"
+    },
+    {
+      "path": "git-common-dir codehealth/design/split_closure_r1r2.py (outside the tree)",
+      "sha256": "b1805dedeee794eb0c08ed008b1eadeb4a29f9b4d5ab353d158bacd0ee066876",
+      "description": "R1 and R2 move-set closure script"
+    }
+  ],
+  "limitations": [
+    "Evidence class: software verification of behaviour-preserving refactors (bitwise: literal multiset, public API, F0 corpus identity, MCP digest, test suite), not a validation of the simulator. The gates prove the tested behaviour unchanged; behaviour no test or corpus pins is covered only by the reviewers reading each step.",
+    "Status is implemented until CI is green on both legs; the review block stays pending until human sign-off. The module splits were approved by the orchestrator under Frank's delegation (D18) and are listed for his review.",
+    "Requirements empty: S17 maps to no D/A requirement; it is a development-process package.",
+    "Budget: 71 function-level attempts against the 60 written in docs/S17_STATE.md before the run; D17 widened the scope and the count was not re-fixed (a miss of the budget line, not of a gate).",
+    "Left for the D19 interface package: old import paths kept as re-exports, private names that now cross modules, two comments outside the scope that still name revision_binding (refusals.yaml:1378, models/revision_flowsheet.py:19), LocalApplication._prepare at debt 6.6 (a dead initializer the literal check keeps).",
+    "Remaining debt is concentrated in revision_run.py (44.6), binding.py (43.6, the legacy binder), cli.py (30.6, declarative parser), stream_table_format.py (26.0, assemble skipped: mutually recursive closures) and local.py (23.6)."
+  ],
+  "review": {
+    "numerical": "pending",
+    "process_model": "pending"
+  }
+}
