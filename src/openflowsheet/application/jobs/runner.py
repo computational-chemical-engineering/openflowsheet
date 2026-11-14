@@ -73,6 +73,7 @@ from __future__ import annotations
 
 import json
 import logging
+import sqlite3
 import time
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass, replace
@@ -260,6 +261,23 @@ class WorkerResult:
             run=document["run"],
             study=document.get("study"),
         )
+
+
+def _defect(error: Exception) -> WorkerResult:
+    """An exception that escaped the operation body: `failed`, with no text of it in the error
+    (D9 (4): the traceback goes to the log)."""
+    store = isinstance(error, sqlite3.Error)
+    return WorkerResult(
+        status="failed",
+        reason="store_error" if store else "operation_error",
+        interruption=None,
+        error=ApiError(
+            code="internal_error",
+            message=f"the job runner raised {type(error).__name__}; see the log",
+            retryable=store,
+            detail={"exception": type(error).__name__},
+        ),
+    )
 
 
 def warm_start_candidate(

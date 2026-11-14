@@ -45,7 +45,6 @@ import logging
 import multiprocessing
 import os
 import signal
-import sqlite3
 import threading
 import time
 from collections import deque
@@ -66,6 +65,7 @@ from openflowsheet.application.jobs.interrupt import (
 )
 from openflowsheet.application.jobs.model import TERMINAL_STATUSES
 from openflowsheet.application.jobs.runner import RunContext, WorkerResult, execute
+from openflowsheet.application.jobs.runner import _defect as _defect
 from openflowsheet.application.store import JOBS_DIR, ArtifactRow
 from openflowsheet.application.types import ApiError, ExecutorSettings, Job, JobEnding
 from openflowsheet.canonical import file_sha256
@@ -213,23 +213,6 @@ class InlineExecutor:
             error=result.error,
             worker_result=result.as_document(),
         )
-
-
-def _defect(error: Exception) -> WorkerResult:
-    """An exception that escaped the operation body: `failed`, with no text of it in the error
-    (D9 (4): the traceback goes to the log)."""
-    store = isinstance(error, sqlite3.Error)
-    return WorkerResult(
-        status="failed",
-        reason="store_error" if store else "operation_error",
-        interruption=None,
-        error=ApiError(
-            code="internal_error",
-            message=f"the job runner raised {type(error).__name__}; see the log",
-            retryable=store,
-            detail={"exception": type(error).__name__},
-        ),
-    )
 
 
 #: Why the supervisor is stopping a worker (§8.2).
