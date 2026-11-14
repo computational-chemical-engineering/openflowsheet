@@ -1,62 +1,103 @@
 # ADR 0076: S19, interface redesign for the repo-wide layering (the D19 package)
 
-**Status:** **Proposed** (design lane, 2026-11-14). Takes effect on `main` when Frank accepts it and S19's manifest is
-`tested` with the `reviewer` pass done; S19 is built on `wp/S19`.
+**Status:** **Proposed** (design lane, 2026-11-14; revised the same day after the independent review
+`docs/briefs/S19-ADR0076-review.md`). Takes effect on `main` when Frank accepts it and S19's manifest is `tested`
+with the `reviewer` pass done; S19 is built on `wp/S19`.
 **Author:** design lane (`architect`). **Brief:** `docs/briefs/S19-A1.md`.
-**Normative text:** this ADR (I-1 to I-19) and `docs/briefs/S19-architecture.md` (the layer order, the cuts, the step
-numbers and the end gate this ADR serves).
+**Normative text:** this ADR (I-1 to I-19, the migration rules, FQ-A to FQ-C) and `docs/briefs/S19-architecture.md`
+(the layer order, the cuts, the step numbers and the end gate this ADR serves).
 **Builds on:** S17 D19 (Frank, 2026-11-13: outward-facing interfaces may be renamed and restructured, no compatibility
-shims); the S17 design note section 6 (candidates D1-D10); S17 review 11's list of re-exports and private names.
+shims); the S17 design note section 6 (D1-D10); S17 review 11's list of re-exports and private names; S19 decision
+Q1 (`docs/S19_DECISIONS.md`: the 35 F0 M9 modules change only in phase W5).
 **Amends:**
-- ADR 0019 D1: the K06 `Application` facade over `LocalApplication` is retired (I-11). A pointer paragraph is added
-  to ADR 0019 in the form of its earlier amendments.
-- ADR 0060 (extension registry): the catalogue freeze is reached through a hook the registry installs, no longer by a
-  lazy import from `messages.catalogue` (I-14). Discovery reads YAML through `messages.yaml_io.yaml_load`.
-- ADR 0075 (units at the boundary): `openflowsheet.units` no longer re-exports `display-conversion-v1`; its one home is
-  `openflowsheet.units.display`, the module ADR 0075 named (I-6). Editorial for ADR 0075; no behaviour changes.
+- ADR 0019: its Consequences paragraph that keeps K06's `transactions.Application` as a facade (0019:94) is
+  superseded (I-11, FQ-C). D1's protocols are unchanged. (The review and FQ-C cite "D1"; measured, the facade
+  sentence is in Consequences, not in D1, so that paragraph is what this ADR supersedes.) A pointer paragraph is
+  added to ADR 0019 in the form of its earlier amendments.
+- ADR 0060: D8, the catalogue freeze is reached through a hook (I-14), and a process that never installed it
+  freezes the core catalogue only; D3/E-F1-5, the built-in `registry_sha256` changes once, in W5 (FQ-A); D6, the
+  legacy units' factory module becomes `openflowsheet.application.model_builders` in W5 (I-19). Discovery reads YAML
+  through `messages.yaml_io.yaml_load`.
+- ADR 0075: `openflowsheet.units` no longer re-exports `display-conversion-v1`; its one home is
+  `openflowsheet.units.display` (I-6). Editorial; no behaviour changes.
 - `docs/interfaces-frozen.md`: a paragraph for this ADR (build lane, with the commit that lands I-19).
 **Does not amend:** plan §2.1 Protocol signatures (`CompiledProblem`, `PropertyProvider`, `Application`); plan §2.2
-schemas; the MCP tool surface and its digest; HTTP routes; CLI commands and outputs; the error JSON (I-9 moves
-Python definitions only); any numeric result. R-016 (verifier independence) is applied, not changed (I-15).
-**Affected requirements:** plan §1.3 interface freeze (§2.1 `Application`: `LocalApplication` is declared to implement
-it, signatures unchanged); R-016 (I-15); replay identity (I-10, Q-F3).
-**Affected packages:** S19 (all of `src/openflowsheet`), with tests, scripts, benchmarks, examples and docs that import
-moved names.
+schemas; MCP tool names, descriptions and digest; HTTP routes; CLI commands and outputs; catalogue codes and message
+texts; any numeric result. R-016 (verifier independence) is applied, not changed (I-15).
+**Affected requirements:**
+- Plan §1.3 interface freeze: §2.1 `Application` is implemented by `LocalApplication`, signatures unchanged (I-11).
+- R-016 (I-15).
+- F0 M9 (`implementation_sha256` over the 35 modules `scripts/codehealth_frozen.py` lists): changes **once, in W5**,
+  under one `specifier` ruling (Q1, FQ-A). Caused by: the W5 retargets of the frozen importers of names that I-2 and
+  I-8 move (column_unit.py:47 `CascadeFailure` through `models.syn001.cascade`; column_unit.py:90 `StagedSplits`
+  through `orchestrator.region`; and any further frozen import of a name an I-8 split moves, listed at the W5 base);
+  the CoolProp data split B7 (I-8; `thermo/_coolprop_heos_fluids.py` and its importer coolprop_heos.py:73, regenerated
+  by `docs/derivations/scripts/s07_reference.py --emit-fluid-table`); the W5 health edits of the frozen modules (not
+  items of this ADR).
+- The built-in registry identity (ADR 0060 D3 self-hashes, `src/openflowsheet/registry/builtin/{legacy,core}.json`,
+  `registry/builtin/tables.sha256`, E-F1-5's `tests/fixtures/registry/builtin-sha256.txt`, the served
+  `registry_sha256`): changes **once, in W5**, regenerated by `python scripts/registry_builtin.py --write` and held by
+  `--check`. Caused by: every W5 byte change of an M9 file (the legacy table's implementation sets are F0's M9
+  attribution); I-7's retarget of `Refusal` in the four contributor files assessment/cost/operating.py:26,
+  cost/index.py:30, lca/brightway.py:44, lca/tables.py:35 (core.json's implementation sets are every `*.py` under
+  `assessment/cost/` and `assessment/lca/`); I-19's removal of `revision_binding.MODEL_BUILDERS` (revision_binding.py:40,
+  a re-export of `model_builders.MODEL_BUILDERS`), which the generator names as the legacy units' factory
+  (`scripts/registry_builtin.py:143`, `BINDER`; legacy.json `"module": "openflowsheet.application.revision_binding",
+  "attribute": "MODEL_BUILDERS"`). Through W4 both identities are unchanged and `registry_builtin.py --check` stays
+  clean.
+- Replay identity: unchanged (I-10 no longer changes a signature; Q-F3 of the first draft is dropped).
+**Affected packages:** S19 (all of `src/openflowsheet`), with the tests, scripts, benchmarks, examples and living docs
+that import moved names.
 
 ## Context
 
-S17 refactored `application/` with bitwise, API-preserving steps and left re-exports at every old path, two cycles
-and two layer violations for this package. S19 extends the work to the whole package tree. Its architecture note sets
-a repo-wide layer order (`repo-layers`) that records 14 violations and 10 import cycles (79 edges) at adoption. Most
-are removed by bitwise moves that keep the old path as a re-export; the rest need the old path gone, a definition
-moved to the package where it belongs, or a call shape changed. Frank's directive is that the design be done well
-now, with no shims left. This ADR lists every outward-facing change S19 makes.
+S17 refactored `application/` with bitwise, API-preserving steps and left re-exports at every old path, two cycles and
+two layer violations for this package. S19 extends the work to the whole package tree. Its architecture note sets a
+repo-wide layer order (`repo-layers`) that records 14 violations and 10 import cycles (79 edges) at adoption. Most are
+removed by bitwise moves that keep the old path as a re-export; the rest need the old path gone, a definition moved to
+the package where it belongs, or a call shape changed. Frank's directive is that the design be done well now, with no
+shims left. This ADR lists every outward-facing change S19 makes and how each one passes the interface gate.
 
-"Outward-facing" here means a public name, module path or signature that code outside its module imports, including
-tests, scripts, benchmarks and examples. Every item below changes import paths only, unless it says otherwise.
+"Outward-facing" means a public name, module path or signature that code outside its module imports, including tests,
+scripts, benchmarks and examples.
 
 ## Decisions
 
-Each item states the change, the reason, and the callers to migrate (counted at the base of the step; the S19 digest
-and the design note give the module edges).
+Each item states the change, the reason and the callers. Its W4 mechanics (commits, plan keys, layer entries) are in
+the migration table below.
 
 ### Moves by meaning (the layer order needs them)
 
-- **I-1** `openflowsheet.orchestrator.trace` becomes `openflowsheet.numerics.trace` (whole module: `SolvePolicy`,
-  `GlobalizationPolicy`, `Trace`, `SolveEvent`, `Checkpoint`, `fraction_string`, ...). Reason: the solve record is
-  what Newton, PTC and Anderson produce; it imports only `compiled` and `numerics.linear`. Removes 3 violations.
-  Callers: about 31 modules in src (application, adapters, models column/cascade solve, orchestrator, run, studies)
-  and their tests.
+- **I-1** `openflowsheet.orchestrator.trace` becomes **`openflowsheet.numerics.solve_record`** (whole module:
+  `SolvePolicy`, `GlobalizationPolicy`, `PtcPolicy`, `HomotopyPolicy`, `RecyclePolicy`, `SolvePlan`, `Trace`,
+  `SolveEvent`, `Checkpoint`, `Counters`, the `REGISTERED_*` constants, `fraction_string`, `INTERRUPT_CHECK`, ...).
+  Reason for the move: the record is what Newton, PTC and Anderson produce; it imports only `compiled`. Removes 3
+  violations. Reason for the name: the module defines itself (trace.py:1-6, K03 §12) as "the recorded metadata of a
+  solve: what a run was told to do, what it did, and where it got to"; the policies and the plan (trace.py:289-773) are
+  two thirds of that, and `trace` names only the event log. A split into a policy module and a record module is
+  rejected: 846 lines, one K03 section, every caller of the policies also handles the record, so a split doubles the
+  caller churn for no layering gain. The docstring's paragraph "they live in the orchestrator because..." is rewritten
+  with the move. A5's restructure plan uses the new name (it has not run). Callers: about 31 src modules and their
+  tests.
 - **I-2** The lifted-split vocabulary moves from `orchestrator.region` to `openflowsheet.models.lifted`: `Regime`,
-  `ClosureType`, `Branch`, `INADMISSIBLE_BRANCH`, `KIND_TOLERANCE` (the solver's), `LABEL_KIND`, `LiftedSplit`,
-  `ZeroFlowForm`, `VapourOnlyForm`, `DormancyForm`, `StagedSplits` (final list = the closure at the step's base).
-  Reason: units declare their splits in it, the region solver consumes it. Removes 2 violations.
+  `ClosureType`, `Branch`, `INADMISSIBLE_BRANCH`, `LABEL_KIND`, `LiftedSplit`, `ZeroFlowForm`, `VapourOnlyForm`,
+  `DormancyForm`, `StagedSplits`, and (I-15) `AdmissibilityRefusal`. The solver's row tolerances go to their own leaf
+  **`openflowsheet.models.lifted_tolerance`** (orchestrator decision 2026-11-14): `KIND_TOLERANCE` (the solver's),
+  `EQUILIBRIUM_TOLERANCE` (region.py:181), and `PRESSURE_TOLERANCE` (moved from orchestrator/rank.py:38; rank imports
+  it from the leaf for its own defaults). Reason for the leaf: the verifier imports `models.lifted` for `LiftedSplit`
+  and `Regime` (verify/checks.py:54, column.py:80, gamma_phi_units.py:78, pr_c1.py:56, zero_flow.py:53, table.py:87),
+  so a solver tolerance in `models.lifted` would escape `verifier-not-through-the-solver`; the leaf is listed in that
+  rule's `to`. Reason for `PRESSURE_TOLERANCE`: `KIND_TOLERANCE["pressure"]` is it (region.py:128, 189), and leaving it
+  in `orchestrator.rank` puts an orchestrator module in the leaf's closure, A4's STOP condition. The other three row
+  tolerances stay in `models.syn001` (a leaf, __init__.py:39-41). Final list = the closure at A4's base. Removes 2
+  violations.
 - **I-3** `openflowsheet.application.policies` becomes `openflowsheet.orchestrator.policies` (`INNER_ROUTE`,
   `ROUTE_DEFAULT_POLICY`, `resolve_policy`, ...). Reason: the route-policy table imports only orchestrator modules,
-  and the replay bundle reads it (run.bundle.py:219). Removes 1 violation.
+  and the replay bundle reads it (run/bundle.py:219). Removes 1 violation.
 - **I-4** `openflowsheet.run.session` becomes `openflowsheet.application.run_session`. Reason: K05's one-run pipeline
-  (solve, verify, bundle) uses the binder (`structural_inputs`, run/session.py:101); its only callers are the CLI and
-  revision_run. Removes 1 violation and the interim `run.session` layer entry.
+  uses the binder (`structural_inputs`, run/session.py:101); its callers are the CLI and revision_run. Removes 1
+  violation and the interim `run.session` layer entry. Callers: conftest.py:126,140; test_m02_wo14.py:59,62,175;
+  t08_v2_substitution.py:25,77; 4 scripts.
 - **I-5** `application.types.schema_errors` (and its private validator cache) becomes
   `openflowsheet.schema_check.schema_errors`. Reason: document validation against `schemas/` is foundation; the
   assessment spec needs it (assessment/spec.py:21). Callers: assessment.spec, application.coupled_run (2 lazy),
@@ -68,139 +109,377 @@ and the design note give the module edges).
   `Linearization`, `Refusal` and the feasibility-tolerance reader move from `assessment.program` to
   `openflowsheet.assessment.linearization` (the reader becomes public `feasibility_tolerance`). Reason: assessment
   judges its inequalities with M03's `TAU_FEAS` without importing the NLP verifier; removes cycle 4 and 1 violation.
-  Values unchanged; "imported, never redefined" still holds.
+  Values unchanged. `assessment.program` keeps importing `Refusal` for its own 24 uses; the four registry-hashed
+  contributor files that import `Refusal` through `assessment.program` are retargeted in W5, not W4 (FQ-A).
 
 ### Homes of the S19 leaves and splits become the only paths
 
-- **I-8** Every module created by an S19 restructure step is the only path for the names it holds: `models.syn001.
-  cascade_failure` (`CascadeFailure`, `FailureOutcome`), `models.syn001.band_types`, `verify.kind_tolerance` (the
-  verifier's `KIND_TOLERANCE`; `application.admission` imports it there), `studies.surrogate.records`,
-  `assessment.sizing.core`, `verify.table_kit`, and the split modules of design note section 3 (region, column,
-  column_solve, cascade, table, projection, executor, certificate, the CoolProp data). Old modules keep only what they
-  define. Private names that now cross modules become public where they are imported across modules (I-13).
+- **I-8** Every module created by an S19 restructure step is the only path for the names it holds. Leaves:
+  `models.syn001.cascade_failure` (`CascadeFailure`, `FailureOutcome`), `models.syn001.band_types`,
+  `verify.kind_tolerance` (the verifier's `KIND_TOLERANCE`; `application.admission` imports it there),
+  `studies.surrogate.records`, `verify.table_kit`, `models.lifted`, `models.lifted_tolerance`,
+  `studies.nlp.tolerances`, `assessment.linearization`, `schema_check`. Splits: the new modules of design note
+  section 3, B1 to B6 and B8. **The normative list of moved names is the union of the committed restructure plans**
+  (`.codehealth/restructure/<id>.toml`, their move sets and `new_files`) at the W4 base; for B8, whose groups the
+  engineer fixes at the base, its plan is that list. Excluded from W4: B7, the CoolProp data split (W5, by the
+  generator), and every name a frozen M9 module imports through its old path (W5, I-19). `assessment.sizing` is
+  different: its `__init__` re-exporting `sizing.core` is the package's API, not a shim. `core` exists to cut the
+  families/`__init__` cycle (A8); outside the package, callers import `openflowsheet.assessment.sizing`, inside it
+  `families` imports `.core`. Removing that re-export would touch the registry-hashed cost/contributor.py:45 and
+  lca/impact.py:39 for no layering gain. Every module split off a module named in the forbid rule
+  `verifier-not-through-the-solver` (`to`) joins that list, in a config commit before its split step (B1's
+  `region_phase`, `region_problem`, `region_attempts`; B8's executor modules). Private names that now cross modules
+  become public (I-13).
 
 ### The application's own interfaces (S17 D1-D7)
 
-- **I-9** (S17 D3) One error vocabulary: `ApiErrorCode`, `ApiError`, `SolveFailedError` (from types),
-  `ApplicationError`, `api_error` (from contract) and validation's error constructors (`task_unsupported`,
-  `nlp_solver_unavailable`, `optimization_request_missing`) move to `openflowsheet.application.errors`. Removes cycle
-  8 and the `types -> contract` violation. `api_error` observes its caller's frame for the MSG audit: the call depth
-  from every caller must stay the same (the move does not add a frame); the MSG audit test is the check.
-- **I-10** (S17 D4) The structural stage (`StructuralAnalysis`, `structural_analysis`, `structural_refusal`,
-  `structural_checks` and their closure, with `revision_run.traced_analysis`) moves to
-  `openflowsheet.application.structural_stage`, below `revision_run`. The revision run no longer calls
-  `validation.validate` (revision_run.py:381): its entry takes the `ValidationReport` its caller already holds
-  (signature change of the run entry, internal to the application; the §2.1 `Application.solve` signature is
-  unchanged). Removes cycle 5 and the last application violation. Design-lane review: replay identity (Q-F3).
+- **I-9** (S17 D3) One error vocabulary: `ApiErrorCode`, `API_ERROR_HTTP_STATUS`, `ApiError`, `SolveFailedError`
+  (types), `ApplicationError`, `api_error` (contract) and validation's error constructors (`task_unsupported`,
+  `nlp_solver_unavailable`, `optimization_request_missing`) move to `openflowsheet.application.errors`. Removes cycle 8
+  and the `types -> contract` violation. `api_error` records its caller's module (`sys._getframe(1)`, contract.py:81):
+  the move must not add a frame. MSG's auditor accepts any `openflowsheet.` frame (messages/audit.py:27), so the
+  existing audit test cannot see an added frame; a new test pins it (migration, test commit before the step).
+- **I-10** (S17 D4) `route_structure` (revision_run.py:367-410, with its private helper `_index`, :354) moves to the new
+  module **`openflowsheet.application.structure_inspection`**, placed directly above `validation` in
+  `application-layers`. Pure move, no signature change. Reason (review, verified): the run path does not call
+  `validate`. The call at revision_run.py:385 (the review's :381) is inside `route_structure`, which serves
+  `inspect_structure` (local.py:1539, "in no identity key"), and its caller holds no `ValidationReport`. Cycle 5 is
+  validation -> revision_routes (lazy, validation.py:294), revision_routes -> revision_run (:20), validation ->
+  revision_run (lazy, :529) and revision_run -> validation (lazy, :381). The last edge is the only upward one, and it
+  leaves with `route_structure`. The structural stage stays in `validation` and `traced_analysis` in `revision_run`.
+  The first draft's move of them to `structural_stage` is dropped: it is not needed for the cycle, and it would make
+  test_m06_wo1_structure_index.py:313 (which patches `revision_run.trace_declaration` under `traced_analysis`) a
+  silent no-op. Removes cycle 5 and the last application violation. The fixture
+  tests/fixtures/m06/g3_structure_snapshots.json uses `"route_structure"` as a key, not a module path; unchanged.
 - **I-11** (S17 D1) One application, one operation: `LocalApplication` is declared to implement
-  `contract.Application` (§2.1, unchanged) and checked by a static conformance test; the K06 facade
-  `transactions.Application`, `RevisionStoreView` and the alias `transactions.Operation` are deleted; the public
-  `Operation` is `operations.Operation` only. Callers: 3 test imports (S17 count), docs.
-- **I-12** (S17 D2) `LocalApplication` (local.py, 1777 NLOC, 77 methods) becomes a thin facade over per-family
-  services: revisions and edits, validation and admission, jobs, artifacts and stream tables, audit and authorization,
-  capabilities. `OPERATIONS` binds each operation to its service method. The facade keeps every public method name
-  and signature (the Python API of `LocalApplication` is unchanged); the service classes are new public names.
-  Reason: health (large file) and the change coupling S17 measured. Same rule for `types.py` (1531 NLOC),
-  `revision_run.py`, `store.py`: split by concept to under 1000 NLOC with final names, no re-export.
+  `contract.Application` (§2.1, unchanged), checked statically by mypy through a private function in local.py under
+  `if TYPE_CHECKING:` (`def _conforms(app: LocalApplication) -> Application: return app`). The module
+  `application/transactions.py` is deleted: the K06 facade `Application`, `RevisionStoreView`, the alias `Operation`,
+  and its S17 re-exports of revision_edits and types names. The public `Operation` is `operations.Operation` only.
+  Removed behaviour, each with its successor:
+  - `Application()` on a fresh in-memory project: `LocalApplication.in_memory()`.
+  - `RevisionStoreView` (`head`, `get`, `history`, `put` with the immutability refusal and a `put_revision` audit
+    row): the store and `LocalApplication`'s read operations. No public "put a revision under a given id" remains, so
+    tests that need one inline the store calls they used.
+  - `commit(ChangeSet)`: `LocalApplication.commit_change(change, expected_revision, idempotency_key)`.
+  - `record_run` and the invalidation union (transactions.py:158-184): the service that owns runs already produces
+    invalidations from jobs recorded in the store (ADR 0035 D4, `ProjectStore.evidence_for_revision`, store.py:1203).
+    The facade's in-memory side table of caller-recorded runs has **no successor**. Invalidations that vanish on a
+    restart would contradict D4's persistent ledger, so the ported test records its run as a job.
+
+  Tests ported (to `LocalApplication`, in a test commit before the step): test_k06_application.py (the fixture
+  `application` and the tests at :89, :103, :121, :136, :158, :211), test_t07_transactions.py:320 and :559,
+  test_t07_w3b_validation.py:467. The script scripts/k06_evidence_manifest.py is ported the same way. Its output need
+  not equal the archived K06 evidence, which is a record and stays as it is. Tests that import re-exported names from
+  `transactions` (test_t07_types.py:30, test_m06_wo2_diff_elements.py:24) import them from their homes.
+- **I-12** (S17 D2) The large application files are split by concept, with final names and no re-export. Four
+  sub-steps:
+  - **I-12a** `types.py` (1531 NLOC) is removed. `documents.py` takes `DocumentSchemaError`, `published_schemas`,
+    `validate_document`, `validate_inline` and the schema helpers. `transaction_types.py` takes `Edit`, `Change`,
+    `ChangeSet`, `DiffElement`, `SemanticDiff`, `TransactionResult`. `job_requests.py` takes `Budgets`,
+    `WarmStartDeclaration`, `SolveBody`, `ReproduceBody`, `ExperimentModel`, `ExperimentInlet`, `ExperimentBody`,
+    `SurrogateStudyParent`, `SurrogateStudyBody`, `OptimizeBody`, `JobRequest`, `normalize_job_request`,
+    `request_sha256`. `job_records.py` takes `ArtifactRef`, `Progress`, `JobEnding`, `EffectiveBudgets`, `Job`,
+    `JobEvent`, `RunFailure`, `RunResult`, `JobResult`. `policy_types.py` takes `Limits`, `CapabilityReference`,
+    `ExecutorSettings`, `ProjectPolicy`, `ReplayPolicy`. `inspection_types.py` takes `SubmitResult`, `JobWait`,
+    `ServerInfo`, `ProjectSummary`, `ModelRegistryView`, `MessageEntry`, `RevisionSummary`, `AuditRecord`,
+    `CapabilityDescriptor`, `CapabilityPage`, `AdmissionPair`, `AdmissionReport`. The vocabulary constants of
+    types.py:62-119 (`SCHEMA_DIR`, `SCHEMA_BASE`, `DEFAULT_SOLVE_POLICY_ID`, `Right`, `RIGHTS`,
+    `LOCAL_OWNER_PRINCIPAL`, `EditOperation`, `TransactionStatus`, ...) go with their first user in this list's
+    order. A private helper goes with its only user; one used by two new modules goes to the lower one and becomes
+    public. Measured section sizes (NLOC): 83, 204, 245, 469, 148, 252; each is under 1000.
+  - **I-12b** `store.py` (1062 NLOC; the `ProjectStore` class is 876) keeps `ProjectStore` and `_create_tables`.
+    Everything at module level above the class (store.py:102-277: `StoreError`, `coded_store_error`,
+    `IdempotencyKeyReusedError`, `ActiveJobLimitError`, `ArtifactTableSink`, `policy_file_bytes`, `AuditEntry`,
+    `ArtifactRow`, `LedgerRow`, `_blob`, `_load`) moves to `store_records.py`. The class is not split. If store.py is
+    not under 1000 NLOC after the move, STOP and report.
+  - **I-12c** `revision_run.py` (1111 NLOC; 1081 after I-10): the reproduction half (revision_run.py:1128-1589,
+    `registered_case`, `registered_flowsheet`, `rerun_registered`, `declared_kinds`, `Reproduction`,
+    `reproduce_bundle` and their private helpers, 319 NLOC) moves to `revision_replay.py`, placed directly above
+    `revision_run`.
+  - **I-12d** `LocalApplication` (local.py, 1538 NLOC in the class) becomes a thin facade over services that share one
+    `ServiceCore` (`service_core.py`: store, project, principal and capability, policy, executor, files root, surrogate
+    resolver, and the cross-cutting `caller`, `authorize`, `refuse`, `refuse_error`, `audit_refusal`, `context`,
+    `surrogates`, public because they cross modules). The services, top to bottom:
+    - `job_service.JobService`: `solve`, `reproduce`, `submit_job`, `get_job`, `list_jobs`, `list_job_events`,
+      `wait_job`, `cancel_job`, `get_job_result` and the private `_submit` .. `_import_bundle`, `_run_result`,
+      `_run_failure`, cursor helpers.
+    - `validation_service.ValidationService`: `validate`, `check_admission`, `inspect_structure` and the `_admit*`
+      family, `_check_request`.
+    - `artifact_service.ArtifactService`: `get_artifact`, `artifact_bytes`, `get_stream_table` and `_artifact_*`,
+      `_missing_member`, `_display_units`.
+    - `revision_service.RevisionService`: `commit_change`, `preview_change`, `list_revisions`, `get_revision`,
+      `diff_revisions` and `_prepare`, `_check_promotion`, `_store_replacements`, `_replayed`, `_rejected`,
+      `_revision`.
+    - `inspection_service.InspectionService`: `get_project`, `list_models`, `list_capabilities`, `explain`,
+      `list_audit`, `audit_refusal`.
+
+    A service calls only services below it and the core. `LocalApplication` keeps every public method name and
+    signature, each a one-line delegation, plus its lifecycle (`create`, `open`, `in_memory`, `authenticated`,
+    `close`, the context manager, the properties). `OPERATIONS` stays bound to the facade's method names: dispatch
+    already routes through the facade (`getattr(app, operation.method)`, operations.py:792). The services are public
+    names but internal to the application: not in `OPERATIONS`, not in `contract`, not in `docs/interfaces-frozen.md`.
+    A method whose family is not listed goes where its only callers are. If it has callers in two services, it goes to
+    the lower one.
 - **I-13** (S17 D6, review 11) The builder kit is public: the pin readers and thermal signatures in
-  `model_signatures` lose their underscore; `_column_owners` becomes `binding_common.column_owners`; `_defect`
-  becomes `jobs.runner.defect_result`; `_basis_refusal` becomes `basis_refusal`. Tests stop importing private names
+  `model_signatures` lose their underscore; `_column_owners` becomes `binding_common.column_owners`; `_defect` becomes
+  `jobs.runner.defect_result`; `_basis_refusal` becomes `basis_refusal`. Tests stop importing private names
   (`_CONTEXT`, `_columns`, `_COLUMN`, `_declared_default` get public names or the tests use the public entry). The
-  builder table stays a dict (`MODEL_BUILDERS`); its shape does not change.
+  builder table stays a dict (`MODEL_BUILDERS`).
 
 ### Low-level hooks
 
-- **I-14** `messages.catalogue` gains `set_before_freeze(hook)`; `openflowsheet.registry` installs
-  `before_catalogue_freeze` when imported; the catalogue no longer imports the registry. `messages.yaml_io.yaml_load`
-  replaces the private `catalogue._yaml_load` for registry discovery. Behaviour: identical in every path that imports
-  the registry before the first freeze (Q-F2); a freeze of a registry-first catalogue with no hook installed raises a
-  typed error instead of importing the registry. Removes cycle 2 and 1 violation.
-- **I-15** (design lane, R-016) `models.syn001.equilibrium_form.reference_k_values(provider, T, P, context)` (public,
-  new) holds the provider evaluation that `verify.checks.k_values` performs today; the verifier keeps `k_values` and
-  its `VerifierError`; the region solver calls `reference_k_values`, raises a plain `RuntimeError` with today's
-  message text on a provider failure, and no longer imports the verifier. The same
-  request and `math.exp` give bitwise the same K. The verifier and the solver share exactly what they share today;
-  this ADR records that sharing instead of hiding it in a lazy import.
+- **I-14** `messages.catalogue` gains `set_before_freeze(hook)` and no longer imports the registry (catalogue.py:345);
+  `openflowsheet.registry` installs `before_catalogue_freeze` when imported; `messages.yaml_io.yaml_load` replaces the
+  private `catalogue._yaml_load` (registry/discovery.py:299). **Who installs the hook** (FQ-B default): the registry on
+  import, `application.errors` (it imports `openflowsheet.registry`), and `application.jobs.worker`. Measured on
+  2026-11-14 at 6589e150, fresh interpreter (`python -I`): importing `application.contract`, `application.types`,
+  `application.jobs.worker` or `messages.catalogue` does not import the registry; `application.local` does; after
+  `from application.contract import api_error`, `str(api_error(code, "probe"))` imports the registry and freezes the
+  catalogue. So the first draft's Q-F2 was false, and its "typed error at freeze" would have raised inside `__str__`.
+  **A process that never installed the hook** freezes the core catalogue without building the registry. If an
+  extension catalogue is later registered in that process, the existing refusal is raised: `RuntimeError("the message
+  catalogue is frozen: register before first use")`, catalogue.py:323. With no extension installed, the catalogue's
+  entries are the same as today's, since the registry adds only extension entries. Rejected: a typed error at freeze,
+  which would crash every library-only process at its first message lookup (the solver's executor, verify.failure and
+  models.revision_flowsheet render messages), extension or not. Also rejected: a declared layer exception, which keeps
+  cycle 2. Removes cycle 2 and 1 violation.
+- **I-15** (design lane, R-016) The region solver stops importing the verifier (region.py:786, 817, 842, 879, 1700).
+  - **Its own K evaluation:** a private `_reference_k_values(provider, T, P, context)` next to `_admissible`. It is a
+    copy of the five lines of verify/checks.py:638-648: the same `StreamState(n=(1.0, 1.0, 1.0), ...)`, the same
+    `PropertyRequest(..., phase="LIQUID", properties=("lnK",))`, `math.exp(values[f"lnK_{c}"])` over `("A", "B",
+    "C")`, the same status test. Same request, same `math.exp`, so bitwise the same K. The verifier keeps `k_values`
+    and its `VerifierError` untouched. A copy, not a shared function: R-016 asks the verifier to share no solve
+    code, and two copies pinned equal by a test are how this repository restates a verifier constant
+    (region.py:178-180).
+  - **Its own refusal exception:** `AdmissibilityRefusal(RuntimeError)` in `models.lifted` (the lowest module the
+    raisers' B1 destination `region_phase` and the catchers can all import). It replaces `VerifierError` at every
+    region raise (the K refusal, region.py:860 and :889) and catch (:824, :1711), with today's message texts unchanged.
+  - **The paths:** the screen (:1711) converts it to `invalid_trial_state` as today. `admissibility_value` (:824)
+    returns `None` as today. The converged path (`converged`, :1453) lets it propagate as today, and every handler
+    that catches a route solve's `VerifierError` also catches `AdmissibilityRefusal` with identical handling:
+    application/jobs/runner.py:427 (classification), :722, :883, :933, :1175; studies/trust_region/parent.py:317,
+    :464; studies/nlp/revision_host.py:453.
+  - **One observable difference, deliberate:** the jobs runner records `exception=type(error).__name__`
+    (runner.py:433), which on the converged path now reads `"AdmissibilityRefusal"` instead of `"VerifierError"`.
+    The code stays `verifier_refused`, and the outcome strings of the TR parent and the NLP host are unchanged
+    because the text is unchanged.
+
+  The first draft's "plain `RuntimeError`" is rejected: the converged path would escape every handler. So is its
+  public `reference_k_values` in `models.syn001.equilibrium_form`, a shared function where a pinned copy gives R-016
+  more.
 
 ### Considered and not taken in S19
 
-- **I-16** (S17 D7) Application subpackages by layer: not taken. The `application-layers` rule already enforces the
-  order, and the path churn (every test, the test-impact map rebuild) buys legibility only. FQ3.
+- **I-16** (S17 D7) Application subpackages by layer: not taken; `application-layers` already enforces the order and
+  the churn buys legibility only. FQ3.
 - **I-17** (S17 D8, D9, D10) One operation declaration generating Protocols and bindings; admission inside the job
-  lifecycle; the CLI as a transport through `operations.dispatch`: deferred. None is needed by the layer order or the
-  end gate, and D8 changes the §2.1 Protocols. FQ2.
-- **I-18** (S17 D5) The legacy binder's public surface (`Binding`, `bind_revision`, `bind_revision_or_reason`,
-  `legacy_admission`, `revision_probe`) is unchanged in S19; whether the legacy route stays supported is a semantics
-  question for Frank (FQ1).
+  lifecycle; the CLI as a transport through `operations.dispatch`: deferred. FQ2.
+- **I-18** (S17 D5) The legacy binder's public surface is unchanged in S19. FQ1.
 
 ### No shims
 
-- **I-19** Last step of S19: every re-export added by S17 or S19 is removed and every importer in `src/`, `tests/`,
-  `scripts/`, `benchmarks/`, `examples/` and `docs/` is retargeted; the stale references S17 recorded are fixed
-  (`messages/catalogue/refusals.yaml:1378` and `models/revision_flowsheet.py:19` naming `revision_binding`,
-  `scripts/registry_builtin.py:134`, `scripts/s16_recall.py:70`); docs that name a moved module are updated.
+- **I-19** Last step of S19 before W5: every re-export added by S17 or S19 is removed and every importer in `src/`,
+  `tests/`, `scripts/`, `benchmarks/`, `examples/` and the living docs is retargeted. **Exceptions until W5, exactly
+  these** (FQ-A): the bindings that a frozen M9 module or a registry-hashed contributor file imports through a non-home
+  path. Measured now: `models.syn001.cascade.CascadeFailure` (column_unit.py:47), `orchestrator.region.StagedSplits`
+  (column_unit.py:90), `assessment.program.Refusal` (the four contributor files, I-7), and
+  `application.revision_binding.MODEL_BUILDERS` (the legacy table's factory). The W5 base recomputes the list
+  (frozen and contributor files' imports against the I-8 plans) and must find no other. W5 retargets them, removes
+  the bindings, switches `scripts/registry_builtin.py`'s units factory to `openflowsheet.application.model_builders`,
+  regenerates the tables, and re-registers M9 in one ruling. Stale references fixed in I-19:
+  `models/revision_flowsheet.py:19` (a docstring naming `revision_binding.MODEL_BUILDERS`),
+  `scripts/registry_builtin.py:134` (a label), `scripts/s16_recall.py:70`, and
+  `messages/catalogue/refusals.yaml:1378` (a YAML comment, so the catalogue's parsed content is unchanged; the path is
+  gate-frozen, so it is edited in a commit outside the gate).
 
 ## Alternatives rejected
 
-- **Keep every old path as a permanent re-export.** Contradicts Frank's D19 ("no compatibility shims"), and a
-  re-export from the old module keeps the old module on the import path of every caller, which is what closes cycles.
+- **Keep every old path as a permanent re-export.** Contradicts D19, and a re-export keeps the old module on every
+  caller's import path, which is what closes cycles.
 - **Dependency injection of the region solver into the column units** instead of module layer entries: changes the
   compile and solve signatures of the most sensitive unit for no correctness gain (design note section 0.3).
-- **One big rename commit at the start.** It would make every S19 structural step start from changed import paths and
-  invalidate the test-impact map for the whole campaign; moving first with re-exports, renaming last, keeps each step
-  provable bitwise.
-- **Moving `k_values` into the orchestrator.** The verifier would then import solver code, which R-016 forbids and the
-  new forbid rule `verifier-not-through-the-solver` would reject.
+- **One big rename commit at the start.** It would make every structural step start from changed paths. (The
+  test-impact argument no longer holds for W1, since no map exists until W2 ends; see risk R4.)
+- **Moving `k_values` into the orchestrator.** The verifier would then import solver code (R-016, forbid rule).
+- **Retargeting the identity-carrying files in W4.** It changes `registry_sha256` in W4 and again in W5. One change,
+  under one ruling, is reviewable.
 
-## Consequences and migration impact
+## Migration
 
-- Python imports change for the names above; nothing else does. MCP tool names, descriptions and digest, HTTP routes,
-  CLI commands and outputs, schemas, catalogue codes and messages, run manifests, replay bundles and F0 are unchanged,
-  and each is a gate of every W4 step.
-- Each item lands in two halves: a bitwise restructure step during W1/W2 that keeps the old path (when the layer order
-  allows a re-export), and an ADR step in W4 that retargets callers and removes the old path. I-4, I-6, I-9, I-10,
-  I-11 and I-12 have no first half (the re-export would itself violate the order or the item changes a call shape).
+### Rules that bind every W4 step
+
+1. **The gate.** `codehealth gate --mode interface --plan .codehealth/interface/<id>.toml` (cce-code-health 1bf41a5;
+   the repo re-pins at W4). The plan is committed before the step, with keys `id`, `approved_by`, `reason` and those
+   listed per item below. The public-API tier passes only if exactly the listed changes are made. Constraints from the
+   tool (orchestrator, 2026-11-14, and interface.py at 1bf41a5):
+   - a removed or renamed name survives in no form (no alias, no `__getattr__`, no `__all__` entry);
+   - a rename keeps signature, members, constant value and re-export source;
+   - a `callers` file may only follow the plan: statements naming a removed name may be deleted, a statement naming a
+     changed name may be rewritten into one of the same kind, and imports move as the renames say;
+   - no caller file may be added, deleted or renamed;
+   - a name entry may not sit under a module the plan removes or renames.
+2. **What the gate cannot express, measured by reading interface.py at 1bf41a5:**
+   - (a) **A retarget to an existing home.** A `renamed` entry's new side must be new in its module (:336-337,
+     "is not new"), and a caller's import of a `removed` name is dropped, not replaced (:574-585). So the W4 half of
+     an item whose definition already moved in W1/W2 needs a commit outside the gate first. It retargets the imports
+     in tests, scripts, benchmarks, examples and living docs (import lines only; the touched tests pass at its head).
+     Src importers are retargeted in a refactor-mode step. The interface step then lists only `removed`.
+   - (b) **Import forms.** The renamer maps dotted module paths only (`_Rename`, :419-460), so `from
+     openflowsheet.run import session` does not follow a module rename. Such imports are normalized first to `import
+     openflowsheet.run.session as session`, in a commit outside the gate.
+   - (c) **Monkeypatch targets.** A `(module, "name")` patch and a patched private class member do not follow a move.
+     See rule 4 and Q-F5.
+3. **Test commits outside the gate** are orchestrator-reviewed, touch only tests (and named scripts), and say in the
+   message which item they serve. They come **before** the step when they pass at its base (ported tests, normalized
+   imports, pre-retargets), and **after** it when they test what the step creates.
+4. **Patch safety.** After every step and test commit that moves or splits code, `python3
+   .claude/skills/s19-refactor/patch_noop.py .` reports 0 flagged, and its total does not drop by more than the
+   patches the commit deletes (243 at d90b498f). patch_noop does not see patched class members (it resolves
+   module-valued aliases only). For each class-member patch on a moved method, and for each patch the commit
+   retargets, the engineer runs a liveness check once: replace the fake with one that raises, and the test must fail.
+   Record it in the build-decisions log. The full-suite terminal report's "MSG WO-5a: N bundles scanned" and "MSG
+   WO-6: N run results checked" must equal the base run's N at every step of I-4, I-10, I-12.
+5. **Doc sweeps change living docs only:** README, `docs/interfaces-frozen.md`, `docs/code-health.md`, guides,
+   `CLAUDE.md`, `.claude/**/*.md`, examples. Records stay as written: `docs/adr/**`, `docs/design-history/**`,
+   `docs/design/**`, `docs/briefs/**`, `evidence/**`, build-decision logs, `*_DECISIONS.md`, measurement and analysis
+   reports. The `[docs]` config excludes records (config commit before W4).
+6. **Layer config** changes are separate orchestrator commits (`.codehealth/*` is refused inside a step). They land
+   immediately after the step that makes them true, or before it when they forbid more.
+
+### Per item
+
+| item | W4 commits, in order | plan keys of the interface step | layer config |
+|---|---|---|---|
+| I-1 | src retarget (refactor); retarget outside gate; interface | `removed` (orchestrator/trace.py, the module) | none (numerics already below) |
+| I-2 | src retarget; retarget outside gate; interface | `removed` (region.py: the vocabulary names except `StagedSplits`, and rank.py's former `PRESSURE_TOLERANCE` binding if it is a re-export) | before A4: forbid `to` += `openflowsheet.models.lifted_tolerance` |
+| I-3 | src retarget; retarget outside gate; interface | `removed` (application/policies.py, the module) | after: application-layers loses `application.policies`; repo-layers adoption line `run.bundle -> application.policies` goes |
+| I-4 | import normalization outside gate (test_m02_wo14.py:59); interface | `renamed` (module run/session.py = application/run_session.py), `new_files`, `callers` (tests/**, scripts/**, living docs) | after: application-layers gains `application.run_session` directly above `application.binding`; repo-layers loses `openflowsheet.run.session` |
+| I-5 | src retarget; retarget outside gate; interface | `removed` (types.py: `schema_errors`) | none |
+| I-6 | src retarget; retarget outside gate; interface | `removed` (units/__init__.py: the display names) | none |
+| I-7 | src retarget (not the 4 contributor files); retarget outside gate; interface | `removed` (verification.py: the `TAU_*` re-exports; program.py: `Linearization`), `added` (linearization.py: `feasibility_tolerance`) | none |
+| I-8 | per restructure plan: src retarget; retarget outside gate; interface | `removed` (each re-export the plans left, except the I-19 W5 exceptions) | before each B1/B8 split: forbid `to` += its new modules |
+| I-9 | test outside gate before (MSG caller-module probe); interface | `renamed` (types.py, contract.py, validation.py names -> errors.py), `new_files`, `callers` | after: application-layers gains `application.errors` directly below `application.types` (below the I-12a type modules once they exist); the `types -> contract` adoption line goes |
+| I-10 | interface | `renamed` (revision_run.py:route_structure = structure_inspection.py:route_structure), `new_files`, `callers` (the 5 tests: test_m06_wo1_structure_index.py, test_t07_r6_free_role.py, test_t07_r7_admission.py, test_t07_w3c_admission.py, test_t07_w5a_projection.py) | after: application-layers gains `application.structure_inspection` directly above `application.validation`; the `revision_run -> validation` adoption line goes |
+| I-11 | ported tests and script outside gate before; retarget of `transactions` re-export importers outside gate before; interface | `removed` (application/transactions.py, the module), `callers` (the facade tests, whose statements naming removed names are deleted) | after: application-layers loses `application.transactions` and its adoption lines |
+| I-12a/b/c | interface each | `renamed` (each moved name -> its new module), `new_files`, `callers` | after: application-layers replaces `application.types` by `inspection_types`, `job_records`, `job_requests`, `policy_types`, `transaction_types`, then `errors`, then `documents` (top to bottom; the import graph at the base fixes the order inside the group, with 0 violations the test); `store_records` directly below `store`; `revision_replay` directly above `revision_run` |
+| I-12d | interface | `added` (service and core classes), `new_files`, `callers` (patches, see Q-F5) | after: services between `local` and `jobs.executor`, in the order of I-12d, `service_core` last |
+| I-13 | interface (public names added, private ones still bound); tests retarget outside gate; refactor step removes the private bindings | `added` | none |
+| I-14 | interface (after I-9); fresh-interpreter tests outside gate after | `added` (catalogue.py: `set_before_freeze`; yaml_io.py: `yaml_load`), `new_files` | after: the `messages.catalogue -> registry` adoption line goes |
+| I-15 | forced-refusal tests outside gate before (asserting all but the `exception` detail); interface; tests outside gate after (`exception == "AdmissibilityRefusal"`, the K pin) | `added` (models/lifted.py: `AdmissibilityRefusal`), `callers` (tests that expect `VerifierError` from a region path, listed at the base) | after: the `orchestrator.region -> verify.checks` adoption line goes |
+| I-19 | sweep commits outside gate (docs, refusals.yaml:1378); interface for any re-export left | `removed` | none |
+
+Recommended W4 order: I-6, I-3, I-1, I-2, I-7, I-8, I-5, I-4, I-9, I-14, I-10, I-11, I-15, I-13, I-12a, I-12b, I-12c,
+I-12d, I-19. Hard constraints: I-14 after I-9; I-5 before I-12a; I-10 before I-12c; I-11 before I-12d.
+
+## Consequences
+
+- Python import paths change for the names above. In addition, and only these:
+  - F0 M9 and the built-in registry identity change once in W5, for the causes listed under Affected requirements.
+  - A library-only process that never installed the catalogue hook freezes the core catalogue without building the
+    registry (I-14).
+  - The K06 facade, its in-memory `record_run` and `RevisionStoreView.put` are gone (I-11).
+  - The `exception` detail of a typed `verifier_refused` end caused by the solver's admissibility evaluation names
+    `AdmissibilityRefusal` (I-15).
+- Unchanged, and a tier of every W4 step: MCP tool names, descriptions and digest, HTTP routes, CLI commands and
+  outputs, schemas, catalogue codes and message texts, run manifests, replay bundles, F0 (`corpus_identity.py
+  --check`) through W4, and `registry_builtin.py --check` through W4.
 - Test-impact map: rebuilt after I-19 (about 70 min).
 
 ## Acceptance evidence
 
-- For every item: no import of the old path in src, tests, scripts, benchmarks, examples (`grep`), and `codehealth
-  docs` reports no broken reference; the public-API difference of the step equals this ADR's list exactly (names
-  removed, names added).
-- Full suite green; `scripts/corpus_identity.py --check` (F0) identical; MCP digest tests green; ruff and mypy clean;
-  CI green on both architectures before the merge.
-- `codehealth arch` at the end of S19: 0 violations on `repo-layers`, `application-layers` and every forbid rule; 0
-  cycles at depth 4.
-- I-10: the R0 projection of every F0 run unchanged. I-11: a static conformance test that `LocalApplication`
-  satisfies `contract.Application`. I-14: the MSG audit and catalogue tests unchanged, plus a test that a library-only
-  freeze without the hook raises the typed error. I-15: bitwise-identical K on the SYN-001 provider over the F0 states.
+- **Per step:** the interface gate accepted with its committed plan; patch_noop 0; MSG WO-5a/WO-6 counts equal to the
+  base where rule 4 requires them; full suite green; F0 `--check` identical; `registry_builtin.py --check` clean; MCP
+  digest tests green; ruff and mypy clean.
+- **End of W4:**
+  - `grep` finds no import of an old path in src, tests, scripts, benchmarks or examples, except the I-19 W5
+    exceptions;
+  - `codehealth docs` reports no broken reference in living docs;
+  - `codehealth arch`: 0 violations on `repo-layers`, `application-layers` and every forbid rule, 0 cycles at depth 4.
+- **End of W5:** the I-19 exceptions are gone, F0 re-registered under the ruling, `registry_builtin.py --write`
+  committed and `--check` clean, and E-F1-5's constant updated in the same commit.
+- **I-9:** an `api_error` call from a test module leaves `Auditor.misses` empty. The same call executed with globals
+  `{"__name__": "openflowsheet.probe"}` records exactly `{code: "openflowsheet.probe"}`. Passes before and after
+  the move.
+- **I-10:** `route_structure` documents equal at base and head for every document of test_m06_wo1_structure_index's
+  corpus (its snapshot test).
+- **I-11:** the mypy tier checks `_conforms`; each ported K06 property test passes at the base of the deleting step.
+- **I-14**, four fresh-interpreter tests (`python -I`):
+  - (a) import `application.errors`, then `str(api_error(...))`: the registry was built before the freeze;
+  - (b) the same for `application.jobs.worker` and a catalogue lookup;
+  - (c) import only `messages.render`, look up a core code: the registry is not imported and the catalogue is
+    frozen;
+  - (d) after (c), building a registry with a test extension catalogue raises the frozen-catalogue `RuntimeError`.
+
+  E-F1-7 (test_f1_discovery.py:464, which imports the registry before its lookup) is unchanged.
+- **I-15:**
+  - one forced-refusal test per raiser (ideal K, gamma-phi `BandError`, pr-c1 `classify`) on each path: screen ->
+    `invalid_trial_state` with today's text; `admissibility_value` -> `None`; converged -> typed end
+    `verifier_refused` with today's text, and the TR parent and NLP host outcome strings unchanged;
+  - `_reference_k_values` equals `verify.checks.k_values` bitwise (`float.hex`) at every `(T, P)` of the F0 runs'
+    lifted splits.
 
 ## Frank questions (value judgments; each has a default so work proceeds)
 
-- **FQ1** Does the legacy binder route stay supported? Default: yes, unchanged in S19; its retirement would be its own
-  package with a semantics ADR.
-- **FQ2** D8, D9, D10 (operation declaration, admission placement, CLI as a transport): default, deferred to a later
-  package.
+- **FQ-A** No shims versus frozen identity. Default: F0 M9 and the built-in registry hash change once, in W5, under one
+  `specifier` ruling; the I-19 exceptions live until then; no permanent re-exports.
+- **FQ-B** I-14, a process that has not imported the registry. Default: the hook is installed by the registry,
+  `application.errors` and `application.jobs.worker`, with fresh-interpreter tests. A process with none freezes core
+  only, and a late extension registration then raises (rather than crashing every library-only lookup).
+- **FQ-C** I-11, deleting the public K06 facade and its `record_run` behaviour. Default: delete; the behaviour lives
+  in the service that owns runs (jobs in the store, ADR 0035 D4), with no in-memory successor; tests and the K06
+  script ported; ADR 0019's facade paragraph superseded here.
+- **FQ1** Does the legacy binder route stay supported? Default: yes, unchanged in S19.
+- **FQ2** D8, D9, D10: default, deferred to a later package.
 - **FQ3** Application subpackages by layer (S17 D7): default, no.
-- **FQ4** New names (`numerics.trace`, `models.lifted`, `orchestrator.policies`, `application.run_session`,
-  `schema_check`, `studies.nlp.tolerances`, `assessment.linearization`, `application.errors`,
-  `application.structural_stage`, the service class names of I-12): default, as written; renames are cheap before
-  I-19 lands.
+- **FQ4** New names: `numerics.solve_record`, `models.lifted`, `models.lifted_tolerance`, `AdmissibilityRefusal`,
+  `orchestrator.policies`, `application.run_session`, `schema_check`, `studies.nlp.tolerances`,
+  `assessment.linearization`, `application.errors`, `application.structure_inspection`, the I-12 modules
+  (`documents`, `transaction_types`, `job_requests`, `job_records`, `policy_types`, `inspection_types`,
+  `store_records`, `revision_replay`, `service_core`, `job_service`, `validation_service`, `artifact_service`,
+  `revision_service`, `inspection_service`) and classes. Default: as written. Renames are cheap until the step that
+  creates each name; `numerics.solve_record` must be settled before A5 runs.
 
 ## Open questions that need a fact (with defaults)
 
-- **Q-F1** Can the gate's public-API check accept an ADR step that removes names? Default: an allow-list naming this
-  ADR's items is added to the tool before W4; until then W4 steps run without that tier and the reviewer checks the
-  diff against this ADR's list.
-- **Q-F2** Does every path that freezes a registry-first catalogue import the registry first? Default: grep and the
-  full suite decide; if not, the application's composition roots install the hook (I-14's typed error covers the
-  rest), reviewed before it runs.
-- **Q-F3** Is the run path's own `ValidationReport` (with its timestamp) inside the R0 identity of a run? Default: if
-  yes, I-10 passes the caller's report and the R0 check on F0 decides; if R0 changes, stop for a design-lane ruling.
-- **Q-F4** Do persisted artifacts or fixtures record Python module paths of moved classes? Default: grep `schemas/`,
-  `benchmarks/`, `tests/` fixtures before each move; F0 decides.
+- **Q-F1** (tool) Can cce-code-health express "remove a re-export and retarget its callers to the existing home" in
+  one interface step, for example with a `retargeted` key? Measured at 1bf41a5: no (rule 2a). Default: the
+  three-commit pattern of rule 2a. Ask the code_health session for the key. Also unknown: whether the profile's
+  `public_api` counts a plain `from x import y` in an in-scope importer as a re-export. Default: src retargets go in a
+  refactor-mode step before the interface step.
+- **Q-F3** dropped (I-10 changes no signature).
+- **Q-F4** Do persisted artifacts record Python module paths of moved names? Measured: yes, the built-in registry
+  tables (`openflowsheet.application.revision_binding` as the factory module, handled in W5 by I-19); the tables also
+  record file paths of the implementation sets. Default for the rest: grep `schemas/`, `benchmarks/` and test fixtures
+  before each move; F0 decides.
+- **Q-F5** (tool) Can a step move a name or private member that tests patch by `(module, "name")` or on its class?
+  The callers rule refuses the retargeting edit, and leaving it strands the patch: a loud `AttributeError` or a silent
+  no-op. Known instances, all in I-12d: conftest.py:107 (`LocalApplication._run_result`), test_msg_surfaces.py:275
+  (`local.MAX_LISTED_MEMBERS`), test_t08_b50_surface_content.py:259, 260, 270 (`local.MODEL_BUILDERS`,
+  `MODEL_SIGNATURES`), test_t08_w2_unsupported.py:150 (`local.apply_edits`). Others are listed by the engineer at
+  each split's base. Default:
+  - ask the code_health session to let callers follow a plan's moves in `monkeypatch.setattr(<alias>, "<name>")`
+    pairs and in class-member patches;
+  - I-12d is scheduled last;
+  - if the tool change has not landed when I-12d is next, I-12d runs outside the codehealth gate with the same tiers
+    (`.claude/skills/s19-refactor/gate.sh`), patch_noop 0, the liveness checks and a reviewer comparison against its
+    committed plan, recorded in the decisions log as "interface gate not applicable", not as a pass.
+- **Q-F6** Does any test or F0 run reach the converged-path refusal of I-15 today? Default: the forced-refusal tests
+  establish the behaviour; F0 decides identity.
+
+## Risks
+
+- **R1** I-12d is the largest step (77 methods). Mitigation: the family table and the "only caller, else lower" rule
+  leave no placement to taste; the step STOPs and reports if a service would call one above it.
+- **R2** Moving `PRESSURE_TOLERANCE` (I-2) touches orchestrator/rank.py, whose own defaults then import it. The value
+  is unchanged (`1e-2`); F0 decides.
+- **R3** I-15's `exception` detail is the one deliberate observable change in W4. Renaming the outcome code for
+  solver-side refusals is out of scope; it would change the catalogue.
+- **R4** Option, not the default: if Frank accepts this ADR before A5 runs, I-1 can land as one module rename in
+  interface mode (no re-export, no retarget commits). Default: A5 as planned.
 
 ## What this ADR does not establish
 
-It does not change any numerical method, tolerance value, phase rule, certificate rule or identity rule; it does not
-decide the legacy binder's future; it does not touch a §2.1 signature or a §2.2 schema.
+It changes no numerical method, tolerance value, phase rule, certificate rule or identity rule (the W5 identity
+changes are re-registrations of byte-identical behaviour, ruled on separately). It does not decide the legacy binder's
+future, touch a §2.1 signature or a §2.2 schema, or rename the `verifier_refused` code.
