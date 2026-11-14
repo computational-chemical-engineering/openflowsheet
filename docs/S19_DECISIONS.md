@@ -279,3 +279,17 @@
   "a VerifierError propagates" at `application/revision_run.py:30, 541, 871`, `application/trust_region_parent.py:15`,
   `studies/nlp/host.py:273`; `models/lifted.py:4` says region re-exports every name (region imports
   `AdmissibilityRefusal` without the `as` form).
+- **2026-11-14, A11 / I-14 ruling (`architect` on Fable 5.2, `docs/briefs/S19-A11-ruling.md`, edc69d6e): accepted with
+  its defaults.** The catalogue stops importing upward through a private hook holder with setters
+  `set_before_freeze` and `set_audit_probe`; the registry installs its hook at import; `application.errors`, the jobs
+  worker and `tests/conftest.py` import the registry (FQ-B); `yaml_load` moves to the leaf `messages/yaml_io.py`.
+  Measured: today no render precedes the extension merge; with the change CLI, HTTP, MCP, worker child, pytest and
+  F1 discovery render the same text in the same order; the one observable change is the one FQ-B accepted (a
+  process that never imports the registry freezes the core catalogue alone). Expected arch at the I-14 base: -1
+  violation, -1 cycle, -6 edges. **Gaps against the ADR, recorded as implementation facts within its intent:** removing
+  cycle 2 needs the audit cut too, so the plan adds three public names (`set_before_freeze`, `set_audit_probe`,
+  `yaml_load`), not the row's two; ADR tests (a) and (b) are written first and pass at the base, (c) and (d) fail at
+  the base by design. Sequencing: A11/I-14 runs in W4 after I-9 (`application.errors` does not exist before it).
+  Defaults taken: Q1 `set_audit_probe`; Q2 the conftest import; Q3 no fourth installer, the engineer records the
+  probe list; Q4 the holder is accepted with a comment, the reviewer reads it; Q5 gate on the full suite; Q6
+  `registry_first` stays. The design note's reading of `catalogue.py:274` (lines 177-182) is corrected by the ruling.
