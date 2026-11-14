@@ -265,3 +265,17 @@
   per run, so it took runs r3 and r4, steps 41 and 43, to find them; asked of the tool owner). Interface mode logs
   `accepted` (it refuses `accepted-neutral`). Before merge: `reviewer` R-I15 on Fable (running). Docs pass: three
   anchors in `docs/design/T07-jobs-and-bindings.md:397` into runner.py drifted.
+- **2026-11-14, R-I15 (`reviewer` on Fable 5.2): merge after test fixes; the source step is sound.** Confirmed by
+  reading and in-memory checks: `_reference_k_values` equals `verify.checks.k_values` (request, status test, text,
+  `math.exp` over A, B, C); all nine handlers catch both classes with identical bodies and order; no other
+  `VerifierError` handler wraps a solve; importing region, executor, tear, splits and revision loads no
+  `openflowsheet.verify*` module; `models.lifted` is a leaf. Fixes (test-only, lane f part 4): the K pin's refusal
+  branch was dead (all 59 points in SYN-001's domain; add out-of-domain points and a refusing provider, F0 points must
+  not refuse); the pin covers 44 of 52 v0.3.0 bundles (the five K05 single-phase bundles have no solution state: add
+  their converged states or correct the claim); optional forced test of m07_journey's branch. Notes recorded:
+  besides the runner's `exception` detail, the class name could surface in generic printers on an unreached path
+  (`studies/nlp/greybox.py:538, 570` notes "verification raised AdmissibilityRefusal", `application/cli.py:493`,
+  `jobs/runner.py:278`, `trust_region/trf.py:409, 416`), same nature as ADR R3, no run reaches it (Q-F6); docs pass:
+  "a VerifierError propagates" at `application/revision_run.py:30, 541, 871`, `application/trust_region_parent.py:15`,
+  `studies/nlp/host.py:273`; `models/lifted.py:4` says region re-exports every name (region imports
+  `AdmissibilityRefusal` without the `as` form).
