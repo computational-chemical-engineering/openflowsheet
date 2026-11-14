@@ -68,3 +68,17 @@
   Next: Frank's answers folded into the ADR text; ADR to Frank for acceptance before W4.
 - **2026-11-14: cce-code-health 1bf41a5 has the interface mode** (plan `.codehealth/interface/<id>.toml`; exact
   public_api; callers check). Re-pin at the W4 boundary.
+- **2026-11-14: code_health releases after d542005 (re-pin before W4, target 04f630e or later).** 04f630e: interface
+  mode with Q-F1 (`retargeted` key) and Q-F5 (patch targets follow renames, moves and retargets), the callers rule
+  rewritten after a second review (deletions listed in the gate JSON); ADR 0076's Q-F1/Q-F5 defaults become "through
+  the gate". dc80d9d: `codehealth stats` (per-recipe statistics from run logs). 965de38: a step that pushes a file
+  over a size threshold fails the step gate (check at re-pin: W2 splits only shrink files; a W4 move may grow a home
+  module). 0f7fe83 `docs --stale` (top entries are the M07/V02 specs: classify them as records in the docs pass) and
+  c4143f4 `docs --agent` (9 agent docs, 6930 words, 3 repeated paragraphs): informational, for the docs pass.
+- **DECISION: W2 runs as lane c (A5, then splits B1 and B8-executor: orchestrator and numerics) and lane d (B6, B5 with
+  B5a first, B8-certificate: studies.trust_region and verify), both from the merge of W1; then a models lane (B3, B2,
+  B4).** Alternative: A5 alone before any split, as the design note orders it. Rejected: A5 and B6/B5 touch disjoint
+  files, splits have arch delta 0 / 0, and each lane re-measures at its base; the clone-wide gate lock already
+  serializes the gates, so a third lane would add queueing, not throughput. B7 (frozen) waits for W5. A `reviewer`
+  pass on the W1 moves (brief `S19-R-W1.md`) runs in parallel (S1/S2 leaf moves: every 4). Reversible by: running A5
+  alone first.
