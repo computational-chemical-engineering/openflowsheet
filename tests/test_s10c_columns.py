@@ -20,7 +20,7 @@ from typing import Any
 import pytest
 from test_s10c_blocks import CONTEXT, REAL, REFERENCE, UNIT, M1Block, column_spec
 
-import openflowsheet.models.syn001.column as column_module
+import openflowsheet.models.syn001.column_rows as column_rows_module
 import openflowsheet.models.syn001.column_solve as column_solve
 from openflowsheet.compile.reference import row_values
 from openflowsheet.models.syn001 import ENERGY_TOLERANCE
@@ -311,7 +311,7 @@ def test_a44_m2_is_detected(
     0.62 and 0.26 (mol/s)² at the roots, ≥ 2.8e6 τ_eq)."""
     reference_state(case)  # built from the unmutated declared rows
     assert rows_over_tolerance(case) and accepted_at_root(case)  # not vacuous
-    monkeypatch.setattr(column_module, "GammaPhiLnKBlock", M2Block)
+    monkeypatch.setattr(column_rows_module, "GammaPhiLnKBlock", M2Block)
     mutated = rows_over_tolerance(case)
     record_property("m2_rows_at_root_max_over_tau", max(mutated.items(), key=lambda item: item[1]))
     assert max(mutated.values()) > ROWS_AT_ROOT
@@ -324,7 +324,7 @@ def test_a44_m2_is_detected(
 def test_a35_m1_record_on_c_mw(monkeypatch: pytest.MonkeyPatch, record_property: Any) -> None:
     """A35 (recorded): C-MW's Newton iterations and observed order under WO-3's M1 mutant (the
     K-block's `n` columns 0.0). Only a typed answer is asserted; the record is the result."""
-    monkeypatch.setattr(column_module, "GammaPhiLnKBlock", M1Block)
+    monkeypatch.setattr(column_rows_module, "GammaPhiLnKBlock", M1Block)
     trace = Trace()
     found = solve_column(column_spec("C-MW"), REAL, trace=trace)
     assert isinstance(found, ColumnSolution | CascadeFailure)

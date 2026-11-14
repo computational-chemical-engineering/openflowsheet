@@ -22,6 +22,7 @@ from conftest import REPO_ROOT
 import openflowsheet.models.syn001.cascade_solve as cascade_solve_module
 import openflowsheet.models.syn001.column as column_module
 import openflowsheet.models.syn001.column_solve as column_solve_module
+import openflowsheet.models.syn001.column_validation as column_validation_module
 from openflowsheet.compile.reference import row_values
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.models.syn001.cascade import (
@@ -376,7 +377,7 @@ def test_a02_refusal_probes(name: str, monkeypatch: pytest.MonkeyPatch) -> None:
         finally:
             provider.inside_r5 = False
 
-    monkeypatch.setattr(column_module, "single_phase_admissible", r5)
+    monkeypatch.setattr(column_validation_module, "single_phase_admissible", r5)
     answer = solve_column(spec, provider)  # type: ignore[arg-type]
     assert isinstance(answer, CascadeFailure), answer
     assert answer.outcome == "INVALID_SPECIFICATION"

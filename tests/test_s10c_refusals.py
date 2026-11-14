@@ -18,7 +18,7 @@ from test_s01_cascade_wo1 import _spec as s01_spec
 from test_s03_s11_refusal import PROVIDERS as S03_PROVIDERS
 from test_s10c_blocks import CONTEXT, REAL, column_spec
 
-import openflowsheet.models.syn001.column as column_module
+import openflowsheet.models.syn001.column_validation as column_validation_module
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.models.syn001.cascade import (
     CascadeFailure,
@@ -199,8 +199,8 @@ def test_a54_inverse_kinds_are_refused_before_i1(
     def unreachable(*_: object) -> None:
         raise AssertionError("a SYN-001 closed form was reached")
 
-    monkeypatch.setattr(column_module, "stage_band", unreachable)
-    monkeypatch.setattr(column_module, "saturation_temperature", unreachable)
+    monkeypatch.setattr(column_validation_module, "stage_band", unreachable)
+    monkeypatch.setattr(column_validation_module, "saturation_temperature", unreachable)
     given = INVERSE[kind]
     if end == "reboiler":
         given = dataclasses.replace(given, stage=C_MW.stage_count if given.stage else None)
