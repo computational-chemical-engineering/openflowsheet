@@ -251,3 +251,9 @@
   interface plan (exact entries, listed in the gate JSON), not an override.** Alternative (b), a shared lower K
   function, rejected by the ADR itself (R-016). I-15 and B1 wait for the tool release; W3 G4 and G2 continue.
   Note for waits: `pgrep -f "test_impact.py build"` matches its own loop; use `[t]est_impact.py build`.
+- **2026-11-14, Frank: "Yes, use Fable 5.2 for the most demanding think tasks. You have my permission. Note that I
+  will perform a budget reset this week, therefore you can use some more agents if you want."** Applied as: the
+  design-lane rulings that are hard to reverse (A11 initialization order, I-10 replay identity, the W5 identity
+  ruling, and any ruling a reviewer escalates) run on Fable 5.2 (the Agent tool's model override on `architect`,
+  `specifier` or `reviewer`; the agent definitions are not edited). Engineers stay on Opus 5.5. W3 widens to three
+  or four lanes on disjoint package groups (gates still one at a time on the clone-wide lock).
