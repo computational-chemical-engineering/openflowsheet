@@ -30,7 +30,7 @@ from typing import Final, Literal
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.thermo import PropertyProvider, PropertyRequest, PropertyStatus, StreamState
 from openflowsheet.verify import NEAR_THRESHOLD_MARGIN
-from openflowsheet.verify.checks import KIND_TOLERANCE
+from openflowsheet.verify.kind_tolerance import KIND_TOLERANCE
 
 __all__ = [
     "BISECTION_BUDGET",

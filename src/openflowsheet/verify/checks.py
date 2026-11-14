@@ -24,7 +24,6 @@ from openflowsheet.compile.spec import ProblemSpec
 from openflowsheet.compiled import CompiledProblem, EvaluationContext
 from openflowsheet.models import duty_id, flow_id, pressure_id, temperature_id
 from openflowsheet.models.syn001 import (
-    ENERGY_TOLERANCE,
     FLOW_TOLERANCE,
     TEMPERATURE_TOLERANCE,
 )
@@ -49,27 +48,18 @@ from openflowsheet.verify import (
     evaluated,
     unsupported,
 )
+from openflowsheet.verify.kind_tolerance import (
+    EQUILIBRIUM_TOLERANCE as EQUILIBRIUM_TOLERANCE,
+)
+from openflowsheet.verify.kind_tolerance import KIND_TOLERANCE as KIND_TOLERANCE
+from openflowsheet.verify.kind_tolerance import PRESSURE_TOLERANCE as PRESSURE_TOLERANCE
 
 if TYPE_CHECKING:
     from openflowsheet.orchestrator.region import LiftedSplit
     from openflowsheet.verify.zero_flow import ZeroFlowSplit
 
-#: §5.1, from ADR 0001 D6. Pressure and the lifted equilibrium row are the two the K03 work
-#: left implicit; §5.2 derives the equilibrium row's from the flow rule at the flow scale.
-PRESSURE_TOLERANCE: Final = 1e-2
-#: §5.2: `a = 1e-9 x 3`, `r s = 1e-8 x 9`. Dividing the row by the flow scale gives a flow.
-EQUILIBRIUM_TOLERANCE: Final = 1e-9 * 3.0 + 1e-8 * 9.0
 #: §4.7, as K03 §8.2 argues it.
 ADMISSIBILITY_EPSILON: Final = 1e-12
-
-#: §5.1's mapping from a declared quantity kind to its registered tolerance.
-KIND_TOLERANCE: Final[Mapping[str, float]] = {
-    "molar_flow": FLOW_TOLERANCE,
-    "molar_flow_squared": EQUILIBRIUM_TOLERANCE,
-    "heat_rate": ENERGY_TOLERANCE,
-    "temperature": TEMPERATURE_TOLERANCE,
-    "pressure": PRESSURE_TOLERANCE,
-}
 
 #: §5.1's `s_i`, the registered reference. Read from the registry, never from an iterate.
 KIND_REFERENCE: Final[Mapping[str, float]] = {
