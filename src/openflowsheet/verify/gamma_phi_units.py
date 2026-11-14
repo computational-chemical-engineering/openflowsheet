@@ -62,8 +62,12 @@ from openflowsheet.verify.checks import (
     stream_of,
 )
 from openflowsheet.verify.column import _SHARED_STABILITY, _STABLE
+from openflowsheet.verify.flowsheet_rows import (
+    REACTING_MODELS,
+    _envelope_energy,
+    _envelope_material,
+)
 from openflowsheet.verify.split_checks import Degeneracy
-from openflowsheet.verify.table import REACTING_MODELS, _envelope_energy, _envelope_material
 from openflowsheet.verify.table_kit import (
     REACTION_DATUM_NOTE,
     SPLIT_ENTHALPY_NOTE,
