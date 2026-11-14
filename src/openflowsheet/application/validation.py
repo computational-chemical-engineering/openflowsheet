@@ -224,10 +224,10 @@ def validate(
     """
     if task == "optimization":
         return _validate_optimization(document, optimization, now, surrogates, solver_probe)
-    schema = _schema_stage(document, task, now)
-    if isinstance(schema, ValidationReport):
-        return schema
-    checks: list[Check] = [schema]
+    schema_outcome = _schema_stage(document, task, now)
+    if isinstance(schema_outcome, ValidationReport):
+        return schema_outcome
+    checks: list[Check] = [schema_outcome]
 
     instances = list(document.get("instances") or [])
     connections = list(document.get("connections") or [])
@@ -1073,12 +1073,14 @@ def _dimensions(
     parameter name in code-point order (ADR 0016 D6): `_judged_specifications`, then
     `_judged_parameters`. `_dimensions_check` then builds the check from what was judged.
     """
-    conversions, refusals, skipped = _judged_specifications(
+    specification_conversions, specification_refusals, skipped = _judged_specifications(
         components, specifications, molecular_weights
     )
     parameter_conversions, parameter_refusals = _judged_parameters(instances, molecular_weights)
     return _dimensions_check(
-        conversions + parameter_conversions, refusals + parameter_refusals, skipped
+        specification_conversions + parameter_conversions,
+        specification_refusals + parameter_refusals,
+        skipped,
     )
 
 
@@ -1109,7 +1111,7 @@ def _judged_specifications(
         try:
             _, conversion = convert_specification(entry, value, molecular_weights)
         except RevisionError as error:
-            refusals.append((name, _with_hint(error)))
+            refusals.append((name, _code_with_hint(error)))
             continue
         if conversion is not None:
             conversions.append(conversion)
@@ -1135,11 +1137,21 @@ def _judged_parameters(
                     unit, parameter, parameters[parameter], molecular_weights
                 )
             except RevisionError as error:
-                refusals.append((f"{unit}.{parameter}", _with_hint(error)))
+                refusals.append((f"{unit}.{parameter}", _code_with_hint(error)))
                 continue
             if conversion is not None:
                 conversions.append(conversion)
     return conversions, refusals
+
+
+def _code_with_hint(error: RevisionError) -> str:
+    """The code, then its hint (ruling round 6, B2), bounded as an `Unbound`'s is."""
+    from openflowsheet.application.binding import HINT_LIMIT
+    from openflowsheet.application.projection import bound_text
+
+    if error.hint is None:
+        return error.code
+    return f"{error.code}. {bound_text(error.hint, HINT_LIMIT)}"
 
 
 def _dimensions_check(
@@ -1188,16 +1200,6 @@ def _dimensions_check(
         + unjudged,
         implicated_objects=tuple(c.input_id for c in conversions),
     )
-
-
-def _with_hint(error: RevisionError) -> str:
-    """The code, then its hint (ruling round 6, B2), bounded as an `Unbound`'s is."""
-    from openflowsheet.application.binding import HINT_LIMIT
-    from openflowsheet.application.projection import bound_text
-
-    if error.hint is None:
-        return error.code
-    return f"{error.code}. {bound_text(error.hint, HINT_LIMIT)}"
 
 
 #: The parameter families keyed by component id (`nu.<c>`, `conversion.<c>`, `split.<c>`).
