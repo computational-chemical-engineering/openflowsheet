@@ -293,3 +293,11 @@
   Defaults taken: Q1 `set_audit_probe`; Q2 the conftest import; Q3 no fourth installer, the engineer records the
   probe list; Q4 the holder is accepted with a comment, the reviewer reads it; Q5 gate on the full suite; Q6
   `registry_first` stays. The design note's reading of `catalogue.py:274` (lines 177-182) is corrected by the ruling.
+- **2026-11-14, B1 rebuilt on I-15 (wip/S19-B1-r2: retarget 0eb2c5c6 incl. the source-reading rule in
+  test_t03_contract.py:199 with a falsifier, plan 485956c1, step df23dd08, docs d337e778 ungated).** Closures clean,
+  arch 6/4/14 unchanged, region.py 2073 -> 1272 NLOC (debt 415.5 -> 350.5, the rest in region_phase 20.0 and
+  region_problem 45.0), patch_noop 0 of 260. The gate (step 54) failed only on the debt tier: "new file smell
+  large_file" for region.py, which was huge_file at the base. Judged a tool defect (the new-smell rule compares smell
+  names, so a huge -> large downgrade counts as new); reported to the tool owner; the step is re-gated unchanged on
+  the fix. Docs pass: `scripts/t03_evidence_manifest.py:1880` (same source rule, expects region.py),
+  `scripts/s08b_evidence_manifest.py:96`.
