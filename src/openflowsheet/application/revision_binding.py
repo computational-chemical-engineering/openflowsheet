@@ -36,7 +36,7 @@ from functools import partial
 from typing import TYPE_CHECKING, Any, Final, overload
 
 from openflowsheet.adapters import variants
-from openflowsheet.application.binding import Unbound, _column_owners
+from openflowsheet.application.binding_common import Unbound, _column_owners
 from openflowsheet.application.model_builders import MODEL_BUILDERS as MODEL_BUILDERS
 from openflowsheet.application.model_builders import SurrogateResolver as SurrogateResolver
 from openflowsheet.application.model_builders import _c1_reactor_surrogate as _c1_reactor_surrogate

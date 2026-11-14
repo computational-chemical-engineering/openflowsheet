@@ -25,16 +25,18 @@ analysis as unsupported. That is the same limitation K06's CLI already carries.
 from __future__ import annotations
 
 import copy
-import sys
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field, replace
-from typing import TYPE_CHECKING, Any, Final, Literal
+from typing import TYPE_CHECKING, Any, Final
 
+from openflowsheet.application.binding_common import HINT_LIMIT as HINT_LIMIT
+from openflowsheet.application.binding_common import Unbound as Unbound
+from openflowsheet.application.binding_common import _column_owners
+from openflowsheet.application.binding_common import refusal_code as refusal_code
 from openflowsheet.canonical import document_sha256, first_noncanonical
 from openflowsheet.compile.spec import EquationSpec, ProblemSpec
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.graph.process import Connection, ProcessGraph
-from openflowsheet.messages import audit
 from openflowsheet.models import SpecificationError
 from openflowsheet.models.revision_flowsheet import (
     InputMapping,
@@ -259,49 +261,6 @@ def structural_inputs(flowsheet: Any) -> tuple[ProblemSpec, ProcessGraph, dict[s
         for equation in unit.contribute(WIRING[unit.unit_id], flowsheet.components).equations
     }
     return spec, graph, row_units
-
-
-@dataclass(frozen=True)
-class Unbound:
-    """Why a revision could not be bound, in the kinds that call for different statuses.
-
-    Decided by Frank on 2026-09-24 (register R-022), refining F1 of the T01 review. The kinds are
-    not interchangeable: a revision whose specifications contradict each other has a real defect;
-    one missing a specification is incomplete, which blueprint §4.3 calls `DRAFT` in so many
-    words; and one this binding cannot read may be perfectly fine, so reporting it as a fault
-    would repeat the old `UNSUPPORTED_RANK_STRUCTURE` mistake of describing the tool as if it were
-    the revision.
-
-    T07 ruling round 5, S3 adds `inadmissible`: a value the document *fixes* that the model it
-    names refuses at construction (`SpecificationError`), outside that model's declared domain.
-    A finding about the document, like `conflict`. A refused *start* is `incomplete` (blueprint
-    §4.3: "a poor guess is not proof that the specified process is impossible").
-    """
-
-    kind: Literal["conflict", "inadmissible", "incomplete", "unsupported"]
-    detail: str
-    implicated: tuple[str, ...] = ()
-    #: What would be accepted (T07 ruling round 6, B2), beside the unchanged code in `detail`;
-    #: bounded to `HINT_LIMIT` code points by `bound_text` (§10.4). Not part of equality: two
-    #: refusals with one code are one refusal.
-    hint: str | None = field(default=None, compare=False)
-
-    def __post_init__(self) -> None:
-        if audit.auditor is not None:  # MSG-G3; frame 1 is the generated `__init__`
-            audit.auditor.observe(self.detail, sys._getframe(2).f_globals.get("__name__", ""))
-        if self.hint is not None:
-            from openflowsheet.application.projection import bound_text
-
-            object.__setattr__(self, "hint", bound_text(self.hint, HINT_LIMIT))
-
-
-#: Ruling round 6, B2: `bound_text` bounds each hint to 512 code points.
-HINT_LIMIT: Final = 512
-
-
-def refusal_code(detail: str) -> str:
-    """A refusal's code token: its `detail` up to the first `(` (T07 ruling round 6, B1)."""
-    return detail.split("(", 1)[0]
 
 
 def legacy_answers(document: Mapping[str, Any], refusal: Unbound) -> bool:
@@ -1256,26 +1215,6 @@ def _honour_declared_values(
         parameters[parameter] = resolved
 
     return parameters
-
-
-def _column_owners(
-    columns: Sequence[str], streams: Mapping[str, str], units: Sequence[str]
-) -> dict[str, str]:
-    """Which unit owns each column: the producer of its stream, or the unit its id names.
-
-    The naming convention lives here, in the layer that knows this flowsheet, and not in the
-    structural layer (register R-019). `streams` maps a stream id to its producing unit; a column
-    belongs to a stream when its id begins with that stream and a separator, which covers the
-    lifted split (`<stream>.vap.<component>`) as well as the declared state.
-    """
-    owners: dict[str, str] = {}
-    for column in columns:
-        head = column.split(".", 1)[0]
-        if head in units:
-            owners[column] = head
-        elif head in streams:
-            owners[column] = streams[head]
-    return owners
 
 
 def _wiring_edges(wiring: Mapping[str, Any]) -> list[tuple[str, str, str]]:
