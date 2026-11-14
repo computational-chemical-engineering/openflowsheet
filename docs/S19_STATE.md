@@ -37,7 +37,8 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 2. W2: lanes c and d (above); then a models lane (B3, B2, B4); merge each lane into `wp/S19` after its report.
 3. After W2: the map at `wp/S19` (`MB`), G-MAP.
 4. W3 function-level per package group; reviews per the sensitivity tiers.
-5. ADR 0076: `reviewer` pass, Frank's acceptance, rulings A15, A11, I-10; then W4. W5: frozen modules after a
+5. W4 (ADR 0076 accepted 2026-11-14): after W3; first the design-lane rulings A15, A11, I-10 and the re-pin to
+   04f630e or later (interface mode); order as in the ADR (I-6, I-3, I-1, ...). W5: frozen modules after a
    `specifier` identity ruling. Merge into `main` after each phase (CI both legs, F0).
 
 ## Gates (pass numbers fixed after A1, before step 1)

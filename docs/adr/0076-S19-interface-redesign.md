@@ -1,7 +1,8 @@
 # ADR 0076: S19, interface redesign for the repo-wide layering (the D19 package)
 
-**Status:** **Proposed** (design lane, 2026-11-14; revised the same day after the independent review
-`docs/briefs/S19-ADR0076-review.md`). Takes effect on `main` when Frank accepts it and S19's manifest is `tested`
+**Status:** **Accepted (Frank Peters, 2026-11-14, Decision Desk card `ofs-adr0076-accept`, option A "Accept as
+written", sign-off verified).** Proposed by the design lane 2026-11-14; revised the same day after the independent review
+`docs/briefs/S19-ADR0076-review.md`). Takes effect on `main` when S19's manifest is `tested`
 with the `reviewer` pass done; S19 is built on `wp/S19`.
 **Author:** design lane (`architect`). **Brief:** `docs/briefs/S19-A1.md`.
 **Normative text:** this ADR (I-1 to I-19, the migration rules, FQ-A to FQ-C) and `docs/briefs/S19-architecture.md`

@@ -89,3 +89,7 @@
   runs/s19-gates/20261114T111827-s19b-A6a-r2.json --rerun-of 1 --head e56f1189 --reason "wall-time budget test flaky
   under load"`), and check 965de38's file-size gate against the W2 results. Alternative: re-pin now. Rejected: as
   above. Reversible by: the pin line.
+- **2026-11-14, Frank: ADR 0076 accepted as written** (Decision Desk card `ofs-adr0076-accept`, option A, signed
+  12:09 UTC; the session's own run of `decision_desk_verify.py` reported VERIFIED). Consequence: the ADR's status is
+  Accepted; its interface steps run in W4 as planned (after W2 and W3); I-1 lands in A5 as a move with a re-export,
+  which W4 drops (R4 not taken). Rulings A15, A11 and I-10 are still due before W4.
