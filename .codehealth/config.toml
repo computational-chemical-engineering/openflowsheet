@@ -276,3 +276,18 @@ from = [
 ]
 to = ["openflowsheet.application.store", "openflowsheet.application.authz"]
 reason = "the revision engine computes; persistence and authorization belong to the services above it (no engine module imports them at run time today; revision_continuation.py:57 is under TYPE_CHECKING) (S17 plan review)"
+
+[docs]
+# S19, Frank 2026-11-14: docs health, warnings only. Records are kept as written: no rot, no anchors, and broken
+# references there are not counted in the living-docs total.
+include = ["README.md", "CLAUDE.md", "**/CLAUDE.md", "docs/**/*.md", ".claude/**/*.md", "examples/**/*.ipynb"]
+exclude = ["CHANGELOG.md"]
+records = [
+    "docs/adr/**", "docs/*DECISIONS*.md", "docs/design-history/**", "docs/reviews/**", "docs/briefs/**",
+    "docs/*HANDOFF*.md", "docs/*rc-record*.md", "docs/HISTORY.md", "docs/progress-archive.md", "docs/*-review.md",
+    "docs/progress.md", "docs/decision-register.md", "evidence/**",
+]
+python_roots = ["src"]
+anchors = "warn"
+new = "warn"
+docstrings = false

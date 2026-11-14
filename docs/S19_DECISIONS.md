@@ -52,3 +52,19 @@
   commits). Each engineer writes its restructure plan as its own commit before the step (the gate reads the plan at
   the base); the orchestrator approves plans after the fact under D18's delegation, and a plan whose numbers miss
   stops the lane.** Alternative: one lane. Rejected: Frank allowed more agents; the lanes touch disjoint files.
+- **2026-11-14, Frank (his own decision form): four decisions.** (1) Docs health enabled, warnings only: a `[docs]`
+  table in `.codehealth/config.toml` with records (ADRs, decision logs, design history, reviews, briefs, handoffs,
+  rc records, progress, decision register, evidence) kept as written; at this commit 762 docs, 467 broken
+  references in living docs (to fix in a docs pass), 808 in records; docstrings off. (2) FQ-A: no shims; F0 M9
+  implementation hashes and the built-in registry hash change once, in W5, under one design-lane ruling.
+  (3) FQ-B: the catalogue's registry hook is installed by the registry, `application.errors` and the jobs worker;
+  fresh-interpreter tests prove it. (4) FQ-C: the K06 facade `transactions.Application` is deleted; its behaviour
+  moves to the service that owns runs, tests ported; ADR 0076 supersedes ADR 0019's facade paragraph.
+- **2026-11-14, ADR 0076 revised (31e287dd, still proposed).** All review findings held and were applied
+  (`docs/briefs/S19-ADR0076-review.md`): I-10 moves `route_structure` only; I-14 hook installers; I-15 a solver-owned
+  `AdmissibilityRefusal` and a K copy pinned bitwise; I-19 keeps the re-exports frozen files need until W5; I-1 name
+  `numerics.solve_record`; I-2 `models.lifted_tolerance` (also `PRESSURE_TOLERANCE` from orchestrator/rank.py:38).
+  Open: Q-F1 (a `retargeted` key) and Q-F5 (patch-following) asked of the code_health session; defaults in the ADR.
+  Next: Frank's answers folded into the ADR text; ADR to Frank for acceptance before W4.
+- **2026-11-14: cce-code-health 1bf41a5 has the interface mode** (plan `.codehealth/interface/<id>.toml`; exact
+  public_api; callers check). Re-pin at the W4 boundary.
