@@ -21,7 +21,7 @@ one state give byte-identical canonical reports without it (A39).
 from __future__ import annotations
 
 import datetime
-from collections.abc import Mapping, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from typing import TYPE_CHECKING, Any, Final
 
 from openflowsheet import __version__
@@ -177,15 +177,7 @@ def report_body(
         return float(values[output_id])
 
     reported = [n for n in program.output_ids if n not in program.admissibility_ids]
-    groups: dict[str, dict[str, float | None]] = {
-        g: {} for g in ("capex", "opex", "annual", "derived", "inventory", "impacts")
-    }
-    for output_id in sorted({*reported, *withheld}):
-        catalogued = classify(output_id)
-        assert catalogued is not None, output_id
-        group = _GROUP.get(catalogued.name)
-        if group is not None:
-            groups[group][output_id] = value(output_id)
+    groups = _groups(reported, withheld, value)
     cost = sections.get("cost", {})
     items: list[dict[str, Any]] = list(cost.get("items", ()))
     for item in items:
@@ -289,6 +281,23 @@ def _checked_values(
     if violated:
         return Refusal("ASSESSMENT_REGIME_INADMISSIBLE", ",".join(violated), f"tau_feas={tau}")
     return evaluated
+
+
+def _groups(
+    reported: Sequence[str], withheld: Mapping[str, str], value: Callable[[str], float | None]
+) -> dict[str, dict[str, float | None]]:
+    """Every reported or withheld output in its report group (§4.11), by sorted id, with its
+    `value`; an output whose catalogue entry has no group (`size`, `adm`) is left out."""
+    groups: dict[str, dict[str, float | None]] = {
+        g: {} for g in ("capex", "opex", "annual", "derived", "inventory", "impacts")
+    }
+    for output_id in sorted({*reported, *withheld}):
+        catalogued = classify(output_id)
+        assert catalogued is not None, output_id
+        group = _GROUP.get(catalogued.name)
+        if group is not None:
+            groups[group][output_id] = value(output_id)
+    return groups
 
 
 def _listed(program: AssessmentProgram, group: Mapping[str, float | None]) -> list[dict[str, Any]]:
