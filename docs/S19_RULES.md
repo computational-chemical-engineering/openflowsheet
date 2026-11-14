@@ -50,6 +50,10 @@
   `.claude/skills/s19-refactor/gate.sh --restructure <plan commit> .codehealth/restructure/<name>.toml <label>`.
   A mismatch of the expected numbers stops the lane: report, do not adjust the plan to fit.
 - Commit, then gate (S17 D14); on a failed gate `git reset --hard <last accepted>`. Never bare `git stash`.
+- Patch safety (ADR 0076 review): after every move or split, `python3 .claude/skills/s19-refactor/patch_noop.py .`
+  must report 0 flagged patches (a test patching `module.name` where `module` neither defines nor uses `name` is a
+  silent no-op the gate cannot see; 0 of 243 at d90b498f). A flag stops the step; the orchestrator retargets the
+  test outside the gate. Quote its summary line in the step's commit message.
 
 ## Running jobs
 
