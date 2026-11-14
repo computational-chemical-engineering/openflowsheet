@@ -151,3 +151,12 @@
   envelope rows if they are needed below table. `MODEL_CHECKS` stays one object (re-exported). STOP if a group's
   closure reaches what stays, or if any module mutates `MODEL_CHECKS` at import time in an order the move would change.
   Table 4.1's later rows are re-derived at each base anyway.
+- **DECISION B1: accepted with expected arch 9 / 6 / 20 (one more violation) and region.py at 1270 NLOC.** Lane c
+  part 2 simulated the split (scratch: ast.dump identical, mypy clean, 360 region tests pass, patch_noop 0). The moved
+  admissibility functions carry their lazy `verify.checks` imports (region.py:617, 648, 673, 710), so the existing
+  edge region -> verify.checks gains a twin region_phase -> verify.checks: the same dependency (R-016, A15), counted
+  per module. No partition avoids it (keeping `_admissible` in region makes region_problem import region). A15 removes
+  both edges. region.py stays a `large_file` (2056 -> 1270 NLOC) until W3's function steps on `_solve_region` and a
+  later `region_attempts` move whose closure then allows it. Retarget set at this base: 22 patches (tests t03, t04,
+  t05b, t08, opt_revision_host; scripts t03, t04, t05b evidence manifests); region keeps `ph_state as ph_state`.
+  Alternative: no split until W3. Rejected: 2056 NLOC does not fit a function step's review.
