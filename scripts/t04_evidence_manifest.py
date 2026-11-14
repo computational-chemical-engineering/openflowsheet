@@ -66,6 +66,7 @@ import test_t04_registry as registry_fixtures  # noqa: E402
 
 import openflowsheet.orchestrator.executor as executor_module  # noqa: E402
 import openflowsheet.orchestrator.region as region_module  # noqa: E402
+import openflowsheet.orchestrator.region_problem as region_problem  # noqa: E402
 import openflowsheet.orchestrator.tear as tear_module  # noqa: E402
 import openflowsheet.verify.certificate as certificate_module  # noqa: E402
 from openflowsheet.canonical import file_sha256  # noqa: E402
@@ -1449,6 +1450,11 @@ def _a09(runs: Runs, ref: Mapping[str, Any]) -> tuple[bool, Any, Any]:
     with pytest.MonkeyPatch.context() as patch:
         patch.setattr(
             region_module,
+            "check_opening",
+            lambda state, requirement: OpeningRefusal("coverage", "S3.T"),
+        )
+        patch.setattr(
+            region_problem,
             "check_opening",
             lambda state, requirement: OpeningRefusal("coverage", "S3.T"),
         )

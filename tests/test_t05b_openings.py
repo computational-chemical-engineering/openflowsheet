@@ -61,6 +61,7 @@ from t05b_support import (
 )
 
 from openflowsheet.orchestrator import region as region_module
+from openflowsheet.orchestrator import region_problem
 from openflowsheet.orchestrator.region import (
     DormancyForm,
     LiftedSplit,
@@ -686,7 +687,7 @@ def _never_settles(entry: Any, *args: Any) -> str:
 def test_b31g_attempt_0_that_never_settles_is_typed(monkeypatch: pytest.MonkeyPatch) -> None:
     """(g) With the re-derivation stubbed to report a change at every entry, attempt 0's opening
     closes `ACTIVE_SET_CYCLING` with `opening_not_settled(<first entry>)`, no exception."""
-    monkeypatch.setattr(region_module, "_rederive", _never_settles)
+    monkeypatch.setattr(region_problem, "_rederive", _never_settles)
     document, start = CASES["CH-UP"]()
     result = solve_from_v2(bind(document), start)
     assert result.outcome == "ACTIVE_SET_CYCLING"
@@ -712,7 +713,7 @@ def test_b31g_a_restart_that_never_settles_is_typed(monkeypatch: pytest.MonkeyPa
         finally:
             at_restart["on"] = False
 
-    monkeypatch.setattr(region_module, "_rederive", rederive)
+    monkeypatch.setattr(region_problem, "_rederive", rederive)
     monkeypatch.setattr(region_module._LiftedOps, "_settled", restart)
     document, start = CASES["CH-UP"]()
     result = solve_from_v2(bind(document), start)
