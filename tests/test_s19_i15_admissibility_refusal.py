@@ -363,14 +363,29 @@ def test_the_region_k_values_are_the_verifier_k_values_bitwise(
     temperature: float, pressure: float
 ) -> None:
     """`_reference_k_values` restates `verify.checks.k_values` (R-016): bitwise equal K at every
-    F0 state, by `float.hex`; a refusal has the same text."""
+    F0 state, by `float.hex`. A converged F0 state is inside SYN-001's domain, so neither side may
+    refuse here; the refusals are pinned below."""
     provider = Syn001Provider()
-    try:
-        expected = [value.hex() for value in k_values(provider, temperature, pressure, CONTEXT)]
-    except VerifierError as error:
-        with pytest.raises(AdmissibilityRefusal) as refused:
-            _reference_k_values(provider, temperature, pressure, CONTEXT)
-        assert str(refused.value) == str(error)
-        return
+    expected = [value.hex() for value in k_values(provider, temperature, pressure, CONTEXT)]
     found = [value.hex() for value in _reference_k_values(provider, temperature, pressure, CONTEXT)]
     assert found == expected
+
+
+#: provider name -> (provider, T, P) at which both sides refuse.
+K_REFUSALS: Mapping[str, Callable[[], tuple[Any, float, float]]] = {
+    "syn001_below_t_domain": lambda: (Syn001Provider(), 250.0, 101325.0),
+    "syn001_above_p_domain": lambda: (Syn001Provider(), 350.0, 1.0e7),
+    "refusing_lnk": lambda: (_RefusingK(), 350.0, 101325.0),
+}
+
+
+@pytest.mark.parametrize("case", list(K_REFUSALS))
+def test_a_k_refusal_has_the_verifiers_text(case: str) -> None:
+    """Where the verifier's `k_values` raises `VerifierError`, the region's restatement raises
+    `AdmissibilityRefusal` with the same text."""
+    provider, temperature, pressure = K_REFUSALS[case]()
+    with pytest.raises(VerifierError) as verifier:
+        k_values(provider, temperature, pressure, CONTEXT)
+    with pytest.raises(AdmissibilityRefusal) as region:
+        _reference_k_values(provider, temperature, pressure, CONTEXT)
+    assert str(region.value) == str(verifier.value)
