@@ -47,6 +47,7 @@ TABLE_MODULES = (
     VERIFY / "table_kit.py",
     VERIFY / "unit_checks.py",
     VERIFY / "split_checks.py",
+    VERIFY / "flowsheet_rows.py",
 )
 SATURATION = VERIFY / "saturation.py"
 ZERO_FLOW = VERIFY / "zero_flow.py"
