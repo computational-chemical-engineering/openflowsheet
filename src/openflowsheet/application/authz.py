@@ -51,7 +51,7 @@ from openflowsheet.application.types import (
     ProjectPolicy,
     Right,
 )
-from openflowsheet.application.validation import utc_timestamp
+from openflowsheet.application.validation_report import utc_timestamp
 
 _LOG = logging.getLogger(__name__)
 

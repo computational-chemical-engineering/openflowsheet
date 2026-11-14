@@ -51,8 +51,8 @@ from openflowsheet.application.types import (
     RevisionSummary,
 )
 
-# §5.1's timestamp has one definition, `validation.utc_timestamp`; the store stamps with it.
-from openflowsheet.application.validation import utc_timestamp
+# §5.1's timestamp has one definition, `validation_report.utc_timestamp`; the store stamps with it.
+from openflowsheet.application.validation_report import utc_timestamp
 from openflowsheet.canonical import canonical_json
 
 STORE_SCHEMA: Final[str] = "t07-store-v1"

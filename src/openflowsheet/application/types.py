@@ -44,7 +44,7 @@ from openflowsheet.application.jobs.model import (
     JobStatus,
     TerminalStatus,
 )
-from openflowsheet.application.validation import (
+from openflowsheet.application.validation_report import (
     Check,
     Task,
     ValidationReport,
