@@ -261,6 +261,11 @@ the migration table below.
     that catches a route solve's `VerifierError` also catches `AdmissibilityRefusal` with identical handling:
     application/jobs/runner.py:427 (classification), :722, :883, :933, :1175; studies/trust_region/parent.py:317,
     :464; studies/nlp/revision_host.py:453.
+    Addendum (S19 implementation, 2026-11-14; a fact the list missed, not a new decision):
+    `scripts/m07_journey.py:466` catches `VerifierError` around `run_revision_session` (outcome
+    `verifier_refused({error})`, RC step 15, `tests/test_m07_journey.py`) and gets the same identical handling, in a
+    script commit right after the step (outside the gate's scope; the interface tier's callers rule refuses added
+    names in caller files).
   - **One observable difference, deliberate:** the jobs runner records `exception=type(error).__name__`
     (runner.py:433), which on the converged path now reads `"AdmissibilityRefusal"` instead of `"VerifierError"`.
     The code stays `verifier_refused`, and the outcome strings of the TR parent and the NLP host are unchanged
