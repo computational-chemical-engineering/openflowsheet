@@ -448,7 +448,7 @@ def _submatrix(matrix: TwinMatrix, rows: Sequence[str], cols: Sequence[str]) -> 
 def _feasibility_tolerance() -> float:
     """M03's V3 feasibility tolerance on scaled inequalities (§4.2.1), imported, never redefined.
     Imported here, not at module load, because `studies.nlp` will import this package."""
-    from openflowsheet.studies.nlp.verification import TAU_FEAS  # noqa: PLC0415
+    from openflowsheet.studies.nlp.tolerances import TAU_FEAS  # noqa: PLC0415
 
     return float(TAU_FEAS)
 

@@ -70,6 +70,13 @@ from openflowsheet.studies.nlp.host import (
     as_host,
 )
 from openflowsheet.studies.nlp.phase import CLOSURE_IDENTITY, PHASE_PREFIX, PhaseRows
+from openflowsheet.studies.nlp.tolerances import TAU_ACTIVE as TAU_ACTIVE
+from openflowsheet.studies.nlp.tolerances import TAU_FEAS as TAU_FEAS
+from openflowsheet.studies.nlp.tolerances import TAU_GROSS as TAU_GROSS
+from openflowsheet.studies.nlp.tolerances import TAU_KKT as TAU_KKT
+from openflowsheet.studies.nlp.tolerances import TAU_LICQ as TAU_LICQ
+from openflowsheet.studies.nlp.tolerances import TAU_SIGN as TAU_SIGN
+from openflowsheet.studies.nlp.tolerances import TAU_VERTEX_MULTIPLIER as TAU_VERTEX_MULTIPLIER
 from openflowsheet.studies.sensitivity import (
     TAU_REGIME,
     OutputFunctional,
@@ -77,15 +84,6 @@ from openflowsheet.studies.sensitivity import (
     StudyParameter,
 )
 
-#: Spec §8.5's thresholds.
-TAU_GROSS: Final = 1e-6
-TAU_FEAS: Final = 1e-8
-TAU_ACTIVE: Final = 1e-6
-TAU_KKT: Final = 1e-6
-TAU_SIGN: Final = 1e-8
-TAU_LICQ: Final = 1e-8
-#: Spec §8.3: at a vertex every multiplier must exceed this for the critical cone to be {0}.
-TAU_VERTEX_MULTIPLIER: Final = 1e-8
 #: The output id of the objective's linearization in the V5 sensitivity request.
 OBJECTIVE_OUTPUT: Final = "objective"
 
