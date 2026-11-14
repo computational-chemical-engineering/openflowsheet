@@ -31,7 +31,7 @@ from __future__ import annotations
 from collections.abc import Callable, Mapping, Sequence
 from typing import Final
 
-from openflowsheet.application.revision_binding import (
+from openflowsheet.application.model_signatures import (
     _THERMAL_FLASH,
     _THERMAL_HEATER,
     _THERMAL_MACHINES,

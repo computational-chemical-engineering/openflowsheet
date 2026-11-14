@@ -15,7 +15,7 @@ unconsumed and refused by the binder.
 
 from __future__ import annotations
 
-from openflowsheet.application.revision_binding import Configuration
+from openflowsheet.application.model_signatures import Configuration
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.models import UnitModel
 from openflowsheet.models.revision_flowsheet import InstanceView
