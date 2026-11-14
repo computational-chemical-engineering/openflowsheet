@@ -4,10 +4,12 @@ Stages `j = 1..N` are numbered top to bottom: liquid flows down, vapour flows up
 enters stage 1, the `bottom` inlet stage N, and side feeds a declared stage, each in a declared
 single phase. There is no condenser, reboiler or reflux (S01 spec §1; those are S02's).
 
-**This module is the unit layer only** (S01 spec §12 WO-1): the specification object and its §5
-refusals, the §2 declared rows built from `models.rows`, the per-stage regime forms of §4.2, the
-§6 analytic initializer `s01-kremser-cmo-v1` and the §4.6 closed-form answer for an all-dormant
-cascade. Compiling, the isothermal pre-solve and the `solve_region` call are WO-2's.
+**The unit layer only** (S01 spec §12 WO-1), in four modules (S19 B4): `cascade_spec` holds the
+specification object, the declarations and the cascade's ids, `cascade_rows` the §2 declared rows
+built from `models.rows` and `cascade_init` the §6 analytic initializer `s01-kremser-cmo-v1`; this
+module holds the §5 refusals, the per-stage regime forms of §4.2 and the §4.6 closed-form answer
+for an all-dormant cascade, and re-exports the other three's names. Compiling, the isothermal
+pre-solve and the `solve_region` call are WO-2's.
 
 **Every stage is one lifted split, PH-type** (S01 spec §4.1): its mixed inflow `m_j` is lifted
 (DECISION 3), so `feed = m_j`, and its energy row fixes `T_j`. Equilibrium is written
