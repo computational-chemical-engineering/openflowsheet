@@ -49,6 +49,8 @@ from openflowsheet.models import (
     row_id,
     temperature_id,
 )
+from openflowsheet.models.lifted import Regime
+from openflowsheet.models.lifted_tolerance import KIND_TOLERANCE
 from openflowsheet.models.rows import (
     balance_row,
     definition_row,
@@ -87,7 +89,6 @@ from openflowsheet.models.syn001.tp_state import (
     lnk_block_id,
     single_phase_admissible,
 )
-from openflowsheet.orchestrator.region import KIND_TOLERANCE, Regime
 from openflowsheet.thermo import Phase, PropertyProvider, PropertyRequest, StreamState
 
 MODEL_ID: Final = "syn001.cascade"
