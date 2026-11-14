@@ -28,14 +28,19 @@ from __future__ import annotations
 
 import math
 from collections.abc import Sequence
-from dataclasses import dataclass
-from typing import Final, Literal
+from typing import Final
 
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.models.syn001 import TEMPERATURE_TOLERANCE
+from openflowsheet.models.syn001.band_types import (
+    MAX_TEMPERATURE_EVALUATIONS as MAX_TEMPERATURE_EVALUATIONS,
+)
+from openflowsheet.models.syn001.band_types import BandError as BandError
+from openflowsheet.models.syn001.band_types import BandTemperature as BandTemperature
+from openflowsheet.models.syn001.band_types import Position as Position
 from openflowsheet.models.syn001.bisection import bracketed_root
 from openflowsheet.models.syn001.equilibrium_form import composition_dependent
-from openflowsheet.thermo import PropertyProvider, PropertyRequest, PropertyStatus, StreamState
+from openflowsheet.thermo import PropertyProvider, PropertyRequest, StreamState
 
 __all__ = [
     "MAX_TEMPERATURE_EVALUATIONS",
@@ -50,42 +55,8 @@ __all__ = [
     "rachford_rice",
 ]
 
-#: Spec §5.2: at most this many evaluations of `g` per `T(β)`, the two ends included; T05 §4.4
-#: step 4's budget. Bisection on the SYN-001 domain reaches adjacent doubles in about 50.
-MAX_TEMPERATURE_EVALUATIONS: Final = 200
-
 #: T05b W6: where `outside_the_degeneracy_window` evaluates `g`, `T ∓ 2 τ_T`.
 PRESCREEN_MARGIN: Final = 2.0 * TEMPERATURE_TOLERANCE
-
-Position = Literal["inside", "below", "above"]
-
-
-class BandError(Exception):
-    """A provider refusal inside a band search, or an exhausted bisection (`not_converged`)."""
-
-    def __init__(self, status: PropertyStatus, message: str) -> None:
-        super().__init__(message)
-        self.status: PropertyStatus = status
-        self.message = message
-
-
-@dataclass(frozen=True)
-class BandTemperature:
-    """`T(β)`, or where it lies when it is outside the domain.
-
-    `inside`: `temperature` is the bisection's answer and `k_values` the provider's `K_i` there
-    (one per declared component, in the provider's order); `below` / `above`: no temperature.
-    For a composition-dependent form (`gamma_phi.band_point`, S10-C §4.3) an `inside` point also
-    carries its liquid composition `liquid`; SYN-001's K needs none, and leaves it empty.
-    """
-
-    position: Position
-    temperature: float | None = None
-    k_values: tuple[float, ...] = ()
-    #: Evaluations of `g` spent, the two domain ends included.
-    evaluations: int = 0
-    #: The liquid composition `x` at `T(β)`, composition-dependent forms only (S10-C §4.3).
-    liquid: tuple[float, ...] = ()
 
 
 def rachford_rice(flows: Sequence[float], k_values: Sequence[float], beta: float) -> float:
