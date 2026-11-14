@@ -235,3 +235,10 @@
   states of the F0 corpus bundles if they hold the lifted splits' states; otherwise a spy during the F0 solves, marked
   slow.** (3) TR parent :464 gets a forced test if one can reach it through the provider; otherwise the gap is named
   in the report and the review.
+- **DECISION (W3 cadence): a W3 run that touches tier S1 files stops after 4 accepted S1 steps, and every W3 run gets a
+  `reviewer` read before its branch merges.** The design note's cadence (S1 every 3, S2 every 4, others every 8) is
+  kept in spirit: an engineer run is the review unit, and S1 runs are capped at 4 steps so a systematic error is
+  caught within one batch. Alternative: a reviewer every 3 S1 steps mid-run (rejected: the engineer would stop and
+  wait, and a resumed engineer rereads its whole context). Targets per group: `<git-common-dir>/codehealth/briefs/S19-W3-targets.md`
+  (scan at df29751f: debt 6370.9, health 7.69, 44 brain functions); the common brief `S19-W3-common.md`. First pair:
+  G4 (assessment) and G2 (models), which do not touch the I-15 files; G1 and G3 after I-15 and B1 land.
