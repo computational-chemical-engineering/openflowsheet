@@ -46,6 +46,7 @@ from openflowsheet.models import (
     row_id,
     temperature_id,
 )
+from openflowsheet.models.lifted import Regime
 from openflowsheet.models.rows import (
     balance_row,
     bubble_row,
@@ -123,7 +124,6 @@ from openflowsheet.models.syn001.tp_state import (
     lnk_block_id,
     single_phase_admissible,
 )
-from openflowsheet.orchestrator.region import Regime
 from openflowsheet.thermo import Phase, PropertyProvider, StreamState
 from openflowsheet.thermo import syn001 as syn001_thermo
 

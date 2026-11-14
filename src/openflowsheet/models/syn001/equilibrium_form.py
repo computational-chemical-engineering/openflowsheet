@@ -24,19 +24,17 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Final
+from typing import Final
 
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.models.syn001 import PROVIDER_ID, REFERENCE_CONVENTION
+from openflowsheet.models.syn001.cascade_failure import CascadeFailure
 from openflowsheet.thermo import (
     PropertyCapabilities,
     PropertyProvider,
     PropertyRequest,
     StreamState,
 )
-
-if TYPE_CHECKING:
-    from openflowsheet.models.syn001.cascade import CascadeFailure
 
 __all__ = [
     "ADMITTED",
@@ -126,9 +124,6 @@ def admission(
     declared capabilities (no evaluation); a vapour `ln φ` that is not identically zero at one probe
     (one evaluation, which turns the allow-list's premise `ln φ^V ≡ 0` into a checked fact).
     """
-    # Imported here: `cascade` imports the kernels that import this module.
-    from openflowsheet.models.syn001.cascade import CascadeFailure  # noqa: PLC0415
-
     described = provider.describe()
     form = form_of(described)
     cause = f"unsupported(column_property_method:{described.provider_id})"

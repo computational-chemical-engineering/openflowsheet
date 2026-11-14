@@ -49,6 +49,8 @@ from openflowsheet.models import (
     row_id,
     temperature_id,
 )
+from openflowsheet.models.lifted import Regime
+from openflowsheet.models.lifted_tolerance import KIND_TOLERANCE
 from openflowsheet.models.rows import (
     balance_row,
     definition_row,
@@ -72,6 +74,12 @@ from openflowsheet.models.syn001 import (
     TEMPERATURE,
 )
 from openflowsheet.models.syn001.blocks import EnthalpyFlowBlock, LnKBlock
+from openflowsheet.models.syn001.cascade_failure import (
+    CascadeFailure as CascadeFailure,
+)
+from openflowsheet.models.syn001.cascade_failure import (
+    FailureOutcome as FailureOutcome,
+)
 from openflowsheet.models.syn001.equilibrium_form import composition_dependent
 from openflowsheet.models.syn001.gamma_phi import _ln_k
 from openflowsheet.models.syn001.saturation_band import BandError, band_temperature
@@ -81,7 +89,6 @@ from openflowsheet.models.syn001.tp_state import (
     lnk_block_id,
     single_phase_admissible,
 )
-from openflowsheet.orchestrator.region import KIND_TOLERANCE, Regime
 from openflowsheet.thermo import Phase, PropertyProvider, PropertyRequest, StreamState
 
 MODEL_ID: Final = "syn001.cascade"
@@ -103,14 +110,6 @@ INLET_PHASES: Final[tuple[Phase, ...]] = ("LIQUID", "VAPOR")
 #: The two fixed ports. Side feeds carry their own port names.
 TOP: Final = "top"
 BOTTOM: Final = "bottom"
-
-#: A refusal's category (spec §5). `INVALID_SPECIFICATION` is not a `SolveOutcome` value; see the
-#: design-lane question in `docs/S01_DECISIONS.md`.
-FailureOutcome = Literal[
-    "CAPABILITY_UNAVAILABLE",
-    "INVALID_SPECIFICATION",
-    "INITIALIZATION_FAILED",
-]
 
 #: `K_i(T, P)` in component order. The initializer's injection point (spec §10 A02).
 KValues = Callable[[float, float], Sequence[float]]
@@ -302,18 +301,6 @@ class CascadeSpec:
             PlacedInlet(BOTTOM, self.stage_count, self.bottom),
             *(PlacedInlet(side.port, side.stage, side.state) for side in self.sides),
         )
-
-
-@dataclass(frozen=True)
-class CascadeFailure:
-    """A typed refusal or failure: the outcome and its cause code (spec §4.5, §5)."""
-
-    outcome: FailureOutcome
-    cause: str
-    message: str = ""
-    #: Stable `code(detail)` notices that do not change the outcome (S02 C8: the duty-only
-    #: multiplicity warning); empty for every S01 failure.
-    warnings: tuple[str, ...] = ()
 
 
 # -- names ---------------------------------------------------------------------------------------
