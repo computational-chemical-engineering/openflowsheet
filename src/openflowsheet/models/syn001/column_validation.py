@@ -19,6 +19,7 @@ from openflowsheet.models.syn001.cascade import (
     INLET_PHASES,
     CascadeFailure,
     EnergyPrecheck,
+    PlacedInlet,
     _enthalpy_flow,
     _in_domain,
     _invalid,
@@ -144,8 +145,13 @@ def validate(
     anything else is read or evaluated. For a composition-dependent form the domain bounds of R3
     are the provider's declared `T` and `P` boxes, and the specification kinds are narrowed after
     S10 (S10-C §4.8); SYN-001 keeps its constants.
+
+    After R1 and `_well_formed_inlets` (R1's misuse checks), one helper per clause, in order:
+    `_inlet_flow_refusal` (R2), `_domain_refusal` (R3), `_side_feed_stage_refusal` (R4),
+    `_two_phase_inlet_refusal` (R6), `_inadmissible_inlet_refusal` (R5), `_column_refusal`
+    (S1–S10) and `_energy_refusal` (R7).
     """
-    unit, components = spec.unit_id, spec.components
+    unit = spec.unit_id
     # S11 (S03 §9; S10-C §4.1)
     refused = admission(unit, provider, context)
     if refused is not None:
@@ -156,6 +162,23 @@ def validate(
     # R1
     if isinstance(count, bool) or not isinstance(count, int) or count < 1:
         return _invalid("stage_count", f"{unit}: N = {count!r} is not an integer >= 1")
+    inlets = _well_formed_inlets(spec)
+    return (
+        _inlet_flow_refusal(unit, inlets)
+        or _domain_refusal(spec, inlets, t_bounds, p_bounds)
+        or _side_feed_stage_refusal(spec)
+        or _two_phase_inlet_refusal(unit, inlets)
+        or _inadmissible_inlet_refusal(spec, inlets, provider, context)
+        or _column_refusal(spec, form)
+        or _energy_refusal(spec, inlets, provider, context)
+    )
+
+
+def _well_formed_inlets(spec: ColumnSpec) -> tuple[PlacedInlet, ...]:
+    """R1's misuse checks on a specification whose `N` passed R1: `spec.inlets()`, after
+    `ValueError` for a pressure or duty list that is not one per stage or a non-finite duty, and
+    before `ValueError` for duplicated inlet ports or a flow vector of the wrong length."""
+    unit, components, count = spec.unit_id, spec.components, spec.stage_count
     if len(spec.pressures) != count or len(spec.duties) != count:
         raise ValueError(
             f"{unit}: {len(spec.pressures)} pressures and {len(spec.duties)} duties for "
@@ -174,14 +197,29 @@ def validate(
                 f"{unit}: inlet {inlet.port} carries {len(inlet.state.n)} flows for "
                 f"{len(components)} components"
             )
-    # R2
+    return inlets
+
+
+def _inlet_flow_refusal(unit: str, inlets: tuple[PlacedInlet, ...]) -> CascadeFailure | None:
+    """R2: the first inlet whose flows are not all finite and `>= 0`, else `None`."""
     for inlet in inlets:
         if not all(math.isfinite(a) and a >= 0.0 for a in inlet.state.n):
             return _invalid(
                 f"inlet_flow:{inlet.port}",
                 f"{unit}: inlet {inlet.port} flows {inlet.state.n} are not finite and >= 0",
             )
-    # R3
+    return None
+
+
+def _domain_refusal(
+    spec: ColumnSpec,
+    inlets: tuple[PlacedInlet, ...],
+    t_bounds: tuple[float, float],
+    p_bounds: tuple[float, float],
+) -> CascadeFailure | None:
+    """R3: the first inlet `T` or `P` outside `t_bounds` or `p_bounds`, then the first stage
+    pressure `P_j*` outside `p_bounds`, else `None`."""
+    unit = spec.unit_id
     for inlet in inlets:
         stream = inlet_stream(unit, inlet.port)
         for column, value, bounds in (
@@ -194,7 +232,13 @@ def validate(
         column = stage_pressure_id(unit, stage)
         if not _in_domain(value, p_bounds):
             return _invalid(f"domain:{column}", f"{column} = {value!r} outside {p_bounds}")
-    # R4
+    return None
+
+
+def _side_feed_stage_refusal(spec: ColumnSpec) -> CascadeFailure | None:
+    """R4: the first side feed whose stage is not an integer in `1..N` or repeats an earlier side
+    feed's stage, else `None`."""
+    unit, count = spec.unit_id, spec.stage_count
     taken: set[int] = set()
     for side in spec.sides:
         stage = side.stage
@@ -210,7 +254,11 @@ def validate(
                 "per stage)",
             )
         taken.add(stage)
-    # R6
+    return None
+
+
+def _two_phase_inlet_refusal(unit: str, inlets: tuple[PlacedInlet, ...]) -> CascadeFailure | None:
+    """R6: the first inlet declared neither LIQUID nor VAPOR, else `None`."""
     for inlet in inlets:
         if inlet.state.phase not in INLET_PHASES:
             return CascadeFailure(
@@ -219,7 +267,18 @@ def validate(
                 f"{unit}: inlet {inlet.port} declared {inlet.state.phase!r}; a column takes a "
                 "declared LIQUID or VAPOR inlet only",
             )
-    # R5
+    return None
+
+
+def _inadmissible_inlet_refusal(
+    spec: ColumnSpec,
+    inlets: tuple[PlacedInlet, ...],
+    provider: PropertyProvider,
+    context: EvaluationContext,
+) -> CascadeFailure | None:
+    """R5: the first non-dormant inlet that `single_phase_admissible` refuses at its own
+    `(n, T, P)` in its declared phase, else `None`."""
+    unit, components = spec.unit_id, spec.components
     for inlet in inlets:
         state = inlet.state
         if _is_dormant(state):
@@ -238,24 +297,6 @@ def validate(
                 "INVALID_SPECIFICATION",
                 f"inadmissible_inlet({inlet.port}, {state.phase})",
                 f"{unit}: inlet {inlet.port} is not an admissible {state.phase} ({detail})",
-            )
-
-    refusal = _column_refusal(spec, form)
-    if refusal is not None:
-        return refusal
-
-    # R7, only when every slot is a duty (§5).
-    if all(_specification(spec, end).kind == "duty" for end in spec.ends()):
-        if all(_is_dormant(inlet.state) for inlet in inlets):
-            # No end (S10 refused the others): S01 §4.6's all-dormant cascade.
-            return None
-        precheck = energy_precheck(spec, provider, context)
-        if not precheck.lower <= precheck.target <= precheck.upper:
-            return CascadeFailure(
-                "INVALID_SPECIFICATION",
-                "infeasible_spec(energy_outside_domain)",
-                f"{unit}: H* = {precheck.target!r} W outside "
-                f"[{precheck.lower!r}, {precheck.upper!r}] W",
             )
     return None
 
@@ -607,6 +648,30 @@ def _split_feasible(
     raise ValueError(
         f"S06 §5 I6 is decided for at most three present components; {len(present)} given"
     )
+
+
+def _energy_refusal(
+    spec: ColumnSpec,
+    inlets: tuple[PlacedInlet, ...],
+    provider: PropertyProvider,
+    context: EvaluationContext,
+) -> CascadeFailure | None:
+    """R7, only when every slot is a duty (§5): `None` for another slot kind or when every inlet
+    is dormant, else the refusal when `H*` is outside the `energy_precheck` bounds."""
+    unit = spec.unit_id
+    if all(_specification(spec, end).kind == "duty" for end in spec.ends()):
+        if all(_is_dormant(inlet.state) for inlet in inlets):
+            # No end (S10 refused the others): S01 §4.6's all-dormant cascade.
+            return None
+        precheck = energy_precheck(spec, provider, context)
+        if not precheck.lower <= precheck.target <= precheck.upper:
+            return CascadeFailure(
+                "INVALID_SPECIFICATION",
+                "infeasible_spec(energy_outside_domain)",
+                f"{unit}: H* = {precheck.target!r} W outside "
+                f"[{precheck.lower!r}, {precheck.upper!r}] W",
+            )
+    return None
 
 
 def energy_precheck(
