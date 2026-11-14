@@ -257,3 +257,11 @@
   ruling, and any ruling a reviewer escalates) run on Fable 5.2 (the Agent tool's model override on `architect`,
   `specifier` or `reviewer`; the agent definitions are not edited). Engineers stay on Opus 5.5. W3 widens to three
   or four lanes on disjoint package groups (gates still one at a time on the clone-wide lock).
+- **2026-11-14, I-15 accepted on wp/S19-f** (plan 6f3b71cc, step 12fd514e: interface gate 17/17, tests 761.6 s, F0
+  ok, the `orchestrator.region -> verify.checks` violation removed, debt 480.3 -> 480.2, run-log step 45; journey
+  handler 2dd0991a, 111 tests; post-step pins 70703ac8 incl. the K pin over 59 `(T, P)` pairs; docs 6c79f316,
+  step 48). The plan declares 8 literals, not 3 (`'LIQUID'`, `'ok'`, the message prefix, `'lnK'`, `'A'`, `'B'`, `'C'`,
+  `'lnK_'`), all from the ADR's verbatim K restatement: accepted (same reason; the tool printed at most 4 problems
+  per run, so it took runs r3 and r4, steps 41 and 43, to find them; asked of the tool owner). Interface mode logs
+  `accepted` (it refuses `accepted-neutral`). Before merge: `reviewer` R-I15 on Fable (running). Docs pass: three
+  anchors in `docs/design/T07-jobs-and-bindings.md:397` into runner.py drifted.
