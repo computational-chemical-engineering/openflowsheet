@@ -215,3 +215,13 @@
   Correction by annotation (the run log refuses a second entry for one tree): lane e's B3 step (e1072f84, run-log
   step 26) was logged `no-gain` by a missing `--result`; its gate passed 16/16 and it is accepted-neutral like the
   other splits.
+- **2026-11-14, R-W2e (`reviewer` on lane e): merge after docs-only fixes; merged as fe9d27fd** (arch at the tip
+  7 / 4 / 14, patch_noop 0 of 246). Fix applied: the split modules' docstrings said the old module re-exports "every
+  name" (private helpers are not re-exported) and cascade_init's import claim omitted `cascade_failure` (6b7fab64,
+  `--no-gain` gate). Record fix: the evidence-manifest scripts that hash `column.py` (s02, s03, s06, s08) and
+  `column_solve.py` (s02, s06, s08, s08b) join `cascade.py` (s01, s03, s06, s08) on the docs-pass list. Notes: the
+  new models modules import moved names through the `column` and `cascade` facades, so ADR 0076's re-export drop
+  (I-19) must retarget src importers too; `tests/test_s02_column_wo1.py:695-697` patches three `column` names that
+  `validate` (now in column_validation) cannot reach (behaviour unchanged today).
+- **W2 closed 2026-11-14 (except B1, parked for I-15; B7 in W5; B8-executor skipped).** Splits landed: B2, B3, B4,
+  B5 (four steps), B6, B8-certificate; A5 with W2. `wp/S19` arch 14 / 10 / 79 at CB -> 7 / 4 / 14.
