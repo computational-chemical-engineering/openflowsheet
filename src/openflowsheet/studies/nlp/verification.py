@@ -42,7 +42,7 @@ from typing import Any, Final, Literal, Protocol, cast
 import numpy as np
 import numpy.typing as npt
 
-from openflowsheet.assessment.program import Linearization, Refusal
+from openflowsheet.assessment.linearization import Linearization, Refusal
 from openflowsheet.assessment.quantities import ASSESSMENT_PREFIX
 from openflowsheet.compile.casadi_backend import TwinEvaluationError
 from openflowsheet.compile.reference import state_vector

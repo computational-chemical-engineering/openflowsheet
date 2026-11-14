@@ -22,10 +22,13 @@ import math
 from collections.abc import Callable, Iterable, Mapping, Sequence
 from dataclasses import dataclass, field
 from types import MappingProxyType
-from typing import Any, Final, Literal, Protocol
+from typing import Any, Final, Protocol
 
 import numpy as np
 
+from openflowsheet.assessment.linearization import Linearization as Linearization
+from openflowsheet.assessment.linearization import Refusal as Refusal
+from openflowsheet.assessment.linearization import _feasibility_tolerance
 from openflowsheet.assessment.quantities import ASSESSMENT_PREFIX, classify
 from openflowsheet.assessment.regimes import Regime, RegimeEntry
 from openflowsheet.assessment.spec import AssessmentSpec
@@ -84,19 +87,6 @@ FunctionalBuilder = Callable[["Symbols", Algebra], Expr]
 
 
 # -- typed results (§4.12) -----------------------------------------------------------------------
-
-
-@dataclass(frozen=True)
-class Refusal:
-    """A typed refusal (or an `unsupported` result): never an exception to the caller (§4.12)."""
-
-    code: str
-    target: str = ""
-    detail: str = ""
-    kind: Literal["refusal", "unsupported"] = "refusal"
-
-    def as_document(self) -> dict[str, Any]:
-        return {"kind": self.kind, "code": self.code, "target": self.target, "detail": self.detail}
 
 
 @dataclass(frozen=True)
@@ -417,13 +407,6 @@ class BuildContext:
         return _float_rows(spec, state)
 
 
-@dataclass(frozen=True)
-class Linearization:
-    values: Mapping[str, float]
-    d_dx: TwinMatrix
-    d_dp: TwinMatrix
-
-
 def _submatrix(matrix: TwinMatrix, rows: Sequence[str], cols: Sequence[str]) -> TwinMatrix:
     """`matrix` restricted to `rows` x `cols` (in those orders), canonical CSC kept."""
     row_index = {name: i for i, name in enumerate(matrix.row_ids)}
@@ -443,14 +426,6 @@ def _submatrix(matrix: TwinMatrix, rows: Sequence[str], cols: Sequence[str]) -> 
         data.extend(v for _, v in entries)
         indptr.append(len(indices))
     return TwinMatrix(tuple(rows), tuple(cols), tuple(indptr), tuple(indices), tuple(data))
-
-
-def _feasibility_tolerance() -> float:
-    """M03's V3 feasibility tolerance on scaled inequalities (§4.2.1), imported, never redefined.
-    Imported here, not at module load, because `studies.nlp` will import this package."""
-    from openflowsheet.studies.nlp.tolerances import TAU_FEAS  # noqa: PLC0415
-
-    return float(TAU_FEAS)
 
 
 # -- the program ---------------------------------------------------------------------------------

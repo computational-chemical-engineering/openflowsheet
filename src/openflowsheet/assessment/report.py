@@ -26,7 +26,7 @@ from typing import TYPE_CHECKING, Any, Final
 
 from openflowsheet import __version__
 from openflowsheet.assessment.cost import uncertainty as aace
-from openflowsheet.assessment.program import Linearization, Refusal, _feasibility_tolerance
+from openflowsheet.assessment.linearization import Linearization, Refusal, _feasibility_tolerance
 from openflowsheet.assessment.quantities import classify
 from openflowsheet.compile.casadi_backend import TwinEvaluationError, TwinMatrix
 
