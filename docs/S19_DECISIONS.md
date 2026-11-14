@@ -20,3 +20,8 @@
   separate branches per package group, a reviewer, the design lane); never two engineers on one branch. Missing
   codehealth features go to the code_health session (sent 2026-11-14: `arch --config`, cycle and package views
   without layers, per-package scan aggregation, the scan JSON schema, a branch-safe run log).
+- **DECISION: re-pin cce-code-health a3401585 -> d542005 before the first step.** It adds `arch --config/--depth/--edges`,
+  `scan --group-depth`, the scan JSON schema (`meta.schema = 1`) and a locked, branch-tagged run log (the S19 feature
+  requests; gate tiers and comparators unchanged per the code_health session). Check at d90b498f: trial arch 10
+  cycles, largest 17 nodes, 79 cycle edges; trial scan debt 6370.9 (as before). Parallel engineers run as worktrees
+  of this clone (one run log). Alternative: keep a3401585 and hand-made graphs. Reversible by: the pin line.

@@ -9,5 +9,5 @@
 # its one dependency, complexipy (the cognitive-complexity scorer behind every debt number), is
 # pinned by version so that the recorded baseline does not drift (S17 DECISION D2). This file is
 # outside the release identity: run manifests record requirements.lock's hash only (R-140).
-cce-code-health @ git+https://github.com/computational-chemical-engineering/cce-code-health@a34015853daf4fb750b9e097f48080ec13a0001c
+cce-code-health @ git+https://github.com/computational-chemical-engineering/cce-code-health@d542005e2189ad0168d17382a48cd4ddb80937cd
 complexipy==8.3.0
