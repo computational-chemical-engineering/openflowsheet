@@ -1,0 +1,209 @@
+{
+  "work_package": "S19",
+  "commit": "17967ccbb943e1c76ec200a17a4a25b74e1e4f1d",
+  "requirements": [],
+  "status": "implemented",
+  "inputs": {
+    "case_id": "S19 (Frank, 2026-11-14: excellent code health before further development); docs/S19_RULES.md; ADR 0076 (accepted 2026-11-14); this manifest covers phases W1 and W2, merged into main by Frank's Decision Desk sign-off ofs-s19-w2-merge-main",
+    "case_hash": "5eeed71c010876cf1d33daba9a8ca952d7cba0f89bfac1deab0c62b235598a65",
+    "environment_lock_hash": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+  },
+  "commands": [
+    {
+      "cmd": ".venv-codehealth/bin/codehealth gate --mode restructure|refactor ... (via .claude/skills/s19-refactor/gate.sh); run log git-common-dir codehealth/runs/s19.jsonl: 28 kept entries for merged work (27 accepted-neutral, 1 logged no-gain and annotated accepted-neutral in S19_DECISIONS), 13 gate-fail entries across the campaign so far",
+      "cwd": ".claude/worktrees/s19",
+      "exit_code": 0
+    },
+    {
+      "cmd": ".venv-codehealth/bin/codehealth arch --depth 4 (CB d90b498f: 14 violations, 10 cycles, 79 cycle edges; at 17967ccb: 7, 4, 14)",
+      "cwd": ".claude/worktrees/s19",
+      "exit_code": 0
+    },
+    {
+      "cmd": ".venv-codehealth/bin/codehealth scan (debt 6370.9 unchanged, health 7.3 -> 7.69: splits move code)",
+      "cwd": ".claude/worktrees/s19",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/test_impact.py build (test map at bec6dbe6)",
+      "cwd": ".claude/worktrees/s19",
+      "exit_code": 0
+    }
+  ],
+  "checks": [
+    {
+      "id": "S19.G-SELF",
+      "description": "gate self-test: a mutated literal outside application/ fails the tests tier",
+      "result": "pass",
+      "value": "run 2 (newton.py:776, a1059f16): unmutated 20253 passed; mutated tests exit 1 (499 failed, 6 errors), f0 detected, mcp_digest missed (as in S17); run 1 failed on a wall-time budget under concurrent gates and led to the clone-wide lock"
+    },
+    {
+      "id": "S19.G-MAP",
+      "description": "test map after W2",
+      "result": "pass",
+      "value": "bec6dbe6: 20362 tests (at least 20356); 4 failed, all of S16's B-6 set (test_m04_wo9 a25, a29; test_x02_wo4 g4e x2)"
+    },
+    {
+      "id": "S19.G-STEP",
+      "description": "every kept step: gate exit 0; restructure plans' arch numbers (design note table 4.1) met",
+      "result": "pass",
+      "value": "28 kept entries, every gate exit 0, arch numbers met; parked and not in this merge: B1 (region split, on wip/S19-B1, waits for ADR 0076 I-15), I-15 (not in this merge), B8-executor skipped (W3), B7 in W5; 13 gate-fail entries logged, none merged"
+    },
+    {
+      "id": "S19.G-REVIEW",
+      "description": "fresh reviewer per the sensitivity tiers; rejects reverted",
+      "result": "pass",
+      "value": "R-W1, R-W2d, R-W2e: merge; fixes applied"
+    },
+    {
+      "id": "S19.ARCH",
+      "description": "codehealth arch --depth 4 against design note table 4.1",
+      "result": "pass",
+      "value": "violations/cycles/cycle edges 14/10/79 -> 7/4/14"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "docs/S19_DECISIONS.md",
+      "sha256": "a3ecfd82213c144bf1a834bb9ac4f2cea4c7cf9677760403df1cc5fc98948172",
+      "description": "decisions per work order and review"
+    },
+    {
+      "path": "docs/S19_STATE.md",
+      "sha256": "5eeed71c010876cf1d33daba9a8ca952d7cba0f89bfac1deab0c62b235598a65",
+      "description": "state: gates with criteria fixed before the run, and results"
+    },
+    {
+      "path": "docs/S19_RULES.md",
+      "sha256": "fee309b534c9858f680713ffbc4328f70d5c646f985439ef719bd809b201766d",
+      "description": "standing rules for every S19 worker"
+    },
+    {
+      "path": "docs/briefs/S19-architecture.md",
+      "sha256": "64fd9d039addedca27e5377a91f2fcfab61b85a6f89abe09da319881f356e998",
+      "description": "the design note (architect): phases W0 to W4, arch numbers per step"
+    },
+    {
+      "path": "docs/adr/0076-S19-interface-redesign.md",
+      "sha256": "0f3a67c91e782121ee9935c03e945e0eb4b12d0bb85abf5ad09633cd39dd37c5",
+      "description": "ADR 0076, accepted 2026-11-14"
+    },
+    {
+      "path": ".codehealth/config.toml",
+      "sha256": "590eaa2f9bbb4d73c2275f94c948962ed28c375dbb838a9573f652a8e8fce7f3",
+      "description": "the codehealth config: scope src/openflowsheet/*, repo-layers, the architecture ratchet"
+    },
+    {
+      "path": ".codehealth/restructure/cut-assessment-linearization.toml",
+      "sha256": "a82a3f1a5ce132805a740e3d49679c036f0008b6e613dad780f86a7d8ff850df",
+      "description": "an approved restructure plan added since d90b498f"
+    },
+    {
+      "path": ".codehealth/restructure/cut-nlp-tolerances.toml",
+      "sha256": "4f1f567b48d8e4485290bd1d099c5fac4106eb456b5b2f66e8d13709a058168e",
+      "description": "an approved restructure plan added since d90b498f"
+    },
+    {
+      "path": ".codehealth/restructure/leaf-band-types.toml",
+      "sha256": "9972c0788ae5868219dbf89f3f78fc47441b7e221f5d8c915b858b1e9de5775e",
+      "description": "an approved restructure plan added since d90b498f"
+    },
+    {
+      "path": ".codehealth/restructure/leaf-cascade-failure.toml",
+      "sha256": "5908adafd07a28c53f8d14f30409396bdf5e8b2c543f8088e4b06b112c65a812",
+      "description": "an approved restructure plan added since d90b498f"
+    },
+    {
+      "path": ".codehealth/restructure/leaf-kind-tolerance.toml",
+      "sha256": "f9ea1d8ebb379d604494533661ecc26744f31903b23b0e68e239118c3020c0ce",
+      "description": "an approved restructure plan added since d90b498f"
+    },
+    {
+      "path": ".codehealth/restructure/leaf-models-lifted.toml",
+      "sha256": "95e3f2bda658c5fe7408aad67523ad3bfc76fff0516629d694ccacdba8b8d8cd",
+      "description": "an approved restructure plan added since d90b498f"
+    },
+    {
+      "path": ".codehealth/restructure/leaf-sizing-core.toml",
+      "sha256": "00b6ebbb8556d8085e58522e475dfe839aa397136e34a846c8ea67ffd32fe44f",
+      "description": "an approved restructure plan added since d90b498f"
+    },
+    {
+      "path": ".codehealth/restructure/leaf-surrogate-records.toml",
+      "sha256": "f5ed0cf2cb4b71a3f9bdd57a7be52efe614a8541f5521bf40579f5d19c8b5733",
+      "description": "an approved restructure plan added since d90b498f"
+    },
+    {
+      "path": ".codehealth/restructure/move-solve-record.toml",
+      "sha256": "4998e1fdc16ed71f4b7ebdb27c417331c70a383200f90b8211a5e16a7902df36",
+      "description": "an approved restructure plan added since d90b498f"
+    },
+    {
+      "path": ".codehealth/restructure/split-cascade.toml",
+      "sha256": "359d9d1bd2f54cff3f555402833558629d377fa7f8969feb8b3578a2f8c04a71",
+      "description": "an approved restructure plan added since d90b498f"
+    },
+    {
+      "path": ".codehealth/restructure/split-certificate-verdict.toml",
+      "sha256": "80ecd309b9fb59876f7c45f3b93327e7cbd9ac4dd9116f14c69ebe209875f093",
+      "description": "an approved restructure plan added since d90b498f"
+    },
+    {
+      "path": ".codehealth/restructure/split-column-solve.toml",
+      "sha256": "86fd0f253c8f9f65f78518b1f443a4dadd248584bc0c9547235e2f23c794790e",
+      "description": "an approved restructure plan added since d90b498f"
+    },
+    {
+      "path": ".codehealth/restructure/split-column.toml",
+      "sha256": "abbf3ee7102069d05f606da1ba4d44456000573ab5abd5df9cbdd40d9c183f4e",
+      "description": "an approved restructure plan added since d90b498f"
+    },
+    {
+      "path": ".codehealth/restructure/split-flowsheet-rows.toml",
+      "sha256": "bfb9e73f2a965fd08c09ee222da7bd5aebde599627106dcd848e29c8272603ec",
+      "description": "an approved restructure plan added since d90b498f"
+    },
+    {
+      "path": ".codehealth/restructure/split-projection.toml",
+      "sha256": "33246d660808c0c31db97e7b871bd7df62a474c8c86c6e95f1e29d9217815581",
+      "description": "an approved restructure plan added since d90b498f"
+    },
+    {
+      "path": ".codehealth/restructure/split-split-checks.toml",
+      "sha256": "b3cf7564bd8a9eb2b2b0546f065100e1910e57e704b94bba5fb69cf2914fd1e6",
+      "description": "an approved restructure plan added since d90b498f"
+    },
+    {
+      "path": ".codehealth/restructure/split-table-kit.toml",
+      "sha256": "f4adc26ed98909c2e39b3cd96cc31c05e9deb1b6eaa29ef5002be4b6e7be5134",
+      "description": "an approved restructure plan added since d90b498f"
+    },
+    {
+      "path": ".codehealth/restructure/split-unit-checks.toml",
+      "sha256": "6f78f68438747b821a88f78a3e6acab10a1ac54003ae1a28dcd348820204f005",
+      "description": "an approved restructure plan added since d90b498f"
+    },
+    {
+      "path": "git-common-dir codehealth/runs/repo-wide-scan-d90b498f.json (outside the tree)",
+      "sha256": "e9e76b4ec23f09f340d2600f429e4ad95ed3072a7d5d255a52a8be73da6306a3",
+      "description": "scan at CB d90b498f: debt 6370.9, health 7.3"
+    },
+    {
+      "path": "git-common-dir codehealth/runs/scan-df29751f.json (outside the tree)",
+      "sha256": "3d86b860e40a5ed25989d30881d8f344df7486fea6189e562979c848f0decba4",
+      "description": "scan at df29751f (W1+W2 code)"
+    }
+  ],
+  "limitations": [
+    "Evidence class: software verification of behaviour-preserving refactors (bitwise: literal multiset, public API, F0 corpus identity, MCP digest, test suite), not a validation of the simulator. The gates prove the tested behaviour unchanged; behaviour no test or corpus pins is covered only by the reviewers reading each step.",
+    "The status follows CI (check S19.G-END-CI, added when CI is green on both legs; the schema has no pending result); the review block stays pending until human sign-off.",
+    "This is a phase merge: W1 and W2 only; W3, W4, W5 and the end gate follow. Debt is unchanged by design in W1 and W2 (6370.9 at CB and at the merge; health 7.3 -> 7.69 because splits move code).",
+    "Old import paths stay as re-exports until ADR 0076's W4.",
+    "The 35 F0 M9 modules are untouched until W5.",
+    "Requirements empty: S19 maps to no D/A requirement; it is a development-process package."
+  ],
+  "review": {
+    "numerical": "pending",
+    "process_model": "pending"
+  }
+}
