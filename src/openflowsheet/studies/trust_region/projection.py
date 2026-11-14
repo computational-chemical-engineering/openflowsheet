@@ -227,6 +227,9 @@ def output_scale(start_value: float) -> float:
     return math.ldexp(1.0, exponent - 1 if mantissa == 0.5 else exponent)
 
 
+# -- the projection -------------------------------------------------------------------------------
+
+
 @dataclass(frozen=True)
 class OmittedRowsCheck:
     """R-274's fact 4 at one state: every omitted row's residual against its tolerance.

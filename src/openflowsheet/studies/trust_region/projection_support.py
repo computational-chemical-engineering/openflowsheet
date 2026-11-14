@@ -1,5 +1,6 @@
-"""The projection's shared vocabulary: its refusal codes and error, the omitted-row record and
-the row derivatives both of its checks read (M05 design note §6.1, R-274).
+"""The projection's shared vocabulary: its refusal codes and error, the omitted-row record, and
+the rows' derivatives and values that both the omitted-row certification and the exact-zero
+flows read (M05 design note §6.1, R-274, R-296).
 `studies.trust_region.projection` re-exports every public name."""
 
 from __future__ import annotations
@@ -48,7 +49,7 @@ class ProjectionRefusedError(Exception):
         return f"{self.code}({self.subject})"
 
 
-# -- the projection -------------------------------------------------------------------------------
+# -- the omitted row (R-274) ----------------------------------------------------------------------
 
 
 @dataclass(frozen=True)
@@ -84,7 +85,7 @@ class OmittedRow:
         }
 
 
-# -- the omitted rows (R-274) ---------------------------------------------------------------------
+# -- the rows' derivatives and values (R-274, R-296) ----------------------------------------------
 
 
 @dataclass(frozen=True)

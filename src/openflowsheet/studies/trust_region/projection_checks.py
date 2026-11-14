@@ -158,6 +158,9 @@ def _shape_check(
     return _ShapeVerdict(matched, size, refusal)
 
 
+# -- the omitted rows (R-274) ---------------------------------------------------------------------
+
+
 def _row_derivatives(
     model: Any,
     spec: ProblemSpec,
