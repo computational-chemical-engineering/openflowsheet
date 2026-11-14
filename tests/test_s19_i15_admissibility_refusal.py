@@ -39,6 +39,7 @@ from test_s10c_region import Z, _state
 from openflowsheet.application import revision_run
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.revision_routes import ApplicationRevisionRoutes
+from openflowsheet.application.revision_run import registered_case, registered_flowsheet
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.models.lifted import AdmissibilityRefusal
 from openflowsheet.orchestrator.region import (
@@ -47,7 +48,9 @@ from openflowsheet.orchestrator.region import (
     _reference_k_values,
     _screen,
     admissibility_value,
+    syn001_lifted_splits,
 )
+from openflowsheet.orchestrator.tear import solve_tear
 from openflowsheet.orchestrator.trace import SolvePolicy
 from openflowsheet.studies.nlp.revision_host import DecisionMap, RevisionNlpHost, decision_map
 from openflowsheet.studies.trust_region.checks import ParentSolve
@@ -333,13 +336,18 @@ def test_the_nlp_host_outcome_is_unchanged(raiser: str) -> None:
 
 # -- the ideal-K restatement (after the step) ------------------------------------------------------
 
-#: F0's RC bundle set as written at v0.3.0 (M7's corpus): the converged states of its runs.
+#: F0's RC bundle set as written at v0.3.0 (M7's corpus): 52 runs. The 44 revision runs that
+#: converged hold their state (`solution-state.json`); the five K05 runs, whose session writes no
+#: state, are solved again below; the other three G8 runs (`HOMOTOPY_STALLED`,
+#: `INITIALIZATION_FAILED` twice) have no converged state and so no `(T, P)` to pin.
 F0_BUNDLES = REPO_ROOT / "tests" / "fixtures" / "f0" / "v0.3.0-bundles"
+K05_CASES = sorted(path.name for path in (F0_BUNDLES / "k05").iterdir())
 
 
 def _f0_temperatures_and_pressures() -> list[tuple[float, float]]:
     """Every stream `(T, P)` in the F0 bundles' solution states, sorted: a superset of the lifted
-    splits' `(T, P)` (a split's temperature and pressure are stream variables of the state)."""
+    splits' `(T, P)` (a split's temperature and pressure are stream variables of the state).
+    The K05 runs' lifted splits are pinned by `test_the_k05_k_values_are_the_verifier_k_values`."""
     found: set[tuple[float, float]] = set()
     for path in sorted(F0_BUNDLES.glob("*/*/artifacts/solution-state.json")):
         variables = json.loads(path.read_text(encoding="utf-8"))["variables"]
@@ -354,8 +362,18 @@ F0_STATES = _f0_temperatures_and_pressures()
 
 
 def test_the_f0_bundles_hold_states() -> None:
-    """The K pin below is not vacuous: 44 bundles with a solution state, 59 distinct `(T, P)`."""
+    """The K pin below is not vacuous: 44 bundles with a solution state, 59 distinct `(T, P)`;
+    five K05 runs; 52 bundles in all."""
+    assert len(list(F0_BUNDLES.glob("*/*/artifacts/solution-state.json"))) == 44
     assert len(F0_STATES) == 59
+    assert K05_CASES == [
+        "SYN-001-all-liquid-310K",
+        "SYN-001-all-vapor-420K",
+        "SYN-001-high-recycle",
+        "SYN-001-nominal",
+        "SYN-001-once-through",
+    ]
+    assert len(list(F0_BUNDLES.glob("*/*/run-manifest.json"))) == 52
 
 
 @pytest.mark.parametrize(("temperature", "pressure"), F0_STATES)
@@ -369,6 +387,35 @@ def test_the_region_k_values_are_the_verifier_k_values_bitwise(
     expected = [value.hex() for value in k_values(provider, temperature, pressure, CONTEXT)]
     found = [value.hex() for value in _reference_k_values(provider, temperature, pressure, CONTEXT)]
     assert found == expected
+
+
+@pytest.mark.parametrize("case", K05_CASES)
+def test_the_k05_k_values_are_the_verifier_k_values(case: str) -> None:
+    """The K05 runs reach the ideal-K test through `orchestrator/tear.py`'s lifted splits; their
+    bundles hold no state, so the case is solved again as F0 solves it (`run_session`'s
+    `solve_tear` under its default policy). The state is the bundle's, bitwise: its hash is the
+    certificate's `target_state_sha256`. K is then bitwise equal at every lifted split's
+    `(T, P)`."""
+    registered = registered_case(case)
+    assert registered is not None, case
+    flowsheet = registered_flowsheet(registered)
+    policy = SolvePolicy(policy_id="SYN-001-K03", residual_tolerances={}, scales={})
+    result, _ = solve_tear(flowsheet, policy=policy)
+    certificate = json.loads(
+        (F0_BUNDLES / "k05" / case / "artifacts" / "solution-certificate.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    assert result.checkpoint is not None
+    assert result.checkpoint.full_state_sha256 == certificate["target_state_sha256"]
+    state = result.final_state
+    assert state is not None
+    provider = Syn001Provider()
+    for split in syn001_lifted_splits(flowsheet.components):
+        temperature, pressure = state[split.temperature], state[split.pressure]
+        expected = [value.hex() for value in k_values(provider, temperature, pressure, CONTEXT)]
+        found = _reference_k_values(provider, temperature, pressure, CONTEXT)
+        assert [value.hex() for value in found] == expected, split.unit
 
 
 #: provider name -> (provider, T, P) at which both sides refuse.
