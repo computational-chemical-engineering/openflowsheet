@@ -2,8 +2,10 @@
 
 `column.py` holds the unit layer (WO-1) with `column_spec`, `column_validation` and `column_rows`
 (S19 B2): the specification, its §5 refusals, the §2 rows, the regime forms and the §6
-initializer. This module compiles those rows and runs spec §7's path on
-them, calling `orchestrator.region.solve_region` unchanged, through S01's `run_region`:
+initializer. `column_compile` compiles those rows, `column_endpoint` builds the easy endpoint and
+the inverse records, and `column_acceptance` holds §8 and the products (S19 B3). This module runs
+spec §7's path on them, calling `orchestrator.region.solve_region` unchanged, through S01's
+`run_region`:
 
 1. validate (§5); an all-dormant column (possible only without ends, §5 S10) is S01 §4.6's;
 2. initialize (`s02-profile-cmo-v1`), giving `x_K`;
@@ -23,8 +25,8 @@ records Stage A and every candidate (§5.6–§5.7).
 
 Each equilibrium stage is one lifted split keyed `<U>.stage.<j>`, as S01's (spec §4.1), PH-type.
 The total condenser is not a split (§4.1). The withdrawn Newton profile pre-solve's rows
-(`presolve_rows`, §7.3) stay here only as the definition of the registered second easy endpoint
-`ref.cases.*.presolve` (A06b); they are not on the solve path.
+(`presolve_rows`, §7.3) stay in `column_compile` only as the definition of the registered second
+easy endpoint `ref.cases.*.presolve` (A06b); they are not on the solve path.
 """
 
 from __future__ import annotations
