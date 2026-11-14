@@ -65,13 +65,15 @@ from openflowsheet.verify.column import _SHARED_STABILITY, _STABLE
 from openflowsheet.verify.table import (
     MODEL_CHECKS,
     REACTING_MODELS,
-    REACTION_DATUM_NOTE,
-    SPLIT_ENTHALPY_NOTE,
     Degeneracy,
-    ModelChecks,
-    Unit,
     _envelope_energy,
     _envelope_material,
+)
+from openflowsheet.verify.table_kit import (
+    REACTION_DATUM_NOTE,
+    SPLIT_ENTHALPY_NOTE,
+    ModelChecks,
+    Unit,
 )
 
 if TYPE_CHECKING:

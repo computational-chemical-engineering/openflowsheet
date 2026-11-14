@@ -40,7 +40,7 @@ from openflowsheet.thermo import Phase, PropertyProvider, PropertyRequest, Strea
 from openflowsheet.verify import CheckResult, dormant, evaluated, unsupported
 from openflowsheet.verify.checks import KIND_REFERENCE, VerifierError, stream_of
 from openflowsheet.verify.forms import _critical_temperature, declared_phases, enthalpy_flow
-from openflowsheet.verify.table import ModelChecks, Unit
+from openflowsheet.verify.table_kit import ModelChecks, Unit
 
 __all__ = [
     "CARRIED_SPLIT_NOTE",
