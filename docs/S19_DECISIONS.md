@@ -206,3 +206,12 @@
   their constants (`projection_zero_flows.py:27-35`, `flowsheet_rows.py:20-28`, `table_kit.py:31-55`);
   `table.py:15-18` "every formula below"; `scripts/k04_evidence_manifest.py:428`, `m07a_evidence_manifest.py:341`,
   the m03 prefix skip, A30 per-module counts.
+- **2026-11-14: re-pinned cce-code-health d542005 -> 6fbc82b at the end of W2's gating** (lanes c, d, e had no gate
+  running; the decision above deferred it to this point). Brings 965de38 (new file smells fail the step; campaign
+  cadence excuses docs/config-only commits), 04f630e (interface mode with `retargeted`, patch targets follow), 0f7fe83
+  and c4143f4 (docs `--stale`, `--agent`), 569c85b (a split that removes a size smell counts as a gain), 93a36d8
+  (findings ratchet per check over touched files), 6fbc82b (`log --rerun-of`). Check at the wp/S19 tip: `arch` 8 / 5
+  / 16 as before. Backfilled: A6 part 1's passing re-gate as run-log step 33 (`--rerun-of 1 --head e56f1189`).
+  Correction by annotation (the run log refuses a second entry for one tree): lane e's B3 step (e1072f84, run-log
+  step 26) was logged `no-gain` by a missing `--result`; its gate passed 16/16 and it is accepted-neutral like the
+  other splits.
