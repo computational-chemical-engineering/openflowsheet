@@ -39,7 +39,7 @@ import numpy.typing as npt
 
 from openflowsheet.canonical import normalize_zero, state_sha256
 from openflowsheet.numerics.newton import Evaluation, IterationObserver, Problem
-from openflowsheet.orchestrator.trace import (
+from openflowsheet.numerics.solve_record import (
     AttemptSignature,
     Counters,
     RecyclePolicy,
