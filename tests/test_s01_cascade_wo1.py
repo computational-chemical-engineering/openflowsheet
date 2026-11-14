@@ -17,7 +17,7 @@ from typing import Any
 import pytest
 from conftest import REPO_ROOT
 
-import openflowsheet.models.syn001.cascade as cascade_module
+import openflowsheet.models.syn001.cascade_init as cascade_init_module
 import openflowsheet.numerics.newton as newton_module
 import openflowsheet.orchestrator.region as region_module
 from openflowsheet.compile.reference import row_values
@@ -238,7 +238,7 @@ def test_a03_tbar_outside_the_domain_is_a_typed_failure(monkeypatch: pytest.Monk
     mapping of `below` and `above` to the typed failure, nothing about the provider."""
     for position in ("below", "above"):
         monkeypatch.setattr(
-            cascade_module,
+            cascade_init_module,
             "band_temperature",
             lambda *args, position=position, **kwargs: BandTemperature(position),
         )
