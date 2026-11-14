@@ -59,7 +59,8 @@ artifact `<bundle id>/<file>` with its kind, and only those three are outputs. A
 
 **Typed ends without a bundle (§12.3).** A record with no registered bundle mapping
 (`RunUnsupportedError`) ends `failed(operation_error)` with `unsupported(<code>)`; a
-`VerifierError` ends `failed(verifier_refused)`; a judged state that is not the certificate's ends
+`VerifierError` or the region's `AdmissibilityRefusal` (ADR 0076 I-15) ends
+`failed(verifier_refused)`; a judged state that is not the certificate's ends
 `failed(operation_error)` with `internal_error(solution_state_mismatch)`. None writes a bundle.
 
 **`retryable` (§5.8 as amended by ruling round 4, W4c-Q2).** On an error recorded on a job it
@@ -435,8 +436,8 @@ def _typed_end(
         # W3-Q1: a record with no registered mapping is `unsupported(<code>)`, never a bundle.
         return _failed(_error("unsupported", error.code, reason=error.code, **where), run)
     if isinstance(error, VerifierError | AdmissibilityRefusal):
-        # The verifier refused to judge; its text may carry revision ids, so it goes to the log
-        # only (D9 (4)).
+        # The verifier, or the region's admissibility test, refused to judge; its text may carry
+        # revision ids, so it goes to the log only (D9 (4)).
         _LOG.warning("verifier refused: %s", error)
         return _failed(
             _error("unsupported", "verifier_refused", exception=type(error).__name__, **where),

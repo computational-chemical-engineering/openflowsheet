@@ -15,8 +15,8 @@ canonicalized, its sha256 recorded, and solved through the route it selects
 M02's outer coupling on the study's one `ExperimentRunner` (`coupled_run.LiveExperiments`, §6.4:
 M02's frozen identity then covers every coupled check and every TRF call of the study), the final
 inner solve certified with `EXT-COUPLING`'s checks. A route that refuses (`RunUnsupportedError`)
-or a verifier that refuses to judge (`VerifierError`) is returned as the outcome, never raised:
-P1 judges it.
+or a verifier that refuses to judge (`VerifierError`, or the region's `AdmissibilityRefusal`, ADR
+0076 I-15) is returned as the outcome, never raised: P1 judges it.
 
 **What a solve reads** from the run:
 - the outcome and the certificate's status (P1);
@@ -137,7 +137,7 @@ class ParentServices(Protocol):
         experiments: Any,
     ) -> Any:
         """`route`'s run of `document`, or the `unsupported(<code>)` code (a `str`) of a run that
-        has no mapping. A `VerifierError` propagates."""
+        has no mapping. A `VerifierError` or an `AdmissibilityRefusal` propagates."""
         ...
 
     def live_experiments(self, runner: ExperimentRunner) -> Any:
@@ -166,7 +166,7 @@ class ParentServices(Protocol):
     ) -> Any:
         """`document`'s `revision_eo` run, its SurrogateManifests resolved by `surrogates` (P2_A's
         re-solve, §7.3), or the code (a `str`) of a document that selects no `revision_eo` route
-        or whose run has no mapping. A `VerifierError` propagates."""
+        or whose run has no mapping. A `VerifierError` or an `AdmissibilityRefusal` propagates."""
         ...
 
 

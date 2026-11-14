@@ -3,7 +3,9 @@
 A unit declares its lifted splits and their forms with these types, and the region solver
 (`orchestrator.region`) consumes them; `region` re-exports every name. The solver's row
 tolerances are not here but in `models.lifted_tolerance`, so that the verifier, which reads
-`LiftedSplit`, does not reach them (R-016).
+`LiftedSplit`, does not reach them (R-016). `AdmissibilityRefusal` is the region's refusal of
+its single-phase admissibility test (ADR 0076 I-15), which a route solve's caller ends as a
+verifier refusal without importing the region.
 """
 
 from __future__ import annotations

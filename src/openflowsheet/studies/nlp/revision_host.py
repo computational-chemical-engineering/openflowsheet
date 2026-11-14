@@ -417,7 +417,8 @@ class RevisionNlpHost:
         has a sink.
 
         Outcomes as `CertifiedSolve`'s: `CONVERGED` only with a `VERIFIED` certificate; the plan
-        run's outcome; `CERTIFICATE_NOT_VERIFIED` (also when the verifier refused to judge);
+        run's outcome; `CERTIFICATE_NOT_VERIFIED` (also when the verifier refused to judge, or the
+        region's admissibility test could not be evaluated: `AdmissibilityRefusal`);
         `SPECIFICATION_REFUSED` (the binder refused the candidate); `UNSUPPORTED` (the route has
         no registered bundle mapping or T02 refused the plan)."""
         document = self.document_at(decisions)
