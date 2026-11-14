@@ -4,6 +4,12 @@
 into a verification status, and `SolutionCertificate` and `ExternalEvidence` are the records the
 verifier issues and takes. Issuing or withholding a certificate for a solve (`verify`,
 `verify_bound`, `verify_revision`) is `verify.certificate`'s, which re-exports every name here.
+
+The verdict rules are short and the precedence matters. `FAILED` beats everything, because a
+required check that *failed* is a statement about the answer; `UNVERIFIED` beats `RELAXED` and
+`VERIFIED`, because a check that could not run, or Jacobian evidence that does not hold, is not
+the same as a check that passed. `RELAXED` beats `VERIFIED` so that a loosened policy can never
+present itself as the registered one.
 """
 
 from __future__ import annotations

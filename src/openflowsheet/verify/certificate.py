@@ -1,10 +1,7 @@
-"""The verifier: run the check set, grade the verdict, issue or withhold a certificate. §8.
+"""The verifier: issue or withhold a certificate for a solve. §8.
 
-The verdict rules are short and the precedence matters. `FAILED` beats everything, because a
-required check that *failed* is a statement about the answer; `UNVERIFIED` beats `RELAXED` and
-`VERIFIED`, because a check that could not run, or Jacobian evidence that does not hold, is not
-the same as a check that passed. `RELAXED` beats `VERIFIED` so that a loosened policy can never
-present itself as the registered one.
+The check set, the verdict rules (`grade`) and the certificate record are `verify.verdict`'s;
+this module re-exports them.
 
 A `FAILED` verdict on a solve the solver called `CONVERGED` is the whole point of the package,
 and it is recorded as `false_success_detected` rather than left for a reader to infer.
