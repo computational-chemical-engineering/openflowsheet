@@ -272,17 +272,9 @@ def exchanger_utility(
     )
     limitations = list(extra_limitations)
     if streams is not None:
-        before, after = (_signature(sctx, stream) for stream in streams)
-        if before is not None and after is not None and before != after:
-            detail: dict[str, Any] = {"inlet": before, "outlet": after}
-            if dt1_f > 0.0 and dt2_f > 0.0:
-                ratio = max(dt1_f, dt2_f) / min(dt1_f, dt2_f)
-                exact = dt1_f if dt1_f == dt2_f else (dt1_f - dt2_f) / math.log(dt1_f / dt2_f)
-                detail |= {
-                    "r": ratio,
-                    "underwood_over_lmtd_minus_1": underwood(dt1_f, dt2_f) / exact - 1.0,
-                }
-            limitations.append(Limitation("LMTD_ACROSS_PHASE_CHANGE", item_id, detail))
+        phase_change = _phase_change(sctx, item_id, streams, dt1_f, dt2_f)
+        if phase_change is not None:
+            limitations.append(phase_change)
 
     def magnitude(s: Symbols, a: Algebra) -> Expr:
         return signed(s, a)
@@ -345,6 +337,27 @@ def _dt_min(doc: Mapping[str, Any], utility: Mapping[str, Any]) -> float | None:
     if "dT_min" in doc:
         return float(doc["dT_min"])
     return float(utility["dT_min"]) if "dT_min" in utility else None
+
+
+def _phase_change(
+    sctx: SizingContext, item_id: str, streams: tuple[str, str], dt1_f: float, dt2_f: float
+) -> Limitation | None:
+    """§4.4.1's `LMTD_ACROSS_PHASE_CHANGE` (information only): the process streams' phase
+    signatures at inlet and outlet, when both are known and differ; with ΔT₁ and ΔT₂ both positive
+    the detail also carries their ratio `r` and Underwood's relative error against the exact LMTD.
+    `None` when either signature is unknown or they agree."""
+    before, after = (_signature(sctx, stream) for stream in streams)
+    if before is not None and after is not None and before != after:
+        detail: dict[str, Any] = {"inlet": before, "outlet": after}
+        if dt1_f > 0.0 and dt2_f > 0.0:
+            ratio = max(dt1_f, dt2_f) / min(dt1_f, dt2_f)
+            exact = dt1_f if dt1_f == dt2_f else (dt1_f - dt2_f) / math.log(dt1_f / dt2_f)
+            detail |= {
+                "r": ratio,
+                "underwood_over_lmtd_minus_1": underwood(dt1_f, dt2_f) / exact - 1.0,
+            }
+        return Limitation("LMTD_ACROSS_PHASE_CHANGE", item_id, detail)
+    return None
 
 
 def _options(doc: Mapping[str, Any]) -> dict[str, Any]:
