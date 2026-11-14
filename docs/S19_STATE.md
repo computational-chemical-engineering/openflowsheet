@@ -12,7 +12,7 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 
 ## Position (2026-11-14)
 
-- `CB` = `d90b498f8759b739361016cca7858f71bc647ccc` (main after the S17 merge): the debt baseline and the map base.
+- `CB` = `d90b498f8759b739361016cca7858f71bc647ccc` (main after the S17 merge): the debt baseline.
 - Baseline (trial scan, scope `src/openflowsheet/*`): 282 files, 100136 NLOC, debt 6370.9, health 7.3, brain
   functions 44, file smells 59; 10 import cycles (the largest 17 modules, 51 edges). Digest:
   `docs/briefs/S19-digest.md`; scan JSON `<git-common-dir>/codehealth/runs/repo-wide-scan-d90b498f.json`.
