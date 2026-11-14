@@ -1,0 +1,27 @@
+# S19 restructure plan, step A7 (design note docs/briefs/S19-architecture.md section 2, cycle 9; table 4.1 row A7).
+# Measured at wp/S19-b 62b719a4 (after A6) with `codehealth arch --depth 4`: 13 violations (11 repo + 2 app),
+# 9 cycles, 75 edges.
+# Moves the closure (top-level Name references, annotations included) of the three names manifest.py:76 imports
+# from studies/surrogate/study.py (MODEL_ID, Observation, SurrogateEvaluation): MODEL_ID (:86-87 with its `#:`
+# comment), the aliases ObservationStatus and CentreStatus (:90-91), Observation (:102-127), CentreEvidence
+# (:182-190), SurrogateEvaluation (:193-210), verbatim and in order, to the leaf studies/surrogate/records.py
+# (imports conformal, plan, quadratic and thermo only; none of them imports study or manifest). study re-exports
+# all six. The section headers "one request's outcome" and "the evidence" stay in study above observe and
+# _gradient_errors, which they still head. Retargeted importer (the cut edge): manifest.py:76. reactor.py,
+# trust_region/parent.py and every test keep the old path. study's lazy build_records import stays as is.
+# EXPECTED after the step (fixed before the run): 13 violations (11 repo + 2 app), 8 cycles, 73 cycle edges.
+# Reasoning: manifest -> study (manifest.py:76) is manifest's only import of study; with it gone the 2-module
+# cycle manifest <-> study (study.py:423 lazy) dissolves: -1 cycle, -2 edges. The leaf adds no edge back into
+# study or manifest; no layer entry changes.
+id = "leaf-surrogate-records"
+approved_by = "orchestrator (OpenFlowsheet-TR09 build lane) under Frank's delegation of 2026-11-13; S19 design note A1 section 2, cycle 9 (step A7)"
+reason = "studies.surrogate.manifest imports study for its record vocabulary while study imports manifest (lazy, build_records): cycle 9. The records move to the leaf studies.surrogate.records: violations 13 -> 13, cycles 9 -> 8, cycle edges 75 -> 73 (measured base 62b719a4)"
+new_files = ["src/openflowsheet/studies/surrogate/records.py"]
+new_public = [
+    "src/openflowsheet/studies/surrogate/records.py:MODEL_ID",
+    "src/openflowsheet/studies/surrogate/records.py:ObservationStatus",
+    "src/openflowsheet/studies/surrogate/records.py:CentreStatus",
+    "src/openflowsheet/studies/surrogate/records.py:Observation",
+    "src/openflowsheet/studies/surrogate/records.py:CentreEvidence",
+    "src/openflowsheet/studies/surrogate/records.py:SurrogateEvaluation",
+]
