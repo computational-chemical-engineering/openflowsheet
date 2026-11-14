@@ -292,3 +292,29 @@ F0, the digest, or (by grep) any test. Re-run the self-test once S16 lands.
   behaviour difference. Notes fixed in 18562395 (`_end_exited` -> `_poll_and_end_exited`, `ending_failed`,
   docstrings for `_supervise`, `solve`, `_warm_start`, `_continuation`). Playbook: rules 4, 7, 8, 10 extended, 15
   and 16, accepted forms, a when-not row (reviews 6 and 7).
+- **Work order 7 (2026-11-14, opus-engineer):** validation.py 57.9 -> 10.9 in 5 attempts, all accepted (run-log steps
+  63 to 67); `_validate_optimization` 18.0 -> 0, `validate` 12.1 -> 2.5 (1.0 is the public 6-parameter signature),
+  `_dimensions` 11.5 -> 0, `_structural` 7.9 -> 0. Scope total 411.4 -> 364.4, below the D17 stretch target (about
+  400).
+- **Review 8 (2026-11-14, reviewer) on work order 7 (e3a36046..02ce7453):** 5 accepted (2 with a note), 0 rejects, no
+  behaviour difference. Notes fixed in ac9d221c (`schema_outcome`, `specification_*`, `_with_hint` ->
+  `_code_with_hint` in depth-first order); its message corrects 02ce7453's argument for the moved lazy imports (safe
+  because `_analysed` imports binding first on the same call path). Run-log step 72.
+- **Work order 8a (2026-11-14, opus-engineer):** 4 attempts, all accepted (run-log steps 68 to 71):
+  stream_table_format.py 35.0 -> 26.0 (`_csv_rows` 11.0 -> 0), replacement.py 17.0 -> 5.0 (`_validity` 12.0 -> 0),
+  operations.py 18.0 -> 8.0 (`_error_refs` 11.0 -> 1.0). `assemble` (16.0) skipped: mutually recursive closures; only
+  a reader class would help (a whole-unit change). Twins named, not merged: `_pointer_target` with
+  `projection.resolve` and `bindings/mcp.py` `_resolve`.
+- **Review 9 (2026-11-14, reviewer) on work order 8a (f3cef5cc..4a8bcecf):** 4 accepted (2 with a note), 0 rejects,
+  no behaviour difference. Notes fixed in 70f99f8c. Playbook: rules 4, 5, 10, 13, 15, 16 extended, accepted forms and
+  a when-not row (reviews 8 and 9).
+- **Split plans recomputed (2026-11-14, architect; R3 plan review by reviewer).** R3 at e3a36046: approved with
+  changes (seed `_c1_reactor_surrogate_of` into model_builders; model_signatures directly after thermal_binding in the
+  layer order; module docstrings; reworded section headers); `runs/s17-review-plan-r3.md`. R1 and R2 at f3cef5cc:
+  move sets re-derived (R1 the 8 public names, 93 lines; R2 13 names, 200 lines including work order 5's helpers);
+  scratch restructure gate 13/13 for each, `mkdocs build --strict` passes after R1, `codehealth arch` 8/33 after R1
+  and 6/14 after R1+R2. DECISION: no second plan review for R1 and R2 (approved 2026-11-13; the recompute adds only
+  helpers that move with their caller). Alternative: a second review. Reversible by: reviewing before the split
+  step. A `--no-gain` docstring commit lands before R4 (stale and false docstrings listed in the R3 plan, plus
+  transactions.py:24-27 and types.py:16-18). After S17: retarget `scripts/s16_recall.py:70` case
+  `app-transactions-diff` (its line moves to revision_edits.py) when the S16 map is rebuilt.

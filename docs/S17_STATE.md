@@ -14,17 +14,16 @@ Lower code-health debt in `application/` without any change in behaviour (bitwis
 - Branch `wp/S17`, worktree `.claude/worktrees/s17`. Config at D11, playbook stub and D12 at `CB`.
 - S16 merged into `main` (fc552176, pushed); `main` merged into `wp/S17` (e215e0ed); `CB` = 1fd6826b.
 - Map at `CB` built: `~/.cache/openflowsheet/testmap/1fd6826b2f433c73c4c41ef6ccad1dcb903985c8/`. G-MAP and G-SELF
-  pass. Work orders 1 to 6 done (revision_run.py 136.0 -> 55.1, binding.py 134.2 -> 43.6, coupled_run.py
-  83.8 -> 21.0, revision_binding.py 85.4 -> 11.5, jobs/model.py 54.2 -> 1.0, transactions.py 47.0 -> 11.0,
-  jobs/executor.py 37.0 -> 12.0, jobs/runner.py 29.7 -> 8.5); reviews 1 to 7, 0 open rejects; review notes fixed
-  through 18562395 (run-log step 62). Scan at 18562395: debt 411.4, health 8.01, brain functions 0
-  (`runs/s17-scan-18562395.json`). `[architecture]` ratchet in the config (D20). Next: work order 7 (validation.py),
-  brief `<git-common-dir>/codehealth/briefs/S17-WO7.md`.
+  pass. Work orders 1 to 7 and 8a done (per file in S17_DECISIONS); reviews 1 to 9, 0 rejects since review 1; review
+  notes fixed through 70f99f8c (run-log step 73). Scan at 70f99f8c: debt 333.4 (from 855.0), health 8.12 (from
+  7.22), brain functions 0 (`runs/s17-scan-70f99f8c.json`). `[architecture]` ratchet in the config (D20); gate.sh
+  `--restructure` mode (f3cef5cc). Split plans R1, R2, R3 recomputed and approved (design dir, S17_DECISIONS).
+  Next: work order 8b (brief `<git-common-dir>/codehealth/briefs/S17-WO8b.md`), review 10, then the splits.
 
 ## Next actions
 
-1. (done) `CB`, map, G-MAP, G-SELF, baseline. Work orders 1 to 6, reviews 1 to 7, D13 to D20.
-2. Work orders 7 and 8 (D17), one engineer at a time; review every 5 accepted steps; briefs in
+1. (done) `CB`, map, G-MAP, G-SELF, baseline. Work orders 1 to 7 and 8a, reviews 1 to 9, D13 to D20.
+2. Work order 8b (D17), one engineer at a time; review every 5 accepted steps; briefs in
    `<git-common-dir>/codehealth/briefs/S17-WO<n>.md`. Gates use the map at `MB` (D16).
 3. Restructure phase (D18): `[architecture]` ratchet in the config; `architect` drafts split plans from `codehealth
    coupling` / `arch`; `reviewer` checks each; orchestrator commits accepted plans; restructure work orders.
