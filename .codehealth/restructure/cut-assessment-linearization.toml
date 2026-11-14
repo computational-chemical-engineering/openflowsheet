@@ -1,0 +1,22 @@
+# S19 restructure plan, step A6 part 2 (design note docs/briefs/S19-architecture.md section 2, cycle 4; table 4.1 row A6).
+# Measured at wp/S19-b e56f1189 (after part 1, cut-nlp-tolerances) with `codehealth arch --depth 4`: 13 violations
+# (11 repo + 2 app), 10 cycles, 77 edges.
+# Moves Refusal (assessment/program.py:89-99, with the "typed results" section header kept in program above
+# Limitation), Linearization (:420-424) and _feasibility_tolerance (:448-453, carrying part 1's retargeted lazy
+# import) verbatim, in order, to the leaf assessment/linearization.py (imports dataclasses, typing, collections.abc
+# and compile.casadi_backend.TwinMatrix only); program re-exports Refusal, Linearization and imports
+# _feasibility_tolerance from it. Retargeted importers (listed in the design note): assessment/report.py:29 and
+# studies/nlp/verification.py:45. All other importers keep the old path.
+# EXPECTED after the step (fixed before the run): 13 violations (11 repo + 2 app), 9 cycles, 75 cycle edges.
+# Reasoning: report -> program (report.py:29) is the last top-level edge back into program; report's other import
+# of program is under TYPE_CHECKING (ignored, type_checking = false). With it gone the 2-module cycle
+# program <-> report (report.py:29, program.py:823) dissolves: -1 cycle, -2 edges. The leaf adds no edge back into
+# program, report or verification. No violation changes (assessment.linearization sits in the assessment layer).
+id = "cut-assessment-linearization"
+approved_by = "orchestrator (OpenFlowsheet-TR09 build lane) under Frank's delegation of 2026-11-13; S19 design note A1 section 2, cycle 4 (step A6)"
+reason = "assessment.report and studies.nlp.verification import assessment.program only for Linearization, Refusal and _feasibility_tolerance, while program imports report lazily: the last cycle of cycle 4. The three move to the leaf assessment.linearization: violations 13 -> 13, cycles 10 -> 9, cycle edges 77 -> 75 (measured base e56f1189)"
+new_files = ["src/openflowsheet/assessment/linearization.py"]
+new_public = [
+    "src/openflowsheet/assessment/linearization.py:Refusal",
+    "src/openflowsheet/assessment/linearization.py:Linearization",
+]
