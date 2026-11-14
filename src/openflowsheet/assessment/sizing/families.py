@@ -210,11 +210,6 @@ def exchanger_utility(
         if not candidates:
             return _refused("NO_ADMISSIBLE_UTILITY", item_id, f"utility {named!r} is not declared")
 
-    def dt_min_of(utility: Mapping[str, Any]) -> float | None:
-        if "dT_min" in doc:
-            return float(doc["dT_min"])
-        return float(utility["dT_min"]) if "dT_min" in utility else None
-
     utility_entry_id = f"{item_id}.utility"
     held = regime.choice(utility_entry_id)
     if held is not None:
@@ -224,23 +219,15 @@ def exchanger_utility(
     elif named != "auto":
         chosen = candidates[0]
     else:
-        admissible: list[tuple[float, int, Mapping[str, Any]]] = []
-        for order, utility in enumerate(candidates):
-            temperatures, dt_min = _utility_temperatures(utility), dt_min_of(utility)
-            price = _price_per_joule(utility)
-            if temperatures is None or dt_min is None or price is None:
-                continue
-            dt1, dt2 = _differences(service, *temperatures, t_pi, t_po)
-            if dt1 - dt_min >= 0.0 and dt2 - dt_min >= 0.0:
-                admissible.append((price, order, utility))
-        if not admissible:
+        cheapest = _cheapest_admissible(doc, candidates, service, t_pi, t_po)
+        if cheapest is None:
             return _refused("NO_ADMISSIBLE_UTILITY", item_id, f"service {service}")
-        chosen = min(admissible, key=lambda entry: (entry[0], entry[1]))[2]
+        chosen = cheapest
     utility_id = chosen["utility_id"]
     temperatures = _utility_temperatures(chosen)
     if temperatures is None:
         return _refused("SIZING_INPUT_MISSING", f"{item_id}.T_supply", utility_id)
-    dt_min = dt_min_of(chosen)
+    dt_min = _dt_min(doc, chosen)
     if dt_min is None:
         return _refused("SIZING_INPUT_MISSING", f"{item_id}.dT_min", utility_id)
 
@@ -326,6 +313,38 @@ def exchanger_utility(
         regime_entries=(service_entry, utility_entry),
         limitations=tuple(limitations),
     )
+
+
+def _cheapest_admissible(
+    doc: Mapping[str, Any],
+    candidates: Sequence[Mapping[str, Any]],
+    service: str,
+    t_pi: float,
+    t_po: float,
+) -> Mapping[str, Any] | None:
+    """§4.3.2 rule 2 without a held or declared utility: the cheapest candidate whose ΔT₁ and ΔT₂
+    both reach its `dT_min` at the process temperatures `t_pi`, `t_po`, ties to the earlier
+    candidate. A candidate without temperatures, `dT_min` or a comparable price is skipped; `None`
+    when no candidate is admissible."""
+    admissible: list[tuple[float, int, Mapping[str, Any]]] = []
+    for order, utility in enumerate(candidates):
+        temperatures, dt_min = _utility_temperatures(utility), _dt_min(doc, utility)
+        price = _price_per_joule(utility)
+        if temperatures is None or dt_min is None or price is None:
+            continue
+        dt1, dt2 = _differences(service, *temperatures, t_pi, t_po)
+        if dt1 - dt_min >= 0.0 and dt2 - dt_min >= 0.0:
+            admissible.append((price, order, utility))
+    if not admissible:
+        return None
+    return min(admissible, key=lambda entry: (entry[0], entry[1]))[2]
+
+
+def _dt_min(doc: Mapping[str, Any], utility: Mapping[str, Any]) -> float | None:
+    """The item's `dT_min`, else the utility's; `None` when neither declares one."""
+    if "dT_min" in doc:
+        return float(doc["dT_min"])
+    return float(utility["dT_min"]) if "dT_min" in utility else None
 
 
 def _options(doc: Mapping[str, Any]) -> dict[str, Any]:
