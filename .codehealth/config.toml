@@ -217,6 +217,7 @@ to = [
     "openflowsheet.orchestrator.recovery", "openflowsheet.orchestrator.coupling",
     "openflowsheet.orchestrator.merge", "openflowsheet.orchestrator.attempts",
     "openflowsheet.numerics.newton", "openflowsheet.numerics.ptc", "openflowsheet.numerics.anderson",
+    "openflowsheet.models.lifted_tolerance",
 ]
 reason = "R-016: the verifier shares no solve code (it may read structure: rank, splits, tear)"
 
