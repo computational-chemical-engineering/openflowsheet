@@ -1,0 +1,27 @@
+# S19 restructure plan, step B5-rows (design note docs/briefs/S19-architecture.md section 3 row B5; ruling
+# DECISION B5 of 2026-11-14 in docs/S19_DECISIONS.md: B5 planned at its base by simulation).
+# Written by the lane-d engineer under work order S19-W2d3; names and numbers measured at wp/S19-d f1abdbdf
+# (after the authorised retarget of tests/test_t05_table_independence.py's TABLE_MODULES). The seven model-id
+# sets (FEED_MODELS, PRODUCT_MODELS, EXTERNAL_DUTY_MODELS, STAGED_DUTY_MODELS, WORK_MODELS, REACTING_MODELS,
+# KINETIC_CSTR) and the flowsheet rows (_feeds, _products, _extent, _nu, _envelope_material, _envelope_energy;
+# table.py:105-256, the section comment and header with them; 13 statements) move verbatim to
+# verify/flowsheet_rows.py. Their closure over top-level Name references reaches only these 13 names and names
+# already below table (verify.column, pr_c1, checks, split_checks.Degeneracy, table_kit, unit_checks._cstr_rate).
+# Table re-exports the seven sets (stream_table.py:49 and tests read them from verify.table) and imports the two
+# envelopes it calls. gamma_phi_units.py:65 (REACTING_MODELS and the envelopes) is retargeted to
+# flowsheet_rows, which removes its module-level import of verify.table: the cycle gamma_phi_units <-> table
+# goes. No module mutates MODEL_CHECKS at import time. Simulated on a scratch tree of these moves: ast.dump
+# multiset 31 = 31, arch 11 / 5 / 16.
+id = "split-flowsheet-rows"
+approved_by = "orchestrator (OpenFlowsheet-TR09 build lane) under Frank's delegation of 2026-11-14 (S19 rules); design note S19-architecture.md section 3 row B5; ruling DECISION B5 (planned by simulation), work order S19-W2d3"
+reason = "verify/gamma_phi_units.py imports REACTING_MODELS and the flowsheet envelope rows from verify.table at module level while table imports gamma_phi_units lazily: the last cycle of B5. The model-id sets and the flowsheet rows move verbatim to verify/flowsheet_rows.py below table; table re-exports the sets; gamma_phi_units.py:65 is retargeted. Expected codehealth arch --depth 4: measured at base 11 violations, 6 cycles, 18 cycle edges; simulated delta (0, -1, -2) gives 11 violations, 5 cycles, 16 cycle edges"
+new_files = ["src/openflowsheet/verify/flowsheet_rows.py"]
+new_public = [
+    "src/openflowsheet/verify/flowsheet_rows.py:FEED_MODELS",
+    "src/openflowsheet/verify/flowsheet_rows.py:PRODUCT_MODELS",
+    "src/openflowsheet/verify/flowsheet_rows.py:EXTERNAL_DUTY_MODELS",
+    "src/openflowsheet/verify/flowsheet_rows.py:STAGED_DUTY_MODELS",
+    "src/openflowsheet/verify/flowsheet_rows.py:WORK_MODELS",
+    "src/openflowsheet/verify/flowsheet_rows.py:REACTING_MODELS",
+    "src/openflowsheet/verify/flowsheet_rows.py:KINETIC_CSTR",
+]
