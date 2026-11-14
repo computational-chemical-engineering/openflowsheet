@@ -723,19 +723,7 @@ def _differences_v2(
 
     # Rows 9–14: a float, under the floor its row gives, else its registered one, else none.
     if isinstance(committed, float) or isinstance(emitted, float):
-        if emitted is None or committed is None:
-            if emitted is not committed:
-                found.append(f"{where}: {emitted!r} against {committed!r}")
-            return found
-        if not (_real(emitted) and _real(committed)):
-            return [f"{where}: {emitted!r} against {committed!r}"]
-        if floor is None:
-            key = where.rsplit(".", 1)[-1]
-            if key in V2_REGISTERED_FLOOR:
-                floor, source = V2_REGISTERED_FLOOR[key], f"the floor of {key}, ADR 0007 D2.2"
-            else:
-                floor, source = NO_FLOOR, "no registered floor, ADR 0007 D2.3"
-        return _outside(emitted, committed, where, floor, source or "")
+        return _float_leaf(emitted, committed, where, floor, source)
 
     # Row 15: every other leaf, exactly.
     if emitted != committed:
@@ -846,6 +834,29 @@ def _phase_branch_flow(where: str, emitted: Any, committed: Any) -> list[str]:
             found += _differences_v2(left, right, f"{where}[{index}]", floor, source, None)
         return found
     return _differences_v2(emitted, committed, where, floor, source, None)
+
+
+def _float_leaf(
+    emitted: Any, committed: Any, where: str, floor: float | None, source: str | None
+) -> list[str]:
+    """Rows 9–14: a float at `where`, under `floor` (labelled `source`) when its row gave one,
+    else the registered floor of its key, else none.
+
+    Null against null is no difference; null against anything else, or a side that is not a
+    real number, is one, compared exactly."""
+    if emitted is None or committed is None:
+        if emitted is not committed:
+            return [f"{where}: {emitted!r} against {committed!r}"]
+        return []
+    if not (_real(emitted) and _real(committed)):
+        return [f"{where}: {emitted!r} against {committed!r}"]
+    if floor is None:
+        key = where.rsplit(".", 1)[-1]
+        if key in V2_REGISTERED_FLOOR:
+            floor, source = V2_REGISTERED_FLOOR[key], f"the floor of {key}, ADR 0007 D2.2"
+        else:
+            floor, source = NO_FLOOR, "no registered floor, ADR 0007 D2.3"
+    return _outside(emitted, committed, where, floor, source or "")
 
 
 def pinned_digests(document: Any, path: str = "") -> list[str]:
