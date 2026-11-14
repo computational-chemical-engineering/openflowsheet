@@ -599,8 +599,10 @@ def _read_instances(
 ) -> tuple[dict[str, dict[str, Any]], list[UnitConversion]]:
     """R1: the instances, in declaration order, as reader records keyed by id, with the
     conversions of their parameters, which R6 reads in SI (ADR 0016 D5). A record's `ports`,
-    `directions`, `capabilities` and `pins` start empty; `_read` fills them. Raises the
-    `id_duplicate` conflict for a repeated id and `instances_missing` for none."""
+    `directions`, `capabilities` and `pins` start empty; `_read` fills them, and its R5 also
+    writes a fixed parameter specification's value into the record's `parameters`
+    (`setdefault`). Raises the `id_duplicate` conflict for a repeated id and `instances_missing`
+    for none."""
     instances: dict[str, dict[str, Any]] = {}
     parameter_conversions: list[UnitConversion] = []
     for entry in document.get("instances") or ():

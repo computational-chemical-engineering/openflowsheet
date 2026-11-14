@@ -20,7 +20,9 @@ FailureOutcome = Literal[
 
 @dataclass(frozen=True)
 class CascadeFailure:
-    """A typed refusal or failure: the outcome and its cause code (spec §4.5, §5)."""
+    """A typed refusal or failure: the outcome and its cause code (spec §4.5, §5).
+
+    Always truthy: column_validation chains refusals with `or`."""
 
     outcome: FailureOutcome
     cause: str

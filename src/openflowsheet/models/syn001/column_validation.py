@@ -146,7 +146,7 @@ def validate(
     are the provider's declared `T` and `P` boxes, and the specification kinds are narrowed after
     S10 (S10-C §4.8); SYN-001 keeps its constants.
 
-    After R1 and `_well_formed_inlets` (R1's misuse checks), one helper per clause, in order:
+    After R1 and `_well_formed_spec_inlets` (R1's misuse checks), one helper per clause, in order:
     `_inlet_flow_refusal` (R2), `_domain_refusal` (R3), `_side_feed_stage_refusal` (R4),
     `_two_phase_inlet_refusal` (R6), `_inadmissible_inlet_refusal` (R5), `_column_refusal`
     (S1–S10) and `_energy_refusal` (R7).
@@ -162,7 +162,7 @@ def validate(
     # R1
     if isinstance(count, bool) or not isinstance(count, int) or count < 1:
         return _invalid("stage_count", f"{unit}: N = {count!r} is not an integer >= 1")
-    inlets = _well_formed_inlets(spec)
+    inlets = _well_formed_spec_inlets(spec)
     return (
         _inlet_flow_refusal(unit, inlets)
         or _domain_refusal(spec, inlets, t_bounds, p_bounds)
@@ -174,7 +174,15 @@ def validate(
     )
 
 
-def _well_formed_inlets(spec: ColumnSpec) -> tuple[PlacedInlet, ...]:
+def _domain(form: EquilibriumForm | None) -> tuple[tuple[float, float], tuple[float, float]]:
+    """The `T` and `P` bounds the column checks: SYN-001's constants, or a composition-dependent
+    form's declared domain (S10-C §4.8; SYN-001's constants do not describe its records)."""
+    if form is not None and form.composition_dependent:
+        return form.domain["T"], form.domain["P"]
+    return (T_MIN, T_MAX), (P_MIN, P_MAX)
+
+
+def _well_formed_spec_inlets(spec: ColumnSpec) -> tuple[PlacedInlet, ...]:
     """R1's misuse checks on a specification whose `N` passed R1: `spec.inlets()`, after
     `ValueError` for a pressure or duty list that is not one per stage or a non-finite duty, and
     before `ValueError` for duplicated inlet ports or a flow vector of the wrong length."""
@@ -315,14 +323,6 @@ def column_warnings(spec: ColumnSpec) -> tuple[str, ...]:
     if ends and all(found is not None and found.kind == "duty" for found in given):
         return (MULTIPLE_STEADY_STATES_WARNING,)
     return ()
-
-
-def _domain(form: EquilibriumForm | None) -> tuple[tuple[float, float], tuple[float, float]]:
-    """The `T` and `P` bounds the column checks: SYN-001's constants, or a composition-dependent
-    form's declared domain (S10-C §4.8; SYN-001's constants do not describe its records)."""
-    if form is not None and form.composition_dependent:
-        return form.domain["T"], form.domain["P"]
-    return (T_MIN, T_MAX), (P_MIN, P_MAX)
 
 
 def _column_refusal(spec: ColumnSpec, form: EquilibriumForm | None = None) -> CascadeFailure | None:
