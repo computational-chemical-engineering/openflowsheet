@@ -16,16 +16,17 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 - Baseline (trial scan, scope `src/openflowsheet/*`): 282 files, 100136 NLOC, debt 6370.9, health 7.3, brain
   functions 44, file smells 59; 10 import cycles (the largest 17 modules, 51 edges). Digest:
   `docs/briefs/S19-digest.md`; scan JSON `<git-common-dir>/codehealth/runs/repo-wide-scan-d90b498f.json`.
-- Running: the test map at `CB` (`scripts/test_impact.py build`, log
-  `<git-common-dir>/codehealth/runs/map-build-d90b498f....log`, PID in `map-build.pid`); design pass A1
-  (`architect`, brief `docs/briefs/S19-A1.md`): repo-wide layer order, cycle cuts, split plans, work orders, ADR 0076,
-  the end-gate numbers.
+- `MB` (the test-map base, read by `.claude/skills/s19-refactor/gate.sh` from the line below; moves to milestone
+  commits, `S19_DECISIONS`):
+- `MB` = `none yet`: built after A1's documents and the config commit.
+- Running: design pass A1 (`architect`, brief `docs/briefs/S19-A1.md`): repo-wide layer order, cycle cuts, split
+  plans, work orders, ADR 0076, the end-gate numbers.
 
 ## Next actions
 
 1. A1 reports: judge it; fix the gate table below with numbers before any step; commit the `[architecture]` table and
    the widened scope in `.codehealth/config.toml` (one orchestrator commit).
-2. G-MAP and G-SELF at `CB`; an `s19-refactor` skill and `gate.sh` with `CB`.
+2. Build the map at that commit (`MB`), G-MAP and G-SELF; the `s19-refactor` skill (gate.sh exists).
 3. Work orders per the design note; reviewer every 6 to 8 accepted steps; design-lane review on sensitive files.
 4. ADR 0076 reviewed, then the interface steps; merge into `main` per package group (CI both legs, F0).
 
@@ -33,7 +34,7 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 
 | gate | when | pass criterion | result |
 | --- | --- | --- | --- |
-| G-MAP | map at `CB` | build exit 0 or 1; at least 20356 tests in the map; failures a subset of the S17 G-MAP set, others named | |
+| G-MAP | each map at `MB` | build exit 0 or 1; at least 20356 tests in the map; failures a subset of the S17 G-MAP set, others named | |
 | G-SELF | before step 1 | as S17 G-SELF, on a literal outside application/ | |
 | G-STEP | every step | gate exit 0; touched files' debt strictly lower (or a restructure plan met) | run log |
 | G-REVIEW | every 6 to 8 accepted steps | fresh `reviewer`; rejects reverted and logged | |

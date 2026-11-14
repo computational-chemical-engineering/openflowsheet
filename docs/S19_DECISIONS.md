@@ -5,10 +5,12 @@
   goal. Do what it takes." Consequence: a repo-wide campaign S19 runs before S18; the D19 interface package
   (`docs/S17_DECISIONS.md`, D19) is folded into it as ADR 0076. Evidence: repo-wide trial scan at d90b498f (debt
   6370.9, health 7.3, 44 brain functions, 10 import cycles; `docs/briefs/S19-digest.md`).
-- **DECISION: the campaign base -> `CB` = main d90b498f, which is also the map base.** Alternative: keep S17's map
-  base 3fa71973. Rejected: every diff since 3fa71973 holds collection-time code, so every S17 gate fell back to the
-  full suite (about 13.5 min each; at S17's rate S19 would need about 700 steps). A fresh map makes selection work.
-  Reversible by: passing the old base to `--ref-base`.
+- **DECISION: the debt baseline `CB` = main d90b498f; the map base `MB` moves to milestone commits.** Alternative:
+  one map at `CB` (or S17's 3fa71973). Rejected: `scripts/test_impact.py` falls back to the full suite for any added
+  or deleted file, `docs/` included (`_fallback_rule`, B-16), and S19 adds design notes and split modules; every S17
+  gate fell back (about 13.5 min each; at that rate S19 would need about 700 full-suite gates). So `MB` is rebuilt
+  (about 52 min) after the design and config commits and after each batch of splits; `gate.sh` takes `MB` from
+  `docs/S19_STATE.md`. The first build at d90b498f was stopped for this reason. Reversible by: setting `MB` = `CB`.
 - **DECISION: design first (A1, `architect`) for the whole tree before any step.** Alternative: start function-level
   steps on the worst files at once. Rejected: 10 cycles across packages and seven files over 1000 NLOC need a target
   layer order and split plans first, or steps would be undone by the splits. Reversible by: none needed (no code).
