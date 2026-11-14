@@ -208,7 +208,7 @@ def analyse_tear(
     """§9's rule on the square system `square_form` describes.
 
     Each loop is a strongly connected component of more than one unit; `_candidates` scores its
-    cycle edges as tears.
+    cycle edges as tears and `_loop_tear` chooses one.
     """
     incidence = declaration.incidence()
     distances = _boundary_distances(graph)
@@ -222,43 +222,7 @@ def analyse_tear(
     results: list[LoopTear] = []
     for units in loops:
         candidates = _candidates(units, graph, square_form, distances)
-
-        breaking = [candidate for candidate in candidates if candidate.breaks_loop]
-        if not breaking:
-            results.append(
-                LoopTear(
-                    units=tuple(units),
-                    cycle_edges=tuple(candidate.stream_id for candidate in candidates),
-                    candidates=tuple(candidates),
-                    chosen_stream=None,
-                    tie_break_used=None,
-                    tear_variables=(),
-                    tear_rows=(),
-                    unsupported="multi_edge_feedback_set",
-                )
-            )
-            continue
-
-        chosen, decided_by = _choose(breaking)
-        tear_variables = chosen.torn_variables
-        torn_here = set(tear_variables)
-        tear_rows = tuple(
-            row_id
-            for row_id in retained_rows
-            if declaration.rows[row_id].unit == chosen.producer
-            and torn_here.intersection(incidence[row_id])
-        )
-        results.append(
-            LoopTear(
-                units=tuple(units),
-                cycle_edges=tuple(candidate.stream_id for candidate in candidates),
-                candidates=tuple(candidates),
-                chosen_stream=chosen.stream_id,
-                tie_break_used=decided_by,
-                tear_variables=tear_variables,
-                tear_rows=tear_rows,
-            )
-        )
+        results.append(_loop_tear(units, candidates, declaration, incidence, retained_rows))
 
     torn_rows = {row_id for loop in results for row_id in loop.tear_rows}
     torn_columns = {column for loop in results for column in loop.tear_variables}
@@ -348,6 +312,52 @@ def _in_coupled_block(form: BlockTriangularForm, column: str) -> bool:
     """Is the column inside a block bigger than one? That is what makes a coordinate coupled."""
     index = form.index_of_column(column)
     return index is not None and form.blocks[index].size > 1
+
+
+def _loop_tear(
+    units: Sequence[str],
+    candidates: Sequence[Candidate],
+    declaration: Declaration,
+    incidence: Mapping[str, frozenset[str]],
+    retained_rows: Sequence[str],
+) -> LoopTear:
+    """One loop's tear: §9.3's chain over the `candidates` that break it, and the tear rows.
+
+    A loop no single candidate breaks is `unsupported` (`multi_edge_feedback_set`), with no
+    chosen stream. The tear rows are the `retained_rows` of the chosen producer that read a torn
+    variable.
+    """
+    breaking = [candidate for candidate in candidates if candidate.breaks_loop]
+    if not breaking:
+        return LoopTear(
+            units=tuple(units),
+            cycle_edges=tuple(candidate.stream_id for candidate in candidates),
+            candidates=tuple(candidates),
+            chosen_stream=None,
+            tie_break_used=None,
+            tear_variables=(),
+            tear_rows=(),
+            unsupported="multi_edge_feedback_set",
+        )
+
+    chosen, decided_by = _choose(breaking)
+    tear_variables = chosen.torn_variables
+    torn_here = set(tear_variables)
+    tear_rows = tuple(
+        row_id
+        for row_id in retained_rows
+        if declaration.rows[row_id].unit == chosen.producer
+        and torn_here.intersection(incidence[row_id])
+    )
+    return LoopTear(
+        units=tuple(units),
+        cycle_edges=tuple(candidate.stream_id for candidate in candidates),
+        candidates=tuple(candidates),
+        chosen_stream=chosen.stream_id,
+        tie_break_used=decided_by,
+        tear_variables=tear_variables,
+        tear_rows=tear_rows,
+    )
 
 
 #: §9.3's score, in order. Each key is an integer, so each step is a minimum over a finite
