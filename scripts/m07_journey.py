@@ -435,6 +435,7 @@ class LoopEvaluator:
             select_route,
         )
         from openflowsheet.canonical import document_sha256
+        from openflowsheet.models.lifted import AdmissibilityRefusal
         from openflowsheet.run.bundle import read_artifact
         from openflowsheet.verify.certificate import CheckPolicy
         from openflowsheet.verify.checks import VerifierError
@@ -463,7 +464,7 @@ class LoopEvaluator:
             entry["outcome"] = f"unsupported({error.code})"
             entry["wall_s"] = self.clock() - started
             return entry
-        except VerifierError as error:
+        except (VerifierError, AdmissibilityRefusal) as error:
             entry["outcome"] = f"verifier_refused({error})"
             entry["wall_s"] = self.clock() - started
             return entry
