@@ -221,12 +221,7 @@ def report_body(
         status_unc |= {"linear_interval": intervals, "rss_sigma": sigmas, "parameters": parameters}
         refusals.extend(more)
     built = [n for n in reported if value(n) is not None]
-    if values is None or not built:
-        status = "REFUSED"
-    elif refusals or withheld:
-        status = "PARTIAL"
-    else:
-        status = "COMPLETE"
+    status = _status(values, built, refusals, withheld)
     lca = sections.get("lca", {})
     defaulted = [d for s in sections.values() for d in s.get("defaulted_inputs", ())]
     return {
@@ -298,6 +293,21 @@ def _groups(
         if group is not None:
             groups[group][output_id] = value(output_id)
     return groups
+
+
+def _status(
+    values: Mapping[str, float] | None,
+    built: Sequence[str],
+    refusals: Sequence[Refusal],
+    withheld: Mapping[str, str],
+) -> str:
+    """The report's status: `REFUSED` without values or without a built output, else `PARTIAL`
+    with a refusal or a withheld output, else `COMPLETE`."""
+    if values is None or not built:
+        return "REFUSED"
+    if refusals or withheld:
+        return "PARTIAL"
+    return "COMPLETE"
 
 
 def _listed(program: AssessmentProgram, group: Mapping[str, float | None]) -> list[dict[str, Any]]:
