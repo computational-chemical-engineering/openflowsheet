@@ -2,10 +2,10 @@
 
 `application.binding` binds the registered SYN-001 revisions to `Syn001Flowsheet` by topology and
 stays as it is. This module builds the flowsheet *from* the revision: every instance's unit is
-constructed by the builder registered for its model id (`MODEL_BUILDERS`), from the instance's
-parameters and pins read by §1.3's rules, with no default (D5). Each builder returns the unit and
-its `configuration` — the part of the revision that selects expressions without changing ids,
-which the flowsheet's label digests (register R-047).
+constructed by the builder registered for its model id (`MODEL_BUILDERS`, `model_builders`),
+from the instance's parameters and pins read by §1.3's rules, with no default (D5). Each builder
+returns the unit and its `configuration` — the part of the revision that selects expressions
+without changing ids, which the flowsheet's label digests (register R-047).
 
 **A pin is consumed when its builder reads it.** The builder is handed the instance view with a
 pin mapping that records every value read; a pin nobody read is a specification the flowsheet
@@ -20,6 +20,11 @@ the rules cannot read may be perfectly fine, and says so as `unsupported`.
 always reads and the one-of specification choices. The builders take those lists from
 `MODEL_SIGNATURES` rather than from literals, so what `list_models` reports is what binding reads;
 the signature constructs nothing.
+
+The signatures, the pin readers and the `Builder` and `Configuration` types live in
+`model_signatures`, the builder catalogue in `model_builders` (S17 R3); this module holds the
+binder (`bind_revision_flowsheet`), the basis and provider selection, and the refusals, and
+re-exports both modules' public names, so `revision_binding.<name>` imports keep working.
 """
 
 from __future__ import annotations

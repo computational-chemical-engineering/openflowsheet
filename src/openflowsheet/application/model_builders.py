@@ -423,8 +423,10 @@ def _syn001_column(
     context: EvaluationContext,
     components: tuple[str, ...],
 ) -> tuple[UnitModel, Configuration]:
-    """`column_binding.build_column` (§4.7.1–§4.7.2), imported at the call: that module imports
-    `ModelSignature` and `Configuration` from this one."""
+    """`column_binding.build_column` (§4.7.1–§4.7.2), imported at the call, so the plugin module
+    loads only when a column is built. (The import was lazy to break a cycle while the signatures
+    lived in `revision_binding`; `column_binding` now imports `model_signatures`, not this
+    module.)"""
     from openflowsheet.application.column_binding import build_column  # noqa: PLC0415
 
     return build_column(view, provider, context, components)
@@ -695,7 +697,9 @@ def resolve_surrogate(
 
 
 def _thermal_builder(model_id: str) -> Builder:
-    """`thermal_binding.BUILDERS[model_id]`, imported at the call: that module imports this one."""
+    """`thermal_binding.BUILDERS[model_id]`, imported at the call, so the plugin module loads only
+    when a `thermal.*` unit is built (`thermal_binding` imports `model_signatures`, not this
+    one)."""
 
     def build(
         view: InstanceView,

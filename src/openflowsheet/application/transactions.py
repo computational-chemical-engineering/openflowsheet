@@ -21,10 +21,11 @@ the old answer, which is what K06's key-only lookup did.
 **Atomic grouping.** A `ChangeSet` applies whole or not at all, so a draft is never left half
 edited by a failure in the middle.
 
-**T07.** The transaction core — `apply_edits` and `semantic_diff` here, persistence and the
-ledger in `LocalApplication.commit_change` — is shared: K06's `Application` below is a thin
-façade over an in-memory `LocalApplication`, and `Edit`, `ChangeSet`, `SemanticDiff` and
-`TransactionResult` are the contract's own types, re-exported from here.
+**T07.** The transaction core — `apply_edits` and `semantic_diff` in `revision_edits` (S17 R2,
+re-exported here), persistence and the ledger in `LocalApplication.commit_change` — is shared:
+K06's `Application` below is a thin façade over an in-memory `LocalApplication`, and `Edit`,
+`ChangeSet`, `SemanticDiff` and `TransactionResult` are the contract's own types, re-exported
+from here.
 """
 
 from __future__ import annotations

@@ -1,9 +1,9 @@
 """The revision builder of `syn001.column` (S11 design note §4.7.1, §4.7.2; WO-B2).
 
-`build_column` is the model's builder, in the `Builder` shape of `revision_binding`, which
-registers it in `MODEL_BUILDERS` (I1) through a wrapper that imports this module at the call, and
-defines the model's signature `_COLUMN` beside the others: this module imports `Configuration`
-from `revision_binding`.
+`build_column` is the model's builder, in the `Builder` shape of `model_signatures`.
+`model_builders` registers it in `MODEL_BUILDERS` (I1) through a wrapper that imports this module
+at the call; `model_signatures` defines the model's signature `_COLUMN` beside the others, and
+this module imports `Configuration` from there (never from `model_builders`).
 
 The builder parses the instance (`column_unit.column_structure`), applies the structural items of
 S02 §5 and S06 §5 at bind (`column_unit.structural_refusal`), and returns the unit with its
