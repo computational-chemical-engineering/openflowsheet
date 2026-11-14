@@ -15,14 +15,15 @@ Lower code-health debt in `application/` without any change in behaviour (bitwis
   the five splits R1 to R5 (D18) are done; review notes fixed through 3de8018c (run-log step 87). Final scan at
   3de8018c: debt 301.8 (from 855.0), health 8.49 (from 7.22), brain functions 0 (from 6); `codehealth arch` 2
   violations, 2 cycles of 6 edges. G-END-DEBT passes (S17_DECISIONS "Campaign end").
-- Next: the S17 manifest (status `implemented` until CI), push `wp/S17`, CI on both legs (G-END-CI), merge into
-  `main`, F0 on `main`, push; report to Frank with the splits for his review.
+- Manifest `evidence/S17/36127495.../manifest.json` status `tested` (CI 43566134806 green on both legs at 41c6dd06;
+  the run before failed two harvest-bookkeeping tests, fixed there). Merged into `main`; next: report to Frank with
+  the splits for his review, then the D19 interface package.
 
 ## Next actions
 
 1. (done) `CB`, map, G-MAP, G-SELF, baseline; work orders 1 to 8b; reviews 1 to 11; D13 to D20; splits R1 to R5;
    run log, reviews and briefs in the tree.
-2. Manifest, push, G-END-CI, merge, F0, push.
+2. (done) Manifest, push, G-END-CI, merge, F0, push.
 3. After S17 (input in S17_DECISIONS, reviews 10 and 11, design note section 6): the D19 interface package (an ADR
    first; drop the re-exports after retargeting their importers, public names for the private names that now cross
    modules, `utc_timestamp` and a builder-kit module, the two out-of-scope comments refusals.yaml:1378 and
@@ -44,7 +45,7 @@ Lower code-health debt in `application/` without any change in behaviour (bitwis
 | G-STEP | every step | gate exit 0 and `codehealth diff --base <last accepted>` shows the touched files' debt strictly lower | per step in the run log |
 | G-REVIEW | every 5 accepted steps | fresh `reviewer` on the diffs; rejected steps reverted and logged `review-reject` | PASS: reviews 1 to 11, 2 rejects (review 1), both reverted and logged |
 | G-END-DEBT | campaign end | `application/` debt at least 30 % below its value at `CB`; `revision_run.py` and `binding.py` each at least 45 % lower; no new brain function || PASS at 3de8018c: 301.8 (-64.7 %); revision_run.py 44.6 (-67.2 %); binding.py 43.6 (-67.5 %); brain 6 -> 0 |
-| G-END-CI | before merge | CI green on ubuntu-latest and ubuntu-24.04-arm at the final commit; F0 on `main` after the merge | |
+| G-END-CI | before merge | CI green on ubuntu-latest and ubuntu-24.04-arm at the final commit; F0 on `main` after the merge | pass: CI 43566134806 (41c6dd06); 43559308752 failed T08.A21 and M07a.A50, fixed |
 
 The G-END numbers are a target, not a pass/fail for the steps: a campaign that stops early (three consecutive targets
 without gain, or the budget) reports the measured reduction against them.

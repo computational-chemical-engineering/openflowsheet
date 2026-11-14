@@ -2,7 +2,7 @@
   "work_package": "S17",
   "commit": "36127495e7cd5333657ed867b628e694c0e74ef2",
   "requirements": [],
-  "status": "implemented",
+  "status": "tested",
   "inputs": {
     "case_id": "S17 brief (orchestrator, 2026-11-12): code-health campaign 1 on src/openflowsheet/application/; docs/S17_RULES.md; D17, D18 (Frank)",
     "case_hash": "e52695febecb21d75570bb2bec46e5c1dade69e7664bb17c4a542438ec04ce5b",
@@ -21,6 +21,11 @@
     },
     {
       "cmd": ".venv-codehealth/bin/codehealth arch (44 files, 2 violations, 2 cycles of 6 edges)",
+      "cwd": ".claude/worktrees/s17",
+      "exit_code": 0
+    },
+    {
+      "cmd": "gh run watch 43566134806 --exit-status",
       "cwd": ".claude/worktrees/s17",
       "exit_code": 0
     }
@@ -61,6 +66,12 @@
       "description": "module splits R1 to R5 (D18): codehealth arch after each split equals the number fixed in the design note before the run",
       "result": "pass",
       "value": "violations/cycle edges 11/83 -> 8/33, 6/14, 4/10, 3/8, 2/6"
+    },
+    {
+      "id": "S17.G-END-CI",
+      "description": "CI green on ubuntu-latest and ubuntu-24.04-arm at the final branch commit (default-install, codehealth and identity jobs green too)",
+      "result": "pass",
+      "value": "run 43566134806 at 41c6dd06; the earlier run 43559308752 at 790a458a failed T08.A21 and M07a.A50 (harvest rows missing), fixed in 41c6dd06"
     }
   ],
   "artifacts": [
