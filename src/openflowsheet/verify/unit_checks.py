@@ -795,7 +795,8 @@ _OWN_MODEL_CHECKS: Final[dict[str, ModelChecks]] = {
 
 class _ModelChecksTable(MutableMapping[str, ModelChecks]):
     """`MODEL_CHECKS`: this module's rows, then `verify.thermal.MODEL_CHECKS`'s seven `thermal.*`
-    rows (units design §4.8, I1b), imported at the read because that module imports this one.
+    rows (units design §4.8, I1b), imported at the read (lazy since that module imported
+    `verify.table`; it imports only `verify.table_kit` now).
     A write goes to this module's rows (a test registering one, `monkeypatch.setitem`)."""
 
     def __init__(self, own: dict[str, ModelChecks]) -> None:

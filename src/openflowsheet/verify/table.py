@@ -14,8 +14,8 @@ SYN-001-shaped revision (`tests/test_t05_w1d_verifier.py`): each legacy value eq
 counterpart to the bit, at the root and at a non-root. That is why every formula below is written
 out in the operation order §4.3 states — left to right, sums over ports, streams and instances
 accumulated from `0.0` in declaration order — and must stay so. A sum over one stream's
-components is `_component_sum`, Python's `sum`, because that is what the legacy builders call
-(see its docstring).
+components is `unit_checks._component_sum`, Python's `sum`, because that is what the legacy
+builders call (see its docstring).
 
 **Order** is category-major, as the legacy engine's: material, energy, specification, bounds,
 then admissibility and the independent split. Within a category: instances in declaration order,
@@ -260,7 +260,8 @@ def _envelope_energy(
 
 
 def _thermal_rows() -> ModuleType:
-    """`verify.thermal`, imported at the call: it imports this module."""
+    """`verify.thermal`, imported at the call (lazy since it imported this module; it imports
+    only `verify.table_kit` now)."""
     from openflowsheet.verify import thermal  # noqa: PLC0415
 
     return thermal

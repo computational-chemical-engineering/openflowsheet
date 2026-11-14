@@ -12,7 +12,7 @@ verified rather than blocked:
   not `SPLIT_RULES` descriptors and are left to its own rows), the material balances,
   specifications and bounds (S11.A73).
 - **What it adds**, for each `SPLIT_RULES` descriptor (an instance of a model with a registry
-  split), SYN-001's check ids (`verify.table._split_checks`) with these substitutions:
+  split), SYN-001's check ids (`verify.split_checks._split_checks`) with these substitutions:
   - *degeneracy*: temperature-degenerate iff the bubble and dew temperatures of the split's feed
     at P lie within τ_T of T, by `models.syn001.saturation_band.degeneracy_distance` (which
     dispatches on the equilibrium form); the check carries `BAND_NOTE`, A3's shared-implementation
@@ -298,8 +298,8 @@ def split_checks(
     note: str,
     distance: float | None = None,
 ) -> list[CheckResult]:
-    """§4.8 on one registry split under SYN-001's ids (`verify.table._split_checks`): a flowing
-    degenerate split (`distance` its `δ`) has `.saturation` and its independent split
+    """§4.8 on one registry split under SYN-001's ids (`verify.split_checks._split_checks`): a
+    flowing degenerate split (`distance` its `δ`) has `.saturation` and its independent split
     `not_applicable`; any other has its admissibility and the fresh flash's comparison."""
     name = f"{split.unit}.{split.stream}"
     subject = split.stream

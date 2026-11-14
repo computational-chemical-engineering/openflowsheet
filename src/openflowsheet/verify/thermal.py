@@ -1,7 +1,7 @@
 """The verifier's rows for the `thermal.*` family and the saturated pure-fluid stream (S11 units
 design §4.8; ADR 0051; WO-C5).
 
-Hooked at I1b into the first pass's `DECLARED_MIXTURE` form: `verify.table.MODEL_CHECKS` reads
+Hooked at I1b into the first pass's `DECLARED_MIXTURE` form: `verify.unit_checks.MODEL_CHECKS` reads
 this module's `MODEL_CHECKS`, and on a pure-fluid basis `revision_checks` takes a saturated
 stream's enthalpy and checks from here. Everything here is the verifier's own computation
 from the fresh provider and the state; nothing calls `models.thermal.kernel` (S11.A66).
@@ -617,7 +617,7 @@ def _machine_bounds(unit: Unit, components: Sequence[str]) -> list[CheckResult]:
     ]
 
 
-#: §4.8's rows for the seven models, merged into `verify.table.MODEL_CHECKS` at I1b.
+#: §4.8's rows for the seven models, merged into `verify.unit_checks.MODEL_CHECKS` at I1b.
 MODEL_CHECKS: Final[Mapping[str, ModelChecks]] = {
     "thermal.heater": ModelChecks(
         material=_through_material,
