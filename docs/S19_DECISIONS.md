@@ -225,3 +225,13 @@
   `validate` (now in column_validation) cannot reach (behaviour unchanged today).
 - **W2 closed 2026-11-14 (except B1, parked for I-15; B7 in W5; B8-executor skipped).** Splits landed: B2, B3, B4,
   B5 (four steps), B6, B8-certificate; A5 with W2. `wp/S19` arch 14 / 10 / 79 at CB -> 7 / 4 / 14.
+- **2026-11-14, I-15 (lane f, wp/S19-f): rulings on the engineer's stop.** Tests-first commit a68186eb (18 forced-refusal
+  tests through the provider, passing at the base; `test_s10c_region.py:109` relaxed to `RuntimeError`, re-pinned
+  after the step). (1) **DECISION: `scripts/m07_journey.py:466` gets identical handling in a script commit right
+  after the step**; ADR 0076 I-15 carries a factual addendum (the handler list missed it; the rule "every handler that
+  catches a route solve's `VerifierError`" already covers it). Alternative: before the step (rejected: the name does
+  not exist yet; catching `RuntimeError` would widen it). Between the two commits a converged-path refusal would
+  escape the journey script; no run reaches that path today (Q-F6). (2) **DECISION: the K pin reads the `(T, P)`
+  states of the F0 corpus bundles if they hold the lifted splits' states; otherwise a spy during the F0 solves, marked
+  slow.** (3) TR parent :464 gets a forced test if one can reach it through the provider; otherwise the gap is named
+  in the report and the review.
