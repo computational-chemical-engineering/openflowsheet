@@ -205,7 +205,11 @@ def analyse_tear(
     retained_rows: Sequence[str],
     square_form: BlockTriangularForm,
 ) -> TearAnalysis:
-    """§9's rule on the square system `square_form` describes."""
+    """§9's rule on the square system `square_form` describes.
+
+    Each loop is a strongly connected component of more than one unit; `_candidates` scores its
+    cycle edges as tears.
+    """
     incidence = declaration.incidence()
     distances = _boundary_distances(graph)
     edges = [(connection.producer, connection.consumer) for connection in graph.connections]
@@ -217,47 +221,7 @@ def analyse_tear(
 
     results: list[LoopTear] = []
     for units in loops:
-        inside = set(units)
-        cycle = [
-            connection
-            for connection in graph.connections
-            if connection.producer in inside and connection.consumer in inside
-        ]
-        candidates: list[Candidate] = []
-        for connection in cycle:
-            # Does removing *this* edge break the loop? Parallel edges between the same pair of
-            # units are possible, so the edge is dropped by identity and not by endpoint.
-            remaining = [
-                (other.producer, other.consumer)
-                for other in graph.connections
-                if other is not connection
-            ]
-            # "No cycle remains among these units", not "the component is no longer the whole
-            # set". Two recycles sharing a unit split into two smaller loops when either is cut,
-            # and the weaker test called every edge breaking — so one tear was chosen and a
-            # recycle survived inside the supposedly acyclic inner system. Measured by the Fable
-            # review of T01 (M1); SYN-001's single simple cycle cannot distinguish the two tests.
-            still_looped = any(
-                len(component) > 1 for component in _strongly_connected(list(units), remaining)
-            )
-            torn = tuple(
-                column
-                for column in connection.state_columns
-                if _in_coupled_block(square_form, column)
-            )
-            candidates.append(
-                Candidate(
-                    stream_id=connection.stream_id,
-                    producer=connection.producer,
-                    consumer=connection.consumer,
-                    breaks_loop=not still_looped,
-                    torn_variables=torn,
-                    not_torn=tuple(
-                        column for column in connection.state_columns if column not in set(torn)
-                    ),
-                    consumer_boundary_distance=distances.get(connection.consumer, len(graph.units)),
-                )
-            )
+        candidates = _candidates(units, graph, square_form, distances)
 
         breaking = [candidate for candidate in candidates if candidate.breaks_loop]
         if not breaking:
@@ -325,6 +289,59 @@ def analyse_tear(
         phase_selecting=phase_selecting,
         ancestor_blocks_of_tear_rows=ancestors,
     )
+
+
+def _candidates(
+    units: Sequence[str],
+    graph: ProcessGraph,
+    square_form: BlockTriangularForm,
+    distances: Mapping[str, int],
+) -> list[Candidate]:
+    """One loop's cycle edges as tear candidates (§9.3), in `graph.connections` order.
+
+    `units` is the loop's component; a consumer that `distances` does not reach scores the unit
+    count.
+    """
+    inside = set(units)
+    cycle = [
+        connection
+        for connection in graph.connections
+        if connection.producer in inside and connection.consumer in inside
+    ]
+    candidates: list[Candidate] = []
+    for connection in cycle:
+        # Does removing *this* edge break the loop? Parallel edges between the same pair of
+        # units are possible, so the edge is dropped by identity and not by endpoint.
+        remaining = [
+            (other.producer, other.consumer)
+            for other in graph.connections
+            if other is not connection
+        ]
+        # "No cycle remains among these units", not "the component is no longer the whole
+        # set". Two recycles sharing a unit split into two smaller loops when either is cut,
+        # and the weaker test called every edge breaking — so one tear was chosen and a
+        # recycle survived inside the supposedly acyclic inner system. Measured by the Fable
+        # review of T01 (M1); SYN-001's single simple cycle cannot distinguish the two tests.
+        still_looped = any(
+            len(component) > 1 for component in _strongly_connected(list(units), remaining)
+        )
+        torn = tuple(
+            column for column in connection.state_columns if _in_coupled_block(square_form, column)
+        )
+        candidates.append(
+            Candidate(
+                stream_id=connection.stream_id,
+                producer=connection.producer,
+                consumer=connection.consumer,
+                breaks_loop=not still_looped,
+                torn_variables=torn,
+                not_torn=tuple(
+                    column for column in connection.state_columns if column not in set(torn)
+                ),
+                consumer_boundary_distance=distances.get(connection.consumer, len(graph.units)),
+            )
+        )
+    return candidates
 
 
 def _in_coupled_block(form: BlockTriangularForm, column: str) -> bool:
