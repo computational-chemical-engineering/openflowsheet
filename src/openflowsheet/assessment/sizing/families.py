@@ -204,11 +204,9 @@ def exchanger_utility(
     # Rule 2: the utility.
     t_pi, t_po = sctx.x(t_in), sctx.x(t_out)
     named = doc.get("utility", "auto")
-    candidates = [u for u in sctx.utilities if u.get("kind") == service]
-    if named != "auto":
-        candidates = [u for u in sctx.utilities if u["utility_id"] == named]
-        if not candidates:
-            return _refused("NO_ADMISSIBLE_UTILITY", item_id, f"utility {named!r} is not declared")
+    candidates = _candidates(sctx, item_id, service, named)
+    if isinstance(candidates, SizingPlan):
+        return candidates
 
     utility_entry_id = f"{item_id}.utility"
     held = regime.choice(utility_entry_id)
@@ -305,6 +303,20 @@ def exchanger_utility(
         regime_entries=(service_entry, utility_entry),
         limitations=tuple(limitations),
     )
+
+
+def _candidates(
+    sctx: SizingContext, item_id: str, service: str, named: Any
+) -> list[Mapping[str, Any]] | SizingPlan:
+    """§4.3.2 rule 2's candidates: the utility the item names (`named`, unless `auto`), else every
+    utility of the service's kind. A `NO_ADMISSIBLE_UTILITY` refusal when the named utility is not
+    declared."""
+    candidates = [u for u in sctx.utilities if u.get("kind") == service]
+    if named != "auto":
+        candidates = [u for u in sctx.utilities if u["utility_id"] == named]
+        if not candidates:
+            return _refused("NO_ADMISSIBLE_UTILITY", item_id, f"utility {named!r} is not declared")
+    return candidates
 
 
 def _cheapest_admissible(
