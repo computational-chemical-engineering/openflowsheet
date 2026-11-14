@@ -689,7 +689,8 @@ def _error_refs(
 ) -> None:
     """Add to `found` the location of every `$ref` to `_ERROR_SCHEMA` under `node`: a `$ref` is
     followed into its published document unless it is in `active` (a cycle), then every
-    `_subschemas` member is walked at its location."""
+    `_subschemas` member is walked at its location. Raises `ValueError` for a `$ref` into a
+    document that is not in `documents` (a schema that is not published)."""
     if not isinstance(node, Mapping):
         return
     reference = node.get("$ref")
@@ -710,8 +711,13 @@ def _error_refs(
 
 
 def _pointer_target(document: Mapping[str, Any], fragment: str) -> Any:
-    """The value the JSON pointer `fragment` (RFC 6901, `~1` and `~0` unescaped) names in
-    `document`: an array step is an index, an object step a member name."""
+    """The value the JSON pointer `fragment` names in `document`: an array step is an index, an
+    object step a member name, `~1` and `~0` unescaped. A lax subset of RFC 6901, enough for the
+    published schemas: a fragment without a leading `/` names the whole document, `int` accepts a
+    sign or leading zeros, there is no percent-decoding, and stepping into a scalar raises
+    `TypeError`. The strict form is `projection.resolve`; `bindings/mcp.py`'s `_resolve` repeats
+    this walk with its prologue (S17 review 9: not merged, the accepted inputs and exceptions
+    differ)."""
     target: Any = document
     for token in fragment.split("/")[1:]:
         token = token.replace("~1", "/").replace("~0", "~")

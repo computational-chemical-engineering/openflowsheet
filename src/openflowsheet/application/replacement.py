@@ -565,8 +565,9 @@ def _contains(outer: Any, inner: Any) -> bool:
 
 
 def _validity(old: _Side, new: _Side) -> FacetResult:
-    """The declared domain's intervals and phases, then, when the new side has a hard domain,
-    `_hard_domain_narrowing`; every narrowing found fails the facet."""
+    """`not_applicable` when either side does not bind (`_unavailable`); else the declared
+    domain's intervals and phases, then, when the new side has a hard domain,
+    `_hard_domain_narrowings`; every narrowing found fails the facet."""
     unavailable = _unavailable("validity", old, new)
     if unavailable is not None:
         return unavailable
@@ -582,7 +583,7 @@ def _validity(old: _Side, new: _Side) -> FacetResult:
         narrower.append(f"phases {lost} lost")
     old_hard, new_hard = old.hard_domain, new.hard_domain
     if new_hard is not None:
-        narrower += _hard_domain_narrowing(old_hard, new_hard)
+        narrower += _hard_domain_narrowings(old_hard, new_hard)
     if narrower:
         return FacetResult(
             "validity", "fail", "the new domain does not contain the old: " + "; ".join(narrower)
@@ -590,7 +591,7 @@ def _validity(old: _Side, new: _Side) -> FacetResult:
     return FacetResult("validity", "pass", "the new declared domain contains the old")
 
 
-def _hard_domain_narrowing(
+def _hard_domain_narrowings(
     old_hard: Mapping[str, Any] | None, new_hard: Mapping[str, Any]
 ) -> list[str]:
     """Where `new_hard` does not contain `old_hard` (`None`: the old side has none), in this
