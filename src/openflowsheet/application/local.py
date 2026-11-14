@@ -2030,7 +2030,11 @@ class LocalApplication:
         idempotency_key: str,
         operation: str,
     ) -> _Prepared | TransactionResult:
-        """Steps 4–6 from one snapshot: the new document, its validation and its diff."""
+        """Steps 4–6 from one snapshot: the new document, its validation and its diff.
+
+        Raised: an optimization task (U05). Rejected: an expected or restore revision that does not
+        exist, a new revision id that is taken, an edit path that does not resolve, and a
+        promotion `_check_promotion` refuses."""
         if change.task == "optimization":
             # U05 (T08 review 2, Ruling 1), as `validate` refuses it: no optimization formulation
             # is checked in v0.1. Audited, before the snapshot is read or anything is built.
@@ -2105,6 +2109,34 @@ class LocalApplication:
         # report. A compatible one writes each report's SHA-256 into the provenance (outside the
         # content hash), so the preview and the commit name the same document.
         reports = check_replacements(expected, document, surrogates=self._surrogates())
+        rejected = self._check_promotion(expected, document, reports, operation, idempotency_key)
+        if rejected is not None:
+            return rejected
+        if reports:
+            document = json.loads(canonical_json(_with_report_hashes(document, reports)))
+        revision = Revision(
+            revision_id=revision_id, document=document, parent_revision=expected_revision
+        )
+        return _Prepared(
+            revision=revision,
+            report=validation.validate(
+                revision.as_document(), change.task, surrogates=self._surrogates()
+            ),
+            diff=semantic_diff(expected, document),
+            replacements=reports,
+        )
+
+    def _check_promotion(
+        self,
+        expected: Mapping[str, Any],
+        document: Mapping[str, Any],
+        reports: tuple[ReplacementReport, ...],
+        operation: str,
+        idempotency_key: str,
+    ) -> TransactionResult | None:
+        """A change's promotions, judged (`rejected`, audited): the first incompatible replacement
+        of `reports`, then the first surrogate of `document` that no replacement judged and that is
+        not promoted against `expected`; `None` when there is neither."""
         incompatible = [report for report in reports if not report.compatible]
         if incompatible:
             report = incompatible[0]
@@ -2130,19 +2162,7 @@ class LocalApplication:
                 instance_id=instance_id,
                 cause=why,
             )
-        if reports:
-            document = json.loads(canonical_json(_with_report_hashes(document, reports)))
-        revision = Revision(
-            revision_id=revision_id, document=document, parent_revision=expected_revision
-        )
-        return _Prepared(
-            revision=revision,
-            report=validation.validate(
-                revision.as_document(), change.task, surrogates=self._surrogates()
-            ),
-            diff=semantic_diff(expected, document),
-            replacements=reports,
-        )
+        return None
 
     def _store_replacements(
         self,
