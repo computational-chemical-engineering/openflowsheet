@@ -1,9 +1,10 @@
 """Cooperative interruption of a running job (T07 design note §8.1).
 
 A job body runs inside `interruptible(...)`, which installs a check in
-`orchestrator.trace.INTERRUPT_CHECK`. Every `Trace.record` calls it before building its event, and
-the runner calls the yielded check again at each stage boundary. The check raises `JobInterrupted`
-once cancellation has been requested or the wall-time deadline has passed; otherwise it returns.
+`numerics.solve_record.INTERRUPT_CHECK`. Every `Trace.record` calls it before building its event,
+and the runner calls the yielded check again at each stage boundary. The check raises
+`JobInterrupted` once cancellation has been requested or the wall-time deadline has passed;
+otherwise it returns.
 
 **`JobInterrupted` is a `BaseException`**, so the solver's and verifier's `except Exception`
 handlers cannot turn a cancellation into a numerical outcome, and `finally` blocks still run (the

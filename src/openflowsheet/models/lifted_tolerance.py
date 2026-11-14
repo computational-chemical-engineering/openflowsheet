@@ -21,8 +21,9 @@ from openflowsheet.models.syn001 import (
 PRESSURE_TOLERANCE: Final = 1e-2
 
 #: K04 §5.2's registered tolerance for the division-free equilibrium row, `a + r s` with
-#: `a = 1e-9 · 3`, `r = 1e-8`, `s = 9 (mol/s)²`. Restated here because the verifier imports the
-#: orchestrator; `tests/test_t02_region.py` pins the two equal so they cannot drift.
+#: `a = 1e-9 · 3`, `r = 1e-8`, `s = 9 (mol/s)²`. Restated here, not imported from the verifier's
+#: `verify.kind_tolerance`, because the solver and the verifier share no tolerance object (R-016);
+#: `tests/test_t02_region.py` pins the two equal so they cannot drift.
 EQUILIBRIUM_TOLERANCE: Final = 1e-9 * 3.0 + 1e-8 * 9.0
 
 #: The row acceptance rule by declared kind (ADR 0001 D6; K04 §5.2), K03 §5.2's per-row test.

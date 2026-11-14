@@ -55,7 +55,7 @@ from openflowsheet.numerics.linear import (
     solve_linear_kept,
 )
 from openflowsheet.numerics.scaling import Scaling
-from openflowsheet.orchestrator.trace import (
+from openflowsheet.numerics.solve_record import (
     AttemptSignature,
     Counters,
     LinearRecord,

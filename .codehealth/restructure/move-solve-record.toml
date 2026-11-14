@@ -1,0 +1,39 @@
+# S19 restructure plan, step A5 (design note docs/briefs/S19-architecture.md section 2 and table 4.1 row A5; ADR 0076 I-1).
+# Written by the lane-c engineer under work order S19-W2c; names and numbers measured at wp/S19-c b16dd300.
+id = "move-solve-record"
+approved_by = "orchestrator (OpenFlowsheet-TR09 build lane) under Frank's delegation of 2026-11-14 (S19 rules); design note S19-architecture.md section 2 and table 4.1 A5, ADR 0076 I-1, work order S19-W2c"
+reason = "numerics.anderson, numerics.newton and numerics.ptc import orchestrator.trace (anderson.py:42, newton.py:58, ptc.py:63): three repo-layers violations, numerics below orchestrator. The solve record is what Newton, PTC and Anderson produce and it imports only openflowsheet.compiled, so every statement of orchestrator/trace.py (846 lines; 31 public names, private _finite_or_none, _names, _members) moves verbatim to numerics/solve_record.py (ADR 0076 I-1 name). orchestrator.trace keeps only same-name re-exports of the 31 public names (no private name is imported from it in src, tests, scripts or benchmarks). Only the three numerics importers are retargeted; every other importer keeps the old path until W4. Persisted paths (Q2): schemas/ and tests/fixtures have no hit; benchmarks/ has five Python imports (rrc/run_candidates.py, t06/generator.py, t06/ensemble.py, t08/ptc_r1/compare.py, t04/basin.py), which the re-exports keep working, and no recorded module path. Expected codehealth arch --depth 4: measured at base 11 violations, 6 cycles, 20 cycle edges; table 4.1 delta A5 (-3, 0, 0) gives 8 violations, 6 cycles, 20 cycle edges (the removed edges are the three numerics -> orchestrator.trace violations, none on a cycle; the added edges orchestrator.trace -> numerics.solve_record and numerics.* -> numerics.solve_record point down and solve_record imports only compiled)"
+new_files = ["src/openflowsheet/numerics/solve_record.py"]
+new_public = [
+    "src/openflowsheet/numerics/solve_record.py:SolveOutcome",
+    "src/openflowsheet/numerics/solve_record.py:EventKind",
+    "src/openflowsheet/numerics/solve_record.py:RejectionReason",
+    "src/openflowsheet/numerics/solve_record.py:EoRecoveryUnsupported",
+    "src/openflowsheet/numerics/solve_record.py:AttemptSignature",
+    "src/openflowsheet/numerics/solve_record.py:Counters",
+    "src/openflowsheet/numerics/solve_record.py:LinearRecord",
+    "src/openflowsheet/numerics/solve_record.py:SolveEvent",
+    "src/openflowsheet/numerics/solve_record.py:EliminatedRowRecord",
+    "src/openflowsheet/numerics/solve_record.py:SolvePlan",
+    "src/openflowsheet/numerics/solve_record.py:Checkpoint",
+    "src/openflowsheet/numerics/solve_record.py:REGISTERED_ARMIJO_C",
+    "src/openflowsheet/numerics/solve_record.py:REGISTERED_STEP_HALVINGS_MAX",
+    "src/openflowsheet/numerics/solve_record.py:REGISTERED_STAGNATION_WINDOW",
+    "src/openflowsheet/numerics/solve_record.py:REGISTERED_STAGNATION_RATIO",
+    "src/openflowsheet/numerics/solve_record.py:REGISTERED_MAX_ITERATIONS",
+    "src/openflowsheet/numerics/solve_record.py:REGISTERED_MAX_ATTEMPTS",
+    "src/openflowsheet/numerics/solve_record.py:REGISTERED_MAX_PROPERTY_CALLS",
+    "src/openflowsheet/numerics/solve_record.py:REGISTERED_PHASE_WALL_PATIENCE",
+    "src/openflowsheet/numerics/solve_record.py:REGISTERED_ETA_INNER",
+    "src/openflowsheet/numerics/solve_record.py:REGISTERED_ADMISSIBILITY_EPSILON",
+    "src/openflowsheet/numerics/solve_record.py:RecycleMethod",
+    "src/openflowsheet/numerics/solve_record.py:PhaseContract",
+    "src/openflowsheet/numerics/solve_record.py:RecyclePolicy",
+    "src/openflowsheet/numerics/solve_record.py:fraction_string",
+    "src/openflowsheet/numerics/solve_record.py:HomotopyPolicy",
+    "src/openflowsheet/numerics/solve_record.py:PtcPolicy",
+    "src/openflowsheet/numerics/solve_record.py:GlobalizationPolicy",
+    "src/openflowsheet/numerics/solve_record.py:SolvePolicy",
+    "src/openflowsheet/numerics/solve_record.py:INTERRUPT_CHECK",
+    "src/openflowsheet/numerics/solve_record.py:Trace",
+]
