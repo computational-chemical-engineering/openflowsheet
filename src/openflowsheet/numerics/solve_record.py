@@ -1,9 +1,9 @@
 """`SolvePolicy`, `SolveEvent` and `Checkpoint` — the recorded metadata of a solve.
 
 K03 specification §12. These are the serializable types: what a run was told to do, what it did,
-and where it got to. They live in the orchestrator because that is the layer that owns plans,
-checkpoints and budgets (blueprint §3); the numerics layer computes and emits, and holds none of
-this.
+and where it got to. They live in the numerics layer because the record is what Newton, PTC and
+Anderson produce (ADR 0076 I-1), and this module imports only `openflowsheet.compiled`; the
+orchestrator, which owns plans, checkpoints and budgets (blueprint §3), reads them from below.
 
 **Every field is required.** A default that can be mistaken for a declaration is the failure
 `Capabilities` and `PropertyCapabilities` already avoid on their own boundaries: a policy that

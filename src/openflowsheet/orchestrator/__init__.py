@@ -8,7 +8,7 @@ table, §7, §8). The phase set belongs to the local nonlinear attempt and is fr
 not import backend objects.
 
 The recorded metadata of a solve — `SolvePolicy`, `SolveEvent`, `Checkpoint` and the
-append-only `Trace` — is introduced by package K03 in `trace`. The plan, the bounded attempts
-and the active-phase controller follow in the same package; the numerics layer computes and
-emits events, and holds none of this.
+append-only `Trace` — is introduced by package K03 and lives in `numerics.solve_record`, because
+it is what Newton, PTC and Anderson produce (ADR 0076 I-1); `trace` re-exports it at its old
+path. The plan, the bounded attempts and the active-phase controller follow in this package.
 """
