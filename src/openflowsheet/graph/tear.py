@@ -134,7 +134,10 @@ class TearAnalysis:
 
 
 def _strongly_connected(units: Sequence[str], edges: Sequence[tuple[str, str]]) -> list[list[str]]:
-    """Kosaraju on the unit digraph, in declaration order. Small graphs; clarity over speed."""
+    """Kosaraju on the unit digraph, in declaration order. Small graphs; clarity over speed.
+
+    `_finishing_order` is the first pass; the second walks `backward` in reverse finishing order.
+    """
     forward: dict[str, list[str]] = {unit: [] for unit in units}
     backward: dict[str, list[str]] = {unit: [] for unit in units}
     for source, target in edges:
@@ -142,6 +145,30 @@ def _strongly_connected(units: Sequence[str], edges: Sequence[tuple[str, str]]) 
             forward[source].append(target)
             backward[target].append(source)
 
+    order = _finishing_order(units, forward)
+
+    assigned: set[str] = set()
+    components: list[list[str]] = []
+    for unit in reversed(order):
+        if unit in assigned:
+            continue
+        component: list[str] = []
+        stack = [unit]
+        assigned.add(unit)
+        while stack:
+            node = stack.pop()
+            component.append(node)
+            for previous in backward[node]:
+                if previous not in assigned:
+                    assigned.add(previous)
+                    stack.append(previous)
+        components.append(sorted(component, key=units.index))
+    return components
+
+
+def _finishing_order(units: Sequence[str], forward: Mapping[str, list[str]]) -> list[str]:
+    """Kosaraju's first pass: the units in the order their depth-first search on `forward`
+    finishes, each search started from the next unseen unit in declaration order."""
     order: list[str] = []
     seen: set[str] = set()
 
@@ -163,24 +190,7 @@ def _strongly_connected(units: Sequence[str], edges: Sequence[tuple[str, str]]) 
     for unit in units:
         if unit not in seen:
             visit(unit)
-
-    assigned: set[str] = set()
-    components: list[list[str]] = []
-    for unit in reversed(order):
-        if unit in assigned:
-            continue
-        component: list[str] = []
-        stack = [unit]
-        assigned.add(unit)
-        while stack:
-            node = stack.pop()
-            component.append(node)
-            for previous in backward[node]:
-                if previous not in assigned:
-                    assigned.add(previous)
-                    stack.append(previous)
-        components.append(sorted(component, key=units.index))
-    return components
+    return order
 
 
 def _boundary_distances(graph: ProcessGraph) -> dict[str, int]:
