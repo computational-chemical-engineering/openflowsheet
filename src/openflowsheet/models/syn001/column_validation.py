@@ -1,8 +1,8 @@
 """`syn001.column`'s refusals: S02 spec §5 (S1 to S10) with S06's inverse refusals I1 to I6, the
 §5 S10 split feasibility and the energy pre-check, and the column's warnings.
 
-Moved verbatim from `column` (S19 B2), which re-exports every name here and keeps the regime forms
-and the §6 initializer. This module imports only `column_spec` among the column modules.
+Moved verbatim from `column` (S19 B2), which re-exports every public name here and keeps the regime
+forms and the §6 initializer. This module imports only `column_spec` among the column modules.
 """
 
 from __future__ import annotations

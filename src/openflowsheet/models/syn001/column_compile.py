@@ -1,9 +1,9 @@
 """`syn001.column` compiled: S02 spec §7.3's slot substitutions, §4.1's per-stage region descriptors
 and the compiled problem.
 
-Moved verbatim from `column_solve` (S19 B3), which re-exports every name here and keeps the solve
-path. This module imports nothing from `column_solve`, `column_blocks` or the other column modules
-that solve.
+Moved verbatim from `column_solve` (S19 B3), which re-exports every public name here and keeps the
+solve path. This module imports nothing from `column_solve`, `column_blocks` or the other column
+modules that solve.
 """
 
 from __future__ import annotations

@@ -1,8 +1,8 @@
 """`syn001.column`'s declarations: the specification kinds and equation families (S02 spec §2,
 S06 §1 and §2), the specification object and the column's ids and names.
 
-Moved verbatim from `column` (S19 B2), which re-exports every name here and keeps the regime forms
-and the §6 initializer. This module imports nothing from the other column modules.
+Moved verbatim from `column` (S19 B2), which re-exports every public name here and keeps the regime
+forms and the §6 initializer. This module imports nothing from the other column modules.
 """
 
 from __future__ import annotations

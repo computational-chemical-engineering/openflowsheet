@@ -1,9 +1,9 @@
 """`syn001.cascade`'s initializer: S01 spec §6's analytic `s01-kremser-cmo-v1` (CMO totals,
 Kremser-type component profiles by the Thomas algorithm) and the initial state.
 
-Moved verbatim from `cascade` (S19 B4), which re-exports every name here and keeps the §5
-refusals, the §4.2 regime forms and the §4.6 dormant answer. This module imports only
-`cascade_spec` and `cascade_rows` among the cascade modules.
+Moved verbatim from `cascade` (S19 B4), which re-exports every public name here and keeps the §5
+refusals, the §4.2 regime forms and the §4.6 dormant answer. Among the cascade modules
+it imports `cascade_spec`, `cascade_rows` and `cascade_failure`.
 """
 
 from __future__ import annotations

@@ -1,7 +1,7 @@
 """`syn001.cascade`'s declarations: the equation families (S01 spec §2), the specification object
 and the cascade's column and row ids.
 
-Moved verbatim from `cascade` (S19 B4), which re-exports every name here and keeps the §5
+Moved verbatim from `cascade` (S19 B4), which re-exports every public name here and keeps the §5
 refusals, the §4.2 regime forms and the §4.6 dormant answer. This module imports nothing from the
 other cascade modules.
 """

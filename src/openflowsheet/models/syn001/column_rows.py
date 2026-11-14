@@ -2,9 +2,9 @@
 reboiler's specification rows, a total condenser's block) with S06 §2's inverse rows and the
 flowsheet links.
 
-Moved verbatim from `column` (S19 B2), which re-exports every name here and keeps the regime forms
-and the §6 initializer. This module imports only `column_spec` and `column_validation` among the
-column modules.
+Moved verbatim from `column` (S19 B2), which re-exports every public name here and keeps the regime
+forms and the §6 initializer. This module imports only `column_spec` and `column_validation` among
+the column modules.
 """
 
 from __future__ import annotations

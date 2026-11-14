@@ -2,9 +2,9 @@
 (bubble-point sweeps at fixed CMO stage ratios) and S06 §7.3 and §7.5's inverse records and
 unreached report.
 
-Moved verbatim from `column_solve` (S19 B3), which re-exports every name here and keeps the solve
-path. This module imports nothing from `column_solve`, `column_blocks` or the other column modules
-that solve.
+Moved verbatim from `column_solve` (S19 B3), which re-exports every public name here and keeps the
+solve path. This module imports nothing from `column_solve`, `column_blocks` or the other column
+modules that solve.
 """
 
 from __future__ import annotations

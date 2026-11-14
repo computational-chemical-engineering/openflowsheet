@@ -1,8 +1,8 @@
 """`syn001.column`'s answer judged: S02 spec §8 acceptance, §1.7 products, §2's overall closure
 (A08) and the spec values (A06).
 
-Moved verbatim from `column_solve` (S19 B3), which re-exports every name here and keeps the solve
-path. This module imports only `column_compile` among the column's solve modules.
+Moved verbatim from `column_solve` (S19 B3), which re-exports every public name here and keeps the
+solve path. This module imports only `column_compile` among the column's solve modules.
 """
 
 from __future__ import annotations

@@ -1,7 +1,7 @@
 """`syn001.cascade`'s declared rows: S01 spec §2's stage and inlet rows built from `models.rows`,
 and the declared problem.
 
-Moved verbatim from `cascade` (S19 B4), which re-exports every name here and keeps the §5
+Moved verbatim from `cascade` (S19 B4), which re-exports every public name here and keeps the §5
 refusals, the §4.2 regime forms and the §4.6 dormant answer. This module imports only
 `cascade_spec` among the cascade modules.
 """
