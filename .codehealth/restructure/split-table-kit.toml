@@ -1,0 +1,26 @@
+# S19 restructure plan, step B5-kit (design note docs/briefs/S19-architecture.md section 2 cycle 3 and section 3
+# row B5; ruling DECISION B5 of 2026-11-14 in docs/S19_DECISIONS.md: B5 planned at its base by simulation).
+# Written by the lane-d engineer under work order S19-W2d2; names and numbers measured at wp/S19-d 97ef27ea.
+# The kit is what the family modules import from verify/table.py for an entry's shape: the four qualification
+# notes (table.py:103-124 with their `#:` comments) and Unit, stream_notes, _unlifted_read, blocked_check, Rule,
+# _nothing, ModelChecks (table.py:169-346); 11 statements. Its closure over top-level Name references is exactly
+# these 11 names. thermal.py:43 (ModelChecks, Unit) is retargeted to the kit, and gamma_phi_units.py:65 takes
+# Unit, ModelChecks and its two notes from the kit (its other names stay on table until the later B5 steps).
+# Simulated on a scratch worktree of these moves at 97ef27ea: the edges thermal -> table (thermal.py:43) and
+# table -> thermal (the lazy import at table.py:1125) leave the cycle (the latter stays as a non-cycle edge);
+# the cycle gamma_phi_units <-> table (2 edges) remains until B5-rows.
+id = "split-table-kit"
+approved_by = "orchestrator (OpenFlowsheet-TR09 build lane) under Frank's delegation of 2026-11-14 (S19 rules); design note S19-architecture.md section 2 cycle 3 and section 3 row B5; ruling DECISION B5 (planned by simulation), work order S19-W2d2"
+reason = "verify/table.py is 1925 lines (the large-file penalty) and sits in a cycle with verify.thermal and verify.gamma_phi_units, whose module-level imports reach table for an entry's shape. The kit (the four notes, Unit, ModelChecks, Rule and the blocked-row helpers) moves verbatim to verify/table_kit.py, a leaf below table; table re-exports the nine public names; thermal.py:43 and gamma_phi_units.py:65 (the kit's names) are retargeted. Expected codehealth arch --depth 4: measured at base 11 violations, 6 cycles, 20 cycle edges; simulated delta (0, 0, -2) gives 11 violations, 6 cycles, 18 cycle edges"
+new_files = ["src/openflowsheet/verify/table_kit.py"]
+new_public = [
+    "src/openflowsheet/verify/table_kit.py:REACTION_DATUM_NOTE",
+    "src/openflowsheet/verify/table_kit.py:SPLIT_ENTHALPY_NOTE",
+    "src/openflowsheet/verify/table_kit.py:DECLARED_ENTHALPY_NOTE",
+    "src/openflowsheet/verify/table_kit.py:UNRESOLVED_ENTHALPY_NOTE",
+    "src/openflowsheet/verify/table_kit.py:Unit",
+    "src/openflowsheet/verify/table_kit.py:stream_notes",
+    "src/openflowsheet/verify/table_kit.py:blocked_check",
+    "src/openflowsheet/verify/table_kit.py:Rule",
+    "src/openflowsheet/verify/table_kit.py:ModelChecks",
+]

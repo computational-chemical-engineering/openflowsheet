@@ -1,0 +1,10 @@
+# S19 restructure plan, step A1 (design note docs/briefs/S19-architecture.md section 2 "Cycle 1", table 4.1 row A1).
+# Written by the lane-a engineer under work order S19-W1a; names and numbers measured at wp/S19-a 094a3aa1.
+id = "leaf-cascade-failure"
+approved_by = "orchestrator (OpenFlowsheet-TR09 build lane) under Frank's delegation of 2026-11-14 (S19 rules); design note S19-architecture.md section 2 and table 4.1 A1, work order S19-W1a"
+reason = "equilibrium_form imports cascade lazily (equilibrium_form.py:130, and under TYPE_CHECKING at :39) only for the CascadeFailure value type, which fuses the syn001 kernels, the column/cascade family, the region solver and the verifier into one 17-module cycle. CascadeFailure and the FailureOutcome alias it annotates (cascade.py:107-113, :307-317) move verbatim to the leaf models/syn001/cascade_failure.py (imports dataclass, Literal only); cascade re-exports both; equilibrium_form imports the leaf at top level (the lazy and TYPE_CHECKING imports go). No other importer is retargeted. Expected codehealth arch --depth 4: measured at base 14 violations, 10 cycles, 79 cycle edges; table 4.1 delta A1 (0, +1, -47) gives 14 violations, 11 cycles, 32 cycle edges"
+new_files = ["src/openflowsheet/models/syn001/cascade_failure.py"]
+new_public = [
+    "src/openflowsheet/models/syn001/cascade_failure.py:FailureOutcome",
+    "src/openflowsheet/models/syn001/cascade_failure.py:CascadeFailure",
+]

@@ -1,0 +1,19 @@
+# S19 restructure plan, step B5-split (design note docs/briefs/S19-architecture.md section 3 row B5; ruling
+# DECISION B5 of 2026-11-14 in docs/S19_DECISIONS.md: B5 planned at its base by simulation).
+# Written by the lane-d engineer under work order S19-W2d2; names and numbers measured at wp/S19-d b8bb13be
+# (after B5-units). Admissibility and the independent split (_split_checks, _declared_phase,
+# _declared_port_checks) and the temperature-degenerate streams (Degeneracy, _band, _phase_enthalpy,
+# _producer_phases, degeneracy) move verbatim to verify/split_checks.py (table.py:273-686, the two section headers
+# with them; 8 statements). Their closure over top-level Name references reaches only these 8 names, MODEL_CHECKS
+# (verify/unit_checks.py) and the kit's blocked_check and three enthalpy notes (verify/table_kit.py). Re-exported
+# private: _phase_enthalpy (tests/test_st_core.py:993 reads `table._phase_enthalpy`). gamma_phi_units.py:65's
+# Degeneracy is retargeted. Simulated on a scratch worktree of these moves: no cycle edge changes (the cycle
+# gamma_phi_units <-> table stays until B5-rows).
+id = "split-split-checks"
+approved_by = "orchestrator (OpenFlowsheet-TR09 build lane) under Frank's delegation of 2026-11-14 (S19 rules); design note S19-architecture.md section 3 row B5; ruling DECISION B5 (planned by simulation), work order S19-W2d2"
+reason = "verify/table.py is 938 lines after B5-units. The admissibility, independent-split and degeneracy rows move verbatim to verify/split_checks.py below table; table re-exports Degeneracy, degeneracy and _phase_enthalpy; gamma_phi_units.py:65's Degeneracy is retargeted. Expected codehealth arch --depth 4: measured at base 11 violations, 6 cycles, 18 cycle edges; simulated delta (0, 0, 0) gives 11 violations, 6 cycles, 18 cycle edges"
+new_files = ["src/openflowsheet/verify/split_checks.py"]
+new_public = [
+    "src/openflowsheet/verify/split_checks.py:Degeneracy",
+    "src/openflowsheet/verify/split_checks.py:degeneracy",
+]

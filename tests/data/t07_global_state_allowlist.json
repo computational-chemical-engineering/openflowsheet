@@ -23,7 +23,7 @@
       "justification": "As the save above: the restore."
     },
     {
-      "file": "orchestrator/trace.py",
+      "file": "numerics/solve_record.py",
       "line": "INTERRUPT_CHECK: ContextVar[Callable[[], None] | None] = ContextVar(\"INTERRUPT_CHECK\", default=None)",
       "patterns": ["ContextVar"],
       "occurrences": 1,

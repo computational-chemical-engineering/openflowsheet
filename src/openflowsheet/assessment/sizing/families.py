@@ -27,7 +27,7 @@ from openflowsheet.assessment.regimes import (
     select_argmax,
     select_service,
 )
-from openflowsheet.assessment.sizing import (
+from openflowsheet.assessment.sizing.core import (
     GRAVITY,
     ItemFamily,
     SizedItem,

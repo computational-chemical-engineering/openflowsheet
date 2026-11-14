@@ -1,0 +1,22 @@
+# S19 restructure plan, step A4 (design note docs/briefs/S19-architecture.md section 2 "Cycle 1", table 4.1 row A4;
+# orchestrator addenda of 2026-11-14 and revised ADR 0076 item I-2, 31e287dd).
+# Written by the lane-a engineer under work order S19-W1a; names and numbers measured at wp/S19-a cbbcd3de.
+id = "leaf-models-lifted"
+approved_by = "orchestrator (OpenFlowsheet-TR09 build lane) under Frank's delegation of 2026-11-14 (S19 rules); design note S19-architecture.md section 2 and table 4.1 A4, orchestrator addenda to work order S19-W1a, ADR 0076 I-2"
+reason = "cascade and column import orchestrator.region (cascade.py:90, column.py:126) for Regime and the solver's KIND_TOLERANCE: two repo-layers violations (models below orchestrator). The lifted-split vocabulary moves verbatim from region.py to the leaf models/lifted.py: Regime, ClosureType, Branch, INADMISSIBLE_BRANCH (:160-176), LiftedSplit, ZeroFlowForm, VapourOnlyForm, DormancyForm, StagedSplits (:193-338), LABEL_KIND (:980-982); imports Mapping, dataclass, Final, Literal, compiled.PhaseSignature. The solver's tolerances move verbatim to their own leaf models/lifted_tolerance.py (not models.lifted, which the verifier reads, R-016): PRESSURE_TOLERANCE from orchestrator/rank.py:37-38 and EQUILIBRIUM_TOLERANCE, KIND_TOLERANCE from region.py:178-190; imports Mapping, Final and the three syn001 tolerances. region re-exports all twelve region names, rank re-exports PRESSURE_TOLERANCE. Retargeted: cascade.py:90 and column.py:126 only. The closure of the moved names reaches no orchestrator module and not syn001_lifted_splits. The plan commit adds openflowsheet.models.lifted_tolerance to the forbid rule verifier-not-through-the-solver (no verify module imports it, so no violation). Expected codehealth arch --depth 4: measured at base 14 violations, 9 cycles, 28 cycle edges; table 4.1 delta A4 (-2, 0, 0) gives 12 violations, 9 cycles, 28 cycle edges"
+new_files = ["src/openflowsheet/models/lifted.py", "src/openflowsheet/models/lifted_tolerance.py"]
+new_public = [
+    "src/openflowsheet/models/lifted.py:Regime",
+    "src/openflowsheet/models/lifted.py:ClosureType",
+    "src/openflowsheet/models/lifted.py:Branch",
+    "src/openflowsheet/models/lifted.py:INADMISSIBLE_BRANCH",
+    "src/openflowsheet/models/lifted.py:LiftedSplit",
+    "src/openflowsheet/models/lifted.py:ZeroFlowForm",
+    "src/openflowsheet/models/lifted.py:VapourOnlyForm",
+    "src/openflowsheet/models/lifted.py:DormancyForm",
+    "src/openflowsheet/models/lifted.py:StagedSplits",
+    "src/openflowsheet/models/lifted.py:LABEL_KIND",
+    "src/openflowsheet/models/lifted_tolerance.py:PRESSURE_TOLERANCE",
+    "src/openflowsheet/models/lifted_tolerance.py:EQUILIBRIUM_TOLERANCE",
+    "src/openflowsheet/models/lifted_tolerance.py:KIND_TOLERANCE",
+]

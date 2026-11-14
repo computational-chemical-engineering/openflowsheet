@@ -19,6 +19,7 @@ import pytest
 from conftest import REPO_ROOT
 
 import openflowsheet.models.syn001.column as column_module
+import openflowsheet.models.syn001.column_validation as column_validation_module
 from openflowsheet.compile.reference import row_values
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.models import flow_id, temperature_id
@@ -691,8 +692,9 @@ def _no_evaluation(monkeypatch: pytest.MonkeyPatch) -> None:
     def refuse(*args: object, **kwargs: object) -> None:
         raise AssertionError("S3 refuses before any row, initializer or energy evaluation")
 
-    for name in ("declared_rows", "profile_initial", "energy_precheck", "band_temperature"):
+    for name in ("declared_rows", "profile_initial", "band_temperature"):
         monkeypatch.setattr(column_module, name, refuse)
+    monkeypatch.setattr(column_validation_module, "energy_precheck", refuse)
 
 
 @pytest.mark.parametrize("case", ["M1", "M2"])

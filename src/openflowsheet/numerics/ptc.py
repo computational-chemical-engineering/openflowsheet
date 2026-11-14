@@ -60,7 +60,7 @@ from openflowsheet.numerics.newton import (
     _trial_point,
     another_signature,
 )
-from openflowsheet.orchestrator.trace import (
+from openflowsheet.numerics.solve_record import (
     AttemptSignature,
     Counters,
     LinearRecord,

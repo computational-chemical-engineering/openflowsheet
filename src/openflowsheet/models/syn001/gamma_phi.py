@@ -27,7 +27,7 @@ from collections.abc import Sequence
 from typing import Final
 
 from openflowsheet.compiled import EvaluationContext
-from openflowsheet.models.syn001.saturation_band import (
+from openflowsheet.models.syn001.band_types import (
     MAX_TEMPERATURE_EVALUATIONS,
     BandError,
     BandTemperature,

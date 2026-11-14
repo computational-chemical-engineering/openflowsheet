@@ -49,7 +49,7 @@ REGISTERED_NOMINALS: Final[Mapping[QuantityKind, float]] = {
 }
 
 #: Kinds a column may carry but a row may not (S02 spec §17 item 1): a row of such a kind would
-#: need a tolerance `region.KIND_TOLERANCE` and K04's table do not have.
+#: need a tolerance `models.lifted_tolerance.KIND_TOLERANCE` and K04's table do not have.
 COLUMN_ONLY: Final[frozenset[QuantityKind]] = frozenset({"dimensionless"})
 
 SCALE_PROVENANCE: Final = (

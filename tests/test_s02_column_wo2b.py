@@ -25,6 +25,7 @@ from test_s02_column_wo2 import (
 )
 
 import openflowsheet.models.syn001.cascade_solve as cascade_solve_module
+import openflowsheet.models.syn001.column_endpoint as endpoint_module
 import openflowsheet.models.syn001.column_solve as solve_module
 import openflowsheet.orchestrator.region as region_module
 from openflowsheet.compile.reference import row_values
@@ -415,7 +416,7 @@ def test_a22_a_bubble_point_outside_the_domain(monkeypatch: pytest.MonkeyPatch) 
             return BandTemperature("below", evaluations=1)
         return real(provider, flows, pressure, *rest, **kw)
 
-    monkeypatch.setattr(solve_module, "band_temperature", below_once)
+    monkeypatch.setattr(endpoint_module, "band_temperature", below_once)
     answer = solve_column(SPECS["M1"], PROVIDER)
     assert isinstance(answer, CascadeFailure)
     assert answer.outcome == "INITIALIZATION_FAILED"

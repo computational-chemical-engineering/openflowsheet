@@ -19842,3 +19842,31 @@ memos), the CoolProp and browser legs CI adds, and the arm64 leg are outside it.
 
 **Watch for.** A proposal to skip CI or F0 because "the selection passed". A refactor campaign that runs on a
 stale map: `select` falls back when the base is not an ancestor of `HEAD` or the map's tree hash differs.
+
+---
+
+## R-1041: The S19 projection split registers its two Pyomo-importing modules as `nlp`-extra modules (R-478's list grows from three to five; 2026-11-14)
+
+| | |
+| --- | --- |
+| Date | 2026-11-14 |
+| Decided by | build lane (S19 orchestrator), under R-478's own rule ("extending it takes a register entry") |
+| Normative text | R-478; `docs/derivations/M07-spec.md` §24.1 (S9.6) |
+| Evidence | S19 B6 (`docs/S19_DECISIONS.md`, "DECISION B6"): `studies/trust_region/projection.py` splits verbatim into `projection_support`, `projection_checks`, `projection_zero_flows`. Gate 20261114 step 25 failed only on `tests/test_p03_a30_workload.py:148` (S9.6): `projection_checks` and `projection_zero_flows` import pyomo at module level (moved statements); the nlp venv runs 404 + 163 tests identically before and after |
+| Affected packages | S19; M07 (S9.6); T08's A30 instrument |
+
+**Decision.** `NLP_EXTRA_MODULES` (`scripts/p03_binary_inventory.py`) adds
+`openflowsheet.studies.trust_region.projection_checks` and `openflowsheet.studies.trust_region.projection_zero_flows`.
+Both hold code that sat in `projection.py`, a registered module, and import pyomo for the same reason (Pyomo's
+`differentiate` and `identify_variables`); `projection.py` imports them, so they load exactly when it does. The rule of
+R-478 is unchanged: each registered module must fail on a name in `NLP_EXTRA_IMPORTS` in the default install.
+`projection_support` imports no extra and is not registered.
+
+**Rejected alternatives, and why.**
+- *Keep the Pyomo code in projection.py:* no verbatim partition of the 1343-NLOC file avoids it (both new modules
+  need Pyomo), and S19 splits files of 1000 NLOC or more before function-level work.
+- *Lazy Pyomo imports in the new modules:* changes code beyond a verbatim move and the import-time behaviour R-478
+  measures.
+
+**Watch for.** `scripts/m07a_evidence_manifest.py:339` (`A30_NLP_EXTRA_MODULES`) is M07a's recorded evidence and
+keeps its three names; A30's walked and imported counts in later evidence change with every new module.

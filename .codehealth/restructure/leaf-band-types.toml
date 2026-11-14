@@ -1,0 +1,12 @@
+# S19 restructure plan, step A2 (design note docs/briefs/S19-architecture.md section 2 "Cycle 1", table 4.1 row A2).
+# Written by the lane-a engineer under work order S19-W1a; names and numbers measured at wp/S19-a d9fc1c6b.
+id = "leaf-band-types"
+approved_by = "orchestrator (OpenFlowsheet-TR09 build lane) under Frank's delegation of 2026-11-14 (S19 rules); design note S19-architecture.md section 2 and table 4.1 A2, work order S19-W1a"
+reason = "gamma_phi imports saturation_band (gamma_phi.py:30) for its value types while saturation_band imports gamma_phi lazily (:261): the two-module cycle left after A1. MAX_TEMPERATURE_EVALUATIONS, Position, BandError and BandTemperature (saturation_band.py:53-55, :60, :63-69, :72-88) move verbatim to the leaf models/syn001/band_types.py (imports dataclass, Final, Literal, thermo.PropertyStatus); saturation_band re-exports all four; gamma_phi imports them from the leaf. The lazy gamma_phi import stays lazy. No other importer is retargeted. Expected codehealth arch --depth 4: measured at base 14 violations, 11 cycles, 32 cycle edges; table 4.1 delta A2 (0, -1, -2) gives 14 violations, 10 cycles, 30 cycle edges"
+new_files = ["src/openflowsheet/models/syn001/band_types.py"]
+new_public = [
+    "src/openflowsheet/models/syn001/band_types.py:MAX_TEMPERATURE_EVALUATIONS",
+    "src/openflowsheet/models/syn001/band_types.py:Position",
+    "src/openflowsheet/models/syn001/band_types.py:BandError",
+    "src/openflowsheet/models/syn001/band_types.py:BandTemperature",
+]

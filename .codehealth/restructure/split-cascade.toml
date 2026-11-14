@@ -1,0 +1,41 @@
+# S19 restructure plan, step B4 (design note docs/briefs/S19-architecture.md section 3, row B4).
+# Written by the lane-e engineer under work order S19-W2e2; names and numbers measured at wp/S19-e 21c46973 (retarget 21c46973).
+id = "split-cascade"
+approved_by = "orchestrator (OpenFlowsheet-TR09 build lane) under Frank's delegation of 2026-11-14 (S19 rules); design note S19-architecture.md section 3 row B4, work order S19-W2e2"
+reason = "models/syn001/cascade.py (1320 lines at 21c46973) holds the S01 declarations, the declared rows and the analytic initializer beside the refusals, regime forms and dormant answer. It splits by statement, verbatim and in order, into cascade_spec.py (MODEL_ID to _parameter: the equation families, the specification object, the column and row ids, with _phase per DECISION B4: 27 names), cascade_rows.py (_token, declared_rows, declared_problem: 3 names) and cascade_init.py (INITIALIZER_ID, BETA_BOUNDS, CMO_FLOOR, KValues, the s01-kremser-cmo-v1 initializer and the initial state, with _k_values per DECISION B4: 11 names). cascade.py keeps INLET_PHASES, the spec 5 refusals (validate, property_method_refusal, the energy pre-check), the 4.2 regime forms, the 4.6 dormant answer and its __all__, and re-exports every moved public name and every moved private read from it outside it (_TOKEN, _token, _parameter, _phase, _k_values) as N as N. Closures at the base over top-level names: cascade_spec reaches no other cascade module, cascade_rows only cascade_spec, cascade_init cascade_spec and cascade_rows; none reaches a name that stays. No importer is retargeted. Retarget commit 21c46973 moves 1 test patch to cascade_init (patch_noop then 0). Persisted paths (Q2): no module path hit in schemas/, benchmarks/ or tests/fixtures (syn001.cascade there is the model id). Source-reading tests: none; scripts/s01_, s03_, s06_, s08_evidence_manifest.py hash cascade.py in file lists (docs pass). Not frozen (scripts/codehealth_frozen.py). Expected codehealth arch --depth 4: measured at base 7 violations, 5 cycles, 18 cycle edges; section 3 row B4 arch effect 0 / 0 gives 7 violations, 5 cycles, 18 cycle edges (the new modules sit in the models layer and import only what cascade.py imports)"
+new_files = ["src/openflowsheet/models/syn001/cascade_spec.py", "src/openflowsheet/models/syn001/cascade_rows.py", "src/openflowsheet/models/syn001/cascade_init.py"]
+new_public = [
+    "src/openflowsheet/models/syn001/cascade_spec.py:MODEL_ID",
+    "src/openflowsheet/models/syn001/cascade_spec.py:SPECIFICATION",
+    "src/openflowsheet/models/syn001/cascade_spec.py:TOP",
+    "src/openflowsheet/models/syn001/cascade_spec.py:BOTTOM",
+    "src/openflowsheet/models/syn001/cascade_spec.py:EQUATIONS",
+    "src/openflowsheet/models/syn001/cascade_spec.py:InletState",
+    "src/openflowsheet/models/syn001/cascade_spec.py:SideFeed",
+    "src/openflowsheet/models/syn001/cascade_spec.py:PlacedInlet",
+    "src/openflowsheet/models/syn001/cascade_spec.py:CascadeSpec",
+    "src/openflowsheet/models/syn001/cascade_spec.py:stage_prefix",
+    "src/openflowsheet/models/syn001/cascade_spec.py:liquid_id",
+    "src/openflowsheet/models/syn001/cascade_spec.py:vapor_id",
+    "src/openflowsheet/models/syn001/cascade_spec.py:mixed_id",
+    "src/openflowsheet/models/syn001/cascade_spec.py:liquid_total_id",
+    "src/openflowsheet/models/syn001/cascade_spec.py:vapor_total_id",
+    "src/openflowsheet/models/syn001/cascade_spec.py:stage_temperature_id",
+    "src/openflowsheet/models/syn001/cascade_spec.py:stage_pressure_id",
+    "src/openflowsheet/models/syn001/cascade_spec.py:stage_duty_id",
+    "src/openflowsheet/models/syn001/cascade_spec.py:inlet_stream",
+    "src/openflowsheet/models/syn001/cascade_spec.py:stage_row_id",
+    "src/openflowsheet/models/syn001/cascade_spec.py:inlet_row_id",
+    "src/openflowsheet/models/syn001/cascade_spec.py:energy_row_id",
+    "src/openflowsheet/models/syn001/cascade_spec.py:label_row_id",
+    "src/openflowsheet/models/syn001/cascade_spec.py:label_column",
+    "src/openflowsheet/models/syn001/cascade_rows.py:declared_rows",
+    "src/openflowsheet/models/syn001/cascade_rows.py:declared_problem",
+    "src/openflowsheet/models/syn001/cascade_init.py:INITIALIZER_ID",
+    "src/openflowsheet/models/syn001/cascade_init.py:BETA_BOUNDS",
+    "src/openflowsheet/models/syn001/cascade_init.py:CMO_FLOOR",
+    "src/openflowsheet/models/syn001/cascade_init.py:KValues",
+    "src/openflowsheet/models/syn001/cascade_init.py:KremserInitial",
+    "src/openflowsheet/models/syn001/cascade_init.py:thomas",
+    "src/openflowsheet/models/syn001/cascade_init.py:kremser_initial",
+]

@@ -34,8 +34,8 @@ from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from typing import Final
 
-#: ADR 0001 D6's registered pressure tolerance: the bound on a consistent mismatch.
-PRESSURE_TOLERANCE: Final = 1e-2
+from openflowsheet.models.lifted_tolerance import PRESSURE_TOLERANCE as PRESSURE_TOLERANCE
+
 #: The linearity witness: two evaluations of the same constant must agree to `1e-9 x 1e5 Pa`.
 LINEARITY_TOLERANCE: Final = 1e-9 * 1e5
 

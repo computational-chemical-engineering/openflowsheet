@@ -118,11 +118,8 @@ from collections.abc import Callable, Collection, Mapping, Sequence
 from dataclasses import dataclass
 from typing import Any, Final, Literal
 
-import numpy as np
-import numpy.typing as npt
 import pyomo.environ as pyo
-from pyomo.common.collections import ComponentMap, ComponentSet
-from pyomo.core.expr.calculus.derivatives import Modes, differentiate
+from pyomo.common.collections import ComponentSet
 from pyomo.core.expr.numeric_expr import (
     AbsExpression,
     Expr_ifExpression,
@@ -139,16 +136,9 @@ from openflowsheet.canonical import (
     normalize_zero,
     structure_sha256,
 )
-from openflowsheet.compile.reference import FloatAlgebra, block_outputs
+from openflowsheet.compile.reference import block_outputs
 from openflowsheet.compile.spec import DomainError, Expr, ProblemSpec, RowBuilder
-from openflowsheet.numerics.linear import LinearSolveFailedError, solve_linear
 from openflowsheet.numerics.scaling import REGISTERED_NOMINALS, ScaleUnavailableError, Scaling
-from openflowsheet.orchestrator.rank import (
-    EliminatedRow,
-    eliminate_alias_rows,
-    pressure_shifted_state,
-)
-from openflowsheet.studies.sensitivity import TAU_ALIAS
 from openflowsheet.studies.trust_region.holders import (
     LINK_BOUNDS,
     LINK_COORDINATES,
@@ -160,6 +150,40 @@ from openflowsheet.studies.trust_region.holders import (
     PropertyBlockBox,
     TruthBox,
 )
+from openflowsheet.studies.trust_region.projection_checks import (
+    SHAPE_CHECK_CRITERION as SHAPE_CHECK_CRITERION,
+)
+from openflowsheet.studies.trust_region.projection_checks import ShapeCheck as ShapeCheck
+from openflowsheet.studies.trust_region.projection_checks import (
+    _certify,
+    _eliminate,
+    _row_derivatives,
+    _shape_check,
+)
+from openflowsheet.studies.trust_region.projection_support import (
+    OMITTED_ROW_REASON as OMITTED_ROW_REASON,
+)
+from openflowsheet.studies.trust_region.projection_support import OmittedRow as OmittedRow
+from openflowsheet.studies.trust_region.projection_support import (
+    ProjectionRefusedError as ProjectionRefusedError,
+)
+from openflowsheet.studies.trust_region.projection_support import RefusalCode as RefusalCode
+from openflowsheet.studies.trust_region.projection_support import _float_rows
+from openflowsheet.studies.trust_region.projection_zero_flows import (
+    JOINT_PERTURBATION as JOINT_PERTURBATION,
+)
+from openflowsheet.studies.trust_region.projection_zero_flows import (
+    JOINT_RCOND_MIN as JOINT_RCOND_MIN,
+)
+from openflowsheet.studies.trust_region.projection_zero_flows import JOINT_SEED as JOINT_SEED
+from openflowsheet.studies.trust_region.projection_zero_flows import ZeroBlock as ZeroBlock
+from openflowsheet.studies.trust_region.projection_zero_flows import (
+    ZeroEliminated as ZeroEliminated,
+)
+from openflowsheet.studies.trust_region.projection_zero_flows import (
+    _Assembly,
+    _eliminate_zero_flows,
+)
 
 SOURCE_MAP_SCHEMA: Final = "projection-source-map-v1"
 #: §6.1: the floor under |y(x₀)| in an output scale, so a zero start value gets a finite scale.
@@ -168,53 +192,13 @@ OUTPUT_SCALE_FLOOR: Final = 1e-6
 LINK_INLET_SIZE: Final = 7
 #: R-275: the provenance of the unit scales a spec without any declared kind is projected with.
 UNIT_NO_KINDS: Final = "unit_no_kinds"
-#: R-274: why an omitted row is not projected, as the source map records it.
-OMITTED_ROW_REASON: Final = (
-    "eliminated by orchestrator/rank.py's alias elimination: implied by the retained rows (R-274)"
-)
 #: R-296, R-326: the rule that eliminates the flows exactly 0.0 at x₀ with their pins, single or
 #: joint (design note §17.1, §18.1).
 ZERO_FLOW_RULE: Final = "M05-zero-flow-v2"
 #: R-296: a pin's residual at a final state, with its flow the constant +0.0 (M05 build log Z1).
 ZERO_PIN_TOLERANCE: Final = 0.0
-#: R-326 (b): a joint block's least scaled σ_min/σ_max (§18.1; F-12: not moved to fit a block).
-JOINT_RCOND_MIN: Final = 1e-10
-#: R-326 (c): the persistence states' relative move, and G4's seed, whose draw ξ it uses.
-JOINT_PERTURBATION: Final = 1e-3
-JOINT_SEED: Final = 20261009
 _NONSMOOTH_FUNCTIONS: Final = frozenset({"abs", "ceil", "floor"})
 _NONSMOOTH_NODES: Final = (AbsExpression, Expr_ifExpression, MaxExpression, MinExpression)
-
-RefusalCode = Literal[
-    "PROJECTION_SCALES_UNAVAILABLE",
-    "PARAMETER_NOT_DIFFERENTIABLE",
-    "PROJECTION_NONSMOOTH",
-    "PROJECTION_STRUCTURE",
-    "PROJECTION_DOF",
-    "PROJECTION_IMPLICIT_EF_INPUT",
-    "PROJECTION_OMITTED_ROW_UNCERTIFIED",
-    "PROJECTION_ZERO_FLOW",
-]
-#: R-278: whether `project` enforces the shape check. `exempt_oracle` is TR-E1's only (test-only).
-ShapeCheck = Literal["required", "exempt_oracle"]
-SHAPE_CHECK_CRITERION: Final = (
-    "structural perfect matching of the projected equations to every variable but the decisions, "
-    "link-EF outputs fixed and property relations kept (R-278)"
-)
-
-
-class ProjectionRefusedError(Exception):
-    """A `ProblemSpec` that cannot be projected for TRF, named by code and subject (§6.1)."""
-
-    def __init__(self, code: RefusalCode, subject: str, detail: str) -> None:
-        super().__init__(f"{code}({subject}): {detail}")
-        self.code = code
-        self.subject = subject
-        self.detail = detail
-
-    @property
-    def reason(self) -> str:
-        return f"{self.code}({self.subject})"
 
 
 class PyomoAlgebra:
@@ -247,39 +231,6 @@ def output_scale(start_value: float) -> float:
 
 
 @dataclass(frozen=True)
-class OmittedRow:
-    """A row the projection leaves out, with what certifies it (R-274's facts 1-3)."""
-
-    elimination: EliminatedRow
-    origin: str
-    residual_x0: float
-    #: Each decision's scaled tangent residual on the row, by parameter id.
-    tangent_residuals: Mapping[str, float]
-
-    @property
-    def equation_id(self) -> str:
-        return self.elimination.row_id
-
-    @property
-    def tolerance(self) -> float:
-        """The elimination's `pressure_tolerance`, which facts 2 and 4 are judged by."""
-        return self.elimination.tolerance
-
-    def as_document(self) -> dict[str, Any]:
-        return {
-            "equation_id": self.equation_id,
-            "origin": self.origin,
-            "reason": OMITTED_ROW_REASON,
-            "retained_path": [[name, sign] for name, sign in self.elimination.equals],
-            "constant_mismatch": self.elimination.constant_mismatch,
-            "residual_x0": self.residual_x0,
-            "pressure_tolerance": self.tolerance,
-            "tangent_residuals": dict(self.tangent_residuals),
-            "tau_alias": TAU_ALIAS,
-        }
-
-
-@dataclass(frozen=True)
 class OmittedRowsCheck:
     """R-274's fact 4 at one state: every omitted row's residual against its tolerance.
 
@@ -306,56 +257,6 @@ class OmittedRowsCheck:
             "residuals": dict(self.residuals),
             "failed": list(self.failed),
             "detail": self.detail,
-        }
-
-
-@dataclass(frozen=True)
-class ZeroEliminated:
-    """A flow exactly 0.0 at x₀ that is not a variable of the projection but the constant +0.0,
-    eliminated together with the row that pins it (R-296): its pin's residual and its derivative
-    in the flow at x₀ (criteria (i) and (ii)). A flow a certified block pins jointly (R-326) has
-    no pin of its own: its pin fields are None and `block` is its `ZeroBlock`'s number."""
-
-    variable_id: str
-    row_id: str | None
-    residual_x0: float | None
-    dr_dx: float | None
-    block: int | None = None
-
-    def as_document(self) -> dict[str, Any]:
-        document: dict[str, Any] = {
-            "variable_id": self.variable_id,
-            "row_id": self.row_id,
-            "residual_x0": self.residual_x0,
-            "dr_dx": self.dr_dx,
-        }
-        if self.block is not None:
-            document["block"] = self.block
-        return document
-
-
-@dataclass(frozen=True)
-class ZeroBlock:
-    """A square block of kept rows that pins zero flows jointly (`M05-zero-flow-v2`, R-326): its
-    variables in variable order, its rows in spec order with their residuals at x₀, the scaled
-    block's σ_min/σ_max, and the largest |r_e| at the two persistence states (0.0 when
-    certified)."""
-
-    block: int
-    variables: tuple[str, ...]
-    rows: tuple[str, ...]
-    residuals_x0: tuple[float, ...]
-    rcond: float
-    persistence_max_abs: float
-
-    def as_document(self) -> dict[str, Any]:
-        return {
-            "block": self.block,
-            "variables": list(self.variables),
-            "rows": list(self.rows),
-            "residuals_x0": list(self.residuals_x0),
-            "rcond": self.rcond,
-            "persistence_max_abs": self.persistence_max_abs,
         }
 
 
@@ -502,31 +403,6 @@ def _initialize_outputs(model: Any, spec: ProblemSpec, values: Mapping[str, floa
         for value in produced:
             model.y[index].set_value(float(value), skip_validation=True)
             index += 1
-
-
-@dataclass
-class _Assembly:
-    """§6.1 steps 1-4 and every row's expression (not yet a constraint): the model with its
-    variables, decisions, links and blocks, built with the eliminated zero flows (§17.1) as the
-    constant +0.0."""
-
-    model: Any
-    bounds: list[tuple[float | None, float | None]]
-    centers: list[float]
-    half_widths: list[float]
-    holders: list[EFHolder]
-    holder_inputs: list[tuple[int, ...]]
-    ef_names: dict[Callable[..., float], str]
-    link_rows: list[dict[str, Any]]
-    link_scales: list[float]
-    output_rows: list[dict[str, Any]]
-    output_starts: list[float]
-    output_scales: list[float]
-    symbols: dict[str, Any]
-    block_outputs: dict[str, Any]
-    parameters: dict[str, Any]
-    #: Every row's expression by equation id, but those in `skip` (the zero-flow pins).
-    built: dict[str, Any]
 
 
 def project(
@@ -1058,613 +934,6 @@ def _check_structure(
             f"{len(seen)} variables in constraints less {equalities} equalities is {dof}, "
             f"not the {n_decisions} decisions TRF is given",
         )
-
-
-# -- the shape check (R-278) ----------------------------------------------------------------------
-
-
-@dataclass(frozen=True)
-class _ShapeVerdict:
-    """The shape check's result: the matching's size against the system's, and on a failure the
-    refusal it raises (unless the projection is TR-E1's exempt oracle)."""
-
-    matched: int
-    size: int
-    refusal: ProjectionRefusedError | None
-
-    def as_document(self, mode: ShapeCheck) -> dict[str, Any]:
-        status = "exempt_oracle" if mode == "exempt_oracle" else "pass"
-        return {
-            "status": status,
-            "criterion": SHAPE_CHECK_CRITERION,
-            "matched": self.matched,
-            "size": self.size,
-            "refusal": None if self.refusal is None else self.refusal.reason,
-        }
-
-
-def _shape_check(
-    model: Any,
-    spec: ProblemSpec,
-    row_ids: Sequence[str],
-    expressions: Sequence[Any],
-    output_rows: Sequence[Mapping[str, Any]],
-    links: Sequence[ExternalLinkSpec],
-    projected: Sequence[int],
-) -> _ShapeVerdict:
-    """R-278 (module docstring): the structural incidence of the projected equations on every
-    variable but the decisions, with the link-EF outputs fixed and the property relations kept,
-    and whether it has a perfect matching. Called after the DOF check, so it is square. The
-    unknowns are the projection's: `x` at the spec positions `projected` (R-296), `y` and `w`."""
-    import scipy.sparse as sp
-    from scipy.sparse.csgraph import maximum_bipartite_matching
-
-    variable_index = {spec.variable_ids[i]: c for c, i in enumerate(projected)}
-    n_x, n_y = len(projected), len(output_rows)
-    link_parameters = [p for link in links for p in (link.x_param_id, link.dt_param_id)]
-    unknown_names = [
-        *(spec.variable_ids[i] for i in projected),
-        *(f"{row['block_id']}.{row['output_id']}" for row in output_rows),
-        *link_parameters,
-    ]
-    column = ComponentMap(
-        [
-            *((model.x[i], c) for c, i in enumerate(projected)),
-            *((model.y[g], n_x + g) for g in range(n_y)),
-            *((model.w[k], n_x + n_y + k) for k in range(len(link_parameters))),
-        ]
-    )
-    # A row's incidence is the unknowns its expression contains; the decisions are not unknowns.
-    equations: list[tuple[str, list[int]]] = [
-        (name, sorted({column[v] for v in identify_variables(expression) if v in column}))
-        for name, expression in zip(row_ids, expressions, strict=True)
-    ]
-    for g, row in enumerate(output_rows):
-        feeding = spec.block_inputs[row["block_id"]]
-        inputs = {variable_index[name] for name in feeding if name in variable_index}
-        equations.append((f"ydef:{row['block_id']}.{row['output_id']}", sorted({n_x + g, *inputs})))
-    for k, parameter in enumerate(link_parameters):
-        equations.append((f"link:{parameter}", [n_x + n_y + k]))
-
-    size = len(unknown_names)
-    if len(equations) != size:  # the DOF check guarantees it; a defect otherwise
-        raise AssertionError(f"shape check: {len(equations)} equations, {size} unknowns")
-    rows = [r for r, (_, columns) in enumerate(equations) for _ in columns]
-    columns = [c for _, cols in equations for c in cols]
-    incidence = sp.csr_matrix(
-        (np.ones(len(rows), dtype=np.int8), (rows, columns)), shape=(size, size)
-    )
-    row_match = maximum_bipartite_matching(incidence, perm_type="column")
-    matched = int(np.count_nonzero(row_match >= 0))
-    if matched == size:
-        return _ShapeVerdict(matched, size, None)
-
-    column_match = np.full(size, -1, dtype=np.int64)
-    for r, c in enumerate(row_match):
-        if c >= 0:
-            column_match[c] = r
-    incident: list[list[int]] = [[] for _ in range(size)]
-    for r, (_, cols) in enumerate(equations):
-        for c in cols:
-            incident[c].append(r)
-    # Alternating paths from the unmatched variables: variable → any incident equation → the
-    # variable that equation is matched to. What they reach is the under-determined block.
-    undetermined = {c for c in range(size) if column_match[c] < 0}
-    frontier = sorted(undetermined)
-    while frontier:
-        reached = []
-        for c in frontier:
-            for r in incident[c]:
-                partner = int(row_match[r])
-                if partner >= 0 and partner not in undetermined:
-                    undetermined.add(partner)
-                    reached.append(partner)
-        frontier = reached
-    link_inputs = {name for link in links for name in link.inlet_variable_ids}
-    under = [unknown_names[c] for c in sorted(undetermined)]
-    flagged = [name for name in under if name in link_inputs]
-    unmatched_equations = [equations[r][0] for r in range(size) if row_match[r] < 0]
-    unmatched_variables = [unknown_names[c] for c in range(size) if column_match[c] < 0]
-    refusal = ProjectionRefusedError(
-        "PROJECTION_IMPLICIT_EF_INPUT",
-        ",".join(under),
-        f"with the decisions and the link-EF outputs fixed, a maximum matching pairs {matched} of "
-        f"the {size} equations and unknowns; unmatched equations {unmatched_equations}, unmatched "
-        f"variables {unmatched_variables}; structurally undetermined variables {under}, of which "
-        f"link-EF inputs {flagged}",
-    )
-    return _ShapeVerdict(matched, size, refusal)
-
-
-# -- the omitted rows (R-274) ---------------------------------------------------------------------
-
-
-@dataclass(frozen=True)
-class _RowDerivatives:
-    """Every row's derivatives at x₀, in spec order: `x`, the total x-Jacobian — through the block
-    outputs, so it is the Jacobian of the function the compiled problem holds — and `d`, the
-    decision columns (per unit of the scaled decision)."""
-
-    x: npt.NDArray[np.float64]
-    d: npt.NDArray[np.float64]
-
-
-def _row_derivatives(
-    model: Any,
-    spec: ProblemSpec,
-    x0: Mapping[str, float],
-    built: Mapping[str, Any],
-    n_outputs: int,
-    n_decisions: int,
-) -> _RowDerivatives:
-    """Pyomo's reverse-mode derivatives of every row in `x`, `y` and `d`, at the model's start
-    values, with ∂y/∂x from each block's own Jacobian at x₀ (the block called directly, never
-    through a holder, and only when some row depends on its outputs)."""
-    n_x = len(spec.variable_ids)
-    wrt = [
-        *(model.x[i] for i in range(n_x)),
-        *(model.y[g] for g in range(n_outputs)),
-        *(model.d[j] for j in range(n_decisions)),
-    ]
-    gradients = np.array(
-        [
-            differentiate(built[name], wrt_list=wrt, mode=Modes.reverse_numeric)
-            for name in spec.equation_ids
-        ],
-        dtype=np.float64,
-    ).reshape(len(spec.equation_ids), len(wrt))
-    by_y = gradients[:, n_x : n_x + n_outputs]
-    dy_dx = np.zeros((n_outputs, n_x))
-    index = {name: i for i, name in enumerate(spec.variable_ids)}
-    first = 0
-    for block in spec.blocks:
-        count = len(block.output_ids)
-        if np.any(by_y[:, first : first + count] != 0.0):
-            feeding = spec.block_inputs[block.block_id]
-            for row, column, value in block.jacobian([float(x0[name]) for name in feeding]):
-                dy_dx[first + row, index[feeding[column]]] += float(value)
-        first += count
-    return _RowDerivatives(
-        x=gradients[:, :n_x] + by_y @ dy_dx, d=gradients[:, n_x + n_outputs :].copy()
-    )
-
-
-def _eliminate(
-    spec: ProblemSpec,
-    x0: Mapping[str, float],
-    outputs_x0: Mapping[str, float],
-    jacobian_x: npt.NDArray[np.float64],
-    domain: Mapping[str, tuple[float, float]],
-) -> tuple[tuple[EliminatedRow, ...], dict[str, float]]:
-    """R-274's facts 1 and 2: `eliminate_alias_rows` on every row, with the certificate's inputs —
-    the rows' Jacobian by column id, the variable kinds, and the residuals (with the pinned
-    parameters) at x₀ and at its pressure-shifted witness state — then each eliminated row's
-    residual at x₀ within the elimination's tolerance. Returns the eliminated rows and every
-    row's residual at x₀."""
-    state = {name: float(x0[name]) for name in spec.variable_ids}
-    at_x0 = _float_rows(spec, state, outputs_x0, spec.parameters)
-    reason = ""
-    second = at_x0
-    if any(spec.variable_kinds.get(name) == "pressure" for name in spec.variable_ids):
-        shifted, reason = pressure_shifted_state(
-            spec.variable_ids, spec.variable_kinds, state, domain["pressure"]
-        )
-        if not reason:
-            try:
-                second = _float_rows(spec, shifted, block_outputs(spec, shifted), spec.parameters)
-            except DomainError:
-                reason = "shifted_state_property_domain_error"
-    coefficients = {
-        name: {
-            column: float(value)
-            for column, value in zip(spec.variable_ids, jacobian_x[i], strict=True)
-            if value != 0.0
-        }
-        for i, name in enumerate(spec.equation_ids)
-    }
-    elimination = eliminate_alias_rows(
-        row_ids=spec.equation_ids,
-        coefficients=coefficients,
-        column_kinds=spec.variable_kinds,
-        residuals=[at_x0, second],
-    )
-    for row in elimination.eliminated:
-        if reason:
-            raise ProjectionRefusedError(
-                "PROJECTION_OMITTED_ROW_UNCERTIFIED",
-                row.row_id,
-                f"the elimination's second state could not be built ({reason}), so the constancy "
-                "of its mismatch is not witnessed",
-            )
-        if not abs(at_x0[row.row_id]) <= row.tolerance:
-            raise ProjectionRefusedError(
-                "PROJECTION_OMITTED_ROW_UNCERTIFIED",
-                row.row_id,
-                f"its residual at x0 is {at_x0[row.row_id]!r}, beyond the elimination's "
-                f"pressure_tolerance {row.tolerance:g}",
-            )
-    return elimination.eliminated, at_x0
-
-
-def _certify(
-    spec: ProblemSpec,
-    scaling: Scaling,
-    decisions: Sequence[DecisionSpec],
-    eliminated: Sequence[EliminatedRow],
-    residuals_x0: Mapping[str, float],
-    derivatives: _RowDerivatives,
-) -> tuple[OmittedRow, ...]:
-    """R-274's fact 3, M03's Q3 in the projection's scales: Ĵ_K X̂ = −F̂_d,K at x₀ (one ADR 0004
-    solve for every decision), and every decision's tangent residual Ĵ_E X̂ + F̂_d,E on each
-    eliminated row within τ_alias. Called after the DOF check, so Ĵ_K is square."""
-    if not eliminated:
-        return ()
-    position = {name: i for i, name in enumerate(spec.equation_ids)}
-    removed = [row.row_id for row in eliminated]
-    kept = [name for name in spec.equation_ids if name not in set(removed)]
-    column_scales = scaling.column_vector(spec.variable_ids)
-
-    def scaled(
-        rows: Sequence[str],
-    ) -> tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]]:
-        at = [position[name] for name in rows]
-        row_scales = scaling.row_vector(rows)[:, None]
-        return (
-            derivatives.x[at] * column_scales[None, :] / row_scales,
-            derivatives.d[at] / row_scales,
-        )
-
-    tangent: npt.NDArray[np.float64] = np.zeros((len(removed), len(decisions)))
-    if decisions:
-        j_kept, d_kept = scaled(kept)
-        j_removed, d_removed = scaled(removed)
-        try:
-            solution, _ = solve_linear(j_kept, -d_kept)
-        except LinearSolveFailedError as error:
-            raise ProjectionRefusedError(
-                "PROJECTION_OMITTED_ROW_UNCERTIFIED",
-                removed[0],
-                f"the tangent of the retained rows at x0 is not defined: {error}",
-            ) from error
-        tangent = j_removed @ solution.reshape(len(kept), len(decisions)) + d_removed
-    origins = {equation.equation_id: equation.origin for equation in spec.equations}
-    certified = []
-    for i, row in enumerate(eliminated):
-        residuals = {
-            decision.parameter_id: float(tangent[i, j]) for j, decision in enumerate(decisions)
-        }
-        over = sorted(name for name, value in residuals.items() if not abs(value) <= TAU_ALIAS)
-        if over:
-            raise ProjectionRefusedError(
-                "PROJECTION_OMITTED_ROW_UNCERTIFIED",
-                row.row_id,
-                f"the tangent residual of decisions {over} on it exceeds tau_alias "
-                f"{TAU_ALIAS:g}: {residuals}",
-            )
-        certified.append(OmittedRow(row, origins[row.row_id], residuals_x0[row.row_id], residuals))
-    return tuple(certified)
-
-
-# -- the exact-zero flows (R-296) -----------------------------------------------------------------
-
-
-def _eliminate_zero_flows(
-    spec: ProblemSpec,
-    x0: Mapping[str, float],
-    assembly: _Assembly,
-    omitted: Collection[str],
-    residuals_x0: Mapping[str, float],
-    derivatives: _RowDerivatives,
-    links: Sequence[ExternalLinkSpec],
-    scaling: Scaling,
-    decisions: Sequence[DecisionSpec],
-) -> tuple[tuple[ZeroEliminated, ...], tuple[ZeroBlock, ...]]:
-    """`M05-zero-flow-v2` (module docstring) on the model with every variable: the candidates
-    Z₀; §17.1's single pins, found by repeated passes over the kept rows in spec order; §18.1's
-    joint stage on the flows they leave, alternating with the passes until neither adds anything;
-    and the refusals. Returns the eliminated flows in variable order and the certified blocks."""
-    variable_ids = spec.variable_ids
-    candidates = [
-        name
-        for name in variable_ids
-        if spec.variable_kinds.get(name) == "molar_flow" and float(x0[name]) == 0.0
-    ]
-    if not candidates:
-        return (), ()
-    model = assembly.model
-    # A row's structural incidence: the unknowns of the shape check (x, y, w) its expression
-    # contains — never the decisions, whose derivative is criterion (iii).
-    unknowns = {
-        **{name: model.x[i] for i, name in enumerate(variable_ids)},
-        **{f"y[{g}]": model.y[g] for g in range(len(assembly.output_rows))},
-        **{f"w[{k}]": model.w[k] for k in range(len(assembly.link_rows))},
-    }
-    column = ComponentMap((variable, name) for name, variable in unknowns.items())
-    incidence = {
-        name: frozenset(column[v] for v in identify_variables(expression) if v in column)
-        for name, expression in assembly.built.items()
-    }
-    position = {name: i for i, name in enumerate(spec.equation_ids)}
-    index = {name: i for i, name in enumerate(variable_ids)}
-    zero = set(candidates)
-    found: dict[str, ZeroEliminated] = {}
-    pins: set[str] = set()
-    blocks: list[ZeroBlock] = []
-    xi: npt.NDArray[np.float64] | None = None
-    while True:
-        # §17.1 step 2: single pins, to the fixpoint.
-        changed = True
-        while changed:
-            changed = False
-            for row in spec.equation_ids:
-                if row in omitted or row in pins:
-                    continue
-                rest = incidence[row] - found.keys()
-                if len(rest) != 1:
-                    continue
-                (j,) = rest
-                if j not in zero:
-                    continue
-                e = position[row]
-                pivot = float(derivatives.x[e, index[j]])
-                if (
-                    residuals_x0[row] == 0.0
-                    and pivot != 0.0
-                    and all(float(value) == 0.0 for value in derivatives.d[e])
-                ):
-                    found[j] = ZeroEliminated(j, row, float(residuals_x0[row]), pivot)
-                    pins.add(row)
-                    changed = True
-        if zero <= found.keys():
-            break
-        # §18.1: the joint stage on the flows the passes leave.
-        joint = _joint_blocks(
-            spec, assembly, omitted, pins, found.keys(), zero, incidence, unknowns,
-            residuals_x0, derivatives,
-        )  # fmt: skip
-        if not joint:
-            break
-        if xi is None:
-            draws = len(variable_ids) + len(assembly.output_rows) + len(assembly.link_rows)
-            xi = np.random.default_rng(JOINT_SEED).uniform(-1.0, 1.0, draws + len(decisions))
-        for rows, variables in joint:
-            block = _certify_block(
-                len(blocks), rows, variables, spec, x0, assembly, scaling, decisions,
-                residuals_x0, derivatives, found.keys(), xi,
-            )  # fmt: skip
-            blocks.append(block)
-            pins.update(rows)
-            for name in variables:
-                found[name] = ZeroEliminated(name, None, None, None, block.block)
-    unpinned = [name for name in candidates if name not in found]
-    if unpinned:
-        raise ProjectionRefusedError(
-            "PROJECTION_ZERO_FLOW",
-            f"{unpinned[0]}:unpinned",
-            f"the flows {unpinned} are exactly 0.0 at x0 and no kept row pins them alone with a "
-            "zero residual, a nonzero pivot and a zero decision tangent at x0 (R-296), nor does "
-            "a certified block of rows pin them jointly (R-326)",
-        )
-    redundant = [
-        row
-        for row in spec.equation_ids
-        if row not in omitted
-        and row not in pins
-        and incidence[row] & found.keys()
-        and not incidence[row] - found.keys()
-    ]
-    if redundant:
-        raise ProjectionRefusedError(
-            "PROJECTION_ZERO_FLOW",
-            f"{redundant[0]}:redundant_row",
-            f"the rows {redundant} have no unknown left once the zero flows are eliminated (R-296)",
-        )
-    inputs = [name for link in links for name in link.inlet_variable_ids if name in found]
-    if inputs:
-        raise ProjectionRefusedError(
-            "PROJECTION_ZERO_FLOW",
-            f"{inputs[0]}:link_input",
-            f"the eliminated flows {inputs} are inlet arguments of an external link; the FD policy "
-            "has no rule for a constant inlet coordinate (R-296)",
-        )
-    return tuple(found[name] for name in variable_ids if name in found), tuple(blocks)
-
-
-def _joint_blocks(
-    spec: ProblemSpec,
-    assembly: _Assembly,
-    omitted: Collection[str],
-    pins: Collection[str],
-    eliminated: Collection[str],
-    zero: Collection[str],
-    incidence: Mapping[str, frozenset[str]],
-    unknowns: Mapping[str, Any],
-    residuals_x0: Mapping[str, float],
-    derivatives: _RowDerivatives,
-) -> list[tuple[tuple[str, ...], tuple[str, ...]]]:
-    """§18.1 steps 1-3 up to certification: the candidate rows R_J with their numerical
-    incidence N_e, and the connected components of the bipartite graph (R_J, Z_J), ordered by
-    their first variable, rows in spec order and variables in variable order."""
-    free = set(zero) - set(eliminated)
-    index = {name: i for i, name in enumerate(spec.variable_ids)}
-    numerical: dict[str, frozenset[str]] = {}
-    for e, row in enumerate(spec.equation_ids):
-        if row in omitted or row in pins:
-            continue
-        if residuals_x0[row] != 0.0 or any(float(value) != 0.0 for value in derivatives.d[e]):
-            continue
-        rest = incidence[row] - set(eliminated)
-        columns = {k for k in rest if k in index and float(derivatives.x[e, index[k]]) != 0.0}
-        if not columns or not columns <= free:
-            continue
-        # A `y` or `w` column is in N_e iff the row's own partial in it is nonzero at x₀; such a
-        # column is never a zero flow, so the row is then no candidate.
-        others = sorted(k for k in rest if k not in index)
-        if others:
-            partials = differentiate(
-                assembly.built[row],
-                wrt_list=[unknowns[k] for k in others],
-                mode=Modes.reverse_numeric,
-            )
-            if any(float(value) != 0.0 for value in partials):
-                continue
-        numerical[row] = frozenset(columns)
-    rows_of: dict[str, list[str]] = {}
-    for row, incident in numerical.items():
-        for name in incident:
-            rows_of.setdefault(name, []).append(row)
-    blocks: list[tuple[tuple[str, ...], tuple[str, ...]]] = []
-    seen: set[str] = set()
-    for start in (name for name in spec.variable_ids if name in rows_of):
-        if start in seen:
-            continue
-        rows: set[str] = set()
-        variables = {start}
-        frontier = [start]
-        while frontier:
-            for row in rows_of[frontier.pop()]:
-                if row not in rows:
-                    rows.add(row)
-                    for name in numerical[row] - variables:
-                        variables.add(name)
-                        frontier.append(name)
-        seen |= variables
-        blocks.append(
-            (
-                tuple(name for name in spec.equation_ids if name in rows),
-                tuple(name for name in spec.variable_ids if name in variables),
-            )
-        )
-    return blocks
-
-
-def _certify_block(
-    number: int,
-    rows: Sequence[str],
-    variables: Sequence[str],
-    spec: ProblemSpec,
-    x0: Mapping[str, float],
-    assembly: _Assembly,
-    scaling: Scaling,
-    decisions: Sequence[DecisionSpec],
-    residuals_x0: Mapping[str, float],
-    derivatives: _RowDerivatives,
-    eliminated: Collection[str],
-    xi: npt.NDArray[np.float64],
-) -> ZeroBlock:
-    """§18.1 step 3: (a) square, (b) the scaled block's σ_min/σ_max ≥ `JOINT_RCOND_MIN`, (c) its
-    rows exactly 0.0 at the two persistence states; or the refusal, named by its first variable."""
-    subject = variables[0]
-    if len(rows) != len(variables):
-        raise ProjectionRefusedError(
-            "PROJECTION_ZERO_FLOW",
-            f"{subject}:joint_not_square",
-            f"the rows {list(rows)} pin the zero flows {list(variables)} jointly, but are not a "
-            "square block (R-326)",
-        )
-    position = {name: i for i, name in enumerate(spec.equation_ids)}
-    index = {name: i for i, name in enumerate(spec.variable_ids)}
-    block = derivatives.x[np.ix_([position[r] for r in rows], [index[v] for v in variables])]
-    scaled = block * scaling.column_vector(variables)[None, :] / scaling.row_vector(rows)[:, None]
-    singular = np.linalg.svd(scaled, compute_uv=False)
-    rcond = float(singular[-1] / singular[0]) if singular[0] > 0.0 else 0.0
-    if not rcond >= JOINT_RCOND_MIN:
-        raise ProjectionRefusedError(
-            "PROJECTION_ZERO_FLOW",
-            f"{subject}:joint_singular",
-            f"the scaled block of the rows {list(rows)} on the zero flows {list(variables)} has "
-            f"sigma_min/sigma_max {rcond!r} < {JOINT_RCOND_MIN:g} (R-326)",
-        )
-    held = set(eliminated) | set(variables)
-    values = [
-        value
-        for sign in (1.0, -1.0)
-        for value in _persistence_rows(
-            spec, x0, assembly, scaling, decisions, xi, held, rows, sign
-        ).values()
-    ]
-    persistence = max(abs(value) for value in values)
-    if not all(value == 0.0 for value in values):
-        raise ProjectionRefusedError(
-            "PROJECTION_ZERO_FLOW",
-            f"{subject}:joint_not_persistent",
-            f"the rows {list(rows)} do not vanish at the persistence states with the zero flows "
-            f"{list(variables)} held at +0.0: max |r| = {persistence!r} (R-326)",
-        )
-    return ZeroBlock(
-        number,
-        tuple(variables),
-        tuple(rows),
-        tuple(float(residuals_x0[row]) for row in rows),
-        rcond,
-        persistence,
-    )
-
-
-def _persistence_rows(
-    spec: ProblemSpec,
-    x0: Mapping[str, float],
-    assembly: _Assembly,
-    scaling: Scaling,
-    decisions: Sequence[DecisionSpec],
-    xi: npt.NDArray[np.float64],
-    held: Collection[str],
-    rows: Collection[str],
-    sign: float,
-) -> dict[str, float]:
-    """§18.1 (c): `rows` evaluated with floats at one persistence state. The variables in `held`
-    are +0.0; every other unknown — `x`, the block outputs `y` and the link outputs `w`, the two
-    as plain values, no EF called — and every decision (its model coordinate `d`, scale 1) moves
-    by `sign` · 10⁻³ ξ_k max(|v₀_k|, s_k), with ξ drawn over x, y, w, d in that order."""
-    n_x, n_y, n_w = len(spec.variable_ids), len(assembly.output_rows), len(assembly.link_rows)
-
-    def moved(value: float, scale: float, k: int) -> float:
-        return value + sign * JOINT_PERTURBATION * float(xi[k]) * max(abs(value), scale)
-
-    state = {
-        name: normalize_zero(0.0)
-        if name in held
-        else moved(float(x0[name]), scaling.column[name], i)
-        for i, name in enumerate(spec.variable_ids)
-    }
-    outputs = {
-        f"{row['block_id']}.{row['output_id']}": moved(
-            assembly.output_starts[g], assembly.output_scales[g], n_x + g
-        )
-        for g, row in enumerate(assembly.output_rows)
-    }
-    parameters = dict(spec.parameters)
-    for k, row in enumerate(assembly.link_rows):
-        name = row["parameter_id"]
-        parameters[name] = moved(
-            float(spec.parameters[name]), assembly.link_scales[k], n_x + n_y + k
-        )
-    for j, decision in enumerate(decisions):
-        name, k = decision.parameter_id, n_x + n_y + n_w + j
-        start = float(spec.parameters[name])
-        if decision.bounded:
-            center, half_width = assembly.centers[j], assembly.half_widths[j]
-            parameters[name] = center + half_width * moved((start - center) / half_width, 1.0, k)
-        else:
-            parameters[name] = moved(start, 1.0, k)
-    return _float_rows(spec, state, outputs, parameters, rows)
-
-
-def _float_rows(
-    spec: ProblemSpec,
-    state: Mapping[str, float],
-    outputs: Mapping[str, float],
-    parameters: Mapping[str, float],
-    wanted: Collection[str] | None = None,
-) -> dict[str, float]:
-    """The rows (`wanted`, or every one) evaluated with floats, as `compile/reference.py` does,
-    with the given block outputs and parameters."""
-    algebra = FloatAlgebra()
-    return {
-        equation.equation_id: float(equation.build(state, outputs, parameters, algebra))
-        for equation in spec.equations
-        if wanted is None or equation.equation_id in wanted
-    }
 
 
 def _source_map(

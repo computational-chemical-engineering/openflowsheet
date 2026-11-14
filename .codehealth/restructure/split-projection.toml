@@ -1,0 +1,42 @@
+# S19 restructure plan, step B6 (design note docs/briefs/S19-architecture.md section 3 row B6; ruling
+# DECISION B6 of 2026-11-14 in docs/S19_DECISIONS.md: a third module projection_support for what both new modules
+# reach). Written by the lane-d engineer under work order S19-W2d3; names and numbers measured at wp/S19-d e0085d6d
+# (after the authorised retarget of tests/test_m05_isolation.py). Closures re-derived at this base over top-level
+# Name references:
+# - projection_support.py: OMITTED_ROW_REASON, RefusalCode, ProjectionRefusedError, OmittedRow, _RowDerivatives,
+#   _float_rows (projection.py:172, 188, 206, 250, 1183, 1653; 6 statements). Closed; Pyomo-free.
+# - projection_checks.py: ShapeCheck, SHAPE_CHECK_CRITERION and the shape check and omitted rows (_ShapeVerdict,
+#   _shape_check, _row_derivatives, _eliminate, _certify; projection.py:199-204, 1063-1347 less _RowDerivatives;
+#   7 statements). Reaches only projection_support (OmittedRow, ProjectionRefusedError, _RowDerivatives,
+#   _float_rows).
+# - projection_zero_flows.py: JOINT_RCOND_MIN, JOINT_PERTURBATION, JOINT_SEED, ZeroEliminated, ZeroBlock, _Assembly
+#   and the exact-zero flows (_eliminate_zero_flows, _joint_blocks, _certify_block, _persistence_rows;
+#   projection.py:181-184, 313, 338, 508, 1348-1652; 10 statements). Reaches only projection_support
+#   (ProjectionRefusedError, _RowDerivatives, _float_rows).
+# The helpers (projection.py:906-1062) are used only by what stays and stay; _source_map stays. projection.py
+# re-exports every public name moved (OMITTED_ROW_REASON, RefusalCode, ProjectionRefusedError, OmittedRow,
+# ShapeCheck, SHAPE_CHECK_CRITERION, JOINT_*, ZeroEliminated, ZeroBlock); no test or caller reads a moved private
+# name through projection, and no test patches one (patch_noop). Nothing outside studies/trust_region imports the
+# new modules. Simulated on a scratch tree of these moves: ast.dump multiset 45 = 45, ruff and mypy clean, arch
+# 11 / 5 / 16 unchanged.
+id = "split-projection"
+approved_by = "orchestrator (OpenFlowsheet-TR09 build lane) under Frank's delegation of 2026-11-14 (S19 rules); design note S19-architecture.md section 3 row B6; ruling DECISION B6, work order S19-W2d3"
+reason = "studies/trust_region/projection.py is 1757 lines (1343 NLOC). The shared vocabulary moves verbatim to projection_support.py, the shape check and omitted rows to projection_checks.py, the exact-zero flows to projection_zero_flows.py; projection.py keeps the projection, project, _assemble, the helpers and the source map and re-exports every moved public name. Expected codehealth arch --depth 4: measured at base 11 violations, 5 cycles, 16 cycle edges; simulated delta (0, 0, 0) gives 11 violations, 5 cycles, 16 cycle edges"
+new_files = [
+    "src/openflowsheet/studies/trust_region/projection_support.py",
+    "src/openflowsheet/studies/trust_region/projection_checks.py",
+    "src/openflowsheet/studies/trust_region/projection_zero_flows.py",
+]
+new_public = [
+    "src/openflowsheet/studies/trust_region/projection_support.py:OMITTED_ROW_REASON",
+    "src/openflowsheet/studies/trust_region/projection_support.py:RefusalCode",
+    "src/openflowsheet/studies/trust_region/projection_support.py:ProjectionRefusedError",
+    "src/openflowsheet/studies/trust_region/projection_support.py:OmittedRow",
+    "src/openflowsheet/studies/trust_region/projection_checks.py:ShapeCheck",
+    "src/openflowsheet/studies/trust_region/projection_checks.py:SHAPE_CHECK_CRITERION",
+    "src/openflowsheet/studies/trust_region/projection_zero_flows.py:JOINT_RCOND_MIN",
+    "src/openflowsheet/studies/trust_region/projection_zero_flows.py:JOINT_PERTURBATION",
+    "src/openflowsheet/studies/trust_region/projection_zero_flows.py:JOINT_SEED",
+    "src/openflowsheet/studies/trust_region/projection_zero_flows.py:ZeroEliminated",
+    "src/openflowsheet/studies/trust_region/projection_zero_flows.py:ZeroBlock",
+]

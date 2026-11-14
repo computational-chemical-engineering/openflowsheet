@@ -1,0 +1,24 @@
+# S19 restructure plan, step B8-certificate (design note docs/briefs/S19-architecture.md section 3 row B8).
+# Written by the lane-d engineer under work order S19-W2d; names and numbers measured at wp/S19-d b16dd300.
+# certificate.py has no section headers; the concept groups come from its docstring's first line ("run the check
+# set, grade the verdict, issue or withhold a certificate") and the closures at base. The first group, the check
+# set and its verdict (certificate.py:86-394: REGISTERED_POLICY_ID with its `#:` comment, CheckPolicy, CheckReport,
+# run_checks, _run_checks, _check_set, grade, statements_for, absent_state_certificate, SolutionCertificate,
+# ExternalEvidence; 11 statements), is closed: its closure over top-level Name references is exactly these 11 names.
+# The issuing side (NOMINAL_DECLARATION .. _phase_branch, :397-1446) stays whole: the bound-declaration group
+# (:978-1446) reaches `_Solved` (:407, the nominal path's solve record), so its closure crosses into the nominal path.
+id = "split-certificate-verdict"
+approved_by = "orchestrator (OpenFlowsheet-TR09 build lane) under Frank's delegation of 2026-11-14 (S19 rules); design note S19-architecture.md section 3 row B8 (concept groups fixed at the base by the engineer), work order S19-W2d"
+reason = "verify/certificate.py is 1446 lines (1088 NLOC, the large-file penalty). The check set and its verdict (policy, check-set engine, grading, the certificate and external-evidence records) move verbatim to verify/verdict.py; certificate keeps the issuing paths (verify, verify_bound, verify_revision and the bound-declaration certification) and re-exports the nine public names; no importer is retargeted. verdict imports only modules certificate already imports (none of which imports certificate), and only certificate imports verdict, so the arch effect is 0 / 0. Expected codehealth arch --depth 4: measured at base 11 violations, 6 cycles, 20 cycle edges; delta (0, 0, 0) gives 11 violations, 6 cycles, 20 cycle edges"
+new_files = ["src/openflowsheet/verify/verdict.py"]
+new_public = [
+    "src/openflowsheet/verify/verdict.py:REGISTERED_POLICY_ID",
+    "src/openflowsheet/verify/verdict.py:CheckPolicy",
+    "src/openflowsheet/verify/verdict.py:CheckReport",
+    "src/openflowsheet/verify/verdict.py:run_checks",
+    "src/openflowsheet/verify/verdict.py:grade",
+    "src/openflowsheet/verify/verdict.py:statements_for",
+    "src/openflowsheet/verify/verdict.py:absent_state_certificate",
+    "src/openflowsheet/verify/verdict.py:SolutionCertificate",
+    "src/openflowsheet/verify/verdict.py:ExternalEvidence",
+]

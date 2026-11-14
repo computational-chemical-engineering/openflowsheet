@@ -1,8 +1,9 @@
 """`syn001.cascade` compiled and solved: S01 spec §4.1–§4.5, §7 and §8 (WO-2).
 
-`cascade.py` holds the unit layer (WO-1): the specification, its §5 refusals, the §2 rows, the
-§6 initializer and the §4.6 closed form. This module compiles those rows and runs spec §7's path
-on them, calling `orchestrator.region.solve_region` unchanged (DECISION 1):
+`cascade.py` holds the unit layer (WO-1) with `cascade_spec`, `cascade_rows` and `cascade_init`
+(S19 B4): the specification, its §5 refusals, the §2 rows, the §6 initializer and the §4.6 closed
+form. This module compiles those rows and runs spec §7's path on them, calling
+`orchestrator.region.solve_region` unchanged (DECISION 1):
 
 1. validate (§5); an all-dormant cascade is §4.6's closed form;
 2. initialize (`s01-kremser-cmo-v1`), giving `x_K`;

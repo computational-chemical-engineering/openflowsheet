@@ -1,0 +1,19 @@
+# S19 restructure plan, step B5-units (design note docs/briefs/S19-architecture.md section 3 row B5; ruling
+# DECISION B5 of 2026-11-14 in docs/S19_DECISIONS.md: B5 planned at its base by simulation).
+# Written by the lane-d engineer under work order S19-W2d2; names and numbers measured at wp/S19-d 1b495bac
+# (after B5-kit). The K02, T05 and T08 entries with `_OWN_MODEL_CHECKS`, `_ModelChecksTable` and `MODEL_CHECKS`
+# (table.py:156-956, from the "the K02 entries" header to MODEL_CHECKS; 44 statements) move verbatim to
+# verify/unit_checks.py; their closure over top-level Name references reaches only these 44 names and the kit's
+# Unit and ModelChecks (verify/table_kit.py). `_ModelChecksTable._thermal`'s lazy import of verify.thermal moves
+# with it. MODEL_CHECKS stays one object (re-exported); no module mutates it at import time (src writes none;
+# tests write through monkeypatch.setitem, to the same object). Re-exported privates: the 14 entry functions the
+# tests import from verify.table (test_m02_wo8_registries.py, test_m02_wo9_reactor.py). gamma_phi_units.py:65's
+# MODEL_CHECKS is retargeted to unit_checks. Simulated on a scratch worktree of these moves: the edge
+# table -> thermal (lazy, table.py:932) becomes unit_checks -> thermal; no cycle edge changes.
+id = "split-unit-checks"
+approved_by = "orchestrator (OpenFlowsheet-TR09 build lane) under Frank's delegation of 2026-11-14 (S19 rules); design note S19-architecture.md section 3 row B5; ruling DECISION B5 (planned by simulation), work order S19-W2d2"
+reason = "verify/table.py is 1732 lines after B5-kit (the large-file penalty). The per-model entries of the K02, T05 and T08 models and the MODEL_CHECKS table move verbatim to verify/unit_checks.py below table; table re-exports MODEL_CHECKS and the 14 entry functions tests import from it; gamma_phi_units.py:65's MODEL_CHECKS is retargeted. Expected codehealth arch --depth 4: measured at base 11 violations, 6 cycles, 18 cycle edges; simulated delta (0, 0, 0) gives 11 violations, 6 cycles, 18 cycle edges"
+new_files = ["src/openflowsheet/verify/unit_checks.py"]
+new_public = [
+    "src/openflowsheet/verify/unit_checks.py:MODEL_CHECKS",
+]

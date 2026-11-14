@@ -1,0 +1,25 @@
+# S19 restructure plan, step A6 part 1 (design note docs/briefs/S19-architecture.md section 2, cycle 4; table 4.1 row A6).
+# Measured at wp/S19-b 094a3aa1 with `codehealth arch --depth 4`: 14 violations (12 repo + 2 app), 10 cycles, 79 edges.
+# Moves the V-tolerance table TAU_GROSS ... TAU_VERTEX_MULTIPLIER (studies/nlp/verification.py:80-88, with its `#:`
+# comments) verbatim to the leaf studies/nlp/tolerances.py (imports only typing.Final); verification re-exports all
+# seven names. Retargeted importer (listed in the design note): the lazy import in assessment/program.py:451
+# (`_feasibility_tolerance`), which is the cut edge. No other importer changes.
+# EXPECTED after the step (fixed before the run): 13 violations (11 repo + 2 app), 10 cycles, 77 cycle edges.
+# Reasoning: the repo-layers violation program -> studies.nlp.verification (program.py:451) and its cycle edge go;
+# program -> studies.nlp.tolerances is legal (layer entry) and the leaf imports nothing; the 3-module cycle
+# {program, report, verification} shrinks to the 2-module cycle program <-> report (report.py:29, program.py:823),
+# so verification -> program leaves the cycle too: 79 - 2 = 77 edges, cycle count unchanged. Part 2
+# (cut-assessment-linearization) removes the remaining 2 edges.
+id = "cut-nlp-tolerances"
+approved_by = "orchestrator (OpenFlowsheet-TR09 build lane) under Frank's delegation of 2026-11-13; S19 design note A1 section 2, cycle 4 (step A6)"
+reason = "assessment.program imports studies.nlp.verification (lazy, program.py:451) only for TAU_FEAS, a layer violation and one edge of cycle 4. The registered V-tolerance table moves to the leaf studies.nlp.tolerances and program imports it there: violations 14 -> 13, cycles 10 -> 10, cycle edges 79 -> 77 (measured base 094a3aa1)"
+new_files = ["src/openflowsheet/studies/nlp/tolerances.py"]
+new_public = [
+    "src/openflowsheet/studies/nlp/tolerances.py:TAU_GROSS",
+    "src/openflowsheet/studies/nlp/tolerances.py:TAU_FEAS",
+    "src/openflowsheet/studies/nlp/tolerances.py:TAU_ACTIVE",
+    "src/openflowsheet/studies/nlp/tolerances.py:TAU_KKT",
+    "src/openflowsheet/studies/nlp/tolerances.py:TAU_SIGN",
+    "src/openflowsheet/studies/nlp/tolerances.py:TAU_LICQ",
+    "src/openflowsheet/studies/nlp/tolerances.py:TAU_VERTEX_MULTIPLIER",
+]

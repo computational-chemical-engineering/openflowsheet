@@ -41,6 +41,14 @@ from pathlib import Path
 
 VERIFY = Path(__file__).resolve().parents[1] / "src" / "openflowsheet" / "verify"
 TABLE = VERIFY / "table.py"
+#: The table and the modules S19 split out of it (B5): the rule reads all of them.
+TABLE_MODULES = (
+    TABLE,
+    VERIFY / "table_kit.py",
+    VERIFY / "unit_checks.py",
+    VERIFY / "split_checks.py",
+    VERIFY / "flowsheet_rows.py",
+)
 SATURATION = VERIFY / "saturation.py"
 ZERO_FLOW = VERIFY / "zero_flow.py"
 PROJECTION = VERIFY / "projection.py"
@@ -131,10 +139,11 @@ def violations(source: str) -> list[str]:
 
 
 def test_the_table_imports_only_ids_and_views_from_the_models() -> None:
-    source = TABLE.read_text()
-    assert violations(source) == []
-    # The rule is not vacuous on the file as it stands: it does import from the models.
-    assert "from openflowsheet.models.syn001.pump import work_id" in source
+    sources = {path.name: path.read_text() for path in TABLE_MODULES}
+    for name, source in sources.items():
+        assert violations(source) == [], name
+    # The rule is not vacuous on the files as they stand: they do import from the models.
+    assert "from openflowsheet.models.syn001.pump import work_id" in "\n".join(sources.values())
 
 
 def test_a_kernel_import_fails_it() -> None:

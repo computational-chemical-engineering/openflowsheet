@@ -9599,3 +9599,39 @@ harvest:
   class: P
   to: []
   note: 'process note: remaining debt is concentrated in five application modules'
+- manifest: evidence/S19/17967ccbb943e1c76ec200a17a4a25b74e1e4f1d/manifest.json
+  item: limitations[0]
+  sha256: 7b392185d6f4db1fa18ba1fff9c8a432374f4a27ba3033b578bc6a9555a94f24
+  class: P
+  to: []
+  note: 'provenance note: software verification of behaviour-preserving refactors, not validation; unpinned behaviour is covered by review only'
+- manifest: evidence/S19/17967ccbb943e1c76ec200a17a4a25b74e1e4f1d/manifest.json
+  item: limitations[1]
+  sha256: 8217477260f3578c4a875fe78d570e2eee1f1ca4a5f4998a6d740e5f51d23f61
+  class: P
+  to: []
+  note: 'provenance note: status follows CI; review pending'
+- manifest: evidence/S19/17967ccbb943e1c76ec200a17a4a25b74e1e4f1d/manifest.json
+  item: limitations[2]
+  sha256: 4b6f9d2daf80dbd007d2c8a5a366b0eabfd911d97ba456a6e8480dd2859023a7
+  class: P
+  to: []
+  note: 'process note: phase merge of W1 and W2; debt unchanged by design; W3 to W5 and the end gate follow'
+- manifest: evidence/S19/17967ccbb943e1c76ec200a17a4a25b74e1e4f1d/manifest.json
+  item: limitations[3]
+  sha256: 3f2fd75c9ba5d98f06f650dcad551009fd40999f7871571c4b6e9bd42c2bc1ac
+  class: P
+  to: []
+  note: 'process note: old import paths stay as re-exports until ADR 0076 W4'
+- manifest: evidence/S19/17967ccbb943e1c76ec200a17a4a25b74e1e4f1d/manifest.json
+  item: limitations[4]
+  sha256: 3c4e273a7c3e6a38c08b72d3aca449b41b9570b1ad9a4e3f8f67bfea962fa9fc
+  class: P
+  to: []
+  note: 'process note: the 35 F0 M9 modules are untouched until W5'
+- manifest: evidence/S19/17967ccbb943e1c76ec200a17a4a25b74e1e4f1d/manifest.json
+  item: limitations[5]
+  sha256: 796252232883103c27a13ac662d1253174664ff2911f60707091978732e1f58f
+  class: P
+  to: []
+  note: 'provenance note: requirements empty, a development-process package'

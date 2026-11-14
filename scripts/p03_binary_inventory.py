@@ -886,13 +886,16 @@ def _closure_of(
     return seen
 
 
-# The `nlp` extra's modules (M07 spec §24.1, R-478). Each imports a distribution of the extra at
-# module level, so in the default install it cannot load and A30's measured half has nothing to
-# measure in it; MR-12 gives its closure to `docs/m03-ipopt-audit.md` and R-450. The list is
-# pinned both ways by `tests/test_p03_a30_workload.py` (S9.6); extending it takes a register entry.
+# The `nlp` extra's modules (M07 spec §24.1, R-478 and R-1041). Each imports a distribution of the
+# extra at module level, so in the default install it cannot load and A30's measured half has
+# nothing to measure in it; MR-12 gives its closure to `docs/m03-ipopt-audit.md` and R-450. The
+# list is pinned both ways by `tests/test_p03_a30_workload.py` (S9.6); extending it takes a register
+# entry.
 NLP_EXTRA_MODULES: Final = (
     "openflowsheet.studies.nlp.greybox",
     "openflowsheet.studies.trust_region.projection",
+    "openflowsheet.studies.trust_region.projection_checks",
+    "openflowsheet.studies.trust_region.projection_zero_flows",
     "openflowsheet.studies.trust_region.trf",
 )
 # The import names of the `nlp` extra's compiled or solver-bearing distributions.

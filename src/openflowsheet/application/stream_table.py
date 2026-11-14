@@ -770,7 +770,7 @@ def _stream(
 
 
 def _feeds(view: RevisionView) -> list[str]:
-    """The outlet streams of feed instances: `verify.table._feeds`' order."""
+    """The outlet streams of feed instances: `verify.flowsheet_rows._feeds`' order."""
     return [
         stream
         for instance in view.instances
@@ -782,7 +782,7 @@ def _feeds(view: RevisionView) -> list[str]:
 
 
 def _products(view: RevisionView) -> list[str]:
-    """The inlet streams of product instances: `verify.table._products`' order."""
+    """The inlet streams of product instances: `verify.flowsheet_rows._products`' order."""
     return [
         stream
         for instance in view.instances

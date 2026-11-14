@@ -1,0 +1,38 @@
+# S19 restructure plan, step A8 (design note docs/briefs/S19-architecture.md section 2, cycle 10; table 4.1 row A8).
+# Measured at wp/S19-b bafa3a98 (after A7) with `codehealth arch --depth 4`: 13 violations (11 repo + 2 app),
+# 8 cycles, 73 edges.
+# Moves the closure (top-level Name references, annotations included) of the twelve names families.py:30 imports
+# from the package assessment/sizing/__init__.py (GRAVITY, ItemFamily, SizedItem, SizingContext, SizingInput,
+# SizingPlan, StreamFlow, argmax_rows, nominal, register_family, size_output, sub_item): those twelve plus
+# LIQUID_VOLUME_THETA, _item_volume_theta, _sum_builder, Family, FAMILIES (17 statements, __init__.py:72-593 and
+# :650-652, each with the `#:` comment above it), verbatim and in order, to the leaf assessment/sizing/core.py.
+# The closure does not reach family_of, _LOADED, _load_builtin, plan_sizing or constant, which stay. __init__
+# re-exports the 15 public names (FAMILIES is the same dict object, so register_family and plan_sizing share it)
+# and keeps the lazy _load_builtin unchanged: built-in registration still happens on first use, in the same order.
+# Retargeted importer (the cut edge): families.py:30. Every other importer keeps the package path.
+# EXPECTED after the step (fixed before the run): 13 violations (11 repo + 2 app), 7 cycles, 71 cycle edges.
+# Reasoning: families -> sizing (families.py:30) is families' only import of the package; with it pointing at
+# sizing.core the 2-module cycle sizing <-> sizing.families (__init__.py:606 lazy) dissolves: -1 cycle, -2 edges.
+# core imports only modules outside the package that never import it (they were outside the base cycle); no layer
+# entry changes.
+id = "leaf-sizing-core"
+approved_by = "orchestrator (OpenFlowsheet-TR09 build lane) under Frank's delegation of 2026-11-13; S19 design note A1 section 2, cycle 10 (step A8)"
+reason = "assessment.sizing.families imports the package __init__ for GRAVITY and the registration API while __init__ imports families lazily (_load_builtin): cycle 10. The closure of those names moves to the leaf assessment.sizing.core: violations 13 -> 13, cycles 8 -> 7, cycle edges 73 -> 71 (measured base bafa3a98)"
+new_files = ["src/openflowsheet/assessment/sizing/core.py"]
+new_public = [
+    "src/openflowsheet/assessment/sizing/core.py:GRAVITY",
+    "src/openflowsheet/assessment/sizing/core.py:ItemFamily",
+    "src/openflowsheet/assessment/sizing/core.py:SizingInput",
+    "src/openflowsheet/assessment/sizing/core.py:SizedItem",
+    "src/openflowsheet/assessment/sizing/core.py:SizingPlan",
+    "src/openflowsheet/assessment/sizing/core.py:StreamFlow",
+    "src/openflowsheet/assessment/sizing/core.py:LIQUID_VOLUME_THETA",
+    "src/openflowsheet/assessment/sizing/core.py:SizingContext",
+    "src/openflowsheet/assessment/sizing/core.py:nominal",
+    "src/openflowsheet/assessment/sizing/core.py:size_output",
+    "src/openflowsheet/assessment/sizing/core.py:argmax_rows",
+    "src/openflowsheet/assessment/sizing/core.py:Family",
+    "src/openflowsheet/assessment/sizing/core.py:FAMILIES",
+    "src/openflowsheet/assessment/sizing/core.py:register_family",
+    "src/openflowsheet/assessment/sizing/core.py:sub_item",
+]

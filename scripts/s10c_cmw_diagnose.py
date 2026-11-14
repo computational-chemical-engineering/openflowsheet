@@ -41,6 +41,7 @@ import scipy  # noqa: E402
 from test_s10c_blocks import REAL, column_spec  # noqa: E402
 from test_s10c_columns import deviations, worst  # noqa: E402
 
+import openflowsheet.models.syn001.column_endpoint as column_endpoint  # noqa: E402
 import openflowsheet.models.syn001.column_solve as column_solve  # noqa: E402
 import openflowsheet.numerics.newton as newton_module  # noqa: E402
 import openflowsheet.orchestrator.region as region  # noqa: E402
@@ -187,8 +188,8 @@ class Recorder:
             return found
 
         spies = [
-            (column_solve, "sweep_flows", sweep_flows, sweep_spy),
-            (column_solve, "relaxed_compositions", relaxed, relaxed_spy),
+            (column_endpoint, "sweep_flows", sweep_flows, sweep_spy),
+            (column_endpoint, "relaxed_compositions", relaxed, relaxed_spy),
             (region, "solve_newton", newton, newton_spy),
             (newton_module, "_bound_aware_step", bound_step, bound_spy),
         ]
