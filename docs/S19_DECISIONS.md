@@ -184,3 +184,11 @@
   `k03`/`k04`, are noted for the docs pass). Authorised next (lane d part 3): B5-rows with `flowsheet_rows.py` added to
   the table rule's module list before its plan; B6 with `tests/test_m05_isolation.py:31-32` (Pyomo allowlist,
   `GLASS_BOX_MODULES`) extended to the new projection modules before its plan.
+- **2026-11-14, lane e: B2 (column.py split) accepted** (retarget f76954d3, plan 94f8f1c9, step 090d6f4f gate 16/16,
+  docs 10334293 15/15; `column_spec`, `column_validation`, `column_rows`; arch 8/6/20 unchanged). Rulings on the two
+  stops: **DECISION B3: three `repo-layers` module entries below `column_blocks` (`column_endpoint`,
+  `column_acceptance`, `column_compile`), orchestrator config commit 2b193a18 on wp/S19-e before B3's plan** (design
+  note Q7, module entries; checked with lane e's simulation on a scratch tree: 8/6/20 -> 7/5/18 = table 4.1 row B3;
+  without the entries the new modules fall in the models layer and add 9 violations). **DECISION B4: `_phase` moves to
+  `cascade_spec` and `_k_values` to `cascade_init`** (the design note kept them with validation, but the new modules
+  reach them and they reach nothing else; cascade.py imports them back; simulated 8/6/20 unchanged, 58/58 verbatim).
