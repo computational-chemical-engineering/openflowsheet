@@ -959,20 +959,20 @@ class LocalApplication:
         family's refusal (`_refuse_error`)."""
         active = self._store.active_job_count(caller.principal_id)
         body = request.body
-        admitted: EffectiveBudgets | ApiError
+        budgets: EffectiveBudgets | ApiError
         if isinstance(body, SolveBody):
-            admitted = self._solve_admission(body, request, caller, active)
+            budgets = self._solve_admission(body, request, caller, active)
         elif isinstance(body, ExperimentBody):
-            admitted = self._experiment_admission(body, request, caller, active)
+            budgets = self._experiment_admission(body, request, caller, active)
         elif isinstance(body, SurrogateStudyBody):
-            admitted = self._surrogate_study_admission(body, request, caller, active)
+            budgets = self._surrogate_study_admission(body, request, caller, active)
         elif isinstance(body, OptimizeBody):
-            admitted = self._optimize_admission(body, request, caller, active)
+            budgets = self._optimize_admission(body, request, caller, active)
         else:
-            admitted = self._reproduce_admission(body, request, caller, active)
-        if isinstance(admitted, ApiError):
-            self._refuse_error(admitted, operation, request_sha256)
-        return admitted
+            budgets = self._reproduce_admission(body, request, caller, active)
+        if isinstance(budgets, ApiError):
+            self._refuse_error(budgets, operation, request_sha256)
+        return budgets
 
     def _solve_admission(
         self, body: SolveBody, request: JobRequest, caller: CapabilityReference, active: int
@@ -1039,7 +1039,7 @@ class LocalApplication:
     def _optimize_admission(
         self, body: OptimizeBody, request: JobRequest, caller: CapabilityReference, active: int
     ) -> EffectiveBudgets | ApiError:
-        """`admit_optimize`: the study's budgets, or the refusal."""
+        """`admit_optimize`: the optimization's budgets, or the refusal."""
         optimize = admit_optimize(
             body, budgets=request.budgets, limits=caller.limits, active_jobs=active
         )
@@ -2105,9 +2105,9 @@ class LocalApplication:
         document = json.loads(canonical_json(built))
         # ADR 0035 D2–D3 (M02 design note §6.2): a change of a variant-backed model reference is a
         # promotion (M04 spec §8.3: or a surrogate-backed one, judged with the project's
-        # resolver), checked before anything is validated; any failed facet rejects it with the
-        # report. A compatible one writes each report's SHA-256 into the provenance (outside the
-        # content hash), so the preview and the commit name the same document.
+        # resolver), checked before anything is validated (`_check_promotion`). A compatible one
+        # writes each report's SHA-256 into the provenance (outside the content hash), so the
+        # preview and the commit name the same document.
         reports = check_replacements(expected, document, surrogates=self._surrogates())
         rejected = self._check_promotion(expected, document, reports, operation, idempotency_key)
         if rejected is not None:
@@ -2134,9 +2134,10 @@ class LocalApplication:
         operation: str,
         idempotency_key: str,
     ) -> TransactionResult | None:
-        """A change's promotions, judged (`rejected`, audited): the first incompatible replacement
-        of `reports`, then the first surrogate of `document` that no replacement judged and that is
-        not promoted against `expected`; `None` when there is neither."""
+        """ADR 0035 D2–D3 and M04 spec §20 A3.1: a change's promotions, judged (`rejected`,
+        audited): the first incompatible replacement of `reports` (any failed facet rejects it,
+        with its report), then the first surrogate of `document` that no replacement judged and
+        that is not promoted against `expected`; `None` when there is neither."""
         incompatible = [report for report in reports if not report.compatible]
         if incompatible:
             report = incompatible[0]

@@ -1298,7 +1298,7 @@ def reproduce_bundle(
     `stage` (§6.4) is called with `integrity` on entry, `rerun` before a rerun, and `compare`
     before the report is built; a rerun's bundle is complete in `rerun_directory` by `compare`.
 
-    The rungs that re-run nothing are `_rerunnable_manifest`, `_recorded_route` and
+    The rungs that re-run nothing are `_rerunnable_manifest`, `_rerun_inputs` and
     `_valid_coupling_record`, in that order; each stages `compare` before its reproduction.
     """
     at = stage if stage is not None else _no_stage
@@ -1311,10 +1311,10 @@ def reproduce_bundle(
     if "revision.json" not in manifest.artifacts:
         return _reproduce_registered(directory, manifest, rerun_directory, run_id, at)
 
-    found = _recorded_route(directory, manifest, at)
-    if isinstance(found, Reproduction):
-        return found
-    recorded, (policy, check_policy), document, route = found
+    rerun_inputs = _rerun_inputs(directory, manifest, at)
+    if isinstance(rerun_inputs, Reproduction):
+        return rerun_inputs
+    recorded, (policy, check_policy), document, route = rerun_inputs
     coupling = _valid_coupling_record(directory, manifest, route, at)
     if isinstance(coupling, Reproduction):
         return coupling
@@ -1387,11 +1387,12 @@ def _rerunnable_manifest(directory: Path, rerun: bool, at: Stage) -> RunManifest
     return manifest
 
 
-def _recorded_route(
+def _rerun_inputs(
     directory: Path, manifest: RunManifest, at: Stage
 ) -> tuple[Any, tuple[SolvePolicy, CheckPolicy], Any, Route] | Reproduction:
-    """R2.5's recorded route of a bundle with `revision.json`: the `solve-path.json` record, the
-    policy documents (`_recorded_policies`), the revision document and the route bound to it.
+    """R2.5's rerun inputs of a bundle with `revision.json`: the `solve-path.json` record, the
+    policy documents (`_recorded_policies`), the revision document and the recorded route bound
+    to it.
     Or, after `compare` is staged, the archive inspected with the reason no rerun happens: no
     `solve-path.json`, policy documents that do not recompute to the manifest's hashes, or a
     recorded solve path that does not bind."""
