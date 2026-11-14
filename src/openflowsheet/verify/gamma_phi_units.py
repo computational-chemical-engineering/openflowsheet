@@ -63,7 +63,6 @@ from openflowsheet.verify.checks import (
 )
 from openflowsheet.verify.column import _SHARED_STABILITY, _STABLE
 from openflowsheet.verify.table import (
-    MODEL_CHECKS,
     REACTING_MODELS,
     Degeneracy,
     _envelope_energy,
@@ -75,6 +74,7 @@ from openflowsheet.verify.table_kit import (
     ModelChecks,
     Unit,
 )
+from openflowsheet.verify.unit_checks import MODEL_CHECKS
 
 if TYPE_CHECKING:
     from openflowsheet.orchestrator.region import LiftedSplit
