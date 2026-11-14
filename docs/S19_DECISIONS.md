@@ -82,3 +82,10 @@
   serializes the gates, so a third lane would add queueing, not throughput. B7 (frozen) waits for W5. A `reviewer`
   pass on the W1 moves (brief `S19-R-W1.md`) runs in parallel (S1/S2 leaf moves: every 4). Reversible by: running A5
   alone first.
+- **DECISION: re-pin cce-code-health to 6fbc82b (or later) at the end of W2, not now.** 6fbc82b adds `codehealth log
+  --rerun-of STEP --reason` (a passing re-gate of a tree whose records are all gate-fail; the earlier record stays,
+  `stats` counts it as a re-run). Lanes c and d are gating with d542005; changing the tool under running lanes would
+  give one lane two tool versions. At the re-pin: backfill A6 part 1 (`--gate-json
+  runs/s19-gates/20261114T111827-s19b-A6a-r2.json --rerun-of 1 --head e56f1189 --reason "wall-time budget test flaky
+  under load"`), and check 965de38's file-size gate against the W2 results. Alternative: re-pin now. Rejected: as
+  above. Reversible by: the pin line.
