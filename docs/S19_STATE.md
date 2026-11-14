@@ -25,21 +25,26 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 - Frozen (F0 M9, 35 modules, debt 565.2): untouched until W5 (S19_DECISIONS, Q1).
 - W1 merged (lanes a, b) and W2 merged (lanes c, d, e) on `wp/S19` (2026-11-14): every step gated on the full
   suite; reviews R-W1, R-W2d, R-W2e passed (fixes applied). At fe9d27fd: `codehealth arch --depth 4` 7 violations,
-  4 cycles, 14 cycle edges (CB: 14 / 10 / 79); patch_noop 0 of 246. cce-code-health re-pinned to 6fbc82b.
-- Parked: B1 (region split) on `wip/S19-B1` until ADR 0076 I-15 (the gate's ratchet: region keeps a lazy
-  verify.checks import). B8-executor skipped (W3). B7 in W5.
+  4 cycles, 14 cycle edges (CB: 14 / 10 / 79); patch_noop 0 of 246.
+- `main` = 218e7a73 (2026-11-15): W1+W2 merged (Decision Desk card ofs-s19-w2-merge-main, verified, executed);
+  evidence manifest at 17967ccb `tested`, CI 43637097255 green on both legs, F0 PASS on `main`.
+- cce-code-health pinned at a0aff44 (interface `literals` detail; huge_file -> large_file is a downgrade).
 - ADR 0076 accepted (Frank, Decision Desk, 2026-11-14). Decision register R-1041 (projection Pyomo modules).
+- `wp/S19-f` (worktree `s19f`): I-15 accepted (interface mode, review R-I15 fixes applied; arch 6/4/14) and B1
+  (region split) accepted as run-log step 62 (re-run of step 54 after the tool fix); docstring follow-up 3fa89e83
+  being gated no-gain. Then merge into `wp/S19`.
+- W3 running (`wp/S19-g2`, `-g4`, `-g5`, `-g6`; briefs `S19-W3-*.md` in `<git-common-dir>/codehealth/briefs/`):
+  G2 run 1 reviewed (R-W3-G2-1, fixes in G2 run 2). Each run: reviewer, then merge into `wp/S19`.
+- A11/I-14 ruled (`docs/briefs/S19-A11-ruling.md`): runs in W4 after I-9. B8-executor skipped; B7 in W5.
 
 ## Next actions
 
-1. The test map at the `wp/S19` tip (`MB`), G-MAP; push `wp/S19`, CI both legs; merge W1+W2 into `main` once
-   Frank signs it on the Decision Desk (evidence manifest `tested`, F0 after the merge).
-2. Design-lane rulings A15/I-15 (R-016), A11, I-10; then I-15 first (interface mode), then B1 from `wip/S19-B1`.
-3. W3 groups in pairs (G1+G4, G2+G3, G5+G6) on the map.
-4. W3 function-level per package group; reviews per the sensitivity tiers.
-5. W4 (ADR 0076 accepted 2026-11-14): after W3; first the design-lane rulings A15, A11, I-10 and the re-pin to
-   04f630e or later (interface mode); order as in the ADR (I-6, I-3, I-1, ...). W5: frozen modules after a
-   `specifier` identity ruling. Merge into `main` after each phase (CI both legs, F0).
+1. Merge `wp/S19-f` (I-15 + B1) into `wp/S19`; remove worktree `s19f`.
+2. W3: review and merge G2, G4, G5, G6 runs; then G1 (orchestrator, numerics) and G3 (studies); more runs per
+   group until the G-END numbers.
+3. W4 in ADR 0076 order (I-9 before A11/I-14; I-10; drop re-exports I-19). W5: frozen modules after a `specifier`
+   identity ruling (Fable). Merge into `main` after each phase (CI both legs, F0, Decision Desk card).
+4. Docs pass (list in `S19_DECISIONS`).
 
 ## Gates (pass numbers fixed after A1, before step 1)
 
