@@ -18,12 +18,15 @@ converged path with the refusing provider, so a handler sees the exception the r
 
 from __future__ import annotations
 
+import json
 import logging
+import math
 from collections.abc import Callable, Iterator, Mapping
 from pathlib import Path
 from typing import Any
 
 import pytest
+from conftest import REPO_ROOT
 from t07_corpus import CORPUS
 from t07_jobs_support import commit
 from test_m05_parent import DECISION, NOMINAL, services_module, standin
@@ -45,6 +48,8 @@ from openflowsheet.orchestrator.region import (
 )
 from openflowsheet.orchestrator.trace import SolvePolicy
 from openflowsheet.studies.nlp.revision_host import DecisionMap, RevisionNlpHost, decision_map
+from openflowsheet.studies.trust_region.checks import ParentSolve
+from openflowsheet.studies.trust_region.parent import P2_A_SOURCE
 from openflowsheet.thermo import PropertyRequest, PropertyResult
 from openflowsheet.thermo.pr_c1 import COMPONENTS as PR_C1_COMPONENTS
 from openflowsheet.thermo.pr_c1 import PrC1Provider
@@ -54,6 +59,16 @@ from openflowsheet.verify.certificate import CheckPolicy
 CONTEXT = EvaluationContext(model_version="S19-I15@" + "0" * 64, constants_sha256="0" * 64)
 #: `_LiftedOps.converged` reads the policy's `admissibility_epsilon` only.
 POLICY_EPSILON = SolvePolicy(policy_id="s19-i15", residual_tolerances={}, scales={})
+#: M04.A19's PROMOTABLE smooth prefix-plan manifest: stage A's surrogate on the stand-in parent.
+A19_MANIFEST = (
+    REPO_ROOT
+    / "tests"
+    / "fixtures"
+    / "schemas"
+    / "surrogate_manifest"
+    / "valid"
+    / "a19_smooth_prefix.json"
+)
 
 
 class _RefusingK(Syn001Provider):
@@ -244,6 +259,35 @@ def test_the_trust_region_parent_outcome_is_unchanged(
         None,
     )
     assert not refused.certified and refused.executions == 0
+
+
+@pytest.mark.parametrize("raiser", list(RAISERS))
+def test_the_trust_region_p2_reference_is_unchanged(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, raiser: str
+) -> None:
+    """Stage A's P2 reference (`C1Parent.surrogate_reference`): the surrogate-backed
+    `revision_eo` re-solve selects its route for real and ends `verifier_refused`."""
+    solves: list[str] = []
+
+    def refuse(*_: Any, **__: Any) -> None:
+        solves.append(raiser)
+        _converge(raiser)
+
+    monkeypatch.setattr(services_module, "solve_route", refuse)
+    manifest = json.loads(A19_MANIFEST.read_text(encoding="utf-8"))
+    reference = standin(tmp_path).surrogate_reference(manifest)
+    targeted = ParentSolve(
+        solve_id="x",
+        purpose="start",
+        decisions={DECISION: NOMINAL},
+        revision_sha256="",
+        outcome="CONVERGED",
+        certificate=None,
+    )
+    refused = reference(targeted)
+    assert solves == [raiser]
+    assert (refused.source, refused.state) == (f"{P2_A_SOURCE}:verifier_refused", {})
+    assert math.isnan(refused.objective)
 
 
 class _ConvergedRefusal(ApplicationRevisionRoutes):
