@@ -326,9 +326,42 @@ def _domain(form: EquilibriumForm | None) -> tuple[tuple[float, float], tuple[fl
 
 
 def _column_refusal(spec: ColumnSpec, form: EquilibriumForm | None = None) -> CascadeFailure | None:
-    """§5 S1–S10, in that order, on a specification that passed R1–R6."""
-    unit, count = spec.unit_id, spec.stage_count
-    # S1
+    """§5 S1–S10, in that order, on a specification that passed R1–R6, then S10-C §4.8 and
+    `_inverse_refusal` (S06's I1 to I6): the first refusal, else `None`.
+
+    One helper per clause: `_end_kind_refusal` (S1), `_end_specification_refusal` (S2),
+    `_redundant_specification_refusal` (S3), `_direct_value_refusal` (S4), then, given the feed
+    total `F`, the column-specification stages and which ends are present,
+    `_rate_exceeds_feed_refusal` (S5), `_end_inlet_refusal` (S6), `_end_stage_side_feed_refusal`
+    (S7), `_stage_count_refusal` (S8, which raises `ValueError` for misplaced `None` duties),
+    `_pressure_profile_refusal` (S9), `_no_feed_refusal` (S10) and `_form_kind_refusal` (S10-C
+    §4.8).
+    """
+    refusal = (
+        _end_kind_refusal(spec)
+        or _end_specification_refusal(spec)
+        or _redundant_specification_refusal(spec)
+        or _direct_value_refusal(spec)
+    )
+    if refusal is not None:
+        return refusal
+    feed, ends = _feed_total(spec), spec.slot_stages()
+    with_condenser, with_reboiler = spec.condenser != "none", spec.reboiler != "none"
+    return (
+        _rate_exceeds_feed_refusal(spec, feed)
+        or _end_inlet_refusal(spec, with_condenser, with_reboiler)
+        or _end_stage_side_feed_refusal(spec, ends)
+        or _stage_count_refusal(spec, ends, with_condenser, with_reboiler)
+        or _pressure_profile_refusal(spec)
+        or _no_feed_refusal(spec, feed)
+        or _form_kind_refusal(spec, form)
+        or _inverse_refusal(spec)
+    )
+
+
+def _end_kind_refusal(spec: ColumnSpec) -> CascadeFailure | None:
+    """S1: a condenser kind, then a reboiler kind, the column does not offer, else `None`."""
+    unit = spec.unit_id
     if spec.condenser not in CONDENSER_KINDS:
         return CascadeFailure(
             "CAPABILITY_UNAVAILABLE",
@@ -341,7 +374,13 @@ def _column_refusal(spec: ColumnSpec, form: EquilibriumForm | None = None) -> Ca
             f"unsupported(reboiler:{spec.reboiler})",
             f"{unit}: reboiler kind {spec.reboiler!r} is not one of {REBOILER_KINDS}",
         )
-    # S2
+    return None
+
+
+def _end_specification_refusal(spec: ColumnSpec) -> CascadeFailure | None:
+    """S2, condenser then reboiler: a present end without a specification, a specification at a
+    `none` end, a kind S02 and S06 do not offer, or a kind the end does not take, else `None`."""
+    unit = spec.unit_id
     for end in (CONDENSER, REBOILER):
         given = spec.end_specification(end)
         present = spec.end_kind(end) != "none"
@@ -364,15 +403,27 @@ def _column_refusal(spec: ColumnSpec, form: EquilibriumForm | None = None) -> Ca
                 f"specification:{end}",
                 f"{unit}: {given.kind!r} is not a {end} specification ({END_KINDS[end]})",
             )
+    return None
+
+
+def _redundant_specification_refusal(spec: ColumnSpec) -> CascadeFailure | None:
+    """S3: a distillate rate with a bottoms rate, else `None`."""
+    unit = spec.unit_id
     kinds = {end: _specification(spec, end).kind for end in spec.ends()}
-    # S3
     if kinds.get(CONDENSER) == "distillate_rate" and kinds.get(REBOILER) == "bottoms_rate":
         return _invalid(
             "redundant_specification",
             f"{unit}: distillate and bottoms rates are linearly dependent through the overall "
             "balance (§3)",
         )
-    # S4, direct kinds only (S06 §5; I1, I2 take the inverse kinds)
+    return None
+
+
+def _direct_value_refusal(spec: ColumnSpec) -> CascadeFailure | None:
+    """S4, direct kinds only (S06 §5; I1, I2 take the inverse kinds): the first end whose value is
+    not finite or has the wrong sign (a condenser duty that is not negative, a reboiler duty
+    that is not positive, another direct value that is not positive), else `None`."""
+    unit = spec.unit_id
     for end in spec.ends():
         given = _specification(spec, end)
         if given.kind in INVERSE_KINDS:
@@ -384,8 +435,12 @@ def _column_refusal(spec: ColumnSpec, form: EquilibriumForm | None = None) -> Ca
             wrong = value <= 0.0
         if not math.isfinite(value) or wrong:
             return _invalid(f"{given.kind}:{end}", f"{unit}: {end} {given.kind} = {value!r}")
-    # S5
-    feed = _feed_total(spec)
+    return None
+
+
+def _rate_exceeds_feed_refusal(spec: ColumnSpec, feed: float) -> CascadeFailure | None:
+    """S5: the first distillate or bottoms rate `>= feed` (`F`), else `None`."""
+    unit = spec.unit_id
     for end in spec.ends():
         given = _specification(spec, end)
         if given.kind in ("distillate_rate", "bottoms_rate") and given.value >= feed:
@@ -394,8 +449,15 @@ def _column_refusal(spec: ColumnSpec, form: EquilibriumForm | None = None) -> Ca
                 f"infeasible_spec({given.kind}_exceeds_feed)",
                 f"{unit}: {given.kind} {given.value!r} mol/s >= F = {feed!r} mol/s",
             )
-    # S6
-    with_condenser, with_reboiler = spec.condenser != "none", spec.reboiler != "none"
+    return None
+
+
+def _end_inlet_refusal(
+    spec: ColumnSpec, with_condenser: bool, with_reboiler: bool
+) -> CascadeFailure | None:
+    """S6: a top inlet with a condenser or none without one, then the same for the bottom inlet and
+    the reboiler, else `None`."""
+    unit = spec.unit_id
     if (spec.top is not None) == with_condenser:
         return _invalid(
             "top_inlet",
@@ -408,15 +470,28 @@ def _column_refusal(spec: ColumnSpec, form: EquilibriumForm | None = None) -> Ca
             f"{unit}: a column {'with' if with_reboiler else 'without'} a reboiler "
             f"{'has no' if with_reboiler else 'needs a'} bottom inlet",
         )
-    # S7
-    ends = spec.slot_stages()
+    return None
+
+
+def _end_stage_side_feed_refusal(spec: ColumnSpec, ends: dict[int, str]) -> CascadeFailure | None:
+    """S7: the first side feed at a column-specification stage of `ends` (stage to end), else
+    `None`."""
+    unit = spec.unit_id
     for side in spec.sides:
         if side.stage in ends:
             return _invalid(
                 f"side_feed_stage:{side.port}",
                 f"{unit}: side feed {side.port} at the {ends[side.stage]} stage {side.stage}",
             )
-    # S8
+    return None
+
+
+def _stage_count_refusal(
+    spec: ColumnSpec, ends: dict[int, str], with_condenser: bool, with_reboiler: bool
+) -> CascadeFailure | None:
+    """S8: an `N` that cannot hold the condenser and the reboiler apart, else `None`; `ValueError`
+    when the `None` duties are not exactly at the column-specification stages of `ends`."""
+    unit, count = spec.unit_id, spec.stage_count
     if count < 1 + int(with_condenser) + int(with_reboiler):
         return _invalid(
             "stage_count", f"{unit}: N = {count} cannot hold a condenser and a reboiler apart"
@@ -431,7 +506,12 @@ def _column_refusal(spec: ColumnSpec, form: EquilibriumForm | None = None) -> Ca
             f"{unit}: Q_j* must be None exactly at the column-specification stages "
             f"{sorted(ends)}; stages {misplaced} disagree"
         )
-    # S9
+    return None
+
+
+def _pressure_profile_refusal(spec: ColumnSpec) -> CascadeFailure | None:
+    """S9: the first stage whose pressure is below the stage above it, else `None`."""
+    unit, count = spec.unit_id, spec.stage_count
     for stage in range(1, count):
         if spec.pressures[stage] < spec.pressures[stage - 1]:
             return _invalid(
@@ -439,11 +519,22 @@ def _column_refusal(spec: ColumnSpec, form: EquilibriumForm | None = None) -> Ca
                 f"{unit}: P_{stage + 1}* = {spec.pressures[stage]!r} Pa < "
                 f"P_{stage}* = {spec.pressures[stage - 1]!r} Pa",
             )
-    # S10
+    return None
+
+
+def _no_feed_refusal(spec: ColumnSpec, feed: float) -> CascadeFailure | None:
+    """S10: a column with a condenser or reboiler and no feed (`feed == 0`), else `None`."""
+    unit = spec.unit_id
     if spec.ends() and feed == 0.0:
         return _invalid("no_feed", f"{unit}: a column with a condenser or reboiler and no feed")
-    # S10-C §4.8: the kinds a composition-dependent form admits, decided before I1, so that
-    # `stage_band` and `saturation_temperature` (SYN-001's closed forms) are never reached for it
+    return None
+
+
+def _form_kind_refusal(spec: ColumnSpec, form: EquilibriumForm | None) -> CascadeFailure | None:
+    """S10-C §4.8: the kinds a composition-dependent form admits, decided before I1, so that
+    `stage_band` and `saturation_temperature` (SYN-001's closed forms) are never reached for it:
+    the first end whose kind is not in `GAMMA_PHI_KINDS`, else `None` (always for SYN-001)."""
+    unit = spec.unit_id
     if form is not None and form.composition_dependent:
         for end in spec.ends():
             kind = _specification(spec, end).kind
@@ -455,7 +546,7 @@ def _column_refusal(spec: ColumnSpec, form: EquilibriumForm | None = None) -> Ca
                     f"{form.provider_id}; a column on it admits {GAMMA_PHI_KINDS} "
                     "(S10-C §4.8, ADR 0049 D7)",
                 )
-    return _inverse_refusal(spec)
+    return None
 
 
 def _inverse_refusal(spec: ColumnSpec) -> CascadeFailure | None:
