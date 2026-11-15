@@ -140,15 +140,20 @@ def _components(
             if work:
                 low[work[-1][0]] = min(low[work[-1][0]], low[node])
             if low[node] == index_of[node]:
-                component: list[str] = []
-                while True:
-                    member = stack.pop()
-                    on_stack.discard(member)
-                    component.append(member)
-                    if member == node:
-                        break
-                found.append(component)
+                found.append(_pop_component(stack, on_stack, node))
     return found
+
+
+def _pop_component(stack: list[str], on_stack: set[str], root: str) -> list[str]:
+    """Pop the component whose root is `root` off Tarjan's `stack`, top first, down to and
+    including `root`, and clear its members from `on_stack`; return the members in pop order."""
+    component: list[str] = []
+    while True:
+        member = stack.pop()
+        on_stack.discard(member)
+        component.append(member)
+        if member == root:
+            return component
 
 
 def block_triangular_form(
@@ -200,19 +205,7 @@ def block_triangular_form(
         for index, rows in enumerate(grouped)
     }
 
-    # §7.2's canonical order: of the blocks whose predecessors are all placed, the one whose first
-    # row has the least declaration index. Not a FIFO queue -- `BTF-1` distinguishes them.
-    remaining = {index: set(edges) for index, edges in raw_edges.items()}
-    placed: list[int] = []
-    while remaining:
-        ready = [index for index, waiting in remaining.items() if not waiting]
-        if not ready:  # pragma: no cover - the condensation of an SCC digraph is acyclic
-            raise ValueError("the block condensation is cyclic, which cannot happen")
-        chosen = min(ready, key=lambda index: order[grouped[index][0]])
-        placed.append(chosen)
-        del remaining[chosen]
-        for waiting in remaining.values():
-            waiting.discard(chosen)
+    placed = _canonical_order(raw_edges, grouped, order)
 
     position = {old: new for new, old in enumerate(placed)}
     blocks = tuple(
@@ -224,3 +217,30 @@ def block_triangular_form(
         for old in placed
     )
     return BlockTriangularForm(blocks=blocks)
+
+
+def _canonical_order(
+    raw_edges: Mapping[int, frozenset[int]],
+    grouped: Sequence[Sequence[str]],
+    order: Mapping[str, int],
+) -> list[int]:
+    """§7.2's canonical order of the blocks: of the blocks whose predecessors are all placed, the
+    one whose first row has the least declaration index. Not a FIFO queue -- `BTF-1`
+    distinguishes them.
+
+    `raw_edges` maps a block (an index into `grouped`) to the blocks it depends on; `order` is
+    the rows' declaration index. Raises ValueError if the condensation were cyclic, which an SCC
+    condensation cannot be.
+    """
+    remaining = {index: set(edges) for index, edges in raw_edges.items()}
+    placed: list[int] = []
+    while remaining:
+        ready = [index for index, waiting in remaining.items() if not waiting]
+        if not ready:  # pragma: no cover - the condensation of an SCC digraph is acyclic
+            raise ValueError("the block condensation is cyclic, which cannot happen")
+        chosen = min(ready, key=lambda index: order[grouped[index][0]])
+        placed.append(chosen)
+        del remaining[chosen]
+        for waiting in remaining.values():
+            waiting.discard(chosen)
+    return placed

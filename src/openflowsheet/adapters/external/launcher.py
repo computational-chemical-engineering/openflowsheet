@@ -243,7 +243,6 @@ def launch(
             return LaunchResult("spawn_failed", None, None, f"spawn_failed: {error}")
         progress.pid = process.pid
         assert process.stdin is not None
-        timed_out = False
         try:
             if on_spawn is not None:
                 on_spawn(process.pid)
@@ -253,19 +252,7 @@ def launch(
             except BrokenPipeError:
                 pass  # the child is already gone; its exit status says why
             deadline = started + limits.timeout_s
-            while True:
-                try:
-                    process.wait(timeout=POLL_S)
-                    break
-                except subprocess.TimeoutExpired:
-                    pass
-                if check is not None:
-                    check()  # an interrupt propagates; `finally` terminates and reaps the child
-                if clock() >= deadline:
-                    timed_out = True
-                    progress.terminated = "timeout"
-                    _terminate(process, limits.kill_grace_s)
-                    break
+            timed_out = _await_exit(process, deadline, limits.kill_grace_s, check, clock, progress)
         finally:
             if process.returncode is None:
                 progress.terminated = progress.terminated or "interrupt"
@@ -320,6 +307,32 @@ def launch(
     if signal_number is not None:
         return ended("crashed", f"crashed: killed by signal {signal_number}")
     return ended("crashed", f"crashed: exit code {exit_code}")
+
+
+def _await_exit(
+    process: subprocess.Popen[bytes],
+    deadline: float,
+    grace_s: float,
+    check: Callable[[], None] | None,
+    clock: Callable[[], float],
+    progress: LaunchProgress,
+) -> bool:
+    """Wait for the child, `POLL_S` at a time, calling `check` between polls; return whether it
+    timed out. At `deadline` on `clock` it marks `progress.terminated` as `timeout` and terminates
+    the child (`_terminate` with `grace_s`). An exception from `check` propagates; `launch`'s
+    `finally` then terminates and reaps the child."""
+    while True:
+        try:
+            process.wait(timeout=POLL_S)
+            return False
+        except subprocess.TimeoutExpired:
+            pass
+        if check is not None:
+            check()  # an interrupt propagates; `launch`'s `finally` terminates and reaps the child
+        if clock() >= deadline:
+            progress.terminated = "timeout"
+            _terminate(process, grace_s)
+            return True
 
 
 def _terminate(process: subprocess.Popen[bytes], grace_s: float) -> None:
