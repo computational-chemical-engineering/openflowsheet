@@ -40,8 +40,9 @@ Position, numbers and rules live in files, not here. A fresh session reads, in o
    S19_DECISIONS. FAIL -> read the failed checks; an environment failure (ENOSPC, TMPDIR, a timeout far from the
    change) is re-enqueued unchanged with `--rerun-of`; a real failure goes to a fresh engineer to bisect the chain.
 4. The test map: `MB` in S19_STATE is the map base; selection is cumulative from it. Move `MB` to the `wp/S19` tip
-   at each milestone (`scripts/test_impact.py build --base <sha> --workers 8` with `TMPDIR` outside the repo, in a
-   detached worktree; G-MAP: failures a subset of the known set), then lanes fast-forward to it.
+   at each milestone (`PYTEST_ADDOPTS=--timeout=900 TMPDIR=~/.cache/openflowsheet/tmp-map scripts/test_impact.py build --base <sha>
+   --workers 8` in a detached worktree, with the gate queue held: no gate while a map builds; not `-- --timeout`, which
+   marks the map partial; G-MAP: failures a subset of the known set), then lanes fast-forward to it.
 
 ## Milestones and self-reset (Frank, 2026-11-15)
 

@@ -476,3 +476,8 @@
   wins on a repeated id (lists keep both, dicts the last); `_region_ends`/`_RegionEnds` also carry domain-end
   enthalpies (a broader name). `ph_state` (9.8) needs a private parameter object (provider, n, pressure, target,
   context) to go further.
+- **2026-11-15, map build hung (OpenFlowsheet-check found it).** The 736f70db build stopped at 97% for 2 h: a
+  `s03_reference.py --check` multiprocessing pool lost its workers under load (zombies) and its parent waited
+  forever. The orchestrator killed that subprocess only (120155, 120191); the build continues and records the test as
+  unsure (B-17). Future builds: per-test timeout through PYTEST_ADDOPTS (extra pytest args would mark the map
+  partial), and no gate runs while a map builds (SKILL.md).
