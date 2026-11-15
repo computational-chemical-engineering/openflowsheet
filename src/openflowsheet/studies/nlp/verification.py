@@ -256,7 +256,8 @@ def verify_candidate(
     the solver's final state by variable id, and without it V2 is `not_evaluated` — so such a
     candidate is never `passed`. `closure` is the gray box's (`FullSpaceNlp.closure`); without
     it the binding's closure is computed at `x_sim` (the pattern is structural). `flowsheet` is
-    an NLP host or a SYN-001 flowsheet (`as_host`); the re-solve is the host's `certify`.
+    an NLP host or a SYN-001 flowsheet (`as_host`); the re-solve is the host's `certify`, and
+    `_resolve_admission` judges V1 on it.
 
     `held` is the start's held system on a revision host (OPT §4.6): V2 then also compares its
     held columns exactly, and V4 requires the re-solve's attempt signature to equal the start's
@@ -279,26 +280,7 @@ def verify_candidate(
     names = CHECKS if binding is not None else M03_CHECKS
     checks: dict[str, VerificationCheck] = {}
     certificate = point.certificate
-    v1: dict[str, Any] = {
-        "resolve_outcome": point.outcome,
-        "message": point.message,
-        "certificate_status": certificate.verification_status if certificate else None,
-    }
-    admitted = point.verified
-    basis: str | None = None
-    if held is not None:
-        # OPT §9 A-1: on a revision host V1 passes on one of two bases, and says which.
-        if point.verified:
-            basis = CERTIFICATE
-            v1["basis"] = basis
-        else:
-            verdict = cast(_BoundaryHost, host).phase_boundary(
-                point, held, phase, tau_active=TAU_ACTIVE
-            )
-            v1.update(verdict.detail())
-            admitted = verdict.passed
-            basis = PHASE_BOUNDARY_FORM if admitted else None
-    checks["V1"] = VerificationCheck("V1", "pass" if admitted else "fail", v1)
+    checks["V1"], admitted, basis = _resolve_admission(host, point, held, phase)
     state = point.state
     # A revision host's held system and regimes exist only at a certified point (OPT §4.2.1;
     # §9 A-1: or one V1 passed on the phase-boundary form): any other re-solve fails V1 and is
@@ -430,6 +412,37 @@ def verify_candidate(
         point=point,
         basis=basis,
     )
+
+
+def _resolve_admission(
+    host: NlpHost, point: CertifiedPoint, held: HeldSystem | None, phase: PhaseRows | None
+) -> tuple[VerificationCheck, bool, str | None]:
+    """V1 on the re-solve `point`: (its check, whether the point is admitted, the basis it
+    passed on). Without `held` the point is admitted iff it is verified, and the basis is None.
+    With `held` (OPT §9 A-1) a verified point passes on `CERTIFICATE`; any other passes on
+    `PHASE_BOUNDARY_FORM` iff the host's phase-boundary verdict passes, and has no basis
+    otherwise."""
+    certificate = point.certificate
+    v1: dict[str, Any] = {
+        "resolve_outcome": point.outcome,
+        "message": point.message,
+        "certificate_status": certificate.verification_status if certificate else None,
+    }
+    admitted = point.verified
+    basis: str | None = None
+    if held is not None:
+        # OPT §9 A-1: on a revision host V1 passes on one of two bases, and says which.
+        if point.verified:
+            basis = CERTIFICATE
+            v1["basis"] = basis
+        else:
+            verdict = cast(_BoundaryHost, host).phase_boundary(
+                point, held, phase, tau_active=TAU_ACTIVE
+            )
+            v1.update(verdict.detail())
+            admitted = verdict.passed
+            basis = PHASE_BOUNDARY_FORM if admitted else None
+    return VerificationCheck("V1", "pass" if admitted else "fail", v1), admitted, basis
 
 
 # -- the assessment (E01 §4.10.3) -----------------------------------------------------------------
