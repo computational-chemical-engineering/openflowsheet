@@ -597,7 +597,7 @@ def check_manifest(manifest: Mapping[str, Any]) -> list[str]:
     none. The schema is checked first; a manifest that fails it is not read further, nor is one
     with a non-finite or non-canonical number or an unregistered plan. The splits are checked
     by `_split_consistency`, the band by `_band_consistency`, the failure lists by
-    `_failure_consistency`."""
+    `_failure_consistency`, the qualifications by `_qualification_consistency`."""
     invalid = schema_errors(MANIFEST_SCHEMA, manifest)
     if invalid:
         return [f"schema: {error}" for error in invalid]
@@ -674,22 +674,7 @@ def check_manifest(manifest: Mapping[str, Any]) -> list[str]:
     found.extend(_failure_consistency(manifest))
 
     # The qualifications: Q0 first iff synthetic, then Q1–Q7, Q6 filled.
-    stated = list(manifest["qualifications"])
-    for text in stated:
-        if _UNFILLED.search(text):
-            found.append(f"qualification with an unfilled field: {text!r}")
-    reference_q = required_qualifications(manifest["reference_distribution"]["id"])
-    expected_q = ([Q0] if manifest["synthetic"] else []) + list(reference_q)
-    if len(stated) != len(expected_q):
-        found.append(f"{len(stated)} qualifications; {len(expected_q)} are required")
-    else:
-        q6_index = _Q6 + (1 if manifest["synthetic"] else 0)
-        for i, (text, required) in enumerate(zip(stated, expected_q, strict=True)):
-            if i == q6_index:
-                if not text.startswith("nominal 0.95 (finite-sample k/(n+1) = "):
-                    found.append(f"Q6 is missing: {text!r}")
-            elif text != required:
-                found.append(f"qualification {required!r} is missing")
+    found.extend(_qualification_consistency(manifest))
     return found
 
 
@@ -763,4 +748,28 @@ def _band_consistency(manifest: Mapping[str, Any], counts: Mapping[Split, int]) 
         lower is not None and stored is not None and abs(float(stored) - lower) > 1e-12
     ):
         found.append(f"lower_bound {stored!r} is not L(H, m) = {lower!r}")
+    return found
+
+
+def _qualification_consistency(manifest: Mapping[str, Any]) -> list[str]:
+    """The stated qualifications against those required: none with an unfilled field, Q0
+    first iff the manifest is synthetic, then the P_ref's required ones in order, the Q6 slot
+    filled (its nominal-coverage text) rather than equal to the template."""
+    found: list[str] = []
+    stated = list(manifest["qualifications"])
+    for text in stated:
+        if _UNFILLED.search(text):
+            found.append(f"qualification with an unfilled field: {text!r}")
+    reference_q = required_qualifications(manifest["reference_distribution"]["id"])
+    expected_q = ([Q0] if manifest["synthetic"] else []) + list(reference_q)
+    if len(stated) != len(expected_q):
+        found.append(f"{len(stated)} qualifications; {len(expected_q)} are required")
+    else:
+        q6_index = _Q6 + (1 if manifest["synthetic"] else 0)
+        for i, (text, required) in enumerate(zip(stated, expected_q, strict=True)):
+            if i == q6_index:
+                if not text.startswith("nominal 0.95 (finite-sample k/(n+1) = "):
+                    found.append(f"Q6 is missing: {text!r}")
+            elif text != required:
+                found.append(f"qualification {required!r} is missing")
     return found
