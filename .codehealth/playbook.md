@@ -22,12 +22,18 @@ memory).
    the last sibling that calls it. (S17 review 3; review 5: 1fe361e5, fixed in 140ce084; review 8: 02ce7453, fixed
    in ac9d221c)
 6. A helper transforms its input purely; the caller owns the edits to its side tables. (review 2: e81fd1a2, 81203d61)
+   Exception: an algorithm's own working state (Tarjan's `stack` and `on_stack` in `graph/blocks.py::_pop_component`)
+   may be edited by a helper whose name says so and which keeps the state's invariant (`on_stack == set(stack)`).
+   (S19 R-W3-G6-1: 623bd9a3)
 7. A refusal ladder or check-and-return block is extracted whole and returns `T | Unbound` (or `Unbound | None` for a
    clause helper, citing its clause id and listed in the caller's docstring). (review 2: ee653caa, 0fd8079b; review
    3: 0843250a, 26b58c96) The step that extracts a caller's first clause or phase helper also lists it in the
    caller's docstring, writing that docstring if the caller has none (review 7: b92b807b). `_<clause>_refusal` names a check returning `Unbound | None`; a function that always builds an
    Unbound takes another suffix. (review 5: 140ce084; `_basis_refusal` predates the rule and is imported by
    tests/test_s11_routing.py)
+   Clause helpers returning `Failure | None` may be chained `return a() or b() or ...` when the failure type is a
+   frozen dataclass without `__bool__`/`__len__` and a test pins its truthiness (S19 R-W3-G2-1, R-W3-G2-3:
+   `CascadeFailure`, tests/test_c8_duty_only_warning.py); otherwise one `if (f := ...) is not None` per clause.
 8. A name covers every effect of the body, including effects of the methods it calls, and never uses a term the
    code's own comment sets apart (a declared default is not a start). A helper whose bool means "the caller goes on"
    is named for the state it guarantees, not for the caller's next action. (review 2: 81203d61, 0fd8079b; fixed in

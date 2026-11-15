@@ -359,3 +359,10 @@
   cycle), keeping the column form of `_domain_refusal`; a spec union or Protocol for `_side_feed_stage_refusal`
   and `_inadmissible_inlet_refusal`. `column_rows.py::declared_rows` (about 400 lines of closures over builder
   state) takes the G1 recipe `closures-to-class` (RC1 to RC7, `docs/briefs/S19-G1-plan.md` section 3).
+- **2026-11-15, W3 G6 run 1 merged (485a7162).** Review R-W3-G6-1 (reviewer, Opus): merge; tear sets, BTF order,
+  canonical matching and the DM partition identical. Playbook rule 6 gains the working-state exception
+  (`_pop_component`); rule 7 gains the accepted `or`-chain of `Failure | None` clause helpers (G2 rulings). Open for
+  G6 run 2: tear.py:221 docstring ("chooses one, or marks the loop `unsupported`"), units:281,284 `+=` vs
+  `.extend` (no-gain). W4 (public signatures, ADR 0076): `units.convert_input_value` overloads (9 parameters),
+  `adapters/external/launcher.launch` (11). launcher.py health 9.0 -> 8.8 while debt fell 23.1 -> 15.8: asked the
+  tool owner.
