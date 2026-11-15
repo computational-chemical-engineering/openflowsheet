@@ -533,24 +533,9 @@ def drum(sctx: SizingContext, unit: UnitRef, item_id: str) -> SizingPlan:
         else:
             members.append(("V", d2_vapour))
     outputs = [OutputDef(size_output(item_id, "volume"), "m3", volume)]
-    entries = [liquid_entry, vapour_entry]
     volume_theta, volume_records = sctx.volume_inputs(item_id, (liquid, vapour))
     theta = [theta for theta, _ in inputs] + list(volume_theta)
-    if len(members) == 1:
-        controlling = "L"
-    else:
-        probe = [
-            OutputDef(f"size.{item_id}.{name}.diameter", "m", build) for name, build in members
-        ]
-        floats = sctx.values([*outputs, *probe], theta)
-        values = {name: floats[f"size.{item_id}.{name}.diameter"] for name, _ in members}
-        held = sctx.ctx.regime.choice(f"{item_id}.controlling")
-        names = [name for name, _ in members]
-        controlling = held or names[select_argmax([values[name] for name in names])]
-        rows = argmax_rows(members, controlling, values)
-        entries.append(
-            RegimeEntry(f"{item_id}.controlling", "argmax", controlling, "§4.3.2 rule 6", rows)
-        )
+    controlling, rule_6 = _drum_controlling(sctx, item_id, members, outputs, theta)
     d2 = dict(members)[controlling]
 
     def diameter(s: Symbols, a: Algebra) -> Expr:
@@ -588,8 +573,33 @@ def drum(sctx: SizingContext, unit: UnitRef, item_id: str) -> SizingPlan:
         items=(item,),
         outputs=tuple(outputs),
         theta=tuple(theta),
-        regime_entries=tuple(entries),
+        regime_entries=(liquid_entry, vapour_entry, *rule_6),
         refusals=tuple(refusals),
+    )
+
+
+def _drum_controlling(
+    sctx: SizingContext,
+    item_id: str,
+    members: Sequence[tuple[str, FunctionalBuilder]],
+    outputs: Sequence[OutputDef],
+    theta: Sequence[Theta],
+) -> tuple[str, tuple[RegimeEntry, ...]]:
+    """The drum's controlling diameter member by §4.3.2 rule 6, with its regime entries: `L` and
+    none when `L` is the only member; else the held `controlling` choice, or the member with the
+    largest diameter at the state (`select_argmax` over the members' diameters, evaluated with
+    `outputs` and `theta`), and its `argmax` entry."""
+    if len(members) == 1:
+        return "L", ()
+    probe = [OutputDef(f"size.{item_id}.{name}.diameter", "m", build) for name, build in members]
+    floats = sctx.values([*outputs, *probe], theta)
+    values = {name: floats[f"size.{item_id}.{name}.diameter"] for name, _ in members}
+    held = sctx.ctx.regime.choice(f"{item_id}.controlling")
+    names = [name for name, _ in members]
+    controlling = held or names[select_argmax([values[name] for name in names])]
+    rows = argmax_rows(members, controlling, values)
+    return controlling, (
+        RegimeEntry(f"{item_id}.controlling", "argmax", controlling, "§4.3.2 rule 6", rows),
     )
 
 
