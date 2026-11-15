@@ -10,6 +10,7 @@ the column modules.
 from __future__ import annotations
 
 from collections.abc import Callable
+from dataclasses import dataclass, field
 
 from openflowsheet.canonical import normalize_zero
 from openflowsheet.compile.spec import EquationSpec, QuantityKind, RowBuilder
@@ -122,70 +123,18 @@ def declared_rows(
     stages = spec.equilibrium_stages()
     slots = spec.slot_stages()
 
-    variables: list[str] = []
-    variable_kinds: dict[str, QuantityKind] = {}
-    equations: list[EquationSpec] = []
-    row_kinds: dict[str, QuantityKind] = {}
-    blocks: list[LnKBlock | EnthalpyFlowBlock | GammaPhiLnKBlock | MixtureEnthalpyFlowBlock] = []
-    block_inputs: dict[str, tuple[str, ...]] = {}
-    parameter_ids: list[str] = []
-    parameters: dict[str, float] = {}
-
-    def column(name: str, kind: QuantityKind | None) -> None:
-        variables.append(name)
-        if kind is not None:
-            variable_kinds[name] = kind
-
-    def row(
-        equation_id: str,
-        build: RowBuilder,
-        accumulation: RowAccumulation,
-        family: str,
-        kind: QuantityKind,
-    ) -> None:
-        equations.append(
-            EquationSpec(
-                equation_id=equation_id,
-                build=build,
-                accumulation=accumulation,
-                origin=origin(MODEL_ID, family),
-            )
-        )
-        row_kinds[equation_id] = kind
-
-    def pin(name: str, value: float) -> str:
-        parameter_ids.append(name)
-        parameters[name] = normalize_zero(float(value))
-        return name
-
-    def enthalpy_block(
-        token: str, phase: Phase, flows: tuple[str, ...], t: str, p: str
-    ) -> tuple[str, ...]:
-        block_id = enthalpy_block_id(token, phase)
-        block: EnthalpyFlowBlock | MixtureEnthalpyFlowBlock
-        if composition_dependent:
-            block = MixtureEnthalpyFlowBlock(
-                provider, components, phase, context, block_id=block_id
-            )
-        else:
-            block = EnthalpyFlowBlock(provider, components, phase, context, block_id=block_id)
-        blocks.append(block)
-        block_inputs[block.block_id] = (*flows, t, p)
-        return tuple(f"{block.block_id}.{out}" for out in block.output_ids)
-
-    def lnk_block(token: str, t: str, p: str, liquid: tuple[str, ...]) -> str:
-        """`liquid`: the flows K is evaluated at (read by a composition-dependent form only)."""
-        if composition_dependent:
-            gamma_phi = GammaPhiLnKBlock(
-                provider, components, context, block_id=lnk_block_id(token)
-            )
-            blocks.append(gamma_phi)
-            block_inputs[gamma_phi.block_id] = (*liquid, t, p)
-            return gamma_phi.block_id
-        lnk = LnKBlock(provider, components, context, block_id=lnk_block_id(token))
-        blocks.append(lnk)
-        block_inputs[lnk.block_id] = (t, p)
-        return lnk.block_id
+    builder = _ContributionBuilder(
+        spec=spec,
+        provider=provider,
+        context=context,
+        links=links,
+        unit=unit,
+        components=components,
+        composition_dependent=composition_dependent,
+        inlets=inlets,
+        total=total,
+        slots=slots,
+    )
 
     # Blocks, as S01: one lnK and one enthalpy block per (stage, phase) outlet, one per inlet; at
     # a total condenser one lnK (the bubble row) and one liquid block each for `r` and `d`.
@@ -196,31 +145,31 @@ def declared_rows(
     distillate_keys: tuple[str, ...] = ()
     if total:
         t_c, p_c = stage_temperature_id(unit, 1), stage_pressure_id(unit, 1)
-        lnk_keys[1] = lnk_block(
+        lnk_keys[1] = builder.lnk_block(
             f"{unit}_s1", t_c, p_c, tuple(vapor_id(unit, 2, c) for c in components)
         )
-        reflux_keys = enthalpy_block(
+        reflux_keys = builder.enthalpy_block(
             f"{unit}_s1_r", "LIQUID", tuple(reflux_id(unit, c) for c in components), t_c, p_c
         )
-        distillate_keys = enthalpy_block(
+        distillate_keys = builder.enthalpy_block(
             f"{unit}_s1_d", "LIQUID", tuple(distillate_id(unit, c) for c in components), t_c, p_c
         )
     for stage in stages:
         token = f"{unit}_s{stage}"
         t, p = stage_temperature_id(unit, stage), stage_pressure_id(unit, stage)
-        lnk_keys[stage] = lnk_block(
+        lnk_keys[stage] = builder.lnk_block(
             token, t, p, tuple(liquid_id(unit, stage, c) for c in components)
         )
-        vapor_keys[stage] = enthalpy_block(
+        vapor_keys[stage] = builder.enthalpy_block(
             token, "VAPOR", tuple(vapor_id(unit, stage, c) for c in components), t, p
         )
-        liquid_keys[stage] = enthalpy_block(
+        liquid_keys[stage] = builder.enthalpy_block(
             token, "LIQUID", tuple(liquid_id(unit, stage, c) for c in components), t, p
         )
     inlet_keys: dict[str, tuple[str, ...]] = {}
     for inlet in inlets:
         stream = inlet_stream(unit, inlet.port)
-        inlet_keys[inlet.port] = enthalpy_block(
+        inlet_keys[inlet.port] = builder.enthalpy_block(
             f"{unit}_in_{inlet.port}",
             _phase(inlet.state),
             tuple(flow_id(stream, c) for c in components),
@@ -228,117 +177,21 @@ def declared_rows(
             pressure_id(stream),
         )
 
-    def slot(stage: int) -> None:
-        """Stage j's slot row: `Q_j − Q_j*` (S01's id) or the column specification (§2.1)."""
-        end = slots.get(stage)
-        if end is None:
-            duty = spec.duties[stage - 1]
-            assert duty is not None
-            row(
-                stage_row_id(unit, stage, "Q"),
-                specification_row(
-                    stage_duty_id(unit, stage), pin(_parameter(stage_duty_id(unit, stage)), duty)
-                ),
-                "algebraic",
-                "CAS-Q",
-                "heat_rate",
-            )
-            return
-        given = _specification(spec, end)
-        build: RowBuilder
-        if given.kind in RATIO_KINDS:
-            ratio = pin(ratio_parameter(unit, stage, given.kind), given.value)
-            if given.kind == "boilup_ratio":
-                build = ratio_row(
-                    (vapor_total_id(unit, stage),), ratio, liquid_total_id(unit, stage)
-                )
-            elif total:
-                build = ratio_row(
-                    tuple(reflux_id(unit, c) for c in components), ratio, distillate_total_id(unit)
-                )
-            else:
-                build = ratio_row((liquid_total_id(unit, 1),), ratio, vapor_total_id(unit, 1))
-        elif given.kind in INVERSE_KINDS and links is not None:
-            # S11 §4.7.4: `T_s − T*`, `w − ν*` or `u − π*` with `F_REF` for `F` and `F_c`.
-            pinned = (
-                recovery_flow_id(unit, stage)
-                if given.kind == "recovery"
-                else slot_column(spec, end, given.kind)
-            )
-            value = given.value if given.kind == "temperature" else given.value * F_REF
-            build = specification_row(pinned, pin(_parameter(pinned), value))
-        elif given.kind in INVERSE_KINDS:
-            # S06 §2: `T_s − T*`, `n_c − ν*` or `u − π*`, each `variable − parameter`.
-            pinned = slot_column(spec, end, given.kind)
-            build = specification_row(pinned, pin(_parameter(pinned), inverse_parameter(spec, end)))
-        else:
-            pinned = slot_column(spec, end, given.kind)
-            build = specification_row(pinned, pin(_parameter(pinned), given.value))
-        row(
-            slot_row_id(unit, stage, given.kind),
-            build,
-            "algebraic",
-            _SLOT_FAMILY[given.kind],
-            _INVERSE_ROW_KIND.get(
-                given.kind, "heat_rate" if given.kind == "duty" else "molar_flow"
-            ),
-        )
-        if given.kind == "purity":
-            # S06 §2: the column `u` and its definition `F n_c − u P`, after the slot row.
-            assert given.component is not None
-            scaled = purity_flow_id(unit, stage)
-            column(scaled, "molar_flow")
-            row(
-                stage_row_id(unit, stage, "spec", "purity_definition"),
-                scaled_definition_row(
-                    product_flow_id(spec, end, given.component),
-                    pin(
-                        purity_reference_parameter(unit, stage),
-                        purity_reference(spec) if links is None else F_REF,
-                    ),
-                    scaled,
-                    product_total_id(spec, end),
-                ),
-                "algebraic",
-                "COL-purity-definition",
-                "molar_flow_squared",
-            )
-        if given.kind == "recovery" and links is not None:
-            # S11 §4.7.4: the column `w` and its definition `F_REF n_c − w Σ_k n_{k,c}`, after the
-            # slot row; the sum over the inlet columns in `inlets()` order.
-            assert given.component is not None
-            scaled = recovery_flow_id(unit, stage)
-            column(scaled, "molar_flow")
-            row(
-                stage_row_id(unit, stage, "spec", "recovery_definition"),
-                scaled_sum_definition_row(
-                    product_flow_id(spec, end, given.component),
-                    pin(recovery_reference_parameter(unit, stage), F_REF),
-                    scaled,
-                    tuple(
-                        flow_id(inlet_stream(unit, inlet.port), given.component) for inlet in inlets
-                    ),
-                ),
-                "algebraic",
-                "COL-recovery-definition",
-                "molar_flow_squared",
-            )
-
     if total:
         # §2.2: columns r_i, d_i, phi, D, T_c, P_c, Q_c; rows bal_i, split_i, Ddef, bubble,
         # energy, P, slot.
         for c in components:
-            column(reflux_id(unit, c), "molar_flow")
+            builder.column(reflux_id(unit, c), "molar_flow")
         for c in components:
-            column(distillate_id(unit, c), "molar_flow")
+            builder.column(distillate_id(unit, c), "molar_flow")
         # `phi` is a pure number: the column-only kind `dimensionless`, nominal 1 (§17 item 1).
-        column(reflux_fraction_id(unit), "dimensionless")
-        column(distillate_total_id(unit), "molar_flow")
-        column(stage_temperature_id(unit, 1), "temperature")
-        column(stage_pressure_id(unit, 1), "pressure")
-        column(stage_duty_id(unit, 1), "heat_rate")
+        builder.column(reflux_fraction_id(unit), "dimensionless")
+        builder.column(distillate_total_id(unit), "molar_flow")
+        builder.column(stage_temperature_id(unit, 1), "temperature")
+        builder.column(stage_pressure_id(unit, 1), "pressure")
+        builder.column(stage_duty_id(unit, 1), "heat_rate")
         for c in components:
-            row(
+            builder.row(
                 stage_row_id(unit, 1, "bal", c),
                 balance_row((vapor_id(unit, 2, c),), (reflux_id(unit, c), distillate_id(unit, c))),
                 "holdup_balance",
@@ -346,14 +199,14 @@ def declared_rows(
                 "molar_flow",
             )
         for c in components:
-            row(
+            builder.row(
                 stage_row_id(unit, 1, "split", c),
                 fraction_row(reflux_id(unit, c), reflux_fraction_id(unit), vapor_id(unit, 2, c)),
                 "algebraic",
                 "COL-tc-split",
                 "molar_flow",
             )
-        row(
+        builder.row(
             stage_row_id(unit, 1, "Ddef"),
             definition_row(
                 distillate_total_id(unit), tuple(distillate_id(unit, c) for c in components)
@@ -362,7 +215,7 @@ def declared_rows(
             "COL-tc-Ddef",
             "molar_flow",
         )
-        row(
+        builder.row(
             stage_row_id(unit, 1, "bubble"),
             bubble_row(
                 tuple(vapor_id(unit, 2, c) for c in components),
@@ -373,7 +226,7 @@ def declared_rows(
             "COL-tc-bubble",
             "molar_flow",
         )
-        row(
+        builder.row(
             energy_row_id(unit, 1),
             energy_row(
                 vapor_keys[2], (*reflux_keys, *distillate_keys), source=stage_duty_id(unit, 1)
@@ -382,17 +235,17 @@ def declared_rows(
             "COL-tc-energy",
             "heat_rate",
         )
-        row(
+        builder.row(
             stage_row_id(unit, 1, "P"),
             specification_row(
                 stage_pressure_id(unit, 1),
-                pin(_parameter(stage_pressure_id(unit, 1)), spec.pressures[0]),
+                builder.pin(_parameter(stage_pressure_id(unit, 1)), spec.pressures[0]),
             ),
             "algebraic",
             "COL-tc-P",
             "pressure",
         )
-        slot(1)
+        builder.slot(1)
 
     sides_at: dict[int, list[PlacedInlet]] = {}
     for inlet in inlets:
@@ -401,20 +254,20 @@ def declared_rows(
 
     for stage in stages:
         for c in components:
-            column(liquid_id(unit, stage, c), "molar_flow")
+            builder.column(liquid_id(unit, stage, c), "molar_flow")
         for c in components:
-            column(vapor_id(unit, stage, c), "molar_flow")
+            builder.column(vapor_id(unit, stage, c), "molar_flow")
         for c in components:
-            column(mixed_id(unit, stage, c), "molar_flow")
-        column(liquid_total_id(unit, stage), "molar_flow")
-        column(vapor_total_id(unit, stage), "molar_flow")
-        column(stage_temperature_id(unit, stage), "temperature")
-        column(stage_pressure_id(unit, stage), "pressure")
-        column(stage_duty_id(unit, stage), "heat_rate")
+            builder.column(mixed_id(unit, stage, c), "molar_flow")
+        builder.column(liquid_total_id(unit, stage), "molar_flow")
+        builder.column(vapor_total_id(unit, stage), "molar_flow")
+        builder.column(stage_temperature_id(unit, stage), "temperature")
+        builder.column(stage_pressure_id(unit, stage), "pressure")
+        builder.column(stage_duty_id(unit, stage), "heat_rate")
 
         sides = sides_at.get(stage, [])
         for c in components:
-            row(
+            builder.row(
                 stage_row_id(unit, stage, "mix", c),
                 balance_row(_inflow(spec, stage, c), (mixed_id(unit, stage, c),)),
                 "algebraic",
@@ -422,7 +275,7 @@ def declared_rows(
                 "molar_flow",
             )
         for c in components:
-            row(
+            builder.row(
                 stage_row_id(unit, stage, "mole", c),
                 balance_row(
                     (mixed_id(unit, stage, c),),
@@ -433,7 +286,7 @@ def declared_rows(
                 "molar_flow",
             )
         for c in components:
-            row(
+            builder.row(
                 stage_row_id(unit, stage, "eq", c),
                 equilibrium_row(
                     vapor_id(unit, stage, c),
@@ -446,7 +299,7 @@ def declared_rows(
                 "CAS-equilibrium",
                 "molar_flow_squared",
             )
-        row(
+        builder.row(
             stage_row_id(unit, stage, "Ldef"),
             definition_row(
                 liquid_total_id(unit, stage), tuple(liquid_id(unit, stage, c) for c in components)
@@ -455,7 +308,7 @@ def declared_rows(
             "CAS-Ldef",
             "molar_flow",
         )
-        row(
+        builder.row(
             stage_row_id(unit, stage, "Vdef"),
             definition_row(
                 vapor_total_id(unit, stage), tuple(vapor_id(unit, stage, c) for c in components)
@@ -476,7 +329,7 @@ def declared_rows(
             below = inlet_keys[BOTTOM] if spec.bottom is not None else ()
         else:
             below = vapor_keys[stage + 1]
-        row(
+        builder.row(
             energy_row_id(unit, stage),
             energy_row(
                 (*above, *below, *(key for s in sides for key in inlet_keys[s.port])),
@@ -487,59 +340,62 @@ def declared_rows(
             "CAS-energy",
             "heat_rate",
         )
-        row(
+        builder.row(
             stage_row_id(unit, stage, "P"),
             specification_row(
                 stage_pressure_id(unit, stage),
-                pin(_parameter(stage_pressure_id(unit, stage)), spec.pressures[stage - 1]),
+                builder.pin(_parameter(stage_pressure_id(unit, stage)), spec.pressures[stage - 1]),
             ),
             "algebraic",
             "CAS-P",
             "pressure",
         )
-        slot(stage)
+        builder.slot(stage)
 
     if links is not None:
-        _link_rows(spec, links, column, row)
+        _link_rows(spec, links, builder.column, builder.row)
         return Contribution(
-            variable_ids=tuple(variables),
-            equations=tuple(equations),
-            blocks=tuple(blocks),
-            block_inputs=block_inputs,
-            parameter_ids=tuple(parameter_ids),
-            parameters=parameters,
-            variable_kinds=variable_kinds,
-            row_kinds=row_kinds,
+            variable_ids=tuple(builder.variables),
+            equations=tuple(builder.equations),
+            blocks=tuple(builder.blocks),
+            block_inputs=builder.block_inputs,
+            parameter_ids=tuple(builder.parameter_ids),
+            parameters=builder.parameters,
+            variable_kinds=builder.variable_kinds,
+            row_kinds=builder.row_kinds,
         )
 
     for inlet in inlets:
         stream = inlet_stream(unit, inlet.port)
         for c in components:
-            column(flow_id(stream, c), "molar_flow")
-        column(temperature_id(stream), "temperature")
-        column(pressure_id(stream), "pressure")
+            builder.column(flow_id(stream, c), "molar_flow")
+        builder.column(temperature_id(stream), "temperature")
+        builder.column(pressure_id(stream), "pressure")
         for c, value in zip(components, inlet.state.n, strict=True):
-            row(
+            builder.row(
                 inlet_row_id(unit, inlet.port, "n", c),
-                specification_row(flow_id(stream, c), pin(_parameter(flow_id(stream, c)), value)),
+                specification_row(
+                    flow_id(stream, c), builder.pin(_parameter(flow_id(stream, c)), value)
+                ),
                 "algebraic",
                 "CAS-inlet-n",
                 "molar_flow",
             )
-        row(
+        builder.row(
             inlet_row_id(unit, inlet.port, "T"),
             specification_row(
                 temperature_id(stream),
-                pin(_parameter(temperature_id(stream)), inlet.state.temperature),
+                builder.pin(_parameter(temperature_id(stream)), inlet.state.temperature),
             ),
             "algebraic",
             "CAS-inlet-T",
             "temperature",
         )
-        row(
+        builder.row(
             inlet_row_id(unit, inlet.port, "P"),
             specification_row(
-                pressure_id(stream), pin(_parameter(pressure_id(stream)), inlet.state.pressure)
+                pressure_id(stream),
+                builder.pin(_parameter(pressure_id(stream)), inlet.state.pressure),
             ),
             "algebraic",
             "CAS-inlet-P",
@@ -547,15 +403,214 @@ def declared_rows(
         )
 
     return Contribution(
-        variable_ids=tuple(variables),
-        equations=tuple(equations),
-        blocks=tuple(blocks),
-        block_inputs=block_inputs,
-        parameter_ids=tuple(parameter_ids),
-        parameters=parameters,
-        variable_kinds=variable_kinds,
-        row_kinds=row_kinds,
+        variable_ids=tuple(builder.variables),
+        equations=tuple(builder.equations),
+        blocks=tuple(builder.blocks),
+        block_inputs=builder.block_inputs,
+        parameter_ids=tuple(builder.parameter_ids),
+        parameters=builder.parameters,
+        variable_kinds=builder.variable_kinds,
+        row_kinds=builder.row_kinds,
     )
+
+
+@dataclass
+class _ContributionBuilder:
+    """One call of `declared_rows`: its frame and the tables of the `Contribution` it builds
+    (playbook rule 6, a builder).
+
+    Frame, fixed for the call and never assigned after construction: `spec`, `provider`,
+    `context` and `links` (the call's arguments), `unit`, `components`, `composition_dependent`,
+    `inlets`, `total` and `slots` (derived from them before construction).
+    State, the product tables, each written only by its append method: `variables` and
+    `variable_kinds` by `column`, `equations` and `row_kinds` by `row`, `parameter_ids` and
+    `parameters` by `pin`, `blocks` and `block_inputs` by `lnk_block` and `enthalpy_block`.
+    `slot` writes through `row`, `pin` and `column`.
+    """
+
+    spec: ColumnSpec
+    provider: PropertyProvider
+    context: EvaluationContext
+    links: FlowsheetLinks | None
+    unit: str
+    components: tuple[str, ...]
+    composition_dependent: bool
+    inlets: tuple[PlacedInlet, ...]
+    total: bool
+    slots: dict[int, str]
+    variables: list[str] = field(default_factory=list)
+    variable_kinds: dict[str, QuantityKind] = field(default_factory=dict)
+    equations: list[EquationSpec] = field(default_factory=list)
+    row_kinds: dict[str, QuantityKind] = field(default_factory=dict)
+    blocks: list[LnKBlock | EnthalpyFlowBlock | GammaPhiLnKBlock | MixtureEnthalpyFlowBlock] = (
+        field(default_factory=list)
+    )
+    block_inputs: dict[str, tuple[str, ...]] = field(default_factory=dict)
+    parameter_ids: list[str] = field(default_factory=list)
+    parameters: dict[str, float] = field(default_factory=dict)
+
+    def lnk_block(self, token: str, t: str, p: str, liquid: tuple[str, ...]) -> str:
+        """`liquid`: the flows K is evaluated at (read by a composition-dependent form only)."""
+        if self.composition_dependent:
+            gamma_phi = GammaPhiLnKBlock(
+                self.provider, self.components, self.context, block_id=lnk_block_id(token)
+            )
+            self.blocks.append(gamma_phi)
+            self.block_inputs[gamma_phi.block_id] = (*liquid, t, p)
+            return gamma_phi.block_id
+        lnk = LnKBlock(self.provider, self.components, self.context, block_id=lnk_block_id(token))
+        self.blocks.append(lnk)
+        self.block_inputs[lnk.block_id] = (t, p)
+        return lnk.block_id
+
+    def enthalpy_block(
+        self, token: str, phase: Phase, flows: tuple[str, ...], t: str, p: str
+    ) -> tuple[str, ...]:
+        block_id = enthalpy_block_id(token, phase)
+        block: EnthalpyFlowBlock | MixtureEnthalpyFlowBlock
+        if self.composition_dependent:
+            block = MixtureEnthalpyFlowBlock(
+                self.provider, self.components, phase, self.context, block_id=block_id
+            )
+        else:
+            block = EnthalpyFlowBlock(
+                self.provider, self.components, phase, self.context, block_id=block_id
+            )
+        self.blocks.append(block)
+        self.block_inputs[block.block_id] = (*flows, t, p)
+        return tuple(f"{block.block_id}.{out}" for out in block.output_ids)
+
+    def column(self, name: str, kind: QuantityKind | None) -> None:
+        self.variables.append(name)
+        if kind is not None:
+            self.variable_kinds[name] = kind
+
+    def row(
+        self,
+        equation_id: str,
+        build: RowBuilder,
+        accumulation: RowAccumulation,
+        family: str,
+        kind: QuantityKind,
+    ) -> None:
+        self.equations.append(
+            EquationSpec(
+                equation_id=equation_id,
+                build=build,
+                accumulation=accumulation,
+                origin=origin(MODEL_ID, family),
+            )
+        )
+        self.row_kinds[equation_id] = kind
+
+    def pin(self, name: str, value: float) -> str:
+        self.parameter_ids.append(name)
+        self.parameters[name] = normalize_zero(float(value))
+        return name
+
+    def slot(self, stage: int) -> None:
+        """Stage j's slot row: `Q_j − Q_j*` (S01's id) or the column specification (§2.1)."""
+        end = self.slots.get(stage)
+        if end is None:
+            duty = self.spec.duties[stage - 1]
+            assert duty is not None
+            self.row(
+                stage_row_id(self.unit, stage, "Q"),
+                specification_row(
+                    stage_duty_id(self.unit, stage),
+                    self.pin(_parameter(stage_duty_id(self.unit, stage)), duty),
+                ),
+                "algebraic",
+                "CAS-Q",
+                "heat_rate",
+            )
+            return
+        given = _specification(self.spec, end)
+        build: RowBuilder
+        if given.kind in RATIO_KINDS:
+            ratio = self.pin(ratio_parameter(self.unit, stage, given.kind), given.value)
+            if given.kind == "boilup_ratio":
+                build = ratio_row(
+                    (vapor_total_id(self.unit, stage),), ratio, liquid_total_id(self.unit, stage)
+                )
+            elif self.total:
+                build = ratio_row(
+                    tuple(reflux_id(self.unit, c) for c in self.components),
+                    ratio,
+                    distillate_total_id(self.unit),
+                )
+            else:
+                build = ratio_row(
+                    (liquid_total_id(self.unit, 1),), ratio, vapor_total_id(self.unit, 1)
+                )
+        elif given.kind in INVERSE_KINDS and self.links is not None:
+            # S11 §4.7.4: `T_s − T*`, `w − ν*` or `u − π*` with `F_REF` for `F` and `F_c`.
+            pinned = (
+                recovery_flow_id(self.unit, stage)
+                if given.kind == "recovery"
+                else slot_column(self.spec, end, given.kind)
+            )
+            value = given.value if given.kind == "temperature" else given.value * F_REF
+            build = specification_row(pinned, self.pin(_parameter(pinned), value))
+        elif given.kind in INVERSE_KINDS:
+            # S06 §2: `T_s − T*`, `n_c − ν*` or `u − π*`, each `variable − parameter`.
+            pinned = slot_column(self.spec, end, given.kind)
+            build = specification_row(
+                pinned, self.pin(_parameter(pinned), inverse_parameter(self.spec, end))
+            )
+        else:
+            pinned = slot_column(self.spec, end, given.kind)
+            build = specification_row(pinned, self.pin(_parameter(pinned), given.value))
+        self.row(
+            slot_row_id(self.unit, stage, given.kind),
+            build,
+            "algebraic",
+            _SLOT_FAMILY[given.kind],
+            _INVERSE_ROW_KIND.get(
+                given.kind, "heat_rate" if given.kind == "duty" else "molar_flow"
+            ),
+        )
+        if given.kind == "purity":
+            # S06 §2: the column `u` and its definition `F n_c − u P`, after the slot row.
+            assert given.component is not None
+            scaled = purity_flow_id(self.unit, stage)
+            self.column(scaled, "molar_flow")
+            self.row(
+                stage_row_id(self.unit, stage, "spec", "purity_definition"),
+                scaled_definition_row(
+                    product_flow_id(self.spec, end, given.component),
+                    self.pin(
+                        purity_reference_parameter(self.unit, stage),
+                        purity_reference(self.spec) if self.links is None else F_REF,
+                    ),
+                    scaled,
+                    product_total_id(self.spec, end),
+                ),
+                "algebraic",
+                "COL-purity-definition",
+                "molar_flow_squared",
+            )
+        if given.kind == "recovery" and self.links is not None:
+            # S11 §4.7.4: the column `w` and its definition `F_REF n_c − w Σ_k n_{k,c}`, after the
+            # slot row; the sum over the inlet columns in `inlets()` order.
+            assert given.component is not None
+            scaled = recovery_flow_id(self.unit, stage)
+            self.column(scaled, "molar_flow")
+            self.row(
+                stage_row_id(self.unit, stage, "spec", "recovery_definition"),
+                scaled_sum_definition_row(
+                    product_flow_id(self.spec, end, given.component),
+                    self.pin(recovery_reference_parameter(self.unit, stage), F_REF),
+                    scaled,
+                    tuple(
+                        flow_id(inlet_stream(self.unit, inlet.port), given.component)
+                        for inlet in self.inlets
+                    ),
+                ),
+                "algebraic",
+                "COL-recovery-definition",
+                "molar_flow_squared",
+            )
 
 
 def _link_rows(
