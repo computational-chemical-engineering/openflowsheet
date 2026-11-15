@@ -337,3 +337,11 @@
   (3) ten underscore names cross region module boundaries, `_admissible` bound in three: make region_phase's
   cross-module names public; (4) the trial screen (`_build_screen`, `_attempt_screen`) is the next move candidate
   into region_phase if its closure stays clear of `_solve_region`.
+- **2026-11-15, G1 plan (architect on Fable 5.2, `docs/briefs/S19-G1-plan.md`).** Recipe `closures-to-class` (RC1
+  to RC7) for the five loop functions (`solve_newton`, `solve_ptc`, `solve_recycle`, `couple`, `_solve_region`);
+  pure extractions elsewhere; restructure `split-region-2` (region_result, region_screen, region_attempts; arch
+  6/4/14). Two lanes: N (numerics, `wp/S19-g1n`) and O (orchestrator, `wp/S19-g1o`). Defaults taken by the
+  orchestrator: Q1 (trace records written inside RC phase methods, against the G2 caller-writes form) accepted
+  provisionally; the reviewer of lane N run 1 confirms before any other RC step, else N1 and P1 are reverted. Q3
+  (declared literal drop for region's six start events) not in W3, listed for I-19. Q4 (executor context record
+  and split) W4; X1 to X6 now.
