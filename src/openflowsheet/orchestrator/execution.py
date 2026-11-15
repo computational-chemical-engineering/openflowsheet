@@ -27,7 +27,7 @@ from typing import Any, Final, Literal
 from openflowsheet.compile.spec import ProblemSpec
 from openflowsheet.graph.process import ProcessGraph
 from openflowsheet.graph.report import StructuralReport
-from openflowsheet.graph.tear import Candidate, LoopTear
+from openflowsheet.graph.tear import Candidate, LoopTear, TearAnalysis
 from openflowsheet.graph.trace import Declaration
 from openflowsheet.numerics.scaling import Scaling
 from openflowsheet.orchestrator.trace import (
@@ -608,6 +608,11 @@ def build_execution_plan(
 
     `specifications` are the cross-unit specification regions (T02 §7.1), already delimited; a
     region absorbs every loop and every evaluation of a unit it contains.
+
+    Per process component in condensation order: the owning specification region's step once
+    (`_region_step`), an `evaluate` step for a single unit with rows, or the loop's step
+    (`_loop_step`). Raises `ValueError` for a report that is not structurally closed;
+    `_check_specifications` and `_loop_step` raise the refusals their docstrings name.
     """
     if report.finding != "STRUCTURALLY_CLOSED" or report.tear is None:
         raise ValueError(
@@ -634,6 +639,7 @@ def build_execution_plan(
         capable=capable,
         retained=retained,
         loops=loops,
+        tear=report.tear,
     )
     steps: list[PlanStep] = []
     placed_regions: set[int] = set()
@@ -655,97 +661,7 @@ def build_execution_plan(
                 steps.append(PlanStep(index=len(steps), kind="evaluate", units=node))
             continue
 
-        loop = loops.get(tuple(node)) or next(
-            (candidate for key, candidate in loops.items() if set(key) == set(node)), None
-        )
-        if loop is None:
-            raise ValueError(f"T01 reports no loop for the process component {list(node)}")
-        loop_region = build_region(declaration, graph, report, node)
-        if policy.recycle.method == "eo":
-            # Review S1: §7.4 holds for every region, a loop promoted by `method: eo` included.
-            for unit in node:
-                ok, declared = capable[unit]
-                if not ok:
-                    raise CapabilityUnavailableError(unit, declared, tuple(node), ())
-            steps.append(_region_step(basis, loop_region, len(steps), f"region{len(steps)}"))
-            continue
-
-        if policy.recycle.tear_streams is not None:
-            # Review M2: an override is resolved through the loop's own candidates and must leave
-            # the loop acyclic (§3.3) — then the tear is *derived* from it, not just relabelled.
-            tear_streams: tuple[str, ...] = _validated_override(
-                graph, node, loop.candidates, tuple(policy.recycle.tear_streams)
-            )
-        elif loop.chosen_stream is not None:
-            tear_streams = (loop.chosen_stream,)
-        else:
-            tear_streams, _ = iterated_tear_set(graph, node, loop.candidates)
-        tear_variables, tear_rows = _tear_of(declaration, loop.candidates, tear_streams, retained)
-        if len(tear_rows) != len(tear_variables):
-            # A torn stream whose producer has more (or fewer) rows touching its torn variables
-            # than it has torn variables is no tear K03's form can take — say so, by name.
-            raise UnsupportedRankStructureError(
-                f"tearing {list(tear_streams)} of the loop {list(node)} gives "
-                f"{len(tear_rows)} tear rows {list(tear_rows)} for {len(tear_variables)} tear "
-                "variables"
-            )
-        # The inner system is every retained row and every column not torn — by this loop, or by
-        # T01's tear of any other loop (T01 §9's rule, restated so an override moves it too).
-        other_rows = {
-            row for other in report.tear.loops if other is not loop for row in other.tear_rows
-        }
-        other_columns = {
-            column
-            for other in report.tear.loops
-            if other is not loop
-            for column in other.tear_variables
-        }
-        inner_rows = tuple(
-            row for row in retained if row not in set(tear_rows) and row not in other_rows
-        )
-        inner_variables = tuple(
-            column
-            for column in declaration.column_ids
-            if column not in set(tear_variables) and column not in other_columns
-        )
-        incapable = next(((u, capable[u][1]) for u in node if not capable[u][0]), None)
-        requested = policy.recycle.method
-        method: Literal["newton_tear", "anderson"] = (
-            "anderson"
-            if requested == "anderson" or (requested == "auto" and incapable is not None)
-            else "newton_tear"
-        )
-        steps.append(
-            PlanStep(
-                index=len(steps),
-                kind="converge",
-                units=tuple(node),
-                tear_streams=tear_streams,
-                method=method,
-                solve_plan=_solve_plan(
-                    plan_id=f"{label}-{policy.policy_id}-loop{len(steps)}",
-                    declaration=declaration,
-                    report=report,
-                    scaling=scaling,
-                    policy=policy,
-                    tear_variables=tear_variables,
-                    tear_rows=tear_rows,
-                    inner_variables=inner_variables,
-                    inner_rows=inner_rows,
-                    eliminated=tuple(
-                        entry.row_id for entry in report.certificates if entry.consistent
-                    ),
-                    # K03 §3: the tear flows are bounded below by 0 (ADR 0001 D3.5).
-                    bounded=tear_variables,
-                    signature_units=report.tear.signature_units,
-                    initializer_chain=("user_guess", "registered_initializer"),
-                ),
-                region_on_merge=None
-                if incapable is not None
-                else _region_step(basis, loop_region, len(steps), f"merge{len(steps)}"),
-                merge_unsupported=incapable,
-            )
-        )
+        steps.append(_loop_step(basis, graph, node, len(steps)))
 
     return ExecutionPlan(
         plan_id=f"{label}-{policy.policy_id}-execution",
@@ -803,7 +719,7 @@ def _check_specifications(
 class _PlanBasis:
     """What every step of one plan is built from: the declaration's label, the policy, the
     structural report and the scaling, each unit's EO capability, the rows certificates retain,
-    and T01's loops by their unit tuple."""
+    T01's loops by their unit tuple, and T01's tear analysis."""
 
     label: str
     policy: SolvePolicy
@@ -813,6 +729,8 @@ class _PlanBasis:
     capable: Mapping[str, tuple[bool, str]]
     retained: tuple[str, ...]
     loops: Mapping[tuple[str, ...], LoopTear]
+    #: T01's tear analysis, present on every structurally closed report (the plan's first check).
+    tear: TearAnalysis
 
 
 def _region_step(basis: _PlanBasis, region: Region, index: int, suffix: str) -> PlanStep:
@@ -843,6 +761,124 @@ def _region_step(basis: _PlanBasis, region: Region, index: int, suffix: str) -> 
             initializer_chain=("user_guess", "sequential_pre_solve"),
         ),
     )
+
+
+def _loop_step(
+    basis: _PlanBasis, graph: ProcessGraph, node: tuple[str, ...], index: int
+) -> PlanStep:
+    """The step at `index` for the process loop `node` (T02 §3.2): under `method: eo` its region
+    as a `solve_eo` step; else a `converge` step over the loop's tear (`_loop_tear`) and inner
+    system (`_inner_system`), with the region that replaces it under a merge (T02 §4.4) unless a
+    unit is not EO-capable. Raises `ValueError` when T01 reports no loop for `node`, and
+    `CapabilityUnavailableError` for the first unit without EO capability under `method: eo`;
+    `_loop_tear` raises `UnsupportedRankStructureError`."""
+    loop = basis.loops.get(tuple(node)) or next(
+        (candidate for key, candidate in basis.loops.items() if set(key) == set(node)), None
+    )
+    if loop is None:
+        raise ValueError(f"T01 reports no loop for the process component {list(node)}")
+    loop_region = build_region(basis.declaration, graph, basis.report, node)
+    if basis.policy.recycle.method == "eo":
+        # Review S1: §7.4 holds for every region, a loop promoted by `method: eo` included.
+        for unit in node:
+            ok, declared = basis.capable[unit]
+            if not ok:
+                raise CapabilityUnavailableError(unit, declared, tuple(node), ())
+        return _region_step(basis, loop_region, index, f"region{index}")
+
+    tear_streams, tear_variables, tear_rows = _loop_tear(basis, graph, node, loop)
+    inner_variables, inner_rows = _inner_system(basis, loop, tear_variables, tear_rows)
+    incapable = next(((u, basis.capable[u][1]) for u in node if not basis.capable[u][0]), None)
+    requested = basis.policy.recycle.method
+    method: Literal["newton_tear", "anderson"] = (
+        "anderson"
+        if requested == "anderson" or (requested == "auto" and incapable is not None)
+        else "newton_tear"
+    )
+    return PlanStep(
+        index=index,
+        kind="converge",
+        units=tuple(node),
+        tear_streams=tear_streams,
+        method=method,
+        solve_plan=_solve_plan(
+            plan_id=f"{basis.label}-{basis.policy.policy_id}-loop{index}",
+            declaration=basis.declaration,
+            report=basis.report,
+            scaling=basis.scaling,
+            policy=basis.policy,
+            tear_variables=tear_variables,
+            tear_rows=tear_rows,
+            inner_variables=inner_variables,
+            inner_rows=inner_rows,
+            eliminated=tuple(
+                entry.row_id for entry in basis.report.certificates if entry.consistent
+            ),
+            # K03 §3: the tear flows are bounded below by 0 (ADR 0001 D3.5).
+            bounded=tear_variables,
+            signature_units=basis.tear.signature_units,
+            initializer_chain=("user_guess", "registered_initializer"),
+        ),
+        region_on_merge=None
+        if incapable is not None
+        else _region_step(basis, loop_region, index, f"merge{index}"),
+        merge_unsupported=incapable,
+    )
+
+
+def _loop_tear(
+    basis: _PlanBasis, graph: ProcessGraph, node: tuple[str, ...], loop: LoopTear
+) -> tuple[tuple[str, ...], tuple[str, ...], tuple[str, ...]]:
+    """The loop's tear as `(streams, variables, rows)`: the policy's override validated against
+    the loop's candidates, else T01's chosen stream, else the iterated tear set; then `_tear_of`.
+    Raises `UnsupportedRankStructureError` when the tear rows do not match the tear variables in
+    number."""
+    if basis.policy.recycle.tear_streams is not None:
+        # Review M2: an override is resolved through the loop's own candidates and must leave
+        # the loop acyclic (§3.3) — then the tear is *derived* from it, not just relabelled.
+        tear_streams: tuple[str, ...] = _validated_override(
+            graph, node, loop.candidates, tuple(basis.policy.recycle.tear_streams)
+        )
+    elif loop.chosen_stream is not None:
+        tear_streams = (loop.chosen_stream,)
+    else:
+        tear_streams, _ = iterated_tear_set(graph, node, loop.candidates)
+    tear_variables, tear_rows = _tear_of(
+        basis.declaration, loop.candidates, tear_streams, basis.retained
+    )
+    if len(tear_rows) != len(tear_variables):
+        # A torn stream whose producer has more (or fewer) rows touching its torn variables
+        # than it has torn variables is no tear K03's form can take — say so, by name.
+        raise UnsupportedRankStructureError(
+            f"tearing {list(tear_streams)} of the loop {list(node)} gives "
+            f"{len(tear_rows)} tear rows {list(tear_rows)} for {len(tear_variables)} tear "
+            "variables"
+        )
+    return tear_streams, tear_variables, tear_rows
+
+
+def _inner_system(
+    basis: _PlanBasis,
+    loop: LoopTear,
+    tear_variables: tuple[str, ...],
+    tear_rows: tuple[str, ...],
+) -> tuple[tuple[str, ...], tuple[str, ...]]:
+    """The loop's inner system as `(variables, rows)`: every retained row and every column not
+    torn, by this loop or by T01's tear of any other loop (T01 §9's rule, restated so an override
+    moves it too)."""
+    other_rows = {row for other in basis.tear.loops if other is not loop for row in other.tear_rows}
+    other_columns = {
+        column for other in basis.tear.loops if other is not loop for column in other.tear_variables
+    }
+    inner_rows = tuple(
+        row for row in basis.retained if row not in set(tear_rows) and row not in other_rows
+    )
+    inner_variables = tuple(
+        column
+        for column in basis.declaration.column_ids
+        if column not in set(tear_variables) and column not in other_columns
+    )
+    return inner_variables, inner_rows
 
 
 @dataclass(frozen=True)
