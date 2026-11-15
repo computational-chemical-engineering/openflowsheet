@@ -60,7 +60,9 @@
   retarget, plan, step; gate against the plan commit. A retarget commit changes only where a patch or path points
   (a name patched in a module that keeps a call site and in one that gains one is patched in both); never an
   assertion, an expected value or a test case. An engineer writes one only when its brief or the orchestrator
-  authorises that step's retarget, and a `reviewer` reads it before the lane is merged.
+  authorises that step's retarget, and a `reviewer` reads it before the lane is merged. The inventory covers
+  `setattr`/`monkeypatch` patches, plain assignments (`module.name = spy`) and spy tables in tests, scripts and
+  benchmarks (R-W3-G1O-2: an AST inventory of patch calls alone missed two).
 
 - Source-reading tests (S19_DECISIONS, 2026-11-14): some tests read a module's source by path (R-016 import rules,
   isolation allowlists). After a move their rule silently stops covering the moved code, which no gate tier sees.
