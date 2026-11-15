@@ -73,8 +73,7 @@ from openflowsheet.canonical import document_sha256
 from openflowsheet.numerics import newton
 from openflowsheet.numerics.anderson import RecyclePolicy, solve_recycle
 from openflowsheet.numerics.newton import Evaluation, Problem, solve_newton
-from openflowsheet.orchestrator import region as region_module
-from openflowsheet.orchestrator import region_phase
+from openflowsheet.orchestrator import region_phase, region_screen
 from openflowsheet.orchestrator.execution import (
     ExecutionPlan,
     declaration_identity,
@@ -252,7 +251,7 @@ def test_e7_a_ph_closure_without_an_answer_certifies_the_same_declaration(
         calls.append((split.unit, all(state[name] == 0.0 for name in split.feed)))
         return None
 
-    monkeypatch.setattr(region_module, "_ph_closure", no_answer)
+    monkeypatch.setattr(region_screen, "_ph_closure", no_answer)
     monkeypatch.setattr(region_phase, "_ph_closure", no_answer)
     plan, patched = solve(again)
     monkeypatch.undo()

@@ -678,8 +678,9 @@ def run_study(
     `ProjectionRefusedError` is `UNSUPPORTED(<code>)`; then stage A if `stage_a` is given (a
     promoted surrogate; else recorded skipped, `surrogate_not_promoted`), checked with
     `stage_a_reference` as P2's reference; then up to `K_MAX` stage-C iterations, each from the
-    best parent-checked point, retried once with radius × ¼ after an abort. The budget is judged
-    before every run and check: `BUDGET_EXHAUSTED`, never stable."""
+    best parent-checked point (`_stage_a_best`, `_best_feasible`), retried once with radius × ¼
+    after an abort. The budget is judged before every run and check: `BUDGET_EXHAUSTED`, never
+    stable."""
     sense = parent.sense
     result = StudyResult(status="", budget=budget, sense=sense)
     readiness = framework()
@@ -785,16 +786,7 @@ def run_study(
             if candidate.status == PARENT_LOCAL_EVIDENCE:
                 result.best = candidate.targeted
                 return stop(DECISION_STABLE)
-            eligible = [s0]
-            if candidate.checks["P1"].passed and all(
-                candidate.checks[name].passed for name in ("P3", "P4")
-            ):
-                assert candidate.targeted is not None
-                eligible.append(candidate.targeted)
-            eligible += [p.solve for p in candidate.poll if p.feasible and p.regimes_match]
-            for point in eligible[1:]:
-                if _better(sense, point, result.best):
-                    result.best = point
+            result.best = _stage_a_best(sense, s0, candidate, result.best)
 
     # Stage C (§7.3).
     for k in range(1, K_MAX + 1):
@@ -811,13 +803,43 @@ def run_study(
             return stop(DECISION_STABLE)
         if candidate.status != NOT_STATIONARY_AT_DELTA:
             return stop(failed(candidate.status))
-        feasible = [point.solve for point in candidate.poll if point.feasible]
-        best = feasible[0]
-        for point in feasible[1:]:
-            if _better(sense, point, best):
-                best = point
-        result.best = best
+        result.best = _best_feasible(sense, candidate)
     return stop(ITERATION_LIMIT)
+
+
+def _stage_a_best(
+    sense: str, s0: ParentSolve, candidate: CandidateCheck, best: ParentSolve
+) -> ParentSolve:
+    """The best parent-checked point after a stage-A candidate that is neither unchecked nor
+    parent-local evidence (§7.3): of `best` and the points the candidate makes eligible (its
+    targeted point when P1, P3 and P4 pass, then its feasible poll points whose regimes match),
+    the best in that order; a point replaces the incumbent only when strictly better
+    (`_better`), so ties keep the earlier one; `best` when none improves on it. `s0` is the head
+    of §7.3's eligible set, which the comparison skips (it is `best`'s start)."""
+    eligible = [s0]
+    if candidate.checks["P1"].passed and all(
+        candidate.checks[name].passed for name in ("P3", "P4")
+    ):
+        assert candidate.targeted is not None
+        eligible.append(candidate.targeted)
+    eligible += [p.solve for p in candidate.poll if p.feasible and p.regimes_match]
+    for point in eligible[1:]:
+        if _better(sense, point, best):
+            best = point
+    return best
+
+
+def _best_feasible(sense: str, candidate: CandidateCheck) -> ParentSolve:
+    """The best of a stage-C candidate's feasible poll points (§7.3), the next iteration's start:
+    the best in poll order; a point replaces the incumbent only when strictly better, so ties keep
+    the earlier one. The
+    candidate is not stationary at Δ, so its poll has a feasible point."""
+    feasible = [point.solve for point in candidate.poll if point.feasible]
+    best = feasible[0]
+    for point in feasible[1:]:
+        if _better(sense, point, best):
+            best = point
+    return best
 
 
 class TrfStage:

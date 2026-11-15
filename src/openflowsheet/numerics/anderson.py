@@ -32,7 +32,7 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 from dataclasses import dataclass, field
-from typing import Literal
+from typing import Literal, NamedTuple
 
 import numpy as np
 import numpy.typing as npt
@@ -202,212 +202,112 @@ def solve_recycle(
     lower = problem.lower_bound_vector()
 
     x = np.array([normalize_zero(float(value)) for value in t0], dtype=np.float64)
-    history_x: list[npt.NDArray[np.float64]] = []
-    history_f: list[npt.NDArray[np.float64]] = []
-    norms: list[float] = []
-    trajectory: list[npt.NDArray[np.float64]] = []
-    accelerations: list[AccelerationEvent] = []
-    restarts: list[RestartEvent] = []
-    closures: list[int] = []
-    oscillation_at: int | None = None
-    beta_sub = rules.beta_substitution
-    stagnation = 0
-    flips = 0
-    previous_f: npt.NDArray[np.float64] | None = None
-    landings = 0
-    invalid = 0
-    calls = 0
-    best_x = x.copy()
-    best_norm = float("inf")
-    running = counters or Counters()
+    run = _RecycleRun(
+        problem=problem,
+        rules=rules,
+        signature=signature,
+        observer=observer,
+        keep_trajectory=keep_trajectory,
+        trace=trace,
+        attempt=attempt,
+        n=n,
+        scale=scale,
+        tolerance_hat=tolerance_hat,
+        lower=lower,
+        x=x,
+        history_x=[],
+        history_f=[],
+        norms=[],
+        trajectory=[],
+        accelerations=[],
+        restarts=[],
+        closures=[],
+        beta_sub=rules.beta_substitution,
+        best_x=x.copy(),
+        running=counters or Counters(),
+    )
 
-    def evaluate(point: npt.NDArray[np.float64]) -> Evaluation:
-        nonlocal calls, running
-        calls += 1
-        running = running.plus(residual_calls=1)
-        return problem.residual(point)
-
-    def digest(point: npt.NDArray[np.float64]) -> str:
-        return state_sha256(point, problem.variable_ids)
-
-    def unscaled_inf(values: Sequence[float] | None) -> float:
-        return float(np.max(np.abs(np.asarray(values)))) if values else float("nan")
-
-    def record_trial(
-        k: int,
-        alpha: float,
-        point: npt.NDArray[np.float64],
-        evaluation: Evaluation,
-        reason: RejectionReason,
-    ) -> None:
-        if trace is None:
-            return
-        trace.record(
-            kind="trial",
-            attempt=attempt,
-            iteration=k,
-            signature=evaluation.signature or signature,
-            state_sha256=digest(point),
-            residual_inf_unscaled=unscaled_inf(evaluation.values),
-            merit=(
-                problem.scaling.merit(evaluation.values, problem.row_ids)
-                if evaluation.values
-                else float("nan")
-            ),
-            counters=running,
-            alpha=alpha,
-            step_inf_scaled=float("nan"),
-            trial_status="rejected",
-            rejection_reason=reason,
-            message=evaluation.message,
-        )
-
-    def finish(
-        outcome: RecycleOutcome, k: int, residual: tuple[float, ...] | None, message: str = ""
-    ) -> RecycleResult:
-        if trace is not None:
-            trace.record(
-                kind="attempt_closed",
-                attempt=attempt,
-                iteration=k,
-                signature=signature,
-                state_sha256=digest(x),
-                residual_inf_unscaled=unscaled_inf(residual),
-                merit=(
-                    problem.scaling.merit(residual, problem.row_ids)
-                    if residual is not None
-                    else float("nan")
-                ),
-                counters=running,
-                outcome=outcome,
-                message=message,
-            )
-        return RecycleResult(
-            outcome=outcome,
-            iterations=k,
-            x=x.copy(),
-            residual=residual,
-            residual_inf_scaled=tuple(norms),
-            accelerations=tuple(accelerations),
-            restarts=tuple(restarts),
-            stagnation_closures=tuple(closures),
-            oscillation_detected_at=oscillation_at,
-            bound_landings=landings,
-            invalid_trials=invalid,
-            residual_calls=calls,
-            best_x=best_x.copy(),
-            best_residual_inf_scaled=best_norm,
-            message=message,
-            signature=signature,
-            counters=running,
-            trajectory=tuple(trajectory) if keep_trajectory else (),
-        )
-
-    current = evaluate(x)
+    run.current = run.evaluate(run.x)
     k = 0
     while True:
-        if current.status != "ok" or current.values is None:
-            return finish("EVALUATION_ERROR", k, None, current.message)
-        residual = np.array(current.values, dtype=np.float64)
+        if run.current.status != "ok" or run.current.values is None:
+            return run.finish("EVALUATION_ERROR", k, None, run.current.message)
+        residual = np.array(run.current.values, dtype=np.float64)
         f_hat = residual / scale
         norm = float(np.max(np.abs(f_hat))) if n else 0.0
-        norms.append(norm)
+        run.norms.append(norm)
         if keep_trajectory:
-            trajectory.append(x.copy())
-        if norm < best_norm:
-            best_norm, best_x = norm, x.copy()
+            run.trajectory.append(run.x.copy())
+        if norm < run.best_norm:
+            run.best_norm, run.best_x = norm, run.x.copy()
 
         # §5.2: convergence, tested before anything else.
         if bool(np.all(np.abs(f_hat) <= tolerance_hat)):
-            return finish("CONVERGED", k, tuple(current.values))
+            return run.finish("CONVERGED", k, tuple(run.current.values))
 
         # §5.6: stagnation over accepted iterates. Growth counts: a residual that grows is a
         # residual that is not shrinking, which is why no divergence factor exists.
         if k > 0:
-            if norms[-1] / norms[-2] > rules.stagnation_ratio:
-                stagnation += 1
+            if run.norms[-1] / run.norms[-2] > rules.stagnation_ratio:
+                run.stagnation += 1
             else:
-                stagnation = 0
-            if stagnation >= rules.stagnation_window:
-                closures.append(k)
-                if len(restarts) < rules.max_restarts:
-                    restarts.append(RestartEvent(iteration=k, count=len(restarts) + 1))
+                run.stagnation = 0
+            if run.stagnation >= rules.stagnation_window:
+                run.closures.append(k)
+                if len(run.restarts) < rules.max_restarts:
+                    run.restarts.append(RestartEvent(iteration=k, count=len(run.restarts) + 1))
                     if trace is not None:
                         trace.record(
                             kind="restart",
                             attempt=attempt,
                             iteration=k,
                             signature=signature,
-                            state_sha256=digest(x),
-                            residual_inf_unscaled=unscaled_inf(current.values),
-                            merit=problem.scaling.merit(current.values, problem.row_ids),
-                            counters=running,
+                            state_sha256=run.digest(run.x),
+                            residual_inf_unscaled=run.unscaled_inf(run.current.values),
+                            merit=problem.scaling.merit(run.current.values, problem.row_ids),
+                            counters=run.running,
                             restart_reason="stagnation",
-                            restart_count=len(restarts),
+                            restart_count=len(run.restarts),
                         )
-                    history_x.clear()
-                    history_f.clear()
-                    stagnation = 0
+                    run.history_x.clear()
+                    run.history_f.clear()
+                    run.stagnation = 0
                 else:
-                    return finish("RECYCLE_STAGNATION", k, tuple(current.values))
+                    return run.finish("RECYCLE_STAGNATION", k, tuple(run.current.values))
 
         # §5.6: the oscillation detector on the dominant component, damping plain steps only.
         dominant = int(np.argmax(np.abs(f_hat)))
         if (
-            previous_f is not None
-            and abs(previous_f[dominant]) > tolerance_hat[dominant]
-            and previous_f[dominant] * f_hat[dominant] < 0.0
+            run.previous_f is not None
+            and abs(run.previous_f[dominant]) > tolerance_hat[dominant]
+            and run.previous_f[dominant] * f_hat[dominant] < 0.0
         ):
-            flips += 1
+            run.flips += 1
         else:
-            flips = 0
-        if flips >= rules.oscillation_window and oscillation_at is None:
-            oscillation_at = k
-            beta_sub = rules.beta_substitution_oscillating
-        previous_f = f_hat
+            run.flips = 0
+        if run.flips >= rules.oscillation_window and run.oscillation_at is None:
+            run.oscillation_at = k
+            run.beta_sub = rules.beta_substitution_oscillating
+        run.previous_f = f_hat
 
         if observer is not None:
             closing = observer.should_close(k)
             if closing is not None:
-                return finish("PHASE_UPDATE_REQUIRED", k, tuple(current.values))
+                return run.finish("PHASE_UPDATE_REQUIRED", k, tuple(run.current.values))
 
         if k >= rules.max_iterations_per_attempt:
-            return finish("BUDGET_EXHAUSTED", k, tuple(current.values))
+            return run.finish("BUDGET_EXHAUSTED", k, tuple(run.current.values))
 
         # §5.3: history, the effective depth, and the filtered least squares (§5.4).
-        history_x.append(x / scale)
-        history_f.append(f_hat)
-        depth = min(rules.depth_max, len(history_f) - 1, n)
-        dropped: list[tuple[str, float]] = []
-        by_condition = by_coefficient = 0
-        step_hat: npt.NDArray[np.float64] | None = None
-        kappa: float | None = None
-        gamma_inf: float | None = None
-        while depth >= 1:
-            delta_f = [history_f[-j] - history_f[-j - 1] for j in range(1, depth + 1)]
-            delta_x = [history_x[-j] - history_x[-j - 1] for j in range(1, depth + 1)]
-            gamma, condition = _least_squares(delta_f, f_hat)
-            if gamma is None or condition > rules.condition_max:
-                by_condition += 1
-                dropped.append(("condition", condition))
-                depth -= 1
-                continue
-            size = float(np.max(np.abs(gamma)))
-            if size > rules.coefficient_max:
-                by_coefficient += 1
-                dropped.append(("coefficient", size))
-                depth -= 1
-                continue
-            kappa, gamma_inf = condition, size
-            correction = sum(
-                (delta_x[j] + rules.beta * delta_f[j]) * gamma[j] for j in range(depth)
-            )
-            step_hat = history_x[-1] + rules.beta * f_hat - correction
-            break
+        run.history_x.append(run.x / scale)
+        run.history_f.append(f_hat)
+        step_hat, depth, by_condition, by_coefficient, kappa, gamma_inf, dropped = _mixing(
+            run.history_x, run.history_f, f_hat, rules, n
+        )
         if step_hat is None:
             depth = 0
-            step_hat = history_x[-1] + beta_sub * f_hat
-        accelerations.append(
+            step_hat = run.history_x[-1] + run.beta_sub * f_hat
+        run.accelerations.append(
             AccelerationEvent(
                 iteration=k,
                 depth_used=depth,
@@ -419,22 +319,22 @@ def solve_recycle(
                 # only (§5.6), so an Anderson step records its own mixing `β` and never the
                 # substitution damping — RCY-TRUNC's flag sets at 7 with no effect on its Anderson
                 # steps, and the record has to be able to show that (A20).
-                beta_substitution=beta_sub if depth == 0 else rules.beta,
-                oscillation_flag=oscillation_at is not None,
+                beta_substitution=run.beta_sub if depth == 0 else rules.beta,
+                oscillation_flag=run.oscillation_at is not None,
                 dropped=tuple(dropped),
             )
         )
         if trace is not None:
-            decision = accelerations[-1]
+            decision = run.accelerations[-1]
             trace.record(
                 kind="acceleration",
                 attempt=attempt,
                 iteration=k,
                 signature=signature,
-                state_sha256=digest(x),
-                residual_inf_unscaled=unscaled_inf(current.values),
-                merit=problem.scaling.merit(current.values, problem.row_ids),
-                counters=running,
+                state_sha256=run.digest(run.x),
+                residual_inf_unscaled=run.unscaled_inf(run.current.values),
+                merit=problem.scaling.merit(run.current.values, problem.row_ids),
+                counters=run.running,
                 depth_used=decision.depth_used,
                 columns_dropped_condition=decision.columns_dropped_condition,
                 columns_dropped_coefficient=decision.columns_dropped_coefficient,
@@ -445,35 +345,35 @@ def solve_recycle(
             )
 
         # K03 §5.3: the bound-aware step length, with an exact landing on the bound.
-        direction = (step_hat - history_x[-1]) * scale
+        direction = (step_hat - run.history_x[-1]) * scale
         alpha_max = 1.0
         for i in range(n):
-            if direction[i] < 0.0 and x[i] + direction[i] < lower[i]:
-                alpha_max = min(alpha_max, (lower[i] - x[i]) / direction[i])
+            if direction[i] < 0.0 and run.x[i] + direction[i] < lower[i]:
+                alpha_max = min(alpha_max, (lower[i] - run.x[i]) / direction[i])
         if alpha_max == 0.0:
-            return finish("BOUND_BLOCKED", k, tuple(current.values))
+            return run.finish("BOUND_BLOCKED", k, tuple(run.current.values))
         if alpha_max < 1.0:
-            landings += 1
+            run.landings += 1
 
         # K03 §5.4–§5.5: a typed refusal or another phase signature shortens the step; nothing
         # else does. There is no merit test (§5.5).
         alpha = alpha_max
         accepted: tuple[npt.NDArray[np.float64], Evaluation] | None = None
         for _ in range(rules.step_halvings_max + 1):
-            trial = x + alpha * direction
+            trial = run.x + alpha * direction
             if alpha == alpha_max:
                 for i in range(n):
-                    if direction[i] < 0.0 and x[i] + alpha_max * direction[i] <= lower[i]:
+                    if direction[i] < 0.0 and run.x[i] + alpha_max * direction[i] <= lower[i]:
                         trial[i] = lower[i]
             trial = np.array([normalize_zero(float(value)) for value in trial])
-            evaluation = evaluate(trial)
+            evaluation = run.evaluate(trial)
             if evaluation.status == "ok":
                 if (
                     signature
                     and evaluation.signature is not None
                     and evaluation.signature != signature
                 ):
-                    record_trial(k, alpha, trial, evaluation, "phase_update_required")
+                    run.record_trial(k, alpha, trial, evaluation, "phase_update_required")
                     if observer is not None:
                         observer.rejected(
                             k, alpha, trial, "phase_update_required", evaluation.signature
@@ -482,26 +382,210 @@ def solve_recycle(
                     continue
                 accepted = (trial, evaluation)
                 break
-            invalid += 1
-            record_trial(k, alpha, trial, evaluation, "invalid_trial")
+            run.invalid += 1
+            run.record_trial(k, alpha, trial, evaluation, "invalid_trial")
             if observer is not None:
                 observer.rejected(k, alpha, trial, "invalid_trial", evaluation.signature)
             alpha /= 2.0
         if accepted is None:
-            return finish("LINE_SEARCH_FAILED", k, tuple(current.values))
-        x, current = accepted
-        if trace is not None and current.values is not None:
+            return run.finish("LINE_SEARCH_FAILED", k, tuple(run.current.values))
+        run.x, run.current = accepted
+        if trace is not None and run.current.values is not None:
             trace.record(
                 kind="step_accepted",
                 attempt=attempt,
                 iteration=k,
                 signature=signature,
-                state_sha256=digest(x),
-                residual_inf_unscaled=unscaled_inf(current.values),
-                merit=problem.scaling.merit(current.values, problem.row_ids),
-                counters=running,
+                state_sha256=run.digest(run.x),
+                residual_inf_unscaled=run.unscaled_inf(run.current.values),
+                merit=problem.scaling.merit(run.current.values, problem.row_ids),
+                counters=run.running,
                 alpha=alpha,
                 step_inf_scaled=float(np.max(np.abs(direction / scale))) * alpha,
                 trial_status="accepted",
             )
         k += 1
+
+
+@dataclass
+class _RecycleRun:
+    """One call of `solve_recycle`: its fixed frame and the state carried between iterations.
+
+    The state: the iterate `x` and its evaluation `current`, the scaled history (§5.3), the norms
+    and trajectory, the decisions the result lists (accelerations, restarts, stagnation closures,
+    the oscillation onset), the counters of §5.6 and of the trials, and the best iterate.
+    """
+
+    problem: Problem
+    rules: RecyclePolicy
+    signature: AttemptSignature
+    observer: IterationObserver | None
+    keep_trajectory: bool
+    trace: Trace | None
+    attempt: int
+    n: int
+    scale: npt.NDArray[np.float64]
+    tolerance_hat: npt.NDArray[np.float64]
+    lower: npt.NDArray[np.float64]
+    x: npt.NDArray[np.float64]
+    history_x: list[npt.NDArray[np.float64]]
+    history_f: list[npt.NDArray[np.float64]]
+    norms: list[float]
+    trajectory: list[npt.NDArray[np.float64]]
+    accelerations: list[AccelerationEvent]
+    restarts: list[RestartEvent]
+    closures: list[int]
+    beta_sub: float
+    best_x: npt.NDArray[np.float64]
+    running: Counters
+    oscillation_at: int | None = None
+    stagnation: int = 0
+    flips: int = 0
+    previous_f: npt.NDArray[np.float64] | None = None
+    landings: int = 0
+    invalid: int = 0
+    calls: int = 0
+    best_norm: float = float("inf")
+    current: Evaluation = field(init=False)
+
+    def evaluate(self, point: npt.NDArray[np.float64]) -> Evaluation:
+        """The residual at `point`; counts `calls` and `running` first, so both counts stand when
+        the residual raises."""
+        self.calls += 1
+        self.running = self.running.plus(residual_calls=1)
+        return self.problem.residual(point)
+
+    def finish(
+        self, outcome: RecycleOutcome, k: int, residual: tuple[float, ...] | None, message: str = ""
+    ) -> RecycleResult:
+        """Closes the attempt: writes `attempt_closed` when `trace` is set and returns the result
+        with copies of `x` and `best_x`."""
+        if self.trace is not None:
+            self.trace.record(
+                kind="attempt_closed",
+                attempt=self.attempt,
+                iteration=k,
+                signature=self.signature,
+                state_sha256=self.digest(self.x),
+                residual_inf_unscaled=self.unscaled_inf(residual),
+                merit=(
+                    self.problem.scaling.merit(residual, self.problem.row_ids)
+                    if residual is not None
+                    else float("nan")
+                ),
+                counters=self.running,
+                outcome=outcome,
+                message=message,
+            )
+        return RecycleResult(
+            outcome=outcome,
+            iterations=k,
+            x=self.x.copy(),
+            residual=residual,
+            residual_inf_scaled=tuple(self.norms),
+            accelerations=tuple(self.accelerations),
+            restarts=tuple(self.restarts),
+            stagnation_closures=tuple(self.closures),
+            oscillation_detected_at=self.oscillation_at,
+            bound_landings=self.landings,
+            invalid_trials=self.invalid,
+            residual_calls=self.calls,
+            best_x=self.best_x.copy(),
+            best_residual_inf_scaled=self.best_norm,
+            message=message,
+            signature=self.signature,
+            counters=self.running,
+            trajectory=tuple(self.trajectory) if self.keep_trajectory else (),
+        )
+
+    def digest(self, point: npt.NDArray[np.float64]) -> str:
+        return state_sha256(point, self.problem.variable_ids)
+
+    def unscaled_inf(self, values: Sequence[float] | None) -> float:
+        return float(np.max(np.abs(np.asarray(values)))) if values else float("nan")
+
+    def record_trial(
+        self,
+        k: int,
+        alpha: float,
+        point: npt.NDArray[np.float64],
+        evaluation: Evaluation,
+        reason: RejectionReason,
+    ) -> None:
+        """Writes a rejected `trial` event when `trace` is set."""
+        if self.trace is None:
+            return
+        self.trace.record(
+            kind="trial",
+            attempt=self.attempt,
+            iteration=k,
+            signature=evaluation.signature or self.signature,
+            state_sha256=self.digest(point),
+            residual_inf_unscaled=self.unscaled_inf(evaluation.values),
+            merit=(
+                self.problem.scaling.merit(evaluation.values, self.problem.row_ids)
+                if evaluation.values
+                else float("nan")
+            ),
+            counters=self.running,
+            alpha=alpha,
+            step_inf_scaled=float("nan"),
+            trial_status="rejected",
+            rejection_reason=reason,
+            message=evaluation.message,
+        )
+
+
+class _Mixing(NamedTuple):
+    """One iteration's filtered least squares (§5.3–§5.4): the Anderson step, or none."""
+
+    step_hat: npt.NDArray[np.float64] | None
+    depth: int
+    by_condition: int
+    by_coefficient: int
+    kappa: float | None
+    gamma_inf: float | None
+    dropped: list[tuple[str, float]]
+
+
+def _mixing(
+    history_x: list[npt.NDArray[np.float64]],
+    history_f: list[npt.NDArray[np.float64]],
+    f_hat: npt.NDArray[np.float64],
+    rules: RecyclePolicy,
+    n: int,
+) -> _Mixing:
+    """§5.3's effective depth and §5.4's filtered least squares over the scaled history; pure.
+
+    The depth starts at `min(depth_max, len(history_f) − 1, n)` and drops the oldest column while
+    the difference matrix is singular or conditioned above `condition_max`, or the coefficient
+    exceeds `coefficient_max`. `step_hat` is the Anderson step at the first depth that passes both
+    filters; it is `None`, at depth 0, when none does, and the caller then takes the plain
+    substitution step.
+    """
+    depth = min(rules.depth_max, len(history_f) - 1, n)
+    dropped: list[tuple[str, float]] = []
+    by_condition = by_coefficient = 0
+    step_hat: npt.NDArray[np.float64] | None = None
+    kappa: float | None = None
+    gamma_inf: float | None = None
+    while depth >= 1:
+        delta_f = [history_f[-j] - history_f[-j - 1] for j in range(1, depth + 1)]
+        delta_x = [history_x[-j] - history_x[-j - 1] for j in range(1, depth + 1)]
+        gamma, condition = _least_squares(delta_f, f_hat)
+        if gamma is None or condition > rules.condition_max:
+            by_condition += 1
+            dropped.append(("condition", condition))
+            depth -= 1
+            continue
+        size = float(np.max(np.abs(gamma)))
+        if size > rules.coefficient_max:
+            by_coefficient += 1
+            dropped.append(("coefficient", size))
+            depth -= 1
+            continue
+        kappa, gamma_inf = condition, size
+        correction = sum((delta_x[j] + rules.beta * delta_f[j]) * gamma[j] for j in range(depth))
+        step_hat = history_x[-1] + rules.beta * f_hat - correction
+        break
+    return _Mixing(step_hat, depth, by_condition, by_coefficient, kappa, gamma_inf, dropped)

@@ -53,6 +53,7 @@ from typing import Any, Final
 import yaml
 
 import openflowsheet.orchestrator.region as region_module
+import openflowsheet.orchestrator.region_attempts as region_attempts
 from benchmarks.t06.ensemble import host, provenance
 from openflowsheet.application.policies import T06_REVISION_V2, T08_PTC_V1, T08_WARM_V1
 from openflowsheet.application.revision_binding import RevisionBinding, bind_revision_flowsheet
@@ -256,10 +257,12 @@ def _newton_blocks(captured: list[tuple[str, ...]]) -> Iterator[None]:
         return result
 
     setattr(region_module, "solve_newton", capturing)  # noqa: B010 - a module attribute
+    setattr(region_attempts, "solve_newton", capturing)  # noqa: B010
     try:
         yield
     finally:
         setattr(region_module, "solve_newton", original)  # noqa: B010
+        setattr(region_attempts, "solve_newton", original)  # noqa: B010
 
 
 def _blocks(detail: RegionResult, newton: Sequence[tuple[str, ...]]) -> list[dict[str, Any]]:

@@ -141,6 +141,50 @@ changed file is one the map has seen.
   file nothing opened);
 - a changed `.py` file does not parse.
 
+Campaign tooling is exempt: a change under `.codehealth/` or `.claude/` (added, deleted or
+modified) neither falls back nor selects anything (`TOOLING_PREFIXES`, S19). The premise, that no
+code a test runs names those trees, is a test (`test_no_test_reads_campaign_tooling`): it scans
+the string literals of the Python under `tests/`, `src/`, `scripts/` and `benchmarks/`.
+
+## A step-relative selection (`--since`, S19)
+
+`select` and `run` judge the whole change from the map's base. In a campaign of many small gated
+steps that makes every fallback cause sticky: one new file, one changed import or one evidence
+commit sends every later gate to the full suite until the map is rebuilt. Replayed over the 104
+steps of S19's W3 (map base `bec6dbe6`), the cumulative selection selected for 3 steps and fell
+back for 101.
+
+    scripts/test_impact.py run --base <map base> --since <last accepted commit> [--import-time-by-file]
+
+`--since X` names a commit between the base and `HEAD` **whose own gate passed**. Then:
+
+- the fallback rules (new or deleted file, `conftest.py`, test support, pytest configuration) are
+  applied to the step `X..` working tree only;
+- only files the step changes are judged, each by its cumulative change from the base, because the
+  map's lines are the base's. The selection of such a file is a superset of the step's own;
+- inside such a file, a hunk the step did not touch (its working-tree lines, widened by one line
+  each way) still selects its tests but no longer falls back;
+- a file the step edits that the map never saw (added since the base) still falls back, and so
+  does a step that restores a file to the base's content (there are no hunks to select by).
+
+`--import-time-by-file` (only with `--since`) is an approximate rule for the step's own
+import-time changes (an import line, a `def` or `class` header, a decorator, a module-level
+statement): it selects every test that executed a line of that file at the base, when there is
+one. Code that ran at collection time still falls back. On the same 104 steps: `--since` alone
+selects for 27, with `--import-time-by-file` for 85 (median 2123 of 20362 tests); the other 19 are
+collection-time code (17) and new files (2).
+
+What a step-relative selection does not see, and why a full suite must follow before the steps
+merge (S19: `gate_queue.py` mode `merge-check`):
+
+- a test that reaches the step's code only through a call edge an earlier step created in a file
+  this step does not touch;
+- with `--import-time-by-file`, a test that depends on a module's import-time state (a constant, a
+  class attribute, a re-export) without executing any line of that module.
+
+A miss therefore costs a late detection and a bisect over the chain, not a wrong merge. Without
+`--since` nothing changes: the cumulative selection stays the exact one.
+
 ## Limitations
 
 - Selection is an inner-loop aid only. CI on both architectures stays the merge gate.

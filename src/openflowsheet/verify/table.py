@@ -28,11 +28,12 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 from dataclasses import replace
 from types import ModuleType
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, NamedTuple
 
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.models.revision_flowsheet import RevisionView
 from openflowsheet.thermo import (
+    Phase,
     PropertyProvider,
 )
 from openflowsheet.verify import (
@@ -172,73 +173,19 @@ def revision_checks(
     pr = form == forms.PR
     mixture = form == forms.DECLARED_MIXTURE
     declared = forms.declared_phases(view) if mixture else {}
-    # Units design §4.8 (I1b): on a pure-fluid basis a `vapor_liquid` outlet of a `thermal.*` unit
-    # is saturated (ADR 0051 D1; L-TH-2), read from its carried split by `verify.thermal`; any other
-    # stream without a declared phase stays unlifted (S11.A17).
     saturated = (
-        frozenset(
-            stream
-            for instance in view.instances
-            if instance.model_id.startswith("thermal.")
-            for port, streams in instance.ports.items()
-            if instance.directions.get(port) == "outlet" and instance.phases.get(port) is None
-            for stream in streams
-        )
-        if mixture and forms.pure_fluid_provider(provider)
-        else frozenset()
+        _saturated_outlets(view) if mixture and forms.pure_fluid_provider(provider) else frozenset()
     )
     if mixture:
-        # No bands; a flowing stream without a declared phase is unlifted (its checks blocked).
-        degenerate = Degeneracy(
-            notes={
-                stream: _thermal_rows().CARRIED_SPLIT_NOTE.format(stream=stream)
-                for stream in saturated
-            },
-            unlifted=frozenset(
-                stream
-                for stream, phase in declared.items()
-                if phase is None
-                and stream not in saturated
-                and not stream_of(at, stream, components).is_dormant
-            ),
-        )
+        degenerate = _mixture_degeneracy(view, at, declared, saturated)
+    elif pr:
+        degenerate = Degeneracy()
     else:
-        degenerate = (
-            Degeneracy()
-            if pr
-            else degeneracy(view, splits, at, provider, context, tolerances, owners)
-        )
+        degenerate = degeneracy(view, splits, at, provider, context, tolerances, owners)
 
-    energy: list[CheckResult] = []
-    enthalpy: dict[str, float] = {}
-    for stream in view.streams:
-        carried = stream_of(at, stream, components)
-        if stream in degenerate.enthalpy:
-            enthalpy[stream] = degenerate.enthalpy[stream]
-        elif carried.is_dormant:
-            enthalpy[stream] = 0.0
-            energy.append(
-                dormant(
-                    id=f"energy_balance.enthalpy.{stream}",
-                    category="energy_balance",
-                    subject=stream,
-                )
-            )
-        elif pr:
-            enthalpy[stream] = pr_c1.enthalpy_flow(provider, carried, context, components)
-        elif mixture:
-            phase = declared[stream]
-            if stream in saturated:
-                enthalpy[stream] = _thermal_rows().saturated_enthalpy(
-                    provider, at, stream, context, components
-                )
-            else:
-                # An unlifted stream's value is never judged: every check reading it is blocked.
-                enthalpy[stream] = (
-                    0.0 if phase is None else forms.enthalpy_flow(provider, carried, phase, context)
-                )
-        else:
-            enthalpy[stream] = enthalpy_flow(provider, carried, context)
+    enthalpy, energy = _stream_enthalpies(
+        view, at, _Routing(pr, mixture, declared, saturated, degenerate), provider, context
+    )
 
     # Each instance is read twice when the two points differ: its energy rows at `at`, its
     # material, specification and bounds rows at `state`.
@@ -332,6 +279,107 @@ def revision_checks(
     )
     admissibility += own_admissibility
     return [*material, *energy, *specification, *bounds, *admissibility]
+
+
+def _saturated_outlets(view: RevisionView) -> frozenset[str]:
+    """Units design §4.8 (I1b): the streams at the outlet ports of `thermal.*` units that declare
+    no phase (`vapor_liquid`). On a pure-fluid basis each is saturated (ADR 0051 D1; L-TH-2),
+    read from its carried split by `verify.thermal` (`_mixture_degeneracy` handles the other
+    streams without a declared phase)."""
+    return frozenset(
+        stream
+        for instance in view.instances
+        if instance.model_id.startswith("thermal.")
+        for port, streams in instance.ports.items()
+        if instance.directions.get(port) == "outlet" and instance.phases.get(port) is None
+        for stream in streams
+    )
+
+
+def _mixture_degeneracy(
+    view: RevisionView,
+    at: Mapping[str, float],
+    declared: Mapping[str, Phase | None],
+    saturated: frozenset[str],
+) -> Degeneracy:
+    """The declared-mixture form's `Degeneracy` at `at`: no bands. Each `saturated` stream gets
+    `verify.thermal`'s carried-split note; a flowing stream without a declared phase in
+    `declared` that is not saturated stays unlifted (its checks blocked; S11.A17)."""
+    return Degeneracy(
+        notes={
+            stream: _thermal_rows().CARRIED_SPLIT_NOTE.format(stream=stream) for stream in saturated
+        },
+        unlifted=frozenset(
+            stream
+            for stream, phase in declared.items()
+            if phase is None
+            and stream not in saturated
+            and not stream_of(at, stream, view.components).is_dormant
+        ),
+    )
+
+
+class _Routing(NamedTuple):
+    """How the revision's form reads its streams' enthalpies (S11 design §4.6; M02 design note
+    §14.2 B15; units design §4.8), as revision_checks routes them."""
+
+    #: A `pr-c1-v1` basis: `verify.pr_c1`'s enthalpy flow.
+    pr: bool
+    #: The declared-phase mixture form (`verify.forms`).
+    mixture: bool
+    #: Each stream's declared phase (`forms.declared_phases`); empty outside the mixture form.
+    declared: Mapping[str, Phase | None]
+    #: The saturated `thermal.*` outlets (`_saturated_outlets`); empty unless the mixture form
+    #: runs on a pure-fluid basis.
+    saturated: frozenset[str]
+    #: The streams whose enthalpy the state carries instead; only `.enthalpy` is read.
+    degenerate: Degeneracy
+
+
+def _stream_enthalpies(
+    view: RevisionView,
+    at: Mapping[str, float],
+    routing: _Routing,
+    provider: PropertyProvider,
+    context: EvaluationContext,
+) -> tuple[dict[str, float], list[CheckResult]]:
+    """The one enthalpy map every energy and declared-port check reads, at `at`, and the
+    `energy_balance.enthalpy.<S>` dormant rows of the dormant streams, in `view.streams` order.
+
+    A stream in `routing.degenerate.enthalpy` takes that value; a dormant one `0.0`; otherwise the
+    form's enthalpy flow: PR-C1's, the mixture form's (a saturated outlet's from its carried
+    split, an unlifted stream's `0.0`, any other in its declared phase), or SYN-001's."""
+    energy: list[CheckResult] = []
+    enthalpy: dict[str, float] = {}
+    for stream in view.streams:
+        carried = stream_of(at, stream, view.components)
+        if stream in routing.degenerate.enthalpy:
+            enthalpy[stream] = routing.degenerate.enthalpy[stream]
+        elif carried.is_dormant:
+            enthalpy[stream] = 0.0
+            energy.append(
+                dormant(
+                    id=f"energy_balance.enthalpy.{stream}",
+                    category="energy_balance",
+                    subject=stream,
+                )
+            )
+        elif routing.pr:
+            enthalpy[stream] = pr_c1.enthalpy_flow(provider, carried, context, view.components)
+        elif routing.mixture:
+            phase = routing.declared[stream]
+            if stream in routing.saturated:
+                enthalpy[stream] = _thermal_rows().saturated_enthalpy(
+                    provider, at, stream, context, view.components
+                )
+            else:
+                # An unlifted stream's value is never judged: every check reading it is blocked.
+                enthalpy[stream] = (
+                    0.0 if phase is None else forms.enthalpy_flow(provider, carried, phase, context)
+                )
+        else:
+            enthalpy[stream] = enthalpy_flow(provider, carried, context)
+    return enthalpy, energy
 
 
 def revision_phase_branch(

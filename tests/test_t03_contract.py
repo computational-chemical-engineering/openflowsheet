@@ -29,8 +29,10 @@ import yaml
 
 import openflowsheet.orchestrator.phase_contract as phase_contract
 import openflowsheet.orchestrator.region as region_module
+import openflowsheet.orchestrator.region_attempts as region_attempts
 import openflowsheet.orchestrator.region_phase as region_phase
 import openflowsheet.orchestrator.region_problem as region_problem
+import openflowsheet.orchestrator.region_screen as region_screen
 from openflowsheet.canonical import state_sha256
 from openflowsheet.compile.casadi_backend import compile_problem
 from openflowsheet.numerics.newton import Evaluation, Problem
@@ -140,7 +142,8 @@ def observe(
         )
 
     monkeypatch.setattr(region_module, "_region_problem", observed)
-    monkeypatch.setattr(region_module, "_screen", counted_screen)
+    monkeypatch.setattr(region_attempts, "_region_problem", observed)
+    monkeypatch.setattr(region_screen, "_screen", counted_screen)
     seen.result = solve_region(
         compiled=compiled,
         spec=item.binding.spec,
@@ -198,7 +201,15 @@ def test_a02_one_decision_function_for_both_paths(monkeypatch: pytest.MonkeyPatc
     source = (REPO_ROOT / "src" / "openflowsheet" / "orchestrator").glob("*.py")
     producing = [path.name for path in source if "active_set_cycling(" in path.read_text()]
     assert producing == ["phase_contract.py"], "the cycling refusal is produced in one place"
-    for name in ("attempts.py", "region.py", "region_phase.py", "region_problem.py"):
+    for name in (
+        "attempts.py",
+        "region.py",
+        "region_phase.py",
+        "region_problem.py",
+        "region_result.py",
+        "region_screen.py",
+        "region_attempts.py",
+    ):
         text = (REPO_ROOT / "src" / "openflowsheet" / "orchestrator" / name).read_text()
         assert "ACTIVE_SET_CYCLING" not in text, f"{name} keeps no cycle rule of its own"
         assert " in used" not in text, f"{name} tests no used signatures itself"
@@ -291,7 +302,7 @@ def test_a05_the_kernel_is_asked_only_on_flagged_trials(
         screened.append((len(seen_box[0].calls) - 1 if seen_box else -1, split.unit))
         return real(provider, context, split, regime, state, epsilon)
 
-    monkeypatch.setattr(region_module, "_admissible", spy)
+    monkeypatch.setattr(region_screen, "_admissible", spy)
     monkeypatch.setattr(region_phase, "_admissible", spy)
     monkeypatch.setattr(region_problem, "_admissible", spy)
     original_observe_calls = Observed.__init__
@@ -1306,7 +1317,7 @@ def test_s5_both_retained_conversions_on_a_physical_state(
         return ok, value
 
     monkeypatch.setattr(region_module._LiftedOps, "__init__", init)
-    monkeypatch.setattr(region_module, "_admissible", admissible)
+    monkeypatch.setattr(region_screen, "_admissible", admissible)
     monkeypatch.setattr(region_phase, "_admissible", admissible)
     monkeypatch.setattr(region_problem, "_admissible", admissible)
     observe("SYN-001-A02-355-liquid-guess", monkeypatch)
@@ -1410,7 +1421,7 @@ def test_n3_the_screen_passes_the_kernels_refusal_through(
 
         return spied
 
-    monkeypatch.setattr(region_module, "_screen", screen)
+    monkeypatch.setattr(region_screen, "_screen", screen)
     from test_t02_a02 import POLICY as T02_POLICY
     from test_t02_a02 import revision, structure, the_region
 

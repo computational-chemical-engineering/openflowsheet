@@ -24,6 +24,7 @@ from openflowsheet.application.policies import DEFAULT_POLICY_ID, resolve_policy
 from openflowsheet.application.revision_routes import REVISION_ROUTES
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.orchestrator import region as region_module
+from openflowsheet.orchestrator import region_attempts
 from openflowsheet.studies.nlp import revision_host
 from openflowsheet.studies.nlp.host import CertifiedPoint, HeldSystem, ZeroSubsystem
 from openflowsheet.studies.nlp.revision_host import (
@@ -70,10 +71,12 @@ def _c_mw() -> tuple[RevisionNlpHost, CertifiedPoint, tuple[float, ...]]:
         return result
 
     setattr(region_module, "solve_newton", spy)  # noqa: B010
+    setattr(region_attempts, "solve_newton", spy)  # noqa: B010
     try:
         point = host.certify({"U-FEED1.T_spec": C_MW_FEED_T})
     finally:
         setattr(region_module, "solve_newton", original)  # noqa: B010
+        setattr(region_attempts, "solve_newton", original)  # noqa: B010
     assert point.verified, (point.outcome, point.message)
     return host, point, residuals[-1]
 

@@ -259,7 +259,7 @@ def _number_or_none(value: Any) -> bool:
     return value is None or (isinstance(value, int | float) and not isinstance(value, bool))
 
 
-def _inside_window(key: str, committed: dict[str, Any]) -> bool:
+def _inside_window_v1(key: str, committed: dict[str, Any]) -> bool:
     sibling, minimum = COMPARABILITY_WINDOW[key]
     selector = committed.get(sibling)
     return isinstance(selector, int | float) and float(selector) >= minimum
@@ -335,30 +335,15 @@ def _differences_v1(
         if not isinstance(emitted, dict):
             return [f"{where}: expected an object, got {type(emitted).__name__}"]
         for key in sorted(set(committed) | set(emitted)):
-            if key not in committed:
-                found.append(f"{where}.{key}: present in the emitted document only")
-            elif key not in emitted:
-                found.append(f"{where}.{key}: present in the committed document only")
-            elif path == "" and (key in PROVENANCE_SUBTREES or key in VOLATILE_FIELDS):
-                found += _provenance_v1(where, key, emitted, committed)
-            elif key in UNREPRODUCIBLE_COUNTS:
-                found += _count_v1(where, key, emitted)
-            elif is_float_digest(key):
-                found += _float_digest_v1(where, key, emitted)
-            elif key == "certificate_id" and _digest_derived_id(committed, emitted):
-                found += _certificate_id_v1(where, key, emitted)
-            elif key in WINDOW_SELECTORS:
-                found += _window_selector_v1(where, key, emitted)
-            elif key in COMPARABILITY_WINDOW and not _inside_window(key, committed):
-                found += _windowed_shape_v1(where, key, emitted, committed)
-            else:
-                floor = None
-                source = SELF_FLOORED.get(key)
-                if source is not None and isinstance(committed.get(source), int | float):
-                    floor = abs(float(committed[source]))
-                found += _differences_v1(
-                    emitted[key], committed[key], f"{where}.{key}", floor=floor
-                )
+            ruled = _key_rule_v1(where, key, path, emitted, committed)
+            if ruled is not None:
+                found += ruled
+                continue
+            floor = None
+            source = SELF_FLOORED.get(key)
+            if source is not None and isinstance(committed.get(source), int | float):
+                floor = abs(float(committed[source]))
+            found += _differences_v1(emitted[key], committed[key], f"{where}.{key}", floor=floor)
         return found
 
     if isinstance(committed, list):
@@ -371,24 +356,40 @@ def _differences_v1(
         return found
 
     if isinstance(committed, float) or isinstance(emitted, float):
-        if emitted is None or committed is None:
-            if emitted is not committed:
-                found.append(f"{where}: {emitted!r} against {committed!r}")
-            return found
-        if floor is None:
-            floor = REGISTERED_FLOOR.get(where.rsplit(".", 1)[-1], NO_FLOOR)
-        if not math.isclose(
-            float(emitted), float(committed), rel_tol=RELATIVE_TOLERANCE, abs_tol=floor
-        ):
-            found.append(
-                f"{where}: {emitted!r} against {committed!r}, outside the interim "
-                f"{RELATIVE_TOLERANCE:g} relative / {floor:g} absolute"
-            )
-        return found
+        return _float_leaf_v1(emitted, committed, where, floor)
 
     if emitted != committed:
         found.append(f"{where}: {emitted!r} against {committed!r}")
     return found
+
+
+def _key_rule_v1(
+    where: str, key: str, path: str, emitted: dict[str, Any], committed: dict[str, Any]
+) -> list[str] | None:
+    """v1 on the key `key` of the object at `where`: the differences its own rule finds, or
+    None when no rule applies and `_differences_v1` compares its value as a child.
+
+    The rules, tried in order, the first match deciding: present on one side only;
+    root-anchored provenance (`path` is ""); an unreproducible count; a float digest; a
+    digest-derived `certificate_id`; a window selector; a windowed float outside its window.
+    """
+    if key not in committed:
+        return [f"{where}.{key}: present in the emitted document only"]
+    if key not in emitted:
+        return [f"{where}.{key}: present in the committed document only"]
+    if path == "" and (key in PROVENANCE_SUBTREES or key in VOLATILE_FIELDS):
+        return _provenance_v1(where, key, emitted, committed)
+    if key in UNREPRODUCIBLE_COUNTS:
+        return _count_v1(where, key, emitted)
+    if is_float_digest(key):
+        return _float_digest_v1(where, key, emitted)
+    if key == "certificate_id" and _digest_derived_id(committed, emitted):
+        return _certificate_id_v1(where, key, emitted)
+    if key in WINDOW_SELECTORS:
+        return _window_selector_v1(where, key, emitted)
+    if key in COMPARABILITY_WINDOW and not _inside_window_v1(key, committed):
+        return _windowed_shape_v1(where, key, emitted, committed)
+    return None
 
 
 def _provenance_v1(
@@ -461,6 +462,27 @@ def _windowed_shape_v1(
             "the comparability window the value is not compared, its shape is"
         ]
     return []
+
+
+def _float_leaf_v1(emitted: Any, committed: Any, where: str, floor: float | None) -> list[str]:
+    """v1 on a float at `where` (at least one side is a float): null against a float is a
+    difference, compared exactly; otherwise `math.isclose` at the interim relative tolerance and
+    `floor` absolute, else the registered floor of its key, else none."""
+    found: list[str] = []
+    if emitted is None or committed is None:
+        if emitted is not committed:
+            found.append(f"{where}: {emitted!r} against {committed!r}")
+        return found
+    if floor is None:
+        floor = REGISTERED_FLOOR.get(where.rsplit(".", 1)[-1], NO_FLOOR)
+    if not math.isclose(
+        float(emitted), float(committed), rel_tol=RELATIVE_TOLERANCE, abs_tol=floor
+    ):
+        found.append(
+            f"{where}: {emitted!r} against {committed!r}, outside the interim "
+            f"{RELATIVE_TOLERANCE:g} relative / {floor:g} absolute"
+        )
+    return found
 
 
 # == T08-numerical-policy-v2 (ADR 0025) =========================================================
@@ -694,7 +716,7 @@ def _differences_v2(
             elif key in V2_WINDOW_SELECTORS:
                 found += _window_selector(where, key, mine)
             # Row 7: outside its window, a windowed float is compared for shape.
-            elif key in V2_COMPARABILITY_WINDOW and not _inside_v2_window(key, committed):
+            elif key in V2_COMPARABILITY_WINDOW and not _inside_window(key, committed):
                 found += _windowed_shape(where, key, mine, theirs)
             # Row 8: text with floats in it.
             elif key in TEXT_KEYS and isinstance(mine, str) and isinstance(theirs, str):
@@ -771,7 +793,7 @@ def _window_selector(where: str, key: str, mine: Any) -> list[str]:
     return []
 
 
-def _inside_v2_window(key: str, committed: dict[str, Any]) -> bool:
+def _inside_window(key: str, committed: dict[str, Any]) -> bool:
     sibling, minimum = V2_COMPARABILITY_WINDOW[key]
     selector = committed.get(sibling)
     return isinstance(selector, int | float) and float(selector) >= minimum

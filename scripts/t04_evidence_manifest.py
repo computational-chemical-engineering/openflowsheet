@@ -66,6 +66,7 @@ import test_t04_registry as registry_fixtures  # noqa: E402
 
 import openflowsheet.orchestrator.executor as executor_module  # noqa: E402
 import openflowsheet.orchestrator.region as region_module  # noqa: E402
+import openflowsheet.orchestrator.region_attempts as region_attempts  # noqa: E402
 import openflowsheet.orchestrator.region_problem as region_problem  # noqa: E402
 import openflowsheet.orchestrator.tear as tear_module  # noqa: E402
 import openflowsheet.verify.certificate as certificate_module  # noqa: E402
@@ -1565,7 +1566,7 @@ def _a10() -> tuple[bool, Any, Any]:
             return level
 
         with pytest.MonkeyPatch.context() as patch:
-            patch.setattr(region_module, "rebind", spy)
+            patch.setattr(region_attempts, "rebind", spy)
             result = edge3_fixtures.plan_run(
                 edge3_fixtures.case_document(case_id), edge3_fixtures.case_policy(case_id)
             ).result

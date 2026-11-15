@@ -48,10 +48,17 @@ RUNTIME = "ofs_testmap_runtime"
 #: so pytest-xdist refuses the session ("Different tests were collected"). A build with workers
 #: runs them in a second, serial pytest call (docs/S16_DECISIONS.md, B-4).
 XDIST_SERIAL = ("tests/test_t07_w2d_noncanonical.py",)
+#: Campaign tooling: no test reads these trees (a guard in tests/test_s16_test_impact.py), so a
+#: change under them, added, deleted or modified, neither falls back nor selects (S19).
+TOOLING_PREFIXES = (".codehealth/", ".claude/")
 
 
 class FallbackError(Exception):
     """The selection cannot be sure: run the full default-marker suite, for this reason."""
+
+
+class ImportTimeFallbackError(FallbackError):
+    """Module- or class-level code changed: a statement, a header, a decorator."""
 
 
 # -- git -------------------------------------------------------------------------------------------
@@ -210,6 +217,18 @@ class TestMap:
             (file_id,),
         )
         return {name for name, bits in rows if has_any(bits, wanted)}
+
+    def file_tests(self, path: str) -> set[str]:
+        """Every test that executed a line of `path` (import and collection time aside)."""
+        file_id = self._file_id(path)
+        if file_id is None:
+            return set()
+        rows = self.db.execute(
+            "SELECT DISTINCT contexts.name FROM lines JOIN contexts ON contexts.id = context_id"
+            " WHERE file_id = ?",
+            (file_id,),
+        )
+        return self.tests_of({name for (name,) in rows} - {COLLECTION}, path)
 
     def open_contexts(self, path: str) -> set[str]:
         file_id = self._file_id(path)
@@ -535,32 +554,74 @@ def _open_rule(test_map: TestMap, path: str, *, required: bool) -> set[str]:
     return test_map.tests_of(contexts, f"{path} (opened)")
 
 
-def _python_rule(test_map: TestMap, change: Change, base: str, cwd: Path) -> set[str]:
+def _span(start: int, count: int) -> set[int]:
+    """The new-side lines of a hunk; a pure deletion sits between `start` and `start + 1`."""
+    return set(range(start, start + count)) if count else {start, start + 1}
+
+
+def _python_rule(
+    test_map: TestMap,
+    change: Change,
+    base: str,
+    cwd: Path,
+    step: set[int] | None = None,
+    by_file: bool = False,
+) -> set[str]:
+    """The tests of a changed Python file. With `step` (the lines the step from `--since` touched,
+    as line numbers of the working tree), a hunk the step did not touch still selects its tests
+    but no longer falls back: an earlier gate judged it. With `by_file`, import-time code the
+    step itself changed selects every test that executed a line of the file, when there is one."""
     path = change.path
     if not test_map.has_lines(path):
         return _open_rule(test_map, path, required=True)
     old = Source(git("show", f"{base}:{path}", cwd=cwd), f"{path} (base)")
     new = Source((cwd / path).read_text(encoding="utf-8"), path)
     selected = _open_rule(test_map, path, required=False)
-    for old_start, old_count, new_start, new_count in change.hunks:
-        added = set(range(new_start, new_start + new_count))
-        for line in range(old_start, old_start + old_count):
-            if not old.is_code(line):
+    for hunk in change.hunks:
+        try:
+            selected |= _hunk_rule(test_map, path, hunk, old, new, base, cwd)
+        except ImportTimeFallbackError:
+            if step is not None and not step & _span(hunk[2], hunk[3]):
                 continue
-            function = old.function_of(line)
-            if function is None:
-                raise FallbackError(f"{path}:{line} (base): import-time code changed")
-            lines = old.statement_lines(line)
-            if old.is_silent(line):  # no line event of its own: the enclosing function's tests
-                lines |= _body_lines(function)
-            where = f"{path}:{line} (base)"
-            selected |= test_map.tests_of(test_map.line_contexts(path, lines), where)
-        for line in sorted(added):
-            if not new.is_code(line):
-                continue
-            selected |= _new_line(
-                test_map, path, line, old, new, added, lambda name: _mentioned_at(base, cwd, name)
-            )
+            tests = test_map.file_tests(path) if by_file else set()
+            if not tests:
+                raise
+            selected |= tests
+        except FallbackError:
+            if step is None or step & _span(hunk[2], hunk[3]):
+                raise
+    return selected
+
+
+def _hunk_rule(
+    test_map: TestMap,
+    path: str,
+    hunk: tuple[int, int, int, int],
+    old: Source,
+    new: Source,
+    base: str,
+    cwd: Path,
+) -> set[str]:
+    old_start, old_count, new_start, new_count = hunk
+    selected: set[str] = set()
+    added = set(range(new_start, new_start + new_count))
+    for line in range(old_start, old_start + old_count):
+        if not old.is_code(line):
+            continue
+        function = old.function_of(line)
+        if function is None:
+            raise ImportTimeFallbackError(f"{path}:{line} (base): import-time code changed")
+        lines = old.statement_lines(line)
+        if old.is_silent(line):  # no line event of its own: the enclosing function's tests
+            lines |= _body_lines(function)
+        where = f"{path}:{line} (base)"
+        selected |= test_map.tests_of(test_map.line_contexts(path, lines), where)
+    for line in sorted(added):
+        if not new.is_code(line):
+            continue
+        selected |= _new_line(
+            test_map, path, line, old, new, added, lambda name: _mentioned_at(base, cwd, name)
+        )
     return selected
 
 
@@ -595,11 +656,51 @@ def _new_line(
     outer = next((n for n in chain if isinstance(n, ast.FunctionDef | ast.AsyncFunctionDef)), None)
     if outer is not None and _fresh_definition(outer, new, added, mentioned):
         return set()
-    raise FallbackError(f"{path}:{line}: import-time code changed")
+    raise ImportTimeFallbackError(f"{path}:{line}: import-time code changed")
 
 
-def select(base: str, map_dir: Path | None = None, cwd: Path = ROOT) -> Selection:
-    """The node ids the change from `base` to the working tree can affect, or a fallback."""
+def _step_paths(since: str, sha: str, cwd: Path) -> dict[str, set[int]]:
+    """The paths the step from `since` to the working tree changes, each with the lines it touched
+    (working-tree numbers, widened by one line each way), or a fallback.
+
+    The fallback rules judge the step's own changes: a file an earlier, already gated step added
+    is not "new" for this one (docs/test-impact.md, "A step-relative selection")."""
+    step = resolve(since, cwd)
+    for older, newer in ((sha, step), (step, "HEAD")):
+        ancestor = subprocess.run(
+            ["git", "merge-base", "--is-ancestor", older, newer], cwd=cwd, capture_output=True
+        )
+        if ancestor.returncode != 0:
+            raise FallbackError(f"--since {step[:12]} is not between the base and HEAD")
+    paths: dict[str, set[int]] = {}
+    for change in changes_since(step, cwd):
+        if change.path.startswith(TOOLING_PREFIXES):
+            continue
+        reason = _fallback_rule(change, step, cwd)
+        if reason is not None:
+            raise FallbackError(reason)
+        touched: set[int] = set()
+        for _, _, new_start, new_count in change.hunks:
+            touched |= _span(new_start, new_count)
+        paths[change.path] = (
+            touched | {line - 1 for line in touched} | {line + 1 for line in touched}
+        )
+    return paths
+
+
+def select(
+    base: str,
+    map_dir: Path | None = None,
+    cwd: Path = ROOT,
+    since: str | None = None,
+    by_file: bool = False,
+) -> Selection:
+    """The node ids the change from `base` to the working tree can affect, or a fallback.
+
+    With `since` (a commit between `base` and HEAD whose own gate passed), only the files the
+    step from `since` changes are judged, each by its cumulative change from `base`, the commit
+    the map's lines are of. `by_file` (with `since` only) is the approximate rule for import-time
+    code; a full suite must follow before the steps merge (docs/test-impact.md)."""
     try:
         sha = resolve(base, cwd)
         ancestor = subprocess.run(
@@ -613,7 +714,17 @@ def select(base: str, map_dir: Path | None = None, cwd: Path = ROOT) -> Selectio
         if test_map.meta.get("pytest_args"):
             raise FallbackError(f"the map is of a partial run ({test_map.meta['pytest_args']})")
         selected: set[str] = set()
-        for change in changes_since(sha, cwd):
+        changes = changes_since(sha, cwd)
+        step = None if since is None else _step_paths(since, sha, cwd)
+        if step is not None:
+            restored = sorted(set(step) - {change.path for change in changes})
+            if restored:  # equal to the base again: no cumulative hunks to select by
+                raise FallbackError(f"{restored[0]}: the step restores the base's content")
+        for change in changes:
+            if change.path.startswith(TOOLING_PREFIXES):
+                continue
+            if step is not None and change.path not in step:
+                continue
             reason = _fallback_rule(change, sha, cwd)
             if reason is not None:
                 raise FallbackError(reason)
@@ -626,7 +737,10 @@ def select(base: str, map_dir: Path | None = None, cwd: Path = ROOT) -> Selectio
             elif path.endswith(".py"):
                 if is_test_module(path):
                     selected.add(path)
-                selected |= _python_rule(test_map, change, sha, cwd)
+                lines = None if step is None else step[path]
+                selected |= _python_rule(
+                    test_map, change, sha, cwd, lines, by_file and step is not None
+                )
             else:
                 selected |= _open_rule(test_map, path, required=True)
         # A test that failed in the build recorded only the lines before its failure (B-17).
@@ -823,13 +937,19 @@ def run(
     extra: list[str],
     repo: Path,
     workers: int = 0,
+    since: str | None = None,
+    by_file: bool = False,
+    full: bool = False,
 ) -> int:
     if any(
         arg in ("-n", "--numprocesses") or arg.startswith(("-n", "--numprocesses="))
         for arg in extra
     ):
         raise SystemExit("run takes workers as --workers N, which keeps XDIST_SERIAL serial (B-12)")
-    selection = select(base, map_dir, repo).whole_files()
+    if full:  # a merge check: the suite the step-relative selections stand on
+        selection = Selection(fallback="--full")
+    else:
+        selection = select(base, map_dir, repo, since, by_file).whole_files()
     sha = git("rev-parse", "--short", "HEAD", cwd=repo).strip()
     log = log or Path(os.environ.get("TMPDIR", "/tmp")) / f"test-impact-{sha}.log"
     command = [sys.executable, "-m", "pytest", "-q", "-p", "no:cacheprovider", "-rs", *extra]
@@ -900,6 +1020,16 @@ def main(argv: list[str] | None = None) -> int:
     select_parser = commands.add_parser("select", help="print the node ids a change can affect")
     select_parser.add_argument("--base", default="HEAD")
     select_parser.add_argument("--map", type=Path)
+    select_parser.add_argument(
+        "--since",
+        help="a gated commit between --base and HEAD: judge only the files changed since it",
+    )
+    select_parser.add_argument(
+        "--import-time-by-file",
+        action="store_true",
+        help="with --since: import-time code the step changes selects the tests that ran the file\n"
+        "(approximate; run the full suite before the steps merge)",
+    )
     select_parser.add_argument("--lines", help="PATH:START-END: the tests executing those lines")
     select_parser.add_argument(
         "--nodes", action="store_true", help="print node ids, not their whole test files (B-11)"
@@ -907,20 +1037,47 @@ def main(argv: list[str] | None = None) -> int:
     run_parser = commands.add_parser("run", help="run the selection (or the full suite)")
     run_parser.add_argument("--base", required=True)
     run_parser.add_argument("--map", type=Path)
+    run_parser.add_argument(
+        "--since",
+        help="a gated commit between --base and HEAD: judge only the files changed since it",
+    )
+    run_parser.add_argument(
+        "--import-time-by-file",
+        action="store_true",
+        help="with --since: import-time code the step changes selects the tests that ran the file\n"
+        "(approximate; run the full suite before the steps merge)",
+    )
     run_parser.add_argument("--log", type=Path)
+    run_parser.add_argument(
+        "--full", action="store_true", help="run the full suite, selecting nothing (a merge check)"
+    )
     run_parser.add_argument(
         "--workers", type=int, default=0, help="pytest-xdist workers (XDIST_SERIAL runs serially)"
     )
     run_parser.add_argument("pytest_args", nargs="*", help="after --: extra pytest arguments")
     args = parser.parse_args(argv)
+    if getattr(args, "import_time_by_file", False) and not args.since:
+        parser.error("--import-time-by-file needs --since")
     if args.command == "build":
         return build(args.base, args.out, args.workers, args.pytest_args)
     if args.command == "run":
-        return run(args.base, args.map, args.log, args.pytest_args, args.repo or ROOT, args.workers)
+        return run(
+            args.base,
+            args.map,
+            args.log,
+            args.pytest_args,
+            args.repo or ROOT,
+            args.workers,
+            args.since,
+            args.import_time_by_file,
+            args.full,
+        )
     if args.lines:
         selection = select_lines(args.lines, args.base, args.map, args.repo or ROOT)
     else:
-        selection = select(args.base, args.map, args.repo or ROOT)
+        selection = select(
+            args.base, args.map, args.repo or ROOT, args.since, args.import_time_by_file
+        )
         if not args.nodes:
             selection = selection.whole_files()
     if selection.fallback is not None:

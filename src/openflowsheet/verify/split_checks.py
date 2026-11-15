@@ -5,9 +5,9 @@ note §4, register R-046; T05b spec §9.1-§9.2, ADR 0012 D7). `verify.table` re
 from __future__ import annotations
 
 import math
-from collections.abc import Mapping, Sequence
+from collections.abc import Iterator, Mapping, Sequence
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, NamedTuple
 
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.models import pressure_id, temperature_id
@@ -25,6 +25,7 @@ from openflowsheet.verify.checks import (
     stream_of,
 )
 from openflowsheet.verify.saturation import (
+    Route,
     SaturationError,
     band_distance,
     band_ends,
@@ -230,6 +231,45 @@ def _declared_port_checks(
     degenerate: Degeneracy,
 ) -> list[CheckResult]:
     checks: list[CheckResult] = []
+    for declared in _declared_streams(view):
+        identifier, stream = declared.identifier, declared.stream
+        if stream_of(state, stream, view.components).is_dormant:
+            checks.append(dormant(id=identifier, category="phase_admissibility", subject=stream))
+            continue
+        if stream in degenerate.unlifted:
+            checks.append(blocked_check(identifier, "phase_admissibility", stream, stream))
+            continue
+        checks.append(
+            evaluated(
+                id=identifier,
+                category="phase_admissibility",
+                subject=stream,
+                value=_declared_phase(
+                    stream, declared.phase, view.components, state, enthalpy, provider, context
+                ),
+                tolerance=tolerances["temperature"],
+                reference=KIND_REFERENCE["temperature"],
+                independence_qualification=note + degenerate.notes.get(stream, ""),
+            )
+        )
+    return checks
+
+
+class _DeclaredStream(NamedTuple):
+    """A stream at a port whose phase its model declares, and the id of its admissibility check."""
+
+    #: `phase_admissibility.<U>.<port>`, or `phase_admissibility.<U>.<port>.<S>` for a port
+    #: that carries several streams.
+    identifier: str
+    stream: str
+    #: The port's declared phase.
+    phase: Phase
+
+
+def _declared_streams(view: RevisionView) -> Iterator[_DeclaredStream]:
+    """Each stream of each declared port (`MODEL_CHECKS[model].declared_ports`) that has a
+    declared phase, by instance in `view.instances` order, then port in the entry's order; an
+    instance whose model has no entry contributes none."""
     for instance in view.instances:
         entry = MODEL_CHECKS.get(instance.model_id)
         if entry is None:
@@ -244,28 +284,7 @@ def _declared_port_checks(
                     if several
                     else f"phase_admissibility.{instance.unit_id}.{port}"
                 )
-                if stream_of(state, stream, view.components).is_dormant:
-                    checks.append(
-                        dormant(id=identifier, category="phase_admissibility", subject=stream)
-                    )
-                    continue
-                if stream in degenerate.unlifted:
-                    checks.append(blocked_check(identifier, "phase_admissibility", stream, stream))
-                    continue
-                checks.append(
-                    evaluated(
-                        id=identifier,
-                        category="phase_admissibility",
-                        subject=stream,
-                        value=_declared_phase(
-                            stream, phase, view.components, state, enthalpy, provider, context
-                        ),
-                        tolerance=tolerances["temperature"],
-                        reference=KIND_REFERENCE["temperature"],
-                        independence_qualification=note + degenerate.notes.get(stream, ""),
-                    )
-                )
-    return checks
+                yield _DeclaredStream(identifier, stream, phase)
 
 
 # -- temperature-degenerate streams (T05b spec §9.1–§9.2; ADR 0012 D7) -------------------------
@@ -343,9 +362,10 @@ def _producer_phases(view: RevisionView) -> dict[str, Phase | None]:
     phases: dict[str, Phase | None] = {}
     for instance in view.instances:
         for port, direction in instance.directions.items():
-            if direction == "outlet":
-                for stream in instance.ports[port]:
-                    phases[stream] = instance.phases.get(port)
+            if direction != "outlet":
+                continue
+            for stream in instance.ports[port]:
+                phases[stream] = instance.phases.get(port)
     return phases
 
 
@@ -390,59 +410,82 @@ def degeneracy(
             owned.update((vapor_stream, liquid_stream))
         else:
             owned.add(split.stream)
-        feed = tuple(state[column] for column in split.feed)
-        if all(flow == 0.0 for flow in feed):
-            continue
-        temperature, pressure = state[split.temperature], state[split.pressure]
-        t_bubble, t_dew = _band(provider, feed, pressure, context, f"{split.unit}.{split.stream}")
-        distance = band_distance(temperature, t_bubble, t_dew)
-        route, floor = split_route(
-            temperature,
-            sum(feed),
-            t_bubble,
-            t_dew,
-            two_phase=state[split.vapor_total] > 0.0 and state[split.liquid_total] > 0.0,
-            flow_tolerance=flow_tolerance,
-        )
-        if route == "resolved":
-            continue
-        if route == "degenerate":
-            distances[split.unit] = distance
-            template = SPLIT_ENTHALPY_NOTE
-        else:
-            unresolved[split.unit] = floor if floor is not None else math.inf
-            template = UNRESOLVED_ENTHALPY_NOTE
-        split_enthalpy = _split_enthalpies(
+        substitution = _split_substitution(
             provider,
             context,
             state,
             split,
-            temperature,
-            pressure,
+            flow_tolerance,
             (vapor_stream, liquid_stream) if products else None,
         )
-        for stream, value in split_enthalpy.items():
+        if substitution is None:
+            continue
+        if substitution.route == "degenerate":
+            distances[split.unit] = substitution.distance
+            template = SPLIT_ENTHALPY_NOTE
+        else:
+            floor = substitution.floor
+            unresolved[split.unit] = floor if floor is not None else math.inf
+            template = UNRESOLVED_ENTHALPY_NOTE
+        for stream, value in substitution.enthalpy.items():
             enthalpy[stream] = value
             notes[stream] = template.format(stream=stream)
 
-    declared = _producer_phases(view)
-    unlifted: set[str] = set()
-    for stream in view.streams:
-        carried = stream_of(state, stream)
-        if stream in owned or carried.is_dormant:
-            continue
-        t_bubble, t_dew = _band(provider, carried.n, carried.pressure, context, stream)
-        if not is_temperature_degenerate(band_distance(carried.temperature, t_bubble, t_dew)):
-            continue
-        capability = declared.get(stream)
-        if capability is None:
-            unlifted.add(stream)
-            continue
-        enthalpy[stream] = _phase_enthalpy(
-            provider, context, carried.n, carried.temperature, carried.pressure, capability, stream
-        )
-        notes[stream] = DECLARED_ENTHALPY_NOTE.format(stream=stream, phase=capability)
+    declared_enthalpy, declared_notes, unlifted = _degenerate_streams(
+        view, state, provider, context, owned
+    )
+    enthalpy.update(declared_enthalpy)
+    notes.update(declared_notes)
     return Degeneracy(distances, enthalpy, notes, frozenset(unlifted), unresolved)
+
+
+class _SplitSubstitution(NamedTuple):
+    """A flowing split that is not resolved, and the enthalpies §9.1 gives its streams."""
+
+    #: `degenerate` (§9.1) or `unresolved` (ADR 0013 D3).
+    route: Route
+    #: `δ` of its feed at the split's `(T, P)`.
+    distance: float
+    #: Its fresh flash's floor over `τ_flow`; None outside the band.
+    floor: float | None
+    #: Stream -> `Ḣ` from the state's split (`_split_enthalpies`).
+    enthalpy: dict[str, float]
+
+
+def _split_substitution(
+    provider: PropertyProvider,
+    context: EvaluationContext,
+    state: Mapping[str, float],
+    split: LiftedSplit,
+    flow_tolerance: float,
+    product_streams: tuple[str, str] | None,
+) -> _SplitSubstitution | None:
+    """§9.1 and ADR 0013 D3 at one split of `state`: its feed tested at the split's `(T, P)`
+    (`split_route`), and, when it is degenerate or unresolved, the enthalpies
+    `_split_enthalpies` gives its streams (`product_streams` as there).
+
+    None when every feed flow is zero (not tested) or when the split is resolved. Raises
+    `VerifierError` when the verifier's own band or phase evaluation fails."""
+    feed = tuple(state[column] for column in split.feed)
+    if all(flow == 0.0 for flow in feed):
+        return None
+    temperature, pressure = state[split.temperature], state[split.pressure]
+    t_bubble, t_dew = _band(provider, feed, pressure, context, f"{split.unit}.{split.stream}")
+    distance = band_distance(temperature, t_bubble, t_dew)
+    route, floor = split_route(
+        temperature,
+        sum(feed),
+        t_bubble,
+        t_dew,
+        two_phase=state[split.vapor_total] > 0.0 and state[split.liquid_total] > 0.0,
+        flow_tolerance=flow_tolerance,
+    )
+    if route == "resolved":
+        return None
+    split_enthalpy = _split_enthalpies(
+        provider, context, state, split, temperature, pressure, product_streams
+    )
+    return _SplitSubstitution(route, distance, floor, split_enthalpy)
 
 
 def _split_enthalpies(
@@ -452,20 +495,20 @@ def _split_enthalpies(
     split: LiftedSplit,
     temperature: float,
     pressure: float,
-    products: tuple[str, str] | None,
+    product_streams: tuple[str, str] | None,
 ) -> dict[str, float]:
     """§9.1 at `state`: the enthalpy a degenerate or unresolved split gives each of its streams,
     read from the state's split rather than from a fresh flash.
 
-    `products` are a products-style split's vapour and liquid streams: each one that is not
+    `product_streams` are a products-style split's vapour and liquid streams: each one that is not
     dormant gets its own phase's enthalpy at its own `(T, P)`, vapour first. None is a
     heater-style split: its stream gets `Σ v_i h_i^V(T, P) + Σ l_i h_i^L(T, P)` at the split's
     `temperature` and `pressure`. Raises `VerifierError` when the verifier's own phase
     evaluation fails."""
     vapor = tuple(state[column] for column in split.vapor)
     liquid = tuple(state[column] for column in split.liquid)
-    if products is not None:
-        vapor_stream, liquid_stream = products
+    if product_streams is not None:
+        vapor_stream, liquid_stream = product_streams
         products_phases: tuple[tuple[str, tuple[float, ...], Phase], ...] = (
             (vapor_stream, vapor, "VAPOR"),
             (liquid_stream, liquid, "LIQUID"),
@@ -489,3 +532,39 @@ def _split_enthalpies(
         stream: _phase_enthalpy(provider, context, vapor, temperature, pressure, "VAPOR", stream)
         + _phase_enthalpy(provider, context, liquid, temperature, pressure, "LIQUID", stream)
     }
+
+
+def _degenerate_streams(
+    view: RevisionView,
+    state: Mapping[str, float],
+    provider: PropertyProvider,
+    context: EvaluationContext,
+    owned: set[str],
+) -> tuple[dict[str, float], dict[str, str], set[str]]:
+    """§9.2 at `state`: every flowing stream of `view` outside `owned` (the splits' streams),
+    tested at its own `(n, T, P)`. Returns the enthalpies and notes of the degenerate ones in
+    their declared phase (read at the producer's outlet port), in stream order, and the
+    degenerate ones with no declared phase there (declared `vapor_liquid`, or no producer),
+    which are unlifted.
+
+    Raises `VerifierError` when the verifier's own band or phase evaluation fails."""
+    declared = _producer_phases(view)
+    declared_enthalpy: dict[str, float] = {}
+    declared_notes: dict[str, str] = {}
+    unlifted: set[str] = set()
+    for stream in view.streams:
+        carried = stream_of(state, stream)
+        if stream in owned or carried.is_dormant:
+            continue
+        t_bubble, t_dew = _band(provider, carried.n, carried.pressure, context, stream)
+        if not is_temperature_degenerate(band_distance(carried.temperature, t_bubble, t_dew)):
+            continue
+        capability = declared.get(stream)
+        if capability is None:
+            unlifted.add(stream)
+            continue
+        declared_enthalpy[stream] = _phase_enthalpy(
+            provider, context, carried.n, carried.temperature, carried.pressure, capability, stream
+        )
+        declared_notes[stream] = DECLARED_ENTHALPY_NOTE.format(stream=stream, phase=capability)
+    return declared_enthalpy, declared_notes, unlifted

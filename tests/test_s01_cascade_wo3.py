@@ -42,7 +42,7 @@ from openflowsheet.models.syn001.cascade_solve import (
     solve_cascade,
 )
 from openflowsheet.numerics.scaling import Scaling
-from openflowsheet.orchestrator import region as region_module
+from openflowsheet.orchestrator import region_attempts
 from openflowsheet.orchestrator.roots import same_root
 from openflowsheet.orchestrator.trace import SolveOutcome, Trace
 
@@ -116,7 +116,7 @@ def _forced_edge_3(monkeypatch: pytest.MonkeyPatch) -> tuple[CascadeSolution, Tr
     runs edge 3 from the target's item-0 opening, `x⁰`, under the unchanged policy. The λ-level
     re-bindings are spied on (T04's A10 pattern)."""
     rebound: list[dict[str, float]] = []
-    real_rebind = region_module.rebind
+    real_rebind = region_attempts.rebind
 
     def rebind(spec: Any, values: dict[str, float]) -> Any:
         rebound.append(dict(values))
@@ -126,7 +126,7 @@ def _forced_edge_3(monkeypatch: pytest.MonkeyPatch) -> tuple[CascadeSolution, Tr
     # would otherwise fill it under the patch when this runs first in a process (S08b review F1).
     solved("C2")
     monkeypatch.setattr(solve_module, "eo_recovery_due", lambda outcome, budget, *, attempts: True)
-    monkeypatch.setattr(region_module, "rebind", rebind)
+    monkeypatch.setattr(region_attempts, "rebind", rebind)
     trace = Trace()
     answer = solve_cascade(_spec(REFERENCE["cases"]["C2"]), PROVIDER, trace=trace)
     assert isinstance(answer, CascadeSolution)

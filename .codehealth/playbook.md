@@ -25,6 +25,14 @@ memory).
    Exception: an algorithm's own working state (Tarjan's `stack` and `on_stack` in `graph/blocks.py::_pop_component`)
    may be edited by a helper whose name says so and which keeps the state's invariant (`on_stack == set(stack)`).
    (S19 R-W3-G6-1: 623bd9a3)
+   Run objects (S19 G1 recipe `closures-to-class`, RC1 to RC7; R-W3-G1N-1, Q1): where evaluations that can raise
+   separate a loop's phases, the trace as written is part of the result. A method of the per-call run object may
+   therefore write the run's own state and the event sinks the base wrote at that place (`trace.record`, observer
+   calls), each site moved once, never forwarded, and named in its docstring. Rule 6 holds otherwise: what can be
+   computed before anything is written is a pure function, and a table the function returns or was handed is
+   written by the caller. A builder with no evaluation between its writes (`column_rows.declared_rows`) qualifies
+   only under the working-state exception above: product tables are fields written solely by its append methods,
+   with a field table first.
 7. A refusal ladder or check-and-return block is extracted whole and returns `T | Unbound` (or `Unbound | None` for a
    clause helper, citing its clause id and listed in the caller's docstring). (review 2: ee653caa, 0fd8079b; review
    3: 0843250a, 26b58c96) The step that extracts a caller's first clause or phase helper also lists it in the
@@ -89,7 +97,10 @@ generator with the recursion left in the walker, only if the walk never mutates 
 materialised to a list (2b2d079f); sibling builders for spec-named record kinds may share one parameter list, never
 merged into one builder with a kind flag (0b1537e6); per-family admission helpers return `T | Error` and the caller
 issues the single refusal, when only an isinstance check and a return sit between the call and the refusal and the
-refusal function is NoReturn (420b299e).
+refusal function is NoReturn (420b299e); a producer loop feeding a closure that keeps side tables becomes a lazy generator of
+the produced items, the closure called by the caller per item, only if the generator reads none of the state the
+closure writes and the generator is consumed by one `for` loop, never materialised (S19 eccacaab, review
+R-W3-G6-2).
 
 ## Restructure (module splits, D18)
 

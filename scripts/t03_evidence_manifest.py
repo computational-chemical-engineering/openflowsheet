@@ -65,8 +65,10 @@ import test_t03_roots as roots_fixtures  # noqa: E402
 
 import openflowsheet.orchestrator.attempts as attempts_module  # noqa: E402
 import openflowsheet.orchestrator.region as region_module  # noqa: E402
+import openflowsheet.orchestrator.region_attempts as region_attempts  # noqa: E402
 import openflowsheet.orchestrator.region_phase as region_phase  # noqa: E402
 import openflowsheet.orchestrator.region_problem as region_problem  # noqa: E402
+import openflowsheet.orchestrator.region_screen as region_screen  # noqa: E402
 import openflowsheet.orchestrator.tear as tear_module  # noqa: E402
 from openflowsheet.canonical import file_sha256, state_sha256  # noqa: E402
 from openflowsheet.compile.casadi_backend import (  # noqa: E402
@@ -428,8 +430,9 @@ def _observe_region(
 
     with pytest.MonkeyPatch.context() as patch:
         patch.setattr(region_module, "_region_problem", problem)
-        patch.setattr(region_module, "_screen", screen_factory)
-        patch.setattr(region_module, "_admissible", admissible)
+        patch.setattr(region_attempts, "_region_problem", problem)
+        patch.setattr(region_screen, "_screen", screen_factory)
+        patch.setattr(region_screen, "_admissible", admissible)
         patch.setattr(region_phase, "_admissible", admissible)
         patch.setattr(region_problem, "_admissible", admissible)
         patch.setattr(region_module, "check_opening", opening_check)
@@ -1882,10 +1885,19 @@ def _a02(runs: Runs) -> tuple[bool, Any, Any]:
             if token in sources[name]
         ]
         + budget_comparison.findall(sources[name])
-        for name in ("attempts.py", "region.py", "region_phase.py", "region_problem.py")
+        for name in (
+            "attempts.py",
+            "region.py",
+            "region_phase.py",
+            "region_problem.py",
+            "region_result.py",
+            "region_screen.py",
+            "region_attempts.py",
+        )
     }
     constructs_wall = {
-        name: "WallObserver(policy)" in sources[name] for name in ("attempts.py", "region.py")
+        name: "WallObserver(policy)" in sources[name]
+        for name in ("attempts.py", "region.py", "region_attempts.py")
     }
     value = {
         "per_run": per_run,
@@ -1898,12 +1910,19 @@ def _a02(runs: Runs) -> tuple[bool, Any, Any]:
         "per_run": "decide_calls == attempt_closures on every run (2, 2, 2, 2)",
         "cycling_refusal_produced_in": ["phase_contract.py"],
         "WallObserver_defined_in": ["phase_contract.py"],
-        "WallObserver_constructed_by": {"attempts.py": True, "region.py": True},
+        "WallObserver_constructed_by": {
+            "attempts.py": True,
+            "region.py": True,
+            "region_attempts.py": True,
+        },
         "own_cycle_or_budget_rule": {
             "attempts.py": [],
             "region.py": [],
             "region_phase.py": [],
             "region_problem.py": [],
+            "region_result.py": [],
+            "region_screen.py": [],
+            "region_attempts.py": [],
         },
     }
     ok = (

@@ -7,9 +7,11 @@ nor a built map: they run in the main venv and in CI. The map build itself needs
 
 from __future__ import annotations
 
+import ast
 import importlib.util
 import json
 import os
+import re
 import sqlite3
 import subprocess
 import sys
@@ -137,6 +139,8 @@ FILES = {
     "data/boot.json": "{}\n",
     "data/unseen.txt": "x\n",
     "pyproject.toml": PYPROJECT,
+    ".codehealth/config.toml": "scope = 1\n",
+    ".claude/skills/s/SKILL.md": "skill\n",
 }
 
 T1 = "tests/test_a.py::test_one"
@@ -617,6 +621,202 @@ def test_an_added_or_deleted_docs_file_falls_back(repo, kind: str) -> None:
     assert "new or deleted file" in (_select(repo).fallback or "")
 
 
+@pytest.mark.parametrize("kind", ["modified", "added", "deleted"])
+@pytest.mark.parametrize("tree", [".codehealth", ".claude"])
+def test_campaign_tooling_neither_falls_back_nor_selects(repo, tree: str, kind: str) -> None:
+    """S19: a change under .codehealth/ or .claude/ is ignored; other changes still select."""
+    root = repo[0]
+    existing = {".codehealth": ".codehealth/config.toml", ".claude": ".claude/skills/s/SKILL.md"}
+    if kind == "modified":
+        _edit(root, existing[tree], "\n", "\nchanged\n")
+    elif kind == "deleted":
+        (root / existing[tree]).unlink()
+    else:
+        (root / tree / "new.toml").write_text("new = 1\n")
+    assert _select(repo).nodes == set() and _select(repo).fallback is None
+    _edit(root, "docs/guide.md", "guide", "changed")
+    assert _select(repo).nodes == {T1}
+
+
+# -- a step-relative selection (S19, `--since`) ---------------------------------------------------
+
+
+def _commit(repo: Path, message: str) -> str:
+    _git(repo, "add", "-A")
+    _git(repo, "commit", "-q", "-m", message)
+    return _git(repo, "rev-parse", "HEAD").strip()
+
+
+def _since(repo_fixture: tuple[Path, str, Path], since: str) -> object:
+    repo, base, map_dir = repo_fixture
+    return ti.select(base, map_dir, cwd=repo, since=since)
+
+
+def _gated_history(root: Path) -> str:
+    """An earlier, gated commit with every sticky cause: a new file, import-time code, a file read
+    at collection time and a body change in another module."""
+    (root / "src/pkg/new.py").write_text("x = 1\n")
+    _edit(root, "src/pkg/mod.py", "LIMIT = 3", "LIMIT = 4")
+    (root / "data/boot.json").write_text((root / "data/boot.json").read_text() + "\n")
+    _edit(root, "src/pkg/twins.py", '        return "second"', '        return "2nd"')
+    return _commit(root, "an earlier gated step")
+
+
+def test_since_judges_only_the_step_and_not_what_it_inherits(repo) -> None:
+    root = repo[0]
+    earlier = _gated_history(root)
+    assert _select(repo).fallback is not None
+    assert _since(repo, earlier).nodes == set() and _since(repo, earlier).fallback is None
+    _edit(root, "docs/guide.md", "guide", "changed")
+    assert _since(repo, earlier).nodes == {T1} and _since(repo, earlier).fallback is None
+    # Committed or not, the step is HEAD's working tree against `since`.
+    _commit(root, "the step")
+    assert _since(repo, earlier).nodes == {T1}
+
+
+def test_since_selects_a_file_by_its_cumulative_change_from_the_base(repo) -> None:
+    """The map's lines are the base's: a file the step touches brings its earlier hunks along (a
+    superset); a file only earlier steps touched brings nothing."""
+    root = repo[0]
+    _edit(root, "src/pkg/mod.py", "    total = 0\n", "    total = 0\n    total -= 1\n")
+    _edit(root, "src/pkg/twins.py", '        return "second"', '        return "2nd"')
+    earlier = _commit(root, "an earlier gated step in g and in twins")
+    _edit(root, "src/pkg/mod.py", "    y = x + 1", "    y = x + 2")
+    assert _since(repo, earlier).nodes == {T1, T2}
+    assert _select(repo).nodes == {T1, T2}
+
+
+@pytest.mark.parametrize(
+    ("kind", "reason"),
+    [
+        ("new-file", "new or deleted file"),
+        ("deleted-file", "new or deleted file"),
+        ("import-time", "import-time code changed"),
+        ("collection", "import or collection time"),
+        ("conftest", "conftest.py"),
+        ("edits-a-file-the-map-never-saw", "new or deleted file"),
+        ("restores-the-base", "restores the base's content"),
+    ],
+)
+def test_since_still_falls_back_on_the_steps_own_causes(repo, kind: str, reason: str) -> None:
+    root = repo[0]
+    earlier = _gated_history(root)
+    if kind == "new-file":
+        (root / "src/pkg/newer.py").write_text("y = 1\n")
+    elif kind == "deleted-file":
+        (root / "data/table.yaml").unlink()
+    elif kind == "import-time":
+        _edit(root, "src/pkg/mod.py", "def f(x):", "def f(x, z=0):")
+    elif kind == "collection":
+        _edit(root, "src/pkg/mod.py", '    return "import time"', '    return "boot"')
+    elif kind == "conftest":
+        (root / "tests/conftest.py").write_text((root / "tests/conftest.py").read_text() + "\n#\n")
+    elif kind == "edits-a-file-the-map-never-saw":
+        (root / "src/pkg/new.py").write_text("x = 2\n")
+    else:
+        _edit(root, "src/pkg/twins.py", '        return "2nd"', '        return "second"')
+    assert reason in (_since(repo, earlier).fallback or "")
+
+
+def test_since_keeps_an_inherited_import_time_change_in_the_steps_own_file_quiet(repo) -> None:
+    """One file, two hunks: the earlier step's module constant (import-time) and this step's body
+    line. The inherited hunk does not fall back; next to the step's line it does."""
+    root = repo[0]
+    earlier = _gated_history(root)  # LIMIT = 3 -> 4 in src/pkg/mod.py
+    _edit(root, "src/pkg/mod.py", "    total = 0\n", "    total = 0\n    total -= 1\n")
+    assert _select(repo).fallback is not None
+    assert _since(repo, earlier).nodes == {T2} and _since(repo, earlier).fallback is None
+    _edit(root, "src/pkg/mod.py", "LIMIT = 4\n", "LIMIT = 4\nOTHER = 5\n")
+    assert "import-time code changed" in (_since(repo, earlier).fallback or "")
+
+
+def test_import_time_by_file_selects_the_tests_that_ran_the_file(repo) -> None:
+    """The approximate rule: the step's own import-time change selects every test that executed a
+    line of the file; collection-time code, a file no test ran and a new file still fall back."""
+    root, base, map_dir = repo
+    earlier = _gated_history(root)
+
+    def by_file() -> object:
+        return ti.select(base, map_dir, cwd=root, since=earlier, by_file=True)
+
+    _edit(root, "src/pkg/mod.py", "def f(x):", "def f(x, z=0):")
+    assert "import-time code changed" in (_since(repo, earlier).fallback or "")
+    assert by_file().fallback is None and by_file().nodes == {T1, T2, T3, T4}
+    _edit(root, "src/pkg/mod.py", '    return "import time"', '    return "boot"')
+    assert "import or collection time" in (by_file().fallback or "")
+    _git(root, "checkout", "-q", "--", "src/pkg/mod.py")
+    (root / "src/pkg/newer.py").write_text("y = 1\n")
+    assert "new or deleted file" in (by_file().fallback or "")
+    # Without --since the rule is off: the cumulative selection stays exact.
+    assert ti.select(base, map_dir, cwd=root, by_file=True).fallback is not None
+    with pytest.raises(SystemExit):
+        ti.main(["select", "--base", base, "--import-time-by-file"])
+
+
+def test_since_must_lie_between_the_base_and_head(repo) -> None:
+    root, base, _ = repo
+    earlier = _gated_history(root)
+    _git(root, "checkout", "-q", "-b", "side", base)
+    (root / "side.txt").write_text("side\n")
+    side = _commit(root, "not an ancestor of the step")
+    _git(root, "checkout", "-q", "main")
+    assert "not between the base and HEAD" in (_since(repo, side).fallback or "")
+    _git(root, "checkout", "-q", "side")
+    assert "not between the base and HEAD" in (_since(repo, earlier).fallback or "")
+
+
+def test_since_on_the_command_line(repo, capsys: pytest.CaptureFixture[str]) -> None:
+    root, base, map_dir = repo
+    earlier = _gated_history(root)
+    _edit(root, "docs/guide.md", "guide", "changed")
+    arguments = ["--repo", str(root), "select", "--base", base, "--map", str(map_dir)]
+    assert ti.main(arguments) == ti.EXIT_FULL
+    capsys.readouterr()
+    assert ti.main([*arguments, "--since", earlier]) == 0
+    assert capsys.readouterr().out.split() == ["tests/test_a.py"]
+
+
+#: A string literal naming a campaign-tooling tree as a path component.
+TOOLING_PATH = re.compile(r"(^|/)\.(codehealth|claude)(/|$)")
+#: The selector and its tests name the prefixes; they do not read the trees.
+TOOLING_NAMERS = ("scripts/test_impact.py", "tests/test_s16_test_impact.py")
+
+
+def _tooling_readers(root: Path) -> list[str]:
+    """Python files under tests/, src/, scripts/ and benchmarks/ with a string literal that names
+    .codehealth or .claude as a path component (`root / ".claude"` included)."""
+    found = []
+    for directory in ("tests", "src", "scripts", "benchmarks"):
+        for path in sorted((root / directory).rglob("*.py")):
+            where = path.relative_to(root).as_posix()
+            if where in TOOLING_NAMERS:
+                continue
+            text = path.read_text(encoding="utf-8")
+            if ".codehealth" not in text and ".claude" not in text:
+                continue  # the literal cannot be there; parsing every file costs seconds
+            tree = ast.parse(text, where)
+            for node in ast.walk(tree):
+                if isinstance(node, ast.Constant) and isinstance(node.value, str):
+                    if TOOLING_PATH.search(node.value):
+                        found.append(f"{where}:{node.lineno}")
+    return found
+
+
+def test_no_test_reads_campaign_tooling(tmp_path: Path) -> None:
+    """The premise of TOOLING_PREFIXES: no code a test runs names .codehealth/ or .claude/.
+
+    String literals in the Python of tests/, src/, scripts/ and benchmarks/ are scanned, not data
+    files: two fixtures record absolute worktree paths (".../.claude/worktrees/...") that no test
+    opens. Falsifier, checked below: a test module that opens ".codehealth/config.toml" is found.
+    A path assembled from fragments ('".clau" + "de"') is not seen; the map's open record is.
+    """
+    assert _tooling_readers(ROOT) == []
+    (tmp_path / "tests").mkdir()
+    planted = 'open(".codehealth/config.toml")\nP = ".claude.json"\n'
+    (tmp_path / "tests/test_x.py").write_text(planted)
+    assert _tooling_readers(tmp_path) == ["tests/test_x.py:1"]
+
+
 def test_a_docs_script_maps_like_source_once_the_map_measures_docs(repo) -> None:
     """B-16: a map without `source_dirs` did not measure docs/*.py, so a change there falls back."""
     root, base, map_dir = repo
@@ -710,6 +910,34 @@ def test_run_with_workers_makes_two_calls_and_one_line(
     out = capsys.readouterr().out.splitlines()
     assert len(out) == 1 and "2 passed, 1 skipped, 1 failed" in out[0]
     assert ("PASS" if expected == 0 else f"FAIL (exit {expected})") in out[0]
+
+
+def test_run_full_runs_the_suite_and_since_reaches_the_selection(
+    repo, tmp_path: Path, monkeypatch, capsys
+) -> None:
+    """`--full` selects nothing (a merge check); `--since` and `--import-time-by-file` reach
+    `select` from the command line."""
+    root, base, map_dir = repo
+    earlier = _gated_history(root)
+    _edit(root, "docs/guide.md", "guide", "changed")
+    calls: list[list[str]] = []
+
+    def fake_call(command: list[str], *, stdout, **_: object) -> int:
+        calls.append(command)
+        stdout.write("1 passed in 0.1s\n")
+        stdout.flush()
+        return 0
+
+    monkeypatch.setattr(ti.subprocess, "call", fake_call)
+    common = ["--repo", str(root), "run", "--base", base, "--map", str(map_dir)]
+    log = ["--log", str(tmp_path / "run.log")]
+    assert ti.main([*common, *log, "--since", earlier, "--import-time-by-file"]) == 0
+    assert "selected 1, fallback no" in capsys.readouterr().out
+    assert calls[-1][-1].startswith("@")
+    assert ti.main([*common, *log, "--since", earlier, "--full"]) == 0
+    captured = capsys.readouterr()
+    assert "selected all, fallback yes" in captured.out and "full suite: --full" in captured.err
+    assert not calls[-1][-1].startswith("@")
 
 
 def test_run_refuses_workers_after_the_separator(repo, tmp_path: Path) -> None:

@@ -132,7 +132,7 @@ from openflowsheet.models.syn001.saturation_band import degeneracy_distance
 from openflowsheet.models.syn001.tp_state import single_phase_admissible
 from openflowsheet.numerics.newton import _trial_point, solve_newton
 from openflowsheet.orchestrator import region as region_module
-from openflowsheet.orchestrator import region_phase, region_problem
+from openflowsheet.orchestrator import region_attempts, region_phase, region_problem
 from openflowsheet.orchestrator.execution import ExecutionPlan
 from openflowsheet.orchestrator.executor import execute_plan
 from openflowsheet.orchestrator.region import (
@@ -6849,6 +6849,7 @@ def _b35() -> tuple[bool, dict[str, Any], dict[str, Any]]:
     with pytest.MonkeyPatch.context() as patch:
         patch.setattr(region_module, "_homotopy", homotopy)
         patch.setattr(region_module, "solve_newton", solve)
+        patch.setattr(region_attempts, "solve_newton", solve)
         run = release.plan_run(release.case_document("HOM-01"), release.case_policy("HOM-01"))
     step = release.region_step(run.result)
     corrector = [opening for inside_homotopy, opening in calls if inside_homotopy]

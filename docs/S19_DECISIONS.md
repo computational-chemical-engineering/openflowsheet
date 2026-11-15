@@ -366,3 +366,162 @@
   `.extend` (no-gain). W4 (public signatures, ADR 0076): `units.convert_input_value` overloads (9 parameters),
   `adapters/external/launcher.launch` (11). launcher.py health 9.0 -> 8.8 while debt fell 23.1 -> 15.8: asked the
   tool owner.
+- **2026-11-15, health vs debt (code_health, cce-code-health a0aff44).** launcher.py health 9.0 -> 8.8 after
+  9eaa29a2 is intended: health counts smelly functions per smell (many_args 0.2 each), so an extraction that leaves
+  the parent's smells and gives the helper 6 parameters lowers health while debt falls. G-END binds repo health
+  >= 9.0, so engineers avoid helpers with more than 5 parameters (parameter object first, playbook seed
+  anti-pattern). `_await_exit` gets a parameter object with W4's `launch` signature change.
+- **2026-11-15, split-region-2 merged.** Review R-W3-G1O-2 (reviewer, Opus): merge after fixes 1 to 3 (applied):
+  an assignment-installed Newton spy (tests/test_opt_revision_host.py) and a spy table (scripts/s10c_cmw_diagnose.py)
+  missed region_attempts; T03 A02 scan widened. Lesson for retarget inventories: grep assignments
+  (`module.name = `) and spy tables, not only setattr/patch calls. Kept: 1e9d2fac (forbid rule covers
+  region_phase, region_problem), the benchmark retarget (benchmarks/t08/ptc_r1). Notes for W4/I-19: region_attempts
+  docstring omits its region_phase import; tests/test_s01_cascade_wo1.py:262-263 patches names that callers import
+  directly (dead guard, older than S19).
+- **2026-11-15, Q1 ruled (R-W3-G1N-1, reviewer on Fable 5.2): the RC form is accepted** for the five loop
+  functions; text in playbook rule 6. G1 lane N run 1 (A1, N1, P1): merge after fixes: (1) the RC check script
+  gains (iii) no `self.<name>` where `<name>` is a parameter or local of that method and (iv) no bare store of a
+  field name below the constructor, comparing `ast.dump`, before A2/C2/R1; (2) no-gain docstring fixes at
+  newton.py:680/708/712, ptc.py:566/590/594. Health: the closing methods' 9 parameters are accepted (no parameter
+  object: one consumer, 19 sites); ptc.py 6.8 is open: if the P steps end below 7.0 that is a miss and P1 is
+  reverted. Notes: anderson.py:380 positional unpack of `_Mixing` read by attribute at A4; frame fields still
+  unread at a function's last step are dropped; `field(init=False)` stays without a default.
+- **2026-11-15, W3 G3 run 1 review R-W3-G3-1 (reviewer, Opus): merge after fixes** (docstrings, f85b4cf6, gated
+  no-gain): `_stage_a_best`/`_best_feasible` keep a running incumbent (ties keep the earlier point), `s0` documented
+  rather than dropped (dropping `[1:]` would remove a literal); `run_study` names its helpers. Notes for later:
+  `verification.py:417` 3-tuple repeats `check.status == "pass"` (NamedTuple or `(check, basis)`); manifest.py caller
+  comments repeat helper docstrings (low). DECISION: `trust_region/study.py::run_study` (still brain, cognitive 43;
+  its `run` and `check` closures rebind the caller's locals) takes the RC recipe under the Q1 ruling, with
+  rc_check.py. Alternative: leave it brain. Reversible by reverting that step.
+- **2026-11-15, W3 G2 run 4 merged.** Review R-W3-G2-4 (reviewer, Opus): merge. Notes for the next G2 run
+  (no-gain): column_blocks.py:286 docstring defines `t = carry[0]`; :128 "whose specification is absent or not
+  `duty`". Recorder evidence is sound but a lower bound (keyword arguments not recorded; by-name imports before
+  pytest_configure bypass the wrapper; opaque objects as `<Type>`). W4 twin: column_acceptance.acceptance_failures
+  and cascade_solve's, message for message.
+- **2026-11-15, W3 G5 run 3 review R-W3-G5-3 (reviewer, Opus): merge after fixes.** Fix 2 and note 3 applied
+  (72481f3b, docstrings, gated no-gain). Fix 1 (`_Routing` built by keyword) raised table.py's debt 21.4 -> 22.0 and
+  is deferred to W4, where the routing becomes the routing phase's result. `_Routing` accepted as a parameter
+  object. W4 item: one verify parameter object (provider, context, tolerances, note, state, components) defined in
+  the shared layer while merging the split/revision-check twins in gamma_phi_units.py and pr_c1.py (public names),
+  reconciled with `Unit`'s fields.
+- **2026-11-15, two gates at a time (Frank: "Run more gates at a time if needed").** gate.sh takes one of two slots
+  (`gate.lock`, `gate.slot2.lock`) and deselects the wall-time budget test
+  `tests/test_t07_v17_reference.py::test_f6_the_forty_runs_fit_their_budget` through PYTEST_ADDOPTS (it failed
+  under two concurrent suites in G-SELF run 1). f6 runs alone on `wp/S19` before each merge into `main`, and CI runs
+  it on both legs. A gate that fails only on another timing test is re-gated unchanged and logged with --rerun-of.
+  Rejected: three slots (16 cores, 12 xdist workers per gate).
+- **2026-11-15, /tmp full (ENOSPC).** Two gates plus a test-map build filled the RAM-backed /tmp (tmpfs, 63 GB).
+  The map build at 736f70db ended with 392 failures (all environment) and was discarded; it is rebuilt with TMPDIR on
+  disk. Gates 20261115T175500-g6r2-s4 and 20261115T175531-g1n-p2 failed their tests tier on ENOSPC only: logged as
+  gate-fail, re-gated unchanged with --rerun-of. gate.sh now sets TMPDIR to `<git-common-dir>/codehealth/tmp-gates`.
+  Why the new map: since I-15 every gate fell back to the full suite (an added file since `MB` = bec6dbe6), about 13
+  minutes of tests per gate; a map at the current tip restores per-step selection.
+- **2026-11-15, gate load.** With two gates (12 xdist workers each) and a map build, load reached 40 to 65 on 16
+  cores and slow tests crossed the 900 s per-test limit (test_t07_r6_routes g_r7_6: 667 s alone under load; two
+  generator checks): environment failures, re-gated unchanged. The tests tier takes its worker count from
+  `S19_GATE_WORKERS` (gate.sh sets 8 with two slots); lanes pick up the config at their next base. The 900 s
+  limit stays. Main lever: the test map at a recent base (per-step selection instead of the full suite).
+- **2026-11-15, TMPDIR moved outside the repository.** The in-repo TMPDIR (`.git/codehealth/tmp-gates`, 18:42) made
+  tests fail that check their temporary projects cannot see the repository (HarnessError "CLAUDE.md is visible",
+  x05 stray/installed-outside checks): gates from 18:42 until this commit that failed on those are environment
+  failures, re-gated unchanged. TMPDIR is now `~/.cache/openflowsheet/tmp-gates`; the map build restarted the same
+  way.
+- **2026-11-15, W3 G3 run 2 (partial).** One step accepted: de77fa37 `run_study` RC first step (`_StudyRun`; 40.5 ->
+  21.6, not brain; study.py health 4.8 -> 5.8), after three environment gate-fails; a reviewer reads it before any
+  further step. Five steps drafted and tested, not gated: patches kept in `<git-common-dir>/codehealth/drafts/g3-run2/`
+  (optimize_revision `_start_failure`; surrogate evaluate `_centre_evidence`, `_scored`; trf `_run` `_preflight_phase`;
+  verification `_Linearization`). Left as is (orchestrator): verification `_regimes` (a test imports and calls it;
+  W4) and `_kkt` (a parameter object would mix phases). New engineer runs paused (2026-11-15 evening) until Frank
+  weighs OpenFlowsheet-check's advice (gate chains, no idle agents, lanes sized to gate capacity, a split G-END).
+- **2026-11-15, G1 lane N run 2 review R-W3-G1N-2 (reviewer, Opus): merge after fixes** (docstrings, d41b0909,
+  gated no-gain). rc_check.py RESULT OK on A2, N2, P2. P2's `_stop -> _Closed` (guard in the loop, a method that
+  always closes) accepted. Notes: ptc.py:293 dispatch `isinstance(frozen, _Frozen)` relies on `_Frozen` being a
+  tuple subclass and `_Closed` a plain tuple: never test against `tuple`; `_Frozen.infinity`/`.merit` unread until
+  P3; anderson frame fields `rules`, `observer`, `n`, `scale`, `tolerance_hat`, `lower` unread by methods (drop at
+  the last step). ptc.py 6.8 still open (P3, P4).
+- **2026-11-15, procedure change (Frank: "Yes, your information is right. Please adopt the procedure.").** Adopted,
+  in Frank's order, the OpenFlowsheet-check advice: (1) narrow the test_impact fallback (`.codehealth/`, `.claude/`
+  are tooling no test reads) and move `MB` to a recent tip; (2) a gate queue outside the agents
+  (`.claude/skills/s19-refactor/gate_queue.py`): engineers deliver a chain of steps, enqueue it and end; one
+  orchestrator wake per lane result; (3) orchestrator self-reset at milestones (`<git-common-dir>/codehealth/tools/
+  self_reset.sh`), resuming from `.claude/skills/s19-refactor/SKILL.md`. Also: lanes at most 2 until the weekly
+  reset (Thu 19 Nov 13:00); chains per function. Open for Frank: the G-END split (blocking for S18 vs trailing)
+  and S18's file list.
+- **2026-11-15, a second wall-time test deselected in gates:** `tests/test_t07_conformance.py::
+  test_the_budget_of_the_scenario_runs` (121.9 s against 120 s under two gates). Runs alone with f6 before each
+  merge into main; CI runs both.
+- **2026-11-15, gate selection (OpenFlowsheet-check findings, read-only diagnosis).** Of S19's gate fallbacks, 86
+  were inherited from changes since MB, 36 a missing map, 8 caused by the step itself. support_envelope.yaml is
+  edited by every evidence-manifest commit and read at collection by 8+ test modules; coupled_run.py:46 alone caused
+  30 inherited fallbacks. DECISION (orchestrator, under Frank's adopted procedure): step-relative selection,
+  `test_impact.py run --base MB --since <last accepted>`: fallback and import-time rules only for paths in
+  since..HEAD, the selection the cumulative one restricted to those paths. Known hole (a call edge created between
+  MB and since in another file) closed by the full suite at each lane merge into wp/S19. Built by OpenFlowsheet-check
+  on `wp/S19-tools2` after `wp/S19-tools` merges. Alternative: skip lists only. Reversible by dropping `--since`.
+  Process: MB moves after every merged restructure step; evidence-manifest commits only right before a merge into
+  main, followed by a map rebuild.
+- **2026-11-15, S19 re-ordered (Frank, confirmed in this session's form: "Yes, adopt it"; first approved in the
+  OpenFlowsheet-check chat: "Yes. This sounds like a good plan.").** (1) The scale probe (R-1034; the S18 of
+  Frank's 2026-11-12 order) runs now, in parallel. (2) First what the 0.5 line builds on: W4 (ADR 0076), the last
+  cycles and violations, G5 (verify/, run/) and G6 (thermo/, graph/, messages/, units/, adapters/, registry/,
+  compile/). (3) The 0.5 line starts when that is done. (4) G3 studies, G4 assessment, G2 models and W5 run behind
+  development; G1 (orchestrator/, numerics/) is held until the scale probe reports. (5) The legacy models/ engine
+  (std.* re-derives its rows and may not import models/syn001, ADR 0065:339-341) stays untouched until Frank rules.
+  G-END stays the end criterion for the whole repository; only the blocking set changes. Running G1, G2, G3 lanes
+  finish and merge their accepted steps and start no new targets.
+- **2026-11-15, W3 G2 run 5 merged; G2 trails development.** Review R-W3-G2-5 (reviewer, Opus): merge; rc_check OK
+  on the builder step. Residue recorded for the trailing phase (and subject to Frank's ruling on the legacy models/
+  engine): `declared_rows` still brain (85.3) with `slot` (cognitive 25, NLOC 97) over RC7: RC step 2 splits `slot`
+  by spec concept and passes `builder` to `_link_rows`; `_ContributionBuilder` docstring should state which entry
+  wins on a repeated id (lists keep both, dicts the last); `_region_ends`/`_RegionEnds` also carry domain-end
+  enthalpies (a broader name). `ph_state` (9.8) needs a private parameter object (provider, n, pressure, target,
+  context) to go further.
+- **2026-11-15, map build hung (OpenFlowsheet-check found it).** The 736f70db build stopped at 97% for 2 h: a
+  `s03_reference.py --check` multiprocessing pool lost its workers under load (zombies) and its parent waited
+  forever. The orchestrator killed that subprocess only (120155, 120191); the build continues and records the test as
+  unsure (B-17). Future builds: per-test timeout through PYTEST_ADDOPTS (extra pytest args would mark the map
+  partial), and no gate runs while a map builds (SKILL.md).
+- **2026-11-15, G1 lane O run 3 merged; G1 held.** Review R-W3-G1O-3: merge after one docstring fix. Held residue:
+  executor.py `_solve_revision_region` (74 NLOC) and `_eo_recovery` (71) wait for `_PlanRun` (plan Q4, W4);
+  `_loop_tear` may become `_plan_tear` with a NamedTuple (name clash with graph/tear.py); twins
+  `_recovery_taken`/`_revision_continuation_taken` stay (rule 15). Region steps R1, S1, C2 and E4, X4 to X6 wait
+  for the scale probe.
+- **2026-11-15, wp/S19-tools merged (e9f34250).** test_impact skips `.codehealth/`, `.claude/` (67 tests, two
+  falsifiers; the premise guard scans source string literals for those trees as whole path components, since two
+  fixtures embed absolute worktree paths); `gate_queue.py` proved on three real gates. The proof's codehealth log
+  records stay outside s19.jsonl (proof commits net to zero; gate JSONs kept). Engineers now deliver a chain, enqueue
+  it and end (`S19-W3-common.md`).
+- **2026-11-16, S18 scale probe reported (registered pass, quiet window; evidence on `wp/SP` cb60b59f,
+  `evidence/S18/c952a6b3.../manifest.json`, status implemented).** SYN-001 C-MW column, wilson-ig-v1, 3 components,
+  stages 10..100: log-log slope of compile CPU 0.99 and of CPU per Newton iteration 0.96, within E-F6-15's 1.3:
+  R-1034's architect-pass trigger is not met. At N=100: compile 0.29 s, 139 ms per iteration (78% in Python
+  property callbacks). 1e4-variable probe: compile 2.25 s, 1.05 s per iteration. Not E-F6-15 itself (not std, 3
+  components). Found: `compile/casadi_backend.py:567` `structural_pattern` is O(nnz x n) (recomputes equation ids
+  per nonzero; about 84 of 113 s of solve CPU at 1e4): a G6 work order (blocking set, compile/). G1's hold
+  condition ("until the scale probe has reported") is met: G1 resumes behind the blocking set. `wp/SP` is not
+  merged: it goes into main with the next merge after Frank's sign-off.
+- **2026-11-16, gate queue: interface mode and `--head` (4535f3bd, then the --head commit).** gate.sh and the queue
+  take `--mode interface` (ADR 0076 W4 steps; base = plan commit, `--plan` the interface plan). `enqueue --head SHA`
+  gates base..SHA of a lane in a temporary detached worktree (`.claude/worktrees/q-<label>`, removed after), so an
+  engineer enqueues several jobs of mixed modes on one lane and ends (W4 items need a refactor-mode retarget and an
+  interface step per item). Checked with a fake gate: the scratch worktree is created at the head, the gate runs in
+  it, it is removed; a head that left the lane is refused. Runner restarted.
+- **DECISION 2026-11-16: G6 run 2 is reviewed together with run 3** -> one `reviewer` pass over 8e4b2db7.. the run 3
+  tip. Why: messages/ is tier "other" (cadence every 8 steps); run 2 has 4 accepted steps; the run 3 S1 step
+  (casadi_backend.py structural_pattern, one step) is read in the same pass before the merge. Saves one agent slot
+  while lanes are capped at 2. Alternative: review run 2 first (the state file's order). Reversible: review run 2
+  alone if run 3 fails.
+- **2026-11-16, W4 run 1 briefed** (`S19-W4-1.md`, lane `wp/S19-w4` from 5d09ace0): I-6 (A16), I-5 (A12), I-3 (A13)
+  in that order, each restructure (where the home is missing), src retarget, outside-gate retarget, interface step.
+  Layer entry `openflowsheet.schema_check` above `serialize` committed before (5d09ace0, rule 6). G6 run 3 briefed
+  (`S19-W3-G6-3.md`): re-gate 684c9f2a, lint.py drafts s5, s6, s7b, s8, structural_pattern hoist with a timing and
+  equality check at the 715-stage probe column.
+- **2026-11-16, wp/S19-tools2 merged (37307ab0; OpenFlowsheet-check).** Step-relative selection `--since {base}`
+  with the approximate `--import-time-by-file` in the tests tier (replay of 104 W3 rows: full-suite fallbacks 101 ->
+  19, median 2123 of 20362 tests); queue `--snapshot`, SKIPPED after a failed step, `--mode merge-check`
+  (S19_GATE_FULL=1), `wait --idle`. Reviewed by the orchestrator: accepted. Rule from now on: a `merge-check` PASS
+  before every lane merge into wp/S19 (it closes the selection's holes: import-time state without executed lines,
+  collection-time code, call edges created between MB and since). Lanes branch from a commit containing MB (else
+  full-suite fallback; wp/S19-g6 at ca416ab3 does not contain MB 736f70db). The interim `--head` of 4535f3bd is
+  folded into `--snapshot` (`--head` alone implies it); `interface` mode kept. First gate with the new tier: read
+  its "selected N" line as the proof.

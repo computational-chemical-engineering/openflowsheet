@@ -65,6 +65,7 @@ from openflowsheet.studies.surrogate.plan import (
     SAMPLER_ID,
     SPLITS,
     BoxCoordinate,
+    Split,
 )
 from openflowsheet.studies.surrogate.quadratic import (
     ADMISSIBLE_DT_K,
@@ -593,7 +594,10 @@ def _failure_consistency(manifest: Mapping[str, Any]) -> list[str]:
 
 def check_manifest(manifest: Mapping[str, Any]) -> list[str]:
     """Every inconsistency of `manifest` that its schema cannot express (M04.A24); empty when
-    none. The schema is checked first; a manifest that fails it is not read further."""
+    none. The schema is checked first; a manifest that fails it is not read further, nor is one
+    with a non-finite or non-canonical number or an unregistered plan. The splits are checked
+    by `_split_consistency`, the band by `_band_consistency`, the failure lists by
+    `_failure_consistency`, the qualifications by `_qualification_consistency`."""
     invalid = schema_errors(MANIFEST_SCHEMA, manifest)
     if invalid:
         return [f"schema: {error}" for error in invalid]
@@ -630,64 +634,10 @@ def check_manifest(manifest: Mapping[str, Any]) -> list[str]:
         )
 
     # Splits: the plan's counts, keys hashed as recorded, pairwise disjoint and without repeats.
-    splits = manifest["splits"]
-    seen: dict[str, str] = {}
-    for split in SPLITS:
-        block = splits[split]
-        keys = block["keys"]
-        expected: int = counts[split]
-        size = expected * 2 * len(BOX) if split == "gradient" else expected
-        if block["count"] != expected or len(keys) != size:
-            found.append(
-                f"{split}: count {block['count']} with {len(keys)} keys; the plan has {expected}"
-            )
-        if block["keys_sha256"] != document_sha256(keys):
-            found.append(f"{split}: keys_sha256 is not the keys' SHA-256")
-        for key in keys:
-            if key in seen:
-                found.append(f"{split}: key {key} is also in {seen[key]} (overlapping splits)")
-            seen[key] = split
-        for entry in (*block["failed"], *block["incomplete"]):
-            if not 0 <= entry["index"] < len(keys):
-                found.append(f"{split}: index {entry['index']} is outside the split")
-            elif "key" in entry and entry["key"] != keys[entry["index"]]:
-                found.append(
-                    f"{split}: incomplete key {entry['key']} is not keys[{entry['index']}]"
-                )
-    centres = splits["gradient"]["centres"]
-    stencil_keys = [key for centre in centres for key in centre["stencil_keys"]]
-    if stencil_keys != splits["gradient"]["keys"]:
-        found.append("gradient: the centres' stencil keys are not the split's keys in order")
+    found.extend(_split_consistency(manifest["splits"], counts))
 
     # The band, the coverage count and the bound, re-derived from the stored scores.
-    calibration = manifest["calibration"]
-    evaluation = manifest["evaluation"]
-    cal_scores = _scores(calibration["scores"])
-    test_scores = _scores(evaluation["scores"])
-    n, m = len(cal_scores), len(test_scores)
-    if calibration["n"] != n or n != counts["calibration"]:
-        found.append(f"n = {calibration['n']} ({n} scores); the plan's is {counts['calibration']}")
-    if evaluation["m"] != m or m != counts["test"]:
-        found.append(f"m = {evaluation['m']} ({m} scores); the plan's is {counts['test']}")
-    if calibration["k"] != k_index(n):
-        found.append(f"k = {calibration['k']}, not k({n}) = {k_index(n)}")
-    if evaluation["h_min"] != h_min(m):
-        found.append(f"h_min = {evaluation['h_min']}, not h_min({m}) = {h_min(m)}")
-    band = conformal_band(cal_scores)
-    q_hat = calibration["q_hat"]
-    if (q_hat is None) != (band.q_hat is None) or (
-        q_hat is not None and float(q_hat) != band.q_hat
-    ):
-        found.append(f"q_hat {q_hat!r} is not the k-th smallest stored score ({band.q_hat!r})")
-    hits = None if band.q_hat is None else coverage_hits(test_scores, band.q_hat)
-    if evaluation["hits"] != hits:
-        found.append(f"hits {evaluation['hits']!r} is not #{{score <= q_hat}} = {hits!r}")
-    lower = None if hits is None else clopper_pearson_lower(hits, m)
-    stored = evaluation["lower_bound"]
-    if (stored is None) != (lower is None) or (
-        lower is not None and stored is not None and abs(float(stored) - lower) > 1e-12
-    ):
-        found.append(f"lower_bound {stored!r} is not L(H, m) = {lower!r}")
+    found.extend(_band_consistency(manifest, counts))
 
     # The verdict, re-derived from the stored metrics (spec §7.3).
     derived = derived_verdict(manifest)
@@ -724,6 +674,88 @@ def check_manifest(manifest: Mapping[str, Any]) -> list[str]:
     found.extend(_failure_consistency(manifest))
 
     # The qualifications: Q0 first iff synthetic, then Q1–Q7, Q6 filled.
+    found.extend(_qualification_consistency(manifest))
+    return found
+
+
+def _split_consistency(splits: Mapping[str, Any], counts: Mapping[Split, int]) -> list[str]:
+    """The `splits` block against the plan's `counts`: each split's count and key count, its
+    `keys_sha256`, no key in two splits, every failed or incomplete index inside its split (and
+    an incomplete entry's key that of its index), and the gradient centres' stencil keys being
+    the gradient split's keys in order."""
+    found: list[str] = []
+    seen: dict[str, str] = {}
+    for split in SPLITS:
+        block = splits[split]
+        keys = block["keys"]
+        expected: int = counts[split]
+        size = expected * 2 * len(BOX) if split == "gradient" else expected
+        if block["count"] != expected or len(keys) != size:
+            found.append(
+                f"{split}: count {block['count']} with {len(keys)} keys; the plan has {expected}"
+            )
+        if block["keys_sha256"] != document_sha256(keys):
+            found.append(f"{split}: keys_sha256 is not the keys' SHA-256")
+        for key in keys:
+            if key in seen:
+                found.append(f"{split}: key {key} is also in {seen[key]} (overlapping splits)")
+            seen[key] = split
+        for entry in (*block["failed"], *block["incomplete"]):
+            if not 0 <= entry["index"] < len(keys):
+                found.append(f"{split}: index {entry['index']} is outside the split")
+            elif "key" in entry and entry["key"] != keys[entry["index"]]:
+                found.append(
+                    f"{split}: incomplete key {entry['key']} is not keys[{entry['index']}]"
+                )
+    centres = splits["gradient"]["centres"]
+    stencil_keys = [key for centre in centres for key in centre["stencil_keys"]]
+    if stencil_keys != splits["gradient"]["keys"]:
+        found.append("gradient: the centres' stencil keys are not the split's keys in order")
+    return found
+
+
+def _band_consistency(manifest: Mapping[str, Any], counts: Mapping[Split, int]) -> list[str]:
+    """The conformal band, the coverage count and the lower bound re-derived from the stored
+    calibration and test scores: `n` and `m` against the scores and the plan's `counts`, `k`
+    and `h_min` of those sizes, `q_hat` the k-th smallest calibration score, `hits` the test
+    scores within it, and `lower_bound` L(H, m) to 1e-12."""
+    found: list[str] = []
+    calibration = manifest["calibration"]
+    evaluation = manifest["evaluation"]
+    cal_scores = _scores(calibration["scores"])
+    test_scores = _scores(evaluation["scores"])
+    n, m = len(cal_scores), len(test_scores)
+    if calibration["n"] != n or n != counts["calibration"]:
+        found.append(f"n = {calibration['n']} ({n} scores); the plan's is {counts['calibration']}")
+    if evaluation["m"] != m or m != counts["test"]:
+        found.append(f"m = {evaluation['m']} ({m} scores); the plan's is {counts['test']}")
+    if calibration["k"] != k_index(n):
+        found.append(f"k = {calibration['k']}, not k({n}) = {k_index(n)}")
+    if evaluation["h_min"] != h_min(m):
+        found.append(f"h_min = {evaluation['h_min']}, not h_min({m}) = {h_min(m)}")
+    band = conformal_band(cal_scores)
+    q_hat = calibration["q_hat"]
+    if (q_hat is None) != (band.q_hat is None) or (
+        q_hat is not None and float(q_hat) != band.q_hat
+    ):
+        found.append(f"q_hat {q_hat!r} is not the k-th smallest stored score ({band.q_hat!r})")
+    hits = None if band.q_hat is None else coverage_hits(test_scores, band.q_hat)
+    if evaluation["hits"] != hits:
+        found.append(f"hits {evaluation['hits']!r} is not #{{score <= q_hat}} = {hits!r}")
+    lower = None if hits is None else clopper_pearson_lower(hits, m)
+    stored = evaluation["lower_bound"]
+    if (stored is None) != (lower is None) or (
+        lower is not None and stored is not None and abs(float(stored) - lower) > 1e-12
+    ):
+        found.append(f"lower_bound {stored!r} is not L(H, m) = {lower!r}")
+    return found
+
+
+def _qualification_consistency(manifest: Mapping[str, Any]) -> list[str]:
+    """The stated qualifications against those required: none with an unfilled field, Q0
+    first iff the manifest is synthetic, then the P_ref's required ones in order, the Q6 slot
+    filled (its nominal-coverage text) rather than equal to the template."""
+    found: list[str] = []
     stated = list(manifest["qualifications"])
     for text in stated:
         if _UNFILLED.search(text):

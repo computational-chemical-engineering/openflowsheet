@@ -39,9 +39,9 @@ from __future__ import annotations
 
 import math
 from collections.abc import Callable, Mapping, Sequence
-from dataclasses import dataclass, replace
+from dataclasses import dataclass, field, replace
 from types import MappingProxyType
-from typing import Final
+from typing import Final, NamedTuple
 
 import numpy as np
 import numpy.typing as npt
@@ -238,177 +238,76 @@ def solve_ptc(
     """
     problem = ptc.problem
     x = np.array([normalize_zero(float(value)) for value in x0], dtype=np.float64)
-    tolerance = problem.tolerance_vector()
-    lower = problem.lower_bound_vector()
-    sigma = row_signs(problem.row_ids, ptc.row_accumulation, sign)
-    running = counters or Counters()
-    steps: list[PseudoStep] = []
-    rejections: list[PtcRejection] = []
-    tau = settings.tau_initial_s if tau_start is None else tau_start
+    run = _PtcRun(
+        ptc=ptc,
+        problem=problem,
+        settings=settings,
+        trace=trace,
+        signature=signature,
+        attempt=attempt,
+        observer=observer,
+        compare_empty=compare_empty,
+        x=x,
+        tolerance=problem.tolerance_vector(),
+        lower=problem.lower_bound_vector(),
+        sigma=row_signs(problem.row_ids, ptc.row_accumulation, sign),
+        running=counters or Counters(),
+        steps=[],
+        rejections=[],
+        tau=settings.tau_initial_s if tau_start is None else tau_start,
+    )
 
-    def digest(vector: npt.NDArray[np.float64]) -> str:
-        return state_sha256(vector, problem.variable_ids)
-
-    def evaluate(vector: npt.NDArray[np.float64]) -> Evaluation:
-        nonlocal running
-        running = running.plus(residual_calls=1)
-        return problem.residual(vector)
-
-    def met(values: Sequence[float]) -> bool:
-        return bool(np.all(np.abs(np.asarray(values, dtype=np.float64)) <= tolerance))
-
-    def record(
-        outcome: SolveOutcome,
-        values: tuple[float, ...],
-        *,
-        iterations: int,
-        tau_end: float,
-        message: str = "",
-        budget: str | None = None,
-        blocked_by: tuple[str, ...] = (),
-        polish: str | None = None,
-        stopped: tuple[npt.NDArray[np.float64], tuple[float, ...]] | None = None,
-    ) -> tuple[NewtonResult, PtcRecord]:
-        array = np.asarray(values, dtype=np.float64)
-        infinity = float(np.max(np.abs(array))) if array.size else 0.0
-        merit = problem.scaling.merit(values, problem.row_ids)
-        trace.record(
-            kind="attempt_closed",
-            attempt=attempt,
-            iteration=iterations,
-            signature=signature,
-            state_sha256=digest(x),
-            residual_inf_unscaled=infinity,
-            merit=merit,
-            counters=running,
-            outcome=outcome,
-            message=message,
-        )
-        result = NewtonResult(
-            outcome=outcome,
-            x=x,
-            residual=values,
-            residual_inf=infinity,
-            merit=merit,
-            iterations=iterations,
-            counters=running,
-            converged=outcome == "CONVERGED",
-            budget=budget,
-            message=message,
-            accepted_any=bool(steps),
-            blocked_by=blocked_by,
-        )
-        return result, PtcRecord(
-            steps=tuple(steps),
-            rejections=tuple(rejections),
-            tau_end=tau_end,
-            polish=polish,
-            stopped_x=None if stopped is None else stopped[0],
-            stopped_residual=None if stopped is None else stopped[1],
-        )
-
-    evaluation = evaluate(x)
+    evaluation = run.evaluate(run.x)
     if evaluation.status != "ok" or evaluation.values is None:
-        return record(
+        return run.close(
             "EVALUATION_ERROR" if evaluation.status == "error" else "PTC_STALLED",
             tuple(np.full(len(problem.row_ids), np.nan)),
             iterations=0,
-            tau_end=tau,
+            tau_end=run.tau,
             message=f"the initial point could not be evaluated: {evaluation.status}: "
             f"{evaluation.message}",
         )
-    values = evaluation.values
+    run.values = evaluation.values
 
     for k in range(settings.max_steps_per_attempt + 1):
-        scaled_residual = problem.scaling.scale_residual(values, problem.row_ids)
+        scaled_residual = problem.scaling.scale_residual(run.values, problem.row_ids)
         phi = _norm(scaled_residual)
-        infinity = float(np.max(np.abs(np.asarray(values)))) if values else 0.0
+        infinity = float(np.max(np.abs(np.asarray(run.values)))) if run.values else 0.0
         merit = 0.5 * phi * phi
 
         # §7.4: the stop, K03 §5.2's test, before anything else — and before any SER update.
-        if met(values):
-            if k == 0:
-                return record("CONVERGED", values, iterations=0, tau_end=tau)
-            stopped = (x.copy(), values)
-            verdict, polished = _polish(
-                problem, x, values, signature, attempt, k, trace, running, compare_empty
-            )
-            running = polished.counters
-            if polished.outcome == "EVALUATION_ERROR":
-                return record(
-                    "EVALUATION_ERROR",
-                    values,
-                    iterations=k,
-                    tau_end=tau,
-                    message=polished.message,
-                    polish=verdict,
-                    stopped=stopped,
-                )
-            if verdict == "accepted":
-                x, values = polished.x, polished.values
-            return record(
-                "CONVERGED", values, iterations=k, tau_end=tau, polish=verdict, stopped=stopped
-            )
+        if run.met(run.values):
+            return run._stop(k)
 
         if k == settings.max_steps_per_attempt:
-            return record(
+            return run.close(
                 "BUDGET_EXHAUSTED",
-                values,
+                run.values,
                 iterations=k,
-                tau_end=tau,
+                tau_end=run.tau,
                 budget="ptc_steps",
                 message=f"{k} accepted pseudo-steps without convergence",
             )
 
-        # The matrices of pseudo-step k, formed once and frozen during its retries (§7.3).
-        running = running.plus(jacobian_calls=1)
-        try:
-            unscaled = sp.csc_matrix(problem.jacobian(x))
-        except JacobianUnavailableError as unavailable:
-            # T04 review M1: a derivative defect at an accepted iterate, never a retry.
-            return record(
-                "EVALUATION_ERROR",
-                values,
-                iterations=k,
-                tau_end=tau,
-                message=f"the Jacobian could not be evaluated: {unavailable}",
-            )
-        jacobian = _row_scaled(_scale_matrix(unscaled, problem), sigma)
-        try:
-            mass = _scale_matrix(sp.csc_matrix(ptc.mass(x)), problem)
-        except MassUnavailableError as unavailable:
-            return record(
-                "EVALUATION_ERROR",
-                values,
-                iterations=k,
-                tau_end=tau,
-                message=f"the mass matrix could not be evaluated: {unavailable}",
-            )
-        trace.record(
-            kind="jacobian",
-            attempt=attempt,
-            iteration=k,
-            signature=signature,
-            state_sha256=digest(x),
-            residual_inf_unscaled=infinity,
-            merit=merit,
-            counters=running,
-        )
-        rhs = -(sigma * scaled_residual)
+        frozen = run._frozen(k, scaled_residual, infinity, merit)
+        if not isinstance(frozen, _Frozen):
+            return frozen
 
-        tau_try, retry = tau, 0
+        tau_try, retry = run.tau, 0
         accepted: tuple[npt.NDArray[np.float64], tuple[float, ...], float, float, tuple[str, ...]]
         while True:
             reason: RejectionReason | None = None
             alpha: float | None = None
             blocked: tuple[str, ...] = ()
-            trial: npt.NDArray[np.float64] = x
+            trial: npt.NDArray[np.float64] = run.x
             trial_evaluation: Evaluation | None = None
             step_inf: float | None = None
             failure_message = ""
-            running = running.plus(factorizations=1)
+            run.running = run.running.plus(factorizations=1)
             try:
-                step_scaled, linear = solve_linear(sp.csc_matrix(jacobian + mass / tau_try), rhs)
+                step_scaled, linear = solve_linear(
+                    sp.csc_matrix(frozen.jacobian + frozen.mass / tau_try), frozen.rhs
+                )
             except LinearSolveFailedError as failure:
                 reason = "linear_solve_failed"
                 failure_message = str(failure)
@@ -418,10 +317,10 @@ def solve_ptc(
                     attempt=attempt,
                     iteration=k,
                     signature=signature,
-                    state_sha256=digest(x),
+                    state_sha256=run.digest(run.x),
                     residual_inf_unscaled=infinity,
                     merit=merit,
-                    counters=running,
+                    counters=run.running,
                     linear=LinearRecord(
                         residual_normalized=linear.residual_normalized,
                         u_diag_min_abs=linear.min_abs_u_diagonal,
@@ -432,15 +331,15 @@ def solve_ptc(
                     pseudo_step=tau_try,
                 )
                 direction = problem.scaling.unscale_state(step_scaled, problem.variable_ids)
-                alpha_max, landing = _bound_aware_alpha(x, direction, lower)
+                alpha_max, landing = _bound_aware_alpha(run.x, direction, run.lower)
                 if alpha_max == 0.0:
                     reason = "bound_blocked"
                     blocked = tuple(problem.variable_ids[index] for index in landing)
                     failure_message = f"blocked by {', '.join(blocked)}"
                 else:
                     alpha = alpha_max
-                    trial = _trial_point(x, direction, alpha_max, lower, landing)
-                    trial_evaluation = evaluate(trial)
+                    trial = _trial_point(run.x, direction, alpha_max, run.lower, landing)
+                    trial_evaluation = run.evaluate(trial)
                     step_inf = float(np.max(np.abs(step_scaled))) * alpha_max
                     failure_message = trial_evaluation.message
                     if trial_evaluation.status == "error":
@@ -449,19 +348,19 @@ def solve_ptc(
                             attempt=attempt,
                             iteration=k,
                             signature=signature,
-                            state_sha256=digest(trial),
+                            state_sha256=run.digest(trial),
                             residual_inf_unscaled=float("nan"),
                             merit=float("nan"),
-                            counters=running,
+                            counters=run.running,
                             alpha=alpha_max,
                             step_inf_scaled=step_inf,
                             trial_status="rejected",
                             message=trial_evaluation.message,
                             pseudo_step=tau_try,
                         )
-                        return record(
+                        return run.close(
                             "EVALUATION_ERROR",
-                            values,
+                            run.values,
                             iterations=k,
                             tau_end=tau_try,
                             message=trial_evaluation.message,
@@ -482,7 +381,7 @@ def solve_ptc(
                         break
 
             # §7.3.5: a rejection keeps x_k and F_k; nothing of the trial is kept.
-            rejections.append(PtcRejection(k, retry, tau_try, reason, alpha, blocked))
+            run.rejections.append(PtcRejection(k, retry, tau_try, reason, alpha, blocked))
             trial_values = (
                 trial_evaluation.values
                 if trial_evaluation is not None and trial_evaluation.values is not None
@@ -497,7 +396,7 @@ def solve_ptc(
                     if trial_evaluation is not None and trial_evaluation.signature
                     else signature
                 ),
-                state_sha256=digest(trial) if alpha is not None else "",
+                state_sha256=run.digest(trial) if alpha is not None else "",
                 residual_inf_unscaled=(
                     float(np.max(np.abs(trial_values))) if trial_values else float("nan")
                 ),
@@ -506,7 +405,7 @@ def solve_ptc(
                     if trial_values
                     else float("nan")
                 ),
-                counters=running,
+                counters=run.running,
                 alpha=alpha,
                 step_inf_scaled=step_inf,
                 trial_status="rejected",
@@ -530,9 +429,9 @@ def solve_ptc(
                 outcome: SolveOutcome = (
                     "BOUND_BLOCKED" if reason == "bound_blocked" else "PTC_STALLED"
                 )
-                return record(
+                return run.close(
                     outcome,
-                    values,
+                    run.values,
                     iterations=k,
                     tau_end=tau_try,
                     blocked_by=blocked if reason == "bound_blocked" else (),
@@ -543,20 +442,20 @@ def solve_ptc(
 
         # §7.3.6 and §7.4: accepted; SER on accepted iterates only, unless the stop test holds.
         trial, trial_values, alpha_max, accepted_step_inf, landed = accepted
-        before, residual_before = x, values
-        x, values = trial, trial_values
-        next_scaled = problem.scaling.scale_residual(values, problem.row_ids)
+        before, residual_before = run.x, run.values
+        run.x, run.values = trial, trial_values
+        next_scaled = problem.scaling.scale_residual(run.values, problem.row_ids)
         phi_next = _norm(next_scaled)
         tau_next: float | None = None
         ratio: float | None = None
-        if not met(values):
+        if not run.met(run.values):
             ratio = min(
                 max(phi / max(phi_next, settings.phi_floor), settings.gamma_min),
                 settings.gamma_max,
             )
             tau_next = min(max(tau_try * ratio, settings.tau_min_s), settings.tau_max_s)
-            tau = tau_next
-        steps.append(
+            run.tau = tau_next
+        run.steps.append(
             PseudoStep(
                 index=k,
                 tau=tau_try,
@@ -567,9 +466,9 @@ def solve_ptc(
                 tau_next=tau_next,
                 ser_ratio=ratio,
                 x_before=before,
-                x=x,
+                x=run.x,
                 residual_before=residual_before,
-                residual=values,
+                residual=run.values,
                 landing=landed,
             )
         )
@@ -578,10 +477,10 @@ def solve_ptc(
             attempt=attempt,
             iteration=k,
             signature=signature,
-            state_sha256=digest(x),
-            residual_inf_unscaled=float(np.max(np.abs(np.asarray(values)))),
+            state_sha256=run.digest(run.x),
+            residual_inf_unscaled=float(np.max(np.abs(np.asarray(run.values)))),
             merit=0.5 * phi_next * phi_next,
-            counters=running,
+            counters=run.running,
             alpha=alpha_max,
             step_inf_scaled=accepted_step_inf,
             trial_status="accepted",
@@ -592,11 +491,11 @@ def solve_ptc(
         if observer is not None:
             requested = observer.should_close(k)
             if requested is not None:
-                return record(
+                return run.close(
                     requested,
-                    values,
+                    run.values,
                     iterations=k + 1,
-                    tau_end=tau,
+                    tau_end=run.tau,
                     message=(
                         "the attempt controller closed the attempt: a persistent phase wall, "
                         "not an overshoot (§9.3)"
@@ -604,6 +503,208 @@ def solve_ptc(
                 )
 
     raise AssertionError("unreachable: the pseudo-step budget is checked inside the loop")
+
+
+@dataclass
+class _PtcRun:
+    """One call of `solve_ptc`: its fixed frame and the state carried between iterations.
+
+    The state: the iterate `x`, its residual `values`, the counters, the SER pseudo-step `tau`
+    (T04 §7.4), and the accepted pseudo-steps and rejected trials the attempt's `PtcRecord` lists.
+    """
+
+    ptc: PtcProblem
+    problem: Problem
+    settings: PtcPolicy
+    trace: Trace
+    signature: AttemptSignature
+    attempt: int
+    observer: IterationObserver | None
+    compare_empty: bool
+    tolerance: npt.NDArray[np.float64]
+    lower: npt.NDArray[np.float64]
+    sigma: npt.NDArray[np.float64]
+    x: npt.NDArray[np.float64]
+    running: Counters
+    steps: list[PseudoStep]
+    rejections: list[PtcRejection]
+    tau: float
+    values: tuple[float, ...] = field(init=False)
+
+    def evaluate(self, vector: npt.NDArray[np.float64]) -> Evaluation:
+        """Count one residual call on `running`, then evaluate `vector`.
+
+        The count comes first, so it stands when `problem.residual` raises.
+        """
+        self.running = self.running.plus(residual_calls=1)
+        return self.problem.residual(vector)
+
+    def close(
+        self,
+        outcome: SolveOutcome,
+        values: tuple[float, ...],
+        *,
+        iterations: int,
+        tau_end: float,
+        message: str = "",
+        budget: str | None = None,
+        blocked_by: tuple[str, ...] = (),
+        polish: str | None = None,
+        stopped: tuple[npt.NDArray[np.float64], tuple[float, ...]] | None = None,
+    ) -> tuple[NewtonResult, PtcRecord]:
+        """Write `attempt_closed` on `trace`; return the result at `x` and the `PtcRecord`."""
+        array = np.asarray(values, dtype=np.float64)
+        infinity = float(np.max(np.abs(array))) if array.size else 0.0
+        merit = self.problem.scaling.merit(values, self.problem.row_ids)
+        self.trace.record(
+            kind="attempt_closed",
+            attempt=self.attempt,
+            iteration=iterations,
+            signature=self.signature,
+            state_sha256=self.digest(self.x),
+            residual_inf_unscaled=infinity,
+            merit=merit,
+            counters=self.running,
+            outcome=outcome,
+            message=message,
+        )
+        result = NewtonResult(
+            outcome=outcome,
+            x=self.x,
+            residual=values,
+            residual_inf=infinity,
+            merit=merit,
+            iterations=iterations,
+            counters=self.running,
+            converged=outcome == "CONVERGED",
+            budget=budget,
+            message=message,
+            accepted_any=bool(self.steps),
+            blocked_by=blocked_by,
+        )
+        return result, PtcRecord(
+            steps=tuple(self.steps),
+            rejections=tuple(self.rejections),
+            tau_end=tau_end,
+            polish=polish,
+            stopped_x=None if stopped is None else stopped[0],
+            stopped_residual=None if stopped is None else stopped[1],
+        )
+
+    def digest(self, vector: npt.NDArray[np.float64]) -> str:
+        return state_sha256(vector, self.problem.variable_ids)
+
+    def met(self, values: Sequence[float]) -> bool:
+        return bool(np.all(np.abs(np.asarray(values, dtype=np.float64)) <= self.tolerance))
+
+    def _stop(self, k: int) -> _Closed:
+        """§7.4's stop at pseudo-step `k`, whose iterate `x` meets K03 §5.2's test: polish, close.
+
+        At step 0 it closes `CONVERGED` at once. Otherwise T04 §7.5's `_polish` runs from `x`
+        (writing its own events on `trace`), its counters become `running`, and the attempt
+        closes `EVALUATION_ERROR` when the polish could not evaluate, else `CONVERGED`, at the
+        polished iterate when the polish was accepted (it rebinds `x` and `values`). Every close
+        writes `attempt_closed` through `close`.
+        """
+        if k == 0:
+            return self.close("CONVERGED", self.values, iterations=0, tau_end=self.tau)
+        stopped = (self.x.copy(), self.values)
+        verdict, polished = _polish(
+            self.problem,
+            self.x,
+            self.values,
+            self.signature,
+            self.attempt,
+            k,
+            self.trace,
+            self.running,
+            self.compare_empty,
+        )
+        self.running = polished.counters
+        if polished.outcome == "EVALUATION_ERROR":
+            return self.close(
+                "EVALUATION_ERROR",
+                self.values,
+                iterations=k,
+                tau_end=self.tau,
+                message=polished.message,
+                polish=verdict,
+                stopped=stopped,
+            )
+        if verdict == "accepted":
+            self.x, self.values = polished.x, polished.values
+        return self.close(
+            "CONVERGED",
+            self.values,
+            iterations=k,
+            tau_end=self.tau,
+            polish=verdict,
+            stopped=stopped,
+        )
+
+    def _frozen(
+        self,
+        k: int,
+        scaled_residual: npt.NDArray[np.float64],
+        infinity: float,
+        merit: float,
+    ) -> _Frozen | _Closed:
+        """The matrices of pseudo-step `k`, formed once and frozen during its retries (§7.3).
+
+        Counts one Jacobian call on `running`, forms the row-signed scaled Jacobian and the
+        scaled mass matrix at `x`, writes the `jacobian` event, and returns them with the
+        right-hand side and the step's `infinity` and `merit`. A Jacobian or a mass matrix that
+        cannot be evaluated closes `EVALUATION_ERROR` through `close`, which writes
+        `attempt_closed`.
+        """
+        self.running = self.running.plus(jacobian_calls=1)
+        try:
+            unscaled = sp.csc_matrix(self.problem.jacobian(self.x))
+        except JacobianUnavailableError as unavailable:
+            # T04 review M1: a derivative defect at an accepted iterate, never a retry.
+            return self.close(
+                "EVALUATION_ERROR",
+                self.values,
+                iterations=k,
+                tau_end=self.tau,
+                message=f"the Jacobian could not be evaluated: {unavailable}",
+            )
+        jacobian = _row_scaled(_scale_matrix(unscaled, self.problem), self.sigma)
+        try:
+            mass = _scale_matrix(sp.csc_matrix(self.ptc.mass(self.x)), self.problem)
+        except MassUnavailableError as unavailable:
+            return self.close(
+                "EVALUATION_ERROR",
+                self.values,
+                iterations=k,
+                tau_end=self.tau,
+                message=f"the mass matrix could not be evaluated: {unavailable}",
+            )
+        self.trace.record(
+            kind="jacobian",
+            attempt=self.attempt,
+            iteration=k,
+            signature=self.signature,
+            state_sha256=self.digest(self.x),
+            residual_inf_unscaled=infinity,
+            merit=merit,
+            counters=self.running,
+        )
+        rhs = -(self.sigma * scaled_residual)
+        return _Frozen(jacobian, mass, rhs, infinity, merit)
+
+
+type _Closed = tuple[NewtonResult, PtcRecord]
+
+
+class _Frozen(NamedTuple):
+    """Pseudo-step k's frozen matrices (§7.3), its right-hand side, and its residual measures."""
+
+    jacobian: sp.csc_matrix
+    mass: sp.csc_matrix
+    rhs: npt.NDArray[np.float64]
+    infinity: float
+    merit: float
 
 
 @dataclass(frozen=True)
