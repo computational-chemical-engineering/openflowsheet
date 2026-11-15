@@ -311,3 +311,10 @@
   valve), `models/thermal/*` (5), and 8 `thermo/` providers. Rejected: a fixture regeneration per step (would
   change the hash many times, against FQ-A). G4 run 1 gate-fails on `cost/sets.py` (steps 37, 40) stand as fails;
   the targets move to W5 with the frozen modules.
+- **2026-11-15, W3 G5 run 1 merged (742a9f9d).** Review R-W3-G5-1 (reviewer, Opus): merge; order of differences
+  and first-match selection unchanged for v1 and v2; d2916c59's reordered local writes unobservable; rule-15 twins
+  kept (ADR 0025 D1.4 freezes v1); naming rule: v2 plain, v1 `_v1`. Two optional renames carried into G5 run 2.
+  No test pins the order of the extracted compare rows (only `tests/test_t08_adr0025.py:376-379`, rows untouched).
+- **2026-11-15, W3 G4 run 1 review R-W3-G4-1 (reviewer, Opus): merge after fixes.** Two docstring fixes in
+  `assessment/sizing/families.py` (f8bed528, gated no-gain). Tie-breaking, refusal order, report status precedence
+  and key order unchanged. Characterization tests to add later: report_body REFUSED path, equal-price utility tie.
