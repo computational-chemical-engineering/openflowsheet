@@ -468,7 +468,7 @@ def saturation_pairs(
     """S08 §5.5: `(|T_j − T_bub(l_j, P_j)|, |T_j − T_dew(v_j, P_j)|)` for every `TWO_PHASE` stage
     `j`, through `band_temperature` at `β = 0` and `β = 1`. A band position other than `inside`, a
     band refusal (`BandError`) or a phase with no positive flow is `inf` (a failure). Shared by
-    S01 §8 (Amendment 2) and S02 §8 item 6 (S08b §5.2)."""
+    S01 §8 (Amendment 2) and S02 §8 item 6 (S08b §5.2). Each error is `_saturation_error`'s."""
     pairs: dict[int, tuple[float, float]] = {}
     for stage, regime in regimes.items():
         if regime != "TWO_PHASE":
@@ -478,17 +478,30 @@ def saturation_pairs(
         errors: list[float] = []
         for outlet, beta in ((liquid_id, 0.0), (vapor_id, 1.0)):
             flows = tuple(float(state[outlet(unit, stage, c)]) for c in components)
-            error = math.inf
-            if any(value > 0.0 for value in flows):
-                try:
-                    band = band_temperature(provider, flows, pressure, beta, DECLARATION_CONTEXT)
-                except BandError:
-                    band = None
-                if band is not None and band.position == "inside" and band.temperature is not None:
-                    error = abs(temperature - band.temperature)
-            errors.append(error)
+            errors.append(_saturation_error(provider, flows, pressure, beta, temperature))
         pairs[stage] = (errors[0], errors[1])
     return pairs
+
+
+def _saturation_error(
+    provider: PropertyProvider,
+    flows: tuple[float, ...],
+    pressure: float,
+    beta: float,
+    temperature: float,
+) -> float:
+    """S08 §5.5 for one outlet of a `TWO_PHASE` stage: `|T_j − T(β)|` with `T(β)` from
+    `band_temperature(flows, P_j, β)`. `inf` when no flow is positive (no band evaluation), when
+    `band_temperature` refuses (`BandError`), or when the band position is not `inside`."""
+    error = math.inf
+    if any(value > 0.0 for value in flows):
+        try:
+            band = band_temperature(provider, flows, pressure, beta, DECLARATION_CONTEXT)
+        except BandError:
+            band = None
+        if band is not None and band.position == "inside" and band.temperature is not None:
+            error = abs(temperature - band.temperature)
+    return error
 
 
 def acceptance_failures(

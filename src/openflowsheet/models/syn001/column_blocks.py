@@ -125,7 +125,8 @@ def _flow_sources(
 
 def _fixed_stages(spec: ColumnSpec, equilibrium: set[int]) -> set[int]:
     """§5.2's fixed stages of `spec`: stage 2 under a total condenser, a partial end stage whose
-    kind is not `duty`, and every `equilibrium` stage named by a `temperature` specification."""
+    specification is absent or not `duty`, and every `equilibrium` stage named by a `temperature`
+    specification."""
     fixed: set[int] = set()
     if spec.total_condenser:
         fixed.add(2)
@@ -284,9 +285,9 @@ def _component_liquid(
 ) -> list[float]:
     """§5.3 step 3b for component `i`: `thomas` on the tridiagonal over `carry` with
     `S_ij = strip[j]`, row `j` reading `[j > t] l_{i,j−1} − (1 + S_ij) l_ij + [j < N] S_{i,j+1}
-    l_{i,j+1} = −F_ij` (`N = count`; `F_ij` the sum of the component's inlet flows on stage `j`;
-    total condenser, `phi` given: first diagonal `−(1 + S_i2) + φ S_i2`). Returns `l_ij` in
-    `carry` order."""
+    l_{i,j+1} = −F_ij` (`t = carry[0]`, `N = count`; `F_ij` the sum of the component's inlet
+    flows on stage `j`; total condenser, `phi` given: first diagonal `−(1 + S_i2) + φ S_i2`).
+    Returns `l_ij` in `carry` order."""
     diag = [-(1.0 + strip[j]) for j in carry]
     if phi is not None:
         diag[0] += phi * strip[carry[0]]
