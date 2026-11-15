@@ -410,3 +410,9 @@
   under two concurrent suites in G-SELF run 1). f6 runs alone on `wp/S19` before each merge into `main`, and CI runs
   it on both legs. A gate that fails only on another timing test is re-gated unchanged and logged with --rerun-of.
   Rejected: three slots (16 cores, 12 xdist workers per gate).
+- **2026-11-15, /tmp full (ENOSPC).** Two gates plus a test-map build filled the RAM-backed /tmp (tmpfs, 63 GB).
+  The map build at 736f70db ended with 392 failures (all environment) and was discarded; it is rebuilt with TMPDIR on
+  disk. Gates 20261115T175500-g6r2-s4 and 20261115T175531-g1n-p2 failed their tests tier on ENOSPC only: logged as
+  gate-fail, re-gated unchanged with --rerun-of. gate.sh now sets TMPDIR to `<git-common-dir>/codehealth/tmp-gates`.
+  Why the new map: since I-15 every gate fell back to the full suite (an added file since `MB` = bec6dbe6), about 13
+  minutes of tests per gate; a map at the current tip restores per-step selection.
