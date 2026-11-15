@@ -252,14 +252,20 @@ def _locate(
         return ("specification", [member, value], None) if 0 <= value < len(items) else None
     for index, item in enumerate(items):
         if isinstance(item, Mapping) and item.get("id") == value:
-            model = None
-            if member == "instances":
-                model_document = item.get("model")
-                if isinstance(model_document, Mapping) and isinstance(
-                    model_document.get("id"), str
-                ):
-                    model = model_document["id"]
+            model = _unit_model(member, item)
             return ("unit" if kind == "element" else kind), [member, index], model
+    return None
+
+
+def _unit_model(member: str, item: Mapping[str, Any]) -> str | None:
+    """§4.2.5: `x_model`, the model id of a unit (an item of the revision's `instances`); `None`
+    for an item of another member and for an instance whose `model` has no string `id`."""
+    if member != "instances":
+        return None
+    model_document = item.get("model")
+    if isinstance(model_document, Mapping) and isinstance(model_document.get("id"), str):
+        model_id: str = model_document["id"]
+        return model_id
     return None
 
 
