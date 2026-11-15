@@ -340,46 +340,17 @@ def _differences_v1(
             elif key not in emitted:
                 found.append(f"{where}.{key}: present in the committed document only")
             elif path == "" and (key in PROVENANCE_SUBTREES or key in VOLATILE_FIELDS):
-                if not _well_formed_provenance(committed[key], emitted[key]):
-                    found.append(
-                        f"{where}.{key}: {type(emitted[key]).__name__} where the recorded "
-                        f"document has {type(committed[key]).__name__}. Provenance is not "
-                        "compared for value, but its shape is."
-                    )
+                found += _provenance_v1(where, key, emitted, committed)
             elif key in UNREPRODUCIBLE_COUNTS:
-                if not isinstance(emitted[key], int) or emitted[key] < 0:
-                    found.append(
-                        f"{where}.{key}: {emitted[key]!r} is not a count. Its value is not "
-                        "compared, its kind is."
-                    )
+                found += _count_v1(where, key, emitted)
             elif is_float_digest(key):
-                if not _well_formed_digest(emitted[key]):
-                    found.append(
-                        f"{where}.{key}: {emitted[key]!r} is not 64 lowercase hex digits or "
-                        "empty. Its value is not compared (ADR 0008 D2.1), its shape is."
-                    )
+                found += _float_digest_v1(where, key, emitted)
             elif key == "certificate_id" and _digest_derived_id(committed, emitted):
-                # K04 §9's `certificate_id` is the target hash when no plan names the solve
-                # (`cert-` + the first 12 hex digits of `target_state_sha256`): a digest of
-                # floating-point state, so its value is not compared (ADR 0008 D2.1). What is
-                # compared is that it is exactly the emitted document's own digest prefix.
-                expected = f"cert-{emitted['target_state_sha256'][:12]}"
-                if emitted[key] != expected:
-                    found.append(
-                        f"{where}.{key}: {emitted[key]!r} is not {expected!r}, the prefix of the "
-                        "document's own target_state_sha256"
-                    )
+                found += _certificate_id_v1(where, key, emitted)
             elif key in WINDOW_SELECTORS:
-                if not _number_or_none(emitted[key]):
-                    found.append(f"{where}.{key}: {emitted[key]!r} is not a number or null")
+                found += _window_selector_v1(where, key, emitted)
             elif key in COMPARABILITY_WINDOW and not _inside_window(key, committed):
-                if not _number_or_none(emitted[key]) or (emitted[key] is None) != (
-                    committed[key] is None
-                ):
-                    found.append(
-                        f"{where}.{key}: {emitted[key]!r} against {committed[key]!r} — outside "
-                        "the comparability window the value is not compared, its shape is"
-                    )
+                found += _windowed_shape_v1(where, key, emitted, committed)
             else:
                 floor = None
                 source = SELF_FLOORED.get(key)
@@ -418,6 +389,78 @@ def _differences_v1(
     if emitted != committed:
         found.append(f"{where}: {emitted!r} against {committed!r}")
     return found
+
+
+def _provenance_v1(
+    where: str, key: str, emitted: Mapping[str, Any], committed: Mapping[str, Any]
+) -> list[str]:
+    """v1 on a root-anchored provenance field `key`: compared for shape, never for value."""
+    if not _well_formed_provenance(committed[key], emitted[key]):
+        return [
+            f"{where}.{key}: {type(emitted[key]).__name__} where the recorded "
+            f"document has {type(committed[key]).__name__}. Provenance is not "
+            "compared for value, but its shape is."
+        ]
+    return []
+
+
+def _count_v1(where: str, key: str, emitted: Mapping[str, Any]) -> list[str]:
+    """v1 on an unreproducible count `key`: compared for kind (an int >= 0), never for value."""
+    if not isinstance(emitted[key], int) or emitted[key] < 0:
+        return [
+            f"{where}.{key}: {emitted[key]!r} is not a count. Its value is not "
+            "compared, its kind is."
+        ]
+    return []
+
+
+def _float_digest_v1(where: str, key: str, emitted: Mapping[str, Any]) -> list[str]:
+    """v1 on a float digest `key`: its shape, never its value (ADR 0008 D2.1)."""
+    if not _well_formed_digest(emitted[key]):
+        return [
+            f"{where}.{key}: {emitted[key]!r} is not 64 lowercase hex digits or "
+            "empty. Its value is not compared (ADR 0008 D2.1), its shape is."
+        ]
+    return []
+
+
+def _certificate_id_v1(where: str, key: str, emitted: Mapping[str, Any]) -> list[str]:
+    """v1 on a `certificate_id` that `_digest_derived_id` found built from the target hash.
+
+    K04 §9's `certificate_id` is the target hash when no plan names the solve (`cert-` + the
+    first 12 hex digits of `target_state_sha256`): a digest of floating-point state, so its value
+    is not compared (ADR 0008 D2.1). What is compared is that it is exactly the emitted
+    document's own digest prefix.
+    """
+    expected = f"cert-{emitted['target_state_sha256'][:12]}"
+    if emitted[key] != expected:
+        return [
+            f"{where}.{key}: {emitted[key]!r} is not {expected!r}, the prefix of the "
+            "document's own target_state_sha256"
+        ]
+    return []
+
+
+def _window_selector_v1(where: str, key: str, emitted: Mapping[str, Any]) -> list[str]:
+    """v1 on a comparability window's selector `key`: compared for kind, a number or null."""
+    if not _number_or_none(emitted[key]):
+        return [f"{where}.{key}: {emitted[key]!r} is not a number or null"]
+    return []
+
+
+def _windowed_shape_v1(
+    where: str, key: str, emitted: Mapping[str, Any], committed: Mapping[str, Any]
+) -> list[str]:
+    """v1 on a windowed float `key` outside its window: compared for shape, never for value.
+
+    Its shape is a number or null, and null on one side exactly when null on the other.
+    """
+    if not _number_or_none(emitted[key]) or (emitted[key] is None) != (committed[key] is None):
+        return [
+            f"{where}.{key}: {emitted[key]!r} against {committed[key]!r} — outside "
+            "the comparability window the value is not compared, its shape is"
+        ]
+    return []
 
 
 # == T08-numerical-policy-v2 (ADR 0025) =========================================================
@@ -632,34 +675,16 @@ def _differences_v2(
             mine, theirs = emitted[key], committed[key]
             # Row 1: root-anchored provenance.
             if path == "" and (key in PROVENANCE_SUBTREES or key in VOLATILE_FIELDS):
-                if not _well_formed_provenance(theirs, mine):
-                    found.append(
-                        f"{where}.{key}: {type(mine).__name__} where the recorded document has "
-                        f"{type(theirs).__name__}. Provenance is not compared for value, but "
-                        "its shape is."
-                    )
+                found += _provenance(where, key, mine, theirs)
             # Row 2: counts.
             elif key in V2_UNREPRODUCIBLE_COUNTS:
-                if not isinstance(mine, int) or mine < 0:
-                    found.append(
-                        f"{where}.{key}: {mine!r} is not a count. Its value is not compared, "
-                        "its kind is."
-                    )
+                found += _count(where, key, mine)
             # Row 3: post-pivoting diagnostics.
             elif key in POST_PIVOTING_FLOATS:
                 found += _post_pivoting(where, key, emitted, theirs)
             # Row 4: float digests.
             elif _is_float_digest_v2(key):
-                if not _well_formed_digest(mine):
-                    found.append(
-                        f"{where}.{key}: {mine!r} is not 64 lowercase hex digits or empty. Its "
-                        "value is not compared (ADR 0008 D2.1, ADR 0025 D2), its shape is."
-                    )
-                elif key in NULL_MATCHED_DIGESTS and (mine is None) != (theirs is None):
-                    found.append(
-                        f"{where}.{key}: {mine!r} against {theirs!r}; null on one side requires "
-                        "null on the other (ADR 0025 D2.1)"
-                    )
+                found += _float_digest(where, key, mine, theirs)
             # Row 5: the certificate id, by how it was built.
             elif key == "certificate_id":
                 difference = _certificate_id(where, emitted, committed)
@@ -667,27 +692,16 @@ def _differences_v2(
                     found.append(difference)
             # Row 6: a comparability window's selector.
             elif key in V2_WINDOW_SELECTORS:
-                if not _number_or_none(mine):
-                    found.append(f"{where}.{key}: {mine!r} is not a number or null")
+                found += _window_selector(where, key, mine)
             # Row 7: outside its window, a windowed float is compared for shape.
             elif key in V2_COMPARABILITY_WINDOW and not _inside_v2_window(key, committed):
-                if not _number_or_none(mine) or (mine is None) != (theirs is None):
-                    found.append(
-                        f"{where}.{key}: {mine!r} against {theirs!r} — outside the "
-                        "comparability window the value is not compared, its shape is"
-                    )
+                found += _windowed_shape(where, key, mine, theirs)
             # Row 8: text with floats in it.
             elif key in TEXT_KEYS and isinstance(mine, str) and isinstance(theirs, str):
                 found += _text(f"{where}.{key}", mine, theirs)
             # Row 11: a solution state's variables, by declared kind.
             elif solution_state and key == "variables" and isinstance(theirs, dict):
-                if kinds is None:
-                    found.append(
-                        f"{where}.variables: declared kinds not supplied; {CURRENT_POLICY_ID} "
-                        "does not compare a solution state without them (ADR 0025 D5)"
-                    )
-                else:
-                    found += _variables(f"{where}.variables", mine, theirs, kinds)
+                found += _solution_variables(where, mine, theirs, kinds)
             # Row 12: phase-branch flows.
             elif key in PHASE_BRANCH_FLOWS and _PHASE_BRANCH_ENTRY.match(where):
                 found += _phase_branch_flow(f"{where}.{key}", mine, theirs)
@@ -709,19 +723,7 @@ def _differences_v2(
 
     # Rows 9–14: a float, under the floor its row gives, else its registered one, else none.
     if isinstance(committed, float) or isinstance(emitted, float):
-        if emitted is None or committed is None:
-            if emitted is not committed:
-                found.append(f"{where}: {emitted!r} against {committed!r}")
-            return found
-        if not (_real(emitted) and _real(committed)):
-            return [f"{where}: {emitted!r} against {committed!r}"]
-        if floor is None:
-            key = where.rsplit(".", 1)[-1]
-            if key in V2_REGISTERED_FLOOR:
-                floor, source = V2_REGISTERED_FLOOR[key], f"the floor of {key}, ADR 0007 D2.2"
-            else:
-                floor, source = NO_FLOOR, "no registered floor, ADR 0007 D2.3"
-        return _outside(emitted, committed, where, floor, source or "")
+        return _float_leaf(emitted, committed, where, floor, source)
 
     # Row 15: every other leaf, exactly.
     if emitted != committed:
@@ -729,10 +731,78 @@ def _differences_v2(
     return found
 
 
+def _provenance(where: str, key: str, mine: Any, theirs: Any) -> list[str]:
+    """Row 1: a root-anchored provenance field, compared for shape, never for value."""
+    if not _well_formed_provenance(theirs, mine):
+        return [
+            f"{where}.{key}: {type(mine).__name__} where the recorded document has "
+            f"{type(theirs).__name__}. Provenance is not compared for value, but "
+            "its shape is."
+        ]
+    return []
+
+
+def _count(where: str, key: str, mine: Any) -> list[str]:
+    """Row 2: an unreproducible count, compared for kind (an int >= 0), never for value."""
+    if not isinstance(mine, int) or mine < 0:
+        return [f"{where}.{key}: {mine!r} is not a count. Its value is not compared, its kind is."]
+    return []
+
+
+def _float_digest(where: str, key: str, mine: Any, theirs: Any) -> list[str]:
+    """Row 4, D2: a float digest's shape, and for `NULL_MATCHED_DIGESTS` its nullness (D2.1)."""
+    if not _well_formed_digest(mine):
+        return [
+            f"{where}.{key}: {mine!r} is not 64 lowercase hex digits or empty. Its "
+            "value is not compared (ADR 0008 D2.1, ADR 0025 D2), its shape is."
+        ]
+    if key in NULL_MATCHED_DIGESTS and (mine is None) != (theirs is None):
+        return [
+            f"{where}.{key}: {mine!r} against {theirs!r}; null on one side requires "
+            "null on the other (ADR 0025 D2.1)"
+        ]
+    return []
+
+
+def _window_selector(where: str, key: str, mine: Any) -> list[str]:
+    """Row 6: a comparability window's selector, compared for kind: a number or null."""
+    if not _number_or_none(mine):
+        return [f"{where}.{key}: {mine!r} is not a number or null"]
+    return []
+
+
 def _inside_v2_window(key: str, committed: dict[str, Any]) -> bool:
     sibling, minimum = V2_COMPARABILITY_WINDOW[key]
     selector = committed.get(sibling)
     return isinstance(selector, int | float) and float(selector) >= minimum
+
+
+def _windowed_shape(where: str, key: str, mine: Any, theirs: Any) -> list[str]:
+    """Row 7: a windowed float outside its window, compared for shape, never for value.
+
+    Its shape is a number or null, and null on one side exactly when null on the other.
+    """
+    if not _number_or_none(mine) or (mine is None) != (theirs is None):
+        return [
+            f"{where}.{key}: {mine!r} against {theirs!r} — outside the "
+            "comparability window the value is not compared, its shape is"
+        ]
+    return []
+
+
+def _solution_variables(
+    where: str, mine: Any, theirs: Mapping[str, Any], kinds: Mapping[str, str] | None
+) -> list[str]:
+    """Row 11, D5: a solution state's `variables` under their declared `kinds`.
+
+    `kinds` None is a difference of its own: v2 does not compare a solution state without them.
+    """
+    if kinds is None:
+        return [
+            f"{where}.variables: declared kinds not supplied; {CURRENT_POLICY_ID} "
+            "does not compare a solution state without them (ADR 0025 D5)"
+        ]
+    return _variables(f"{where}.variables", mine, theirs, kinds)
 
 
 def _sibling_floor(
@@ -764,6 +834,29 @@ def _phase_branch_flow(where: str, emitted: Any, committed: Any) -> list[str]:
             found += _differences_v2(left, right, f"{where}[{index}]", floor, source, None)
         return found
     return _differences_v2(emitted, committed, where, floor, source, None)
+
+
+def _float_leaf(
+    emitted: Any, committed: Any, where: str, floor: float | None, source: str | None
+) -> list[str]:
+    """Rows 9–14: a float at `where`, under `floor` (labelled `source`) when its row gave one,
+    else the registered floor of its key, else none.
+
+    Null against null is no difference; null against anything else, or a side that is not a
+    real number, is one, compared exactly."""
+    if emitted is None or committed is None:
+        if emitted is not committed:
+            return [f"{where}: {emitted!r} against {committed!r}"]
+        return []
+    if not (_real(emitted) and _real(committed)):
+        return [f"{where}: {emitted!r} against {committed!r}"]
+    if floor is None:
+        key = where.rsplit(".", 1)[-1]
+        if key in V2_REGISTERED_FLOOR:
+            floor, source = V2_REGISTERED_FLOOR[key], f"the floor of {key}, ADR 0007 D2.2"
+        else:
+            floor, source = NO_FLOOR, "no registered floor, ADR 0007 D2.3"
+    return _outside(emitted, committed, where, floor, source or "")
 
 
 def pinned_digests(document: Any, path: str = "") -> list[str]:
