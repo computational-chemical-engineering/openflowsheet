@@ -278,18 +278,7 @@ def check_quantity(quantity: Mapping[str, object]) -> tuple[str, ...]:
         problems.append(f"kind must be a string, got {kind!r}")
 
     value = read_number(quantity.get("value")) if "value" in quantity else None
-    if "value" in quantity and value is None:
-        problems.append(f"value must be a number, got {quantity['value']!r}")
-    elif value is not None:
-        if not isfinite(value):
-            problems.append(
-                f"value must be finite, got {value!r}; nonfinite numbers are rejected in every "
-                "semantic input (ADR 0001 D1.5)"
-            )
-        elif value == 0.0 and copysign(1.0, value) < 0.0:
-            problems.append(
-                "value is -0.0; canonical form normalizes signed zero to +0.0 (ADR 0001 D1.5)"
-            )
+    problems += _check_value(quantity, value)
 
     if dimension is not None and isinstance(kind, str):
         problems += _check_registration(quantity, kind, dimension, value)
@@ -307,6 +296,25 @@ def check_quantity(quantity: Mapping[str, object]) -> tuple[str, ...]:
             problems.append(f"nominal must be a finite number, got {nominal!r}")
 
     return tuple(problems)
+
+
+def _check_value(quantity: Mapping[str, object], value: float | None) -> list[str]:
+    """The quantity's `value` as `read_number` gave it (None when absent or not a number): a
+    present `value` must be a number, finite, and not -0.0 (ADR 0001 D1.5)."""
+    problems: list[str] = []
+    if "value" in quantity and value is None:
+        problems.append(f"value must be a number, got {quantity['value']!r}")
+    elif value is not None:
+        if not isfinite(value):
+            problems.append(
+                f"value must be finite, got {value!r}; nonfinite numbers are rejected in every "
+                "semantic input (ADR 0001 D1.5)"
+            )
+        elif value == 0.0 and copysign(1.0, value) < 0.0:
+            problems.append(
+                "value is -0.0; canonical form normalizes signed zero to +0.0 (ADR 0001 D1.5)"
+            )
+    return problems
 
 
 def _check_registration(
