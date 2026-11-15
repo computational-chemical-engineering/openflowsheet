@@ -689,37 +689,102 @@ def run_study(
         result.status = unsupported(result.readiness.codes)
         return result
 
-    def stop(status: str) -> StudyResult:
-        result.status = status
-        return result
+    study = _StudyRun(
+        parent=parent,
+        decisions=decisions,
+        budget=budget,
+        limitations=limitations,
+        result=result,
+    )
 
     if budget.exhausted() is not None:
-        return stop(BUDGET_EXHAUSTED)
+        return study.stop(BUDGET_EXHAUSTED)
     s0 = parent.solve(start, solve_id="S0", purpose="start")
     budget.charge_solve(s0)
     result.s0 = s0
     if not targeted_check(s0).passed:
-        return stop(failed("start_not_certified"))
+        return study.stop(failed("start_not_certified"))
     result.best = s0
     if projection_check is not None:
         refused = _projection_refusal(projection_check, s0)
         if refused is not None:
             result.readiness = StudyReadiness.of([refused])
-            return stop(unsupported(result.readiness.codes))
-    reference_regimes = dict(s0.regimes)
+            return study.stop(unsupported(result.readiness.codes))
+    study.reference_regimes = dict(s0.regimes)
+
+    # Stage A (§7.3): only with a promoted surrogate of the bound parent.
+    if stage_a is None:
+        result.stage_a = {"executed": False, "reason": "surrogate_not_promoted"}
+    else:
+        staged, stopped, ids = study.run(stage_a, "A", 0, s0)
+        result.stage_a = {"executed": True, "runs": ids}
+        if staged is None and disposition(result.runs[-1]["outcome"], budget) != "abort":
+            assert stopped is not None
+            return study.stop(stopped)
+        if staged is None:
+            # A second stage-A abort leaves stage C to start from S0 (build log S6).
+            result.stage_a["outcome"] = stopped
+        else:
+            candidate = study.check(staged, "A", stage_a_reference)
+            result.produced_by[candidate.candidate_id] = ids
+            if candidate.status == NOT_CHECKED:
+                return study.stop(BUDGET_EXHAUSTED)
+            if candidate.status == PARENT_LOCAL_EVIDENCE:
+                result.best = candidate.targeted
+                return study.stop(DECISION_STABLE)
+            result.best = _stage_a_best(sense, s0, candidate, result.best)
+
+    # Stage C (§7.3).
+    for k in range(1, K_MAX + 1):
+        staged, stopped, ids = study.run(stage_c, "C", k, result.best)
+        if staged is None:
+            assert stopped is not None
+            return study.stop(stopped)
+        candidate = study.check(staged, "C")
+        result.produced_by[candidate.candidate_id] = ids
+        if candidate.status == NOT_CHECKED:
+            return study.stop(BUDGET_EXHAUSTED)
+        if candidate.status == PARENT_LOCAL_EVIDENCE:
+            result.best = candidate.targeted
+            return study.stop(DECISION_STABLE)
+        if candidate.status != NOT_STATIONARY_AT_DELTA:
+            return study.stop(failed(candidate.status))
+        result.best = _best_feasible(sense, candidate)
+    return study.stop(ITERATION_LIMIT)
+
+
+@dataclass
+class _StudyRun:
+    """One call of `run_study`: its fixed frame and S0's regimes, the reference of every check.
+
+    Frame: the parent, the decisions, the budget, the caller's limitations and the result the
+    methods fill (`runs`, `candidates`, `status`). State: `reference_regimes`, assigned once
+    after S0, read by `check`.
+    """
+
+    parent: Parent
+    decisions: Sequence[Decision]
+    budget: StudyBudget
+    limitations: Sequence[str]
+    result: StudyResult
+    reference_regimes: dict[str, str] = field(init=False)
+
+    def stop(self, status: str) -> StudyResult:
+        self.result.status = status
+        return self.result
 
     def run(
-        runner: StageRunner, stage: str, iteration: int, begin: ParentSolve
+        self, runner: StageRunner, stage: str, iteration: int, begin: ParentSolve
     ) -> tuple[StageRun | None, str | None, list[str]]:
         """A run and its one retry: (the run with a candidate, the stopping status, run ids)."""
         ids: list[str] = []
         for retry, factor in enumerate((1.0, RETRY_RADIUS_FACTOR)):
-            if budget.exhausted() is not None:
+            if self.budget.exhausted() is not None:
                 return None, BUDGET_EXHAUSTED, ids
             run_id = f"{stage}{iteration}" + ("-retry" if retry else "")
-            staged = runner(begin, run_id=run_id, radius_factor=factor, budget=budget)
+            staged = runner(begin, run_id=run_id, radius_factor=factor, budget=self.budget)
             ids.append(run_id)
-            result.runs.append(
+            self.result.runs.append(
                 {
                     **dict(staged.document),
                     "run_id": run_id,
@@ -732,7 +797,7 @@ def run_study(
                     "cold": staged.cold,
                 }
             )
-            kind = disposition(staged.outcome, budget)
+            kind = disposition(staged.outcome, self.budget)
             if kind == "candidate":
                 return staged, None, ids
             if kind == "budget":
@@ -741,70 +806,30 @@ def run_study(
                 return None, failed(f"trf_aborted:{staged.outcome}"), ids
         return None, failed(f"trf_aborted:{staged.outcome}"), ids
 
-    def check(staged: StageRun, stage: str, reference: Any = None) -> CandidateCheck:
+    def check(self, staged: StageRun, stage: str, reference: Any = None) -> CandidateCheck:
         assert staged.decisions is not None
         candidate_id = f"cand-{staged.run_id.removesuffix('-retry')}"
         checked = check_candidate(
-            parent,
+            self.parent,
             candidate_id=candidate_id,
             stage=stage,
-            decisions=decisions,
+            decisions=self.decisions,
             at=staged.decisions,
-            reference_regimes=reference_regimes,
-            budget=budget,
+            reference_regimes=self.reference_regimes,
+            budget=self.budget,
             run_id=staged.run_id,
             trf_point=staged.point,
             p2_reference=reference,
             # R-327: a max-iterations exit keeps its candidate, and says so; so does an
             # unverified "Optimal" exit (R-401).
             limitations=[
-                *limitations,
+                *self.limitations,
                 *_outcome_limitations(staged.outcome),
                 *staged.limitations,
             ],
         )
-        result.candidates.append(checked)
+        self.result.candidates.append(checked)
         return checked
-
-    # Stage A (§7.3): only with a promoted surrogate of the bound parent.
-    if stage_a is None:
-        result.stage_a = {"executed": False, "reason": "surrogate_not_promoted"}
-    else:
-        staged, stopped, ids = run(stage_a, "A", 0, s0)
-        result.stage_a = {"executed": True, "runs": ids}
-        if staged is None and disposition(result.runs[-1]["outcome"], budget) != "abort":
-            assert stopped is not None
-            return stop(stopped)
-        if staged is None:
-            # A second stage-A abort leaves stage C to start from S0 (build log S6).
-            result.stage_a["outcome"] = stopped
-        else:
-            candidate = check(staged, "A", stage_a_reference)
-            result.produced_by[candidate.candidate_id] = ids
-            if candidate.status == NOT_CHECKED:
-                return stop(BUDGET_EXHAUSTED)
-            if candidate.status == PARENT_LOCAL_EVIDENCE:
-                result.best = candidate.targeted
-                return stop(DECISION_STABLE)
-            result.best = _stage_a_best(sense, s0, candidate, result.best)
-
-    # Stage C (§7.3).
-    for k in range(1, K_MAX + 1):
-        staged, stopped, ids = run(stage_c, "C", k, result.best)
-        if staged is None:
-            assert stopped is not None
-            return stop(stopped)
-        candidate = check(staged, "C")
-        result.produced_by[candidate.candidate_id] = ids
-        if candidate.status == NOT_CHECKED:
-            return stop(BUDGET_EXHAUSTED)
-        if candidate.status == PARENT_LOCAL_EVIDENCE:
-            result.best = candidate.targeted
-            return stop(DECISION_STABLE)
-        if candidate.status != NOT_STATIONARY_AT_DELTA:
-            return stop(failed(candidate.status))
-        result.best = _best_feasible(sense, candidate)
-    return stop(ITERATION_LIMIT)
 
 
 def _stage_a_best(
