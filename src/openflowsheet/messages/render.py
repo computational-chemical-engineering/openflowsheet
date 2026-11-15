@@ -276,6 +276,8 @@ def _raw(value: object) -> str:
 
 
 def _format(typed: _Typed, conversion: template.Conversion, catalogue: Catalogue) -> str:
+    """§4.2.4: a param's text: a pointer as its path whatever the conversion, then `!raw` and
+    `!title`, else `_by_type`."""
     value = typed.value
     if typed.type == "pointer" and isinstance(value, list | tuple):
         return _pointer(value)
@@ -284,6 +286,13 @@ def _format(typed: _Typed, conversion: template.Conversion, catalogue: Catalogue
     if conversion == "title":
         entry = catalogue.entry(str(value)) if typed.type == "code" else None
         return entry.title if entry is not None else _raw(value)
+    return _by_type(typed, catalogue)
+
+
+def _by_type(typed: _Typed, catalogue: Catalogue) -> str:
+    """§4.2.4: `{name}` with no conversion, by the param's type. A type without a rule here
+    (`text`, `code`) and a value its rule cannot read (no number, no phrase) give `_raw`."""
+    value = typed.value
     if typed.type in ELEMENT_TYPES:
         return f"'{_raw(value)}'"
     if typed.type == "quantity":
