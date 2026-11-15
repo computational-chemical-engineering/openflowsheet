@@ -7,9 +7,11 @@ nor a built map: they run in the main venv and in CI. The map build itself needs
 
 from __future__ import annotations
 
+import ast
 import importlib.util
 import json
 import os
+import re
 import sqlite3
 import subprocess
 import sys
@@ -137,6 +139,8 @@ FILES = {
     "data/boot.json": "{}\n",
     "data/unseen.txt": "x\n",
     "pyproject.toml": PYPROJECT,
+    ".codehealth/config.toml": "scope = 1\n",
+    ".claude/skills/s/SKILL.md": "skill\n",
 }
 
 T1 = "tests/test_a.py::test_one"
@@ -615,6 +619,64 @@ def test_an_added_or_deleted_docs_file_falls_back(repo, kind: str) -> None:
     else:
         (root / "docs/other.md").unlink()
     assert "new or deleted file" in (_select(repo).fallback or "")
+
+
+@pytest.mark.parametrize("kind", ["modified", "added", "deleted"])
+@pytest.mark.parametrize("tree", [".codehealth", ".claude"])
+def test_campaign_tooling_neither_falls_back_nor_selects(repo, tree: str, kind: str) -> None:
+    """S19: a change under .codehealth/ or .claude/ is ignored; other changes still select."""
+    root = repo[0]
+    existing = {".codehealth": ".codehealth/config.toml", ".claude": ".claude/skills/s/SKILL.md"}
+    if kind == "modified":
+        _edit(root, existing[tree], "\n", "\nchanged\n")
+    elif kind == "deleted":
+        (root / existing[tree]).unlink()
+    else:
+        (root / tree / "new.toml").write_text("new = 1\n")
+    assert _select(repo).nodes == set() and _select(repo).fallback is None
+    _edit(root, "docs/guide.md", "guide", "changed")
+    assert _select(repo).nodes == {T1}
+
+
+#: A string literal naming a campaign-tooling tree as a path component.
+TOOLING_PATH = re.compile(r"(^|/)\.(codehealth|claude)(/|$)")
+#: The selector and its tests name the prefixes; they do not read the trees.
+TOOLING_NAMERS = ("scripts/test_impact.py", "tests/test_s16_test_impact.py")
+
+
+def _tooling_readers(root: Path) -> list[str]:
+    """Python files under tests/, src/, scripts/ and benchmarks/ with a string literal that names
+    .codehealth or .claude as a path component (`root / ".claude"` included)."""
+    found = []
+    for directory in ("tests", "src", "scripts", "benchmarks"):
+        for path in sorted((root / directory).rglob("*.py")):
+            where = path.relative_to(root).as_posix()
+            if where in TOOLING_NAMERS:
+                continue
+            text = path.read_text(encoding="utf-8")
+            if ".codehealth" not in text and ".claude" not in text:
+                continue  # the literal cannot be there; parsing every file costs seconds
+            tree = ast.parse(text, where)
+            for node in ast.walk(tree):
+                if isinstance(node, ast.Constant) and isinstance(node.value, str):
+                    if TOOLING_PATH.search(node.value):
+                        found.append(f"{where}:{node.lineno}")
+    return found
+
+
+def test_no_test_reads_campaign_tooling(tmp_path: Path) -> None:
+    """The premise of TOOLING_PREFIXES: no code a test runs names .codehealth/ or .claude/.
+
+    String literals in the Python of tests/, src/, scripts/ and benchmarks/ are scanned, not data
+    files: two fixtures record absolute worktree paths (".../.claude/worktrees/...") that no test
+    opens. Falsifier, checked below: a test module that opens ".codehealth/config.toml" is found.
+    A path assembled from fragments ('".clau" + "de"') is not seen; the map's open record is.
+    """
+    assert _tooling_readers(ROOT) == []
+    (tmp_path / "tests").mkdir()
+    planted = 'open(".codehealth/config.toml")\nP = ".claude.json"\n'
+    (tmp_path / "tests/test_x.py").write_text(planted)
+    assert _tooling_readers(tmp_path) == ["tests/test_x.py:1"]
 
 
 def test_a_docs_script_maps_like_source_once_the_map_measures_docs(repo) -> None:

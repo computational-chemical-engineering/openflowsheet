@@ -141,6 +141,11 @@ changed file is one the map has seen.
   file nothing opened);
 - a changed `.py` file does not parse.
 
+Campaign tooling is exempt: a change under `.codehealth/` or `.claude/` (added, deleted or
+modified) neither falls back nor selects anything (`TOOLING_PREFIXES`, S19). The premise, that no
+code a test runs names those trees, is a test (`test_no_test_reads_campaign_tooling`): it scans
+the string literals of the Python under `tests/`, `src/`, `scripts/` and `benchmarks/`.
+
 ## Limitations
 
 - Selection is an inner-loop aid only. CI on both architectures stays the merge gate.
