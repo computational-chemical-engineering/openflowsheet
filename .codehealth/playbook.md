@@ -97,7 +97,10 @@ generator with the recursion left in the walker, only if the walk never mutates 
 materialised to a list (2b2d079f); sibling builders for spec-named record kinds may share one parameter list, never
 merged into one builder with a kind flag (0b1537e6); per-family admission helpers return `T | Error` and the caller
 issues the single refusal, when only an isinstance check and a return sit between the call and the refusal and the
-refusal function is NoReturn (420b299e).
+refusal function is NoReturn (420b299e); a producer loop feeding a closure that keeps side tables becomes a lazy generator of
+the produced items, the closure called by the caller per item, only if the generator reads none of the state the
+closure writes and the generator is consumed by one `for` loop, never materialised (S19 eccacaab, review
+R-W3-G6-2).
 
 ## Restructure (module splits, D18)
 
