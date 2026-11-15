@@ -822,25 +822,32 @@ def _signature_document(signature: Any) -> list[list[str]] | None:
     ]
 
 
+@dataclass(frozen=True)
+class _Linearization:
+    """What `_kkt` linearizes every output with (`_functional`): the state, the number of
+    decisions and their ids in decision order, and the chain-rule terms of the assessment
+    outputs and of the phase rows (`None` without them)."""
+
+    state: Mapping[str, float]
+    assessment: _Assessment | None
+    n: int
+    decision_ids: Sequence[str]
+    phase: _PhaseTerms | None
+
+
 def _functional(
-    output_id: str,
-    expression: QuadraticExpression,
-    state: Mapping[str, float],
-    assessment: _Assessment | None,
-    n: int,
-    decision_ids: Sequence[str] = (),
-    phase: _PhaseTerms | None = None,
+    output_id: str, expression: QuadraticExpression, linearization: _Linearization
 ) -> tuple[OutputFunctional | None, npt.NDArray[np.float64] | None]:
-    """The expression's linearization at `state`, as a sensitivity output of scale 1: its
-    sensitivity is then the scaled gradient with respect to the decisions.
+    """The expression's linearization at `linearization.state`, as a sensitivity output of scale
+    1: its sensitivity is then the scaled gradient with respect to the decisions.
 
     An `assessment:<id>` term enters by the chain rule (E01 §4.10.3 V5): its coefficient times
     `∂y/∂x` joins the functional, and times `∂y/∂d` the direct term returned beside it (`None`
     for an expression without one, whose functional is M03's exactly). The functional is `None`
     when no state variable is left in it. A `phase:<id>` term (OPT §4.7) enters by the chain rule
     as an assessment output's does, from the phase rows' linearization."""
-    gradient = expression.gradient(state)
-    position = {name: index for index, name in enumerate(decision_ids)}
+    gradient = expression.gradient(linearization.state)
+    position = {name: index for index, name in enumerate(linearization.decision_ids)}
     named = [
         name
         for name in gradient
@@ -851,17 +858,17 @@ def _functional(
     parts: dict[str, list[float]] = {
         name: [value] for name, value in gradient.items() if name not in set(named)
     }
-    direct = np.zeros(n)
+    direct = np.zeros(linearization.n)
     for name in named:
         coefficient = gradient[name]
         if name in position:
             # OPT §4.3: a decision named in an expression; its derivative is direct.
             direct[position[name]] += coefficient
             continue
-        terms: _Assessment | _PhaseTerms | None = assessment
+        terms: _Assessment | _PhaseTerms | None = linearization.assessment
         output = name[len(ASSESSMENT_PREFIX) :]
         if name.startswith(PHASE_PREFIX):
-            terms, output = phase, name[len(PHASE_PREFIX) :]
+            terms, output = linearization.phase, name[len(PHASE_PREFIX) :]
         assert terms is not None
         for variable_id, value in terms.d_dx[output].items():
             parts.setdefault(variable_id, []).append(coefficient * value)
@@ -891,12 +898,9 @@ def _kkt(
     )
     n = len(formulation.decisions)
     ids = formulation.decision_ids
-    built = [
-        _functional(OBJECTIVE_OUTPUT, formulation.objective, state, assessment, n, ids, phase)
-    ] + [
-        _functional(
-            constraint.constraint_id, constraint.expression, state, assessment, n, ids, phase
-        )
+    linearization = _Linearization(state, assessment, n, ids, phase)
+    built = [_functional(OBJECTIVE_OUTPUT, formulation.objective, linearization)] + [
+        _functional(constraint.constraint_id, constraint.expression, linearization)
         for constraint in constraints
     ]
     outputs = tuple(functional for functional, _ in built if functional is not None)
