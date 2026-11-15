@@ -433,7 +433,8 @@ def static_readiness(
     the decision probes, solves nothing. Every failing reason is listed, in the table's order; a
     check whose input is missing (a request with problems, a revision not on `revision_eo`) is
     in `not_run`. Ready iff no problem, no reason and nothing not run; then `formulation` is the
-    request's `NlpFormulation`. `routes` are the application's (`host.RevisionRoutes`)."""
+    request's `NlpFormulation`. `routes` are the application's (`host.RevisionRoutes`). The
+    request-only rows are `_request_reasons`'s."""
     solver = solver_probe()
     problems = tuple(request_problems(request))
     reasons: list[ReadinessReason] = []
@@ -455,62 +456,8 @@ def static_readiness(
     parsed = OptimizationRequest.of(request)
 
     # Request-only checks: they need no revision.
-    if parsed.revision_sha256 is not None:
-        stored = document_sha256(revision)
-        if parsed.revision_sha256 != stored:
-            reasons.append(
-                ReadinessReason(
-                    "REVISION_MISMATCH",
-                    f"the request names revision {parsed.revision_sha256}; the stored revision "
-                    f"is {stored}",
-                )
-            )
-    for box, scale in zip(parsed.decisions, parsed.scales, strict=True):
-        decision = Decision(box.specification_id, box.lower, box.upper, scale)
-        if not decision.bounded:
-            reasons.append(
-                ReadinessReason(
-                    "BOUNDS_UNDECLARED",
-                    f"{box.specification_id}: the box [{box.lower!r}, {box.upper!r}] is not "
-                    "finite with lower < upper",
-                    box.specification_id,
-                )
-            )
-    for index, start in enumerate(parsed.explicit, start=int(parsed.include_revision)):
-        reasons.extend(_outside(parsed, index, start))
-    count = parsed.start_count
-    if not 1 <= count <= MAX_STARTS:
-        reasons.append(
-            ReadinessReason("TOO_MANY_STARTS", f"{count} starts; a request has 1 to {MAX_STARTS}")
-        )
     named = parsed.names()
-    for name in named:
-        if name.startswith(DECISION_PREFIX) and (
-            name[len(DECISION_PREFIX) :] not in parsed.specification_ids
-        ):
-            reasons.append(
-                ReadinessReason(
-                    "UNKNOWN_VARIABLE", f"{name!r} names no decision of the request", name
-                )
-            )
-    assessment_named = [name for name in named if is_assessment_name(name)]
-    if assessment_named and parsed.assessment is None:
-        reasons.extend(
-            ReadinessReason(
-                "ASSESSMENT_OUTPUT_UNKNOWN",
-                f"{name} is named and the request has no assessment",
-                name.split(":", 1)[1],
-            )
-            for name in assessment_named
-        )
-    if parsed.hessian != HESSIAN_APPROXIMATION:
-        reasons.append(
-            ReadinessReason(
-                "HESSIAN_UNAVAILABLE",
-                f"Hessian {parsed.hessian!r} requested; Capabilities.hessian is absent and the "
-                f"only policy is Ipopt's {HESSIAN_APPROXIMATION} approximation",
-            )
-        )
+    reasons.extend(_request_reasons(parsed, revision, named))
 
     # The revision: its route, then the decision probes and the state names on its binding.
     revision_codes: list[ReadinessCode] = [
@@ -593,6 +540,73 @@ def static_readiness(
     elif parsed.include_revision:
         skip(["START_OUTSIDE_BOUNDS"], "start 0 needs every decision's parameter")
     return _finish(problems, reasons, not_run, solver, parsed, mapping, revision_values)
+
+
+def _request_reasons(
+    parsed: OptimizationRequest, revision: Mapping[str, Any], named: Sequence[str]
+) -> list[ReadinessReason]:
+    """The request-only rows of design §4.5's static table for `parsed`, in its order:
+    REVISION_MISMATCH (a named revision hash that is not `revision`'s), BOUNDS_UNDECLARED,
+    START_OUTSIDE_BOUNDS for the explicit starts, TOO_MANY_STARTS, UNKNOWN_VARIABLE for a
+    decision name in `named` (the request's names) that is not a decision of the request,
+    ASSESSMENT_OUTPUT_UNKNOWN, HESSIAN_UNAVAILABLE."""
+    reasons: list[ReadinessReason] = []
+    if parsed.revision_sha256 is not None:
+        stored = document_sha256(revision)
+        if parsed.revision_sha256 != stored:
+            reasons.append(
+                ReadinessReason(
+                    "REVISION_MISMATCH",
+                    f"the request names revision {parsed.revision_sha256}; the stored revision "
+                    f"is {stored}",
+                )
+            )
+    for box, scale in zip(parsed.decisions, parsed.scales, strict=True):
+        decision = Decision(box.specification_id, box.lower, box.upper, scale)
+        if not decision.bounded:
+            reasons.append(
+                ReadinessReason(
+                    "BOUNDS_UNDECLARED",
+                    f"{box.specification_id}: the box [{box.lower!r}, {box.upper!r}] is not "
+                    "finite with lower < upper",
+                    box.specification_id,
+                )
+            )
+    for index, start in enumerate(parsed.explicit, start=int(parsed.include_revision)):
+        reasons.extend(_outside(parsed, index, start))
+    count = parsed.start_count
+    if not 1 <= count <= MAX_STARTS:
+        reasons.append(
+            ReadinessReason("TOO_MANY_STARTS", f"{count} starts; a request has 1 to {MAX_STARTS}")
+        )
+    for name in named:
+        if name.startswith(DECISION_PREFIX) and (
+            name[len(DECISION_PREFIX) :] not in parsed.specification_ids
+        ):
+            reasons.append(
+                ReadinessReason(
+                    "UNKNOWN_VARIABLE", f"{name!r} names no decision of the request", name
+                )
+            )
+    assessment_named = [name for name in named if is_assessment_name(name)]
+    if assessment_named and parsed.assessment is None:
+        reasons.extend(
+            ReadinessReason(
+                "ASSESSMENT_OUTPUT_UNKNOWN",
+                f"{name} is named and the request has no assessment",
+                name.split(":", 1)[1],
+            )
+            for name in assessment_named
+        )
+    if parsed.hessian != HESSIAN_APPROXIMATION:
+        reasons.append(
+            ReadinessReason(
+                "HESSIAN_UNAVAILABLE",
+                f"Hessian {parsed.hessian!r} requested; Capabilities.hessian is absent and the "
+                f"only policy is Ipopt's {HESSIAN_APPROXIMATION} approximation",
+            )
+        )
+    return reasons
 
 
 def _ends(box: DecisionBox) -> bool:
