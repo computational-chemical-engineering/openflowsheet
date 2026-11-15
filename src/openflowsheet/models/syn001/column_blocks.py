@@ -22,7 +22,7 @@ from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from typing import Final
 
-from openflowsheet.models.syn001.cascade import CascadeFailure, _k_values, thomas
+from openflowsheet.models.syn001.cascade import CascadeFailure, PlacedInlet, _k_values, thomas
 from openflowsheet.models.syn001.cascade_solve import DECLARATION_CONTEXT
 from openflowsheet.models.syn001.column import (
     PHI_INITIAL,
@@ -248,19 +248,35 @@ def _core_flows(
     vapor = {j: [0.0] * len(components) for j in carry}
     for i in range(len(components)):
         strip = {j: (k_stage[j][i] * rho[j] if j in k_stage else 0.0) for j in carry}
-        diag = [-(1.0 + strip[j]) for j in carry]
-        if phi is not None:
-            diag[0] += phi * strip[carry[0]]
-        solved = thomas(
-            [1.0] * len(carry),
-            diag,
-            [strip[j + 1] if j < count else 0.0 for j in carry],
-            [-sum(f.state.n[i] for f in inlets if f.stage == j) for j in carry],
-        )
+        solved = _component_liquid(carry, strip, phi, count, inlets, i)
         for k, j in enumerate(carry):
             liquid[j][i] = solved[k]
             vapor[j][i] = strip[j] * solved[k] if j in k_stage else 0.0
     return liquid, vapor
+
+
+def _component_liquid(
+    carry: tuple[int, ...],
+    strip: Mapping[int, float],
+    phi: float | None,
+    count: int,
+    inlets: tuple[PlacedInlet, ...],
+    i: int,
+) -> list[float]:
+    """§5.3 step 3b for component `i`: `thomas` on the tridiagonal over `carry` with
+    `S_ij = strip[j]`, row `j` reading `[j > t] l_{i,j−1} − (1 + S_ij) l_ij + [j < N] S_{i,j+1}
+    l_{i,j+1} = −F_ij` (`N = count`; `F_ij` the sum of the component's inlet flows on stage `j`;
+    total condenser, `phi` given: first diagonal `−(1 + S_i2) + φ S_i2`). Returns `l_ij` in
+    `carry` order."""
+    diag = [-(1.0 + strip[j]) for j in carry]
+    if phi is not None:
+        diag[0] += phi * strip[carry[0]]
+    return thomas(
+        [1.0] * len(carry),
+        diag,
+        [strip[j + 1] if j < count else 0.0 for j in carry],
+        [-sum(f.state.n[i] for f in inlets if f.stage == j) for j in carry],
+    )
 
 
 def _specified_duty(spec: ColumnSpec, stage: int) -> float:
