@@ -33,6 +33,7 @@ from typing import TYPE_CHECKING, Any
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.models.revision_flowsheet import RevisionView
 from openflowsheet.thermo import (
+    Phase,
     PropertyProvider,
 )
 from openflowsheet.verify import (
@@ -172,42 +173,15 @@ def revision_checks(
     pr = form == forms.PR
     mixture = form == forms.DECLARED_MIXTURE
     declared = forms.declared_phases(view) if mixture else {}
-    # Units design §4.8 (I1b): on a pure-fluid basis a `vapor_liquid` outlet of a `thermal.*` unit
-    # is saturated (ADR 0051 D1; L-TH-2), read from its carried split by `verify.thermal`; any other
-    # stream without a declared phase stays unlifted (S11.A17).
     saturated = (
-        frozenset(
-            stream
-            for instance in view.instances
-            if instance.model_id.startswith("thermal.")
-            for port, streams in instance.ports.items()
-            if instance.directions.get(port) == "outlet" and instance.phases.get(port) is None
-            for stream in streams
-        )
-        if mixture and forms.pure_fluid_provider(provider)
-        else frozenset()
+        _saturated_outlets(view) if mixture and forms.pure_fluid_provider(provider) else frozenset()
     )
     if mixture:
-        # No bands; a flowing stream without a declared phase is unlifted (its checks blocked).
-        degenerate = Degeneracy(
-            notes={
-                stream: _thermal_rows().CARRIED_SPLIT_NOTE.format(stream=stream)
-                for stream in saturated
-            },
-            unlifted=frozenset(
-                stream
-                for stream, phase in declared.items()
-                if phase is None
-                and stream not in saturated
-                and not stream_of(at, stream, components).is_dormant
-            ),
-        )
+        degenerate = _mixture_degeneracy(view, at, declared, saturated)
+    elif pr:
+        degenerate = Degeneracy()
     else:
-        degenerate = (
-            Degeneracy()
-            if pr
-            else degeneracy(view, splits, at, provider, context, tolerances, owners)
-        )
+        degenerate = degeneracy(view, splits, at, provider, context, tolerances, owners)
 
     energy: list[CheckResult] = []
     enthalpy: dict[str, float] = {}
@@ -332,6 +306,44 @@ def revision_checks(
     )
     admissibility += own_admissibility
     return [*material, *energy, *specification, *bounds, *admissibility]
+
+
+def _saturated_outlets(view: RevisionView) -> frozenset[str]:
+    """Units design §4.8 (I1b): the streams at the outlet ports of `thermal.*` units that declare
+    no phase (`vapor_liquid`). On a pure-fluid basis each is saturated (ADR 0051 D1; L-TH-2),
+    read from its carried split by `verify.thermal`; any other stream without a declared phase
+    stays unlifted (S11.A17)."""
+    return frozenset(
+        stream
+        for instance in view.instances
+        if instance.model_id.startswith("thermal.")
+        for port, streams in instance.ports.items()
+        if instance.directions.get(port) == "outlet" and instance.phases.get(port) is None
+        for stream in streams
+    )
+
+
+def _mixture_degeneracy(
+    view: RevisionView,
+    at: Mapping[str, float],
+    declared: Mapping[str, Phase | None],
+    saturated: frozenset[str],
+) -> Degeneracy:
+    """The declared-mixture form's `Degeneracy` at `at`: no bands. Each `saturated` stream gets
+    `verify.thermal`'s carried-split note; a flowing stream without a declared phase in
+    `declared` that is not saturated is unlifted (its checks blocked)."""
+    return Degeneracy(
+        notes={
+            stream: _thermal_rows().CARRIED_SPLIT_NOTE.format(stream=stream) for stream in saturated
+        },
+        unlifted=frozenset(
+            stream
+            for stream, phase in declared.items()
+            if phase is None
+            and stream not in saturated
+            and not stream_of(at, stream, view.components).is_dormant
+        ),
+    )
 
 
 def revision_phase_branch(
