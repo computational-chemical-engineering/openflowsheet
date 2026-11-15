@@ -721,17 +721,9 @@ def render_error(
         for name in entry.params
     }
     members = {name: value for name, value in detail.items() if name in declared}
-    unbound = detail.get("unbound")
-    hint = None
-    extra: tuple[str, ...] = implicated_objects
-    kind_override = None
-    if isinstance(unbound, Mapping):
-        hint = unbound.get("hint") if isinstance(unbound.get("hint"), str) else None
-        implicated = unbound.get("implicated")
-        if isinstance(implicated, Sequence) and not isinstance(implicated, str):
-            extra += tuple(str(item) for item in implicated)
-        if from_binder and unbound.get("kind") in UNBOUND_INPUT_KINDS:
-            kind_override = "input"
+    hint, extra, kind_override = _unbound_request_fields(
+        detail.get("unbound"), from_binder, implicated_objects
+    )
     request = _Request(
         links=links,
         params=_merge(context, links, members),
@@ -743,6 +735,26 @@ def render_error(
         extra_elements=extra,
     )
     return _explain(request, catalogue, strict=strict)
+
+
+def _unbound_request_fields(
+    unbound: object, from_binder: bool, implicated_objects: tuple[str, ...]
+) -> tuple[str | None, tuple[str, ...], str | None]:
+    """The request's `hint`, `extra_elements` and `kind_override` from the binder's `Unbound`
+    (`detail.unbound`): its hint when a string; `implicated_objects`, then its implicated ids;
+    `input` when the chain is the binder's and its kind is an input kind. Without an `Unbound`
+    mapping: no hint, `implicated_objects` alone, no override."""
+    hint = None
+    extra: tuple[str, ...] = implicated_objects
+    kind_override = None
+    if isinstance(unbound, Mapping):
+        hint = unbound.get("hint") if isinstance(unbound.get("hint"), str) else None
+        implicated = unbound.get("implicated")
+        if isinstance(implicated, Sequence) and not isinstance(implicated, str):
+            extra += tuple(str(item) for item in implicated)
+        if from_binder and unbound.get("kind") in UNBOUND_INPUT_KINDS:
+            kind_override = "input"
+    return hint, extra, kind_override
 
 
 def _consistent(diagnosis: Mapping[str, Any], links: Sequence[Link], catalogue: Catalogue) -> bool:
