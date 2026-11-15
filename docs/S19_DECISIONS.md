@@ -450,3 +450,13 @@
 - **2026-11-15, a second wall-time test deselected in gates:** `tests/test_t07_conformance.py::
   test_the_budget_of_the_scenario_runs` (121.9 s against 120 s under two gates). Runs alone with f6 before each
   merge into main; CI runs both.
+- **2026-11-15, gate selection (OpenFlowsheet-check findings, read-only diagnosis).** Of S19's gate fallbacks, 86
+  were inherited from changes since MB, 36 a missing map, 8 caused by the step itself. support_envelope.yaml is
+  edited by every evidence-manifest commit and read at collection by 8+ test modules; coupled_run.py:46 alone caused
+  30 inherited fallbacks. DECISION (orchestrator, under Frank's adopted procedure): step-relative selection,
+  `test_impact.py run --base MB --since <last accepted>`: fallback and import-time rules only for paths in
+  since..HEAD, the selection the cumulative one restricted to those paths. Known hole (a call edge created between
+  MB and since in another file) closed by the full suite at each lane merge into wp/S19. Built by OpenFlowsheet-check
+  on `wp/S19-tools2` after `wp/S19-tools` merges. Alternative: skip lists only. Reversible by dropping `--since`.
+  Process: MB moves after every merged restructure step; evidence-manifest commits only right before a merge into
+  main, followed by a map rebuild.
