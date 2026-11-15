@@ -469,3 +469,10 @@
   (std.* re-derives its rows and may not import models/syn001, ADR 0065:339-341) stays untouched until Frank rules.
   G-END stays the end criterion for the whole repository; only the blocking set changes. Running G1, G2, G3 lanes
   finish and merge their accepted steps and start no new targets.
+- **2026-11-15, W3 G2 run 5 merged; G2 trails development.** Review R-W3-G2-5 (reviewer, Opus): merge; rc_check OK
+  on the builder step. Residue recorded for the trailing phase (and subject to Frank's ruling on the legacy models/
+  engine): `declared_rows` still brain (85.3) with `slot` (cognitive 25, NLOC 97) over RC7: RC step 2 splits `slot`
+  by spec concept and passes `builder` to `_link_rows`; `_ContributionBuilder` docstring should state which entry
+  wins on a repeated id (lists keep both, dicts the last); `_region_ends`/`_RegionEnds` also carry domain-end
+  enthalpies (a broader name). `ph_state` (9.8) needs a private parameter object (provider, n, pressure, target,
+  context) to go further.
