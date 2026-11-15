@@ -50,6 +50,7 @@ from openflowsheet.assessment.report import SCHEMA_REFERENCE, report_body  # noq
 from openflowsheet.assessment.spec import load_assessment  # noqa: E402
 from openflowsheet.assessment.views import view_of  # noqa: E402
 from openflowsheet.canonical import canonical_json, state_sha256  # noqa: E402
+from openflowsheet.compile.casadi_backend import TwinEvaluationError  # noqa: E402
 from openflowsheet.orchestrator.executor import execute_plan  # noqa: E402
 from openflowsheet.orchestrator.revision import plan_revision  # noqa: E402
 from openflowsheet.run.compare import _is_float_digest_v2  # noqa: E402
@@ -367,6 +368,47 @@ def test_a40_refused_item_nulls_totals_and_exclude_restores_them(registered: Non
     )
     assert report["excluded"] == [{"item": "B", "reason": "existing boiler"}]
     assert {i["item_id"]: i["status"] for i in report["items"]}["B"] == "excluded"
+
+
+def test_report_body_is_refused_when_the_values_at_the_state_are_refused(
+    registered: None, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Both refusals of `_checked_values` drive `report_body` to `REFUSED`, with every output
+    `null` and the refusal appended after the program's own refusals. Falsifier:
+    `refusals.insert(0, checked)` in place of `refusals.append(checked)` in `report_body` puts it
+    first."""
+    refused = {
+        **P1_DOC,
+        "items": {
+            **P1_DOC["items"],
+            "B": {"F_BM": 3.17, "correlation": {"set": "sslw-idaes-v1", "entry": "pump"}},
+        },
+    }
+    program, state, digest = _program("TH-C1", refused)
+    own = [(r.code, r.target) for r in program.refusals]
+    assert own
+    row = next(n for n in program.admissibility_ids if n not in program.domain_rows)
+    original = AssessmentProgram.evaluate
+
+    def failing(self: AssessmentProgram, *args: Any, **kwargs: Any) -> Any:
+        raise TwinEvaluationError("stub evaluation failure")
+
+    def inadmissible(self: AssessmentProgram, *args: Any, **kwargs: Any) -> Any:
+        values = original(self, *args, **kwargs)
+        assert isinstance(values, Mapping)
+        return {**values, row: -1.0}
+
+    for evaluate, expected in (
+        (failing, ("ASSESSMENT_EVALUATION_FAILED", "")),
+        (inadmissible, ("ASSESSMENT_REGIME_INADMISSIBLE", row)),
+    ):
+        monkeypatch.setattr(AssessmentProgram, "evaluate", evaluate)
+        body = report_body(program, state, state_sha256=digest, uncertainty=True)
+        assert body["status"] == "REFUSED"
+        assert [(r["code"], r["target"]) for r in body["refusals"]] == [*own, expected]
+        assert all(v is None for v in body["capex"].values())
+        assert all(v is None for v in body["annual"].values())
+        assert body["uncertainty"]["linear_interval"] == {}
 
 
 # -- A41: every default used is reported ---------------------------------------------------------
