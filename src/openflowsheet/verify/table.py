@@ -284,8 +284,8 @@ def revision_checks(
 def _saturated_outlets(view: RevisionView) -> frozenset[str]:
     """Units design §4.8 (I1b): the streams at the outlet ports of `thermal.*` units that declare
     no phase (`vapor_liquid`). On a pure-fluid basis each is saturated (ADR 0051 D1; L-TH-2),
-    read from its carried split by `verify.thermal`; any other stream without a declared phase
-    stays unlifted (S11.A17)."""
+    read from its carried split by `verify.thermal` (`_mixture_degeneracy` handles the other
+    streams without a declared phase)."""
     return frozenset(
         stream
         for instance in view.instances
@@ -304,7 +304,7 @@ def _mixture_degeneracy(
 ) -> Degeneracy:
     """The declared-mixture form's `Degeneracy` at `at`: no bands. Each `saturated` stream gets
     `verify.thermal`'s carried-split note; a flowing stream without a declared phase in
-    `declared` that is not saturated is unlifted (its checks blocked)."""
+    `declared` that is not saturated stays unlifted (its checks blocked; S11.A17)."""
     return Degeneracy(
         notes={
             stream: _thermal_rows().CARRIED_SPLIT_NOTE.format(stream=stream) for stream in saturated
@@ -332,7 +332,7 @@ class _Routing(NamedTuple):
     #: The saturated `thermal.*` outlets (`_saturated_outlets`); empty unless the mixture form
     #: runs on a pure-fluid basis.
     saturated: frozenset[str]
-    #: The streams whose enthalpy the state carries instead (`degenerate.enthalpy`).
+    #: The streams whose enthalpy the state carries instead; only `.enthalpy` is read.
     degenerate: Degeneracy
 
 
