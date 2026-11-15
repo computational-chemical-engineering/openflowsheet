@@ -65,6 +65,7 @@ from openflowsheet.studies.surrogate.plan import (
     SAMPLER_ID,
     SPLITS,
     BoxCoordinate,
+    Split,
 )
 from openflowsheet.studies.surrogate.quadratic import (
     ADMISSIBLE_DT_K,
@@ -593,7 +594,9 @@ def _failure_consistency(manifest: Mapping[str, Any]) -> list[str]:
 
 def check_manifest(manifest: Mapping[str, Any]) -> list[str]:
     """Every inconsistency of `manifest` that its schema cannot express (M04.A24); empty when
-    none. The schema is checked first; a manifest that fails it is not read further."""
+    none. The schema is checked first; a manifest that fails it is not read further, nor is one
+    with a non-finite or non-canonical number or an unregistered plan. The splits are checked
+    by `_split_consistency`, the failure lists by `_failure_consistency`."""
     invalid = schema_errors(MANIFEST_SCHEMA, manifest)
     if invalid:
         return [f"schema: {error}" for error in invalid]
@@ -630,34 +633,7 @@ def check_manifest(manifest: Mapping[str, Any]) -> list[str]:
         )
 
     # Splits: the plan's counts, keys hashed as recorded, pairwise disjoint and without repeats.
-    splits = manifest["splits"]
-    seen: dict[str, str] = {}
-    for split in SPLITS:
-        block = splits[split]
-        keys = block["keys"]
-        expected: int = counts[split]
-        size = expected * 2 * len(BOX) if split == "gradient" else expected
-        if block["count"] != expected or len(keys) != size:
-            found.append(
-                f"{split}: count {block['count']} with {len(keys)} keys; the plan has {expected}"
-            )
-        if block["keys_sha256"] != document_sha256(keys):
-            found.append(f"{split}: keys_sha256 is not the keys' SHA-256")
-        for key in keys:
-            if key in seen:
-                found.append(f"{split}: key {key} is also in {seen[key]} (overlapping splits)")
-            seen[key] = split
-        for entry in (*block["failed"], *block["incomplete"]):
-            if not 0 <= entry["index"] < len(keys):
-                found.append(f"{split}: index {entry['index']} is outside the split")
-            elif "key" in entry and entry["key"] != keys[entry["index"]]:
-                found.append(
-                    f"{split}: incomplete key {entry['key']} is not keys[{entry['index']}]"
-                )
-    centres = splits["gradient"]["centres"]
-    stencil_keys = [key for centre in centres for key in centre["stencil_keys"]]
-    if stencil_keys != splits["gradient"]["keys"]:
-        found.append("gradient: the centres' stencil keys are not the split's keys in order")
+    found.extend(_split_consistency(manifest["splits"], counts))
 
     # The band, the coverage count and the bound, re-derived from the stored scores.
     calibration = manifest["calibration"]
@@ -740,4 +716,40 @@ def check_manifest(manifest: Mapping[str, Any]) -> list[str]:
                     found.append(f"Q6 is missing: {text!r}")
             elif text != required:
                 found.append(f"qualification {required!r} is missing")
+    return found
+
+
+def _split_consistency(splits: Mapping[str, Any], counts: Mapping[Split, int]) -> list[str]:
+    """The `splits` block against the plan's `counts`: each split's count and key count, its
+    `keys_sha256`, no key in two splits, every failed or incomplete index inside its split (and
+    an incomplete entry's key that of its index), and the gradient centres' stencil keys being
+    the gradient split's keys in order."""
+    found: list[str] = []
+    seen: dict[str, str] = {}
+    for split in SPLITS:
+        block = splits[split]
+        keys = block["keys"]
+        expected: int = counts[split]
+        size = expected * 2 * len(BOX) if split == "gradient" else expected
+        if block["count"] != expected or len(keys) != size:
+            found.append(
+                f"{split}: count {block['count']} with {len(keys)} keys; the plan has {expected}"
+            )
+        if block["keys_sha256"] != document_sha256(keys):
+            found.append(f"{split}: keys_sha256 is not the keys' SHA-256")
+        for key in keys:
+            if key in seen:
+                found.append(f"{split}: key {key} is also in {seen[key]} (overlapping splits)")
+            seen[key] = split
+        for entry in (*block["failed"], *block["incomplete"]):
+            if not 0 <= entry["index"] < len(keys):
+                found.append(f"{split}: index {entry['index']} is outside the split")
+            elif "key" in entry and entry["key"] != keys[entry["index"]]:
+                found.append(
+                    f"{split}: incomplete key {entry['key']} is not keys[{entry['index']}]"
+                )
+    centres = splits["gradient"]["centres"]
+    stencil_keys = [key for centre in centres for key in centre["stencil_keys"]]
+    if stencil_keys != splits["gradient"]["keys"]:
+        found.append("gradient: the centres' stencil keys are not the split's keys in order")
     return found
