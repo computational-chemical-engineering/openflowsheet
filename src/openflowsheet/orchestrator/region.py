@@ -71,22 +71,15 @@ its callers and tests read there.
 from __future__ import annotations
 
 from collections.abc import Callable, Mapping, Sequence
-from dataclasses import dataclass, field, replace
-from fractions import Fraction
 from typing import Any, Literal
 
 import numpy as np
-import numpy.typing as npt
-import scipy.sparse as sp
 
 from openflowsheet.canonical import state_sha256
 from openflowsheet.compile.spec import ProblemSpec
-from openflowsheet.compiled import CompiledProblem, EvaluationContext, PhaseSignature
-from openflowsheet.models import temperature_id
-from openflowsheet.models.c1.phase import classify
+from openflowsheet.compiled import CompiledProblem, EvaluationContext
 from openflowsheet.models.lifted import INADMISSIBLE_BRANCH as INADMISSIBLE_BRANCH
 from openflowsheet.models.lifted import LABEL_KIND as LABEL_KIND
-from openflowsheet.models.lifted import AdmissibilityRefusal
 from openflowsheet.models.lifted import Branch as Branch
 from openflowsheet.models.lifted import ClosureType as ClosureType
 from openflowsheet.models.lifted import DormancyForm as DormancyForm
@@ -100,19 +93,14 @@ from openflowsheet.models.lifted_tolerance import (
 )
 from openflowsheet.models.lifted_tolerance import KIND_TOLERANCE as KIND_TOLERANCE
 from openflowsheet.models.syn001.ph_kernel import ph_state as ph_state
-from openflowsheet.numerics.newton import Evaluation, NewtonResult, solve_newton
-from openflowsheet.numerics.ptc import PtcProblem, PtcRecord, solve_ptc
+from openflowsheet.numerics.newton import solve_newton
+from openflowsheet.numerics.ptc import PtcRecord
 from openflowsheet.numerics.scaling import REGISTERED_NOMINALS, Scaling
 from openflowsheet.orchestrator.attempts import AttemptContext, AttemptCore, provenance_item
 from openflowsheet.orchestrator.budget import BudgetExhaustedError
 from openflowsheet.orchestrator.execution import Region
 from openflowsheet.orchestrator.homotopy import (
-    Continuation,
-    CorrectorOutcome,
     HomotopyRecord,
-    continue_specification,
-    level_values,
-    rebind,
 )
 from openflowsheet.orchestrator.mass import MappingRefusal, MassMapping, RegionMass, resolve_mass
 from openflowsheet.orchestrator.phase_contract import (
@@ -130,13 +118,15 @@ from openflowsheet.orchestrator.phase_contract import (
     jacobian_pattern,
     opening_not_settled,
 )
+from openflowsheet.orchestrator.region_attempts import _homotopy as _homotopy
+from openflowsheet.orchestrator.region_attempts import _ptc_attempt
+from openflowsheet.orchestrator.region_attempts import region_ptc_problem as region_ptc_problem
 from openflowsheet.orchestrator.region_phase import TP_REGIME as TP_REGIME
 from openflowsheet.orchestrator.region_phase import ClosureMemo as ClosureMemo
 from openflowsheet.orchestrator.region_phase import _admissible as _admissible
 from openflowsheet.orchestrator.region_phase import _band_regime as _band_regime
 from openflowsheet.orchestrator.region_phase import (
     _branch,
-    _closure_key,
     _dormant_feed,
     _form,
     _zero_flow_answer,
@@ -158,7 +148,6 @@ from openflowsheet.orchestrator.region_problem import (
     _label_entries,
     _labels,
     _refinement,
-    _watched_variables,
     _with_labels,
 )
 from openflowsheet.orchestrator.region_problem import _items as _items
@@ -172,6 +161,13 @@ from openflowsheet.orchestrator.region_problem import _trigger_dormant as _trigg
 from openflowsheet.orchestrator.region_problem import (
     _units_and_items_disjoint as _units_and_items_disjoint,
 )
+from openflowsheet.orchestrator.region_result import AttemptSystem as AttemptSystem
+from openflowsheet.orchestrator.region_result import RecoveryStart as RecoveryStart
+from openflowsheet.orchestrator.region_result import RegionAttempt as RegionAttempt
+from openflowsheet.orchestrator.region_result import RegionResult as RegionResult
+from openflowsheet.orchestrator.region_screen import _attempt_screen as _attempt_screen
+from openflowsheet.orchestrator.region_screen import _build_screen as _build_screen
+from openflowsheet.orchestrator.region_screen import _screen as _screen
 from openflowsheet.orchestrator.revision_continuation import REVISION_CONTINUATION_REJECTED
 from openflowsheet.orchestrator.roots import branch_found, root_fingerprint
 from openflowsheet.orchestrator.trace import (
@@ -184,7 +180,7 @@ from openflowsheet.orchestrator.trace import (
     fraction_string,
 )
 from openflowsheet.orchestrator.warm_start import WARM_START_REJECTED, WARM_START_SOURCE
-from openflowsheet.thermo import FlashRequest, PropertyProvider, StreamState
+from openflowsheet.thermo import PropertyProvider
 
 __all__ = [
     "ClosureType",
@@ -243,280 +239,6 @@ def syn001_lifted_splits(components: Sequence[str]) -> tuple[LiftedSplit, ...]:
         liquid_definition=row_id(FLASH_UNIT, "Ndef", "liquid"),
     )
     return heater, flash
-
-
-@dataclass(frozen=True)
-class RegionAttempt:
-    signature: AttemptSignature
-    outcome: SolveOutcome
-    iterations: int
-    #: Why the attempt closed into the next one, in §9's registered grammar, or "".
-    reason: str = ""
-    #: What Newton itself ended on, before §6.3 converted it (A31: `STAGNATION` read as a
-    #: disagreement with the kernel), and the iterate it ended at, before any pin or projection.
-    solver_outcome: SolveOutcome | None = None
-    end_state: Mapping[str, float] = field(default_factory=dict)
-    #: The numbers behind `reason` or the terminal message — an admissibility value, the offending
-    #: value of a refused opening — kept here because the strings are R0 (review S4).
-    observations: Mapping[str, float] = field(default_factory=dict)
-    #: T04 §7.8: a PTC attempt's pseudo-steps, rejections, SER state and polish. In memory only.
-    ptc: PtcRecord | None = None
-
-
-@dataclass(frozen=True)
-class AttemptSystem:
-    """OPT design §4.2.1: the converged attempt's square system — exactly the arguments it passed
-    to `_region_problem` (`rows`, `free`, `labels`) and the values it held (every column of the
-    problem that is not free, at the value the attempt held it at), under its `signature`. In
-    memory only, never serialised (like `RegionResult.opening`)."""
-
-    rows: tuple[str, ...]
-    free: tuple[str, ...]
-    held: Mapping[str, float]
-    labels: tuple[tuple[str, str, str], ...]
-    signature: AttemptSignature
-
-
-@dataclass(frozen=True)
-class RegionResult:
-    outcome: SolveOutcome
-    state: Mapping[str, float]
-    attempts: tuple[RegionAttempt, ...]
-    #: Streams whose supplied split disagreed with the kernel and was overwritten (§6.2).
-    projections: tuple[str, ...] = ()
-    counters: Counters = field(default_factory=Counters)
-    message: str = ""
-    #: K03 §12.5's checkpoint of the last attempt that accepted a step or converged:
-    #: `candidate_root` only when the solve converged, `partial` otherwise (A30).
-    checkpoint: Checkpoint | None = None
-    #: One context per attempt, with the active phase set it solved under (ADR 0009 D4).
-    contexts: tuple[AttemptContext, ...] = ()
-    #: ADR 0005 D7 (T03 §8.1): one item per attempt — the attempt history and its start.
-    branch_provenance: tuple[Mapping[str, Any], ...] = ()
-    #: ADR 0005 D7 (T03 §8.2): issued on a `CONVERGED`, admissible solve, `None` otherwise.
-    root_fingerprint: Mapping[str, Any] | None = None
-    #: Attempt 0's opening: the full state (after §6.2's projection and the attempt's pins) and
-    #: the regimes it opened under — what recovery edge 3 starts from (T04 §5.3). In memory only.
-    opening: tuple[Mapping[str, float], Mapping[str, Regime]] | None = None
-    #: On `BUDGET_EXHAUSTED`: which budget — the core's (`newton_iterations`, `homotopy_steps`) or
-    #: `property_calls` — because edge 3's trigger set tells them apart (T04 §5.1).
-    budget: str | None = None
-    #: T04 §4.7: the homotopy's record, when attempt 0 ran the homotopy core.
-    homotopy: HomotopyRecord | None = None
-    #: OPT design §4.2.1: the converged attempt's system, set iff the region returns `CONVERGED`.
-    #: In memory only, never serialised.
-    final_system: AttemptSystem | None = None
-
-    @property
-    def iterations(self) -> int:
-        return sum(attempt.iterations for attempt in self.attempts)
-
-    @property
-    def signatures(self) -> tuple[AttemptSignature, ...]:
-        return tuple(attempt.signature for attempt in self.attempts)
-
-
-@dataclass(frozen=True)
-class RecoveryStart:
-    """Recovery edge 3's start (T04 §5.3): the failed solve's item-0 opening state and signature,
-    the region's continuation parameter, and item 0's initializer source. The recovery region
-    solve's attempt 0 runs the homotopy core from here, with a fresh contract state."""
-
-    state: Mapping[str, float]
-    regimes: Mapping[str, Regime]
-    continuation: Continuation
-    initializer_source: str | None
-    #: RRC design note §5.7 (ADR 0072): the signature the source reported for `state` — a
-    #: revision continuation's ancestor certificate's final signature. `None` is T04's recovery
-    #: from the failed solve's own opening, which is not checked. With a value, attempt 0's
-    #: opening is held to T03 §5.1's checks (`check_opening`) against it before the homotopy.
-    reported_signature: AttemptSignature | None = None
-
-
-def _attempt_screen(
-    *,
-    splits: Sequence[LiftedSplit],
-    regimes: Mapping[str, Regime],
-    provider: PropertyProvider,
-    context: EvaluationContext,
-    epsilon: float,
-    ph_units: frozenset[str],
-    v2: bool = False,
-    dormancy: Sequence[DormancyForm] = (),
-    temperatures: Mapping[str, tuple[str, ...]] | None = None,
-    memo: ClosureMemo | None = None,
-) -> Callable[[dict[str, float]], AttemptSignature | Evaluation]:
-    """The attempt's screen: T03's (`_screen`) under v1 — every v1 attempt, called exactly as
-    before — else the same screen with F2's kernel on the PH-type units (T05b spec §6.2), the
-    dormancy agreement of every split (§7.3), and each dormancy form's item read off the trial
-    (§7.8 (iii)). `temperatures` and `memo` are the openings' (§6.2 as amended): a full PH
-    closure the screen asks is kept in `memo` for an opening at the same state."""
-    if not v2:
-        return _screen(
-            splits=splits, regimes=regimes, provider=provider, context=context, epsilon=epsilon
-        )
-    return _build_screen(
-        splits,
-        regimes,
-        provider,
-        context,
-        epsilon,
-        ph_units,
-        v2=True,
-        dormancy=dormancy,
-        temperatures=temperatures,
-        memo=memo,
-    )
-
-
-def _screen(
-    *,
-    splits: Sequence[LiftedSplit],
-    regimes: Mapping[str, Regime],
-    provider: PropertyProvider,
-    context: EvaluationContext,
-    epsilon: float,
-) -> Callable[[dict[str, float]], AttemptSignature | Evaluation]:
-    """T03 §4.3: K03 §8.2 on each single-phase unit at a trial; the kernel on a flagged one."""
-    return _build_screen(splits, regimes, provider, context, epsilon, frozenset())
-
-
-def _build_screen(
-    splits: Sequence[LiftedSplit],
-    regimes: Mapping[str, Regime],
-    provider: PropertyProvider,
-    context: EvaluationContext,
-    epsilon: float,
-    ph_units: frozenset[str],
-    v2: bool = False,
-    dormancy: Sequence[DormancyForm] = (),
-    temperatures: Mapping[str, tuple[str, ...]] | None = None,
-    memo: ClosureMemo | None = None,
-) -> Callable[[dict[str, float]], AttemptSignature | Evaluation]:
-    """`_screen`'s body. The flag is v1's under both literals; under v2 a flagged PH-type unit
-    (`ph_units`) reports its PH closure's regime, and the TP flash's only when the closure gives
-    none (T05b spec §6.2). As amended (Q-S10, R-053) the regime is read off the band's end
-    enthalpies (`_band_regime`, (s1)–(s2)); only inside a `τ_E` zone of an end, or when an
-    evaluation there is not `ok`, is the full closure asked (s3), and its answer is kept in
-    `memo` (with `temperatures`' columns, as an opening would ask it) for the opening.
-
-    Under v2 (`v2`) every split is first checked for T05b spec §7.3's agreement — one comparison:
-    a dormant feed reports `ZERO_FLOW`; a `ZERO_FLOW` split whose feed flows reports the TP
-    flash's regime (it is leaving, and its pinned split carries no enthalpy, §7.4) at the
-    leaving answer's inputs — for a PH-type split its feed's `T` (Q-S15 (3)). After the
-    splits, each dormancy form's item is reported from the trial's trigger dormancy (§7.8 (iii),
-    one comparison per outlet): an item the attempt does not run, or runs against a flowing
-    trigger, makes the reported signature differ, and the trial is phase-rejected."""
-
-    def screen(state: dict[str, float]) -> AttemptSignature | Evaluation:
-        # The screen calls the provider outside the compiled residual, so it converts a refusal
-        # exactly as the residual does (review S1): a spent budget is an `error` evaluation (the
-        # executor reports `BUDGET_EXHAUSTED` from its meter), a provider that will not give the
-        # K-values is `invalid_trial_state`. Neither may escape the attempt loop.
-        try:
-            return reported_signature(state)
-        except BudgetExhaustedError as exhausted:
-            return Evaluation(status="error", message=str(exhausted))
-        except AdmissibilityRefusal as refused:
-            return Evaluation(status="invalid_trial_state", message=str(refused))
-
-    def reported_signature(state: dict[str, float]) -> AttemptSignature | Evaluation:
-        reported: list[tuple[str, PhaseSignature]] = []
-        for split in splits:
-            regime = regimes[split.unit]
-            if v2 and _dormant_feed(split, state):
-                reported.append((split.unit, "ZERO_FLOW"))
-                continue
-            if v2 and regime == "ZERO_FLOW":
-                # §7.4 as amended (Q-S15 (3)): a PH-type split reports the TP flash at the
-                # leaving answer's inputs — its feed's `T` (`_contract_kernel`), not its own
-                # `T` column, the zero-flow label of an earlier feed.
-                leaving = tp_regime(split, state, leaving=split.unit in ph_units)
-                if isinstance(leaving, Evaluation):
-                    return leaving
-                reported.append((split.unit, leaving))
-                continue
-            if regime == "TWO_PHASE":
-                reported.append((split.unit, regime))
-                continue
-            ok, _ = _admissible(provider, context, split, regime, state, epsilon)
-            if ok:
-                reported.append((split.unit, regime))
-                continue
-            if split.unit in ph_units:
-                screened = screened_regime(split, state)
-                if screened is not None and screened != TP_REGIME:
-                    reported.append((split.unit, screened))
-                    continue
-                if screened is None:
-                    answer = asked(split, state)
-                    if answer is not None:
-                        reported.append((split.unit, answer.regime))
-                        continue
-            kernel = tp_regime(split, state)
-            if isinstance(kernel, Evaluation):
-                return kernel
-            reported.append((split.unit, kernel))
-        return (*reported, *_items(dormancy, state))
-
-    def screened_regime(
-        split: LiftedSplit, state: dict[str, float]
-    ) -> Regime | Literal["tp"] | None:
-        """§6.2 (s1)–(s2): the band ends' regime, `TP_REGIME`, or `None` for (s3)."""
-        target = _split_enthalpy(provider, context, split, state)
-        if target is None:
-            return None
-        feed = tuple(state[name] for name in split.feed)
-        return _band_regime(provider, context, feed, state[split.pressure], target)
-
-    def asked(split: LiftedSplit, state: dict[str, float]) -> _KernelAnswer | None:
-        """§6.2 (s3): the full closure, kept for an opening at the same state."""
-        key = _closure_key(split, state)
-        if memo is not None and key in memo:
-            return memo[key]
-        answer = _ph_closure(provider, context, split, state, (temperatures or {}).get(split.unit))
-        if memo is not None:
-            memo[key] = answer
-        return answer
-
-    def tp_regime(
-        split: LiftedSplit, state: dict[str, float], *, leaving: bool = False
-    ) -> PhaseSignature | Evaluation:
-        """The provider's TP flash of the split's feed at the trial, or its refusal: at the
-        split's own `T`, or — for a PH-type split `leaving` `ZERO_FLOW` — at its feed's `T`,
-        as the opening's leaving answer asks it (`_contract_kernel`)."""
-        temperature = temperature_id(split.stream) if leaving else split.temperature
-        stream = StreamState(
-            n=tuple(state[name] for name in split.feed),
-            temperature=state[temperature],
-            pressure=state[split.pressure],
-        )
-        band: PhaseSignature | None = None
-        if _pr_c1(provider):
-            # M02 design note §14.2 B14: the kernel's regime, so the dew band reads VAPOR here as
-            # in `_kernel` (build log D38).
-            band, _, flashed = classify(
-                provider, context, stream.n, stream.temperature, stream.pressure
-            )
-        else:
-            flashed = provider.flash(FlashRequest(state=stream), context)
-        if flashed.status != "ok" or flashed.phase_signature is None:
-            # The provider's own status (review N3; K03 §5.5: the unit, the status and the
-            # message). Newton halves on any of them but `error`, which ends the attempt.
-            return Evaluation(
-                status="invalid_trial_state" if flashed.status == "ok" else flashed.status,
-                message=(
-                    f"the kernel refused {split.unit}'s regime ({split.stream}) at the "
-                    f"trial: {flashed.status}: {flashed.message}"
-                ),
-            )
-        if band == "VAPOR":
-            return band
-        if flashed.phase_signature in ("LIQUID", "VAPOR"):
-            return flashed.phase_signature
-        return "TWO_PHASE"
-
-    return screen
 
 
 def solve_region(
@@ -1299,125 +1021,6 @@ def _swapped_row_test(
     return None
 
 
-def region_ptc_problem(
-    *,
-    region_mass: RegionMass,
-    compiled: CompiledProblem,
-    spec: ProblemSpec,
-    scaling: Scaling,
-    base: Mapping[str, float],
-    free: Sequence[str],
-    rows: Sequence[str],
-    splits: Sequence[LiftedSplit],
-    regimes: Mapping[str, Regime],
-    provider: PropertyProvider,
-    policy: SolvePolicy,
-    context: EvaluationContext,
-    opening: npt.NDArray[np.float64] | None = None,
-    ph_units: frozenset[str] = frozenset(),
-    v2: bool = False,
-    labels: Sequence[tuple[str, str, str]] = (),
-    dormancy: Sequence[DormancyForm] = (),
-    temperatures: Mapping[str, tuple[str, ...]] | None = None,
-    memo: ClosureMemo | None = None,
-) -> PtcProblem:
-    """One PTC attempt's problem (T04 §7.2–§7.3): the Newton attempt's — the same rows, columns,
-    scales, tolerances, bounds and T03 screen, `opening` not screened — with `M` added: the
-    region's validated mapping evaluated at each accepted iterate, restricted by id to the
-    attempt's rows and free columns, under the attempt's one context (K03 §12.4). A label row
-    (T05b spec §7.8 (v)) is algebraic: no holdup, a zero row of `M`."""
-    screen = _attempt_screen(
-        splits=splits,
-        regimes=regimes,
-        provider=provider,
-        context=context,
-        epsilon=policy.admissibility_epsilon,
-        ph_units=ph_units,
-        v2=v2,
-        dormancy=dormancy,
-        temperatures=temperatures,
-        memo=memo,
-    )
-    problem = _region_problem(
-        compiled, context, spec, scaling, base, free, rows, screen, opening, **_with_labels(labels)
-    )
-    held = dict(base)
-
-    def mass(x: npt.NDArray[np.float64]) -> sp.csc_matrix:
-        state = dict(held)
-        state.update(zip(free, (float(value) for value in x), strict=True))
-        return region_mass.matrix(state, problem.row_ids, free, provider, context)
-
-    accumulation: Mapping[str, str] = spec.row_accumulation
-    if labels:
-        accumulation = {**accumulation, **{label: "algebraic" for label, _, _ in labels}}
-    return PtcProblem(problem, mass, accumulation)
-
-
-def _ptc_attempt(
-    *,
-    region_mass: RegionMass,
-    compiled: CompiledProblem,
-    spec: ProblemSpec,
-    scaling: Scaling,
-    base: Mapping[str, float],
-    free: Sequence[str],
-    rows: Sequence[str],
-    splits: Sequence[LiftedSplit],
-    regimes: Mapping[str, Regime],
-    provider: PropertyProvider,
-    policy: SolvePolicy,
-    attempt_context: EvaluationContext,
-    trace: Trace,
-    attempt_index: int,
-    signature: AttemptSignature,
-    counters: Counters,
-    wall: WallObserver,
-    x0: npt.NDArray[np.float64],
-    ph_units: frozenset[str],
-    v2: bool = False,
-    labels: Sequence[tuple[str, str, str]] = (),
-    dormancy: Sequence[DormancyForm] = (),
-    temperatures: Mapping[str, tuple[str, ...]] | None = None,
-    memo: ClosureMemo | None = None,
-) -> tuple[NewtonResult, PtcRecord]:
-    """T04 §7 as one attempt's core, in the attempt's frozen signature. The SER state opens at
-    `tau_initial_s`: T04 §7.4's reset, per attempt."""
-    problem = region_ptc_problem(
-        region_mass=region_mass,
-        compiled=compiled,
-        spec=spec,
-        scaling=scaling,
-        base=base,
-        free=free,
-        rows=rows,
-        splits=splits,
-        regimes=regimes,
-        provider=provider,
-        policy=policy,
-        context=attempt_context,
-        opening=x0,
-        ph_units=ph_units,
-        v2=v2,
-        labels=labels,
-        dormancy=dormancy,
-        temperatures=temperatures,
-        memo=memo,
-    )
-    return solve_ptc(
-        problem,
-        x0,
-        policy.globalization.ptc,
-        trace=trace,
-        signature=signature,
-        attempt=attempt_index,
-        counters=counters,
-        observer=wall,
-        # T05b spec §7.8 (iii): an empty signature is screened too where there are forms (v2).
-        compare_empty=bool(dormancy),
-    )
-
-
 def _external_opening(
     current: Mapping[str, float],
     opening: AttemptSignature,
@@ -1457,164 +1060,3 @@ def _external_opening(
             },
         ),
     )
-
-
-def _homotopy(
-    *,
-    recovery: RecoveryStart,
-    compiled: CompiledProblem,
-    compile_level: Callable[[ProblemSpec], CompiledProblem],
-    spec: ProblemSpec,
-    scaling: Scaling,
-    opening_state: Mapping[str, float],
-    free: Sequence[str],
-    rows: Sequence[str],
-    splits: Sequence[LiftedSplit],
-    regimes: Mapping[str, Regime],
-    provider: PropertyProvider,
-    policy: SolvePolicy,
-    attempt_context: EvaluationContext,
-    trace: Trace,
-    attempt_index: int,
-    signature: AttemptSignature,
-    counters: Counters,
-    x0: npt.NDArray[np.float64],
-    ph_units: frozenset[str],
-    v2: bool = False,
-    labels: Sequence[tuple[str, str, str]] = (),
-    dormancy: Sequence[DormancyForm] = (),
-) -> tuple[NewtonResult, HomotopyRecord]:
-    """T04 §4 as one attempt's core, in the attempt's frozen signature.
-
-    Each λ < 1 level is compiled from the declaration with the continued pinned inputs re-bound
-    (`homotopy.rebind`, by id) and evaluated under a **level context** — the attempt's own context
-    but for `constants_sha256` (ADR 0010 D6). The λ = 1 level is the target instance under the
-    attempt's context. Every corrector is K03's Newton core, unchanged, with the T03 screen and a
-    wall observer of its own, capped at `corrector_max_iterations`.
-    """
-    settings = policy.globalization.homotopy
-    corrector_policy = replace(policy, max_iterations_per_attempt=settings.corrector_max_iterations)
-    levels: dict[Fraction, tuple[CompiledProblem, EvaluationContext]] = {}
-
-    def level(lam: Fraction) -> tuple[CompiledProblem, EvaluationContext]:
-        if lam == 1:
-            return compiled, attempt_context
-        if lam not in levels:
-            values = level_values(recovery.continuation, spec.parameters, opening_state, lam)
-            instance = compile_level(rebind(spec, values))
-            if instance.metadata.model_version != compiled.metadata.model_version:
-                raise RuntimeError(
-                    "defect: a λ-level re-binds pinned inputs only, and compiled to another "
-                    f"model_version ({instance.metadata.model_version})"
-                )
-            levels[lam] = (
-                instance,
-                replace(attempt_context, constants_sha256=instance.metadata.constants_sha256),
-            )
-        return levels[lam]
-
-    def correct(
-        lam: Fraction, start: npt.NDArray[np.float64], running: Counters
-    ) -> CorrectorOutcome:
-        instance, context = level(lam)
-        screen = _attempt_screen(
-            splits=splits,
-            regimes=regimes,
-            provider=provider,
-            context=context,
-            epsilon=policy.admissibility_epsilon,
-            ph_units=ph_units,
-            v2=v2,
-            dormancy=dormancy,
-        )
-        problem = _region_problem(
-            instance,
-            context,
-            spec,
-            scaling,
-            opening_state,
-            free,
-            rows,
-            screen,
-            start,
-            **_with_labels(labels),
-        )
-        wall = WallObserver(policy)
-        result = solve_newton(
-            problem,
-            start,
-            corrector_policy,
-            trace=trace,
-            signature=signature,
-            attempt=attempt_index,
-            counters=running,
-            observer=wall,
-            compare_empty=bool(dormancy),
-            # K03 §5.3's release reads the attempt's opening, not this λ-level's start (note of
-            # 2026-09-25, T05b Q-S13): a phase that vanished at an earlier level is no
-            # structural zero.
-            opening=x0,
-        )
-        return CorrectorOutcome(
-            result=result,
-            level_constants_sha256=instance.metadata.constants_sha256,
-            boundary_unit=_boundary_unit(
-                result, wall, splits, regimes, signature, opening_state, free
-            ),
-        )
-
-    return continue_specification(
-        correct=correct,
-        x0=x0,
-        continuation=recovery.continuation,
-        policy=settings,
-        trace=trace,
-        attempt=attempt_index,
-        signature=signature,
-        variable_ids=free,
-        counters=counters,
-    )
-
-
-def _boundary_unit(
-    result: NewtonResult,
-    wall: WallObserver,
-    splits: Sequence[LiftedSplit],
-    regimes: Mapping[str, Regime],
-    signature: AttemptSignature,
-    base: Mapping[str, float],
-    free: Sequence[str],
-) -> str | None:
-    """T04 §4.6: the unit a rejected corrector's phase boundary belongs to, or `None`.
-
-    `BOUND_BLOCKED` with a watched variable (T03 §4.6) of a `TWO_PHASE` unit in `blocked_by`: that
-    unit. `PHASE_UPDATE_REQUIRED`: the unit whose reported regime differed from the frozen one.
-    Either way the first in signature order."""
-    order = [unit for unit, _ in signature]
-    # T05b spec §7.8 (i): a candidate can carry an item the frozen signature lacks; it follows
-    # the frozen entries, in the candidates' order.
-    order += list(
-        dict.fromkeys(
-            unit
-            for candidate in wall.candidates
-            for unit, _ in candidate.signature
-            if unit not in order
-        )
-    )
-    found: set[str] = set()
-    if result.outcome == "BOUND_BLOCKED":
-        end = dict(base)
-        end.update(zip(free, (float(value) for value in result.x), strict=True))
-        watched = _watched_variables(splits, regimes, end)
-        found = {watched[name][0] for name in result.blocked_by if name in watched}
-    elif result.outcome == "PHASE_UPDATE_REQUIRED":
-        frozen = dict(signature)
-        found = {
-            unit
-            for candidate in wall.candidates
-            for unit, regime in candidate.signature
-            if frozen.get(unit) != regime
-        }
-    if not found:
-        return None
-    return min(found, key=order.index)
