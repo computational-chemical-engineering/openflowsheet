@@ -46,7 +46,7 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 2. W3: review and merge G2, G4, G5, G6 runs; then G1 (orchestrator, numerics) and G3 (studies); more runs per
    group until the G-END numbers.
 3. W4 in ADR 0076 order (I-9 before A11/I-14; I-10; drop re-exports I-19). W5: frozen modules after a `specifier`
-   identity ruling (Fable). Merge into `main` after each phase (CI both legs, F0, Decision Desk card).
+   identity ruling (Fable). Merge into `main` after each phase (f6 alone on `wp/S19`: `pytest tests/test_t07_v17_reference.py -k f6` with no gate running; CI both legs; F0; Decision Desk card).
 4. Docs pass (list in `S19_DECISIONS`).
 
 ## Gates (pass numbers fixed after A1, before step 1)
