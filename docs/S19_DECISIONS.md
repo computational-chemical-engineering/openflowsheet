@@ -500,3 +500,19 @@
   per nonzero; about 84 of 113 s of solve CPU at 1e4): a G6 work order (blocking set, compile/). G1's hold
   condition ("until the scale probe has reported") is met: G1 resumes behind the blocking set. `wp/SP` is not
   merged: it goes into main with the next merge after Frank's sign-off.
+- **2026-11-16, gate queue: interface mode and `--head` (4535f3bd, then the --head commit).** gate.sh and the queue
+  take `--mode interface` (ADR 0076 W4 steps; base = plan commit, `--plan` the interface plan). `enqueue --head SHA`
+  gates base..SHA of a lane in a temporary detached worktree (`.claude/worktrees/q-<label>`, removed after), so an
+  engineer enqueues several jobs of mixed modes on one lane and ends (W4 items need a refactor-mode retarget and an
+  interface step per item). Checked with a fake gate: the scratch worktree is created at the head, the gate runs in
+  it, it is removed; a head that left the lane is refused. Runner restarted.
+- **DECISION 2026-11-16: G6 run 2 is reviewed together with run 3** -> one `reviewer` pass over 8e4b2db7.. the run 3
+  tip. Why: messages/ is tier "other" (cadence every 8 steps); run 2 has 4 accepted steps; the run 3 S1 step
+  (casadi_backend.py structural_pattern, one step) is read in the same pass before the merge. Saves one agent slot
+  while lanes are capped at 2. Alternative: review run 2 first (the state file's order). Reversible: review run 2
+  alone if run 3 fails.
+- **2026-11-16, W4 run 1 briefed** (`S19-W4-1.md`, lane `wp/S19-w4` from 5d09ace0): I-6 (A16), I-5 (A12), I-3 (A13)
+  in that order, each restructure (where the home is missing), src retarget, outside-gate retarget, interface step.
+  Layer entry `openflowsheet.schema_check` above `serialize` committed before (5d09ace0, rule 6). G6 run 3 briefed
+  (`S19-W3-G6-3.md`): re-gate 684c9f2a, lint.py drafts s5, s6, s7b, s8, structural_pattern hoist with a timing and
+  equality check at the 715-stage probe column.
