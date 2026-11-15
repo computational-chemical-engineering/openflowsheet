@@ -28,6 +28,7 @@ from jsonschema import Draft202012Validator
 
 import openflowsheet.orchestrator.executor as executor_module
 import openflowsheet.orchestrator.region as region_module
+import openflowsheet.orchestrator.region_attempts as region_attempts
 import openflowsheet.orchestrator.region_problem as region_problem
 from openflowsheet.application.binding import Binding, bind_revision
 from openflowsheet.orchestrator.executor import PlanResult, StepResult
@@ -518,7 +519,7 @@ def test_a10_the_recovery_solves_the_same_problem(
         assert level.variable_ids == spec.variable_ids and level.equations == spec.equations
         return level
 
-    monkeypatch.setattr(region_module, "rebind", rebind)
+    monkeypatch.setattr(region_attempts, "rebind", rebind)
     result = plan_run(case_document(case_id), case_policy(case_id)).result
     step = region_step(result)
     failed, recovery = step.recovered_from, step.detail

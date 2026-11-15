@@ -18,7 +18,7 @@ import pytest
 import openflowsheet.numerics.ptc as ptc_module
 from benchmarks.t06.ensemble import host
 from benchmarks.t08.ptc_r1 import compare, diagnose
-from openflowsheet.orchestrator import region as region_module
+from openflowsheet.orchestrator import region_attempts
 
 
 @cache
@@ -51,9 +51,9 @@ def _pick(group: str, index: int) -> dict[str, Any]:
 def test_the_rerun_reproduces_the_committed_record(group: str, index: int) -> None:
     committed = _pick(group, index)
     rows = {(int(row[0]), int(row[1])): row for row in compare.start_rows()}
-    original = (region_module.solve_ptc, ptc_module.solve_linear)
+    original = (region_attempts.solve_ptc, ptc_module.solve_linear)
     run = diagnose.diagnose_run(rows[(committed["i"], committed["j"])], committed)
-    assert (region_module.solve_ptc, ptc_module.solve_linear) == original
+    assert (region_attempts.solve_ptc, ptc_module.solve_linear) == original
     assert run["class"] == committed["class"]
     assert run["class"] in (("MID",) if group == "MID" else ("LOW", "HIGH"))
     (attempt,) = run["attempts"]

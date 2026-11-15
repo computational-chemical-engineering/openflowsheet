@@ -355,7 +355,11 @@ DECLARATION_PACKAGES: tuple[tuple[Any, str], ...] = (
 #: The residence-time pseudo-holdup mapping (T04 §6.2), and the PTC-path modules that import it.
 PSEUDO_HOLDUP_MODULE = "openflowsheet.orchestrator.mass"
 REGISTERED_MASS_IMPORTERS = frozenset(
-    {"openflowsheet.orchestrator.executor", "openflowsheet.orchestrator.region"}
+    {
+        "openflowsheet.orchestrator.executor",
+        "openflowsheet.orchestrator.region",
+        "openflowsheet.orchestrator.region_attempts",
+    }
 )
 
 PACKAGE_ROOT = REPO_ROOT / "src" / "openflowsheet"
