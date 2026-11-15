@@ -378,3 +378,11 @@
   region_phase, region_problem), the benchmark retarget (benchmarks/t08/ptc_r1). Notes for W4/I-19: region_attempts
   docstring omits its region_phase import; tests/test_s01_cascade_wo1.py:262-263 patches names that callers import
   directly (dead guard, older than S19).
+- **2026-11-15, Q1 ruled (R-W3-G1N-1, reviewer on Fable 5.2): the RC form is accepted** for the five loop
+  functions; text in playbook rule 6. G1 lane N run 1 (A1, N1, P1): merge after fixes: (1) the RC check script
+  gains (iii) no `self.<name>` where `<name>` is a parameter or local of that method and (iv) no bare store of a
+  field name below the constructor, comparing `ast.dump`, before A2/C2/R1; (2) no-gain docstring fixes at
+  newton.py:680/708/712, ptc.py:566/590/594. Health: the closing methods' 9 parameters are accepted (no parameter
+  object: one consumer, 19 sites); ptc.py 6.8 is open: if the P steps end below 7.0 that is a miss and P1 is
+  reverted. Notes: anderson.py:380 positional unpack of `_Mixing` read by attribute at A4; frame fields still
+  unread at a function's last step are dropped; `field(init=False)` stays without a default.

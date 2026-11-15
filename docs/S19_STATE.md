@@ -37,6 +37,9 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
   G2 run 1 reviewed (R-W3-G2-1, fixes in G2 run 2). Each run: reviewer, then merge into `wp/S19`.
 - A11/I-14 ruled (`docs/briefs/S19-A11-ruling.md`): runs in W4 after I-9. B8-executor skipped; B7 in W5.
 
+- Open (R-W3-G1N-1): numerics/ptc.py health 6.8 after P1 (closing method's 9 parameters); P2 to P4 must end >= 7.0,
+  else a miss and P1 is reverted.
+
 ## Next actions
 
 1. Merge `wp/S19-f` (I-15 + B1) into `wp/S19`; remove worktree `s19f`.
