@@ -386,3 +386,10 @@
   object: one consumer, 19 sites); ptc.py 6.8 is open: if the P steps end below 7.0 that is a miss and P1 is
   reverted. Notes: anderson.py:380 positional unpack of `_Mixing` read by attribute at A4; frame fields still
   unread at a function's last step are dropped; `field(init=False)` stays without a default.
+- **2026-11-15, W3 G3 run 1 review R-W3-G3-1 (reviewer, Opus): merge after fixes** (docstrings, f85b4cf6, gated
+  no-gain): `_stage_a_best`/`_best_feasible` keep a running incumbent (ties keep the earlier point), `s0` documented
+  rather than dropped (dropping `[1:]` would remove a literal); `run_study` names its helpers. Notes for later:
+  `verification.py:417` 3-tuple repeats `check.status == "pass"` (NamedTuple or `(check, basis)`); manifest.py caller
+  comments repeat helper docstrings (low). DECISION: `trust_region/study.py::run_study` (still brain, cognitive 43;
+  its `run` and `check` closures rebind the caller's locals) takes the RC recipe under the Q1 ruling, with
+  rc_check.py. Alternative: leave it brain. Reversible by reverting that step.
