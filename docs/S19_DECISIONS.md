@@ -366,3 +366,8 @@
   `.extend` (no-gain). W4 (public signatures, ADR 0076): `units.convert_input_value` overloads (9 parameters),
   `adapters/external/launcher.launch` (11). launcher.py health 9.0 -> 8.8 while debt fell 23.1 -> 15.8: asked the
   tool owner.
+- **2026-11-15, health vs debt (code_health, cce-code-health a0aff44).** launcher.py health 9.0 -> 8.8 after
+  9eaa29a2 is intended: health counts smelly functions per smell (many_args 0.2 each), so an extraction that leaves
+  the parent's smells and gives the helper 6 parameters lowers health while debt falls. G-END binds repo health
+  >= 9.0, so engineers avoid helpers with more than 5 parameters (parameter object first, playbook seed
+  anti-pattern). `_await_exit` gets a parameter object with W4's `launch` signature change.
