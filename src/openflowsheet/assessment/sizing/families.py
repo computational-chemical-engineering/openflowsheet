@@ -173,7 +173,9 @@ def exchanger_utility(
     """An `exchanger.utility` item (§4.4.1): area `|Q|/(U F_T ΔT_lm)` against one utility.
 
     `t_in`/`t_out` are the host ids of the process inlet and outlet temperatures; `streams` the
-    process streams, when there are any, for the phase-change limitation."""
+    process streams, when there are any, for the phase-change limitation. `_candidates`
+    refuses NO_ADMISSIBLE_UTILITY for an undeclared named utility; `_cheapest_admissible` returns
+    `None`, which this function turns into the same refusal."""
     doc = sctx.item(item_id)
     regime = sctx.ctx.regime
     service_entry_id = f"{item_id}.service"
@@ -327,9 +329,9 @@ def _cheapest_admissible(
     t_po: float,
 ) -> Mapping[str, Any] | None:
     """§4.3.2 rule 2 without a held or declared utility: the cheapest candidate whose ΔT₁ and ΔT₂
-    both reach its `dT_min` at the process temperatures `t_pi`, `t_po`, ties to the earlier
-    candidate. A candidate without temperatures, `dT_min` or a comparable price is skipped; `None`
-    when no candidate is admissible."""
+    both reach the item's `dT_min`, else the candidate's, at the process temperatures `t_pi`,
+    `t_po`, ties to the earlier candidate. A candidate without temperatures, `dT_min` or a
+    comparable price is skipped; `None` when no candidate is admissible."""
     admissible: list[tuple[float, int, Mapping[str, Any]]] = []
     for order, utility in enumerate(candidates):
         temperatures, dt_min = _utility_temperatures(utility), _dt_min(doc, utility)
