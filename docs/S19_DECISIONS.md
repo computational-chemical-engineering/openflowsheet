@@ -353,3 +353,9 @@
   `splits.py::_check_equilibrium_reads` (cognitive 17, nesting 4) can be split by `rule.vapour_only` into two
   single-loop helpers without merging literal sites (K2); `coupling.py:385` unpacks `_Experiments` by position with
   two adjacent `str | None` fields: C3 replaces the call site, else read the fields by name.
+- **2026-11-15, W3 G2 run 3 merged.** Review R-W3-G2-3 (reviewer, Opus): merge. Notes: cascade_failure.py:25 and
+  its test docstring should name `cascade.validate` too (docs pass); W4 item: merge the cascade/column_validation
+  refusal twins with the shared helpers in cascade (column_validation already imports cascade; the reverse is a
+  cycle), keeping the column form of `_domain_refusal`; a spec union or Protocol for `_side_feed_stage_refusal`
+  and `_inadmissible_inlet_refusal`. `column_rows.py::declared_rows` (about 400 lines of closures over builder
+  state) takes the G1 recipe `closures-to-class` (RC1 to RC7, `docs/briefs/S19-G1-plan.md` section 3).
