@@ -459,36 +459,22 @@ def _instance_hint(unit: str, model: str, targets: Mapping[str, str]) -> str | N
 def _read(
     document: Mapping[str, Any], instance_targets: Mapping[str, str] | None = None
 ) -> tuple[RevisionView, dict[str, tuple[str, ...]]]:
+    """`document` read by §1.3's rules R1 to R6: the `RevisionView` and, per pinned column, the
+    names of the specifications that pin it, in specification order. `instance_targets` maps a
+    model to what its instance targets read, for the `specification_unsupported` hint. Raises
+    `RevisionError` for what the rules cannot read.
+
+    Phases, in order: `_read_instances` (R1), the material connections (R1, R3), `_port_phases`
+    (R4), then the fixed specifications (R5), whose targets `_connection_columns` and
+    `_instance_columns` resolve to columns.
+    """
     declared_components = tuple((document.get("component_set") or {}).get("components") or ())
     basis = component_basis(document)
     components = canonical_components(declared_components, basis)
     component_set = ", ".join(str(component) for component in declared_components)
     targets = instance_targets or {}
 
-    # R1: instances, in declaration order; R6 reads each parameter in SI (ADR 0016 D5).
-    instances: dict[str, dict[str, Any]] = {}
-    parameter_conversions: list[UnitConversion] = []
-    for entry in document.get("instances") or ():
-        unit = _require_id(entry.get("id"))
-        if unit in instances:
-            raise RevisionError("conflict", f"id_duplicate({unit})")
-        parameters, converted = _parameters(
-            unit, entry.get("parameters") or {}, basis.molecular_weights
-        )
-        parameter_conversions.extend(converted)
-        model = entry.get("model") or {}
-        instances[unit] = {
-            "model": str(model.get("id", "")),
-            "version": model.get("version"),
-            "artifact_ref": model.get("artifact_ref"),
-            "parameters": parameters,
-            "ports": {},
-            "directions": {},
-            "capabilities": {},
-            "pins": {},
-        }
-    if not instances:
-        raise RevisionError("incomplete", "instances_missing")
+    instances, parameter_conversions = _read_instances(document, basis)
 
     # R1, R3: material connections, in stream order.
     streams: list[str] = []
@@ -522,15 +508,7 @@ def _read(
         edges.append((stream, ends[0], ends[1]))
     producers = {stream: producer for stream, producer, _ in edges}
 
-    # R4: one declared phase per port.
-    phases: dict[str, dict[str, Phase | None]] = {}
-    for unit, record in instances.items():
-        phases[unit] = {}
-        for port, capabilities in record["capabilities"].items():
-            if len(capabilities) != 1:
-                raise RevisionError("unsupported", f"port_phase_ambiguous({unit}.{port})")
-            (capability,) = capabilities
-            phases[unit][port] = _DECLARED[capability]
+    phases = _port_phases(instances)
 
     # R5: fixed specifications become pins, routed to the owner of the column they fix. Each
     # value is read in SI by `unit-conversion-v2` (ADR 0016 D5, reader R2), after its component:
@@ -561,19 +539,9 @@ def _read(
             if object_id not in producers:
                 raise RevisionError("incomplete", f"specification_target_unknown({name})")
             owner = producers[object_id]
-            component = target.get("component")
-            if path == "state.n" and component in components:
-                columns: tuple[str, ...] = (flow_id(object_id, str(component)),)
-            elif path == "state.T" and component is None:
-                columns = (temperature_id(object_id),)
-            elif path == "state.P" and component is None:
-                columns = (pressure_id(object_id),)
-            else:
-                raise RevisionError(
-                    "unsupported",
-                    f"specification_unsupported({name})",
-                    _CONNECTION_HINT.format(components=component_set),
-                )
+            columns = _connection_columns(
+                name, object_id, path, target.get("component"), components, component_set
+            )
         elif object_type == "instance":
             if object_id not in instances:
                 raise RevisionError("incomplete", f"specification_target_unknown({name})")
@@ -587,29 +555,7 @@ def _read(
                         "conflict", f"specification_conflict({name}, {owner}.{parameter})"
                     )
                 continue
-            if path in ("outlet.T", "outlet.P"):
-                outlets = [
-                    stream
-                    for port, direction in record["directions"].items()
-                    if direction == "outlet"
-                    for stream in record["ports"][port]
-                ]
-                if not outlets:
-                    raise RevisionError(
-                        "unsupported",
-                        f"specification_unsupported({name})",
-                        _instance_hint(owner, record["model"], targets),
-                    )
-                identify = temperature_id if path == "outlet.T" else pressure_id
-                columns = tuple(identify(stream) for stream in outlets)
-            elif path == "duty.Q":
-                columns = (duty_id(owner),)
-            else:
-                raise RevisionError(
-                    "unsupported",
-                    f"specification_unsupported({name})",
-                    _instance_hint(owner, record["model"], targets),
-                )
+            columns = _instance_columns(name, owner, path, record, targets)
         else:
             raise RevisionError("unsupported", f"specification_unsupported({name})")
         pins: dict[str, float] = instances[owner]["pins"]
@@ -646,6 +592,112 @@ def _read(
         basis=basis,
     )
     return view, {column: tuple(names) for column, names in sources.items()}
+
+
+def _read_instances(
+    document: Mapping[str, Any], basis: ComponentBasis
+) -> tuple[dict[str, dict[str, Any]], list[UnitConversion]]:
+    """R1: the instances, in declaration order, as reader records keyed by id, with the
+    conversions of their parameters, which R6 reads in SI (ADR 0016 D5). A record's `ports`,
+    `directions`, `capabilities` and `pins` start empty; `_read` fills them, and its R5 also
+    writes a fixed parameter specification's value into the record's `parameters`
+    (`setdefault`). Raises the `id_duplicate` conflict for a repeated id and `instances_missing`
+    for none."""
+    instances: dict[str, dict[str, Any]] = {}
+    parameter_conversions: list[UnitConversion] = []
+    for entry in document.get("instances") or ():
+        unit = _require_id(entry.get("id"))
+        if unit in instances:
+            raise RevisionError("conflict", f"id_duplicate({unit})")
+        parameters, converted = _parameters(
+            unit, entry.get("parameters") or {}, basis.molecular_weights
+        )
+        parameter_conversions.extend(converted)
+        model = entry.get("model") or {}
+        instances[unit] = {
+            "model": str(model.get("id", "")),
+            "version": model.get("version"),
+            "artifact_ref": model.get("artifact_ref"),
+            "parameters": parameters,
+            "ports": {},
+            "directions": {},
+            "capabilities": {},
+            "pins": {},
+        }
+    if not instances:
+        raise RevisionError("incomplete", "instances_missing")
+    return instances, parameter_conversions
+
+
+def _port_phases(instances: Mapping[str, Mapping[str, Any]]) -> dict[str, dict[str, Phase | None]]:
+    """R4: one declared phase per port, per instance in record order and per port in its
+    `capabilities` order; raises `port_phase_ambiguous` for a port whose connections declare
+    more than one phase capability."""
+    phases: dict[str, dict[str, Phase | None]] = {}
+    for unit, record in instances.items():
+        phases[unit] = {}
+        for port, capabilities in record["capabilities"].items():
+            if len(capabilities) != 1:
+                raise RevisionError("unsupported", f"port_phase_ambiguous({unit}.{port})")
+            (capability,) = capabilities
+            phases[unit][port] = _DECLARED[capability]
+    return phases
+
+
+def _connection_columns(
+    name: str,
+    stream: str,
+    path: str,
+    component: Any,
+    components: tuple[str, ...],
+    component_set: str,
+) -> tuple[str, ...]:
+    """R5: the column a `connection` target fixes on `stream`: `state.n` with a `component` in
+    `components`, or `state.T` or `state.P` without one; any other path refuses specification
+    `name` as unsupported, with the connection hint over `component_set`."""
+    if path == "state.n" and component in components:
+        return (flow_id(stream, str(component)),)
+    if path == "state.T" and component is None:
+        return (temperature_id(stream),)
+    if path == "state.P" and component is None:
+        return (pressure_id(stream),)
+    raise RevisionError(
+        "unsupported",
+        f"specification_unsupported({name})",
+        _CONNECTION_HINT.format(components=component_set),
+    )
+
+
+def _instance_columns(
+    name: str, owner: str, path: str, record: Mapping[str, Any], targets: Mapping[str, str]
+) -> tuple[str, ...]:
+    """R5: the columns an `instance` target other than a parameter fixes on `owner`, whose reader
+    record is `record`: `outlet.T` or `outlet.P` on every stream at an outlet port, in port then
+    connection order, or `duty.Q`; a path outside these, or an outlet path on an instance without
+    an outlet stream, refuses specification `name` as unsupported, with the instance hint from
+    `targets`."""
+    if path in ("outlet.T", "outlet.P"):
+        outlets = [
+            stream
+            for port, direction in record["directions"].items()
+            if direction == "outlet"
+            for stream in record["ports"][port]
+        ]
+        if not outlets:
+            raise RevisionError(
+                "unsupported",
+                f"specification_unsupported({name})",
+                _instance_hint(owner, record["model"], targets),
+            )
+        identify = temperature_id if path == "outlet.T" else pressure_id
+        return tuple(identify(stream) for stream in outlets)
+    if path == "duty.Q":
+        return (duty_id(owner),)
+    raise RevisionError(
+        "unsupported",
+        f"specification_unsupported({name})",
+        _instance_hint(owner, record["model"], targets),
+    )
 
 
 def _optional_text(value: Any) -> str | None:

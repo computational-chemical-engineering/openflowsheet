@@ -427,6 +427,10 @@ def _build(
     ratio_scale: float,
     max_sweeps: int,
 ) -> BlockEndpoint:
+    """§5.3 steps 1–9 for `candidate = (a, c)`: the first `a` equilibrium stages are the V-block,
+    the last `c` the L-block and the `b` between them the core. Steps 2–4 on a non-empty core are
+    `_core_endpoint`'s, which raises `_RefusalError` (`sweeps_exhausted`, or `_bubble`'s) as the
+    later steps do (`_block_stage`'s, `_bubble`'s, `inadmissible_endpoint`)."""
     unit, components = spec.unit_id, spec.components
     signature = block_signature(spec, candidate)
     stages = spec.equilibrium_stages()
@@ -442,46 +446,13 @@ def _build(
     sweeps, delta = 0, 0.0
     if b >= 1:
         carry = stages[a:]
-        # Step 2: the start; step 3: the sweeps over the core.
-        temperatures = {j: initial.profile[j - 1] + profile_shift for j in core}
-        # S10-C §4.9: a composition-dependent K is relaxed as in §18.2's sweeps.
-        compositions = (
-            liquid_compositions(initial.liquid, core) if composition_dependent(provider) else None
+        core_end = _core_endpoint(
+            spec, provider, initial, carry, core, rho, phi, profile_shift, max_sweeps
         )
-        delta, change = float("inf"), 0.0
-        for sweep in range(1, max_sweeps + 1):
-            flows, _ = _core_flows(
-                spec, provider, carry, core, temperatures, rho, phi, compositions
-            )
-            updated = {
-                j: _bubble(
-                    provider,
-                    flows[j],
-                    spec.pressures[j - 1],
-                    f"{unit} stage {j}, sweep {sweep}",
-                )
-                for j in core
-            }
-            delta = max(abs(updated[j] - temperatures[j]) for j in core)
-            temperatures = updated
-            if compositions is not None:
-                compositions, change = relaxed_compositions(compositions, flows, core)
-            if delta <= SWEEP_TOLERANCE and change <= SWEEP_COMPOSITION_TOLERANCE:
-                sweeps = sweep
-                break
-        else:
-            detail = "" if compositions is None else f", max |dx| = {change!r}"
-            raise _RefusalError(
-                "sweeps_exhausted",
-                f"{unit}: core max |dT| = {delta!r} K{detail} after {max_sweeps} sweeps",
-            )
-        # Step 4: the final flows at the stopped T (and the relaxed composition, S10-C §4.9).
-        flows, rising = _core_flows(
-            spec, provider, carry, core, temperatures, rho, phi, compositions
-        )
+        temperatures, sweeps, delta = dict(core_end.temperatures), core_end.sweeps, core_end.delta
         for j in carry:
-            liquid[j] = flows[j]
-            vapor[j] = rising[j]
+            liquid[j] = core_end.liquid[j]
+            vapor[j] = core_end.vapor[j]
     # Step 5: the L-block, top-down.
     for j in l_block:
         above = j - 1
@@ -533,3 +504,68 @@ def _build(
         if not admissible:
             raise _RefusalError(f"inadmissible_endpoint({j})", f"{unit} stage {j}: {message}")
     return BlockEndpoint(state, signature, rho, phi, sweeps, delta)
+
+
+@dataclass(frozen=True)
+class _CoreEndpoint:
+    """§5.3 steps 2–4 on a non-empty core: the core's stopped `T_j`, the sweep count, the last
+    core `max_j |ΔT_j|`, and the final liquid and vapor flows over the liquid-carrying stages."""
+
+    temperatures: dict[int, float]
+    sweeps: int
+    delta: float
+    liquid: dict[int, list[float]]
+    vapor: dict[int, list[float]]
+
+
+def _core_endpoint(
+    spec: ColumnSpec,
+    provider: PropertyProvider,
+    initial: ProfileInitial,
+    carry: tuple[int, ...],
+    core: tuple[int, ...],
+    rho: Mapping[int, float],
+    phi: float | None,
+    profile_shift: float,
+    max_sweeps: int,
+) -> _CoreEndpoint:
+    """§5.3 steps 2–4 over the non-empty `core` (`carry`: the core, then the L-block): the start
+    `T_j = initial.profile[j - 1] + profile_shift`, at most `max_sweeps` sweeps of `_core_flows` and
+    `_bubble` until `max_j |ΔT_j|` (and, for a composition-dependent form, the relaxed liquid's
+    `max |Δx|`, S10-C §4.9) is within tolerance, then the flows at the stopped `T`. Raises
+    `_RefusalError` `sweeps_exhausted` when no sweep meets the tolerances, or `_bubble`'s."""
+    unit = spec.unit_id
+    # Step 2: the start; step 3: the sweeps over the core.
+    temperatures = {j: initial.profile[j - 1] + profile_shift for j in core}
+    # S10-C §4.9: a composition-dependent K is relaxed as in §18.2's sweeps.
+    compositions = (
+        liquid_compositions(initial.liquid, core) if composition_dependent(provider) else None
+    )
+    delta, change = float("inf"), 0.0
+    for sweep in range(1, max_sweeps + 1):
+        flows, _ = _core_flows(spec, provider, carry, core, temperatures, rho, phi, compositions)
+        updated = {
+            j: _bubble(
+                provider,
+                flows[j],
+                spec.pressures[j - 1],
+                f"{unit} stage {j}, sweep {sweep}",
+            )
+            for j in core
+        }
+        delta = max(abs(updated[j] - temperatures[j]) for j in core)
+        temperatures = updated
+        if compositions is not None:
+            compositions, change = relaxed_compositions(compositions, flows, core)
+        if delta <= SWEEP_TOLERANCE and change <= SWEEP_COMPOSITION_TOLERANCE:
+            sweeps = sweep
+            break
+    else:
+        detail = "" if compositions is None else f", max |dx| = {change!r}"
+        raise _RefusalError(
+            "sweeps_exhausted",
+            f"{unit}: core max |dT| = {delta!r} K{detail} after {max_sweeps} sweeps",
+        )
+    # Step 4: the final flows at the stopped T (and the relaxed composition, S10-C §4.9).
+    flows, rising = _core_flows(spec, provider, carry, core, temperatures, rho, phi, compositions)
+    return _CoreEndpoint(temperatures, sweeps, delta, flows, rising)
