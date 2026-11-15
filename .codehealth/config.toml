@@ -223,6 +223,7 @@ to = [
     "openflowsheet.models.lifted_tolerance",
     "openflowsheet.orchestrator.region_result", "openflowsheet.orchestrator.region_screen",
     "openflowsheet.orchestrator.region_attempts",
+    "openflowsheet.orchestrator.region_phase", "openflowsheet.orchestrator.region_problem",
 ]
 reason = "R-016: the verifier shares no solve code (it may read structure: rank, splits, tear)"
 
