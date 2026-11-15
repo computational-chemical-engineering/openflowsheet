@@ -481,3 +481,8 @@
   forever. The orchestrator killed that subprocess only (120155, 120191); the build continues and records the test as
   unsure (B-17). Future builds: per-test timeout through PYTEST_ADDOPTS (extra pytest args would mark the map
   partial), and no gate runs while a map builds (SKILL.md).
+- **2026-11-15, G1 lane O run 3 merged; G1 held.** Review R-W3-G1O-3: merge after one docstring fix. Held residue:
+  executor.py `_solve_revision_region` (74 NLOC) and `_eo_recovery` (71) wait for `_PlanRun` (plan Q4, W4);
+  `_loop_tear` may become `_plan_tear` with a NamedTuple (name clash with graph/tear.py); twins
+  `_recovery_taken`/`_revision_continuation_taken` stay (rule 15). Region steps R1, S1, C2 and E4, X4 to X6 wait
+  for the scale probe.
