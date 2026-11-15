@@ -216,7 +216,7 @@ def _cross_check_solve_path(
     """
     from dataclasses import replace  # noqa: PLC0415
 
-    from openflowsheet.application.policies import (  # noqa: PLC0415
+    from openflowsheet.orchestrator.policies import (  # noqa: PLC0415
         INNER_ROUTE,
         ROUTE_DEFAULT_POLICY,
         resolve_policy,
