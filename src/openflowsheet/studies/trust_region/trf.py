@@ -81,7 +81,7 @@ import threading
 import time
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
-from typing import Any, Final
+from typing import Any, Final, NamedTuple
 
 import pyomo.environ as pyo
 from pyomo.opt import SolverFactory
@@ -269,6 +269,10 @@ def _run(
     gradient_check: Callable[[Projection], Any] | None = None,
     check_budgets: Mapping[str, Sequence[ColdBudget]] | None = None,
 ) -> TrfRun:
+    """One TRF run on `projection`, inside its holders' run: `_preflight_phase` (the gradient
+    check, the basis, `_preflight`), whose refusal is the run's outcome
+    `TRF_TRUTH_REFUSED(<code>)` without a solve; else Pyomo's TRF solve with its log and stdout
+    captured, the θ recheck, and the outcome classified into the returned `TrfRun`."""
     solver = SolverFactory("trustregion")
     effective = solver.config(dict(config))
     run = RunState(run_id)
@@ -280,37 +284,7 @@ def _run(
     for holder in projection.holders:
         holder.begin_run(run, budgets.get(holder.name, ()), checked.get(holder.name, ()))
     preflight_start = time.perf_counter()
-    refused: TruthRefused | None = None
-    refused_phase = "start:"
-    built: Mapping[str, EFBasis] | None = None if callable(basis) else basis
-    preflown = False
-    try:
-        try:
-            if gradient_check is not None:
-                run.checking_gradient = True
-                try:
-                    gradient_check(projection)
-                finally:
-                    run.checking_gradient = False
-            if callable(basis):
-                run.forming_basis = True
-                try:
-                    built = basis(projection)
-                finally:
-                    run.forming_basis = False
-        except TruthRefused as unhandled:
-            # R-400 step 9: a refusal the check or the basis did not handle (a budget refusal)
-            # is the run's outcome, `TRF_TRUTH_REFUSED(<code>)`; nothing more is asked.
-            refused, refused_phase = unhandled, ""
-        else:
-            assert built is not None
-            _refuse_basis(projection, built)
-            refused = _preflight(projection)
-        preflown = True
-    finally:
-        if not preflown or refused is not None:
-            for holder in projection.holders:
-                holder.end_run()
+    refused, refused_phase, built = _preflight_phase(projection, basis, gradient_check, run)
     # The backstop (R-276) counts the refusals from here on: one the basis handled itself (R-400
     # step 9: the curvature's fallback) is recorded in its basis block, not the run's outcome.
     refused_before = {holder.name: len(holder.refusals) for holder in projection.holders}
@@ -491,6 +465,63 @@ def _run(
         final_step_ratio=step_ratio,
         final_step_at_box_bound=at_box_bound,
     )
+
+
+class _Preflown(NamedTuple):
+    """`_preflight_phase`'s result: the refusal that ends the run before TRF starts (`None`: TRF
+    runs), the prefix of its outcome code (`""` for a refusal the gradient check or the basis
+    raised, `start:` for `_preflight`'s), and the basis (`None` only when the check or the basis
+    refused before it was formed)."""
+
+    refused: TruthRefused | None
+    refused_phase: str
+    built: Mapping[str, EFBasis] | None
+
+
+def _preflight_phase(
+    projection: Projection,
+    basis: Mapping[str, EFBasis] | BasisFor,
+    gradient_check: Callable[[Projection], Any] | None,
+    run: RunState,
+) -> _Preflown:
+    """Everything before TRF's solve, inside the holders' run: `gradient_check` (with
+    `run.checking_gradient` set), then the basis when `basis` is a `BasisFor` (with
+    `run.forming_basis` set); a `TruthRefused` from either is the run's refusal (R-400 step 9).
+    Otherwise `_refuse_basis` (it raises `TrfConfigurationRefusedError`) and `_preflight` (R-276).
+    The holders' runs are ended here when the phase refuses or raises; otherwise they stay open
+    for the solve."""
+    refused: TruthRefused | None = None
+    refused_phase = "start:"
+    built: Mapping[str, EFBasis] | None = None if callable(basis) else basis
+    preflown = False
+    try:
+        try:
+            if gradient_check is not None:
+                run.checking_gradient = True
+                try:
+                    gradient_check(projection)
+                finally:
+                    run.checking_gradient = False
+            if callable(basis):
+                run.forming_basis = True
+                try:
+                    built = basis(projection)
+                finally:
+                    run.forming_basis = False
+        except TruthRefused as unhandled:
+            # R-400 step 9: a refusal the check or the basis did not handle (a budget refusal)
+            # is the run's outcome, `TRF_TRUTH_REFUSED(<code>)`; nothing more is asked.
+            refused, refused_phase = unhandled, ""
+        else:
+            assert built is not None
+            _refuse_basis(projection, built)
+            refused = _preflight(projection)
+        preflown = True
+    finally:
+        if not preflown or refused is not None:
+            for holder in projection.holders:
+                holder.end_run()
+    return _Preflown(refused, refused_phase, built)
 
 
 def _at_box_bound(projection: Projection, model: Any) -> bool:
