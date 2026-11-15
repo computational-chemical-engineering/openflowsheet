@@ -20,7 +20,7 @@ the test-suite audit each fallback is recorded as a defect, which fails the sess
 from __future__ import annotations
 
 import math
-from collections.abc import Iterable, Mapping, Sequence
+from collections.abc import Iterable, Iterator, Mapping, Sequence
 from dataclasses import dataclass, replace
 from typing import Any, Literal
 
@@ -548,16 +548,8 @@ def _elements(request: _Request, resolved: list[tuple[int, Entry]]) -> list[dict
             seen.add((kind, identifier))
             out.append({"type": kind, "id": identifier, "path": path})
 
-    for _, entry in resolved:
-        for name, value in request.params.items():
-            declared = entry.params.get(name)
-            if declared is None or declared.type not in ELEMENT_TYPES or not _present(value):
-                continue
-            located = _locate(declared.type, value, request.context.revision)
-            if located is None:
-                add(declared.type, _raw(value), None)
-            else:
-                add(located[0], _raw(value), located[1])
+    for kind, identifier, path in _param_elements(request, resolved):
+        add(kind, identifier, path)
     for identifier in request.extra_elements:
         if any(element["id"] == identifier for element in out):
             continue  # an implicated id a chain param already typed (rule 2's check, Q2)
@@ -567,6 +559,25 @@ def _elements(request: _Request, resolved: list[tuple[int, Entry]]) -> list[dict
         else:
             add(located[0], identifier, located[1])
     return out
+
+
+def _param_elements(
+    request: _Request, resolved: list[tuple[int, Entry]]
+) -> Iterator[tuple[str, str, list[str | int] | None]]:
+    """The request's present element params, per resolved entry in chain order and then in param
+    order, as `(type, id, path)`: `_locate`'s type and path, or the declared type and no path
+    when the revision has no such element. Lazy: `_elements` adds each one before the next is
+    located."""
+    for _, entry in resolved:
+        for name, value in request.params.items():
+            declared = entry.params.get(name)
+            if declared is None or declared.type not in ELEMENT_TYPES or not _present(value):
+                continue
+            located = _locate(declared.type, value, request.context.revision)
+            if located is None:
+                yield declared.type, _raw(value), None
+            else:
+                yield located[0], _raw(value), located[1]
 
 
 def _numbers(
