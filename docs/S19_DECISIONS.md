@@ -329,3 +329,11 @@
   walk order replaces a direction flag). The commit states that `_inlet_flows` now runs before the block's
   `_block_stage` calls (pure, cannot raise on a validated spec) and that walk-predecessor equals `j -/+ 1` because
   `equilibrium_stages()` is contiguous (column_spec.py:403). No split of column_blocks.py.
+- **2026-11-15, I-15 and B1 merged into `wp/S19` (ce537725).** Review R-B1 (reviewer, Opus): merge. All 60 moved
+  top-level statements byte-identical; 67 patches on region/region_phase/region_problem mapped to call sites, none
+  dead; exception identity holds; no lazy verify import. Item 1 fixed (scripts/t03_evidence_manifest.py A02 scans
+  the new modules). W4 notes: (2) region.py re-exports about 20 private names used only by tests, which hides
+  dead patches from patch_noop: move test imports to the defining modules and drop the re-exports (with I-19);
+  (3) ten underscore names cross region module boundaries, `_admissible` bound in three: make region_phase's
+  cross-module names public; (4) the trial screen (`_build_screen`, `_attempt_screen`) is the next move candidate
+  into region_phase if its closure stays clear of `_solve_region`.
