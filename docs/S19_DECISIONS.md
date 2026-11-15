@@ -491,3 +491,12 @@
   fixtures embed absolute worktree paths); `gate_queue.py` proved on three real gates. The proof's codehealth log
   records stay outside s19.jsonl (proof commits net to zero; gate JSONs kept). Engineers now deliver a chain, enqueue
   it and end (`S19-W3-common.md`).
+- **2026-11-16, S18 scale probe reported (registered pass, quiet window; evidence on `wp/SP` cb60b59f,
+  `evidence/S18/c952a6b3.../manifest.json`, status implemented).** SYN-001 C-MW column, wilson-ig-v1, 3 components,
+  stages 10..100: log-log slope of compile CPU 0.99 and of CPU per Newton iteration 0.96, within E-F6-15's 1.3:
+  R-1034's architect-pass trigger is not met. At N=100: compile 0.29 s, 139 ms per iteration (78% in Python
+  property callbacks). 1e4-variable probe: compile 2.25 s, 1.05 s per iteration. Not E-F6-15 itself (not std, 3
+  components). Found: `compile/casadi_backend.py:567` `structural_pattern` is O(nnz x n) (recomputes equation ids
+  per nonzero; about 84 of 113 s of solve CPU at 1e4): a G6 work order (blocking set, compile/). G1's hold
+  condition ("until the scale probe has reported") is met: G1 resumes behind the blocking set. `wp/SP` is not
+  merged: it goes into main with the next merge after Frank's sign-off.
