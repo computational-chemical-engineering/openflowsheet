@@ -48,6 +48,9 @@ RUNTIME = "ofs_testmap_runtime"
 #: so pytest-xdist refuses the session ("Different tests were collected"). A build with workers
 #: runs them in a second, serial pytest call (docs/S16_DECISIONS.md, B-4).
 XDIST_SERIAL = ("tests/test_t07_w2d_noncanonical.py",)
+#: Campaign tooling: no test reads these trees (a guard in tests/test_s16_test_impact.py), so a
+#: change under them, added, deleted or modified, neither falls back nor selects (S19).
+TOOLING_PREFIXES = (".codehealth/", ".claude/")
 
 
 class FallbackError(Exception):
@@ -614,6 +617,8 @@ def select(base: str, map_dir: Path | None = None, cwd: Path = ROOT) -> Selectio
             raise FallbackError(f"the map is of a partial run ({test_map.meta['pytest_args']})")
         selected: set[str] = set()
         for change in changes_since(sha, cwd):
+            if change.path.startswith(TOOLING_PREFIXES):
+                continue
             reason = _fallback_rule(change, sha, cwd)
             if reason is not None:
                 raise FallbackError(reason)
