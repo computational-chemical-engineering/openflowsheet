@@ -322,95 +322,9 @@ def solve_newton(
         merit = problem.scaling.merit(run.values, problem.row_ids)
 
         # §5.2: the convergence test, on the unscaled residual, before any Jacobian.
-        if bool(np.all(np.abs(array) <= run.tolerance)):
-            if run.column_tolerance is None or run.kept is None or iteration == 0:
-                return run.finish(
-                    "CONVERGED", run.values, iterations=iteration, accepted_any=run.accepted_any
-                )
-            # ADR 0018 D2: the chord correction at this iterate with the last factorization.
-            try:
-                ratio, column, run.chord_linear = _chord(
-                    problem, run.kept, run.values, run.column_tolerance
-                )
-            except LinearSolveFailedError as failure:
-                # ADR 0004 D3's test failed on the back-solve: there is no estimate. Before a
-                # refinement the iterate is returned as `newton` returns it, and after one the
-                # attempt returns `x_k` (D4); either way the closing message says so.
-                if run.refining is None:
-                    return run.finish(
-                        "CONVERGED",
-                        run.values,
-                        message=f"terminal_refinement(abandoned: chord {failure.reason})",
-                        iterations=iteration,
-                        accepted_any=run.accepted_any,
-                    )
-                start, run.refining = run.refining, None
-                run.x = start.x
-                return run.finish(
-                    "CONVERGED",
-                    start.values,
-                    message=start.message(f"reverted: chord {failure.reason}"),
-                    iterations=start.iteration,
-                    accepted_any=start.accepted_any,
-                    linear=run.chord_linear,
-                )
-            if run.refining is not None:
-                # D4: the refined iterate is kept iff its own chord, with `x_k`'s factorization,
-                # is within the kind tolerance on every column.
-                start, run.refining = run.refining, None
-                if ratio <= 1.0:
-                    return run.finish(
-                        "CONVERGED",
-                        run.values,
-                        message=start.message(f"accepted: chord {ratio!r} at {column}"),
-                        iterations=iteration,
-                        accepted_any=run.accepted_any,
-                        linear=run.chord_linear,
-                    )
-                run.x = start.x
-                return run.finish(
-                    "CONVERGED",
-                    start.values,
-                    message=start.message(f"reverted: chord {ratio!r} at {column}"),
-                    iterations=start.iteration,
-                    accepted_any=start.accepted_any,
-                    linear=run.chord_linear,
-                )
-            if not ratio > 1.0:
-                return run.finish(
-                    "CONVERGED",
-                    run.values,
-                    iterations=iteration,
-                    accepted_any=run.accepted_any,
-                    linear=run.chord_linear,
-                )
-            converged = _Converged(
-                run.x.copy(), run.values, iteration, run.accepted_any, ratio, column
-            )
-            if iteration == policy.max_iterations_per_attempt:
-                # D2: never at the iteration budget; the estimate is disclosed all the same.
-                return run.finish(
-                    "CONVERGED",
-                    run.values,
-                    message=converged.message("abandoned: BUDGET_EXHAUSTED(newton_iterations)"),
-                    iterations=iteration,
-                    accepted_any=run.accepted_any,
-                    linear=run.chord_linear,
-                )
-            # D3: one more iteration of this loop from `x_k`, unchanged.
-            run.refining = converged
-        elif run.refining is not None:
-            # D4: the refined iterate does not pass every row; the attempt returns `x_k`.
-            start, run.refining = run.refining, None
-            run.x = start.x
-            return run.finish(
-                "CONVERGED",
-                start.values,
-                message=start.message("reverted: rows unconverged"),
-                iterations=start.iteration,
-                accepted_any=start.accepted_any,
-                linear=run.chord_linear,
-            )
+        closed = run._closing_at_convergence(iteration, array)
+        if closed is not None:
+            return closed
 
         if iteration == policy.max_iterations_per_attempt:
             return run.finish(
@@ -779,6 +693,125 @@ class _NewtonRun:
 
     def digest(self, vector: npt.NDArray[np.float64]) -> str:
         return state_sha256(vector, self.problem.variable_ids)
+
+    def _closing_at_convergence(
+        self, iteration: int, array: npt.NDArray[np.float64]
+    ) -> NewtonResult | None:
+        """§5.2's convergence test on the unscaled residual `array` of `values`; ADR 0018's exits.
+
+        Returns the closing result, or None when the loop goes on: rows unconverged outside a
+        refinement, or D3's one more iteration from `_refinement`. Converged at iteration 0, or
+        without column tolerances or a kept factorization, it closes `CONVERGED`; converged
+        otherwise, it returns `_refinement`'s answer. Unconverged inside a refinement (D4), it
+        restores `x` to `x_k`, clears `refining` and closes `CONVERGED` there. Every close writes
+        `attempt_closed` through `finish`.
+        """
+        if bool(np.all(np.abs(array) <= self.tolerance)):
+            if self.column_tolerance is None or self.kept is None or iteration == 0:
+                return self.finish(
+                    "CONVERGED", self.values, iterations=iteration, accepted_any=self.accepted_any
+                )
+            return self._refinement(iteration, self.kept, self.column_tolerance)
+        if self.refining is not None:
+            # D4: the refined iterate does not pass every row; the attempt returns `x_k`.
+            start, self.refining = self.refining, None
+            self.x = start.x
+            return self.finish(
+                "CONVERGED",
+                start.values,
+                message=start.message("reverted: rows unconverged"),
+                iterations=start.iteration,
+                accepted_any=start.accepted_any,
+                linear=self.chord_linear,
+            )
+        return None
+
+    def _refinement(
+        self, iteration: int, kept: KeptFactorization, column_tolerance: npt.NDArray[np.float64]
+    ) -> NewtonResult | None:
+        """ADR 0018 D2 to D4 at a converged iterate `x`, with the fields `kept` and
+        `column_tolerance` (the caller has checked both are set).
+
+        The chord correction with the last factorization (D2) sets `chord_linear` when the
+        back-solve succeeds. Inside a refinement it judges the refined iterate (D4): it keeps it
+        or restores `x` to `x_k`, clears `refining`, and closes `CONVERGED`. Outside one it closes
+        `CONVERGED` when the chord is within the kind tolerance or at the iteration budget, and
+        otherwise opens the refinement (D3: sets `refining`) and returns None for one more
+        iteration. Every close writes `attempt_closed` through `finish`.
+        """
+        # ADR 0018 D2: the chord correction at this iterate with the last factorization.
+        try:
+            ratio, column, self.chord_linear = _chord(
+                self.problem, kept, self.values, column_tolerance
+            )
+        except LinearSolveFailedError as failure:
+            # ADR 0004 D3's test failed on the back-solve: there is no estimate. Before a
+            # refinement the iterate is returned as `newton` returns it, and after one the
+            # attempt returns `x_k` (D4); either way the closing message says so.
+            if self.refining is None:
+                return self.finish(
+                    "CONVERGED",
+                    self.values,
+                    message=f"terminal_refinement(abandoned: chord {failure.reason})",
+                    iterations=iteration,
+                    accepted_any=self.accepted_any,
+                )
+            start, self.refining = self.refining, None
+            self.x = start.x
+            return self.finish(
+                "CONVERGED",
+                start.values,
+                message=start.message(f"reverted: chord {failure.reason}"),
+                iterations=start.iteration,
+                accepted_any=start.accepted_any,
+                linear=self.chord_linear,
+            )
+        if self.refining is not None:
+            # D4: the refined iterate is kept iff its own chord, with `x_k`'s factorization,
+            # is within the kind tolerance on every column.
+            start, self.refining = self.refining, None
+            if ratio <= 1.0:
+                return self.finish(
+                    "CONVERGED",
+                    self.values,
+                    message=start.message(f"accepted: chord {ratio!r} at {column}"),
+                    iterations=iteration,
+                    accepted_any=self.accepted_any,
+                    linear=self.chord_linear,
+                )
+            self.x = start.x
+            return self.finish(
+                "CONVERGED",
+                start.values,
+                message=start.message(f"reverted: chord {ratio!r} at {column}"),
+                iterations=start.iteration,
+                accepted_any=start.accepted_any,
+                linear=self.chord_linear,
+            )
+        if not ratio > 1.0:
+            return self.finish(
+                "CONVERGED",
+                self.values,
+                iterations=iteration,
+                accepted_any=self.accepted_any,
+                linear=self.chord_linear,
+            )
+        converged = _Converged(
+            self.x.copy(), self.values, iteration, self.accepted_any, ratio, column
+        )
+        if iteration == self.policy.max_iterations_per_attempt:
+            # D2: never at the iteration budget; the estimate is disclosed all the same.
+            return self.finish(
+                "CONVERGED",
+                self.values,
+                message=converged.message("abandoned: BUDGET_EXHAUSTED(newton_iterations)"),
+                iterations=iteration,
+                accepted_any=self.accepted_any,
+                linear=self.chord_linear,
+            )
+        # D3: one more iteration of this loop from `x_k`, unchanged.
+        self.refining = converged
+        return None
 
 
 def _chord(
