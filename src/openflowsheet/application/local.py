@@ -150,7 +150,7 @@ from openflowsheet.run.bundle import MANIFEST_NAME
 from openflowsheet.run.replay import ReplayReport
 from openflowsheet.studies.nlp.replay import MANIFEST as OPTIMIZATION_MANIFEST
 from openflowsheet.studies.nlp.replay import is_optimization_record
-from openflowsheet.units import DisplayUnits, DisplayUnitsError, parse_display_units
+from openflowsheet.units.display import DisplayUnits, DisplayUnitsError, parse_display_units
 
 Executor = Literal["inline", "process"]
 TASKS: tuple[str, ...] = get_args(Task)

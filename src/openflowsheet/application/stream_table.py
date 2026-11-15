@@ -44,7 +44,7 @@ from openflowsheet.thermo import (
     PropertyRequest,
     StreamState,
 )
-from openflowsheet.units import DisplayUnits, display_item
+from openflowsheet.units.display import DisplayUnits, display_item
 from openflowsheet.verify import column
 from openflowsheet.verify.table import (
     EXTERNAL_DUTY_MODELS,

@@ -62,7 +62,7 @@ from openflowsheet.registry import default_registry
 if TYPE_CHECKING:
     from openflowsheet.application.local import LocalApplication
     from openflowsheet.application.types import ApiError
-    from openflowsheet.units import DisplayUnits
+    from openflowsheet.units.display import DisplayUnits
 
 #: §11.5: an `ApiError`'s exit code, 2–16 in §5.8's table order (`ApiErrorCode`'s order). 0 is a
 #: domain result; 1 is a call that was never made. argparse's own usage error is also 2.
@@ -787,7 +787,7 @@ def _bundle_display_units(text: str) -> DisplayUnits | ApiError:
     from openflowsheet.application.contract import api_error
     from openflowsheet.application.operations import OPERATIONS
     from openflowsheet.application.types import DocumentSchemaError, validate_inline
-    from openflowsheet.units import DisplayUnitsError, parse_display_units
+    from openflowsheet.units.display import DisplayUnitsError, parse_display_units
 
     operation = OPERATIONS["get_stream_table"]
     member = {
@@ -821,7 +821,7 @@ def command_streams(arguments: argparse.Namespace) -> int:
     from openflowsheet.application.local import LocalApplication
     from openflowsheet.application.operations import dispatch
     from openflowsheet.application.store import StoreError
-    from openflowsheet.units import DisplayUnits
+    from openflowsheet.units.display import DisplayUnits
 
     as_json = arguments.format == "json"
     by_job = arguments.project is not None or arguments.job is not None

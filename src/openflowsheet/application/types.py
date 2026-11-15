@@ -51,7 +51,7 @@ from openflowsheet.application.validation_report import (
 )
 from openflowsheet.canonical import document_sha256
 from openflowsheet.resources import packaged
-from openflowsheet.units import DisplayUnits
+from openflowsheet.units.display import DisplayUnits
 
 if TYPE_CHECKING:
     from openflowsheet.run.replay import ReplayReport
