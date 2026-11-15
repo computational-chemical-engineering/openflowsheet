@@ -140,15 +140,20 @@ def _components(
             if work:
                 low[work[-1][0]] = min(low[work[-1][0]], low[node])
             if low[node] == index_of[node]:
-                component: list[str] = []
-                while True:
-                    member = stack.pop()
-                    on_stack.discard(member)
-                    component.append(member)
-                    if member == node:
-                        break
-                found.append(component)
+                found.append(_pop_component(stack, on_stack, node))
     return found
+
+
+def _pop_component(stack: list[str], on_stack: set[str], root: str) -> list[str]:
+    """Pop the component whose root is `root` off Tarjan's `stack`, top first, down to and
+    including `root`, and clear its members from `on_stack`; return the members in pop order."""
+    component: list[str] = []
+    while True:
+        member = stack.pop()
+        on_stack.discard(member)
+        component.append(member)
+        if member == root:
+            return component
 
 
 def block_triangular_form(
