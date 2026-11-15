@@ -678,8 +678,9 @@ def run_study(
     `ProjectionRefusedError` is `UNSUPPORTED(<code>)`; then stage A if `stage_a` is given (a
     promoted surrogate; else recorded skipped, `surrogate_not_promoted`), checked with
     `stage_a_reference` as P2's reference; then up to `K_MAX` stage-C iterations, each from the
-    best parent-checked point, retried once with radius × ¼ after an abort. The budget is judged
-    before every run and check: `BUDGET_EXHAUSTED`, never stable."""
+    best parent-checked point (`_stage_a_best`, `_best_feasible`), retried once with radius × ¼
+    after an abort. The budget is judged before every run and check: `BUDGET_EXHAUSTED`, never
+    stable."""
     sense = parent.sense
     result = StudyResult(status="", budget=budget, sense=sense)
     readiness = framework()
@@ -812,7 +813,9 @@ def _stage_a_best(
     """The best parent-checked point after a stage-A candidate that is neither unchecked nor
     parent-local evidence (§7.3): of `best` and the points the candidate makes eligible (its
     targeted point when P1, P3 and P4 pass, then its feasible poll points whose regimes match),
-    the first strictly better one in that order wins; `best` when none improves on it."""
+    the best in that order; a point replaces the incumbent only when strictly better
+    (`_better`), so ties keep the earlier one; `best` when none improves on it. `s0` is the head
+    of §7.3's eligible set, which the comparison skips (it is `best`'s start)."""
     eligible = [s0]
     if candidate.checks["P1"].passed and all(
         candidate.checks[name].passed for name in ("P3", "P4")
@@ -828,7 +831,8 @@ def _stage_a_best(
 
 def _best_feasible(sense: str, candidate: CandidateCheck) -> ParentSolve:
     """The best of a stage-C candidate's feasible poll points (§7.3), the next iteration's start:
-    the first, unless a later one is strictly better (the first strictly better wins). The
+    the best in poll order; a point replaces the incumbent only when strictly better, so ties keep
+    the earlier one. The
     candidate is not stationary at Δ, so its poll has a feasible point."""
     feasible = [point.solve for point in candidate.poll if point.feasible]
     best = feasible[0]

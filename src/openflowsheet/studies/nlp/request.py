@@ -458,7 +458,7 @@ def static_readiness(
         return StaticReadiness(problems, _ordered(reasons), not_run, solver)
     parsed = OptimizationRequest.of(request)
 
-    # Request-only checks: they need no revision.
+    # Request-only checks: no revision binding.
     named = parsed.names()
     reasons.extend(_request_reasons(parsed, revision, named))
 
