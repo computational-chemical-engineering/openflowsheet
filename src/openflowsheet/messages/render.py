@@ -297,7 +297,8 @@ def _format(typed: _Typed, conversion: template.Conversion, catalogue: Catalogue
 
 def _by_type(typed: _Typed, catalogue: Catalogue) -> str:
     """§4.2.4: `{name}` with no conversion, by the param's type. A type without a rule here
-    (`text`, `code`) and a value its rule cannot read (no number, no phrase) give `_raw`."""
+    (`text`, `code`, a pointer that is not a path) and a value its rule cannot read (no number, no
+    phrase) give `_raw`."""
     value = typed.value
     if typed.type in ELEMENT_TYPES:
         return f"'{_raw(value)}'"
@@ -566,7 +567,7 @@ def _param_elements(
 ) -> Iterator[tuple[str, str, list[str | int] | None]]:
     """The request's present element params, per resolved entry in chain order and then in param
     order, as `(type, id, path)`: `_locate`'s type and path, or the declared type and no path
-    when the revision has no such element. Lazy: `_elements` adds each one before the next is
+    when `_locate` finds none. Lazy: `_elements` adds each one before the next is
     located."""
     for _, entry in resolved:
         for name, value in request.params.items():
