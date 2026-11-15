@@ -184,20 +184,7 @@ def report_body(
         item["size"] = {q: value(f"size.{item['item_id']}.{q}") for q in item["size"]}
         for key in ("purchased", "bare_module"):
             item[f"{key}_value"] = value(item[key]) if item[key] else None
-    entries = []
-    for entry in program.entries:
-        rows = {
-            row.row_id: value(f"adm.{entry.entry_id}.{row.row_id}") for row in entry.admissibility
-        }
-        entries.append(
-            {
-                "entry_id": entry.entry_id,
-                "kind": entry.kind,
-                "choice": entry.choice,
-                "rule": entry.rule_text,
-                "admissibility": rows,
-            }
-        )
+    entries = _regime_entries(program, value)
     status_unc: dict[str, Any] = {
         "aace_class": None,
         "aace_range": None,
@@ -293,6 +280,28 @@ def _groups(
         if group is not None:
             groups[group][output_id] = value(output_id)
     return groups
+
+
+def _regime_entries(
+    program: AssessmentProgram, value: Callable[[str], float | None]
+) -> list[dict[str, Any]]:
+    """The regime's entries as report documents, in the program's order: id, kind, choice, rule
+    text, and each admissibility row's `value` (its `adm.<entry>.<row>` output)."""
+    entries = []
+    for entry in program.entries:
+        rows = {
+            row.row_id: value(f"adm.{entry.entry_id}.{row.row_id}") for row in entry.admissibility
+        }
+        entries.append(
+            {
+                "entry_id": entry.entry_id,
+                "kind": entry.kind,
+                "choice": entry.choice,
+                "rule": entry.rule_text,
+                "admissibility": rows,
+            }
+        )
+    return entries
 
 
 def _status(
