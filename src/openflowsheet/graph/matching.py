@@ -87,23 +87,38 @@ def canonical_matching(
 
     fixed: dict[int, int] = {}
     for column in range(len(column_ids)):
-        taken = set(fixed.values())
-        for row in sorted(by_column[column]):
-            if row in taken:
-                continue
-            trial = {**fixed, column: row}
-            used_rows = set(trial.values())
-            free_columns = [
-                other for other in range(len(column_ids)) if other not in trial and other > column
-            ]
-            remainder: list[frozenset[int]] = [
-                by_column[other] - used_rows if other in free_columns else frozenset()
-                for other in range(len(column_ids))
-            ]
-            if len(trial) + len(_match_indices(remainder, len(row_ids), free_columns)) == target:
-                fixed = trial
-                break
+        fixed = _with_least_row(fixed, column, by_column, len(row_ids), target)
     return {column_ids[column]: row_ids[row] for column, row in fixed.items()}
+
+
+def _with_least_row(
+    fixed: dict[int, int],
+    column: int,
+    by_column: Sequence[frozenset[int]],
+    row_count: int,
+    target: int,
+) -> dict[int, int]:
+    """`fixed` extended by `column -> row` for the least row not yet taken such that a matching of
+    size `target` (the maximum) still extends the assignments; `fixed` itself when no row does.
+
+    Only columns after `column` are free to complete the trial matching.
+    """
+    taken = set(fixed.values())
+    for row in sorted(by_column[column]):
+        if row in taken:
+            continue
+        trial = {**fixed, column: row}
+        used_rows = set(trial.values())
+        free_columns = [
+            other for other in range(len(by_column)) if other not in trial and other > column
+        ]
+        remainder: list[frozenset[int]] = [
+            by_column[other] - used_rows if other in free_columns else frozenset()
+            for other in range(len(by_column))
+        ]
+        if len(trial) + len(_match_indices(remainder, row_count, free_columns)) == target:
+            return trial
+    return fixed
 
 
 @dataclass(frozen=True)
