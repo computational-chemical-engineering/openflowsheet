@@ -362,9 +362,10 @@ def _producer_phases(view: RevisionView) -> dict[str, Phase | None]:
     phases: dict[str, Phase | None] = {}
     for instance in view.instances:
         for port, direction in instance.directions.items():
-            if direction == "outlet":
-                for stream in instance.ports[port]:
-                    phases[stream] = instance.phases.get(port)
+            if direction != "outlet":
+                continue
+            for stream in instance.ports[port]:
+                phases[stream] = instance.phases.get(port)
     return phases
 
 
