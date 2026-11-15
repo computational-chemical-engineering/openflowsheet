@@ -426,3 +426,10 @@
   x05 stray/installed-outside checks): gates from 18:42 until this commit that failed on those are environment
   failures, re-gated unchanged. TMPDIR is now `~/.cache/openflowsheet/tmp-gates`; the map build restarted the same
   way.
+- **2026-11-15, W3 G3 run 2 (partial).** One step accepted: de77fa37 `run_study` RC first step (`_StudyRun`; 40.5 ->
+  21.6, not brain; study.py health 4.8 -> 5.8), after three environment gate-fails; a reviewer reads it before any
+  further step. Five steps drafted and tested, not gated: patches kept in `<git-common-dir>/codehealth/drafts/g3-run2/`
+  (optimize_revision `_start_failure`; surrogate evaluate `_centre_evidence`, `_scored`; trf `_run` `_preflight_phase`;
+  verification `_Linearization`). Left as is (orchestrator): verification `_regimes` (a test imports and calls it;
+  W4) and `_kkt` (a parameter object would mix phases). New engineer runs paused (2026-11-15 evening) until Frank
+  weighs OpenFlowsheet-check's advice (gate chains, no idle agents, lanes sized to gate capacity, a split G-END).
