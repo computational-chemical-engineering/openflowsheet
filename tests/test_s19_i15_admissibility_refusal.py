@@ -1,6 +1,6 @@
 """ADR 0076 I-15: forced refusals of the region's admissibility test, per raiser and path.
 
-The region (`orchestrator.region`, K03 §8.2) raises a refusal from three places: the ideal-K
+The region (`orchestrator.region_phase`, K03 §8.2) raises a refusal from three places: the ideal-K
 evaluation (the provider will not give `lnK`), the gamma-phi kernel (`BandError`) and the
 `pr-c1-v1` kernel (`classify` without a regime). Each reaches three paths:
 

@@ -588,9 +588,10 @@ def test_a_warm_opening_that_ends_before_an_attempt_falls_through(
 ) -> None:
     """Review S4 (§B2, "the run never fails because of the warm start"): a candidate that passes
     `integrity`, `compatibility` and `evaluation`, but whose region solve ends before any attempt
-    other than by the opening check — §6.2's kernel refusal (`region.py`, `_KernelRefusedError`),
-    or an opening that does not settle (§7.8 (ii)) — is rejected `opening:<outcome>`, and the
-    traversal follows. The refusal is monkeypatched at the warm solve only."""
+    other than by the opening check — §6.2's kernel refusal (`region_phase.py`,
+    `_KernelRefusedError`), or an opening that does not settle (§7.8 (ii)) — is rejected
+    `opening:<outcome>`, and the traversal follows. The refusal is monkeypatched at the warm
+    solve only."""
     original = region_module._solve_region
 
     def refusing(**kwargs: Any) -> RegionResult:
