@@ -53,7 +53,7 @@ and end the turn. The new context starts from this file.
 
 ## Merging a phase into main
 
-Evidence manifest `tested`, f6 alone on `wp/S19` (`pytest tests/test_t07_v17_reference.py -k f6`, no gate running),
+Evidence manifest `tested`, the wall-time budget tests alone on `wp/S19` (f6 and t07_conformance budget_of_the_scenario_runs, no gate running),
 CI green on both legs, a Decision Desk card signed by Frank and verified with `decision_desk_verify.py` (CLAUDE.md
 "Decision Desk sign-offs"), merge commit, F0 on `main`, push, write `executed` on the card.
 

@@ -447,3 +447,6 @@
   self_reset.sh`), resuming from `.claude/skills/s19-refactor/SKILL.md`. Also: lanes at most 2 until the weekly
   reset (Thu 19 Nov 13:00); chains per function. Open for Frank: the G-END split (blocking for S18 vs trailing)
   and S18's file list.
+- **2026-11-15, a second wall-time test deselected in gates:** `tests/test_t07_conformance.py::
+  test_the_budget_of_the_scenario_runs` (121.9 s against 120 s under two gates). Runs alone with f6 before each
+  merge into main; CI runs both.

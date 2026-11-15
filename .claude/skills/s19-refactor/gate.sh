@@ -41,7 +41,7 @@ mkdir -p "$HOME/.cache/openflowsheet/tmp-gates" && export TMPDIR="$HOME/.cache/o
 # 8 xdist workers per gate with two slots on 16 cores (load 40 to 65 at 12 each pushed tests past the 900 s
 # per-test limit); read by the tests tier of .codehealth/config.toml from 2026-11-15 on.
 export S19_GATE_WORKERS="${S19_GATE_WORKERS:-8}"
-export PYTEST_ADDOPTS="${PYTEST_ADDOPTS:-} --deselect tests/test_t07_v17_reference.py::test_f6_the_forty_runs_fit_their_budget"
+export PYTEST_ADDOPTS="${PYTEST_ADDOPTS:-} --deselect tests/test_t07_v17_reference.py::test_f6_the_forty_runs_fit_their_budget --deselect tests/test_t07_conformance.py::test_the_budget_of_the_scenario_runs"
 slot=""
 while [ -z "$slot" ]; do
     for s in gate.lock gate.slot2.lock; do
