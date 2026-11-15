@@ -563,8 +563,10 @@ class CasadiCompiledProblem:
         no entry is filtered by value (structural zeros included). T03 §5.2, ADR 0005 D5.
         """
         rows, columns = self._jacobian.sparsity_out(0).get_triplet()
+        equation_ids = self._spec.equation_ids
+        variable_ids = self._spec.variable_ids
         return tuple(
-            (self._spec.equation_ids[row], self._spec.variable_ids[column])
+            (equation_ids[row], variable_ids[column])
             for row, column in zip(rows, columns, strict=True)
         )
 
