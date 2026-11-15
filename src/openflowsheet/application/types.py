@@ -55,7 +55,6 @@ from openflowsheet.schema_check import (
     _registry,
     _validator,
 )
-from openflowsheet.schema_check import schema_errors as schema_errors
 from openflowsheet.units.display import DisplayUnits
 
 if TYPE_CHECKING:
