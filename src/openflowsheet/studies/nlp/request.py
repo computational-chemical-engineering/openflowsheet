@@ -33,7 +33,7 @@ import math
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from functools import cache
-from typing import Any, Final, Literal
+from typing import TYPE_CHECKING, Any, Final, Literal
 
 from jsonschema import Draft202012Validator
 from referencing import Registry
@@ -65,6 +65,9 @@ from openflowsheet.studies.nlp.revision_host import (
     RevisionUnboundError,
     decision_map,
 )
+
+if TYPE_CHECKING:
+    from openflowsheet.compile.spec import ProblemSpec
 
 REQUEST_FORMAT: Final = "openflowsheet-optimization-request-v1"
 SCHEMA_REFERENCE: Final = "optimization-request.schema.json"
@@ -489,18 +492,7 @@ def static_readiness(
         )
         skip(revision_codes, f"the revision is not on {ROUTE}")
         return _finish(problems, reasons, not_run, solver, parsed)
-    spec = route.binding.spec
-    for name in named:
-        if (
-            not name.startswith(DECISION_PREFIX)
-            and not is_assessment_name(name)
-            and name not in spec.variable_ids
-        ):
-            reasons.append(
-                ReadinessReason(
-                    "UNKNOWN_VARIABLE", f"{name!r} is not a variable of {spec.label!r}", name
-                )
-            )
+    reasons.extend(_unknown_variable_reasons(named, route.binding.spec))
     probed = [box for box in parsed.decisions if _ends(box)]
     unprobed = [box.specification_id for box in parsed.decisions if not _ends(box)]
     try:
@@ -606,6 +598,24 @@ def _request_reasons(
                 f"only policy is Ipopt's {HESSIAN_APPROXIMATION} approximation",
             )
         )
+    return reasons
+
+
+def _unknown_variable_reasons(named: Sequence[str], spec: ProblemSpec) -> list[ReadinessReason]:
+    """UNKNOWN_VARIABLE for each name in `named` (the request's names, in order) that is
+    neither a decision nor an assessment output and is not a variable of the bound `spec`."""
+    reasons: list[ReadinessReason] = []
+    for name in named:
+        if (
+            not name.startswith(DECISION_PREFIX)
+            and not is_assessment_name(name)
+            and name not in spec.variable_ids
+        ):
+            reasons.append(
+                ReadinessReason(
+                    "UNKNOWN_VARIABLE", f"{name!r} is not a variable of {spec.label!r}", name
+                )
+            )
     return reasons
 
 
