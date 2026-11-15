@@ -981,7 +981,8 @@ def _eo_recovery(
     `_sequential_restart`), and under `"homotopy_or_revision_continuation_or_sequential_restart"`
     the revision continuation comes first (ADR 0072; `_revision_continuation`), from
     `revision_source`, which no other value reads. The count of one is structural: this runs once
-    per region step, on the region solve the step ran, and never on its own recovery.
+    per region step, on the region solve the step ran, and never on its own recovery. A recovery
+    solve is the step's outcome (`_recovery_taken`).
     """
     failed = step.detail
     if policy.globalization.eo_recovery not in (
@@ -1041,28 +1042,7 @@ def _eo_recovery(
             initializer_source=failed.branch_provenance[0]["initializer_source"],
         ),
     )
-    recovered = replace(
-        recovered,
-        branch_provenance=recovered_provenance(
-            failed.branch_provenance, recovered.branch_provenance
-        ),
-        # The step's checkpoint is the recovery's last accepted level (T04 §4.4: `partial` with
-        # its λ below 1); the failed solve's own stays on `recovered_from`.
-        checkpoint=recovered.checkpoint if recovered.checkpoint is not None else failed.checkpoint,
-    )
-    return (
-        replace(
-            step,
-            outcome=recovered.outcome,
-            iterations=step.iterations + recovered.iterations,
-            message=recovered.message,
-            detail=recovered,
-            eo_recovery="taken",
-            recovered_from=failed,
-        ),
-        spent,
-        state,
-    )
+    return _recovery_taken(step, failed, recovered), spent, state
 
 
 def _revision_continuation(
@@ -1249,6 +1229,31 @@ def _sequential_restart(
         ),
         spent,
         state,
+    )
+
+
+def _recovery_taken(step: StepResult, failed: RegionResult, recovered: RegionResult) -> StepResult:
+    """`step` once edge 3's recovery solve has run (`eo_recovery = "taken"`): the recovery's
+    outcome, message and result, its iterations added to the step's, its branch provenance after
+    the failed solve's (`recovered_provenance`), its checkpoint (else the failed solve's), and the
+    failed solve on `recovered_from`."""
+    recovered = replace(
+        recovered,
+        branch_provenance=recovered_provenance(
+            failed.branch_provenance, recovered.branch_provenance
+        ),
+        # The step's checkpoint is the recovery's last accepted level (T04 §4.4: `partial` with
+        # its λ below 1); the failed solve's own stays on `recovered_from`.
+        checkpoint=recovered.checkpoint if recovered.checkpoint is not None else failed.checkpoint,
+    )
+    return replace(
+        step,
+        outcome=recovered.outcome,
+        iterations=step.iterations + recovered.iterations,
+        message=recovered.message,
+        detail=recovered,
+        eo_recovery="taken",
+        recovered_from=failed,
     )
 
 
