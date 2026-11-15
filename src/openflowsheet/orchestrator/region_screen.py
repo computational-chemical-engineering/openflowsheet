@@ -1,6 +1,11 @@
-"""The region's trial screen: `_attempt_screen`, `_screen`, `_build_screen`.
+"""The region's trial screen (T03 §4.3, K03 §8.2, T05b §6.2, §7.3, §7.8).
 
-Moved verbatim from `orchestrator.region` (S19 RS split-region-2); `region` re-exports them.
+`_attempt_screen` picks an attempt's screen: T03's (`_screen`) under v1, else `_build_screen`'s
+v2 screen, which answers a flagged PH-type unit by its band ends or its PH closure, checks each
+split's dormancy against its regime, and reads each dormancy form's item off the trial.
+
+Split from `orchestrator.region` (S19 RS), which re-exports the three names. Of the region solver
+this module imports `region_phase` and `region_problem`.
 """
 
 from __future__ import annotations

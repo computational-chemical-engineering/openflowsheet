@@ -1,7 +1,12 @@
-"""The region's PTC and homotopy attempts: `region_ptc_problem`, `_ptc_attempt`, `_homotopy`,
-`_boundary_unit`.
+"""The region's PTC and homotopy attempts (T04 §4, §7).
 
-Moved verbatim from `orchestrator.region` (S19 RS split-region-2); `region` re-exports them.
+`region_ptc_problem` is one PTC attempt's problem and `_ptc_attempt` runs it (T04 §7);
+`_homotopy` runs one attempt as T04 §4's homotopy core, with `_boundary_unit` naming the unit a
+rejected corrector's phase boundary belongs to (§4.6).
+
+Split from `orchestrator.region` (S19 RS), which re-exports `region_ptc_problem` and `_homotopy`
+and imports `_ptc_attempt`. Of the region solver this module imports `region_result`,
+`region_screen` and `region_problem`.
 """
 
 from __future__ import annotations

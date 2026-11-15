@@ -1,6 +1,11 @@
-"""The region solve's records: `RegionAttempt`, `AttemptSystem`, `RegionResult`, `RecoveryStart`.
+"""The region solve's records (T03 §8, T04 §5.3, OPT design §4.2.1).
 
-Moved verbatim from `orchestrator.region` (S19 RS split-region-2); `region` re-exports them.
+`RegionAttempt` (one attempt: its signature, outcome and iterations, why it closed, what Newton
+ended on, its PTC record), `AttemptSystem` (the converged attempt's square system),
+`RegionResult` (what `solve_region` returns) and `RecoveryStart` (recovery edge 3's start).
+
+Split from `orchestrator.region` (S19 RS), which re-exports all four. This module reaches no other
+module of the region solver.
 """
 
 from __future__ import annotations

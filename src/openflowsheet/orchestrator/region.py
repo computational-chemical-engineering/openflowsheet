@@ -60,12 +60,15 @@ regime of a flagged split is the same kernel's. A split whose rule declares vapo
 has a `VapourOnlyForm`: in a TWO_PHASE attempt their liquid flows are pinned at `+0.0` and their
 zero rows dropped. Every other provider runs the code above, unchanged.
 
-**Where the code is** (S19 B1). This module holds the region's records, the attempt loop
-(`solve_region`, `_solve_region`), the trial screen, PTC and the homotopy. The phase-policy kernel
-(the kernel, the PH closure, the admissibility screens and their refusals) is in
-`orchestrator.region_phase`, the Newton problem over lifted splits (labels, the opening fixed
-point, dormancy outlets, `_LiftedOps`) in `orchestrator.region_problem`; `region` re-exports what
-its callers and tests read there.
+**Where the code is** (S19 B1, RS). This module holds SYN-001's lifted splits and the attempt
+loop (`solve_region`, `_solve_region`, with `_swapped_row_test` and `_external_opening`). The
+region's records (`RegionResult`, `RegionAttempt`, `AttemptSystem`, `RecoveryStart`) are in
+`orchestrator.region_result`; the trial screen (`_attempt_screen`) in `orchestrator.region_screen`;
+the PTC and homotopy attempts (`region_ptc_problem`, `_ptc_attempt`, `_homotopy`) in
+`orchestrator.region_attempts`; the phase-policy kernel (the kernel, the PH closure, the
+admissibility screens and their refusals) in `orchestrator.region_phase`; the Newton problem over
+lifted splits (labels, the opening fixed point, dormancy outlets, `_LiftedOps`) in
+`orchestrator.region_problem`. `region` re-exports what its callers and tests read there.
 """
 
 from __future__ import annotations
