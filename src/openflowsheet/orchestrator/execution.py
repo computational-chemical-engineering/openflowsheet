@@ -832,7 +832,8 @@ def _loop_tear(
     """The loop's tear as `(streams, variables, rows)`: the policy's override validated against
     the loop's candidates, else T01's chosen stream, else the iterated tear set; then `_tear_of`.
     Raises `UnsupportedRankStructureError` when the tear rows do not match the tear variables in
-    number."""
+    number, and, through `_validated_override`, for an override that is not a valid tear of the
+    loop."""
     if basis.policy.recycle.tear_streams is not None:
         # Review M2: an override is resolved through the loop's own candidates and must leave
         # the loop acyclic (§3.3) — then the tear is *derived* from it, not just relabelled.
