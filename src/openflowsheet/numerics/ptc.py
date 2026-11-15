@@ -41,7 +41,7 @@ import math
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field, replace
 from types import MappingProxyType
-from typing import Final
+from typing import Final, NamedTuple
 
 import numpy as np
 import numpy.typing as npt
@@ -277,33 +277,7 @@ def solve_ptc(
 
         # §7.4: the stop, K03 §5.2's test, before anything else — and before any SER update.
         if run.met(run.values):
-            if k == 0:
-                return run.close("CONVERGED", run.values, iterations=0, tau_end=run.tau)
-            stopped = (run.x.copy(), run.values)
-            verdict, polished = _polish(
-                problem, run.x, run.values, signature, attempt, k, trace, run.running, compare_empty
-            )
-            run.running = polished.counters
-            if polished.outcome == "EVALUATION_ERROR":
-                return run.close(
-                    "EVALUATION_ERROR",
-                    run.values,
-                    iterations=k,
-                    tau_end=run.tau,
-                    message=polished.message,
-                    polish=verdict,
-                    stopped=stopped,
-                )
-            if verdict == "accepted":
-                run.x, run.values = polished.x, polished.values
-            return run.close(
-                "CONVERGED",
-                run.values,
-                iterations=k,
-                tau_end=run.tau,
-                polish=verdict,
-                stopped=stopped,
-            )
+            return run._stop(k)
 
         if k == settings.max_steps_per_attempt:
             return run.close(
@@ -315,41 +289,9 @@ def solve_ptc(
                 message=f"{k} accepted pseudo-steps without convergence",
             )
 
-        # The matrices of pseudo-step k, formed once and frozen during its retries (§7.3).
-        run.running = run.running.plus(jacobian_calls=1)
-        try:
-            unscaled = sp.csc_matrix(problem.jacobian(run.x))
-        except JacobianUnavailableError as unavailable:
-            # T04 review M1: a derivative defect at an accepted iterate, never a retry.
-            return run.close(
-                "EVALUATION_ERROR",
-                run.values,
-                iterations=k,
-                tau_end=run.tau,
-                message=f"the Jacobian could not be evaluated: {unavailable}",
-            )
-        jacobian = _row_scaled(_scale_matrix(unscaled, problem), run.sigma)
-        try:
-            mass = _scale_matrix(sp.csc_matrix(ptc.mass(run.x)), problem)
-        except MassUnavailableError as unavailable:
-            return run.close(
-                "EVALUATION_ERROR",
-                run.values,
-                iterations=k,
-                tau_end=run.tau,
-                message=f"the mass matrix could not be evaluated: {unavailable}",
-            )
-        trace.record(
-            kind="jacobian",
-            attempt=attempt,
-            iteration=k,
-            signature=signature,
-            state_sha256=run.digest(run.x),
-            residual_inf_unscaled=infinity,
-            merit=merit,
-            counters=run.running,
-        )
-        rhs = -(run.sigma * scaled_residual)
+        frozen = run._frozen(k, scaled_residual, infinity, merit)
+        if not isinstance(frozen, _Frozen):
+            return frozen
 
         tau_try, retry = run.tau, 0
         accepted: tuple[npt.NDArray[np.float64], tuple[float, ...], float, float, tuple[str, ...]]
@@ -363,7 +305,9 @@ def solve_ptc(
             failure_message = ""
             run.running = run.running.plus(factorizations=1)
             try:
-                step_scaled, linear = solve_linear(sp.csc_matrix(jacobian + mass / tau_try), rhs)
+                step_scaled, linear = solve_linear(
+                    sp.csc_matrix(frozen.jacobian + frozen.mass / tau_try), frozen.rhs
+                )
             except LinearSolveFailedError as failure:
                 reason = "linear_solve_failed"
                 failure_message = str(failure)
@@ -652,6 +596,115 @@ class _PtcRun:
 
     def met(self, values: Sequence[float]) -> bool:
         return bool(np.all(np.abs(np.asarray(values, dtype=np.float64)) <= self.tolerance))
+
+    def _stop(self, k: int) -> _Closed:
+        """§7.4's stop at pseudo-step `k`, whose iterate `x` meets K03 §5.2's test: polish, close.
+
+        At step 0 it closes `CONVERGED` at once. Otherwise T04 §7.5's `_polish` runs from `x`
+        (writing its own events on `trace`), its counters become `running`, and the attempt
+        closes `EVALUATION_ERROR` when the polish could not evaluate, else `CONVERGED`, at the
+        polished iterate when the polish was accepted (it rebinds `x` and `values`). Every close
+        writes `attempt_closed` through `close`.
+        """
+        if k == 0:
+            return self.close("CONVERGED", self.values, iterations=0, tau_end=self.tau)
+        stopped = (self.x.copy(), self.values)
+        verdict, polished = _polish(
+            self.problem,
+            self.x,
+            self.values,
+            self.signature,
+            self.attempt,
+            k,
+            self.trace,
+            self.running,
+            self.compare_empty,
+        )
+        self.running = polished.counters
+        if polished.outcome == "EVALUATION_ERROR":
+            return self.close(
+                "EVALUATION_ERROR",
+                self.values,
+                iterations=k,
+                tau_end=self.tau,
+                message=polished.message,
+                polish=verdict,
+                stopped=stopped,
+            )
+        if verdict == "accepted":
+            self.x, self.values = polished.x, polished.values
+        return self.close(
+            "CONVERGED",
+            self.values,
+            iterations=k,
+            tau_end=self.tau,
+            polish=verdict,
+            stopped=stopped,
+        )
+
+    def _frozen(
+        self,
+        k: int,
+        scaled_residual: npt.NDArray[np.float64],
+        infinity: float,
+        merit: float,
+    ) -> _Frozen | _Closed:
+        """The matrices of pseudo-step `k`, formed once and frozen during its retries (§7.3).
+
+        Counts one Jacobian call on `running`, forms the row-signed scaled Jacobian and the
+        scaled mass matrix at `x`, writes the `jacobian` event, and returns them with the
+        right-hand side and the step's `infinity` and `merit`. A Jacobian or a mass matrix that
+        cannot be evaluated closes `EVALUATION_ERROR` through `close`, which writes
+        `attempt_closed`.
+        """
+        self.running = self.running.plus(jacobian_calls=1)
+        try:
+            unscaled = sp.csc_matrix(self.problem.jacobian(self.x))
+        except JacobianUnavailableError as unavailable:
+            # T04 review M1: a derivative defect at an accepted iterate, never a retry.
+            return self.close(
+                "EVALUATION_ERROR",
+                self.values,
+                iterations=k,
+                tau_end=self.tau,
+                message=f"the Jacobian could not be evaluated: {unavailable}",
+            )
+        jacobian = _row_scaled(_scale_matrix(unscaled, self.problem), self.sigma)
+        try:
+            mass = _scale_matrix(sp.csc_matrix(self.ptc.mass(self.x)), self.problem)
+        except MassUnavailableError as unavailable:
+            return self.close(
+                "EVALUATION_ERROR",
+                self.values,
+                iterations=k,
+                tau_end=self.tau,
+                message=f"the mass matrix could not be evaluated: {unavailable}",
+            )
+        self.trace.record(
+            kind="jacobian",
+            attempt=self.attempt,
+            iteration=k,
+            signature=self.signature,
+            state_sha256=self.digest(self.x),
+            residual_inf_unscaled=infinity,
+            merit=merit,
+            counters=self.running,
+        )
+        rhs = -(self.sigma * scaled_residual)
+        return _Frozen(jacobian, mass, rhs, infinity, merit)
+
+
+type _Closed = tuple[NewtonResult, PtcRecord]
+
+
+class _Frozen(NamedTuple):
+    """Pseudo-step k's frozen matrices (§7.3), its right-hand side, and its residual measures."""
+
+    jacobian: sp.csc_matrix
+    mass: sp.csc_matrix
+    rhs: npt.NDArray[np.float64]
+    infinity: float
+    merit: float
 
 
 @dataclass(frozen=True)
