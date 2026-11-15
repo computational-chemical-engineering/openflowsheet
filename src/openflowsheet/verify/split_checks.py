@@ -412,23 +412,11 @@ def degeneracy(
             enthalpy[stream] = value
             notes[stream] = template.format(stream=stream)
 
-    declared = _producer_phases(view)
-    unlifted: set[str] = set()
-    for stream in view.streams:
-        carried = stream_of(state, stream)
-        if stream in owned or carried.is_dormant:
-            continue
-        t_bubble, t_dew = _band(provider, carried.n, carried.pressure, context, stream)
-        if not is_temperature_degenerate(band_distance(carried.temperature, t_bubble, t_dew)):
-            continue
-        capability = declared.get(stream)
-        if capability is None:
-            unlifted.add(stream)
-            continue
-        enthalpy[stream] = _phase_enthalpy(
-            provider, context, carried.n, carried.temperature, carried.pressure, capability, stream
-        )
-        notes[stream] = DECLARED_ENTHALPY_NOTE.format(stream=stream, phase=capability)
+    declared_enthalpy, declared_notes, unlifted = _degenerate_streams(
+        view, state, provider, context, owned
+    )
+    enthalpy.update(declared_enthalpy)
+    notes.update(declared_notes)
     return Degeneracy(distances, enthalpy, notes, frozenset(unlifted), unresolved)
 
 
@@ -525,3 +513,39 @@ def _split_enthalpies(
         stream: _phase_enthalpy(provider, context, vapor, temperature, pressure, "VAPOR", stream)
         + _phase_enthalpy(provider, context, liquid, temperature, pressure, "LIQUID", stream)
     }
+
+
+def _degenerate_streams(
+    view: RevisionView,
+    state: Mapping[str, float],
+    provider: PropertyProvider,
+    context: EvaluationContext,
+    owned: set[str],
+) -> tuple[dict[str, float], dict[str, str], set[str]]:
+    """§9.2 at `state`: every flowing stream of `view` outside `owned` (the splits' streams),
+    tested at its own `(n, T, P)`. Returns the enthalpies and notes of the degenerate ones in
+    their declared phase (read at the producer's outlet port), in stream order, and the
+    degenerate ones with no declared phase there (declared `vapor_liquid`, or no producer),
+    which are unlifted.
+
+    Raises `VerifierError` when the verifier's own band or phase evaluation fails."""
+    declared = _producer_phases(view)
+    enthalpy: dict[str, float] = {}
+    notes: dict[str, str] = {}
+    unlifted: set[str] = set()
+    for stream in view.streams:
+        carried = stream_of(state, stream)
+        if stream in owned or carried.is_dormant:
+            continue
+        t_bubble, t_dew = _band(provider, carried.n, carried.pressure, context, stream)
+        if not is_temperature_degenerate(band_distance(carried.temperature, t_bubble, t_dew)):
+            continue
+        capability = declared.get(stream)
+        if capability is None:
+            unlifted.add(stream)
+            continue
+        enthalpy[stream] = _phase_enthalpy(
+            provider, context, carried.n, carried.temperature, carried.pressure, capability, stream
+        )
+        notes[stream] = DECLARED_ENTHALPY_NOTE.format(stream=stream, phase=capability)
+    return enthalpy, notes, unlifted
