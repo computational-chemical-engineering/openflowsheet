@@ -186,6 +186,7 @@ def enqueue(a: argparse.Namespace) -> int:
             "head": head,
             "head_tree": git("rev-parse", f"{head}^{{tree}}", cwd=worktree),
             "snapshot": bool(a.snapshot),
+            "detached": bool(a.snapshot),  # read by a runner started before 37307ab0
             "mode": a.mode,
             "plan": a.plan,
             "target": a.target,
