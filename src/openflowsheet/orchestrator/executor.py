@@ -753,39 +753,12 @@ def _solve_revision_region(
 ) -> tuple[StepResult, Counters, dict[str, float] | None]:
     """T05 §2.3's general branch of `_solve_eo`: the region from `traversal-G0-v1`'s start, or
     from `user_start` (`execute_plan`), recorded `user_guess`, with no closure routes. With no
-    `user_start` and a chain that names it, the compatible warm start comes first (ADR 0024)."""
-    if region.specification_rows:
-        # No cross-unit specification on a revision-built flowsheet in v0.1 (T05 §9).
-        return (
-            StepResult(
-                index,
-                "solve_eo",
-                region.units,
-                "UNSUPPORTED_RANK_STRUCTURE",
-                message="specification_region_unsupported(revision_flowsheet)",
-            ),
-            spent,
-            None,
-        )
-    # S11 §4.7.5 (A28): a staged unit's stage splits are PH-type and its standalone solve runs
-    # under phase contract v2; under v1 the region is refused before the traversal.
-    staged = [
-        unit.model_id
-        for unit in flowsheet.units()
-        if unit.model_id in STAGED_MODELS and unit.unit_id in region.units
-    ]
-    if staged and policy.phase_contract != CONTRACT_V2:
-        return (
-            StepResult(
-                index,
-                "solve_eo",
-                region.units,
-                "CAPABILITY_UNAVAILABLE",
-                message=f"phase_contract_unsupported({staged[0]})",
-            ),
-            spent,
-            None,
-        )
+    `user_start` and a chain that names it, the compatible warm start comes first (ADR 0024).
+    It refuses first by `_traversal_refusal` (a specification region; a staged unit under a phase
+    contract other than v2), and later an `InitialStateFailure` start as `INITIALIZATION_FAILED`."""
+    refusal = _traversal_refusal(index, region, flowsheet, policy)
+    if refusal is not None:
+        return refusal, spent, None
     record: WarmStartRecord | None = None
     if user_start is None and (
         WARM_START_SOURCE in policy.initializer_chain
@@ -845,6 +818,39 @@ def _solve_revision_region(
     return _eo_recovery(
         step, region, flowsheet, spec, policy, run, spent, state, following, revision_continuation
     )
+
+
+def _traversal_refusal(
+    index: int, region: Region, flowsheet: RevisionFlowsheet, policy: SolvePolicy
+) -> StepResult | None:
+    """The refusals before the traversal, in order: a cross-unit specification region (T05 §9),
+    then a staged unit under a phase contract other than v2 (S11 §4.7.5, A28); None when the
+    region passes both."""
+    if region.specification_rows:
+        # No cross-unit specification on a revision-built flowsheet in v0.1 (T05 §9).
+        return StepResult(
+            index,
+            "solve_eo",
+            region.units,
+            "UNSUPPORTED_RANK_STRUCTURE",
+            message="specification_region_unsupported(revision_flowsheet)",
+        )
+    # S11 §4.7.5 (A28): a staged unit's stage splits are PH-type and its standalone solve runs
+    # under phase contract v2; under v1 the region is refused before the traversal.
+    staged = [
+        unit.model_id
+        for unit in flowsheet.units()
+        if unit.model_id in STAGED_MODELS and unit.unit_id in region.units
+    ]
+    if staged and policy.phase_contract != CONTRACT_V2:
+        return StepResult(
+            index,
+            "solve_eo",
+            region.units,
+            "CAPABILITY_UNAVAILABLE",
+            message=f"phase_contract_unsupported({staged[0]})",
+        )
+    return None
 
 
 def _warm_start(
