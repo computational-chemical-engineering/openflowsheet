@@ -844,6 +844,31 @@ def explain_failure(
         (entry for link in reversed(links) if (entry := catalogue.entry(link.code)) is not None),
         None,
     )
+    layer = _sidecar_params(diagnosis, links, explained, catalogue, strict=strict)
+    params = _merge(context, links, layer)
+    if explained is not None:
+        params.update(_derived_elements(explained, params, context.revision))
+    request = _Request(
+        links=links,
+        params=params,
+        context=context,
+        machine=message or outcome,
+        family_hint="outcome",
+    )
+    return _explain(request, catalogue, strict=strict), dict(request.params)
+
+
+def _sidecar_params(
+    diagnosis: Diagnostic | Mapping[str, Any] | None,
+    links: list[Link],
+    explained: Entry | None,
+    catalogue: Catalogue,
+    *,
+    strict: bool,
+) -> dict[str, Any]:
+    """§4.8: the diagnostic sidecar's params when `diagnosis` agrees with the chain `links`, with
+    the numbers the `explained` entry's pattern reads from its `detail`; none without a diagnosis
+    or when it disagrees, and `RenderError` on a disagreement under `strict` or the audit."""
     layer: dict[str, Any] = {}
     if diagnosis is not None:
         document = diagnosis.as_document() if isinstance(diagnosis, Diagnostic) else diagnosis
@@ -856,17 +881,7 @@ def explain_failure(
                 layer = {**detail_params(explained, detail), **layer}
         elif strict or audit.auditor is not None:
             raise RenderError(f"diagnosis {document.get('code')!r} does not match the chain")
-    params = _merge(context, links, layer)
-    if explained is not None:
-        params.update(_derived_elements(explained, params, context.revision))
-    request = _Request(
-        links=links,
-        params=params,
-        context=context,
-        machine=message or outcome,
-        family_hint="outcome",
-    )
-    return _explain(request, catalogue, strict=strict), dict(request.params)
+    return layer
 
 
 # -- the catalogue entry (`explain`, §3.5, §4.9) ------------------------------------------------
