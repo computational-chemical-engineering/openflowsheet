@@ -596,7 +596,8 @@ def check_manifest(manifest: Mapping[str, Any]) -> list[str]:
     """Every inconsistency of `manifest` that its schema cannot express (M04.A24); empty when
     none. The schema is checked first; a manifest that fails it is not read further, nor is one
     with a non-finite or non-canonical number or an unregistered plan. The splits are checked
-    by `_split_consistency`, the failure lists by `_failure_consistency`."""
+    by `_split_consistency`, the band by `_band_consistency`, the failure lists by
+    `_failure_consistency`."""
     invalid = schema_errors(MANIFEST_SCHEMA, manifest)
     if invalid:
         return [f"schema: {error}" for error in invalid]
@@ -636,34 +637,7 @@ def check_manifest(manifest: Mapping[str, Any]) -> list[str]:
     found.extend(_split_consistency(manifest["splits"], counts))
 
     # The band, the coverage count and the bound, re-derived from the stored scores.
-    calibration = manifest["calibration"]
-    evaluation = manifest["evaluation"]
-    cal_scores = _scores(calibration["scores"])
-    test_scores = _scores(evaluation["scores"])
-    n, m = len(cal_scores), len(test_scores)
-    if calibration["n"] != n or n != counts["calibration"]:
-        found.append(f"n = {calibration['n']} ({n} scores); the plan's is {counts['calibration']}")
-    if evaluation["m"] != m or m != counts["test"]:
-        found.append(f"m = {evaluation['m']} ({m} scores); the plan's is {counts['test']}")
-    if calibration["k"] != k_index(n):
-        found.append(f"k = {calibration['k']}, not k({n}) = {k_index(n)}")
-    if evaluation["h_min"] != h_min(m):
-        found.append(f"h_min = {evaluation['h_min']}, not h_min({m}) = {h_min(m)}")
-    band = conformal_band(cal_scores)
-    q_hat = calibration["q_hat"]
-    if (q_hat is None) != (band.q_hat is None) or (
-        q_hat is not None and float(q_hat) != band.q_hat
-    ):
-        found.append(f"q_hat {q_hat!r} is not the k-th smallest stored score ({band.q_hat!r})")
-    hits = None if band.q_hat is None else coverage_hits(test_scores, band.q_hat)
-    if evaluation["hits"] != hits:
-        found.append(f"hits {evaluation['hits']!r} is not #{{score <= q_hat}} = {hits!r}")
-    lower = None if hits is None else clopper_pearson_lower(hits, m)
-    stored = evaluation["lower_bound"]
-    if (stored is None) != (lower is None) or (
-        lower is not None and stored is not None and abs(float(stored) - lower) > 1e-12
-    ):
-        found.append(f"lower_bound {stored!r} is not L(H, m) = {lower!r}")
+    found.extend(_band_consistency(manifest, counts))
 
     # The verdict, re-derived from the stored metrics (spec §7.3).
     derived = derived_verdict(manifest)
@@ -752,4 +726,41 @@ def _split_consistency(splits: Mapping[str, Any], counts: Mapping[Split, int]) -
     stencil_keys = [key for centre in centres for key in centre["stencil_keys"]]
     if stencil_keys != splits["gradient"]["keys"]:
         found.append("gradient: the centres' stencil keys are not the split's keys in order")
+    return found
+
+
+def _band_consistency(manifest: Mapping[str, Any], counts: Mapping[Split, int]) -> list[str]:
+    """The conformal band, the coverage count and the lower bound re-derived from the stored
+    calibration and test scores: `n` and `m` against the scores and the plan's `counts`, `k`
+    and `h_min` of those sizes, `q_hat` the k-th smallest calibration score, `hits` the test
+    scores within it, and `lower_bound` L(H, m) to 1e-12."""
+    found: list[str] = []
+    calibration = manifest["calibration"]
+    evaluation = manifest["evaluation"]
+    cal_scores = _scores(calibration["scores"])
+    test_scores = _scores(evaluation["scores"])
+    n, m = len(cal_scores), len(test_scores)
+    if calibration["n"] != n or n != counts["calibration"]:
+        found.append(f"n = {calibration['n']} ({n} scores); the plan's is {counts['calibration']}")
+    if evaluation["m"] != m or m != counts["test"]:
+        found.append(f"m = {evaluation['m']} ({m} scores); the plan's is {counts['test']}")
+    if calibration["k"] != k_index(n):
+        found.append(f"k = {calibration['k']}, not k({n}) = {k_index(n)}")
+    if evaluation["h_min"] != h_min(m):
+        found.append(f"h_min = {evaluation['h_min']}, not h_min({m}) = {h_min(m)}")
+    band = conformal_band(cal_scores)
+    q_hat = calibration["q_hat"]
+    if (q_hat is None) != (band.q_hat is None) or (
+        q_hat is not None and float(q_hat) != band.q_hat
+    ):
+        found.append(f"q_hat {q_hat!r} is not the k-th smallest stored score ({band.q_hat!r})")
+    hits = None if band.q_hat is None else coverage_hits(test_scores, band.q_hat)
+    if evaluation["hits"] != hits:
+        found.append(f"hits {evaluation['hits']!r} is not #{{score <= q_hat}} = {hits!r}")
+    lower = None if hits is None else clopper_pearson_lower(hits, m)
+    stored = evaluation["lower_bound"]
+    if (stored is None) != (lower is None) or (
+        lower is not None and stored is not None and abs(float(stored) - lower) > 1e-12
+    ):
+        found.append(f"lower_bound {stored!r} is not L(H, m) = {lower!r}")
     return found
