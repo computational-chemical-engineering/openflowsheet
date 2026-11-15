@@ -35,6 +35,8 @@ fi
 # the old single lock, so gates queued under the one-slot script share it. The wall-time budget test
 # t07_v17_reference f6 fails under two concurrent suites (G-SELF 2026-11-14: 333 s against 300 s), so gates deselect
 # it; it runs alone on wp/S19 before each merge into main, and CI runs it on both legs.
+# Temporary files on disk, not the RAM-backed /tmp (2026-11-15: two gates and a map build filled /tmp, ENOSPC).
+mkdir -p "$GC/codehealth/tmp-gates" && export TMPDIR="$GC/codehealth/tmp-gates"
 export PYTEST_ADDOPTS="${PYTEST_ADDOPTS:-} --deselect tests/test_t07_v17_reference.py::test_f6_the_forty_runs_fit_their_budget"
 slot=""
 while [ -z "$slot" ]; do
