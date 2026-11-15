@@ -50,6 +50,7 @@ from openflowsheet.studies.surrogate.conformal import (
 )
 from openflowsheet.studies.surrogate.plan import (
     PLAN_N_TUBES,
+    GradientCentre,
     SamplePlan,
     Split,
     check_plan,
@@ -244,20 +245,7 @@ def evaluate(
     width = len(plan.gradient[0].stencil) if plan.gradient else 0
     for j, centre in enumerate(plan.gradient):
         stencil = rows["gradient"][j * width : (j + 1) * width]
-        status: CentreStatus
-        errors = None
-        if any(o.status == "incomplete" for o in stencil):
-            status = "incomplete"
-        elif any(o.status == "failed" for o in stencil):
-            status = "parent_failed"
-        elif surrogate is None:
-            status = "not_evaluated"
-        else:
-            status = "ok"
-            u = coordinates(centre.request, PLAN_N_TUBES)
-            assert u is not None
-            errors = _gradient_errors(surrogate, scaled(u, surrogate.scaling), stencil)
-        centres.append(CentreEvidence(centre.index, status, tuple(stencil), errors))
+        centres.append(_centre_evidence(centre, stencil, surrogate))
 
     extrapolated = sum(1 for found in rows.values() for o in found if o.extrapolated)
     plan_complete = all(o.status != "incomplete" for found in rows.values() for o in found)
@@ -293,6 +281,29 @@ def evaluate(
         centres=tuple(centres),
         verdict=verdict,
     )
+
+
+def _centre_evidence(
+    centre: GradientCentre, stencil: Sequence[Observation], surrogate: QuadraticSurrogate | None
+) -> CentreEvidence:
+    """One gradient centre's evidence (spec §6) from its `stencil` observations: `incomplete`
+    when any is incomplete, else `parent_failed` when any failed, else `not_evaluated` without a
+    surrogate (errors `None` in all three); else `ok` with the surrogate's gradient errors at
+    the centre's scaled coordinates (`_gradient_errors`). Pure."""
+    status: CentreStatus
+    errors = None
+    if any(o.status == "incomplete" for o in stencil):
+        status = "incomplete"
+    elif any(o.status == "failed" for o in stencil):
+        status = "parent_failed"
+    elif surrogate is None:
+        status = "not_evaluated"
+    else:
+        status = "ok"
+        u = coordinates(centre.request, PLAN_N_TUBES)
+        assert u is not None
+        errors = _gradient_errors(surrogate, scaled(u, surrogate.scaling), stencil)
+    return CentreEvidence(centre.index, status, tuple(stencil), errors)
 
 
 # -- the study ------------------------------------------------------------------------------------
