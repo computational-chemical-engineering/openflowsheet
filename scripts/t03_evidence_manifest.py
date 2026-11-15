@@ -1885,10 +1885,19 @@ def _a02(runs: Runs) -> tuple[bool, Any, Any]:
             if token in sources[name]
         ]
         + budget_comparison.findall(sources[name])
-        for name in ("attempts.py", "region.py", "region_phase.py", "region_problem.py")
+        for name in (
+            "attempts.py",
+            "region.py",
+            "region_phase.py",
+            "region_problem.py",
+            "region_result.py",
+            "region_screen.py",
+            "region_attempts.py",
+        )
     }
     constructs_wall = {
-        name: "WallObserver(policy)" in sources[name] for name in ("attempts.py", "region.py")
+        name: "WallObserver(policy)" in sources[name]
+        for name in ("attempts.py", "region.py", "region_attempts.py")
     }
     value = {
         "per_run": per_run,
@@ -1901,12 +1910,19 @@ def _a02(runs: Runs) -> tuple[bool, Any, Any]:
         "per_run": "decide_calls == attempt_closures on every run (2, 2, 2, 2)",
         "cycling_refusal_produced_in": ["phase_contract.py"],
         "WallObserver_defined_in": ["phase_contract.py"],
-        "WallObserver_constructed_by": {"attempts.py": True, "region.py": True},
+        "WallObserver_constructed_by": {
+            "attempts.py": True,
+            "region.py": True,
+            "region_attempts.py": True,
+        },
         "own_cycle_or_budget_rule": {
             "attempts.py": [],
             "region.py": [],
             "region_phase.py": [],
             "region_problem.py": [],
+            "region_result.py": [],
+            "region_screen.py": [],
+            "region_attempts.py": [],
         },
     }
     ok = (
