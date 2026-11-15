@@ -88,18 +88,7 @@ def _check_templates(entry: Entry, catalogue: Catalogue) -> list[str]:
     allowed = _allowed_names(entry)
     for name, index, text in entry.templates():
         where = name if index is None else f"variants[{index}].{name}"
-        try:
-            nodes = template.parse(text)
-        except template.TemplateError as error:
-            problems.append(f"{where}: {error}")
-            continue
-        for param in template.params(nodes):
-            if param.name not in allowed:
-                problems.append(f"{where}: undeclared param {param.name!r}")
-            elif param.conversion == "title":
-                declared = entry.params.get(param.name)
-                if declared is None or declared.type != "code":
-                    problems.append(f"{where}: !title on {param.name!r}, which is not a code")
+        problems += _check_template(entry, allowed, where, text)
     for name in entry.args:
         if name not in entry.params:
             problems.append(f"args: {name!r} is not a declared param")
@@ -111,6 +100,25 @@ def _check_templates(entry: Entry, catalogue: Catalogue) -> list[str]:
             re.compile(entry.detail_pattern)
         except re.error as error:
             problems.append(f"detail_pattern: {error}")
+    return problems
+
+
+def _check_template(entry: Entry, allowed: set[str], where: str, text: str) -> list[str]:
+    """The template `text` at `where` parses, every name it renders is in `allowed`, and `!title`
+    is applied only to a `code` param of `entry`."""
+    problems: list[str] = []
+    try:
+        nodes = template.parse(text)
+    except template.TemplateError as error:
+        problems.append(f"{where}: {error}")
+        return problems
+    for param in template.params(nodes):
+        if param.name not in allowed:
+            problems.append(f"{where}: undeclared param {param.name!r}")
+        elif param.conversion == "title":
+            declared = entry.params.get(param.name)
+            if declared is None or declared.type != "code":
+                problems.append(f"{where}: !title on {param.name!r}, which is not a code")
     return problems
 
 
