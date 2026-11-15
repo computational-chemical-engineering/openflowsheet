@@ -175,14 +175,35 @@ def validate(
 
     S03 §9 S11 precedes R1: a provider other than SYN-001 is refused by identity before anything
     else is read or evaluated.
+
+    After R1 and `_well_formed_spec_inlets` (R1's misuse checks), one helper per clause, in order:
+    `_inlet_flow_refusal` (R2), `_domain_refusal` (R3), `_side_feed_stage_refusal` (R4),
+    `_two_phase_inlet_refusal` (R6), `_inadmissible_inlet_refusal` (R5) and `_energy_refusal`
+    (R7, `None` when every inlet is dormant).
     """
-    unit, components = spec.unit_id, spec.components
+    unit = spec.unit_id
     refused = property_method_refusal(unit, provider)
     if refused is not None:
         return refused
     count = spec.stage_count
     if isinstance(count, bool) or not isinstance(count, int) or count < 1:
         return _invalid("stage_count", f"{unit}: N = {count!r} is not an integer >= 1")
+    inlets = _well_formed_spec_inlets(spec)
+    return (
+        _inlet_flow_refusal(unit, inlets)
+        or _domain_refusal(spec, inlets)
+        or _side_feed_stage_refusal(spec)
+        or _two_phase_inlet_refusal(unit, inlets)
+        or _inadmissible_inlet_refusal(spec, inlets, provider, context)
+        or _energy_refusal(spec, provider, context)
+    )
+
+
+def _well_formed_spec_inlets(spec: CascadeSpec) -> tuple[PlacedInlet, ...]:
+    """R1's misuse checks on a specification whose `N` passed R1: `spec.inlets()`, after
+    `ValueError` for a pressure or duty list that is not one per stage or a non-finite duty, and
+    before `ValueError` for duplicated inlet ports or a flow vector of the wrong length."""
+    unit, components, count = spec.unit_id, spec.components, spec.stage_count
     if len(spec.pressures) != count or len(spec.duties) != count:
         raise ValueError(
             f"{unit}: {len(spec.pressures)} pressures and {len(spec.duties)} duties for "
@@ -201,15 +222,24 @@ def validate(
                 f"{unit}: inlet {inlet.port} carries {len(inlet.state.n)} flows for "
                 f"{len(components)} components"
             )
+    return inlets
 
-    # R2
+
+def _inlet_flow_refusal(unit: str, inlets: tuple[PlacedInlet, ...]) -> CascadeFailure | None:
+    """R2: the first inlet whose flows are not all finite and `>= 0`, else `None`."""
     for inlet in inlets:
         if not all(math.isfinite(a) and a >= 0.0 for a in inlet.state.n):
             return _invalid(
                 f"inlet_flow:{inlet.port}",
                 f"{unit}: inlet {inlet.port} flows {inlet.state.n} are not finite and >= 0",
             )
-    # R3
+    return None
+
+
+def _domain_refusal(spec: CascadeSpec, inlets: tuple[PlacedInlet, ...]) -> CascadeFailure | None:
+    """R3: the first inlet `T` outside `(T_MIN, T_MAX)` or `P` outside `(P_MIN, P_MAX)`, then
+    the first stage pressure `P_j*` outside `(P_MIN, P_MAX)`, else `None`."""
+    unit = spec.unit_id
     for inlet in inlets:
         stream = inlet_stream(unit, inlet.port)
         for column, value, bounds in (
@@ -222,7 +252,13 @@ def validate(
         column = stage_pressure_id(unit, stage)
         if not _in_domain(value, (P_MIN, P_MAX)):
             return _invalid(f"domain:{column}", f"{column} = {value!r} outside {(P_MIN, P_MAX)}")
-    # R4
+    return None
+
+
+def _side_feed_stage_refusal(spec: CascadeSpec) -> CascadeFailure | None:
+    """R4: the first side feed whose stage is not an integer in `1..N` or repeats an earlier side
+    feed's stage, else `None`."""
+    unit, count = spec.unit_id, spec.stage_count
     taken: set[int] = set()
     for side in spec.sides:
         stage = side.stage
@@ -238,7 +274,11 @@ def validate(
                 "per stage)",
             )
         taken.add(stage)
-    # R6
+    return None
+
+
+def _two_phase_inlet_refusal(unit: str, inlets: tuple[PlacedInlet, ...]) -> CascadeFailure | None:
+    """R6: the first inlet declared neither LIQUID nor VAPOR, else `None`."""
     for inlet in inlets:
         if inlet.state.phase not in INLET_PHASES:
             return CascadeFailure(
@@ -247,8 +287,18 @@ def validate(
                 f"{unit}: inlet {inlet.port} declared {inlet.state.phase!r}; S01 takes a declared "
                 "LIQUID or VAPOR inlet only",
             )
-    # R5: R-007 admissibility (spec §17.3, R-512), the inlet at its own `(n, T, P)` in its
-    # declared phase.
+    return None
+
+
+def _inadmissible_inlet_refusal(
+    spec: CascadeSpec,
+    inlets: tuple[PlacedInlet, ...],
+    provider: PropertyProvider,
+    context: EvaluationContext,
+) -> CascadeFailure | None:
+    """R5: R-007 admissibility (spec §17.3, R-512): the first non-dormant inlet that
+    `single_phase_admissible` refuses at its own `(n, T, P)` in its declared phase, else `None`."""
+    unit, components = spec.unit_id, spec.components
     for inlet in inlets:
         state = inlet.state
         if _is_dormant(state):
@@ -268,7 +318,15 @@ def validate(
                 f"inadmissible_inlet({inlet.port}, {state.phase})",
                 f"{unit}: inlet {inlet.port} is not an admissible {state.phase} ({detail})",
             )
-    # R7
+    return None
+
+
+def _energy_refusal(
+    spec: CascadeSpec, provider: PropertyProvider, context: EvaluationContext
+) -> CascadeFailure | None:
+    """R7: `None` when every inlet is dormant, else the refusal when `H*` is outside the
+    `energy_precheck` bounds, else `None`."""
+    unit = spec.unit_id
     if is_dormant(spec):
         # Every inlet dormant: §4.6's closed form answers (see the design-lane question in
         # docs/S01_DECISIONS.md on R7's scope).
