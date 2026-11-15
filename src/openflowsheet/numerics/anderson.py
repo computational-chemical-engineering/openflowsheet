@@ -449,6 +449,8 @@ class _RecycleRun:
     current: Evaluation = field(init=False)
 
     def evaluate(self, point: npt.NDArray[np.float64]) -> Evaluation:
+        """The residual at `point`; counts `calls` and `running` first, so both counts stand when
+        the residual raises."""
         self.calls += 1
         self.running = self.running.plus(residual_calls=1)
         return self.problem.residual(point)
@@ -456,6 +458,8 @@ class _RecycleRun:
     def finish(
         self, outcome: RecycleOutcome, k: int, residual: tuple[float, ...] | None, message: str = ""
     ) -> RecycleResult:
+        """Closes the attempt: writes `attempt_closed` when `trace` is set and returns the result
+        with copies of `x` and `best_x`."""
         if self.trace is not None:
             self.trace.record(
                 kind="attempt_closed",
@@ -508,6 +512,7 @@ class _RecycleRun:
         evaluation: Evaluation,
         reason: RejectionReason,
     ) -> None:
+        """Writes a rejected `trial` event when `trace` is set."""
         if self.trace is None:
             return
         self.trace.record(

@@ -734,10 +734,11 @@ class _NewtonRun:
 
         The chord correction with the last factorization (D2) sets `chord_linear` when the
         back-solve succeeds. Inside a refinement it judges the refined iterate (D4): it keeps it
-        or restores `x` to `x_k`, clears `refining`, and closes `CONVERGED`. Outside one it closes
-        `CONVERGED` when the chord is within the kind tolerance or at the iteration budget, and
-        otherwise opens the refinement (D3: sets `refining`) and returns None for one more
-        iteration. Every close writes `attempt_closed` through `finish`.
+        or restores `x` to `x_k`, clears `refining`, and closes `CONVERGED`. Outside one a failed
+        back-solve closes `CONVERGED` ("abandoned: chord"); else it closes `CONVERGED` when the
+        chord is within the kind tolerance or at the iteration budget, and otherwise opens the
+        refinement (D3: sets `refining`) and returns None for one more iteration. Every close
+        writes `attempt_closed` through `finish`.
         """
         # ADR 0018 D2: the chord correction at this iterate with the last factorization.
         try:
