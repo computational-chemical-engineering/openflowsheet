@@ -430,7 +430,9 @@ def _build(
     """§5.3 steps 1–9 for `candidate = (a, c)`: the first `a` equilibrium stages are the V-block,
     the last `c` the L-block and the `b` between them the core. Steps 2–4 on a non-empty core are
     `_core_endpoint`'s, which raises `_RefusalError` (`sweeps_exhausted`, or `_bubble`'s) as the
-    later steps do (`_block_stage`'s, `_bubble`'s, `inadmissible_endpoint`)."""
+    later steps do (`_block_stage`'s, `_bubble`'s, `inadmissible_endpoint`). Steps 5 and 6 sum the
+    block flows with `_summed_inlet_flows` (the L-block's only on an empty core) and find the block
+    temperatures with `_block_temperatures`; `_build` writes every table."""
     unit, components = spec.unit_id, spec.components
     signature = block_signature(spec, candidate)
     stages = spec.equilibrium_stages()
@@ -454,34 +456,29 @@ def _build(
             liquid[j] = core_end.liquid[j]
             vapor[j] = core_end.vapor[j]
     # Step 5: the L-block, top-down.
+    if b == 0:
+        liquid.update(_summed_inlet_flows(spec, l_block, [0.0] * len(components)))
     for j in l_block:
-        above = j - 1
-        carried = above in core or above in l_block
-        if b == 0:
-            feed = _inlet_flows(spec, j)
-            upper = liquid[above] if carried else [0.0] * len(components)
-            liquid[j] = [upper[i] + feed[i] for i in range(len(components))]
         vapor[j] = [0.0] * len(components)
-        neighbour = (
-            (liquid[above], temperatures[above], float(spec.pressures[above - 1]))
-            if carried
-            else None
-        )
-        temperatures[j] = _block_stage(spec, provider, j, liquid[j], "LIQUID", neighbour)
+    descending = (
+        (liquid[core[-1]], temperatures[core[-1]], float(spec.pressures[core[-1] - 1]))
+        if core
+        else None
+    )
+    temperatures.update(_block_temperatures(spec, provider, l_block, liquid, "LIQUID", descending))
     # Step 6: the V-block, bottom-up.
-    for j in reversed(v_block):
-        below = j + 1
-        rising_in = below in core or below in v_block
-        feed = _inlet_flows(spec, j)
-        lower = vapor[below] if rising_in else [0.0] * len(components)
-        vapor[j] = [lower[i] + feed[i] for i in range(len(components))]
+    upward = v_block[::-1]
+    vapor.update(
+        _summed_inlet_flows(spec, upward, vapor[core[0]] if core else [0.0] * len(components))
+    )
+    for j in v_block:
         liquid[j] = [0.0] * len(components)
-        neighbour = (
-            (vapor[below], temperatures[below], float(spec.pressures[below - 1]))
-            if rising_in
-            else None
-        )
-        temperatures[j] = _block_stage(spec, provider, j, vapor[j], "VAPOR", neighbour)
+    rising = (
+        (vapor[core[0]], temperatures[core[0]], float(spec.pressures[core[0] - 1]))
+        if core
+        else None
+    )
+    temperatures.update(_block_temperatures(spec, provider, upward, vapor, "VAPOR", rising))
     # Step 7: the total condenser.
     profile = [temperatures.get(j, 0.0) for j in range(1, spec.stage_count + 1)]
     if phi is not None:
@@ -569,3 +566,38 @@ def _core_endpoint(
     # Step 4: the final flows at the stopped T (and the relaxed composition, S10-C §4.9).
     flows, rising = _core_flows(spec, provider, carry, core, temperatures, rho, phi, compositions)
     return _CoreEndpoint(temperatures, sweeps, delta, flows, rising)
+
+
+def _summed_inlet_flows(
+    spec: ColumnSpec, walk: tuple[int, ...], start: list[float]
+) -> dict[int, list[float]]:
+    """§5.3 steps 5–6 block flows: down `walk` (the block's stages in flow order), each stage's
+    flow is the previous stage's (`start` for the first) plus its `_inlet_flows`, component by
+    component. A new list per stage; `start` is not modified."""
+    summed: dict[int, list[float]] = {}
+    previous = start
+    for j in walk:
+        feed = _inlet_flows(spec, j)
+        previous = [previous[i] + feed[i] for i in range(len(spec.components))]
+        summed[j] = previous
+    return summed
+
+
+def _block_temperatures(
+    spec: ColumnSpec,
+    provider: PropertyProvider,
+    walk: tuple[int, ...],
+    flows: Mapping[int, list[float]],
+    phase: Phase,
+    edge: tuple[list[float], float, float] | None,
+) -> dict[int, float]:
+    """§5.3 steps 5–6 block temperatures: `_block_stage` down `walk` (the block's stages in flow
+    order) on `flows[j]` in `phase`; the first stage's neighbour is `edge` (the stream entering
+    the block, or `None`), each later stage's the previous stage's flows, `T` and `P*`. Raises
+    `_block_stage`'s `_RefusalError`."""
+    temperatures: dict[int, float] = {}
+    neighbour = edge
+    for j in walk:
+        temperatures[j] = _block_stage(spec, provider, j, flows[j], phase, neighbour)
+        neighbour = (flows[j], temperatures[j], float(spec.pressures[j - 1]))
+    return temperatures

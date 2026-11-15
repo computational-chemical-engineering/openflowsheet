@@ -1078,21 +1078,9 @@ class RevisionFlowsheet:
                 if not started:
                     return fail(pending[0].unit_id, "error", "no_computed_inlet")
                 unit = started[0]
-                inlets = self._streams(unit, "inlet")
-                label = value[next(s for s in inlets if s in computed)]
-                for stream in inlets:
-                    if stream in value:
-                        continue
-                    value[stream] = (
-                        guesses[stream]
-                        if stream in guesses
-                        else StreamState(
-                            n=(0.0,) * len(self.components),
-                            temperature=label.temperature,
-                            pressure=label.pressure,
-                        )
-                    )
-                    torn.append(stream)
+                tears = self._tear(unit, value, computed, guesses)
+                value.update(tears)
+                torn.extend(tears)
 
             connected = self.wiring[unit.unit_id].streams
             evaluation = unit.evaluate(
@@ -1124,6 +1112,33 @@ class RevisionFlowsheet:
             torn=tuple(torn),
             computed_torn=dict(computed_torn),
         )
+
+    def _tear(
+        self,
+        unit: UnitModel,
+        value: Mapping[str, StreamState],
+        computed: set[str],
+        guesses: Mapping[str, StreamState],
+    ) -> dict[str, StreamState]:
+        """§1.5's tear of `unit`, the deadlocked pass's first pending unit with a computed inlet:
+        each inlet stream without a value in `value`, in `_streams` order, mapped to its guess,
+        or to a dormant stream labelled with the first computed inlet's `(T, P)`. Reads only."""
+        inlets = self._streams(unit, "inlet")
+        label = value[next(s for s in inlets if s in computed)]
+        tears: dict[str, StreamState] = {}
+        for stream in inlets:
+            if stream in value or stream in tears:
+                continue
+            tears[stream] = (
+                guesses[stream]
+                if stream in guesses
+                else StreamState(
+                    n=(0.0,) * len(self.components),
+                    temperature=label.temperature,
+                    pressure=label.pressure,
+                )
+            )
+        return tears
 
 
 def _material(unit: UnitModel, direction: PortDirection) -> tuple[str, ...]:
