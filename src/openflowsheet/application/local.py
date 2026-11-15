@@ -64,7 +64,6 @@ from openflowsheet.application.contract import ApplicationError, Page, Projectio
 from openflowsheet.application.jobs.executor import InlineExecutor, ProcessExecutor
 from openflowsheet.application.jobs.model import JOB_STATUSES, TERMINAL_STATUSES, JobStatus
 from openflowsheet.application.jobs.runner import RunContext, bundle_rows, record_rows
-from openflowsheet.application.policies import APPLICATION_POLICIES, DEFAULT_POLICY_ID
 from openflowsheet.application.projection import (
     DEFAULT_DEPTH,
     DEFAULT_PAGE,
@@ -145,6 +144,7 @@ from openflowsheet.application.types import (
 )
 from openflowsheet.application.validation import Task, ValidationReport
 from openflowsheet.canonical import canonical_json, document_sha256, first_noncanonical
+from openflowsheet.orchestrator.policies import APPLICATION_POLICIES, DEFAULT_POLICY_ID
 from openflowsheet.registry import default_registry
 from openflowsheet.run.bundle import MANIFEST_NAME
 from openflowsheet.run.replay import ReplayReport

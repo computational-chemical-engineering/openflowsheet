@@ -15,7 +15,6 @@ from pathlib import Path
 from typing import Any, Final
 
 from openflowsheet.application.binding import Unbound, refusal_code
-from openflowsheet.application.policies import DEFAULT_POLICY_ID, SolvePath
 from openflowsheet.application.revision_binding import SurrogateResolver
 from openflowsheet.application.revision_run import (
     NoRoute,
@@ -29,6 +28,7 @@ from openflowsheet.application.revision_run import (
     solve_route,
     write_revision_bundle,
 )
+from openflowsheet.orchestrator.policies import DEFAULT_POLICY_ID, SolvePath
 from openflowsheet.orchestrator.trace import SolvePolicy
 from openflowsheet.orchestrator.warm_start import WarmStartCandidate
 from openflowsheet.verify.certificate import CheckPolicy

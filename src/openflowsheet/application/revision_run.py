@@ -73,7 +73,6 @@ from openflowsheet.application.coupled_run import (
     solve_coupled,
     unused_coupling_start,
 )
-from openflowsheet.application.policies import SolvePath
 from openflowsheet.application.revision_binding import (
     RevisionBinding,
     SurrogateResolver,
@@ -101,6 +100,7 @@ from openflowsheet.orchestrator.execution import (
     specification_regions,
 )
 from openflowsheet.orchestrator.executor import PlanResult, execute_plan
+from openflowsheet.orchestrator.policies import SolvePath
 from openflowsheet.orchestrator.region import RegionResult
 from openflowsheet.orchestrator.revision import plan_revision
 from openflowsheet.orchestrator.revision_continuation import RevisionContinuationRefusal

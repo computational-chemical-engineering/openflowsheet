@@ -171,8 +171,8 @@ def command_optimize(arguments: argparse.Namespace) -> int:
     is `KKT_POINT_VERIFIED`, as `solve` exits 0 iff its run is `VERIFIED`.
     """
     from openflowsheet.application.contract import api_error
-    from openflowsheet.application.policies import DEFAULT_POLICY_ID, resolve_policy
     from openflowsheet.application.revision_routes import REVISION_ROUTES
+    from openflowsheet.orchestrator.policies import DEFAULT_POLICY_ID, resolve_policy
     from openflowsheet.studies.nlp.request import request_problems
     from openflowsheet.studies.nlp.revision import optimize_revision
     from openflowsheet.studies.nlp.revision_host import ROUTE
