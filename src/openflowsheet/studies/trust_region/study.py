@@ -802,12 +802,7 @@ def run_study(
             return stop(DECISION_STABLE)
         if candidate.status != NOT_STATIONARY_AT_DELTA:
             return stop(failed(candidate.status))
-        feasible = [point.solve for point in candidate.poll if point.feasible]
-        best = feasible[0]
-        for point in feasible[1:]:
-            if _better(sense, point, best):
-                best = point
-        result.best = best
+        result.best = _best_feasible(sense, candidate)
     return stop(ITERATION_LIMIT)
 
 
@@ -826,6 +821,18 @@ def _stage_a_best(
         eligible.append(candidate.targeted)
     eligible += [p.solve for p in candidate.poll if p.feasible and p.regimes_match]
     for point in eligible[1:]:
+        if _better(sense, point, best):
+            best = point
+    return best
+
+
+def _best_feasible(sense: str, candidate: CandidateCheck) -> ParentSolve:
+    """The best of a stage-C candidate's feasible poll points (§7.3), the next iteration's start:
+    the first, unless a later one is strictly better (the first strictly better wins). The
+    candidate is not stationary at Δ, so its poll has a feasible point."""
+    feasible = [point.solve for point in candidate.poll if point.feasible]
+    best = feasible[0]
+    for point in feasible[1:]:
         if _better(sense, point, best):
             best = point
     return best
