@@ -530,8 +530,8 @@ def _degenerate_streams(
 
     Raises `VerifierError` when the verifier's own band or phase evaluation fails."""
     declared = _producer_phases(view)
-    enthalpy: dict[str, float] = {}
-    notes: dict[str, str] = {}
+    declared_enthalpy: dict[str, float] = {}
+    declared_notes: dict[str, str] = {}
     unlifted: set[str] = set()
     for stream in view.streams:
         carried = stream_of(state, stream)
@@ -544,8 +544,8 @@ def _degenerate_streams(
         if capability is None:
             unlifted.add(stream)
             continue
-        enthalpy[stream] = _phase_enthalpy(
+        declared_enthalpy[stream] = _phase_enthalpy(
             provider, context, carried.n, carried.temperature, carried.pressure, capability, stream
         )
-        notes[stream] = DECLARED_ENTHALPY_NOTE.format(stream=stream, phase=capability)
-    return enthalpy, notes, unlifted
+        declared_notes[stream] = DECLARED_ENTHALPY_NOTE.format(stream=stream, phase=capability)
+    return declared_enthalpy, declared_notes, unlifted

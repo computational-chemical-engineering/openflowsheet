@@ -465,8 +465,8 @@ def _windowed_shape_v1(
 
 
 def _float_leaf_v1(emitted: Any, committed: Any, where: str, floor: float | None) -> list[str]:
-    """v1 on a float at `where`: null against null is no difference, null against anything else
-    is one, compared exactly; otherwise `math.isclose` at the interim relative tolerance and
+    """v1 on a float at `where` (at least one side is a float): null against a float is a
+    difference, compared exactly; otherwise `math.isclose` at the interim relative tolerance and
     `floor` absolute, else the registered floor of its key, else none."""
     found: list[str] = []
     if emitted is None or committed is None:
