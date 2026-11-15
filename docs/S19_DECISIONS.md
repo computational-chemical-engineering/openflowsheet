@@ -433,3 +433,9 @@
   verification `_Linearization`). Left as is (orchestrator): verification `_regimes` (a test imports and calls it;
   W4) and `_kkt` (a parameter object would mix phases). New engineer runs paused (2026-11-15 evening) until Frank
   weighs OpenFlowsheet-check's advice (gate chains, no idle agents, lanes sized to gate capacity, a split G-END).
+- **2026-11-15, G1 lane N run 2 review R-W3-G1N-2 (reviewer, Opus): merge after fixes** (docstrings, d41b0909,
+  gated no-gain). rc_check.py RESULT OK on A2, N2, P2. P2's `_stop -> _Closed` (guard in the loop, a method that
+  always closes) accepted. Notes: ptc.py:293 dispatch `isinstance(frozen, _Frozen)` relies on `_Frozen` being a
+  tuple subclass and `_Closed` a plain tuple: never test against `tuple`; `_Frozen.infinity`/`.merit` unread until
+  P3; anderson frame fields `rules`, `observer`, `n`, `scale`, `tolerance_hat`, `lower` unread by methods (drop at
+  the last step). ptc.py 6.8 still open (P3, P4).
