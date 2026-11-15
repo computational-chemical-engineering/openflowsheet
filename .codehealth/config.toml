@@ -202,6 +202,7 @@ order = [
     "openflowsheet.registry",
     "openflowsheet.messages",
     "openflowsheet.units",
+    "openflowsheet.schema_check",
     "openflowsheet.serialize",
     "openflowsheet.compiled",
     "openflowsheet.canonical",
