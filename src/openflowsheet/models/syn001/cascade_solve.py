@@ -502,16 +502,45 @@ def acceptance_failures(
     column `+0.0`, `V_j, L_j > 0` on a `TWO_PHASE` stage, admissibility on a single-phase one, and
     (Amendment 2, S08b §5.2) every `TWO_PHASE` stage within `TWO_PHASE_SATURATION_TOLERANCE` of
     its liquid's bubble and its vapour's dew temperature (`SATURATION_PREFIX`). Empty when the
-    answer is accepted."""
-    failures: list[str] = []
+    answer is accepted. The checks, in this order: `_row_failures`, `_pinned_failures`,
+    `_stage_failures`, `_saturation_failures`."""
     residuals, pinned = system_residuals(spec, declared, state, regimes)
+    failures = _row_failures(declared, residuals)
+    failures += _pinned_failures(state, pinned)
+    failures += _stage_failures(spec, provider, state, regimes)
+    failures += _saturation_failures(spec, provider, state, regimes)
+    return tuple(failures)
+
+
+def _row_failures(declared: ProblemSpec, residuals: Mapping[str, float]) -> list[str]:
+    """Spec §8: each declared row whose residual is not within its kind's `KIND_TOLERANCE`, in
+    `residuals` order."""
+    failures: list[str] = []
     for row, value in residuals.items():
         tolerance = KIND_TOLERANCE[row_kind(declared, row)]
         if not abs(value) <= tolerance:
             failures.append(f"row {row} = {value!r} exceeds {tolerance!r}")
+    return failures
+
+
+def _pinned_failures(state: Mapping[str, float], pinned: Sequence[str]) -> list[str]:
+    """Spec §8: each `pinned` column whose state value is not `0.0`, in `pinned` order."""
+    failures: list[str] = []
     for column in pinned:
         if state[column] != 0.0:
             failures.append(f"pinned column {column} = {state[column]!r} is not zero")
+    return failures
+
+
+def _stage_failures(
+    spec: CascadeSpec,
+    provider: PropertyProvider,
+    state: Mapping[str, float],
+    regimes: Sequence[Regime],
+) -> list[str]:
+    """Spec §8, stage by stage: on a `TWO_PHASE` stage each of `V_j`, `L_j` that is not `> 0`; on a
+    `LIQUID` or `VAPOR` stage a failed `admissibility`."""
+    failures: list[str] = []
     unit = spec.unit_id
     for stage, regime in enumerate(regimes, start=1):
         if regime == "TWO_PHASE":
@@ -523,9 +552,20 @@ def acceptance_failures(
             admissible, detail = admissibility(spec, provider, state, stage, phase)
             if not admissible:
                 failures.append(f"{regime} stage {stage} inadmissible: {detail}")
-    # S08b §5.2 (S01 §8 as amended by Amendment 2): S02 §8 item 6's saturation consistency.
+    return failures
+
+
+def _saturation_failures(
+    spec: CascadeSpec,
+    provider: PropertyProvider,
+    state: Mapping[str, float],
+    regimes: Sequence[Regime],
+) -> list[str]:
+    """S08b §5.2 (S01 §8 as amended by Amendment 2): S02 §8 item 6's saturation consistency, each
+    bubble or dew error of `saturation_pairs` not within `TWO_PHASE_SATURATION_TOLERANCE`."""
+    failures: list[str] = []
     pairs = saturation_pairs(
-        unit, spec.components, provider, state, dict(enumerate(regimes, start=1))
+        spec.unit_id, spec.components, provider, state, dict(enumerate(regimes, start=1))
     )
     for stage, errors in pairs.items():
         for side, error in zip(("bubble", "dew"), errors, strict=True):
@@ -533,7 +573,7 @@ def acceptance_failures(
                 failures.append(
                     f"{SATURATION_PREFIX}TWO_PHASE stage {stage}: {side} error {error!r} K"
                 )
-    return tuple(failures)
+    return failures
 
 
 # -- spec §2: overall closure (A08) ---------------------------------------------------------------
