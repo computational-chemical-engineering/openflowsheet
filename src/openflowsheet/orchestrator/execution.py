@@ -27,7 +27,7 @@ from typing import Any, Final, Literal
 from openflowsheet.compile.spec import ProblemSpec
 from openflowsheet.graph.process import ProcessGraph
 from openflowsheet.graph.report import StructuralReport
-from openflowsheet.graph.tear import Candidate
+from openflowsheet.graph.tear import Candidate, LoopTear
 from openflowsheet.graph.trace import Declaration
 from openflowsheet.numerics.scaling import Scaling
 from openflowsheet.orchestrator.trace import (
@@ -625,43 +625,25 @@ def build_execution_plan(
     loops = {tuple(loop.units): loop for loop in report.tear.loops}
     certified = {entry.row_id for entry in report.certificates if entry.consistent}
     retained = tuple(row for row in declaration.row_ids if row not in certified)
+    basis = _PlanBasis(
+        label=label,
+        policy=policy,
+        declaration=declaration,
+        report=report,
+        scaling=scaling,
+        capable=capable,
+        retained=retained,
+        loops=loops,
+    )
     steps: list[PlanStep] = []
     placed_regions: set[int] = set()
-
-    def region_step(region: Region, index: int, suffix: str) -> PlanStep:
-        return PlanStep(
-            index=index,
-            kind="solve_eo",
-            units=region.units,
-            region=region,
-            solve_plan=_solve_plan(
-                plan_id=f"{label}-{policy.policy_id}-{suffix}",
-                declaration=declaration,
-                report=report,
-                scaling=scaling,
-                policy=policy,
-                tear_variables=(),
-                tear_rows=(),
-                inner_variables=region.variable_ids,
-                inner_rows=region.row_ids,
-                eliminated=region.eliminated_rows,
-                # T02 §6.1: every molar-flow column of the region, the lifted split included.
-                bounded=tuple(
-                    name
-                    for name in region.variable_ids
-                    if declaration.column_kinds.get(name) == "molar_flow"
-                ),
-                signature_units=region.signature_units,
-                initializer_chain=("user_guess", "sequential_pre_solve"),
-            ),
-        )
 
     for node in condensation_order(graph):
         owner: Region | None = next((claimed[unit] for unit in node if unit in claimed), None)
         if owner is not None:
             if id(owner) not in placed_regions:
                 placed_regions.add(id(owner))
-                steps.append(region_step(owner, len(steps), f"region{len(steps)}"))
+                steps.append(_region_step(basis, owner, len(steps), f"region{len(steps)}"))
             continue
         self_loop = any(
             connection.producer == connection.consumer == node[0]
@@ -685,7 +667,7 @@ def build_execution_plan(
                 ok, declared = capable[unit]
                 if not ok:
                     raise CapabilityUnavailableError(unit, declared, tuple(node), ())
-            steps.append(region_step(loop_region, len(steps), f"region{len(steps)}"))
+            steps.append(_region_step(basis, loop_region, len(steps), f"region{len(steps)}"))
             continue
 
         if policy.recycle.tear_streams is not None:
@@ -760,7 +742,7 @@ def build_execution_plan(
                 ),
                 region_on_merge=None
                 if incapable is not None
-                else region_step(loop_region, len(steps), f"merge{len(steps)}"),
+                else _region_step(basis, loop_region, len(steps), f"merge{len(steps)}"),
                 merge_unsupported=incapable,
             )
         )
@@ -815,6 +797,52 @@ def _check_specifications(
                 f"{len(promoted.row_ids)} rows over {len(promoted.variable_ids)} columns after "
                 "certificates"
             )
+
+
+@dataclass(frozen=True)
+class _PlanBasis:
+    """What every step of one plan is built from: the declaration's label, the policy, the
+    structural report and the scaling, each unit's EO capability, the rows certificates retain,
+    and T01's loops by their unit tuple."""
+
+    label: str
+    policy: SolvePolicy
+    declaration: Declaration
+    report: StructuralReport
+    scaling: Scaling
+    capable: Mapping[str, tuple[bool, str]]
+    retained: tuple[str, ...]
+    loops: Mapping[tuple[str, ...], LoopTear]
+
+
+def _region_step(basis: _PlanBasis, region: Region, index: int, suffix: str) -> PlanStep:
+    """The `solve_eo` step that solves `region` as one EO block, its plan id ending in `suffix`."""
+    return PlanStep(
+        index=index,
+        kind="solve_eo",
+        units=region.units,
+        region=region,
+        solve_plan=_solve_plan(
+            plan_id=f"{basis.label}-{basis.policy.policy_id}-{suffix}",
+            declaration=basis.declaration,
+            report=basis.report,
+            scaling=basis.scaling,
+            policy=basis.policy,
+            tear_variables=(),
+            tear_rows=(),
+            inner_variables=region.variable_ids,
+            inner_rows=region.row_ids,
+            eliminated=region.eliminated_rows,
+            # T02 §6.1: every molar-flow column of the region, the lifted split included.
+            bounded=tuple(
+                name
+                for name in region.variable_ids
+                if basis.declaration.column_kinds.get(name) == "molar_flow"
+            ),
+            signature_units=region.signature_units,
+            initializer_chain=("user_guess", "sequential_pre_solve"),
+        ),
+    )
 
 
 @dataclass(frozen=True)
