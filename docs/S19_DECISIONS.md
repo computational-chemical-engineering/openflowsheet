@@ -349,3 +349,7 @@
   G4 has no W3 target left (cost and lca wait for W5; `exchanger_utility`'s utility-choice ladder would need a
   parameter object, not taken). Note 1 applied (test requires non-empty sections); notes 2 (refusal detail not
   pinned) and 3 (`report.py:290` annotation) for the docs/typing pass. `git worktree` s19-g4 removed.
+- **2026-11-15, G1 lane O run 1 merged.** Review R-W3-G1O-1 (reviewer, Opus): merge. Notes for later steps:
+  `splits.py::_check_equilibrium_reads` (cognitive 17, nesting 4) can be split by `rule.vapour_only` into two
+  single-loop helpers without merging literal sites (K2); `coupling.py:385` unpacks `_Experiments` by position with
+  two adjacent `str | None` fields: C3 replaces the call site, else read the fields by name.
