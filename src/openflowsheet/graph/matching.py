@@ -18,7 +18,7 @@ flowsheet order and fixes nothing that the declaration order does not already fi
 
 from __future__ import annotations
 
-from collections.abc import Mapping, Sequence
+from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
 
 __all__ = [
@@ -164,35 +164,12 @@ def dulmage_mendelsohn(
         for column in references[row]:
             by_column[column].append(row)
 
-    over_rows: set[str] = set()
-    over_cols: set[str] = set()
-    stack = [row for row in row_ids if row not in row_mate]
-    over_rows.update(stack)
-    while stack:
-        row = stack.pop()
-        for column in references[row]:
-            if column in over_cols:
-                continue
-            over_cols.add(column)
-            mate = pairs.get(column)
-            if mate is not None and mate not in over_rows:
-                over_rows.add(mate)
-                stack.append(mate)
-
-    under_cols: set[str] = set()
-    under_rows: set[str] = set()
-    columns = [column for column in column_ids if column not in pairs]
-    under_cols.update(columns)
-    while columns:
-        column = columns.pop()
-        for row in by_column[column]:
-            if row in under_rows:
-                continue
-            under_rows.add(row)
-            mate = row_mate.get(row)
-            if mate is not None and mate not in under_cols:
-                under_cols.add(mate)
-                columns.append(mate)
+    over_rows, over_cols = _alternating_reach(
+        [row for row in row_ids if row not in row_mate], references, pairs
+    )
+    under_cols, under_rows = _alternating_reach(
+        [column for column in column_ids if column not in pairs], by_column, row_mate
+    )
 
     def ordered(names: Sequence[str], chosen: set[str]) -> tuple[str, ...]:
         return tuple(name for name in names if name in chosen)
@@ -206,3 +183,30 @@ def dulmage_mendelsohn(
         square_cols=ordered(column_ids, set(column_ids) - over_cols - under_cols),
         structural_rank=len(pairs),
     )
+
+
+def _alternating_reach(
+    starts: Sequence[str], neighbours: Mapping[str, Iterable[str]], mate: Mapping[str, str]
+) -> tuple[set[str], set[str]]:
+    """The vertices reachable from the unmatched `starts` by alternating paths (§6.3).
+
+    A path leaves a start-side vertex by any of its `neighbours` and comes back by that
+    neighbour's `mate`, when it has one. Returns the reached start-side vertices (the starts
+    included) and the reached other-side vertices. For `R+`/`C+` the starts are the unmatched
+    rows; the mirror image, from the unmatched columns, gives `C-`/`R-`.
+    """
+    start_side: set[str] = set()
+    other_side: set[str] = set()
+    stack = list(starts)
+    start_side.update(stack)
+    while stack:
+        vertex = stack.pop()
+        for neighbour in neighbours[vertex]:
+            if neighbour in other_side:
+                continue
+            other_side.add(neighbour)
+            matched = mate.get(neighbour)
+            if matched is not None and matched not in start_side:
+                start_side.add(matched)
+                stack.append(matched)
+    return start_side, other_side
