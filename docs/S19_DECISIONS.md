@@ -398,3 +398,9 @@
   `duty`". Recorder evidence is sound but a lower bound (keyword arguments not recorded; by-name imports before
   pytest_configure bypass the wrapper; opaque objects as `<Type>`). W4 twin: column_acceptance.acceptance_failures
   and cascade_solve's, message for message.
+- **2026-11-15, W3 G5 run 3 review R-W3-G5-3 (reviewer, Opus): merge after fixes.** Fix 2 and note 3 applied
+  (72481f3b, docstrings, gated no-gain). Fix 1 (`_Routing` built by keyword) raised table.py's debt 21.4 -> 22.0 and
+  is deferred to W4, where the routing becomes the routing phase's result. `_Routing` accepted as a parameter
+  object. W4 item: one verify parameter object (provider, context, tolerances, note, state, components) defined in
+  the shared layer while merging the split/revision-check twins in gamma_phi_units.py and pr_c1.py (public names),
+  reconciled with `Unit`'s fields.
