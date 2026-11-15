@@ -36,7 +36,8 @@ fi
 # t07_v17_reference f6 fails under two concurrent suites (G-SELF 2026-11-14: 333 s against 300 s), so gates deselect
 # it; it runs alone on wp/S19 before each merge into main, and CI runs it on both legs.
 # Temporary files on disk, not the RAM-backed /tmp (2026-11-15: two gates and a map build filled /tmp, ENOSPC).
-mkdir -p "$GC/codehealth/tmp-gates" && export TMPDIR="$GC/codehealth/tmp-gates"
+# Outside every repository tree: tests check that their temporary projects cannot see the repo (CLAUDE.md, x05).
+mkdir -p "$HOME/.cache/openflowsheet/tmp-gates" && export TMPDIR="$HOME/.cache/openflowsheet/tmp-gates"
 # 8 xdist workers per gate with two slots on 16 cores (load 40 to 65 at 12 each pushed tests past the 900 s
 # per-test limit); read by the tests tier of .codehealth/config.toml from 2026-11-15 on.
 export S19_GATE_WORKERS="${S19_GATE_WORKERS:-8}"

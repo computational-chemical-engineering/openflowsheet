@@ -421,3 +421,8 @@
   generator checks): environment failures, re-gated unchanged. The tests tier takes its worker count from
   `S19_GATE_WORKERS` (gate.sh sets 8 with two slots); lanes pick up the config at their next base. The 900 s
   limit stays. Main lever: the test map at a recent base (per-step selection instead of the full suite).
+- **2026-11-15, TMPDIR moved outside the repository.** The in-repo TMPDIR (`.git/codehealth/tmp-gates`, 18:42) made
+  tests fail that check their temporary projects cannot see the repository (HarnessError "CLAUDE.md is visible",
+  x05 stray/installed-outside checks): gates from 18:42 until this commit that failed on those are environment
+  failures, re-gated unchanged. TMPDIR is now `~/.cache/openflowsheet/tmp-gates`; the map build restarted the same
+  way.
