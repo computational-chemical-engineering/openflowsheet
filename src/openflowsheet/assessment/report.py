@@ -21,7 +21,7 @@ one state give byte-identical canonical reports without it (A39).
 from __future__ import annotations
 
 import datetime
-from collections.abc import Mapping, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from typing import TYPE_CHECKING, Any, Final
 
 from openflowsheet import __version__
@@ -147,31 +147,17 @@ def _estimate_class(items: Sequence[Mapping[str, Any]]) -> int | None:
 def report_body(
     program: AssessmentProgram, x: Mapping[str, float], *, state_sha256: str, uncertainty: bool
 ) -> dict[str, Any]:
-    """The report without `provenance` (the part A39 compares byte for byte)."""
+    """The report without `provenance` (the part A39 compares byte for byte). The values at `x`
+    come from `_checked_values`; when it returns a refusal instead, the refusal joins `refusals` and
+    every output is `null`."""
     refusals: list[Refusal] = list(program.refusals)
     withheld: dict[str, str] = dict(program.unavailable)
-    values: Mapping[str, float] | None
-    try:
-        # The `derived` section reports each undefined ratio below; the guard would null them all.
-        evaluated = program.evaluate(x, domain_guard=False)
-    except TwinEvaluationError as error:
-        refusals.append(Refusal("ASSESSMENT_EVALUATION_FAILED", "", str(error)))
-        values = None
+    values: Mapping[str, float] | None = None
+    checked = _checked_values(program, x)
+    if isinstance(checked, Refusal):
+        refusals.append(checked)
     else:
-        assert isinstance(evaluated, Mapping)
-        values = evaluated
-    if values is not None:
-        tau = _feasibility_tolerance()
-        violated = [
-            n
-            for n in program.admissibility_ids
-            if values[n] < -tau and n not in program.domain_rows
-        ]
-        if violated:
-            refusals.append(
-                Refusal("ASSESSMENT_REGIME_INADMISSIBLE", ",".join(violated), f"tau_feas={tau}")
-            )
-            values = None
+        values = checked
     plans = program.plans
     sections = {
         name: plan.section(values if values is not None else {})
@@ -191,15 +177,7 @@ def report_body(
         return float(values[output_id])
 
     reported = [n for n in program.output_ids if n not in program.admissibility_ids]
-    groups: dict[str, dict[str, float | None]] = {
-        g: {} for g in ("capex", "opex", "annual", "derived", "inventory", "impacts")
-    }
-    for output_id in sorted({*reported, *withheld}):
-        catalogued = classify(output_id)
-        assert catalogued is not None, output_id
-        group = _GROUP.get(catalogued.name)
-        if group is not None:
-            groups[group][output_id] = value(output_id)
+    groups = _groups(reported, withheld, value)
     cost = sections.get("cost", {})
     items: list[dict[str, Any]] = list(cost.get("items", ()))
     for item in items:
@@ -243,12 +221,7 @@ def report_body(
         status_unc |= {"linear_interval": intervals, "rss_sigma": sigmas, "parameters": parameters}
         refusals.extend(more)
     built = [n for n in reported if value(n) is not None]
-    if values is None or not built:
-        status = "REFUSED"
-    elif refusals or withheld:
-        status = "PARTIAL"
-    else:
-        status = "COMPLETE"
+    status = _status(values, built, refusals, withheld)
     lca = sections.get("lca", {})
     defaulted = [d for s in sections.values() for d in s.get("defaulted_inputs", ())]
     return {
@@ -281,6 +254,60 @@ def report_body(
         "excluded": list(cost.get("excluded", ())),
         "statement": aace.STATEMENT,
     }
+
+
+def _checked_values(
+    program: AssessmentProgram, x: Mapping[str, float]
+) -> Mapping[str, float] | Refusal:
+    """The program's outputs at `x` on the float path, or the one refusal that withholds them all:
+    `ASSESSMENT_EVALUATION_FAILED` when the evaluation raises `TwinEvaluationError`,
+    `ASSESSMENT_REGIME_INADMISSIBLE` when an admissibility row that is not a domain row is below
+    `-tau_feas`."""
+    try:
+        # The report's `derived` section reports each undefined ratio; the guard would null all.
+        evaluated = program.evaluate(x, domain_guard=False)
+    except TwinEvaluationError as error:
+        return Refusal("ASSESSMENT_EVALUATION_FAILED", "", str(error))
+    assert isinstance(evaluated, Mapping)
+    tau = _feasibility_tolerance()
+    violated = [
+        n for n in program.admissibility_ids if evaluated[n] < -tau and n not in program.domain_rows
+    ]
+    if violated:
+        return Refusal("ASSESSMENT_REGIME_INADMISSIBLE", ",".join(violated), f"tau_feas={tau}")
+    return evaluated
+
+
+def _groups(
+    reported: Sequence[str], withheld: Mapping[str, str], value: Callable[[str], float | None]
+) -> dict[str, dict[str, float | None]]:
+    """Every reported or withheld output in its report group (§4.11), by sorted id, with its
+    `value`; an output whose catalogue entry has no group (`size`, `adm`) is left out."""
+    groups: dict[str, dict[str, float | None]] = {
+        g: {} for g in ("capex", "opex", "annual", "derived", "inventory", "impacts")
+    }
+    for output_id in sorted({*reported, *withheld}):
+        catalogued = classify(output_id)
+        assert catalogued is not None, output_id
+        group = _GROUP.get(catalogued.name)
+        if group is not None:
+            groups[group][output_id] = value(output_id)
+    return groups
+
+
+def _status(
+    values: Mapping[str, float] | None,
+    built: Sequence[str],
+    refusals: Sequence[Refusal],
+    withheld: Mapping[str, str],
+) -> str:
+    """The report's status: `REFUSED` without values or without a built output, else `PARTIAL`
+    with a refusal or a withheld output, else `COMPLETE`."""
+    if values is None or not built:
+        return "REFUSED"
+    if refusals or withheld:
+        return "PARTIAL"
+    return "COMPLETE"
 
 
 def _listed(program: AssessmentProgram, group: Mapping[str, float | None]) -> list[dict[str, Any]]:
