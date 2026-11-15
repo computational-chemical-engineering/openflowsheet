@@ -35,9 +35,9 @@ from openflowsheet.application.types import (
     Edit,
     JobRequest,
     SolveBody,
-    schema_errors,
 )
 from openflowsheet.canonical import canonical_json, document_sha256
+from openflowsheet.schema_check import schema_errors
 
 NOMINAL = "SYN-001-nominal"
 PAGE_SCHEMA = "application-results.schema.json#/$defs/audit_page"

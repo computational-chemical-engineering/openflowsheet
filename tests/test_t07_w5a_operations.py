@@ -53,15 +53,10 @@ from openflowsheet.application.projection import (
     bound_text,
     is_forbidden,
 )
-from openflowsheet.application.types import (
-    RIGHTS,
-    JobRequest,
-    SolveBody,
-    schema_errors,
-    validate_inline,
-)
+from openflowsheet.application.types import RIGHTS, JobRequest, SolveBody, validate_inline
 from openflowsheet.canonical import canonical_json
 from openflowsheet.run.bundle import ARTIFACT_DIR
+from openflowsheet.schema_check import schema_errors
 
 NOMINAL = "SYN-001-nominal"
 ALL = ("python", "cli", "http", "mcp")

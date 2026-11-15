@@ -25,11 +25,12 @@ from openflowsheet.application.revision_run import (
     route_structure,
     select_route,
 )
-from openflowsheet.application.types import ApiError, Budgets, Limits, SolveBody, schema_errors
+from openflowsheet.application.types import ApiError, Budgets, Limits, SolveBody
 from openflowsheet.application.validation import structural_refusal, validate
 from openflowsheet.orchestrator.execution import ExecutionPlan
 from openflowsheet.orchestrator.revision import plan_revision
 from openflowsheet.run.manifest import policy_sha256
+from openflowsheet.schema_check import schema_errors
 from openflowsheet.verify.certificate import REGISTERED_POLICY_ID, CheckPolicy
 from openflowsheet.verify.checks import KIND_TOLERANCE
 

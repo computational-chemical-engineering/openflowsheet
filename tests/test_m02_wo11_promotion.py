@@ -44,11 +44,12 @@ from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.operations import dispatch
 from openflowsheet.application.replacement import FACETS, check_replacement, replacements
 from openflowsheet.application.revision_binding import ModelSignature
-from openflowsheet.application.types import Change, Edit, TransactionResult, schema_errors
+from openflowsheet.application.types import Change, Edit, TransactionResult
 from openflowsheet.canonical import document_sha256
 from openflowsheet.models import Port
 from openflowsheet.models.c1.reactor import PORTS
 from openflowsheet.models.revision_flowsheet import RevisionError
+from openflowsheet.schema_check import schema_errors
 
 LOOP_PATH = REPO_ROOT / "benchmarks" / "m02" / "c1-loop-standin.json"
 STANDIN = variants.registered_variant("standin-x025-v1")

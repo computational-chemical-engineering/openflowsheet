@@ -59,12 +59,12 @@ from openflowsheet.application.revision_run import (
     run_revision_session,
     select_route,
 )
-from openflowsheet.application.types import schema_errors
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.models.c1.boundary import TubeInlet, TubeOutlet
 from openflowsheet.orchestrator.coupling import UnitInlet
 from openflowsheet.run.bundle import read_artifact, read_manifest
 from openflowsheet.run.compare import CURRENT_POLICY_ID
+from openflowsheet.schema_check import schema_errors
 from openflowsheet.thermo.pr_c1 import COMPONENTS, PrC1Provider
 from openflowsheet.verify.certificate import CheckPolicy
 from openflowsheet.verify.failure import OUTCOME_ACTIONS

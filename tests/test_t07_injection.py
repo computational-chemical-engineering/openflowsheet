@@ -61,7 +61,8 @@ from openflowsheet.application.authz import grant
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.operations import OPERATIONS, dispatch
 from openflowsheet.application.store import POLICY_NAME
-from openflowsheet.application.types import RIGHTS, CapabilityReference, schema_errors
+from openflowsheet.application.types import RIGHTS, CapabilityReference
+from openflowsheet.schema_check import schema_errors
 
 NOMINAL = "SYN-001-nominal"
 PROJECT_ID = "t07-injection"

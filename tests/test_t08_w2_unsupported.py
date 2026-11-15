@@ -39,13 +39,13 @@ from openflowsheet.application.contract import ApplicationError
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.operations import OPERATIONS
 from openflowsheet.application.revision_binding import bind_revision_flowsheet
-from openflowsheet.application.types import schema_errors
 from openflowsheet.application.validation import validate
 from openflowsheet.models.revision_flowsheet import (
     RevisionError,
     canonical_components,
     component_basis,
 )
+from openflowsheet.schema_check import schema_errors
 from openflowsheet.thermo import pr_c1
 
 ROOT = Path(__file__).resolve().parents[1]

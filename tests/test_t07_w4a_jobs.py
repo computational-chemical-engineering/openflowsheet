@@ -56,11 +56,11 @@ from openflowsheet.application.types import (
     ReproduceBody,
     RunResult,
     SolveBody,
-    schema_errors,
 )
 from openflowsheet.canonical import directory_hash, file_sha256
 from openflowsheet.run.bundle import read_artifact, read_manifest, verify_bundle
 from openflowsheet.run.manifest import policy_sha256
+from openflowsheet.schema_check import schema_errors
 from openflowsheet.verify.certificate import CheckPolicy
 from openflowsheet.verify.checks import KIND_TOLERANCE, VerifierError
 

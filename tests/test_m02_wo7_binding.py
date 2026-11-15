@@ -199,7 +199,8 @@ def test_g6a_through_solve_admission() -> None:
     `revision_unsupported`, which only a READY revision without a route reaches (build log
     D27)."""
     from openflowsheet.application.admission import admit_solve
-    from openflowsheet.application.types import ApiError, Budgets, Limits, SolveBody, schema_errors
+    from openflowsheet.application.types import ApiError, Budgets, Limits, SolveBody
+    from openflowsheet.schema_check import schema_errors
 
     pinned = variants.registry()[REAL]
     document = _through(version=REAL, artifact_ref=_flipped(pinned))

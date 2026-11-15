@@ -58,10 +58,10 @@ from openflowsheet.application.types import (
     TransactionResult,
     normalize_job_request,
     request_sha256,
-    schema_errors,
     validate_document,
 )
 from openflowsheet.application.validation import validate
+from openflowsheet.schema_check import schema_errors
 
 T07_SCHEMAS = (
     "api-error",

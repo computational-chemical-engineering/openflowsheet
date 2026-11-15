@@ -37,8 +37,9 @@ from openflowsheet.application.authz import (
 from openflowsheet.application.cli import main
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.store import DATABASE_NAME, POLICY_NAME, StoreError
-from openflowsheet.application.types import Change, ProjectPolicy, schema_errors
+from openflowsheet.application.types import Change, ProjectPolicy
 from openflowsheet.canonical import document_sha256
+from openflowsheet.schema_check import schema_errors
 
 REFERENCE: dict[str, Any] = json.loads(
     (REPO_ROOT / "docs" / "derivations" / "scripts" / "x04_reference.json").read_text("utf-8")

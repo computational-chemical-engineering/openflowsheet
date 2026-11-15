@@ -32,9 +32,9 @@ from openflowsheet.application.types import (
     SolvePath,
     VerificationStatus,
     _replay_report_build,
-    schema_errors,
 )
 from openflowsheet.run.replay import ReplayReport
+from openflowsheet.schema_check import schema_errors
 
 JOB_RESULT = "job.schema.json#/$defs/job_result"
 FIXTURES = REPO_ROOT / "tests" / "fixtures" / "schemas"

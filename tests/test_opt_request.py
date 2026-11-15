@@ -27,8 +27,8 @@ from openflowsheet.application import validation
 from openflowsheet.application.contract import ApplicationError
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.revision_routes import REVISION_ROUTES
-from openflowsheet.application.types import schema_errors
 from openflowsheet.canonical import canonical_json, document_sha256
+from openflowsheet.schema_check import schema_errors
 from openflowsheet.studies.nlp import closure
 from openflowsheet.studies.nlp import request as request_module
 from openflowsheet.studies.nlp.closure import SolverAvailability, audited_solver

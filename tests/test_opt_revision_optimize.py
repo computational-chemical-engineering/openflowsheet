@@ -17,8 +17,8 @@ from t07_corpus import A02_FILES, CORPUS
 from openflowsheet.application.policies import DEFAULT_POLICY_ID, resolve_policy
 from openflowsheet.application.revision_routes import REVISION_ROUTES
 from openflowsheet.application.revision_run import select_route
-from openflowsheet.application.types import schema_errors
 from openflowsheet.canonical import canonical_json, document_sha256
+from openflowsheet.schema_check import schema_errors
 from openflowsheet.studies.nlp.closure import SolverAvailability
 from openflowsheet.studies.nlp.host import CertifiedPoint
 from openflowsheet.studies.nlp.revision import (

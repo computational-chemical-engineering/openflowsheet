@@ -33,9 +33,9 @@ from openflowsheet.application.types import (
     Job,
     JobEvent,
     published_schemas,
-    schema_errors,
 )
 from openflowsheet.canonical import canonical_json
+from openflowsheet.schema_check import schema_errors
 
 FIXTURES = REPO_ROOT / "tests" / "fixtures" / "schemas"
 EVENT_ID = SCHEMA_BASE + "job-event.schema.json"

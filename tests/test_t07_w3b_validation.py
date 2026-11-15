@@ -46,7 +46,6 @@ from openflowsheet.application.revision_binding import RevisionBinding, bind_rev
 from openflowsheet.application.revision_run import NoRoute, Route, legacy_plan, select_route
 from openflowsheet.application.revisions import Revision
 from openflowsheet.application.transactions import Application, ChangeSet, Edit
-from openflowsheet.application.types import schema_errors
 from openflowsheet.application.validation import (
     FALLBACK_PRODUCED_BY,
     MISSING_REVISION_ID,
@@ -60,6 +59,7 @@ from openflowsheet.application.validation import (
 from openflowsheet.graph.analysis import analyse
 from openflowsheet.orchestrator.execution import ExecutionPlan, declaration_identity
 from openflowsheet.orchestrator.revision import plan_revision
+from openflowsheet.schema_check import schema_errors
 
 SCHEMA = "validation-report.schema.json"
 STRUCTURAL = ("STR-01", "STR-02", "STR-03", "STR-04", "STR-05")

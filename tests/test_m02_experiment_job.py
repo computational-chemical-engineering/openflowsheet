@@ -32,8 +32,8 @@ from openflowsheet.application.contract import ApplicationError
 from openflowsheet.application.jobs.executor import ProcessExecutor
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.operations import dispatch
-from openflowsheet.application.types import schema_errors
 from openflowsheet.models.c1 import COMPONENTS
+from openflowsheet.schema_check import schema_errors
 
 STANDIN = variants.registered_variant("standin-x025-v1")
 REAL = variants.registered_variant("pymrm-6089593-g2-nz800-s123-v1")

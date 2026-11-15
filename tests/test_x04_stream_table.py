@@ -47,9 +47,10 @@ from openflowsheet.application.contract import ApplicationError
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.operations import OPERATIONS, dispatch
 from openflowsheet.application.store import DATABASE_NAME
-from openflowsheet.application.types import Change, schema_errors
+from openflowsheet.application.types import Change
 from openflowsheet.canonical import canonical_json, document_sha256
 from openflowsheet.messages.render import render_error
+from openflowsheet.schema_check import schema_errors
 from openflowsheet.units.display import DisplayUnits, display_item, parse_display_units
 
 RANKINE = REPO_ROOT / "examples" / "rankine-cycle.changeset.json"

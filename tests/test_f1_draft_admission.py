@@ -33,7 +33,6 @@ from openflowsheet.application.contract import ApplicationError
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.operations import dispatch
 from openflowsheet.application.revision_binding import MODEL_BASES, bind_revision_flowsheet
-from openflowsheet.application.types import schema_errors
 from openflowsheet.canonical import canonical_json
 from openflowsheet.models.revision_flowsheet import (
     COOLPROP_RECORDS,
@@ -42,6 +41,7 @@ from openflowsheet.models.revision_flowsheet import (
     component_basis,
 )
 from openflowsheet.registry import default_registry, usage
+from openflowsheet.schema_check import schema_errors
 from openflowsheet.thermo import pr_c1
 
 REPO_ROOT = Path(__file__).resolve().parent.parent

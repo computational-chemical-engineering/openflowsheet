@@ -24,7 +24,7 @@ from test_e01_b_lca import P4_DOC  # noqa: E402
 
 from openflowsheet.application import validation  # noqa: E402
 from openflowsheet.application.revision_routes import REVISION_ROUTES
-from openflowsheet.application.types import schema_errors  # noqa: E402
+from openflowsheet.schema_check import schema_errors  # noqa: E402
 from openflowsheet.studies.nlp.closure import SolverAvailability  # noqa: E402
 from openflowsheet.studies.nlp.request import static_readiness  # noqa: E402
 

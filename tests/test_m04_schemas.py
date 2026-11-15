@@ -22,8 +22,9 @@ import pytest
 from conftest import REPO_ROOT, load_json, load_yaml
 from jsonschema import Draft202012Validator
 
-from openflowsheet.application.types import SCHEMA_BASE, published_schemas, schema_errors
+from openflowsheet.application.types import SCHEMA_BASE, published_schemas
 from openflowsheet.canonical import document_sha256
+from openflowsheet.schema_check import schema_errors
 from openflowsheet.studies.surrogate.manifest import check_manifest
 
 sys.path.insert(0, str(REPO_ROOT / "scripts"))

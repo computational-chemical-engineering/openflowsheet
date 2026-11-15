@@ -35,9 +35,9 @@ from openflowsheet.application.types import (
     ArtifactRef,
     CapabilityReference,
     JobEvent,
-    schema_errors,
 )
 from openflowsheet.canonical import canonical_json
+from openflowsheet.schema_check import schema_errors
 
 Outcome = tuple[bool, Any]  # (is an error, the response document, bytes, or ApiError document)
 ALL = frozenset(OPERATIONS)

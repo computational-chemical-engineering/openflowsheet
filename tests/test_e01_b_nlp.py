@@ -28,7 +28,6 @@ import numpy as np
 import pytest
 from m03_support import flowsheet, nlp_formulation
 
-from openflowsheet.application.types import schema_errors
 from openflowsheet.assessment.program import (
     AssessmentProgram,
     BuildContext,
@@ -49,6 +48,7 @@ from openflowsheet.assessment.regimes import (
 from openflowsheet.assessment.spec import load_assessment
 from openflowsheet.assessment.views import view_of
 from openflowsheet.compile.casadi_backend import TwinEvaluationError
+from openflowsheet.schema_check import schema_errors
 from openflowsheet.studies.nlp.closure import (
     REGIME_NOTE,
     Readiness,

@@ -35,7 +35,6 @@ from test_e01_a_contributor_c1 import C1_DOC, _c1  # noqa: E402
 
 from openflowsheet.application.policies import T06_REVISION_V2  # noqa: E402
 from openflowsheet.application.revision_binding import bind_revision_flowsheet  # noqa: E402
-from openflowsheet.application.types import schema_errors  # noqa: E402
 from openflowsheet.assessment.cost import uncertainty as aace  # noqa: E402
 from openflowsheet.assessment.cost.contributor import CostContributor  # noqa: E402
 from openflowsheet.assessment.cost.derived import DerivedContributor  # noqa: E402
@@ -54,6 +53,7 @@ from openflowsheet.compile.casadi_backend import TwinEvaluationError  # noqa: E4
 from openflowsheet.orchestrator.executor import execute_plan  # noqa: E402
 from openflowsheet.orchestrator.revision import plan_revision  # noqa: E402
 from openflowsheet.run.compare import _is_float_digest_v2  # noqa: E402
+from openflowsheet.schema_check import schema_errors  # noqa: E402
 
 FIXTURES = Path(__file__).resolve().parent / "fixtures" / "schemas" / "assessment_report"
 REPO = Path(__file__).resolve().parents[1]
