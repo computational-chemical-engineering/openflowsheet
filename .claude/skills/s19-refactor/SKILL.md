@@ -48,7 +48,7 @@ Position, numbers and rules live in files, not here. A fresh session reads, in o
 At each milestone (a lane merged and the next runs briefed, or context above about 100k), with no background agent
 of this session running (the gate runner is detached and survives): rewrite `docs/S19_STATE.md` (position, next
 action, open items), commit, then run
-`<git-common-dir>/codehealth/tools/self_reset.sh <this tmux pane> "Resume S19: invoke the s19-refactor skill."`
+`<git-common-dir>/codehealth/tools/self_reset.sh %29 "Resume S19: invoke the s19-refactor skill."` (this session: tmux pane `%29`, session `OpenFlowsheet:0.0`)
 and end the turn. The new context starts from this file.
 
 ## Merging a phase into main
