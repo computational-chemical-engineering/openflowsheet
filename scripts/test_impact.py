@@ -939,13 +939,17 @@ def run(
     workers: int = 0,
     since: str | None = None,
     by_file: bool = False,
+    full: bool = False,
 ) -> int:
     if any(
         arg in ("-n", "--numprocesses") or arg.startswith(("-n", "--numprocesses="))
         for arg in extra
     ):
         raise SystemExit("run takes workers as --workers N, which keeps XDIST_SERIAL serial (B-12)")
-    selection = select(base, map_dir, repo, since, by_file).whole_files()
+    if full:  # a merge check: the suite the step-relative selections stand on
+        selection = Selection(fallback="--full")
+    else:
+        selection = select(base, map_dir, repo, since, by_file).whole_files()
     sha = git("rev-parse", "--short", "HEAD", cwd=repo).strip()
     log = log or Path(os.environ.get("TMPDIR", "/tmp")) / f"test-impact-{sha}.log"
     command = [sys.executable, "-m", "pytest", "-q", "-p", "no:cacheprovider", "-rs", *extra]
@@ -1045,6 +1049,9 @@ def main(argv: list[str] | None = None) -> int:
     )
     run_parser.add_argument("--log", type=Path)
     run_parser.add_argument(
+        "--full", action="store_true", help="run the full suite, selecting nothing (a merge check)"
+    )
+    run_parser.add_argument(
         "--workers", type=int, default=0, help="pytest-xdist workers (XDIST_SERIAL runs serially)"
     )
     run_parser.add_argument("pytest_args", nargs="*", help="after --: extra pytest arguments")
@@ -1063,6 +1070,7 @@ def main(argv: list[str] | None = None) -> int:
             args.workers,
             args.since,
             args.import_time_by_file,
+            args.full,
         )
     if args.lines:
         selection = select_lines(args.lines, args.base, args.map, args.repo or ROOT)

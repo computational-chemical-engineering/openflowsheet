@@ -10,6 +10,17 @@ State in <git-common-dir>/codehealth/queue/: pending/, running/, done/<label>.js
       commits base..head gated as one. --base is gate.sh's sha argument: the last accepted commit,
       or for --mode revert the rejected commit (HEAD exactly undoes it). --reason is required for
       no-gain, restructure, revert and --rerun-of: it goes to `codehealth log` where log needs one.
+  enqueue --snapshot [--head SHA] ... (as above)
+      The job gates the commit --head (default: W's HEAD) in a scratch worktree of its own, so W
+      may move on at once and need not be clean: commit a step, enqueue it with --base at the
+      previous step's commit, carry on with the next step. Jobs of one worktree run in queue
+      order. When a snapshot job fails, the pending snapshot jobs of that worktree whose head
+      descends from the failed commit are finished as SKIPPED, not gated: the first failing step
+      of a chain is the one reported FAIL.
+  enqueue --worktree W --base SHA --mode merge-check --label L [--head SHA] [--snapshot]
+      The check before a lane merges: the full suite (S19_GATE_FULL=1, read by the tests tier),
+      F0 and the MCP digest over base..head, no gain check, nothing written to the run log. It
+      closes the holes of the step-relative selection (docs/test-impact.md).
   run [--detach] [--log-out JSONL]
       The runner: FIFO, at most SLOTS jobs at a time, one job per worktree at a time. It refuses a
       job whose worktree HEAD or tree changed since enqueue, runs gate.sh in the worktree, then
@@ -17,9 +28,11 @@ State in <git-common-dir>/codehealth/queue/: pending/, running/, done/<label>.js
       starts it in its own session (log runner.log, PID runner.pid). Stop it with
       `kill "$(cat <queue>/runner.pid)"`: running gates are interrupted and reported, not logged.
       --log-out sends the log records to another file than codehealth's default (a dry run).
-  wait [--since N]
+  wait [--since N] [--idle W]
       Blocks until results.log has more than N lines (default: its count now), prints the new
-      lines and `COUNT <n>`, exits 0. Run it in the background to wake once per result.
+      lines and `COUNT <n>`, exits 0. Run it in the background to wake once per result. With
+      --idle W it also waits until no job of worktree W is pending or running: one wake per
+      delivered chain.
   status
       Runner, pending, running and the last results, one screen.
 """
@@ -44,7 +57,8 @@ HERE = Path(__file__).resolve().parent
 GATE = HERE / "gate.sh"
 CAMPAIGN = "s19"
 SLOTS = 2  # gate.sh holds one of the clone's two gate slots per run
-MODES = ("step", "no-gain", "restructure", "revert")
+MODES = ("step", "no-gain", "restructure", "revert", "merge-check")
+SCRATCH = "gq-"  # scratch worktrees of snapshot jobs: <repo>/.claude/worktrees/gq-<label>
 LABEL = re.compile(r"[A-Za-z0-9._-]+")
 GATE_LINE = re.compile(r"^GATE \S+ rc=(-?\d+) \| (.*) \| json (\S+) \| log (\S+)$")
 LOG_LINE = re.compile(r"^LOG \S+ step (\d+) (\S+) ")
@@ -93,6 +107,13 @@ def worktree_state(worktree: Path) -> tuple[str, str]:
     return git("rev-parse", "HEAD", cwd=worktree), git("status", "--porcelain", cwd=worktree)
 
 
+def is_ancestor(older: str, newer: str, cwd: Path) -> bool:
+    done = subprocess.run(
+        ["git", "merge-base", "--is-ancestor", older, newer], cwd=cwd, capture_output=True
+    )
+    return done.returncode == 0
+
+
 def labels_in_use() -> set[str]:
     return {
         json.loads(p.read_text())["label"] for d in (PENDING, RUNNING) for p in d.glob("*.json")
@@ -130,14 +151,25 @@ def enqueue(a: argparse.Namespace) -> int:
         raise SystemExit("--mode restructure needs --plan")
     if a.plan and a.mode != "restructure":
         raise SystemExit("--plan is only for --mode restructure")
+    if a.mode == "merge-check":
+        if a.rerun_of is not None:
+            raise SystemExit("--mode merge-check is not logged: no --rerun-of")
+    elif not (a.target and a.recipe and a.model):
+        raise SystemExit(f"--mode {a.mode} needs --target, --recipe and --model")
+    if a.head and not a.snapshot:
+        raise SystemExit("--head needs --snapshot (a job without it gates the worktree itself)")
     if not a.reason and (a.mode in ("no-gain", "restructure", "revert") or a.rerun_of is not None):
         raise SystemExit(
             f"--mode {a.mode}{' with --rerun-of' if a.rerun_of is not None else ''} needs --reason"
         )
     head, dirty = worktree_state(worktree)
-    if dirty:
+    if a.snapshot:
+        head = git("rev-parse", "--verify", f"{a.head or 'HEAD'}^{{commit}}", cwd=worktree)
+    elif dirty:
         raise SystemExit(f"{worktree} is not clean:\n{dirty}")
     base = git("rev-parse", "--verify", f"{a.base}^{{commit}}", cwd=worktree)
+    if a.snapshot and not is_ancestor(base, head, worktree):
+        raise SystemExit(f"--base {base[:10]} is not an ancestor of the head {head[:10]}")
     with locked():
         if a.label in labels_in_use():
             raise SystemExit(f"label {a.label} is already queued, running or done")
@@ -150,7 +182,8 @@ def enqueue(a: argparse.Namespace) -> int:
             "worktree": str(worktree),
             "base": base,
             "head": head,
-            "head_tree": git("rev-parse", "HEAD^{tree}", cwd=worktree),
+            "head_tree": git("rev-parse", f"{head}^{{tree}}", cwd=worktree),
+            "snapshot": bool(a.snapshot),
             "mode": a.mode,
             "plan": a.plan,
             "target": a.target,
@@ -177,6 +210,8 @@ def gate_command(job: dict) -> list[str]:
         return ["bash", str(GATE), base, label]
     if mode == "restructure":
         return ["bash", str(GATE), "--restructure", base, job["plan"], label]
+    if mode == "merge-check":  # behaviour tiers over base..head, the tests tier on the full suite
+        return ["bash", str(GATE), "--no-gain", base, label]
     return ["bash", str(GATE), f"--{mode}", base, label]
 
 
@@ -221,6 +256,7 @@ class Runner:
         self.lock = threading.Lock()
         self.threads: dict[str, threading.Thread] = {}  # worktree -> its job's thread
         self.gates: dict[str, subprocess.Popen] = {}
+        self.failed: dict[str, list[str]] = {}  # worktree -> heads of its failed snapshot jobs
         self.stopping = False
 
     def say(self, line: str) -> None:
@@ -247,7 +283,25 @@ class Runner:
             )
 
     def _job(self, job: dict, running: Path) -> None:
-        worktree = Path(job["worktree"])
+        if not job.get("snapshot"):
+            self._gate(job, running, Path(job["worktree"]))
+            return
+        scratch = COMMON.parent / ".claude" / "worktrees" / f"{SCRATCH}{job['label']}"
+        try:
+            git("worktree", "add", "--detach", str(scratch), job["head"], cwd=COMMON.parent)
+        except SystemExit as error:
+            self.finish(job, running, {"status": "refused", "why": str(error)}, f"REFUSED {error}")
+            return
+        try:
+            self._gate(job, running, scratch)
+        finally:
+            subprocess.run(
+                ["git", "worktree", "remove", "--force", str(scratch)],
+                cwd=COMMON.parent,
+                capture_output=True,
+            )
+
+    def _gate(self, job: dict, running: Path, worktree: Path) -> None:
         started = now()
         try:
             head, dirty = worktree_state(worktree)
@@ -267,9 +321,13 @@ class Runner:
                 f"REFUSED {why}",
             )
             return
+        environment = dict(os.environ)
+        if job["mode"] == "merge-check":
+            environment["S19_GATE_FULL"] = "1"
         gate = subprocess.Popen(
             gate_command(job),
             cwd=worktree,
+            env=environment,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             text=True,
@@ -295,6 +353,7 @@ class Runner:
             return
         if match is None or not Path(match.group(3)).is_file():
             tail = " / ".join(lines[-3:])
+            self.fail(job)
             self.finish(
                 job,
                 running,
@@ -306,6 +365,18 @@ class Runner:
         report = json.loads(gate_json.read_text())
         failed = [c["name"] for c in report["checks"] if not c["ok"]]
         outcome |= {"gate_json": str(gate_json), "gate_log": gate_log, "failed_checks": failed}
+        if gate.returncode != 0 or failed:
+            self.fail(job)
+        if job["mode"] == "merge-check":  # not a step: nothing for the run log
+            verdict = "PASS" if gate.returncode == 0 and not failed else f"FAIL {','.join(failed)}"
+            outcome["status"] = "checked"
+            self.finish(
+                job,
+                running,
+                outcome,
+                f"merge-check {verdict} rc={gate.returncode} | {match.group(2)}",
+            )
+            return
         moved = git("rev-parse", "HEAD", cwd=worktree) != job["head"]
         logged = subprocess.run(
             log_command(job, gate_json, report, moved, self.log_out),
@@ -331,6 +402,22 @@ class Runner:
             outcome["status"] = "logged"
             summary = f"{verdict} rc={gate.returncode} | step {step.group(1)} {step.group(2)}"
         self.finish(job, running, outcome, f"{job['mode']} {summary} | {match.group(2)}")
+
+    def fail(self, job: dict) -> None:
+        if job.get("snapshot"):
+            with self.lock:
+                self.failed.setdefault(job["worktree"], []).append(job["head"])
+
+    def skipped(self, job: dict) -> str | None:
+        """The failed commit a pending snapshot job is built on, if any."""
+        if not job.get("snapshot"):
+            return None
+        with self.lock:
+            heads = list(self.failed.get(job["worktree"], []))
+        for head in heads:
+            if is_ancestor(head, job["head"], COMMON.parent):
+                return head
+        return None
 
     def stop(self, *_: object) -> None:
         self.stopping = True
@@ -360,6 +447,15 @@ class Runner:
                     continue
                 running = RUNNING / pending.name
                 os.replace(pending, running)
+                below = self.skipped(job)
+                if below is not None:
+                    self.finish(
+                        job,
+                        running,
+                        {"status": "skipped", "why": f"built on failed {below}"},
+                        f"SKIPPED built on the failed step {below[:10]}",
+                    )
+                    continue
                 self.say(
                     f"START {job['seq']} {job['label']} {job['mode']} {Path(job['worktree']).name}"
                 )
@@ -410,7 +506,17 @@ def run(a: argparse.Namespace) -> int:
 def wait(a: argparse.Namespace) -> int:
     setup()
     since = result_count() if a.since is None else a.since
-    while result_count() <= since:
+    lane = str(Path(a.idle).resolve()) if a.idle else None
+
+    def busy() -> bool:
+        for directory in (PENDING, RUNNING):
+            for path in directory.glob("*.json"):
+                with contextlib.suppress(FileNotFoundError, ValueError):
+                    if json.loads(path.read_text())["worktree"] == lane:
+                        return True
+        return False
+
+    while result_count() <= since or (lane is not None and busy()):
         time.sleep(POLL)
     with open(RESULTS) as handle:
         lines = handle.read().splitlines()
@@ -449,9 +555,11 @@ def main(argv: list[str] | None = None) -> int:
     e.add_argument("--mode", required=True, choices=MODES)
     e.add_argument("--plan")
     e.add_argument("--label", required=True)
-    e.add_argument("--target", required=True)
-    e.add_argument("--recipe", required=True)
-    e.add_argument("--model", required=True)
+    e.add_argument("--target")
+    e.add_argument("--recipe")
+    e.add_argument("--model")
+    e.add_argument("--snapshot", action="store_true")
+    e.add_argument("--head")
     e.add_argument("--rerun-of", type=int)
     e.add_argument("--reason")
     r = sub.add_parser("run")
@@ -459,6 +567,7 @@ def main(argv: list[str] | None = None) -> int:
     r.add_argument("--log-out")
     w = sub.add_parser("wait")
     w.add_argument("--since", type=int)
+    w.add_argument("--idle", metavar="WORKTREE")
     sub.add_parser("status")
     a = parser.parse_args(argv)
     return {"enqueue": enqueue, "run": run, "wait": wait, "status": status}[a.command](a)

@@ -912,6 +912,34 @@ def test_run_with_workers_makes_two_calls_and_one_line(
     assert ("PASS" if expected == 0 else f"FAIL (exit {expected})") in out[0]
 
 
+def test_run_full_runs_the_suite_and_since_reaches_the_selection(
+    repo, tmp_path: Path, monkeypatch, capsys
+) -> None:
+    """`--full` selects nothing (a merge check); `--since` and `--import-time-by-file` reach
+    `select` from the command line."""
+    root, base, map_dir = repo
+    earlier = _gated_history(root)
+    _edit(root, "docs/guide.md", "guide", "changed")
+    calls: list[list[str]] = []
+
+    def fake_call(command: list[str], *, stdout, **_: object) -> int:
+        calls.append(command)
+        stdout.write("1 passed in 0.1s\n")
+        stdout.flush()
+        return 0
+
+    monkeypatch.setattr(ti.subprocess, "call", fake_call)
+    common = ["--repo", str(root), "run", "--base", base, "--map", str(map_dir)]
+    log = ["--log", str(tmp_path / "run.log")]
+    assert ti.main([*common, *log, "--since", earlier, "--import-time-by-file"]) == 0
+    assert "selected 1, fallback no" in capsys.readouterr().out
+    assert calls[-1][-1].startswith("@")
+    assert ti.main([*common, *log, "--since", earlier, "--full"]) == 0
+    captured = capsys.readouterr()
+    assert "selected all, fallback yes" in captured.out and "full suite: --full" in captured.err
+    assert not calls[-1][-1].startswith("@")
+
+
 def test_run_refuses_workers_after_the_separator(repo, tmp_path: Path) -> None:
     root, base, map_dir = repo
     for extra in (["-n", "4"], ["-n4"], ["--numprocesses=4"]):
