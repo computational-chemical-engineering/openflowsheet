@@ -393,3 +393,8 @@
   comments repeat helper docstrings (low). DECISION: `trust_region/study.py::run_study` (still brain, cognitive 43;
   its `run` and `check` closures rebind the caller's locals) takes the RC recipe under the Q1 ruling, with
   rc_check.py. Alternative: leave it brain. Reversible by reverting that step.
+- **2026-11-15, W3 G2 run 4 merged.** Review R-W3-G2-4 (reviewer, Opus): merge. Notes for the next G2 run
+  (no-gain): column_blocks.py:286 docstring defines `t = carry[0]`; :128 "whose specification is absent or not
+  `duty`". Recorder evidence is sound but a lower bound (keyword arguments not recorded; by-name imports before
+  pytest_configure bypass the wrapper; opaque objects as `<Type>`). W4 twin: column_acceptance.acceptance_failures
+  and cascade_solve's, message for message.
