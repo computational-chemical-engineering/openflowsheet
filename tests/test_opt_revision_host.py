@@ -37,6 +37,7 @@ from openflowsheet.application.revision_run import (
 )
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.orchestrator import region as region_module
+from openflowsheet.orchestrator import region_phase
 from openflowsheet.orchestrator.region import _admissible
 from openflowsheet.orchestrator.revision import instances_of
 from openflowsheet.orchestrator.splits import region_splits
@@ -558,6 +559,7 @@ def test_a_provider_whose_closure_tests_otherwise_gets_no_margin(
     with the provider reported `pr-c1-v1`."""
     host, point, _ = _certified("PHF")
     monkeypatch.setattr(region_module, "_pr_c1", lambda provider: True)
+    monkeypatch.setattr(region_phase, "_pr_c1", lambda provider: True)
     monkeypatch.setattr(revision_host._handle(point), "phase", None)
     assert host.phase_rows(point).undefined == ("U-PHF",)
     (split,) = host.regimes(point).splits

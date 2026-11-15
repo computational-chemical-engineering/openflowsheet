@@ -3,7 +3,9 @@
 A unit declares its lifted splits and their forms with these types, and the region solver
 (`orchestrator.region`) consumes them; `region` re-exports every name. The solver's row
 tolerances are not here but in `models.lifted_tolerance`, so that the verifier, which reads
-`LiftedSplit`, does not reach them (R-016).
+`LiftedSplit`, does not reach them (R-016). `AdmissibilityRefusal` is the region's refusal of
+its single-phase admissibility test (ADR 0076 I-15), which a route solve's caller ends as a
+verifier refusal without importing the region.
 """
 
 from __future__ import annotations
@@ -31,6 +33,15 @@ INADMISSIBLE_BRANCH: Final[Mapping[str, str]] = {
     "VAPOR": "all_vapor",
     "ZERO_FLOW": "zero_flow",
 }
+
+
+class AdmissibilityRefusal(RuntimeError):  # noqa: N818 - the name is ADR 0076 I-15's
+    """The region's single-phase admissibility test (K03 §8.2) could not be evaluated: the
+    provider refused the K-values, or the gamma-phi or `pr-c1-v1` kernel refused the regime.
+
+    Not a verdict and not the verifier's `VerifierError` (R-016, ADR 0076 I-15): the screen turns
+    it into `invalid_trial_state`, `admissibility_value` into `None`, and on the converged path
+    it propagates to the route solve's caller, which ends it as a verifier refusal."""
 
 
 @dataclass(frozen=True)

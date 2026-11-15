@@ -713,10 +713,10 @@ def test_b27_without_the_outlet_reset_attempt_1_cannot_step(
     """The negative control for F7: with §7.8 (ii)'s reset disabled, attempt 1 opens with
     `S4 = 0`, so `HX-energy-hot`'s `S4.T` coefficient is zero, the `S4.T` column empty
     (`ref…opening_without_outlet_reset`: rank 33 of 34), and Newton fails its first solve."""
-    from openflowsheet.orchestrator import region as region_module
+    from openflowsheet.orchestrator import region_problem
 
     # §7.8 (ii)'s reset is `_reset_outlet` inside the opening's fixed point (W9.3, Q-S9).
-    monkeypatch.setattr(region_module, "_reset_outlet", lambda state, form: False)
+    monkeypatch.setattr(region_problem, "_reset_outlet", lambda state, form: False)
     result = solve_from_v2(bind(dz12()), registered_state(DZ12["start"]))
     assert [a.solver_outcome for a in result.attempts] == ["CONVERGED", "LINEAR_SOLVE_FAILED"]
     assert DZ12["attempt1"]["opening_without_outlet_reset"]["rank"] == 33
@@ -726,9 +726,9 @@ def test_b27_the_negative_control_is_not_due_for_edge_3(monkeypatch: pytest.Monk
     """S02 §19 item 1 (R-550, review M1): the negative control's solve ends `LINEAR_SOLVE_FAILED`
     after two attempts, the first `CONVERGED` — a restart that a physical correction, not a
     globalization failure, opened. ADR 0044 D1 as narrowed does not send it to edge 3."""
-    from openflowsheet.orchestrator import region as region_module
+    from openflowsheet.orchestrator import region_problem
 
-    monkeypatch.setattr(region_module, "_reset_outlet", lambda state, form: False)
+    monkeypatch.setattr(region_problem, "_reset_outlet", lambda state, form: False)
     result = solve_from_v2(bind(dz12()), registered_state(DZ12["start"]))
     attempts = solver_outcomes(result.attempts)
     assert result.outcome == "LINEAR_SOLVE_FAILED"

@@ -43,6 +43,7 @@ from openflowsheet.application.revision_binding import RevisionBinding
 from openflowsheet.models import temperature_id
 from openflowsheet.numerics.newton import _bound_aware_step, _released, _trial_point
 from openflowsheet.orchestrator import region as region_module
+from openflowsheet.orchestrator import region_problem
 from openflowsheet.orchestrator.execution import ExecutionPlan
 from openflowsheet.orchestrator.executor import execute_plan
 from openflowsheet.orchestrator.region import LiftedSplit, RegionResult, _KernelAnswer
@@ -109,6 +110,7 @@ def openings(monkeypatch: pytest.MonkeyPatch) -> Iterator[list[Opening]]:
         return result
 
     monkeypatch.setattr(region_module, "_contract_kernel", spy_kernel)
+    monkeypatch.setattr(region_problem, "_contract_kernel", spy_kernel)
     monkeypatch.setattr(region_module._LiftedOps, "_settled", spy_settled)
     yield found
 

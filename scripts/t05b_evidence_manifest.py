@@ -132,6 +132,7 @@ from openflowsheet.models.syn001.saturation_band import degeneracy_distance
 from openflowsheet.models.syn001.tp_state import single_phase_admissible
 from openflowsheet.numerics.newton import _trial_point, solve_newton
 from openflowsheet.orchestrator import region as region_module
+from openflowsheet.orchestrator import region_phase, region_problem
 from openflowsheet.orchestrator.execution import ExecutionPlan
 from openflowsheet.orchestrator.executor import execute_plan
 from openflowsheet.orchestrator.region import (
@@ -5656,7 +5657,7 @@ def _p4_b31_function_level(ledger: Ledger) -> dict[str, Any]:
     # (g) at attempt 0.
     document, start = openings.CASES["CH-UP"]()
     with pytest.MonkeyPatch.context() as patch:
-        patch.setattr(region_module, "_rederive", openings._never_settles)
+        patch.setattr(region_problem, "_rederive", openings._never_settles)
         result = openings.solve_from_v2(openings.bind(document), start)
     value["(g) attempt 0"] = {
         "outcome": result.outcome,
@@ -5684,7 +5685,7 @@ def _p4_b31_function_level(ledger: Ledger) -> dict[str, Any]:
 
     document, start = openings.CASES["CH-UP"]()
     with pytest.MonkeyPatch.context() as patch:
-        patch.setattr(region_module, "_rederive", rederive)
+        patch.setattr(region_problem, "_rederive", rederive)
         patch.setattr(region_module._LiftedOps, "_settled", restart)
         result = openings.solve_from_v2(openings.bind(document), start)
     value["(g) restart"] = {
@@ -6972,6 +6973,7 @@ def _b36() -> tuple[bool, dict[str, Any], dict[str, Any]]:
 
     with pytest.MonkeyPatch.context() as patch:
         patch.setattr(region_module, "_kernel", kernel)
+        patch.setattr(region_phase, "_kernel", kernel)
         result = openings.solve_from_v2(openings.bind(document), start)
     outlet = 100_000.0 - openings.DP
     ledger.equal("(b) CH-UP-DP outcome", result.outcome, "CONVERGED")

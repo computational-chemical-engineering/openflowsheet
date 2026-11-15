@@ -45,7 +45,7 @@ from openflowsheet.application.revision_binding import RevisionBinding, bind_rev
 from openflowsheet.application.store import ProjectStore
 from openflowsheet.application.types import JobRequest, ReplayPolicy, SolveBody
 from openflowsheet.orchestrator import region as region_module
-from openflowsheet.orchestrator import revision
+from openflowsheet.orchestrator import region_problem, revision
 from openflowsheet.orchestrator.execution import ExecutionPlan
 from openflowsheet.orchestrator.executor import PlanResult, execute_plan
 from openflowsheet.orchestrator.phase_contract import (
@@ -588,9 +588,10 @@ def test_a_warm_opening_that_ends_before_an_attempt_falls_through(
 ) -> None:
     """Review S4 (§B2, "the run never fails because of the warm start"): a candidate that passes
     `integrity`, `compatibility` and `evaluation`, but whose region solve ends before any attempt
-    other than by the opening check — §6.2's kernel refusal (`region.py`, `_KernelRefusedError`),
-    or an opening that does not settle (§7.8 (ii)) — is rejected `opening:<outcome>`, and the
-    traversal follows. The refusal is monkeypatched at the warm solve only."""
+    other than by the opening check — §6.2's kernel refusal (`region_phase.py`,
+    `_KernelRefusedError`), or an opening that does not settle (§7.8 (ii)) — is rejected
+    `opening:<outcome>`, and the traversal follows. The refusal is monkeypatched at the warm
+    solve only."""
     original = region_module._solve_region
 
     def refusing(**kwargs: Any) -> RegionResult:
@@ -659,6 +660,7 @@ def test_a_warm_opening_refused_by_the_opening_check_falls_through(
 
     monkeypatch.setattr(region_module, "_solve_region", solving)
     monkeypatch.setattr(region_module, "check_opening", checking)
+    monkeypatch.setattr(region_problem, "check_opening", checking)
     target = _binding(_child(0.95))
     run = _plan_run(target, T08_WARM_V1, _constructed(lambda values: None))
     assert [refused.check if refused else None for refused in refusals] == [check]

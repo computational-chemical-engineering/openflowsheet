@@ -29,6 +29,8 @@ import yaml
 
 import openflowsheet.orchestrator.phase_contract as phase_contract
 import openflowsheet.orchestrator.region as region_module
+import openflowsheet.orchestrator.region_phase as region_phase
+import openflowsheet.orchestrator.region_problem as region_problem
 from openflowsheet.canonical import state_sha256
 from openflowsheet.compile.casadi_backend import compile_problem
 from openflowsheet.numerics.newton import Evaluation, Problem
@@ -196,7 +198,7 @@ def test_a02_one_decision_function_for_both_paths(monkeypatch: pytest.MonkeyPatc
     source = (REPO_ROOT / "src" / "openflowsheet" / "orchestrator").glob("*.py")
     producing = [path.name for path in source if "active_set_cycling(" in path.read_text()]
     assert producing == ["phase_contract.py"], "the cycling refusal is produced in one place"
-    for name in ("attempts.py", "region.py"):
+    for name in ("attempts.py", "region.py", "region_phase.py", "region_problem.py"):
         text = (REPO_ROOT / "src" / "openflowsheet" / "orchestrator" / name).read_text()
         assert "ACTIVE_SET_CYCLING" not in text, f"{name} keeps no cycle rule of its own"
         assert " in used" not in text, f"{name} tests no used signatures itself"
@@ -290,6 +292,8 @@ def test_a05_the_kernel_is_asked_only_on_flagged_trials(
         return real(provider, context, split, regime, state, epsilon)
 
     monkeypatch.setattr(region_module, "_admissible", spy)
+    monkeypatch.setattr(region_phase, "_admissible", spy)
+    monkeypatch.setattr(region_problem, "_admissible", spy)
     original_observe_calls = Observed.__init__
 
     def remember(self: Observed, *arguments: Any, **keywords: Any) -> None:
@@ -561,6 +565,7 @@ def test_a16_an_incompatible_opening_is_refused_and_opens_nothing(
         return real(corrupt(state), requirement)
 
     monkeypatch.setattr(region_module, "check_opening", corrupted)
+    monkeypatch.setattr(region_problem, "check_opening", corrupted)
     assert_refused(observe("SYN-001-A02-355-liquid-guess", monkeypatch), check, subject, observed)
 
 
@@ -624,6 +629,7 @@ def test_a16_every_registered_opening_passes_all_six_checks(
         return outcome
 
     monkeypatch.setattr(region_module, "check_opening", watched)
+    monkeypatch.setattr(region_problem, "check_opening", watched)
     for case_id in (
         "SYN-001-A02-355-liquid-guess",
         "SYN-001-A02-360-liquid-guess",
@@ -1301,6 +1307,8 @@ def test_s5_both_retained_conversions_on_a_physical_state(
 
     monkeypatch.setattr(region_module._LiftedOps, "__init__", init)
     monkeypatch.setattr(region_module, "_admissible", admissible)
+    monkeypatch.setattr(region_phase, "_admissible", admissible)
+    monkeypatch.setattr(region_problem, "_admissible", admissible)
     observe("SYN-001-A02-355-liquid-guess", monkeypatch)
     assert flagged, "the registered flagged trial was screened"
     given = {**kwargs[0], "end_state": flagged[0]}
@@ -1357,6 +1365,7 @@ def test_n4_a_candidate_the_kernel_disagrees_with_is_a_defect(
 
     monkeypatch.setattr(region_module._LiftedOps, "at_candidate", at_candidate)
     monkeypatch.setattr(region_module, "_kernel", kernel)
+    monkeypatch.setattr(region_phase, "_kernel", kernel)
     with pytest.raises(RuntimeError, match="defect: the kernel reports U-HEAT VAPOR"):
         observe("SYN-001-A02-355-liquid-guess", monkeypatch)
 

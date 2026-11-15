@@ -65,6 +65,8 @@ import test_t03_roots as roots_fixtures  # noqa: E402
 
 import openflowsheet.orchestrator.attempts as attempts_module  # noqa: E402
 import openflowsheet.orchestrator.region as region_module  # noqa: E402
+import openflowsheet.orchestrator.region_phase as region_phase  # noqa: E402
+import openflowsheet.orchestrator.region_problem as region_problem  # noqa: E402
 import openflowsheet.orchestrator.tear as tear_module  # noqa: E402
 from openflowsheet.canonical import file_sha256, state_sha256  # noqa: E402
 from openflowsheet.compile.casadi_backend import (  # noqa: E402
@@ -428,7 +430,10 @@ def _observe_region(
         patch.setattr(region_module, "_region_problem", problem)
         patch.setattr(region_module, "_screen", screen_factory)
         patch.setattr(region_module, "_admissible", admissible)
+        patch.setattr(region_phase, "_admissible", admissible)
+        patch.setattr(region_problem, "_admissible", admissible)
         patch.setattr(region_module, "check_opening", opening_check)
+        patch.setattr(region_problem, "check_opening", opening_check)
         patch.setattr(region_module, "decide", decide)
         patch.setattr(region_module._LiftedOps, "blocked", blocked)
         for name in real_compiled:

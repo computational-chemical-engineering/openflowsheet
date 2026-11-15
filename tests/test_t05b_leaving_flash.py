@@ -40,6 +40,7 @@ from t05b_support import POLICY_V2, solve_from_v2
 from test_t05b_openings import CASES, DP, QUP, _traversal, ch
 
 from openflowsheet.orchestrator import region as region_module
+from openflowsheet.orchestrator import region_phase
 from openflowsheet.orchestrator.phase_contract import Candidate
 from openflowsheet.orchestrator.region import _attempt_screen, _contract_kernel, _kernel
 from openflowsheet.orchestrator.revision import instances_of
@@ -135,6 +136,7 @@ def test_b36b_off_the_dew_point_the_leaving_flash_is_at_the_outlet_pressure() ->
 
     with pytest.MonkeyPatch.context() as patch:
         patch.setattr(region_module, "_kernel", kernel)
+        patch.setattr(region_phase, "_kernel", kernel)
         result = solve_from_v2(bind(document), start)
     assert result.outcome == "CONVERGED", result.message
     assert asked

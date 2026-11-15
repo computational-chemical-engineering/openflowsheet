@@ -15,8 +15,8 @@ canonicalized, its sha256 recorded, and solved through the route it selects
 M02's outer coupling on the study's one `ExperimentRunner` (`coupled_run.LiveExperiments`, §6.4:
 M02's frozen identity then covers every coupled check and every TRF call of the study), the final
 inner solve certified with `EXT-COUPLING`'s checks. A route that refuses (`RunUnsupportedError`)
-or a verifier that refuses to judge (`VerifierError`) is returned as the outcome, never raised:
-P1 judges it.
+or a verifier that refuses to judge (`VerifierError`, or the region's `AdmissibilityRefusal`, ADR
+0076 I-15) is returned as the outcome, never raised: P1 judges it.
 
 **What a solve reads** from the run:
 - the outcome and the certificate's status (P1);
@@ -71,6 +71,7 @@ from openflowsheet.adapters.variants import Variant
 from openflowsheet.canonical import document_sha256
 from openflowsheet.models import flow_id, temperature_id
 from openflowsheet.models.c1.reactor import C1Reactor
+from openflowsheet.models.lifted import AdmissibilityRefusal
 from openflowsheet.orchestrator.coupling import UnitInlet
 from openflowsheet.orchestrator.execution import PlanRefusal
 from openflowsheet.orchestrator.executor import execute_plan
@@ -136,7 +137,7 @@ class ParentServices(Protocol):
         experiments: Any,
     ) -> Any:
         """`route`'s run of `document`, or the `unsupported(<code>)` code (a `str`) of a run that
-        has no mapping. A `VerifierError` propagates."""
+        has no mapping. A `VerifierError` or an `AdmissibilityRefusal` propagates."""
         ...
 
     def live_experiments(self, runner: ExperimentRunner) -> Any:
@@ -165,7 +166,7 @@ class ParentServices(Protocol):
     ) -> Any:
         """`document`'s `revision_eo` run, its SurrogateManifests resolved by `surrogates` (P2_A's
         re-solve, §7.3), or the code (a `str`) of a document that selects no `revision_eo` route
-        or whose run has no mapping. A `VerifierError` propagates."""
+        or whose run has no mapping. A `VerifierError` or an `AdmissibilityRefusal` propagates."""
         ...
 
 
@@ -314,7 +315,7 @@ class C1Parent:
                 check_policy=self.check_policy,
                 experiments=self.experiments,
             )
-        except VerifierError as error:
+        except (VerifierError, AdmissibilityRefusal) as error:
             return failed(f"verifier_refused({error})")
         if isinstance(result, str):
             return failed(f"unsupported({result})")
@@ -461,7 +462,7 @@ class C1Parent:
                     policy=self.policy,
                     check_policy=self.check_policy,
                 )
-            except VerifierError:
+            except (VerifierError, AdmissibilityRefusal):
                 return P2Reference(f"{P2_A_SOURCE}:verifier_refused", math.nan, {})
             if isinstance(result, str):
                 return P2Reference(f"{P2_A_SOURCE}:unsupported({result})", math.nan, {})

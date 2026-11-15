@@ -1,0 +1,67 @@
+# ADR 0076 I-15 (W4, pulled forward to unblock split B1): the region solver stops importing the
+# verifier. `codehealth gate --mode interface` reads this plan from the plan commit.
+id = "i15-region-verifier"
+approved_by = "Frank Peters, 2026-11-14, ADR 0076 accepted (Decision Desk ofs-adr0076-accept)"
+reason = """ADR 0076 I-15: the region's admissibility test raises AdmissibilityRefusal (models/lifted.py, \
+a RuntimeError) instead of the verifier's VerifierError, and computes the ideal-K values with \
+_reference_k_values, a verbatim-arithmetic restatement of verify/checks.py k_values (same request, same \
+math.exp); region.py imports nothing from verify. Every handler of a route solve's VerifierError \
+(application/jobs/runner.py :427 :722 :883 :933 :1175, studies/trust_region/parent.py :317 :464, \
+studies/nlp/revision_host.py :453) also catches AdmissibilityRefusal with identical handling; message \
+texts unchanged. scripts/m07_journey.py:466 follows in a script commit right after the step (ADR 0076 \
+I-15 addendum). Expected codehealth arch --depth 4: base 7 violations / 4 cycles / 14 cycle edges, \
+after 6 / 4 / 14 (the repo-layers violation orchestrator.region -> verify.checks goes)."""
+removed = []
+renamed = {}
+changed = []
+added = ["src/openflowsheet/models/lifted.py:AdmissibilityRefusal"]
+new_files = []
+callers = ["tests/test_s10c_region.py"]
+
+[[literals_added]]
+file = "src/openflowsheet/orchestrator/region.py"
+literal = "LIQUID"
+count = 1
+reason = "ADR 0076 I-15: the verbatim restatement of verify.checks.k_values (R-016), pinned bitwise by the K pin test"
+
+[[literals_added]]
+file = "src/openflowsheet/orchestrator/region.py"
+literal = "ok"
+count = 1
+reason = "ADR 0076 I-15: the verbatim restatement of verify.checks.k_values (R-016), pinned bitwise by the K pin test"
+
+[[literals_added]]
+file = "src/openflowsheet/orchestrator/region.py"
+literal = "the verifier's own K-values returned "
+count = 1
+reason = "ADR 0076 I-15: the verbatim restatement of verify.checks.k_values (R-016), pinned bitwise by the K pin test"
+
+[[literals_added]]
+file = "src/openflowsheet/orchestrator/region.py"
+literal = "lnK"
+count = 1
+reason = "ADR 0076 I-15: the verbatim restatement of verify.checks.k_values (R-016), pinned bitwise by the K pin test"
+
+[[literals_added]]
+file = "src/openflowsheet/orchestrator/region.py"
+literal = "A"
+count = 1
+reason = "ADR 0076 I-15: the verbatim restatement of verify.checks.k_values (R-016), pinned bitwise by the K pin test"
+
+[[literals_added]]
+file = "src/openflowsheet/orchestrator/region.py"
+literal = "B"
+count = 1
+reason = "ADR 0076 I-15: the verbatim restatement of verify.checks.k_values (R-016), pinned bitwise by the K pin test"
+
+[[literals_added]]
+file = "src/openflowsheet/orchestrator/region.py"
+literal = "C"
+count = 1
+reason = "ADR 0076 I-15: the verbatim restatement of verify.checks.k_values (R-016), pinned bitwise by the K pin test"
+
+[[literals_added]]
+file = "src/openflowsheet/orchestrator/region.py"
+literal = "lnK_"
+count = 1
+reason = "ADR 0076 I-15: the verbatim restatement of verify.checks.k_values (R-016), pinned bitwise by the K pin test"

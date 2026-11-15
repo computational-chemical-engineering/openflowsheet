@@ -47,6 +47,7 @@ from openflowsheet.compile.casadi_backend import (
 )
 from openflowsheet.compile.spec import ProblemSpec
 from openflowsheet.compiled import CompiledProblem, EvaluationContext
+from openflowsheet.models.lifted import AdmissibilityRefusal
 from openflowsheet.models.revision_flowsheet import RevisionFlowsheet, si_unit
 from openflowsheet.numerics.scaling import REGISTERED_NOMINALS, Scaling
 from openflowsheet.orchestrator.region import LiftedSplit, RegionResult, admissibility_value
@@ -90,7 +91,8 @@ from openflowsheet.verify.checks import VerifierError
 ROUTE: Literal["revision_eo"] = "revision_eo"
 
 #: The bounds K03's Newton core applies by quantity kind in the production solve
-#: (`orchestrator/region.py` `_region_problem`: `lower_bounds` 0 on `molar_flow`, nothing else).
+#: (`orchestrator/region_problem.py` `_region_problem`: `lower_bounds` 0 on `molar_flow`,
+#: nothing else).
 K03_KIND_BOUNDS: Mapping[str, tuple[float | None, float | None]] = MappingProxyType(
     {"molar_flow": (0.0, None)}
 )
@@ -416,7 +418,8 @@ class RevisionNlpHost:
         has a sink.
 
         Outcomes as `CertifiedSolve`'s: `CONVERGED` only with a `VERIFIED` certificate; the plan
-        run's outcome; `CERTIFICATE_NOT_VERIFIED` (also when the verifier refused to judge);
+        run's outcome; `CERTIFICATE_NOT_VERIFIED` (also when the verifier refused to judge, or the
+        region's admissibility test could not be evaluated: `AdmissibilityRefusal`);
         `SPECIFICATION_REFUSED` (the binder refused the candidate); `UNSUPPORTED` (the route has
         no registered bundle mapping or T02 refused the plan)."""
         document = self.document_at(decisions)
@@ -450,7 +453,7 @@ class RevisionNlpHost:
             )
         except self.routes.unsupported as error:
             return self._unsolved(document, route, "UNSUPPORTED", str(error), bound)
-        except VerifierError as error:
+        except (VerifierError, AdmissibilityRefusal) as error:
             message = f"verifier_refused: {str(error).splitlines()[0] if str(error) else ''}"
             return self._unsolved(document, route, "CERTIFICATE_NOT_VERIFIED", message, bound)
         bundle_ref = None
@@ -619,8 +622,9 @@ class RevisionNlpHost:
         §9 A-3): the margin is the region closure's own test at the converged state, for TP- and
         PH-type splits alike —
 
-        - LIQUID / VAPOR: `1 − admissibility_value` (`orchestrator/region.py`; ideal K: `Σ x K`
-          or `Σ y/K` over the side's composition, γ–φ: `Σ x K(x)` or the incipient-liquid `ΣW`),
+        - LIQUID / VAPOR: `1 − admissibility_value` (`orchestrator/region_phase.py`; ideal K:
+          `Σ x K` or `Σ y/K` over the side's composition, γ–φ: `Σ x K(x)` or the
+          incipient-liquid `ΣW`),
           `None` where the closure judges by another form (`pr-c1-v1`) or the test raises;
         - TWO_PHASE: the smaller side's `molar_flow` total over K03's registered `molar_flow`
           nominal (the closure holds it by `V, L ≥ 0` only), `None` without such a column;
