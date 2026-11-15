@@ -5,13 +5,17 @@ State in <git-common-dir>/codehealth/queue/: pending/, running/, done/<label>.js
 (one line per finished job), runner.pid, runner.log. Python 3 standard library only.
 
   enqueue --worktree W --base SHA --mode {step,no-gain,restructure,interface,revert} [--plan P] --label L
-          --target T --recipe R --model M [--reason TEXT] [--rerun-of N]
+          --target T --recipe R --model M [--reason TEXT] [--rerun-of N] [--head SHA]
       W must be clean; its HEAD is recorded as the job's head. A job is one step, or a chain of
       commits base..head gated as one. --base is gate.sh's sha argument: the last accepted commit,
       or for --mode revert the rejected commit (HEAD exactly undoes it); for --mode restructure and
       interface, the plan commit (--plan names the plan file, ADR 0076 W4 for interface).
       --reason is required for no-gain, restructure, revert and --rerun-of: it goes to
       `codehealth log` where log needs one.
+      --head SHA (an ancestor of W's HEAD, or HEAD) gates base..SHA in a temporary detached
+      worktree (<repo>/.claude/worktrees/q-<label>, removed after), so W may move on: an engineer
+      enqueues several jobs of one lane (e.g. a refactor-mode retarget, then an interface step
+      based on its plan commit) and ends. Jobs of one lane still run one at a time, in order.
   run [--detach] [--log-out JSONL]
       The runner: FIFO, at most SLOTS jobs at a time, one job per worktree at a time. It refuses a
       job whose worktree HEAD or tree changed since enqueue, runs gate.sh in the worktree, then
@@ -96,6 +100,15 @@ def worktree_state(worktree: Path) -> tuple[str, str]:
     return git("rev-parse", "HEAD", cwd=worktree), git("status", "--porcelain", cwd=worktree)
 
 
+def is_ancestor(commit: str, of: str, cwd: Path) -> bool:
+    return (
+        subprocess.run(
+            ["git", "merge-base", "--is-ancestor", commit, of], cwd=cwd, capture_output=True
+        ).returncode
+        == 0
+    )
+
+
 def labels_in_use() -> set[str]:
     return {
         json.loads(p.read_text())["label"] for d in (PENDING, RUNNING) for p in d.glob("*.json")
@@ -141,6 +154,13 @@ def enqueue(a: argparse.Namespace) -> int:
     if dirty:
         raise SystemExit(f"{worktree} is not clean:\n{dirty}")
     base = git("rev-parse", "--verify", f"{a.base}^{{commit}}", cwd=worktree)
+    detached = a.head is not None
+    if detached:
+        head = git("rev-parse", "--verify", f"{a.head}^{{commit}}", cwd=worktree)
+        if not is_ancestor(head, "HEAD", worktree):
+            raise SystemExit(f"--head {a.head} is not an ancestor of {worktree}'s HEAD")
+    if not is_ancestor(base, head, worktree):
+        raise SystemExit(f"--base {a.base} is not an ancestor of the job's head")
     with locked():
         if a.label in labels_in_use():
             raise SystemExit(f"label {a.label} is already queued, running or done")
@@ -153,7 +173,8 @@ def enqueue(a: argparse.Namespace) -> int:
             "worktree": str(worktree),
             "base": base,
             "head": head,
-            "head_tree": git("rev-parse", "HEAD^{tree}", cwd=worktree),
+            "head_tree": git("rev-parse", f"{head}^{{tree}}", cwd=worktree),
+            "detached": detached,
             "mode": a.mode,
             "plan": a.plan,
             "target": a.target,
@@ -241,7 +262,7 @@ class Runner:
     def job(self, job: dict, running: Path) -> None:
         try:
             self._job(job, running)
-        except Exception as error:  # reported, never swallowed: the job leaves running/
+        except (Exception, SystemExit) as error:  # reported, never swallowed: the job leaves running/
             self.finish(
                 job,
                 running,
@@ -250,7 +271,26 @@ class Runner:
             )
 
     def _job(self, job: dict, running: Path) -> None:
-        worktree = Path(job["worktree"])
+        if not job.get("detached"):
+            self._gate_in(Path(job["worktree"]), job, running)
+            return
+        lane = Path(job["worktree"])
+        if not is_ancestor(job["head"], "HEAD", lane):
+            self.finish(
+                job,
+                running,
+                {"status": "refused", "started": now(), "why": "head left the lane"},
+                f"REFUSED head {job['head'][:10]} is no longer an ancestor of the lane's HEAD",
+            )
+            return
+        scratch = COMMON.parent / ".claude" / "worktrees" / f"q-{job['label']}"
+        git("worktree", "add", "--detach", str(scratch), job["head"], cwd=lane)
+        try:
+            self._gate_in(scratch, job, running)
+        finally:
+            git("worktree", "remove", "--force", str(scratch), cwd=lane)
+
+    def _gate_in(self, worktree: Path, job: dict, running: Path) -> None:
         started = now()
         try:
             head, dirty = worktree_state(worktree)
@@ -457,6 +497,7 @@ def main(argv: list[str] | None = None) -> int:
     e.add_argument("--model", required=True)
     e.add_argument("--rerun-of", type=int)
     e.add_argument("--reason")
+    e.add_argument("--head")
     r = sub.add_parser("run")
     r.add_argument("--detach", action="store_true")
     r.add_argument("--log-out")
