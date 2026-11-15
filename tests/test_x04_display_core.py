@@ -19,19 +19,22 @@ from typing import Any
 import pytest
 
 from openflowsheet import units
-from openflowsheet.units import (
-    CONVERSION_ROWS,
+from openflowsheet.units import CONVERSION_ROWS, convert_input_value
+from openflowsheet.units import display as display_module
+from openflowsheet.units.display import (
     DISPLAY_CONVERSION_ID,
     DISPLAY_KINDS,
     DISPLAY_ROWS,
+    GAUGE_ROWS,
+    PRESETS,
+    TEXT_UNITS,
     DisplayUnits,
     DisplayUnitsError,
-    convert_input_value,
     display_item,
     parse_display_units,
+    row_to_si,
+    text_unit,
 )
-from openflowsheet.units import display as display_module
-from openflowsheet.units.display import GAUGE_ROWS, PRESETS, TEXT_UNITS, row_to_si, text_unit
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "docs" / "derivations" / "scripts" / "x04_reference.py"

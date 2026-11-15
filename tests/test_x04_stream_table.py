@@ -50,7 +50,7 @@ from openflowsheet.application.store import DATABASE_NAME
 from openflowsheet.application.types import Change, schema_errors
 from openflowsheet.canonical import canonical_json, document_sha256
 from openflowsheet.messages.render import render_error
-from openflowsheet.units import DisplayUnits, display_item, parse_display_units
+from openflowsheet.units.display import DisplayUnits, display_item, parse_display_units
 
 RANKINE = REPO_ROOT / "examples" / "rankine-cycle.changeset.json"
 NOMINAL = "SYN-001-nominal"
