@@ -219,6 +219,24 @@ def test_a10_auto_utility_is_the_cheapest_admissible_and_u_is_required() -> None
     assert "size.H1.area" not in program.output_ids
 
 
+def test_a10_equal_price_admissible_utilities_tie_to_the_earlier_candidate() -> None:
+    """Two admissible utilities at the same price: the earlier one in `utilities` is chosen, in
+    either order (§4.3.2 rule 2, `_cheapest_admissible`). Falsifier: the tie key
+    `(entry[0], -entry[1])` in `_cheapest_admissible` makes the later candidate win."""
+    twin = {**STEAM, "utility_id": "HPS2"}
+    for utilities, expected in (([STEAM, twin], "HPS"), ([twin, STEAM], "HPS2")):
+        document = {**A10_DOC, "utilities": utilities}
+        program = AssessmentProgram.build(
+            _StubView((HEATER,)),
+            HOST,
+            load_assessment(document),
+            A10_STATE,
+            contributors=[Sizing()],
+        )
+        assert isinstance(program, AssessmentProgram)
+        assert program.regime.entries["H1.utility"] == expected
+
+
 # -- A13: the volumetric blocks against the provider, bitwise ------------------------------------
 
 
