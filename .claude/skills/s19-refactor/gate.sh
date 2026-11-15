@@ -31,10 +31,20 @@ elif [ "${1:-}" = "--no-gain" ]; then
 else
     args=(gate --mode refactor --base "$1" --ref-base "$MB" --require-gain); label="${2:-step}"
 fi
-# One gate at a time per clone: the suite holds wall-time budget tests (t07_v17_reference f6) that fail under the
-# load of two concurrent full suites (G-SELF 2026-11-14: 333 s against 300 s). Parallel lanes queue here.
-exec 9>"$OUT/gate.lock"
-flock 9
+# Two gates at a time per clone (Frank, 2026-11-15: "Run more gates at a time if needed"; S19_DECISIONS). Slot 1 is
+# the old single lock, so gates queued under the one-slot script share it. The wall-time budget test
+# t07_v17_reference f6 fails under two concurrent suites (G-SELF 2026-11-14: 333 s against 300 s), so gates deselect
+# it; it runs alone on wp/S19 before each merge into main, and CI runs it on both legs.
+export PYTEST_ADDOPTS="${PYTEST_ADDOPTS:-} --deselect tests/test_t07_v17_reference.py::test_f6_the_forty_runs_fit_their_budget"
+slot=""
+while [ -z "$slot" ]; do
+    for s in gate.lock gate.slot2.lock; do
+        exec 9>"$OUT/$s"
+        if flock -n 9; then slot="$s"; break; fi
+        exec 9>&-
+    done
+    [ -n "$slot" ] || sleep 15
+done
 tag="$(date +%Y%m%dT%H%M%S)-$label"
 "$CH" "${args[@]}" --json "$OUT/$tag.json" --log "$OUT/$tag.tiers.log" > "$OUT/$tag.log" 2>&1 9>&- &
 pid=$!

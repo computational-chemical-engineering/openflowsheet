@@ -404,3 +404,9 @@
   object. W4 item: one verify parameter object (provider, context, tolerances, note, state, components) defined in
   the shared layer while merging the split/revision-check twins in gamma_phi_units.py and pr_c1.py (public names),
   reconciled with `Unit`'s fields.
+- **2026-11-15, two gates at a time (Frank: "Run more gates at a time if needed").** gate.sh takes one of two slots
+  (`gate.lock`, `gate.slot2.lock`) and deselects the wall-time budget test
+  `tests/test_t07_v17_reference.py::test_f6_the_forty_runs_fit_their_budget` through PYTEST_ADDOPTS (it failed
+  under two concurrent suites in G-SELF run 1). f6 runs alone on `wp/S19` before each merge into `main`, and CI runs
+  it on both legs. A gate that fails only on another timing test is re-gated unchanged and logged with --rerun-of.
+  Rejected: three slots (16 cores, 12 xdist workers per gate).
