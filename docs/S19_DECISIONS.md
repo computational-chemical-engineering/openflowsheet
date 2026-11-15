@@ -416,3 +416,8 @@
   gate-fail, re-gated unchanged with --rerun-of. gate.sh now sets TMPDIR to `<git-common-dir>/codehealth/tmp-gates`.
   Why the new map: since I-15 every gate fell back to the full suite (an added file since `MB` = bec6dbe6), about 13
   minutes of tests per gate; a map at the current tip restores per-step selection.
+- **2026-11-15, gate load.** With two gates (12 xdist workers each) and a map build, load reached 40 to 65 on 16
+  cores and slow tests crossed the 900 s per-test limit (test_t07_r6_routes g_r7_6: 667 s alone under load; two
+  generator checks): environment failures, re-gated unchanged. The tests tier takes its worker count from
+  `S19_GATE_WORKERS` (gate.sh sets 8 with two slots); lanes pick up the config at their next base. The 900 s
+  limit stays. Main lever: the test map at a recent base (per-step selection instead of the full suite).

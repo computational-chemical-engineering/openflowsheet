@@ -70,7 +70,7 @@ detect_exit = [1, 124]
 # pytest-timeout; OPENFLOWSHEET_TESTMAP_VENV overrides it) under 12 workers, with a 900 s limit
 # per test. The map is of the campaign base, {ref_base} (`gate --ref-base`; default {base}): the
 # selection is then cumulative since that base, a superset of the step's own.
-cmd = 'V="${OPENFLOWSHEET_TESTMAP_VENV:-$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")/.venv-testmap}/bin"; PYTHONPATH=src "$V/python" scripts/test_impact.py run --base {ref_base} --workers 12 -- --timeout=900'
+cmd = 'V="${OPENFLOWSHEET_TESTMAP_VENV:-$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")/.venv-testmap}/bin"; PYTHONPATH=src "$V/python" scripts/test_impact.py run --base {ref_base} --workers "${S19_GATE_WORKERS:-12}" -- --timeout=900'
 
 [[gate.tier]]
 name = "f0"
