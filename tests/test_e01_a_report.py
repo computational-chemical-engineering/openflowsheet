@@ -406,8 +406,8 @@ def test_report_body_is_refused_when_the_values_at_the_state_are_refused(
         body = report_body(program, state, state_sha256=digest, uncertainty=True)
         assert body["status"] == "REFUSED"
         assert [(r["code"], r["target"]) for r in body["refusals"]] == [*own, expected]
-        assert all(v is None for v in body["capex"].values())
-        assert all(v is None for v in body["annual"].values())
+        assert body["capex"] and all(v is None for v in body["capex"].values())
+        assert body["annual"] and all(v is None for v in body["annual"].values())
         assert body["uncertainty"]["linear_interval"] == {}
 
 
