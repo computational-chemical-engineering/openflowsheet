@@ -619,23 +619,8 @@ def build_execution_plan(
     units_with_rows = {row.unit for row in declaration.rows.values() if row.unit is not None}
     label = declaration.model_version.split("@")[0] or "plan"
 
-    claimed: dict[str, Region] = {}
-    for promoted in specifications:
-        for unit in promoted.units:
-            claimed[unit] = promoted
-    for promoted in specifications:
-        for unit in promoted.units:
-            ok, declared = capable[unit]
-            if not ok:
-                raise CapabilityUnavailableError(
-                    unit, declared, promoted.units, promoted.specification_rows
-                )
-        if not promoted.square:
-            raise UnsupportedRankStructureError(
-                f"the region {list(promoted.units)} for {list(promoted.specification_rows)} is "
-                f"{len(promoted.row_ids)} rows over {len(promoted.variable_ids)} columns after "
-                "certificates"
-            )
+    claimed = _claimed_regions(specifications)
+    _check_specifications(specifications, capable)
 
     loops = {tuple(loop.units): loop for loop in report.tear.loops}
     certified = {entry.row_id for entry in report.certificates if entry.consistent}
@@ -799,6 +784,37 @@ def build_execution_plan(
             ),
         },
     )
+
+
+def _claimed_regions(specifications: Sequence[Region]) -> dict[str, Region]:
+    """The specification region that claims each unit; a unit two regions name maps to the later
+    one."""
+    claimed: dict[str, Region] = {}
+    for promoted in specifications:
+        for unit in promoted.units:
+            claimed[unit] = promoted
+    return claimed
+
+
+def _check_specifications(
+    specifications: Sequence[Region], capable: Mapping[str, tuple[bool, str]]
+) -> None:
+    """Refuses the plan when a specification region cannot be solved as one EO block: per region,
+    in order, `CapabilityUnavailableError` for its first unit without EO capability, then
+    `UnsupportedRankStructureError` when it is not square after certificates."""
+    for promoted in specifications:
+        for unit in promoted.units:
+            ok, declared = capable[unit]
+            if not ok:
+                raise CapabilityUnavailableError(
+                    unit, declared, promoted.units, promoted.specification_rows
+                )
+        if not promoted.square:
+            raise UnsupportedRankStructureError(
+                f"the region {list(promoted.units)} for {list(promoted.specification_rows)} is "
+                f"{len(promoted.row_ids)} rows over {len(promoted.variable_ids)} columns after "
+                "certificates"
+            )
 
 
 @dataclass(frozen=True)

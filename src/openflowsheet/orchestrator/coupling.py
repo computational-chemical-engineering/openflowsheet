@@ -37,7 +37,7 @@ from __future__ import annotations
 
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
-from typing import Any, Final, Literal
+from typing import Any, Final, Literal, NamedTuple
 
 import numpy as np
 import numpy.typing as npt
@@ -382,27 +382,12 @@ def couple(
                     return end(inner.outcome, None, inner, u)
                 failure = "inner_failed"
             else:
-                answers: dict[str, ExternalAnswer] = {}
-                unit_entries: dict[str, Any] = {}
-                r_hat = np.zeros(m2)
-                rho = 0.0
-                for j, unit in enumerate(units):
-                    inlet = inner.inlets[unit]
-                    answer = evaluate(unit, inlet)
-                    answers[unit] = answer
-                    if answer.status == "transient":
-                        unit_entries[unit] = _unit_entry(inlet, answer, None)
-                        entry(u, inner, unit_entries)
-                        return end("EVALUATION_ERROR", f"{answer.code}({unit})", inner, u)
-                    if answer.status == "refused":
-                        unit_entries[unit] = _unit_entry(inlet, answer, None)
-                        failure = f"external_refused({answer.code})"
-                        break
-                    terms = _unit_terms(inlet, answer, w[unit], block)
-                    unit_entries[unit] = _unit_entry(inlet, answer, terms)
-                    r_hat[2 * j] = terms["r_xi"] / block.scale_X
-                    r_hat[2 * j + 1] = terms["r_T"] / block.scale_dT
-                    rho = max(rho, float(terms["_rho"]))
+                answers, unit_entries, r_hat, rho, failure, transient = _experiments(
+                    units, inner, evaluate, w, block
+                )
+                if transient is not None:
+                    entry(u, inner, unit_entries)
+                    return end("EVALUATION_ERROR", transient, inner, u)
                 item = entry(u, inner, unit_entries)
                 if failure is None:
                     item["rho"] = rho
@@ -465,3 +450,51 @@ def couple(
         base = step_from
         u = u_next
         k += 1
+
+
+class _Experiments(NamedTuple):
+    """One trial's experiments, in unit order up to the first unit whose answer was refused or
+    transient: the answers and record entries by unit, and r̂ and ρ over the units that
+    answered."""
+
+    answers: dict[str, ExternalAnswer]
+    entries: dict[str, Any]
+    r_hat: Vector
+    rho: float
+    #: The trial's failure, `external_refused(<code>)`, when a unit refused.
+    refused: str | None
+    #: `EVALUATION_ERROR`'s reason, `<code>(<unit>)`, when a unit's answer was transient.
+    transient: str | None
+
+
+def _experiments(
+    units: Sequence[str],
+    inner: InnerSolve,
+    evaluate: Evaluate,
+    w: Mapping[str, tuple[float, float]],
+    block: CouplingBlock,
+) -> _Experiments:
+    """Runs `evaluate` on each unit at the converged inner solve `inner`, in unit order, up to the
+    first refused or transient answer. Writes no record: `couple` writes the trial's entry and
+    ends the run on a transient answer."""
+    answers: dict[str, ExternalAnswer] = {}
+    unit_entries: dict[str, Any] = {}
+    r_hat = np.zeros(2 * len(units))
+    rho = 0.0
+    for j, unit in enumerate(units):
+        inlet = inner.inlets[unit]
+        answer = evaluate(unit, inlet)
+        answers[unit] = answer
+        if answer.status == "transient":
+            unit_entries[unit] = _unit_entry(inlet, answer, None)
+            return _Experiments(answers, unit_entries, r_hat, rho, None, f"{answer.code}({unit})")
+        if answer.status == "refused":
+            unit_entries[unit] = _unit_entry(inlet, answer, None)
+            failure = f"external_refused({answer.code})"
+            return _Experiments(answers, unit_entries, r_hat, rho, failure, None)
+        terms = _unit_terms(inlet, answer, w[unit], block)
+        unit_entries[unit] = _unit_entry(inlet, answer, terms)
+        r_hat[2 * j] = terms["r_xi"] / block.scale_X
+        r_hat[2 * j + 1] = terms["r_T"] / block.scale_dT
+        rho = max(rho, float(terms["_rho"]))
+    return _Experiments(answers, unit_entries, r_hat, rho, None, None)

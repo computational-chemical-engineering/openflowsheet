@@ -55,7 +55,7 @@ from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Final, Literal
 
-from openflowsheet.compile.spec import ProblemSpec
+from openflowsheet.compile.spec import ProblemSpec, QuantityKind
 from openflowsheet.compiled import PhaseSignature
 from openflowsheet.graph.trace import Declaration
 from openflowsheet.models import Wiring, flow_id, pressure_id, row_id, temperature_id
@@ -604,11 +604,50 @@ def check_agreement(
     models = {unit: model for unit, model, _ in instances}
     given = staged or {}
     owners = split_owners(given)
+    squared = _squared_rows(spec, row_units)
+    _check_registered(models, splits, owners, squared)
+    _check_keys(models, splits, owners)
+    for unit, staging in given.items():
+        _check_staged_rows(unit, staging, squared.get(unit, []))
+
+    columns = set(spec.variable_ids)
+    for split in splits:
+        rule = _rule(models, split)
+        # A staged split's (b′) is checked above, by `_check_staged_rows` for its whole instance.
+        if split.unit not in owners:
+            _check_authored_rows(split, rule, squared[split.unit], row_units, spec.row_kinds)
+        _check_columns(split, columns)
+        _check_definitions(split, declaration)
+        _check_equilibrium_reads(split, rule, declaration)
+    for split in splits if forms is not None else ():
+        assert forms is not None
+        form = _zero_flow_form(split, forms, owners, row_units)
+        _check_zero_flow_label(split, form, columns, declaration)
+    wirings = {unit: wiring for unit, _, wiring in instances}
+    for dormant in dormancy or ():
+        _check_dormancy_form(dormant, wirings, columns, row_units, declaration)
+    if vapour_only is not None:
+        _check_vapour_only_forms(models, splits, vapour_only, columns, row_units, declaration)
+
+
+def _squared_rows(spec: ProblemSpec, row_units: Mapping[str, str]) -> dict[str, list[str]]:
+    """The spec's `molar_flow_squared` rows by the unit that authored them, in `equation_ids`
+    order."""
     squared: dict[str, list[str]] = {}
     for row in spec.equation_ids:
         if spec.row_kinds.get(row) == "molar_flow_squared":
             squared.setdefault(row_units[row], []).append(row)
+    return squared
 
+
+def _check_registered(
+    models: Mapping[str, str],
+    splits: Sequence[LiftedSplit],
+    owners: Mapping[str, str],
+    squared: Mapping[str, list[str]],
+) -> None:
+    """`check_agreement` (a) and (a′): the units with `molar_flow_squared` rows are exactly the
+    units with a descriptor, a staged split's unit standing for its owner."""
     described = {owners.get(split.unit, split.unit) for split in splits}
     for unit in squared:
         if unit not in described:
@@ -616,120 +655,18 @@ def check_agreement(
     for split in splits:
         if owners.get(split.unit, split.unit) not in squared:
             raise ValueError(f"lifted_split_without_rows({split.unit})")
+
+
+def _check_keys(
+    models: Mapping[str, str], splits: Sequence[LiftedSplit], owners: Mapping[str, str]
+) -> None:
+    """`check_agreement` (a″): the descriptors' keys are pairwise distinct and no staged key is an
+    instance id."""
     keys: set[str] = set()
     for split in splits:
         if split.unit in keys or (split.unit in owners and split.unit in models):
             raise ValueError(f"lifted_split_key_collision({split.unit})")
         keys.add(split.unit)
-    for unit, staging in given.items():
-        _check_staged_rows(unit, staging, squared.get(unit, []))
-
-    columns = set(spec.variable_ids)
-    for split in splits:
-        rule = _rule(models, split)
-        if split.unit in owners:
-            pass  # (b′), checked above for the whole staged instance.
-        elif rule.vapour_only:
-            zero = _vapour_only_rows(split, rule)
-            others = tuple(row for row in split.equilibrium_rows if row not in zero)
-            authored = [
-                row
-                for row in split.equilibrium_rows
-                if row in zero
-                and (row_units.get(row) != split.unit or spec.row_kinds.get(row) != "molar_flow")
-            ]
-            if others != tuple(squared[split.unit]) or authored:
-                raise ValueError(
-                    f"lifted_split_rows_disagree({split.unit}): the rule names "
-                    f"{list(others)} and the zero rows {sorted(zero)}, the unit authors "
-                    f"{squared[split.unit]}; not molar_flow rows of the unit: {authored}"
-                )
-        else:
-            if split.equilibrium_rows != tuple(squared[split.unit]):
-                raise ValueError(
-                    f"lifted_split_rows_disagree({split.unit}): the rule names "
-                    f"{list(split.equilibrium_rows)}, the unit authors {squared[split.unit]}"
-                )
-        named = (
-            *split.feed,
-            split.temperature,
-            split.pressure,
-            *split.vapor,
-            *split.liquid,
-            split.vapor_total,
-            split.liquid_total,
-        )
-        absent = [name for name in named if name not in columns]
-        if absent:
-            raise ValueError(f"lifted_split_variables_absent({split.unit}): {absent}")
-        for definition, flows, total in (
-            (split.vapor_definition, split.vapor, split.vapor_total),
-            (split.liquid_definition, split.liquid, split.liquid_total),
-        ):
-            traced = declaration.rows.get(definition)
-            if traced is None or set(traced.columns) != {*flows, total}:
-                raise ValueError(
-                    f"lifted_split_definition_disagrees({split.unit}, {definition}): reads "
-                    f"{None if traced is None else list(traced.columns)}, the rule names "
-                    f"{[*flows, total]}"
-                )
-        totals = {split.vapor_total, split.liquid_total}
-        if rule.vapour_only:
-            zero = _vapour_only_rows(split, rule)
-            for equilibrium, vapor, liquid in zip(
-                split.equilibrium_rows, split.vapor, split.liquid, strict=True
-            ):
-                read = set(declaration.rows[equilibrium].columns)
-                if equilibrium in zero:
-                    if read != {liquid}:
-                        raise ValueError(
-                            f"lifted_split_equilibrium_disagrees({split.unit}, {equilibrium}): "
-                            f"reads {sorted(read)}, not exactly {liquid}"
-                        )
-                elif not {vapor, liquid, *totals} <= read:
-                    raise ValueError(
-                        f"lifted_split_equilibrium_disagrees({split.unit}, {equilibrium}): does "
-                        f"not read {sorted({vapor, liquid, *totals} - read)}"
-                    )
-        else:
-            for equilibrium, vapor, liquid in zip(
-                split.equilibrium_rows, split.vapor, split.liquid, strict=True
-            ):
-                read = set(declaration.rows[equilibrium].columns)
-                if not {vapor, liquid, *totals} <= read:
-                    raise ValueError(
-                        f"lifted_split_equilibrium_disagrees({split.unit}, {equilibrium}): does "
-                        f"not read {sorted({vapor, liquid, *totals} - read)}"
-                    )
-    for split in splits if forms is not None else ():
-        assert forms is not None
-        form = forms.get(split.unit)
-        if form is None:
-            raise ValueError(f"zero_flow_form_disagrees({split.unit}): no form")
-        owner = owners.get(split.unit, split.unit)
-        foreign = [row for row in form.rows if row_units.get(row) != owner]
-        if foreign:
-            raise ValueError(
-                f"zero_flow_form_disagrees({split.unit}): not rows the unit authored: {foreign}"
-            )
-        if form.label is None:
-            continue
-        _, outlet, source = form.label
-        if outlet != split.temperature or source not in columns:
-            raise ValueError(
-                f"zero_flow_form_disagrees({split.unit}): the label reads {outlet} and {source}"
-            )
-        swapped = declaration.rows.get(form.swapped)
-        if swapped is None or split.temperature not in swapped.columns:
-            raise ValueError(
-                f"zero_flow_form_disagrees({split.unit}, {form.swapped}): does not read "
-                f"{split.temperature}"
-            )
-    wirings = {unit: wiring for unit, _, wiring in instances}
-    for dormant in dormancy or ():
-        _check_dormancy_form(dormant, wirings, columns, row_units, declaration)
-    if vapour_only is not None:
-        _check_vapour_only_forms(models, splits, vapour_only, columns, row_units, declaration)
 
 
 def _check_staged_rows(unit: str, staging: StagedSplits, squared: Sequence[str]) -> None:
@@ -767,6 +704,147 @@ def _rule(models: Mapping[str, str], split: LiftedSplit) -> SplitRule:
 
 #: What `_rule` answers for a descriptor whose model the registry does not hold.
 _NO_RULE: Final = SplitRule("products", "", None, "", None)
+
+
+def _check_authored_rows(
+    split: LiftedSplit,
+    rule: SplitRule,
+    squared_rows: list[str],
+    row_units: Mapping[str, str],
+    row_kinds: Mapping[str, QuantityKind],
+) -> None:
+    """`check_agreement` (b) for a split that is not staged: its equilibrium rows are
+    `squared_rows`, its unit's `molar_flow_squared` rows in `equation_ids` order. Under a rule
+    with vapour-only components, the other components' rows are, and each vapour-only row is a
+    `molar_flow` row of the unit."""
+    if rule.vapour_only:
+        zero = _vapour_only_rows(split, rule)
+        others = tuple(row for row in split.equilibrium_rows if row not in zero)
+        authored = [
+            row
+            for row in split.equilibrium_rows
+            if row in zero
+            and (row_units.get(row) != split.unit or row_kinds.get(row) != "molar_flow")
+        ]
+        if others != tuple(squared_rows) or authored:
+            raise ValueError(
+                f"lifted_split_rows_disagree({split.unit}): the rule names "
+                f"{list(others)} and the zero rows {sorted(zero)}, the unit authors "
+                f"{squared_rows}; not molar_flow rows of the unit: {authored}"
+            )
+    elif split.equilibrium_rows != tuple(squared_rows):
+        raise ValueError(
+            f"lifted_split_rows_disagree({split.unit}): the rule names "
+            f"{list(split.equilibrium_rows)}, the unit authors {squared_rows}"
+        )
+
+
+def _check_columns(split: LiftedSplit, columns: set[str]) -> None:
+    """`check_agreement` (c): every variable the descriptor names is a column of the spec."""
+    named = (
+        *split.feed,
+        split.temperature,
+        split.pressure,
+        *split.vapor,
+        *split.liquid,
+        split.vapor_total,
+        split.liquid_total,
+    )
+    absent = [name for name in named if name not in columns]
+    if absent:
+        raise ValueError(f"lifted_split_variables_absent({split.unit}): {absent}")
+
+
+def _check_definitions(split: LiftedSplit, declaration: Declaration) -> None:
+    """`check_agreement` (d): each phase-total definition row reads exactly that phase's flows
+    and its total."""
+    for definition, flows, total in (
+        (split.vapor_definition, split.vapor, split.vapor_total),
+        (split.liquid_definition, split.liquid, split.liquid_total),
+    ):
+        traced = declaration.rows.get(definition)
+        if traced is None or set(traced.columns) != {*flows, total}:
+            raise ValueError(
+                f"lifted_split_definition_disagrees({split.unit}, {definition}): reads "
+                f"{None if traced is None else list(traced.columns)}, the rule names "
+                f"{[*flows, total]}"
+            )
+
+
+def _check_equilibrium_reads(split: LiftedSplit, rule: SplitRule, declaration: Declaration) -> None:
+    """`check_agreement` (e): each equilibrium row reads its component's vapour and liquid flows
+    and both totals; under a rule with vapour-only components, each vapour-only row reads
+    exactly its liquid flow."""
+    totals = {split.vapor_total, split.liquid_total}
+    if rule.vapour_only:
+        zero = _vapour_only_rows(split, rule)
+        for equilibrium, vapor, liquid in zip(
+            split.equilibrium_rows, split.vapor, split.liquid, strict=True
+        ):
+            read = set(declaration.rows[equilibrium].columns)
+            if equilibrium in zero:
+                if read != {liquid}:
+                    raise ValueError(
+                        f"lifted_split_equilibrium_disagrees({split.unit}, {equilibrium}): "
+                        f"reads {sorted(read)}, not exactly {liquid}"
+                    )
+            elif not {vapor, liquid, *totals} <= read:
+                raise ValueError(
+                    f"lifted_split_equilibrium_disagrees({split.unit}, {equilibrium}): does "
+                    f"not read {sorted({vapor, liquid, *totals} - read)}"
+                )
+    else:
+        for equilibrium, vapor, liquid in zip(
+            split.equilibrium_rows, split.vapor, split.liquid, strict=True
+        ):
+            read = set(declaration.rows[equilibrium].columns)
+            if not {vapor, liquid, *totals} <= read:
+                raise ValueError(
+                    f"lifted_split_equilibrium_disagrees({split.unit}, {equilibrium}): does "
+                    f"not read {sorted({vapor, liquid, *totals} - read)}"
+                )
+
+
+def _zero_flow_form(
+    split: LiftedSplit,
+    forms: Mapping[str, ZeroFlowForm],
+    owners: Mapping[str, str],
+    row_units: Mapping[str, str],
+) -> ZeroFlowForm:
+    """`check_agreement` (f) and (f′): the split's zero-flow form, after checking that the split
+    has one and that every row it drops is a row of the split's unit (its owner, for a staged
+    split)."""
+    form = forms.get(split.unit)
+    if form is None:
+        raise ValueError(f"zero_flow_form_disagrees({split.unit}): no form")
+    owner = owners.get(split.unit, split.unit)
+    foreign = [row for row in form.rows if row_units.get(row) != owner]
+    if foreign:
+        raise ValueError(
+            f"zero_flow_form_disagrees({split.unit}): not rows the unit authored: {foreign}"
+        )
+    return form
+
+
+def _check_zero_flow_label(
+    split: LiftedSplit, form: ZeroFlowForm, columns: set[str], declaration: Declaration
+) -> None:
+    """`check_agreement` (f) for a form with a label: the label row reads the split's
+    temperature and a column of the spec, and the swapped row reads the split's temperature.
+    A form without a label has nothing more to check."""
+    if form.label is None:
+        return
+    _, outlet, source = form.label
+    if outlet != split.temperature or source not in columns:
+        raise ValueError(
+            f"zero_flow_form_disagrees({split.unit}): the label reads {outlet} and {source}"
+        )
+    swapped = declaration.rows.get(form.swapped)
+    if swapped is None or split.temperature not in swapped.columns:
+        raise ValueError(
+            f"zero_flow_form_disagrees({split.unit}, {form.swapped}): does not read "
+            f"{split.temperature}"
+        )
 
 
 def _vapour_only_rows(split: LiftedSplit, rule: SplitRule) -> frozenset[str]:
