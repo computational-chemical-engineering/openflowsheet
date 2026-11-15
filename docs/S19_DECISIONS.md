@@ -439,3 +439,11 @@
   tuple subclass and `_Closed` a plain tuple: never test against `tuple`; `_Frozen.infinity`/`.merit` unread until
   P3; anderson frame fields `rules`, `observer`, `n`, `scale`, `tolerance_hat`, `lower` unread by methods (drop at
   the last step). ptc.py 6.8 still open (P3, P4).
+- **2026-11-15, procedure change (Frank: "Yes, your information is right. Please adopt the procedure.").** Adopted,
+  in Frank's order, the OpenFlowsheet-check advice: (1) narrow the test_impact fallback (`.codehealth/`, `.claude/`
+  are tooling no test reads) and move `MB` to a recent tip; (2) a gate queue outside the agents
+  (`.claude/skills/s19-refactor/gate_queue.py`): engineers deliver a chain of steps, enqueue it and end; one
+  orchestrator wake per lane result; (3) orchestrator self-reset at milestones (`<git-common-dir>/codehealth/tools/
+  self_reset.sh`), resuming from `.claude/skills/s19-refactor/SKILL.md`. Also: lanes at most 2 until the weekly
+  reset (Thu 19 Nov 13:00); chains per function. Open for Frank: the G-END split (blocking for S18 vs trailing)
+  and S18's file list.

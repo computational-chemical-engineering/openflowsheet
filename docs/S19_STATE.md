@@ -1,8 +1,7 @@
 # S19 state: repo-wide code-health campaign (includes the D19 interface package)
 
 Rewritten in place; history in `docs/S19_DECISIONS.md` and the run log
-`$(git rev-parse --git-common-dir)/codehealth/runs/s19.jsonl`. Standing rules: `docs/S19_RULES.md`. Procedure: the
-S17 skill (`.claude/skills/s17-refactor/SKILL.md`) until `s19-refactor` exists.
+`$(git rev-parse --git-common-dir)/codehealth/runs/s19.jsonl`. Standing rules: `docs/S19_RULES.md`. Procedure: `.claude/skills/s19-refactor/SKILL.md` (gate queue, self-reset).
 
 ## Objective
 
