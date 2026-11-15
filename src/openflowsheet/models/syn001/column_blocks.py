@@ -87,17 +87,27 @@ def _flows(n: tuple[float, ...]) -> bool:
 
 
 def sources(spec: ColumnSpec) -> Sources:
-    """§5.2's liquid sources, vapour sources and fixed stages of `spec`."""
-    count = spec.stage_count
+    """§5.2's liquid sources, vapour sources and fixed stages of `spec`: the table's first two rows
+    (`_flow_sources`), then its third (`_fixed_stages`)."""
     equilibrium = set(spec.equilibrium_stages())
+    liquid, vapor = _flow_sources(spec, equilibrium)
+    fixed = _fixed_stages(spec, equilibrium)
+    return Sources(tuple(liquid), tuple(vapor), tuple(sorted(fixed)))
+
+
+def _flow_sources(
+    spec: ColumnSpec, equilibrium: set[int]
+) -> tuple[list[tuple[int, str]], list[tuple[int, str]]]:
+    """§5.2's liquid and vapour sources of `spec` as `(stage, kind)`: the ends, then the flowing
+    inlets in `spec.inlets()` order, then the intermediate duties of the `equilibrium` stages by
+    stage."""
+    count = spec.stage_count
     liquid: list[tuple[int, str]] = []
     vapor: list[tuple[int, str]] = []
-    fixed: set[int] = set()
     if spec.condenser == "partial":
         liquid.append((1, "end"))
     elif spec.total_condenser:
         liquid.append((2, "reflux"))
-        fixed.add(2)
     if spec.reboiler == "partial":
         vapor.append((count, "end"))
     for inlet in spec.inlets():
@@ -110,13 +120,22 @@ def sources(spec: ColumnSpec) -> Sources:
             liquid.append((stage, "duty"))
         elif duty is not None and duty > 0.0:
             vapor.append((stage, "duty"))
+    return liquid, vapor
+
+
+def _fixed_stages(spec: ColumnSpec, equilibrium: set[int]) -> set[int]:
+    """§5.2's fixed stages of `spec`: stage 2 under a total condenser, a partial end stage whose
+    kind is not `duty`, and every `equilibrium` stage named by a `temperature` specification."""
+    fixed: set[int] = set()
+    if spec.total_condenser:
+        fixed.add(2)
     for end in spec.ends():
         given = spec.end_specification(end)
         if spec.end_kind(end) == "partial" and (given is None or given.kind != "duty"):
             fixed.add(spec.end_stage(end))
         if given is not None and given.kind == "temperature" and given.stage in equilibrium:
             fixed.add(given.stage)
-    return Sources(tuple(liquid), tuple(vapor), tuple(sorted(fixed)))
+    return fixed
 
 
 def _carries(spec: ColumnSpec, stage: int, phase: str) -> bool:
