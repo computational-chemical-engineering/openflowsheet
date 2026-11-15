@@ -638,6 +638,144 @@ def test_campaign_tooling_neither_falls_back_nor_selects(repo, tree: str, kind: 
     assert _select(repo).nodes == {T1}
 
 
+# -- a step-relative selection (S19, `--since`) ---------------------------------------------------
+
+
+def _commit(repo: Path, message: str) -> str:
+    _git(repo, "add", "-A")
+    _git(repo, "commit", "-q", "-m", message)
+    return _git(repo, "rev-parse", "HEAD").strip()
+
+
+def _since(repo_fixture: tuple[Path, str, Path], since: str) -> object:
+    repo, base, map_dir = repo_fixture
+    return ti.select(base, map_dir, cwd=repo, since=since)
+
+
+def _gated_history(root: Path) -> str:
+    """An earlier, gated commit with every sticky cause: a new file, import-time code, a file read
+    at collection time and a body change in another module."""
+    (root / "src/pkg/new.py").write_text("x = 1\n")
+    _edit(root, "src/pkg/mod.py", "LIMIT = 3", "LIMIT = 4")
+    (root / "data/boot.json").write_text((root / "data/boot.json").read_text() + "\n")
+    _edit(root, "src/pkg/twins.py", '        return "second"', '        return "2nd"')
+    return _commit(root, "an earlier gated step")
+
+
+def test_since_judges_only_the_step_and_not_what_it_inherits(repo) -> None:
+    root = repo[0]
+    earlier = _gated_history(root)
+    assert _select(repo).fallback is not None
+    assert _since(repo, earlier).nodes == set() and _since(repo, earlier).fallback is None
+    _edit(root, "docs/guide.md", "guide", "changed")
+    assert _since(repo, earlier).nodes == {T1} and _since(repo, earlier).fallback is None
+    # Committed or not, the step is HEAD's working tree against `since`.
+    _commit(root, "the step")
+    assert _since(repo, earlier).nodes == {T1}
+
+
+def test_since_selects_a_file_by_its_cumulative_change_from_the_base(repo) -> None:
+    """The map's lines are the base's: a file the step touches brings its earlier hunks along (a
+    superset); a file only earlier steps touched brings nothing."""
+    root = repo[0]
+    _edit(root, "src/pkg/mod.py", "    total = 0\n", "    total = 0\n    total -= 1\n")
+    _edit(root, "src/pkg/twins.py", '        return "second"', '        return "2nd"')
+    earlier = _commit(root, "an earlier gated step in g and in twins")
+    _edit(root, "src/pkg/mod.py", "    y = x + 1", "    y = x + 2")
+    assert _since(repo, earlier).nodes == {T1, T2}
+    assert _select(repo).nodes == {T1, T2}
+
+
+@pytest.mark.parametrize(
+    ("kind", "reason"),
+    [
+        ("new-file", "new or deleted file"),
+        ("deleted-file", "new or deleted file"),
+        ("import-time", "import-time code changed"),
+        ("collection", "import or collection time"),
+        ("conftest", "conftest.py"),
+        ("edits-a-file-the-map-never-saw", "new or deleted file"),
+        ("restores-the-base", "restores the base's content"),
+    ],
+)
+def test_since_still_falls_back_on_the_steps_own_causes(repo, kind: str, reason: str) -> None:
+    root = repo[0]
+    earlier = _gated_history(root)
+    if kind == "new-file":
+        (root / "src/pkg/newer.py").write_text("y = 1\n")
+    elif kind == "deleted-file":
+        (root / "data/table.yaml").unlink()
+    elif kind == "import-time":
+        _edit(root, "src/pkg/mod.py", "def f(x):", "def f(x, z=0):")
+    elif kind == "collection":
+        _edit(root, "src/pkg/mod.py", '    return "import time"', '    return "boot"')
+    elif kind == "conftest":
+        (root / "tests/conftest.py").write_text((root / "tests/conftest.py").read_text() + "\n#\n")
+    elif kind == "edits-a-file-the-map-never-saw":
+        (root / "src/pkg/new.py").write_text("x = 2\n")
+    else:
+        _edit(root, "src/pkg/twins.py", '        return "2nd"', '        return "second"')
+    assert reason in (_since(repo, earlier).fallback or "")
+
+
+def test_since_keeps_an_inherited_import_time_change_in_the_steps_own_file_quiet(repo) -> None:
+    """One file, two hunks: the earlier step's module constant (import-time) and this step's body
+    line. The inherited hunk does not fall back; next to the step's line it does."""
+    root = repo[0]
+    earlier = _gated_history(root)  # LIMIT = 3 -> 4 in src/pkg/mod.py
+    _edit(root, "src/pkg/mod.py", "    total = 0\n", "    total = 0\n    total -= 1\n")
+    assert _select(repo).fallback is not None
+    assert _since(repo, earlier).nodes == {T2} and _since(repo, earlier).fallback is None
+    _edit(root, "src/pkg/mod.py", "LIMIT = 4\n", "LIMIT = 4\nOTHER = 5\n")
+    assert "import-time code changed" in (_since(repo, earlier).fallback or "")
+
+
+def test_import_time_by_file_selects_the_tests_that_ran_the_file(repo) -> None:
+    """The approximate rule: the step's own import-time change selects every test that executed a
+    line of the file; collection-time code, a file no test ran and a new file still fall back."""
+    root, base, map_dir = repo
+    earlier = _gated_history(root)
+
+    def by_file() -> object:
+        return ti.select(base, map_dir, cwd=root, since=earlier, by_file=True)
+
+    _edit(root, "src/pkg/mod.py", "def f(x):", "def f(x, z=0):")
+    assert "import-time code changed" in (_since(repo, earlier).fallback or "")
+    assert by_file().fallback is None and by_file().nodes == {T1, T2, T3, T4}
+    _edit(root, "src/pkg/mod.py", '    return "import time"', '    return "boot"')
+    assert "import or collection time" in (by_file().fallback or "")
+    _git(root, "checkout", "-q", "--", "src/pkg/mod.py")
+    (root / "src/pkg/newer.py").write_text("y = 1\n")
+    assert "new or deleted file" in (by_file().fallback or "")
+    # Without --since the rule is off: the cumulative selection stays exact.
+    assert ti.select(base, map_dir, cwd=root, by_file=True).fallback is not None
+    with pytest.raises(SystemExit):
+        ti.main(["select", "--base", base, "--import-time-by-file"])
+
+
+def test_since_must_lie_between_the_base_and_head(repo) -> None:
+    root, base, _ = repo
+    earlier = _gated_history(root)
+    _git(root, "checkout", "-q", "-b", "side", base)
+    (root / "side.txt").write_text("side\n")
+    side = _commit(root, "not an ancestor of the step")
+    _git(root, "checkout", "-q", "main")
+    assert "not between the base and HEAD" in (_since(repo, side).fallback or "")
+    _git(root, "checkout", "-q", "side")
+    assert "not between the base and HEAD" in (_since(repo, earlier).fallback or "")
+
+
+def test_since_on_the_command_line(repo, capsys: pytest.CaptureFixture[str]) -> None:
+    root, base, map_dir = repo
+    earlier = _gated_history(root)
+    _edit(root, "docs/guide.md", "guide", "changed")
+    arguments = ["--repo", str(root), "select", "--base", base, "--map", str(map_dir)]
+    assert ti.main(arguments) == ti.EXIT_FULL
+    capsys.readouterr()
+    assert ti.main([*arguments, "--since", earlier]) == 0
+    assert capsys.readouterr().out.split() == ["tests/test_a.py"]
+
+
 #: A string literal naming a campaign-tooling tree as a path component.
 TOOLING_PATH = re.compile(r"(^|/)\.(codehealth|claude)(/|$)")
 #: The selector and its tests name the prefixes; they do not read the trees.
