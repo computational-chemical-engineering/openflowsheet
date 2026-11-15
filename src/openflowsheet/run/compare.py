@@ -335,30 +335,15 @@ def _differences_v1(
         if not isinstance(emitted, dict):
             return [f"{where}: expected an object, got {type(emitted).__name__}"]
         for key in sorted(set(committed) | set(emitted)):
-            if key not in committed:
-                found.append(f"{where}.{key}: present in the emitted document only")
-            elif key not in emitted:
-                found.append(f"{where}.{key}: present in the committed document only")
-            elif path == "" and (key in PROVENANCE_SUBTREES or key in VOLATILE_FIELDS):
-                found += _provenance_v1(where, key, emitted, committed)
-            elif key in UNREPRODUCIBLE_COUNTS:
-                found += _count_v1(where, key, emitted)
-            elif is_float_digest(key):
-                found += _float_digest_v1(where, key, emitted)
-            elif key == "certificate_id" and _digest_derived_id(committed, emitted):
-                found += _certificate_id_v1(where, key, emitted)
-            elif key in WINDOW_SELECTORS:
-                found += _window_selector_v1(where, key, emitted)
-            elif key in COMPARABILITY_WINDOW and not _inside_window_v1(key, committed):
-                found += _windowed_shape_v1(where, key, emitted, committed)
-            else:
-                floor = None
-                source = SELF_FLOORED.get(key)
-                if source is not None and isinstance(committed.get(source), int | float):
-                    floor = abs(float(committed[source]))
-                found += _differences_v1(
-                    emitted[key], committed[key], f"{where}.{key}", floor=floor
-                )
+            ruled = _key_rule_v1(where, key, path, emitted, committed)
+            if ruled is not None:
+                found += ruled
+                continue
+            floor = None
+            source = SELF_FLOORED.get(key)
+            if source is not None and isinstance(committed.get(source), int | float):
+                floor = abs(float(committed[source]))
+            found += _differences_v1(emitted[key], committed[key], f"{where}.{key}", floor=floor)
         return found
 
     if isinstance(committed, list):
@@ -389,6 +374,35 @@ def _differences_v1(
     if emitted != committed:
         found.append(f"{where}: {emitted!r} against {committed!r}")
     return found
+
+
+def _key_rule_v1(
+    where: str, key: str, path: str, emitted: dict[str, Any], committed: dict[str, Any]
+) -> list[str] | None:
+    """v1 on the key `key` of the object at `where`: the differences its own rule finds, or
+    None when no rule applies and `_differences_v1` compares its value as a child.
+
+    The rules, tried in order, the first match deciding: present on one side only;
+    root-anchored provenance (`path` is ""); an unreproducible count; a float digest; a
+    digest-derived `certificate_id`; a window selector; a windowed float outside its window.
+    """
+    if key not in committed:
+        return [f"{where}.{key}: present in the emitted document only"]
+    if key not in emitted:
+        return [f"{where}.{key}: present in the committed document only"]
+    if path == "" and (key in PROVENANCE_SUBTREES or key in VOLATILE_FIELDS):
+        return _provenance_v1(where, key, emitted, committed)
+    if key in UNREPRODUCIBLE_COUNTS:
+        return _count_v1(where, key, emitted)
+    if is_float_digest(key):
+        return _float_digest_v1(where, key, emitted)
+    if key == "certificate_id" and _digest_derived_id(committed, emitted):
+        return _certificate_id_v1(where, key, emitted)
+    if key in WINDOW_SELECTORS:
+        return _window_selector_v1(where, key, emitted)
+    if key in COMPARABILITY_WINDOW and not _inside_window_v1(key, committed):
+        return _windowed_shape_v1(where, key, emitted, committed)
+    return None
 
 
 def _provenance_v1(
