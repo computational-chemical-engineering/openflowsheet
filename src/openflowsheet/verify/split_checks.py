@@ -7,7 +7,7 @@ from __future__ import annotations
 import math
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, NamedTuple
 
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.models import pressure_id, temperature_id
@@ -25,6 +25,7 @@ from openflowsheet.verify.checks import (
     stream_of,
 )
 from openflowsheet.verify.saturation import (
+    Route,
     SaturationError,
     band_distance,
     band_ends,
@@ -390,38 +391,24 @@ def degeneracy(
             owned.update((vapor_stream, liquid_stream))
         else:
             owned.add(split.stream)
-        feed = tuple(state[column] for column in split.feed)
-        if all(flow == 0.0 for flow in feed):
-            continue
-        temperature, pressure = state[split.temperature], state[split.pressure]
-        t_bubble, t_dew = _band(provider, feed, pressure, context, f"{split.unit}.{split.stream}")
-        distance = band_distance(temperature, t_bubble, t_dew)
-        route, floor = split_route(
-            temperature,
-            sum(feed),
-            t_bubble,
-            t_dew,
-            two_phase=state[split.vapor_total] > 0.0 and state[split.liquid_total] > 0.0,
-            flow_tolerance=flow_tolerance,
-        )
-        if route == "resolved":
-            continue
-        if route == "degenerate":
-            distances[split.unit] = distance
-            template = SPLIT_ENTHALPY_NOTE
-        else:
-            unresolved[split.unit] = floor if floor is not None else math.inf
-            template = UNRESOLVED_ENTHALPY_NOTE
-        split_enthalpy = _split_enthalpies(
+        substitution = _split_substitution(
             provider,
             context,
             state,
             split,
-            temperature,
-            pressure,
+            flow_tolerance,
             (vapor_stream, liquid_stream) if products else None,
         )
-        for stream, value in split_enthalpy.items():
+        if substitution is None:
+            continue
+        if substitution.route == "degenerate":
+            distances[split.unit] = substitution.distance
+            template = SPLIT_ENTHALPY_NOTE
+        else:
+            floor = substitution.floor
+            unresolved[split.unit] = floor if floor is not None else math.inf
+            template = UNRESOLVED_ENTHALPY_NOTE
+        for stream, value in substitution.enthalpy.items():
             enthalpy[stream] = value
             notes[stream] = template.format(stream=stream)
 
@@ -443,6 +430,55 @@ def degeneracy(
         )
         notes[stream] = DECLARED_ENTHALPY_NOTE.format(stream=stream, phase=capability)
     return Degeneracy(distances, enthalpy, notes, frozenset(unlifted), unresolved)
+
+
+class _SplitSubstitution(NamedTuple):
+    """A flowing split that is not resolved, and the enthalpies §9.1 gives its streams."""
+
+    #: `degenerate` (§9.1) or `unresolved` (ADR 0013 D3).
+    route: Route
+    #: `δ` of its feed at the split's `(T, P)`.
+    distance: float
+    #: Its fresh flash's floor over `τ_flow`; None outside the band.
+    floor: float | None
+    #: Stream -> `Ḣ` from the state's split (`_split_enthalpies`).
+    enthalpy: dict[str, float]
+
+
+def _split_substitution(
+    provider: PropertyProvider,
+    context: EvaluationContext,
+    state: Mapping[str, float],
+    split: LiftedSplit,
+    flow_tolerance: float,
+    product_streams: tuple[str, str] | None,
+) -> _SplitSubstitution | None:
+    """§9.1 and ADR 0013 D3 at one split of `state`: its feed tested at the split's `(T, P)`
+    (`split_route`), and, when it is degenerate or unresolved, the enthalpies
+    `_split_enthalpies` gives its streams (`product_streams` as there).
+
+    None when every feed flow is zero (not tested) or when the split is resolved. Raises
+    `VerifierError` when the verifier's own band or phase evaluation fails."""
+    feed = tuple(state[column] for column in split.feed)
+    if all(flow == 0.0 for flow in feed):
+        return None
+    temperature, pressure = state[split.temperature], state[split.pressure]
+    t_bubble, t_dew = _band(provider, feed, pressure, context, f"{split.unit}.{split.stream}")
+    distance = band_distance(temperature, t_bubble, t_dew)
+    route, floor = split_route(
+        temperature,
+        sum(feed),
+        t_bubble,
+        t_dew,
+        two_phase=state[split.vapor_total] > 0.0 and state[split.liquid_total] > 0.0,
+        flow_tolerance=flow_tolerance,
+    )
+    if route == "resolved":
+        return None
+    split_enthalpy = _split_enthalpies(
+        provider, context, state, split, temperature, pressure, product_streams
+    )
+    return _SplitSubstitution(route, distance, floor, split_enthalpy)
 
 
 def _split_enthalpies(
