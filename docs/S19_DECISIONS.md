@@ -460,3 +460,12 @@
   on `wp/S19-tools2` after `wp/S19-tools` merges. Alternative: skip lists only. Reversible by dropping `--since`.
   Process: MB moves after every merged restructure step; evidence-manifest commits only right before a merge into
   main, followed by a map rebuild.
+- **2026-11-15, S19 re-ordered (Frank, confirmed in this session's form: "Yes, adopt it"; first approved in the
+  OpenFlowsheet-check chat: "Yes. This sounds like a good plan.").** (1) The scale probe (R-1034; the S18 of
+  Frank's 2026-11-12 order) runs now, in parallel. (2) First what the 0.5 line builds on: W4 (ADR 0076), the last
+  cycles and violations, G5 (verify/, run/) and G6 (thermo/, graph/, messages/, units/, adapters/, registry/,
+  compile/). (3) The 0.5 line starts when that is done. (4) G3 studies, G4 assessment, G2 models and W5 run behind
+  development; G1 (orchestrator/, numerics/) is held until the scale probe reports. (5) The legacy models/ engine
+  (std.* re-derives its rows and may not import models/syn001, ADR 0065:339-341) stays untouched until Frank rules.
+  G-END stays the end criterion for the whole repository; only the blocking set changes. Running G1, G2, G3 lanes
+  finish and merge their accepted steps and start no new targets.

@@ -39,14 +39,26 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 - Open (R-W3-G1N-1): numerics/ptc.py health 6.8 after P1 (closing method's 9 parameters); P2 to P4 must end >= 7.0,
   else a miss and P1 is reverted.
 
+## Order (Frank, 2026-11-15; S19_DECISIONS)
+
+- Blocking for the 0.5 line: W4 (ADR 0076 items), 0 cycles and 0 violations, G5 (verify/, run/), G6 (thermo/, graph/,
+  messages/, units/, adapters/, registry/, compile/). When done: Frank starts 0.5 (roadmap ADR 0057: X07a, X01, F3, F2,
+  F8, X06).
+- In parallel: the scale probe (R-1034).
+- Behind development: G3 studies, G4 assessment, G2 models (legacy engine untouched until Frank rules), W5.
+- Held until the scale probe reports: G1 (orchestrator/, numerics/). Open: ptc.py 6.8 (P3, P4).
+- G-END (below) stays the end criterion for the whole repository.
+
 ## Next actions
 
-1. Merge `wp/S19-f` (I-15 + B1) into `wp/S19`; remove worktree `s19f`.
-2. W3: review and merge G2, G4, G5, G6 runs; then G1 (orchestrator, numerics) and G3 (studies); more runs per
-   group until the G-END numbers.
-3. W4 in ADR 0076 order (I-9 before A11/I-14; I-10; drop re-exports I-19). W5: frozen modules after a `specifier`
-   identity ruling (Fable). Merge into `main` after each phase (the wall-time budget tests alone on `wp/S19`, no gate running: `pytest tests/test_t07_v17_reference.py -k f6 tests/test_t07_conformance.py -k budget_of_the_scenario`; CI both legs; F0; Decision Desk card).
-4. Docs pass (list in `S19_DECISIONS`).
+1. Merge the tools branch `wp/S19-tools` (test-map skip list, `gate_queue.py`); tell OpenFlowsheet-check its merge
+   commit (it builds `--since` selection, chain gating and merge-check on `wp/S19-tools2`).
+2. Finish and merge running work: G1 lane O run 3, G2 run 5, G5 run 3 fixes; G3 drafts and G6 run 2 wait (drafts in
+   `<git-common-dir>/codehealth/drafts/`).
+3. Move `MB` to the new map (736f70db when its build passes G-MAP), then lanes fast-forward.
+4. Two lanes until Thu 19 Nov 13:00: G5/G6 and W4; the scale probe as its own package.
+5. Merge into `main` after each phase (the wall-time budget tests alone on `wp/S19`: f6 and t07_conformance
+   budget_of_the_scenario_runs; CI both legs; F0; Decision Desk card).
 
 ## Gates (pass numbers fixed after A1, before step 1)
 
