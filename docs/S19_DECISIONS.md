@@ -516,3 +516,12 @@
   Layer entry `openflowsheet.schema_check` above `serialize` committed before (5d09ace0, rule 6). G6 run 3 briefed
   (`S19-W3-G6-3.md`): re-gate 684c9f2a, lint.py drafts s5, s6, s7b, s8, structural_pattern hoist with a timing and
   equality check at the 715-stage probe column.
+- **2026-11-16, wp/S19-tools2 merged (37307ab0; OpenFlowsheet-check).** Step-relative selection `--since {base}`
+  with the approximate `--import-time-by-file` in the tests tier (replay of 104 W3 rows: full-suite fallbacks 101 ->
+  19, median 2123 of 20362 tests); queue `--snapshot`, SKIPPED after a failed step, `--mode merge-check`
+  (S19_GATE_FULL=1), `wait --idle`. Reviewed by the orchestrator: accepted. Rule from now on: a `merge-check` PASS
+  before every lane merge into wp/S19 (it closes the selection's holes: import-time state without executed lines,
+  collection-time code, call edges created between MB and since). Lanes branch from a commit containing MB (else
+  full-suite fallback; wp/S19-g6 at ca416ab3 does not contain MB 736f70db). The interim `--head` of 4535f3bd is
+  folded into `--snapshot` (`--head` alone implies it); `interface` mode kept. First gate with the new tier: read
+  its "selected N" line as the proof.
