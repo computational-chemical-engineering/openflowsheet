@@ -31,7 +31,7 @@ from test_s06_column_wo1 import (
 )
 
 import openflowsheet.models.syn001.column_solve as solve_module
-import openflowsheet.orchestrator.region as region_module
+import openflowsheet.orchestrator.region_attempts as region_attempts
 from openflowsheet.compile.reference import row_values
 from openflowsheet.models.syn001 import FLOW_TOLERANCE
 from openflowsheet.models.syn001.cascade import (
@@ -536,14 +536,14 @@ def test_a10_forced_edge_3_from_x0(monkeypatch: pytest.MonkeyPatch, name: str) -
     replaced slots, each inverse slot's parameter among them; `p⁰` is A05's; λ dyadic; the λ = 1
     instance is the target's; the recovery is `CONVERGED` at `ref.cases.*.target`."""
     rebound: list[dict[str, float]] = []
-    real = region_module.rebind
+    real = region_attempts.rebind
 
     def rebind(spec: Any, values: dict[str, float]) -> Any:
         rebound.append(dict(values))
         return real(spec, values)
 
     monkeypatch.setattr(solve_module, "eo_recovery_due", lambda outcome, budget, *, attempts: True)
-    monkeypatch.setattr(region_module, "rebind", rebind)
+    monkeypatch.setattr(region_attempts, "rebind", rebind)
     spec = J_CASES[name]
     found = endpoint(name)
     initial = profile_initial(spec, PROVIDER, DECLARATION_CONTEXT)

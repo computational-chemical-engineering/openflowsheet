@@ -20,7 +20,7 @@ import pytest
 from test_s02_column_wo1 import CASES, PROVIDER, REFERENCE, SPECS, UNIT, _variant
 
 import openflowsheet.models.syn001.column_solve as solve_module
-import openflowsheet.orchestrator.region as region_module
+import openflowsheet.orchestrator.region_attempts as region_attempts
 from openflowsheet.compile.reference import row_values
 from openflowsheet.compile.spec import ProblemSpec
 from openflowsheet.graph.trace import trace_declaration
@@ -389,14 +389,14 @@ def test_a10_the_compiled_jacobian(case: str, point: str) -> None:
 
 def _forced(monkeypatch: pytest.MonkeyPatch, case: str) -> tuple[Any, list[dict[str, float]]]:
     rebound: list[dict[str, float]] = []
-    real = region_module.rebind
+    real = region_attempts.rebind
 
     def rebind(spec: Any, values: dict[str, float]) -> Any:
         rebound.append(dict(values))
         return real(spec, values)
 
     monkeypatch.setattr(solve_module, "eo_recovery_due", lambda outcome, budget, *, attempts: True)
-    monkeypatch.setattr(region_module, "rebind", rebind)
+    monkeypatch.setattr(region_attempts, "rebind", rebind)
     spec = SPECS[case]
     profile = [float(t) for t in REFERENCE["cases"][case]["initializer"]["profile"]]
     answer = solve_target(spec, PROVIDER, compile_column(spec, PROVIDER), ref_state(case), profile)

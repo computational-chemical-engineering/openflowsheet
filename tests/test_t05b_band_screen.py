@@ -35,7 +35,7 @@ from t05b_support import POLICY_V2, REF, near_pure, number, sc1
 from openflowsheet.models.syn001 import ENERGY_TOLERANCE
 from openflowsheet.models.syn001.ph_kernel import ph_state
 from openflowsheet.models.syn001.tp_state import enthalpy_flow, tp_state
-from openflowsheet.orchestrator import executor, region_phase, revision
+from openflowsheet.orchestrator import executor, region_phase, region_screen, revision
 from openflowsheet.orchestrator import region as region_module
 from openflowsheet.orchestrator.execution import ExecutionPlan
 from openflowsheet.orchestrator.region import (
@@ -244,7 +244,7 @@ def test_s3_the_closure_the_screen_asks_is_carried_to_the_opening(
         asked.append(args[3])
         return real(*args, **kwargs)
 
-    monkeypatch.setattr(region_module, "_band_regime", lambda *args: None)
+    monkeypatch.setattr(region_screen, "_band_regime", lambda *args: None)
     monkeypatch.setattr(region_phase, "ph_state", counted)
     memo: ClosureMemo = {}
     screen = _build_screen(

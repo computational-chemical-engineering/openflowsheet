@@ -1,0 +1,17 @@
+# S19 restructure plan RS (S19-G1 plan docs/briefs/S19-G1-plan.md section 4; brief S19-W3-G1O-2, lane O run 2).
+# Names, lines and numbers measured at wp/S19-g1o base 99c91b64 and re-derived by simulation of the split at this plan's base.
+id = "split-region-2"
+approved_by = "orchestrator (OpenFlowsheet-TR09 build lane) under Frank's delegation of 2026-11-14 (S19 rules); S19-G1 plan section 4 (architect, 2026-11-15), brief S19-W3-G1O-2"
+reason = "orchestrator/region.py is 1272 NLOC (health 1.1, the large-file penalty) and the G1 function steps on _solve_region add about 135; no function step removes the penalty. Three closed groups move verbatim (statement text; no comment block above any of them, no function-level import inside them): the records RegionAttempt, AttemptSystem, RegionResult, RecoveryStart (region.py:248-333 at 99c91b64) to orchestrator/region_result.py, which reaches no other region module; the trial screen _attempt_screen, _screen, _build_screen (region.py:336-519) to orchestrator/region_screen.py, which imports region_phase and region_problem; the PTC and homotopy attempts region_ptc_problem, _ptc_attempt (region.py:1302-1418) and _homotopy, _boundary_unit (region.py:1462-1620) to orchestrator/region_attempts.py, which imports region_screen (_attempt_screen), region_result (RecoveryStart) and region_problem. No moved statement reaches a name that stays in region (syn001_lifted_splits, solve_region, _solve_region, _swapped_row_test, _external_opening stay). region.py imports back what its staying code loads and re-exports (`N as N`) every moved name that src, tests, scripts or benchmarks import from region or read as region.N (all but _ptc_attempt, imported plainly, and _boundary_unit, read by nobody); __all__ is unchanged. No test reads __module__ of a moved class. Test, script and benchmark patches of region.X whose call sites move, the source rule of tests/test_t03_contract.py:201 and the mass-importer allowlist of tests/test_adr_0008_transient_readiness.py were retargeted before this plan. Persisted paths: the three modules are new; every old import path stays valid through the re-exports. Expected codehealth arch --depth 4: measured at this plan's base 6 violations, 4 cycles, 14 cycle edges; on the simulated split 6, 4, 14 (0 / 0): no new module imports region, and verify imports none of them (forbid rule verifier-not-through-the-solver extended before this plan). Expected scan on the simulation: region.py 1272 -> 843 NLOC (debt 350.5 -> 227.4), region_result 55 NLOC (0), region_screen 162 NLOC (66.0, health 6.3), region_attempts 273 NLOC (57.1, health 7.4); debt over the touched files 350.5 -> 350.5."
+new_files = [
+    "src/openflowsheet/orchestrator/region_result.py",
+    "src/openflowsheet/orchestrator/region_screen.py",
+    "src/openflowsheet/orchestrator/region_attempts.py",
+]
+new_public = [
+    "src/openflowsheet/orchestrator/region_result.py:RegionAttempt",
+    "src/openflowsheet/orchestrator/region_result.py:AttemptSystem",
+    "src/openflowsheet/orchestrator/region_result.py:RegionResult",
+    "src/openflowsheet/orchestrator/region_result.py:RecoveryStart",
+    "src/openflowsheet/orchestrator/region_attempts.py:region_ptc_problem",
+]

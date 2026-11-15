@@ -24,6 +24,7 @@ import pytest
 import yaml
 
 import openflowsheet.orchestrator.region as region_module
+import openflowsheet.orchestrator.region_attempts as region_attempts
 from openflowsheet.compile.casadi_backend import compile_problem
 from openflowsheet.orchestrator.region import RegionResult, solve_region, syn001_lifted_splits
 from openflowsheet.orchestrator.tear import solve_tear
@@ -78,6 +79,7 @@ def run_case(case_id: str, monkeypatch: pytest.MonkeyPatch) -> Run:
         return replace(problem, residual=residual)
 
     monkeypatch.setattr(region_module, "_region_problem", observed)
+    monkeypatch.setattr(region_attempts, "_region_problem", observed)
     trace = Trace()
     result = solve_region(
         compiled=compile_problem(item.binding.spec),
