@@ -774,27 +774,43 @@ def _split_feasible(
         return all(0 < t < high for t, high in zip(particular, box, strict=True))
     if len(basis) == 1:
         (direction,) = basis
-        low: Fraction | None = None
-        high: Fraction | None = None
-        for t, d, upper in zip(particular, direction, box, strict=True):
-            if d == 0:
-                if not 0 < t < upper:
-                    return False
-                continue
-            a, b = sorted(((0 - t) / d, (upper - t) / d))
-            low = a if low is None else max(low, a)
-            high = b if high is None else min(high, b)
-        return low is None or high is None or low < high
+        return _line_meets_box(particular, direction, box)
     if len(reduced) == 1:
         (row,) = reduced
-        lower = sum((min(Fraction(0), a * f) for a, f in zip(row, box, strict=True)), Fraction(0))
-        upper = sum((max(Fraction(0), a * f) for a, f in zip(row, box, strict=True)), Fraction(0))
-        return lower < rhs[0] < upper
+        return _hyperplane_meets_box(row, rhs[0], box)
     # Two independent rows and two or more free directions: four or more present components,
     # which SYN-001 (three) cannot declare. Not decided here rather than guessed.
     raise ValueError(
         f"S06 §5 I6 is decided for at most three present components; {len(present)} given"
     )
+
+
+def _line_meets_box(
+    particular: list[Fraction], direction: list[Fraction], box: list[Fraction]
+) -> bool:
+    """I6 with one free direction `d`: is there an `s` with `0 < t⁰_c + s d_c < F_c` for every
+    present c? A coordinate with `d_c = 0` must hold at `t⁰` (`False` at the first that does
+    not); each other coordinate bounds `s` to an open interval, and the line meets the box when
+    their intersection is non-empty."""
+    low: Fraction | None = None
+    high: Fraction | None = None
+    for t, d, upper in zip(particular, direction, box, strict=True):
+        if d == 0:
+            if not 0 < t < upper:
+                return False
+            continue
+        a, b = sorted(((0 - t) / d, (upper - t) / d))
+        low = a if low is None else max(low, a)
+        high = b if high is None else min(high, b)
+    return low is None or high is None or low < high
+
+
+def _hyperplane_meets_box(row: list[Fraction], b: Fraction, box: list[Fraction]) -> bool:
+    """I6 with one row `a·t = b`: the hyperplane meets the open box `0 < t_c < F_c` exactly when
+    `Σ min(0, a_c F_c) < b < Σ max(0, a_c F_c)`."""
+    lower = sum((min(Fraction(0), a * f) for a, f in zip(row, box, strict=True)), Fraction(0))
+    upper = sum((max(Fraction(0), a * f) for a, f in zip(row, box, strict=True)), Fraction(0))
+    return lower < b < upper
 
 
 def _energy_refusal(
