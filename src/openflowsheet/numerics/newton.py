@@ -677,7 +677,7 @@ def solve_newton(
 
 @dataclass
 class _NewtonRun:
-    """One call of `solve_newton`: the frame fixed for the call and the state its closing reads.
+    """One call of `solve_newton`: its fixed frame and the state carried between iterations.
 
     The state: the iterate `x`, its residual `values`, whether a step was accepted, the counters,
     and the merit ratios of the accepted steps (§5.7). ADR 0018: the column tolerances, the
@@ -706,6 +706,10 @@ class _NewtonRun:
     accepted_any: bool = field(init=False)
 
     def evaluate(self, vector: npt.NDArray[np.float64]) -> tuple[Evaluation, Counters]:
+        """Count one residual call on `running`, then evaluate `vector`; returns both.
+
+        The count comes first, so it stands when `problem.residual` raises.
+        """
         self.running = self.running.plus(residual_calls=1)
         return self.problem.residual(vector), self.running
 
@@ -722,6 +726,11 @@ class _NewtonRun:
         blocked_by: tuple[str, ...] = (),
         linear: LinearRecord | None = None,
     ) -> NewtonResult:
+        """Write `attempt_closed` on `trace` and return the attempt's result at `x`.
+
+        Inside a refinement (ADR 0018 D4) it first restores `x` to the iterate the refinement
+        started from and clears `refining`, and closes `CONVERGED` there instead.
+        """
         if self.refining is not None:
             # ADR 0018 D4: whatever would have ended the attempt inside its refinement abandons
             # the refinement; the attempt returns `x_k`, `CONVERGED`, with its counters as spent.

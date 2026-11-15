@@ -563,7 +563,7 @@ def solve_ptc(
 
 @dataclass
 class _PtcRun:
-    """One call of `solve_ptc`: the frame fixed for the call and the state its closing reads.
+    """One call of `solve_ptc`: its fixed frame and the state carried between iterations.
 
     The state: the iterate `x`, its residual `values`, the counters, the SER pseudo-step `tau`
     (T04 §7.4), and the accepted pseudo-steps and rejected trials the attempt's `PtcRecord` lists.
@@ -588,6 +588,10 @@ class _PtcRun:
     values: tuple[float, ...] = field(init=False)
 
     def evaluate(self, vector: npt.NDArray[np.float64]) -> Evaluation:
+        """Count one residual call on `running`, then evaluate `vector`.
+
+        The count comes first, so it stands when `problem.residual` raises.
+        """
         self.running = self.running.plus(residual_calls=1)
         return self.problem.residual(vector)
 
@@ -604,6 +608,7 @@ class _PtcRun:
         polish: str | None = None,
         stopped: tuple[npt.NDArray[np.float64], tuple[float, ...]] | None = None,
     ) -> tuple[NewtonResult, PtcRecord]:
+        """Write `attempt_closed` on `trace`; return the result at `x` and the `PtcRecord`."""
         array = np.asarray(values, dtype=np.float64)
         infinity = float(np.max(np.abs(array))) if array.size else 0.0
         merit = self.problem.scaling.merit(values, self.problem.row_ids)
