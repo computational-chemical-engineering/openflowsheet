@@ -20,17 +20,13 @@ from K06's `transactions.py`, whose imports keep working; the transaction core t
 from __future__ import annotations
 
 import copy
-import json
 import math
-from collections.abc import Callable, Mapping, Sequence
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field
 from functools import cache
-from importlib.resources.abc import Traversable
 from typing import TYPE_CHECKING, Any, Final, Literal, Self, get_args
 
 from jsonschema import Draft202012Validator
-from referencing import Registry
-from referencing.jsonschema import DRAFT202012
 
 from openflowsheet.application.jobs.model import (
     ARTIFACT_KINDS,
@@ -50,17 +46,20 @@ from openflowsheet.application.validation_report import (
     ValidationReport,
 )
 from openflowsheet.canonical import document_sha256
-from openflowsheet.resources import packaged
+from openflowsheet.schema_check import SCHEMA_BASE as SCHEMA_BASE
+from openflowsheet.schema_check import SCHEMA_DIR as SCHEMA_DIR
+from openflowsheet.schema_check import (
+    _consumer_job_schema,
+    _pointer,
+    _published,
+    _registry,
+    _validator,
+)
+from openflowsheet.schema_check import schema_errors as schema_errors
 from openflowsheet.units.display import DisplayUnits
 
 if TYPE_CHECKING:
     from openflowsheet.run.replay import ReplayReport
-
-#: The published schemas (the repository's `schemas/`), as the package carries them: through
-#: `importlib.resources`, so a source checkout, an editable install and an installed wheel read the
-#: same bytes (T08 W4.2, `openflowsheet.resources`).
-SCHEMA_DIR: Final[Traversable] = packaged("schemas")
-SCHEMA_BASE: Final[str] = "https://github.com/frankp/process-runtime/schemas/"
 
 #: §5.3 as amended by ruling round 1 R2.3: `policies.DEFAULT_POLICY_ID`, the reserved id that
 #: resolves at admission to the route's registered policy; the schema default of
@@ -138,39 +137,6 @@ class DocumentSchemaError(ValueError):
         self.message = message
 
 
-@cache
-def _published() -> Mapping[str, Mapping[str, Any]]:
-    documents: dict[str, Mapping[str, Any]] = {}
-    for path in sorted(SCHEMA_DIR.iterdir(), key=lambda entry: entry.name):
-        if not path.name.endswith(".schema.json"):
-            continue
-        document = json.loads(path.read_text(encoding="utf-8"))
-        documents[document["$id"]] = document
-    return documents
-
-
-def _consumer_job_schema(document: Mapping[str, Any]) -> dict[str, Any]:
-    """`job.schema.json` with the artifact-kind enum opened: J5's consumer reading."""
-    opened = copy.deepcopy(dict(document))
-    opened["$defs"]["artifact_ref"]["properties"]["kind"] = {"type": "string", "minLength": 1}
-    return opened
-
-
-@cache
-def _registry(consumer: bool) -> Registry[Any]:
-    resources = []
-    for schema_id, document in _published().items():
-        if consumer and schema_id == SCHEMA_BASE + "job.schema.json":
-            document = _consumer_job_schema(document)
-        resources.append((schema_id, DRAFT202012.create_resource(document)))
-    return Registry().with_resources(resources)
-
-
-@cache
-def _validator(reference: str, consumer: bool = False) -> Draft202012Validator:
-    return Draft202012Validator({"$ref": SCHEMA_BASE + reference}, registry=_registry(consumer))
-
-
 def _event_common_schema() -> dict[str, Any]:
     """The common members of a job event, whatever its kind (J5's consumer rule)."""
     published = _published()[SCHEMA_BASE + "job-event.schema.json"]["properties"]
@@ -216,19 +182,6 @@ def published_schemas(*, consumer: bool = False) -> Mapping[str, Mapping[str, An
         documents[job] = _consumer_job_schema(documents[job])
         documents[event] = _consumer_event_schema(documents[event])
     return documents
-
-
-def _pointer(path: Sequence[str | int]) -> str:
-    return "".join("/" + str(part).replace("~", "~0").replace("/", "~1") for part in path)
-
-
-def schema_errors(reference: str, document: Any, *, consumer: bool = False) -> list[str]:
-    """Every error of `document` against `schemas/<reference>`, as `<pointer>: <message>`."""
-    validator = _validator(reference, consumer)
-    return [
-        f"{_pointer(list(error.absolute_path))}: {error.message}"
-        for error in sorted(validator.iter_errors(document), key=lambda e: list(e.absolute_path))
-    ]
 
 
 def validate_document(reference: str, document: Any, *, consumer: bool = False) -> None:
