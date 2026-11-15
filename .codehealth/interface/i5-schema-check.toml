@@ -1,0 +1,21 @@
+# ADR 0076 I-5 (W4 run 1, brief S19-W4-1): application.types stops re-exporting schema_errors,
+# whose home is openflowsheet.schema_check since S19 A12. `codehealth gate --mode interface` reads
+# this plan from the plan commit.
+id = "i5-schema-check"
+approved_by = "Frank Peters, 2026-11-14, ADR 0076 accepted (Decision Desk ofs-adr0076-accept)"
+reason = """ADR 0076 I-5: document validation against schemas/ is foundation. schema_errors and its \
+validator closure moved to openflowsheet/schema_check.py in restructure A12 (ffcb0a53, plan \
+move-schema-check); every src importer was retargeted in refactor mode (07535927) and every test \
+outside the gate (0ef51cc8), so no src, test, script, benchmark or example imports \
+application.types.schema_errors. The step deletes the re-export `from openflowsheet.schema_check \
+import schema_errors as schema_errors` from application/types.py (no alias, no __getattr__, no \
+__all__ entry; types.py has no __all__). types.py keeps the closure names its own code uses \
+(SCHEMA_BASE, _validator, ...) and the SCHEMA_DIR re-export, which the ADR does not list. Expected \
+codehealth arch --depth 4: base 5 violations / 4 cycles / 14 cycle edges, after 5 / 4 / 14 (the \
+import edge application.types -> schema_check stays)."""
+removed = ["src/openflowsheet/application/types.py:schema_errors"]
+renamed = {}
+changed = []
+added = []
+new_files = []
+callers = []
