@@ -6,6 +6,7 @@
 #        gate.sh --no-gain <last accepted sha> [label]  names/docstrings only, no gain check (D15)
 #        gate.sh --restructure <last accepted sha> <plan path> [label]  a module split (D18); the plan and the
 #                                                       layer entries must be committed at or before that base (the gate reads both at base)
+#        gate.sh --interface <plan commit> <plan path> [label]  an ADR 0076 W4 interface step (the plan committed at the base)
 # The map base MB (docs/S19_STATE.md) is passed as --ref-base: the tests tier's map (D13).
 # Stop a run with: kill -INT "$(cat <tag>.pid)"
 set -u
@@ -25,6 +26,9 @@ elif [ "${1:-}" = "--revert" ]; then
 elif [ "${1:-}" = "--restructure" ]; then
     # a split under an approved plan: behaviour tiers plus plan checks, no gain check (D18, D20).
     args=(gate --mode restructure --plan "$3" --base "$2" --ref-base "$MB"); label="${4:-restructure}"
+elif [ "${1:-}" = "--interface" ]; then
+    # an ADR 0076 W4 interface step: behaviour tiers plus the public-API plan check (migration rule 1).
+    args=(gate --mode interface --plan "$3" --base "$2" --ref-base "$MB"); label="${4:-interface}"
 elif [ "${1:-}" = "--no-gain" ]; then
     # names, docstrings or ordering only (review notes): behaviour tiers, no gain check (D15).
     args=(gate --mode refactor --base "$2" --ref-base "$MB"); label="${3:-nogain}"

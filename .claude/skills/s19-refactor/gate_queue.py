@@ -4,12 +4,14 @@
 State in <git-common-dir>/codehealth/queue/: pending/, running/, done/<label>.json, results.log
 (one line per finished job), runner.pid, runner.log. Python 3 standard library only.
 
-  enqueue --worktree W --base SHA --mode {step,no-gain,restructure,revert} [--plan P] --label L
+  enqueue --worktree W --base SHA --mode {step,no-gain,restructure,interface,revert} [--plan P] --label L
           --target T --recipe R --model M [--reason TEXT] [--rerun-of N]
       W must be clean; its HEAD is recorded as the job's head. A job is one step, or a chain of
       commits base..head gated as one. --base is gate.sh's sha argument: the last accepted commit,
-      or for --mode revert the rejected commit (HEAD exactly undoes it). --reason is required for
-      no-gain, restructure, revert and --rerun-of: it goes to `codehealth log` where log needs one.
+      or for --mode revert the rejected commit (HEAD exactly undoes it); for --mode restructure and
+      interface, the plan commit (--plan names the plan file, ADR 0076 W4 for interface).
+      --reason is required for no-gain, restructure, revert and --rerun-of: it goes to
+      `codehealth log` where log needs one.
   run [--detach] [--log-out JSONL]
       The runner: FIFO, at most SLOTS jobs at a time, one job per worktree at a time. It refuses a
       job whose worktree HEAD or tree changed since enqueue, runs gate.sh in the worktree, then
@@ -44,7 +46,8 @@ HERE = Path(__file__).resolve().parent
 GATE = HERE / "gate.sh"
 CAMPAIGN = "s19"
 SLOTS = 2  # gate.sh holds one of the clone's two gate slots per run
-MODES = ("step", "no-gain", "restructure", "revert")
+MODES = ("step", "no-gain", "restructure", "interface", "revert")
+PLAN_MODES = ("restructure", "interface")
 LABEL = re.compile(r"[A-Za-z0-9._-]+")
 GATE_LINE = re.compile(r"^GATE \S+ rc=(-?\d+) \| (.*) \| json (\S+) \| log (\S+)$")
 LOG_LINE = re.compile(r"^LOG \S+ step (\d+) (\S+) ")
@@ -126,10 +129,10 @@ def enqueue(a: argparse.Namespace) -> int:
         raise SystemExit(f"{worktree} is not a worktree of {COMMON.parent}")
     if not LABEL.fullmatch(a.label):
         raise SystemExit(f"--label must match {LABEL.pattern}")
-    if a.mode == "restructure" and not a.plan:
-        raise SystemExit("--mode restructure needs --plan")
-    if a.plan and a.mode != "restructure":
-        raise SystemExit("--plan is only for --mode restructure")
+    if a.mode in PLAN_MODES and not a.plan:
+        raise SystemExit(f"--mode {a.mode} needs --plan")
+    if a.plan and a.mode not in PLAN_MODES:
+        raise SystemExit("--plan is only for --mode restructure or interface")
     if not a.reason and (a.mode in ("no-gain", "restructure", "revert") or a.rerun_of is not None):
         raise SystemExit(
             f"--mode {a.mode}{' with --rerun-of' if a.rerun_of is not None else ''} needs --reason"
@@ -175,8 +178,8 @@ def gate_command(job: dict) -> list[str]:
     mode, base, label = job["mode"], job["base"], job["label"]
     if mode == "step":
         return ["bash", str(GATE), base, label]
-    if mode == "restructure":
-        return ["bash", str(GATE), "--restructure", base, job["plan"], label]
+    if mode in PLAN_MODES:
+        return ["bash", str(GATE), f"--{mode}", base, job["plan"], label]
     return ["bash", str(GATE), f"--{mode}", base, label]
 
 
