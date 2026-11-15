@@ -21,6 +21,7 @@ from openflowsheet.messages.catalogue import (
     Entry,
 )
 from openflowsheet.messages.render import (
+    Explanation,
     RenderContext,
     RenderError,
     _matches,
@@ -162,16 +163,24 @@ def _check_examples(entry: Entry, catalogue: Catalogue) -> list[str]:
             except RenderError as error:
                 problems.append(f"examples[{number}] (surface {surface}): {error}")
                 continue
-            for member in ("summary", "cause"):
-                text = explanation.get(member)
-                if text is not None and len(text) > SUMMARY_LIMIT:
-                    problems.append(
-                        f"examples[{number}] (surface {surface}): {member} has {len(text)} > "
-                        f"{SUMMARY_LIMIT} characters"
-                    )
+            problems += _check_lengths(explanation, surface, number)
             scope = _Scope(entry, {**context.params(), **params}, context, catalogue)
             outer = chain[: chain.index(entry.code)]
             problems += _check_reached_variants(entry, scope, outer, surface, number)
+    return problems
+
+
+def _check_lengths(explanation: Explanation, surface: str | None, number: int) -> list[str]:
+    """Example `number` on `surface`: the rendered summary and cause are at most `SUMMARY_LIMIT`
+    characters."""
+    problems: list[str] = []
+    for member in ("summary", "cause"):
+        text = explanation.get(member)
+        if text is not None and len(text) > SUMMARY_LIMIT:
+            problems.append(
+                f"examples[{number}] (surface {surface}): {member} has {len(text)} > "
+                f"{SUMMARY_LIMIT} characters"
+            )
     return problems
 
 
