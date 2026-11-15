@@ -32,7 +32,7 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 from dataclasses import dataclass, field
-from typing import Literal
+from typing import Literal, NamedTuple
 
 import numpy as np
 import numpy.typing as npt
@@ -377,33 +377,9 @@ def solve_recycle(
         # §5.3: history, the effective depth, and the filtered least squares (§5.4).
         history_x.append(x / scale)
         history_f.append(f_hat)
-        depth = min(rules.depth_max, len(history_f) - 1, n)
-        dropped: list[tuple[str, float]] = []
-        by_condition = by_coefficient = 0
-        step_hat: npt.NDArray[np.float64] | None = None
-        kappa: float | None = None
-        gamma_inf: float | None = None
-        while depth >= 1:
-            delta_f = [history_f[-j] - history_f[-j - 1] for j in range(1, depth + 1)]
-            delta_x = [history_x[-j] - history_x[-j - 1] for j in range(1, depth + 1)]
-            gamma, condition = _least_squares(delta_f, f_hat)
-            if gamma is None or condition > rules.condition_max:
-                by_condition += 1
-                dropped.append(("condition", condition))
-                depth -= 1
-                continue
-            size = float(np.max(np.abs(gamma)))
-            if size > rules.coefficient_max:
-                by_coefficient += 1
-                dropped.append(("coefficient", size))
-                depth -= 1
-                continue
-            kappa, gamma_inf = condition, size
-            correction = sum(
-                (delta_x[j] + rules.beta * delta_f[j]) * gamma[j] for j in range(depth)
-            )
-            step_hat = history_x[-1] + rules.beta * f_hat - correction
-            break
+        step_hat, depth, by_condition, by_coefficient, kappa, gamma_inf, dropped = _mixing(
+            history_x, history_f, f_hat, rules, n
+        )
         if step_hat is None:
             depth = 0
             step_hat = history_x[-1] + beta_sub * f_hat
@@ -505,3 +481,58 @@ def solve_recycle(
                 trial_status="accepted",
             )
         k += 1
+
+
+class _Mixing(NamedTuple):
+    """One iteration's filtered least squares (§5.3–§5.4): the Anderson step, or none."""
+
+    step_hat: npt.NDArray[np.float64] | None
+    depth: int
+    by_condition: int
+    by_coefficient: int
+    kappa: float | None
+    gamma_inf: float | None
+    dropped: list[tuple[str, float]]
+
+
+def _mixing(
+    history_x: list[npt.NDArray[np.float64]],
+    history_f: list[npt.NDArray[np.float64]],
+    f_hat: npt.NDArray[np.float64],
+    rules: RecyclePolicy,
+    n: int,
+) -> _Mixing:
+    """§5.3's effective depth and §5.4's filtered least squares over the scaled history; pure.
+
+    The depth starts at `min(depth_max, len(history_f) − 1, n)` and drops the oldest column while
+    the difference matrix is singular or conditioned above `condition_max`, or the coefficient
+    exceeds `coefficient_max`. `step_hat` is the Anderson step at the first depth that passes both
+    filters; it is `None`, at depth 0, when none does, and the caller then takes the plain
+    substitution step.
+    """
+    depth = min(rules.depth_max, len(history_f) - 1, n)
+    dropped: list[tuple[str, float]] = []
+    by_condition = by_coefficient = 0
+    step_hat: npt.NDArray[np.float64] | None = None
+    kappa: float | None = None
+    gamma_inf: float | None = None
+    while depth >= 1:
+        delta_f = [history_f[-j] - history_f[-j - 1] for j in range(1, depth + 1)]
+        delta_x = [history_x[-j] - history_x[-j - 1] for j in range(1, depth + 1)]
+        gamma, condition = _least_squares(delta_f, f_hat)
+        if gamma is None or condition > rules.condition_max:
+            by_condition += 1
+            dropped.append(("condition", condition))
+            depth -= 1
+            continue
+        size = float(np.max(np.abs(gamma)))
+        if size > rules.coefficient_max:
+            by_coefficient += 1
+            dropped.append(("coefficient", size))
+            depth -= 1
+            continue
+        kappa, gamma_inf = condition, size
+        correction = sum((delta_x[j] + rules.beta * delta_f[j]) * gamma[j] for j in range(depth))
+        step_hat = history_x[-1] + rules.beta * f_hat - correction
+        break
+    return _Mixing(step_hat, depth, by_condition, by_coefficient, kappa, gamma_inf, dropped)
