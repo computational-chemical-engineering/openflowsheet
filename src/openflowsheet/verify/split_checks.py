@@ -5,7 +5,7 @@ note §4, register R-046; T05b spec §9.1-§9.2, ADR 0012 D7). `verify.table` re
 from __future__ import annotations
 
 import math
-from collections.abc import Mapping, Sequence
+from collections.abc import Iterator, Mapping, Sequence
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, NamedTuple
 
@@ -231,6 +231,45 @@ def _declared_port_checks(
     degenerate: Degeneracy,
 ) -> list[CheckResult]:
     checks: list[CheckResult] = []
+    for declared in _declared_streams(view):
+        identifier, stream = declared.identifier, declared.stream
+        if stream_of(state, stream, view.components).is_dormant:
+            checks.append(dormant(id=identifier, category="phase_admissibility", subject=stream))
+            continue
+        if stream in degenerate.unlifted:
+            checks.append(blocked_check(identifier, "phase_admissibility", stream, stream))
+            continue
+        checks.append(
+            evaluated(
+                id=identifier,
+                category="phase_admissibility",
+                subject=stream,
+                value=_declared_phase(
+                    stream, declared.phase, view.components, state, enthalpy, provider, context
+                ),
+                tolerance=tolerances["temperature"],
+                reference=KIND_REFERENCE["temperature"],
+                independence_qualification=note + degenerate.notes.get(stream, ""),
+            )
+        )
+    return checks
+
+
+class _DeclaredStream(NamedTuple):
+    """A stream at a port whose phase its model declares, and the id of its admissibility check."""
+
+    #: `phase_admissibility.<U>.<port>`, or `phase_admissibility.<U>.<port>.<S>` for a port
+    #: that carries several streams.
+    identifier: str
+    stream: str
+    #: The port's declared phase.
+    phase: Phase
+
+
+def _declared_streams(view: RevisionView) -> Iterator[_DeclaredStream]:
+    """Each stream of each declared port (`MODEL_CHECKS[model].declared_ports`) that has a
+    declared phase, by instance in `view.instances` order, then port in the entry's order; an
+    instance whose model has no entry contributes none."""
     for instance in view.instances:
         entry = MODEL_CHECKS.get(instance.model_id)
         if entry is None:
@@ -245,28 +284,7 @@ def _declared_port_checks(
                     if several
                     else f"phase_admissibility.{instance.unit_id}.{port}"
                 )
-                if stream_of(state, stream, view.components).is_dormant:
-                    checks.append(
-                        dormant(id=identifier, category="phase_admissibility", subject=stream)
-                    )
-                    continue
-                if stream in degenerate.unlifted:
-                    checks.append(blocked_check(identifier, "phase_admissibility", stream, stream))
-                    continue
-                checks.append(
-                    evaluated(
-                        id=identifier,
-                        category="phase_admissibility",
-                        subject=stream,
-                        value=_declared_phase(
-                            stream, phase, view.components, state, enthalpy, provider, context
-                        ),
-                        tolerance=tolerances["temperature"],
-                        reference=KIND_REFERENCE["temperature"],
-                        independence_qualification=note + degenerate.notes.get(stream, ""),
-                    )
-                )
-    return checks
+                yield _DeclaredStream(identifier, stream, phase)
 
 
 # -- temperature-degenerate streams (T05b spec §9.1–§9.2; ADR 0012 D7) -------------------------
@@ -344,9 +362,10 @@ def _producer_phases(view: RevisionView) -> dict[str, Phase | None]:
     phases: dict[str, Phase | None] = {}
     for instance in view.instances:
         for port, direction in instance.directions.items():
-            if direction == "outlet":
-                for stream in instance.ports[port]:
-                    phases[stream] = instance.phases.get(port)
+            if direction != "outlet":
+                continue
+            for stream in instance.ports[port]:
+                phases[stream] = instance.phases.get(port)
     return phases
 
 
