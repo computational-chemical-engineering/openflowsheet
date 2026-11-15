@@ -785,16 +785,7 @@ def run_study(
             if candidate.status == PARENT_LOCAL_EVIDENCE:
                 result.best = candidate.targeted
                 return stop(DECISION_STABLE)
-            eligible = [s0]
-            if candidate.checks["P1"].passed and all(
-                candidate.checks[name].passed for name in ("P3", "P4")
-            ):
-                assert candidate.targeted is not None
-                eligible.append(candidate.targeted)
-            eligible += [p.solve for p in candidate.poll if p.feasible and p.regimes_match]
-            for point in eligible[1:]:
-                if _better(sense, point, result.best):
-                    result.best = point
+            result.best = _stage_a_best(sense, s0, candidate, result.best)
 
     # Stage C (§7.3).
     for k in range(1, K_MAX + 1):
@@ -818,6 +809,26 @@ def run_study(
                 best = point
         result.best = best
     return stop(ITERATION_LIMIT)
+
+
+def _stage_a_best(
+    sense: str, s0: ParentSolve, candidate: CandidateCheck, best: ParentSolve
+) -> ParentSolve:
+    """The best parent-checked point after a stage-A candidate that is neither unchecked nor
+    parent-local evidence (§7.3): of `best` and the points the candidate makes eligible (its
+    targeted point when P1, P3 and P4 pass, then its feasible poll points whose regimes match),
+    the first strictly better one in that order wins; `best` when none improves on it."""
+    eligible = [s0]
+    if candidate.checks["P1"].passed and all(
+        candidate.checks[name].passed for name in ("P3", "P4")
+    ):
+        assert candidate.targeted is not None
+        eligible.append(candidate.targeted)
+    eligible += [p.solve for p in candidate.poll if p.feasible and p.regimes_match]
+    for point in eligible[1:]:
+        if _better(sense, point, best):
+            best = point
+    return best
 
 
 class TrfStage:
