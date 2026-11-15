@@ -452,20 +452,20 @@ def _split_enthalpies(
     split: LiftedSplit,
     temperature: float,
     pressure: float,
-    products: tuple[str, str] | None,
+    product_streams: tuple[str, str] | None,
 ) -> dict[str, float]:
     """§9.1 at `state`: the enthalpy a degenerate or unresolved split gives each of its streams,
     read from the state's split rather than from a fresh flash.
 
-    `products` are a products-style split's vapour and liquid streams: each one that is not
+    `product_streams` are a products-style split's vapour and liquid streams: each one that is not
     dormant gets its own phase's enthalpy at its own `(T, P)`, vapour first. None is a
     heater-style split: its stream gets `Σ v_i h_i^V(T, P) + Σ l_i h_i^L(T, P)` at the split's
     `temperature` and `pressure`. Raises `VerifierError` when the verifier's own phase
     evaluation fails."""
     vapor = tuple(state[column] for column in split.vapor)
     liquid = tuple(state[column] for column in split.liquid)
-    if products is not None:
-        vapor_stream, liquid_stream = products
+    if product_streams is not None:
+        vapor_stream, liquid_stream = product_streams
         products_phases: tuple[tuple[str, tuple[float, ...], Phase], ...] = (
             (vapor_stream, vapor, "VAPOR"),
             (liquid_stream, liquid, "LIQUID"),

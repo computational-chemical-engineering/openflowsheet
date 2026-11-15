@@ -259,7 +259,7 @@ def _number_or_none(value: Any) -> bool:
     return value is None or (isinstance(value, int | float) and not isinstance(value, bool))
 
 
-def _inside_window(key: str, committed: dict[str, Any]) -> bool:
+def _inside_window_v1(key: str, committed: dict[str, Any]) -> bool:
     sibling, minimum = COMPARABILITY_WINDOW[key]
     selector = committed.get(sibling)
     return isinstance(selector, int | float) and float(selector) >= minimum
@@ -349,7 +349,7 @@ def _differences_v1(
                 found += _certificate_id_v1(where, key, emitted)
             elif key in WINDOW_SELECTORS:
                 found += _window_selector_v1(where, key, emitted)
-            elif key in COMPARABILITY_WINDOW and not _inside_window(key, committed):
+            elif key in COMPARABILITY_WINDOW and not _inside_window_v1(key, committed):
                 found += _windowed_shape_v1(where, key, emitted, committed)
             else:
                 floor = None
@@ -694,7 +694,7 @@ def _differences_v2(
             elif key in V2_WINDOW_SELECTORS:
                 found += _window_selector(where, key, mine)
             # Row 7: outside its window, a windowed float is compared for shape.
-            elif key in V2_COMPARABILITY_WINDOW and not _inside_v2_window(key, committed):
+            elif key in V2_COMPARABILITY_WINDOW and not _inside_window(key, committed):
                 found += _windowed_shape(where, key, mine, theirs)
             # Row 8: text with floats in it.
             elif key in TEXT_KEYS and isinstance(mine, str) and isinstance(theirs, str):
@@ -771,7 +771,7 @@ def _window_selector(where: str, key: str, mine: Any) -> list[str]:
     return []
 
 
-def _inside_v2_window(key: str, committed: dict[str, Any]) -> bool:
+def _inside_window(key: str, committed: dict[str, Any]) -> bool:
     sibling, minimum = V2_COMPARABILITY_WINDOW[key]
     selector = committed.get(sibling)
     return isinstance(selector, int | float) and float(selector) >= minimum
