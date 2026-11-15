@@ -320,7 +320,8 @@ def ph_state(
 
     `flows` must be flowing; a dormant stream is the caller's (spec §4.7). `max_evaluations` is
     the registered 200 and exists as a keyword only so the budget failure can be exercised; it
-    bounds step 4's evaluations of `f` and, separately, step 2's `T_sat` bisection.
+    bounds step 4's evaluations of `f` and, separately, step 2's `T_sat` bisection. Once step 4's
+    bracket has closed, `_closed_bracket_state` gives the state (step 5 and the band route).
     """
     n = tuple(float(value) for value in flows)
     if sum(n) == 0.0:
@@ -408,36 +409,53 @@ def ph_state(
                 f"the bracket did not close in {max_evaluations} evaluations",
                 root.evaluations,
             )
-        # Step 5 (T05b §5.3): the candidate is the bracket's better end with the provider's TP
-        # split there (step 6); it is accepted on the closure's rows.
-        rows = _closure_rows(provider, n, root.payload, root.point, pressure, target, context)
-        if rows.accepted:
-            return PHState(
-                status="ok",
-                temperature=root.point,
-                split=root.payload,
-                route="bracket",
-                evaluations=root.evaluations,
-                residual=root.value,
-            )
-        attempts: list[tuple[str, float, _Rows]] = [("bracket", root.point, rows)]
-        evaluations = root.evaluations
-        # T05b §5.1 step 4: the band route, only with at least two flowing components.
-        if len(flowing) >= 2:
-            band = _band_route(provider, n, pressure, target, context)
-            if isinstance(band, PHState):
-                return band
-            if band is not None:
-                answer, band_rows = band
-                if band_rows.accepted:
-                    return answer
-                assert answer.temperature is not None
-                attempts.append(("band", answer.temperature, band_rows))
-                evaluations += answer.evaluations
-        # T05b §5.1 step 5: no route's answer passed.
-        return _ill_conditioned(attempts, evaluations)
+        return _closed_bracket_state(provider, n, pressure, target, context, root, flowing)
     except _InnerFailureError as failure:
         return failure.state
+
+
+def _closed_bracket_state(
+    provider: PropertyProvider,
+    n: tuple[float, ...],
+    pressure: float,
+    target: float,
+    context: EvaluationContext,
+    root: Root[TPState],
+    flowing: Sequence[int],
+) -> PHState:
+    """`ph_state` after step 4's bracket closed at `root`: the bracket's state when the closure's
+    rows accept it (step 5, T05b §5.3); else, with at least two `flowing` components, the band
+    route's typed failure or accepted answer (T05b §5.1 step 4); else `_ill_conditioned` over the
+    routes tried (T05b §5.1 step 5). `_closure_rows` and `_band_route` raise `_InnerFailureError`
+    on a provider failure; `ph_state`'s handler turns it into its state."""
+    # Step 5 (T05b §5.3): the candidate is the bracket's better end with the provider's TP
+    # split there (step 6); it is accepted on the closure's rows.
+    rows = _closure_rows(provider, n, root.payload, root.point, pressure, target, context)
+    if rows.accepted:
+        return PHState(
+            status="ok",
+            temperature=root.point,
+            split=root.payload,
+            route="bracket",
+            evaluations=root.evaluations,
+            residual=root.value,
+        )
+    attempts: list[tuple[str, float, _Rows]] = [("bracket", root.point, rows)]
+    evaluations = root.evaluations
+    # T05b §5.1 step 4: the band route, only with at least two flowing components.
+    if len(flowing) >= 2:
+        band = _band_route(provider, n, pressure, target, context)
+        if isinstance(band, PHState):
+            return band
+        if band is not None:
+            answer, band_rows = band
+            if band_rows.accepted:
+                return answer
+            assert answer.temperature is not None
+            attempts.append(("band", answer.temperature, band_rows))
+            evaluations += answer.evaluations
+    # T05b §5.1 step 5: no route's answer passed.
+    return _ill_conditioned(attempts, evaluations)
 
 
 # --------------------------------------------------------------- the band route (T05b §5.2)
