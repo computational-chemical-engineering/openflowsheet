@@ -345,3 +345,7 @@
   provisionally; the reviewer of lane N run 1 confirms before any other RC step, else N1 and P1 are reverted. Q3
   (declared literal drop for region's six start events) not in W3, listed for I-19. Q4 (executor context record
   and split) W4; X1 to X6 now.
+- **2026-11-15, W3 G4 run 2 merged (53bf5af1).** Review R-W3-G4-2: merge. families.py health 7.4, report.py 8.7;
+  G4 has no W3 target left (cost and lca wait for W5; `exchanger_utility`'s utility-choice ladder would need a
+  parameter object, not taken). Note 1 applied (test requires non-empty sections); notes 2 (refusal detail not
+  pinned) and 3 (`report.py:290` annotation) for the docs/typing pass. `git worktree` s19-g4 removed.
