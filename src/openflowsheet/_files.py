@@ -15,7 +15,7 @@ __all__ = ["atomic_write_bytes"]
 
 
 def atomic_write_bytes(path: Path, data: bytes) -> None:
-    """Write a temporary file beside `path`, `fsync` it, rename it over `path`, sync the dir."""
+    """Write a temporary file beside `path`, `fsync` it, rename it over `path`, `fsync` the dir."""
     temporary = path.with_name(f".{path.name}.{os.getpid()}.{threading.get_ident()}.tmp")
     with open(temporary, "wb") as handle:
         handle.write(data)
