@@ -356,20 +356,7 @@ def _differences_v1(
         return found
 
     if isinstance(committed, float) or isinstance(emitted, float):
-        if emitted is None or committed is None:
-            if emitted is not committed:
-                found.append(f"{where}: {emitted!r} against {committed!r}")
-            return found
-        if floor is None:
-            floor = REGISTERED_FLOOR.get(where.rsplit(".", 1)[-1], NO_FLOOR)
-        if not math.isclose(
-            float(emitted), float(committed), rel_tol=RELATIVE_TOLERANCE, abs_tol=floor
-        ):
-            found.append(
-                f"{where}: {emitted!r} against {committed!r}, outside the interim "
-                f"{RELATIVE_TOLERANCE:g} relative / {floor:g} absolute"
-            )
-        return found
+        return _float_leaf_v1(emitted, committed, where, floor)
 
     if emitted != committed:
         found.append(f"{where}: {emitted!r} against {committed!r}")
@@ -475,6 +462,27 @@ def _windowed_shape_v1(
             "the comparability window the value is not compared, its shape is"
         ]
     return []
+
+
+def _float_leaf_v1(emitted: Any, committed: Any, where: str, floor: float | None) -> list[str]:
+    """v1 on a float at `where`: null against null is no difference, null against anything else
+    is one, compared exactly; otherwise `math.isclose` at the interim relative tolerance and
+    `floor` absolute, else the registered floor of its key, else none."""
+    found: list[str] = []
+    if emitted is None or committed is None:
+        if emitted is not committed:
+            found.append(f"{where}: {emitted!r} against {committed!r}")
+        return found
+    if floor is None:
+        floor = REGISTERED_FLOOR.get(where.rsplit(".", 1)[-1], NO_FLOOR)
+    if not math.isclose(
+        float(emitted), float(committed), rel_tol=RELATIVE_TOLERANCE, abs_tol=floor
+    ):
+        found.append(
+            f"{where}: {emitted!r} against {committed!r}, outside the interim "
+            f"{RELATIVE_TOLERANCE:g} relative / {floor:g} absolute"
+        )
+    return found
 
 
 # == T08-numerical-policy-v2 (ADR 0025) =========================================================
