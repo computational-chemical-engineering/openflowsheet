@@ -456,7 +456,7 @@ def _first_schema_error(document: Mapping[str, Any]) -> tuple[str, str] | None:
     """The first `process-revision.schema.json` error of a canonical `document`, as `(pointer,
     message)`, or `None`. The document is read as JSON reads it (a tuple is an array, any mapping
     an object): the schema judges the document's canonical form, not its Python spelling."""
-    from openflowsheet.application.types import schema_errors
+    from openflowsheet.schema_check import schema_errors
 
     errors = schema_errors("process-revision.schema.json", _as_json(document))
     if not errors:
