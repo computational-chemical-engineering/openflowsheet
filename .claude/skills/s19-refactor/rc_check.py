@@ -1,3 +1,4 @@
+# ruff: noqa: E501
 """RC checks for a `closures-to-class` step (S19 G1 plan section 3; playbook rule 6; R-W3-G1N-1).
 
 usage: rc_check.py BASE_FILE HEAD_FILE FUNC CLASS RUNVAR [--rename OLD=NEW ...] [--state A,B,...]
