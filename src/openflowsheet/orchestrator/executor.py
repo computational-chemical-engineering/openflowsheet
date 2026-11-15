@@ -1068,7 +1068,7 @@ def _revision_continuation(
     `rejected(opening(<check>:<subject>))`. Every refusal is recorded as one
     `initializer_rejected` event and the step's record, and the ADR 0015 restart then runs exactly
     as under `homotopy_or_sequential_restart`. A solve that opened an attempt is the step's
-    outcome, whatever it is (FQ3: one recovery per step).
+    outcome, whatever it is (FQ3: one recovery per step; `_revision_continuation_taken`).
     """
     failed = step.detail
     found: Continuation | RevisionContinuationRefusal
@@ -1109,30 +1109,8 @@ def _revision_continuation(
             found = RevisionContinuationRefusal("rejected", f"opening({check}")
             spent = spent_after
         else:
-            recovered = replace(
-                recovered,
-                branch_provenance=recovered_provenance(
-                    failed.branch_provenance,
-                    recovered.branch_provenance,
-                    first_initializer_source=REVISION_CONTINUATION_SOURCE,
-                ),
-                checkpoint=(
-                    recovered.checkpoint if recovered.checkpoint is not None else failed.checkpoint
-                ),
-            )
             return (
-                replace(
-                    step,
-                    outcome=recovered.outcome,
-                    iterations=step.iterations + recovered.iterations,
-                    message=recovered.message,
-                    detail=recovered,
-                    eo_recovery="taken",
-                    recovered_from=failed,
-                    revision_continuation=RevisionContinuationRecord(
-                        "taken", None, found.parameter_ids, found.start_values
-                    ),
-                ),
+                _revision_continuation_taken(step, failed, recovered, found),
                 spent_after,
                 state_after,
             )
@@ -1142,6 +1120,39 @@ def _revision_continuation(
         step, revision_continuation=RevisionContinuationRecord(found.status, found.reason)
     )
     return _sequential_restart(step, region, flowsheet, spec, policy, run, spent, state, following)
+
+
+def _revision_continuation_taken(
+    step: StepResult, failed: RegionResult, recovered: RegionResult, found: Continuation
+) -> StepResult:
+    """`step` once R9b's recovery solve has opened an attempt (`eo_recovery = "taken"`): the
+    recovery's outcome, message and result, its iterations added to the step's, its branch
+    provenance after the failed solve's with `REVISION_CONTINUATION_SOURCE` first, its checkpoint
+    (else the failed solve's), the failed solve on `recovered_from`, and the taken record of
+    `found`'s parameters and start values."""
+    recovered = replace(
+        recovered,
+        branch_provenance=recovered_provenance(
+            failed.branch_provenance,
+            recovered.branch_provenance,
+            first_initializer_source=REVISION_CONTINUATION_SOURCE,
+        ),
+        checkpoint=(
+            recovered.checkpoint if recovered.checkpoint is not None else failed.checkpoint
+        ),
+    )
+    return replace(
+        step,
+        outcome=recovered.outcome,
+        iterations=step.iterations + recovered.iterations,
+        message=recovered.message,
+        detail=recovered,
+        eo_recovery="taken",
+        recovered_from=failed,
+        revision_continuation=RevisionContinuationRecord(
+            "taken", None, found.parameter_ids, found.start_values
+        ),
+    )
 
 
 def _sequential_restart(
