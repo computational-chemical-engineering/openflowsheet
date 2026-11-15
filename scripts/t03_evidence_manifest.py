@@ -1882,7 +1882,7 @@ def _a02(runs: Runs) -> tuple[bool, Any, Any]:
             if token in sources[name]
         ]
         + budget_comparison.findall(sources[name])
-        for name in ("attempts.py", "region.py")
+        for name in ("attempts.py", "region.py", "region_phase.py", "region_problem.py")
     }
     constructs_wall = {
         name: "WallObserver(policy)" in sources[name] for name in ("attempts.py", "region.py")
@@ -1899,7 +1899,12 @@ def _a02(runs: Runs) -> tuple[bool, Any, Any]:
         "cycling_refusal_produced_in": ["phase_contract.py"],
         "WallObserver_defined_in": ["phase_contract.py"],
         "WallObserver_constructed_by": {"attempts.py": True, "region.py": True},
-        "own_cycle_or_budget_rule": {"attempts.py": [], "region.py": []},
+        "own_cycle_or_budget_rule": {
+            "attempts.py": [],
+            "region.py": [],
+            "region_phase.py": [],
+            "region_problem.py": [],
+        },
     }
     ok = (
         all(row["decide_calls"] == row["attempt_closures"] > 0 for row in per_run.values())
