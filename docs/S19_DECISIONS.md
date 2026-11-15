@@ -371,3 +371,10 @@
   the parent's smells and gives the helper 6 parameters lowers health while debt falls. G-END binds repo health
   >= 9.0, so engineers avoid helpers with more than 5 parameters (parameter object first, playbook seed
   anti-pattern). `_await_exit` gets a parameter object with W4's `launch` signature change.
+- **2026-11-15, split-region-2 merged.** Review R-W3-G1O-2 (reviewer, Opus): merge after fixes 1 to 3 (applied):
+  an assignment-installed Newton spy (tests/test_opt_revision_host.py) and a spy table (scripts/s10c_cmw_diagnose.py)
+  missed region_attempts; T03 A02 scan widened. Lesson for retarget inventories: grep assignments
+  (`module.name = `) and spy tables, not only setattr/patch calls. Kept: 1e9d2fac (forbid rule covers
+  region_phase, region_problem), the benchmark retarget (benchmarks/t08/ptc_r1). Notes for W4/I-19: region_attempts
+  docstring omits its region_phase import; tests/test_s01_cascade_wo1.py:262-263 patches names that callers import
+  directly (dead guard, older than S19).
