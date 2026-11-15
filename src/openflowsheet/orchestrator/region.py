@@ -59,6 +59,13 @@ admissibility reads the same classification and not `admissibility_epsilon`, and
 regime of a flagged split is the same kernel's. A split whose rule declares vapour-only components
 has a `VapourOnlyForm`: in a TWO_PHASE attempt their liquid flows are pinned at `+0.0` and their
 zero rows dropped. Every other provider runs the code above, unchanged.
+
+**Where the code is** (S19 B1). This module holds the region's records, the attempt loop
+(`solve_region`, `_solve_region`), the trial screen, PTC and the homotopy. The phase-policy kernel
+(the kernel, the PH closure, the admissibility screens and their refusals) is in
+`orchestrator.region_phase`, the Newton problem over lifted splits (labels, the opening fixed
+point, dormancy outlets, `_LiftedOps`) in `orchestrator.region_problem`; `region` re-exports what
+its callers and tests read there.
 """
 
 from __future__ import annotations

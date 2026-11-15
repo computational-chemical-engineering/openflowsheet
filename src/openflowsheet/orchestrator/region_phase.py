@@ -1,8 +1,15 @@
-"""The phase-policy kernel of the EO region solver (T03, T05b): lifted splits, the PH closure
-and the admissibility screens.
+"""The phase-policy kernel of the EO region solver (T03 §4, T05b §6–§7, K03 §8.2).
 
-Moved verbatim from `orchestrator.region` (S19 B1); `region` re-exports what its callers and
-tests read there. This module reaches nothing in `region` or `region_problem`.
+The kernel (`_kernel`: the provider's regime and split at the stream's `(n, T, P)`, K03 §8.3),
+the zero-flow answer of a dormant feed, the v2 kernel that answers a PH-type split by its PH
+closure (`_contract_kernel`, `_ph_closure`), and the single-phase admissibility test
+(`_admissible`, `admissibility_value`; ideal K by `_reference_k_values`, γ–φ, `pr-c1-v1`), which
+raises `AdmissibilityRefusal` when it cannot be evaluated (ADR 0076 I-15). Then the regime
+helpers: a supplied split's branch word (`_branch`) and what a regime pins and drops (`_pin`,
+`_form`, `_pinned`, `_dropped`).
+
+Split from `orchestrator.region` (S19 B1), which re-exports what its callers and tests read here.
+This module reaches nothing in `region` or `region_problem`.
 """
 
 from __future__ import annotations

@@ -91,7 +91,8 @@ from openflowsheet.verify.checks import VerifierError
 ROUTE: Literal["revision_eo"] = "revision_eo"
 
 #: The bounds K03's Newton core applies by quantity kind in the production solve
-#: (`orchestrator/region.py` `_region_problem`: `lower_bounds` 0 on `molar_flow`, nothing else).
+#: (`orchestrator/region_problem.py` `_region_problem`: `lower_bounds` 0 on `molar_flow`,
+#: nothing else).
 K03_KIND_BOUNDS: Mapping[str, tuple[float | None, float | None]] = MappingProxyType(
     {"molar_flow": (0.0, None)}
 )
@@ -621,8 +622,9 @@ class RevisionNlpHost:
         §9 A-3): the margin is the region closure's own test at the converged state, for TP- and
         PH-type splits alike —
 
-        - LIQUID / VAPOR: `1 − admissibility_value` (`orchestrator/region.py`; ideal K: `Σ x K`
-          or `Σ y/K` over the side's composition, γ–φ: `Σ x K(x)` or the incipient-liquid `ΣW`),
+        - LIQUID / VAPOR: `1 − admissibility_value` (`orchestrator/region_phase.py`; ideal K:
+          `Σ x K` or `Σ y/K` over the side's composition, γ–φ: `Σ x K(x)` or the
+          incipient-liquid `ΣW`),
           `None` where the closure judges by another form (`pr-c1-v1`) or the test raises;
         - TWO_PHASE: the smaller side's `molar_flow` total over K03's registered `molar_flow`
           nominal (the closure holds it by `V, L ≥ 0` only), `None` without such a column;
