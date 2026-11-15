@@ -486,3 +486,8 @@
   `_loop_tear` may become `_plan_tear` with a NamedTuple (name clash with graph/tear.py); twins
   `_recovery_taken`/`_revision_continuation_taken` stay (rule 15). Region steps R1, S1, C2 and E4, X4 to X6 wait
   for the scale probe.
+- **2026-11-15, wp/S19-tools merged (e9f34250).** test_impact skips `.codehealth/`, `.claude/` (67 tests, two
+  falsifiers; the premise guard scans source string literals for those trees as whole path components, since two
+  fixtures embed absolute worktree paths); `gate_queue.py` proved on three real gates. The proof's codehealth log
+  records stay outside s19.jsonl (proof commits net to zero; gate JSONs kept). Engineers now deliver a chain, enqueue
+  it and end (`S19-W3-common.md`).

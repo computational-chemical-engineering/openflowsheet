@@ -34,7 +34,10 @@ Position, numbers and rules live in files, not here. A fresh session reads, in o
    step per gate.
 2. Gate queue (Frank, 2026-11-15): the runner (`gate_queue.py run`, detached) gates each enqueued chain with
    `gate.sh` (two slots, 8 xdist workers, TMPDIR outside the repo, f6 deselected) and logs it with `codehealth log`.
-   The orchestrator runs `gate_queue.py wait --since N` in the background: one wake per result.
+   The orchestrator runs `gate_queue.py wait --since N` in the background: one wake per result. Commands:
+   `Q=python3 .claude/skills/s19-refactor/gate_queue.py`; `$Q run --detach` (PID and log in
+   `<git-common-dir>/codehealth/queue/`, stop with `kill $(cat <queue>/runner.pid)`), `$Q status`, `$Q wait --since N`
+   (prints new result lines and `COUNT n`), `$Q enqueue ...` (engineers; see `S19-W3-common.md`).
 3. On a result: PASS -> reviewer per cadence -> review fixes (docstrings by the orchestrator, gated no-gain;
    code by a fresh engineer) -> merge the lane into `wp/S19` (merge commit, `git merge -F <file>`) -> log in
    S19_DECISIONS. FAIL -> read the failed checks; an environment failure (ENOSPC, TMPDIR, a timeout far from the
