@@ -318,3 +318,14 @@
 - **2026-11-15, W3 G4 run 1 review R-W3-G4-1 (reviewer, Opus): merge after fixes.** Two docstring fixes in
   `assessment/sizing/families.py` (f8bed528, gated no-gain). Tie-breaking, refusal order, report status precedence
   and key order unchanged. Characterization tests to add later: report_body REFUSED path, equal-price utility tie.
+- **2026-11-15, W3 G2 run 2 review R-W3-G2-2 (reviewer, Opus): merge after fixes.** Fixes (8b0eaed5, gated
+  no-gain): `_core_endpoint` docstring index `profile[j - 1]`; local `found` -> `core_end`, and
+  `temperatures.update(core_end.temperatures)` into the declared dict instead of rebinding to the record's dict.
+  I5+I6 in one helper accepted (rule 10: no hoist of `_split_rows` above I3, I4). Ruling for `column_blocks._build`
+  steps 5 and 6: no loop-body helper; two pure §5.3 helpers, the caller writes every table (rules 6, 11):
+  `_summed_inlet_flows(spec, walk, start) -> dict[int, list[float]]` (step 5 only under the existing `if b == 0`,
+  replacing the "feeds summed" flag; step 6 always, start `vapor[core[0]] if core else` zeros) and
+  `_block_temperatures(spec, provider, walk, flows, phase, edge) -> dict[int, float]` (the `_block_stage` chain;
+  walk order replaces a direction flag). The commit states that `_inlet_flows` now runs before the block's
+  `_block_stage` calls (pure, cannot raise on a validated spec) and that walk-predecessor equals `j -/+ 1` because
+  `equilibrium_stages()` is contiguous (column_spec.py:403). No split of column_blocks.py.
