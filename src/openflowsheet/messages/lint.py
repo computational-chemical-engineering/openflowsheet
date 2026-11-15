@@ -171,19 +171,28 @@ def _check_examples(entry: Entry, catalogue: Catalogue) -> list[str]:
                     )
             scope = _Scope(entry, {**context.params(), **params}, context, catalogue)
             outer = chain[: chain.index(entry.code)]
-            for index, variant in enumerate(entry.variants):
-                if not _matches(variant["when"], scope.params, surface, outer):
-                    continue
-                for name in ("summary", "context", "where", "why", "action"):
-                    if name not in variant:
-                        continue
-                    try:
-                        render_template(str(variant[name]), scope)
-                    except RenderError as error:
-                        problems.append(
-                            f"examples[{number}] (surface {surface}) variants[{index}].{name}: "
-                            f"{error}"
-                        )
+            problems += _check_reached_variants(entry, scope, outer, surface, number)
+    return problems
+
+
+def _check_reached_variants(
+    entry: Entry, scope: _Scope, outer: list[str], surface: str | None, number: int
+) -> list[str]:
+    """Example `number` on `surface`: every template of every variant whose `when` it reaches
+    (with `outer`, the chain's codes before the entry's) renders in `scope`."""
+    problems: list[str] = []
+    for index, variant in enumerate(entry.variants):
+        if not _matches(variant["when"], scope.params, surface, outer):
+            continue
+        for name in ("summary", "context", "where", "why", "action"):
+            if name not in variant:
+                continue
+            try:
+                render_template(str(variant[name]), scope)
+            except RenderError as error:
+                problems.append(
+                    f"examples[{number}] (surface {surface}) variants[{index}].{name}: {error}"
+                )
     return problems
 
 
