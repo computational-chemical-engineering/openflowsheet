@@ -446,13 +446,13 @@ def _build(
     sweeps, delta = 0, 0.0
     if b >= 1:
         carry = stages[a:]
-        found = _core_endpoint(
+        core_end = _core_endpoint(
             spec, provider, initial, carry, core, rho, phi, profile_shift, max_sweeps
         )
-        temperatures, sweeps, delta = found.temperatures, found.sweeps, found.delta
+        temperatures, sweeps, delta = dict(core_end.temperatures), core_end.sweeps, core_end.delta
         for j in carry:
-            liquid[j] = found.liquid[j]
-            vapor[j] = found.vapor[j]
+            liquid[j] = core_end.liquid[j]
+            vapor[j] = core_end.vapor[j]
     # Step 5: the L-block, top-down.
     for j in l_block:
         above = j - 1
@@ -530,7 +530,7 @@ def _core_endpoint(
     max_sweeps: int,
 ) -> _CoreEndpoint:
     """§5.3 steps 2–4 over the non-empty `core` (`carry`: the core, then the L-block): the start
-    `T_j = initial.profile[j] + profile_shift`, at most `max_sweeps` sweeps of `_core_flows` and
+    `T_j = initial.profile[j - 1] + profile_shift`, at most `max_sweeps` sweeps of `_core_flows` and
     `_bubble` until `max_j |ΔT_j|` (and, for a composition-dependent form, the relaxed liquid's
     `max |Δx|`, S10-C §4.9) is within tolerance, then the flows at the stopped `T`. Raises
     `_RefusalError` `sweeps_exhausted` when no sweep meets the tolerances, or `_bubble`'s."""
