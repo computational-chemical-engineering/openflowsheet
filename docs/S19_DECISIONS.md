@@ -568,3 +568,18 @@
   only, and the orchestrator allowance (`ALLOWED_ORCHESTRATOR_NAMES`) goes, so any orchestrator import becomes a
   violation (stricter). Falsifiers quoted in the commit: a runtime `from openflowsheet.models.lifted import
   LiftedSplit` and a TYPE_CHECKING orchestrator import each fail. The design-lane reviewer reads it.
+- **2026-11-16, W4 run 3 (opus-engineer, 152k tokens).** I-2 and I-7 done on `wp/S19-w4` (tip 517355e1), I-8 not
+  started (cap). b2380d3a R-016 test commit (STOP 2; its own head red for the four verifier modules, green at the
+  next commit), d250ba4c revert of 3bbdd571 (job 36, no-gain), a3cefbf0 + e29b15d7 plan and step
+  `i2-lifted-vocabulary` (job 37; region.py `__all__` loses ClosureType, DormancyForm, LiftedSplit, Regime,
+  VapourOnlyForm, ZeroFlowForm; rank.py `PRESSURE_TOLERANCE` was an `X as X` re-export), 372a0809 + 517355e1 plan and
+  step `i7-tolerances-linearization` (job 38). Arch 4/3/12 unchanged by both (imports 4129 -> 4113). Frozen exception:
+  StagedSplits via orchestrator.region (column_unit.py:90). Full mypy, ruff, patch_noop 0/265 clean before enqueue.
+  Gates: jobs 21 (I-5 move, step 154) and 32-33 (G5 run 4 steps 1-2, debt 84.7 -> 47.7) PASS.
+- **DECISION 2026-11-16, surrogate reactor `MODEL_ID` (W4 run 3 finding).** studies/surrogate/reactor.py:112 lists
+  `MODEL_ID` in `__all__` after importing it from study (:102); the only reader through reactor is
+  test_m04_wo7_surrogate_unit.py (`sr.MODEL_ID`). Ruling under STOP 1: an ordinary re-export; I-8 retargets reactor.py
+  and the test to `studies.surrogate.records` and drops it from reactor's `__all__` (`changed`). Alternative: keep it
+  as reactor's own API (a unit module naming its model id); rejected, reactor exposes it through its method (:374).
+  Reversible by: re-adding the `__all__` entry. W4 run 4 briefed (`S19-W4-4.md`: I-8 only, smallest module first);
+  run 3's I-8 scripts saved to `<git-common-dir>/codehealth/drafts/w4-i8/`.
