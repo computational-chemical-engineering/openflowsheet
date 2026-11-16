@@ -40,6 +40,3 @@ def feasibility_tolerance() -> float:
     from openflowsheet.studies.nlp.tolerances import TAU_FEAS  # noqa: PLC0415
 
     return float(TAU_FEAS)
-
-
-_feasibility_tolerance = feasibility_tolerance
