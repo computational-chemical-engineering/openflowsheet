@@ -103,7 +103,8 @@ cmd = 'V="${OPENFLOWSHEET_VENV:-$(dirname "$(git rev-parse --path-format=absolut
 # total order, top to bottom, and an importer may not import a module listed above it. The
 # order states the target architecture: the violations recorded at adoption are the ones the
 # planned splits remove (S17 R1 to R5).
-# Violations recorded at adoption (11), each with the step that removes it (plan review, S17):
+# Violations recorded at adoption (11), each with the step that removed it (plan review, S17).
+# R1 to R5 are done; the two pairs marked `stay` are the ones still reported (codehealth arch):
 #   types -> validation, store -> validation, authz -> validation       R1 split-validation-report
 #   local -> transactions, revision_continuation -> transactions        R2 split-revision-edits
 #   column_binding -> revision_binding, thermal_binding -> revision_binding   R3 split-revision-binding
