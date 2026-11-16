@@ -1402,3 +1402,12 @@
   8671bbdf->a953ca84, caccb2ad->84e74e1d plan I-9, 1e0d6bee->1f5c2c6b I-9, 1c8037be->a609de45 layer config,
   1cc1271e->dbb304a3, 3185ea65->cf66884c plan I-14, 672a1edf->8292d7e2 I-14, 674d7de6->45e742b7, 619e0011->2b40c2f2.
   Enqueued: 194 w4r9-i5b-iface-2 (rerun of 185), 195 w4r9-i9-iface-2, 196 w4r10-i14-iface-2.
+- **2026-11-16 ~21:50, G5 run 9 reported (opus-engineer, 147k tokens). wp/S19-g5g from 135c78f8, tip bfe9e545, all on
+  run/compare.py:** 55be9616 `_differences_v2` -> `_object_differences` (23.0 -> 17.0), 24f772cc `_differences_v1` ->
+  `_object_differences_v1` (v1 twin; 17.0 -> 12.0), 7338568e `_variables` -> `_kind_floor` (12.0 -> 8.0), bfe9e545
+  `_differences_v2` `floor`+`source` -> one pair `row_floor` (parameter-object, 8.0 -> 7.0, gain exactly 1.0: borderline,
+  it lifts the file 8.9 -> 9.1; revert alone leaves 8.9). Jobs 189, 190, 192, 193. compare.py health 7.4 -> 9.1; repo
+  debt 4746.1 -> 4730.1. Every step: mypy 377 files clean, ruff clean, F0 PASS, patch_noop 0/265, compare tests
+  (t08_adr0025, t02_identity, k05_replay, v1 schema, m02_wo10_coupled) pass; no string literal changed. Not taken:
+  `_key_rule` (5.0, a 12-rung first-match ladder, one helper per ADR 0025 §5 row; playbook "when not"). certificate.py
+  and column.py untouched (S2 cap). Review R-W3-G5-9 when 189-193 pass (rule on step 4's bare tuple).

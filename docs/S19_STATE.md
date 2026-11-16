@@ -52,34 +52,37 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 - Held until the scale probe reports: G1 (orchestrator/, numerics/). Open: ptc.py 6.8 (P3, P4).
 - G-END (below) stays the end criterion for the whole repository.
 
-## Next actions (2026-11-16, ~20:15)
+## Next actions (2026-11-16, ~21:55; self-reset)
 
-Runner pid 2642417 (cce-code-health 6529f47 installed; merge-check = `gate.sh --behaviour-only`). Results consumed up
-to 172; start `$Q wait --since 172` in the background first. Agents: G5 run 9. W4 chain rebuilt after job 185 FAIL (S19_DECISIONS "fix185"): lane tip 2b40c2f2, jobs 194 I-5b, 195 I-9, 196 I-14; old shas in the state lines above map per that entry. Lanes at most 2 agents until Thu 19 Nov
-13:00. ALERTs persist (proposal 2 with Frank). Merge-checks run on a helper branch `wp/S19-<lane>-mc` = lane tip +
-wp/S19 tip merged in. S19_DECISIONS holds the detail of every item below (grep the quoted words).
-1. **Rule 4 serial runs (detached, not agents; S19_DECISIONS "rule 4 falsifier: base2"):** xdist counts are not
-   deterministic (base 964/125/1228, base2 963/124/1231). Serial full suites (`-p no:xdist`) at base 10adfc3d+A
-   (worktree `/tmp/claude-1000/-home-eajfpeters-Code-OpenFlowsheet/0e0821aa-6e8e-4c6b-9a00-f781aa0ef7c7/scratchpad/base2`)
+Runner pid 2642417 (cce-code-health ec5aaea installed). Results consumed up to 172; start `$Q wait --since 172` in the
+background first. No agent running. Lanes at most 2 agents until Thu 19 Nov 13:00. ALERTs persist (proposal 2 with
+Frank). Merge-checks run on a helper branch `wp/S19-<lane>-mc` = lane tip + wp/S19 tip merged in. Detail of every item
+in S19_DECISIONS (grep the quoted words).
+1. **Rule 4 serial runs (detached; "rule 4 falsifier: base2"):** serial full suites (`-p no:xdist`) at base
+   10adfc3d+A (worktree `/tmp/claude-1000/-home-eajfpeters-Code-OpenFlowsheet/0e0821aa-6e8e-4c6b-9a00-f781aa0ef7c7/scratchpad/base2`)
    and head be115b6a+A (worktree `/tmp/claude-1000/-home-eajfpeters-Code-OpenFlowsheet/165c72bf-833e-48c6-b5e2-b732f68e85df/scratchpad/headser`),
    started 20:15, ~3 h. Logs `baseser.log`, `headser.log` in that 165c72bf scratchpad (end "EXIT n"); read only
-   `grep -h "MSG WO\|passed\|^EXIT"`. Equal: run 8 merges (item 3), ADR rule 4 text (serial form) into the R-W4-9
-   batch. Unequal: fresh engineer on the I-4 gap. Then remove both worktrees.
-2. **Done 20:50:** cce-code-health ec5aaea (e0ef865c); W4 run 9 enqueued as jobs 185 (I-5b), 186 (I-9).
-3. **W4 run 8 merge** waits for item 1 (R-W4-8 fix 1). Fixes 2 (c7d21f2e, job 179 PASS) and 3 done. Helper
-   wp/S19-w4r8-mc (worktree s19-w4r8-mc) = 486b6dbb + c7d21f2e; then merge wp/S19 into it, merge-check, merge. Run 9
-   (wp/S19-w4 after 486b6dbb) merges after run 8, with its own review (R-W4-9: I-5b, I-9, the flag, 8671bbdf).
-4. **G6 run 6**: R-W3-G6-6 merge after fixes; fix 0dd145b0 job 187 (no-gain); helper wp/S19-g6d-mc (worktree
+   `grep -h "MSG WO\|passed\|^EXIT"`. Equal: W4 run 8 merges (item 3), ADR rule 4 text (serial form) into the
+   R-W4-9 batch, and I-10/I-12 can be briefed. Unequal: fresh engineer on the I-4 gap. Then remove both worktrees.
+2. **G6 run 6:** R-W3-G6-6 merge after fixes; fix 0dd145b0 job 187 (no-gain); helper wp/S19-g6d-mc (worktree
    s19-g6d-mc, 19f2ff53) merge-check job 188. Both PASS: merge wp/S19-g6d into wp/S19 (`git merge -F`), remove
    worktrees s19-g6d, s19-g6d-mc.
-5. **G5 run 9 running** (opus-engineer, wp/S19-g5g from e0ef865c; brief
-   `S19-W3-G5-9.md`: run/compare.py 7.4; verify/ below 9: gamma_phi_units 6.4, pr_c1 6.7, split_checks 7.2, table 7.5,
-   compare.py, certificate.py, column.py; S2 tier, cadence 4). W4 run 10 done: I-14 job 191 (lane tip 619e0011); next a review R-W4-9 over runs 9+10 (Fable for I-14) when jobs 194, 195, 196 pass, then W4 run 11 (I-11, I-13; brief = S19-W4-10.md minus I-14). I-10 and I-12 wait for rule 4; was: I-14 per the A11 ruling, then I-10,
-   I-11, I-15?, I-13, I-12a-d, I-19; I-12a's list per R-1044).
+3. **W4 run 8 merge** waits for item 1 (R-W4-8 fix 1). Helper wp/S19-w4r8-mc (worktree s19-w4r8-mc) = 486b6dbb +
+   c7d21f2e; then merge wp/S19 into it, merge-check, merge.
+4. **W4 runs 9+10 (lane wp/S19-w4, tip 2b40c2f2, rebuilt after job 185 FAIL, "fix185"):** jobs 194 I-5b (rerun of
+   185), 195 I-9, 196 I-14. All PASS: one review R-W4-9 over runs 9+10 (write the brief: I-5b 50779e18, I-9
+   1f5c2c6b, flag 651cc8d0, tests 1e0eb6ce/634c1195/a953ca84/dbb304a3/45e742b7, layer configs a609de45/2b40c2f2, I-14
+   8292d7e2; I-14 by a `reviewer` on `model: fable` (initialization order); engineer choices in "W4 run 10 reported").
+   Then W4 run 11: I-11, I-13 (brief = S19-W4-10.md minus I-14; importers of transactions listed there). I-10 and
+   I-12a-d wait for item 1.
+5. **G5 run 9 (wp/S19-g5g, base 135c78f8, tip bfe9e545; "G5 run 9 reported"):** jobs 189, 190, 192, 193. All PASS:
+   review R-W3-G5-9 (write the brief from S19-R-W3-G5-8.md; rule on step 4's bare-tuple pair), fixes, helper
+   merge-check, merge. Next G5 run 10: certificate.py `_issue` (11.8, 15 parameters; grouping as R-W3-G5-4),
+   `verify_revision` (8.3), column.py `_end_check` (4.0).
 6. Open for Frank (not blocking): R-1042 option C; STOP 1 alternative; tool items; verify twins addendum;
-   selection-widening; proposal 2 for the ALERTs. Design lane: NaN derivative-witness pass (R-W3-G5-8). Docs-pass
-   leftovers in S19_DECISIONS (add: 77ae7025 message says cognitive 16 -> 11, scan 12; i4 plan reason "two" -> three;
-   ruff tier `{files:*.py,*.pyi}` switch).
+   selection-widening; proposal 2 for the ALERTs. Design lane: NaN derivative-witness pass (R-W3-G5-8); rule 4
+   deterministic form (after item 1). Docs-pass leftovers in S19_DECISIONS (77ae7025 message says cognitive 16 -> 11,
+   scan 12; i4 plan reason "two" -> three; ruff tier `{files:*.py,*.pyi}` switch).
 
 ## Gates (pass numbers fixed after A1, before step 1)
 
