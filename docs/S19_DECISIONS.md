@@ -1544,3 +1544,10 @@
   wp/S19 as 76db456d** (helper wp/S19-g5g-mc2; wp/S19 changed only docs since e6cd0017). Worktrees s19-g5g,
   s19-g5g-mc, s19-g5g-mc2 removed. W4 runs 9+10 helper wp/S19-w4-mc (worktree s19-w4-mc) = f8173c9f + wp/S19 76db456d
   as 08be63e6 (clean; tests/conftest.py auto-merged); merge-check job 206 (w4r10-mc) behind job 205 (no-gain).
+- **2026-11-17 00:00, self-reset.** G5 run 10 brief S19-W3-G5-10.md written (lane wp/S19-g5h); G6 run 7 targets from the
+  scan of c0aad45e in S19_STATE item 4 (repo debt 4718.1, health 8.1, brain 26). Gate report before the reset:
+  "ALERT selected share 48% < 75% of step gates"
+  "ALERT selected gates take 562 s > 300 s (tests tier)"
+  "ALERT selected/full time ratio 0.43 > 0.4: selection saves little"
+  "ALERT queue wait median 27 min > 15 min"
+  (standing; proposal 2 with Frank). Jobs 205, 206 gating; serial repeat headser2 running (PID 3980694).
