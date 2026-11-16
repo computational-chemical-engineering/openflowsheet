@@ -979,3 +979,15 @@
   (6 h): 32 gates, 0 failed, 28 of 30 steps accepted, debt removed 176.9. ALERTs unchanged from job 123 (cause and
   action recorded there): "selected gates take 753 s > 300 s (tests tier)", "selected/full time ratio 0.59 > 0.4:
   selection saves little", "queue wait median 69 min > 15 min".
+- **2026-11-16 13:41, job 140 FAIL (w4-mc, merge-check 3c2c2d33..4d250386): forbid, scope, literals, public_api; 6/10,
+  20 s, no test ran.** A merge-check runs `gate.sh --no-gain` = refactor mode, so an interface lane's range fails by
+  construction: the lane commits its own `.codehealth/` plans and config (forbid and scope hard-code `.codehealth/*`),
+  removes names (literals, public_api) and edits 263 test files and pyproject.toml (callers, forbid). Every step passed
+  these under its own plan. `--cadence campaign` still forbids `.codehealth/*`; a combined plan would fail the callers
+  rule. Not a code failure.
+  DECISION: W4 merge-check -> `.claude/skills/s19-refactor/merge_tiers.sh BASE HEAD LABEL`: the head config's
+  behaviour tiers run directly (ruff on the lane's src files, mypy, the full suite with gate.sh's environment and
+  deselects, f0, mcp_digest) under gate.sh's two-slot lock, one summary line. Alternative: a combined interface plan
+  (fails callers), or wait for a cce-code-health interface-lane merge-check (owner session code_health, whose v0.2.0
+  waits on this merge). Reversible by: a proper merge-check once the tool has one. Run w4-mt1 on 4d250386 started now;
+  after the G5 run 8 and G6 run 4 merges, wp/S19 is merged into the lane and merge_tiers.sh re-run on that merge.
