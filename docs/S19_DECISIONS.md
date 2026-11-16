@@ -1219,3 +1219,7 @@
   blocking): `__module__` change and audit caller change are STOPs only if a test pins them; validate_inline stays on
   I-12a's list; schema_check private names unchanged through I-12a. W4 run 9 launched (opus-engineer, brief
   S19-W4-9.md: I-5b, I-9, then I-14 if context allows), on wp/S19-w4 from 486b6dbb, steps chained after job 177.
+- **2026-11-16, job 177 (W4 run 8 I-4 interface, be115b6a) PASS, step 239 accepted.** Review R-W4-8 launched
+  (reviewer, brief S19-R-W4-8.md, range ce7f9b76..486b6dbb). Gate report: ALERT selected share 65% < 75% of step
+  gates; ALERT selected gates take 609 s > 300 s (tests tier); ALERT selected/full time ratio 0.45 > 0.4: selection
+  saves little; ALERT queue wait median 51 min > 15 min (causes as before; proposal 2 with Frank).
