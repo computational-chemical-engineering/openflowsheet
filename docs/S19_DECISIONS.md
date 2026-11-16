@@ -1038,3 +1038,8 @@
   tests of the importers passed; job 155 (g6r5-revfix, no-gain).
 - **2026-11-16, wp/S19 (6de773c6) merged into wp/S19-w4 (aa2de578, clean); merge_tiers w4-mt2 on it started.** On
   PASS: W4 merges into wp/S19.
+- **2026-11-16, merge_tiers w4-mt2 PASS (6de773c6..aa2de578, 1446 s): ruff, mypy, full suite 20375 passed / 107
+  skipped / 3 xfailed (1343 s), F0 M1-M9, MCP digest. Merged wp/S19-w4 (at aa2de578) into wp/S19 (7ffa7901).**
+  `codehealth arch --depth 4` at 7ffa7901: 4 violations, 3 cycles, 12 cycle edges (CB 14 / 10 / 79). Session
+  code_health told (its v0.2.0 waits on this merge) and asked for an interface-lane merge-check mode. W4 run 7 next
+  (brief `S19-W4-7.md`), lane fast-forwarded to the wp/S19 tip.
