@@ -50,7 +50,7 @@ from openflowsheet.models import duty_id, flow_id, row_id, temperature_id
 from openflowsheet.models.revision_flowsheet import InstanceView, RevisionView
 
 if TYPE_CHECKING:
-    from openflowsheet.models.lifted import LiftedSplit
+    from openflowsheet.orchestrator.region import LiftedSplit
 
 __all__ = [
     "DORMANT_OUTLETS",
