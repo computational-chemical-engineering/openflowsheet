@@ -20,6 +20,7 @@ from pathlib import Path
 from typing import Any
 
 import pytest
+import yaml
 from conftest import REPO_ROOT
 from f1_harness import FakeSite, descriptor
 
@@ -213,3 +214,99 @@ def test_b3_the_audit_switch_is_read_at_each_load() -> None:
         """
     )
     assert found == {"off": False, "restored": True}
+
+
+# After the step (ADR 0076 I-14 tests (c) and (d), ruling 2.5 item 1): a process that never
+# imported the registry freezes the core catalogue alone. A1, A2 and A4 fail before the step.
+
+#: The slurry extension's catalogue document, as `register` takes it.
+SLURRY_DOCUMENT = yaml.safe_load(CATALOGUE_YAML.format(namespace="slurry"))
+LIBRARY_LOOKUP = f"""
+from openflowsheet.messages import catalogue, render
+from openflowsheet.messages.catalogue import CATALOGUE
+
+core = CATALOGUE.entry("{CORE_CODE}") is not None
+registry = "openflowsheet.registry" in sys.modules
+"""
+
+
+def test_a1_a_library_only_lookup_freezes_the_core_alone(site: FakeSite) -> None:
+    _slurry_with_peek(site)
+    found = _fresh(
+        LIBRARY_LOOKUP
+        + f"""
+import json
+try:
+    catalogue.register(json.loads({json.dumps(json.dumps(SLURRY_DOCUMENT))}), namespace="slurry")
+    refused = None
+except RuntimeError as error:
+    refused = str(error)
+print(json.dumps({{"core": core, "registry": registry, "refused": refused}}))
+""",
+        site.directories,
+    )
+    assert found == {
+        "core": True,
+        "registry": False,
+        "refused": "the message catalogue is frozen: register before first use",
+    }
+
+
+def test_a2_a_registry_built_after_a_library_freeze_refuses_its_extension(
+    site: FakeSite,
+) -> None:
+    _slurry_with_peek(site)
+    found = _fresh(
+        LIBRARY_LOOKUP
+        + """
+import json
+from openflowsheet.registry import default_registry
+
+try:
+    default_registry()
+    refused = None
+except RuntimeError as error:
+    refused = str(error)
+print(json.dumps({"registry": registry, "refused": refused}))
+""",
+        site.directories,
+    )
+    assert found["registry"] is False
+    assert found["refused"] is not None and "the message catalogue is frozen" in found["refused"]
+
+
+def test_a3_without_an_extension_a_late_registry_build_changes_nothing() -> None:
+    found = _fresh(
+        LIBRARY_LOOKUP
+        + """
+import json
+from openflowsheet.registry import default_registry
+
+keys = CATALOGUE.keys()
+closed = default_registry().closed
+print(json.dumps({"core": core, "closed": closed, "unchanged": CATALOGUE.keys() == keys}))
+"""
+    )
+    assert found == {"core": True, "closed": True, "unchanged": True}
+
+
+def test_a4_the_registry_imports_the_catalogue_and_not_the_audit_or_the_renderer() -> None:
+    found = _fresh(
+        """
+        import json
+        import openflowsheet.registry
+        from openflowsheet.messages.catalogue import Catalogue
+
+        loaded = {name: f"openflowsheet.messages.{name}" in sys.modules
+                  for name in ("catalogue", "render", "audit")}
+        Catalogue().keys()
+        loaded["audit after a load"] = "openflowsheet.messages.audit" in sys.modules
+        print(json.dumps(loaded))
+        """
+    )
+    assert found == {
+        "catalogue": True,
+        "render": False,
+        "audit": False,
+        "audit after a load": False,
+    }
