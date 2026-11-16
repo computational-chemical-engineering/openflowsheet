@@ -1363,7 +1363,7 @@ def _stencil_difference(
 
 def _not_a_pass(refusal: str | None, on: float, off: float) -> bool:
     """§4.8.3 (a): whether a column's central result is not a pass: a refused point (`refusal`),
-    or either maximum above `DERIVATIVE_TOLERANCE` (a NaN maximum is not above it)."""
+    or either maximum above `DERIVATIVE_TOLERANCE`."""
     return refusal is not None or on > DERIVATIVE_TOLERANCE or off > DERIVATIVE_TOLERANCE
 
 
