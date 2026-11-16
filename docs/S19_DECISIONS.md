@@ -826,3 +826,11 @@
   126 (I-8e src), 127 (I-8e interface), 128 (I-8f src), 129 (I-8f interface). Tool note: the queue's `--rerun-of`
   should take or map to the run-log step. Report: ALERTs selected 1008 s > 300 s, ratio 0.78 > 0.4, wait median
   100 min > 15 min (the share ALERT cleared); the W4 jobs still carry ref-base 736f70db; action unchanged.
+- **2026-11-16, G5 run 8 delivered (opus-engineer, Opus): wp/S19-g5f, base 209ed607, 3 steps queued (123 g5r8-1,
+  132 g5r8-2, 134 g5r8-3).** d8e21d1a `derivative_witness` 16.2 -> 1.0 (loop-body-extract, frozen `_WitnessFrame`,
+  `_ColumnWitness`); ce638e4c `escalate_column` 8.0 -> 3.0 (rest is its 8 public parameters, W4); d6769618
+  `decide_mode` 8.0 -> 0. checks.py 36.7 -> 17.5 (health 7.1 -> 8.4), replay.py 15.3 -> 7.3 (8.7 -> 9.2). For the
+  reviewer (R-W3-G5-8): step 1 reads `scaling.column`/`.row` once per frame instead of per column, and moves the
+  `escalations[name]` write after a pure `_discrepancies` call; step 2 evaluates the `all(<=)` test when a level is
+  barred (pure float comparison, result unused then). Left: `_identity()` order in `decide_mode` (Environment(**)
+  may raise), `replay` 5.3, `closure_check` 5.0 (public parameters, W4).
