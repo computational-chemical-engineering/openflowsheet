@@ -1076,18 +1076,10 @@ def escalate_column(
         current = _central4_estimate(points, h, column_scale, row_scales)
         admissible.append(True)
         barred.append(level_barred)
-        if previous is None:
-            gaps.append(None)
-        else:
-            differences = [abs(now - before) for now, before in zip(current, previous, strict=True)]
-            gaps.append(max(differences, default=0.0))
-            # `all(<=)` rather than `max <=`, so that a NaN row never resolves a column.
-            if (
-                not level_barred
-                and not previous_barred
-                and all(difference <= RESOLUTION_TOLERANCE for difference in differences)
-            ):
-                return Escalation(tuple(admissible), tuple(gaps), tuple(barred), k, current)
+        gap, agreed = _level_gap(current, previous)
+        gaps.append(gap)
+        if not level_barred and not previous_barred and agreed:
+            return Escalation(tuple(admissible), tuple(gaps), tuple(barred), k, current)
         previous = current
         previous_barred = level_barred
     return Escalation(tuple(admissible), tuple(gaps), tuple(barred), None, None)
@@ -1117,6 +1109,21 @@ def _central4_estimate(
             accumulated += weight * values[row]
         estimate.append(accumulated / (12.0 * h) * column_scale / row_scale)
     return tuple(estimate)
+
+
+def _level_gap(
+    current: tuple[float, ...], previous: tuple[float, ...] | None
+) -> tuple[float | None, bool]:
+    """§4.8.3 (b): an admissible level's e_k, the largest row difference between its estimate
+    `current` and the previous level's `previous`, and whether every row's difference is within
+    `RESOLUTION_TOLERANCE`; `(None, False)` when `previous` is None (k = 0, or level k - 1 was
+    inadmissible). `all(<=)` rather than `max <=`, so that a NaN row never resolves a column."""
+    if previous is None:
+        return None, False
+    differences = [abs(now - before) for now, before in zip(current, previous, strict=True)]
+    return max(differences, default=0.0), all(
+        difference <= RESOLUTION_TOLERANCE for difference in differences
+    )
 
 
 def _discrepancies(
