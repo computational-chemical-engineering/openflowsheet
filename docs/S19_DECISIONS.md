@@ -766,3 +766,4 @@
   only while those orders equal `COMPONENTS`. A design-lane question (component-order invariant), listed for the G5
   close.
 - **2026-11-16, job 80 PASS (W4 run 5b, w4r4 batch A src, 54f25b7a, step 185 accepted-neutral, 263.4 -> 263.4, 15/15).** W4 jobs 81-87, 89, 93, 98, 99 still queued; no W4 action until all pass.
+- **2026-11-16, job 103 PASS (G5 run 5 review fixes, 718d896a, step 186 accepted-neutral, 30.1 -> 30.1, 15/15).** Run 5 merges into wp/S19 on job 104 (merge-check) PASS.
