@@ -1274,3 +1274,22 @@
   is mechanical from the committed end state. 4151f00f ACCEPTED (an allowlist entry for the new home of names
   bindings/http already imported; not a relaxation; the reviewer checks it). G6 run 6 launched (opus-engineer, brief
   S19-W3-G6-6.md, branch wp/S19-g6d).
+- **2026-11-16, cce-code-health f70d7dc (code_health; pushed, 379 tests): the three W4 run 9 fixes.** (1) opt-in
+  `[gate] no_implicit_reexport = true`: an old module may keep an unaliased `from <new home> import N` that its own
+  code reads (still a shim: `__init__.py`, N in `__all__` or a non-literal `__all__`, any aliased or other-source
+  import of N, a star import, no read of N); (2) binary caller = strict UTF-8 failure or NUL; (3) imports inside a
+  multi-line Python string normalised like code. code_health verified I-5b (1bb5a274 on a3d307a0) and I-9 (55dad047
+  on b4185c3e) pass with the flag, public_api still fails without it. Its reviewer's soundness condition: a type
+  checker with no-implicit-reexport over every importer. Ours covers src and benchmarks only; `mypy
+  --no-implicit-reexport tests scripts` measured 299 such hits (121 on openflowsheet modules, many legitimate patch
+  targets), so it cannot be the guard. DECISION: set the flag, and guard by (a) a repo-wide importer inventory per
+  rename step (AST from-import and module-attribute forms plus a `git grep` for string-embedded imports) recorded in
+  the log, and (b) a request to code_health (sent) to make public_api fail under the flag when any tracked .py file
+  takes a renamed N through the old module (patch-target strings, the old module and the plan's callers exempt).
+  Alternative: wait for (b) before enqueueing. Reversible by: dropping the config line and re-gating.
+  Inventory at the I-9 head (dbcae2a5): 0 importers of the 11 renamed names through application.types, .contract or
+  .validation in src, tests, scripts, benchmarks, examples; string grep 0.
+  Lane rewritten (run 9 commits were never enqueued; backup branch wp/S19-w4r9-orig = dbcae2a5): f3fb74f2 config
+  flag after 486b6dbb, then dc256e26 (was 52bfc2af), 205c10fa plan (a3d307a0), 7a52250e I-5b (1bb5a274), efdadbe5
+  (4151f00f), 22194102 plan (b4185c3e), afc33aa5 I-9 (55dad047), ad0feaa3 layer config (dbcae2a5); final tree =
+  backup + the 4 config lines. Enqueue after the re-pin to f70d7dc (or its successor with (b)) at a queue-idle window.
