@@ -33,6 +33,12 @@ memory).
    written by the caller. A builder with no evaluation between its writes (`column_rows.declared_rows`) qualifies
    only under the working-state exception above: product tables are fields written solely by its append methods,
    with a field table first.
+   Projection member writers (S19 R-W3-G5-6, 11d21d5a `run/identity.py::_add_warm_start_r0`): a helper may write one
+   member of a projection dict its caller is building, named `_add_<member>_r0` and documented as writing into
+   `projection`, when the member's nested writes are part of the identity literals (the gate counts the literal
+   multiset) and both pure forms fail a gate: pure helpers with the writes in the caller raised the caller's debt
+   (job 111, `r0_projection` cognitive 17 -> 23), and one helper building the member in a local dropped two
+   `"warm_start"` subscript literals (b74823ba). It writes only that member, and nothing in the caller reads it in between.
 7. A refusal ladder or check-and-return block is extracted whole and returns `T | Unbound` (or `Unbound | None` for a
    clause helper, citing its clause id and listed in the caller's docstring). (review 2: ee653caa, 0fd8079b; review
    3: 0843250a, 26b58c96) The step that extracts a caller's first clause or phase helper also lists it in the
