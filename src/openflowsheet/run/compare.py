@@ -671,26 +671,33 @@ def _variables(
         elif name not in emitted:
             found.append(f"{where}.{name}: present in the committed document only")
         else:
-            kind = kinds.get(name)
-            floor = KIND_FLOOR.get(kind) if kind is not None else None
-            source = (
-                f"tau_kind of {kind}, ADR 0025 D5"
-                if floor is not None
-                else (
-                    f"{kind} registers no tau_kind, relative only, ADR 0025 D5"
-                    if kind is not None
-                    else "no declared kind, relative only, ADR 0025 D5"
-                )
-            )
+            floor, source = _kind_floor(kinds.get(name))
             found += _differences_v2(
                 emitted[name],
                 committed[name],
                 f"{where}.{name}",
-                floor if floor is not None else NO_FLOOR,
+                floor,
                 source,
                 None,
             )
     return found
+
+
+def _kind_floor(kind: str | None) -> tuple[float, str]:
+    """Row 11, D5.1: the floor a variable of declared kind `kind` (None when it declares none)
+    is compared under, and its source: `τ_kind` of the kind when it registers one, else
+    `NO_FLOOR` (relative only)."""
+    floor = KIND_FLOOR.get(kind) if kind is not None else None
+    source = (
+        f"tau_kind of {kind}, ADR 0025 D5"
+        if floor is not None
+        else (
+            f"{kind} registers no tau_kind, relative only, ADR 0025 D5"
+            if kind is not None
+            else "no declared kind, relative only, ADR 0025 D5"
+        )
+    )
+    return floor if floor is not None else NO_FLOOR, source
 
 
 def _differences_v2(
