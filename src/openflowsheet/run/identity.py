@@ -39,21 +39,27 @@ def execution_plan_r0(document: Mapping[str, Any]) -> dict[str, Any]:
     must be. ADR 0009 D1 makes the plan R0 entire — ids, integers, orderings, *declared scales
     and bounds* (review S3) — and every float in it is such a declared constant, so each is kept
     and compared exactly as its shortest decimal string. The one computed float, a certificate's
-    `constant_mismatch`, goes with the eliminated rows, which are compared by id."""
+    `constant_mismatch`, goes with the eliminated rows, which are compared by id.
 
-    def keep(value: Any, key: str = "") -> Any:
-        if isinstance(value, float):
-            return repr(value)
-        if isinstance(value, Mapping):
-            return {name: keep(item, name) for name, item in value.items()}
-        if isinstance(value, Sequence) and not isinstance(value, str | bytes):
-            if key == "eliminated_rows":
-                return [row["row_id"] if isinstance(row, Mapping) else row for row in value]
-            return [keep(item) for item in value]
-        return value
-
-    result: dict[str, Any] = keep(document)
+    The walk is `_plan_value_r0`'s."""
+    result: dict[str, Any] = _plan_value_r0(document)
     return result
+
+
+def _plan_value_r0(value: Any, key: str = "") -> Any:
+    """`execution_plan_r0` on one value of the plan, held under `key` ("" for the document and
+    for list items): a float as its shortest decimal string, a mapping and a list item by item,
+    the `eliminated_rows` list as row ids (an entry that is no mapping kept as it is), any other
+    value unchanged."""
+    if isinstance(value, float):
+        return repr(value)
+    if isinstance(value, Mapping):
+        return {name: _plan_value_r0(item, name) for name, item in value.items()}
+    if isinstance(value, Sequence) and not isinstance(value, str | bytes):
+        if key == "eliminated_rows":
+            return [row["row_id"] if isinstance(row, Mapping) else row for row in value]
+        return [_plan_value_r0(item) for item in value]
+    return value
 
 
 def r0_projection(artifacts: Mapping[str, Any]) -> dict[str, Any]:
