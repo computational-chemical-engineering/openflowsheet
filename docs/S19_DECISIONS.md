@@ -1411,3 +1411,10 @@
   (t08_adr0025, t02_identity, k05_replay, v1 schema, m02_wo10_coupled) pass; no string literal changed. Not taken:
   `_key_rule` (5.0, a 12-rung first-match ladder, one helper per ADR 0025 §5 row; playbook "when not"). certificate.py
   and column.py untouched (S2 cap). Review R-W3-G5-9 when 189-193 pass (rule on step 4's bare tuple).
+- **2026-11-16 21:25, resume after self-reset: review briefs written** (`<git-common-dir>/codehealth/briefs/`):
+  S19-R-W4-9a.md (reviewer, Opus: 651cc8d0 flag, I-5b, I-9, tests, layer config; 486b6dbb..a609de45),
+  S19-R-W4-9b.md (reviewer on `model: fable`: I-14, a609de45..2b40c2f2; initialization order), S19-R-W3-G5-9.md
+  (reviewer, Opus; rules on step 4's bare tuple). DECISION: R-W4-9 split into 9a and 9b. Alternative: one review on
+  Fable over both runs. Reason: only I-14 needs the Fable ruling (initialization order); I-5b/I-9 are pure moves.
+  Reversible by: one combined brief. Launch order (2 agents at a time): G5-9 when 189-193 pass, 9a and 9b when
+  194-196 pass. Job 191 (pre-rebase I-14 chain) will be SKIPPED, superseded by 196. Serial rule-4 runs at ~55% (21:16).
