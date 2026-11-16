@@ -47,11 +47,11 @@ from openflowsheet.compile.casadi_backend import (
 )
 from openflowsheet.compile.spec import ProblemSpec
 from openflowsheet.compiled import CompiledProblem, EvaluationContext
-from openflowsheet.models.lifted import AdmissibilityRefusal
+from openflowsheet.models.lifted import AdmissibilityRefusal, LiftedSplit
 from openflowsheet.models.revision_flowsheet import RevisionFlowsheet, si_unit
 from openflowsheet.numerics.scaling import REGISTERED_NOMINALS, Scaling
 from openflowsheet.numerics.solve_record import SolvePolicy
-from openflowsheet.orchestrator.region import LiftedSplit, RegionResult, admissibility_value
+from openflowsheet.orchestrator.region import RegionResult, admissibility_value
 from openflowsheet.orchestrator.revision import instances_of
 from openflowsheet.orchestrator.splits import region_splits
 from openflowsheet.run.manifest import started_now

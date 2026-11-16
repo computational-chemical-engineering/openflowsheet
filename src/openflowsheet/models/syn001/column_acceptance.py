@@ -15,6 +15,8 @@ from typing import Final
 from openflowsheet.compile.reference import row_values
 from openflowsheet.compile.spec import ProblemSpec
 from openflowsheet.models import flow_id, temperature_id
+from openflowsheet.models.lifted import LABEL_KIND, Regime
+from openflowsheet.models.lifted_tolerance import KIND_TOLERANCE
 from openflowsheet.models.syn001.cascade import (
     _enthalpy_flow,
     _phase,
@@ -47,7 +49,6 @@ from openflowsheet.models.syn001.column import (
 )
 from openflowsheet.models.syn001.column_compile import stage_unit
 from openflowsheet.models.syn001.tp_state import single_phase_admissible
-from openflowsheet.orchestrator.region import KIND_TOLERANCE, LABEL_KIND, Regime
 from openflowsheet.thermo import Phase, PropertyProvider, StreamState
 
 #: S06 §8 item 4: the binary64 slack on a recovery's and a purity's bound, `2⁻⁵²`.

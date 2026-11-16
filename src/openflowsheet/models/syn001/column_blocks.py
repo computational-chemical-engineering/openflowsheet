@@ -22,6 +22,7 @@ from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from typing import Final
 
+from openflowsheet.models.lifted import Regime
 from openflowsheet.models.syn001.cascade import CascadeFailure, PlacedInlet, _k_values, thomas
 from openflowsheet.models.syn001.cascade_solve import DECLARATION_CONTEXT
 from openflowsheet.models.syn001.column import (
@@ -42,7 +43,6 @@ from openflowsheet.models.syn001.column_endpoint import (
 from openflowsheet.models.syn001.equilibrium_form import composition_dependent
 from openflowsheet.models.syn001.saturation_band import BandError, band_temperature
 from openflowsheet.models.syn001.tp_state import enthalpy_flow
-from openflowsheet.orchestrator.region import Regime
 from openflowsheet.thermo import Phase, PropertyProvider, StreamState
 
 __all__ = [

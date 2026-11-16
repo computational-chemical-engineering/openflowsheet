@@ -38,6 +38,14 @@ from openflowsheet.compile.casadi_backend import compile_problem
 from openflowsheet.compile.spec import ProblemSpec
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.messages.diagnostic import Diagnostic
+from openflowsheet.models.lifted import (
+    ClosureType,
+    DormancyForm,
+    LiftedSplit,
+    Regime,
+    VapourOnlyForm,
+    ZeroFlowForm,
+)
 from openflowsheet.models.revision_flowsheet import RevisionFlowsheet
 from openflowsheet.models.syn001.flowsheet import FEED_UNIT, WIRING, Syn001Flowsheet
 from openflowsheet.numerics.solve_record import (
@@ -70,14 +78,8 @@ from openflowsheet.orchestrator.recovery import (
     solver_outcomes,
 )
 from openflowsheet.orchestrator.region import (
-    ClosureType,
-    DormancyForm,
-    LiftedSplit,
     RecoveryStart,
-    Regime,
     RegionResult,
-    VapourOnlyForm,
-    ZeroFlowForm,
     solve_region,
     syn001_lifted_splits,
 )

@@ -43,6 +43,8 @@ from openflowsheet.models import (
     origin,
     temperature_id,
 )
+from openflowsheet.models.lifted import LABEL_KIND, ClosureType, LiftedSplit, Regime, ZeroFlowForm
+from openflowsheet.models.lifted_tolerance import KIND_TOLERANCE
 from openflowsheet.models.rows import specification_row
 from openflowsheet.models.syn001 import TEMPERATURE
 from openflowsheet.models.syn001.cascade import (
@@ -85,17 +87,7 @@ from openflowsheet.orchestrator.recovery import (
     recovered_provenance,
     solver_outcomes,
 )
-from openflowsheet.orchestrator.region import (
-    KIND_TOLERANCE,
-    LABEL_KIND,
-    ClosureType,
-    LiftedSplit,
-    RecoveryStart,
-    Regime,
-    RegionResult,
-    ZeroFlowForm,
-    solve_region,
-)
+from openflowsheet.orchestrator.region import RecoveryStart, RegionResult, solve_region
 from openflowsheet.thermo import Phase, PropertyProvider, StreamState
 
 #: Spec §7.3's registered pre-solve.

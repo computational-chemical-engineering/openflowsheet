@@ -55,7 +55,7 @@ from openflowsheet.verify.table import (
 )
 
 if TYPE_CHECKING:
-    from openflowsheet.orchestrator.region import LiftedSplit
+    from openflowsheet.models.lifted import LiftedSplit
 
 SCHEMA_VERSION: Final = "stream-table-v1"
 #: §4.2's phase rule, named in every document's header.

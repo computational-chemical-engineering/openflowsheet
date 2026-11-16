@@ -38,6 +38,7 @@ from typing import TYPE_CHECKING, Final
 from openflowsheet.canonical import state_sha256
 from openflowsheet.compile.spec import QuantityKind
 from openflowsheet.models import Accumulation, DeclaredEquation
+from openflowsheet.models.lifted import Regime
 from openflowsheet.models.syn001 import TEMPERATURE
 from openflowsheet.models.syn001.cascade import (
     CascadeFailure,
@@ -129,7 +130,7 @@ from openflowsheet.orchestrator.recovery import (
     recovered_provenance,
     solver_outcomes,
 )
-from openflowsheet.orchestrator.region import RecoveryStart, Regime, RegionResult
+from openflowsheet.orchestrator.region import RecoveryStart, RegionResult
 from openflowsheet.thermo import PropertyProvider
 
 if TYPE_CHECKING:

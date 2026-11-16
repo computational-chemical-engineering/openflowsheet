@@ -77,7 +77,7 @@ from openflowsheet.verify.checks import VerifierError
 
 if TYPE_CHECKING:
     from openflowsheet.compiled import EvaluationContext
-    from openflowsheet.orchestrator.region import Regime
+    from openflowsheet.models.lifted import Regime
     from openflowsheet.thermo import PropertyProvider
     from openflowsheet.verify import CheckCategory
 

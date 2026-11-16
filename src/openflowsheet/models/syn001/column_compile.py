@@ -15,6 +15,7 @@ from typing import Final
 from openflowsheet.compile.casadi_backend import compile_problem
 from openflowsheet.compile.spec import EquationSpec, QuantityKind
 from openflowsheet.models import Contribution, SpecificationError, origin
+from openflowsheet.models.lifted import ClosureType, LiftedSplit, ZeroFlowForm
 from openflowsheet.models.rows import ratio_row, specification_row
 from openflowsheet.models.syn001.cascade import (
     _parameter,
@@ -44,7 +45,6 @@ from openflowsheet.models.syn001.column import (
     slot_row_id,
 )
 from openflowsheet.orchestrator.execution import Region
-from openflowsheet.orchestrator.region import ClosureType, LiftedSplit, ZeroFlowForm
 from openflowsheet.thermo import PropertyProvider
 
 #: `ref.cases.*.continued`'s kind letter of each continued slot (S06 §12: an inverse slot's is

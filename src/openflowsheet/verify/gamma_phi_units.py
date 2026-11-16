@@ -77,7 +77,7 @@ from openflowsheet.verify.table_kit import (
 from openflowsheet.verify.unit_checks import MODEL_CHECKS
 
 if TYPE_CHECKING:
-    from openflowsheet.orchestrator.region import LiftedSplit
+    from openflowsheet.models.lifted import LiftedSplit
 
 __all__ = [
     "BAND_NOTE",
