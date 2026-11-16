@@ -6,11 +6,14 @@ Reads what the gates and the queue already write (no model, no test run):
   <git-common-dir>/codehealth/queue/done/<label>.json: enqueued, started, finished
   <git-common-dir>/codehealth/runs/s19.jsonl: steps and debt
 
-  gate_report.py [--hours H] [--append FILE] [--slow N]
+  gate_report.py [--hours H] [--append FILE] [--slow N] [--heavy N]
 
 Prints the report for the last H hours (default 12) and exits 1 when a target is missed (an ALERT
 line says which). --append adds one tab-separated line to FILE (a trend log the user can read).
---slow N lists the N slowest gates of the window with what they ran.
+--slow N lists the N slowest gates of the window with what they ran. --heavy N lists the N test
+files that cost the selected gates most, from the `--durations` lines of their test-impact logs
+(tests tier, from c3e1b1ba on): in how many gates, and the summed and largest time. A file that
+is heavy in most gates is a candidate for a merge-check cadence.
 
 The orchestrator runs it at every wake on a chain result and before every self-reset, quotes the
 ALERT lines in docs/S19_DECISIONS.md and acts on them before it starts new work (SKILL.md).
@@ -44,6 +47,8 @@ IMPACT = re.compile(
     r"pytest calls \d+, wall (\d+)s"
 )
 FULL = re.compile(r"^full suite: (.*)$", re.M)
+RUN_LOG = re.compile(r"\(log ([^)]*test-impact[^)]*)\)")
+DURATION = re.compile(r"^\s*([\d.]+)s (?:call|setup|teardown)\s+(\S+?)(?:::|\s|$)", re.M)
 STAMP = re.compile(r"^(\d{8}T\d{6})-(.+)$")
 
 
@@ -118,9 +123,26 @@ def gates(directory: Path, since: datetime) -> list[dict]:
                 "fallback": None if impact is None else impact.group(3) == "yes",
                 "counts": "" if impact is None else impact.group(4),
                 "reason": reason_kind(full.group(1)) if full else "",
+                "durations": durations(text),
             }
         )
     return found
+
+
+def durations(tiers_log: str) -> dict[str, float]:
+    """Seconds per test file from the slowest-durations lines of a gate's test-impact log."""
+    found = RUN_LOG.findall(tiers_log)
+    if not found:
+        return {}
+    try:
+        text = Path(found[-1]).read_text(errors="replace")
+    except OSError:
+        return {}
+    start = text.find("slowest")
+    by_file: dict[str, float] = {}
+    for seconds, path in DURATION.findall(text[start:] if start >= 0 else ""):
+        by_file[path] = by_file.get(path, 0.0) + float(seconds)
+    return by_file
 
 
 def queue_waits(directory: Path, since: datetime) -> tuple[list[float], float]:
@@ -164,6 +186,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--hours", type=float, default=12.0)
     parser.add_argument("--append", type=Path)
     parser.add_argument("--slow", type=int, default=0)
+    parser.add_argument("--heavy", type=int, default=0)
     a = parser.parse_args(argv)
     common = common_dir()
     now = datetime.now(UTC)
@@ -228,6 +251,20 @@ def main(argv: list[str] | None = None) -> int:
         for g in sorted(ran, key=lambda g: -g["tests"])[: a.slow]:
             what = g["reason"] or f"selected {g['selected']} files"
             print(f"  {g['tests']:5.0f} s  {g['label'][:34]:34s} {what}; {g['counts']}")
+    if a.heavy:
+        timed = [g for g in selected if g["durations"]]
+        print(f"heaviest {a.heavy} test files in {len(timed)} selected gates with durations:")
+        total: Counter = Counter()
+        gates_with: Counter = Counter()
+        largest: dict[str, float] = {}
+        for g in timed:
+            for path, seconds in g["durations"].items():
+                total[path] += seconds
+                gates_with[path] += 1
+                largest[path] = max(largest.get(path, 0.0), seconds)
+        for path, seconds in total.most_common(a.heavy):
+            count, top = gates_with[path], largest[path]
+            print(f"  {seconds:6.0f} s in {count:2d} gates, max {top:4.0f} s  {path}")
     if a.append:
         fields = [
             stamp,
