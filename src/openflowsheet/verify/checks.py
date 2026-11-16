@@ -933,10 +933,11 @@ def witness_classes(
 
     `streams` are the revision's streams (R-281 reads `<S>.n.<c>` over them); `splits` the
     verifier's own reading of the revision's lifted splits (`lifted_splits(..., staged=...)`),
-    from declarations, never from the solver's attempts. A side is dormant when every column of
-    its tuple is exactly 0.0 (`-0.0` counts as 0.0, as for Z). A split whose feed is all exactly
-    0.0 in `state` (`ZERO_FLOW`) is skipped, so its sides fall to class 5 and §4.8.8's "stays
-    unsupported" holds (review F-2); a feed column absent from `state` is not taken as 0.0.
+    from declarations, never from the solver's attempts (`_dormant_sides` reads them). A side is
+    dormant when every column of its tuple is exactly 0.0 (`-0.0` counts as 0.0, as for Z). A
+    split whose feed is all exactly 0.0 in `state` (`ZERO_FLOW`) is skipped, so its sides fall to
+    class 5 and §4.8.8's "stays unsupported" holds (review F-2); a feed column absent from `state`
+    is not taken as 0.0.
     Classes 2-4 are empty on every basis outside `ONE_SIDED_BASES`, class 1 on every basis but
     `pr-c1-v1`. The witness's `unstenciled` is classes 1 and 2, its `one_sided` classes 3 and 4."""
     zero_flow = (
@@ -949,13 +950,7 @@ def witness_classes(
     dormant_liquid: set[str] = set()
     dormant_vapour: set[str] = set()
     if gamma_phi:
-        for split in splits:
-            if all(name in state and state[name] == 0.0 for name in split.feed):
-                continue
-            if all(state[name] == 0.0 for name in split.liquid):
-                dormant_liquid.update(split.liquid)
-            if all(state[name] == 0.0 for name in split.vapor):
-                dormant_vapour.update(split.vapor)
+        dormant_liquid, dormant_vapour = _dormant_sides(splits, state)
     classes: dict[str, int] = {}
     for name in columns:
         if name in zero_flow and state[name] == 0.0:
@@ -969,6 +964,26 @@ def witness_classes(
         else:
             classes[name] = 5
     return classes
+
+
+def _dormant_sides(
+    splits: Sequence[LiftedSplit], state: Mapping[str, float]
+) -> tuple[set[str], set[str]]:
+    """§4.8.2 classes 2 and 4 (A2, A1): the columns of the dormant liquid sides and of the
+    dormant vapour sides of `splits` at `state`, a side being dormant when every column of its
+    tuple is exactly 0.0. A split whose feed is all exactly 0.0 (`ZERO_FLOW`) is skipped (review
+    F-2); a feed column absent from `state` is not taken as 0.0, while a side column absent from
+    `state` raises `KeyError`."""
+    liquid: set[str] = set()
+    vapour: set[str] = set()
+    for split in splits:
+        if all(name in state and state[name] == 0.0 for name in split.feed):
+            continue
+        if all(state[name] == 0.0 for name in split.liquid):
+            liquid.update(split.liquid)
+        if all(state[name] == 0.0 for name in split.vapor):
+            vapour.update(split.vapor)
+    return liquid, vapour
 
 
 @dataclass(frozen=True)
