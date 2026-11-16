@@ -535,19 +535,22 @@ def verify_revision(
         screened=screened,
         projection=projection,
         provider=fresh,
-        # K04 §4.8.2 (amendment WIT, ADR 0073): not differenced, and listed — §14.2 B17
-        # *Consequence* as narrowed by §14.3 C2 (R-281), a `pr-c1-v1` revision's stream
-        # component-flow columns exactly 0.0 (class 1), and a dormant lifted liquid side on a
-        # Wilson basis (class 2, A2); differenced one-sided — S11 rulings item 2's (R-831) Z
-        # (class 3) and a dormant lifted vapour side on a Wilson basis (class 4, A1).
-        unstenciled=frozenset(name for name, k in classes.items() if k in (1, 2)),
-        one_sided=frozenset(name for name, k in classes.items() if k in (3, 4)),
-        components=view.components,
-        # ADR 0073 D5 as amended: classes 1 and 2 never share a basis, so the reason follows it.
-        skipped_reason=(
-            "wilson_dormant_liquid_columns"
-            if basis in ONE_SIDED_BASES
-            else "pr_c1_zero_flow_columns"
+        witness=_WitnessColumns(
+            # K04 §4.8.2 (amendment WIT, ADR 0073): not differenced, and listed — §14.2 B17
+            # *Consequence* as narrowed by §14.3 C2 (R-281), a `pr-c1-v1` revision's stream
+            # component-flow columns exactly 0.0 (class 1), and a dormant lifted liquid side on
+            # a Wilson basis (class 2, A2); differenced one-sided — S11 rulings item 2's (R-831)
+            # Z (class 3) and a dormant lifted vapour side on a Wilson basis (class 4, A1).
+            unstenciled=frozenset(name for name, k in classes.items() if k in (1, 2)),
+            one_sided=frozenset(name for name, k in classes.items() if k in (3, 4)),
+            components=view.components,
+            # ADR 0073 D5 as amended: classes 1 and 2 never share a basis, so the reason
+            # follows it.
+            skipped_reason=(
+                "wilson_dormant_liquid_columns"
+                if basis in ONE_SIDED_BASES
+                else "pr_c1_zero_flow_columns"
+            ),
         ),
         appended=surrogate_limitations,
         external=external,
@@ -859,7 +862,7 @@ def _certify(
         phase_branch=_phase_branch(final_state),
         screened=screened,
         projection=projection,
-        components=COMPONENTS,
+        witness=_WitnessColumns(components=COMPONENTS),
     )
 
 
@@ -957,6 +960,21 @@ def _judged_at(
     ]
 
 
+@dataclass(frozen=True)
+class _WitnessColumns:
+    """K04 §4.8.2 (amendment WIT, ADR 0073): how the derivative witness treats the declaration's
+    columns, and the reason its `derivative_witness_partial` limitation records (§14.3 C2)."""
+
+    #: The columns not differenced, and listed (`witness_classes`' classes 1 and 2).
+    unstenciled: frozenset[str] = frozenset()
+    #: The columns differenced one-sided (classes 3 and 4).
+    one_sided: frozenset[str] = frozenset()
+    #: The components whose class-5 columns `escalate_column` may re-difference.
+    components: Sequence[str] = ()
+    #: The limitation's `reason` when `unstenciled` holds a column of the declaration.
+    skipped_reason: str = "pr_c1_zero_flow_columns"
+
+
 def _issue(
     target: Any,
     result: Any,
@@ -971,10 +989,7 @@ def _issue(
     screened: _Screened,
     projection: Projection,
     provider: PropertyProvider | None = None,
-    unstenciled: frozenset[str] = frozenset(),
-    one_sided: frozenset[str] = frozenset(),
-    components: Sequence[str] = (),
-    skipped_reason: str = "pr_c1_zero_flow_columns",
+    witness: _WitnessColumns,
     appended: Sequence[Limitation] = (),
     external: ExternalEvidence | None = None,
 ) -> SolutionCertificate:
@@ -984,7 +999,8 @@ def _issue(
     `phase_branch` the caller's record of the branch, `screened` the regularity screen the caller
     ran at `final_state` before its fresh-flash categories (ADR 0013 D1), on the zero-flow form of
     its `ZERO_FLOW` splits (T05b spec §9.3; none for SYN-001), and `projection` where those
-    categories were judged, recorded as `transformations.projection` (K04-F9 spec §5.5)."""
+    categories were judged, recorded as `transformations.projection` (K04-F9 spec §5.5), and
+    `witness` the columns the derivative witness does not difference or differences one-sided."""
     from openflowsheet.verify.checks import derivative_witness, witness_skipped_columns
     from openflowsheet.verify.regularity import solution_error_bound
 
@@ -995,7 +1011,11 @@ def _issue(
         # M02 design note §4.4: the coupling checks are judged with the check set.
         checks += external.checks
     checks += derivative_witness(
-        target, final_state, unstenciled=unstenciled, one_sided=one_sided, components=components
+        target,
+        final_state,
+        unstenciled=witness.unstenciled,
+        one_sided=witness.one_sided,
+        components=witness.components,
     )
 
     matrix, scaled_residual = screened.matrix, screened.scaled_residual
@@ -1021,12 +1041,12 @@ def _issue(
     )
     # M02 design note §14.3 C2 (R-281): the columns the witness did not difference, recorded
     # where a reader enumerates what was not established; nothing when none was skipped.
-    skipped = witness_skipped_columns(target.spec.variable_ids, unstenciled)
+    skipped = witness_skipped_columns(target.spec.variable_ids, witness.unstenciled)
     if skipped:
         limitations.append(
             Limitation(
                 "derivative_witness_partial",
-                {"columns": skipped, "reason": skipped_reason},
+                {"columns": skipped, "reason": witness.skipped_reason},
             )
         )
     if external is not None:
