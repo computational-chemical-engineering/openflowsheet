@@ -1449,3 +1449,9 @@
   file below health 9.0. DECISION: one sonnet-implementer (brief S19-W3-G5-9-fix.md) commits the revert (mode revert,
   label g5r9-revert2) and `_RowFloor` (no-gain, g5r9-revfix), both enqueued; then helper merge-check and merge.
   Alternative: opus-engineer. Reason: both fixes fully specified with line anchors.
+- **2026-11-16 22:20, job 197 FAIL (g5r9-revert2, 620d6c02, step 253 gate-fail, 10/11, check `revert`: "worktree
+  differs from the exact revert").** Orchestrator brief error: in mode revert the queue's `--base` is the REJECTED
+  commit (gate.sh `--revert <sha>`, gate base HEAD~1), and the brief gave the lane tip bfe9e545, so the gate checked
+  an exact revert of bfe9e545. The commit itself is right. Re-enqueued unchanged as 198 g5r9-revert2-b (`--base
+  24f772cc --head 620d6c02 --rerun-of 197`); brief S19-W3-G5-9-fix.md corrected. Jobs enqueued after a failure are
+  not skipped (gate_queue.py skipped()), so the implementer's `_RowFloor` job on 620d6c02 gates normally.
