@@ -1499,3 +1499,8 @@
   since c37ca884). Worktree s19-w4r8-mc removed. Gate report (6 h): "ALERT selected share 60% < 75% of step gates",
   "ALERT selected gates take 555 s > 300 s (tests tier)", "ALERT queue wait median 32 min > 15 min": standing, proposal
   2 with Frank. Pending: 201 (I-9), 202 (I-14), 203 (g5r9-mc).
+- **2026-11-16 22:55, G5 run 9 merge-check redone on a 2nd helper.** Job 203 (helper 94224851, wp/S19 8071cd4c) was
+  already running when W4 run 8 merged; wp/S19 then gained code (run/session.py -> application/run_session.py), and
+  G5 also touches run/, so 203's PASS would not cover the merge. New helper wp/S19-g5g-mc2 (worktree s19-g5g-mc2) =
+  174045f1 + wp/S19 e6cd0017 as 3a676c0f (clean merge); job 204 g5r9-mc2. The merge takes 204's helper; 203 stays
+  informative (a FAIL there is a G5 finding). Alternative: wait for 203, then re-check (one queue round later).

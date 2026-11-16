@@ -70,8 +70,9 @@ rebase (enqueue fresh). Mode revert: `--base` is the rejected commit. Detail in 
    Then fixes, helper wp/S19-w4-mc, merge-check, merge. Then W4 run 11: I-11, I-13 (S19-W4-10.md minus I-14), then
    I-10 and I-12a-d (unblocked; each step needs serial-suite MSG counts at base and head, ~2.2 h per suite).
 3. **G5 run 9 (lane wp/S19-g5g, tip 174045f1; "R-W3-G5-9"):** step 2 reverted (620d6c02, step 254), `_RowFloor`
-   174045f1 (step 256). Merge-check job 203 (g5r9-mc) on helper wp/S19-g5g-mc 94224851 (worktree s19-g5g-mc). PASS:
-   merge, remove worktrees s19-g5g, s19-g5g-mc. Then G5 run 10 (brief from S19-W3-G5-9.md): certificate.py `_issue`
+   174045f1 (step 256). Merge-check job 204 (g5r9-mc2) on helper wp/S19-g5g-mc2 3a676c0f (worktree s19-g5g-mc2, has W4 run 8);
+   job 203 (old helper 94224851, pre-W4-run-8) informative only. 204 PASS: merge wp/S19-g5g-mc2, remove worktrees
+   s19-g5g, s19-g5g-mc, s19-g5g-mc2. Then G5 run 10 (brief from S19-W3-G5-9.md): certificate.py `_issue`
    (11.8, 15 parameters; grouping as R-W3-G5-4), `verify_revision` (8.3), column.py `_end_check` (4.0).
 4. **G6 run 7:** G6 run 6 merged (18f934f6). Brief from a scan of the wp/S19 tip over the G6 scope (thermo/, graph/,
    messages/, units/, adapters/, registry/, compile/), when an agent slot is free after the W4 reviews.
