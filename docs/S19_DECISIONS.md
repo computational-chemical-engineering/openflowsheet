@@ -1504,3 +1504,7 @@
   G5 also touches run/, so 203's PASS would not cover the merge. New helper wp/S19-g5g-mc2 (worktree s19-g5g-mc2) =
   174045f1 + wp/S19 e6cd0017 as 3a676c0f (clean merge); job 204 g5r9-mc2. The merge takes 204's helper; 203 stays
   informative (a FAIL there is a G5 finding). Alternative: wait for 203, then re-check (one queue round later).
+- **2026-11-16 23:05, job 201 PASS (w4r9-i9-iface-3, 3f7540a9, step 257 accepted, interface, 17/17). R-W4-9a
+  launched (`reviewer`, Opus, brief S19-R-W4-9a.md, range 486b6dbb..574621df) before job 202:** its range ends before
+  I-14, so an I-14 fix cannot change what it reads. Alternative: wait for 202 (the state's wording). R-W4-9b waits
+  for job 202.
