@@ -687,27 +687,15 @@ def _differences_v2(
 ) -> list[str]:
     """`T08-numerical-policy-v2`: ADR 0025 §5's rows, in order.
 
-    An object's keys go to `_key_rule` first (present on one side only, then rows 1 to 8, 11
-    and 12); a key no rule takes is compared as a child, under `_sibling_floor`'s floor.
+    An object goes to `_object_differences` (its keys by rule, else as children); a list is
+    compared entry by entry; a float leaf goes to `_float_leaf` (rows 9 to 14); every other
+    leaf is compared exactly (row 15).
     """
     found: list[str] = []
     where = path or "<root>"
 
     if isinstance(committed, dict):
-        if not isinstance(emitted, dict):
-            return [f"{where}: expected an object, got {type(emitted).__name__}"]
-        solution_state = path == "" and committed.get("schema_version") == SOLUTION_STATE_SCHEMA
-        compared = _ComparedObject(where, path, emitted, committed, solution_state, kinds)
-        for key in sorted(set(committed) | set(emitted)):
-            ruled = _key_rule(compared, key)
-            if ruled is not None:
-                found += ruled
-                continue
-            child_floor, child_source = _sibling_floor(where, key, committed)
-            found += _differences_v2(
-                emitted[key], committed[key], f"{where}.{key}", child_floor, child_source, None
-            )
-        return found
+        return _object_differences(emitted, committed, where, path, kinds)
 
     if isinstance(committed, list):
         if not isinstance(emitted, list):
@@ -728,10 +716,39 @@ def _differences_v2(
     return found
 
 
+def _object_differences(
+    emitted: Any,
+    committed: dict[str, Any],
+    where: str,
+    path: str,
+    kinds: Mapping[str, str] | None,
+) -> list[str]:
+    """v2 on an object at `where` (`path` "" at the root): an emitted side that is not an object
+    is one difference; else each key, in sorted order, goes to `_key_rule` first (present on
+    one side only, then rows 1 to 8, 11 and 12), and a key no rule takes is compared as a
+    child, under `_sibling_floor`'s floor. `kinds` reaches row 11 only.
+    """
+    if not isinstance(emitted, dict):
+        return [f"{where}: expected an object, got {type(emitted).__name__}"]
+    solution_state = path == "" and committed.get("schema_version") == SOLUTION_STATE_SCHEMA
+    compared = _ComparedObject(where, path, emitted, committed, solution_state, kinds)
+    found: list[str] = []
+    for key in sorted(set(committed) | set(emitted)):
+        ruled = _key_rule(compared, key)
+        if ruled is not None:
+            found += ruled
+            continue
+        child_floor, child_source = _sibling_floor(where, key, committed)
+        found += _differences_v2(
+            emitted[key], committed[key], f"{where}.{key}", child_floor, child_source, None
+        )
+    return found
+
+
 class _ComparedObject(NamedTuple):
-    """An object `_differences_v2` compares key by key: where it sits (`path` "" at the root),
-    both sides, whether it is a root solution state (row 11), and the declared kinds row 11
-    reads."""
+    """An object `_object_differences` compares key by key: where it sits (`path` "" at the
+    root), both sides, whether it is a root solution state (row 11), and the declared kinds row
+    11 reads."""
 
     where: str
     path: str
@@ -743,7 +760,7 @@ class _ComparedObject(NamedTuple):
 
 def _key_rule(compared: _ComparedObject, key: str) -> list[str] | None:
     """v2 on the key `key` of the object `compared`: the differences its own rule finds, or
-    None when no rule applies and `_differences_v2` compares its value as a child.
+    None when no rule applies and `_object_differences` compares its value as a child.
 
     The rules, tried in order, the first match deciding: present on one side only, then rows 1
     to 8, 11 and 12 of ADR 0025 §5. `_key_rule_v1` is v1's twin.
