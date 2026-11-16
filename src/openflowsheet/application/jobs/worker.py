@@ -231,7 +231,12 @@ def _run(
 ) -> None:
     # Imported here, after the redirection: what these imports print belongs in the log.
     from openflowsheet.application.jobs.interrupt import interruptible
-    from openflowsheet.application.jobs.runner import RunContext, WorkerResult, _defect, execute
+    from openflowsheet.application.jobs.runner import (
+        RunContext,
+        WorkerResult,
+        defect_result,
+        execute,
+    )
     from openflowsheet.application.store import ProjectStore
 
     store = ProjectStore.open(directory)
@@ -258,7 +263,7 @@ def _run(
                 result = execute(context, job, check=check, cancel=signal_.set, on_stage=on_stage)
             except Exception as error:  # a defect of the runner or the store, never of a solve
                 _LOG.exception("job %s: the runner raised", job_id)
-                result = _defect(error)
+                result = defect_result(error)
         store.record_worker_result(
             job_id, owner_instance=owner_instance, worker_result=result.as_document()
         )

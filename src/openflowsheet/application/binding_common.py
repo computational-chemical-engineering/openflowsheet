@@ -60,7 +60,7 @@ def refusal_code(detail: str) -> str:
     return detail.split("(", 1)[0]
 
 
-def _column_owners(
+def column_owners(
     columns: Sequence[str], streams: Mapping[str, str], units: Sequence[str]
 ) -> dict[str, str]:
     """Which unit owns each column: the producer of its stream, or the unit its id names.
@@ -78,3 +78,7 @@ def _column_owners(
         elif head in streams:
             owners[column] = streams[head]
     return owners
+
+
+# ADR 0076 I-13 (R-1045): the private name stays bound until I-13's refactor step removes it.
+_column_owners = column_owners

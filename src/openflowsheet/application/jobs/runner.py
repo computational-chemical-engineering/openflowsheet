@@ -265,7 +265,7 @@ class WorkerResult:
         )
 
 
-def _defect(error: Exception) -> WorkerResult:
+def defect_result(error: Exception) -> WorkerResult:
     """An exception that escaped the operation body: `failed`, with no text of it in the error
     (D9 (4): the traceback goes to the log)."""
     store = isinstance(error, sqlite3.Error)
@@ -280,6 +280,10 @@ def _defect(error: Exception) -> WorkerResult:
             detail={"exception": type(error).__name__},
         ),
     )
+
+
+# ADR 0076 I-13 (R-1045): the private name stays bound until I-13's refactor step removes it.
+_defect = defect_result
 
 
 def warm_start_candidate(
