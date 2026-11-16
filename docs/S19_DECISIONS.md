@@ -869,3 +869,5 @@
   17/17).** Report: ALERTs as at job 123.
 - **2026-11-16, job 126 PASS (W4 run 5b, I-8e src, 2998c6fd..fb10af23, step 205 accepted-neutral, 11.0 -> 11.0,
   15/15).** Report: ALERTs as at job 123.
+- **2026-11-16, job 131 PASS (G6 run 4 step 4, 85784bd8, `certify` -> `_copy_coefficients`, step 206 accepted,
+  23.0 -> 7.0, 16/16).** Report: ALERTs as at job 123.
