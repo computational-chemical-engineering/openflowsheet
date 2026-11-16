@@ -1239,3 +1239,14 @@
   report: ALERT selected share 63% < 75% of step gates; ALERT selected gates take 558 s > 300 s (tests tier); ALERT
   selected/full time ratio 0.42 > 0.4: selection saves little; ALERT queue wait median 46 min > 15 min (causes as
   before; proposal 2 with Frank). Next G6 brief: rescan wp/S19 for the G6 scope.
+- **2026-11-16, job 179 (w4r8-revfix, R-W4-8 fix 2, c7d21f2e) PASS, step 240 accepted-neutral.** Queue idle after it:
+  re-pin window. **cce-code-health 846a065 -> 6529f47** (holds 04a01f8 complexipy 8.3.0 pin and `__all__` out of
+  duplication, 6ab9fd1 `{files:GLOB}`, f527252 docstrings out of clone detection, 6529f47 `literals` scope rule;
+  not 9095836, benchmark tiers, not needed). `.venv-codehealth` reinstalled from requirements-codehealth.txt,
+  direct_url commit 6529f476; complexipy 8.3.0; `config --check` 0 problems; arch on wp/S19 unchanged 4/3/12, 3989
+  imports. Runner not restarted (gate_queue.py unchanged; the tool is called per gate). Duplication numbers may drop
+  at base and head alike (docstrings, `__all__`): gates compare like with like; the trend TSV and G-END scans read
+  the new tool from here. Reviewers rule on the `literals` drops the check detail lists. The ruff tier keeps its
+  POSIX filter (36ea9c2d); switching it to `set -- {files:*.py,*.pyi}` is left for a config commit at a lane-free
+  moment (both forms select the same files). DECISION: keep the filter now. Alternative: switch now. Reversible by:
+  one config line.
