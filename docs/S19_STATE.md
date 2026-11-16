@@ -55,12 +55,13 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 ## Next actions (2026-11-16, ~05:00)
 
 Gate queue: runner pid 1056796. Results consumed up to 55; next: `$Q wait --since 55` (a wait may be running).
-Agents running: W4 run 6 (brief `S19-W4-6.md`, I-8 batch F `column`, lane wp/S19-w4 from ad40c05d) and G5 run 6
-(brief `S19-W3-G5-6.md`, run/identity.py r0_projection then compare._differences_v2, lane wp/S19-g5d from 14f4fa35).
+Agent running: G5 run 7 (brief `S19-W3-G5-7.md`, verify/projection.py `project`, split_checks; lane wp/S19-g5e from
+cd756adb). G5 run 6 delivered (jobs 94-97, lane wp/S19-g5d); W4 run 6 delivered.
 Lanes at most 2 until Thu 19 Nov 13:00.
 1. **W4:** STOP 3 ruled (R-W4-STOP3, Fable: Q1 option C, Q2 option a; ADR 0076 addendum + R-1042 on wp/S19
    274fb926); lane rebuilt (W4 run 5, S19_DECISIONS). Queued: 50, 52 (I-5, I-6 iface, re-enqueued from withdrawn),
-   73-87 (rebuild 5b), 89, 93 (batch E column_solve). When all PASS and run 6 reports: orchestrator layer-config
+   73-87 (rebuild 5b; 73, 74 PASS as steps 168, 169), 89, 93 (batch E column_solve), 98, 99 (run 6, batch F
+   column, delivered). No new W4 work until R-W4-1. When all PASS: orchestrator layer-config
    commit (config.toml application-layers line 162 `application.policies` stale; repo-layers adoption comment lines
    173-176, 178, 179, 181 stale, 177 (A11) and 180 (A14) live, count "(12)" at 172), then R-W4-1 (brief
    `S19-R-W4-1.md`, extend to the lane tip: runs 2-6, rulings STOP 1/2/3, test_x04 a7, MODEL_ID ruling, run 4's

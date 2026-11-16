@@ -696,3 +696,12 @@
   shared a scratch directory (one overwrote another's check script): common brief now asks for per-lane scratch
   subdirectories. G5 run 7 (verify/projection.py `project`, split_checks) briefed (`S19-W3-G5-7.md`, lane
   wp/S19-g5e) and launched.
+- **2026-11-16, W4 run 6 delivered (opus-engineer; I-8 batch F, models/syn001/column.py).** f9dec891 src retarget
+  (9 modules, 41 names to column_spec/column_validation/column_rows; includes verify/certificate.py's lazy import
+  :559, which G5 run 5 (wp/S19-g5c) also edits: check at the second merge), job 98; 1a26b068 outside-gate retarget
+  (19 tests, scripts/s03_references_ours.py); plan eb6af70f; interface step f33bcf8b, job 99. `__all__` -26; 18
+  frozen names kept (column_unit.py:59); 6 aliases dropped with plain imports kept; 24 imports gone. Arch 4/3/12,
+  imports 4011 -> 3993; 85 related test files 2411 passed at both steps. Still re-exporting per i8map: transactions
+  (7), program (1; I-7's frozen-contributor exception), sizing (15; `__init__` excluded): next W4 run, after R-W4-1.
+  DECISION: no new W4 work on the lane until R-W4-1 and the lane's merge (the review span is already runs 2-6).
+  Alternative: keep adding I-8 batches. Reversible by: briefing W4 run 7 now.
