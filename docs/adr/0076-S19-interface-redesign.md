@@ -118,6 +118,14 @@ the migration table below.
   `openflowsheet.schema_check.schema_errors`. Reason: document validation against `schemas/` is foundation; the
   assessment spec needs it (assessment/spec.py:21). Callers: assessment.spec, application.coupled_run (2 lazy),
   application.validation (lazy), tests.
+  Addendum (S19 W4, 2026-11-16, ruling A-I9 on Fable 5.2, `docs/briefs/S19-A-I9-ruling.md`; R-1044): **I-5b.**
+  `DocumentSchemaError`, `validate_document` and the private `_raise_first` (application/types.py:128, :185, :190 at
+  486b6dbb) also become `openflowsheet.schema_check` names: a pure move, before I-9. Reason: they are the
+  raise-first form of `schema_errors` over the same validator, order and pointer, and I-9's `application.errors`
+  needs `validate_document` (`ApiError.from_document`) from below itself. Left in types.py, the I-9 step ends at 3
+  violations / 3 cycles / 12 cycle edges with a new `errors -> types` violation and an `errors <-> types` cycle
+  (measured at import level). `_validator` and `_pointer` are private to schema_check again. Callers:
+  application.cli (lazy), application.local, application.operations, tests.
 - **I-6** `openflowsheet.units` stops re-exporting the display-conversion names (units/__init__.py:612-618). Callers
   import `openflowsheet.units.display`. Removes cycle 6.
 - **I-7** M03's V-tolerances `TAU_GROSS`, `TAU_FEAS`, `TAU_ACTIVE`, `TAU_KKT`, `TAU_SIGN`, `TAU_LICQ`,
@@ -155,6 +163,10 @@ the migration table below.
   and the `types -> contract` violation. `api_error` records its caller's module (`sys._getframe(1)`, contract.py:81):
   the move must not add a frame. MSG's auditor accepts any `openflowsheet.` frame (messages/audit.py:27), so the
   existing audit test cannot see an added frame; a new test pins it (migration, test commit before the step).
+  Addendum (same ruling, R-1044): `ApiError.from_document` imports `validate_document` from
+  `openflowsheet.schema_check` (I-5b). `application.errors` imports no application module at run time (`RunResult`
+  under `TYPE_CHECKING` only); its place in `application-layers` is as stated. Expected `codehealth arch --depth 4`:
+  3 / 3 / 12 -> 2 / 2 / 10.
 - **I-10** (S17 D4) `route_structure` (revision_run.py:367-410, with its private helper `_index`, :354) moves to the new
   module **`openflowsheet.application.structure_inspection`**, placed directly above `validation` in
   `application-layers`. Pure move, no signature change. Reason (review, verified): the run path does not call
@@ -204,6 +216,9 @@ the migration table below.
     `LOCAL_OWNER_PRINCIPAL`, `EditOperation`, `TransactionStatus`, ...) go with their first user in this list's
     order. A private helper goes with its only user; one used by two new modules goes to the lower one and becomes
     public. Measured section sizes (NLOC): 83, 204, 245, 469, 148, 252; each is under 1000.
+    Addendum (same ruling, R-1044): `documents.py` takes `published_schemas`, `validate_inline` and the schema
+    helpers left in types.py (`_event_common_schema`, `_event_common_validator`, `_consumer_event_schema`, `_checked`).
+    `DocumentSchemaError` and `validate_document` are not on its list (I-5b). The order of the I-12a row stands.
   - **I-12b** `store.py` (1062 NLOC; the `ProjectStore` class is 876) keeps `ProjectStore` and `_create_tables`.
     Everything at module level above the class (store.py:102-277: `StoreError`, `coded_store_error`,
     `IdempotencyKeyReusedError`, `ActiveJobLimitError`, `ArtifactTableSink`, `policy_file_bytes`, `AuditEntry`,
@@ -377,6 +392,7 @@ the migration table below.
 | I-3 | src retarget; retarget outside gate; interface | `removed` (application/policies.py, the module) | after: application-layers loses `application.policies`; repo-layers adoption line `run.bundle -> application.policies` goes |
 | I-4 | import normalization outside gate (test_m02_wo14.py:59); interface | `renamed` (module run/session.py = application/run_session.py), `new_files`, `callers` (tests/**, scripts/**, living docs) | after: application-layers gains `application.run_session` directly above `application.binding`; repo-layers loses `openflowsheet.run.session` |
 | I-5 | src retarget; retarget outside gate; interface | `removed` (types.py: `schema_errors`) | none |
+| I-5b | interface | `renamed` (types.py: `DocumentSchemaError`, `validate_document` = schema_check.py, same names), `callers` (application/cli.py, local.py, operations.py; the tests that import either name) | none |
 | I-6 | src retarget; retarget outside gate; interface | `removed` (units/__init__.py: the display names) | none |
 | I-7 | src retarget (not the 4 contributor files); retarget outside gate; interface | `removed` (verification.py: the `TAU_*` re-exports; program.py: `Linearization`), `added` (linearization.py: `feasibility_tolerance`) | none |
 | I-8 | per restructure plan: src retarget; retarget outside gate; interface | `removed` (each re-export the plans left, except the I-19 W5 exceptions) | before each B1/B8 split: forbid `to` += its new modules |
@@ -390,8 +406,8 @@ the migration table below.
 | I-15 | forced-refusal tests outside gate before (asserting all but the `exception` detail); interface; tests outside gate after (`exception == "AdmissibilityRefusal"`, the K pin) | `added` (models/lifted.py: `AdmissibilityRefusal`), `callers` (tests that expect `VerifierError` from a region path, listed at the base) | after: the `orchestrator.region -> verify.checks` adoption line goes |
 | I-19 | sweep commits outside gate (docs, refusals.yaml:1378); interface for any re-export left | `removed` | none |
 
-Recommended W4 order: I-6, I-3, I-1, I-2, I-7, I-8, I-5, I-4, I-9, I-14, I-10, I-11, I-15, I-13, I-12a, I-12b, I-12c,
-I-12d, I-19. Hard constraints: I-14 after I-9; I-5 before I-12a; I-10 before I-12c; I-11 before I-12d.
+Recommended W4 order: I-6, I-3, I-1, I-2, I-7, I-8, I-5, I-4, I-5b, I-9, I-14, I-10, I-11, I-15, I-13, I-12a, I-12b,
+I-12c, I-12d, I-19. Hard constraints: I-14 after I-9; I-5 before I-12a; I-5b before I-9 (R-1044); I-10 before I-12c; I-11 before I-12d.
 
 ## Consequences
 
