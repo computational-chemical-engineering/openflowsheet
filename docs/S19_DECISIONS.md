@@ -905,3 +905,5 @@
   (§4.8.3).** Unchecked whether `compiled.residual` can return `ok` with a NaN; if it can, a silent pass in a
   certificate check. Goes to progress.md for the design lane (specifier), behaviour unchanged in S19.
   wp/S19 merged into the lane (2465d02d); merge-check job 138.
+- **2026-11-16, job 135 PASS (G6 run 4 step 6, 0ed6c982, render.py `_by_type`, step 213 accepted, 24.0 -> 20.0,
+  16/16).** Report: ALERTs as at job 123.
