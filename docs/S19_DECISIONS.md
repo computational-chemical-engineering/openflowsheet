@@ -1180,3 +1180,4 @@
   8cdd71d8.** `codehealth arch --depth 4` at 8cdd71d8: 4 violations, 3 cycles, 12 cycle edges, 3989 imports. G6 jobs
   149 (step 229, 5.0 -> 2.0) and 150 (step 230, 10.0 -> 3.0) PASS.
 - **2026-11-16, cce-code-health 04a01f8 (session code_health; not urgent):** complexipy pinned ==8.3.0 inside the tool (ours is already pinned in requirements-codehealth.txt), JSON meta.backends, `__all__` left out of clone detection (dup_lines may drop at base and head alike). DECISION: re-pin at the next queue-idle milestone window (as 846a065), not mid-lane. Alternative: never (nothing in S19 needs it). Reversible by: re-pinning 846a065.
+- **2026-11-16, cce-code-health 6ab9fd1 (code_health; holds 04a01f8): tier placeholder `{files:GLOB[,GLOB]}`.** The re-pin target becomes 6ab9fd1; with it the ruff tier's POSIX filter (36ea9c2d) is replaced by `set -- {files:*.py,*.pyi}`.

@@ -71,7 +71,7 @@ merge-check.
    `__init__` non-core aliases removed by plan, region.py:130-145 private aliases).
 4. Next G6 brief after run 5: rescan wp/S19 (G6 outside registry-hashed thermo is small: store.py 8.6, render.py
    7.5, units/__init__.py 7.4); G5: compare.py 7.4, `replay` 5.3, W4-dependent targets.
-5. Re-pin cce-code-health 846a065 -> 04a01f8 at the next queue-idle window (S19_DECISIONS; not urgent).
+5. Re-pin cce-code-health 846a065 -> 6ab9fd1 (holds 04a01f8; adds `{files:GLOB}`: switch the ruff tier to `set -- {files:*.py,*.pyi}`) at the next queue-idle window (S19_DECISIONS; not urgent).
 6. Open for Frank (not blocking): R-1042 / option (C) for the T06 self-hash at W4 close; STOP 1 alternative (tool
    change); cce-code-health fixes (empty `{files}`; `log --rerun-of` with a moved base; queue `--rerun-of` job vs
    step; GATE-ERROR not to block a same-head re-gate); the verify twins ADR 0076 addendum; the selection-widening
