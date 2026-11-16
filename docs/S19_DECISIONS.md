@@ -1182,3 +1182,23 @@
 - **2026-11-16, cce-code-health 04a01f8 (session code_health; not urgent):** complexipy pinned ==8.3.0 inside the tool (ours is already pinned in requirements-codehealth.txt), JSON meta.backends, `__all__` left out of clone detection (dup_lines may drop at base and head alike). DECISION: re-pin at the next queue-idle milestone window (as 846a065), not mid-lane. Alternative: never (nothing in S19 needs it). Reversible by: re-pinning 846a065.
 - **2026-11-16, cce-code-health 6ab9fd1 (code_health; holds 04a01f8): tier placeholder `{files:GLOB[,GLOB]}`.** The re-pin target becomes 6ab9fd1; with it the ruff tier's POSIX filter (36ea9c2d) is replaced by `set -- {files:*.py,*.pyi}`.
 - **2026-11-16, cce-code-health 6529f47 (code_health):** `literals` in refactor/restructure mode allows a string literal's count to drop when every scope that reached it at base still reaches it at head (directly or through a referenced function); the allowed drops are listed in the check detail; deleting one copy of a duplicated check still fails; interface plans stay exact. Also f527252: docstrings out of clone detection. DECISION: re-pin target 6529f47 at the next queue-idle window; from then on each reviewer brief asks the reviewer to rule on every listed allowed drop (the rule is a relaxation, so a human-readable list replaces the hard fail). Alternative: stay on 6ab9fd1 and keep the strict rule. Reversible by: re-pinning 6ab9fd1.
+- **2026-11-16, W4 run 8 reported (opus-engineer, 189k tokens; over the cap). wp/S19-w4 ce7f9b76..486b6dbb, 11
+  commits.** 3b: 498fa21d plan `i3b-policies-all` (`added = [policies.py:__all__]`), 2cde3944 step (job 174 PASS,
+  step 233). anderson: c2d1e41d merge.py:28 -> solve_record (job 175 PASS, step 235; no outside-gate importer through
+  anderson), fb3f6a00 plan `i8h-anderson-recyclepolicy`, 3a2fec6e step (job 176 PASS, step 237). I-4: 84a290f9
+  test_m02_wo14.py:59 normalization (outside), 10adfc3d plan `i4-run-session`, be115b6a step (`git mv` 100%, 4 lazy src
+  imports, 11 tests, 4 scripts, run/bundle.py docstring; job 177), 9810abf6 layer config (application-layers gains
+  `application.run_session` above `application.binding`; repo-layers loses `run.session` and its A14 line; config
+  --check 0) KEPT by the orchestrator (it is the ADR I-4 row's "after"), a9e36ea0 two test docstrings (outside).
+  I-9: only 486b6dbb, the MSG caller-module probe test (outside, before the step; 3/3 at its base). Arch 4/3/12 ->
+  3/3/12 after I-4 (run.session -> application.binding gone, as the row expects); imports 3989. Engineer's full
+  suite at be115b6a: 1 failed, t07_v17_reference f6 386 s > 300 s under load ~33 (alone 224 s; the known
+  load-dependent budget test). MSG WO-5a/WO-6 counts read 0 at base and head under xdist (controller sees no
+  bundles): rule 4's equality to be read from the gate's report.
+  **STOP (I-9):** `ApiError.from_document` calls `validate_document` (application/types.py:255, defined :185); ADR
+  puts `application.errors` directly below `application.types` (and below I-12a's documents.py, which receives
+  validate_document, ADR :193-194), so errors would import upward: a new errors -> types violation and a
+  types <-> errors cycle, against the row's "removes cycle 8". Engineer's proposal: move DocumentSchemaError,
+  validate_document and _raise_first to openflowsheet.schema_check (their dependencies _validator, _pointer live
+  there, I-5's home); pure move, no new edge; changes I-12a's documents.py list. Design-lane ruling needed
+  (architect; brief `S19-A-I9-home.md`). W4 run 9 waits for it; G5/G6 lanes do not.
