@@ -55,7 +55,7 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 ## Next actions (2026-11-16, ~20:15)
 
 Runner pid 2642417 (cce-code-health 6529f47 installed; merge-check = `gate.sh --behaviour-only`). Results consumed up
-to 170; start `$Q wait --since 170` in the background first. Agents: G5 run 9. Lanes at most 2 agents until Thu 19 Nov
+to 172; start `$Q wait --since 172` in the background first. Agents: G5 run 9, fix185 (sonnet-implementer: job 185 FAIL, test_e01_a_links `_validator` import; chain rebuilt on a test commit after 1e0eb6ce, I-5b/I-9/I-14 re-enqueued). Lanes at most 2 agents until Thu 19 Nov
 13:00. ALERTs persist (proposal 2 with Frank). Merge-checks run on a helper branch `wp/S19-<lane>-mc` = lane tip +
 wp/S19 tip merged in. S19_DECISIONS holds the detail of every item below (grep the quoted words).
 1. **Rule 4 serial runs (detached, not agents; S19_DECISIONS "rule 4 falsifier: base2"):** xdist counts are not

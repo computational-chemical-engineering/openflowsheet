@@ -1387,3 +1387,12 @@
   DECISION: the next W4 engineer run (I-11, I-13) waits for one review R-W4-9 over runs 9 and 10 (I-5b, I-9, the flag
   651cc8d0, 8671bbdf, I-14; Fable model for I-14's initialization order), launched when jobs 185, 186, 191 pass.
   Alternative: launch I-11 now. Reason: three unreviewed W4 runs on one lane; a reject would rebuild everything above.
+- **2026-11-16, job 185 FAIL (w4r9-i5b-iface, ecf46789, step 246 gate-fail, 14/15, tests): one collection error,
+  tests/test_e01_a_links.py:16 imports `_validator` from application.types, which I-5b empties (full suite fallback,
+  20374 passed, 1 error).** A real failure with a known cause (the engineer ran touched tests only; the tool's
+  importer scan covers planned names, not a private name moving with them). No bisect needed: at 1e0eb6ce types
+  imports `_validator` from schema_check, so the retarget passes at the base (the 1e0eb6ce pattern). Job 186 SKIPPED,
+  191 will be. DECISION: a sonnet-implementer (brief `S19-W4-9-fix185.md`) adds the test commit after 1e0eb6ce,
+  rebases 75e424be..619e0011 onto it (backup wp/S19-w4r10-orig), re-enqueues I-5b (`--rerun-of 185`), I-9, I-14.
+  Alternative: a fresh opus-engineer. Reason: fully specified one-line change plus a rebase; the orchestrator does not
+  edit lane code. ALERTs: selected share 56%, selected 465 s, wait median 39 min (standing).
