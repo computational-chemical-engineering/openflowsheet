@@ -36,11 +36,11 @@ from openflowsheet.compile.reference import row_values
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.models import flow_id, pressure_id, temperature_id
 from openflowsheet.models.lifted import Regime
-from openflowsheet.models.syn001.cascade import (
-    CMO_FLOOR,
-    CascadeFailure,
-    _k_values,
-    declared_problem,
+from openflowsheet.models.syn001.cascade import _k_values
+from openflowsheet.models.syn001.cascade_failure import CascadeFailure
+from openflowsheet.models.syn001.cascade_init import CMO_FLOOR, thomas
+from openflowsheet.models.syn001.cascade_rows import declared_problem
+from openflowsheet.models.syn001.cascade_spec import (
     energy_row_id,
     inlet_stream,
     label_row_id,
@@ -51,7 +51,6 @@ from openflowsheet.models.syn001.cascade import (
     stage_pressure_id,
     stage_row_id,
     stage_temperature_id,
-    thomas,
     vapor_id,
     vapor_total_id,
 )

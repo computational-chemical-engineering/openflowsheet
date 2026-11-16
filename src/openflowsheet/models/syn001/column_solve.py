@@ -40,12 +40,8 @@ from openflowsheet.compile.spec import QuantityKind
 from openflowsheet.models import Accumulation, DeclaredEquation
 from openflowsheet.models.lifted import Regime
 from openflowsheet.models.syn001 import TEMPERATURE
-from openflowsheet.models.syn001.cascade import (
-    CascadeFailure,
-    CascadeSpec,
-    DormantAnswer,
-    dormant_answer,
-)
+from openflowsheet.models.syn001.cascade import DormantAnswer, dormant_answer
+from openflowsheet.models.syn001.cascade_failure import CascadeFailure
 from openflowsheet.models.syn001.cascade_solve import (
     DECLARATION_CONTEXT,
     S01_DEFAULT_V1,
@@ -56,6 +52,7 @@ from openflowsheet.models.syn001.cascade_solve import (
 )
 from openflowsheet.models.syn001.cascade_solve import FD_COLUMN_SCALE as CASCADE_FD_SCALE
 from openflowsheet.models.syn001.cascade_solve import saturation_pairs as saturation_pairs
+from openflowsheet.models.syn001.cascade_spec import CascadeSpec
 from openflowsheet.models.syn001.column import (
     ColumnSpec,
     ProfileInitial,

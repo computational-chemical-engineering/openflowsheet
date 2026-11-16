@@ -24,8 +24,11 @@ from typing import Final
 
 from openflowsheet.models.lifted import Regime
 from openflowsheet.models.syn001.band_types import BandError
-from openflowsheet.models.syn001.cascade import CascadeFailure, PlacedInlet, _k_values, thomas
+from openflowsheet.models.syn001.cascade import _k_values
+from openflowsheet.models.syn001.cascade_failure import CascadeFailure
+from openflowsheet.models.syn001.cascade_init import thomas
 from openflowsheet.models.syn001.cascade_solve import DECLARATION_CONTEXT
+from openflowsheet.models.syn001.cascade_spec import PlacedInlet
 from openflowsheet.models.syn001.column import (
     PHI_INITIAL,
     ColumnSpec,

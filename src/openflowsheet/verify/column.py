@@ -43,9 +43,9 @@ from typing import TYPE_CHECKING, Final, Protocol
 
 from openflowsheet.models import flow_id, pressure_id, temperature_id
 from openflowsheet.models.revision_flowsheet import InstanceView
-from openflowsheet.models.syn001.cascade import (
+from openflowsheet.models.syn001.cascade_rows import declared_problem
+from openflowsheet.models.syn001.cascade_spec import (
     InletState,
-    declared_problem,
     inlet_stream,
     liquid_id,
     liquid_total_id,

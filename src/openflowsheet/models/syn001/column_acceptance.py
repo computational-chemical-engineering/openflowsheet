@@ -17,9 +17,13 @@ from openflowsheet.compile.spec import ProblemSpec
 from openflowsheet.models import flow_id, temperature_id
 from openflowsheet.models.lifted import LABEL_KIND, Regime
 from openflowsheet.models.lifted_tolerance import KIND_TOLERANCE
-from openflowsheet.models.syn001.cascade import (
-    _enthalpy_flow,
-    _phase,
+from openflowsheet.models.syn001.cascade import _enthalpy_flow, _phase
+from openflowsheet.models.syn001.cascade_solve import (
+    DECLARATION_CONTEXT,
+    TWO_PHASE_SATURATION_TOLERANCE,
+    saturation_pairs,
+)
+from openflowsheet.models.syn001.cascade_spec import (
     inlet_stream,
     liquid_id,
     liquid_total_id,
@@ -28,11 +32,6 @@ from openflowsheet.models.syn001.cascade import (
     stage_temperature_id,
     vapor_id,
     vapor_total_id,
-)
-from openflowsheet.models.syn001.cascade_solve import (
-    DECLARATION_CONTEXT,
-    TWO_PHASE_SATURATION_TOLERANCE,
-    saturation_pairs,
 )
 from openflowsheet.models.syn001.column import (
     INVERSE_KINDS,

@@ -17,9 +17,10 @@ from openflowsheet.compile.spec import EquationSpec, QuantityKind
 from openflowsheet.models import Contribution, SpecificationError, origin
 from openflowsheet.models.lifted import ClosureType, LiftedSplit, ZeroFlowForm
 from openflowsheet.models.rows import ratio_row, specification_row
-from openflowsheet.models.syn001.cascade import (
-    _parameter,
-    declared_problem,
+from openflowsheet.models.syn001.cascade import _parameter
+from openflowsheet.models.syn001.cascade_rows import declared_problem
+from openflowsheet.models.syn001.cascade_solve import DECLARATION_CONTEXT, CompiledCascade
+from openflowsheet.models.syn001.cascade_spec import (
     liquid_id,
     liquid_total_id,
     mixed_id,
@@ -31,7 +32,6 @@ from openflowsheet.models.syn001.cascade import (
     vapor_id,
     vapor_total_id,
 )
-from openflowsheet.models.syn001.cascade_solve import DECLARATION_CONTEXT, CompiledCascade
 from openflowsheet.models.syn001.column import (
     MODEL_ID,
     RATIO_KINDS,

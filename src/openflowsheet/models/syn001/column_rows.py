@@ -29,13 +29,11 @@ from openflowsheet.models.rows import (
     specification_row,
 )
 from openflowsheet.models.syn001.blocks import EnthalpyFlowBlock, LnKBlock
-from openflowsheet.models.syn001.cascade import (
+from openflowsheet.models.syn001.cascade import _parameter, _phase, _token
+from openflowsheet.models.syn001.cascade_spec import (
     BOTTOM,
     TOP,
     PlacedInlet,
-    _parameter,
-    _phase,
-    _token,
     energy_row_id,
     inlet_row_id,
     inlet_stream,

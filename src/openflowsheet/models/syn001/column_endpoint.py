@@ -14,7 +14,9 @@ from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from typing import Final
 
-from openflowsheet.models.syn001.cascade import CascadeFailure, _k_values, _parameter, thomas
+from openflowsheet.models.syn001.cascade import _k_values, _parameter
+from openflowsheet.models.syn001.cascade_failure import CascadeFailure
+from openflowsheet.models.syn001.cascade_init import thomas
 from openflowsheet.models.syn001.cascade_solve import DECLARATION_CONTEXT
 from openflowsheet.models.syn001.column import (
     INVERSE_KINDS,

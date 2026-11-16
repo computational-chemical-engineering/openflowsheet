@@ -17,14 +17,16 @@ from openflowsheet.models import pressure_id, temperature_id
 from openflowsheet.models.syn001 import P_MAX, P_MIN, T_MAX, T_MIN
 from openflowsheet.models.syn001.cascade import (
     INLET_PHASES,
-    CascadeFailure,
     EnergyPrecheck,
-    PlacedInlet,
     _enthalpy_flow,
     _in_domain,
     _invalid,
     _is_dormant,
     _phase,
+)
+from openflowsheet.models.syn001.cascade_failure import CascadeFailure
+from openflowsheet.models.syn001.cascade_spec import (
+    PlacedInlet,
     inlet_stream,
     stage_pressure_id,
     stage_temperature_id,
