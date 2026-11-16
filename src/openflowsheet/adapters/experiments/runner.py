@@ -312,17 +312,8 @@ class ExperimentRunner:
         key = request["experiment_key"]
         with self.records.locked(key, check):
             existing = self.records.result(key)
-            written: list[Mapping[str, Any]] = []
             self.records.write_request(request, self.job_id)  # once; byte-equal if present
-            # Every execution is an attempt (§3.3): a handshake that failed is one, under the key
-            # its fingerprint (measured after a retry, or not at all) gave the request. A later
-            # experiment of the same job is not handshaken again (R-236); when the job's handshake
-            # failed, its attempt records that frozen failure, which it did not execute.
-            if first:
-                for failure in failed:
-                    written.append(self._failed_handshake(key, failure, existing))
-            elif environment.failure is not None:
-                written.append(self._failed_handshake(key, _frozen(environment.failure), existing))
+            written = self._handshake_attempts(key, first, failed, environment, existing)
             if environment.failure is not None:
                 failure = environment.failure
                 envelope = refused("error", f"external_{failure.status}", failure.message)
@@ -414,6 +405,30 @@ class ExperimentRunner:
             ):
                 self._handshakes[variant.sha256] = (environment, tuple(found))
                 return environment, tuple(found), True
+
+    def _handshake_attempts(
+        self,
+        key: str,
+        first: bool,
+        failed: tuple[Execution, ...],
+        environment: Environment,
+        existing: Mapping[str, Any] | None,
+    ) -> list[Mapping[str, Any]]:
+        """The attempts the job's handshake gives the experiment `key`, each written in turn.
+
+        Every execution is an attempt (§3.3): a handshake that failed is one, under the key its
+        fingerprint (measured after a retry, or not at all) gave the request. On the job's
+        `first` experiment of the variant those are the `failed` handshakes. A later experiment
+        of the same job is not handshaken again (R-236); when the job's handshake failed, its
+        attempt records that frozen failure, which it did not execute. Otherwise there is none.
+        """
+        written: list[Mapping[str, Any]] = []
+        if first:
+            for failure in failed:
+                written.append(self._failed_handshake(key, failure, existing))
+        elif environment.failure is not None:
+            written.append(self._failed_handshake(key, _frozen(environment.failure), existing))
+        return written
 
     def _failed_handshake(
         self, key: str, failure: Execution, existing: Mapping[str, Any] | None
