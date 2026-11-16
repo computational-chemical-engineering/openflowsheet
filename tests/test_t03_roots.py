@@ -19,8 +19,7 @@ import yaml
 from jsonschema import Draft202012Validator
 from referencing import Registry, Resource
 
-from openflowsheet.numerics.anderson import RecyclePolicy
-from openflowsheet.numerics.solve_record import Trace
+from openflowsheet.numerics.solve_record import RecyclePolicy, Trace
 from openflowsheet.orchestrator.merge import ConvergeResult, converge_with_merge
 from openflowsheet.orchestrator.roots import DELTA_ROOT, same_root
 

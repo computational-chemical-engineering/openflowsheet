@@ -39,11 +39,8 @@ from openflowsheet.assessment.cost.contributor import CostContributor  # noqa: E
 from openflowsheet.assessment.cost.derived import DerivedContributor  # noqa: E402
 from openflowsheet.assessment.defaults import DEFAULTS  # noqa: E402
 from openflowsheet.assessment.lca.section import LcaContributor  # noqa: E402
-from openflowsheet.assessment.program import (  # noqa: E402
-    CONTRIBUTOR_MODULES,
-    AssessmentProgram,
-    Refusal,
-)
+from openflowsheet.assessment.linearization import Refusal  # noqa: E402
+from openflowsheet.assessment.program import CONTRIBUTOR_MODULES, AssessmentProgram  # noqa: E402
 from openflowsheet.assessment.report import SCHEMA_REFERENCE, report_body  # noqa: E402
 from openflowsheet.assessment.spec import load_assessment  # noqa: E402
 from openflowsheet.assessment.views import view_of  # noqa: E402

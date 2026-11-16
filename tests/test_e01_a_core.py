@@ -19,13 +19,12 @@ import pytest
 from m03_support import flowsheet
 
 from openflowsheet.assessment.defaults import DEFAULTS, REQUIRED
-from openflowsheet.assessment.linearization import Linearization
+from openflowsheet.assessment.linearization import Linearization, Refusal
 from openflowsheet.assessment.program import (
     AssessmentProgram,
     BuildContext,
     ContributionPlan,
     OutputDef,
-    Refusal,
     Symbols,
     Theta,
 )

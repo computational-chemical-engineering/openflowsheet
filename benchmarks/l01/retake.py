@@ -87,7 +87,7 @@ def measurement_binding() -> types.ModuleType:
     from openflowsheet.application import (  # noqa: PLC0415
         model_builders,
         model_signatures,
-        revision_binding,  # noqa: PLC0415
+        revision_binding,
     )
     from openflowsheet.thermo import pr_lib  # noqa: PLC0415
 

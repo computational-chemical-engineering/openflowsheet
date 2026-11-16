@@ -54,13 +54,13 @@ from openflowsheet.models.syn001.column_solve import (
 )
 from openflowsheet.models.syn001.column_spec import ColumnSpec, distillate_total_id
 from openflowsheet.numerics.scaling import Scaling
+from openflowsheet.numerics.solve_record import SolveOutcome
 from openflowsheet.orchestrator.recovery import (
     EO_CORE_FAILURES,
     EO_RECOVERY_TRIGGERS,
     eo_recovery_due,
     solver_outcomes,
 )
-from openflowsheet.orchestrator.region import SolveOutcome
 from openflowsheet.orchestrator.roots import same_root
 
 #: §18.6 A05: the endpoints the generator registers — M1–M4 and the six regular variant sets
