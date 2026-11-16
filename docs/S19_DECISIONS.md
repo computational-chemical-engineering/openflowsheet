@@ -962,3 +962,15 @@
   wp/S19's changed tests collect. Merge-check job 140 (after the no-gain 139). Then merge W4 into wp/S19 and brief
   W4 run 7: R-W4-1a fixes 1 (non-hashed `Refusal` importers), 2-4, 6, 8, 9; R-W4-1b fixes 1-2 and its out-of-scope
   list; the sizing/transactions/program I-8 leftovers.
+- **2026-11-16, R-W3-G6-4 (reviewer, Opus, 90k tokens): merge after fixes, no step rejected.** Step 3: `exit_code`
+  and `signal_number` are the locals bound at launcher.py:276 after the reap, nothing rebinds them, no poll/wait
+  moved, ladder order and five texts byte-identical. Steps 4-5 (S2): arithmetic verbatim, same rows appended in the
+  same order, kinds in `CERTIFIABLE_KINDS` order. Steps 1-2: D7 check order and first-failure-wins unchanged,
+  nothing registered in the helpers. Steps 6-7: rendered text byte-identical. Fixes applied by the orchestrator in
+  6d81db7b (job 141 no-gain): `certify` docstring names `_certified_kind`/`_copy_coefficients` (rule 7);
+  `_from_entry` docstring: default action applies to any entry without one; `_outcome_line`: defect recorded only
+  when an auditor is set; registry/__init__.py:452 line wrap; launcher `_exit_failure` moved after `_read_result`,
+  before `_last_line` (rule 5).
+  DECISION: the orchestrator made the def move itself (a pure move, top-level AST multiset equal, checked by script)
+  rather than brief an engineer. Alternative: a fresh engineer for one move; rejected (cost far above the change).
+  Reversible by: reverting 6d81db7b's launcher hunk. wp/S19 merged into the lane (af68ba31); merge-check job 142.
