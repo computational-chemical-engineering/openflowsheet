@@ -54,13 +54,17 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 
 ## Next actions (2026-11-16, ~05:00)
 
-Gate queue: runner pid 1056796. Results consumed up to 55; next: `$Q wait --since 55` (a wait may be running).
-Agents running: W4 run 6 (brief `S19-W4-6.md`, I-8 batch F `column`, lane wp/S19-w4 from ad40c05d) and G5 run 6
-(brief `S19-W3-G5-6.md`, run/identity.py r0_projection then compare._differences_v2, lane wp/S19-g5d from 14f4fa35).
-Lanes at most 2 until Thu 19 Nov 13:00.
+Gate queue: runner pid 1056796. Results consumed up to 58; next: `$Q wait --since 58`. No agent running (self-reset
+2026-11-16 ~06:30). Lanes delivered and waiting for gates: W4 (wp/S19-w4), G5 run 5 (wp/S19-g5c, jobs 88, 90-92),
+G5 run 6 (wp/S19-g5d, jobs 94-97), G5 run 7 (wp/S19-g5e, jobs 100-102). Each G5 lane: gates PASS -> reviewer (S2,
+`S19-R-W3-common.md` plus a short per-run brief naming the decisions entry "G5 run N delivered") -> docstring fixes
+gated no-gain -> merge-check -> merge. Merge order note: W4's f9dec891 and G5 run 5 both edit
+verify/certificate.py (W4: lazy import line :559); resolve at the second merge, import line only.
+Lanes at most 2 until Thu 19 Nov 13:00. Review briefs `S19-R-W3-G5-5.md`, `-6.md`, `-7.md` drafted (2026-11-16 04:20).
 1. **W4:** STOP 3 ruled (R-W4-STOP3, Fable: Q1 option C, Q2 option a; ADR 0076 addendum + R-1042 on wp/S19
    274fb926); lane rebuilt (W4 run 5, S19_DECISIONS). Queued: 50, 52 (I-5, I-6 iface, re-enqueued from withdrawn),
-   73-87 (rebuild 5b), 89, 93 (batch E column_solve). When all PASS and run 6 reports: orchestrator layer-config
+   73-87 (rebuild 5b; 73, 74 PASS as steps 168, 169), 89, 93 (batch E column_solve), 98, 99 (run 6, batch F
+   column, delivered). No new W4 work until R-W4-1. When all PASS: orchestrator layer-config
    commit (config.toml application-layers line 162 `application.policies` stale; repo-layers adoption comment lines
    173-176, 178, 179, 181 stale, 177 (A11) and 180 (A14) live, count "(12)" at 172), then R-W4-1 (brief
    `S19-R-W4-1.md`, extend to the lane tip: runs 2-6, rulings STOP 1/2/3, test_x04 a7, MODEL_ID ruling, run 4's
@@ -71,8 +75,9 @@ Lanes at most 2 until Thu 19 Nov 13:00.
    `S19-R-W3-common.md` + a short `S19-R-W3-G5-5.md`; points: twin `_require_planned_aliases` in `verify_bound`,
    step 2's reorder before `revision_phase_branch`), docstring fix (verify_revision docstring names
    `_require_planned_aliases`, rule 7) gated no-gain, merge-check, merge.
-3. **G5 run 6** on report: as 2. Then G5 leftovers: verify/projection.py `project` 29.7, split_checks, table
-   `revision_checks` 21.4; pr_c1/gamma_phi_units twins wait for the W4 verify parameter object.
+3. **G5 runs 6 and 7:** as 2 (run 7: reviewer judges c95eadac, under the gain rule). G5 then has left: checks.py
+   `derivative_witness` 16.2, compare.py (health 7.4), split_checks 21.0, table `revision_checks` (W4 routing);
+   pr_c1 6.7 / gamma_phi_units 6.4 twins wait for the W4 verify parameter object (ADR 0076 addendum).
 4. Then W4 items I-4, I-9, I-14 (A11 ruling), I-10, I-11, I-13, I-12a-d, I-19; cycles and violations to 0.
    `wp/S19-g3` and `wp/SP` wait.
 5. Open for Frank (not blocking): confirm R-1042 / option (C) for the T06 self-hash at W4 close; STOP 1 alternative

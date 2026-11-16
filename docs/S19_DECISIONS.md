@@ -686,3 +686,82 @@
   72ba4f740d`, from s19-w4): `--rerun-of 164` refused because the base moved (3d45c5db, the new outside-gate test
   commit). Tool note (for the tooling backlog): `codehealth log --rerun-of` matches tree AND base; a rebuilt step with
   a new base needs a plain log. Job 77 (`--rerun-of 162`) will need the same.
+- **2026-11-16, G5 run 6 delivered (opus-engineer, 140k tokens; lane wp/S19-g5d from 14f4fa35).** 54e688fd
+  (`r0_projection` 66.4 -> 2.0, per-family `_*_r0` helpers, `_sorted_ids`, `_solver_counters`), 8cfcb076
+  (`_differences_v2` 36.0 -> 7.0, `_key_rule` with private NamedTuple `_ComparedObject`), 870f6c8b
+  (`execution_plan_r0` 10.0 -> 0, `_plan_value_r0`), a9f6499c (`_differences_v1` 9.0 -> 5.0, `_self_floor_v1`; v1
+  behaviour frozen by ADR 0025 D1.4). identity.py 76.4 -> 5.0, health 7.7 -> 9.0; compare.py 51.0 -> 23.0 (health
+  7.4); repo debt 5043.9 -> 4944.5, brain functions 27 -> 26. F0 `corpus_identity.py --check` PASS at every step.
+  Jobs 94-97. Steps 3-4 beyond the named targets accepted (same files, within the S2 cadence of 4). Lesson: engineers
+  shared a scratch directory (one overwrote another's check script): common brief now asks for per-lane scratch
+  subdirectories. G5 run 7 (verify/projection.py `project`, split_checks) briefed (`S19-W3-G5-7.md`, lane
+  wp/S19-g5e) and launched.
+- **2026-11-16, W4 run 6 delivered (opus-engineer; I-8 batch F, models/syn001/column.py).** f9dec891 src retarget
+  (9 modules, 41 names to column_spec/column_validation/column_rows; includes verify/certificate.py's lazy import
+  :559, which G5 run 5 (wp/S19-g5c) also edits: check at the second merge), job 98; 1a26b068 outside-gate retarget
+  (19 tests, scripts/s03_references_ours.py); plan eb6af70f; interface step f33bcf8b, job 99. `__all__` -26; 18
+  frozen names kept (column_unit.py:59); 6 aliases dropped with plain imports kept; 24 imports gone. Arch 4/3/12,
+  imports 4011 -> 3993; 85 related test files 2411 passed at both steps. Still re-exporting per i8map: transactions
+  (7), program (1; I-7's frozen-contributor exception), sizing (15; `__init__` excluded): next W4 run, after R-W4-1.
+  DECISION: no new W4 work on the lane until R-W4-1 and the lane's merge (the review span is already runs 2-6).
+  Alternative: keep adding I-8 batches. Reversible by: briefing W4 run 7 now.
+- **2026-11-16, G5 run 7 delivered (opus-engineer; lane wp/S19-g5e from cd756adb).** ac17ce56 (`project` 29.7 ->
+  6.0, five guards kept in order, six private helpers; projection.py health 8.5 -> 9.8), c95eadac (`_split_checks`
+  9.6 -> 8.0: under the ~2-point rule, taken as one named early return (T05b 9.1); the reviewer may reject),
+  49a0db77 (`degeneracy` 6.0 -> 3.0, `_product_streams`; `InstanceView` under TYPE_CHECKING). split_checks.py 25.6 ->
+  21.0 (health 7.2). Jobs 100-102. No 4th step (remaining cuts need > 5 parameters or a cross-phase parameter object);
+  `_declared_phase`/`_phase_enthalpy` twins kept (rule 15).
+- **2026-11-16, job 50 PASS (W4 I-5 iface re-gate 3b8d43db..6f85454c, step 170 accepted-neutral, 15/15).**
+- **2026-11-16, job 88 PASS (G5 run 5 step 1, 8a086d1f `_WitnessColumns`, step 171 accepted, certificate.py 54.2 -> 51.5, 16/16).**
+- **2026-11-16, job 52 PASS (W4 I-6 iface re-gate c63e01cd..e4f18a7a, interface mode, step 172 accepted, 17/17).**
+- **2026-11-16, job 90 PASS (G5 run 5 step 2, 2e86e892 `verify_revision`, step 173 accepted, certificate.py 51.5 -> 46.1, 16/16).**
+- **2026-11-16, job 91 PASS (G5 run 5 step 3, 3551c828 `_freed_columns`, step 174 accepted, certificate.py 46.1 -> 37.1, 16/16).**
+- **2026-11-16, job 75 PASS (W4 rebuild 5b, I-2 src e0acbfbb..809babce, step 175 accepted-neutral, 15/15).**
+- **2026-11-16, job 76 PASS (W4 rebuild 5b, I-7 src 9ce92c74..66a4d2cd, step 176 accepted-neutral, 15/15).**
+- **2026-11-16, job 92 PASS (G5 run 5 step 4, 8bf68291 `_guard`, step 177 accepted, certificate.py 37.1 -> 30.1, 16/16).** G5 run 5 fully gated; reviewer R-W3-G5-5 launched (Opus, brief `S19-R-W3-G5-5.md`).
+- **2026-11-16, job 94 FAIL (G5 run 6 step 1, 54e688fd `r0_projection`, step 178 gate-fail): static check `literals`,
+  `removed 'warm_start' x2`** (the `projection["warm_start"]["coupling"/"external"]` writes became one assignment of a
+  locally built dict; behaviour unchanged; debt 76.4 -> 12.0, tests tier not run). Jobs 95-97 SKIPPED. Step mode has
+  no declared literal drop, so as in S17 the step is reworked: fresh opus-engineer, brief `S19-W3-G5-6b.md` (rework
+  step 1 to an equal literal multiset without dead code, rebuild the lane, check every step's literal multiset
+  locally, re-enqueue as g5r6b-1..4; old tip kept as `wip/S19-g5d-r1`).
+- **2026-11-16, R-W3-G5-5 (reviewer, Opus, 90k tokens): merge after fixes.** All four steps behaviour-neutral; the
+  2e86e892 reorder is pure on every path (no raise, mutation or lazy import moved; same frozenset insertion order);
+  `_require_planned_aliases` twin in `verify_bound` kept (rule 15; a later merge is behaviour-neutral, blocked only by
+  the literal gate). Fixes applied by the orchestrator in 718d896a: (1) `verify_revision` docstring names
+  `_require_planned_aliases` and `_revision_witness` (rule 7); (2) the TYPE_CHECKING import of `LiftedSplit` from
+  `models.lifted` (its definition), not `orchestrator.region` (forbidden by `verifier-not-through-the-solver`; the gate
+  does not see type-only imports, config.toml:114). DECISION: the orchestrator took fix 2 (type-only import, no
+  runtime code) instead of a fresh engineer. Alternative: an engineer. Reversible by reverting 718d896a. Note for
+  later: the same type-only import stands in checks.py:58 and gamma_phi_units.py:80 (existing debt). Optional note
+  not taken: `_issue`'s `witness` clause omits `components` and the limitation reason. Job 103 (no-gain) queued;
+  wp/S19 (docs only since 62fdf722) merged into the lane; merge-check queued.
+- **2026-11-16, job 77 PASS (W4 run 5b, I-2 revert 9e467cca..145725ae, 15/15), logged by hand as step 179**
+  (accepted-neutral, `--head 145725ae`, from s19-w4): `--rerun-of 162` refused, the base moved (as job 73). Note for
+  the G5 run 5 merge: W4's I-2 also moves the verifier's type-only `LiftedSplit` imports to `models.lifted`; 718d896a
+  does the same in certificate.py, so the two agree (resolve to the `models.lifted` line).
+- **2026-11-16, job 100 PASS (G5 run 7 step 1, ac17ce56 `project`, step 180 accepted, 29.7 -> 6.0, 16/16).**
+- **2026-11-16, G5 run 6b delivered (opus-engineer, Opus, 89k tokens; lane wp/S19-g5d rebuilt on 14f4fa35, old tip
+  `wip/S19-g5d-r1` = a9f6499c).** 11d21d5a (step 1 reworked: `_add_warm_start_r0(projection, warm_start) -> None`, the
+  old block moved verbatim, writes in the original order), 3d1688a8, 9bbae106, 3cdb0d50 (steps 2-4 cherry-picked
+  without conflicts). Every step: the gate's literal multiset equal, mypy, ruff, patch_noop 0 of 265, touched tests
+  pass, F0 PASS on steps 1 and 3; repo debt 5043.9 -> 4944.5, brain functions 27 -> 26 (as the first take). Jobs
+  105-108. Correction: brief 6b said to count docstrings; the gate's `_string_literals` (cce_code_health/gate.py)
+  excludes them, and the engineer rightly used the gate's function. Review brief `S19-R-W3-G5-6.md` updated to the
+  new shas, with a point on the one mutating helper.
+- **2026-11-16, job 101 PASS (G5 run 7 step 2, c95eadac `_split_checks`, step 181 accepted, split_checks.py 25.6 -> 24.0, 16/16; the gain-rule question stays with R-W3-G5-7).**
+- **2026-11-16, job 78 PASS (W4 run 5b, I-2 iface 0e49da0f..89908c34, interface mode, step 182 accepted, 17/17).**
+- **2026-11-16, job 79 PASS (W4 run 5b, I-7 iface a99c305a..10f734bb, interface mode, step 183 accepted, 17/17).**
+- **2026-11-16, job 102 PASS (G5 run 7 step 3, 49a0db77 `degeneracy`, step 184 accepted, split_checks.py 24.0 -> 21.0, 16/16).** G5 run 7 fully gated (jobs 100-102); reviewer R-W3-G5-7 launched (Opus, brief `S19-R-W3-G5-7.md`).
+- **2026-11-16, R-W3-G5-7 (reviewer, Opus, 90k tokens): merge after fixes.** ac17ce56 OK (five refusals in order with
+  the same texts; nothing computed ahead of a refusal that was not before; the `target.spec` read moved ahead of the
+  comprehensions, a field read, stated in the commit); c95eadac accepted under the gain rule (1.6 points; a whole
+  early return of a spec-named unit, T05b §9.1); 49a0db77 OK (`InstanceView` has no runtime use). Fix applied by the
+  orchestrator in 3b13e7fe: `_degenerate_split_checks` docstring (δ is the spec §4.4 saturation distance
+  max(|T - T_b|, |T - T_d|), checked against T05b spec line 108; both checks on `subject`); job 109 (no-gain).
+  Twins `_declared_phase`/`_phase_enthalpy` kept (different requests and dormant handling; a merge needs a
+  behaviour-level commit with its own test). **Open (pre-existing, outside the diff, before any twin merge):**
+  split_checks.py:218 reads `stream_of(state, stream)` in SYN-001 order but zips with `view.components` (:259), and
+  `_phase_enthalpy` (flows at :538/:576 in SYN-001 order) zips with `provider.describe().components`; both are right
+  only while those orders equal `COMPONENTS`. A design-lane question (component-order invariant), listed for the G5
+  close.
