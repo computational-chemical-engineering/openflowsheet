@@ -991,3 +991,6 @@
   (fails callers), or wait for a cce-code-health interface-lane merge-check (owner session code_health, whose v0.2.0
   waits on this merge). Reversible by: a proper merge-check once the tool has one. Run w4-mt1 on 4d250386 started now;
   after the G5 run 8 and G6 run 4 merges, wp/S19 is merged into the lane and merge_tiers.sh re-run on that merge.
+- **2026-11-16, job 138 PASS (G5 run 8 merge-check at 2465d02d, full suite, 15/15, 52.0 -> 24.8). Merged wp/S19-g5f
+  into wp/S19 (e9d5f386).** wp/S19 gained docs and skill files only since the merge-check base 708ce244. Worktree
+  s19-g5f removed; branch kept (merged into wp/S19, not main).
