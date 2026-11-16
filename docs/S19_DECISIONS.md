@@ -1030,3 +1030,4 @@
   Test-only follow-ups, not merge conditions (build lane, trailing): a test pinning `lint_entry`'s finding order (one
   complete entry with a failing example, jargon in a variant summary and an infeasibility claim); a lock-contention
   test for `ExperimentStore.locked` (`BlockingIOError` branch).
+- **2026-11-16, job 143 PASS (g6r5-1 58f1aecb, step 218 accepted, 15.0 -> 0).** Gate report ALERTs: ALERT selected gates take 743 s > 300 s (tests tier);ALERT selected/full time ratio 0.58 > 0.4: selection saves little;ALERT queue wait median 38 min > 15 min; (cause as at job 123; proposal 2 with Frank).
