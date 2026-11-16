@@ -18,7 +18,6 @@ from typing import Any
 
 import pytest
 
-from openflowsheet import units
 from openflowsheet.units import CONVERSION_ROWS, convert_input_value
 from openflowsheet.units import display as display_module
 from openflowsheet.units.display import (
@@ -318,7 +317,9 @@ def test_a7_kinds_decide_never_the_si_unit() -> None:
     assert display_item(1000.0, "heat_rate", kilowatt) == {"value": 1.0, "unit": "kW"}
 
 
-def test_a7_reexported_from_units() -> None:
+def test_a7_display_names_live_in_units_display() -> None:
+    """ADR 0076 (amends ADR 0075, I-6): the one home of display-conversion-v1 is
+    `openflowsheet.units.display`; each name is exported and defined there."""
     for name in (
         "DISPLAY_CONVERSION_ID",
         "DISPLAY_KINDS",
@@ -329,8 +330,10 @@ def test_a7_reexported_from_units() -> None:
         "parse_display_units",
         "text_unit",
     ):
-        assert name in units.__all__
-        assert getattr(units, name) is getattr(display_module, name)
+        assert name in display_module.__all__
+        value = getattr(display_module, name)
+        if isinstance(value, type) or callable(value):
+            assert value.__module__ == display_module.__name__
 
 
 def test_d7_7_text_spelling_maps_degc_and_degf_only() -> None:
