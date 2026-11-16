@@ -52,19 +52,19 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 - Held until the scale probe reports: G1 (orchestrator/, numerics/). Open: ptc.py 6.8 (P3, P4).
 - G-END (below) stays the end criterion for the whole repository.
 
-## Next actions (2026-11-16, ~19:45; self-reset)
+## Next actions (2026-11-16, ~20:15)
 
 Runner pid 2642417 (cce-code-health 6529f47 installed; merge-check = `gate.sh --behaviour-only`). Results consumed up
-to 166; start `$Q wait --since 166` in the background first. No agent running. Lanes at most 2 agents until Thu 19 Nov
+to 167; start `$Q wait --since 167` in the background first. No agent running. Lanes at most 2 agents until Thu 19 Nov
 13:00. ALERTs persist (proposal 2 with Frank). Merge-checks run on a helper branch `wp/S19-<lane>-mc` = lane tip +
 wp/S19 tip merged in. S19_DECISIONS holds the detail of every item below (grep the quoted words).
-1. **Rule 4 falsifier running (detached bash, not an agent):** base 10adfc3d + conftest patch A re-run with
-   `/tmp/claude-1000/-home-eajfpeters-Code-OpenFlowsheet/0e0821aa-6e8e-4c6b-9a00-f781aa0ef7c7/scratchpad/run.sh` into `/tmp/claude-1000/-home-eajfpeters-Code-OpenFlowsheet/0e0821aa-6e8e-4c6b-9a00-f781aa0ef7c7/scratchpad/base2.log` (worktree `/tmp/claude-1000/-home-eajfpeters-Code-OpenFlowsheet/0e0821aa-6e8e-4c6b-9a00-f781aa0ef7c7/scratchpad/base2`; ends with "EXIT n"; ~1 h from 19:40). Read only
-   `grep -n "MSG WO\|EXIT\|passed" /tmp/claude-1000/-home-eajfpeters-Code-OpenFlowsheet/0e0821aa-6e8e-4c6b-9a00-f781aa0ef7c7/scratchpad/base2.log | tail -4`. Earlier: base 964 run results (125 failure) / 1228
-   bundles, head be115b6a 878 (101) / 1370, tip 803 / 1175 ("rule 4 counts differ"). base2 = 964/1228 -> the I-4 step
-   changed the counts: a finding for W4 run 8 (fresh engineer to find the cause). base2 differs -> the counts are not
-   deterministic under xdist: rule 4 needs a deterministic form (design-lane ruling; ADR 0076 rule 4 text). Then remove
-   worktree `/tmp/claude-1000/-home-eajfpeters-Code-OpenFlowsheet/0e0821aa-6e8e-4c6b-9a00-f781aa0ef7c7/scratchpad/base2`.
+1. **Rule 4 serial runs (detached, not agents; S19_DECISIONS "rule 4 falsifier: base2"):** xdist counts are not
+   deterministic (base 964/125/1228, base2 963/124/1231). Serial full suites (`-p no:xdist`) at base 10adfc3d+A
+   (worktree `/tmp/claude-1000/-home-eajfpeters-Code-OpenFlowsheet/0e0821aa-6e8e-4c6b-9a00-f781aa0ef7c7/scratchpad/base2`)
+   and head be115b6a+A (worktree `/tmp/claude-1000/-home-eajfpeters-Code-OpenFlowsheet/165c72bf-833e-48c6-b5e2-b732f68e85df/scratchpad/headser`),
+   started 20:15, ~3 h. Logs `baseser.log`, `headser.log` in that 165c72bf scratchpad (end "EXIT n"); read only
+   `grep -h "MSG WO\|passed\|^EXIT"`. Equal: run 8 merges (item 3), ADR rule 4 text (serial form) into the R-W4-9
+   batch. Unequal: fresh engineer on the I-4 gap. Then remove both worktrees.
 2. **Re-pin cce-code-health 6529f47 -> ec5aaea6b54ffcb31b245d21d1c5b3e73e643f12** at the first queue-idle moment
    (G6 run 6 jobs 181-184 drain first): edit requirements-codehealth.txt, `.venv-codehealth/bin/pip install -q -r
    requirements-codehealth.txt`, check direct_url, `codehealth config --check`, commit, log ("cce-code-health ec5aaea").
@@ -78,7 +78,7 @@ wp/S19 tip merged in. S19_DECISIONS holds the detail of every item below (grep t
    (wp/S19-w4 after 486b6dbb) merges after run 8, with its own review (R-W4-9: I-5b, I-9, the flag, 8671bbdf).
 4. **G6 run 6** (wp/S19-g6d, base f2987b62, jobs 180 PASS, 181-184 gating): when 184 is in, review R-W3-G6-6
    (brief written: `S19-R-W3-G6-6.md`), fixes, helper merge-check, merge.
-5. **New lanes held** until run 9 is enqueued (DECISION in S19_DECISIONS "G6 run 6 reported"). Then G5 run 9 (write
+5. **New lanes held** until run 9 is enqueued (DECISION in S19_DECISIONS "G6 run 6 reported"). Then G5 run 9 (brief written,
    `S19-W3-G5-9.md`: run/compare.py 7.4; verify/ below 9: gamma_phi_units 6.4, pr_c1 6.7, split_checks 7.2, table 7.5,
    column 7.6, checks 8.4, certificate 8.4; S2 tier, cadence 4) and W4 run 10 (I-14 per the A11 ruling, then I-10,
    I-11, I-15?, I-13, I-12a-d, I-19; I-12a's list per R-1044).
