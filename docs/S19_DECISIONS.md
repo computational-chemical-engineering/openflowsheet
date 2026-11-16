@@ -1485,3 +1485,9 @@
   `--rerun-of` across a rebase). Job 196 will be SKIPPED. R-W4-9a/9b shas change by the rebase; the briefs are
   updated from the implementer's map before launch. Alternative: opus-engineer. Reason: the fix185 pattern, one
   line. ALERTs standing.
+- **2026-11-16 22:30, fix195 done (sonnet-implementer, 53k tokens): X = 024ecc4d on a953ca84 (test_t07_w6b_mcp.py:79
+  gains "errors"; 41 passed at X and at the new I-9 step), rebase clean, tip eed97251 (backup wp/S19-w4r10-orig2 =
+  2b40c2f2; diff = that one line, checked).** Map: 84e74e1d->7c0b2202 plan I-9, 1f5c2c6b->3f7540a9 I-9,
+  a609de45->574621df layer config, dbb304a3->5227e2ba, cf66884c->fb99f834 plan I-14, 8292d7e2->ffed4051 I-14,
+  45e742b7->0fe4c01b, 2b40c2f2->eed97251. Enqueued fresh: 201 w4r9-i9-iface-3, 202 w4r10-i14-iface-3. Job 196 SKIPPED.
+  Review briefs S19-R-W4-9a/9b updated to the new shas and jobs.
