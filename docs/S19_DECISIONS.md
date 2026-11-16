@@ -819,3 +819,10 @@
   registry `_add_package` 19.5, launcher `launch` 14.8, graph/certificates `certify` 23.0 (S2), messages/render.py
   (health 7.0). Both avoid W4's import lines and units/__init__.py. Scan at ce9e9d30 (wp/S19 + run 6b): repo debt
   4892.1, health 8.05, brain 26. S19-W3-common.md now names cce-code-health 1f7df37.
+- **2026-11-16, job 118 PASS (W4 step 197 re-gated unchanged on cce-code-health 1f7df37, ee5eb4d8..0dc0558e, 15/15,
+  354.7 -> 354.7); the runner's log failed ("--rerun-of 86: the last step for this tree and base is 197": `--rerun-of`
+  takes the run-log step, not the queue job).** Logged by hand as step 199 (accepted-neutral, `--rerun-of 197 --head
+  0dc0558e`). Re-enqueued the five skipped W4 jobs unchanged as snapshots, labels `-r2`: 125 (batch D interface),
+  126 (I-8e src), 127 (I-8e interface), 128 (I-8f src), 129 (I-8f interface). Tool note: the queue's `--rerun-of`
+  should take or map to the run-log step. Report: ALERTs selected 1008 s > 300 s, ratio 0.78 > 0.4, wait median
+  100 min > 15 min (the share ALERT cleared); the W4 jobs still carry ref-base 736f70db; action unchanged.
