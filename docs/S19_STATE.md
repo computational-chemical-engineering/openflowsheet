@@ -56,19 +56,17 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 
 ## Next actions (2026-11-16 23:50, after the self-reset)
 
-Runner pid 2642417. Results consumed up to 190; `$Q wait --since 190` runs in the background (jobs 205 w4r10-revfix,
-206 w4r10-mc). Agent running: G5 run 10 (`opus-engineer`, brief S19-W3-G5-10.md, lane wp/S19-g5h).
+Runner pid 2642417. Results consumed up to 192 (`$Q wait --since 192` next). Agents running: G5 run 10 (`opus-engineer`, brief
+S19-W3-G5-10.md, lane wp/S19-g5h) and W4 run 11 (`opus-engineer`, S19-W4-11.md, lane wp/S19-w4).
 Lanes at most 2 agents until Thu 19 Nov 13:00. ALERTs persist (proposal 2 with Frank). Merge-checks run on a helper
 branch `wp/S19-<lane>-mc` = lane tip + wp/S19 tip merged in; the merge into wp/S19 takes the helper (`git merge --no-ff
 -F <file> wp/S19-<lane>-mc`), after checking wp/S19 changed only docs/S19_* since the helper's merge. `enqueue
 --rerun-of` takes the RUN-LOG STEP number (from the failed result line), never the job number, and never across a
 rebase (enqueue fresh). Mode revert: `--base` is the rejected commit. Detail in S19_DECISIONS (grep quoted words).
-1. **W4 runs 9+10** (lane wp/S19-w4, steps 251 I-5b, 257 I-9, 258 I-14): reviews done (9a no fixes; 9b docstring fix
-   f8173c9f, job 205 no-gain); merge-check job 206 on helper wp/S19-w4-mc 08be63e6 (worktree s19-w4-mc). Both PASS:
-   check wp/S19 changed only docs since 76db456d, merge the helper, remove worktree s19-w4-mc.
-2. **W4 run 11: launch** `opus-engineer` on `<git-common-dir>/codehealth/briefs/S19-W4-11.md` (I-11, I-13; lane
-   fast-forwards to the wp/S19 tip) right after item 1's merge. Then I-10 and I-12a-d (each step needs serial-suite
-   MSG counts at base and head per amended ADR rule 4, ~2.2 h per suite).
+1. **W4 runs 9+10 merged** into wp/S19 as 68a9597a (job 206 PASS); worktree s19-w4-mc removed.
+2. **W4 run 11 running** (`opus-engineer`, brief S19-W4-11.md: I-11, I-13; lane wp/S19-w4 from 68a9597a). On its
+   report: gate results per step, `reviewer` (W4 cadence), fixes, helper merge-check, merge. Then I-10 and I-12a-d
+   (each step needs serial-suite MSG counts at base and head per amended ADR rule 4, ~2.2 h per suite).
 3. **G5 run 10** running; on its report: per-step gate results, then `reviewer` (S2 tier), fixes, merge-check, merge.
 4. **G6:** W3 part done (S19_DECISIONS "G6 run 7 not briefed"); launcher `launch` after W4. Frozen thermo files: W5.
 5. **Rule 4 falsifier:** serial repeat headser2 relaunched (first attempt had a bad conftest overlay), PID 4036764, log

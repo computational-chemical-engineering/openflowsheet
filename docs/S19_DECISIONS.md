@@ -1568,3 +1568,11 @@
   territory; gains under 2). Reversible by: briefing a G6 run on those. For Frank (not blocking): thermo/ below 7.0
   (pr_c1 4.6, iapws95 6.2, coolprop_heos 6.4, pr_lib 6.9, wilson_ig 6.9) is reachable only in W5. The free slot goes
   to W4 run 11 (brief S19-W4-11.md: I-11, I-13), launched after runs 9+10 merge (jobs 205, 206).
+- **2026-11-16 ~23:55, job 205 PASS (w4r10-revfix, f8173c9f, step 259 accepted-neutral, 15/15, 11.0 -> 11.0).** Gate
+  report: "ALERT selected share 50% < 75% of step gates", "ALERT selected gates take 570 s > 300 s (tests tier)",
+  "ALERT selected/full time ratio 0.44 > 0.4: selection saves little", "ALERT queue wait median 27 min > 15 min"
+  (standing; proposal 2 with Frank). Merge of W4 runs 9+10 waits for job 206.
+- **2026-11-17 ~00:05, job 206 PASS (w4r10-mc, helper 08be63e6, full suite, 8/8, debt 163.1 -> 163.1). W4 runs 9+10
+  merged into wp/S19 as 68a9597a** (wp/S19 had changed only docs/S19_* since 76db456d). Worktree s19-w4-mc removed
+  (clean); branch kept. **W4 run 11 launched** (`opus-engineer`, Opus, brief S19-W4-11.md: I-11, I-13; lane
+  wp/S19-w4 fast-forwards to 68a9597a). Agents running: G5 run 10, W4 run 11 (cap 2).
