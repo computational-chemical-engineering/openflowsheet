@@ -1636,3 +1636,17 @@
   row and the read successors, and lines 255-260 fix I-13's principle; what is left is the scope list and four names.
   Alternative: fable. Reversible by: a fable re-review if the Opus ruling is contested. Each launches when its steps
   pass (W4: job 212; G5: jobs 208-210).
+- **2026-11-17, job 208 PASS (g5r10-2, 3a864127, step 262 accepted, 25.4 -> 23.9, 16/16).** ALERTs standing.
+- **2026-11-17, job 209 PASS (g5r10-3, db3bd5b3, step 263 accepted, column.py 11.0 -> 8.0, 16/16).** ALERTs standing.
+- **2026-11-17, job 210 PASS (g5r10-4, b3c346c0, step 264 accepted, column.py 8.0 -> 5.0, 16/16). G5 run 10 fully
+  gated (steps 260, 262, 263, 264). Reviewer R-W3-G5-10 launched (`reviewer`, Opus, S19-R-W3-G5-10.md).** ALERTs standing.
+- **2026-11-17, R-W3-G5-10 reported (`reviewer`, Opus, 80k tokens): merge.** Step 1 `_Checked` a real parameter
+  object (all five fields from the caller's check-set phase, held by reference, both callers `return _issue(...)`);
+  steps 2-4 moved verbatim at the same place, same order and operands; forbid rule and lazy-import timing clean.
+  Note 1 (hardening, not taken; record): `_graded` grades `checked.checks` while the certificate records `_issue`'s
+  local `checks`; the same object only because `+=` at certificate.py:1060-1061 extends in place (all three producers
+  return list); a later rebind `checks = [*checks, ...]` would pass mypy and make `derivative_ok` vacuous. DECISION:
+  leave it (field comment at :1019 states it). Alternative: `.extend` or pass the graded set. Reversible by: a later
+  refactor step. Note 2 (rule 7): `_Checked` and `_issue` docstrings did not name `appended`: fixed by the orchestrator
+  as 5f4d221a, job 213 g5r10-revfix (no-gain). Helper wp/S19-g5h-mc (worktree s19-g5h-mc) = 5f4d221a + wp/S19
+  cda029b0 as 6656a326; merge-check job 214 g5r10-mc.
