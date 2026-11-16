@@ -52,36 +52,37 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 - Held until the scale probe reports: G1 (orchestrator/, numerics/). Open: ptc.py 6.8 (P3, P4).
 - G-END (below) stays the end criterion for the whole repository.
 
-## Next actions (2026-11-16, ~16:35)
+## Next actions (2026-11-16, ~21:55; self-reset)
 
-Runner pid 2642417 (078fa7ed: skips only jobs enqueued before a failure; cce-code-health 846a065, merge-check =
-`gate.sh --behaviour-only`, merge_tiers.sh gone; ruff tier filters to *.py at 36ea9c2d). Results consumed up to 146
-(job 147 PASS, step 223). Queue: G6 148-155, W4 run 7 169-172 (bases as the engineer enqueued; job 161 on base
-34474d67 failed scope/forbid, logged step 222 gate-fail). No agent running. Lanes at most 2 until Thu 19 Nov
-13:00. ALERTs persist (cause at job 123; proposal 2 with Frank via session OpenFlowsheet-check). The tool gates from
-merge-base(base, HEAD) with the tiers of that base: a lane's merge-check sees 36ea9c2d only if the lane contains
-it, so merge the wp/S19 tip into the lane (or a helper `-mc` branch) before its merge-check when it touches non-.py
-files.
-1. Wait: `$Q wait --since 146` in the background, one wake per result.
-2. **G6 run 5** (wp/S19-g6c, bd694a82..72ef6454): steps 218-220 accepted; 146-155 in the queue (155 = review fix,
-   no-gain). Review R-W3-G6-5 done (merge after fixes = 72ef6454). When the chain passes: merge-check (`--mode
-   merge-check --snapshot --worktree .../s19-g6c --base <wp/S19 tip> --label g6r5-mc`); PASS -> merge, log, remove
-   worktree s19-g6c.
-3. **W4 run 7** (wp/S19-w4 34474d67..bf921d8c, reported, S19_DECISIONS): after its gates pass, `reviewer`
-   (R-W4-7; brief from S19-R-W4-1b-style briefs in `<git-common-dir>/codehealth/briefs/`), then merge-check
-   (behaviour-only after the re-pin) and merge (S19_DECISIONS append conflict: keep both sides). Then the W4 items
-   after I-8 (I-4, I-9, I-14, I-10, I-11, I-13, I-12a-d, I-19, ADR order), item 3b when code_health's tool change
-   for an added `__all__` lands, and anderson.py `__all__` `RecyclePolicy` (STOP 1, `changed`).
-4. Next G6 brief after run 5: rescan wp/S19 (G6 outside registry-hashed thermo is small: store.py 8.6, render.py
-   7.5, units/__init__.py 7.4); G5: compare.py 7.4, `replay` 5.3, W4-dependent targets.
-5. Open for Frank (not blocking): R-1042 / option (C) for the T06 self-hash at W4 close; STOP 1 alternative (tool
-   change); cce-code-health fixes (empty `{files}`; `log --rerun-of` with a moved base; queue `--rerun-of` job vs
-   step; GATE-ERROR not to block a same-head re-gate); the verify twins ADR 0076 addendum; the selection-widening
-   design item. Design lane (progress.md): the NaN derivative-witness pass (R-W3-G5-8). Recorded, left: the
-   surrogate unit's identity is unregistered (R-W4-1b Q4). Docs-pass leftovers as before plus region.py:71,
-   models.lifted docstring, run 4's evidence-manifest scripts (k04, t04, t05, t05b, s02, s10c),
-   scripts/corpus_identity.py import lines, docs/interfaces-frozen.md:90, verify/column.py:103 report string and
-   test_s08_item6.py:90; the next T05b manifest shows a new spec sha256 (8993799c, expected).
+Runner pid 2642417 (cce-code-health ec5aaea installed). Results consumed up to 172; start `$Q wait --since 172` in the
+background first. No agent running. Lanes at most 2 agents until Thu 19 Nov 13:00. ALERTs persist (proposal 2 with
+Frank). Merge-checks run on a helper branch `wp/S19-<lane>-mc` = lane tip + wp/S19 tip merged in. Detail of every item
+in S19_DECISIONS (grep the quoted words).
+1. **Rule 4 serial runs (detached; "rule 4 falsifier: base2"):** serial full suites (`-p no:xdist`) at base
+   10adfc3d+A (worktree `/tmp/claude-1000/-home-eajfpeters-Code-OpenFlowsheet/0e0821aa-6e8e-4c6b-9a00-f781aa0ef7c7/scratchpad/base2`)
+   and head be115b6a+A (worktree `/tmp/claude-1000/-home-eajfpeters-Code-OpenFlowsheet/165c72bf-833e-48c6-b5e2-b732f68e85df/scratchpad/headser`),
+   started 20:15, ~3 h. Logs `baseser.log`, `headser.log` in that 165c72bf scratchpad (end "EXIT n"); read only
+   `grep -h "MSG WO\|passed\|^EXIT"`. Equal: W4 run 8 merges (item 3), ADR rule 4 text (serial form) into the
+   R-W4-9 batch, and I-10/I-12 can be briefed. Unequal: fresh engineer on the I-4 gap. Then remove both worktrees.
+2. **G6 run 6:** R-W3-G6-6 merge after fixes; fix 0dd145b0 job 187 (no-gain); helper wp/S19-g6d-mc (worktree
+   s19-g6d-mc, 19f2ff53) merge-check job 188. Both PASS: merge wp/S19-g6d into wp/S19 (`git merge -F`), remove
+   worktrees s19-g6d, s19-g6d-mc.
+3. **W4 run 8 merge** waits for item 1 (R-W4-8 fix 1). Helper wp/S19-w4r8-mc (worktree s19-w4r8-mc) = 486b6dbb +
+   c7d21f2e; then merge wp/S19 into it, merge-check, merge.
+4. **W4 runs 9+10 (lane wp/S19-w4, tip 2b40c2f2, rebuilt after job 185 FAIL, "fix185"):** jobs 194 I-5b (rerun of
+   185), 195 I-9, 196 I-14. All PASS: one review R-W4-9 over runs 9+10 (write the brief: I-5b 50779e18, I-9
+   1f5c2c6b, flag 651cc8d0, tests 1e0eb6ce/634c1195/a953ca84/dbb304a3/45e742b7, layer configs a609de45/2b40c2f2, I-14
+   8292d7e2; I-14 by a `reviewer` on `model: fable` (initialization order); engineer choices in "W4 run 10 reported").
+   Then W4 run 11: I-11, I-13 (brief = S19-W4-10.md minus I-14; importers of transactions listed there). I-10 and
+   I-12a-d wait for item 1.
+5. **G5 run 9 (wp/S19-g5g, base 135c78f8, tip bfe9e545; "G5 run 9 reported"):** jobs 189, 190, 192, 193. All PASS:
+   review R-W3-G5-9 (write the brief from S19-R-W3-G5-8.md; rule on step 4's bare-tuple pair), fixes, helper
+   merge-check, merge. Next G5 run 10: certificate.py `_issue` (11.8, 15 parameters; grouping as R-W3-G5-4),
+   `verify_revision` (8.3), column.py `_end_check` (4.0).
+6. Open for Frank (not blocking): R-1042 option C; STOP 1 alternative; tool items; verify twins addendum;
+   selection-widening; proposal 2 for the ALERTs. Design lane: NaN derivative-witness pass (R-W3-G5-8); rule 4
+   deterministic form (after item 1). Docs-pass leftovers in S19_DECISIONS (77ae7025 message says cognitive 16 -> 11,
+   scan 12; i4 plan reason "two" -> three; ruff tier `{files:*.py,*.pyi}` switch).
 
 ## Gates (pass numbers fixed after A1, before step 1)
 
