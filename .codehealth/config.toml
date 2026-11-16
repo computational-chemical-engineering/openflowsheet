@@ -48,7 +48,7 @@ timeout = 300
 kind = "command"
 cadence = "step"
 behaviour = false
-cmd = 'V="${OPENFLOWSHEET_VENV:-$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")/.venv}/bin"; "$V/ruff" check {files} && "$V/ruff" format --check {files}'
+cmd = 'V="${OPENFLOWSHEET_VENV:-$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")/.venv}/bin"; set -- {files}; [ "$#" -gt 0 ] || { echo "ruff: no touched head files (a deletion-only step)"; exit 0; }; "$V/ruff" check "$@" && "$V/ruff" format --check "$@"'
 
 [[gate.tier]]
 name = "mypy"

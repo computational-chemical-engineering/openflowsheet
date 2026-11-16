@@ -36,6 +36,9 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
   G2 run 1 reviewed (R-W3-G2-1, fixes in G2 run 2). Each run: reviewer, then merge into `wp/S19`.
 - A11/I-14 ruled (`docs/briefs/S19-A11-ruling.md`): runs in W4 after I-9. B8-executor skipped; B7 in W5.
 
+- Gate tooling (2026-11-16): queue modes interface and merge-check, `--snapshot`/`--head`, step-relative test
+  selection (wp/S19-tools2, 37307ab0). G6 runs 2+3 reviewed (merge); W4 run 1: arch 6/4/14 -> 4/4/14.
+
 - Open (R-W3-G1N-1): numerics/ptc.py health 6.8 after P1 (closing method's 9 parameters); P2 to P4 must end >= 7.0,
   else a miss and P1 is reverted.
 
@@ -49,22 +52,33 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 - Held until the scale probe reports: G1 (orchestrator/, numerics/). Open: ptc.py 6.8 (P3, P4).
 - G-END (below) stays the end criterion for the whole repository.
 
-## Next actions (2026-11-16, at the self-reset)
+## Next actions (2026-11-16, at the self-reset, ~04:00)
 
-All lanes merged into `wp/S19` except: `wp/S19-g6` run 2 (4 accepted steps 8e4b2db7..eccacaab, unreviewed; step 4
-684c9f2a and drafted patch scripts s5, s6, s7b, s8 in `<git-common-dir>/codehealth/drafts/g6-run2/`, each taking the
-worktree path as its argument), `wp/S19-g3` (de77fa37 run_study RC step,
-unreviewed; G3 trails; drafts in `<git-common-dir>/codehealth/drafts/g3-run2/`), `wp/SP` (S18 evidence).
-1. Start the gate runner (`gate_queue.py run --detach`; results.log has 3 proof lines: `wait --since 3`).
-2. Lane 1, G6 (blocking): reviewer for g6 run 2 (S19-R-W3-G6-2, to write), then a run that re-gates 684c9f2a, applies
-   the drafts (render.py, lint.py to >= 7.0) and fixes `compile/casadi_backend.py:567` structural_pattern
-   (hoist equation_ids; prove bitwise identical pattern and record a before/after time at the 1e4 probe).
-3. Lane 2, W4 (blocking): brief from ADR 0076 (`docs/adr/0076-S19-interface-redesign.md`, its item order; I-15 done;
-   A11/I-14 ruling `docs/briefs/S19-A11-ruling.md` runs after I-9).
-4. Then G5 run 4 (verify remaining: gamma_phi_units, pr_c1, certificate/checks with W4 I-2) and the cycles and
-   violations (`codehealth arch --depth 4`: 6 / 4 at c64ee32e).
-5. OpenFlowsheet-check builds `--since` selection, chain gating, merge-check on `wp/S19-tools2`; review and merge it.
-6. Lanes: at most 2 until Thu 19 Nov 13:00. Merge into `main` after the blocking set (Decision Desk card).
+Gate queue: runner pid 1056796 (restarted, `queue/runner.pid`). Results consumed up to 37; next: `$Q wait --since 37`.
+Running/queued: 48 (G5 merge-check), 49 (I-3 iface side chain), 51 (G5 review-fix docstrings, re-enqueued), 57 (I-1
+iface side chain). W4 jobs withdrawn to `queue/withdrawn/` pending the lane rebuild. No agent running.
+1. **W4 ruling first:** launch `reviewer` with `model: fable`, brief `<git-common-dir>/codehealth/briefs/S19-R-W4-STOP3.md`
+   (T06 generator self-hash after I-1; experiment isolation test_m02). If it says Frank must approve: Decision Desk
+   request via hub, and park W4 (G5 and others continue). Else brief a fresh `opus-engineer` (write `S19-W4-5.md`):
+   rebuild `wp/S19-w4` with each fix in its causing commit (S19_DECISIONS "W4 lane repair by rebuild"), tag the old
+   tip `s19-w4-pre-stop3`, merge wp/S19 in (0064d0ae ruff guard), re-enqueue every gated range of runs 1-4 (list:
+   `queue/withdrawn/` and done jobs 21-24 stay valid only if their shas survive), then I-8's column_solve and column.
+   Deletion-only interface steps after the merge carry the guard; before it they need a side chain (S19_DECISIONS
+   "ruff tier guard").
+2. **G5 run 4:** when 48 (merge-check) and 51 PASS: merge `wp/S19-g5b` into wp/S19 (merge commit, `-F` file), log.
+   Next G5 run: certificate.py `_issue` witness parameter object (ruling in S19_DECISIONS R-W3-G5-4), then
+   `verify_revision`, `_revision_values`, `_guard`.
+3. After the W4 rebuild's jobs PASS: orchestrator layer-config commit on the lane (config.toml application-layers
+   line 162 `application.policies` stale; repo-layers adoption comment lines 173-176, 178, 179, 181 stale, 177 (A11) and
+   180 (A14) live, count "(12)" at 172), then R-W4-1 (brief `S19-R-W4-1.md`, extend to the lane tip: runs 2-4, rulings
+   STOP 1/2/3, test_x04 a7, the MODEL_ID ruling; the module-attribute retargets in run 4's outside-gate commits),
+   merge-check, merge.
+4. Open for Frank (not blocking): STOP 1 alternative (tool change), a cce-code-health fix for empty `{files}` (needs a
+   push), the verify twins ADR 0076 addendum. Docs-pass leftovers as before plus region.py:71, models.lifted
+   docstring, run 4's evidence-manifest scripts (k04, t04, t05, t05b, s02, s10c) and scripts/corpus_identity.py
+   import lines, docs/interfaces-frozen.md:90.
+5. Then W4 items I-4, I-9, I-14 (A11 ruling), I-10, I-11, I-13, I-12a-d, I-19; G5's remaining files; cycles and
+   violations to 0. `wp/S19-g3` and `wp/SP` wait. Lanes at most 2 until Thu 19 Nov 13:00.
 
 ## Gates (pass numbers fixed after A1, before step 1)
 

@@ -525,3 +525,120 @@
   full-suite fallback; wp/S19-g6 at ca416ab3 does not contain MB 736f70db). The interim `--head` of 4535f3bd is
   folded into `--snapshot` (`--head` alone implies it); `interface` mode kept. First gate with the new tier: read
   its "selected N" line as the proof.
+- **2026-11-16, G6 runs 2+3 reviewed (R-W3-G6-2, reviewer Opus): merge.** Ten steps OK; gates 148 (msg chain,
+  debt 88 -> 34), 149 (structural_pattern, accepted-neutral; 14.19 s -> 0.011 s at the 715-stage probe column,
+  tuples equal, 50746 pairs), 150 (review-note docstrings, 711e8b5f). render.py 6.0 -> 7.0, lint.py 6.5 -> 8.5. Note 1
+  became a playbook accepted form (ba124ab8). wp/S19 merged into the lane (21345f7a); merge-check g6-mc1 queued.
+- **2026-11-16, W4 run 1 (wp/S19-w4, 5d09ace0..24f2fc86).** A12/I-5 and A13/I-3 done (arch 6/4/14 -> 4/4/14 as
+  table 4.1); I-6 src and test retargets done, interface step stopped on test_x04 a7 (asserts the re-export). Gate
+  jobs 8-14 queued. Engineer's choices confirmed: (1) the move commit retargets the one violating importer (as A5);
+  (2) A12 moved the whole validator closure, types.py still re-exports SCHEMA_DIR (I-19 sweeps it); (3) `__all__`
+  kept in the old module; (4) 97d4833f edits docs/derivations/T05b-limitations-spec.md:218 (a path in the register
+  the test reads): the W4 reviewer reads it.
+- **DECISION 2026-11-16, test_x04 a7 (I-6).** ADR 0076 (accepted) amends ADR 0075: units no longer re-exports
+  display-conversion-v1. Authorised under migration rule 3: a7 becomes "the 8 names live in units.display" (passes
+  before and after), plus a test after the step that units no longer has them. Not a relaxed check: the pinned rule
+  was superseded by an accepted ADR. W4 run 2 (`S19-W4-2.md`, base 35d46182 = run 1 + merge of wp/S19): I-6, I-1,
+  I-2, I-7. Layer config after jobs 8-14 pass: application-layers loses `application.policies`; adoption lines
+  `run.bundle -> application.policies` and `assessment.spec -> application.types` go.
+- **2026-11-16, G6 merged into wp/S19 (ebcf513a).** Merge-check g6-mc1: full suite (`--full`) 20371 passed, 107
+  skipped, 3 xfailed; 15/15 checks. arch at ebcf513a 6/4/14 (W4 not yet merged); repo scan debt 5094.9, health 8.01,
+  brain 27. G5 run 4 briefed (`S19-W3-G5-4.md`, lane wp/S19-g5b).
+- **2026-11-16, W4 gate 152 FAIL (w4r1-i5-move, mypy) and the lane rebuilt.** The A12 move left `SCHEMA_BASE`
+  imported without alias in application/types.py; operations.py:61 imports it from there (strict mypy: no
+  implicit re-export). The engineer ran mypy on touched files only. Fixed in the move commit itself (types.py
+  re-exports `SCHEMA_BASE as SCHEMA_BASE`, as SCHEMA_DIR); full mypy clean at it; the private lane rebased with
+  merges kept (old tip tagged `s19-w4-pre-fix`; new tip 38f55cff differs from it only in that import). Shas changed:
+  move ffcb0a53 -> 4a4b08f0, I-5 iface 805575a9 -> 6f85454c, I-3 iface 24f2fc86 -> 59c076bd, lane merge 35d46182 ->
+  f6764f52. Jobs 9-20 (12 SKIPPED behind 152) re-enqueued as 21-31. Lesson for briefs: run the full mypy (the gate's
+  tier) before enqueueing a move.
+- **DECISION 2026-11-16, STOP 1 of W4 run 2 (re-exports outside `__init__.py`).** cce-code-health counts imports as
+  public API only in `__init__.py` (gate.py:289), so an interface plan cannot list `removed` for a re-export in
+  region.py, verification.py, program.py or types.py. Ruling: ADR 0076 rule 1's own test is "no alias, no
+  `__getattr__`, no `__all__` entry". A step that drops such re-exports lists `changed = ["<file>:__all__"]` where
+  the module has `__all__` (region.py, program.py), and nothing for an alias in a module without one (types.py,
+  verification.py); a module may keep a plain import of a name its own code uses. The plan's reason names every
+  dropped alias, the step's message quotes the grep that finds no importer of the old path, and the reviewer checks
+  both. I-5's interface step (6f85454c) is gated no-gain for that reason (job 31). Alternative: tool change (c), an
+  `X as X` import counts as API in any module, with a re-pin; rejected for now because it changes every lane's
+  public-API tier mid-campaign. Reversible by: re-gating those steps after a tool change.
+- **DECISION 2026-11-16, STOP 2 of W4 run 2 (R-016 table rule, test_t05_table_independence).** ADR 0076 I-2 moves
+  `LiftedSplit` to models.lifted and states that the verifier imports it there. Authorised (migration rule 3, test
+  commit before the plan): the rule admits `LiftedSplit` from `openflowsheet.models.lifted` inside `TYPE_CHECKING`
+  only, and the orchestrator allowance (`ALLOWED_ORCHESTRATOR_NAMES`) goes, so any orchestrator import becomes a
+  violation (stricter). Falsifiers quoted in the commit: a runtime `from openflowsheet.models.lifted import
+  LiftedSplit` and a TYPE_CHECKING orchestrator import each fail. The design-lane reviewer reads it.
+- **2026-11-16, W4 run 3 (opus-engineer, 152k tokens).** I-2 and I-7 done on `wp/S19-w4` (tip 517355e1), I-8 not
+  started (cap). b2380d3a R-016 test commit (STOP 2; its own head red for the four verifier modules, green at the
+  next commit), d250ba4c revert of 3bbdd571 (job 36, no-gain), a3cefbf0 + e29b15d7 plan and step
+  `i2-lifted-vocabulary` (job 37; region.py `__all__` loses ClosureType, DormancyForm, LiftedSplit, Regime,
+  VapourOnlyForm, ZeroFlowForm; rank.py `PRESSURE_TOLERANCE` was an `X as X` re-export), 372a0809 + 517355e1 plan and
+  step `i7-tolerances-linearization` (job 38). Arch 4/3/12 unchanged by both (imports 4129 -> 4113). Frozen exception:
+  StagedSplits via orchestrator.region (column_unit.py:90). Full mypy, ruff, patch_noop 0/265 clean before enqueue.
+  Gates: jobs 21 (I-5 move, step 154) and 32-33 (G5 run 4 steps 1-2, debt 84.7 -> 47.7) PASS.
+- **DECISION 2026-11-16, surrogate reactor `MODEL_ID` (W4 run 3 finding).** studies/surrogate/reactor.py:112 lists
+  `MODEL_ID` in `__all__` after importing it from study (:102); the only reader through reactor is
+  test_m04_wo7_surrogate_unit.py (`sr.MODEL_ID`). Ruling under STOP 1: an ordinary re-export; I-8 retargets reactor.py
+  and the test to `studies.surrogate.records` and drops it from reactor's `__all__` (`changed`). Alternative: keep it
+  as reactor's own API (a unit module naming its model id); rejected, reactor exposes it through its method (:374).
+  Reversible by: re-adding the `__all__` entry. W4 run 4 briefed (`S19-W4-4.md`: I-8 only, smallest module first);
+  run 3's I-8 scripts saved to `<git-common-dir>/codehealth/drafts/w4-i8/`.
+- **2026-11-16, R-W3-G5-4 (reviewer, Opus): merge after two docstring fixes, no step rejected.** G5 run 4 on
+  `wp/S19-g5b` (835d7b4e, a180b91b, 959b4345, e6244466; gate steps 153, 155, 157, 159, all PASS; checks.py debt
+  84.7 -> 36.7, certificate.py 57.2 -> 54.2). Arithmetic order unchanged in every step; `name in one_sided` pure (typed
+  `frozenset[str]`, every caller passes one); `_issue`'s helpers run at their keyword positions and only read; R-016
+  clean. Fixes applied by the orchestrator in 846a705f (checks.py `_exact_entries` repeated-entry rule,
+  `_stencil_difference` forward classes 3-4: Z, R-831, A1), job 47 no-gain. Optional, not done: the dead `set()`
+  defaults at checks.py:950. Ruling on `_issue`'s 18 parameters: a private frozen dataclass of `unstenciled`,
+  `one_sided`, `components`, `skipped_reason`, built once in `verify_revision` (certificate.py:515-551) and unpacked at
+  the `derivative_witness` call (its public keywords unchanged), is the next G5 step; it stays separate from the W4
+  verify parameter object. Lane merged with wp/S19 (3fdead1e, docs only); merge-check job 48.
+- **2026-11-16, gate 161 FAIL (W4 I-3 interface step 59c076bd, job 25): ruff tier scope, not the step.** The step only
+  deletes application/policies.py, so the tier's `{files}` (touched head paths, cce-code-health gate.py:1203) was
+  empty and `ruff check` linted the whole repository; it found two E501 lines in the lane's gate_queue.py (blob
+  362978db). wp/S19 itself failed repo-wide ruff (3 E501 + 1 format in gate_queue.py from 37307ab0/dd0fee9d, so CI
+  would fail). Every other tier passed (12/13). Jobs 26-30 were SKIPPED behind it, and the runner's in-memory
+  failed-head list would have skipped every later W4 job (36-46, all descendants).
+- **DECISION 2026-11-16, ruff tier guard and side-chain re-gates.** (1) 0064d0ae on wp/S19: gate_queue.py
+  ruff-clean; the tier (`.codehealth/config.toml`) exits 0 with "no touched head files" when a step leaves none (its
+  defined scope is the touched files; repo-wide lint stays CI's). Alternative: a cce-code-health fix (empty `{files}`
+  -> tier skipped); rejected for now: the pin installs from the public GitHub remote, so it needs a push (Frank).
+  (2) The gated tree carries its own config, so a deletion-only step already committed on the lane is re-gated on a
+  side chain: base + the guard commit, then the step cherry-picked; the gated diff is byte-identical to the lane
+  step's (checked with `diff`). Gate 161 -> job 49 (worktree s19-w4-rg161, 8446be59..cc39a383, `--rerun-of 161`).
+  The I-1 interface step 08e0133e (also deletion-only, re-enqueued as 54) was withdrawn before it ran
+  (`queue/withdrawn/`) and gated as job 57 (s19-w4-rg54, 4cbd8283..bf0e21b8). (3) The runner was stopped (pid
+  781151) to clear its failed list; jobs 31 and 47 INTERRUPTED and re-enqueued as 50 and 51; 26-30 as 52-56; new
+  runner pid 1056796. Lane commits 59c076bd and 08e0133e keep job 25's FAIL in the log; their evidence is jobs 49
+  and 57 plus the lane's merge-check at its tip. After W4 run 4 reports: merge wp/S19 into wp/S19-w4 so later
+  deletion-only steps carry the guard. Reversible by: reverting 0064d0ae's config hunk.
+- **2026-11-16, W4 run 4 (opus-engineer, 232k tokens; over the 150k cap).** I-8 batches A-D committed on
+  `wp/S19-w4` (tip 09080db6): A i8a-leaf-reexports 1836c838/3c7a5502/a1da21d4/29420b3d, B i8b-split-reexports
+  75233089/6a637a62/9c6f56f7/2711d716 (StagedSplits kept), C i8c-table-binding-reexports 781bb747/fcb94ee6/76a2c61f/
+  4213b3c5, D i8d-cascade-reexports 028a596c/353b3edd/69201031/09080db6; arch 4/3/12 throughout, imports 4113 -> 4048.
+  Left: column_solve, column (frozen names). MODEL_ID retargeted in three more src and three test files under the
+  ruling. reactor.py's `_artifact_hash` changes with its bytes by design (models/__init__.py:411); F0 at the merge.
+  Helper scripts copied to `<git-common-dir>/codehealth/drafts/w4-i8/`.
+- **2026-11-16, gate 162 FAIL (job 36, w4r3-i2-revert at d250ba4c): 7 tests, all from run 2's I-1 commits.**
+  test_m02_experiment_body_isolation (f60c8faa: adapters/experiments/runner.py:71 and adapters/external/launcher.py:64
+  import INTERRUPT_CHECK from numerics.solve_record; `SOLVER_ENTRIES` lists all of numerics) and six tests asserting
+  `generator.generator_sha256() == GENERATOR_SHA256[0]` (8ae387f1 changed benchmarks/t06/generator.py's import;
+  measured raw 509b01fb -> 5e436348, renamed-back 7f426aa9 (published) -> c2718343). Design-lane questions (registered
+  benchmark identity; isolation property): ruling brief `S19-R-W4-STOP3.md` (reviewer on Fable).
+- **DECISION 2026-11-16, W4 lane repair by rebuild, not fix-forward.** A fix on top would descend from the failed
+  commits, and the queue skips descendants of a failed step; the gate-152 precedent rebuilt the lane. After the
+  ruling, a fresh engineer puts each fix into the commit that caused it (f60c8faa, 8ae387f1, or the I-1 interface
+  step), rebuilds the lane with merges kept, tags the old tip, merges wp/S19 (0064d0ae ruff guard), and re-enqueues
+  every gated range. Pending W4 jobs 37-46, 50, 52, 53, 55, 56 withdrawn (`queue/withdrawn/`); 49 and 57 (side-chain
+  re-gates of the I-3 and I-1 interface diffs) left to run, their evidence carries by diff identity if the rebuild
+  leaves those diffs unchanged. Alternative: fix-forward with a runner restart; rejected (red interval in the lane,
+  bisecting broken). Reversible by: re-enqueueing the withdrawn jobs.
+- **2026-11-16, R-W4-STOP3 ruling (reviewer on Fable, 107k tokens).** Q1 (T06 self-hash): option (C) tightened,
+  fix in 8ae387f1: generator.py:73 changes in place (per-file I001), rename-back gains an exact full-line
+  substitution before R-149's, `GENERATOR_SHA256[0]` = new raw hash, 509b01fb kept as checked intermediate; needs the
+  ADR 0076 addendum and R-1042 (written on wp/S19, this commit) and Frank's confirmation at W4 close (not blocking;
+  default (C)). Q2 (experiment isolation): option (a) narrowed, fix in f60c8faa: test_m02 excepts exactly
+  `numerics.solve_record`, adapters import only `INTERRUPT_CHECK` from it, a new assertion pins solve_record's
+  SOLVER_ENTRIES imports to {numerics.linear}; no Frank. Full text and falsifiers:
+  `<git-common-dir>/codehealth/briefs/S19-R-W4-STOP3-ruling.md`. W4 run 5 (rebuild, brief `S19-W4-5.md`,
+  opus-engineer) launched.

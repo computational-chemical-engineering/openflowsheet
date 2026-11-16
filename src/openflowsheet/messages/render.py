@@ -20,7 +20,7 @@ the test-suite audit each fallback is recorded as a defect, which fails the sess
 from __future__ import annotations
 
 import math
-from collections.abc import Iterable, Mapping, Sequence
+from collections.abc import Iterable, Iterator, Mapping, Sequence
 from dataclasses import dataclass, replace
 from typing import Any, Literal
 
@@ -252,14 +252,20 @@ def _locate(
         return ("specification", [member, value], None) if 0 <= value < len(items) else None
     for index, item in enumerate(items):
         if isinstance(item, Mapping) and item.get("id") == value:
-            model = None
-            if member == "instances":
-                model_document = item.get("model")
-                if isinstance(model_document, Mapping) and isinstance(
-                    model_document.get("id"), str
-                ):
-                    model = model_document["id"]
+            model = _unit_model(member, item)
             return ("unit" if kind == "element" else kind), [member, index], model
+    return None
+
+
+def _unit_model(member: str, item: Mapping[str, Any]) -> str | None:
+    """§4.2.5: `x_model`, the model id of a unit (an item of the revision's `instances`); `None`
+    for an item of another member and for an instance whose `model` has no string `id`."""
+    if member != "instances":
+        return None
+    model_document = item.get("model")
+    if isinstance(model_document, Mapping) and isinstance(model_document.get("id"), str):
+        model_id: str = model_document["id"]
+        return model_id
     return None
 
 
@@ -276,6 +282,8 @@ def _raw(value: object) -> str:
 
 
 def _format(typed: _Typed, conversion: template.Conversion, catalogue: Catalogue) -> str:
+    """§4.2.4: a param's text: a pointer as its path whatever the conversion, then `!raw` and
+    `!title`, else `_by_type`."""
     value = typed.value
     if typed.type == "pointer" and isinstance(value, list | tuple):
         return _pointer(value)
@@ -284,6 +292,14 @@ def _format(typed: _Typed, conversion: template.Conversion, catalogue: Catalogue
     if conversion == "title":
         entry = catalogue.entry(str(value)) if typed.type == "code" else None
         return entry.title if entry is not None else _raw(value)
+    return _by_type(typed, catalogue)
+
+
+def _by_type(typed: _Typed, catalogue: Catalogue) -> str:
+    """§4.2.4: `{name}` with no conversion, by the param's type. A type without a rule here
+    (`text`, `code`, a pointer that is not a path) and a value its rule cannot read (no number, no
+    phrase) give `_raw`."""
+    value = typed.value
     if typed.type in ELEMENT_TYPES:
         return f"'{_raw(value)}'"
     if typed.type == "quantity":
@@ -533,16 +549,8 @@ def _elements(request: _Request, resolved: list[tuple[int, Entry]]) -> list[dict
             seen.add((kind, identifier))
             out.append({"type": kind, "id": identifier, "path": path})
 
-    for _, entry in resolved:
-        for name, value in request.params.items():
-            declared = entry.params.get(name)
-            if declared is None or declared.type not in ELEMENT_TYPES or not _present(value):
-                continue
-            located = _locate(declared.type, value, request.context.revision)
-            if located is None:
-                add(declared.type, _raw(value), None)
-            else:
-                add(located[0], _raw(value), located[1])
+    for kind, identifier, path in _param_elements(request, resolved):
+        add(kind, identifier, path)
     for identifier in request.extra_elements:
         if any(element["id"] == identifier for element in out):
             continue  # an implicated id a chain param already typed (rule 2's check, Q2)
@@ -552,6 +560,25 @@ def _elements(request: _Request, resolved: list[tuple[int, Entry]]) -> list[dict
         else:
             add(located[0], identifier, located[1])
     return out
+
+
+def _param_elements(
+    request: _Request, resolved: list[tuple[int, Entry]]
+) -> Iterator[tuple[str, str, list[str | int] | None]]:
+    """The request's present element params, per resolved entry in chain order and then in param
+    order, as `(type, id, path)`: `_locate`'s type and path, or the declared type and no path
+    when `_locate` finds none. Lazy: `_elements` adds each one before the next is
+    located."""
+    for _, entry in resolved:
+        for name, value in request.params.items():
+            declared = entry.params.get(name)
+            if declared is None or declared.type not in ELEMENT_TYPES or not _present(value):
+                continue
+            located = _locate(declared.type, value, request.context.revision)
+            if located is None:
+                yield declared.type, _raw(value), None
+            else:
+                yield located[0], _raw(value), located[1]
 
 
 def _numbers(
@@ -695,17 +722,9 @@ def render_error(
         for name in entry.params
     }
     members = {name: value for name, value in detail.items() if name in declared}
-    unbound = detail.get("unbound")
-    hint = None
-    extra: tuple[str, ...] = implicated_objects
-    kind_override = None
-    if isinstance(unbound, Mapping):
-        hint = unbound.get("hint") if isinstance(unbound.get("hint"), str) else None
-        implicated = unbound.get("implicated")
-        if isinstance(implicated, Sequence) and not isinstance(implicated, str):
-            extra += tuple(str(item) for item in implicated)
-        if from_binder and unbound.get("kind") in UNBOUND_INPUT_KINDS:
-            kind_override = "input"
+    hint, extra, kind_override = _unbound_request_fields(
+        detail.get("unbound"), from_binder, implicated_objects
+    )
     request = _Request(
         links=links,
         params=_merge(context, links, members),
@@ -717,6 +736,26 @@ def render_error(
         extra_elements=extra,
     )
     return _explain(request, catalogue, strict=strict)
+
+
+def _unbound_request_fields(
+    unbound: object, from_binder: bool, implicated_objects: tuple[str, ...]
+) -> tuple[str | None, tuple[str, ...], str | None]:
+    """The request's `hint`, `extra_elements` and `kind_override` from the binder's `Unbound`
+    (`detail.unbound`): its hint when a string; `implicated_objects`, then its implicated ids;
+    `input` when the chain is the binder's and its kind is an input kind. Without an `Unbound`
+    mapping: no hint, `implicated_objects` alone, no override."""
+    hint = None
+    extra: tuple[str, ...] = implicated_objects
+    kind_override = None
+    if isinstance(unbound, Mapping):
+        hint = unbound.get("hint") if isinstance(unbound.get("hint"), str) else None
+        implicated = unbound.get("implicated")
+        if isinstance(implicated, Sequence) and not isinstance(implicated, str):
+            extra += tuple(str(item) for item in implicated)
+        if from_binder and unbound.get("kind") in UNBOUND_INPUT_KINDS:
+            kind_override = "input"
+    return hint, extra, kind_override
 
 
 def _consistent(diagnosis: Mapping[str, Any], links: Sequence[Link], catalogue: Catalogue) -> bool:
@@ -806,6 +845,31 @@ def explain_failure(
         (entry for link in reversed(links) if (entry := catalogue.entry(link.code)) is not None),
         None,
     )
+    layer = _sidecar_params(diagnosis, links, explained, catalogue, strict=strict)
+    params = _merge(context, links, layer)
+    if explained is not None:
+        params.update(_derived_elements(explained, params, context.revision))
+    request = _Request(
+        links=links,
+        params=params,
+        context=context,
+        machine=message or outcome,
+        family_hint="outcome",
+    )
+    return _explain(request, catalogue, strict=strict), dict(request.params)
+
+
+def _sidecar_params(
+    diagnosis: Diagnostic | Mapping[str, Any] | None,
+    links: list[Link],
+    explained: Entry | None,
+    catalogue: Catalogue,
+    *,
+    strict: bool,
+) -> dict[str, Any]:
+    """§4.8: the diagnostic sidecar's params when `diagnosis` agrees with the chain `links`, with
+    the numbers the `explained` entry's pattern reads from its `detail`; none without a diagnosis
+    or when it disagrees, and `RenderError` on a disagreement under `strict` or the audit."""
     layer: dict[str, Any] = {}
     if diagnosis is not None:
         document = diagnosis.as_document() if isinstance(diagnosis, Diagnostic) else diagnosis
@@ -818,17 +882,7 @@ def explain_failure(
                 layer = {**detail_params(explained, detail), **layer}
         elif strict or audit.auditor is not None:
             raise RenderError(f"diagnosis {document.get('code')!r} does not match the chain")
-    params = _merge(context, links, layer)
-    if explained is not None:
-        params.update(_derived_elements(explained, params, context.revision))
-    request = _Request(
-        links=links,
-        params=params,
-        context=context,
-        machine=message or outcome,
-        family_hint="outcome",
-    )
-    return _explain(request, catalogue, strict=strict), dict(request.params)
+    return layer
 
 
 # -- the catalogue entry (`explain`, §3.5, §4.9) ------------------------------------------------

@@ -271,10 +271,10 @@ def check_quantity(quantity: Mapping[str, object]) -> tuple[str, ...]:
         problems.append(f"kind must be a string, got {kind!r}")
 
     value = read_number(quantity.get("value")) if "value" in quantity else None
-    problems += _check_value(quantity, value)
+    problems.extend(_check_value(quantity, value))
 
     if dimension is not None and isinstance(kind, str):
-        problems += _check_registration(quantity, kind, dimension, value)
+        problems.extend(_check_registration(quantity, kind, dimension, value))
 
     role = quantity.get("role")
     if "role" in quantity and role not in QUANTITY_ROLES:

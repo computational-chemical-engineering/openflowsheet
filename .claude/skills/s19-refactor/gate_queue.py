@@ -4,8 +4,8 @@
 State in <git-common-dir>/codehealth/queue/: pending/, running/, done/<label>.json, results.log
 (one line per finished job), runner.pid, runner.log. Python 3 standard library only.
 
-  enqueue --worktree W --base SHA --mode {step,no-gain,restructure,interface,revert} [--plan P] --label L
-          --target T --recipe R --model M [--reason TEXT] [--rerun-of N]
+  enqueue --worktree W --base SHA --mode {step,no-gain,restructure,interface,revert} [--plan P]
+          --label L --target T --recipe R --model M [--reason TEXT] [--rerun-of N]
       W must be clean; its HEAD is recorded as the job's head. A job is one step, or a chain of
       commits base..head gated as one. --base is gate.sh's sha argument: the last accepted commit,
       or for --mode revert the rejected commit (HEAD exactly undoes it); for --mode restructure and
@@ -158,7 +158,8 @@ def enqueue(a: argparse.Namespace) -> int:
             raise SystemExit("--mode merge-check is not logged: no --rerun-of")
     elif not (a.target and a.recipe and a.model):
         raise SystemExit(f"--mode {a.mode} needs --target, --recipe and --model")
-    if a.head:  # an earlier commit can only be gated in a scratch worktree (S19 W4 briefs use --head alone)
+    # an earlier commit can only be gated in a scratch worktree (S19 W4 briefs use --head alone)
+    if a.head:
         a.snapshot = True
     if not a.reason and (a.mode in ("no-gain", "restructure", "revert") or a.rerun_of is not None):
         raise SystemExit(
@@ -277,7 +278,8 @@ class Runner:
     def job(self, job: dict, running: Path) -> None:
         try:
             self._job(job, running)
-        except (Exception, SystemExit) as error:  # reported, never swallowed: the job leaves running/
+        # reported, never swallowed: the job leaves running/
+        except (Exception, SystemExit) as error:
             self.finish(
                 job,
                 running,
@@ -407,7 +409,7 @@ class Runner:
         self.finish(job, running, outcome, f"{job['mode']} {summary} | {match.group(2)}")
 
     def fail(self, job: dict) -> None:
-        if (job.get("snapshot") or job.get("detached")):
+        if job.get("snapshot") or job.get("detached"):
             with self.lock:
                 self.failed.setdefault(job["worktree"], []).append(job["head"])
 

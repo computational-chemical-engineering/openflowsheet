@@ -19870,3 +19870,25 @@ R-478 is unchanged: each registered module must fail on a name in `NLP_EXTRA_IMP
 
 **Watch for.** `scripts/m07a_evidence_manifest.py:339` (`A30_NLP_EXTRA_MODULES`) is M07a's recorded evidence and
 keeps its three names; A30's walked and imported counts in later evidence change with every new module.
+
+## R-1042: The T06 generator's self-hash moves by substitution only under S19's I-1 (R-149 extended; 2026-11-16)
+
+| | |
+| --- | --- |
+| Date | 2026-11-16 |
+| Decided by | design lane (S19 reviewer on Fable, ruling R-W4-STOP3); Frank's confirmation pending, not blocking (default this decision) |
+| Normative text | ADR 0076 (Affected requirements, Addendum 2026-11-16; I-1); R-149; T06 spec §6.5 |
+| Evidence | S19 gate 162 (`docs/S19_DECISIONS.md`, "gate 162 FAIL"): I-1's retarget of `benchmarks/t06/generator.py` (isort-moved import) changed the raw self-hash `509b01fb -> 5e436348` and the renamed-back value `7f426aa9 -> c2718343`, failing six identity tests; the implementing commit on `wp/S19-w4` quotes the remeasured hashes |
+| Affected packages | S19 (W4 I-1); T06 identity; T08's rename-substitution instrument |
+
+**Decision.** `generator.py` line 73 changes in place (module path only; per-file ruff `I001` ignore so the line
+keeps its position). The rename-back helper undoes it by an exact full-line substitution, asserted to occur once,
+before R-149's package substitution. `GENERATOR_SHA256[0]` becomes the new raw hash; R-149's `509b01fb...` is kept as a
+checked intermediate; the published start sets keep `7f426aa9...`. This waives, for this one pin, S19's rule that a
+retarget never changes an expected value.
+
+**Rejected alternatives, and why.**
+- *Re-register after the isort-ordered edit:* not substitution-only (renamed-back `c2718343`), so the proof chain to
+  the published `7f426aa9` breaks.
+- *Keep a minimal `orchestrator/trace.py` re-export until W5:* keeps a module I-1's migration row marks removed and
+  defers the same move.
