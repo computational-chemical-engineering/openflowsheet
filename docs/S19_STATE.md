@@ -58,9 +58,12 @@ Gate queue: runner restarted at the tools2 code (37307ab0). `wait --since 7` was
 Running/queued: 7 `g6-mc1` (merge-check of wp/S19-g6 at 21345f7a over ba124ab8), 8-14 `w4r1-*` (W4 run 1).
 Agents: W4 run 2 engineer (`S19-W4-2.md`: I-6 finish with the a7 test ruling, I-1, I-2, I-7) on `wp/S19-w4` from
 35d46182; it enqueues `w4r2-*` snapshot jobs as it goes.
-1. g6-mc1 PASS -> merge `wp/S19-g6` into `wp/S19` (merge commit; review R-W3-G6-2 passed, 3 notes fixed). Then
-   G6 is left with: `registry/__init__.py`, `graph/analysis.py`, `compile/spec.py` (gain >= 5) and the `thermo/`
-   providers (W5). Brief G6 run 4 only if the gain list is real (`codehealth scan` on those files).
+1. G6 merged into wp/S19 (ebcf513a; g6-mc1 full suite 20371 passed). G6 files outside thermo/ are all >= 7.0;
+   thermo providers (pr_c1 4.6, iapws95 6.2, coolprop_heos 6.4, pr_lib 6.9, wilson_ig 6.9) are registry-hashed, W5
+   only: the blocking set's "G6 (thermo/ ...)" therefore ends in W5 (ask Frank when the blocking set closes).
+   G5 run 4 running (`S19-W3-G5-4.md`, `wp/S19-g5b` from ebcf513a: checks.py, certificate.py, at most 4 steps; then
+   reviewer). Open design question for the W4 ruling batch: the verify twins merge and the shared verify parameter
+   object (public names in gamma_phi_units.py, pr_c1.py) need an ADR 0076 addendum (R-W3-G5-3).
 2. Jobs 8-14 PASS -> layer config commit on wp/S19-w4 (application-layers loses `application.policies`
    (config.toml:159); adoption lines `run.bundle -> application.policies` (:176) and `assessment.spec ->
    application.types` (:175) go), then reviewer R-W4-1 (brief written: `S19-R-W4-1.md`). A SKIPPED or FAIL: a fresh

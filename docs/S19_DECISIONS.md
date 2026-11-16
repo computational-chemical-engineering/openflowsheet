@@ -541,3 +541,6 @@
   was superseded by an accepted ADR. W4 run 2 (`S19-W4-2.md`, base 35d46182 = run 1 + merge of wp/S19): I-6, I-1,
   I-2, I-7. Layer config after jobs 8-14 pass: application-layers loses `application.policies`; adoption lines
   `run.bundle -> application.policies` and `assessment.spec -> application.types` go.
+- **2026-11-16, G6 merged into wp/S19 (ebcf513a).** Merge-check g6-mc1: full suite (`--full`) 20371 passed, 107
+  skipped, 3 xfailed; 15/15 checks. arch at ebcf513a 6/4/14 (W4 not yet merged); repo scan debt 5094.9, health 8.01,
+  brain 27. G5 run 4 briefed (`S19-W3-G5-4.md`, lane wp/S19-g5b).
