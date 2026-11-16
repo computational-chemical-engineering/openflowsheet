@@ -19,7 +19,7 @@ from openflowsheet.application.model_signatures import Configuration
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.models import UnitModel
 from openflowsheet.models.revision_flowsheet import InstanceView
-from openflowsheet.models.syn001.column import CONDENSER, REBOILER, EndSpecification
+from openflowsheet.models.syn001.column_spec import CONDENSER, REBOILER, EndSpecification
 from openflowsheet.models.syn001.column_unit import (
     ColumnUnit,
     column_staged_splits,

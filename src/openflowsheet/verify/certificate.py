@@ -556,7 +556,7 @@ def _staged_splits(view: Any) -> dict[str, Any]:
     """S11 design §10.11 (B4): `column_staged_splits(column_structure(view, components))` for
     each instance whose model is in `STAGED_MODELS`, by instance id in declaration order — the
     function the column's builder calls, on the revision's own view of the instance."""
-    from openflowsheet.models.syn001.column import MODEL_ID as COLUMN
+    from openflowsheet.models.syn001.column_spec import MODEL_ID as COLUMN
     from openflowsheet.models.syn001.column_unit import column_staged_splits, column_structure
     from openflowsheet.orchestrator.splits import STAGED_MODELS
 

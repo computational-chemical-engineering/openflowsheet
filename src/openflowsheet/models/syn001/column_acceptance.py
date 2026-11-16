@@ -33,20 +33,22 @@ from openflowsheet.models.syn001.cascade_spec import (
     vapor_id,
     vapor_total_id,
 )
-from openflowsheet.models.syn001.column import (
+from openflowsheet.models.syn001.column import regime_form
+from openflowsheet.models.syn001.column_compile import stage_unit
+from openflowsheet.models.syn001.column_spec import (
     INVERSE_KINDS,
     ColumnSpec,
-    component_feeds,
     distillate_id,
     distillate_total_id,
     product_total_id,
-    purity_reference,
     reflux_fraction_id,
     reflux_id,
-    regime_form,
+)
+from openflowsheet.models.syn001.column_validation import (
+    component_feeds,
+    purity_reference,
     specified_quantity,
 )
-from openflowsheet.models.syn001.column_compile import stage_unit
 from openflowsheet.models.syn001.tp_state import single_phase_admissible
 from openflowsheet.thermo import Phase, PropertyProvider, StreamState
 

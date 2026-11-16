@@ -51,7 +51,7 @@ from openflowsheet.models.syn001 import (
     splitter,
     valve,
 )
-from openflowsheet.models.syn001.column import MODEL_ID as COLUMN_MODEL_ID
+from openflowsheet.models.syn001.column_spec import MODEL_ID as COLUMN_MODEL_ID
 from openflowsheet.models.thermal import flash as thermal_flash
 from openflowsheet.models.thermal import heater as thermal_heater
 from openflowsheet.models.thermal import machines as thermal_machines

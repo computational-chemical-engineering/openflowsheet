@@ -54,15 +54,15 @@ from openflowsheet.models.syn001.cascade_spec import (
     stage_temperature_id,
     vapor_total_id,
 )
-from openflowsheet.models.syn001.column import (
+from openflowsheet.models.syn001.column_acceptance import acceptance_failures
+from openflowsheet.models.syn001.column_rows import declared_rows
+from openflowsheet.models.syn001.column_spec import (
     CONDENSER,
     REBOILER,
     ColumnSpec,
     EndSpecification,
-    declared_rows,
     reflux_id,
 )
-from openflowsheet.models.syn001.column_acceptance import acceptance_failures
 from openflowsheet.models.syn001.column_unit import (
     BOTTOMS,
     DISTILLATE,

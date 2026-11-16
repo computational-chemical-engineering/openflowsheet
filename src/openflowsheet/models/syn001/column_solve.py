@@ -53,13 +53,7 @@ from openflowsheet.models.syn001.cascade_solve import (
 from openflowsheet.models.syn001.cascade_solve import FD_COLUMN_SCALE as CASCADE_FD_SCALE
 from openflowsheet.models.syn001.cascade_solve import saturation_pairs as saturation_pairs
 from openflowsheet.models.syn001.cascade_spec import CascadeSpec
-from openflowsheet.models.syn001.column import (
-    ColumnSpec,
-    ProfileInitial,
-    column_warnings,
-    profile_initial,
-    validate,
-)
+from openflowsheet.models.syn001.column import ProfileInitial, profile_initial
 from openflowsheet.models.syn001.column_acceptance import (
     ITEM_6_PREFIX,
     UnsupportedAnswerError,
@@ -86,6 +80,8 @@ from openflowsheet.models.syn001.column_endpoint import (
     inverse_records,
     unreached_specifications,
 )
+from openflowsheet.models.syn001.column_spec import ColumnSpec
+from openflowsheet.models.syn001.column_validation import column_warnings, validate
 from openflowsheet.models.syn001.saturation_band import band_temperature as band_temperature
 from openflowsheet.numerics.solve_record import SolvePolicy, Trace
 from openflowsheet.orchestrator.homotopy import Continuation

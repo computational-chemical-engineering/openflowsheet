@@ -32,15 +32,15 @@ from openflowsheet.models.syn001.cascade_spec import (
     vapor_id,
     vapor_total_id,
 )
-from openflowsheet.models.syn001.column import (
+from openflowsheet.models.syn001.column import regime_form
+from openflowsheet.models.syn001.column_rows import declared_rows
+from openflowsheet.models.syn001.column_spec import (
     MODEL_ID,
     RATIO_KINDS,
     ColumnSpec,
-    declared_rows,
     distillate_total_id,
     ratio_parameter,
     reflux_id,
-    regime_form,
     slot_column,
     slot_row_id,
 )

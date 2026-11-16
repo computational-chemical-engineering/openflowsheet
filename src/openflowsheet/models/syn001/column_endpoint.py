@@ -18,16 +18,12 @@ from openflowsheet.models.syn001.cascade import _k_values, _parameter
 from openflowsheet.models.syn001.cascade_failure import CascadeFailure
 from openflowsheet.models.syn001.cascade_init import thomas
 from openflowsheet.models.syn001.cascade_solve import DECLARATION_CONTEXT
-from openflowsheet.models.syn001.column import (
-    INVERSE_KINDS,
-    PHI_INITIAL,
-    ColumnSpec,
-    ProfileInitial,
-    _initial_state,
+from openflowsheet.models.syn001.column import PHI_INITIAL, ProfileInitial, _initial_state
+from openflowsheet.models.syn001.column_spec import INVERSE_KINDS, ColumnSpec, slot_column
+from openflowsheet.models.syn001.column_validation import (
     component_feeds,
     inverse_parameter,
     purity_reference,
-    slot_column,
     specified_quantity,
 )
 from openflowsheet.models.syn001.equilibrium_form import composition_dependent
