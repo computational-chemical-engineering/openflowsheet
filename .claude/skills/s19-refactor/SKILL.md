@@ -48,10 +48,15 @@ Position, numbers and rules live in files, not here. A fresh session reads, in o
    --label <lane>-mc` (full suite; a PASS is required) -> merge the lane into `wp/S19` (merge commit, `git merge -F <file>`) -> log in
    S19_DECISIONS. FAIL -> read the failed checks; an environment failure (ENOSPC, TMPDIR, a timeout far from the
    change) is re-enqueued unchanged with `--rerun-of`; a real failure goes to a fresh engineer to bisect the chain.
+   Gate report (Frank, 2026-11-16: "if they really improve something is not monitored"): at every wake on a chain
+   result and before every self-reset run `.venv/bin/python .claude/skills/s19-refactor/gate_report.py --hours 6
+   --append <git-common-dir>/codehealth/runs/s19-gate-trend.tsv` (repo-root `.venv`); quote each ALERT line in
+   S19_DECISIONS and act on an ALERT before starting new work.
 4. The test map: `MB` in S19_STATE is the map base; selection is cumulative from it. Move `MB` to the `wp/S19` tip
    at each milestone (`PYTEST_ADDOPTS=--timeout=900 TMPDIR=~/.cache/openflowsheet/tmp-map scripts/test_impact.py build --base <sha>
    --workers 8` in a detached worktree, with the gate queue held: no gate while a map builds; not `-- --timeout`, which
-   marks the map partial; G-MAP: failures a subset of the known set), then lanes fast-forward to it.
+   marks the map partial; G-MAP: failures a subset of the known set, and no unsure test in a file
+   that costs more than about 60 s, else re-run the build; no `--deselect` in the build), then lanes fast-forward to it.
 
 ## Milestones and self-reset (Frank, 2026-11-15)
 

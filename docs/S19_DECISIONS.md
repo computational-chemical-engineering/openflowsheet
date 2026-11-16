@@ -666,3 +666,141 @@
   7, a review-fix docstring candidate); lifting the revision reading is blocked by lazy-import timing (rule 10).
   Queue: jobs 60-72 (W4 rebuild attempt r5a) descend from failed step 164 and will be SKIPPED; 57 and 59 (stale I-1
   side chains, superseded by 74) left to finish.
+- **2026-11-16, gate 166 FAIL (job 57, the pre-rebuild I-1 iface side chain bf0e21b8): expected, superseded.** Full
+  suite (fallback), 18 failed, all the two STOP 3 causes in the pre-rebuild f60c8faa/8ae387f1 (test_m02 isolation;
+  generator hash 7f426aa9 vs c2718343, t08_rename_substitution.py:56/:204, test_t06_w6_generator, test_t06_w30_holdout,
+  test_t08_rename_substitution:66). No other failure. Evidence for the I-1 interface diff is job 74 (rebuilt side
+  chain rg54c). Worktree s19-w4-rg54 can go once nothing queued uses it.
+- **2026-11-16, W4 run 5 delivered (opus-engineer, 188k tokens; over the cap).** Rebuild 5b: Q2 test as its own
+  outside-gate commit 3d45c5db before the src retarget 72ba4f74 (diff byte-identical to f60c8faa); Q1 in 4b706fce
+  (was 8ae387f1; one hunk @@ -73 +73 @@; raw d03247b6, I-1 undone 509b01fb, both undone 7f426aa9 = published; isort
+  variant c2718343 fails 7); I-1 iface e0acbfbb (diff identical to 08e0133e); wp/S19 274fb926 merged as 2998c6fd
+  (no conflicts); falsifiers all fail as required; gate-162 set + interrupt + kill_chain 204 passed. Tags
+  s19-w4-pre-stop3 (09080db6), s19-w4-r5a (e4fc8fbe). I-8 batch E (column_solve): outside-gate retarget 77c40b2c,
+  step ad40c05d (36 `__all__` entries dropped, 5 frozen kept); leftovers verify/column.py:103 report string,
+  test_s08_item6.py:90. Arch 4/3/12, imports 4048 -> 4011. Jobs 73-87, 89, 93; 58-72 SKIPPED. Jobs 50 (I-5 iface
+  6f85454c) and 52 (I-6 iface e4f18a7a) never had a result and kept their shas: moved back from `withdrawn/` to
+  `pending/` by the orchestrator. Left in I-8: column (48 names, 41 src users).
+- **2026-11-16, jobs 59 and 73 PASS.** 59 (r5a's I-1 iface side chain rg54b, diff identical to e0acbfbb) step 167.
+  73 (rebuilt I-1 src retarget 72ba4f74 on 3d45c5db, 15/15) logged by hand as step 168 (accepted-neutral, `--head
+  72ba4f740d`, from s19-w4): `--rerun-of 164` refused because the base moved (3d45c5db, the new outside-gate test
+  commit). Tool note (for the tooling backlog): `codehealth log --rerun-of` matches tree AND base; a rebuilt step with
+  a new base needs a plain log. Job 77 (`--rerun-of 162`) will need the same.
+- **2026-11-16, G5 run 6 delivered (opus-engineer, 140k tokens; lane wp/S19-g5d from 14f4fa35).** 54e688fd
+  (`r0_projection` 66.4 -> 2.0, per-family `_*_r0` helpers, `_sorted_ids`, `_solver_counters`), 8cfcb076
+  (`_differences_v2` 36.0 -> 7.0, `_key_rule` with private NamedTuple `_ComparedObject`), 870f6c8b
+  (`execution_plan_r0` 10.0 -> 0, `_plan_value_r0`), a9f6499c (`_differences_v1` 9.0 -> 5.0, `_self_floor_v1`; v1
+  behaviour frozen by ADR 0025 D1.4). identity.py 76.4 -> 5.0, health 7.7 -> 9.0; compare.py 51.0 -> 23.0 (health
+  7.4); repo debt 5043.9 -> 4944.5, brain functions 27 -> 26. F0 `corpus_identity.py --check` PASS at every step.
+  Jobs 94-97. Steps 3-4 beyond the named targets accepted (same files, within the S2 cadence of 4). Lesson: engineers
+  shared a scratch directory (one overwrote another's check script): common brief now asks for per-lane scratch
+  subdirectories. G5 run 7 (verify/projection.py `project`, split_checks) briefed (`S19-W3-G5-7.md`, lane
+  wp/S19-g5e) and launched.
+- **2026-11-16, W4 run 6 delivered (opus-engineer; I-8 batch F, models/syn001/column.py).** f9dec891 src retarget
+  (9 modules, 41 names to column_spec/column_validation/column_rows; includes verify/certificate.py's lazy import
+  :559, which G5 run 5 (wp/S19-g5c) also edits: check at the second merge), job 98; 1a26b068 outside-gate retarget
+  (19 tests, scripts/s03_references_ours.py); plan eb6af70f; interface step f33bcf8b, job 99. `__all__` -26; 18
+  frozen names kept (column_unit.py:59); 6 aliases dropped with plain imports kept; 24 imports gone. Arch 4/3/12,
+  imports 4011 -> 3993; 85 related test files 2411 passed at both steps. Still re-exporting per i8map: transactions
+  (7), program (1; I-7's frozen-contributor exception), sizing (15; `__init__` excluded): next W4 run, after R-W4-1.
+  DECISION: no new W4 work on the lane until R-W4-1 and the lane's merge (the review span is already runs 2-6).
+  Alternative: keep adding I-8 batches. Reversible by: briefing W4 run 7 now.
+- **2026-11-16, G5 run 7 delivered (opus-engineer; lane wp/S19-g5e from cd756adb).** ac17ce56 (`project` 29.7 ->
+  6.0, five guards kept in order, six private helpers; projection.py health 8.5 -> 9.8), c95eadac (`_split_checks`
+  9.6 -> 8.0: under the ~2-point rule, taken as one named early return (T05b 9.1); the reviewer may reject),
+  49a0db77 (`degeneracy` 6.0 -> 3.0, `_product_streams`; `InstanceView` under TYPE_CHECKING). split_checks.py 25.6 ->
+  21.0 (health 7.2). Jobs 100-102. No 4th step (remaining cuts need > 5 parameters or a cross-phase parameter object);
+  `_declared_phase`/`_phase_enthalpy` twins kept (rule 15).
+- **2026-11-16, job 50 PASS (W4 I-5 iface re-gate 3b8d43db..6f85454c, step 170 accepted-neutral, 15/15).**
+- **2026-11-16, job 88 PASS (G5 run 5 step 1, 8a086d1f `_WitnessColumns`, step 171 accepted, certificate.py 54.2 -> 51.5, 16/16).**
+- **2026-11-16, job 52 PASS (W4 I-6 iface re-gate c63e01cd..e4f18a7a, interface mode, step 172 accepted, 17/17).**
+- **2026-11-16, job 90 PASS (G5 run 5 step 2, 2e86e892 `verify_revision`, step 173 accepted, certificate.py 51.5 -> 46.1, 16/16).**
+- **2026-11-16, job 91 PASS (G5 run 5 step 3, 3551c828 `_freed_columns`, step 174 accepted, certificate.py 46.1 -> 37.1, 16/16).**
+- **2026-11-16, job 75 PASS (W4 rebuild 5b, I-2 src e0acbfbb..809babce, step 175 accepted-neutral, 15/15).**
+- **2026-11-16, job 76 PASS (W4 rebuild 5b, I-7 src 9ce92c74..66a4d2cd, step 176 accepted-neutral, 15/15).**
+- **2026-11-16, job 92 PASS (G5 run 5 step 4, 8bf68291 `_guard`, step 177 accepted, certificate.py 37.1 -> 30.1, 16/16).** G5 run 5 fully gated; reviewer R-W3-G5-5 launched (Opus, brief `S19-R-W3-G5-5.md`).
+- **2026-11-16, job 94 FAIL (G5 run 6 step 1, 54e688fd `r0_projection`, step 178 gate-fail): static check `literals`,
+  `removed 'warm_start' x2`** (the `projection["warm_start"]["coupling"/"external"]` writes became one assignment of a
+  locally built dict; behaviour unchanged; debt 76.4 -> 12.0, tests tier not run). Jobs 95-97 SKIPPED. Step mode has
+  no declared literal drop, so as in S17 the step is reworked: fresh opus-engineer, brief `S19-W3-G5-6b.md` (rework
+  step 1 to an equal literal multiset without dead code, rebuild the lane, check every step's literal multiset
+  locally, re-enqueue as g5r6b-1..4; old tip kept as `wip/S19-g5d-r1`).
+- **2026-11-16, R-W3-G5-5 (reviewer, Opus, 90k tokens): merge after fixes.** All four steps behaviour-neutral; the
+  2e86e892 reorder is pure on every path (no raise, mutation or lazy import moved; same frozenset insertion order);
+  `_require_planned_aliases` twin in `verify_bound` kept (rule 15; a later merge is behaviour-neutral, blocked only by
+  the literal gate). Fixes applied by the orchestrator in 718d896a: (1) `verify_revision` docstring names
+  `_require_planned_aliases` and `_revision_witness` (rule 7); (2) the TYPE_CHECKING import of `LiftedSplit` from
+  `models.lifted` (its definition), not `orchestrator.region` (forbidden by `verifier-not-through-the-solver`; the gate
+  does not see type-only imports, config.toml:114). DECISION: the orchestrator took fix 2 (type-only import, no
+  runtime code) instead of a fresh engineer. Alternative: an engineer. Reversible by reverting 718d896a. Note for
+  later: the same type-only import stands in checks.py:58 and gamma_phi_units.py:80 (existing debt). Optional note
+  not taken: `_issue`'s `witness` clause omits `components` and the limitation reason. Job 103 (no-gain) queued;
+  wp/S19 (docs only since 62fdf722) merged into the lane; merge-check queued.
+- **2026-11-16, job 77 PASS (W4 run 5b, I-2 revert 9e467cca..145725ae, 15/15), logged by hand as step 179**
+  (accepted-neutral, `--head 145725ae`, from s19-w4): `--rerun-of 162` refused, the base moved (as job 73). Note for
+  the G5 run 5 merge: W4's I-2 also moves the verifier's type-only `LiftedSplit` imports to `models.lifted`; 718d896a
+  does the same in certificate.py, so the two agree (resolve to the `models.lifted` line).
+- **2026-11-16, job 100 PASS (G5 run 7 step 1, ac17ce56 `project`, step 180 accepted, 29.7 -> 6.0, 16/16).**
+- **2026-11-16, G5 run 6b delivered (opus-engineer, Opus, 89k tokens; lane wp/S19-g5d rebuilt on 14f4fa35, old tip
+  `wip/S19-g5d-r1` = a9f6499c).** 11d21d5a (step 1 reworked: `_add_warm_start_r0(projection, warm_start) -> None`, the
+  old block moved verbatim, writes in the original order), 3d1688a8, 9bbae106, 3cdb0d50 (steps 2-4 cherry-picked
+  without conflicts). Every step: the gate's literal multiset equal, mypy, ruff, patch_noop 0 of 265, touched tests
+  pass, F0 PASS on steps 1 and 3; repo debt 5043.9 -> 4944.5, brain functions 27 -> 26 (as the first take). Jobs
+  105-108. Correction: brief 6b said to count docstrings; the gate's `_string_literals` (cce_code_health/gate.py)
+  excludes them, and the engineer rightly used the gate's function. Review brief `S19-R-W3-G5-6.md` updated to the
+  new shas, with a point on the one mutating helper.
+- **2026-11-16, job 101 PASS (G5 run 7 step 2, c95eadac `_split_checks`, step 181 accepted, split_checks.py 25.6 -> 24.0, 16/16; the gain-rule question stays with R-W3-G5-7).**
+- **2026-11-16, job 78 PASS (W4 run 5b, I-2 iface 0e49da0f..89908c34, interface mode, step 182 accepted, 17/17).**
+- **2026-11-16, job 79 PASS (W4 run 5b, I-7 iface a99c305a..10f734bb, interface mode, step 183 accepted, 17/17).**
+- **2026-11-16, job 102 PASS (G5 run 7 step 3, 49a0db77 `degeneracy`, step 184 accepted, split_checks.py 24.0 -> 21.0, 16/16).** G5 run 7 fully gated (jobs 100-102); reviewer R-W3-G5-7 launched (Opus, brief `S19-R-W3-G5-7.md`).
+- **2026-11-16, R-W3-G5-7 (reviewer, Opus, 90k tokens): merge after fixes.** ac17ce56 OK (five refusals in order with
+  the same texts; nothing computed ahead of a refusal that was not before; the `target.spec` read moved ahead of the
+  comprehensions, a field read, stated in the commit); c95eadac accepted under the gain rule (1.6 points; a whole
+  early return of a spec-named unit, T05b §9.1); 49a0db77 OK (`InstanceView` has no runtime use). Fix applied by the
+  orchestrator in 3b13e7fe: `_degenerate_split_checks` docstring (δ is the spec §4.4 saturation distance
+  max(|T - T_b|, |T - T_d|), checked against T05b spec line 108; both checks on `subject`); job 109 (no-gain).
+  Twins `_declared_phase`/`_phase_enthalpy` kept (different requests and dormant handling; a merge needs a
+  behaviour-level commit with its own test). **Open (pre-existing, outside the diff, before any twin merge):**
+  split_checks.py:218 reads `stream_of(state, stream)` in SYN-001 order but zips with `view.components` (:259), and
+  `_phase_enthalpy` (flows at :538/:576 in SYN-001 order) zips with `provider.describe().components`; both are right
+  only while those orders equal `COMPONENTS`. A design-lane question (component-order invariant), listed for the G5
+  close.
+- **2026-11-16, job 80 PASS (W4 run 5b, w4r4 batch A src, 54f25b7a, step 185 accepted-neutral, 263.4 -> 263.4, 15/15).** W4 jobs 81-87, 89, 93, 98, 99 still queued; no W4 action until all pass.
+- **2026-11-16, job 103 PASS (G5 run 5 review fixes, 718d896a, step 186 accepted-neutral, 30.1 -> 30.1, 15/15).** Run 5 merges into wp/S19 on job 104 (merge-check) PASS.
+- **2026-11-16, job 81 PASS (W4 run 5b, w4r4 batch A interface, dc3f3da4, step 187 accepted, 180.4 -> 180.4, 17/17).**
+- **2026-11-16, job 104 PASS (G5 run 5 merge-check at de7807d3, full suite, 15/15, certificate.py 54.2 -> 30.1). Merged wp/S19-g5c into wp/S19 (bbcaad2d).** wp/S19 had gained docs only since the merge-check base 5ae994ea. Run 7 (wp/S19-g5e, jobs 109, 110) now meets a wp/S19 that gained run 5 (verify/certificate.py) plus docs; the lanes are disjoint (projection.py, split_checks.py), so run 7 merges on its own merge-check per S19_STATE item 2.
+- **2026-11-16, gate speed (session OpenFlowsheet-check; Frank noticed the gates were not faster).** Measured over 9 h: selected gates ran ~7% of the tests in ~80% of the full-suite time. Cause: the 736f70db map's unsure tests widen to their whole file in every selected gate: s09 a20[s03_reference.py] (its file 649 s; the hung s03 script was killed during the build) and the two deselected wall-time budget tests (t07_v17_reference.py 127 s, t07_conformance.py). Merged wp/S19-tools3 into wp/S19 (53c32c6c): fb963d16 `run` drops an unsure test that the same run deselects; 0e6e8633 `gate_report.py`. tests/test_s16_test_impact.py 82 passed (re-run here). Lanes get the fix when they merge wp/S19 in; queued jobs keep the old behaviour.
+  First report (6 h to 08:05): 35 gates (22 selected, 11 full suite: 6 import-time code, 4 new or deleted file, 1 collection-time code), tests tier median selected 1025 s vs full 1301 s, queue wait median 67 min (max 197), slots 95% busy, 30 of 35 steps accepted, debt -103.4. ALERTs: `selected share 67% < 75%`; `selected gates take 1025 s > 300 s`; `selected/full time ratio 0.79 > 0.4`; `queue wait median 67 min > 15 min`. Action: a map rebuild at the wp/S19 tip (removes s09 from the unsure set and the W4 new-module fallbacks), no `--deselect`, PYTEST_ADDOPTS=--timeout=900.
+  DECISION: rebuild timing -> when the queue drains, before any new lane work is gated (the build needs no gate running; 16 jobs queued, slots 95% busy). Alternative: hold the queue now. Reversible by: building at once. New G-MAP criterion (adopted from the peer): no unsure test in a file that costs more than about 60 s, else re-run the build. Procedure: gate_report.py at every chain-result wake and before every self-reset (skill, loop step 3).
+- **2026-11-16, gate profile (session OpenFlowsheet-check).** Last night's w4r5b-w4r3-i7-iface selection (58 files, 1501 tests), 4 workers, `--durations=80`, under gate load: 752 s wall; the 80 slowest entries 2235 s of worker time, of which the three unsure-widened files 1428 s (64%): test_s09_references.py 792 s (a20 generator checks s02 315 s, s06 169 s, s03 148 s; a02 142 s), test_t07_v17_reference.py 550 s (almost all setup: its module fixture rebuilt on each xdist worker, 205/173/164 s), test_t07_conformance.py 86 s. Next: test_t08_w2_recovery_edges.py 153 s (a33 143 s), test_m04_study.py 103 s. Expected after the map rebuild plus fb963d16: ~800 s worker time, ~150-250 s on 8 workers. If selected gates stay above 300 s, read `gate_report.py --slow`.
+  Open, not started: (1) an xdist group for test_t07_v17_reference.py so its module fixture is built once per run (build lane, test-only; also speeds the full suite). (2) a merge-check-only cadence for multi-minute single tests (s09 a20, t08_w2 a33): changes what a step gate proves, so a design-lane ruling; raise only if the report shows them often.
+- **2026-11-16, job 105 PASS (G5 run 6b step 1, 11d21d5a, step 188 accepted, 76.4 -> 12.0, 16/16).** Report: same four ALERTs (`selected share 69% < 75%`, `selected gates take 1025 s > 300 s`, `selected/full 0.78 > 0.4`, `queue wait median 70 min > 15 min`); action unchanged: map rebuild when the queue drains.
+- **2026-11-16, job 82 PASS (W4 run 5b, w4r4 batch B src, 962c6fb6, step 189 accepted-neutral, 551.2 -> 551.2, 15/15).** Report: the four ALERTs persist (selected share 70%, selected 1025 s, ratio 0.78, wait median 71 min); action unchanged (map rebuild when the queue drains).
+- **2026-11-16, job 106 PASS (G5 run 6b step 2, 3d1688a8, step 190 accepted, 51.0 -> 27.0, 16/16).** Report not run at this wake (Bash classifier unavailable); run at the next.
+- **2026-11-16, job 83 PASS (W4 run 5b, w4r4 batch B interface, 449b5f87, step 191 accepted, 398.1 -> 398.1, 17/17).** Report: the four ALERTs persist (selected share 70%, selected 1025 s, ratio 0.78, wait median 75 min); action unchanged (map rebuild when the queue drains).
+- **2026-11-16, job 107 PASS (G5 run 6b step 3, 9bbae106, step 192 accepted, 12.0 -> 5.0, 16/16).** Report: the four ALERTs persist (selected share 70%, selected 1025 s, ratio 0.78, wait median 84 min); action unchanged.
+- **2026-11-16, job 108 PASS (G5 run 6b step 4, 3cdb0d50, step 193 accepted, 27.0 -> 23.0, 16/16).** Run 6b fully gated (jobs 105-108); reviewer R-W3-G5-6 launched (Opus, brief `S19-R-W3-G5-6.md`). Report: the four ALERTs persist (selected share 73%, selected 1021 s, ratio 0.79, wait median 86 min); action unchanged.
+- **2026-11-16, R-W3-G5-6 (reviewer, Opus, 92k tokens): merge after fixes, no step rejected.** Identity bytes checked dict by dict (key order, value expressions, sorts, None vs missing key, the KeyError point for missing `counters`); 9bbae106 `keep` captured nothing, whole walker moved; 3d1688a8 first-match semantics kept (row 5 returns `[]`, not None); 3cdb0d50 v1 output bit for bit (ADR 0025 D1.4). Steps 3-4 (beyond the named targets) accepted. Items: (1) identity.py:173 `_add_warm_start_r0` mutates the caller's projection, against playbook rule 6; (2) run tests/test_rrc_application.py and test_rrc_candidates.py, the only tests reaching `_revision_continuation_r0`, which the map did not select for 11d21d5a. Note: rule 5 order would put `_solver_counters` after `_event_r0`.
+  Item 2 done by the orchestrator: at 3cdb0d50, test_rrc_application.py, test_rrc_candidates.py, test_rrc_continuation.py 44 passed in 126 s (serial, PYTHONPATH=<lane>/src; without it the repo .venv imports main's src and collection fails).
+  DECISION: item 1 -> option (a), three pure helpers (`_warm_start_r0`, `_coupling_r0`, `_external_starts_r0`), the caller keeps the `.get`s and the three writes; a fresh opus-engineer (brief `S19-W3-G5-6b-revfix.md`, queue label g5r6b-revfix, no-gain). Alternative: (b) keep it and record a rule-6 exception in the playbook. Reversible by: reverting the fix commit and adding the exception.
+- **2026-11-16, job 84 PASS (W4 run 5b, w4r4 batch C src, 900f9a5b, step 194 accepted-neutral, 155.2 -> 155.2, 15/15).** Report: the four ALERTs persist (selected share 71%, selected 1021 s, ratio 0.79, wait median 86 min); action unchanged.
+- **2026-11-16, job 109 PASS (G5 run 7 review fix, 3b13e7fe, step 195 accepted-neutral, 21.0 -> 21.0, 15/15).** Run 7 merges on job 110 (merge-check) PASS. Report: the four ALERTs persist (selected share 71%, selected 1013 s, ratio 0.78, wait median 89 min); action unchanged.
+- **2026-11-16, R-W3-G5-6 item 1 delivered (opus-engineer, Opus, 69k tokens): 71bd0005 on wp/S19-g5d (base 3cdb0d50), job 111 (no-gain, not a snapshot: the s19-g5d worktree stays untouched until it runs).** Three pure helpers `_warm_start_r0`, `_coupling_r0`, `_external_starts_r0`; the caller makes the three writes in the old order; ADR texts moved with their code. Literal multiset (docstrings excluded) equal; old vs new modules on 160 crafted warm-start inputs: output JSON, key order, exception type and message identical; 21 test files importing run.identity plus the three rrc files: 632 passed, 6 deselected, 692 s (serial). The brief's enqueue line lacked `--target`/`--recipe`; the engineer used `--target src/openflowsheet/run/identity.py::r0_projection --recipe review-note`.
+  DECISION: `_solver_counters` placement -> stays (rule 5: a helper shared by siblings follows its last caller, `_failure_r0`; the reviewer's note was no-action). Alternative: move it after `_event_r0`. Reversible by: a docs-pass move.
+  Merge-check: wp/S19 (327a5856) merged into 71bd0005 on helper branch wp/S19-g5d-mc (worktree s19-g5d-mc), merge 3e1c7f62, clean; job 112 (merge-check, snapshot, base 327a5856). Both 111 and 112 PASS -> fast-forward wp/S19-g5d to 3e1c7f62, merge into wp/S19, remove the helper worktree and branch.
+- **2026-11-16, job 85 PASS (W4 run 5b, w4r4 batch C interface, ee5eb4d8, step 196 accepted, 32.9 -> 32.9, 17/17).** Report: the four ALERTs persist (selected share 73%, selected 1021 s, ratio 0.79, wait median 91 min); action unchanged.
+- **2026-11-16, job 86 FAIL (W4 run 5b, w4r4 batch D src, 0dc0558e on ee5eb4d8, step 197 gate-fail, debt 354.7 -> 354.7, 9/10, failed: debt "src/openflowsheet/models/syn001/column.py: new file smell(s) duplication (nloc 336)").** column.py changed in import lines only (cascade names retargeted to cascade_failure/_init/_rows/_spec). `codehealth scan --json` at base and head: column.py dup_lines 32 -> 41, dup_fraction 0.095 -> 0.122 (over the threshold); siblings unchanged (cascade_rows 0.099, column_rows 0.078, cascade_init 0.041). The 9 new duplicated lines are the `cascade_spec` import name list that sibling modules import the same way. Jobs 87, 89, 93, 98, 99 were SKIPPED (built on the failed step).
+  DECISION: job 86 -> a tool defect (clone detection counts import statements), as B1's huge_file -> large_file (step 54): reported via hub to the cce-code-health owner (ask: exclude imports from clone detection, then a re-pin); step 197 is re-gated unchanged on the fix. Alternative: a fresh engineer rewrites column.py's imports to a module alias (a code change made only to dodge the detector; held as the fallback if the owner declines). Reversible by: that fallback. The five skipped jobs re-enqueued unchanged (each gates its own base..head and column.py has the smell at their bases): 113-117 (labels `-r`).
+  Report: the four ALERTs persist (selected share 73%, selected 1021 s, ratio 0.79, wait median 91 min).
+- **2026-11-16, job 111 FAIL (G5 run 6b review fix 71bd0005, step 198 gate-fail, no-gain, debt 5.0 -> 11.0).** Scan at 3cdb0d50 and 71bd0005: all of the rise is `r0_projection` (cognitive 17 -> 23, debt 2.0 -> 8.0), the two nested `if`s the reviewer named as option (a)'s cost. A real failure. DECISION: second form -> `_warm_start_r0` builds the whole warm-start R0 (coupling and external included) in its own local dict and returns it; the caller makes one write (rule 6 holds: the helper mutates only its local). A fresh opus-engineer (brief `S19-W3-G5-6b-revfix2.md`, one commit on 71bd0005, enqueued from base 3cdb0d50 as g5r6b-revfix2, scan-checked to debt <= 5.0 before enqueueing). Alternative: option (b), revert 71bd0005 and record a rule-6 exception. Reversible by: that. Job 112 (merge-check on 3e1c7f62, which contains 71bd0005) is moot; the helper branch wp/S19-g5d-mc is rebuilt after the new fix passes.
+- **2026-11-16, job 110 PASS (G5 run 7 merge-check at 0dc5f187, base 6ad6a9e0, full suite, 15/15, 55.3 -> 27.0). Merged wp/S19-g5e into wp/S19 (2644ea96).** Since the merge-check base wp/S19 gained docs, run 5 (verify/certificate.py) and wp/S19-tools3 (scripts/test_impact.py, tests/test_s16_test_impact.py, skill scripts); the lane touches only verify/projection.py and verify/split_checks.py; `git merge-tree` clean.
+  DECISION: merge without a new merge-check although wp/S19 gained tools3 beyond S19_STATE item 2's "docs plus the other lane alone" -> yes: tools3 shares no file with the lane and passed its own tests (82). Alternative: a fresh merge-check (~25 min plus ~90 min queue wait). Reversible by: reverting 2644ea96.
+  Report: the four ALERTs persist (selected share 73%, selected 1021 s, ratio 0.79, wait median 91 min). cce-code-health owner: session `code_health` (hub forwarded the job 86 defect report).
+- **2026-11-16, jobs 113-117 SKIPPED again ("built on the failed step 0dc0558e").** The runner checks a job's ancestry at run time, not only at enqueue time, so W4 waits for step 197 (job 86) to be re-gated on the cce-code-health fix (owner: session code_health). No workaround. Pending 0, job 112 (moot merge-check) the last one running: the queue drains, which opens the G-MAP 3 window. Plan: when 112 ends, stop the runner (`kill $(cat <queue>/runner.pid)`; pending jobs persist), build the map at the wp/S19 tip, judge G-MAP 3, move MB, restart the runner. g5r6b-revfix2 waits in pending meanwhile. Report: the four ALERTs persist (selected share 73%, selected 1021 s, ratio 0.79, wait median 91 min).
+- **2026-11-16, cce-code-health 1f7df37 (session code_health, pushed to origin/main): clone detection leaves out whole import statements (CPD ignore-imports style); nloc denominator unchanged; owner-checked on job 86's range: column.py dup_lines 32 -> 32, dup_fraction 0.095 at both, no smell; 340 tool tests pass; includes 719092b (`log --external-fail`, repo-relative gate_json).** Side effect: dup_lines can drop in other files with shared import lists, at base and head alike. DECISION: re-pin a0aff44 -> 1f7df37 in the map-rebuild window (runner stopped, no gate running, so no lane sees two versions), then re-gate step 197 (job 86) unchanged with `--rerun-of` and re-enqueue jobs 87, 89, 93, 98, 99. Alternative: re-pin at the W4 boundary (W4 stays blocked until then). Reversible by: re-pinning a0aff44. code_health asks to hear when W4 is done (its v0.2.0 tag waits on it).
+- **2026-11-16, R-W3-G5-6 item 1, second form (opus-engineer, Opus, 87k tokens): b74823ba on 71bd0005, not enqueued.** identity.py debt 5.0, `r0_projection` cognitive 17, 1012 warm-start inputs equivalent to 3cdb0d50 (0 mismatches), 619 passed / 6 deselected; but the gate's literal counter (`_string_literals`) reports `'warm_start'` x2 removed (the `projection["warm_start"][...]` subscripts go away). No natural form keeps rule 6, the debt rule and the literal multiset together.
+  DECISION: item 1 -> option (b), the reviewer's alternative: keep 3cdb0d50's `_add_warm_start_r0` and record a rule-6 exception (playbook, "projection member writers", citing 11d21d5a, job 111 and b74823ba). Alternatives: interface mode with `literals_removed` (a mode for API changes used on a non-interface step), or a contorted form that keeps the literal count (gaming the gate). Reversible by: replaying b74823ba (kept on `wip/S19-g5d-revfix`). wp/S19-g5d returns to 3cdb0d50 (all four steps gated PASS); 71bd0005 and b74823ba kept on the wip ref. Run 6b then needs only a merge-check against the wp/S19 tip; job 112 (on 71bd0005) is moot.
+  Tool note for briefs: `codehealth scan --json X` writes the report to X; my brief's wording led the engineer to overwrite identity.py once (restored from HEAD). S19-W3-common.md now says the argument is the output file.
+- **2026-11-16, job 112 PASS (moot merge-check on 3e1c7f62 = 71bd0005 + wp/S19 327a5856, full suite, 15/15, 127.4 -> 34.0).** wp/S19-g5d reset to 3cdb0d50 per the rule-6 exception; 71bd0005 and b74823ba kept on `wip/S19-g5d-revfix`. Run 6b needs a fresh merge-check of 3cdb0d50 + the wp/S19 tip (after the map).
+  Map window: queue idle, runner stopped (pid 1056796). Re-pinned cce-code-health a0aff44 -> 1f7df37 (c3c5793e; `.venv-codehealth` reinstalled, direct_url commit 1f7df378). Spot-check: column.py at 0dc0558e with 1f7df37: no smell, dup_fraction 0.095, dup_lines 32. G-MAP 3 build started at c3c5793e (`.venv-testmap`, PYTEST_ADDOPTS=--timeout=900, TMPDIR ~/.cache/openflowsheet/tmp-map, 8 workers, no --deselect); session OpenFlowsheet-check asked to keep the machine quiet.
+- **2026-11-16, G-MAP 3 (map at c3c5793e, quiet build): 20483 tests (20370 passed, 109 skipped, 4 failed), pytest exit 1, 3473 s, 25.7 MB.** Failed = the B-6 set (m04_wo9 a25, a29; x02_wo4 g4e x2), so the unsure set is those four only; s09 a20 and both t07 budget tests passed. Criterion "no unsure test in a file over ~60 s": MISS (test_m04_wo9_synthetic_loop.py ~77 s in the profile under load; x02_wo4 unmeasured). DECISION: accept the map and move MB 736f70db -> c3c5793e. The B-6 failures are deterministic in every map since S16, so a re-run cannot cure them, and the unsure set is a strict subset of the old map's (which also held s09 and the t07 files). Alternative: re-run the build (same four failures expected). Reversible by: MB back to 736f70db (its map is kept). Lanes branch from or merge the wp/S19 tip to use it; queued W4 jobs keep MB 736f70db from their own state file.
