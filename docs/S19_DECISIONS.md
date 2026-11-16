@@ -1317,3 +1317,6 @@
   config lines. Re-pin 6529f47 -> ec5aaea at the next queue-idle window, then enqueue: `--snapshot --head`, I-5b base
   75e424be head ecf46789, I-9 base caccb2ad head 1e0d6bee, layer config 1c8037be (gated with the I-9 row's "after"
   as before), labels w4r9-*.
+- **2026-11-16, job 180 (g6r6-1, 44f044f1) PASS, step 241 accepted (24.0 -> 19.0).** Gate report: ALERT selected
+  share 56% < 75% of step gates; ALERT selected gates take 465 s > 300 s (tests tier); ALERT queue wait median 27 min >
+  15 min (causes as before; proposal 2 with Frank). The selected/full ratio ALERT cleared.
