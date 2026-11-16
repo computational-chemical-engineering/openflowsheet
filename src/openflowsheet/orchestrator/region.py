@@ -129,8 +129,6 @@ from openflowsheet.orchestrator.phase_contract import (
 )
 from openflowsheet.orchestrator.region_attempts import _homotopy as _homotopy
 from openflowsheet.orchestrator.region_attempts import _ptc_attempt
-from openflowsheet.orchestrator.region_attempts import region_ptc_problem as region_ptc_problem
-from openflowsheet.orchestrator.region_phase import TP_REGIME as TP_REGIME
 from openflowsheet.orchestrator.region_phase import ClosureMemo as ClosureMemo
 from openflowsheet.orchestrator.region_phase import _admissible as _admissible
 from openflowsheet.orchestrator.region_phase import _band_regime as _band_regime
@@ -151,7 +149,6 @@ from openflowsheet.orchestrator.region_phase import _pinned as _pinned
 from openflowsheet.orchestrator.region_phase import _pr_c1 as _pr_c1
 from openflowsheet.orchestrator.region_phase import _reference_k_values as _reference_k_values
 from openflowsheet.orchestrator.region_phase import _split_enthalpy as _split_enthalpy
-from openflowsheet.orchestrator.region_phase import admissibility_value as admissibility_value
 from openflowsheet.orchestrator.region_problem import (
     _branch_found,
     _label_entries,
@@ -170,10 +167,12 @@ from openflowsheet.orchestrator.region_problem import _trigger_dormant as _trigg
 from openflowsheet.orchestrator.region_problem import (
     _units_and_items_disjoint as _units_and_items_disjoint,
 )
-from openflowsheet.orchestrator.region_result import AttemptSystem as AttemptSystem
-from openflowsheet.orchestrator.region_result import RecoveryStart as RecoveryStart
-from openflowsheet.orchestrator.region_result import RegionAttempt as RegionAttempt
-from openflowsheet.orchestrator.region_result import RegionResult as RegionResult
+from openflowsheet.orchestrator.region_result import (
+    AttemptSystem,
+    RecoveryStart,
+    RegionAttempt,
+    RegionResult,
+)
 from openflowsheet.orchestrator.region_screen import _attempt_screen as _attempt_screen
 from openflowsheet.orchestrator.region_screen import _build_screen as _build_screen
 from openflowsheet.orchestrator.region_screen import _screen as _screen
@@ -183,10 +182,7 @@ from openflowsheet.orchestrator.warm_start import WARM_START_REJECTED, WARM_STAR
 from openflowsheet.thermo import PropertyProvider
 
 __all__ = [
-    "RecoveryStart",
-    "RegionResult",
     "StagedSplits",
-    "region_ptc_problem",
     "solve_region",
     "syn001_lifted_splits",
 ]

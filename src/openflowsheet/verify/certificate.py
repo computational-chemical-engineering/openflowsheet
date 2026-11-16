@@ -62,16 +62,15 @@ from openflowsheet.verify.checks import (
     witness_classes,
 )
 from openflowsheet.verify.projection import PROJECTED_CATEGORIES, Projection, project
-from openflowsheet.verify.verdict import REGISTERED_POLICY_ID as REGISTERED_POLICY_ID
-from openflowsheet.verify.verdict import CheckPolicy as CheckPolicy
-from openflowsheet.verify.verdict import CheckReport as CheckReport
-from openflowsheet.verify.verdict import ExternalEvidence as ExternalEvidence
-from openflowsheet.verify.verdict import SolutionCertificate as SolutionCertificate
-from openflowsheet.verify.verdict import _check_set
-from openflowsheet.verify.verdict import absent_state_certificate as absent_state_certificate
-from openflowsheet.verify.verdict import grade as grade
-from openflowsheet.verify.verdict import run_checks as run_checks
-from openflowsheet.verify.verdict import statements_for as statements_for
+from openflowsheet.verify.verdict import (
+    CheckPolicy,
+    ExternalEvidence,
+    SolutionCertificate,
+    _check_set,
+    absent_state_certificate,
+    grade,
+    statements_for,
+)
 
 if TYPE_CHECKING:
     from openflowsheet.models.revision_flowsheet import ComponentBasis

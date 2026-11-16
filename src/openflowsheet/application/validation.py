@@ -23,14 +23,15 @@ from collections.abc import Callable, Mapping, Sequence
 from dataclasses import replace
 from typing import TYPE_CHECKING, Any, Final, NamedTuple
 
-from openflowsheet.application.validation_report import Check as Check
-from openflowsheet.application.validation_report import EvidenceClass as EvidenceClass
-from openflowsheet.application.validation_report import Result as Result
-from openflowsheet.application.validation_report import Stage as Stage
-from openflowsheet.application.validation_report import Task as Task
-from openflowsheet.application.validation_report import ValidationReport as ValidationReport
-from openflowsheet.application.validation_report import ValidationStatus as ValidationStatus
-from openflowsheet.application.validation_report import utc_timestamp as utc_timestamp
+from openflowsheet.application.validation_report import (
+    Check,
+    Result,
+    Stage,
+    Task,
+    ValidationReport,
+    ValidationStatus,
+    utc_timestamp,
+)
 from openflowsheet.canonical import first_noncanonical
 
 if TYPE_CHECKING:
