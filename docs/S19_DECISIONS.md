@@ -806,3 +806,16 @@
 - **2026-11-16, G-MAP 3 (map at c3c5793e, quiet build): 20483 tests (20370 passed, 109 skipped, 4 failed), pytest exit 1, 3473 s, 25.7 MB.** Failed = the B-6 set (m04_wo9 a25, a29; x02_wo4 g4e x2), so the unsure set is those four only; s09 a20 and both t07 budget tests passed. Criterion "no unsure test in a file over ~60 s": MISS (test_m04_wo9_synthetic_loop.py ~77 s in the profile under load; x02_wo4 unmeasured). DECISION: accept the map and move MB 736f70db -> c3c5793e. The B-6 failures are deterministic in every map since S16, so a re-run cannot cure them, and the unsure set is a strict subset of the old map's (which also held s09 and the t07 files). Alternative: re-run the build (same four failures expected). Reversible by: MB back to 736f70db (its map is kept). Lanes branch from or merge the wp/S19 tip to use it; queued W4 jobs keep MB 736f70db from their own state file.
 - **2026-11-16, runner restarted (pid 1923489).** Job 118: W4 step 197 re-gated unchanged on 1f7df37 (`--rerun-of 86`, snapshot ee5eb4d8..0dc0558e). Jobs 87, 89, 93, 98, 99 are re-enqueued after 118 passes (the runner skips a lane with a failed step). Job 119: G5 run 6b merge-check, helper branch wp/S19-g5d-mc rebuilt on 3cdb0d50 with wp/S19 6400b95b merged (ce9e9d30; the old helper at 3e1c7f62 deleted). PASS -> fast-forward wp/S19-g5d to ce9e9d30, merge into wp/S19.
 - **2026-11-16, job 119 GATE-ERROR rc=2 (run 6b merge-check): environment.** The gate's base checkout `.git/codehealth/base-6400b95b…` was prunable (its gitdir link gone), so `scripts/codehealth_frozen.py` found no `benchmarks/f0/corpus.json`. Pruned (`git worktree prune`), removed the directory, re-enqueued unchanged as job 120 (merge-check takes no `--rerun-of`). Cause not determined (possibly a concurrent base checkout or cleanup); watch for a repeat.
+- **2026-11-16, job 120 SKIPPED ("built on the failed step ce9e9d30"): the runner keeps the heads of failed snapshot
+  jobs per worktree in memory, and job 119's GATE-ERROR counts as failed, so a re-gate of the same head from the same
+  worktree is skipped for the runner's lifetime.** DECISION: re-enqueue from a second worktree path (detached
+  `.claude/worktrees/s19-g5d-mc2` at ce9e9d30) as job 121, rather than kill the runner during job 118 (W4 step 197
+  re-gate). Alternative: restart the runner after 118. Reversible by: nothing to revert (bookkeeping only). Tool note
+  for the next tools lane: an environment GATE-ERROR should not mark a head failed, or a re-enqueue of the same head
+  should clear it; a PASS should clear its head.
+- **2026-11-16, G5 run 8 and G6 run 4 briefed and started (opus-engineer x2, base 209ed607 = wp/S19 tip, MB
+  c3c5793e).** G5 run 8 (`S19-W3-G5-8.md`, wp/S19-g5f): verify/checks.py `derivative_witness` 16.2, `escalate_column`
+  8.0, then run/replay.py `decide_mode` 8.0; S2, at most 4 steps. G6 run 4 (`S19-W3-G6-4.md`, wp/S19-g6b):
+  registry `_add_package` 19.5, launcher `launch` 14.8, graph/certificates `certify` 23.0 (S2), messages/render.py
+  (health 7.0). Both avoid W4's import lines and units/__init__.py. Scan at ce9e9d30 (wp/S19 + run 6b): repo debt
+  4892.1, health 8.05, brain 26. S19-W3-common.md now names cce-code-health 1f7df37.
