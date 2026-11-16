@@ -55,7 +55,7 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 ## Next actions (2026-11-16, ~20:15)
 
 Runner pid 2642417 (cce-code-health 6529f47 installed; merge-check = `gate.sh --behaviour-only`). Results consumed up
-to 169; start `$Q wait --since 169` in the background first. No agent running. Lanes at most 2 agents until Thu 19 Nov
+to 170; start `$Q wait --since 170` in the background first. Agents: R-W3-G6-6, G5 run 9. Lanes at most 2 agents until Thu 19 Nov
 13:00. ALERTs persist (proposal 2 with Frank). Merge-checks run on a helper branch `wp/S19-<lane>-mc` = lane tip +
 wp/S19 tip merged in. S19_DECISIONS holds the detail of every item below (grep the quoted words).
 1. **Rule 4 serial runs (detached, not agents; S19_DECISIONS "rule 4 falsifier: base2"):** xdist counts are not
@@ -65,22 +65,15 @@ wp/S19 tip merged in. S19_DECISIONS holds the detail of every item below (grep t
    started 20:15, ~3 h. Logs `baseser.log`, `headser.log` in that 165c72bf scratchpad (end "EXIT n"); read only
    `grep -h "MSG WO\|passed\|^EXIT"`. Equal: run 8 merges (item 3), ADR rule 4 text (serial form) into the R-W4-9
    batch. Unequal: fresh engineer on the I-4 gap. Then remove both worktrees.
-2. **Re-pin cce-code-health 6529f47 -> ec5aaea6b54ffcb31b245d21d1c5b3e73e643f12** at the first queue-idle moment
-   (G6 run 6 jobs 181-184 drain first): edit requirements-codehealth.txt, `.venv-codehealth/bin/pip install -q -r
-   requirements-codehealth.txt`, check direct_url, `codehealth config --check`, commit, log ("cce-code-health ec5aaea").
-   Then **enqueue W4 run 9** on worktree s19-w4 (chain in S19_DECISIONS "W4 run 9 chain rebuilt"): `--snapshot`, I-5b
-   `--base 75e424be --head ecf46789 --mode interface --plan .codehealth/interface/i5b-document-validation.toml`
-   (label w4r9-i5b-iface), I-9 `--base caccb2ad --head 1e0d6bee --mode interface --plan
-   .codehealth/interface/i9-errors.toml` (w4r9-i9-iface); 1c8037be layer config stays outside the gate as 9810abf6
-   did. Flag commit 651cc8d0 is before both. Backup branch wp/S19-w4r9-orig.
+2. **Done 20:50:** cce-code-health ec5aaea (e0ef865c); W4 run 9 enqueued as jobs 185 (I-5b), 186 (I-9).
 3. **W4 run 8 merge** waits for item 1 (R-W4-8 fix 1). Fixes 2 (c7d21f2e, job 179 PASS) and 3 done. Helper
    wp/S19-w4r8-mc (worktree s19-w4r8-mc) = 486b6dbb + c7d21f2e; then merge wp/S19 into it, merge-check, merge. Run 9
    (wp/S19-w4 after 486b6dbb) merges after run 8, with its own review (R-W4-9: I-5b, I-9, the flag, 8671bbdf).
-4. **G6 run 6** (wp/S19-g6d, base f2987b62, jobs 180 PASS, 181-184 gating): when 184 is in, review R-W3-G6-6
-   (brief written: `S19-R-W3-G6-6.md`), fixes, helper merge-check, merge.
-5. **New lanes held** until run 9 is enqueued (DECISION in S19_DECISIONS "G6 run 6 reported"). Then G5 run 9 (brief written,
+4. **G6 run 6** (wp/S19-g6d, base f2987b62, jobs 180-184 all PASS): reviewer R-W3-G6-6 running (Opus); then
+   fixes, helper merge-check, merge.
+5. **G5 run 9 running** (opus-engineer, wp/S19-g5g from e0ef865c; brief
    `S19-W3-G5-9.md`: run/compare.py 7.4; verify/ below 9: gamma_phi_units 6.4, pr_c1 6.7, split_checks 7.2, table 7.5,
-   column 7.6, checks 8.4, certificate 8.4; S2 tier, cadence 4) and W4 run 10 (I-14 per the A11 ruling, then I-10,
+   compare.py, certificate.py, column.py; S2 tier, cadence 4). W4 run 10 next free slot (brief to write: I-14 per the A11 ruling, then I-10,
    I-11, I-15?, I-13, I-12a-d, I-19; I-12a's list per R-1044).
 6. Open for Frank (not blocking): R-1042 option C; STOP 1 alternative; tool items; verify twins addendum;
    selection-widening; proposal 2 for the ALERTs. Design lane: NaN derivative-witness pass (R-W3-G5-8). Docs-pass
