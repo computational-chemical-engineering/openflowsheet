@@ -1001,3 +1001,8 @@
   `runs/s19-gates/20261116T134343-w4-mt1.tiers.log`. W4's own merge-check evidence; it merges after wp/S19 (with
   G5 run 8 and, after job 142, G6 run 4) is merged into the lane and merge_tiers passes on that merge: wp/S19 gained
   code since 3c2c2d33 that W4's import retargets could break without a shared file.
+- **2026-11-16, config: the tests tier passes `--durations=25` to pytest** (proposal 1 of session OpenFlowsheet-check's
+  14:17 gate-report reading). Diagnostics only: test_impact.py's selection reads only `--deselect` from the extra
+  arguments, the verdict is pytest's exit code. Takes effect for gates whose base contains this commit. Proposal 2
+  (a step-cadence exclusion of end-to-end reference files) changes what a step gate proves: put to Frank by that
+  session; not adopted here.

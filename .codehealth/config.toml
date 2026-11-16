@@ -72,8 +72,9 @@ detect_exit = [1, 124]
 # selection of each file the step touches is then cumulative since that base. The step itself is
 # {base}.. (`--since`, with the approximate `--import-time-by-file`; docs/test-impact.md, "A
 # step-relative selection"); S19_GATE_FULL=1 (gate_queue.py --mode merge-check) runs the full
-# suite, which must pass before the steps merge.
-cmd = 'V="${OPENFLOWSHEET_TESTMAP_VENV:-$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")/.venv-testmap}/bin"; SELECT="--since {base} --import-time-by-file"; [ -z "${S19_GATE_FULL:-}" ] || SELECT="--full"; PYTHONPATH=src "$V/python" scripts/test_impact.py run --base {ref_base} $SELECT --workers "${S19_GATE_WORKERS:-12}" -- --timeout=900'
+# suite, which must pass before the steps merge. `--durations=25` (2026-11-16): each gate's test-impact log
+# names its slowest tests (gate_report input; selection and verdict unchanged).
+cmd = 'V="${OPENFLOWSHEET_TESTMAP_VENV:-$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")/.venv-testmap}/bin"; SELECT="--since {base} --import-time-by-file"; [ -z "${S19_GATE_FULL:-}" ] || SELECT="--full"; PYTHONPATH=src "$V/python" scripts/test_impact.py run --base {ref_base} $SELECT --workers "${S19_GATE_WORKERS:-12}" -- --timeout=900 --durations=25'
 
 [[gate.tier]]
 name = "f0"
