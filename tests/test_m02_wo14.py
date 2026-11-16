@@ -5,7 +5,7 @@ D8's coupled replay digests.
   `w`, sorted, that is not the `unit_id` of a `C1Reactor` of the binding — another unit's id or no
   unit's — and changes nothing; the binding's own reactor ids are accepted, and the values reach
   the rebuilt unit as passed (no coercion).
-- D7 (R-307): R3 iff the run's provider is in `run.session.EXTERNAL_PROVIDERS` (empty today),
+- D7 (R-307): R3 iff the run's provider is in `run_session.EXTERNAL_PROVIDERS` (empty today),
   never from provenance text: SYN-001 → R1; a C1 `revision_eo` run → R1; the stand-in coupled run
   → R1; a provider whose provenance says "external" and which is not in the set → R1 (and R3 once
   registered). The synthetic out-of-process coupled run → R3 is

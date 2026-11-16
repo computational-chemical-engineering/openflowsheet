@@ -9,7 +9,7 @@ move — whole `7f32b143…` → `28dd8bf7…`, minus-`t07` `9a7b4e6d…` → `2
 `solve` and `inspect` print for SYN-001-nominal (`af86adb8…` → `f9536122…`); T02's floats
 `9a8a5baf…` do not. Frank approved re-registering them as a substitution-only move (2026-10-02,
 R-148). The substitution is undone at its two sources (ADR 0017 D3's precedent: the old value
-monkeypatched in where it is made): the id a run manifest records (`run.session`'s
+monkeypatched in where it is made): the id a run manifest records (`application.run_session`'s
 `_numerical_policy_id`, which `application.revision_run` reads too) and the certificate's default
 (`SolutionCertificate.numerical_policy_id`). The switch's third source change goes with them:
 `replay._as_recorded`, which reads a rerun's certificate as naming the policy this build records,
