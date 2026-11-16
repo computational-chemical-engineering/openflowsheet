@@ -33,8 +33,8 @@ from m02_c1_support import (
 from m02_wo8_support import POLICY
 from test_schemas_p01 import validator_for
 
-from openflowsheet.application import revision_binding as rb
 from openflowsheet.application.binding_common import Unbound
+from openflowsheet.application.model_builders import MODEL_BUILDERS
 from openflowsheet.application.revision_binding import RevisionBinding, bind_revision_flowsheet
 from openflowsheet.canonical import document_sha256
 from openflowsheet.compile.casadi_backend import compile_problem
@@ -315,8 +315,9 @@ def test_the_registered_builder_without_a_manifest_refuses() -> None:
     document = reactor_revision(inlet_of(STATES["J1"]), surrogate_instance(A19))
     view = parse_revision(document)
     (reactor,) = (i for i in view.instances if i.unit_id == UNIT)
+    context = EvaluationContext(model_version="t", constants_sha256="0" * 64, phase_signature=None)
     with pytest.raises(RevisionError, match=r"surrogate_manifest_mismatch\(R\)"):
-        rb._c1_reactor_surrogate(reactor, PrC1Provider(), rb._CONTEXT, COMPONENTS)
+        MODEL_BUILDERS[records.MODEL_ID](reactor, PrC1Provider(), context, COMPONENTS)
 
 
 # -- W27 Amendment 3 §22.4 (R-302): the C1 corpus's surrogate revision ----------------------------

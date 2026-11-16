@@ -35,11 +35,11 @@ from openflowsheet.application.model_signatures import (
     Encoding,
     ModelSignature,
     PinColumn,
+    pin_columns,
     pin_encodings,
     render_encoding,
 )
 from openflowsheet.application.revision_binding import RevisionBinding, bind_revision_flowsheet
-from openflowsheet.application.revision_binding import _columns as _columns
 from openflowsheet.application.revision_run import Route, run_revision_session, select_route
 from openflowsheet.application.validation import validate
 from openflowsheet.models.revision_flowsheet import (
@@ -107,7 +107,7 @@ def _columns_of(
 ) -> tuple[str, ...]:
     """The column ids of the pin or option `name` on this instance."""
     (pin,) = [option for option in _options(signature) if option.name == name]
-    return _columns(view, pin, components)
+    return pin_columns(view, pin, components)
 
 
 def _pinning(document: Document, unit: str, model_id: str, pin: PinColumn) -> bool:

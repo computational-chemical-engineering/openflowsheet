@@ -20,7 +20,7 @@ import pytest
 
 from openflowsheet.application import model_builders, model_signatures
 from openflowsheet.application.column_binding import build_column
-from openflowsheet.application.revision_binding import _COLUMN
+from openflowsheet.application.model_signatures import COLUMN
 from openflowsheet.models.revision_flowsheet import WILSON_RECORDS
 from openflowsheet.models.syn001.cascade_spec import BOTTOM, TOP
 from openflowsheet.models.syn001.column_spec import CONDENSER, MODEL_ID, REBOILER, ColumnSpec
@@ -194,7 +194,7 @@ def column_registered(
     """The column in `MODEL_BUILDERS`, `MODEL_SIGNATURES`, `MODEL_BASES` and the verifier's
     `MODEL_CHECKS` for one test."""
     monkeypatch.setitem(model_builders.MODEL_BUILDERS, MODEL_ID, build_column)
-    monkeypatch.setitem(model_signatures.MODEL_SIGNATURES, MODEL_ID, _COLUMN)
+    monkeypatch.setitem(model_signatures.MODEL_SIGNATURES, MODEL_ID, COLUMN)
     monkeypatch.setitem(model_signatures.MODEL_BASES, MODEL_ID, bases)
     monkeypatch.setitem(unit_checks.MODEL_CHECKS, MODEL_ID, column_checks())
     yield
