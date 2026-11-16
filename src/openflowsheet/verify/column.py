@@ -62,7 +62,7 @@ from openflowsheet.models.syn001.column import (
     declared_rows,
     reflux_id,
 )
-from openflowsheet.models.syn001.column_solve import acceptance_failures
+from openflowsheet.models.syn001.column_acceptance import acceptance_failures
 from openflowsheet.models.syn001.column_unit import (
     BOTTOMS,
     DISTILLATE,
