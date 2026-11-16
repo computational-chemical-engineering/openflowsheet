@@ -53,7 +53,7 @@ from openflowsheet.verify import (
 from openflowsheet.verify.checks import KIND_REFERENCE, VerifierError, stream_of
 
 if TYPE_CHECKING:
-    from openflowsheet.orchestrator.region import LiftedSplit
+    from openflowsheet.models.lifted import LiftedSplit
 
 __all__ = [
     "PROVIDER_ID",

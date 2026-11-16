@@ -88,7 +88,7 @@ from openflowsheet.verify.unit_checks import _splitter_material as _splitter_mat
 from openflowsheet.verify.unit_checks import _splitter_specification as _splitter_specification
 
 if TYPE_CHECKING:
-    from openflowsheet.orchestrator.region import LiftedSplit
+    from openflowsheet.models.lifted import LiftedSplit
 
 __all__ = [
     "DECLARED_ENTHALPY_NOTE",
