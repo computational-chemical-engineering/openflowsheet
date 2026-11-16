@@ -666,3 +666,8 @@
   7, a review-fix docstring candidate); lifting the revision reading is blocked by lazy-import timing (rule 10).
   Queue: jobs 60-72 (W4 rebuild attempt r5a) descend from failed step 164 and will be SKIPPED; 57 and 59 (stale I-1
   side chains, superseded by 74) left to finish.
+- **2026-11-16, gate 166 FAIL (job 57, the pre-rebuild I-1 iface side chain bf0e21b8): expected, superseded.** Full
+  suite (fallback), 18 failed, all the two STOP 3 causes in the pre-rebuild f60c8faa/8ae387f1 (test_m02 isolation;
+  generator hash 7f426aa9 vs c2718343, t08_rename_substitution.py:56/:204, test_t06_w6_generator, test_t06_w30_holdout,
+  test_t08_rename_substitution:66). No other failure. Evidence for the I-1 interface diff is job 74 (rebuilt side
+  chain rg54c). Worktree s19-w4-rg54 can go once nothing queued uses it.
