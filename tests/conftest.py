@@ -56,6 +56,9 @@ def pytest_addoption(parser: Any) -> None:
 
 def pytest_configure(config: Any) -> None:
     """Every code the package emits at the four audit hooks must have a catalogue entry."""
+    # ADR 0076 I-14: the test process installs the catalogue's before-freeze hook, as every entry
+    # point does.
+    import openflowsheet.registry  # noqa: F401
     from openflowsheet.messages import audit
 
     audit.enable()
