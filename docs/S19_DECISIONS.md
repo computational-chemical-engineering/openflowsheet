@@ -1679,3 +1679,11 @@
   eb71978d).
 - **2026-11-17, job 213 PASS (g5r10-revfix, 5f4d221a, step 266 accepted-neutral, 15/15).** ALERTs standing; merge waits for job 214.
 - **2026-11-17, job 214 PASS (g5r10-mc, helper 6656a326, full suite, 7/7, debt 41.1 -> 28.9). G5 run 10 merged into wp/S19** (wp/S19 changed only docs since cda029b0: S19_STATE, S19_DECISIONS, decision-register R-1045). Worktree s19-g5h-mc removed; branches kept.
+- **2026-11-17, scan of wp/S19 640bbd63: repo debt 4705.9, health 8.11, brain 26.** G5 (verify/, run/) below 9.0:
+  verify/gamma_phi_units.py 6.4 and verify/pr_c1.py 6.7 (the verify twins: W4 twin merge per R-W3-G5-3; not yet an
+  ADR 0076 item, "verify twins addendum" open for Frank), split_checks.py 7.2, table.py 7.5 (`revision_checks` 21.4:
+  routing deferred to W4, R-W3-G5-3), checks.py 8.4, compare.py 8.6 (v1 frozen; `_key_rule` a ladder),
+  certificate.py 8.7 (`verify_revision` lazy-import timing), flowsheet_rows.py 8.8, verify/__init__.py 8.8.
+  **G5 run 11 launched** (`opus-engineer`, Opus, brief S19-W3-G5-11.md, lane wp/S19-g5i: split_checks.py without the
+  R-W3-G5-7 component-order readings or the twin merge, then checks.py). After it, G5's W3 part leaves only the W4/
+  design items above. Agents running: W4 run 12, G5 run 11 (cap 2).
