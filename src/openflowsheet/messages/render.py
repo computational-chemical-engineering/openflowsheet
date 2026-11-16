@@ -379,17 +379,12 @@ def _matches(
 def _field(
     entry: Entry, name: str, scope: _Scope, outer: Sequence[str], *, strict: bool, machine: str
 ) -> str | None:
-    """`name` of `entry`: the first matching variant that defines it, then the base (§4.2.2).
+    """`name` of `entry`: the first matching variant that defines it, then the base (§4.2.2;
+    the candidates in that order are `_field_candidates`).
     An empty rendering counts as not supplied. A candidate that fails is a defect: `strict`
     raises it, the audit records it, and the next candidate is tried; `RenderError` when every
     candidate fails."""
-    candidates = [
-        str(variant[name])
-        for variant in entry.variants
-        if name in variant and _matches(variant["when"], scope.params, scope.context.surface, outer)
-    ]
-    if name in entry.document:
-        candidates.append(str(entry.document[name]))
+    candidates = _field_candidates(entry, name, scope, outer)
     if not candidates:
         return None
     error: RenderError | None = None
@@ -408,6 +403,19 @@ def _field(
     if error is not None:
         raise error
     return None
+
+
+def _field_candidates(entry: Entry, name: str, scope: _Scope, outer: Sequence[str]) -> list[str]:
+    """§4.2.2: the templates that may supply `name` of `entry`, in the order they are tried: each
+    variant that defines it and whose `when` matches, in declaration order, then the base's."""
+    candidates = [
+        str(variant[name])
+        for variant in entry.variants
+        if name in variant and _matches(variant["when"], scope.params, scope.context.surface, outer)
+    ]
+    if name in entry.document:
+        candidates.append(str(entry.document[name]))
+    return candidates
 
 
 def _kind(entry: Entry, scope: _Scope, outer: Sequence[str]) -> str:
