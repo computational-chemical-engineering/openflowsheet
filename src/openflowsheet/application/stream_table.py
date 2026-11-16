@@ -1118,7 +1118,7 @@ def from_bundle(
     revision's basis cannot be bound here (`basis_unavailable(<id>)`, its hint in `detail`), and
     `internal_error` as `build` does.
     """
-    from openflowsheet.application.binding import Unbound  # noqa: PLC0415
+    from openflowsheet.application.binding_common import Unbound  # noqa: PLC0415
     from openflowsheet.application.revision_binding import provider_for  # noqa: PLC0415
     from openflowsheet.run.bundle import ARTIFACT_DIR  # noqa: PLC0415
 

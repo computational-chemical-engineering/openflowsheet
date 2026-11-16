@@ -77,7 +77,7 @@ from openflowsheet.orchestrator.coupling import UnitInlet
 from openflowsheet.orchestrator.execution import PlanRefusal
 from openflowsheet.orchestrator.executor import execute_plan
 from openflowsheet.orchestrator.revision import plan_revision
-from openflowsheet.studies.surrogate.study import MODEL_ID as SURROGATE_MODEL_ID
+from openflowsheet.studies.surrogate.records import MODEL_ID as SURROGATE_MODEL_ID
 from openflowsheet.studies.trust_region.checks import Decision, P2Reference, ParentSolve, Sense
 from openflowsheet.studies.trust_region.holders import TruthModel
 from openflowsheet.studies.trust_region.study import (

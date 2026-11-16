@@ -46,13 +46,8 @@ from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Any, Final
 
-from openflowsheet.application.binding import (
-    Binding,
-    Unbound,
-    bind_revision_or_reason,
-    legacy_admission,
-    refusal_code,
-)
+from openflowsheet.application.binding import Binding, bind_revision_or_reason, legacy_admission
+from openflowsheet.application.binding_common import Unbound, refusal_code
 from openflowsheet.application.coupled_run import (
     COUPLING_NAME,
     CoupledStart,

@@ -14,7 +14,7 @@ from collections.abc import Mapping
 from pathlib import Path
 from typing import Any, Final
 
-from openflowsheet.application.binding import Unbound, refusal_code
+from openflowsheet.application.binding_common import Unbound, refusal_code
 from openflowsheet.application.revision_binding import SurrogateResolver
 from openflowsheet.application.revision_run import (
     NoRoute,

@@ -31,9 +31,10 @@ from openflowsheet.models.lifted import (
     ZeroFlowForm,
 )
 from openflowsheet.models.syn001 import ENERGY_TOLERANCE, gamma_phi
+from openflowsheet.models.syn001.band_types import BandError
 from openflowsheet.models.syn001.equilibrium_form import composition_dependent
 from openflowsheet.models.syn001.ph_kernel import ph_state
-from openflowsheet.models.syn001.saturation_band import BandError, band_temperature
+from openflowsheet.models.syn001.saturation_band import band_temperature
 from openflowsheet.models.syn001.tp_state import enthalpy_flow, tp_state
 from openflowsheet.thermo import FlashRequest, Phase, PropertyProvider, PropertyRequest, StreamState
 from openflowsheet.thermo.pr_c1 import LIGHT

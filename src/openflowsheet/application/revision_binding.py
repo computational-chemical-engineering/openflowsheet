@@ -107,7 +107,7 @@ from openflowsheet.models.revision_flowsheet import (
 from openflowsheet.models.syn001 import PROVIDER_ID as SYN001_PROVIDER_ID
 from openflowsheet.models.thermal import machines as thermal_machines
 from openflowsheet.orchestrator.splits import split_owners, staged_units
-from openflowsheet.studies.surrogate import reactor as c1_surrogate
+from openflowsheet.studies.surrogate.records import MODEL_ID as SURROGATE_MODEL_ID
 from openflowsheet.thermo import PropertyProvider
 from openflowsheet.thermo.pr_c1 import PROVIDER_ID as C1_PROVIDER_ID
 
@@ -708,7 +708,7 @@ def _surrogate_manifests(
     for instance in instances:
         # M04 spec §8.2 (ADR 0037 D2): a surrogate is pinned by its manifest's SHA-256, resolved
         # through the injected resolver and checked; `revision_unsupported` otherwise.
-        if instance.model_id == c1_surrogate.MODEL_ID:
+        if instance.model_id == SURROGATE_MODEL_ID:
             manifest = _resolve_surrogate(instance, surrogates)
             if manifest is None:
                 return Unbound("unsupported", f"surrogate_manifest_mismatch({instance.unit_id})")

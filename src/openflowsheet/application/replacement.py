@@ -62,7 +62,7 @@ from typing import Any, Final, Literal
 
 from openflowsheet.adapters import variants
 from openflowsheet.adapters.variants import Variant
-from openflowsheet.application.binding import Unbound
+from openflowsheet.application.binding_common import Unbound
 from openflowsheet.application.revision_binding import (
     MODEL_BUILDERS,
     MODEL_SIGNATURES,
@@ -73,8 +73,8 @@ from openflowsheet.application.revision_binding import (
 )
 from openflowsheet.canonical import canonical_json
 from openflowsheet.orchestrator.execution import EO_CAPABLE_METHODS
-from openflowsheet.studies.surrogate import reactor as c1_surrogate
 from openflowsheet.studies.surrogate.manifest import derived_verdict
+from openflowsheet.studies.surrogate.records import MODEL_ID as SURROGATE_MODEL_ID
 
 __all__ = [
     "FACETS",
@@ -96,7 +96,7 @@ DOMAIN_MEMBERS: Final = frozenset({"hard_domain", "data_domain"})
 HARD_INTERVALS: Final = ("T_K", "P_Pa", "H2_N2", "tube_flow_mol_s")
 DETAIL_MAX: Final = 2048
 #: The surrogate-backed model ids (M04 spec §8.3): pinned by a SurrogateManifest, not a variant.
-SURROGATE_MODELS: Final = frozenset({c1_surrogate.MODEL_ID})
+SURROGATE_MODELS: Final = frozenset({SURROGATE_MODEL_ID})
 PROMOTABLE: Final = "PROMOTABLE"
 
 FacetOutcome = Literal["pass", "fail", "not_applicable"]

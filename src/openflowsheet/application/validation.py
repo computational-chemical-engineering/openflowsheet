@@ -34,7 +34,7 @@ from openflowsheet.application.validation_report import utc_timestamp as utc_tim
 from openflowsheet.canonical import first_noncanonical
 
 if TYPE_CHECKING:
-    from openflowsheet.application.binding import Unbound
+    from openflowsheet.application.binding_common import Unbound
     from openflowsheet.application.contract import ApplicationError
     from openflowsheet.application.revision_binding import SurrogateResolver
     from openflowsheet.graph.process import ProcessGraph
@@ -1053,7 +1053,7 @@ def _judged_parameters(
 
 def _code_with_hint(error: RevisionError) -> str:
     """The code, then its hint (ruling round 6, B2), bounded as an `Unbound`'s is."""
-    from openflowsheet.application.binding import HINT_LIMIT
+    from openflowsheet.application.binding_common import HINT_LIMIT
     from openflowsheet.application.projection import bound_text
 
     if error.hint is None:

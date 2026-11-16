@@ -88,7 +88,7 @@ from openflowsheet.studies.surrogate.iterations import predecessors as iteration
 from openflowsheet.studies.surrogate.plan import PlanRefusedError
 from openflowsheet.studies.surrogate.study import prepare
 from openflowsheet.verify.certificate import REGISTERED_POLICY_ID, CheckPolicy
-from openflowsheet.verify.checks import KIND_TOLERANCE
+from openflowsheet.verify.kind_tolerance import KIND_TOLERANCE
 
 __all__ = [
     "POLICY_UNSUPPORTED_ON_ROUTE",

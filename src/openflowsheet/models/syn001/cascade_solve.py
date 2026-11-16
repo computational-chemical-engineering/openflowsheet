@@ -47,6 +47,7 @@ from openflowsheet.models.lifted import LABEL_KIND, ClosureType, LiftedSplit, Re
 from openflowsheet.models.lifted_tolerance import KIND_TOLERANCE
 from openflowsheet.models.rows import specification_row
 from openflowsheet.models.syn001 import TEMPERATURE
+from openflowsheet.models.syn001.band_types import BandError
 from openflowsheet.models.syn001.cascade import (
     MODEL_ID as CASCADE_MODEL_ID,
 )
@@ -77,7 +78,7 @@ from openflowsheet.models.syn001.cascade import (
     vapor_id,
     vapor_total_id,
 )
-from openflowsheet.models.syn001.saturation_band import BandError, band_temperature
+from openflowsheet.models.syn001.saturation_band import band_temperature
 from openflowsheet.models.syn001.tp_state import single_phase_admissible
 from openflowsheet.numerics.solve_record import GlobalizationPolicy, SolvePolicy, Trace
 from openflowsheet.orchestrator.execution import Region

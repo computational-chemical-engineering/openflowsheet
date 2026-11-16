@@ -44,9 +44,9 @@ from typing import TYPE_CHECKING, Final
 
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.models.revision_flowsheet import RevisionView
+from openflowsheet.models.syn001.band_types import BandError
 from openflowsheet.models.syn001.equilibrium_form import composition_dependent
 from openflowsheet.models.syn001.saturation_band import (
-    BandError,
     degeneracy_distance,
     is_temperature_degenerate,
 )
