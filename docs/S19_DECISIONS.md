@@ -1072,3 +1072,23 @@
   job and 156-159 (`--rerun-of` not needed: skipped jobs were never logged), re-pins cce-code-health to 1304e31 in
   the same idle window (entry above), and restarts the runner.
 - **2026-11-16 ~15:50, gate report before the self-reset:** 28 gates, 0 failed; 23 of 25 steps accepted, debt removed 105.5. ALERTs unchanged (cause at job 123; proposal 2 with Frank): "selected gates take 724 s > 300 s (tests tier)", "selected/full time ratio 0.56 > 0.4", "queue wait median 31 min > 15 min".
+- **2026-11-16 ~16:30, queue-idle window: runner restart and re-pin.** The nine pending G6 run 5 jobs (147-155) were
+  moved aside (`queue/held/`) while job 146 ran, so the old runner (pid 1923489) went idle and stopped with no gate
+  interrupted; job 146 PASS (step 221 accepted, debt 13.0 -> 7.0). Session code_health: cce-code-health 846a065
+  (pushed; after 1304e31) lets an interface plan add or remove a module's `__all__` (`added = ["<file>:__all__"]`;
+  the names it lists are not counted as added public names; every name must be bound at head).
+  DECISION: re-pin 1f7df37 -> 846a065 directly, not 1304e31 (846a065 holds 1304e31 and unblocks W4 item 3b).
+  Alternative: 1304e31 now and 846a065 at the next window. Reversible by: re-pinning 1f7df37. `.venv-codehealth`
+  reinstalled, direct_url commit 846a0653. gate.sh gains `--behaviour-only <base> [label]` (S19_GATE_FULL=1),
+  gate_queue.py's merge-check calls it, merge_tiers.sh deleted (2c1ca898). Runner restarted (pid 2610692, new code:
+  a merge-check failure no longer skips a lane). G6 jobs 147-155 restored; W4 run 7 re-enqueued as jobs 161-164
+  (refusal base 34474d67, so the tests tier selects b41fa802's test retargets too).
+- **2026-11-16, job 160 (proof: behaviour-only merge-check of the merged W4 lane, 6de773c6..aa2de578) FAIL ruff:
+  18803 errors, all in non-Python files the ruff tier got from `{files}`** (16302 docs/derivations/T05b-limitations-spec.md,
+  2459 docs/interfaces-frozen.md, 42 tests/data/t07_global_state_allowlist.json; 0 in .py). Step gates never touched
+  such files; merge_tiers.sh ran its own ruff. Fix: the ruff tier keeps `*.py`/`*.pyi` only (POSIX loop; tier
+  commands run under /bin/sh). Checked: the filtered command over job 160's 426 files at aa2de578 gives 407 Python
+  files, `ruff check` and `ruff format --check` rc 0. The tool gates from merge-base(base, HEAD) and reads the tiers
+  from that base, so a merge-check sees the fix only when the lane contains this commit: W4 run 7's merge-check runs
+  on a helper branch with the wp/S19 tip merged in (as G5 run 6b). No re-run of the proof: the first real
+  merge-check on such a base is the proof (expect PASS).
