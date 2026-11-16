@@ -1467,3 +1467,11 @@
   194's LOG-ERROR, where 185's step was 246, though that one also crossed a rebase). Logged by hand with `--rerun-of
   253`: step 254 review-reject (`_differences_v1` 0.0 -> 5.0, compare.py 7.0 -> 12.0, as the reviewer predicted).
   Rule for every orchestrator and engineer: `enqueue --rerun-of <step N from the failed result line>`.
+- **2026-11-16 22:24, rule 4 serial runs done (item 1; "rule 4 falsifier: base2"). Serial full suites (`-p no:xdist`,
+  both wall-time budget tests deselected) at base 10adfc3d+A and head be115b6a+A: EQUAL.** Both: `MSG WO-5a: 1061
+  bundles scanned`, `MSG WO-6: 801 run results checked, 100 with a failure`, 20375 passed, 107 skipped, 222
+  deselected, 3 xfailed, EXIT 0 (7918 s and 7914 s). R-W4-8 fix 1 (evidence for I-4) is met in the serial form. Worktrees
+  base2 and headser removed (only the commit-A conftest overlay, on wp/S19 as 7af4b2f4). Consequences:
+  (a) W4 run 8 merges: helper wp/S19-w4r8-mc gains wp/S19 c37ca884 as 9cb029ed; merge-check job 200 (w4r8-mc).
+  (b) Rule 4 serial-form text added as question 6 of R-W4-9a (S19-R-W4-9a.md) for the design-lane ruling.
+  (c) I-10 and I-12a-d may be briefed (after R-W4-9); each of their steps needs serial counts at base and head.
