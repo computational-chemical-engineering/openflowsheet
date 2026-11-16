@@ -525,3 +525,19 @@
   full-suite fallback; wp/S19-g6 at ca416ab3 does not contain MB 736f70db). The interim `--head` of 4535f3bd is
   folded into `--snapshot` (`--head` alone implies it); `interface` mode kept. First gate with the new tier: read
   its "selected N" line as the proof.
+- **2026-11-16, G6 runs 2+3 reviewed (R-W3-G6-2, reviewer Opus): merge.** Ten steps OK; gates 148 (msg chain,
+  debt 88 -> 34), 149 (structural_pattern, accepted-neutral; 14.19 s -> 0.011 s at the 715-stage probe column,
+  tuples equal, 50746 pairs), 150 (review-note docstrings, 711e8b5f). render.py 6.0 -> 7.0, lint.py 6.5 -> 8.5. Note 1
+  became a playbook accepted form (ba124ab8). wp/S19 merged into the lane (21345f7a); merge-check g6-mc1 queued.
+- **2026-11-16, W4 run 1 (wp/S19-w4, 5d09ace0..24f2fc86).** A12/I-5 and A13/I-3 done (arch 6/4/14 -> 4/4/14 as
+  table 4.1); I-6 src and test retargets done, interface step stopped on test_x04 a7 (asserts the re-export). Gate
+  jobs 8-14 queued. Engineer's choices confirmed: (1) the move commit retargets the one violating importer (as A5);
+  (2) A12 moved the whole validator closure, types.py still re-exports SCHEMA_DIR (I-19 sweeps it); (3) `__all__`
+  kept in the old module; (4) 97d4833f edits docs/derivations/T05b-limitations-spec.md:218 (a path in the register
+  the test reads): the W4 reviewer reads it.
+- **DECISION 2026-11-16, test_x04 a7 (I-6).** ADR 0076 (accepted) amends ADR 0075: units no longer re-exports
+  display-conversion-v1. Authorised under migration rule 3: a7 becomes "the 8 names live in units.display" (passes
+  before and after), plus a test after the step that units no longer has them. Not a relaxed check: the pinned rule
+  was superseded by an accepted ADR. W4 run 2 (`S19-W4-2.md`, base 35d46182 = run 1 + merge of wp/S19): I-6, I-1,
+  I-2, I-7. Layer config after jobs 8-14 pass: application-layers loses `application.policies`; adoption lines
+  `run.bundle -> application.policies` and `assessment.spec -> application.types` go.
