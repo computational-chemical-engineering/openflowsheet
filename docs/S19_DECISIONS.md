@@ -1202,3 +1202,4 @@
   validate_document and _raise_first to openflowsheet.schema_check (their dependencies _validator, _pointer live
   there, I-5's home); pure move, no new edge; changes I-12a's documents.py list. Design-lane ruling needed
   (architect; brief `S19-A-I9-home.md`). W4 run 9 waits for it; G5/G6 lanes do not.
+- **2026-11-16 ~19:00, gate report before the self-reset:** gates 35: step 32 (selected 22, full suite 10), merge-check 3; failed 0;steps: 33 attempts, 32 accepted, debt removed 111.5; 5.5 attempts/h;ALERT selected share 69% < 75% of step gates;ALERT selected gates take 665 s > 300 s (tests tier);ALERT selected/full time ratio 0.52 > 0.4: selection saves little;ALERT queue wait median 42 min > 15 min; (ALERT causes as before: import-time fallbacks of W4 steps; proposal 2 with Frank).
