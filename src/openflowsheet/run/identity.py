@@ -57,57 +57,29 @@ def execution_plan_r0(document: Mapping[str, Any]) -> dict[str, Any]:
 
 
 def r0_projection(artifacts: Mapping[str, Any]) -> dict[str, Any]:
-    """The R0 content of a run's artifacts, by artifact name. No floats, at any depth."""
+    """The R0 content of a run's artifacts, by artifact name. No floats, at any depth.
+
+    Each artifact present contributes its part, in this order: the solve plan (`_plan_r0`), the
+    events and their last solver counters (`_event_r0`, `_solver_counters`), the certificate
+    (`_certificate_r0`), the structural report, the execution plan, the solve path with its
+    warm start (`_add_warm_start_r0`) and revision continuation (`_revision_continuation_r0`), the
+    solution state's ids, and the failure bundle (`_failure_r0`).
+    """
     projection: dict[str, Any] = {}
 
     plan = artifacts.get("solve-plan.json")
     if isinstance(plan, dict):
-        projection["plan"] = {
-            "tear_variable_ids": plan["tear_variable_ids"],
-            "tear_row_ids": plan["tear_row_ids"],
-            "inner_variable_ids": plan["inner_variable_ids"],
-            "inner_row_ids": plan["inner_row_ids"],
-            "eliminated_rows": [row["row_id"] for row in plan["eliminated_rows"]],
-            "signature_units": plan["signature_units"],
-            "initializer_chain": plan["initializer_chain"],
-            "estimates": plan["estimates"],
-        }
+        projection["plan"] = _plan_r0(plan)
 
     events = artifacts.get("solve-events.json")
     if isinstance(events, Sequence) and not isinstance(events, str | bytes):
-        projection["events"] = [
-            {
-                "sequence": event["sequence"],
-                "kind": event["kind"],
-                "attempt": event["attempt"],
-                "iteration": event["iteration"],
-                "signature": event["signature"],
-                "outcome": event.get("outcome"),
-            }
-            for event in events
-        ]
+        projection["events"] = [_event_r0(event) for event in events]
         if events:
-            projection["solver_counters"] = {
-                key: events[-1]["counters"][key] for key in SOLVER_COUNTERS
-            }
+            projection["solver_counters"] = _solver_counters(events[-1]["counters"])
 
     certificate = artifacts.get("solution-certificate.json")
     if isinstance(certificate, dict):
-        projection["certificate"] = {
-            "verification_status": certificate["verification_status"],
-            "false_success_detected": certificate["false_success_detected"],
-            "check_ids": [check["id"] for check in certificate["checks"]],
-            "check_results": [check["result"] for check in certificate["checks"]],
-            # D2.4's condition, carried so a difference is diagnosable rather than mysterious.
-            "check_near_threshold": [
-                bool(check["near_threshold"]) for check in certificate["checks"]
-            ],
-            "regularity_status": certificate["regularity"]["status"],
-            "regularity_dimension": certificate["regularity"]["dimension"],
-            "limitation_kinds": sorted(
-                {limitation["kind"] for limitation in certificate["limitations"]}
-            ),
-        }
+        projection["certificate"] = _certificate_r0(certificate)
 
     structural = artifacts.get("structural-report.json")
     if isinstance(structural, dict):
@@ -128,78 +100,12 @@ def r0_projection(artifacts: Mapping[str, Any]) -> dict[str, Any]:
     solve_path = artifacts.get("solve-path.json")
     if isinstance(solve_path, dict):
         projection["solve_path"] = solve_path["solve_path"]
-        # ADR 0024 D4 (T08 build-first spec §B2): a warm start's R0 — what happened and on which
-        # ids, never a value, a digest or the provenance ids. No bundle before T08 W4 has the
-        # member, so every earlier projection, and every registered key, is unchanged.
         warm_start = solve_path.get("warm_start")
         if isinstance(warm_start, dict):
-            candidate = warm_start.get("candidate")
-            ids = candidate.get("variable_ids") if isinstance(candidate, dict) else None
-            projection["warm_start"] = {
-                "status": warm_start["status"],
-                "reason": warm_start["reason"],
-                "selection": warm_start["selection"],
-                "candidate_variable_ids": (
-                    sorted(ids)
-                    if isinstance(ids, list) and all(isinstance(name, str) for name in ids)
-                    else None
-                ),
-                "projected_ids": [entry[0] for entry in warm_start["projections"]],
-            }
-            # ADR 0070 D9 (X02 design note §5.7): a declared outer start's R0 — statuses,
-            # reasons, the source and the unit ids, never a value. Present only when declared.
-            coupling = warm_start.get("coupling")
-            if isinstance(coupling, dict):
-                declared = coupling.get("declared")
-                projection["warm_start"]["coupling"] = {
-                    "source": coupling["source"],
-                    "status": coupling["status"],
-                    "reason": coupling["reason"],
-                    "units": sorted(declared) if isinstance(declared, dict) else [],
-                    "projected": [[entry[0], entry[1]] for entry in coupling["projections"]],
-                }
-            external = warm_start.get("external")
-            if isinstance(external, dict):
-                projection["warm_start"]["external"] = {
-                    unit: {"status": item["status"], "reason": item["reason"]}
-                    for unit, item in sorted(external["units"].items())
-                }
-        # ADR 0072 (RRC design note §5.8): a revision continuation's R0 — the decision, the
-        # continued ids and their start values (canonical strings of document constants), the
-        # source's declaration identity, signature, document `content_hash` and pinned inputs;
-        # never the provenance ids, a float, or a float-derived digest (`full_state_sha256`, the
-        # candidate's `state_sha256`: shape only). No bundle before RRC has the member.
+            _add_warm_start_r0(projection, warm_start)
         continuation = solve_path.get("revision_continuation")
         if isinstance(continuation, dict):
-            identity = continuation["source_identity"]
-            source = continuation["source_document"]
-            candidate = continuation["candidate"]
-            ids = candidate.get("variable_ids") if isinstance(candidate, dict) else None
-            projection["revision_continuation"] = {
-                "record": continuation["record"],
-                "selection": continuation["selection"],
-                "status": continuation["status"],
-                "reason": continuation["reason"],
-                "continued": continuation["continued"],
-                "source_identity": (
-                    {
-                        "model_version": identity["model_version"],
-                        "constants_sha256": identity["constants_sha256"],
-                    }
-                    if isinstance(identity, dict)
-                    else None
-                ),
-                "source_signature": continuation["source_signature"],
-                "source_content_hash": (
-                    source.get("content_hash") if isinstance(source, dict) else None
-                ),
-                "source_parameters": continuation["source_parameters"],
-                "candidate_variable_ids": (
-                    sorted(ids)
-                    if isinstance(ids, list) and all(isinstance(name, str) for name in ids)
-                    else None
-                ),
-            }
+            projection["revision_continuation"] = _revision_continuation_r0(continuation)
     # T07 ruling round 2 F1.3: the solution state's ids only. Its values and its digest are
     # float-derived and never R0 (ADR 0007; ADR 0008 D2.1). Inert for every earlier bundle.
     solution_state = artifacts.get("solution-state.json")
@@ -208,16 +114,153 @@ def r0_projection(artifacts: Mapping[str, Any]) -> dict[str, Any]:
 
     bundle = artifacts.get("failure-bundle.json")
     if isinstance(bundle, dict):
-        projection["failure"] = {
-            "outcome": bundle["outcome"],
-            "taxonomy": bundle["taxonomy"],
-            "implicated_sources": bundle["implicated_sources"],
-            "suggested_actions": [entry["action"] for entry in bundle["suggested_actions"]],
-            "solver_counters": {
-                key: bundle["observations"]["counters"][key] for key in SOLVER_COUNTERS
-            },
-        }
+        projection["failure"] = _failure_r0(bundle)
     return projection
+
+
+def _plan_r0(plan: dict[str, Any]) -> dict[str, Any]:
+    """A solve plan's R0: its tear and inner ids, the eliminated rows by id, the signature
+    units, the initializer chain and the estimates."""
+    return {
+        "tear_variable_ids": plan["tear_variable_ids"],
+        "tear_row_ids": plan["tear_row_ids"],
+        "inner_variable_ids": plan["inner_variable_ids"],
+        "inner_row_ids": plan["inner_row_ids"],
+        "eliminated_rows": [row["row_id"] for row in plan["eliminated_rows"]],
+        "signature_units": plan["signature_units"],
+        "initializer_chain": plan["initializer_chain"],
+        "estimates": plan["estimates"],
+    }
+
+
+def _event_r0(event: Any) -> dict[str, Any]:
+    """A solve event's R0: its sequence, kind, attempt, iteration, signature and outcome (None
+    when the event records none)."""
+    return {
+        "sequence": event["sequence"],
+        "kind": event["kind"],
+        "attempt": event["attempt"],
+        "iteration": event["iteration"],
+        "signature": event["signature"],
+        "outcome": event.get("outcome"),
+    }
+
+
+def _certificate_r0(certificate: dict[str, Any]) -> dict[str, Any]:
+    """A solution certificate's R0: its status words, its checks' ids, results and
+    near-threshold flags in check order, its regularity, and its limitation kinds, sorted."""
+    return {
+        "verification_status": certificate["verification_status"],
+        "false_success_detected": certificate["false_success_detected"],
+        "check_ids": [check["id"] for check in certificate["checks"]],
+        "check_results": [check["result"] for check in certificate["checks"]],
+        # D2.4's condition, carried so a difference is diagnosable rather than mysterious.
+        "check_near_threshold": [bool(check["near_threshold"]) for check in certificate["checks"]],
+        "regularity_status": certificate["regularity"]["status"],
+        "regularity_dimension": certificate["regularity"]["dimension"],
+        "limitation_kinds": sorted(
+            {limitation["kind"] for limitation in certificate["limitations"]}
+        ),
+    }
+
+
+def _add_warm_start_r0(projection: dict[str, Any], warm_start: dict[str, Any]) -> None:
+    """ADR 0024 D4 (T08 build-first spec §B2): writes a warm start's R0 into `projection`, what
+    happened and on which ids, never a value, a digest or the provenance ids. No bundle before
+    T08 W4 has the member, so every earlier projection, and every registered key, is unchanged.
+
+    The candidate's ids are `_sorted_ids`'s (None unless a list of names). A declared outer
+    start (`coupling`) and external starts (`external`) add their parts to the stored warm
+    start when present.
+    """
+    candidate = warm_start.get("candidate")
+    ids = candidate.get("variable_ids") if isinstance(candidate, dict) else None
+    projection["warm_start"] = {
+        "status": warm_start["status"],
+        "reason": warm_start["reason"],
+        "selection": warm_start["selection"],
+        "candidate_variable_ids": _sorted_ids(ids),
+        "projected_ids": [entry[0] for entry in warm_start["projections"]],
+    }
+    # ADR 0070 D9 (X02 design note §5.7): a declared outer start's R0 — statuses,
+    # reasons, the source and the unit ids, never a value. Present only when declared.
+    coupling = warm_start.get("coupling")
+    if isinstance(coupling, dict):
+        declared = coupling.get("declared")
+        projection["warm_start"]["coupling"] = {
+            "source": coupling["source"],
+            "status": coupling["status"],
+            "reason": coupling["reason"],
+            "units": sorted(declared) if isinstance(declared, dict) else [],
+            "projected": [[entry[0], entry[1]] for entry in coupling["projections"]],
+        }
+    external = warm_start.get("external")
+    if isinstance(external, dict):
+        projection["warm_start"]["external"] = {
+            unit: {"status": item["status"], "reason": item["reason"]}
+            for unit, item in sorted(external["units"].items())
+        }
+
+
+def _revision_continuation_r0(continuation: dict[str, Any]) -> dict[str, Any]:
+    """ADR 0072 (RRC design note §5.8): a revision continuation's R0, the decision, the
+    continued ids and their start values (canonical strings of document constants), the
+    source's declaration identity, signature, document `content_hash` and pinned inputs; never
+    the provenance ids, a float, or a float-derived digest (`full_state_sha256`, the
+    candidate's `state_sha256`: shape only). No bundle before RRC has the member.
+
+    The source identity is None unless a dict, the content hash None unless the source document
+    is one, and the candidate's ids are `_sorted_ids`'s.
+    """
+    identity = continuation["source_identity"]
+    source = continuation["source_document"]
+    candidate = continuation["candidate"]
+    ids = candidate.get("variable_ids") if isinstance(candidate, dict) else None
+    return {
+        "record": continuation["record"],
+        "selection": continuation["selection"],
+        "status": continuation["status"],
+        "reason": continuation["reason"],
+        "continued": continuation["continued"],
+        "source_identity": (
+            {
+                "model_version": identity["model_version"],
+                "constants_sha256": identity["constants_sha256"],
+            }
+            if isinstance(identity, dict)
+            else None
+        ),
+        "source_signature": continuation["source_signature"],
+        "source_content_hash": (source.get("content_hash") if isinstance(source, dict) else None),
+        "source_parameters": continuation["source_parameters"],
+        "candidate_variable_ids": _sorted_ids(ids),
+    }
+
+
+def _sorted_ids(ids: Any) -> list[str] | None:
+    """A candidate's `variable_ids`, sorted, when they are a list of names; else None."""
+    return (
+        sorted(ids)
+        if isinstance(ids, list) and all(isinstance(name, str) for name in ids)
+        else None
+    )
+
+
+def _failure_r0(bundle: dict[str, Any]) -> dict[str, Any]:
+    """A failure bundle's R0: its outcome, taxonomy, implicated sources, the suggested actions
+    by name, and its observed solver counters (`_solver_counters`)."""
+    return {
+        "outcome": bundle["outcome"],
+        "taxonomy": bundle["taxonomy"],
+        "implicated_sources": bundle["implicated_sources"],
+        "suggested_actions": [entry["action"] for entry in bundle["suggested_actions"]],
+        "solver_counters": _solver_counters(bundle["observations"]["counters"]),
+    }
+
+
+def _solver_counters(counters: Mapping[str, Any]) -> dict[str, Any]:
+    """`counters` restricted to `SOLVER_COUNTERS`, in that order (ADR 0007 D5.3)."""
+    return {key: counters[key] for key in SOLVER_COUNTERS}
 
 
 def r0_sha256(projection: Mapping[str, Any]) -> str:
