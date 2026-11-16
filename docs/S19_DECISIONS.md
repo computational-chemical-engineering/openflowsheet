@@ -1051,3 +1051,23 @@
   reinstalling `.venv-codehealth` under running gates (jobs 145-155 and W4 run 7's) risks them. Then: gate.sh gains
   `--behaviour-only <base> [label]`, gate_queue.py's merge-check calls it, a check run on an already-merged lane
   (expect PASS), merge_tiers.sh deleted. Alternative: re-pin now (rejected, above). Reversible by: re-pinning 1f7df37.
+- **2026-11-16, W4 run 7 reported (opus-engineer, 201k tokens; over the cap).** wp/S19-w4 34474d67..bf921d8c, 10
+  commits: b41fa802 test/script/benchmark retargets (outside the gate, 309 passed); 3cc1be0a `Refusal` src retarget
+  (no-gain, job 156); 6534c277 `feasibility_tolerance` callers, alias deleted (no-gain, 157); 1d4d88ca region.py
+  imports ClosureMemo plainly (no-gain without a plan: not in region's `__all__`, as I-5; 158); 645f1669 docs and
+  docstrings incl. 4 src files (outside the gate; engineer checked code unchanged); fee6bc4f a `.codehealth/config.toml`
+  comment (separate commit, the orchestrator's to keep or revert); 07897c02 transactions test retargets; 43a5cc53 +
+  ae3afc36 plan and interface step i8g-transactions-reexports (7 aliases and `__all__` entries go; 159); bf921d8c
+  sha map, 37 rows appended to S19_DECISIONS on the lane (expect an append conflict at the merge: keep both sides).
+  arch 4/3/12 (imports 3993 -> 3989). Item 3b STOPPED: the tool refuses any plan that adds `__all__` to an existing
+  module (orchestrator/policies.py); asked session code_health for `added = ["<file>:__all__"]`. Leftovers: sizing
+  `__init__` is package API (I-8: not a shim); program is I-7's frozen exception; benchmarks/registry.yaml:1738 names
+  application.policies (not edited); t08_numerical_policy.py:222-223 output labels (bytes, left);
+  anderson.py `__all__` still has `RecyclePolicy` (needs a STOP 1 step `changed = [anderson.py:__all__]`); the next
+  T05b manifest's case_hash changes (tests/t05b_support.py comment, expected).
+- **2026-11-16, jobs 156-159 (all of W4 run 7's gated steps) SKIPPED "built on the failed step 4d25038655":** the
+  runner's in-memory failed list holds job 140's merge-check head, and every W4 commit descends from it. Not a code
+  failure. Fix: gate_queue.py `fail()` ignores merge-check jobs (this commit). The running runner (pid 1923489) keeps
+  the old code and list until restarted: the next session stops it at a gate boundary, re-enqueues the interrupted
+  job and 156-159 (`--rerun-of` not needed: skipped jobs were never logged), re-pins cce-code-health to 1304e31 in
+  the same idle window (entry above), and restarts the runner.

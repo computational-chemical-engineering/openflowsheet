@@ -409,6 +409,11 @@ class Runner:
         self.finish(job, running, outcome, f"{job['mode']} {summary} | {match.group(2)}")
 
     def fail(self, job: dict) -> None:
+        # A merge-check verdict is about a lane's readiness to merge, not a step the lane builds
+        # on: its failure must not skip the lane's later steps (2026-11-16: job 140 skipped W4
+        # run 7's jobs 156-159).
+        if job["mode"] == "merge-check":
+            return
         if job.get("snapshot") or job.get("detached"):
             with self.lock:
                 self.failed.setdefault(job["worktree"], []).append(job["head"])
