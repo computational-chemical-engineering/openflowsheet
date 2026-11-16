@@ -1111,3 +1111,20 @@
   (tests tier)"; "selected/full time ratio 0.54 > 0.4"; "queue wait median 25 min > 15 min" (cause at job 123;
   proposal 2 with Frank).
 - **2026-11-16, jobs 170, 171, 148 PASS** (W4 feastol step 225, closurememo step 227, accepted-neutral; G6 run 5 step 226 accepted, 11.0 -> 5.0). Review R-W4-7 started (`reviewer`, brief `S19-R-W4-7.md`) while job 172 (i8g interface) gates. DECISION: review before 172's result. Alternative: after it. Reversible by: discarding the review if 172 fails. fee6bc4f (config comment, W4 lane) kept.
+- **2026-11-16, job 172 PASS (W4 run 7 i8g interface, 43a5cc53..ae3afc36, 17/17), step 228 accepted. Review R-W4-7
+  (`reviewer`, Opus): merge, no blockers, no fixes.** All retargets keep object identity (Refusal, RecyclePolicy,
+  Unbound, LiftedSplit, SolveOutcome, ClosureMemo); `_feasibility_tolerance` was the same function object;
+  645f1669's four src hunks are comments/docstrings, none read at run time (test_t05b_literal reads policies.py by
+  AST); the i8g plan names all seven aliases, no importer left. Notes for the I-19/W5 inventory:
+  (a) sizing/__init__.py:25-49 keeps S19 A8 (051f8b75) `X as X` aliases of non-core names outside `__all__` (typing
+  Final/Literal/Protocol, blocks.*, defaults.default, program.ContributionPlan/Limitation/OutputDef/Symbols/Theta,
+  quantities, regimes); ADR I-8 exempts only sizing.core's `__all__` names; no hashed file uses them.
+  DECISION: remove them at I-19 with a plan listing them under `removed` (reviewer's proposal). Alternative: keep
+  them as package API. Reversible by: not running that step.
+  (b) region.py:130-145 S19 B1 private aliases (`_admissible`, `_band_regime`, `_kernel`, `_dropped`, ...) still
+  have importers (tests/test_m02_wo8_g7.py:40, tests/test_m02_wo8_region.py:39, scripts/t05b_evidence_manifest.py:140,
+  3559; a string at tests/test_m02_wo8_verifier.py:96): into the I-19 inventory.
+  (c) the anderson `__all__` `RecyclePolicy` step must also retarget orchestrator/merge.py:28.
+  (d) cosmetic: scripts/t02_identity.py:39-40 binds RecyclePolicy twice; policies.py:32 short unreflowed line.
+  Merge-check job 173 (helper wp/S19-w4-mc = W4 tip + wp/S19 f16d72f5, dd2fd2ee; S19_DECISIONS union-merged, 1159 =
+  1091 + 1113 - 1045 lines) queued.
