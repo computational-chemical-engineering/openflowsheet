@@ -37,9 +37,15 @@ Position, numbers and rules live in files, not here. A fresh session reads, in o
    The orchestrator runs `gate_queue.py wait --since N` in the background: one wake per result. Commands:
    `Q=python3 .claude/skills/s19-refactor/gate_queue.py`; `$Q run --detach` (PID and log in
    `<git-common-dir>/codehealth/queue/`, stop with `kill $(cat <queue>/runner.pid)`), `$Q status`, `$Q wait --since N`
-   (prints new result lines and `COUNT n`), `$Q enqueue ...` (engineers; see `S19-W3-common.md`).
+   (prints new result lines and `COUNT n`; `--idle <worktree>`: one wake per delivered chain), `$Q enqueue ...`
+   (engineers; see `S19-W3-common.md`). Since 37307ab0 (wp/S19-tools2): engineers enqueue each step with
+   `--snapshot` (`--head SHA` implies it) and carry on; a failed snapshot step marks the later steps of its lane
+   SKIPPED; modes include `interface` (W4, `--plan`) and `merge-check`. The tests tier selects step-relative
+   (`--since {base} --import-time-by-file`), which has holes only the full suite closes. A lane must contain `MB`
+   (else every gate falls back to the full suite): branch lanes from the `wp/S19` tip.
 3. On a result: PASS -> reviewer per cadence -> review fixes (docstrings by the orchestrator, gated no-gain;
-   code by a fresh engineer) -> merge the lane into `wp/S19` (merge commit, `git merge -F <file>`) -> log in
+   code by a fresh engineer) -> `$Q enqueue --snapshot --worktree W --base <wp/S19 tip> --mode merge-check
+   --label <lane>-mc` (full suite; a PASS is required) -> merge the lane into `wp/S19` (merge commit, `git merge -F <file>`) -> log in
    S19_DECISIONS. FAIL -> read the failed checks; an environment failure (ENOSPC, TMPDIR, a timeout far from the
    change) is re-enqueued unchanged with `--rerun-of`; a real failure goes to a fresh engineer to bisect the chain.
 4. The test map: `MB` in S19_STATE is the map base; selection is cumulative from it. Move `MB` to the `wp/S19` tip
