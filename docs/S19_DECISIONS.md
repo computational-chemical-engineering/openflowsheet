@@ -1102,3 +1102,4 @@
   built on 3cc1be0a, including deliberate re-gates (the procedure's environment-failure re-run would hit the same).
   Fix: a failure records the queue's last seq; only jobs enqueued at or before it are skipped. Pending jobs held
   (`queue/held/`) until G6 job 147 ends, then the runner restarts on the fix and W4 run 7 is re-enqueued.
+- **2026-11-16 ~15:50Z, job 147 PASS (step 223); runner restarted (pid 2642417, 078fa7ed) with no gate running; G6 148-155 restored; W4 run 7 re-enqueued as jobs 169-172.**

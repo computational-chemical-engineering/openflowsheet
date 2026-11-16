@@ -54,14 +54,15 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 
 ## Next actions (2026-11-16, ~16:35)
 
-Runner pid 2610692 (new code; cce-code-health 846a065, merge-check = `gate.sh --behaviour-only`, merge_tiers.sh
-gone; ruff tier filters to *.py at 36ea9c2d). Results consumed up to 137 (job 160, proof FAIL ruff on .md inputs,
-fixed; S19_DECISIONS). Queue: G6 147-155, W4 run 7 161-164. No agent running. Lanes at most 2 until Thu 19 Nov
+Runner pid 2642417 (078fa7ed: skips only jobs enqueued before a failure; cce-code-health 846a065, merge-check =
+`gate.sh --behaviour-only`, merge_tiers.sh gone; ruff tier filters to *.py at 36ea9c2d). Results consumed up to 146
+(job 147 PASS, step 223). Queue: G6 148-155, W4 run 7 169-172 (bases as the engineer enqueued; job 161 on base
+34474d67 failed scope/forbid, logged step 222 gate-fail). No agent running. Lanes at most 2 until Thu 19 Nov
 13:00. ALERTs persist (cause at job 123; proposal 2 with Frank via session OpenFlowsheet-check). The tool gates from
 merge-base(base, HEAD) with the tiers of that base: a lane's merge-check sees 36ea9c2d only if the lane contains
 it, so merge the wp/S19 tip into the lane (or a helper `-mc` branch) before its merge-check when it touches non-.py
 files.
-1. Wait: `$Q wait --since 137` in the background, one wake per result.
+1. Wait: `$Q wait --since 146` in the background, one wake per result.
 2. **G6 run 5** (wp/S19-g6c, bd694a82..72ef6454): steps 218-220 accepted; 146-155 in the queue (155 = review fix,
    no-gain). Review R-W3-G6-5 done (merge after fixes = 72ef6454). When the chain passes: merge-check (`--mode
    merge-check --snapshot --worktree .../s19-g6c --base <wp/S19 tip> --label g6r5-mc`); PASS -> merge, log, remove
