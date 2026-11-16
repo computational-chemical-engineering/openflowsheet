@@ -617,16 +617,7 @@ def convert_input_value(
         raise UnitConversionError("unit")
     if value is None:
         return None, None
-    a = row.a
-    molar_mass: float | None = None
-    if row.rule == "mass_to_molar":
-        assert component is not None
-        molar_mass = molar_masses[component]
-        a = a / Fraction(repr(molar_mass))
-    try:
-        si_value = float(a * Fraction(repr(value)) + row.b)
-    except OverflowError:
-        raise UnitConversionError("value") from None
+    si_value, molar_mass = _row_conversion(row, value, component, molar_masses)
     return si_value, UnitConversion(
         source=source,
         input_id=input_id,
@@ -638,3 +629,22 @@ def convert_input_value(
         component=component if molar_mass is not None else None,
         molar_mass=molar_mass,
     )
+
+
+def _row_conversion(
+    row: ConversionRow, value: float, component: str | None, molar_masses: Mapping[str, float]
+) -> tuple[float, float | None]:
+    """ADR 0016 D2 for one admitted `row`: `value` in SI, `RN(a·D(v) + b)`, and the molar mass
+    of `component` that a `mass_to_molar` row's `a` is divided by (`None` for any other row).
+    Raises `UnitConversionError("value")` when the result overflows binary64."""
+    a = row.a
+    molar_mass: float | None = None
+    if row.rule == "mass_to_molar":
+        assert component is not None
+        molar_mass = molar_masses[component]
+        a = a / Fraction(repr(molar_mass))
+    try:
+        si_value = float(a * Fraction(repr(value)) + row.b)
+    except OverflowError:
+        raise UnitConversionError("value") from None
+    return si_value, molar_mass
