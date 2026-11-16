@@ -765,3 +765,4 @@
   `_phase_enthalpy` (flows at :538/:576 in SYN-001 order) zips with `provider.describe().components`; both are right
   only while those orders equal `COMPONENTS`. A design-lane question (component-order invariant), listed for the G5
   close.
+- **2026-11-16, job 80 PASS (W4 run 5b, w4r4 batch A src, 54f25b7a, step 185 accepted-neutral, 263.4 -> 263.4, 15/15).** W4 jobs 81-87, 89, 93, 98, 99 still queued; no W4 action until all pass.
