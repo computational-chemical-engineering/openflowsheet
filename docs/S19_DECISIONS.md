@@ -1250,3 +1250,27 @@
   POSIX filter (36ea9c2d); switching it to `set -- {files:*.py,*.pyi}` is left for a config commit at a lane-free
   moment (both forms select the same files). DECISION: keep the filter now. Alternative: switch now. Reversible by:
   one config line.
+- **2026-11-16, W4 run 9 reported (opus-engineer, 224k tokens; over the cap). wp/S19-w4 486b6dbb..dbcae2a5, 7
+  commits, NOTHING enqueued.** 52bfc2af test retarget outside (test_opt_request.py:94 `_pointer` read from
+  schema_check, same object); a3d307a0 plan `i5b-document-validation` + 1bb5a274 I-5b step; 4151f00f test retarget
+  outside (test_t07_w6a_http `ALLOWED_APPLICATION` gains `application.errors`; falsifier: a forbidden import in
+  bindings/http.py fails the test); b4185c3e plan `i9-errors` + 55dad047 I-9 step (12 src callers, tests, 5 scripts,
+  benchmarks/t07/v17/reference.py) + dbcae2a5 layer config (errors directly below types; `types -> contract`
+  adoption line goes). Ruling gates: G1 (a) 3/3/12 base and head, (b) moved blocks diff empty (20 lines, in the step
+  message), (c) no `_validator`/`_pointer` in application, (d) 0 importers through application.types (13 at base),
+  (e) patch_noop 265, 0 flagged; G2 (a)/(b) 2/2/10 exactly section 5's, none names errors/types/contract, (c) the only
+  application import in errors.py is under TYPE_CHECKING, (d) MSG probe 3/3 base and head; I-9 moved blocks identical
+  (186 lines). mypy 378 files, ruff clean; touched tests 1552 passed. Imports 3989 -> 3991 -> 3998; files 315.
+  Ruling 10.1/10.4: no test pins `__module__` or the caller module. I-14 not started.
+  **STOP (tool): the gate's static checks refuse both plans** (re-run by the orchestrator at 6529f47: same):
+  public_api `still_bound` counts the plain import the old module keeps because it uses the name (types.py:31, :50);
+  callers: test_t07_w5a_operations.py and _projection.py "binary caller file may not change" (strict UTF-8, no NUL,
+  literal U+FFFD: a tool defect); test_opt_request.py:500 "replace beyond the plan" (import inside a subprocess
+  program string). The I-5b restructure fallback is refused too (schema_check.py is not new).
+  DECISION: ask session code_health for (1) `still_bound` exempting an unaliased `from <target> import N` in a
+  non-`__init__` module with N not in `__all__`, (2) binary = strict UTF-8 failure or NUL, (3, optional) plan-matching
+  import rewrites inside string literals; re-pin, then enqueue the run 9 chain unchanged. Alternative: split I-9 by
+  the I-5 pattern (restructure + no-gain retargets), which still leaves I-5b blocked. Reversible by: the split, which
+  is mechanical from the committed end state. 4151f00f ACCEPTED (an allowlist entry for the new home of names
+  bindings/http already imported; not a relaxation; the reviewer checks it). G6 run 6 launched (opus-engineer, brief
+  S19-W3-G6-6.md, branch wp/S19-g6d).
