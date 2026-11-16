@@ -1203,3 +1203,10 @@
   there, I-5's home); pure move, no new edge; changes I-12a's documents.py list. Design-lane ruling needed
   (architect; brief `S19-A-I9-home.md`). W4 run 9 waits for it; G5/G6 lanes do not.
 - **2026-11-16 ~19:00, gate report before the self-reset:** gates 35: step 32 (selected 22, full suite 10), merge-check 3; failed 0;steps: 33 attempts, 32 accepted, debt removed 111.5; 5.5 attempts/h;ALERT selected share 69% < 75% of step gates;ALERT selected gates take 665 s > 300 s (tests tier);ALERT selected/full time ratio 0.52 > 0.4: selection saves little;ALERT queue wait median 42 min > 15 min; (ALERT causes as before: import-time fallbacks of W4 steps; proposal 2 with Frank).
+- **2026-11-16, job 155 (G6 run 5 review fix, no-gain) PASS, step 238 accepted-neutral.** Helper wp/S19-g6c-mc
+  (worktree s19-g6c-mc) = lane 72ef6454 + wp/S19 0f453303 merged in, bf36afb7 (clean; runner.py auto-merged, the only
+  overlap; lane does not touch S19_DECISIONS); merge-check enqueued as job 178 (g6r5-mc). A-I9 ruling launched
+  (architect, Fable; brief S19-A-I9-home.md). R-W4-8 review brief written (S19-R-W4-8.md), runs when 177 passes.
+  Gate report: ALERT selected share 66% < 75% of step gates; ALERT selected gates take 660 s > 300 s (tests tier);
+  ALERT selected/full time ratio 0.50 > 0.4: selection saves little; ALERT queue wait median 50 min > 15 min (causes
+  as before: import-time fallbacks of W4 steps, 10 of 11 full-suite causes collection-time code; proposal 2 with Frank).
