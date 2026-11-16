@@ -1070,20 +1070,10 @@ def escalate_column(
             barred.append(False)
             previous = None
             continue
-        flat = {
-            row
-            for row in range(len(row_scales))
-            if all(values[row] == points[0][row] for values in points[1:])
-        }
+        flat = _flat_rows(points, len(row_scales))
         level_barred = bool(flat & varied)
         varied.update(row for row in range(len(row_scales)) if row not in flat)
-        estimate = []
-        for row, row_scale in enumerate(row_scales):
-            accumulated = 0.0
-            for weight, values in zip(_CENTRAL4_WEIGHTS, points, strict=True):
-                accumulated += weight * values[row]
-            estimate.append(accumulated / (12.0 * h) * column_scale / row_scale)
-        current = tuple(estimate)
+        current = _central4_estimate(points, h, column_scale, row_scales)
         admissible.append(True)
         barred.append(level_barred)
         if previous is None:
@@ -1101,6 +1091,32 @@ def escalate_column(
         previous = current
         previous_barred = level_barred
     return Escalation(tuple(admissible), tuple(gaps), tuple(barred), None, None)
+
+
+def _flat_rows(points: Sequence[Sequence[float]], rows: int) -> set[int]:
+    """§4.8.3 (c), the flat rule: the rows of `range(rows)` whose values at the level's four
+    `points` are all equal (`==`, so -0.0 equals 0.0 and a NaN row is never flat)."""
+    return {
+        row for row in range(rows) if all(values[row] == points[0][row] for values in points[1:])
+    }
+
+
+def _central4_estimate(
+    points: Sequence[Sequence[float]],
+    h: float,
+    column_scale: float,
+    row_scales: Sequence[float],
+) -> tuple[float, ...]:
+    """§4.8.3 (b): the level's central fourth-order estimate per row, scaled as the witness
+    scales (`D * column_scale / row_scales[i]`), from its four `points` in `_CENTRAL4_OFFSETS`'
+    order, the weighted sum accumulated in that order."""
+    estimate = []
+    for row, row_scale in enumerate(row_scales):
+        accumulated = 0.0
+        for weight, values in zip(_CENTRAL4_WEIGHTS, points, strict=True):
+            accumulated += weight * values[row]
+        estimate.append(accumulated / (12.0 * h) * column_scale / row_scale)
+    return tuple(estimate)
 
 
 def _discrepancies(
