@@ -917,7 +917,7 @@
   Findings and actions:
   (1) The W5 `Refusal` exception list missed four registry-hashed files (parenthesized imports); confirmed by grep at
   92153233: cost/contributor.py:33, cost/derived.py:33, lca/impact.py:30, lca/inventory.py:37.
-  DECISION: ADR 0076 addendum (this commit; a fact the list missed, as the 2026-11-14 addendum): eight hashed files
+  DECISION: ADR 0076 addendum (88ffb121, R-1043; a fact the list missed, as the 2026-11-14 addendum): eight hashed files
   in W5; the non-hashed importers (sizing/__init__, sizing/core, sizing/families, studies/assessment.py,
   studies/nlp/revision.py, tests) retarget in W4 run 7 with the sizing re-exports. Alternative: keep all eight
   hashed files on the old path past S19 as a permanent exception; rejected (rule 1, no shims). Reversible by: a

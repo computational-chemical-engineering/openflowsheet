@@ -19892,3 +19892,21 @@ retarget never changes an expected value.
   the published `7f426aa9` breaks.
 - *Keep a minimal `orchestrator/trace.py` re-export until W5:* keeps a module I-1's migration row marks removed and
   defers the same move.
+
+## R-1043: S19's W5 `Refusal` exception covers eight registry-hashed contributor files, not four (2026-11-16)
+
+| | |
+| --- | --- |
+| Date | 2026-11-16 |
+| Decided by | build lane (S19 orchestrator), on a finding of the design-lane review R-W4-1a; a fact the list missed, not a new policy |
+| Normative text | ADR 0076 (Affected requirements, Addendum 2026-11-16 R-W4-1a; I-7 row; No shims, FQ-A) |
+| Evidence | `docs/S19_DECISIONS.md`, "R-W4-1a": grep on `wp/S19-w4` at 92153233, parenthesized imports included |
+| Affected packages | S19 (W4 run 7, W5); core.json `registry_sha256` (one change in W5, as already planned) |
+
+**Decision.** The eight files under `assessment/cost/` and `assessment/lca/` that import `Refusal` through
+`assessment.program` (the four listed plus cost/contributor.py, cost/derived.py, lca/impact.py, lca/inventory.py) are
+retargeted in W5 together with the planned `registry_sha256` change. Non-hashed importers are retargeted in W4.
+
+**Rejected alternatives, and why.**
+- *Leave the four added files on the old path after S19:* a permanent re-export path, against ADR 0076 rule 1 (no shims).
+- *Retarget them in W4:* changes `registry_sha256` twice; W5 is the one planned change.
