@@ -32,7 +32,7 @@ from openflowsheet.canonical import canonical_json
 from openflowsheet.orchestrator.policies import DEFAULT_POLICY_ID, resolve_policy
 from openflowsheet.studies.nlp.replay import MANIFEST, replay_optimization
 from openflowsheet.studies.nlp.revision import OptimizationOutcome, optimize_revision
-from openflowsheet.verify.certificate import CheckPolicy
+from openflowsheet.verify.verdict import CheckPolicy
 
 pytestmark = pytest.mark.nlp
 

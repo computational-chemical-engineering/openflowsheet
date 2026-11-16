@@ -41,8 +41,8 @@ from openflowsheet.orchestrator.executor import StepResult
 from openflowsheet.orchestrator.policies import DEFAULT_POLICY_ID, resolve_policy
 from openflowsheet.run.bundle import read_artifact, verify_bundle
 from openflowsheet.run.identity import r0_projection
-from openflowsheet.verify.certificate import CheckPolicy
 from openflowsheet.verify.failure import initializer_bundle, initializer_source
+from openflowsheet.verify.verdict import CheckPolicy
 
 COUNTERS = (
     "property_calls",

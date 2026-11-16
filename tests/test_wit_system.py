@@ -24,12 +24,13 @@ from openflowsheet.models.revision_flowsheet import WILSON_BASIS
 from openflowsheet.orchestrator.executor import execute_plan
 from openflowsheet.orchestrator.policies import T06_REVISION_V2
 from openflowsheet.orchestrator.revision import plan_revision
-from openflowsheet.verify.certificate import SolutionCertificate, verify_revision
+from openflowsheet.verify.certificate import verify_revision
 from openflowsheet.verify.checks import (
     DERIVATIVE_TOLERANCE,
     ONE_SIDED_BASES,
     WITNESS_CLASSES,
 )
+from openflowsheet.verify.verdict import SolutionCertificate
 
 WIT: dict[str, Any] = load_json(
     REPO_ROOT / "docs" / "derivations" / "scripts" / "wit_reference.json"

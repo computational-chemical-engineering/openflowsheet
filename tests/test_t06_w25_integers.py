@@ -33,7 +33,8 @@ from conftest import REPO_ROOT, load_yaml
 from openflowsheet.application.binding import bind_revision_or_reason
 from openflowsheet.application.binding_common import Unbound
 from openflowsheet.application.revision_binding import bind_revision_flowsheet
-from openflowsheet.application.validation import ValidationReport, validate
+from openflowsheet.application.validation import validate
+from openflowsheet.application.validation_report import ValidationReport
 from openflowsheet.units import read_number
 
 #: A100's two documents, the instance whose `pressure_drop` Quantity carries the parameter

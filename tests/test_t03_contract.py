@@ -39,7 +39,8 @@ from openflowsheet.numerics.newton import Evaluation, Problem
 from openflowsheet.numerics.scaling import Scaling
 from openflowsheet.numerics.solve_record import SolvePolicy, Trace
 from openflowsheet.orchestrator.attempts import solve_with_attempts
-from openflowsheet.orchestrator.region import RegionResult, solve_region, syn001_lifted_splits
+from openflowsheet.orchestrator.region import solve_region, syn001_lifted_splits
+from openflowsheet.orchestrator.region_result import RegionResult
 from openflowsheet.orchestrator.tear import solve_tear
 
 REPO_ROOT = Path(__file__).resolve().parents[1]

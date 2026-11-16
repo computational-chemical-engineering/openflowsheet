@@ -55,7 +55,8 @@ from openflowsheet.numerics.solve_record import SolvePolicy
 from openflowsheet.orchestrator import splits as splits_module
 from openflowsheet.orchestrator.execution import ExecutionPlan, declaration_identity
 from openflowsheet.orchestrator.executor import PlanResult, execute_plan
-from openflowsheet.orchestrator.region import RegionResult, _attempt_screen, _contract_kernel
+from openflowsheet.orchestrator.region import _attempt_screen, _contract_kernel
+from openflowsheet.orchestrator.region_result import RegionResult
 from openflowsheet.orchestrator.revision import instances_of, plan_revision
 from openflowsheet.orchestrator.splits import (
     SPLIT_RULES,
@@ -65,7 +66,8 @@ from openflowsheet.orchestrator.splits import (
     zero_flow_forms,
 )
 from openflowsheet.verify import CheckResult
-from openflowsheet.verify.certificate import SolutionCertificate, verify_revision
+from openflowsheet.verify.certificate import verify_revision
+from openflowsheet.verify.verdict import SolutionCertificate
 
 DORMANT: dict[str, Any] = REF["dormant_cases"]
 CONFLICTS: dict[str, Any] = REF["zero_flow_conflicts"]

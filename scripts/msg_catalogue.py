@@ -159,7 +159,7 @@ def vocabularies() -> dict[str, set[str]]:
 
     from openflowsheet.application.jobs.model import ENDING_REASONS, JobStatus  # noqa: PLC0415
     from openflowsheet.application.types import ApiErrorCode  # noqa: PLC0415
-    from openflowsheet.application.validation import ValidationStatus  # noqa: PLC0415
+    from openflowsheet.application.validation_report import ValidationStatus  # noqa: PLC0415
     from openflowsheet.verify import RegularityStatus, VerificationStatus  # noqa: PLC0415
     from openflowsheet.verify.failure import TAXONOMY  # noqa: PLC0415
 

@@ -52,7 +52,7 @@ from openflowsheet.studies.nlp.revision_host import (
     document_at,
 )
 from openflowsheet.studies.sensitivity import TAU_REGIME, OutputFunctional, StudyParameter
-from openflowsheet.verify.certificate import CheckPolicy
+from openflowsheet.verify.verdict import CheckPolicy
 
 REPO = Path(__file__).resolve().parents[1]
 S11 = REPO / "benchmarks" / "s11"

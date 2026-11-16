@@ -44,7 +44,7 @@ from openflowsheet.orchestrator.recovery import (
     eo_recovery_due,
     recovered_provenance,
 )
-from openflowsheet.orchestrator.region import RegionResult
+from openflowsheet.orchestrator.region_result import RegionResult
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 CASES = REPO_ROOT / "benchmarks" / "syn001" / "cases"

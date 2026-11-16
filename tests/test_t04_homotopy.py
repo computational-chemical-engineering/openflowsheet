@@ -47,12 +47,8 @@ from openflowsheet.orchestrator.homotopy import (
     level_values,
     rebind,
 )
-from openflowsheet.orchestrator.region import (
-    RecoveryStart,
-    RegionResult,
-    solve_region,
-    syn001_lifted_splits,
-)
+from openflowsheet.orchestrator.region import solve_region, syn001_lifted_splits
+from openflowsheet.orchestrator.region_result import RecoveryStart, RegionResult
 from openflowsheet.orchestrator.tear import solve_tear
 
 REPO_ROOT = Path(__file__).resolve().parents[1]

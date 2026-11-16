@@ -33,13 +33,14 @@ from openflowsheet.models.syn001.flowsheet import Syn001Flowsheet  # noqa: E402
 from openflowsheet.numerics.solve_record import SolvePolicy  # noqa: E402
 from openflowsheet.orchestrator.tear import Syn001TearProblem, solve_tear  # noqa: E402
 from openflowsheet.thermo.syn001 import Syn001Provider  # noqa: E402
-from openflowsheet.verify.certificate import CheckPolicy, verify  # noqa: E402
+from openflowsheet.verify.certificate import verify  # noqa: E402
 from openflowsheet.verify.failure import bundle_for  # noqa: E402
 from openflowsheet.verify.kind_tolerance import KIND_TOLERANCE  # noqa: E402
 from openflowsheet.verify.regularity import (  # noqa: E402
     absolute_conditioning_threshold,
     screen,
 )
+from openflowsheet.verify.verdict import CheckPolicy  # noqa: E402
 
 CONTEXT = EvaluationContext(model_version="K04-evidence@" + "0" * 64, constants_sha256="0" * 64)
 

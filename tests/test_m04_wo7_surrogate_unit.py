@@ -50,8 +50,9 @@ from openflowsheet.studies.surrogate import records
 from openflowsheet.thermo import StreamState
 from openflowsheet.thermo.pr_c1 import COMPONENTS, PrC1Provider
 from openflowsheet.verify import CheckResult, Limitation
-from openflowsheet.verify.certificate import SolutionCertificate, verify_revision
+from openflowsheet.verify.certificate import verify_revision
 from openflowsheet.verify.surrogate import surrogate_items
+from openflowsheet.verify.verdict import SolutionCertificate
 
 REFERENCE: Mapping[str, Any] = load_json(REPO_ROOT / "benchmarks" / "m04" / "reference_values.json")
 STATES: Mapping[str, Mapping[str, Any]] = {s["id"]: s for s in REFERENCE["jacobian_states"]}

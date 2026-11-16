@@ -28,7 +28,8 @@ from openflowsheet.numerics.solve_record import SolvePolicy, Trace
 from openflowsheet.orchestrator import revision as revision_module
 from openflowsheet.orchestrator.mass import residence_time
 from openflowsheet.orchestrator.policies import T05B_V2
-from openflowsheet.orchestrator.region import RegionResult, solve_region
+from openflowsheet.orchestrator.region import solve_region
+from openflowsheet.orchestrator.region_result import RegionResult
 from openflowsheet.orchestrator.splits import (
     closure_types,
     dormancy_forms,
@@ -772,14 +773,10 @@ def revision_projection(
     certificate's own helpers, and the table's checks at `state` itself (unprojected)."""
     from openflowsheet.models.revision_flowsheet import parse_revision
     from openflowsheet.thermo.syn001 import Syn001Provider
-    from openflowsheet.verify.certificate import (
-        BoundDeclaration,
-        CheckPolicy,
-        _project,
-        _screen,
-    )
+    from openflowsheet.verify.certificate import BoundDeclaration, _project, _screen
     from openflowsheet.verify.checks import label_checks, residual_checks
     from openflowsheet.verify.table import revision_checks
+    from openflowsheet.verify.verdict import CheckPolicy
     from openflowsheet.verify.zero_flow import dormant_outlets, zero_flow_splits
 
     policy = CheckPolicy()

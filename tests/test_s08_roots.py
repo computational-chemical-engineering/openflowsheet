@@ -40,7 +40,7 @@ from openflowsheet.models.syn001.column_solve import (
     ColumnSolution,
     solve_column,
 )
-from openflowsheet.orchestrator.region import RegionResult
+from openflowsheet.orchestrator.region_result import RegionResult
 
 REFERENCE_PATH = REPO_ROOT / "docs" / "derivations" / "scripts" / "s08_reference.json"
 #: The record as WO-G committed it (`s08_reference.py --check` byte-compares it).

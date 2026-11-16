@@ -66,8 +66,8 @@ from openflowsheet.run.bundle import read_artifact, read_manifest
 from openflowsheet.run.compare import CURRENT_POLICY_ID
 from openflowsheet.schema_check import schema_errors
 from openflowsheet.thermo.pr_c1 import COMPONENTS, PrC1Provider
-from openflowsheet.verify.certificate import CheckPolicy
 from openflowsheet.verify.failure import OUTCOME_ACTIONS
+from openflowsheet.verify.verdict import CheckPolicy
 
 sys.path.insert(0, str(REPO_ROOT / "scripts"))
 from m02_schema_fixtures import synthetic_backend, synthetic_variant  # noqa: E402

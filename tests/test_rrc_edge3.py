@@ -45,8 +45,9 @@ from openflowsheet.orchestrator.revision_continuation import (
     RevisionContinuationRecord,
     RevisionContinuationRefusal,
 )
-from openflowsheet.verify.certificate import SolutionCertificate, verify_revision
+from openflowsheet.verify.certificate import verify_revision
 from openflowsheet.verify.checks import VerifierError
+from openflowsheet.verify.verdict import SolutionCertificate
 
 NET02 = "SYN-001-T06-NET02"
 NET03 = "SYN-001-T06-NET03"

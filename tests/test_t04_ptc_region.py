@@ -57,12 +57,9 @@ from openflowsheet.orchestrator.mass import (
     resolve_mass,
     syn001_residence_time,
 )
-from openflowsheet.orchestrator.region import (
-    RegionResult,
-    region_ptc_problem,
-    solve_region,
-    syn001_lifted_splits,
-)
+from openflowsheet.orchestrator.region import solve_region, syn001_lifted_splits
+from openflowsheet.orchestrator.region_attempts import region_ptc_problem
+from openflowsheet.orchestrator.region_result import RegionResult
 from openflowsheet.orchestrator.tear import Syn001TearProblem
 from openflowsheet.thermo import PropertyRequest, PropertyResult
 from openflowsheet.thermo.syn001 import C_P, V_MOLAR, Syn001Provider, h_liquid, h_vapor

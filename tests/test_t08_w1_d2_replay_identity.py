@@ -28,8 +28,8 @@ from openflowsheet.numerics.solve_record import SolvePolicy
 from openflowsheet.orchestrator.execution import ExecutionPlan
 from openflowsheet.orchestrator.policies import DEFAULT_POLICY_ID, T05B_V2, resolve_policy
 from openflowsheet.orchestrator.tear import solve_tear
-from openflowsheet.verify.certificate import CheckPolicy
 from openflowsheet.verify.failure import bundle_for
+from openflowsheet.verify.verdict import CheckPolicy
 
 
 def _solved(name: str, policy: SolvePolicy | None = None) -> tuple[RouteRun, SolvePolicy]:

@@ -239,7 +239,7 @@ def coupling_documents() -> dict[str, Any]:
     from openflowsheet.orchestrator.policies import T06_REVISION_V2
     from openflowsheet.run.bundle import read_artifact
     from openflowsheet.thermo.pr_c1 import PrC1Provider
-    from openflowsheet.verify.certificate import CheckPolicy
+    from openflowsheet.verify.verdict import CheckPolicy
 
     document = json.loads(
         (ROOT / "benchmarks" / "m02" / "c1-loop-standin.json").read_text(encoding="utf-8")

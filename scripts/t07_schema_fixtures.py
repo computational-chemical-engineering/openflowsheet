@@ -84,7 +84,7 @@ from openflowsheet.orchestrator.policies import resolve_policy  # noqa: E402
 from openflowsheet.run.bundle import read_artifact  # noqa: E402
 from openflowsheet.run.manifest import THREAD_VARIABLES  # noqa: E402
 from openflowsheet.run.solution_state import NAME  # noqa: E402
-from openflowsheet.verify.certificate import CheckPolicy  # noqa: E402
+from openflowsheet.verify.verdict import CheckPolicy  # noqa: E402
 
 FIXTURE_DIR = ROOT / "tests" / "fixtures" / "schemas"
 REVISION = ROOT / "benchmarks" / "syn001" / "cases" / "SYN-001-nominal.yaml"

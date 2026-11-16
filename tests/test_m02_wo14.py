@@ -62,7 +62,7 @@ from openflowsheet.run.compare import CURRENT_POLICY_ID
 from openflowsheet.run.session import EXTERNAL_PROVIDERS, _reproducibility_class
 from openflowsheet.thermo.pr_c1 import PrC1Provider
 from openflowsheet.thermo.syn001 import Syn001Provider
-from openflowsheet.verify.certificate import CheckPolicy
+from openflowsheet.verify.verdict import CheckPolicy
 
 LOOP_PATH = REPO_ROOT / "benchmarks" / "m02" / "c1-loop-standin.json"
 HEATER_PATH = REPO_ROOT / "benchmarks" / "m02" / "c1-heater.json"

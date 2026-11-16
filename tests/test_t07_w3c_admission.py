@@ -31,8 +31,8 @@ from openflowsheet.orchestrator.policies import ROUTE_DEFAULT_POLICY
 from openflowsheet.orchestrator.revision import plan_revision
 from openflowsheet.run.manifest import policy_sha256
 from openflowsheet.schema_check import schema_errors
-from openflowsheet.verify.certificate import REGISTERED_POLICY_ID, CheckPolicy
 from openflowsheet.verify.kind_tolerance import KIND_TOLERANCE
+from openflowsheet.verify.verdict import REGISTERED_POLICY_ID, CheckPolicy
 
 READY = sorted(MOVED_TO_READY | ALREADY_READY)
 #: `project grant`'s agent defaults (§5.9).

@@ -24,7 +24,7 @@ from openflowsheet.studies.nlp.revision import (
     OptimizationOutcome,
     optimize_revision,
 )
-from openflowsheet.verify.certificate import CheckPolicy
+from openflowsheet.verify.verdict import CheckPolicy
 
 pytestmark = pytest.mark.nlp
 

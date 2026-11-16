@@ -33,7 +33,7 @@ from openflowsheet.orchestrator.policies import DEFAULT_POLICY_ID, resolve_polic
 from openflowsheet.run.bundle import read_artifact, read_manifest
 from openflowsheet.run.manifest import THREAD_VARIABLES
 from openflowsheet.run.session import run_session
-from openflowsheet.verify.certificate import CheckPolicy
+from openflowsheet.verify.verdict import CheckPolicy
 
 
 @pytest.fixture(autouse=True)

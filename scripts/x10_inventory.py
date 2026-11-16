@@ -431,7 +431,7 @@ def attempt(document: Document) -> dict[str, Any]:
         DEFAULT_POLICY_ID,
         resolve_policy,
     )
-    from openflowsheet.verify.certificate import CheckPolicy  # noqa: PLC0415
+    from openflowsheet.verify.verdict import CheckPolicy  # noqa: PLC0415
 
     result: dict[str, Any] = {}
     try:

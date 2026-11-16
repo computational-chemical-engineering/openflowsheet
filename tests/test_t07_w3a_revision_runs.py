@@ -64,7 +64,7 @@ from openflowsheet.run.bundle import read_artifact, read_manifest, verify_bundle
 from openflowsheet.run.identity import execution_plan_r0, floats_in, r0_projection, r0_sha256
 from openflowsheet.run.manifest import policy_sha256
 from openflowsheet.run.session import run_session
-from openflowsheet.verify.certificate import CheckPolicy
+from openflowsheet.verify.verdict import CheckPolicy
 
 sys.path.insert(0, str(REPO_ROOT / "scripts"))
 

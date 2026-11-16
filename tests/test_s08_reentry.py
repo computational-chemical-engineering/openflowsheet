@@ -56,7 +56,7 @@ from openflowsheet.models.syn001.column_solve import (
     saturation_errors,
     solve_column,
 )
-from openflowsheet.orchestrator.region import RegionResult
+from openflowsheet.orchestrator.region_result import RegionResult
 
 LIQUID5 = ("LIQUID",) * 5
 #: §6.2: F1's (and P3's) block root, the candidate `(0, 2)`.

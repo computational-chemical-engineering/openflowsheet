@@ -43,13 +43,12 @@ from openflowsheet.orchestrator.splits import STAGED_MODELS, lifted_splits, spli
 from openflowsheet.verify import CheckResult
 from openflowsheet.verify.certificate import (
     BoundDeclaration,
-    CheckPolicy,
-    SolutionCertificate,
     _staged_splits,
     fresh_provider,
     verify_revision,
 )
 from openflowsheet.verify.checks import DERIVATIVE_TOLERANCE, derivative_witness, one_sided_columns
+from openflowsheet.verify.verdict import CheckPolicy, SolutionCertificate
 from openflowsheet.verify.zero_flow import zero_flow_splits
 
 BASES = frozenset({"syn001", "wilson-ig-v2"})

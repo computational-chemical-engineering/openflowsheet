@@ -51,7 +51,7 @@ from openflowsheet.models.revision_flowsheet import (
     pin_specifications,
 )
 from openflowsheet.orchestrator.policies import DEFAULT_POLICY_ID, resolve_policy
-from openflowsheet.verify.certificate import CheckPolicy
+from openflowsheet.verify.verdict import CheckPolicy
 
 Document = dict[str, Any]
 

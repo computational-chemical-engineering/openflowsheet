@@ -822,7 +822,7 @@ def step_bundles_write(arguments: argparse.Namespace) -> int:
         resolve_policy,
     )
     from openflowsheet.run.bundle import read_manifest  # noqa: PLC0415
-    from openflowsheet.verify.certificate import CheckPolicy  # noqa: PLC0415
+    from openflowsheet.verify.verdict import CheckPolicy  # noqa: PLC0415
 
     os.environ.update({name: "1" for name in THREAD_VARIABLES})
     out: Path = arguments.out

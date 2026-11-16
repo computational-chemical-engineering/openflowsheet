@@ -36,15 +36,12 @@ from openflowsheet.models.revision_flowsheet import parse_revision
 from openflowsheet.numerics.solve_record import SolvePolicy
 from openflowsheet.orchestrator.execution import ExecutionPlan
 from openflowsheet.orchestrator.executor import PlanResult, execute_plan
-from openflowsheet.orchestrator.region import RegionResult
+from openflowsheet.orchestrator.region_result import RegionResult
 from openflowsheet.orchestrator.revision import plan_revision
 from openflowsheet.orchestrator.splits import lifted_splits
-from openflowsheet.verify.certificate import (
-    BoundDeclaration,
-    SolutionCertificate,
-    verify_revision,
-)
+from openflowsheet.verify.certificate import BoundDeclaration, verify_revision
 from openflowsheet.verify.regularity import screen, target_jacobian
+from openflowsheet.verify.verdict import SolutionCertificate
 from openflowsheet.verify.zero_flow import zero_flow_splits
 
 POLICY = SolvePolicy(policy_id="T05-W13", residual_tolerances={}, scales={})

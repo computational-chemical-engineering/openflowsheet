@@ -42,9 +42,10 @@ from openflowsheet.orchestrator.splits import DORMANCY_RULES, DormancyRule
 from openflowsheet.thermo import PropertyProvider, StreamState
 from openflowsheet.thermo.iapws95 import Iapws95Provider
 from openflowsheet.verify import CheckResult
-from openflowsheet.verify.certificate import SolutionCertificate, verify_revision
+from openflowsheet.verify.certificate import verify_revision
 from openflowsheet.verify.kind_tolerance import KIND_TOLERANCE
 from openflowsheet.verify.thermal import enthalpy_map
+from openflowsheet.verify.verdict import SolutionCertificate
 
 ROOT = Path(__file__).resolve().parents[1]
 

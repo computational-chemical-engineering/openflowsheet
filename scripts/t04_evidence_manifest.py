@@ -1343,7 +1343,7 @@ def _a09(runs: Runs, ref: Mapping[str, Any]) -> tuple[bool, Any, Any]:
     from openflowsheet.numerics.solve_record import SolveOutcome
     from openflowsheet.orchestrator.phase_contract import OpeningRefusal
     from openflowsheet.orchestrator.recovery import EO_RECOVERY_TRIGGERS, eo_recovery_due
-    from openflowsheet.orchestrator.region import RegionResult
+    from openflowsheet.orchestrator.region_result import RegionResult
 
     ledger = Ledger()
     registered = sorted(ref["constants"]["edge3_triggers"])

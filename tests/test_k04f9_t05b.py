@@ -53,18 +53,11 @@ from openflowsheet.models.syn001.flowsheet import STREAMS
 from openflowsheet.orchestrator.tear import Syn001TearProblem
 from openflowsheet.thermo.syn001 import Syn001Provider
 from openflowsheet.verify import CheckResult
-from openflowsheet.verify.certificate import (
-    CheckPolicy,
-    SolutionCertificate,
-    _project,
-    _screen,
-    run_checks,
-    verify,
-    verify_revision,
-)
+from openflowsheet.verify.certificate import _project, _screen, verify, verify_revision
 from openflowsheet.verify.checks import residual_checks
 from openflowsheet.verify.projection import PROJECTED_CATEGORIES, Projection
 from openflowsheet.verify.table import UNRESOLVED_ENTHALPY_NOTE
+from openflowsheet.verify.verdict import CheckPolicy, SolutionCertificate, run_checks
 
 REF: dict[str, Any] = yaml.safe_load(
     (REPO_ROOT / "benchmarks" / "k04f9" / "reference_values.yaml").read_text()

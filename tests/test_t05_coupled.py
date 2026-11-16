@@ -47,7 +47,7 @@ from openflowsheet.graph.report import StructuralReport
 from openflowsheet.numerics.solve_record import SolvePolicy
 from openflowsheet.orchestrator.execution import ExecutionPlan
 from openflowsheet.orchestrator.executor import PlanResult, execute_plan
-from openflowsheet.orchestrator.region import RegionResult
+from openflowsheet.orchestrator.region_result import RegionResult
 from openflowsheet.orchestrator.revision import INITIALIZER_ID, plan_revision
 from openflowsheet.verify.certificate import BoundDeclaration, alias_document
 

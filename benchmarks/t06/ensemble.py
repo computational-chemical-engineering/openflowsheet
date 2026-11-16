@@ -75,20 +75,15 @@ from openflowsheet.numerics.solve_record import SolveEvent, SolvePolicy
 from openflowsheet.orchestrator import revision
 from openflowsheet.orchestrator.execution import ExecutionPlan
 from openflowsheet.orchestrator.executor import PlanResult, execute_plan
-from openflowsheet.orchestrator.region import RegionResult
+from openflowsheet.orchestrator.region_result import RegionResult
 from openflowsheet.orchestrator.roots import same_root
 from openflowsheet.orchestrator.tear import TEAR_STREAM, solve_tear
 from openflowsheet.run.compare import differences
 from openflowsheet.run.manifest import policy_sha256
 from openflowsheet.verify import CheckResult
-from openflowsheet.verify.certificate import (
-    SolutionCertificate,
-    statements_for,
-    verify,
-    verify_bound,
-    verify_revision,
-)
+from openflowsheet.verify.certificate import verify, verify_bound, verify_revision
 from openflowsheet.verify.failure import TAXONOMY
+from openflowsheet.verify.verdict import SolutionCertificate, statements_for
 
 __all__ = [
     "A33_PREFIXES",

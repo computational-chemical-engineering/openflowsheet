@@ -74,7 +74,7 @@ from openflowsheet.orchestrator.policies import T06_REVISION_V2
 from openflowsheet.run.bundle import BundleError, read_artifact
 from openflowsheet.thermo import StreamState
 from openflowsheet.thermo.pr_c1 import PrC1Provider
-from openflowsheet.verify.certificate import CheckPolicy
+from openflowsheet.verify.verdict import CheckPolicy
 
 REPO = Path(__file__).resolve().parents[2]
 LOOP = REPO / "benchmarks" / "m02" / "c1-loop-real.json"

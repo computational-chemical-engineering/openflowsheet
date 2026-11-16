@@ -48,10 +48,12 @@ from openflowsheet.orchestrator import region as region_module
 from openflowsheet.orchestrator import region_problem
 from openflowsheet.orchestrator.execution import ExecutionPlan
 from openflowsheet.orchestrator.executor import execute_plan
-from openflowsheet.orchestrator.region import RegionResult, _KernelAnswer
+from openflowsheet.orchestrator.region import _KernelAnswer
+from openflowsheet.orchestrator.region_result import RegionResult
 from openflowsheet.orchestrator.revision import initial_state, plan_revision
 from openflowsheet.orchestrator.splits import closure_types
-from openflowsheet.verify.certificate import SolutionCertificate, verify_revision
+from openflowsheet.verify.certificate import verify_revision
+from openflowsheet.verify.verdict import SolutionCertificate
 
 
 @dataclass(frozen=True)

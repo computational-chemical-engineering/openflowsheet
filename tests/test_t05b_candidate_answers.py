@@ -53,10 +53,11 @@ from t05b_support import (
 
 from openflowsheet.orchestrator import region as region_module
 from openflowsheet.orchestrator.phase_contract import Candidate
-from openflowsheet.orchestrator.region import RegionResult
+from openflowsheet.orchestrator.region_result import RegionResult
 from openflowsheet.orchestrator.revision import InitialStateFailure, initial_state
 from openflowsheet.verify import NEAR_THRESHOLD_MARGIN
-from openflowsheet.verify.certificate import CheckPolicy, SolutionCertificate, verify_revision
+from openflowsheet.verify.certificate import verify_revision
+from openflowsheet.verify.verdict import CheckPolicy, SolutionCertificate
 
 FEED = (1.0, 1.0, 1.0)
 DUTIES = (0.0, 30_000.0, 90_000.0, 115_000.0, 125_000.0)

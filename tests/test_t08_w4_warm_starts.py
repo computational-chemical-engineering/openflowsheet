@@ -53,7 +53,7 @@ from openflowsheet.orchestrator.policies import (
     T06_REVISION_V2,
     T08_WARM_V1,
 )
-from openflowsheet.orchestrator.region import RegionResult
+from openflowsheet.orchestrator.region_result import RegionResult
 from openflowsheet.orchestrator.splits import lifted_splits
 from openflowsheet.orchestrator.warm_start import WarmStartCandidate
 from openflowsheet.run import solution_state

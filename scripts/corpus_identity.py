@@ -245,7 +245,7 @@ def solve(
         DEFAULT_POLICY_ID,
         resolve_policy,
     )
-    from openflowsheet.verify.certificate import CheckPolicy  # noqa: PLC0415
+    from openflowsheet.verify.verdict import CheckPolicy  # noqa: PLC0415
 
     revision = dict(document) if document is not None else revision_document(run_set, name)
     route = select_route(revision)

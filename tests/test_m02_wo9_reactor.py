@@ -57,7 +57,7 @@ from openflowsheet.orchestrator.revision import INITIALIZER_ID, plan_revision, t
 from openflowsheet.thermo import PropertyRequest, StreamState
 from openflowsheet.thermo.pr_c1 import COMPONENTS, PrC1Provider
 from openflowsheet.verify import pr_c1
-from openflowsheet.verify.certificate import SolutionCertificate, verify_revision
+from openflowsheet.verify.certificate import verify_revision
 from openflowsheet.verify.regularity import TAU_ILL
 from openflowsheet.verify.table import (
     EXTERNAL_DUTY_MODELS,
@@ -66,6 +66,7 @@ from openflowsheet.verify.table import (
     _c1_reactor_material,
     _reactor_energy,
 )
+from openflowsheet.verify.verdict import SolutionCertificate
 
 LOOP_PATH: Path = REPO_ROOT / "benchmarks" / "m02" / "c1-loop-standin.json"
 STANDIN = variants.registered_variant("standin-x025-v1")

@@ -275,7 +275,7 @@ def certified_state(spec_id: str, value: float) -> dict[str, float]:
     simulation path, cold), its certificate `VERIFIED`; else `RuntimeError`."""
     from openflowsheet.application.revision_run import Route, bind_route, solve_route
     from openflowsheet.orchestrator.policies import DEFAULT_POLICY_ID, resolve_policy
-    from openflowsheet.verify.certificate import CheckPolicy
+    from openflowsheet.verify.verdict import CheckPolicy
 
     policy = resolve_policy(DEFAULT_POLICY_ID, "revision_eo")
     assert policy is not None

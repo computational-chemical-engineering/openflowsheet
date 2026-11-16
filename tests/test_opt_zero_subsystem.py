@@ -34,7 +34,7 @@ from openflowsheet.studies.nlp.revision_host import (
     decision_map,
 )
 from openflowsheet.studies.nlp.verification import ZERO_SUBSYSTEM_CHANGED, _regimes
-from openflowsheet.verify.certificate import CheckPolicy
+from openflowsheet.verify.verdict import CheckPolicy
 
 REPO = Path(__file__).resolve().parents[1]
 C_MW = REPO / "benchmarks" / "s11" / "flowsheets" / "C-MW.json"

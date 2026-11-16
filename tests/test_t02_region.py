@@ -37,7 +37,8 @@ from openflowsheet.orchestrator.execution import (
     build_execution_plan,
     declaration_identity,
 )
-from openflowsheet.orchestrator.region import RegionResult, solve_region, syn001_lifted_splits
+from openflowsheet.orchestrator.region import solve_region, syn001_lifted_splits
+from openflowsheet.orchestrator.region_result import RegionResult
 from openflowsheet.orchestrator.tear import INITIALIZER_ID, Syn001TearProblem, solve_tear
 from openflowsheet.thermo.syn001 import Syn001Provider
 

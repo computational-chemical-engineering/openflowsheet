@@ -35,7 +35,7 @@ from openflowsheet.models.syn001.column_solve import (
     stage_unit,
 )
 from openflowsheet.numerics.scaling import REGISTERED_NOMINALS
-from openflowsheet.orchestrator.region import RegionResult
+from openflowsheet.orchestrator.region_result import RegionResult
 from openflowsheet.thermo.syn001 import C_P, h_liquid, h_vapor
 
 # -- A11: §4.3's circulation vector on the compiled Jacobian -------------------------------------

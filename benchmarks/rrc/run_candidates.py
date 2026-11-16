@@ -75,8 +75,9 @@ from openflowsheet.orchestrator.recovery import eo_recovery_due, solver_outcomes
 from openflowsheet.orchestrator.revision_continuation import (  # noqa: E402
     RevisionContinuationCandidate,
 )
-from openflowsheet.verify.certificate import SolutionCertificate, verify_revision  # noqa: E402
+from openflowsheet.verify.certificate import verify_revision  # noqa: E402
 from openflowsheet.verify.checks import VerifierError  # noqa: E402
+from openflowsheet.verify.verdict import SolutionCertificate  # noqa: E402
 
 CASES: Final[dict[str, Any]] = yaml.safe_load((HERE / "cases.yaml").read_text("utf-8"))
 #: §8.1: `RRC-revision-v1` with `eo_recovery = "none"`, built here and not offered.

@@ -39,7 +39,8 @@ from openflowsheet.orchestrator.execution import (
     plan_or_refusal,
     specification_regions,
 )
-from openflowsheet.orchestrator.region import RegionResult, solve_region, syn001_lifted_splits
+from openflowsheet.orchestrator.region import solve_region, syn001_lifted_splits
+from openflowsheet.orchestrator.region_result import RegionResult
 from openflowsheet.orchestrator.tear import solve_tear
 from openflowsheet.thermo.syn001 import Syn001Provider
 from openflowsheet.verify.failure import refusal_bundle

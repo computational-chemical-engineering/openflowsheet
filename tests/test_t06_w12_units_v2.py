@@ -34,7 +34,8 @@ from test_t06_w5_corpus import _spy
 from openflowsheet.application.binding import Binding, bind_revision_or_reason
 from openflowsheet.application.binding_common import Unbound
 from openflowsheet.application.revision_binding import RevisionBinding, bind_revision_flowsheet
-from openflowsheet.application.validation import ValidationReport, validate
+from openflowsheet.application.validation import validate
+from openflowsheet.application.validation_report import ValidationReport
 from openflowsheet.canonical import canonical_json
 from openflowsheet.graph.analysis import analyse
 from openflowsheet.models.revision_flowsheet import (

@@ -64,7 +64,7 @@ from openflowsheet.numerics.solve_record import SolvePolicy, Trace
 from openflowsheet.orchestrator.execution import ExecutionPlan, declaration_identity
 from openflowsheet.orchestrator.executor import PlanResult, execute_plan
 from openflowsheet.orchestrator.recovery import eo_recovery_due, solver_outcomes
-from openflowsheet.orchestrator.region import RegionResult
+from openflowsheet.orchestrator.region_result import RegionResult
 from openflowsheet.orchestrator.revision import instances_of, plan_revision
 from openflowsheet.orchestrator.splits import (
     DORMANCY_RULES,
@@ -75,7 +75,8 @@ from openflowsheet.orchestrator.splits import (
     zero_flow_forms,
 )
 from openflowsheet.verify import CheckResult
-from openflowsheet.verify.certificate import SolutionCertificate, verify_revision
+from openflowsheet.verify.certificate import verify_revision
+from openflowsheet.verify.verdict import SolutionCertificate
 from openflowsheet.verify.zero_flow import zero_flow_splits
 
 CASES: dict[str, Any] = REF["dormant_non_lifted_cases"]

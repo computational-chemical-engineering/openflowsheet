@@ -108,7 +108,7 @@ def _revision_record(binding: Any, document: Mapping[str, Any], policy: Any) -> 
     """`plan_revision` → `execute_plan` → `verify_revision` when `CONVERGED`: the R0 record."""
     from openflowsheet.orchestrator.execution import ExecutionPlan
     from openflowsheet.orchestrator.executor import execute_plan
-    from openflowsheet.orchestrator.region import RegionResult
+    from openflowsheet.orchestrator.region_result import RegionResult
     from openflowsheet.orchestrator.revision import plan_revision
     from openflowsheet.run.identity import execution_plan_r0, r0_projection
     from openflowsheet.verify.certificate import verify_revision

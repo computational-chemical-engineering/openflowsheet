@@ -54,15 +54,17 @@ from openflowsheet.models.syn001.ph_kernel import port_enthalpy
 from openflowsheet.numerics.solve_record import SolvePolicy
 from openflowsheet.orchestrator.execution import ExecutionPlan
 from openflowsheet.orchestrator.executor import PlanResult, execute_plan
-from openflowsheet.orchestrator.region import RegionResult, _contract_kernel
+from openflowsheet.orchestrator.region import _contract_kernel
+from openflowsheet.orchestrator.region_result import RegionResult
 from openflowsheet.orchestrator.revision import TraversalStart, plan_revision, traversal_start
 from openflowsheet.orchestrator.splits import closure_types, lifted_splits
 from openflowsheet.run.identity import execution_plan_r0, r0_projection
 from openflowsheet.verify import CheckResult
-from openflowsheet.verify.certificate import SolutionCertificate, verify_revision
+from openflowsheet.verify.certificate import verify_revision
 from openflowsheet.verify.kind_tolerance import KIND_TOLERANCE
 from openflowsheet.verify.saturation import band_ends, split_route
 from openflowsheet.verify.table import SPLIT_ENTHALPY_NOTE, UNRESOLVED_ENTHALPY_NOTE
+from openflowsheet.verify.verdict import SolutionCertificate
 
 K04F9_REF: dict[str, Any] = yaml.safe_load(
     (REPO_ROOT / "benchmarks" / "k04f9" / "reference_values.yaml").read_text()

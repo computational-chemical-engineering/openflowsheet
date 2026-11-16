@@ -78,7 +78,7 @@ from openflowsheet.numerics.scaling import (
     Scaling,
 )
 from openflowsheet.numerics.solve_record import Trace
-from openflowsheet.orchestrator.region import RegionResult
+from openflowsheet.orchestrator.region_result import RegionResult
 from openflowsheet.orchestrator.roots import same_root
 from openflowsheet.orchestrator.splits import check_agreement
 

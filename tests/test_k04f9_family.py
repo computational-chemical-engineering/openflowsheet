@@ -26,8 +26,9 @@ from openflowsheet.application.binding import Binding, bind_revision
 from openflowsheet.compile.casadi_backend import compile_problem
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.thermo.syn001 import Syn001Provider
-from openflowsheet.verify.certificate import SolutionCertificate, verify_bound
+from openflowsheet.verify.certificate import verify_bound
 from openflowsheet.verify.checks import admissibility_checks, energy_checks
+from openflowsheet.verify.verdict import SolutionCertificate
 
 FAMILY = REF["closed_form"]["a02_family_projection"]
 EXPOSED = {

@@ -138,8 +138,6 @@ from openflowsheet.orchestrator import region_attempts, region_phase, region_pro
 from openflowsheet.orchestrator.execution import ExecutionPlan
 from openflowsheet.orchestrator.executor import execute_plan
 from openflowsheet.orchestrator.region import (
-    TP_REGIME,
-    RegionResult,
     _band_regime,
     _contract_kernel,
     _items,
@@ -149,6 +147,8 @@ from openflowsheet.orchestrator.region import (
     _split_enthalpy,
     _trigger_dormant,
 )
+from openflowsheet.orchestrator.region_phase import TP_REGIME
+from openflowsheet.orchestrator.region_result import RegionResult
 from openflowsheet.orchestrator.revision import (
     InitialStateFailure,
     TraversalStart,
@@ -162,14 +162,7 @@ from openflowsheet.run.compare import differences
 from openflowsheet.run.identity import floats_in, r0_projection
 from openflowsheet.thermo import FlashRequest, StreamState
 from openflowsheet.verify import CheckResult
-from openflowsheet.verify.certificate import (
-    CheckReport,
-    SolutionCertificate,
-    run_checks,
-    verify,
-    verify_bound,
-    verify_revision,
-)
+from openflowsheet.verify.certificate import verify, verify_bound, verify_revision
 from openflowsheet.verify.kind_tolerance import KIND_TOLERANCE
 from openflowsheet.verify.projection import PROJECTED_CATEGORIES
 from openflowsheet.verify.saturation import (
@@ -182,6 +175,7 @@ from openflowsheet.verify.table import (
     SPLIT_ENTHALPY_NOTE,
     UNRESOLVED_ENTHALPY_NOTE,
 )
+from openflowsheet.verify.verdict import CheckReport, SolutionCertificate, run_checks
 from openflowsheet.verify.zero_flow import DORMANT_OUTLETS
 
 REFERENCE = ROOT / "benchmarks" / "t05b" / "reference_values.yaml"
@@ -619,7 +613,7 @@ def _t02_floats_sha256() -> str:
 
 def _identities_local() -> dict[str, Any]:
     """The registered identities on this machine (`docs/t05b-measurements.md`'s protocol)."""
-    from openflowsheet.verify.certificate import CheckPolicy
+    from openflowsheet.verify.verdict import CheckPolicy
 
     document = identity_document()
     return {

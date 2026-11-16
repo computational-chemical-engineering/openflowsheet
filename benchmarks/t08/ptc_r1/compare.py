@@ -62,7 +62,7 @@ from openflowsheet.orchestrator import revision
 from openflowsheet.orchestrator.execution import ExecutionPlan
 from openflowsheet.orchestrator.executor import PlanResult, execute_plan
 from openflowsheet.orchestrator.policies import T06_REVISION_V2, T08_PTC_V1, T08_WARM_V1
-from openflowsheet.orchestrator.region import RegionResult
+from openflowsheet.orchestrator.region_result import RegionResult
 from openflowsheet.run.manifest import policy_sha256
 from openflowsheet.verify.certificate import verify_revision
 

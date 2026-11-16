@@ -98,7 +98,8 @@ from openflowsheet.orchestrator.mass import (
     residence_time,
     resolve_mass,
 )
-from openflowsheet.orchestrator.region import RegionResult, region_ptc_problem
+from openflowsheet.orchestrator.region_attempts import region_ptc_problem
+from openflowsheet.orchestrator.region_result import RegionResult
 from openflowsheet.orchestrator.splits import lifted_splits
 from openflowsheet.thermo import StreamState
 from openflowsheet.thermo.syn001 import Syn001Provider, h_liquid, h_vapor

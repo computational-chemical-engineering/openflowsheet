@@ -18,7 +18,8 @@ from conftest import REPO_ROOT, load_yaml
 from test_k04_checks import flowsheet_for
 
 from openflowsheet.orchestrator.tear import solve_tear
-from openflowsheet.verify.certificate import CheckPolicy, verify
+from openflowsheet.verify.certificate import verify
+from openflowsheet.verify.verdict import CheckPolicy
 
 
 @pytest.fixture(scope="module")

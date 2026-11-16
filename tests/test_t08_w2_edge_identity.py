@@ -81,11 +81,12 @@ from openflowsheet.orchestrator.policies import (
     T08_PTC_V1,
     resolve_policy,
 )
-from openflowsheet.orchestrator.region import RegionResult
+from openflowsheet.orchestrator.region_result import RegionResult
 from openflowsheet.orchestrator.revision import plan_revision
 from openflowsheet.verify import certificate as certificate_module
 from openflowsheet.verify import projection
-from openflowsheet.verify.certificate import CheckPolicy, verify_revision
+from openflowsheet.verify.certificate import verify_revision
+from openflowsheet.verify.verdict import CheckPolicy
 
 # -- E1 ------------------------------------------------------------------------------------------
 

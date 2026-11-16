@@ -27,7 +27,8 @@ import openflowsheet.orchestrator.region as region_module
 import openflowsheet.orchestrator.region_attempts as region_attempts
 from openflowsheet.compile.casadi_backend import compile_problem
 from openflowsheet.numerics.solve_record import SolvePolicy, Trace
-from openflowsheet.orchestrator.region import RegionResult, solve_region, syn001_lifted_splits
+from openflowsheet.orchestrator.region import solve_region, syn001_lifted_splits
+from openflowsheet.orchestrator.region_result import RegionResult
 from openflowsheet.orchestrator.tear import solve_tear
 
 REPO_ROOT = Path(__file__).resolve().parents[1]

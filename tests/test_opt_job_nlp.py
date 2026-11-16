@@ -37,7 +37,7 @@ from openflowsheet.application.types import Budgets, Change, Edit, JobRequest
 from openflowsheet.orchestrator.policies import DEFAULT_POLICY_ID, resolve_policy
 from openflowsheet.run.identity import r0_projection
 from openflowsheet.studies.nlp.revision import optimize_revision
-from openflowsheet.verify.certificate import CheckPolicy
+from openflowsheet.verify.verdict import CheckPolicy
 
 pytestmark = pytest.mark.nlp
 

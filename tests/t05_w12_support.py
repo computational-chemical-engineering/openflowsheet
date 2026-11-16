@@ -22,7 +22,8 @@ from openflowsheet.numerics.solve_record import SolvePolicy
 from openflowsheet.orchestrator import revision
 from openflowsheet.orchestrator.execution import ExecutionPlan, PlanStep
 from openflowsheet.orchestrator.mass import residence_time
-from openflowsheet.orchestrator.region import RegionResult, solve_region
+from openflowsheet.orchestrator.region import solve_region
+from openflowsheet.orchestrator.region_result import RegionResult
 from openflowsheet.orchestrator.splits import lifted_splits
 
 Document = dict[str, Any]

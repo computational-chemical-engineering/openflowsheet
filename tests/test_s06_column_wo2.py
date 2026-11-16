@@ -80,7 +80,7 @@ from openflowsheet.models.syn001.column_solve import (
     target_bound,
 )
 from openflowsheet.numerics.scaling import REGISTERED_NOMINALS
-from openflowsheet.orchestrator.region import RegionAttempt, RegionResult
+from openflowsheet.orchestrator.region_result import RegionAttempt, RegionResult
 
 S02_REFERENCE: dict[str, Any] = json.loads(
     (REPO_ROOT / "docs" / "derivations" / "scripts" / "s02_reference.json").read_bytes()

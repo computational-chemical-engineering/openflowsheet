@@ -51,10 +51,9 @@ from openflowsheet.application.validation import (
     PRODUCED_BY,
     REQUIRED_KEYS,
     SCHEMA_ONLY_PRODUCED_BY,
-    ValidationReport,
-    utc_timestamp,
     validate,
 )
+from openflowsheet.application.validation_report import ValidationReport, utc_timestamp
 from openflowsheet.graph.analysis import analyse
 from openflowsheet.orchestrator.execution import ExecutionPlan, declaration_identity
 from openflowsheet.orchestrator.policies import resolve_policy
@@ -240,7 +239,7 @@ def test_fallback_labels_implicated_columns_with_their_specifications(
     specification's id, and any other object is kept; the labels do not change the finding. No
     corpus revision's fallback analysis implicates a column, so the check list is replaced."""
     import openflowsheet.application.validation as validation_module
-    from openflowsheet.application.validation import Check
+    from openflowsheet.application.validation_report import Check
     from openflowsheet.models.revision_flowsheet import pin_specifications
 
     document = CORPUS["SYN-001-T06-NET03"]()

@@ -33,13 +33,9 @@ import openflowsheet.orchestrator.tear as tear_module
 import openflowsheet.verify.certificate as certificate_module
 from openflowsheet.application.binding import Binding, bind_revision
 from openflowsheet.numerics.solve_record import SolvePolicy
-from openflowsheet.verify.certificate import (
-    SolutionCertificate,
-    alias_document,
-    verify,
-    verify_bound,
-)
+from openflowsheet.verify.certificate import alias_document, verify, verify_bound
 from openflowsheet.verify.checks import VerifierError, admissibility_checks, energy_checks
+from openflowsheet.verify.verdict import SolutionCertificate
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 CASES = REPO_ROOT / "benchmarks" / "syn001" / "cases"
@@ -448,7 +444,7 @@ def test_x23_run_checks_is_never_projected() -> None:
     reads (K04 §8.3), judges every category at the state it is given. At A02-355 from 358 K its
     S3 values are F9's raw ones — the unprojected functions' at `x_final`, bit for bit — not the
     certificate's; and a `CheckReport` carries no `transformations` and no projection."""
-    from openflowsheet.verify.certificate import CheckReport, run_checks
+    from openflowsheet.verify.verdict import CheckReport, run_checks
 
     item = solved_355()
     checks, digest = run_checks(item.binding.flowsheet, item.result.state)

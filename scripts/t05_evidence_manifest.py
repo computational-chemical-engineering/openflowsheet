@@ -2935,7 +2935,7 @@ def _a23(
 
 def _a23_local(identity_document: Mapping[str, Any]) -> tuple[bool, dict[str, Any]]:
     from openflowsheet.orchestrator.region import syn001_lifted_splits
-    from openflowsheet.verify.certificate import CheckPolicy
+    from openflowsheet.verify.verdict import CheckPolicy
 
     ledger = Ledger()
     # (i) The provider's source, byte for byte against the base commit.

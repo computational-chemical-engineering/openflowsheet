@@ -437,8 +437,8 @@ class LoopEvaluator:
         from openflowsheet.models.lifted import AdmissibilityRefusal
         from openflowsheet.orchestrator.policies import T06_REVISION_V2
         from openflowsheet.run.bundle import read_artifact
-        from openflowsheet.verify.certificate import CheckPolicy
         from openflowsheet.verify.checks import VerifierError
+        from openflowsheet.verify.verdict import CheckPolicy
 
         document = document_at(self.document, t)
         entry = empty_entry(t, literal)

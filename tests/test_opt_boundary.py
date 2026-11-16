@@ -46,7 +46,7 @@ from openflowsheet.studies.nlp.revision_host import (
     decision_map,
 )
 from openflowsheet.studies.nlp.tolerances import TAU_ACTIVE
-from openflowsheet.verify.certificate import CheckPolicy
+from openflowsheet.verify.verdict import CheckPolicy
 
 REPO = Path(__file__).resolve().parents[1]
 OPT = REPO / "benchmarks" / "opt"

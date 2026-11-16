@@ -55,7 +55,7 @@ from openflowsheet.compiled import EvaluationContext
 from openflowsheet.orchestrator.policies import T06_REVISION_V2
 from openflowsheet.run.bundle import read_artifact
 from openflowsheet.thermo.pr_c1 import PrC1Provider
-from openflowsheet.verify.certificate import CheckPolicy
+from openflowsheet.verify.verdict import CheckPolicy
 
 REPO = Path(__file__).resolve().parents[2]
 V3_ID = "pymrm-6089593-g2-nz800-s123-v3"

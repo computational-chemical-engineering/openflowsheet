@@ -590,7 +590,7 @@ def rc_bundles(tmp_path_factory: pytest.TempPathFactory) -> Path:
         select_route,
     )
     from openflowsheet.orchestrator.policies import DEFAULT_POLICY_ID, resolve_policy
-    from openflowsheet.verify.certificate import CheckPolicy
+    from openflowsheet.verify.verdict import CheckPolicy
 
     written = tmp_path_factory.mktemp("written")
     document = CORPUS["SYN-001-nominal"]()

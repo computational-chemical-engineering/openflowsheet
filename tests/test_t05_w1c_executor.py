@@ -42,7 +42,8 @@ from openflowsheet.orchestrator.execution import (
 )
 from openflowsheet.orchestrator.executor import PlanResult, execute_plan
 from openflowsheet.orchestrator.mass import RegionMass, residence_time, resolve_mass
-from openflowsheet.orchestrator.region import RegionResult, syn001_lifted_splits
+from openflowsheet.orchestrator.region import syn001_lifted_splits
+from openflowsheet.orchestrator.region_result import RegionResult
 from openflowsheet.orchestrator.revision import (
     INITIALIZER_ID,
     InitialStateFailure,

@@ -63,7 +63,7 @@ import openflowsheet.application.binding as binding
 import openflowsheet.application.revision_run as revision_run
 from openflowsheet.application.revision_run import Route, select_route, solve_route
 from openflowsheet.orchestrator.policies import DEFAULT_POLICY_ID, T05B_V2, resolve_policy
-from openflowsheet.verify.certificate import CheckPolicy
+from openflowsheet.verify.verdict import CheckPolicy
 
 sys.path.insert(0, str(REPO_ROOT / "scripts"))
 import t07_identity  # noqa: E402

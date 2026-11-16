@@ -30,7 +30,7 @@ from openflowsheet.studies.nlp.revision import (
     optimize_revision,
 )
 from openflowsheet.studies.nlp.revision_host import RevisionNlpHost
-from openflowsheet.verify.certificate import CheckPolicy
+from openflowsheet.verify.verdict import CheckPolicy
 
 REPO = Path(__file__).resolve().parents[1]
 OPT = REPO / "benchmarks" / "opt"

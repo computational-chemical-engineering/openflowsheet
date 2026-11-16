@@ -336,7 +336,7 @@ def test_a_spec_without_kinds_ignores_its_own_scales() -> None:
 
 
 def test_a_spec_with_partial_kinds_is_refused() -> None:
-    from openflowsheet.studies.trust_region.projection import ProjectionRefusedError
+    from openflowsheet.studies.trust_region.projection_support import ProjectionRefusedError
 
     base = tr_e1_spec()
     with pytest.raises(ProjectionRefusedError) as refused:
@@ -404,7 +404,7 @@ def c1(v: Mapping[str, Expr], b: Mapping[str, Expr], p: Mapping[str, Any], a: An
 
 
 def test_a_builder_that_branches_on_a_decision_is_not_differentiable() -> None:
-    from openflowsheet.studies.trust_region.projection import ProjectionRefusedError
+    from openflowsheet.studies.trust_region.projection_support import ProjectionRefusedError
 
     def branching(
         v: Mapping[str, Expr], b: Mapping[str, Expr], p: Mapping[str, Any], a: Any
@@ -426,7 +426,7 @@ def test_a_builder_that_fails_on_floats_too_is_a_defect_not_a_refusal() -> None:
 
 
 def test_a_nonsmooth_row_is_refused() -> None:
-    from openflowsheet.studies.trust_region.projection import ProjectionRefusedError
+    from openflowsheet.studies.trust_region.projection_support import ProjectionRefusedError
 
     def kinked(v: Mapping[str, Expr], b: Mapping[str, Expr], p: Mapping[str, Any], a: Any) -> Expr:
         return abs(v["x1"]) * p["z2"] ** 4 * p["z1"] ** 2 + p["z1"] - 8.0
@@ -437,7 +437,7 @@ def test_a_nonsmooth_row_is_refused() -> None:
 
 
 def test_a_decision_in_no_constraint_is_a_structure_refusal() -> None:
-    from openflowsheet.studies.trust_region.projection import ProjectionRefusedError
+    from openflowsheet.studies.trust_region.projection_support import ProjectionRefusedError
 
     base = tr_e1_spec()
     with pytest.raises(ProjectionRefusedError) as refused:
@@ -450,7 +450,7 @@ def test_a_decision_in_no_constraint_is_a_structure_refusal() -> None:
 
 
 def test_a_row_with_no_variable_is_a_structure_refusal() -> None:
-    from openflowsheet.studies.trust_region.projection import ProjectionRefusedError
+    from openflowsheet.studies.trust_region.projection_support import ProjectionRefusedError
 
     def constant(
         v: Mapping[str, Expr], b: Mapping[str, Expr], p: Mapping[str, Any], a: Any
@@ -463,7 +463,7 @@ def test_a_row_with_no_variable_is_a_structure_refusal() -> None:
 
 
 def test_a_dof_count_other_than_the_decisions_is_refused() -> None:
-    from openflowsheet.studies.trust_region.projection import ProjectionRefusedError
+    from openflowsheet.studies.trust_region.projection_support import ProjectionRefusedError
 
     def pin(v: Mapping[str, Expr], b: Mapping[str, Expr], p: Mapping[str, Any], a: Any) -> Expr:
         return v["x1"] - 1.0
@@ -530,7 +530,7 @@ def test_syn001_s_alias_rows_are_computed_not_supplied(state: str) -> None:
     """R-274: with no `omitted_rows`, the projection omits exactly the rows M03's elimination does
     — SYN-001's two pressure alias rows, on the same retained paths — and records their four
     facts' first three; TRF's DOF count is then the 5 decisions."""
-    from openflowsheet.studies.trust_region.projection import OMITTED_ROW_REASON
+    from openflowsheet.studies.trust_region.projection_support import OMITTED_ROW_REASON
 
     projection, x0 = syn001_projection(state)
     m03 = syn001_alias_rows(state)
@@ -579,7 +579,7 @@ def test_syn001_a_supplied_set_other_than_the_certified_one_is_refused(
     supplied: list[str], subject: str
 ) -> None:
     """A caller can neither keep a certified alias row nor drop another row (R-274)."""
-    from openflowsheet.studies.trust_region.projection import ProjectionRefusedError
+    from openflowsheet.studies.trust_region.projection_support import ProjectionRefusedError
 
     with pytest.raises(ProjectionRefusedError) as refused:
         syn001_projection("P1", omitted_rows=supplied)
@@ -587,7 +587,7 @@ def test_syn001_a_supplied_set_other_than_the_certified_one_is_refused(
 
 
 def test_syn001_a_supplied_row_the_elimination_keeps_is_refused() -> None:
-    from openflowsheet.studies.trust_region.projection import ProjectionRefusedError
+    from openflowsheet.studies.trust_region.projection_support import ProjectionRefusedError
 
     projection, _ = syn001_projection("P1")
     kept = projection.row_ids[0]
@@ -658,7 +658,7 @@ def test_at_a_row_not_satisfied_at_the_start_is_refused() -> None:
     """Fact 2: the redundancy is consistent (mismatch 0), but x₀ violates the row by 1 Pa."""
     from m05_support import AT_START, at_projection
 
-    from openflowsheet.studies.trust_region.projection import ProjectionRefusedError
+    from openflowsheet.studies.trust_region.projection_support import ProjectionRefusedError
 
     with pytest.raises(ProjectionRefusedError) as refused:
         at_projection(start={**AT_START, "Pa": 1.0e5 + 1.0, "Pb": 1.0e5 + 1.0})
@@ -671,7 +671,7 @@ def test_at_a_row_a_decision_moves_is_refused() -> None:
     `p_spec2` does not — a tangent residual of h/S_F = 1e4/1e5 per unit decision."""
     from m05_support import at_projection
 
-    from openflowsheet.studies.trust_region.projection import ProjectionRefusedError
+    from openflowsheet.studies.trust_region.projection_support import ProjectionRefusedError
 
     with pytest.raises(ProjectionRefusedError) as refused:
         at_projection(decisions={"z": (0.5, 1.5), "p_spec": (0.9e5, 1.1e5)})
@@ -684,7 +684,7 @@ def test_at_without_a_witness_state_no_row_is_certified() -> None:
     ways, so the elimination's mismatch is not witnessed at a second state."""
     from m05_support import AT_DOMAIN, at_projection
 
-    from openflowsheet.studies.trust_region.projection import ProjectionRefusedError
+    from openflowsheet.studies.trust_region.projection_support import ProjectionRefusedError
 
     narrow = {**AT_DOMAIN, "pressure": (99_000.0, 101_000.0)}
     with pytest.raises(ProjectionRefusedError) as refused:
@@ -735,7 +735,7 @@ def test_r278_a_link_output_pinned_by_the_decisions_is_refused() -> None:
     unmatched equation."""
     from m05_support import link_toy_projection
 
-    from openflowsheet.studies.trust_region.projection import ProjectionRefusedError
+    from openflowsheet.studies.trust_region.projection_support import ProjectionRefusedError
 
     with pytest.raises(ProjectionRefusedError) as refused:
         link_toy_projection("implicit")
@@ -769,7 +769,7 @@ def test_r278_a_property_output_pinned_by_the_decisions_passes() -> None:
 def test_r278_tr_e1_is_exempt_as_the_oracle_and_would_be_refused() -> None:
     """Pyomo's example is itself implicit (c2 holds decisions only): exempt, recorded, and refused
     if the check were required."""
-    from openflowsheet.studies.trust_region.projection import ProjectionRefusedError
+    from openflowsheet.studies.trust_region.projection_support import ProjectionRefusedError
 
     check = tr_e1_projection().source_map["shape_check"]
     assert (check["status"], check["matched"], check["size"]) == ("exempt_oracle", 2, 3)
@@ -803,7 +803,7 @@ def test_r326_syn001_s_zero_flows_are_eliminated_by_one_certified_block(
     block of the producer's three equilibrium rows and its total-flow row, with residuals 0.0 at
     x₀, rcond ≥ 1e-10 (recorded, F-12) and persistence exactly 0.0; (b) the reduced matching is
     the full system's minus 4."""
-    from openflowsheet.studies.trust_region.projection import JOINT_RCOND_MIN
+    from openflowsheet.studies.trust_region.projection_zero_flows import JOINT_RCOND_MIN
 
     projection, _ = syn001_projection(state)
     source = projection.source_map

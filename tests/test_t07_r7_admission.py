@@ -64,7 +64,7 @@ from openflowsheet.application.types import JobRequest
 from openflowsheet.application.validation import structural_refusal, validate
 from openflowsheet.orchestrator.policies import DEFAULT_POLICY_ID, T04_W12, resolve_policy
 from openflowsheet.orchestrator.revision import plan_revision
-from openflowsheet.verify.certificate import CheckPolicy
+from openflowsheet.verify.verdict import CheckPolicy
 
 #: Every A02 file's revision refusal, the admitted route's `route_reason` at `86ab418`.
 ROUTE_REASON = "unsupported(specification_role_unsupported(GUESS-heater-outlet-T))"

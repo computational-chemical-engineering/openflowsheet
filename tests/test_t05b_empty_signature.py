@@ -49,7 +49,8 @@ from openflowsheet.numerics.scaling import Scaling
 from openflowsheet.numerics.solve_record import PtcPolicy, SolvePolicy, Trace
 from openflowsheet.orchestrator.execution import ExecutionPlan
 from openflowsheet.orchestrator.executor import execute_plan
-from openflowsheet.orchestrator.region import RegionResult, _attempt_screen, _region_problem
+from openflowsheet.orchestrator.region import _attempt_screen, _region_problem
+from openflowsheet.orchestrator.region_result import RegionResult
 from openflowsheet.orchestrator.revision import instances_of, plan_revision
 from openflowsheet.orchestrator.splits import dormancy_forms
 from openflowsheet.thermo import EvaluationContext
