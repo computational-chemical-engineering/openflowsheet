@@ -261,14 +261,8 @@ def check_quantity(quantity: Mapping[str, object]) -> tuple[str, ...]:
             problems.append(f"missing required field {field!r}")
 
     kind = quantity.get("kind")
-    dimension: Dimension | None = None
-    if isinstance(kind, str):
-        try:
-            dimension = dimension_of(kind)
-        except UnknownKindError as error:
-            problems.append(str(error))
-    elif "kind" in quantity:
-        problems.append(f"kind must be a string, got {kind!r}")
+    dimension, kind_problems = _kind_dimension(quantity, kind)
+    problems.extend(kind_problems)
 
     value = read_number(quantity.get("value")) if "value" in quantity else None
     problems.extend(_check_value(quantity, value))
@@ -289,6 +283,24 @@ def check_quantity(quantity: Mapping[str, object]) -> tuple[str, ...]:
             problems.append(f"nominal must be a finite number, got {nominal!r}")
 
     return tuple(problems)
+
+
+def _kind_dimension(
+    quantity: Mapping[str, object], kind: object
+) -> tuple[Dimension | None, list[str]]:
+    """The dimension ADR 0001 registers for the quantity's declared `kind`, and the problem that
+    leaves it `None`: an unknown kind, or a present `kind` that is not a string. An absent
+    `kind` gives `None` and no problem (the missing field is reported by the caller)."""
+    problems: list[str] = []
+    dimension: Dimension | None = None
+    if isinstance(kind, str):
+        try:
+            dimension = dimension_of(kind)
+        except UnknownKindError as error:
+            problems.append(str(error))
+    elif "kind" in quantity:
+        problems.append(f"kind must be a string, got {kind!r}")
+    return dimension, problems
 
 
 def _check_value(quantity: Mapping[str, object], value: float | None) -> list[str]:
