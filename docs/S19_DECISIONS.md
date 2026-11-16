@@ -1430,3 +1430,8 @@
 - **2026-11-16 21:44, job 191 SKIPPED (pre-rebase I-14, superseded by 196); job 190 PASS (g5r9-2, 24f772cc, step 249
   accepted, 17.0 -> 12.0, 16/16).** ALERTs standing.
 - **2026-11-16 21:54, job 192 PASS (g5r9-3, 7338568e, step 250 accepted, 12.0 -> 8.0, 16/16).** ALERTs standing.
+- **2026-11-16 22:04, job 194 PASS (w4r9-i5b-iface-2, 50779e18, interface, 17/17) with LOG-ERROR: `--rerun-of 185:
+  campaign s19 has no step for this tree and base`** (the fix185 rebase changed base and tree, so 185's step 246 does
+  not match). Logged by hand without `--rerun-of`, same command otherwise (`--head 50779e18`): run-log step 251
+  accepted, 63.2 -> 63.2. Step 246 stays gate-fail for the pre-rebase ecf46789. Tool note: `--rerun-of` across a
+  rebase cannot match by design; enqueue such re-runs as fresh steps. ALERTs standing.
