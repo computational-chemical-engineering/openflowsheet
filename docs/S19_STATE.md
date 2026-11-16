@@ -52,27 +52,22 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 - Held until the scale probe reports: G1 (orchestrator/, numerics/). Open: ptc.py 6.8 (P3, P4).
 - G-END (below) stays the end criterion for the whole repository.
 
-## Next actions (2026-11-16, ~15:00)
+## Next actions (2026-11-16, ~14:10)
 
-Runner pid 1923489. Results consumed up to 123; next `$Q wait --since 123` (in the background). No agent running.
-Lanes at most 2 until Thu 19 Nov 13:00. Gate report ALERTs (selected ~760 s, ratio 0.59, wait ~70 min) persist:
-cause and action recorded at job 123 (selection widening, a tools-lane design item). Tool notes: queue
-`--rerun-of` names the run-log step, not the job; a GATE-ERROR marks its head failed in the runner's memory.
-Queued: 138 g5r8-mc, 139 w4-revfix-1b (no-gain), 140 w4-mc, 141 g6r4-revfix (no-gain), 142 g6r4-mc.
-1. **G5 run 8** (wp/S19-g5f): reviewed (R-W3-G5-8 merge; fix 95d29ba1 job 137 PASS). When merge-check 138 passes:
-   merge wp/S19-g5f into wp/S19 (merge commit, `git merge -F <file>`), log, remove worktree s19-g5f.
-2. **W4** (wp/S19-w4): reviewed (R-W4-1a, R-W4-1b: merge after fixes; docstring fixes cd2b9f43 job 139; the rest is
-   run 7). wp/S19 merged into the lane as 4d250386 (split_checks.py conflict resolved). When 139 and 140 pass: merge
-   into wp/S19, log, tell session `code_health` (its v0.2.0 tag waits on the W4 merge). Worktrees s19-w4-rg54,
-   -rg54b removable. Then launch **W4 run 7**: brief `S19-W4-7.md` (fill BASE = the wp/S19 tip after the merge,
-   fast-forward the lane to it), `opus-engineer`.
-3. **G6 run 4** (wp/S19-g6b): reviewed (R-W3-G6-4 merge after fixes, applied 6d81db7b job 141). When 141 and 142
-   pass: merge into wp/S19, log, remove worktrees s19-g6b, gq-g6r4-6, gq-g5r8-3.
-4. The second lane slot: G6 run 5, brief `S19-W3-G6-5.md` written (fill BASE = wp/S19 tip after the G6 run 4
-   merge; targets compile/spec.py, graph/{analysis,blocks,tear}.py, messages/lint.py, adapters/experiments/; G6
-   thermo is registry-hashed, W5) or the W4 items after I-8 (I-4, I-9, I-14, I-10, I-11, I-13,
-   I-12a-d, I-19, in the ADR's recommended order) once run 7 reports. G5 has left only W4-dependent targets and
-   compare.py 7.4, `replay` 5.3; the split_checks component-order question (R-W3-G5-7) is for the G5 close.
+Runner pid 1923489. Results consumed up to 126; next `$Q wait --since 126` (in the background). Queued: 141
+g6r4-revfix (no-gain), 142 g6r4-mc. Running agents: G6 run 5 engineer (opus-engineer, wp/S19-g6c from bd694a82,
+brief `S19-W3-G6-5.md`; it enqueues `g6r5-<n>` steps). Running outside the queue: `merge_tiers.sh` w4-mt1 on
+4d250386 (W4 merge-check substitute; S19_DECISIONS 13:41). Lanes at most 2 until Thu 19 Nov 13:00. Gate report
+ALERTs persist (cause and action at job 123).
+1. **G5 run 8**: merged (e9d5f386).
+2. **W4** (wp/S19-w4): job 139 PASS; job 140 merge-check FAILED by construction (refactor mode on an interface lane).
+   Substitute: `.claude/skills/s19-refactor/merge_tiers.sh BASE HEAD LABEL`. After G6 run 4 merges: merge wp/S19
+   into the lane, run merge_tiers.sh on that merge (BASE = the wp/S19 tip), on PASS merge the lane into wp/S19, log,
+   tell session `code_health` (its v0.2.0 tag waits on the W4 merge; also ask for an interface-lane merge-check
+   mode). Worktrees s19-w4-rg54, -rg54b removable. Then launch **W4 run 7** (brief `S19-W4-7.md`, BASE = the wp/S19
+   tip after the merge, `opus-engineer`): the second lane slot.
+3. **G6 run 4** (wp/S19-g6b): when 141 and 142 pass: merge into wp/S19, log, remove worktrees s19-g6b, gq-g6r4-6.
+4. **G6 run 5** running (first lane slot): on its report, the reviewer at cadence 8 (other files) before merge.
 5. Open for Frank (not blocking): R-1042 / option (C) for the T06 self-hash at W4 close; STOP 1 alternative (tool
    change); cce-code-health fixes (empty `{files}`; `log --rerun-of` with a moved base; queue `--rerun-of` job vs
    step; GATE-ERROR not to block a same-head re-gate); the verify twins ADR 0076 addendum; the selection-widening
