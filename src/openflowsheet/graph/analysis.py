@@ -101,7 +101,10 @@ def analyse_declaration(
     *,
     specification_ids: Mapping[str, str] | None = None,
 ) -> StructuralReport:
-    """§8.1's rule on an already-traced declaration. The finding itself is `_finding`'s."""
+    """§8.1's rule on an already-traced declaration.
+
+    The candidate specifications are `_candidate_specifications`'s; the finding is `_finding`'s.
+    """
     names = dict(specification_ids or {})
     incidence = declaration.incidence()
     rows, columns = list(declaration.row_ids), list(declaration.column_ids)
@@ -122,11 +125,7 @@ def analyse_declaration(
     candidate_rows = tuple(
         row_id for row_id in dm_kept.over_rows if declaration.rows[row_id].is_specification_row
     )
-    candidate_specifications: list[str] = []
-    for row_id in candidate_rows:
-        name = names.get(row_id)
-        if name is not None and name not in candidate_specifications:
-            candidate_specifications.append(name)
+    candidate_specifications = _candidate_specifications(candidate_rows, names)
 
     finding, implicated_objects, over_specified = _finding(
         redundancy, dm_kept, implicated, candidate_specifications, over_specified
@@ -194,6 +193,21 @@ def analyse_declaration(
         unsupported=tuple(absent),
         provenance=dict(_PROVENANCE),
     )
+
+
+def _candidate_specifications(
+    candidate_rows: tuple[str, ...], names: Mapping[str, str]
+) -> list[str]:
+    """The specification ids `names` gives the candidate rows, in row order, each once.
+
+    A row without an entry in `names` contributes nothing.
+    """
+    candidate_specifications: list[str] = []
+    for row_id in candidate_rows:
+        name = names.get(row_id)
+        if name is not None and name not in candidate_specifications:
+            candidate_specifications.append(name)
+    return candidate_specifications
 
 
 def _finding(
