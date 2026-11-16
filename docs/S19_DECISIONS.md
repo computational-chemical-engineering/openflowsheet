@@ -1110,3 +1110,4 @@
   import-time code, so W4 steps fall back by nature; no action beyond proposal 2); "selected gates take 703 s > 300 s
   (tests tier)"; "selected/full time ratio 0.54 > 0.4"; "queue wait median 25 min > 15 min" (cause at job 123;
   proposal 2 with Frank).
+- **2026-11-16, jobs 170, 171, 148 PASS** (W4 feastol step 225, closurememo step 227, accepted-neutral; G6 run 5 step 226 accepted, 11.0 -> 5.0). Review R-W4-7 started (`reviewer`, brief `S19-R-W4-7.md`) while job 172 (i8g interface) gates. DECISION: review before 172's result. Alternative: after it. Reversible by: discarding the review if 172 fails. fee6bc4f (config comment, W4 lane) kept.
