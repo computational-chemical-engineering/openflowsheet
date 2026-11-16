@@ -1,7 +1,8 @@
 # ADR 0076 I-11 (S17 D1, FQ-C decided 2026-11-14: delete) (W4 run 11, brief S19-W4-11): the K06
 # facade module application/transactions.py is deleted; LocalApplication is checked against the
 # plan §2.1 `Application` by mypy through local.py's private `_conforms` under TYPE_CHECKING.
-# `codehealth gate --mode interface` reads this plan from the plan commit.
+# `codehealth gate --mode interface` reads this plan from the plan commit. literals_removed added
+# after job 211 (literals tier: the deleted module's ten string literals, none declared).
 id = "i11-k06-facade"
 approved_by = "Frank Peters, 2026-11-14, ADR 0076 accepted (Decision Desk ofs-adr0076-accept); FQ-C decided by Frank 2026-11-14 (delete)"
 reason = """ADR 0076 I-11: the module application/transactions.py is removed with everything it \
@@ -33,3 +34,64 @@ changed = []
 added = []
 new_files = []
 callers = ["tests/test_t07_transactions.py"]
+
+[[literals_removed]]
+file = "src/openflowsheet/application/transactions.py"
+literal = "no revision "
+count = 1
+reason = "K06 facade deleted (FQ-C, ADR 0076 I-11): RevisionStoreView.get's RevisionError text. Successor read: LocalApplication.get_revision, whose existing not_found text is 'no such revision' (local.py:1911); the same wording stays in revisions.RevisionStore.get (revisions.py:96) and admission.py:152"
+
+[[literals_removed]]
+file = "src/openflowsheet/application/transactions.py"
+literal = "revision "
+count = 1
+reason = "K06 facade deleted (FQ-C, ADR 0076 I-11): first part of RevisionStoreView.put's immutability refusal; the put has no successor (ADR: no public put remains)"
+
+[[literals_removed]]
+file = "src/openflowsheet/application/transactions.py"
+literal = " already exists with different content ("
+count = 1
+reason = "K06 facade deleted (FQ-C, ADR 0076 I-11): RevisionStoreView.put's immutability refusal, no successor; the in-memory revisions.RevisionStore.put keeps its own text (revisions.py:113); LocalApplication.commit_change refuses a taken id with its existing 'revision id ... is taken; a revision is never replaced'"
+
+[[literals_removed]]
+file = "src/openflowsheet/application/transactions.py"
+literal = " against "
+count = 1
+reason = "K06 facade deleted (FQ-C, ADR 0076 I-11): part of the same immutability refusal, no successor"
+
+[[literals_removed]]
+file = "src/openflowsheet/application/transactions.py"
+literal = "); a revision is immutable and a change is a new revision"
+count = 1
+reason = "K06 facade deleted (FQ-C, ADR 0076 I-11): end of the same immutability refusal, no successor"
+
+[[literals_removed]]
+file = "src/openflowsheet/application/transactions.py"
+literal = "put_revision"
+count = 1
+reason = "K06 facade deleted (FQ-C, ADR 0076 I-11): the audit operation of RevisionStoreView.put, which has no successor (ADR text)"
+
+[[literals_removed]]
+file = "src/openflowsheet/application/transactions.py"
+literal = "allowed"
+count = 1
+reason = "K06 facade deleted (FQ-C, ADR 0076 I-11): the outcome field of that put_revision audit row (commit_change audits its own rows unchanged)"
+
+[[literals_removed]]
+file = "src/openflowsheet/application/transactions.py"
+literal = "revision:"
+count = 1
+reason = "K06 facade deleted (FQ-C, ADR 0076 I-11): the effect prefix of that put_revision audit row (commit_change's own `revision:` effect, local.py:671, unchanged)"
+
+[[literals_removed]]
+file = "src/openflowsheet/application/transactions.py"
+literal = "committed"
+count = 1
+reason = "K06 facade deleted (FQ-C, ADR 0076 I-11): the facade commit's status test for merging record_run ids; record_run has no successor (ADR 0035 D4)"
+
+[[literals_removed]]
+file = "src/openflowsheet/application/transactions.py"
+literal = "replayed"
+count = 1
+reason = "K06 facade deleted (FQ-C, ADR 0076 I-11): the same status test as 'committed'"
+
