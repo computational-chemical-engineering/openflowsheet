@@ -32,8 +32,8 @@ from openflowsheet.compile.casadi_backend import compile_problem
 from openflowsheet.compile.reference import state_vector
 from openflowsheet.models import flow_id
 from openflowsheet.models.revision_flowsheet import parse_revision
-from openflowsheet.models.syn001.cascade import stage_duty_id, stage_temperature_id
 from openflowsheet.models.syn001.cascade_solve import S01_DEFAULT_V1
+from openflowsheet.models.syn001.cascade_spec import stage_duty_id, stage_temperature_id
 from openflowsheet.models.syn001.column import ColumnSpec
 from openflowsheet.orchestrator.execution import ExecutionPlan
 from openflowsheet.orchestrator.executor import execute_plan

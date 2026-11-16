@@ -24,11 +24,11 @@ from openflowsheet.compile.reference import row_values
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.models import flow_id, temperature_id
 from openflowsheet.models.syn001.band_types import BandTemperature
-from openflowsheet.models.syn001.cascade import (
-    CascadeFailure,
+from openflowsheet.models.syn001.cascade_failure import CascadeFailure
+from openflowsheet.models.syn001.cascade_rows import declared_problem
+from openflowsheet.models.syn001.cascade_spec import (
     InletState,
     SideFeed,
-    declared_problem,
     inlet_stream,
     liquid_id,
     liquid_total_id,

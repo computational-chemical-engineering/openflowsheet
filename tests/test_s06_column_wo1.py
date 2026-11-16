@@ -26,11 +26,11 @@ import openflowsheet.models.syn001.column_solve as column_solve_module
 import openflowsheet.models.syn001.column_validation as column_validation_module
 from openflowsheet.compile.reference import row_values
 from openflowsheet.compiled import EvaluationContext
-from openflowsheet.models.syn001.cascade import (
-    CascadeFailure,
+from openflowsheet.models.syn001.cascade_failure import CascadeFailure
+from openflowsheet.models.syn001.cascade_rows import declared_problem
+from openflowsheet.models.syn001.cascade_spec import (
     InletState,
     SideFeed,
-    declared_problem,
     liquid_id,
     stage_pressure_id,
     stage_temperature_id,

@@ -16,7 +16,7 @@ import pytest
 from test_s02_column_wo1 import PROVIDER, REFERENCE, SPECS, UNIT
 from test_s02_column_wo2 import FLOW_ABS, FLOW_REL, T_ABS, stages_state
 
-from openflowsheet.models.syn001.cascade import (
+from openflowsheet.models.syn001.cascade_spec import (
     liquid_id,
     liquid_total_id,
     mixed_id,

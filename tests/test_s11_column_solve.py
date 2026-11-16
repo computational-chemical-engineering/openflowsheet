@@ -42,8 +42,8 @@ from openflowsheet.application.revision_binding import (
 from openflowsheet.compile.casadi_backend import compile_problem
 from openflowsheet.models import flow_id, pressure_id, temperature_id
 from openflowsheet.models.revision_flowsheet import WILSON_BASIS, WILSON_RECORDS
-from openflowsheet.models.syn001.cascade import stage_duty_id, stage_temperature_id
 from openflowsheet.models.syn001.cascade_solve import S01_DEFAULT_V1
+from openflowsheet.models.syn001.cascade_spec import stage_duty_id, stage_temperature_id
 from openflowsheet.models.syn001.column import ColumnSpec
 from openflowsheet.models.syn001.column_solve import ColumnSolution, product_columns, solve_column
 from openflowsheet.numerics.solve_record import SolvePolicy

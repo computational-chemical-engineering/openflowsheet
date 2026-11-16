@@ -32,13 +32,9 @@ import openflowsheet.models.syn001.column_acceptance as acceptance_module
 import openflowsheet.models.syn001.column_blocks as blocks_module
 import openflowsheet.models.syn001.column_solve as solve_module
 from openflowsheet.canonical import state_sha256
-from openflowsheet.models.syn001.cascade import (
-    CascadeFailure,
-    liquid_id,
-    stage_temperature_id,
-    vapor_id,
-)
+from openflowsheet.models.syn001.cascade_failure import CascadeFailure
 from openflowsheet.models.syn001.cascade_solve import DECLARATION_CONTEXT, AcceptanceDefectError
+from openflowsheet.models.syn001.cascade_spec import liquid_id, stage_temperature_id, vapor_id
 from openflowsheet.models.syn001.column import profile_initial
 from openflowsheet.models.syn001.column_blocks import BLOCK_ENDPOINT_ID, BlockEndpoint
 from openflowsheet.models.syn001.column_solve import (

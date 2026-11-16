@@ -25,8 +25,8 @@ from test_s08_blocks import D1, EXPECTED_CANDIDATES, F1, P2, P3
 
 import openflowsheet.models.syn001.column_blocks as blocks_module
 import openflowsheet.models.syn001.column_solve as solve_module
-from openflowsheet.models.syn001.cascade import (
-    _k_values,
+from openflowsheet.models.syn001.cascade import _k_values
+from openflowsheet.models.syn001.cascade_spec import (
     liquid_id,
     stage_duty_id,
     stage_temperature_id,

@@ -35,8 +35,9 @@ import openflowsheet.orchestrator.region_attempts as region_attempts
 from openflowsheet.compile.reference import row_values
 from openflowsheet.models.lifted_tolerance import KIND_TOLERANCE
 from openflowsheet.models.syn001 import FLOW_TOLERANCE
-from openflowsheet.models.syn001.cascade import (
-    CascadeFailure,
+from openflowsheet.models.syn001.cascade_failure import CascadeFailure
+from openflowsheet.models.syn001.cascade_solve import AcceptanceDefectError
+from openflowsheet.models.syn001.cascade_spec import (
     liquid_id,
     liquid_total_id,
     mixed_id,
@@ -46,7 +47,6 @@ from openflowsheet.models.syn001.cascade import (
     vapor_id,
     vapor_total_id,
 )
-from openflowsheet.models.syn001.cascade_solve import AcceptanceDefectError
 from openflowsheet.models.syn001.column import (
     ColumnSpec,
     _inflow,

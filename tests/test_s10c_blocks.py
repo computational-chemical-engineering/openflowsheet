@@ -24,10 +24,10 @@ import openflowsheet.models.syn001.gamma_phi_blocks as gamma_phi_blocks
 from openflowsheet.compile.casadi_backend import compile_problem
 from openflowsheet.compile.reference import state_vector
 from openflowsheet.compiled import EvaluationContext
-from openflowsheet.models.syn001.cascade import (
+from openflowsheet.models.syn001.cascade_rows import declared_problem
+from openflowsheet.models.syn001.cascade_spec import (
     InletState,
     SideFeed,
-    declared_problem,
     liquid_id,
     liquid_total_id,
     stage_pressure_id,

@@ -12,7 +12,7 @@ import pytest
 from test_s02_column_wo1 import PROVIDER, REFERENCE, SPECS, _variant
 from test_s02_column_wo2b import R2, solved
 
-from openflowsheet.models.syn001.cascade import CascadeFailure
+from openflowsheet.models.syn001.cascade_failure import CascadeFailure
 from openflowsheet.models.syn001.column import (
     MULTIPLE_STEADY_STATES_WARNING,
     ColumnSpec,

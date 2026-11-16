@@ -26,8 +26,9 @@ from openflowsheet.compile.reference import row_values
 from openflowsheet.models.lifted_tolerance import KIND_TOLERANCE
 from openflowsheet.models.syn001 import ENERGY_TOLERANCE
 from openflowsheet.models.syn001.band_types import BandError, BandTemperature
-from openflowsheet.models.syn001.cascade import (
-    CascadeFailure,
+from openflowsheet.models.syn001.cascade_failure import CascadeFailure
+from openflowsheet.models.syn001.cascade_solve import DECLARATION_CONTEXT
+from openflowsheet.models.syn001.cascade_spec import (
     InletState,
     SideFeed,
     liquid_id,
@@ -36,7 +37,6 @@ from openflowsheet.models.syn001.cascade import (
     vapor_id,
     vapor_total_id,
 )
-from openflowsheet.models.syn001.cascade_solve import DECLARATION_CONTEXT
 from openflowsheet.models.syn001.column import ColumnSpec, EndSpecification, profile_initial
 from openflowsheet.models.syn001.column_blocks import (
     BLOCK_ENDPOINT_ID,

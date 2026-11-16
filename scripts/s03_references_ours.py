@@ -33,11 +33,11 @@ from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
 
-from openflowsheet.models.syn001.cascade import (
+from openflowsheet.models.syn001.cascade import DormantAnswer
+from openflowsheet.models.syn001.cascade_failure import CascadeFailure
+from openflowsheet.models.syn001.cascade_spec import (
     BOTTOM,
     TOP,
-    CascadeFailure,
-    DormantAnswer,
     InletState,
     SideFeed,
     liquid_total_id,

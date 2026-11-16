@@ -21,8 +21,8 @@ from test_s10c_blocks import REAL, column_spec
 
 from openflowsheet.models import Contribution, flow_id, pressure_id, temperature_id
 from openflowsheet.models.revision_flowsheet import InstanceView, RevisionError
-from openflowsheet.models.syn001.cascade import BOTTOM, TOP, inlet_row_id, inlet_stream
 from openflowsheet.models.syn001.cascade_solve import DECLARATION_CONTEXT
+from openflowsheet.models.syn001.cascade_spec import BOTTOM, TOP, inlet_row_id, inlet_stream
 from openflowsheet.models.syn001.column import (
     CONDENSER,
     F_REF,

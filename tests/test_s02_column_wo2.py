@@ -26,8 +26,9 @@ from openflowsheet.compile.spec import ProblemSpec
 from openflowsheet.graph.trace import trace_declaration
 from openflowsheet.models.lifted_tolerance import KIND_TOLERANCE
 from openflowsheet.models.syn001 import FLOW_TOLERANCE
-from openflowsheet.models.syn001.cascade import (
-    declared_problem,
+from openflowsheet.models.syn001.cascade_rows import declared_problem
+from openflowsheet.models.syn001.cascade_solve import S01_DEFAULT_V1
+from openflowsheet.models.syn001.cascade_spec import (
     label_row_id,
     liquid_id,
     liquid_total_id,
@@ -39,7 +40,6 @@ from openflowsheet.models.syn001.cascade import (
     vapor_id,
     vapor_total_id,
 )
-from openflowsheet.models.syn001.cascade_solve import S01_DEFAULT_V1
 from openflowsheet.models.syn001.column import (
     ColumnSpec,
     _inflow,
@@ -550,7 +550,7 @@ def test_a18_the_stage_1_labels() -> None:
     """A18: M1's stage-1 label is `T_feed`, M4's `T_bottom`, M3's `T_top`, M2's stage-2 `T_c`;
     every stage's label is a declared column."""
     from openflowsheet.models import temperature_id
-    from openflowsheet.models.syn001.cascade import inlet_stream
+    from openflowsheet.models.syn001.cascade_spec import inlet_stream
 
     assert label_source(SPECS["M1"], 1) == temperature_id(inlet_stream(UNIT, "feed"))
     assert label_source(SPECS["M4"], 1) == temperature_id(inlet_stream(UNIT, "bottom"))
@@ -598,7 +598,7 @@ def test_a18_m1_stage_1_zero_flow_label_residual() -> None:
     """A18: on M1 at `x_K` with stage 1 ZERO_FLOW and the rest TWO_PHASE, the system is square
     and the label row's residual is `T_1 − T_feed`, one IEEE subtraction."""
     from openflowsheet.models import temperature_id
-    from openflowsheet.models.syn001.cascade import inlet_stream
+    from openflowsheet.models.syn001.cascade_spec import inlet_stream
     from openflowsheet.models.syn001.column_solve import system_residuals
 
     spec = SPECS["M1"]
