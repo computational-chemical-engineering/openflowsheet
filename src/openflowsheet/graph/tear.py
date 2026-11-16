@@ -218,7 +218,7 @@ def analyse_tear(
     """§9's rule on the square system `square_form` describes.
 
     Each loop is a strongly connected component of more than one unit; `_candidates` scores its
-    cycle edges as tears and `_loop_tear` chooses one.
+    cycle edges as tears and `_loop_tear` chooses one, or marks the loop `unsupported`.
     """
     incidence = declaration.incidence()
     distances = _boundary_distances(graph)

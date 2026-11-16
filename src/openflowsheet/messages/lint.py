@@ -21,6 +21,7 @@ from openflowsheet.messages.catalogue import (
     Entry,
 )
 from openflowsheet.messages.render import (
+    Explanation,
     RenderContext,
     RenderError,
     _matches,
@@ -87,18 +88,7 @@ def _check_templates(entry: Entry, catalogue: Catalogue) -> list[str]:
     allowed = _allowed_names(entry)
     for name, index, text in entry.templates():
         where = name if index is None else f"variants[{index}].{name}"
-        try:
-            nodes = template.parse(text)
-        except template.TemplateError as error:
-            problems.append(f"{where}: {error}")
-            continue
-        for param in template.params(nodes):
-            if param.name not in allowed:
-                problems.append(f"{where}: undeclared param {param.name!r}")
-            elif param.conversion == "title":
-                declared = entry.params.get(param.name)
-                if declared is None or declared.type != "code":
-                    problems.append(f"{where}: !title on {param.name!r}, which is not a code")
+        problems += _check_template(entry, allowed, where, text)
     for name in entry.args:
         if name not in entry.params:
             problems.append(f"args: {name!r} is not a declared param")
@@ -110,6 +100,25 @@ def _check_templates(entry: Entry, catalogue: Catalogue) -> list[str]:
             re.compile(entry.detail_pattern)
         except re.error as error:
             problems.append(f"detail_pattern: {error}")
+    return problems
+
+
+def _check_template(entry: Entry, allowed: set[str], where: str, text: str) -> list[str]:
+    """The template `text` at `where` parses, every name it renders is in `allowed`, and `!title`
+    is applied only to a `code` param of `entry`."""
+    problems: list[str] = []
+    try:
+        nodes = template.parse(text)
+    except template.TemplateError as error:
+        problems.append(f"{where}: {error}")
+        return problems
+    for param in template.params(nodes):
+        if param.name not in allowed:
+            problems.append(f"{where}: undeclared param {param.name!r}")
+        elif param.conversion == "title":
+            declared = entry.params.get(param.name)
+            if declared is None or declared.type != "code":
+                problems.append(f"{where}: !title on {param.name!r}, which is not a code")
     return problems
 
 
@@ -162,28 +171,45 @@ def _check_examples(entry: Entry, catalogue: Catalogue) -> list[str]:
             except RenderError as error:
                 problems.append(f"examples[{number}] (surface {surface}): {error}")
                 continue
-            for member in ("summary", "cause"):
-                text = explanation.get(member)
-                if text is not None and len(text) > SUMMARY_LIMIT:
-                    problems.append(
-                        f"examples[{number}] (surface {surface}): {member} has {len(text)} > "
-                        f"{SUMMARY_LIMIT} characters"
-                    )
+            problems += _check_lengths(explanation, surface, number)
             scope = _Scope(entry, {**context.params(), **params}, context, catalogue)
             outer = chain[: chain.index(entry.code)]
-            for index, variant in enumerate(entry.variants):
-                if not _matches(variant["when"], scope.params, surface, outer):
-                    continue
-                for name in ("summary", "context", "where", "why", "action"):
-                    if name not in variant:
-                        continue
-                    try:
-                        render_template(str(variant[name]), scope)
-                    except RenderError as error:
-                        problems.append(
-                            f"examples[{number}] (surface {surface}) variants[{index}].{name}: "
-                            f"{error}"
-                        )
+            problems += _check_reached_variants(entry, scope, outer, surface, number)
+    return problems
+
+
+def _check_lengths(explanation: Explanation, surface: str | None, number: int) -> list[str]:
+    """Example `number` on `surface`: the rendered summary and cause are at most `SUMMARY_LIMIT`
+    characters."""
+    problems: list[str] = []
+    for member in ("summary", "cause"):
+        text = explanation.get(member)
+        if text is not None and len(text) > SUMMARY_LIMIT:
+            problems.append(
+                f"examples[{number}] (surface {surface}): {member} has {len(text)} > "
+                f"{SUMMARY_LIMIT} characters"
+            )
+    return problems
+
+
+def _check_reached_variants(
+    entry: Entry, scope: _Scope, outer: list[str], surface: str | None, number: int
+) -> list[str]:
+    """Example `number` on `surface`: every template of every variant whose `when` it reaches
+    (with `outer`, the chain's codes before the entry's) renders in `scope`."""
+    problems: list[str] = []
+    for index, variant in enumerate(entry.variants):
+        if not _matches(variant["when"], scope.params, surface, outer):
+            continue
+        for name in ("summary", "context", "where", "why", "action"):
+            if name not in variant:
+                continue
+            try:
+                render_template(str(variant[name]), scope)
+            except RenderError as error:
+                problems.append(
+                    f"examples[{number}] (surface {surface}) variants[{index}].{name}: {error}"
+                )
     return problems
 
 
