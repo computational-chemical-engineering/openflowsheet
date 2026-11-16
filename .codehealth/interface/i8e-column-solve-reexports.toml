@@ -1,0 +1,41 @@
+# ADR 0076 I-8, batch E (W4 run 5, brief S19-W4-5; form of S19_DECISIONS 2026-11-16 STOP 1):
+# models/syn001/column_solve.py stops re-exporting the names that the restructure plan
+# split-column-solve gave a new home, except the five the frozen column_unit.py imports through it.
+# `codehealth gate --mode interface` reads this plan from the plan commit.
+id = "i8e-column-solve-reexports"
+approved_by = "Frank Peters, 2026-11-14, ADR 0076 accepted (Decision Desk ofs-adr0076-accept)"
+reason = """ADR 0076 I-8: every module created by an S19 restructure step is the only path for the \
+names it holds; the normative list is the union of the committed restructure plans' new_public \
+names. src importers were retargeted in refactor mode (fb10af23: verify/column.py) and tests and \
+scripts outside the gate (77c40b2c), so an AST inventory (from-imports at any depth, module-alias \
+attribute reads, setattr patches, dotted strings; living docs by grep) finds no use of the moved \
+names through models.syn001.column_solve, except the frozen M9 module \
+models/syn001/column_unit.py:79, which imports closure_types, lifted_splits, products, \
+split_temperatures and zero_flow_forms from column_solve: these five keep their aliases and \
+__all__ entries, the I-19 W5 exception. Tests that patch column_solve's own lookup of \
+acceptance_failures keep doing so: column_solve calls it and keeps a plain import; so does the \
+verifier's report text at verify/column.py:103 (_SHARED_ACCEPTANCE, prose in emitted bytes, \
+unchanged). The step \
+drops, in models/syn001/column_solve.py, the aliases BubblePointEndpoint, ITEM_6_PREFIX, \
+InverseRecord, MAX_SWEEPS, PRESOLVE_ID, UnreachedSpecification, UnsupportedAnswerError, \
+acceptance_failures, bubble_point_endpoint, compile_column, inverse_records, regimes_of, \
+saturation_errors, single_phase_specified_stage, slots, unreached_specifications (plain imports \
+stay: column_solve uses them) and CONTINUED_KIND, Closure, QUOTIENT_SLACK, RATIO_LETTER, \
+SWEEP_COMPOSITION_TOLERANCE, SWEEP_RELAXATION, SWEEP_TOLERANCE, Slot, inverse_ends, lambda_state, \
+liquid_compositions, model_label, overall_closure, presolve_row_id, presolve_rows, \
+product_columns, relaxed_compositions, singular_pairs, spec_values, stage_ratios, stage_unit, \
+sweep_flows, system_residuals, target_bound (imports go), and the 36 __all__ entries among them \
+(all but liquid_compositions, relaxed_compositions, saturation_errors and stage_unit, \
+which were never listed). The \
+private aliases _admissibility and _saturation_pairs (tests read them) and saturation_pairs (from \
+cascade_solve, no restructure plan) are not I-8 names and stay. cce-code-health counts imports as \
+API only in __init__.py, so the dropped aliases are invisible to the public-API tier and \
+column_solve.py's __all__ is the one listed change (STOP 1 ruling). Expected codehealth arch \
+--depth 4 (measured at this base and with the step applied): base 4 violations / 3 cycles / 12 \
+cycle edges, after 4 / 3 / 12 (imports 4048 -> 4011). Layer config: none."""
+removed = []
+renamed = {}
+changed = ["src/openflowsheet/models/syn001/column_solve.py:__all__"]
+added = []
+new_files = []
+callers = []
