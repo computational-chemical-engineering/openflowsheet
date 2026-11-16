@@ -52,32 +52,27 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 - Held until the scale probe reports: G1 (orchestrator/, numerics/). Open: ptc.py 6.8 (P3, P4).
 - G-END (below) stays the end criterion for the whole repository.
 
-## Next actions (2026-11-16, ~10:15)
+## Next actions (2026-11-16, ~11:20)
 
-**Map window closed (G-MAP 3 map accepted, MB moved to c3c5793e); runner restarted.**
-G-MAP 3 build running at c3c5793e (`.venv-testmap/bin/python scripts/test_impact.py build --base c3c5793e... --workers 8`,
-PYTEST_ADDOPTS=--timeout=900, TMPDIR ~/.cache/openflowsheet/tmp-map; log in this session's scratchpad
-`mapbuild-<sha>.log`; map in `~/.cache/openflowsheet/testmap/<sha>/`). If this session died: `pgrep -af "[t]est_impact.py build"`;
-if none and no `meta.json`, re-run it. On completion: judge G-MAP 3 (failures a subset of the known set; no unsure test in a
-file over ~60 s), move MB to c3c5793e..., restart the runner, tell session OpenFlowsheet-check the machine is free.
-cce-code-health re-pinned to 1f7df37 (c3c5793e; imports out of clone detection). `gate_report.py` at every chain-result
-wake (skill loop step 3). Results consumed up to 103; next `$Q wait --since 103`. No agent running. Lanes at most 2 until
-Thu 19 Nov 13:00. Tool notes: a re-gate whose base moved cannot use `--rerun-of` (log by hand, steps 168, 179); the
-literal check excludes docstrings; the runner SKIPs any job whose lane contains a failed step, at run time.
-1. **G5 run 5**: merged into wp/S19 (bbcaad2d; jobs 103, 104 PASS).
-2. **G5 run 7**: merged into wp/S19 (2644ea96; jobs 109, 110 PASS).
-3. **G5 run 6b** (wp/S19-g5d at 3cdb0d50, steps 188, 190, 192, 193 PASS): R-W3-G5-6 merge after fixes; item 2 tests
-   pass (44); item 1 settled as a playbook rule-6 exception (0123368c; both fix forms on wip/S19-g5d-revfix). After the
-   runner restarts: merge the wp/S19 tip into the lane (fresh helper branch; delete wp/S19-g5d-mc and its worktree
-   s19-g5d-mc first), enqueue `--snapshot --mode merge-check --label g5r6b-mc2 --base <wp/S19 tip>`, PASS -> merge.
-4. **W4** (wp/S19-w4): step 197 (job 86) failed only on the import-duplication tool defect, fixed in 1f7df37. After
-   the restart: re-gate it unchanged (`$Q enqueue --snapshot --head 0dc0558e2e --base ee5eb4d80b --worktree s19-w4
-   --mode no-gain --rerun-of 86`, other args from `queue/done/w4r5b-w4r4-batchD-src.json`), then re-enqueue 87, 89,
-   93, 98, 99 (args in their done JSONs). When all PASS: the layer-config commit (config.toml application-layers line
-   162 `application.policies` stale; repo-layers adoption comment lines 173-176, 178, 179, 181 stale, 177 (A11) and
-   180 (A14) live, count "(12)" at 172), then R-W4-1 (brief `S19-R-W4-1.md`, extend to the lane tip: runs 2-6,
-   rulings STOP 1/2/3, test_x04 a7, MODEL_ID ruling, run 4's outside-gate module-attribute retargets), merge-check,
-   merge. Tell session code_health when W4 is merged (its v0.2.0 tag waits). Worktrees s19-w4-rg54, -rg54b removable.
+**Map window closed (G-MAP 3 map accepted, MB moved to c3c5793e); runner restarted (pid 1923489).** cce-code-health
+re-pinned to 1f7df37 (imports out of clone detection). `gate_report.py` at every chain-result wake (skill loop step 3);
+expected once lanes carry the new MB: selected tests tier ~150-250 s. Results consumed up to 103; next `$Q wait --since
+103`. No agent running. Lanes at most 2 until Thu 19 Nov 13:00. Tool notes: a re-gate whose base moved cannot use
+`--rerun-of` (log by hand, steps 168, 179); the literal check excludes docstrings; the runner SKIPs any job whose lane
+contains a failed step, at run time; `codehealth scan --json X` writes to X (never a source path).
+1. **G5 run 5**: merged into wp/S19 (bbcaad2d). 2. **G5 run 7**: merged into wp/S19 (2644ea96).
+3. **G5 run 6b** (wp/S19-g5d at 3cdb0d50, steps 188, 190, 192, 193 PASS; R-W3-G5-6 item 1 settled as a playbook rule-6
+   exception, item 2 tests pass): job 119 = merge-check on helper branch wp/S19-g5d-mc (ce9e9d30 = 3cdb0d50 + wp/S19
+   6400b95b). PASS -> `git -C .claude/worktrees/s19-g5d merge --ff-only wp/S19-g5d-mc`, merge wp/S19-g5d into wp/S19
+   (merge commit, `-F <file>`), log, remove worktree s19-g5d-mc and branch wp/S19-g5d-mc.
+4. **W4** (wp/S19-w4): job 118 = step 197 re-gated unchanged on 1f7df37 (`--rerun-of 86`). PASS -> re-enqueue 87, 89,
+   93, 98, 99 with their done-JSON args (`queue/done/<label>.json`: worktree, base, head, mode, plan, target, recipe,
+   reason; `--snapshot --head`; label suffix `-r2`). When all PASS: the layer-config commit (config.toml
+   application-layers line 162 `application.policies` stale; repo-layers adoption comment lines 173-176, 178, 179, 181
+   stale, 177 (A11) and 180 (A14) live, count "(12)" at 172), then R-W4-1 (brief `S19-R-W4-1.md`, extend to the lane
+   tip: runs 2-6, rulings STOP 1/2/3, test_x04 a7, MODEL_ID ruling, run 4's outside-gate module-attribute retargets),
+   merge-check, merge. Tell session code_health when W4 is merged (its v0.2.0 tag waits). Worktrees s19-w4-rg54, -rg54b
+   removable.
 5. G5 then has left: checks.py `derivative_witness` 16.2, compare.py (health 7.4), split_checks 21.0, table
    `revision_checks` (W4 routing); pr_c1 6.7 / gamma_phi_units 6.4 twins wait for the W4 verify parameter object.
    Type-only `LiftedSplit` imports via orchestrator.region remain in checks.py:58 and gamma_phi_units.py:80 (W4 I-2
