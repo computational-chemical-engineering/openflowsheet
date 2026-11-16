@@ -1435,3 +1435,5 @@
   not match). Logged by hand without `--rerun-of`, same command otherwise (`--head 50779e18`): run-log step 251
   accepted, 63.2 -> 63.2. Step 246 stays gate-fail for the pre-rebase ecf46789. Tool note: `--rerun-of` across a
   rebase cannot match by design; enqueue such re-runs as fresh steps. ALERTs standing.
+- **2026-11-16 22:05, job 193 PASS (g5r9-4, bfe9e545, step 252 accepted, 8.0 -> 7.0, 16/16). G5 run 9 fully gated;
+  review R-W3-G5-9 launched (reviewer, Opus, brief S19-R-W3-G5-9.md).** ALERTs standing.
