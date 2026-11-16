@@ -30,16 +30,17 @@ from k04_schema_fixtures import TRIVIAL_ROOT_OFFSET, once_through  # noqa: E402
 from openflowsheet.canonical import file_sha256  # noqa: E402
 from openflowsheet.compiled import EvaluationContext  # noqa: E402
 from openflowsheet.models.syn001.flowsheet import Syn001Flowsheet  # noqa: E402
+from openflowsheet.numerics.solve_record import SolvePolicy  # noqa: E402
 from openflowsheet.orchestrator.tear import Syn001TearProblem, solve_tear  # noqa: E402
-from openflowsheet.orchestrator.trace import SolvePolicy  # noqa: E402
 from openflowsheet.thermo.syn001 import Syn001Provider  # noqa: E402
-from openflowsheet.verify.certificate import CheckPolicy, verify  # noqa: E402
-from openflowsheet.verify.checks import KIND_TOLERANCE  # noqa: E402
+from openflowsheet.verify.certificate import verify  # noqa: E402
 from openflowsheet.verify.failure import bundle_for  # noqa: E402
+from openflowsheet.verify.kind_tolerance import KIND_TOLERANCE  # noqa: E402
 from openflowsheet.verify.regularity import (  # noqa: E402
     absolute_conditioning_threshold,
     screen,
 )
+from openflowsheet.verify.verdict import CheckPolicy  # noqa: E402
 
 CONTEXT = EvaluationContext(model_version="K04-evidence@" + "0" * 64, constants_sha256="0" * 64)
 

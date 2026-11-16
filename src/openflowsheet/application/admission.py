@@ -58,14 +58,7 @@ from pathlib import Path
 from typing import Any, Final
 
 from openflowsheet.adapters import variants
-from openflowsheet.application.policies import (
-    APPLICATION_POLICIES,
-    DEFAULT_POLICY_ID,
-    REGISTERED_POLICY_IDS,
-    SolvePath,
-    resolve_policy,
-)
-from openflowsheet.application.revision_binding import SurrogateResolver
+from openflowsheet.application.model_builders import SurrogateResolver
 from openflowsheet.application.revision_run import Route, select_route
 from openflowsheet.application.store import ProjectStore
 from openflowsheet.application.types import (
@@ -82,13 +75,20 @@ from openflowsheet.application.types import (
 from openflowsheet.application.validation import validate
 from openflowsheet.canonical import file_sha256
 from openflowsheet.models.c1 import COMPONENTS as C1_COMPONENTS
-from openflowsheet.orchestrator.trace import SolvePolicy
+from openflowsheet.numerics.solve_record import SolvePolicy
+from openflowsheet.orchestrator.policies import (
+    APPLICATION_POLICIES,
+    DEFAULT_POLICY_ID,
+    REGISTERED_POLICY_IDS,
+    SolvePath,
+    resolve_policy,
+)
 from openflowsheet.studies.surrogate.iterations import StoredManifest
 from openflowsheet.studies.surrogate.iterations import predecessors as iteration_predecessors
 from openflowsheet.studies.surrogate.plan import PlanRefusedError
 from openflowsheet.studies.surrogate.study import prepare
-from openflowsheet.verify.certificate import REGISTERED_POLICY_ID, CheckPolicy
-from openflowsheet.verify.checks import KIND_TOLERANCE
+from openflowsheet.verify.kind_tolerance import KIND_TOLERANCE
+from openflowsheet.verify.verdict import REGISTERED_POLICY_ID, CheckPolicy
 
 __all__ = [
     "POLICY_UNSUPPORTED_ON_ROUTE",

@@ -34,9 +34,9 @@ from test_t04_edge3 import case_document, case_policy, plan_run, region_step
 
 from openflowsheet.numerics.newton import Evaluation, Problem, solve_newton
 from openflowsheet.numerics.scaling import Scaling
+from openflowsheet.numerics.solve_record import SolvePolicy, Trace
 from openflowsheet.orchestrator import region as region_module
 from openflowsheet.orchestrator import region_attempts
-from openflowsheet.orchestrator.trace import SolvePolicy, Trace
 
 POLICY = SolvePolicy(policy_id="K03-synthetic-seeds", residual_tolerances={}, scales={})
 IDS = ("a", "b", "c")

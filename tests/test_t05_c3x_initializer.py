@@ -13,9 +13,9 @@ from pathlib import Path
 import yaml
 
 from openflowsheet.application.revision_binding import RevisionBinding, bind_revision_flowsheet
+from openflowsheet.numerics.solve_record import SolvePolicy
 from openflowsheet.orchestrator.executor import execute_plan
 from openflowsheet.orchestrator.revision import InitialStateFailure, initial_state, plan_revision
-from openflowsheet.orchestrator.trace import SolvePolicy
 
 CASES = Path(__file__).resolve().parent.parent / "benchmarks" / "t05" / "cases"
 POLICY = SolvePolicy(policy_id="T05-C3X", residual_tolerances={}, scales={})

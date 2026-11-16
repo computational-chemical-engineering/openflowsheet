@@ -57,12 +57,14 @@ from test_t05_w11_cases import case_document
 
 from openflowsheet.application.revision_binding import RevisionBinding
 from openflowsheet.graph.trace import trace_declaration
+from openflowsheet.models.lifted import DormancyForm
 from openflowsheet.models.revision_flowsheet import parse_revision
 from openflowsheet.models.syn001 import TEMPERATURE_TOLERANCE
+from openflowsheet.numerics.solve_record import SolvePolicy, Trace
 from openflowsheet.orchestrator.execution import ExecutionPlan, declaration_identity
 from openflowsheet.orchestrator.executor import PlanResult, execute_plan
 from openflowsheet.orchestrator.recovery import eo_recovery_due, solver_outcomes
-from openflowsheet.orchestrator.region import DormancyForm, RegionResult
+from openflowsheet.orchestrator.region_result import RegionResult
 from openflowsheet.orchestrator.revision import instances_of, plan_revision
 from openflowsheet.orchestrator.splits import (
     DORMANCY_RULES,
@@ -72,9 +74,9 @@ from openflowsheet.orchestrator.splits import (
     lifted_splits,
     zero_flow_forms,
 )
-from openflowsheet.orchestrator.trace import SolvePolicy, Trace
 from openflowsheet.verify import CheckResult
-from openflowsheet.verify.certificate import SolutionCertificate, verify_revision
+from openflowsheet.verify.certificate import verify_revision
+from openflowsheet.verify.verdict import SolutionCertificate
 from openflowsheet.verify.zero_flow import zero_flow_splits
 
 CASES: dict[str, Any] = REF["dormant_non_lifted_cases"]

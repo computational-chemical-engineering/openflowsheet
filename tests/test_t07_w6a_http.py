@@ -41,8 +41,9 @@ from openflowsheet.application.authz import grant, new_token, revoke
 from openflowsheet.application.contract import ApplicationError
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.operations import OPERATIONS, dispatch
-from openflowsheet.application.types import API_ERROR_HTTP_STATUS, schema_errors
+from openflowsheet.application.types import API_ERROR_HTTP_STATUS
 from openflowsheet.canonical import canonical_json
+from openflowsheet.schema_check import schema_errors
 
 NOMINAL = "SYN-001-nominal"
 PROJECT_ID = "w6a-http"

@@ -31,13 +31,13 @@ import pytest
 
 from openflowsheet.application.jobs.model import TERMINAL_STATUSES
 from openflowsheet.application.local import LocalApplication
-from openflowsheet.application.policies import DEFAULT_POLICY_ID, resolve_policy
 from openflowsheet.application.revision_routes import REVISION_ROUTES
 from openflowsheet.application.store import JOBS_DIR
 from openflowsheet.application.types import Budgets, Change, Edit, JobRequest
+from openflowsheet.orchestrator.policies import DEFAULT_POLICY_ID, resolve_policy
 from openflowsheet.run.identity import r0_projection
 from openflowsheet.studies.nlp.revision import optimize_revision
-from openflowsheet.verify.certificate import CheckPolicy
+from openflowsheet.verify.verdict import CheckPolicy
 
 pytestmark = pytest.mark.nlp
 

@@ -1,0 +1,25 @@
+# ADR 0076 I-8, batch G (W4 run 7, brief S19-W4-7; form of S19_DECISIONS 2026-11-16 STOP 1):
+# application/transactions.py stops re-exporting the seven names the restructure plan
+# split-revision-edits gave a home in application/revision_edits.py.
+# `codehealth gate --mode interface` reads this plan from the plan commit.
+id = "i8g-transactions-reexports"
+approved_by = "Frank Peters, 2026-11-14, ADR 0076 accepted (Decision Desk ofs-adr0076-accept)"
+reason = """ADR 0076 I-8: every module created by an S19 restructure step is the only path for the \
+names it holds; the normative list is the union of the committed restructure plans' new_public \
+names. No src module imports these names through application.transactions; the two tests that did \
+were retargeted outside the gate (07897c02), so an AST inventory (from-imports at any depth, \
+module-alias attribute reads, setattr patches, dotted strings) finds no use of them through the \
+old module. No frozen M9 module or registry-hashed file imports any of them through transactions. \
+transactions.py uses none of them, so the step drops the seven `X as X` imports and their \
+__all__ entries: ELEMENT_MEMBERS, EditPathError, apply_edits, element_diff, json_pointer, \
+revision_diff, semantic_diff; its docstring's "re-exported here" is corrected. cce-code-health \
+counts imports as API only in __init__.py, so the dropped aliases are invisible to the \
+public-API tier and the __all__ list is the listed change (STOP 1 ruling). Expected codehealth \
+arch --depth 4 (measured at this base and on the step applied to it): base 4 violations / 3 \
+cycles / 12 cycle edges, after 4 / 3 / 12 (imports 3996 -> 3989; the edge transactions -> \
+revision_edits goes, which was neither a violation nor on a cycle). Layer config: none."""
+removed = []
+renamed = {}
+changed = ["src/openflowsheet/application/transactions.py:__all__"]
+added = []
+new_files = []

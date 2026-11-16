@@ -119,6 +119,7 @@ from t05b_support import DORMANT_NON_LIFTED_CASES, Biased, Jump, number
 
 import openflowsheet.verify.certificate as p5_certificate_module
 from openflowsheet.canonical import canonical_json, file_sha256
+from openflowsheet.models.lifted import DormancyForm
 from openflowsheet.models.revision_flowsheet import parse_revision
 from openflowsheet.models.syn001 import TEMPERATURE_TOLERANCE
 from openflowsheet.models.syn001.admission import admitted_enthalpy
@@ -131,14 +132,12 @@ from openflowsheet.models.syn001.ph_kernel import (
 from openflowsheet.models.syn001.saturation_band import degeneracy_distance
 from openflowsheet.models.syn001.tp_state import single_phase_admissible
 from openflowsheet.numerics.newton import _trial_point, solve_newton
+from openflowsheet.numerics.solve_record import PhaseContract, SolvePolicy, Trace
 from openflowsheet.orchestrator import region as region_module
 from openflowsheet.orchestrator import region_attempts, region_phase, region_problem
 from openflowsheet.orchestrator.execution import ExecutionPlan
 from openflowsheet.orchestrator.executor import execute_plan
 from openflowsheet.orchestrator.region import (
-    TP_REGIME,
-    DormancyForm,
-    RegionResult,
     _band_regime,
     _contract_kernel,
     _items,
@@ -148,6 +147,8 @@ from openflowsheet.orchestrator.region import (
     _split_enthalpy,
     _trigger_dormant,
 )
+from openflowsheet.orchestrator.region_phase import TP_REGIME
+from openflowsheet.orchestrator.region_result import RegionResult
 from openflowsheet.orchestrator.revision import (
     InitialStateFailure,
     TraversalStart,
@@ -157,20 +158,12 @@ from openflowsheet.orchestrator.revision import (
 )
 from openflowsheet.orchestrator.splits import DORMANCY_RULES, closure_types, lifted_splits
 from openflowsheet.orchestrator.tear import Syn001TearProblem
-from openflowsheet.orchestrator.trace import PhaseContract, SolvePolicy, Trace
 from openflowsheet.run.compare import differences
 from openflowsheet.run.identity import floats_in, r0_projection
 from openflowsheet.thermo import FlashRequest, StreamState
 from openflowsheet.verify import CheckResult
-from openflowsheet.verify.certificate import (
-    CheckReport,
-    SolutionCertificate,
-    run_checks,
-    verify,
-    verify_bound,
-    verify_revision,
-)
-from openflowsheet.verify.checks import KIND_TOLERANCE
+from openflowsheet.verify.certificate import verify, verify_bound, verify_revision
+from openflowsheet.verify.kind_tolerance import KIND_TOLERANCE
 from openflowsheet.verify.projection import PROJECTED_CATEGORIES
 from openflowsheet.verify.saturation import (
     UNRESOLVED_FLOOR_OVER_TOLERANCE,
@@ -178,10 +171,8 @@ from openflowsheet.verify.saturation import (
     resolution_floor,
     split_route,
 )
-from openflowsheet.verify.table import (
-    SPLIT_ENTHALPY_NOTE,
-    UNRESOLVED_ENTHALPY_NOTE,
-)
+from openflowsheet.verify.table_kit import SPLIT_ENTHALPY_NOTE, UNRESOLVED_ENTHALPY_NOTE
+from openflowsheet.verify.verdict import CheckReport, SolutionCertificate, run_checks
 from openflowsheet.verify.zero_flow import DORMANT_OUTLETS
 
 REFERENCE = ROOT / "benchmarks" / "t05b" / "reference_values.yaml"
@@ -619,7 +610,7 @@ def _t02_floats_sha256() -> str:
 
 def _identities_local() -> dict[str, Any]:
     """The registered identities on this machine (`docs/t05b-measurements.md`'s protocol)."""
-    from openflowsheet.verify.certificate import CheckPolicy
+    from openflowsheet.verify.verdict import CheckPolicy
 
     document = identity_document()
     return {
@@ -1742,7 +1733,7 @@ def _b06() -> tuple[bool, dict[str, Any], dict[str, Any]]:
     import k03_schema_fixtures as k03
     import t04_schema_fixtures as t04
 
-    from openflowsheet.orchestrator.trace import GlobalizationPolicy, RecyclePolicy
+    from openflowsheet.numerics.solve_record import GlobalizationPolicy, RecyclePolicy
 
     ptc = t04.policy(
         "ptc",

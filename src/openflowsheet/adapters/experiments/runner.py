@@ -68,7 +68,7 @@ from openflowsheet.models.c1.boundary import (
     TubeInlet,
     refused,
 )
-from openflowsheet.orchestrator.trace import INTERRUPT_CHECK
+from openflowsheet.numerics.solve_record import INTERRUPT_CHECK
 from openflowsheet.thermo import (
     FlashRequest,
     FlashResult,

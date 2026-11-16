@@ -45,9 +45,10 @@ from openflowsheet.application.operations import (
     project_response,
 )
 from openflowsheet.application.projection import TEXT_LIMIT
-from openflowsheet.application.types import ApiError, Change, published_schemas, schema_errors
+from openflowsheet.application.types import ApiError, Change, published_schemas
 from openflowsheet.messages.catalogue import CATALOGUE
 from openflowsheet.messages.render import RenderContext, render_error
+from openflowsheet.schema_check import schema_errors
 
 # ============================================================== §4.7: the schema walk
 

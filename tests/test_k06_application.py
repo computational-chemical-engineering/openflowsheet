@@ -23,18 +23,14 @@ import yaml
 from conftest import REPO_ROOT
 
 from openflowsheet.application.cli import main
+from openflowsheet.application.revision_edits import semantic_diff
 from openflowsheet.application.revisions import (
     Revision,
     RevisionError,
     RevisionStore,
     content_hash,
 )
-from openflowsheet.application.transactions import (
-    Application,
-    ChangeSet,
-    Edit,
-    semantic_diff,
-)
+from openflowsheet.application.transactions import Application, ChangeSet, Edit
 from openflowsheet.application.validation import validate
 
 CASE = REPO_ROOT / "benchmarks" / "syn001" / "cases" / "SYN-001-nominal.yaml"

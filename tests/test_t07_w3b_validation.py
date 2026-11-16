@@ -36,30 +36,29 @@ import openflowsheet.application.binding as binding_module
 import openflowsheet.application.revision_binding as revision_binding_module
 from openflowsheet.application.binding import (
     Binding,
-    Unbound,
     bind_revision_or_reason,
     legacy_admission,
     legacy_answers,
 )
-from openflowsheet.application.policies import resolve_policy
+from openflowsheet.application.binding_common import Unbound
 from openflowsheet.application.revision_binding import RevisionBinding, bind_revision_flowsheet
 from openflowsheet.application.revision_run import NoRoute, Route, legacy_plan, select_route
 from openflowsheet.application.revisions import Revision
 from openflowsheet.application.transactions import Application, ChangeSet, Edit
-from openflowsheet.application.types import schema_errors
 from openflowsheet.application.validation import (
     FALLBACK_PRODUCED_BY,
     MISSING_REVISION_ID,
     PRODUCED_BY,
     REQUIRED_KEYS,
     SCHEMA_ONLY_PRODUCED_BY,
-    ValidationReport,
-    utc_timestamp,
     validate,
 )
+from openflowsheet.application.validation_report import ValidationReport, utc_timestamp
 from openflowsheet.graph.analysis import analyse
 from openflowsheet.orchestrator.execution import ExecutionPlan, declaration_identity
+from openflowsheet.orchestrator.policies import resolve_policy
 from openflowsheet.orchestrator.revision import plan_revision
+from openflowsheet.schema_check import schema_errors
 
 SCHEMA = "validation-report.schema.json"
 STRUCTURAL = ("STR-01", "STR-02", "STR-03", "STR-04", "STR-05")
@@ -240,7 +239,7 @@ def test_fallback_labels_implicated_columns_with_their_specifications(
     specification's id, and any other object is kept; the labels do not change the finding. No
     corpus revision's fallback analysis implicates a column, so the check list is replaced."""
     import openflowsheet.application.validation as validation_module
-    from openflowsheet.application.validation import Check
+    from openflowsheet.application.validation_report import Check
     from openflowsheet.models.revision_flowsheet import pin_specifications
 
     document = CORPUS["SYN-001-T06-NET03"]()

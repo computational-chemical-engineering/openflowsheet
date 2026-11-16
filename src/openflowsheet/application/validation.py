@@ -23,20 +23,21 @@ from collections.abc import Callable, Mapping, Sequence
 from dataclasses import replace
 from typing import TYPE_CHECKING, Any, Final, NamedTuple
 
-from openflowsheet.application.validation_report import Check as Check
-from openflowsheet.application.validation_report import EvidenceClass as EvidenceClass
-from openflowsheet.application.validation_report import Result as Result
-from openflowsheet.application.validation_report import Stage as Stage
-from openflowsheet.application.validation_report import Task as Task
-from openflowsheet.application.validation_report import ValidationReport as ValidationReport
-from openflowsheet.application.validation_report import ValidationStatus as ValidationStatus
-from openflowsheet.application.validation_report import utc_timestamp as utc_timestamp
+from openflowsheet.application.validation_report import (
+    Check,
+    Result,
+    Stage,
+    Task,
+    ValidationReport,
+    ValidationStatus,
+    utc_timestamp,
+)
 from openflowsheet.canonical import first_noncanonical
 
 if TYPE_CHECKING:
-    from openflowsheet.application.binding import Unbound
+    from openflowsheet.application.binding_common import Unbound
     from openflowsheet.application.contract import ApplicationError
-    from openflowsheet.application.revision_binding import SurrogateResolver
+    from openflowsheet.application.model_builders import SurrogateResolver
     from openflowsheet.graph.process import ProcessGraph
     from openflowsheet.graph.trace import Declaration
     from openflowsheet.models.revision_flowsheet import RevisionError
@@ -456,7 +457,7 @@ def _first_schema_error(document: Mapping[str, Any]) -> tuple[str, str] | None:
     """The first `process-revision.schema.json` error of a canonical `document`, as `(pointer,
     message)`, or `None`. The document is read as JSON reads it (a tuple is an array, any mapping
     an object): the schema judges the document's canonical form, not its Python spelling."""
-    from openflowsheet.application.types import schema_errors
+    from openflowsheet.schema_check import schema_errors
 
     errors = schema_errors("process-revision.schema.json", _as_json(document))
     if not errors:
@@ -1053,7 +1054,7 @@ def _judged_parameters(
 
 def _code_with_hint(error: RevisionError) -> str:
     """The code, then its hint (ruling round 6, B2), bounded as an `Unbound`'s is."""
-    from openflowsheet.application.binding import HINT_LIMIT
+    from openflowsheet.application.binding_common import HINT_LIMIT
     from openflowsheet.application.projection import bound_text
 
     if error.hint is None:

@@ -27,8 +27,8 @@ from openflowsheet.application import validation
 from openflowsheet.application.contract import ApplicationError
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.revision_routes import REVISION_ROUTES
-from openflowsheet.application.types import schema_errors
 from openflowsheet.canonical import canonical_json, document_sha256
+from openflowsheet.schema_check import schema_errors
 from openflowsheet.studies.nlp import closure
 from openflowsheet.studies.nlp import request as request_module
 from openflowsheet.studies.nlp.closure import SolverAvailability, audited_solver
@@ -78,7 +78,7 @@ def test_g18_the_schema_is_a_draft_2020_12_schema_and_registered() -> None:
 
 def test_the_request_reader_reports_the_application_schema_errors_bytewise() -> None:
     """OPT review M2: `studies` reads the request schema itself (it never imports `application`);
-    its errors are `application.types.schema_errors`'s, text and order, on every fixture and on
+    its errors are `schema_check.schema_errors`'s, text and order, on every fixture and on
     ill-formed documents, and its pointers carry the same RFC 6901 escapes."""
     documents: list[Any] = [
         json.loads(path.read_bytes()) for path in sorted(FIXTURES.rglob("*.json"))

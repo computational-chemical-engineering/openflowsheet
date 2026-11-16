@@ -76,11 +76,14 @@ from openflowsheet.compile.casadi_backend import (  # noqa: E402
     compile_problem,
 )
 from openflowsheet.compiled import EvaluationContext  # noqa: E402
-from openflowsheet.numerics.anderson import RecyclePolicy  # noqa: E402
+from openflowsheet.numerics.solve_record import (  # noqa: E402
+    RecyclePolicy,
+    SolvePolicy,
+    Trace,
+)
 from openflowsheet.orchestrator.attempts import solve_with_attempts  # noqa: E402
 from openflowsheet.orchestrator.region import solve_region, syn001_lifted_splits  # noqa: E402
 from openflowsheet.orchestrator.tear import Syn001TearProblem, solve_tear  # noqa: E402
-from openflowsheet.orchestrator.trace import SolvePolicy, Trace  # noqa: E402
 
 REFERENCE = ROOT / "benchmarks" / "t03" / "reference_values.yaml"
 T02_REFERENCE = ROOT / "benchmarks" / "t02" / "reference_values.yaml"

@@ -20,14 +20,14 @@ from conftest import load_json
 from f0_support import N_ARCHIVED_OUTPUTS, is_archived_output
 from test_k03_schemas import SCHEMA_DIR, errors_for
 
-from openflowsheet.orchestrator import executor
-from openflowsheet.orchestrator.trace import (
+from openflowsheet.numerics.solve_record import (
     Counters,
     EoRecoveryUnsupported,
     GlobalizationPolicy,
     SolvePolicy,
     Trace,
 )
+from openflowsheet.orchestrator import executor
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 RESTART = "homotopy_or_sequential_restart"

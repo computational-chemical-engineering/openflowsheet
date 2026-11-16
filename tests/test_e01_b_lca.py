@@ -22,7 +22,6 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from test_e01_a_report import P1_DOC, _solved, registered  # noqa: E402, F401
 
-from openflowsheet.application.types import schema_errors  # noqa: E402
 from openflowsheet.assessment.cost.contributor import CostContributor  # noqa: E402
 from openflowsheet.assessment.cost.derived import DerivedContributor  # noqa: E402
 from openflowsheet.assessment.lca import tables  # noqa: E402
@@ -35,6 +34,7 @@ from openflowsheet.assessment.views import view_of  # noqa: E402
 from openflowsheet.canonical import state_sha256  # noqa: E402
 from openflowsheet.models import flow_id  # noqa: E402
 from openflowsheet.models.thermal.state import liquid_id, vapor_id  # noqa: E402
+from openflowsheet.schema_check import schema_errors  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
 HAND = yaml.safe_load((ROOT / "benchmarks/e01/lca_hand/lca_hand.yaml").read_text("utf-8"))

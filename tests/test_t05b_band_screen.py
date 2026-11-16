@@ -39,14 +39,13 @@ from openflowsheet.orchestrator import executor, region_phase, region_screen, re
 from openflowsheet.orchestrator import region as region_module
 from openflowsheet.orchestrator.execution import ExecutionPlan
 from openflowsheet.orchestrator.region import (
-    TP_REGIME,
-    ClosureMemo,
     _band_regime,
     _build_screen,
     _contract_kernel,
     _kernel,
     _split_enthalpy,
 )
+from openflowsheet.orchestrator.region_phase import TP_REGIME, ClosureMemo
 from openflowsheet.orchestrator.revision import TraversalStart, plan_revision
 from openflowsheet.orchestrator.splits import closure_types, lifted_splits
 from openflowsheet.thermo import StreamState

@@ -30,8 +30,9 @@ from s11_thermal_support import committed_case, solve  # noqa: E402
 from test_e01_a_report import _solved, registered  # noqa: E402, F401
 from test_e01_b_lca import P4_DOC, RATE, _program  # noqa: E402
 
-from openflowsheet.application.types import schema_errors  # noqa: E402
-from openflowsheet.assessment.program import AssessmentProgram, Refusal  # noqa: E402
+from openflowsheet.assessment.linearization import Refusal  # noqa: E402
+from openflowsheet.assessment.program import AssessmentProgram  # noqa: E402
+from openflowsheet.schema_check import schema_errors  # noqa: E402
 from openflowsheet.studies import assessment as study_assessment  # noqa: E402
 from openflowsheet.studies.sensitivity import (  # noqa: E402
     OutputFunctional,

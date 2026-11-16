@@ -33,9 +33,11 @@ from test_s06_column_wo1 import (
 import openflowsheet.models.syn001.column_solve as solve_module
 import openflowsheet.orchestrator.region_attempts as region_attempts
 from openflowsheet.compile.reference import row_values
+from openflowsheet.models.lifted_tolerance import KIND_TOLERANCE
 from openflowsheet.models.syn001 import FLOW_TOLERANCE
-from openflowsheet.models.syn001.cascade import (
-    CascadeFailure,
+from openflowsheet.models.syn001.cascade_failure import CascadeFailure
+from openflowsheet.models.syn001.cascade_solve import AcceptanceDefectError
+from openflowsheet.models.syn001.cascade_spec import (
     liquid_id,
     liquid_total_id,
     mixed_id,
@@ -45,41 +47,41 @@ from openflowsheet.models.syn001.cascade import (
     vapor_id,
     vapor_total_id,
 )
-from openflowsheet.models.syn001.cascade_solve import AcceptanceDefectError
-from openflowsheet.models.syn001.column import (
+from openflowsheet.models.syn001.column import _inflow, _inlet_columns, profile_initial
+from openflowsheet.models.syn001.column_acceptance import (
+    QUOTIENT_SLACK,
+    acceptance_failures,
+    overall_closure,
+    spec_values,
+    target_bound,
+)
+from openflowsheet.models.syn001.column_compile import (
+    CONTINUED_KIND,
+    compile_column,
+    slots,
+    stage_unit,
+)
+from openflowsheet.models.syn001.column_endpoint import BubblePointEndpoint, bubble_point_endpoint
+from openflowsheet.models.syn001.column_solve import (
+    DECLARATION_CONTEXT,
+    FD_COLUMN_SCALE,
+    ColumnSolution,
+    continuation,
+    solve_column,
+    solve_target,
+)
+from openflowsheet.models.syn001.column_spec import (
     ColumnSpec,
-    _inflow,
-    _inlet_columns,
     distillate_id,
     distillate_total_id,
     product_flow_id,
     product_total_id,
-    profile_initial,
     purity_flow_id,
     reflux_fraction_id,
     reflux_id,
 )
-from openflowsheet.models.syn001.column_solve import (
-    CONTINUED_KIND,
-    DECLARATION_CONTEXT,
-    FD_COLUMN_SCALE,
-    QUOTIENT_SLACK,
-    BubblePointEndpoint,
-    ColumnSolution,
-    acceptance_failures,
-    bubble_point_endpoint,
-    compile_column,
-    continuation,
-    overall_closure,
-    slots,
-    solve_column,
-    solve_target,
-    spec_values,
-    stage_unit,
-    target_bound,
-)
 from openflowsheet.numerics.scaling import REGISTERED_NOMINALS
-from openflowsheet.orchestrator.region import KIND_TOLERANCE, RegionAttempt, RegionResult
+from openflowsheet.orchestrator.region_result import RegionAttempt, RegionResult
 
 S02_REFERENCE: dict[str, Any] = json.loads(
     (REPO_ROOT / "docs" / "derivations" / "scripts" / "s02_reference.json").read_bytes()

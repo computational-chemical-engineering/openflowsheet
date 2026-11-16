@@ -22,14 +22,15 @@ from test_s10c_blocks import CONTEXT, REAL, REFERENCE, UNIT, M1Block, column_spe
 
 import openflowsheet.models.syn001.column_endpoint as column_endpoint
 import openflowsheet.models.syn001.column_rows as column_rows_module
-import openflowsheet.models.syn001.column_solve as column_solve
 from openflowsheet.compile.reference import row_values
+from openflowsheet.models.lifted_tolerance import KIND_TOLERANCE
 from openflowsheet.models.syn001 import ENERGY_TOLERANCE
-from openflowsheet.models.syn001.cascade import (
-    CascadeFailure,
+from openflowsheet.models.syn001.cascade_failure import CascadeFailure
+from openflowsheet.models.syn001.cascade_rows import declared_problem
+from openflowsheet.models.syn001.cascade_solve import DECLARATION_CONTEXT, AcceptanceDefectError
+from openflowsheet.models.syn001.cascade_spec import (
     InletState,
     SideFeed,
-    declared_problem,
     liquid_id,
     liquid_total_id,
     stage_duty_id,
@@ -37,18 +38,11 @@ from openflowsheet.models.syn001.cascade import (
     vapor_id,
     vapor_total_id,
 )
-from openflowsheet.models.syn001.cascade_solve import DECLARATION_CONTEXT, AcceptanceDefectError
-from openflowsheet.models.syn001.column import (
-    ColumnSpec,
-    EndSpecification,
-    _initial_state,
-    declared_rows,
-    distillate_id,
-    distillate_total_id,
-    profile_initial,
-    reflux_fraction_id,
-    reflux_id,
-    validate,
+from openflowsheet.models.syn001.column import _initial_state, profile_initial
+from openflowsheet.models.syn001.column_acceptance import (
+    acceptance_failures,
+    regimes_of,
+    saturation_errors,
 )
 from openflowsheet.models.syn001.column_blocks import (
     BlockEndpoint,
@@ -56,25 +50,31 @@ from openflowsheet.models.syn001.column_blocks import (
     block_signature,
     candidates,
 )
-from openflowsheet.models.syn001.column_solve import (
+from openflowsheet.models.syn001.column_compile import compile_column, lifted_splits, slots
+from openflowsheet.models.syn001.column_endpoint import (
     PRESOLVE_ID,
-    TWO_PHASE_SATURATION_TOLERANCE,
     BubblePointEndpoint,
-    ColumnSolution,
-    acceptance_failures,
     bubble_point_endpoint,
-    compile_column,
-    lifted_splits,
-    regimes_of,
-    saturation_errors,
-    slots,
+)
+from openflowsheet.models.syn001.column_rows import declared_rows
+from openflowsheet.models.syn001.column_solve import (
+    TWO_PHASE_SATURATION_TOLERANCE,
+    ColumnSolution,
     solve_column,
 )
+from openflowsheet.models.syn001.column_spec import (
+    ColumnSpec,
+    EndSpecification,
+    distillate_id,
+    distillate_total_id,
+    reflux_fraction_id,
+    reflux_id,
+)
+from openflowsheet.models.syn001.column_validation import validate
 from openflowsheet.models.syn001.gamma_phi_blocks import GammaPhiLnKBlock, probe_flows
 from openflowsheet.models.syn001.saturation_band import band_temperature
-from openflowsheet.orchestrator.region import KIND_TOLERANCE
+from openflowsheet.numerics.solve_record import Trace
 from openflowsheet.orchestrator.roots import branch_found
-from openflowsheet.orchestrator.trace import Trace
 from openflowsheet.thermo import StreamState
 
 CASES = ("C-MW", "C-EW")
@@ -386,7 +386,7 @@ def test_stage_b_opening_on_a_wilson_specification() -> None:
     assert not isinstance(initial, CascadeFailure), initial
     found = block_endpoint(spec, REAL, initial, (0, 10))
     assert isinstance(found, BlockEndpoint), found
-    assert 1 <= found.sweeps and found.last_delta <= column_solve.SWEEP_TOLERANCE
+    assert 1 <= found.sweeps and found.last_delta <= column_endpoint.SWEEP_TOLERANCE
     signature = block_signature(spec, (0, 10))
     assert found.signature == signature
     stages = spec.equilibrium_stages()

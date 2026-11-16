@@ -24,7 +24,7 @@ from test_k03_schemas import errors_for
 from test_t06_w4_registry import CONSTRUCTED, REGISTRY
 
 from benchmarks.t06 import ensemble, generator
-from openflowsheet.orchestrator.trace import GlobalizationPolicy, SolvePolicy
+from openflowsheet.numerics.solve_record import GlobalizationPolicy, SolvePolicy
 from openflowsheet.run.manifest import policy_sha256
 
 V2 = "T06-revision-v2"

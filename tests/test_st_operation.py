@@ -36,10 +36,11 @@ from openflowsheet.application.authz import grant
 from openflowsheet.application.contract import ApplicationError
 from openflowsheet.application.local import STREAM_TABLE_DEPTH, LocalApplication
 from openflowsheet.application.projection import MAX_DEPTH
-from openflowsheet.application.types import Change, schema_errors
+from openflowsheet.application.types import Change
 from openflowsheet.canonical import document_sha256
 from openflowsheet.messages.render import render_error
 from openflowsheet.run.bundle import ARTIFACT_DIR
+from openflowsheet.schema_check import schema_errors
 
 RANKINE = REPO_ROOT / "examples" / "rankine-cycle.changeset.json"
 TH_C2 = REPO_ROOT / "benchmarks" / "s11" / "thermal" / "TH-C2.json"

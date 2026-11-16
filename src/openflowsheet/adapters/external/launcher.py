@@ -61,7 +61,7 @@ from openflowsheet.adapters.external.protocol import (
     STDOUT_FILE,
 )
 from openflowsheet.canonical import document_sha256, file_sha256, first_noncanonical
-from openflowsheet.orchestrator.trace import INTERRUPT_CHECK
+from openflowsheet.numerics.solve_record import INTERRUPT_CHECK
 
 __all__ = [
     "ChildProgram",
@@ -204,6 +204,8 @@ def launch(
     `INTERRUPT_CHECK` (none outside a job). `use_installed_check=False` with no `check` disables
     it (a worker test hook that ignores cancellation, gate G3 (d)). `on_spawn` sees the child's
     pid once it runs. `test_environment` is added to the scrubbed environment; no API reaches it.
+    A child that ended within its deadline other than with `EXIT_OK` ends as `_exit_failure`
+    reads its exit.
     """
     if sys.platform == "win32":
         return _unavailable(f"{UNSUPPORTED_PLATFORM}: external-subprocess-v1 refuses Windows")
@@ -298,15 +300,7 @@ def launch(
             document=document,
             timing=dict(timing) if isinstance(timing, Mapping) else {},
         )
-    if process.returncode == EXIT_LIFELINE_LOST:
-        return ended("protocol_error", "protocol_error: lifeline_lost (the child saw stdin close)")
-    if process.returncode == EXIT_SELF_DEADLINE:
-        return ended("protocol_error", "protocol_error: self_deadline (the child's own deadline)")
-    if process.returncode == EXIT_ENVIRONMENT_MISMATCH:
-        return ended("environment_mismatch", f"environment_mismatch: {_last_line(stderr_path)}")
-    if signal_number is not None:
-        return ended("crashed", f"crashed: killed by signal {signal_number}")
-    return ended("crashed", f"crashed: exit code {exit_code}")
+    return ended(*_exit_failure(process.returncode, exit_code, signal_number, stderr_path))
 
 
 def _await_exit(
@@ -377,6 +371,24 @@ def _read_result(path: Path, digest: str, handshake: bool) -> tuple[dict[str, An
     if not isinstance(document.get("fingerprint"), dict):
         return None, f"{RESULT_FILE} carries no fingerprint object"
     return document, ""
+
+
+def _exit_failure(
+    returncode: int | None, exit_code: int | None, signal_number: int | None, stderr_path: Path
+) -> tuple[LaunchStatus, str]:
+    """The status and message of a child that ended within its deadline with a `returncode`
+    other than `EXIT_OK`: `protocol_error` for a lost lifeline or the child's own deadline,
+    `environment_mismatch` with the last line of `stderr_path`, else `crashed` by
+    `signal_number` or by `exit_code`."""
+    if returncode == EXIT_LIFELINE_LOST:
+        return "protocol_error", "protocol_error: lifeline_lost (the child saw stdin close)"
+    if returncode == EXIT_SELF_DEADLINE:
+        return "protocol_error", "protocol_error: self_deadline (the child's own deadline)"
+    if returncode == EXIT_ENVIRONMENT_MISMATCH:
+        return "environment_mismatch", f"environment_mismatch: {_last_line(stderr_path)}"
+    if signal_number is not None:
+        return "crashed", f"crashed: killed by signal {signal_number}"
+    return "crashed", f"crashed: exit code {exit_code}"
 
 
 def _last_line(path: Path) -> str:

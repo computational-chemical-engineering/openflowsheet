@@ -37,7 +37,6 @@ from openflowsheet.application.coupled_run import (
     inlet_of,
     unit_variant,
 )
-from openflowsheet.application.policies import T06_REVISION_V2
 from openflowsheet.application.revision_binding import RevisionBinding, bind_revision_flowsheet
 from openflowsheet.application.revision_run import (
     Route,
@@ -47,9 +46,10 @@ from openflowsheet.application.revision_run import (
     solve_route,
 )
 from openflowsheet.models.c1.reactor import C1Reactor
+from openflowsheet.numerics.solve_record import SolvePolicy
 from openflowsheet.orchestrator.coupling import UnitInlet
-from openflowsheet.orchestrator.trace import SolvePolicy
-from openflowsheet.verify.certificate import CheckPolicy
+from openflowsheet.orchestrator.policies import T06_REVISION_V2
+from openflowsheet.verify.verdict import CheckPolicy
 
 __all__ = ["C1_PARENT_SERVICES", "C1ParentServices", "pinned_at"]
 

@@ -2,7 +2,7 @@
 
 A leaf of `assessment.program` (E01 §4.12, §4.2.1): the report and the NLP verifier read these
 three without importing the program, which imports the report. `assessment.program` re-exports
-`Refusal` and `Linearization`.
+`Refusal`.
 """
 
 from __future__ import annotations
@@ -34,7 +34,7 @@ class Linearization:
     d_dp: TwinMatrix
 
 
-def _feasibility_tolerance() -> float:
+def feasibility_tolerance() -> float:
     """M03's V3 feasibility tolerance on scaled inequalities (§4.2.1), imported, never redefined.
     Imported here, not at module load, because `studies.nlp` will import this package."""
     from openflowsheet.studies.nlp.tolerances import TAU_FEAS  # noqa: PLC0415

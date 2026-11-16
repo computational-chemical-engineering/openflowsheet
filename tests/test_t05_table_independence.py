@@ -11,7 +11,9 @@ the module's import statements (anywhere in the file, function bodies included):
 - `openflowsheet.models.rows`, `models.syn001.{ph_kernel, admission, blocks}` and
   `openflowsheet.compile…` are not imported at all, nor is any `openflowsheet.models…` module
   as a module;
-- `openflowsheet.orchestrator…` only for `LiftedSplit`, and only under `TYPE_CHECKING`.
+- `openflowsheet.models.lifted` only for `LiftedSplit`, and only under `TYPE_CHECKING`;
+  `openflowsheet.orchestrator…` not at all (S19, ADR 0076 I-2: the split descriptor's one home is
+  `models.lifted`, and the verifier imports it there).
 
 Shared ids are sanctioned (note §4.1); shared functions are not, and copying the helpers into the
 table would defeat the point (review §7), so the allow-list names them where they live.
@@ -82,7 +84,9 @@ FORBIDDEN_MODULES = (
     "openflowsheet.models.syn001.bisection",
     "openflowsheet.compile",
 )
-ALLOWED_ORCHESTRATOR_NAMES = frozenset({"LiftedSplit"})
+#: The split descriptor, typing only (ADR 0076 I-2).
+LIFTED = "openflowsheet.models.lifted"
+ALLOWED_LIFTED_NAMES = frozenset({"LiftedSplit"})
 
 
 def _within(module: str, package: str) -> bool:
@@ -124,13 +128,15 @@ def violations(source: str) -> list[str]:
                 found.append(where)
             elif any(_within(module, forbidden) for forbidden in FORBIDDEN_MODULES):
                 found.append(where)
+            elif module == LIFTED:
+                if id(node) not in typing_only or any(
+                    name not in ALLOWED_LIFTED_NAMES for name in names
+                ):
+                    found.append(where)
             elif _within(module, "openflowsheet.models"):
                 if any(name not in ALLOWED_MODEL_NAMES for name in names):
                     found.append(where)
-            elif _within(module, "openflowsheet.orchestrator") and (
-                id(node) not in typing_only
-                or any(name not in ALLOWED_ORCHESTRATOR_NAMES for name in names)
-            ):
+            elif _within(module, "openflowsheet.orchestrator"):
                 found.append(where)
         elif isinstance(node, ast.Call) and isinstance(node.func, ast.Name):
             if node.func.id == "__import__":

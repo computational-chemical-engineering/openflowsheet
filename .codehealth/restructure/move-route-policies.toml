@@ -1,0 +1,22 @@
+# S19 restructure plan A13 (design note docs/briefs/S19-architecture.md table 4.1 row A13; ADR 0076 I-3).
+# Written by the W4 engineer under brief S19-W4-1; names and numbers measured at wp/S19-w4 97d4833f.
+id = "move-route-policies"
+approved_by = "orchestrator (OpenFlowsheet-TR09 build lane) under Frank's delegation of 2026-11-14 (S19 rules); design note S19-architecture.md table 4.1 A13, ADR 0076 I-3, brief S19-W4-1"
+reason = "run.bundle imports the route-policy table from application.policies (run/bundle.py:219, lazy): a repo-layers violation, run below application. The table imports only orchestrator modules (orchestrator.revision, orchestrator.trace, orchestrator.warm_start), so the whole module moves to orchestrator/policies.py (ADR 0076 I-3 name), as A5 moved orchestrator.trace: every top-level statement of application/policies.py, the module docstring included, moves verbatim and in order (15 statements, ast.dump identity checked), except __all__, which stays in application/policies.py unchanged so that module's public API (__all__ included) and the literal multiset stay as they were. application/policies.py keeps a short new docstring, one `from openflowsheet.orchestrator.policies import (...)` of its 14 public names and its __all__, until the ADR 0076 interface step removes the module. Only the violating importer, run.bundle, is retargeted in the step; the other src importers (application/{admission, cli, local, revision_routes, revision_run, trust_region_parent}.py) follow in a src-retarget step. The source-reading test test_t05b_literal and the spec register it reads (T05b spec §6.6) follow in the retarget commit 97d4833f. Persisted paths (Q2): schemas/ and tests/fixtures have no hit; benchmarks/registry.yaml:1738,1748,1756 name process_runtime.application.policies.* as `constructed_by` text (the pre-rename package; no code reads it), noted for the docs pass. Expected codehealth arch --depth 4: measured at base 5 violations, 4 cycles, 14 cycle edges; table 4.1 delta A13 (-1, 0, 0) gives 4 violations, 4 cycles, 14 cycle edges (the removed edge is run.bundle -> application.policies; the added edges application.policies -> orchestrator.policies and run.bundle -> orchestrator.policies point down, and orchestrator.policies imports only orchestrator modules on no cycle)"
+new_files = ["src/openflowsheet/orchestrator/policies.py"]
+new_public = [
+    "src/openflowsheet/orchestrator/policies.py:APPLICATION_POLICIES",
+    "src/openflowsheet/orchestrator/policies.py:DEFAULT_POLICY_ID",
+    "src/openflowsheet/orchestrator/policies.py:INNER_ROUTE",
+    "src/openflowsheet/orchestrator/policies.py:REGISTERED_POLICY_IDS",
+    "src/openflowsheet/orchestrator/policies.py:ROUTE_DEFAULT_POLICY",
+    "src/openflowsheet/orchestrator/policies.py:RRC_REVISION_V1",
+    "src/openflowsheet/orchestrator/policies.py:T04_W12",
+    "src/openflowsheet/orchestrator/policies.py:T05B_V2",
+    "src/openflowsheet/orchestrator/policies.py:T06_REVISION_V1",
+    "src/openflowsheet/orchestrator/policies.py:T06_REVISION_V2",
+    "src/openflowsheet/orchestrator/policies.py:T08_PTC_V1",
+    "src/openflowsheet/orchestrator/policies.py:T08_WARM_V1",
+    "src/openflowsheet/orchestrator/policies.py:SolvePath",
+    "src/openflowsheet/orchestrator/policies.py:resolve_policy",
+]

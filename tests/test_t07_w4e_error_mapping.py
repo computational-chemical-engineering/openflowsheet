@@ -42,8 +42,8 @@ from openflowsheet.application.types import (
     JobEnding,
     Limits,
     ReplayPolicy,
-    schema_errors,
 )
+from openflowsheet.schema_check import schema_errors
 from openflowsheet.verify.checks import VerifierError
 
 NOMINAL = "SYN-001-nominal"

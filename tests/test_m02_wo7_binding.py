@@ -20,7 +20,7 @@ from m02_c1_support import (
 )
 
 from openflowsheet.adapters import variants
-from openflowsheet.application.binding import Unbound
+from openflowsheet.application.binding_common import Unbound
 from openflowsheet.application.revision_binding import basis_provider, bind_revision_flowsheet
 from openflowsheet.models.revision_flowsheet import (
     MOLECULAR_WEIGHTS,
@@ -199,7 +199,8 @@ def test_g6a_through_solve_admission() -> None:
     `revision_unsupported`, which only a READY revision without a route reaches (build log
     D27)."""
     from openflowsheet.application.admission import admit_solve
-    from openflowsheet.application.types import ApiError, Budgets, Limits, SolveBody, schema_errors
+    from openflowsheet.application.types import ApiError, Budgets, Limits, SolveBody
+    from openflowsheet.schema_check import schema_errors
 
     pinned = variants.registry()[REAL]
     document = _through(version=REAL, artifact_ref=_flipped(pinned))

@@ -24,15 +24,10 @@ from openflowsheet.models.revision_flowsheet import (
 )
 from openflowsheet.thermo import PropertyProvider, PropertyRequest
 from openflowsheet.verify import certificate
-from openflowsheet.verify.certificate import (
-    FRESH_PROVIDERS,
-    CheckPolicy,
-    SolutionCertificate,
-    fresh_provider,
-    verify_revision,
-)
+from openflowsheet.verify.certificate import FRESH_PROVIDERS, fresh_provider, verify_revision
 from openflowsheet.verify.checks import VerifierError
 from openflowsheet.verify.table import revision_checks
+from openflowsheet.verify.verdict import CheckPolicy, SolutionCertificate
 
 CONTEXT = EvaluationContext(model_version="s11-a3", constants_sha256="0" * 64)
 

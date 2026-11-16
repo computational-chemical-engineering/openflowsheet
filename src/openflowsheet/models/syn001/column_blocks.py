@@ -22,14 +22,14 @@ from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from typing import Final
 
-from openflowsheet.models.syn001.cascade import CascadeFailure, PlacedInlet, _k_values, thomas
+from openflowsheet.models.lifted import Regime
+from openflowsheet.models.syn001.band_types import BandError
+from openflowsheet.models.syn001.cascade import _k_values
+from openflowsheet.models.syn001.cascade_failure import CascadeFailure
+from openflowsheet.models.syn001.cascade_init import thomas
 from openflowsheet.models.syn001.cascade_solve import DECLARATION_CONTEXT
-from openflowsheet.models.syn001.column import (
-    PHI_INITIAL,
-    ColumnSpec,
-    ProfileInitial,
-    _initial_state,
-)
+from openflowsheet.models.syn001.cascade_spec import PlacedInlet
+from openflowsheet.models.syn001.column import PHI_INITIAL, ProfileInitial, _initial_state
 from openflowsheet.models.syn001.column_acceptance import _admissibility
 from openflowsheet.models.syn001.column_endpoint import (
     MAX_SWEEPS,
@@ -39,10 +39,10 @@ from openflowsheet.models.syn001.column_endpoint import (
     relaxed_compositions,
     stage_ratios,
 )
+from openflowsheet.models.syn001.column_spec import ColumnSpec
 from openflowsheet.models.syn001.equilibrium_form import composition_dependent
-from openflowsheet.models.syn001.saturation_band import BandError, band_temperature
+from openflowsheet.models.syn001.saturation_band import band_temperature
 from openflowsheet.models.syn001.tp_state import enthalpy_flow
-from openflowsheet.orchestrator.region import Regime
 from openflowsheet.thermo import Phase, PropertyProvider, StreamState
 
 __all__ = [

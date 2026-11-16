@@ -27,11 +27,12 @@ from test_t06_w6_generator import BY_CASE
 from benchmarks.t06 import ensemble, generator
 from openflowsheet.application.revision_binding import RevisionBinding, bind_revision_flowsheet
 from openflowsheet.models import flow_id, pressure_id, temperature_id
+from openflowsheet.models.lifted import LiftedSplit
 from openflowsheet.models.syn001 import TEMPERATURE_TOLERANCE
 from openflowsheet.models.syn001.saturation_band import degeneracy_distance
 from openflowsheet.models.syn001.tp_state import tp_state
 from openflowsheet.orchestrator import revision
-from openflowsheet.orchestrator.splits import SPLIT_RULES, LiftedSplit, lifted_splits
+from openflowsheet.orchestrator.splits import SPLIT_RULES, lifted_splits
 from openflowsheet.thermo import StreamState
 
 CASES = {case.case: case for case in ensemble_cases()}

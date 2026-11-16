@@ -63,14 +63,10 @@ from openflowsheet.models.syn001 import (
     REFERENCE_CONVENTION,
     gamma_phi,
 )
-from openflowsheet.models.syn001.band_types import BandTemperature
+from openflowsheet.models.syn001.band_types import BandError, BandTemperature
 from openflowsheet.models.syn001.bisection import Root, bracketed_root
 from openflowsheet.models.syn001.equilibrium_form import form_of
-from openflowsheet.models.syn001.saturation_band import (
-    BandError,
-    band_split,
-    band_temperature,
-)
+from openflowsheet.models.syn001.saturation_band import band_split, band_temperature
 from openflowsheet.models.syn001.tp_state import (
     TPState,
     enthalpy_flow,

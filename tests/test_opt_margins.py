@@ -23,11 +23,11 @@ from typing import Any
 import pytest
 from s11_gp_support import gp_c3
 
-from openflowsheet.application.policies import DEFAULT_POLICY_ID, resolve_policy
 from openflowsheet.application.revision_routes import REVISION_ROUTES
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.models.syn001 import gamma_phi
-from openflowsheet.orchestrator import region as region_module
+from openflowsheet.orchestrator import region_phase
+from openflowsheet.orchestrator.policies import DEFAULT_POLICY_ID, resolve_policy
 from openflowsheet.orchestrator.revision import instances_of
 from openflowsheet.orchestrator.splits import region_splits
 from openflowsheet.studies.nlp import revision as revision_module
@@ -43,7 +43,7 @@ from openflowsheet.studies.nlp.revision_host import (
 from openflowsheet.studies.nlp.verification import _not_closure_test, _phase_terms, _regimes
 from openflowsheet.studies.sensitivity import TAU_REGIME, SplitRegime
 from openflowsheet.studies.syn001 import tp_margin
-from openflowsheet.verify.certificate import CheckPolicy
+from openflowsheet.verify.verdict import CheckPolicy
 
 REPO = Path(__file__).resolve().parents[1]
 OPT = REPO / "benchmarks" / "opt"
@@ -207,7 +207,7 @@ def test_g24d_a_perturbed_closure_value_leaves_the_split_unguarded(
 ) -> None:
     document = json.loads((OPT / "flowsheets" / "OPT-A1.json").read_bytes())
     host = _host(document, [DecisionBox("SPEC-Q", 500.0, 20000.0, "W")])
-    original = region_module.admissibility_value
+    original = region_phase.admissibility_value
 
     def moved(*args: Any) -> float | None:
         value = original(*args)

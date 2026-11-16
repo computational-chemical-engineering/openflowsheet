@@ -41,8 +41,8 @@ from openflowsheet.verify.table_kit import (
 from openflowsheet.verify.unit_checks import MODEL_CHECKS
 
 if TYPE_CHECKING:
+    from openflowsheet.models.lifted import LiftedSplit
     from openflowsheet.models.revision_flowsheet import InstanceView
-    from openflowsheet.orchestrator.region import LiftedSplit
 
 
 # -- admissibility and the independent split ---------------------------------------------------

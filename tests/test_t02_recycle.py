@@ -27,9 +27,10 @@ import numpy.typing as npt
 import pytest
 import yaml
 
-from openflowsheet.numerics.anderson import RecyclePolicy, RecycleResult, solve_recycle
+from openflowsheet.numerics.anderson import RecycleResult, solve_recycle
 from openflowsheet.numerics.newton import Evaluation, Problem
 from openflowsheet.numerics.scaling import Scaling
+from openflowsheet.numerics.solve_record import RecyclePolicy
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 TOLERANCE = 3.1e-8
@@ -474,8 +475,8 @@ def _syn001(case_id: str) -> tuple[Any, npt.NDArray[np.float64]]:
 
 
 def _anderson_policy() -> Any:
-    from openflowsheet.orchestrator.trace import RecyclePolicy as Recycle
-    from openflowsheet.orchestrator.trace import SolvePolicy
+    from openflowsheet.numerics.solve_record import RecyclePolicy as Recycle
+    from openflowsheet.numerics.solve_record import SolvePolicy
 
     return SolvePolicy(
         policy_id="T02-anderson",

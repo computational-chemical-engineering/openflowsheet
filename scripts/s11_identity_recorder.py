@@ -80,7 +80,7 @@ def _sorted_items(mapping: Mapping[str, Any]) -> tuple[tuple[str, str], ...]:
 def outcome(answer: Any, raw_sha256: str | None = None) -> tuple[Any, ...]:
     """§6.2 G1: what one binding outcome is compared by (`raw_sha256`: the unmarked document's
     `document_sha256`)."""
-    from openflowsheet.application.binding import Unbound
+    from openflowsheet.application.binding_common import Unbound
     from openflowsheet.application.revision_binding import RevisionBinding
 
     if isinstance(answer, Unbound):

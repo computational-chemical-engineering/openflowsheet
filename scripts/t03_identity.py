@@ -48,9 +48,9 @@ def _region_case(case_id: str) -> dict[str, Any]:
     from test_t02_a02 import POLICY, revision, structure, the_region
 
     from openflowsheet.compile.casadi_backend import compile_problem
+    from openflowsheet.numerics.solve_record import Trace
     from openflowsheet.orchestrator.region import solve_region, syn001_lifted_splits
     from openflowsheet.orchestrator.tear import solve_tear
-    from openflowsheet.orchestrator.trace import Trace
 
     item = structure(revision(case_id))
     flowsheet = item.binding.flowsheet
@@ -83,8 +83,8 @@ def _region_case(case_id: str) -> dict[str, Any]:
 def _off_b() -> dict[str, Any]:
     from test_k03_attempts import OFF_B, flowsheet_for, variants
 
+    from openflowsheet.numerics.solve_record import SolvePolicy
     from openflowsheet.orchestrator.tear import solve_tear
-    from openflowsheet.orchestrator.trace import SolvePolicy
 
     reference = yaml.safe_load(
         (ROOT / "benchmarks" / "syn001" / "reference_values.yaml").read_text()

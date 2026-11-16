@@ -25,8 +25,8 @@ from test_t06_w6_generator import BY_CASE, PUBLISHED
 import openflowsheet.orchestrator.executor as executor_module
 import openflowsheet.verify.regularity as regularity_module
 from benchmarks.t06 import ensemble
+from openflowsheet.numerics.solve_record import SolveOutcome
 from openflowsheet.orchestrator import revision
-from openflowsheet.orchestrator.trace import SolveOutcome
 from openflowsheet.verify.failure import TAXONOMY
 
 SPEC = (REPO_ROOT / "docs" / "derivations" / "T06-corpus-spec.md").read_text("utf-8")

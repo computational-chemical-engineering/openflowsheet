@@ -563,7 +563,7 @@ def builtins() -> Registry:
 
 
 def test_factory_resolution_of_the_legacy_built_ins(builtins: Registry) -> None:
-    from openflowsheet.application import revision_binding
+    from openflowsheet.application import model_builders, revision_binding
 
     refused = {}
     for entry in builtins.descriptors(("property_method", "unit_model")):
@@ -575,7 +575,7 @@ def test_factory_resolution_of_the_legacy_built_ins(builtins: Registry) -> None:
         expected = (
             revision_binding.basis_provider
             if entry.kind == "property_method"
-            else revision_binding.MODEL_BUILDERS[entry.id]
+            else model_builders.MODEL_BUILDERS[entry.id]
         )
         assert found is expected, entry.id
     # Without CoolProp installed, its method is refused before its factory (F1 review SF-3).

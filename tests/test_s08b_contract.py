@@ -15,7 +15,9 @@ from typing import Any
 import numpy as np
 import pytest
 
+from openflowsheet.models.lifted import DormancyForm, LiftedSplit
 from openflowsheet.numerics.newton import NewtonResult
+from openflowsheet.numerics.solve_record import Counters, SolvePolicy
 from openflowsheet.orchestrator.phase_contract import (
     Candidate,
     Conversion,
@@ -24,13 +26,7 @@ from openflowsheet.orchestrator.phase_contract import (
     _proposal,
     adjacent,
 )
-from openflowsheet.orchestrator.region import (
-    DormancyForm,
-    LiftedSplit,
-    _LiftedOps,
-    _units_and_items_disjoint,
-)
-from openflowsheet.orchestrator.trace import Counters, SolvePolicy
+from openflowsheet.orchestrator.region import _LiftedOps, _units_and_items_disjoint
 
 STAGE_1_2P = ("S.stage.1", "TWO_PHASE")
 LIQUID = (STAGE_1_2P, ("S.stage.2", "LIQUID"))

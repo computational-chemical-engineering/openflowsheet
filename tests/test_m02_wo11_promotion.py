@@ -39,16 +39,17 @@ from m02_variant_support import register_variants
 from t07_jobs_support import commit, lifecycle_violations, response_schema_violations
 
 from openflowsheet.adapters import variants
-from openflowsheet.application import revision_binding
+from openflowsheet.application import model_builders, model_signatures
 from openflowsheet.application.local import LocalApplication
+from openflowsheet.application.model_signatures import ModelSignature
 from openflowsheet.application.operations import dispatch
 from openflowsheet.application.replacement import FACETS, check_replacement, replacements
-from openflowsheet.application.revision_binding import ModelSignature
-from openflowsheet.application.types import Change, Edit, TransactionResult, schema_errors
+from openflowsheet.application.types import Change, Edit, TransactionResult
 from openflowsheet.canonical import document_sha256
 from openflowsheet.models import Port
 from openflowsheet.models.c1.reactor import PORTS
 from openflowsheet.models.revision_flowsheet import RevisionError
+from openflowsheet.schema_check import schema_errors
 
 LOOP_PATH = REPO_ROOT / "benchmarks" / "m02" / "c1-loop-standin.json"
 STANDIN = variants.registered_variant("standin-x025-v1")
@@ -320,9 +321,9 @@ def test_g9c_a_renamed_port_fails_ports(
         # A unit whose inlet is `feed` finds no stream on it: the binder's refusal.
         raise RevisionError("unsupported", f"port_unconnected({view.unit_id}.feed)")
 
-    monkeypatch.setitem(revision_binding.MODEL_SIGNATURES, model_id, signature)  # type: ignore[index]
-    monkeypatch.setitem(revision_binding.MODEL_BUILDERS, model_id, builder)  # type: ignore[index]
-    monkeypatch.setitem(revision_binding.MODEL_BASES, model_id, frozenset({"pr-c1-v1"}))  # type: ignore[index]
+    monkeypatch.setitem(model_signatures.MODEL_SIGNATURES, model_id, signature)  # type: ignore[index]
+    monkeypatch.setitem(model_builders.MODEL_BUILDERS, model_id, builder)  # type: ignore[index]
+    monkeypatch.setitem(model_signatures.MODEL_BASES, model_id, frozenset({"pr-c1-v1"}))  # type: ignore[index]
     result = app.commit_change(
         change({"id": model_id, "version": "0.0.0-declared", "artifact_ref": None}),
         revision_id,

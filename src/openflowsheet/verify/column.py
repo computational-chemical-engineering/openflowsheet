@@ -43,9 +43,9 @@ from typing import TYPE_CHECKING, Final, Protocol
 
 from openflowsheet.models import flow_id, pressure_id, temperature_id
 from openflowsheet.models.revision_flowsheet import InstanceView
-from openflowsheet.models.syn001.cascade import (
+from openflowsheet.models.syn001.cascade_rows import declared_problem
+from openflowsheet.models.syn001.cascade_spec import (
     InletState,
-    declared_problem,
     inlet_stream,
     liquid_id,
     liquid_total_id,
@@ -54,15 +54,15 @@ from openflowsheet.models.syn001.cascade import (
     stage_temperature_id,
     vapor_total_id,
 )
-from openflowsheet.models.syn001.column import (
+from openflowsheet.models.syn001.column_acceptance import acceptance_failures
+from openflowsheet.models.syn001.column_rows import declared_rows
+from openflowsheet.models.syn001.column_spec import (
     CONDENSER,
     REBOILER,
     ColumnSpec,
     EndSpecification,
-    declared_rows,
     reflux_id,
 )
-from openflowsheet.models.syn001.column_solve import acceptance_failures
 from openflowsheet.models.syn001.column_unit import (
     BOTTOMS,
     DISTILLATE,
@@ -77,7 +77,7 @@ from openflowsheet.verify.checks import VerifierError
 
 if TYPE_CHECKING:
     from openflowsheet.compiled import EvaluationContext
-    from openflowsheet.orchestrator.region import Regime
+    from openflowsheet.models.lifted import Regime
     from openflowsheet.thermo import PropertyProvider
     from openflowsheet.verify import CheckCategory
 

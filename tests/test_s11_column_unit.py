@@ -18,14 +18,15 @@ from test_s06_column_wo1 import J_CASES
 from test_s10c_blocks import REAL, column_spec
 from test_s11_column_face import view_of
 
-from openflowsheet.application.binding import Unbound
+from openflowsheet.application.binding_common import Unbound
 from openflowsheet.application.column_binding import build_column
 from openflowsheet.application.revision_binding import RevisionBinding, bind_revision_flowsheet
 from openflowsheet.models import SpecificationError, UnitEvaluation
 from openflowsheet.models.revision_flowsheet import InstanceView, RevisionError
 from openflowsheet.models.syn001.cascade_solve import DECLARATION_CONTEXT
-from openflowsheet.models.syn001.column import ColumnSpec
-from openflowsheet.models.syn001.column_solve import ColumnSolution, products, solve_column
+from openflowsheet.models.syn001.column_acceptance import products
+from openflowsheet.models.syn001.column_solve import ColumnSolution, solve_column
+from openflowsheet.models.syn001.column_spec import ColumnSpec
 from openflowsheet.models.syn001.column_unit import ColumnUnit
 from openflowsheet.thermo import StreamState
 

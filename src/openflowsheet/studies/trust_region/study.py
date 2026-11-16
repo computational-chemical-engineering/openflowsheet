@@ -1077,7 +1077,7 @@ def _projection_refusal(
 ) -> tuple[str, str] | None:
     """The projection half: `project(start)`'s refusal as (code, `reason: detail`), or `None`.
     The projection module (Pyomo) is imported only here, after the framework half passed."""
-    from openflowsheet.studies.trust_region.projection import ProjectionRefusedError
+    from openflowsheet.studies.trust_region.projection_support import ProjectionRefusedError
 
     try:
         project(start)

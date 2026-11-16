@@ -94,7 +94,7 @@ from m03_support import number, reference
 
 from openflowsheet.run.compare import CURRENT_POLICY_ID, V2_RELATIVE_TOLERANCE, differences
 from openflowsheet.studies.nlp.formulation import IPOPT_OPTIONS
-from openflowsheet.studies.nlp.verification import TAU_FEAS
+from openflowsheet.studies.nlp.tolerances import TAU_FEAS
 from openflowsheet.studies.sensitivity import TAU_CONSISTENCY_ABS
 
 #: Spec §4.7: `τ_abs`, the registered-zero bound of a scaled sensitivity.

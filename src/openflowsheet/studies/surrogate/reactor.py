@@ -99,7 +99,7 @@ from openflowsheet.studies.surrogate.quadratic import (
     causal_outlet,
     inlet_sensitivity,
 )
-from openflowsheet.studies.surrogate.study import MODEL_ID
+from openflowsheet.studies.surrogate.records import MODEL_ID
 from openflowsheet.thermo import PropertyProvider, StreamState
 from openflowsheet.thermo.conventions import (
     REACTION_CONSISTENT_CONVENTIONS,
@@ -109,7 +109,6 @@ from openflowsheet.thermo.conventions import (
 __all__ = [
     "EQUATIONS",
     "HARD_BOUNDS",
-    "MODEL_ID",
     "PORTS",
     "C1ReactorSurrogate",
     "SurrogateBlock",

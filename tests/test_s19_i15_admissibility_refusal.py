@@ -41,17 +41,16 @@ from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.revision_routes import ApplicationRevisionRoutes
 from openflowsheet.application.revision_run import registered_case, registered_flowsheet
 from openflowsheet.compiled import EvaluationContext
-from openflowsheet.models.lifted import AdmissibilityRefusal
+from openflowsheet.models.lifted import AdmissibilityRefusal, LiftedSplit
+from openflowsheet.numerics.solve_record import SolvePolicy
 from openflowsheet.orchestrator.region import (
-    LiftedSplit,
     _LiftedOps,
     _reference_k_values,
     _screen,
-    admissibility_value,
     syn001_lifted_splits,
 )
+from openflowsheet.orchestrator.region_phase import admissibility_value
 from openflowsheet.orchestrator.tear import solve_tear
-from openflowsheet.orchestrator.trace import SolvePolicy
 from openflowsheet.studies.nlp.revision_host import DecisionMap, RevisionNlpHost, decision_map
 from openflowsheet.studies.trust_region.checks import ParentSolve
 from openflowsheet.studies.trust_region.parent import P2_A_SOURCE
@@ -59,8 +58,8 @@ from openflowsheet.thermo import PropertyRequest, PropertyResult
 from openflowsheet.thermo.pr_c1 import COMPONENTS as PR_C1_COMPONENTS
 from openflowsheet.thermo.pr_c1 import PrC1Provider
 from openflowsheet.thermo.syn001 import Syn001Provider, _flash_failure
-from openflowsheet.verify.certificate import CheckPolicy
 from openflowsheet.verify.checks import VerifierError, k_values
+from openflowsheet.verify.verdict import CheckPolicy
 
 CONTEXT = EvaluationContext(model_version="S19-I15@" + "0" * 64, constants_sha256="0" * 64)
 #: `_LiftedOps.converged` reads the policy's `admissibility_epsilon` only.

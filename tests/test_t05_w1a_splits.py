@@ -19,11 +19,12 @@ from openflowsheet.application.binding import structural_inputs
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.graph.trace import trace_declaration
 from openflowsheet.models import Wiring
+from openflowsheet.models.lifted import LiftedSplit
 from openflowsheet.models.syn001 import COMPONENTS
 from openflowsheet.models.syn001.flowsheet import WIRING, Syn001Flowsheet
 from openflowsheet.orchestrator.execution import declaration_identity
 from openflowsheet.orchestrator.mass import residence_time, syn001_residence_time
-from openflowsheet.orchestrator.region import LiftedSplit, syn001_lifted_splits
+from openflowsheet.orchestrator.region import syn001_lifted_splits
 from openflowsheet.orchestrator.splits import SPLIT_RULES, check_agreement, lifted_splits
 from openflowsheet.thermo.syn001 import Syn001Provider
 

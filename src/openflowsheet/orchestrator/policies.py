@@ -26,8 +26,10 @@ additions (ADR 0024):
   D-1), once the executor and the application carry the value's revision continuation.
 
 The chain `T05b-v2` → `T06-revision-v1` → `T06-revision-v2` is constructed **here**, once. It moved
-from `tests/t05b_support.py` and `tests/t06_support.py` (W0 flag E6), which now import it, so the
-registry's `constructed_by` names this module. Moving it moved no hash: `policy_sha256` of each
+from `tests/t05b_support.py` and `tests/t06_support.py` (W0 flag E6), which now import it; the
+registry's `constructed_by` names it under the path it had then
+(`process_runtime.application.policies`; ADR 0076 I-3 moved the module here). Moving it moved no
+hash: `policy_sha256` of each
 object equals its registry entry, which `tests/test_t06_w4_registry.py` and
 `tests/test_t07_w3a_revision_runs.py` check.
 
@@ -41,26 +43,9 @@ from collections.abc import Mapping
 from dataclasses import replace
 from typing import Final, Literal
 
+from openflowsheet.numerics.solve_record import SolvePolicy
 from openflowsheet.orchestrator.revision import INITIALIZER_ID
-from openflowsheet.orchestrator.trace import SolvePolicy
 from openflowsheet.orchestrator.warm_start import WARM_START_SOURCE
-
-__all__ = [
-    "APPLICATION_POLICIES",
-    "DEFAULT_POLICY_ID",
-    "INNER_ROUTE",
-    "REGISTERED_POLICY_IDS",
-    "ROUTE_DEFAULT_POLICY",
-    "RRC_REVISION_V1",
-    "T04_W12",
-    "T05B_V2",
-    "T06_REVISION_V1",
-    "T06_REVISION_V2",
-    "T08_PTC_V1",
-    "T08_WARM_V1",
-    "SolvePath",
-    "resolve_policy",
-]
 
 #: The solve routes (ruling round 1 R2.1; `revision_coupled`, M02 design note §4.4, ADR 0034
 #: D2). The tear path is not reachable through `solve`.

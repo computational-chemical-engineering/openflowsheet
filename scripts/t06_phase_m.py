@@ -51,9 +51,9 @@ from openflowsheet.application.revision_binding import (  # noqa: E402
 )
 from openflowsheet.application.validation import validate  # noqa: E402
 from openflowsheet.models.syn001.flowsheet import Syn001Flowsheet  # noqa: E402
+from openflowsheet.numerics.solve_record import SolvePolicy  # noqa: E402
 from openflowsheet.orchestrator.execution import ExecutionPlan  # noqa: E402
 from openflowsheet.orchestrator.rank import eliminate_alias_rows  # noqa: E402
-from openflowsheet.orchestrator.trace import SolvePolicy  # noqa: E402
 
 POLICY_V2 = t05b.POLICY_V2
 TEAR_POLICY = SolvePolicy(policy_id="SYN-001-K03", residual_tolerances={}, scales={})

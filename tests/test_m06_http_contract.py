@@ -38,7 +38,8 @@ from test_m06_static_scan import UI_OPERATIONS
 
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.operations import OPERATIONS
-from openflowsheet.application.types import ApiError, schema_errors, validate_inline
+from openflowsheet.application.types import ApiError, validate_inline
+from openflowsheet.schema_check import schema_errors
 
 if TYPE_CHECKING:
     from starlette.testclient import TestClient

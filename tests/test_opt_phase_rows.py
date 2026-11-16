@@ -21,9 +21,9 @@ import pytest
 from test_opt_revision_host import _certified
 from test_opt_revision_optimize import AVAILABLE, _case, _optimize
 
-from openflowsheet.application.types import schema_errors
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.models.thermal.kernel import saturation
+from openflowsheet.schema_check import schema_errors
 from openflowsheet.studies.nlp.formulation import (
     Decision,
     FullSpaceNlp,

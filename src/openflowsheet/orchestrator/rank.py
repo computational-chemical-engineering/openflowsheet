@@ -34,7 +34,7 @@ from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from typing import Final
 
-from openflowsheet.models.lifted_tolerance import PRESSURE_TOLERANCE as PRESSURE_TOLERANCE
+from openflowsheet.models.lifted_tolerance import PRESSURE_TOLERANCE
 
 #: The linearity witness: two evaluations of the same constant must agree to `1e-9 x 1e5 Pa`.
 LINEARITY_TOLERANCE: Final = 1e-9 * 1e5

@@ -189,10 +189,10 @@ def _primal_size(record_dir: Path | None, index: int) -> int | None:
 
 
 def run_case(case: str, request: dict[str, Any], records: Path) -> dict[str, Any]:
-    from openflowsheet.application.policies import DEFAULT_POLICY_ID, resolve_policy
     from openflowsheet.application.revision_routes import REVISION_ROUTES
+    from openflowsheet.orchestrator.policies import DEFAULT_POLICY_ID, resolve_policy
     from openflowsheet.studies.nlp.revision import optimize_revision
-    from openflowsheet.verify.certificate import CheckPolicy
+    from openflowsheet.verify.verdict import CheckPolicy
 
     policy = resolve_policy(DEFAULT_POLICY_ID, "revision_eo")
     assert policy is not None

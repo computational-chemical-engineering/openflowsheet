@@ -18,7 +18,7 @@ from conftest import load_json
 from f0_support import N_ARCHIVED_OUTPUTS, is_archived_output
 from test_k03_schemas import SCHEMA_DIR, errors_for
 
-from openflowsheet.orchestrator.trace import GlobalizationPolicy, SolvePolicy
+from openflowsheet.numerics.solve_record import GlobalizationPolicy, SolvePolicy
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 REFINED = "newton_refined"
@@ -61,7 +61,7 @@ def test_w18_the_policy_schema_refuses_every_other_value(value: object) -> None:
 
 def test_w18_no_committed_fixture_names_the_new_value() -> None:
     """C2: no registered fixture or case document carries the value; the policies that select it
-    are built in code (`openflowsheet.application.policies`) and named by id and hash."""
+    are built in code (`openflowsheet.orchestrator.policies`) and named by id and hash."""
     carrying = [
         path
         for root in ("tests/fixtures", "benchmarks")

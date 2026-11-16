@@ -47,9 +47,9 @@ import scipy.sparse as sp
 from openflowsheet.assessment.quantities import ASSESSMENT_PREFIX
 from openflowsheet.compile.casadi_backend import ParametricTwin
 from openflowsheet.compile.reference import state_vector
+from openflowsheet.models.lifted import LABEL_KIND
 from openflowsheet.models.syn001.flowsheet import Syn001Flowsheet
 from openflowsheet.numerics.scaling import REGISTERED_NOMINALS, Scaling
-from openflowsheet.orchestrator.region import LABEL_KIND
 from openflowsheet.studies.nlp.host import CertifiedPoint, NlpHost, Syn001NlpHost, as_host
 from openflowsheet.studies.nlp.phase import PHASE_COMPONENT, PhaseRows
 

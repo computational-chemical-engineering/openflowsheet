@@ -40,9 +40,11 @@ from openflowsheet.thermo import PropertyProvider, StreamState
 from openflowsheet.thermo.iapws95 import Iapws95Provider
 from openflowsheet.verify import CheckResult
 from openflowsheet.verify import thermal as vt
-from openflowsheet.verify.checks import KIND_TOLERANCE, qualification
+from openflowsheet.verify.checks import qualification
+from openflowsheet.verify.flowsheet_rows import EXTERNAL_DUTY_MODELS, WORK_MODELS
 from openflowsheet.verify.forms import declared_phases, stream_admissibility
-from openflowsheet.verify.table import EXTERNAL_DUTY_MODELS, WORK_MODELS, Unit
+from openflowsheet.verify.kind_tolerance import KIND_TOLERANCE
+from openflowsheet.verify.table_kit import Unit
 
 TAU_FLOW = KIND_TOLERANCE["molar_flow"]
 CONTEXT = _CONTEXT

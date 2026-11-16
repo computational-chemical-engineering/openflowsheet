@@ -23,14 +23,12 @@ from test_s02_column_wo1 import CONTEXT, SPECS
 
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.models.syn001 import PROVIDER_ID, REFERENCE_CONVENTION
-from openflowsheet.models.syn001.cascade import (
-    CascadeFailure,
-    property_method_refusal,
-)
+from openflowsheet.models.syn001.cascade import property_method_refusal
 from openflowsheet.models.syn001.cascade import validate as cascade_validate
+from openflowsheet.models.syn001.cascade_failure import CascadeFailure
 from openflowsheet.models.syn001.cascade_solve import solve_cascade
-from openflowsheet.models.syn001.column import validate
 from openflowsheet.models.syn001.column_solve import ColumnSolution, solve_column
+from openflowsheet.models.syn001.column_validation import validate
 from openflowsheet.thermo import (
     FlashRequest,
     PropertyCapabilities,

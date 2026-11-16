@@ -32,8 +32,6 @@ from openflowsheet.application.types import (
     API_ERROR_HTTP_STATUS,
     DEFAULT_SOLVE_POLICY_ID,
     RIGHTS,
-    SCHEMA_BASE,
-    SCHEMA_DIR,
     ApiError,
     ApiErrorCode,
     ArtifactRef,
@@ -58,10 +56,10 @@ from openflowsheet.application.types import (
     TransactionResult,
     normalize_job_request,
     request_sha256,
-    schema_errors,
     validate_document,
 )
 from openflowsheet.application.validation import validate
+from openflowsheet.schema_check import SCHEMA_BASE, SCHEMA_DIR, schema_errors
 
 T07_SCHEMAS = (
     "api-error",

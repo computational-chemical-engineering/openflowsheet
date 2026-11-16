@@ -27,15 +27,9 @@ from t07_support import AT, COMPLETED, JOB_ID, LATER, completed_solve, event, jo
 from openflowsheet.application.jobs.model import EVENT_KINDS
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.store import DATABASE_NAME
-from openflowsheet.application.types import (
-    SCHEMA_BASE,
-    DocumentSchemaError,
-    Job,
-    JobEvent,
-    published_schemas,
-    schema_errors,
-)
+from openflowsheet.application.types import DocumentSchemaError, Job, JobEvent, published_schemas
 from openflowsheet.canonical import canonical_json
+from openflowsheet.schema_check import SCHEMA_BASE, schema_errors
 
 FIXTURES = REPO_ROOT / "tests" / "fixtures" / "schemas"
 EVENT_ID = SCHEMA_BASE + "job-event.schema.json"

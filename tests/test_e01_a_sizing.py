@@ -26,12 +26,8 @@ from openflowsheet.assessment.blocks import (
     VolumetricFlowBlock,
     volume_available,
 )
-from openflowsheet.assessment.program import (
-    AssessmentProgram,
-    BuildContext,
-    ContributionPlan,
-    Refusal,
-)
+from openflowsheet.assessment.linearization import Refusal
+from openflowsheet.assessment.program import AssessmentProgram, BuildContext, ContributionPlan
 from openflowsheet.assessment.sizing import FAMILIES, SizedItem, family_of, plan_sizing
 from openflowsheet.assessment.sizing.families import actual_trays, underwood
 from openflowsheet.assessment.spec import load_assessment
@@ -39,7 +35,7 @@ from openflowsheet.assessment.views import UnitRef, view_of
 from openflowsheet.compile.spec import ProblemSpec
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.models.thermal.kernel import phase_properties, saturation
-from openflowsheet.studies.nlp.verification import TAU_FEAS
+from openflowsheet.studies.nlp.tolerances import TAU_FEAS
 from openflowsheet.studies.syn001 import solve_certified
 from openflowsheet.thermo import PropertyRequest, StreamState
 from openflowsheet.thermo.iapws95 import Iapws95Provider
@@ -572,13 +568,13 @@ def test_th_c1_turbine_condenser_and_boiler(registered: None) -> None:  # noqa: 
 from s11_column_support import column_registered  # noqa: E402
 from s11_column_support import committed_case as column_committed  # noqa: E402
 
-from openflowsheet.application.policies import T06_REVISION_V2  # noqa: E402
 from openflowsheet.application.revision_binding import (  # noqa: E402
     RevisionBinding,
     bind_revision_flowsheet,
 )
 from openflowsheet.orchestrator.execution import ExecutionPlan  # noqa: E402
 from openflowsheet.orchestrator.executor import execute_plan  # noqa: E402
+from openflowsheet.orchestrator.policies import T06_REVISION_V2  # noqa: E402
 from openflowsheet.orchestrator.revision import plan_revision  # noqa: E402
 
 

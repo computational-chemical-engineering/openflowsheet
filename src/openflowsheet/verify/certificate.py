@@ -1,7 +1,7 @@
 """The verifier: issue or withhold a certificate for a solve. §8.
 
-The check set, the verdict rules (`grade`) and the certificate record are `verify.verdict`'s;
-this module re-exports them.
+The check set, the verdict rules (`grade`) and the certificate record are `verify.verdict`'s and
+are imported from there (ADR 0076 I-8).
 
 A `FAILED` verdict on a solve the solver called `CONVERGED` is the whole point of the package,
 and it is recorded as `false_success_detected` rather than left for a reader to infer.
@@ -62,16 +62,15 @@ from openflowsheet.verify.checks import (
     witness_classes,
 )
 from openflowsheet.verify.projection import PROJECTED_CATEGORIES, Projection, project
-from openflowsheet.verify.verdict import REGISTERED_POLICY_ID as REGISTERED_POLICY_ID
-from openflowsheet.verify.verdict import CheckPolicy as CheckPolicy
-from openflowsheet.verify.verdict import CheckReport as CheckReport
-from openflowsheet.verify.verdict import ExternalEvidence as ExternalEvidence
-from openflowsheet.verify.verdict import SolutionCertificate as SolutionCertificate
-from openflowsheet.verify.verdict import _check_set
-from openflowsheet.verify.verdict import absent_state_certificate as absent_state_certificate
-from openflowsheet.verify.verdict import grade as grade
-from openflowsheet.verify.verdict import run_checks as run_checks
-from openflowsheet.verify.verdict import statements_for as statements_for
+from openflowsheet.verify.verdict import (
+    CheckPolicy,
+    ExternalEvidence,
+    SolutionCertificate,
+    _check_set,
+    absent_state_certificate,
+    grade,
+    statements_for,
+)
 
 if TYPE_CHECKING:
     from openflowsheet.models.lifted import LiftedSplit
@@ -560,7 +559,7 @@ def _staged_splits(view: Any) -> dict[str, Any]:
     """S11 design §10.11 (B4): `column_staged_splits(column_structure(view, components))` for
     each instance whose model is in `STAGED_MODELS`, by instance id in declaration order — the
     function the column's builder calls, on the revision's own view of the instance."""
-    from openflowsheet.models.syn001.column import MODEL_ID as COLUMN
+    from openflowsheet.models.syn001.column_spec import MODEL_ID as COLUMN
     from openflowsheet.models.syn001.column_unit import column_staged_splits, column_structure
     from openflowsheet.orchestrator.splits import STAGED_MODELS
 

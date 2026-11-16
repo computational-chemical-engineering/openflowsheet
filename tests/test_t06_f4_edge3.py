@@ -21,12 +21,12 @@ from t06_support import CORPUS, T06_REVISION_POLICY, case_document, registered_r
 from test_t05_coupled import POLICY as POLICY_W13
 
 from openflowsheet.application.revision_binding import RevisionBinding, bind_revision_flowsheet
+from openflowsheet.numerics.solve_record import SolvePolicy
 from openflowsheet.orchestrator import executor, region, revision
 from openflowsheet.orchestrator.execution import ExecutionPlan
 from openflowsheet.orchestrator.executor import PlanResult, StepResult, execute_plan
 from openflowsheet.orchestrator.recovery import recovered_provenance
 from openflowsheet.orchestrator.revision import INITIALIZER_ID, RESTART_INITIALIZER_ID
-from openflowsheet.orchestrator.trace import SolvePolicy
 from openflowsheet.verify.certificate import verify_revision
 
 RESTART = "homotopy_or_sequential_restart"

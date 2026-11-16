@@ -1,0 +1,22 @@
+# ADR 0076 I-3 (W4 run 1, brief S19-W4-1): the old module application/policies.py goes; the
+# route-policy table lives in openflowsheet.orchestrator.policies since S19 A13. `codehealth gate
+# --mode interface` reads this plan from the plan commit.
+id = "i3-route-policies"
+approved_by = "Frank Peters, 2026-11-14, ADR 0076 accepted (Decision Desk ofs-adr0076-accept)"
+reason = """ADR 0076 I-3: the route-policy table imports only orchestrator modules and the replay \
+bundle reads it, so it belongs to the orchestrator. Restructure A13 (2f4f8101, plan \
+move-route-policies) moved every statement to orchestrator/policies.py and left \
+application/policies.py as a re-export of its 14 public names plus its __all__; src importers \
+were retargeted in refactor mode (d63b1967) and tests, scripts and benchmarks outside the gate \
+(24c3eec2), so an AST inventory finds no import of openflowsheet.application.policies anywhere. \
+The step deletes application/policies.py, the module (no alias, no __getattr__, no __all__ entry \
+survives). Expected codehealth arch --depth 4: base 4 violations / 4 cycles / 14 cycle edges, \
+after 4 / 4 / 14 (only the downward edge application.policies -> orchestrator.policies goes). \
+After the step the orchestrator removes openflowsheet.application.policies from application-layers \
+and the repo-layers adoption comment line run.bundle -> application.policies (rule 6)."""
+removed = ["src/openflowsheet/application/policies.py"]
+renamed = {}
+changed = []
+added = []
+new_files = []
+callers = []

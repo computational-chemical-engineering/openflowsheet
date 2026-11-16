@@ -24,7 +24,7 @@ from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from typing import Literal, Protocol
 
-from openflowsheet.orchestrator.trace import INTERRUPT_CHECK
+from openflowsheet.numerics.solve_record import INTERRUPT_CHECK
 
 __all__ = ["CancelSignal", "InterruptReason", "JobInterrupted", "interrupt_check", "interruptible"]
 

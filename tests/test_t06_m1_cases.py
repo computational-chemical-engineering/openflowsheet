@@ -29,7 +29,7 @@ from openflowsheet.application.revision_binding import RevisionBinding, bind_rev
 from openflowsheet.compile.casadi_backend import compile_problem
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.units import check_quantity
-from openflowsheet.verify.checks import KIND_TOLERANCE
+from openflowsheet.verify.kind_tolerance import KIND_TOLERANCE
 
 Document = dict[str, Any]
 

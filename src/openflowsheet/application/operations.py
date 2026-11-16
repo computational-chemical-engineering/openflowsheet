@@ -59,7 +59,6 @@ from openflowsheet.application.projection import (
     bound_text,
 )
 from openflowsheet.application.types import (
-    SCHEMA_BASE,
     ApiError,
     ApiErrorCode,
     AuditRecord,
@@ -75,6 +74,7 @@ from openflowsheet.application.types import (
     validate_inline,
 )
 from openflowsheet.canonical import first_noncanonical
+from openflowsheet.schema_check import SCHEMA_BASE
 
 Transport = Literal["python", "cli", "http", "mcp"]
 ALL_TRANSPORTS: Final[tuple[Transport, ...]] = ("python", "cli", "http", "mcp")
@@ -135,7 +135,7 @@ JOB_ID: Final = _ref("job.schema.json#/$defs/job_id")
 ARTIFACT_ID: Final = _ref("job.schema.json#/$defs/artifact_id")
 CURSOR: Final = {"type": ["string", "null"], "maxLength": 1024}
 POINTER: Final = {"type": "string", "maxLength": 8192}
-#: ADR 0075 D8: a display preference's text; its grammar is `units.parse_display_units`'s.
+#: ADR 0075 D8: a display preference's text; its grammar is `units.display.parse_display_units`'s.
 DISPLAY_UNITS: Final = {"type": "string", "minLength": 1, "maxLength": 1024}
 #: ADR 0058 D7: a message code as `explain` takes it (MSG §3.5).
 MESSAGE_CODE: Final = {

@@ -75,8 +75,9 @@ from test_t07_w3a_revision_runs import _rewrite
 from openflowsheet.application.authz import grant
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.operations import OPERATIONS, dispatch
-from openflowsheet.application.types import SCHEMA_BASE, published_schemas
+from openflowsheet.application.types import published_schemas
 from openflowsheet.run.bundle import read_artifact, read_manifest
+from openflowsheet.schema_check import SCHEMA_BASE
 
 # ============================================================================ (i) the scan
 

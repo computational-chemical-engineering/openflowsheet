@@ -37,10 +37,11 @@ from openflowsheet.canonical import state_sha256
 from openflowsheet.compile.casadi_backend import compile_problem
 from openflowsheet.numerics.newton import Evaluation, Problem
 from openflowsheet.numerics.scaling import Scaling
+from openflowsheet.numerics.solve_record import SolvePolicy, Trace
 from openflowsheet.orchestrator.attempts import solve_with_attempts
-from openflowsheet.orchestrator.region import RegionResult, solve_region, syn001_lifted_splits
+from openflowsheet.orchestrator.region import solve_region, syn001_lifted_splits
+from openflowsheet.orchestrator.region_result import RegionResult
 from openflowsheet.orchestrator.tear import solve_tear
-from openflowsheet.orchestrator.trace import SolvePolicy, Trace
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 POLICY = SolvePolicy(policy_id="T03", residual_tolerances={}, scales={})
@@ -1014,7 +1015,7 @@ VAP: Any = (("U-HEAT", "VAPOR"),)
 
 def newton(outcome: str, iterations: int = 3, **extra: Any) -> Any:
     from openflowsheet.numerics.newton import NewtonResult
-    from openflowsheet.orchestrator.trace import Counters
+    from openflowsheet.numerics.solve_record import Counters
 
     return NewtonResult(
         outcome=outcome,  # type: ignore[arg-type]

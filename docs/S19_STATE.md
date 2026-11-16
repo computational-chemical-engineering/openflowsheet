@@ -52,28 +52,34 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 - Held until the scale probe reports: G1 (orchestrator/, numerics/). Open: ptc.py 6.8 (P3, P4).
 - G-END (below) stays the end criterion for the whole repository.
 
-## Next actions (2026-11-16, ~15:00)
+## Next actions (2026-11-16, ~19:00; self-reset)
 
-Runner pid 1923489. Results consumed up to 123; next `$Q wait --since 123` (in the background). No agent running.
-Lanes at most 2 until Thu 19 Nov 13:00. Gate report ALERTs (selected ~760 s, ratio 0.59, wait ~70 min) persist:
-cause and action recorded at job 123 (selection widening, a tools-lane design item). Tool notes: queue
-`--rerun-of` names the run-log step, not the job; a GATE-ERROR marks its head failed in the runner's memory.
-Queued: 138 g5r8-mc, 139 w4-revfix-1b (no-gain), 140 w4-mc, 141 g6r4-revfix (no-gain), 142 g6r4-mc.
-1. **G5 run 8** (wp/S19-g5f): reviewed (R-W3-G5-8 merge; fix 95d29ba1 job 137 PASS). When merge-check 138 passes:
-   merge wp/S19-g5f into wp/S19 (merge commit, `git merge -F <file>`), log, remove worktree s19-g5f.
-2. **W4** (wp/S19-w4): reviewed (R-W4-1a, R-W4-1b: merge after fixes; docstring fixes cd2b9f43 job 139; the rest is
-   run 7). wp/S19 merged into the lane as 4d250386 (split_checks.py conflict resolved). When 139 and 140 pass: merge
-   into wp/S19, log, tell session `code_health` (its v0.2.0 tag waits on the W4 merge). Worktrees s19-w4-rg54,
-   -rg54b removable. Then launch **W4 run 7**: brief `S19-W4-7.md` (fill BASE = the wp/S19 tip after the merge,
-   fast-forward the lane to it), `opus-engineer`.
-3. **G6 run 4** (wp/S19-g6b): reviewed (R-W3-G6-4 merge after fixes, applied 6d81db7b job 141). When 141 and 142
-   pass: merge into wp/S19, log, remove worktrees s19-g6b, gq-g6r4-6, gq-g5r8-3.
-4. The second lane slot: G6 run 5, brief `S19-W3-G6-5.md` written (fill BASE = wp/S19 tip after the G6 run 4
-   merge; targets compile/spec.py, graph/{analysis,blocks,tear}.py, messages/lint.py, adapters/experiments/; G6
-   thermo is registry-hashed, W5) or the W4 items after I-8 (I-4, I-9, I-14, I-10, I-11, I-13,
-   I-12a-d, I-19, in the ADR's recommended order) once run 7 reports. G5 has left only W4-dependent targets and
-   compare.py 7.4, `replay` 5.3; the split_checks component-order question (R-W3-G5-7) is for the G5 close.
-5. Open for Frank (not blocking): R-1042 / option (C) for the T06 self-hash at W4 close; STOP 1 alternative (tool
+Runner pid 2642417 (078fa7ed skip fix; cce-code-health 846a065; merge-check = `gate.sh --behaviour-only`, proven by
+job 173; ruff tier *.py only, 36ea9c2d). W4 run 7 merged (8cdd71d8; arch 4/3/12). Results consumed up to 161.
+Running gates: 155 (G6 run 5 review fix), 177 (W4 run 8 I-4 interface). Pending: none. No agent running. Lanes at
+most 2 until Thu 19 Nov 13:00. ALERTs persist (proposal 2 with Frank). The tool gates from merge-base(base, HEAD)
+with that base's tiers: run every merge-check on a helper branch `wp/S19-<lane>-mc` = lane tip + the wp/S19 tip
+merged in (S19_DECISIONS union-merged with `git merge-file --union`; check line count = ours + theirs - base); it
+also tests the combined tree.
+1. **Launch the I-9 design ruling first** (`architect`, Fable per memory "Fable for hard rulings"; brief
+   `<git-common-dir>/codehealth/briefs/S19-A-I9-home.md`; it commits `docs/briefs/S19-A-I9-ruling.md` on wp/S19).
+   Then `$Q wait --since 161` in the background.
+2. **G6 run 5** (wp/S19-g6c, ..72ef6454): steps 218-221, 223, 226, 229-232, 234, 236 accepted; 155 (review fix,
+   no-gain) gating. Review R-W3-G6-5 done. When 155 passes: helper `wp/S19-g6c-mc` (lane touches 7 .py files only),
+   `$Q enqueue --worktree <helper wt> --base <wp/S19 tip> --head <helper HEAD> --snapshot --mode merge-check --label
+   g6r5-mc`; PASS -> merge the helper into wp/S19 (`git merge --no-ff -F <file>`), log, remove worktree s19-g6c and the
+   helper.
+3. **W4 run 8** (wp/S19-w4 ce7f9b76..486b6dbb; S19_DECISIONS "W4 run 8 reported"): steps 233, 235, 237 accepted; 177
+   (I-4) gating. Layer config 9810abf6 kept. When 177 passes: reviewer R-W4-8 (template `S19-R-W4-7.md`; cover 3b,
+   anderson, I-4 incl. 9810abf6 and the outside-gate commits 84a290f9, a9e36ea0, 486b6dbb; check the MSG WO-5a/WO-6
+   counts in job 177's gate report, the engineer could not read them under xdist); then helper merge-check and
+   merge. W4 run 9 waits for the I-9 ruling: I-9 per the ruling, then I-14; later I-10, I-11, I-15?, I-13, I-12a-d,
+   I-19 (ADR order :393; with the R-W4-7 inventory: sizing `__init__` non-core aliases removed by plan,
+   region.py:130-145 private aliases).
+4. Next G6 brief after run 5: rescan wp/S19 (G6 outside registry-hashed thermo is small: store.py 8.6, render.py
+   7.5, units/__init__.py 7.4); G5: compare.py 7.4, `replay` 5.3, W4-dependent targets.
+5. Re-pin cce-code-health 846a065 -> 6529f47 (holds 6ab9fd1, 04a01f8, f527252 docstrings out of clone detection; `literals` lets a count drop when every base scope still reaches it: reviewers check the listed drops; adds `{files:GLOB}`: switch the ruff tier to `set -- {files:*.py,*.pyi}`) at the next queue-idle window (S19_DECISIONS; not urgent).
+6. Open for Frank (not blocking): R-1042 / option (C) for the T06 self-hash at W4 close; STOP 1 alternative (tool
    change); cce-code-health fixes (empty `{files}`; `log --rerun-of` with a moved base; queue `--rerun-of` job vs
    step; GATE-ERROR not to block a same-head re-gate); the verify twins ADR 0076 addendum; the selection-widening
    design item. Design lane (progress.md): the NaN derivative-witness pass (R-W3-G5-8). Recorded, left: the

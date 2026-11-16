@@ -54,6 +54,13 @@ from openflowsheet.models.syn001.tp_state import (
 from openflowsheet.numerics.linear import LinearSolveRecord, solve_linear
 from openflowsheet.numerics.newton import Evaluation, Problem
 from openflowsheet.numerics.scaling import Scaling
+from openflowsheet.numerics.solve_record import (
+    Counters,
+    EliminatedRowRecord,
+    SolvePlan,
+    SolvePolicy,
+    Trace,
+)
 from openflowsheet.orchestrator.attempts import (
     SIGNATURE_UNITS,
     AttemptContext,
@@ -65,13 +72,6 @@ from openflowsheet.orchestrator.budget import BudgetedProvider, BudgetExhaustedE
 from openflowsheet.orchestrator.phase_contract import jacobian_pattern
 from openflowsheet.orchestrator.rank import AliasElimination, eliminate_alias_rows
 from openflowsheet.orchestrator.roots import branch_found, root_fingerprint
-from openflowsheet.orchestrator.trace import (
-    Counters,
-    EliminatedRowRecord,
-    SolvePlan,
-    SolvePolicy,
-    Trace,
-)
 from openflowsheet.thermo import StreamState
 from openflowsheet.thermo.cache import ExactPropertyCache
 

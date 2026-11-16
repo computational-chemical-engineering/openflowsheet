@@ -187,7 +187,7 @@ def probe(checkout: bool) -> dict[str, Any]:
             raise SystemExit("probe --in-checkout: openflowsheet is not imported from a checkout")
         found["c"] = answers(WilsonIdealGasProvider(records))
         return found
-    from openflowsheet.application.binding import Unbound  # noqa: PLC0415
+    from openflowsheet.application.binding_common import Unbound  # noqa: PLC0415
     from openflowsheet.application.revision_binding import provider_for  # noqa: PLC0415
     from openflowsheet.models.revision_flowsheet import WILSON_BASIS  # noqa: PLC0415
     from openflowsheet.resources import packaged_path  # noqa: PLC0415

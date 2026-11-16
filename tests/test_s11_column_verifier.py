@@ -27,29 +27,28 @@ from s11_column_support import (
     committed_case,
 )
 
-from openflowsheet.application.policies import T06_REVISION_V2
 from openflowsheet.application.revision_binding import RevisionBinding, bind_revision_flowsheet
 from openflowsheet.compile.casadi_backend import compile_problem
 from openflowsheet.compile.reference import state_vector
 from openflowsheet.models import flow_id
 from openflowsheet.models.revision_flowsheet import parse_revision
-from openflowsheet.models.syn001.cascade import stage_duty_id, stage_temperature_id
 from openflowsheet.models.syn001.cascade_solve import S01_DEFAULT_V1
-from openflowsheet.models.syn001.column import ColumnSpec
+from openflowsheet.models.syn001.cascade_spec import stage_duty_id, stage_temperature_id
+from openflowsheet.models.syn001.column_spec import ColumnSpec
 from openflowsheet.orchestrator.execution import ExecutionPlan
 from openflowsheet.orchestrator.executor import execute_plan
+from openflowsheet.orchestrator.policies import T06_REVISION_V2
 from openflowsheet.orchestrator.revision import plan_revision
 from openflowsheet.orchestrator.splits import STAGED_MODELS, lifted_splits, split_owners
 from openflowsheet.verify import CheckResult
 from openflowsheet.verify.certificate import (
     BoundDeclaration,
-    CheckPolicy,
-    SolutionCertificate,
     _staged_splits,
     fresh_provider,
     verify_revision,
 )
 from openflowsheet.verify.checks import DERIVATIVE_TOLERANCE, derivative_witness, one_sided_columns
+from openflowsheet.verify.verdict import CheckPolicy, SolutionCertificate
 from openflowsheet.verify.zero_flow import zero_flow_splits
 
 BASES = frozenset({"syn001", "wilson-ig-v2"})

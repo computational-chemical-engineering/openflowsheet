@@ -49,7 +49,7 @@ from openflowsheet.messages.legacy import (
     parse_check,
     resolve,
 )
-from openflowsheet.units import display_item, text_unit
+from openflowsheet.units.display import display_item, text_unit
 
 Surface = Literal["python", "cli", "http", "mcp"]
 Explanation = dict[str, Any]
@@ -64,9 +64,9 @@ UNBOUND_INPUT_KINDS = frozenset({"conflict", "inadmissible", "incomplete"})
 class RenderContext:
     """What a rendering may know besides the chain (§4.2.5): the surface, the revision document,
     and the ids that are context params. `display_units` is the request's resolved display
-    preference (ADR 0075 D7.2, a `units.DisplayUnits`, which carries the ambient pressure): with
-    it, every quantity of a kind in the map gains its display item and renders from it; `None`
-    renders SI only."""
+    preference (ADR 0075 D7.2, a `units.display.DisplayUnits`, which carries the ambient
+    pressure): with it, every quantity of a kind in the map gains its display item and renders
+    from it; `None` renders SI only."""
 
     surface: Surface | None = None
     revision: Mapping[str, Any] | None = None
@@ -311,11 +311,9 @@ def _by_type(typed: _Typed, catalogue: Catalogue) -> str:
         quantity = _quantity(value)
         if quantity is not None:
             return f"{format_number(quantity[0])} {quantity[1]}"
-        number = _number(value)
-        return format_number(number) if number is not None else _raw(value)
+        return _number_text(value)
     if typed.type == "number":
-        number = _number(value)
-        return format_number(number) if number is not None else _raw(value)
+        return _number_text(value)
     if typed.type == "enum":
         phrase = (
             None if typed.vocabulary is None else catalogue.phrase(typed.vocabulary, str(value))
@@ -329,6 +327,13 @@ def _by_type(typed: _Typed, catalogue: Catalogue) -> str:
         # param keeps the D2 spelling (`degF`), and `!raw` gives it.
         return text_unit(_raw(value))
     return _raw(value)
+
+
+def _number_text(value: object) -> str:
+    """§4.2.4's `number` rule, also a `quantity`'s when it reads as no quantity: `value` as a
+    number in §4.5's format, or `_raw` when it is no number."""
+    number = _number(value)
+    return format_number(number) if number is not None else _raw(value)
 
 
 def _render(nodes: tuple[template.Node, ...], scope: _Scope) -> str:
@@ -457,6 +462,12 @@ def _from_entry(
     *,
     strict: bool,
 ) -> Explanation:
+    """The explanation of the chain `codes` from `entry`, the resolved link at `position`: its
+    summary, kind (or the request's override), for a complete entry its why, action and where,
+    and the kind's default action for any entry without one; when an `outcome` entry other than
+    `entry` heads the chain, its line (`_outcome_line`), when it gives one, becomes the summary
+    and the entry's summary the cause. Raises `RenderError` when `entry` renders no summary or a
+    field fails as `_field` raises it."""
     scope = _Scope(entry, request.params, request.context, catalogue)
     outer = codes[:position]
     machine = request.machine
@@ -480,18 +491,7 @@ def _from_entry(
     cause = None
     head = resolved[0]
     if head[0] == 0 and head[1].family == "outcome" and head[1].code != entry.code:
-        outcome = head[1]
-        outcome_scope = _Scope(outcome, request.params, request.context, catalogue)
-        try:
-            line = field(outcome, "context", outcome_scope, [])
-            if line is None:
-                line = field(outcome, "summary", outcome_scope, [])
-        except RenderError as error:
-            if strict:
-                raise
-            if audit.auditor is not None:
-                audit.auditor.defect(f"{outcome.code}: {error}", request.machine)
-            line = None
+        line = _outcome_line(head[1], request, catalogue, strict=strict)
         if line is not None:
             summary, cause = line, summary
     return {
@@ -511,6 +511,30 @@ def _from_entry(
         "chain": codes,
         "docs": entry.docs,
     }
+
+
+def _outcome_line(
+    outcome: Entry, request: _Request, catalogue: Catalogue, *, strict: bool
+) -> str | None:
+    """The line an `outcome` entry heading the chain gives in place of the summary: its
+    `context`, else its `summary`, rendered in its own scope with no outer codes (`_field`);
+    `None` when it has neither, or when rendering fails and not `strict` (the failure recorded
+    as a defect when an auditor is set, as `_explain` records one for an entry); `strict`
+    raises the `RenderError`."""
+    outcome_scope = _Scope(outcome, request.params, request.context, catalogue)
+    try:
+        line = _field(outcome, "context", outcome_scope, [], strict=strict, machine=request.machine)
+        if line is None:
+            line = _field(
+                outcome, "summary", outcome_scope, [], strict=strict, machine=request.machine
+            )
+    except RenderError as error:
+        if strict:
+            raise
+        if audit.auditor is not None:
+            audit.auditor.defect(f"{outcome.code}: {error}", request.machine)
+        line = None
+    return line
 
 
 def _minimal(request: _Request, codes: list[str], catalogue: Catalogue) -> Explanation:

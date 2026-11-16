@@ -71,7 +71,7 @@ def documents() -> Iterator[tuple[str, Document]]:
 
 
 def _refusal(result: Any) -> list[Any] | None:
-    from openflowsheet.application.binding import Unbound
+    from openflowsheet.application.binding_common import Unbound
 
     if isinstance(result, Unbound):
         return [result.kind, result.detail, list(result.implicated)]

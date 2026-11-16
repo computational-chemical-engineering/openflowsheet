@@ -22,7 +22,6 @@ from t07_corpus import CORPUS
 
 from openflowsheet.application import revision_run
 from openflowsheet.application.cli import main
-from openflowsheet.application.policies import DEFAULT_POLICY_ID, resolve_policy
 from openflowsheet.application.revision_run import (
     Route,
     registered_case,
@@ -30,10 +29,11 @@ from openflowsheet.application.revision_run import (
     run_revision_session,
     select_route,
 )
+from openflowsheet.orchestrator.policies import DEFAULT_POLICY_ID, resolve_policy
 from openflowsheet.run.bundle import read_artifact, read_manifest
 from openflowsheet.run.manifest import THREAD_VARIABLES
 from openflowsheet.run.session import run_session
-from openflowsheet.verify.certificate import CheckPolicy
+from openflowsheet.verify.verdict import CheckPolicy
 
 
 @pytest.fixture(autouse=True)

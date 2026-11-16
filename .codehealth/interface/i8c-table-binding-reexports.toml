@@ -1,0 +1,43 @@
+# ADR 0076 I-8, batch C (W4 run 4, brief S19-W4-4; form of S19_DECISIONS 2026-11-16 STOP 1):
+# verify/table.py and application/revision_binding.py stop re-exporting the names that the
+# restructure plans split-flowsheet-rows, split-split-checks, split-table-kit, split-unit-checks and
+# split-revision-binding gave a new home. `codehealth gate --mode interface` reads this plan from the
+# plan commit.
+id = "i8c-table-binding-reexports"
+approved_by = "Frank Peters, 2026-11-14, ADR 0076 accepted (Decision Desk ofs-adr0076-accept)"
+reason = """ADR 0076 I-8: every module created by an S19 restructure step is the only path for the \
+names it holds; the normative list is the union of the committed restructure plans' new_public \
+names. src importers were retargeted in refactor mode (781bb747) and tests, scripts, benchmarks and \
+docs/interfaces-frozen.md outside the gate (fcb94ee6), so an AST inventory (from-imports at any \
+depth, module-alias attribute reads, setattr patches, dotted strings; living docs by grep) finds no \
+use of these names through the old modules, except one live patch: test_t07_w5a_inspection.py:134 \
+patches application.revision_binding.MODEL_BUILDERS, which revision_binding reads itself (:732) and \
+keeps as a plain import. No frozen M9 module imports these names through an old path. The step \
+drops, in verify/table.py, the aliases REACTING_MODELS, Degeneracy, degeneracy, REACTION_DATUM_NOTE, \
+ModelChecks, Unit, MODEL_CHECKS (plain imports stay: table uses them) and EXTERNAL_DUTY_MODELS, \
+FEED_MODELS, KINETIC_CSTR, PRODUCT_MODELS, STAGED_DUTY_MODELS, WORK_MODELS, DECLARED_ENTHALPY_NOTE, \
+SPLIT_ENTHALPY_NOTE, UNRESOLVED_ENTHALPY_NOTE, Rule, blocked_check, stream_notes (imports go), and \
+the __all__ entries DECLARED_ENTHALPY_NOTE, MODEL_CHECKS, REACTION_DATUM_NOTE, SPLIT_ENTHALPY_NOTE, \
+UNRESOLVED_ENTHALPY_NOTE, Degeneracy, ModelChecks, Unit, degeneracy; in \
+application/revision_binding.py, the aliases MODEL_BUILDERS, SurrogateResolver, resolve_surrogate, \
+MODEL_BASES, MODEL_SIGNATURES, ROUTING_MODELS, Configuration, ModelSignature, pin_encodings (plain \
+imports stay) and LIST_MODELS_LINE, S11_BASES, TARGET_PATH_HEADING, Builder, Encoding, PinColumn, \
+PinQuantity, SpecificationChoice, instance_contract, render_encoding, target_path_table (imports \
+go), and the __all__ entries MODEL_BASES, MODEL_BUILDERS, MODEL_SIGNATURES, Builder, \
+SurrogateResolver, Encoding, ModelSignature, PinColumn, SpecificationChoice, instance_contract, \
+pin_encodings, render_encoding, resolve_surrogate, target_path_table. The private cross-module \
+aliases both modules keep (table: _phase_enthalpy and the unit_checks _-names; revision_binding: \
+_c1_reactor_surrogate, _COLUMN, _columns) are I-13's, not I-8's. cce-code-health counts imports as \
+API only in __init__.py, so the dropped aliases are invisible to the public-API tier and the two \
+__all__ lists are the listed changes (STOP 1 ruling). Expected codehealth arch --depth 4 (measured \
+at this base and by a simulation of the step): base 4 violations / 3 cycles / 12 cycle edges, after \
+4 / 3 / 12 (imports 4087 -> 4050). Layer config: none."""
+removed = []
+renamed = {}
+changed = [
+    "src/openflowsheet/verify/table.py:__all__",
+    "src/openflowsheet/application/revision_binding.py:__all__",
+]
+added = []
+new_files = []
+callers = []

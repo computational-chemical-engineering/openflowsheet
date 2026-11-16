@@ -27,12 +27,11 @@ from t07_r7_documents import BASE, MUTATIONS, mutated
 
 from openflowsheet.application.binding import (
     Binding,
-    Unbound,
     bind_revision_or_reason,
     legacy_answers,
-    refusal_code,
     revision_probe,
 )
+from openflowsheet.application.binding_common import Unbound, refusal_code
 from openflowsheet.application.contract import ApplicationError
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.revision_binding import (

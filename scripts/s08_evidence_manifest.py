@@ -260,11 +260,8 @@ def recorded_numbers(commit: str) -> dict[str, Any]:
     from test_s08_blocks import P3
     from test_s08_item6 import _regimes, _registered
 
-    from openflowsheet.models.syn001.column_solve import (
-        ColumnSolution,
-        saturation_errors,
-        solve_column,
-    )
+    from openflowsheet.models.syn001.column_acceptance import saturation_errors
+    from openflowsheet.models.syn001.column_solve import ColumnSolution, solve_column
 
     timed: dict[str, Any] = {}
     for name, spec in (("P1", SPECS["P1"]), ("P3", P3)):

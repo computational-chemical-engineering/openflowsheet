@@ -24,9 +24,11 @@ import openflowsheet.orchestrator.region_attempts as region_attempts
 from openflowsheet.compile.reference import row_values
 from openflowsheet.compile.spec import ProblemSpec
 from openflowsheet.graph.trace import trace_declaration
+from openflowsheet.models.lifted_tolerance import KIND_TOLERANCE
 from openflowsheet.models.syn001 import FLOW_TOLERANCE
-from openflowsheet.models.syn001.cascade import (
-    declared_problem,
+from openflowsheet.models.syn001.cascade_rows import declared_problem
+from openflowsheet.models.syn001.cascade_solve import S01_DEFAULT_V1
+from openflowsheet.models.syn001.cascade_spec import (
     label_row_id,
     liquid_id,
     liquid_total_id,
@@ -38,48 +40,44 @@ from openflowsheet.models.syn001.cascade import (
     vapor_id,
     vapor_total_id,
 )
-from openflowsheet.models.syn001.cascade_solve import S01_DEFAULT_V1
-from openflowsheet.models.syn001.column import (
-    ColumnSpec,
-    _inflow,
-    _inlet_columns,
-    declared_rows,
-    distillate_id,
-    distillate_total_id,
-    label_source,
-    profile_initial,
-    reflux_fraction_id,
-    reflux_id,
-    regime_form,
-    validate,
+from openflowsheet.models.syn001.column import _inflow, _inlet_columns, profile_initial, regime_form
+from openflowsheet.models.syn001.column_acceptance import (
+    acceptance_failures,
+    overall_closure,
+    products,
+    singular_pairs,
+    spec_values,
 )
+from openflowsheet.models.syn001.column_compile import compile_column, presolve_rows, slots
+from openflowsheet.models.syn001.column_endpoint import PRESOLVE_ID
+from openflowsheet.models.syn001.column_rows import declared_rows
 from openflowsheet.models.syn001.column_solve import (
     DECLARATION_CONTEXT,
     FD_COLUMN_SCALE,
-    PRESOLVE_ID,
     S02_TARGET_POLICY,
     ColumnSolution,
-    acceptance_failures,
-    compile_column,
     continuation,
-    overall_closure,
-    presolve_rows,
-    products,
-    singular_pairs,
-    slots,
     solve_column,
     solve_target,
-    spec_values,
 )
+from openflowsheet.models.syn001.column_spec import (
+    ColumnSpec,
+    distillate_id,
+    distillate_total_id,
+    label_source,
+    reflux_fraction_id,
+    reflux_id,
+)
+from openflowsheet.models.syn001.column_validation import validate
 from openflowsheet.numerics.scaling import (
     REGISTERED_NOMINALS,
     ScaleUnavailableError,
     Scaling,
 )
-from openflowsheet.orchestrator.region import KIND_TOLERANCE, RegionResult
+from openflowsheet.numerics.solve_record import Trace
+from openflowsheet.orchestrator.region_result import RegionResult
 from openflowsheet.orchestrator.roots import same_root
 from openflowsheet.orchestrator.splits import check_agreement
-from openflowsheet.orchestrator.trace import Trace
 
 # Spec §10's state tolerance (S01's, R-514): flows rel 1e-6 + 10·τ_flow, T 1e-4 K, Q 1e-2 W.
 FLOW_REL, FLOW_ABS, T_ABS, Q_ABS = 1e-6, 10 * FLOW_TOLERANCE, 1e-4, 1e-2
@@ -507,7 +505,7 @@ def test_a17_phi_is_dimensionless_with_scale_one() -> None:
     """A17: M2's `phi` is `dimensionless`; `Scaling.from_spec` builds for M2 and V-M2's two
     sets with `column[phi] == 1.0` and every other entry its kind's nominal; the kind is in
     neither tolerance table."""
-    from openflowsheet.orchestrator.region import KIND_TOLERANCE as REGION_TOLERANCE
+    from openflowsheet.models.lifted_tolerance import KIND_TOLERANCE as REGION_TOLERANCE
 
     for spec in (
         SPECS["M2"],
@@ -549,7 +547,7 @@ def test_a18_the_stage_1_labels() -> None:
     """A18: M1's stage-1 label is `T_feed`, M4's `T_bottom`, M3's `T_top`, M2's stage-2 `T_c`;
     every stage's label is a declared column."""
     from openflowsheet.models import temperature_id
-    from openflowsheet.models.syn001.cascade import inlet_stream
+    from openflowsheet.models.syn001.cascade_spec import inlet_stream
 
     assert label_source(SPECS["M1"], 1) == temperature_id(inlet_stream(UNIT, "feed"))
     assert label_source(SPECS["M4"], 1) == temperature_id(inlet_stream(UNIT, "bottom"))
@@ -597,8 +595,8 @@ def test_a18_m1_stage_1_zero_flow_label_residual() -> None:
     """A18: on M1 at `x_K` with stage 1 ZERO_FLOW and the rest TWO_PHASE, the system is square
     and the label row's residual is `T_1 − T_feed`, one IEEE subtraction."""
     from openflowsheet.models import temperature_id
-    from openflowsheet.models.syn001.cascade import inlet_stream
-    from openflowsheet.models.syn001.column_solve import system_residuals
+    from openflowsheet.models.syn001.cascade_spec import inlet_stream
+    from openflowsheet.models.syn001.column_acceptance import system_residuals
 
     spec = SPECS["M1"]
     state = dict(profile_initial(spec, PROVIDER, DECLARATION_CONTEXT).state)  # type: ignore[union-attr]

@@ -13,11 +13,11 @@ from dataclasses import dataclass, replace
 from fractions import Fraction
 from typing import Any
 
+from openflowsheet.assessment.linearization import Refusal
 from openflowsheet.assessment.program import (
     FunctionalBuilder,
     Limitation,
     OutputDef,
-    Refusal,
     Symbols,
     Theta,
 )
@@ -44,7 +44,7 @@ from openflowsheet.assessment.sizing.core import (
 from openflowsheet.assessment.views import UnitRef
 from openflowsheet.compile.spec import Algebra, Expr
 from openflowsheet.models import duty_id, pressure_id, temperature_id
-from openflowsheet.models.syn001 import cascade
+from openflowsheet.models.syn001 import cascade_spec
 from openflowsheet.models.syn001.pump import work_id
 from openflowsheet.models.thermal.state import liquid_id, vapor_id
 from openflowsheet.thermo import FlashRequest, StreamState
@@ -769,7 +769,7 @@ class _Column:
             SizingPlan(limitations=(Limitation("COLUMN_AUXILIARIES_NOT_COSTED", u),))
         )
         if structure.condenser != "none":
-            duty = _duty(sctx, u, cascade.stage_duty_id(u, 1))
+            duty = _duty(sctx, u, cascade_spec.stage_duty_id(u, 1))
             if duty is None:
                 plan = plan.merged(_refused("SIZING_INPUT_UNAVAILABLE", f"{u}.condenser.Q"))
             else:
@@ -779,14 +779,14 @@ class _Column:
                         sub_item(u, "condenser"),
                         u,
                         duty,
-                        cascade.stage_temperature_id(u, 2),
-                        cascade.stage_temperature_id(u, 1),
+                        cascade_spec.stage_temperature_id(u, 2),
+                        cascade_spec.stage_temperature_id(u, 1),
                         forced_service="cooling",
                         design_pressure=design,
                     )
                 )
         if structure.reboiler != "none":
-            duty = _duty(sctx, u, cascade.stage_duty_id(u, n))
+            duty = _duty(sctx, u, cascade_spec.stage_duty_id(u, n))
             if duty is None:
                 plan = plan.merged(_refused("SIZING_INPUT_UNAVAILABLE", f"{u}.reboiler.Q"))
             else:
@@ -796,8 +796,8 @@ class _Column:
                         sub_item(u, "reboiler"),
                         u,
                         duty,
-                        cascade.stage_temperature_id(u, n - 1),
-                        cascade.stage_temperature_id(u, n),
+                        cascade_spec.stage_temperature_id(u, n - 1),
+                        cascade_spec.stage_temperature_id(u, n),
                         forced_service="heating",
                         design_pressure=design,
                     )
@@ -850,12 +850,12 @@ class _Column:
         members: list[tuple[str, FunctionalBuilder]] = []
         for j in range(first, last + 1):
             vap_ids = (
-                tuple(cascade.vapor_id(u, j, c) for c in components),
-                cascade.stage_temperature_id(u, j),
-                cascade.stage_pressure_id(u, j),
+                tuple(cascade_spec.vapor_id(u, j, c) for c in components),
+                cascade_spec.stage_temperature_id(u, j),
+                cascade_spec.stage_pressure_id(u, j),
             )
             liq_ids = (
-                tuple(cascade.liquid_id(u, j, c) for c in components),
+                tuple(cascade_spec.liquid_id(u, j, c) for c in components),
                 vap_ids[1],
                 vap_ids[2],
             )

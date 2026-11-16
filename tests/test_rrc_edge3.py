@@ -29,14 +29,15 @@ import pytest
 from s11_column_support import RECYCLE_CASE, column_registered, committed_case
 from t06_support import T06_REVISION_POLICY, case_document
 
-from openflowsheet.application.policies import RRC_REVISION_V1
 from openflowsheet.application.revision_binding import RevisionBinding, bind_revision_flowsheet
 from openflowsheet.canonical import encode_doubles, state_sha256
 from openflowsheet.numerics.scaling import Scaling
+from openflowsheet.numerics.solve_record import SolvePolicy
 from openflowsheet.orchestrator import executor, region_attempts, revision
 from openflowsheet.orchestrator.execution import ExecutionPlan, declaration_identity
 from openflowsheet.orchestrator.executor import PlanResult, StepResult, execute_plan
 from openflowsheet.orchestrator.homotopy import CorrectorOutcome, level_values, rebind
+from openflowsheet.orchestrator.policies import RRC_REVISION_V1
 from openflowsheet.orchestrator.revision import INITIALIZER_ID
 from openflowsheet.orchestrator.revision_continuation import (
     REVISION_CONTINUATION_SOURCE,
@@ -44,9 +45,9 @@ from openflowsheet.orchestrator.revision_continuation import (
     RevisionContinuationRecord,
     RevisionContinuationRefusal,
 )
-from openflowsheet.orchestrator.trace import SolvePolicy
-from openflowsheet.verify.certificate import SolutionCertificate, verify_revision
+from openflowsheet.verify.certificate import verify_revision
 from openflowsheet.verify.checks import VerifierError
+from openflowsheet.verify.verdict import SolutionCertificate
 
 NET02 = "SYN-001-T06-NET02"
 NET03 = "SYN-001-T06-NET03"

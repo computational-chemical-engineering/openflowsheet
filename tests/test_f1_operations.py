@@ -41,10 +41,11 @@ from openflowsheet.application.cli import API_EXIT_CODES, main
 from openflowsheet.application.contract import ApplicationError
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.operations import dispatch
-from openflowsheet.application.types import Limits, schema_errors
+from openflowsheet.application.types import Limits
 from openflowsheet.canonical import canonical_json
 from openflowsheet.messages.catalogue import CATALOGUE
 from openflowsheet.registry import default_registry, usage
+from openflowsheet.schema_check import schema_errors
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT / "scripts"))

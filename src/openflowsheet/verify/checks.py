@@ -48,14 +48,10 @@ from openflowsheet.verify import (
     evaluated,
     unsupported,
 )
-from openflowsheet.verify.kind_tolerance import (
-    EQUILIBRIUM_TOLERANCE as EQUILIBRIUM_TOLERANCE,
-)
-from openflowsheet.verify.kind_tolerance import KIND_TOLERANCE as KIND_TOLERANCE
-from openflowsheet.verify.kind_tolerance import PRESSURE_TOLERANCE as PRESSURE_TOLERANCE
+from openflowsheet.verify.kind_tolerance import KIND_TOLERANCE, PRESSURE_TOLERANCE
 
 if TYPE_CHECKING:
-    from openflowsheet.orchestrator.region import LiftedSplit
+    from openflowsheet.models.lifted import LiftedSplit
     from openflowsheet.verify.zero_flow import ZeroFlowSplit
 
 #: §4.7, as K03 §8.2 argues it.

@@ -18,8 +18,8 @@ from pathlib import Path
 from types import MappingProxyType
 from typing import Any, Final
 
-from openflowsheet.application.types import schema_errors
 from openflowsheet.canonical import document_sha256, first_noncanonical
+from openflowsheet.schema_check import schema_errors
 
 __all__ = ["SCHEMA_REFERENCE", "AssessmentDocumentError", "AssessmentSpec", "load_assessment"]
 

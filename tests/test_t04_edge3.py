@@ -31,6 +31,12 @@ import openflowsheet.orchestrator.region as region_module
 import openflowsheet.orchestrator.region_attempts as region_attempts
 import openflowsheet.orchestrator.region_problem as region_problem
 from openflowsheet.application.binding import Binding, bind_revision
+from openflowsheet.numerics.solve_record import (
+    GlobalizationPolicy,
+    RecyclePolicy,
+    SolveOutcome,
+    SolvePolicy,
+)
 from openflowsheet.orchestrator.executor import PlanResult, StepResult
 from openflowsheet.orchestrator.phase_contract import OpeningRefusal
 from openflowsheet.orchestrator.recovery import (
@@ -38,13 +44,7 @@ from openflowsheet.orchestrator.recovery import (
     eo_recovery_due,
     recovered_provenance,
 )
-from openflowsheet.orchestrator.region import RegionResult
-from openflowsheet.orchestrator.trace import (
-    GlobalizationPolicy,
-    RecyclePolicy,
-    SolveOutcome,
-    SolvePolicy,
-)
+from openflowsheet.orchestrator.region_result import RegionResult
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 CASES = REPO_ROOT / "benchmarks" / "syn001" / "cases"
