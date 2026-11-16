@@ -1677,3 +1677,5 @@
   old one was merged in 68a9597a), worktree s19-w4-mc = eb71978d + wp/S19 5ac6ddb9 as 97553d85; merge-check job 215
   w4r11-mc. **W4 run 12 launched** (`opus-engineer`, Opus, brief S19-W4-12.md: I-13 per R-1045, lane wp/S19-w4 from
   eb71978d).
+- **2026-11-17, job 213 PASS (g5r10-revfix, 5f4d221a, step 266 accepted-neutral, 15/15).** ALERTs standing; merge waits for job 214.
+- **2026-11-17, job 214 PASS (g5r10-mc, helper 6656a326, full suite, 7/7, debt 41.1 -> 28.9). G5 run 10 merged into wp/S19** (wp/S19 changed only docs since cda029b0: S19_STATE, S19_DECISIONS, decision-register R-1045). Worktree s19-g5h-mc removed; branches kept.
