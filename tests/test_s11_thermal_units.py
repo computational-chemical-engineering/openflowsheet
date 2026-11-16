@@ -37,7 +37,7 @@ from openflowsheet.models.thermal.state import SaturatedStreamState, liquid_id, 
 from openflowsheet.models.thermal.valve import ThermalValve
 from openflowsheet.thermo import StreamState
 from openflowsheet.thermo.iapws95 import Iapws95Provider
-from openflowsheet.verify.checks import KIND_TOLERANCE
+from openflowsheet.verify.kind_tolerance import KIND_TOLERANCE
 
 ROOT = Path(__file__).resolve().parents[1]
 UNITS = yaml.safe_load((ROOT / "benchmarks/s11/thermal_reference.yaml").read_text())["units"]

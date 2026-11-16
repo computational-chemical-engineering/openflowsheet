@@ -79,7 +79,8 @@ from openflowsheet.thermo.syn001 import Syn001Provider
 from openflowsheet.thermo.wilson_ig_v2 import WilsonIdealGasProviderV2
 from openflowsheet.verify import CheckResult, gamma_phi_units, table
 from openflowsheet.verify.certificate import CheckPolicy, fresh_provider, verify_revision
-from openflowsheet.verify.checks import KIND_TOLERANCE, VerifierError
+from openflowsheet.verify.checks import VerifierError
+from openflowsheet.verify.kind_tolerance import KIND_TOLERANCE
 
 CONTEXT = EvaluationContext(model_version="S11-WO-D3@" + "0" * 64, constants_sha256="0" * 64)
 TOLERANCES = CheckPolicy().tolerances

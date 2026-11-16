@@ -206,7 +206,7 @@ def test_a16_inj4_a_relaxed_policy_is_never_verified(
     under a *tightened* policy is `FAILED`, not `RELAXED` — relaxation is about the policy
     being looser than the registered one, not merely different from it.
     """
-    from openflowsheet.verify.checks import KIND_TOLERANCE
+    from openflowsheet.verify.kind_tolerance import KIND_TOLERANCE
 
     flowsheet, result, state, _ = inj3_state(variants, reference)
     assert verify(flowsheet, result, state=state).verification_status == "FAILED"

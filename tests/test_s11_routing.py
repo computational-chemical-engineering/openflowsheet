@@ -23,7 +23,7 @@ from semantic_roles import role_of
 
 from openflowsheet import resources
 from openflowsheet.application import revision_binding
-from openflowsheet.application.binding import Unbound
+from openflowsheet.application.binding_common import Unbound
 from openflowsheet.application.revision_binding import (
     MODEL_BASES,
     MODEL_BUILDERS,

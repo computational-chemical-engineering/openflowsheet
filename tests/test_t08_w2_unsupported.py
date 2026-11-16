@@ -34,7 +34,7 @@ import pytest
 from t07_corpus import CORPUS
 
 from openflowsheet.application import validation
-from openflowsheet.application.binding import Unbound
+from openflowsheet.application.binding_common import Unbound
 from openflowsheet.application.contract import ApplicationError
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.operations import OPERATIONS

@@ -18,7 +18,7 @@ from m02_c1_support import connection, feed_specifications, instance, revision, 
 from m04_schema_support import M04_MODELS
 from test_schemas_p01 import schema_errors
 
-from openflowsheet.application.binding import Unbound
+from openflowsheet.application.binding_common import Unbound
 from openflowsheet.application.revision_binding import (
     MODEL_BASES,
     MODEL_BUILDERS,

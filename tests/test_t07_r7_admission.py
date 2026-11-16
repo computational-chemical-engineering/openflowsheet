@@ -41,12 +41,12 @@ from t07_r7_documents import mutated
 import openflowsheet.application.revision_binding as revision_binding_module
 from openflowsheet.application.binding import (
     Binding,
-    Unbound,
     _declared_default,
     bind_revision_or_reason,
     legacy_admission,
     revision_probe,
 )
+from openflowsheet.application.binding_common import Unbound
 from openflowsheet.application.contract import ApplicationError
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.revision_binding import RevisionBinding, bind_revision_flowsheet

@@ -19,7 +19,7 @@ from test_s11_column_face import view_of
 from test_t05_w11_cases import case_document
 
 from openflowsheet.application import column_binding, revision_binding
-from openflowsheet.application.binding import Unbound
+from openflowsheet.application.binding_common import Unbound
 from openflowsheet.application.revision_binding import RevisionBinding, bind_revision_flowsheet
 from openflowsheet.models.lifted import StagedSplits
 from openflowsheet.models.syn001.cascade_solve import S01_DEFAULT_V1

@@ -30,7 +30,8 @@ from openflowsheet.application.contract import ApplicationError
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.types import JobRequest, SolveBody
 from openflowsheet.verify.certificate import CheckPolicy
-from openflowsheet.verify.checks import KIND_TOLERANCE, routing_tolerances
+from openflowsheet.verify.checks import routing_tolerances
+from openflowsheet.verify.kind_tolerance import KIND_TOLERANCE
 
 #: The ruling's five revisions, each `VERIFIED` at the registered policy (measured).
 REVISIONS = (

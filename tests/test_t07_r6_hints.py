@@ -28,7 +28,7 @@ from s11_thermal_support import THERMAL_SAMPLES, sample_case
 from t07_corpus import CORPUS
 from t07_v17_c1_documents import c1_document
 
-from openflowsheet.application.binding import HINT_LIMIT, Unbound
+from openflowsheet.application.binding_common import HINT_LIMIT, Unbound
 from openflowsheet.application.revision_binding import (
     MODEL_BUILDERS,
     MODEL_SIGNATURES,

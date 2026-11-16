@@ -813,7 +813,7 @@ def test_each_route_binds_a_revision_with_its_component_set() -> None:
     revision over that set whose models are among the route's own `model_ids`, which are the
     models `MODEL_BASES` puts on the route's basis (R-288) — not every model of
     `MODEL_BUILDERS`."""
-    from openflowsheet.application.binding import Unbound  # noqa: PLC0415
+    from openflowsheet.application.binding_common import Unbound  # noqa: PLC0415
     from openflowsheet.application.revision_binding import (  # noqa: PLC0415
         MODEL_BASES,
         RevisionBinding,

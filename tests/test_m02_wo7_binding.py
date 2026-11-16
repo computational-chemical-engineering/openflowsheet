@@ -20,7 +20,7 @@ from m02_c1_support import (
 )
 
 from openflowsheet.adapters import variants
-from openflowsheet.application.binding import Unbound
+from openflowsheet.application.binding_common import Unbound
 from openflowsheet.application.revision_binding import basis_provider, bind_revision_flowsheet
 from openflowsheet.models.revision_flowsheet import (
     MOLECULAR_WEIGHTS,

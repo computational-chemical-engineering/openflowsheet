@@ -35,7 +35,7 @@ from s11_gp_support import (
 )
 from wit_support import spy
 
-from openflowsheet.application.binding import Unbound
+from openflowsheet.application.binding_common import Unbound
 from openflowsheet.application.revision_binding import bind_revision_flowsheet
 from openflowsheet.compile.casadi_backend import compile_problem
 from openflowsheet.compiled import EvaluationContext
@@ -60,12 +60,8 @@ from openflowsheet.orchestrator.policies import T06_REVISION_V2
 from openflowsheet.thermo import FlashRequest, PropertyProvider, PropertyRequest, StreamState
 from openflowsheet.thermo.syn001 import Syn001Provider
 from openflowsheet.verify.certificate import BoundDeclaration, fresh_provider, verify_revision
-from openflowsheet.verify.checks import (
-    DERIVATIVE_TOLERANCE,
-    KIND_TOLERANCE,
-    derivative_witness,
-    one_sided_columns,
-)
+from openflowsheet.verify.checks import DERIVATIVE_TOLERANCE, derivative_witness, one_sided_columns
+from openflowsheet.verify.kind_tolerance import KIND_TOLERANCE
 from openflowsheet.verify.thermal import additive_isentropic_enthalpy
 
 #: K04 amendment WIT's reference values (`docs/derivations/scripts/wit_reference.py`).

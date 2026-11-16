@@ -19,7 +19,7 @@ import pytest
 from t05_syn001_shaped import shaped_revision
 from t05_w12_support import Feed, Outlet, connection_pin, duty_pin, mini_revision, unit_instance
 
-from openflowsheet.application.binding import Unbound
+from openflowsheet.application.binding_common import Unbound
 from openflowsheet.application.revision_binding import (
     MODEL_BUILDERS,
     RevisionBinding,

@@ -18,7 +18,7 @@ from test_s06_column_wo1 import J_CASES
 from test_s10c_blocks import REAL, column_spec
 from test_s11_column_face import view_of
 
-from openflowsheet.application.binding import Unbound
+from openflowsheet.application.binding_common import Unbound
 from openflowsheet.application.column_binding import build_column
 from openflowsheet.application.revision_binding import RevisionBinding, bind_revision_flowsheet
 from openflowsheet.models import SpecificationError, UnitEvaluation

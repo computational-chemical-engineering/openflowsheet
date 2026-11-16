@@ -46,7 +46,7 @@ from openflowsheet.application.types import (
 )
 from openflowsheet.run import solution_state
 from openflowsheet.run.identity import r0_projection
-from openflowsheet.verify.checks import KIND_TOLERANCE
+from openflowsheet.verify.kind_tolerance import KIND_TOLERANCE
 
 EXPLICIT = "explicit-v1"
 

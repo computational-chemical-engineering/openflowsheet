@@ -27,7 +27,8 @@ from t07_corpus import CORPUS
 from t07_jobs_support import commit, lifecycle_violations
 from test_t07_w2d_noncanonical import SURROGATES
 
-from openflowsheet.application.binding import Unbound, bind_revision_or_reason
+from openflowsheet.application.binding import bind_revision_or_reason
+from openflowsheet.application.binding_common import Unbound
 from openflowsheet.application.contract import ApplicationError
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.operations import dispatch

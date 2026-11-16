@@ -34,8 +34,8 @@ from openflowsheet.numerics.solve_record import SolvePolicy  # noqa: E402
 from openflowsheet.orchestrator.tear import Syn001TearProblem, solve_tear  # noqa: E402
 from openflowsheet.thermo.syn001 import Syn001Provider  # noqa: E402
 from openflowsheet.verify.certificate import CheckPolicy, verify  # noqa: E402
-from openflowsheet.verify.checks import KIND_TOLERANCE  # noqa: E402
 from openflowsheet.verify.failure import bundle_for  # noqa: E402
+from openflowsheet.verify.kind_tolerance import KIND_TOLERANCE  # noqa: E402
 from openflowsheet.verify.regularity import (  # noqa: E402
     absolute_conditioning_threshold,
     screen,

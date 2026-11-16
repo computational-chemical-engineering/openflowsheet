@@ -23,7 +23,7 @@ from test_schemas_p01 import schema_errors
 
 from openflowsheet import resources
 from openflowsheet.application import revision_binding
-from openflowsheet.application.binding import Unbound
+from openflowsheet.application.binding_common import Unbound
 from openflowsheet.application.revision_binding import (
     SELECTABLE_BASES,
     basis_provider,

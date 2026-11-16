@@ -91,7 +91,7 @@ from openflowsheet.models import SpecificationError, Wiring, origin  # noqa: E40
 from openflowsheet.models.syn001.flash import TPFlash  # noqa: E402
 from openflowsheet.models.syn001.heater import TPHeater  # noqa: E402
 from openflowsheet.models.syn001.ph_flash import PHFlash  # noqa: E402
-from openflowsheet.verify.checks import KIND_TOLERANCE  # noqa: E402
+from openflowsheet.verify.kind_tolerance import KIND_TOLERANCE  # noqa: E402
 
 REFERENCE = ROOT / "benchmarks" / "t05" / "reference_values.yaml"
 SPEC = ROOT / "docs" / "derivations" / "T05-unit-models-spec.md"

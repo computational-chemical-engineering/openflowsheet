@@ -36,11 +36,11 @@ import openflowsheet.application.binding as binding_module
 import openflowsheet.application.revision_binding as revision_binding_module
 from openflowsheet.application.binding import (
     Binding,
-    Unbound,
     bind_revision_or_reason,
     legacy_admission,
     legacy_answers,
 )
+from openflowsheet.application.binding_common import Unbound
 from openflowsheet.application.revision_binding import RevisionBinding, bind_revision_flowsheet
 from openflowsheet.application.revision_run import NoRoute, Route, legacy_plan, select_route
 from openflowsheet.application.revisions import Revision

@@ -60,7 +60,7 @@ from openflowsheet.orchestrator.splits import closure_types, lifted_splits
 from openflowsheet.run.identity import execution_plan_r0, r0_projection
 from openflowsheet.verify import CheckResult
 from openflowsheet.verify.certificate import SolutionCertificate, verify_revision
-from openflowsheet.verify.checks import KIND_TOLERANCE
+from openflowsheet.verify.kind_tolerance import KIND_TOLERANCE
 from openflowsheet.verify.saturation import band_ends, split_route
 from openflowsheet.verify.table import SPLIT_ENTHALPY_NOTE, UNRESOLVED_ENTHALPY_NOTE
 

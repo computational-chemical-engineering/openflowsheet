@@ -60,7 +60,7 @@ from openflowsheet.run import solution_state
 from openflowsheet.run.bundle import MANIFEST_NAME
 from openflowsheet.run.identity import r0_projection
 from openflowsheet.run.manifest import policy_sha256
-from openflowsheet.verify.checks import KIND_TOLERANCE
+from openflowsheet.verify.kind_tolerance import KIND_TOLERANCE
 
 #: The members `run_revision_session` writes under `artifacts/`.
 Artifacts = dict[str, Any]

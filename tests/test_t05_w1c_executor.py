@@ -23,7 +23,7 @@ from jsonschema import Draft202012Validator
 from referencing import Registry, Resource
 from t05_syn001_shaped import shaped_revision
 
-from openflowsheet.application.binding import Unbound
+from openflowsheet.application.binding_common import Unbound
 from openflowsheet.application.revision_binding import (
     MODEL_BASES,
     MODEL_BUILDERS,

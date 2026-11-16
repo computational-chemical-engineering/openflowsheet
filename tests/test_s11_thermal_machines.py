@@ -52,7 +52,7 @@ from openflowsheet.orchestrator.budget import PropertyMeter
 from openflowsheet.thermo import PropertyProvider, PropertyRequest, PropertyResult, StreamState
 from openflowsheet.thermo.iapws95 import Iapws95Provider
 from openflowsheet.thermo.wilson_ig_v2 import WilsonIdealGasProviderV2
-from openflowsheet.verify.checks import KIND_TOLERANCE
+from openflowsheet.verify.kind_tolerance import KIND_TOLERANCE
 
 ROOT = Path(__file__).resolve().parents[1]
 UNITS = yaml.safe_load((ROOT / "benchmarks/s11/thermal_reference.yaml").read_text())["units"]

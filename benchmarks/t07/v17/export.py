@@ -30,7 +30,7 @@ from typing import Any, Final
 
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.canonical import CanonicalizationError, canonical_json
-from openflowsheet.verify.checks import KIND_TOLERANCE
+from openflowsheet.verify.kind_tolerance import KIND_TOLERANCE
 
 EXPORT_FILE: Final[str] = "store-export.json"
 #: §4.8: the artifact kinds whose documents the oracles and the system counter read.

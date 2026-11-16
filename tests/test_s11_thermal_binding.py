@@ -18,7 +18,7 @@ from m02_c1_support import connection, quantity, revision, specification
 from semantic_roles import role_of
 
 from openflowsheet.application import revision_binding, thermal_binding
-from openflowsheet.application.binding import Unbound
+from openflowsheet.application.binding_common import Unbound
 from openflowsheet.application.revision_binding import RevisionBinding, bind_revision_flowsheet
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.models.revision_flowsheet import (

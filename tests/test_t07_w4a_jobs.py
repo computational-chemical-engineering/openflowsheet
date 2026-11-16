@@ -62,7 +62,8 @@ from openflowsheet.run.bundle import read_artifact, read_manifest, verify_bundle
 from openflowsheet.run.manifest import policy_sha256
 from openflowsheet.schema_check import schema_errors
 from openflowsheet.verify.certificate import CheckPolicy
-from openflowsheet.verify.checks import KIND_TOLERANCE, VerifierError
+from openflowsheet.verify.checks import VerifierError
+from openflowsheet.verify.kind_tolerance import KIND_TOLERANCE
 
 NOMINAL = "SYN-001-nominal"
 #: One revision per shape: revision_eo with a certificate, legacy_eo with a certificate,

@@ -16,7 +16,7 @@ import pytest
 from s11_column_support import column_checks, column_revision, quantity
 from test_s02_column_wo1 import SPECS
 
-from openflowsheet.application.binding import Unbound
+from openflowsheet.application.binding_common import Unbound
 from openflowsheet.application.revision_binding import (
     MODEL_BASES,
     MODEL_BUILDERS,

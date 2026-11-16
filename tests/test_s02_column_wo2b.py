@@ -30,6 +30,7 @@ import openflowsheet.models.syn001.column_solve as solve_module
 import openflowsheet.orchestrator.region_attempts as region_attempts
 from openflowsheet.compile.reference import row_values
 from openflowsheet.models.lifted_tolerance import KIND_TOLERANCE
+from openflowsheet.models.syn001.band_types import BandTemperature
 from openflowsheet.models.syn001.cascade import (
     CascadeFailure,
     liquid_total_id,
@@ -50,7 +51,6 @@ from openflowsheet.models.syn001.column_solve import (
     slots,
     solve_column,
 )
-from openflowsheet.models.syn001.saturation_band import BandTemperature
 from openflowsheet.numerics.scaling import Scaling
 from openflowsheet.orchestrator.recovery import (
     EO_CORE_FAILURES,

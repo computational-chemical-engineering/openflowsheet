@@ -17,7 +17,7 @@ from test_t07_w3b_validation import ALREADY_READY, MOVED_TO_READY
 
 import openflowsheet.application.admission as admission_module
 from openflowsheet.application.admission import SolveAdmission, admit_budgets, admit_solve
-from openflowsheet.application.binding import Unbound
+from openflowsheet.application.binding_common import Unbound
 from openflowsheet.application.revision_run import (
     NoRoute,
     Route,
@@ -32,7 +32,7 @@ from openflowsheet.orchestrator.revision import plan_revision
 from openflowsheet.run.manifest import policy_sha256
 from openflowsheet.schema_check import schema_errors
 from openflowsheet.verify.certificate import REGISTERED_POLICY_ID, CheckPolicy
-from openflowsheet.verify.checks import KIND_TOLERANCE
+from openflowsheet.verify.kind_tolerance import KIND_TOLERANCE
 
 READY = sorted(MOVED_TO_READY | ALREADY_READY)
 #: `project grant`'s agent defaults (§5.9).

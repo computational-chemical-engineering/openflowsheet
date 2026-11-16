@@ -170,7 +170,7 @@ from openflowsheet.verify.certificate import (
     verify_bound,
     verify_revision,
 )
-from openflowsheet.verify.checks import KIND_TOLERANCE
+from openflowsheet.verify.kind_tolerance import KIND_TOLERANCE
 from openflowsheet.verify.projection import PROJECTED_CATEGORIES
 from openflowsheet.verify.saturation import (
     UNRESOLVED_FLOOR_OVER_TOLERANCE,

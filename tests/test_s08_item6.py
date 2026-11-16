@@ -30,6 +30,7 @@ import openflowsheet.models.syn001.cascade_solve as cascade_solve_module
 import openflowsheet.models.syn001.column_solve as column_solve_module
 from openflowsheet.models.lifted import Regime
 from openflowsheet.models.lifted_tolerance import KIND_TOLERANCE
+from openflowsheet.models.syn001.band_types import BandError, BandTemperature
 from openflowsheet.models.syn001.cascade import (
     InletState,
     SideFeed,
@@ -48,7 +49,6 @@ from openflowsheet.models.syn001.column_solve import (
     saturation_errors,
     solve_column,
 )
-from openflowsheet.models.syn001.saturation_band import BandError, BandTemperature
 
 sys.path.insert(0, str(REPO_ROOT / "scripts"))
 import s03_references_ours as s03_ours  # noqa: E402

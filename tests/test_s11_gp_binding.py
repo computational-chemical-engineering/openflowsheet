@@ -19,7 +19,7 @@ import pytest
 from m02_c1_support import connection, quantity, revision, specification
 from semantic_roles import role_of
 
-from openflowsheet.application.binding import Unbound
+from openflowsheet.application.binding_common import Unbound
 from openflowsheet.application.revision_binding import (
     MODEL_BASES,
     RevisionBinding,

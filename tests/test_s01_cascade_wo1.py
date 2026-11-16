@@ -23,6 +23,7 @@ import openflowsheet.orchestrator.region as region_module
 from openflowsheet.compile.reference import row_values
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.models import flow_id, pressure_id, temperature_id
+from openflowsheet.models.syn001.band_types import BandTemperature
 from openflowsheet.models.syn001.cascade import (
     BOTTOM,
     TOP,
@@ -48,7 +49,6 @@ from openflowsheet.models.syn001.cascade import (
     vapor_id,
     vapor_total_id,
 )
-from openflowsheet.models.syn001.saturation_band import BandTemperature
 from openflowsheet.thermo.syn001 import Syn001Provider
 
 REFERENCE_PATH = REPO_ROOT / "docs" / "derivations" / "scripts" / "s01_reference.json"

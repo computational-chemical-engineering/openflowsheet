@@ -27,7 +27,7 @@ from t07_corpus import CORPUS
 
 from openflowsheet.adapters import variants
 from openflowsheet.application import capabilities
-from openflowsheet.application.binding import Unbound
+from openflowsheet.application.binding_common import Unbound
 from openflowsheet.application.cli import API_EXIT_CODES, main
 from openflowsheet.application.contract import ApplicationError
 from openflowsheet.application.local import LocalApplication

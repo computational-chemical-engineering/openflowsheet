@@ -210,7 +210,7 @@ def kind_floor(a: float, r: float, s: float | None) -> float:
 def build(problems: list[str]) -> dict[str, Any]:
     """The policy document; every refusal condition of A1 appended to `problems`."""
     from openflowsheet.models.lifted_tolerance import KIND_TOLERANCE as REGION_KIND_TOLERANCE
-    from openflowsheet.verify.checks import KIND_TOLERANCE as CHECKS_KIND_TOLERANCE
+    from openflowsheet.verify.kind_tolerance import KIND_TOLERANCE as CHECKS_KIND_TOLERANCE
 
     v1 = v1_policy()
 

@@ -31,7 +31,8 @@ from test_t04_edge3 import plan_run, region_step
 from test_t05_w11_cases import _instance, shaped_revision
 from test_t06_w5_corpus import _spy
 
-from openflowsheet.application.binding import Binding, Unbound, bind_revision_or_reason
+from openflowsheet.application.binding import Binding, bind_revision_or_reason
+from openflowsheet.application.binding_common import Unbound
 from openflowsheet.application.revision_binding import RevisionBinding, bind_revision_flowsheet
 from openflowsheet.application.validation import ValidationReport, validate
 from openflowsheet.canonical import canonical_json

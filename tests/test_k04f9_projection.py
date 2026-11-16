@@ -24,7 +24,8 @@ import pytest
 import scipy.sparse as sp
 
 from openflowsheet.verify import CheckResult
-from openflowsheet.verify.checks import KIND_TOLERANCE, residual_checks
+from openflowsheet.verify.checks import residual_checks
+from openflowsheet.verify.kind_tolerance import KIND_TOLERANCE
 from openflowsheet.verify.projection import PROJECTED_CATEGORIES, Projection, project
 from openflowsheet.verify.zero_flow import ZeroFlowSplit
 

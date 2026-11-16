@@ -33,7 +33,7 @@ from openflowsheet.compile.casadi_backend import CasadiCompiledProblem, compile_
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.models import UnitModel
 from openflowsheet.models.syn001 import COMPONENTS
-from openflowsheet.verify.checks import KIND_TOLERANCE
+from openflowsheet.verify.kind_tolerance import KIND_TOLERANCE
 
 #: Spec §15 A06: the cases whose causal solution the rows are evaluated at.
 A06_CASES = (

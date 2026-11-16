@@ -34,8 +34,7 @@ from conftest import REPO_ROOT, load_json
 from jsonschema import Draft202012Validator
 from m03_fixture_compare import fixture_differences
 
-from openflowsheet.application.types import SCHEMA_BASE
-from openflowsheet.schema_check import schema_errors
+from openflowsheet.schema_check import SCHEMA_BASE, schema_errors
 from openflowsheet.studies import sensitivity as sensitivity_module
 from openflowsheet.studies.nlp.closure import StartEvidence, classify_starts
 from openflowsheet.studies.nlp.verification import CHECKS

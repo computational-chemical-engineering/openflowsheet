@@ -132,7 +132,7 @@ def disagreement(item: Case, state: Mapping[str, float]) -> list[str]:
 
 def test_the_equilibrium_tolerance_is_k04s() -> None:
     """Restated in the region module to avoid an import cycle; pinned here so it cannot drift."""
-    from openflowsheet.verify.checks import EQUILIBRIUM_TOLERANCE as REGISTERED
+    from openflowsheet.verify.kind_tolerance import EQUILIBRIUM_TOLERANCE as REGISTERED
 
     assert EQUILIBRIUM_TOLERANCE == REGISTERED
 

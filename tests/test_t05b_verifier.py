@@ -67,7 +67,8 @@ from openflowsheet.orchestrator.splits import lifted_splits
 from openflowsheet.verify import CheckResult
 from openflowsheet.verify import saturation as verifier_band
 from openflowsheet.verify.certificate import SolutionCertificate, verify_revision
-from openflowsheet.verify.checks import KIND_TOLERANCE, enthalpy_flow, stream_of
+from openflowsheet.verify.checks import enthalpy_flow, stream_of
+from openflowsheet.verify.kind_tolerance import KIND_TOLERANCE
 from openflowsheet.verify.table import (
     DECLARED_ENTHALPY_NOTE,
     SPLIT_ENTHALPY_NOTE,

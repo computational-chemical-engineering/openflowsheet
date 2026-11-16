@@ -23,6 +23,7 @@ import openflowsheet.models.syn001.column_validation as column_validation_module
 from openflowsheet.compile.reference import row_values
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.models import flow_id, temperature_id
+from openflowsheet.models.syn001.band_types import BandTemperature
 from openflowsheet.models.syn001.cascade import (
     CascadeFailure,
     InletState,
@@ -51,7 +52,6 @@ from openflowsheet.models.syn001.column import (
     regime_form,
     validate,
 )
-from openflowsheet.models.syn001.saturation_band import BandTemperature
 from openflowsheet.models.syn001.tp_state import enthalpy_flow
 from openflowsheet.thermo import PropertyRequest, StreamState
 from openflowsheet.thermo.syn001 import Syn001Provider

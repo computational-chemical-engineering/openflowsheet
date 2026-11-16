@@ -43,9 +43,8 @@ from x02_schema_support import without_x02
 from x04_schema_support import without_x04
 
 from openflowsheet.application.operations import OPERATIONS, Operation
-from openflowsheet.application.types import SCHEMA_BASE
 from openflowsheet.canonical import canonical_json
-from openflowsheet.schema_check import schema_errors
+from openflowsheet.schema_check import SCHEMA_BASE, schema_errors
 
 SCHEMA = "application-results.schema.json"
 SCHEMA_DIR = REPO_ROOT / "schemas"
