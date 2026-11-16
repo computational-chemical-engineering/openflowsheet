@@ -938,3 +938,27 @@
   records it): expected, not drift.
 - **2026-11-16, job 137 PASS (G5 run 8 review-fix docstring 95d29ba1, step 214 accepted-neutral, 17.5 -> 17.5,
   15/15).** Report: ALERTs as at job 123. Merge-check job 138 next.
+- **2026-11-16, R-W4-1b (reviewer, Opus, 198k tokens; I-8 A-F, 92153233): merge after fixes, no commit rejected.**
+  Import-stripped ASTs equal on every touched file; 310 src and 666 outside-src retargeted from-imports resolve to
+  the same object; 68 setattr/patch targets all live (no silent no-op); kept names = exactly column_unit's imports
+  (cascade 9 + `_TOKEN`, column 18, column_solve 5); lazy imports stay in scope, no new cycle; STOP 1 form 6/6;
+  92153233 OK. Fixes: (1) region.py:132 `ClosureMemo as ClosureMemo` (PEP 695 alias missed by split-region's
+  `new_public`), test_t05b_band_screen.py:41-42 imports it through region; (2) test_m02_wo9_reactor.py:45 imports
+  `Unbound` through revision_binding: both to W4 run 7. (3) Docstrings claiming removed re-exports
+  (revision_binding.py:27, certificate.py:3-4, cascade.py:11, column.py:13 incomplete): applied by the orchestrator,
+  cd2b9f43, job 139 no-gain. Notes: kept private aliases in cascade/column_solve and `band_temperature` (I-13, I-19);
+  benchmarks/l01/retake.py:90 duplicate `# noqa` (run 7); config.toml:105-111 comment lists S17 edges R1-R5 removed
+  (run 7). Q4: reactor.py `_artifact_hash` keys nothing registered (M9 scans models/ only; corpus_identity.py:670),
+  so "F0 at the merge" checks nothing there; the surrogate unit's identity is unregistered, a pre-existing gap:
+  recorded, left (not S19 scope). Out of scope found: SolveOutcome via region (test_s02_column_wo2b.py:63),
+  LiftedSplit via orchestrator.splits (test_t06_w6_a85.py:34), RecyclePolicy via numerics.anderson (8 scripts):
+  W4 run 7. The 33 column_unit bindings I-8 kept are covered by ADR 0076:33-34 ("any further frozen import ...
+  listed at the W5 base"); no amendment now.
+- **2026-11-16, job 136 PASS (G6 run 4 step 7, d2e627b1, `_from_entry`, step 215 accepted, 20.0 -> 17.0, 16/16): G6
+  run 4 all gated.** R-W3-G6-4 launched (`S19-R-W3-G6-4.md`, reviewer, Opus).
+- **2026-11-16, W4 merge-check prepared.** wp/S19 (3c2c2d33) merged into wp/S19-w4 as 4d250386: one conflict,
+  verify/split_checks.py TYPE_CHECKING block (W4: `LiftedSplit` from models.lifted; wp/S19 G5: `InstanceView` added,
+  `LiftedSplit` from orchestrator.region): both imports kept, LiftedSplit from its home. Full mypy clean (377 files),
+  wp/S19's changed tests collect. Merge-check job 140 (after the no-gain 139). Then merge W4 into wp/S19 and brief
+  W4 run 7: R-W4-1a fixes 1 (non-hashed `Refusal` importers), 2-4, 6, 8, 9; R-W4-1b fixes 1-2 and its out-of-scope
+  list; the sizing/transactions/program I-8 leftovers.
