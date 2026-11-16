@@ -54,7 +54,7 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 
 ## Next actions (2026-11-16, ~20:30)
 
-Runner pid 2642417 (cce-code-health 846a065; merge-check = `gate.sh --behaviour-only`). Results consumed up to 164;
+Runner pid 2642417 (cce-code-health 6529f47; merge-check = `gate.sh --behaviour-only`). Results consumed up to 164;
 `$Q wait --since 164` was running. Scan of wp/S19 at 5fa99307: 314 files, debt 4746.1, health 8.08, brain 26, file
 smells 58. Lanes at most 2 agents until Thu 19 Nov 13:00. ALERTs persist (proposal 2 with Frank). Merge-checks run on
 a helper branch `wp/S19-<lane>-mc` = lane tip + the wp/S19 tip merged in (S19_DECISIONS union-merged with
@@ -78,7 +78,7 @@ review: merge after fixes (fix 3 done 6bdc88b6).
    (gamma_phi_units 6.4, pr_c1 6.7, split_checks 7.2, table 7.5, column 7.6, checks 8.4, certificate 8.4; S2 tier,
    cadence 4; duplication among verify twins: the verify twins ADR 0076 addendum is open with Frank). Write brief
    S19-W3-G5-9.md after G6 run 6 launches.
-6. Re-pin cce-code-health 846a065 -> 6529f47 at the next queue-idle window (not urgent).
+6. Re-pinned to 6529f47 (S19_DECISIONS, job 179 entry); ruff tier `{files:GLOB}` switch left.
 7. Open for Frank (not blocking): as before (R-1042 option C; STOP 1 alternative; tool fixes; verify twins addendum;
    selection-widening; proposal 2 for the ALERTs). Design lane: NaN derivative-witness pass (R-W3-G5-8). Docs-pass
    leftovers as listed in S19_DECISIONS.
