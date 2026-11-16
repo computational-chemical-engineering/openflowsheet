@@ -42,8 +42,8 @@ from typing import Any, Final, Literal
 import numpy as np
 import numpy.typing as npt
 
-from openflowsheet.assessment.linearization import Linearization
-from openflowsheet.assessment.program import AssessmentProgram, Limitation, Refusal
+from openflowsheet.assessment.linearization import Linearization, Refusal
+from openflowsheet.assessment.program import AssessmentProgram, Limitation
 from openflowsheet.compile.casadi_backend import compile_problem
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.numerics.scaling import Scaling

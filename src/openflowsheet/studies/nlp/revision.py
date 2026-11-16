@@ -37,7 +37,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Final
 
-from openflowsheet.assessment.program import AssessmentProgram, Refusal
+from openflowsheet.assessment.linearization import Refusal
+from openflowsheet.assessment.program import AssessmentProgram
 from openflowsheet.assessment.spec import load_assessment
 from openflowsheet.assessment.views import view_of
 from openflowsheet.canonical import canonical_json, document_sha256

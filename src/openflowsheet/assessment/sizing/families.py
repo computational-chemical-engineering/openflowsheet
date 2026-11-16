@@ -13,11 +13,11 @@ from dataclasses import dataclass, replace
 from fractions import Fraction
 from typing import Any
 
+from openflowsheet.assessment.linearization import Refusal
 from openflowsheet.assessment.program import (
     FunctionalBuilder,
     Limitation,
     OutputDef,
-    Refusal,
     Symbols,
     Theta,
 )

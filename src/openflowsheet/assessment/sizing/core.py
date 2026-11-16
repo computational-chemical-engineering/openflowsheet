@@ -24,13 +24,13 @@ from openflowsheet.assessment.blocks import (
     volumetric_block_id,
 )
 from openflowsheet.assessment.defaults import default
+from openflowsheet.assessment.linearization import Refusal
 from openflowsheet.assessment.program import (
     BuildContext,
     ContributionPlan,
     FunctionalBuilder,
     Limitation,
     OutputDef,
-    Refusal,
     Symbols,
     Theta,
 )
