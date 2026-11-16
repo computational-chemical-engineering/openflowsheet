@@ -339,10 +339,7 @@ def _differences_v1(
             if ruled is not None:
                 found += ruled
                 continue
-            floor = None
-            source = SELF_FLOORED.get(key)
-            if source is not None and isinstance(committed.get(source), int | float):
-                floor = abs(float(committed[source]))
+            floor = _self_floor_v1(key, committed)
             found += _differences_v1(emitted[key], committed[key], f"{where}.{key}", floor=floor)
         return found
 
@@ -462,6 +459,15 @@ def _windowed_shape_v1(
             "the comparability window the value is not compared, its shape is"
         ]
     return []
+
+
+def _self_floor_v1(key: str, committed: dict[str, Any]) -> float | None:
+    """v1's floor for the child `key` of the committed object: the magnitude of its
+    `SELF_FLOORED` sibling when that is a number, else None."""
+    source = SELF_FLOORED.get(key)
+    if source is not None and isinstance(committed.get(source), int | float):
+        return abs(float(committed[source]))
+    return None
 
 
 def _float_leaf_v1(emitted: Any, committed: Any, where: str, floor: float | None) -> list[str]:
