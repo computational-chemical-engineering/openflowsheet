@@ -593,3 +593,22 @@
   `one_sided`, `components`, `skipped_reason`, built once in `verify_revision` (certificate.py:515-551) and unpacked at
   the `derivative_witness` call (its public keywords unchanged), is the next G5 step; it stays separate from the W4
   verify parameter object. Lane merged with wp/S19 (3fdead1e, docs only); merge-check job 48.
+- **2026-11-16, gate 161 FAIL (W4 I-3 interface step 59c076bd, job 25): ruff tier scope, not the step.** The step only
+  deletes application/policies.py, so the tier's `{files}` (touched head paths, cce-code-health gate.py:1203) was
+  empty and `ruff check` linted the whole repository; it found two E501 lines in the lane's gate_queue.py (blob
+  362978db). wp/S19 itself failed repo-wide ruff (3 E501 + 1 format in gate_queue.py from 37307ab0/dd0fee9d, so CI
+  would fail). Every other tier passed (12/13). Jobs 26-30 were SKIPPED behind it, and the runner's in-memory
+  failed-head list would have skipped every later W4 job (36-46, all descendants).
+- **DECISION 2026-11-16, ruff tier guard and side-chain re-gates.** (1) 0064d0ae on wp/S19: gate_queue.py
+  ruff-clean; the tier (`.codehealth/config.toml`) exits 0 with "no touched head files" when a step leaves none (its
+  defined scope is the touched files; repo-wide lint stays CI's). Alternative: a cce-code-health fix (empty `{files}`
+  -> tier skipped); rejected for now: the pin installs from the public GitHub remote, so it needs a push (Frank).
+  (2) The gated tree carries its own config, so a deletion-only step already committed on the lane is re-gated on a
+  side chain: base + the guard commit, then the step cherry-picked; the gated diff is byte-identical to the lane
+  step's (checked with `diff`). Gate 161 -> job 49 (worktree s19-w4-rg161, 8446be59..cc39a383, `--rerun-of 161`).
+  The I-1 interface step 08e0133e (also deletion-only, re-enqueued as 54) was withdrawn before it ran
+  (`queue/withdrawn/`) and gated as job 57 (s19-w4-rg54, 4cbd8283..bf0e21b8). (3) The runner was stopped (pid
+  781151) to clear its failed list; jobs 31 and 47 INTERRUPTED and re-enqueued as 50 and 51; 26-30 as 52-56; new
+  runner pid 1056796. Lane commits 59c076bd and 08e0133e keep job 25's FAIL in the log; their evidence is jobs 49
+  and 57 plus the lane's merge-check at its tip. After W4 run 4 reports: merge wp/S19 into wp/S19-w4 so later
+  deletion-only steps carry the guard. Reversible by: reverting 0064d0ae's config hunk.
