@@ -1422,3 +1422,8 @@
   Report: ALERT selected share 54% < 75%; ALERT selected gates take 465 s > 300 s; ALERT queue wait median 37 min >
   15 min (standing; proposal 2 with Frank). G6 run 6 merges when merge-check 188 passes.
 - **2026-11-16 21:37, job 189 PASS (g5r9-1, 55be9616, step 248 accepted, 23.0 -> 17.0, 16/16).** ALERTs standing.
+- **2026-11-16 21:42, job 188 PASS (g6r6-mc merge-check, 19f2ff53, full suite, 7/7). G6 run 6 merged into wp/S19 as
+  18f934f6** (via helper wp/S19-g6d-mc; wp/S19 had changed only docs/S19_* since the helper's base 135c78f8).
+  Worktrees s19-g6d and s19-g6d-mc removed (clean); branches kept. ALERTs standing. Next G6 run: not briefed; G6 left
+  per the targets file after the next scan (DECISION: brief G6 run 7 at the next wake with no review pending, from a
+  scan of the wp/S19 tip; alternative: brief now; reason: 2-agent cap, three reviews queued first).
