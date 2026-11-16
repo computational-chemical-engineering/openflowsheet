@@ -1210,3 +1210,12 @@
   Gate report: ALERT selected share 66% < 75% of step gates; ALERT selected gates take 660 s > 300 s (tests tier);
   ALERT selected/full time ratio 0.50 > 0.4: selection saves little; ALERT queue wait median 50 min > 15 min (causes
   as before: import-time fallbacks of W4 steps, 10 of 11 full-suite causes collection-time code; proposal 2 with Frank).
+- **2026-11-16, A-I9 ruling (architect, Fable 5.2, 136k tokens; 05150df1, `docs/briefs/S19-A-I9-ruling.md`):** the
+  engineer's proposal accepted as new step I-5b (DocumentSchemaError, validate_document, _raise_first ->
+  openflowsheet.schema_check, pure move, before I-9); errors.py imports validate_document from schema_check, no
+  application module at run time; errors stays directly below types. Measured on a scratch export of 486b6dbb: I-5b
+  3/3/12 unchanged, I-9 then 2/2/10 (I-9 as written: 3/3/12 with errors -> types violation and errors <-> types
+  cycle, confirming the STOP). Recorded as ADR 0076 addenda and register R-1044 (f5ef28f8). Open defaults (none
+  blocking): `__module__` change and audit caller change are STOPs only if a test pins them; validate_inline stays on
+  I-12a's list; schema_check private names unchanged through I-12a. W4 run 9 launched (opus-engineer, brief
+  S19-W4-9.md: I-5b, I-9, then I-14 if context allows), on wp/S19-w4 from 486b6dbb, steps chained after job 177.
