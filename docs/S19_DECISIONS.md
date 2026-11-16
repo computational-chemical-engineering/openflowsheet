@@ -646,3 +646,8 @@
   job 51 (review-fix docstrings 846a705f) PASS no-gain (step 163). Worktrees s19-g5, s19-g5b removed. G5 run 5
   briefed (`S19-W3-G5-5.md`, lane wp/S19-g5c from 62fdf722: `_issue` parameter object per R-W3-G5-4, then
   verify_revision, _revision_values, _guard), opus-engineer launched alongside W4 run 5 (2 lanes).
+- **2026-11-16, job 49 PASS (I-3 interface side chain cc39a383 on c8ba6356 + guard 8446be59; 17/17), logged by hand
+  as step 165.** The queue's `--rerun-of 161` failed (`campaign s19 has no step for this tree and base`: the side
+  chain's base differs from 59c076bd's), so `codehealth log` ran in the side-chain worktree without it. Evidence for
+  59c076bd's interface diff: step 165 plus the lane's merge-check. Tool note: a side-chain re-gate cannot carry
+  `--rerun-of`; job 57 (I-1) will hit the same and is logged the same way. Worktree s19-w4-rg161 removed.
