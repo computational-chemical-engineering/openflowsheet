@@ -865,3 +865,5 @@
   as at job 123 (widening; action recorded there).
 - **2026-11-16, job 130 PASS (G6 run 4 step 3, 201baec8, `launch`, step 203 accepted, 15.8 -> 11.0, 16/16).**
   Report: ALERTs as at job 123.
+- **2026-11-16, job 125 PASS (W4 run 5b, batch D interface, 5356e0d4..7cd01494, step 204 accepted, 11.0 -> 11.0,
+  17/17).** Report: ALERTs as at job 123.
