@@ -1576,3 +1576,99 @@
   merged into wp/S19 as 68a9597a** (wp/S19 had changed only docs/S19_* since 76db456d). Worktree s19-w4-mc removed
   (clean); branch kept. **W4 run 11 launched** (`opus-engineer`, Opus, brief S19-W4-11.md: I-11, I-13; lane
   wp/S19-w4 fast-forwards to 68a9597a). Agents running: G5 run 10, W4 run 11 (cap 2).
+- **2026-11-17, job 207 PASS (g5r10-1, 205a80a1, step 260 accepted, 30.1 -> 25.4, 16/16).**
+- **2026-11-17, G5 run 10 reported (opus-engineer, Opus). wp/S19-g5h (BASE 5b2f2886), 4 steps, jobs 207-210 (S2 cap):**
+  205a80a1 certificate `_issue` parameter object `_Checked` (15 -> 11 parameters; 11.8 -> 7.5; file 30.1 -> 25.4),
+  3a864127 `_issue` grading/limitations -> `_graded` (-> 6.0; file 23.9), db3bd5b3 column `_end_check` -> `_reflux`
+  (4.0 -> 1.0; file 11.0 -> 8.0; scratch spy: both branches run, 20 partial / 11 total condenser), b3c346c0
+  `admissibility` standalone-state -> `_standalone_state` (3.0 -> 0; file 5.0). Health certificate 8.4 -> 8.7 (aim 9.0
+  missed), column 7.6 -> 9.1; compare.py untouched; repo debt 4718.1 -> 4705.9. Not taken: `verify_revision` check-set
+  lift (lazy imports of verify.zero_flow/surrogate, rule 10); compare `_key_rule` (one-call rungs per ADR 0025 §5,
+  playbook "leave the ladder"); column `_stages_of` (regex ladder). Next: reviewer R-W3-G5-10 after jobs 208-210.
+- **2026-11-17, job 211 FAIL (w4r11-i11-1, I-11 step 2025815b on plan 0f14a6d0, run-log step 261 gate-fail, 11/12,
+  `literals`): removed ' against ', ' already exists with different content (', '); a revision is immutable and a
+  change is a new revision', 'no revision ', 'put_revision', 'replayed', 'revision '.** Cause: the plan deletes
+  application/transactions.py (FQ-C) without `literals_removed`. git grep at base/head: three texts lived only in the
+  facade (the "already exists" and "immutable" messages, 'put_revision'); the others keep copies elsewhere in src.
+  DECISION: declare the seven in the plan (`literals_removed`, file transactions.py), rebuild plan/step/layer-config,
+  enqueue fresh. Alternative: keep the texts alive somewhere (no caller; against FQ-C). Fix brief
+  S19-W4-11-fix211.md, `sonnet-implementer` (Sonnet). The running engineer was messaged first but ended at ~192k
+  without acting; no follow-up to it (agent-budget rule).
+- **2026-11-17, W4 run 11 reported (opus-engineer, Opus, ~192k tokens incl. the ignored resume). Lane fast-forwarded
+  to cacd0fef (arch 1/1/4, 316 files, 4002 imports).** I-11: 1efad3ce tests and scripts/k06_evidence_manifest.py
+  ported to `LocalApplication.in_memory()` (test_k06_application :154 now records its run as a solve job and expects
+  `run-<job_id>`; script output = base except `invalidations` run-job-000001 and new key `recorded_run`), ae098feb
+  importers retargeted to application.types, 0f14a6d0 plan, 2025815b step (`_conforms` under TYPE_CHECKING in
+  local.py; mypy falsifier at local.py:2391; patch_noop 265/0; arch 1/1/4 -> 1/1/4, files 316 -> 315, imports 4002 ->
+  3995), fe742b07 layer config (also drops the forbid rule's `to` entry; arch warnings 0). For review: two test names
+  still say "facade" (one cited in evidence/T07); forbid `to` entry dropped though the ADR row names only
+  application-layers; ported fixtures commit via `commit_revision` only (no `put_revision` audit row). Leftovers
+  (docs pass): scripts/k06_evidence_manifest.py:361 still hashes the deleted file, `build()` now raises;
+  scripts/s16_recall.py:70 stale mutant (since S17 R2); docs/roadmap/00-core-inventory.md:505, ADR 0019 pointer.
+  **STOP I-13: the ADR row ("pin readers and thermal signatures") does not settle which names.** Cross-module private
+  imports: model_builders.py:17 (35 names), revision_binding.py:47 (23), thermal_binding.py:34 (9), incl. signature
+  constants, hint builders, `_expand`, `_COOLPROP`, `_WILSON`, `_named_first`; no public name given for `_CONTEXT`
+  (revision_binding.py:118; test_m04_wo7_surrogate_unit.py:319), `_COLUMN` (tests/s11_column_support.py:23), `_columns`
+  (test_t07_r6_hints.py:42), `_declared_default` (binding.py:1266). Engineer's default: every cross-module private name
+  drops its underscore; the design lane names the four. Settled part: `column_owners`, `defect_result` (executor.py:69;
+  test_t07_w4e:35), `basis_refusal` (test_s11_routing.py:31). DECISION: I-13 scope goes to the design lane in the
+  R-W4-11 review (fable: frozen-interface naming), batched with the I-11 review questions; I-13 waits. Alternative:
+  the engineer's default now. Reversible by: running the default.
+- **2026-11-17, fix211 superseded.** The W4 run 11 engineer was resumed by the orchestrator's message after all (still
+  running) and rebuilt the chain itself: 869d96be plan with `literals_removed` (ten entries), 685bb448 step, fff4ead2
+  layer config; backup wp/S19-w4r11-job211 = fe742b07. The `sonnet-implementer` (S19-W4-11-fix211.md, 59k tokens)
+  found the moved tip, reverted its uncommitted plan edit, and stopped clean with no commit or enqueue; it measured
+  each of the seven failing literals at count 1 (tool counter). Its backup branch wp/S19-w4r11-orig (= fe742b07)
+  deleted. Lesson: a SendMessage to a finished agent resumes it; check ListAgents before briefing a second agent on
+  the same lane.
+- **2026-11-17, W4 run 11 final report (engineer resumed by message; ~217k tokens in all). I-11 rebuilt and enqueued
+  as job 212 (w4r11-i11-2, interface, f98f54aa..79c88b0e); 139afd37 layer config.** f98f54aa declares the deleted
+  module's 10 literals (count 1 each; the tool's literal check offline on f98f54aa..79c88b0e clean); 869d96be/
+  685bb448/fff4ead2 were an intermediate rebuild (869d96be had 7 extra entries appended by the concurrent fix211
+  `sonnet-implementer`, the "other writer" the engineer reported; resolved, not another session). Verified: lane tip
+  139afd37 clean, plan has 10 `[[literals_removed]]`. For R-W4-11 (besides the three review points): two removed
+  behaviours answer differently through their ADR successors: a missing revision gives `not_found "no such revision"`
+  from `LocalApplication.get_revision` (local.py:1911) instead of `RevisionError "no revision ..."`; the facade `put`
+  immutability refusal and its `put_revision` audit row have no successor (engineer did not STOP; revert f98f54aa if
+  the review does). I-13 not started (STOP above).
+- **2026-11-17, review briefs written: S19-R-W4-11.md (I-11 + the I-13 scope ruling) and S19-R-W3-G5-10.md.** DECISION:
+  R-W4-11 runs on Opus, not fable: ADR 0076 lines 188-191 and 426 already list the removed `put` refusal, its audit
+  row and the read successors, and lines 255-260 fix I-13's principle; what is left is the scope list and four names.
+  Alternative: fable. Reversible by: a fable re-review if the Opus ruling is contested. Each launches when its steps
+  pass (W4: job 212; G5: jobs 208-210).
+- **2026-11-17, job 208 PASS (g5r10-2, 3a864127, step 262 accepted, 25.4 -> 23.9, 16/16).** ALERTs standing.
+- **2026-11-17, job 209 PASS (g5r10-3, db3bd5b3, step 263 accepted, column.py 11.0 -> 8.0, 16/16).** ALERTs standing.
+- **2026-11-17, job 210 PASS (g5r10-4, b3c346c0, step 264 accepted, column.py 8.0 -> 5.0, 16/16). G5 run 10 fully
+  gated (steps 260, 262, 263, 264). Reviewer R-W3-G5-10 launched (`reviewer`, Opus, S19-R-W3-G5-10.md).** ALERTs standing.
+- **2026-11-17, R-W3-G5-10 reported (`reviewer`, Opus, 80k tokens): merge.** Step 1 `_Checked` a real parameter
+  object (all five fields from the caller's check-set phase, held by reference, both callers `return _issue(...)`);
+  steps 2-4 moved verbatim at the same place, same order and operands; forbid rule and lazy-import timing clean.
+  Note 1 (hardening, not taken; record): `_graded` grades `checked.checks` while the certificate records `_issue`'s
+  local `checks`; the same object only because `+=` at certificate.py:1060-1061 extends in place (all three producers
+  return list); a later rebind `checks = [*checks, ...]` would pass mypy and make `derivative_ok` vacuous. DECISION:
+  leave it (field comment at :1019 states it). Alternative: `.extend` or pass the graded set. Reversible by: a later
+  refactor step. Note 2 (rule 7): `_Checked` and `_issue` docstrings did not name `appended`: fixed by the orchestrator
+  as 5f4d221a, job 213 g5r10-revfix (no-gain). Helper wp/S19-g5h-mc (worktree s19-g5h-mc) = 5f4d221a + wp/S19
+  cda029b0 as 6656a326; merge-check job 214 g5r10-mc.
+- **2026-11-17, job 212 PASS (w4r11-i11-2, I-11 step 79c88b0e on plan f98f54aa, step 265 accepted, interface,
+  17/17).** Reviewer R-W4-11 launched (`reviewer`, Opus, S19-R-W4-11.md; includes the I-13 scope ruling).
+- **2026-11-17, R-W4-11 reported (`reviewer`, Opus, 153k tokens): I-11 merge after fix 1.** 1efad3ce OK (ported
+  tests keep their assertions; :154 tighter: `store.evidence_for_revision` at store.py:1203, exact tuple, "none"
+  and "all jobs" mutants fail); ae098feb OK; 0f14a6d0/f98f54aa OK (AST probe: 18 str constants in transactions.py,
+  8 `__all__`, exactly the 10 declared; both behaviour changes are listed in the ADR at :189-190, :426; immutability
+  survives on the contract path); 79c88b0e OK (no importer or string reference left in src, tests, scripts,
+  benchmarks, examples, docs-site; `_conforms` checks exactly §2.1 contract.py:47); 139afd37 OK (keep the forbid `to`
+  drop; its message says "After 2025815b", the job-211 chain's step, really 79c88b0e: logged, history not rewritten).
+  Fix 1: scripts/k06_evidence_manifest.py:361 hashes the deleted file (`build()` FileNotFoundError; FQ-C requires the
+  script ported) -> local.py and revision_edits.py entries, script-only commit after the step: `sonnet-implementer`,
+  brief S19-W4-11-fixk06.md. Notes (docs pass, not taken now): the 8-line store block is now three times
+  (test_k06 fixture, test_t07_w3b_validation:470, script:62; a t07_store_support helper would hold it);
+  test_t07_transactions.py:320-327 repeats :288-317 and :537 repeats :157; the test name at :107
+  (`..._and_the_old_imports_work`) is now false, rename with the two "facade" names (evidence/T07 cites node ids at
+  5f3d3ea2, so a rename does not falsify it); `_conforms` does not check JobControl or Inspection (beyond the ADR).
+  **I-13 ruling** recorded as decision register R-1045 (scope: 44 model_signatures names + 3 named moves +
+  `c1_reactor_surrogate_of`; collision renames `pin_value`, `port_stream`, `pin_column`, `pin_columns`; `COLUMN`
+  public; `_CONTEXT`, `_declared_default` stay private, tests use the public entry / an independent expectation;
+  correction: `_declared_default` has a test importer, test_t07_r7_admission.py:44). DECISION: adopt the reviewer's
+  two open defaults (`c1_reactor_surrogate_of` in scope; the four distinct names). Alternative: an architect ruling.
+  Reversible by: a new register entry before I-13 merges.
