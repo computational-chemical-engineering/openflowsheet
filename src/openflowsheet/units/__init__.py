@@ -351,13 +351,22 @@ def _check_registration(
 
 
 def _check_bounds(quantity: Mapping[str, object], value: float | None) -> list[str]:
-    problems: list[str] = []
+    """The quantity's declared `bounds` (none: no problems): an object whose present limits are
+    finite numbers (`_read_limits`), the lower not above the upper, and a finite `value` within
+    them (`_limit_problems`)."""
     bounds = quantity.get("bounds")
     if bounds is None:
-        return problems
+        return []
     if not isinstance(bounds, Mapping):
         return [f"bounds must be an object with optional lower/upper, got {bounds!r}"]
+    limits, problems = _read_limits(bounds)
+    return problems + _limit_problems(limits, value)
 
+
+def _read_limits(bounds: Mapping[object, object]) -> tuple[dict[str, float], list[str]]:
+    """The finite `lower` and `upper` limits of `bounds`, keyed by name, and a problem for each
+    present limit that is not a finite number; an absent or `None` limit is neither."""
+    problems: list[str] = []
     limits: dict[str, float] = {}
     for name in ("lower", "upper"):
         if name not in bounds or bounds[name] is None:
@@ -367,7 +376,14 @@ def _check_bounds(quantity: Mapping[str, object], value: float | None) -> list[s
             problems.append(f"bounds.{name} must be a finite number, got {bounds[name]!r}")
         else:
             limits[name] = limit
+    return limits, problems
 
+
+def _limit_problems(limits: Mapping[str, float], value: float | None) -> list[str]:
+    """The problems of finite `limits`: a lower limit above the upper one, then a finite
+    `value` below the lower or above the upper limit (a `None` or nonfinite value is not
+    compared)."""
+    problems: list[str] = []
     if "lower" in limits and "upper" in limits and limits["lower"] > limits["upper"]:
         problems.append(
             f"bounds.lower {limits['lower']!r} exceeds bounds.upper {limits['upper']!r}"
