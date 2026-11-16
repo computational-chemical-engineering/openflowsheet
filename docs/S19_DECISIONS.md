@@ -1551,3 +1551,20 @@
   "ALERT selected/full time ratio 0.43 > 0.4: selection saves little"
   "ALERT queue wait median 27 min > 15 min"
   (standing; proposal 2 with Frank). Jobs 205, 206 gating; serial repeat headser2 running (PID 3980694).
+- **2026-11-16 23:40, resume after self-reset. Serial repeat headser2 (PID 3980694) was invalid: EXIT 1, 20458
+  setup errors in 176 s, `ModuleNotFoundError: No module named 'openflowsheet.run.session'` (tests/conftest.py
+  fixture `_msg_sidecar_in_no_bundle`).** The overlay was commit A's conftest verbatim, which at head be115b6a reverts
+  the import to the pre-I-4 `openflowsheet.run.session`. Fixed that one line to `openflowsheet.application.run_session`
+  (as be115b6a has it; `git diff` now shows only commit A's hunks) and relaunched: PID 4036764, log `headser2.log`
+  (bad run kept as `headser2-badoverlay.log`), same scratchpad and `serial.sh`. Compare on EXIT with 1061/801/100,
+  20375 passed.
+- **2026-11-16 23:45, G6 run 7 not briefed. DECISION: the targets in S19_STATE item 4 (thermo/pr_c1, iapws95,
+  coolprop_heos, pr_lib, wilson_ig, wilson_ig_v2, syn001) are all F0 M9 frozen modules (`scripts/codehealth_frozen.py`)
+  and registry-hashed: W5 only (Q1; "registry-hashed files wait for W5"). Frank's 2026-11-15 order puts W5 behind
+  development, so G6's blocking part is its non-frozen files.** Scan of c0aad45e, G6 non-frozen files below 9.0:
+  launcher.py 8.8 (leftover `launch`: after W4, agreed in R-W3-G6-6), render.py 8.5 and units/__init__.py 9.4 (rests
+  judged not taken in run 6, review agreed), store.py 8.6 (duplication = R-237 `ArtifactSink`, an interface question).
+  G6's W3 part is done except launcher after W4. Alternative: a run on env.py 9.0 / registry/__init__ 9.3 (W4
+  territory; gains under 2). Reversible by: briefing a G6 run on those. For Frank (not blocking): thermo/ below 7.0
+  (pr_c1 4.6, iapws95 6.2, coolprop_heos 6.4, pr_lib 6.9, wilson_ig 6.9) is reachable only in W5. The free slot goes
+  to W4 run 11 (brief S19-W4-11.md: I-11, I-13), launched after runs 9+10 merge (jobs 205, 206).
