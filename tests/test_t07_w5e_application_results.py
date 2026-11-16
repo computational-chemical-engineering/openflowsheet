@@ -43,8 +43,8 @@ from x02_schema_support import without_x02
 from x04_schema_support import without_x04
 
 from openflowsheet.application.operations import OPERATIONS, Operation
-from openflowsheet.application.types import SCHEMA_BASE, schema_errors
 from openflowsheet.canonical import canonical_json
+from openflowsheet.schema_check import SCHEMA_BASE, schema_errors
 
 SCHEMA = "application-results.schema.json"
 SCHEMA_DIR = REPO_ROOT / "schemas"
@@ -507,7 +507,7 @@ def test_g_r6_6_every_pin_lists_its_pin_encodings() -> None:
     """The response validates against the amended schema, and each pin's and each option's
     `specifications` is its `pin_encodings`."""
     from openflowsheet.application.local import LocalApplication
-    from openflowsheet.application.revision_binding import MODEL_SIGNATURES, pin_encodings
+    from openflowsheet.application.model_signatures import MODEL_SIGNATURES, pin_encodings
 
     with tempfile.TemporaryDirectory() as scratch:
         with LocalApplication.create(Path(scratch) / "p", project_id="g-r6-6") as application:

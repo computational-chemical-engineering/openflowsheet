@@ -24,6 +24,7 @@ from t05_support import REF as T05_REF
 from t05b_support import REF, error, number
 
 from openflowsheet.compiled import EvaluationContext
+from openflowsheet.models.syn001 import band_types
 from openflowsheet.models.syn001 import saturation_band as unit
 from openflowsheet.thermo import (
     FlashRequest,
@@ -185,7 +186,7 @@ def test_t_of_beta_is_nondecreasing_and_the_split_conserves(composition: str) ->
     for beta in BETAS:
         answer = unit.band_temperature(PROVIDER, n, pressure, beta, CONTEXT)
         assert answer.position == "inside" and answer.temperature is not None
-        assert answer.evaluations <= unit.MAX_TEMPERATURE_EVALUATIONS
+        assert answer.evaluations <= band_types.MAX_TEMPERATURE_EVALUATIONS
         temperatures.append(answer.temperature)
         vapor, liquid = unit.band_split(n, answer.k_values, beta)
         for v, liq, flow in zip(vapor, liquid, n, strict=True):
@@ -258,7 +259,7 @@ def test_a_band_off_the_domain_is_the_sign_oracle_and_not_degenerate(
 
 def test_an_exhausted_bisection_is_typed_in_both_layers(monkeypatch: pytest.MonkeyPatch) -> None:
     n = (1.0, 1.0, 1.0)
-    with pytest.raises(unit.BandError) as raised:
+    with pytest.raises(band_types.BandError) as raised:
         unit.band_temperature(PROVIDER, n, 1.0e5, 0.5, CONTEXT, budget=5)
     assert raised.value.status == "not_converged"
     monkeypatch.setattr(verifier, "BISECTION_BUDGET", 5)
@@ -291,7 +292,7 @@ class RefusingLnK:
 
 def test_a_provider_refusal_is_surfaced_with_its_status_in_both_layers() -> None:
     refusing = RefusingLnK(PROVIDER)
-    with pytest.raises(unit.BandError) as raised:
+    with pytest.raises(band_types.BandError) as raised:
         unit.band_temperature(refusing, (1.0, 1.0, 1.0), 1.0e5, 0.5, CONTEXT)
     assert raised.value.status == "unsupported"
     with pytest.raises(verifier.SaturationError) as refused:

@@ -273,9 +273,9 @@ def document_at(spec_id: str, value: float) -> dict[str, Any]:
 def certified_state(spec_id: str, value: float) -> dict[str, float]:
     """TH-C1 with `spec_id` at `value`, bound and solved by the `revision_eo` route (the
     simulation path, cold), its certificate `VERIFIED`; else `RuntimeError`."""
-    from openflowsheet.application.policies import DEFAULT_POLICY_ID, resolve_policy
     from openflowsheet.application.revision_run import Route, bind_route, solve_route
-    from openflowsheet.verify.certificate import CheckPolicy
+    from openflowsheet.orchestrator.policies import DEFAULT_POLICY_ID, resolve_policy
+    from openflowsheet.verify.verdict import CheckPolicy
 
     policy = resolve_policy(DEFAULT_POLICY_ID, "revision_eo")
     assert policy is not None

@@ -86,7 +86,7 @@ def toy_projection(spec: ProblemSpec | None = None, **options: Any) -> Any:
 
 
 def refusal(spec: ProblemSpec) -> str:
-    from openflowsheet.studies.trust_region.projection import ProjectionRefusedError
+    from openflowsheet.studies.trust_region.projection_support import ProjectionRefusedError
 
     with pytest.raises(ProjectionRefusedError) as refused:
         toy_projection(spec)
@@ -174,9 +174,9 @@ def test_an_eliminated_flow_among_a_links_inlet_is_refused() -> None:
         DecisionSpec,
         ExternalLinkSpec,
         ObjectiveSpec,
-        ProjectionRefusedError,
         project,
     )
+    from openflowsheet.studies.trust_region.projection_support import ProjectionRefusedError
 
     feed = {**LINK_TOY_FEED, "n_NH3": 0.0}
 
@@ -334,7 +334,7 @@ def test_a_toy_without_a_joint_block_keeps_its_source_map_bytes() -> None:
 
 @pytest.mark.parametrize("reason", sorted(JOINT_REFUSALS))
 def test_each_joint_refusal_names_the_block_s_first_variable(reason: str) -> None:
-    from openflowsheet.studies.trust_region.projection import ProjectionRefusedError
+    from openflowsheet.studies.trust_region.projection_support import ProjectionRefusedError
 
     with pytest.raises(ProjectionRefusedError) as refused:
         joint_projection(*JOINT_REFUSALS[reason])

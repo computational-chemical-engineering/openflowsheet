@@ -62,7 +62,7 @@ from openflowsheet.registry import default_registry
 if TYPE_CHECKING:
     from openflowsheet.application.local import LocalApplication
     from openflowsheet.application.types import ApiError
-    from openflowsheet.units import DisplayUnits
+    from openflowsheet.units.display import DisplayUnits
 
 #: §11.5: an `ApiError`'s exit code, 2–16 in §5.8's table order (`ApiErrorCode`'s order). 0 is a
 #: domain result; 1 is a call that was never made. argparse's own usage error is also 2.
@@ -171,12 +171,12 @@ def command_optimize(arguments: argparse.Namespace) -> int:
     is `KKT_POINT_VERIFIED`, as `solve` exits 0 iff its run is `VERIFIED`.
     """
     from openflowsheet.application.contract import api_error
-    from openflowsheet.application.policies import DEFAULT_POLICY_ID, resolve_policy
     from openflowsheet.application.revision_routes import REVISION_ROUTES
+    from openflowsheet.orchestrator.policies import DEFAULT_POLICY_ID, resolve_policy
     from openflowsheet.studies.nlp.request import request_problems
     from openflowsheet.studies.nlp.revision import optimize_revision
     from openflowsheet.studies.nlp.revision_host import ROUTE
-    from openflowsheet.verify.certificate import CheckPolicy
+    from openflowsheet.verify.verdict import CheckPolicy
 
     document = _load(Path(arguments.revision))
     request = _load(Path(arguments.request))
@@ -787,7 +787,7 @@ def _bundle_display_units(text: str) -> DisplayUnits | ApiError:
     from openflowsheet.application.contract import api_error
     from openflowsheet.application.operations import OPERATIONS
     from openflowsheet.application.types import DocumentSchemaError, validate_inline
-    from openflowsheet.units import DisplayUnitsError, parse_display_units
+    from openflowsheet.units.display import DisplayUnitsError, parse_display_units
 
     operation = OPERATIONS["get_stream_table"]
     member = {
@@ -821,7 +821,7 @@ def command_streams(arguments: argparse.Namespace) -> int:
     from openflowsheet.application.local import LocalApplication
     from openflowsheet.application.operations import dispatch
     from openflowsheet.application.store import StoreError
-    from openflowsheet.units import DisplayUnits
+    from openflowsheet.units.display import DisplayUnits
 
     as_json = arguments.format == "json"
     by_job = arguments.project is not None or arguments.job is not None

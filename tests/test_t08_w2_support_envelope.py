@@ -17,7 +17,7 @@ from typing import Any
 
 import pytest
 
-from openflowsheet.application import revision_binding
+from openflowsheet.application import model_builders, revision_binding
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -318,11 +318,11 @@ def library_only_problems(builders: Any, harvest: list[dict[str, Any]]) -> list[
 def test_d1_the_library_only_models_are_unbound_with_their_u04_items(
     envelope: dict[str, Any],
 ) -> None:
-    assert library_only_problems(revision_binding.MODEL_BUILDERS, envelope["harvest"]) == []
+    assert library_only_problems(model_builders.MODEL_BUILDERS, envelope["harvest"]) == []
 
 
 def test_d1_binding_a_library_only_model_trips_the_wire(envelope: dict[str, Any]) -> None:
-    bound = {**revision_binding.MODEL_BUILDERS, "syn001.cascade": object()}
+    bound = {**model_builders.MODEL_BUILDERS, "syn001.cascade": object()}
     problems = library_only_problems(bound, envelope["harvest"])
     assert len(problems) == 1
     assert "syn001.cascade" in problems[0]
@@ -337,12 +337,12 @@ def test_d1_a_u04_item_that_loses_its_model_id_trips_the_wire(envelope: dict[str
         if item["manifest"].startswith("evidence/S01/") and "U04" in (item.get("to") or [])
     )
     entry["note"] = entry["note"].replace("`syn001.cascade`", "the cascade")
-    problems = library_only_problems(revision_binding.MODEL_BUILDERS, mutated)
+    problems = library_only_problems(model_builders.MODEL_BUILDERS, mutated)
     assert len(problems) == 1
     assert "syn001.cascade" in problems[0]
     # no vacuous pass: a harvest with the package's U04 items removed is also a problem
     stripped = [i for i in envelope["harvest"] if "U04" not in (i.get("to") or [])]
-    assert len(library_only_problems(revision_binding.MODEL_BUILDERS, stripped)) == 1
+    assert len(library_only_problems(model_builders.MODEL_BUILDERS, stripped)) == 1
 
 
 # -- C3: the library-only providers (T08 release spec §5.7 Amendment S04; R-568, R-569) --------

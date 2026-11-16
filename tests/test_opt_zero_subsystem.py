@@ -20,11 +20,11 @@ import numpy as np
 import numpy.typing as npt
 import pytest
 
-from openflowsheet.application.policies import DEFAULT_POLICY_ID, resolve_policy
 from openflowsheet.application.revision_routes import REVISION_ROUTES
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.orchestrator import region as region_module
 from openflowsheet.orchestrator import region_attempts
+from openflowsheet.orchestrator.policies import DEFAULT_POLICY_ID, resolve_policy
 from openflowsheet.studies.nlp import revision_host
 from openflowsheet.studies.nlp.host import CertifiedPoint, HeldSystem, ZeroSubsystem
 from openflowsheet.studies.nlp.revision_host import (
@@ -34,7 +34,7 @@ from openflowsheet.studies.nlp.revision_host import (
     decision_map,
 )
 from openflowsheet.studies.nlp.verification import ZERO_SUBSYSTEM_CHANGED, _regimes
-from openflowsheet.verify.certificate import CheckPolicy
+from openflowsheet.verify.verdict import CheckPolicy
 
 REPO = Path(__file__).resolve().parents[1]
 C_MW = REPO / "benchmarks" / "s11" / "flowsheets" / "C-MW.json"

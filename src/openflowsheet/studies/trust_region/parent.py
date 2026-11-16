@@ -72,12 +72,12 @@ from openflowsheet.canonical import document_sha256
 from openflowsheet.models import flow_id, temperature_id
 from openflowsheet.models.c1.reactor import C1Reactor
 from openflowsheet.models.lifted import AdmissibilityRefusal
+from openflowsheet.numerics.solve_record import SolvePolicy
 from openflowsheet.orchestrator.coupling import UnitInlet
 from openflowsheet.orchestrator.execution import PlanRefusal
 from openflowsheet.orchestrator.executor import execute_plan
 from openflowsheet.orchestrator.revision import plan_revision
-from openflowsheet.orchestrator.trace import SolvePolicy
-from openflowsheet.studies.surrogate.study import MODEL_ID as SURROGATE_MODEL_ID
+from openflowsheet.studies.surrogate.records import MODEL_ID as SURROGATE_MODEL_ID
 from openflowsheet.studies.trust_region.checks import Decision, P2Reference, ParentSolve, Sense
 from openflowsheet.studies.trust_region.holders import TruthModel
 from openflowsheet.studies.trust_region.study import (
@@ -88,8 +88,8 @@ from openflowsheet.studies.trust_region.study import (
     project_c1,
 )
 from openflowsheet.studies.trust_region.truths import ParentExperimentTruth
-from openflowsheet.verify.certificate import CheckPolicy
 from openflowsheet.verify.checks import VerifierError, stream_of
+from openflowsheet.verify.verdict import CheckPolicy
 
 if TYPE_CHECKING:
     from openflowsheet.studies.trust_region.projection import Projection

@@ -37,9 +37,9 @@ from openflowsheet.application.types import (
     RunFailure,
     RunResult,
     SolveFailedError,
-    schema_errors,
 )
 from openflowsheet.messages.render import render_failure
+from openflowsheet.schema_check import schema_errors
 
 RANKINE = REPO_ROOT / "examples" / "rankine-cycle.changeset.json"
 

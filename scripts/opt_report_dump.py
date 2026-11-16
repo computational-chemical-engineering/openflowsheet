@@ -35,10 +35,10 @@ def blank(document: Any) -> Any:
 
 
 def report(case: str, directory: Path) -> Any:
-    from openflowsheet.application.policies import DEFAULT_POLICY_ID, resolve_policy
     from openflowsheet.application.revision_routes import REVISION_ROUTES
+    from openflowsheet.orchestrator.policies import DEFAULT_POLICY_ID, resolve_policy
     from openflowsheet.studies.nlp.revision import optimize_revision
-    from openflowsheet.verify.certificate import CheckPolicy
+    from openflowsheet.verify.verdict import CheckPolicy
 
     expected = json.loads((OPT / "expected.json").read_bytes())
     flowsheet = expected["flowsheets"][case]

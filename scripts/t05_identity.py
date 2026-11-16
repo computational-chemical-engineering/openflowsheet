@@ -41,7 +41,7 @@ def _case(case: str) -> dict[str, Any]:
     from test_t05_certificates import certify
     from test_t05_coupled import solve
 
-    from openflowsheet.orchestrator.region import RegionResult
+    from openflowsheet.orchestrator.region_result import RegionResult
     from openflowsheet.run.identity import execution_plan_r0, r0_projection
 
     solved = solve(case)

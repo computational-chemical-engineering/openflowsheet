@@ -51,13 +51,14 @@ from openflowsheet.models.syn001 import (
     splitter,
     valve,
 )
-from openflowsheet.models.syn001.column import MODEL_ID as COLUMN_MODEL_ID
+from openflowsheet.models.syn001.column_spec import MODEL_ID as COLUMN_MODEL_ID
 from openflowsheet.models.thermal import flash as thermal_flash
 from openflowsheet.models.thermal import heater as thermal_heater
 from openflowsheet.models.thermal import machines as thermal_machines
 from openflowsheet.models.thermal import mixer as thermal_mixer
 from openflowsheet.models.thermal import valve as thermal_valve
 from openflowsheet.studies.surrogate import reactor as c1_surrogate
+from openflowsheet.studies.surrogate.records import MODEL_ID as SURROGATE_MODEL_ID
 from openflowsheet.thermo import Phase, PropertyProvider
 from openflowsheet.thermo.pr_c1 import PROVIDER_ID as C1_PROVIDER_ID
 
@@ -716,7 +717,7 @@ _C1_REACTOR_STANDIN: Final = ModelSignature(
 #: before building (`_resolve_surrogate`) and hands it to `_c1_reactor_surrogate_of`; the
 #: registered builder, called without one, refuses as an unresolved manifest does.
 _C1_REACTOR_SURROGATE: Final = ModelSignature(
-    model_id=c1_surrogate.MODEL_ID, ports=c1_surrogate.PORTS, required=("n_tubes",)
+    model_id=SURROGATE_MODEL_ID, ports=c1_surrogate.PORTS, required=("n_tubes",)
 )
 
 

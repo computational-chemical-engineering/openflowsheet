@@ -61,7 +61,7 @@ from openflowsheet.adapters.external.protocol import (
     STDOUT_FILE,
 )
 from openflowsheet.canonical import document_sha256, file_sha256, first_noncanonical
-from openflowsheet.orchestrator.trace import INTERRUPT_CHECK
+from openflowsheet.numerics.solve_record import INTERRUPT_CHECK
 
 __all__ = [
     "ChildProgram",

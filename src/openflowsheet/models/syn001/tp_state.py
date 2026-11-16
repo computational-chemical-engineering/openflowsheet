@@ -38,11 +38,11 @@ from openflowsheet.models import (
 )
 from openflowsheet.models.rows import balance_row, definition_row, equilibrium_row
 from openflowsheet.models.syn001 import TEMPERATURE_TOLERANCE, gamma_phi
+from openflowsheet.models.syn001.band_types import BandError
 from openflowsheet.models.syn001.blocks import EnthalpyFlowBlock, LnKBlock
 from openflowsheet.models.syn001.equilibrium_form import composition_dependent
 from openflowsheet.models.syn001.gamma_phi_blocks import GammaPhiLnKBlock, MixtureEnthalpyFlowBlock
 from openflowsheet.models.syn001.saturation_band import (
-    BandError,
     degeneracy_distance,
     is_temperature_degenerate,
     outside_the_degeneracy_window,

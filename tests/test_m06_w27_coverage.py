@@ -540,14 +540,18 @@ def v2_binder() -> ModuleType:
     read it through this binder; their routes are the ones they read before S11. Its models and
     `list_models` are v1/v2's model table's (`snapshot.restrict_to_v2_models`, S11 I1b): S11's
     models have rows in v3 only (R-805)."""
-    from openflowsheet.application import revision_binding  # noqa: PLC0415
+    from openflowsheet.application import (  # noqa: PLC0415
+        model_builders,
+        model_signatures,
+        revision_binding,  # noqa: PLC0415
+    )
 
     module = ModuleType("w27_v2_revision_binding")
     module.SELECTABLE_BASES = tuple(  # type: ignore[attr-defined]
         b for b in revision_binding.SELECTABLE_BASES if b.provider_id in snapshot.PROVIDER_LINES
     )
-    module.MODEL_BASES = revision_binding.MODEL_BASES  # type: ignore[attr-defined]
-    module.MODEL_BUILDERS = revision_binding.MODEL_BUILDERS  # type: ignore[attr-defined]
+    module.MODEL_BASES = model_signatures.MODEL_BASES  # type: ignore[attr-defined]
+    module.MODEL_BUILDERS = model_builders.MODEL_BUILDERS  # type: ignore[attr-defined]
     module.basis_provider = revision_binding.basis_provider  # type: ignore[attr-defined]
     return snapshot.restrict_to_v2_models(module)
 
@@ -813,9 +817,9 @@ def test_each_route_binds_a_revision_with_its_component_set() -> None:
     revision over that set whose models are among the route's own `model_ids`, which are the
     models `MODEL_BASES` puts on the route's basis (R-288) — not every model of
     `MODEL_BUILDERS`."""
-    from openflowsheet.application.binding import Unbound  # noqa: PLC0415
+    from openflowsheet.application.binding_common import Unbound  # noqa: PLC0415
+    from openflowsheet.application.model_signatures import MODEL_BASES  # noqa: PLC0415
     from openflowsheet.application.revision_binding import (  # noqa: PLC0415
-        MODEL_BASES,
         RevisionBinding,
         bind_revision_flowsheet,
     )

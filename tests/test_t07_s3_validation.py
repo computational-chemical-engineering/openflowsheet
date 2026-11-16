@@ -30,9 +30,10 @@ from t08_d1_substitution import d1_reversed
 
 from openflowsheet.application.contract import ApplicationError
 from openflowsheet.application.local import LocalApplication
-from openflowsheet.application.types import Change, Edit, schema_errors
+from openflowsheet.application.types import Change, Edit
 from openflowsheet.application.validation import validate
 from openflowsheet.canonical import canonical_json
+from openflowsheet.schema_check import schema_errors
 
 STRUCTURAL = ("STR-01", "STR-02", "STR-03", "STR-04", "STR-05")
 #: SHA-256 of `{document: [status, checks]}` over the 94 registered revision documents, as

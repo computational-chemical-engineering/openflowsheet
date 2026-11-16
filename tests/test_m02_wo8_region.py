@@ -27,22 +27,16 @@ from m02_wo8_support import (
     solve,
 )
 
-from openflowsheet.application import revision_binding
+from openflowsheet.application import model_builders
 from openflowsheet.application.revision_binding import RevisionBinding
 from openflowsheet.compile.spec import EquationSpec
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.graph.trace import trace_declaration
 from openflowsheet.models import Contribution
 from openflowsheet.models.c1 import TAU_DEW
+from openflowsheet.models.lifted import LiftedSplit, VapourOnlyForm
 from openflowsheet.orchestrator.execution import declaration_identity
-from openflowsheet.orchestrator.region import (
-    LiftedSplit,
-    VapourOnlyForm,
-    _admissible,
-    _dropped,
-    _kernel,
-    _pinned,
-)
+from openflowsheet.orchestrator.region import _admissible, _dropped, _kernel, _pinned
 from openflowsheet.orchestrator.revision import instances_of, plan_revision
 from openflowsheet.orchestrator.splits import (
     check_agreement,
@@ -263,13 +257,13 @@ class _Mutant:
 def _mutated(
     monkeypatch: pytest.MonkeyPatch, alter: Callable[[Contribution], Contribution]
 ) -> RevisionBinding:
-    builder = revision_binding.MODEL_BUILDERS["c1.tp_flash"]
+    builder = model_builders.MODEL_BUILDERS["c1.tp_flash"]
 
     def build(*arguments: Any) -> Any:
         unit, configuration = builder(*arguments)
         return _Mutant(unit, alter), configuration
 
-    monkeypatch.setitem(revision_binding.MODEL_BUILDERS, "c1.tp_flash", build)  # type: ignore[arg-type]
+    monkeypatch.setitem(model_builders.MODEL_BUILDERS, "c1.tp_flash", build)  # type: ignore[arg-type]
     return bind(flash_revision(F1, 268.15))
 
 

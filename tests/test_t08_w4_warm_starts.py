@@ -36,11 +36,6 @@ from t07_corpus import CORPUS
 from t07_jobs_support import commit
 
 from openflowsheet.application.local import LocalApplication
-from openflowsheet.application.policies import (
-    APPLICATION_POLICIES,
-    T06_REVISION_V2,
-    T08_WARM_V1,
-)
 from openflowsheet.application.revision_binding import RevisionBinding, bind_revision_flowsheet
 from openflowsheet.application.store import ProjectStore
 from openflowsheet.application.types import JobRequest, ReplayPolicy, SolveBody
@@ -53,14 +48,19 @@ from openflowsheet.orchestrator.phase_contract import (
     OpeningRequirement,
     OpeningState,
 )
-from openflowsheet.orchestrator.region import RegionResult
+from openflowsheet.orchestrator.policies import (
+    APPLICATION_POLICIES,
+    T06_REVISION_V2,
+    T08_WARM_V1,
+)
+from openflowsheet.orchestrator.region_result import RegionResult
 from openflowsheet.orchestrator.splits import lifted_splits
 from openflowsheet.orchestrator.warm_start import WarmStartCandidate
 from openflowsheet.run import solution_state
 from openflowsheet.run.bundle import MANIFEST_NAME
 from openflowsheet.run.identity import r0_projection
 from openflowsheet.run.manifest import policy_sha256
-from openflowsheet.verify.checks import KIND_TOLERANCE
+from openflowsheet.verify.kind_tolerance import KIND_TOLERANCE
 
 #: The members `run_revision_session` writes under `artifacts/`.
 Artifacts = dict[str, Any]

@@ -30,7 +30,7 @@ from openflowsheet.graph.report import StructuralReport
 from openflowsheet.graph.tear import Candidate, LoopTear, TearAnalysis
 from openflowsheet.graph.trace import Declaration
 from openflowsheet.numerics.scaling import Scaling
-from openflowsheet.orchestrator.trace import (
+from openflowsheet.numerics.solve_record import (
     Counters,
     EliminatedRowRecord,
     SolveOutcome,

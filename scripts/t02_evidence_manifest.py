@@ -62,7 +62,7 @@ from openflowsheet.numerics.anderson import (  # noqa: E402
     RecycleResult,
     solve_recycle,
 )
-from openflowsheet.orchestrator.trace import Trace  # noqa: E402
+from openflowsheet.numerics.solve_record import Trace  # noqa: E402
 
 REFERENCE = ROOT / "benchmarks" / "t02" / "reference_values.yaml"
 P01 = ROOT / "benchmarks" / "syn001" / "reference_values.yaml"
@@ -853,8 +853,8 @@ def _a01(ref: Mapping[str, Any]) -> tuple[bool, Any, Any]:
     from openflowsheet.graph.analysis import analyse
     from openflowsheet.graph.trace import trace_declaration
     from openflowsheet.models.syn001.flowsheet import Syn001Flowsheet
+    from openflowsheet.numerics.solve_record import SolvePolicy
     from openflowsheet.orchestrator.execution import build_execution_plan, declaration_identity
-    from openflowsheet.orchestrator.trace import SolvePolicy
     from openflowsheet.thermo.syn001 import Syn001Provider
 
     flowsheet = Syn001Flowsheet(
@@ -989,8 +989,8 @@ def _without_identity(value: Any) -> Any:
 def _a02_local() -> tuple[bool, dict[str, Any]]:
     from k05_structural_identity import identity as k05_identity
 
-    from openflowsheet.orchestrator.trace import RecyclePolicy as Recycle
-    from openflowsheet.orchestrator.trace import SolvePolicy
+    from openflowsheet.numerics.solve_record import RecyclePolicy as Recycle
+    from openflowsheet.numerics.solve_record import SolvePolicy
     from openflowsheet.run.identity import execution_plan_r0
 
     projections = {
@@ -2720,9 +2720,9 @@ def _a32(runs: Mapping[str, RecycleResult]) -> tuple[bool, Any, Any]:
     bad_restarts = [entry for entry in restarts if entry[1] != "stagnation" or entry[2] > 2]
 
     # region_on_merge on SYN-001 under anderson: the loop, nothing added.
+    from openflowsheet.numerics.solve_record import RecyclePolicy as Recycle
+    from openflowsheet.numerics.solve_record import SolvePolicy
     from openflowsheet.orchestrator.execution import build_execution_plan, declaration_identity
-    from openflowsheet.orchestrator.trace import RecyclePolicy as Recycle
-    from openflowsheet.orchestrator.trace import SolvePolicy
 
     flowsheet = plan_fixtures.Syn001Flowsheet(
         provider=plan_fixtures.Syn001Provider(),
@@ -3292,8 +3292,8 @@ def _ci_comparison(directory: Path) -> dict[str, Any]:
 
 def _a35(gate: Mapping[str, Any]) -> tuple[bool, Any, Any]:
     from openflowsheet.compiled import EvaluationContext
+    from openflowsheet.numerics.solve_record import SolvePolicy
     from openflowsheet.orchestrator.attempts import solve_with_attempts
-    from openflowsheet.orchestrator.trace import SolvePolicy
 
     files = sorted(str(path.relative_to(ROOT)) for path in ROOT.glob("tests/test_k03_*.py"))
     completed = subprocess.run(  # noqa: S603

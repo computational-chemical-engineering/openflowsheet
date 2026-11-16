@@ -12,7 +12,10 @@ that makes the allowance safe, the analogue of ADR 0020 D7's W14 path test:
   types, the job model and runner, the operations and the application object) nor the experiment
   adapters, so they cannot be handed the body or its records; and the experiment adapters import
   no solver entry point, so the body cannot be handed on from there. (Three solver-side modules
-  import `application`'s binder and policy modules, which hold no request body.)
+  import `application`'s binder and policy modules, which hold no request body.) The one
+  exception: the adapters take the interrupt check `INTERRUPT_CHECK`, and nothing else, from
+  `numerics.solve_record`, whose own reach into the solver entry points is pinned to the linear
+  solver's options (R-W4-STOP3 Q2).
 - **Dynamic.** An `experiment` job runs to `completed` with every solve entry point the job
   runner holds — route selection and binding, policy resolution, the revision session, the warm
   start's candidate search, reproduction — replaced by a tripwire that none trips; and what it
@@ -61,6 +64,10 @@ SOLVER_ENTRIES = (
     "openflowsheet.orchestrator.warm_start",
     "openflowsheet.run",
 )
+#: The one solver-entry module the adapters may import, and the one name they may take from it:
+#: the context variable a job's interrupt check is set through (R-W4-STOP3 Q2).
+SOLVE_RECORD = "openflowsheet.numerics.solve_record"
+ADAPTER_EXCEPTION = (SOLVE_RECORD, "INTERRUPT_CHECK")
 
 
 def _imports(path: Path) -> set[str]:
@@ -80,6 +87,25 @@ def _imports(path: Path) -> set[str]:
     return found
 
 
+def _imported_names(path: Path) -> set[tuple[str, str]]:
+    """Every (module, name) `path` takes by `from module import name`, and (module, "") for each
+    `import module`, anywhere in it (lazy imports included)."""
+    package = ".".join(("openflowsheet", *path.relative_to(PACKAGE).parts[:-1]))
+    found: set[tuple[str, str]] = set()
+    for node in ast.walk(ast.parse(path.read_text(encoding="utf-8"))):
+        if isinstance(node, ast.Import):
+            found.update((alias.name, "") for alias in node.names)
+        elif isinstance(node, ast.ImportFrom):
+            if node.level:
+                parts = package.split(".")
+                stem = ".".join(parts[: len(parts) - node.level + 1])
+                module = f"{stem}.{node.module}" if node.module else stem
+            else:
+                module = node.module or ""
+            found.update((module, alias.name) for alias in node.names)
+    return found
+
+
 def _under(name: str, prefixes: tuple[str, ...]) -> bool:
     return any(name == prefix or name.startswith(f"{prefix}.") for prefix in prefixes)
 
@@ -96,11 +122,20 @@ def test_no_solver_layer_can_be_handed_an_experiment_body() -> None:
 def test_the_experiment_adapters_reach_no_solver_entry_point() -> None:
     offending = {
         str(path.relative_to(PACKAGE)): sorted(
-            n for n in _imports(path) if _under(n, SOLVER_ENTRIES)
+            f"{module}:{name}" if name else module
+            for module, name in _imported_names(path)
+            if _under(module, SOLVER_ENTRIES) and (module, name) != ADAPTER_EXCEPTION
         )
         for path in sorted((PACKAGE / "adapters").rglob("*.py"))
     }
     assert {name: found for name, found in offending.items() if found} == {}
+
+
+def test_the_solve_record_reaches_only_the_linear_solver_options() -> None:
+    """The exception above is safe only while the solve record starts nothing: its one import
+    under the solver entry points is the linear solver's options (a lazy import of a constant)."""
+    found = _imports(PACKAGE / "numerics" / "solve_record.py")
+    assert {n for n in found if _under(n, SOLVER_ENTRIES)} == {"openflowsheet.numerics.linear"}
 
 
 #: What the job runner holds that starts, seeds or replays a solve.

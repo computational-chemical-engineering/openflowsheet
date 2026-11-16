@@ -70,7 +70,7 @@ from openflowsheet.thermo import (
 )
 from openflowsheet.thermo.syn001 import Syn001Provider
 from openflowsheet.thermo.wilson_ig import WilsonIdealGasProvider
-from openflowsheet.verify.checks import KIND_TOLERANCE
+from openflowsheet.verify.kind_tolerance import KIND_TOLERANCE
 
 CONTEXT = EvaluationContext(model_version="S11-WO-D1@" + "0" * 64, constants_sha256="0" * 64)
 SYN001 = Syn001Provider()

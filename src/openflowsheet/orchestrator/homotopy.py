@@ -42,7 +42,7 @@ import numpy.typing as npt
 from openflowsheet.canonical import state_sha256
 from openflowsheet.compile.spec import ProblemSpec
 from openflowsheet.numerics.newton import NewtonResult
-from openflowsheet.orchestrator.trace import (
+from openflowsheet.numerics.solve_record import (
     AttemptSignature,
     Counters,
     HomotopyPolicy,

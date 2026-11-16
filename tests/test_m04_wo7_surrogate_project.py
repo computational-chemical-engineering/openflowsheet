@@ -25,7 +25,7 @@ from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.revisions import Revision
 from openflowsheet.application.types import LOCAL_OWNER_PRINCIPAL, Change, Edit
 from openflowsheet.canonical import document_sha256
-from openflowsheet.studies.surrogate import reactor as sr
+from openflowsheet.studies.surrogate import records
 from openflowsheet.studies.surrogate.manifest import derived_verdict
 
 LOOP_PATH: Path = REPO_ROOT / "benchmarks" / "m02" / "c1-loop-standin.json"
@@ -46,7 +46,7 @@ def surrogate_loop(surrogate_id: str, sha256: str) -> dict[str, Any]:
     """M02's stand-in loop with its reactor bound to the surrogate `sha256`."""
     document: dict[str, Any] = json.loads(LOOP_PATH.read_text(encoding="utf-8"))
     (reactor,) = (i for i in document["instances"] if i["id"] == "reactor")
-    reactor["model"] = {"id": sr.MODEL_ID, "version": surrogate_id, "artifact_ref": sha256}
+    reactor["model"] = {"id": records.MODEL_ID, "version": surrogate_id, "artifact_ref": sha256}
     return document
 
 

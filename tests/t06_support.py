@@ -24,8 +24,8 @@ from typing import Any
 import yaml
 from conftest import load_yaml
 
-from openflowsheet.application.policies import T06_REVISION_V1, T06_REVISION_V2
-from openflowsheet.orchestrator.trace import SolvePolicy
+from openflowsheet.numerics.solve_record import SolvePolicy
+from openflowsheet.orchestrator.policies import T06_REVISION_V1, T06_REVISION_V2
 
 __all__ = [
     "ALLOWANCE",

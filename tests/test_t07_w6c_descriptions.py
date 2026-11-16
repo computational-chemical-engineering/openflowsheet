@@ -16,9 +16,9 @@ from typing import Any
 import pytest
 from conftest import REPO_ROOT
 
+from openflowsheet.application.model_signatures import target_path_table
 from openflowsheet.application.operations import OPERATIONS
 from openflowsheet.application.projection import is_forbidden
-from openflowsheet.application.revision_binding import target_path_table
 from openflowsheet.models.revision_flowsheet import TARGET_PATH_KINDS, si_unit
 
 DESCRIPTIONS = REPO_ROOT / "src" / "openflowsheet" / "application" / "bindings" / "descriptions"

@@ -43,7 +43,8 @@ from openflowsheet.orchestrator.splits import closure_types, lifted_splits
 from openflowsheet.thermo import FlashRequest, PropertyRequest, StreamState
 from openflowsheet.thermo.pr_c1 import COMPONENTS, PrC1Provider
 from openflowsheet.verify import pr_c1
-from openflowsheet.verify.certificate import SolutionCertificate, verify_revision
+from openflowsheet.verify.certificate import verify_revision
+from openflowsheet.verify.verdict import SolutionCertificate
 
 FLASH: Mapping[str, Any] = load_yaml(REPO_ROOT / "benchmarks" / "m01" / "reference_values.yaml")[
     "closed_form"

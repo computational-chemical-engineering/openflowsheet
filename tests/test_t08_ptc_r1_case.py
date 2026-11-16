@@ -25,17 +25,17 @@ from conftest import REPO_ROOT, require_archived_history
 from t08_cstr_support import ptc_r1_revision
 
 from benchmarks.t08.ptc_r1 import compare
-from openflowsheet.application.policies import (
+from openflowsheet.application.revision_binding import RevisionBinding, bind_revision_flowsheet
+from openflowsheet.application.revisions import content_hash
+from openflowsheet.numerics.solve_record import Counters, PtcPolicy, Trace
+from openflowsheet.orchestrator import region as region_module
+from openflowsheet.orchestrator.executor import PlanResult
+from openflowsheet.orchestrator.policies import (
     APPLICATION_POLICIES,
     T06_REVISION_V2,
     T08_PTC_V1,
     T08_WARM_V1,
 )
-from openflowsheet.application.revision_binding import RevisionBinding, bind_revision_flowsheet
-from openflowsheet.application.revisions import content_hash
-from openflowsheet.orchestrator import region as region_module
-from openflowsheet.orchestrator.executor import PlanResult
-from openflowsheet.orchestrator.trace import Counters, PtcPolicy, Trace
 from openflowsheet.run.manifest import policy_sha256
 
 CASE_DIR = REPO_ROOT / "benchmarks" / "t08" / "ptc_r1"

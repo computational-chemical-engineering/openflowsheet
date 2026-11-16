@@ -60,12 +60,9 @@ from t08_cstr_support import (
 )
 
 from openflowsheet.application.local import LocalApplication
-from openflowsheet.application.revision_binding import (
-    MODEL_BUILDERS,
-    MODEL_SIGNATURES,
-    RevisionBinding,
-    bind_revision_flowsheet,
-)
+from openflowsheet.application.model_builders import MODEL_BUILDERS
+from openflowsheet.application.model_signatures import MODEL_SIGNATURES
+from openflowsheet.application.revision_binding import RevisionBinding, bind_revision_flowsheet
 from openflowsheet.compile.casadi_backend import compile_problem
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.models import SpecificationError
@@ -87,6 +84,7 @@ from openflowsheet.numerics.ptc import (
     row_signs,
 )
 from openflowsheet.numerics.scaling import REGISTERED_NOMINALS, Scaling
+from openflowsheet.numerics.solve_record import SolvePolicy
 from openflowsheet.orchestrator import revision
 from openflowsheet.orchestrator.execution import ExecutionPlan
 from openflowsheet.orchestrator.executor import execute_plan
@@ -97,9 +95,9 @@ from openflowsheet.orchestrator.mass import (
     residence_time,
     resolve_mass,
 )
-from openflowsheet.orchestrator.region import RegionResult, region_ptc_problem
+from openflowsheet.orchestrator.region_attempts import region_ptc_problem
+from openflowsheet.orchestrator.region_result import RegionResult
 from openflowsheet.orchestrator.splits import lifted_splits
-from openflowsheet.orchestrator.trace import SolvePolicy
 from openflowsheet.thermo import StreamState
 from openflowsheet.thermo.syn001 import Syn001Provider, h_liquid, h_vapor
 from openflowsheet.verify.certificate import verify_revision
@@ -827,7 +825,7 @@ def test_b19_the_liquid_reaction_is_thermoneutral() -> None:
 
 def test_the_verifier_checks_fail_on_a_wrong_rate() -> None:
     """`material_balance.<U>.<c>` recomputes `r` itself: a state off the mole rows fails it."""
-    from openflowsheet.verify.table import MODEL_CHECKS
+    from openflowsheet.verify.unit_checks import MODEL_CHECKS
 
     assert MODEL_ID in MODEL_CHECKS
     run, bound = _run("liquid")

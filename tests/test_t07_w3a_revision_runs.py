@@ -39,14 +39,6 @@ from test_t06_w4_registry import BY_ID, CONSTRUCTED, REGISTRY
 
 import benchmarks.t06.ensemble as ensemble
 from openflowsheet.application.binding import Binding, bind_revision_or_reason
-from openflowsheet.application.policies import (
-    APPLICATION_POLICIES,
-    DEFAULT_POLICY_ID,
-    ROUTE_DEFAULT_POLICY,
-    T04_W12,
-    T06_REVISION_V2,
-    resolve_policy,
-)
 from openflowsheet.application.revision_run import (
     NoRoute,
     Route,
@@ -58,13 +50,21 @@ from openflowsheet.application.revision_run import (
     solve_route,
 )
 from openflowsheet.canonical import canonical_json
+from openflowsheet.numerics.solve_record import RecyclePolicy, SolvePolicy
 from openflowsheet.orchestrator.execution import ExecutionPlan
-from openflowsheet.orchestrator.trace import RecyclePolicy, SolvePolicy
+from openflowsheet.orchestrator.policies import (
+    APPLICATION_POLICIES,
+    DEFAULT_POLICY_ID,
+    ROUTE_DEFAULT_POLICY,
+    T04_W12,
+    T06_REVISION_V2,
+    resolve_policy,
+)
 from openflowsheet.run.bundle import read_artifact, read_manifest, verify_bundle, write_bundle
 from openflowsheet.run.identity import execution_plan_r0, floats_in, r0_projection, r0_sha256
 from openflowsheet.run.manifest import policy_sha256
 from openflowsheet.run.session import run_session
-from openflowsheet.verify.certificate import CheckPolicy
+from openflowsheet.verify.verdict import CheckPolicy
 
 sys.path.insert(0, str(REPO_ROOT / "scripts"))
 

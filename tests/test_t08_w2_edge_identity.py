@@ -57,22 +57,14 @@ from test_t05b_release_opening import affine
 
 from benchmarks.t08.ptc_r1 import compare
 from openflowsheet.application.binding import Binding, bind_revision_or_reason
-from openflowsheet.application.policies import (
-    APPLICATION_POLICIES,
-    DEFAULT_POLICY_ID,
-    T08_PTC_V1,
-    resolve_policy,
-)
-from openflowsheet.application.revision_binding import (
-    MODEL_BUILDERS,
-    RevisionBinding,
-    bind_revision_flowsheet,
-)
+from openflowsheet.application.model_builders import MODEL_BUILDERS
+from openflowsheet.application.revision_binding import RevisionBinding, bind_revision_flowsheet
 from openflowsheet.application.revision_run import Route, legacy_plan, select_route, solve_route
 from openflowsheet.canonical import document_sha256
 from openflowsheet.numerics import newton
 from openflowsheet.numerics.anderson import RecyclePolicy, solve_recycle
 from openflowsheet.numerics.newton import Evaluation, Problem, solve_newton
+from openflowsheet.numerics.solve_record import Trace
 from openflowsheet.orchestrator import region_phase, region_screen
 from openflowsheet.orchestrator.execution import (
     ExecutionPlan,
@@ -80,12 +72,18 @@ from openflowsheet.orchestrator.execution import (
     eo_capability,
 )
 from openflowsheet.orchestrator.executor import execute_plan
-from openflowsheet.orchestrator.region import RegionResult
+from openflowsheet.orchestrator.policies import (
+    APPLICATION_POLICIES,
+    DEFAULT_POLICY_ID,
+    T08_PTC_V1,
+    resolve_policy,
+)
+from openflowsheet.orchestrator.region_result import RegionResult
 from openflowsheet.orchestrator.revision import plan_revision
-from openflowsheet.orchestrator.trace import Trace
 from openflowsheet.verify import certificate as certificate_module
 from openflowsheet.verify import projection
-from openflowsheet.verify.certificate import CheckPolicy, verify_revision
+from openflowsheet.verify.certificate import verify_revision
+from openflowsheet.verify.verdict import CheckPolicy
 
 # -- E1 ------------------------------------------------------------------------------------------
 

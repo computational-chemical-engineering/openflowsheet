@@ -27,13 +27,13 @@ from test_t05_table_independence import violations
 
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.models.c1.phase import classify
+from openflowsheet.models.lifted import LiftedSplit
 from openflowsheet.models.revision_flowsheet import (
     SYN001_BASIS,
     RevisionError,
     component_basis,
     parse_revision,
 )
-from openflowsheet.orchestrator.region import LiftedSplit
 from openflowsheet.orchestrator.revision import instances_of
 from openflowsheet.orchestrator.splits import lifted_splits
 from openflowsheet.thermo import FlashRequest, StreamState
@@ -41,7 +41,8 @@ from openflowsheet.thermo.pr_c1 import COMPONENTS, PrC1Provider
 from openflowsheet.thermo.syn001 import Syn001Provider
 from openflowsheet.verify import pr_c1
 from openflowsheet.verify.certificate import FRESH_PROVIDERS, fresh_provider, verify_revision
-from openflowsheet.verify.checks import KIND_TOLERANCE, VerifierError, qualification
+from openflowsheet.verify.checks import VerifierError, qualification
+from openflowsheet.verify.kind_tolerance import KIND_TOLERANCE
 
 CHECK_POLICY_SHA256 = "21c44e105a1b78428047258af3030b8502957aab5d27f0389c2f143bcb3cf390"
 FLASH: Mapping[str, Any] = load_yaml(REPO_ROOT / "benchmarks" / "m01" / "reference_values.yaml")[

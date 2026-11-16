@@ -43,40 +43,42 @@ from openflowsheet.models import (
     origin,
     temperature_id,
 )
+from openflowsheet.models.lifted import LABEL_KIND, ClosureType, LiftedSplit, Regime, ZeroFlowForm
+from openflowsheet.models.lifted_tolerance import KIND_TOLERANCE
 from openflowsheet.models.rows import specification_row
 from openflowsheet.models.syn001 import TEMPERATURE
+from openflowsheet.models.syn001.band_types import BandError
 from openflowsheet.models.syn001.cascade import (
-    MODEL_ID as CASCADE_MODEL_ID,
-)
-from openflowsheet.models.syn001.cascade import (
-    CascadeFailure,
-    CascadeSpec,
     DormantAnswer,
-    KremserInitial,
     _enthalpy_flow,
     _parameter,
     _phase,
-    declared_problem,
-    declared_rows,
     dormant_answer,
-    inlet_stream,
     is_dormant,
-    kremser_initial,
+    regime_form,
+    validate,
+)
+from openflowsheet.models.syn001.cascade_failure import CascadeFailure
+from openflowsheet.models.syn001.cascade_init import KremserInitial, kremser_initial
+from openflowsheet.models.syn001.cascade_rows import declared_problem, declared_rows
+from openflowsheet.models.syn001.cascade_spec import MODEL_ID as CASCADE_MODEL_ID
+from openflowsheet.models.syn001.cascade_spec import (
+    CascadeSpec,
+    inlet_stream,
     liquid_id,
     liquid_total_id,
     mixed_id,
-    regime_form,
     stage_duty_id,
     stage_prefix,
     stage_pressure_id,
     stage_row_id,
     stage_temperature_id,
-    validate,
     vapor_id,
     vapor_total_id,
 )
-from openflowsheet.models.syn001.saturation_band import BandError, band_temperature
+from openflowsheet.models.syn001.saturation_band import band_temperature
 from openflowsheet.models.syn001.tp_state import single_phase_admissible
+from openflowsheet.numerics.solve_record import GlobalizationPolicy, SolvePolicy, Trace
 from openflowsheet.orchestrator.execution import Region
 from openflowsheet.orchestrator.homotopy import Continuation
 from openflowsheet.orchestrator.recovery import (
@@ -84,18 +86,8 @@ from openflowsheet.orchestrator.recovery import (
     recovered_provenance,
     solver_outcomes,
 )
-from openflowsheet.orchestrator.region import (
-    KIND_TOLERANCE,
-    LABEL_KIND,
-    ClosureType,
-    LiftedSplit,
-    RecoveryStart,
-    Regime,
-    RegionResult,
-    ZeroFlowForm,
-    solve_region,
-)
-from openflowsheet.orchestrator.trace import GlobalizationPolicy, SolvePolicy, Trace
+from openflowsheet.orchestrator.region import solve_region
+from openflowsheet.orchestrator.region_result import RecoveryStart, RegionResult
 from openflowsheet.thermo import Phase, PropertyProvider, StreamState
 
 #: Spec §7.3's registered pre-solve.

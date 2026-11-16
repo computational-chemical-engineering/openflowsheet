@@ -24,10 +24,10 @@ import openflowsheet.models.syn001.gamma_phi_blocks as gamma_phi_blocks
 from openflowsheet.compile.casadi_backend import compile_problem
 from openflowsheet.compile.reference import state_vector
 from openflowsheet.compiled import EvaluationContext
-from openflowsheet.models.syn001.cascade import (
+from openflowsheet.models.syn001.cascade_rows import declared_problem
+from openflowsheet.models.syn001.cascade_spec import (
     InletState,
     SideFeed,
-    declared_problem,
     liquid_id,
     liquid_total_id,
     stage_pressure_id,
@@ -35,12 +35,9 @@ from openflowsheet.models.syn001.cascade import (
     stage_temperature_id,
     vapor_total_id,
 )
-from openflowsheet.models.syn001.column import (
-    ColumnSpec,
-    EndSpecification,
-    declared_rows,
-    regime_form,
-)
+from openflowsheet.models.syn001.column import regime_form
+from openflowsheet.models.syn001.column_rows import declared_rows
+from openflowsheet.models.syn001.column_spec import ColumnSpec, EndSpecification
 from openflowsheet.models.syn001.gamma_phi_blocks import (
     GammaPhiLnKBlock,
     MixtureEnthalpyFlowBlock,

@@ -52,15 +52,10 @@ from t08_v2_substitution import CLI_STRUCTURAL_SUBSTITUTION, record_v1, v2_rever
 from openflowsheet.application.cli import API_EXIT_CODES, TOKEN_FILE_VARIABLE, main
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.operations import OPERATIONS, dispatch
-from openflowsheet.application.types import (
-    Change,
-    Edit,
-    JobRequest,
-    SolveBody,
-    schema_errors,
-)
+from openflowsheet.application.types import Change, Edit, JobRequest, SolveBody
 from openflowsheet.canonical import canonical_json
 from openflowsheet.run.bundle import ARTIFACT_DIR
+from openflowsheet.schema_check import schema_errors
 
 PINS = REPO_ROOT / "tests" / "fixtures" / "t07" / "cli-existing-commands.json"
 #: SHA-256 of the pins as T07 captured them. T08 D1's STR-05 extension (Frank, 2026-09-29) moved

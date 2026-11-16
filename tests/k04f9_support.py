@@ -19,14 +19,10 @@ from openflowsheet.compile.casadi_backend import compile_problem
 from openflowsheet.models.syn001.flowsheet import STREAMS
 from openflowsheet.thermo.syn001 import Syn001Provider
 from openflowsheet.verify import CheckResult
-from openflowsheet.verify.certificate import (
-    BoundDeclaration,
-    CheckPolicy,
-    _project,
-    _screen,
-)
+from openflowsheet.verify.certificate import BoundDeclaration, _project, _screen
 from openflowsheet.verify.checks import label_checks, residual_checks
 from openflowsheet.verify.projection import PROJECTED_CATEGORIES, Projection
+from openflowsheet.verify.verdict import CheckPolicy
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 REF: Final[dict[str, Any]] = yaml.safe_load(

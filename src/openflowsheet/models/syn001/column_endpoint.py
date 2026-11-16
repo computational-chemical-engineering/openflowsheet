@@ -14,25 +14,23 @@ from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from typing import Final
 
-from openflowsheet.models.syn001.cascade import CascadeFailure, _k_values, _parameter, thomas
+from openflowsheet.models.syn001.cascade import _k_values, _parameter
+from openflowsheet.models.syn001.cascade_failure import CascadeFailure
+from openflowsheet.models.syn001.cascade_init import thomas
 from openflowsheet.models.syn001.cascade_solve import DECLARATION_CONTEXT
-from openflowsheet.models.syn001.column import (
-    INVERSE_KINDS,
-    PHI_INITIAL,
-    ColumnSpec,
-    ProfileInitial,
-    _initial_state,
+from openflowsheet.models.syn001.column import PHI_INITIAL, ProfileInitial, _initial_state
+from openflowsheet.models.syn001.column_spec import INVERSE_KINDS, ColumnSpec, slot_column
+from openflowsheet.models.syn001.column_validation import (
     component_feeds,
     inverse_parameter,
     purity_reference,
-    slot_column,
     specified_quantity,
 )
 from openflowsheet.models.syn001.equilibrium_form import composition_dependent
 from openflowsheet.models.syn001.saturation_band import band_temperature
+from openflowsheet.numerics.solve_record import fraction_string
 from openflowsheet.orchestrator.homotopy import HomotopyRecord
-from openflowsheet.orchestrator.region import RegionResult
-from openflowsheet.orchestrator.trace import fraction_string
+from openflowsheet.orchestrator.region_result import RegionResult
 from openflowsheet.thermo import PropertyProvider
 
 #: Spec §18.2's registered easy endpoint, the target's `initializer_source`.

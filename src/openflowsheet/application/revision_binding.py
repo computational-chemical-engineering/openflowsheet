@@ -23,8 +23,8 @@ the signature constructs nothing.
 
 The signatures, the pin readers and the `Builder` and `Configuration` types live in
 `model_signatures`, the builder catalogue in `model_builders` (S17 R3); this module holds the
-binder (`bind_revision_flowsheet`), the basis and provider selection, and the refusals, and
-re-exports both modules' public names, so `revision_binding.<name>` imports keep working.
+binder (`bind_revision_flowsheet`), the basis and provider selection, and the refusals. Their
+names are imported from those modules, not through this one (ADR 0076 I-8).
 """
 
 from __future__ import annotations
@@ -37,11 +37,13 @@ from typing import TYPE_CHECKING, Any, Final, overload
 
 from openflowsheet.adapters import variants
 from openflowsheet.application.binding_common import Unbound, _column_owners
-from openflowsheet.application.model_builders import MODEL_BUILDERS as MODEL_BUILDERS
-from openflowsheet.application.model_builders import SurrogateResolver as SurrogateResolver
+from openflowsheet.application.model_builders import (
+    MODEL_BUILDERS,
+    SurrogateResolver,
+    _c1_reactor_surrogate_of,
+    resolve_surrogate,
+)
 from openflowsheet.application.model_builders import _c1_reactor_surrogate as _c1_reactor_surrogate
-from openflowsheet.application.model_builders import _c1_reactor_surrogate_of
-from openflowsheet.application.model_builders import resolve_surrogate as resolve_surrogate
 from openflowsheet.application.model_signatures import (
     _ADIABATIC_MIXER,
     _C1_ADIABATIC_MIXER,
@@ -65,27 +67,16 @@ from openflowsheet.application.model_signatures import (
     _TP_HEATER,
     _VALVE,
     _WILSON,
+    MODEL_BASES,
+    MODEL_SIGNATURES,
+    ROUTING_MODELS,
+    Configuration,
+    ModelSignature,
     _named_first,
+    pin_encodings,
 )
 from openflowsheet.application.model_signatures import _COLUMN as _COLUMN
-from openflowsheet.application.model_signatures import LIST_MODELS_LINE as LIST_MODELS_LINE
-from openflowsheet.application.model_signatures import MODEL_BASES as MODEL_BASES
-from openflowsheet.application.model_signatures import MODEL_SIGNATURES as MODEL_SIGNATURES
-from openflowsheet.application.model_signatures import ROUTING_MODELS as ROUTING_MODELS
-from openflowsheet.application.model_signatures import S11_BASES as S11_BASES
-from openflowsheet.application.model_signatures import TARGET_PATH_HEADING as TARGET_PATH_HEADING
-from openflowsheet.application.model_signatures import Builder as Builder
-from openflowsheet.application.model_signatures import Configuration as Configuration
-from openflowsheet.application.model_signatures import Encoding as Encoding
-from openflowsheet.application.model_signatures import ModelSignature as ModelSignature
-from openflowsheet.application.model_signatures import PinColumn as PinColumn
-from openflowsheet.application.model_signatures import PinQuantity as PinQuantity
-from openflowsheet.application.model_signatures import SpecificationChoice as SpecificationChoice
 from openflowsheet.application.model_signatures import _columns as _columns
-from openflowsheet.application.model_signatures import instance_contract as instance_contract
-from openflowsheet.application.model_signatures import pin_encodings as pin_encodings
-from openflowsheet.application.model_signatures import render_encoding as render_encoding
-from openflowsheet.application.model_signatures import target_path_table as target_path_table
 from openflowsheet.canonical import document_sha256, first_noncanonical
 from openflowsheet.compile.spec import ProblemSpec
 from openflowsheet.compiled import EvaluationContext
@@ -107,7 +98,7 @@ from openflowsheet.models.revision_flowsheet import (
 from openflowsheet.models.syn001 import PROVIDER_ID as SYN001_PROVIDER_ID
 from openflowsheet.models.thermal import machines as thermal_machines
 from openflowsheet.orchestrator.splits import split_owners, staged_units
-from openflowsheet.studies.surrogate import reactor as c1_surrogate
+from openflowsheet.studies.surrogate.records import MODEL_ID as SURROGATE_MODEL_ID
 from openflowsheet.thermo import PropertyProvider
 from openflowsheet.thermo.pr_c1 import PROVIDER_ID as C1_PROVIDER_ID
 
@@ -115,26 +106,12 @@ if TYPE_CHECKING:
     from openflowsheet.orchestrator.budget import PropertyMeter
 
 __all__ = [
-    "MODEL_BASES",
-    "MODEL_BUILDERS",
-    "MODEL_SIGNATURES",
     "SELECTABLE_BASES",
-    "Builder",
-    "SurrogateResolver",
-    "Encoding",
-    "ModelSignature",
-    "PinColumn",
     "RevisionBinding",
-    "SpecificationChoice",
     "basis_provider",
     "bind_revision_flowsheet",
-    "instance_contract",
     "provider_for",
-    "pin_encodings",
-    "render_encoding",
-    "resolve_surrogate",
     "specification_rows",
-    "target_path_table",
 ]
 
 #: The context a revision-built flowsheet's units are constructed with (§1.4).
@@ -708,7 +685,7 @@ def _surrogate_manifests(
     for instance in instances:
         # M04 spec §8.2 (ADR 0037 D2): a surrogate is pinned by its manifest's SHA-256, resolved
         # through the injected resolver and checked; `revision_unsupported` otherwise.
-        if instance.model_id == c1_surrogate.MODEL_ID:
+        if instance.model_id == SURROGATE_MODEL_ID:
             manifest = _resolve_surrogate(instance, surrogates)
             if manifest is None:
                 return Unbound("unsupported", f"surrogate_manifest_mismatch({instance.unit_id})")

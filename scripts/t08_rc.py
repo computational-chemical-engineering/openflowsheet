@@ -812,17 +812,17 @@ def step_bundles_write(arguments: argparse.Namespace) -> int:
     from t07_corpus import CORPUS  # noqa: PLC0415
 
     from openflowsheet.application.cli import main as cli  # noqa: PLC0415
-    from openflowsheet.application.policies import (  # noqa: PLC0415
-        DEFAULT_POLICY_ID,
-        resolve_policy,
-    )
     from openflowsheet.application.revision_run import (  # noqa: PLC0415
         Route,
         run_revision_session,
         select_route,
     )
+    from openflowsheet.orchestrator.policies import (  # noqa: PLC0415
+        DEFAULT_POLICY_ID,
+        resolve_policy,
+    )
     from openflowsheet.run.bundle import read_manifest  # noqa: PLC0415
-    from openflowsheet.verify.certificate import CheckPolicy  # noqa: PLC0415
+    from openflowsheet.verify.verdict import CheckPolicy  # noqa: PLC0415
 
     os.environ.update({name: "1" for name in THREAD_VARIABLES})
     out: Path = arguments.out

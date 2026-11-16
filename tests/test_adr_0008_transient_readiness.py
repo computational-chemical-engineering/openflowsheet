@@ -50,7 +50,7 @@ import openflowsheet.studies.surrogate as surrogate_package
 # thing to assert against. K01 must port group H to the canonical hash when it lands; no digest
 # value is pinned here (D2.1).
 from benchmarks.p02.judge import _state_sha256 as _judge_state_sha256
-from openflowsheet.application.revision_binding import MODEL_BUILDERS
+from openflowsheet.application.model_builders import MODEL_BUILDERS
 from openflowsheet.canonical import state_sha256 as _production_state_sha256
 from openflowsheet.compiled import (
     CompiledProblem,

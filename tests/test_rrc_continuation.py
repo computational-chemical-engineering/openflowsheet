@@ -25,8 +25,8 @@ from jsonschema import Draft202012Validator
 from referencing import Registry, Resource
 from referencing.jsonschema import DRAFT202012
 
-from openflowsheet.application.policies import RRC_REVISION_V1, T06_REVISION_V2
 from openflowsheet.orchestrator.homotopy import Continuation, level_values
+from openflowsheet.orchestrator.policies import RRC_REVISION_V1, T06_REVISION_V2
 from openflowsheet.run.manifest import policy_sha256
 
 REPO_ROOT = Path(__file__).resolve().parents[1]

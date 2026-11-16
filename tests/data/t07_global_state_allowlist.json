@@ -33,7 +33,14 @@
       "file": "application/types.py",
       "line": "@cache",
       "patterns": ["cache"],
-      "occurrences": 5,
+      "occurrences": 2,
+      "justification": "The published schemas, their registry and validators, and (W6b) `published_schemas`, the producer and J5 consumer readings by $id, all built from the packaged schema files, which are immutable for the process's life; the cached documents are never mutated (the consumer variants are new documents; the job one deep-copies)."
+    },
+    {
+      "file": "schema_check.py",
+      "line": "@cache",
+      "patterns": ["cache"],
+      "occurrences": 3,
       "justification": "The published schemas, their registry and validators, and (W6b) `published_schemas`, the producer and J5 consumer readings by $id, all built from the packaged schema files, which are immutable for the process's life; the cached documents are never mutated (the consumer variants are new documents; the job one deep-copies)."
     },
     {

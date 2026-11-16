@@ -43,7 +43,7 @@ if TYPE_CHECKING:
         SubmitResult,
         TransactionResult,
     )
-    from openflowsheet.application.validation import Task, ValidationReport
+    from openflowsheet.application.validation_report import Task, ValidationReport
     from openflowsheet.run.replay import ReplayReport
 
 

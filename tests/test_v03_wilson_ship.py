@@ -26,7 +26,7 @@ import pytest
 from conftest import REPO_ROOT
 
 from openflowsheet import resources
-from openflowsheet.application.binding import Unbound
+from openflowsheet.application.binding_common import Unbound
 from openflowsheet.application.revision_binding import provider_for
 from openflowsheet.models.revision_flowsheet import WILSON_BASIS
 from openflowsheet.resources import PACKAGED, packaged, packaged_path

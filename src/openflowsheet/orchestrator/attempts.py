@@ -42,6 +42,15 @@ from openflowsheet.canonical import state_sha256
 from openflowsheet.compiled import EvaluationContext, PhaseSignature
 from openflowsheet.numerics.anderson import RecycleResult, solve_recycle
 from openflowsheet.numerics.newton import NewtonResult, Problem, solve_newton
+from openflowsheet.numerics.solve_record import (
+    AttemptSignature,
+    Checkpoint,
+    Counters,
+    SolveOutcome,
+    SolvePlan,
+    SolvePolicy,
+    Trace,
+)
 from openflowsheet.orchestrator.phase_contract import (
     Candidate,
     Conversion,
@@ -55,15 +64,6 @@ from openflowsheet.orchestrator.phase_contract import (
     decide,
 )
 from openflowsheet.orchestrator.roots import root_fingerprint
-from openflowsheet.orchestrator.trace import (
-    AttemptSignature,
-    Checkpoint,
-    Counters,
-    SolveOutcome,
-    SolvePlan,
-    SolvePolicy,
-    Trace,
-)
 
 #: §9.1's fixed map from the flash's two outlet signatures to the attempt's regime. Three
 #: entries, and `regime ∈ {TWO_PHASE, LIQUID, VAPOR}` — exactly what §9.1 registers.

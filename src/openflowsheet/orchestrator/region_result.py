@@ -16,9 +16,9 @@ from typing import Any
 
 from openflowsheet.models.lifted import Regime
 from openflowsheet.numerics.ptc import PtcRecord
+from openflowsheet.numerics.solve_record import AttemptSignature, Checkpoint, Counters, SolveOutcome
 from openflowsheet.orchestrator.attempts import AttemptContext
 from openflowsheet.orchestrator.homotopy import Continuation, HomotopyRecord
-from openflowsheet.orchestrator.trace import AttemptSignature, Checkpoint, Counters, SolveOutcome
 
 
 @dataclass(frozen=True)

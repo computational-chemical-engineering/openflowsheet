@@ -27,13 +27,13 @@ from t07_corpus import CORPUS
 
 from openflowsheet.adapters import variants
 from openflowsheet.application import capabilities
-from openflowsheet.application.binding import Unbound
+from openflowsheet.application.binding_common import Unbound
 from openflowsheet.application.cli import API_EXIT_CODES, main
 from openflowsheet.application.contract import ApplicationError
 from openflowsheet.application.local import LocalApplication
+from openflowsheet.application.model_signatures import MODEL_BASES
 from openflowsheet.application.operations import dispatch
-from openflowsheet.application.revision_binding import MODEL_BASES, bind_revision_flowsheet
-from openflowsheet.application.types import schema_errors
+from openflowsheet.application.revision_binding import bind_revision_flowsheet
 from openflowsheet.canonical import canonical_json
 from openflowsheet.models.revision_flowsheet import (
     COOLPROP_RECORDS,
@@ -42,6 +42,7 @@ from openflowsheet.models.revision_flowsheet import (
     component_basis,
 )
 from openflowsheet.registry import default_registry, usage
+from openflowsheet.schema_check import schema_errors
 from openflowsheet.thermo import pr_c1
 
 REPO_ROOT = Path(__file__).resolve().parent.parent

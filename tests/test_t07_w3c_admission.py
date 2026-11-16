@@ -17,21 +17,22 @@ from test_t07_w3b_validation import ALREADY_READY, MOVED_TO_READY
 
 import openflowsheet.application.admission as admission_module
 from openflowsheet.application.admission import SolveAdmission, admit_budgets, admit_solve
-from openflowsheet.application.binding import Unbound
-from openflowsheet.application.policies import ROUTE_DEFAULT_POLICY
+from openflowsheet.application.binding_common import Unbound
 from openflowsheet.application.revision_run import (
     NoRoute,
     Route,
     route_structure,
     select_route,
 )
-from openflowsheet.application.types import ApiError, Budgets, Limits, SolveBody, schema_errors
+from openflowsheet.application.types import ApiError, Budgets, Limits, SolveBody
 from openflowsheet.application.validation import structural_refusal, validate
 from openflowsheet.orchestrator.execution import ExecutionPlan
+from openflowsheet.orchestrator.policies import ROUTE_DEFAULT_POLICY
 from openflowsheet.orchestrator.revision import plan_revision
 from openflowsheet.run.manifest import policy_sha256
-from openflowsheet.verify.certificate import REGISTERED_POLICY_ID, CheckPolicy
-from openflowsheet.verify.checks import KIND_TOLERANCE
+from openflowsheet.schema_check import schema_errors
+from openflowsheet.verify.kind_tolerance import KIND_TOLERANCE
+from openflowsheet.verify.verdict import REGISTERED_POLICY_ID, CheckPolicy
 
 READY = sorted(MOVED_TO_READY | ALREADY_READY)
 #: `project grant`'s agent defaults (§5.9).
@@ -339,7 +340,7 @@ def test_inspect_structure_reports_the_formulation_solve_uses(name: str) -> None
 
 
 def _default_policy(route: Route) -> Any:
-    from openflowsheet.application.policies import resolve_policy
+    from openflowsheet.orchestrator.policies import resolve_policy
 
     return resolve_policy("default", route.solve_path)
 

@@ -17,7 +17,6 @@ import pytest
 from conftest import REPO_ROOT, load_json
 from t07_support import JOB_ID, ref
 
-from openflowsheet.application import policies
 from openflowsheet.application.jobs.model import ARTIFACT_FILE_NAMES, ARTIFACT_KINDS
 from openflowsheet.application.types import (
     DEFAULT_SOLVE_POLICY_ID,
@@ -32,9 +31,10 @@ from openflowsheet.application.types import (
     SolvePath,
     VerificationStatus,
     _replay_report_build,
-    schema_errors,
 )
+from openflowsheet.orchestrator import policies
 from openflowsheet.run.replay import ReplayReport
+from openflowsheet.schema_check import schema_errors
 
 JOB_RESULT = "job.schema.json#/$defs/job_result"
 FIXTURES = REPO_ROOT / "tests" / "fixtures" / "schemas"

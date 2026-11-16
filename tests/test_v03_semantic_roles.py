@@ -30,7 +30,8 @@ import pytest
 import yaml
 from conftest import REPO_ROOT
 
-from openflowsheet.application.revision_binding import MODEL_SIGNATURES, bind_revision_flowsheet
+from openflowsheet.application.model_signatures import MODEL_SIGNATURES
+from openflowsheet.application.revision_binding import bind_revision_flowsheet
 from openflowsheet.application.validation import validate
 from openflowsheet.canonical import document_sha256
 

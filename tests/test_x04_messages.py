@@ -36,13 +36,7 @@ from openflowsheet.application.contract import ApplicationError
 from openflowsheet.application.local import LocalApplication, _displayed
 from openflowsheet.application.operations import OPERATIONS, dispatch, project_response
 from openflowsheet.application.store import StoreError
-from openflowsheet.application.types import (
-    ApiError,
-    Change,
-    DocumentSchemaError,
-    JobResult,
-    schema_errors,
-)
+from openflowsheet.application.types import ApiError, Change, DocumentSchemaError, JobResult
 from openflowsheet.canonical import canonical_json
 from openflowsheet.messages.catalogue import CATALOGUE
 from openflowsheet.messages.diagnostic import Diagnostic
@@ -56,8 +50,14 @@ from openflowsheet.messages.render import (
     render_error,
     render_failure,
 )
-from openflowsheet.units import DisplayUnits, DisplayUnitsError, display_item, parse_display_units
-from openflowsheet.units.display import DISPLAY_KINDS
+from openflowsheet.schema_check import schema_errors
+from openflowsheet.units.display import (
+    DISPLAY_KINDS,
+    DisplayUnits,
+    DisplayUnitsError,
+    display_item,
+    parse_display_units,
+)
 
 REFERENCE: dict[str, Any] = json.loads(
     (REPO_ROOT / "docs" / "derivations" / "scripts" / "x04_reference.json").read_text("utf-8")

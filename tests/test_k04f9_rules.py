@@ -29,13 +29,8 @@ import yaml
 from t05_support import CONTEXT, PROVIDER
 
 from openflowsheet.thermo import FlashRequest, PropertyRequest, StreamState
-from openflowsheet.verify.checks import (
-    ADMISSIBILITY_EPSILON,
-    COMPONENTS,
-    KIND_TOLERANCE,
-    enthalpy_flow,
-    k_values,
-)
+from openflowsheet.verify.checks import ADMISSIBILITY_EPSILON, COMPONENTS, enthalpy_flow, k_values
+from openflowsheet.verify.kind_tolerance import KIND_TOLERANCE
 from openflowsheet.verify.saturation import (
     UNRESOLVED_FLOOR_OVER_TOLERANCE,
     band_ends,

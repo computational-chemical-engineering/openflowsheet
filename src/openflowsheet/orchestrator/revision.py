@@ -43,6 +43,7 @@ from openflowsheet.models.syn001.conversion_reactor import extent_id
 from openflowsheet.models.syn001.ph_kernel import PHState
 from openflowsheet.models.syn001.pump import work_id
 from openflowsheet.models.syn001.tp_state import tp_state
+from openflowsheet.numerics.solve_record import SolvePolicy, Trace
 from openflowsheet.orchestrator.execution import (
     ExecutionPlan,
     PlanRefusal,
@@ -57,7 +58,6 @@ from openflowsheet.orchestrator.splits import (
     lifted_splits,
     region_splits,
 )
-from openflowsheet.orchestrator.trace import SolvePolicy, Trace
 from openflowsheet.thermo import StreamState
 
 if TYPE_CHECKING:

@@ -1,0 +1,33 @@
+# ADR 0076 I-8, batch D (W4 run 4, brief S19-W4-4; form of S19_DECISIONS 2026-11-16 STOP 1):
+# models/syn001/cascade.py stops re-exporting the names that the restructure plans split-cascade and
+# leaf-cascade-failure gave a new home, except the nine the frozen column_unit.py imports through it.
+# `codehealth gate --mode interface` reads this plan from the plan commit.
+id = "i8d-cascade-reexports"
+approved_by = "Frank Peters, 2026-11-14, ADR 0076 accepted (Decision Desk ofs-adr0076-accept)"
+reason = """ADR 0076 I-8: every module created by an S19 restructure step is the only path for the \
+names it holds; the normative list is the union of the committed restructure plans' new_public \
+names. src importers were retargeted in refactor mode (028a596c; assessment/sizing/families.py's \
+module-alias reads included) and tests and scripts outside the gate (353b3edd), so an AST inventory \
+(from-imports at any depth, module-alias attribute reads, setattr patches, dotted strings; living \
+docs by grep) finds no use of the moved names through models.syn001.cascade, except the frozen M9 \
+module models/syn001/column_unit.py:47, which imports BOTTOM, TOP, CascadeFailure, InletState, \
+SideFeed, inlet_stream, stage_pressure_id, stage_row_id and stage_temperature_id from cascade: these \
+nine keep their aliases and __all__ entries, the I-19 W5 exception (column_unit's private _TOKEN \
+alias is I-13's). The step drops, in models/syn001/cascade.py, the aliases declared_problem, \
+declared_rows, CascadeSpec, PlacedInlet, energy_row_id, label_column, label_row_id, liquid_id, \
+liquid_total_id, mixed_id, stage_duty_id, vapor_id, vapor_total_id (plain imports stay: cascade \
+uses them) and FailureOutcome, BETA_BOUNDS, CMO_FLOOR, INITIALIZER_ID, KremserInitial, KValues, \
+kremser_initial, thomas, EQUATIONS, MODEL_ID, SPECIFICATION, inlet_row_id, stage_prefix (imports \
+go), and the __all__ entries BETA_BOUNDS, CMO_FLOOR, EQUATIONS, INITIALIZER_ID, MODEL_ID, \
+CascadeSpec, KremserInitial, PlacedInlet, declared_problem, declared_rows, kremser_initial, thomas. \
+cce-code-health counts imports as API only in __init__.py, so the dropped aliases are invisible to \
+the public-API tier and cascade.py's __all__ is the one listed change (STOP 1 ruling). Expected \
+codehealth arch --depth 4 (measured at this base and by a simulation of the step): base 4 \
+violations / 3 cycles / 12 cycle edges, after 4 / 3 / 12 (imports 4072 -> 4048). Layer config: \
+none."""
+removed = []
+renamed = {}
+changed = ["src/openflowsheet/models/syn001/cascade.py:__all__"]
+added = []
+new_files = []
+callers = []

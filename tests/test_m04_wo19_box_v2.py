@@ -40,10 +40,10 @@ from openflowsheet.application.types import (
     Limits,
     SurrogateStudyBody,
     SurrogateStudyParent,
-    schema_errors,
 )
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.models.c1 import COMPONENTS
+from openflowsheet.schema_check import schema_errors
 from openflowsheet.studies.surrogate import plan as sp
 from openflowsheet.studies.surrogate.iterations import StoredManifest, predecessors
 from openflowsheet.studies.surrogate.manifest import check_manifest

@@ -21,27 +21,26 @@ from test_s10c_blocks import REAL, column_spec
 
 from openflowsheet.models import Contribution, flow_id, pressure_id, temperature_id
 from openflowsheet.models.revision_flowsheet import InstanceView, RevisionError
-from openflowsheet.models.syn001.cascade import BOTTOM, TOP, inlet_row_id, inlet_stream
 from openflowsheet.models.syn001.cascade_solve import DECLARATION_CONTEXT
-from openflowsheet.models.syn001.column import (
+from openflowsheet.models.syn001.cascade_spec import BOTTOM, TOP, inlet_row_id, inlet_stream
+from openflowsheet.models.syn001.column_compile import (
+    closure_types,
+    lifted_splits,
+    split_temperatures,
+    zero_flow_forms,
+)
+from openflowsheet.models.syn001.column_rows import declared_rows
+from openflowsheet.models.syn001.column_spec import (
     CONDENSER,
     F_REF,
     REBOILER,
     ColumnSpec,
     EndSpecification,
-    component_feeds,
-    declared_rows,
     product_flow_id,
     product_total_id,
     purity_flow_id,
     recovery_flow_id,
     slot_row_id,
-)
-from openflowsheet.models.syn001.column_solve import (
-    closure_types,
-    lifted_splits,
-    split_temperatures,
-    zero_flow_forms,
 )
 from openflowsheet.models.syn001.column_unit import (
     END_PARAMETERS,
@@ -50,6 +49,7 @@ from openflowsheet.models.syn001.column_unit import (
     column_structure,
     structural_spec,
 )
+from openflowsheet.models.syn001.column_validation import component_feeds
 from openflowsheet.thermo import PropertyProvider
 
 #: S11.A21: `declared_rows(spec)` digests (`_digest`) at the base `3cbd3bd3` (= `8c34ecb0` for

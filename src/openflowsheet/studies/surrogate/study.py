@@ -64,20 +64,16 @@ from openflowsheet.studies.surrogate.quadratic import (
     fit_quadratic,
     inadmissible_outputs,
 )
-from openflowsheet.studies.surrogate.records import MODEL_ID as MODEL_ID
-from openflowsheet.studies.surrogate.records import CentreEvidence as CentreEvidence
-from openflowsheet.studies.surrogate.records import CentreStatus as CentreStatus
-from openflowsheet.studies.surrogate.records import Observation as Observation
-from openflowsheet.studies.surrogate.records import ObservationStatus as ObservationStatus
-from openflowsheet.studies.surrogate.records import SurrogateEvaluation as SurrogateEvaluation
+from openflowsheet.studies.surrogate.records import (
+    CentreEvidence,
+    CentreStatus,
+    Observation,
+    SurrogateEvaluation,
+)
 from openflowsheet.thermo import StreamState
 
 __all__ = [
-    "MODEL_ID",
-    "CentreEvidence",
-    "Observation",
     "StudyOutcome",
-    "SurrogateEvaluation",
     "admissibility_distance",
     "evaluate",
     "observe",

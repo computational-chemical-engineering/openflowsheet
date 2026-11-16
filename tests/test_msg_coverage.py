@@ -86,7 +86,7 @@ def test_the_normative_list_is_complete() -> None:
     from typing import get_args
 
     from openflowsheet.application.types import ApiErrorCode
-    from openflowsheet.application.validation import ValidationStatus
+    from openflowsheet.application.validation_report import ValidationStatus
     from openflowsheet.verify import RegularityStatus, VerificationStatus
     from openflowsheet.verify.failure import TAXONOMY
 

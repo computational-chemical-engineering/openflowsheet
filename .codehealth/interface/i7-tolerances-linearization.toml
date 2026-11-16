@@ -1,0 +1,36 @@
+# ADR 0076 I-7 (W4 run 3, brief S19-W4-3; form of S19_DECISIONS 2026-11-16 STOP 1): the
+# V-tolerances live in openflowsheet.studies.nlp.tolerances and Linearization in
+# openflowsheet.assessment.linearization; their old modules stop re-exporting them, and the
+# feasibility-tolerance reader becomes public. `codehealth gate --mode interface` reads this plan
+# from the plan commit.
+id = "i7-tolerances-linearization"
+approved_by = "Frank Peters, 2026-11-14, ADR 0076 accepted (Decision Desk ofs-adr0076-accept)"
+reason = """ADR 0076 I-7: M03's V-tolerances moved to studies/nlp/tolerances.py (restructure \
+cut-nlp-tolerances) and Linearization, Refusal and the feasibility-tolerance reader to \
+assessment/linearization.py (restructure cut-assessment-linearization). src importers were \
+retargeted in refactor mode (7b3a4c99) and tests, scripts and benchmarks outside the gate \
+(38f55cff), so an AST inventory (from-imports, module-alias attribute reads, dotted strings, \
+setattr patches, living docs) finds no use of TAU_GROSS, TAU_FEAS, TAU_ACTIVE, TAU_KKT, TAU_SIGN, \
+TAU_LICQ, TAU_VERTEX_MULTIPLIER through openflowsheet.studies.nlp.verification, nor of \
+Linearization or _feasibility_tolerance through openflowsheet.assessment.program. The step: \
+studies/nlp/verification.py (no __all__) turns the seven `TAU_* as TAU_*` aliases into plain \
+imports (its own V2, V3, V5 checks use all seven), invisible to the public-API tier (imports count \
+as API only in __init__.py; STOP 1 ruling); assessment/program.py turns `Linearization as \
+Linearization` into a plain import (its own code uses it) and drops the __all__ entry \
+Linearization (changed below); `Refusal as Refusal` and its __all__ entry stay: program uses \
+Refusal itself and the four registry-hashed contributor files import it through \
+assessment.program until W5 (FQ-A). assessment/linearization.py: the reader is renamed to the \
+public feasibility_tolerance (added below) and `_feasibility_tolerance = feasibility_tolerance` \
+stays as a private alias for its two src callers, assessment/program.py and assessment/report.py, \
+whose retarget and the alias's removal are I-13/I-19's. Docstrings of linearization.py and \
+studies/nlp/tolerances.py stop saying that program and verification re-export what they no longer \
+do. Values unchanged. Expected codehealth arch --depth 4 (measured at this base and by a \
+simulation of the step): base 4 violations / 3 cycles / 12 cycle edges, after 4 / 3 / 12 (no \
+module edge goes; ADR 0076's cycle 4 and 1 violation were removed by the two cut restructures). \
+Layer config: none."""
+removed = []
+renamed = {}
+changed = ["src/openflowsheet/assessment/program.py:__all__"]
+added = ["src/openflowsheet/assessment/linearization.py:feasibility_tolerance"]
+new_files = []
+callers = []

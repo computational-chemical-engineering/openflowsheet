@@ -23,17 +23,15 @@ from jsonschema import Draft202012Validator
 from referencing import Registry, Resource
 from t05_syn001_shaped import shaped_revision
 
-from openflowsheet.application.binding import Unbound
-from openflowsheet.application.revision_binding import (
-    MODEL_BASES,
-    MODEL_BUILDERS,
-    RevisionBinding,
-    bind_revision_flowsheet,
-)
+from openflowsheet.application.binding_common import Unbound
+from openflowsheet.application.model_builders import MODEL_BUILDERS
+from openflowsheet.application.model_signatures import MODEL_BASES
+from openflowsheet.application.revision_binding import RevisionBinding, bind_revision_flowsheet
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.graph.analysis import analyse
 from openflowsheet.graph.trace import trace_declaration
 from openflowsheet.models.syn001.flowsheet import Syn001Flowsheet
+from openflowsheet.numerics.solve_record import SolvePolicy
 from openflowsheet.orchestrator.execution import (
     ExecutionPlan,
     build_execution_plan,
@@ -41,7 +39,8 @@ from openflowsheet.orchestrator.execution import (
 )
 from openflowsheet.orchestrator.executor import PlanResult, execute_plan
 from openflowsheet.orchestrator.mass import RegionMass, residence_time, resolve_mass
-from openflowsheet.orchestrator.region import RegionResult, syn001_lifted_splits
+from openflowsheet.orchestrator.region import syn001_lifted_splits
+from openflowsheet.orchestrator.region_result import RegionResult
 from openflowsheet.orchestrator.revision import (
     INITIALIZER_ID,
     InitialStateFailure,
@@ -51,7 +50,6 @@ from openflowsheet.orchestrator.revision import (
 )
 from openflowsheet.orchestrator.splits import SPLIT_RULES, check_agreement, lifted_splits
 from openflowsheet.orchestrator.tear import Syn001TearProblem, solve_tear
-from openflowsheet.orchestrator.trace import SolvePolicy
 from openflowsheet.run.session import run_session, solve_and_bundle
 from openflowsheet.thermo.syn001 import Syn001Provider
 

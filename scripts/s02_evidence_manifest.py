@@ -290,7 +290,7 @@ def floor_check(commit: str) -> dict[str, Any]:
     from test_s02_column_wo1 import PROVIDER, SPECS
     from test_s02_column_wo2 import fd_errors, ref_state
 
-    from openflowsheet.models.syn001.cascade import CascadeFailure
+    from openflowsheet.models.syn001.cascade_failure import CascadeFailure
     from openflowsheet.models.syn001.column import profile_initial
     from openflowsheet.models.syn001.column_solve import DECLARATION_CONTEXT
 

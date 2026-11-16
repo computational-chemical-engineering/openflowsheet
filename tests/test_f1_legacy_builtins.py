@@ -38,7 +38,7 @@ import pytest
 from conftest import REPO_ROOT
 
 from openflowsheet.application.local import LocalApplication
-from openflowsheet.application.revision_binding import MODEL_BASES
+from openflowsheet.application.model_signatures import MODEL_BASES
 from openflowsheet.models.revision_flowsheet import selectable_bases
 from openflowsheet.registry import (
     ExtensionPackage,
@@ -354,7 +354,7 @@ def test_e_f1_3_pip_extra_and_factories_resolve(registry: Registry) -> None:
 
 
 def test_e_f1_3_unit_payloads_are_the_list_models_entries(registry: Registry) -> None:
-    from openflowsheet.application.revision_binding import MODEL_BUILDERS
+    from openflowsheet.application.model_builders import MODEL_BUILDERS
 
     listed = {
         model["model_id"]: model

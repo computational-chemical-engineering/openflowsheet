@@ -23,12 +23,12 @@ import pytest
 from conftest import REPO_ROOT
 from t07_corpus import CORPUS
 
-from openflowsheet.application.policies import DEFAULT_POLICY_ID, T05B_V2, resolve_policy
 from openflowsheet.application.revision_run import Route, select_route, solve_route
+from openflowsheet.numerics.solve_record import SolvePolicy
+from openflowsheet.orchestrator.policies import DEFAULT_POLICY_ID, T05B_V2, resolve_policy
 from openflowsheet.orchestrator.tear import solve_tear
-from openflowsheet.orchestrator.trace import SolvePolicy
-from openflowsheet.verify.certificate import CheckPolicy
 from openflowsheet.verify.failure import bundle_for, region_bundle
+from openflowsheet.verify.verdict import CheckPolicy
 
 COUNTERS = (
     "property_calls",

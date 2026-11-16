@@ -35,10 +35,11 @@ from openflowsheet.application.authz import grant
 from openflowsheet.application.contract import ApplicationError
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.operations import OPERATIONS, dispatch
-from openflowsheet.application.types import MessageEntry, schema_errors
+from openflowsheet.application.types import MessageEntry
 from openflowsheet.messages.catalogue import CATALOGUE, FORMAT_ID
 from openflowsheet.messages.render import entry_document, suggestions
 from openflowsheet.messages.text import STUB_NOTE, format_entry
+from openflowsheet.schema_check import schema_errors
 
 ENTRY = "application-results.schema.json#/$defs/message_entry"
 TYPO = "phase_regim_mismatch"

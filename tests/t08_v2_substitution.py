@@ -24,7 +24,7 @@ import pytest
 import openflowsheet.run.replay as replay
 import openflowsheet.run.session as session
 from openflowsheet.run.compare import CURRENT_POLICY_ID, V1_POLICY_ID
-from openflowsheet.verify.certificate import SolutionCertificate
+from openflowsheet.verify.verdict import SolutionCertificate
 
 #: (new, old): the structural hash of the CLI's SYN-001-nominal run, as `solve` and `inspect`
 #: print it (`tests/fixtures/t07/cli-existing-commands.json`).

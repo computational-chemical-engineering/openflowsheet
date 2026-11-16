@@ -18,7 +18,7 @@ from conftest import load_json
 from f0_support import N_ARCHIVED_OUTPUTS, is_archived_output
 from test_k03_schemas import SCHEMA_DIR, errors_for
 
-from openflowsheet.orchestrator.trace import GlobalizationPolicy, SolvePolicy
+from openflowsheet.numerics.solve_record import GlobalizationPolicy, SolvePolicy
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 REFINED = "newton_refined"

@@ -32,13 +32,15 @@ from test_e01_b_nlp import base, bound, full_space, m03_readiness, verify
 
 from openflowsheet.assessment.cost.contributor import CostContributor
 from openflowsheet.assessment.cost.derived import DerivedContributor
-from openflowsheet.assessment.program import AssessmentProgram, Linearization
+from openflowsheet.assessment.linearization import Linearization
+from openflowsheet.assessment.program import AssessmentProgram
 from openflowsheet.assessment.regimes import Regime
 from openflowsheet.assessment.spec import load_assessment
 from openflowsheet.assessment.views import view_of
 from openflowsheet.studies.nlp.closure import StartEvidence, classify_starts
 from openflowsheet.studies.nlp.formulation import FullSpaceNlp
-from openflowsheet.studies.nlp.verification import CHECKS, TAU_FEAS
+from openflowsheet.studies.nlp.tolerances import TAU_FEAS
+from openflowsheet.studies.nlp.verification import CHECKS
 
 #: P2's assessment: SSLW on SYN-001's heater and flash, the bare-module chain, 2023 USD. The
 #: F_BM values are test inputs (as P1's and P3's fixture documents).

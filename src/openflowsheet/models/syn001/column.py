@@ -10,8 +10,10 @@ specification of §2.1 in place of `Q_j − Q_j*`.
 **The unit layer only** (S02 spec §12 WO-1), in four modules (S19 B2): `column_spec` holds the
 specification object, the declarations and the column's ids, `column_validation` its §5
 refusals and `column_rows` the §2 declared rows; this module holds the per-stage regime forms
-with §2.3's label and the §6 analytic initializer `s02-profile-cmo-v1`, and re-exports the
-other three's names. The pre-solve, the target and acceptance are WO-2's.
+with §2.3's label and the §6 analytic initializer `s02-profile-cmo-v1`. It re-exports the names
+the frozen `column_unit` imports through it (ADR 0076 I-8) and three names outside I-8's move sets
+(`_inflow`, `GammaPhiLnKBlock`, `single_phase_admissible`; I-13 and I-19). The pre-solve, the
+target and acceptance are WO-2's.
 
 Column ids beyond S01's (build decision, `docs/S02_DECISIONS.md`): the total condenser's are
 `<U>.stage.1.{r,d}.<c>`, `<U>.stage.1.{phi,D}` and S01's `<U>.stage.1.{T,P,Q}` for `T_c`, `P_c`,
@@ -36,11 +38,11 @@ from openflowsheet.compile.reference import row_values
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.models import flow_id, pressure_id, temperature_id
 from openflowsheet.models.lifted import Regime
-from openflowsheet.models.syn001.cascade import (
-    CMO_FLOOR,
-    CascadeFailure,
-    _k_values,
-    declared_problem,
+from openflowsheet.models.syn001.cascade import _k_values
+from openflowsheet.models.syn001.cascade_failure import CascadeFailure
+from openflowsheet.models.syn001.cascade_init import CMO_FLOOR, thomas
+from openflowsheet.models.syn001.cascade_rows import declared_problem
+from openflowsheet.models.syn001.cascade_spec import (
     energy_row_id,
     inlet_stream,
     label_row_id,
@@ -51,67 +53,36 @@ from openflowsheet.models.syn001.cascade import (
     stage_pressure_id,
     stage_row_id,
     stage_temperature_id,
-    thomas,
     vapor_id,
     vapor_total_id,
 )
 from openflowsheet.models.syn001.column_rows import _inflow as _inflow
 from openflowsheet.models.syn001.column_rows import declared_rows as declared_rows
-from openflowsheet.models.syn001.column_spec import COLUMN_EQUATIONS as COLUMN_EQUATIONS
 from openflowsheet.models.syn001.column_spec import COMPONENT_KINDS as COMPONENT_KINDS
 from openflowsheet.models.syn001.column_spec import CONDENSER as CONDENSER
-from openflowsheet.models.syn001.column_spec import CONDENSER_KINDS as CONDENSER_KINDS
 from openflowsheet.models.syn001.column_spec import END_KINDS as END_KINDS
 from openflowsheet.models.syn001.column_spec import EQUATIONS as EQUATIONS
 from openflowsheet.models.syn001.column_spec import F_REF as F_REF
 from openflowsheet.models.syn001.column_spec import FLOWSHEET_EQUATIONS as FLOWSHEET_EQUATIONS
 from openflowsheet.models.syn001.column_spec import GAMMA_PHI_KINDS as GAMMA_PHI_KINDS
-from openflowsheet.models.syn001.column_spec import INVERSE_EQUATIONS as INVERSE_EQUATIONS
 from openflowsheet.models.syn001.column_spec import INVERSE_KINDS as INVERSE_KINDS
 from openflowsheet.models.syn001.column_spec import MODEL_ID as MODEL_ID
-from openflowsheet.models.syn001.column_spec import NOT_OFFERED as NOT_OFFERED
-from openflowsheet.models.syn001.column_spec import RATIO_KINDS as RATIO_KINDS
 from openflowsheet.models.syn001.column_spec import REBOILER as REBOILER
-from openflowsheet.models.syn001.column_spec import REBOILER_KINDS as REBOILER_KINDS
-from openflowsheet.models.syn001.column_spec import S06_SPECIFICATION as S06_SPECIFICATION
-from openflowsheet.models.syn001.column_spec import S11_SPECIFICATION as S11_SPECIFICATION
-from openflowsheet.models.syn001.column_spec import SPECIFICATION as SPECIFICATION
 from openflowsheet.models.syn001.column_spec import ColumnSpec as ColumnSpec
 from openflowsheet.models.syn001.column_spec import EndSpecification as EndSpecification
 from openflowsheet.models.syn001.column_spec import FlowsheetLinks as FlowsheetLinks
-from openflowsheet.models.syn001.column_spec import distillate_id as distillate_id
-from openflowsheet.models.syn001.column_spec import distillate_total_id as distillate_total_id
-from openflowsheet.models.syn001.column_spec import label_source as label_source
+from openflowsheet.models.syn001.column_spec import (
+    distillate_id,
+    distillate_total_id,
+    label_source,
+    reflux_fraction_id,
+    reflux_id,
+)
 from openflowsheet.models.syn001.column_spec import product_flow_id as product_flow_id
-from openflowsheet.models.syn001.column_spec import product_link_row_id as product_link_row_id
 from openflowsheet.models.syn001.column_spec import product_total_id as product_total_id
 from openflowsheet.models.syn001.column_spec import purity_flow_id as purity_flow_id
-from openflowsheet.models.syn001.column_spec import (
-    purity_reference_parameter as purity_reference_parameter,
-)
-from openflowsheet.models.syn001.column_spec import ratio_parameter as ratio_parameter
 from openflowsheet.models.syn001.column_spec import recovery_flow_id as recovery_flow_id
-from openflowsheet.models.syn001.column_spec import (
-    recovery_reference_parameter as recovery_reference_parameter,
-)
-from openflowsheet.models.syn001.column_spec import reflux_fraction_id as reflux_fraction_id
-from openflowsheet.models.syn001.column_spec import reflux_id as reflux_id
-from openflowsheet.models.syn001.column_spec import slot_column as slot_column
-from openflowsheet.models.syn001.column_spec import slot_row_id as slot_row_id
-from openflowsheet.models.syn001.column_validation import (
-    MULTIPLE_STEADY_STATES_WARNING as MULTIPLE_STEADY_STATES_WARNING,
-)
-from openflowsheet.models.syn001.column_validation import column_warnings as column_warnings
-from openflowsheet.models.syn001.column_validation import component_feeds as component_feeds
-from openflowsheet.models.syn001.column_validation import energy_precheck as energy_precheck
-from openflowsheet.models.syn001.column_validation import inverse_parameter as inverse_parameter
-from openflowsheet.models.syn001.column_validation import purity_reference as purity_reference
-from openflowsheet.models.syn001.column_validation import (
-    saturation_temperature as saturation_temperature,
-)
-from openflowsheet.models.syn001.column_validation import specified_quantity as specified_quantity
-from openflowsheet.models.syn001.column_validation import stage_band as stage_band
-from openflowsheet.models.syn001.column_validation import validate as validate
+from openflowsheet.models.syn001.column_validation import purity_reference
 from openflowsheet.models.syn001.gamma_phi_blocks import GammaPhiLnKBlock as GammaPhiLnKBlock
 from openflowsheet.models.syn001.saturation_band import band_temperature
 from openflowsheet.models.syn001.tp_state import single_phase_admissible as single_phase_admissible
@@ -369,51 +340,25 @@ def _initial_state(
 
 
 __all__ = [
-    "COLUMN_EQUATIONS",
     "COMPONENT_KINDS",
     "CONDENSER",
-    "CONDENSER_KINDS",
     "END_KINDS",
     "EQUATIONS",
     "GAMMA_PHI_KINDS",
     "INITIALIZER_ID",
-    "INVERSE_EQUATIONS",
     "INVERSE_KINDS",
     "MODEL_ID",
-    "MULTIPLE_STEADY_STATES_WARNING",
-    "NOT_OFFERED",
     "PHI_INITIAL",
     "PROFILE_BETAS",
-    "RATIO_KINDS",
     "REBOILER",
-    "REBOILER_KINDS",
-    "S06_SPECIFICATION",
     "ColumnRegimeForm",
     "ColumnSpec",
     "EndSpecification",
     "ProfileInitial",
-    "column_warnings",
-    "component_feeds",
     "declared_rows",
-    "distillate_id",
-    "distillate_total_id",
-    "energy_precheck",
-    "inverse_parameter",
-    "label_source",
     "product_flow_id",
     "product_total_id",
     "profile_initial",
     "purity_flow_id",
-    "purity_reference",
-    "purity_reference_parameter",
-    "ratio_parameter",
-    "reflux_fraction_id",
-    "reflux_id",
     "regime_form",
-    "saturation_temperature",
-    "slot_column",
-    "slot_row_id",
-    "specified_quantity",
-    "stage_band",
-    "validate",
 ]

@@ -150,7 +150,7 @@ def _flipped(slack_recorded: float, slack_fresh: float) -> tuple[dict, dict]:
     inactive at `slack_fresh` (fresh): the active set, V3's list, the multiplier and V5 move."""
     import copy
 
-    from openflowsheet.studies.nlp.verification import TAU_ACTIVE
+    from openflowsheet.studies.nlp.tolerances import TAU_ACTIVE
 
     assert slack_fresh > TAU_ACTIVE >= slack_recorded
     recorded = json.loads((FIXTURE / "starts" / "0" / "verification.json").read_bytes())
@@ -168,7 +168,7 @@ def _flipped(slack_recorded: float, slack_fresh: float) -> tuple[dict, dict]:
 
 def test_s49_an_active_set_flip_near_tau_active_is_near_threshold() -> None:
     from openflowsheet.studies.nlp.replay import active_set_flips, verification_differences
-    from openflowsheet.studies.nlp.verification import TAU_ACTIVE
+    from openflowsheet.studies.nlp.tolerances import TAU_ACTIVE
 
     fresh, recorded = _flipped(TAU_ACTIVE * (1 - 1e-12), TAU_ACTIVE * (1 + 1e-12))
     assert active_set_flips(fresh, recorded) == ("T-min",)
@@ -182,7 +182,7 @@ def test_s49_an_active_set_flip_near_tau_active_is_near_threshold() -> None:
 
 def test_s49_a_flip_away_from_tau_active_is_a_difference() -> None:
     from openflowsheet.studies.nlp.replay import verification_differences
-    from openflowsheet.studies.nlp.verification import TAU_ACTIVE
+    from openflowsheet.studies.nlp.tolerances import TAU_ACTIVE
 
     # the recorded slack 1e-3 relative inside the threshold: a real flip, not noise
     fresh, recorded = _flipped(TAU_ACTIVE * (1 - 1e-3), TAU_ACTIVE * (1 + 1e-12))
@@ -196,7 +196,7 @@ def test_s49_a_flip_away_from_tau_active_is_a_difference() -> None:
 
 def test_s49_a_near_flip_does_not_forgive_other_differences() -> None:
     from openflowsheet.studies.nlp.replay import verification_differences
-    from openflowsheet.studies.nlp.verification import TAU_ACTIVE
+    from openflowsheet.studies.nlp.tolerances import TAU_ACTIVE
 
     fresh, recorded = _flipped(TAU_ACTIVE * (1 - 1e-12), TAU_ACTIVE * (1 + 1e-12))
     fresh["objective"] = recorded["objective"] * (1 + 1e-3)
@@ -253,7 +253,7 @@ def test_m1_ulp_noise_in_every_float_replays_to_match(start: int) -> None:
 
 def test_m1_a_float_beyond_its_check_tolerance_is_a_difference() -> None:
     from openflowsheet.studies.nlp.replay import verification_differences
-    from openflowsheet.studies.nlp.verification import TAU_FEAS, TAU_GROSS, TAU_KKT, TAU_SIGN
+    from openflowsheet.studies.nlp.tolerances import TAU_FEAS, TAU_GROSS, TAU_KKT, TAU_SIGN
 
     recorded = json.loads((FIXTURE / "starts" / "1" / "verification.json").read_bytes())
     checks = [item["check"] for item in recorded["checks"]]

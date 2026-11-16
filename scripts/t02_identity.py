@@ -36,6 +36,8 @@ from openflowsheet.models.syn001.flowsheet import Syn001Flowsheet
 from openflowsheet.numerics.anderson import RecyclePolicy, solve_recycle
 from openflowsheet.numerics.newton import Evaluation, Problem
 from openflowsheet.numerics.scaling import Scaling
+from openflowsheet.numerics.solve_record import RecyclePolicy as Recycle
+from openflowsheet.numerics.solve_record import SolveEvent, SolvePolicy, Trace
 from openflowsheet.orchestrator.budget import PropertyMeter
 from openflowsheet.orchestrator.execution import (
     ExecutionPlan,
@@ -45,8 +47,6 @@ from openflowsheet.orchestrator.execution import (
 )
 from openflowsheet.orchestrator.executor import execute_plan
 from openflowsheet.orchestrator.tear import Syn001TearProblem
-from openflowsheet.orchestrator.trace import RecyclePolicy as Recycle
-from openflowsheet.orchestrator.trace import SolveEvent, SolvePolicy, Trace
 from openflowsheet.run.identity import execution_plan_r0
 from openflowsheet.thermo.syn001 import Syn001Provider
 

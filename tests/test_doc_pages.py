@@ -14,8 +14,9 @@ from conftest import REPO_ROOT
 sys.path.insert(0, str(REPO_ROOT / "scripts"))
 import doc_pages as catalogue  # noqa: E402
 
+from openflowsheet.application.model_builders import MODEL_BUILDERS  # noqa: E402
+from openflowsheet.application.model_signatures import MODEL_BASES  # noqa: E402
 from openflowsheet.application.operations import OPERATIONS  # noqa: E402
-from openflowsheet.application.revision_binding import MODEL_BASES, MODEL_BUILDERS  # noqa: E402
 
 
 def test_the_committed_pages_are_the_generated_ones() -> None:

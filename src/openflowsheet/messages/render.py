@@ -49,7 +49,7 @@ from openflowsheet.messages.legacy import (
     parse_check,
     resolve,
 )
-from openflowsheet.units import display_item, text_unit
+from openflowsheet.units.display import display_item, text_unit
 
 Surface = Literal["python", "cli", "http", "mcp"]
 Explanation = dict[str, Any]

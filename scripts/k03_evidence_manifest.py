@@ -29,12 +29,12 @@ from openflowsheet.canonical import file_sha256  # noqa: E402
 from openflowsheet.compiled import EvaluationContext  # noqa: E402
 from openflowsheet.models.syn001.flowsheet import Syn001Flowsheet  # noqa: E402
 from openflowsheet.numerics.linear import SUPERLU_OPTIONS  # noqa: E402
+from openflowsheet.numerics.solve_record import SolvePolicy  # noqa: E402
 from openflowsheet.orchestrator.tear import (  # noqa: E402
     Syn001TearProblem,
     build_plan,
     solve_tear,
 )
-from openflowsheet.orchestrator.trace import SolvePolicy  # noqa: E402
 from openflowsheet.thermo import StreamState  # noqa: E402
 from openflowsheet.thermo.syn001 import Syn001Provider  # noqa: E402
 
@@ -573,7 +573,7 @@ def build(commit: str, gate_stdout: Path) -> dict[str, Any]:
             ("src/openflowsheet/numerics/scaling.py", "Scales from the registered nominals."),
             ("src/openflowsheet/numerics/linear.py", "The one SuperLU solve (ADR 0004)."),
             ("src/openflowsheet/numerics/newton.py", "Damped Newton and the line search."),
-            ("src/openflowsheet/orchestrator/trace.py", "The recorded metadata types."),
+            ("src/openflowsheet/numerics/solve_record.py", "The recorded metadata types."),
             ("src/openflowsheet/orchestrator/rank.py", "Structural alias elimination."),
             ("src/openflowsheet/orchestrator/attempts.py", "The bounded attempt controller."),
             ("src/openflowsheet/orchestrator/tear.py", "The tear problem and the solve."),

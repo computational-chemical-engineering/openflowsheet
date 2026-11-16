@@ -26,9 +26,9 @@ import pytest
 
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.models.syn001.flowsheet import Syn001Flowsheet
+from openflowsheet.numerics.solve_record import SolvePolicy, Trace
 from openflowsheet.orchestrator.attempts import FLASH_REGIME, flash_signature
 from openflowsheet.orchestrator.tear import solve_tear
-from openflowsheet.orchestrator.trace import SolvePolicy, Trace
 from openflowsheet.thermo.syn001 import Syn001Provider
 
 CONTEXT = EvaluationContext(model_version="K03-G00@" + "0" * 64, constants_sha256="0" * 64)

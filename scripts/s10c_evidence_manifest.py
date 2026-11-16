@@ -437,7 +437,7 @@ def aarch64_column_check(commit: str) -> dict[str, Any]:
             sys.path.insert(0, str(path))
     from test_s10c_columns import UNIT, absent, column_spec
 
-    from openflowsheet.models.syn001.cascade import liquid_id, vapor_id
+    from openflowsheet.models.syn001.cascade_spec import liquid_id, vapor_id
 
     cases: dict[str, Any] = {}
     for case, stem in DIAG_CASES.items():

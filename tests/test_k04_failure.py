@@ -16,8 +16,8 @@ from typing import Any
 
 import pytest
 
+from openflowsheet.numerics.solve_record import SolvePolicy
 from openflowsheet.orchestrator.tear import solve_tear
-from openflowsheet.orchestrator.trace import SolvePolicy
 from openflowsheet.verify.failure import (
     TAXONOMY,
     VERDICT_WORDS,
@@ -97,7 +97,7 @@ def test_a20_every_outcome_with_a_class_can_be_bundled() -> None:
     that need it — every code in the vocabulary containing a verdict word, and no other."""
     from typing import get_args
 
-    from openflowsheet.orchestrator.trace import SolveOutcome
+    from openflowsheet.numerics.solve_record import SolveOutcome
     from openflowsheet.verify.failure import OUTCOME_CODES_WITH_VERDICT_WORDS
 
     codes = get_args(SolveOutcome)
@@ -177,7 +177,7 @@ def test_every_k03_outcome_has_a_class_and_an_action() -> None:
     """
     from typing import get_args
 
-    from openflowsheet.orchestrator.trace import SolveOutcome
+    from openflowsheet.numerics.solve_record import SolveOutcome
     from openflowsheet.verify.failure import ACTIONS
 
     outcomes = set(get_args(SolveOutcome)) - {"CONVERGED"}

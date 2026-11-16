@@ -25,7 +25,7 @@ from openflowsheet.application.revision_binding import RevisionBinding, bind_rev
 from openflowsheet.orchestrator import revision
 from openflowsheet.orchestrator.execution import ExecutionPlan
 from openflowsheet.orchestrator.executor import PlanResult, execute_plan
-from openflowsheet.orchestrator.region import RegionResult
+from openflowsheet.orchestrator.region_result import RegionResult
 
 CASES = {
     "SYN-001-UL-C1": REPO_ROOT / "benchmarks" / "t05" / "cases" / "SYN-001-UL-C1.yaml",

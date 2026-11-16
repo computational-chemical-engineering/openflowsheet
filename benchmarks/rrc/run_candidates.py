@@ -57,7 +57,6 @@ ROOT: Final = HERE.parents[1]
 sys.path[:0] = [str(ROOT / "src")]
 
 from openflowsheet.application.local import LocalApplication  # noqa: E402
-from openflowsheet.application.policies import RRC_REVISION_V1, T06_REVISION_V2  # noqa: E402
 from openflowsheet.application.revision_binding import (  # noqa: E402
     RevisionBinding,
     bind_revision_flowsheet,
@@ -67,16 +66,18 @@ from openflowsheet.canonical import state_sha256  # noqa: E402
 from openflowsheet.models import flow_id  # noqa: E402
 from openflowsheet.models.syn001 import FLOW_TOLERANCE  # noqa: E402
 from openflowsheet.numerics.scaling import Scaling  # noqa: E402
+from openflowsheet.numerics.solve_record import SolvePolicy  # noqa: E402
 from openflowsheet.orchestrator import executor, revision  # noqa: E402
 from openflowsheet.orchestrator.execution import ExecutionPlan  # noqa: E402
 from openflowsheet.orchestrator.executor import PlanResult, StepResult, execute_plan  # noqa: E402
+from openflowsheet.orchestrator.policies import RRC_REVISION_V1, T06_REVISION_V2  # noqa: E402
 from openflowsheet.orchestrator.recovery import eo_recovery_due, solver_outcomes  # noqa: E402
 from openflowsheet.orchestrator.revision_continuation import (  # noqa: E402
     RevisionContinuationCandidate,
 )
-from openflowsheet.orchestrator.trace import SolvePolicy  # noqa: E402
-from openflowsheet.verify.certificate import SolutionCertificate, verify_revision  # noqa: E402
+from openflowsheet.verify.certificate import verify_revision  # noqa: E402
 from openflowsheet.verify.checks import VerifierError  # noqa: E402
+from openflowsheet.verify.verdict import SolutionCertificate  # noqa: E402
 
 CASES: Final[dict[str, Any]] = yaml.safe_load((HERE / "cases.yaml").read_text("utf-8"))
 #: §8.1: `RRC-revision-v1` with `eo_recovery = "none"`, built here and not offered.

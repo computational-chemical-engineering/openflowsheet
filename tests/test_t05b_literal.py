@@ -31,7 +31,7 @@ from conftest import load_json
 from f0_support import N_ARCHIVED_OUTPUTS, is_archived_output
 from test_k03_schemas import FIXTURE_DIR, errors_for
 
-from openflowsheet.orchestrator.trace import PhaseContract, SolvePolicy
+from openflowsheet.numerics.solve_record import PhaseContract, SolvePolicy
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 V1, V2 = "T03-phase-contract-v1", "T05b-phase-contract-v2"
@@ -80,7 +80,7 @@ def test_b06_the_policy_fixtures_regenerate_byte_for_byte() -> None:
     import k03_schema_fixtures as k03
     import t04_schema_fixtures as t04
 
-    from openflowsheet.orchestrator.trace import GlobalizationPolicy, RecyclePolicy
+    from openflowsheet.numerics.solve_record import GlobalizationPolicy, RecyclePolicy
 
     ptc = t04.policy(
         "ptc",
@@ -102,7 +102,7 @@ def _sources() -> list[Path]:
 
 #: Spec §6.6: the T05b cases' policy `T05b-v2` is constructed in exactly one place — the
 #: application's policy registry since T07 W3a (design note §12.2, W0 flag E6).
-T05B_V2_SOURCE = REPO_ROOT / "src" / "openflowsheet" / "application" / "policies.py"
+T05B_V2_SOURCE = REPO_ROOT / "src" / "openflowsheet" / "orchestrator" / "policies.py"
 #: S01 spec §4 item 4 and §7 item 6 (register R-505): S01's cascade solves under its own
 #: registered policy `s01-default-v1` — the registered EO default with phase contract v2 and
 #: `eo_core = "newton_refined"` — constructed once, as `cascade_solve.S01_DEFAULT_V1`. A second

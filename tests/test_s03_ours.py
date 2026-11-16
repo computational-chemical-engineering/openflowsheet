@@ -25,7 +25,7 @@ from typing import Any
 import pytest
 from test_s02_column_wo1 import SPECS as S02_SPECS
 
-from openflowsheet.models.syn001.cascade import InletState, SideFeed
+from openflowsheet.models.syn001.cascade_spec import InletState, SideFeed
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT / "scripts"))

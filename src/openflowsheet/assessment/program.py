@@ -26,9 +26,8 @@ from typing import Any, Final, Protocol
 
 import numpy as np
 
-from openflowsheet.assessment.linearization import Linearization as Linearization
+from openflowsheet.assessment.linearization import Linearization, _feasibility_tolerance
 from openflowsheet.assessment.linearization import Refusal as Refusal
-from openflowsheet.assessment.linearization import _feasibility_tolerance
 from openflowsheet.assessment.quantities import ASSESSMENT_PREFIX, classify
 from openflowsheet.assessment.regimes import Regime, RegimeEntry
 from openflowsheet.assessment.spec import AssessmentSpec
@@ -59,7 +58,6 @@ __all__ = [
     "Contributor",
     "FunctionalBuilder",
     "Limitation",
-    "Linearization",
     "OutputDef",
     "Refusal",
     "Symbols",

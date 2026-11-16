@@ -44,7 +44,6 @@ from openflowsheet.application.coupled_run import (
     iterate_differences,
     record_differences,
 )
-from openflowsheet.application.policies import T06_REVISION_V2
 from openflowsheet.application.revision_run import (
     Route,
     _constants_for_shape,
@@ -56,13 +55,14 @@ from openflowsheet.compiled import EvaluationContext
 from openflowsheet.models.c1.reactor import C1Reactor
 from openflowsheet.orchestrator import coupling
 from openflowsheet.orchestrator.execution import declaration_identity
+from openflowsheet.orchestrator.policies import T06_REVISION_V2
 from openflowsheet.run import session
 from openflowsheet.run.bundle import read_artifact, read_manifest
 from openflowsheet.run.compare import CURRENT_POLICY_ID
 from openflowsheet.run.session import EXTERNAL_PROVIDERS, _reproducibility_class
 from openflowsheet.thermo.pr_c1 import PrC1Provider
 from openflowsheet.thermo.syn001 import Syn001Provider
-from openflowsheet.verify.certificate import CheckPolicy
+from openflowsheet.verify.verdict import CheckPolicy
 
 LOOP_PATH = REPO_ROOT / "benchmarks" / "m02" / "c1-loop-standin.json"
 HEATER_PATH = REPO_ROOT / "benchmarks" / "m02" / "c1-heater.json"

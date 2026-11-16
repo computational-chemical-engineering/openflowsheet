@@ -81,24 +81,30 @@ import numpy as np
 from openflowsheet.canonical import state_sha256
 from openflowsheet.compile.spec import ProblemSpec
 from openflowsheet.compiled import CompiledProblem, EvaluationContext
-from openflowsheet.models.lifted import INADMISSIBLE_BRANCH as INADMISSIBLE_BRANCH
-from openflowsheet.models.lifted import LABEL_KIND as LABEL_KIND
-from openflowsheet.models.lifted import Branch as Branch
-from openflowsheet.models.lifted import ClosureType as ClosureType
-from openflowsheet.models.lifted import DormancyForm as DormancyForm
-from openflowsheet.models.lifted import LiftedSplit as LiftedSplit
-from openflowsheet.models.lifted import Regime as Regime
-from openflowsheet.models.lifted import StagedSplits as StagedSplits
-from openflowsheet.models.lifted import VapourOnlyForm as VapourOnlyForm
-from openflowsheet.models.lifted import ZeroFlowForm as ZeroFlowForm
-from openflowsheet.models.lifted_tolerance import (
-    EQUILIBRIUM_TOLERANCE as EQUILIBRIUM_TOLERANCE,
+from openflowsheet.models.lifted import (
+    LABEL_KIND,
+    ClosureType,
+    DormancyForm,
+    LiftedSplit,
+    Regime,
+    VapourOnlyForm,
+    ZeroFlowForm,
 )
-from openflowsheet.models.lifted_tolerance import KIND_TOLERANCE as KIND_TOLERANCE
+from openflowsheet.models.lifted import StagedSplits as StagedSplits
+from openflowsheet.models.lifted_tolerance import KIND_TOLERANCE
 from openflowsheet.models.syn001.ph_kernel import ph_state as ph_state
 from openflowsheet.numerics.newton import solve_newton
 from openflowsheet.numerics.ptc import PtcRecord
 from openflowsheet.numerics.scaling import REGISTERED_NOMINALS, Scaling
+from openflowsheet.numerics.solve_record import (
+    AttemptSignature,
+    Checkpoint,
+    Counters,
+    SolveOutcome,
+    SolvePolicy,
+    Trace,
+    fraction_string,
+)
 from openflowsheet.orchestrator.attempts import AttemptContext, AttemptCore, provenance_item
 from openflowsheet.orchestrator.budget import BudgetExhaustedError
 from openflowsheet.orchestrator.execution import Region
@@ -123,8 +129,6 @@ from openflowsheet.orchestrator.phase_contract import (
 )
 from openflowsheet.orchestrator.region_attempts import _homotopy as _homotopy
 from openflowsheet.orchestrator.region_attempts import _ptc_attempt
-from openflowsheet.orchestrator.region_attempts import region_ptc_problem as region_ptc_problem
-from openflowsheet.orchestrator.region_phase import TP_REGIME as TP_REGIME
 from openflowsheet.orchestrator.region_phase import ClosureMemo as ClosureMemo
 from openflowsheet.orchestrator.region_phase import _admissible as _admissible
 from openflowsheet.orchestrator.region_phase import _band_regime as _band_regime
@@ -145,7 +149,6 @@ from openflowsheet.orchestrator.region_phase import _pinned as _pinned
 from openflowsheet.orchestrator.region_phase import _pr_c1 as _pr_c1
 from openflowsheet.orchestrator.region_phase import _reference_k_values as _reference_k_values
 from openflowsheet.orchestrator.region_phase import _split_enthalpy as _split_enthalpy
-from openflowsheet.orchestrator.region_phase import admissibility_value as admissibility_value
 from openflowsheet.orchestrator.region_problem import (
     _branch_found,
     _label_entries,
@@ -164,38 +167,22 @@ from openflowsheet.orchestrator.region_problem import _trigger_dormant as _trigg
 from openflowsheet.orchestrator.region_problem import (
     _units_and_items_disjoint as _units_and_items_disjoint,
 )
-from openflowsheet.orchestrator.region_result import AttemptSystem as AttemptSystem
-from openflowsheet.orchestrator.region_result import RecoveryStart as RecoveryStart
-from openflowsheet.orchestrator.region_result import RegionAttempt as RegionAttempt
-from openflowsheet.orchestrator.region_result import RegionResult as RegionResult
+from openflowsheet.orchestrator.region_result import (
+    AttemptSystem,
+    RecoveryStart,
+    RegionAttempt,
+    RegionResult,
+)
 from openflowsheet.orchestrator.region_screen import _attempt_screen as _attempt_screen
 from openflowsheet.orchestrator.region_screen import _build_screen as _build_screen
 from openflowsheet.orchestrator.region_screen import _screen as _screen
 from openflowsheet.orchestrator.revision_continuation import REVISION_CONTINUATION_REJECTED
 from openflowsheet.orchestrator.roots import branch_found, root_fingerprint
-from openflowsheet.orchestrator.trace import (
-    AttemptSignature,
-    Checkpoint,
-    Counters,
-    SolveOutcome,
-    SolvePolicy,
-    Trace,
-    fraction_string,
-)
 from openflowsheet.orchestrator.warm_start import WARM_START_REJECTED, WARM_START_SOURCE
 from openflowsheet.thermo import PropertyProvider
 
 __all__ = [
-    "ClosureType",
-    "DormancyForm",
-    "LiftedSplit",
-    "RecoveryStart",
-    "RegionResult",
-    "Regime",
     "StagedSplits",
-    "VapourOnlyForm",
-    "ZeroFlowForm",
-    "region_ptc_problem",
     "solve_region",
     "syn001_lifted_splits",
 ]

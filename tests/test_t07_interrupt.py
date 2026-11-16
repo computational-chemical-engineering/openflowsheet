@@ -56,10 +56,10 @@ from openflowsheet.application.jobs.interrupt import (
 )
 from openflowsheet.application.revision_binding import RevisionBinding, bind_revision_flowsheet
 from openflowsheet.canonical import canonical_json
+from openflowsheet.numerics.solve_record import INTERRUPT_CHECK, Trace
 from openflowsheet.orchestrator.execution import ExecutionPlan
 from openflowsheet.orchestrator.executor import PlanResult, execute_plan
 from openflowsheet.orchestrator.revision import plan_revision
-from openflowsheet.orchestrator.trace import INTERRUPT_CHECK, Trace
 from openflowsheet.verify import regularity
 from openflowsheet.verify.certificate import verify_revision
 

@@ -29,27 +29,30 @@ import openflowsheet.models.syn001.column_endpoint as endpoint_module
 import openflowsheet.models.syn001.column_solve as solve_module
 import openflowsheet.orchestrator.region_attempts as region_attempts
 from openflowsheet.compile.reference import row_values
-from openflowsheet.models.syn001.cascade import (
-    CascadeFailure,
+from openflowsheet.models.lifted_tolerance import KIND_TOLERANCE
+from openflowsheet.models.syn001.band_types import BandTemperature
+from openflowsheet.models.syn001.cascade_failure import CascadeFailure
+from openflowsheet.models.syn001.cascade_spec import (
     liquid_total_id,
     stage_temperature_id,
     vapor_total_id,
 )
-from openflowsheet.models.syn001.column import ColumnSpec, distillate_total_id, profile_initial
-from openflowsheet.models.syn001.column_solve import (
-    DECLARATION_CONTEXT,
+from openflowsheet.models.syn001.column import profile_initial
+from openflowsheet.models.syn001.column_compile import compile_column, slots
+from openflowsheet.models.syn001.column_endpoint import (
     MAX_SWEEPS,
     PRESOLVE_ID,
     SWEEP_TOLERANCE,
     BubblePointEndpoint,
-    ColumnSolution,
     bubble_point_endpoint,
-    compile_column,
+)
+from openflowsheet.models.syn001.column_solve import (
+    DECLARATION_CONTEXT,
+    ColumnSolution,
     continuation,
-    slots,
     solve_column,
 )
-from openflowsheet.models.syn001.saturation_band import BandTemperature
+from openflowsheet.models.syn001.column_spec import ColumnSpec, distillate_total_id
 from openflowsheet.numerics.scaling import Scaling
 from openflowsheet.orchestrator.recovery import (
     EO_CORE_FAILURES,
@@ -57,7 +60,7 @@ from openflowsheet.orchestrator.recovery import (
     eo_recovery_due,
     solver_outcomes,
 )
-from openflowsheet.orchestrator.region import KIND_TOLERANCE, SolveOutcome
+from openflowsheet.orchestrator.region import SolveOutcome
 from openflowsheet.orchestrator.roots import same_root
 
 #: §18.6 A05: the endpoints the generator registers — M1–M4 and the six regular variant sets

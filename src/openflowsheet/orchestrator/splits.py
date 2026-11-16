@@ -59,20 +59,20 @@ from openflowsheet.compile.spec import ProblemSpec, QuantityKind
 from openflowsheet.compiled import PhaseSignature
 from openflowsheet.graph.trace import Declaration
 from openflowsheet.models import Wiring, flow_id, pressure_id, row_id, temperature_id
-from openflowsheet.models.syn001.flash import total_flow_id
-from openflowsheet.models.syn001.tp_state import (
-    liquid_flow_id,
-    liquid_total_id,
-    vapor_flow_id,
-    vapor_total_id,
-)
-from openflowsheet.orchestrator.region import (
+from openflowsheet.models.lifted import (
     ClosureType,
     DormancyForm,
     LiftedSplit,
     StagedSplits,
     VapourOnlyForm,
     ZeroFlowForm,
+)
+from openflowsheet.models.syn001.flash import total_flow_id
+from openflowsheet.models.syn001.tp_state import (
+    liquid_flow_id,
+    liquid_total_id,
+    vapor_flow_id,
+    vapor_total_id,
 )
 
 if TYPE_CHECKING:

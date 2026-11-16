@@ -47,7 +47,8 @@ from openflowsheet.studies.sensitivity import (
     evaluate_sensitivity,
 )
 from openflowsheet.thermo import PropertyProvider, PropertyRequest, StreamState
-from openflowsheet.verify.certificate import SolutionCertificate, verify
+from openflowsheet.verify.certificate import verify
+from openflowsheet.verify.verdict import SolutionCertificate
 
 #: The `Syn001Flowsheet` field each separately settable pinned input lives in (spec §4.5). The feed
 #: flows are `U-FEED.n_spec.<component>`, one entry of `feed_flows` each.

@@ -27,7 +27,7 @@ import numpy as np
 import pytest
 from conftest import REPO_ROOT, load_json
 
-from openflowsheet.orchestrator.region import LiftedSplit
+from openflowsheet.models.lifted import LiftedSplit
 from openflowsheet.verify.checks import (
     DERIVATIVE_TOLERANCE,
     ESCALATION_LEVELS,

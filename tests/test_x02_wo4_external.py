@@ -54,7 +54,6 @@ from openflowsheet.application.coupled_run import (
     external_starts,
     job_coupling_start,
 )
-from openflowsheet.application.policies import T06_REVISION_V2
 from openflowsheet.application.revision_run import (
     Route,
     reproduce_bundle,
@@ -62,11 +61,12 @@ from openflowsheet.application.revision_run import (
     select_route,
 )
 from openflowsheet.compiled import EvaluationContext
+from openflowsheet.orchestrator.policies import T06_REVISION_V2
 from openflowsheet.run.bundle import read_artifact, read_manifest, write_bundle
 from openflowsheet.run.identity import r0_projection
 from openflowsheet.thermo import StreamState
 from openflowsheet.thermo.pr_c1 import COMPONENTS, PrC1Provider
-from openflowsheet.verify.certificate import CheckPolicy
+from openflowsheet.verify.verdict import CheckPolicy
 
 sys.path.insert(0, str(REPO_ROOT / "scripts"))
 from m02_schema_fixtures import (  # noqa: E402

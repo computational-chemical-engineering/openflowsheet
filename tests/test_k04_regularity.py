@@ -251,7 +251,7 @@ def test_k03s_newton_really_does_stop_where_the_specification_says() -> None:
     """
     from openflowsheet.numerics.newton import Evaluation, Problem, solve_newton
     from openflowsheet.numerics.scaling import Scaling
-    from openflowsheet.orchestrator.trace import SolvePolicy, Trace
+    from openflowsheet.numerics.solve_record import SolvePolicy, Trace
 
     def residual(x: np.ndarray) -> Evaluation:
         return Evaluation(status="ok", values=(float(x[0]) ** 2,))

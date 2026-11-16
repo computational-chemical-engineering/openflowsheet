@@ -50,8 +50,8 @@ from openflowsheet.application.types import (
     JobRequest,
     ReproduceBody,
     SolveBody,
-    schema_errors,
 )
+from openflowsheet.schema_check import schema_errors
 
 JOB_REQUEST = "job.schema.json#/$defs/job_request"
 FIXTURES = REPO_ROOT / "tests" / "fixtures" / "schemas"

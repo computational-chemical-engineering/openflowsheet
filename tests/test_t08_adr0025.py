@@ -582,7 +582,6 @@ def rc_bundles(tmp_path_factory: pytest.TempPathFactory) -> Path:
     records a build recording v2 writes; this build's recording switch is held)."""
     from t07_corpus import CORPUS
 
-    from openflowsheet.application.policies import DEFAULT_POLICY_ID, resolve_policy
     from openflowsheet.application.revision_run import (
         Route,
         registered_case,
@@ -590,7 +589,8 @@ def rc_bundles(tmp_path_factory: pytest.TempPathFactory) -> Path:
         run_revision_session,
         select_route,
     )
-    from openflowsheet.verify.certificate import CheckPolicy
+    from openflowsheet.orchestrator.policies import DEFAULT_POLICY_ID, resolve_policy
+    from openflowsheet.verify.verdict import CheckPolicy
 
     written = tmp_path_factory.mktemp("written")
     document = CORPUS["SYN-001-nominal"]()

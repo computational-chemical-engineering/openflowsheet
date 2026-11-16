@@ -25,8 +25,8 @@ sys.path.insert(0, str(ROOT / "scripts"))
 from k03_schema_fixtures import CONTEXT, POLICY, flowsheet  # noqa: E402
 
 from openflowsheet.models.syn001.flowsheet import Syn001Flowsheet  # noqa: E402
+from openflowsheet.numerics.solve_record import SolvePolicy  # noqa: E402
 from openflowsheet.orchestrator.tear import solve_tear  # noqa: E402
-from openflowsheet.orchestrator.trace import SolvePolicy  # noqa: E402
 from openflowsheet.thermo.syn001 import Syn001Provider  # noqa: E402
 from openflowsheet.verify.certificate import verify  # noqa: E402
 from openflowsheet.verify.failure import bundle_for  # noqa: E402

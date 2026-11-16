@@ -18,20 +18,9 @@ from test_s01_cascade_wo2 import PROVIDER, Q_ABS, deviation, solved
 
 import openflowsheet.models.syn001.cascade_solve as solve_module
 from openflowsheet.canonical import state_sha256
-from openflowsheet.models.syn001.cascade import (
-    CascadeFailure,
-    is_dormant,
-    kremser_initial,
-    liquid_id,
-    liquid_total_id,
-    mixed_id,
-    stage_duty_id,
-    stage_pressure_id,
-    stage_temperature_id,
-    validate,
-    vapor_id,
-    vapor_total_id,
-)
+from openflowsheet.models.syn001.cascade import is_dormant, validate
+from openflowsheet.models.syn001.cascade_failure import CascadeFailure
+from openflowsheet.models.syn001.cascade_init import kremser_initial
 from openflowsheet.models.syn001.cascade_solve import (
     DECLARATION_CONTEXT,
     PRESOLVE_ID,
@@ -41,10 +30,20 @@ from openflowsheet.models.syn001.cascade_solve import (
     compile_cascade,
     solve_cascade,
 )
+from openflowsheet.models.syn001.cascade_spec import (
+    liquid_id,
+    liquid_total_id,
+    mixed_id,
+    stage_duty_id,
+    stage_pressure_id,
+    stage_temperature_id,
+    vapor_id,
+    vapor_total_id,
+)
 from openflowsheet.numerics.scaling import Scaling
+from openflowsheet.numerics.solve_record import SolveOutcome, Trace
 from openflowsheet.orchestrator import region_attempts
 from openflowsheet.orchestrator.roots import same_root
-from openflowsheet.orchestrator.trace import SolveOutcome, Trace
 
 #: The single-phase regime a stage reaches, and the phase whose disappearance takes it there.
 VANISHED = {"LIQUID": "vapor", "VAPOR": "liquid"}

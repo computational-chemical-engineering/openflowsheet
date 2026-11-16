@@ -23,32 +23,32 @@ import openflowsheet.orchestrator.region as region_module
 from openflowsheet.compile.reference import row_values
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.models import flow_id, pressure_id, temperature_id
+from openflowsheet.models.syn001.band_types import BandTemperature
 from openflowsheet.models.syn001.cascade import (
-    BOTTOM,
-    TOP,
-    CascadeFailure,
-    CascadeSpec,
-    InletState,
-    KremserInitial,
-    SideFeed,
-    declared_problem,
-    declared_rows,
     dormant_answer,
     energy_precheck,
+    regime_form,
+    validate,
+)
+from openflowsheet.models.syn001.cascade_failure import CascadeFailure
+from openflowsheet.models.syn001.cascade_init import KremserInitial, kremser_initial
+from openflowsheet.models.syn001.cascade_rows import declared_problem, declared_rows
+from openflowsheet.models.syn001.cascade_spec import (
+    BOTTOM,
+    TOP,
+    CascadeSpec,
+    InletState,
+    SideFeed,
     inlet_stream,
-    kremser_initial,
     liquid_id,
     liquid_total_id,
     mixed_id,
-    regime_form,
     stage_duty_id,
     stage_pressure_id,
     stage_temperature_id,
-    validate,
     vapor_id,
     vapor_total_id,
 )
-from openflowsheet.models.syn001.saturation_band import BandTemperature
 from openflowsheet.thermo.syn001 import Syn001Provider
 
 REFERENCE_PATH = REPO_ROOT / "docs" / "derivations" / "scripts" / "s01_reference.json"

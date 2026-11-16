@@ -29,8 +29,9 @@ from t07_jobs_support import commit, lifecycle_violations, response_schema_viola
 from openflowsheet.application.contract import ApplicationError
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.types import JobRequest, SolveBody
-from openflowsheet.verify.certificate import CheckPolicy
-from openflowsheet.verify.checks import KIND_TOLERANCE, routing_tolerances
+from openflowsheet.verify.checks import routing_tolerances
+from openflowsheet.verify.kind_tolerance import KIND_TOLERANCE
+from openflowsheet.verify.verdict import CheckPolicy
 
 #: The ruling's five revisions, each `VERIFIED` at the registered policy (measured).
 REVISIONS = (

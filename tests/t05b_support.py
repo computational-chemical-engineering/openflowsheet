@@ -21,13 +21,15 @@ from conftest import load_yaml
 from t05_w12_support import connection_pin, duty_pin, planned_step, unit_instance
 from test_t05_w11_cases import case_document
 
-from openflowsheet.application.policies import T05B_V2
 from openflowsheet.application.revision_binding import RevisionBinding
 from openflowsheet.compile.casadi_backend import compile_problem
 from openflowsheet.compiled import EvaluationContext
+from openflowsheet.numerics.solve_record import SolvePolicy, Trace
 from openflowsheet.orchestrator import revision as revision_module
 from openflowsheet.orchestrator.mass import residence_time
-from openflowsheet.orchestrator.region import RegionResult, solve_region
+from openflowsheet.orchestrator.policies import T05B_V2
+from openflowsheet.orchestrator.region import solve_region
+from openflowsheet.orchestrator.region_result import RegionResult
 from openflowsheet.orchestrator.splits import (
     closure_types,
     dormancy_forms,
@@ -35,7 +37,6 @@ from openflowsheet.orchestrator.splits import (
     split_temperatures,
     zero_flow_forms,
 )
-from openflowsheet.orchestrator.trace import SolvePolicy, Trace
 from openflowsheet.thermo import (
     FlashRequest,
     FlashResult,
@@ -772,14 +773,10 @@ def revision_projection(
     certificate's own helpers, and the table's checks at `state` itself (unprojected)."""
     from openflowsheet.models.revision_flowsheet import parse_revision
     from openflowsheet.thermo.syn001 import Syn001Provider
-    from openflowsheet.verify.certificate import (
-        BoundDeclaration,
-        CheckPolicy,
-        _project,
-        _screen,
-    )
+    from openflowsheet.verify.certificate import BoundDeclaration, _project, _screen
     from openflowsheet.verify.checks import label_checks, residual_checks
     from openflowsheet.verify.table import revision_checks
+    from openflowsheet.verify.verdict import CheckPolicy
     from openflowsheet.verify.zero_flow import dormant_outlets, zero_flow_splits
 
     policy = CheckPolicy()

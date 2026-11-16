@@ -73,7 +73,7 @@ import openflowsheet.verify.certificate as certificate_module  # noqa: E402
 from openflowsheet.canonical import file_sha256  # noqa: E402
 from openflowsheet.compile.casadi_backend import compile_problem  # noqa: E402
 from openflowsheet.compiled import EvaluationContext  # noqa: E402
-from openflowsheet.orchestrator.trace import (  # noqa: E402
+from openflowsheet.numerics.solve_record import (  # noqa: E402
     GlobalizationPolicy,
     HomotopyPolicy,
     PtcPolicy,
@@ -1340,10 +1340,10 @@ def _a08(runs: Runs, ref: Mapping[str, Any], t02: Mapping[str, Any]) -> tuple[bo
 
 
 def _a09(runs: Runs, ref: Mapping[str, Any]) -> tuple[bool, Any, Any]:
+    from openflowsheet.numerics.solve_record import SolveOutcome
     from openflowsheet.orchestrator.phase_contract import OpeningRefusal
     from openflowsheet.orchestrator.recovery import EO_RECOVERY_TRIGGERS, eo_recovery_due
-    from openflowsheet.orchestrator.region import RegionResult
-    from openflowsheet.orchestrator.trace import SolveOutcome
+    from openflowsheet.orchestrator.region_result import RegionResult
 
     ledger = Ledger()
     registered = sorted(ref["constants"]["edge3_triggers"])

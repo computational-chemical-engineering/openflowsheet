@@ -106,7 +106,8 @@ from openflowsheet.application.jobs.model import (
     Interruption,
     TerminalStatus,
 )
-from openflowsheet.application.revision_binding import RevisionBinding, SurrogateResolver
+from openflowsheet.application.model_builders import SurrogateResolver
+from openflowsheet.application.revision_binding import RevisionBinding
 from openflowsheet.application.revision_continuation import (
     ContinuationSource,
     continues_revisions,
@@ -140,7 +141,7 @@ from openflowsheet.application.types import (
 from openflowsheet.canonical import canonical_json, directory_hash, file_sha256
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.models.lifted import AdmissibilityRefusal
-from openflowsheet.orchestrator.trace import SolvePolicy, Trace
+from openflowsheet.numerics.solve_record import SolvePolicy, Trace
 from openflowsheet.orchestrator.warm_start import EXPLICIT, WARM_START_SOURCE, WarmStartCandidate
 from openflowsheet.run.bundle import ARTIFACT_DIR, MANIFEST_NAME, BundleError, read_artifact
 from openflowsheet.run.manifest import RunManifest, policy_sha256

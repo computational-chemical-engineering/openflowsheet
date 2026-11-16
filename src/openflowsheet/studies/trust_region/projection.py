@@ -151,36 +151,20 @@ from openflowsheet.studies.trust_region.holders import (
     TruthBox,
 )
 from openflowsheet.studies.trust_region.projection_checks import (
-    SHAPE_CHECK_CRITERION as SHAPE_CHECK_CRITERION,
-)
-from openflowsheet.studies.trust_region.projection_checks import ShapeCheck as ShapeCheck
-from openflowsheet.studies.trust_region.projection_checks import (
+    ShapeCheck,
     _certify,
     _eliminate,
     _row_derivatives,
     _shape_check,
 )
 from openflowsheet.studies.trust_region.projection_support import (
-    OMITTED_ROW_REASON as OMITTED_ROW_REASON,
-)
-from openflowsheet.studies.trust_region.projection_support import OmittedRow as OmittedRow
-from openflowsheet.studies.trust_region.projection_support import (
-    ProjectionRefusedError as ProjectionRefusedError,
-)
-from openflowsheet.studies.trust_region.projection_support import RefusalCode as RefusalCode
-from openflowsheet.studies.trust_region.projection_support import _float_rows
-from openflowsheet.studies.trust_region.projection_zero_flows import (
-    JOINT_PERTURBATION as JOINT_PERTURBATION,
+    OmittedRow,
+    ProjectionRefusedError,
+    _float_rows,
 )
 from openflowsheet.studies.trust_region.projection_zero_flows import (
-    JOINT_RCOND_MIN as JOINT_RCOND_MIN,
-)
-from openflowsheet.studies.trust_region.projection_zero_flows import JOINT_SEED as JOINT_SEED
-from openflowsheet.studies.trust_region.projection_zero_flows import ZeroBlock as ZeroBlock
-from openflowsheet.studies.trust_region.projection_zero_flows import (
-    ZeroEliminated as ZeroEliminated,
-)
-from openflowsheet.studies.trust_region.projection_zero_flows import (
+    ZeroBlock,
+    ZeroEliminated,
     _Assembly,
     _eliminate_zero_flows,
 )

@@ -40,10 +40,9 @@ from test_schemas_p01 import validator_for
 from openflowsheet.adapters import variants
 from openflowsheet.adapters.experiments.runner import ExperimentRunner
 from openflowsheet.adapters.experiments.store import ExperimentStore, ListArtifactSink
+from openflowsheet.application.model_builders import MODEL_BUILDERS
+from openflowsheet.application.model_signatures import MODEL_BASES, MODEL_SIGNATURES
 from openflowsheet.application.revision_binding import (
-    MODEL_BASES,
-    MODEL_BUILDERS,
-    MODEL_SIGNATURES,
     RevisionBinding,
     Unbound,
     bind_revision_flowsheet,
@@ -57,15 +56,12 @@ from openflowsheet.orchestrator.revision import INITIALIZER_ID, plan_revision, t
 from openflowsheet.thermo import PropertyRequest, StreamState
 from openflowsheet.thermo.pr_c1 import COMPONENTS, PrC1Provider
 from openflowsheet.verify import pr_c1
-from openflowsheet.verify.certificate import SolutionCertificate, verify_revision
+from openflowsheet.verify.certificate import verify_revision
+from openflowsheet.verify.flowsheet_rows import EXTERNAL_DUTY_MODELS, REACTING_MODELS
 from openflowsheet.verify.regularity import TAU_ILL
-from openflowsheet.verify.table import (
-    EXTERNAL_DUTY_MODELS,
-    MODEL_CHECKS,
-    REACTING_MODELS,
-    _c1_reactor_material,
-    _reactor_energy,
-)
+from openflowsheet.verify.table import _c1_reactor_material, _reactor_energy
+from openflowsheet.verify.unit_checks import MODEL_CHECKS
+from openflowsheet.verify.verdict import SolutionCertificate
 
 LOOP_PATH: Path = REPO_ROOT / "benchmarks" / "m02" / "c1-loop-standin.json"
 STANDIN = variants.registered_variant("standin-x025-v1")

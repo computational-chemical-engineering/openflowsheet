@@ -19,17 +19,18 @@ from conftest import REPO_ROOT, load_json
 from s11_gp_support import gp_c1, gp_c3, solve
 from wit_support import Witnessed, spy
 
-from openflowsheet.application.policies import T06_REVISION_V2
 from openflowsheet.application.revision_binding import RevisionBinding, bind_revision_flowsheet
 from openflowsheet.models.revision_flowsheet import WILSON_BASIS
 from openflowsheet.orchestrator.executor import execute_plan
+from openflowsheet.orchestrator.policies import T06_REVISION_V2
 from openflowsheet.orchestrator.revision import plan_revision
-from openflowsheet.verify.certificate import SolutionCertificate, verify_revision
+from openflowsheet.verify.certificate import verify_revision
 from openflowsheet.verify.checks import (
     DERIVATIVE_TOLERANCE,
     ONE_SIDED_BASES,
     WITNESS_CLASSES,
 )
+from openflowsheet.verify.verdict import SolutionCertificate
 
 WIT: dict[str, Any] = load_json(
     REPO_ROOT / "docs" / "derivations" / "scripts" / "wit_reference.json"

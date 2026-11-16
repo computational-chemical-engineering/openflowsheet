@@ -418,10 +418,6 @@ def attempt(document: Document) -> dict[str, Any]:
     """Bind, route and (on `revision_eo`) solve one revision; every exception is recorded."""
     from m02_c1_corpus import surrogates  # noqa: PLC0415
 
-    from openflowsheet.application.policies import (  # noqa: PLC0415
-        DEFAULT_POLICY_ID,
-        resolve_policy,
-    )
     from openflowsheet.application.revision_binding import (  # noqa: PLC0415
         RevisionBinding,
         bind_revision_flowsheet,
@@ -431,7 +427,11 @@ def attempt(document: Document) -> dict[str, Any]:
         select_route,
         solve_route,
     )
-    from openflowsheet.verify.certificate import CheckPolicy  # noqa: PLC0415
+    from openflowsheet.orchestrator.policies import (  # noqa: PLC0415
+        DEFAULT_POLICY_ID,
+        resolve_policy,
+    )
+    from openflowsheet.verify.verdict import CheckPolicy  # noqa: PLC0415
 
     result: dict[str, Any] = {}
     try:
