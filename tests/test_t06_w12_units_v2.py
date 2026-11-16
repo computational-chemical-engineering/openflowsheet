@@ -42,11 +42,11 @@ from openflowsheet.models.revision_flowsheet import (
     pin_specifications,
     required_kind,
 )
+from openflowsheet.numerics.solve_record import SolvePolicy, Trace
 from openflowsheet.orchestrator.execution import ExecutionPlan, declaration_identity
 from openflowsheet.orchestrator.executor import execute_plan
 from openflowsheet.orchestrator.revision import plan_revision
 from openflowsheet.orchestrator.tear import solve_tear
-from openflowsheet.orchestrator.trace import SolvePolicy, Trace
 from openflowsheet.units import (
     CONVERSION_ROWS,
     FRACTION_PARAMETERS,

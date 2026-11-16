@@ -79,8 +79,9 @@ def _literal(annotation: Any) -> tuple[str, ...]:
 
 
 def _literal_labels() -> set[str]:
+    import openflowsheet.numerics.solve_record as trace
     from openflowsheet.models.syn001 import ph_kernel
-    from openflowsheet.orchestrator import phase_contract, trace
+    from openflowsheet.orchestrator import phase_contract
     from openflowsheet.verify import projection
 
     hints = get_type_hints(trace.GlobalizationPolicy)

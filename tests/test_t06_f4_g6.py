@@ -35,10 +35,10 @@ from test_t05_coupled import POLICY as POLICY_W13
 from test_t05_w11_cases import case_document as t05_case
 
 from openflowsheet.application.revision_binding import RevisionBinding, bind_revision_flowsheet
+from openflowsheet.numerics.solve_record import SolvePolicy
 from openflowsheet.orchestrator import revision
 from openflowsheet.orchestrator.execution import ExecutionPlan
 from openflowsheet.orchestrator.executor import execute_plan
-from openflowsheet.orchestrator.trace import SolvePolicy
 
 T05_CYCLIC = ("SYN-001-UL-C2", "SYN-001-UL-C3")
 T06_CYCLIC = tuple(

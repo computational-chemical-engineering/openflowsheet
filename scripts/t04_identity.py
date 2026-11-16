@@ -207,7 +207,7 @@ def _hom_u() -> dict[str, Any]:
 def _seed(name: str) -> dict[str, Any]:
     from test_t04_ptc import run_seed
 
-    from openflowsheet.orchestrator.trace import Trace
+    from openflowsheet.numerics.solve_record import Trace
 
     trace = Trace()
     outcome, attempts = run_seed(name, trace=trace)
@@ -230,7 +230,7 @@ def _seed(name: str) -> dict[str, Any]:
 def _off_b_ptc() -> dict[str, Any]:
     from test_t04_ptc_region import HIGH, case, solve, start
 
-    from openflowsheet.orchestrator.trace import Trace
+    from openflowsheet.numerics.solve_record import Trace
 
     item = case(HIGH)
     trace = Trace()
@@ -246,7 +246,7 @@ def _phs05_ptc() -> dict[str, Any]:
 
 
 def identity() -> dict[str, Any]:
-    from openflowsheet.orchestrator.trace import SolvePolicy
+    from openflowsheet.numerics.solve_record import SolvePolicy
 
     policy = SolvePolicy(policy_id="T04", residual_tolerances={}, scales={})
     return {

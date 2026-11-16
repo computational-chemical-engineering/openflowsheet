@@ -191,7 +191,7 @@ def test_every_emitted_document_validates_against_its_schema() -> None:
 
 def test_a_plan_whose_inner_block_is_not_square_is_refused() -> None:
     """`UNSUPPORTED_RANK_STRUCTURE`. A schema can count neither block nor compare the two."""
-    from openflowsheet.orchestrator.trace import SolvePlan
+    from openflowsheet.numerics.solve_record import SolvePlan
 
     common: dict[str, Any] = {
         "plan_id": "p",
@@ -513,8 +513,8 @@ def test_a01_a_converged_solve_hands_over_the_full_state_and_its_hash() -> None:
     from k03_schema_fixtures import OFF_B, POLICY, flowsheet
 
     from openflowsheet.compile.reference import state_vector
+    from openflowsheet.numerics.solve_record import SolvePolicy
     from openflowsheet.orchestrator.tear import Syn001TearProblem, solve_tear
-    from openflowsheet.orchestrator.trace import SolvePolicy
 
     result, _ = solve_tear(flowsheet(), policy=POLICY)
     assert result.outcome == "CONVERGED"

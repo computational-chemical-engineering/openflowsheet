@@ -76,10 +76,10 @@ from openflowsheet.numerics.scaling import (
     ScaleUnavailableError,
     Scaling,
 )
+from openflowsheet.numerics.solve_record import Trace
 from openflowsheet.orchestrator.region import KIND_TOLERANCE, RegionResult
 from openflowsheet.orchestrator.roots import same_root
 from openflowsheet.orchestrator.splits import check_agreement
-from openflowsheet.orchestrator.trace import Trace
 
 # Spec §10's state tolerance (S01's, R-514): flows rel 1e-6 + 10·τ_flow, T 1e-4 K, Q 1e-2 W.
 FLOW_REL, FLOW_ABS, T_ABS, Q_ABS = 1e-6, 10 * FLOW_TOLERANCE, 1e-4, 1e-2

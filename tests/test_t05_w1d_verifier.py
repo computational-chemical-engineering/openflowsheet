@@ -30,11 +30,11 @@ from openflowsheet.application.revision_binding import RevisionBinding, bind_rev
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.models.revision_flowsheet import parse_revision
 from openflowsheet.models.syn001.flowsheet import Syn001Flowsheet
+from openflowsheet.numerics.solve_record import SolvePolicy
 from openflowsheet.orchestrator.execution import ExecutionPlan
 from openflowsheet.orchestrator.executor import PlanResult, execute_plan
 from openflowsheet.orchestrator.revision import InitialStateFailure, initial_state, plan_revision
 from openflowsheet.orchestrator.splits import lifted_splits
-from openflowsheet.orchestrator.trace import SolvePolicy
 from openflowsheet.thermo.syn001 import Syn001Provider
 from openflowsheet.verify import CheckResult
 from openflowsheet.verify.certificate import (

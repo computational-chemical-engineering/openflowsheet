@@ -24,10 +24,10 @@ from conftest import REPO_ROOT
 from t07_corpus import CORPUS
 
 from openflowsheet.application.revision_run import Route, RouteRun, select_route, solve_route
+from openflowsheet.numerics.solve_record import SolvePolicy
 from openflowsheet.orchestrator.execution import ExecutionPlan
 from openflowsheet.orchestrator.policies import DEFAULT_POLICY_ID, T05B_V2, resolve_policy
 from openflowsheet.orchestrator.tear import solve_tear
-from openflowsheet.orchestrator.trace import SolvePolicy
 from openflowsheet.verify.certificate import CheckPolicy
 from openflowsheet.verify.failure import bundle_for
 

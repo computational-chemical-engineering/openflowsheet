@@ -34,6 +34,13 @@ from jsonschema import Draft202012Validator
 from openflowsheet.compile.casadi_backend import compile_problem
 from openflowsheet.compile.spec import ProblemSpec
 from openflowsheet.compiled import EvaluationContext
+from openflowsheet.numerics.solve_record import (
+    Checkpoint,
+    GlobalizationPolicy,
+    HomotopyPolicy,
+    SolvePolicy,
+    Trace,
+)
 from openflowsheet.orchestrator.homotopy import (
     HomotopyRecord,
     continuation_parameter,
@@ -47,13 +54,6 @@ from openflowsheet.orchestrator.region import (
     syn001_lifted_splits,
 )
 from openflowsheet.orchestrator.tear import solve_tear
-from openflowsheet.orchestrator.trace import (
-    Checkpoint,
-    GlobalizationPolicy,
-    HomotopyPolicy,
-    SolvePolicy,
-    Trace,
-)
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 CASES = REPO_ROOT / "benchmarks" / "syn001" / "cases"

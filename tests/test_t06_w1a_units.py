@@ -37,11 +37,11 @@ from openflowsheet.application.validation import ValidationReport, validate
 from openflowsheet.canonical import canonical_json
 from openflowsheet.models.revision_flowsheet import MOLECULAR_WEIGHTS, parse_revision
 from openflowsheet.models.syn001.conversion_reactor import MOLAR_MASSES
+from openflowsheet.numerics.solve_record import SolvePolicy, Trace
 from openflowsheet.orchestrator.execution import ExecutionPlan
 from openflowsheet.orchestrator.executor import execute_plan
 from openflowsheet.orchestrator.revision import plan_revision
 from openflowsheet.orchestrator.tear import solve_tear
-from openflowsheet.orchestrator.trace import SolvePolicy, Trace
 from openflowsheet.thermo.syn001 import Syn001Provider
 from openflowsheet.units import UnitConversion
 from openflowsheet.verify.certificate import (

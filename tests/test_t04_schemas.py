@@ -211,7 +211,7 @@ def test_a27_the_ptc_outcomes_bundle_with_their_class_and_infer_nothing() -> Non
     class and action of D8, no inferred cause, no claim of infeasibility."""
     from test_t04_ptc_region import HIGH, case, mixer_double, phs05, solve, start
 
-    from openflowsheet.orchestrator.trace import Trace
+    from openflowsheet.numerics.solve_record import Trace
 
     run = phs05()
     refused_trace = Trace()

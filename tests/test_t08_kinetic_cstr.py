@@ -87,6 +87,7 @@ from openflowsheet.numerics.ptc import (
     row_signs,
 )
 from openflowsheet.numerics.scaling import REGISTERED_NOMINALS, Scaling
+from openflowsheet.numerics.solve_record import SolvePolicy
 from openflowsheet.orchestrator import revision
 from openflowsheet.orchestrator.execution import ExecutionPlan
 from openflowsheet.orchestrator.executor import execute_plan
@@ -99,7 +100,6 @@ from openflowsheet.orchestrator.mass import (
 )
 from openflowsheet.orchestrator.region import RegionResult, region_ptc_problem
 from openflowsheet.orchestrator.splits import lifted_splits
-from openflowsheet.orchestrator.trace import SolvePolicy
 from openflowsheet.thermo import StreamState
 from openflowsheet.thermo.syn001 import Syn001Provider, h_liquid, h_vapor
 from openflowsheet.verify.certificate import verify_revision

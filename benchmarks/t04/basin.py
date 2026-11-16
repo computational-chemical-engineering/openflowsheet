@@ -29,6 +29,7 @@ from openflowsheet.application.binding import Binding, bind_revision
 from openflowsheet.compile.casadi_backend import compile_problem
 from openflowsheet.graph.analysis import analyse
 from openflowsheet.graph.trace import trace_declaration
+from openflowsheet.numerics.solve_record import GlobalizationPolicy, RecyclePolicy, SolvePolicy
 from openflowsheet.orchestrator.execution import (
     Region,
     build_execution_plan,
@@ -37,7 +38,6 @@ from openflowsheet.orchestrator.execution import (
 from openflowsheet.orchestrator.mass import syn001_residence_time
 from openflowsheet.orchestrator.region import RegionResult, solve_region, syn001_lifted_splits
 from openflowsheet.orchestrator.tear import Syn001TearProblem, solve_tear
-from openflowsheet.orchestrator.trace import GlobalizationPolicy, RecyclePolicy, SolvePolicy
 
 __all__ = [
     "LATTICE",

@@ -474,8 +474,8 @@ def _syn001(case_id: str) -> tuple[Any, npt.NDArray[np.float64]]:
 
 
 def _anderson_policy() -> Any:
-    from openflowsheet.orchestrator.trace import RecyclePolicy as Recycle
-    from openflowsheet.orchestrator.trace import SolvePolicy
+    from openflowsheet.numerics.solve_record import RecyclePolicy as Recycle
+    from openflowsheet.numerics.solve_record import SolvePolicy
 
     return SolvePolicy(
         policy_id="T02-anderson",

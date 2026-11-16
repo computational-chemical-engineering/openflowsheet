@@ -27,11 +27,11 @@ from openflowsheet.application.revision_binding import (
     bind_revision_flowsheet,
 )
 from openflowsheet.models.revision_flowsheet import WILSON_BASIS, WILSON_RECORDS
+from openflowsheet.numerics.solve_record import SolvePolicy
 from openflowsheet.orchestrator.execution import ExecutionPlan
 from openflowsheet.orchestrator.executor import PlanResult, execute_plan
 from openflowsheet.orchestrator.policies import T06_REVISION_V2
 from openflowsheet.orchestrator.revision import plan_revision
-from openflowsheet.orchestrator.trace import SolvePolicy
 from openflowsheet.verify import CheckResult, gamma_phi_units
 
 GP = Path(__file__).resolve().parents[1] / "benchmarks" / "s11" / "gp"

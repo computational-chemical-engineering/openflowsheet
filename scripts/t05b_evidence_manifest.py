@@ -131,6 +131,7 @@ from openflowsheet.models.syn001.ph_kernel import (
 from openflowsheet.models.syn001.saturation_band import degeneracy_distance
 from openflowsheet.models.syn001.tp_state import single_phase_admissible
 from openflowsheet.numerics.newton import _trial_point, solve_newton
+from openflowsheet.numerics.solve_record import PhaseContract, SolvePolicy, Trace
 from openflowsheet.orchestrator import region as region_module
 from openflowsheet.orchestrator import region_attempts, region_phase, region_problem
 from openflowsheet.orchestrator.execution import ExecutionPlan
@@ -157,7 +158,6 @@ from openflowsheet.orchestrator.revision import (
 )
 from openflowsheet.orchestrator.splits import DORMANCY_RULES, closure_types, lifted_splits
 from openflowsheet.orchestrator.tear import Syn001TearProblem
-from openflowsheet.orchestrator.trace import PhaseContract, SolvePolicy, Trace
 from openflowsheet.run.compare import differences
 from openflowsheet.run.identity import floats_in, r0_projection
 from openflowsheet.thermo import FlashRequest, StreamState
@@ -1742,7 +1742,7 @@ def _b06() -> tuple[bool, dict[str, Any], dict[str, Any]]:
     import k03_schema_fixtures as k03
     import t04_schema_fixtures as t04
 
-    from openflowsheet.orchestrator.trace import GlobalizationPolicy, RecyclePolicy
+    from openflowsheet.numerics.solve_record import GlobalizationPolicy, RecyclePolicy
 
     ptc = t04.policy(
         "ptc",

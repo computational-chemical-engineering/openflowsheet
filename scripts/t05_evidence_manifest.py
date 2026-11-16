@@ -2733,6 +2733,7 @@ def _a27(ref: Mapping[str, Any]) -> tuple[bool, Any, Any]:
     first T05 `holdup_balance` row in region row order (`FIRST_UNMAPPED_ROW`, measured)."""
     import openflowsheet.orchestrator.executor as executor_module
     from openflowsheet.compile.casadi_backend import compile_problem
+    from openflowsheet.numerics.solve_record import Trace
     from openflowsheet.orchestrator.executor import execute_plan
     from openflowsheet.orchestrator.mass import residence_time
     from openflowsheet.orchestrator.region import solve_region
@@ -2743,7 +2744,6 @@ def _a27(ref: Mapping[str, Any]) -> tuple[bool, Any, Any]:
         plan_revision,
     )
     from openflowsheet.orchestrator.splits import lifted_splits
-    from openflowsheet.orchestrator.trace import Trace
 
     ledger = Ledger()
     per_case: dict[str, Any] = {}

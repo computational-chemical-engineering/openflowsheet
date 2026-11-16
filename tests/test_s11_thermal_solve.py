@@ -34,11 +34,11 @@ from test_s11_thermal_verifier import CONTEXT, evaluated_state, verifier_checks
 from openflowsheet.application.revision_binding import RevisionBinding, bind_revision_flowsheet
 from openflowsheet.models.revision_flowsheet import parse_revision
 from openflowsheet.models.thermal.kernel import Sat, phase_properties, saturation
+from openflowsheet.numerics.solve_record import SolvePolicy
 from openflowsheet.orchestrator.executor import PlanResult, execute_plan
 from openflowsheet.orchestrator.policies import T04_W12, T06_REVISION_V2
 from openflowsheet.orchestrator.revision import plan_revision
 from openflowsheet.orchestrator.splits import DORMANCY_RULES, DormancyRule
-from openflowsheet.orchestrator.trace import SolvePolicy
 from openflowsheet.thermo import PropertyProvider, StreamState
 from openflowsheet.thermo.iapws95 import Iapws95Provider
 from openflowsheet.verify import CheckResult

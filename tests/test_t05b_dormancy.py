@@ -59,6 +59,7 @@ from openflowsheet.application.revision_binding import RevisionBinding
 from openflowsheet.graph.trace import trace_declaration
 from openflowsheet.models.revision_flowsheet import parse_revision
 from openflowsheet.models.syn001 import TEMPERATURE_TOLERANCE
+from openflowsheet.numerics.solve_record import SolvePolicy, Trace
 from openflowsheet.orchestrator.execution import ExecutionPlan, declaration_identity
 from openflowsheet.orchestrator.executor import PlanResult, execute_plan
 from openflowsheet.orchestrator.recovery import eo_recovery_due, solver_outcomes
@@ -72,7 +73,6 @@ from openflowsheet.orchestrator.splits import (
     lifted_splits,
     zero_flow_forms,
 )
-from openflowsheet.orchestrator.trace import SolvePolicy, Trace
 from openflowsheet.verify import CheckResult
 from openflowsheet.verify.certificate import SolutionCertificate, verify_revision
 from openflowsheet.verify.zero_flow import zero_flow_splits

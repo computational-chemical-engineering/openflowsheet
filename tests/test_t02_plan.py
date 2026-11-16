@@ -24,6 +24,7 @@ from openflowsheet.graph.process import Connection, ProcessGraph
 from openflowsheet.graph.tear import Candidate
 from openflowsheet.graph.trace import trace_declaration
 from openflowsheet.models.syn001.flowsheet import Syn001Flowsheet
+from openflowsheet.numerics.solve_record import RecyclePolicy, SolvePolicy
 from openflowsheet.orchestrator.execution import (
     ExecutionPlan,
     build_execution_plan,
@@ -32,7 +33,6 @@ from openflowsheet.orchestrator.execution import (
     eo_capability,
     iterated_tear_set,
 )
-from openflowsheet.orchestrator.trace import RecyclePolicy, SolvePolicy
 from openflowsheet.thermo.syn001 import Syn001Provider
 
 REPO_ROOT = Path(__file__).resolve().parents[1]

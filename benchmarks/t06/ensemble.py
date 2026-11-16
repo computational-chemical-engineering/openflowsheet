@@ -71,13 +71,13 @@ from openflowsheet.models import flow_id
 from openflowsheet.models.revision_flowsheet import pin_specifications
 from openflowsheet.models.syn001.flowsheet import Syn001Flowsheet
 from openflowsheet.numerics.scaling import Scaling
+from openflowsheet.numerics.solve_record import SolveEvent, SolvePolicy
 from openflowsheet.orchestrator import revision
 from openflowsheet.orchestrator.execution import ExecutionPlan
 from openflowsheet.orchestrator.executor import PlanResult, execute_plan
 from openflowsheet.orchestrator.region import RegionResult
 from openflowsheet.orchestrator.roots import same_root
 from openflowsheet.orchestrator.tear import TEAR_STREAM, solve_tear
-from openflowsheet.orchestrator.trace import SolveEvent, SolvePolicy
 from openflowsheet.run.compare import differences
 from openflowsheet.run.manifest import policy_sha256
 from openflowsheet.verify import CheckResult

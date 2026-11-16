@@ -72,9 +72,9 @@ from openflowsheet.models.syn001.column_solve import (
 )
 from openflowsheet.models.syn001.gamma_phi_blocks import GammaPhiLnKBlock, probe_flows
 from openflowsheet.models.syn001.saturation_band import band_temperature
+from openflowsheet.numerics.solve_record import Trace
 from openflowsheet.orchestrator.region import KIND_TOLERANCE
 from openflowsheet.orchestrator.roots import branch_found
-from openflowsheet.orchestrator.trace import Trace
 from openflowsheet.thermo import StreamState
 
 CASES = ("C-MW", "C-EW")

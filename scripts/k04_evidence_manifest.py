@@ -30,8 +30,8 @@ from k04_schema_fixtures import TRIVIAL_ROOT_OFFSET, once_through  # noqa: E402
 from openflowsheet.canonical import file_sha256  # noqa: E402
 from openflowsheet.compiled import EvaluationContext  # noqa: E402
 from openflowsheet.models.syn001.flowsheet import Syn001Flowsheet  # noqa: E402
+from openflowsheet.numerics.solve_record import SolvePolicy  # noqa: E402
 from openflowsheet.orchestrator.tear import Syn001TearProblem, solve_tear  # noqa: E402
-from openflowsheet.orchestrator.trace import SolvePolicy  # noqa: E402
 from openflowsheet.thermo.syn001 import Syn001Provider  # noqa: E402
 from openflowsheet.verify.certificate import CheckPolicy, verify  # noqa: E402
 from openflowsheet.verify.checks import KIND_TOLERANCE  # noqa: E402

@@ -36,9 +36,9 @@ from openflowsheet.application.revision_run import (
     solve_route,
 )
 from openflowsheet.canonical import canonical_json
+from openflowsheet.numerics.solve_record import Counters, Trace
 from openflowsheet.orchestrator.executor import StepResult
 from openflowsheet.orchestrator.policies import DEFAULT_POLICY_ID, resolve_policy
-from openflowsheet.orchestrator.trace import Counters, Trace
 from openflowsheet.run.bundle import read_artifact, verify_bundle
 from openflowsheet.run.identity import r0_projection
 from openflowsheet.verify.certificate import CheckPolicy

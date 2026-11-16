@@ -20,10 +20,12 @@ from conftest import REPO_ROOT
 from t08_rename_substitution import (
     FIXTURES_PRE_RENAME_SHA256,
     GENERATOR_SHA256,
+    GENERATOR_SHA256_BEFORE_I1,
     PINS_PRE_RENAME_SHA256,
     PROVIDER_SHA256,
     W3A_PRE_RENAME_SHA256,
     W5C_PRE_RENAME_SHA256,
+    before_i1,
     record_process_runtime,
     renamed_back_cli_text,
     renamed_back_fixture_text,
@@ -65,6 +67,15 @@ def test_each_self_hash_moved_by_the_package_name_only(
     assert callable(live)
     assert live() == hashlib.sha256(path.read_bytes()).hexdigest() == new
     assert renamed_back_sha256(path) == old
+
+
+def test_the_generator_moved_by_its_i1_line_only() -> None:
+    """S19's I-1 line put back, the generator's bytes are the ones R-149 registered as new: the
+    step changed that one line in place and nothing else (R-W4-STOP3 Q1)."""
+    data = Path(generator.__file__).read_bytes()
+    assert hashlib.sha256(before_i1(data)).hexdigest() == GENERATOR_SHA256_BEFORE_I1
+    with pytest.raises(ValueError, match="occurs 0 times"):
+        before_i1(before_i1(data))
 
 
 # -- the schema fixtures -----------------------------------------------------------------------

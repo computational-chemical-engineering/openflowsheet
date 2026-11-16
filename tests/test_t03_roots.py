@@ -20,9 +20,9 @@ from jsonschema import Draft202012Validator
 from referencing import Registry, Resource
 
 from openflowsheet.numerics.anderson import RecyclePolicy
+from openflowsheet.numerics.solve_record import Trace
 from openflowsheet.orchestrator.merge import ConvergeResult, converge_with_merge
 from openflowsheet.orchestrator.roots import DELTA_ROOT, same_root
-from openflowsheet.orchestrator.trace import Trace
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 IDENTITY = ("REC-05-gamma-0.1@t03", "0" * 64)
@@ -263,8 +263,8 @@ def test_a21_a_solve_that_did_not_converge_receives_no_certificate() -> None:
     itself carries its one attempt — a restart the budget refused."""
     from test_k03_attempts import OFF_B, flowsheet_for, variants
 
+    from openflowsheet.numerics.solve_record import SolvePolicy
     from openflowsheet.orchestrator.tear import solve_tear
-    from openflowsheet.orchestrator.trace import SolvePolicy
     from openflowsheet.verify.certificate import verify
     from openflowsheet.verify.checks import VerifierError
 

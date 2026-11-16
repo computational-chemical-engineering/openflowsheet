@@ -94,7 +94,7 @@ def test_a_run_writes_the_artifacts_a_reader_needs(bundle: tuple[Path, Any]) -> 
 
 
 def test_a_failed_run_carries_a_bundle_and_no_certificate(tmp_path: Path) -> None:
-    from openflowsheet.orchestrator.trace import SolvePolicy
+    from openflowsheet.numerics.solve_record import SolvePolicy
 
     capped = SolvePolicy(
         policy_id="SYN-001-capped", residual_tolerances={}, scales={}, max_property_calls=20
@@ -707,7 +707,7 @@ def test_s1_the_identity_covers_what_the_run_did(bundle: tuple[Path, Any]) -> No
     iteration cap produced an identical `structural_sha256`. Now the policy's values and a
     digest of the R0 projection are both in it.
     """
-    from openflowsheet.orchestrator.trace import SolvePolicy
+    from openflowsheet.numerics.solve_record import SolvePolicy
     from openflowsheet.run.identity import floats_in, r0_projection, r0_sha256
     from openflowsheet.run.manifest import policy_sha256
 
@@ -805,7 +805,7 @@ def test_s6_the_model_identity_survives_a_failure_before_the_plan(tmp_path: Path
     before a plan existed recorded empty strings for both — and two different models that both
     failed at planning shared a structural identity.
     """
-    from openflowsheet.orchestrator.trace import SolvePolicy
+    from openflowsheet.numerics.solve_record import SolvePolicy
 
     capped = SolvePolicy(
         policy_id="SYN-001-capped", residual_tolerances={}, scales={}, max_property_calls=20

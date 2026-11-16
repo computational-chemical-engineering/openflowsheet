@@ -18,7 +18,7 @@ import pytest
 import yaml
 from jsonschema import Draft202012Validator
 
-from openflowsheet.orchestrator.trace import (
+from openflowsheet.numerics.solve_record import (
     GlobalizationPolicy,
     HomotopyPolicy,
     PtcPolicy,

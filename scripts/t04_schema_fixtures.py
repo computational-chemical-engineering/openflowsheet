@@ -36,6 +36,11 @@ sys.path.insert(0, str(ROOT))
 from openflowsheet.application.binding import Binding, bind_revision  # noqa: E402
 from openflowsheet.graph.analysis import analyse  # noqa: E402
 from openflowsheet.graph.trace import trace_declaration  # noqa: E402
+from openflowsheet.numerics.solve_record import (  # noqa: E402
+    GlobalizationPolicy,
+    RecyclePolicy,
+    SolvePolicy,
+)
 from openflowsheet.orchestrator.execution import (  # noqa: E402
     ExecutionPlan,
     build_execution_plan,
@@ -43,11 +48,6 @@ from openflowsheet.orchestrator.execution import (  # noqa: E402
     specification_regions,
 )
 from openflowsheet.orchestrator.executor import PlanResult, execute_plan  # noqa: E402
-from openflowsheet.orchestrator.trace import (  # noqa: E402
-    GlobalizationPolicy,
-    RecyclePolicy,
-    SolvePolicy,
-)
 from openflowsheet.verify.certificate import verify_bound  # noqa: E402
 from openflowsheet.verify.failure import region_bundle  # noqa: E402
 

@@ -28,6 +28,7 @@ from openflowsheet.compile.casadi_backend import compile_problem
 from openflowsheet.graph.analysis import analyse
 from openflowsheet.graph.report import StructuralReport
 from openflowsheet.graph.trace import Declaration, trace_declaration
+from openflowsheet.numerics.solve_record import SolvePolicy
 from openflowsheet.orchestrator.execution import (
     ExecutionPlan,
     PlanRefusal,
@@ -40,7 +41,6 @@ from openflowsheet.orchestrator.execution import (
 )
 from openflowsheet.orchestrator.region import RegionResult, solve_region, syn001_lifted_splits
 from openflowsheet.orchestrator.tear import solve_tear
-from openflowsheet.orchestrator.trace import SolvePolicy
 from openflowsheet.thermo.syn001 import Syn001Provider
 from openflowsheet.verify.failure import refusal_bundle
 

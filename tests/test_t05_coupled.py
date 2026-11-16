@@ -44,11 +44,11 @@ from t05_support import REF
 from openflowsheet.application.revision_binding import RevisionBinding, bind_revision_flowsheet
 from openflowsheet.compile.casadi_backend import compile_problem
 from openflowsheet.graph.report import StructuralReport
+from openflowsheet.numerics.solve_record import SolvePolicy
 from openflowsheet.orchestrator.execution import ExecutionPlan
 from openflowsheet.orchestrator.executor import PlanResult, execute_plan
 from openflowsheet.orchestrator.region import RegionResult
 from openflowsheet.orchestrator.revision import INITIALIZER_ID, plan_revision
-from openflowsheet.orchestrator.trace import SolvePolicy
 from openflowsheet.verify.certificate import BoundDeclaration, alias_document
 
 CASE_DIR = Path(__file__).resolve().parent.parent / "benchmarks" / "t05" / "cases"

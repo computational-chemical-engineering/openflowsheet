@@ -39,6 +39,13 @@ from openflowsheet.models.syn001 import MOLAR_FLOW
 from openflowsheet.models.syn001.flowsheet import Syn001Flowsheet
 from openflowsheet.numerics.ptc import PtcProblem, pseudo_step_direction, row_signs
 from openflowsheet.numerics.scaling import Scaling
+from openflowsheet.numerics.solve_record import (
+    GlobalizationPolicy,
+    PtcPolicy,
+    RecyclePolicy,
+    SolvePolicy,
+    Trace,
+)
 from openflowsheet.orchestrator.execution import build_execution_plan, declaration_identity
 from openflowsheet.orchestrator.mass import (
     HoldupRule,
@@ -57,13 +64,6 @@ from openflowsheet.orchestrator.region import (
     syn001_lifted_splits,
 )
 from openflowsheet.orchestrator.tear import Syn001TearProblem
-from openflowsheet.orchestrator.trace import (
-    GlobalizationPolicy,
-    PtcPolicy,
-    RecyclePolicy,
-    SolvePolicy,
-    Trace,
-)
 from openflowsheet.thermo import PropertyRequest, PropertyResult
 from openflowsheet.thermo.syn001 import C_P, V_MOLAR, Syn001Provider, h_liquid, h_vapor
 

@@ -46,12 +46,12 @@ from openflowsheet.models.syn001.cascade import stage_duty_id, stage_temperature
 from openflowsheet.models.syn001.cascade_solve import S01_DEFAULT_V1
 from openflowsheet.models.syn001.column import ColumnSpec
 from openflowsheet.models.syn001.column_solve import ColumnSolution, product_columns, solve_column
+from openflowsheet.numerics.solve_record import SolvePolicy
 from openflowsheet.orchestrator.execution import ExecutionPlan
 from openflowsheet.orchestrator.executor import PlanResult, execute_plan
 from openflowsheet.orchestrator.homotopy import continuation_parameter
 from openflowsheet.orchestrator.policies import T04_W12, T06_REVISION_V2, T08_PTC_V1
 from openflowsheet.orchestrator.revision import plan_revision
-from openflowsheet.orchestrator.trace import SolvePolicy
 from openflowsheet.thermo.wilson_ig_v2 import WilsonIdealGasProviderV2
 from openflowsheet.verify.certificate import fresh_provider
 

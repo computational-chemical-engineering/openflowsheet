@@ -42,9 +42,9 @@ from openflowsheet.models.syn001.cascade_solve import (
     solve_cascade,
 )
 from openflowsheet.numerics.scaling import Scaling
+from openflowsheet.numerics.solve_record import SolveOutcome, Trace
 from openflowsheet.orchestrator import region_attempts
 from openflowsheet.orchestrator.roots import same_root
-from openflowsheet.orchestrator.trace import SolveOutcome, Trace
 
 #: The single-phase regime a stage reaches, and the phase whose disappearance takes it there.
 VANISHED = {"LIQUID": "vapor", "VAPOR": "liquid"}

@@ -70,7 +70,7 @@ from openflowsheet.orchestrator import revision
 from openflowsheet.orchestrator.execution import ExecutionPlan, declaration_identity
 from openflowsheet.orchestrator.splits import lifted_splits
 from openflowsheet.orchestrator.tear import Syn001TearProblem, build_plan
-from openflowsheet.orchestrator.trace import SolvePlan, SolvePolicy
+from openflowsheet.numerics.solve_record import SolvePlan, SolvePolicy
 from openflowsheet.thermo import StreamState
 
 __all__ = [

@@ -22,12 +22,12 @@ sys.path.insert(0, str(ROOT))
 
 from openflowsheet.compiled import EvaluationContext  # noqa: E402
 from openflowsheet.models.syn001.flowsheet import Syn001Flowsheet  # noqa: E402
+from openflowsheet.numerics.solve_record import SolvePolicy  # noqa: E402
 from openflowsheet.orchestrator.tear import (  # noqa: E402
     Syn001TearProblem,
     build_plan,
     solve_tear,
 )
-from openflowsheet.orchestrator.trace import SolvePolicy  # noqa: E402
 from openflowsheet.thermo.syn001 import Syn001Provider  # noqa: E402
 
 FIXTURE_DIR = ROOT / "tests" / "fixtures" / "schemas"

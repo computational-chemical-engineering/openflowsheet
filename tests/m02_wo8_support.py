@@ -22,11 +22,11 @@ from m02_c1_support import connection, feed_specifications, instance, revision, 
 from openflowsheet.application.revision_binding import RevisionBinding, bind_revision_flowsheet
 from openflowsheet.compile.casadi_backend import CasadiCompiledProblem
 from openflowsheet.graph.report import StructuralReport
+from openflowsheet.numerics.solve_record import SolvePolicy
 from openflowsheet.orchestrator.execution import ExecutionPlan
 from openflowsheet.orchestrator.executor import PlanResult, execute_plan
 from openflowsheet.orchestrator.policies import APPLICATION_POLICIES
 from openflowsheet.orchestrator.revision import plan_revision
-from openflowsheet.orchestrator.trace import SolvePolicy
 
 #: The revision path's registered policy (`revision_eo`'s default): phase contract v2.
 POLICY: SolvePolicy = APPLICATION_POLICIES["T06-revision-v2"]

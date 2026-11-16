@@ -46,7 +46,7 @@ import openflowsheet.models.syn001.column_solve as column_solve  # noqa: E402
 import openflowsheet.numerics.newton as newton_module  # noqa: E402
 import openflowsheet.orchestrator.region as region  # noqa: E402
 import openflowsheet.orchestrator.region_attempts as region_attempts  # noqa: E402
-from openflowsheet.orchestrator.trace import Trace  # noqa: E402
+from openflowsheet.numerics.solve_record import Trace  # noqa: E402
 
 #: How many of the last sweeps to print.
 SWEEP_TAIL = 6

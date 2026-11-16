@@ -33,12 +33,12 @@ from openflowsheet.application.revision_binding import RevisionBinding, bind_rev
 from openflowsheet.compile.casadi_backend import compile_problem
 from openflowsheet.compile.reference import state_vector
 from openflowsheet.models.revision_flowsheet import parse_revision
+from openflowsheet.numerics.solve_record import SolvePolicy
 from openflowsheet.orchestrator.execution import ExecutionPlan
 from openflowsheet.orchestrator.executor import PlanResult, execute_plan
 from openflowsheet.orchestrator.region import RegionResult
 from openflowsheet.orchestrator.revision import plan_revision
 from openflowsheet.orchestrator.splits import lifted_splits
-from openflowsheet.orchestrator.trace import SolvePolicy
 from openflowsheet.verify.certificate import (
     BoundDeclaration,
     SolutionCertificate,

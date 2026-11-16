@@ -11,7 +11,7 @@ from t05b_support import POLICY_V2
 from t06_support import T06_REVISION_POLICY_V1 as T06_REVISION_POLICY
 from test_k03_schemas import errors_for
 
-from openflowsheet.orchestrator.trace import GlobalizationPolicy, SolvePolicy
+from openflowsheet.numerics.solve_record import GlobalizationPolicy, SolvePolicy
 
 
 def _differing(a: object, b: object, kind: type) -> list[str]:

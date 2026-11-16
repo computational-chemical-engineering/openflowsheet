@@ -42,6 +42,7 @@ from test_t05b_openings import CASES as B31_CASES
 from openflowsheet.application.revision_binding import RevisionBinding
 from openflowsheet.models import temperature_id
 from openflowsheet.numerics.newton import _bound_aware_step, _released, _trial_point
+from openflowsheet.numerics.solve_record import Trace
 from openflowsheet.orchestrator import region as region_module
 from openflowsheet.orchestrator import region_problem
 from openflowsheet.orchestrator.execution import ExecutionPlan
@@ -49,7 +50,6 @@ from openflowsheet.orchestrator.executor import execute_plan
 from openflowsheet.orchestrator.region import LiftedSplit, RegionResult, _KernelAnswer
 from openflowsheet.orchestrator.revision import initial_state, plan_revision
 from openflowsheet.orchestrator.splits import closure_types
-from openflowsheet.orchestrator.trace import Trace
 from openflowsheet.verify.certificate import SolutionCertificate, verify_revision
 
 

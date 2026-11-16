@@ -29,12 +29,12 @@ from openflowsheet.canonical import file_sha256  # noqa: E402
 from openflowsheet.compiled import EvaluationContext  # noqa: E402
 from openflowsheet.models.syn001.flowsheet import Syn001Flowsheet  # noqa: E402
 from openflowsheet.numerics.linear import SUPERLU_OPTIONS  # noqa: E402
+from openflowsheet.numerics.solve_record import SolvePolicy  # noqa: E402
 from openflowsheet.orchestrator.tear import (  # noqa: E402
     Syn001TearProblem,
     build_plan,
     solve_tear,
 )
-from openflowsheet.orchestrator.trace import SolvePolicy  # noqa: E402
 from openflowsheet.thermo import StreamState  # noqa: E402
 from openflowsheet.thermo.syn001 import Syn001Provider  # noqa: E402
 

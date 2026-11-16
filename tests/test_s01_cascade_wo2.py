@@ -47,8 +47,8 @@ from openflowsheet.models.syn001.cascade_solve import (
 )
 from openflowsheet.models.syn001.ph_kernel import ph_state
 from openflowsheet.numerics.scaling import REGISTERED_NOMINALS
+from openflowsheet.numerics.solve_record import Trace
 from openflowsheet.orchestrator.policies import T05B_V2
-from openflowsheet.orchestrator.trace import Trace
 from openflowsheet.thermo.syn001 import Syn001Provider
 
 PROVIDER = Syn001Provider()

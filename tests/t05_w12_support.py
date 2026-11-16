@@ -18,12 +18,12 @@ from test_t05_w11_cases import case_document
 
 from openflowsheet.application.revision_binding import RevisionBinding, bind_revision_flowsheet
 from openflowsheet.compile.casadi_backend import compile_problem
+from openflowsheet.numerics.solve_record import SolvePolicy
 from openflowsheet.orchestrator import revision
 from openflowsheet.orchestrator.execution import ExecutionPlan, PlanStep
 from openflowsheet.orchestrator.mass import residence_time
 from openflowsheet.orchestrator.region import RegionResult, solve_region
 from openflowsheet.orchestrator.splits import lifted_splits
-from openflowsheet.orchestrator.trace import SolvePolicy
 
 Document = dict[str, Any]
 

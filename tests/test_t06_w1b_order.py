@@ -31,11 +31,11 @@ from openflowsheet.application.revision_binding import RevisionBinding, bind_rev
 from openflowsheet.application.validation import validate
 from openflowsheet.canonical import canonical_json
 from openflowsheet.models.revision_flowsheet import _COMPONENTS, canonical_components
+from openflowsheet.numerics.solve_record import SolvePolicy
 from openflowsheet.orchestrator.execution import ExecutionPlan, declaration_identity
 from openflowsheet.orchestrator.executor import execute_plan
 from openflowsheet.orchestrator.revision import plan_revision
 from openflowsheet.orchestrator.tear import solve_tear
-from openflowsheet.orchestrator.trace import SolvePolicy
 from openflowsheet.thermo.syn001 import Syn001Provider
 from openflowsheet.verify.certificate import verify, verify_revision
 

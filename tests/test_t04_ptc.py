@@ -34,16 +34,16 @@ from openflowsheet.numerics.ptc import (
     solve_ptc,
 )
 from openflowsheet.numerics.scaling import Scaling
+from openflowsheet.numerics.solve_record import (
+    PtcPolicy,
+    SolvePolicy,
+    Trace,
+)
 from openflowsheet.orchestrator.phase_contract import (
     Candidate,
     Conversion,
     WallObserver,
     decide,
-)
-from openflowsheet.orchestrator.trace import (
-    PtcPolicy,
-    SolvePolicy,
-    Trace,
 )
 
 REPO_ROOT = Path(__file__).resolve().parents[1]

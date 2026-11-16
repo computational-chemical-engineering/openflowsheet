@@ -17,7 +17,7 @@ import pytest
 import yaml
 from test_t04_edge3 import plan_run, region_step
 
-from openflowsheet.orchestrator.trace import GlobalizationPolicy, RecyclePolicy, SolvePolicy
+from openflowsheet.numerics.solve_record import GlobalizationPolicy, RecyclePolicy, SolvePolicy
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 REGISTRY: dict[str, Any] = yaml.safe_load((REPO_ROOT / "benchmarks" / "registry.yaml").read_text())

@@ -67,6 +67,7 @@ from openflowsheet.canonical import document_sha256
 from openflowsheet.numerics import newton
 from openflowsheet.numerics.anderson import RecyclePolicy, solve_recycle
 from openflowsheet.numerics.newton import Evaluation, Problem, solve_newton
+from openflowsheet.numerics.solve_record import Trace
 from openflowsheet.orchestrator import region_phase, region_screen
 from openflowsheet.orchestrator.execution import (
     ExecutionPlan,
@@ -82,7 +83,6 @@ from openflowsheet.orchestrator.policies import (
 )
 from openflowsheet.orchestrator.region import RegionResult
 from openflowsheet.orchestrator.revision import plan_revision
-from openflowsheet.orchestrator.trace import Trace
 from openflowsheet.verify import certificate as certificate_module
 from openflowsheet.verify import projection
 from openflowsheet.verify.certificate import CheckPolicy, verify_revision

@@ -142,7 +142,7 @@ select = ["E", "F", "I", "B", "UP", "N"]
 # §1, frozen per docs/interfaces-frozen.md, so pep8-naming's lowercase rules for arguments
 # (N803), local variables (N806) and dataclass fields such as `sum_zK` (N815) are switched off
 # for these three files only. Apart from the S03 tool scripts' waivers below (E501, F841 and the
-# formatter), no other check is relaxed anywhere.
+# formatter) and the T06 generator's import order (I001), no other check is relaxed anywhere.
 "benchmarks/syn001/oracle.py" = ["N803", "N806", "N815"]
 "tests/test_syn001_oracle.py" = ["N803", "N806"]
 "tests/test_syn001_reference_values.py" = ["N803", "N806"]
@@ -153,6 +153,11 @@ select = ["E", "F", "I", "B", "UP", "N"]
 # commit, F841 (an unused local, `pyo` in `inspection`; S03 WO-S03-6 build decision B6-1).
 "spikes/references/s03_qualify_idaes.py" = ["E501", "F841"]
 "spikes/references/s03_qualify_dwsim.py" = ["E501"]
+# The T06 generator hashes its own bytes (`generator_sha256`, T06 spec §6.5; R-149). S19's I-1 step
+# changed its solve-record import in place, on line 73, so that the registered hash is recovered by
+# substituting that one line back (tests/t08_rename_substitution.py, R-W4-STOP3 Q1); re-sorting
+# the import block would move the line and break the chain to the published hash.
+"benchmarks/t06/generator.py" = ["I001"]
 
 [tool.ruff.format]
 # The S03 tool scripts are not reformatted either: an edit means a new qualification run (S03 §19.5,

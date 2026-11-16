@@ -32,7 +32,7 @@ from test_t04_edge3 import case_document, full_run, plan_run, region_step
 import openflowsheet.orchestrator.tear as tear_module
 import openflowsheet.verify.certificate as certificate_module
 from openflowsheet.application.binding import Binding, bind_revision
-from openflowsheet.orchestrator.trace import SolvePolicy
+from openflowsheet.numerics.solve_record import SolvePolicy
 from openflowsheet.verify.certificate import (
     SolutionCertificate,
     alias_document,

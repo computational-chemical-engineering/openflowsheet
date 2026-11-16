@@ -31,7 +31,7 @@ from conftest import load_json
 from f0_support import N_ARCHIVED_OUTPUTS, is_archived_output
 from test_k03_schemas import FIXTURE_DIR, errors_for
 
-from openflowsheet.orchestrator.trace import PhaseContract, SolvePolicy
+from openflowsheet.numerics.solve_record import PhaseContract, SolvePolicy
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 V1, V2 = "T03-phase-contract-v1", "T05b-phase-contract-v2"
@@ -80,7 +80,7 @@ def test_b06_the_policy_fixtures_regenerate_byte_for_byte() -> None:
     import k03_schema_fixtures as k03
     import t04_schema_fixtures as t04
 
-    from openflowsheet.orchestrator.trace import GlobalizationPolicy, RecyclePolicy
+    from openflowsheet.numerics.solve_record import GlobalizationPolicy, RecyclePolicy
 
     ptc = t04.policy(
         "ptc",

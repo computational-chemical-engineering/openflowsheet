@@ -66,6 +66,7 @@ from openflowsheet.canonical import state_sha256  # noqa: E402
 from openflowsheet.models import flow_id  # noqa: E402
 from openflowsheet.models.syn001 import FLOW_TOLERANCE  # noqa: E402
 from openflowsheet.numerics.scaling import Scaling  # noqa: E402
+from openflowsheet.numerics.solve_record import SolvePolicy  # noqa: E402
 from openflowsheet.orchestrator import executor, revision  # noqa: E402
 from openflowsheet.orchestrator.execution import ExecutionPlan  # noqa: E402
 from openflowsheet.orchestrator.executor import PlanResult, StepResult, execute_plan  # noqa: E402
@@ -74,7 +75,6 @@ from openflowsheet.orchestrator.recovery import eo_recovery_due, solver_outcomes
 from openflowsheet.orchestrator.revision_continuation import (  # noqa: E402
     RevisionContinuationCandidate,
 )
-from openflowsheet.orchestrator.trace import SolvePolicy  # noqa: E402
 from openflowsheet.verify.certificate import SolutionCertificate, verify_revision  # noqa: E402
 from openflowsheet.verify.checks import VerifierError  # noqa: E402
 

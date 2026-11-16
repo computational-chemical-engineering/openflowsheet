@@ -60,6 +60,7 @@ from t05b_support import (
     solve_from_v2,
 )
 
+from openflowsheet.numerics.solve_record import Trace
 from openflowsheet.orchestrator import region as region_module
 from openflowsheet.orchestrator import region_problem
 from openflowsheet.orchestrator.region import (
@@ -75,7 +76,6 @@ from openflowsheet.orchestrator.region import (
 )
 from openflowsheet.orchestrator.revision import initial_state, instances_of
 from openflowsheet.orchestrator.splits import closure_types, dormancy_forms, lifted_splits
-from openflowsheet.orchestrator.trace import Trace
 from openflowsheet.verify.certificate import SolutionCertificate, verify_revision
 
 FEED = (1.0, 1.0, 1.0)

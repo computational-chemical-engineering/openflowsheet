@@ -27,6 +27,7 @@ from t08_cstr_support import ptc_r1_revision
 from benchmarks.t08.ptc_r1 import compare
 from openflowsheet.application.revision_binding import RevisionBinding, bind_revision_flowsheet
 from openflowsheet.application.revisions import content_hash
+from openflowsheet.numerics.solve_record import Counters, PtcPolicy, Trace
 from openflowsheet.orchestrator import region as region_module
 from openflowsheet.orchestrator.executor import PlanResult
 from openflowsheet.orchestrator.policies import (
@@ -35,7 +36,6 @@ from openflowsheet.orchestrator.policies import (
     T08_PTC_V1,
     T08_WARM_V1,
 )
-from openflowsheet.orchestrator.trace import Counters, PtcPolicy, Trace
 from openflowsheet.run.manifest import policy_sha256
 
 CASE_DIR = REPO_ROOT / "benchmarks" / "t08" / "ptc_r1"

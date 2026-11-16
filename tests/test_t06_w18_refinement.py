@@ -32,7 +32,7 @@ from openflowsheet.numerics.newton import (
     solve_newton,
 )
 from openflowsheet.numerics.scaling import Scaling
-from openflowsheet.orchestrator.trace import AttemptSignature, SolvePolicy, Trace
+from openflowsheet.numerics.solve_record import AttemptSignature, SolvePolicy, Trace
 
 POLICY = SolvePolicy(policy_id="T06-W18-constructed", residual_tolerances={}, scales={})
 #: The column tolerance of the constructed problems (a stand-in for a registered `τ_kind`).

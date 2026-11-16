@@ -34,6 +34,7 @@ from openflowsheet.compiled import EvaluationContext
 from openflowsheet.graph.analysis import analyse
 from openflowsheet.graph.trace import trace_declaration
 from openflowsheet.models.syn001.flowsheet import Syn001Flowsheet
+from openflowsheet.numerics.solve_record import SolvePolicy
 from openflowsheet.orchestrator.execution import (
     ExecutionPlan,
     build_execution_plan,
@@ -51,7 +52,6 @@ from openflowsheet.orchestrator.revision import (
 )
 from openflowsheet.orchestrator.splits import SPLIT_RULES, check_agreement, lifted_splits
 from openflowsheet.orchestrator.tear import Syn001TearProblem, solve_tear
-from openflowsheet.orchestrator.trace import SolvePolicy
 from openflowsheet.run.session import run_session, solve_and_bundle
 from openflowsheet.thermo.syn001 import Syn001Provider
 
