@@ -681,3 +681,8 @@
   test_s08_item6.py:90. Arch 4/3/12, imports 4048 -> 4011. Jobs 73-87, 89, 93; 58-72 SKIPPED. Jobs 50 (I-5 iface
   6f85454c) and 52 (I-6 iface e4f18a7a) never had a result and kept their shas: moved back from `withdrawn/` to
   `pending/` by the orchestrator. Left in I-8: column (48 names, 41 src users).
+- **2026-11-16, jobs 59 and 73 PASS.** 59 (r5a's I-1 iface side chain rg54b, diff identical to e0acbfbb) step 167.
+  73 (rebuilt I-1 src retarget 72ba4f74 on 3d45c5db, 15/15) logged by hand as step 168 (accepted-neutral, `--head
+  72ba4f740d`, from s19-w4): `--rerun-of 164` refused because the base moved (3d45c5db, the new outside-gate test
+  commit). Tool note (for the tooling backlog): `codehealth log --rerun-of` matches tree AND base; a rebuilt step with
+  a new base needs a plain log. Job 77 (`--rerun-of 162`) will need the same.
