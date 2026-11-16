@@ -583,3 +583,13 @@
   as reactor's own API (a unit module naming its model id); rejected, reactor exposes it through its method (:374).
   Reversible by: re-adding the `__all__` entry. W4 run 4 briefed (`S19-W4-4.md`: I-8 only, smallest module first);
   run 3's I-8 scripts saved to `<git-common-dir>/codehealth/drafts/w4-i8/`.
+- **2026-11-16, R-W3-G5-4 (reviewer, Opus): merge after two docstring fixes, no step rejected.** G5 run 4 on
+  `wp/S19-g5b` (835d7b4e, a180b91b, 959b4345, e6244466; gate steps 153, 155, 157, 159, all PASS; checks.py debt
+  84.7 -> 36.7, certificate.py 57.2 -> 54.2). Arithmetic order unchanged in every step; `name in one_sided` pure (typed
+  `frozenset[str]`, every caller passes one); `_issue`'s helpers run at their keyword positions and only read; R-016
+  clean. Fixes applied by the orchestrator in 846a705f (checks.py `_exact_entries` repeated-entry rule,
+  `_stencil_difference` forward classes 3-4: Z, R-831, A1), job 47 no-gain. Optional, not done: the dead `set()`
+  defaults at checks.py:950. Ruling on `_issue`'s 18 parameters: a private frozen dataclass of `unstenciled`,
+  `one_sided`, `components`, `skipped_reason`, built once in `verify_revision` (certificate.py:515-551) and unpacked at
+  the `derivative_witness` call (its public keywords unchanged), is the next G5 step; it stays separate from the W4
+  verify parameter object. Lane merged with wp/S19 (3fdead1e, docs only); merge-check job 48.
