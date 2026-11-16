@@ -1338,3 +1338,14 @@
   "ALERT selected share 52% < 75% of step gates", "ALERT selected gates take 451 s > 300 s (tests tier)", "ALERT queue
   wait median 36 min > 15 min" (standing; proposal 2 with Frank). Brief `S19-W3-G5-9.md` written (compare.py,
   certificate.py, column.py; branch wp/S19-g5g), held until W4 run 9 is enqueued.
+- **2026-11-16 ~20:10, rule 4 falsifier: base2 (10adfc3d + conftest A, `-n 4`, 20280 passed) 963 run results (124
+  with a failure), 1231 bundles; base 964 (125) / 1228.** The counts are not deterministic under xdist (spread 1/3 at
+  one commit), so ADR 0076 rule 4's "must equal" cannot be read off an xdist run. The spread at one commit is far
+  below head be115b6a's gap (878 (101) / 1370) and the tip's (803 (100) / 1175), so noise alone does not settle I-4
+  either. DECISION: measure rule 4 in a deterministic form before asking the design lane: full suite serial
+  (`-p no:xdist`, same deselects, no `--ignore`) at base 10adfc3d+A (worktree scratchpad base2) and head be115b6a+A
+  (worktree `<this session's scratchpad>/headser`), script `serial.sh`, logs `baseser.log`, `headser.log` (this
+  session's scratchpad 165c72bf...), PIDs in `*.pid`. Alternative: a design-lane ruling now on xdist counts. Reason:
+  the ruling needs the serial numbers anyway; compute is free. Equal serial counts: I-4 meets rule 4 in serial form,
+  run 8 merges, and the ADR text change (serial or per-file form) goes to the R-W4-9 review batch. Unequal: the I-4
+  gap is real, a finding for a fresh engineer (patch targets of write_bundle / _run_result after the move).
