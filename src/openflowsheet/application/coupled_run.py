@@ -57,6 +57,7 @@ from openflowsheet.compiled import EvaluationContext
 from openflowsheet.models import flow_id, pressure_id, temperature_id
 from openflowsheet.models.c1 import NU
 from openflowsheet.models.c1.reactor import KEY_COMPONENT, C1Reactor
+from openflowsheet.numerics.solve_record import Counters, SolvePolicy, Trace
 from openflowsheet.orchestrator.coupling import (
     CouplingBlock,
     CouplingRun,
@@ -68,7 +69,6 @@ from openflowsheet.orchestrator.coupling import (
 from openflowsheet.orchestrator.execution import PlanRefusal, declaration_identity
 from openflowsheet.orchestrator.executor import PlanResult, execute_plan
 from openflowsheet.orchestrator.revision import plan_revision
-from openflowsheet.orchestrator.trace import Counters, SolvePolicy, Trace
 from openflowsheet.orchestrator.warm_start import (
     WARM_START_REJECTED,
     WARM_START_SOURCE,

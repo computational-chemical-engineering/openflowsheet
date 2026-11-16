@@ -75,6 +75,7 @@ from openflowsheet.application.types import (
 from openflowsheet.application.validation import validate
 from openflowsheet.canonical import file_sha256
 from openflowsheet.models.c1 import COMPONENTS as C1_COMPONENTS
+from openflowsheet.numerics.solve_record import SolvePolicy
 from openflowsheet.orchestrator.policies import (
     APPLICATION_POLICIES,
     DEFAULT_POLICY_ID,
@@ -82,7 +83,6 @@ from openflowsheet.orchestrator.policies import (
     SolvePath,
     resolve_policy,
 )
-from openflowsheet.orchestrator.trace import SolvePolicy
 from openflowsheet.studies.surrogate.iterations import StoredManifest
 from openflowsheet.studies.surrogate.iterations import predecessors as iteration_predecessors
 from openflowsheet.studies.surrogate.plan import PlanRefusedError

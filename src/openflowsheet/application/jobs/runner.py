@@ -140,7 +140,7 @@ from openflowsheet.application.types import (
 from openflowsheet.canonical import canonical_json, directory_hash, file_sha256
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.models.lifted import AdmissibilityRefusal
-from openflowsheet.orchestrator.trace import SolvePolicy, Trace
+from openflowsheet.numerics.solve_record import SolvePolicy, Trace
 from openflowsheet.orchestrator.warm_start import EXPLICIT, WARM_START_SOURCE, WarmStartCandidate
 from openflowsheet.run.bundle import ARTIFACT_DIR, MANIFEST_NAME, BundleError, read_artifact
 from openflowsheet.run.manifest import RunManifest, policy_sha256

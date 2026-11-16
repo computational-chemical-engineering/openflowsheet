@@ -25,6 +25,7 @@ from openflowsheet.models.lifted import DormancyForm, LiftedSplit, Regime
 from openflowsheet.numerics.newton import NewtonResult, solve_newton
 from openflowsheet.numerics.ptc import PtcProblem, PtcRecord, solve_ptc
 from openflowsheet.numerics.scaling import Scaling
+from openflowsheet.numerics.solve_record import AttemptSignature, Counters, SolvePolicy, Trace
 from openflowsheet.orchestrator.homotopy import (
     CorrectorOutcome,
     HomotopyRecord,
@@ -42,7 +43,6 @@ from openflowsheet.orchestrator.region_problem import (
 )
 from openflowsheet.orchestrator.region_result import RecoveryStart
 from openflowsheet.orchestrator.region_screen import _attempt_screen
-from openflowsheet.orchestrator.trace import AttemptSignature, Counters, SolvePolicy, Trace
 from openflowsheet.thermo import PropertyProvider
 
 

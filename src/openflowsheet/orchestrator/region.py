@@ -99,6 +99,15 @@ from openflowsheet.models.syn001.ph_kernel import ph_state as ph_state
 from openflowsheet.numerics.newton import solve_newton
 from openflowsheet.numerics.ptc import PtcRecord
 from openflowsheet.numerics.scaling import REGISTERED_NOMINALS, Scaling
+from openflowsheet.numerics.solve_record import (
+    AttemptSignature,
+    Checkpoint,
+    Counters,
+    SolveOutcome,
+    SolvePolicy,
+    Trace,
+    fraction_string,
+)
 from openflowsheet.orchestrator.attempts import AttemptContext, AttemptCore, provenance_item
 from openflowsheet.orchestrator.budget import BudgetExhaustedError
 from openflowsheet.orchestrator.execution import Region
@@ -173,15 +182,6 @@ from openflowsheet.orchestrator.region_screen import _build_screen as _build_scr
 from openflowsheet.orchestrator.region_screen import _screen as _screen
 from openflowsheet.orchestrator.revision_continuation import REVISION_CONTINUATION_REJECTED
 from openflowsheet.orchestrator.roots import branch_found, root_fingerprint
-from openflowsheet.orchestrator.trace import (
-    AttemptSignature,
-    Checkpoint,
-    Counters,
-    SolveOutcome,
-    SolvePolicy,
-    Trace,
-    fraction_string,
-)
 from openflowsheet.orchestrator.warm_start import WARM_START_REJECTED, WARM_START_SOURCE
 from openflowsheet.thermo import PropertyProvider
 

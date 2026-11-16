@@ -17,8 +17,8 @@ from pathlib import Path
 from typing import Any, Final
 
 from openflowsheet.models.syn001.flowsheet import Syn001Flowsheet
+from openflowsheet.numerics.solve_record import SolvePolicy
 from openflowsheet.orchestrator.tear import Syn001TearProblem, solve_tear
-from openflowsheet.orchestrator.trace import SolvePolicy
 from openflowsheet.run.bundle import write_bundle
 from openflowsheet.run.identity import r0_projection, r0_sha256
 from openflowsheet.run.manifest import RunManifest, environment, policy_sha256, started_now

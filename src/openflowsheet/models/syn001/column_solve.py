@@ -122,6 +122,7 @@ from openflowsheet.models.syn001.column_endpoint import (
     unreached_specifications as unreached_specifications,
 )
 from openflowsheet.models.syn001.saturation_band import band_temperature as band_temperature
+from openflowsheet.numerics.solve_record import SolvePolicy, Trace
 from openflowsheet.orchestrator.homotopy import Continuation
 from openflowsheet.orchestrator.recovery import (
     eo_recovery_due,
@@ -129,7 +130,6 @@ from openflowsheet.orchestrator.recovery import (
     solver_outcomes,
 )
 from openflowsheet.orchestrator.region import RecoveryStart, Regime, RegionResult
-from openflowsheet.orchestrator.trace import SolvePolicy, Trace
 from openflowsheet.thermo import PropertyProvider
 
 if TYPE_CHECKING:

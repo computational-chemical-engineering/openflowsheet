@@ -22,7 +22,7 @@ import numpy.typing as npt
 
 from openflowsheet.canonical import document_sha256
 from openflowsheet.numerics.newton import NewtonResult
-from openflowsheet.orchestrator.trace import AttemptSignature, SolveOutcome, SolvePolicy
+from openflowsheet.numerics.solve_record import AttemptSignature, SolveOutcome, SolvePolicy
 
 __all__ = [
     "Candidate",

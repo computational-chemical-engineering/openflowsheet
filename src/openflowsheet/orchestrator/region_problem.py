@@ -42,6 +42,7 @@ from openflowsheet.numerics.newton import (
     Problem,
 )
 from openflowsheet.numerics.scaling import REGISTERED_NOMINALS, Scaling
+from openflowsheet.numerics.solve_record import AttemptSignature, SolvePolicy
 from openflowsheet.orchestrator.execution import Region
 from openflowsheet.orchestrator.phase_contract import (
     Candidate,
@@ -65,7 +66,6 @@ from openflowsheet.orchestrator.region_phase import (
     _zero_flow_answer,
 )
 from openflowsheet.orchestrator.roots import branch_found
-from openflowsheet.orchestrator.trace import AttemptSignature, SolvePolicy
 from openflowsheet.thermo import PropertyProvider
 
 

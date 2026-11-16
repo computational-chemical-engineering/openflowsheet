@@ -43,7 +43,7 @@ from openflowsheet.assessment.views import view_of
 from openflowsheet.canonical import canonical_json, document_sha256
 from openflowsheet.compile.casadi_backend import TwinEvaluationError
 from openflowsheet.models.revision_flowsheet import si_unit
-from openflowsheet.orchestrator.trace import SolvePolicy
+from openflowsheet.numerics.solve_record import SolvePolicy
 from openflowsheet.run.manifest import policy_sha256
 from openflowsheet.studies.nlp.boundary import PHASE_BOUNDARY_FORM
 from openflowsheet.studies.nlp.closure import (

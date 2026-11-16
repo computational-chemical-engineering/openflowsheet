@@ -41,8 +41,8 @@ from collections.abc import Mapping
 from dataclasses import replace
 from typing import Final, Literal
 
+from openflowsheet.numerics.solve_record import SolvePolicy
 from openflowsheet.orchestrator.revision import INITIALIZER_ID
-from openflowsheet.orchestrator.trace import SolvePolicy
 from openflowsheet.orchestrator.warm_start import WARM_START_SOURCE
 
 #: The solve routes (ruling round 1 R2.1; `revision_coupled`, M02 design note §4.4, ADR 0034

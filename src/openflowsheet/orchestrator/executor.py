@@ -40,6 +40,18 @@ from openflowsheet.compiled import EvaluationContext
 from openflowsheet.messages.diagnostic import Diagnostic
 from openflowsheet.models.revision_flowsheet import RevisionFlowsheet
 from openflowsheet.models.syn001.flowsheet import FEED_UNIT, WIRING, Syn001Flowsheet
+from openflowsheet.numerics.solve_record import (
+    AttemptSignature,
+    Checkpoint,
+    Counters,
+    EoRecoveryUnsupported,
+    EventKind,
+    RecyclePolicy,
+    SolveOutcome,
+    SolvePlan,
+    SolvePolicy,
+    Trace,
+)
 from openflowsheet.orchestrator import revision
 from openflowsheet.orchestrator.budget import BudgetExhaustedError, PropertyMeter
 from openflowsheet.orchestrator.execution import ExecutionPlan, PlanStep, Region
@@ -87,18 +99,6 @@ from openflowsheet.orchestrator.splits import (
     zero_flow_forms,
 )
 from openflowsheet.orchestrator.tear import INITIALIZER_ID, Syn001TearProblem, solve_tear
-from openflowsheet.orchestrator.trace import (
-    AttemptSignature,
-    Checkpoint,
-    Counters,
-    EoRecoveryUnsupported,
-    EventKind,
-    RecyclePolicy,
-    SolveOutcome,
-    SolvePlan,
-    SolvePolicy,
-    Trace,
-)
 from openflowsheet.orchestrator.warm_start import (
     EXPLICIT,
     WARM_START_REJECTED,

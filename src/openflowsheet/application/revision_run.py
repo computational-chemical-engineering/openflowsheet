@@ -91,6 +91,7 @@ from openflowsheet.graph.process import ProcessGraph
 from openflowsheet.graph.report import StructuralReport
 from openflowsheet.graph.trace import Declaration, StructureUnavailableError, trace_declaration
 from openflowsheet.messages import audit
+from openflowsheet.numerics.solve_record import SolvePlan, SolvePolicy, Trace
 from openflowsheet.orchestrator.execution import (
     ExecutionPlan,
     PlanRefusal,
@@ -104,7 +105,6 @@ from openflowsheet.orchestrator.policies import SolvePath
 from openflowsheet.orchestrator.region import RegionResult
 from openflowsheet.orchestrator.revision import plan_revision
 from openflowsheet.orchestrator.revision_continuation import RevisionContinuationRefusal
-from openflowsheet.orchestrator.trace import SolvePlan, SolvePolicy, Trace
 from openflowsheet.orchestrator.warm_start import (
     EXPLICIT,
     WarmStartCandidate,

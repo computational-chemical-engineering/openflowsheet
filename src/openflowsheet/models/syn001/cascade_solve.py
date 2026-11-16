@@ -77,6 +77,7 @@ from openflowsheet.models.syn001.cascade import (
 )
 from openflowsheet.models.syn001.saturation_band import BandError, band_temperature
 from openflowsheet.models.syn001.tp_state import single_phase_admissible
+from openflowsheet.numerics.solve_record import GlobalizationPolicy, SolvePolicy, Trace
 from openflowsheet.orchestrator.execution import Region
 from openflowsheet.orchestrator.homotopy import Continuation
 from openflowsheet.orchestrator.recovery import (
@@ -95,7 +96,6 @@ from openflowsheet.orchestrator.region import (
     ZeroFlowForm,
     solve_region,
 )
-from openflowsheet.orchestrator.trace import GlobalizationPolicy, SolvePolicy, Trace
 from openflowsheet.thermo import Phase, PropertyProvider, StreamState
 
 #: Spec §7.3's registered pre-solve.

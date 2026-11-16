@@ -41,6 +41,7 @@ from openflowsheet.application.revision_binding import RevisionBinding, bind_rev
 from openflowsheet.application.revision_edits import ELEMENT_MEMBERS, element_diff
 from openflowsheet.application.revisions import CONTENT_HASH_EXCLUDED
 from openflowsheet.canonical import canonical_json
+from openflowsheet.numerics.solve_record import SolvePolicy
 from openflowsheet.orchestrator.execution import declaration_identity
 from openflowsheet.orchestrator.revision_continuation import (
     RECORD,
@@ -49,7 +50,6 @@ from openflowsheet.orchestrator.revision_continuation import (
     RevisionContinuationRecord,
     RevisionContinuationRefusal,
 )
-from openflowsheet.orchestrator.trace import SolvePolicy
 from openflowsheet.orchestrator.warm_start import intact
 
 if TYPE_CHECKING:

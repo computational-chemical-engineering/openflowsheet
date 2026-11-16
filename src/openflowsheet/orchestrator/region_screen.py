@@ -18,6 +18,7 @@ from openflowsheet.models import temperature_id
 from openflowsheet.models.c1.phase import classify
 from openflowsheet.models.lifted import AdmissibilityRefusal, DormancyForm, LiftedSplit, Regime
 from openflowsheet.numerics.newton import Evaluation
+from openflowsheet.numerics.solve_record import AttemptSignature
 from openflowsheet.orchestrator.budget import BudgetExhaustedError
 from openflowsheet.orchestrator.region_phase import (
     TP_REGIME,
@@ -32,7 +33,6 @@ from openflowsheet.orchestrator.region_phase import (
     _split_enthalpy,
 )
 from openflowsheet.orchestrator.region_problem import _items
-from openflowsheet.orchestrator.trace import AttemptSignature
 from openflowsheet.thermo import FlashRequest, PropertyProvider, StreamState
 
 

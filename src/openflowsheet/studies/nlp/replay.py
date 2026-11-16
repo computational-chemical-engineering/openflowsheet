@@ -421,7 +421,7 @@ def _recomputed_chain(
     directory: Path, routes: RevisionRoutes
 ) -> tuple[list[str], list[str], list[str]]:
     """Steps 3 and 4: the differences, the reasons and the near-threshold entries."""
-    from openflowsheet.orchestrator.trace import SolvePolicy
+    from openflowsheet.numerics.solve_record import SolvePolicy
     from openflowsheet.run.manifest import policy_sha256
     from openflowsheet.studies.nlp.closure import (
         SolverAvailability,

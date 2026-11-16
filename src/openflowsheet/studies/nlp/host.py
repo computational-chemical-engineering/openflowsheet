@@ -45,9 +45,9 @@ from openflowsheet.compile.casadi_backend import (
 from openflowsheet.compile.spec import ProblemSpec
 from openflowsheet.models import SpecificationError
 from openflowsheet.models.syn001.flowsheet import Syn001Flowsheet
+from openflowsheet.numerics.solve_record import SolvePolicy
 from openflowsheet.orchestrator.region import AttemptSystem
 from openflowsheet.orchestrator.tear import Syn001TearProblem
-from openflowsheet.orchestrator.trace import SolvePolicy
 from openflowsheet.studies.sensitivity import (
     Mode,
     OutputFunctional,
