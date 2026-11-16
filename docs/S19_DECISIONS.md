@@ -1475,3 +1475,13 @@
   (a) W4 run 8 merges: helper wp/S19-w4r8-mc gains wp/S19 c37ca884 as 9cb029ed; merge-check job 200 (w4r8-mc).
   (b) Rule 4 serial-form text added as question 6 of R-W4-9a (S19-R-W4-9a.md) for the design-lane ruling.
   (c) I-10 and I-12a-d may be briefed (after R-W4-9); each of their steps needs serial counts at base and head.
+- **2026-11-16 22:26, job 195 FAIL (w4r9-i9-iface-2, 1f5c2c6b, step 255 gate-fail, 14/15, tests; full-suite
+  fallback, 2 failed, 20376 passed): test_t07_w6b_mcp.py::test_g14_the_bindings_import_only_the_contract[http.py]
+  and [mcp.py], "imports outside §11.6 (2): ['openflowsheet.application.errors']".** Known cause: a953ca84 widened
+  `ALLOWED_APPLICATION` in test_t07_w6a_http.py but not its twin `ALLOWED_PROJECT_MODULES` in test_t07_w6b_mcp.py:77
+  (the only other copy; grep of tests and scripts). Not a bisect case. DECISION: sonnet-implementer (brief
+  S19-W4-9-fix195.md) adds the twin's line on a953ca84 (passes at the base: an allowed module not yet imported),
+  rebases 84e74e1d..2b40c2f2 onto it (backup wp/S19-w4r10-orig2), and enqueues I-9 and I-14 as fresh steps (no
+  `--rerun-of` across a rebase). Job 196 will be SKIPPED. R-W4-9a/9b shas change by the rebase; the briefs are
+  updated from the implementer's map before launch. Alternative: opus-engineer. Reason: the fix185 pattern, one
+  line. ALERTs standing.
