@@ -1621,3 +1621,13 @@
   each of the seven failing literals at count 1 (tool counter). Its backup branch wp/S19-w4r11-orig (= fe742b07)
   deleted. Lesson: a SendMessage to a finished agent resumes it; check ListAgents before briefing a second agent on
   the same lane.
+- **2026-11-17, W4 run 11 final report (engineer resumed by message; ~217k tokens in all). I-11 rebuilt and enqueued
+  as job 212 (w4r11-i11-2, interface, f98f54aa..79c88b0e); 139afd37 layer config.** f98f54aa declares the deleted
+  module's 10 literals (count 1 each; the tool's literal check offline on f98f54aa..79c88b0e clean); 869d96be/
+  685bb448/fff4ead2 were an intermediate rebuild (869d96be had 7 extra entries appended by the concurrent fix211
+  `sonnet-implementer`, the "other writer" the engineer reported; resolved, not another session). Verified: lane tip
+  139afd37 clean, plan has 10 `[[literals_removed]]`. For R-W4-11 (besides the three review points): two removed
+  behaviours answer differently through their ADR successors: a missing revision gives `not_found "no such revision"`
+  from `LocalApplication.get_revision` (local.py:1911) instead of `RevisionError "no revision ..."`; the facade `put`
+  immutability refusal and its `put_revision` audit row have no successor (engineer did not STOP; revert f98f54aa if
+  the review does). I-13 not started (STOP above).
