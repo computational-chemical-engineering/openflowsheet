@@ -52,23 +52,30 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 - Held until the scale probe reports: G1 (orchestrator/, numerics/). Open: ptc.py 6.8 (P3, P4).
 - G-END (below) stays the end criterion for the whole repository.
 
-## Next actions (2026-11-16, ~17:55)
+## Next actions (2026-11-16, ~19:00; self-reset)
 
 Runner pid 2642417 (078fa7ed skip fix; cce-code-health 846a065; merge-check = `gate.sh --behaviour-only`, proven by
-job 173; ruff tier *.py only, 36ea9c2d). W4 run 7 merged (8cdd71d8; arch 4/3/12). Results consumed up to 154.
-Agent running: W4 run 8 engineer (opus-engineer, brief `S19-W4-8.md`: item 3b policies `__all__`, anderson
-`RecyclePolicy` + merge.py:28, I-4, I-9; lane wp/S19-w4 from ce7f9b76; labels `w4r8-*`). Lanes at most 2 until Thu
-19 Nov 13:00. ALERTs persist (proposal 2 with Frank). The tool gates from merge-base(base, HEAD) with that base's
-tiers: merge the wp/S19 tip into a lane (or a helper `-mc` branch, union-merge S19_DECISIONS) before its
-merge-check.
-1. Wait: `$Q wait --since 154` in the background, one wake per result.
-2. **G6 run 5** (wp/S19-g6c, ..72ef6454): steps 218-221, 223, 226, 229, 230 accepted; 151-155 queued (155 = review
-   fix, no-gain). Review R-W3-G6-5 done (merge after fixes = 72ef6454). When the chain passes: merge-check
-   (`--mode merge-check --snapshot --worktree .../s19-g6c --base <wp/S19 tip> --label g6r5-mc`); PASS -> merge, log,
-   remove worktree s19-g6c.
-3. **W4 run 8**: on its report, gates as they come; reviewer R-W4-8 (template `S19-R-W4-7.md`); merge-check on a
-   helper; merge. Then W4: I-14 (after I-9), I-10, I-11, I-13, I-12a-d, I-19 (with the R-W4-7 inventory: sizing
-   `__init__` non-core aliases removed by plan, region.py:130-145 private aliases).
+job 173; ruff tier *.py only, 36ea9c2d). W4 run 7 merged (8cdd71d8; arch 4/3/12). Results consumed up to 161.
+Running gates: 155 (G6 run 5 review fix), 177 (W4 run 8 I-4 interface). Pending: none. No agent running. Lanes at
+most 2 until Thu 19 Nov 13:00. ALERTs persist (proposal 2 with Frank). The tool gates from merge-base(base, HEAD)
+with that base's tiers: run every merge-check on a helper branch `wp/S19-<lane>-mc` = lane tip + the wp/S19 tip
+merged in (S19_DECISIONS union-merged with `git merge-file --union`; check line count = ours + theirs - base); it
+also tests the combined tree.
+1. **Launch the I-9 design ruling first** (`architect`, Fable per memory "Fable for hard rulings"; brief
+   `<git-common-dir>/codehealth/briefs/S19-A-I9-home.md`; it commits `docs/briefs/S19-A-I9-ruling.md` on wp/S19).
+   Then `$Q wait --since 161` in the background.
+2. **G6 run 5** (wp/S19-g6c, ..72ef6454): steps 218-221, 223, 226, 229-232, 234, 236 accepted; 155 (review fix,
+   no-gain) gating. Review R-W3-G6-5 done. When 155 passes: helper `wp/S19-g6c-mc` (lane touches 7 .py files only),
+   `$Q enqueue --worktree <helper wt> --base <wp/S19 tip> --head <helper HEAD> --snapshot --mode merge-check --label
+   g6r5-mc`; PASS -> merge the helper into wp/S19 (`git merge --no-ff -F <file>`), log, remove worktree s19-g6c and the
+   helper.
+3. **W4 run 8** (wp/S19-w4 ce7f9b76..486b6dbb; S19_DECISIONS "W4 run 8 reported"): steps 233, 235, 237 accepted; 177
+   (I-4) gating. Layer config 9810abf6 kept. When 177 passes: reviewer R-W4-8 (template `S19-R-W4-7.md`; cover 3b,
+   anderson, I-4 incl. 9810abf6 and the outside-gate commits 84a290f9, a9e36ea0, 486b6dbb; check the MSG WO-5a/WO-6
+   counts in job 177's gate report, the engineer could not read them under xdist); then helper merge-check and
+   merge. W4 run 9 waits for the I-9 ruling: I-9 per the ruling, then I-14; later I-10, I-11, I-15?, I-13, I-12a-d,
+   I-19 (ADR order :393; with the R-W4-7 inventory: sizing `__init__` non-core aliases removed by plan,
+   region.py:130-145 private aliases).
 4. Next G6 brief after run 5: rescan wp/S19 (G6 outside registry-hashed thermo is small: store.py 8.6, render.py
    7.5, units/__init__.py 7.4); G5: compare.py 7.4, `replay` 5.3, W4-dependent targets.
 5. Re-pin cce-code-health 846a065 -> 6529f47 (holds 6ab9fd1, 04a01f8, f527252 docstrings out of clone detection; `literals` lets a count drop when every base scope still reaches it: reviewers check the listed drops; adds `{files:GLOB}`: switch the ruff tier to `set -- {files:*.py,*.pyi}`) at the next queue-idle window (S19_DECISIONS; not urgent).
