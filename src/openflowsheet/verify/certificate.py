@@ -47,6 +47,7 @@ from openflowsheet.thermo.syn001 import Syn001Provider
 from openflowsheet.verify import (
     CheckResult,
     Limitation,
+    VerificationStatus,
     unsupported,
 )
 from openflowsheet.verify.checks import (
@@ -1047,7 +1048,7 @@ def _issue(
     table's); `checked` is the caller's check set at `final_state` with its residual state hash,
     regularity screen and projection, `phase_branch` the caller's record of the branch, and
     `witness` the columns the derivative witness does not difference or differences one-sided."""
-    from openflowsheet.verify.checks import derivative_witness, witness_skipped_columns
+    from openflowsheet.verify.checks import derivative_witness
     from openflowsheet.verify.regularity import solution_error_bound
 
     checks, digest, screened = checked.checks, checked.digest, checked.screened
@@ -1076,30 +1077,7 @@ def _issue(
     if bound is None:
         bound = solution_error_bound(matrix, scaled_residual)
 
-    derivative_ok = all(
-        check.result == "pass" for check in checks if check.category == "derivative_witness"
-    )
-    status, limitations = grade(
-        checks,
-        policy=resolved,
-        regularity_status=regularity.status,
-        regularity_reason=regularity.ill_conditioned_reason,
-        derivative_ok=derivative_ok,
-    )
-    # M02 design note §14.3 C2 (R-281): the columns the witness did not difference, recorded
-    # where a reader enumerates what was not established; nothing when none was skipped.
-    skipped = witness_skipped_columns(target.spec.variable_ids, witness.unstenciled)
-    if skipped:
-        limitations.append(
-            Limitation(
-                "derivative_witness_partial",
-                {"columns": skipped, "reason": witness.skipped_reason},
-            )
-        )
-    if external is not None:
-        limitations += external.limitations
-    # The caller's own limitations after the grade's (M04 spec §8.6: a surrogate's).
-    limitations.extend(checked.appended)
+    status, limitations = _graded(target, checked, resolved, witness, external)
     # M02 design note §14.2 B15: the fresh provider the checks ran on, which the independence
     # qualifications and the statements name; SYN-001's unless given.
     if provider is None:
@@ -1136,6 +1114,47 @@ def _issue(
         limitations=tuple(limitations),
         statements=statements_for(provider),
     )
+
+
+def _graded(
+    target: Any,
+    checked: _Checked,
+    policy: CheckPolicy,
+    witness: _WitnessColumns,
+    external: ExternalEvidence | None,
+) -> tuple[VerificationStatus, list[Limitation]]:
+    """§8.1's verdict on `checked`'s check set, the derivative witness's checks included, with
+    its limitations: `grade`'s under `policy` and the screen's regularity, then
+    `derivative_witness_partial` when `witness` left a column of `target`'s declaration
+    undifferenced, `external`'s, and the caller's own (`checked.appended`)."""
+    from openflowsheet.verify.checks import witness_skipped_columns
+
+    regularity = checked.screened.regularity
+    derivative_ok = all(
+        check.result == "pass" for check in checked.checks if check.category == "derivative_witness"
+    )
+    status, limitations = grade(
+        checked.checks,
+        policy=policy,
+        regularity_status=regularity.status,
+        regularity_reason=regularity.ill_conditioned_reason,
+        derivative_ok=derivative_ok,
+    )
+    # M02 design note §14.3 C2 (R-281): the columns the witness did not difference, recorded
+    # where a reader enumerates what was not established; nothing when none was skipped.
+    skipped = witness_skipped_columns(target.spec.variable_ids, witness.unstenciled)
+    if skipped:
+        limitations.append(
+            Limitation(
+                "derivative_witness_partial",
+                {"columns": skipped, "reason": witness.skipped_reason},
+            )
+        )
+    if external is not None:
+        limitations += external.limitations
+    # The caller's own limitations after the grade's (M04 spec §8.6: a surrogate's).
+    limitations.extend(checked.appended)
+    return status, limitations
 
 
 def _transformations(
