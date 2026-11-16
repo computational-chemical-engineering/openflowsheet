@@ -879,3 +879,10 @@
   15/15).** Report: ALERTs as at job 123.
 - **2026-11-16, job 133 PASS (G6 run 4 step 5, b1792fdb, `certify` -> `_certified_kind`, step 210 accepted,
   7.0 -> 0, 16/16).** Report: ALERTs as at job 123.
+- **2026-11-16, job 129 PASS (W4 run 6, I-8f interface, eb6af70f..f33bcf8b, step 211 accepted, 35.1 -> 35.1,
+  17/17): every W4 step re-gated PASS.** Layer-config commit 92153233 on wp/S19-w4: application-layers drops the
+  stale `application.policies` entry (it matched no module, arch WARNING gone); the repo-layers adoption comment
+  lists the two live entries only (A11 messages.catalogue -> registry, A14 run.session -> application.binding),
+  measured with `codehealth arch --depth 4` at the tip: 4 violations, 3 cycles, 12 edges, unchanged by the commit
+  (it is config comments and one stale entry; the merge-check gates it). Next: R-W4-1 extended to the lane tip.
+  Self-reset here (context ~100k).
