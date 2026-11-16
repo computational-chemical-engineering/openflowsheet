@@ -52,34 +52,33 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 - Held until the scale probe reports: G1 (orchestrator/, numerics/). Open: ptc.py 6.8 (P3, P4).
 - G-END (below) stays the end criterion for the whole repository.
 
-## Next actions (2026-11-16, at the self-reset, ~03:00)
+## Next actions (2026-11-16, at the self-reset, ~04:00)
 
-Gate queue: runner pid in `<git-common-dir>/codehealth/queue/runner.pid` (tools2 code, 37307ab0). Consumed up to
-result 20; next: `$Q wait --since 20`. Queued: 21-31 (W4 lane, re-made after gate 152; 31 = I-5 interface step,
-no-gain per the STOP 1 ruling), 32-35 (G5 run 4, `g5r4-1..4`). No agent running.
-1. **W4** (`wp/S19-w4`, tip 38f55cff; history rebuilt, old tip tag `s19-w4-pre-fix`). Done and queued: I-5 (A12),
-   I-3 (A13), I-6, I-1; src/test retargets of I-2 and I-7. When job 21 (w4r1b-i5-move) PASSES, launch W4 run 3
-   (`opus-engineer`, brief `S19-W4-3.md`: I-2 and I-7 interface steps under the STOP 1/STOP 2 rulings, then I-8). A
-   FAIL or SKIPPED in 21-31: read the failed tier, fix like gate 152 (S19_DECISIONS) or brief a fresh engineer.
-   After all W4 jobs of runs 1-2 PASS: orchestrator layer-config commit on the lane (application-layers loses
-   `application.policies` (config.toml:159); adoption lines `run.bundle -> application.policies` and
-   `assessment.spec -> application.types` go; stale comment `numerics -> orchestrator.trace` at :173), then
-   reviewer R-W4-1 (brief `S19-R-W4-1.md`; extend its range to the lane tip and add run 2's commits and the two
-   rulings STOP 1/STOP 2 and the test_x04 a7 ruling to it), merge-check, merge into wp/S19.
-2. **G5 run 4** (`wp/S19-g5b` from ebcf513a; checks.py 6.1 -> 7.1, certificate.py 6.4 unchanged). When 32-35 PASS:
-   reviewer R-W3-G5-4 (brief written), fixes, merge-check, merge. Next G5 run: certificate.py `verify_revision`,
-   `_revision_values`, `_guard`; `_issue`'s 18 parameters wait for the reviewer's answer (parameter object or the
-   deferred W4 verify parameter object).
-3. Open for Frank (not blocking work): STOP 1 alternative (tool change: `X as X` counts as API in any module, re-pin)
-   and the STOP 2 R-016 test change (authorised by the orchestrator under ADR 0076 I-2; reviewer reads it). The
-   verify twins merge (gamma_phi_units.py, pr_c1.py public names) needs an ADR 0076 addendum (design lane batch).
-   thermo/ providers below 7.0 are W5 only: the blocking set's G6 closes in W5.
-4. Docs-pass leftovers: studies/nlp/request.py:109,132; run/bundle.py:214; benchmarks/registry.yaml:1738,1748,1756;
-   render.py:67 and operations.py:138 (`units.X`); test docstrings test_x04_stream_table.py:8, test_x04_messages.py:6,
-   test_t07_interrupt.py:3; scripts/t08_numerical_policy.py:9,223.
-5. Then W4 run 4 (I-4, I-9, I-14 after I-9 with the A11 ruling, I-10, I-11, I-13, I-12a-d, I-19), G5's remaining
-   files, cycles and violations to 0. `wp/S19-g3` (unreviewed, trails) and `wp/SP` wait. Lanes at most 2 until Thu
-   19 Nov 13:00. Every lane merge needs a merge-check PASS; lanes branch from the wp/S19 tip.
+Gate queue: runner pid 1056796 (restarted, `queue/runner.pid`). Results consumed up to 37; next: `$Q wait --since 37`.
+Running/queued: 48 (G5 merge-check), 49 (I-3 iface side chain), 51 (G5 review-fix docstrings, re-enqueued), 57 (I-1
+iface side chain). W4 jobs withdrawn to `queue/withdrawn/` pending the lane rebuild. No agent running.
+1. **W4 ruling first:** launch `reviewer` with `model: fable`, brief `<git-common-dir>/codehealth/briefs/S19-R-W4-STOP3.md`
+   (T06 generator self-hash after I-1; experiment isolation test_m02). If it says Frank must approve: Decision Desk
+   request via hub, and park W4 (G5 and others continue). Else brief a fresh `opus-engineer` (write `S19-W4-5.md`):
+   rebuild `wp/S19-w4` with each fix in its causing commit (S19_DECISIONS "W4 lane repair by rebuild"), tag the old
+   tip `s19-w4-pre-stop3`, merge wp/S19 in (0064d0ae ruff guard), re-enqueue every gated range of runs 1-4 (list:
+   `queue/withdrawn/` and done jobs 21-24 stay valid only if their shas survive), then I-8's column_solve and column.
+   Deletion-only interface steps after the merge carry the guard; before it they need a side chain (S19_DECISIONS
+   "ruff tier guard").
+2. **G5 run 4:** when 48 (merge-check) and 51 PASS: merge `wp/S19-g5b` into wp/S19 (merge commit, `-F` file), log.
+   Next G5 run: certificate.py `_issue` witness parameter object (ruling in S19_DECISIONS R-W3-G5-4), then
+   `verify_revision`, `_revision_values`, `_guard`.
+3. After the W4 rebuild's jobs PASS: orchestrator layer-config commit on the lane (config.toml application-layers
+   line 162 `application.policies` stale; repo-layers adoption comment lines 173-176, 178, 179, 181 stale, 177 (A11) and
+   180 (A14) live, count "(12)" at 172), then R-W4-1 (brief `S19-R-W4-1.md`, extend to the lane tip: runs 2-4, rulings
+   STOP 1/2/3, test_x04 a7, the MODEL_ID ruling; the module-attribute retargets in run 4's outside-gate commits),
+   merge-check, merge.
+4. Open for Frank (not blocking): STOP 1 alternative (tool change), a cce-code-health fix for empty `{files}` (needs a
+   push), the verify twins ADR 0076 addendum. Docs-pass leftovers as before plus region.py:71, models.lifted
+   docstring, run 4's evidence-manifest scripts (k04, t04, t05, t05b, s02, s10c) and scripts/corpus_identity.py
+   import lines, docs/interfaces-frozen.md:90.
+5. Then W4 items I-4, I-9, I-14 (A11 ruling), I-10, I-11, I-13, I-12a-d, I-19; G5's remaining files; cycles and
+   violations to 0. `wp/S19-g3` and `wp/SP` wait. Lanes at most 2 until Thu 19 Nov 13:00.
 
 ## Gates (pass numbers fixed after A1, before step 1)
 

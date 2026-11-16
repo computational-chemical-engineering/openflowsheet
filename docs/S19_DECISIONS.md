@@ -612,3 +612,24 @@
   runner pid 1056796. Lane commits 59c076bd and 08e0133e keep job 25's FAIL in the log; their evidence is jobs 49
   and 57 plus the lane's merge-check at its tip. After W4 run 4 reports: merge wp/S19 into wp/S19-w4 so later
   deletion-only steps carry the guard. Reversible by: reverting 0064d0ae's config hunk.
+- **2026-11-16, W4 run 4 (opus-engineer, 232k tokens; over the 150k cap).** I-8 batches A-D committed on
+  `wp/S19-w4` (tip 09080db6): A i8a-leaf-reexports 1836c838/3c7a5502/a1da21d4/29420b3d, B i8b-split-reexports
+  75233089/6a637a62/9c6f56f7/2711d716 (StagedSplits kept), C i8c-table-binding-reexports 781bb747/fcb94ee6/76a2c61f/
+  4213b3c5, D i8d-cascade-reexports 028a596c/353b3edd/69201031/09080db6; arch 4/3/12 throughout, imports 4113 -> 4048.
+  Left: column_solve, column (frozen names). MODEL_ID retargeted in three more src and three test files under the
+  ruling. reactor.py's `_artifact_hash` changes with its bytes by design (models/__init__.py:411); F0 at the merge.
+  Helper scripts copied to `<git-common-dir>/codehealth/drafts/w4-i8/`.
+- **2026-11-16, gate 162 FAIL (job 36, w4r3-i2-revert at d250ba4c): 7 tests, all from run 2's I-1 commits.**
+  test_m02_experiment_body_isolation (f60c8faa: adapters/experiments/runner.py:71 and adapters/external/launcher.py:64
+  import INTERRUPT_CHECK from numerics.solve_record; `SOLVER_ENTRIES` lists all of numerics) and six tests asserting
+  `generator.generator_sha256() == GENERATOR_SHA256[0]` (8ae387f1 changed benchmarks/t06/generator.py's import;
+  measured raw 509b01fb -> 5e436348, renamed-back 7f426aa9 (published) -> c2718343). Design-lane questions (registered
+  benchmark identity; isolation property): ruling brief `S19-R-W4-STOP3.md` (reviewer on Fable).
+- **DECISION 2026-11-16, W4 lane repair by rebuild, not fix-forward.** A fix on top would descend from the failed
+  commits, and the queue skips descendants of a failed step; the gate-152 precedent rebuilt the lane. After the
+  ruling, a fresh engineer puts each fix into the commit that caused it (f60c8faa, 8ae387f1, or the I-1 interface
+  step), rebuilds the lane with merges kept, tags the old tip, merges wp/S19 (0064d0ae ruff guard), and re-enqueues
+  every gated range. Pending W4 jobs 37-46, 50, 52, 53, 55, 56 withdrawn (`queue/withdrawn/`); 49 and 57 (side-chain
+  re-gates of the I-3 and I-1 interface diffs) left to run, their evidence carries by diff identity if the rebuild
+  leaves those diffs unchanged. Alternative: fix-forward with a runner restart; rejected (red interval in the lane,
+  bisecting broken). Reversible by: re-enqueueing the withdrawn jobs.
