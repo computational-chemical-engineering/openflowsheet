@@ -34,7 +34,7 @@ from t07_transport_support import (
 
 from openflowsheet.application import cli
 from openflowsheet.application.authz import grant
-from openflowsheet.application.contract import ApplicationError, api_error
+from openflowsheet.application.errors import ApiError, ApplicationError, api_error
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.operations import (
     ANY,
@@ -45,7 +45,7 @@ from openflowsheet.application.operations import (
     project_response,
 )
 from openflowsheet.application.projection import TEXT_LIMIT
-from openflowsheet.application.types import ApiError, Change, published_schemas
+from openflowsheet.application.types import Change, published_schemas
 from openflowsheet.messages.catalogue import CATALOGUE
 from openflowsheet.messages.render import RenderContext, render_error
 from openflowsheet.schema_check import schema_errors

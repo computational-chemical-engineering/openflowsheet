@@ -1551,3 +1551,88 @@
   "ALERT selected/full time ratio 0.43 > 0.4: selection saves little"
   "ALERT queue wait median 27 min > 15 min"
   (standing; proposal 2 with Frank). Jobs 205, 206 gating; serial repeat headser2 running (PID 3980694).
+- **2026-11-16 23:40, resume after self-reset. Serial repeat headser2 (PID 3980694) was invalid: EXIT 1, 20458
+  setup errors in 176 s, `ModuleNotFoundError: No module named 'openflowsheet.run.session'` (tests/conftest.py
+  fixture `_msg_sidecar_in_no_bundle`).** The overlay was commit A's conftest verbatim, which at head be115b6a reverts
+  the import to the pre-I-4 `openflowsheet.run.session`. Fixed that one line to `openflowsheet.application.run_session`
+  (as be115b6a has it; `git diff` now shows only commit A's hunks) and relaunched: PID 4036764, log `headser2.log`
+  (bad run kept as `headser2-badoverlay.log`), same scratchpad and `serial.sh`. Compare on EXIT with 1061/801/100,
+  20375 passed.
+- **2026-11-16 23:45, G6 run 7 not briefed. DECISION: the targets in S19_STATE item 4 (thermo/pr_c1, iapws95,
+  coolprop_heos, pr_lib, wilson_ig, wilson_ig_v2, syn001) are all F0 M9 frozen modules (`scripts/codehealth_frozen.py`)
+  and registry-hashed: W5 only (Q1; "registry-hashed files wait for W5"). Frank's 2026-11-15 order puts W5 behind
+  development, so G6's blocking part is its non-frozen files.** Scan of c0aad45e, G6 non-frozen files below 9.0:
+  launcher.py 8.8 (leftover `launch`: after W4, agreed in R-W3-G6-6), render.py 8.5 and units/__init__.py 9.4 (rests
+  judged not taken in run 6, review agreed), store.py 8.6 (duplication = R-237 `ArtifactSink`, an interface question).
+  G6's W3 part is done except launcher after W4. Alternative: a run on env.py 9.0 / registry/__init__ 9.3 (W4
+  territory; gains under 2). Reversible by: briefing a G6 run on those. For Frank (not blocking): thermo/ below 7.0
+  (pr_c1 4.6, iapws95 6.2, coolprop_heos 6.4, pr_lib 6.9, wilson_ig 6.9) is reachable only in W5. The free slot goes
+  to W4 run 11 (brief S19-W4-11.md: I-11, I-13), launched after runs 9+10 merge (jobs 205, 206).
+- **2026-11-16 ~23:55, job 205 PASS (w4r10-revfix, f8173c9f, step 259 accepted-neutral, 15/15, 11.0 -> 11.0).** Gate
+  report: "ALERT selected share 50% < 75% of step gates", "ALERT selected gates take 570 s > 300 s (tests tier)",
+  "ALERT selected/full time ratio 0.44 > 0.4: selection saves little", "ALERT queue wait median 27 min > 15 min"
+  (standing; proposal 2 with Frank). Merge of W4 runs 9+10 waits for job 206.
+- **2026-11-17 ~00:05, job 206 PASS (w4r10-mc, helper 08be63e6, full suite, 8/8, debt 163.1 -> 163.1). W4 runs 9+10
+  merged into wp/S19 as 68a9597a** (wp/S19 had changed only docs/S19_* since 76db456d). Worktree s19-w4-mc removed
+  (clean); branch kept. **W4 run 11 launched** (`opus-engineer`, Opus, brief S19-W4-11.md: I-11, I-13; lane
+  wp/S19-w4 fast-forwards to 68a9597a). Agents running: G5 run 10, W4 run 11 (cap 2).
+- **2026-11-17, job 207 PASS (g5r10-1, 205a80a1, step 260 accepted, 30.1 -> 25.4, 16/16).**
+- **2026-11-17, G5 run 10 reported (opus-engineer, Opus). wp/S19-g5h (BASE 5b2f2886), 4 steps, jobs 207-210 (S2 cap):**
+  205a80a1 certificate `_issue` parameter object `_Checked` (15 -> 11 parameters; 11.8 -> 7.5; file 30.1 -> 25.4),
+  3a864127 `_issue` grading/limitations -> `_graded` (-> 6.0; file 23.9), db3bd5b3 column `_end_check` -> `_reflux`
+  (4.0 -> 1.0; file 11.0 -> 8.0; scratch spy: both branches run, 20 partial / 11 total condenser), b3c346c0
+  `admissibility` standalone-state -> `_standalone_state` (3.0 -> 0; file 5.0). Health certificate 8.4 -> 8.7 (aim 9.0
+  missed), column 7.6 -> 9.1; compare.py untouched; repo debt 4718.1 -> 4705.9. Not taken: `verify_revision` check-set
+  lift (lazy imports of verify.zero_flow/surrogate, rule 10); compare `_key_rule` (one-call rungs per ADR 0025 §5,
+  playbook "leave the ladder"); column `_stages_of` (regex ladder). Next: reviewer R-W3-G5-10 after jobs 208-210.
+- **2026-11-17, job 211 FAIL (w4r11-i11-1, I-11 step 2025815b on plan 0f14a6d0, run-log step 261 gate-fail, 11/12,
+  `literals`): removed ' against ', ' already exists with different content (', '); a revision is immutable and a
+  change is a new revision', 'no revision ', 'put_revision', 'replayed', 'revision '.** Cause: the plan deletes
+  application/transactions.py (FQ-C) without `literals_removed`. git grep at base/head: three texts lived only in the
+  facade (the "already exists" and "immutable" messages, 'put_revision'); the others keep copies elsewhere in src.
+  DECISION: declare the seven in the plan (`literals_removed`, file transactions.py), rebuild plan/step/layer-config,
+  enqueue fresh. Alternative: keep the texts alive somewhere (no caller; against FQ-C). Fix brief
+  S19-W4-11-fix211.md, `sonnet-implementer` (Sonnet). The running engineer was messaged first but ended at ~192k
+  without acting; no follow-up to it (agent-budget rule).
+- **2026-11-17, W4 run 11 reported (opus-engineer, Opus, ~192k tokens incl. the ignored resume). Lane fast-forwarded
+  to cacd0fef (arch 1/1/4, 316 files, 4002 imports).** I-11: 1efad3ce tests and scripts/k06_evidence_manifest.py
+  ported to `LocalApplication.in_memory()` (test_k06_application :154 now records its run as a solve job and expects
+  `run-<job_id>`; script output = base except `invalidations` run-job-000001 and new key `recorded_run`), ae098feb
+  importers retargeted to application.types, 0f14a6d0 plan, 2025815b step (`_conforms` under TYPE_CHECKING in
+  local.py; mypy falsifier at local.py:2391; patch_noop 265/0; arch 1/1/4 -> 1/1/4, files 316 -> 315, imports 4002 ->
+  3995), fe742b07 layer config (also drops the forbid rule's `to` entry; arch warnings 0). For review: two test names
+  still say "facade" (one cited in evidence/T07); forbid `to` entry dropped though the ADR row names only
+  application-layers; ported fixtures commit via `commit_revision` only (no `put_revision` audit row). Leftovers
+  (docs pass): scripts/k06_evidence_manifest.py:361 still hashes the deleted file, `build()` now raises;
+  scripts/s16_recall.py:70 stale mutant (since S17 R2); docs/roadmap/00-core-inventory.md:505, ADR 0019 pointer.
+  **STOP I-13: the ADR row ("pin readers and thermal signatures") does not settle which names.** Cross-module private
+  imports: model_builders.py:17 (35 names), revision_binding.py:47 (23), thermal_binding.py:34 (9), incl. signature
+  constants, hint builders, `_expand`, `_COOLPROP`, `_WILSON`, `_named_first`; no public name given for `_CONTEXT`
+  (revision_binding.py:118; test_m04_wo7_surrogate_unit.py:319), `_COLUMN` (tests/s11_column_support.py:23), `_columns`
+  (test_t07_r6_hints.py:42), `_declared_default` (binding.py:1266). Engineer's default: every cross-module private name
+  drops its underscore; the design lane names the four. Settled part: `column_owners`, `defect_result` (executor.py:69;
+  test_t07_w4e:35), `basis_refusal` (test_s11_routing.py:31). DECISION: I-13 scope goes to the design lane in the
+  R-W4-11 review (fable: frozen-interface naming), batched with the I-11 review questions; I-13 waits. Alternative:
+  the engineer's default now. Reversible by: running the default.
+- **2026-11-17, fix211 superseded.** The W4 run 11 engineer was resumed by the orchestrator's message after all (still
+  running) and rebuilt the chain itself: 869d96be plan with `literals_removed` (ten entries), 685bb448 step, fff4ead2
+  layer config; backup wp/S19-w4r11-job211 = fe742b07. The `sonnet-implementer` (S19-W4-11-fix211.md, 59k tokens)
+  found the moved tip, reverted its uncommitted plan edit, and stopped clean with no commit or enqueue; it measured
+  each of the seven failing literals at count 1 (tool counter). Its backup branch wp/S19-w4r11-orig (= fe742b07)
+  deleted. Lesson: a SendMessage to a finished agent resumes it; check ListAgents before briefing a second agent on
+  the same lane.
+- **2026-11-17, W4 run 11 final report (engineer resumed by message; ~217k tokens in all). I-11 rebuilt and enqueued
+  as job 212 (w4r11-i11-2, interface, f98f54aa..79c88b0e); 139afd37 layer config.** f98f54aa declares the deleted
+  module's 10 literals (count 1 each; the tool's literal check offline on f98f54aa..79c88b0e clean); 869d96be/
+  685bb448/fff4ead2 were an intermediate rebuild (869d96be had 7 extra entries appended by the concurrent fix211
+  `sonnet-implementer`, the "other writer" the engineer reported; resolved, not another session). Verified: lane tip
+  139afd37 clean, plan has 10 `[[literals_removed]]`. For R-W4-11 (besides the three review points): two removed
+  behaviours answer differently through their ADR successors: a missing revision gives `not_found "no such revision"`
+  from `LocalApplication.get_revision` (local.py:1911) instead of `RevisionError "no revision ..."`; the facade `put`
+  immutability refusal and its `put_revision` audit row have no successor (engineer did not STOP; revert f98f54aa if
+  the review does). I-13 not started (STOP above).
+- **2026-11-17, review briefs written: S19-R-W4-11.md (I-11 + the I-13 scope ruling) and S19-R-W3-G5-10.md.** DECISION:
+  R-W4-11 runs on Opus, not fable: ADR 0076 lines 188-191 and 426 already list the removed `put` refusal, its audit
+  row and the read successors, and lines 255-260 fix I-13's principle; what is left is the scope list and four names.
+  Alternative: fable. Reversible by: a fable re-review if the Opus ruling is contested. Each launches when its steps
+  pass (W4: job 212; G5: jobs 208-210).

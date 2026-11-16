@@ -71,7 +71,7 @@ sys.path.insert(0, str(ROOT / "tests"))
 import yaml  # noqa: E402
 from t07_jobs_support import cancel_while_queued, commit, lifecycle_violations  # noqa: E402
 
-from openflowsheet.application.contract import ApplicationError  # noqa: E402
+from openflowsheet.application.errors import ApplicationError  # noqa: E402
 from openflowsheet.application.local import LocalApplication  # noqa: E402
 from openflowsheet.application.operations import dispatch  # noqa: E402
 from openflowsheet.application.revision_run import (  # noqa: E402

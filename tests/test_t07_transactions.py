@@ -25,7 +25,7 @@ from conftest import REPO_ROOT
 
 from openflowsheet.application import transactions, types
 from openflowsheet.application.authz import grant
-from openflowsheet.application.contract import ApplicationError
+from openflowsheet.application.errors import ApplicationError
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.store import ProjectStore
 from openflowsheet.application.types import (

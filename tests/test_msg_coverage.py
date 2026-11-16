@@ -85,7 +85,7 @@ def test_the_normative_list_is_complete() -> None:
     regularity and validation statuses, four job statuses, the named refusals and `L-TH-4`."""
     from typing import get_args
 
-    from openflowsheet.application.types import ApiErrorCode
+    from openflowsheet.application.errors import ApiErrorCode
     from openflowsheet.application.validation_report import ValidationStatus
     from openflowsheet.verify import RegularityStatus, VerificationStatus
     from openflowsheet.verify.failure import TAXONOMY

@@ -37,7 +37,8 @@ from collections.abc import Callable, Mapping, Sequence
 from dataclasses import replace
 from typing import Any, Final
 
-from openflowsheet.application.contract import ApplicationError, Projection, api_error
+from openflowsheet.application.contract import Projection
+from openflowsheet.application.errors import ApplicationError, api_error
 from openflowsheet.canonical import canonical_json
 
 #: §10.4: the bounds of a string value and of an object key, in code points.

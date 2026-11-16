@@ -99,6 +99,7 @@ from openflowsheet.application.coupled_run import (
     job_coupling_start,
     unit_variant,
 )
+from openflowsheet.application.errors import ApiError, ApiErrorCode
 from openflowsheet.application.jobs.interrupt import CancelReason, JobInterrupted
 from openflowsheet.application.jobs.model import (
     ARTIFACT_FILE_NAMES,
@@ -125,8 +126,6 @@ from openflowsheet.application.revision_run import (
 )
 from openflowsheet.application.store import JOBS_DIR, ArtifactRow, ArtifactTableSink, ProjectStore
 from openflowsheet.application.types import (
-    ApiError,
-    ApiErrorCode,
     ArtifactRef,
     ExperimentBody,
     Job,

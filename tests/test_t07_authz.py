@@ -34,7 +34,7 @@ from openflowsheet.application.authz import (
     token_sha256,
 )
 from openflowsheet.application.cli import main
-from openflowsheet.application.contract import ApplicationError
+from openflowsheet.application.errors import ApplicationError
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.revisions import Revision
 from openflowsheet.application.store import POLICY_NAME, ProjectStore
@@ -42,10 +42,10 @@ from openflowsheet.application.types import (
     LOCAL_OWNER_PRINCIPAL,
     RIGHTS,
     CapabilityReference,
-    DocumentSchemaError,
     Limits,
     ProjectPolicy,
 )
+from openflowsheet.schema_check import DocumentSchemaError
 
 #: §10.1, transcribed. `read`: inspect, validate, preview, jobs and artifacts; `draft`:
 #: `commit_change`; `execute`: `submit_job`, `solve`, `reproduce`, `cancel_job` (own jobs).

@@ -38,7 +38,7 @@ import re
 from collections.abc import Mapping, Sequence
 from typing import Any, Final
 
-from openflowsheet.application.contract import api_error
+from openflowsheet.application.errors import api_error
 from openflowsheet.application.types import (
     AdmissionPair,
     AdmissionReport,

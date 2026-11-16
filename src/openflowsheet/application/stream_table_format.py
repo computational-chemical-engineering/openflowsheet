@@ -28,7 +28,7 @@ import io
 from collections.abc import Callable, Iterator, Mapping, Sequence
 from typing import Any, Final
 
-from openflowsheet.application.contract import api_error
+from openflowsheet.application.errors import api_error
 from openflowsheet.application.projection import ELIDED, MAX_PAGE, escape_token
 from openflowsheet.application.stream_table import SITES
 from openflowsheet.canonical import canonical_json

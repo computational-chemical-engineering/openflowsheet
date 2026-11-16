@@ -32,7 +32,7 @@ from openflowsheet.application.binding import (
     revision_probe,
 )
 from openflowsheet.application.binding_common import Unbound, refusal_code
-from openflowsheet.application.contract import ApplicationError
+from openflowsheet.application.errors import ApplicationError
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.revision_binding import (
     RevisionBinding,

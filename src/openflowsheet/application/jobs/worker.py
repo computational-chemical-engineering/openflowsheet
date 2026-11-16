@@ -12,9 +12,12 @@ In order, the worker:
    D3) — an external model's attempt never outlives a killed worker; a child must therefore never
    be given a session of its own (R-221);
 1. redirects its stdout and stderr, at the file-descriptor level, to `jobs/<job_id>/worker.log`
-   (§9.1) — before it imports anything heavier than the standard library, so what an import
-   prints is in the log too — and ignores `SIGINT`, so that a terminal's Ctrl-C reaches the
-   supervisor, which governs its workers (§9.3's clean shutdown);
+   (§9.1), so what a later import prints is in the log too, and ignores `SIGINT`, so that a
+   terminal's Ctrl-C reaches the supervisor, which governs its workers (§9.3's clean shutdown).
+   This module's own imports run before steps 0 and 1: it imports `openflowsheet.registry` (and
+   with it numpy) at module level to install the catalogue's before-freeze hook (ADR 0076 I-14,
+   FQ-B), so what that import prints reaches the inherited stderr, not the log. The forced kill
+   is unaffected: no child exists before step 0;
 2. moves the job `queued → running` with its `started` event (§6.2), fenced on the owner (§9.3);
    a job that is not queued any more (cancelled meanwhile) is left as it is, and the worker exits;
 3. starts the wall-time clock (§8.3) and then sets the started event, so the supervisor's own
@@ -54,6 +57,9 @@ from multiprocessing.sharedctypes import Synchronized
 from multiprocessing.synchronize import Event
 from pathlib import Path
 from typing import TYPE_CHECKING, Final
+
+# ADR 0076 I-14: importing the registry installs the catalogue's before-freeze hook.
+import openflowsheet.registry  # noqa: F401
 
 if TYPE_CHECKING:
     from openflowsheet.application.jobs.interrupt import CancelReason

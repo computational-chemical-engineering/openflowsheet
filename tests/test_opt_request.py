@@ -22,9 +22,9 @@ import pytest
 from jsonschema import Draft202012Validator
 from t07_corpus import A02_FILES, CORPUS
 
-from openflowsheet.application import types as application_types
+from openflowsheet import schema_check
 from openflowsheet.application import validation
-from openflowsheet.application.contract import ApplicationError
+from openflowsheet.application.errors import ApplicationError
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.revision_routes import REVISION_ROUTES
 from openflowsheet.canonical import canonical_json, document_sha256
@@ -91,7 +91,7 @@ def test_the_request_reader_reports_the_application_schema_errors_bytewise() -> 
         expected = schema_errors(SCHEMA_REFERENCE, document)
         assert request_module._schema_errors(document) == expected, document
     path = ["a/b~c", 0, "~/"]
-    assert request_module._pointer(path) == application_types._pointer(path) == "/a~1b~0c/0/~0~1"
+    assert request_module._pointer(path) == schema_check._pointer(path) == "/a~1b~0c/0/~0~1"
 
 
 @pytest.mark.parametrize("name", ["th_r1_minimal", "th_r1_full"])
@@ -501,7 +501,7 @@ _NO_NLP_IMPORT = """
 import json, sys
 sys.path.insert(0, sys.argv[1])
 from openflowsheet.application import validation
-from openflowsheet.application.contract import ApplicationError
+from openflowsheet.application.errors import ApplicationError
 from openflowsheet.application.revision_routes import REVISION_ROUTES
 from openflowsheet.studies.nlp.closure import SolverAvailability
 from openflowsheet.studies.nlp.request import static_readiness

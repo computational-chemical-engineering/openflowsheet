@@ -32,7 +32,7 @@ from x02_schema_support import without_x02
 from x04_schema_support import without_x04
 
 from openflowsheet.adapters import variants
-from openflowsheet.application.contract import ApplicationError
+from openflowsheet.application.errors import ApplicationError
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.operations import OPERATIONS, dispatch
 from openflowsheet.application.types import JobResult

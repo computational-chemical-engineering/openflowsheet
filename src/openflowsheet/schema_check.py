@@ -1,10 +1,11 @@
 """Document validation against the published schemas under `schemas/` (ADR 0076 I-5).
 
-`schema_errors` lists every error of a document against `schemas/<reference>`. The schemas, their
-`$ref` registry (the producer reading and J5's consumer reading) and one validator per reference are
-built once from the packaged schema files and cached for the process's life. Foundation code: it
-imports no application, solver or model module, so the assessment spec and the application layer
-validate documents the same way (S19 A12, from `application.types`).
+`schema_errors` lists every error of a document against `schemas/<reference>`. `validate_document`
+raises `DocumentSchemaError` for the first error in the same order. The schemas, their `$ref`
+registry (the producer reading and J5's consumer reading) and one validator per reference are built
+once from the packaged schema files and cached for the process's life. Foundation code: it imports
+no application, solver or model module, so the assessment spec and the application layer validate
+documents the same way (S19 A12, from `application.types`).
 """
 
 from __future__ import annotations
@@ -27,6 +28,16 @@ from openflowsheet.resources import packaged
 #: same bytes (T08 W4.2, `openflowsheet.resources`).
 SCHEMA_DIR: Final[Traversable] = packaged("schemas")
 SCHEMA_BASE: Final[str] = "https://github.com/frankp/process-runtime/schemas/"
+
+
+class DocumentSchemaError(ValueError):
+    """A document its schema refuses. `pointer` is the RFC 6901 pointer of the first error."""
+
+    def __init__(self, schema: str, pointer: str, message: str) -> None:
+        super().__init__(f"{schema}{'#' + pointer if pointer else ''}: {message}")
+        self.schema = schema
+        self.pointer = pointer
+        self.message = message
 
 
 @cache
@@ -73,3 +84,15 @@ def schema_errors(reference: str, document: Any, *, consumer: bool = False) -> l
         f"{_pointer(list(error.absolute_path))}: {error.message}"
         for error in sorted(validator.iter_errors(document), key=lambda e: list(e.absolute_path))
     ]
+
+
+def validate_document(reference: str, document: Any, *, consumer: bool = False) -> None:
+    """Raise `DocumentSchemaError` unless `document` satisfies `schemas/<reference>`."""
+    _raise_first(reference, _validator(reference, consumer), document)
+
+
+def _raise_first(reference: str, validator: Draft202012Validator, document: Any) -> None:
+    errors = sorted(validator.iter_errors(document), key=lambda e: list(e.absolute_path))
+    if errors:
+        first = errors[0]
+        raise DocumentSchemaError(reference, _pointer(list(first.absolute_path)), first.message)

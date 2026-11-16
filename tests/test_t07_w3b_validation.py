@@ -407,7 +407,7 @@ def test_r3_every_corpus_report_validates(task: str) -> None:
     """T08 review 2, Ruling 1 (U05) moved the `optimization` case: no report is built for that
     task, so every corpus document is refused `unsupported` instead — amended on purpose by ADR
     0071 (OPT design §4.11): without an audited solver, `nlp_solver_unavailable`."""
-    from openflowsheet.application.contract import ApplicationError
+    from openflowsheet.application.errors import ApplicationError
 
     for name, build in CORPUS.items():
         if task == "optimization":

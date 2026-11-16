@@ -56,7 +56,7 @@ from t07_jobs_support import commit
 
 import openflowsheet.verify.certificate as certificate_module
 from openflowsheet.application.binding import Binding, bind_revision_or_reason
-from openflowsheet.application.contract import ApplicationError
+from openflowsheet.application.errors import ApplicationError
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.model_builders import MODEL_BUILDERS
 from openflowsheet.application.operations import dispatch

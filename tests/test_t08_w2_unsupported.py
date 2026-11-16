@@ -35,7 +35,7 @@ from t07_corpus import CORPUS
 
 from openflowsheet.application import validation
 from openflowsheet.application.binding_common import Unbound
-from openflowsheet.application.contract import ApplicationError
+from openflowsheet.application.errors import ApplicationError
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.operations import OPERATIONS
 from openflowsheet.application.revision_binding import bind_revision_flowsheet

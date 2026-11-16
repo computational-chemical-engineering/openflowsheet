@@ -53,8 +53,15 @@ class Auditor:
 auditor: Auditor | None = None
 
 
+def _on() -> bool:
+    return auditor is not None
+
+
 def enable() -> Auditor:
     global auditor  # noqa: PLW0603
+    from openflowsheet.messages import catalogue  # noqa: PLC0415
+
+    catalogue.set_audit_probe(_on)
     if auditor is None:
         auditor = Auditor()
     return auditor

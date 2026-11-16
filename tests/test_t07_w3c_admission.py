@@ -18,13 +18,14 @@ from test_t07_w3b_validation import ALREADY_READY, MOVED_TO_READY
 import openflowsheet.application.admission as admission_module
 from openflowsheet.application.admission import SolveAdmission, admit_budgets, admit_solve
 from openflowsheet.application.binding_common import Unbound
+from openflowsheet.application.errors import ApiError
 from openflowsheet.application.revision_run import (
     NoRoute,
     Route,
     route_structure,
     select_route,
 )
-from openflowsheet.application.types import ApiError, Budgets, Limits, SolveBody
+from openflowsheet.application.types import Budgets, Limits, SolveBody
 from openflowsheet.application.validation import structural_refusal, validate
 from openflowsheet.orchestrator.execution import ExecutionPlan
 from openflowsheet.orchestrator.policies import ROUTE_DEFAULT_POLICY

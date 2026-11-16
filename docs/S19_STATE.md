@@ -39,7 +39,7 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 - Gate tooling (2026-11-16): queue modes interface and merge-check, `--snapshot`/`--head`, step-relative test
   selection (wp/S19-tools2, 37307ab0). G6 runs 2+3 reviewed (merge); W4 run 1: arch 6/4/14 -> 4/4/14.
 
-- G6 run 6 merged into wp/S19 (18f934f6, 2026-11-16 21:42).
+- G6 run 6 merged into wp/S19 (18f934f6, 2026-11-16 21:42); G6's W3 part done (frozen thermo: W5).
 
 - Open (R-W3-G1N-1): numerics/ptc.py health 6.8 after P1 (closing method's 9 parameters); P2 to P4 must end >= 7.0,
   else a miss and P1 is reverted.
@@ -54,37 +54,34 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 - Held until the scale probe reports: G1 (orchestrator/, numerics/). Open: ptc.py 6.8 (P3, P4).
 - G-END (below) stays the end criterion for the whole repository.
 
-## Next actions (2026-11-17 00:00; self-reset)
+## Next actions (2026-11-16 23:50, after the self-reset)
 
-Runner pid 2642417. Results consumed up to 190; start `$Q wait --since 190` in the background first (jobs 205 w4r10-revfix, 206 w4r10-mc). No agent running. Serial repeat headser2 PID 3980694 (session 916d464e scratchpad, log headser2.log): compare with 1061/801/100, S19_DECISIONS "R-W4-9a reported".
+Runner pid 2642417. Results consumed up to 194 (`$Q wait --since 194` runs in the background). No agent running (W4 run 11 ended; I-11 re-gating as job 212,
+plan f98f54aa, step 79c88b0e, layer config 139afd37).
 Lanes at most 2 agents until Thu 19 Nov 13:00. ALERTs persist (proposal 2 with Frank). Merge-checks run on a helper
 branch `wp/S19-<lane>-mc` = lane tip + wp/S19 tip merged in; the merge into wp/S19 takes the helper (`git merge --no-ff
 -F <file> wp/S19-<lane>-mc`), after checking wp/S19 changed only docs/S19_* since the helper's merge. `enqueue
 --rerun-of` takes the RUN-LOG STEP number (from the failed result line), never the job number, and never across a
 rebase (enqueue fresh). Mode revert: `--base` is the rejected commit. Detail in S19_DECISIONS (grep quoted words).
-1. **W4 run 8 merged** into wp/S19 as cb1106c0 (job 200 PASS, 2026-11-16 22:50); worktree s19-w4r8-mc removed.
-2. **W4 runs 9+10** (lane wp/S19-w4, steps 251 I-5b, 257 I-9, 258 I-14): R-W4-9a merge (no fixes), R-W4-9b merge
-   after docstring fix f8173c9f (job 205, no-gain); merge-check job 206 on helper wp/S19-w4-mc 08be63e6 (worktree
-   s19-w4-mc, = f8173c9f + wp/S19 76db456d). Both PASS: check wp/S19 changed only docs since 76db456d, merge the helper,
-   remove worktree s19-w4-mc. Then W4 run 11: I-11, I-13 (S19-W4-10.md minus I-14), then I-10 and I-12a-d (each step
-   needs serial-suite MSG counts at base and head per the amended ADR rule 4, ~2.2 h per suite).
-3. **G5 run 10: launch** `opus-engineer` on brief `<git-common-dir>/codehealth/briefs/S19-W3-G5-10.md` (written
-   2026-11-16 23:58; lane wp/S19-g5h from the wp/S19 tip; certificate.py `_issue` 11.8, `verify_revision` 8.3; column.py
-   `_end_check` 4.0; compare.py `_key_rule` 5.0). G5 run 9 merged as 76db456d (job 204).
-4. **G6 run 7:** write the brief (template `S19-W3-G6-6.md`), then launch when a slot is free. Scan of the wp/S19 tip
-   c0aad45e (`/tmp/claude-1000/-home-eajfpeters-Code-OpenFlowsheet/916d464e-9c10-46af-b355-083a80943fd2/scratchpad/scan-tip.json`): repo debt 4718.1, health 8.1, brain 26. G6 scope 59 files,
-   debt 385.4; below 7.0: thermo/pr_c1.py 4.6 (`PrC1Provider.evaluate_phase` 34.0, brain; duplication), iapws95.py 6.2
-   (`evaluate_phase` 38.6, brain), coolprop_heos.py 6.4 (`_evaluate` 30.4, `_maxwell_fallback` 23.3), pr_lib.py 6.9
-   (`evaluate_phase` 19.6), wilson_ig.py 6.9 (`evaluate_phase` 23.5, `_Search.two_phase` 19.0); also wilson_ig_v2.py
-   `evaluate_phase` 38.0, syn001.py `evaluate_phase` 18.0. Thermo is numerics: arithmetic rule, F0 at every step;
-   the pr_c1 / gamma_phi_units verify twins stay out (W4).
-6. **Rule 4 falsifier:** serial repeat headser2 at be115b6a+A, PID 3980694, log
-   `/tmp/claude-1000/-home-eajfpeters-Code-OpenFlowsheet/916d464e-9c10-46af-b355-083a80943fd2/scratchpad/headser2.log` (started 23:09, ~2.2 h). On EXIT: grep `MSG WO-5a|MSG WO-6|passed` and compare with 1061/801/100,
-   20375 passed; log the result; then `git worktree remove` that scratchpad's headser2.
-5. Open for Frank (not blocking): R-1042 option C; STOP 1 alternative; tool items; verify twins addendum;
-   selection-widening; proposal 2 for the ALERTs. Design lane: NaN derivative-witness pass (R-W3-G5-8); I-19 importer
-   scan over every W4-moved name (R-W4-9a note 3). Rule 4 serial form ruled and amended (01f01341). Docs-pass leftovers in S19_DECISIONS (77ae7025 message says cognitive 16 -> 11, scan 12;
-   i4 plan reason "two" -> three; ruff tier `{files:*.py,*.pyi}` switch).
+1. **W4 runs 9+10 merged** into wp/S19 as 68a9597a (job 206 PASS); worktree s19-w4-mc removed.
+2. **W4 run 11** reported (S19_DECISIONS "W4 run 11 reported"): I-11 done but job 211 FAIL (`literals`; plan lacked
+   `literals_removed`). Fixed by the resumed engineer (869d96be plan, 685bb448 step, fff4ead2; backup
+   wp/S19-w4r11-job211); fix211 superseded. On PASS: reviewer R-W4-11 (Opus; brief S19-R-W4-11.md written),
+   which also rules I-13's name scope (STOP; engineer's default and the four unnamed names in S19_DECISIONS) and the
+   three I-11 review points; then merge-check helper wp/S19-w4-mc, merge. Then I-13 per ruling, I-10 and I-12a-d
+   (serial MSG counts at base and head per amended rule 4, ~2.2 h per suite).
+3. **G5 run 10** reported (4 steps, jobs 207 PASS, 208-210 gating; S19_DECISIONS "G5 run 10 reported"). After jobs
+   208-210: `reviewer` R-W3-G5-10 (S2 tier, Opus; brief written), fixes, helper merge-check, merge.
+4. **G6:** W3 part done (S19_DECISIONS "G6 run 7 not briefed"); launcher `launch` after W4. Frozen thermo files: W5.
+5. **Rule 4 falsifier:** serial repeat headser2 relaunched (first attempt had a bad conftest overlay), PID 4036764, log
+   `/tmp/claude-1000/-home-eajfpeters-Code-OpenFlowsheet/916d464e-9c10-46af-b355-083a80943fd2/scratchpad/headser2.log`
+   (started 23:37, ~2.2 h). On EXIT: grep `MSG WO-5a|MSG WO-6|passed` and compare with 1061/801/100, 20375 passed; log
+   the result; then `git worktree remove` that scratchpad's headser2.
+6. Open for Frank (not blocking): R-1042 option C; STOP 1 alternative; tool items; verify twins addendum;
+   selection-widening; proposal 2 for the ALERTs; thermo/ below 7.0 reachable only in W5 (S19_DECISIONS "G6 run 7 not
+   briefed"). Design lane: NaN derivative-witness pass (R-W3-G5-8); I-19 importer scan over every W4-moved name
+   (R-W4-9a note 3). Docs-pass leftovers in S19_DECISIONS (77ae7025 message says cognitive 16 -> 11, scan 12; i4 plan
+   reason "two" -> three; ruff tier `{files:*.py,*.pyi}` switch).
 
 ## Gates (pass numbers fixed after A1, before step 1)
 

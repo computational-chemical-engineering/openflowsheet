@@ -36,7 +36,6 @@ from openflowsheet.canonical import first_noncanonical
 
 if TYPE_CHECKING:
     from openflowsheet.application.binding_common import Unbound
-    from openflowsheet.application.contract import ApplicationError
     from openflowsheet.application.model_builders import SurrogateResolver
     from openflowsheet.graph.process import ProcessGraph
     from openflowsheet.graph.trace import Declaration
@@ -74,35 +73,6 @@ def _revision_id(document: Mapping[str, Any]) -> str:
     value = document.get("revision_id")
     text = "" if value is None else str(value)
     return text or MISSING_REVISION_ID
-
-
-def task_unsupported(task: str) -> ApplicationError:
-    """U05's refusal of a task v0.1 does not validate for, ready to raise (T08 review 2, Ruling 1).
-    `LocalApplication.validate` raises it audited, before reading the revision."""
-    from openflowsheet.application.contract import api_error
-
-    return api_error("unsupported", f"task_unsupported({task})", pointer="/task")
-
-
-def nlp_solver_unavailable() -> ApplicationError:
-    """OPT design §4.11 (ADR 0071 D8, D10): `validate(task="optimization")` where no audited NLP
-    solver is available — ADR 0019's `unsupported`, `nlp_solver_unavailable`, pointer `/task`,
-    raised before the revision is read (U05's place). The message is the same on every platform
-    (D-16); the probe's detail, which names the platform, is the report reason's."""
-    from openflowsheet.application.contract import api_error
-
-    return api_error("unsupported", "nlp_solver_unavailable", pointer="/task")
-
-
-def optimization_request_missing() -> ApplicationError:
-    """OPT design §4.11: `task="optimization"` without an `optimization` request."""
-    from openflowsheet.application.contract import api_error
-
-    return api_error(
-        "invalid_request",
-        "task optimization needs an optimization request",
-        pointer="/optimization",
-    )
 
 
 def validate(
@@ -292,6 +262,10 @@ def _validate_optimization(
     solver_probe: Callable[[], Any] | None,
 ) -> ValidationReport:
     """OPT design §4.11: see `validate`."""
+    from openflowsheet.application.errors import (
+        nlp_solver_unavailable,
+        optimization_request_missing,
+    )
     from openflowsheet.application.revision_routes import REVISION_ROUTES
     from openflowsheet.studies.nlp.closure import audited_solver
     from openflowsheet.studies.nlp.request import STATIC_CODES, static_readiness
