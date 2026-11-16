@@ -1418,3 +1418,6 @@
   Fable over both runs. Reason: only I-14 needs the Fable ruling (initialization order); I-5b/I-9 are pure moves.
   Reversible by: one combined brief. Launch order (2 agents at a time): G5-9 when 189-193 pass, 9a and 9b when
   194-196 pass. Job 191 (pre-rebase I-14 chain) will be SKIPPED, superseded by 196. Serial rule-4 runs at ~55% (21:16).
+- **2026-11-16 21:23, job 187 PASS (g6r6-revfix, 0dd145b0, no-gain, step 247 accepted-neutral, 24.0 -> 24.0, 15/15).**
+  Report: ALERT selected share 54% < 75%; ALERT selected gates take 465 s > 300 s; ALERT queue wait median 37 min >
+  15 min (standing; proposal 2 with Frank). G6 run 6 merges when merge-check 188 passes.
