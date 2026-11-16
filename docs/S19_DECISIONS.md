@@ -1092,3 +1092,4 @@
   from that base, so a merge-check sees the fix only when the lane contains this commit: W4 run 7's merge-check runs
   on a helper branch with the wp/S19 tip merged in (as G5 run 6b). No re-run of the proof: the first real
   merge-check on such a base is the proof (expect PASS).
+- **2026-11-16 ~16:35, gate report (after job 146):** 29 gates, 0 failed; 24 of 26 steps accepted, debt removed 111.5. ALERTs unchanged: tests tier 724 s > 300 s; selected/full 0.57 > 0.4; queue wait median 31 min > 15 min (cause at job 123; proposal 2 with Frank).

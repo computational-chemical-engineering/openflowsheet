@@ -52,24 +52,16 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 - Held until the scale probe reports: G1 (orchestrator/, numerics/). Open: ptc.py 6.8 (P3, P4).
 - G-END (below) stays the end criterion for the whole repository.
 
-## Next actions (2026-11-16, ~15:50; self-reset)
+## Next actions (2026-11-16, ~16:35)
 
-Runner pid 1923489 (OLD code: its failed list skips every W4 descendant of 4d250386). Results consumed up to 135
-(156-159 SKIPPED). No agent running. Lanes at most 2 until Thu 19 Nov 13:00. ALERTs persist (cause at job 123;
-proposal 2 with Frank via session OpenFlowsheet-check). Merged today: G5 run 8 (e9d5f386), G6 run 4 (6de773c6),
-W4 runs 1-6 (7ffa7901; arch 4/3/12), tools4. Interface-lane merge-check: `merge_tiers.sh BASE HEAD LABEL` until the
-re-pin below.
-1. **Runner restart + re-pin window (first).** Wait for the running G6 run 5 gate to finish (`$Q wait --since 135`),
-   then `kill $(cat <queue>/runner.pid)` (a running gate is INTERRUPTED: re-enqueue it unchanged). With no gate
-   running: re-pin cce-code-health 1f7df37 -> 1304e31 (as the 1f7df37 re-pin, S19_DECISIONS ~line 805:
-   `.venv-codehealth` reinstall, check direct_url), add `gate.sh --behaviour-only <base> [label]` (`codehealth gate
-   --behaviour-only --mode refactor --base B --cadence campaign`, S19_GATE_FULL=1 exported), make gate_queue.py's
-   merge-check call it, prove it on a merged lane (e.g. base 6de773c6 head aa2de578, expect PASS), delete
-   merge_tiers.sh. Restart `$Q run --detach` (new code: merge-check failures no longer skip). Re-enqueue W4 run 7's
-   four steps with `--snapshot --worktree .../s19-w4`: 3cc1be0a base 34474d67 no-gain (label w4r7-refusal-src-r2),
-   6534c277 base 3cc1be0a no-gain, 1d4d88ca base 6534c277 no-gain, ae3afc36 base 43a5cc53 interface `--plan
-   .codehealth/interface/i8g-transactions-reexports.toml` (check the plan file name in 43a5cc53; targets, recipes and
-   reasons from `queue/done/w4r7-*.json`).
+Runner pid 2610692 (new code; cce-code-health 846a065, merge-check = `gate.sh --behaviour-only`, merge_tiers.sh
+gone; ruff tier filters to *.py at 36ea9c2d). Results consumed up to 137 (job 160, proof FAIL ruff on .md inputs,
+fixed; S19_DECISIONS). Queue: G6 147-155, W4 run 7 161-164. No agent running. Lanes at most 2 until Thu 19 Nov
+13:00. ALERTs persist (cause at job 123; proposal 2 with Frank via session OpenFlowsheet-check). The tool gates from
+merge-base(base, HEAD) with the tiers of that base: a lane's merge-check sees 36ea9c2d only if the lane contains
+it, so merge the wp/S19 tip into the lane (or a helper `-mc` branch) before its merge-check when it touches non-.py
+files.
+1. Wait: `$Q wait --since 137` in the background, one wake per result.
 2. **G6 run 5** (wp/S19-g6c, bd694a82..72ef6454): steps 218-220 accepted; 146-155 in the queue (155 = review fix,
    no-gain). Review R-W3-G6-5 done (merge after fixes = 72ef6454). When the chain passes: merge-check (`--mode
    merge-check --snapshot --worktree .../s19-g6c --base <wp/S19 tip> --label g6r5-mc`); PASS -> merge, log, remove
