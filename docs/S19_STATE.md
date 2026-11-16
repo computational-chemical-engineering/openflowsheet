@@ -56,15 +56,13 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 
 ## Next actions (2026-11-16 22:40; self-reset)
 
-Runner pid 2642417. Results consumed up to 185; start `$Q wait --since 185` in the background first. No agent running.
+Runner pid 2642417. Results consumed up to 186; start `$Q wait --since 186` in the background first. No agent running.
 Lanes at most 2 agents until Thu 19 Nov 13:00. ALERTs persist (proposal 2 with Frank). Merge-checks run on a helper
 branch `wp/S19-<lane>-mc` = lane tip + wp/S19 tip merged in; the merge into wp/S19 takes the helper (`git merge --no-ff
 -F <file> wp/S19-<lane>-mc`), after checking wp/S19 changed only docs/S19_* since the helper's merge. `enqueue
 --rerun-of` takes the RUN-LOG STEP number (from the failed result line), never the job number, and never across a
 rebase (enqueue fresh). Mode revert: `--base` is the rejected commit. Detail in S19_DECISIONS (grep quoted words).
-1. **W4 run 8 merge (job 200, w4r8-mc):** helper wp/S19-w4r8-mc (worktree s19-w4r8-mc) = 486b6dbb + c7d21f2e + wp/S19
-   c37ca884 as 9cb029ed. Rule 4 met in serial form ("rule 4 serial runs done": 1061/801/100 at base and head). PASS:
-   merge the helper into wp/S19, remove worktree s19-w4r8-mc. The lane wp/S19-w4 (runs 9+10) contains 486b6dbb.
+1. **W4 run 8 merged** into wp/S19 as cb1106c0 (job 200 PASS, 2026-11-16 22:50); worktree s19-w4r8-mc removed.
 2. **W4 runs 9+10 (lane wp/S19-w4, tip eed97251 after "fix195 done"):** I-5b job 194 PASS (step 251, logged by hand);
    jobs 201 I-9 (3f7540a9), 202 I-14 (ffed4051). Both PASS: launch R-W4-9a (`reviewer`, brief
    `<git-common-dir>/codehealth/briefs/S19-R-W4-9a.md`, includes Q6: ADR rule 4 serial-form text) and R-W4-9b

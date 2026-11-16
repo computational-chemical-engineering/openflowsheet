@@ -1494,3 +1494,8 @@
 - **2026-11-16 22:36, job 199 PASS (g5r9-revfix, 174045f1 `_RowFloor`, step 256 accepted-neutral, 12.0 -> 12.0,
   15/15). G5 run 9 closed:** helper wp/S19-g5g-mc (worktree s19-g5g-mc) = 174045f1 + wp/S19 8071cd4c as 94224851;
   merge-check job 203 (g5r9-mc). Job 196 SKIPPED (pre-fix195 I-14). ALERTs standing.
+- **2026-11-16 22:50, job 200 PASS (w4r8-mc merge-check, 9cb029ed, full suite, 7/7, debt 200.8 -> 200.8). W4 run 8
+  merged into wp/S19 as cb1106c0** (`git merge --no-ff -F`, helper wp/S19-w4r8-mc; wp/S19 changed only docs/S19_*
+  since c37ca884). Worktree s19-w4r8-mc removed. Gate report (6 h): "ALERT selected share 60% < 75% of step gates",
+  "ALERT selected gates take 555 s > 300 s (tests tier)", "ALERT queue wait median 32 min > 15 min": standing, proposal
+  2 with Frank. Pending: 201 (I-9), 202 (I-14), 203 (g5r9-mc).
