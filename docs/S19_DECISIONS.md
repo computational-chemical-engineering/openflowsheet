@@ -892,3 +892,16 @@
   I-7; supersedes `S19-R-W4-1.md`, whose run-1 shas changed in the gate-152 rebuild) and `S19-R-W4-1b.md` (I-8 A-F,
   layer config). Launched: R-W4-1a and R-W3-G5-8 (`S19-R-W3-G5-8.md`), both `reviewer` on Opus; R-W4-1b next free
   slot, then R-W3-G6-4 after jobs 135-136.
+- **2026-11-16, R-W3-G5-8 (reviewer, Opus, 89k tokens): merge, notes only.** Steps d8e21d1a, ce638e4c, d6769618 OK:
+  `Scaling` frozen with positive scales (numerics/scaling.py:69-90), so hoisted reads cannot change or raise;
+  `_discrepancies` never sees `escalations` and cannot raise; the barred-level `all(<=)` is pure (NaN gives False,
+  no warning on numpy 2.2.4 under `-W error`); `decide_mode` keeps rung order; R-016 clean. Note applied:
+  `_not_a_pass` docstring drops "(a NaN maximum is not above it)" (95d29ba1, job 137 no-gain). Not applied: commit
+  message of d8e21d1a says the frame is built before `frozenset(components)`; the code keeps the old order (after),
+  code right. Correction: the delivery entry's "`_identity()` order in `decide_mode`" has no referent in run/
+  (`recorded.identity()` at replay.py:104, unmoved); dropped from the open list.
+  **Open design-lane item (pre-existing, not S19 scope): `_discrepancies` folds with `max(0.0, nan) == 0.0`, so a
+  stencil column with status `ok` and a NaN entry gives on/off 0.0, passes the witness and never escalates
+  (§4.8.3).** Unchecked whether `compiled.residual` can return `ok` with a NaN; if it can, a silent pass in a
+  certificate check. Goes to progress.md for the design lane (specifier), behaviour unchanged in S19.
+  wp/S19 merged into the lane (2465d02d); merge-check job 138.

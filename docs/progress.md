@@ -364,6 +364,13 @@ genuinely structural, and guessing that before measuring it is how the wrong lin
 
 **No package is `BLOCKED`.**
 
+**Design-lane item (found in S19 review R-W3-G5-8, 2026-11-16; pre-existing, behaviour unchanged by S19):**
+`verify/checks.py` `_discrepancies` folds with `max(0.0, nan) == 0.0`, so a derivative-witness stencil column whose
+residual evaluation reports status `ok` but contains a NaN entry gives on/off discrepancy 0.0, passes the witness and
+never escalates (T06 spec §4.8.3). Open fact: can `compiled.residual` return `ok` with a NaN? If yes, this is a
+silent pass in a certificate check. Owner: design lane (`specifier`), after S19's blocking set. Evidence:
+`docs/S19_DECISIONS.md` "R-W3-G5-8".
+
 ADR 0008 registers four open questions with recommended defaults, all applied. **Q1 is closed:**
 Frank confirmed on 2026-09-16 that the SYN-001 heater is a holdup unit, so the registered
 `holdup_balance` classification stands and no file changed. Q2 (K01 adds `row_accumulation` and
