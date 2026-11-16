@@ -1,0 +1,24 @@
+# ADR 0076 I-1 (W4 run 2, brief S19-W4-2): the old module orchestrator/trace.py goes; the solve
+# record lives in openflowsheet.numerics.solve_record since S19 A5. `codehealth gate --mode
+# interface` reads this plan from the plan commit.
+id = "i1-solve-record"
+approved_by = "Frank Peters, 2026-11-14, ADR 0076 accepted (Decision Desk ofs-adr0076-accept)"
+reason = """ADR 0076 I-1: the solve record is what Newton, PTC and Anderson produce and imports \
+only compiled, so it belongs to numerics. Restructure A5 (plan move-solve-record) moved every \
+statement to numerics/solve_record.py and left orchestrator/trace.py as a re-export of its 31 \
+public names; src importers were retargeted in refactor mode (b77c3105, 33 modules) and tests, \
+scripts and benchmarks outside the gate (9ed07112; the one `from openflowsheet.orchestrator \
+import trace` form normalized), and scripts/k03_evidence_manifest.py hashes the record at its new \
+path (0066dfda), so an AST inventory finds no import of openflowsheet.orchestrator.trace \
+anywhere. The step deletes orchestrator/trace.py, the module (no alias, no __getattr__, no \
+__all__ entry survives). Expected codehealth arch --depth 4 (measured at this base and by a \
+simulation of the step): base 4 violations / 3 cycles / 12 cycle edges, after 4 / 3 / 12 (only \
+the downward edge orchestrator.trace -> numerics.solve_record goes). No layer-config change \
+(rule 6: numerics already below); the repo-layers adoption comment line \
+numerics.anderson|newton|ptc -> orchestrator.trace (A5) is stale."""
+removed = ["src/openflowsheet/orchestrator/trace.py"]
+renamed = {}
+changed = []
+added = []
+new_files = []
+callers = []
