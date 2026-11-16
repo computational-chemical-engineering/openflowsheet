@@ -768,3 +768,4 @@
 - **2026-11-16, job 80 PASS (W4 run 5b, w4r4 batch A src, 54f25b7a, step 185 accepted-neutral, 263.4 -> 263.4, 15/15).** W4 jobs 81-87, 89, 93, 98, 99 still queued; no W4 action until all pass.
 - **2026-11-16, job 103 PASS (G5 run 5 review fixes, 718d896a, step 186 accepted-neutral, 30.1 -> 30.1, 15/15).** Run 5 merges into wp/S19 on job 104 (merge-check) PASS.
 - **2026-11-16, job 81 PASS (W4 run 5b, w4r4 batch A interface, dc3f3da4, step 187 accepted, 180.4 -> 180.4, 17/17).**
+- **2026-11-16, job 104 PASS (G5 run 5 merge-check at de7807d3, full suite, 15/15, certificate.py 54.2 -> 30.1). Merged wp/S19-g5c into wp/S19 (bbcaad2d).** wp/S19 had gained docs only since the merge-check base 5ae994ea. Run 7 (wp/S19-g5e, jobs 109, 110) now meets a wp/S19 that gained run 5 (verify/certificate.py) plus docs; the lanes are disjoint (projection.py, split_checks.py), so run 7 merges on its own merge-check per S19_STATE item 2.

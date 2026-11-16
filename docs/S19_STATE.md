@@ -59,10 +59,7 @@ Gate queue: runner pid 1056796. Results consumed up to 76; next: `$Q wait --sinc
 shas) ready. Tool note: a re-gate whose base moved cannot use `--rerun-of`; log by hand with a plain `codehealth log
 --head SHA --result accepted-neutral --reason ...` from the lane worktree (steps 168, 179). The gate's literal check
 excludes docstrings.
-1. **G5 run 5** (wp/S19-g5c): reviewed (R-W3-G5-5, fixes in 718d896a), wp/S19 merged in (de7807d3). Jobs 103
-   (no-gain revfix) and 104 (merge-check). Both PASS -> `git merge -F <file>` of wp/S19-g5c into wp/S19 (merge
-   commit), log in S19_DECISIONS. A later W4 merge meets certificate.py: W4's f9dec891 lazy import (:559) and W4 I-2's
-   type-only `LiftedSplit` import from `models.lifted` (718d896a does the same): resolve import lines only.
+1. **G5 run 5**: merged into wp/S19 (bbcaad2d, 2026-11-16; jobs 103, 104 PASS).
 2. **G5 run 7** (wp/S19-g5e): reviewed (R-W3-G5-7, fix 3b13e7fe), wp/S19 merged in (0dc5f187). Jobs 109 (revfix) and
    110 (merge-check). Both PASS -> merge as 1. If run 5 merged first, the merge-check base is stale but the lanes are
    disjoint (certificate.py vs projection.py/split_checks.py); merge without a new merge-check only if wp/S19 gained
