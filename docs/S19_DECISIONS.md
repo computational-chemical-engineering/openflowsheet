@@ -1293,3 +1293,17 @@
   flag after 486b6dbb, then dc256e26 (was 52bfc2af), 205c10fa plan (a3d307a0), 7a52250e I-5b (1bb5a274), efdadbe5
   (4151f00f), 22194102 plan (b4185c3e), afc33aa5 I-9 (55dad047), ad0feaa3 layer config (dbcae2a5); final tree =
   backup + the 4 config lines. Enqueue after the re-pin to f70d7dc (or its successor with (b)) at a queue-idle window.
+- **2026-11-16, G6 run 6 reported (opus-engineer, 132k tokens). wp/S19-g6d (BASE f2987b62), 5 extract steps, jobs
+  180-184:** 44f044f1 units `_check_bounds` (24.0 -> 19.0), 842d3986 `convert_input_value` D2 arithmetic (-> 17.0),
+  77ae7025 `check_quantity` kind check (-> 14.0; units 7.4 -> 9.4), aa10c1d6 render `_field` candidates (17.0 ->
+  14.0), 048a390b render `_by_type` families (-> 10.0; render 7.5 -> 8.5). Local repo debt 4746.1 -> 4729.1. Notes:
+  77ae7025's message says cognitive 16 -> 11, the scan says 12 (fix in a later docs commit); step 5 lifts only
+  multi-statement families (one-expression rungs stay inline): reviewer to confirm the "every family or none" reading.
+  Not taken, with reasons: units rest is `convert_input_value`'s nine public parameters (x3 overloads); render's
+  `_candidate_chain` ladder (when-not row), `_derived_elements` trial raised debt, `_from_entry` parameters;
+  launcher `launch` finally-cleanup (needs an import-line change during W4, writes `progress.terminated` against
+  rule 6, gain 1.6 < 2: reconsider after W4); store.py's 21 duplicated lines are the R-237 `ArtifactSink` Protocol
+  and its list implementation (an interface question, not W3). Review R-W3-G6-6 after jobs 180-184.
+  DECISION: no new lane until W4 run 9 is enqueued. Alternative: launch G5 run 9 now. Reason: the f70d7dc re-pin needs
+  a queue-idle window and W4 is on the blocking path; a G5 lane would keep the queue busy. Reversible by: launching
+  G5 run 9 (brief to write) at any time.
