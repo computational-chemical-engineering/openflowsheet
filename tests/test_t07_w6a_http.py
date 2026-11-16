@@ -53,6 +53,7 @@ BINDINGS = REPO_ROOT / "src" / "openflowsheet" / "application" / "bindings"
 #: §11.6 (2): what a binding may import, besides the standard library.
 ALLOWED_APPLICATION = {
     "openflowsheet.application.contract",
+    "openflowsheet.application.errors",
     "openflowsheet.application.types",
     "openflowsheet.application.operations",
     "openflowsheet.application.projection",
