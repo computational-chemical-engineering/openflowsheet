@@ -39,6 +39,8 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 - Gate tooling (2026-11-16): queue modes interface and merge-check, `--snapshot`/`--head`, step-relative test
   selection (wp/S19-tools2, 37307ab0). G6 runs 2+3 reviewed (merge); W4 run 1: arch 6/4/14 -> 4/4/14.
 
+- G6 run 6 merged into wp/S19 (18f934f6, 2026-11-16 21:42).
+
 - Open (R-W3-G1N-1): numerics/ptc.py health 6.8 after P1 (closing method's 9 parameters); P2 to P4 must end >= 7.0,
   else a miss and P1 is reverted.
 
@@ -52,33 +54,31 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 - Held until the scale probe reports: G1 (orchestrator/, numerics/). Open: ptc.py 6.8 (P3, P4).
 - G-END (below) stays the end criterion for the whole repository.
 
-## Next actions (2026-11-16, ~20:15)
+## Next actions (2026-11-16 22:40; self-reset)
 
-Runner pid 2642417 (cce-code-health 6529f47 installed; merge-check = `gate.sh --behaviour-only`). Results consumed up
-to 170; start `$Q wait --since 170` in the background first. Agents: R-W3-G6-6, G5 run 9. Lanes at most 2 agents until Thu 19 Nov
-13:00. ALERTs persist (proposal 2 with Frank). Merge-checks run on a helper branch `wp/S19-<lane>-mc` = lane tip +
-wp/S19 tip merged in. S19_DECISIONS holds the detail of every item below (grep the quoted words).
-1. **Rule 4 serial runs (detached, not agents; S19_DECISIONS "rule 4 falsifier: base2"):** xdist counts are not
-   deterministic (base 964/125/1228, base2 963/124/1231). Serial full suites (`-p no:xdist`) at base 10adfc3d+A
-   (worktree `/tmp/claude-1000/-home-eajfpeters-Code-OpenFlowsheet/0e0821aa-6e8e-4c6b-9a00-f781aa0ef7c7/scratchpad/base2`)
-   and head be115b6a+A (worktree `/tmp/claude-1000/-home-eajfpeters-Code-OpenFlowsheet/165c72bf-833e-48c6-b5e2-b732f68e85df/scratchpad/headser`),
-   started 20:15, ~3 h. Logs `baseser.log`, `headser.log` in that 165c72bf scratchpad (end "EXIT n"); read only
-   `grep -h "MSG WO\|passed\|^EXIT"`. Equal: run 8 merges (item 3), ADR rule 4 text (serial form) into the R-W4-9
-   batch. Unequal: fresh engineer on the I-4 gap. Then remove both worktrees.
-2. **Done 20:50:** cce-code-health ec5aaea (e0ef865c); W4 run 9 enqueued as jobs 185 (I-5b), 186 (I-9).
-3. **W4 run 8 merge** waits for item 1 (R-W4-8 fix 1). Fixes 2 (c7d21f2e, job 179 PASS) and 3 done. Helper
-   wp/S19-w4r8-mc (worktree s19-w4r8-mc) = 486b6dbb + c7d21f2e; then merge wp/S19 into it, merge-check, merge. Run 9
-   (wp/S19-w4 after 486b6dbb) merges after run 8, with its own review (R-W4-9: I-5b, I-9, the flag, 8671bbdf).
-4. **G6 run 6** (wp/S19-g6d, base f2987b62, jobs 180-184 all PASS): reviewer R-W3-G6-6 running (Opus); then
-   fixes, helper merge-check, merge.
-5. **G5 run 9 running** (opus-engineer, wp/S19-g5g from e0ef865c; brief
-   `S19-W3-G5-9.md`: run/compare.py 7.4; verify/ below 9: gamma_phi_units 6.4, pr_c1 6.7, split_checks 7.2, table 7.5,
-   compare.py, certificate.py, column.py; S2 tier, cadence 4). W4 run 10 next free slot (brief to write: I-14 per the A11 ruling, then I-10,
-   I-11, I-15?, I-13, I-12a-d, I-19; I-12a's list per R-1044).
-6. Open for Frank (not blocking): R-1042 option C; STOP 1 alternative; tool items; verify twins addendum;
-   selection-widening; proposal 2 for the ALERTs. Design lane: NaN derivative-witness pass (R-W3-G5-8). Docs-pass
-   leftovers in S19_DECISIONS (add: 77ae7025 message says cognitive 16 -> 11, scan 12; i4 plan reason "two" -> three;
-   ruff tier `{files:*.py,*.pyi}` switch).
+Runner pid 2642417. Results consumed up to 186; start `$Q wait --since 186` in the background first. No agent running.
+Lanes at most 2 agents until Thu 19 Nov 13:00. ALERTs persist (proposal 2 with Frank). Merge-checks run on a helper
+branch `wp/S19-<lane>-mc` = lane tip + wp/S19 tip merged in; the merge into wp/S19 takes the helper (`git merge --no-ff
+-F <file> wp/S19-<lane>-mc`), after checking wp/S19 changed only docs/S19_* since the helper's merge. `enqueue
+--rerun-of` takes the RUN-LOG STEP number (from the failed result line), never the job number, and never across a
+rebase (enqueue fresh). Mode revert: `--base` is the rejected commit. Detail in S19_DECISIONS (grep quoted words).
+1. **W4 run 8 merged** into wp/S19 as cb1106c0 (job 200 PASS, 2026-11-16 22:50); worktree s19-w4r8-mc removed.
+2. **W4 runs 9+10 (lane wp/S19-w4, tip eed97251 after "fix195 done"):** I-5b job 194 PASS (step 251, logged by hand);
+   jobs 201 I-9 (3f7540a9), 202 I-14 (ffed4051). Both PASS: launch R-W4-9a (`reviewer`, brief
+   `<git-common-dir>/codehealth/briefs/S19-R-W4-9a.md`, includes Q6: ADR rule 4 serial-form text) and R-W4-9b
+   (`reviewer` with `model: fable`, brief S19-R-W4-9b.md, I-14 initialization order). Briefs carry the current shas.
+   Then fixes, helper wp/S19-w4-mc, merge-check, merge. Then W4 run 11: I-11, I-13 (S19-W4-10.md minus I-14), then
+   I-10 and I-12a-d (unblocked; each step needs serial-suite MSG counts at base and head, ~2.2 h per suite).
+3. **G5 run 9 (lane wp/S19-g5g, tip 174045f1; "R-W3-G5-9"):** step 2 reverted (620d6c02, step 254), `_RowFloor`
+   174045f1 (step 256). Merge-check job 203 (g5r9-mc) on helper wp/S19-g5g-mc 94224851 (worktree s19-g5g-mc). PASS:
+   merge, remove worktrees s19-g5g, s19-g5g-mc. Then G5 run 10 (brief from S19-W3-G5-9.md): certificate.py `_issue`
+   (11.8, 15 parameters; grouping as R-W3-G5-4), `verify_revision` (8.3), column.py `_end_check` (4.0).
+4. **G6 run 7:** G6 run 6 merged (18f934f6). Brief from a scan of the wp/S19 tip over the G6 scope (thermo/, graph/,
+   messages/, units/, adapters/, registry/, compile/), when an agent slot is free after the W4 reviews.
+5. Open for Frank (not blocking): R-1042 option C; STOP 1 alternative; tool items; verify twins addendum;
+   selection-widening; proposal 2 for the ALERTs. Design lane: NaN derivative-witness pass (R-W3-G5-8); rule 4
+   serial form (R-W4-9a Q6). Docs-pass leftovers in S19_DECISIONS (77ae7025 message says cognitive 16 -> 11, scan 12;
+   i4 plan reason "two" -> three; ruff tier `{files:*.py,*.pyi}` switch).
 
 ## Gates (pass numbers fixed after A1, before step 1)
 

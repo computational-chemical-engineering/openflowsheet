@@ -137,7 +137,7 @@ def _check_line(check_id: str) -> str | None:
 def command_solve(arguments: argparse.Namespace) -> int:
     """Solve a registered SYN-001 case, verify it, and write a replay bundle."""
     from openflowsheet.application.revision_run import registered_case, registered_flowsheet
-    from openflowsheet.run.session import run_session
+    from openflowsheet.application.run_session import run_session
 
     case = registered_case(arguments.case)
     if case is None:

@@ -27,6 +27,7 @@ from openflowsheet.application.binding_common import Unbound
 from openflowsheet.application.model_builders import MODEL_BUILDERS
 from openflowsheet.application.model_signatures import MODEL_BASES
 from openflowsheet.application.revision_binding import RevisionBinding, bind_revision_flowsheet
+from openflowsheet.application.run_session import run_session, solve_and_bundle
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.graph.analysis import analyse
 from openflowsheet.graph.trace import trace_declaration
@@ -50,7 +51,6 @@ from openflowsheet.orchestrator.revision import (
 )
 from openflowsheet.orchestrator.splits import SPLIT_RULES, check_agreement, lifted_splits
 from openflowsheet.orchestrator.tear import Syn001TearProblem, solve_tear
-from openflowsheet.run.session import run_session, solve_and_bundle
 from openflowsheet.thermo.syn001 import Syn001Provider
 
 REPO_ROOT = Path(__file__).resolve().parents[1]

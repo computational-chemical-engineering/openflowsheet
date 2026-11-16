@@ -180,7 +180,7 @@ def _msg_sidecar_in_no_bundle() -> Any:
     writes holds the key `diagnosis` or `diagnostic`; the sidecar lives only in the job store's
     `run.diagnosis`. Wraps `write_bundle` where the two session paths import it."""
     import openflowsheet.application.revision_run as revision_run
-    import openflowsheet.run.session as session
+    import openflowsheet.application.run_session as session
 
     written = session.write_bundle
 

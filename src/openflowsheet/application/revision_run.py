@@ -743,7 +743,7 @@ def _solve_coupled(
     """`revision_coupled` (M02 design note §4.3–§4.4): the outer coupling, then the final inner
     solve certified with the coupling's evidence, or a bundle. Each inner solve is planned and run
     as `revision_eo`'s; `plan` and `solve` are called once, before the first inner solve."""
-    from openflowsheet.run.session import _reproducibility_class
+    from openflowsheet.application.run_session import _reproducibility_class
 
     if experiments is None:
         raise RunUnsupportedError("external_runner_unavailable")
@@ -927,7 +927,7 @@ def write_revision_bundle(
     the solve was given them.
     OPT's revision NLP host solves with `solve_route` and writes the same bundle through this,
     without them (OPT design §4.8)."""
-    from openflowsheet.run.session import _numerical_policy_id, _reproducibility_class
+    from openflowsheet.application.run_session import _numerical_policy_id, _reproducibility_class
 
     # The route the result was solved on: on `revision_coupled`, its binding is the final inner
     # solve's (at the final w); on every other route it is `route` itself.
@@ -1144,7 +1144,7 @@ def registered_flowsheet(case: Mapping[str, Any]) -> Any:
 
 def rerun_registered(case: Mapping[str, Any], directory: Path, *, run_id: str) -> Rerun:
     """`run_session` of a registered variant into `directory`, read back as a `Rerun`."""
-    from openflowsheet.run.session import run_session
+    from openflowsheet.application.run_session import run_session
 
     fresh = run_session(registered_flowsheet(case), directory, run_id=run_id)
     return Rerun({name: read_artifact(directory, name) for name in fresh.artifacts})

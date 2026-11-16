@@ -1360,3 +1360,142 @@
   (caccb2ad..1e0d6bee), `--snapshot`; 1c8037be layer config outside the gate. Launched: reviewer R-W3-G6-6 (Opus,
   `S19-R-W3-G6-6.md`) and G5 run 9 (opus-engineer, `S19-W3-G5-9.md`, wp/S19-g5g from e0ef865c). W4 run 10 waits for a
   free agent slot.
+- **2026-11-16, R-W3-G6-6 (reviewer, Opus, 89k tokens): merge after fixes.** All five steps behaviour-identical
+  (units: same Fraction operations and association, problem order, None handling; render: candidate order, texts per
+  type); no literal drops listed. Step 5's "every family or none" reading correct (every rung with a body lifted;
+  one-expression rungs stay). Leftovers agreed: launcher `launch` after W4; store.py duplication = R-237 (ADR).
+  77ae7025's message says cognitive 16 -> 11, the scan says 12 (recorded here; the gated hash stays). Fix 1 (`_field`
+  docstring: None and RenderError returns) and note 2 (`_check_bounds`: the non-object early return) applied by the
+  orchestrator in 0dd145b0, job 187 (no-gain). Helper wp/S19-g6d-mc (worktree s19-g6d-mc) = 0dd145b0 + wp/S19
+  135c78f8 (19f2ff53), merge-check job 188.
+- **2026-11-16, W4 run 10 launched (opus-engineer, brief `S19-W4-10.md`): I-14, I-11, then I-13, on wp/S19-w4 from
+  1c8037be.** DECISION: I-10 and I-12a-d wait until rule 4 has a deterministic form (the serial runs). Alternative:
+  include them and judge rule 4 later. Reason: their gate would carry a rule 4 count that cannot be judged now.
+- **2026-11-16 ~21:30, W4 run 10 reported (opus-engineer, ~125k tokens; stopped after I-14 to stay under the cap).
+  wp/S19-w4 1c8037be..619e0011:** 1cc1271e test outside before (test_s19_i14_freeze_order.py B1-B3, conftest registry
+  import, Q2 default; 10/10 at base); 3185ea65 plan `I-14.toml` (`added`: set_before_freeze, set_audit_probe,
+  yaml_load per ruling 2.7; `new_files` yaml_io.py); 672a1edf step (the ruling's 8 src files), **job 191**
+  w4r10-i14-iface; 674d7de6 tests after (A1-A4); 619e0011 layer config (repo-layers adoption line
+  `messages.catalogue -> registry` goes). Gates: G1 arch 2/2/10 (3998 imports) -> 1/1/4 (4002), the ruling's delta;
+  G2 10/10 base and head; G4 patch_noop 265, 0 flagged; G5 F0 PASS, registry_builtin clean, CATALOGUE.sha256 000dba96,
+  MCP digest e2c44b6b, registry snapshot equal base/head; G20 passes; G6 A1-A4 pass at head (A1, A2, A4 fail at base).
+  G7: contract.py:70 lookup kept, no fourth installer (Q3 default). Engineer choices (for the review): (1) registry
+  binds the catalogue as `_catalogue` (ruling 2.2 fallback, Q5: a plain `from openflowsheet.messages import catalogue`
+  in an `__init__` counts as a public re-export), so registry :792 reads `_catalogue.register`; (2) B2 pins the
+  measured line `"  Details: not_found: probe"`. I-11 not started (importers of transactions: tests k06_application:33,
+  t07_transactions:26, t07_types:31, t07_w3b_validation:47, scripts/k06_evidence_manifest.py:35; no src importer).
+  DECISION: the next W4 engineer run (I-11, I-13) waits for one review R-W4-9 over runs 9 and 10 (I-5b, I-9, the flag
+  651cc8d0, 8671bbdf, I-14; Fable model for I-14's initialization order), launched when jobs 185, 186, 191 pass.
+  Alternative: launch I-11 now. Reason: three unreviewed W4 runs on one lane; a reject would rebuild everything above.
+- **2026-11-16, job 185 FAIL (w4r9-i5b-iface, ecf46789, step 246 gate-fail, 14/15, tests): one collection error,
+  tests/test_e01_a_links.py:16 imports `_validator` from application.types, which I-5b empties (full suite fallback,
+  20374 passed, 1 error).** A real failure with a known cause (the engineer ran touched tests only; the tool's
+  importer scan covers planned names, not a private name moving with them). No bisect needed: at 1e0eb6ce types
+  imports `_validator` from schema_check, so the retarget passes at the base (the 1e0eb6ce pattern). Job 186 SKIPPED,
+  191 will be. DECISION: a sonnet-implementer (brief `S19-W4-9-fix185.md`) adds the test commit after 1e0eb6ce,
+  rebases 75e424be..619e0011 onto it (backup wp/S19-w4r10-orig), re-enqueues I-5b (`--rerun-of 185`), I-9, I-14.
+  Alternative: a fresh opus-engineer. Reason: fully specified one-line change plus a rebase; the orchestrator does not
+  edit lane code. ALERTs: selected share 56%, selected 465 s, wait median 39 min (standing).
+- **2026-11-16, fix185 done (sonnet-implementer): X = 634c1195 (test_e01_a_links.py:16 reads `_validator` from
+  schema_check; 4 passed at X and at the new I-5b step), chain rebased cleanly onto X, tip 2b40c2f2 (backup
+  wp/S19-w4r10-orig = 619e0011; diff = that one line).** Map: 75e424be->4f7e5a57 plan I-5b, ecf46789->50779e18 I-5b,
+  8671bbdf->a953ca84, caccb2ad->84e74e1d plan I-9, 1e0d6bee->1f5c2c6b I-9, 1c8037be->a609de45 layer config,
+  1cc1271e->dbb304a3, 3185ea65->cf66884c plan I-14, 672a1edf->8292d7e2 I-14, 674d7de6->45e742b7, 619e0011->2b40c2f2.
+  Enqueued: 194 w4r9-i5b-iface-2 (rerun of 185), 195 w4r9-i9-iface-2, 196 w4r10-i14-iface-2.
+- **2026-11-16 ~21:50, G5 run 9 reported (opus-engineer, 147k tokens). wp/S19-g5g from 135c78f8, tip bfe9e545, all on
+  run/compare.py:** 55be9616 `_differences_v2` -> `_object_differences` (23.0 -> 17.0), 24f772cc `_differences_v1` ->
+  `_object_differences_v1` (v1 twin; 17.0 -> 12.0), 7338568e `_variables` -> `_kind_floor` (12.0 -> 8.0), bfe9e545
+  `_differences_v2` `floor`+`source` -> one pair `row_floor` (parameter-object, 8.0 -> 7.0, gain exactly 1.0: borderline,
+  it lifts the file 8.9 -> 9.1; revert alone leaves 8.9). Jobs 189, 190, 192, 193. compare.py health 7.4 -> 9.1; repo
+  debt 4746.1 -> 4730.1. Every step: mypy 377 files clean, ruff clean, F0 PASS, patch_noop 0/265, compare tests
+  (t08_adr0025, t02_identity, k05_replay, v1 schema, m02_wo10_coupled) pass; no string literal changed. Not taken:
+  `_key_rule` (5.0, a 12-rung first-match ladder, one helper per ADR 0025 §5 row; playbook "when not"). certificate.py
+  and column.py untouched (S2 cap). Review R-W3-G5-9 when 189-193 pass (rule on step 4's bare tuple).
+- **2026-11-16 21:25, resume after self-reset: review briefs written** (`<git-common-dir>/codehealth/briefs/`):
+  S19-R-W4-9a.md (reviewer, Opus: 651cc8d0 flag, I-5b, I-9, tests, layer config; 486b6dbb..a609de45),
+  S19-R-W4-9b.md (reviewer on `model: fable`: I-14, a609de45..2b40c2f2; initialization order), S19-R-W3-G5-9.md
+  (reviewer, Opus; rules on step 4's bare tuple). DECISION: R-W4-9 split into 9a and 9b. Alternative: one review on
+  Fable over both runs. Reason: only I-14 needs the Fable ruling (initialization order); I-5b/I-9 are pure moves.
+  Reversible by: one combined brief. Launch order (2 agents at a time): G5-9 when 189-193 pass, 9a and 9b when
+  194-196 pass. Job 191 (pre-rebase I-14 chain) will be SKIPPED, superseded by 196. Serial rule-4 runs at ~55% (21:16).
+- **2026-11-16 21:23, job 187 PASS (g6r6-revfix, 0dd145b0, no-gain, step 247 accepted-neutral, 24.0 -> 24.0, 15/15).**
+  Report: ALERT selected share 54% < 75%; ALERT selected gates take 465 s > 300 s; ALERT queue wait median 37 min >
+  15 min (standing; proposal 2 with Frank). G6 run 6 merges when merge-check 188 passes.
+- **2026-11-16 21:37, job 189 PASS (g5r9-1, 55be9616, step 248 accepted, 23.0 -> 17.0, 16/16).** ALERTs standing.
+- **2026-11-16 21:42, job 188 PASS (g6r6-mc merge-check, 19f2ff53, full suite, 7/7). G6 run 6 merged into wp/S19 as
+  18f934f6** (via helper wp/S19-g6d-mc; wp/S19 had changed only docs/S19_* since the helper's base 135c78f8).
+  Worktrees s19-g6d and s19-g6d-mc removed (clean); branches kept. ALERTs standing. Next G6 run: not briefed; G6 left
+  per the targets file after the next scan (DECISION: brief G6 run 7 at the next wake with no review pending, from a
+  scan of the wp/S19 tip; alternative: brief now; reason: 2-agent cap, three reviews queued first).
+- **2026-11-16 21:44, job 191 SKIPPED (pre-rebase I-14, superseded by 196); job 190 PASS (g5r9-2, 24f772cc, step 249
+  accepted, 17.0 -> 12.0, 16/16).** ALERTs standing.
+- **2026-11-16 21:54, job 192 PASS (g5r9-3, 7338568e, step 250 accepted, 12.0 -> 8.0, 16/16).** ALERTs standing.
+- **2026-11-16 22:04, job 194 PASS (w4r9-i5b-iface-2, 50779e18, interface, 17/17) with LOG-ERROR: `--rerun-of 185:
+  campaign s19 has no step for this tree and base`** (the fix185 rebase changed base and tree, so 185's step 246 does
+  not match). Logged by hand without `--rerun-of`, same command otherwise (`--head 50779e18`): run-log step 251
+  accepted, 63.2 -> 63.2. Step 246 stays gate-fail for the pre-rebase ecf46789. Tool note: `--rerun-of` across a
+  rebase cannot match by design; enqueue such re-runs as fresh steps. ALERTs standing.
+- **2026-11-16 22:05, job 193 PASS (g5r9-4, bfe9e545, step 252 accepted, 8.0 -> 7.0, 16/16). G5 run 9 fully gated;
+  review R-W3-G5-9 launched (reviewer, Opus, brief S19-R-W3-G5-9.md).** ALERTs standing.
+- **2026-11-16 22:15, R-W3-G5-9 (reviewer, Opus, 90k tokens): behaviour unchanged in all 4 steps; verdict: do not
+  merge 24f772cc (step 2), merge 55be9616, 7338568e, bfe9e545 after fix 2.** Step 2 is playbook.md:130 exactly (lifts
+  the dict branch of a structural-recursion walker, leaves the list branch, creates mutual recursion; v1 frozen by ADR
+  0025 D1.4, gain is nesting credit only; S17 rejected the same pattern in b29aea3c): revert alone (applies cleanly).
+  Step 1 kept (v2 was already mutually recursive through `_variables`/`_phase_branch_flow`; the branch is the §5
+  key-rule concept with its own `_ComparedObject`). Step 4 ruling: a real parameter object (data clump returned by
+  `_sibling_floor`/`_kind_floor`), but a bare tuple: replace by `_RowFloor` NamedTuple (compare.py:321, 681, 702, 726,
+  902, 928, 930; docstring at 708 to name `(floor, None)`). Note: object nesting now costs 2 frames per level in v2
+  (RecursionError only at pathological depth; accepted). Consequence: compare.py debt ends at 12.0 - 1.0 = about 11,
+  file below health 9.0. DECISION: one sonnet-implementer (brief S19-W3-G5-9-fix.md) commits the revert (mode revert,
+  label g5r9-revert2) and `_RowFloor` (no-gain, g5r9-revfix), both enqueued; then helper merge-check and merge.
+  Alternative: opus-engineer. Reason: both fixes fully specified with line anchors.
+- **2026-11-16 22:20, job 197 FAIL (g5r9-revert2, 620d6c02, step 253 gate-fail, 10/11, check `revert`: "worktree
+  differs from the exact revert").** Orchestrator brief error: in mode revert the queue's `--base` is the REJECTED
+  commit (gate.sh `--revert <sha>`, gate base HEAD~1), and the brief gave the lane tip bfe9e545, so the gate checked
+  an exact revert of bfe9e545. The commit itself is right. Re-enqueued unchanged as 198 g5r9-revert2-b (`--base
+  24f772cc --head 620d6c02 --rerun-of 197`); brief S19-W3-G5-9-fix.md corrected. Jobs enqueued after a failure are
+  not skipped (gate_queue.py skipped()), so the implementer's `_RowFloor` job on 620d6c02 gates normally.
+- **2026-11-16 22:25, G5 run 9 fixes done (sonnet-implementer): 620d6c02 revert of 24f772cc (job 197 FAIL on the
+  brief's base, re-gated as 198), 174045f1 `_RowFloor` NamedTuple (job 199 g5r9-revfix, no-gain).** Local: mypy 377
+  clean, ruff clean, 100 compare tests passed, F0 PASS (M1-M9 all equal). `_RowFloor` at the `differences()` call, the
+  list-entry `(None, None)`, both `_phase_branch_flow` sites; `_kind_floor`/`_sibling_floor` return it; unpacking
+  `_float_leaf(..., *row_floor)` kept. After 198 and 199 PASS: helper wp/S19-g5g-mc (174045f1 + wp/S19 tip),
+  merge-check, merge.
+- **2026-11-16 22:23, job 198 PASS (g5r9-revert2-b, 620d6c02, revert of 24f772cc exact, 16/16) with LOG-ERROR:
+  `--rerun-of 197: the last step for this tree and base is 253`.** The queue's `--rerun-of` is passed to `codehealth
+  log --rerun-of STEP`, so it takes the RUN-LOG STEP number, not the queue job number (the same mistake behind job
+  194's LOG-ERROR, where 185's step was 246, though that one also crossed a rebase). Logged by hand with `--rerun-of
+  253`: step 254 review-reject (`_differences_v1` 0.0 -> 5.0, compare.py 7.0 -> 12.0, as the reviewer predicted).
+  Rule for every orchestrator and engineer: `enqueue --rerun-of <step N from the failed result line>`.
+- **2026-11-16 22:24, rule 4 serial runs done (item 1; "rule 4 falsifier: base2"). Serial full suites (`-p no:xdist`,
+  both wall-time budget tests deselected) at base 10adfc3d+A and head be115b6a+A: EQUAL.** Both: `MSG WO-5a: 1061
+  bundles scanned`, `MSG WO-6: 801 run results checked, 100 with a failure`, 20375 passed, 107 skipped, 222
+  deselected, 3 xfailed, EXIT 0 (7918 s and 7914 s). R-W4-8 fix 1 (evidence for I-4) is met in the serial form. Worktrees
+  base2 and headser removed (only the commit-A conftest overlay, on wp/S19 as 7af4b2f4). Consequences:
+  (a) W4 run 8 merges: helper wp/S19-w4r8-mc gains wp/S19 c37ca884 as 9cb029ed; merge-check job 200 (w4r8-mc).
+  (b) Rule 4 serial-form text added as question 6 of R-W4-9a (S19-R-W4-9a.md) for the design-lane ruling.
+  (c) I-10 and I-12a-d may be briefed (after R-W4-9); each of their steps needs serial counts at base and head.
+- **2026-11-16 22:26, job 195 FAIL (w4r9-i9-iface-2, 1f5c2c6b, step 255 gate-fail, 14/15, tests; full-suite
+  fallback, 2 failed, 20376 passed): test_t07_w6b_mcp.py::test_g14_the_bindings_import_only_the_contract[http.py]
+  and [mcp.py], "imports outside §11.6 (2): ['openflowsheet.application.errors']".** Known cause: a953ca84 widened
+  `ALLOWED_APPLICATION` in test_t07_w6a_http.py but not its twin `ALLOWED_PROJECT_MODULES` in test_t07_w6b_mcp.py:77
+  (the only other copy; grep of tests and scripts). Not a bisect case. DECISION: sonnet-implementer (brief
+  S19-W4-9-fix195.md) adds the twin's line on a953ca84 (passes at the base: an allowed module not yet imported),
+  rebases 84e74e1d..2b40c2f2 onto it (backup wp/S19-w4r10-orig2), and enqueues I-9 and I-14 as fresh steps (no
+  `--rerun-of` across a rebase). Job 196 will be SKIPPED. R-W4-9a/9b shas change by the rebase; the briefs are
+  updated from the implementer's map before launch. Alternative: opus-engineer. Reason: the fix185 pattern, one
+  line. ALERTs standing.
+- **2026-11-16 22:30, fix195 done (sonnet-implementer, 53k tokens): X = 024ecc4d on a953ca84 (test_t07_w6b_mcp.py:79
+  gains "errors"; 41 passed at X and at the new I-9 step), rebase clean, tip eed97251 (backup wp/S19-w4r10-orig2 =
+  2b40c2f2; diff = that one line, checked).** Map: 84e74e1d->7c0b2202 plan I-9, 1f5c2c6b->3f7540a9 I-9,
+  a609de45->574621df layer config, dbb304a3->5227e2ba, cf66884c->fb99f834 plan I-14, 8292d7e2->ffed4051 I-14,
+  45e742b7->0fe4c01b, 2b40c2f2->eed97251. Enqueued fresh: 201 w4r9-i9-iface-3, 202 w4r10-i14-iface-3. Job 196 SKIPPED.
+  Review briefs S19-R-W4-9a/9b updated to the new shas and jobs.
+- **2026-11-16 22:36, job 199 PASS (g5r9-revfix, 174045f1 `_RowFloor`, step 256 accepted-neutral, 12.0 -> 12.0,
+  15/15). G5 run 9 closed:** helper wp/S19-g5g-mc (worktree s19-g5g-mc) = 174045f1 + wp/S19 8071cd4c as 94224851;
+  merge-check job 203 (g5r9-mc). Job 196 SKIPPED (pre-fix195 I-14). ALERTs standing.
+- **2026-11-16 22:50, job 200 PASS (w4r8-mc merge-check, 9cb029ed, full suite, 7/7, debt 200.8 -> 200.8). W4 run 8
+  merged into wp/S19 as cb1106c0** (`git merge --no-ff -F`, helper wp/S19-w4r8-mc; wp/S19 changed only docs/S19_*
+  since c37ca884). Worktree s19-w4r8-mc removed. Gate report (6 h): "ALERT selected share 60% < 75% of step gates",
+  "ALERT selected gates take 555 s > 300 s (tests tier)", "ALERT queue wait median 32 min > 15 min": standing, proposal
+  2 with Frank. Pending: 201 (I-9), 202 (I-14), 203 (g5r9-mc).

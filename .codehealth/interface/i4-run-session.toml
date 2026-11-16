@@ -1,0 +1,30 @@
+# ADR 0076 I-4 (W4 run 8, brief S19-W4-8): openflowsheet.run.session becomes
+# openflowsheet.application.run_session, a module rename; every importer follows in the step.
+# `codehealth gate --mode interface` reads this plan from the plan commit.
+id = "i4-run-session"
+approved_by = "Frank Peters, 2026-11-14, ADR 0076 accepted (Decision Desk ofs-adr0076-accept)"
+reason = """ADR 0076 I-4: K05's one-run pipeline uses the binder (structural_inputs, a lazy \
+import of application.binding), so it belongs to the application layer; its callers are the CLI \
+and revision_run. The module moves unchanged (git mv, no byte of it changes) and keeps its whole \
+API. Importers follow the rename in the same step: src application/cli.py:140 and \
+application/revision_run.py:746, :930, :1147 (all lazy); callers tests/conftest.py:126, \
+t08_v2_substitution.py:25, test_m02_wo14.py (the module alias normalized outside the gate in \
+84a290f9, rule 2b, and the from-import), test_a09_qualification_field.py, test_k05_replay.py, \
+test_t01_structural.py, test_t05_w1c_executor.py, test_t07_w3a_revision_runs.py, \
+test_t07_w3e_solution_state.py, test_t08_w2_cli_rerun.py; scripts k05_evidence_manifest.py, \
+k05_schema_fixtures.py, k05_structural_identity.py, t01_evidence_manifest.py (import lines only, \
+isort order). The two module-valued monkeypatch targets (conftest write_bundle, t08_v2 \
+_numerical_policy_id, test_m02_wo14 EXTERNAL_PROVIDERS) follow the alias. No living doc names \
+the module path (rule 5 grep); run/bundle.py's docstring no longer names run.session. No frozen \
+M9 or registry-hashed file imports it. Expected codehealth arch --depth 4 (measured at this base \
+and on the step applied to it): base 4 violations / 3 cycles / 12 cycle edges, after 3 / 3 / 12 \
+(imports 3989 -> 3989; the violation run.session -> application.binding goes). Layer config after \
+the step (separate commit): application-layers gains openflowsheet.application.run_session \
+directly above openflowsheet.application.binding; repo-layers loses openflowsheet.run.session \
+and its adoption comment line."""
+removed = []
+renamed = {"src/openflowsheet/run/session.py" = "src/openflowsheet/application/run_session.py"}
+changed = []
+added = []
+new_files = ["src/openflowsheet/application/run_session.py"]
+callers = ["tests/**", "scripts/**"]
