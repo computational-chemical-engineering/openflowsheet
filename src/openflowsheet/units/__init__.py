@@ -363,9 +363,9 @@ def _check_registration(
 
 
 def _check_bounds(quantity: Mapping[str, object], value: float | None) -> list[str]:
-    """The quantity's declared `bounds` (none: no problems): an object whose present limits are
-    finite numbers (`_read_limits`), the lower not above the upper, and a finite `value` within
-    them (`_limit_problems`)."""
+    """The quantity's declared `bounds` (none: no problems; not an object: that one problem): an
+    object whose present limits are finite numbers (`_read_limits`), the lower not above the
+    upper, and a finite `value` within them (`_limit_problems`)."""
     bounds = quantity.get("bounds")
     if bounds is None:
         return []

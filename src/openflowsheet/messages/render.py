@@ -397,11 +397,11 @@ def _matches(
 def _field(
     entry: Entry, name: str, scope: _Scope, outer: Sequence[str], *, strict: bool, machine: str
 ) -> str | None:
-    """`name` of `entry`: the first matching variant that defines it, then the base (§4.2.2;
-    the candidates in that order are `_field_candidates`).
-    An empty rendering counts as not supplied. A candidate that fails is a defect: `strict`
-    raises it, the audit records it, and the next candidate is tried; `RenderError` when every
-    candidate fails."""
+    """`name` of `entry`: the first of `_field_candidates` (each matching variant that defines
+    it, then the base; §4.2.2) that renders non-empty. A candidate that fails is a defect:
+    `strict` raises it, the audit records it, and the next candidate is tried. `None` when there
+    is no candidate, or when every candidate renders empty and none failed; the first failure, a
+    `RenderError`, when no candidate renders non-empty and one failed."""
     candidates = _field_candidates(entry, name, scope, outer)
     if not candidates:
         return None
