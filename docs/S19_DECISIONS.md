@@ -633,3 +633,12 @@
   re-gates of the I-3 and I-1 interface diffs) left to run, their evidence carries by diff identity if the rebuild
   leaves those diffs unchanged. Alternative: fix-forward with a runner restart; rejected (red interval in the lane,
   bisecting broken). Reversible by: re-enqueueing the withdrawn jobs.
+- **2026-11-16, R-W4-STOP3 ruling (reviewer on Fable, 107k tokens).** Q1 (T06 self-hash): option (C) tightened,
+  fix in 8ae387f1: generator.py:73 changes in place (per-file I001), rename-back gains an exact full-line
+  substitution before R-149's, `GENERATOR_SHA256[0]` = new raw hash, 509b01fb kept as checked intermediate; needs the
+  ADR 0076 addendum and R-1042 (written on wp/S19, this commit) and Frank's confirmation at W4 close (not blocking;
+  default (C)). Q2 (experiment isolation): option (a) narrowed, fix in f60c8faa: test_m02 excepts exactly
+  `numerics.solve_record`, adapters import only `INTERRUPT_CHECK` from it, a new assertion pins solve_record's
+  SOLVER_ENTRIES imports to {numerics.linear}; no Frank. Full text and falsifiers:
+  `<git-common-dir>/codehealth/briefs/S19-R-W4-STOP3-ruling.md`. W4 run 5 (rebuild, brief `S19-W4-5.md`,
+  opus-engineer) launched.
