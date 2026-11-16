@@ -52,22 +52,28 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 - Held until the scale probe reports: G1 (orchestrator/, numerics/). Open: ptc.py 6.8 (P3, P4).
 - G-END (below) stays the end criterion for the whole repository.
 
-## Next actions (2026-11-16, ~14:10)
+## Next actions (2026-11-16, ~16:35)
 
-Runner pid 1923489. Results consumed up to 126; next `$Q wait --since 126` (in the background). Queued: 141
-g6r4-revfix (no-gain), 142 g6r4-mc. Running agents: G6 run 5 engineer (opus-engineer, wp/S19-g6c from bd694a82,
-brief `S19-W3-G6-5.md`; it enqueues `g6r5-<n>` steps). Running outside the queue: `merge_tiers.sh` w4-mt1 on
-4d250386 (W4 merge-check substitute; S19_DECISIONS 13:41). Lanes at most 2 until Thu 19 Nov 13:00. Gate report
-ALERTs persist (cause and action at job 123).
-1. **G5 run 8**: merged (e9d5f386).
-2. **W4** (wp/S19-w4): job 139 PASS; job 140 merge-check FAILED by construction (refactor mode on an interface lane).
-   Substitute: `.claude/skills/s19-refactor/merge_tiers.sh BASE HEAD LABEL`. After G6 run 4 merges: merge wp/S19
-   into the lane, run merge_tiers.sh on that merge (BASE = the wp/S19 tip), on PASS merge the lane into wp/S19, log,
-   tell session `code_health` (its v0.2.0 tag waits on the W4 merge; also ask for an interface-lane merge-check
-   mode). Worktrees s19-w4-rg54, -rg54b removable. Then launch **W4 run 7** (brief `S19-W4-7.md`, BASE = the wp/S19
-   tip after the merge, `opus-engineer`): the second lane slot.
-3. **G6 run 4** (wp/S19-g6b): when 141 and 142 pass: merge into wp/S19, log, remove worktrees s19-g6b, gq-g6r4-6.
-4. **G6 run 5** running (first lane slot): on its report, the reviewer at cadence 8 (other files) before merge.
+Runner pid 2642417 (078fa7ed: skips only jobs enqueued before a failure; cce-code-health 846a065, merge-check =
+`gate.sh --behaviour-only`, merge_tiers.sh gone; ruff tier filters to *.py at 36ea9c2d). Results consumed up to 146
+(job 147 PASS, step 223). Queue: G6 148-155, W4 run 7 169-172 (bases as the engineer enqueued; job 161 on base
+34474d67 failed scope/forbid, logged step 222 gate-fail). No agent running. Lanes at most 2 until Thu 19 Nov
+13:00. ALERTs persist (cause at job 123; proposal 2 with Frank via session OpenFlowsheet-check). The tool gates from
+merge-base(base, HEAD) with the tiers of that base: a lane's merge-check sees 36ea9c2d only if the lane contains
+it, so merge the wp/S19 tip into the lane (or a helper `-mc` branch) before its merge-check when it touches non-.py
+files.
+1. Wait: `$Q wait --since 146` in the background, one wake per result.
+2. **G6 run 5** (wp/S19-g6c, bd694a82..72ef6454): steps 218-220 accepted; 146-155 in the queue (155 = review fix,
+   no-gain). Review R-W3-G6-5 done (merge after fixes = 72ef6454). When the chain passes: merge-check (`--mode
+   merge-check --snapshot --worktree .../s19-g6c --base <wp/S19 tip> --label g6r5-mc`); PASS -> merge, log, remove
+   worktree s19-g6c.
+3. **W4 run 7** (wp/S19-w4 34474d67..bf921d8c, reported, S19_DECISIONS): after its gates pass, `reviewer`
+   (R-W4-7; brief from S19-R-W4-1b-style briefs in `<git-common-dir>/codehealth/briefs/`), then merge-check
+   (behaviour-only after the re-pin) and merge (S19_DECISIONS append conflict: keep both sides). Then the W4 items
+   after I-8 (I-4, I-9, I-14, I-10, I-11, I-13, I-12a-d, I-19, ADR order), item 3b when code_health's tool change
+   for an added `__all__` lands, and anderson.py `__all__` `RecyclePolicy` (STOP 1, `changed`).
+4. Next G6 brief after run 5: rescan wp/S19 (G6 outside registry-hashed thermo is small: store.py 8.6, render.py
+   7.5, units/__init__.py 7.4); G5: compare.py 7.4, `replay` 5.3, W4-dependent targets.
 5. Open for Frank (not blocking): R-1042 / option (C) for the T06 self-hash at W4 close; STOP 1 alternative (tool
    change); cce-code-health fixes (empty `{files}`; `log --rerun-of` with a moved base; queue `--rerun-of` job vs
    step; GATE-ERROR not to block a same-head re-gate); the verify twins ADR 0076 addendum; the selection-widening

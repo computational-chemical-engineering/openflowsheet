@@ -7,6 +7,8 @@
 #        gate.sh --restructure <last accepted sha> <plan path> [label]  a module split (D18); the plan and the
 #                                                       layer entries must be committed at or before that base (the gate reads both at base)
 #        gate.sh --interface <plan commit> <plan path> [label]  an ADR 0076 W4 interface step (the plan committed at the base)
+#        gate.sh --behaviour-only <wp/S19 sha> [label]  a lane's merge-check: the base's behaviour tiers over base..HEAD,
+#                                                       the FULL suite, no static checks, debt reported not gated, not loggable
 # The map base MB (docs/S19_STATE.md) is passed as --ref-base: the tests tier's map (D13).
 # Stop a run with: kill -INT "$(cat <tag>.pid)"
 set -u
@@ -29,6 +31,10 @@ elif [ "${1:-}" = "--restructure" ]; then
 elif [ "${1:-}" = "--interface" ]; then
     # an ADR 0076 W4 interface step: behaviour tiers plus the public-API plan check (migration rule 1).
     args=(gate --mode interface --plan "$3" --base "$2" --ref-base "$MB"); label="${4:-interface}"
+elif [ "${1:-}" = "--behaviour-only" ]; then
+    # merge-check of a gated lane (cce-code-health 1304e31; replaces merge_tiers.sh): tiers only, full suite.
+    args=(gate --behaviour-only --mode refactor --cadence campaign --base "$2" --ref-base "$MB"); label="${3:-mc}"
+    export S19_GATE_FULL=1
 elif [ "${1:-}" = "--no-gain" ]; then
     # names, docstrings or ordering only (review notes): behaviour tiers, no gain check (D15).
     args=(gate --mode refactor --base "$2" --ref-base "$MB"); label="${3:-nogain}"

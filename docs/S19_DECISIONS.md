@@ -1089,3 +1089,71 @@
   | fcb94ee6 | ee29de4f | interface/i8c-table-binding-reexports |
   | 028a596c | 0dc0558e | interface/i8d-cascade-reexports |
   | 353b3edd | 68dc81b5 | interface/i8d-cascade-reexports |
+- **2026-11-16, cce-code-health 1304e31 (session code_health; after the v0.2.0 tag 7b8449d): `codehealth gate
+  --behaviour-only [--mode refactor|optimize] --base <wp/S19 sha> --cadence campaign`** runs the config checks and
+  tiers over base..head, no static checks, debt reported not gated; tiers from the BASE's config (note check
+  `tier_config` flags a head [gate] that differs). It retires merge_tiers.sh.
+  DECISION: re-pin 1f7df37 -> 1304e31 at the next queue-idle window (runner stopped, as the 1f7df37 re-pin), not now:
+  reinstalling `.venv-codehealth` under running gates (jobs 145-155 and W4 run 7's) risks them. Then: gate.sh gains
+  `--behaviour-only <base> [label]`, gate_queue.py's merge-check calls it, a check run on an already-merged lane
+  (expect PASS), merge_tiers.sh deleted. Alternative: re-pin now (rejected, above). Reversible by: re-pinning 1f7df37.
+- **2026-11-16, W4 run 7 reported (opus-engineer, 201k tokens; over the cap).** wp/S19-w4 34474d67..bf921d8c, 10
+  commits: b41fa802 test/script/benchmark retargets (outside the gate, 309 passed); 3cc1be0a `Refusal` src retarget
+  (no-gain, job 156); 6534c277 `feasibility_tolerance` callers, alias deleted (no-gain, 157); 1d4d88ca region.py
+  imports ClosureMemo plainly (no-gain without a plan: not in region's `__all__`, as I-5; 158); 645f1669 docs and
+  docstrings incl. 4 src files (outside the gate; engineer checked code unchanged); fee6bc4f a `.codehealth/config.toml`
+  comment (separate commit, the orchestrator's to keep or revert); 07897c02 transactions test retargets; 43a5cc53 +
+  ae3afc36 plan and interface step i8g-transactions-reexports (7 aliases and `__all__` entries go; 159); bf921d8c
+  sha map, 37 rows appended to S19_DECISIONS on the lane (expect an append conflict at the merge: keep both sides).
+  arch 4/3/12 (imports 3993 -> 3989). Item 3b STOPPED: the tool refuses any plan that adds `__all__` to an existing
+  module (orchestrator/policies.py); asked session code_health for `added = ["<file>:__all__"]`. Leftovers: sizing
+  `__init__` is package API (I-8: not a shim); program is I-7's frozen exception; benchmarks/registry.yaml:1738 names
+  application.policies (not edited); t08_numerical_policy.py:222-223 output labels (bytes, left);
+  anderson.py `__all__` still has `RecyclePolicy` (needs a STOP 1 step `changed = [anderson.py:__all__]`); the next
+  T05b manifest's case_hash changes (tests/t05b_support.py comment, expected).
+- **2026-11-16, jobs 156-159 (all of W4 run 7's gated steps) SKIPPED "built on the failed step 4d25038655":** the
+  runner's in-memory failed list holds job 140's merge-check head, and every W4 commit descends from it. Not a code
+  failure. Fix: gate_queue.py `fail()` ignores merge-check jobs (this commit). The running runner (pid 1923489) keeps
+  the old code and list until restarted: the next session stops it at a gate boundary, re-enqueues the interrupted
+  job and 156-159 (`--rerun-of` not needed: skipped jobs were never logged), re-pins cce-code-health to 1304e31 in
+  the same idle window (entry above), and restarts the runner.
+- **2026-11-16 ~15:50, gate report before the self-reset:** 28 gates, 0 failed; 23 of 25 steps accepted, debt removed 105.5. ALERTs unchanged (cause at job 123; proposal 2 with Frank): "selected gates take 724 s > 300 s (tests tier)", "selected/full time ratio 0.56 > 0.4", "queue wait median 31 min > 15 min".
+- **2026-11-16 ~16:30, queue-idle window: runner restart and re-pin.** The nine pending G6 run 5 jobs (147-155) were
+  moved aside (`queue/held/`) while job 146 ran, so the old runner (pid 1923489) went idle and stopped with no gate
+  interrupted; job 146 PASS (step 221 accepted, debt 13.0 -> 7.0). Session code_health: cce-code-health 846a065
+  (pushed; after 1304e31) lets an interface plan add or remove a module's `__all__` (`added = ["<file>:__all__"]`;
+  the names it lists are not counted as added public names; every name must be bound at head).
+  DECISION: re-pin 1f7df37 -> 846a065 directly, not 1304e31 (846a065 holds 1304e31 and unblocks W4 item 3b).
+  Alternative: 1304e31 now and 846a065 at the next window. Reversible by: re-pinning 1f7df37. `.venv-codehealth`
+  reinstalled, direct_url commit 846a0653. gate.sh gains `--behaviour-only <base> [label]` (S19_GATE_FULL=1),
+  gate_queue.py's merge-check calls it, merge_tiers.sh deleted (2c1ca898). Runner restarted (pid 2610692, new code:
+  a merge-check failure no longer skips a lane). G6 jobs 147-155 restored; W4 run 7 re-enqueued as jobs 161-164
+  (refusal base 34474d67, so the tests tier selects b41fa802's test retargets too).
+- **2026-11-16, job 160 (proof: behaviour-only merge-check of the merged W4 lane, 6de773c6..aa2de578) FAIL ruff:
+  18803 errors, all in non-Python files the ruff tier got from `{files}`** (16302 docs/derivations/T05b-limitations-spec.md,
+  2459 docs/interfaces-frozen.md, 42 tests/data/t07_global_state_allowlist.json; 0 in .py). Step gates never touched
+  such files; merge_tiers.sh ran its own ruff. Fix: the ruff tier keeps `*.py`/`*.pyi` only (POSIX loop; tier
+  commands run under /bin/sh). Checked: the filtered command over job 160's 426 files at aa2de578 gives 407 Python
+  files, `ruff check` and `ruff format --check` rc 0. The tool gates from merge-base(base, HEAD) and reads the tiers
+  from that base, so a merge-check sees the fix only when the lane contains this commit: W4 run 7's merge-check runs
+  on a helper branch with the wp/S19 tip merged in (as G5 run 6b). No re-run of the proof: the first real
+  merge-check on such a base is the proof (expect PASS).
+- **2026-11-16 ~16:35, gate report (after job 146):** 29 gates, 0 failed; 24 of 26 steps accepted, debt removed 111.5. ALERTs unchanged: tests tier 724 s > 300 s; selected/full 0.57 > 0.4; queue wait median 31 min > 15 min (cause at job 123; proposal 2 with Frank).
+- **2026-11-16, job 161 (W4 run 7 refusal src, base 34474d67) FAIL forbid, scope (logged step 222 gate-fail); 162-164
+  SKIPPED.** Cause: the base. 34474d67 takes in b41fa802 (test, script and benchmark retargets, outside the gate by
+  design), so forbid and scope flagged those files; the previous state file's "base 34474d67" was wrong, the engineer
+  had enqueued base b41fa802. Re-enqueued all four with the engineer's bases (jobs 165-168, plain, no `--rerun-of`:
+  log refuses a moved base, as jobs 73 and 77). b41fa802's tests are covered by the lane's full-suite merge-check.
+- **2026-11-16, jobs 165-168 SKIPPED on job 161's failed head:** the runner's failed list skipped every later job
+  built on 3cc1be0a, including deliberate re-gates (the procedure's environment-failure re-run would hit the same).
+  Fix: a failure records the queue's last seq; only jobs enqueued at or before it are skipped. Pending jobs held
+  (`queue/held/`) until G6 job 147 ends, then the runner restarts on the fix and W4 run 7 is re-enqueued.
+- **2026-11-16 ~15:50Z, job 147 PASS (step 223); runner restarted (pid 2642417, 078fa7ed) with no gate running; G6 148-155 restored; W4 run 7 re-enqueued as jobs 169-172.**
+- **2026-11-16, job 169 PASS (W4 run 7 refusal src, b41fa802..3cc1be0a, 15/15), step 224 accepted-neutral (logged by
+  the runner; no LOG-ERROR after step 222's gate-fail on the same head).** Gate report: 28 gates, 0 failed; 25 of 26
+  steps accepted, debt removed 118.5. ALERTs: "selected share 72% < 75% of step gates" (new: 7 of 25 step gates ran
+  the full suite, all "collection-time code"; job 169 is an import-line retarget, which the selector must treat as
+  import-time code, so W4 steps fall back by nature; no action beyond proposal 2); "selected gates take 703 s > 300 s
+  (tests tier)"; "selected/full time ratio 0.54 > 0.4"; "queue wait median 25 min > 15 min" (cause at job 123;
+  proposal 2 with Frank).
+- **2026-11-16, jobs 170, 171, 148 PASS** (W4 feastol step 225, closurememo step 227, accepted-neutral; G6 run 5 step 226 accepted, 11.0 -> 5.0). Review R-W4-7 started (`reviewer`, brief `S19-R-W4-7.md`) while job 172 (i8g interface) gates. DECISION: review before 172's result. Alternative: after it. Reversible by: discarding the review if 172 fails. fee6bc4f (config comment, W4 lane) kept.

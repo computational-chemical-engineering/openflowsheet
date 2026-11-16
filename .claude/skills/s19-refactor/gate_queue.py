@@ -19,9 +19,11 @@ State in <git-common-dir>/codehealth/queue/: pending/, running/, done/<label>.js
       descends from the failed commit are finished as SKIPPED, not gated: the first failing step
       of a chain is the one reported FAIL.
   enqueue --worktree W --base SHA --mode merge-check --label L [--head SHA] [--snapshot]
-      The check before a lane merges: the full suite (S19_GATE_FULL=1, read by the tests tier),
-      F0 and the MCP digest over base..head, no gain check, nothing written to the run log. It
-      closes the holes of the step-relative selection (docs/test-impact.md).
+      The check before a lane merges (gate.sh --behaviour-only, `codehealth gate --behaviour-only`):
+      the base's behaviour tiers over base..head with the full suite (S19_GATE_FULL=1, read by the
+      tests tier), F0 and the MCP digest; no static checks, debt reported not gated, nothing
+      written to the run log. It closes the holes of the step-relative selection
+      (docs/test-impact.md) and gates interface lanes as one range.
   run [--detach] [--log-out JSONL]
       The runner: FIFO, at most SLOTS jobs at a time, one job per worktree at a time. It refuses a
       job whose worktree HEAD or tree changed since enqueue, runs gate.sh in the worktree, then
@@ -214,8 +216,8 @@ def gate_command(job: dict) -> list[str]:
         return ["bash", str(GATE), base, label]
     if mode in PLAN_MODES:
         return ["bash", str(GATE), f"--{mode}", base, job["plan"], label]
-    if mode == "merge-check":  # behaviour tiers over base..head, the tests tier on the full suite
-        return ["bash", str(GATE), "--no-gain", base, label]
+    if mode == "merge-check":  # behaviour tiers over base..head, the full suite, no static checks
+        return ["bash", str(GATE), "--behaviour-only", base, label]
     return ["bash", str(GATE), f"--{mode}", base, label]
 
 
@@ -260,7 +262,8 @@ class Runner:
         self.lock = threading.Lock()
         self.threads: dict[str, threading.Thread] = {}  # worktree -> its job's thread
         self.gates: dict[str, subprocess.Popen] = {}
-        self.failed: dict[str, list[str]] = {}  # worktree -> heads of its failed snapshot jobs
+        # worktree -> (head of a failed snapshot job, the last seq enqueued when it failed)
+        self.failed: dict[str, list[tuple[str, int]]] = {}
         self.stopping = False
 
     def say(self, line: str) -> None:
@@ -409,18 +412,27 @@ class Runner:
         self.finish(job, running, outcome, f"{job['mode']} {summary} | {match.group(2)}")
 
     def fail(self, job: dict) -> None:
+        # A merge-check verdict is about a lane's readiness to merge, not a step the lane builds
+        # on: its failure must not skip the lane's later steps (2026-11-16: job 140 skipped W4
+        # run 7's jobs 156-159).
+        if job["mode"] == "merge-check":
+            return
         if job.get("snapshot") or job.get("detached"):
+            seq_file = QUEUE / "seq"
+            last = int(seq_file.read_text()) if seq_file.exists() else job["seq"]
             with self.lock:
-                self.failed.setdefault(job["worktree"], []).append(job["head"])
+                self.failed.setdefault(job["worktree"], []).append((job["head"], last))
 
     def skipped(self, job: dict) -> str | None:
-        """The failed commit a pending snapshot job is built on, if any."""
+        """The failed commit a pending snapshot job is built on, if any. Only jobs enqueued before
+        the failure are skipped: one enqueued after it is a deliberate re-gate (2026-11-16: jobs
+        165-168, re-enqueued on corrected bases, were skipped on job 161's failed head)."""
         if not (job.get("snapshot") or job.get("detached")):
             return None
         with self.lock:
             heads = list(self.failed.get(job["worktree"], []))
-        for head in heads:
-            if is_ancestor(head, job["head"], COMMON.parent):
+        for head, last in heads:
+            if job["seq"] <= last and is_ancestor(head, job["head"], COMMON.parent):
                 return head
         return None
 
