@@ -1522,3 +1522,5 @@
   conditions as headser (no fixed seed), worktree `scratchpad/headser2` of session 916d464e, PID 3980694, log
   `headser2.log`, started 23:09. Equal to 1061/801/100: determinism confirmed directly. Unequal: the amendment is
   wrong; park rule 4 for the design lane with both numbers, I-10/I-12 wait.
+- **2026-11-16 23:15, job 203 PASS (g5r9-mc, old helper 94224851, 7/7, debt 23.0 -> 12.0; informative only, no G5
+  finding).** The merge waits for job 204 (g5r9-mc2). ALERTs standing (proposal 2 with Frank).
