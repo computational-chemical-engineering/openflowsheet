@@ -907,3 +907,32 @@
   wp/S19 merged into the lane (2465d02d); merge-check job 138.
 - **2026-11-16, job 135 PASS (G6 run 4 step 6, 0ed6c982, render.py `_by_type`, step 213 accepted, 24.0 -> 20.0,
   16/16).** Report: ALERTs as at job 123.
+- **2026-11-16, R-W4-1a (reviewer, Opus, 178k tokens; I-5, I-3, I-6, I-1, I-2, I-7): merge after fixes, no commit
+  rejected.** Every retarget changes import lines only (filter over 13 commits); lazy imports stay lazy and now load
+  less (schema_check, tolerances, orchestrator.policies; dropped modules have no import-time effects; the `@cache`d
+  `_validator`/`_published` are one function object, one cache); no patch target changed meaning (`Trace.record`,
+  `generator.generator_sha256`); authorised test changes (x04 a7, R-016 9e467cca, test_m02 3d45c5db, T06 hash,
+  G20 2+3) match their rulings and are not weaker; 8993799c acceptable as a path fix; STOP 1 form met; arch numbers
+  as planned (6/4/14 -> 5/4/14 -> 4/4/14 -> 4/3/12).
+  Findings and actions:
+  (1) The W5 `Refusal` exception list missed four registry-hashed files (parenthesized imports); confirmed by grep at
+  92153233: cost/contributor.py:33, cost/derived.py:33, lca/impact.py:30, lca/inventory.py:37.
+  DECISION: ADR 0076 addendum (this commit; a fact the list missed, as the 2026-11-14 addendum): eight hashed files
+  in W5; the non-hashed importers (sizing/__init__, sizing/core, sizing/families, studies/assessment.py,
+  studies/nlp/revision.py, tests) retarget in W4 run 7 with the sizing re-exports. Alternative: keep all eight
+  hashed files on the old path past S19 as a permanent exception; rejected (rule 1, no shims). Reversible by: a
+  further addendum.
+  (2) Docstrings and comments naming old homes (src: studies/nlp/request.py:109,132; application/operations.py:138;
+  messages/render.py:67; orchestrator/policies.py:30 vs benchmarks/registry.yaml:1738; tests: test_t05b_literal.py:14,
+  t05b_support.py:55, t06_support.py:9,60, test_t06_w18_literal.py:64, test_opt_request.py:81; scripts:
+  m02_schema_fixtures.py:39, m04_schema_fixtures.py:54, t08_numerical_policy.py:9), (3) orchestrator/policies.py has
+  no `__all__` (add the 14 names, interface step), (4) linearization.py:45 `_feasibility_tolerance` alias still
+  serving program.py:29,607,814 and report.py:29,259 (retarget, delete): all to W4 run 7, after the W4 merge, before
+  I-19. Notes: (5) types.py imports five private schema_check names (public names later, I-19 judgment);
+  (6) d1f2ff38's two allowlist justifications identical, the types.py text should name `_event_common_validator`
+  and `published_schemas` (run 7 docs item); (7) three documented red commits on the lane: merge with a merge
+  commit (as always) so `bisect --first-parent` skips them; (8) plan reasons cite pre-rebuild shas reachable only
+  from local tags s19-w4-pre-fix, s19-w4-pre-stop3: run 7 logs the full old-to-new map (by patch-id) in S19_DECISIONS,
+  tags stay local; (9) a7's docstring says "defined there" for three constants only checked in `display.__all__`
+  (run 7 docs item). The next T05b manifest will show a new spec sha256 (8993799c; scripts/t05b_evidence_manifest.py
+  records it): expected, not drift.

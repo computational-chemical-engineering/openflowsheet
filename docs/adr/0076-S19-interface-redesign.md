@@ -54,6 +54,14 @@ texts; any numeric result. R-016 (verifier independence) is applied, not changed
   an exact full-line substitution before R-149's package substitution, so the published start sets keep `7f426aa9...`
   and R-149's `509b01fb...` stays checked as the intermediate. A substitution-only move like R-149's; Frank's decision
   is pending, not blocking (default this form, reported at W4 close).
+- Addendum (S19 W4, 2026-11-16, review R-W4-1a; a fact the lists missed, not a new decision): the W5 `Refusal`
+  exception (FQ-A; the I-7 row and "No shims") names four registry-hashed contributor files; a single-line grep missed
+  the parenthesized imports. Measured on `wp/S19-w4` at 92153233: eight files under `assessment/cost/` and
+  `assessment/lca/` import `Refusal` through `assessment.program`: cost/operating.py:26, cost/index.py:30,
+  lca/brightway.py:44, lca/tables.py:35 (listed) and cost/contributor.py:33, cost/derived.py:33, lca/impact.py:30,
+  lca/inventory.py:37 (added). All eight are retargeted in W5 with the one `registry_sha256` change. The non-hashed
+  importers (assessment/sizing/__init__.py:39, sizing/core.py:27, sizing/families.py:16, studies/assessment.py:46,
+  studies/nlp/revision.py:40 and the tests) are retargeted in W4 with the sizing re-exports (I-8).
 **Affected packages:** S19 (all of `src/openflowsheet`), with the tests, scripts, benchmarks, examples and living docs
 that import moved names.
 
