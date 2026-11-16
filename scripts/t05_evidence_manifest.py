@@ -2110,7 +2110,7 @@ def _a21(runs: Runs, ref: Mapping[str, Any]) -> tuple[bool, Any, Any]:
     from openflowsheet.verify.certificate import BoundDeclaration
     from openflowsheet.verify.checks import qualification
     from openflowsheet.verify.regularity import target_jacobian
-    from openflowsheet.verify.table import REACTION_DATUM_NOTE
+    from openflowsheet.verify.table_kit import REACTION_DATUM_NOTE
 
     ledger = Ledger()
     provider = Syn001Provider()

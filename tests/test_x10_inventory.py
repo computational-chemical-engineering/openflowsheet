@@ -19,7 +19,7 @@ import sys
 
 from conftest import REPO_ROOT
 
-from openflowsheet.application.revision_binding import MODEL_BASES
+from openflowsheet.application.model_signatures import MODEL_BASES
 
 SCRIPT = REPO_ROOT / "scripts" / "x10_inventory.py"
 INVENTORY = REPO_ROOT / "benchmarks" / "x10" / "inventory.json"

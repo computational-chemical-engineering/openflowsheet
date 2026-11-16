@@ -171,10 +171,7 @@ from openflowsheet.verify.saturation import (
     resolution_floor,
     split_route,
 )
-from openflowsheet.verify.table import (
-    SPLIT_ENTHALPY_NOTE,
-    UNRESOLVED_ENTHALPY_NOTE,
-)
+from openflowsheet.verify.table_kit import SPLIT_ENTHALPY_NOTE, UNRESOLVED_ENTHALPY_NOTE
 from openflowsheet.verify.verdict import CheckReport, SolutionCertificate, run_checks
 from openflowsheet.verify.zero_flow import DORMANT_OUTLETS
 

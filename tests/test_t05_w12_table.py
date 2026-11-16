@@ -27,7 +27,8 @@ from openflowsheet.thermo.syn001 import Syn001Provider
 from openflowsheet.verify import CheckResult
 from openflowsheet.verify.certificate import verify_revision
 from openflowsheet.verify.checks import qualification
-from openflowsheet.verify.table import REACTION_DATUM_NOTE, revision_checks
+from openflowsheet.verify.table import revision_checks
+from openflowsheet.verify.table_kit import REACTION_DATUM_NOTE
 from openflowsheet.verify.verdict import CheckPolicy, SolutionCertificate
 
 SOLVABLE = ("SYN-001-UL-C1", "SYN-001-UL-C2", "SYN-001-UL-C3")

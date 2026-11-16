@@ -24,8 +24,9 @@ from pathlib import Path
 from typing import Any
 
 from openflowsheet.application.local import LocalApplication
+from openflowsheet.application.model_builders import MODEL_BUILDERS
+from openflowsheet.application.model_signatures import MODEL_BASES
 from openflowsheet.application.operations import OPERATIONS
-from openflowsheet.application.revision_binding import MODEL_BASES, MODEL_BUILDERS
 from openflowsheet.messages.catalogue import CATALOGUE, FAMILY_PAGES
 from openflowsheet.messages.render import entry_document
 from openflowsheet.messages.text import STUB_NOTE, format_text

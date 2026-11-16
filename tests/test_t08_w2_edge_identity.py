@@ -57,11 +57,8 @@ from test_t05b_release_opening import affine
 
 from benchmarks.t08.ptc_r1 import compare
 from openflowsheet.application.binding import Binding, bind_revision_or_reason
-from openflowsheet.application.revision_binding import (
-    MODEL_BUILDERS,
-    RevisionBinding,
-    bind_revision_flowsheet,
-)
+from openflowsheet.application.model_builders import MODEL_BUILDERS
+from openflowsheet.application.revision_binding import RevisionBinding, bind_revision_flowsheet
 from openflowsheet.application.revision_run import Route, legacy_plan, select_route, solve_route
 from openflowsheet.canonical import document_sha256
 from openflowsheet.numerics import newton

@@ -84,7 +84,11 @@ def library_basis() -> Any:
 
 def measurement_binding() -> types.ModuleType:
     """The installed binder's tables with the library basis appended; outside the wheel."""
-    from openflowsheet.application import revision_binding  # noqa: PLC0415
+    from openflowsheet.application import (  # noqa: PLC0415
+        model_builders,
+        model_signatures,
+        revision_binding,  # noqa: PLC0415
+    )
     from openflowsheet.thermo import pr_lib  # noqa: PLC0415
 
     library = library_basis()
@@ -102,8 +106,8 @@ def measurement_binding() -> types.ModuleType:
         b for b in revision_binding.SELECTABLE_BASES if b.provider_id in V2_BASIS_PROVIDERS
     )
     binding.SELECTABLE_BASES = (*registered, library)  # type: ignore[attr-defined]
-    binding.MODEL_BASES = revision_binding.MODEL_BASES  # type: ignore[attr-defined]
-    binding.MODEL_BUILDERS = revision_binding.MODEL_BUILDERS  # type: ignore[attr-defined]
+    binding.MODEL_BASES = model_signatures.MODEL_BASES  # type: ignore[attr-defined]
+    binding.MODEL_BUILDERS = model_builders.MODEL_BUILDERS  # type: ignore[attr-defined]
     binding.basis_provider = basis_provider  # type: ignore[attr-defined]
     return snapshot.restrict_to_v2_models(binding)
 

@@ -13,11 +13,8 @@ everything the originals pinned, plus the additions: no check is narrowed.
 from __future__ import annotations
 
 from openflowsheet.orchestrator.splits import DORMANCY_RULES, SPLIT_RULES, DormancyRule, SplitRule
+from openflowsheet.verify.flowsheet_rows import EXTERNAL_DUTY_MODELS, FEED_MODELS, PRODUCT_MODELS
 from openflowsheet.verify.table import (
-    EXTERNAL_DUTY_MODELS,
-    FEED_MODELS,
-    MODEL_CHECKS,
-    PRODUCT_MODELS,
     _c1_flash_material,
     _c1_reactor_material,
     _feed_specification,
@@ -33,6 +30,7 @@ from openflowsheet.verify.table import (
     _splitter_material,
     _splitter_specification,
 )
+from openflowsheet.verify.unit_checks import MODEL_CHECKS
 from openflowsheet.verify.zero_flow import DORMANT_OUTLETS, PRODUCT_MOLE_ROWS, DormantOutlet
 
 SYN001_SPLIT_MODELS = {

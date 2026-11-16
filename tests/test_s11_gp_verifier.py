@@ -77,7 +77,7 @@ from openflowsheet.thermo import (
 )
 from openflowsheet.thermo.syn001 import Syn001Provider
 from openflowsheet.thermo.wilson_ig_v2 import WilsonIdealGasProviderV2
-from openflowsheet.verify import CheckResult, gamma_phi_units, table
+from openflowsheet.verify import CheckResult, gamma_phi_units, table, table_kit
 from openflowsheet.verify.certificate import fresh_provider, verify_revision
 from openflowsheet.verify.checks import VerifierError
 from openflowsheet.verify.kind_tolerance import KIND_TOLERANCE
@@ -333,7 +333,7 @@ def test_a72_the_azeotrope_is_temperature_degenerate_and_verifies() -> None:
     # The heater's energy balance reads S2 from the stored split, and says so.
     energy = checks["energy_balance.U-H"]
     assert energy.result == "pass"
-    assert table.SPLIT_ENTHALPY_NOTE.format(stream="S2") in (
+    assert table_kit.SPLIT_ENTHALPY_NOTE.format(stream="S2") in (
         energy.independence_qualification or ""
     )
     assert _not_passing(checks) == {}

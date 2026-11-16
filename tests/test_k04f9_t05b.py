@@ -56,7 +56,7 @@ from openflowsheet.verify import CheckResult
 from openflowsheet.verify.certificate import _project, _screen, verify, verify_revision
 from openflowsheet.verify.checks import residual_checks
 from openflowsheet.verify.projection import PROJECTED_CATEGORIES, Projection
-from openflowsheet.verify.table import UNRESOLVED_ENTHALPY_NOTE
+from openflowsheet.verify.table_kit import UNRESOLVED_ENTHALPY_NOTE
 from openflowsheet.verify.verdict import CheckPolicy, SolutionCertificate, run_checks
 
 REF: dict[str, Any] = yaml.safe_load(

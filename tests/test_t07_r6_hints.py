@@ -29,17 +29,16 @@ from t07_corpus import CORPUS
 from t07_v17_c1_documents import c1_document
 
 from openflowsheet.application.binding_common import HINT_LIMIT, Unbound
-from openflowsheet.application.revision_binding import (
-    MODEL_BUILDERS,
+from openflowsheet.application.model_builders import MODEL_BUILDERS
+from openflowsheet.application.model_signatures import (
     MODEL_SIGNATURES,
     Encoding,
     ModelSignature,
     PinColumn,
-    RevisionBinding,
-    bind_revision_flowsheet,
     pin_encodings,
     render_encoding,
 )
+from openflowsheet.application.revision_binding import RevisionBinding, bind_revision_flowsheet
 from openflowsheet.application.revision_binding import _columns as _columns
 from openflowsheet.application.revision_run import Route, run_revision_session, select_route
 from openflowsheet.application.validation import validate

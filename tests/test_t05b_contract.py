@@ -63,7 +63,7 @@ from openflowsheet.verify import CheckResult
 from openflowsheet.verify.certificate import verify_revision
 from openflowsheet.verify.kind_tolerance import KIND_TOLERANCE
 from openflowsheet.verify.saturation import band_ends, split_route
-from openflowsheet.verify.table import SPLIT_ENTHALPY_NOTE, UNRESOLVED_ENTHALPY_NOTE
+from openflowsheet.verify.table_kit import SPLIT_ENTHALPY_NOTE, UNRESOLVED_ENTHALPY_NOTE
 from openflowsheet.verify.verdict import SolutionCertificate
 
 K04F9_REF: dict[str, Any] = yaml.safe_load(

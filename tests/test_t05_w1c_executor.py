@@ -24,12 +24,9 @@ from referencing import Registry, Resource
 from t05_syn001_shaped import shaped_revision
 
 from openflowsheet.application.binding_common import Unbound
-from openflowsheet.application.revision_binding import (
-    MODEL_BASES,
-    MODEL_BUILDERS,
-    RevisionBinding,
-    bind_revision_flowsheet,
-)
+from openflowsheet.application.model_builders import MODEL_BUILDERS
+from openflowsheet.application.model_signatures import MODEL_BASES
+from openflowsheet.application.revision_binding import RevisionBinding, bind_revision_flowsheet
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.graph.analysis import analyse
 from openflowsheet.graph.trace import trace_declaration

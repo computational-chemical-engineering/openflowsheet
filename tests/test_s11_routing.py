@@ -24,10 +24,9 @@ from semantic_roles import role_of
 from openflowsheet import resources
 from openflowsheet.application import revision_binding
 from openflowsheet.application.binding_common import Unbound
+from openflowsheet.application.model_builders import MODEL_BUILDERS
+from openflowsheet.application.model_signatures import MODEL_BASES, MODEL_SIGNATURES
 from openflowsheet.application.revision_binding import (
-    MODEL_BASES,
-    MODEL_BUILDERS,
-    MODEL_SIGNATURES,
     RevisionBinding,
     _basis_refusal,
     bind_revision_flowsheet,

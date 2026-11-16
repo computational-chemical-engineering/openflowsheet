@@ -60,12 +60,9 @@ from t08_cstr_support import (
 )
 
 from openflowsheet.application.local import LocalApplication
-from openflowsheet.application.revision_binding import (
-    MODEL_BUILDERS,
-    MODEL_SIGNATURES,
-    RevisionBinding,
-    bind_revision_flowsheet,
-)
+from openflowsheet.application.model_builders import MODEL_BUILDERS
+from openflowsheet.application.model_signatures import MODEL_SIGNATURES
+from openflowsheet.application.revision_binding import RevisionBinding, bind_revision_flowsheet
 from openflowsheet.compile.casadi_backend import compile_problem
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.models import SpecificationError
@@ -828,7 +825,7 @@ def test_b19_the_liquid_reaction_is_thermoneutral() -> None:
 
 def test_the_verifier_checks_fail_on_a_wrong_rate() -> None:
     """`material_balance.<U>.<c>` recomputes `r` itself: a state off the mole rows fails it."""
-    from openflowsheet.verify.table import MODEL_CHECKS
+    from openflowsheet.verify.unit_checks import MODEL_CHECKS
 
     assert MODEL_ID in MODEL_CHECKS
     run, bound = _run("liquid")

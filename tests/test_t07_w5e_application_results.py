@@ -507,7 +507,7 @@ def test_g_r6_6_every_pin_lists_its_pin_encodings() -> None:
     """The response validates against the amended schema, and each pin's and each option's
     `specifications` is its `pin_encodings`."""
     from openflowsheet.application.local import LocalApplication
-    from openflowsheet.application.revision_binding import MODEL_SIGNATURES, pin_encodings
+    from openflowsheet.application.model_signatures import MODEL_SIGNATURES, pin_encodings
 
     with tempfile.TemporaryDirectory() as scratch:
         with LocalApplication.create(Path(scratch) / "p", project_id="g-r6-6") as application:

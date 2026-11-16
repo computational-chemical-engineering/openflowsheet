@@ -426,7 +426,7 @@ def test_m9_holds_every_legacy_unit_module_d9() -> None:
     import importlib
     import inspect
 
-    from openflowsheet.application.revision_binding import MODEL_BUILDERS
+    from openflowsheet.application.model_builders import MODEL_BUILDERS
 
     legacy = gate.legacy_unit_modules()
     assert len(legacy) == 27 and set(legacy) == _manifest_modules()

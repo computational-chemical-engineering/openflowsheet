@@ -29,7 +29,8 @@ from t07_jobs_support import commit, lifecycle_violations
 from openflowsheet.application.authz import grant
 from openflowsheet.application.contract import ApplicationError
 from openflowsheet.application.local import LocalApplication
-from openflowsheet.application.revision_binding import MODEL_BUILDERS, MODEL_SIGNATURES
+from openflowsheet.application.model_builders import MODEL_BUILDERS
+from openflowsheet.application.model_signatures import MODEL_SIGNATURES
 from openflowsheet.application.store import STORE_SCHEMA
 from openflowsheet.application.types import (
     Change,

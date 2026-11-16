@@ -20,11 +20,8 @@ from t05_syn001_shaped import shaped_revision
 from t05_w12_support import Feed, Outlet, connection_pin, duty_pin, mini_revision, unit_instance
 
 from openflowsheet.application.binding_common import Unbound
-from openflowsheet.application.revision_binding import (
-    MODEL_BUILDERS,
-    RevisionBinding,
-    bind_revision_flowsheet,
-)
+from openflowsheet.application.model_builders import MODEL_BUILDERS
+from openflowsheet.application.revision_binding import RevisionBinding, bind_revision_flowsheet
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.models.revision_flowsheet import RevisionError, parse_revision
 from openflowsheet.models.syn001.flowsheet import MODEL_LABEL, Syn001Flowsheet

@@ -39,7 +39,9 @@ from openflowsheet.thermo.syn001 import Syn001Provider
 from openflowsheet.verify import CheckResult
 from openflowsheet.verify.certificate import VerifierError, verify, verify_revision
 from openflowsheet.verify.projection import PROJECTED_CATEGORIES
-from openflowsheet.verify.table import MODEL_CHECKS, Unit, revision_checks
+from openflowsheet.verify.table import revision_checks
+from openflowsheet.verify.table_kit import Unit
+from openflowsheet.verify.unit_checks import MODEL_CHECKS
 from openflowsheet.verify.verdict import CheckPolicy, SolutionCertificate, run_checks
 
 POLICY = SolvePolicy(policy_id="T05-W1d", residual_tolerances={}, scales={})
