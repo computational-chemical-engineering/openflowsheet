@@ -686,3 +686,13 @@
   72ba4f740d`, from s19-w4): `--rerun-of 164` refused because the base moved (3d45c5db, the new outside-gate test
   commit). Tool note (for the tooling backlog): `codehealth log --rerun-of` matches tree AND base; a rebuilt step with
   a new base needs a plain log. Job 77 (`--rerun-of 162`) will need the same.
+- **2026-11-16, G5 run 6 delivered (opus-engineer, 140k tokens; lane wp/S19-g5d from 14f4fa35).** 54e688fd
+  (`r0_projection` 66.4 -> 2.0, per-family `_*_r0` helpers, `_sorted_ids`, `_solver_counters`), 8cfcb076
+  (`_differences_v2` 36.0 -> 7.0, `_key_rule` with private NamedTuple `_ComparedObject`), 870f6c8b
+  (`execution_plan_r0` 10.0 -> 0, `_plan_value_r0`), a9f6499c (`_differences_v1` 9.0 -> 5.0, `_self_floor_v1`; v1
+  behaviour frozen by ADR 0025 D1.4). identity.py 76.4 -> 5.0, health 7.7 -> 9.0; compare.py 51.0 -> 23.0 (health
+  7.4); repo debt 5043.9 -> 4944.5, brain functions 27 -> 26. F0 `corpus_identity.py --check` PASS at every step.
+  Jobs 94-97. Steps 3-4 beyond the named targets accepted (same files, within the S2 cadence of 4). Lesson: engineers
+  shared a scratch directory (one overwrote another's check script): common brief now asks for per-lane scratch
+  subdirectories. G5 run 7 (verify/projection.py `project`, split_checks) briefed (`S19-W3-G5-7.md`, lane
+  wp/S19-g5e) and launched.
