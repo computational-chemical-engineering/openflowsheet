@@ -996,3 +996,8 @@
   s19-g5f removed; branch kept (merged into wp/S19, not main).
 - **2026-11-16, job 141 PASS (g6r4-revfix 6d81db7b, step 217 accepted-neutral, 35.0 -> 35.0, 15/15).** G6 run 4
   merges on job 142 (merge-check) PASS.
+- **2026-11-16 14:08, merge_tiers w4-mt1 PASS (3c2c2d33..4d250386, 1453 s).** ruff 0, mypy 0 (42 s), full suite
+  20375 passed, 107 skipped, 3 xfailed (1352 s), F0 PASS M1-M9 (43 s), mcp_digest 40 passed. Log
+  `runs/s19-gates/20261116T134343-w4-mt1.tiers.log`. W4's own merge-check evidence; it merges after wp/S19 (with
+  G5 run 8 and, after job 142, G6 run 4) is merged into the lane and merge_tiers passes on that merge: wp/S19 gained
+  code since 3c2c2d33 that W4's import retargets could break without a shared file.

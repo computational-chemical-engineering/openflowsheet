@@ -47,7 +47,7 @@ tier tests 3600 env PYTHONPATH=src "$VT/python" scripts/test_impact.py run --bas
 tier f0 1800 env PYTHONPATH=src "$V/python" scripts/corpus_identity.py --check
 tier mcp_digest 600 env PYTHONPATH=src "$V/python" -m pytest -q -p no:cacheprovider tests/test_t08_w2_surface_digest.py tests/test_m07a_surface_chain.py
 rm -f "$OUT/$tag.pid"; cd / && git -C "$GC/.." worktree remove --force "$WT" >/dev/null 2>&1
-summary=$(grep -E '^[0-9]+ (passed|failed)|^=+ .*(passed|failed)' "$LOG" | tail -n 1)
+summary="$(grep -E '^TEST-IMPACT' "$LOG" | tail -n 1 | cut -d'(' -f1); $(grep -E '^F0 (PASS|FAIL)' "$LOG" | cut -c1-12)"
 if [ "${#fails[@]}" -eq 0 ]; then v=PASS; else v="FAIL ${fails[*]}"; fi
 echo "MERGE-TIERS $label $v base=${BASE:0:10} head=${HEAD_SHA:0:10} $(( $(date +%s) - t0 )) s | $summary | log $LOG"
 [ "${#fails[@]}" -eq 0 ]
