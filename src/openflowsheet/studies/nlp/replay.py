@@ -217,7 +217,7 @@ def replay_optimization(
 
 
 def _near_active(slack: Any) -> bool:
-    from openflowsheet.studies.nlp.verification import TAU_ACTIVE
+    from openflowsheet.studies.nlp.tolerances import TAU_ACTIVE
 
     if not isinstance(slack, int | float) or isinstance(slack, bool):
         return False
@@ -251,7 +251,7 @@ def _verification_floor(
     with its label — the tolerance of the V-check whose verdict it feeds, as ADR 0007 D2.2 floors
     `check.value` at its own tolerance. `None` where the float compares under the registered
     policy alone: V6's `objective` (and `assessment_values`), relative only, and `decisions`."""
-    from openflowsheet.studies.nlp.verification import (
+    from openflowsheet.studies.nlp.tolerances import (
         TAU_FEAS,
         TAU_GROSS,
         TAU_KKT,

@@ -67,12 +67,8 @@ from openflowsheet.studies.nlp.formulation import (
     is_assessment_name,
 )
 from openflowsheet.studies.nlp.host import CertifiedPoint, DecisionRefusedError, NlpHost, as_host
-from openflowsheet.studies.nlp.verification import (
-    CHECKS,
-    TAU_FEAS,
-    CandidateVerification,
-    CheckOutcome,
-)
+from openflowsheet.studies.nlp.tolerances import TAU_FEAS
+from openflowsheet.studies.nlp.verification import CHECKS, CandidateVerification, CheckOutcome
 from openflowsheet.studies.sensitivity import TAU_ALIAS, OutputFunctional, StudyParameter
 
 SCHEMA_VERSION: Final = "optimization-report-v1"
