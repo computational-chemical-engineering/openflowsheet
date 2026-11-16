@@ -41,6 +41,7 @@ from openflowsheet.verify.table_kit import (
 from openflowsheet.verify.unit_checks import MODEL_CHECKS
 
 if TYPE_CHECKING:
+    from openflowsheet.models.revision_flowsheet import InstanceView
     from openflowsheet.orchestrator.region import LiftedSplit
 
 
@@ -403,7 +404,10 @@ def degeneracy(
 
     `owners` (S11 design §10.11) maps a staged split's key to the instance that owns it; a split
     the registry lifted is its own instance's (`owners.get(key, key)`). A staged split (a column
-    stage) is heater-style: its stream is its key, which no flowsheet stream is."""
+    stage) is heater-style: its stream is its key, which no flowsheet stream is. The owning
+    instance's ports decide the style (`_product_streams`); `_split_substitution` tests each
+    split and `_degenerate_streams` every other stream. Raises `VerifierError` when the
+    verifier's own band or phase evaluation fails."""
     flow_tolerance = routing_tolerances(tolerances)["molar_flow"]
     instances = {instance.unit_id: instance for instance in view.instances}
     owner = owners or {}
@@ -414,20 +418,13 @@ def degeneracy(
     owned: set[str] = set()
     for split in splits:
         instance = instances[owner.get(split.unit, split.unit)]
-        products = "vapor" in instance.ports and "liquid" in instance.ports
-        if products:
-            (vapor_stream,) = instance.ports["vapor"]
-            (liquid_stream,) = instance.ports["liquid"]
-            owned.update((vapor_stream, liquid_stream))
+        product_streams = _product_streams(instance)
+        if product_streams is not None:
+            owned.update(product_streams)
         else:
             owned.add(split.stream)
         substitution = _split_substitution(
-            provider,
-            context,
-            state,
-            split,
-            flow_tolerance,
-            (vapor_stream, liquid_stream) if products else None,
+            provider, context, state, split, flow_tolerance, product_streams
         )
         if substitution is None:
             continue
@@ -448,6 +445,18 @@ def degeneracy(
     enthalpy.update(declared_enthalpy)
     notes.update(declared_notes)
     return Degeneracy(distances, enthalpy, notes, frozenset(unlifted), unresolved)
+
+
+def _product_streams(instance: InstanceView) -> tuple[str, str] | None:
+    """The vapour and liquid streams of a products-style split's owning `instance`: the single
+    stream of each of its `vapor` and `liquid` ports. None when it lacks either port (a
+    heater-style split). Unpacking raises `ValueError` when either port carries more or fewer
+    than one stream."""
+    if "vapor" in instance.ports and "liquid" in instance.ports:
+        (vapor_stream,) = instance.ports["vapor"]
+        (liquid_stream,) = instance.ports["liquid"]
+        return vapor_stream, liquid_stream
+    return None
 
 
 class _SplitSubstitution(NamedTuple):
