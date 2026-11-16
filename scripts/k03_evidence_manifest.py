@@ -573,7 +573,7 @@ def build(commit: str, gate_stdout: Path) -> dict[str, Any]:
             ("src/openflowsheet/numerics/scaling.py", "Scales from the registered nominals."),
             ("src/openflowsheet/numerics/linear.py", "The one SuperLU solve (ADR 0004)."),
             ("src/openflowsheet/numerics/newton.py", "Damped Newton and the line search."),
-            ("src/openflowsheet/orchestrator/trace.py", "The recorded metadata types."),
+            ("src/openflowsheet/numerics/solve_record.py", "The recorded metadata types."),
             ("src/openflowsheet/orchestrator/rank.py", "Structural alias elimination."),
             ("src/openflowsheet/orchestrator/attempts.py", "The bounded attempt controller."),
             ("src/openflowsheet/orchestrator/tear.py", "The tear problem and the solve."),
