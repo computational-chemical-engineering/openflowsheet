@@ -28,7 +28,6 @@ from t07_support import AT, COMPLETED, DIGEST, JOB_ID, completed_solve, event, j
 
 from openflowsheet.application.errors import API_ERROR_HTTP_STATUS, ApiError, ApiErrorCode
 from openflowsheet.application.jobs import model
-from openflowsheet.application.transactions import SemanticDiff
 from openflowsheet.application.types import (
     DEFAULT_SOLVE_POLICY_ID,
     RIGHTS,
@@ -48,6 +47,7 @@ from openflowsheet.application.types import (
     ReplayPolicy,
     ReproduceBody,
     RunResult,
+    SemanticDiff,
     SolveBody,
     SubmitResult,
     TransactionResult,

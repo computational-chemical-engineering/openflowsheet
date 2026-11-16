@@ -33,8 +33,7 @@ from openflowsheet.application.revisions import (
     RevisionStore,
     content_hash,
 )
-from openflowsheet.application.transactions import ChangeSet, Edit
-from openflowsheet.application.types import TransactionResult
+from openflowsheet.application.types import ChangeSet, Edit, TransactionResult
 from openflowsheet.application.validation import validate
 
 CASE = REPO_ROOT / "benchmarks" / "syn001" / "cases" / "SYN-001-nominal.yaml"

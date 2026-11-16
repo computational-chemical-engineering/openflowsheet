@@ -45,8 +45,7 @@ from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.revision_binding import RevisionBinding, bind_revision_flowsheet
 from openflowsheet.application.revision_run import NoRoute, Route, legacy_plan, select_route
 from openflowsheet.application.revisions import Revision
-from openflowsheet.application.transactions import Edit
-from openflowsheet.application.types import Change
+from openflowsheet.application.types import Change, Edit
 from openflowsheet.application.validation import (
     FALLBACK_PRODUCED_BY,
     MISSING_REVISION_ID,
