@@ -1,7 +1,7 @@
 """The verifier: issue or withhold a certificate for a solve. §8.
 
-The check set, the verdict rules (`grade`) and the certificate record are `verify.verdict`'s;
-this module re-exports them.
+The check set, the verdict rules (`grade`) and the certificate record are `verify.verdict`'s and
+are imported from there (ADR 0076 I-8).
 
 A `FAILED` verdict on a solve the solver called `CONVERGED` is the whole point of the package,
 and it is recorded as `false_success_detected` rather than left for a reader to infer.

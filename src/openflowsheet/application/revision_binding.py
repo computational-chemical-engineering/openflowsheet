@@ -23,8 +23,8 @@ the signature constructs nothing.
 
 The signatures, the pin readers and the `Builder` and `Configuration` types live in
 `model_signatures`, the builder catalogue in `model_builders` (S17 R3); this module holds the
-binder (`bind_revision_flowsheet`), the basis and provider selection, and the refusals, and
-re-exports both modules' public names, so `revision_binding.<name>` imports keep working.
+binder (`bind_revision_flowsheet`), the basis and provider selection, and the refusals. Their
+names are imported from those modules, not through this one (ADR 0076 I-8).
 """
 
 from __future__ import annotations

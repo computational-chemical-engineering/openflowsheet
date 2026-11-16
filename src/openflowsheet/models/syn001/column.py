@@ -10,9 +10,10 @@ specification of §2.1 in place of `Q_j − Q_j*`.
 **The unit layer only** (S02 spec §12 WO-1), in four modules (S19 B2): `column_spec` holds the
 specification object, the declarations and the column's ids, `column_validation` its §5
 refusals and `column_rows` the §2 declared rows; this module holds the per-stage regime forms
-with §2.3's label and the §6 analytic initializer `s02-profile-cmo-v1`, and re-exports only the
-names the frozen `column_unit` imports through it (ADR 0076 I-8). The pre-solve, the target and
-acceptance are WO-2's.
+with §2.3's label and the §6 analytic initializer `s02-profile-cmo-v1`. It re-exports the names
+the frozen `column_unit` imports through it (ADR 0076 I-8) and three names outside I-8's move sets
+(`_inflow`, `GammaPhiLnKBlock`, `single_phase_admissible`; I-13 and I-19). The pre-solve, the
+target and acceptance are WO-2's.
 
 Column ids beyond S01's (build decision, `docs/S02_DECISIONS.md`): the total condenser's are
 `<U>.stage.1.{r,d}.<c>`, `<U>.stage.1.{phi,D}` and S01's `<U>.stage.1.{T,P,Q}` for `T_c`, `P_c`,
