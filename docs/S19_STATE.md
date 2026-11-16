@@ -73,6 +73,8 @@ refactor mode; S19_DECISIONS 13:41); code_health asked for a tool mode.
    (store.py 8.6, render.py 7.5, units/__init__.py 7.4 after W4); G5 has W4-dependent targets, compare.py 7.4,
    `replay` 5.3. Rescan wp/S19 before briefing.
 4. Self-reset when W4 run 7 has reported and no agent runs.
+4b. At the next queue-idle window: re-pin cce-code-health to 1304e31 (`--behaviour-only`), wire it into gate.sh and
+   the queue's merge-check, retire merge_tiers.sh (S19_DECISIONS, 1304e31 entry).
 5. Open for Frank (not blocking): R-1042 / option (C) for the T06 self-hash at W4 close; STOP 1 alternative (tool
    change); cce-code-health fixes (empty `{files}`; `log --rerun-of` with a moved base; queue `--rerun-of` job vs
    step; GATE-ERROR not to block a same-head re-gate); the verify twins ADR 0076 addendum; the selection-widening

@@ -1043,3 +1043,11 @@
   `codehealth arch --depth 4` at 7ffa7901: 4 violations, 3 cycles, 12 cycle edges (CB 14 / 10 / 79). Session
   code_health told (its v0.2.0 waits on this merge) and asked for an interface-lane merge-check mode. W4 run 7 next
   (brief `S19-W4-7.md`), lane fast-forwarded to the wp/S19 tip.
+- **2026-11-16, cce-code-health 1304e31 (session code_health; after the v0.2.0 tag 7b8449d): `codehealth gate
+  --behaviour-only [--mode refactor|optimize] --base <wp/S19 sha> --cadence campaign`** runs the config checks and
+  tiers over base..head, no static checks, debt reported not gated; tiers from the BASE's config (note check
+  `tier_config` flags a head [gate] that differs). It retires merge_tiers.sh.
+  DECISION: re-pin 1f7df37 -> 1304e31 at the next queue-idle window (runner stopped, as the 1f7df37 re-pin), not now:
+  reinstalling `.venv-codehealth` under running gates (jobs 145-155 and W4 run 7's) risks them. Then: gate.sh gains
+  `--behaviour-only <base> [label]`, gate_queue.py's merge-check calls it, a check run on an already-merged lane
+  (expect PASS), merge_tiers.sh deleted. Alternative: re-pin now (rejected, above). Reversible by: re-pinning 1f7df37.
