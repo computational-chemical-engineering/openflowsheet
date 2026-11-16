@@ -449,9 +449,8 @@ class Registry:
     ) -> _PackageDescriptors | Coded:
         """D7's per-descriptor checks of `package`'s `descriptors` in document order: schema, id
         prefix (`namespace`), uniqueness, tokens, self-hash and (for `message_entries`) the
-        catalogue (`_message_catalogue`). The descriptors that
-        passed, or the first problem as the package's quarantine reason; nothing is registered
-        here."""
+        catalogue (`_message_catalogue`). The descriptors that passed, or the first problem as
+        the package's quarantine reason; nothing is registered here."""
         registered: list[Registered] = []
         catalogues: dict[tuple[str, tuple[int, int, int]], tuple[str, Mapping[str, Any]]] = {}
         codes: set[str] = set()

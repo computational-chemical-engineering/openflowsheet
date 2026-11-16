@@ -463,11 +463,11 @@ def _from_entry(
     strict: bool,
 ) -> Explanation:
     """The explanation of the chain `codes` from `entry`, the resolved link at `position`: its
-    summary, kind (or the request's override), and for a complete entry its why, action and
-    where (the kind's default action when none); when an `outcome` entry other than `entry`
-    heads the chain, its line (`_outcome_line`), when it gives one, becomes the summary and the
-    entry's summary the cause. Raises `RenderError` when `entry` renders no summary or a field
-    fails as `_field` raises it."""
+    summary, kind (or the request's override), for a complete entry its why, action and where,
+    and the kind's default action for any entry without one; when an `outcome` entry other than
+    `entry` heads the chain, its line (`_outcome_line`), when it gives one, becomes the summary
+    and the entry's summary the cause. Raises `RenderError` when `entry` renders no summary or a
+    field fails as `_field` raises it."""
     scope = _Scope(entry, request.params, request.context, catalogue)
     outer = codes[:position]
     machine = request.machine
@@ -519,7 +519,8 @@ def _outcome_line(
     """The line an `outcome` entry heading the chain gives in place of the summary: its
     `context`, else its `summary`, rendered in its own scope with no outer codes (`_field`);
     `None` when it has neither, or when rendering fails and not `strict` (the failure recorded
-    as a defect, as `_explain` records one for an entry); `strict` raises the `RenderError`."""
+    as a defect when an auditor is set, as `_explain` records one for an entry); `strict`
+    raises the `RenderError`."""
     outcome_scope = _Scope(outcome, request.params, request.context, catalogue)
     try:
         line = _field(outcome, "context", outcome_scope, [], strict=strict, machine=request.machine)

@@ -169,7 +169,8 @@ class _Forest:
 def certify(
     declaration: Declaration, *, row_ids: Sequence[str] | None = None
 ) -> CertifiedRedundancy:
-    """Apply §8.2 to every certifiable kind independently, in declaration order."""
+    """Apply §8.2 to every certifiable kind independently, in declaration order
+    (`_certified_kind`, which admits copy rows by `_copy_coefficients`)."""
     considered = tuple(row_ids) if row_ids is not None else declaration.row_ids
     certificates: list[Certificate] = []
     uncertified: list[str] = []
