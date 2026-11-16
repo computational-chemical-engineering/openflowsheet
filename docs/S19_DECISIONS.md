@@ -778,3 +778,4 @@
 - **2026-11-16, job 82 PASS (W4 run 5b, w4r4 batch B src, 962c6fb6, step 189 accepted-neutral, 551.2 -> 551.2, 15/15).** Report: the four ALERTs persist (selected share 70%, selected 1025 s, ratio 0.78, wait median 71 min); action unchanged (map rebuild when the queue drains).
 - **2026-11-16, job 106 PASS (G5 run 6b step 2, 3d1688a8, step 190 accepted, 51.0 -> 27.0, 16/16).** Report not run at this wake (Bash classifier unavailable); run at the next.
 - **2026-11-16, job 83 PASS (W4 run 5b, w4r4 batch B interface, 449b5f87, step 191 accepted, 398.1 -> 398.1, 17/17).** Report: the four ALERTs persist (selected share 70%, selected 1025 s, ratio 0.78, wait median 75 min); action unchanged (map rebuild when the queue drains).
+- **2026-11-16, job 107 PASS (G5 run 6b step 3, 9bbae106, step 192 accepted, 12.0 -> 5.0, 16/16).** Report: the four ALERTs persist (selected share 70%, selected 1025 s, ratio 0.78, wait median 84 min); action unchanged.
