@@ -28,11 +28,11 @@ import numpy as np
 import pytest
 from m03_support import flowsheet, nlp_formulation
 
+from openflowsheet.assessment.linearization import Linearization
 from openflowsheet.assessment.program import (
     AssessmentProgram,
     BuildContext,
     ContributionPlan,
-    Linearization,
     OutputDef,
     Symbols,
     Theta,

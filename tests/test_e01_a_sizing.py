@@ -39,7 +39,7 @@ from openflowsheet.assessment.views import UnitRef, view_of
 from openflowsheet.compile.spec import ProblemSpec
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.models.thermal.kernel import phase_properties, saturation
-from openflowsheet.studies.nlp.verification import TAU_FEAS
+from openflowsheet.studies.nlp.tolerances import TAU_FEAS
 from openflowsheet.studies.syn001 import solve_certified
 from openflowsheet.thermo import PropertyRequest, StreamState
 from openflowsheet.thermo.iapws95 import Iapws95Provider

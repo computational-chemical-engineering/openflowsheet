@@ -45,7 +45,7 @@ from openflowsheet.studies.nlp.revision_host import (
     RevisionNlpHost,
     decision_map,
 )
-from openflowsheet.studies.nlp.verification import TAU_ACTIVE
+from openflowsheet.studies.nlp.tolerances import TAU_ACTIVE
 from openflowsheet.verify.certificate import CheckPolicy
 
 REPO = Path(__file__).resolve().parents[1]
