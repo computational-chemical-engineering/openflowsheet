@@ -1275,7 +1275,8 @@ def derivative_witness(
 
 def _exact_entries(jacobian: JacobianResult) -> dict[tuple[int, int], float]:
     """§4.8's AD entries J_ij of `jacobian`'s CSC arrays, keyed by `(row, column)`: the pattern
-    the witness compares on, every other entry being off-pattern."""
+    the witness compares on, every other entry being off-pattern. A repeated `(row, column)` in
+    the CSC arrays: the last entry wins."""
     exact: dict[tuple[int, int], float] = {}
     for column in range(len(jacobian.col_ids)):
         for offset in range(jacobian.indptr[column], jacobian.indptr[column + 1]):
@@ -1287,8 +1288,8 @@ def _stencil_difference(
     points: Sequence[Sequence[float]], row: int, step: float, forward: bool
 ) -> float:
     """The registered stencil's difference quotient in `row`, from `_stencil`'s `points`:
-    central (F(x + h) - F(x - h)) / (2 h), or with `forward` (Z, R-831) the forward five-point
-    (-25 F0 + 48 F1 - 36 F2 + 16 F3 - 3 F4) / (12 h)."""
+    central (F(x + h) - F(x - h)) / (2 h), or with `forward` (§4.8.2 classes 3-4: Z, R-831, and A1)
+    the forward five-point (-25 F0 + 48 F1 - 36 F2 + 16 F3 - 3 F4) / (12 h)."""
     if forward:
         return (
             -25.0 * points[0][row]
