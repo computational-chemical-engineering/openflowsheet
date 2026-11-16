@@ -24,6 +24,10 @@ frozen = [
 forbid = ["tests/*", "benchmarks/*", "requirements*", "pyproject.toml", "evidence/*", "schemas/*"]
 literals = true
 public_api = true
+# ADR 0076 STOP 1 form (S19_DECISIONS, W4 run 9): an old module may keep an unaliased import of a renamed
+# name from its new home when its own code reads it; public_api then scans every .py file for an importer that
+# still takes the name through the old module (cce-code-health ec5aaea).
+no_implicit_reexport = true
 
 [gate.env]
 PYTHONHASHSEED = "0"
