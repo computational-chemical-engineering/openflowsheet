@@ -39,6 +39,8 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 - Gate tooling (2026-11-16): queue modes interface and merge-check, `--snapshot`/`--head`, step-relative test
   selection (wp/S19-tools2, 37307ab0). G6 runs 2+3 reviewed (merge); W4 run 1: arch 6/4/14 -> 4/4/14.
 
+- G6 run 6 merged into wp/S19 (18f934f6, 2026-11-16 21:42).
+
 - Open (R-W3-G1N-1): numerics/ptc.py health 6.8 after P1 (closing method's 9 parameters); P2 to P4 must end >= 7.0,
   else a miss and P1 is reverted.
 
@@ -52,37 +54,33 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 - Held until the scale probe reports: G1 (orchestrator/, numerics/). Open: ptc.py 6.8 (P3, P4).
 - G-END (below) stays the end criterion for the whole repository.
 
-## Next actions (2026-11-16, ~21:55; self-reset)
+## Next actions (2026-11-16 22:40; self-reset)
 
-Runner pid 2642417 (cce-code-health ec5aaea installed). Results consumed up to 172; start `$Q wait --since 172` in the
-background first. No agent running. Lanes at most 2 agents until Thu 19 Nov 13:00. ALERTs persist (proposal 2 with
-Frank). Merge-checks run on a helper branch `wp/S19-<lane>-mc` = lane tip + wp/S19 tip merged in. Detail of every item
-in S19_DECISIONS (grep the quoted words).
-1. **Rule 4 serial runs (detached; "rule 4 falsifier: base2"):** serial full suites (`-p no:xdist`) at base
-   10adfc3d+A (worktree `/tmp/claude-1000/-home-eajfpeters-Code-OpenFlowsheet/0e0821aa-6e8e-4c6b-9a00-f781aa0ef7c7/scratchpad/base2`)
-   and head be115b6a+A (worktree `/tmp/claude-1000/-home-eajfpeters-Code-OpenFlowsheet/165c72bf-833e-48c6-b5e2-b732f68e85df/scratchpad/headser`),
-   started 20:15, ~3 h. Logs `baseser.log`, `headser.log` in that 165c72bf scratchpad (end "EXIT n"); read only
-   `grep -h "MSG WO\|passed\|^EXIT"`. Equal: W4 run 8 merges (item 3), ADR rule 4 text (serial form) into the
-   R-W4-9 batch, and I-10/I-12 can be briefed. Unequal: fresh engineer on the I-4 gap. Then remove both worktrees.
-2. **G6 run 6:** R-W3-G6-6 merge after fixes; fix 0dd145b0 job 187 (no-gain); helper wp/S19-g6d-mc (worktree
-   s19-g6d-mc, 19f2ff53) merge-check job 188. Both PASS: merge wp/S19-g6d into wp/S19 (`git merge -F`), remove
-   worktrees s19-g6d, s19-g6d-mc.
-3. **W4 run 8 merge** waits for item 1 (R-W4-8 fix 1). Helper wp/S19-w4r8-mc (worktree s19-w4r8-mc) = 486b6dbb +
-   c7d21f2e; then merge wp/S19 into it, merge-check, merge.
-4. **W4 runs 9+10 (lane wp/S19-w4, tip 2b40c2f2, rebuilt after job 185 FAIL, "fix185"):** jobs 194 I-5b (rerun of
-   185), 195 I-9, 196 I-14. All PASS: one review R-W4-9 over runs 9+10 (write the brief: I-5b 50779e18, I-9
-   1f5c2c6b, flag 651cc8d0, tests 1e0eb6ce/634c1195/a953ca84/dbb304a3/45e742b7, layer configs a609de45/2b40c2f2, I-14
-   8292d7e2; I-14 by a `reviewer` on `model: fable` (initialization order); engineer choices in "W4 run 10 reported").
-   Then W4 run 11: I-11, I-13 (brief = S19-W4-10.md minus I-14; importers of transactions listed there). I-10 and
-   I-12a-d wait for item 1.
-5. **G5 run 9 (wp/S19-g5g, base 135c78f8, tip bfe9e545; "G5 run 9 reported"):** jobs 189, 190, 192, 193. All PASS:
-   review R-W3-G5-9 (write the brief from S19-R-W3-G5-8.md; rule on step 4's bare-tuple pair), fixes, helper
-   merge-check, merge. Next G5 run 10: certificate.py `_issue` (11.8, 15 parameters; grouping as R-W3-G5-4),
-   `verify_revision` (8.3), column.py `_end_check` (4.0).
-6. Open for Frank (not blocking): R-1042 option C; STOP 1 alternative; tool items; verify twins addendum;
+Runner pid 2642417. Results consumed up to 185; start `$Q wait --since 185` in the background first. No agent running.
+Lanes at most 2 agents until Thu 19 Nov 13:00. ALERTs persist (proposal 2 with Frank). Merge-checks run on a helper
+branch `wp/S19-<lane>-mc` = lane tip + wp/S19 tip merged in; the merge into wp/S19 takes the helper (`git merge --no-ff
+-F <file> wp/S19-<lane>-mc`), after checking wp/S19 changed only docs/S19_* since the helper's merge. `enqueue
+--rerun-of` takes the RUN-LOG STEP number (from the failed result line), never the job number, and never across a
+rebase (enqueue fresh). Mode revert: `--base` is the rejected commit. Detail in S19_DECISIONS (grep quoted words).
+1. **W4 run 8 merge (job 200, w4r8-mc):** helper wp/S19-w4r8-mc (worktree s19-w4r8-mc) = 486b6dbb + c7d21f2e + wp/S19
+   c37ca884 as 9cb029ed. Rule 4 met in serial form ("rule 4 serial runs done": 1061/801/100 at base and head). PASS:
+   merge the helper into wp/S19, remove worktree s19-w4r8-mc. The lane wp/S19-w4 (runs 9+10) contains 486b6dbb.
+2. **W4 runs 9+10 (lane wp/S19-w4, tip eed97251 after "fix195 done"):** I-5b job 194 PASS (step 251, logged by hand);
+   jobs 201 I-9 (3f7540a9), 202 I-14 (ffed4051). Both PASS: launch R-W4-9a (`reviewer`, brief
+   `<git-common-dir>/codehealth/briefs/S19-R-W4-9a.md`, includes Q6: ADR rule 4 serial-form text) and R-W4-9b
+   (`reviewer` with `model: fable`, brief S19-R-W4-9b.md, I-14 initialization order). Briefs carry the current shas.
+   Then fixes, helper wp/S19-w4-mc, merge-check, merge. Then W4 run 11: I-11, I-13 (S19-W4-10.md minus I-14), then
+   I-10 and I-12a-d (unblocked; each step needs serial-suite MSG counts at base and head, ~2.2 h per suite).
+3. **G5 run 9 (lane wp/S19-g5g, tip 174045f1; "R-W3-G5-9"):** step 2 reverted (620d6c02, step 254), `_RowFloor`
+   174045f1 (step 256). Merge-check job 203 (g5r9-mc) on helper wp/S19-g5g-mc 94224851 (worktree s19-g5g-mc). PASS:
+   merge, remove worktrees s19-g5g, s19-g5g-mc. Then G5 run 10 (brief from S19-W3-G5-9.md): certificate.py `_issue`
+   (11.8, 15 parameters; grouping as R-W3-G5-4), `verify_revision` (8.3), column.py `_end_check` (4.0).
+4. **G6 run 7:** G6 run 6 merged (18f934f6). Brief from a scan of the wp/S19 tip over the G6 scope (thermo/, graph/,
+   messages/, units/, adapters/, registry/, compile/), when an agent slot is free after the W4 reviews.
+5. Open for Frank (not blocking): R-1042 option C; STOP 1 alternative; tool items; verify twins addendum;
    selection-widening; proposal 2 for the ALERTs. Design lane: NaN derivative-witness pass (R-W3-G5-8); rule 4
-   deterministic form (after item 1). Docs-pass leftovers in S19_DECISIONS (77ae7025 message says cognitive 16 -> 11,
-   scan 12; i4 plan reason "two" -> three; ruff tier `{files:*.py,*.pyi}` switch).
+   serial form (R-W4-9a Q6). Docs-pass leftovers in S19_DECISIONS (77ae7025 message says cognitive 16 -> 11, scan 12;
+   i4 plan reason "two" -> three; ruff tier `{files:*.py,*.pyi}` switch).
 
 ## Gates (pass numbers fixed after A1, before step 1)
 
