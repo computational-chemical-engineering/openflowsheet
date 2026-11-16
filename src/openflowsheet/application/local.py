@@ -113,7 +113,6 @@ from openflowsheet.application.types import (
     CapabilityPage,
     CapabilityReference,
     Change,
-    DocumentSchemaError,
     EffectiveBudgets,
     ExecutorSettings,
     ExperimentBody,
@@ -139,7 +138,6 @@ from openflowsheet.application.types import (
     SurrogateStudyBody,
     TransactionResult,
     _replay_report_build,
-    validate_document,
 )
 from openflowsheet.application.validation_report import Task, ValidationReport
 from openflowsheet.canonical import canonical_json, document_sha256, first_noncanonical
@@ -147,6 +145,7 @@ from openflowsheet.orchestrator.policies import APPLICATION_POLICIES, DEFAULT_PO
 from openflowsheet.registry import default_registry
 from openflowsheet.run.bundle import MANIFEST_NAME
 from openflowsheet.run.replay import ReplayReport
+from openflowsheet.schema_check import DocumentSchemaError, validate_document
 from openflowsheet.studies.nlp.replay import MANIFEST as OPTIMIZATION_MANIFEST
 from openflowsheet.studies.nlp.replay import is_optimization_record
 from openflowsheet.units.display import DisplayUnits, DisplayUnitsError, parse_display_units

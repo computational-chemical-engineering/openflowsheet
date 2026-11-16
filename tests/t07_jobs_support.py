@@ -28,13 +28,13 @@ from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.operations import OPERATIONS, dispatch
 from openflowsheet.application.types import (
     Change,
-    DocumentSchemaError,
     Edit,
     Job,
     JobRequest,
     SubmitResult,
     validate_inline,
 )
+from openflowsheet.schema_check import DocumentSchemaError
 
 #: A generous bound on anything a test waits for; every wait here normally takes milliseconds.
 PATIENCE_S = 60.0

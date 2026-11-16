@@ -22,7 +22,6 @@ from openflowsheet.application.types import (
     DEFAULT_SOLVE_POLICY_ID,
     ApiError,
     Budgets,
-    DocumentSchemaError,
     JobRequest,
     JobResult,
     Limits,
@@ -34,7 +33,7 @@ from openflowsheet.application.types import (
 )
 from openflowsheet.orchestrator import policies
 from openflowsheet.run.replay import ReplayReport
-from openflowsheet.schema_check import schema_errors
+from openflowsheet.schema_check import DocumentSchemaError, schema_errors
 
 JOB_RESULT = "job.schema.json#/$defs/job_result"
 FIXTURES = REPO_ROOT / "tests" / "fixtures" / "schemas"

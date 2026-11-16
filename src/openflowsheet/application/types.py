@@ -48,11 +48,12 @@ from openflowsheet.application.validation_report import (
 from openflowsheet.canonical import document_sha256
 from openflowsheet.schema_check import (
     SCHEMA_BASE,
+    DocumentSchemaError,
     _consumer_job_schema,
-    _pointer,
     _published,
+    _raise_first,
     _registry,
-    _validator,
+    validate_document,
 )
 from openflowsheet.units.display import DisplayUnits
 
@@ -125,16 +126,6 @@ EVENT_COMMON_MEMBERS: Final[tuple[str, ...]] = (
 # ============================================================================ schema validation
 
 
-class DocumentSchemaError(ValueError):
-    """A document its schema refuses. `pointer` is the RFC 6901 pointer of the first error."""
-
-    def __init__(self, schema: str, pointer: str, message: str) -> None:
-        super().__init__(f"{schema}{'#' + pointer if pointer else ''}: {message}")
-        self.schema = schema
-        self.pointer = pointer
-        self.message = message
-
-
 def _event_common_schema() -> dict[str, Any]:
     """The common members of a job event, whatever its kind (J5's consumer rule)."""
     published = _published()[SCHEMA_BASE + "job-event.schema.json"]["properties"]
@@ -180,18 +171,6 @@ def published_schemas(*, consumer: bool = False) -> Mapping[str, Mapping[str, An
         documents[job] = _consumer_job_schema(documents[job])
         documents[event] = _consumer_event_schema(documents[event])
     return documents
-
-
-def validate_document(reference: str, document: Any, *, consumer: bool = False) -> None:
-    """Raise `DocumentSchemaError` unless `document` satisfies `schemas/<reference>`."""
-    _raise_first(reference, _validator(reference, consumer), document)
-
-
-def _raise_first(reference: str, validator: Draft202012Validator, document: Any) -> None:
-    errors = sorted(validator.iter_errors(document), key=lambda e: list(e.absolute_path))
-    if errors:
-        first = errors[0]
-        raise DocumentSchemaError(reference, _pointer(list(first.absolute_path)), first.message)
 
 
 def _checked[T](

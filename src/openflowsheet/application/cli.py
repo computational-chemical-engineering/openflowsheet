@@ -786,7 +786,8 @@ def _bundle_display_units(text: str) -> DisplayUnits | ApiError:
     (1 to 1024 characters) comes first and refuses as `dispatch` does (X04 review S4)."""
     from openflowsheet.application.contract import api_error
     from openflowsheet.application.operations import OPERATIONS
-    from openflowsheet.application.types import DocumentSchemaError, validate_inline
+    from openflowsheet.application.types import validate_inline
+    from openflowsheet.schema_check import DocumentSchemaError
     from openflowsheet.units.display import DisplayUnitsError, parse_display_units
 
     operation = OPERATIONS["get_stream_table"]

@@ -63,7 +63,6 @@ from openflowsheet.application.types import (
     ApiErrorCode,
     AuditRecord,
     Change,
-    DocumentSchemaError,
     Job,
     JobEvent,
     JobRequest,
@@ -74,7 +73,7 @@ from openflowsheet.application.types import (
     validate_inline,
 )
 from openflowsheet.canonical import first_noncanonical
-from openflowsheet.schema_check import SCHEMA_BASE
+from openflowsheet.schema_check import SCHEMA_BASE, DocumentSchemaError
 
 Transport = Literal["python", "cli", "http", "mcp"]
 ALL_TRANSPORTS: Final[tuple[Transport, ...]] = ("python", "cli", "http", "mcp")

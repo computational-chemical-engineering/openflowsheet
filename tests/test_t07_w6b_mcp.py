@@ -55,9 +55,9 @@ from openflowsheet.application.authz import revoke
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.operations import OPERATIONS
 from openflowsheet.application.types import (
-    DocumentSchemaError,
     validate_inline,
 )
+from openflowsheet.schema_check import DocumentSchemaError
 
 NOMINAL = "SYN-001-nominal"
 BINDINGS = REPO_ROOT / "src" / "openflowsheet" / "application" / "bindings"

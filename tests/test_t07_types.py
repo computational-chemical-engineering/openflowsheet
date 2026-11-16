@@ -38,7 +38,6 @@ from openflowsheet.application.types import (
     Budgets,
     CapabilityReference,
     Change,
-    DocumentSchemaError,
     Edit,
     ExecutorSettings,
     Job,
@@ -56,10 +55,15 @@ from openflowsheet.application.types import (
     TransactionResult,
     normalize_job_request,
     request_sha256,
-    validate_document,
 )
 from openflowsheet.application.validation import validate
-from openflowsheet.schema_check import SCHEMA_BASE, SCHEMA_DIR, schema_errors
+from openflowsheet.schema_check import (
+    SCHEMA_BASE,
+    SCHEMA_DIR,
+    DocumentSchemaError,
+    schema_errors,
+    validate_document,
+)
 
 T07_SCHEMAS = (
     "api-error",

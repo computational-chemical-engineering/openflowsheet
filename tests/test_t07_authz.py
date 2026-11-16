@@ -42,10 +42,10 @@ from openflowsheet.application.types import (
     LOCAL_OWNER_PRINCIPAL,
     RIGHTS,
     CapabilityReference,
-    DocumentSchemaError,
     Limits,
     ProjectPolicy,
 )
+from openflowsheet.schema_check import DocumentSchemaError
 
 #: §10.1, transcribed. `read`: inspect, validate, preview, jobs and artifacts; `draft`:
 #: `commit_change`; `execute`: `submit_job`, `solve`, `reproduce`, `cancel_job` (own jobs).
