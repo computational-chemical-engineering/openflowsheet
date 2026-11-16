@@ -109,7 +109,6 @@ from openflowsheet.thermo.conventions import (
 __all__ = [
     "EQUATIONS",
     "HARD_BOUNDS",
-    "MODEL_ID",
     "PORTS",
     "C1ReactorSurrogate",
     "SurrogateBlock",

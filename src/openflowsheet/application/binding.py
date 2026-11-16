@@ -29,10 +29,7 @@ from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field, replace
 from typing import TYPE_CHECKING, Any, Final
 
-from openflowsheet.application.binding_common import HINT_LIMIT as HINT_LIMIT
-from openflowsheet.application.binding_common import Unbound as Unbound
-from openflowsheet.application.binding_common import _column_owners
-from openflowsheet.application.binding_common import refusal_code as refusal_code
+from openflowsheet.application.binding_common import Unbound, _column_owners, refusal_code
 from openflowsheet.canonical import document_sha256, first_noncanonical
 from openflowsheet.compile.spec import EquationSpec, ProblemSpec
 from openflowsheet.compiled import EvaluationContext
@@ -52,13 +49,11 @@ if TYPE_CHECKING:
 
 __all__ = [
     "Binding",
-    "Unbound",
     "bind_revision",
     "bind_revision_or_reason",
     "instance_named",
     "legacy_admission",
     "legacy_answers",
-    "refusal_code",
     "revision_probe",
 ]
 

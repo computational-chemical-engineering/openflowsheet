@@ -46,9 +46,8 @@ from openflowsheet.application.validation_report import (
     ValidationReport,
 )
 from openflowsheet.canonical import document_sha256
-from openflowsheet.schema_check import SCHEMA_BASE as SCHEMA_BASE
-from openflowsheet.schema_check import SCHEMA_DIR as SCHEMA_DIR
 from openflowsheet.schema_check import (
+    SCHEMA_BASE,
     _consumer_job_schema,
     _pointer,
     _published,
