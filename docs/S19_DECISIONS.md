@@ -1320,3 +1320,17 @@
 - **2026-11-16, job 180 (g6r6-1, 44f044f1) PASS, step 241 accepted (24.0 -> 19.0).** Gate report: ALERT selected
   share 56% < 75% of step gates; ALERT selected gates take 465 s > 300 s (tests tier); ALERT queue wait median 27 min >
   15 min (causes as before; proposal 2 with Frank). The selected/full ratio ALERT cleared.
+- **2026-11-16, MSG counters under xdist (sonnet-implementer, 86k tokens): A 7af4b2f4, B e0e8cbf0 on wp/S19
+  (tests/conftest.py only).** Workers forward the counts, the other TERMINAL_REPORT lines and the MSG-G3 audit findings
+  at sessionfinish; the controller sums them in `pytest_testnodedown` (a class registered only when xdist is loaded);
+  B fails the controller on forwarded findings. (a) `-p no:xdist` on test_k05_replay, test_t08_adr0025,
+  test_t08_kinetic_cstr: output identical to the old conftest (43 bundles, 6 run results, 1 with a failure); (b) `-n
+  2` same N; (c) ruff clean; mypy's conftest.py:183 `run.session does not explicitly export write_bundle` predates the
+  change. Forwarded audit findings in three full runs: none (so B closes the hole without a failure).
+  **(d) Rule 4 at I-4, full suite `-n 4` (20280 passed both): base 10adfc3d 964 run results (125 with a failure), 1228
+  bundles; head be115b6a 878 (101), 1370. Not equal.** A third run at the wp/S19 tip: 803 (100), 1175. Hypothesis:
+  the counts are not deterministic under xdist (distribution-dependent caching or reuse within a worker), not an I-4
+  effect. Falsifier running: base 10adfc3d re-run with the same script (`scratchpad/base2`). If base2 = 964/1228, the
+  step changed them and the cause is a finding for W4 run 8; if not, rule 4 needs a deterministic form (serial run,
+  or counts per test file) and that is a ruling. The tip run's 2 failures in test_rel_rc_local came from HEAD moving
+  during the run: 26/26 pass at the tip now.
