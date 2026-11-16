@@ -19933,3 +19933,32 @@ module at run time and keeps its place directly below `application.types`. Expec
 - *A function-level import, errors above types, moving `from_document`, creating `documents.py` early, or putting the
   names in errors.py:* each hides or moves the edge instead of removing it, or splits one concept; reasons in the
   ruling, section 2.
+
+## R-1045: S19's I-13 builder kit: scope and public names (2026-11-17)
+
+| | |
+| --- | --- |
+| Date | 2026-11-17 |
+| Decided by | design lane (`reviewer`, Opus, review R-W4-11) on a STOP of the W4 run 11 engineer; adopted by the S19 orchestrator |
+| Normative text | ADR 0076 I-13 (lines 255-260) and its migration row; this entry clarifies scope and names |
+| Evidence | `docs/S19_DECISIONS.md`, "R-W4-11 reported" (AST probes of the six collision scopes; importer lists) |
+| Affected packages | S19 (W4: I-13) |
+
+**Decision.** I-13 covers the 44 distinct private names defined in `models/model_signatures` and imported across
+modules (67 import sites: model_builders.py:17, revision_binding.py:47, thermal_binding.py:34), plus the three named
+moves (`_column_owners` -> `binding_common.column_owners`, `_defect` -> `jobs.runner.defect_result`, `_basis_refusal`
+-> `basis_refusal`) and `_c1_reactor_surrogate_of` -> `c1_reactor_surrogate_of` (model_builders; imported at
+revision_binding.py:43). Each name drops its underscore, except four whose plain form collides with a local in six
+scopes: `_pin` -> `pin_value`, `_stream` -> `port_stream`, `_column` -> `pin_column`, `_columns` -> `pin_columns`.
+`_COLUMN` -> `model_signatures.COLUMN` (not in MODEL_SIGNATURES; no public entry). `_CONTEXT` and `_declared_default`
+stay private: test_m04_wo7_surrogate_unit.py:319 calls the public entry `MODEL_BUILDERS[records.MODEL_ID](...)`
+with a test-built context, and test_t07_r7_admission.py:144 checks against `models.syn001.flowsheet.HEATER_TEMPERATURE`.
+The test-only `X as X` re-exports at revision_binding.py:46, :78, :79 go in I-13's refactor step.
+
+**Rejected alternatives, and why.**
+- *Drop every underscore unchanged (the engineer's default):* `pin = signature.pin(...)` would shadow `pin(...)` in
+  model_builders `_feed_source`:129, `_c1_feed_source`:500 and model_signatures `_pinned`:409; `stream = stream(...)`
+  at model_signatures:398 raises UnboundLocalError; `column` collides at model_builders:266 and thermal_binding:145.
+- *All ~150 cross-module privates in orchestrator, verify and models.syn001:* not the builder kit S17 review 11
+  item 5 names ("the private pin readers and signature constants in model_signatures").
+- *Public names for `_CONTEXT` and `_declared_default`:* the tests have a public entry or an independent expectation.

@@ -1650,3 +1650,25 @@
   refactor step. Note 2 (rule 7): `_Checked` and `_issue` docstrings did not name `appended`: fixed by the orchestrator
   as 5f4d221a, job 213 g5r10-revfix (no-gain). Helper wp/S19-g5h-mc (worktree s19-g5h-mc) = 5f4d221a + wp/S19
   cda029b0 as 6656a326; merge-check job 214 g5r10-mc.
+- **2026-11-17, job 212 PASS (w4r11-i11-2, I-11 step 79c88b0e on plan f98f54aa, step 265 accepted, interface,
+  17/17).** Reviewer R-W4-11 launched (`reviewer`, Opus, S19-R-W4-11.md; includes the I-13 scope ruling).
+- **2026-11-17, R-W4-11 reported (`reviewer`, Opus, 153k tokens): I-11 merge after fix 1.** 1efad3ce OK (ported
+  tests keep their assertions; :154 tighter: `store.evidence_for_revision` at store.py:1203, exact tuple, "none"
+  and "all jobs" mutants fail); ae098feb OK; 0f14a6d0/f98f54aa OK (AST probe: 18 str constants in transactions.py,
+  8 `__all__`, exactly the 10 declared; both behaviour changes are listed in the ADR at :189-190, :426; immutability
+  survives on the contract path); 79c88b0e OK (no importer or string reference left in src, tests, scripts,
+  benchmarks, examples, docs-site; `_conforms` checks exactly §2.1 contract.py:47); 139afd37 OK (keep the forbid `to`
+  drop; its message says "After 2025815b", the job-211 chain's step, really 79c88b0e: logged, history not rewritten).
+  Fix 1: scripts/k06_evidence_manifest.py:361 hashes the deleted file (`build()` FileNotFoundError; FQ-C requires the
+  script ported) -> local.py and revision_edits.py entries, script-only commit after the step: `sonnet-implementer`,
+  brief S19-W4-11-fixk06.md. Notes (docs pass, not taken now): the 8-line store block is now three times
+  (test_k06 fixture, test_t07_w3b_validation:470, script:62; a t07_store_support helper would hold it);
+  test_t07_transactions.py:320-327 repeats :288-317 and :537 repeats :157; the test name at :107
+  (`..._and_the_old_imports_work`) is now false, rename with the two "facade" names (evidence/T07 cites node ids at
+  5f3d3ea2, so a rename does not falsify it); `_conforms` does not check JobControl or Inspection (beyond the ADR).
+  **I-13 ruling** recorded as decision register R-1045 (scope: 44 model_signatures names + 3 named moves +
+  `c1_reactor_surrogate_of`; collision renames `pin_value`, `port_stream`, `pin_column`, `pin_columns`; `COLUMN`
+  public; `_CONTEXT`, `_declared_default` stay private, tests use the public entry / an independent expectation;
+  correction: `_declared_default` has a test importer, test_t07_r7_admission.py:44). DECISION: adopt the reviewer's
+  two open defaults (`c1_reactor_surrogate_of` in scope; the four distinct names). Alternative: an architect ruling.
+  Reversible by: a new register entry before I-13 merges.
