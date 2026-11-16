@@ -68,8 +68,9 @@ Queued: 138 g5r8-mc, 139 w4-revfix-1b (no-gain), 140 w4-mc, 141 g6r4-revfix (no-
    fast-forward the lane to it), `opus-engineer`.
 3. **G6 run 4** (wp/S19-g6b): reviewed (R-W3-G6-4 merge after fixes, applied 6d81db7b job 141). When 141 and 142
    pass: merge into wp/S19, log, remove worktrees s19-g6b, gq-g6r4-6, gq-g5r8-3.
-4. The second lane slot: next G6 run (scan the G6 packages for what is left: files below 9.0, brain functions;
-   write `S19-W3-G6-5.md` from S19-W3-G6-4.md) or the W4 items after I-8 (I-4, I-9, I-14, I-10, I-11, I-13,
+4. The second lane slot: G6 run 5, brief `S19-W3-G6-5.md` written (fill BASE = wp/S19 tip after the G6 run 4
+   merge; targets compile/spec.py, graph/{analysis,blocks,tear}.py, messages/lint.py, adapters/experiments/; G6
+   thermo is registry-hashed, W5) or the W4 items after I-8 (I-4, I-9, I-14, I-10, I-11, I-13,
    I-12a-d, I-19, in the ADR's recommended order) once run 7 reports. G5 has left only W4-dependent targets and
    compare.py 7.4, `replay` 5.3; the split_checks component-order question (R-W3-G5-7) is for the G5 close.
 5. Open for Frank (not blocking): R-1042 / option (C) for the T06 self-hash at W4 close; STOP 1 alternative (tool
