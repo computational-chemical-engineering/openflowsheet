@@ -426,6 +426,35 @@ def test_a_test_that_failed_in_the_build_is_always_selected(repo) -> None:
     assert _select(repo).nodes == {T1, T4}
 
 
+def test_an_unsure_test_the_run_deselects_selects_nothing(repo, monkeypatch) -> None:
+    """S19: gate.sh deselects two wall-time tests that also failed in the map build; as unsure
+    tests they pulled their whole files (the forty reference runs) into every selected gate."""
+    root, base, map_dir = repo
+    _with_map_rows(map_dir, ("UPDATE tests SET outcome = 'failed' WHERE nodeid = ?", (T4,)))
+    _edit(root, "src/pkg/mod.py", "    y = x + 1", "    y = x + 2")
+    assert ti.select(base, map_dir, cwd=root, deselected=frozenset({T4})).nodes == {T1}
+    monkeypatch.setenv("PYTEST_ADDOPTS", f"-q --deselect {T4} --deselect=tests/x.py::t")
+    assert ti._deselected(["--timeout=9", "--deselect", "tests/y.py::u"]) == {
+        T4,
+        "tests/x.py::t",
+        "tests/y.py::u",
+    }
+    seen: list[list[str]] = []
+
+    def fake_call(command: list[str], *, stdout, **_: object) -> int:
+        seen.append(Path(command[-1].removeprefix("@")).read_text().split())
+        stdout.write("1 passed in 0.1s\n")
+        stdout.flush()
+        return 0
+
+    monkeypatch.setattr(ti.subprocess, "call", fake_call)
+    assert ti.run(base, map_dir, root.parent / "run.log", [], root) == 0
+    assert seen == [["tests/test_a.py"]]
+    monkeypatch.delenv("PYTEST_ADDOPTS")
+    assert ti.run(base, map_dir, root.parent / "run.log", [], root) == 0
+    assert seen[-1] == ["tests/test_a.py", "tests/test_b.py"]
+
+
 def test_an_unlinked_fixture_selects_its_test_module_or_falls_back(repo) -> None:
     """B-17: a module's fixture requested through `request.getfixturevalue` links no test in a map
     built before B-17; its module is known, a conftest fixture's users are not."""

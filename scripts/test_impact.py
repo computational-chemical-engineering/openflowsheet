@@ -23,6 +23,7 @@ import io
 import json
 import os
 import re
+import shlex
 import shutil
 import sqlite3
 import subprocess
@@ -694,13 +695,16 @@ def select(
     cwd: Path = ROOT,
     since: str | None = None,
     by_file: bool = False,
+    deselected: frozenset[str] = frozenset(),
 ) -> Selection:
     """The node ids the change from `base` to the working tree can affect, or a fallback.
 
     With `since` (a commit between `base` and HEAD whose own gate passed), only the files the
     step from `since` changes are judged, each by its cumulative change from `base`, the commit
     the map's lines are of. `by_file` (with `since` only) is the approximate rule for import-time
-    code; a full suite must follow before the steps merge (docs/test-impact.md)."""
+    code; a full suite must follow before the steps merge (docs/test-impact.md). `deselected` are
+    node ids the run will not execute anyway (pytest `--deselect`): an unsure test among them
+    selects nothing, so it does not drag its whole file into every run."""
     try:
         sha = resolve(base, cwd)
         ancestor = subprocess.run(
@@ -744,7 +748,7 @@ def select(
             else:
                 selected |= _open_rule(test_map, path, required=True)
         # A test that failed in the build recorded only the lines before its failure (B-17).
-        return Selection(_collapse(selected | test_map.unsure))
+        return Selection(_collapse(selected | (test_map.unsure - deselected)))
     except FallbackError as reason:
         return Selection(fallback=str(reason))
 
@@ -920,6 +924,14 @@ def _runs(selection: Selection, workers: int) -> list[tuple[list[str], list[str]
     return calls + ([([], serial)] if serial else [])
 
 
+def _deselected(extra: list[str]) -> frozenset[str]:
+    """The node ids pytest will deselect: `--deselect` in PYTEST_ADDOPTS and the extra arguments."""
+    words = [*shlex.split(os.environ.get("PYTEST_ADDOPTS", "")), *extra]
+    found = {word.split("=", 1)[1] for word in words if word.startswith("--deselect=")}
+    found |= {after for word, after in zip(words, words[1:], strict=False) if word == "--deselect"}
+    return frozenset(found)
+
+
 def _counts(text: str) -> dict[str, int]:
     """pytest's closing counts (`3 passed, 1 skipped`) of one run's output, by kind."""
     match = next((m for m in map(SUMMARY.match, reversed(text.splitlines())) if m), None)
@@ -949,7 +961,7 @@ def run(
     if full:  # a merge check: the suite the step-relative selections stand on
         selection = Selection(fallback="--full")
     else:
-        selection = select(base, map_dir, repo, since, by_file).whole_files()
+        selection = select(base, map_dir, repo, since, by_file, _deselected(extra)).whole_files()
     sha = git("rev-parse", "--short", "HEAD", cwd=repo).strip()
     log = log or Path(os.environ.get("TMPDIR", "/tmp")) / f"test-impact-{sha}.log"
     command = [sys.executable, "-m", "pytest", "-q", "-p", "no:cacheprovider", "-rs", *extra]

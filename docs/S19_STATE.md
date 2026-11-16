@@ -17,7 +17,7 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
   `docs/briefs/S19-digest.md`; scan JSON `<git-common-dir>/codehealth/runs/repo-wide-scan-d90b498f.json`.
 - `MB` (the test-map base, read by `.claude/skills/s19-refactor/gate.sh` from the line below; moves to milestone
   commits, `S19_DECISIONS`):
-- `MB` = `736f70dbf9b88dad9f79b8a8dcd26a44f885520a` (the `wp/S19` tip on 2026-11-15 evening; map built with TMPDIR outside the repo, G-MAP PASS with named failures; earlier MB bec6dbe6).
+- `MB` = `c3c5793eb0584a4727cb0ad3988c3a3c62347d0e` (the `wp/S19` tip on 2026-11-16 ~10:15, after the re-pin to cce-code-health 1f7df37; G-MAP 3 map, quiet build, unsure set = the B-6 four only; earlier MB 736f70db, bec6dbe6).
 - A1 done: design note `docs/briefs/S19-architecture.md` (phases W0 to W4, table 4.1 with the arch numbers per
   step), ADR 0076 proposed. Config committed: scope `src/openflowsheet/*`, `repo-layers`, forbid
   `verifier-not-through-the-solver`; adoption 14 violations, 10 cycles, 79 cycle edges.
@@ -52,33 +52,44 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 - Held until the scale probe reports: G1 (orchestrator/, numerics/). Open: ptc.py 6.8 (P3, P4).
 - G-END (below) stays the end criterion for the whole repository.
 
-## Next actions (2026-11-16, at the self-reset, ~04:00)
+## Next actions (2026-11-16, ~13:45)
 
-Gate queue: runner pid 1056796 (restarted, `queue/runner.pid`). Results consumed up to 37; next: `$Q wait --since 37`.
-Running/queued: 48 (G5 merge-check), 49 (I-3 iface side chain), 51 (G5 review-fix docstrings, re-enqueued), 57 (I-1
-iface side chain). W4 jobs withdrawn to `queue/withdrawn/` pending the lane rebuild. No agent running.
-1. **W4 ruling first:** launch `reviewer` with `model: fable`, brief `<git-common-dir>/codehealth/briefs/S19-R-W4-STOP3.md`
-   (T06 generator self-hash after I-1; experiment isolation test_m02). If it says Frank must approve: Decision Desk
-   request via hub, and park W4 (G5 and others continue). Else brief a fresh `opus-engineer` (write `S19-W4-5.md`):
-   rebuild `wp/S19-w4` with each fix in its causing commit (S19_DECISIONS "W4 lane repair by rebuild"), tag the old
-   tip `s19-w4-pre-stop3`, merge wp/S19 in (0064d0ae ruff guard), re-enqueue every gated range of runs 1-4 (list:
-   `queue/withdrawn/` and done jobs 21-24 stay valid only if their shas survive), then I-8's column_solve and column.
-   Deletion-only interface steps after the merge carry the guard; before it they need a side chain (S19_DECISIONS
-   "ruff tier guard").
-2. **G5 run 4:** when 48 (merge-check) and 51 PASS: merge `wp/S19-g5b` into wp/S19 (merge commit, `-F` file), log.
-   Next G5 run: certificate.py `_issue` witness parameter object (ruling in S19_DECISIONS R-W3-G5-4), then
-   `verify_revision`, `_revision_values`, `_guard`.
-3. After the W4 rebuild's jobs PASS: orchestrator layer-config commit on the lane (config.toml application-layers
-   line 162 `application.policies` stale; repo-layers adoption comment lines 173-176, 178, 179, 181 stale, 177 (A11) and
-   180 (A14) live, count "(12)" at 172), then R-W4-1 (brief `S19-R-W4-1.md`, extend to the lane tip: runs 2-4, rulings
-   STOP 1/2/3, test_x04 a7, the MODEL_ID ruling; the module-attribute retargets in run 4's outside-gate commits),
-   merge-check, merge.
-4. Open for Frank (not blocking): STOP 1 alternative (tool change), a cce-code-health fix for empty `{files}` (needs a
-   push), the verify twins ADR 0076 addendum. Docs-pass leftovers as before plus region.py:71, models.lifted
-   docstring, run 4's evidence-manifest scripts (k04, t04, t05, t05b, s02, s10c) and scripts/corpus_identity.py
-   import lines, docs/interfaces-frozen.md:90.
-5. Then W4 items I-4, I-9, I-14 (A11 ruling), I-10, I-11, I-13, I-12a-d, I-19; G5's remaining files; cycles and
-   violations to 0. `wp/S19-g3` and `wp/SP` wait. Lanes at most 2 until Thu 19 Nov 13:00.
+Runner pid 1923489 (running since 09:51Z). Results consumed up to 119; next `$Q wait --since 119`. No agent running.
+Lanes at most 2 until Thu 19 Nov 13:00. Gate report ALERTs (selected ~850 s, ratio 0.66, wait ~71 min) persist after
+the map rebuild: cause measured at job 123 (selection widens 1220 nodes to 199 whole files, S16 B-11); action recorded
+in S19_DECISIONS (a tools-lane design item, design-lane judged; no extra lanes meanwhile). Tool notes: the queue's
+`--rerun-of` must name the run-log step, not the job (job 118 logged by hand as step 199 with `--rerun-of 197
+--result accepted-neutral --head`); a GATE-ERROR marks its head failed in the runner's memory, so re-gate it from a
+second worktree path (job 121) or after a runner restart.
+1. **G5 run 6b**: merged into wp/S19 (8e19c77a).
+2. **W4** (wp/S19-w4, tip 92153233): every step gated PASS through job 129 (steps 199, 204, 205, 207, 209, 211);
+   layer-config commit 92153233 done (arch 4 violations / 3 cycles / 12 edges; repo-layers live: A11, A14;
+   application-layers: revision_run -> validation, types -> contract). Next: extend review brief
+   `S19-R-W4-1.md` to the lane tip and run R-W4-1 (one `reviewer`, Opus; `model: fable` only if a ruling is hard).
+   The brief's run 1 shas: d1f2ff38, edf13038, 5d09ace0 are on the lane; 24f2fc86 is NOT (the lane was rebuilt:
+   run 1's I-5/I-3 tail is now 4a4b08f0..59c076bd). Lane commits after run 1: `git log --no-merges 5d09ace0..92153233`
+   (~50 lane commits, plus docs commits from wp/S19 merges). Cover runs 2-6, rulings STOP 1/2/3 (R-W4-STOP3, ADR 0076
+   addendum, R-1042), test_x04 a7, the surrogate MODEL_ID ruling, run 4's outside-gate module-attribute retargets
+   (grep S19_DECISIONS for each). Then merge-check (W4 lane merged with the wp/S19 tip on a helper branch, `--mode
+   merge-check`), merge into wp/S19, tell session `code_health` (its v0.2.0 tag waits). Worktrees s19-w4-rg54,
+   -rg54b removable.
+3. **G5 run 8** (wp/S19-g5f, steps 201, 208 accepted; job 134 = step 3 `decide_mode` running): when 134 passes, review
+   R-W3-G5-8 (S2; brief to write from S19-R-W3-common.md; reviewer points in S19_DECISIONS "G5 run 8 delivered"),
+   then merge-check, merge.
+4. **G6 run 4** (wp/S19-g6b, steps 200, 202, 203, 206, 210 accepted; jobs 135, 136 = steps 6, 7 render.py): when both
+   pass, review R-W3-G6-4 (certificates.py S2; points in S19_DECISIONS "G6 run 4 delivered"), merge-check, merge.
+5. G5 then has left: compare.py (7.4), split_checks 21.0 (design-lane question R-W3-G5-7: component order :218 vs
+   :259, `_phase_enthalpy` :538/:576), table `revision_checks` (W4 routing), pr_c1 6.7 / gamma_phi_units 6.4 twins
+   (W4 verify parameter object), `replay` 5.3, `closure_check` 5.0 (public parameters). Type-only `LiftedSplit`
+   imports in checks.py and gamma_phi_units.py: check at the W4 merge.
+6. Then W4 items I-4, I-9, I-14 (A11 ruling), I-10, I-11, I-13, I-12a-d, I-19; cycles and violations to 0.
+   `wp/S19-g3` and `wp/SP` wait.
+7. Open for Frank (not blocking): confirm R-1042 / option (C) for the T06 self-hash at W4 close; STOP 1 alternative
+   (tool change); cce-code-health fixes (empty `{files}`; `log --rerun-of` with a moved base; queue `--rerun-of` job
+   vs step; GATE-ERROR not to block a same-head re-gate); the verify twins ADR 0076 addendum; the selection-widening
+   design item. Docs-pass leftovers as before plus region.py:71, models.lifted docstring, run 4's evidence-manifest
+   scripts (k04, t04, t05, t05b, s02, s10c), scripts/corpus_identity.py import lines, docs/interfaces-frozen.md:90,
+   verify/column.py:103 report string and test_s08_item6.py:90.
 
 ## Gates (pass numbers fixed after A1, before step 1)
 
@@ -87,6 +98,7 @@ iface side chain). W4 jobs withdrawn to `queue/withdrawn/` pending the lane rebu
 | G-MAP | the map after W2 | build exit 0 or 1; at least 20356 tests in the map; failures a subset of the S17 G-MAP set, others named | PASS (bec6dbe6): 20362 tests, 3708 s, 25.4 MB; 4 failed, all of S16's B-6 set (test_m04_wo9 a25, a29; test_x02_wo4 g4e x2); f6 passed |
 | G-MAP 2 | the map at 736f70db (2026-11-15) | as G-MAP | PASS: 20461 tests, 12810 s (under load), 25.6 MB; 7 failed: the B-6 set (m04_wo9 a25, a29; x02_wo4 g4e x2), two wall-time budget tests under load (t07_v17_reference f6, t07_conformance budget_of_the_scenario_runs), s09 a20[s03_reference.py] (its hung subprocess killed, S19_DECISIONS) |
 | G-SELF | before step 1 | `gate --self-test --mutate` on a numeric literal outside application/ that tests read: tests tier exit 1 (failures, not 2 or 124) and F0 detects it; unmutated, all tiers pass | run 1 (newton.py:776, 3d3eebe3) FAIL: unmutated tests tier exit 1, only test_t07_v17_reference f6 (wall 333 s > 300 s budget) under two concurrent lane gates; gate.sh now takes a clone-wide lock (a1059f16); run 2 (same literal, a1059f16) PASS: unmutated 20253 passed, 1044 s; mutated tests exit 1 (499 failed, 6 errors, 865 s), f0 detected, mcp_digest missed (as in S17) |
+| G-MAP 3 | the map at the wp/S19 tip when the queue drains (2026-11-16) | as G-MAP, built without `--deselect`; no unsure test in a file that costs more than about 60 s (else re-run the build) | MISS on the unsure-file criterion, map accepted (c3c5793e): 20483 tests, 3473 s quiet, 25.7 MB; 4 failed = the B-6 set (m04_wo9 a25, a29; x02_wo4 g4e x2), deterministic since S16, so a re-run cannot cure them; test_m04_wo9_synthetic_loop.py ~77 s (profile under load) > 60 s, x02_wo4 unmeasured. s09 and both t07 budget tests passed (out of the unsure set). |
 | G-STEP | every step | gate exit 0; refactor: touched files' debt strictly lower; restructure: the plan's arch numbers (table 4.1) met exactly | run log |
 | G-REVIEW | S1 files every 3 accepted steps, S2 and S1/S2 splits every 4, others every 8 (design note 5) | fresh `reviewer`; rejects reverted and logged | |
 | G-END | campaign end, at the merged tip | repo scan (scope `src/openflowsheet/*`): debt <= 1900; health >= 9.0 (binding); brain functions 0; no file below health 7.0; no `huge_file`; `codehealth arch`: 0 cycles at depth 4, 0 violations on every rule; F0 and MCP digest identical; full suite and CI green on both legs | |

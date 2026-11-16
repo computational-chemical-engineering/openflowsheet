@@ -185,6 +185,12 @@ merge (S19: `gate_queue.py` mode `merge-check`):
 A miss therefore costs a late detection and a bisect over the chain, not a wrong merge. Without
 `--since` nothing changes: the cumulative selection stays the exact one.
 
+A test that failed in the map build is always selected (B-17), and `run` widens it to its whole
+file. `run` therefore drops an unsure test that the same run deselects (`--deselect` in
+`PYTEST_ADDOPTS` or after `--`): S19's gates deselect two wall-time budget tests, which had failed
+in the build under load and pulled `test_t07_v17_reference.py` and `test_t07_conformance.py` into
+every selected gate.
+
 ## Limitations
 
 - Selection is an inner-loop aid only. CI on both architectures stays the merge gate.

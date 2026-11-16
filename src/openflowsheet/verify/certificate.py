@@ -30,7 +30,7 @@ from openflowsheet.canonical import document_sha256, state_sha256
 from openflowsheet.compile.casadi_backend import compile_problem
 from openflowsheet.compile.reference import state_vector
 from openflowsheet.compile.spec import ProblemSpec
-from openflowsheet.compiled import CompiledProblem, EvaluationContext
+from openflowsheet.compiled import CompiledProblem, CompiledProblemMetadata, EvaluationContext
 from openflowsheet.models.syn001.flowsheet import STREAMS, Syn001Flowsheet
 from openflowsheet.numerics.scaling import Scaling
 from openflowsheet.orchestrator.rank import (
@@ -73,7 +73,9 @@ from openflowsheet.verify.verdict import (
 )
 
 if TYPE_CHECKING:
-    from openflowsheet.models.revision_flowsheet import ComponentBasis
+    from openflowsheet.models.lifted import LiftedSplit
+    from openflowsheet.models.revision_flowsheet import ComponentBasis, RevisionView
+    from openflowsheet.thermo import PropertyCapabilities
     from openflowsheet.verify.regularity import RegularityEvidence
     from openflowsheet.verify.zero_flow import ZeroFlowSplit
 
@@ -120,10 +122,11 @@ def _guard(
     this declaration at this state.
 
     The solve's identity is read from its root fingerprint and from its `SolvePlan` (the result's,
-    or the region plan the caller holds); `x_final` from `state=`, else `final_state`, else
-    `state`. Refusals are `VerifierError`s with an R0 message: `declaration_unidentified`,
-    `declaration_mismatch(<field>)`, `state_mismatch(full_state_sha256)`. Only the hash
-    comparison is skipped under `state=` (K04 §9's injections)."""
+    or the region plan the caller holds) and compared by `_require_claimed_identity`; `x_final`
+    from `state=`, else `final_state`, else `state`. Refusals are `VerifierError`s with an R0
+    message: `declaration_unidentified`, `declaration_mismatch(<field>)`,
+    `state_mismatch(full_state_sha256)`. Only the hash comparison is skipped under `state=`
+    (K04 §9's injections)."""
     source = _last_solve(result)
     fingerprint = getattr(source, "root_fingerprint", None)
     own_plan = getattr(source, "plan", None)
@@ -133,16 +136,7 @@ def _guard(
     if fingerprint is None and own_plan is None:
         raise VerifierError("declaration_unidentified")
     plans = [plan for plan in (own_plan, solve_plan) if plan is not None]
-    metadata = compiled.metadata
-    claimed: list[tuple[str, str]] = []
-    if fingerprint is not None:
-        claimed.append((fingerprint["model_version"], fingerprint["constants_sha256"]))
-    claimed += [(plan.model_version, plan.constants_sha256) for plan in plans]
-    for model_version, constants in claimed:
-        if model_version != metadata.model_version:
-            raise VerifierError("declaration_mismatch(model_version)")
-        if constants != metadata.constants_sha256:
-            raise VerifierError("declaration_mismatch(constants_sha256)")
+    _require_claimed_identity(fingerprint, plans, compiled.metadata)
     # §4.8 item 1: the first differing of `model_version`, `constants_sha256` and `revision`.
     if not revision_matches:
         raise VerifierError("declaration_mismatch(revision)")
@@ -164,6 +158,26 @@ def _guard(
         "row_ids": list(tear_plan.tear_row_ids) if tear_plan is not None else [],
     }
     return _Solved(source, final_state, tear)
+
+
+def _require_claimed_identity(
+    fingerprint: Mapping[str, Any] | None,
+    plans: Sequence[Any],
+    metadata: CompiledProblemMetadata,
+) -> None:
+    """T04 §4.8 item 1 (ADR 0010 D9.2): every `(model_version, constants_sha256)` the solve
+    claims, its root `fingerprint`'s first and then each of `plans`' in order, is the compiled
+    declaration's (`metadata`). The first claim that differs raises `VerifierError`
+    `declaration_mismatch(model_version)`, else `declaration_mismatch(constants_sha256)`."""
+    claimed: list[tuple[str, str]] = []
+    if fingerprint is not None:
+        claimed.append((fingerprint["model_version"], fingerprint["constants_sha256"]))
+    claimed += [(plan.model_version, plan.constants_sha256) for plan in plans]
+    for model_version, constants in claimed:
+        if model_version != metadata.model_version:
+            raise VerifierError("declaration_mismatch(model_version)")
+        if constants != metadata.constants_sha256:
+            raise VerifierError("declaration_mismatch(constants_sha256)")
 
 
 def verify(
@@ -374,8 +388,10 @@ def verify_revision(
     """K04 on a **revision-built** flowsheet (T05 design note §4.2): the binding's declaration,
     judged by the table of `verify.table` against the revision's own values.
 
-    The guard, the residual rows, the alias certificates and everything after the check set
-    (`_issue`) are the ones `verify_bound` runs; only the check set in between is the table's. The
+    The guard, the residual rows, the alias certificates (`_require_planned_aliases`) and
+    everything after the check set (`_issue`) are the ones `verify_bound` runs; only the check
+    set in between is the table's, and the derivative witness's columns are classified on the
+    revision (`_revision_witness`). The
     table reads the revision through `parse_revision` (ids, pins, parameters) and a fresh
     provider, never the binding's flowsheet or units (R-016). `binding` is an
     `application.revision_binding.RevisionBinding`; `revision` must be the document it was bound
@@ -427,15 +443,7 @@ def verify_revision(
     target = BoundDeclaration(
         binding.spec, compiled, final_state, pressure_domain=fresh.describe().domain["P"]
     )
-    if solve_plan is not None:
-        found = [alias_document(row) for row in target.partition.elimination.eliminated]
-        planned = [alias_document(row) for row in solve_plan.eliminated_rows]
-        if found != planned:
-            raise VerifierError(
-                "the certified aliases of the declaration at x_final are not the region plan's: "
-                f"{[row['row_id'] for row in found]} against "
-                f"{[row['row_id'] for row in planned]}"
-            )
+    _require_planned_aliases(target, solve_plan)
 
     try:
         view = parse_revision(revision)
@@ -510,14 +518,7 @@ def verify_revision(
     bounds = [k for k, check in enumerate(table) if check.category == "bounds_and_domain"]
     at = bounds[-1] + 1 if bounds else len(table)
     checks += [*table[:at], *surrogate_checks, *table[at:]]
-    classes = witness_classes(
-        target.spec.variable_ids,
-        final_state,
-        view.components,
-        basis=basis,
-        streams=view.streams,
-        splits=splits,
-    )
+    witness = _revision_witness(target, final_state, view, basis, splits)
     return _issue(
         target,
         result,
@@ -533,23 +534,25 @@ def verify_revision(
         screened=screened,
         projection=projection,
         provider=fresh,
-        # K04 §4.8.2 (amendment WIT, ADR 0073): not differenced, and listed — §14.2 B17
-        # *Consequence* as narrowed by §14.3 C2 (R-281), a `pr-c1-v1` revision's stream
-        # component-flow columns exactly 0.0 (class 1), and a dormant lifted liquid side on a
-        # Wilson basis (class 2, A2); differenced one-sided — S11 rulings item 2's (R-831) Z
-        # (class 3) and a dormant lifted vapour side on a Wilson basis (class 4, A1).
-        unstenciled=frozenset(name for name, k in classes.items() if k in (1, 2)),
-        one_sided=frozenset(name for name, k in classes.items() if k in (3, 4)),
-        components=view.components,
-        # ADR 0073 D5 as amended: classes 1 and 2 never share a basis, so the reason follows it.
-        skipped_reason=(
-            "wilson_dormant_liquid_columns"
-            if basis in ONE_SIDED_BASES
-            else "pr_c1_zero_flow_columns"
-        ),
+        witness=witness,
         appended=surrogate_limitations,
         external=external,
     )
+
+
+def _require_planned_aliases(target: BoundDeclaration, solve_plan: Any) -> None:
+    """§4.8 item 3: the certified aliases of `target`'s declaration at `x_final` are the ones the
+    region's `SolvePlan` eliminated, compared as `alias_document`s in order; else a
+    `VerifierError` naming both row lists. Nothing to compare when `solve_plan` is `None`."""
+    if solve_plan is not None:
+        found = [alias_document(row) for row in target.partition.elimination.eliminated]
+        planned = [alias_document(row) for row in solve_plan.eliminated_rows]
+        if found != planned:
+            raise VerifierError(
+                "the certified aliases of the declaration at x_final are not the region plan's: "
+                f"{[row['row_id'] for row in found]} against "
+                f"{[row['row_id'] for row in planned]}"
+            )
 
 
 def _staged_splits(view: Any) -> dict[str, Any]:
@@ -569,6 +572,43 @@ def _staged_splits(view: Any) -> dict[str, Any]:
         structure = column_structure(instance, view.components)
         staged[instance.unit_id] = column_staged_splits(structure)
     return staged
+
+
+def _revision_witness(
+    target: BoundDeclaration,
+    final_state: Mapping[str, float],
+    view: RevisionView,
+    basis: str,
+    splits: Sequence[LiftedSplit],
+) -> _WitnessColumns:
+    """K04 §4.8.2 (amendment WIT, ADR 0073): the columns of `target`'s declaration the
+    derivative witness does not difference or differences one-sided, by `witness_classes` at
+    `final_state` over `view`'s components and streams and the lifted `splits` on the fresh
+    provider's `basis`, and the reason its partial-witness limitation records."""
+    classes = witness_classes(
+        target.spec.variable_ids,
+        final_state,
+        view.components,
+        basis=basis,
+        streams=view.streams,
+        splits=splits,
+    )
+    return _WitnessColumns(
+        # Not differenced, and listed — §14.2 B17 *Consequence* as narrowed by §14.3 C2 (R-281),
+        # a `pr-c1-v1` revision's stream component-flow columns exactly 0.0 (class 1), and a
+        # dormant lifted liquid side on a Wilson basis (class 2, A2); differenced one-sided —
+        # S11 rulings item 2's (R-831) Z (class 3) and a dormant lifted vapour side on a Wilson
+        # basis (class 4, A1).
+        unstenciled=frozenset(name for name, k in classes.items() if k in (1, 2)),
+        one_sided=frozenset(name for name, k in classes.items() if k in (3, 4)),
+        components=view.components,
+        # ADR 0073 D5 as amended: classes 1 and 2 never share a basis, so the reason follows it.
+        skipped_reason=(
+            "wilson_dormant_liquid_columns"
+            if basis in ONE_SIDED_BASES
+            else "pr_c1_zero_flow_columns"
+        ),
+    )
 
 
 def alias_document(row: Any) -> dict[str, Any]:
@@ -643,9 +683,7 @@ def _revision_values(
     for name, entry in entries.items():
         role = entry.get("role")
         if role == "free":
-            for column in targets.get(name, ()):
-                if column in binding.freed.values():
-                    freed[column] = name
+            freed.update(_freed_columns(binding, targets.get(name, ()), name))
             continue
         if role != "fixed":
             continue
@@ -656,6 +694,13 @@ def _revision_values(
     if split_fraction is None:
         raise VerifierError("the revision declares no split fraction; §4.3 cannot be judged")
     return values, freed, split_fraction
+
+
+def _freed_columns(binding: Any, columns: Sequence[str], entry_id: str) -> dict[str, str]:
+    """The target `columns` of the revision's `role: free` entry `entry_id` that the binding
+    freed (`binding.freed`), each mapped to `entry_id`, in `columns`' order; a repeated column
+    is one entry."""
+    return {column: entry_id for column in columns if column in binding.freed.values()}
 
 
 class BoundDeclaration:
@@ -857,7 +902,7 @@ def _certify(
         phase_branch=_phase_branch(final_state),
         screened=screened,
         projection=projection,
-        components=COMPONENTS,
+        witness=_WitnessColumns(components=COMPONENTS),
     )
 
 
@@ -955,6 +1000,21 @@ def _judged_at(
     ]
 
 
+@dataclass(frozen=True)
+class _WitnessColumns:
+    """K04 §4.8.2 (amendment WIT, ADR 0073): how the derivative witness treats the declaration's
+    columns, and the reason its `derivative_witness_partial` limitation records (§14.3 C2)."""
+
+    #: The columns not differenced, and listed (`witness_classes`' classes 1 and 2).
+    unstenciled: frozenset[str] = frozenset()
+    #: The columns differenced one-sided (classes 3 and 4).
+    one_sided: frozenset[str] = frozenset()
+    #: The components whose class-5 columns `escalate_column` may re-difference.
+    components: Sequence[str] = ()
+    #: The limitation's `reason` when `unstenciled` holds a column of the declaration.
+    skipped_reason: str = "pr_c1_zero_flow_columns"
+
+
 def _issue(
     target: Any,
     result: Any,
@@ -969,10 +1029,7 @@ def _issue(
     screened: _Screened,
     projection: Projection,
     provider: PropertyProvider | None = None,
-    unstenciled: frozenset[str] = frozenset(),
-    one_sided: frozenset[str] = frozenset(),
-    components: Sequence[str] = (),
-    skipped_reason: str = "pr_c1_zero_flow_columns",
+    witness: _WitnessColumns,
     appended: Sequence[Limitation] = (),
     external: ExternalEvidence | None = None,
 ) -> SolutionCertificate:
@@ -982,7 +1039,8 @@ def _issue(
     `phase_branch` the caller's record of the branch, `screened` the regularity screen the caller
     ran at `final_state` before its fresh-flash categories (ADR 0013 D1), on the zero-flow form of
     its `ZERO_FLOW` splits (T05b spec §9.3; none for SYN-001), and `projection` where those
-    categories were judged, recorded as `transformations.projection` (K04-F9 spec §5.5)."""
+    categories were judged, recorded as `transformations.projection` (K04-F9 spec §5.5), and
+    `witness` the columns the derivative witness does not difference or differences one-sided."""
     from openflowsheet.verify.checks import derivative_witness, witness_skipped_columns
     from openflowsheet.verify.regularity import solution_error_bound
 
@@ -993,7 +1051,11 @@ def _issue(
         # M02 design note §4.4: the coupling checks are judged with the check set.
         checks += external.checks
     checks += derivative_witness(
-        target, final_state, unstenciled=unstenciled, one_sided=one_sided, components=components
+        target,
+        final_state,
+        unstenciled=witness.unstenciled,
+        one_sided=witness.one_sided,
+        components=witness.components,
     )
 
     matrix, scaled_residual = screened.matrix, screened.scaled_residual
@@ -1019,12 +1081,12 @@ def _issue(
     )
     # M02 design note §14.3 C2 (R-281): the columns the witness did not difference, recorded
     # where a reader enumerates what was not established; nothing when none was skipped.
-    skipped = witness_skipped_columns(target.spec.variable_ids, unstenciled)
+    skipped = witness_skipped_columns(target.spec.variable_ids, witness.unstenciled)
     if skipped:
         limitations.append(
             Limitation(
                 "derivative_witness_partial",
-                {"columns": skipped, "reason": skipped_reason},
+                {"columns": skipped, "reason": witness.skipped_reason},
             )
         )
     if external is not None:
@@ -1061,45 +1123,66 @@ def _issue(
             dict(item) for item in getattr(solved.source, "branch_provenance", ()) or ()
         ),
         root_fingerprint=getattr(solved.source, "root_fingerprint", None),
-        transformations={
-            "scales": {"column": dict(target.scaling.column), "row": dict(target.scaling.row)},
-            "eliminated_rows": [
-                row.as_document() for row in target.partition.elimination.eliminated
-            ],
-            "tear": dict(solved.tear),
-            # ADR 0010 D9.4: what the binding removed, freed and promoted; empty when nominal.
-            "declaration": {key: _plain(value) for key, value in declaration.items()},
-            # ADR 0013 D5: where the fresh-flash categories were judged, and why. R0, no float.
-            "projection": projection.as_document(),
-        },
-        derivative_provenance={
-            "path": "assembled_schur",
-            "pattern_provenance": identity.get("pattern_provenance", "declared-by-compiler"),
-            # `None` when the witness did not run (T06 spec §8.2): a 0.0 would read as a pass.
-            "witness_max_diff": max(
-                (
-                    c.value
-                    for c in checks
-                    if c.category == "derivative_witness" and c.value is not None
-                ),
-                default=None,
-            ),
-            # M02 design note §4.4: an external unit's map has no derivative (ADR 0034 D4).
-            **({} if external is None else {"external_map": dict(external.derivatives)}),
-        },
-        independence_qualifications=tuple(
-            {
-                "check_id": check.id,
-                "provider_id": capabilities.provider_id,
-                "implementation_sha256": capabilities.implementation_sha256,
-                "data_sha256": capabilities.data_sha256,
-                "reference_convention": capabilities.reference_convention,
-            }
-            for check in checks
-            if check.independence_qualification is not None
-        ),
+        transformations=_transformations(target, solved, declaration, projection),
+        derivative_provenance=_derivative_provenance(identity, checks, external),
+        independence_qualifications=_independence_qualifications(checks, capabilities),
         limitations=tuple(limitations),
         statements=statements_for(provider),
+    )
+
+
+def _transformations(
+    target: Any, solved: _Solved, declaration: Mapping[str, Any], projection: Projection
+) -> dict[str, Any]:
+    """The certificate's `transformations` record: `target`'s scales and eliminated rows, the
+    solve's tear, the binding's `declaration` and where the fresh-flash categories were judged
+    (`projection`)."""
+    return {
+        "scales": {"column": dict(target.scaling.column), "row": dict(target.scaling.row)},
+        "eliminated_rows": [row.as_document() for row in target.partition.elimination.eliminated],
+        "tear": dict(solved.tear),
+        # ADR 0010 D9.4: what the binding removed, freed and promoted; empty when nominal.
+        "declaration": {key: _plain(value) for key, value in declaration.items()},
+        # ADR 0013 D5: where the fresh-flash categories were judged, and why. R0, no float.
+        "projection": projection.as_document(),
+    }
+
+
+def _derivative_provenance(
+    identity: Mapping[str, Any], checks: Sequence[CheckResult], external: ExternalEvidence | None
+) -> dict[str, Any]:
+    """The certificate's `derivative_provenance` record: the assembled-Schur path, the screen's
+    pattern provenance (`identity`), the largest derivative-witness value in `checks`, and an
+    `external` unit's derivative map when there is one."""
+    return {
+        "path": "assembled_schur",
+        "pattern_provenance": identity.get("pattern_provenance", "declared-by-compiler"),
+        # `None` when the witness did not run (T06 spec §8.2): a 0.0 would read as a pass.
+        "witness_max_diff": max(
+            (c.value for c in checks if c.category == "derivative_witness" and c.value is not None),
+            default=None,
+        ),
+        # M02 design note §4.4: an external unit's map has no derivative (ADR 0034 D4).
+        **({} if external is None else {"external_map": dict(external.derivatives)}),
+    }
+
+
+def _independence_qualifications(
+    checks: Sequence[CheckResult], capabilities: PropertyCapabilities
+) -> tuple[dict[str, str], ...]:
+    """The certificate's `independence_qualifications`: for each check of `checks` that carries
+    an independence qualification, in check order, the fresh provider it ran on (`capabilities`,
+    M02 design note §14.2 B15)."""
+    return tuple(
+        {
+            "check_id": check.id,
+            "provider_id": capabilities.provider_id,
+            "implementation_sha256": capabilities.implementation_sha256,
+            "data_sha256": capabilities.data_sha256,
+            "reference_convention": capabilities.reference_convention,
+        }
+        for check in checks
+        if check.independence_qualification is not None
     )
 
 
