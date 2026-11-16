@@ -1421,3 +1421,4 @@
 - **2026-11-16 21:23, job 187 PASS (g6r6-revfix, 0dd145b0, no-gain, step 247 accepted-neutral, 24.0 -> 24.0, 15/15).**
   Report: ALERT selected share 54% < 75%; ALERT selected gates take 465 s > 300 s; ALERT queue wait median 37 min >
   15 min (standing; proposal 2 with Frank). G6 run 6 merges when merge-check 188 passes.
+- **2026-11-16 21:37, job 189 PASS (g5r9-1, 55be9616, step 248 accepted, 23.0 -> 17.0, 16/16).** ALERTs standing.
