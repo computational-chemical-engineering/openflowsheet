@@ -81,20 +81,17 @@ import numpy as np
 from openflowsheet.canonical import state_sha256
 from openflowsheet.compile.spec import ProblemSpec
 from openflowsheet.compiled import CompiledProblem, EvaluationContext
-from openflowsheet.models.lifted import INADMISSIBLE_BRANCH as INADMISSIBLE_BRANCH
-from openflowsheet.models.lifted import LABEL_KIND as LABEL_KIND
-from openflowsheet.models.lifted import Branch as Branch
-from openflowsheet.models.lifted import ClosureType as ClosureType
-from openflowsheet.models.lifted import DormancyForm as DormancyForm
-from openflowsheet.models.lifted import LiftedSplit as LiftedSplit
-from openflowsheet.models.lifted import Regime as Regime
-from openflowsheet.models.lifted import StagedSplits as StagedSplits
-from openflowsheet.models.lifted import VapourOnlyForm as VapourOnlyForm
-from openflowsheet.models.lifted import ZeroFlowForm as ZeroFlowForm
-from openflowsheet.models.lifted_tolerance import (
-    EQUILIBRIUM_TOLERANCE as EQUILIBRIUM_TOLERANCE,
+from openflowsheet.models.lifted import (
+    LABEL_KIND,
+    ClosureType,
+    DormancyForm,
+    LiftedSplit,
+    Regime,
+    VapourOnlyForm,
+    ZeroFlowForm,
 )
-from openflowsheet.models.lifted_tolerance import KIND_TOLERANCE as KIND_TOLERANCE
+from openflowsheet.models.lifted import StagedSplits as StagedSplits
+from openflowsheet.models.lifted_tolerance import KIND_TOLERANCE
 from openflowsheet.models.syn001.ph_kernel import ph_state as ph_state
 from openflowsheet.numerics.newton import solve_newton
 from openflowsheet.numerics.ptc import PtcRecord
@@ -186,15 +183,9 @@ from openflowsheet.orchestrator.warm_start import WARM_START_REJECTED, WARM_STAR
 from openflowsheet.thermo import PropertyProvider
 
 __all__ = [
-    "ClosureType",
-    "DormancyForm",
-    "LiftedSplit",
     "RecoveryStart",
     "RegionResult",
-    "Regime",
     "StagedSplits",
-    "VapourOnlyForm",
-    "ZeroFlowForm",
     "region_ptc_problem",
     "solve_region",
     "syn001_lifted_splits",
