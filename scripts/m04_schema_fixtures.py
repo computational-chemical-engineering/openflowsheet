@@ -51,7 +51,7 @@ sys.path.insert(0, str(ROOT / "tests" / "support"))
 
 FIXTURE_DIR: Final = ROOT / "tests" / "fixtures" / "schemas"
 _STUDY: Final = "surrogate-manifest.schema.json#/$defs/"
-#: Each fixture directory's schema reference, as `application.types.schema_errors` takes it.
+#: Each fixture directory's schema reference, as `schema_check.schema_errors` takes it.
 REFERENCES: Final[Mapping[str, str]] = {
     "surrogate_manifest": "surrogate-manifest.schema.json",
     "model_evidence": "model-evidence.schema.json",

@@ -135,7 +135,7 @@ JOB_ID: Final = _ref("job.schema.json#/$defs/job_id")
 ARTIFACT_ID: Final = _ref("job.schema.json#/$defs/artifact_id")
 CURSOR: Final = {"type": ["string", "null"], "maxLength": 1024}
 POINTER: Final = {"type": "string", "maxLength": 8192}
-#: ADR 0075 D8: a display preference's text; its grammar is `units.parse_display_units`'s.
+#: ADR 0075 D8: a display preference's text; its grammar is `units.display.parse_display_units`'s.
 DISPLAY_UNITS: Final = {"type": "string", "minLength": 1, "maxLength": 1024}
 #: ADR 0058 D7: a message code as `explain` takes it (MSG §3.5).
 MESSAGE_CODE: Final = {

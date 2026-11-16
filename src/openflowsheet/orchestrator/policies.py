@@ -26,8 +26,10 @@ additions (ADR 0024):
   D-1), once the executor and the application carry the value's revision continuation.
 
 The chain `T05b-v2` → `T06-revision-v1` → `T06-revision-v2` is constructed **here**, once. It moved
-from `tests/t05b_support.py` and `tests/t06_support.py` (W0 flag E6), which now import it, so the
-registry's `constructed_by` names this module. Moving it moved no hash: `policy_sha256` of each
+from `tests/t05b_support.py` and `tests/t06_support.py` (W0 flag E6), which now import it; the
+registry's `constructed_by` names it under the path it had then
+(`process_runtime.application.policies`; ADR 0076 I-3 moved the module here). Moving it moved no
+hash: `policy_sha256` of each
 object equals its registry entry, which `tests/test_t06_w4_registry.py` and
 `tests/test_t07_w3a_revision_runs.py` check.
 

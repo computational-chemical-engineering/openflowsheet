@@ -320,7 +320,8 @@ def test_a7_kinds_decide_never_the_si_unit() -> None:
 
 def test_a7_display_names_live_in_units_display() -> None:
     """ADR 0076 (amends ADR 0075, I-6): the one home of display-conversion-v1 is
-    `openflowsheet.units.display`; each name is exported and defined there."""
+    `openflowsheet.units.display`; each name is in `display.__all__`, and each class or function
+    is defined there (its `__module__`); the three constants are checked through `__all__`."""
     for name in (
         "DISPLAY_CONVERSION_ID",
         "DISPLAY_KINDS",

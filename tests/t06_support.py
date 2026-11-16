@@ -6,7 +6,7 @@
 `T06-revision-v1`, run 1's policy, which stays defined (spec §6.6 as amended by design note
 `docs/design/T06-F4-recovery.md` §5.6 and §6.1; ADR 0015): `T05b-v2` with only
 `globalization.eo_recovery` changed, to `homotopy_or_sequential_restart`. Both are constructed
-once, with `T05b-v2`, in `openflowsheet.application.policies` (T07 W3a);
+once, with `T05b-v2`, in `openflowsheet.orchestrator.policies` (T07 W3a; ADR 0076 I-3);
 `test_t06_f4_policy.py` checks v1 (A65) and `test_t06_w18_policy.py` v2 (A86).
 
 `registered_root` and `worst_ratio` compare a state with a twin root at T02 §6.4's allowances
@@ -57,8 +57,9 @@ ALLOWANCE: Mapping[str, float] = {
     "xi": 3.1e-7,
 }
 
-#: Constructed in `openflowsheet.application.policies`, where T07 W3a moved the chain (W0 flag
-#: E6; design note §12.2): the application's registered policy is the ensemble's, one object.
+#: Constructed in `openflowsheet.orchestrator.policies`, where T07 W3a moved the chain (W0 flag
+#: E6; design note §12.2; ADR 0076 I-3 moved the module): the application's registered policy
+#: is the ensemble's, one object.
 T06_REVISION_POLICY_V1: SolvePolicy = T06_REVISION_V1
 T06_REVISION_POLICY: SolvePolicy = T06_REVISION_V2
 

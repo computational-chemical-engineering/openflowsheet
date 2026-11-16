@@ -6,7 +6,9 @@ record names `T08-numerical-policy-v2`. It is v1's policy (`benchmarks/k04/refer
 is its only author. It refuses to emit unless (ADR 0025 A1):
 
 - (a) each `kind_floors.floor` is `a + r·s` computed here **and** equals both
-  `verify.checks.KIND_TOLERANCE` and `orchestrator.region.KIND_TOLERANCE`, as floats, exactly;
+  `verify.kind_tolerance.KIND_TOLERANCE` (the verifier's) and
+  `models.lifted_tolerance.KIND_TOLERANCE` (the solver's), as floats, exactly (reported under
+  their former homes' labels `verify.checks` and `orchestrator.region`);
 - (b) each carried v1 entry equals v1's exactly, and v1 has no `floors` key that v2 lacks other
   than the two `u_diag` rows (D4);
 - (c) the D6.2 token pattern yields exactly §8's ten registered token lists;

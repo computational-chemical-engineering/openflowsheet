@@ -64,9 +64,9 @@ UNBOUND_INPUT_KINDS = frozenset({"conflict", "inadmissible", "incomplete"})
 class RenderContext:
     """What a rendering may know besides the chain (§4.2.5): the surface, the revision document,
     and the ids that are context params. `display_units` is the request's resolved display
-    preference (ADR 0075 D7.2, a `units.DisplayUnits`, which carries the ambient pressure): with
-    it, every quantity of a kind in the map gains its display item and renders from it; `None`
-    renders SI only."""
+    preference (ADR 0075 D7.2, a `units.display.DisplayUnits`, which carries the ambient
+    pressure): with it, every quantity of a kind in the map gains its display item and renders
+    from it; `None` renders SI only."""
 
     surface: Surface | None = None
     revision: Mapping[str, Any] | None = None
