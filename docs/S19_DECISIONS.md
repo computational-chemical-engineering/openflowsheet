@@ -711,3 +711,10 @@
   49a0db77 (`degeneracy` 6.0 -> 3.0, `_product_streams`; `InstanceView` under TYPE_CHECKING). split_checks.py 25.6 ->
   21.0 (health 7.2). Jobs 100-102. No 4th step (remaining cuts need > 5 parameters or a cross-phase parameter object);
   `_declared_phase`/`_phase_enthalpy` twins kept (rule 15).
+- **2026-11-16, job 50 PASS (W4 I-5 iface re-gate 3b8d43db..6f85454c, step 170 accepted-neutral, 15/15).**
+- **2026-11-16, job 88 PASS (G5 run 5 step 1, 8a086d1f `_WitnessColumns`, step 171 accepted, certificate.py 54.2 -> 51.5, 16/16).**
+- **2026-11-16, job 52 PASS (W4 I-6 iface re-gate c63e01cd..e4f18a7a, interface mode, step 172 accepted, 17/17).**
+- **2026-11-16, job 90 PASS (G5 run 5 step 2, 2e86e892 `verify_revision`, step 173 accepted, certificate.py 51.5 -> 46.1, 16/16).**
+- **2026-11-16, job 91 PASS (G5 run 5 step 3, 3551c828 `_freed_columns`, step 174 accepted, certificate.py 46.1 -> 37.1, 16/16).**
+- **2026-11-16, job 75 PASS (W4 rebuild 5b, I-2 src e0acbfbb..809babce, step 175 accepted-neutral, 15/15).**
+- **2026-11-16, job 76 PASS (W4 rebuild 5b, I-7 src 9ce92c74..66a4d2cd, step 176 accepted-neutral, 15/15).**
