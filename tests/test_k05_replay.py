@@ -22,6 +22,7 @@ from typing import Any
 import pytest
 from conftest import REPO_ROOT
 
+from openflowsheet.application.run_session import run_session
 from openflowsheet.run.bundle import (
     ARTIFACT_DIR,
     MANIFEST_NAME,
@@ -32,7 +33,6 @@ from openflowsheet.run.bundle import (
 )
 from openflowsheet.run.manifest import NON_STRUCTURAL, THREAD_VARIABLES, environment
 from openflowsheet.run.replay import REGISTERED_PLATFORMS, Rerun, decide_mode, replay
-from openflowsheet.run.session import run_session
 
 
 def flowsheet() -> Any:

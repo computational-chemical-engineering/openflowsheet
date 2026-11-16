@@ -21,8 +21,8 @@ from __future__ import annotations
 
 import pytest
 
+import openflowsheet.application.run_session as session
 import openflowsheet.run.replay as replay
-import openflowsheet.run.session as session
 from openflowsheet.run.compare import CURRENT_POLICY_ID, V1_POLICY_ID
 from openflowsheet.verify.verdict import SolutionCertificate
 

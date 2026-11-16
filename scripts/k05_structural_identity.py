@@ -37,9 +37,9 @@ from t05b_identity import identity as t05b_identity  # noqa: E402
 from t06_identity import identity as t06_identity  # noqa: E402
 from t07_identity import identity as t07_identity  # noqa: E402
 
+from openflowsheet.application.run_session import run_session  # noqa: E402
 from openflowsheet.run.bundle import read_artifact  # noqa: E402
 from openflowsheet.run.identity import r0_projection  # noqa: E402
-from openflowsheet.run.session import run_session  # noqa: E402
 
 
 def identity() -> dict[str, Any]:

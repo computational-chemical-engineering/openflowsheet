@@ -29,10 +29,10 @@ from openflowsheet.application.revision_run import (
     run_revision_session,
     select_route,
 )
+from openflowsheet.application.run_session import run_session
 from openflowsheet.orchestrator.policies import DEFAULT_POLICY_ID, resolve_policy
 from openflowsheet.run.bundle import read_artifact, read_manifest
 from openflowsheet.run.manifest import THREAD_VARIABLES
-from openflowsheet.run.session import run_session
 from openflowsheet.verify.verdict import CheckPolicy
 
 

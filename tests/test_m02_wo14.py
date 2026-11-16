@@ -33,7 +33,7 @@ import numpy as np
 import pytest
 from conftest import REPO_ROOT
 
-import openflowsheet.run.session as session
+import openflowsheet.application.run_session as session
 from openflowsheet.adapters.experiments.runner import ExperimentRunner
 from openflowsheet.adapters.experiments.store import ExperimentStore, ListArtifactSink
 from openflowsheet.application.coupled_run import (
@@ -52,6 +52,7 @@ from openflowsheet.application.revision_run import (
     run_revision_session,
     select_route,
 )
+from openflowsheet.application.run_session import EXTERNAL_PROVIDERS, _reproducibility_class
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.models.c1.reactor import C1Reactor
 from openflowsheet.orchestrator import coupling
@@ -59,7 +60,6 @@ from openflowsheet.orchestrator.execution import declaration_identity
 from openflowsheet.orchestrator.policies import T06_REVISION_V2
 from openflowsheet.run.bundle import read_artifact, read_manifest
 from openflowsheet.run.compare import CURRENT_POLICY_ID
-from openflowsheet.run.session import EXTERNAL_PROVIDERS, _reproducibility_class
 from openflowsheet.thermo.pr_c1 import PrC1Provider
 from openflowsheet.thermo.syn001 import Syn001Provider
 from openflowsheet.verify.verdict import CheckPolicy

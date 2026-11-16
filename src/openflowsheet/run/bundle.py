@@ -211,8 +211,8 @@ def _cross_check_solve_path(
     Only an indexed, present and intact file is judged, and an unknown route or policy id is
     itself a reason. A bundle without the file — every K05 bundle — is untouched.
 
-    The registry is the application's: imported here, as `run.session` imports the binder's
-    inputs, so that `run/` has no import-time dependency on `application/`.
+    The registry is the application's: imported here, not at module level, so that `run/` has
+    no import-time dependency on `application/`.
     """
     from dataclasses import replace  # noqa: PLC0415
 

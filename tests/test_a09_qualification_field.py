@@ -38,10 +38,10 @@ from test_m02_wo10_coupled import solve as solve_coupled
 
 from openflowsheet.application import coupled_run
 from openflowsheet.application.coupled_run import LiveExperiments
+from openflowsheet.application.run_session import run_session
 from openflowsheet.models import flow_id
 from openflowsheet.models.revision_flowsheet import parse_revision
 from openflowsheet.run.bundle import read_artifact
-from openflowsheet.run.session import run_session
 from openflowsheet.thermo import PropertyProvider
 from openflowsheet.thermo.pr_c1 import PrC1Provider
 from openflowsheet.thermo.syn001 import Syn001Provider
