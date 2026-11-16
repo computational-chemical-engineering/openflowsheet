@@ -842,3 +842,7 @@
   2.0. Files: registry 22.5 -> 7.0 (9.0 -> 9.3), launcher 15.8 -> 11.0 (8.8), certificates 23.0 -> 0 (9.5 -> 10.0),
   render 24.0 -> 17.0 (7.0 -> 7.5). Local scans; repo 4991.5 -> 4941.2. Reviewer (R-W3-G6-4) before merge:
   certificates.py S2; step 3 reads `exit_code`/`signal_number` from values captured at the old point.
+- **2026-11-16, job 121 PASS (G5 run 6b merge-check, full suite, 6400b95b..ce9e9d30, 15/15, 127.4 -> 28.0). Merged
+  wp/S19-g5d into wp/S19 (8e19c77a)** after fast-forwarding it to ce9e9d30; wp/S19 gained only docs since 6400b95b.
+  Removed worktrees s19-g5d-mc, s19-g5d-mc2, s19-g5d and branch wp/S19-g5d-mc. No gate report: a merge-check is not a
+  chain result.
