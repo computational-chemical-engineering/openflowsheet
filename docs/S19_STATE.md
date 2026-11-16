@@ -52,39 +52,42 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 - Held until the scale probe reports: G1 (orchestrator/, numerics/). Open: ptc.py 6.8 (P3, P4).
 - G-END (below) stays the end criterion for the whole repository.
 
-## Next actions (2026-11-16, ~05:00)
+## Next actions (2026-11-16, ~07:30)
 
-Gate queue: runner pid 1056796. Results consumed up to 58; next: `$Q wait --since 58`. No agent running (self-reset
-2026-11-16 ~06:30). Lanes delivered and waiting for gates: W4 (wp/S19-w4), G5 run 5 (wp/S19-g5c, jobs 88, 90-92),
-G5 run 6 (wp/S19-g5d, jobs 94-97), G5 run 7 (wp/S19-g5e, jobs 100-102). Each G5 lane: gates PASS -> reviewer (S2,
-`S19-R-W3-common.md` plus a short per-run brief naming the decisions entry "G5 run N delivered") -> docstring fixes
-gated no-gain -> merge-check -> merge. Merge order note: W4's f9dec891 and G5 run 5 both edit
-verify/certificate.py (W4: lazy import line :559); resolve at the second merge, import line only.
-Lanes at most 2 until Thu 19 Nov 13:00. Review briefs `S19-R-W3-G5-5.md`, `-6.md`, `-7.md` drafted (2026-11-16 04:20).
-1. **W4:** STOP 3 ruled (R-W4-STOP3, Fable: Q1 option C, Q2 option a; ADR 0076 addendum + R-1042 on wp/S19
-   274fb926); lane rebuilt (W4 run 5, S19_DECISIONS). Queued: 50, 52 (I-5, I-6 iface, re-enqueued from withdrawn),
-   73-87 (rebuild 5b; 73, 74 PASS as steps 168, 169), 89, 93 (batch E column_solve), 98, 99 (run 6, batch F
-   column, delivered). No new W4 work until R-W4-1. When all PASS: orchestrator layer-config
-   commit (config.toml application-layers line 162 `application.policies` stale; repo-layers adoption comment lines
-   173-176, 178, 179, 181 stale, 177 (A11) and 180 (A14) live, count "(12)" at 172), then R-W4-1 (brief
-   `S19-R-W4-1.md`, extend to the lane tip: runs 2-6, rulings STOP 1/2/3, test_x04 a7, MODEL_ID ruling, run 4's
-   outside-gate module-attribute retargets), merge-check, merge into wp/S19. A job FAIL: read failed checks; env
-   failure re-enqueue `--rerun-of`; real failure to a fresh engineer. Side-chain re-gates cannot carry `--rerun-of`:
-   log by hand in the side-chain worktree (as step 165). Worktrees s19-w4-rg54, -rg54b removable once no job uses them.
-2. **G5 run 5** (wp/S19-g5c, certificate.py 54.2 -> 30.1): jobs 88, 90, 91, 92. When PASS: reviewer (S2, brief
-   `S19-R-W3-common.md` + a short `S19-R-W3-G5-5.md`; points: twin `_require_planned_aliases` in `verify_bound`,
-   step 2's reorder before `revision_phase_branch`), docstring fix (verify_revision docstring names
-   `_require_planned_aliases`, rule 7) gated no-gain, merge-check, merge.
-3. **G5 runs 6 and 7:** as 2 (run 7: reviewer judges c95eadac, under the gain rule). G5 then has left: checks.py
-   `derivative_witness` 16.2, compare.py (health 7.4), split_checks 21.0, table `revision_checks` (W4 routing);
-   pr_c1 6.7 / gamma_phi_units 6.4 twins wait for the W4 verify parameter object (ADR 0076 addendum).
-4. Then W4 items I-4, I-9, I-14 (A11 ruling), I-10, I-11, I-13, I-12a-d, I-19; cycles and violations to 0.
+Gate queue: runner pid 1056796. Results consumed up to 76; next: `$Q wait --since 76`. No agent running (self-reset
+2026-11-16 ~07:30). Lanes at most 2 until Thu 19 Nov 13:00. Review briefs `S19-R-W3-G5-6.md` (updated to run 6b's
+shas) ready. Tool note: a re-gate whose base moved cannot use `--rerun-of`; log by hand with a plain `codehealth log
+--head SHA --result accepted-neutral --reason ...` from the lane worktree (steps 168, 179). The gate's literal check
+excludes docstrings.
+1. **G5 run 5** (wp/S19-g5c): reviewed (R-W3-G5-5, fixes in 718d896a), wp/S19 merged in (de7807d3). Jobs 103
+   (no-gain revfix) and 104 (merge-check). Both PASS -> `git merge -F <file>` of wp/S19-g5c into wp/S19 (merge
+   commit), log in S19_DECISIONS. A later W4 merge meets certificate.py: W4's f9dec891 lazy import (:559) and W4 I-2's
+   type-only `LiftedSplit` import from `models.lifted` (718d896a does the same): resolve import lines only.
+2. **G5 run 7** (wp/S19-g5e): reviewed (R-W3-G5-7, fix 3b13e7fe), wp/S19 merged in (0dc5f187). Jobs 109 (revfix) and
+   110 (merge-check). Both PASS -> merge as 1. If run 5 merged first, the merge-check base is stale but the lanes are
+   disjoint (certificate.py vs projection.py/split_checks.py); merge without a new merge-check only if wp/S19 gained
+   docs plus the other lane alone, and say so in the log.
+3. **G5 run 6b** (wp/S19-g5d rebuilt on 14f4fa35; old tip wip/S19-g5d-r1): jobs 105-108. All PASS -> reviewer
+   (Opus, brief `S19-R-W3-G5-6.md`) -> fixes -> merge wp/S19 into the lane -> merge-check -> merge.
+4. **W4** (wp/S19-w4): queued jobs 80-87, 89, 93, 98, 99 (75-79 PASS: steps 175, 176, 179 by hand, 182, 183). No new
+   W4 work until R-W4-1. When all PASS: the layer-config commit (config.toml application-layers line 162
+   `application.policies` stale; repo-layers adoption comment lines 173-176, 178, 179, 181 stale, 177 (A11) and 180
+   (A14) live, count "(12)" at 172), then R-W4-1 (brief `S19-R-W4-1.md`, extend to the lane tip: runs 2-6, rulings
+   STOP 1/2/3, test_x04 a7, MODEL_ID ruling, run 4's outside-gate module-attribute retargets), merge-check, merge.
+   A job FAIL: read failed checks; env failure re-enqueue `--rerun-of`; real failure to a fresh engineer.
+   Worktrees s19-w4-rg54, -rg54b removable once no job uses them.
+5. G5 then has left: checks.py `derivative_witness` 16.2, compare.py (health 7.4), split_checks 21.0, table
+   `revision_checks` (W4 routing); pr_c1 6.7 / gamma_phi_units 6.4 twins wait for the W4 verify parameter object.
+   Type-only `LiftedSplit` imports via orchestrator.region remain in checks.py:58 and gamma_phi_units.py:80 (W4 I-2
+   may cover them; check at the W4 merge). Design-lane question for the G5 close: split_checks.py component order
+   (:218 vs :259, `_phase_enthalpy` :538/:576), S19_DECISIONS R-W3-G5-7.
+6. Then W4 items I-4, I-9, I-14 (A11 ruling), I-10, I-11, I-13, I-12a-d, I-19; cycles and violations to 0.
    `wp/S19-g3` and `wp/SP` wait.
-5. Open for Frank (not blocking): confirm R-1042 / option (C) for the T06 self-hash at W4 close; STOP 1 alternative
-   (tool change); a cce-code-health fix for empty `{files}` (needs a push); the verify twins ADR 0076 addendum.
-   Docs-pass leftovers as before plus region.py:71, models.lifted docstring, run 4's evidence-manifest scripts (k04,
-   t04, t05, t05b, s02, s10c), scripts/corpus_identity.py import lines, docs/interfaces-frozen.md:90,
-   verify/column.py:103 report string and test_s08_item6.py:90 (batch E leftovers).
+7. Open for Frank (not blocking): confirm R-1042 / option (C) for the T06 self-hash at W4 close; STOP 1 alternative
+   (tool change); a cce-code-health fix for empty `{files}` (needs a push) and for `log --rerun-of` with a moved
+   base; the verify twins ADR 0076 addendum. Docs-pass leftovers as before plus region.py:71, models.lifted
+   docstring, run 4's evidence-manifest scripts (k04, t04, t05, t05b, s02, s10c), scripts/corpus_identity.py import
+   lines, docs/interfaces-frozen.md:90, verify/column.py:103 report string and test_s08_item6.py:90.
 
 ## Gates (pass numbers fixed after A1, before step 1)
 
