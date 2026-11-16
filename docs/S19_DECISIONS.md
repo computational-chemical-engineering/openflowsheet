@@ -1427,3 +1427,5 @@
   Worktrees s19-g6d and s19-g6d-mc removed (clean); branches kept. ALERTs standing. Next G6 run: not briefed; G6 left
   per the targets file after the next scan (DECISION: brief G6 run 7 at the next wake with no review pending, from a
   scan of the wp/S19 tip; alternative: brief now; reason: 2-agent cap, three reviews queued first).
+- **2026-11-16 21:44, job 191 SKIPPED (pre-rebase I-14, superseded by 196); job 190 PASS (g5r9-2, 24f772cc, step 249
+  accepted, 17.0 -> 12.0, 16/16).** ALERTs standing.
