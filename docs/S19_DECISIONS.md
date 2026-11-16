@@ -1018,3 +1018,15 @@
   reviewed and run by the orchestrator. Proposal 2 (step-cadence exclusion of end-to-end files) is with Frank, with
   this session's three conditions (excluded files stated per gate; merge_tiers.sh named for interface lanes;
   test_doc_examples.py kept at step cadence for --mode interface).
+- **2026-11-16, review R-W3-G6-5 (reviewer, Opus, 109k tokens): merge after fixes.** All twelve steps preserve
+  behaviour (order, texts, side-effect order; no arithmetic moved). Fixes: renames, steps 2 (`_finding` ->
+  `_finding_and_objects`, analysis.py:213), 7 (`_next_layer` -> `_record_next_layer`, tear.py:217; rule 6 exception
+  needs the name to say it writes), 11 (`_handshake_attempts` -> `_write_handshake_attempts`, runner.py:409): one
+  commit by sonnet-implementer, enqueued no-gain as g6r5-revfix. Log corrections (history not rewritten):
+  step 8 (69c3d900): its message's claim that test_x04_messages and test_msg_corpus compare the finding lists is
+  false (they assert `== []`, test_x04_messages.py:633, test_msg_corpus.py:429); the order is unchanged by
+  construction (reviewer). Step 12 (c252d508): its `Codehealth-Recipe: loop-body-extract` trailer is wrong; the whole
+  loop moved (the accepted form of 65fdadb0). Step 5 (4e8cde81): its message's nesting "4 -> 1" is 2 (engineer).
+  Test-only follow-ups, not merge conditions (build lane, trailing): a test pinning `lint_entry`'s finding order (one
+  complete entry with a failing example, jargon in a variant summary and an infeasibility claim); a lock-contention
+  test for `ExperimentStore.locked` (`BlockingIOError` branch).
