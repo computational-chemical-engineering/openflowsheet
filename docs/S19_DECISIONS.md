@@ -1461,3 +1461,9 @@
   list-entry `(None, None)`, both `_phase_branch_flow` sites; `_kind_floor`/`_sibling_floor` return it; unpacking
   `_float_leaf(..., *row_floor)` kept. After 198 and 199 PASS: helper wp/S19-g5g-mc (174045f1 + wp/S19 tip),
   merge-check, merge.
+- **2026-11-16 22:23, job 198 PASS (g5r9-revert2-b, 620d6c02, revert of 24f772cc exact, 16/16) with LOG-ERROR:
+  `--rerun-of 197: the last step for this tree and base is 253`.** The queue's `--rerun-of` is passed to `codehealth
+  log --rerun-of STEP`, so it takes the RUN-LOG STEP number, not the queue job number (the same mistake behind job
+  194's LOG-ERROR, where 185's step was 246, though that one also crossed a rebase). Logged by hand with `--rerun-of
+  253`: step 254 review-reject (`_differences_v1` 0.0 -> 5.0, compare.py 7.0 -> 12.0, as the reviewer predicted).
+  Rule for every orchestrator and engineer: `enqueue --rerun-of <step N from the failed result line>`.
