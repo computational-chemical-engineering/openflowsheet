@@ -1614,3 +1614,10 @@
   test_t07_w4e:35), `basis_refusal` (test_s11_routing.py:31). DECISION: I-13 scope goes to the design lane in the
   R-W4-11 review (fable: frozen-interface naming), batched with the I-11 review questions; I-13 waits. Alternative:
   the engineer's default now. Reversible by: running the default.
+- **2026-11-17, fix211 superseded.** The W4 run 11 engineer was resumed by the orchestrator's message after all (still
+  running) and rebuilt the chain itself: 869d96be plan with `literals_removed` (ten entries), 685bb448 step, fff4ead2
+  layer config; backup wp/S19-w4r11-job211 = fe742b07. The `sonnet-implementer` (S19-W4-11-fix211.md, 59k tokens)
+  found the moved tip, reverted its uncommitted plan edit, and stopped clean with no commit or enqueue; it measured
+  each of the seven failing literals at count 1 (tool counter). Its backup branch wp/S19-w4r11-orig (= fe742b07)
+  deleted. Lesson: a SendMessage to a finished agent resumes it; check ListAgents before briefing a second agent on
+  the same lane.
