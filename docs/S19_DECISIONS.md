@@ -936,3 +936,5 @@
   tags stay local; (9) a7's docstring says "defined there" for three constants only checked in `display.__all__`
   (run 7 docs item). The next T05b manifest will show a new spec sha256 (8993799c; scripts/t05b_evidence_manifest.py
   records it): expected, not drift.
+- **2026-11-16, job 137 PASS (G5 run 8 review-fix docstring 95d29ba1, step 214 accepted-neutral, 17.5 -> 17.5,
+  15/15).** Report: ALERTs as at job 123. Merge-check job 138 next.
