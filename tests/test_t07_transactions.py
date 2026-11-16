@@ -317,27 +317,14 @@ def test_an_in_memory_project_and_the_k06_facade_reject_typed_inside_the_snapsho
     ]
     assert history(app) == ("rev-000001", ("rev-000001",))
 
-    facade = transactions.Application()
-    facade.commit(
-        ChangeSet(
-            edits=(Edit("set", ("title",), "a"),), expected_revision=None, idempotency_key="k"
-        )
-    )
-    taken = facade.commit(
-        ChangeSet(
-            edits=(),
-            expected_revision="rev-000001",
-            idempotency_key="k2",
-            new_revision_id="rev-000001",
-        )
-    )
-    unknown = facade.commit(
-        ChangeSet(
-            edits=(), expected_revision="rev-000001", idempotency_key="k3", restore_from="rev-404"
-        )
-    )
+    # K06's facade ran on a fresh in-memory project; ADR 0076 I-11: that is `in_memory()`.
+    fresh = LocalApplication.in_memory()
+    fresh.commit_change(sets((("title",), "a")), None, "k")
+    taken = fresh.commit_change(Change(edits=(), new_revision_id="rev-000001"), "rev-000001", "k2")
+    unknown = fresh.commit_change(Change(edits=(), restore_from="rev-404"), "rev-000001", "k3")
     assert (taken.status, unknown.status) == ("rejected", "rejected")
-    assert facade.store.history() == ("rev-000001",)
+    assert history(fresh)[1] == ("rev-000001",)
+    fresh.close()
 
 
 @pytest.mark.parametrize(
@@ -551,27 +538,20 @@ def test_rejected_conflict_and_previewed_results_satisfy_their_schema(
 
 
 def test_the_k06_facade_runs_on_the_shared_core() -> None:
-    """ADR 0019 D1/D3: K06's `Application` is a façade; key reuse with a new body is refused.
+    """ADR 0019 D3: on a fresh in-memory project, key reuse with a new body is refused.
 
-    This is the documented reversal of K06's replay-on-mismatch (`transactions.py:136` before
-    T07): the old code handed a changed request the old answer.
+    K06's `Application` façade is gone (ADR 0076 I-11); its successor is
+    `LocalApplication.in_memory()`. This is the documented reversal of K06's replay-on-mismatch
+    (`transactions.py:136` before T07): the old code handed a changed request the old answer.
     """
-    facade = transactions.Application()
-    assert isinstance(facade.application, LocalApplication)
-    first = facade.commit(
-        ChangeSet(
-            edits=(Edit("set", ("title",), "a"),), expected_revision=None, idempotency_key="k"
-        )
-    )
+    fresh = LocalApplication.in_memory()
+    first = fresh.commit_change(sets((("title",), "a")), None, "k")
     assert first.status == "committed" and first.revision_id == "rev-000001"
-    assert facade.store.history() == ("rev-000001",)
+    assert history(fresh)[1] == ("rev-000001",)
     with pytest.raises(ApplicationError) as refused:
-        facade.commit(
-            ChangeSet(
-                edits=(Edit("set", ("title",), "b"),), expected_revision=None, idempotency_key="k"
-            )
-        )
+        fresh.commit_change(sets((("title",), "b")), None, "k")
     assert refused.value.code == "idempotency_key_reused"
+    fresh.close()
 
 
 def test_a_capability_object_is_resolved_against_the_policy_not_trusted(

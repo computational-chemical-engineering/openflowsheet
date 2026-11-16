@@ -15,14 +15,17 @@ way to set one.
 from __future__ import annotations
 
 import json
+from collections.abc import Iterator
 from pathlib import Path
 from typing import Any
 
 import pytest
+import t07_store_support as support
 import yaml
 from conftest import REPO_ROOT
 
 from openflowsheet.application.cli import main
+from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.revision_edits import semantic_diff
 from openflowsheet.application.revisions import (
     Revision,
@@ -30,7 +33,8 @@ from openflowsheet.application.revisions import (
     RevisionStore,
     content_hash,
 )
-from openflowsheet.application.transactions import Application, ChangeSet, Edit
+from openflowsheet.application.transactions import ChangeSet, Edit
+from openflowsheet.application.types import TransactionResult
 from openflowsheet.application.validation import validate
 
 CASE = REPO_ROOT / "benchmarks" / "syn001" / "cases" / "SYN-001-nominal.yaml"
@@ -42,16 +46,52 @@ def revision() -> dict[str, Any]:
 
 
 @pytest.fixture
-def application(revision: dict[str, Any]) -> Application:
-    app = Application()
-    app.store.put(Revision(revision_id=revision["revision_id"], document=revision))
-    return app
+def application(revision: dict[str, Any]) -> Iterator[LocalApplication]:
+    """An in-memory project whose head is the nominal case, stored under its own id."""
+    app = LocalApplication.in_memory()
+    store = app.store
+    with store.writing() as connection:
+        store.commit_revision(
+            connection,
+            Revision(revision_id=revision["revision_id"], document=revision),
+            principal_id=app.principal_id,
+            capability_id=app.capability_id,
+            policy_sha256=app.policy.policy_sha256,
+        )
+    yield app
+    app.close()
 
 
-def change_set(app: Application, key: str, new_id: str, **edits: Any) -> ChangeSet:
+def head_of(app: LocalApplication) -> str | None:
+    store = app.store
+    with store.reading() as connection:
+        return store.head(connection)
+
+
+def history_of(app: LocalApplication) -> tuple[str, ...]:
+    store = app.store
+    with store.reading() as connection:
+        return store.revision_ids(connection)
+
+
+def revision_in(app: LocalApplication, revision_id: str) -> Revision:
+    store = app.store
+    with store.reading() as connection:
+        revision = store.get_revision(connection, revision_id)
+    assert revision is not None, revision_id
+    return revision
+
+
+def commit(app: LocalApplication, change_set: ChangeSet) -> TransactionResult:
+    return app.commit_change(
+        change_set.change, change_set.expected_revision, change_set.idempotency_key
+    )
+
+
+def change_set(app: LocalApplication, key: str, new_id: str, **edits: Any) -> ChangeSet:
     return ChangeSet(
         edits=tuple(Edit("set", (name,), value) for name, value in edits.items()),
-        expected_revision=app.store.head,
+        expected_revision=head_of(app),
         idempotency_key=key,
         new_revision_id=new_id,
     )
@@ -96,9 +136,9 @@ def test_a_revision_is_immutable(revision: dict[str, Any]) -> None:
         store.put(Revision(revision_id="r1", document={**revision, "specifications": []}))
 
 
-def test_an_optimistic_conflict_names_both_revisions(application: Application) -> None:
+def test_an_optimistic_conflict_names_both_revisions(application: LocalApplication) -> None:
     """§11: a caller states what it read; a moved store refuses and says what it is at now."""
-    first = application.commit(change_set(application, "k1", "rev-2", title="second"))
+    first = commit(application, change_set(application, "k1", "rev-2", title="second"))
     assert first.status == "committed"
 
     stale = ChangeSet(
@@ -107,31 +147,31 @@ def test_an_optimistic_conflict_names_both_revisions(application: Application) -
         idempotency_key="k2",
         new_revision_id="rev-3",
     )
-    result = application.commit(stale)
+    result = commit(application, stale)
     assert result.status == "conflict"
     assert result.revision_id is None
     assert result.conflict == {"expected": "SYN-001-nominal-r1", "actual": "rev-2"}
-    assert application.store.head == "rev-2", "a refused transaction changes nothing"
+    assert head_of(application) == "rev-2", "a refused transaction changes nothing"
 
 
-def test_an_idempotent_retry_returns_the_original_result(application: Application) -> None:
+def test_an_idempotent_retry_returns_the_original_result(application: LocalApplication) -> None:
     """§11: "retrying an idempotent request cannot duplicate an expensive experiment"."""
     request = change_set(application, "same-key", "rev-2", title="once")
-    first = application.commit(request)
+    first = commit(application, request)
     assert first.status == "committed"
-    before = application.store.history()
+    before = history_of(application)
 
-    again = application.commit(request)
+    again = commit(application, request)
     assert again.status == "replayed"
     assert again.revision_id == first.revision_id
     assert again.diff is not None and first.diff is not None
     assert again.diff.as_document() == first.diff.as_document()
-    assert application.store.history() == before, "no second revision was created"
+    assert history_of(application) == before, "no second revision was created"
 
 
-def test_a_change_set_applies_whole_or_not_at_all(application: Application) -> None:
+def test_a_change_set_applies_whole_or_not_at_all(application: LocalApplication) -> None:
     """Grouped atomically: a draft is never left half edited."""
-    head = application.store.head
+    head = head_of(application)
     request = ChangeSet(
         edits=(
             Edit("set", ("title",), "new title"),
@@ -141,24 +181,27 @@ def test_a_change_set_applies_whole_or_not_at_all(application: Application) -> N
         idempotency_key="atomic",
         new_revision_id="rev-2",
     )
-    result = application.commit(request)
+    result = commit(application, request)
     assert result.status == "committed"
 
-    stored = application.store.get("rev-2").document
+    stored = revision_in(application, "rev-2").document
     assert stored["title"] == "new title"
     assert stored["description"] == "new description"
     # The base is untouched: a revision is never edited in place.
-    assert application.store.get(head or "").document["title"] != "new title"
+    assert revision_in(application, head or "").document["title"] != "new title"
 
 
-def test_a_transaction_reports_downstream_invalidations(application: Application) -> None:
-    """§11: a committed edit tells the caller which runs are now against a stale revision."""
-    application.record_run("run-a", "SYN-001-nominal-r1")
-    application.record_run("run-b", "some-other-revision")
+def test_a_transaction_reports_downstream_invalidations(application: LocalApplication) -> None:
+    """§11: a committed edit tells the caller which runs are now against a stale revision.
 
-    result = application.commit(change_set(application, "k", "rev-2", title="moved"))
+    A run is a job in the store (ADR 0035 D4), so the invalidations survive a restart.
+    """
+    run_a, _ = support.accept(application, support.solve_request("a", "SYN-001-nominal-r1"))
+    support.accept(application, support.solve_request("b", "some-other-revision"))
+
+    result = commit(application, change_set(application, "k", "rev-2", title="moved"))
     assert result.status == "committed"
-    assert result.invalidations == ("run-a",), (
+    assert result.invalidations == (f"run-{run_a}",), (
         "the run against the superseded revision is named; the unrelated one is not"
     )
 
@@ -204,19 +247,20 @@ def test_a_status_is_computed_and_there_is_no_way_to_set_one(
     )
 
 
-def test_d16_an_incomplete_draft_is_committable(application: Application) -> None:
+def test_d16_an_incomplete_draft_is_committable(application: LocalApplication) -> None:
     """D16: "a syntactically valid draft can be committed without being executable".
 
     A tool that refuses to hold an unfinished thought gets worked around, and the work then
     happens somewhere with no provenance at all.
     """
-    result = application.commit(
+    result = commit(
+        application,
         ChangeSet(
             edits=(Edit("set", ("specifications",), []),),
-            expected_revision=application.store.head,
+            expected_revision=head_of(application),
             idempotency_key="draft",
             new_revision_id="draft-1",
-        )
+        ),
     )
     assert result.status == "committed", "an under-specified revision still commits"
     assert result.validation is not None
