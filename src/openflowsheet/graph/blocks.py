@@ -105,43 +105,65 @@ class BlockTriangularForm:
 def _components(
     row_ids: Sequence[str], dependencies: Mapping[str, frozenset[str]]
 ) -> list[list[str]]:
-    """Tarjan's strongly connected components, iteratively, in declaration order of entry."""
-    index_of: dict[str, int] = {}
-    low: dict[str, int] = {}
-    on_stack: set[str] = set()
-    stack: list[str] = []
-    found: list[list[str]] = []
-    counter = 0
+    """Tarjan's strongly connected components, iteratively, in declaration order of entry.
 
+    One `_Tarjan.search` from each row not yet entered, in `row_ids` order; the components are
+    returned in the order they close.
+    """
+    tarjan = _Tarjan(dependencies)
     for start in row_ids:
-        if start in index_of:
-            continue
-        work: list[tuple[str, list[str]]] = [(start, sorted(dependencies[start]))]
-        index_of[start] = low[start] = counter
-        counter += 1
-        stack.append(start)
-        on_stack.add(start)
+        if start not in tarjan.index_of:
+            tarjan.search(start)
+    return tarjan.found
 
+
+class _Tarjan:
+    """Tarjan's working state over one dependency digraph.
+
+    Each entered row's index and low-link, the component stack (`on_stack == set(stack)`), the
+    next index to give, and the components found, in the order they close.
+    """
+
+    def __init__(self, dependencies: Mapping[str, frozenset[str]]) -> None:
+        self.dependencies = dependencies
+        self.index_of: dict[str, int] = {}
+        self.low: dict[str, int] = {}
+        self.on_stack: set[str] = set()
+        self.stack: list[str] = []
+        self.found: list[list[str]] = []
+        self.counter = 0
+
+    def search(self, start: str) -> None:
+        """One iterative depth-first search from the unentered row `start`.
+
+        Each row's dependencies are visited in reverse sorted order (the work frame pops from the
+        end); every component whose root finishes is popped off the stack and appended to `found`.
+        """
+        work: list[tuple[str, list[str]]] = [self._enter(start)]
         while work:
             node, pending = work[-1]
             if pending:
                 target = pending.pop()
-                if target not in index_of:
-                    index_of[target] = low[target] = counter
-                    counter += 1
-                    stack.append(target)
-                    on_stack.add(target)
-                    work.append((target, sorted(dependencies[target])))
-                elif target in on_stack:
-                    low[node] = min(low[node], index_of[target])
+                if target not in self.index_of:
+                    work.append(self._enter(target))
+                elif target in self.on_stack:
+                    self.low[node] = min(self.low[node], self.index_of[target])
                 continue
 
             work.pop()
             if work:
-                low[work[-1][0]] = min(low[work[-1][0]], low[node])
-            if low[node] == index_of[node]:
-                found.append(_pop_component(stack, on_stack, node))
-    return found
+                self.low[work[-1][0]] = min(self.low[work[-1][0]], self.low[node])
+            if self.low[node] == self.index_of[node]:
+                self.found.append(_pop_component(self.stack, self.on_stack, node))
+
+    def _enter(self, node: str) -> tuple[str, list[str]]:
+        """Give `node` the next index as its index and low-link, push it on the stack, and return
+        its work frame: the node and its sorted dependencies."""
+        self.index_of[node] = self.low[node] = self.counter
+        self.counter += 1
+        self.stack.append(node)
+        self.on_stack.add(node)
+        return node, sorted(self.dependencies[node])
 
 
 def _pop_component(stack: list[str], on_stack: set[str], root: str) -> list[str]:
